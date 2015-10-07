@@ -390,7 +390,8 @@ namespace
     BranchIterator(const std::vector<const TVDEdge*> & edges, int i )
       :_i( i ), _size( edges.size() ), _edges( edges )
     {
-      _closed = ( edges[0]->vertex1() == edges.back()->vertex0() ); // closed branch
+      _closed = ( edges[0]->vertex1() == edges.back()->vertex0() || // closed branch
+                  edges[0]->vertex0() == edges.back()->vertex1() );
     }
     const TVDEdge* operator++() { ++_i; return edge(); }
     const TVDEdge* operator--() { --_i; return edge(); }
@@ -1031,14 +1032,16 @@ namespace
         {
           branchID = bndSegs[i]._prev->_branchID;  // with sign
         }
-        else if ( bndSegs[i]._edge && // 1st bndSeg of a WIRE
-                  bndSegs[i]._inSeg->isConnected( bndSegs[i]._edge ))
+        else if ( bndSegs[i]._edge ) // 1st bndSeg of a WIRE
         {
           branchEdges.resize(( branchID = branchEdges.size()) + 1 );
-          if ( bndSegs[i]._inSeg->point0() == bndSegs[i]._edge->vertex1() )
-            endType.insert( make_pair( bndSegs[i]._edge->vertex1(), SMESH_MAT2d::BE_ON_VERTEX ));
-          else
-            endType.insert( make_pair( bndSegs[i]._edge->vertex0(), SMESH_MAT2d::BE_ON_VERTEX ));
+          if ( bndSegs[i]._inSeg->isConnected( bndSegs[i]._edge ))
+          {
+            if ( bndSegs[i]._inSeg->point0() == bndSegs[i]._edge->vertex1() )
+              endType.insert( make_pair( bndSegs[i]._edge->vertex1(), SMESH_MAT2d::BE_ON_VERTEX ));
+            else
+              endType.insert( make_pair( bndSegs[i]._edge->vertex0(), SMESH_MAT2d::BE_ON_VERTEX ));
+          }
         }
 
         bndSegs[i].setBranch( branchID, bndSegsPerEdge ); // set to i-th and to the opposite bndSeg
@@ -1396,6 +1399,21 @@ bool SMESH_MAT2d::Boundary::getBranchPoint( const std::size_t iEdge,
   p._edgeParam = ( maE.first && maReverse ) ? ( 1. - edgeParam ) : edgeParam;
 
   return true;
+}
+
+//================================================================================
+/*!
+ * \brief Returns a BranchPoint corresponding to a given BoundaryPoint on a geom EDGE
+ *  \param [in] bp - the BoundaryPoint
+ *  \param [out] p - the found BranchPoint
+ *  \return bool - is OK
+ */
+//================================================================================
+
+bool SMESH_MAT2d::Boundary::getBranchPoint( const BoundaryPoint& bp,
+                                            BranchPoint&         p ) const
+{
+  return getBranchPoint( bp._edgeIndex, bp._param, p );
 }
 
 //================================================================================

@@ -406,10 +406,11 @@ bool SMESHGUI_SmoothingDlg::ClickOnApply()
 
     if (aResult) {
       SMESH::Update(myIO, SMESH::eDisplay);
+      SMESH::RepaintCurrentView();
       SMESHGUI::Modified();
       //Init();
 
-      mySelectedObject = SMESH::SMESH_IDSource::_nil();
+      //mySelectedObject = SMESH::SMESH_IDSource::_nil();
     }
   }
 

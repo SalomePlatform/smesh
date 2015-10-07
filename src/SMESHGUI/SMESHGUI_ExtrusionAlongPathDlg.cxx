@@ -826,7 +826,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::SetEditCurrentArgument (QPushButton* button
     if (!myPath->_is_nil()) {
       SMESH_Actor* aPathActor = SMESH::FindActorByObject(myPath);
       if (aPathActor) {
-        SMESH::SetPointRepresentation(true);
+        aPathActor->SetPointRepresentation( true );
         if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
           aViewWindow->SetSelectionMode(NodeSelection);
         SMESH::SetPickable(aPathActor);

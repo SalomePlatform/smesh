@@ -1031,6 +1031,9 @@ namespace
                         TMAPar2NPoints &                    thePointsOnE,
                         SinuousFace&                        theSinuFace)
   {
+    if ( theDivPoints.empty() )
+      return true;
+
     SMESHDS_Mesh* meshDS = theHelper.GetMeshDS();
     const vector< TopoDS_Edge >&     theSinuEdges = theSinuFace._sinuEdges;
     const vector< Handle(Geom_Curve) >& theCurves = theSinuFace._sinuCurves;
@@ -1059,12 +1062,28 @@ namespace
       findVertexAndNode( np1, theSinuEdges, meshDS );
       thePointsOnE.insert( make_pair( 1.1, make_pair( np0, np1)));
     }
+    else
+    {
+      // project a VERTEX of outer sinuous side corresponding to branch(0.)
+      // which is not included into theDivPoints
+      if ( ! ( theDivPoints[0]._iEdge     == 0 &&
+               theDivPoints[0]._edgeParam == 0. )) // recursive call
+      {
+        SMESH_MAT2d::BranchPoint brp( &branch, 0, 0 );
+        vector< SMESH_MAT2d::BranchPoint > divPoint( 1, brp );
+        vector< std::size_t > edgeIDs1(2), edgeIDs2(2);
+        edgeIDs1[0] = theEdgeIDs1.back();
+        edgeIDs1[1] = theEdgeIDs1[0];
+        edgeIDs2[0] = theEdgeIDs2.back();
+        edgeIDs2[1] = theEdgeIDs2[0];
+        projectVertices( theHelper, theMA, divPoint, edgeIDs1, edgeIDs2,
+                         theIsEdgeComputed, thePointsOnE, theSinuFace );
+      }
+    }
 
     // project theDivPoints
 
-    if ( theDivPoints.empty() )
-      return true;
-
+    TMAPar2NPoints::iterator u2NP;
     for ( size_t i = 0; i < theDivPoints.size(); ++i )
     {
       if ( !branch.getParameter( theDivPoints[i], uMA ))
@@ -1080,15 +1099,32 @@ namespace
         findVertexAndNode( np[0], theSinuEdges, meshDS, theEdgeIDs1[i], theEdgeIDs1[i+1] ),
         findVertexAndNode( np[1], theSinuEdges, meshDS, theEdgeIDs2[i], theEdgeIDs2[i+1] )
       };
+      const size_t iVert = isVertex[0] ? 0 : 1; // side with a VERTEX
+      const size_t iNode = 1 - iVert;           // opposite (meshed?) side
 
-      TMAPar2NPoints::iterator u2NP =
-        thePointsOnE.insert( make_pair( uMA, make_pair( np[0], np[1])));//.first;
+      if ( isVertex[0] != isVertex[1] ) // try to find an opposite VERTEX
+      {
+        theMA.getBoundary().moveToClosestEdgeEnd( bp[iNode] ); // EDGE -> VERTEX
+        SMESH_MAT2d::BranchPoint brp;
+        theMA.getBoundary().getBranchPoint( bp[iNode], brp );  // WIRE -> MA
+        SMESH_MAT2d::BoundaryPoint bp2[2];
+        branch.getBoundaryPoints( brp, bp2[0], bp2[1] );       // MA -> WIRE
+        NodePoint np2[2] = { NodePoint( bp2[0]), NodePoint( bp2[1]) };
+        findVertexAndNode( np2[0], theSinuEdges, meshDS );
+        findVertexAndNode( np2[1], theSinuEdges, meshDS );
+        if ( np2[ iVert ]._node == np[ iVert ]._node &&
+             np2[ iNode ]._node)
+        {
+          np[ iNode ] = np2[ iNode ];
+          isVertex[ iNode ] = true;
+        }
+      }
+
+      u2NP = thePointsOnE.insert( make_pair( uMA, make_pair( np[0], np[1])));
 
       if ( !isVertex[0] && !isVertex[1] ) return false; // error
       if ( isVertex[0] && isVertex[1] )
         continue;
-      const size_t iVert = isVertex[0] ? 0 : 1;
-      const size_t iNode = 1 - iVert;
 
       bool isOppComputed = theIsEdgeComputed[ np[ iNode ]._edgeInd ];
       if ( !isOppComputed )
@@ -1103,7 +1139,7 @@ namespace
 
       // evaluate distance to neighbor projections
       const double rShort = 0.2;
-      bool isShortPrev[2], isShortNext[2];
+      bool isShortPrev[2], isShortNext[2], isPrevCloser[2];
       TMAPar2NPoints::iterator u2NPPrev = u2NP, u2NPNext = u2NP;
       --u2NPPrev; ++u2NPNext;
       // bool hasPrev = ( u2NP     != thePointsOnE.begin() );
@@ -1121,8 +1157,9 @@ namespace
         double  distPrev = p.Distance( pPrev );
         double  distNext = p.Distance( pNext );
         double         r = distPrev / ( distPrev + distNext );
-        isShortPrev[iS] = ( r < rShort );
-        isShortNext[iS] = (( 1 - r ) > ( 1 - rShort ));
+        isShortPrev [iS] = ( r < rShort );
+        isShortNext [iS] = (( 1 - r ) > ( 1 - rShort ));
+        isPrevCloser[iS] = (( r < 0.5 ) && ( u2NPPrev->first > 0 ));
       }
       // if ( !hasPrev ) isShortPrev[0] = isShortPrev[1] = false;
       // if ( !hasNext ) isShortNext[0] = isShortNext[1] = false;
@@ -1132,14 +1169,14 @@ namespace
       if (( isShortPrev[0] && isShortPrev[1] ) || // option 2) -> remove a too close projection
           ( isShortNext[0] && isShortNext[1] ))
       {
-        u2NPClose = isShortPrev[0] ? u2NPPrev : u2NPNext;
+        u2NPClose = isPrevCloser[0] ? u2NPPrev : u2NPNext;
         NodePoint& npProj  = get( u2NP->second,      iNode ); // NP of VERTEX projection
         NodePoint npCloseN = get( u2NPClose->second, iNode ); // NP close to npProj
         NodePoint npCloseV = get( u2NPClose->second, iVert ); // NP close to VERTEX
         if ( !npCloseV._node )
         {
           npProj = npCloseN;
-          thePointsOnE.erase( isShortPrev[0] ? u2NPPrev : u2NPNext );
+          thePointsOnE.erase( isPrevCloser[0] ? u2NPPrev : u2NPNext );
           continue;
         }
         else
@@ -1149,7 +1186,7 @@ namespace
       }
       // else: option 1) - wide enough -> "duplicate" existing node
       {
-        u2NPClose = isShortPrev[ iNode ] ? u2NPPrev : u2NPNext;
+        u2NPClose = isPrevCloser[ iNode ] ? u2NPPrev : u2NPNext;
         NodePoint& npProj   = get( u2NP->second,      iNode ); // NP of VERTEX projection
         NodePoint& npCloseN = get( u2NPClose->second, iNode ); // NP close to npProj
         npProj = npCloseN;
@@ -1164,6 +1201,12 @@ namespace
         //theNodes2Merge[ npCloseN._node ].push_back( npProj._node );
       }
     }
+
+    // remove auxiliary NodePoint's of ends of theSinuEdges
+    for ( u2NP = thePointsOnE.begin(); u2NP->first < 0; )
+      thePointsOnE.erase( u2NP++ );
+    thePointsOnE.erase( 1.1 );
+
     return true;
   }
 
@@ -1198,7 +1241,8 @@ namespace
   void separateNodes( SMESH_MesherHelper&            theHelper,
                       const SMESH_MAT2d::MedialAxis& theMA,
                       TMAPar2NPoints &               thePointsOnE,
-                      SinuousFace&                   theSinuFace )
+                      SinuousFace&                   theSinuFace,
+                      const vector< bool >&          theIsComputedEdge)
   {
     if ( thePointsOnE.size() < 2 )
       return;
@@ -1287,7 +1331,7 @@ namespace
             }
 
             // distribute points and create nodes
-            double du = ( u1 - u0 ) / ( sameU2NP.size() + 1 );
+            double du = ( u1 - u0 ) / ( sameU2NP.size() + !existingNode );
             double u  = u0 + du;
             for ( size_t i = 0; i < sameU2NP.size(); ++i )
             {
@@ -1299,7 +1343,9 @@ namespace
                 gp_Pnt p = np->Point( curves );
                 np->_node = meshDS->AddNode( p.X(), p.Y(), p.Z() );
                 meshDS->SetNodeOnEdge( np->_node, theSinuEdges[ *edgeID ], np->_u  );
-                //mergeNodes.push_back( np->_node );
+
+                if ( theIsComputedEdge[ *edgeID ])
+                  mergeNodes.push_back( np->_node );
               }
             }
           }
@@ -1410,9 +1456,33 @@ namespace
       theFace._quad->side[ 0 ] = StdMeshers_FaceSide::New( uvsNew );
       theFace._quad->side[ 2 ] = theFace._quad->side[ 0 ];
 
-      // rotate the IN side if opposite nodes of IN and OUT sides don't match
-      if ( theFace._quad->side[ 1 ].GetUVPtStruct().empty() )
+      if ( theFace._quad->side[ 1 ].GetUVPtStruct().empty() ||
+           theFace._quad->side[ 3 ].GetUVPtStruct().empty() )
         return false;
+
+      // assure that the outer sinuous side starts at nOut
+      if ( theFace._sinuSide[0].size() > 1 )
+      {
+        const UVPtStructVec& uvsOut = theFace._quad->side[ 3 ].GetUVPtStruct(); // _sinuSide[0]
+        size_t i; // find UVPtStruct holding nOut
+        for ( i = 0; i < uvsOut.size(); ++i )
+          if ( nOut == uvsOut[i].node )
+            break;
+        if ( i == uvsOut.size() )
+          return false;
+
+        if ( i != 0  &&  i != uvsOut.size()-1 )
+        {
+          // create a new OUT quad side
+          uvsNew.clear();
+          uvsNew.reserve( uvsOut.size() );
+          uvsNew.insert( uvsNew.end(), uvsOut.begin() + i, uvsOut.end() );
+          uvsNew.insert( uvsNew.end(), uvsOut.begin() + 1, uvsOut.begin() + i + 1);
+          theFace._quad->side[ 3 ] = StdMeshers_FaceSide::New( uvsNew );
+        }
+      }
+
+      // rotate the IN side if opposite nodes of IN and OUT sides don't match
       const SMDS_MeshNode * nIn0 = theFace._quad->side[ 1 ].First().node;
       if ( nIn0 != nIn )
       {
@@ -1431,12 +1501,13 @@ namespace
         uvsNew.insert( uvsNew.end(), uvsIn.begin() + i, uvsIn.end() );
         uvsNew.insert( uvsNew.end(), uvsIn.begin() + 1, uvsIn.begin() + i + 1);
         theFace._quad->side[ 1 ] = StdMeshers_FaceSide::New( uvsNew );
-
-        if ( theFace._quad->side[ 1 ].NbPoints() !=
-             theFace._quad->side[ 3 ].NbPoints())
-          return false;
       }
-    } // if ( theShortEdges[0].empty() )
+
+      if ( theFace._quad->side[ 1 ].NbPoints() !=
+           theFace._quad->side[ 3 ].NbPoints())
+        return false;
+
+    } // if ( theFace.IsRing() )
 
     return true;
 
@@ -1666,7 +1737,7 @@ namespace
                            isComputed, pointsOnE, theSinuFace ))
       return false;
 
-    separateNodes( theHelper, theMA, pointsOnE, theSinuFace );
+    separateNodes( theHelper, theMA, pointsOnE, theSinuFace, isComputed );
 
     // create nodes
     TMAPar2NPoints::iterator u2np = pointsOnE.begin();

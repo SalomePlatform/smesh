@@ -82,7 +82,8 @@ namespace SMESH_MAT2d
     std::size_t   _iEdge; // MA edge index within the branch
     double        _edgeParam; // normalized param within the MA edge
 
-    BranchPoint(): _branch(0), _iEdge(0), _edgeParam(-1) {}
+    BranchPoint( const Branch* b = 0, std::size_t e = 0, double u = -1 ):
+      _branch(b), _iEdge(e), _edgeParam(u) {}
   };
   //-------------------------------------------------------------------------------------
   /*!
@@ -179,6 +180,8 @@ namespace SMESH_MAT2d
     bool getPoint( std::size_t iEdge, std::size_t iSeg, double u, BoundaryPoint& bp ) const;
 
     bool getBranchPoint( const std::size_t iEdge, double u, BranchPoint& p ) const;
+
+    bool getBranchPoint( const BoundaryPoint& bp, BranchPoint& p ) const;
 
     bool isConcaveSegment( std::size_t iEdge, std::size_t iSeg ) const;
 

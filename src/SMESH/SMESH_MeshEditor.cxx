@@ -6389,7 +6389,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet     theElements[2],
       SMESH_MeshEditor_PathPoint PP2 = currList.front();
       gp_Dir D1 = PP1.Tangent();
       gp_Dir D2 = PP2.Tangent();
-      gp_Dir Dnew( ( D1.XYZ() + D2.XYZ() ) / 2 );
+      gp_Dir Dnew( D1.XYZ() + D2.XYZ() );
       PP1.SetTangent(Dnew);
       fullList.push_back(PP1);
       fullList.splice( fullList.end(), currList, ++currList.begin(), currList.end() );
@@ -6454,7 +6454,7 @@ SMESH_MeshEditor::MakeEdgePathPoints(std::list<double>&                aPrms,
     aL2 = aVec.SquareMagnitude();
     if ( aL2 < aTolVec2 )
       return EXTR_CANT_GET_TANGENT;
-    gp_Dir aTgt( aVec );
+    gp_Dir aTgt( FirstIsStart ? aVec : -aVec );
     aPP.SetPnt( aP3D );
     aPP.SetTangent( aTgt );
     aPP.SetParameter( aT );
@@ -6479,9 +6479,11 @@ SMESH_MeshEditor::MakeExtrElements(TIDSortedElemSet                  theElemSets
                                    const bool                        theMakeGroups)
 {
   const int aNbTP = fullList.size();
+
   // Angles
   if( theHasAngles && !theAngles.empty() && theLinearVariation )
     LinearAngleVariation(aNbTP-1, theAngles);
+
   // fill vector of path points with angles
   vector<SMESH_MeshEditor_PathPoint> aPPs;
   list<SMESH_MeshEditor_PathPoint>::iterator itPP = fullList.begin();
@@ -6511,10 +6513,10 @@ SMESH_MeshEditor::MakeExtrElements(TIDSortedElemSet                  theElemSets
     {
       TIDSortedElemSet& theElements = theElemSets[ is2ndSet ];
       itElem = theElements.begin();
-      for ( ; itElem != theElements.end(); itElem++ ) {
+      for ( ; itElem != theElements.end(); itElem++ )
+      {
         const SMDS_MeshElement* elem = *itElem;
-
-        SMDS_ElemIteratorPtr itN = elem->nodesIterator();
+        SMDS_ElemIteratorPtr     itN = elem->nodesIterator();
         while ( itN->more() ) {
           const SMDS_MeshElement* node = itN->next();
           if ( newNodes.insert( node ).second )
@@ -6528,19 +6530,15 @@ SMESH_MeshEditor::MakeExtrElements(TIDSortedElemSet                  theElemSets
 
   // 4. Processing the elements
   SMESHDS_Mesh* aMesh = GetMeshDS();
+  list<const SMDS_MeshNode*> emptyList;
 
   setElemsFirst( theElemSets );
   for ( int is2ndSet = 0; is2ndSet < 2; ++is2ndSet )
   {
     TIDSortedElemSet& theElements = theElemSets[ is2ndSet ];
-    for ( itElem = theElements.begin(); itElem != theElements.end(); itElem++ ) {
-      // check element type
+    for ( itElem = theElements.begin(); itElem != theElements.end(); itElem++ )
+    {
       const SMDS_MeshElement* elem = *itElem;
-      if ( !elem )
-        continue;
-      // SMDSAbs_ElementType aTypeE = elem->GetType();
-      // if ( aTypeE != SMDSAbs_Face && aTypeE != SMDSAbs_Edge )
-      //   continue;
 
       vector<TNodeOfNodeListMapItr> & newNodesItVec = mapElemNewNodes[ elem ];
       newNodesItVec.reserve( elem->NbNodes() );
@@ -6552,13 +6550,11 @@ SMESH_MeshEditor::MakeExtrElements(TIDSortedElemSet                  theElemSets
       {
         ++nodeIndex;
         // check if a node has been already processed
-        const SMDS_MeshNode* node =
-          static_cast<const SMDS_MeshNode*>( itN->next() );
-        TNodeOfNodeListMap::iterator nIt = mapNewNodes.find( node );
-        if ( nIt == mapNewNodes.end() ) {
-          nIt = mapNewNodes.insert( make_pair( node, list<const SMDS_MeshNode*>() )).first;
-          list<const SMDS_MeshNode*>& listNewNodes = nIt->second;
-
+        const SMDS_MeshNode* node = cast2Node( itN->next() );
+        TNodeOfNodeListMap::iterator nIt = mapNewNodes.insert( make_pair( node, emptyList )).first;
+        list<const SMDS_MeshNode*>& listNewNodes = nIt->second;
+        if ( listNewNodes.empty() )
+        {
           // make new nodes
           Standard_Real aAngle1x, aAngleT1T0, aTolAng;
           gp_Pnt aP0x, aP1x, aPN0, aPN1, aV0x, aV1x;
@@ -6573,7 +6569,6 @@ SMESH_MeshEditor::MakeExtrElements(TIDSortedElemSet                  theElemSets
           const SMESH_MeshEditor_PathPoint& aPP0 = aPPs[0];
           aP0x = aPP0.Pnt();
           aDT0x= aPP0.Tangent();
-          //cout<<"j = 0   PP: Pnt("<<aP0x.X()<<","<<aP0x.Y()<<","<<aP0x.Z()<<")"<<endl;
 
           for ( int j = 1; j < aNbTP; ++j ) {
             const SMESH_MeshEditor_PathPoint& aPP1 = aPPs[j];
@@ -6592,7 +6587,8 @@ SMESH_MeshEditor::MakeExtrElements(TIDSortedElemSet                  theElemSets
 
             // rotation 1 [ T1,T0 ]
             aAngleT1T0=-aDT1x.Angle( aDT0x );
-            if (fabs(aAngleT1T0) > aTolAng) {
+            if (fabs(aAngleT1T0) > aTolAng)
+            {
               aDT1T0=aDT1x^aDT0x;
               anAxT1T0.SetLocation( aV1x );
               anAxT1T0.SetDirection( aDT1T0 );
@@ -6611,13 +6607,11 @@ SMESH_MeshEditor::MakeExtrElements(TIDSortedElemSet                  theElemSets
             }
 
             // make new node
-            //MESSAGE("elem->IsQuadratic " << elem->IsQuadratic() << " " << elem->IsMediumNode(node));
-            if( elem->IsQuadratic() && !elem->IsMediumNode(node) ) {
+            if ( elem->IsQuadratic() && !elem->IsMediumNode(node) )
+            {
               // create additional node
-              double x = ( aPN1.X() + aPN0.X() )/2.;
-              double y = ( aPN1.Y() + aPN0.Y() )/2.;
-              double z = ( aPN1.Z() + aPN0.Z() )/2.;
-              const SMDS_MeshNode* newNode = aMesh->AddNode(x,y,z);
+              gp_XYZ midP = 0.5 * ( aPN1.XYZ() + aPN0.XYZ() );
+              const SMDS_MeshNode* newNode = aMesh->AddNode( midP.X(), midP.Y(), midP.Z() );
               myLastCreatedNodes.Append(newNode);
               srcNodes.Append( node );
               listNewNodes.push_back( newNode );
@@ -6633,42 +6627,40 @@ SMESH_MeshEditor::MakeExtrElements(TIDSortedElemSet                  theElemSets
             aDT0x = aDT1x;
           }
         }
-
-        else {
+        else if( elem->IsQuadratic() && !elem->IsMediumNode(node) )
+        {
           // if current elem is quadratic and current node is not medium
           // we have to check - may be it is needed to insert additional nodes
-          if( elem->IsQuadratic() && !elem->IsMediumNode(node) ) {
-            list< const SMDS_MeshNode* > & listNewNodes = nIt->second;
-            if(listNewNodes.size()==aNbTP-1) {
-              vector<const SMDS_MeshNode*> aNodes(2*(aNbTP-1));
-              gp_XYZ P(node->X(), node->Y(), node->Z());
-              list< const SMDS_MeshNode* >::iterator it = listNewNodes.begin();
-              int i;
-              for(i=0; i<aNbTP-1; i++) {
-                const SMDS_MeshNode* N = *it;
-                double x = ( N->X() + P.X() )/2.;
-                double y = ( N->Y() + P.Y() )/2.;
-                double z = ( N->Z() + P.Z() )/2.;
-                const SMDS_MeshNode* newN = aMesh->AddNode(x,y,z);
-                srcNodes.Append( node );
-                myLastCreatedNodes.Append(newN);
-                aNodes[2*i] = newN;
-                aNodes[2*i+1] = N;
-                P = gp_XYZ(N->X(),N->Y(),N->Z());
-              }
-              listNewNodes.clear();
-              for(i=0; i<2*(aNbTP-1); i++) {
-                listNewNodes.push_back(aNodes[i]);
-              }
+          list< const SMDS_MeshNode* > & listNewNodes = nIt->second;
+          if ( listNewNodes.size() == aNbTP-1 )
+          {
+            vector<const SMDS_MeshNode*> aNodes(2*(aNbTP-1));
+            gp_XYZ P(node->X(), node->Y(), node->Z());
+            list< const SMDS_MeshNode* >::iterator it = listNewNodes.begin();
+            int i;
+            for(i=0; i<aNbTP-1; i++) {
+              const SMDS_MeshNode* N = *it;
+              double x = ( N->X() + P.X() )/2.;
+              double y = ( N->Y() + P.Y() )/2.;
+              double z = ( N->Z() + P.Z() )/2.;
+              const SMDS_MeshNode* newN = aMesh->AddNode(x,y,z);
+              srcNodes.Append( node );
+              myLastCreatedNodes.Append(newN);
+              aNodes[2*i] = newN;
+              aNodes[2*i+1] = N;
+              P = gp_XYZ(N->X(),N->Y(),N->Z());
+            }
+            listNewNodes.clear();
+            for(i=0; i<2*(aNbTP-1); i++) {
+              listNewNodes.push_back(aNodes[i]);
             }
           }
         }
 
         newNodesItVec.push_back( nIt );
       }
+
       // make new elements
-      //sweepElement( aMesh, elem, newNodesItVec, newElemsMap[elem],
-      //              newNodesItVec[0]->second.size(), myLastCreatedElems );
       sweepElement( elem, newNodesItVec, newElemsMap[elem], aNbTP-1, srcElems );
     }
   }

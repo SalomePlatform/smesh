@@ -539,7 +539,7 @@ void SMESH_VisualObjDef::buildElemPrs()
 
 //=================================================================================
 // function : GetEdgeNodes
-// purpose  : Retrieve ids of nodes from edge of elements ( edge is numbered from 1 )
+// purpose  : Retrieve ids of nodes from edge of elements ( edge is numbered from 0 )
 //=================================================================================
 bool SMESH_VisualObjDef::GetEdgeNodes( const int theElemId,
                                        const int theEdgeNum,
@@ -556,11 +556,13 @@ bool SMESH_VisualObjDef::GetEdgeNodes( const int theElemId,
     
   int nbNodes = anElem->NbCornerNodes();
 
-  if ( theEdgeNum < 0 || theEdgeNum > 3 || (nbNodes != 3 && nbNodes != 4) || theEdgeNum > nbNodes )
+  if (( theEdgeNum < 0 || theEdgeNum > 3 ) ||
+      ( nbNodes != 3 && nbNodes != 4 ) ||
+      ( theEdgeNum >= nbNodes ))
     return false;
 
-  theNodeId1 = anElem->GetNode( theEdgeNum - 1       )->GetID();
-  theNodeId2 = anElem->GetNode( theEdgeNum % nbNodes )->GetID();
+  theNodeId1 = anElem->GetNode(  theEdgeNum                 )->GetID();
+  theNodeId2 = anElem->GetNode(( theEdgeNum + 1 ) % nbNodes )->GetID();
 
   return true;
 }
@@ -584,10 +586,9 @@ vtkUnstructuredGrid* SMESH_VisualObjDef::GetUnstructuredGrid()
 //=================================================================================
 bool SMESH_VisualObjDef::IsValid() const
 {
-        //MESSAGE("SMESH_VisualObjDef::IsValid");
-  return ( GetNbEntities(SMDSAbs_0DElement) > 0 || 
-           GetNbEntities(SMDSAbs_Ball     ) > 0 || 
-           GetNbEntities(SMDSAbs_Edge     ) > 0 || 
+  return ( GetNbEntities(SMDSAbs_0DElement) > 0 ||
+           GetNbEntities(SMDSAbs_Ball     ) > 0 ||
+           GetNbEntities(SMDSAbs_Edge     ) > 0 ||
            GetNbEntities(SMDSAbs_Face     ) > 0 ||
            GetNbEntities(SMDSAbs_Volume   ) > 0 ||
            GetNbEntities(SMDSAbs_Node     ) > 0 );
@@ -597,59 +598,67 @@ bool SMESH_VisualObjDef::IsValid() const
 // function : updateEntitiesFlags
 // purpose  : Update entities flags
 //=================================================================================
-void SMESH_VisualObjDef::updateEntitiesFlags() {
+void SMESH_VisualObjDef::updateEntitiesFlags()
+{
+  unsigned int tmp = myEntitiesState;
+  ClearEntitiesFlags();
 
-        unsigned int tmp = myEntitiesState;
-        ClearEntitiesFlags();
+  map<SMDSAbs_ElementType,int> entities = SMESH::GetEntitiesFromObject(this);
 
-        map<SMDSAbs_ElementType,int> entities = SMESH::GetEntitiesFromObject(this);
-        
 
-        if( myEntitiesCache[SMDSAbs_0DElement] != 0 ||  myEntitiesCache[SMDSAbs_0DElement] >= entities[SMDSAbs_0DElement] )
-                myEntitiesState &= ~SMESH_Actor::e0DElements;
+  if( myEntitiesCache[SMDSAbs_0DElement] != 0 ||
+      myEntitiesCache[SMDSAbs_0DElement] >= entities[SMDSAbs_0DElement] )
+    myEntitiesState &= ~SMESH_Actor::e0DElements;
 
-        if( myEntitiesCache[SMDSAbs_Ball] != 0 ||  myEntitiesCache[SMDSAbs_Ball] >= entities[SMDSAbs_Ball] )
-                myEntitiesState &= ~SMESH_Actor::eBallElem;
+  if( myEntitiesCache[SMDSAbs_Ball] != 0 ||
+      myEntitiesCache[SMDSAbs_Ball] >= entities[SMDSAbs_Ball] )
+    myEntitiesState &= ~SMESH_Actor::eBallElem;
 
-        if( myEntitiesCache[SMDSAbs_Edge] != 0 || myEntitiesCache[SMDSAbs_Edge] >= entities[SMDSAbs_Edge] )
-                myEntitiesState &= ~SMESH_Actor::eEdges; 
+  if( myEntitiesCache[SMDSAbs_Edge] != 0 ||
+      myEntitiesCache[SMDSAbs_Edge] >= entities[SMDSAbs_Edge] )
+    myEntitiesState &= ~SMESH_Actor::eEdges;
 
-        if( myEntitiesCache[SMDSAbs_Face] != 0 || myEntitiesCache[SMDSAbs_Face] >= entities[SMDSAbs_Face] )
-                myEntitiesState &= ~SMESH_Actor::eFaces; 
+  if( myEntitiesCache[SMDSAbs_Face] != 0 ||
+      myEntitiesCache[SMDSAbs_Face] >= entities[SMDSAbs_Face] )
+    myEntitiesState &= ~SMESH_Actor::eFaces;
 
-        if( myEntitiesCache[SMDSAbs_Volume] != 0 || myEntitiesCache[SMDSAbs_Volume] >= entities[SMDSAbs_Volume] )
-                myEntitiesState &= ~SMESH_Actor::eVolumes;
+  if( myEntitiesCache[SMDSAbs_Volume] != 0 ||
+      myEntitiesCache[SMDSAbs_Volume] >= entities[SMDSAbs_Volume] )
+    myEntitiesState &= ~SMESH_Actor::eVolumes;
 
-        if( tmp != myEntitiesState ) {
-                myEntitiesFlag = true;
-        }
-        
-        myEntitiesCache = entities;
+  if( tmp != myEntitiesState ) {
+    myEntitiesFlag = true;
+  }
+
+  myEntitiesCache = entities;
 }
 
 //=================================================================================
 // function : ClearEntitiesFlags
 // purpose  : Clear the entities flags
 //=================================================================================
-void SMESH_VisualObjDef::ClearEntitiesFlags() {
-        myEntitiesState = SMESH_Actor::eAllEntity;
-        myEntitiesFlag = false;
+void SMESH_VisualObjDef::ClearEntitiesFlags()
+{
+  myEntitiesState = SMESH_Actor::eAllEntity;
+  myEntitiesFlag = false;
 }
 
 //=================================================================================
 // function : GetEntitiesFlag
 // purpose  : Return the entities flag
 //=================================================================================
-bool SMESH_VisualObjDef::GetEntitiesFlag() {
-        return myEntitiesFlag;
+bool SMESH_VisualObjDef::GetEntitiesFlag()
+{
+  return myEntitiesFlag;
 }
 
 //=================================================================================
 // function : GetEntitiesState
 // purpose  : Return the entities state
 //=================================================================================
-unsigned int SMESH_VisualObjDef::GetEntitiesState() {
-        return myEntitiesState;
+unsigned int SMESH_VisualObjDef::GetEntitiesState()
+{
+  return myEntitiesState;
 }
 
 /*
@@ -699,20 +708,20 @@ bool SMESH_MeshObj::Update( int theIsClear )
 
 bool SMESH_MeshObj::NulData()
 {
-        MESSAGE ("SMESH_MeshObj::NulData() ==================================================================================");
-        if (!myEmptyGrid)
-        {
-          myEmptyGrid = SMDS_UnstructuredGrid::New();
-          myEmptyGrid->Initialize();
-          myEmptyGrid->Allocate();
-          vtkPoints* points = vtkPoints::New();
-          points->SetNumberOfPoints(0);
-          myEmptyGrid->SetPoints( points );
-          points->Delete();
-          myEmptyGrid->BuildLinks();
-        }
-        myGrid->ShallowCopy(myEmptyGrid);
-        return true;
+  MESSAGE ("SMESH_MeshObj::NulData() ==================================================================================");
+  if (!myEmptyGrid)
+  {
+    myEmptyGrid = SMDS_UnstructuredGrid::New();
+    myEmptyGrid->Initialize();
+    myEmptyGrid->Allocate();
+    vtkPoints* points = vtkPoints::New();
+    points->SetNumberOfPoints(0);
+    myEmptyGrid->SetPoints( points );
+    points->Delete();
+    myEmptyGrid->BuildLinks();
+  }
+  myGrid->ShallowCopy(myEmptyGrid);
+  return true;
 }
 //=================================================================================
 // function : GetElemDimension

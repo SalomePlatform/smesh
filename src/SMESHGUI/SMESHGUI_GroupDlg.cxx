@@ -1827,6 +1827,8 @@ void SMESHGUI_GroupDlg::onAdd()
 
   if (aNbSel == 0 || myActorsList.count() == 0 || myMesh->_is_nil()) return;
 
+  SUIT_OverrideCursor wc;
+
   myIsBusy = true;
   int sizeBefore = myElements->count();
 
