@@ -38,8 +38,9 @@ creation and specify the meshing parameters on sub-meshes only; then
 only the sub-shapes, for which an algorithm and a hypothesis (if any)
 have been defined will be discretized.
 
-\n Construction of a mesh on a geometry includes at least two (mesh
-creation and computing) of the following steps:
+\n Construction of a mesh on a geometry includes at least two 
+(\ref create_mesh_anchor "mesh creation" and
+\ref compute_anchor "computing") of the following steps:
 <ul>
   <li> \ref create_mesh_anchor "Creation of a mesh object", where you
   can specify meshing parameters to apply to all sub-shapes of the
@@ -262,7 +263,9 @@ information box:
 <h2>Previewing the mesh</h2>
 
 Before \ref compute_anchor "the mesh computation", it is also possible
-to see the mesh preview.
+to see the mesh preview. This operation allows to incrementally
+compute the mesh, dimension by dimension, and to discard an
+unsatisfactory mesh.
 
 For this, select the mesh in the Object Browser. From the \b Mesh menu
 select \b Preview or click "Preview" button in the toolbar or activate
@@ -380,8 +383,8 @@ will see the following information.
 It is equally possible to skip  \ref evaluate_anchor "the Evaluation"
 and \ref preview_anchor "the Preview" and to \b Compute the mesh after
 the hypotheses are assigned. For this, select your mesh in
-the <b>Object Browser</b>. From the \b Mesh menu select \b Compute or
-click "Compute" button of the toolbar.
+the <b>Object Browser</b>. From the \b Mesh menu or the context menu
+select \b Compute or click \a "Compute" button of the toolbar.
 
 <center>
 \image html image28.png
@@ -406,8 +409,9 @@ failure is provided in \b Errors table.
 
 \image html meshcomputationfail.png
 
-After you select an error, <b>Show Sub-shape</b> button allows
-visualizing in magenta the geometrical entity that causes the error.
+After you select an error in \b Errors table, <b>Show Sub-shape</b> button allows
+visualizing in magenta the geometrical entity meshing of which failed
+(Name of this entity or its ID and type is shown in \a Sub-shape column).
 
 <center>
 \image html failed_computation.png 

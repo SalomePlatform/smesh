@@ -1546,11 +1546,11 @@ LightApp_Dialog* SMESHGUI_ComputeOp::dlg() const
 //================================================================================
 
 SMESHGUI_PrecomputeOp::SMESHGUI_PrecomputeOp()
- : SMESHGUI_BaseComputeOp(),
- myDlg( 0 ),
- myOrderMgr( 0 ),
- myActiveDlg( 0 ),
- myPreviewDisplayer( 0 )
+  : SMESHGUI_BaseComputeOp(),
+    myDlg( 0 ),
+    myOrderMgr( 0 ),
+    myActiveDlg( 0 ),
+    myPreviewDisplayer( 0 )
 {
 }
 
@@ -1861,7 +1861,7 @@ void SMESHGUI_PrecomputeOp::onCancel()
       // remove all submeshes for collected shapes
       QMap<int,int>::const_iterator it = myMapShapeId.constBegin();
       for ( ; it != myMapShapeId.constEnd(); ++it )
-        myMesh->ClearSubMesh( *it );
+        myMesh->ClearSubMesh( it.key() );
       isRestoreOrder = true;
     }
   }
@@ -2015,6 +2015,7 @@ SMESHGUI_PrecomputeDlg::SMESHGUI_PrecomputeDlg( QWidget* parent )
 
   setButtonText( OK, tr( "COMPUTE" ) );
   QFrame* main = mainFrame();
+  main->setMinimumWidth( 300 );
 
   QVBoxLayout* layout = new QVBoxLayout( main );
 
