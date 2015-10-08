@@ -1349,6 +1349,7 @@ void StdMeshersGUI_StdHypothesisCreator::attuneStdWidget (QWidget* w, const int)
     {
       sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "length_precision" );
       sb->setEnabled( !widget< QCheckBox >( 1 )->isChecked() );
+      sb->setMinimumWidth( 150 );
     }
     else if( hypType()=="MaxElementArea" )
     {
