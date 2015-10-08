@@ -4902,9 +4902,7 @@ Please, create VTK viewer and try again</translation>
     <name>SMESHGUI_PrecomputeOp</name>
     <message>
         <source>CLEAR_SUBMESH_QUESTION</source>
-        <translation>Temporary sub-meshes on the selected geometry
-were created during preview operation.
-Do you want to remove all these sub-meshes?</translation>
+        <translation>Do you want to remove mesh entities generated during preview operation?</translation>
     </message>
     <message>
         <source>SMESH_WRN_NOTHING_PREVIEW</source>
@@ -5742,7 +5740,7 @@ Please enter correct value and try again</translation>
     </message>
     <message>
         <source>ELEMENTS</source>
-        <translation>Elements</translation>
+        <translation>All</translation>
     </message>
     <message>
         <source>ENTITY_TYPE</source>

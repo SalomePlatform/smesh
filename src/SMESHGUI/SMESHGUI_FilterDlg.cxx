@@ -1012,6 +1012,7 @@ void SMESHGUI_FilterTable::Init (const QList<int>& theTypes)
         Table* aTable = createTable(mySwitchTableGrp, *typeIt);
         myTables[ *typeIt ] = aTable;
         ((QVBoxLayout*)mySwitchTableGrp->layout())->addWidget(myTables[ *typeIt ]);
+        myEntityType = -1;
       }
     }
   }

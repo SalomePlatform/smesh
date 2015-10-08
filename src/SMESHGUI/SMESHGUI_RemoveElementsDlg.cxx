@@ -532,6 +532,7 @@ void SMESHGUI_RemoveElementsDlg::setFilters()
   if ( myMesh->NbVolumes()   ) types << SMESH::VOLUME;
   if ( myMesh->NbBalls()     ) types << SMESH::BALL;
   if ( myMesh->Nb0DElements()) types << SMESH::ELEM0D;
+  if ( types.count() > 1 )     types << SMESH::ALL;
 
   myFilterDlg->Init( types );
   myFilterDlg->SetSelection();
