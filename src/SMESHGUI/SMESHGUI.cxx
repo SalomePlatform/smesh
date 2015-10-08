@@ -2584,8 +2584,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       SMESH::EDisplaing anAction;
       switch (theCommandID) {
-      case SMESHOp::OpHide: anAction = SMESH::eErase; break;
-      case SMESHOp::OpShow: anAction = SMESH::eDisplay; break;
+      case SMESHOp::OpHide:     anAction = SMESH::eErase; break;
+      case SMESHOp::OpShow:     anAction = SMESH::eDisplay; break;
       case SMESHOp::OpShowOnly: anAction = SMESH::eDisplayOnly; break;
       }
 
@@ -2594,7 +2594,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if (aSel)
         aSel->selectedObjects( sel_objects );
 
-      if( theCommandID==SMESHOp::OpShowOnly )
+      if ( theCommandID==SMESHOp::OpShowOnly )
       {
         MESSAGE("anAction = SMESH::eDisplayOnly");
         startOperation( myEraseAll );
@@ -2608,20 +2608,17 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 #endif
         if (vtkwnd) {
           SALOME_ListIteratorOfListIO It( to_process );
-          for ( ; It.More(); It.Next()) {
-            MESSAGE("---");
+          for ( ; It.More(); It.Next())
+          {
             Handle(SALOME_InteractiveObject) IOS = It.Value();
-            if (IOS->hasEntry()) {
-              MESSAGE("---");
-              if (!SMESH::UpdateView(anAction, IOS->getEntry())) {
+            if ( IOS->hasEntry() )
+            {
+              if ( !SMESH::UpdateView( anAction, IOS->getEntry() )) {
                 SMESHGUI::GetSMESHGUI()->EmitSignalVisibilityChanged();
                 break; // PAL16774 (Crash after display of many groups)
               }
               if (anAction == SMESH::eDisplayOnly)
-              {
-                MESSAGE("anAction = SMESH::eDisplayOnly");
                 anAction = SMESH::eDisplay;
-              }
             }
           }
         }
@@ -4057,11 +4054,11 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   createMenu( SMESHOp::OpFreeNode,              nodeId,   -1 );
   createMenu( SMESHOp::OpEqualNode,             nodeId,   -1 );
-  createMenu( SMESHOp::OpFreeEdge,              edgeId,   -1 );
   createMenu( SMESHOp::OpFreeBorder,            edgeId,   -1 );
   createMenu( SMESHOp::OpLength,                edgeId,   -1 );
   createMenu( SMESHOp::OpConnection,            edgeId,   -1 );
   createMenu( SMESHOp::OpEqualEdge,             edgeId,   -1 );
+  createMenu( SMESHOp::OpFreeEdge,              faceId,   -1 );
   createMenu( SMESHOp::OpFreeFace,              faceId,   -1 );
   createMenu( SMESHOp::OpBareBorderFace,        faceId,   -1 );
   createMenu( SMESHOp::OpOverConstrainedFace,   faceId,   -1 );
@@ -4203,12 +4200,12 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( SMESHOp::OpFreeNode,  ctrl0dTb );
   createTool( SMESHOp::OpEqualNode, ctrl0dTb );
 
-  createTool( SMESHOp::OpFreeEdge,   ctrl1dTb );
   createTool( SMESHOp::OpFreeBorder, ctrl1dTb );
   createTool( SMESHOp::OpLength,     ctrl1dTb );
   createTool( SMESHOp::OpConnection, ctrl1dTb );
   createTool( SMESHOp::OpEqualEdge,  ctrl1dTb );
 
+  createTool( SMESHOp::OpFreeEdge,            ctrl2dTb );
   createTool( SMESHOp::OpFreeFace,            ctrl2dTb );
   createTool( SMESHOp::OpBareBorderFace,      ctrl2dTb );
   createTool( SMESHOp::OpOverConstrainedFace, ctrl2dTb );
