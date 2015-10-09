@@ -441,7 +441,8 @@ void SMESH_Gen::setCurrentSubMesh(SMESH_subMesh* sm)
 {
   if ( sm )
     _sm_current.push_back( sm );
-  else
+
+  else if ( !_sm_current.empty() )
     _sm_current.pop_back();
 }
 

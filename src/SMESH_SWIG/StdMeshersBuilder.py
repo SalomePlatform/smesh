@@ -1100,8 +1100,7 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
 
     pass # end of StdMeshersBuilder_Prism3D class
 
-## Defines a Prism 3D algorithm, which is either "Extrusion 3D" or "Radial Prism"
-#  depending on geometry
+## Defines a Prism 3D algorithm
 # 
 #  It is created by calling smeshBuilder.Mesh.Prism(geom=0)
 #
@@ -1133,30 +1132,12 @@ class StdMeshersBuilder_RadialPrism3D(StdMeshersBuilder_Prism3D):
         self.nbLayers = None
         return
 
-## Defines a Radial Quadrangle 1D-2D algorithm
+## Base class for algorithms supporting radial distribution hypotheses
 # 
-#  It is created by calling smeshBuilder.Mesh.Quadrangle(smeshBuilder.RADIAL_QUAD,geom=0)
-#
-#  @ingroup l2_algos_radialq
-class StdMeshersBuilder_RadialQuadrangle1D2D(Mesh_Algorithm):
+class StdMeshersBuilder_RadialAlgorithm(Mesh_Algorithm):
 
-    ## name of the dynamic method in smeshBuilder.Mesh class
-    #  @internal
-    meshMethod = "Quadrangle"
-    ## type of algorithm used with helper function in smeshBuilder.Mesh class
-    #  @internal
-    algoType   = RADIAL_QUAD
-    ## doc string of the method
-    #  @internal
-    docHelper  = "Creates quadrangle 1D-2D algorithm for faces having a shape of disk or a disk segment"
-
-    ## Private constructor.
-    #  @param mesh parent mesh object algorithm is assigned to
-    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
-    #              if it is @c 0 (default), the algorithm is assigned to the main shape
-    def __init__(self, mesh, geom=0):
+    def __init__(self):
         Mesh_Algorithm.__init__(self)
-        self.Create(mesh, geom, self.algoType)
 
         self.distribHyp = None #self.Hypothesis("LayerDistribution2D", UseExisting=0)
         self.nbLayers = None
@@ -1259,12 +1240,42 @@ class StdMeshersBuilder_RadialQuadrangle1D2D(Mesh_Algorithm):
 
     pass # end of StdMeshersBuilder_RadialQuadrangle1D2D class
 
+## Defines a Radial Quadrangle 1D-2D algorithm
+# 
+#  It is created by calling smeshBuilder.Mesh.Quadrangle(smeshBuilder.RADIAL_QUAD,geom=0)
+#
+#  @ingroup l2_algos_radialq
+class StdMeshersBuilder_RadialQuadrangle1D2D(StdMeshersBuilder_RadialAlgorithm):
+
+    ## name of the dynamic method in smeshBuilder.Mesh class
+    #  @internal
+    meshMethod = "Quadrangle"
+    ## type of algorithm used with helper function in smeshBuilder.Mesh class
+    #  @internal
+    algoType   = RADIAL_QUAD
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates quadrangle 1D-2D algorithm for faces having a shape of disk or a disk segment"
+
+    ## Private constructor.
+    #  @param mesh parent mesh object algorithm is assigned to
+    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
+    #              if it is @c 0 (default), the algorithm is assigned to the main shape
+    def __init__(self, mesh, geom=0):
+        StdMeshersBuilder_RadialAlgorithm.__init__(self)
+        self.Create(mesh, geom, self.algoType)
+
+        self.distribHyp = None #self.Hypothesis("LayerDistribution2D", UseExisting=0)
+        self.nbLayers = None
+        pass
+
+
 ## Defines a Quadrangle (Medial Axis Projection) 1D-2D algorithm
 # 
 #  It is created by calling smeshBuilder.Mesh.Quadrangle(smeshBuilder.QUAD_MA_PROJ,geom=0)
 #
 #  @ingroup l2_algos_quad_ma
-class StdMeshersBuilder_QuadMA_1D2D(Mesh_Algorithm):
+class StdMeshersBuilder_QuadMA_1D2D(StdMeshersBuilder_RadialAlgorithm):
 
     ## name of the dynamic method in smeshBuilder.Mesh class
     #  @internal
@@ -1281,7 +1292,7 @@ class StdMeshersBuilder_QuadMA_1D2D(Mesh_Algorithm):
     #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
     #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
-        Mesh_Algorithm.__init__(self)
+        StdMeshersBuilder_RadialAlgorithm.__init__(self)
         self.Create(mesh, geom, self.algoType)
         pass
 

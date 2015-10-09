@@ -1039,7 +1039,7 @@ namespace
     const vector< Handle(Geom_Curve) >& theCurves = theSinuFace._sinuCurves;
 
     double uMA;
-    SMESH_MAT2d::BoundaryPoint bp[2];
+    SMESH_MAT2d::BoundaryPoint bp[2]; // 2 sinuous sides
     const SMESH_MAT2d::Branch& branch = *theMA.getBranch(0);
     {
       // add to thePointsOnE NodePoint's of ends of theSinuEdges
@@ -1138,7 +1138,7 @@ namespace
       // projection is set to the BoundaryPoint of this projection
 
       // evaluate distance to neighbor projections
-      const double rShort = 0.2;
+      const double rShort = 0.33;
       bool isShortPrev[2], isShortNext[2], isPrevCloser[2];
       TMAPar2NPoints::iterator u2NPPrev = u2NP, u2NPNext = u2NP;
       --u2NPPrev; ++u2NPNext;
@@ -1306,8 +1306,8 @@ namespace
 
           TIterator u2NPprev = sameU2NP.front();
           TIterator u2NPnext = sameU2NP.back() ;
-          if ( u2NPprev->first > 0. ) --u2NPprev;
-          if ( u2NPnext->first < 1. ) ++u2NPprev;
+          if ( u2NPprev->first < 0. ) ++u2NPprev;
+          if ( u2NPnext->first > 1. ) --u2NPnext;
 
           set< int >::iterator edgeID = edgeInds.begin();
           for ( ; edgeID != edgeInds.end(); ++edgeID )
@@ -1322,8 +1322,8 @@ namespace
 
             if ( u0 == u1 )
             {
-              if ( np->_node ) --u2NPprev;
-              else             ++u2NPnext;
+              if ( u2NPprev != thePointsOnE.begin() ) --u2NPprev;
+              if ( u2NPnext != --thePointsOnE.end() ) ++u2NPnext;
               np = &get( u2NPprev->second, iSide );
               u0 = getUOnEdgeByPoint( *edgeID, np, theSinuFace );
               np = &get( u2NPnext->second, iSide );
@@ -1331,7 +1331,7 @@ namespace
             }
 
             // distribute points and create nodes
-            double du = ( u1 - u0 ) / ( sameU2NP.size() + !existingNode );
+            double du = ( u1 - u0 ) / ( sameU2NP.size() + 1 /*!existingNode*/ );
             double u  = u0 + du;
             for ( size_t i = 0; i < sameU2NP.size(); ++i )
             {
@@ -1503,8 +1503,8 @@ namespace
         theFace._quad->side[ 1 ] = StdMeshers_FaceSide::New( uvsNew );
       }
 
-      if ( theFace._quad->side[ 1 ].NbPoints() !=
-           theFace._quad->side[ 3 ].NbPoints())
+      if ( theFace._quad->side[ 1 ].GetUVPtStruct().empty() ||
+           theFace._quad->side[ 3 ].GetUVPtStruct().empty() )
         return false;
 
     } // if ( theFace.IsRing() )
@@ -1553,6 +1553,7 @@ namespace
     vector< int >                edgeIDs   ( theSinuEdges.size() ); // IDs in the main shape
     vector< bool >               isComputed( theSinuEdges.size() );
     curves.resize( theSinuEdges.size(), 0 );
+    bool                         allComputed = true;
     for ( size_t i = 0; i < theSinuEdges.size(); ++i )
     {
       curves[i] = BRep_Tool::Curve( theSinuEdges[i], f,l );
@@ -1561,6 +1562,8 @@ namespace
       SMESH_subMesh* sm = mesh->GetSubMesh( theSinuEdges[i] );
       edgeIDs   [i] = sm->GetId();
       isComputed[i] = ( !sm->IsEmpty() );
+      if ( !isComputed[i] )
+        allComputed = false;
     }
 
     const SMESH_MAT2d::Branch& branch = *theMA.getBranch(0);
@@ -1568,7 +1571,9 @@ namespace
 
     vector< std::size_t > edgeIDs1, edgeIDs2; // indices in theSinuEdges
     vector< SMESH_MAT2d::BranchPoint > divPoints;
-    branch.getOppositeGeomEdges( edgeIDs1, edgeIDs2, divPoints );
+    if ( !allComputed )
+      branch.getOppositeGeomEdges( edgeIDs1, edgeIDs2, divPoints );
+
     for ( size_t i = 0; i < edgeIDs1.size(); ++i )
       if ( isComputed[ edgeIDs1[i]] &&
            isComputed[ edgeIDs2[i]] )
@@ -1587,15 +1592,20 @@ namespace
           return false;
       }
 
-    // map param on MA to parameters of nodes on a pair of theSinuEdges
+    // map (param on MA) to (parameters of nodes on a pair of theSinuEdges)
     TMAPar2NPoints pointsOnE;
     vector<double> maParams;
+    set<int>       projectedEdges; // treated EDGEs which 'isComputed'
 
     // compute params of nodes on EDGEs by projecting division points from MA
 
     for ( size_t iEdgePair = 0; iEdgePair < edgeIDs1.size(); ++iEdgePair )
       // loop on pairs of opposite EDGEs
     {
+      if ( projectedEdges.count( edgeIDs1[ iEdgePair ]) ||
+           projectedEdges.count( edgeIDs2[ iEdgePair ]) )
+        continue;
+
       // --------------------------------------------------------------------------------
       if ( isComputed[ edgeIDs1[ iEdgePair ]] !=                    // one EDGE is meshed
            isComputed[ edgeIDs2[ iEdgePair ]])
@@ -1610,6 +1620,8 @@ namespace
         if ( !SMESH_Algo::GetSortedNodesOnEdge( meshDS, theSinuEdges[ iEdgeComputed ], /*skipMedium=*/true, nodeParams ))
           return false;
 
+        projectedEdges.insert( iEdgeComputed );
+
         SMESH_MAT2d::BoundaryPoint& bndPnt = bp[ 1-iSideComputed ];
         SMESH_MAT2d::BranchPoint brp;
         NodePoint npN, npB; // NodePoint's initialized by node and BoundaryPoint
@@ -1618,10 +1630,10 @@ namespace
 
         double maParam1st, maParamLast, maParam;
         if ( !theMA.getBoundary().getBranchPoint( iEdgeComputed, nodeParams.begin()->first, brp ))
-            return false;
+          return false;
         branch.getParameter( brp, maParam1st );
         if ( !theMA.getBoundary().getBranchPoint( iEdgeComputed, nodeParams.rbegin()->first, brp ))
-            return false;
+          return false;
         branch.getParameter( brp, maParamLast );
 
         map< double, const SMDS_MeshNode* >::iterator u2n = nodeParams.begin(), u2nEnd = nodeParams.end();
@@ -1640,28 +1652,6 @@ namespace
           npN = NodePoint( u2n->second, u2n->first, iEdgeComputed );
           npB = NodePoint( bndPnt );
           pos = pointsOnE.insert( hint, make_pair( maParam, make_pair( np0, np1 )));
-        }
-
-        // move iEdgePair forward;
-        // find divPoints most close to max MA param
-        if ( edgeIDs1.size() > 1 )
-        {
-          maParamLast = pointsOnE.rbegin()->first;
-          int iClosest;
-          double minDist = 1.;
-          for ( ; iEdgePair < edgeIDs1.size()-1; ++iEdgePair )
-          {
-            branch.getParameter( divPoints[iEdgePair], maParam );
-            double d = Abs( maParamLast - maParam );
-            if ( d < minDist )
-              minDist = d, iClosest = iEdgePair;
-            else
-              break;
-          }
-          if ( Abs( maParamLast - 1. ) < minDist )
-            break; // the last pair treated
-          else
-            iEdgePair = iClosest;
         }
       }
       // --------------------------------------------------------------------------------

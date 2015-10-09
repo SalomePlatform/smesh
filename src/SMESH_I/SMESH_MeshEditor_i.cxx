@@ -2844,7 +2844,7 @@ SMESH_MeshEditor_i::ExtrusionAlongPathObjects(const SMESH::ListOfIDSources & the
     if ( !aMeshImp ) return aGroups._retn();
     TopoDS_Shape aShape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape( thePathShape );
     aSubMesh = aMeshImp->GetImpl().GetSubMesh( aShape );
-    if ( !aSubMesh || !aSubMesh->GetSubMeshDS() )
+    if ( !aSubMesh /*|| !aSubMesh->GetSubMeshDS()*/ )
       return aGroups._retn();
   }
 

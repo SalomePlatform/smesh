@@ -344,6 +344,9 @@ namespace
       if ( !_edge || !seg2._edge )
         return true;
 
+      if ( _edge->twin() == seg2._edge )
+        return true;
+
       const TVDCell* cell1 = this->_edge->twin()->cell();
       const TVDCell* cell2 = seg2. _edge->twin()->cell();
       if ( cell1 == cell2 )
@@ -367,8 +370,8 @@ namespace
       else if ( edgeMedium1->is_primary() && edgeMedium2->is_primary() )
       {
         if ( edgeMedium1->twin() == edgeMedium2 &&
-             SMESH_MAT2d::Branch::getBndSegment( edgeMedium1 ) ==
-             SMESH_MAT2d::Branch::getBndSegment( edgeMedium2 ))
+             SMESH_MAT2d::Branch::getGeomEdge( edgeMedium1 ) ==
+             SMESH_MAT2d::Branch::getGeomEdge( edgeMedium2 ))
           // this is an ignored MA edge between inSegment's on one EDGE forming a convex corner
           return true;
       }
@@ -413,7 +416,7 @@ namespace
    */
   //================================================================================
 
-  void bndSegsToMesh( const vector< BndSeg >& bndSegs )
+  void bndSegsToMesh( const vector< vector< BndSeg > >& bndSegsPerEdge )
   {
 #ifdef _MYDEBUG_
     if ( !getenv("bndSegsToMesh")) return;
@@ -431,31 +434,35 @@ namespace
     text << "from salome.smesh import smeshBuilder\n";
     text << "smesh = smeshBuilder.New(salome.myStudy)\n";
     text << "m=smesh.Mesh()\n";
-    for ( size_t i = 0; i < bndSegs.size(); ++i )
+    for ( size_t iE = 0; iE < bndSegsPerEdge.size(); ++iE )
     {
-      if ( !bndSegs[i]._edge )
-        text << "# " << i << " NULL edge\n";
-      else if ( !bndSegs[i]._edge->vertex0() ||
-                !bndSegs[i]._edge->vertex1() )
-        text << "# " << i << " INFINITE edge\n";
-      else if ( addedEdges.insert( bndSegs[i]._edge ).second &&
-                addedEdges.insert( bndSegs[i]._edge->twin() ).second )
+      const vector< BndSeg >& bndSegs = bndSegsPerEdge[ iE ];
+      for ( size_t i = 0; i < bndSegs.size(); ++i )
       {
-        v2n = v2Node.insert( make_pair( bndSegs[i]._edge->vertex0(), v2Node.size() + 1 )).first;
-        int n0 = v2n->second;
-        if ( n0 == v2Node.size() )
-          text << "n" << n0 << " = m.AddNode( "
-               << bndSegs[i]._edge->vertex0()->x() / theScale[0] << ", "
-               << bndSegs[i]._edge->vertex0()->y() / theScale[1] << ", 0 )\n";
+        if ( !bndSegs[i]._edge )
+          text << "# E=" << iE << " i=" << i << " NULL edge\n";
+        else if ( !bndSegs[i]._edge->vertex0() ||
+                  !bndSegs[i]._edge->vertex1() )
+          text << "# E=" << iE << " i=" << i << " INFINITE edge\n";
+        else if ( addedEdges.insert( bndSegs[i]._edge ).second &&
+                  addedEdges.insert( bndSegs[i]._edge->twin() ).second )
+        {
+          v2n = v2Node.insert( make_pair( bndSegs[i]._edge->vertex0(), v2Node.size() + 1 )).first;
+          int n0 = v2n->second;
+          if ( n0 == v2Node.size() )
+            text << "n" << n0 << " = m.AddNode( "
+                 << bndSegs[i]._edge->vertex0()->x() / theScale[0] << ", "
+                 << bndSegs[i]._edge->vertex0()->y() / theScale[1] << ", 0 )\n";
 
-        v2n = v2Node.insert( make_pair( bndSegs[i]._edge->vertex1(), v2Node.size() + 1 )).first;
-        int n1 = v2n->second;
-        if ( n1 == v2Node.size() )
-          text << "n" << n1 << " = m.AddNode( "
-               << bndSegs[i]._edge->vertex1()->x() / theScale[0] << ", "
-               << bndSegs[i]._edge->vertex1()->y() / theScale[1] << ", 0 )\n";
+          v2n = v2Node.insert( make_pair( bndSegs[i]._edge->vertex1(), v2Node.size() + 1 )).first;
+          int n1 = v2n->second;
+          if ( n1 == v2Node.size() )
+            text << "n" << n1 << " = m.AddNode( "
+                 << bndSegs[i]._edge->vertex1()->x() / theScale[0] << ", "
+                 << bndSegs[i]._edge->vertex1()->y() / theScale[1] << ", 0 )\n";
 
-        text << "e" << i << " = m.AddEdge([ n" << n0 << ", n" << n1 << " ])\n";
+          text << "e" << i << " = m.AddEdge([ n" << n0 << ", n" << n1 << " ])\n";
+        }
       }
     }
     text << "\n";
@@ -985,7 +992,7 @@ namespace
       bndSegs[0].setIndexToEdge( 0 );
     }
 
-    //bndSegsToMesh( bndSegsPerEdge ); // debug: visually check found MA edges
+    bndSegsToMesh( bndSegsPerEdge ); // debug: visually check found MA edges
 
 
     // Find TVDEdge's of Branches and associate them with bndSegs
@@ -1372,6 +1379,15 @@ bool SMESH_MAT2d::Boundary::getBranchPoint( const std::size_t iEdge,
   {
     while ( points._params[i  ] > u ) --i;
     while ( points._params[i+1] < u ) ++i;
+  }
+
+  if ( points._params[i] == points._params[i+1] ) // coincident points at some end
+  {
+    int di = ( points._params[0] == points._params[i] ) ? +1 : -1;
+    while ( points._params[i] == points._params[i+1] )
+      i += di;
+    if ( i < 0 || i+1 >= points._params.size() )
+      i = 0;
   }
 
   double edgeParam = ( u - points._params[i] ) / ( points._params[i+1] - points._params[i] );

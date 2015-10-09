@@ -947,7 +947,8 @@ std::string SMESH_GroupOnFilter_i::FilterToString() const
     {
       SMESH::Filter::Criterion& crit = criteria[ i ];
 
-      if ( SMESH::FunctorType( crit.Type ) == SMESH::FT_BelongToMeshGroup )
+      if ( SMESH::FunctorType( crit.Type ) == SMESH::FT_BelongToMeshGroup &&
+           crit.ThresholdID.in() && crit.ThresholdID.in()[0] )
       {
         CORBA::Object_var obj = SMESH_Gen_i::GetORB()->string_to_object( crit.ThresholdID );
         if ( SMESH_GroupBase_i * g = SMESH::DownCast< SMESH_GroupBase_i*>( obj ))

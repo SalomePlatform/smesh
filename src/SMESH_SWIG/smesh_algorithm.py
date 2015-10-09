@@ -85,6 +85,7 @@ class Mesh_Algorithm:
                     attr = hypo_so_i.FindAttribute("AttributeIOR")[1]
                     if attr is not None:
                         anIOR = attr.Value()
+                        if not anIOR: continue # prevent exception in orb.string_to_object()
                         hypo_o_i = salome.orb.string_to_object(anIOR)
                         if hypo_o_i is not None:
                             # Check if this is a hypothesis
@@ -128,6 +129,7 @@ class Mesh_Algorithm:
                     attr = algo_so_i.FindAttribute("AttributeIOR")[1]
                     if attr is not None:
                         anIOR = attr.Value()
+                        if not anIOR: continue # prevent exception in orb.string_to_object()
                         algo_o_i = salome.orb.string_to_object(anIOR)
                         if algo_o_i is not None:
                             # Check if this is an algorithm

@@ -229,6 +229,9 @@ have been defined will be discretized.
     </hypotheses-set-group>
     </meshers>
 ~~~~~~
+    If the file contents are incorrect, there can be an error at
+    activation of Mesh module: <em>"fatal parsing error: error
+    triggered by consumer in line ..."</em>
 <br>
 <center>
       \image html hypo_sets.png

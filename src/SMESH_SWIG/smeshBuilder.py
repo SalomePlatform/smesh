@@ -3987,6 +3987,7 @@ class Mesh:
         if isinstance( RefPoint, geomBuilder.GEOM._objref_GEOM_Object):
             RefPoint = self.smeshpyD.GetPointStruct(RefPoint)
         if isinstance( RefPoint, list ):
+            if not RefPoint: RefPoint = [0,0,0]
             RefPoint = SMESH.PointStruct( *RefPoint )
         if isinstance( PathMesh, Mesh ):
             PathMesh = PathMesh.GetMesh()
@@ -4019,8 +4020,9 @@ class Mesh:
     #          only SMESH::Extrusion_Error otherwise
     #  @ingroup l2_modif_extrurev
     def ExtrusionAlongPathX(self, Base, Path, NodeStart,
-                            HasAngles, Angles, LinearVariation,
-                            HasRefPoint, RefPoint, MakeGroups, ElemType):
+                            HasAngles=False, Angles=[], LinearVariation=False,
+                            HasRefPoint=False, RefPoint=[0,0,0], MakeGroups=False,
+                            ElemType=SMESH.FACE):
         n,e,f = [],[],[]
         if ElemType == SMESH.NODE: n = Base
         if ElemType == SMESH.EDGE: e = Base
@@ -4050,7 +4052,7 @@ class Mesh:
     #          only SMESH::Extrusion_Error otherwise
     #  @ingroup l2_modif_extrurev
     def ExtrusionAlongPath(self, IDsOfElements, PathMesh, PathShape, NodeStart,
-                           HasAngles, Angles, HasRefPoint, RefPoint,
+                           HasAngles=False, Angles=[], HasRefPoint=False, RefPoint=[],
                            MakeGroups=False, LinearVariation=False):
         n,e,f = [],IDsOfElements,IDsOfElements
         gr,er = self.ExtrusionAlongPathObjects(n,e,f, PathMesh, PathShape,
@@ -4080,7 +4082,7 @@ class Mesh:
     #          only SMESH::Extrusion_Error otherwise
     #  @ingroup l2_modif_extrurev
     def ExtrusionAlongPathObject(self, theObject, PathMesh, PathShape, NodeStart,
-                                 HasAngles, Angles, HasRefPoint, RefPoint,
+                                 HasAngles=False, Angles=[], HasRefPoint=False, RefPoint=[],
                                  MakeGroups=False, LinearVariation=False):
         n,e,f = [],theObject,theObject
         gr,er = self.ExtrusionAlongPathObjects(n,e,f, PathMesh, PathShape, NodeStart,
@@ -4109,7 +4111,7 @@ class Mesh:
     #          only SMESH::Extrusion_Error otherwise
     #  @ingroup l2_modif_extrurev
     def ExtrusionAlongPathObject1D(self, theObject, PathMesh, PathShape, NodeStart,
-                                   HasAngles, Angles, HasRefPoint, RefPoint,
+                                   HasAngles=False, Angles=[], HasRefPoint=False, RefPoint=[],
                                    MakeGroups=False, LinearVariation=False):
         n,e,f = [],theObject,[]
         gr,er = self.ExtrusionAlongPathObjects(n,e,f, PathMesh, PathShape, NodeStart,
@@ -4138,7 +4140,7 @@ class Mesh:
     #          only SMESH::Extrusion_Error otherwise
     #  @ingroup l2_modif_extrurev
     def ExtrusionAlongPathObject2D(self, theObject, PathMesh, PathShape, NodeStart,
-                                   HasAngles, Angles, HasRefPoint, RefPoint,
+                                   HasAngles=False, Angles=[], HasRefPoint=False, RefPoint=[],
                                    MakeGroups=False, LinearVariation=False):
         n,e,f = [],[],theObject
         gr,er = self.ExtrusionAlongPathObjects(n,e,f, PathMesh, PathShape, NodeStart,

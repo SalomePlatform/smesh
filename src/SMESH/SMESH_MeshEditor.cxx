@@ -5986,6 +5986,10 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet     theElements[2],
   ASSERT( theTrack );
 
   SMESHDS_SubMesh* pSubMeshDS = theTrack->GetSubMeshDS();
+  if ( !pSubMeshDS )
+    return ExtrusionAlongTrack( theElements, theTrack->GetFather(), theN1,
+                                theHasAngles, theAngles, theLinearVariation,
+                                theHasRefPoint, theRefPoint, theMakeGroups );
 
   aItE = pSubMeshDS->GetElements();
   while ( aItE->more() ) {
