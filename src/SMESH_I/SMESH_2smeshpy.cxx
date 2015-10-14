@@ -3585,7 +3585,9 @@ void _pyCommand::SetBegPos( int thePartIndex, int thePosition )
 TCollection_AsciiString _pyCommand::GetIndentation()
 {
   int end = 1;
-  while ( end <= Length() && isblank( myString.Value( end )))
+  //while ( end <= Length() && isblank( myString.Value( end )))
+  //ANA: isblank() function isn't provided in VC2010 compiler
+  while ( end <= Length() && ( myString.Value( end ) == ' ' || myString.Value( end ) == '\t') )
     ++end;
   return ( end == 1 ) ? _AString("") : myString.SubString( 1, end - 1 );
 }

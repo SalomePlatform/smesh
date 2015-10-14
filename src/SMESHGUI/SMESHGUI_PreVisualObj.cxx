@@ -59,7 +59,7 @@ int SMESHGUI_PreVisualObj::GetElemDimension( const int theObjId )
 
 int SMESHGUI_PreVisualObj::GetNbEntities( const SMDSAbs_ElementType theType ) const
 {
-  myMesh->GetMeshInfo().NbElements( theType );
+  return myMesh->GetMeshInfo().NbElements( theType );
 }
 
 SMESH::SMESH_Mesh_ptr SMESHGUI_PreVisualObj::GetMeshServer()

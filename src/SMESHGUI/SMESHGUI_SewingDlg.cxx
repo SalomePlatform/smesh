@@ -907,7 +907,7 @@ void SMESHGUI_SewingDlg::onDetectClicked()
 
       QListWidgetItem * item = new QListWidgetItem( icon, groupText, ListCoincident );
       item->setData( GROUP_COLOR, groupColor );
-      item->setData( GROUP_INDEX, i );
+      item->setData( GROUP_INDEX, (long)i );
     }
   }
   myBusy = false;
