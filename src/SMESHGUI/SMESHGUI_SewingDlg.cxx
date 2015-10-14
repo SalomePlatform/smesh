@@ -894,7 +894,7 @@ void SMESHGUI_SewingDlg::onDetectClicked()
     }
     myBorderDisplayers.resize( myBorders->coincidentGroups.length(), 0 );
 
-    for ( CORBA::ULong i = 0; i < myBorders->coincidentGroups.length(); ++i )
+    for ( uint i = 0; i < myBorders->coincidentGroups.length(); ++i )
     {
       QString groupText = getGroupText( i );
       if ( groupText.isEmpty() )
@@ -907,7 +907,7 @@ void SMESHGUI_SewingDlg::onDetectClicked()
 
       QListWidgetItem * item = new QListWidgetItem( icon, groupText, ListCoincident );
       item->setData( GROUP_COLOR, groupColor );
-      item->setData( GROUP_INDEX, (long)i );
+      item->setData( GROUP_INDEX, i );
     }
   }
   myBusy = false;
