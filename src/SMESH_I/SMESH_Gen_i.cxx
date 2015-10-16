@@ -2585,6 +2585,7 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::ListOfIDSources& theMeshesArray,
         aGroup = aListOfGroups[iG];
         aGroupType = aGroup->GetType();
         aGroupName = aGroup->GetName();
+	string aName = aGroupName.in();
 
         // convert a list of IDs
         anNewIDs->length( aGroup->Size() );
@@ -2602,15 +2603,15 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::ListOfIDSources& theMeshesArray,
 
         // check a current group name and type don't have identical ones in final mesh
         aListOfNewGroups.clear();
-        TGroupsMap::iterator anIter = aGroupsMap.find( make_pair( aGroupName, aGroupType ));
+        TGroupsMap::iterator anIter = aGroupsMap.find( make_pair( aName, aGroupType ));
         if ( anIter == aGroupsMap.end() ) {
           // add a new group in the mesh
-          aNewGroup = aNewImpl->CreateGroup( aGroupType, aGroupName );
+          aNewGroup = aNewImpl->CreateGroup( aGroupType, aGroupName.in() );
           // add elements into new group
           aNewGroup->Add( anNewIDs );
 
           aListOfNewGroups.push_back(aNewGroup);
-          aGroupsMap.insert(make_pair( make_pair(aGroupName, aGroupType), aListOfNewGroups ));
+          aGroupsMap.insert(make_pair( make_pair(aName, aGroupType), aListOfNewGroups ));
         }
 
         else if ( theUniteIdenticalGroups ) {
@@ -2621,18 +2622,18 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::ListOfIDSources& theMeshesArray,
 
         else {
           // rename identical groups
-          aNewGroup = aNewImpl->CreateGroup(aGroupType, aGroupName);
+          aNewGroup = aNewImpl->CreateGroup(aGroupType, aGroupName.in());
           aNewGroup->Add( anNewIDs );
 
           TListOfNewGroups& aNewGroups = anIter->second;
           string aNewGroupName;
           if (aNewGroups.size() == 1) {
-            aNewGroupName = string(aGroupName) + "_1";
+            aNewGroupName = aName + "_1";
             aNewGroups.front()->SetName(aNewGroupName.c_str());
           }
           char aGroupNum[128];
           sprintf(aGroupNum, "%u", aNewGroups.size()+1);
-          aNewGroupName = string(aGroupName) + "_" + string(aGroupNum);
+          aNewGroupName = aName + "_" + string(aGroupNum);
           aNewGroup->SetName(aNewGroupName.c_str());
           aNewGroups.push_back(aNewGroup);
         }

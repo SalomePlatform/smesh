@@ -3135,7 +3135,7 @@ namespace
     if ( !_vIntNodes.empty() )
       return false;
 
-    const int ijk[3] = { _i, _j, _k };
+    const size_t ijk[3] = { _i, _j, _k };
     F_IntersectPoint curIntPnt;
 
     // consider a cell to be in a hole if all links in any direction

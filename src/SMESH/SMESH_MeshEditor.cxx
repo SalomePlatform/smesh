@@ -8528,7 +8528,7 @@ SMESH_MeshEditor::SewFreeBorder (const SMDS_MeshNode* theBordFirstNode,
   // sew the border to the side 2
   // ============================
 
-  int nbNodes[]  = { nSide[0].size(), nSide[1].size() };
+  int nbNodes[]  = { (int)nSide[0].size(), (int)nSide[1].size() };
   int maxNbNodes = Max( nbNodes[0], nbNodes[1] );
 
   bool toMergeConformal = ( nbNodes[0] == nbNodes[1] );
