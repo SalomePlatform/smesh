@@ -98,7 +98,7 @@ surface in addition stores its position in parametric space of the
 associated geometrical entity.
 
 Mesh entities are identified by integer IDs starting from 1.
-Nodes and elements are countered separately, i.e. there can be a node
+Nodes and elements are counted separately, i.e. there can be a node
 and element with the same ID.
 
 SALOME supports elements of second order, without a central node

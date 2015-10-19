@@ -23,10 +23,10 @@ elements is extruded into a corresponding type of result elements:
 </table>
 
 When 2D elements are extruded, in addition to 3D elements segments are
-created on ribs of the result 3D mesh. Free edges of input 2D elements
+created on the ribs of the resulting 3D mesh. Free edges of input 2D elements
 generate logically horizontal rib segments. Logically vertical rib
-segments are generated from nodes belonging to a sole input 2D element
-(a figure below illustrates this rule).
+segments are generated from the nodes belonging to a sole input 2D element
+(the figure below illustrates this rule).
 
 \image html extru_rib_segs.png "Two triangles extruded: no vertical rib segments generated from nodes #2 and #3 as they are shared by both triangles"
 

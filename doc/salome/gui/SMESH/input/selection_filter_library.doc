@@ -3,8 +3,8 @@
 \page selection_filter_library_page Selection filter library
 
 \n Selection filter library allows creating and storing in files
-filters that can be later loaded and used for operations on meshes. You can
-access to it from the Main Menu via <b>Tools / Selection filter library</b>.
+the filters that can be later reused for operations on meshes. You can
+access it from the Main Menu via <b>Tools / Selection filter library</b>.
 It is also possible to save any filter by invoking the filter library
 from \a Filter dialog launched from any mesh operation.
 
@@ -182,8 +182,8 @@ The following criteria allow selecting mesh <b>Faces</b>:
 \ref area_page "Area quality control"), which is more, less or equal (within a given
 <b>Tolerance</b>) to the predefined <b>Threshold Value</b>.
 </li><li>
-<b>Free edges</b> selects 2D mesh elements having at least one of its
-edges not shared with other faces. See also a
+<b>Free edges</b> selects 2D mesh elements having at least one 
+edge, which is not shared with other faces. See also a
 \ref free_edges_page "Free Edges quality control".
 </li><li>
 <b>Free faces</b> selects 2D mesh elements, which belong to less than two volumes.

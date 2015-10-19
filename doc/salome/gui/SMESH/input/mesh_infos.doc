@@ -46,7 +46,7 @@ information about the selected mesh node(s) or element(s), namely:
   - Node ID;
   - Coordinates (X, Y, Z);
   - Connectivity information (connected elements); double click in
-    this line makes the dialog show information of these elements;
+    this line reveals information about these elements;
   - Position on a shape (for meshes built on a geometry);
   - Groups information (names of groups the node belongs to).
 
@@ -59,7 +59,7 @@ information about the selected mesh node(s) or element(s), namely:
   - Type (triangle, quadrangle, etc.);
   - Gravity center (X, Y, Z coordinates);
   - Connectivity information (connected nodes); double click in
-    a line of a node makes the dialog show information of this node;
+    a line of a node reveals the information about this node;
   - Quality controls (area, aspect ration, volume, etc.);
   - Position on a shape (for meshes built on a geometry);
   - Groups information (names of groups the element belongs to).
@@ -156,7 +156,7 @@ button. Also, values are automatically computed if the number of
 nodes / elements does not exceed the "Automatic controls compute limit" set 
 via the "Mesh information" preferences (zero value means that there is no limit).
 
-\note The plot functionality is available only if GUI module is builded with Plot 2D Viewer (set option SALOME_USE_PLOT2DVIEWER to ON when building GUI module).
+\note The plot functionality is available only if the GUI module is built with Plot 2D Viewer (option SALOME_USE_PLOT2DVIEWER is ON when building GUI module).
 
 The button \b "Dump" allows printing the information displayed in the
 dialog box to a .txt file.

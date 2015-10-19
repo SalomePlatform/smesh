@@ -250,7 +250,7 @@ negative</b>.
 \ref tui_deflection_1d "Defining Number of Segments" hypothesis
 operation.
 
-\note The plot functionality is available only if GUI module is builded with Plot 2D Viewer (set option SALOME_USE_PLOT2DVIEWER to ON when building GUI module).
+\note The plot functionality is available only if GUI module is built with Plot 2D Viewer (option SALOME_USE_PLOT2DVIEWER is ON when building GUI module).
 
 <br>
 \anchor start_and_end_length_anchor
