@@ -685,7 +685,7 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
   // import edges from groups
   TNodeNodeMap* n2n;
   TElemElemMap* e2e;
-  for ( int iG = 0; iG < srcGroups.size(); ++iG )
+  for ( size_t iG = 0; iG < srcGroups.size(); ++iG )
   {
     const SMESHDS_GroupBase* srcGroup = srcGroups[iG]->GetGroupDS();
 
@@ -711,7 +711,7 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
       double mytol = a.Distance(edge->GetNode(edge->NbNodes()-1))/25;
       //mytol = max(1.E-5, 10*edgeTol); // too strict and not necessary
       //MESSAGE("mytol = " << mytol);
-      for ( unsigned i = 0; i < newNodes.size(); ++i, ++node )
+      for ( size_t i = 0; i < newNodes.size(); ++i, ++node )
       {
         TNodeNodeMap::iterator n2nIt = n2n->insert( make_pair( *node, (SMDS_MeshNode*)0 )).first;
         if ( n2nIt->second )
@@ -810,7 +810,7 @@ bool StdMeshers_Import_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & th
 
   // copy meshes
   vector<SMESH_Mesh*> srcMeshes = _sourceHyp->GetSourceMeshes();
-  for ( unsigned i = 0; i < srcMeshes.size(); ++i )
+  for ( size_t i = 0; i < srcMeshes.size(); ++i )
     importMesh( srcMeshes[i], theMesh, _sourceHyp, theShape );
 
   return true;
@@ -873,7 +873,7 @@ void StdMeshers_Import_1D::importMesh(const SMESH_Mesh*          srcMesh,
       (*e2eIt).second = newElem;
   }
   // copy free nodes
-  if ( srcMeshDS->NbNodes() > n2n->size() )
+  if ( srcMeshDS->NbNodes() > (int) n2n->size() )
   {
     SMDS_NodeIteratorPtr nIt = srcMeshDS->nodesIterator();
     while( nIt->more() )
@@ -1028,7 +1028,7 @@ bool StdMeshers_Import_1D::Evaluate(SMESH_Mesh &         theMesh,
 
     // count edges imported from groups
     int nbEdges = 0, nbQuadEdges = 0;
-    for ( int iG = 0; iG < srcGroups.size(); ++iG )
+    for ( size_t iG = 0; iG < srcGroups.size(); ++iG )
     {
       const SMESHDS_GroupBase* srcGroup = srcGroups[iG]->GetGroupDS();
       SMDS_ElemIteratorPtr srcElems = srcGroup->GetElements();
@@ -1057,7 +1057,7 @@ bool StdMeshers_Import_1D::Evaluate(SMESH_Mesh &         theMesh,
   }
 
   SMESH_subMesh * sm = theMesh.GetSubMesh(theShape);
-  aResMap.insert(make_pair(sm,aVec));
+  aResMap.insert( make_pair( sm, aVec ));
 
   return true;
 }

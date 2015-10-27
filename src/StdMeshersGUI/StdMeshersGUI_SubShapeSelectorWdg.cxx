@@ -72,8 +72,8 @@
 StdMeshersGUI_SubShapeSelectorWdg
 ::StdMeshersGUI_SubShapeSelectorWdg( QWidget * parent, TopAbs_ShapeEnum aSubShType ): 
   QWidget( parent ),
-  myPreviewActor( 0 ),
-  myMaxSize( -1 )
+  myMaxSize( -1 ),
+  myPreviewActor( 0 )
 {
   QPixmap image0( SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap( "SMESH", tr( "ICON_SELECT" ) ) );
 

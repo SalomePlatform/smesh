@@ -132,8 +132,7 @@ bool StdMeshers_Quadrangle_2D::CheckHypothesis
   myParams               = NULL;
   myQuadList.clear();
 
-  bool isOk = true;
-  aStatus   = SMESH_Hypothesis::HYP_OK;
+  aStatus = SMESH_Hypothesis::HYP_OK;
 
   const list <const SMESHDS_Hypothesis * >& hyps =
     GetUsedHypothesis(aMesh, aShape, false);
@@ -4219,7 +4218,7 @@ bool StdMeshers_Quadrangle_2D::check()
   return isOK;
 }
 
-/*//================================================================================
+//================================================================================
 /*!
  * \brief Finds vertices at the most sharp face corners
  *  \param [in] theFace - the FACE
@@ -4604,7 +4603,7 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
 //================================================================================
 
 FaceQuadStruct::Side::Side(StdMeshers_FaceSidePtr theGrid)
-  : grid(theGrid), nbNodeOut(0), from(0), to(theGrid ? theGrid->NbPoints() : 0 ), di(1)
+  : grid(theGrid), from(0), to(theGrid ? theGrid->NbPoints() : 0 ), di(1), nbNodeOut(0)
 {
 }
 

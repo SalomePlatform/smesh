@@ -78,6 +78,7 @@ int SMESH_Hypothesis::GetDim() const
     case ALGO_1D: dim = 1; break;
     case ALGO_2D: dim = 2; break;
     case ALGO_3D: dim = 3; break;
+    case ALGO_0D: dim = 0; break;
     case PARAM_ALGO:
       dim = ( _param_algo_dim < 0 ) ? -_param_algo_dim : _param_algo_dim; break;
     }
@@ -159,7 +160,7 @@ void SMESH_Hypothesis::SetLibName(const char* theLibName)
 SMESH_Mesh* SMESH_Hypothesis::GetMeshByPersistentID(int id)
 {
   StudyContextStruct* myStudyContext = _gen->GetStudyContext(_studyId);
-  map<int, SMESH_Mesh*>::iterator itm = itm = myStudyContext->mapMesh.begin();
+  map<int, SMESH_Mesh*>::iterator itm = myStudyContext->mapMesh.begin();
   for ( ; itm != myStudyContext->mapMesh.end(); itm++)
   {
     SMESH_Mesh* mesh = (*itm).second;

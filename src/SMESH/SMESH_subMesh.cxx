@@ -1093,8 +1093,6 @@ bool SMESH_subMesh::IsConform(const SMESH_Algo* theAlgo)
        !theAlgo->OnlyUnaryInput() ) // all adjacent shapes will be meshed by this algo?
     return true;
 
-  SMESH_Gen* gen =_father->GetGen();
-
   // only local algo is to be checked
   //if ( gen->IsGlobalHypothesis( theAlgo, *_father ))
   if ( _subShape.ShapeType() == _father->GetMeshDS()->ShapeToMesh().ShapeType() )
@@ -2465,7 +2463,7 @@ namespace {
   {
     _Iterator(SMDS_Iterator<SMESH_subMesh*>* subIt,
               SMESH_subMesh*                 prepend,
-              SMESH_subMesh*                 append): myIt(subIt),myAppend(append)
+              SMESH_subMesh*                 append): myAppend(append), myIt(subIt)
     {
       myCur = prepend ? prepend : myIt->more() ? myIt->next() : append;
       if ( myCur == append ) append = 0;
@@ -2570,7 +2568,7 @@ void SMESH_subMesh::ClearAncestors()
 bool SMESH_subMesh::FindIntersection(const SMESH_subMesh*            theOther,
                                      std::set<const SMESH_subMesh*>& theSetOfCommon ) const
 {
-  int oldNb = theSetOfCommon.size();
+  size_t oldNb = theSetOfCommon.size();
 
   // check main submeshes
   const map <int, SMESH_subMesh*>::const_iterator otherEnd = theOther->_mapDepend.end();

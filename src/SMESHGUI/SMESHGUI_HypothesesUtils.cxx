@@ -629,7 +629,7 @@ namespace SMESH
             {
               SMESH_Hypothesis_var hypo = SMESH_Hypothesis::_narrow( SObjectToObject( aHypObj ) );
               SObjectList meshList = GetMeshesUsingAlgoOrHypothesis( hypo );
-              for( int i = 0; i < meshList.size(); i++ )
+              for( size_t i = 0; i < meshList.size(); i++ )
                 RemoveHypothesisOrAlgorithmOnMesh( meshList[ i ], hypo );
             }
         }
@@ -729,7 +729,7 @@ namespace SMESH
   QString GetMessageOnAlgoStateErrors(const algo_error_array& errors)
   {
     QString resMsg; // PAL14861 = QObject::tr("SMESH_WRN_MISSING_PARAMETERS") + ":\n";
-    for ( int i = 0; i < errors.length(); ++i ) {
+    for ( size_t i = 0; i < errors.length(); ++i ) {
       const SMESH::AlgoStateError & error = errors[ i ];
       const bool hasAlgo = ( strlen( error.algoName ) != 0 );
       QString msg;

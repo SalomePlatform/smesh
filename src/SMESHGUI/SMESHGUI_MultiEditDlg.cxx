@@ -112,8 +112,8 @@ SMESHGUI_MultiEditDlg
                         const bool the3d2d,
                         bool       theDoInit):
   SMESHGUI_PreviewDlg(theModule),
-  mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
   mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
+  mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
   mySMESHGUI(theModule)
 {
   setModal(false);
@@ -1572,7 +1572,6 @@ SMESHGUI_SplitVolumesDlg::SMESHGUI_SplitVolumesDlg(SMESHGUI* theModule)
   QLabel* dXLbl = new QLabel( tr("SMESH_DX"), myFacetSelGrp);
   QLabel* dYLbl = new QLabel( tr("SMESH_DY"), myFacetSelGrp);
   QLabel* dZLbl = new QLabel( tr("SMESH_DZ"), myFacetSelGrp);
-  QPushButton* axisBtn[3];
   for ( int i = 0; i < 3; ++i )
   {
     myPointSpin[i] = new SMESHGUI_SpinBox( myFacetSelGrp );
@@ -1983,7 +1982,7 @@ void SMESHGUI_SplitVolumesDlg::onSetDir()
     if ( sender() == myAxisBtn[i] )
       break;
   if ( i == 3 )
-    i == 0;
+    i = 0;
   myDirSpin[i]->SetValue(1.);
 
   if ( myActor && !myMesh->_is_nil() && myMesh->NbNodes() > 0 )

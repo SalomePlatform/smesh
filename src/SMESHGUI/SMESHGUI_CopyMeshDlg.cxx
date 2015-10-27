@@ -109,8 +109,8 @@ SMESHGUI_CopyMeshDlg::SMESHGUI_CopyMeshDlg( SMESHGUI* theModule )
   : QDialog( SMESH::GetDesktop( theModule ) ),
     mySMESHGUI( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-    myFilterDlg(0),
     mySelectedObject(SMESH::SMESH_IDSource::_nil()),
+    myFilterDlg(0),
     myIsApplyAndClose( false )
 {
   QPixmap image (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_COPY_MESH")));

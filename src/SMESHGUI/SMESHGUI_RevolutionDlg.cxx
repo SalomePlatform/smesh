@@ -612,9 +612,7 @@ void SMESHGUI_RevolutionDlg::SelectionIntoArgument()
     if ( !aMesh )
       return;
 
-    int aNbUnits = 0;
-
-    bool isNodeSelected = (myEditCurrentArgument == (QWidget*)SpinBox_X ||
+    bool isNodeSelected = ((myEditCurrentArgument == (QWidget*)SpinBox_X ) ||
                            (myEditCurrentArgument == (QWidget*)SpinBox_DX &&
                             myVectorDefinition==POINT_SELECT));
 

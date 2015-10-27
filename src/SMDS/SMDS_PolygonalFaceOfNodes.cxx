@@ -150,7 +150,7 @@ class SMDS_PolygonalFaceOfNodes_MyIterator:public SMDS_NodeVectorElemIterator
 class _MyEdgeIterator : public SMDS_ElemIterator
 {
   vector< const SMDS_MeshElement* > myElems;
-  int myIndex;
+  size_t                            myIndex;
 public:
   _MyEdgeIterator(const SMDS_MeshFace* face):myIndex(0) {
     myElems.reserve( face->NbNodes() );

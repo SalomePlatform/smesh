@@ -124,16 +124,16 @@ int SMDS_Mesh::CheckMemory(const bool doNotRaise) throw (std::bad_alloc)
 ///////////////////////////////////////////////////////////////////////////////
 /// Create a new mesh object
 ///////////////////////////////////////////////////////////////////////////////
-SMDS_Mesh::SMDS_Mesh()
-  :myParent(NULL),
-   myNodeIDFactory(new SMDS_MeshNodeIDFactory()),
-   myElementIDFactory(new SMDS_MeshElementIDFactory()),
-   myHasConstructionEdges(false), myHasConstructionFaces(false),
-   myHasInverseElements(true),
-   myNodeMin(0), myNodeMax(0),
-   myNodePool(0), myEdgePool(0), myFacePool(0), myVolumePool(0),myBallPool(0),
-   myModified(false), myModifTime(0), myCompactTime(0),
-   xmin(0), xmax(0), ymin(0), ymax(0), zmin(0), zmax(0)
+SMDS_Mesh::SMDS_Mesh():
+  myNodePool(0), myVolumePool(0), myFacePool(0), myEdgePool(0), myBallPool(0),
+  myParent(NULL),
+  myNodeIDFactory(new SMDS_MeshNodeIDFactory()),
+  myElementIDFactory(new SMDS_MeshElementIDFactory()),
+  myModified(false), myModifTime(0), myCompactTime(0),
+  myNodeMin(0), myNodeMax(0),
+  myHasConstructionEdges(false), myHasConstructionFaces(false),
+  myHasInverseElements(true),
+  xmin(0), xmax(0), ymin(0), ymax(0), zmin(0), zmax(0)
 {
   myMeshId = _meshList.size();         // --- index of the mesh to push back in the vector
   myNodeIDFactory->SetMesh(this);
@@ -169,16 +169,16 @@ SMDS_Mesh::SMDS_Mesh()
 /// Note that the tree structure of SMDS_Mesh seems to be unused in this version
 /// (2003-09-08) of SMESH
 ///////////////////////////////////////////////////////////////////////////////
-SMDS_Mesh::SMDS_Mesh(SMDS_Mesh * parent)
-        :myParent(parent), myNodeIDFactory(parent->myNodeIDFactory),
-         myElementIDFactory(parent->myElementIDFactory),
-         myHasConstructionEdges(false), myHasConstructionFaces(false),
-         myHasInverseElements(true),
-         myNodePool(parent->myNodePool),
-         myEdgePool(parent->myEdgePool),
-         myFacePool(parent->myFacePool),
-         myVolumePool(parent->myVolumePool),
-         myBallPool(parent->myBallPool)
+SMDS_Mesh::SMDS_Mesh(SMDS_Mesh * parent):
+  myNodePool(parent->myNodePool),
+  myVolumePool(parent->myVolumePool),
+  myFacePool(parent->myFacePool),
+  myEdgePool(parent->myEdgePool),
+  myBallPool(parent->myBallPool),
+  myParent(parent), myNodeIDFactory(parent->myNodeIDFactory),
+  myElementIDFactory(parent->myElementIDFactory),
+  myHasConstructionEdges(false), myHasConstructionFaces(false),
+  myHasInverseElements(true)
 {
 }
 
@@ -188,9 +188,9 @@ SMDS_Mesh::SMDS_Mesh(SMDS_Mesh * parent)
 
 SMDS_Mesh *SMDS_Mesh::AddSubMesh()
 {
-        SMDS_Mesh *submesh = new SMDS_Mesh(this);
-        myChildren.insert(myChildren.end(), submesh);
-        return submesh;
+  SMDS_Mesh *submesh = new SMDS_Mesh(this);
+  myChildren.insert(myChildren.end(), submesh);
+  return submesh;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -223,7 +223,7 @@ SMDS_MeshNode * SMDS_Mesh::AddNodeWithID(double x, double y, double z, int ID)
     SMDS_MeshNode * node = myNodePool->getNew();
     node->init(ID, myMeshId, 0, x, y, z);
 
-    if (ID >= myNodes.size())
+    if (ID >= (int)myNodes.size())
     {
         myNodes.resize(ID+SMDS_Mesh::chunkSize, 0);
 //         MESSAGE(" ------------------ myNodes resize " << ID << " --> " << ID+SMDS_Mesh::chunkSize);
@@ -1649,7 +1649,7 @@ SMDS_MeshFace* SMDS_Mesh::AddFaceFromVtkIdsWithID(const std::vector<vtkIdType>& 
 bool SMDS_Mesh::registerElement(int ID, SMDS_MeshElement* element)
 {
   //MESSAGE("registerElement " << ID);
-  if ((ID >=0) && (ID < myCells.size()) && myCells[ID]) // --- already bound
+  if ((ID >=0) && (ID < (int)myCells.size()) && myCells[ID]) // --- already bound
   {
     MESSAGE(" ------------------ already bound "<< ID << " " << myCells[ID]->getVtkId());
     return false;
@@ -1664,7 +1664,7 @@ bool SMDS_Mesh::registerElement(int ID, SMDS_MeshElement* element)
   if (vtkId == -1)
     vtkId = myElementIDFactory->SetInVtkGrid(element);
 
-  if (vtkId >= myCellIdVtkToSmds.size()) // --- resize local vector
+  if (vtkId >= (int)myCellIdVtkToSmds.size()) // --- resize local vector
   {
 //     MESSAGE(" --------------------- resize myCellIdVtkToSmds " << vtkId << " --> " << vtkId + SMDS_Mesh::chunkSize);
     myCellIdVtkToSmds.resize(vtkId + SMDS_Mesh::chunkSize, -1);
@@ -1691,7 +1691,7 @@ void SMDS_Mesh::MoveNode(const SMDS_MeshNode *n, double x, double y, double z)
 ///////////////////////////////////////////////////////////////////////////////
 const SMDS_MeshNode * SMDS_Mesh::FindNode(int ID) const
 {
-  if (ID < 1 || ID >= myNodes.size())
+  if (ID < 1 || ID >= (int)myNodes.size())
   {
 //     MESSAGE("------------------------------------------------------------------------- ");
 //     MESSAGE("----------------------------------- bad ID " << ID << " " << myNodes.size());
@@ -1707,7 +1707,7 @@ const SMDS_MeshNode * SMDS_Mesh::FindNode(int ID) const
 const SMDS_MeshNode * SMDS_Mesh::FindNodeVtk(int vtkId) const
 {
   // TODO if needed use mesh->nodeIdFromVtkToSmds
-  if (vtkId < 0 || vtkId >= (myNodes.size() -1))
+  if ( vtkId < 0 || vtkId+1 >= (int) myNodes.size() )
   {
     MESSAGE("------------------------------------------------------------------------- ");
     MESSAGE("---------------------------- bad VTK ID " << vtkId << " " << myNodes.size());
@@ -2426,7 +2426,7 @@ const SMDS_MeshFace* SMDS_Mesh::FindFace(const SMDS_MeshNode *node1,
 
 const SMDS_MeshElement* SMDS_Mesh::FindElement(int IDelem) const
 {
-  if ((IDelem <= 0) || IDelem >= myCells.size())
+  if ( IDelem <= 0 || IDelem >= (int)myCells.size() )
   {
     MESSAGE("--------------------------------------------------------------------------------- ");
     MESSAGE("----------------------------------- bad IDelem " << IDelem << " " << myCells.size());
@@ -2482,7 +2482,7 @@ const SMDS_MeshElement* SMDS_Mesh::FindElement (const vector<const SMDS_MeshNode
     {
       const SMDS_MeshElement* e = itF->next();
       int nbNodesToCheck = noMedium ? e->NbCornerNodes() : e->NbNodes();
-      if ( nbNodesToCheck == nodes.size() )
+      if ( nbNodesToCheck == (int)nodes.size() )
       {
         for ( size_t i = 1; e && i < nodes.size(); ++i )
         {
@@ -3110,28 +3110,27 @@ static set<const SMDS_MeshElement*> * getFinitElements(const SMDS_MeshElement * 
 ///////////////////////////////////////////////////////////////////////////////
 /// Return the list of nodes used only by the given elements
 ///////////////////////////////////////////////////////////////////////////////
-static set<const SMDS_MeshElement*> * getExclusiveNodes(
-        set<const SMDS_MeshElement*>& elements)
+static set<const SMDS_MeshElement*> * getExclusiveNodes(set<const SMDS_MeshElement*>& elements)
 {
-        set<const SMDS_MeshElement*> * toReturn=new set<const SMDS_MeshElement*>();
-        set<const SMDS_MeshElement*>::iterator itElements=elements.begin();
+  set<const SMDS_MeshElement*> * toReturn=new set<const SMDS_MeshElement*>();
+  set<const SMDS_MeshElement*>::iterator itElements=elements.begin();
 
-        while(itElements!=elements.end())
-        {
-                SMDS_ElemIteratorPtr itNodes = (*itElements)->nodesIterator();
-                itElements++;
+  while(itElements!=elements.end())
+  {
+    SMDS_ElemIteratorPtr itNodes = (*itElements)->nodesIterator();
+    itElements++;
 
-                while(itNodes->more())
-                {
-                        const SMDS_MeshNode * n=static_cast<const SMDS_MeshNode*>(itNodes->next());
-                        SMDS_ElemIteratorPtr itFe = n->GetInverseElementIterator();
-                        set<const SMDS_MeshElement*> s;
-                        while(itFe->more())
-                          s.insert(itFe->next());
-                        if(s==elements) toReturn->insert(n);
-                }
-        }
-        return toReturn;
+    while(itNodes->more())
+    {
+      const SMDS_MeshNode * n=static_cast<const SMDS_MeshNode*>(itNodes->next());
+      SMDS_ElemIteratorPtr itFe = n->GetInverseElementIterator();
+      set<const SMDS_MeshElement*> s;
+      while(itFe->more())
+        s.insert(itFe->next());
+      if(s==elements) toReturn->insert(n);
+    }
+  }
+  return toReturn;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3145,62 +3144,63 @@ void SMDS_Mesh::addChildrenWithNodes(set<const SMDS_MeshElement*>& setOfChildren
                                      set<const SMDS_MeshElement*>& nodes)
 {
   switch(element->GetType())
+  {
+  case SMDSAbs_Node:
+    MESSAGE("Internal Error: This should not happen");
+    break;
+  case SMDSAbs_0DElement:
+  {
+  }
+  break;
+  case SMDSAbs_Edge:
+  {
+    SMDS_ElemIteratorPtr itn=element->nodesIterator();
+    while(itn->more())
     {
-    case SMDSAbs_Node:
-      MESSAGE("Internal Error: This should not happen");
-      break;
-    case SMDSAbs_0DElement:
+      const SMDS_MeshElement * e=itn->next();
+      if(nodes.find(e)!=nodes.end())
       {
+        setOfChildren.insert(element);
+        break;
       }
-      break;
-    case SMDSAbs_Edge:
-        {
-                SMDS_ElemIteratorPtr itn=element->nodesIterator();
-                while(itn->more())
-                {
-                        const SMDS_MeshElement * e=itn->next();
-                        if(nodes.find(e)!=nodes.end())
-                        {
-                          setOfChildren.insert(element);
-                          break;
-                        }
-                }
-        } break;
-    case SMDSAbs_Face:
-        {
-                SMDS_ElemIteratorPtr itn=element->nodesIterator();
-                while(itn->more())
-                {
-                        const SMDS_MeshElement * e=itn->next();
-                        if(nodes.find(e)!=nodes.end())
-                        {
-                          setOfChildren.insert(element);
-                          break;
-                        }
-                }
-                if(hasConstructionEdges())
-                {
-                        SMDS_ElemIteratorPtr ite=element->edgesIterator();
-                        while(ite->more())
-                                addChildrenWithNodes(setOfChildren, ite->next(), nodes);
-                }
-        } break;
-    case SMDSAbs_Volume:
-        {
-                if(hasConstructionFaces())
-                {
-                        SMDS_ElemIteratorPtr ite=element->facesIterator();
-                        while(ite->more())
-                                addChildrenWithNodes(setOfChildren, ite->next(), nodes);
-                }
-                else if(hasConstructionEdges())
-                {
-                        SMDS_ElemIteratorPtr ite=element->edgesIterator();
-                        while(ite->more())
-                                addChildrenWithNodes(setOfChildren, ite->next(), nodes);
-                }
-        }
     }
+  } break;
+  case SMDSAbs_Face:
+  {
+    SMDS_ElemIteratorPtr itn=element->nodesIterator();
+    while(itn->more())
+    {
+      const SMDS_MeshElement * e=itn->next();
+      if(nodes.find(e)!=nodes.end())
+      {
+        setOfChildren.insert(element);
+        break;
+      }
+    }
+    if(hasConstructionEdges())
+    {
+      SMDS_ElemIteratorPtr ite=element->edgesIterator();
+      while(ite->more())
+        addChildrenWithNodes(setOfChildren, ite->next(), nodes);
+    }
+  } break;
+  case SMDSAbs_Volume:
+  {
+    if(hasConstructionFaces())
+    {
+      SMDS_ElemIteratorPtr ite=element->facesIterator();
+      while(ite->more())
+        addChildrenWithNodes(setOfChildren, ite->next(), nodes);
+    }
+    else if(hasConstructionEdges())
+    {
+      SMDS_ElemIteratorPtr ite=element->edgesIterator();
+      while(ite->more())
+        addChildrenWithNodes(setOfChildren, ite->next(), nodes);
+    }
+  }
+  case SMDSAbs_All: break;
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3347,6 +3347,9 @@ void SMDS_Mesh::RemoveElement(const SMDS_MeshElement *        elem,
           else
             delete (*it);
           break;
+
+        case SMDSAbs_All:
+        case SMDSAbs_NbElementTypes: break;
       }
       if (vtkid >= 0)
         {
@@ -4685,7 +4688,7 @@ void SMDS_Mesh::updateNodeMinMax()
     myNodeMax=0;
     return;
   }
-  while (!myNodes[myNodeMin] && (myNodeMin<myNodes.size()))
+  while ( !myNodes[myNodeMin] && myNodeMin < (int)myNodes.size() )
     myNodeMin++;
   myNodeMax=myNodes.size()-1;
   while (!myNodes[myNodeMax] && (myNodeMin>=0))
@@ -4775,7 +4778,7 @@ void SMDS_Mesh::compactMesh()
 
 int SMDS_Mesh::fromVtkToSmds(int vtkid)
 {
-  if (vtkid >= 0 && vtkid < myCellIdVtkToSmds.size())
+  if (vtkid >= 0 && vtkid < (int)myCellIdVtkToSmds.size())
     return myCellIdVtkToSmds[vtkid];
   throw SALOME_Exception(LOCALIZED ("vtk id out of bounds"));
 }

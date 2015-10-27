@@ -191,7 +191,7 @@ class SMDS_VolumeOfNodes_MyIterator:public SMDS_NodeArrayElemIterator
 class _MySubIterator : public SMDS_ElemIterator
 {
   vector< const SMDS_MeshElement* > myElems;
-  int myIndex;
+  size_t myIndex;
 public:
   _MySubIterator(const SMDS_VolumeOfNodes* vol, SMDSAbs_ElementType type):myIndex(0) {
     SMDS_VolumeTool vTool(vol);

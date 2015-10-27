@@ -215,7 +215,7 @@ void StdMeshersGUI_QuadrangleParamCreator::retrieveParams() const
     GEOM::ListOfGO_var     shapes;
     SMESH::nodes_array_var points;
     h->GetEnforcedNodes( shapes, points );
-    for ( int i = 0; i < shapes->length(); ++i )
+    for ( size_t i = 0; i < shapes->length(); ++i )
     {
       CORBA::String_var name  = shapes[i]->GetName();
       CORBA::String_var entry = shapes[i]->GetStudyEntry();
@@ -223,7 +223,7 @@ void StdMeshersGUI_QuadrangleParamCreator::retrieveParams() const
       item->setData( Qt::UserRole, entry.in() );
       myShapesList->addItem( item );
     }
-    for ( int i = 0; i < points->length(); ++i )
+    for ( size_t i = 0; i < points->length(); ++i )
     {
       QTreeWidgetItem* item = new QTreeWidgetItem
         ( QStringList()

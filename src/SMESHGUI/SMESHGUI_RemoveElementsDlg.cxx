@@ -80,8 +80,8 @@
 SMESHGUI_RemoveElementsDlg
 ::SMESHGUI_RemoveElementsDlg(SMESHGUI* theModule)
   : QDialog(SMESH::GetDesktop(theModule)),
-    mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
     mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
+    mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
     mySMESHGUI(theModule),
     myBusy(false),
     myFilterDlg(0)

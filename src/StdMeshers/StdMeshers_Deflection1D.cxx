@@ -212,7 +212,7 @@ bool StdMeshers_Deflection1D::SetParametersByMesh(const SMESH_Mesh*   theMesh,
       if ( SMESH_Algo::GetNodeParamOnEdge( aMeshDS, edge, params ))
       {
         nbEdges++;
-        for ( int i = 1; i < params.size(); ++i )
+        for ( size_t i = 1; i < params.size(); ++i )
           _value = Max( _value, deflection( AdaptCurve, params[ i-1 ], params[ i ]));
       }
     }

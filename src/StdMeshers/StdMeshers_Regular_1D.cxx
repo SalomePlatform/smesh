@@ -713,7 +713,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     size_t  iSeg = theReverse ? segLen.size()-1 : 0;
     size_t  dSeg = theReverse ? -1 : +1;
     double param = theFirstU;
-    int nbParams = 0;
+    size_t nbParams = 0;
     for ( int i = 0, nb = segLen.size()-1; i < nb; ++i, iSeg += dSeg )
     {
       GCPnts_AbscissaPoint Discret( theC3d, segLen[ iSeg ], param );
@@ -988,9 +988,9 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
   case FIXED_POINTS_1D: {
     const std::vector<double>& aPnts = _fpHyp->GetPoints();
     const std::vector<int>&   nbsegs = _fpHyp->GetNbSegments();
-    int i = 0;
     TColStd_SequenceOfReal Params;
-    for(; i<aPnts.size(); i++) {
+    for ( size_t i = 0; i < aPnts.size(); i++ )
+    {
       if( aPnts[i]<0.0001 || aPnts[i]>0.9999 ) continue;
       int j=1;
       bool IsExist = false;
@@ -1014,8 +1014,9 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     }
     double eltSize, segmentSize = 0.;
     double currAbscissa = 0;
-    for(i=0; i<Params.Length(); i++) {
-      int nbseg = ( i > nbsegs.size()-1 ) ? nbsegs[0] : nbsegs[i];
+    for ( int i = 0; i < Params.Length(); i++ )
+    {
+      int nbseg = ( i > (int)nbsegs.size()-1 ) ? nbsegs[0] : nbsegs[i];
       segmentSize = Params.Value(i+1)*theLength - currAbscissa;
       currAbscissa += segmentSize;
       GCPnts_AbscissaPoint APnt(theC3d, sign*segmentSize, par1);
@@ -1052,7 +1053,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
       par1 = par2;
     }
     // add for last
-    int nbseg = ( nbsegs.size() > Params.Length() ) ? nbsegs[Params.Length()] : nbsegs[0];
+    int nbseg = ( (int)nbsegs.size() > Params.Length() ) ? nbsegs[Params.Length()] : nbsegs[0];
     segmentSize = theLength - currAbscissa;
     eltSize = segmentSize/nbseg;
     GCPnts_UniformAbscissa Discret;

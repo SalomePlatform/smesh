@@ -497,6 +497,9 @@ void SMESHGUI_Add0DElemsOnAllNodesOp::onSelTypeChange(int selType)
     disconnect( myDlg, SIGNAL( objectChanged( int, const QStringList& )),
                 this,  SLOT  ( onTextChanged( int, const QStringList& )));
 
+  connect( myDlg->myGroupListCmBox, SIGNAL( editTextChanged(const QString & )),
+           this,                    SLOT(   updateButtons() ));
+
   selectionDone();
 }
 

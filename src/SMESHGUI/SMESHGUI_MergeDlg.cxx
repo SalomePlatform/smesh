@@ -797,11 +797,11 @@ void SMESHGUI_MergeDlg::onDetect()
       break;
     }
     
-    for (int i = 0; i < aGroupsArray->length(); i++) {
+    for (int i = 0; i < (int)aGroupsArray->length(); i++) {
       SMESH::long_array& aGroup = aGroupsArray[i];
 
       QStringList anIDs;
-      for (int j = 0; j < aGroup.length(); j++)
+      for (int j = 0; j < (int)aGroup.length(); j++)
         anIDs.append(QString::number(aGroup[j]));
 
       ListCoincident->addItem(anIDs.join(" "));

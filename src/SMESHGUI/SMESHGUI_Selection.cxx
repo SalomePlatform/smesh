@@ -474,7 +474,7 @@ int SMESHGUI_Selection::dim( int ind ) const
       if ( !CORBA::is_nil( idSrc ) )
       {
         SMESH::array_of_ElementType_var types = idSrc->GetTypes();
-        for ( int i = 0; i < types->length(); ++ i) {
+        for ( size_t i = 0; i < types->length(); ++ i) {
           switch ( types[i] ) {
           case SMESH::EDGE  : dim = std::max( dim, 1 ); break;
           case SMESH::FACE  : dim = std::max( dim, 2 ); break;

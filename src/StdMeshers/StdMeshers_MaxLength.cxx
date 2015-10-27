@@ -213,7 +213,7 @@ bool StdMeshers_MaxLength::SetParametersByMesh(const SMESH_Mesh*   theMesh,
     SMESHDS_Mesh* aMeshDS = const_cast< SMESH_Mesh* >( theMesh )->GetMeshDS();
     if ( SMESH_Algo::GetNodeParamOnEdge( aMeshDS, edge, params ))
     {
-      for ( int i = 1; i < params.size(); ++i )
+      for ( size_t i = 1; i < params.size(); ++i )
         _length += GCPnts_AbscissaPoint::Length( AdaptCurve, params[ i-1 ], params[ i ]);
       nbEdges += params.size() - 1;
     }

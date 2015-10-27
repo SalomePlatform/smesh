@@ -123,7 +123,7 @@ SMESH::long_array* StdMeshers_Reversible1D_i::GetReversedEdges()
   SMESH::long_array_var anArray = new SMESH::long_array;
   std::vector<int> ids = this->GetImpl()->GetReversedEdges();
   anArray->length( ids.size() );
-  for ( CORBA::Long i = 0; i < ids.size(); i++)
+  for ( CORBA::ULong i = 0; i < ids.size(); i++)
     anArray [ i ] = ids [ i ];
 
   return anArray._retn();

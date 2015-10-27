@@ -73,8 +73,8 @@
 //=================================================================================
 SMESHGUI_DeleteGroupDlg::SMESHGUI_DeleteGroupDlg (SMESHGUI* theModule):
   QDialog(SMESH::GetDesktop(theModule)),
-  mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
-  mySMESHGUI(theModule)
+  mySMESHGUI(theModule),
+  mySelectionMgr(SMESH::GetSelectionMgr(theModule))
 {
   setModal(false);
   setWindowTitle(tr("CAPTION"));

@@ -444,8 +444,8 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
   {
     aCubeSide[i]._columns.resize( aCubeSide[i]._u2nodesMap.size() );
 
-    int iFwd = 0, iRev = aCubeSide[i]._columns.size()-1;
-    int* pi = isReverse[i] ? &iRev : &iFwd;
+    size_t iFwd = 0, iRev = aCubeSide[i]._columns.size()-1;
+    size_t*  pi = isReverse[i] ? &iRev : &iFwd;
     TParam2ColumnMap::iterator u2nn = aCubeSide[i]._u2nodesMap.begin();
     for ( ; iFwd < aCubeSide[i]._columns.size(); --iRev, ++iFwd, ++u2nn )
       aCubeSide[i]._columns[ *pi ].swap( u2nn->second );

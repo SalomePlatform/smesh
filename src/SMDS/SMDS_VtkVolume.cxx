@@ -165,7 +165,7 @@ bool SMDS_VtkVolume::vtkOrder(const SMDS_MeshNode* nodes[], const int nbNodes)
   const std::vector<int>& interlace = SMDS_MeshCell::toVtkOrder( VTKCellType( aVtkType ));
   if ( !interlace.empty() )
   {
-    ASSERT( interlace.size() == nbNodes );
+    ASSERT( (int)interlace.size() == nbNodes );
     std::vector<const SMDS_MeshNode*> initNodes( nodes, nodes+nbNodes );
     for ( size_t i = 0; i < interlace.size(); ++i )
       nodes[i] = initNodes[ interlace[i] ];

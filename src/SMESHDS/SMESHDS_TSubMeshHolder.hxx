@@ -54,7 +54,7 @@ public:
     }
     else
     {
-      if ( myVec.size() <= id )
+      if ( (int)myVec.size() <= id )
         myVec.resize( id+1, (SUBMESH*) NULL );
       myVec[ id ] = sm;
     }
@@ -68,7 +68,7 @@ public:
     }
     else
     {
-      return (SUBMESH*) ( id >= myVec.size() ? NULL : myVec[ id ]);
+      return (SUBMESH*) ( id >= (int)myVec.size() ? NULL : myVec[ id ]);
     }
   }
   void DeleteAll()

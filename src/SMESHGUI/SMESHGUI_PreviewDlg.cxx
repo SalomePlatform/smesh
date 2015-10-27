@@ -45,8 +45,8 @@
 // purpose  :
 //=================================================================================
 SMESHGUI_PreviewDlg::SMESHGUI_PreviewDlg(SMESHGUI* theModule) :
-  mySMESHGUI(theModule),
   QDialog(SMESH::GetDesktop( theModule )),
+  mySMESHGUI(theModule),
   myIsApplyAndClose( false )
 {
   mySimulation = new SMESHGUI_MeshEditPreview(SMESH::GetViewWindow( mySMESHGUI ));
@@ -151,8 +151,8 @@ void SMESHGUI_PreviewDlg::onOpenView()
 // purpose  :
 //=================================================================================
 SMESHGUI_MultiPreviewDlg::SMESHGUI_MultiPreviewDlg( SMESHGUI* theModule ) :
-  mySMESHGUI( theModule ),
   QDialog( SMESH::GetDesktop( theModule ) ),
+  mySMESHGUI( theModule ),
   myIsApplyAndClose( false )
 {
   mySimulationList.clear();

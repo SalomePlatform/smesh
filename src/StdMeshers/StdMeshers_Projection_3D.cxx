@@ -52,10 +52,8 @@
 
 #define RETURN_BAD_RESULT(msg) { MESSAGE(")-: Error: " << msg); return false; }
 #define gpXYZ(n) gp_XYZ(n->X(),n->Y(),n->Z())
-#define SHOWYXZ(msg, xyz) // {\
-// gp_Pnt p (xyz); \
-// cout << msg << " ("<< p.X() << "; " <<p.Y() << "; " <<p.Z() << ") " <<endl;\
-// }
+#define SHOWYXZ(msg, xyz)                                               \
+  //{gp_Pnt p(xyz); cout<<msg<< " ("<< p.X() << "; " <<p.Y() << "; " <<p.Z() << ") " <<endl; }
 
 namespace TAssocTool = StdMeshers_ProjectionUtils;
 
@@ -295,7 +293,7 @@ bool StdMeshers_Projection_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aS
       shape2ShapeMap.Clear();
       vector< int > edgeIdVec;
       SMESH_Block::GetFaceEdgesIDs( fId, edgeIdVec );
-      for ( int i = 0; i < edgeIdVec.size(); ++i ) {
+      for ( size_t i = 0; i < edgeIdVec.size(); ++i ) {
         int eID = edgeIdVec[ i ];
         shape2ShapeMap.Bind( scrShapes( eID ), tgtShapes( eID ));
         if ( i < 2 ) {

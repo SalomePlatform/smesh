@@ -154,7 +154,7 @@ istream & StdMeshers_FixedPoints1D::LoadFrom(istream & load)
   if (isOK && intVal > 0) {
     _params.clear();
     _params.reserve( intVal );
-    for (int i = 0; i < _params.capacity() && isOK; i++) {
+    for ( size_t i = 0; i < _params.capacity() && isOK; i++) {
       isOK = (load >> dblVal);
       if ( isOK ) _params.push_back( dblVal );
     }
@@ -164,7 +164,7 @@ istream & StdMeshers_FixedPoints1D::LoadFrom(istream & load)
   if (isOK && intVal > 0) {
     _nbsegs.clear();
     _nbsegs.reserve( intVal );
-    for (int i = 0; i < _nbsegs.capacity() && isOK; i++) {
+    for ( size_t i = 0; i < _nbsegs.capacity() && isOK; i++) {
       isOK = (load >> intVal);
       if ( isOK ) _nbsegs.push_back( intVal );
     }
@@ -174,7 +174,7 @@ istream & StdMeshers_FixedPoints1D::LoadFrom(istream & load)
   if (isOK && intVal > 0) {
     _edgeIDs.clear();
     _edgeIDs.reserve( intVal );
-    for (int i = 0; i < _edgeIDs.capacity() && isOK; i++) {
+    for ( size_t i = 0; i < _edgeIDs.capacity() && isOK; i++) {
       isOK = (load >> intVal);
       if ( isOK ) _edgeIDs.push_back( intVal );
     }

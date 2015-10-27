@@ -111,8 +111,8 @@ SMESHGUI_SmoothingDlg::SMESHGUI_SmoothingDlg( SMESHGUI* theModule )
   : QDialog( SMESH::GetDesktop( theModule ) ),
     mySMESHGUI( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-    myFilterDlg(0),
-    mySelectedObject(SMESH::SMESH_IDSource::_nil())
+    mySelectedObject(SMESH::SMESH_IDSource::_nil()),
+    myFilterDlg(0)
 {
   QPixmap image0 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_DLG_SMOOTHING")));
   QPixmap image1 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));

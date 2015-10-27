@@ -379,7 +379,7 @@ std::vector< int > * StdMeshersGUI_PropagationHelperWdg::getSelectedChain()
   std::vector< int > * chain = 0;
   if ( QListWidgetItem * item = myListWidget->currentItem() )
   {
-    int i = item->data( Qt::UserRole ).toInt();
+    size_t i = (size_t) item->data( Qt::UserRole ).toInt();
     if ( 0 <= i && i < myChains.size() )
       chain = & myChains[i];
   }

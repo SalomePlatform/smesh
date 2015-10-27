@@ -304,7 +304,7 @@ namespace {
         // Get ordered edges and find index of anE in a sequence
         edges.clear();
         BRepTools_WireExplorer aWE (TopoDS::Wire(itA.Value()));
-        int edgeIndex = 0;
+        size_t edgeIndex = 0;
         for (; aWE.More(); aWE.Next()) {
           TopoDS_Edge edge = aWE.Current();
           edge.Orientation( aWE.Orientation() );
@@ -325,8 +325,8 @@ namespace {
         else {
           // count nb sides
           TopoDS_Edge prevEdge = anE;
-          int nbSide = 0, eIndex = edgeIndex + 1;
-          for ( int i = 0; i < edges.size(); ++i, ++eIndex )
+          size_t nbSide = 0, eIndex = edgeIndex + 1;
+          for ( size_t i = 0; i < edges.size(); ++i, ++eIndex )
           {
             if ( eIndex == edges.size() )
               eIndex = 0;
@@ -633,7 +633,11 @@ namespace {
       }
       return;
     }
+    case MEANINGLESS_LAST: {
+      break;
+    }
     } // switch by SubMeshState
-  }
+
+  } // ProcessEvent()
 
 } // namespace

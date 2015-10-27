@@ -824,7 +824,7 @@ bool StdMeshers_Import_1D2D::Evaluate(SMESH_Mesh &         theMesh,
     set<const SMDS_MeshNode* > allNodes;
     gp_XY uv;
     double minGroupTol = 1e100;
-    for ( int iG = 0; iG < srcGroups.size(); ++iG )
+    for ( size_t iG = 0; iG < srcGroups.size(); ++iG )
     {
       const SMESHDS_GroupBase* srcGroup = srcGroups[iG]->GetGroupDS();
       const double groupTol = 0.5 * sqrt( getMinElemSize2( srcGroup ));

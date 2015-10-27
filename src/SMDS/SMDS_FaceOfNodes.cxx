@@ -90,7 +90,7 @@ class SMDS_FaceOfNodes_MyIterator:public SMDS_NodeArrayElemIterator
 class _MyEdgeIterator : public SMDS_ElemIterator
 {
   vector< const SMDS_MeshElement* > myElems;
-  int myIndex;
+  size_t                            myIndex;
 public:
   _MyEdgeIterator(const SMDS_FaceOfNodes* face):myIndex(0) {
     myElems.reserve( face->NbNodes() );
@@ -108,8 +108,7 @@ public:
   virtual const SMDS_MeshElement* next() { return myElems[ myIndex++ ]; }
 };
 
-SMDS_ElemIteratorPtr SMDS_FaceOfNodes::elementsIterator
-                         (SMDSAbs_ElementType type) const
+SMDS_ElemIteratorPtr SMDS_FaceOfNodes::elementsIterator( SMDSAbs_ElementType type ) const
 {
   switch(type)
   {

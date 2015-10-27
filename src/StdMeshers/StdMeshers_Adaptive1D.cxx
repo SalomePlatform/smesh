@@ -535,7 +535,7 @@ namespace // internal utils
         for ( int i = 0; i < 3; ++i )
         {
           const gp_Pnt& pn = myNodes->Value(n[i]);
-          if ( avoidTria = ( pn.SquareDistance( *avoidPnt ) <= tol2 ))
+          if (( avoidTria = ( pn.SquareDistance( *avoidPnt ) <= tol2 )))
             break;
           if ( !projectedOnly )
             minD2 = Min( minD2, pn.SquareDistance( p ));
@@ -1505,7 +1505,7 @@ bool AdaptiveAlgo::Evaluate(SMESH_Mesh &         theMesh,
 
   for ( ; edExp.More(); edExp.Next() )
   {
-    const TopoDS_Edge & edge = TopoDS::Edge( edExp.Current() );
+    //const TopoDS_Edge & edge = TopoDS::Edge( edExp.Current() );
     StdMeshers_Regular_1D::Evaluate( theMesh, theShape, theResMap );
   }
   return true;

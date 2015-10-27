@@ -93,17 +93,17 @@ namespace UNV{
    */
   inline double D_to_e(std::string& number)
   {
-    /* find "D" in string, start looking at 
+    /* find "D" in string, start looking at
      * 6th element, to improve speed.
      * We dont expect a "D" earlier
      */
-    const int position = number.find("D",6);
-    if(position != std::string::npos){
-      number.replace(position, 1, "e"); 
-    }
+    const size_t position = number.find("D",6);
+    if ( position != std::string::npos )
+      number.replace(position, 1, "e");
+
     return atof (number.c_str());
   }
-  
+
   /**
    * @returns \p false when file is incorrect, \p true otherwise.
    * Check file with name \p theFileName for correct terminate

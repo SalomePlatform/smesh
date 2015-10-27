@@ -183,7 +183,7 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
             aRec.fe_descriptor_id = anId;
             aRec.node_labels.reserve(aNbNodes);
             SMDS_NodeIteratorPtr aNodesIter = anElem->nodesIteratorToUNV();
-            while ( aNodesIter->more() && aRec.node_labels.size() < aNbNodes )
+            while ( aNodesIter->more() && (int)aRec.node_labels.size() < aNbNodes )
             {
               const SMDS_MeshElement* aNode = aNodesIter->next();
               aRec.node_labels.push_back(aNode->GetID());

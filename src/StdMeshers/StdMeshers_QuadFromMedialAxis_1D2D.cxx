@@ -949,7 +949,7 @@ namespace
   {
     const SMDS_MeshNode* _node;
     double               _u;
-    int                  _edgeInd; // index in theSinuEdges vector
+    size_t               _edgeInd; // index in theSinuEdges vector
 
     NodePoint(): _node(0), _u(0), _edgeInd(-1) {}
     NodePoint(const SMDS_MeshNode* n, double u, size_t iEdge ): _node(n), _u(u), _edgeInd(iEdge) {}
@@ -1251,8 +1251,8 @@ namespace
     const vector<TopoDS_Edge>&    theSinuEdges = theSinuFace._sinuEdges;
     const vector< Handle(Geom_Curve) >& curves = theSinuFace._sinuCurves;
 
-    SMESH_MAT2d::BoundaryPoint bp[2];
-    const SMESH_MAT2d::Branch& branch = *theMA.getBranch(0);
+    //SMESH_MAT2d::BoundaryPoint bp[2];
+    //const SMESH_MAT2d::Branch& branch = *theMA.getBranch(0);
 
     typedef TMAPar2NPoints::iterator TIterator;
 
@@ -1292,7 +1292,7 @@ namespace
         {
           // find an existing node on VERTEX among sameU2NP and get underlying EDGEs
           const SMDS_MeshNode* existingNode = 0;
-          set< int > edgeInds;
+          set< size_t > edgeInds;
           NodePoint* np;
           for ( size_t i = 0; i < sameU2NP.size(); ++i )
           {
@@ -1309,7 +1309,7 @@ namespace
           if ( u2NPprev->first < 0. ) ++u2NPprev;
           if ( u2NPnext->first > 1. ) --u2NPnext;
 
-          set< int >::iterator edgeID = edgeInds.begin();
+          set< size_t >::iterator edgeID = edgeInds.begin();
           for ( ; edgeID != edgeInds.end(); ++edgeID )
           {
             // get U range on iEdge within which the equal points will be distributed
@@ -1844,12 +1844,12 @@ namespace
     const double dksi = 0.5, deta = 0.5;
     const double  dksi2 = dksi*dksi, deta2 = deta*deta;
     double err = 0., g11, g22, g12;
-    int nbErr = 0;
+    //int nbErr = 0;
 
     FaceQuadStruct& q = *quad;
     UVPtStruct pNew;
 
-    double refArea = area( q.UVPt(0,0), q.UVPt(1,0), q.UVPt(1,1) );
+    //double refArea = area( q.UVPt(0,0), q.UVPt(1,0), q.UVPt(1,1) );
 
     for ( int iLoop = 0; iLoop < nbLoops; ++iLoop )
     {

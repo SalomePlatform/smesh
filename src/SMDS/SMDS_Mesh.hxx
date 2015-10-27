@@ -789,7 +789,7 @@ protected:
   {
     assert(ID >= 0);
     myElementIDFactory->adjustMaxId(ID);
-    if (ID >= myCells.size())
+    if (ID >= (int)myCells.size())
       myCells.resize(ID+SMDS_Mesh::chunkSize,0);
   }
 
@@ -838,6 +838,8 @@ protected:
   SMDS_MeshElementIDFactory *myElementIDFactory;
   SMDS_MeshInfo          myInfo;
 
+  //! any add, remove or change of node or cell
+  bool myModified;
   //! use a counter to keep track of modifications
   unsigned long myModifTime, myCompactTime;
 
@@ -847,9 +849,6 @@ protected:
   bool myHasConstructionEdges;
   bool myHasConstructionFaces;
   bool myHasInverseElements;
-
-  //! any add, remove or change of node or cell
-  bool myModified;
 
   double xmin;
   double xmax;

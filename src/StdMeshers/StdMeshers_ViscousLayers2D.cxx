@@ -817,7 +817,7 @@ bool _ViscousBuilder2D::findEdgesWithLayers()
                   {
                     hasVL = false;
                     for ( hyp = allHyps.begin(); hyp != allHyps.end() && !hasVL; ++hyp )
-                      if ( viscHyp = dynamic_cast<const THypVL*>( *hyp ))
+                      if (( viscHyp = dynamic_cast<const THypVL*>( *hyp )))
                         hasVL = viscHyp->IsShapeWithLayers( neighbourID );
                   }
                   if ( !hasVL )
@@ -1438,7 +1438,7 @@ bool _ViscousBuilder2D::inflate()
       _PolyLine::TEdgeIterator eIt = isR ? L._lEdges.end()-1 : L._lEdges.begin();
       if ( eIt->_length2D == 0 ) continue;
       _Segment seg1( eIt->_uvOut, eIt->_uvIn );
-      for ( eIt += deltaIt; nbRemove < L._lEdges.size()-1; eIt += deltaIt )
+      for ( eIt += deltaIt; nbRemove < (int)L._lEdges.size()-1; eIt += deltaIt )
       {
         _Segment seg2( eIt->_uvOut, eIt->_uvIn );
         if ( !intersection.Compute( seg1, seg2 ))
@@ -1446,7 +1446,7 @@ bool _ViscousBuilder2D::inflate()
         ++nbRemove;
       }
       if ( nbRemove > 0 ) {
-        if ( nbRemove == L._lEdges.size()-1 ) // 1st and last _LayerEdge's intersect
+        if ( nbRemove == (int)L._lEdges.size()-1 ) // 1st and last _LayerEdge's intersect
         {
           --nbRemove;
           _LayerEdge& L0 = L._lEdges.front();
@@ -2131,7 +2131,7 @@ bool _ViscousBuilder2D::refine()
   // store a proxyMesh in a sub-mesh
   // make faces on each _PolyLine
   vector< double > layersHeight;
-  double prevLen2D = -1;
+  //double prevLen2D = -1;
   for ( size_t iL = 0; iL < _polyLineVec.size(); ++iL )
   {
     _PolyLine& L = _polyLineVec[ iL ];
@@ -2669,7 +2669,7 @@ _SegmentTree::box_type* _SegmentTree::buildRootBox()
 
 void _SegmentTree::buildChildrenData()
 {
-  for ( int i = 0; i < _segments.size(); ++i )
+  for ( size_t i = 0; i < _segments.size(); ++i )
     for (int j = 0; j < nbChildren(); j++)
       if ( !myChildren[j]->getBox()->IsOut( *_segments[i]._seg->_uv[0],
                                             *_segments[i]._seg->_uv[1] ))
@@ -2680,7 +2680,7 @@ void _SegmentTree::buildChildrenData()
   for (int j = 0; j < nbChildren(); j++)
   {
     _SegmentTree* child = static_cast<_SegmentTree*>( myChildren[j]);
-    child->myIsLeaf = ( child->_segments.size() <= maxNbSegInLeaf() );
+    child->myIsLeaf = ((int) child->_segments.size() <= maxNbSegInLeaf() );
   }
 }
 
@@ -2698,7 +2698,7 @@ void _SegmentTree::GetSegmentsNear( const _Segment&            seg,
 
   if ( isLeaf() )
   {
-    for ( int i = 0; i < _segments.size(); ++i )
+    for ( size_t i = 0; i < _segments.size(); ++i )
       if ( !_segments[i].IsOut( seg ))
         found.push_back( _segments[i]._seg );
   }
@@ -2724,7 +2724,7 @@ void _SegmentTree::GetSegmentsNear( const gp_Ax2d&             ray,
 
   if ( isLeaf() )
   {
-    for ( int i = 0; i < _segments.size(); ++i )
+    for ( size_t i = 0; i < _segments.size(); ++i )
       if ( !_segments[i].IsOut( ray ))
         found.push_back( _segments[i]._seg );
   }

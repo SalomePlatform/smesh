@@ -101,7 +101,7 @@ void SMESHGUI_FindElemByPointDlg::setTypes(SMESH::array_of_ElementType_var & typ
   myElemTypeCombo->blockSignals(true);
   myElemTypeCombo->clear();
   int nbTypes = 0, hasNodes = 0;
-  for ( int i = 0; i < types->length(); ++i )
+  for ( int i = 0; i < (int) types->length(); ++i )
   {
     switch ( types[i] ) {
     case SMESH::NODE:
@@ -449,7 +449,7 @@ void SMESHGUI_FindElemByPointOp::onFind()
                                                myDlg->myZ->GetValue(),
                                                SMESH::ElementType( myDlg->myElemTypeCombo->currentId()));
     myDlg->myFoundList->clear();
-    for ( int i = 0; i < foundIds->length(); ++i )
+    for ( int i = 0; i < (int) foundIds->length(); ++i )
       myDlg->myFoundList->addItem( QString::number( foundIds[i] ));
 
     if ( foundIds->length() > 0 )

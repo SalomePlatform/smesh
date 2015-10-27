@@ -2010,7 +2010,7 @@ SMESH_Group* SMESH_Mesh::AddGroup (SMESHDS_GroupBase* groupDS) throw(SALOME_Exce
 
 bool SMESH_Mesh::SynchronizeGroups()
 {
-  int nbGroups = _mapGroup.size();
+  size_t nbGroups = _mapGroup.size();
   const set<SMESHDS_GroupBase*>& groups = _myMeshDS->GetGroups();
   set<SMESHDS_GroupBase*>::const_iterator gIt = groups.begin();
   for ( ; gIt != groups.end(); ++gIt )

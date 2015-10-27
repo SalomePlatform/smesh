@@ -155,7 +155,7 @@ istream & StdMeshers_Arithmetic1D::LoadFrom(istream & load)
   isOK = (load >> intVal);
   if (isOK && intVal > 0) {
     _edgeIDs.reserve( intVal );
-    for (int i = 0; i < _edgeIDs.capacity() && isOK; i++) {
+    for ( size_t i = 0; i < _edgeIDs.capacity() && isOK; i++) {
       isOK = (load >> intVal);
       if ( isOK ) _edgeIDs.push_back( intVal );
     }
@@ -167,7 +167,7 @@ istream & StdMeshers_Arithmetic1D::LoadFrom(istream & load)
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 

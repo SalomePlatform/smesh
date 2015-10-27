@@ -587,7 +587,7 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
     F = TopoDS::Face( _helper->GetSubShape() );
     TopExp::MapShapesAndAncestors( F, TopAbs_VERTEX, TopAbs_WIRE, VWMap );
     int nbVertices = 0;
-    for ( int iW = 0; iW < wires.size(); ++iW )
+    for ( size_t iW = 0; iW < wires.size(); ++iW )
       nbVertices += wires[ iW ]->NbEdges();
     if ( nbVertices == VWMap.Extent() )
       VWMap.Clear(); // wires have no common vertices
@@ -595,10 +595,10 @@ bool StdMeshers_MEFISTO_2D::LoadPoints(TWireVector &                 wires,
 
   int m = 0;
 
-  for ( int iW = 0; iW < wires.size(); ++iW )
+  for ( size_t iW = 0; iW < wires.size(); ++iW )
   {
     const vector<UVPtStruct>& uvPtVec = wires[ iW ]->GetUVPtStruct();
-    if ( uvPtVec.size() != wires[ iW ]->NbPoints() ) {
+    if ((int) uvPtVec.size() != wires[ iW ]->NbPoints() ) {
       return error(COMPERR_BAD_INPUT_MESH,SMESH_Comment("Unexpected nb of points on wire ")
                    << iW << ": " << uvPtVec.size()<<" != "<<wires[ iW ]->NbPoints()
                    << ", probably because of invalid node parameters on geom edges");

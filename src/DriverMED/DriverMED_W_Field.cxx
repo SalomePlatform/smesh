@@ -168,7 +168,7 @@ bool DriverMED_W_Field::Set(SMESHDS_Mesh *      mesh,
 
 void DriverMED_W_Field::SetCompName(const int iComp, const char* name)
 {
-  if ( _compNames.size() <= iComp )
+  if ( (int)_compNames.size() <= iComp )
     _compNames.resize( iComp + 1 );
   _compNames[ iComp ] = name;
 }
@@ -327,7 +327,7 @@ Driver_Mesh::Status DriverMED_W_Field::Perform()
   MED::PIntTimeStampValue   timeStampIntVal = timeStampVal;
 
   // set values
-  int iVal = 0, i, nbE;
+  int iVal = 0;
   MED::TFloat* ptrDbl = 0;
   MED::TInt*   ptrInt = 0;
   for ( size_t iG = 1; iG < _nbElemsByGeom.size(); ++iG )
@@ -354,6 +354,8 @@ Driver_Mesh::Status DriverMED_W_Field::Perform()
 
   _dblValues.clear();
   _intValues.clear();
+
+  return DRS_OK;
 }
 
 namespace DriverMED // Implemetation of fuctions declared in DriverMED.hxx

@@ -71,8 +71,7 @@ using namespace std;
 #ifdef _DEBUG_
 #define DBGOUT(msg) //cout << msg << endl;
 #define SHOWYXZ(msg, xyz)                                               \
-  // { gp_Pnt p (xyz);                                                     \
-  //   cout << msg << " ("<< p.X() << "; " <<p.Y() << "; " <<p.Z() << ") " <<endl; }
+  //{ gp_Pnt p (xyz); cout << msg << " ("<< p.X() << "; " <<p.Y() << "; " <<p.Z() << ") " <<endl; }
 #else
 #define DBGOUT(msg)
 #define SHOWYXZ(msg, xyz)
@@ -3476,10 +3475,8 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
     }
   }
 
-// #define SHOWYXZ(msg, xyz) {                     \
-//     gp_Pnt p (xyz);                                                     \
-//     cout << msg << " ("<< p.X() << "; " <<p.Y() << "; " <<p.Z() << ") " <<endl; \
-//   }
+// #define SHOWYXZ(msg, xyz) { gp_Pnt p(xyz); cout << msg << " ("<< p.X() << "; " <<p.Y() << "; " <<p.Z() << ") " <<endl; }
+
 //   double _u[]={ 0.1, 0.1, 0.9, 0.9 };
 //   double _v[]={ 0.1, 0.9, 0.1, 0.9 };
 //   for ( int z = 0; z < 2; ++z )

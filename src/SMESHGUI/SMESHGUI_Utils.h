@@ -195,7 +195,7 @@ SMESHGUI_EXPORT
   class toStrT : public _STRING {
     CORBA::String_var myStr;
   public:
-    toStrT( char* s ): myStr(s), _STRING( s )
+    toStrT( char* s ): _STRING( s ), myStr(s)
     {}
     operator const char*() const
     { return myStr.in(); }

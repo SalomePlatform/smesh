@@ -397,7 +397,7 @@ void SMESHGUI_3TypesSelector::addTmpIdSource( SMESH::long_array_var& ids, int iT
   SMESH::SMESH_IDSource_var idSrc =
     aMeshEditor->MakeIDSource( ids, SMESH::ElementType( iType+1 ));
 
-  if ( myIDSource[ iType ]->length() <= index )
+  if ( (int) myIDSource[ iType ]->length() <= index )
     myIDSource[ iType ]->length( index + 1 );
   myIDSource[ iType ][ index ] = idSrc;
 

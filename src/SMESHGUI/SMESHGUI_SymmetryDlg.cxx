@@ -815,46 +815,8 @@ void SMESHGUI_SymmetryDlg::SelectionIntoArgument()
       if ( myObjects.isEmpty() ) 
         return;
       // get IDs from mesh
-      /*
-        SMDS_Mesh* aSMDSMesh = myActor->GetObject()->GetMesh();
-        if (!aSMDSMesh)
-          return;
-
-        for (int i = aSMDSMesh->MinElementID(); i <= aSMDSMesh->MaxElementID(); i++) {
-          const SMDS_MeshElement * e = aSMDSMesh->FindElement(i);
-          if (e) {
-            myElementsId += QString(" %1").arg(i);
-            aNbUnits++;
-          }
-        }
-      } else if (!SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO)->_is_nil()) { //SUBMESH
-        // get submesh
-        SMESH::SMESH_subMesh_var aSubMesh = SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO);
-
-        // get IDs from submesh
-        /*
-        SMESH::long_array_var anElementsIds = new SMESH::long_array;
-        anElementsIds = aSubMesh->GetElementsId();
-        for (int i = 0; i < anElementsIds->length(); i++) {
-          myElementsId += QString(" %1").arg(anElementsIds[i]);
-        }
-        aNbUnits = anElementsIds->length();
-      } else { // GROUP
-        // get smesh group
-        SMESH::SMESH_GroupBase_var aGroup =
-          SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IO);
-        if (aGroup->_is_nil())
-          return;
-
-        // get IDs from smesh group
-        SMESH::long_array_var anElementsIds = new SMESH::long_array;
-        anElementsIds = aGroup->GetListOfID();
-        for (int i = 0; i < anElementsIds->length(); i++) {
-          myElementsId += QString(" %1").arg(anElementsIds[i]);
-        }
-        aNbUnits = anElementsIds->length();
-      }
-      */
+      // get IDs from submesh
+      // get IDs from smesh group
     } else {
       aNbUnits = SMESH::GetNameOfSelectedElements( mySelector, aList.First(), aString);
       myElementsId = aString;
