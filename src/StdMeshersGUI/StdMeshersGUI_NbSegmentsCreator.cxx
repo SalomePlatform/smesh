@@ -94,9 +94,10 @@ bool StdMeshersGUI_NbSegmentsCreator::checkParams( QString& msg ) const
   readParamsFromHypo( data_old );
   readParamsFromWidgets( data_new );
   bool res = storeParamsToHypo( data_new );
-  storeParamsToHypo( data_old );
   res = myNbSeg->isValid( msg, true ) && res;
   res = myScale->isValid( msg, true ) && res;
+  if ( !res )
+    storeParamsToHypo( data_old );
   return res;
 }
 
@@ -300,7 +301,7 @@ QString StdMeshersGUI_NbSegmentsCreator::storeParams() const
   case TabFunc : {
     //valStr += tr("SMESH_TAB_FUNC");
     bool param = true;
-    for( size_t i=0; i < data.myTable.length(); i++, param = !param ) {
+    for( int i=0; i < data.myTable.length(); i++, param = !param ) {
       if ( param )
         valStr += "[";
       valStr += QString::number( data.myTable[ i ]);
@@ -382,9 +383,10 @@ bool StdMeshersGUI_NbSegmentsCreator::storeParamsToHypo( const NbSegmentsHypothe
 
     h->SetVarParameter( h_data.myNbSegVarName.toLatin1().constData(), "SetNumberOfSegments" );
     h->SetNumberOfSegments( h_data.myNbSeg );
-    int distr = h_data.myDistrType;
-    h->SetDistrType( distr );
     
+    int distr = h_data.myDistrType;
+    if ( distr == 0 )
+      h->SetDistrType( distr ); // this is actually needed at non-uniform -> uniform switch
     if( distr==1 ) {
       h->SetVarParameter( h_data.myScaleVarName.toLatin1().constData(), "SetScaleFactor" );
       h->SetScaleFactor( h_data.myScale );

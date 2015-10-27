@@ -13,7 +13,7 @@ Several filtering criteria can be combined together by using logical
 operators \a AND and \a OR. In addition, applied filter criterion can
 be reverted using logical operator \a NOT.
 
-Mesh filters use the functionality of mesh quality controls to filter
+Mesh filters can use the functionality of mesh quality controls to filter
 mesh nodes / elements by a specific characteristic (Area, Length, etc).
 
 This page provides a short description of the existing mesh filters,

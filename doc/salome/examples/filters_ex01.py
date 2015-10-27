@@ -25,3 +25,10 @@ crit = [ smesh.GetCriterion( SMESH.FACE, SMESH.FT_AspectRatio, '<', 1.5, BinaryO
 triaGroup = mesh.MakeGroupByCriteria( "Tria AR < 1.5", crit )
 print "Number of triangles with aspect ratio < 1.5:", triaGroup.Size()
 
+# get range of values of Aspect Ratio of all faces in the mesh
+aspects = mesh.GetMinMax( SMESH.FT_AspectRatio )
+print "MESH: Min aspect = %s, Max aspect = %s" % ( aspects[0], aspects[1] )
+
+# get max value of Aspect Ratio of faces in triaGroup
+grAspects = mesh.GetMinMax( SMESH.FT_AspectRatio, triaGroup )
+print "GROUP: Max aspect = %s" % grAspects[1]

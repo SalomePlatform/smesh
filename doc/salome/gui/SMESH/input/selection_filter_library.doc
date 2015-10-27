@@ -20,7 +20,7 @@ filter. By default it is prefixed with the corresponding entity type.
 
 \anchor filtering_elements
 
-When we use filters during a group creation or another operation (by 
+When we use filters during group creation or another operation (by 
 clicking <b>Set Filter</b> button in the corresponding dialog), the
 dialog for setting filters looks as shown below.
 
@@ -29,7 +29,10 @@ dialog for setting filters looks as shown below.
 The \b Add button creates a new criterion at the end of the list of
 criteria. The \b Insert button creates a new criterion before the
 selected criterion. The \b Remove button deletes the selected
-criterion. The \b Clear button deletes all criteria.
+criterion. The \b Clear button deletes all criteria.\n
+If there is a choice of <b>Entity type</b> in the dialog, only
+criteria of currently selected type are used to create or change a
+filter, and criteria of hidden types (if were specified) are ignored.
 \n Each <b>Entity type</b> has its specific list of criteria, however all
 filters have common syntax. The <b>Threshold Value</b> should be specified 
 for most criteria. For numerical criteria it is necessary to indicate if 

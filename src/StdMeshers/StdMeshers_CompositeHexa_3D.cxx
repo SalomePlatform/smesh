@@ -62,7 +62,9 @@
 #ifdef _DEBUG_
 // #define DEB_FACES
 // #define DEB_GRID
-// #define DUMP_VERT(msg,V) { TopoDS_Vertex v = V; gp_Pnt p = BRep_Tool::Pnt(v); cout << msg << "( "<< p.X()<<", "<<p.Y()<<", "<<p.Z()<<" )"<<endl; }
+// #define DUMP_VERT(msg,V) \
+//   { TopoDS_Vertex v = V; gp_Pnt p = BRep_Tool::Pnt(v);                  \
+//     cout << msg << "( "<< p.X()<<", "<<p.Y()<<", "<<p.Z()<<" )"<<endl;}
 #endif
 
 #ifndef DUMP_VERT
@@ -77,6 +79,8 @@
 enum EQuadSides{ Q_BOTTOM=0, Q_RIGHT, Q_TOP, Q_LEFT,   Q_CHILD, Q_PARENT };
 
 enum EBoxSides{ B_BOTTOM=0, B_RIGHT, B_TOP, B_LEFT, B_FRONT, B_BACK, B_UNDEFINED };
+
+enum EAxes{ COO_X=1, COO_Y, COO_Z };
 
 //================================================================================
 /*!
@@ -157,7 +161,7 @@ public: //** Methods to find and orient faces of 6 sides of the box **//
   _QuadFaceGrid* FindAdjacentForSide(int i, list<_QuadFaceGrid>& faces, EBoxSides id) const;
 
   //!< Reverse edges in order to have the bottom edge going along axes of the unit box
-  void ReverseEdges(/*int e1, int e2*/);
+  void ReverseEdges();
 
   bool IsComplex() const { return !myChildren.empty(); }
 
@@ -177,6 +181,9 @@ public: //** Loading and access to mesh **//
   //!< Load nodes of a mesh
   bool LoadGrid( SMESH_Mesh& mesh );
 
+  //!< Computes normalized parameters of nodes of myGrid
+  void ComputeIJK( int i1, int i2, double v3 );
+
   //!< Return number of segments on the hirizontal sides
   int GetNbHoriSegments(SMESH_Mesh& mesh, bool withBrothers=false) const;
 
@@ -191,6 +198,9 @@ public: //** Loading and access to mesh **//
 
   //!< Return node coordinates by its position
   gp_XYZ GetXYZ(int iHori, int iVert) const;
+
+  //!< Return normalized parameters of nodes within the unitary cube
+  gp_XYZ& GetIJK(int iCol, int iRow) { return myIJK[ myIndexer( iCol, iRow )]; }
 
 public: //** Access to member fields **//
 
@@ -241,8 +251,9 @@ private:
   _QuadFaceGrid* myRightBrother;
   _QuadFaceGrid* myUpBrother;
 
-  _Indexer    myIndexer;
+  _Indexer                      myIndexer;
   vector<const SMDS_MeshNode*>  myGrid;
+  vector<gp_XYZ>                myIJK; // normalized parameters of nodes
 
   SMESH_ComputeErrorPtr         myError;
 
@@ -590,6 +601,14 @@ bool StdMeshers_CompositeHexa_3D::Compute(SMESH_Mesh&         theMesh,
   if ( !fRight ->LoadGrid( theMesh )) return error( fRight ->GetError() );
   if ( !fTop   ->LoadGrid( theMesh )) return error( fTop   ->GetError() );
 
+  // compute normalized parameters of nodes on sides (PAL23189)
+  fBottom->ComputeIJK( COO_X, COO_Y, /*z=*/0. );
+  fBack  ->ComputeIJK( COO_X, COO_Z, /*y=*/1. );
+  fLeft  ->ComputeIJK( COO_Y, COO_Z, /*x=*/0. );
+  fFront ->ComputeIJK( COO_X, COO_Z, /*y=*/0. );
+  fRight ->ComputeIJK( COO_Y, COO_Z, /*x=*/1. );
+  fTop   ->ComputeIJK( COO_X, COO_Y, /*z=*/1. );
+
   int x, xSize = fBottom->GetNbHoriSegments(theMesh) + 1, X = xSize - 1;
   int y, ySize = fBottom->GetNbVertSegments(theMesh) + 1, Y = ySize - 1;
   int z, zSize = fFront ->GetNbVertSegments(theMesh) + 1, Z = zSize - 1;
@@ -645,13 +664,14 @@ bool StdMeshers_CompositeHexa_3D::Compute(SMESH_Mesh&         theMesh,
   pointsOnShapes[ SMESH_Block::ID_V011 ] = fTop->GetXYZ( 0, Y );
   pointsOnShapes[ SMESH_Block::ID_V111 ] = fTop->GetXYZ( X, Y );
 
+  gp_XYZ params; // normalized parameters of an internal node within the unit box
+
   for ( x = 1; x < xSize-1; ++x )
   {
-    gp_XYZ params; // normalized parameters of internal node within a unit box
-    params.SetCoord( 1, x / double(X) );
+    const double rX = x / double(X);
     for ( y = 1; y < ySize-1; ++y )
     {
-      params.SetCoord( 2, y / double(Y) );
+      const double rY = y / double(Y);
       // column to fill during z loop
       vector< const SMDS_MeshNode* >& column = columns[ colIndex( x, y )];
       // points projections on horizontal edges
@@ -668,14 +688,28 @@ bool StdMeshers_CompositeHexa_3D::Compute(SMESH_Mesh&         theMesh,
       pointsOnShapes[ SMESH_Block::ID_Fxy1 ] = fTop   ->GetXYZ( x, y );
       for ( z = 1; z < zSize-1; ++z ) // z loop
       {
-        params.SetCoord( 3, z / double(Z) );
+        // compute normalized parameters of an internal node within the unit box
+        const double   rZ = z / double(Z);
+        const gp_XYZ& pBo = fBottom->GetIJK( x, y );
+        const gp_XYZ& pTo = fTop   ->GetIJK( x, y );
+        const gp_XYZ& pFr = fFront ->GetIJK( x, z );
+        const gp_XYZ& pBa = fBack  ->GetIJK( x, z );
+        const gp_XYZ& pLe = fLeft  ->GetIJK( y, z );
+        const gp_XYZ& pRi = fRight ->GetIJK( y, z );
+        params.SetCoord( 1, 0.5 * ( pBo.X() * ( 1. - rZ ) + pTo.X() * rZ  +
+                                    pFr.X() * ( 1. - rY ) + pBa.X() * rY ));
+        params.SetCoord( 2, 0.5 * ( pBo.Y() * ( 1. - rZ ) + pTo.Y() * rZ  +
+                                    pLe.Y() * ( 1. - rX ) + pRi.Y() * rX ));
+        params.SetCoord( 3, 0.5 * ( pFr.Z() * ( 1. - rY ) + pBa.Z() * rY  +
+                                    pLe.Z() * ( 1. - rX ) + pRi.Z() * rX ));
+
         // point projections on vertical edges
-        pointsOnShapes[ SMESH_Block::ID_E00z ] = fFront->GetXYZ( 0, z );    
-        pointsOnShapes[ SMESH_Block::ID_E10z ] = fFront->GetXYZ( X, z );    
-        pointsOnShapes[ SMESH_Block::ID_E01z ] = fBack->GetXYZ( 0, z );    
+        pointsOnShapes[ SMESH_Block::ID_E00z ] = fFront->GetXYZ( 0, z );
+        pointsOnShapes[ SMESH_Block::ID_E10z ] = fFront->GetXYZ( X, z );
+        pointsOnShapes[ SMESH_Block::ID_E01z ] = fBack->GetXYZ( 0, z );
         pointsOnShapes[ SMESH_Block::ID_E11z ] = fBack->GetXYZ( X, z );
         // point projections on vertical faces
-        pointsOnShapes[ SMESH_Block::ID_Fx0z ] = fFront->GetXYZ( x, z );    
+        pointsOnShapes[ SMESH_Block::ID_Fx0z ] = fFront->GetXYZ( x, z );
         pointsOnShapes[ SMESH_Block::ID_Fx1z ] = fBack ->GetXYZ( x, z );    
         pointsOnShapes[ SMESH_Block::ID_F0yz ] = fLeft ->GetXYZ( y, z );    
         pointsOnShapes[ SMESH_Block::ID_F1yz ] = fRight->GetXYZ( y, z );
@@ -1117,7 +1151,7 @@ bool _QuadFaceGrid::LoadGrid( SMESH_Mesh& mesh )
   const SMDS_MeshElement* firstQuad = 0; // most left face above the last row of found nodes
 
   int nbFoundNodes = myIndexer._xSize;
-  while ( nbFoundNodes != (int) myGrid.size() )
+  while ( nbFoundNodes != myGrid.size() )
   {
     // first and last nodes of the last filled row of nodes
     const SMDS_MeshNode* n1down = myGrid[ nbFoundNodes - myIndexer._xSize ];
@@ -1183,6 +1217,53 @@ bool _QuadFaceGrid::LoadGrid( SMESH_Mesh& mesh )
   DumpGrid(); // debug
 
   return true;
+}
+
+//================================================================================
+/*!
+ * \brief Fill myIJK with normalized parameters of nodes in myGrid
+ *  \param [in] i1 - coordinate index along rows of myGrid
+ *  \param [in] i2 - coordinate index along columns of myGrid
+ *  \param [in] v3 - value of the constant parameter
+ */
+//================================================================================
+
+void _QuadFaceGrid::ComputeIJK( int i1, int i2, double v3 )
+{
+  gp_XYZ ijk( v3, v3, v3 );
+  myIJK.resize( myIndexer.size(), ijk );
+
+  const size_t nbCol = myIndexer._xSize;
+  const size_t nbRow = myIndexer._ySize;
+
+  vector< double > len( nbRow );
+  len[0] = 0;
+  for ( size_t i = 0; i < nbCol; ++i )
+  {
+    gp_Pnt pPrev = GetXYZ( i, 0 );
+    for ( size_t j = 1; j < nbRow; ++j )
+    {
+      gp_Pnt p = GetXYZ( i, j );
+      len[ j ] = len[ j-1 ] + p.Distance( pPrev );
+      pPrev = p;
+    }
+    for ( size_t j = 0; j < nbRow; ++j )
+      GetIJK( i, j ).SetCoord( i2, len[ j ]/len.back() );
+  }
+
+  len.resize( nbCol );
+  for ( size_t j = 0; j < nbRow; ++j )
+  {
+    gp_Pnt pPrev = GetXYZ( 0, j );
+    for ( size_t i = 1; i < nbCol; ++i )
+    {
+      gp_Pnt p = GetXYZ( i, j );
+      len[ i ] = len[ i-1 ] + p.Distance( pPrev );
+      pPrev = p;
+    }
+    for ( size_t i = 0; i < nbCol; ++i )
+      GetIJK( i, j ).SetCoord( i1, len[ i ]/len.back() );
+  }
 }
 
 //================================================================================
@@ -1441,8 +1522,8 @@ const SMDS_MeshNode* _QuadFaceGrid::GetNode(int iHori, int iVert) const
 
 gp_XYZ _QuadFaceGrid::GetXYZ(int iHori, int iVert) const
 {
-  const SMDS_MeshNode* n = myGrid[ myIndexer( iHori, iVert )];
-  return gp_XYZ( n->X(), n->Y(), n->Z() );
+  SMESH_TNodeXYZ xyz = myGrid[ myIndexer( iHori, iVert )];
+  return xyz;
 }
 
 //================================================================================

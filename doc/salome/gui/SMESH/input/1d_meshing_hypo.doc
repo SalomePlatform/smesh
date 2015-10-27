@@ -241,7 +241,7 @@ in the plot the density function curve in red and the node
 distribution as blue crosses. The node distribution is computed in the
 same way as for 
 \ref analyticdensity_anchor "Distribution with Analytic Density". You
-can select the <b>Conversion mode</b> from\b Exponent and <b>Cut
+can select the <b>Conversion mode</b> from \b Exponent and <b>Cut
 negative</b>.
 
 \image html distributionwithtabledensity.png
@@ -344,16 +344,24 @@ geometrical model in the 3D Viewer, which can help to understand the
 location of a set of edges within the model.
 
 <b>Propagation chains</b> group allows defining <b>Reversed Edges</b>
-for splitting opposite edges of quadrilateral faces
-in a logically uniform direction. When this group is
-activated, the list is filled with propagation chains found within the
-model. When a chain is selected in the list its edges are
-shown in the Viewer with arrows, which enables choosing a common
-direction for all chain edges. \b Reverse button inverts the common
-direction of chain edges. If \b Add button is active, some
-edges of a chain have a different direction, so you can click \b Add
-button to add them to <b>Reversed Edges</b> list.
+for splitting opposite edges of quadrilateral faces in a logically
+uniform direction. When this group is activated, the list is filled
+with propagation chains found within the shape on which a hypothesis
+is assigned. When a chain is selected in the list its edges are shown
+in the Viewer with arrows, which enables choosing a common direction
+for all chain edges. \b Reverse button inverts the common direction of
+chain edges. \b Add button is active if some edges of a chain have a
+different direction, so you can click \b Add button to add them
+to <b>Reversed Edges</b> list.
 
 \image html propagation_chain.png "The whole geometry and a propagation chain"
+
+\note Alternatively, uniform direction of edges of one propagation
+chain can be achieved by 
+\ref constructing_submeshes_page "definition of a sub-mesh" on one
+edge of the chain and assigning a 
+\ref propagation_anchor "Propagation" additional hypothesis.
+Orientation of this edge (and hence of all the rest edges of the chain) can be
+controlled by using <b>Reversed Edges</b> field.
 
 */

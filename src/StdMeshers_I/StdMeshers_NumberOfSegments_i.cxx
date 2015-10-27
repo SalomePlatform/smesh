@@ -267,10 +267,13 @@ void StdMeshers_NumberOfSegments_i::SetDistrType(CORBA::Long typ)
 {
   ASSERT( myBaseImpl );
   try {
+    CORBA::Long oldType = (CORBA::Long) this->GetImpl()->GetDistrType();
+
     this->GetImpl()->SetDistrType( (::StdMeshers_NumberOfSegments::DistrType) typ );
 
     // Update Python script
-    SMESH::TPythonDump() << _this() << ".SetDistrType( " << typ << " )";
+    if ( oldType != typ )
+      SMESH::TPythonDump() << _this() << ".SetDistrType( " << typ << " )";
   }
   catch ( SALOME_Exception& S_ex ) {
     THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
@@ -397,7 +400,8 @@ void StdMeshers_NumberOfSegments_i::SetExpressionFunction(const char* expr)
     SMESH::TPythonDump() << _this() << ".SetExpressionFunction( '" << expr << "' )";
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
+                                  SALOME::BAD_PARAM );
   }
 }
 
