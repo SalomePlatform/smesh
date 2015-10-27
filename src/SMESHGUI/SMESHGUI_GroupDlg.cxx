@@ -128,8 +128,8 @@ SMESHGUI_GroupDlg::SMESHGUI_GroupDlg( SMESHGUI* theModule,
     mySelector( SMESH::GetViewWindow( theModule )->GetSelector() ),
     myIsBusy( false ),
     myNameChanged( false ),
-    myIsApplyAndClose( false ),
-    myNbChangesOfContents(0)
+    myNbChangesOfContents(0),
+    myIsApplyAndClose( false )
 {
   initDialog( true );
   if ( !theMesh->_is_nil() )
@@ -612,6 +612,8 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup,
   case SMESH::EDGE:   aType = grpEdgeSelection;   break;
   case SMESH::FACE:   aType = grpFaceSelection;   break;
   case SMESH::VOLUME: aType = grpVolumeSelection; break;
+  case SMESH::ALL:
+  case SMESH::NB_ELEMENT_TYPES: break;
   }
   myTypeGroup->button(aType)->setChecked(true);
 
@@ -1075,7 +1077,7 @@ bool SMESHGUI_GroupDlg::onApply()
         // check and add all selected GEOM objects: they must be
         // a sub-shapes of the main GEOM and must be of one type
         TopAbs_ShapeEnum aGroupType = TopAbs_SHAPE;
-        for ( int i =0; i < myGeomObjects->length(); i++) {
+        for ( int i =0; i < (int)myGeomObjects->length(); i++) {
           TopAbs_ShapeEnum aSubShapeType = (TopAbs_ShapeEnum)myGeomObjects[i]->GetShapeType();
           if (i == 0)
             aGroupType = aSubShapeType;
@@ -1809,6 +1811,10 @@ void SMESHGUI_GroupDlg::onFilterAccepted()
         mesh = myGroupOnFilter->GetMesh();
     }
     myFilter->SetMesh( mesh );
+
+    // highlight ids if selection changed in the Viewer (IPAL52924)
+    myCurrentLineEdit = 0;
+    onObjectSelectionChanged();
   }
 
   updateButtons();
@@ -2139,15 +2145,13 @@ void SMESHGUI_GroupDlg::onRemove()
       }
     }
     else if (myCurrentLineEdit == myGroupLine) {
-      Standard_Boolean aRes;
-      //SALOME_ListIteratorOfListIO anIt (mySelectionMgr->StoredIObjects());
       SALOME_ListIO aList;
       mySelectionMgr->selectedObjects( aList );
 
       SALOME_ListIteratorOfListIO anIt (aList);
       for ( ; anIt.More(); anIt.Next()) {
         SMESH::SMESH_Group_var aGroup = SMESH::IObjectToInterface<SMESH::SMESH_Group>(anIt.Value());
-        if (aRes && !aGroup->_is_nil()) {
+        if (!aGroup->_is_nil()) {
           // check if mesh is the same
           if (aGroup->GetType() == aType && aGroup->GetMesh()->GetId() == myMesh->GetId()) {
             SMESH::long_array_var anElements = aGroup->GetListOfID();
@@ -2285,18 +2289,20 @@ void SMESHGUI_GroupDlg::onHelp()
 {
   LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
   if (app)
-    app->onHelpContextModule(mySMESHGUI ? app->moduleName(mySMESHGUI->moduleName()) : QString( "" ), myHelpFileName);
-  else {
-    QString platform;
+  {
+    app->onHelpContextModule
+      ( mySMESHGUI ? app->moduleName( mySMESHGUI->moduleName() ) : QString(""), myHelpFileName );
+  }
+  else
+  {
 #ifdef WIN32
-    platform = "winapplication";
+    QString platform = "winapplication";
 #else
-    platform = "application";
+    QString platform = "application";
 #endif
     SUIT_MessageBox::warning(this, tr( "WRN_WARNING" ),
                              tr( "EXTERNAL_BROWSER_CANNOT_SHOW_PAGE" ).
-                             arg(app->resourceMgr()->stringValue( "ExternalBrowser",
-                                                                 platform)).
+                             arg(app->resourceMgr()->stringValue( "ExternalBrowser", platform)).
                              arg(myHelpFileName));
   }
 }
@@ -2343,16 +2349,16 @@ void SMESHGUI_GroupDlg::keyPressEvent( QKeyEvent* e )
     return;
 
   if ( e->key() == Qt::Key_F1 )
-    {
-      e->accept();
-      onHelp();
-    }
+  {
+    e->accept();
+    onHelp();
+  }
 }
 
 //================================================================================
 /*!
  * \brief Enable showing of the popup when Geometry selection btn is clicked
-  * \param enable - true to enable
+ * \param enable - true to enable
  */
 //================================================================================
 
@@ -2388,17 +2394,17 @@ void SMESHGUI_GroupDlg::updateGeomPopup()
 void SMESHGUI_GroupDlg::onGeomSelectionButton(bool isBtnOn)
 {
   if ( myGeomPopup && isBtnOn )
-    {
-      myCurrentLineEdit = myGeomGroupLine;
-      QAction* a = myGeomPopup->exec( QCursor::pos() );
-      if (!a || myActions[a] == DIRECT_GEOM_INDEX)
-        setSelectionMode(grpGeomSelection);
-    }
+  {
+    myCurrentLineEdit = myGeomGroupLine;
+    QAction* a = myGeomPopup->exec( QCursor::pos() );
+    if (!a || myActions[a] == DIRECT_GEOM_INDEX)
+      setSelectionMode(grpGeomSelection);
+  }
   else if (!isBtnOn)
-    {
-      myCurrentLineEdit = 0;
-      setSelectionMode(grpAllSelection);
-    }
+  {
+    myCurrentLineEdit = 0;
+    setSelectionMode(grpAllSelection);
+  }
 }
 
 //=================================================================================
@@ -2409,26 +2415,26 @@ void SMESHGUI_GroupDlg::onGeomPopup( QAction* a )
 {
   int index = myActions[a];
   if ( index == GEOM_BY_MESH_INDEX )
-    {
-      mySelectionMode = grpNoSelection;
-      if ( !myShapeByMeshOp ) {
-        myShapeByMeshOp = new SMESHGUI_ShapeByMeshOp(true);
-        connect(myShapeByMeshOp, SIGNAL(committed(SUIT_Operation*)),
-                SLOT(onPublishShapeByMeshDlg(SUIT_Operation*)));
-        connect(myShapeByMeshOp, SIGNAL(aborted(SUIT_Operation*)),
-                SLOT(onCloseShapeByMeshDlg(SUIT_Operation*)));
-      }
-      // set mesh object to SMESHGUI_ShapeByMeshOp and start it
-      if ( !myMesh->_is_nil() ) {
-        myIsBusy = true;
-        hide(); // stop processing selection
-        myIsBusy = false;
-        myShapeByMeshOp->setModule( mySMESHGUI );
-        myShapeByMeshOp->setStudy( 0 ); // it's really necessary
-        myShapeByMeshOp->SetMesh( myMesh );
-        myShapeByMeshOp->start();
-      }
+  {
+    mySelectionMode = grpNoSelection;
+    if ( !myShapeByMeshOp ) {
+      myShapeByMeshOp = new SMESHGUI_ShapeByMeshOp(true);
+      connect(myShapeByMeshOp, SIGNAL(committed(SUIT_Operation*)),
+              SLOT(onPublishShapeByMeshDlg(SUIT_Operation*)));
+      connect(myShapeByMeshOp, SIGNAL(aborted(SUIT_Operation*)),
+              SLOT(onCloseShapeByMeshDlg(SUIT_Operation*)));
     }
+    // set mesh object to SMESHGUI_ShapeByMeshOp and start it
+    if ( !myMesh->_is_nil() ) {
+      myIsBusy = true;
+      hide(); // stop processing selection
+      myIsBusy = false;
+      myShapeByMeshOp->setModule( mySMESHGUI );
+      myShapeByMeshOp->setStudy( 0 ); // it's really necessary
+      myShapeByMeshOp->SetMesh( myMesh );
+      myShapeByMeshOp->start();
+    }
+  }
 }
 
 //================================================================================
@@ -2469,10 +2475,10 @@ void SMESHGUI_GroupDlg::onPublishShapeByMeshDlg(SUIT_Operation* op)
 void SMESHGUI_GroupDlg::onCloseShapeByMeshDlg(SUIT_Operation* op)
 {
   if ( myShapeByMeshOp == op )
-    {
-      show();
-      setSelectionMode(grpGeomSelection);
-    }
+  {
+    show();
+    setSelectionMode(grpGeomSelection);
+  }
 }
 
 //=================================================================================

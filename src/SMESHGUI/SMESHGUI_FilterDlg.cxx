@@ -870,8 +870,8 @@ SMESHGUI_FilterTable::SMESHGUI_FilterTable( SMESHGUI* theModule,
                                             QWidget* parent,
                                             const int type )
 : QWidget( parent ),
-  myIsLocked( false ),
-  mySMESHGUI( theModule )
+  mySMESHGUI( theModule ),
+  myIsLocked( false )
 {
   myEntityType = -1;
 
@@ -888,8 +888,8 @@ SMESHGUI_FilterTable::SMESHGUI_FilterTable( SMESHGUI* theModule,
                                             QWidget* parent,
                                             const QList<int>& types )
 : QWidget( parent ),
-  myIsLocked( false ),
-  mySMESHGUI( theModule )
+  mySMESHGUI( theModule ),
+  myIsLocked( false )
 {
   myEntityType = -1;
   Init(types);
@@ -1155,7 +1155,7 @@ bool SMESHGUI_FilterTable::IsValid (const bool theMess, const int theEntityType)
       bool aRes = false;
       bool isSignalsBlocked = aTable->signalsBlocked();
       aTable->blockSignals(true);
-      double  aThreshold = (int)aTable->text(i, 2).toDouble(&aRes);
+      /*double  aThreshold =*/ aTable->text(i, 2).toDouble( &aRes );
       aTable->blockSignals(isSignalsBlocked);
 
       if (!aRes && aTable->isEditable(i, 2))
@@ -3365,7 +3365,7 @@ bool SMESHGUI_FilterDlg::onApply()
 
     if (!myFilter[ aCurrType ]->GetPredicate()->_is_nil()) {
       //
-      bool toFilter = (( SMESH::FindActorByObject( myMesh )) ||
+      bool toFilter = (( getActor() ) ||
                        ( myInitSourceWgOnApply && mySourceWg ) ||
                        ( mySourceGrp->checkedId() == Dialog && mySourceWg ));
       if ( toFilter ) {
@@ -3416,7 +3416,7 @@ bool SMESHGUI_FilterDlg::createFilter (const int theType)
   if ( mgr && mgr->booleanValue( "SMESH", "use_precision", false ) )
     aPrecision = mgr->integerValue( "SMESH", "controls_precision", aPrecision );
 
-  for (CORBA::ULong i = 0; i < n; i++) {
+  for ( int i = 0; i < n; i++) {
     SMESH::Filter::Criterion aCriterion = createCriterion();
     myTable->GetCriterion(i, aCriterion);
     aCriterion.Precision = aPrecision;
@@ -3623,6 +3623,35 @@ void SMESHGUI_FilterDlg::filterSelectionSource (const int theType,
 }
 
 //=======================================================================
+//function : getActor
+//purpose  : Returns an actor to show filtered entities
+//=======================================================================
+
+SMESH_Actor* SMESHGUI_FilterDlg::getActor()
+{
+  SMESH_Actor* meshActor = SMESH::FindActorByObject( myMesh );
+  if ( meshActor && meshActor->GetVisibility() )
+    return meshActor;
+
+  SALOME_DataMapIteratorOfDataMapOfIOMapOfInteger anIter(myIObjects);
+  for ( ; anIter.More(); anIter.Next())
+  {
+    Handle(SALOME_InteractiveObject) io = anIter.Key();
+    if ( io->hasEntry() )
+    {
+      SMESH_Actor* actor = SMESH::FindActorByEntry( io->getEntry() );
+      if ( !actor )
+        continue;
+      if ( actor->GetVisibility() )
+        return actor;
+      if ( !meshActor )
+        meshActor = actor;
+    }
+  }
+  return meshActor;
+}
+
+//=======================================================================
 // name    : SMESHGUI_FilterDlg::selectInViewer
 // Purpose : Select given entities in viewer
 //=======================================================================
@@ -3644,8 +3673,8 @@ void SMESHGUI_FilterDlg::selectInViewer (const int theType, const QList<int>& th
   }
 
   // Clear selection
-  SMESH_Actor* anActor = SMESH::FindActorByObject(myMesh);
-  if (!anActor || !anActor->hasIO())
+  SMESH_Actor* anActor = getActor();
+  if ( !anActor || !anActor->hasIO() )
     return;
 
   Handle(SALOME_InteractiveObject) anIO = anActor->getIO();

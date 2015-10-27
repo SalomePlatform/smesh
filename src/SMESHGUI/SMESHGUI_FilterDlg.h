@@ -45,17 +45,18 @@
 #include CORBA_SERVER_HEADER(SMESH_Filter)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
-class QFrame;
+class LightApp_SelectionMgr;
 class QButtonGroup;
 class QCheckBox;
+class QFrame;
 class QGroupBox;
 class QPushButton;
+class QStackedWidget;
 class QTableWidget;
 class QTableWidgetItem;
-class QStackedWidget;
-class LightApp_SelectionMgr;
 class SMESHGUI;
 class SMESHGUI_FilterLibraryDlg;
+class SMESH_Actor;
 class SVTK_Selector;
 
 /*!
@@ -282,6 +283,7 @@ private:
   void                      setIdsToWg( QWidget*, const QList<int>& );
   Selection_Mode            getSelMode( const int ) const;
   void                      updateSelection();
+  SMESH_Actor*              getActor();
 
 private:
   // widgets
