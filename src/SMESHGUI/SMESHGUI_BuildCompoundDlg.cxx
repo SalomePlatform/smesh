@@ -228,7 +228,7 @@ void SMESHGUI_BuildCompoundDlg::Init()
   ComboBoxUnion->addItem(tr("RENAME"));
   ComboBoxUnion->setCurrentIndex(0);
 
-  CheckBoxMerge->setChecked(false);
+  CheckBoxMerge->setChecked(true);
 
   TextLabelTol->setEnabled(CheckBoxMerge->isChecked());
   SpinBoxTol->SetValue(1e-05);
