@@ -1762,7 +1762,7 @@ SMESH_Mesh_i::CreateDimGroup(const SMESH::ListOfIDSources& theGroups,
         while ( nIt->more() )
         {
           const SMDS_MeshNode* n = nIt->next();
-          if ( n->GetID() >= isNodeInGroups.size() )
+          if ( n->GetID() >= (int) isNodeInGroups.size() )
             isNodeInGroups.resize( n->GetID() + 1, false );
           isNodeInGroups[ n->GetID() ] = true;
         }
@@ -1851,7 +1851,7 @@ void SMESH_Mesh_i::addGeomGroupData(GEOM::GEOM_Object_ptr theGeomObj,
   CORBA::String_var entry = groupSO->GetID();
   groupData._groupEntry = entry.in();
   // indices
-  for ( int i = 0; i < ids->length(); ++i )
+  for ( CORBA::ULong i = 0; i < ids->length(); ++i )
     groupData._indices.insert( ids[i] );
   // SMESH object
   groupData._smeshObject = CORBA::Object::_duplicate( theSmeshObj );
@@ -1904,7 +1904,7 @@ TopoDS_Shape SMESH_Mesh_i::newGroupShape( TGeomGroupData & groupData)
     GEOM::GEOM_IGroupOperations_wrap groupOp =
       geomGen->GetIGroupOperations( _gen_i->GetCurrentStudyID() );
     GEOM::ListOfLong_var   ids = groupOp->GetObjects( geomGroup );
-    for ( int i = 0; i < ids->length(); ++i )
+    for ( CORBA::ULong i = 0; i < ids->length(); ++i )
       curIndices.insert( ids[i] );
 
     if ( groupData._indices == curIndices )
@@ -3398,7 +3398,7 @@ void SMESH_Mesh_i::exportMEDFields( DriverMED_W_Field&        fieldWriter,
         {
           const SMDS_MeshElement* e = elemIt->next();
           const int shapeID = e->getshapeId();
-          if ( shapeID < 1 || shapeID >= dblVals.size() )
+          if ( shapeID < 1 || shapeID >= (int) dblVals.size() )
             fieldWriter.AddValue( noneDblValue );
           else
             fieldWriter.AddValue( dblVals[ shapeID ]);
@@ -3408,7 +3408,7 @@ void SMESH_Mesh_i::exportMEDFields( DriverMED_W_Field&        fieldWriter,
         {
           const SMDS_MeshElement* e = elemIt->next();
           const int shapeID = e->getshapeId();
-          if ( shapeID < 1 || shapeID >= intVals.size() )
+          if ( shapeID < 1 || shapeID >= (int) intVals.size() )
             fieldWriter.AddValue( (double) noneIntValue );
           else
             fieldWriter.AddValue( (double) intVals[ shapeID ]);
@@ -4673,7 +4673,7 @@ SMESH::long_array* SMESH_Mesh_i::GetElemFaceNodes(CORBA::Long  elemId,
       {
         aResult->length( vtool.NbFaceNodes( faceIndex ));
         const SMDS_MeshNode** nn = vtool.GetFaceNodes( faceIndex );
-        for ( int i = 0; i < aResult->length(); ++i )
+        for ( CORBA::ULong i = 0; i < aResult->length(); ++i )
           aResult[ i ] = nn[ i ]->GetID();
       }
     }
@@ -4722,7 +4722,7 @@ CORBA::Long SMESH_Mesh_i::FindElementByNodes(const SMESH::long_array& nodes)
   if ( SMESHDS_Mesh* mesh = _impl->GetMeshDS() )
   {
     vector< const SMDS_MeshNode * > nn( nodes.length() );
-    for ( int i = 0; i < nodes.length(); ++i )
+    for ( CORBA::ULong i = 0; i < nodes.length(); ++i )
       if ( !( nn[i] = mesh->FindNode( nodes[i] )))
         return elemID;
 
@@ -5111,11 +5111,11 @@ SMESH::string_array* SMESH_Mesh_i::GetLastParameters()
     SALOMEDS::Study_var    aStudy = gen->GetCurrentStudy();
     if ( !aStudy->_is_nil()) {
       SALOMEDS::ListOfListOfStrings_var aSections = aStudy->ParseVariables(aParameters); 
-      if(aSections->length() > 0) {
-        SALOMEDS::ListOfStrings aVars = aSections[aSections->length()-1];
-        aResult->length(aVars.length());
-        for(int i = 0;i < aVars.length();i++)
-          aResult[i] = CORBA::string_dup( aVars[i]);
+      if ( aSections->length() > 0 ) {
+        SALOMEDS::ListOfStrings aVars = aSections[ aSections->length() - 1 ];
+        aResult->length( aVars.length() );
+        for ( CORBA::ULong i = 0;i < aVars.length(); i++ )
+          aResult[i] = CORBA::string_dup( aVars[i] );
       }
     }
   }
@@ -5407,7 +5407,7 @@ SMDS_ElemIteratorPtr SMESH_Mesh_i::GetElements(SMESH::SMESH_IDSource_ptr theObje
                                                SMESH::ElementType        theType)
 {
   SMDS_ElemIteratorPtr  elemIt;
-  bool                  typeOK = false;
+  bool                  typeOK = ( theType == SMESH::ALL );
   SMDSAbs_ElementType elemType = SMDSAbs_ElementType( theType );
 
   SMESH::SMESH_Mesh_var meshVar = theObject->GetMesh();
@@ -5637,7 +5637,7 @@ class SMESH_DimHyp
       if ( find( theOther->_hypotheses.begin(), otheEndIt, *hypIt ) != otheEndIt )
         nbSame++;
     // the submeshes are concurrent if their algorithms has different parameters
-    return nbSame != theOther->_hypotheses.size() - 1;
+    return nbSame != (int)theOther->_hypotheses.size() - 1;
   }
 
   // Return true if algorithm of this SMESH_DimHyp is used if no
@@ -6070,14 +6070,14 @@ SMESH_MeshPartDS::SMESH_MeshPartDS(SMESH::SMESH_IDSource_ptr meshPart):
     SMESH::array_of_ElementType_var types = meshPart->GetTypes();
     if ( types->length() == 1 && types[0] == SMESH::NODE ) // group of nodes
     {
-      for (int i=0; i < anIDs->length(); i++)
-        if ( const SMDS_MeshNode * n = _meshDS->FindNode(anIDs[i]))
+      for ( CORBA::ULong i=0; i < anIDs->length(); i++ )
+        if ( const SMDS_MeshNode * n = _meshDS->FindNode( anIDs[i] ))
           if ( _elements[ SMDSAbs_Node ].insert( n ).second )
             tmpInfo.Add( n );
     }
     else
     {
-      for (int i=0; i < anIDs->length(); i++)
+      for ( CORBA::ULong i=0; i < anIDs->length(); i++ )
         if ( const SMDS_MeshElement * e = _meshDS->FindElement(anIDs[i]))
           if ( _elements[ e->GetType() ].insert( e ).second )
           {
