@@ -51,23 +51,6 @@ class MGCleanerMonViewText(Ui_ViewExe, QDialog):
         # Je n arrive pas a utiliser le setEnvironment du QProcess
         # fonctionne hors Salome mais pas dans Salome ???
         cmds=''
-        try :
-          LICENCE_FILE=os.environ["DISTENE_LICENCE_FILE_FOR_MGCLEANER"]
-        except:
-          LICENCE_FILE=''
-        try :
-          PATH=os.environ["DISTENE_PATH_FOR_MGCLEANER"]
-        except:
-          PATH=''
-        if LICENCE_FILE != '': 
-          cmds+='source '+LICENCE_FILE+'\n'
-        else:
-          cmds+="# $DISTENE_LICENCE_FILE_FOR_MGCLEANER NOT SET\n"
-        if PATH != '': 
-          cmds+='export PATH='+PATH+':$PATH\n'
-        else:
-          cmds+="# $DISTENE_PATH_FOR_MGCLEANER NOT SET\n"
-        #cmds+='env\n'
         cmds+='rm -f '+self.parent().fichierOut+'\n'
         cmds+=txt+'\n'
         cmds+='echo END_OF_MGCleaner\n'
