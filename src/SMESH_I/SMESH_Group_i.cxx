@@ -55,11 +55,11 @@ SMESH_GroupBase_i::SMESH_GroupBase_i( PortableServer::POA_ptr thePOA,
                                       SMESH_Mesh_i*           theMeshServant,
                                       const int               theLocalID )
 : SALOME::GenericObj_i( thePOA ),
-  myMeshServant( theMeshServant ), 
-  myLocalID( theLocalID ),
+  myPreMeshInfo(NULL),
   myNbNodes(-1),
   myGroupDSTic(0),
-  myPreMeshInfo(NULL)
+  myMeshServant( theMeshServant ), 
+  myLocalID( theLocalID )
 {
   // PAL7962: san -- To ensure correct mapping of servant and correct reference counting in GenericObj_i,
   // servant activation is performed by SMESH_Mesh_i::createGroup()
@@ -69,8 +69,8 @@ SMESH_GroupBase_i::SMESH_GroupBase_i( PortableServer::POA_ptr thePOA,
 SMESH_Group_i::SMESH_Group_i( PortableServer::POA_ptr thePOA,
                               SMESH_Mesh_i*           theMeshServant,
                               const int               theLocalID )
-     : SALOME::GenericObj_i( thePOA ),
-       SMESH_GroupBase_i( thePOA, theMeshServant, theLocalID )
+  : SALOME::GenericObj_i( thePOA ),
+    SMESH_GroupBase_i( thePOA, theMeshServant, theLocalID )
 {
   //MESSAGE("SMESH_Group_i; this = "<<this );
 }
@@ -78,8 +78,8 @@ SMESH_Group_i::SMESH_Group_i( PortableServer::POA_ptr thePOA,
 SMESH_GroupOnGeom_i::SMESH_GroupOnGeom_i( PortableServer::POA_ptr thePOA,
                                           SMESH_Mesh_i*           theMeshServant,
                                           const int               theLocalID )
-     : SALOME::GenericObj_i( thePOA ),
-       SMESH_GroupBase_i( thePOA, theMeshServant, theLocalID )
+  : SALOME::GenericObj_i( thePOA ),
+    SMESH_GroupBase_i( thePOA, theMeshServant, theLocalID )
 {
   //MESSAGE("SMESH_GroupOnGeom_i; this = "<<this );
 }
@@ -320,9 +320,9 @@ CORBA::Long SMESH_Group_i::Add( const SMESH::long_array& theIDs )
   SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( GetGroupDS() );
   if (aGroupDS) {
     int nbAdd = 0;
-    for (int i = 0; i < theIDs.length(); i++) {
+    for ( CORBA::ULong i = 0; i < theIDs.length(); i++) {
       int anID = (int) theIDs[i];
-      if (aGroupDS->Add(anID))
+      if ( aGroupDS->Add( anID ))
         nbAdd++;
     }
     if ( nbAdd )
@@ -335,7 +335,7 @@ CORBA::Long SMESH_Group_i::Add( const SMESH::long_array& theIDs )
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -352,9 +352,9 @@ CORBA::Long SMESH_Group_i::Remove( const SMESH::long_array& theIDs )
   SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( GetGroupDS() );
   if (aGroupDS) {
     int nbDel = 0;
-    for (int i = 0; i < theIDs.length(); i++) {
+    for ( CORBA::ULong i = 0; i < theIDs.length(); i++ ) {
       int anID = (int) theIDs[i];
-      if (aGroupDS->Remove(anID))
+      if ( aGroupDS->Remove( anID ))
         nbDel++;
     }
     if ( nbDel )
@@ -367,7 +367,7 @@ CORBA::Long SMESH_Group_i::Remove( const SMESH::long_array& theIDs )
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -708,7 +708,7 @@ SMESH::long_array* SMESH_GroupBase_i::GetMeshInfo()
 
   if ( SMESHDS_GroupBase* g = GetGroupDS())
   {
-    if ( g->GetType() == SMDSAbs_Node || ( myNbNodes > -1 && g->GetTic() == myGroupDSTic))
+    if ( g->GetType() == SMDSAbs_Node /*|| ( myNbNodes > -1 && g->GetTic() == myGroupDSTic)*/)
       aRes[ SMDSEntity_Node ] = GetNumberOfNodes();
 
     if ( g->GetType() != SMDSAbs_Node )
@@ -913,7 +913,7 @@ SMESH::long_array* SMESH_GroupOnFilter_i::GetMeshInfo()
 
   if ( SMESHDS_GroupBase* g = GetGroupDS())
   {
-    if ( g->GetType() == SMDSAbs_Node || ( myNbNodes > -1 && g->GetTic() == myGroupDSTic))
+    if ( g->GetType() == SMDSAbs_Node /*|| ( myNbNodes > -1 && g->GetTic() == myGroupDSTic)*/)
       aRes[ SMDSEntity_Node ] = GetNumberOfNodes();
 
     if ( g->GetType() != SMDSAbs_Node )
