@@ -84,6 +84,11 @@
 #define SPACING 6
 #define MARGIN  11
 
+namespace
+{
+  enum { MANUAL_MODE = 0, SEARCH_MODE }; // how a node to move is specified
+}
+
 /*!
  * \brief Dialog to publish a sub-shape of the mesh main shape
  *        by selecting mesh elements
@@ -437,7 +442,7 @@ void SMESHGUI_MakeNodeAtPointOp::startOperation()
   myDlg->myDestDZ->setReadOnly(true);
   myDlg->myRButNodeToMove->setChecked(true);
 
-  myDlg->ConstructorsClicked(GetConstructorId());
+  myDlg->ConstructorsClicked( GetConstructorId() );
 
   myDlg->show();
 
@@ -469,12 +474,13 @@ void SMESHGUI_MakeNodeAtPointOp::stopOperation()
     mySimulation = 0;
   }
   if ( myMeshActor ) {
-    myMeshActor->SetPointRepresentation(false);
-    SMESH::RepaintCurrentView();
     myMeshActor = 0;
   }
+  SMESH::SetPointRepresentation( false );
+  SMESH::RepaintCurrentView();
+
   disconnect(mySMESHGUI, SIGNAL (SignalActivatedViewManager()), this, SLOT(onOpenView()));
-  disconnect(mySMESHGUI, SIGNAL (SignalCloseView()), this, SLOT(onCloseView()));
+  disconnect(mySMESHGUI, SIGNAL (SignalCloseView()),            this, SLOT(onCloseView()));
   selectionMgr()->removeFilter( myFilter );
   SMESHGUI_SelectionOp::stopOperation();
 }
@@ -685,6 +691,9 @@ void SMESHGUI_MakeNodeAtPointOp::redisplayPreview()
     return;
   myNoPreview = true;
 
+  if ( !myMeshActor && GetConstructorId() == SEARCH_MODE )
+    onSelectionDone();
+
   SMESH::MeshPreviewStruct_var aMeshPreviewStruct;
 
   bool moveShown = false;
@@ -776,7 +785,8 @@ void SMESHGUI_MakeNodeAtPointOp::redisplayPreview()
             }
           }
         }
-      }catch (...) {
+      }
+      catch (...) {
       }
     }
   }

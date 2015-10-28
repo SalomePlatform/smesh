@@ -1176,7 +1176,7 @@ namespace
                   out << "# Control: " << functorToString( aFunctor ) << endl;
                   out << "#" << endl;
                   out.setFieldWidth( 10 );
-                  for ( int i = 0; i < qMin( nbEvents.size(), funValues.size()-1 ); i++ )
+                  for ( int i = 0; i < (int)qMin( nbEvents.size(), funValues.size()-1 ); i++ )
                     out << funValues[i] << "\t" << funValues[i+1] << "\t" << nbEvents[i] << endl;
                   f.close();
                 }
@@ -4901,7 +4901,7 @@ void SMESHGUI::ProcessEvents( vtkObject* theObject,
                               void* theCallData )
 {
   if( SMESHGUI* aSMESHGUI = reinterpret_cast<SMESHGUI*>( theClientData ) ) {
-    if( theObject && theEvent == SMESH::DeleteActorEvent ) {
+    if( theObject && (int) theEvent == SMESH::DeleteActorEvent ) {
       if( SMESH_Actor* anActor = SMESH_Actor::SafeDownCast( theObject ) ) {
         SMESHGUI_ClippingPlaneInfoMap& aClippingPlaneInfoMap = aSMESHGUI->getClippingPlaneInfoMap();
         SMESHGUI_ClippingPlaneInfoMap::iterator anIter1 = aClippingPlaneInfoMap.begin();
@@ -5305,79 +5305,92 @@ void SMESHGUI::createPreferences()
 
 void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
 {
-  if( sect=="SMESH" ) {
-    float sbX1,sbY1,sbW,sbH;
+  if ( sect=="SMESH" ) {
+    float sbX1 = 0.01, sbY1 = 0.01, sbW = 0.08, sbH = 0.08;
     float aTol = 1.00000009999999;
     std::string aWarning;
     SUIT_ResourceMgr* aResourceMgr = SMESH::GetResourceMgr(this);
-    if( name=="selection_object_color" || name=="selection_element_color" ||
-        name=="highlight_color" ||
-        name=="selection_precision_node" || name=="selection_precision_element" ||
-        name=="selection_precision_object")
+
+    if ( name== "selection_object_color" ||
+         name=="selection_element_color" ||
+         name==        "highlight_color" ||
+         name=="selection_precision_node"    ||
+         name=="selection_precision_element" ||
+         name=="selection_precision_object"   )
+    {
       SMESH::UpdateSelectionProp( this );
-    else if (name == QString("scalar_bar_vertical_x") || name == QString("scalar_bar_vertical_width")){
-      sbX1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_x", sbX1);
-      sbW = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_width", sbW);
-      if(sbX1+sbW > aTol){
+    }
+    else if (name == "scalar_bar_vertical_x" || name == "scalar_bar_vertical_width")
+    {
+      sbX1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_x",     sbX1);
+      sbW  = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_width", sbW);
+      if ( sbX1+sbW > aTol ) {
         aWarning = "Origin and Size Vertical: X+Width > 1\n";
-        sbX1=0.01;
-        sbW=0.08;
-        aResourceMgr->setValue("SMESH", "scalar_bar_vertical_x", sbX1);
+        sbX1 = 0.01;
+        sbW  = 0.08;
+        aResourceMgr->setValue("SMESH", "scalar_bar_vertical_x",     sbX1);
         aResourceMgr->setValue("SMESH", "scalar_bar_vertical_width", sbW);
       }
     }
-    else if(name == QString("scalar_bar_vertical_y") || name == QString("scalar_bar_vertical_height")){
-      sbY1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_y", sbY1);
-      sbH = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_height",sbH);
-      if(sbY1+sbH > aTol){
+    else if (name == "scalar_bar_vertical_y" || name == "scalar_bar_vertical_height" )
+    {
+      sbY1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_y",     sbY1);
+      sbH  = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_height",sbH);
+      if ( sbY1 + sbH > aTol ) {
         aWarning = "Origin and Size Vertical: Y+Height > 1\n";
-        aResourceMgr->setValue("SMESH", "scalar_bar_vertical_y", sbY1);
+        aResourceMgr->setValue("SMESH", "scalar_bar_vertical_y",     sbY1);
         aResourceMgr->setValue("SMESH", "scalar_bar_vertical_height",sbH);
       }
     }
-    else if(name ==  QString("scalar_bar_horizontal_x") || name ==  QString("scalar_bar_horizontal_width")){
-      sbX1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_x", sbX1);
-      sbW = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_width", sbW);
-      if(sbX1+sbW > aTol){
+    else if (name == "scalar_bar_horizontal_x" || name ==  "scalar_bar_horizontal_width")
+    {
+      sbX1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_x",     sbX1);
+      sbW  = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_width", sbW);
+      if ( sbX1 + sbW > aTol ) {
         aWarning = "Origin and Size Horizontal: X+Width > 1\n";
         sbX1=0.1;
-        sbW=0.08;
+        sbW =0.08;
         aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_x", sbX1);
         aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_width", sbW);
       }
     }
-    else if(name ==  QString("scalar_bar_horizontal_y") || name ==  QString("scalar_bar_horizontal_height")){
-      sbY1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_y", sbY1);
-      sbH = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_height",sbH);
-      if(sbY1+sbH > aTol){
+    else if (name == "scalar_bar_horizontal_y" || name ==  "scalar_bar_horizontal_height")
+    {
+      sbY1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_y",     sbY1);
+      sbH  = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_height",sbH);
+      if ( sbY1 + sbH > aTol ) {
         aWarning = "Origin and Size Horizontal: Y+Height > 1\n";
         sbY1=0.01;
-        sbH=0.08;
+        sbH =0.08;
         aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_y", sbY1);
         aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_height",sbH);
       }
     }
-    else if ( name == "segmentation" ) {
+    else if ( name == "segmentation" )
+    {
       int nbSeg = aResourceMgr->integerValue( "SMESH", "segmentation", 10 );
       myComponentSMESH->SetBoundaryBoxSegmentation( nbSeg );
     }
-    else if ( name == "nb_segments_per_edge" ) {
+    else if ( name == "nb_segments_per_edge" )
+    {
       int nbSeg = aResourceMgr->integerValue( "SMESH", "nb_segments_per_edge", 15 );
       myComponentSMESH->SetDefaultNbSegments( nbSeg );
     }
-    else if ( name == "historical_python_dump" ||
-              name == "forget_mesh_on_hyp_modif") {
+    else if ( name == "historical_python_dump" || name == "forget_mesh_on_hyp_modif")
+    {
       QString val = aResourceMgr->stringValue( "SMESH", name );
       myComponentSMESH->SetOption( name.toLatin1().constData(), val.toLatin1().constData() );
     }
-    else if ( name == QString( "numbering_node_color" ) || name == QString( "numbering_node_font" ) ) {
-      SMESH::UpdateFontProp( this );    
+    else if ( name == "numbering_node_color" || name == "numbering_node_font" )
+    {
+      SMESH::UpdateFontProp( this );
     }
-    else if ( name == QString( "numbering_elem_color" ) || name == QString( "numbering_elem_font" ) ) {
+    else if ( name == "numbering_elem_color" || name == "numbering_elem_font" )
+    {
       SMESH::UpdateFontProp( this );
     }
 
-    if(aWarning.size() != 0){
+    if ( aWarning.size() != 0 ) {
       aWarning += "The default values are applied instead.";
       SUIT_MessageBox::warning(SMESHGUI::desktop(),
                                QObject::tr("SMESH_ERR_SCALARBAR_PARAMS"),
