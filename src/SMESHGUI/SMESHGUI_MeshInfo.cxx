@@ -2917,7 +2917,7 @@ void SMESHGUI_MeshInfoDlg::showInfo( const Handle(SALOME_InteractiveObject)& IO 
     myCtrlInfo->showInfo( obj );
 
     myActor = SMESH::FindActorByEntry( IO->getEntry() );
-    SVTK_Selector* selector = SMESH::GetViewWindow()->GetSelector();
+    SVTK_Selector* selector = SMESH::GetSelector();
     QString ID;
     int nb = 0;
     if ( myActor && selector ) {
@@ -3081,7 +3081,7 @@ void SMESHGUI_MeshInfoDlg::modeChanged()
 */
 void SMESHGUI_MeshInfoDlg::idChanged()
 {
-  SVTK_Selector* selector = SMESH::GetViewWindow()->GetSelector();
+  SVTK_Selector* selector = SMESH::GetSelector();
   if ( myActor && selector ) {
     Handle(SALOME_InteractiveObject) IO = myActor->getIO();
     TColStd_MapOfInteger ID;

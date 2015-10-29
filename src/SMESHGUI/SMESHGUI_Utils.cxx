@@ -298,9 +298,10 @@ namespace SMESH
     aPixmap->SetPixMap( pmName );
 
     _PTR(ChildIterator) anIter = aStudy->NewChildIterator(theSObject);
-    for (int i = 1; anIter->More(); anIter->Next(), i++) {
+    for ( ; anIter->More(); anIter->Next() ) {
       _PTR(SObject) aSObj = anIter->Value();
-      /*if (i >= 1)*/ {
+      if ( aSObj->Tag() >= SMESH::Tag_FirstSubMesh )
+      {
         _PTR(ChildIterator) anIter1 = aStudy->NewChildIterator(aSObj);
         for ( ; anIter1->More(); anIter1->Next())
         {
@@ -339,7 +340,7 @@ namespace SMESH
             else
               aPixmap->SetPixMap( "ICON_SMESH_TREE_GROUP" );
           }
-          else
+          else // is it necessary?
           {
             if ( !theIsNotModif )
               aPixmap->SetPixMap( pmName );

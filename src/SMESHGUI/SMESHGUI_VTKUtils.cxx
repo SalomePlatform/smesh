@@ -773,6 +773,7 @@ namespace SMESH
               anActor->SetVisibility(false);
               aStudy->setVisibilityState(theEntry, Qtx::HiddenState);
               break;
+            default:;
           }
         } else {
           switch (theAction) {
@@ -799,6 +800,7 @@ namespace SMESH
               }
               break;
             }
+          default:;
           }
         }
       }
@@ -808,16 +810,20 @@ namespace SMESH
   }
 
 
-  bool UpdateView(EDisplaing theAction, const char* theEntry){
+  bool UpdateView(EDisplaing theAction, const char* theEntry) {
         //MESSAGE("UpdateView");
     SalomeApp_Study* aStudy = dynamic_cast< SalomeApp_Study* >( GetActiveStudy() );
     SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( aStudy->application() );
-    SUIT_ViewWindow *aWnd = app->activeViewManager()->getActiveView();
-    return UpdateView(aWnd,theAction,theEntry);
+    if ( SUIT_ViewManager* vm = app->activeViewManager() )
+    {
+      SUIT_ViewWindow *aWnd = vm->getActiveView();
+      return UpdateView(aWnd,theAction,theEntry);
+    }
+    return false;
   }
 
   void UpdateView(){
-    if(SVTK_ViewWindow* aWnd = SMESH::GetCurrentVtkView()){
+    if ( SVTK_ViewWindow* aWnd = SMESH::GetCurrentVtkView()) {
       LightApp_SelectionMgr* mgr = SMESHGUI::selectionMgr();
       SALOME_ListIO selected; mgr->selectedObjects( selected );
 
@@ -848,7 +854,7 @@ namespace SMESH
 
   bool Update(const Handle(SALOME_InteractiveObject)& theIO, bool theDisplay)
   {
-        MESSAGE("Update");
+    MESSAGE("Update");
     _PTR(Study) aStudy = GetActiveStudyDocument();
     CORBA::Long anId = aStudy->StudyId();
     if ( TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId,theIO->getEntry())) {
@@ -861,7 +867,7 @@ namespace SMESH
 
   bool UpdateNulData(const Handle(SALOME_InteractiveObject)& theIO, bool theDisplay)
   {
-        MESSAGE("UpdateNulData");
+    MESSAGE("UpdateNulData");
     _PTR(Study) aStudy = GetActiveStudyDocument();
     CORBA::Long anId = aStudy->StudyId();
     if ( TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId,theIO->getEntry(), true)) {

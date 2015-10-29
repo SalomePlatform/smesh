@@ -2666,7 +2666,7 @@ void SMESHGUI_MeshOp::onAlgoSetByMeshType( const int theTabIndex, const int theI
   * \param theIndex - Index of current type of mesh
  */
 //================================================================================
-void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theIndex)
+void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theIndex )
 {
   QStringList anAvailableAlgs;
   QString anCompareType = currentMeshTypeName( theIndex );
@@ -2684,7 +2684,7 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
       anCurrentAvailableAlgo = -1;
       isNone = currentHyp( dim, Algo ) < 0;
       //return current algo in current tab and set new algorithm list
-      HypothesisData* algoCur;
+      HypothesisData* algoCur = 0;
       if ( !isNone && !myAvailableHypData[dim][Algo].empty() ) {
         algoCur = myAvailableHypData[dim][Algo].at( currentHyp( dim, Algo ) );
       }
