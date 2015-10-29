@@ -237,6 +237,19 @@ void SMESH_Hypothesis_i::setOldParameters (const char* theParameters)
   return myBaseImpl;
 }
 
+//================================================================================
+/*!
+ * \brief Return true if a hypothesis has parameters
+ */
+//================================================================================
+
+CORBA::Boolean SMESH_Hypothesis_i::HasParameters()
+{
+  std::ostringstream os;
+  myBaseImpl->SaveTo( os );
+  return ( !os.str().empty() );
+}
+
 //=============================================================================
 /*!
  *  SMESH_Hypothesis_i::SaveTo

@@ -95,7 +95,7 @@ typedef list<SMESHDS_SubMesh*> TListOfSubMeshes;
 bool getSubMeshes(::SMESH_subMesh*  theSubMesh,
                   TListOfSubMeshes& theSubMeshList)
 {
-  int size = theSubMeshList.size();
+  size_t size = theSubMeshList.size();
 
   SMESH_Mesh*      aMesh      = theSubMesh->GetFather();
   SMESHDS_Mesh*    aMeshDS    = aMesh->GetMeshDS();

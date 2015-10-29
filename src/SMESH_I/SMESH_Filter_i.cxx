@@ -170,21 +170,21 @@ static TopoDS_Shape getShapeByID (const char* theID)
   return TopoDS_Shape();
 }
 
-static std::string getShapeNameByID (const char* theID)
-{
-  if ( theID && strlen( theID ) > 0 ) {
-    SMESH_Gen_i*     aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-    SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
-    if ( !aStudy->_is_nil() ) {
-      SALOMEDS::SObject_wrap aSObj = aStudy->FindObjectID(theID);
-      if ( !aSObj->_is_nil() ) {
-        CORBA::String_var name = aSObj->GetName();
-        return name.in();
-      }
-    }
-  }
-  return "";
-}
+// static std::string getShapeNameByID (const char* theID)
+// {
+//   if ( theID && strlen( theID ) > 0 ) {
+//     SMESH_Gen_i*     aSMESHGen = SMESH_Gen_i::GetSMESHGen();
+//     SALOMEDS::Study_var aStudy = aSMESHGen->GetCurrentStudy();
+//     if ( !aStudy->_is_nil() ) {
+//       SALOMEDS::SObject_wrap aSObj = aStudy->FindObjectID(theID);
+//       if ( !aSObj->_is_nil() ) {
+//         CORBA::String_var name = aSObj->GetName();
+//         return name.in();
+//       }
+//     }
+//   }
+//   return "";
+// }
 
 /*
                                 FUNCTORS
@@ -1830,9 +1830,9 @@ FunctorType EqualTo_i::GetFunctorType()
   Class       : LogicalNOT_i
   Description : Logical NOT predicate
 */
-LogicalNOT_i::LogicalNOT_i()
-: myPredicate( NULL ),
-  myLogicalNOTPtr( new Controls::LogicalNOT() )
+LogicalNOT_i::LogicalNOT_i():
+  myLogicalNOTPtr( new Controls::LogicalNOT() ),
+  myPredicate( NULL )
 {
   myFunctorPtr = myPredicatePtr = myLogicalNOTPtr;
 }
@@ -4068,7 +4068,7 @@ static const char** getFunctNames()
 #ifdef _DEBUG_
   // check if functName is complete, compilation failure means that enum FunctorType changed
   const int nbFunctors = sizeof(functName) / sizeof(const char*);
-  int _assert[( nbFunctors == SMESH::FT_Undefined + 1 ) ? 1 : -1 ];
+  int _assert[( nbFunctors == SMESH::FT_Undefined + 1 ) ? 1 : -1 ]; _assert[0]=1;
 #endif
 
   return functName;

@@ -87,6 +87,13 @@ module SMESH
      * Verify whether hypothesis supports given entity type 
      */
     boolean IsDimSupported( in Dimension type );
+
+    /*!
+     * Return true if a hypothesis has parameters.
+     *
+     * This method is intended for GUI to know if "Edit" menu item sould be available
+     */
+    boolean HasParameters();
   };
 
   typedef sequence<string> ListOfHypothesisName;

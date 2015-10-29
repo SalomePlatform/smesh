@@ -105,6 +105,16 @@ CORBA::Long StdMeshers_LengthFromEdges_i::GetMode()
   return this->GetImpl()->GetMode();
 }
 
+//================================================================================
+/*!
+ * \brief Return false as in SALOME the mode is not used
+ */
+//================================================================================
+
+CORBA::Boolean StdMeshers_LengthFromEdges_i::HasParameters()
+{
+  return false;
+}
 
 //=============================================================================
 /*!

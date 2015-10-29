@@ -56,10 +56,11 @@ public:
   virtual bool            isAutoColor( int ) const;
   virtual int             numberOfNodes( int ) const;
   virtual int             dim( int ) const;
-  virtual QVariant        isComputable( int ) const;
-  virtual QVariant        isPreComputable( int ) const;
-  virtual QVariant        hasGeomReference( int ) const;
-  virtual QVariant        isVisible( int ) const;
+  virtual bool            isComputable( int ) const;
+  virtual bool            isPreComputable( int ) const;
+  virtual bool            hasGeomReference( int ) const;
+  virtual bool            isEditableHyp( int ) const;
+  virtual bool            isVisible( int ) const;
 
   virtual QString         quadratic2DMode( int ) const;
 

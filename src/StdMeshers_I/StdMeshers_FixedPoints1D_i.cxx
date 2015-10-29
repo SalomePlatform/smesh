@@ -137,7 +137,7 @@ SMESH::double_array* StdMeshers_FixedPoints1D_i::GetPoints()
   SMESH::double_array_var anArray = new SMESH::double_array;
   std::vector<double> params = this->GetImpl()->GetPoints();
   anArray->length( params.size() );
-  for ( CORBA::Long i = 0; i < params.size(); i++)
+  for ( CORBA::ULong i = 0; i < params.size(); i++)
     anArray [ i ] = params [ i ];
 
   return anArray._retn();
@@ -158,7 +158,7 @@ SMESH::long_array* StdMeshers_FixedPoints1D_i::GetNbSegments()
   SMESH::long_array_var anArray = new SMESH::long_array;
   std::vector<int> nbsegs = this->GetImpl()->GetNbSegments();
   anArray->length( nbsegs.size() );
-  for ( CORBA::Long i = 0; i < nbsegs.size(); i++)
+  for ( CORBA::ULong i = 0; i < nbsegs.size(); i++)
     anArray [ i ] = nbsegs [ i ];
 
   return anArray._retn();
@@ -252,7 +252,7 @@ SMESH::long_array* StdMeshers_FixedPoints1D_i::GetReversedEdges()
   SMESH::long_array_var anArray = new SMESH::long_array;
   std::vector<int> ids = this->GetImpl()->GetReversedEdges();
   anArray->length( ids.size() );
-  for ( CORBA::Long i = 0; i < ids.size(); i++)
+  for ( CORBA::ULong i = 0; i < ids.size(); i++)
     anArray [ i ] = ids [ i ];
 
   return anArray._retn();

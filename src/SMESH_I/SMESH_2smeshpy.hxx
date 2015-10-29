@@ -115,7 +115,7 @@ class _pyCommand: public Standard_Transient
 public:
   _pyCommand() {};
   _pyCommand( const _AString& theString, int theNb=-1 )
-    : myString( theString ), myOrderNb( theNb ) {};
+    : myOrderNb( theNb ), myString( theString ) {};
   _AString & GetString() { return myString; }
   int  GetOrderNb() const { return myOrderNb; }
   void SetOrderNb( int theNb ) { myOrderNb = theNb; }

@@ -4353,7 +4353,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( SMESHOp::OpCreateGeometryGroup,    OB, mesh, "&& hasGeomReference" );
   createPopupItem( SMESHOp::OpConstructGroup,         OB, subMesh );
   popupMgr()->insert( separator(), -1, 0 );
-  createPopupItem( SMESHOp::OpEditHypothesis,         OB, hypo);
+  createPopupItem( SMESHOp::OpEditHypothesis,         OB, hypo, "&& isEditableHyp");
   createPopupItem( SMESHOp::OpUnassign,               OB, hyp_alg );     // REMOVE HYPOTHESIS / ALGORITHMS
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( SMESHOp::OpConvertMeshToQuadratic, OB, mesh + " " + subMesh );  // convert to quadratic

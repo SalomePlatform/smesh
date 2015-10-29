@@ -551,7 +551,7 @@ namespace
                                allEdges, theShortEdges[ nbBranchPoints > 0 ] ))
         return false;
 
-      for ( size_t iS = 0; iS < theShortEdges[ nbBranchPoints ].size(); ++iS )
+      for ( size_t iS = 0; iS < theShortEdges[ nbBranchPoints > 0 ].size(); ++iS )
         shortMap.Add( theShortEdges[ nbBranchPoints ][ iS ]);
 
       ++nbBranchPoints;

@@ -919,7 +919,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
           Threshold = SMESH + types[ iGeom ];
 #ifdef _DEBUG_
         // is types complete? (compilation failure mains that enum GeometryType changed)
-        int _assert[( sizeof(types) / sizeof(const char*) == nbTypes ) ? 1 : -1 ];
+        int _assert[( sizeof(types) / sizeof(const char*) == nbTypes ) ? 1 : -1 ]; _assert[0]=1;
 #endif
       }
       if (Type == "SMESH.FT_EntityType")
@@ -939,7 +939,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
           Threshold = SMESH + types[ iGeom ];
 #ifdef _DEBUG_
         // is types complete? (compilation failure mains that enum EntityType changed)
-        int _assert[( sizeof(types) / sizeof(const char*) == nbTypes ) ? 1 : -1 ];
+        int _assert[( sizeof(types) / sizeof(const char*) == nbTypes ) ? 1 : -1 ]; _assert[0]=1;
 #endif
       }
     }
@@ -1930,7 +1930,7 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
     TCollection_AsciiString grIDs = theCommand->GetResultValue();
     list< _pyID >          idList = theCommand->GetStudyEntries( grIDs );
     list< _pyID >::iterator  grID = idList.begin();
-    const int nbGroupsBefore = myGroups.size();
+    const size_t nbGroupsBefore = myGroups.size();
     Handle(_pyObject) obj;
     for ( ; grID != idList.end(); ++grID )
     {
@@ -3133,7 +3133,7 @@ void _pyHypothesis::setCreationArg( const int argNb, const _AString& arg )
 {
   if ( myCurCrMethod )
   {
-    while ( myCurCrMethod->myArgs.size() < argNb )
+    while ( (int) myCurCrMethod->myArgs.size() < argNb )
       myCurCrMethod->myArgs.push_back( "None" );
     if ( arg.IsEmpty() )
       myCurCrMethod->myArgs[ argNb-1 ] = "None";
@@ -3200,7 +3200,7 @@ void _pyComplexParamHypo::Process( const Handle(_pyCommand)& theCommand)
     for ( ; type2meth != myAlgoType2CreationMethod.end(); ++type2meth )
     {
       CreationMethod& crMethod = type2meth->second;
-        while ( crMethod.myArgs.size() < i+1 )
+      while ( (int) crMethod.myArgs.size() < i+1 )
           crMethod.myArgs.push_back( "[]" );
         crMethod.myArgs[ i ] = theCommand->GetArg( 1 ); // arg value
     }

@@ -59,6 +59,9 @@ public:
   // Get mode
   CORBA::Long GetMode();
 
+  // Return false as in SALOME the mode is not used
+  CORBA::Boolean HasParameters();
+
   // Get implementation
   ::StdMeshers_LengthFromEdges* GetImpl();
   

@@ -129,6 +129,7 @@ QVariant SMESHGUI_Selection::parameter( const int ind, const QString& p ) const
   else if ( p=="isComputable" )         val = QVariant( isComputable( ind ) );
   else if ( p=="isPreComputable" )      val = QVariant( isPreComputable( ind ) );
   else if ( p=="hasGeomReference" )     val = QVariant( hasGeomReference( ind ) );
+  else if ( p=="isEditableHyp" )        val = QVariant( isEditableHyp( ind ) );
   else if ( p=="isImported" )           val = QVariant( isImported( ind ) );
   else if ( p=="facesOrientationMode" ) val = QVariant( facesOrientationMode( ind ) );
   else if ( p=="groupType" )            val = QVariant( groupType( ind ) );
@@ -495,16 +496,16 @@ int SMESHGUI_Selection::dim( int ind ) const
 //purpose  : return true for a ready-to-compute mesh
 //=======================================================================
 
-QVariant SMESHGUI_Selection::isComputable( int ind ) const
+bool SMESHGUI_Selection::isComputable( int ind ) const
 {
   if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] == "Mesh" )
   {
     QMap<int,int> modeMap;
     _PTR(SObject) so = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
     SMESHGUI_PrecomputeOp::getAssignedAlgos( so, modeMap );
-    return QVariant( modeMap.size() > 0 );
+    return modeMap.size() > 0;
   }
-  return QVariant( false );
+  return false;
 }
 
 //=======================================================================
@@ -512,7 +513,7 @@ QVariant SMESHGUI_Selection::isComputable( int ind ) const
 //purpose  : returns true for a mesh with algorithms
 //=======================================================================
 
-QVariant SMESHGUI_Selection::isPreComputable( int ind ) const
+bool SMESHGUI_Selection::isPreComputable( int ind ) const
 {
   if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] == "Mesh" )
   {
@@ -523,11 +524,11 @@ QVariant SMESHGUI_Selection::isPreComputable( int ind ) const
       _PTR(SObject) pMesh = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
       SMESHGUI_PrecomputeOp::getAssignedAlgos( pMesh, modeMap );
       if ( modeMap.size() > 1 )
-        return QVariant( ( modeMap.contains( SMESH::DIM_3D )) ||
-                         ( modeMap.contains( SMESH::DIM_2D ) && maxDim < 1 ));
+        return (( modeMap.contains( SMESH::DIM_3D )) ||
+                ( modeMap.contains( SMESH::DIM_2D ) && maxDim < 1 ));
     }
   }
-  return QVariant( false );
+  return false;
 }
 
 //=======================================================================
@@ -535,15 +536,35 @@ QVariant SMESHGUI_Selection::isPreComputable( int ind ) const
 //purpose  : returns true for a mesh or sub-mesh on geometry
 //=======================================================================
 
-QVariant SMESHGUI_Selection::hasGeomReference( int ind ) const
+bool SMESHGUI_Selection::hasGeomReference( int ind ) const
 {
   if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
   {
     _PTR(SObject) so = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
     GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );
-    return QVariant( !shape->_is_nil() );
+    return !shape->_is_nil();
   }
-  return QVariant( false );
+  return false;
+}
+
+//=======================================================================
+//function : isEditableHyp
+//purpose  : 
+//=======================================================================
+
+bool SMESHGUI_Selection::isEditableHyp( int ind ) const
+{
+  bool isEditable = true;
+  if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] == "Hypothesis" )
+  {
+    _PTR(SObject) so = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
+    SMESH::SMESH_Hypothesis_var hyp = SMESH::SObjectToInterface<SMESH::SMESH_Hypothesis>( so );
+    if ( !hyp->_is_nil() )
+    {
+      isEditable = hyp->HasParameters();
+    }
+  }
+  return isEditable;
 }
 
 //=======================================================================
@@ -551,17 +572,17 @@ QVariant SMESHGUI_Selection::hasGeomReference( int ind ) const
 //purpose  : 
 //=======================================================================
 
-QVariant SMESHGUI_Selection::isVisible( int ind ) const
+bool SMESHGUI_Selection::isVisible( int ind ) const
 {
   if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
   {
     SMESH_Actor* actor = SMESH::FindActorByEntry( entry( ind ).toLatin1().data() );
     if ( actor && actor->hasIO() ) {
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetCurrentVtkView() )
-        return QVariant( aViewWindow->isVisible( actor->getIO() ) );
+        return aViewWindow->isVisible( actor->getIO() );
     }
   }
-  return QVariant( false );
+  return false;
 }
 
 //=======================================================================
