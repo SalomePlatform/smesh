@@ -715,6 +715,8 @@ void SMESHGUI_ScaleDlg::onTextChange (const QString& theNewText)
 void SMESHGUI_ScaleDlg::SelectionIntoArgument()
 {
   if (myBusy) return;
+  if (myFilterDlg && myFilterDlg->isVisible()) return; // filter dlg active
+
   BusyLocker lock( myBusy );
   // clear
   myActor = 0;
@@ -1112,6 +1114,15 @@ void SMESHGUI_ScaleDlg::setFilters()
   if ( !myFilterDlg )
     myFilterDlg = new SMESHGUI_FilterDlg( mySMESHGUI, SMESH::ALL );
 
+  QList<int> types;
+  if ( myMeshes[0]->NbEdges()     ) types << SMESH::EDGE;
+  if ( myMeshes[0]->NbFaces()     ) types << SMESH::FACE;
+  if ( myMeshes[0]->NbVolumes()   ) types << SMESH::VOLUME;
+  if ( myMeshes[0]->NbBalls()     ) types << SMESH::BALL;
+  if ( myMeshes[0]->Nb0DElements()) types << SMESH::ELEM0D;
+  if ( types.count() > 1 )          types << SMESH::ALL;
+
+  myFilterDlg->Init( types );
   myFilterDlg->SetSelection();
   myFilterDlg->SetMesh( myMeshes[0] );
   myFilterDlg->SetSourceWg( LineEditElements );

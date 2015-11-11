@@ -736,6 +736,7 @@ void SMESHGUI_SymmetryDlg::onTextChange (const QString& theNewText)
 void SMESHGUI_SymmetryDlg::SelectionIntoArgument()
 {
   if (myBusy) return;
+  if (myFilterDlg && myFilterDlg->isVisible()) return; // filter dlg active
 
   // clear
   myActor = 0;
@@ -1134,6 +1135,15 @@ void SMESHGUI_SymmetryDlg::setFilters()
   if ( !myFilterDlg )
     myFilterDlg = new SMESHGUI_FilterDlg( mySMESHGUI, SMESH::ALL );
 
+  QList<int> types;
+  if ( myMeshes[0]->NbEdges()     ) types << SMESH::EDGE;
+  if ( myMeshes[0]->NbFaces()     ) types << SMESH::FACE;
+  if ( myMeshes[0]->NbVolumes()   ) types << SMESH::VOLUME;
+  if ( myMeshes[0]->NbBalls()     ) types << SMESH::BALL;
+  if ( myMeshes[0]->Nb0DElements()) types << SMESH::ELEM0D;
+  if ( types.count() > 1 )          types << SMESH::ALL;
+
+  myFilterDlg->Init( types );
   myFilterDlg->SetSelection();
   myFilterDlg->SetMesh( myMeshes[0] );
   myFilterDlg->SetSourceWg( LineEditElements );
@@ -1173,10 +1183,13 @@ bool SMESHGUI_SymmetryDlg::isValid()
 // function : onDisplaySimulation
 // purpose  : Show/Hide preview
 //=================================================================================
-void SMESHGUI_SymmetryDlg::onDisplaySimulation( bool toDisplayPreview ) {
-  if (myPreviewCheckBox->isChecked() && toDisplayPreview) {
-    if ( myNbOkElements && isValid() && IsMirrorOk() ) {
-      QStringList aListElementsId = myElementsId.split(" ", QString::SkipEmptyParts);      
+void SMESHGUI_SymmetryDlg::onDisplaySimulation( bool toDisplayPreview )
+{
+  if (myPreviewCheckBox->isChecked() && toDisplayPreview)
+  {
+    if ( myNbOkElements && isValid() && IsMirrorOk() )
+    {
+      QStringList aListElementsId = myElementsId.split(" ", QString::SkipEmptyParts);
       SMESH::long_array_var anElementsId = new SMESH::long_array;
 
       anElementsId->length(aListElementsId.count());
@@ -1185,7 +1198,7 @@ void SMESHGUI_SymmetryDlg::onDisplaySimulation( bool toDisplayPreview ) {
 
       SMESH::AxisStruct aMirror;
       SMESH::SMESH_MeshEditor::MirrorType aMirrorType;
-      
+
       getMirror(aMirror,aMirrorType);
 
       try {
@@ -1201,7 +1214,7 @@ void SMESHGUI_SymmetryDlg::onDisplaySimulation( bool toDisplayPreview ) {
           }
         else {
           SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditPreviewer();
-          aMeshEditor->Mirror(anElementsId, aMirror, aMirrorType, copy );        
+          aMeshEditor->Mirror(anElementsId, aMirror, aMirrorType, copy );
           aMeshPreviewStruct << aMeshEditor->GetPreviewData();
         }
         setSimulationPreview(aMeshPreviewStruct);
@@ -1210,7 +1223,7 @@ void SMESHGUI_SymmetryDlg::onDisplaySimulation( bool toDisplayPreview ) {
       }
     } else {
       hidePreview();
-    } 
+    }
   } else {
     hidePreview();
   }
@@ -1220,7 +1233,9 @@ void SMESHGUI_SymmetryDlg::onDisplaySimulation( bool toDisplayPreview ) {
 // function : getMirror
 // purpose  : return mirror parameters
 //=================================================================================
-void SMESHGUI_SymmetryDlg::getMirror(SMESH::AxisStruct& theMirror, SMESH::SMESH_MeshEditor::MirrorType& theMirrorType) {
+void SMESHGUI_SymmetryDlg::getMirror(SMESH::AxisStruct&                   theMirror,
+                                     SMESH::SMESH_MeshEditor::MirrorType& theMirrorType)
+{
   theMirror.x =  SpinBox_X->GetValue();
   theMirror.y =  SpinBox_Y->GetValue();
   theMirror.z =  SpinBox_Z->GetValue();

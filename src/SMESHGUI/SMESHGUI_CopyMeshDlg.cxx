@@ -494,6 +494,9 @@ void SMESHGUI_CopyMeshDlg::onTextChange (const QString& theNewText)
 void SMESHGUI_CopyMeshDlg::SelectionIntoArgument()
 {
   if (myBusy) return;
+  if (myFilterDlg && myFilterDlg->isVisible()) return; // filter dlg active
+  if (!GroupButtons->isEnabled()) return;              // inactive
+
   BusyLocker lock( myBusy );
 
   // clear
@@ -677,6 +680,15 @@ void SMESHGUI_CopyMeshDlg::setFilters()
   if ( !myFilterDlg )
     myFilterDlg = new SMESHGUI_FilterDlg( mySMESHGUI, SMESH::ALL );
 
+  QList<int> types;
+  if ( myMesh->NbEdges()     ) types << SMESH::EDGE;
+  if ( myMesh->NbFaces()     ) types << SMESH::FACE;
+  if ( myMesh->NbVolumes()   ) types << SMESH::VOLUME;
+  if ( myMesh->NbBalls()     ) types << SMESH::BALL;
+  if ( myMesh->Nb0DElements()) types << SMESH::ELEM0D;
+  if ( types.count() > 1 )     types << SMESH::ALL;
+
+  myFilterDlg->Init( types );
   myFilterDlg->SetSelection();
   myFilterDlg->SetMesh( myMesh );
   myFilterDlg->SetSourceWg( myLineEditElements );

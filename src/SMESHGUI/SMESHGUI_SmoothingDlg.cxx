@@ -566,6 +566,7 @@ void SMESHGUI_SmoothingDlg::onTextChange (const QString& theNewText)
 void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
 {
   if (myBusy) return;
+  if (myFilterDlg && myFilterDlg->isVisible()) return; // filter dlg active
 
   // clear
   QString aString = "";
@@ -574,7 +575,8 @@ void SMESHGUI_SmoothingDlg::SelectionIntoArgument()
   BusyLocker lock( myBusy );
 
   if (myEditCurrentArgument == LineEditElements ||
-      myEditCurrentArgument == LineEditNodes) {
+      myEditCurrentArgument == LineEditNodes)
+  {
     myEditCurrentArgument->setText(aString);
     if (myEditCurrentArgument == LineEditElements) {
       myNbOkElements = 0;

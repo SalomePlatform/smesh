@@ -677,6 +677,7 @@ void SMESHGUI_RotationDlg::onTextChange (const QString& theNewText)
 void SMESHGUI_RotationDlg::SelectionIntoArgument()
 {
   if (myBusy) return;
+  if (myFilterDlg && myFilterDlg->isVisible()) return; // filter dlg active
 
   // clear
   myActor = 0;
@@ -1064,6 +1065,15 @@ void SMESHGUI_RotationDlg::setFilters()
   if ( !myFilterDlg )
     myFilterDlg = new SMESHGUI_FilterDlg( mySMESHGUI, SMESH::ALL );
 
+  QList<int> types;
+  if ( myMeshes[0]->NbEdges()     ) types << SMESH::EDGE;
+  if ( myMeshes[0]->NbFaces()     ) types << SMESH::FACE;
+  if ( myMeshes[0]->NbVolumes()   ) types << SMESH::VOLUME;
+  if ( myMeshes[0]->NbBalls()     ) types << SMESH::BALL;
+  if ( myMeshes[0]->Nb0DElements()) types << SMESH::ELEM0D;
+  if ( types.count() > 1 )          types << SMESH::ALL;
+
+  myFilterDlg->Init( types );
   myFilterDlg->SetSelection();
   myFilterDlg->SetMesh( myMeshes[0] );
   myFilterDlg->SetSourceWg( LineEditElements );

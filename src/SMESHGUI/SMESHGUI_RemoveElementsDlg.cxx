@@ -377,7 +377,7 @@ void SMESHGUI_RemoveElementsDlg::onTextChange(const QString& theNewText)
 void SMESHGUI_RemoveElementsDlg::SelectionIntoArgument()
 {
   if (myBusy) return;                                  // busy
-  if (myFilterDlg && myFilterDlg->isVisible()) return; // filter digl active
+  if (myFilterDlg && myFilterDlg->isVisible()) return; // filter dlg active
   if (!GroupButtons->isEnabled()) return;              // inactive
 
   // clear
