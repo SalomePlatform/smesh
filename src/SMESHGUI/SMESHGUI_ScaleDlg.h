@@ -131,6 +131,7 @@ private:
 protected slots:
   virtual void           onDisplaySimulation( bool );
   virtual void           reject();
+  void                   onFilterAccepted();
    
 private slots:
   void                   ConstructorsClicked( int );
