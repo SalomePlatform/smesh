@@ -30,6 +30,7 @@
 #include "SMESHGUI.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_GEOMGenUtils.h"
+#include <SMESH_ActorUtils.h>
 
 #include <GeometryGUI.h>
 #include <GEOM_SelectionFilter.h>
@@ -350,9 +351,17 @@ bool SMESHGUI_GroupOnShapeOp::onApply()
 
       //printf( "apply() %s %s\n", (*geomID).latin1(), name.latin1() );
       group = mesh->CreateGroupFromGEOM( elemType, name.toLatin1().data(), geom );
-      if( !group->_is_nil() )
+      if( !group->_is_nil() ) {
+        // set default color for created group
+        QColor c = SMESH::GetColor( "SMESH", "default_grp_color" );
+        SALOMEDS::Color aColor;
+        aColor.R = c.redF();
+        aColor.G = c.greenF();
+        aColor.B = c.blueF();
+        group->SetColor(aColor);
         if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( group ) )
           anEntryList.append( aSObject->GetID().c_str() );
+      }
     }
   }
   SMESHGUI::Modified();
