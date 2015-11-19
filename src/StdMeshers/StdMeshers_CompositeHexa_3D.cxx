@@ -62,9 +62,7 @@
 #ifdef _DEBUG_
 // #define DEB_FACES
 // #define DEB_GRID
-// #define DUMP_VERT(msg,V) \
-//   { TopoDS_Vertex v = V; gp_Pnt p = BRep_Tool::Pnt(v);                  \
-//     cout << msg << "( "<< p.X()<<", "<<p.Y()<<", "<<p.Z()<<" )"<<endl;}
+// #define DUMP_VERT(msg,V) { TopoDS_Vertex v = V; gp_Pnt p = BRep_Tool::Pnt(v); cout << msg << "( "<< p.X()<<", "<<p.Y()<<", "<<p.Z()<<" )"<<endl; }
 #endif
 
 #ifndef DUMP_VERT
@@ -1150,7 +1148,7 @@ bool _QuadFaceGrid::LoadGrid( SMESH_Mesh& mesh )
   TIDSortedElemSet emptySet, avoidSet;
   const SMDS_MeshElement* firstQuad = 0; // most left face above the last row of found nodes
 
-  int nbFoundNodes = myIndexer._xSize;
+  size_t nbFoundNodes = myIndexer._xSize;
   while ( nbFoundNodes != myGrid.size() )
   {
     // first and last nodes of the last filled row of nodes

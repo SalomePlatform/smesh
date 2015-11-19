@@ -730,7 +730,7 @@ public:
   void sweepElement(const SMDS_MeshElement*                    elem,
                     const std::vector<TNodeOfNodeListMapItr> & newNodesItVec,
                     std::list<const SMDS_MeshElement*>&        newElems,
-                    const int                                  nbSteps,
+                    const size_t                               nbSteps,
                     SMESH_SequenceOfElemPtr&                   srcElements);
 
   /*!

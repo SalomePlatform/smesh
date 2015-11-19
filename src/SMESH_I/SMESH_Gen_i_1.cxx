@@ -585,7 +585,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishMesh (SALOMEDS::Study_ptr   theStudy,
     // Publish global hypotheses
 
     SMESH::ListOfHypothesis_var hypList = theMesh->GetHypothesisList( aShapeObject );
-    for ( int i = 0; i < hypList->length(); i++ )
+    for ( CORBA::ULong i = 0; i < hypList->length(); i++ )
     {
       SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( hypList[ i ]);
       SALOMEDS::SObject_wrap so = PublishHypothesis( theStudy, aHyp );
@@ -710,7 +710,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishSubMesh (SALOMEDS::Study_ptr      theS
   // Publish hypothesis
 
   SMESH::ListOfHypothesis_var hypList = theMesh->GetHypothesisList( theShapeObject );
-  for ( int i = 0; i < hypList->length(); i++ ) {
+  for ( CORBA::ULong i = 0; i < hypList->length(); i++ ) {
     SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( hypList[ i ]);
     SALOMEDS::SObject_wrap so = PublishHypothesis( theStudy, aHyp );
     AddHypothesisToShape( theStudy, theMesh, theShapeObject, aHyp );
@@ -742,7 +742,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishGroup (SALOMEDS::Study_ptr    theStudy
       if ( aMeshSO->_is_nil())
         return SALOMEDS::SObject::_nil();
     }
-    int aType = (int)theGroup->GetType();
+    size_t aType = (int)theGroup->GetType();
     const char* aRootNames[] = {
       "Compound Groups", "Groups of Nodes", "Groups of Edges",
       "Groups of Faces", "Groups of Volumes", "Groups of 0D Elements",

@@ -166,7 +166,7 @@ void SMESH_Block::TFace::Set( const int          faceID,
   // pcurves
   vector< int > edgeIdVec;
   GetFaceEdgesIDs( faceID, edgeIdVec );
-  for ( int iE = 0; iE < edgeIdVec.size(); iE++ ) // loop on 4 edges
+  for ( size_t iE = 0; iE < edgeIdVec.size(); iE++ ) // loop on 4 edges
   {
     myCoordInd[ iE ] = GetCoordIndOnEdge( edgeIdVec[ iE ] );
     if ( myC2d[ iE ]) delete myC2d[ iE ];
@@ -2083,7 +2083,7 @@ bool SMESH_Block::LoadFace(const TopoDS_Face& theFace,
   bool isForward[4];
   vector< int > edgeIdVec;
   GetFaceEdgesIDs( theFaceID, edgeIdVec );
-  for ( int iE = 0; iE < edgeIdVec.size(); iE++ ) // loop on 4 edges
+  for ( size_t iE = 0; iE < edgeIdVec.size(); iE++ ) // loop on 4 edges
   {
     if ( edgeIdVec[ iE ] > theShapeIDMap.Extent() )
       return false;

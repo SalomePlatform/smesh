@@ -270,7 +270,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
 
   ElementBndBoxTree::~ElementBndBoxTree()
   {
-    for ( int i = 0; i < _elements.size(); ++i )
+    for ( size_t i = 0; i < _elements.size(); ++i )
       if ( --_elements[i]->_refCount <= 0 )
         delete _elements[i];
   }
@@ -284,7 +284,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
   Bnd_B3d* ElementBndBoxTree::buildRootBox()
   {
     Bnd_B3d* box = new Bnd_B3d;
-    for ( int i = 0; i < _elements.size(); ++i )
+    for ( size_t i = 0; i < _elements.size(); ++i )
       box->Add( *_elements[i] );
     return box;
   }
@@ -297,7 +297,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
 
   void ElementBndBoxTree::buildChildrenData()
   {
-    for ( int i = 0; i < _elements.size(); ++i )
+    for ( size_t i = 0; i < _elements.size(); ++i )
     {
       for (int j = 0; j < 8; j++)
       {
@@ -315,7 +315,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
     for (int j = 0; j < 8; j++)
     {
       ElementBndBoxTree* child = static_cast<ElementBndBoxTree*>( myChildren[j]);
-      if ( child->_elements.size() <= MaxNbElemsInLeaf )
+      if ((int) child->_elements.size() <= MaxNbElemsInLeaf )
         child->myIsLeaf = true;
 
       if ( child->_elements.capacity() - child->_elements.size() > 1000 )
@@ -337,7 +337,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
 
     if ( isLeaf() )
     {
-      for ( int i = 0; i < _elements.size(); ++i )
+      for ( size_t i = 0; i < _elements.size(); ++i )
         if ( !_elements[i]->IsOut( point.XYZ() ))
           foundElems.insert( _elements[i]->_element );
     }
@@ -362,7 +362,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
 
     if ( isLeaf() )
     {
-      for ( int i = 0; i < _elements.size(); ++i )
+      for ( size_t i = 0; i < _elements.size(); ++i )
         if ( !_elements[i]->IsOut( line ))
           foundElems.insert( _elements[i]->_element );
     }
@@ -388,7 +388,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
 
     if ( isLeaf() )
     {
-      for ( int i = 0; i < _elements.size(); ++i )
+      for ( size_t i = 0; i < _elements.size(); ++i )
         if ( !_elements[i]->IsOut( center, radius ))
           foundElems.insert( _elements[i]->_element );
     }
@@ -1325,6 +1325,7 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshElement* elem,
     return GetDistance( dynamic_cast<const SMDS_MeshEdge*>( elem ), point);
   case SMDSAbs_Node:
     return point.Distance( SMESH_TNodeXYZ( elem ));
+  default:;
   }
   return -1;
 }
@@ -1421,6 +1422,7 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshFace* face,
     // cout << distVec.Magnitude()  << " VERTEX " << face->GetNode(pos._index)->GetID() << endl;
     return distVec.Magnitude();
   }
+  default:;
   }
   return badDistance;
 }

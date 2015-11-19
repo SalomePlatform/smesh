@@ -1088,7 +1088,7 @@ namespace SMESH{
       TMeshModifTracer     myMeshModifTracer;
       long                 myFaceID;
       double               myToler;
-      std::set< long >     myCoplanarIDs;
+      TColStd_MapOfInteger myCoplanarIDs;
     };
     typedef boost::shared_ptr<CoplanarFaces> CoplanarFacesPtr;
 

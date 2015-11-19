@@ -1349,6 +1349,8 @@ bool SMESH_Mesh::HasModificationsToDiscard() const
         hasNotComputed = true;
       if ( hasComputed && hasNotComputed)
         return true;
+
+    default:;
     }
   }
   if ( NbNodes() < 1 )

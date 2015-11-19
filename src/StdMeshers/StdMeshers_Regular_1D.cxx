@@ -343,9 +343,9 @@ bool StdMeshers_Regular_1D::CheckHypothesis( SMESH_Mesh&         aMesh,
   return ( aStatus == SMESH_Hypothesis::HYP_OK );
 }
 
-static bool computeParamByFunc(Adaptor3d_Curve& C3d, double first, double last,
-                               double length, bool theReverse,
-                               int nbSeg, Function& func,
+static bool computeParamByFunc(Adaptor3d_Curve& C3d,
+                               double first, double last, double length,
+                               bool theReverse, int nbSeg, Function& func,
                                list<double>& theParams)
 {
   // never do this way
@@ -359,31 +359,23 @@ static bool computeParamByFunc(Adaptor3d_Curve& C3d, double first, double last,
   int nbPnt = 1 + nbSeg;
   vector<double> x(nbPnt, 0.);
 
-  if (!buildDistribution(func, 0.0, 1.0, nbSeg, x, 1E-4))
+  if ( !buildDistribution( func, 0.0, 1.0, nbSeg, x, 1E-4 ))
      return false;
-
-  MESSAGE( "Points:\n" );
-  char buf[1024];
-  for ( int i=0; i<=nbSeg; i++ )
-  {
-    sprintf(  buf, "%f\n", float(x[i] ) );
-    MESSAGE( buf );
-  }
-
-
 
   // apply parameters in range [0,1] to the space of the curve
   double prevU = first;
-  double sign = 1.;
-  if (theReverse)
+  double  sign = 1.;
+  if ( theReverse )
   {
     prevU = last;
-    sign = -1.;
+    sign  = -1.;
   }
-  for( int i = 1; i < nbSeg; i++ )
+
+  for ( int i = 1; i < nbSeg; i++ )
   {
     double curvLength = length * (x[i] - x[i-1]) * sign;
-    GCPnts_AbscissaPoint Discret( C3d, curvLength, prevU );
+    double tol         = Min( Precision::Confusion(), curvLength / 100. );
+    GCPnts_AbscissaPoint Discret( tol, C3d, curvLength, prevU );
     if ( !Discret.IsDone() )
       return false;
     double U = Discret.Parameter();

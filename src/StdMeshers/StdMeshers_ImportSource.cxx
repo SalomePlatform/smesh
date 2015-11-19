@@ -125,14 +125,14 @@ namespace
                                       bool                        loaded=false)
   {
     vector<SMESH_Group*> okGroups;
-    for ( int i = 0; i < groups.size(); ++i )
+    for ( size_t i = 0; i < groups.size(); ++i )
     {
       try
       {
         // we expect SIGSEGV on a dead group
         OCC_CATCH_SIGNALS;
         SMESH_Group* okGroup = 0;
-        map<int, SMESH_Mesh*>::iterator itm = itm = studyContext->mapMesh.begin();
+        map<int, SMESH_Mesh*>::iterator itm = studyContext->mapMesh.begin();
         for ( ; !okGroup && itm != studyContext->mapMesh.end(); itm++)
         {
           SMESH_Mesh::GroupIteratorPtr gIt = itm->second->GetGroups();
@@ -174,7 +174,7 @@ namespace
   {
     int tgtID = resMapKey.second;
     SMESH_Mesh* tgtMesh = 0;
-    map<int, SMESH_Mesh*>::iterator itm = itm = studyContext->mapMesh.begin();
+    map<int, SMESH_Mesh*>::iterator itm = studyContext->mapMesh.begin();
     for ( ; !tgtMesh && itm != studyContext->mapMesh.end(); itm++)
     {
       tgtMesh = (*itm).second;
@@ -250,7 +250,7 @@ std::vector<SMESH_Mesh*> StdMeshers_ImportSource1D::GetSourceMeshes() const
     StudyContextStruct* studyContext = _gen->GetStudyContext(_studyId);
     for ( set<int>::iterator id = meshIDs.begin(); id != meshIDs.end(); ++id )
     {
-      map<int, SMESH_Mesh*>::iterator itm = itm = studyContext->mapMesh.begin();
+      map<int, SMESH_Mesh*>::iterator itm = studyContext->mapMesh.begin();
       for ( ; itm != studyContext->mapMesh.end(); itm++)
       {
         SMESH_Mesh* mesh = (*itm).second;
@@ -394,7 +394,7 @@ void StdMeshers_ImportSource1D::RestoreGroups(const std::vector<SMESH_Group*>& g
   _groups = groups;
 
   _resultGroups.clear();
-  int i = 0;
+  size_t i = 0;
   while ( i < _resultGroupsStorage.size() )
   {
     int key1 = _resultGroupsStorage[i++];

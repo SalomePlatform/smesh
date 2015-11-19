@@ -88,7 +88,7 @@ SMESH::double_array* StdMeshers_NumberOfSegments_i::BuildDistributionExpr( const
     SMESH::double_array_var aRes = new SMESH::double_array();
     const std::vector<double>& res = this->GetImpl()->BuildDistributionExpr( func, nbSeg, conv );
     aRes->length( res.size() );
-    for (int i = 0; i < res.size(); i++)
+    for (size_t i = 0; i < res.size(); i++)
       aRes[i] = res[i];
     return aRes._retn();
   }
@@ -98,23 +98,24 @@ SMESH::double_array* StdMeshers_NumberOfSegments_i::BuildDistributionExpr( const
   }
 }
 
-SMESH::double_array* StdMeshers_NumberOfSegments_i::BuildDistributionTab( const SMESH::double_array& func,
-                                                                          CORBA::Long nbSeg, 
-                                                                          CORBA::Long conv )
+SMESH::double_array*
+StdMeshers_NumberOfSegments_i::BuildDistributionTab( const SMESH::double_array& func,
+                                                     CORBA::Long                nbSeg,
+                                                     CORBA::Long                conv )
   throw ( SALOME::SALOME_Exception )
 {
   ASSERT( myBaseImpl );
 
   std::vector<double> tbl( func.length() );
-  for (int i = 0; i < func.length(); i++)
+  for ( size_t i = 0; i < tbl.size(); i++ )
     tbl[i] = func[i];
 
   try
   {
-    SMESH::double_array_var aRes = new SMESH::double_array();
+    SMESH::double_array_var   aRes = new SMESH::double_array();
     const std::vector<double>& res = this->GetImpl()->BuildDistributionTab( tbl, nbSeg, conv );
     aRes->length( res.size() );
-    for (int i = 0; i < res.size(); i++)
+    for (size_t i = 0; i < res.size(); i++)
       aRes[i] = res[i];
     return aRes._retn();
   }
@@ -251,7 +252,7 @@ SMESH::long_array* StdMeshers_NumberOfSegments_i::GetReversedEdges()
   SMESH::long_array_var anArray = new SMESH::long_array;
   std::vector<int> ids = this->GetImpl()->GetReversedEdges();
   anArray->length( ids.size() );
-  for ( CORBA::Long i = 0; i < ids.size(); i++)
+  for ( size_t i = 0; i < ids.size(); i++)
     anArray [ i ] = ids [ i ];
 
   return anArray._retn();
@@ -348,7 +349,7 @@ void StdMeshers_NumberOfSegments_i::SetTableFunction(const SMESH::double_array& 
 {
   ASSERT( myBaseImpl );
   std::vector<double> tbl( table.length() );
-  for (int i = 0; i < table.length(); i++)
+  for ( CORBA::ULong i = 0; i < table.length(); i++)
     tbl[i] = table[i];
   try {
     this->GetImpl()->SetTableFunction( tbl );
@@ -375,12 +376,11 @@ SMESH::double_array* StdMeshers_NumberOfSegments_i::GetTableFunction()
     tbl = &this->GetImpl()->GetTableFunction();
   }
   catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-                                  SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(), SALOME::BAD_PARAM );
   }
   SMESH::double_array_var aRes = new SMESH::double_array();
   aRes->length(tbl->size());
-  for (int i = 0; i < tbl->size(); i++)
+  for ( size_t i = 0; i < tbl->size(); i++ )
     aRes[i] = (*tbl)[i];
   return aRes._retn();
 }

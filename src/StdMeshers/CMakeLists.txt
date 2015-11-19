@@ -62,6 +62,7 @@ SET(_link_LIBRARIES
   ${CAS_TKAdvTools}
   ${CAS_TKTopAlgo}
   ${CAS_TKG3d}
+  ${CAS_TKOffset}
   ${GEOM_GEOMUtils}
   SMESHimpl
   SMESHDS

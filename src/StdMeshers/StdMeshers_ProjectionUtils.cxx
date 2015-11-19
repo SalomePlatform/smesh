@@ -79,23 +79,9 @@ using namespace std;
 #define RETURN_BAD_RESULT(msg) { MESSAGE(")-: Error: " << msg); return false; }
 #define CONT_BAD_RESULT(msg) { MESSAGE(")-: Error: " << msg); continue; }
 #define SHOW_SHAPE(v,msg) \
-// { \
-//  if ( (v).IsNull() ) cout << msg << " NULL SHAPE" << endl; \
-// else if ((v).ShapeType() == TopAbs_VERTEX) {\
-//   gp_Pnt p = BRep_Tool::Pnt( TopoDS::Vertex( (v) ));\
-//   cout<<msg<<" "<<shapeIndex((v))<<" ( "<<p.X()<<", "<<p.Y()<<", "<<p.Z()<<" )"<<endl;} \
-// else {\
-//   cout << msg << " "; TopAbs::Print((v).ShapeType(),cout) <<" "<<shapeIndex((v))<<endl;}\
-// }
+  // { show_shape((v),(msg)); }
 #define SHOW_LIST(msg,l) \
-// { \
-//     cout << msg << " ";\
-//     list< TopoDS_Edge >::const_iterator e = l.begin();\
-//     for ( int i = 0; e != l.end(); ++e, ++i ) {\
-//       cout << i << "V (" << TopExp::FirstVertex( *e, true ).TShape().operator->() << ") "\
-//            << i << "E (" << e->TShape().operator->() << "); "; }\
-//     cout << endl;\
-//   }
+  // { show_list((msg),(l)); }
 
 namespace HERE = StdMeshers_ProjectionUtils;
 
@@ -108,7 +94,24 @@ namespace {
       return max(theMeshDS[0]->ShapeToIndex(S), theMeshDS[1]->ShapeToIndex(S) );
     return long(S.TShape().operator->());
   }
-
+  void show_shape( TopoDS_Shape v, const char* msg ) // debug
+  {
+    if ( v.IsNull() ) cout << msg << " NULL SHAPE" << endl;
+    else if (v.ShapeType() == TopAbs_VERTEX) {
+      gp_Pnt p = BRep_Tool::Pnt( TopoDS::Vertex( v ));
+      cout<<msg<<" "<<shapeIndex((v))<<" ( "<<p.X()<<", "<<p.Y()<<", "<<p.Z()<<" )"<<endl;}
+    else {
+      cout << msg << " "; TopAbs::Print((v).ShapeType(),cout) <<" "<<shapeIndex((v))<<endl;}
+  }
+  void show_list( const char* msg, const list< TopoDS_Edge >& l ) // debug
+  {
+    cout << msg << " ";
+    list< TopoDS_Edge >::const_iterator e = l.begin();
+    for ( int i = 0; e != l.end(); ++e, ++i ) {
+      cout << i << "V (" << TopExp::FirstVertex( *e, true ).TShape().operator->() << ") "
+           << i << "E (" << e->TShape().operator->() << "); "; }
+    cout << endl;
+  }
   //================================================================================
   /*!
    * \brief Write shape for debug purposes
@@ -2180,7 +2183,7 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
           static_cast<const SMDS_EdgePosition*>(node->GetPosition());
         pos2nodes.insert( make_pair( pos->GetUParameter(), node ));
       }
-      if ( pos2nodes.size() != edgeSM->NbNodes() )
+      if ((int) pos2nodes.size() != edgeSM->NbNodes() )
         RETURN_BAD_RESULT("Equal params of nodes on edge "
                           << smDS->ShapeToIndex( edge ) << " of face " << is2 );
     }

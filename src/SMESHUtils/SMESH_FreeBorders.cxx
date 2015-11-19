@@ -344,19 +344,6 @@ namespace
 
 } // namespace
 
-// struct needed for NCollection_Map
-struct TLinkHasher
-{
-  static int HashCode(const SMESH_TLink& link, int aLimit)
-  {
-    return ::HashCode( link.node1()->GetID() + link.node2()->GetID(), aLimit );
-  }
-  static Standard_Boolean IsEqual(const SMESH_TLink& l1, const SMESH_TLink& l2)
-  {
-    return ( l1.node1() == l2.node1() && l1.node2() == l2.node2() );
-  }
-};
-
 //================================================================================
 /*
  * Returns groups of TFreeBorder's coincident within the given tolerance.
@@ -370,7 +357,7 @@ void SMESH_MeshAlgos::FindCoincidentFreeBorders(SMDS_Mesh&              mesh,
                                                 CoincidentFreeBorders & foundFreeBordes)
 {
   // find free links
-  typedef NCollection_DataMap<SMESH_TLink, const SMDS_MeshElement*, TLinkHasher > TLink2FaceMap;
+  typedef NCollection_DataMap<SMESH_TLink, const SMDS_MeshElement*, SMESH_TLink > TLink2FaceMap;
   TLink2FaceMap linkMap;
   int nbSharedLinks = 0;
   SMDS_FaceIteratorPtr faceIt = mesh.facesIterator();

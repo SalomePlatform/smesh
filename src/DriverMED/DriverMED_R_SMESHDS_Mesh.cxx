@@ -500,7 +500,8 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
             default:;
             }
             vector<TInt> aNodeIds(aNbNodes);
-            for(int iElem = 0; iElem < aNbElems; iElem++){
+            for ( int iElem = 0; iElem < aNbElems; iElem++ )
+            {
               bool anIsValidConnect = false;
               TCConnSlice aConnSlice = aCellInfo->GetConnSlice(iElem);
 #ifndef _DEXCEPT_
@@ -950,17 +951,19 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
                   }
                   break;
 
+                default:;
+
                 } // switch(aGeom)
 
 #ifndef _DEXCEPT_
-              }catch(const std::exception& exc){
+              } catch(const std::exception& exc) {
                 INFOS("The following exception was caught:\n\t"<<exc.what());
                 aResult = DRS_FAIL;
-              }catch(...){
+              } catch(...) {
                 INFOS("Unknown exception was caught !!!");
                 aResult = DRS_FAIL;
               }
-#endif          
+#endif
               if (!anElement) {
                 aResult = DRS_WARN_SKIP_ELEM;
               }
@@ -977,11 +980,13 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
                   myFamilies[aFamNum]->SetType(anElement->GetType());
                 }
               }
-            }
-          }}
-        }
-      }
+            } // loop on aNbElems
+          }} // switch(aGeom)
+        } // loop on aGeom2Size
+      } // loop on aEntityInfo
+
       if (aDescendingEntitiesMap.Extent()) isDescConn = true; // Mantis issue 0020483
+
     } // for(int iMesh = 0; iMesh < aNbMeshes; iMesh++)
 #ifndef _DEXCEPT_
   }

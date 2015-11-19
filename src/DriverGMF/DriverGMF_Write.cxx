@@ -296,19 +296,19 @@ Driver_Mesh::Status DriverGMF_Write::Perform()
       SMDSAbs_EntityType smdsEntity;
       std::string entity = groupName.substr( pos + strlen("_required_"));
       if      ( entity == "Vertices" ) {
-        gmfKwd   = GmfRequiredVertices;
+        gmfKwd     = GmfRequiredVertices;
         smdsEntity = SMDSEntity_Node;
       }
       else if ( entity == "Edges" ) {
-        gmfKwd   = GmfRequiredEdges;
+        gmfKwd     = GmfRequiredEdges;
         smdsEntity = SMDSEntity_Edge;
       }
       else if ( entity == "Triangles" ) {
-        gmfKwd   = GmfRequiredTriangles;
+        gmfKwd     = GmfRequiredTriangles;
         smdsEntity = SMDSEntity_Triangle;
       }
       else if ( entity == "Quadrilaterals" ) {
-        gmfKwd   = GmfRequiredQuadrilaterals;
+        gmfKwd     = GmfRequiredQuadrilaterals;
         smdsEntity = SMDSEntity_Quadrangle;
       }
       else {
@@ -330,11 +330,11 @@ Driver_Mesh::Status DriverGMF_Write::Perform()
 
       // choose a TElem2IDMap
       TElem2IDMap* elem2IDMap = 0;
-      if ( smdsEntity == SMDSEntity_Quadrangle && nbOkElems != myMesh->NbFaces() )
+      if ( smdsEntity == SMDSEntity_Quadrangle    && nbOkElems != myMesh->NbFaces() )
         elem2IDMap = & quad2IDMap;
       else if ( smdsEntity == SMDSEntity_Triangle && nbOkElems != myMesh->NbFaces() )
         elem2IDMap = & tria2IDMap;
-      else if ( smdsEntity == SMDSEntity_Edge && nbOkElems != myMesh->NbEdges() )
+      else if ( smdsEntity == SMDSEntity_Edge     && nbOkElems != myMesh->NbEdges() )
         elem2IDMap = & edge2IDMap;
 
       // write the group

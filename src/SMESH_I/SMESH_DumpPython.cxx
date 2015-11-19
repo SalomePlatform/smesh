@@ -98,7 +98,7 @@ namespace SMESH
       myStream << "[ ";
       for ( size_t i = 1; i <= theVarValue.myVals.size(); ++i )
       {
-        if ( myVarsCounter < varIDs.size() && varIDs[ myVarsCounter ] >= 0 )
+        if ( myVarsCounter < (int)varIDs.size() && varIDs[ myVarsCounter ] >= 0 )
           myStream << TVar::Quote() << varIDs[ myVarsCounter ] << TVar::Quote();
         else
           myStream << theVarValue.myVals[i-1];
@@ -110,7 +110,7 @@ namespace SMESH
     }
     else
     {
-      if ( myVarsCounter < varIDs.size() && varIDs[ myVarsCounter ] >= 0 )
+      if ( myVarsCounter < (int)varIDs.size() && varIDs[ myVarsCounter ] >= 0 )
         myStream << TVar::Quote() << varIDs[ myVarsCounter ] << TVar::Quote();
       else
         myStream << theVarValue.myVals[0];
@@ -247,7 +247,7 @@ namespace SMESH
     else
     {
       theStream << "[ ";
-      for (int i = 1; i <= theArray.length(); i++) {
+      for (CORBA::ULong i = 1; i <= theArray.length(); i++) {
         theStream << theArray[i-1];
         if ( i < theArray.length() )
           theStream << ", ";
@@ -281,7 +281,7 @@ namespace SMESH
   TPythonDump::operator<<(const SMESH::string_array& theArray)
   {
     myStream << "[ ";
-    for (int i = 1; i <= theArray.length(); i++) {
+    for ( CORBA::ULong i = 1; i <= theArray.length(); i++ ) {
       myStream << "'" << theArray[i-1] << "'";
       if ( i < theArray.length() )
         myStream << ", ";
@@ -564,7 +564,7 @@ namespace SMESH
       for ( CORBA::ULong iP = 0; iP < aGRP.length(); ++iP )
       {
         const SMESH::FreeBorderPart& aPART = aGRP[ iP ];
-        if ( 0 <= aPART.border && aPART.border < theCFB.borders.length() )
+        if ( 0 <= aPART.border && aPART.border < (CORBA::Long)theCFB.borders.length() )
         {
           if ( iP ) myStream << ", ";
           const SMESH::FreeBorder& aBRD = theCFB.borders[ aPART.border ];

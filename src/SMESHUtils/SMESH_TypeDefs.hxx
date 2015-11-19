@@ -80,8 +80,11 @@ namespace SMESHUtils
   struct Deleter
   {
     TOBJ* _obj;
-    Deleter( TOBJ* obj = (TOBJ*)NULL ): _obj( obj ) {}
+    explicit Deleter( TOBJ* obj = (TOBJ*)NULL ): _obj( obj ) {}
     ~Deleter() { delete _obj; _obj = 0; }
+    TOBJ& operator*()  const { return *_obj; }
+    TOBJ* operator->() const { return _obj; }
+    operator bool()    const { return _obj; }
   private:
     Deleter( const Deleter& );
   };
@@ -113,6 +116,16 @@ struct SMESH_TLink: public NLink
   { if ( first->GetID() < second->GetID() ) std::swap( first, second ); }
   const SMDS_MeshNode* node1() const { return first; }
   const SMDS_MeshNode* node2() const { return second; }
+
+  // methods for usage of SMESH_TLink as a hasher in NCollection maps
+  static int HashCode(const SMESH_TLink& link, int aLimit)
+  {
+    return ::HashCode( link.node1()->GetID() + link.node2()->GetID(), aLimit );
+  }
+  static Standard_Boolean IsEqual(const SMESH_TLink& l1, const SMESH_TLink& l2)
+  {
+    return ( l1.node1() == l2.node1() && l1.node2() == l2.node2() );
+  }
 };
 
 //=======================================================================

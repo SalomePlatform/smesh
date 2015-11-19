@@ -1268,7 +1268,7 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
           SMESH::ListOfGroups_var groups = aMesh->GetGroups();
           myInfo->append( "" ); // separator
           bool top_created = false;
-          for ( int i = 0; i < groups->length(); i++ ) {
+          for ( CORBA::ULong i = 0; i < groups->length(); i++ ) {
             SMESH::SMESH_GroupBase_var aGrp = groups[i];
             if ( CORBA::is_nil( aGrp ) ) continue;
             QString aName = aGrp->GetName();
@@ -1528,7 +1528,7 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
           SMESH::ListOfGroups_var  groups = aMesh->GetGroups();
           myInfo->append( "" ); // separator
           bool top_created = false;
-          for ( int i = 0; i < groups->length(); i++ ) {
+          for ( CORBA::ULong i = 0; i < groups->length(); i++ ) {
             SMESH::SMESH_GroupBase_var aGrp = groups[i];
             if ( CORBA::is_nil( aGrp ) ) continue;
             QString aName = aGrp->GetName();
@@ -1788,7 +1788,7 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
         if ( !CORBA::is_nil( aMesh ) ) {
           SMESH::ListOfGroups_var groups = aMesh->GetGroups();
           QTreeWidgetItem* groupsItem = 0;
-          for ( int i = 0; i < groups->length(); i++ ) {
+          for ( CORBA::ULong i = 0; i < groups->length(); i++ ) {
             SMESH::SMESH_GroupBase_var aGrp = groups[i];
             if ( CORBA::is_nil( aGrp ) ) continue;
             QString aName = aGrp->GetName();
@@ -2086,7 +2086,7 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
         if ( !CORBA::is_nil( aMesh ) ) {
           SMESH::ListOfGroups_var  groups = aMesh->GetGroups();
           QTreeWidgetItem* groupsItem = 0;
-          for ( int i = 0; i < groups->length(); i++ ) {
+          for ( CORBA::ULong i = 0; i < groups->length(); i++ ) {
             SMESH::SMESH_GroupBase_var aGrp = groups[i];
             if ( CORBA::is_nil( aGrp ) ) continue;
             QString aName = aGrp->GetName();
@@ -2643,7 +2643,7 @@ void SMESHGUI_AddInfo::showGroups()
       itemGroups->setData( 0, Qt::UserRole, GROUPS_ID );
 
       // total number of groups > 10, show extra widgets for info browsing
-      if ( myGroups->length() > MAXITEMS ) {
+      if ((int) myGroups->length() > MAXITEMS ) {
         ExtraWidget* extra = new ExtraWidget( this, true );
         connect( extra->prev, SIGNAL( clicked() ), this, SLOT( showPreviousGroups() ) );
         connect( extra->next, SIGNAL( clicked() ), this, SLOT( showNextGroups() ) );
@@ -2704,7 +2704,7 @@ void SMESHGUI_AddInfo::showSubMeshes()
       itemSubMeshes->setData( 0, Qt::UserRole, SUBMESHES_ID );
 
       // total number of sub-meshes > 10, show extra widgets for info browsing
-      if ( mySubMeshes->length() > MAXITEMS ) {
+      if ((int) mySubMeshes->length() > MAXITEMS ) {
         ExtraWidget* extra = new ExtraWidget( this, true );
         connect( extra->prev, SIGNAL( clicked() ), this, SLOT( showPreviousSubMeshes() ) );
         connect( extra->next, SIGNAL( clicked() ), this, SLOT( showNextSubMeshes() ) );

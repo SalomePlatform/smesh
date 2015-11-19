@@ -10,7 +10,7 @@ or edit mesh groups, remove elements from the mesh object, control
 mesh quality by different parameters, etc.
 
 Several filtering criteria can be combined together by using logical
-operators \a AND and \a OR. In addition, applied filter criterion can
+operators \a AND and \a OR. In addition, a filtering criterion can
 be reverted using logical operator \a NOT.
 
 Mesh filters can use the functionality of mesh quality controls to filter
@@ -416,9 +416,9 @@ entity type.
 
 \tui_script{filters_ex35.py}
 
-\section combining_filters How to combine filters with Criterion structures?
+\section combining_filters How to combine several criteria into a filter?
 
-Filters can be combined by making use of "criteria".
+Several criteria can be combined into a filter.
 
 Example :
 

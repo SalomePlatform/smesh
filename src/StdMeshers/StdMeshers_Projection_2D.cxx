@@ -423,15 +423,13 @@ namespace {
                   TAssocTool::TNodeNodeMap&          src2tgtNodes,
                   bool&                              is1DComputed)
   {
-    SMESHDS_Mesh* tgtMeshDS = tgtMesh->GetMeshDS();
-    SMESHDS_Mesh* srcMeshDS = srcMesh->GetMeshDS();
-
     src2tgtNodes.clear();
 
     // get ordered src EDGEs
     TError err;
     srcWires = StdMeshers_FaceSide::GetFaceWires( srcFace, *srcMesh,/*skipMediumNodes=*/0, err);
-    if ( err && !err->IsOK() || srcWires.empty() )
+    if (( err && !err->IsOK() ) ||
+        ( srcWires.empty() ))
       return err;
 
     SMESH_MesherHelper srcHelper( *srcMesh );
@@ -591,7 +589,7 @@ namespace {
         const double minSegLen = srcWires[iW]->Length() / totNbSeg;
         for ( int iE = 0; iE < srcWires[iW]->NbEdges(); ++iE )
         {
-          int nbSeg    = Max( 1, int( srcWires[iW]->EdgeLength( iE ) / minSegLen ));
+          size_t nbSeg = Max( 1, int( srcWires[iW]->EdgeLength( iE ) / minSegLen ));
           double srcU  = srcWires[iW]->FirstParameter( iE );
           double tgtU  = tgtWires[iW]->FirstParameter( iE );
           double srcDu = ( srcWires[iW]->LastParameter( iE )- srcU ) / nbSeg;
@@ -830,7 +828,7 @@ namespace {
           const double minSegLen = srcWires[iW]->Length() / totNbSeg;
           for ( int iE = 0; iE < srcWires[iW]->NbEdges(); ++iE )
           {
-            int nbSeg    = Max( 1, int( srcWires[iW]->EdgeLength( iE ) / minSegLen ));
+            size_t nbSeg = Max( 1, int( srcWires[iW]->EdgeLength( iE ) / minSegLen ));
             double srcU  = srcWires[iW]->FirstParameter( iE );
             double tgtU  = tgtWires[iW]->FirstParameter( iE );
             double srcDu = ( srcWires[iW]->LastParameter( iE )- srcU ) / nbSeg;
@@ -920,6 +918,7 @@ namespace {
             tgtMeshDS->SetNodeOnVertex( n, TopoDS::Vertex( tgtV ));
             break;
           }
+          default:;
           }
           srcN_tgtN->second = n;
         }
@@ -952,7 +951,7 @@ namespace {
   {
     SMESH_Mesh * tgtMesh = tgtWires[0]->GetMesh();
     SMESH_Mesh * srcMesh = srcWires[0]->GetMesh();
-    SMESHDS_Mesh * tgtMeshDS = tgtMesh->GetMeshDS();
+    //SMESHDS_Mesh * tgtMeshDS = tgtMesh->GetMeshDS();
     SMESHDS_Mesh * srcMeshDS = srcMesh->GetMeshDS();
 
     if ( srcWires[0]->NbEdges() != 4 )

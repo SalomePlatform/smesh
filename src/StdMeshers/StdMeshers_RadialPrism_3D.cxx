@@ -598,7 +598,6 @@ bool StdMeshers_RadialPrism_3D::Evaluate(SMESH_Mesh& aMesh,
 
 bool StdMeshers_RadialPrism_3D::IsApplicable( const TopoDS_Shape & aShape, bool toCheckAll )
 {
-  bool isCurShellApp;
   int nbFoundSolids = 0;
   for (TopExp_Explorer exp( aShape, TopAbs_SOLID ); exp.More(); exp.Next(), ++nbFoundSolids )
   {
