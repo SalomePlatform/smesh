@@ -1433,9 +1433,35 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshFace* face,
  */
 //=======================================================================
 
-double SMESH_MeshAlgos::GetDistance( const SMDS_MeshEdge* edge, const gp_Pnt& point )
+double SMESH_MeshAlgos::GetDistance( const SMDS_MeshEdge* seg, const gp_Pnt& point )
 {
-  throw SALOME_Exception(LOCALIZED("not implemented so far"));
+  double dist = Precision::Infinite();
+  if ( !seg ) return dist;
+
+  int i = 0, nbNodes = seg->NbNodes();
+
+  vector< SMESH_TNodeXYZ > xyz( nbNodes );
+  SMDS_ElemIteratorPtr nodeIt = seg->interlacedNodesElemIterator();
+  while ( nodeIt->more() )
+    xyz[ i++ ].Set( nodeIt->next() );
+
+  for ( i = 1; i < nbNodes; ++i )
+  {
+    gp_Vec edge( xyz[i-1], xyz[i] );
+    gp_Vec n1p ( xyz[i-1], point  );
+    double u = ( edge * n1p ) / edge.SquareMagnitude(); // param [0,1] on the edge
+    if ( u <= 0. ) {
+      dist = Min( dist, n1p.SquareMagnitude() );
+    }
+    else if ( u >= 1. ) {
+      dist = Min( dist, point.SquareDistance( xyz[i] ));
+    }
+    else {
+      gp_XYZ proj = ( 1. - u ) * xyz[i-1] + u * xyz[i]; // projection of the point on the edge
+      dist = Min( dist, point.SquareDistance( proj ));
+    }
+  }
+  return Sqrt( dist );
 }
 
 //=======================================================================

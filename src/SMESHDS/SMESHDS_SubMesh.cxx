@@ -89,7 +89,7 @@ void SMESHDS_SubMesh::AddElement(const SMDS_MeshElement * ME)
         MESSAGE("add element in subshape already belonging to that subshape "
                 << ME->GetID() << " " << oldShapeId << " " << idInSubShape);
         // check if ok: do nothing if ok
-        if (idInSubShape >= myElements.size())
+        if (idInSubShape >= (int)myElements.size())
         {
           throw SALOME_Exception(LOCALIZED("out of bounds"));
         }
@@ -128,7 +128,7 @@ bool SMESHDS_SubMesh::RemoveElement(const SMDS_MeshElement * ME, bool isElemDele
     SMDS_MeshElement* elem = (SMDS_MeshElement*) (ME);
     elem->setShapeId(0);
     elem->setIdInShape(-1);
-    if ((idInSubShape >= 0) && (idInSubShape < myElements.size()))
+    if ((idInSubShape >= 0) && (idInSubShape < (int) myElements.size()))
     {
       myElements[idInSubShape] = 0; // this vector entry is no more used
       if ( ++myUnusedIdElements == (int) myElements.size() )
@@ -160,7 +160,7 @@ void SMESHDS_SubMesh::AddNode(const SMDS_MeshNode * N)
       if ( shapeId != myIndex )
         throw SALOME_Exception
           (LOCALIZED("a node being in sub-mesh is added to another sub-mesh"));
-      if ( idInSubShape >= myNodes.size() || myNodes[ idInSubShape ] != N )
+      if ( idInSubShape >= (int)myNodes.size() || myNodes[ idInSubShape ] != N )
         throw SALOME_Exception
           (LOCALIZED("a node with wrong idInSubShape is re-added to the same sub-mesh"));
       return; // already in
@@ -187,7 +187,7 @@ bool SMESHDS_SubMesh::RemoveNode(const SMDS_MeshNode * N, bool isNodeDeleted)
     SMDS_MeshNode* node = (SMDS_MeshNode*) (N);
     node->setShapeId(0);
     node->setIdInShape(-1);
-    if ((idInSubShape >= 0) && (idInSubShape < myNodes.size()))
+    if ((idInSubShape >= 0) && (idInSubShape < (int) myNodes.size()))
     {
       myNodes[idInSubShape] = 0; // this vector entry is no more used
       if ( ++myUnusedIdNodes == (int) myNodes.size() )
@@ -284,7 +284,7 @@ template<typename VALUE> class MyIterator : public SMDS_Iterator<VALUE>
 {
  public:
   MyIterator (const set<const SMESHDS_SubMesh*>& theSubMeshes)
-    : mySubIt( theSubMeshes.begin() ), mySubEnd( theSubMeshes.end() ), myMore(false)
+    : myMore(false), mySubIt( theSubMeshes.begin() ), mySubEnd( theSubMeshes.end() )
     {}
   bool more()
   {
@@ -388,14 +388,14 @@ bool SMESHDS_SubMesh::Contains(const SMDS_MeshElement * ME) const
   if (ME->GetType() == SMDSAbs_Node)
   {
     int idInShape = ME->getIdInShape();
-    if ((idInShape >= 0) && (idInShape < myNodes.size()))
+    if ((idInShape >= 0) && (idInShape < (int) myNodes.size()))
       if (myNodes[idInShape] == ME)
         return true;
   }
   else
   {
     int idInShape = ME->getIdInShape();
-    if ((idInShape >= 0) && (idInShape < myElements.size()))
+    if ((idInShape >= 0) && (idInShape < (int) myElements.size()))
       if (myElements[idInShape] == ME)
         return true;
   }
@@ -538,4 +538,24 @@ void SMESHDS_SubMesh::compactList()
     myNodes.swap(newNodes);
     myUnusedIdNodes = 0;
   }
+}
+
+//=======================================================================
+//function : GetElement
+//purpose  : Return an element by its IdInShape
+//=======================================================================
+
+const SMDS_MeshElement* SMESHDS_SubMesh::GetElement( size_t idInShape ) const
+{
+  return ( !IsComplexSubmesh() && idInShape < myElements.size() ) ? myElements[idInShape] : 0;
+}
+
+//=======================================================================
+//function : GetElement
+//purpose  : Return a node by its IdInShape
+//=======================================================================
+
+const SMDS_MeshNode* SMESHDS_SubMesh::GetNode( size_t idInShape ) const
+{
+  return ( !IsComplexSubmesh() && idInShape < myNodes.size() ) ? myNodes[idInShape] : 0;
 }

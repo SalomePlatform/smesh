@@ -81,6 +81,7 @@ class SMESH_EXPORT SMESH_subMesh
 
   const std::map < int, SMESH_subMesh * >& DependsOn();
   bool DependsOn( const SMESH_subMesh* other ) const;
+  bool DependsOn( const int shapeID ) const;
   /*!
    * \brief Return iterator on the sub-meshes this one depends on. By default
    *        most simple sub-meshes go first.

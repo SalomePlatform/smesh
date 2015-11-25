@@ -525,7 +525,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     const SMDS_MeshInfo& nbElemInfo = myMesh->GetMeshInfo();
 
     // poly elements are not supported by med-2.1
-    bool polyTypesSupported = myMed->CrPolygoneInfo(aMeshInfo,eMAILLE,ePOLYGONE,0,0);
+    bool polyTypesSupported = ( myMed->CrPolygoneInfo(aMeshInfo,eMAILLE,ePOLYGONE,0,0).get() != 0 );
     TInt nbPolygonNodes = 0, nbPolyhedronNodes = 0, nbPolyhedronFaces = 0;
 
     // nodes on VERTEXes where 0D elements are absent

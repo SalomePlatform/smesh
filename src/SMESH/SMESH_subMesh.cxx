@@ -457,13 +457,16 @@ const map < int, SMESH_subMesh * >& SMESH_subMesh::DependsOn()
 
 namespace
 {
-  int dependsOnMapKey( const SMESH_subMesh* sm )
+  int dependsOnMapKey( TopAbs_ShapeEnum type, int shapeID )
   {
-    int type = sm->GetSubShape().ShapeType();
-    int ordType = 9 - type;               // 2 = Vertex, 8 = CompSolid
-    int cle = sm->GetId();
+    int ordType = 9 - int(type);               // 2 = Vertex, 8 = CompSolid
+    int     cle = shapeID;
     cle += 10000000 * ordType;    // sort map by ordType then index
     return cle;
+  }
+  int dependsOnMapKey( const SMESH_subMesh* sm )
+  {
+    return dependsOnMapKey( sm->GetSubShape().ShapeType(), sm->GetId() );
   }
 }
 
@@ -501,6 +504,17 @@ void SMESH_subMesh::insertDependence(const TopoDS_Shape aShape,
 bool SMESH_subMesh::DependsOn( const SMESH_subMesh* other ) const
 {
   return other ? _mapDepend.count( dependsOnMapKey( other )) : false;
+}
+
+//================================================================================
+/*!
+ * \brief Return \c true if \a this sub-mesh depends on a \a shape
+ */
+//================================================================================
+
+bool SMESH_subMesh::DependsOn( const int shapeID ) const
+{
+  return DependsOn( _father->GetSubMeshContaining( shapeID ));
 }
 
 //=============================================================================
