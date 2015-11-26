@@ -569,7 +569,11 @@ QFrame* SMESHGUI_ComputeDlg::createMainFrame (QWidget* theParent, bool ForEval)
   myTable->hideColumn( COL_PUBLISHED );
   myTable->hideColumn( COL_SHAPEID );
   myTable->hideColumn( COL_BAD_MESH );
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
   myTable->horizontalHeader()->setResizeMode( COL_ERROR, QHeaderView::Interactive );
+#else
+  myTable->horizontalHeader()->setSectionResizeMode( COL_ERROR, QHeaderView::Interactive );
+#endif
   myTable->setWordWrap( true );
   myTable->horizontalHeader()->setStretchLastSection( true );
   myTable->setMinimumWidth( 500 );
@@ -1710,7 +1714,7 @@ void SMESHGUI_PrecomputeOp::initDialog()
   myOrderMgr = new SMESHGUI_MeshOrderMgr( myDlg->getMeshOrderBox() );
   myOrderMgr->SetMesh( myMesh );
   bool isOrder = myOrderMgr->GetMeshOrder(myPrevOrder);
-  myDlg->getMeshOrderBox()->setShown(isOrder);
+  myDlg->getMeshOrderBox()->setVisible(isOrder);
   if ( !isOrder ) {
     delete myOrderMgr;
     myOrderMgr = 0;

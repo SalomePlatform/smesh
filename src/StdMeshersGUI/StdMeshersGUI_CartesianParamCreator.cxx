@@ -319,10 +319,10 @@ namespace StdMeshersGUI
 
   void GridAxisTab::onMode(int isSpacing)
   {
-    mySpacingTreeWdg->setShown( isSpacing );
-    myCoordList->setShown( !isSpacing );
-    myStepSpin->setShown( !isSpacing );
-    myStepLabel->setShown( !isSpacing );
+    mySpacingTreeWdg->setVisible( isSpacing );
+    myCoordList->setVisible( !isSpacing );
+    myStepSpin->setVisible( !isSpacing );
+    myStepLabel->setVisible( !isSpacing );
     if ( isSpacing )
     {
       if ( mySpacingTreeWdg->topLevelItemCount() == 0 )

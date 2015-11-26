@@ -18,7 +18,7 @@
 #
 
 IF(SALOME_BUILD_GUI)
-  INCLUDE(UsePyQt4)
+  INCLUDE(UsePyQt)
 ENDIF(SALOME_BUILD_GUI)
 
 # --- options ---
@@ -69,7 +69,7 @@ IF(SALOME_BUILD_GUI)
   )
 
   # scripts / pyuic wrappings
-  PYQT4_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_files})
+  PYQT_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_files})
 
 ENDIF(SALOME_BUILD_GUI)
 

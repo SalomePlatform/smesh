@@ -1650,7 +1650,11 @@ SMESHGUI_TreeElemInfo::SMESHGUI_TreeElemInfo( QWidget* parent )
   myInfo->setColumnCount( 2 );
   myInfo->setHeaderLabels( QStringList() << tr( "PROPERTY" ) << tr( "VALUE" ) );
   myInfo->header()->setStretchLastSection( true );
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
   myInfo->header()->setResizeMode( 0, QHeaderView::ResizeToContents );
+#else
+  myInfo->header()->setSectionResizeMode( 0, QHeaderView::ResizeToContents );
+#endif
   myInfo->setItemDelegate( new ItemDelegate( myInfo ) );
   QVBoxLayout* l = new QVBoxLayout( frame() );
   l->setMargin( 0 );
@@ -2342,7 +2346,11 @@ SMESHGUI_AddInfo::SMESHGUI_AddInfo( QWidget* parent )
 {
   setColumnCount( 2 );
   header()->setStretchLastSection( true );
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
   header()->setResizeMode( 0, QHeaderView::ResizeToContents );
+#else
+  header()->setSectionResizeMode( 0, QHeaderView::ResizeToContents );
+#endif
   header()->hide();
 }
 
@@ -3147,7 +3155,7 @@ void SMESHGUI_MeshInfoDlg::dump()
 
   DumpFileDlg fd( this );
   fd.setWindowTitle( tr( "SAVE_INFO" ) );
-  fd.setFilters( aFilters );
+  fd.setNameFilters( aFilters );
   fd.myBaseChk->setChecked( anIsBase );
   fd.myElemChk->setChecked( anIsElem );
   fd.myAddChk ->setChecked( anIsAdd );
@@ -3858,7 +3866,7 @@ void SMESHGUI_CtrlInfoDlg::dump()
 
   DumpFileDlg fd( this );
   fd.setWindowTitle( tr( "SAVE_INFO" ) );
-  fd.setFilters( aFilters );
+  fd.setNameFilters( aFilters );
   fd.myBaseChk->hide();
   fd.myElemChk->hide();
   fd.myAddChk ->hide();
