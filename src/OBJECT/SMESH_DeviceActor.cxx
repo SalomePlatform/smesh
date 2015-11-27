@@ -363,7 +363,7 @@ SMESH_DeviceActor
                     SMESH_ScalarBarActor* theScalarBarActor,
                     vtkLookupTable* theLookupTable)
 {
-  bool anIsInitialized = theFunctor;
+  bool anIsInitialized = theFunctor != NULL;
   myExtractUnstructuredGrid->ClearRegisteredCells();
   myExtractUnstructuredGrid->ClearRegisteredCellsWithType();
   myExtractUnstructuredGrid->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::ePassAll);
