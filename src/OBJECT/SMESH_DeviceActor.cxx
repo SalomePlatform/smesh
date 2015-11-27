@@ -297,7 +297,7 @@ SMESH_DeviceActor
                  SMESH_ScalarBarActor* theScalarBarActor,
                  vtkLookupTable* theLookupTable)
 {
-  bool anIsInitialized = theFunctor;
+  bool anIsInitialized = theFunctor != NULL;
   if(anIsInitialized){
     vtkUnstructuredGrid* aDataSet = vtkUnstructuredGrid::New();
 
