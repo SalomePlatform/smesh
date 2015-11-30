@@ -1951,7 +1951,7 @@ SalomeApp_Module( "SMESH" )
     nbSeg = aResourceMgr->integerValue( "SMESH", "nb_segments_per_edge", 15 );
     myComponentSMESH->SetDefaultNbSegments( nbSeg );
 
-    const char* options[] = { "historical_python_dump", "forget_mesh_on_hyp_modif" };
+    const char* options[] = { "historical_python_dump", "forget_mesh_on_hyp_modif", "default_grp_color" };
     for ( size_t i = 0; i < sizeof(options)/sizeof(char*); ++i )
       if ( aResourceMgr->hasValue( "SMESH", options[i] ))
       {
@@ -5376,7 +5376,7 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
       int nbSeg = aResourceMgr->integerValue( "SMESH", "nb_segments_per_edge", 15 );
       myComponentSMESH->SetDefaultNbSegments( nbSeg );
     }
-    else if ( name == "historical_python_dump" || name == "forget_mesh_on_hyp_modif")
+    else if ( name == "historical_python_dump" || name == "forget_mesh_on_hyp_modif" || name == "default_grp_color" )
     {
       QString val = aResourceMgr->stringValue( "SMESH", name );
       myComponentSMESH->SetOption( name.toLatin1().constData(), val.toLatin1().constData() );

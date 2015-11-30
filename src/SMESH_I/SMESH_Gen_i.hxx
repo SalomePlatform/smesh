@@ -679,6 +679,9 @@ private:
   SALOMEDS::Study_var       myCurrentStudy;     // Current study
   CORBA::Boolean            myIsEmbeddedMode;   // Current mode
 
+  // Default color of groups
+  std::string myDefaultGroupColor;
+
   // To load full mesh data from study at hyp modification or not
   bool myToForgetMeshDataOnHypModif;
 

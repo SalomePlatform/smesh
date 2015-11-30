@@ -88,6 +88,7 @@ protected:
   SMESH::ListOfGroups*      convert( const QList<SMESH::SMESH_GroupBase_var>& );
 
   SALOMEDS::Color           getColor() const;
+  void                      setDefaultGroupColor();
 
   void                      setIsApplyAndClose( const bool theFlag );
   bool                      isApplyAndClose() const;

@@ -31,6 +31,7 @@
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESH_TypeFilter.hxx"
+#include <SMESH_ActorUtils.h>
 
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
@@ -232,6 +233,8 @@ void SMESHGUI_GroupOpDlg::Init()
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);
   mySelectionMgr->installFilter(new SMESH_TypeFilter (SMESH::GROUP));
+
+  setDefaultGroupColor();
 }
 
 /*!
@@ -448,6 +451,14 @@ SALOMEDS::Color SMESHGUI_GroupOpDlg::getColor() const
 }
 
 /*!
+  \brief Set default color for group
+*/
+void SMESHGUI_GroupOpDlg::setDefaultGroupColor()
+{
+  myColorBtn->setColor( SMESH::GetColor( "SMESH", "default_grp_color", QColor( 255, 170, 0 ) ) );
+}
+
+/*!
   \brief SLOT, called when selection is changed. Current implementation does 
    nothing. The method should be redefined in derived classes to update 
    corresponding GUI controls
@@ -505,6 +516,7 @@ void SMESHGUI_GroupOpDlg::reset()
 {
   myNameEdit->setText("");
   myNameEdit->setFocus();
+  setDefaultGroupColor();
 }
 
 /*!
