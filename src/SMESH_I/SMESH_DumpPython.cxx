@@ -1179,9 +1179,11 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   if ( importGeom && isMultiFile )
   {
     initPart += ("\n## import GEOM dump file ## \n"
-                 "import string, os, sys, re\n"
-                 "sys.path.insert( 0, os.path.dirname(__file__) )\n"
-                 "exec(\"from \"+re.sub(\"SMESH$\",\"GEOM\",__name__)+\" import *\")\n");
+                 "import string, os, sys, re, inspect\n"
+                 "thisFile   = inspect.getfile( inspect.currentframe() )\n"
+                 "thisModule = os.path.splitext( os.path.basename( thisFile ))[0]\n"
+                 "sys.path.insert( 0, os.path.dirname( thisFile ))\n"
+                 "exec(\"from \"+re.sub(\"SMESH$\",\"GEOM\",thisModule)+\" import *\")\n\n");
   }
   // import python files corresponding to plugins if they are used in anUpdatedScript
   {
@@ -1207,7 +1209,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
       initPart += importStr + "\n";
   }
 
-  if( isMultiFile )
+  if ( isMultiFile )
     initPart += "def RebuildData(theStudy):";
   initPart += "\n";
 
@@ -1271,8 +1273,18 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
 
   anUpdatedScript += removeObjPart + '\n' + setNamePart + '\n' + visualPropertiesPart;
 
-  if( isMultiFile )
-    anUpdatedScript += "\n\tpass";
+  if ( isMultiFile )
+  {
+    anUpdatedScript +=
+      "\n\tpass"
+      "\n"
+      "\nif __name__ == '__main__':"
+      "\n\tSMESH_RebuildData = RebuildData"
+      "\n\texec('import '+re.sub('SMESH$','GEOM',thisModule)+' as GEOM_dump')"
+      "\n\tGEOM_dump.RebuildData( salome.myStudy )"
+      "\n\texec('from '+re.sub('SMESH$','GEOM',thisModule)+' import * ')"
+      "\n\tSMESH_RebuildData( salome.myStudy )";
+  }
   anUpdatedScript += "\n";
 
   // no need now as we use 'tab' and 'nt' variables depending on isMultiFile
