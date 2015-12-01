@@ -1773,7 +1773,7 @@ void SMESHGUI_PrecomputeOp::getAssignedAlgos(_PTR(SObject) theMesh,
   }
 
   // check sub-meshes
-  for ( aPart = SMESH::Tag_SubMeshOnEdge; aPart < SMESH::Tag_LastSubMesh; ++aPart )
+  for ( aPart = SMESH::Tag_SubMeshOnEdge; aPart <= SMESH::Tag_LastSubMesh; ++aPart )
   {
     if ( !theMesh->FindSubObject( aPart, aHypFolder ))
       continue;

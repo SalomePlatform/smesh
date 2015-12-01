@@ -3013,12 +3013,13 @@ bool ConnectedElements::IsSatisfy( long theElementId )
 
 namespace
 {
-  inline bool isLessAngle( const gp_Vec& v1, const gp_Vec& v2, const double cos2 )
+  inline bool isLessAngle( const gp_Vec& v1, const gp_Vec& v2, const double cos )
   {
     double dot = v1 * v2; // cos * |v1| * |v2|
     double l1  = v1.SquareMagnitude();
     double l2  = v2.SquareMagnitude();
-    return ( dot * dot ) / l1 / l2 >= cos2;
+    return (( dot * cos >= 0 ) && 
+            ( dot * dot ) / l1 / l2 >= ( cos * cos ));
   }
 }
 CoplanarFaces::CoplanarFaces()
@@ -3046,7 +3047,7 @@ void CoplanarFaces::SetMesh( const SMDS_Mesh* theMesh )
     if (!normOK)
       return;
 
-    const double cosTol2 = Cos( myToler ) * Cos( myToler );
+    const double cosTol = Cos( myToler * M_PI / 180. );
     NCollection_Map< SMESH_TLink, SMESH_TLink > checkedLinks;
 
     std::list< pair< const SMDS_MeshElement*, gp_Vec > > faceQueue;
@@ -3070,7 +3071,7 @@ void CoplanarFaces::SetMesh( const SMDS_Mesh* theMesh )
           if ( f->GetNodeIndex( n2 ) > -1 )
           {
             gp_Vec norm = getNormale( static_cast<const SMDS_MeshFace*>(f), &normOK );
-            if (!normOK || isLessAngle( myNorm, norm, cosTol2))
+            if (!normOK || isLessAngle( myNorm, norm, cosTol))
             {
               myCoplanarIDs.Add( f->GetID() );
               faceQueue.push_back( make_pair( f, norm ));

@@ -1680,9 +1680,10 @@ class Mesh:
         if self.mesh.HasShapeToMesh():
             hyp_type     = hyp.GetName()
             lib_name     = hyp.GetLibName()
-            checkAll    = ( not geom.IsSame( self.mesh.GetShapeToMesh() ))
-            if checkAll and geom:
-                checkAll = geom.GetType() == 37
+            # checkAll    = ( not geom.IsSame( self.mesh.GetShapeToMesh() ))
+            # if checkAll and geom:
+            #     checkAll = geom.GetType() == 37
+            checkAll     = False
             isApplicable = self.smeshpyD.IsApplicable(hyp_type, lib_name, geom, checkAll)
         if isApplicable:
             AssureGeomPublished( self, geom, "shape for %s" % hyp.GetName())

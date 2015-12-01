@@ -4059,12 +4059,13 @@ namespace { // Structures used by FixQuadraticElements()
 
   const QFace* QLink::GetContinuesFace( const QFace* face ) const
   {
-    for ( size_t i = 0; i < _faces.size(); ++i ) {
-      if ( _faces[i] == face ) {
-        int iF = i < 2 ? 1-i : 5-i;
-        return iF < (int)_faces.size() ? _faces[iF] : 0;
+    if ( _faces.size() <= 4 )
+      for ( size_t i = 0; i < _faces.size(); ++i ) {
+        if ( _faces[i] == face ) {
+          int iF = i < 2 ? 1-i : 5-i;
+          return iF < (int)_faces.size() ? _faces[iF] : 0;
+        }
       }
-    }
     return 0;
   }
   //================================================================================

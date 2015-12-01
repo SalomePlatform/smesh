@@ -1421,6 +1421,8 @@ class StdMeshersBuilder_UseExistingElements_1D2D(Mesh_Algorithm):
                                       hyp.GetCopySourceMesh() == args[1], args[2] )
         hyp = self.Hypothesis("ImportSource2D", [groups, toCopyMesh, toCopyGroups],
                               UseExisting=UseExisting, CompareMethod=compFun, toAdd=False)
+        if groups and isinstance( groups, SMESH._objref_SMESH_GroupBase ):
+            groups = [groups]
         hyp.SetSourceFaces(groups)
         hyp.SetCopySourceMesh(toCopyMesh, toCopyGroups)
         self.mesh.AddHypothesis(hyp, self.geom)
