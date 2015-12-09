@@ -445,7 +445,7 @@ deleteRow()
 {
   QList<int> selRows = selectedRows();
   for ( int r = selRows.count()-1; r >= 0; r-- )
-    removeRow( r );
+    removeRow( selRows.at(r) );
 }
 
 void
