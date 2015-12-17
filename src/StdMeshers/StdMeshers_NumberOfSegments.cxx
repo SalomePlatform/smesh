@@ -186,8 +186,9 @@ void StdMeshers_NumberOfSegments::SetScaleFactor(double scaleFactor)
   if (_distrType != DT_Scale)
     _distrType = DT_Scale;
 
-  if ( fabs(scaleFactor - 1.0) < PRECISION )
-    _distrType = DT_Regular;
+//  commented by mpa for IPAL 52986
+//  if ( fabs(scaleFactor - 1.0) < PRECISION )
+//    _distrType = DT_Regular;
 
   if ( fabs(_scaleFactor - scaleFactor) > PRECISION )
   {
