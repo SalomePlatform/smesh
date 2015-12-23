@@ -957,11 +957,23 @@ void SMESH_Gen_i::SetOption(const char* name, const char* value)
     {
       vector<int> color;
       string str = value;
-      if ( str.at(0) == '#' && str.length() == 7 ) // color should be presented as a string (#aaaaaa, for example)
+      // color must be presented as a string of next form:
+      if ( str.at(0) == '#' && str.length() == 7 ) { // hexadecimal color ("#ffaa00", for example)
         str = str.substr(1);
         for ( int i = 0; i < str.length()/2; i++ )
           if ( str.at(i*2) >= '0' && str.at(i*2) <= 'f' && str.at(i*2+1) >= '0' && str.at(i*2+1) <= 'f' )
             color.push_back( strtol( str.substr( i*2, 2 ).c_str(), NULL, 16 ) );
+      }
+      else { // rgb color ("255,170,0", for example)
+        char* tempValue = strdup( value );
+        char* colorValue = strtok( tempValue, "," );
+        while ( colorValue != NULL ) {
+          int c_value = atoi( colorValue );
+          if ( c_value >= 0 && c_value <= 255 )
+            color.push_back( c_value );
+          colorValue = strtok( NULL, "," );
+        }
+      }
       if ( color.size() == 3 ) { // color must have three valid component
         SMESHDS_GroupBase::SetDefaultColor( Quantity_Color( color[0]/255., color[1]/255., color[2]/255., Quantity_TOC_RGB ) );
         myDefaultGroupColor = value;
