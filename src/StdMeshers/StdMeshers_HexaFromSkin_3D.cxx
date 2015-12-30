@@ -107,14 +107,14 @@ namespace
       return true;
 
     set<const SMDS_MeshNode*> nodesInInverseFaces;
-    SMDS_ElemIteratorPtr fIt = n->GetInverseElementIterator(SMDSAbs_Face );
+    SMDS_ElemIteratorPtr fIt = n->GetInverseElementIterator( SMDSAbs_Face );
     while ( fIt->more() )
     {
       const SMDS_MeshElement* face = fIt->next();
       nodesInInverseFaces.insert( face->begin_nodes(), face->end_nodes() );
     }
 
-    return nodesInInverseFaces.size() != ( 6 + (nbF/2-1)*3 );
+    return (int)nodesInInverseFaces.size() != ( 6 + (nbF/2-1)*3 );
   }
 
   //================================================================================
@@ -212,7 +212,7 @@ namespace
     int                          _nbBlocksFound;
 
 #ifdef _DEBUG_ // want to get SIGSEGV in case of invalid index
-#define _grid_access_(pobj, i) pobj->_grid[ ((i) < pobj->_grid.size()) ? i : int(1e100)]
+#define _grid_access_(pobj, i) pobj->_grid[ ((i) < (int)pobj->_grid.size()) ? i : int(1e100)]
 #else
 #define _grid_access_(pobj, i) pobj->_grid[ i ]
 #endif
@@ -269,8 +269,8 @@ namespace
     //!< safely return a node by XY
     const SMDS_MeshNode* node(int x, int y) const
     {
-      int i = _index( x, y );
-      return ( i < 0 || i >= _side->_grid.size()) ? 0 : _side->_grid[i];
+      size_t i = _index( x, y );
+      return ( i >= _side->_grid.size() ) ? 0 : _side->_grid[i];
     }
     //!< Return an edge
     SMESH_OrientedLink edge(EQuadEdge edge) const
@@ -372,7 +372,7 @@ namespace
 
   //================================================================================
   /*!
-   * \brief Find and return number of submeshes corresponding to blocks
+   * \brief Find blocks and return their number
    */
   //================================================================================
 
@@ -421,7 +421,7 @@ namespace
           _allSides.push_back( _BlockSide() );
 
         _BlockSide& side = _allSides.back();
-        if ( !fillSide( side, face, *corner ) )
+        if ( !fillSide( side, face, *corner ))
         {
           if ( !_error.empty() )
             return false;
@@ -522,7 +522,7 @@ namespace
             ok = block.setSide( i, findBlockSide( B_FRONT, edgeOfFront[i], edgeOfAdj[i],
                                                   advAnalys, sidesAround));
         // try to find a BACK side by a TOP one
-        if ( ok || !advAnalys)
+        if ( ok || !advAnalys )
           if ( !block._side[B_BACK] && block._side[B_TOP] )
             ok = block.setSide( B_BACK, findBlockSide( B_TOP, Q_TOP, Q_TOP,
                                                        advAnalys, sidesAround ));
@@ -533,7 +533,7 @@ namespace
       {
         // check if just found block is same as one of previously found blocks
         bool isSame = false;
-        for ( int i = 1; i < _blocks.size() && !isSame; ++i )
+        for ( size_t i = 1; i < _blocks.size() && !isSame; ++i )
           isSame = ( block._corners == _blocks[i-1]._corners );
         ok = !isSame;
       }
@@ -606,12 +606,12 @@ namespace
       side._index._ySize = verRow1.size();
       side._grid.resize( side._index.size(), NULL );
 
-      for ( x = 0; x < horRow1.size(); ++x )
+      for ( x = 0; x < nbX; ++x )
       {
         side.setNode( x, 0, horRow1[x] );
         side.setNode( x, 1, horRow2[x] );
       }
-      for ( y = 0; y < verRow1.size(); ++y )
+      for ( y = 0; y < nbY; ++y )
       {
         side.setNode( 0, y, verRow1[y] );
         side.setNode( 1, y, verRow2[y] );
@@ -725,7 +725,9 @@ namespace
       if ( !n ) return false;
 
       prevSide = nextSide;
-      nbChainLinks++;
+
+      if ( ++nbChainLinks > NB_QUAD_SIDES )
+        return false;
     }
 
     return ( n == n2 && nbChainLinks == NB_QUAD_SIDES );
@@ -1003,6 +1005,9 @@ namespace
       SMESH_OrientedLink eAdja = _side[ adjacent[i] ].edge( edgeAdj[i] );
       ok = ( eBack == eAdja );
     }
+    ok = ok && ( _side[ B_BOTTOM ]._index.size() == _side[ B_TOP  ]._index.size() &&
+                 _side[ B_RIGHT  ]._index.size() == _side[ B_LEFT ]._index.size() &&
+                 _side[ B_FRONT  ]._index.size() == _side[ B_BACK ]._index.size() );
     return ok;
   }
 
@@ -1250,7 +1255,7 @@ bool StdMeshers_HexaFromSkin_3D::Evaluate(SMESH_Mesh &         aMesh,
 
   int entity = secondOrder ? SMDSEntity_Quad_Hexa : SMDSEntity_Hexa;
   vector<int>& nbByType = aResMap[ aMesh.GetSubMesh( aShape )];
-  if ( entity >= nbByType.size() )
+  if ( entity >= (int) nbByType.size() )
     nbByType.resize( SMDSEntity_Last, 0 );
 
   for ( int i = 0; i < nbBlocks; ++i )

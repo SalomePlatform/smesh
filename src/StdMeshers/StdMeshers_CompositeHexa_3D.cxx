@@ -929,7 +929,7 @@ bool _QuadFaceGrid::AddContinuousFace( const _QuadFaceGrid&       other,
   {
     const _FaceSide& otherSide = other.GetSide( i );
     int iMyCommon;
-    if ( mySides.Contain( otherSide, &iMyCommon ) )
+    if ( mySides.Contain( otherSide, &iMyCommon ))
     {
       if ( internalEdges.Contains( otherSide.Edge( 0 )))
       {
@@ -937,13 +937,23 @@ bool _QuadFaceGrid::AddContinuousFace( const _QuadFaceGrid&       other,
         DUMP_VERT("Cont 2", mySides.GetSide(iMyCommon)->LastVertex());
         DUMP_VERT("Cont 3", otherSide.FirstVertex());
         DUMP_VERT("Cont 4", otherSide.LastVertex());
-        if ( myChildren.empty() ) {
+
+        if ( myChildren.empty() )
+        {
           myChildren.push_back( *this );
           myFace.Nullify();
         }
+        else // find iMyCommon in myChildren
+        {
+          for ( TChildIterator children = GetChildren(); children.more(); ) {
+            const _QuadFaceGrid& child = children.next();
+            if ( child.mySides.Contain( otherSide, &iMyCommon ))
+              break;
+          }
+        }
 
         // orient new children equally
-        int otherBottomIndex = ( 4 + i - iMyCommon + 2 ) % 4;
+        int otherBottomIndex = SMESH_MesherHelper::WrapIndex( i - iMyCommon + 2, 4 );
         if ( other.IsComplex() )
           for ( TChildIterator children = other.GetChildren(); children.more(); ) {
             myChildren.push_back( children.next() );
@@ -960,7 +970,7 @@ bool _QuadFaceGrid::AddContinuousFace( const _QuadFaceGrid&       other,
         if ( other.IsComplex() )
           for ( TChildIterator children = other.GetChildren(); children.more(); )
           {
-            const _QuadFaceGrid& child =  children.next();
+            const _QuadFaceGrid& child = children.next();
             for ( int i = 0; i < 4; ++i )
               mySides.AppendSide( child.GetSide(i) );
           }
@@ -1002,9 +1012,9 @@ bool _QuadFaceGrid::SetBottomSide(const _FaceSide& bottom, int* sideIndex)
     {
       if ( childFace->SetBottomSide( bottom, &myBottomIndex ))
       {
-        TChildren::iterator orientedCild = childFace;
+        TChildren::iterator orientedChild = childFace;
         for ( childFace = myChildren.begin(); childFace != childEnd; ++childFace ) {
-          if ( childFace != orientedCild )
+          if ( childFace != orientedChild )
             childFace->SetBottomSide( childFace->GetSide( myBottomIndex ));
         }
         if ( sideIndex )
@@ -1076,7 +1086,7 @@ const _FaceSide& _QuadFaceGrid::GetSide(int i) const
  */
 //================================================================================
 
-void _QuadFaceGrid::ReverseEdges(/*int e1, int e2*/)
+void _QuadFaceGrid::ReverseEdges()
 {
   myReverse = !myReverse;
 
@@ -1087,8 +1097,6 @@ void _QuadFaceGrid::ReverseEdges(/*int e1, int e2*/)
 
   if ( myChildren.empty() )
   {
-//     mySides.GetSide( e1 )->Reverse();
-//     mySides.GetSide( e2 )->Reverse();
     DumpVertices();
   }
   else
@@ -1096,7 +1104,7 @@ void _QuadFaceGrid::ReverseEdges(/*int e1, int e2*/)
     DumpVertices();
     TChildren::iterator child = myChildren.begin(), childEnd = myChildren.end();
     for ( ; child != childEnd; ++child )
-      child->ReverseEdges( /*e1, e2*/ );
+      child->ReverseEdges();
   }
 }
 
@@ -1672,8 +1680,6 @@ _FaceSide::_FaceSide(const list<TopoDS_Edge>& edges):
   for ( ; edge != eEnd; ++edge ) {
     myChildren.push_back( _FaceSide( *edge ));
     myNbChildren++;
-//     myVertices.insert( myChildren.back().myVertices.begin(),
-//                        myChildren.back().myVertices.end() );
     myVertices.Add( myChildren.back().FirstVertex() );
     myVertices.Add( myChildren.back().LastVertex() );
     myChildren.back().SetID( Q_CHILD ); // not to splice them
@@ -1682,7 +1688,7 @@ _FaceSide::_FaceSide(const list<TopoDS_Edge>& edges):
 
 //=======================================================================
 //function : GetSide
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 _FaceSide* _FaceSide::GetSide(const int i)
