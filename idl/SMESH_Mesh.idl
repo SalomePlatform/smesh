@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -66,6 +66,7 @@ module SMESH
       ADD_QUADEDGE,
       ADD_QUADTRIANGLE,
       ADD_QUADQUADRANGLE,
+      ADD_QUADPOLYGON,
       ADD_QUADTETRAHEDRON,
       ADD_QUADPYRAMID,
       ADD_QUADPENTAHEDRON,
@@ -89,18 +90,18 @@ module SMESH
 
   struct PointStruct { double x;
                        double y;
-                       double z; } ;
+                       double z; };
 
   typedef sequence<PointStruct> nodes_array;
 
-  struct DirStruct   { PointStruct PS ; } ;          // analog to OCCT gp_Vec
+  struct DirStruct   { PointStruct PS; };          // analog to OCCT gp_Vec
 
   struct AxisStruct  { double x;
                        double y;
                        double z;
                        double vx;
                        double vy;
-                       double vz; } ;
+                       double vz; };
   /*!
    * Node location on a shape
    */
@@ -132,7 +133,7 @@ module SMESH
     BALL,
     NB_ELEMENT_TYPES
   };
-  typedef sequence<ElementType> array_of_ElementType ;
+  typedef sequence<ElementType> array_of_ElementType;
 
   /*!
    * Enumeration for element geometry type, like SMDSAbs_GeometryType in SMDSAbs_ElementType.hxx
@@ -150,7 +151,8 @@ module SMESH
     Geom_PENTA,
     Geom_HEXAGONAL_PRISM,
     Geom_POLYHEDRA,
-    Geom_BALL
+    Geom_BALL,
+    Geom_LAST
   };
   
   /*!
@@ -253,6 +255,14 @@ module SMESH
   };
 
   /*!
+   * Enumeration for CreateDimGroup()
+   */
+  enum NB_COMMON_NODES_ENUM
+  {
+    ALL_NODES, MAIN, AT_LEAST_ONE, MAJORITY
+  };
+
+  /*!
    * Auxilary flags for advanced extrusion.
    * BOUNDARY: create or not boundary for result of extrusion
    * SEW:      try to use existing nodes or create new nodes in any case
@@ -313,6 +323,11 @@ module SMESH
      * happen if mesh data is not yet fully loaded from the file of study.
      */
     boolean IsMeshInfoCorrect();
+
+    /*!
+     * Returns mesh unstructed grid information.
+     */
+    SALOMEDS::TMPFile GetVtkUgStream();
   };
 
   interface SMESH_Group;
@@ -492,14 +507,21 @@ module SMESH
       raises (SALOME::SALOME_Exception);
       
     /*!
-     *  Create groups of entities from existing groups of superior dimensions 
-     *  New group is created. System 
-     *  1) extracts all nodes from each group,
-     *  2) combines all elements of specified dimension laying on these nodes.
+     *  Create a group of entities basing on nodes of other groups.
+     *  \param [in] aListOfGroups - list of either groups, sub-meshes or filters.
+     *  \param [in] anElemType - a type of elements to include to the new group.
+     *  \param [in] name - a name of the new group.
+     *  \param [in] nbCommonNodes - criterion of inclusion of an element to the new group.
+     *  \param [in] underlyingOnly - if \c True, an element is included to the 
+     *         new group provided that it is based on nodes of an element of
+     *         \a aListOfGroups
+     *  \return SMESH_Group - the created group
      */
-    SMESH_Group CreateDimGroup( in ListOfGroups aListOfGroups,
-                                in ElementType  anElemType,
-                                in string       name )
+    SMESH_Group CreateDimGroup( in ListOfIDSources      aListOfGroups,
+                                in ElementType          anElemType,
+                                in string               name,
+                                in NB_COMMON_NODES_ENUM nbCommonNodes,
+                                in boolean              underlyingOnly )
       raises (SALOME::SALOME_Exception);
 
     /*!
@@ -755,6 +777,9 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     long NbPolygons()
+      raises (SALOME::SALOME_Exception);
+
+    long NbPolygonsOfOrder(in ElementOrder order)
       raises (SALOME::SALOME_Exception);
 
     long NbVolumes()
@@ -1019,7 +1044,7 @@ module SMESH
       raises (SALOME::SALOME_Exception);
     
     /*!
-     * Return type of submesh element
+     * Returns type of mesh element (same as SMESH_Mesh::GetElementType() )
      */
     ElementType GetElementType( in long id, in boolean iselem )
       raises (SALOME::SALOME_Exception);

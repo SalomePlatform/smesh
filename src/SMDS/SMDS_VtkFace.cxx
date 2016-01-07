@@ -1,4 +1,4 @@
-// Copyright (C) 2010-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2010-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -85,6 +85,15 @@ void SMDS_VtkFace::initPoly(const std::vector<vtkIdType>& nodeIds, SMDS_Mesh* me
   mesh->setMyModified();
 }
 
+void SMDS_VtkFace::initQuadPoly(const std::vector<vtkIdType>& nodeIds, SMDS_Mesh* mesh)
+{
+  SMDS_MeshFace::init();
+  vtkUnstructuredGrid* grid = mesh->getGrid();
+  myMeshId = mesh->getMeshId();
+  myVtkID = grid->InsertNextLinkedCell(VTK_QUADRATIC_POLYGON, nodeIds.size(), (vtkIdType*) &nodeIds[0]);
+  mesh->setMyModified();
+}
+
 bool SMDS_VtkFace::ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes)
 {
   vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
@@ -111,26 +120,28 @@ void SMDS_VtkFace::Print(std::ostream & OS) const
 
 int SMDS_VtkFace::NbEdges() const
 {
-  // TODO quadratic polygons ?
   vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
   vtkIdType aVtkType = grid->GetCellType(this->myVtkID);
   int nbEdges = 3;
   switch (aVtkType)
   {
-    case VTK_TRIANGLE:
-    case VTK_QUADRATIC_TRIANGLE:
-    case VTK_BIQUADRATIC_TRIANGLE:
-      nbEdges = 3;
-      break;
-    case VTK_QUAD:
-    case VTK_QUADRATIC_QUAD:
-    case VTK_BIQUADRATIC_QUAD:
-      nbEdges = 4;
-      break;
-    case VTK_POLYGON:
-    default:
-      nbEdges = grid->GetCell(myVtkID)->GetNumberOfPoints();
-      break;
+  case VTK_TRIANGLE:
+  case VTK_QUADRATIC_TRIANGLE:
+  case VTK_BIQUADRATIC_TRIANGLE:
+    nbEdges = 3;
+    break;
+  case VTK_QUAD:
+  case VTK_QUADRATIC_QUAD:
+  case VTK_BIQUADRATIC_QUAD:
+    nbEdges = 4;
+    break;
+  case VTK_QUADRATIC_POLYGON:
+    nbEdges = grid->GetCell(myVtkID)->GetNumberOfPoints() / 2;
+    break;
+  case VTK_POLYGON:
+  default:
+    nbEdges = grid->GetCell(myVtkID)->GetNumberOfPoints();
+    break;
   }
   return nbEdges;
 }
@@ -186,6 +197,7 @@ bool SMDS_VtkFace::IsQuadratic() const
   {
     case VTK_QUADRATIC_TRIANGLE:
     case VTK_QUADRATIC_QUAD:
+    case VTK_QUADRATIC_POLYGON:
     case VTK_BIQUADRATIC_QUAD:
     case VTK_BIQUADRATIC_TRIANGLE:
       return true;
@@ -199,7 +211,7 @@ bool SMDS_VtkFace::IsPoly() const
 {
   vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
   vtkIdType aVtkType = grid->GetCellType(this->myVtkID);
-  return (aVtkType == VTK_POLYGON);
+  return ( aVtkType == VTK_POLYGON || aVtkType == VTK_QUADRATIC_POLYGON );
 }
 
 bool SMDS_VtkFace::IsMediumNode(const SMDS_MeshNode* node) const
@@ -209,33 +221,36 @@ bool SMDS_VtkFace::IsMediumNode(const SMDS_MeshNode* node) const
   int rankFirstMedium = 0;
   switch (aVtkType)
   {
-    case VTK_QUADRATIC_TRIANGLE:
-    case VTK_BIQUADRATIC_TRIANGLE:
-      rankFirstMedium = 3; // medium nodes are of rank 3,4,5
-      break;
-    case VTK_QUADRATIC_QUAD:
-    case VTK_BIQUADRATIC_QUAD:
-      rankFirstMedium = 4; // medium nodes are of rank 4,5,6,7
-      break;
-    default:
-      //MESSAGE("wrong element type " << aVtkType);
-      return false;
+  case VTK_QUADRATIC_TRIANGLE:
+  case VTK_BIQUADRATIC_TRIANGLE:
+    rankFirstMedium = 3; // medium nodes are of rank 3,4,5
+    break;
+  case VTK_QUADRATIC_QUAD:
+  case VTK_BIQUADRATIC_QUAD:
+    rankFirstMedium = 4; // medium nodes are of rank 4,5,6,7
+    break;
+  case VTK_QUADRATIC_POLYGON:
+    rankFirstMedium = grid->GetCell(myVtkID)->GetNumberOfPoints() / 2;
+    break;
+  default:
+    //MESSAGE("wrong element type " << aVtkType);
+    return false;
   }
   vtkIdType npts = 0;
   vtkIdType* pts = 0;
   grid->GetCellPoints(myVtkID, npts, pts);
   vtkIdType nodeId = node->getVtkId();
   for (int rank = 0; rank < npts; rank++)
+  {
+    if (pts[rank] == nodeId)
     {
-      if (pts[rank] == nodeId)
-        {
-          //MESSAGE("rank " << rank << " is medium node " << (rank < rankFirstMedium));
-          if (rank < rankFirstMedium)
-            return false;
-          else
-            return true;
-        }
+      //MESSAGE("rank " << rank << " is medium node " << (rank < rankFirstMedium));
+      if (rank < rankFirstMedium)
+        return false;
+      else
+        return true;
     }
+  }
   //throw SALOME_Exception(LOCALIZED("node does not belong to this element"));
   MESSAGE("======================================================");
   MESSAGE("= IsMediumNode: node does not belong to this element =");
@@ -248,8 +263,17 @@ int SMDS_VtkFace::NbCornerNodes() const
   vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
   int       nbPoints = grid->GetCell(myVtkID)->GetNumberOfPoints();
   vtkIdType aVtkType = grid->GetCellType(myVtkID);
-  if ( aVtkType != VTK_POLYGON )
-    return nbPoints <= 4 ? nbPoints : nbPoints / 2;
+  switch ( aVtkType )
+  {
+  case VTK_POLYGON:
+    break;
+  case VTK_QUADRATIC_POLYGON:
+    nbPoints /= 2;
+    break;
+  default:
+    if ( nbPoints > 4 )
+      nbPoints /= 2;
+  }
   return nbPoints;
 }
 
@@ -273,7 +297,8 @@ SMDSAbs_GeometryType SMDS_VtkFace::GetGeomType() const
   case VTK_QUADRATIC_QUAD:
   case VTK_BIQUADRATIC_QUAD: return SMDSGeom_QUADRANGLE;
 
-  case VTK_POLYGON: return SMDSGeom_POLYGON;
+  case VTK_POLYGON:
+  case VTK_QUADRATIC_POLYGON: return SMDSGeom_POLYGON;
   default:;
   }
   return SMDSGeom_NONE;

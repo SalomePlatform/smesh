@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -28,7 +28,11 @@
 #include "SMESH_SMESHGUI.hxx"
 #include "SMESH_ControlsDef.hxx"
 
-#include <Plot2d_Histogram.h>
+#ifndef DISABLE_PLOT2DVIEWER
+  #include <Plot2d_Histogram.h>
+#else
+  #include <qwt_plot.h>
+#endif
 
 #include <QFrame>
 #include <QDialog>
@@ -158,6 +162,7 @@ protected:
   {
     double myX, myY, myZ;
     XYZ() { myX = myY = myZ = 0.0; }
+    XYZ(double x, double y, double z) { myX = x; myY = y; myZ = z; }
     void add( double x, double y, double z ) { myX += x; myY += y; myZ += z; }
     void divide( double a ) { if ( a != 0.) { myX /= a; myY /= a; myZ /= a; } }
     double x() const  { return myX; }
@@ -176,6 +181,7 @@ protected:
   Connectivity nodeConnectivity( const SMDS_MeshNode* );
   QString      formatConnectivity( Connectivity, int );
   XYZ          gravityCenter( const SMDS_MeshElement* );
+  XYZ          normal( const SMDS_MeshElement* );
 
 signals:
   void         itemInfo( int );
@@ -244,7 +250,7 @@ class GrpComputor: public QObject
   Q_OBJECT;
 
 public:
-  GrpComputor( SMESH::SMESH_GroupBase_ptr, QTreeWidgetItem*, QObject* );
+  GrpComputor( SMESH::SMESH_GroupBase_ptr, QTreeWidgetItem*, QObject*, bool = false);
   QTreeWidgetItem* getItem() { return myItem; }
 
 public slots:
@@ -253,6 +259,7 @@ public slots:
 private:
   SMESH::SMESH_GroupBase_var myGroup;
   QTreeWidgetItem*           myItem;
+  bool                       myToComputeSize;
 };
 
 class SMESHGUI_EXPORT SMESHGUI_AddInfo : public QTreeWidget
@@ -308,7 +315,9 @@ private:
   QwtPlot*              createPlot( QWidget* );
   void                  setFontAttributes( QWidget* );
   void                  clearInternal();
+#ifndef DISABLE_PLOT2DVIEWER
   Plot2d_Histogram*     getHistogram( SMESH::NumericalFunctor_ptr functor );
+#endif
   void                  computeNb( int ft, int iBut, int iWdg );
 
 private slots:

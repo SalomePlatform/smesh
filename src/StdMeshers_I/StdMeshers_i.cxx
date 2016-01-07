@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -31,70 +31,72 @@
 
 #include "utilities.h"
 
-#include "StdMeshers_LocalLength_i.hxx"
-#include "StdMeshers_AutomaticLength_i.hxx"
-#include "StdMeshers_StartEndLength_i.hxx"
-#include "StdMeshers_Arithmetic1D_i.hxx"
-#include "StdMeshers_Geometric1D_i.hxx"
-#include "StdMeshers_FixedPoints1D_i.hxx"
-#include "StdMeshers_NumberOfSegments_i.hxx"
-#include "StdMeshers_Deflection1D_i.hxx"
 #include "StdMeshers_Adaptive1D_i.hxx"
-#include "StdMeshers_Propagation_i.hxx"
-#include "StdMeshers_LengthFromEdges_i.hxx"
-#include "StdMeshers_QuadranglePreference_i.hxx"
-//#include "StdMeshers_TrianglePreference_i.hxx"
-#include "StdMeshers_QuadraticMesh_i.hxx"
-#include "StdMeshers_MaxElementArea_i.hxx"
-#include "StdMeshers_MaxElementVolume_i.hxx"
-#include "StdMeshers_NotConformAllowed_i.hxx"
-#include "StdMeshers_ProjectionSource3D_i.hxx"
-#include "StdMeshers_ProjectionSource2D_i.hxx"
-#include "StdMeshers_ProjectionSource1D_i.hxx"
-#include "StdMeshers_NumberOfLayers_i.hxx"
-#include "StdMeshers_LayerDistribution_i.hxx"
-#include "StdMeshers_NumberOfLayers2D_i.hxx"
-#include "StdMeshers_LayerDistribution2D_i.hxx"
-#include "StdMeshers_SegmentLengthAroundVertex_i.hxx"
-#include "StdMeshers_MaxLength_i.hxx"
-#include "StdMeshers_QuadrangleParams_i.hxx"
+#include "StdMeshers_Arithmetic1D_i.hxx"
+#include "StdMeshers_AutomaticLength_i.hxx"
+#include "StdMeshers_CartesianParameters3D_i.hxx"
+#include "StdMeshers_Cartesian_3D_i.hxx"
+#include "StdMeshers_CompositeSegment_1D_i.hxx"
+#include "StdMeshers_Deflection1D_i.hxx"
+#include "StdMeshers_FixedPoints1D_i.hxx"
+#include "StdMeshers_Geometric1D_i.hxx"
+#include "StdMeshers_Hexa_3D_i.hxx"
 #include "StdMeshers_ImportSource1D_i.hxx"
 #include "StdMeshers_ImportSource2D_i.hxx"
-#include "StdMeshers_Cartesian_3D_i.hxx"
-
+#include "StdMeshers_Import_1D2D_i.hxx"
+#include "StdMeshers_Import_1D_i.hxx"
+#include "StdMeshers_LayerDistribution2D_i.hxx"
+#include "StdMeshers_LayerDistribution_i.hxx"
+#include "StdMeshers_LengthFromEdges_i.hxx"
+#include "StdMeshers_LocalLength_i.hxx"
+#include "StdMeshers_MaxElementArea_i.hxx"
+#include "StdMeshers_MaxElementVolume_i.hxx"
+#include "StdMeshers_MaxLength_i.hxx"
+#include "StdMeshers_NotConformAllowed_i.hxx"
+#include "StdMeshers_NumberOfLayers2D_i.hxx"
+#include "StdMeshers_NumberOfLayers_i.hxx"
+#include "StdMeshers_NumberOfSegments_i.hxx"
+#include "StdMeshers_PolygonPerFace_2D_i.hxx"
+#include "StdMeshers_Prism_3D_i.hxx"
+#include "StdMeshers_ProjectionSource1D_i.hxx"
+#include "StdMeshers_ProjectionSource2D_i.hxx"
+#include "StdMeshers_ProjectionSource3D_i.hxx"
+#include "StdMeshers_Projection_1D_2D_3D_i.hxx"
+#include "StdMeshers_Propagation_i.hxx"
+#include "StdMeshers_QuadrangleParams_i.hxx"
+#include "StdMeshers_QuadranglePreference_i.hxx"
+#include "StdMeshers_Quadrangle_2D_i.hxx"
+#include "StdMeshers_QuadraticMesh_i.hxx"
+#include "StdMeshers_RadialQuadrangle_1D2D_i.hxx"
 #include "StdMeshers_Regular_1D_i.hxx"
+#include "StdMeshers_SegmentAroundVertex_0D_i.hxx"
+#include "StdMeshers_SegmentLengthAroundVertex_i.hxx"
+#include "StdMeshers_StartEndLength_i.hxx"
+#include "StdMeshers_UseExisting_1D2D_i.hxx"
+#include "StdMeshers_ViscousLayers2D_i.hxx"
+#include "StdMeshers_ViscousLayers_i.hxx"
 #ifdef ENABLE_MEFISTO
  #include "StdMeshers_MEFISTO_2D_i.hxx"
 #endif
-#include "StdMeshers_Quadrangle_2D_i.hxx"
-#include "StdMeshers_Hexa_3D_i.hxx"
-#include "StdMeshers_Projection_1D_2D_3D_i.hxx"
-#include "StdMeshers_Prism_3D_i.hxx"
-#include "StdMeshers_SegmentAroundVertex_0D_i.hxx"
-#include "StdMeshers_CompositeSegment_1D_i.hxx"
-#include "StdMeshers_UseExisting_1D2D_i.hxx"
-#include "StdMeshers_RadialQuadrangle_1D2D_i.hxx"
-#include "StdMeshers_Import_1D_i.hxx"
-#include "StdMeshers_Import_1D2D_i.hxx"
-#include "StdMeshers_ViscousLayers_i.hxx"
-#include "StdMeshers_ViscousLayers2D_i.hxx"
-#include "StdMeshers_CartesianParameters3D_i.hxx"
 
 namespace SMESH {
   class ApplicableToAny
   {
   public:
-    static CORBA::Boolean IsApplicable( const TopoDS_Shape &S, CORBA::Boolean toCheckAll ) {
+    static CORBA::Boolean IsApplicable( const TopoDS_Shape &S, CORBA::Boolean toCheckAll )
+    {
       return true;
     }
   };
 };
-template <class T, class TIsApplicable = SMESH::ApplicableToAny> class StdHypothesisCreator_i:public HypothesisCreator_i<T>
+template <class T, class TIsApplicable = SMESH::ApplicableToAny>
+class StdHypothesisCreator_i : public HypothesisCreator_i< T >
 {
 public:
   // as we have 'module StdMeshers' in SMESH_BasicHypothesis.idl
   virtual std::string GetModuleName() { return "StdMeshers"; }
-  virtual CORBA::Boolean IsApplicable( const TopoDS_Shape & S, CORBA::Boolean toCheckAll ) {
+  virtual CORBA::Boolean IsApplicable( const TopoDS_Shape & S, CORBA::Boolean toCheckAll )
+  {
     return TIsApplicable::IsApplicable( S, toCheckAll );
   }
 };
@@ -216,6 +218,8 @@ STDMESHERS_I_EXPORT
 #endif
     else if (strcmp(aHypName, "Quadrangle_2D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_Quadrangle_2D_i, StdMeshers_Quadrangle_2D_i>;
+    else if (strcmp(aHypName, "QuadFromMedialAxis_1D2D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_QuadFromMedialAxis_1D2D_i, StdMeshers_QuadFromMedialAxis_1D2D_i>;
     else if (strcmp(aHypName, "Hexa_3D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_Hexa_3D_i, StdMeshers_Hexa_3D_i>;
     else if (strcmp(aHypName, "Projection_1D") == 0)
@@ -225,7 +229,7 @@ STDMESHERS_I_EXPORT
     else if (strcmp(aHypName, "Projection_2D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_Projection_2D_i>;
     else if (strcmp(aHypName, "Projection_3D") == 0)
-      aCreator = new StdHypothesisCreator_i<StdMeshers_Projection_3D_i, StdMeshers_Hexa_3D_i>;
+      aCreator = new StdHypothesisCreator_i<StdMeshers_Projection_3D_i, StdMeshers_Projection_3D_i>;
     else if (strcmp(aHypName, "Prism_3D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_Prism_3D_i, StdMeshers_Prism_3D_i>;
     else if (strcmp(aHypName, "RadialPrism_3D") == 0)
@@ -246,6 +250,8 @@ STDMESHERS_I_EXPORT
       aCreator = new StdHypothesisCreator_i<StdMeshers_Import_1D2D_i>;
     else if (strcmp(aHypName, "Cartesian_3D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_Cartesian_3D_i>;
+    else if (strcmp(aHypName, "PolygonPerFace_2D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_PolygonPerFace_2D_i>;
     else ;
 
     return aCreator;

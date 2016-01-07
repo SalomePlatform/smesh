@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -25,18 +25,18 @@
 //  Module : SMESH
 //
 #include "StdMeshers_CompositeSegment_1D.hxx"
-#include "StdMeshers_FaceSide.hxx"
-#include "StdMeshers_AutomaticLength.hxx"
-
-#include "SMESH_Gen.hxx"
-#include "SMESH_Mesh.hxx"
-#include "SMESH_HypoFilter.hxx"
-#include "SMESH_subMesh.hxx"
-#include "SMESH_subMeshEventListener.hxx"
-#include "SMESH_Comment.hxx"
 
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "SMESH_Comment.hxx"
+#include "SMESH_Gen.hxx"
+#include "SMESH_HypoFilter.hxx"
+#include "SMESH_Mesh.hxx"
+#include "SMESH_TypeDefs.hxx"
+#include "SMESH_subMesh.hxx"
+#include "SMESH_subMeshEventListener.hxx"
+#include "StdMeshers_AutomaticLength.hxx"
+#include "StdMeshers_FaceSide.hxx"
 
 #include "utilities.h"
 
@@ -173,7 +173,7 @@ namespace {
               // check if an edge is a part of a complex side
               TopoDS_Face face;
               TopoDS_Edge edge = TopoDS::Edge( subMesh->GetSubShape() );
-              auto_ptr< StdMeshers_FaceSide > side
+              SMESHUtils::Deleter< StdMeshers_FaceSide > side
                 ( StdMeshers_CompositeSegment_1D::GetFaceSide(*subMesh->GetFather(),
                                                               edge, face, false ));
               if ( side->NbEdges() > 1 && side->NbSegments() )
@@ -287,21 +287,21 @@ void StdMeshers_CompositeSegment_1D::SetEventListener(SMESH_subMesh* subMesh)
     // check if an edge is a part of a complex side
     TopoDS_Face face;
     TopoDS_Edge edge = TopoDS::Edge( subMesh->GetSubShape() );
-    auto_ptr< StdMeshers_FaceSide > side
-      ( StdMeshers_CompositeSegment_1D::GetFaceSide(*subMesh->GetFather(),edge, face, false ));
+    SMESHUtils::Deleter< StdMeshers_FaceSide > side
+      ( StdMeshers_CompositeSegment_1D::GetFaceSide( *subMesh->GetFather(), edge, face, false ));
     if ( side->NbEdges() > 1 ) { // complex
 
       // set _alwaysComputed to vertices
       for ( int iE = 1; iE < side->NbEdges(); ++iE )
       {
-        TopoDS_Vertex V = side->FirstVertex( iE );
+        TopoDS_Vertex   V = side->FirstVertex( iE );
         SMESH_subMesh* sm = side->GetMesh()->GetSubMesh( V );
         sm->SetIsAlwaysComputed( true );
       }
     }
   }
   // set listener that will remove _alwaysComputed from submeshes at algorithm change
-  subMesh->SetEventListener( new VertexNodesRestoringListener(), 0, subMesh);
+  subMesh->SetEventListener( new VertexNodesRestoringListener(), 0, subMesh );
   StdMeshers_Regular_1D::SetEventListener( subMesh );
 }
 
@@ -368,7 +368,7 @@ bool StdMeshers_CompositeSegment_1D::Compute(SMESH_Mesh &         aMesh,
 
   // Get edges to be discretized as a whole
   TopoDS_Face nullFace;
-  auto_ptr< StdMeshers_FaceSide > side( GetFaceSide(aMesh, edge, nullFace, true ));
+  SMESHUtils::Deleter< StdMeshers_FaceSide > side( GetFaceSide(aMesh, edge, nullFace, true ));
   //side->dump("IN COMPOSITE SEG");
 
   if ( side->NbEdges() < 2 )
@@ -384,7 +384,7 @@ bool StdMeshers_CompositeSegment_1D::Compute(SMESH_Mesh &         aMesh,
   }
 
   // Compute node parameters
-  auto_ptr< BRepAdaptor_CompCurve > C3d ( side->GetCurve3d() );
+  SMESHUtils::Deleter< BRepAdaptor_CompCurve > C3d ( side->GetCurve3d() );
   double f = C3d->FirstParameter(), l = C3d->LastParameter();
   list< double > params;
   if ( !computeInternalParameters ( aMesh, *C3d, side->Length(), f, l, params, false ))

@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -858,10 +858,25 @@ module StdMeshers
   };
 
   /*!
+   * Method of computing translation of a node at Viscous Layers construction
+   */
+  enum VLExtrusionMethod { 
+    // node is translated along normal to a surface with possible further smoothing
+    SURF_OFFSET_SMOOTH,
+    // node is translated along the average normal of surrounding faces till
+    // intersection with a neighbor face translated along its own normal 
+    // by the layers thickness
+    FACE_OFFSET,
+    // node is translated along the average normal of surrounding faces
+    // by the layers thickness
+    NODE_OFFSET
+  };
+
+  /*!
    * interface of "Viscous Layers" hypothesis.
    * This hypothesis specifies parameters of layers of prisms to build
    * near mesh boundary. This hypothesis can be used by several 3D algorithms:
-   * NETGEN 3D, GHS3D, Hexahedron(i,j,k)
+   * NETGEN 3D, Hexahedron(i,j,k), MG_Tetra
    */
   interface StdMeshers_ViscousLayers : SMESH::SMESH_Hypothesis
   {
@@ -892,10 +907,13 @@ module StdMeshers
     short GetNumberLayers();
 
     /*!
-     * Set factor (>1.0) of growth of layer thickness towards inside of mesh
+     * Set factor (>=1.0) of growth of layer thickness towards inside of mesh
      */
     void SetStretchFactor(in double factor) raises (SALOME::SALOME_Exception);
     double GetStretchFactor();
+
+    void SetMethod( in VLExtrusionMethod how );
+    VLExtrusionMethod GetMethod();
   };
 
   /*!
@@ -933,7 +951,7 @@ module StdMeshers
     short GetNumberLayers();
 
     /*!
-     * Set factor (>1.0) of growth of layer thickness towards inside of mesh
+     * Set factor (>=1.0) of growth of layer thickness towards inside of mesh
      */
     void SetStretchFactor(in double factor) raises (SALOME::SALOME_Exception);
     double GetStretchFactor();
@@ -1069,6 +1087,20 @@ module StdMeshers
    * StdMeshers_Quadrangle_2D: interface of "Quadrangle (Mapping)" algorithm
    */
   interface StdMeshers_Quadrangle_2D : SMESH::SMESH_2D_Algo
+  {
+  };
+
+  /*!
+   * StdMeshers_QuadFromMedialAxis_1D2D: interface of "Quadrangle (Medial Axis Projection)" algorithm
+   */
+  interface StdMeshers_QuadFromMedialAxis_1D2D : SMESH::SMESH_2D_Algo
+  {
+  };
+
+  /*!
+   * StdMeshers_PolygonPerFace_2D: interface of "Polygon Per Face" 2D algorithm
+   */
+  interface StdMeshers_PolygonPerFace_2D : SMESH::SMESH_2D_Algo
   {
   };
 

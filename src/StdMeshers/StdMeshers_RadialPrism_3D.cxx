@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -598,7 +598,6 @@ bool StdMeshers_RadialPrism_3D::Evaluate(SMESH_Mesh& aMesh,
 
 bool StdMeshers_RadialPrism_3D::IsApplicable( const TopoDS_Shape & aShape, bool toCheckAll )
 {
-  bool isCurShellApp;
   int nbFoundSolids = 0;
   for (TopExp_Explorer exp( aShape, TopAbs_SOLID ); exp.More(); exp.Next(), ++nbFoundSolids )
   {

@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -35,10 +35,11 @@
 #include <utilities.h>
 
 // SALOME GUI includes
-#include <SUIT_Session.h>
-#include <SUIT_MessageBox.h>
-#include <SUIT_ResourceMgr.h>
 #include <LightApp_Application.h>
+#include <SUIT_MessageBox.h>
+#include <SUIT_OverrideCursor.h>
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Session.h>
 #include <SalomeApp_IntSpinBox.h>
 
 // Qt includes
@@ -150,7 +151,7 @@ void SMESHGUI_GenericHypothesisCreator::editHypothesis( SMESH::SMESH_Hypothesis_
   }
   else {
     emit finished( QDialog::Accepted );
-        delete myDlg;
+    delete myDlg;
   }
 }
 
@@ -246,6 +247,12 @@ QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
       changeWidgets().append( w );
     }
   }
+  if ( QWidget* w = getHelperWidget() )
+  {
+    w->setParent( fr );
+    w->move( QPoint( 0, 0 ) );
+    lay->addWidget( w );
+  }
 
   return fr;
 }
@@ -264,6 +271,7 @@ void SMESHGUI_GenericHypothesisCreator::onDialogFinished( int result )
   bool res = result==QDialog::Accepted;
   if( res )
   {
+    SUIT_OverrideCursor wc;
       /*QString paramValues = */storeParams();
       // No longer needed since NoteBook appears and "Value" OB field shows names of variable
 //       if ( !paramValues.isEmpty() ) {
@@ -512,6 +520,17 @@ QWidget* SMESHGUI_GenericHypothesisCreator::getCustomWidget( const StdParam & /*
 {
   return 0;
 }
+//================================================================================
+/*!
+ * \brief Returns a widget representing not a hypothesis parameter but some helper widget
+ */
+//================================================================================
+
+QWidget* SMESHGUI_GenericHypothesisCreator::getHelperWidget() const
+{
+  return 0;
+}
+
 bool SMESHGUI_GenericHypothesisCreator::getParamFromCustomWidget( StdParam&, QWidget* ) const
 {
   return false;
@@ -646,6 +665,7 @@ void SMESHGUI_HypothesisDlg::setCustomFrame( QFrame* f )
 
 void SMESHGUI_HypothesisDlg::accept()
 {
+  SUIT_OverrideCursor wc; // some creators temporary set params to a hyp which can be long
   QString msg;
   if ( myCreator && !myCreator->checkParams( msg ) )
   {

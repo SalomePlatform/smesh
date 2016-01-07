@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -38,25 +38,27 @@
 
 // STL includes
 #include <list>
+#include <vector>
 
 // IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
+class LightApp_SelectionMgr;
+class QButtonGroup;
+class QCheckBox;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
+class QListWidget;
 class QPushButton;
 class QRadioButton;
-class QCheckBox;
-class QListWidget;
-class QButtonGroup;
 class SMESHGUI;
+class SMESHGUI_IdPreview;
 class SMESHGUI_SpinBox;
 class SMESH_Actor;
-class SVTK_Selector;
-class LightApp_SelectionMgr;
 class SUIT_SelectionFilter;
+class SVTK_Selector;
 class TColStd_MapOfInteger;
 
 namespace SMESH
@@ -76,13 +78,18 @@ public:
   SMESHGUI_MergeDlg( SMESHGUI*, int );
   ~SMESHGUI_MergeDlg();
 
+  static QPixmap IconFirst();
+
 private:
   void                      Init();
   void                      enterEvent( QEvent* );              /* mouse enter the QWidget */
   void                      keyPressEvent( QKeyEvent* );
   void                      onEditGroup();
+  bool                      isKeepNodesIDsSelection();
+  bool                      isNewKeepNodesGroup( const char* entry );
 
-  void                      FindGravityCenter( TColStd_MapOfInteger&, 
+  void                      FindGravityCenter( TColStd_MapOfInteger&,
+                                               std::vector<int>& , 
                                                std::list<gp_XYZ>& );
   // add the centers of gravity of ElemsIdMap elements to the GrCentersXYZ list
 
@@ -99,16 +106,15 @@ private:
   SMESH::SMESH_IDSource_var mySubMeshOrGroup;
   SMESH_Actor*              myActor;
   SUIT_SelectionFilter*     myMeshOrSubMeshOrGroupFilter;
+  SUIT_SelectionFilter*     mySubMeshOrGroupFilter;
 
-  SMESH::TIdPreview*        myIdPreview;
+  SMESHGUI_IdPreview*       myIdPreview;
 
   int                       myAction;
   bool                      myIsBusy;
-  int                       myTypeId;
+  int                       myTypeId; // manual(1) or automatic(0)
 
   // Widgets
-  QGroupBox*                GroupConstructors;
-  QRadioButton*             RadioButton;
 
   QGroupBox*                GroupButtons;
   QPushButton*              buttonOk;
@@ -121,10 +127,12 @@ private:
   QPushButton*              SelectMeshButton;
   QLineEdit*                LineEditMesh;
 
-  QGroupBox*                GroupCoincident;
-  QWidget*                  GroupCoincidentWidget;
-  QLabel*                   TextLabelTolerance;
+  QWidget*                  NodeSpecWidget;
   SMESHGUI_SpinBox*         SpinBoxTolerance;
+  QCheckBox*                SeparateCornersAndMedium;
+
+  QGroupBox*                GroupCoincident;
+  //QWidget*                  GroupCoincidentWidget;
   QPushButton*              DetectButton;
   QListWidget*              ListCoincident;
   QPushButton*              AddGroupButton;
@@ -140,6 +148,13 @@ private:
 
   QGroupBox*                GroupExclude;
   QListWidget*              ListExclude;
+
+  QGroupBox*                GroupKeep;
+  QButtonGroup*             KeepFromButGroup;
+  QPushButton*              SelectKeepNodesButton;
+  QPushButton*              AddKeepNodesButton;
+  QPushButton*              RemoveKeepNodesButton;
+  QListWidget*              KeepList;
 
   QGroupBox*                TypeBox;
   QButtonGroup*             GroupType;
@@ -158,6 +173,10 @@ protected slots:
   void                      ClickOnHelp();
   void                      updateControls();
   void                      onDetect();
+  void                      onAddKeepNode();
+  void                      onRemoveKeepNode();
+  void                      onSelectKeepNode();
+  void                      onKeepNodeSourceChanged(int);
   void                      onAddGroup();
   void                      onRemoveGroup();
   void                      onSelectGroup();
@@ -171,6 +190,8 @@ protected slots:
   void                      DeactivateActiveDialog();
   void                      ActivateThisDialog();
   void                      onTypeChanged(int);
+  void                      onOpenView();
+  void                      onCloseView();
 };
 
 #endif // SMESHGUI_MergeDlg_H

@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -223,7 +223,7 @@ SMESH::long_array* StdMeshers_StartEndLength_i::GetReversedEdges()
   SMESH::long_array_var anArray = new SMESH::long_array;
   std::vector<int> ids = this->GetImpl()->GetReversedEdges();
   anArray->length( ids.size() );
-  for ( CORBA::Long i = 0; i < ids.size(); i++)
+  for ( CORBA::ULong i = 0; i < ids.size(); i++)
     anArray [ i ] = ids [ i ];
 
   return anArray._retn();

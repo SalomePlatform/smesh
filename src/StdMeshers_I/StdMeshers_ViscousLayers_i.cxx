@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -228,6 +228,33 @@ throw ( SALOME::SALOME_Exception )
 ::CORBA::Double StdMeshers_ViscousLayers_i::GetStretchFactor()
 {
   return GetImpl()->GetStretchFactor();
+}
+
+//================================================================================
+/*!
+ * \brief Set Method of computing translation of a node
+ */
+//================================================================================
+
+void StdMeshers_ViscousLayers_i::SetMethod( ::StdMeshers::VLExtrusionMethod how )
+{
+  GetImpl()->SetMethod( ::StdMeshers_ViscousLayers::ExtrusionMethod( how ));
+  const char* methNames[3] = { "SURF_OFFSET_SMOOTH",
+                               "FACE_OFFSET",
+                               "NODE_OFFSET" };
+  if ( how >= 0 && how < 3 )
+    SMESH::TPythonDump() << _this() << ".SetMethod( StdMeshers." << methNames[ how ]<< " )";
+}
+
+//================================================================================
+/*!
+ * \brief Return Method of computing translation of a node
+ */
+//================================================================================
+
+::StdMeshers::VLExtrusionMethod StdMeshers_ViscousLayers_i::GetMethod()
+{
+  return (::StdMeshers::VLExtrusionMethod) GetImpl()->GetMethod();
 }
 
 //=============================================================================

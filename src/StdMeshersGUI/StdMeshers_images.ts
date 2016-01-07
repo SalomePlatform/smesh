@@ -124,6 +124,10 @@
             <translation>mesh_tree_algo_mefisto.png</translation>
         </message>
         <message>
+            <source>ICON_SMESH_TREE_ALGO_PolygonPerFace_2D</source>
+            <translation>mesh_tree_algo_polygon.png</translation>
+        </message>
+        <message>
             <source>ICON_SMESH_TREE_ALGO_Projection_1D</source>
             <translation>mesh_tree_algo_regular.png</translation>
         </message>
@@ -142,6 +146,10 @@
 	<message>
             <source>ICON_SMESH_TREE_ALGO_RadialQuadrangle_1D2D</source>
             <translation>mesh_tree_algo_radial_quadrangle_1D2D.png</translation>
+        </message>
+	<message>
+            <source>ICON_SMESH_TREE_ALGO_QuadFromMedialAxis_1D2D</source>
+            <translation>mesh_tree_algo_quad.png</translation>
         </message>
 	<message>
             <source>ICON_SMESH_TREE_ALGO_Prism_3D</source>
@@ -281,6 +289,21 @@
         <message>
             <source>ICON_StdMeshers_Quadrangle_Params_4</source>
             <translation>mesh_quadrangle_reduced.png</translation>
+        </message>
+    </context>
+    <context>
+    <name>StdMeshersGUI_StdHypothesisCreator</name>
+        <message>
+            <source>ICON_EXTMETH_SURF_OFFSET_SMOOTH</source>
+            <translation>mesh_extmeth_surf_offset_smooth.png</translation>
+        </message>
+        <message>
+            <source>ICON_EXTMETH_NODE_OFFSET</source>
+            <translation>mesh_extmeth_node_offset.png</translation>
+        </message>
+        <message>
+            <source>ICON_EXTMETH_FACE_OFFSET</source>
+            <translation>mesh_extmeth_face_offset.png</translation>
         </message>
     </context>
 </TS>

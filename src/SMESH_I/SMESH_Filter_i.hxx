@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -41,8 +41,31 @@
 
 #include <list>
 
+class SMESH_GroupBase_i;
+
+
 namespace SMESH
 {
+  /*!
+   * \brief Object notified on change of base objects and
+   *        notifying dependent objects in its turn.
+   *        This interface is used to track the following dependencies:
+   *        - GroupOnFiler depending on Filter predicates
+   *        - Filter depending on a Group via FT_BelongToMeshGroup predicate 
+   */
+  struct NotifyerAndWaiter
+  {
+    virtual void OnBaseObjModified(NotifyerAndWaiter* obj, bool removed) {};
+    // specific reaction on modification of a base object
+
+    void Modified( bool removed=false, NotifyerAndWaiter* who = 0);
+    // calls OnBaseObjModified(), if who != 0, and myWaiters[i]->Modified(who)
+
+    void AddModifWaiter    ( NotifyerAndWaiter* waiter ); // adds a dependent object to notify
+    void RemoveModifWaiter ( NotifyerAndWaiter* waiter ); // CALL IT when a waiter dies!!!
+    bool ContainModifWaiter( NotifyerAndWaiter* waiter );
+    std::list<NotifyerAndWaiter*> myWaiters;
+  };
   // ================================================================================
   /*
     FUNCTORS
@@ -368,6 +391,28 @@ namespace SMESH
   public:
     OverConstrainedFace_i();
     FunctorType                     GetFunctorType();
+  };
+
+  /*
+    Class       : BelongToMeshGroup_i
+    Description : Verify whether a mesh element is included into a mesh group
+  */
+  class SMESH_I_EXPORT BelongToMeshGroup_i: public virtual POA_SMESH::BelongToMeshGroup,
+                                            public virtual Predicate_i
+  {
+    std::string                    myID; // IOR or StoreName
+    SMESH::SMESH_GroupBase_var     myGroup;
+    Controls::BelongToMeshGroupPtr myBelongToMeshGroup;
+  public:
+    BelongToMeshGroup_i();
+    ~BelongToMeshGroup_i();
+    void                       SetGroup( SMESH::SMESH_GroupBase_ptr theGroup );
+    void                       SetGroupID( const char* theID ); // IOR or StoreName
+    SMESH::SMESH_GroupBase_ptr GetGroup();
+
+    std::string                GetGroupID();
+    FunctorType                GetFunctorType();
+    //virtual void               SetMesh( SMESH_Mesh_ptr theMesh );
   };
 
   /*
@@ -896,7 +941,8 @@ namespace SMESH
     FILTER
   */
   class SMESH_I_EXPORT Filter_i: public virtual POA_SMESH::Filter,
-                                 public virtual SALOME::GenericObj_i
+                                 public virtual SALOME::GenericObj_i,
+                                 public NotifyerAndWaiter
   {
   public:
     Filter_i();
@@ -943,6 +989,12 @@ namespace SMESH
 
     Predicate_i*     GetPredicate_i();
 
+    void FindBaseObjects();
+    // finds groups it depends on
+
+    virtual void OnBaseObjModified(NotifyerAndWaiter* group, bool removed);
+    // notified on change of myBaseGroups[i]
+
     // =========================
     // SMESH_IDSource interface
     // =========================
@@ -952,26 +1004,17 @@ namespace SMESH
     virtual SMESH::array_of_ElementType* GetTypes();
     virtual SMESH::SMESH_Mesh_ptr        GetMesh();
     virtual bool                         IsMeshInfoCorrect() { return true; }
-
-    /*!
-     * \brief Object notified on change of predicate
-     */
-    struct TPredicateChangeWaiter
-    {
-      virtual void PredicateChanged() = 0;
-    };
-    void AddWaiter( TPredicateChangeWaiter* waiter );
-    void RemoveWaiter( TPredicateChangeWaiter* waiter );
+    virtual SALOMEDS::TMPFile*           GetVtkUgStream();
 
   private:
     Controls::Filter myFilter;
     Predicate_i*     myPredicate;
     SMESH_Mesh_var   myMesh;
 
-    std::list<TPredicateChangeWaiter*> myWaiters;
+    std::vector< SMESH_GroupBase_i* > myBaseGroups;
   };
-  
-  
+
+
   /*
     FILTER LIBRARY
   */
@@ -1036,6 +1079,7 @@ namespace SMESH
     MultiConnection2D_ptr     CreateMultiConnection2D();
     BallDiameter_ptr          CreateBallDiameter();
     
+    BelongToMeshGroup_ptr     CreateBelongToMeshGroup();
     BelongToGeom_ptr          CreateBelongToGeom();
     BelongToPlane_ptr         CreateBelongToPlane();
     BelongToCylinder_ptr      CreateBelongToCylinder();

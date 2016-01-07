@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -343,9 +343,9 @@ bool StdMeshers_Regular_1D::CheckHypothesis( SMESH_Mesh&         aMesh,
   return ( aStatus == SMESH_Hypothesis::HYP_OK );
 }
 
-static bool computeParamByFunc(Adaptor3d_Curve& C3d, double first, double last,
-                               double length, bool theReverse,
-                               int nbSeg, Function& func,
+static bool computeParamByFunc(Adaptor3d_Curve& C3d,
+                               double first, double last, double length,
+                               bool theReverse, int nbSeg, Function& func,
                                list<double>& theParams)
 {
   // never do this way
@@ -359,31 +359,23 @@ static bool computeParamByFunc(Adaptor3d_Curve& C3d, double first, double last,
   int nbPnt = 1 + nbSeg;
   vector<double> x(nbPnt, 0.);
 
-  if (!buildDistribution(func, 0.0, 1.0, nbSeg, x, 1E-4))
+  if ( !buildDistribution( func, 0.0, 1.0, nbSeg, x, 1E-4 ))
      return false;
-
-  MESSAGE( "Points:\n" );
-  char buf[1024];
-  for ( int i=0; i<=nbSeg; i++ )
-  {
-    sprintf(  buf, "%f\n", float(x[i] ) );
-    MESSAGE( buf );
-  }
-
-
 
   // apply parameters in range [0,1] to the space of the curve
   double prevU = first;
-  double sign = 1.;
-  if (theReverse)
+  double  sign = 1.;
+  if ( theReverse )
   {
     prevU = last;
-    sign = -1.;
+    sign  = -1.;
   }
-  for( int i = 1; i < nbSeg; i++ )
+
+  for ( int i = 1; i < nbSeg; i++ )
   {
     double curvLength = length * (x[i] - x[i-1]) * sign;
-    GCPnts_AbscissaPoint Discret( C3d, curvLength, prevU );
+    double tol         = Min( Precision::Confusion(), curvLength / 100. );
+    GCPnts_AbscissaPoint Discret( tol, C3d, curvLength, prevU );
     if ( !Discret.IsDone() )
       return false;
     double U = Discret.Parameter();
@@ -690,27 +682,30 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     if ( smDS->NbNodes() < 1 )
       return true; // 1 segment
 
-    vector< double > mainEdgeParams;
-    if ( ! SMESH_Algo::GetNodeParamOnEdge( theMesh.GetMeshDS(), mainEdge, mainEdgeParams ))
+    map< double, const SMDS_MeshNode* > mainEdgeParamsOfNodes;
+    if ( ! SMESH_Algo::GetSortedNodesOnEdge( theMesh.GetMeshDS(), mainEdge, _quadraticMesh,
+                                             mainEdgeParamsOfNodes, SMDSAbs_Edge ))
       return error("Bad node parameters on the source edge of Propagation Of Distribution");
 
-    vector< double > segLen( mainEdgeParams.size() - 1 );
+    vector< double > segLen( mainEdgeParamsOfNodes.size() - 1 );
     double totalLen = 0;
     BRepAdaptor_Curve mainEdgeCurve( mainEdge );
-    for ( size_t i = 1; i < mainEdgeParams.size(); ++i )
+    map< double, const SMDS_MeshNode* >::iterator
+      u_n2 = mainEdgeParamsOfNodes.begin(), u_n1 = u_n2++;
+    for ( size_t i = 1; i < mainEdgeParamsOfNodes.size(); ++i, ++u_n1, ++u_n2 )
     {
       segLen[ i-1 ] = GCPnts_AbscissaPoint::Length( mainEdgeCurve,
-                                                    mainEdgeParams[i-1],
-                                                    mainEdgeParams[i]);
+                                                    u_n1->first,
+                                                    u_n2->first);
       totalLen += segLen[ i-1 ];
     }
     for ( size_t i = 0; i < segLen.size(); ++i )
       segLen[ i ] *= theLength / totalLen;
 
-    size_t iSeg = theReverse ? segLen.size()-1 : 0;
-    size_t dSeg = theReverse ? -1 : +1;
+    size_t  iSeg = theReverse ? segLen.size()-1 : 0;
+    size_t  dSeg = theReverse ? -1 : +1;
     double param = theFirstU;
-    int nbParams = 0;
+    size_t nbParams = 0;
     for ( int i = 0, nb = segLen.size()-1; i < nb; ++i, iSeg += dSeg )
     {
       GCPnts_AbscissaPoint Discret( theC3d, segLen[ iSeg ], param );
@@ -968,13 +963,13 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     {
       if ( Abs( param - Un ) < 0.2 * Abs( param - theParams.back() ))
       {
-        compensateError( a1, eltSize, U1, Un, theLength, theC3d, theParams );
+        compensateError( a1, Abs(eltSize), U1, Un, theLength, theC3d, theParams );
       }
       else if ( Abs( Un - theParams.back() ) <
-                0.2 * Abs( theParams.back() - *(--theParams.rbegin())))
+                0.2 * Abs( theParams.back() - *(++theParams.rbegin())))
       {
         theParams.pop_back();
-        compensateError( a1, an, U1, Un, theLength, theC3d, theParams );
+        compensateError( a1, Abs(an), U1, Un, theLength, theC3d, theParams );
       }
     }
     if (theReverse) theParams.reverse(); // NPAL18025
@@ -985,9 +980,9 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
   case FIXED_POINTS_1D: {
     const std::vector<double>& aPnts = _fpHyp->GetPoints();
     const std::vector<int>&   nbsegs = _fpHyp->GetNbSegments();
-    int i = 0;
     TColStd_SequenceOfReal Params;
-    for(; i<aPnts.size(); i++) {
+    for ( size_t i = 0; i < aPnts.size(); i++ )
+    {
       if( aPnts[i]<0.0001 || aPnts[i]>0.9999 ) continue;
       int j=1;
       bool IsExist = false;
@@ -1011,8 +1006,9 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     }
     double eltSize, segmentSize = 0.;
     double currAbscissa = 0;
-    for(i=0; i<Params.Length(); i++) {
-      int nbseg = ( i > nbsegs.size()-1 ) ? nbsegs[0] : nbsegs[i];
+    for ( int i = 0; i < Params.Length(); i++ )
+    {
+      int nbseg = ( i > (int)nbsegs.size()-1 ) ? nbsegs[0] : nbsegs[i];
       segmentSize = Params.Value(i+1)*theLength - currAbscissa;
       currAbscissa += segmentSize;
       GCPnts_AbscissaPoint APnt(theC3d, sign*segmentSize, par1);
@@ -1049,7 +1045,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
       par1 = par2;
     }
     // add for last
-    int nbseg = ( nbsegs.size() > Params.Length() ) ? nbsegs[Params.Length()] : nbsegs[0];
+    int nbseg = ( (int)nbsegs.size() > Params.Length() ) ? nbsegs[Params.Length()] : nbsegs[0];
     segmentSize = theLength - currAbscissa;
     eltSize = segmentSize/nbseg;
     GCPnts_UniformAbscissa Discret;
@@ -1170,10 +1166,13 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
     }
     if ( !_mainEdge.IsNull() ) {
       // take into account reversing the edge the hypothesis is propagated from
+      // (_mainEdge.Orientation() marks mutual orientation of EDGEs in propagation chain)
       reversed = ( _mainEdge.Orientation() == TopAbs_REVERSED );
-      int mainID = meshDS->ShapeToIndex(_mainEdge);
-      if ( std::find( _revEdgesIDs.begin(), _revEdgesIDs.end(), mainID) != _revEdgesIDs.end())
-        reversed = !reversed;
+      if ( !_isPropagOfDistribution ) {
+        int mainID = meshDS->ShapeToIndex(_mainEdge);
+        if ( std::find( _revEdgesIDs.begin(), _revEdgesIDs.end(), mainID) != _revEdgesIDs.end())
+          reversed = !reversed;
+      }
     }
     // take into account this edge reversing
     if ( std::find( _revEdgesIDs.begin(), _revEdgesIDs.end(), shapeID) != _revEdgesIDs.end())

@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -235,6 +235,19 @@ void SMESH_Hypothesis_i::setOldParameters (const char* theParameters)
 ::SMESH_Hypothesis* SMESH_Hypothesis_i::GetImpl()
 {
   return myBaseImpl;
+}
+
+//================================================================================
+/*!
+ * \brief Return true if a hypothesis has parameters
+ */
+//================================================================================
+
+CORBA::Boolean SMESH_Hypothesis_i::HasParameters()
+{
+  std::ostringstream os;
+  myBaseImpl->SaveTo( os );
+  return ( !os.str().empty() );
 }
 
 //=============================================================================

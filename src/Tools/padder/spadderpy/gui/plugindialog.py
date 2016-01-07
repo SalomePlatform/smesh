@@ -1,5 +1,5 @@
 # -*- coding: iso-8859-1 -*-
-# Copyright (C) 2011-2014  EDF R&D
+# Copyright (C) 2011-2015  EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -50,7 +50,7 @@ all_states = run_states+end_states;
 # The SALOME launcher resource is specified by its name as defined in
 # the file CatalogResources.xml (see root directory of the
 # application). We could have a check box in the dialog to specify
-# wether we want a local execution or a remote one.
+# whether we want a local execution or a remote one.
 resource_name = "localhost"
 from salome.smesh.spadder.configreader import ConfigReader
 

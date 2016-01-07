@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -22,10 +22,10 @@
 
 #include "SMESH_TypeFilter.hxx"
 
-#include <SUIT_Session.h>
-
-#include <SalomeApp_Study.h>
 #include <LightApp_DataOwner.h>
+#include <SUIT_Session.h>
+#include <SalomeApp_Application.h>
+#include <SalomeApp_Study.h>
 
 #include <SALOMEconfig.h>
 #include CORBA_CLIENT_HEADER(SMESH_Gen)
@@ -37,6 +37,40 @@ SMESH_TypeFilter::SMESH_TypeFilter (SMESH::MeshObjectType theType)
 
 SMESH_TypeFilter::~SMESH_TypeFilter()
 {
+}
+
+namespace
+{
+  //================================================================================
+  /*!
+   * \brief Returns true if \a obj is SMESH_IDSource including elements of a given \a type 
+   */
+  //================================================================================
+
+  bool isIDSourceOfType( _PTR(SObject) obj, SMESH::ElementType type )
+  {
+    bool Ok = false;
+    SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>
+      (SUIT_Session::session()->activeApplication());
+    _PTR(GenericAttribute) anAttr;
+    if ( obj->FindAttribute(anAttr, "AttributeIOR"))
+    {
+      _PTR(AttributeIOR) anIOR = anAttr;
+      std::string aVal = anIOR->Value();
+      if ( aVal.size() > 0 )
+      {
+        CORBA::Object_var corbaObj = app->orb()->string_to_object( aVal.c_str() );
+        SMESH::SMESH_IDSource_var ids = SMESH::SMESH_IDSource::_narrow( corbaObj );
+        if ( ! ids->_is_nil() )
+        {
+          SMESH::array_of_ElementType_var types = ids->GetTypes();
+          for ( int i = 0, nb = types->length(); i < nb && !Ok; ++i )
+            Ok = ( types[i] == type );
+        }
+      }
+    }
+    return Ok;
+  }
 }
 
 bool SMESH_TypeFilter::isOk (const SUIT_DataOwner* theDataOwner) const
@@ -213,6 +247,21 @@ bool SMESH_TypeFilter::isOk (const SUIT_DataOwner* theDataOwner) const
         {
           Ok = ( SMESH_TypeFilter(SMESH::MESHorSUBMESH).isOk( theDataOwner ) ||
                  SMESH_TypeFilter(SMESH::GROUP)        .isOk( theDataOwner ));
+          break;
+        }
+      case SMESH::IDSOURCE_EDGE:
+        {
+          Ok = isIDSourceOfType( obj, SMESH::EDGE );
+          break;
+        }
+      case SMESH::IDSOURCE_FACE:
+        {
+          Ok = isIDSourceOfType( obj, SMESH::FACE );
+          break;
+        }
+      case SMESH::IDSOURCE_VOLUME:
+        {
+          Ok = isIDSourceOfType( obj, SMESH::VOLUME );
           break;
         }
     }

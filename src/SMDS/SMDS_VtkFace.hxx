@@ -1,4 +1,4 @@
-// Copyright (C) 2010-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2010-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -34,6 +34,7 @@ public:
   ~SMDS_VtkFace();
   void init(const std::vector<vtkIdType>& nodeIds, SMDS_Mesh* mesh);
   void initPoly(const std::vector<vtkIdType>& nodeIds, SMDS_Mesh* mesh);
+  void initQuadPoly(const std::vector<vtkIdType>& nodeIds, SMDS_Mesh* mesh);
 
   bool ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes);
   void ChangeApex(SMDS_MeshNode* node); // to use only for tmp triangles

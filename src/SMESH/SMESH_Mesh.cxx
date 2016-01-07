@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -58,7 +58,7 @@
 #include <GEOMUtils.hxx>
 
 #undef _Precision_HeaderFile
-//#include <BRepBndLib.hxx>
+#include <BRepBndLib.hxx>
 #include <BRepPrimAPI_MakeBox.hxx>
 #include <Bnd_Box.hxx>
 #include <TColStd_MapOfInteger.hxx>
@@ -72,11 +72,12 @@
 #include "SMESH_TryCatch.hxx" // include after OCCT headers!
 
 #include "Utils_ExceptHandlers.hxx"
+
 #ifndef WIN32
 #include <boost/thread/thread.hpp>
 #include <boost/bind.hpp>
 #else 
-#include <pthread.h> 
+#include <pthread.h>
 #endif
 
 using namespace std;
@@ -180,6 +181,11 @@ SMESH_Mesh::~SMESH_Mesh()
 {
   MESSAGE("SMESH_Mesh::~SMESH_Mesh");
 
+  // avoid usual removal of elements while processing RemoveHypothesis( algo ) event
+  SMESHDS_SubMeshIteratorPtr smIt = _myMeshDS->SubMeshes();
+  while ( smIt->more() )
+    const_cast<SMESHDS_SubMesh*>( smIt->next() )->Clear();
+
   // issue 0020340: EDF 1022 SMESH : Crash with FindNodeClosestTo in a second new study
   //   Notify event listeners at least that something happens
   if ( SMESH_subMesh * sm = GetSubMeshContaining(1))
@@ -229,6 +235,26 @@ SMESH_Mesh::~SMESH_Mesh()
 bool SMESH_Mesh::MeshExists( int meshId ) const
 {
   return _myDocument ? bool( _myDocument->GetMesh( meshId )) : false;
+}
+
+//================================================================================
+/*!
+ * \brief Return a mesh by id
+ */
+//================================================================================
+
+SMESH_Mesh* SMESH_Mesh::FindMesh( int meshId ) const
+{
+  if ( _id == meshId )
+    return (SMESH_Mesh*) this;
+
+  if ( StudyContextStruct *aStudyContext = _gen->GetStudyContext( _studyId ))
+  {
+    std::map < int, SMESH_Mesh * >::iterator i_m = aStudyContext->mapMesh.find( meshId );
+    if ( i_m != aStudyContext->mapMesh.end() )
+      return i_m->second;
+  }
+  return NULL;
 }
 
 //=============================================================================
@@ -329,7 +355,16 @@ double SMESH_Mesh::GetShapeDiagonalSize(const TopoDS_Shape & aShape)
 {
   if ( !aShape.IsNull() ) {
     Bnd_Box Box;
-    GEOMUtils::PreciseBoundingBox(aShape, Box);
+    // avoid too long waiting on large shapes. PreciseBoundingBox() was added
+    // to assure same result which else depends on presence of triangulation (IPAL52557).
+    const int maxNbFaces = 4000;
+    int nbFaces = 0;
+    for ( TopExp_Explorer f( aShape, TopAbs_FACE ); f.More() && nbFaces < maxNbFaces; f.Next() )
+      ++nbFaces;
+    if ( nbFaces < maxNbFaces )
+      GEOMUtils::PreciseBoundingBox(aShape, Box);
+    else
+      BRepBndLib::Add( aShape, Box);
     if ( !Box.IsVoid() )
       return sqrt( Box.SquareExtent() );
   }
@@ -717,7 +752,7 @@ SMESH_Hypothesis::Hypothesis_Status
   // shape 
   
   bool isAlgo = ( !anHyp->GetType() == SMESHDS_Hypothesis::PARAM_ALGO );
-  int event = isAlgo ? SMESH_subMesh::REMOVE_ALGO : SMESH_subMesh::REMOVE_HYP;
+  int   event = isAlgo ? SMESH_subMesh::REMOVE_ALGO : SMESH_subMesh::REMOVE_HYP;
 
   SMESH_subMesh *subMesh = GetSubMesh(aSubShape);
 
@@ -1082,7 +1117,7 @@ throw(SALOME_Exception)
 
 //================================================================================
 /*!
- * \brief Return submeshes of groups containing the given sub-shape
+ * \brief Return sub-meshes of groups containing the given sub-shape
  */
 //================================================================================
 
@@ -1096,8 +1131,8 @@ SMESH_Mesh::GetGroupSubMeshesContaining(const TopoDS_Shape & aSubShape) const
   if ( !subMesh )
     return found;
 
-  // submeshes of groups have max IDs, so search from the map end
-SMESH_subMeshIteratorPtr smIt( _subMeshHolder->GetIterator( /*reverse=*/true ) );
+  // sub-meshes of groups have max IDs, so search from the map end
+  SMESH_subMeshIteratorPtr smIt( _subMeshHolder->GetIterator( /*reverse=*/true ) );
   while ( smIt->more() ) {
     SMESH_subMesh*    sm = smIt->next();
     SMESHDS_SubMesh * ds = sm->GetSubMeshDS();
@@ -1122,6 +1157,12 @@ SMESH_subMeshIteratorPtr smIt( _subMeshHolder->GetIterator( /*reverse=*/true ) )
              SMESH_MesherHelper::IsSubShape( aSubShape, mainSM->GetSubShape() ))
           found.push_back( mainSM );
       }
+  }
+  else // issue 0023068
+  {
+    if ( SMESH_subMesh * mainSM = GetSubMeshContaining(1) )
+      if ( mainSM->GetSubShape().ShapeType() == TopAbs_COMPOUND )
+        found.push_back( mainSM );
   }
   return found;
 }
@@ -1215,7 +1256,8 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
     // other possible changes are not interesting. (IPAL0052457 - assigning hyp performance pb)
     if ( aSubMesh->GetComputeState() != SMESH_subMesh::COMPUTE_OK &&
          aSubMesh->GetComputeState() != SMESH_subMesh::FAILED_TO_COMPUTE &&
-         aSubMesh->GetAlgoState()    != SMESH_subMesh::MISSING_HYP )
+         aSubMesh->GetAlgoState()    != SMESH_subMesh::MISSING_HYP &&
+         !hyp->DataDependOnParams() )
       continue;
 
     const TopoDS_Shape & aSubShape = aSubMesh->GetSubShape();
@@ -1292,7 +1334,7 @@ bool SMESH_Mesh::HasModificationsToDiscard() const
   // return true if the next Compute() will be partial and
   // existing but changed elements may prevent successful re-compute
   bool hasComputed = false, hasNotComputed = false;
-SMESH_subMeshIteratorPtr smIt( _subMeshHolder->GetIterator() );
+  SMESH_subMeshIteratorPtr smIt( _subMeshHolder->GetIterator() );
   while ( smIt->more() )
   {
     const SMESH_subMesh* aSubMesh = smIt->next();
@@ -1307,6 +1349,8 @@ SMESH_subMeshIteratorPtr smIt( _subMeshHolder->GetIterator() );
         hasNotComputed = true;
       if ( hasComputed && hasNotComputed)
         return true;
+
+    default:;
     }
   }
   if ( NbNodes() < 1 )
@@ -1536,7 +1580,8 @@ void SMESH_Mesh::ExportSTL(const char *        file,
 //================================================================================
 
 void SMESH_Mesh::ExportCGNS(const char *        file,
-                            const SMESHDS_Mesh* meshDS)
+                            const SMESHDS_Mesh* meshDS,
+                            const char *        meshName)
 {
   int res = Driver_Mesh::DRS_FAIL;
 #ifdef WITH_CGNS
@@ -1544,6 +1589,8 @@ void SMESH_Mesh::ExportCGNS(const char *        file,
   myWriter.SetFile( file );
   myWriter.SetMesh( const_cast<SMESHDS_Mesh*>( meshDS ));
   myWriter.SetMeshName( SMESH_Comment("Mesh_") << meshDS->GetPersistentId());
+  if ( meshName && meshName[0] )
+    myWriter.SetMeshName( meshName );
   res = myWriter.Perform();
 #endif
   if ( res != Driver_Mesh::DRS_OK )
@@ -1744,10 +1791,10 @@ int SMESH_Mesh::NbBiQuadQuadrangles() const throw(SALOME_Exception)
  */
 //================================================================================
 
-int SMESH_Mesh::NbPolygons() const throw(SALOME_Exception)
+int SMESH_Mesh::NbPolygons(SMDSAbs_ElementOrder order) const throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  return _myMeshDS->GetMeshInfo().NbPolygons();
+  return _myMeshDS->GetMeshInfo().NbPolygons(order);
 }
 
 //================================================================================
@@ -1870,6 +1917,18 @@ int SMESH_Mesh::NbSubMesh() const throw(SALOME_Exception)
   return _myMeshDS->NbSubMesh();
 }
 
+//================================================================================
+/*!
+ * \brief Returns number of meshes in the Study, that is supposed to be
+ *        equal to SMESHDS_Document::NbMeshes()
+ */
+//================================================================================
+
+int SMESH_Mesh::NbMeshes() const // nb meshes in the Study
+{
+  return _myDocument->NbMeshes();
+}
+
 //=======================================================================
 //function : IsNotConformAllowed
 //purpose  : check if a hypothesis alowing notconform mesh is present
@@ -1953,7 +2012,7 @@ SMESH_Group* SMESH_Mesh::AddGroup (SMESHDS_GroupBase* groupDS) throw(SALOME_Exce
 
 bool SMESH_Mesh::SynchronizeGroups()
 {
-  int nbGroups = _mapGroup.size();
+  size_t nbGroups = _mapGroup.size();
   const set<SMESHDS_GroupBase*>& groups = _myMeshDS->GetGroups();
   set<SMESHDS_GroupBase*>::const_iterator gIt = groups.begin();
   for ( ; gIt != groups.end(); ++gIt )
@@ -2065,11 +2124,11 @@ ostream& SMESH_Mesh::Dump(ostream& save)
 {
   int clause = 0;
   save << "========================== Dump contents of mesh ==========================" << endl << endl;
-  save << ++clause << ") Total number of nodes:   \t"    << NbNodes() << endl;
-  save << ++clause << ") Total number of edges:   \t"    << NbEdges() << endl;
-  save << ++clause << ") Total number of faces:   \t"    << NbFaces() << endl;
-  save << ++clause << ") Total number of polygons:\t"    << NbPolygons() << endl;
-  save << ++clause << ") Total number of volumes:\t"     << NbVolumes() << endl;
+  save << ++clause << ") Total number of nodes:      \t" << NbNodes() << endl;
+  save << ++clause << ") Total number of edges:      \t" << NbEdges() << endl;
+  save << ++clause << ") Total number of faces:      \t" << NbFaces() << endl;
+  save << ++clause << ") Total number of polygons:   \t" << NbPolygons() << endl;
+  save << ++clause << ") Total number of volumes:    \t" << NbVolumes() << endl;
   save << ++clause << ") Total number of polyhedrons:\t" << NbPolyhedrons() << endl << endl;
   for ( int isQuadratic = 0; isQuadratic < 2; ++isQuadratic )
   {
@@ -2104,10 +2163,10 @@ ostream& SMESH_Mesh::Dump(ostream& save)
       int nb4 = NbTetras(order);
       int nb5 = NbPyramids(order);
       int nb6 = NbPrisms(order);
-      save << clause << ".1) Number of " << orderStr << " hexahedrons:\t" << nb8 << endl;
+      save << clause << ".1) Number of " << orderStr << " hexahedrons: \t" << nb8 << endl;
       save << clause << ".2) Number of " << orderStr << " tetrahedrons:\t" << nb4 << endl;
       save << clause << ".3) Number of " << orderStr << " prisms:      \t" << nb6 << endl;
-      save << clause << ".4) Number of " << orderStr << " pyramids:\t" << nb5 << endl;
+      save << clause << ".4) Number of " << orderStr << " pyramids:    \t" << nb5 << endl;
       if ( nb8 + nb4 + nb5 + nb6 != NbVolumes(order) ) {
         map<int,int> myVolumesMap;
         SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
@@ -2153,9 +2212,9 @@ SMESH_Group* SMESH_Mesh::ConvertToStandalone ( int theGroupID )
     return aGroup;
 
   SMESH_Group* anOldGrp = (*itg).second;
-  SMESHDS_GroupBase* anOldGrpDS = anOldGrp->GetGroupDS();
-  if ( !anOldGrp || !anOldGrpDS )
+  if ( !anOldGrp || !anOldGrp->GetGroupDS() )
     return aGroup;
+  SMESHDS_GroupBase* anOldGrpDS = anOldGrp->GetGroupDS();
 
   // create new standalone group
   aGroup = new SMESH_Group (theGroupID, this, anOldGrpDS->GetType(), anOldGrp->GetName() );
@@ -2236,8 +2295,8 @@ void SMESH_Mesh::fillAncestorsMap(const TopoDS_Shape& theShape)
         TopTools_ListIteratorOfListOfShape ancIt (ancList);
         while ( ancIt.More() && ancIt.Value().ShapeType() >= memberType )
           ancIt.Next();
-        if ( ancIt.More() )
-          ancList.InsertBefore( theShape, ancIt );
+        if ( ancIt.More() ) ancList.InsertBefore( theShape, ancIt );
+        else                ancList.Append( theShape );
       }
   }
   else // else added for 52457: Addition of hypotheses is 8 time longer than meshing

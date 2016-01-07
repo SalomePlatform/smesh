@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -95,7 +95,7 @@ bool SMDS_MeshElementIDFactory::BindID(int ID, SMDS_MeshElement * elem)
 //=======================================================================
 SMDS_MeshElement* SMDS_MeshElementIDFactory::MeshElement(int ID)
 {
-  if ((ID<1) || (ID>=myMesh->myCells.size()))
+  if ( ID<1 || ID >= (int) myMesh->myCells.size() )
     return NULL;
   const SMDS_MeshElement* elem = GetMesh()->FindElement(ID);
   return (SMDS_MeshElement*)(elem);
@@ -129,7 +129,7 @@ void SMDS_MeshElementIDFactory::ReleaseID(int ID, int vtkId)
   //MESSAGE("~~~~~~~~~~~~~~ SMDS_MeshElementIDFactory::ReleaseID smdsId vtkId " << ID << " " << vtkId);
   if (vtkId >= 0)
     {
-      assert(vtkId < myMesh->myCellIdVtkToSmds.size());
+      assert(vtkId < (int)myMesh->myCellIdVtkToSmds.size());
       myMesh->myCellIdVtkToSmds[vtkId] = -1;
       myMesh->setMyModified();
     }
@@ -149,7 +149,7 @@ void SMDS_MeshElementIDFactory::updateMinMax() const
 {
   myMin = INT_MAX;
   myMax = 0;
-  for (int i = 0; i < myMesh->myCells.size(); i++)
+  for (size_t i = 0; i < myMesh->myCells.size(); i++)
     {
       if (myMesh->myCells[i])
         {

@@ -3,8 +3,8 @@
 \page mesh_through_point_page Moving nodes
 
 \n In mesh you can define a node at a certain point either
-by movement of the node closest to the point or by
-movement of any node to the point.
+- by movement of the node closest to the point or 
+- by movement of a selected node to the point.
 
 <em>To displace a node:</em>
 <ol>
@@ -17,19 +17,20 @@ click <em>"Move Node"</em> button in the toolbar.
 The following dialog will appear:
 
 \image html meshtopass1.png "Manual node selection"
+<br>
 
 \image html meshtopass2.png "Automatic node selection"
+<br>
 
 </li>
 <li>Specify the way of node selection: manually (the first radio
   button) or automatically (the second radio button).</li>
-<li>If the manual method is selected, select the necessary node (X, Y,
-  Z fields show the original coordinates of the node to move) or type
+<li>If the manual method is selected, select a node to move (X, Y,
+  Z fields show the original coordinates of the node) or type
   the node ID.</li>
-<li>Enter the coordinates of the destination point.</li>
-<li>Click <b>Update Destination</b> button to set the coordinates
-  of the destination point equal to the coordinates of the node to
-  move.</li>
+<li>Enter the coordinates of the destination point. You can
+  click <b>Update Destination</b> button to set the coordinates of the
+  destination point equal to the coordinates of the node to move.</li>
 <li>Activate \b Preview check-box to show the result of move in the
   viewer.</li>
 <li>Click the \b Apply or <b>Apply and Close</b> button to confirm the

@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -34,6 +34,7 @@
 #include <SMDS_QuadraticEdge.hxx>
 
 #include <Geom_Surface.hxx>
+#include <ShapeAnalysis_Surface.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Shape.hxx>
 #include <gp_Pnt2d.hxx>
@@ -236,6 +237,10 @@ class SMESH_EXPORT SMESH_MesherHelper
   static TopAbs_ShapeEnum GetGroupType(const TopoDS_Shape& group,
                                        const bool          avoidCompound=false);
 
+  static TopoDS_Shape GetShapeOfHypothesis( const SMESHDS_Hypothesis * hyp,
+                                            const TopoDS_Shape&        shape,
+                                            SMESH_Mesh*                mesh);
+
 
 public:
   // ---------- PUBLIC INSTANCE METHODS ----------
@@ -243,7 +248,9 @@ public:
   // constructor
   SMESH_MesherHelper(SMESH_Mesh& theMesh);
 
-  SMESH_Mesh* GetMesh() const { return myMesh; }
+  SMESH_Gen*    GetGen() const { return GetMesh()->GetGen(); }
+    
+  SMESH_Mesh*   GetMesh() const { return myMesh; }
     
   SMESHDS_Mesh* GetMeshDS() const { return GetMesh()->GetMeshDS(); }
     
@@ -252,12 +259,9 @@ public:
    * quadratic elements will be created. Also fill myTLinkNodeMap
    */
   bool IsQuadraticSubMesh(const TopoDS_Shape& theShape);
-  /*!
-   * \brief Set order of elements to create without calling IsQuadraticSubMesh()
-   */
 
   /*!
-   * \brief Set myCreateQuadratic flag
+   * \brief Set order of elements to create without calling IsQuadraticSubMesh()
    */
   void SetIsQuadratic(const bool theBuildQuadratic)
   { myCreateQuadratic = theBuildQuadratic; }
@@ -482,10 +486,10 @@ public:
                            bool *       isBadTria=0);
   /*!
    * \brief Define a pointer to wrapper over a function of gp_XY class,
-   *       suitable to pass as xyFunPtr to applyIn2D().
+   *       suitable to pass as xyFunPtr to ApplyIn2D().
    *       For exaple gp_XY_FunPtr(Added) defines pointer gp_XY_Added to function
    *       calling gp_XY::Added(gp_XY), which is to be used like following
-   *       applyIn2D(surf, uv1, uv2, gp_XY_Added)
+   *       ApplyIn2D(surf, uv1, uv2, gp_XY_Added)
    */
 #define gp_XY_FunPtr(meth) \
   static gp_XY __gpXY_##meth (const gp_XY& uv1, const gp_XY& uv2) { return uv1.meth( uv2 ); } \
@@ -496,18 +500,26 @@ public:
    *        It takes into account period of the surface. Use gp_XY_FunPtr macro
    *        to easily define pointer to function of gp_XY class.
    */
-  static gp_XY applyIn2D(const Handle(Geom_Surface)& surface,
-                         const gp_XY&                uv1,
-                         const gp_XY&                uv2,
-                         xyFunPtr                    fun,
-                         const bool                  resultInPeriod=true);
-                          
+  static gp_XY ApplyIn2D(Handle(Geom_Surface) surface,
+                         const gp_XY&         uv1,
+                         const gp_XY&         uv2,
+                         xyFunPtr             fun,
+                         const bool           resultInPeriod=true);
+
+  /*!
+   * \brief Move node positions on a FACE within surface period
+   *  \param [in] face - the FACE
+   *  \param [inout] uv - node positions to adjust
+   *  \param [in] nbUV - nb of \a uv
+   */
+  void AdjustByPeriod( const TopoDS_Face& face, gp_XY uv[], const int nbUV );
+
   /*!
    * \brief Check if inFaceNode argument is necessary for call GetNodeUV(F,..)
-    * \retval bool - return true if the face is periodic
-    *
-    * If F is Null, answer about subshape set through IsQuadraticSubMesh() or
-    * SetSubShape()
+   *  \retval bool - return true if the face is periodic
+   *
+   * If F is Null, answer about subshape set through IsQuadraticSubMesh() or
+   * SetSubShape()
    */
   bool GetNodeUVneedInFaceNode(const TopoDS_Face& F = TopoDS_Face()) const;
 
@@ -517,13 +529,17 @@ public:
   GeomAPI_ProjectPointOnSurf& GetProjector(const TopoDS_Face& F,
                                            TopLoc_Location&   loc,
                                            double             tol=0 ) const; 
+  /*!
+   * \brief Return a cached ShapeAnalysis_Surface of a FACE
+   */
+  Handle(ShapeAnalysis_Surface) GetSurface(const TopoDS_Face& F ) const;
 
   /*!
    * \brief Check if shape is a degenerated edge or it's vertex
-    * \param subShape - edge or vertex index in SMESHDS
-    * \retval bool - true if subShape is a degenerated shape
-    *
-    * It works only if IsQuadraticSubMesh() or SetSubShape() has been called
+   *  \param subShape - edge or vertex index in SMESHDS
+   *  \retval bool - true if subShape is a degenerated shape
+   *
+   * It works only if IsQuadraticSubMesh() or SetSubShape() has been called
    */
   bool IsDegenShape(const int subShape) const
   { return myDegenShapeIds.find( subShape ) != myDegenShapeIds.end(); }
@@ -594,10 +610,14 @@ public:
    *  \param force3d - true means node creation at the middle between the
    *                   two given nodes, else node position is found on its
    *                   supporting geometrical shape, if any.
+   *  \param expectedSupport - shape type corresponding to element being created
+   *                           , e.g TopAbs_EDGE if SMDSAbs_Edge is created
+   *                           basing on \a n1 and \a n2
    */
   const SMDS_MeshNode* GetMediumNode(const SMDS_MeshNode* n1,
                                      const SMDS_MeshNode* n2,
-                                     const bool force3d);
+                                     const bool           force3d,
+                                     TopAbs_ShapeEnum     expectedSupport=TopAbs_SHAPE);
   /*!
    * \brief Return existing or create a new central node for a quardilateral
    *       quadratic face given its 8 nodes.
@@ -631,7 +651,8 @@ public:
    */
   std::pair<int, TopAbs_ShapeEnum> GetMediumPos(const SMDS_MeshNode* n1,
                                                 const SMDS_MeshNode* n2,
-                                                const bool           useCurSubShape=false);
+                                                const bool           useCurSubShape=false,
+                                                TopAbs_ShapeEnum     expectedSupport=TopAbs_SHAPE);
   /*!
    * \brief Add a link in my data structure
    */
@@ -671,11 +692,14 @@ public:
    *  \param uv2 - UV within a face
    *  \retval gp_Pnt2d - selected UV
    */
-  gp_Pnt2d GetUVOnSeam( const gp_Pnt2d& uv1, const gp_Pnt2d& uv2 ) const;
+  gp_Pnt2d getUVOnSeam( const gp_Pnt2d& uv1, const gp_Pnt2d& uv2 ) const;
 
   const SMDS_MeshNode* getMediumNodeOnComposedWire(const SMDS_MeshNode* n1,
                                                    const SMDS_MeshNode* n2,
                                                    bool                 force3d);
+
+  double getFaceMaxTol( const TopoDS_Shape& face ) const;
+
  private:
 
   // Forbiden copy constructor
@@ -710,9 +734,13 @@ public:
   double          myPar1[2], myPar2[2]; // U and V bounds of a closed periodic surface
   int             myParIndex;     // bounds' index (1-U, 2-V, 3-both)
 
-  typedef std::map< int, GeomAPI_ProjectPointOnSurf* > TID2ProjectorOnSurf;
-  TID2ProjectorOnSurf myFace2Projector;
+  std::map< int, double > myFaceMaxTol;
+
+  typedef std::map< int, Handle(ShapeAnalysis_Surface)> TID2Surface;
+  typedef std::map< int, GeomAPI_ProjectPointOnSurf* >  TID2ProjectorOnSurf;
   typedef std::map< int, GeomAPI_ProjectPointOnCurve* > TID2ProjectorOnCurve;
+  mutable TID2Surface  myFace2Surface;
+  TID2ProjectorOnSurf  myFace2Projector;
   TID2ProjectorOnCurve myEdge2Projector;
 
   TopoDS_Shape    myShape;

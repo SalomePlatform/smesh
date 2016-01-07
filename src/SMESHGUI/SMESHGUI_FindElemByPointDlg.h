@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -68,11 +68,14 @@ private slots:
   void                           onElemSelected();
   void                           onElemTypeChange(int);
   void                           redisplayPreview();
+  void                           onOpenView();
+  void                           onCloseView();
 
 private:
   SMESHGUI_FindElemByPointDlg*     myDlg;
 
   SUIT_SelectionFilter*            myFilter;
+  SMESHGUI*                        mySMESHGUI;
   SMESHGUI_MeshEditPreview*        mySimulation; // to show point coordinates
   SMESH::SMESH_IDSource_var        myMeshOrPart;
   SMESH::MeshPreviewStruct_var     myPreview;

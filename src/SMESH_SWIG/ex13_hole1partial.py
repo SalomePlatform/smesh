@@ -1,5 +1,5 @@
 #  -*- coding: iso-8859-1 -*-
-# Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 # CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -257,3 +257,8 @@ local(cyl_x+d, cyl_y+d, box_dz, 10)
 # ----------------
 
 hexa.Compute()
+
+# Update object browser
+# ---------------------
+
+salome.sg.updateObjBrowser(1)

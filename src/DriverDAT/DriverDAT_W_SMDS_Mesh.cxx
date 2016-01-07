@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -38,11 +38,10 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
   Status aResult = DRS_OK;
 
   int nbNodes, nbCells;
-  //int i;
-  
+
   char *file2Read = (char *)myFile.c_str();
   FILE* aFileId = fopen(file2Read, "w+");
-  if (aFileId < 0) {
+  if ( !aFileId ) {
     fprintf(stderr, ">> ERREUR : ouverture du fichier %s \n", file2Read);
     return DRS_FAIL;
   }
@@ -50,12 +49,12 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
   /****************************************************************************
    *                       NOMBRES D'OBJETS                                    *
    ****************************************************************************/
-  
+
   /* Combien de noeuds ? */
   nbNodes = myMesh->NbNodes();
-  
+
   /* Combien de mailles, faces ou aretes ? */
-  int /*nb_of_nodes,*/ nb_of_edges, nb_of_faces, nb_of_volumes;
+  int nb_of_edges, nb_of_faces, nb_of_volumes;
   nb_of_edges = myMesh->NbEdges();
   nb_of_faces = myMesh->NbFaces();
   nb_of_volumes = myMesh->NbVolumes();
@@ -63,18 +62,18 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
   SCRUTE(nb_of_edges);
   SCRUTE(nb_of_faces);
   SCRUTE(nb_of_volumes);
-  
-  fprintf(stdout, "%d %d\n", nbNodes, nbCells);
+
+  //fprintf(stdout, "%d %d\n", nbNodes, nbCells);
   fprintf(aFileId, "%d %d\n", nbNodes, nbCells);
-  
+
   /****************************************************************************
    *                       ECRITURE DES NOEUDS                                 *
    ****************************************************************************/
-  
+
   SMDS_NodeIteratorPtr itNodes=myMesh->nodesIterator();
   while(itNodes->more()){               
     const SMDS_MeshNode * node = itNodes->next();
-    fprintf(aFileId, "%d %e %e %e\n", node->GetID(), node->X(), node->Y(), node->Z());
+    fprintf(aFileId, "%d %.14e %.14e %.14e\n", node->GetID(), node->X(), node->Y(), node->Z());
   }
         
   /****************************************************************************

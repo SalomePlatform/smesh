@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -102,7 +102,7 @@ Bnd_B3d* SMESH_OctreeNode::buildRootBox()
     gp_XYZ p1( n1->X(), n1->Y(), n1->Z() );
     box->Add(p1);
   }
-  if ( myNodes.size() <= getMaxNbNodes() )
+  if ((int) myNodes.size() <= getMaxNbNodes() )
     myIsLeaf = true;
 
   return box;
@@ -151,7 +151,7 @@ void SMESH_OctreeNode::buildChildrenData()
   for (int i = 0; i < 8; i++)
   {
     SMESH_OctreeNode* myChild = dynamic_cast<SMESH_OctreeNode*> (myChildren[i]);
-    if ( myChild->myNodes.size() <= getMaxNbNodes() )
+    if ((int) myChild->myNodes.size() <= getMaxNbNodes() )
       myChild->myIsLeaf = true;
   }
 }
@@ -189,6 +189,7 @@ void SMESH_OctreeNode::NodesAround (const SMDS_MeshNode * Node,
 //================================================================================
 /*!
  * \brief Return in dist2Nodes nodes mapped to their square distance from Node
+ *        Tries to find a closest node.
  *  \param node - node to find nodes closest to
  *  \param dist2Nodes - map of found nodes and their distances
  *  \param precision - radius of a sphere to check nodes inside
@@ -241,6 +242,44 @@ bool SMESH_OctreeNode::NodesAround(const gp_XYZ &node,
   return false;
 }
 
+//================================================================================
+/*!
+ * \brief Return a list of nodes close to a point
+ *  \param [in] point - point
+ *  \param [out] nodes - found nodes
+ *  \param [in] precision - allowed distance from \a point
+ */
+//================================================================================
+
+void SMESH_OctreeNode::NodesAround(const gp_XYZ&                      point,
+                                   std::vector<const SMDS_MeshNode*>& nodes,
+                                   double                             precision)
+{
+  if ( isInside( point, precision ))
+  {
+    if ( isLeaf() && NbNodes() )
+    {
+      double minDist2 = precision * precision;
+      TIDSortedNodeSet::iterator nIt = myNodes.begin();
+      for ( ; nIt != myNodes.end(); ++nIt )
+      {
+        SMESH_TNodeXYZ p2( *nIt );
+        double dist2 = ( point - p2 ).SquareModulus();
+        if ( dist2 <= minDist2 )
+          nodes.push_back( p2._node );
+      }
+    }
+    else if ( myChildren )
+    {
+      for (int i = 0; i < 8; i++)
+      {
+        SMESH_OctreeNode* myChild = dynamic_cast<SMESH_OctreeNode*> (myChildren[i]);
+        myChild->NodesAround( point, nodes, precision);
+      }
+    }
+  }
+}
+
 //=============================
 /*!
  * \brief  Return in theGroupsOfNodes a list of group of nodes close to each other within theTolerance
@@ -275,42 +314,33 @@ void SMESH_OctreeNode::FindCoincidentNodes (TIDSortedNodeSet& theSetOfNodes,
  * \param theGroupsOfNodes - list of nodes closed to each other returned
  */
 //=============================
-void SMESH_OctreeNode::FindCoincidentNodes ( TIDSortedNodeSet* theSetOfNodes,
-                                             const double               theTolerance,
+void SMESH_OctreeNode::FindCoincidentNodes ( TIDSortedNodeSet*                    theSetOfNodes,
+                                             const double                         theTolerance,
                                              list< list< const SMDS_MeshNode*> >* theGroupsOfNodes)
 {
   TIDSortedNodeSet::iterator it1 = theSetOfNodes->begin();
   list<const SMDS_MeshNode*>::iterator it2;
 
+  list<const SMDS_MeshNode*> ListOfCoincidentNodes;
+  TIDCompare idLess;
+
   while (it1 != theSetOfNodes->end())
   {
     const SMDS_MeshNode * n1 = *it1;
-
-    list<const SMDS_MeshNode*> ListOfCoincidentNodes;// Initialize the lists via a declaration, it's enough
-
-    list<const SMDS_MeshNode*> * groupPtr = 0;
 
     // Searching for Nodes around n1 and put them in ListofCoincidentNodes.
     // Found nodes are also erased from theSetOfNodes
     FindCoincidentNodes(n1, theSetOfNodes, &ListOfCoincidentNodes, theTolerance);
 
-    // We build a list {n1 + his neigbours} and add this list in theGroupsOfNodes
-    for (it2 = ListOfCoincidentNodes.begin(); it2 != ListOfCoincidentNodes.end(); it2++)
+    if ( !ListOfCoincidentNodes.empty() )
     {
-      const SMDS_MeshNode* n2 = *it2;
-      if ( !groupPtr )
-      {
-        theGroupsOfNodes->push_back( list<const SMDS_MeshNode*>() );
-        groupPtr = & theGroupsOfNodes->back();
-        groupPtr->push_back( n1 );
-      }
-      if (groupPtr->front() > n2)
-        groupPtr->push_front( n2 );
-      else
-        groupPtr->push_back( n2 );
+      // We build a list {n1 + his neigbours} and add this list in theGroupsOfNodes
+      if ( idLess( n1, ListOfCoincidentNodes.front() )) ListOfCoincidentNodes.push_front( n1 );
+      else                                              ListOfCoincidentNodes.push_back ( n1 );
+      ListOfCoincidentNodes.sort( idLess );
+      theGroupsOfNodes->push_back( list<const SMDS_MeshNode*>() );
+      theGroupsOfNodes->back().splice( theGroupsOfNodes->back().end(), ListOfCoincidentNodes );
     }
-    if (groupPtr != 0)
-      groupPtr->sort();
 
     theSetOfNodes->erase(it1);
     it1 = theSetOfNodes->begin();

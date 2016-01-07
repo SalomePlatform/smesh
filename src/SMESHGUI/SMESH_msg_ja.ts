@@ -221,11 +221,11 @@
     </message>
     <message>
       <source>MEN_ASPECT</source>
-      <translation>レポート フォーム</translation>
+      <translation>アスペクト比</translation>
     </message>
     <message>
       <source>MEN_ASPECT_3D</source>
-      <translation>レポートの 3 D を形成</translation>
+      <translation>3Dアスペクト比</translation>
     </message>
     <message>
       <source>MEN_AUTO_COLOR</source>
@@ -396,8 +396,8 @@
       <translation>エッジ</translation>
     </message>
     <message>
-        <source>MEN_CHOOSE</source>
-        <translation type="unfinished">Choose...</translation>
+      <source>MEN_CHOOSE</source>
+      <translation>選択...</translation>
     </message>
     <message>
       <source>MEN_EDIT</source>
@@ -453,7 +453,7 @@
     </message>
     <message>
       <source>MEN_EXTRUSION</source>
-      <translation>Extrusion</translation>
+      <translation>押出し</translation>
     </message>
     <message>
       <source>MEN_EXTRUSION_ALONG</source>
@@ -497,7 +497,7 @@
     </message>
     <message>
       <source>MEN_EQUAL_NODE</source>
-      <translation>二重ノット</translation>
+      <translation>二重ノード</translation>
     </message>
     <message>
       <source>STB_EQUAL_NODE</source>
@@ -792,6 +792,10 @@
       <translation>多角形</translation>
     </message>
     <message>
+      <source>MEN_QUADRATIC_POLYGON</source>
+      <translation>2次ポリゴン</translation>
+    </message>
+    <message>
       <source>MEN_POLYHEDRON</source>
       <translation>多面体</translation>
     </message>
@@ -901,7 +905,7 @@
     </message>
     <message>
       <source>MEN_REVOLUTION</source>
-      <translation>Revolution</translation>
+      <translation>回転</translation>
     </message>
     <message>
       <source>MEN_ROT</source>
@@ -930,6 +934,10 @@
     <message>
       <source>MEN_SHADE</source>
       <translation>網かけ</translation>
+    </message>
+    <message>
+      <source>MEN_SHOW_SCALAR_BAR</source>
+      <translation>スカラバーの表示</translation>
     </message>
     <message>
       <source>MEN_QUADRATIC_REPRESENT</source>
@@ -977,7 +985,7 @@
     </message>
     <message>
       <source>MEN_TAPER</source>
-      <translation>Cone</translation>
+      <translation>抜き勾配</translation>
     </message>
     <message>
       <source>MEN_TETRA</source>
@@ -1080,6 +1088,18 @@
       <translation>四面体を爆発します。</translation>
     </message>
     <message>
+      <source>MEN_SPLIT_BIQUAD</source>
+      <translation>線形に2次分割</translation>
+    </message>
+    <message>
+      <source>TOP_SPLIT_BIQUAD</source>
+      <translation>線形に2次分割</translation>
+    </message>
+    <message>
+      <source>STB_SPLIT_BIQUAD</source>
+      <translation>線形に2次分割</translation>
+    </message>
+    <message>
       <source>MESHERS_FILE_CANT_OPEN</source>
       <translation>リソース ファイルを開くことができません。</translation>
     </message>
@@ -1120,8 +1140,12 @@
       <translation>グループ名は表示されません。作成または既存のグループを選択して新しいグループの名前を指定します。</translation>
     </message>
     <message>
-      <source>MESH_STANDALONE_GRP_CHOSEN</source>
-      <translation>ジオメトリにリンクされているグループが選択されている： %1。スタンドアロン アレイに変換しますか。</translation>
+      <source>MESH_GEOM_GRP_CHOSEN</source>
+      <translation>ジオメトリグループは次のように選択されています: %1　それをスタンドアロングループに変換したいですか？</translation>
+    </message>
+    <message>
+      <source>MESH_FILTER_GRP_CHOSEN</source>
+      <translation>フィルタ上のグループは次のように選択されています: %1　それをスタンドアロングループに変換したいですか？</translation>
     </message>
     <message>
       <source>NODE_ID</source>
@@ -1214,6 +1238,14 @@
     <message>
       <source>SMESH_ADD_POLYGON_TITLE</source>
       <translation>多角形を追加します。</translation>
+    </message>
+    <message>
+      <source>SMESH_ADD_QUADRATIC_POLYGON</source>
+      <translation>2次ポリゴンの追加</translation>
+    </message>
+    <message>
+      <source>SMESH_ADD_QUADRATIC_POLYGON_TITLE</source>
+      <translation>2次ポリゴンの追加</translation>
     </message>
     <message>
       <source>SMESH_ADD_PENTA</source>
@@ -1668,6 +1700,10 @@
       <translation>押出、ベクトルに沿って</translation>
     </message>
     <message>
+      <source>SMESH_EXTRUSION_BY_NORMAL</source>
+      <translation>標準押出</translation>
+    </message>
+    <message>
       <source>SMESH_FACE</source>
       <translation>Face</translation>
     </message>
@@ -1820,8 +1856,8 @@
       <translation>このようなディメンションの前提がジオメトリに既に割り当てられています。</translation>
     </message>
     <message>
-      <source>SMESH_ID_DIAGONAL</source>
-      <translation>エッジの Id</translation>
+      <source>SMESH_ID_EDGES</source>
+      <translation>エッジID</translation>
     </message>
     <message>
       <source>SMESH_ID_ELEMENTS</source>
@@ -2134,6 +2170,10 @@
     <message>
       <source>SMESH_OBJECT_MESH</source>
       <translation>Mesh</translation>
+    </message>
+    <message>
+      <source>SMESH_OBJECTS</source>
+      <translation>オブジェクト</translation>
     </message>
     <message>
       <source>SMESH_OBJECT_MESHorSUBMESH</source>
@@ -2542,6 +2582,10 @@
     <message>
       <source>SMESH_SEWING</source>
       <translation>つなぎ合わせ</translation>
+    </message>
+    <message>
+      <source>SMESH_SHOW_SCALAR_BAR</source>
+      <translation>スカラバーの表示</translation>
     </message>
     <message>
       <source>SMESH_SMOOTHING</source>
@@ -3172,6 +3216,10 @@
       <translation>多角形</translation>
     </message>
     <message>
+      <source>STB_QUADRATIC_POLYGON</source>
+      <translation>2次ポリゴン</translation>
+    </message>
+    <message>
       <source>STB_POLYHEDRON</source>
       <translation>多面体</translation>
     </message>
@@ -3282,6 +3330,10 @@
     <message>
       <source>STB_SHOW</source>
       <translation>表示</translation>
+    </message>
+    <message>
+      <source>STB_SHOW_SCALAR_BAR</source>
+      <translation>スカラバーの表示</translation>
     </message>
     <message>
       <source>STB_SHRINK</source>
@@ -3824,6 +3876,10 @@
       <translation>多角形</translation>
     </message>
     <message>
+      <source>TOP_QUADRATIC_POLYGON</source>
+      <translation>2次ポリゴン</translation>
+    </message>
+    <message>
       <source>TOP_POLYHEDRON</source>
       <translation>多面体</translation>
     </message>
@@ -4301,12 +4357,20 @@
       <translation>表示する項目</translation>
     </message>
     <message>
+      <source>QUADRATIC_REPRESENT_MODE_GROUP</source>
+      <translation>2D二次要素の表現</translation>
+    </message>
+    <message>
       <source>QUADRATIC_REPRESENT_MODE</source>
       <translation>2 D の 2 次要素の表現</translation>
     </message>
     <message>
       <source>MAX_ARC_ANGLE</source>
       <translation>最大角度</translation>
+    </message>
+    <message>
+      <source>PREF_DISPLAY_MODE_GROUP</source>
+      <translation>表示モード</translation>
     </message>
     <message>
       <source>PREF_DISPLAY_MODE</source>
@@ -4533,6 +4597,10 @@
       <translation>粒子</translation>
     </message>
     <message>
+      <source>PREF_BALL_DIAMETER</source>
+      <translation>ボール要素のデフォルト直径</translation>
+    </message>
+    <message>
       <source>PREF_BALL_SIZE</source>
       <translation>粒子状のコンポーネントのサイズ</translation>
     </message>
@@ -4590,7 +4658,7 @@
     <name>SMESHGUI_AddQuadraticElementDlg</name>
     <message>
       <source>SMESH_ADD_QUADRATIC_EDGE</source>
-      <translation>正方形のエッジを追加します。</translation>
+      <translation>２次エッジの追加</translation>
     </message>
     <message>
       <source>SMESH_ADD_QUADRATIC_HEXAHEDRON</source>
@@ -4606,7 +4674,7 @@
     </message>
     <message>
       <source>SMESH_ADD_QUADRATIC_PYRAMID</source>
-      <translation>四角錐を追加します。</translation>
+      <translation>二次ピラミッドの追加</translation>
     </message>
     <message>
       <source>SMESH_ADD_QUADRATIC_QUADRANGLE</source>
@@ -4793,6 +4861,32 @@
     <message>
       <source>SMESH_REJECT_MESH_ORDER</source>
       <translation>サブメッシュの優先順位は、プレビュー時に変更されました。初期の優先度を復元しますか。</translation>
+    </message>
+  </context>
+  <context>
+    <name>SMESHGUI_SplitBiQuadDlg</name>
+    <message>
+      <source>CAPTION</source>
+      <translation>線形に2次分割</translation>
+    </message>
+    <message>
+      <source>MESH</source>
+      <translation>メッシュ、グループ、あるいはサブメッシュ</translation>
+    </message>
+  </context>
+  <context>
+    <name>SMESHGUI_SplitBiQuadOp</name>
+    <message>
+      <source>MESH_IS_NOT_SELECTED</source>
+      <translation>分割のためのオブジェクトは選択されていません。オブジェクトを指定してから再試行してください。</translation>
+    </message>
+    <message>
+      <source>REF_IS_NULL</source>
+      <translation>有効なメッシュオブジェクトは選択されていません</translation>
+    </message>
+    <message>
+      <source>DIFFERENT_MESHES</source>
+      <translation>異なるメッシュに属したオブジェクトが選択されています</translation>
     </message>
   </context>
   <context>
@@ -4991,6 +5085,22 @@
       <source>EXCLUDE_GROUPS</source>
       <translation>グループを除外</translation>
     </message>
+    <message>
+      <source>SEPARATE_CORNERS_AND_MEDIUM</source>
+      <translation>2次セルのコーナ節点と中間節点をマージできません</translation>
+    </message>
+    <message>
+      <source>KEEP_NODES</source>
+      <translation>維持節点</translation>
+    </message>
+    <message>
+      <source>GROUP_SUBMESH</source>
+      <translation>グループとサブメッシュ</translation>
+    </message>
+    <message>
+      <source>SELECT</source>
+      <translation>Select: </translation>
+    </message>
   </context>
   <context>
     <name>SMESHGUI_ExtrusionAlongPathDlg</name>
@@ -5088,6 +5198,14 @@
     <message>
       <source>EXTRUSION_ALONG_LINE</source>
       <translation>線に沿った押出し</translation>
+    </message>
+    <message>
+      <source>BY_AVERAGE_NORMAL</source>
+      <translation>平均標準に従う</translation>
+    </message>
+    <message>
+      <source>USE_INPUT_ELEMS_ONLY</source>
+      <translation>入力要素のみ使用</translation>
     </message>
   </context>
   <context>
@@ -5337,6 +5455,10 @@
     <message>
       <source>OVER_CONSTRAINED_FACE</source>
       <translation>制約が多すぎるフェース</translation>
+    </message>
+    <message>
+      <source>BELONG_TO_MESH_GROUP</source>
+      <translation>メッシュグループに所属</translation>
     </message>
     <message>
       <source>BELONG_TO_CYLINDER</source>
@@ -5722,8 +5844,8 @@
       <translation>操作の引数されていないそれらを入力し、もう一度やり直してください</translation>
     </message>
     <message>
-      <source>NAME</source>
-      <translation>名前</translation>
+      <source>RESULT</source>
+      <translation>結果</translation>
     </message>
     <message>
       <source>OBJECT_1</source>
@@ -5764,20 +5886,28 @@
       <translation>要素の型</translation>
     </message>
     <message>
-      <source>NODE</source>
-      <translation>ノード</translation>
+      <source>UNDERLYING_ENTITIES_ONLY</source>
+      <translation>基本的なエンティティのみを含める</translation>
     </message>
     <message>
-      <source>EDGE</source>
-      <translation>Edge</translation>
+      <source>NUMBER_OF_COMMON_NODES</source>
+      <translation>共通節点数</translation>
     </message>
     <message>
-      <source>FACE</source>
-      <translation>Face</translation>
+      <source>ALL</source>
+      <translation>すべて</translation>
     </message>
     <message>
-      <source>VOLUME</source>
-      <translation>ボリューム</translation>
+      <source>MAIN</source>
+      <translation>メイン</translation>
+    </message>
+    <message>
+      <source>AT_LEAST_ONE</source>
+      <translation>少なくともひとつ</translation>
+    </message>
+    <message>
+      <source>MAJORITY</source>
+      <translation>多数</translation>
     </message>
   </context>
   <context>
@@ -6295,8 +6425,8 @@
       <translation>プレビュー</translation>
     </message>
     <message>
-      <source>REVOLUTION_1D</source>
-      <translation>1 D 要素の革命</translation>
+      <source>REVOLUTION</source>
+      <translation>回転押出</translation>
     </message>
     <message>
       <source>REVOLUTION_2D</source>
@@ -6428,6 +6558,42 @@
     <message>
       <source>SIDE_2</source>
       <translation>エッジ 2</translation>
+    </message>
+    <message>
+      <source>AUTO_SEWING</source>
+      <translation>自動縫合</translation>
+    </message>
+    <message>
+      <source>COINCIDENT_FREE_BORDERS</source>
+      <translation>一致フリー境界</translation>
+    </message>
+    <message>
+      <source>DETECT</source>
+      <translation>検出</translation>
+    </message>
+    <message>
+      <source>SELECT_ALL</source>
+      <translation>すべてを選択</translation>
+    </message>
+    <message>
+      <source>EDIT_SELECTED_GROUP</source>
+      <translation>選択グループを編集</translation>
+    </message>
+    <message>
+      <source>STEP</source>
+      <translation>Step</translation>
+    </message>
+    <message>
+      <source>NO_BORDERS_TO_SEW</source>
+      <translation>縫合できるフリー境界はみつかりません</translation>
+    </message>
+    <message>
+      <source>NOT_ALL_BORDERS_SEWED</source>
+      <translation>境界の %2 グループの%1を縫合しました</translation>
+    </message>
+    <message>
+      <source>ALL_BORDERS_SEWED</source>
+      <translation>境界の %1 グループを縫合しました。</translation>
     </message>
   </context>
   <context>
@@ -6987,6 +7153,10 @@
     <message>
       <source>GRAVITY_CENTER</source>
       <translation>重心</translation>
+    </message>
+    <message>
+      <source>NORMAL_VECTOR</source>
+      <translation>標準</translation>
     </message>
     <message>
       <source>NODE</source>
@@ -7588,6 +7758,14 @@
       <source>ORIENTATION</source>
       <translation>方向</translation>
     </message>
+    <message>
+      <source>VOLUMES</source>
+      <translation>ボリューム</translation>
+    </message>
+    <message>
+      <source>OUTSIDE_VOLUME_NORMAL</source>
+      <translation>標準外側ボリュームに面する</translation>
+    </message>
   </context>
   <context>
     <name>SMESHGUI_ReorientFacesOp</name>
@@ -7596,8 +7774,16 @@
       <translation>選択したオブジェクトがありません。</translation>
     </message>
     <message>
+      <source>NO_VOLUME_OBJECT_SELECTED</source>
+      <translation>選択されたボリュームオブジェクトはありません</translation>
+    </message>
+    <message>
       <source>NO_FACES</source>
       <translation>オブジェクトに顔が含まれていません。</translation>
+    </message>
+    <message>
+      <source>NO_VOLUMES</source>
+      <translation>ボリュームオブジェクトはボリュームを含んでいません</translation>
     </message>
     <message>
       <source>ZERO_SIZE_VECTOR</source>
@@ -7695,7 +7881,7 @@
     <name>SMESHGUI_DisplayEntitiesDlg</name>
     <message>
       <source>WRN_AT_LEAST_ONE</source>
-      <translation type="unfinished">At least one entity type should be chosen!</translation>
+      <translation>少なくとも一つのエンティティタイプは選択する必要があります！</translation>
     </message>
   </context>
 </TS>

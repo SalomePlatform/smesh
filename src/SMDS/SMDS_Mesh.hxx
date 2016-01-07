@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -58,7 +58,7 @@
 
 #define MYASSERT(val) if (!(val)) throw SALOME_Exception(LOCALIZED("assertion not verified"));
 
-class SMDS_EXPORT SMDS_Mesh:public SMDS_MeshObject
+class SMDS_EXPORT SMDS_Mesh : public SMDS_MeshObject
 {
 public:
   friend class SMDS_MeshIDFactory;
@@ -576,14 +576,22 @@ public:
 
   virtual SMDS_MeshFace* AddPolygonalFace (const std::vector<const SMDS_MeshNode*> & nodes);
 
-  virtual SMDS_MeshVolume* AddPolyhedralVolumeWithID
-                           (const std::vector<int> & nodes_ids,
-                            const std::vector<int> & quantities,
-                            const int                ID);
+  virtual SMDS_MeshFace* AddQuadPolygonalFaceWithID(const std::vector<int> & nodes_ids,
+                                                    const int                ID);
+
+  virtual SMDS_MeshFace* AddQuadPolygonalFaceWithID(const std::vector<const SMDS_MeshNode*> & nodes,
+                                                    const int                                 ID);
+
+  virtual SMDS_MeshFace* AddQuadPolygonalFace(const std::vector<const SMDS_MeshNode*> & nodes);
 
   virtual SMDS_MeshVolume* AddPolyhedralVolumeWithID
-                           (const std::vector<const SMDS_MeshNode*> & nodes,
-                            const std::vector<int>                  & quantities,
+    (const std::vector<int> & nodes_ids,
+     const std::vector<int> & quantities,
+     const int                ID);
+
+  virtual SMDS_MeshVolume* AddPolyhedralVolumeWithID
+    (const std::vector<const SMDS_MeshNode*> & nodes,
+     const std::vector<int>                  & quantities,
                             const int                                 ID);
 
   virtual SMDS_MeshVolume* AddPolyhedralVolume
@@ -781,7 +789,7 @@ protected:
   {
     assert(ID >= 0);
     myElementIDFactory->adjustMaxId(ID);
-    if (ID >= myCells.size())
+    if (ID >= (int)myCells.size())
       myCells.resize(ID+SMDS_Mesh::chunkSize,0);
   }
 
@@ -830,6 +838,8 @@ protected:
   SMDS_MeshElementIDFactory *myElementIDFactory;
   SMDS_MeshInfo          myInfo;
 
+  //! any add, remove or change of node or cell
+  bool myModified;
   //! use a counter to keep track of modifications
   unsigned long myModifTime, myCompactTime;
 
@@ -839,9 +849,6 @@ protected:
   bool myHasConstructionEdges;
   bool myHasConstructionFaces;
   bool myHasInverseElements;
-
-  //! any add, remove or change of node or cell
-  bool myModified;
 
   double xmin;
   double xmax;

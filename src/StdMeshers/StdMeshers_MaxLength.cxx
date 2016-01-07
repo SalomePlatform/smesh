@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -213,7 +213,7 @@ bool StdMeshers_MaxLength::SetParametersByMesh(const SMESH_Mesh*   theMesh,
     SMESHDS_Mesh* aMeshDS = const_cast< SMESH_Mesh* >( theMesh )->GetMeshDS();
     if ( SMESH_Algo::GetNodeParamOnEdge( aMeshDS, edge, params ))
     {
-      for ( int i = 1; i < params.size(); ++i )
+      for ( size_t i = 1; i < params.size(); ++i )
         _length += GCPnts_AbscissaPoint::Length( AdaptCurve, params[ i-1 ], params[ i ]);
       nbEdges += params.size() - 1;
     }

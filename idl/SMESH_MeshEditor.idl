@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -29,31 +29,60 @@
 
 module SMESH
 {
+  interface NumericalFunctor;
+
   enum Bnd_Dimension { BND_2DFROM3D, BND_1DFROM3D, BND_1DFROM2D };
+
+
+  struct FreeBorder
+  {
+    SMESH::long_array nodeIDs; // all nodes defining a free border
+    // 1st and last node is same in a closed border
+  };
+  struct FreeBorderPart
+  {
+    short border; // border index within a sequence<FreeBorder>
+    long  node1;  // node index within the border-th FreeBorder
+    long  node2;
+    long  nodeLast;
+  };
+  typedef sequence<FreeBorder>       ListOfFreeBorders;
+  typedef sequence<FreeBorderPart>   FreeBordersGroup;
+  typedef sequence<FreeBordersGroup> ListOfFreeBorderGroups;
+
+  struct CoincidentFreeBorders
+  {
+    ListOfFreeBorders      borders;          // nodes of all free borders
+    ListOfFreeBorderGroups coincidentGroups; // groups of coincident parts of borders
+  };
+
 
   /*!
    * This interface makes modifications on the Mesh - removing elements and nodes etc.
    */
-  interface NumericalFunctor;
-
   interface SMESH_MeshEditor
   {
    /*!
+    * Returns a mesh subject to edition
+    */
+    SMESH_Mesh GetMesh();
+
+   /*!
     * Return data of mesh edition preview which is computed provided
-    * that the editor was obtained trough SMESH_Mesh::GetMeshEditPreviewer()
+    * that the editor was obtained through SMESH_Mesh::GetMeshEditPreviewer()
     */
     MeshPreviewStruct GetPreviewData() raises (SALOME::SALOME_Exception);
 
    /*!
     * If during last operation of MeshEditor some nodes were
-    * created this method returns list of their IDs, if new nodes
+    * created, this method returns list of their IDs, if new nodes
     * not created - returns empty list
     */
     long_array GetLastCreatedNodes() raises (SALOME::SALOME_Exception);
 
    /*!
     * If during last operation of MeshEditor some elements were
-    * created this method returns list of their IDs, if new elements
+    * created, this method returns list of their IDs, if new elements
     * not created - returns empty list
     */
     long_array GetLastCreatedElems() raises (SALOME::SALOME_Exception);
@@ -137,6 +166,13 @@ module SMESH
     long AddFace(in long_array IDsOfNodes) raises (SALOME::SALOME_Exception);
 
     long AddPolygonalFace(in long_array IdsOfNodes) raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Create a quadratic polygonal face
+     *  \param IdsOfNodes - nodes of the polygon; corner nodes follow first
+     *  \return long - ID of a new polygon
+     */
+    long AddQuadPolygonalFace(in long_array IdsOfNodes) raises (SALOME::SALOME_Exception);
 
     /*!
      *  Create volume, either linear and quadratic (this is determed
@@ -348,11 +384,23 @@ module SMESH
      *         to \a facetToSplitNormal location are split, else \a facetToSplitNormal
      *         is used to find the facet to split in all domains present in \a elems.
      */
-    void SplitHexahedraIntoPrisms(in SMESH_IDSource     elems, 
+    void SplitHexahedraIntoPrisms(in SMESH_IDSource     elems,
                                   in SMESH::PointStruct startHexPoint,
                                   in SMESH::DirStruct   facetToSplitNormal,
                                   in short              methodFlags,
                                   in boolean            allDomains)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * \brief Split bi-quadratic elements into linear ones without creation of additional nodes.
+     *   - bi-quadratic triangle will be split into 3 linear quadrangles;
+     *   - bi-quadratic quadrangle will be split into 4 linear quadrangles;
+     *   - tri-quadratic hexahedron will be split into 8 linear hexahedra;
+     *   Quadratic elements of lower dimension  adjacent to the split bi-quadratic element
+     *   will be split in order to keep the mesh conformal.
+     *  \param elems - elements to split
+     */
+    void SplitBiQuadraticIntoLinear(in ListOfIDSources elems)
       raises (SALOME::SALOME_Exception);
 
 
@@ -393,7 +441,7 @@ module SMESH
     void    ConvertFromQuadraticObject(in SMESH_IDSource theObject)
       raises (SALOME::SALOME_Exception);
 
-    void ConvertToBiQuadratic(in boolean        theForce3d, 
+    void ConvertToBiQuadratic(in boolean        theForce3d,
                               in SMESH_IDSource theObject)
       raises (SALOME::SALOME_Exception);
 
@@ -402,190 +450,73 @@ module SMESH
     void RenumberElements() raises (SALOME::SALOME_Exception);
 
     /*!
-     * \brief Genarate dim+1 elements by rotation of given elements around axis
-     * \param IDsOfElements - elements to ratate
-     * \param Axix - rotation axis
-     * \param AngleInRadians - rotation angle
-     * \param NbOfSteps - number of elements to generate from one element
+     * \brief Generate dim+1 elements by rotation of the object around axis
+     *  \param Nodes - nodes to revolve: a list including groups, sub-meshes or a mesh
+     *  \param Edges - edges to revolve: a list including groups, sub-meshes or a mesh
+     *  \param Faces - faces to revolve: a list including groups, sub-meshes or a mesh
+     *  \param Axis - rotation axis
+     *  \param AngleInRadians - rotation angle
+     *  \param NbOfSteps - number of elements to generate from one element
+     *  \param ToMakeGroups - if true, new elements will be included into new groups
+     *         corresponding to groups the input elements included in.
+     *  \return ListOfGroups - new groups craeted if \a ToMakeGroups is true
      */
-    void RotationSweep(in long_array       IDsOfElements,
-                       in AxisStruct       Axix,
-                       in double           AngleInRadians,
-                       in long             NbOfSteps,
-                       in double           Tolerance) 
-      raises (SALOME::SALOME_Exception);
-    /*!
-     * \brief Same as previous but additionally create groups of elements
-     *  generated from elements belonging to preexisting groups
-     */
-    ListOfGroups RotationSweepMakeGroups(in long_array       IDsOfElements,
-                                         in AxisStruct       Axix,
-                                         in double           AngleInRadians,
-                                         in long             NbOfSteps,
-                                         in double           Tolerance) 
-      raises (SALOME::SALOME_Exception);
-    /*!
-     * \brief Genarate dim+1 elements by rotation of the object around axis
-     * \param theObject - object containing elements to ratate
-     * \param Axix - rotation axis
-     * \param AngleInRadians - rotation angle
-     * \param NbOfSteps - number of elements to generate from one element
-     */
-    void RotationSweepObject(in SMESH_IDSource  theObject,
-                             in AxisStruct      Axix,
-                             in double          AngleInRadians,
-                             in long            NbOfSteps,
-                             in double          Tolerance) 
-      raises (SALOME::SALOME_Exception);
-    /*!
-     * \brief Same as previous but additionally create groups of elements
-     *  generated from elements belonging to preexisting groups
-     */
-    ListOfGroups RotationSweepObjectMakeGroups(in SMESH_IDSource  theObject,
-                                               in AxisStruct      Axix,
-                                               in double          AngleInRadians,
-                                               in long            NbOfSteps,
-                                               in double          Tolerance) 
-      raises (SALOME::SALOME_Exception);
-    /*!
-     * \brief Genarate dim+1 elements by rotation of the object around axis
-     * \param theObject - object containing elements to ratate
-     * \param Axix - rotation axis
-     * \param AngleInRadians - rotation angle
-     * \param NbOfSteps - number of elements to generate from one element
-     */
-    void RotationSweepObject1D(in SMESH_IDSource  theObject,
-                               in AxisStruct      Axix,
-                               in double          AngleInRadians,
-                               in long            NbOfSteps,
-                               in double          Tolerance) 
-      raises (SALOME::SALOME_Exception);
-    /*!
-     * \brief Same as previous but additionally create groups of elements
-     *  generated from elements belonging to preexisting groups
-     */
-    ListOfGroups RotationSweepObject1DMakeGroups(in SMESH_IDSource  theObject,
-                                                 in AxisStruct      Axix,
-                                                 in double          AngleInRadians,
-                                                 in long            NbOfSteps,
-                                                 in double          Tolerance) 
-      raises (SALOME::SALOME_Exception);
-    /*!
-     * \brief Genarate dim+1 elements by rotation of the object around axis
-     * \param theObject - object containing elements to ratate
-     * \param Axix - rotation axis
-     * \param AngleInRadians - rotation angle
-     * \param NbOfSteps - number of elements to generate from one element
-     */
-    void RotationSweepObject2D(in SMESH_IDSource  theObject,
-                               in AxisStruct      Axix,
-                               in double          AngleInRadians,
-                               in long            NbOfSteps,
-                               in double          Tolerance) 
-      raises (SALOME::SALOME_Exception);
-    /*!
-     * \brief Same as previous but additionally create groups of elements
-     *  generated from elements belonging to preexisting groups
-     */
-    ListOfGroups RotationSweepObject2DMakeGroups(in SMESH_IDSource  theObject,
-                                                 in AxisStruct      Axix,
-                                                 in double          AngleInRadians,
-                                                 in long            NbOfSteps,
-                                                 in double          Tolerance) 
-      raises (SALOME::SALOME_Exception);
-    /*!
-     * \brief Genarate dim+1 elements by extrusion of elements along vector
-     * \param IDsOfElements - elements to sweep
-     * \param StepVector - vector giving direction and distance of an extrusion step
-     * \param NbOfSteps - number of elements to generate from one element
-     */
-    void ExtrusionSweep(in long_array      IDsOfElements,
-                        in DirStruct       StepVector,
-                        in long            NbOfSteps) 
-      raises (SALOME::SALOME_Exception);
-    /*!
-     * \brief Genarate dim+1 elements by extrusion of elements along vector
-     * \param IDsOfElements - elements to sweep
-     * \param StepVector - vector giving direction and distance of an extrusion step
-     * \param NbOfSteps - number of elements to generate from one element
-     */
-    void ExtrusionSweep0D(in long_array    IDsOfElements,
-                        in DirStruct       StepVector,
-                        in long            NbOfSteps) 
-      raises (SALOME::SALOME_Exception);
-    /*!
-     * \brief Same as previous but additionally create groups of elements
-     *  generated from elements belonging to preexisting groups
-     */
-    ListOfGroups ExtrusionSweepMakeGroups(in long_array      IDsOfElements,
-                                          in DirStruct       StepVector,
-                                          in long            NbOfSteps) 
-      raises (SALOME::SALOME_Exception);
-   /*!
-     * \brief Same as previous but elements are nodes
-     */
-    ListOfGroups ExtrusionSweepMakeGroups0D(in long_array      IDsOfElements,
-                                          in DirStruct       StepVector,
-                                          in long            NbOfSteps) 
-      raises (SALOME::SALOME_Exception);
-   /*!
-    * Generate new elements by extrusion of theElements
-    * by StepVector by NbOfSteps
-    * param ExtrFlags set flags for performing extrusion
-    * param SewTolerance - uses for comparing locations of nodes if flag
-    *   EXTRUSION_FLAG_SEW is set
-    */
-    void AdvancedExtrusion(in long_array      IDsOfElements,
-                           in DirStruct       StepVector,
-                           in long            NbOfSteps,
-                           in long            ExtrFlags,
-                           in double          SewTolerance) 
-      raises (SALOME::SALOME_Exception);
-    /*!
-     * \brief Same as previous but additionally create groups of elements
-     *  generated from elements belonging to preexisting groups
-     */
-    ListOfGroups AdvancedExtrusionMakeGroups(in long_array      IDsOfElements,
-                                             in DirStruct       StepVector,
-                                             in long            NbOfSteps,
-                                             in long            ExtrFlags,
-                                             in double          SewTolerance) 
+    ListOfGroups RotationSweepObjects(in ListOfIDSources Nodes,
+                                      in ListOfIDSources Edges,
+                                      in ListOfIDSources Faces,
+                                      in AxisStruct      Axis,
+                                      in double          AngleInRadians,
+                                      in long            NbOfSteps,
+                                      in double          Tolerance,
+                                      in boolean         ToMakeGroups)
       raises (SALOME::SALOME_Exception);
 
-    void ExtrusionSweepObject(in SMESH_IDSource  theObject,
-                              in DirStruct       StepVector,
-                              in long            NbOfSteps) 
-      raises (SALOME::SALOME_Exception);
-    ListOfGroups ExtrusionSweepObjectMakeGroups(in SMESH_IDSource  theObject,
-                                                in DirStruct       StepVector,
-                                                in long            NbOfSteps) 
-      raises (SALOME::SALOME_Exception);
-
-    void ExtrusionSweepObject0D(in SMESH_IDSource theObject,
-                                in DirStruct      StepVector,
-                                in long           NbOfSteps) 
-      raises (SALOME::SALOME_Exception);
-    ListOfGroups ExtrusionSweepObject0DMakeGroups(in SMESH_IDSource theObject,
-                                                  in DirStruct      StepVector,
-                                                  in long           NbOfSteps) 
-      raises (SALOME::SALOME_Exception);
-
-    void ExtrusionSweepObject1D(in SMESH_IDSource theObject,
-                                in DirStruct      StepVector,
-                                in long           NbOfSteps) 
-      raises (SALOME::SALOME_Exception);
-    ListOfGroups ExtrusionSweepObject1DMakeGroups(in SMESH_IDSource theObject,
-                                                  in DirStruct      StepVector,
-                                                  in long           NbOfSteps) 
+    /*!
+     * \brief Generate dim+1 elements by extrusion of elements along vector
+     *  \param nodes - nodes to extrude: a list including groups, sub-meshes or a mesh
+     *  \param edges - edges to extrude: a list including groups, sub-meshes or a mesh
+     *  \param faces - faces to extrude: a list including groups, sub-meshes or a mesh
+     *  \param stepVector - vector giving direction and distance of an extrusion step
+     *  \param nbOfSteps - number of elements to generate from one element
+     *  \param toMakeGroups - if true, new elements will be included into new groups
+     *         corresponding to groups the input elements included in.
+     *  \return ListOfGroups - new groups craeted if \a toMakeGroups is true
+     */
+    ListOfGroups ExtrusionSweepObjects(in ListOfIDSources nodes,
+                                       in ListOfIDSources edges,
+                                       in ListOfIDSources faces,
+                                       in DirStruct       stepVector,
+                                       in long            nbOfSteps,
+                                       in boolean         toMakeGroups)
       raises (SALOME::SALOME_Exception);
 
-    void ExtrusionSweepObject2D(in SMESH_IDSource theObject,
-                                in DirStruct      StepVector,
-                                in long           NbOfSteps) 
+    /*! Generates new elements by extrusion along the normal to a discretized surface or wire
+     */
+    ListOfGroups ExtrusionByNormal(in ListOfIDSources theObjects,
+                                   in double          stepSize,
+                                   in long            nbOfSteps,
+                                   in boolean         byAverageNormal,
+                                   in boolean         useInputElemsOnly,
+                                   in boolean         makeGroups,
+                                   in short           dim)
       raises (SALOME::SALOME_Exception);
-    ListOfGroups ExtrusionSweepObject2DMakeGroups(in SMESH_IDSource theObject,
-                                                  in DirStruct      StepVector,
-                                                  in long           NbOfSteps) 
+
+    /*!
+     * Generate new elements by extrusion of theElements
+     * by StepVector by NbOfSteps
+     *  \param ExtrFlags set flags for performing extrusion
+     *  \param SewTolerance - uses for comparing locations of nodes if flag
+     *         EXTRUSION_FLAG_SEW is set
+     *  \param ToMakeGroups - if true, new elements will be included into new groups
+     *         corresponding to groups the input elements included in.
+     *  \return ListOfGroups - new groups craeted if \a ToMakeGroups is true
+     */
+    ListOfGroups AdvancedExtrusion(in long_array IDsOfElements,
+                                   in DirStruct  StepVector,
+                                   in long       NbOfSteps,
+                                   in long       ExtrFlags,
+                                   in double     SewTolerance,
+                                   in boolean    ToMakeGroups)
       raises (SALOME::SALOME_Exception);
 
     enum Extrusion_Error {
@@ -596,112 +527,21 @@ module SMESH
       EXTR_BAD_STARTING_NODE,
       EXTR_BAD_ANGLES_NUMBER,
       EXTR_CANT_GET_TANGENT
-      };
+    };
 
-    ListOfGroups ExtrusionAlongPathX(in long_array        IDsOfElements,
-                                     in SMESH_IDSource    Path,
-                                     in long              NodeStart,
-                                     in boolean           HasAngles,
-                                     in double_array      Angles,
-                                     in boolean           LinearVariation,
-                                     in boolean           HasRefPoint,
-                                     in PointStruct       RefPoint,
-                                     in boolean           MakeGroups,
-                                     in ElementType       ElemType,
-                                     out Extrusion_Error  Error) 
-      raises (SALOME::SALOME_Exception);
-
-    ListOfGroups ExtrusionAlongPathObjX(in SMESH_IDSource    theObject,
-                                        in SMESH_IDSource    Path,
-                                        in long              NodeStart,
-                                        in boolean           HasAngles,
-                                        in double_array      Angles,
-                                        in boolean           LinearVariation,
-                                        in boolean           HasRefPoint,
-                                        in PointStruct       RefPoint,
-                                        in boolean           MakeGroups,
-                                        in ElementType       ElemType,
-                                        out Extrusion_Error  Error) 
-      raises (SALOME::SALOME_Exception);
-
-    Extrusion_Error ExtrusionAlongPath(in long_array        IDsOfElements,
-                                       in SMESH_Mesh        PathMesh,
-                                       in GEOM::GEOM_Object PathShape,
-                                       in long              NodeStart,
-                                       in boolean           HasAngles,
-                                       in double_array      Angles,
-                                       in boolean           HasRefPoint,
-                                       in PointStruct       RefPoint) 
-      raises (SALOME::SALOME_Exception);
-    ListOfGroups ExtrusionAlongPathMakeGroups(in long_array        IDsOfElements,
-                                              in SMESH_Mesh        PathMesh,
-                                              in GEOM::GEOM_Object PathShape,
-                                              in long              NodeStart,
-                                              in boolean           HasAngles,
-                                              in double_array      Angles,
-                                              in boolean           HasRefPoint,
-                                              in PointStruct       RefPoint,
-                                              out Extrusion_Error  Error) 
-      raises (SALOME::SALOME_Exception);
-
-    Extrusion_Error ExtrusionAlongPathObject(in SMESH_IDSource    theObject,
-                                             in SMESH_Mesh        PathMesh,
-                                             in GEOM::GEOM_Object PathShape,
-                                             in long              NodeStart,
-                                             in boolean           HasAngles,
-                                             in double_array      Angles,
-                                             in boolean           HasRefPoint,
-                                             in PointStruct       RefPoint) 
-      raises (SALOME::SALOME_Exception);
-    ListOfGroups ExtrusionAlongPathObjectMakeGroups(in SMESH_IDSource    theObject,
-                                                    in SMESH_Mesh        PathMesh,
-                                                    in GEOM::GEOM_Object PathShape,
-                                                    in long              NodeStart,
-                                                    in boolean           HasAngles,
-                                                    in double_array      Angles,
-                                                    in boolean           HasRefPoint,
-                                                    in PointStruct       RefPoint,
-                                                    out Extrusion_Error  Error) 
-      raises (SALOME::SALOME_Exception);
-
-    Extrusion_Error ExtrusionAlongPathObject1D(in SMESH_IDSource    theObject,
-                                               in SMESH_Mesh        PathMesh,
-                                               in GEOM::GEOM_Object PathShape,
-                                               in long              NodeStart,
-                                               in boolean           HasAngles,
-                                               in double_array      Angles,
-                                               in boolean           HasRefPoint,
-                                               in PointStruct       RefPoint) 
-      raises (SALOME::SALOME_Exception);
-    ListOfGroups ExtrusionAlongPathObject1DMakeGroups(in SMESH_IDSource    theObject,
-                                                      in SMESH_Mesh        PathMesh,
-                                                      in GEOM::GEOM_Object PathShape,
-                                                      in long              NodeStart,
-                                                      in boolean           HasAngles,
-                                                      in double_array      Angles,
-                                                      in boolean           HasRefPoint,
-                                                      in PointStruct       RefPoint,
-                                                      out Extrusion_Error  Error) 
-      raises (SALOME::SALOME_Exception);
-
-    Extrusion_Error ExtrusionAlongPathObject2D(in SMESH_IDSource    theObject,
-                                               in SMESH_Mesh        PathMesh,
-                                               in GEOM::GEOM_Object PathShape,
-                                               in long              NodeStart,
-                                               in boolean           HasAngles,
-                                               in double_array      Angles,
-                                               in boolean           HasRefPoint,
-                                               in PointStruct       RefPoint) 
-      raises (SALOME::SALOME_Exception);
-    ListOfGroups ExtrusionAlongPathObject2DMakeGroups(in SMESH_IDSource    theObject,
-                                                      in SMESH_Mesh        PathMesh,
-                                                      in GEOM::GEOM_Object PathShape,
-                                                      in long              NodeStart,
-                                                      in boolean           HasAngles,
-                                                      in double_array      Angles,
-                                                      in boolean           HasRefPoint,
-                                                      in PointStruct       RefPoint,
-                                                      out Extrusion_Error  Error) 
+    ListOfGroups ExtrusionAlongPathObjects(in ListOfIDSources Nodes,
+                                           in ListOfIDSources Edges,
+                                           in ListOfIDSources Faces,
+                                           in SMESH_IDSource    Path,
+                                           in GEOM::GEOM_Object PathShape,
+                                           in long              NodeStart,
+                                           in boolean           HasAngles,
+                                           in double_array      Angles,
+                                           in boolean           LinearVariation,
+                                           in boolean           HasRefPoint,
+                                           in PointStruct       RefPoint,
+                                           in boolean           MakeGroups,
+                                           out Extrusion_Error  Error)
       raises (SALOME::SALOME_Exception);
 
    /*!
@@ -805,41 +645,45 @@ module SMESH
                                in AxisStruct Axis,
                                in double     AngleInRadians,
                                in boolean    CopyGroups,
-                               in string     MeshName) 
+                               in string     MeshName)
       raises (SALOME::SALOME_Exception);
 
     void RotateObject (in SMESH_IDSource theObject,
                        in AxisStruct     Axis,
                        in double         AngleInRadians,
-                       in boolean        Copy) 
+                       in boolean        Copy)
       raises (SALOME::SALOME_Exception);
     ListOfGroups RotateObjectMakeGroups (in SMESH_IDSource theObject,
                                          in AxisStruct     Axis,
-                                         in double         AngleInRadians) 
+                                         in double         AngleInRadians)
       raises (SALOME::SALOME_Exception);
     SMESH_Mesh RotateObjectMakeMesh (in SMESH_IDSource theObject,
                                      in AxisStruct     Axis,
                                      in double         AngleInRadians,
                                      in boolean        CopyGroups,
-                                     in string         MeshName) 
+                                     in string         MeshName)
       raises (SALOME::SALOME_Exception);
 
     void FindCoincidentNodes (in  double              Tolerance,
-                              out array_of_long_array GroupsOfNodes) 
+                              out array_of_long_array GroupsOfNodes,
+                              in  boolean             SeparateCornersAndMedium)
       raises (SALOME::SALOME_Exception);
 
     void FindCoincidentNodesOnPart (in  SMESH_IDSource      SubMeshOrGroup,
                                     in  double              Tolerance,
-                                    out array_of_long_array GroupsOfNodes) 
+                                    out array_of_long_array GroupsOfNodes,
+                                    in  boolean             SeparateCornersAndMedium)
       raises (SALOME::SALOME_Exception);
 
     void FindCoincidentNodesOnPartBut (in  SMESH_IDSource      SubMeshOrGroup,
                                        in  double              Tolerance,
                                        out array_of_long_array GroupsOfNodes,
-                                       in  ListOfIDSources     ExceptSubMeshOrGroups) 
+                                       in  ListOfIDSources     ExceptSubMeshOrGroups,
+                                       in  boolean             SeparateCornersAndMedium)
       raises (SALOME::SALOME_Exception);
 
-    void MergeNodes (in array_of_long_array GroupsOfNodes) 
+    void MergeNodes (in array_of_long_array    GroupsOfNodes,
+                     in SMESH::ListOfIDSources NodesToKeep)
       raises (SALOME::SALOME_Exception);
 
     /*!
@@ -901,6 +745,21 @@ module SMESH
      * TopAbs_UNKNOWN state means that either mesh is wrong or the analysis fails.
      */
     short GetPointState(in double x, in double y, in double z) 
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns groups of FreeBorder's coincident within the given tolerance.
+     * If the tolerance <= 0.0 then one tenth of an average size of elements adjacent
+     * to free borders being compared is used.
+     */
+    CoincidentFreeBorders FindCoincidentFreeBorders(in double tolerance);
+
+    /*!
+     * Sew FreeBorder's of each group
+     */
+    short SewCoincidentFreeBorders (in CoincidentFreeBorders freeBorders,
+                                    in boolean               createPolygons,
+                                    in boolean               createPolyedrs)
       raises (SALOME::SALOME_Exception);
 
     enum Sew_Error {

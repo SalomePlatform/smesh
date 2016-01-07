@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -52,6 +52,8 @@ class SMESHDS_EXPORT SMESHDS_SubMesh
   virtual bool RemoveElement(const SMDS_MeshElement * ME, bool isElemDeleted); // ret true if ME was in
   virtual void AddNode(const SMDS_MeshNode * ME);
   virtual bool RemoveNode(const SMDS_MeshNode * ME, bool isNodeDeleted);       // ret true if ME was in
+  virtual const SMDS_MeshElement* GetElement( size_t idInShape ) const;
+  virtual const SMDS_MeshNode*    GetNode   ( size_t idInShape ) const;
 
   // if IsComplexSubmesh()
   void AddSubMesh( const SMESHDS_SubMesh* theSubMesh );
@@ -67,19 +69,20 @@ class SMESHDS_EXPORT SMESHDS_SubMesh
   virtual int NbNodes() const;
   virtual SMDS_NodeIteratorPtr GetNodes() const;
   virtual bool Contains(const SMDS_MeshElement * ME) const;      // check if elem or node is in
+  virtual bool IsQuadratic() const;
 
   // clear the contents
   virtual void Clear();
-  int getSize();
+  int  getSize();
   void compactList();
 
-  SMESHDS_Mesh *GetParent()   { return myParent; }
-  int           GetID() const { return myIndex; }
+  SMESHDS_Mesh* GetParent() const { return const_cast< SMESHDS_Mesh*>( myParent ); }
+  int           GetID()     const { return myIndex; }
 
  private:
-  SMESHDS_Mesh * myParent;
+  SMESHDS_Mesh *                       myParent;
   std::vector<const SMDS_MeshElement*> myElements;
-  std::vector<const SMDS_MeshNode*> myNodes;
+  std::vector<const SMDS_MeshNode*>    myNodes;
 
   int myUnusedIdNodes;
   int myUnusedIdElements;

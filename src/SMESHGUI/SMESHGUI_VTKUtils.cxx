@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -28,16 +28,15 @@
 #include "SMESHGUI_VTKUtils.h"
 
 #include "SMESHGUI.h"
-#include "SMESHGUI_Utils.h"
 #include "SMESHGUI_Filter.h"
-#include "SMESH_ControlsDef.hxx"
-
-#include <SMESH_Actor.h>
-#include <SMESH_ActorUtils.h>
-#include "SMESH_NodeLabelActor.h"
+#include "SMESHGUI_Utils.h"
+#include "SMDS_Mesh.hxx"
+#include "SMESH_Actor.h"
+#include "SMESH_ActorUtils.h"
 #include "SMESH_CellLabelActor.h"
-#include <SMESH_ObjectDef.h>
-#include <SMDS_Mesh.hxx>
+#include "SMESH_ControlsDef.hxx"
+#include "SMESH_NodeLabelActor.h"
+#include "SMESH_ObjectDef.h"
 
 // SALOME GUI includes
 #include <SUIT_Desktop.h>
@@ -774,6 +773,7 @@ namespace SMESH
               anActor->SetVisibility(false);
               aStudy->setVisibilityState(theEntry, Qtx::HiddenState);
               break;
+            default:;
           }
         } else {
           switch (theAction) {
@@ -800,6 +800,7 @@ namespace SMESH
               }
               break;
             }
+          default:;
           }
         }
       }
@@ -809,16 +810,20 @@ namespace SMESH
   }
 
 
-  bool UpdateView(EDisplaing theAction, const char* theEntry){
+  bool UpdateView(EDisplaing theAction, const char* theEntry) {
         //MESSAGE("UpdateView");
     SalomeApp_Study* aStudy = dynamic_cast< SalomeApp_Study* >( GetActiveStudy() );
     SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( aStudy->application() );
-    SUIT_ViewWindow *aWnd = app->activeViewManager()->getActiveView();
-    return UpdateView(aWnd,theAction,theEntry);
+    if ( SUIT_ViewManager* vm = app->activeViewManager() )
+    {
+      SUIT_ViewWindow *aWnd = vm->getActiveView();
+      return UpdateView(aWnd,theAction,theEntry);
+    }
+    return false;
   }
 
   void UpdateView(){
-    if(SVTK_ViewWindow* aWnd = SMESH::GetCurrentVtkView()){
+    if ( SVTK_ViewWindow* aWnd = SMESH::GetCurrentVtkView()) {
       LightApp_SelectionMgr* mgr = SMESHGUI::selectionMgr();
       SALOME_ListIO selected; mgr->selectedObjects( selected );
 
@@ -849,7 +854,7 @@ namespace SMESH
 
   bool Update(const Handle(SALOME_InteractiveObject)& theIO, bool theDisplay)
   {
-        MESSAGE("Update");
+    MESSAGE("Update");
     _PTR(Study) aStudy = GetActiveStudyDocument();
     CORBA::Long anId = aStudy->StudyId();
     if ( TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId,theIO->getEntry())) {
@@ -862,7 +867,7 @@ namespace SMESH
 
   bool UpdateNulData(const Handle(SALOME_InteractiveObject)& theIO, bool theDisplay)
   {
-        MESSAGE("UpdateNulData");
+    MESSAGE("UpdateNulData");
     _PTR(Study) aStudy = GetActiveStudyDocument();
     CORBA::Long anId = aStudy->StudyId();
     if ( TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId,theIO->getEntry(), true)) {
@@ -905,12 +910,12 @@ namespace SMESH
            aPreColor = mgr->colorValue( "SMESH", "highlight_color", Qt::cyan );
 
     int aElem0DSize = mgr->integerValue("SMESH", "elem0d_size", 5);
-    int aBallSize   = mgr->integerValue("SMESH", "ball_elem_size", 5);
+   // int aBallSize   = mgr->integerValue("SMESH", "ball_elem_size", 5);
     int aLineWidth  = mgr->integerValue("SMESH", "element_width", 1);
     int maxSize = aElem0DSize;
     if (aElem0DSize > maxSize) maxSize = aElem0DSize;
     if (aLineWidth > maxSize) maxSize = aLineWidth;
-    if (aBallSize > maxSize) maxSize = aBallSize;
+  //  if (aBallSize > maxSize) maxSize = aBallSize;
 
     double SP1 = mgr->doubleValue( "SMESH", "selection_precision_node", 0.025 ),
            SP2 = mgr->doubleValue( "SMESH", "selection_precision_element", 0.001 ),

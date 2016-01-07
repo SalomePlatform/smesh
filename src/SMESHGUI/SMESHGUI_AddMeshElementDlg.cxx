@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -169,7 +169,8 @@ namespace SMESH
       // Preview for the balls
       vtkProperty* aBallProp = vtkProperty::New();
       aBallProp->SetColor(ffc.red() / 255. , ffc.green() / 255. , ffc.blue() / 255.);
-      double aBallElemSize = SMESH::GetFloat("SMESH:ball_elem_size",10);
+      //double aBallElemSize = SMESH::GetFloat("SMESH:ball_elem_size",10);
+      double aBallElemSize = SMESH::GetFloat("SMESH:ball_elem_diameter",1);
       aBallProp->SetPointSize(aBallElemSize);
 
       myBallPolyData = vtkPolyData::New();
@@ -213,12 +214,13 @@ namespace SMESH
       SetVisibility(true, theActor->GetFacesOriented(), false);
     }
 
-    void SetBallPosition(SMESH_Actor* theActor,TVTKIds& theIds, double theDiameter) {
+    void SetBallPosition(SMESH_Actor* theActor,TVTKIds& theIds, double theDiameter)
+    {
       vtkUnstructuredGrid *aGrid = theActor->GetUnstructuredGrid();
       myBallPolyData->Reset();
       myBallPolyData->DeleteCells();
       myBallPolyData->SetPoints(aGrid->GetPoints());
-      
+
       vtkDataArray* aScalars = vtkDataArray::CreateDataArray(VTK_DOUBLE);
       aScalars->SetNumberOfComponents(1);
       aScalars->SetNumberOfTuples(theIds.size());
@@ -234,7 +236,7 @@ namespace SMESH
         aScalars->SetTuple(anId,&d);
         anIds->Reset();
       }
-      
+
       anIds->Delete();
       myBallPolyData->Modified();
       SetVisibility (false, false, true);
@@ -427,7 +429,7 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI*          theMo
     GroupC1Layout->addWidget(DiameterSpinBox, 1, 1, 1, 2);
 
     DiameterSpinBox->RangeStepAndValidator( 1e-7, 1e+9, 0.1 );
-    DiameterSpinBox->SetValue( 1. );
+    DiameterSpinBox->SetValue( SMESH::GetFloat("SMESH:ball_elem_diameter", 1) );
     connect( DiameterSpinBox, SIGNAL( valueChanged ( double ) ), this, SLOT( onDiameterChanged( ) ) );
   }
   /* Add to group ************************************************/
@@ -514,10 +516,13 @@ void SMESHGUI_AddMeshElementDlg::Init()
   connect(SelectButtonC1A1,SIGNAL(clicked()),                     SLOT(SetEditCurrentArgument()));
   connect(LineEditC1A1,    SIGNAL(textChanged(const QString&)),   SLOT(onTextChange(const QString&)));
   connect(mySMESHGUI,      SIGNAL(SignalDeactivateActiveDialog()),SLOT(DeactivateActiveDialog()));
+
   connect(mySelectionMgr,  SIGNAL(currentSelectionChanged()),     SLOT(SelectionIntoArgument()));
   /* to close dialog if study frame change */
   connect(mySMESHGUI,      SIGNAL(SignalStudyFrameChanged()),     SLOT(reject()));
-  connect(mySMESHGUI,      SIGNAL(SignalCloseAllDialogs()),       SLOT(reject()));    
+  connect(mySMESHGUI,      SIGNAL(SignalCloseAllDialogs()),       SLOT(reject()));
+  connect(mySMESHGUI,      SIGNAL(SignalActivatedViewManager()),  SLOT(onOpenView()));
+  connect(mySMESHGUI,      SIGNAL(SignalCloseView()),             SLOT(onCloseView()));
 
   if (Reverse)
     connect(Reverse,       SIGNAL(stateChanged(int)),             SLOT(CheckBox(int)));
@@ -578,6 +583,13 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
                                                tr( "SMESH_BUT_YES" ), tr( "SMESH_BUT_NO" ), 0, 1 );
           if ( res == 1 ) return;
         }
+        SMESH::SMESH_GroupOnFilter_var aFilterGroup = SMESH::SMESH_GroupOnFilter::_narrow( myGroups[idx-1] );
+        if ( !aFilterGroup->_is_nil() ) {
+          int res = SUIT_MessageBox::question( this, tr( "SMESH_WRN_WARNING" ),
+                                               tr( "MESH_FILTER_GRP_CHOSEN" ).arg( aGroupName ),
+                                               tr( "SMESH_BUT_YES" ), tr( "SMESH_BUT_NO" ), 0, 1 );
+          if ( res == 1 ) return;
+        }
         aGroup = myGroups[idx-1];
       }
     }
@@ -586,16 +598,19 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
     SMESH::long_array_var anIdList = new SMESH::long_array;
     anIdList->length( 1 );
     anIdList[0] = -1;
-    const bool onlyNodesInMesh = ( myMesh->NbElements() == 0 );
+    //const bool onlyNodesInMesh = ( myMesh->NbElements() == 0 );
+    int nbElemsBefore = 0;
 
     switch (myElementType) {
     case SMDSAbs_0DElement:
+      nbElemsBefore = myMesh->Nb0DElements();
       anIdList->length( anArrayOfIndices->length() );
       for ( size_t i = 0; i < anArrayOfIndices->length(); ++i )
         anIdList[i] = aMeshEditor->Add0DElement(anArrayOfIndices[i]);
       break;
     case SMDSAbs_Ball:
       if ( myGeomType == SMDSEntity_Ball ) {
+        nbElemsBefore = myMesh->NbBalls();
         anIdList->length( anArrayOfIndices->length() );
         for ( size_t i = 0; i < anArrayOfIndices->length(); ++i )
           anIdList[i] = aMeshEditor->AddBall(anArrayOfIndices[i],
@@ -603,21 +618,24 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
       }
       break;
     case SMDSAbs_Edge:
+      nbElemsBefore = myMesh->NbEdges();
       anIdList[0] = aMeshEditor->AddEdge(anArrayOfIndices.inout()); break;
     case SMDSAbs_Face:
+      nbElemsBefore = myMesh->NbFaces();
       if ( myIsPoly )
         anIdList[0] = aMeshEditor->AddPolygonalFace(anArrayOfIndices.inout());
       else
         anIdList[0] = aMeshEditor->AddFace(anArrayOfIndices.inout());
       break;
     default:
+      nbElemsBefore = myMesh->NbVolumes();
       anIdList[0] = aMeshEditor->AddVolume(anArrayOfIndices.inout()); break;
     }
 
     if ( anIdList[0] > 0 && addToGroup && !aGroupName.isEmpty() ) {
       SMESH::SMESH_Group_var aGroupUsed;
       if ( aGroup->_is_nil() ) {
-        // create new group 
+        // create new group
         aGroupUsed = SMESH::AddGroup( myMesh, (SMESH::ElementType)myElementType, aGroupName );
         if ( !aGroupUsed->_is_nil() ) {
           myGroups.append(SMESH::SMESH_GroupBase::_duplicate(aGroupUsed));
@@ -625,9 +643,17 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
         }
       }
       else {
-        SMESH::SMESH_GroupOnGeom_var aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGroup );
+        SMESH::SMESH_GroupOnGeom_var     aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGroup );
+        SMESH::SMESH_GroupOnFilter_var aFilterGroup = SMESH::SMESH_GroupOnFilter::_narrow( aGroup );
         if ( !aGeomGroup->_is_nil() ) {
           aGroupUsed = myMesh->ConvertToStandalone( aGeomGroup );
+          if ( !aGroupUsed->_is_nil() && idx > 0 ) {
+            myGroups[idx-1] = SMESH::SMESH_GroupBase::_duplicate(aGroupUsed);
+            SMESHGUI::GetSMESHGUI()->getApp()->updateObjectBrowser();
+          }
+        }
+        else if ( !aFilterGroup->_is_nil() ) {
+          aGroupUsed = myMesh->ConvertToStandalone( aFilterGroup );
           if ( !aGroupUsed->_is_nil() && idx > 0 ) {
             myGroups[idx-1] = SMESH::SMESH_GroupBase::_duplicate(aGroupUsed);
             SMESHGUI::GetSMESHGUI()->getApp()->updateObjectBrowser();
@@ -646,8 +672,24 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
     mySelectionMgr->setSelectedObjects( aList, false );
 
     mySimulation->SetVisibility(false);
-    if ( onlyNodesInMesh )
-      myActor->SetRepresentation( SMESH_Actor::eEdge ); // wireframe
+    // if ( onlyNodesInMesh )
+    //   myActor->SetRepresentation( SMESH_Actor::eEdge ); // wireframe
+    if ( nbElemsBefore == 0  )
+    {
+      // 1st element of the type has been added, update actor to show this entity
+      unsigned int aMode = myActor->GetEntityMode();
+      switch ( myElementType ) {
+      case SMDSAbs_Edge:
+        myActor->SetRepresentation(SMESH_Actor::eEdge);
+        myActor->SetEntityMode( aMode |= SMESH_Actor::eEdges ); break;
+      case SMDSAbs_Face:
+        myActor->SetRepresentation(SMESH_Actor::eSurface);
+        myActor->SetEntityMode( aMode |= SMESH_Actor::eFaces ); break;
+      case SMDSAbs_Volume:
+        myActor->SetRepresentation(SMESH_Actor::eSurface);
+        myActor->SetEntityMode( aMode |= SMESH_Actor::eVolumes ); break;
+      }
+    }
     SMESH::UpdateView();
 
     buttonOk->setEnabled(false);
@@ -941,9 +983,15 @@ void SMESHGUI_AddMeshElementDlg::ActivateThisDialog()
 //=================================================================================
 void SMESHGUI_AddMeshElementDlg::enterEvent (QEvent*)
 {
-  if (GroupConstructors->isEnabled())
-    return;
-  ActivateThisDialog();
+  if ( !GroupConstructors->isEnabled() ) {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+    if ( aViewWindow && !mySelector && !mySimulation) {
+      mySelector = aViewWindow->GetSelector();
+      mySimulation = new SMESH::TElementSimulation(
+        dynamic_cast<SalomeApp_Application*>( mySMESHGUI->application() ) );
+    }
+    ActivateThisDialog();
+  }
 }
 
 //=================================================================================
@@ -978,7 +1026,7 @@ void SMESHGUI_AddMeshElementDlg::keyPressEvent( QKeyEvent* e )
 }
 
 //=================================================================================
-// function : isValid
+// function : onDiameterChanged()
 // purpose  :
 //=================================================================================
 void SMESHGUI_AddMeshElementDlg::onDiameterChanged(){
@@ -986,7 +1034,37 @@ void SMESHGUI_AddMeshElementDlg::onDiameterChanged(){
 }
 
 //=================================================================================
-// function : isValid
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_AddMeshElementDlg::onOpenView()
+{
+  if ( mySelector && mySimulation ) {
+    mySimulation->SetVisibility(false);
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    mySimulation = new SMESH::TElementSimulation(
+      dynamic_cast<SalomeApp_Application*>( mySMESHGUI->application() ) );
+    ActivateThisDialog();
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_AddMeshElementDlg::onCloseView()
+{
+  DeactivateActiveDialog();
+  mySelector = 0;
+  delete mySimulation;
+  mySimulation = 0;
+}
+
+//=================================================================================
+// function : isValid()
 // purpose  :
 //=================================================================================
 bool SMESHGUI_AddMeshElementDlg::isValid()

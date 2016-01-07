@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -28,6 +28,8 @@
 #include "SMDS_Mesh0DElement.hxx"
 #include "SMDS_IteratorOfElements.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "SMDS_Mesh.hxx"
+
 #include "utilities.h"
 
 using namespace std;
@@ -139,8 +141,24 @@ const SMDS_MeshNode* SMDS_Mesh0DElement::GetNode(const int ind) const
 //function : ChangeNode
 //purpose  :
 //=======================================================================
-bool SMDS_Mesh0DElement::ChangeNode (const SMDS_MeshNode * node)
+bool SMDS_Mesh0DElement::ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes)
 {
-  myNode = node;
-  return true;
+  if ( nbNodes == 1 )
+  {
+    vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
+    vtkIdType npts = 0;
+    vtkIdType* pts = 0;
+    grid->GetCellPoints(myVtkID, npts, pts);
+    if (nbNodes != npts)
+    {
+      MESSAGE("ChangeNodes problem: not the same number of nodes " << npts << " -> " << nbNodes);
+      return false;
+    }
+    myNode = nodes[0];
+    pts[0] = myNode->getVtkId();
+
+    SMDS_Mesh::_meshList[myMeshId]->setMyModified();
+    return true;
+  }
+  return false;
 }

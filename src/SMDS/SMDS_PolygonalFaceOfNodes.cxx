@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -41,7 +41,7 @@ using namespace std;
 //purpose  : 
 //=======================================================================
 SMDS_PolygonalFaceOfNodes::SMDS_PolygonalFaceOfNodes
-                          (std::vector<const SMDS_MeshNode *> nodes)
+                          (const std::vector<const SMDS_MeshNode *>& nodes)
 {
   //MESSAGE("******************************************** SMDS_PolygonalFaceOfNodes");
   myNodes = nodes;
@@ -150,7 +150,7 @@ class SMDS_PolygonalFaceOfNodes_MyIterator:public SMDS_NodeVectorElemIterator
 class _MyEdgeIterator : public SMDS_ElemIterator
 {
   vector< const SMDS_MeshElement* > myElems;
-  int myIndex;
+  size_t                            myIndex;
 public:
   _MyEdgeIterator(const SMDS_MeshFace* face):myIndex(0) {
     myElems.reserve( face->NbNodes() );

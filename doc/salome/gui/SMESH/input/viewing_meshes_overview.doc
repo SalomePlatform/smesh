@@ -26,8 +26,11 @@ information about the mesh.</li>
 <li>\subpage find_element_by_point_page "Find Element by Point" -
 allows to find all mesh elements, to which belongs a point with the
 given coordinates.</li>
-<li><b>Auto Color</b> - switch on / off auto-assigning colors for the groups.</li>
-<li>\subpage numbering_page "Numbering"  - allows to display the ID
+<li><b>Auto Color</b> - switch on / off auto-assigning colors for the
+  groups. If switched on, a default color of a new group in 
+  \ref creating_groups_page "Create Group" dialog is chosen
+  randomly. </li>
+<li>\subpage numbering_page "Numbering" - allows to display the ID
 numbers of all meshing elements or nodes composing your mesh in the
 viewer.</li>
 <li>\subpage display_mode_page "Display Mode" - allows to select between

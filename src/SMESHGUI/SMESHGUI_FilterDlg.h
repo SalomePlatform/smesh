@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -45,17 +45,18 @@
 #include CORBA_SERVER_HEADER(SMESH_Filter)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
-class QFrame;
+class LightApp_SelectionMgr;
 class QButtonGroup;
 class QCheckBox;
+class QFrame;
 class QGroupBox;
 class QPushButton;
+class QStackedWidget;
 class QTableWidget;
 class QTableWidgetItem;
-class QStackedWidget;
-class LightApp_SelectionMgr;
 class SMESHGUI;
 class SMESHGUI_FilterLibraryDlg;
+class SMESH_Actor;
 class SVTK_Selector;
 
 /*!
@@ -228,6 +229,7 @@ public:
 
   void                      SetSelection();
   void                      SetMesh (SMESH::SMESH_Mesh_var);
+  void                      SetGroup (SMESH::SMESH_GroupOnFilter_var);
   void                      SetSourceWg( QWidget*, const bool initOnApply = true );
   void                      SetEnabled( bool setInViewer, bool diffSources );
 
@@ -254,6 +256,8 @@ private slots:
   void                      onCriterionChanged( const int, const int );
   void                      onThresholdChanged( const int, const int );
   void                      onCurrentChanged( int, int );
+  void                      onOpenView();
+  void                      onCloseView();
 
 private:
 
@@ -279,6 +283,7 @@ private:
   void                      setIdsToWg( QWidget*, const QList<int>& );
   Selection_Mode            getSelMode( const int ) const;
   void                      updateSelection();
+  SMESH_Actor*              getActor();
 
 private:
   // widgets
@@ -297,6 +302,7 @@ private:
   LightApp_SelectionMgr*    mySelectionMgr;
   SVTK_Selector*            mySelector;
   SMESH::SMESH_Mesh_var     myMesh;
+  SMESH::SMESH_GroupOnFilter_var myGroup;
   bool                      myInitSourceWgOnApply;
   bool                      myInsertEnabled;
   bool                      myDiffSourcesEnabled;

@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -111,9 +111,11 @@ void StdMeshersGUI_LayerDistributionParamWdg::init()
 
   myCreateButton = new QPushButton( this );
   myCreateButton->setObjectName( "createBut" );
+  myCreateButton->setMinimumWidth(100);
 
   myEditButton   = new QPushButton( tr("EDIT"), this );
   myEditButton->setObjectName( "editBut" );
+  myEditButton->setMinimumWidth(100);
 
   myHypTypePopup = new QMenu( this );
 
@@ -130,8 +132,8 @@ void StdMeshersGUI_LayerDistributionParamWdg::init()
   }
 
   aHBox->addWidget( myCreateButton );
+  aHBox->addStretch(5);
   aHBox->addWidget( myEditButton );
-  aHBox->addStretch();
 
   connect( myCreateButton, SIGNAL(clicked()), SLOT(onCreate()));
   connect( myEditButton,   SIGNAL(clicked()), SLOT(onEdit()));

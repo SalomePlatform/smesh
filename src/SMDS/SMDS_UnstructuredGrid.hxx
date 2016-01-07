@@ -1,4 +1,4 @@
-// Copyright (C) 2010-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2010-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -28,7 +28,6 @@
 
 #include <vtkUnstructuredGrid.h>
 #include <vtkCellLinks.h>
-#include "chrono.hxx"
 
 #include <vector>
 #include <set>

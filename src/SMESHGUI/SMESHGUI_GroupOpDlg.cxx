@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -30,37 +30,35 @@
 #include "SMESHGUI.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
-
-#include <SMESH_TypeFilter.hxx>
-
-// SALOME GUI includes
-#include <SUIT_ResourceMgr.h>
-#include <SUIT_Desktop.h>
-#include <SUIT_Session.h>
-#include <SUIT_MessageBox.h>
+#include "SMESH_TypeFilter.hxx"
+#include <SMESH_ActorUtils.h>
 
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
+#include <QtxColorButton.h>
+#include <SALOMEDSClient_SObject.hxx>
+#include <SALOME_ListIO.hxx>
+#include <SUIT_Desktop.h>
+#include <SUIT_MessageBox.h>
+#include <SUIT_OverrideCursor.h>
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Session.h>
 #include <SVTK_Selection.h>
 #include <SVTK_ViewWindow.h>
-#include <SALOME_ListIO.hxx>
-
-// SALOME KERNEL includes
-#include <SALOMEDSClient_SObject.hxx>
 
 // Qt includes
-#include <QHBoxLayout>
-#include <QVBoxLayout>
+#include <QButtonGroup>
+#include <QCheckBox>
+#include <QComboBox>
 #include <QGridLayout>
-#include <QPushButton>
 #include <QGroupBox>
+#include <QHBoxLayout>
+#include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
-#include <QKeyEvent>
 #include <QListWidget>
-#include <QButtonGroup>
-#include <QComboBox>
-#include <QtxColorButton.h>
+#include <QPushButton>
+#include <QVBoxLayout>
 
 #define SPACING 6
 #define MARGIN  11
@@ -110,7 +108,7 @@ QWidget* SMESHGUI_GroupOpDlg::createMainFrame( QWidget* theParent )
   aLay->setSpacing(SPACING);
   
   // ------------------------------------------------------
-  QGroupBox* aNameGrp = new QGroupBox(tr("NAME"), aMainGrp);
+  QGroupBox* aNameGrp = new QGroupBox(tr("RESULT"), aMainGrp);
   QHBoxLayout* aNameGrpLayout = new QHBoxLayout(aNameGrp);
   aNameGrpLayout->setMargin(MARGIN);
   aNameGrpLayout->setSpacing(SPACING);
@@ -228,11 +226,15 @@ void SMESHGUI_GroupOpDlg::Init()
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
   connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), SLOT(onDeactivate()));
   connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(reject()));
+  connect(mySMESHGUI, SIGNAL(SignalActivatedViewManager()), SLOT(onOpenView()));
+  connect(mySMESHGUI, SIGNAL(SignalCloseView()), SLOT(onCloseView()));
 
   // set selection mode
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);
   mySelectionMgr->installFilter(new SMESH_TypeFilter (SMESH::GROUP));
+
+  setDefaultGroupColor();
 }
 
 /*!
@@ -312,6 +314,7 @@ bool SMESHGUI_GroupOpDlg::isValid( const QList<SMESH::SMESH_GroupBase_var>& theL
 */
 void SMESHGUI_GroupOpDlg::onOk()
 {
+  SUIT_OverrideCursor oc;
   setIsApplyAndClose( true );
   if ( onApply() )
     reject();
@@ -331,6 +334,32 @@ void SMESHGUI_GroupOpDlg::reject()
   mySelectionMgr->clearFilters();
   reset();
   QDialog::reject();
+}
+
+//=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_GroupOpDlg::onOpenView()
+{
+  if ( mySelector ) {
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    mySMESHGUI->EmitSignalDeactivateDialog();
+    setEnabled(true);
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_GroupOpDlg::onCloseView()
+{
+  onDeactivate();
+  mySelector = 0;
 }
 
 /*!
@@ -422,6 +451,14 @@ SALOMEDS::Color SMESHGUI_GroupOpDlg::getColor() const
 }
 
 /*!
+  \brief Set default color for group
+*/
+void SMESHGUI_GroupOpDlg::setDefaultGroupColor()
+{
+  myColorBtn->setColor( SMESH::GetColor( "SMESH", "default_grp_color", QColor( 255, 170, 0 ) ) );
+}
+
+/*!
   \brief SLOT, called when selection is changed. Current implementation does 
    nothing. The method should be redefined in derived classes to update 
    corresponding GUI controls
@@ -461,8 +498,12 @@ void SMESHGUI_GroupOpDlg::enterEvent(QEvent*)
 {
   mySMESHGUI->EmitSignalDeactivateDialog();
   setEnabled(true);
-  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+  SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+  if ( aViewWindow ) {
     aViewWindow->SetSelectionMode(ActorSelection);
+    if (!mySelector)
+      mySelector = aViewWindow->GetSelector();
+  }
   mySelectionMgr->installFilter(new SMESH_TypeFilter (SMESH::GROUP));
 }
 
@@ -475,6 +516,7 @@ void SMESHGUI_GroupOpDlg::reset()
 {
   myNameEdit->setText("");
   myNameEdit->setFocus();
+  setDefaultGroupColor();
 }
 
 /*!
@@ -498,7 +540,7 @@ void SMESHGUI_GroupOpDlg::setName( const QString& theName )
 }
 
 /*!
-  \brief Provides reaction on “F1” button pressing
+  \brief Provides reaction on ï¿½F1ï¿½ button pressing
   \param e  key press event
 */
 void SMESHGUI_GroupOpDlg::keyPressEvent( QKeyEvent* e )
@@ -951,35 +993,55 @@ void SMESHGUI_CutGroupsDlg::onSelectionDone()
   \param theModule module
 */
 SMESHGUI_DimGroupDlg::SMESHGUI_DimGroupDlg( SMESHGUI* theModule )
-: SMESHGUI_GroupOpDlg( theModule )
+  : SMESHGUI_GroupOpDlg( theModule )
 {
   setWindowTitle( tr( "CREATE_GROUP_OF_UNDERLYING_ELEMS" ) );
   setHelpFileName( "group_of_underlying_elements_page.html" );
 
   QGroupBox* anArgGrp = getArgGrp();
 
-  QLabel* aLbl = new QLabel( tr( "ELEMENTS_TYPE" ), anArgGrp );
-  
-  myCombo = new QComboBox( anArgGrp );
-  static QStringList anItems;
-  if ( anItems.isEmpty() )
+  QLabel* aTypeLbl = new QLabel( tr( "ELEMENTS_TYPE" ), anArgGrp );
+
+  myTypeCombo = new QComboBox( anArgGrp );
+  QStringList anItems;
   {
-    anItems.append( tr( "NODE" ) );
-    anItems.append( tr( "EDGE" ) );
-    anItems.append( tr( "FACE" ) );
-    anItems.append( tr( "VOLUME" ) );
+    anItems.append( tr( "MESH_NODE" ) );
+    anItems.append( tr( "SMESH_EDGE" ) );
+    anItems.append( tr( "SMESH_FACE" ) );
+    anItems.append( tr( "SMESH_VOLUME" ) );
+    anItems.append( tr( "SMESH_ELEM0D" ) );
+    anItems.append( tr( "SMESH_BALL" ) );
   }
-  myCombo->addItems( anItems );
-  myCombo->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
-  
+  myTypeCombo->addItems( anItems );
+  myTypeCombo->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
+
+  QLabel* aNbNoLbl = new QLabel( tr( "NUMBER_OF_COMMON_NODES" ), anArgGrp );
+
+  myNbNoCombo = new QComboBox( anArgGrp );
+  anItems.clear();
+  {
+    anItems.append( tr( "ALL" ) );
+    anItems.append( tr( "MAIN" ) );
+    anItems.append( tr( "AT_LEAST_ONE" ) );
+    anItems.append( tr( "MAJORITY" ) );
+  }
+  myNbNoCombo->addItems( anItems );
+  myNbNoCombo->setSizePolicy( QSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed ) );
+
   myListWg = new QListWidget( anArgGrp );
+
+  myUnderlOnlyChk = new QCheckBox( tr("UNDERLYING_ENTITIES_ONLY"), anArgGrp );
+  myUnderlOnlyChk->setChecked( false );
 
   // layout
   QGridLayout* aLay = new QGridLayout( anArgGrp );
   aLay->setSpacing( SPACING );
-  aLay->addWidget( aLbl, 0, 0 );
-  aLay->addWidget( myCombo, 0, 1 );
-  aLay->addWidget( myListWg, 1, 0, 1, 2 );
+  aLay->addWidget( aTypeLbl,        0, 0 );
+  aLay->addWidget( myTypeCombo,     0, 1 );
+  aLay->addWidget( aNbNoLbl,        1, 0 );
+  aLay->addWidget( myNbNoCombo,     1, 1 );
+  aLay->addWidget( myListWg,        2, 0, 1, 2 );
+  aLay->addWidget( myUnderlOnlyChk, 3, 0 );
 }
 
 /*!
@@ -1007,7 +1069,7 @@ void SMESHGUI_DimGroupDlg::reset()
 */
 SMESH::ElementType SMESHGUI_DimGroupDlg::getElementType() const
 {
-  return (SMESH::ElementType)( myCombo->currentIndex() + 1 );
+  return (SMESH::ElementType)( myTypeCombo->currentIndex() + 1 );
 }
 
 /*!
@@ -1017,7 +1079,7 @@ SMESH::ElementType SMESHGUI_DimGroupDlg::getElementType() const
 */
 void SMESHGUI_DimGroupDlg::setElementType( const SMESH::ElementType& theElemType )
 {
-  myCombo->setCurrentIndex( theElemType - 1 );
+  myTypeCombo->setCurrentIndex( theElemType - 1 );
 }
 
 /*!
@@ -1047,10 +1109,19 @@ bool SMESHGUI_DimGroupDlg::onApply()
   QStringList anEntryList;
   try
   {
-    SMESH::ListOfGroups_var aList = convert( myGroups );
+    SMESH::ListOfIDSources_var aList = new SMESH::ListOfIDSources();
+    aList->length( myGroups.count() );
+    QList<SMESH::SMESH_GroupBase_var>::const_iterator anIter = myGroups.begin();
+    for ( int i = 0; anIter != myGroups.end(); ++anIter, ++i )
+      aList[ i ] = SMESH::SMESH_IDSource::_narrow( *anIter );
+
     SMESH::ElementType anElemType = getElementType();
-    SMESH::SMESH_Group_var aNewGrp = 
-      aMesh->CreateDimGroup( aList, anElemType, aName.toLatin1().constData() );
+    SMESH::NB_COMMON_NODES_ENUM aNbCoNodes =
+      (SMESH::NB_COMMON_NODES_ENUM) myNbNoCombo->currentIndex();
+
+    SMESH::SMESH_Group_var aNewGrp =
+      aMesh->CreateDimGroup( aList, anElemType, aName.toLatin1().constData(),
+                             aNbCoNodes, myUnderlOnlyChk->isChecked() );
     if ( !CORBA::is_nil( aNewGrp ) )
     {
       aNewGrp->SetColor(  getColor() );
@@ -1092,5 +1163,3 @@ void SMESHGUI_DimGroupDlg::onSelectionDone()
   myListWg->clear();
   myListWg->addItems( aNames );
 }
-
-

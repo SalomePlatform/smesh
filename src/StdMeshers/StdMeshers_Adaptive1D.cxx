@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -535,7 +535,7 @@ namespace // internal utils
         for ( int i = 0; i < 3; ++i )
         {
           const gp_Pnt& pn = myNodes->Value(n[i]);
-          if ( avoidTria = ( pn.SquareDistance( *avoidPnt ) <= tol2 ))
+          if (( avoidTria = ( pn.SquareDistance( *avoidPnt ) <= tol2 )))
             break;
           if ( !projectedOnly )
             minD2 = Min( minD2, pn.SquareDistance( p ));
@@ -703,7 +703,7 @@ namespace // internal utils
   void ElementBndBoxTree::buildChildrenData()
   {
     ElemTreeData* data = GetElemData();
-    for ( int i = 0; i < _elementIDs.size(); ++i )
+    for ( size_t i = 0; i < _elementIDs.size(); ++i )
     {
       const Bnd_B3d* elemBox = data->GetBox( _elementIDs[i] );
       for (int j = 0; j < 8; j++)
@@ -718,7 +718,7 @@ namespace // internal utils
     {
       ElementBndBoxTree* child = static_cast<ElementBndBoxTree*>( myChildren[j] );
       child->_elementIDs = data->myWorkIDs[ j ];
-      if ( child->_elementIDs.size() <= theMaxNbElemsInLeaf )
+      if ((int) child->_elementIDs.size() <= theMaxNbElemsInLeaf )
         child->myIsLeaf = true;
       data->myWorkIDs[ j ].clear();
     }
@@ -741,7 +741,7 @@ namespace // internal utils
       if ( isLeaf() )
       {
         ElemTreeData* data = GetElemData();
-        for ( int i = 0; i < _elementIDs.size(); ++i )
+        for ( size_t i = 0; i < _elementIDs.size(); ++i )
           if ( !data->GetBox( _elementIDs[i] )->IsOut( center, radius ))
             foundElemIDs.push_back( _elementIDs[i] );
       }
@@ -1197,7 +1197,7 @@ bool AdaptiveAlgo::Compute(SMESH_Mesh &         theMesh,
   StdMeshers_Regular_1D::_value[ DEFLECTION_IND ] = myHyp->GetDeflection();
 
   list< double > params;
-  for ( int iE = 0; iE < myEdges.size(); ++iE )
+  for ( size_t iE = 0; iE < myEdges.size(); ++iE )
   {
     EdgeData& eData = myEdges[ iE ];
     //cout << "E " << theMesh.GetMeshDS()->ShapeToIndex( eData.Edge() ) << endl;
@@ -1243,7 +1243,7 @@ bool AdaptiveAlgo::Compute(SMESH_Mesh &         theMesh,
 
     triaSearcher->SetSizeByTrias( sizeTree, myHyp->GetDeflection() );
 
-    for ( int iE = 0; iE < myEdges.size(); ++iE )
+    for ( size_t iE = 0; iE < myEdges.size(); ++iE )
     {
       EdgeData& eData = myEdges[ iE ];
 
@@ -1290,6 +1290,7 @@ bool AdaptiveAlgo::Compute(SMESH_Mesh &         theMesh,
         //cout << "E " << theMesh.GetMeshDS()->ShapeToIndex( eData.Edge() ) << endl;
         sizeDecreased = false;
         const gp_Pnt* avoidPnt = & eData.First().myP;
+        EdgeData::TPntIter pItLast = --eData.myPoints.end(), pItFirst = eData.myPoints.begin();
         for ( pIt1 = eData.myPoints.begin(); pIt1 != eData.myPoints.end();  )
         {
           double distToFace =
@@ -1307,19 +1308,16 @@ bool AdaptiveAlgo::Compute(SMESH_Mesh &         theMesh,
               //      << "\t SetSize " << allowedSize << " at "
               //      << pIt1->myP.X() <<", "<< pIt1->myP.Y()<<", "<<pIt1->myP.Z() << endl;
               pIt2 = pIt1;
-              if ( --pIt2 != eData.myPoints.end() && pIt2->mySegSize > allowedSize )
+              if ( pIt1 != pItFirst && ( --pIt2 )->mySegSize > allowedSize )
                 sizeTree.SetSize( eData.myC3d.Value( 0.6*pIt2->myU + 0.4*pIt1->myU ), allowedSize );
               pIt2 = pIt1;
-              if ( ++pIt2 != eData.myPoints.end() && pIt2->mySegSize > allowedSize )
+              if ( pIt1 != pItLast  && ( ++pIt2 )->mySegSize > allowedSize )
                 sizeTree.SetSize( eData.myC3d.Value( 0.6*pIt2->myU + 0.4*pIt1->myU ), allowedSize );
             }
             pIt1->mySegSize = allowedSize;
           }
           ++pIt1;
-          if ( & (*pIt1) == & eData.Last() )
-            avoidPnt = & eData.Last().myP;
-          else
-            avoidPnt = NULL;
+          avoidPnt = ( pIt1 == pItLast ) ? & eData.Last().myP : NULL;
 
           if ( iLoop > 20 )
           {
@@ -1356,7 +1354,7 @@ bool AdaptiveAlgo::makeSegments()
 
   vector< double > nbSegs, params;
 
-  for ( int iE = 0; iE < myEdges.size(); ++iE )
+  for ( size_t iE = 0; iE < myEdges.size(); ++iE )
   {
     EdgeData& eData = myEdges[ iE ];
 
@@ -1367,13 +1365,13 @@ bool AdaptiveAlgo::makeSegments()
       edgeMinSize = Min( edgeMinSize,
                          Min( pIt1->mySegSize, mySizeTree->GetSize( pIt1->myP )));
 
-    const double f = eData.myC3d.FirstParameter(), l = eData.myC3d.LastParameter();
+    const double      f = eData.myC3d.FirstParameter(), l = eData.myC3d.LastParameter();
     const double parLen = l - f;
     const int  nbDivSeg = 5;
-    int           nbDiv = Max( 1, int ( eData.myLength / edgeMinSize * nbDivSeg ));
+    size_t        nbDiv = Max( 1, int ( eData.myLength / edgeMinSize * nbDivSeg ));
 
     // compute nb of segments
-    bool toRecompute = true;
+    bool  toRecompute = true;
     double maxSegSize = 0;
     size_t i = 1, segCount;
     //cout << "E " << theMesh.GetMeshDS()->ShapeToIndex( eData.Edge() ) << endl;
@@ -1431,7 +1429,7 @@ bool AdaptiveAlgo::makeSegments()
     }
 
     // compute parameters of nodes
-    int nbSegFinal = Max( 1, int(floor( nbSegs.back() + 0.5 )));
+    size_t nbSegFinal = Max( 1, int(floor( nbSegs.back() + 0.5 )));
     double fact = nbSegFinal / nbSegs.back();
     if ( maxSegSize / fact > myHyp->GetMaxSize() )
       fact = ++nbSegFinal / nbSegs.back();
@@ -1504,7 +1502,7 @@ bool AdaptiveAlgo::Evaluate(SMESH_Mesh &         theMesh,
 
   for ( ; edExp.More(); edExp.Next() )
   {
-    const TopoDS_Edge & edge = TopoDS::Edge( edExp.Current() );
+    //const TopoDS_Edge & edge = TopoDS::Edge( edExp.Current() );
     StdMeshers_Regular_1D::Evaluate( theMesh, theShape, theResMap );
   }
   return true;

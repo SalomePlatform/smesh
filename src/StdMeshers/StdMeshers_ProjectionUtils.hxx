@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -36,8 +36,8 @@
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Vertex.hxx>
-#include <gp_Trsf.hxx>
-#include <gp_Trsf2d.hxx>
+#include <gp_GTrsf.hxx>
+#include <gp_GTrsf2d.hxx>
 
 #include <list>
 #include <map>
@@ -59,6 +59,10 @@ struct StdMeshers_ShapeShapeBiDirectionMap
 {
   TopTools_DataMapOfShapeShape _map1to2, _map2to1;
 
+  enum EAssocType {
+    UNDEF, INIT_VERTEX, PROPAGATION, PARTNER, CLOSE_VERTEX, COMMON_VERTEX, FEW_EF };
+  EAssocType _assocType;
+
   // convention: s1 - target, s2 - source
   bool Bind( const TopoDS_Shape& s1, const TopoDS_Shape& s2 )
   { _map1to2.Bind( s1, s2 ); return _map2to1.Bind( s2, s1 ); }
@@ -72,6 +76,8 @@ struct StdMeshers_ShapeShapeBiDirectionMap
     // passes incorrect isShape2
     return (isShape2 ? _map2to1 : _map1to2)( s );
   }
+  StdMeshers_ShapeShapeBiDirectionMap() : _assocType( UNDEF ) {}
+  void SetAssocType( EAssocType type ) { if ( _assocType == UNDEF ) _assocType = type; }
 };
 
 /*!
@@ -91,12 +97,12 @@ namespace StdMeshers_ProjectionUtils
    */
   class TrsfFinder2D
   {
-    gp_Trsf2d _trsf;
-    gp_XY     _srcOrig;
+    gp_GTrsf2d _trsf;
+    gp_XY      _srcOrig;
   public:
     TrsfFinder2D(): _srcOrig(0,0) {}
 
-    void Set( const gp_Trsf2d& t ) { _trsf = t; } // it's an alternative to Solve()
+    void Set( const gp_GTrsf2d& t ) { _trsf = t; } // it's an alternative to Solve()
 
     bool Solve( const std::vector< gp_XY >& srcPnts,
                 const std::vector< gp_XY >& tgtPnts );
@@ -111,12 +117,12 @@ namespace StdMeshers_ProjectionUtils
    */
   class TrsfFinder3D
   {
-    gp_Trsf _trsf;
-    gp_XYZ  _srcOrig;
+    gp_GTrsf _trsf;
+    gp_XYZ   _srcOrig;
   public:
     TrsfFinder3D(): _srcOrig(0,0,0) {}
 
-    void Set( const gp_Trsf& t ) { _trsf = t; } // it's an alternative to Solve()
+    void Set( const gp_GTrsf& t ) { _trsf = t; } // it's an alternative to Solve()
 
     bool Solve( const std::vector< gp_XYZ > & srcPnts,
                 const std::vector< gp_XYZ > & tgtPnts );
@@ -148,20 +154,22 @@ namespace StdMeshers_ProjectionUtils
 
   /*!
    * \brief Find association of edges of faces
-   * \param face1 - face 1
-   * \param VV1 - vertices of face 1
-   * \param face2 - face 2
-   * \param VV2 - vertices of face 2 associated with oned of face 1
-   * \param edges1 - out list of edges of face 1
-   * \param edges2 - out list of edges of face 2
-   * \retval int - nb of edges in an outer wire in a success case, else zero
+   *  \param face1 - face 1
+   *  \param VV1 - vertices of face 1
+   *  \param face2 - face 2
+   *  \param VV2 - vertices of face 2 associated with oned of face 1
+   *  \param edges1 - out list of edges of face 1
+   *  \param edges2 - out list of edges of face 2
+   *  \param isClosenessAssoc - is association starting by VERTEX closeness
+   *  \retval int - nb of edges in an outer wire in a success case, else zero
    */
   int FindFaceAssociation(const TopoDS_Face&         face1,
                           TopoDS_Vertex              VV1[2],
                           const TopoDS_Face&         face2,
                           TopoDS_Vertex              VV2[2],
                           std::list< TopoDS_Edge > & edges1,
-                          std::list< TopoDS_Edge > & edges2);
+                          std::list< TopoDS_Edge > & edges2,
+                          const bool                 isClosenessAssoc=false);
 
   /*!
    * \brief Insert vertex association defined by a hypothesis into a map

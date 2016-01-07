@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -24,7 +24,8 @@
 #define _SMESH_CONTROLS_HXX_
 
 // This file is named incosistently with others, i.e. not SMESHDS_Controls.hxx,
-// because it was moved from ../Controls/SMESH_Controls.hxx
+// because it was moved from ../Controls/SMESH_Controls.hxx.
+// It was moved here for the sake of SMESHDS_GroupOnFilter
 
 #include "SMDSAbs_ElementType.hxx"
 
@@ -47,7 +48,7 @@ namespace SMESH{
 
     /*
       Class       : Functor
-      Description : Root of all Functors
+      Description : Root of all Functors defined in ../Controls/SMESH_ControlsDef.hxx
     */
     class SMESHCONTROLS_EXPORT Functor
     {

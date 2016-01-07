@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -55,6 +55,9 @@ struct SMESHUtils_EXPORT SMESH_NodeSearcher
 {
   virtual const SMDS_MeshNode* FindClosestTo( const gp_Pnt& pnt ) = 0;
   virtual void MoveNode( const SMDS_MeshNode* node, const gp_Pnt& toPnt ) = 0;
+  virtual int  FindNearPoint(const gp_Pnt&                        point,
+                             const double                         tolerance,
+                             std::vector< const SMDS_MeshNode* >& foundNodes) = 0;
 };
 
 //=======================================================================
@@ -153,10 +156,45 @@ namespace SMESH_MeshAlgos
    * \brief Return SMESH_ElementSearcher. The caller is responsible for deleting it
    */
   SMESHUtils_EXPORT
-  SMESH_ElementSearcher* GetElementSearcher( SMDS_Mesh& mesh );
+  SMESH_ElementSearcher* GetElementSearcher( SMDS_Mesh& mesh,
+                                             double     tolerance=-1.);
   SMESHUtils_EXPORT
   SMESH_ElementSearcher* GetElementSearcher( SMDS_Mesh& mesh,
-                                             SMDS_ElemIteratorPtr elemIt );
-}
+                                             SMDS_ElemIteratorPtr elemIt,
+                                             double     tolerance=-1. );
+
+
+
+  typedef std::vector<const SMDS_MeshNode*> TFreeBorder;
+  typedef std::vector<TFreeBorder>          TFreeBorderVec;
+  struct TFreeBorderPart
+  {
+    int _border; // border index within a TFreeBorderVec
+    int _node1;  // node index within the border-th TFreeBorder
+    int _node2;
+    int _nodeLast;
+  };
+  typedef std::vector<TFreeBorderPart>  TCoincidentGroup;
+  typedef std::vector<TCoincidentGroup> TCoincidentGroupVec;
+  struct CoincidentFreeBorders
+  {
+    TFreeBorderVec      _borders;          // nodes of all free borders
+    TCoincidentGroupVec _coincidentGroups; // groups of coincident parts of borders
+  };
+
+  /*!
+   * Returns TFreeBorder's coincident within the given tolerance.
+   * If the tolerance <= 0.0 then one tenth of an average size of elements adjacent
+   * to free borders being compared is used.
+   *
+   * (Implemented in ./SMESH_FreeBorders.cxx)
+   */
+  SMESHUtils_EXPORT
+  void FindCoincidentFreeBorders(SMDS_Mesh&              mesh,
+                                 double                  tolerance,
+                                 CoincidentFreeBorders & foundFreeBordes);
+  
+
+} // SMESH_MeshAlgos
 
 #endif

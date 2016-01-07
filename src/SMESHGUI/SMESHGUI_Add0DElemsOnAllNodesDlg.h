@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -99,6 +99,8 @@ class SMESHGUI_EXPORT SMESHGUI_Add0DElemsOnAllNodesOp : public SMESHGUI_Selectio
   virtual bool                   onApply();
   void                           onSelTypeChange(int);
   void                           onSetFilter();
+  virtual void                   onTextChanged( int, const QStringList& );
+  void                           updateButtons();
 
  private:
   SMESHGUI_Add0DElemsOnAllNodesDlg* myDlg;

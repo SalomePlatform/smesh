@@ -27,9 +27,10 @@ def triedreBase():
     OY = geompy.MakeVectorDXDYDZ(0, 1, 0)
     OZ = geompy.MakeVectorDXDYDZ(0, 0, 1)
   
-    geomPublish(initLog.debug,  O, 'O' )
-    geomPublish(initLog.debug,  OX, 'OX' )
-    geomPublish(initLog.debug,  OY, 'OY' )
-    geomPublish(initLog.debug,  OZ, 'OZ' )
+    if not geompy.myStudy.FindObjectByName( 'OX', geompy.ComponentDataType() ):
+      geomPublish(initLog.debug,  O, 'O' )
+      geomPublish(initLog.debug,  OX, 'OX' )
+      geomPublish(initLog.debug,  OY, 'OY' )
+      geomPublish(initLog.debug,  OZ, 'OZ' )
 
   return O, OX, OY, OZ

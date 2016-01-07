@@ -27,6 +27,30 @@
       <source>TO_IGNORE_FACES</source>
       <translation>レイヤ（入出口）を伴わない面</translation>
     </message>
+    <message>
+      <source>BAD_FACES_WARNING</source>
+      <translation>明示された面はメッシュ/サブメッシュ形状のサブ形状ではありません。このメッシュ/サブメッシュのためにこれを使用する代わりにもう一つのhypothesisを作成していることが考えられます。</translation>
+    </message>
+    <message>
+      <source>BAD_EDGES_WARNING</source>
+      <translation>明示されたエッジはメッシュ/サブメッシュ形状のサブ形状ではありません。このメッシュ/サブメッシュのためにこれを使用する代わりにもう一つのhypothesisを作成していることが考えられます。</translation>
+    </message>
+    <message>
+      <source>EXTMETH_SURF_OFFSET_SMOOTH</source>
+      <translation>表面オフセットと平滑化</translation>
+    </message>
+    <message>
+      <source>EXTRUSION_METHOD</source>
+      <translation>押出方法</translation>
+    </message>
+    <message>
+      <source>EXTMETH_NODE_OFFSET</source>
+      <translation>節点オフセット</translation>
+    </message>
+    <message>
+      <source>EXTMETH_FACE_OFFSET</source>
+      <translation>面オフセット</translation>
+    </message>
   </context>
   <context>
     <name>@default</name>
@@ -508,10 +532,6 @@
       <source>ENF_NODES</source>
       <translation>強化された節点</translation>
     </message>
-    <message>
-      <source/>
-      <translation type="unfinished"/>
-    </message>
   </context>
   <context>
     <name>StdMeshersGUI_LayerDistributionParamWdg</name>
@@ -592,6 +612,37 @@
     <message>
       <source>COORD_STEP</source>
       <translation>ステップ</translation>
+    </message>
+  </context>
+  <context>
+    <name>StdMeshersGUI_PropagationHelperWdg</name>
+    <message>
+      <source>HELPER</source>
+      <translation>ヘルパ</translation>
+    </message>
+    <message>
+      <source>SHOW_GEOMETRY</source>
+      <translation>ジオメトリ全体の表示</translation>
+    </message>
+    <message>
+      <source>PROPAGATION_CHAINS</source>
+      <translation>伝播チェーン</translation>
+    </message>
+    <message>
+      <source>ADD</source>
+      <translation>追加</translation>
+    </message>
+    <message>
+      <source>REVERSE</source>
+      <translation>反転</translation>
+    </message>
+    <message>
+      <source>NO_CHAINS</source>
+      <translation>(no chains)</translation>
+    </message>
+    <message>
+      <source>CHAIN_NUM_NB_EDGES</source>
+      <translation>Chain %1 (%2 edges)</translation>
     </message>
   </context>
 </TS>

@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -42,21 +42,36 @@ public:
 
   // Set boundary shapes (faces in 3D, edges in 2D) either to exclude from
   // treatment or to make the Viscous Layers on
-  void SetBndShapes(const std::vector<int>& shapeIds, bool toIgnore);
+  void   SetBndShapes(const std::vector<int>& shapeIds, bool toIgnore);
   std::vector<int> GetBndShapes() const { return _shapeIds; }
-  bool IsToIgnoreShapes() const { return _isToIgnoreShapes; }
+  bool   IsToIgnoreShapes() const { return _isToIgnoreShapes; }
 
   // Set total thickness of layers of prisms
-  void SetTotalThickness(double thickness);
+  void   SetTotalThickness(double thickness);
   double GetTotalThickness() const { return _thickness; }
 
   // Set number of layers of prisms
-  void SetNumberLayers(int nb);
-  int GetNumberLayers() const { return _nbLayers; }
+  void   SetNumberLayers(int nb);
+  int    GetNumberLayers() const { return _nbLayers; }
 
   // Set factor (>1.0) of growth of layer thickness towards inside of mesh
-  void SetStretchFactor(double factor);
+  void   SetStretchFactor(double factor);
   double GetStretchFactor() const { return _stretchFactor; }
+
+  // Method of computing node translation 
+  enum ExtrusionMethod {
+    // node is translated along normal to a surface with possible further smoothing
+    SURF_OFFSET_SMOOTH,
+    // node is translated along the average normal of surrounding faces till
+    // intersection with a neighbor face translated along its own normal 
+    // by the layers thickness
+    FACE_OFFSET,
+    // node is translated along the average normal of surrounding faces
+    // by the layers thickness
+    NODE_OFFSET
+  };
+  void   SetMethod( ExtrusionMethod how );
+  ExtrusionMethod GetMethod() const { return _method; }
 
   // Computes temporary 2D mesh to be used by 3D algorithm.
   // Return SMESH_ProxyMesh for each SOLID in theShape
@@ -64,7 +79,7 @@ public:
                                const TopoDS_Shape& theShape,
                                const bool          toMakeN2NMap=false) const;
 
-  // Checks compatibility of assigned StdMeshers_ViscousLayers hypotheses 
+  // Checks compatibility of assigned StdMeshers_ViscousLayers hypotheses
   static SMESH_ComputeErrorPtr
     CheckHypothesis(SMESH_Mesh&                          aMesh,
                     const TopoDS_Shape&                  aShape,
@@ -81,8 +96,6 @@ public:
     * \param theMesh - the built mesh
     * \param theShape - the geometry of interest
     * \retval bool - true if parameter values have been successfully defined
-    *
-    * Just return false as this hypothesis does not have parameters values
    */
   virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh, const TopoDS_Shape& theShape);
 
@@ -102,6 +115,7 @@ public:
   int              _nbLayers;
   double           _thickness;
   double           _stretchFactor;
+  ExtrusionMethod  _method;
 };
 
 class SMESH_subMesh;

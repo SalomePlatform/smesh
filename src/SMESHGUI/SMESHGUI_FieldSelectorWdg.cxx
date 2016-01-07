@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -170,7 +170,7 @@ bool SMESHGUI_FieldSelectorWdg::GetSelectedFeilds()
 {
   int nbSelected = 0;
   if ( myTree->isEnabled() )
-    for ( size_t i = 0; i < myTree->topLevelItemCount(); ++i )
+    for ( int i = 0; i < myTree->topLevelItemCount(); ++i )
     {
       QTreeWidgetItem* meshItem = myTree->topLevelItem( i );
       int iM = meshItem->data( 0, Qt::UserRole ).toInt();
@@ -202,7 +202,7 @@ bool SMESHGUI_FieldSelectorWdg::GetSelectedFeilds()
     }
   else
   {
-    for ( size_t iF = 0; iF < myFields->count(); ++iF )
+    for ( int iF = 0; iF < myFields->count(); ++iF )
     {
       GEOM::ListOfFields& fields = (*myFields)[ iF ].first.inout();
       fields.length( 0 );

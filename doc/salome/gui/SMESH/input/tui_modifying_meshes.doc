@@ -140,4 +140,9 @@
 <h2>Convert mesh to/from quadratic</h2>
 \tui_script{modifying_meshes_ex26.py}
 
+<br>
+\anchor tui_split_biquad
+<h2>Split bi-quadratic into linear</h2>
+\tui_script{split_biquad.py}
+
 */

@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -234,7 +234,7 @@ namespace
         dist2 = ( nn1[1] - nn2[1] ).Modulus();
         tol   = 1e-5 * ( nn1[0] - nn1[1] ).Modulus();
       }
-      return ( dist1 < tol & dist2 < tol );
+      return ( dist1 < tol && dist2 < tol );
     }
     return false;
   }
@@ -451,7 +451,7 @@ namespace
     if ( !_nodeReplacementMap.empty() )
     {
       map< int, int >::const_iterator it, end = _nodeReplacementMap.end();
-      for ( size_t i = 0; i < nbIds; ++i )
+      for ( int i = 0; i < nbIds; ++i )
         if (( it = _nodeReplacementMap.find( ids[i] + idShift)) != end )
           ids[i] = it->second;
         else
@@ -459,7 +459,7 @@ namespace
     }
     else if ( idShift )
     {
-      for ( size_t i = 0; i < nbIds; ++i )
+      for ( int i = 0; i < nbIds; ++i )
         ids[i] += idShift;
     }
   }
@@ -1022,7 +1022,7 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
           if ( zone.IsStructured() )
           {
             int axis = 0; // axis perpendiculaire to which boundary elements are oriented
-            if ( ids.size() >= meshDim * 2 )
+            if ( (int) ids.size() >= meshDim * 2 )
             {
               for ( ; axis < meshDim; ++axis )
                 if ( ids[axis] - ids[axis+meshDim] == 0 )
@@ -1127,7 +1127,7 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
 
             if ( psType == CGNS_ENUMV( PointRange ) && ids.size() == 2 )
             {
-              for ( size_t i = ids[0]; i <= ids[1]; ++i )
+              for ( cgsize_t i = ids[0]; i <= ids[1]; ++i )
                 if ( const SMDS_MeshElement* e = myMesh->FindElement( i ))
                   groupDS.Add( e );
             }

@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -123,7 +123,7 @@ SMESH_SVTKActor
   SVTK::CopyPoints( GetSource(), aSourceDataSet );
   SVTK::CopyPoints( myBallGrid, aSourceDataSet );
   SVTK::CopyPoints( my0DGrid,    aSourceDataSet );
-  
+
 
   int aNbOfParts = theMapIndex.Extent();
 
@@ -143,12 +143,14 @@ SMESH_SVTKActor
       {
         if(aCell->GetCellType() == VTK_VERTEX ) {
           my0DGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
-        } else if(aCell->GetCellType() == VTK_POLY_VERTEX ) {
+        }
+        else if(aCell->GetCellType() == VTK_POLY_VERTEX ) {
           vtkIdType newCellId = myBallGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
           if(myVisualObj) {
             outputCD->CopyData(cd, myVisualObj->GetElemVTKId(aPartId), newCellId);
           }
-        } else {
+        }
+        else {
           myUnstructuredGrid->InsertNextCell(aCell->GetCellType(),aCell->GetPointIds());
         }
       }
@@ -195,6 +197,10 @@ void SMESH_SVTKActor::Set0DSize(float theSize) {
 
 void SMESH_SVTKActor::SetBallSize(float theSize) {
   myBallActor->GetProperty()->SetPointSize(theSize);
+}
+
+void SMESH_SVTKActor::SetBallScale(double theScale) {
+  myBallActor->SetBallScale(theScale);
 }
 
 void SMESH_SVTKActor::SetVisualObject(TVisualObjPtr theVisualObj) {

@@ -13,7 +13,7 @@
     </message>
     <message>
         <source>TO_IGNORE_EDGES</source>
-        <translation>Edges without layers (inlets and oulets)</translation>
+        <translation>Edges without layers (inlets and outlets)</translation>
     </message>
     <message>
         <source>TO_IGNORE_FACES_OR_NOT</source>
@@ -25,7 +25,7 @@
     </message>
     <message>
         <source>TO_IGNORE_FACES</source>
-        <translation>Faces without layers (inlets and oulets)</translation>
+        <translation>Faces without layers (inlets and outlets)</translation>
     </message>
     <message>
         <source>BAD_FACES_WARNING</source>
@@ -42,6 +42,22 @@ Specified edges are not sub-shapes of the shape of
 mesh/sub-mesh.
 Consider creating another hypothesis instead of using
 this one for this mesh/sub-mesh.</translation>
+    </message>
+    <message>
+        <source>EXTMETH_SURF_OFFSET_SMOOTH</source>
+        <translation>Surface offset + smooth</translation>
+    </message>
+    <message>
+        <source>EXTRUSION_METHOD</source>
+        <translation>Extrusion method</translation>
+    </message>
+    <message>
+        <source>EXTMETH_NODE_OFFSET</source>
+        <translation>Node offset</translation>
+    </message>
+    <message>
+        <source>EXTMETH_FACE_OFFSET</source>
+        <translation>Face offset</translation>
     </message>
 </context>
 <context>
@@ -233,7 +249,7 @@ this one for this mesh/sub-mesh.</translation>
     <message>
         <source>SMESH_FACES_WO_LAYERS</source>
         <translation>Faces without layers
-(inlets and oulets)</translation>
+(inlets and outlets)</translation>
     </message>
     <message>
         <source>SMESH_EDGES_WO_LAYERS</source>
@@ -306,11 +322,11 @@ this one for this mesh/sub-mesh.</translation>
     </message>
     <message>
         <source>SMESH_NUMBER_OF_LAYERS_HYPOTHESIS</source>
-        <translation>Radial Prism Parameter</translation>
+        <translation>Radial Discretization</translation>
     </message>
     <message>
         <source>SMESH_NUMBER_OF_LAYERS_2D_HYPOTHESIS</source>
-        <translation>Radial Quadrangle Parameter</translation>
+        <translation>Radial Discretization</translation>
     </message>
     <message>
         <source>SMESH_NUMBER_OF_LAYERS_TITLE</source>
@@ -526,10 +542,6 @@ this one for this mesh/sub-mesh.</translation>
         <source>ENF_NODES</source>
         <translation>Enforced nodes</translation>
     </message>
-    <message>
-        <source></source>
-        <translation></translation>
-    </message>
 </context>
 <context>
     <name>StdMeshersGUI_LayerDistributionParamWdg</name>
@@ -610,6 +622,37 @@ this one for this mesh/sub-mesh.</translation>
     <message>
         <source>COORD_STEP</source>
         <translation>Step</translation>
+    </message>
+</context>
+<context>
+    <name>StdMeshersGUI_PropagationHelperWdg</name>
+    <message>
+        <source>HELPER</source>
+        <translation>Helper</translation>
+    </message>
+    <message>
+        <source>SHOW_GEOMETRY</source>
+        <translation>Show whole geometry</translation>
+    </message>
+    <message>
+        <source>PROPAGATION_CHAINS</source>
+        <translation>Propagation chains</translation>
+    </message>
+    <message>
+        <source>ADD</source>
+        <translation>Add</translation>
+    </message>
+    <message>
+        <source>REVERSE</source>
+        <translation>Reverse</translation>
+    </message>
+    <message>
+        <source>NO_CHAINS</source>
+        <translation>(no chains)</translation>
+    </message>
+    <message>
+        <source>CHAIN_NUM_NB_EDGES</source>
+        <translation>Chain %1 (%2 edges)</translation>
     </message>
 </context>
 </TS>

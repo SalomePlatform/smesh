@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -168,14 +168,14 @@ namespace {
 
   //=======================================================================
   //class : _MyInterlacedNodeIterator
-  //purpose  : 
+  //purpose  :
   //=======================================================================
 
   class _MyInterlacedNodeIterator:public SMDS_NodeIterator
   {
     const vector<const SMDS_MeshNode *>& mySet;
-    int myIndex;
-    const int * myInterlace;
+    size_t                               myIndex;
+    const int *                          myInterlace;
   public:
     _MyInterlacedNodeIterator(const vector<const SMDS_MeshNode *>& s,
                               const int * interlace):
@@ -228,7 +228,7 @@ SMDS_NodeIteratorPtr SMDS_QuadraticFaceOfNodes::interlacedNodesIterator() const
 class _MyEdgeIterator : public SMDS_ElemIterator
 {
   vector< const SMDS_MeshElement* > myElems;
-  int myIndex;
+  size_t                            myIndex;
 public:
   _MyEdgeIterator(const SMDS_QuadraticFaceOfNodes* face):myIndex(0) {
     myElems.reserve( face->NbNodes() );

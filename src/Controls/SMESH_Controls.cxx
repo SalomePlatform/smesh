@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -31,9 +31,10 @@
 #include "SMDS_QuadraticFaceOfNodes.hxx"
 #include "SMDS_VolumeTool.hxx"
 #include "SMESHDS_GroupBase.hxx"
+#include "SMESHDS_GroupOnFilter.hxx"
 #include "SMESHDS_Mesh.hxx"
-#include "SMESH_OctreeNode.hxx"
 #include "SMESH_MeshAlgos.hxx"
+#include "SMESH_OctreeNode.hxx"
 
 #include <Basics_Utils.hxx>
 
@@ -43,6 +44,7 @@
 #include <Geom_CylindricalSurface.hxx>
 #include <Geom_Plane.hxx>
 #include <Geom_Surface.hxx>
+#include <NCollection_Map.hxx>
 #include <Precision.hxx>
 #include <TColStd_MapIteratorOfMapOfInteger.hxx>
 #include <TColStd_MapOfInteger.hxx>
@@ -135,8 +137,8 @@ namespace {
     int aResult0 = 0, aResult1 = 0;
      // last node, it is a medium one in a quadratic edge
     const SMDS_MeshNode* aLastNode = anEdge->GetNode( anEdge->NbNodes() - 1 );
-    const SMDS_MeshNode* aNode0 = anEdge->GetNode( 0 );
-    const SMDS_MeshNode* aNode1 = anEdge->GetNode( 1 );
+    const SMDS_MeshNode*    aNode0 = anEdge->GetNode( 0 );
+    const SMDS_MeshNode*    aNode1 = anEdge->GetNode( 1 );
     if ( aNode1 == aLastNode ) aNode1 = 0;
 
     SMDS_ElemIteratorPtr anElemIter = aLastNode->GetInverseElementIterator();
@@ -157,29 +159,6 @@ namespace {
       }
     }
     int aResult = std::max ( aResult0, aResult1 );
-
-//     TColStd_MapOfInteger aMap;
-
-//     SMDS_ElemIteratorPtr anIter = anEdge->nodesIterator();
-//     if ( anIter != 0 ) {
-//       while( anIter->more() ) {
-//      const SMDS_MeshNode* aNode = (SMDS_MeshNode*)anIter->next();
-//      if ( aNode == 0 )
-//        return 0;
-//      SMDS_ElemIteratorPtr anElemIter = aNode->GetInverseElementIterator();
-//      while( anElemIter->more() ) {
-//        const SMDS_MeshElement* anElem = anElemIter->next();
-//        if ( anElem != 0 && anElem->GetType() != SMDSAbs_Edge ) {
-//          int anId = anElem->GetID();
-
-//          if ( anIter->more() )              // i.e. first node
-//            aMap.Add( anId );
-//          else if ( aMap.Contains( anId ) )
-//            aResult++;
-//        }
-//      }
-//       }
-//     }
 
     return aResult;
   }
@@ -232,7 +211,7 @@ void NumericalFunctor::SetMesh( const SMDS_Mesh* theMesh )
   myMesh = theMesh;
 }
 
-bool NumericalFunctor::GetPoints(const int theId,
+bool NumericalFunctor::GetPoints(const int       theId,
                                  TSequenceOfXYZ& theRes ) const
 {
   theRes.clear();
@@ -256,6 +235,7 @@ bool NumericalFunctor::GetPoints(const SMDS_MeshElement* anElem,
     return false;
 
   theRes.reserve( anElem->NbNodes() );
+  theRes.setElement( anElem );
 
   // Get nodes of the element
   SMDS_ElemIteratorPtr anIter;
@@ -272,7 +252,6 @@ bool NumericalFunctor::GetPoints(const SMDS_MeshElement* anElem,
       break;
     default:
       anIter = anElem->nodesIterator();
-      //return false;
     }
   }
   else {
@@ -280,9 +259,13 @@ bool NumericalFunctor::GetPoints(const SMDS_MeshElement* anElem,
   }
 
   if ( anIter ) {
+    double xyz[3];
     while( anIter->more() ) {
       if ( const SMDS_MeshNode* aNode = static_cast<const SMDS_MeshNode*>( anIter->next() ))
-        theRes.push_back( gp_XYZ( aNode->X(), aNode->Y(), aNode->Z() ) );
+      {
+        aNode->GetXYZ( xyz );
+        theRes.push_back( gp_XYZ( xyz[0], xyz[1], xyz[2] ));
+      }
     }
   }
 
@@ -347,7 +330,7 @@ void NumericalFunctor::GetHistogram(int                  nbIntervals,
   std::multiset< double > values;
   if ( elements.empty() )
   {
-    SMDS_ElemIteratorPtr elemIt = myMesh->elementsIterator(GetType());
+    SMDS_ElemIteratorPtr elemIt = myMesh->elementsIterator( GetType() );
     while ( elemIt->more() )
       values.insert( GetValue( elemIt->next()->GetID() ));
   }
@@ -480,6 +463,27 @@ double MaxElementLength2D::GetValue( const TSequenceOfXYZ& P )
     double D2 = getDistance(P( 3 ),P( 7 ));
     aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(D1,D2));
   }
+  // Diagonals are undefined for concave polygons
+  // else if ( P.getElementEntity() == SMDSEntity_Quad_Polygon && P.size() > 2 ) // quad polygon
+  // {
+  //   // sides
+  //   aVal = getDistance( P( 1 ), P( P.size() )) + getDistance( P( P.size() ), P( P.size()-1 ));
+  //   for ( size_t i = 1; i < P.size()-1; i += 2 )
+  //   {
+  //     double L = getDistance( P( i ), P( i+1 )) + getDistance( P( i+1 ), P( i+2 ));
+  //     aVal = Max( aVal, L );
+  //   }
+  //   // diagonals
+  //   for ( int i = P.size()-5; i > 0; i -= 2 )
+  //     for ( int j = i + 4; j < P.size() + i - 2; i += 2 )
+  //     {
+  //       double D = getDistance( P( i ), P( j ));
+  //       aVal = Max( aVal, D );
+  //     }
+  // }
+  // { // polygons
+    
+  // }
 
   if( myPrecision >= 0 )
   {
@@ -518,148 +522,164 @@ double MaxElementLength3D::GetValue( long theElementId )
   if( GetPoints( theElementId, P ) ) {
     double aVal = 0;
     const SMDS_MeshElement* aElem = myMesh->FindElement( theElementId );
-    SMDSAbs_ElementType aType = aElem->GetType();
+    SMDSAbs_EntityType      aType = aElem->GetEntityType();
     int len = P.size();
-    switch( aType ) {
-    case SMDSAbs_Volume:
-      if( len == 4 ) { // tetras
-        double L1 = getDistance(P( 1 ),P( 2 ));
-        double L2 = getDistance(P( 2 ),P( 3 ));
-        double L3 = getDistance(P( 3 ),P( 1 ));
-        double L4 = getDistance(P( 1 ),P( 4 ));
-        double L5 = getDistance(P( 2 ),P( 4 ));
-        double L6 = getDistance(P( 3 ),P( 4 ));
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-        break;
-      }
-      else if( len == 5 ) { // pyramids
-        double L1 = getDistance(P( 1 ),P( 2 ));
-        double L2 = getDistance(P( 2 ),P( 3 ));
-        double L3 = getDistance(P( 3 ),P( 4 ));
-        double L4 = getDistance(P( 4 ),P( 1 ));
-        double L5 = getDistance(P( 1 ),P( 5 ));
-        double L6 = getDistance(P( 2 ),P( 5 ));
-        double L7 = getDistance(P( 3 ),P( 5 ));
-        double L8 = getDistance(P( 4 ),P( 5 ));
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-        aVal = Max(aVal,Max(L7,L8));
-        break;
-      }
-      else if( len == 6 ) { // pentas
-        double L1 = getDistance(P( 1 ),P( 2 ));
-        double L2 = getDistance(P( 2 ),P( 3 ));
-        double L3 = getDistance(P( 3 ),P( 1 ));
-        double L4 = getDistance(P( 4 ),P( 5 ));
-        double L5 = getDistance(P( 5 ),P( 6 ));
-        double L6 = getDistance(P( 6 ),P( 4 ));
-        double L7 = getDistance(P( 1 ),P( 4 ));
-        double L8 = getDistance(P( 2 ),P( 5 ));
-        double L9 = getDistance(P( 3 ),P( 6 ));
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-        aVal = Max(aVal,Max(Max(L7,L8),L9));
-        break;
-      }
-      else if( len == 8 ) { // hexas
-        double L1 = getDistance(P( 1 ),P( 2 ));
-        double L2 = getDistance(P( 2 ),P( 3 ));
-        double L3 = getDistance(P( 3 ),P( 4 ));
-        double L4 = getDistance(P( 4 ),P( 1 ));
-        double L5 = getDistance(P( 5 ),P( 6 ));
-        double L6 = getDistance(P( 6 ),P( 7 ));
-        double L7 = getDistance(P( 7 ),P( 8 ));
-        double L8 = getDistance(P( 8 ),P( 5 ));
-        double L9 = getDistance(P( 1 ),P( 5 ));
-        double L10= getDistance(P( 2 ),P( 6 ));
-        double L11= getDistance(P( 3 ),P( 7 ));
-        double L12= getDistance(P( 4 ),P( 8 ));
-        double D1 = getDistance(P( 1 ),P( 7 ));
-        double D2 = getDistance(P( 2 ),P( 8 ));
-        double D3 = getDistance(P( 3 ),P( 5 ));
-        double D4 = getDistance(P( 4 ),P( 6 ));
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-        aVal = Max(aVal,Max(Max(L7,L8),Max(L9,L10)));
-        aVal = Max(aVal,Max(L11,L12));
-        aVal = Max(aVal,Max(Max(D1,D2),Max(D3,D4)));
-        break;
-      }
-      else if( len == 12 ) { // hexagonal prism
-        for ( int i1 = 1; i1 < 12; ++i1 )
-          for ( int i2 = i1+1; i1 <= 12; ++i1 )
-            aVal = Max( aVal, getDistance(P( i1 ),P( i2 )));
-        break;
-      }
-      else if( len == 10 ) { // quadratic tetras
-        double L1 = getDistance(P( 1 ),P( 5 )) + getDistance(P( 5 ),P( 2 ));
-        double L2 = getDistance(P( 2 ),P( 6 )) + getDistance(P( 6 ),P( 3 ));
-        double L3 = getDistance(P( 3 ),P( 7 )) + getDistance(P( 7 ),P( 1 ));
-        double L4 = getDistance(P( 1 ),P( 8 )) + getDistance(P( 8 ),P( 4 ));
-        double L5 = getDistance(P( 2 ),P( 9 )) + getDistance(P( 9 ),P( 4 ));
-        double L6 = getDistance(P( 3 ),P( 10 )) + getDistance(P( 10 ),P( 4 ));
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-        break;
-      }
-      else if( len == 13 ) { // quadratic pyramids
-        double L1 = getDistance(P( 1 ),P( 6 )) + getDistance(P( 6 ),P( 2 ));
-        double L2 = getDistance(P( 2 ),P( 7 )) + getDistance(P( 7 ),P( 3 ));
-        double L3 = getDistance(P( 3 ),P( 8 )) + getDistance(P( 8 ),P( 4 ));
-        double L4 = getDistance(P( 4 ),P( 9 )) + getDistance(P( 9 ),P( 1 ));
-        double L5 = getDistance(P( 1 ),P( 10 )) + getDistance(P( 10 ),P( 5 ));
-        double L6 = getDistance(P( 2 ),P( 11 )) + getDistance(P( 11 ),P( 5 ));
-        double L7 = getDistance(P( 3 ),P( 12 )) + getDistance(P( 12 ),P( 5 ));
-        double L8 = getDistance(P( 4 ),P( 13 )) + getDistance(P( 13 ),P( 5 ));
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-        aVal = Max(aVal,Max(L7,L8));
-        break;
-      }
-      else if( len == 15 ) { // quadratic pentas
-        double L1 = getDistance(P( 1 ),P( 7 )) + getDistance(P( 7 ),P( 2 ));
-        double L2 = getDistance(P( 2 ),P( 8 )) + getDistance(P( 8 ),P( 3 ));
-        double L3 = getDistance(P( 3 ),P( 9 )) + getDistance(P( 9 ),P( 1 ));
-        double L4 = getDistance(P( 4 ),P( 10 )) + getDistance(P( 10 ),P( 5 ));
-        double L5 = getDistance(P( 5 ),P( 11 )) + getDistance(P( 11 ),P( 6 ));
-        double L6 = getDistance(P( 6 ),P( 12 )) + getDistance(P( 12 ),P( 4 ));
-        double L7 = getDistance(P( 1 ),P( 13 )) + getDistance(P( 13 ),P( 4 ));
-        double L8 = getDistance(P( 2 ),P( 14 )) + getDistance(P( 14 ),P( 5 ));
-        double L9 = getDistance(P( 3 ),P( 15 )) + getDistance(P( 15 ),P( 6 ));
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-        aVal = Max(aVal,Max(Max(L7,L8),L9));
-        break;
-      }
-      else if( len == 20 || len == 27 ) { // quadratic hexas
-        double L1 = getDistance(P( 1 ),P( 9 )) + getDistance(P( 9 ),P( 2 ));
-        double L2 = getDistance(P( 2 ),P( 10 )) + getDistance(P( 10 ),P( 3 ));
-        double L3 = getDistance(P( 3 ),P( 11 )) + getDistance(P( 11 ),P( 4 ));
-        double L4 = getDistance(P( 4 ),P( 12 )) + getDistance(P( 12 ),P( 1 ));
-        double L5 = getDistance(P( 5 ),P( 13 )) + getDistance(P( 13 ),P( 6 ));
-        double L6 = getDistance(P( 6 ),P( 14 )) + getDistance(P( 14 ),P( 7 ));
-        double L7 = getDistance(P( 7 ),P( 15 )) + getDistance(P( 15 ),P( 8 ));
-        double L8 = getDistance(P( 8 ),P( 16 )) + getDistance(P( 16 ),P( 5 ));
-        double L9 = getDistance(P( 1 ),P( 17 )) + getDistance(P( 17 ),P( 5 ));
-        double L10= getDistance(P( 2 ),P( 18 )) + getDistance(P( 18 ),P( 6 ));
-        double L11= getDistance(P( 3 ),P( 19 )) + getDistance(P( 19 ),P( 7 ));
-        double L12= getDistance(P( 4 ),P( 20 )) + getDistance(P( 20 ),P( 8 ));
-        double D1 = getDistance(P( 1 ),P( 7 ));
-        double D2 = getDistance(P( 2 ),P( 8 ));
-        double D3 = getDistance(P( 3 ),P( 5 ));
-        double D4 = getDistance(P( 4 ),P( 6 ));
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-        aVal = Max(aVal,Max(Max(L7,L8),Max(L9,L10)));
-        aVal = Max(aVal,Max(L11,L12));
-        aVal = Max(aVal,Max(Max(D1,D2),Max(D3,D4)));
-        break;
-      }
-      else if( len > 1 && aElem->IsPoly() ) { // polys
-        // get the maximum distance between all pairs of nodes
-        for( int i = 1; i <= len; i++ ) {
-          for( int j = 1; j <= len; j++ ) {
-            if( j > i ) { // optimization of the loop
-              double D = getDistance( P(i), P(j) );
-              aVal = Max( aVal, D );
-            }
+    switch ( aType ) {
+    case SMDSEntity_Tetra: { // tetras
+      double L1 = getDistance(P( 1 ),P( 2 ));
+      double L2 = getDistance(P( 2 ),P( 3 ));
+      double L3 = getDistance(P( 3 ),P( 1 ));
+      double L4 = getDistance(P( 1 ),P( 4 ));
+      double L5 = getDistance(P( 2 ),P( 4 ));
+      double L6 = getDistance(P( 3 ),P( 4 ));
+      aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
+      break;
+    }
+    case SMDSEntity_Pyramid: { // pyramids
+      double L1 = getDistance(P( 1 ),P( 2 ));
+      double L2 = getDistance(P( 2 ),P( 3 ));
+      double L3 = getDistance(P( 3 ),P( 4 ));
+      double L4 = getDistance(P( 4 ),P( 1 ));
+      double L5 = getDistance(P( 1 ),P( 5 ));
+      double L6 = getDistance(P( 2 ),P( 5 ));
+      double L7 = getDistance(P( 3 ),P( 5 ));
+      double L8 = getDistance(P( 4 ),P( 5 ));
+      aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
+      aVal = Max(aVal,Max(L7,L8));
+      break;
+    }
+    case SMDSEntity_Penta: { // pentas
+      double L1 = getDistance(P( 1 ),P( 2 ));
+      double L2 = getDistance(P( 2 ),P( 3 ));
+      double L3 = getDistance(P( 3 ),P( 1 ));
+      double L4 = getDistance(P( 4 ),P( 5 ));
+      double L5 = getDistance(P( 5 ),P( 6 ));
+      double L6 = getDistance(P( 6 ),P( 4 ));
+      double L7 = getDistance(P( 1 ),P( 4 ));
+      double L8 = getDistance(P( 2 ),P( 5 ));
+      double L9 = getDistance(P( 3 ),P( 6 ));
+      aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
+      aVal = Max(aVal,Max(Max(L7,L8),L9));
+      break;
+    }
+    case SMDSEntity_Hexa: { // hexas
+      double L1 = getDistance(P( 1 ),P( 2 ));
+      double L2 = getDistance(P( 2 ),P( 3 ));
+      double L3 = getDistance(P( 3 ),P( 4 ));
+      double L4 = getDistance(P( 4 ),P( 1 ));
+      double L5 = getDistance(P( 5 ),P( 6 ));
+      double L6 = getDistance(P( 6 ),P( 7 ));
+      double L7 = getDistance(P( 7 ),P( 8 ));
+      double L8 = getDistance(P( 8 ),P( 5 ));
+      double L9 = getDistance(P( 1 ),P( 5 ));
+      double L10= getDistance(P( 2 ),P( 6 ));
+      double L11= getDistance(P( 3 ),P( 7 ));
+      double L12= getDistance(P( 4 ),P( 8 ));
+      double D1 = getDistance(P( 1 ),P( 7 ));
+      double D2 = getDistance(P( 2 ),P( 8 ));
+      double D3 = getDistance(P( 3 ),P( 5 ));
+      double D4 = getDistance(P( 4 ),P( 6 ));
+      aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
+      aVal = Max(aVal,Max(Max(L7,L8),Max(L9,L10)));
+      aVal = Max(aVal,Max(L11,L12));
+      aVal = Max(aVal,Max(Max(D1,D2),Max(D3,D4)));
+      break;
+    }
+    case SMDSEntity_Hexagonal_Prism: { // hexagonal prism
+      for ( int i1 = 1; i1 < 12; ++i1 )
+        for ( int i2 = i1+1; i1 <= 12; ++i1 )
+          aVal = Max( aVal, getDistance(P( i1 ),P( i2 )));
+      break;
+    }
+    case SMDSEntity_Quad_Tetra: { // quadratic tetras
+      double L1 = getDistance(P( 1 ),P( 5 )) + getDistance(P( 5 ),P( 2 ));
+      double L2 = getDistance(P( 2 ),P( 6 )) + getDistance(P( 6 ),P( 3 ));
+      double L3 = getDistance(P( 3 ),P( 7 )) + getDistance(P( 7 ),P( 1 ));
+      double L4 = getDistance(P( 1 ),P( 8 )) + getDistance(P( 8 ),P( 4 ));
+      double L5 = getDistance(P( 2 ),P( 9 )) + getDistance(P( 9 ),P( 4 ));
+      double L6 = getDistance(P( 3 ),P( 10 )) + getDistance(P( 10 ),P( 4 ));
+      aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
+      break;
+    }
+    case SMDSEntity_Quad_Pyramid: { // quadratic pyramids
+      double L1 = getDistance(P( 1 ),P( 6 )) + getDistance(P( 6 ),P( 2 ));
+      double L2 = getDistance(P( 2 ),P( 7 )) + getDistance(P( 7 ),P( 3 ));
+      double L3 = getDistance(P( 3 ),P( 8 )) + getDistance(P( 8 ),P( 4 ));
+      double L4 = getDistance(P( 4 ),P( 9 )) + getDistance(P( 9 ),P( 1 ));
+      double L5 = getDistance(P( 1 ),P( 10 )) + getDistance(P( 10 ),P( 5 ));
+      double L6 = getDistance(P( 2 ),P( 11 )) + getDistance(P( 11 ),P( 5 ));
+      double L7 = getDistance(P( 3 ),P( 12 )) + getDistance(P( 12 ),P( 5 ));
+      double L8 = getDistance(P( 4 ),P( 13 )) + getDistance(P( 13 ),P( 5 ));
+      aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
+      aVal = Max(aVal,Max(L7,L8));
+      break;
+    }
+    case SMDSEntity_Quad_Penta: { // quadratic pentas
+      double L1 = getDistance(P( 1 ),P( 7 )) + getDistance(P( 7 ),P( 2 ));
+      double L2 = getDistance(P( 2 ),P( 8 )) + getDistance(P( 8 ),P( 3 ));
+      double L3 = getDistance(P( 3 ),P( 9 )) + getDistance(P( 9 ),P( 1 ));
+      double L4 = getDistance(P( 4 ),P( 10 )) + getDistance(P( 10 ),P( 5 ));
+      double L5 = getDistance(P( 5 ),P( 11 )) + getDistance(P( 11 ),P( 6 ));
+      double L6 = getDistance(P( 6 ),P( 12 )) + getDistance(P( 12 ),P( 4 ));
+      double L7 = getDistance(P( 1 ),P( 13 )) + getDistance(P( 13 ),P( 4 ));
+      double L8 = getDistance(P( 2 ),P( 14 )) + getDistance(P( 14 ),P( 5 ));
+      double L9 = getDistance(P( 3 ),P( 15 )) + getDistance(P( 15 ),P( 6 ));
+      aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
+      aVal = Max(aVal,Max(Max(L7,L8),L9));
+      break;
+    }
+    case SMDSEntity_Quad_Hexa:
+    case SMDSEntity_TriQuad_Hexa: { // quadratic hexas
+      double L1 = getDistance(P( 1 ),P( 9 )) + getDistance(P( 9 ),P( 2 ));
+      double L2 = getDistance(P( 2 ),P( 10 )) + getDistance(P( 10 ),P( 3 ));
+      double L3 = getDistance(P( 3 ),P( 11 )) + getDistance(P( 11 ),P( 4 ));
+      double L4 = getDistance(P( 4 ),P( 12 )) + getDistance(P( 12 ),P( 1 ));
+      double L5 = getDistance(P( 5 ),P( 13 )) + getDistance(P( 13 ),P( 6 ));
+      double L6 = getDistance(P( 6 ),P( 14 )) + getDistance(P( 14 ),P( 7 ));
+      double L7 = getDistance(P( 7 ),P( 15 )) + getDistance(P( 15 ),P( 8 ));
+      double L8 = getDistance(P( 8 ),P( 16 )) + getDistance(P( 16 ),P( 5 ));
+      double L9 = getDistance(P( 1 ),P( 17 )) + getDistance(P( 17 ),P( 5 ));
+      double L10= getDistance(P( 2 ),P( 18 )) + getDistance(P( 18 ),P( 6 ));
+      double L11= getDistance(P( 3 ),P( 19 )) + getDistance(P( 19 ),P( 7 ));
+      double L12= getDistance(P( 4 ),P( 20 )) + getDistance(P( 20 ),P( 8 ));
+      double D1 = getDistance(P( 1 ),P( 7 ));
+      double D2 = getDistance(P( 2 ),P( 8 ));
+      double D3 = getDistance(P( 3 ),P( 5 ));
+      double D4 = getDistance(P( 4 ),P( 6 ));
+      aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
+      aVal = Max(aVal,Max(Max(L7,L8),Max(L9,L10)));
+      aVal = Max(aVal,Max(L11,L12));
+      aVal = Max(aVal,Max(Max(D1,D2),Max(D3,D4)));
+      break;
+    }
+    case SMDSEntity_Quad_Polyhedra:
+    case SMDSEntity_Polyhedra: { // polys
+      // get the maximum distance between all pairs of nodes
+      for( int i = 1; i <= len; i++ ) {
+        for( int j = 1; j <= len; j++ ) {
+          if( j > i ) { // optimization of the loop
+            double D = getDistance( P(i), P(j) );
+            aVal = Max( aVal, D );
           }
         }
       }
+      break;
     }
+    case SMDSEntity_Node:
+    case SMDSEntity_0D:
+    case SMDSEntity_Edge:
+    case SMDSEntity_Quad_Edge:
+    case SMDSEntity_Triangle:
+    case SMDSEntity_Quad_Triangle:
+    case SMDSEntity_BiQuad_Triangle:
+    case SMDSEntity_Quadrangle:
+    case SMDSEntity_Quad_Quadrangle:
+    case SMDSEntity_BiQuad_Quadrangle:
+    case SMDSEntity_Polygon:
+    case SMDSEntity_Quad_Polygon:
+    case SMDSEntity_Ball:
+    case SMDSEntity_Last: return 0;
+    } // switch ( aType )
 
     if( myPrecision >= 0 )
     {
@@ -698,8 +718,9 @@ double MinimumAngle::GetValue( const TSequenceOfXYZ& P )
   aMin = getAngle(P( P.size() ), P( 1 ), P( 2 ));
   aMin = Min(aMin,getAngle(P( P.size()-1 ), P( P.size() ), P( 1 )));
 
-  for (int i=2; i<P.size();i++){
-      double A0 = getAngle( P( i-1 ), P( i ), P( i+1 ) );
+  for ( size_t i = 2; i < P.size(); i++ )
+  {
+    double A0 = getAngle( P( i-1 ), P( i ), P( i+1 ) );
     aMin = Min(aMin,A0);
   }
 
@@ -1356,10 +1377,10 @@ double Taper::GetValue( const TSequenceOfXYZ& P )
     return 0.;
 
   // Compute taper
-  double J1 = getArea( P( 4 ), P( 1 ), P( 2 ) ) / 2.;
-  double J2 = getArea( P( 3 ), P( 1 ), P( 2 ) ) / 2.;
-  double J3 = getArea( P( 2 ), P( 3 ), P( 4 ) ) / 2.;
-  double J4 = getArea( P( 3 ), P( 4 ), P( 1 ) ) / 2.;
+  double J1 = getArea( P( 4 ), P( 1 ), P( 2 ) );
+  double J2 = getArea( P( 3 ), P( 1 ), P( 2 ) );
+  double J3 = getArea( P( 2 ), P( 3 ), P( 4 ) );
+  double J4 = getArea( P( 3 ), P( 4 ), P( 1 ) );
 
   double JA = 0.25 * ( J1 + J2 + J3 + J4 );
   if ( JA <= theEps )
@@ -1380,7 +1401,7 @@ double Taper::GetValue( const TSequenceOfXYZ& P )
 double Taper::GetBadRate( double Value, int /*nbNodes*/ ) const
 {
   // the taper is in the range [0.0,1.0]
-  // 0.0  = good (no taper)
+  // 0.0 = good (no taper)
   // 1.0 = bad  (les cotes opposes sont allignes)
   return Value;
 }
@@ -1466,13 +1487,16 @@ SMDSAbs_ElementType Skew::GetType() const
 double Area::GetValue( const TSequenceOfXYZ& P )
 {
   double val = 0.0;
-  if ( P.size() > 2 ) {
+  if ( P.size() > 2 )
+  {
     gp_Vec aVec1( P(2) - P(1) );
     gp_Vec aVec2( P(3) - P(1) );
     gp_Vec SumVec = aVec1 ^ aVec2;
-    for (int i=4; i<=P.size(); i++) {
+
+    for (size_t i=4; i<=P.size(); i++)
+    {
       gp_Vec aVec1( P(i-1) - P(1) );
-      gp_Vec aVec2( P(i) - P(1) );
+      gp_Vec aVec2( P(i  ) - P(1) );
       gp_Vec tmp = aVec1 ^ aVec2;
       SumVec.Add(tmp);
     }
@@ -1522,81 +1546,78 @@ SMDSAbs_ElementType Length::GetType() const
 //================================================================================
 /*
   Class       : Length2D
-  Description : Functor for calculating length of edge
+  Description : Functor for calculating minimal length of edge
 */
 //================================================================================
 
-double Length2D::GetValue( long theElementId)
+double Length2D::GetValue( long theElementId )
 {
   TSequenceOfXYZ P;
 
-  //cout<<"Length2D::GetValue"<<endl;
-  if (GetPoints(theElementId,P)){
-    //for(int jj=1; jj<=P.size(); jj++)
-    //  cout<<"jj="<<jj<<" P("<<P(jj).X()<<","<<P(jj).Y()<<","<<P(jj).Z()<<")"<<endl;
-
-    double  aVal;// = GetValue( P );
-    const SMDS_MeshElement* aElem = myMesh->FindElement( theElementId );
-    SMDSAbs_ElementType aType = aElem->GetType();
-
+  if ( GetPoints( theElementId, P ))
+  {
+    double aVal = 0;
     int len = P.size();
+    SMDSAbs_EntityType aType = P.getElementEntity();
 
-    switch (aType){
-    case SMDSAbs_All:
-    case SMDSAbs_Node:
-    case SMDSAbs_Edge:
-      if (len == 2){
+    switch (aType) {
+    case SMDSEntity_Edge:
+      if (len == 2)
         aVal = getDistance( P( 1 ), P( 2 ) );
-        break;
-      }
-      else if (len == 3){ // quadratic edge
+      break;
+    case SMDSEntity_Quad_Edge:
+      if (len == 3) // quadratic edge
         aVal = getDistance(P( 1 ),P( 3 )) + getDistance(P( 3 ),P( 2 ));
-        break;
-      }
-    case SMDSAbs_Face:
+      break;
+    case SMDSEntity_Triangle:
       if (len == 3){ // triangles
         double L1 = getDistance(P( 1 ),P( 2 ));
         double L2 = getDistance(P( 2 ),P( 3 ));
         double L3 = getDistance(P( 3 ),P( 1 ));
-        aVal = Max(L1,Max(L2,L3));
-        break;
+        aVal = Min(L1,Min(L2,L3));
       }
-      else if (len == 4){ // quadrangles
+      break;
+    case SMDSEntity_Quadrangle:
+      if (len == 4){ // quadrangles
         double L1 = getDistance(P( 1 ),P( 2 ));
         double L2 = getDistance(P( 2 ),P( 3 ));
         double L3 = getDistance(P( 3 ),P( 4 ));
         double L4 = getDistance(P( 4 ),P( 1 ));
-        aVal = Max(Max(L1,L2),Max(L3,L4));
-        break;
+        aVal = Min(Min(L1,L2),Min(L3,L4));
       }
-      if (len == 6){ // quadratic triangles
+      break;
+    case SMDSEntity_Quad_Triangle:
+    case SMDSEntity_BiQuad_Triangle:
+      if (len >= 6){ // quadratic triangles
         double L1 = getDistance(P( 1 ),P( 2 )) + getDistance(P( 2 ),P( 3 ));
         double L2 = getDistance(P( 3 ),P( 4 )) + getDistance(P( 4 ),P( 5 ));
         double L3 = getDistance(P( 5 ),P( 6 )) + getDistance(P( 6 ),P( 1 ));
-        aVal = Max(L1,Max(L2,L3));
-        //cout<<"L1="<<L1<<" L2="<<L2<<"L3="<<L3<<" aVal="<<aVal<<endl;
-        break;
+        aVal = Min(L1,Min(L2,L3));
       }
-      else if (len == 8){ // quadratic quadrangles
+      break;
+    case SMDSEntity_Quad_Quadrangle:
+    case SMDSEntity_BiQuad_Quadrangle:
+      if (len >= 8){ // quadratic quadrangles
         double L1 = getDistance(P( 1 ),P( 2 )) + getDistance(P( 2 ),P( 3 ));
         double L2 = getDistance(P( 3 ),P( 4 )) + getDistance(P( 4 ),P( 5 ));
         double L3 = getDistance(P( 5 ),P( 6 )) + getDistance(P( 6 ),P( 7 ));
         double L4 = getDistance(P( 7 ),P( 8 )) + getDistance(P( 8 ),P( 1 ));
-        aVal = Max(Max(L1,L2),Max(L3,L4));
-        break;
+        aVal = Min(Min(L1,L2),Min(L3,L4));
       }
-    case SMDSAbs_Volume:
-      if (len == 4){ // tetraidrs
+      break;
+    case SMDSEntity_Tetra:
+      if (len == 4){ // tetrahedra
         double L1 = getDistance(P( 1 ),P( 2 ));
         double L2 = getDistance(P( 2 ),P( 3 ));
         double L3 = getDistance(P( 3 ),P( 1 ));
         double L4 = getDistance(P( 1 ),P( 4 ));
         double L5 = getDistance(P( 2 ),P( 4 ));
         double L6 = getDistance(P( 3 ),P( 4 ));
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-        break;
+        aVal = Min(Min(Min(L1,L2),Min(L3,L4)),Min(L5,L6));
       }
-      else if (len == 5){ // piramids
+      break;
+    case SMDSEntity_Pyramid:
+      if (len == 5){ // piramids
         double L1 = getDistance(P( 1 ),P( 2 ));
         double L2 = getDistance(P( 2 ),P( 3 ));
         double L3 = getDistance(P( 3 ),P( 4 ));
@@ -1606,11 +1627,12 @@ double Length2D::GetValue( long theElementId)
         double L7 = getDistance(P( 3 ),P( 5 ));
         double L8 = getDistance(P( 4 ),P( 5 ));
 
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-        aVal = Max(aVal,Max(L7,L8));
-        break;
+        aVal = Min(Min(Min(L1,L2),Min(L3,L4)),Min(L5,L6));
+        aVal = Min(aVal,Min(L7,L8));
       }
-      else if (len == 6){ // pentaidres
+      break;
+    case SMDSEntity_Penta:
+      if (len == 6) { // pentaidres
         double L1 = getDistance(P( 1 ),P( 2 ));
         double L2 = getDistance(P( 2 ),P( 3 ));
         double L3 = getDistance(P( 3 ),P( 1 ));
@@ -1621,11 +1643,12 @@ double Length2D::GetValue( long theElementId)
         double L8 = getDistance(P( 2 ),P( 5 ));
         double L9 = getDistance(P( 3 ),P( 6 ));
 
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-        aVal = Max(aVal,Max(Max(L7,L8),L9));
-        break;
+        aVal = Min(Min(Min(L1,L2),Min(L3,L4)),Min(L5,L6));
+        aVal = Min(aVal,Min(Min(L7,L8),L9));
       }
-      else if (len == 8){ // hexaider
+      break;
+    case SMDSEntity_Hexa:
+      if (len == 8){ // hexahedron
         double L1 = getDistance(P( 1 ),P( 2 ));
         double L2 = getDistance(P( 2 ),P( 3 ));
         double L3 = getDistance(P( 3 ),P( 4 ));
@@ -1639,13 +1662,12 @@ double Length2D::GetValue( long theElementId)
         double L11= getDistance(P( 3 ),P( 7 ));
         double L12= getDistance(P( 4 ),P( 8 ));
 
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-        aVal = Max(aVal,Max(Max(L7,L8),Max(L9,L10)));
-        aVal = Max(aVal,Max(L11,L12));
-        break;
-
+        aVal = Min(Min(Min(L1,L2),Min(L3,L4)),Min(L5,L6));
+        aVal = Min(aVal,Min(Min(L7,L8),Min(L9,L10)));
+        aVal = Min(aVal,Min(L11,L12));
       }
-
+      break;
+    case SMDSEntity_Quad_Tetra:
       if (len == 10){ // quadratic tetraidrs
         double L1 = getDistance(P( 1 ),P( 5 )) + getDistance(P( 5 ),P( 2 ));
         double L2 = getDistance(P( 2 ),P( 6 )) + getDistance(P( 6 ),P( 3 ));
@@ -1653,10 +1675,11 @@ double Length2D::GetValue( long theElementId)
         double L4 = getDistance(P( 1 ),P( 8 )) + getDistance(P( 8 ),P( 4 ));
         double L5 = getDistance(P( 2 ),P( 9 )) + getDistance(P( 9 ),P( 4 ));
         double L6 = getDistance(P( 3 ),P( 10 )) + getDistance(P( 10 ),P( 4 ));
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-        break;
+        aVal = Min(Min(Min(L1,L2),Min(L3,L4)),Min(L5,L6));
       }
-      else if (len == 13){ // quadratic piramids
+      break;
+    case SMDSEntity_Quad_Pyramid:
+      if (len == 13){ // quadratic piramids
         double L1 = getDistance(P( 1 ),P( 6 )) + getDistance(P( 6 ),P( 2 ));
         double L2 = getDistance(P( 2 ),P( 7 )) + getDistance(P( 7 ),P( 3 ));
         double L3 = getDistance(P( 3 ),P( 8 )) + getDistance(P( 8 ),P( 4 ));
@@ -1665,11 +1688,12 @@ double Length2D::GetValue( long theElementId)
         double L6 = getDistance(P( 2 ),P( 11 )) + getDistance(P( 11 ),P( 5 ));
         double L7 = getDistance(P( 3 ),P( 12 )) + getDistance(P( 12 ),P( 5 ));
         double L8 = getDistance(P( 4 ),P( 13 )) + getDistance(P( 13 ),P( 5 ));
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-        aVal = Max(aVal,Max(L7,L8));
-        break;
+        aVal = Min(Min(Min(L1,L2),Min(L3,L4)),Min(L5,L6));
+        aVal = Min(aVal,Min(L7,L8));
       }
-      else if (len == 15){ // quadratic pentaidres
+      break;
+    case SMDSEntity_Quad_Penta:
+      if (len == 15){ // quadratic pentaidres
         double L1 = getDistance(P( 1 ),P( 7 )) + getDistance(P( 7 ),P( 2 ));
         double L2 = getDistance(P( 2 ),P( 8 )) + getDistance(P( 8 ),P( 3 ));
         double L3 = getDistance(P( 3 ),P( 9 )) + getDistance(P( 9 ),P( 1 ));
@@ -1679,11 +1703,13 @@ double Length2D::GetValue( long theElementId)
         double L7 = getDistance(P( 1 ),P( 13 )) + getDistance(P( 13 ),P( 4 ));
         double L8 = getDistance(P( 2 ),P( 14 )) + getDistance(P( 14 ),P( 5 ));
         double L9 = getDistance(P( 3 ),P( 15 )) + getDistance(P( 15 ),P( 6 ));
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-        aVal = Max(aVal,Max(Max(L7,L8),L9));
-        break;
+        aVal = Min(Min(Min(L1,L2),Min(L3,L4)),Min(L5,L6));
+        aVal = Min(aVal,Min(Min(L7,L8),L9));
       }
-      else if (len == 20){ // quadratic hexaider
+      break;
+    case SMDSEntity_Quad_Hexa:
+    case SMDSEntity_TriQuad_Hexa:
+      if (len >= 20) { // quadratic hexaider
         double L1 = getDistance(P( 1 ),P( 9 )) + getDistance(P( 9 ),P( 2 ));
         double L2 = getDistance(P( 2 ),P( 10 )) + getDistance(P( 10 ),P( 3 ));
         double L3 = getDistance(P( 3 ),P( 11 )) + getDistance(P( 11 ),P( 4 ));
@@ -1696,17 +1722,61 @@ double Length2D::GetValue( long theElementId)
         double L10= getDistance(P( 2 ),P( 18 )) + getDistance(P( 18 ),P( 6 ));
         double L11= getDistance(P( 3 ),P( 19 )) + getDistance(P( 19 ),P( 7 ));
         double L12= getDistance(P( 4 ),P( 20 )) + getDistance(P( 20 ),P( 8 ));
-        aVal = Max(Max(Max(L1,L2),Max(L3,L4)),Max(L5,L6));
-        aVal = Max(aVal,Max(Max(L7,L8),Max(L9,L10)));
-        aVal = Max(aVal,Max(L11,L12));
-        break;
-
+        aVal = Min(Min(Min(L1,L2),Min(L3,L4)),Min(L5,L6));
+        aVal = Min(aVal,Min(Min(L7,L8),Min(L9,L10)));
+        aVal = Min(aVal,Min(L11,L12));
       }
+      break;
+    case SMDSEntity_Polygon:
+      if ( len > 1 ) {
+        aVal = getDistance( P(1), P( P.size() ));
+        for ( size_t i = 1; i < P.size(); ++i )
+          aVal = Min( aVal, getDistance( P( i ), P( i+1 )));
+      }
+      break;
+    case SMDSEntity_Quad_Polygon:
+      if ( len > 2 ) {
+        aVal = getDistance( P(1), P( P.size() )) + getDistance( P(P.size()), P( P.size()-1 ));
+        for ( size_t i = 1; i < P.size()-1; i += 2 )
+          aVal = Min( aVal, getDistance( P( i ), P( i+1 )) + getDistance( P( i+1 ), P( i+2 )));
+      }
+      break;
+    case SMDSEntity_Hexagonal_Prism:
+      if (len == 12) { // hexagonal prism
+        double L1 = getDistance(P( 1 ),P( 2 ));
+        double L2 = getDistance(P( 2 ),P( 3 ));
+        double L3 = getDistance(P( 3 ),P( 4 ));
+        double L4 = getDistance(P( 4 ),P( 5 ));
+        double L5 = getDistance(P( 5 ),P( 6 ));
+        double L6 = getDistance(P( 6 ),P( 1 ));
 
-    default: aVal=-1;
+        double L7 = getDistance(P( 7 ), P( 8 ));
+        double L8 = getDistance(P( 8 ), P( 9 ));
+        double L9 = getDistance(P( 9 ), P( 10 ));
+        double L10= getDistance(P( 10 ),P( 11 ));
+        double L11= getDistance(P( 11 ),P( 12 ));
+        double L12= getDistance(P( 12 ),P( 7 ));
+
+        double L13 = getDistance(P( 1 ),P( 7 ));
+        double L14 = getDistance(P( 2 ),P( 8 ));
+        double L15 = getDistance(P( 3 ),P( 9 ));
+        double L16 = getDistance(P( 4 ),P( 10 ));
+        double L17 = getDistance(P( 5 ),P( 11 ));
+        double L18 = getDistance(P( 6 ),P( 12 ));
+        aVal = Min(Min(Min(L1,L2),Min(L3,L4)),Min(L5,L6));
+        aVal = Min(aVal, Min(Min(Min(L7,L8),Min(L9,L10)),Min(L11,L12)));
+        aVal = Min(aVal, Min(Min(Min(L13,L14),Min(L15,L16)),Min(L17,L18)));
+      }
+      break;
+    case SMDSEntity_Polyhedra:
+    {
+    }
+    break;
+    default:
+      return 0;
     }
 
-    if (aVal <0){
+    if (aVal < 0 ) {
       return 0.;
     }
 
@@ -1724,7 +1794,7 @@ double Length2D::GetValue( long theElementId)
 
 double Length2D::GetBadRate( double Value, int /*nbNodes*/ ) const
 {
-  // meaningless as it is not quality control functor
+  // meaningless as it is not a quality control functor
   return Value;
 }
 
@@ -1742,14 +1812,16 @@ Length2D::Value::Value(double theLength,long thePntId1, long thePntId2):
   }
 }
 
-bool Length2D::Value::operator<(const Length2D::Value& x) const{
+bool Length2D::Value::operator<(const Length2D::Value& x) const
+{
   if(myPntId[0] < x.myPntId[0]) return true;
   if(myPntId[0] == x.myPntId[0])
     if(myPntId[1] < x.myPntId[1]) return true;
   return false;
 }
 
-void Length2D::GetValues(TValues& theValues){
+void Length2D::GetValues(TValues& theValues)
+{
   TValues aValues;
   SMDS_FaceIteratorPtr anIter = myMesh->facesIterator();
   for(; anIter->more(); ){
@@ -1946,14 +2018,16 @@ MultiConnection2D::Value::Value(long thePntId1, long thePntId2)
   }
 }
 
-bool MultiConnection2D::Value::operator<(const MultiConnection2D::Value& x) const{
+bool MultiConnection2D::Value::operator<(const MultiConnection2D::Value& x) const
+{
   if(myPntId[0] < x.myPntId[0]) return true;
   if(myPntId[0] == x.myPntId[0])
     if(myPntId[1] < x.myPntId[1]) return true;
   return false;
 }
 
-void MultiConnection2D::GetValues(MValues& theValues){
+void MultiConnection2D::GetValues(MValues& theValues)
+{
   if ( !myMesh ) return;
   SMDS_FaceIteratorPtr anIter = myMesh->facesIterator();
   for(; anIter->more(); ){
@@ -2373,26 +2447,15 @@ bool FreeEdges::IsSatisfy( long theId )
   if ( aFace == 0 || aFace->GetType() != SMDSAbs_Face || aFace->NbNodes() < 3 )
     return false;
 
-  SMDS_ElemIteratorPtr anIter;
-  if ( aFace->IsQuadratic() ) {
-    anIter = dynamic_cast<const SMDS_VtkFace*>
-      (aFace)->interlacedNodesElemIterator();
-  }
-  else {
-    anIter = aFace->nodesIterator();
-  }
+  SMDS_NodeIteratorPtr anIter = aFace->interlacedNodesIterator();
   if ( !anIter )
     return false;
 
   int i = 0, nbNodes = aFace->NbNodes();
   std::vector <const SMDS_MeshNode*> aNodes( nbNodes+1 );
   while( anIter->more() )
-  {
-    const SMDS_MeshNode* aNode = (SMDS_MeshNode*)anIter->next();
-    if ( aNode == 0 )
+    if ( ! ( aNodes[ i++ ] = anIter->next() ))
       return false;
-    aNodes[ i++ ] = aNode;
-  }
   aNodes[ nbNodes ] = aNodes[ 0 ];
 
   for ( i = 0; i < nbNodes; i++ )
@@ -2525,7 +2588,7 @@ bool FreeFaces::IsSatisfy( long theId )
 
   int nbNode = aFace->NbNodes();
 
-  // collect volumes check that number of volumss with count equal nbNode not less than 2
+  // collect volumes to check that number of volumes with count equal nbNode not less than 2
   typedef map< SMDS_MeshElement*, int > TMapOfVolume; // map of volume counters
   typedef map< SMDS_MeshElement*, int >::iterator TItrMapOfVolume; // iterator
   TMapOfVolume mapOfVol;
@@ -2605,7 +2668,7 @@ GroupColor::GroupColor()
 
 bool GroupColor::IsSatisfy( long theId )
 {
-  return (myIDs.find( theId ) != myIDs.end());
+  return myIDs.count( theId );
 }
 
 void GroupColor::SetType( SMDSAbs_ElementType theType )
@@ -2623,16 +2686,15 @@ static bool isEqual( const Quantity_Color& theColor1,
 {
   // tolerance to compare colors
   const double tol = 5*1e-3;
-  return ( fabs( theColor1.Red() - theColor2.Red() ) < tol &&
+  return ( fabs( theColor1.Red()   - theColor2.Red() )   < tol &&
            fabs( theColor1.Green() - theColor2.Green() ) < tol &&
-           fabs( theColor1.Blue() - theColor2.Blue() ) < tol );
+           fabs( theColor1.Blue()  - theColor2.Blue() )  < tol );
 }
-
 
 void GroupColor::SetMesh( const SMDS_Mesh* theMesh )
 {
   myIDs.clear();
-  
+
   const SMESHDS_Mesh* aMesh = dynamic_cast<const SMESHDS_Mesh*>(theMesh);
   if ( !aMesh )
     return;
@@ -2640,19 +2702,23 @@ void GroupColor::SetMesh( const SMDS_Mesh* theMesh )
   int nbGrp = aMesh->GetNbGroups();
   if ( !nbGrp )
     return;
-  
+
   // iterates on groups and find necessary elements ids
   const std::set<SMESHDS_GroupBase*>& aGroups = aMesh->GetGroups();
   set<SMESHDS_GroupBase*>::const_iterator GrIt = aGroups.begin();
-  for (; GrIt != aGroups.end(); GrIt++) {
+  for (; GrIt != aGroups.end(); GrIt++)
+  {
     SMESHDS_GroupBase* aGrp = (*GrIt);
     if ( !aGrp )
       continue;
     // check type and color of group
-    if ( !isEqual( myColor, aGrp->GetColor() ) )
+    if ( !isEqual( myColor, aGrp->GetColor() ))
       continue;
-    if ( myType != SMDSAbs_All && myType != (SMDSAbs_ElementType)aGrp->GetType() )
-      continue;
+
+    // IPAL52867 (prevent infinite recursion via GroupOnFilter)
+    if ( SMESHDS_GroupOnFilter * gof = dynamic_cast< SMESHDS_GroupOnFilter* >( aGrp ))
+      if ( gof->GetPredicate().get() == this )
+        continue;
 
     SMDSAbs_ElementType aGrpElType = (SMDSAbs_ElementType)aGrp->GetType();
     if ( myType == aGrpElType || (myType == SMDSAbs_All && aGrpElType != SMDSAbs_Node) ) {
@@ -2945,6 +3011,17 @@ bool ConnectedElements::IsSatisfy( long theElementId )
  */
 //================================================================================
 
+namespace
+{
+  inline bool isLessAngle( const gp_Vec& v1, const gp_Vec& v2, const double cos )
+  {
+    double dot = v1 * v2; // cos * |v1| * |v2|
+    double l1  = v1.SquareMagnitude();
+    double l2  = v2.SquareMagnitude();
+    return (( dot * cos >= 0 ) && 
+            ( dot * dot ) / l1 / l2 >= ( cos * cos ));
+  }
+}
 CoplanarFaces::CoplanarFaces()
   : myFaceID(0), myToler(0)
 {
@@ -2956,7 +3033,7 @@ void CoplanarFaces::SetMesh( const SMDS_Mesh* theMesh )
   {
     // Build a set of coplanar face ids
 
-    myCoplanarIDs.clear();
+    myCoplanarIDs.Clear();
 
     if ( !myMeshModifTracer.GetMesh() || !myFaceID || !myToler )
       return;
@@ -2970,8 +3047,8 @@ void CoplanarFaces::SetMesh( const SMDS_Mesh* theMesh )
     if (!normOK)
       return;
 
-    const double radianTol = myToler * M_PI / 180.;
-    std::set< SMESH_TLink > checkedLinks;
+    const double cosTol = Cos( myToler * M_PI / 180. );
+    NCollection_Map< SMESH_TLink, SMESH_TLink > checkedLinks;
 
     std::list< pair< const SMDS_MeshElement*, gp_Vec > > faceQueue;
     faceQueue.push_back( make_pair( face, myNorm ));
@@ -2985,7 +3062,7 @@ void CoplanarFaces::SetMesh( const SMDS_Mesh* theMesh )
       {
         const SMDS_MeshNode*  n1 = face->GetNode( i );
         const SMDS_MeshNode*  n2 = face->GetNode(( i+1 )%nbN);
-        if ( !checkedLinks.insert( SMESH_TLink( n1, n2 )).second )
+        if ( !checkedLinks.Add( SMESH_TLink( n1, n2 )))
           continue;
         SMDS_ElemIteratorPtr fIt = n1->GetInverseElementIterator(SMDSAbs_Face);
         while ( fIt->more() )
@@ -2994,9 +3071,9 @@ void CoplanarFaces::SetMesh( const SMDS_Mesh* theMesh )
           if ( f->GetNodeIndex( n2 ) > -1 )
           {
             gp_Vec norm = getNormale( static_cast<const SMDS_MeshFace*>(f), &normOK );
-            if (!normOK || myNorm.Angle( norm ) <= radianTol)
+            if (!normOK || isLessAngle( myNorm, norm, cosTol))
             {
-              myCoplanarIDs.insert( f->GetID() );
+              myCoplanarIDs.Add( f->GetID() );
               faceQueue.push_back( make_pair( f, norm ));
             }
           }
@@ -3007,7 +3084,7 @@ void CoplanarFaces::SetMesh( const SMDS_Mesh* theMesh )
 }
 bool CoplanarFaces::IsSatisfy( long theElementId )
 {
-  return myCoplanarIDs.count( theElementId );
+  return myCoplanarIDs.Contains( theElementId );
 }
 
 /*
@@ -3618,7 +3695,7 @@ bool ManifoldPart::process()
       myMapIds.Add( aFaceId );
     }
 
-    if ( fi == ( myAllFacePtr.size() - 1 ) )
+    if ( fi == int( myAllFacePtr.size() - 1 ))
       fi = 0;
   } // end run on vector of faces
   return !myMapIds.IsEmpty();
@@ -3820,9 +3897,59 @@ void ManifoldPart::getFacesByLink( const ManifoldPart::Link& theLink,
   }
 }
 
+/*
+  Class       : BelongToMeshGroup
+  Description : Verify whether a mesh element is included into a mesh group
+*/
+BelongToMeshGroup::BelongToMeshGroup(): myGroup( 0 )
+{
+}
+
+void BelongToMeshGroup::SetGroup( SMESHDS_GroupBase* g )
+{
+  myGroup = g;
+}
+
+void BelongToMeshGroup::SetStoreName( const std::string& sn )
+{
+  myStoreName = sn;
+}
+
+void BelongToMeshGroup::SetMesh( const SMDS_Mesh* theMesh )
+{
+  if ( myGroup && myGroup->GetMesh() != theMesh )
+  {
+    myGroup = 0;
+  }
+  if ( !myGroup && !myStoreName.empty() )
+  {
+    if ( const SMESHDS_Mesh* aMesh = dynamic_cast<const SMESHDS_Mesh*>(theMesh))
+    {
+      const std::set<SMESHDS_GroupBase*>& grps = aMesh->GetGroups();
+      std::set<SMESHDS_GroupBase*>::const_iterator g = grps.begin();
+      for ( ; g != grps.end() && !myGroup; ++g )
+        if ( *g && myStoreName == (*g)->GetStoreName() )
+          myGroup = *g;
+    }
+  }
+  if ( myGroup )
+  {
+    myGroup->IsEmpty(); // make GroupOnFilter update its predicate
+  }
+}
+
+bool BelongToMeshGroup::IsSatisfy( long theElementId )
+{
+  return myGroup ? myGroup->Contains( theElementId ) : false;
+}
+
+SMDSAbs_ElementType BelongToMeshGroup::GetType() const
+{
+  return myGroup ? myGroup->GetType() : SMDSAbs_All;
+}
 
 /*
-   ElementsOnSurface
+  ElementsOnSurface
 */
 
 ElementsOnSurface::ElementsOnSurface()
@@ -3999,7 +4126,41 @@ void ElementsOnShape::SetAllNodes (bool theAllNodes)
 
 void ElementsOnShape::SetMesh (const SMDS_Mesh* theMesh)
 {
-  myMesh = theMesh;
+  myMeshModifTracer.SetMesh( theMesh );
+  if ( myMeshModifTracer.IsMeshModified())
+  {
+    size_t nbNodes = theMesh ? theMesh->NbNodes() : 0;
+    if ( myNodeIsChecked.size() == nbNodes )
+    {
+      std::fill( myNodeIsChecked.begin(), myNodeIsChecked.end(), false );
+    }
+    else
+    {
+      SMESHUtils::FreeVector( myNodeIsChecked );
+      SMESHUtils::FreeVector( myNodeIsOut );
+      myNodeIsChecked.resize( nbNodes, false );
+      myNodeIsOut.resize( nbNodes );
+    }
+  }
+}
+
+bool ElementsOnShape::getNodeIsOut( const SMDS_MeshNode* n, bool& isOut )
+{
+  if ( n->GetID() >= (int) myNodeIsChecked.size() ||
+       !myNodeIsChecked[ n->GetID() ])
+    return false;
+
+  isOut = myNodeIsOut[ n->GetID() ];
+  return true;
+}
+
+void ElementsOnShape::setNodeIsOut( const SMDS_MeshNode* n, bool  isOut )
+{
+  if ( n->GetID() < (int) myNodeIsChecked.size() )
+  {
+    myNodeIsChecked[ n->GetID() ] = true;
+    myNodeIsOut    [ n->GetID() ] = isOut;
+  }
 }
 
 void ElementsOnShape::SetShape (const TopoDS_Shape&       theShape,
@@ -4008,7 +4169,7 @@ void ElementsOnShape::SetShape (const TopoDS_Shape&       theShape,
   myType  = theType;
   myShape = theShape;
   if ( myShape.IsNull() ) return;
-  
+
   TopTools_IndexedMapOfShape shapesMap;
   TopAbs_ShapeEnum shapeTypes[4] = { TopAbs_SOLID, TopAbs_FACE, TopAbs_EDGE, TopAbs_VERTEX };
   TopExp_Explorer sub;
@@ -4026,6 +4187,16 @@ void ElementsOnShape::SetShape (const TopoDS_Shape&       theShape,
   myClassifiers.resize( shapesMap.Extent() );
   for ( int i = 0; i < shapesMap.Extent(); ++i )
     myClassifiers[ i ] = new TClassifier( shapesMap( i+1 ), myToler );
+
+  if ( theType == SMDSAbs_Node )
+  {
+    SMESHUtils::FreeVector( myNodeIsChecked );
+    SMESHUtils::FreeVector( myNodeIsOut );
+  }
+  else
+  {
+    std::fill( myNodeIsChecked.begin(), myNodeIsChecked.end(), false );
+  }
 }
 
 void ElementsOnShape::clearClassifiers()
@@ -4037,38 +4208,45 @@ void ElementsOnShape::clearClassifiers()
 
 bool ElementsOnShape::IsSatisfy (long elemId)
 {
+  const SMDS_Mesh*        mesh = myMeshModifTracer.GetMesh();
   const SMDS_MeshElement* elem =
-    ( myType == SMDSAbs_Node ? myMesh->FindNode( elemId ) : myMesh->FindElement( elemId ));
+    ( myType == SMDSAbs_Node ? mesh->FindNode( elemId ) : mesh->FindElement( elemId ));
   if ( !elem || myClassifiers.empty() )
     return false;
 
-  for ( size_t i = 0; i < myClassifiers.size(); ++i )
+  bool isSatisfy = myAllNodesFlag, isNodeOut;
+
+  gp_XYZ centerXYZ (0, 0, 0);
+
+  SMDS_ElemIteratorPtr aNodeItr = elem->nodesIterator();
+  while (aNodeItr->more() && (isSatisfy == myAllNodesFlag))
   {
-    SMDS_ElemIteratorPtr aNodeItr = elem->nodesIterator();
-    bool isSatisfy = myAllNodesFlag;
-    
-    gp_XYZ centerXYZ (0, 0, 0);
+    SMESH_TNodeXYZ aPnt( aNodeItr->next() );
+    centerXYZ += aPnt;
 
-    while (aNodeItr->more() && (isSatisfy == myAllNodesFlag))
+    isNodeOut = true;
+    if ( !getNodeIsOut( aPnt._node, isNodeOut ))
     {
-      SMESH_TNodeXYZ aPnt ( aNodeItr->next() );
-      centerXYZ += aPnt;
-      isSatisfy = ! myClassifiers[i]->IsOut( aPnt );
-    }
+      for ( size_t i = 0; i < myClassifiers.size() && isNodeOut; ++i )
+        isNodeOut = myClassifiers[i]->IsOut( aPnt );
 
-    // Check the center point for volumes MantisBug 0020168
-    if (isSatisfy &&
-        myAllNodesFlag &&
-        myClassifiers[i]->ShapeType() == TopAbs_SOLID)
-    {
-      centerXYZ /= elem->NbNodes();
-      isSatisfy = ! myClassifiers[i]->IsOut( centerXYZ );
+      setNodeIsOut( aPnt._node, isNodeOut );
     }
-    if ( isSatisfy )
-      return true;
+    isSatisfy = !isNodeOut;
   }
 
-  return false;
+  // Check the center point for volumes MantisBug 0020168
+  if (isSatisfy &&
+      myAllNodesFlag &&
+      myClassifiers[0]->ShapeType() == TopAbs_SOLID)
+  {
+    centerXYZ /= elem->NbNodes();
+    isSatisfy = false;
+    for ( size_t i = 0; i < myClassifiers.size() && !isSatisfy; ++i )
+      isSatisfy = ! myClassifiers[i]->IsOut( centerXYZ );
+  }
+
+  return isSatisfy;
 }
 
 TopAbs_ShapeEnum ElementsOnShape::TClassifier::ShapeType() const
@@ -4308,6 +4486,7 @@ bool BelongToGeom::IsSatisfy (long theId)
       case SMDS_TOP_FACE   : return ( IsContains( myMeshDS,myShape,aNode,TopAbs_FACE ));
       case SMDS_TOP_3DSPACE: return ( IsContains( myMeshDS,myShape,aNode,TopAbs_SOLID ) ||
                                       IsContains( myMeshDS,myShape,aNode,TopAbs_SHELL ));
+      default:;
       }
     }
   }
@@ -4333,6 +4512,7 @@ bool BelongToGeom::IsSatisfy (long theId)
         case SMDSAbs_Face  : return ( IsContains( myMeshDS,myShape,anElem,TopAbs_FACE ));
         case SMDSAbs_Volume: return ( IsContains( myMeshDS,myShape,anElem,TopAbs_SOLID )||
                                       IsContains( myMeshDS,myShape,anElem,TopAbs_SHELL ));
+        default:;
         }
       }
     }
@@ -4409,12 +4589,22 @@ void LyingOnGeom::init()
     myIsSubshape = false;
   }
   else {
-    TopTools_IndexedMapOfShape aMap;
-    TopExp::MapShapes(aMainShape, aMap);
-    myIsSubshape = IsSubShape(aMap, myShape);
+    myIsSubshape = myMeshDS->IsGroupOfSubShapes( myShape );
   }
 
-  if (!myIsSubshape)
+  if (myIsSubshape)
+  {
+    TopTools_IndexedMapOfShape shapes;
+    TopExp::MapShapes( myShape, shapes );
+    mySubShapesIDs.Clear();
+    for ( int i = 1; i <= shapes.Extent(); ++i )
+    {
+      int subID = myMeshDS->ShapeToIndex( shapes( i ));
+      if ( subID > 0 )
+        mySubShapesIDs.Add( subID );
+    }
+  }
+  else
   {
     myElementsOnShapePtr.reset(new ElementsOnShape());
     myElementsOnShapePtr->SetTolerance(myTolerance);
@@ -4434,43 +4624,22 @@ bool LyingOnGeom::IsSatisfy( long theId )
     return myElementsOnShapePtr->IsSatisfy(theId);
   }
 
-  // Case of submesh
-  if( myType == SMDSAbs_Node )
+  // Case of sub-mesh
+
+  const SMDS_MeshElement* elem =
+    ( myType == SMDSAbs_Node ) ? myMeshDS->FindNode( theId ) : myMeshDS->FindElement( theId );
+
+  if ( mySubShapesIDs.Contains( elem->getshapeId() ))
+    return true;
+
+  if ( elem->GetType() != SMDSAbs_Node )
   {
-    if( const SMDS_MeshNode* aNode = myMeshDS->FindNode( theId ) )
+    SMDS_ElemIteratorPtr nodeItr = elem->nodesIterator();
+    while ( nodeItr->more() )
     {
-      const SMDS_PositionPtr& aPosition = aNode->GetPosition();
-      SMDS_TypeOfPosition aTypeOfPosition = aPosition->GetTypeOfPosition();
-      switch( aTypeOfPosition )
-      {
-      case SMDS_TOP_VERTEX : return IsContains( myMeshDS,myShape,aNode,TopAbs_VERTEX );
-      case SMDS_TOP_EDGE   : return IsContains( myMeshDS,myShape,aNode,TopAbs_EDGE );
-      case SMDS_TOP_FACE   : return IsContains( myMeshDS,myShape,aNode,TopAbs_FACE );
-      case SMDS_TOP_3DSPACE: return IsContains( myMeshDS,myShape,aNode,TopAbs_SHELL );
-      }
-    }
-  }
-  else
-  {
-    if( const SMDS_MeshElement* anElem = myMeshDS->FindElement( theId ) )
-    {
-      if( myType == SMDSAbs_All )
-      {
-        return Contains( myMeshDS,myShape,anElem,TopAbs_EDGE ) ||
-               Contains( myMeshDS,myShape,anElem,TopAbs_FACE ) ||
-               Contains( myMeshDS,myShape,anElem,TopAbs_SHELL )||
-               Contains( myMeshDS,myShape,anElem,TopAbs_SOLID );
-      }
-      else if( myType == anElem->GetType() )
-      {
-        switch( myType )
-        {
-        case SMDSAbs_Edge  : return Contains( myMeshDS,myShape,anElem,TopAbs_EDGE );
-        case SMDSAbs_Face  : return Contains( myMeshDS,myShape,anElem,TopAbs_FACE );
-        case SMDSAbs_Volume: return Contains( myMeshDS,myShape,anElem,TopAbs_SHELL )||
-                                    Contains( myMeshDS,myShape,anElem,TopAbs_SOLID );
-        }
-      }
+      const SMDS_MeshElement* aNode = nodeItr->next();
+      if ( mySubShapesIDs.Contains( aNode->getshapeId() ))
+        return true;
     }
   }
 
@@ -4516,51 +4685,47 @@ bool LyingOnGeom::Contains( const SMESHDS_Mesh*     theMeshDS,
                             TopAbs_ShapeEnum        theFindShapeEnum,
                             TopAbs_ShapeEnum        theAvoidShapeEnum )
 {
-  if (IsContains(theMeshDS, theShape, theElem, theFindShapeEnum, theAvoidShapeEnum))
-    return true;
+  // if (IsContains(theMeshDS, theShape, theElem, theFindShapeEnum, theAvoidShapeEnum))
+  //   return true;
 
-  TopTools_IndexedMapOfShape aSubShapes;
-  TopExp::MapShapes( theShape, aSubShapes );
+  // TopTools_MapOfShape aSubShapes;
+  // TopExp_Explorer exp( theShape, theFindShapeEnum, theAvoidShapeEnum );
+  // for ( ; exp.More(); exp.Next() )
+  // {
+  //   const TopoDS_Shape& aShape = exp.Current();
+  //   if ( !aSubShapes.Add( aShape )) continue;
 
-  for (int i = 1; i <= aSubShapes.Extent(); i++)
-  {
-    const TopoDS_Shape& aShape = aSubShapes.FindKey(i);
+  //   if ( SMESHDS_SubMesh* aSubMesh = theMeshDS->MeshElements( aShape ))
+  //   {
+  //     if ( aSubMesh->Contains( theElem ))
+  //       return true;
 
-    if( SMESHDS_SubMesh* aSubMesh = theMeshDS->MeshElements( aShape ) ){
-      if( aSubMesh->Contains( theElem ) )
-        return true;
-
-      SMDS_NodeIteratorPtr aNodeIt = aSubMesh->GetNodes();
-      while ( aNodeIt->more() )
-      {
-        const SMDS_MeshNode* aNode = static_cast<const SMDS_MeshNode*>(aNodeIt->next());
-        SMDS_ElemIteratorPtr anElemIt = aNode->GetInverseElementIterator();
-        while ( anElemIt->more() )
-        {
-          const SMDS_MeshElement* anElement = static_cast<const SMDS_MeshElement*>(anElemIt->next());
-          if (anElement == theElem)
-            return true;
-        }
-      }
-    }
-  }
+  //     SMDS_ElemIteratorPtr nodeItr = theElem->nodesIterator();
+  //     while ( nodeItr->more() )
+  //     {
+  //       const SMDS_MeshElement* aNode = nodeItr->next();
+  //       if ( aSubMesh->Contains( aNode ))
+  //         return true;
+  //     }
+  //   }
+  // }
   return false;
 }
 
-TSequenceOfXYZ::TSequenceOfXYZ()
+TSequenceOfXYZ::TSequenceOfXYZ(): myElem(0)
 {}
 
-TSequenceOfXYZ::TSequenceOfXYZ(size_type n) : myArray(n)
+TSequenceOfXYZ::TSequenceOfXYZ(size_type n) : myArray(n), myElem(0)
 {}
 
-TSequenceOfXYZ::TSequenceOfXYZ(size_type n, const gp_XYZ& t) : myArray(n,t)
+TSequenceOfXYZ::TSequenceOfXYZ(size_type n, const gp_XYZ& t) : myArray(n,t), myElem(0)
 {}
 
-TSequenceOfXYZ::TSequenceOfXYZ(const TSequenceOfXYZ& theSequenceOfXYZ) : myArray(theSequenceOfXYZ.myArray)
+TSequenceOfXYZ::TSequenceOfXYZ(const TSequenceOfXYZ& theSequenceOfXYZ) : myArray(theSequenceOfXYZ.myArray), myElem(theSequenceOfXYZ.myElem)
 {}
 
 template <class InputIterator>
-TSequenceOfXYZ::TSequenceOfXYZ(InputIterator theBegin, InputIterator theEnd): myArray(theBegin,theEnd)
+TSequenceOfXYZ::TSequenceOfXYZ(InputIterator theBegin, InputIterator theEnd): myArray(theBegin,theEnd), myElem(0)
 {}
 
 TSequenceOfXYZ::~TSequenceOfXYZ()
@@ -4569,6 +4734,7 @@ TSequenceOfXYZ::~TSequenceOfXYZ()
 TSequenceOfXYZ& TSequenceOfXYZ::operator=(const TSequenceOfXYZ& theSequenceOfXYZ)
 {
   myArray = theSequenceOfXYZ.myArray;
+  myElem  = theSequenceOfXYZ.myElem;
   return *this;
 }
 
@@ -4600,6 +4766,11 @@ void TSequenceOfXYZ::push_back(const gp_XYZ& v)
 TSequenceOfXYZ::size_type TSequenceOfXYZ::size() const
 {
   return myArray.size();
+}
+
+SMDSAbs_EntityType TSequenceOfXYZ::getElementEntity() const
+{
+  return myElem ? myElem->GetEntityType() : SMDSEntity_Last;
 }
 
 TMeshModifTracer::TMeshModifTracer():

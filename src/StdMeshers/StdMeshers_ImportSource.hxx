@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -61,6 +61,7 @@ class STDMESHERS_EXPORT StdMeshers_ImportSource1D : public SMESH_Hypothesis
   virtual std::istream & LoadFrom(std::istream & load);
   virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh, const TopoDS_Shape& theShape);
   virtual bool SetParametersByDefaults(const TDefaults& dflts, const SMESH_Mesh* theMesh=0);
+  virtual bool DataDependOnParams() const { return true; }
   void RestoreGroups(const std::vector<SMESH_Group*>& groups);
 
   void StoreResultGroups(const std::vector<SMESH_Group*>& groups,

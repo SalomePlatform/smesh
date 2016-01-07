@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -173,7 +173,7 @@ void SMESHGUI_MeshEditPreview::SetData (const SMESH::MeshPreviewStruct* previewD
   vtkPoints* aPoints = vtkPoints::New();
   aPoints->SetNumberOfPoints(aNodesXYZ.length());
 
-  for ( int i = 0; i < aNodesXYZ.length(); i++ ) {
+  for ( size_t i = 0; i < aNodesXYZ.length(); i++ ) {
     aPoints->SetPoint( i, aNodesXYZ[i].x, aNodesXYZ[i].y, aNodesXYZ[i].z );
   }
   myGrid->SetPoints(aPoints);
@@ -197,7 +197,7 @@ void SMESHGUI_MeshEditPreview::SetData (const SMESH::MeshPreviewStruct* previewD
   vtkIdList *anIdList = vtkIdList::New();
   int aNodePos = 0;
 
-  for ( int i = 0; i < anElemTypes.length(); i++ ) {
+  for ( size_t i = 0; i < anElemTypes.length(); i++ ) {
     const SMESH::ElementSubType& anElementSubType = anElemTypes[i];
     SMDSAbs_ElementType aType = SMDSAbs_ElementType(anElementSubType.SMDS_ElementType);
     vtkIdType aNbNodes = anElementSubType.nbNodesInElement;
@@ -299,7 +299,7 @@ void SMESHGUI_MeshEditPreview::SetArrowShapeAndNb( int         nbArrows,
   myLabelActors.resize( nbArrows, ( vtkTextActor*) NULL );
   char label[] = "X";
   if ( labels )
-    for ( int iP = 0, iA = 0; iA < nbArrows; ++iA )
+    for ( int iA = 0; iA < nbArrows; ++iA )
     {
       label[0] = labels[iA];
       vtkTextMapper* text = vtkTextMapper::New();
@@ -333,7 +333,7 @@ void SMESHGUI_MeshEditPreview::SetArrows( const gp_Ax1* axes,
 {
   vtkPoints* aPoints = myGrid->GetPoints();
 
-  for ( int iP = 0, iA = 0; iA < myLabelActors.size(); ++iA )
+  for ( int iP = 0, iA = 0; iA < (int) myLabelActors.size(); ++iA )
   {
     gp_Trsf trsf;
     trsf.SetTransformation( gp_Ax3( axes[iA].Location(), axes[iA].Direction() ), gp::XOY() );

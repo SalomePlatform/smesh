@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -42,9 +42,10 @@ class SMESH_Mesh_i;
 
 namespace MeshEditor_I {
   struct TPreviewMesh;
+  struct ExtrusionParams;
 }
 
-class SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
+class SMESH_I_EXPORT SMESH_MeshEditor_i: public POA_SMESH::SMESH_MeshEditor
 {
 public:
   SMESH_MeshEditor_i(SMESH_Mesh_i * theMesh, bool isPreview);
@@ -55,6 +56,8 @@ public:
    * \retval int - mesh ID
    */
   int GetMeshId() const { return myMesh->GetId(); }
+
+  SMESH::SMESH_Mesh_ptr GetMesh();
 
   // --- CORBA
 
@@ -113,6 +116,8 @@ public:
   CORBA::Long AddFace(const SMESH::long_array & IDsOfNodes)
     throw (SALOME::SALOME_Exception);
   CORBA::Long AddPolygonalFace(const SMESH::long_array & IDsOfNodes)
+    throw (SALOME::SALOME_Exception);
+  CORBA::Long AddQuadPolygonalFace(const SMESH::long_array & IDsOfNodes)
     throw (SALOME::SALOME_Exception);
   CORBA::Long AddVolume(const SMESH::long_array & IDsOfNodes)
     throw (SALOME::SALOME_Exception);
@@ -216,7 +221,7 @@ public:
                              CORBA::Boolean                 outsideNormal)
     throw (SALOME::SALOME_Exception);
 
-  // Split/Join faces
+  // Split/Join
   CORBA::Boolean TriToQuad       (const SMESH::long_array &   IDsOfElements,
                                   SMESH::NumericalFunctor_ptr Criterion,
                                   CORBA::Double               MaxAngle)
@@ -250,6 +255,8 @@ public:
                                           const SMESH::DirStruct&    facetToSplitNormal,
                                           CORBA::Short               methodFlags,
                                           CORBA::Boolean             allDomains)
+    throw (SALOME::SALOME_Exception);
+  void           SplitBiQuadraticIntoLinear(const SMESH::ListOfIDSources& elems)
     throw (SALOME::SALOME_Exception);
 
   CORBA::Boolean Smooth(const SMESH::long_array &              IDsOfElements,
@@ -307,109 +314,59 @@ public:
   void RenumberNodes() throw (SALOME::SALOME_Exception);
   void RenumberElements() throw (SALOME::SALOME_Exception);
 
-  void RotationSweep(const SMESH::long_array & IDsOfElements,
-                     const SMESH::AxisStruct & Axis,
-                     CORBA::Double             AngleInRadians,
-                     CORBA::Long               NbOfSteps,
-                     CORBA::Double             Tolerance)
-    throw (SALOME::SALOME_Exception);
-  void RotationSweepObject(SMESH::SMESH_IDSource_ptr theObject,
-                           const SMESH::AxisStruct & Axis,
-                           CORBA::Double             AngleInRadians,
-                           CORBA::Long               NbOfSteps,
-                           CORBA::Double             Tolerance)
-    throw (SALOME::SALOME_Exception);
-  void RotationSweepObject1D(SMESH::SMESH_IDSource_ptr theObject,
-                             const SMESH::AxisStruct & Axis,
-                             CORBA::Double             AngleInRadians,
-                             CORBA::Long               NbOfSteps,
-                             CORBA::Double             Tolerance)
-    throw (SALOME::SALOME_Exception);
-  void RotationSweepObject2D(SMESH::SMESH_IDSource_ptr theObject,
-                             const SMESH::AxisStruct & Axis,
-                             CORBA::Double             AngleInRadians,
-                             CORBA::Long               NbOfSteps,
-                             CORBA::Double             Tolerance)
+  SMESH::ListOfGroups* RotationSweepObjects(const SMESH::ListOfIDSources & nodes,
+                                            const SMESH::ListOfIDSources & edges,
+                                            const SMESH::ListOfIDSources & faces,
+                                            const SMESH::AxisStruct &      Axis,
+                                            CORBA::Double                  AngleInRadians,
+                                            CORBA::Long                    NbOfSteps,
+                                            CORBA::Double                  Tolerance,
+                                            CORBA::Boolean                 toMakeGroups)
     throw (SALOME::SALOME_Exception);
 
-  void ExtrusionSweep(const SMESH::long_array & IDsOfElements,
-                      const SMESH::DirStruct &  StepVector,
-                      CORBA::Long               NbOfSteps)
-    throw (SALOME::SALOME_Exception);
-  void ExtrusionSweep0D(const SMESH::long_array & IDsOfElements,
-                      const SMESH::DirStruct &  StepVector,
-                      CORBA::Long               NbOfSteps)
-    throw (SALOME::SALOME_Exception);
-
-  void ExtrusionSweepObject(SMESH::SMESH_IDSource_ptr theObject,
-                            const SMESH::DirStruct &  StepVector,
-                            CORBA::Long               NbOfSteps)
+  SMESH::ListOfGroups* ExtrusionSweepObjects(const SMESH::ListOfIDSources & nodes,
+                                             const SMESH::ListOfIDSources & edges,
+                                             const SMESH::ListOfIDSources & faces,
+                                             const SMESH::DirStruct &       stepVector,
+                                             CORBA::Long                    nbOfSteps,
+                                             CORBA::Boolean                 toMakeGroups)
     throw (SALOME::SALOME_Exception);
 
-  void ExtrusionSweepObject0D(SMESH::SMESH_IDSource_ptr theObject,
-                              const SMESH::DirStruct &  StepVector,
-                              CORBA::Long               NbOfSteps)
+  SMESH::ListOfGroups* ExtrusionByNormal(const SMESH::ListOfIDSources& objects,
+                                         CORBA::Double                 stepSize,
+                                         CORBA::Long                   nbOfSteps,
+                                         CORBA::Boolean                byAverageNormal,
+                                         CORBA::Boolean                useInputElemsOnly,
+                                         CORBA::Boolean                makeGroups,
+                                         CORBA::Short                  dim)
     throw (SALOME::SALOME_Exception);
-  void ExtrusionSweepObject1D(SMESH::SMESH_IDSource_ptr theObject,
-                              const SMESH::DirStruct &  StepVector,
-                              CORBA::Long               NbOfSteps)
-    throw (SALOME::SALOME_Exception);
-  void ExtrusionSweepObject2D(SMESH::SMESH_IDSource_ptr theObject,
-                              const SMESH::DirStruct &  StepVector,
-                              CORBA::Long               NbOfSteps)
-    throw (SALOME::SALOME_Exception);
-  void AdvancedExtrusion(const SMESH::long_array & theIDsOfElements,
-                         const SMESH::DirStruct &  theStepVector,
-                         CORBA::Long               theNbOfSteps,
-                         CORBA::Long               theExtrFlags,
-                         CORBA::Double             theSewTolerance)
+  SMESH::ListOfGroups*  AdvancedExtrusion(const SMESH::long_array & theIDsOfElements,
+                                          const SMESH::DirStruct &  theStepVector,
+                                          CORBA::Long               theNbOfSteps,
+                                          CORBA::Long               theExtrFlags,
+                                          CORBA::Double             theSewTolerance,
+                                          CORBA::Boolean            theMakeGroups)
     throw (SALOME::SALOME_Exception);
 
-  SMESH::SMESH_MeshEditor::Extrusion_Error
-  ExtrusionAlongPath(const SMESH::long_array &   IDsOfElements,
-                     SMESH::SMESH_Mesh_ptr       PathMesh,
-                     GEOM::GEOM_Object_ptr       PathShape,
-                     CORBA::Long                 NodeStart,
-                     CORBA::Boolean              HasAngles,
-                     const SMESH::double_array & Angles,
-                     CORBA::Boolean              HasRefPoint,
-                     const SMESH::PointStruct &  RefPoint)
-    throw (SALOME::SALOME_Exception);
-
-  SMESH::SMESH_MeshEditor::Extrusion_Error
-  ExtrusionAlongPathObject(SMESH::SMESH_IDSource_ptr   theObject,
-                           SMESH::SMESH_Mesh_ptr       PathMesh,
-                           GEOM::GEOM_Object_ptr       PathShape,
-                           CORBA::Long                 NodeStart,
-                           CORBA::Boolean              HasAngles,
-                           const SMESH::double_array & Angles,
-                           CORBA::Boolean              HasRefPoint,
-                           const SMESH::PointStruct &  RefPoint)
-    throw (SALOME::SALOME_Exception);
-  SMESH::SMESH_MeshEditor::Extrusion_Error
-  ExtrusionAlongPathObject1D(SMESH::SMESH_IDSource_ptr   theObject,
-                             SMESH::SMESH_Mesh_ptr       PathMesh,
-                             GEOM::GEOM_Object_ptr       PathShape,
-                             CORBA::Long                 NodeStart,
-                             CORBA::Boolean              HasAngles,
-                             const SMESH::double_array & Angles,
-                             CORBA::Boolean              HasRefPoint,
-                             const SMESH::PointStruct &  RefPoint)
-    throw (SALOME::SALOME_Exception);
-  SMESH::SMESH_MeshEditor::Extrusion_Error
-  ExtrusionAlongPathObject2D(SMESH::SMESH_IDSource_ptr   theObject,
-                             SMESH::SMESH_Mesh_ptr       PathMesh,
-                             GEOM::GEOM_Object_ptr       PathShape,
-                             CORBA::Long                 NodeStart,
-                             CORBA::Boolean              HasAngles,
-                             const SMESH::double_array & Angles,
-                             CORBA::Boolean              HasRefPoint,
-                             const SMESH::PointStruct &  RefPoint)
+  SMESH::ListOfGroups*
+    ExtrusionAlongPathObjects(const SMESH::ListOfIDSources & nodes,
+                              const SMESH::ListOfIDSources & edges,
+                              const SMESH::ListOfIDSources & faces,
+                              SMESH::SMESH_IDSource_ptr      PathMesh,
+                              GEOM::GEOM_Object_ptr          PathShape,
+                              CORBA::Long                    NodeStart,
+                              CORBA::Boolean                 HasAngles,
+                              const SMESH::double_array &    Angles,
+                              CORBA::Boolean                 LinearVariation,
+                              CORBA::Boolean                 HasRefPoint,
+                              const SMESH::PointStruct &     RefPoint,
+                              bool                           MakeGroups,
+                              SMESH::SMESH_MeshEditor::Extrusion_Error& Error)
     throw (SALOME::SALOME_Exception);
 
   SMESH::double_array* LinearAnglesVariation(SMESH::SMESH_Mesh_ptr       PathMesh,
-                                             GEOM::GEOM_Object_ptr       PathShape,
-                                             const SMESH::double_array & Angles);
+                                               GEOM::GEOM_Object_ptr       PathShape,
+                                               const SMESH::double_array & Angles);
 
   void Mirror(const SMESH::long_array &           IDsOfElements,
               const SMESH::AxisStruct &           Axis,
@@ -438,128 +395,6 @@ public:
                     const SMESH::AxisStruct &  Axis,
                     CORBA::Double              Angle,
                     CORBA::Boolean             Copy)
-    throw (SALOME::SALOME_Exception);
-
-  SMESH::ListOfGroups* RotationSweepMakeGroups(const SMESH::long_array& IDsOfElements,
-                                               const SMESH::AxisStruct& Axix,
-                                               CORBA::Double            AngleInRadians,
-                                               CORBA::Long              NbOfSteps,
-                                               CORBA::Double            Tolerance)
-    throw (SALOME::SALOME_Exception);
-  SMESH::ListOfGroups* RotationSweepObjectMakeGroups(SMESH::SMESH_IDSource_ptr Object,
-                                                     const SMESH::AxisStruct&  Axix,
-                                                     CORBA::Double             AngleInRadians,
-                                                     CORBA::Long               NbOfSteps,
-                                                     CORBA::Double             Tolerance)
-    throw (SALOME::SALOME_Exception);
-  SMESH::ListOfGroups* RotationSweepObject1DMakeGroups(SMESH::SMESH_IDSource_ptr Object,
-                                                       const SMESH::AxisStruct&  Axix,
-                                                       CORBA::Double             AngleInRadians,
-                                                       CORBA::Long               NbOfSteps,
-                                                       CORBA::Double             Tolerance)
-    throw (SALOME::SALOME_Exception);
-  SMESH::ListOfGroups* RotationSweepObject2DMakeGroups(SMESH::SMESH_IDSource_ptr Object,
-                                                       const SMESH::AxisStruct&  Axix,
-                                                       CORBA::Double             AngleInRadians,
-                                                       CORBA::Long               NbOfSteps,
-                                                       CORBA::Double             Tolerance)
-    throw (SALOME::SALOME_Exception);
-  SMESH::ListOfGroups* ExtrusionSweepMakeGroups(const SMESH::long_array& IDsOfElements,
-                                                const SMESH::DirStruct&  StepVector,
-                                                CORBA::Long              NbOfSteps)
-    throw (SALOME::SALOME_Exception);
-  SMESH::ListOfGroups* ExtrusionSweepMakeGroups0D(const SMESH::long_array& IDsOfElements,
-                                                const SMESH::DirStruct&  StepVector,
-                                                CORBA::Long              NbOfSteps)
-    throw (SALOME::SALOME_Exception);
-
-  SMESH::ListOfGroups* AdvancedExtrusionMakeGroups(const SMESH::long_array& IDsOfElements,
-                                                   const SMESH::DirStruct&  StepVector,
-                                                   CORBA::Long              NbOfSteps,
-                                                   CORBA::Long              ExtrFlags,
-                                                   CORBA::Double            SewTolerance)
-    throw (SALOME::SALOME_Exception);
-  SMESH::ListOfGroups* ExtrusionSweepObjectMakeGroups(SMESH::SMESH_IDSource_ptr Object,
-                                                      const SMESH::DirStruct&   StepVector,
-                                                      CORBA::Long               NbOfSteps)
-    throw (SALOME::SALOME_Exception);
-  SMESH::ListOfGroups* ExtrusionSweepObject0DMakeGroups(SMESH::SMESH_IDSource_ptr Object,
-                                                        const SMESH::DirStruct&   StepVector,
-                                                        CORBA::Long               NbOfSteps)
-    throw (SALOME::SALOME_Exception);
-  SMESH::ListOfGroups* ExtrusionSweepObject1DMakeGroups(SMESH::SMESH_IDSource_ptr Object,
-                                                        const SMESH::DirStruct&   StepVector,
-                                                        CORBA::Long               NbOfSteps)
-    throw (SALOME::SALOME_Exception);
-  SMESH::ListOfGroups* ExtrusionSweepObject2DMakeGroups(SMESH::SMESH_IDSource_ptr Object,
-                                                        const SMESH::DirStruct&   StepVector,
-                                                        CORBA::Long               NbOfSteps)
-    throw (SALOME::SALOME_Exception);
-  SMESH::ListOfGroups* ExtrusionAlongPathMakeGroups(const SMESH::long_array&   IDsOfElements,
-                                                    SMESH::SMESH_Mesh_ptr      PathMesh,
-                                                    GEOM::GEOM_Object_ptr      PathShape,
-                                                    CORBA::Long                NodeStart,
-                                                    CORBA::Boolean             HasAngles,
-                                                    const SMESH::double_array& Angles,
-                                                    CORBA::Boolean             HasRefPoint,
-                                                    const SMESH::PointStruct&  RefPoint,
-                                                    SMESH::SMESH_MeshEditor::Extrusion_Error& Error)
-    throw (SALOME::SALOME_Exception);
-  SMESH::ListOfGroups* ExtrusionAlongPathObjectMakeGroups(SMESH::SMESH_IDSource_ptr  Object,
-                                                          SMESH::SMESH_Mesh_ptr      PathMesh,
-                                                          GEOM::GEOM_Object_ptr      PathShape,
-                                                          CORBA::Long                NodeStart,
-                                                          CORBA::Boolean             HasAngles,
-                                                          const SMESH::double_array& Angles,
-                                                          CORBA::Boolean             HasRefPoint,
-                                                          const SMESH::PointStruct&  RefPoint,
-                                                          SMESH::SMESH_MeshEditor::Extrusion_Error& Error)
-    throw (SALOME::SALOME_Exception);
-  SMESH::ListOfGroups* ExtrusionAlongPathObject1DMakeGroups(SMESH::SMESH_IDSource_ptr  Object,
-                                                            SMESH::SMESH_Mesh_ptr      PathMesh,
-                                                            GEOM::GEOM_Object_ptr      PathShape,
-                                                            CORBA::Long                NodeStart,
-                                                            CORBA::Boolean             HasAngles,
-                                                            const SMESH::double_array& Angles,
-                                                            CORBA::Boolean             HasRefPoint,
-                                                            const SMESH::PointStruct&  RefPoint,
-                                                            SMESH::SMESH_MeshEditor::Extrusion_Error& Error)
-    throw (SALOME::SALOME_Exception);
-  SMESH::ListOfGroups* ExtrusionAlongPathObject2DMakeGroups(SMESH::SMESH_IDSource_ptr  Object,
-                                                            SMESH::SMESH_Mesh_ptr      PathMesh,
-                                                            GEOM::GEOM_Object_ptr      PathShape,
-                                                            CORBA::Long                NodeStart,
-                                                            CORBA::Boolean             HasAngles,
-                                                            const SMESH::double_array& Angles,
-                                                            CORBA::Boolean             HasRefPoint,
-                                                            const SMESH::PointStruct&  RefPoint,
-                                                            SMESH::SMESH_MeshEditor::Extrusion_Error& Error)
-    throw (SALOME::SALOME_Exception);
-
-  // skl 04.06.2009 
-  SMESH::ListOfGroups* ExtrusionAlongPathObjX(SMESH::SMESH_IDSource_ptr  Object,
-                                              SMESH::SMESH_IDSource_ptr  Path,
-                                              CORBA::Long                NodeStart,
-                                              CORBA::Boolean             HasAngles,
-                                              const SMESH::double_array& Angles,
-                                              CORBA::Boolean             LinearVariation,
-                                              CORBA::Boolean             HasRefPoint,
-                                              const SMESH::PointStruct&  RefPoint,
-                                              CORBA::Boolean             MakeGroups,
-                                              SMESH::ElementType         ElemType,
-                                              SMESH::SMESH_MeshEditor::Extrusion_Error& Error)
-    throw (SALOME::SALOME_Exception);
-  SMESH::ListOfGroups* ExtrusionAlongPathX(const SMESH::long_array&   IDsOfElements,
-                                           SMESH::SMESH_IDSource_ptr  Path,
-                                           CORBA::Long                NodeStart,
-                                           CORBA::Boolean             HasAngles,
-                                           const SMESH::double_array& Angles,
-                                           CORBA::Boolean             LinearVariation,
-                                           CORBA::Boolean             HasRefPoint,
-                                           const SMESH::PointStruct&  RefPoint,
-                                           CORBA::Boolean             MakeGroups,
-                                           SMESH::ElementType         ElemType,
-                                           SMESH::SMESH_MeshEditor::Extrusion_Error& Error)
     throw (SALOME::SALOME_Exception);
 
   SMESH::ListOfGroups* MirrorMakeGroups(const SMESH::long_array&            IDsOfElements,
@@ -639,18 +474,22 @@ public:
     throw (SALOME::SALOME_Exception);
 
   void FindCoincidentNodes (CORBA::Double                  Tolerance,
-                            SMESH::array_of_long_array_out GroupsOfNodes)
+                            SMESH::array_of_long_array_out GroupsOfNodes,
+                            CORBA::Boolean                 SeparateCornersAndMedium)
     throw (SALOME::SALOME_Exception);
   void FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr      Object,
                                  CORBA::Double                  Tolerance,
-                                 SMESH::array_of_long_array_out GroupsOfNodes)
+                                 SMESH::array_of_long_array_out GroupsOfNodes,
+                                 CORBA::Boolean                 SeparateCornersAndMedium)
     throw (SALOME::SALOME_Exception);
   void FindCoincidentNodesOnPartBut(SMESH::SMESH_IDSource_ptr      Object,
                                     CORBA::Double                  Tolerance,
                                     SMESH::array_of_long_array_out GroupsOfNodes,
-                                    const SMESH::ListOfIDSources&  ExceptSubMeshOrGroups)
+                                    const SMESH::ListOfIDSources&  ExceptSubMeshOrGroups,
+                                    CORBA::Boolean                 SeparateCornersAndMedium)
     throw (SALOME::SALOME_Exception);
-  void MergeNodes (const SMESH::array_of_long_array& GroupsOfNodes)
+  void MergeNodes (const SMESH::array_of_long_array& GroupsOfNodes,
+                   const SMESH::ListOfIDSources&     NodesToKeep )
     throw (SALOME::SALOME_Exception);
   void FindEqualElements(SMESH::SMESH_IDSource_ptr      Object,
                          SMESH::array_of_long_array_out GroupsOfElementsID)
@@ -699,6 +538,12 @@ public:
   CORBA::Short GetPointState(CORBA::Double x, CORBA::Double y, CORBA::Double z)
     throw (SALOME::SALOME_Exception);
 
+  SMESH::CoincidentFreeBorders* FindCoincidentFreeBorders(CORBA::Double tolerance);
+  CORBA::Short SewCoincidentFreeBorders(const SMESH::CoincidentFreeBorders& freeBorders,
+                                        CORBA::Boolean                      createPolygons,
+                                        CORBA::Boolean                      createPolyedrs)
+    throw (SALOME::SALOME_Exception);
+
   SMESH::SMESH_MeshEditor::Sew_Error
   SewFreeBorders(CORBA::Long FirstNodeID1,
                  CORBA::Long SecondNodeID1,
@@ -707,15 +552,13 @@ public:
                  CORBA::Long SecondNodeID2,
                  CORBA::Long LastNodeID2,
                  CORBA::Boolean CreatePolygons,
-                 CORBA::Boolean CreatePolyedrs)
-    throw (SALOME::SALOME_Exception);
+                 CORBA::Boolean CreatePolyedrs) throw (SALOME::SALOME_Exception);
   SMESH::SMESH_MeshEditor::Sew_Error
   SewConformFreeBorders(CORBA::Long FirstNodeID1,
                         CORBA::Long SecondNodeID1,
                         CORBA::Long LastNodeID1,
                         CORBA::Long FirstNodeID2,
-                        CORBA::Long SecondNodeID2)
-    throw (SALOME::SALOME_Exception);
+                        CORBA::Long SecondNodeID2) throw (SALOME::SALOME_Exception);
   SMESH::SMESH_MeshEditor::Sew_Error
   SewBorderToSide(CORBA::Long FirstNodeIDOnFreeBorder,
                   CORBA::Long SecondNodeIDOnFreeBorder,
@@ -723,16 +566,14 @@ public:
                   CORBA::Long FirstNodeIDOnSide,
                   CORBA::Long LastNodeIDOnSide,
                   CORBA::Boolean CreatePolygons,
-                  CORBA::Boolean CreatePolyedrs)
-    throw (SALOME::SALOME_Exception);
+                  CORBA::Boolean CreatePolyedrs) throw (SALOME::SALOME_Exception);
   SMESH::SMESH_MeshEditor::Sew_Error
   SewSideElements(const SMESH::long_array& IDsOfSide1Elements,
                   const SMESH::long_array& IDsOfSide2Elements,
                   CORBA::Long NodeID1OfSide1ToMerge,
                   CORBA::Long NodeID1OfSide2ToMerge,
                   CORBA::Long NodeID2OfSide1ToMerge,
-                  CORBA::Long NodeID2OfSide2ToMerge)
-    throw (SALOME::SALOME_Exception);
+                  CORBA::Long NodeID2OfSide2ToMerge) throw (SALOME::SALOME_Exception);
 
   /*!
    * Set new nodes for given element.
@@ -1017,51 +858,6 @@ private: //!< private methods
   SMESH::ListOfGroups* getGroups(const std::list<int>* groupIDs)
     throw (SALOME::SALOME_Exception);
 
-  SMESH::ListOfGroups* rotationSweep(const SMESH::long_array & IDsOfElements,
-                                     const SMESH::AxisStruct & Axis,
-                                     CORBA::Double             AngleInRadians,
-                                     CORBA::Long               NbOfSteps,
-                                     CORBA::Double             Tolerance,
-                                     const bool                MakeGroups,
-                                     const SMDSAbs_ElementType ElementType=SMDSAbs_All)
-    throw (SALOME::SALOME_Exception);
-  SMESH::ListOfGroups* extrusionSweep(const SMESH::long_array & IDsOfElements,
-                                      const SMESH::DirStruct &  StepVector,
-                                      CORBA::Long               NbOfSteps,
-                                      bool                      MakeGroups,
-                                      const SMDSAbs_ElementType ElementType=SMDSAbs_All)
-    throw (SALOME::SALOME_Exception);
-  SMESH::ListOfGroups* advancedExtrusion(const SMESH::long_array & theIDsOfElements,
-                                         const SMESH::DirStruct &  theStepVector,
-                                         CORBA::Long               theNbOfSteps,
-                                         CORBA::Long               theExtrFlags,
-                                         CORBA::Double             theSewTolerance,
-                                         const bool                MakeGroups)
-    throw (SALOME::SALOME_Exception);
-  SMESH::ListOfGroups* extrusionAlongPath(const SMESH::long_array &   IDsOfElements,
-                                          SMESH::SMESH_Mesh_ptr       PathMesh,
-                                          GEOM::GEOM_Object_ptr       PathShape,
-                                          CORBA::Long                 NodeStart,
-                                          CORBA::Boolean              HasAngles,
-                                          const SMESH::double_array & Angles,
-                                          CORBA::Boolean              HasRefPoint,
-                                          const SMESH::PointStruct &  RefPoint,
-                                          const bool                  MakeGroups,
-                                          SMESH::SMESH_MeshEditor::Extrusion_Error & Error,
-                                          const SMDSAbs_ElementType   ElementType=SMDSAbs_All)
-    throw (SALOME::SALOME_Exception);
-  SMESH::ListOfGroups* extrusionAlongPathX(const SMESH::long_array &  IDsOfElements,
-                                           SMESH::SMESH_IDSource_ptr  Path,
-                                           CORBA::Long                NodeStart,
-                                           CORBA::Boolean             HasAngles,
-                                           const SMESH::double_array& Angles,
-                                           CORBA::Boolean             LinearVariation,
-                                           CORBA::Boolean             HasRefPoint,
-                                           const SMESH::PointStruct&  RefPoint,
-                                           bool                       MakeGroups,
-                                           const SMDSAbs_ElementType  ElementType,
-                                           SMESH::SMESH_MeshEditor::Extrusion_Error & theError)
-    throw (SALOME::SALOME_Exception);
   SMESH::ListOfGroups* mirror(TIDSortedElemSet &                  IDsOfElements,
                               const SMESH::AxisStruct &           Axis,
                               SMESH::SMESH_MeshEditor::MirrorType MirrorType,
@@ -1098,14 +894,31 @@ private: //!< private methods
 
   SMESH::SMESH_Mesh_ptr makeMesh(const char* theMeshName);
 
-  void dumpGroupsList(SMESH::TPythonDump & theDumpPython, 
+  void dumpGroupsList(SMESH::TPythonDump &        theDumpPython,
                       const SMESH::ListOfGroups * theGroupList);
 
   string generateGroupName(const string& thePrefix);
 
   void prepareIdSource(SMESH::SMESH_IDSource_ptr theObject);
 
-private: //!< fields
+
+  enum IDSource_Error { IDSource_OK, IDSource_INVALID, IDSource_EMPTY };
+
+  bool idSourceToSet(SMESH::SMESH_IDSource_ptr  theIDSource,
+                     const SMESHDS_Mesh*        theMeshDS,
+                     TIDSortedElemSet&          theElemSet,
+                     const SMDSAbs_ElementType  theType,
+                     const bool                 emptyIfIsMesh = false,
+                     IDSource_Error*            error = 0);
+
+  void findCoincidentNodes( TIDSortedNodeSet &             Nodes,
+                            CORBA::Double                  Tolerance,
+                            SMESH::array_of_long_array_out GroupsOfNodes,
+                            CORBA::Boolean                 SeparateCornersAndMedium);
+
+
+
+ private: //!< fields
 
   SMESH_Mesh_i*                myMesh_i;
   SMESH_Mesh *                 myMesh;

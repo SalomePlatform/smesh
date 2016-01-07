@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -305,7 +305,7 @@ void SMESHGUI_Make2DFrom3DOp::selectionDone()
         _PTR(SObject) sobj =
           SMESHGUI::activeStudy()->studyDS()->FindObjectID( ids[i].toLatin1().constData() );
         mySrcMesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( sobj );  
-        isMesh = !mySrcMesh->_is_nil();
+        //isMesh = !mySrcMesh->_is_nil(); // EAP - it's sometimes necessary to copy to a new mesh
       }
       myDlg->setNewMeshEnabled( isMesh );
     }
@@ -374,7 +374,7 @@ bool SMESHGUI_Make2DFrom3DOp::isValid( QString& msg ) const
       idSource = SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( sobj );
     if ( !idSource->_is_nil() ) {
       SMESH::array_of_ElementType_var types = idSource->GetTypes();
-      for ( int j = 0; j < types->length(); ++j )
+      for ( int j = 0; j < (int) types->length(); ++j )
         if ( types[j] == SMESH::VOLUME )
           hasVolumes = true;
         else if ( types[j] == SMESH::FACE )

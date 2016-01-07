@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -130,7 +130,7 @@ const SMESHDS_SubMesh* SMESH_ProxyMesh::GetSubMesh(const TopoDS_Shape& shape) co
 {
   const SMESHDS_SubMesh* sm = 0;
 
-  int i = shapeIndex(shape);
+  size_t i = shapeIndex(shape);
   if ( i < _subMeshes.size() )
     sm = _subMeshes[i];
   if ( !sm )
@@ -148,7 +148,7 @@ const SMESHDS_SubMesh* SMESH_ProxyMesh::GetSubMesh(const TopoDS_Shape& shape) co
 const SMESH_ProxyMesh::SubMesh*
 SMESH_ProxyMesh::GetProxySubMesh(const TopoDS_Shape& shape) const
 {
-  int i = shapeIndex(shape);
+  size_t i = shapeIndex(shape);
   return i < _subMeshes.size() ? _subMeshes[i] : 0;
 }
 

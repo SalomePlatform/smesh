@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -179,10 +179,10 @@ class SMESH_EXPORT SMESH_Algo : public SMESH_Hypothesis
 
   /*!
    * \brief evaluates size of prospective mesh on a shape
-    * \param aMesh - the mesh
-    * \param aShape - the shape
-    * \param aNbElems - prospective number of elements by types
-    * \retval bool - is a success
+   *  \param aMesh - the mesh
+   *  \param aShape - the shape
+   *  \param aResMap - prospective number of elements by SMDSAbs_ElementType by a sub-mesh
+   *  \retval bool - is a success
    */
   virtual bool Evaluate(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape,
                         MapShapeNbElems& aResMap) = 0;
@@ -313,6 +313,7 @@ public:
    * \param theEdge - The geometrical edge of interest
    * \param theParams - The resulting vector of sorted node parameters
    * \retval bool - false if not all parameters are OK
+   * \warning Nodes moved to other geometry by MergeNodes() are NOT returned.
    */
   static bool GetNodeParamOnEdge(const SMESHDS_Mesh*     theMesh,
                                  const TopoDS_Edge&      theEdge,
@@ -323,17 +324,16 @@ public:
    * \param theEdge - The geometrical edge of interest
    * \param theNodes - The resulting map
    * \param ignoreMediumNodes - to store medium nodes of quadratic elements or not
+   * \param typeToCheck - type of elements to check for medium nodes
    * \retval bool - false if not all parameters are OK
+   * \warning Nodes moved to other geometry by MergeNodes() are NOT returned.
    */
   static bool GetSortedNodesOnEdge(const SMESHDS_Mesh*                        theMesh,
                                    const TopoDS_Edge&                         theEdge,
                                    const bool                                 ignoreMediumNodes,
-                                   std::map< double, const SMDS_MeshNode* > & theNodes);
-  /*!
-   * Moved to SMESH_MesherHelper
-   */
-  // static bool IsReversedSubMesh (const TopoDS_Face&  theFace,
-  //                                SMESHDS_Mesh*       theMeshDS);
+                                   std::map< double, const SMDS_MeshNode* > & theNodes,
+                                   const SMDSAbs_ElementType                  typeToCheck = SMDSAbs_All);
+
   /*!
    * \brief Compute length of an edge
     * \param E - the edge
@@ -341,7 +341,6 @@ public:
    */
   static double EdgeLength(const TopoDS_Edge & E);
 
-  //static int NumberOfWires(const TopoDS_Shape& S);
   int NumberOfPoints(SMESH_Mesh& aMesh,const TopoDS_Wire& W);
 
   /*!
@@ -370,10 +369,33 @@ public:
   /*!
    * \brief Return the node built on a vertex
     * \param V - the vertex
-    * \param meshDS - mesh
+    * \param meshDS - mesh data structure
     * \retval const SMDS_MeshNode* - found node or NULL
    */
   static const SMDS_MeshNode* VertexNode(const TopoDS_Vertex& V, const SMESHDS_Mesh* meshDS);
+
+  /*!
+   * \brief Return the node built on a vertex.
+   *        A node moved to other geometry by MergeNodes() is also returned.
+    * \param V - the vertex
+    * \param mesh - mesh
+    * \retval const SMDS_MeshNode* - found node or NULL
+   */
+  static const SMDS_MeshNode* VertexNode(const TopoDS_Vertex& V, const SMESH_Mesh* mesh);
+
+  /*!
+   * \brief Return the node built on a vertex.
+   *        A node moved to other geometry by MergeNodes() is also returned.
+    * \param V - the vertex
+    * \param edgeSM - sub-mesh of a meshed EDGE sharing the vertex
+    * \param mesh - the mesh
+    * \param checkV - if \c true, presence of a node on the vertex is checked
+    * \retval const SMDS_MeshNode* - found node or NULL
+   */
+  static const SMDS_MeshNode* VertexNode(const TopoDS_Vertex&   V,
+                                         const SMESHDS_SubMesh* edgeSM,
+                                         const SMESH_Mesh*      mesh,
+                                         const bool             checkV=true);
 
   enum EMeshError { MEr_OK = 0, MEr_HOLES, MEr_BAD_ORI, MEr_EMPTY };
 
@@ -423,7 +445,7 @@ protected:
   bool _requireDiscreteBoundary;// GetDim()-1 mesh must be present. Default TRUE
   bool _requireShape;           // work with GetDim()-1 mesh bound to geom only. Default TRUE
   bool _supportSubmeshes;       // if !_requireDiscreteBoundary. Default FALSE
-  bool _neededLowerHyps[4];     // hyp dims needed by algo that !NeedDiscreteBoundary(). Df. FALSE
+  bool _neededLowerHyps[4];     // hyp dims needed by algo that !_requireDiscreteBoundary. Df. FALSE
 
   // indicates if quadratic mesh creation is required,
   // is usually set like this: _quadraticMesh = SMESH_MesherHelper::IsQuadraticSubMesh(shape)

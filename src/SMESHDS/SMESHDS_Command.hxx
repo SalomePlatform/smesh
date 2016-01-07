@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -57,6 +57,8 @@ class SMESHDS_EXPORT SMESHDS_Command
                        int idnode9, int idnode10, int idnode11, int idnode12);
         void AddPolygonalFace (const int               ElementID,
                                const std::vector<int>& nodes_ids);
+        void AddQuadPolygonalFace (const int               ElementID,
+                                   const std::vector<int>& nodes_ids);
         void AddPolyhedralVolume (const int               ElementID,
                                   const std::vector<int>& nodes_ids,
                                   const std::vector<int>& quantities);

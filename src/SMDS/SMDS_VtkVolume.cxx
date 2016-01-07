@@ -1,4 +1,4 @@
-// Copyright (C) 2010-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2010-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -165,7 +165,7 @@ bool SMDS_VtkVolume::vtkOrder(const SMDS_MeshNode* nodes[], const int nbNodes)
   const std::vector<int>& interlace = SMDS_MeshCell::toVtkOrder( VTKCellType( aVtkType ));
   if ( !interlace.empty() )
   {
-    ASSERT( interlace.size() == nbNodes );
+    ASSERT( (int)interlace.size() == nbNodes );
     std::vector<const SMDS_MeshNode*> initNodes( nodes, nodes+nbNodes );
     for ( size_t i = 0; i < interlace.size(); ++i )
       nodes[i] = initNodes[ interlace[i] ];

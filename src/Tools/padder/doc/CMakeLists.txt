@@ -1,4 +1,4 @@
-# Copyright (C) 2007-2014  EDF R&D
+# Copyright (C) 2007-2015  EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,6 @@ ADD_CUSTOM_TARGET(usr_padder_docs ${DOXYGEN_EXECUTABLE})
 ADD_DEPENDENCIES(usr_padder_docs html_docs)
 
 INSTALL(CODE "EXECUTE_PROCESS(COMMAND \"${CMAKE_COMMAND}\" --build ${PROJECT_BINARY_DIR} --target usr_padder_docs)")
-INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/SMESH DESTINATION ${SALOME_INSTALL_DOC}/gui) 
+INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/padder DESTINATION ${SALOME_INSTALL_DOC}/gui/SMESH)
 
 SET_DIRECTORY_PROPERTIES(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES SMESH)

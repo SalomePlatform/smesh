@@ -3,8 +3,15 @@
 \page extrusion_page Extrusion
 
 \n Extrusion is used to build mesh elements of plus one
-dimension than the input ones. Any node, segment or 2D element can be
-extruded. Each type of elements has a corresponding type of extruded elements:
+dimension than the input ones. Boundary elements around generated
+mesh of plus one dimension are additionally created. All created
+elements can be automatically grouped. Extrusion can be used to create
+a \ref extrusion_struct "structured mesh from scratch".
+
+\image html extrusion_box.png "If you extrude several quadrangles, you get exactly the same mesh as if you meshed a geometrical box (except for that the initial quadrangles can be incorrectly oriented): quadrangles and segments are created on the boundary of the generated mesh"
+
+<p>Any node, segment or 2D element can be extruded. Each type of
+elements is extruded into a corresponding type of result elements:
 <table>
 <tr><td><b>Extruded element</b></td><td><b> Result element </b></td></tr>
 <tr><td>Node              </td><td> Segment </td></tr>
@@ -14,6 +21,14 @@ extruded. Each type of elements has a corresponding type of extruded elements:
 <tr><td>Polygon           </td><td> Polyhedron </td></tr>
 <tr><td>Hexagonal polygon </td><td> Hexagonal prism </td></tr>
 </table>
+
+When 2D elements are extruded, in addition to 3D elements segments are
+created on the ribs of the resulting 3D mesh. Free edges of input 2D elements
+generate logically horizontal rib segments. Logically vertical rib
+segments are generated from the nodes belonging to a sole input 2D element
+(the figure below illustrates this rule).
+
+\image html extru_rib_segs.png "Two triangles extruded: no vertical rib segments generated from nodes #2 and #3 as they are shared by both triangles"
 
 <em>To use extrusion:</em>
 <ol>
@@ -25,61 +40,121 @@ extruded. Each type of elements has a corresponding type of extruded elements:
 <em>"Extrusion" button</em>
 </center>
 
-The following dialog common for line and planar elements will appear:
+The following dialog will appear:
 
 \image html extrusionalongaline1.png
-
-\image html extrusionalongaline2.png
 
 </li>
 
 <li>In this dialog:
 <ul>
-  <li>Select the type of elements which will be extruded (nodes, 1D or
-  2D elements).</li>
-  <li>Specify the IDs of the elements which will be extruded by one
-    following means:
+  <li>Use \a Selection button to specify what you are going to
+    select at a given moment, \b Nodes, \b Edges or \b Faces.
+    \image html image120.png
+    <center><em>"Selection" button</em></center>
+  </li>
+  <li>Specify \b Nodes, \b Edges and \b Faces, which will be extruded, by one
+    of following means:
     <ul>
-      <li><b>Select the whole mesh, submesh or group</b> activating this
-        checkbox.</li>
+      <li><b>Select the whole mesh, sub-mesh or group</b> activating the
+        corresponding check-box.</li>
       <li>Choose mesh elements with the mouse in the 3D Viewer. It is
         possible to select a whole area with a mouse frame.</li> 
-      <li>Input the element IDs directly in <b>ID Elements</b>
-        field. The selected elements will be highlighted in the viewer.</li> 
+      <li>Input the element IDs directly in <b>Node IDs</b>, <b>Edge
+        IDs</b> and <b>Face IDs</b> fields. The selected elements will
+        be highlighted in the viewer, if the mesh is shown there.</li> 
       <li>Apply Filters. <b>Set filter</b> button allows to apply a
         filter to the selection of elements. See more about filters in
         the \ref filtering_elements "Selection filters" page.</li> 
     </ul>
   </li>
-  <li>If the <b>Extrude to Distance</b> radio button is selected</li>
-  <ul>
-    <li>specify the distance at which the elements will be extruded.</li>
+  <li>If the <b>Extrusion to Distance</b> radio button is selected
+    - specify the translation vector by which the elements will be extruded.
+  </li>
+  <p><br></p>
+
+\image html extrusionalongaline2.png  
+
+ <li>If the <b>Extrusion Along Vector</b> radio button is selected
+    <ul>
+      <li>specify the coordinates of the \b Vector along which the elements
+        will be extruded, either directly or by selecting the mesh face (the
+        normal to the face will define the vector),</li>
+      <li>specify the \b Distance of extrusion along the vector (it can
+        be negative).</li>
+    </ul>
+  </li>
+  <p><br></p>
+
+\image html extrusionalongaline3.png  
+  
+  <li>If the <b>Extrusion By Normal</b> radio button is selected,
+    every node of the selected faces is extruded along the \a average
+    of the \a normal vectors to the faces sharing the node. (Nodes and
+    edges cannot be extruded in this mode.)
+    <ul>
+      <li>Specify the \b Distance of extrusion (it can be negative),</li>
+      <li>Use <b>Along average normal</b> check-box to specify along
+        which vector the distance is measured.
+        <ul>
+          <li>If it is \a activated the distance is measured along the
+            average normal mentioned above. </li>
+          <li>If it is \a deactivated every node is extruded along the
+            average normal till its intersection with a virtual plane obtained
+            by translation of the face sharing the node along its own normal
+            by the \b Distance.</li>
+        </ul>
+        The picture below shows a cross-section of a 2D mesh extruded
+        with <b>Along average normal</b> activated (to the left) and
+        deactivated (to the right). 
+
+        \image html extrusionbynormal_alongavgnorm.png "'Along average normal' activated (to the left) and deactivated (to the right)"
+        <p></li>
+
+      <li><b>Use only input elements</b> check-box specifies what
+        elements will be used to compute the average normal.<ul>
+          <li> If it is \a activated only selected faces, among faces
+            sharing the node, are used to compute the average normal at
+            the node. </li>
+          <li>Else all faces sharing the node are used.</li></ul>
+
+        The picture below shows a cross-section of a 2D mesh the upper
+        plane of which is extruded with <b>Use only input elements</b>
+        activated (to the left) and deactivated (to the right). 
+
+        \image html extrusionbynormal_useonly.png "'Use only input elements' activated (to the left) and deactivated (to the right)"
+        <p></li>
+  </li>
   </ul>
-  <li>If the <b>Extrude Along Vector</b> radio button is selected</li>
-  <ul>
-    <li>specify the coordinates of the vector along which the elements
-      will be extruded, or select the face (the normal to the face will
-      define the vector),</li>
-    <li>specify the distance of extrusion along the vector.</li>
-  </ul>
-  <li>Specify the number of steps.</li>
+
+  <li>Specify the <b>Number of steps</b>.</li>
   <li>If you activate <b>Generate Groups</b> check-box, the <em>result elements</em>
-    created from <em>extruded elements</em> contained in groups will be
+    created from <em>selected elements</em> contained in groups will be
     included into new groups named by pattern "<old group
-    name>_extruded" and "<old group name>_top". For example if an
-    extruded quadrangle is included in \a Group_1 group then result
-    hexahedra will be included in \a Group_1_extruded group and a
-    quadrangle created at the "top" of extruded mesh will
-    be included in \a Group_1_top group. <br>This check-box is active
-    only if there are some groups in the mesh.</li>
+    name>_extruded" and "<old group name>_top". For example if a
+    selected quadrangle is included in \a g_Faces group (see figures
+    below) then result hexahedra will be included in \a
+    g_Faces_extruded group and a quadrangle created at the "top" of
+    extruded mesh will be included in \a g_Faces_top group. <br> 
+\image html extrusion_groups.png
+\image html extrusion_groups_res.png
+    <p> This check-box is active only if there are some groups in the mesh.
+  </li>
 </ul>
 
 <li>Click \b Apply or <b> Apply and Close</b>  button to confirm the operation.</li>
 </ol>
+<p>
 
-\image html image77.jpg "The mesh with an edge selected for extrusion"
+\anchor extrusion_struct
+<h2>Example: creation of a structured mesh from scratch</h2>
 
-\image html image76.jpg "The mesh with extruded edge" 
+\image html image75.jpg "A node is extruded into a line of segments"
+<br>
+\image html image76.jpg "The line of segments is extruded into a quadrangle mesh"
+<br>
+\image html image77.jpg "The quadrangle mesh is revolved into a hexahedral mesh"
+
 
 <br><b>See Also</b> a sample TUI Script of an 
 \ref tui_extrusion "Extrusion" operation. 

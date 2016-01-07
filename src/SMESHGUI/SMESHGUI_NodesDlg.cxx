@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -230,8 +230,8 @@ namespace SMESH
 //=================================================================================
 SMESHGUI_NodesDlg::SMESHGUI_NodesDlg( SMESHGUI* theModule ): 
   QDialog( SMESH::GetDesktop( theModule ) ),
-  mySelector( SMESH::GetViewWindow( theModule )->GetSelector() ),
   mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
+  mySelector( SMESH::GetViewWindow( theModule )->GetSelector() ),
   mySMESHGUI( theModule )
 {
   setModal( false );
@@ -382,8 +382,9 @@ void SMESHGUI_NodesDlg::Init()
   connect( mySMESHGUI,     SIGNAL( SignalDeactivateActiveDialog() ), SLOT( DeactivateActiveDialog() ) );
   /* to close dialog if study frame change */
   connect( mySMESHGUI,     SIGNAL( SignalStudyFrameChanged() ),      SLOT( reject() ) );
-  connect(mySMESHGUI,      SIGNAL(SignalCloseAllDialogs()),          SLOT(reject()));
-
+  connect( mySMESHGUI,     SIGNAL( SignalCloseAllDialogs() ),        SLOT( reject() ) );
+  connect( mySMESHGUI,     SIGNAL( SignalActivatedViewManager() ),   SLOT( onOpenView() ) );
+  connect( mySMESHGUI,     SIGNAL( SignalCloseView() ),              SLOT( onCloseView() ) );
   // set selection mode
   SMESH::SetPointRepresentation( true );
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ) )
@@ -402,7 +403,6 @@ void SMESHGUI_NodesDlg::ValueChangedInSpinBox( double newValue )
     double vx = SpinBox_X->GetValue();
     double vy = SpinBox_Y->GetValue();
     double vz = SpinBox_Z->GetValue();
-
     mySimulation->SetPosition( vx, vy, vz );
   }
 }
@@ -547,12 +547,41 @@ void SMESHGUI_NodesDlg::reject()
   disconnect( mySelectionMgr, 0, this, 0 );
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ) )
     aViewWindow->SetSelectionMode( ActorSelection );
-
   mySimulation->SetVisibility( false );
   SMESH::SetPointRepresentation( false );
   mySMESHGUI->ResetState();
 
   QDialog::reject();
+}
+
+//=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_NodesDlg::onOpenView()
+{
+  if ( mySelector && mySimulation ) {
+    mySimulation->SetVisibility(false);
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+    mySelector = aViewWindow->GetSelector();
+    mySimulation = new SMESH::TNodeSimulation(aViewWindow);
+    ActivateThisDialog();
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_NodesDlg::onCloseView()
+{
+  DeactivateActiveDialog();
+  mySelector = 0;
+  delete mySimulation;
+  mySimulation = 0;
 }
 
 //=================================================================================
@@ -644,8 +673,14 @@ void SMESHGUI_NodesDlg::SelectionIntoArgument()
 //=================================================================================
 void SMESHGUI_NodesDlg::enterEvent( QEvent* )
 {
-  if ( !GroupConstructors->isEnabled() )
+  if ( !GroupConstructors->isEnabled() ) {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+    if ( aViewWindow && !mySelector && !mySimulation) {
+      mySelector = aViewWindow->GetSelector();
+      mySimulation = new SMESH::TNodeSimulation(aViewWindow);
+    }
     ActivateThisDialog();
+  }
 }
 
 //=================================================================================
@@ -678,7 +713,6 @@ void SMESHGUI_NodesDlg::ActivateThisDialog()
   SMESH::SetPointRepresentation( true );
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ) )
     aViewWindow->SetSelectionMode( NodeSelection );
-
   SelectionIntoArgument();
 }
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -19,9 +19,7 @@
 
 //  SMESH OBJECT : interactive object for SMESH visualization
 //  File   : SMESH_PreviewActorsCollection.h
-//  Author : OCN
 //  Module : SMESH
-//  $Header: /home/server/cvs/SMESH/SMESH_SRC/src/OBJECT/SMESH_PreviewActorsCollection.h,v 1
 //
 #ifndef SMESH_PREVIEW_ACTOR_COLLECTION_H
 #define SMESH_PREVIEW_ACTOR_COLLECTION_H
@@ -45,10 +43,13 @@ public:
   SMESH_PreviewActorsCollection();
   ~SMESH_PreviewActorsCollection();
 
-  virtual void    AddToRender(vtkRenderer* theRenderer);
+  virtual void    AddToRender     (vtkRenderer* theRenderer);
   virtual void    RemoveFromRender(vtkRenderer* theRenderer);
 
-  bool            Init( const TopoDS_Shape& theShape, TopAbs_ShapeEnum subShapeType = TopAbs_EDGE, const QString& = QString("") );
+  bool            Init( const TopoDS_Shape& theShape,
+                        const TopoDS_Shape& theMainShape,
+                        TopAbs_ShapeEnum    subShapeType = TopAbs_EDGE,
+                        const QString& = QString("") );
 
   void            SetSelector( SVTK_Selector* );
 
@@ -56,8 +57,14 @@ public:
   void            HighlightID( int );
 
   GEOM_Actor*     GetActorByIndex( int );
+  bool            IsValidIndex( int );
 
   int             GetIndexByShape( const TopoDS_Shape& );
+  TopoDS_Shape    GetShapeByIndex( int i );
+  int             NbShapesOfType( TopAbs_ShapeEnum type );
+
+  void            SetIndices( const QList<int>& indices);
+  const QList<int>& GetIndices() const { return myIndices; }
 
   void            SetShown( bool );
 

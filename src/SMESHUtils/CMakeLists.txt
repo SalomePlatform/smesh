@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2012-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -25,7 +25,6 @@ INCLUDE_DIRECTORIES(
   ${VTK_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
   ${PROJECT_SOURCE_DIR}/src/SMDS
-  ${PROJECT_SOURCE_DIR}/src/SMESHDS
 )
 
 # additional preprocessor / compiler flags
@@ -38,12 +37,15 @@ ADD_DEFINITIONS(
 SET(_link_LIBRARIES
   ${CAS_TKShHealing}
   ${CAS_TKPrim}
+  ${CAS_TKernel}
+  ${CAS_TKBRep}
   ${CAS_TKG2d}
   ${CAS_TKG3d}
   ${CAS_TKGeomBase}
   ${CAS_TKGeomAlgo}
+  ${CAS_TKTopAlgo}
   ${Boost_LIBRARIES}
-  SMESHDS
+  SMDS
 )
 
 # --- headers ---
@@ -62,6 +64,7 @@ SET(SMESHUtils_HEADERS
   SMESH_Utils.hxx
   SMESH_TryCatch.hxx
   SMESH_MeshAlgos.hxx
+  SMESH_MAT2d.hxx
 )
 
 # --- sources ---
@@ -75,6 +78,8 @@ SET(SMESHUtils_SOURCES
   SMESH_TryCatch.cxx
   SMESH_File.cxx
   SMESH_MeshAlgos.cxx
+  SMESH_MAT2d.cxx
+  SMESH_FreeBorders.cxx
 )
 
 # --- rules ---

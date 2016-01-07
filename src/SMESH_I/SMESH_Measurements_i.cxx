@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -132,7 +132,8 @@ static bool isNodeType (SMESH::array_of_ElementType_var theTypes)
   return theTypes->length() > 0 && theTypes[0] == SMESH::NODE;
 }
 
-static double getNumericalValue(SMESH::SMESH_IDSource_ptr theSource, SMESH::Controls::NumericalFunctorPtr theFunctor)
+static double getNumericalValue(SMESH::SMESH_IDSource_ptr            theSource,
+                                SMESH::Controls::NumericalFunctorPtr theFunctor)
 {
   double value = 0;
 
@@ -142,7 +143,7 @@ static double getNumericalValue(SMESH::SMESH_IDSource_ptr theSource, SMESH::Cont
       theFunctor->SetMesh( aMesh );
       
       SMESH::long_array_var anElementsId = theSource->GetIDs();
-      for (int i = 0; i < anElementsId->length(); i++) {
+      for ( CORBA::ULong i = 0; i < anElementsId->length(); i++) {
         value += theFunctor->GetValue( anElementsId[i] );
       }
     }

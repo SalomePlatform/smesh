@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -89,13 +89,21 @@ protected slots:
 
 private:
   typedef QList<HypothesisData*> THypDataList; // typedef: list of hypothesis data
+  typedef QMap<QString, bool>    THypLabelIsAppMap; // typedef: map of hypothesis is applicable
 
   bool                           isValid( QString& ) const;
+  bool                           isCompatibleToGeometry( HypothesisData* ,
+                                                         QString,
+                                                         GEOM::GEOM_Object_var);
+  bool                           isCompatibleToMeshType( HypothesisData* ,
+                                                         QString);
   void                           availableHyps( const int, 
                                                 const int,
                                                 QStringList&,
                                                 THypDataList&,
-                                                HypothesisData* = 0 ) const;
+                                                HypothesisData* = 0,
+                                                HypothesisData* = 0,
+                                                const QString& = "");
   void                           existingHyps( const int, 
                                                const int, 
                                                _PTR(SObject),
@@ -137,6 +145,7 @@ private:
   void                           createMeshTypeList( QStringList& );
   void                           setAvailableMeshType( const QStringList& );
   void                           setFilteredAlgoData( const int, const int );
+  QString                        currentMeshTypeName( const int ) const;
 
 private:
 
@@ -152,7 +161,8 @@ private:
                                                  //   edited mesh/sub-mesh
   // hypdata corresponding to hypotheses present in myDlg
   THypDataList                   myAvailableHypData[4][NbHypTypes];
-  THypDataList                   myFilteredAlgoData[4];
+  QString                        myLastGeomToSelect;
+  THypLabelIsAppMap              myHypMapIsApplicable;
   bool                           myIgnoreAlgoSelection;
   HypothesesSet* myHypoSet;
   int myDim, myType, myMaxShapeDim;

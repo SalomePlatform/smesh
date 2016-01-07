@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -35,7 +35,7 @@
 
 /*!
  * \brief Driver reading a mesh from the CGNS file. The mesh to read is selected by 
- *  an index (counted form 0) set via SetMeshId()
+ *  an index (counted from 0) set via SetMeshId()
  */
 class MESHDriverCGNS_EXPORT DriverCGNS_Read : public Driver_SMESHDS_Mesh
 {

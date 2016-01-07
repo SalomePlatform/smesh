@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -223,6 +223,7 @@ SMESHGUI_Add0DElemsOnAllNodesOp::SMESHGUI_Add0DElemsOnAllNodesOp()
 
   connect( myDlg,              SIGNAL( selTypeChanged(int) ), SLOT( onSelTypeChange(int)));
   connect( myDlg->myFilterBtn, SIGNAL( clicked()),            SLOT( onSetFilter() ));
+  connect( myDlg->myGroupBox,  SIGNAL( clicked(bool)),        SLOT( updateButtons() ));
 }
 
 //================================================================================
@@ -270,6 +271,7 @@ void SMESHGUI_Add0DElemsOnAllNodesOp::selectionDone()
 
   myIO.Nullify();
   myDlg->setObjectText( 0, "");
+  updateButtons();
 
   SALOME_ListIO aList;
   selectionMgr()->selectedObjects( aList );
@@ -297,12 +299,14 @@ void SMESHGUI_Add0DElemsOnAllNodesOp::selectionDone()
   // fill the list of existing groups
   myDlg->myGroupListCmBox->clear();
   myDlg->myGroupListCmBox->addItem( QString() );
-  if ( !myIO.IsNull() && myIO->hasEntry()) {
-    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-    _PTR(SObject) meshSO = aStudy->FindObjectID( myIO->getEntry() );
+  if ( !myIO.IsNull() && myIO->hasEntry())
+  {
+    SMESH::SMESH_Mesh_var mesh = SMESH::GetMeshByIO( myIO );
+    _PTR(SObject)       meshSO = SMESH::ObjectToSObject( mesh );
     _PTR(SObject) group0DRoot;
-    if ( meshSO->FindSubObject( SMESH::Tag_0DElementsGroups, group0DRoot ))
+    if ( meshSO && meshSO->FindSubObject( SMESH::Tag_0DElementsGroups, group0DRoot ))
     {
+      _PTR(Study)              aStudy = SMESH::GetActiveStudyDocument();
       _PTR(ChildIterator) group0DIter = aStudy->NewChildIterator( group0DRoot );
       for ( ; group0DIter->More(); group0DIter->Next() )
       {
@@ -312,7 +316,42 @@ void SMESHGUI_Add0DElemsOnAllNodesOp::selectionDone()
           myDlg->myGroupListCmBox->addItem( groupName.c_str() );
       }
     }
+    // enable buttons
+    updateButtons();
   }
+}
+
+//=======================================================================
+//function : updateButtons
+//purpose  : enable [Apply]
+//=======================================================================
+
+void SMESHGUI_Add0DElemsOnAllNodesOp::updateButtons()
+{
+  bool ok = false;
+
+  if (( !myIO.IsNull() && myIO->hasEntry() && !myDlg->objectText( 0 ).isEmpty() ) &&
+      ( !myDlg->myGroupBox->isChecked() || !myDlg->myGroupListCmBox->currentText().isEmpty() ))
+  {
+    SMESH::SMESH_Mesh_var mesh = SMESH::GetMeshByIO( myIO );
+    if ( !mesh->_is_nil() )
+    {
+      if ( myDlg->getSelectionType() == SEL_OBJECT )
+        ok = true;
+      else
+      {
+        QString        ids = myDlg->objectText( 0 );
+        QStringList idList = ids.split( " ", QString::SkipEmptyParts );
+        const bool  isElem = ( myDlg->getSelectionType() == SEL_ELEMENTS );
+        QStringList::iterator idIt = idList.begin();
+        for ( ; idIt != idList.end() && !ok; ++idIt )
+          ok = ( mesh->GetElementType( idIt->toLong(), isElem ) != SMESH::ALL );
+      }
+    }
+  }
+
+  myDlg->button( QtxDialog::Apply )->setEnabled( ok );
+  myDlg->button( QtxDialog::OK    )->setEnabled( ok );
 }
 
 //================================================================================
@@ -353,7 +392,7 @@ bool SMESHGUI_Add0DElemsOnAllNodesOp::onApply()
     return false;
 
   // get a mesh
-  SMESH::SMESH_IDSource_wrap meshObject;
+  SMESH::IDSource_wrap meshObject;
   SMESH::SMESH_Mesh_var      mesh;
   if ( !myIO.IsNull() )
   {
@@ -458,6 +497,9 @@ void SMESHGUI_Add0DElemsOnAllNodesOp::onSelTypeChange(int selType)
     disconnect( myDlg, SIGNAL( objectChanged( int, const QStringList& )),
                 this,  SLOT  ( onTextChanged( int, const QStringList& )));
 
+  connect( myDlg->myGroupListCmBox, SIGNAL( editTextChanged(const QString & )),
+           this,                    SLOT(   updateButtons() ));
+
   selectionDone();
 }
 
@@ -494,4 +536,15 @@ void SMESHGUI_Add0DElemsOnAllNodesOp::onSetFilter()
   myFilterDlg->SetSourceWg( myDlg->objectWg( 0, LightApp_Dialog::Control ));
 
   myFilterDlg->show();
+}
+
+//=======================================================================
+//function : onTextChanged
+//purpose  : SLOT called when the user types IDs
+//=======================================================================
+
+void SMESHGUI_Add0DElemsOnAllNodesOp::onTextChanged( int obj, const QStringList& text )
+{
+  SMESHGUI_SelectionOp::onTextChanged( obj, text );
+  updateButtons();
 }

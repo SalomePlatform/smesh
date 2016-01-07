@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -2731,7 +2731,7 @@ namespace
              chn.back()->IsLinked( quad._eIntNodes[ iP ]->_intPoint ))
         {
           chn.push_back( quad._eIntNodes[ iP ]);
-          found = quad._eIntNodes[ iP ]->_usedInFace = &quad;
+          found = ( quad._eIntNodes[ iP ]->_usedInFace = &quad );
           break;
         }
     } while ( found && ! chn.back()->IsLinked( n2->_intPoint ) );
@@ -2823,7 +2823,7 @@ namespace
               ( !avoidFace || quad._eIntNodes[ iP ]->IsOnFace( avoidFace )))
           {
             chn.push_back( quad._eIntNodes[ iP ]);
-            found = quad._eIntNodes[ iP ]->_usedInFace = &quad;
+            found = ( quad._eIntNodes[ iP ]->_usedInFace = &quad );
             break;
           }
       } while ( found );
@@ -3135,7 +3135,7 @@ namespace
     if ( !_vIntNodes.empty() )
       return false;
 
-    const int ijk[3] = { _i, _j, _k };
+    const size_t ijk[3] = { _i, _j, _k };
     F_IntersectPoint curIntPnt;
 
     // consider a cell to be in a hole if all links in any direction

@@ -40,6 +40,14 @@
             <translation>mesh_compute.png</translation>
         </message>
         <message>
+            <source>ICON_EVALUATE</source>
+            <translation>mesh_evaluate.png</translation>
+        </message>
+        <message>
+            <source>ICON_MESH_ORDER</source>
+            <translation>mesh_order.png</translation>
+        </message>
+        <message>
             <source>ICON_PRECOMPUTE</source>
             <translation>mesh_precompute.png</translation>
         </message>
@@ -210,6 +218,10 @@
         <message>
             <source>ICON_DLG_BIQUADRATIC_QUADRANGLE</source>
             <translation>mesh_biquad_quadrangle.png</translation>
+        </message>
+        <message>
+            <source>ICON_DLG_QUADRATIC_POLYGON</source>
+            <translation>mesh_quad_polygon.png</translation>
         </message>
         <message>
             <source>ICON_DLG_QUADRATIC_TETRAHEDRON</source>
@@ -586,6 +598,10 @@
         <message>
             <source>ICON_SPLIT_TO_TETRA</source>
             <translation>split_into_tetra.png</translation>
+        </message>
+        <message>
+            <source>ICON_SPLIT_BIQUAD</source>
+            <translation>split_biquad.png</translation>
         </message>
 	<message>
             <source>ICON_MEASURE_LENGTH</source>

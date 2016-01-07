@@ -6,76 +6,104 @@ This functionality allows user to detect groups of coincident nodes
 with specified tolerance; each group of the coincident nodes can be
 then converted to the single node.
 
-\image html mergenodes_ico.png "Merge nodes button"
+\image html mergenodes_ico.png "Merge nodes menu button"
 
 <em>To merge nodes of your mesh:</em>
 <ol>
-<li>From the \b Modification choose \b Transformation and from its
-sub-menu select the <b>Merge nodes</b> item. The following dialog box
-shall appear:</li>
+<li>Choose \b Modification -> \b Transformation -> <b>Merge nodes</b>
+  menu item. The following dialog box shall appear:</li>
 <br>
 \image html mergenodes_auto.png
 <br>
 <ul>
 <li>\b Name is the name of the mesh whose nodes will be merged.</li>
-<li>\b Automatic or \b Manual Mode allows choosing how the nodes are
-processed.
+<li>\b Automatic or \b Manual mode allows choosing how the nodes are
+  processed. In \b Manual mode you can adjust groups of coincident nodes
+  detected by the program and/or select any nodes to be merged.</li>
 <li>\b Tolerance is a maximum distance between nodes sufficient for
 merging.</li>
-<li><b>Exclude Groups</b> group box allows to ignore the nodes which
-belong to the specified mesh groups.
+<li>Activation of <b>No merge of corner and medium nodes of quadratic
+    cells</b> check-box prevents merging medium nodes of quadratic
+    elements with corner nodes. This check-box is enabled provided
+    that the selected mesh includes quadratic elements.</li>
+<li><b>Exclude groups from detection</b> group allows to ignore the
+  nodes which belong to the specified mesh groups. This control is
+  active provided that the mesh includes groups.</li>
+<li><b>Nodes to keep during the merge</b> group allows to specify
+  nodes to keep in the mesh. (By default a node being the first in a
+  group of coincident nodes is kept.) It is possible to either select
+  nodes in the Viewer or select groups of any element type whose nodes
+  will be kept.
+  <ul>
+    <li>\a Selection button activates selection of nodes to keep.</li>
+    <li><b>Nodes</b> button activates selection of nodes in the
+      Viewer.</li>
+    <li><b>Groups and sub-meshes</b> button activates selection of
+      groups and sub-meshes.</li>
+    <li>\b Add button adds selected nodes or groups to the list.</li>
+    <li> Nodes or groups selected in the list can be removed using \b
+      Remove button.</li>
+  </ul>
+</li>
 </ul>
 
 <li><b>Automatic mode:</b>
 <br>
 <ul>
-<li>In the \b Automatic Mode all Nodes within the indicated tolerance
-will be merged. The nodes which belong to the groups specified in the
-<b>Exclude Groups</b> will be not taken into account.</li>
+<li>In the \b Automatic Mode all nodes within the indicated tolerance
+will be merged. The nodes which belong to the groups specified in
+<b>Exclude groups from detection</b> will NOT be taken into account.</li>
 </ul>
 </li><br>
-<li>If the \b Manual Mode is selected, additional controls are available:
+<li> The \b Manual mode gives you full control of what the operation will do.
+In this mode additional controls are available:
 <ul>
-<li>\b Detect button generates the list of coincident nodes for the given
-\b Tolerance.</li>
-<li><b>Coincident nodes</b> is a list of groups of nodes for
-merging. All nodes of each group will form one after the
-operation.
+  <li>\b Detect button generates the list of coincident nodes for the given
+    \b Tolerance.</li>
+  <li><b>Coincident nodes</b> is a list of groups of nodes for
+    merging. Upon \b Apply all nodes of each group will
+    be united into one node. The first node of a group is kept and
+    the others are removed. By default the first node has a lowest ID
+    within the group.
 <ul>
 <li>\b Remove button deletes the selected group from the list.</li>
 <li>\b Add button adds to the list a group of nodes selected in the
-viewer with pressed "Shift" key.</li>
-<li><b>Select all</b> checkbox selects all groups.</li>
-<li><b>Show double nodes IDs</b> checkbox shows/hides identifiers of
-nodes in the 3D viewer.</li>
+viewer.</li>
+<li><b>Select all</b> check-box selects all groups.</li>
+<li><b>Show double nodes IDs</b> check-box shows/hides identifiers of
+nodes of selected groups in the 3D viewer.</li>
 </ul>
 
 <br>
 \image html mergenodes.png
 <br>
 </li>
-<li><b>Edit selected group</b> list allows editing the selected
-group:
-<br><br>
-\image html add.png
-<center>adds to the group the node selected in the viewer.</center>
-<br>
-\image html remove.png
-<center>removes from the group the selected node.</center>
-<br>
-\image html sort.png
-<center>moves the selected node to the first position in the
-group. This means that all other nodes will be merged into this
-one.</center><br>
-</li>
+  <li><b>Edit selected group of coincident nodes</b> list allows
+  editing the selected group:
+    <br><br>
+    \image html add.png
+    <center>adds to the group the nodes selected in the viewer.</center>
+    <br>
+    \image html remove.png
+    <center>removes from the group the selected nodes.</center>
+    <br>
+    \image html sort.png
+    <center>moves the selected node to the first position in the
+      group in order to keep it in the mesh.</center><br>
+  </li>
 </ul>
 </li>
 <li>To confirm your choice click \b Apply or <b>Apply and Close</b> button.</li>
 </ol>
 
-\image html merging_nodes1.png "The initial obgect" 
-
-\image html merging_nodes2.png "The object has been merged with a very big tolerance"
+\image html merging_nodes1.png 
+<center> The initial object. Nodes 25, 26 and 5 are added to <b>Nodes
+    to keep during the merge</b> group.
+</center>
+<br>
+\image html merging_nodes2.png
+<center> The object has been merged
+</center>
 
 <br><b>See Also</b> a sample TUI Script of a 
 \ref tui_merging_nodes "Merge Nodes" operation.  

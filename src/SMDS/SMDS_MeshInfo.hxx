@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -56,7 +56,7 @@ public:
   inline int NbQuadrangles(SMDSAbs_ElementOrder order = ORDER_ANY) const;
   int NbBiQuadTriangles() const { return myNbBiQuadTriangles; }
   int NbBiQuadQuadrangles() const { return myNbBiQuadQuadrangles; }
-  int NbPolygons() const { return myNbPolygons; }
+  inline int NbPolygons(SMDSAbs_ElementOrder order = ORDER_ANY) const;
 
   inline int NbVolumes (SMDSAbs_ElementOrder order = ORDER_ANY) const;
   inline int NbTetras  (SMDSAbs_ElementOrder order = ORDER_ANY) const;
@@ -90,7 +90,7 @@ private:
   int myNbEdges      , myNbQuadEdges      ;
   int myNbTriangles  , myNbQuadTriangles,   myNbBiQuadTriangles  ;
   int myNbQuadrangles, myNbQuadQuadrangles, myNbBiQuadQuadrangles;
-  int myNbPolygons;
+  int myNbPolygons   , myNbQuadPolygons;
 
   int myNbTetras  , myNbQuadTetras  ;
   int myNbHexas   , myNbQuadHexas,    myNbTriQuadHexas;
@@ -110,7 +110,7 @@ inline SMDS_MeshInfo::SMDS_MeshInfo():
   myNbEdges      (0), myNbQuadEdges      (0),
   myNbTriangles  (0), myNbQuadTriangles  (0), myNbBiQuadTriangles(0),
   myNbQuadrangles(0), myNbQuadQuadrangles(0), myNbBiQuadQuadrangles(0),
-  myNbPolygons   (0),
+  myNbPolygons   (0), myNbQuadPolygons   (0),
   myNbTetras     (0), myNbQuadTetras  (0),
   myNbHexas      (0), myNbQuadHexas   (0), myNbTriQuadHexas(0),
   myNbPyramids   (0), myNbQuadPyramids(0),
@@ -128,21 +128,21 @@ inline SMDS_MeshInfo::SMDS_MeshInfo():
   // 0 ------------------  - DON't USE 0!!!
   // 1            .  * .
   // 2         .       *
-  // 3      .     *
-  // 4   *  .  .
+  // 3      .  .  *
+  // 4   *  .
   // 5   *
   // 6   *  .
-  // 7      .  *
+  // 7      .
   // 8   *  .
-  // 9      .  *
+  // 9      .
   // 10  *
   // 11
   // 12  *
   // 13  *
   // 14
   // 15  *
-  // 16     
-  // 17     
+  // 16        *
+  // 17        *
   // 18     *
   // 19     *
   // 20  *   
@@ -158,7 +158,7 @@ inline SMDS_MeshInfo::SMDS_MeshInfo():
   myShift.resize(SMDSAbs_NbElementTypes, 0);
 
   myShift[ SMDSAbs_Face      ] = +15;// 3->18, 4->19, etc.
-  myShift[ SMDSAbs_Edge      ] = +5; // 2->7, 4->9
+  myShift[ SMDSAbs_Edge      ] = +14;// 2->16, 3->17
   myShift[ SMDSAbs_0DElement ] = +2; // 1->3
   myShift[ SMDSAbs_Ball      ] = +1; // 1->2
 
@@ -169,7 +169,7 @@ inline SMDS_MeshInfo::SMDS_MeshInfo():
   myNb[ index( SMDSAbs_Ball,1 )] = & myNbBalls;
 
   myNb[ index( SMDSAbs_Edge,2 )] = & myNbEdges;
-  myNb[ index( SMDSAbs_Edge,4 )] = & myNbQuadEdges;
+  myNb[ index( SMDSAbs_Edge,3 )] = & myNbQuadEdges;
 
   myNb[ index( SMDSAbs_Face,3 )] = & myNbTriangles;
   myNb[ index( SMDSAbs_Face,4 )] = & myNbQuadrangles;
@@ -192,16 +192,17 @@ inline SMDS_MeshInfo::SMDS_MeshInfo():
 
 inline SMDS_MeshInfo& // operator=
 SMDS_MeshInfo::operator=(const SMDS_MeshInfo& other)
-{ for ( int i=0; i<myNb.size(); ++i ) if ( myNb[i] ) (*myNb[i])=(*other.myNb[i]);
-  myNbPolygons = other.myNbPolygons;
-  myNbPolyhedrons = other.myNbPolyhedrons;
+{ for ( size_t i=0; i<myNb.size(); ++i ) if ( myNb[i] ) (*myNb[i])=(*other.myNb[i]);
+  myNbPolygons     = other.myNbPolygons;
+  myNbQuadPolygons = other.myNbQuadPolygons;
+  myNbPolyhedrons  = other.myNbPolyhedrons;
   return *this;
 }
 
 inline void // Clear
 SMDS_MeshInfo::Clear()
-{ for ( int i=0; i<myNb.size(); ++i ) if ( myNb[i] ) (*myNb[i])=0;
-  myNbPolygons=myNbPolyhedrons=0;
+{ for ( size_t i=0; i<myNb.size(); ++i ) if ( myNb[i] ) (*myNb[i])=0;
+  myNbPolygons=myNbQuadPolygons=myNbPolyhedrons=0;
 }
 
 inline int // index
@@ -217,20 +218,26 @@ SMDS_MeshInfo::add(const SMDS_MeshElement* el)
 { ++(*myNb[ index(el->GetType(), el->NbNodes()) ]); }
 
 inline void // addWithPoly
-SMDS_MeshInfo::addWithPoly(const SMDS_MeshElement* el)
-{
-  if ( el->IsPoly() )
-    ++( el->GetType()==SMDSAbs_Face ? myNbPolygons : myNbPolyhedrons );
-  else
-    add(el);
+SMDS_MeshInfo::addWithPoly(const SMDS_MeshElement* el) {
+  switch ( el->GetEntityType() ) {
+  case SMDSEntity_Polygon:      ++myNbPolygons; break;
+  case SMDSEntity_Quad_Polygon: ++myNbQuadPolygons; break;
+  case SMDSEntity_Polyhedra:    ++myNbPolyhedrons; break;
+  default:                      add(el);
+  }
 }
 inline void // RemoveEdge
 SMDS_MeshInfo::RemoveEdge(const SMDS_MeshElement* el)
 { if ( el->IsQuadratic() ) --myNbQuadEdges; else --myNbEdges; }
 
 inline void // RemoveFace
-SMDS_MeshInfo::RemoveFace(const SMDS_MeshElement* el)
-{ if ( el->IsPoly() ) --myNbPolygons; else remove( el ); }
+SMDS_MeshInfo::RemoveFace(const SMDS_MeshElement* el) {
+  switch ( el->GetEntityType() ) {
+  case SMDSEntity_Polygon:      --myNbPolygons; break;
+  case SMDSEntity_Quad_Polygon: --myNbQuadPolygons; break;
+  default:                      remove(el);
+  }
+}
 
 inline void // RemoveVolume
 SMDS_MeshInfo::RemoveVolume(const SMDS_MeshElement* el)
@@ -242,7 +249,7 @@ SMDS_MeshInfo::NbEdges      (SMDSAbs_ElementOrder order) const
 
 inline int  // NbFaces
 SMDS_MeshInfo::NbFaces      (SMDSAbs_ElementOrder order) const
-{ return NbTriangles(order)+NbQuadrangles(order)+(order == ORDER_QUADRATIC ? 0 : myNbPolygons); }
+{ return NbTriangles(order)+NbQuadrangles(order)+(order == ORDER_ANY ? myNbPolygons+myNbQuadPolygons : order == ORDER_LINEAR ? myNbPolygons : myNbQuadPolygons ); }
 
 inline int  // NbTriangles
 SMDS_MeshInfo::NbTriangles  (SMDSAbs_ElementOrder order) const
@@ -251,6 +258,10 @@ SMDS_MeshInfo::NbTriangles  (SMDSAbs_ElementOrder order) const
 inline int  // NbQuadrangles
 SMDS_MeshInfo::NbQuadrangles(SMDSAbs_ElementOrder order) const
 { return order == ORDER_ANY ? myNbQuadrangles+myNbQuadQuadrangles+myNbBiQuadQuadrangles : order == ORDER_LINEAR ? myNbQuadrangles : myNbQuadQuadrangles+myNbBiQuadQuadrangles; }
+
+inline int  // NbPolygons
+SMDS_MeshInfo::NbPolygons(SMDSAbs_ElementOrder order) const
+{ return order == ORDER_ANY ? myNbPolygons+myNbQuadPolygons : order == ORDER_LINEAR ? myNbPolygons : myNbQuadPolygons; }
 
 inline int  // NbVolumes
 SMDS_MeshInfo::NbVolumes (SMDSAbs_ElementOrder order) const
@@ -282,8 +293,8 @@ SMDS_MeshInfo::NbElements(SMDSAbs_ElementType type) const
   int nb = 0;
   switch (type) {
   case SMDSAbs_All:
-    for ( int i=1+index( SMDSAbs_Node,1 ); i<myNb.size(); ++i ) if ( myNb[i] ) nb += *myNb[i];
-    nb += myNbPolygons + myNbPolyhedrons;
+    for ( size_t i=1+index( SMDSAbs_Node,1 ); i<myNb.size(); ++i ) if ( myNb[i] ) nb += *myNb[i];
+    nb += myNbPolygons + myNbQuadPolygons + myNbPolyhedrons;
     break;
   case SMDSAbs_Volume:
     nb = ( myNbTetras+     myNbPyramids+     myNbPrisms+     myNbHexas+     myNbHexPrism+
@@ -293,7 +304,7 @@ SMDS_MeshInfo::NbElements(SMDSAbs_ElementType type) const
   case SMDSAbs_Face:
     nb = ( myNbTriangles+       myNbQuadrangles+
            myNbQuadTriangles+   myNbBiQuadTriangles+
-           myNbQuadQuadrangles+ myNbBiQuadQuadrangles+ myNbPolygons );
+           myNbQuadQuadrangles+ myNbBiQuadQuadrangles+ myNbPolygons+ myNbQuadPolygons );
     break;
   case SMDSAbs_Edge:
     nb = myNbEdges + myNbQuadEdges;
@@ -339,8 +350,9 @@ SMDS_MeshInfo::NbEntities(SMDSAbs_EntityType type) const
   case SMDSEntity_Polyhedra:        return myNbPolyhedrons;
   case SMDSEntity_0D:               return myNb0DElements;
   case SMDSEntity_Ball:             return myNbBalls;
-  case SMDSEntity_Quad_Polygon:
+  case SMDSEntity_Quad_Polygon:     return myNbQuadPolygons;
   case SMDSEntity_Quad_Polyhedra:
+  case SMDSEntity_Last:
     break;
   }
   return 0;
@@ -362,7 +374,7 @@ SMDS_MeshInfo::NbElementsOfGeom(SMDSAbs_GeometryType geom) const
   case SMDSGeom_QUADRANGLE:      return (myNbQuadrangles +
                                          myNbQuadQuadrangles +
                                          myNbBiQuadQuadrangles );
-  case SMDSGeom_POLYGON:         return myNbPolygons;
+  case SMDSGeom_POLYGON:         return (myNbPolygons + myNbQuadPolygons );
     // 3D:
   case SMDSGeom_TETRA:           return (myNbTetras +
                                          myNbQuadTetras);
@@ -411,8 +423,9 @@ SMDS_MeshInfo::setNb(const SMDSAbs_EntityType geomType, const int nb)
   case SMDSEntity_Tetra:            myNbTetras            = nb; break;
   case SMDSEntity_TriQuad_Hexa:     myNbTriQuadHexas      = nb; break;
   case SMDSEntity_Triangle:         myNbTriangles         = nb; break;
-  case SMDSEntity_Quad_Polygon:
+  case SMDSEntity_Quad_Polygon:     myNbQuadPolygons      = nb; break;
   case SMDSEntity_Quad_Polyhedra:
+  case SMDSEntity_Last:
     break;
   }
 }

@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -169,8 +169,10 @@ class SMESH_EXPORT SMESH_Mesh
   
   bool MeshExists( int meshId ) const;
   
+  SMESH_Mesh* FindMesh( int meshId ) const;
+
   SMESHDS_Mesh * GetMeshDS() { return _myMeshDS; }
-  
+
   const SMESHDS_Mesh * GetMeshDS() const { return _myMeshDS; }
   
   SMESH_Gen *GetGen()        { return _gen; }
@@ -259,7 +261,8 @@ class SMESH_EXPORT SMESH_Mesh
                  const bool          isascii,
                  const SMESHDS_Mesh* meshPart = 0) throw(SALOME_Exception);
   void ExportCGNS(const char *        file,
-                  const SMESHDS_Mesh* mesh);
+                  const SMESHDS_Mesh* mesh,
+                  const char *        meshName = 0);
   void ExportGMF(const char *        file,
                  const SMESHDS_Mesh* mesh,
                  bool                withRequiredGroups = true );
@@ -280,7 +283,7 @@ class SMESH_EXPORT SMESH_Mesh
   int NbQuadrangles(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
   int NbBiQuadQuadrangles() const throw(SALOME_Exception);
   int NbBiQuadTriangles() const throw(SALOME_Exception);
-  int NbPolygons() const throw(SALOME_Exception);
+  int NbPolygons(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
   
   int NbVolumes(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
   int NbTetras(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
@@ -294,6 +297,8 @@ class SMESH_EXPORT SMESH_Mesh
   int NbSubMesh() const throw(SALOME_Exception);
   
   int NbGroup() const { return _mapGroup.size(); }
+
+  int NbMeshes() const; // nb meshes in the Study
 
   SMESH_Group* AddGroup (const SMDSAbs_ElementType theType,
                          const char*               theName,
@@ -353,7 +358,6 @@ protected:
   int                        _groupId;      // id generator for group objects
   int                        _nbSubShapes;  // initial nb of subshapes in the shape to mesh
   bool                       _isShapeToMesh;// set to true when a shape is given (only once)
-  //std::list <SMESH_subMesh*> _subMeshesUsingHypothesisList;
   SMESHDS_Document *         _myDocument;
   SMESHDS_Mesh *             _myMeshDS;
   SMESH_Gen *                _gen;

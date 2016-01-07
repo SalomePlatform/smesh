@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -45,14 +45,15 @@ class QCheckBox;
 class QListWidget;
 class QPushButton;
 
+class LightApp_SelectionMgr;
 class SMESHGUI;
-class SMESH_Actor;
+class SMESHGUI_3TypesSelector;
+class SMESHGUI_FilterDlg;
 class SMESHGUI_IdValidator;
 class SMESHGUI_SpinBox;
-class SMESHGUI_FilterDlg;
-class SVTK_Selector;
-class LightApp_SelectionMgr;
+class SMESH_Actor;
 class SUIT_SelectionFilter;
+class SVTK_Selector;
 
 //=================================================================================
 // class    : SMESHGUI_ExtrusionAlongPathDlg
@@ -75,13 +76,11 @@ private:
   void                      Init( bool = true );
   void                      enterEvent( QEvent* );                           /* mouse enter the QWidget */
   void                      keyPressEvent( QKeyEvent* );
-  int                       GetConstructorId();
-  void                      SetEditCurrentArgument( QToolButton* );
+  void                      SetEditCurrentArgument( QPushButton* );
 
   bool                      isValid();
   bool                      isValuesValid();
   
-  SMESH::long_array_var     getSelectedElements();
   SMESH::double_array_var   getAngles();
 
   void                      updateLinearAngles();
@@ -89,38 +88,20 @@ private:
   SMESHGUI_IdValidator*     myIdValidator;
   LightApp_SelectionMgr*    mySelectionMgr;        /* User shape selection */
   SVTK_Selector*            mySelector;
-
   QWidget*                  myEditCurrentArgument; /* Current  argument */
 
   bool                      myBusy;
-  SMESH::SMESH_Mesh_var     myMesh;
-  SMESH_Actor*              myMeshActor;
-  SMESH::SMESH_IDSource_var myIDSource;
-  //SMESH::SMESH_Mesh_var     myPathMesh;
   SMESH::SMESH_IDSource_var myPath;
-  //GEOM::GEOM_Object_var     myPathShape;
-  SUIT_SelectionFilter*     myElementsFilter;
   SUIT_SelectionFilter*     myPathMeshFilter;
-  int                       myType;
   QList<double>             myAnglesList;
 
   // widgets
-  QGroupBox*                ConstructorsBox;
-  QButtonGroup*             GroupConstructors;
-  QRadioButton*             Elements1dRB;
-  QRadioButton*             Elements2dRB;
-
+  SMESHGUI_3TypesSelector*  SelectorWdg;
   QGroupBox*                GroupArguments;
-  QLabel*                   ElementsLab;
-  QToolButton*              SelectElementsButton;
-  QLineEdit*                ElementsLineEdit;
-  QCheckBox*                MeshCheck;
   QGroupBox*                PathGrp;
-  QToolButton*              SelectPathMeshButton;
+  QPushButton*              SelectPathMeshButton;
   QLineEdit*                PathMeshLineEdit;
-  //QToolButton*              SelectPathShapeButton;
-  //QLineEdit*                PathShapeLineEdit;
-  QToolButton*              SelectStartPointButton;
+  QPushButton*              SelectStartPointButton;
   QLineEdit*                StartPointLineEdit;
   QCheckBox*                LinearAnglesCheck;
   QGroupBox*                AnglesGrp;
@@ -129,7 +110,7 @@ private:
   QToolButton*              RemoveAngleButton;
   SMESHGUI_SpinBox*         AngleSpin;
   QGroupBox*                BasePointGrp;
-  QToolButton*              SelectBasePointButton;
+  QPushButton*              SelectBasePointButton;
   SMESHGUI_SpinBox*         XSpin;
   SMESHGUI_SpinBox*         YSpin;
   SMESHGUI_SpinBox*         ZSpin;
@@ -143,27 +124,24 @@ private:
 
   QString                   myHelpFileName;
 
-  QPushButton*              myFilterBtn;
-  SMESHGUI_FilterDlg*       myFilterDlg;
-   
 protected slots:
   void                      reject();
   virtual void              onDisplaySimulation( bool );
 
 private slots:
-  void                      ConstructorsClicked( int );
   void                      ClickOnOk();
   bool                      ClickOnApply();
   void                      ClickOnHelp();
+  void                      CheckIsEnable();
   void                      SetEditCurrentArgument();
   void                      SelectionIntoArgument();
   void                      DeactivateActiveDialog();
   void                      ActivateThisDialog();
   void                      onTextChange( const QString& );
-  void                      onSelectMesh();
   void                      OnAngleAdded();
   void                      OnAngleRemoved();
-  void                      setFilters();
+  void                      onOpenView();
+  void                      onCloseView();
 };
 
 #endif // SMESHGUI_EXTRUSIONALONGPATHDLG_H

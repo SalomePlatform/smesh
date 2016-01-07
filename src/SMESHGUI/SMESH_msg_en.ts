@@ -286,7 +286,7 @@
     </message>
     <message>
         <source>MEN_MESH_ORDER</source>
-        <translation>Change submesh priority</translation>
+        <translation>Change sub-mesh priority</translation>
     </message>
     <message>
         <source>MEN_CREATE_GROUP</source>
@@ -793,6 +793,10 @@
         <translation>Polygon</translation>
     </message>
     <message>
+        <source>MEN_QUADRATIC_POLYGON</source>
+        <translation>Quadratic Polygon</translation>
+    </message>
+    <message>
         <source>MEN_POLYHEDRON</source>
         <translation>Polyhedron</translation>
     </message>
@@ -933,6 +937,10 @@
         <translation>Shading</translation>
     </message>
     <message>
+        <source>MEN_SHOW_SCALAR_BAR</source>
+        <translation>Show Scalar Bar</translation>
+    </message>
+    <message>
         <source>MEN_QUADRATIC_REPRESENT</source>
         <translation>2D Quadratic</translation>
     </message>
@@ -1038,7 +1046,7 @@
     </message>
     <message>
         <source>MEN_UNDERLYING_ELEMS</source>
-        <translation>Group of underlying entities</translation>
+        <translation>Group based on nodes of other groups</translation>
     </message>
     <message>
         <source>MEN_UPDATE</source>
@@ -1079,6 +1087,18 @@
     <message>
         <source>STB_SPLIT_TO_TETRA</source>
         <translation>Split Volumes</translation>
+    </message>
+    <message>
+        <source>MEN_SPLIT_BIQUAD</source>
+        <translation>Split bi-quadratic into linear</translation>
+    </message>
+    <message>
+        <source>TOP_SPLIT_BIQUAD</source>
+        <translation>Split bi-quadratic into linear</translation>
+    </message>
+    <message>
+        <source>STB_SPLIT_BIQUAD</source>
+        <translation>Split bi-quadratic into linear</translation>
     </message>
     <message>
         <source>MESHERS_FILE_CANT_OPEN</source>
@@ -1123,8 +1143,13 @@ Please, select a mesh and try again</translation>
 Please enter a name of new group to be created or choose an existing one.</translation>
     </message>
     <message>
-        <source>MESH_STANDALONE_GRP_CHOSEN</source>
+        <source>MESH_GEOM_GRP_CHOSEN</source>
         <translation>Group on geometry is chosen: %1.
+Do you want to convert it to the standalone group?</translation>
+    </message>
+    <message>
+        <source>MESH_FILTER_GRP_CHOSEN</source>
+        <translation>Group on filter is chosen: %1.
 Do you want to convert it to the standalone group?</translation>
     </message>
     <message>
@@ -1222,6 +1247,14 @@ Please enter correct values and try again</translation>
         <translation>Add Polygon</translation>
     </message>
     <message>
+        <source>SMESH_ADD_QUADRATIC_POLYGON</source>
+        <translation>Add Quadratic polygon</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_QUADRATIC_POLYGON_TITLE</source>
+        <translation>Add Quadratic Polygon</translation>
+    </message>
+    <message>
         <source>SMESH_ADD_PENTA</source>
         <translation>Add pentahedron</translation>
     </message>
@@ -1287,7 +1320,7 @@ Please enter correct values and try again</translation>
     </message>
     <message>
         <source>SMESH_ADD_SUBMESH</source>
-        <translation>SubMesh Construction</translation>
+        <translation>Sub-mesh Construction</translation>
     </message>
     <message>
         <source>SMESH_ADD_TETRAS</source>
@@ -1694,6 +1727,10 @@ Do you want to continue ?</translation>
         <translation>Extrusion Along Vector</translation>
     </message>
     <message>
+        <source>SMESH_EXTRUSION_BY_NORMAL</source>
+        <translation>Extrusion By Normal</translation>
+    </message>
+    <message>
         <source>SMESH_FACE</source>
         <translation>Face</translation>
     </message>
@@ -1801,7 +1838,7 @@ add the exported data to its contents?</translation>
     </message>
     <message>
         <source>SMESH_HYP_10</source>
-        <translation>Hypothesis and submesh dimensions mismatch</translation>
+        <translation>Hypothesis and sub-mesh dimensions mismatch</translation>
     </message>
     <message>
         <source>SMESH_HYP_11</source>
@@ -1826,7 +1863,7 @@ Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>SMESH_HYP_4</source>
-        <translation>Submesh is ignored as there is another algorithm of upper dimension generating %1D elements</translation>
+        <translation>Sub-mesh is ignored as there is another algorithm of upper dimension generating %1D elements</translation>
     </message>
     <message>
         <source>SMESH_HYP_5</source>
@@ -1850,19 +1887,23 @@ Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>SMESH_ID_DIAGONAL</source>
-        <translation>Id Edges</translation>
+        <translation>Edges IDs</translation>
+    </message>
+    <message>
+        <source>SMESH_ID_EDGES</source>
+        <translation>Edge IDs</translation>
     </message>
     <message>
         <source>SMESH_ID_ELEMENTS</source>
-        <translation>Id Elements</translation>
+        <translation>Element IDs</translation>
     </message>
     <message>
         <source>SMESH_ID_FACES</source>
-        <translation>Id Faces</translation>
+        <translation>Face IDs</translation>
     </message>
     <message>
         <source>SMESH_ID_NODES</source>
-        <translation>Id Nodes</translation>
+        <translation>Node IDs</translation>
     </message>
     <message>
         <source>SMESH_INCORRECT_INPUT</source>
@@ -1934,23 +1975,23 @@ Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>SMESH_MEN_SubMeshesOnCompound</source>
-        <translation>SubMeshes On Compound</translation>
+        <translation>Sub-meshes On Compound</translation>
     </message>
     <message>
         <source>SMESH_MEN_SubMeshesOnEdge</source>
-        <translation>SubMeshes On Edge</translation>
+        <translation>Sub-meshes On Edge</translation>
     </message>
     <message>
         <source>SMESH_MEN_SubMeshesOnFace</source>
-        <translation>SubMeshes On Face</translation>
+        <translation>Sub-meshes On Face</translation>
     </message>
     <message>
         <source>SMESH_MEN_SubMeshesOnSolid</source>
-        <translation>SubMeshes On Solid</translation>
+        <translation>Sub-meshes On Solid</translation>
     </message>
     <message>
         <source>SMESH_MEN_SubMeshesOnVertex</source>
-        <translation>SubMeshes On Vertex</translation>
+        <translation>Sub-meshes On Vertex</translation>
     </message>
     <message>
         <source>SMESH_AUTOMATIC</source>
@@ -2165,8 +2206,12 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Mesh</translation>
     </message>
     <message>
+        <source>SMESH_OBJECTS</source>
+        <translation>Objects</translation>
+    </message>
+    <message>
         <source>SMESH_OBJECT_MESHorSUBMESH</source>
-        <translation>Mesh or SubMesh</translation>
+        <translation>Mesh or Sub-mesh</translation>
     </message>
     <message>
         <source>SMESH_OPERATION_FAILED</source>
@@ -2310,7 +2355,7 @@ Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>PREF_NUMBERING_ELEM</source>
-        <translation>Edges: Color</translation>
+        <translation>Elements: Color</translation>
     </message>
     <message>
         <source>PREF_NUMBERING_FONT</source>
@@ -2574,6 +2619,10 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Sewing</translation>
     </message>
     <message>
+        <source>SMESH_SHOW_SCALAR_BAR</source>
+        <translation>Show Scalar Bar</translation>
+    </message>
+    <message>
         <source>SMESH_SMOOTHING</source>
         <translation>Smoothing</translation>
     </message>
@@ -2583,11 +2632,11 @@ Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>SMESH_SUBMESH</source>
-        <translation>SubMesh</translation>
+        <translation>Sub-mesh</translation>
     </message>
     <message>
         <source>SMESH_SUBMESH_SELECTED</source>
-        <translation>%1 SubMeshes</translation>
+        <translation>%1 Sub-meshes</translation>
     </message>
     <message>
         <source>SMESH_SYMMETRY</source>
@@ -2910,7 +2959,7 @@ Use Display Entity menu command to show them.
     </message>
     <message>
         <source>STB_MESH_ORDER</source>
-        <translation>Change submesh priority</translation>
+        <translation>Change sub-mesh priority</translation>
     </message>
     <message>
         <source>STB_CREATE_GROUP</source>
@@ -3209,6 +3258,10 @@ Use Display Entity menu command to show them.
         <translation>Polygon</translation>
     </message>
     <message>
+        <source>STB_QUADRATIC_POLYGON</source>
+        <translation>Quadratic Polygon</translation>
+    </message>
+    <message>
         <source>STB_POLYHEDRON</source>
         <translation>Polyhedron</translation>
     </message>
@@ -3283,6 +3336,10 @@ Use Display Entity menu command to show them.
     <message>
         <source>STB_SHOW_DISTRIBUTION</source>
         <translation>Show Distribution</translation>
+    </message>
+    <message>
+        <source>STB_SHOW_SCALAR_BAR</source>
+        <translation>Show Scalar bar</translation>
     </message>
     <message>
         <source>STB_REVOLUTION</source>
@@ -3394,7 +3451,7 @@ Use Display Entity menu command to show them.
     </message>
     <message>
         <source>STB_UNDERLYING_ELEMS</source>
-        <translation>Create groups of entities from existing groups of superior dimensions</translation>
+        <translation>Create groups of entities basing on nodes of other groups</translation>
     </message>
     <message>
         <source>STB_UPDATE</source>
@@ -3570,7 +3627,7 @@ Use Display Entity menu command to show them.
     </message>
     <message>
         <source>TOP_MESH_ORDER</source>
-        <translation>Change submesh priority</translation>
+        <translation>Change sub-mesh priority</translation>
     </message>
     <message>
         <source>TOP_CREATE_GROUP</source>
@@ -3861,6 +3918,10 @@ Use Display Entity menu command to show them.
         <translation>Polygon</translation>
     </message>
     <message>
+        <source>TOP_QUADRATIC_POLYGON</source>
+        <translation>Quadratic Polygon</translation>
+    </message>
+    <message>
         <source>TOP_POLYHEDRON</source>
         <translation>Polyhedron</translation>
     </message>
@@ -4046,7 +4107,7 @@ Use Display Entity menu command to show them.
     </message>
     <message>
         <source>TOP_UNDERLYING_ELEMS</source>
-        <translation>Create groups of entities from existing groups of superior dimensions</translation>
+        <translation>Create groups of entities basing on nodes of other groups</translation>
     </message>
     <message>
         <source>TOP_UPDATE</source>
@@ -4346,16 +4407,24 @@ Please, create VTK viewer and try again</translation>
         <translation>Display entity</translation>
     </message>
     <message>
-        <source>QUADRATIC_REPRESENT_MODE</source>
+        <source>QUADRATIC_REPRESENT_MODE_GROUP</source>
         <translation>Representation of the 2D quadratic elements</translation>
+    </message>
+    <message>
+        <source>QUADRATIC_REPRESENT_MODE</source>
+        <translation>Default mode of the 2D quadratic elements</translation>
     </message>
     <message>
         <source>MAX_ARC_ANGLE</source>
         <translation>Maximum angle</translation>
     </message>
     <message>
-        <source>PREF_DISPLAY_MODE</source>
+        <source>PREF_DISPLAY_MODE_GROUP</source>
         <translation>Display mode</translation>
+    </message>
+    <message>
+        <source>PREF_DISPLAY_MODE</source>
+        <translation>Default display mode</translation>
     </message>
     <message>
         <source>PREF_ELEMENTS</source>
@@ -4567,7 +4636,7 @@ Please, create VTK viewer and try again</translation>
     </message>
     <message>
         <source>PREF_COLOR_0D</source>
-        <translation>0D elements</translation>
+        <translation>0D element color</translation>
     </message>
     <message>
         <source>PREF_SIZE_0D</source>
@@ -4575,7 +4644,11 @@ Please, create VTK viewer and try again</translation>
     </message>
     <message>
         <source>PREF_BALL_COLOR</source>
-        <translation>Balls</translation>
+        <translation>Ball color</translation>
+    </message>
+    <message>
+        <source>PREF_BALL_DIAMETER</source>
+        <translation>Default diameter of ball elements</translation>
     </message>
     <message>
         <source>PREF_BALL_SIZE</source>
@@ -4710,7 +4783,7 @@ Please, create VTK viewer and try again</translation>
     </message>
     <message>
         <source>CREATE_COMMON_GROUPS</source>
-        <translation>Create common groups for initial meshes</translation>
+        <translation>Create groups from input objects</translation>
     </message>
     <message>
         <source>MERGE_NODES_AND_ELEMENTS</source>
@@ -4718,7 +4791,7 @@ Please, create VTK viewer and try again</translation>
     </message>
     <message>
         <source>MESHES</source>
-        <translation>Meshes</translation>
+        <translation>Meshes, sub-meshes, groups</translation>
     </message>
     <message>
         <source>PROCESSING_IDENTICAL_GROUPS</source>
@@ -4829,9 +4902,7 @@ Please, create VTK viewer and try again</translation>
     <name>SMESHGUI_PrecomputeOp</name>
     <message>
         <source>CLEAR_SUBMESH_QUESTION</source>
-        <translation>Temporary submeshes on the selected geometry
-were created during preview operation.
-Do you want to remove all these submeshes?</translation>
+        <translation>Do you want to remove mesh entities generated during preview operation?</translation>
     </message>
     <message>
         <source>SMESH_WRN_NOTHING_PREVIEW</source>
@@ -4839,8 +4910,35 @@ Do you want to remove all these submeshes?</translation>
     </message>
     <message>
         <source>SMESH_REJECT_MESH_ORDER</source>
-        <translation>The submesh priority changed during preview operation.
-Do you want to restore original submesh priority?</translation>
+        <translation>The sub-mesh priority changed during preview operation.
+Do you want to restore original sub-mesh priority?</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_SplitBiQuadDlg</name>
+    <message>
+        <source>CAPTION</source>
+        <translation>Split bi-quadratic into linear</translation>
+    </message>
+    <message>
+        <source>MESH</source>
+        <translation>Mesh, Group or Sub-mesh</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_SplitBiQuadOp</name>
+    <message>
+        <source>MESH_IS_NOT_SELECTED</source>
+        <translation>No object to split is selected.
+Please specify it and try again</translation>
+    </message>
+    <message>
+        <source>REF_IS_NULL</source>
+        <translation>No valid mesh object selected</translation>
+    </message>
+    <message>
+        <source>DIFFERENT_MESHES</source>
+        <translation>Selected objects belong to different meshes</translation>
     </message>
 </context>
 <context>
@@ -4936,7 +5034,7 @@ Please verify validity of entered information</translation>
     </message>
     <message>
         <source>MESH_OR_SUBMESH</source>
-        <translation>Mesh or SubMesh</translation>
+        <translation>Mesh or Sub-mesh</translation>
     </message>
     <message>
         <source>PATTERN</source>
@@ -5024,8 +5122,12 @@ Please select a group and try again</translation>
         <translation>Detect</translation>
     </message>
     <message>
-        <source>EDIT_SELECTED_GROUP</source>
-        <translation>Edit selected group</translation>
+        <source>EDIT_SELECTED_NODE_GROUP</source>
+        <translation>Edit selected group of coincident nodes</translation>
+    </message>
+    <message>
+        <source>EDIT_SELECTED_ELEM_GROUP</source>
+        <translation>Edit selected group of coincident elements</translation>
     </message>
     <message>
         <source>SELECT_ALL</source>
@@ -5041,7 +5143,23 @@ Please select a group and try again</translation>
     </message>
     <message>
         <source>EXCLUDE_GROUPS</source>
-        <translation>Exclude Groups</translation>
+        <translation>Exclude groups from detection</translation>
+    </message>
+    <message>
+        <source>SEPARATE_CORNERS_AND_MEDIUM</source>
+        <translation>No merge of corner and medium nodes of quadratic cells</translation>
+    </message>
+    <message>
+        <source>KEEP_NODES</source>
+        <translation>Nodes to keep during the merge</translation>
+    </message>
+    <message>
+        <source>GROUP_SUBMESH</source>
+        <translation>Groups and sub-meshes</translation>
+    </message>
+    <message>
+        <source>SELECT</source>
+        <translation>Select: </translation>
     </message>
 </context>
 <context>
@@ -5100,7 +5218,7 @@ Please select a group and try again</translation>
     </message>
     <message>
         <source>SMESH_PATH_MESH</source>
-        <translation>Mesh or submesh</translation>
+        <translation>Mesh or sub-mesh</translation>
     </message>
     <message>
         <source>SMESH_PATH_SHAPE</source>
@@ -5141,6 +5259,14 @@ Please select a group and try again</translation>
         <source>EXTRUSION_ALONG_LINE</source>
         <translation>Extrusion along a line</translation>
     </message>
+    <message>
+        <source>BY_AVERAGE_NORMAL</source>
+        <translation>Along average normal</translation>
+    </message>
+    <message>
+        <source>USE_INPUT_ELEMS_ONLY</source>
+        <translation>Use only input elements</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_FilterDlg</name>
@@ -5151,7 +5277,7 @@ Please select valid object and try again</translation>
     </message>
     <message>
         <source>CURRENT_DIALOG</source>
-        <translation>Current Group</translation>
+        <translation>Current Dialog</translation>
     </message>
     <message>
         <source>EDGES_TLT</source>
@@ -5187,7 +5313,7 @@ Please select valid object and try again</translation>
     </message>
     <message>
         <source>SHAPE_IS_NOT_A_CYLINDER</source>
-        <translation>&quot;%1&quot; is not a cylinderical face
+        <translation>&quot;%1&quot; is not a cylindrical face
 Please select a cylindrical face and try again</translation>
     </message>
     <message>
@@ -5406,6 +5532,10 @@ Please check input data and try again</translation>
         <translation>Over-constrained faces</translation>
     </message>
     <message>
+        <source>BELONG_TO_MESH_GROUP</source>
+        <translation>Belong to Mesh Group</translation>
+    </message>
+    <message>
         <source>BELONG_TO_CYLINDER</source>
         <translation>Belong to Cylinder</translation>
     </message>
@@ -5610,7 +5740,7 @@ Please enter correct value and try again</translation>
     </message>
     <message>
         <source>ELEMENTS</source>
-        <translation>Elements</translation>
+        <translation>All</translation>
     </message>
     <message>
         <source>ENTITY_TYPE</source>
@@ -5798,8 +5928,8 @@ Please specify non-empty name and try again</translation>
 Please specify them and try again</translation>
     </message>
     <message>
-        <source>NAME</source>
-        <translation>Name</translation>
+        <source>RESULT</source>
+        <translation>Result</translation>
     </message>
     <message>
         <source>OBJECT_1</source>
@@ -5811,7 +5941,7 @@ Please specify them and try again</translation>
     </message>
     <message>
         <source>RESULT_NAME</source>
-        <translation>Result name</translation>
+        <translation>Group name</translation>
     </message>
     <message>
         <source>TOOL_OBJECT</source>
@@ -5833,27 +5963,35 @@ Please specify them and try again</translation>
     <name>SMESHGUI_DimGroupDlg</name>
     <message>
         <source>CREATE_GROUP_OF_UNDERLYING_ELEMS</source>
-        <translation>Create group of underlying entities</translation>
+        <translation>Group based on nodes of other groups</translation>
     </message>
     <message>
         <source>ELEMENTS_TYPE</source>
         <translation>Elements type</translation>
     </message>
     <message>
-        <source>NODE</source>
-        <translation>Node</translation>
+        <source>UNDERLYING_ENTITIES_ONLY</source>
+        <translation>Include underlying entities only</translation>
     </message>
     <message>
-        <source>EDGE</source>
-        <translation>Edge</translation>
+        <source>NUMBER_OF_COMMON_NODES</source>
+        <translation>Number of common nodes</translation>
     </message>
     <message>
-        <source>FACE</source>
-        <translation>Face</translation>
+        <source>ALL</source>
+        <translation>All</translation>
     </message>
     <message>
-        <source>VOLUME</source>
-        <translation>Volume</translation>
+        <source>MAIN</source>
+        <translation>Main</translation>
+    </message>
+    <message>
+        <source>AT_LEAST_ONE</source>
+        <translation>At least one</translation>
+    </message>
+    <message>
+        <source>MAJORITY</source>
+        <translation>Majority</translation>
     </message>
 </context>
 <context>
@@ -6014,12 +6152,12 @@ Please specify them and try again</translation>
     </message>
     <message>
         <source>EDIT_SUBMESH_QUESTION</source>
-        <translation>A submesh on the selected geometry already exists.
- Do you want to edit this submesh?</translation>
+        <translation>A sub-mesh on the selected geometry already exists.
+ Do you want to edit this sub-mesh?</translation>
     </message>
     <message>
         <source>SUBMESH_NOT_ALLOWED</source>
-        <translation>No sense in creating a submesh ignored by global algorithm &quot;%1&quot;</translation>
+        <translation>No sense in creating a sub-mesh ignored by global algorithm &quot;%1&quot;</translation>
     </message>
     <message>
         <source>GEOMETRY_OBJECT_IS_NOT_DEFINED_MESH</source>
@@ -6088,7 +6226,7 @@ Please enter valid name and try again</translation>
     </message>
     <message>
         <source>NAME_OF_SUBMESH_IS_EMPTY</source>
-        <translation>Name of submesh is empty
+        <translation>Name of sub-mesh is empty
 Please enter valid name and try again</translation>
     </message>
     <message>
@@ -6395,8 +6533,8 @@ It is impossible to read point coordinates from file</translation>
         <translation>Preview</translation>
     </message>
     <message>
-        <source>REVOLUTION_1D</source>
-        <translation>Revolution of 1D elements</translation>
+        <source>REVOLUTION</source>
+        <translation>Revolution</translation>
     </message>
     <message>
         <source>REVOLUTION_2D</source>
@@ -6529,6 +6667,42 @@ It is impossible to read point coordinates from file</translation>
         <source>SIDE_2</source>
         <translation>Side 2</translation>
     </message>
+    <message>
+        <source>AUTO_SEWING</source>
+        <translation>Auto Sewing</translation>
+    </message>
+    <message>
+        <source>COINCIDENT_FREE_BORDERS</source>
+        <translation>Coincident Free Borders</translation>
+    </message>
+    <message>
+        <source>DETECT</source>
+        <translation>Detect</translation>
+    </message>
+    <message>
+        <source>SELECT_ALL</source>
+        <translation>Select all</translation>
+    </message>
+    <message>
+        <source>EDIT_SELECTED_GROUP</source>
+        <translation>Edit Selected Group</translation>
+    </message>
+    <message>
+        <source>STEP</source>
+        <translation>Step</translation>
+    </message>
+    <message>
+        <source>NO_BORDERS_TO_SEW</source>
+        <translation>No free borders to sew found</translation>
+    </message>
+    <message>
+        <source>NOT_ALL_BORDERS_SEWED</source>
+        <translation>%1 of %2 groups of borders sewed</translation>
+    </message>
+    <message>
+        <source>ALL_BORDERS_SEWED</source>
+        <translation>%1 group(s) of borders sewed</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_ShapeByMeshDlg</name>
@@ -6630,14 +6804,14 @@ It is impossible to read point coordinates from file</translation>
     <name>SMESHGUI_MeshOrderDlg</name>
     <message>
         <source>SMESH_MESHORDER_TITLE</source>
-        <translation>Order of submesh in meshing process</translation>
+        <translation>Order of sub-mesh in meshing process</translation>
     </message>
 </context>
 <context>
     <name>SMESHGUI_MeshOrderOp</name>
     <message>
         <source>SMESH_NO_CONCURENT_MESH</source>
-        <translation>No concurent submeshes detected</translation>
+        <translation>No concurent sub-meshes detected</translation>
     </message>
 </context>
 <context>
@@ -7089,6 +7263,10 @@ as they are of improper type:
     <message>
         <source>GRAVITY_CENTER</source>
         <translation>Gravity Center</translation>
+    </message>
+    <message>
+        <source>NORMAL_VECTOR</source>
+        <translation>Normal</translation>
     </message>
     <message>
         <source>NODE</source>

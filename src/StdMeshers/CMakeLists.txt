@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2012-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -62,6 +62,7 @@ SET(_link_LIBRARIES
   ${CAS_TKAdvTools}
   ${CAS_TKTopAlgo}
   ${CAS_TKG3d}
+  ${CAS_TKOffset}
   ${GEOM_GEOMUtils}
   SMESHimpl
   SMESHDS
@@ -130,6 +131,8 @@ SET(StdMeshers_HEADERS
   StdMeshers_Projection_1D2D.hxx
   StdMeshers_CartesianParameters3D.hxx
   StdMeshers_Cartesian_3D.hxx
+  StdMeshers_QuadFromMedialAxis_1D2D.hxx
+  StdMeshers_PolygonPerFace_2D.hxx
 )
 
 IF(SALOME_SMESH_ENABLE_MEFISTO)
@@ -193,6 +196,8 @@ SET(StdMeshers_SOURCES
   StdMeshers_CartesianParameters3D.cxx
   StdMeshers_Cartesian_3D.cxx
   StdMeshers_Adaptive1D.cxx
+  StdMeshers_QuadFromMedialAxis_1D2D.cxx
+  StdMeshers_PolygonPerFace_2D.cxx
 )
 
 IF(SALOME_SMESH_ENABLE_MEFISTO)

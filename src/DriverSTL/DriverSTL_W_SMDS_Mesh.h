@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -57,7 +57,8 @@ class MESHDRIVERSTL_EXPORT DriverSTL_W_SMDS_Mesh: public Driver_SMDS_Mesh
  private:
   // PRIVATE FIELDS
   bool myIsAscii;
-  std::vector<const SMDS_MeshElement*> myVolumeTrias; // tmp triangles
+  int                                  myNbVolumeTrias;
+  std::vector<const SMDS_MeshElement*> myVolumeFacets; // tmp faces
 };
 
 #endif

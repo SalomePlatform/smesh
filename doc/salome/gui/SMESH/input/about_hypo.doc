@@ -3,12 +3,27 @@
 \page about_hypo_page About Hypotheses
 
 \b Hypotheses represent boundary conditions which will be taken into
-account at calculations of meshes or sub-meshes. 
-These hypotheses allow you to manage the level of detail of
-the resulting meshes or sub-meshes: when applying different hypotheses
+account by meshing algorithms.
+The hypotheses allow you to manage the level of detail of
+the resulting mesh: when applying different hypotheses
 with different parameters you can preset the quantity or size of
 elements which will compose your mesh. So, it will be possible to
-generate a coarse or a more refined mesh or sub-mesh.
+generate a coarse or a more refined mesh.
+
+The choice of a hypothesis depends on the selected algorithm.
+
+Hypotheses are created during creation and edition of 
+\ref constructing_meshes_page "meshes" and
+\ref constructing_submeshes_page "sub-meshes". 
+Once created a hypotheses can be reused during creation and edition of
+other meshes and sub-meshes. All created hypotheses and algorithms are
+present in the Object Browser in \a Hypotheses and \a Algorithms
+folders correspondingly. It is possible to open a dialog to modify the
+parameters of a hypothesis from its context menu. This menu also
+provides \b Unassign command that will unassign the hypothesis from
+all meshes and sub-meshes using it. Modification of any parameter of a
+hypothesis and its unassignment leads to automatic removal of elements
+generated using it.
 
 In \b MESH there are the following Basic Hypotheses:
 <ul>
@@ -20,10 +35,11 @@ In \b MESH there are the following Basic Hypotheses:
 <li>\ref max_length_anchor "Max Size"</li>
 <li>\ref adaptive_1d_anchor "Adaptive"</li>
 <li>\ref arithmetic_1d_anchor "Arithmetic 1D"</li>
-<li>\ref geometric_1d_anchor "Geometric 1D"</li>
+<li>\ref geometric_1d_anchor "Geometric Progression"</li>
 <li>\ref start_and_end_length_anchor "Start and end length"</li>
 <li>\ref deflection_1d_anchor "Deflection 1D"</li>
 <li>\ref automatic_length_anchor "Automatic Length"</li>
+<li>\ref fixed_points_1d_anchor "Fixed points 1D"</li>
 </ul>
 <li>\subpage a2d_meshing_hypo_page "2D Hypotheses" (for meshing of <b>faces</b>):</li>
 <ul>
@@ -37,22 +53,14 @@ In \b MESH there are the following Basic Hypotheses:
 </ul>
 </ul>
 
-There also exist  
-\subpage additional_hypo_page "Additional Hypotheses" used together
-with other hypotheses:
+There also exist
+\subpage additional_hypo_page "Additional Hypotheses":
 <ul>
 <li>\ref propagation_anchor "Propagation of 1D Hypothesis on opposite edges"</li>
 <li>\ref propagofdistribution_anchor "Propagation of Node Distribution on Opposite Edges"</li>
 <li>\ref viscous_layers_anchor "Viscous layers"</li>
 <li>\ref quadratic_mesh_anchor "Quadratic mesh"</li>
-<li>\ref non_conform_allowed_anchor "Non conform mesh allowed"</li>
 <li>\ref quadrangle_preference_anchor "Quadrangle preference"</li>
-</ul>
-
-The choice of a hypothesis depends on:
-<ul>
-<li>the algorithm, which will be selected for meshing of this geometrical object (shape)</li>
-<li>the geometrical object (shape) which will be meshed</li>
 </ul>
 
 */

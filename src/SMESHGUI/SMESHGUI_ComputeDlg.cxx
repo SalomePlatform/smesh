@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -23,21 +23,19 @@
 //
 #include "SMESHGUI_ComputeDlg.h"
 
+#include "SMDS_Mesh.hxx"
+#include "SMDS_SetIterator.hxx"
 #include "SMESHGUI.h"
 #include "SMESHGUI_GEOMGenUtils.h"
-#include "SMESHGUI_MeshUtils.h"
-#include "SMESHGUI_VTKUtils.h"
-#include "SMESHGUI_MeshInfosBox.h"
 #include "SMESHGUI_HypothesesUtils.h"
 #include "SMESHGUI_MeshEditPreview.h"
-#include "SMESHGUI_MeshOrderOp.h"
+#include "SMESHGUI_MeshInfosBox.h"
 #include "SMESHGUI_MeshOrderDlg.h"
-
+#include "SMESHGUI_MeshOrderOp.h"
+#include "SMESHGUI_MeshUtils.h"
+#include "SMESHGUI_VTKUtils.h"
 #include "SMESH_Actor.h"
 #include "SMESH_ActorUtils.h"
-
-#include <SMDS_SetIterator.hxx>
-#include <SMDS_Mesh.hxx>
 
 // SALOME GEOM includes
 #include <GEOMBase.h>
@@ -47,35 +45,36 @@
 // SALOME GUI includes
 #include <LightApp_SelectionMgr.h>
 #include <LightApp_UpdateFlags.h>
-#include <SALOME_ListIO.hxx>
-#include <SVTK_ViewWindow.h>
-#include <SVTK_ViewModel.h>
-#include <SalomeApp_Application.h>
-#include <SUIT_ResourceMgr.h>
-#include <SUIT_OverrideCursor.h>
-#include <SUIT_MessageBox.h>
-#include <SUIT_Desktop.h>
 #include <QtxComboBox.h>
+#include <SALOME_ListIO.hxx>
+#include <SUIT_Desktop.h>
+#include <SUIT_MessageBox.h>
+#include <SUIT_OverrideCursor.h>
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Session.h>
+#include <SVTK_ViewModel.h>
+#include <SVTK_ViewWindow.h>
+#include <SalomeApp_Application.h>
 
 // SALOME KERNEL includes
 #include <SALOMEDS_SObject.hxx>
 #include <SALOMEDSClient_SObject.hxx>
 #include <SALOMEDS_wrap.hxx>
+#include "utilities.h"
 
 #include CORBA_SERVER_HEADER(SMESH_Group)
 
 // OCCT includes
-#include <BRep_Tool.hxx>
-#include <TopExp.hxx>
-#include <TopExp_Explorer.hxx>
-#include <TopTools_IndexedMapOfShape.hxx>
-#include <TopoDS.hxx>
-
-#include <TopLoc_Location.hxx>
-#include <Poly_Triangulation.hxx>
-#include <Bnd_Box.hxx>
 #include <BRepBndLib.hxx>
 #include <BRepMesh_IncrementalMesh.hxx>
+#include <BRep_Tool.hxx>
+#include <Bnd_Box.hxx>
+#include <Poly_Triangulation.hxx>
+#include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
+#include <TopLoc_Location.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
+#include <TopoDS.hxx>
 
 #include <Standard_ErrorHandler.hxx>
 
@@ -488,7 +487,7 @@ namespace SMESH
 //=======================================================================
 
 SMESHGUI_ComputeDlg::SMESHGUI_ComputeDlg( QWidget* parent, bool ForEval )
- : SMESHGUI_Dialog( parent, false, true, Close/* | Help*/ )
+ : SMESHGUI_Dialog( parent, false, true, Close | Help )
 {
   QVBoxLayout* aDlgLay = new QVBoxLayout (mainFrame());
   aDlgLay->setMargin( 0 );
@@ -1222,6 +1221,7 @@ void SMESHGUI_BaseComputeOp::onPublishShape()
   GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
   SALOMEDS::Study_var study = SMESHGUI::GetSMESHGen()->GetCurrentStudy();
 
+  QStringList entryList;
   QList<int> rows;
   SMESH::getSelectedRows( table(), rows );
   int row;
@@ -1259,10 +1259,13 @@ void SMESHGUI_BaseComputeOp::onPublishShape()
         QString       shapeText = QString("%1 (%2)").arg( name.in() ).arg( entry.in() );
         table()->item( row, COL_SHAPE     )->setText( shapeText );
         table()->item( row, COL_PUBLISHED )->setText( entry.in() );
+        entryList.push_back( entry.in() );
       }
     }
   }
   getSMESHGUI()->getApp()->updateObjectBrowser();
+  getSMESHGUI()->getApp()->browseObjects( entryList, /*isApplyAndClose=*/true );
+
   currentCellChanged(); // to update buttons
 }
 
@@ -1479,6 +1482,7 @@ QTableWidget* SMESHGUI_BaseComputeOp::table()
 SMESHGUI_ComputeOp::SMESHGUI_ComputeOp()
  : SMESHGUI_BaseComputeOp()
 {
+  myHelpFileName = "constructing_meshes_page.html#compute_anchor";
 }
 
 
@@ -1542,13 +1546,12 @@ LightApp_Dialog* SMESHGUI_ComputeOp::dlg() const
 //================================================================================
 
 SMESHGUI_PrecomputeOp::SMESHGUI_PrecomputeOp()
- : SMESHGUI_BaseComputeOp(),
- myDlg( 0 ),
- myOrderMgr( 0 ),
- myActiveDlg( 0 ),
- myPreviewDisplayer( 0 )
+  : SMESHGUI_BaseComputeOp(),
+    myDlg( 0 ),
+    myOrderMgr( 0 ),
+    myActiveDlg( 0 ),
+    myPreviewDisplayer( 0 )
 {
-  myHelpFileName = "constructing_meshes_page.html#preview_mesh_anchor";
 }
 
 //================================================================================
@@ -1589,6 +1592,8 @@ LightApp_Dialog* SMESHGUI_PrecomputeOp::dlg() const
 
 void SMESHGUI_PrecomputeOp::startOperation()
 {
+  myHelpFileName = "constructing_meshes_page.html#preview_anchor"; // other anchor onCompute()
+
   if ( !myDlg )
   {
     myDlg = new SMESHGUI_PrecomputeDlg( desktop() );
@@ -1723,13 +1728,14 @@ void SMESHGUI_PrecomputeOp::initDialog()
 void SMESHGUI_PrecomputeOp::getAssignedAlgos(_PTR(SObject) theMesh,
                                              QMap<int,int>& theModeMap)
 {
-  _PTR(SObject)          aHypRoot;
+  if ( !theMesh ) return;
+  _PTR(SObject)          aHypFolder;
   _PTR(GenericAttribute) anAttr;
   int aPart = SMESH::Tag_RefOnAppliedAlgorithms;
-  if ( theMesh && theMesh->FindSubObject( aPart, aHypRoot ) )
+  if ( theMesh->FindSubObject( aPart, aHypFolder ) )
   {
     _PTR(ChildIterator) anIter =
-      SMESH::GetActiveStudyDocument()->NewChildIterator( aHypRoot );
+      SMESH::GetActiveStudyDocument()->NewChildIterator( aHypFolder );
     for ( ; anIter->More(); anIter->Next() )
     {
       _PTR(SObject) anObj = anIter->Value();
@@ -1738,16 +1744,16 @@ void SMESHGUI_PrecomputeOp::getAssignedAlgos(_PTR(SObject) theMesh,
         anObj = aRefObj;
       else
         continue;
-      
+
       if ( anObj->FindAttribute( anAttr, "AttributeName" ) )
       {
         CORBA::Object_var aVar = _CAST(SObject,anObj)->GetObject();
         if ( CORBA::is_nil( aVar ) )
           continue;
-        
+
+        SMESH::SMESH_Algo_var algo;
         for( int dim = SMESH::DIM_1D; dim <= SMESH::DIM_3D; dim++ )
         {
-          SMESH::SMESH_Algo_var algo;
           switch(dim) {
           case SMESH::DIM_1D: algo = SMESH::SMESH_1D_Algo::_narrow( aVar ); break;
           case SMESH::DIM_2D: algo = SMESH::SMESH_2D_Algo::_narrow( aVar ); break;
@@ -1755,7 +1761,56 @@ void SMESHGUI_PrecomputeOp::getAssignedAlgos(_PTR(SObject) theMesh,
           default: break;
           }
           if ( !algo->_is_nil() )
+          {
             theModeMap[ dim ] = 0;
+            if ( theModeMap.size() == 3 )
+              return;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  // check sub-meshes
+  for ( aPart = SMESH::Tag_SubMeshOnEdge; aPart <= SMESH::Tag_LastSubMesh; ++aPart )
+  {
+    if ( !theMesh->FindSubObject( aPart, aHypFolder ))
+      continue;
+
+    _PTR(ChildIterator) anIter =
+      SMESH::GetActiveStudyDocument()->NewChildIterator( aHypFolder );
+    for ( anIter->InitEx(true); anIter->More(); anIter->Next() )
+    {
+      _PTR(SObject) anObj = anIter->Value();
+      _PTR(SObject) aRefObj;
+      if ( anObj->ReferencedObject( aRefObj ) )
+        anObj = aRefObj;
+      else
+        continue;
+
+      if ( anObj->FindAttribute( anAttr, "AttributeName" ))
+      {
+        CORBA::Object_var aVar = _CAST(SObject,anObj)->GetObject();
+        if ( CORBA::is_nil( aVar ) )
+          continue;
+
+        SMESH::SMESH_Algo_var algo;
+        for( int dim = SMESH::DIM_1D; dim <= SMESH::DIM_3D; dim++ )
+        {
+          switch(dim) {
+          case SMESH::DIM_1D: algo = SMESH::SMESH_1D_Algo::_narrow( aVar ); break;
+          case SMESH::DIM_2D: algo = SMESH::SMESH_2D_Algo::_narrow( aVar ); break;
+          case SMESH::DIM_3D: algo = SMESH::SMESH_3D_Algo::_narrow( aVar ); break;
+          default: break;
+          }
+          if ( !algo->_is_nil() )
+          {
+            theModeMap[ dim ] = 0;
+            if ( theModeMap.size() == 3 )
+              return;
+            break;
+          }
         }
       }
     }
@@ -1775,6 +1830,7 @@ void SMESHGUI_PrecomputeOp::onCompute()
     myOrderMgr->SetMeshOrder();
   myMapShapeId.clear();
   myActiveDlg = computeDlg();
+  myHelpFileName = "constructing_meshes_page.html#compute_anchor";
   computeMesh();
 }
 
@@ -1805,7 +1861,7 @@ void SMESHGUI_PrecomputeOp::onCancel()
       // remove all submeshes for collected shapes
       QMap<int,int>::const_iterator it = myMapShapeId.constBegin();
       for ( ; it != myMapShapeId.constEnd(); ++it )
-        myMesh->ClearSubMesh( *it );
+        myMesh->ClearSubMesh( it.key() );
       isRestoreOrder = true;
     }
   }
@@ -1847,19 +1903,19 @@ void SMESHGUI_PrecomputeOp::onPreview()
   if (myOrderMgr && myOrderMgr->IsOrderChanged())
     myOrderMgr->SetMeshOrder();
 
-  // Compute preview of mesh, 
+  // Compute preview of mesh,
   // i.e. compute mesh till indicated dimension
   int dim = myDlg->getPreviewMode();
-  
+
   SMESH::MemoryReserve aMemoryReserve;
-  
+
   SMESH::compute_error_array_var aCompErrors;
   QString                        aHypErrors;
 
   bool computeFailed = true, memoryLack = false;
 
   SMESHGUI_ComputeDlg* aCompDlg = computeDlg();
-    aCompDlg->myMeshName->setText( aMeshSObj->GetName().c_str() );
+  aCompDlg->myMeshName->setText( aMeshSObj->GetName().c_str() );
 
   SMESHGUI* gui = getSMESHGUI();
   SMESH::SMESH_Gen_var gen = gui->GetSMESHGen();
@@ -1959,6 +2015,7 @@ SMESHGUI_PrecomputeDlg::SMESHGUI_PrecomputeDlg( QWidget* parent )
 
   setButtonText( OK, tr( "COMPUTE" ) );
   QFrame* main = mainFrame();
+  main->setMinimumWidth( 300 );
 
   QVBoxLayout* layout = new QVBoxLayout( main );
 
@@ -2042,6 +2099,7 @@ SMESHGUI_MeshOrderBox* SMESHGUI_PrecomputeDlg::getMeshOrderBox() const
 SMESHGUI_EvaluateOp::SMESHGUI_EvaluateOp()
  : SMESHGUI_BaseComputeOp()
 {
+  myHelpFileName = "constructing_meshes_page.html#evaluate_anchor";
 }
 
 

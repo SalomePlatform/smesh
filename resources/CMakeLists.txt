@@ -1,4 +1,4 @@
-# Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 # CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -38,6 +38,8 @@ SET(SMESH_RESOURCES_FILES
   mesh_choose_all.png
   mesh_clear.png
   mesh_compute.png
+  mesh_evaluate.png
+  mesh_order.png
   mesh_diagonal.png
   mesh_edit.png
   mesh_hexa.png
@@ -96,6 +98,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_tetra.png
   mesh_tree_algo_hexa.png
   mesh_tree_algo_mefisto.png
+  mesh_tree_algo_polygon.png
   mesh_tree_algo.png
   mesh_tree_algo_0D.png
   mesh_tree_algo_quad.png
@@ -168,6 +171,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_quad_edge.png
   mesh_quad_triangle.png
   mesh_quad_quadrangle.png
+  mesh_quad_polygon.png
   mesh_quad_tetrahedron.png
   mesh_quad_pyramid.png
   mesh_quad_pentahedron.png
@@ -199,6 +203,7 @@ SET(SMESH_RESOURCES_FILES
   scale.png
   scale_along_axes.png
   split_into_tetra.png
+  split_biquad.png
   mesh_duplicate_nodes.png
   mesh_duplicate_nodes_with_elem.png
   mesh_duplicate_elem_only.png
@@ -215,6 +220,9 @@ SET(SMESH_RESOURCES_FILES
   mesh_measure_length.png
   mesh_measure_area.png
   mesh_measure_volume.png
+  mesh_extmeth_node_offset.png
+  mesh_extmeth_surf_offset_smooth.png
+  mesh_extmeth_face_offset.png
 )
 
 INSTALL(FILES ${SMESH_RESOURCES_FILES} DESTINATION ${SALOME_SMESH_INSTALL_RES_DATA})

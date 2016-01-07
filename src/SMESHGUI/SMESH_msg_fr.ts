@@ -398,7 +398,7 @@
     </message>
     <message>
         <source>MEN_CHOOSE</source>
-        <translation type="unfinished">Choose...</translation>
+        <translation>Choisir...</translation>
     </message>
     <message>
         <source>MEN_EDIT</source>
@@ -793,6 +793,10 @@
         <translation>Polygone</translation>
     </message>
     <message>
+        <source>MEN_QUADRATIC_POLYGON</source>
+        <translation>Polygone quadratique</translation>
+    </message>
+    <message>
         <source>MEN_POLYHEDRON</source>
         <translation>Polyèdre</translation>
     </message>
@@ -931,6 +935,10 @@
     <message>
         <source>MEN_SHADE</source>
         <translation>Ombrage</translation>
+    </message>
+    <message>
+        <source>MEN_SHOW_SCALAR_BAR</source>
+        <translation>Afficher la barre d'échelle</translation>
     </message>
     <message>
         <source>MEN_QUADRATIC_REPRESENT</source>
@@ -1081,6 +1089,18 @@
         <translation>Eclater en tétraèdres</translation>
     </message>
     <message>
+        <source>MEN_SPLIT_BIQUAD</source>
+        <translation>Eclater les éléments bi-quadratiques en éléments linéaires</translation>
+    </message>
+    <message>
+        <source>TOP_SPLIT_BIQUAD</source>
+        <translation>Eclater les éléments bi-quadratiques en éléments linéaires</translation>
+    </message>
+    <message>
+        <source>STB_SPLIT_BIQUAD</source>
+        <translation>Eclater les éléments bi-quadratiques en éléments linéaire</translation>
+    </message>
+    <message>
         <source>MESHERS_FILE_CANT_OPEN</source>
         <translation>Impossible d&apos;ouvrir le fichier de ressource</translation>
     </message>
@@ -1123,8 +1143,13 @@ Choisissez un maillage et essayez de nouveau</translation>
 Indiquez le nom d&apos;un nouveau groupe à créer ou choisissez un groupe existant.</translation>
     </message>
     <message>
-        <source>MESH_STANDALONE_GRP_CHOSEN</source>
+        <source>MESH_GEOM_GRP_CHOSEN</source>
         <translation>Un groupe lié à la géométrie est choisi: %1.
+Voulez-vous le convertir en un groupe autonome ?</translation>
+    </message>
+    <message>
+        <source>MESH_FILTER_GRP_CHOSEN</source>
+        <translation>Un groupe lié à un filtre est choisi: %1.
 Voulez-vous le convertir en un groupe autonome ?</translation>
     </message>
     <message>
@@ -1220,6 +1245,14 @@ Merci de les corriger, puis essayez de nouveau</translation>
     <message>
         <source>SMESH_ADD_POLYGON_TITLE</source>
         <translation>Ajouter un polygone</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_QUADRATIC_POLYGON</source>
+        <translation>Ajouter un polygone quadratique</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_QUADRATIC_POLYGON_TITLE</source>
+        <translation>Ajouter un polygone quadratique</translation>
     </message>
     <message>
         <source>SMESH_ADD_PENTA</source>
@@ -1694,6 +1727,10 @@ Voulez-vous continuer ?</translation>
         <translation>Extrusion le long du vecteur</translation>
     </message>
     <message>
+        <source>SMESH_EXTRUSION_BY_NORMAL</source>
+        <translation>Extrusion par la normale</translation>
+    </message>
+    <message>
         <source>SMESH_FACE</source>
         <translation>Face</translation>
     </message>
@@ -1850,6 +1887,10 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>SMESH_ID_DIAGONAL</source>
+        <translation>IDs des arêtes</translation>
+    </message>
+    <message>
+        <source>SMESH_ID_EDGES</source>
         <translation>IDs des arêtes</translation>
     </message>
     <message>
@@ -2165,6 +2206,10 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>Maillage</translation>
     </message>
     <message>
+        <source>SMESH_OBJECTS</source>
+        <translation>Objets</translation>
+    </message>
+    <message>
         <source>SMESH_OBJECT_MESHorSUBMESH</source>
         <translation>Maillage ou sous-maillage</translation>
     </message>
@@ -2310,7 +2355,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>PREF_NUMBERING_ELEM</source>
-        <translation>Arêtes: couleur</translation>
+        <translation>Éléments: couleur</translation>
     </message>
     <message>
         <source>PREF_NUMBERING_FONT</source>
@@ -2572,6 +2617,10 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     <message>
         <source>SMESH_SEWING</source>
         <translation>Couture</translation>
+    </message>
+    <message>
+        <source>SMESH_SHOW_SCALAR_BAR</source>
+        <translation>Afficher la barre d'échelle</translation>
     </message>
     <message>
         <source>SMESH_SMOOTHING</source>
@@ -3210,6 +3259,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Polygone</translation>
     </message>
     <message>
+        <source>STB_QUADRATIC_POLYGON</source>
+        <translation>Polygone quadratique</translation>
+    </message>
+    <message>
         <source>STB_POLYHEDRON</source>
         <translation>Polyèdre</translation>
     </message>
@@ -3284,6 +3337,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     <message>
         <source>STB_SHOW_DISTRIBUTION</source>
         <translation>Afficher la distribution</translation>
+    </message>
+    <message>
+        <source>STB_SHOW_SCALAR_BAR</source>
+        <translation>Afficher la barre d'échelle</translation>
     </message>
     <message>
         <source>STB_REVOLUTION</source>
@@ -3862,6 +3919,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Polygone</translation>
     </message>
     <message>
+        <source>TOP_QUADRATIC_POLYGON</source>
+        <translation>Polygone quadratique</translation>
+    </message>
+    <message>
         <source>TOP_POLYHEDRON</source>
         <translation>Polyèdre</translation>
     </message>
@@ -4240,15 +4301,19 @@ Il ne peut pas être supprimé.</translation>
     <name>SMESHGUI_Dialog</name>
     <message>
         <source>DLG_MESH</source>
-        <translation>maillages</translation>
+        <translation>maillage(s)</translation>
     </message>
     <message>
         <source>DLG_HYPO</source>
-        <translation>hypothèses</translation>
+        <translation>hypothèse(s)</translation>
     </message>
     <message>
         <source>DLG_ALGO</source>
-        <translation>algorithmes</translation>
+        <translation>algorithme(s)</translation>
+    </message>
+    <message>
+        <source>DLG_GEOM</source>
+        <translation>objet(s)</translation>
     </message>
 </context>
 <context>
@@ -4343,6 +4408,10 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
         <translation>Eléments à visualiser</translation>
     </message>
     <message>
+        <source>QUADRATIC_REPRESENT_MODE_GROUP</source>
+        <translation>Mode des éléments quadratiques 2D par défaut</translation>
+    </message>
+    <message>
         <source>QUADRATIC_REPRESENT_MODE</source>
         <translation>Représentation des éléments quadratiques 2D</translation>
     </message>
@@ -4351,8 +4420,12 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
         <translation>Angle maximal</translation>
     </message>
     <message>
-        <source>PREF_DISPLAY_MODE</source>
+        <source>PREF_DISPLAY_MODE_GROUP</source>
         <translation>Mode de visualisation</translation>
+    </message>
+    <message>
+        <source>PREF_DISPLAY_MODE</source>
+        <translation>Mode de visualisation par défaut</translation>
     </message>
     <message>
         <source>PREF_ELEMENTS</source>
@@ -4564,7 +4637,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_COLOR_0D</source>
-        <translation>Eléments 0D</translation>
+        <translation>Couleur d&apos;elément 0D</translation>
     </message>
     <message>
         <source>PREF_SIZE_0D</source>
@@ -4572,7 +4645,11 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     </message>
     <message>
         <source>PREF_BALL_COLOR</source>
-        <translation>Particulaires</translation>
+        <translation>Couleur des particulaires</translation>
+    </message>
+    <message>
+        <source>PREF_BALL_DIAMETER</source>
+        <translation>Diamètre par défaut des éléments particulaires</translation>
     </message>
     <message>
         <source>PREF_BALL_SIZE</source>
@@ -4841,6 +4918,33 @@ Voulez-vous restaurer la priorité initiale ?</translation>
     </message>
 </context>
 <context>
+    <name>SMESHGUI_SplitBiQuadDlg</name>
+    <message>
+        <source>CAPTION</source>
+        <translation>Eclater les éléments bi-quadratiques en éléments linéaires</translation>
+    </message>
+    <message>
+        <source>MESH</source>
+        <translation>Maillage, groupe ou sous-maillage</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_SplitBiQuadOp</name>
+    <message>
+        <source>MESH_IS_NOT_SELECTED</source>
+        <translation>Pas d'éléments à éclater.
+Sélectionner des éléments et essayer encore</translation>
+    </message>
+    <message>
+        <source>REF_IS_NULL</source>
+        <translation>Aucun maillage valide n'a été sélectionné</translation>
+    </message>
+    <message>
+        <source>DIFFERENT_MESHES</source>
+        <translation>Les éléments sélectionnés appartiennent à différents maillages</translation>
+    </message>
+</context>
+<context>
     <name>SMESHGUI_ConvToQuadDlg</name>
     <message>
         <source>CAPTION</source>
@@ -5021,8 +5125,12 @@ Choisissez un groupe et essayez de nouveau</translation>
         <translation>Détecter</translation>
     </message>
     <message>
-        <source>EDIT_SELECTED_GROUP</source>
-        <translation>Editer le groupe sélectionné</translation>
+        <source>EDIT_SELECTED_NODE_GROUP</source>
+        <translation>Editer le groupe sélectionné de noeuds coïncidents</translation>
+    </message>
+    <message>
+        <source>EDIT_SELECTED_ELEM_GROUP</source>
+        <translation>Editer le groupe sélectionné d'éléments coïncidents</translation>
     </message>
     <message>
         <source>SELECT_ALL</source>
@@ -5038,7 +5146,23 @@ Choisissez un groupe et essayez de nouveau</translation>
     </message>
     <message>
         <source>EXCLUDE_GROUPS</source>
-        <translation>Exclure les groupes</translation>
+        <translation>Exclure les groupes de la détection</translation>
+    </message>
+    <message>
+        <source>SEPARATE_CORNERS_AND_MEDIUM</source>
+        <translation>Pas de fusion du coin et des noeuds moyens des cellules quadratiques</translation>
+    </message>
+    <message>
+        <source>KEEP_NODES</source>
+        <translation>Les noeuds à conserver pendant la fusion</translation>
+    </message>
+    <message>
+        <source>GROUP_SUBMESH</source>
+        <translation>Groupes et sous-maillages</translation>
+    </message>
+    <message>
+        <source>SELECT</source>
+        <translation>Selectionner: </translation>
     </message>
 </context>
 <context>
@@ -5137,6 +5261,14 @@ Choisissez un groupe et essayez de nouveau</translation>
     <message>
         <source>EXTRUSION_ALONG_LINE</source>
         <translation>Extrusion suivant une ligne</translation>
+    </message>
+    <message>
+        <source>BY_AVERAGE_NORMAL</source>
+        <translation>Suivant une normale moyenne</translation>
+    </message>
+    <message>
+        <source>USE_INPUT_ELEMS_ONLY</source>
+        <translation>Use only input elements</translation>
     </message>
 </context>
 <context>
@@ -5401,6 +5533,10 @@ Vérifiez la validité des informations données</translation>
     <message>
         <source>OVER_CONSTRAINED_FACE</source>
         <translation>Faces sur-contraintes</translation>
+    </message>
+    <message>
+        <source>BELONG_TO_MESH_GROUP</source>
+        <translation>Appartient au groupe du maillage</translation>
     </message>
     <message>
         <source>BELONG_TO_CYLINDER</source>
@@ -5795,8 +5931,8 @@ Indiquez un nom non-vide et essayez de nouveau</translation>
 Indiquez-les et essayez de nouveau</translation>
     </message>
     <message>
-        <source>NAME</source>
-        <translation>Nom</translation>
+        <source>RESULT</source>
+        <translation>Résultat</translation>
     </message>
     <message>
         <source>OBJECT_1</source>
@@ -5837,20 +5973,28 @@ Indiquez-les et essayez de nouveau</translation>
         <translation>Type d&apos;éléments </translation>
     </message>
     <message>
-        <source>NODE</source>
-        <translation>Nœud</translation>
+        <source>UNDERLYING_ENTITIES_ONLY</source>
+        <translation>Inclure les entités sous-jacentes uniquement</translation>
     </message>
     <message>
-        <source>EDGE</source>
-        <translation>Arête</translation>
+        <source>NUMBER_OF_COMMON_NODES</source>
+        <translation>Nombre de nœuds en commun</translation>
     </message>
     <message>
-        <source>FACE</source>
-        <translation>Face</translation>
+        <source>ALL</source>
+        <translation>Tout</translation>
     </message>
     <message>
-        <source>VOLUME</source>
-        <translation>Volume</translation>
+        <source>MAIN</source>
+        <translation>Principal</translation>
+    </message>
+    <message>
+        <source>AT_LEAST_ONE</source>
+        <translation>Au moins un</translation>
+    </message>
+    <message>
+        <source>MAJORITY</source>
+        <translation>La majorité</translation>
     </message>
 </context>
 <context>
@@ -6019,10 +6163,15 @@ Voulez-vous éditer ce sous-maillage?</translation>
         <translation>Créer un sous-maillage ignoré par l&apos;algorithme global n&apos;a pas de sens &quot;%1&quot;</translation>
     </message>
     <message>
-        <source>GEOMETRY_OBJECT_IS_NOT_DEFINED</source>
+        <source>GEOMETRY_OBJECT_IS_NOT_DEFINED_MESH</source>
         <translation>La géométrie n&apos;est pas définie.
 Voulez-vous créer un maillage vide
 sans algorithme ni hypothèse ? </translation>
+    </message>
+    <message>
+        <source>GEOMETRY_OBJECT_IS_NOT_DEFINED_SUBMESH</source>
+        <translation>L&apos;objet géométrique n&apos;est pas défini.
+Merci de le spécifier et essayer de nouveau</translation>
     </message>
     <message>
         <source>GEOMETRY_OBJECT_IS_NULL</source>
@@ -6087,6 +6236,14 @@ Indiquez un nom valide et essayez de nouveau</translation>
         <source>THERE_IS_NO_OBJECT_FOR_EDITING</source>
         <translation>Il n&apos;y a pas d&apos;objet à éditer.
 Sélectionnez un maillage ou un sous-maillage et essayez de nouveau</translation>
+    </message>
+    <message>
+        <source>CONCURRENT_SUBMESH_APPEARS</source>
+        <translation> 
+L&apos;algorithme assigné a la même priorité que celui assigné à un
+sous-maillage adjacent; ainsi l'algorithme à utiliser pour mailler la
+frontière partagée par les deux sous-maillages n&apos;est pas défini.
+Voulez-vous définir l&apos;ordre de calcul des sous-maillages ?</translation>
     </message>
 </context>
 <context>
@@ -6250,6 +6407,14 @@ Il y a trop peu de points dans le fichier </translation>
         <source>NONE</source>
         <translation>&lt;None&gt;</translation>
     </message>
+    <message>
+        <source>DEFAULT</source>
+        <translation>&lt;Défaut&gt;</translation>
+    </message>
+    <message>
+        <source>SELECT</source>
+        <translation>&lt;Sélectionner&gt;</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_MultiEditDlg</name>
@@ -6371,7 +6536,7 @@ Il y a trop peu de points dans le fichier </translation>
         <translation>Prévisualiser</translation>
     </message>
     <message>
-        <source>REVOLUTION_1D</source>
+        <source>REVOLUTION</source>
         <translation>Révolution des éléments 1D</translation>
     </message>
     <message>
@@ -6504,6 +6669,42 @@ Il y a trop peu de points dans le fichier </translation>
     <message>
         <source>SIDE_2</source>
         <translation>Bord 2</translation>
+    </message>
+    <message>
+        <source>AUTO_SEWING</source>
+        <translation>Couture automatique</translation>
+    </message>
+    <message>
+        <source>COINCIDENT_FREE_BORDERS</source>
+        <translation>Frontières libres coïncidentes</translation>
+    </message>
+    <message>
+        <source>DETECT</source>
+        <translation>Détecter</translation>
+    </message>
+    <message>
+        <source>SELECT_ALL</source>
+        <translation>Sélectionner tous</translation>
+    </message>
+    <message>
+        <source>EDIT_SELECTED_GROUP</source>
+        <translation>Editer le groupe sélectionné</translation>
+    </message>
+    <message>
+        <source>STEP</source>
+        <translation>Pas</translation>
+    </message>
+    <message>
+        <source>NO_BORDERS_TO_SEW</source>
+        <translation>Pas de frontière libre à coudre</translation>
+    </message>
+    <message>
+        <source>NOT_ALL_BORDERS_SEWED</source>
+        <translation>%1 groupes sur %2 de frontières cousus</translation>
+    </message>
+    <message>
+        <source>ALL_BORDERS_SEWED</source>
+        <translation>%1 groupe(s) de frontières cousu(s)</translation>
     </message>
 </context>
 <context>
@@ -6738,6 +6939,10 @@ Il y a trop peu de points dans le fichier </translation>
         <translation>Avec duplication des éléments de frontière seulement</translation>
     </message>
     <message>
+        <source>DUPLICATION_GROUP_BOUNDARY</source>
+        <translation>Avec duplication des nœuds des groupes de frontière</translation>
+    </message>
+    <message>
         <source>GROUP_ELEMS_TO_DUPLICATE</source>
         <translation>Groupe des éléments à dupliquer</translation>
     </message>
@@ -6760,6 +6965,14 @@ Il y a trop peu de points dans le fichier </translation>
     <message>
         <source>CONSTRUCT_NEW_GROUP_ELEMENTS</source>
         <translation>Construire un groupe avec les éléments nouvellement créés</translation>
+    </message>
+    <message>
+        <source>CREATE_JOINT_ELEMENTS</source>
+        <translation>Créer des éléments de joint</translation>
+    </message>
+    <message>
+        <source>ON_ALL_BOUNDARIES</source>
+        <translation>Sur toutes les frontières</translation>
     </message>
 </context>
 <context>
@@ -7044,15 +7257,19 @@ en raison de leurs types incompatibles:
     </message>
     <message>
         <source>COORDINATES</source>
-        <translation>COORDONNÉES</translation>
+        <translation>Coordonnées</translation>
     </message>
     <message>
         <source>CONNECTIVITY</source>
-        <translation>CONNECTIVITÉ</translation>
+        <translation>Connectivité</translation>
     </message>
     <message>
         <source>GRAVITY_CENTER</source>
-        <translation>CENTRE DE GRAVITÉ</translation>
+        <translation>Centre de gravité</translation>
+    </message>
+    <message>
+        <source>NORMAL_VECTOR</source>
+        <translation>Normal</translation>
     </message>
     <message>
         <source>NODE</source>
@@ -7060,43 +7277,43 @@ en raison de leurs types incompatibles:
     </message>
     <message>
         <source>0D_ELEMENT</source>
-        <translation>ELÉMENTS 0D</translation>
+        <translation>Eléments 0d</translation>
     </message>
     <message>
         <source>0D_ELEMENTS</source>
-        <translation>ELÉMENTS 0D</translation>
+        <translation>Eléments 0d</translation>
     </message>
     <message>
         <source>BALL_ELEMENT</source>
-        <translation>ELEMENT PARTICULAIRE</translation>
+        <translation>Elément particulaire</translation>
     </message>
     <message>
         <source>BALL_ELEMENTS</source>
-        <translation>ELEMENTS PARTICULAIRES</translation>
+        <translation>Eléments particulaires</translation>
     </message>
     <message>
         <source>EDGE</source>
-        <translation>ARÊTE</translation>
+        <translation>Arête</translation>
     </message>
     <message>
         <source>EDGES</source>
-        <translation>ARÊTES</translation>
+        <translation>Arêtes</translation>
     </message>
     <message>
         <source>FACE</source>
-        <translation>FACE</translation>
+        <translation>Face</translation>
     </message>
     <message>
         <source>FACES</source>
-        <translation>FACES</translation>
+        <translation>Faces</translation>
     </message>
     <message>
         <source>VOLUME</source>
-        <translation>VOLUME</translation>
+        <translation>Volume</translation>
     </message>
     <message>
         <source>VOLUMES</source>
-        <translation>VOLUMES</translation>
+        <translation>Volumes</translation>
     </message>
     <message>
         <source>FREE_NODE</source>
@@ -7104,7 +7321,7 @@ en raison de leurs types incompatibles:
     </message>
     <message>
         <source>TYPE</source>
-        <translation>TYPE</translation>
+        <translation>Type</translation>
     </message>
     <message>
         <source>TRIANGLE</source>
@@ -7144,7 +7361,7 @@ en raison de leurs types incompatibles:
     </message>
     <message>
         <source>QUADRATIC</source>
-        <translation>QUADRATIQUE</translation>
+        <translation>Quadratique</translation>
     </message>
     <message>
         <source>YES</source>
@@ -7654,6 +7871,14 @@ en raison de leurs types incompatibles:
         <source>ORIENTATION</source>
         <translation>Orientation</translation>
     </message>
+    <message>
+        <source>VOLUMES</source>
+        <translation>Volumes</translation>
+    </message>
+    <message>
+        <source>OUTSIDE_VOLUME_NORMAL</source>
+        <translation>Normale de face en dehors du volume</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_ReorientFacesOp</name>
@@ -7662,8 +7887,16 @@ en raison de leurs types incompatibles:
         <translation>Aucun objet sélectionné</translation>
     </message>
     <message>
+        <source>NO_VOLUME_OBJECT_SELECTED</source>
+        <translation>Aucun objet de volume sélectionné</translation>
+    </message>
+    <message>
         <source>NO_FACES</source>
         <translation>L&apos;objet ne contient pas de faces</translation>
+    </message>
+    <message>
+        <source>NO_VOLUMES</source>
+        <translation>L&apos;objet ne contient pas de volumes</translation>
     </message>
     <message>
         <source>ZERO_SIZE_VECTOR</source>
@@ -7761,7 +7994,7 @@ en raison de leurs types incompatibles:
     <name>SMESHGUI_DisplayEntitiesDlg</name>
     <message>
         <source>WRN_AT_LEAST_ONE</source>
-        <translation type="unfinished">At least one entity type should be chosen!</translation>
+        <translation>Au moins une entité devrait être choisie!</translation>
     </message>
 </context>
 </TS>

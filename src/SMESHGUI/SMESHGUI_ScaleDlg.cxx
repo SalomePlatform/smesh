@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -308,7 +308,10 @@ SMESHGUI_ScaleDlg::SMESHGUI_ScaleDlg( SMESHGUI* theModule ) :
   connect(mySMESHGUI, SIGNAL (SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()),   this, SLOT(SelectionIntoArgument()));
   /* to close dialog if study change */
-  connect(mySMESHGUI,       SIGNAL (SignalCloseAllDialogs()), this, SLOT(reject()));
+  connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()),      this, SLOT(reject()));
+  connect(mySMESHGUI, SIGNAL(SignalActivatedViewManager()), this, SLOT(onOpenView()));
+  connect(mySMESHGUI, SIGNAL(SignalCloseView()),            this, SLOT(onCloseView()));
+
   connect(LineEditElements, SIGNAL(textChanged(const QString&)),    SLOT(onTextChange(const QString&)));
   connect(CheckBoxMesh,     SIGNAL(toggled(bool)),                  SLOT(onSelectMesh(bool)));
   connect(ActionGroup,      SIGNAL(buttonClicked(int)),             SLOT(onActionClicked(int)));
@@ -486,7 +489,7 @@ bool SMESHGUI_ScaleDlg::ClickOnApply()
           }
         else {
           SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
-          SMESH::SMESH_IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
+          SMESH::IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
           myMeshes[0]->SetParameters( aParameters.join( ":" ).toLatin1().constData() );
           aMeshEditor->Scale( src, aPoint, aScaleFact, false);
         }
@@ -503,7 +506,7 @@ bool SMESHGUI_ScaleDlg::ClickOnApply()
             }
           else {
             SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
-            SMESH::SMESH_IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
+            SMESH::IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
             myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
             groups = aMeshEditor->ScaleMakeGroups( src, aPoint, aScaleFact);
           }
@@ -518,7 +521,7 @@ bool SMESHGUI_ScaleDlg::ClickOnApply()
           }
           else {
             SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
-            SMESH::SMESH_IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
+            SMESH::IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
             myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
             aMeshEditor->Scale( src, aPoint, aScaleFact, true);
           }
@@ -541,7 +544,7 @@ bool SMESHGUI_ScaleDlg::ClickOnApply()
         else {
           SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
           myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
-          SMESH::SMESH_IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
+          SMESH::IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
           mesh = aMeshEditor->ScaleMakeMesh( src, aPoint, aScaleFact, makeGroups,
                                              LineEditNewMesh->text().toLatin1().data());
           if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
@@ -603,6 +606,31 @@ void SMESHGUI_ScaleDlg::reject()
     aViewWindow->SetSelectionMode( ActorSelection );
   mySMESHGUI->ResetState();
   QDialog::reject();
+}
+
+//=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_ScaleDlg::onOpenView()
+{
+  if ( mySelector ) {
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    ActivateThisDialog();
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_ScaleDlg::onCloseView()
+{
+  DeactivateActiveDialog();
+  mySelector = 0;
 }
 
 //=================================================================================
@@ -687,6 +715,8 @@ void SMESHGUI_ScaleDlg::onTextChange (const QString& theNewText)
 void SMESHGUI_ScaleDlg::SelectionIntoArgument()
 {
   if (myBusy) return;
+  if (myFilterDlg && myFilterDlg->isVisible()) return; // filter dlg active
+
   BusyLocker lock( myBusy );
   // clear
   myActor = 0;
@@ -713,38 +743,39 @@ void SMESHGUI_ScaleDlg::SelectionIntoArgument()
 
   int aNbUnits = 0;
 
-  if (myEditCurrentArgument == (QWidget*)LineEditElements) {
+  if (myEditCurrentArgument == (QWidget*)LineEditElements)
+  {
     myElementsId = "";
     myObjects.clear();
     myObjectsNames.clear();
     myMeshes.clear();
 
-    for ( SALOME_ListIteratorOfListIO it( aList ); it.More(); it.Next() ) {
+    for ( SALOME_ListIteratorOfListIO it( aList ); it.More(); it.Next() )
+    {
       Handle(SALOME_InteractiveObject) IO = it.Value();
       SMESH::SMESH_Mesh_var aMesh = SMESH::GetMeshByIO( IO );
       if ( aMesh->_is_nil() )
         return;
-  
+
       myActor = SMESH::FindActorByObject( aMesh );
       if ( !myActor )
         myActor = SMESH::FindActorByEntry( IO->getEntry() );
-      if ( !myActor && !CheckBoxMesh->isChecked() )
-        return;
+      // if ( !myActor && !CheckBoxMesh->isChecked() ) -- elems can be selected by Filter
+      //   return;
 
-      if ( !SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO )->_is_nil() ) {
-        if ( _PTR(Study) aStudy = SMESH::GetActiveStudyDocument() ) {
-          _PTR(SObject) obj = aStudy->FindObjectID( qPrintable( QString( IO->getEntry() ) ) );
-          _PTR(GenericAttribute) anAttr;
-          if ( obj && obj->FindAttribute( anAttr, "AttributeName" ) ) {
-            _PTR(AttributeName) aNameAttr( anAttr );
-            myObjects << SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO );
-            myObjectsNames << aNameAttr->Value().c_str();
-            myMeshes << aMesh;
-          }
+      SMESH::SMESH_IDSource_var idSrc = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO );
+      if ( _PTR(SObject) obj = SMESH::FindSObject( idSrc ))
+      {
+        std::string name = obj->GetName();
+        if ( !name.empty() )
+        {
+          myObjects << idSrc;
+          myObjectsNames << name.c_str();
+          myMeshes << aMesh;
         }
       }
     }
-      
+
     // MakeGroups is available if there are groups and "Copy"
     int aNbGroups = 0;
     for ( int i = 0; i < myMeshes.count(); i++ )
@@ -759,50 +790,11 @@ void SMESHGUI_ScaleDlg::SelectionIntoArgument()
     }
 
     if (CheckBoxMesh->isChecked()) {
-      SMESH::GetNameOfSelectedIObjects( mySelectionMgr, aString );
       if (myMeshes.isEmpty())
         return;
-        // get IDs from mesh
-        /*
-        SMDS_Mesh* aSMDSMesh = myActor->GetObject()->GetMesh();
-        if (!aSMDSMesh)
-          return;
-
-        for (int i = aSMDSMesh->MinElementID(); i <= aSMDSMesh->MaxElementID(); i++) {
-          const SMDS_MeshElement * e = aSMDSMesh->FindElement(i);
-          if (e) {
-            myElementsId += QString(" %1").arg(i);
-            aNbUnits++;
-          }
-        }
-      } else if (!SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO)->_is_nil()) { //SUBMESH
-        // get submesh
-        SMESH::SMESH_subMesh_var aSubMesh = SMESH::IObjectToInterface<SMESH::SMESH_subMesh>(IO);
-
-        // get IDs from submesh
-        SMESH::long_array_var anElementsIds = new SMESH::long_array;
-        anElementsIds = aSubMesh->GetElementsId();
-        for (int i = 0; i < anElementsIds->length(); i++) {
-          myElementsId += QString(" %1").arg(anElementsIds[i]);
-        }
-        aNbUnits = anElementsIds->length();
-      } else { // GROUP
-        // get smesh group
-        SMESH::SMESH_GroupBase_var aGroup =
-          SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IO);
-        if (aGroup->_is_nil())
-          return;
-
-        // get IDs from smesh group
-        SMESH::long_array_var anElementsIds = new SMESH::long_array;
-        anElementsIds = aGroup->GetListOfID();
-        for (int i = 0; i < anElementsIds->length(); i++) {
-          myElementsId += QString(" %1").arg(anElementsIds[i]);
-        }
-        aNbUnits = anElementsIds->length();
-      }
-        */
-    } else {
+      SMESH::GetNameOfSelectedIObjects( mySelectionMgr, aString );
+    }
+    else {
       aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, aList.First(), aString);
       myElementsId = aString;
       if (aNbUnits < 1)
@@ -810,15 +802,14 @@ void SMESHGUI_ScaleDlg::SelectionIntoArgument()
     }
 
     myNbOkElements = true;
-  } else {
-    Handle(SALOME_InteractiveObject) IO = aList.First();
-    if ((SMESH::GetMeshByIO(IO))->_is_nil())
-      return;
 
-    SMESH_Actor* anActor = SMESH::FindActorByObject(SMESH::GetMeshByIO(IO));
+  }
+  else // set coordinates by a picked node
+  {
+    Handle(SALOME_InteractiveObject) IO = aList.First();
+
+    SMESH_Actor* anActor = SMESH::FindActorByEntry( IO->getEntry() );
     if (!anActor)
-      anActor = SMESH::FindActorByEntry(IO->getEntry());
-    if (!anActor && !CheckBoxMesh->isChecked())
       return;
 
     aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);
@@ -944,8 +935,13 @@ void SMESHGUI_ScaleDlg::ActivateThisDialog()
 //=================================================================================
 void SMESHGUI_ScaleDlg::enterEvent (QEvent*)
 {
-  if (!ConstructorsBox->isEnabled())
+  if (!ConstructorsBox->isEnabled()) {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+    if ( aViewWindow && !mySelector) {
+      mySelector = aViewWindow->GetSelector();
+    }
     ActivateThisDialog();
+  }
 }
 
 //=======================================================================
@@ -1070,20 +1066,46 @@ void SMESHGUI_ScaleDlg::keyPressEvent( QKeyEvent* e )
 //=================================================================================
 void SMESHGUI_ScaleDlg::setFilters()
 {
-  if(myMeshes.isEmpty()) {
-    SUIT_MessageBox::critical(this,
-                              tr("SMESH_ERROR"),
-                              tr("NO_MESH_SELECTED"));
-   return;
+  if ( myMeshes.isEmpty() ) {
+    SUIT_MessageBox::critical(this, tr("SMESH_ERROR"), tr("NO_MESH_SELECTED"));
+    return;
   }
-  if ( !myFilterDlg )
+  if ( !myFilterDlg ) {
     myFilterDlg = new SMESHGUI_FilterDlg( mySMESHGUI, SMESH::ALL );
+    connect(myFilterDlg, SIGNAL(Accepted()), SLOT(onFilterAccepted()));
+  }
 
+  QList<int> types;
+  if ( myMeshes[0]->NbEdges()     ) types << SMESH::EDGE;
+  if ( myMeshes[0]->NbFaces()     ) types << SMESH::FACE;
+  if ( myMeshes[0]->NbVolumes()   ) types << SMESH::VOLUME;
+  if ( myMeshes[0]->NbBalls()     ) types << SMESH::BALL;
+  if ( myMeshes[0]->Nb0DElements()) types << SMESH::ELEM0D;
+  if ( types.count() > 1 )          types << SMESH::ALL;
+
+  myFilterDlg->Init( types );
   myFilterDlg->SetSelection();
   myFilterDlg->SetMesh( myMeshes[0] );
   myFilterDlg->SetSourceWg( LineEditElements );
 
   myFilterDlg->show();
+}
+
+//=======================================================================
+// name    : onFilterAccepted()
+// Purpose : SLOT. Called when Filter dlg closed with OK button.
+//           Activate [Apply] if no Actor is available
+//=======================================================================
+void SMESHGUI_ScaleDlg::onFilterAccepted()
+{
+  if ( myMeshes.length() > 0 && !buttonOk->isEnabled() )
+  {
+    myElementsId = LineEditElements->text();
+    QStringList aListElementsId = myElementsId.split(" ", QString::SkipEmptyParts);
+    myNbOkElements = aListElementsId.count();
+    buttonOk->setEnabled   ( myNbOkElements );
+    buttonApply->setEnabled( myNbOkElements );
+  }
 }
 
 //=================================================================================
@@ -1147,7 +1169,7 @@ void SMESHGUI_ScaleDlg::onDisplaySimulation( bool toDisplayPreview ) {
           }
         else {
           SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditPreviewer();
-          SMESH::SMESH_IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
+          SMESH::IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::ALL);
           aMeshEditor->Scale( src, aPoint, aScaleFact, copy);
           aMeshPreviewStruct << aMeshEditor->GetPreviewData();
         }

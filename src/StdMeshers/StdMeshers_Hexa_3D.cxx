@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -144,12 +144,15 @@ namespace
   //=============================================================================
 
   typedef boost::shared_ptr< FaceQuadStruct > FaceQuadStructPtr;
+  typedef std::vector<gp_XYZ>                 TXYZColumn;
 
   // symbolic names of box sides
   enum EBoxSides{ B_BOTTOM=0, B_RIGHT, B_TOP, B_LEFT, B_FRONT, B_BACK, B_NB_SIDES };
 
   // symbolic names of sides of quadrangle
   enum EQuadSides{ Q_BOTTOM=0, Q_RIGHT, Q_TOP, Q_LEFT, Q_NB_SIDES };
+
+  enum EAxes{ COO_X=1, COO_Y, COO_Z };
 
   //=============================================================================
   /*!
@@ -166,6 +169,9 @@ namespace
     // node column's taken form _u2nodesMap taking into account sub-shape orientation
     vector<TNodeColumn> _columns;
 
+    // columns of normalized parameters of nodes within the unitary cube
+    vector<TXYZColumn> _ijkColumns;
+
     // geometry of a cube side
     TopoDS_Face _sideF;
 
@@ -176,6 +182,10 @@ namespace
     gp_XYZ GetXYZ(int iCol, int iRow) const
     {
       return SMESH_TNodeXYZ( GetNode( iCol, iRow ));
+    }
+    gp_XYZ& GetIJK(int iCol, int iRow)
+    {
+      return _ijkColumns[iCol][iRow];
     }
   };
 
@@ -275,6 +285,56 @@ namespace
       n   = proxymesh->GetProxyNode( n );
     }
     return ( n == n00 || n == n01 || n == n10 || n == n11 );
+  }
+
+  //================================================================================
+  /*!
+   * \brief Fill in _FaceGrid::_ijkColumns
+   *  \param [in,out] fg - a _FaceGrid
+   *  \param [in] i1 - coordinate index along _columns
+   *  \param [in] i2 - coordinate index along _columns[i]
+   *  \param [in] v3 - value of the constant parameter
+   */
+  //================================================================================
+
+  void computeIJK( _FaceGrid& fg, int i1, int i2, double v3 )
+  {
+    gp_XYZ ijk( v3, v3, v3 );
+    const size_t nbCol = fg._columns.size();
+    const size_t nbRow = fg._columns[0].size();
+
+    fg._ijkColumns.resize( nbCol );
+    for ( size_t i = 0; i < nbCol; ++i )
+      fg._ijkColumns[ i ].resize( nbRow, ijk );
+
+    vector< double > len( nbRow );
+    len[0] = 0;
+    for ( size_t i = 0; i < nbCol; ++i )
+    {
+      gp_Pnt pPrev = fg.GetXYZ( i, 0 );
+      for ( size_t j = 1; j < nbRow; ++j )
+      {
+        gp_Pnt p = fg.GetXYZ( i, j );
+        len[ j ] = len[ j-1 ] + p.Distance( pPrev );
+        pPrev = p;
+      }
+      for ( size_t j = 0; j < nbRow; ++j )
+        fg.GetIJK( i, j ).SetCoord( i2, len[ j ]/len.back() );
+    }
+
+    len.resize( nbCol );
+    for ( size_t j = 0; j < nbRow; ++j )
+    {
+      gp_Pnt pPrev = fg.GetXYZ( 0, j );
+      for ( size_t i = 1; i < nbCol; ++i )
+      {
+        gp_Pnt p = fg.GetXYZ( i, j );
+        len[ i ] = len[ i-1 ] + p.Distance( pPrev );
+        pPrev = p;
+      }
+      for ( size_t i = 0; i < nbCol; ++i )
+        fg.GetIJK( i, j ).SetCoord( i1, len[ i ]/len.back() );
+    }
   }
 }
 
@@ -444,15 +504,15 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
   {
     aCubeSide[i]._columns.resize( aCubeSide[i]._u2nodesMap.size() );
 
-    int iFwd = 0, iRev = aCubeSide[i]._columns.size()-1;
-    int* pi = isReverse[i] ? &iRev : &iFwd;
+    size_t iFwd = 0, iRev = aCubeSide[i]._columns.size()-1;
+    size_t*  pi = isReverse[i] ? &iRev : &iFwd;
     TParam2ColumnMap::iterator u2nn = aCubeSide[i]._u2nodesMap.begin();
     for ( ; iFwd < aCubeSide[i]._columns.size(); --iRev, ++iFwd, ++u2nn )
       aCubeSide[i]._columns[ *pi ].swap( u2nn->second );
 
     aCubeSide[i]._u2nodesMap.clear();
   }
-  
+
   if ( proxymesh )
     for ( int i = 0; i < 6; ++i )
       for ( unsigned j = 0; j < aCubeSide[i]._columns.size(); ++j)
@@ -475,6 +535,14 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
   _FaceGrid* fLeft   = & aCubeSide[ B_LEFT   ];
   _FaceGrid* fFront  = & aCubeSide[ B_FRONT  ];
   _FaceGrid* fBack   = & aCubeSide[ B_BACK   ];
+
+  // compute normalized parameters of nodes on sides (PAL23189)
+  computeIJK( *fBottom, COO_X, COO_Y, /*z=*/0. );
+  computeIJK( *fRight,  COO_Y, COO_Z, /*x=*/1. );
+  computeIJK( *fTop,    COO_X, COO_Y, /*z=*/1. );
+  computeIJK( *fLeft,   COO_Y, COO_Z, /*x=*/0. );
+  computeIJK( *fFront,  COO_X, COO_Z, /*y=*/0. );
+  computeIJK( *fBack,   COO_X, COO_Z, /*y=*/1. );
 
   // cube size measured in nb of nodes
   int x, xSize = fBottom->_columns.size() , X = xSize - 1;
@@ -531,13 +599,14 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
   pointsOnShapes[ SMESH_Block::ID_V011 ] = fTop->GetXYZ( 0, Y );
   pointsOnShapes[ SMESH_Block::ID_V111 ] = fTop->GetXYZ( X, Y );
 
+  gp_XYZ params; // normalized parameters of an internal node within the unit box
   for ( x = 1; x < xSize-1; ++x )
   {
-    gp_XYZ params; // normalized parameters of internal node within a unit box
-    params.SetCoord( 1, x / double(X) );
+    const double rX = x / double(X);
     for ( y = 1; y < ySize-1; ++y )
     {
-      params.SetCoord( 2, y / double(Y) );
+      const double rY = y / double(Y);
+
       // a column to fill in during z loop
       vector< const SMDS_MeshNode* >& column = columns[ colIndex( x, y )];
       // projection points on horizontal edges
@@ -554,23 +623,36 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
       pointsOnShapes[ SMESH_Block::ID_Fxy1 ] = fTop   ->GetXYZ( x, y );
       for ( z = 1; z < zSize-1; ++z ) // z loop
       {
-        params.SetCoord( 3, z / double(Z) );
+        const double rZ = z / double(Z);
+
+        const gp_XYZ& pBo = fBottom->GetIJK( x, y );
+        const gp_XYZ& pTo = fTop   ->GetIJK( x, y );
+        const gp_XYZ& pFr = fFront ->GetIJK( x, z );
+        const gp_XYZ& pBa = fBack  ->GetIJK( x, z );
+        const gp_XYZ& pLe = fLeft  ->GetIJK( y, z );
+        const gp_XYZ& pRi = fRight ->GetIJK( y, z );
+        params.SetCoord( 1, 0.5 * ( pBo.X() * ( 1. - rZ ) + pTo.X() * rZ  +
+                                    pFr.X() * ( 1. - rY ) + pBa.X() * rY ));
+        params.SetCoord( 2, 0.5 * ( pBo.Y() * ( 1. - rZ ) + pTo.Y() * rZ  +
+                                    pLe.Y() * ( 1. - rX ) + pRi.Y() * rX ));
+        params.SetCoord( 3, 0.5 * ( pFr.Z() * ( 1. - rY ) + pBa.Z() * rY  +
+                                    pLe.Z() * ( 1. - rX ) + pRi.Z() * rX ));
+
         // projection points on vertical edges
-        pointsOnShapes[ SMESH_Block::ID_E00z ] = fFront->GetXYZ( 0, z );    
-        pointsOnShapes[ SMESH_Block::ID_E10z ] = fFront->GetXYZ( X, z );    
-        pointsOnShapes[ SMESH_Block::ID_E01z ] = fBack->GetXYZ( 0, z );    
+        pointsOnShapes[ SMESH_Block::ID_E00z ] = fFront->GetXYZ( 0, z );
+        pointsOnShapes[ SMESH_Block::ID_E10z ] = fFront->GetXYZ( X, z );
+        pointsOnShapes[ SMESH_Block::ID_E01z ] = fBack->GetXYZ( 0, z );
         pointsOnShapes[ SMESH_Block::ID_E11z ] = fBack->GetXYZ( X, z );
         // projection points on vertical faces
-        pointsOnShapes[ SMESH_Block::ID_Fx0z ] = fFront->GetXYZ( x, z );    
-        pointsOnShapes[ SMESH_Block::ID_Fx1z ] = fBack ->GetXYZ( x, z );    
-        pointsOnShapes[ SMESH_Block::ID_F0yz ] = fLeft ->GetXYZ( y, z );    
+        pointsOnShapes[ SMESH_Block::ID_Fx0z ] = fFront->GetXYZ( x, z );
+        pointsOnShapes[ SMESH_Block::ID_Fx1z ] = fBack ->GetXYZ( x, z );
+        pointsOnShapes[ SMESH_Block::ID_F0yz ] = fLeft ->GetXYZ( y, z );
         pointsOnShapes[ SMESH_Block::ID_F1yz ] = fRight->GetXYZ( y, z );
 
         // compute internal node coordinates
         gp_XYZ coords;
         SMESH_Block::ShellPoint( params, pointsOnShapes, coords );
         column[ z ] = helper.AddNode( coords.X(), coords.Y(), coords.Z() );
-
       }
     }
   }

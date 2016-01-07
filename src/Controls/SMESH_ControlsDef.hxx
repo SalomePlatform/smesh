@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -37,7 +37,6 @@
 #include <TColStd_SequenceOfInteger.hxx>
 #include <TCollection_AsciiString.hxx>
 #include <TopAbs.hxx>
-#include <TopTools_MapOfShape.hxx>
 #include <TopoDS_Face.hxx>
 #include <gp_XYZ.hxx>
 
@@ -54,6 +53,7 @@ class SMDS_Mesh;
 
 class SMESHDS_Mesh;
 class SMESHDS_SubMesh;
+class SMESHDS_GroupBase;
 
 class gp_Pnt;
 
@@ -67,7 +67,7 @@ namespace SMESH{
     public:
       TSequenceOfXYZ();
 
-      TSequenceOfXYZ(size_type n);
+      explicit TSequenceOfXYZ(size_type n);
 
       TSequenceOfXYZ(size_type n, const gp_XYZ& t);
 
@@ -92,8 +92,16 @@ namespace SMESH{
 
       size_type size() const;
 
+
+      void setElement(const SMDS_MeshElement* e) { myElem = e; }
+
+      const SMDS_MeshElement* getElement() const { return myElem; }
+
+      SMDSAbs_EntityType getElementEntity() const;
+
     private:
-      std::vector<gp_XYZ> myArray;
+      std::vector<gp_XYZ>     myArray;
+      const SMDS_MeshElement* myElem;
     };
 
     /*!
@@ -763,8 +771,8 @@ namespace SMESH{
                               TMapOfLink&            theNonManifold,
                               SMDS_MeshFace*         theNextFace ) const;
 
-     void     getFacesByLink( const Link& theLink,
-                              TVectorOfFacePtr& theFaces ) const;
+      void     getFacesByLink( const Link& theLink,
+                               TVectorOfFacePtr& theFaces ) const;
 
     private:
       const SMDS_Mesh*      myMesh;
@@ -779,6 +787,27 @@ namespace SMESH{
     };
     typedef boost::shared_ptr<ManifoldPart> ManifoldPartPtr;
 
+    /*
+      Class       : BelongToMeshGroup
+      Description : Verify whether a mesh element is included into a mesh group
+    */
+    class SMESHCONTROLS_EXPORT BelongToMeshGroup : public virtual Predicate
+    {
+    public:
+      BelongToMeshGroup();
+      virtual void SetMesh( const SMDS_Mesh* theMesh );
+      virtual bool IsSatisfy( long theElementId );
+      virtual SMDSAbs_ElementType GetType() const;
+
+      void SetGroup( SMESHDS_GroupBase* g );
+      void SetStoreName( const std::string& sn );
+      const SMESHDS_GroupBase* GetGroup() const { return myGroup; }
+
+    private:
+      SMESHDS_GroupBase* myGroup;
+      std::string        myStoreName;
+    };
+    typedef boost::shared_ptr<BelongToMeshGroup> BelongToMeshGroupPtr;
 
     /*
       Class       : ElementsOnSurface
@@ -809,7 +838,6 @@ namespace SMESH{
       TMeshModifTracer      myMeshModifTracer;
       TColStd_MapOfInteger  myIds;
       SMDSAbs_ElementType   myType;
-      //Handle(Geom_Surface)  mySurf;
       TopoDS_Face           mySurf;
       double                myToler;
       bool                  myUseBoundaries;
@@ -867,14 +895,18 @@ namespace SMESH{
         double                      myTol;
       };
       void clearClassifiers();
+      bool getNodeIsOut( const SMDS_MeshNode* n, bool& isOut );
+      void setNodeIsOut( const SMDS_MeshNode* n, bool  isOut );
 
       std::vector< TClassifier* > myClassifiers;
-      const SMDS_Mesh*            myMesh;
       SMDSAbs_ElementType         myType;
       TopoDS_Shape                myShape;
       double                      myToler;
       bool                        myAllNodesFlag;
 
+      TMeshModifTracer            myMeshModifTracer;
+      std::vector<bool>           myNodeIsChecked;
+      std::vector<bool>           myNodeIsOut;
     };
 
     typedef boost::shared_ptr<ElementsOnShape> ElementsOnShapePtr;
@@ -949,6 +981,7 @@ namespace SMESH{
       virtual void                    init();
 
       TopoDS_Shape                    myShape;
+      TColStd_MapOfInteger            mySubShapesIDs;
       const SMESHDS_Mesh*             myMeshDS;
       SMDSAbs_ElementType             myType;
       bool                            myIsSubshape;
@@ -1055,7 +1088,7 @@ namespace SMESH{
       TMeshModifTracer     myMeshModifTracer;
       long                 myFaceID;
       double               myToler;
-      std::set< long >     myCoplanarIDs;
+      TColStd_MapOfInteger myCoplanarIDs;
     };
     typedef boost::shared_ptr<CoplanarFaces> CoplanarFacesPtr;
 

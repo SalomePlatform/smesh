@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -66,7 +66,7 @@ SMESHGUI_MeshInfosBox::SMESHGUI_MeshInfosBox(const bool full, QWidget* theParent
   myNbTrai(0), myNbLinTrai(0), myNbQuadTrai(0), myNbBiQuadTrai(0),
   myNbQuad(0), myNbLinQuad(0), myNbQuadQuad(0), myNbBiQuadQuad(0),
   myNbFace(0), myNbLinFace(0), myNbQuadFace(0), myNbBiQuadFace(0),
-  myNbPolyg(0),
+  myNbPolyg(0), myNbQuadPolyg(0),
   myNbHexa(0), myNbLinHexa(0), myNbQuadHexa(0), myNbBiQuadHexa(0),
   myNbTetra(0),myNbLinTetra(0),myNbQuadTetra(0),
   myNbPyra(0), myNbLinPyra(0), myNbQuadPyra(0),
@@ -219,8 +219,15 @@ SMESHGUI_MeshInfosBox::SMESHGUI_MeshInfosBox(const bool full, QWidget* theParent
     // ... poligones
     lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_POLYGONES")), this );
     l->addWidget( lab,           row, 0 );
+    // --
     myNbPolyg    = new QLabel( this );
     l->addWidget( myNbPolyg,     row, 1 );
+    // --
+    myNbLinPolyg = new QLabel( this );
+    l->addWidget( myNbLinPolyg,    row, 2 );
+    // --
+    myNbQuadPolyg = new QLabel( this );
+    l->addWidget( myNbQuadPolyg,   row, 3 );
 
     addSeparator(this);          // add separator
 
@@ -432,12 +439,14 @@ void SMESHGUI_MeshInfosBox::SetMeshInfo(const SMESH::long_array& theInfo)
                                                theInfo[SMDSEntity_Quadrangle] +
                                                theInfo[SMDSEntity_Quad_Quadrangle] +
                                                theInfo[SMDSEntity_BiQuad_Quadrangle] +
-                                               theInfo[SMDSEntity_Polygon] ));
+                                               theInfo[SMDSEntity_Polygon] +
+                                               theInfo[SMDSEntity_Quad_Polygon]));
   myNbLinFace    ->setText( QString("%1").arg( theInfo[SMDSEntity_Triangle] +
                                                theInfo[SMDSEntity_Quadrangle] +
                                                theInfo[SMDSEntity_Polygon] ));
   myNbQuadFace   ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Triangle] +
-                                               theInfo[SMDSEntity_Quad_Quadrangle] ));
+                                               theInfo[SMDSEntity_Quad_Quadrangle] +
+                                               theInfo[SMDSEntity_Quad_Polygon] ));
   myNbBiQuadFace ->setText( QString("%1").arg( theInfo[SMDSEntity_BiQuad_Triangle] +
                                                theInfo[SMDSEntity_BiQuad_Quadrangle] ));
 
@@ -481,7 +490,10 @@ void SMESHGUI_MeshInfosBox::SetMeshInfo(const SMESH::long_array& theInfo)
     myNbQuadQuad   ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Quadrangle] ));
     myNbBiQuadQuad ->setText( QString("%1").arg( theInfo[SMDSEntity_BiQuad_Quadrangle]));
     // poligones
-    myNbPolyg      ->setText( QString("%1").arg( theInfo[SMDSEntity_Polygon] ));
+    myNbPolyg      ->setText( QString("%1").arg( theInfo[SMDSEntity_Polygon] +
+                                                 theInfo[SMDSEntity_Quad_Polygon] ));
+    myNbLinPolyg   ->setText( QString("%1").arg( theInfo[SMDSEntity_Polygon] ));
+    myNbQuadPolyg  ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Polygon] ));
 
     // tetras
     myNbTetra      ->setText( QString("%1").arg( theInfo[SMDSEntity_Tetra] +

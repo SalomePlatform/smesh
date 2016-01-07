@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -85,6 +85,9 @@ class SMESHDS_EXPORT SMESHDS_GroupBase
 
   int GetColorGroup() const;
   
+  static void SetDefaultColor (const Quantity_Color& theColor)
+  { myDefaultColor = theColor;}
+
  protected:
   const SMDS_MeshElement* findInMesh (const int theID) const;
   void resetIterator();
@@ -105,6 +108,8 @@ class SMESHDS_EXPORT SMESHDS_GroupBase
   int                  myCurIndex;
   int                  myCurID;
   SMDS_ElemIteratorPtr myIterator;
+
+  static Quantity_Color myDefaultColor;
 };
 
 #endif

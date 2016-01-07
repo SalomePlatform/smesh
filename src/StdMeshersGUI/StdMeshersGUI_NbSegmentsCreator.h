@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -39,13 +39,16 @@ class SalomeApp_IntSpinBox;
 class QtxComboBox;
 class SMESHGUI_SpinBox;
 class StdMeshersGUI_DistrTableFrame;
-class StdMeshersGUI_DistrPreview;
+#ifndef DISABLE_PLOT2DVIEWER
+  class StdMeshersGUI_DistrPreview;
+#endif
 class QLineEdit;
 class QButtonGroup;
 class QGroupBox;
 class QGridLayout;
 class QRadioButton;
 class StdMeshersGUI_SubShapeSelectorWdg;
+class StdMeshersGUI_PropagationHelperWdg;
 
 typedef struct
 {
@@ -85,7 +88,9 @@ private:
   QtxComboBox*     myDistr;
   SMESHGUI_SpinBox*   myScale;
   StdMeshersGUI_DistrTableFrame*  myTable;
+#ifndef DISABLE_PLOT2DVIEWER
   StdMeshersGUI_DistrPreview* myPreview;
+#endif
   QLineEdit       *myName, *myExpr;
   QGroupBox*       myConvBox;
   QButtonGroup*    myConv;
@@ -96,6 +101,7 @@ private:
   QGroupBox*       myReversedEdgesBox;
 
   StdMeshersGUI_SubShapeSelectorWdg*    myDirectionWidget;
+  StdMeshersGUI_PropagationHelperWdg*   myReversedEdgesHelper;
 };
 
 #endif // STDMESHERSGUI_NBSEGMENTSCREATOR_H

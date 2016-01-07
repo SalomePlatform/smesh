@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -37,14 +37,15 @@
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Group)
 
-class QPushButton;
-class QtxColorButton;
+class LightApp_SelectionMgr;
+class QCheckBox;
 class QComboBox;
-class QListWidget;
 class QGroupBox;
 class QLineEdit;
+class QListWidget;
+class QPushButton;
+class QtxColorButton;
 class SMESHGUI;
-class LightApp_SelectionMgr;
 class SVTK_Selector;
 
 /*
@@ -87,6 +88,7 @@ protected:
   SMESH::ListOfGroups*      convert( const QList<SMESH::SMESH_GroupBase_var>& );
 
   SALOMEDS::Color           getColor() const;
+  void                      setDefaultGroupColor();
 
   void                      setIsApplyAndClose( const bool theFlag );
   bool                      isApplyAndClose() const;
@@ -103,6 +105,9 @@ private slots:
   void                      onHelp();
 
   void                      onDeactivate();
+
+  void                      onOpenView();
+  void                      onCloseView();
 
 private:
   QWidget*                  createButtonFrame( QWidget* );
@@ -235,8 +240,11 @@ protected slots:
   virtual void                      onSelectionDone();
 
 private:
-  QComboBox*                        myCombo;
+  QComboBox*                        myTypeCombo;
+  QComboBox*                        myNbNoCombo;
   QListWidget*                      myListWg;
+  QCheckBox*                        myUnderlOnlyChk;
+  
   QList<SMESH::SMESH_GroupBase_var> myGroups;
 };
 

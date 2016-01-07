@@ -1,5 +1,5 @@
 #  -*- coding: iso-8859-1 -*-
-# Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -103,3 +103,5 @@ smesh.SetName(Compound1, 'Compound_with_RenamedGrps_and_MergeElems')
 Compound2 = smesh.Concatenate([Mesh_inf.GetMesh(), Mesh_sup.GetMesh()], 1, 0, 1e-05, True)
 smesh.SetName(Compound2, 'Compound_with_UniteGrps_and_GrpsOfAllElems')
 #end
+
+salome.sg.updateObjBrowser(1)

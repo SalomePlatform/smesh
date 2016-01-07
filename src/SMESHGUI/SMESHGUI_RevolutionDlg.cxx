@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -35,6 +35,7 @@
 #include "SMESHGUI_IdValidator.h"
 #include "SMESHGUI_MeshEditPreview.h"
 #include "SMESHGUI_FilterDlg.h"
+#include "SMESHGUI_ExtrusionDlg.h"
 
 #include <SMESH_Actor.h>
 #include <SMESH_TypeFilter.hxx>
@@ -91,66 +92,28 @@
 SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
   : SMESHGUI_PreviewDlg( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-    myVectorDefinition(NONE_SELECT),
-    myFilterDlg( 0 ),
-    mySelectedObject(SMESH::SMESH_IDSource::_nil()),
-    myActor(0)
+    myVectorDefinition(NONE_SELECT)
 {
-  mySimulation = new SMESHGUI_MeshEditPreview(SMESH::GetViewWindow( mySMESHGUI ));
-
   SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
-  QPixmap image0 ( mgr->loadPixmap("SMESH", tr("ICON_DLG_EDGE")));
-  QPixmap image1 ( mgr->loadPixmap("SMESH", tr("ICON_DLG_TRIANGLE")));
-  QPixmap image2 ( mgr->loadPixmap("SMESH", tr("ICON_SELECT")));
+  QPixmap image ( mgr->loadPixmap("SMESH", tr("ICON_SELECT")));
 
   setModal(false);
   setAttribute(Qt::WA_DeleteOnClose, true);
   setWindowTitle(tr("REVOLUTION_AROUND_AXIS"));
   setSizeGripEnabled(true);
-  
+
   QVBoxLayout* SMESHGUI_RevolutionDlgLayout = new QVBoxLayout(this);
   SMESHGUI_RevolutionDlgLayout->setSpacing(SPACING);
   SMESHGUI_RevolutionDlgLayout->setMargin(MARGIN);
 
   /***************************************************************/
-  ConstructorsBox = new QGroupBox(tr("SMESH_REVOLUTION"), this);
-  GroupConstructors = new QButtonGroup(this);
-  QHBoxLayout* ConstructorsBoxLayout = new QHBoxLayout(ConstructorsBox);
-  ConstructorsBoxLayout->setSpacing(SPACING);
-  ConstructorsBoxLayout->setMargin(MARGIN);
-
-  RadioButton1 = new QRadioButton(ConstructorsBox);
-  RadioButton1->setIcon(image0);
-  RadioButton2 = new QRadioButton(ConstructorsBox);
-  RadioButton2->setIcon(image1);
-
-  ConstructorsBoxLayout->addWidget(RadioButton1);
-  ConstructorsBoxLayout->addWidget(RadioButton2);
-  GroupConstructors->addButton(RadioButton1, 0);
-  GroupConstructors->addButton(RadioButton2, 1);
-
-  /***************************************************************/
-  GroupArguments = new QGroupBox(tr("REVOLUTION_1D"), this);
+  GroupArguments = new QGroupBox(tr("REVOLUTION"), this);
   QGridLayout* GroupArgumentsLayout = new QGridLayout(GroupArguments);
   GroupArgumentsLayout->setSpacing(SPACING);
   GroupArgumentsLayout->setMargin(MARGIN);
 
-  myIdValidator = new SMESHGUI_IdValidator(this);
-
   // Controls for elements selection
-  TextLabelElements = new QLabel(tr("SMESH_ID_ELEMENTS"), GroupArguments);
-
-  SelectElementsButton = new QPushButton(GroupArguments);
-  SelectElementsButton->setIcon(image2);
-
-  LineEditElements  = new QLineEdit(GroupArguments);
-  LineEditElements->setValidator(myIdValidator);
-  LineEditElements->setMaxLength(-1);
-  myFilterBtn = new QPushButton( tr( "SMESH_BUT_FILTER" ), GroupArguments );
-  connect(myFilterBtn,   SIGNAL(clicked()), this, SLOT(setFilters()));
-
-  // Control for the whole mesh selection
-  CheckBoxMesh = new QCheckBox(tr("SMESH_SELECT_WHOLE_MESH"), GroupArguments);
+  SelectorWdg = new SMESHGUI_3TypesSelector( GroupArguments );
 
   // Controls for axis defining
   GroupAxis = new QGroupBox(tr("SMESH_AXIS"), GroupArguments);
@@ -160,7 +123,8 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
 
   TextLabelPoint = new QLabel(tr("SMESH_POINT"), GroupAxis);
   SelectPointButton  = new QPushButton(GroupAxis);
-  SelectPointButton->setIcon(image2);
+  SelectPointButton->setIcon(image);
+  SelectPointButton->setCheckable(true);
 
   TextLabelX = new QLabel(tr("SMESH_X"), GroupAxis);
   SpinBox_X = new SMESHGUI_SpinBox(GroupAxis);
@@ -173,7 +137,8 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
 
   TextLabelVector = new QLabel(tr("SMESH_VECTOR"), GroupAxis);
   SelectVectorButton = new QPushButton(GroupAxis);
-  SelectVectorButton->setIcon(image2);
+  SelectVectorButton->setIcon(image);
+  SelectVectorButton->setCheckable(true);
 
   TextLabelDX = new QLabel(tr("SMESH_DX"), GroupAxis);
   SpinBox_DX = new SMESHGUI_SpinBox(GroupAxis);
@@ -237,17 +202,16 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
   MakeGroupsCheck = new QCheckBox(tr("SMESH_MAKE_GROUPS"), GroupArguments);
   MakeGroupsCheck->setChecked(true);
 
-  GroupArgumentsLayout->addWidget(TextLabelElements,    0, 0);
-  GroupArgumentsLayout->addWidget(SelectElementsButton, 0, 1);
-  GroupArgumentsLayout->addWidget(LineEditElements,     0, 2);
-  GroupArgumentsLayout->addWidget(myFilterBtn,          0, 3);
-  GroupArgumentsLayout->addWidget(CheckBoxMesh,         1, 0, 1, 4);
-  GroupArgumentsLayout->addWidget(GroupAxis,            2, 0, 1, 4);
-  GroupArgumentsLayout->addWidget(GroupAngleBox,        3, 0, 1, 4);
-  GroupArgumentsLayout->addWidget(TextLabelTolerance,   4, 0, 1, 2);
-  GroupArgumentsLayout->addWidget(SpinBox_Tolerance,    4, 2, 1, 2);
-  GroupArgumentsLayout->addWidget(myPreviewCheckBox,    5, 0, 1, 4);
-  GroupArgumentsLayout->addWidget(MakeGroupsCheck,      6, 0, 1, 4);
+  GroupArgumentsLayout->addWidget(SelectorWdg,          0, 0, 1, 4);
+  GroupArgumentsLayout->addWidget(GroupAxis,            1, 0, 1, 4);
+  GroupArgumentsLayout->addWidget(GroupAngleBox,        2, 0, 1, 4);
+  GroupArgumentsLayout->addWidget(TextLabelTolerance,   3, 0, 1, 2);
+  GroupArgumentsLayout->addWidget(SpinBox_Tolerance,    3, 2, 1, 2);
+  GroupArgumentsLayout->addWidget(myPreviewCheckBox,    4, 0, 1, 4);
+  GroupArgumentsLayout->addWidget(MakeGroupsCheck,      5, 0, 1, 4);
+
+  SelectorWdg->GetButtonGroup()->addButton( SelectVectorButton );
+  SelectorWdg->GetButtonGroup()->addButton( SelectPointButton );
 
   /***************************************************************/
   GroupButtons = new QGroupBox(this);
@@ -274,7 +238,6 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
   GroupButtonsLayout->addWidget(buttonHelp);
 
   /***************************************************************/
-  SMESHGUI_RevolutionDlgLayout->addWidget(ConstructorsBox);
   SMESHGUI_RevolutionDlgLayout->addWidget(GroupArguments);
   SMESHGUI_RevolutionDlgLayout->addWidget(GroupButtons);
 
@@ -294,22 +257,9 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
 
   SpinBox_Tolerance->RangeStepAndValidator(0.0, COORD_MAX, 0.00001, "len_tol_precision");
 
-  RadioButton1->setChecked(true);
-
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
-
-  // Costruction of the logical filter
-  SMESH_TypeFilter* aMeshOrSubMeshFilter = new SMESH_TypeFilter (SMESH::MESHorSUBMESH);
-  SMESH_TypeFilter* aSmeshGroupFilter    = new SMESH_TypeFilter (SMESH::GROUP);
-
-  QList<SUIT_SelectionFilter*> aListOfFilters;
-  if (aMeshOrSubMeshFilter) aListOfFilters.append(aMeshOrSubMeshFilter);
-  if (aSmeshGroupFilter)    aListOfFilters.append(aSmeshGroupFilter);
-
-  myMeshOrSubMeshOrGroupFilter =
-    new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR);
 
   myHelpFileName = "revolution_page.html";
 
@@ -326,9 +276,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
   connect(buttonCancel, SIGNAL(clicked()), this, SLOT(reject()));
   connect(buttonApply,  SIGNAL(clicked()), this, SLOT(ClickOnApply()));
   connect(buttonHelp,   SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
-  connect(GroupConstructors, SIGNAL(buttonClicked(int)), SLOT(ConstructorsClicked(int)));
 
-  connect(SelectElementsButton, SIGNAL(clicked()), this, SLOT(SetEditCurrentArgument()));
   connect(SelectPointButton,    SIGNAL(clicked()), this, SLOT(SetEditCurrentArgument()));
   connect(SelectVectorButton,   SIGNAL(clicked()), this, SLOT(onSelectVectorButton()));
 
@@ -336,16 +284,21 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
   connect(SpinBox_Y,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
   connect(SpinBox_Z,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
 
-  connect(SpinBox_DX, SIGNAL(valueChanged(double)), this, SLOT(onVectorChanged()));
-  connect(SpinBox_DY, SIGNAL(valueChanged(double)), this, SLOT(onVectorChanged()));
-  connect(SpinBox_DZ, SIGNAL(valueChanged(double)), this, SLOT(onVectorChanged()));
+  connect(SpinBox_DX, SIGNAL(valueChanged(double)), this, SLOT(CheckIsEnable()));
+  connect(SpinBox_DY, SIGNAL(valueChanged(double)), this, SLOT(CheckIsEnable()));
+  connect(SpinBox_DZ, SIGNAL(valueChanged(double)), this, SLOT(CheckIsEnable()));
+  connect(SpinBox_DX, SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox_DY, SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(SpinBox_DZ, SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
 
-  connect(mySMESHGUI,     SIGNAL(SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
-  connect(mySelectionMgr, SIGNAL(currentSelectionChanged()),      this, SLOT(SelectionIntoArgument()));
+  connect(mySMESHGUI,     SIGNAL(SignalDeactivateActiveDialog()), SLOT(DeactivateActiveDialog()));
+  connect(mySelectionMgr, SIGNAL(currentSelectionChanged()),      SLOT(SelectionIntoArgument()));
+  connect(SelectorWdg,    SIGNAL(selectionChanged()), this, SLOT(toDisplaySimulation()));
+  connect(SelectorWdg,    SIGNAL(selectionChanged()), this, SLOT(CheckIsEnable()));
   /* to close dialog if study change */
-  connect(mySMESHGUI,       SIGNAL(SignalCloseAllDialogs()), this, SLOT(reject()));
-  connect(LineEditElements, SIGNAL(textChanged(const QString&)),   SLOT(onTextChange(const QString&)));
-  connect(CheckBoxMesh,     SIGNAL(toggled(bool)),                 SLOT(onSelectMesh(bool)));
+  connect(mySMESHGUI,       SIGNAL(SignalCloseAllDialogs()),      this, SLOT(reject()));
+  connect(mySMESHGUI,       SIGNAL(SignalActivatedViewManager()), this, SLOT(onOpenView()));
+  connect(mySMESHGUI,       SIGNAL(SignalCloseView()),            this, SLOT(onCloseView()));
 
   connect(GroupAngle,        SIGNAL(buttonClicked(int)),   this, SLOT(toDisplaySimulation()));
   connect(SpinBox_Angle,     SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
@@ -357,8 +310,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
 
   connect(SpinBox_Angle, SIGNAL(textChanged(const QString&)), this, SLOT(onAngleTextChange(const QString&)));
 
-  ConstructorsClicked(0);
-  SelectionIntoArgument();
+  CheckIsEnable();
 }
 
 //=================================================================================
@@ -367,12 +319,6 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
 //=================================================================================
 SMESHGUI_RevolutionDlg::~SMESHGUI_RevolutionDlg()
 {
-  delete mySimulation;
-  if ( myFilterDlg ) {
-    myFilterDlg->setParent( 0 );
-    delete myFilterDlg;
-    myFilterDlg = 0;
-  }
 }
 
 //=================================================================================
@@ -381,17 +327,6 @@ SMESHGUI_RevolutionDlg::~SMESHGUI_RevolutionDlg()
 //=================================================================================
 void SMESHGUI_RevolutionDlg::Init (bool ResetControls)
 {
-  myBusy = false;
-
-  myEditCurrentArgument = 0;
-  LineEditElements->clear();
-  myElementsId = "";
-  myNbOkElements = 0;
-  myIDs.clear();
-
-  myActor = 0;
-  myMesh = SMESH::SMESH_Mesh::_nil();
-
   if (ResetControls) {
     SpinBox_X->SetValue(0.0);
     SpinBox_Y->SetValue(0.0);
@@ -404,68 +339,51 @@ void SMESHGUI_RevolutionDlg::Init (bool ResetControls)
     SpinBox_NbSteps->setValue(1);
     SpinBox_Tolerance->SetValue(1e-05);
 
-    CheckBoxMesh->setChecked(false);
-    onSelectMesh(false);
     myPreviewCheckBox->setChecked(false);
     onDisplaySimulation(false);
   }
+  SelectorWdg->Clear();
 }
 
 //=================================================================================
-// function : ConstructorsClicked()
-// purpose  : Radio button management
+// function : CheckIsEnable()
+// purpose  : Check whether the Ok and Apply buttons should be enabled or not
 //=================================================================================
-void SMESHGUI_RevolutionDlg::ConstructorsClicked (int constructorId)
+
+void SMESHGUI_RevolutionDlg::CheckIsEnable()
+{  
+  bool anIsEnable = SelectorWdg->IsAnythingSelected() && IsAxisOk();
+
+  buttonOk->setEnabled(anIsEnable);
+  buttonApply->setEnabled(anIsEnable);
+}
+
+//=================================================================================
+// function : isValid
+// purpose  : Return true in case if values entered into dialog are valid
+//=================================================================================
+bool SMESHGUI_RevolutionDlg::isValid()
 {
-  disconnect(mySelectionMgr, 0, this, 0);
+  QString msg;
+  bool ok = true;
+  ok = SpinBox_X->isValid( msg, true ) && ok;
+  ok = SpinBox_Y->isValid( msg, true ) && ok;
+  ok = SpinBox_Z->isValid( msg, true ) && ok;
+  ok = SpinBox_DX->isValid( msg, true ) && ok;
+  ok = SpinBox_DY->isValid( msg, true ) && ok;
+  ok = SpinBox_DZ->isValid( msg, true ) && ok;
+  ok = SpinBox_Angle->isValid( msg, true ) && ok;
+  ok = SpinBox_NbSteps->isValid( msg, true ) && ok;
+  ok = SpinBox_Tolerance->isValid( msg, true ) && ok;
 
-  /*  SALOME_ListIO io;
-  mySelectionMgr->selectedObjects( io );
-  SALOME_ListIO aList;
-  mySelectionMgr->setSelectedObjects( aList );*/
-
-  buttonApply->setEnabled(false);
-  buttonOk->setEnabled(false);
-  mySimulation->SetVisibility(false);
-
-  Selection_Mode aSelMode = ActorSelection;
-
-  switch (constructorId) {
-  case 0:
-    {
-      GroupArguments->setTitle(tr("REVOLUTION_1D"));
-      aSelMode = EdgeSelection;
-      break;
-    }
-  case 1:
-    {
-      GroupArguments->setTitle(tr("REVOLUTION_2D"));
-      aSelMode = FaceSelection;
-      break;
-    }
+  if( !ok ) {
+    QString str( tr( "SMESH_INCORRECT_INPUT" ) );
+    if ( !msg.isEmpty() )
+      str += "\n" + msg;
+    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
+    return false;
   }
-
-  if (myEditCurrentArgument != (QWidget*)LineEditElements) {
-    SMESH::SetPointRepresentation(false);
-  }
-
-  if (!CheckBoxMesh->isChecked())
-    {
-      LineEditElements->clear();
-      myIDs.clear();
-      myNbOkElements = 0;
-      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-        aViewWindow->SetSelectionMode(aSelMode);
-    }
-
-  myEditCurrentArgument = (QWidget*)LineEditElements;
-  LineEditElements->setFocus();
-
-  if (CheckBoxMesh->isChecked())
-    onSelectMesh(true);
-
-  connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
-  //  mySelectionMgr->setSelectedObjects( io );
+  return true;
 }
 
 //=================================================================================
@@ -480,14 +398,7 @@ bool SMESHGUI_RevolutionDlg::ClickOnApply()
   if (!isValid())
     return false;
 
-  if (myNbOkElements && IsAxisOk()) {
-    QStringList aListElementsId = myElementsId.split(" ", QString::SkipEmptyParts);
-
-    SMESH::long_array_var anElementsId = new SMESH::long_array;
-
-    anElementsId->length(aListElementsId.count());
-    for (int i = 0; i < aListElementsId.count(); i++)
-      anElementsId[i] = aListElementsId[i].toInt();
+  if ( SelectorWdg->IsAnythingSelected() && IsAxisOk() ) {
 
     SMESH::AxisStruct anAxis;
 
@@ -498,8 +409,8 @@ bool SMESHGUI_RevolutionDlg::ClickOnApply()
     anAxis.vy = SpinBox_DY->GetValue();
     anAxis.vz = SpinBox_DZ->GetValue();
 
-    double anAngle = (SpinBox_Angle->GetValue())*M_PI/180.;
-    long aNbSteps = (long)SpinBox_NbSteps->value();
+    double    anAngle = (SpinBox_Angle->GetValue())*M_PI/180.;
+    long     aNbSteps = (long)SpinBox_NbSteps->value();
     double aTolerance = SpinBox_Tolerance->GetValue();
 
     if ( GroupAngle->checkedId() == 1 )
@@ -516,50 +427,61 @@ bool SMESHGUI_RevolutionDlg::ClickOnApply()
     aParameters << SpinBox_NbSteps->text();
     aParameters << SpinBox_Tolerance->text();
 
+    bool meshHadNewTypeBefore = true;
+    int  maxSelType = 0;
+    const bool makeGroups = ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() );
+
     try {
       SUIT_OverrideCursor aWaitCursor;
-      SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
-      
-      myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
 
-      if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() ) {
-        if( CheckBoxMesh->isChecked() ) {
-          if( GetConstructorId() == 0 )
-            SMESH::ListOfGroups_var groups = 
-              aMeshEditor->RotationSweepObject1DMakeGroups(mySelectedObject, anAxis,
-                                                           anAngle, aNbSteps, aTolerance);
-          else
-            SMESH::ListOfGroups_var groups = 
-              aMeshEditor->RotationSweepObject2DMakeGroups(mySelectedObject, anAxis,
-                                                           anAngle, aNbSteps, aTolerance);
-        }
-        else
-          SMESH::ListOfGroups_var groups = 
-            aMeshEditor->RotationSweepMakeGroups(anElementsId.inout(), anAxis,
-                                                 anAngle, aNbSteps, aTolerance);
-      }
-      else {
-        if( CheckBoxMesh->isChecked() ) {
-          if( GetConstructorId() == 0 )
-            aMeshEditor->RotationSweepObject1D(mySelectedObject, anAxis, anAngle, aNbSteps, aTolerance);
-          else
-            aMeshEditor->RotationSweepObject2D(mySelectedObject, anAxis, anAngle, aNbSteps, aTolerance);
-        }
-        else
-          aMeshEditor->RotationSweep(anElementsId.inout(), anAxis, anAngle, aNbSteps, aTolerance);
-      }
+      SMESH::SMESH_Mesh_var mesh = SelectorWdg->GetMesh();
+
+      mesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+
+      SMESH::ListOfIDSources_var nodes = new SMESH::ListOfIDSources();
+      SMESH::ListOfIDSources_var edges = new SMESH::ListOfIDSources();
+      SMESH::ListOfIDSources_var faces = new SMESH::ListOfIDSources();
+      maxSelType = SelectorWdg->GetSelected( nodes, edges, faces );
+
+      // is it necessary to switch on the next Display Mode?
+      SMESH::ElementType newType = (SMESH::ElementType)( maxSelType + 1 );
+      SMESH::array_of_ElementType_var oldTypes = mesh->GetTypes();
+      meshHadNewTypeBefore = false;
+      for ( size_t i = 0; i < oldTypes->length() && !meshHadNewTypeBefore; ++i )
+        meshHadNewTypeBefore = ( oldTypes[i] >= newType );
+
+      SMESH::SMESH_MeshEditor_var aMeshEditor = mesh->GetMeshEditor();
+
+      SMESH::ListOfGroups_var groups = 
+        aMeshEditor->RotationSweepObjects( nodes, edges, faces, anAxis,
+                                           anAngle, aNbSteps, aTolerance, makeGroups);
 
     } catch (...) {
     }
 
-    SMESH::UpdateView();
-    SMESH::Update(myIO, SMESH::eDisplay);
-    if ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() )
+    SMESH_Actor* actor = SelectorWdg->GetActor();
+    if ( actor && !meshHadNewTypeBefore )
+    {
+      unsigned int aMode = actor->GetEntityMode();
+      switch ( maxSelType ) {
+      case SMESH::NODE: // extrude node -> edges
+        actor->SetRepresentation(SMESH_Actor::eEdge);
+        actor->SetEntityMode( aMode |= SMESH_Actor::eEdges ); break;
+      case SMESH::EDGE: // edge -> faces
+        actor->SetRepresentation(SMESH_Actor::eSurface);
+        actor->SetEntityMode( aMode |= SMESH_Actor::eFaces ); break;
+      case SMESH::FACE: // faces -> volumes
+        actor->SetRepresentation(SMESH_Actor::eSurface);
+        actor->SetEntityMode( aMode |= SMESH_Actor::eVolumes ); break;
+      }
+    }
+    if ( actor )
+      SMESH::Update( actor->getIO(), actor->GetVisibility() );
+    if ( makeGroups )
       mySMESHGUI->updateObjBrowser(true); // new groups may appear
     Init(false);
-    ConstructorsClicked(GetConstructorId());
-    mySelectedObject = SMESH::SMESH_IDSource::_nil();
-    SelectionIntoArgument();
+    mySelectionMgr->clearSelected();
+    SelectorWdg->Clear();
 
     SMESHGUI::Modified();
   }
@@ -595,6 +517,32 @@ void SMESHGUI_RevolutionDlg::reject()
   mySMESHGUI->ResetState();
 
   QDialog::reject();
+}
+
+//=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_RevolutionDlg::onOpenView()
+{
+  if ( mySelector ) {
+    mySimulation->SetVisibility(false);
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    ActivateThisDialog();
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_RevolutionDlg::onCloseView()
+{
+  DeactivateActiveDialog();
+  mySelector = 0;
 }
 
 //=================================================================================
@@ -634,159 +582,48 @@ void SMESHGUI_RevolutionDlg::onAngleTextChange (const QString& theNewText)
   RadioButton4->setEnabled( isNumber );
 }
 
-//=======================================================================
-// function : onTextChange()
-// purpose  :
-//=======================================================================
-void SMESHGUI_RevolutionDlg::onTextChange (const QString& theNewText)
-{
-  QLineEdit* send = (QLineEdit*)sender();
-
-  if (myBusy) return;
-  myBusy = true;
-
-  if (send == LineEditElements)
-    myNbOkElements = 0;
-
-  buttonOk->setEnabled(false);
-  buttonApply->setEnabled(false);
-
-  // hilight entered elements
-  SMDS_Mesh* aMesh = 0;
-  if (myActor)
-    aMesh = myActor->GetObject()->GetMesh();
-
-  if (aMesh) {
-    if (send == LineEditElements) {
-      Handle(SALOME_InteractiveObject) anIO = myActor->getIO();
-
-      TColStd_MapOfInteger newIndices;
-
-      QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
-      
-      for (int i = 0; i < aListId.count(); i++) {
-        const SMDS_MeshElement * e = aMesh->FindElement(aListId[ i ].toInt());
-        if (e)
-          newIndices.Add(e->GetID());
-        myNbOkElements++;
-      }
-
-      mySelector->AddOrRemoveIndex(myActor->getIO(), newIndices, false);
-      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-        aViewWindow->highlight( myActor->getIO(), true, true );
-      
-      myElementsId = theNewText;
-    }
-  }
-
-  if (myNbOkElements && IsAxisOk()) {
-    buttonOk->setEnabled(true);
-    buttonApply->setEnabled(true);
-  }
-  onDisplaySimulation(true);
-
-  myBusy = false;
-}
-
 //=================================================================================
 // function : SelectionIntoArgument()
 // purpose  : Called when selection as changed or other case
 //=================================================================================
 void SMESHGUI_RevolutionDlg::SelectionIntoArgument()
 {
-  if (myBusy) return;
-
-  // clear
-  QString aString = "";
-
-  myBusy = true;
-  if (myEditCurrentArgument == (QWidget*)LineEditElements) {
-    LineEditElements->setText(aString);
-    myNbOkElements = 0;
-    buttonOk->setEnabled(false);
-    buttonApply->setEnabled(false);
-  }
-  myBusy = false;
-
   if (!GroupButtons->isEnabled()) // inactive
     return;
-
-  // get selected mesh
-  SALOME_ListIO aList;
-  mySelectionMgr->selectedObjects(aList);
-  int nbSel = aList.Extent();
-  if (nbSel != 1) 
-    return;
-
-  Handle(SALOME_InteractiveObject) IO = aList.First();
-  SMESH::SMESH_Mesh_var aMeshVar = SMESH::GetMeshByIO(IO);
-  if (aMeshVar->_is_nil())
-    return;
-
-  SMESH_Actor* anActor = SMESH::FindActorByObject(aMeshVar);
-  if (!anActor)
-    anActor = SMESH::FindActorByEntry(IO->getEntry());
-  if (!anActor && !CheckBoxMesh->isChecked())
-    return;
-
-  int aNbUnits = 0;
-
-  if (myEditCurrentArgument == (QWidget*)LineEditElements) {
-    myElementsId = "";
-    myMesh = aMeshVar;
-    myActor = anActor;
-    myIO = IO;
-
-    // MakeGroups is available if there are groups
-    if ( myMesh->NbGroups() == 0 ) {
-      MakeGroupsCheck->setChecked(false);
-      MakeGroupsCheck->setEnabled(false);
-    } else {
-      MakeGroupsCheck->setEnabled(true);
-    }
-
-    if (CheckBoxMesh->isChecked()) {
-      SMESH::GetNameOfSelectedIObjects(mySelectionMgr, aString);
-
-      if (!SMESH::IObjectToInterface<SMESH::SMESH_IDSource>(IO)->_is_nil())
-        mySelectedObject = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>(IO);
-      else
-        return;
-    } else {
-      aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, IO, aString);
-      myElementsId = aString;
-      if (aNbUnits < 1)
-        return;
-    }
-    myNbOkElements = true;
-  } else {
-
-    SMDS_Mesh* aMesh = anActor->GetObject()->GetMesh();
-    if (!aMesh)
+  
+  if ( SelectVectorButton->isChecked() ||
+       SelectPointButton->isChecked() )
+  {
+    // get selected mesh
+    SALOME_ListIO aList;
+    mySelectionMgr->selectedObjects(aList);
+    int nbSel = aList.Extent();
+    if (nbSel != 1)
       return;
 
-    bool isNodeSelected = (myEditCurrentArgument == (QWidget*)SpinBox_X ||
-                           (myEditCurrentArgument == (QWidget*)SpinBox_DX && 
+    Handle(SALOME_InteractiveObject) IO = aList.First();
+    TColStd_IndexedMapOfInteger aMapIndex;
+    mySelector->GetIndex(IO,aMapIndex);
+    if ( aMapIndex.Extent() != 1 )
+      return;
+
+    SMESH_Actor* anActor = SMESH::FindActorByEntry( IO->getEntry() );
+    SMDS_Mesh*     aMesh = anActor ? anActor->GetObject()->GetMesh() : 0;
+    if ( !aMesh )
+      return;
+
+    bool isNodeSelected = ((myEditCurrentArgument == (QWidget*)SpinBox_X ) ||
+                           (myEditCurrentArgument == (QWidget*)SpinBox_DX &&
                             myVectorDefinition==POINT_SELECT));
 
-    bool isFaceSelected = (myEditCurrentArgument == (QWidget*)SpinBox_DX && 
+    bool isFaceSelected = (myEditCurrentArgument == (QWidget*)SpinBox_DX &&
                            myVectorDefinition==FACE_SELECT);
 
-    if(isNodeSelected) {
-      aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);
-    }
-    else if(isFaceSelected){
-      aNbUnits = SMESH::GetNameOfSelectedElements(mySelector, IO, aString);
-    }
-    
-    if (aNbUnits != 1)
-      return;
-
-    if(isNodeSelected) {
-      const SMDS_MeshNode * n = aMesh->FindNode(aString.toInt());
+    if ( isNodeSelected )
+    {
+      const SMDS_MeshNode * n = aMesh->FindNode( aMapIndex(1) );
       if (!n)
         return;
-
       double x = n->X();
       double y = n->Y();
       double z = n->Z();
@@ -801,30 +638,21 @@ void SMESHGUI_RevolutionDlg::SelectionIntoArgument()
         SpinBox_DZ->SetValue(z - SpinBox_Z->GetValue());
       }
     }
-    else if(isFaceSelected){
-      const SMDS_MeshFace* face = dynamic_cast<const SMDS_MeshFace*>(aMesh->FindElement(aString.toInt()));
+    else if ( isFaceSelected )
+    {
+      const SMDS_MeshFace* face =
+        dynamic_cast<const SMDS_MeshFace*>(aMesh->FindElement(aMapIndex(1)));
       if (!face)
         return;
-      
       gp_XYZ aNormale = SMESH::getNormale(face);
       SpinBox_DX->SetValue(aNormale.X());
       SpinBox_DY->SetValue(aNormale.Y());
       SpinBox_DZ->SetValue(aNormale.Z());
-      
+
     }
   }
 
-  myBusy = true;
-  if (myEditCurrentArgument == (QWidget*)LineEditElements)
-    LineEditElements->setText(aString);
-  myBusy = false;
-
-  // OK
-  if (myNbOkElements && IsAxisOk()) {
-    buttonOk->setEnabled(true);
-    buttonApply->setEnabled(true);
-  }
-
+  CheckIsEnable();
   onDisplaySimulation(true);
 }
 
@@ -840,35 +668,13 @@ void SMESHGUI_RevolutionDlg::SetEditCurrentArgument()
   mySelectionMgr->clearSelected();
   mySelectionMgr->clearFilters();
 
-  if (send == SelectElementsButton) {
-    mySimulation->SetVisibility(false);
-    myEditCurrentArgument = (QWidget*)LineEditElements;
-    SMESH::SetPointRepresentation(false);
-    if (CheckBoxMesh->isChecked()) {
-      if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-        aViewWindow->SetSelectionMode(ActorSelection);
-      mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
-    } else {
-      int aConstructorId = GetConstructorId();
-      if (aConstructorId == 0)
-        {
-          if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-            aViewWindow->SetSelectionMode(EdgeSelection);
-        }
-      else if (aConstructorId == 1)
-        {
-          if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-            aViewWindow->SetSelectionMode(FaceSelection);
-        }
-    }
-  } else if (send == SelectPointButton) {
+  if (send == SelectPointButton) {
     myEditCurrentArgument = (QWidget*)SpinBox_X;
+    myEditCurrentArgument->setFocus();
     SMESH::SetPointRepresentation(true);
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
       aViewWindow->SetSelectionMode(NodeSelection);
   }
-
-  myEditCurrentArgument->setFocus();
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
   SelectionIntoArgument();
 }
@@ -879,10 +685,11 @@ void SMESHGUI_RevolutionDlg::SetEditCurrentArgument()
 //=================================================================================
 void SMESHGUI_RevolutionDlg::DeactivateActiveDialog()
 {
-  if (ConstructorsBox->isEnabled()) {
-    ConstructorsBox->setEnabled(false);
+  if (GroupButtons->isEnabled())
+  {
     GroupArguments->setEnabled(false);
     GroupButtons->setEnabled(false);
+    SelectorWdg->setEnabled(false);
     mySMESHGUI->ResetState();
     mySMESHGUI->SetActiveDialogBox(0);
   }
@@ -896,14 +703,11 @@ void SMESHGUI_RevolutionDlg::ActivateThisDialog()
 {
   /* Emit a signal to deactivate the active dialog */
   mySMESHGUI->EmitSignalDeactivateDialog();
-  ConstructorsBox->setEnabled(true);
   GroupArguments->setEnabled(true);
   GroupButtons->setEnabled(true);
+  SelectorWdg->setEnabled(true);
 
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
-
-  ConstructorsClicked(GetConstructorId());
-  SelectionIntoArgument();
 }
 
 //=================================================================================
@@ -912,71 +716,13 @@ void SMESHGUI_RevolutionDlg::ActivateThisDialog()
 //=================================================================================
 void SMESHGUI_RevolutionDlg::enterEvent (QEvent*)
 {
-  if (!ConstructorsBox->isEnabled())
+  if (!GroupButtons->isEnabled()) {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+    if ( aViewWindow && !mySelector) {
+      mySelector = aViewWindow->GetSelector();
+    }
     ActivateThisDialog();
-}
-
-//=======================================================================
-//function : onSelectMesh
-//purpose  :
-//=======================================================================
-void SMESHGUI_RevolutionDlg::onSelectMesh (bool toSelectMesh)
-{
-  if (toSelectMesh) {
-    myIDs = LineEditElements->text();
-    TextLabelElements->setText(tr("SMESH_NAME"));
   }
-  else
-    TextLabelElements->setText(tr("SMESH_ID_ELEMENTS"));
-  myFilterBtn->setEnabled(!toSelectMesh);
-
-  if (myEditCurrentArgument != LineEditElements) {
-    LineEditElements->clear();
-    mySimulation->SetVisibility(false);
-    return;
-  }
-
-  mySelectionMgr->clearFilters();
-  SMESH::SetPointRepresentation(false);
-
-  if (toSelectMesh) {
-    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-      aViewWindow->SetSelectionMode(ActorSelection);
-    mySelectionMgr->installFilter(myMeshOrSubMeshOrGroupFilter);
-    LineEditElements->setReadOnly(true);
-    LineEditElements->setValidator(0);
-  } else {
-    int aConstructorId = GetConstructorId();
-    if (aConstructorId == 0)
-      {
-        if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-          aViewWindow->SetSelectionMode(EdgeSelection);
-      }
-    else if (aConstructorId == 1)
-      {
-        if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-          aViewWindow->SetSelectionMode(FaceSelection);
-      }
-
-    LineEditElements->setReadOnly(false);
-    LineEditElements->setValidator(myIdValidator);
-    onTextChange(LineEditElements->text());
-    mySimulation->SetVisibility(false);
-  }
-
-  SelectionIntoArgument();
-
-  if (!toSelectMesh)
-    LineEditElements->setText( myIDs );
-}
-
-//=================================================================================
-// function : GetConstructorId()
-// purpose  :
-//=================================================================================
-int SMESHGUI_RevolutionDlg::GetConstructorId()
-{
-  return GroupConstructors->checkedId();
 }
 
 //=================================================================================
@@ -988,22 +734,6 @@ bool SMESHGUI_RevolutionDlg::IsAxisOk()
   return (SpinBox_DX->GetValue() != 0 ||
           SpinBox_DY->GetValue() != 0 ||
           SpinBox_DZ->GetValue() != 0);
-}
-
-//=================================================================================
-// function : onVectorChanged()
-// purpose  :
-//=================================================================================
-void SMESHGUI_RevolutionDlg::onVectorChanged()
-{
-  if (IsAxisOk()) {
-    buttonOk->setEnabled(true);
-    buttonApply->setEnabled(true);
-  } else {
-    buttonOk->setEnabled(false);
-    buttonApply->setEnabled(false);
-  }
-  onDisplaySimulation(true);
 }
 
 //=================================================================================
@@ -1030,17 +760,8 @@ void SMESHGUI_RevolutionDlg::onDisplaySimulation(bool toDisplayPreview)
 {
   if (myPreviewCheckBox->isChecked() && toDisplayPreview)
   {
-    //display preview
-    if (myNbOkElements && IsAxisOk())
+    if (SelectorWdg->IsAnythingSelected() && IsAxisOk())
     {
-      QStringList aListElementsId = myElementsId.split(" ", QString::SkipEmptyParts);
-      
-      SMESH::long_array_var anElementsId = new SMESH::long_array;
-      
-      anElementsId->length(aListElementsId.count());
-      for (int i = 0; i < aListElementsId.count(); i++)
-        anElementsId[i] = aListElementsId[i].toInt();
-      
       SMESH::AxisStruct anAxis;
       
       anAxis.x =  SpinBox_X->GetValue();
@@ -1050,33 +771,34 @@ void SMESHGUI_RevolutionDlg::onDisplaySimulation(bool toDisplayPreview)
       anAxis.vy = SpinBox_DY->GetValue();
       anAxis.vz = SpinBox_DZ->GetValue();
 
-      double anAngle = (SpinBox_Angle->GetValue())*M_PI/180.;
-      long aNbSteps = (long)SpinBox_NbSteps->value();
+      double    anAngle = (SpinBox_Angle->GetValue())*M_PI/180.;
+      long     aNbSteps = (long)SpinBox_NbSteps->value();
       double aTolerance = SpinBox_Tolerance->GetValue();
       
       if (GroupAngle->checkedId() == 1)
         anAngle = anAngle/aNbSteps;
       
-      try {
+      try
+      {
         SUIT_OverrideCursor aWaitCursor;
-        SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditPreviewer();
-        if( CheckBoxMesh->isChecked() ) {
-          if( GetConstructorId() == 0 )
-            aMeshEditor->RotationSweepObject1D(mySelectedObject, anAxis,
-                                               anAngle, aNbSteps, aTolerance);
-          else
-            aMeshEditor->RotationSweepObject2D(mySelectedObject, anAxis,
-                                               anAngle, aNbSteps, aTolerance);
-        }
-        else
-          aMeshEditor->RotationSweep(anElementsId.inout(), 
-                                     anAxis, 
-                                     anAngle, 
-                                     aNbSteps, 
-                                     aTolerance);
-        SMESH::MeshPreviewStruct_var aMeshPreviewStruct = aMeshEditor->GetPreviewData();
-        mySimulation->SetData(aMeshPreviewStruct._retn());
-      } catch (...) {}
+
+        SMESH::SMESH_Mesh_var             mesh = SelectorWdg->GetMesh();
+        SMESH::SMESH_MeshEditor_var meshEditor = mesh->GetMeshEditPreviewer();
+        SMESH::ListOfGroups_var         groups;
+
+        SMESH::ListOfIDSources_var nodes = new SMESH::ListOfIDSources();
+        SMESH::ListOfIDSources_var edges = new SMESH::ListOfIDSources();
+        SMESH::ListOfIDSources_var faces = new SMESH::ListOfIDSources();
+        SelectorWdg->GetSelected( nodes, edges, faces );
+        const bool makeGroups = false;
+
+        meshEditor->RotationSweepObjects(nodes, edges, faces, 
+                                         anAxis, anAngle, aNbSteps, aTolerance, makeGroups );
+
+        SMESH::MeshPreviewStruct_var aMeshPreviewStruct = meshEditor->GetPreviewData();
+        mySimulation->SetData( aMeshPreviewStruct._retn() );
+      }
+      catch (...) {}
     }
     else
     {
@@ -1094,7 +816,8 @@ void SMESHGUI_RevolutionDlg::onDisplaySimulation(bool toDisplayPreview)
 // function : onSelectVectorButton()
 // purpose  : [slot]
 //=================================================================================
-void SMESHGUI_RevolutionDlg::onSelectVectorButton(){
+void SMESHGUI_RevolutionDlg::onSelectVectorButton()
+{
   if(SelectVectorMenu) {
     SelectVectorMenu->exec( QCursor::pos() );
   }
@@ -1104,7 +827,8 @@ void SMESHGUI_RevolutionDlg::onSelectVectorButton(){
 // function : onSelectVectorMenu()
 // purpose  : [slot]
 //=================================================================================
-void SMESHGUI_RevolutionDlg::onSelectVectorMenu( QAction* action){
+void SMESHGUI_RevolutionDlg::onSelectVectorMenu( QAction* action)
+{
   if(!action)
     return;
 
@@ -1131,58 +855,4 @@ void SMESHGUI_RevolutionDlg::onSelectVectorMenu( QAction* action){
   SelectionIntoArgument();
 }
 
-//=================================================================================
-// function : setFilters()
-// purpose  : SLOT. Called when "Filter" button pressed.
-//=================================================================================
-void SMESHGUI_RevolutionDlg::setFilters()
-{
-  if(myMesh->_is_nil()) {
-    SUIT_MessageBox::critical(this,
-                              tr("SMESH_ERROR"),
-                              tr("NO_MESH_SELECTED"));
-   return;
-  }
-  if ( !myFilterDlg )
-  {
-    QList<int> types;  
-    types.append( SMESH::EDGE );
-    types.append( SMESH::FACE );
-    myFilterDlg = new SMESHGUI_FilterDlg( mySMESHGUI, types );
-  }
-  myFilterDlg->Init( GetConstructorId() ? SMESH::FACE : SMESH::EDGE );
 
-  myFilterDlg->SetSelection();
-  myFilterDlg->SetMesh( myMesh );
-  myFilterDlg->SetSourceWg( LineEditElements );
-
-  myFilterDlg->show();
-}
-
-//=================================================================================
-// function : isValid
-// purpose  :
-//=================================================================================
-bool SMESHGUI_RevolutionDlg::isValid()
-{
-  QString msg;
-  bool ok = true;
-  ok = SpinBox_X->isValid( msg, true ) && ok;
-  ok = SpinBox_Y->isValid( msg, true ) && ok;
-  ok = SpinBox_Z->isValid( msg, true ) && ok;
-  ok = SpinBox_DX->isValid( msg, true ) && ok;
-  ok = SpinBox_DY->isValid( msg, true ) && ok;
-  ok = SpinBox_DZ->isValid( msg, true ) && ok;
-  ok = SpinBox_Angle->isValid( msg, true ) && ok;
-  ok = SpinBox_NbSteps->isValid( msg, true ) && ok;
-  ok = SpinBox_Tolerance->isValid( msg, true ) && ok;
-
-  if( !ok ) {
-    QString str( tr( "SMESH_INCORRECT_INPUT" ) );
-    if ( !msg.isEmpty() )
-      str += "\n" + msg;
-    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
-    return false;
-  }
-  return true;
-}

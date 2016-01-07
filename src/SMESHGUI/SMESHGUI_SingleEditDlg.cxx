@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -93,8 +93,8 @@ private:
 SMESHGUI_SingleEditDlg
 ::SMESHGUI_SingleEditDlg(SMESHGUI* theModule)
   : QDialog(SMESH::GetDesktop(theModule)),
-    mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
     mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
+    mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
     mySMESHGUI(theModule)
 {
   setModal(false);
@@ -223,6 +223,8 @@ void SMESHGUI_SingleEditDlg::Init()
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
   connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), SLOT(onDeactivate()));
   connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(reject()));
+  connect(mySMESHGUI, SIGNAL(SignalActivatedViewManager()), SLOT(onOpenView()));
+  connect(mySMESHGUI, SIGNAL(SignalCloseView()),            SLOT(onCloseView()));
   connect(myEdge, SIGNAL(textChanged(const QString&)), SLOT(onTextChange(const QString&)));
 
   myOkBtn->setEnabled(false);
@@ -444,6 +446,29 @@ void SMESHGUI_SingleEditDlg::onDeactivate()
   setEnabled(false);
 }
 
+//=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_SingleEditDlg::onOpenView()
+{
+  if ( !mySelector ) {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    mySMESHGUI->EmitSignalDeactivateDialog();
+    setEnabled(true);
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_SingleEditDlg::onCloseView()
+{
+  onDeactivate();
+  mySelector = 0;
+}
+
 //=======================================================================
 // name    : enterEvent()
 // Purpose : Event filter
@@ -452,8 +477,12 @@ void SMESHGUI_SingleEditDlg::enterEvent (QEvent*)
 {
   if (!isEnabled()) {
     mySMESHGUI->EmitSignalDeactivateDialog();
-    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+    if ( aViewWindow) {
       aViewWindow->SetSelectionMode(EdgeOfCellSelection);
+      if (!mySelector)
+        mySelector = aViewWindow->GetSelector();
+    }
     setEnabled(true);
   }
 }

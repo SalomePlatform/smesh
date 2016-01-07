@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -79,6 +79,8 @@
 #include <iostream>
 #include <sstream>
 
+#include <vtkUnstructuredGridWriter.h>
+
 // to pass CORBA exception through SMESH_TRY
 #define SMY_OWN_CATCH catch( SALOME::SALOME_Exception& se ) { throw se; }
 
@@ -103,7 +105,7 @@ int SMESH_Mesh_i::_idGenerator = 0;
 
 SMESH_Mesh_i::SMESH_Mesh_i( PortableServer::POA_ptr thePOA,
                             SMESH_Gen_i*            gen_i,
-                            CORBA::Long studyId )
+                            CORBA::Long             studyId )
 : SALOME::GenericObj_i( thePOA )
 {
   MESSAGE("SMESH_Mesh_i");
@@ -158,6 +160,11 @@ SMESH_Mesh_i::~SMESH_Mesh_i()
     SMESH::SMESH_Hypothesis_var( itH->second ); // decref CORBA object
   }
   _mapHypo.clear();
+
+  // clear cashed shapes if no more meshes remain; (the cash is blame,
+  // together with publishing, of spent time increasing in issue 22874)
+  if ( _impl->NbMeshes() == 1 )
+    _gen_i->GetShapeReader()->ClearClientBuffer();
 
   delete _editor; _editor = NULL;
   delete _previewEditor; _previewEditor = NULL;
@@ -225,7 +232,25 @@ GEOM::GEOM_Object_ptr SMESH_Mesh_i::GetShapeToMesh()
   try {
     TopoDS_Shape S = _impl->GetMeshDS()->ShapeToMesh();
     if ( !S.IsNull() )
+    {
       aShapeObj = _gen_i->ShapeToGeomObject( S );
+      if ( aShapeObj->_is_nil() )
+      {
+        // S was removed from GEOM_Client by newGroupShape() called by other mesh;
+        // find GEOM_Object by entry (IPAL52735)
+        list<TGeomGroupData>::iterator data = _geomGroupData.begin();
+        for ( ; data != _geomGroupData.end(); ++data )
+          if ( data->_smeshObject->_is_equivalent( _this() ))
+          {
+            SALOMEDS::Study_var study = _gen_i->GetCurrentStudy();
+            if ( study->_is_nil() ) break;
+            SALOMEDS::SObject_wrap so = study->FindObjectID( data->_groupEntry.c_str() );
+            CORBA::Object_var     obj = _gen_i->SObjectToObject( so );
+            aShapeObj = GEOM::GEOM_Object::_narrow( obj );
+            break;
+          }
+      }
+    }
   }
   catch(SALOME_Exception & S_ex) {
     THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
@@ -1050,6 +1075,7 @@ void SMESH_Mesh_i::RemoveGroup( SMESH::SMESH_GroupBase_ptr theGroup )
       builder->RemoveObjectWithChildren( aGroupSO );
     }
   }
+  aGroup->Modified(/*removed=*/true); // notify dependent Filter with FT_BelongToMeshGroup criterion
 
   // Remove the group from SMESH data structures
   removeGroup( aGroup->GetLocalID() );
@@ -1073,11 +1099,35 @@ void SMESH_Mesh_i::RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup 
   if ( theGroup->_is_nil() )
     return;
 
+  vector<int> nodeIds; // to remove nodes becoming free
+  if ( !theGroup->IsEmpty() )
+  {
+    CORBA::Long elemID = theGroup->GetID( 1 );
+    int nbElemNodes = GetElemNbNodes( elemID );
+    if ( nbElemNodes > 0 )
+      nodeIds.reserve( theGroup->Size() * nbElemNodes );
+  }
+
   // Remove contents
   SMESH::SMESH_IDSource_var idSrc = SMESH::SMESH_IDSource::_narrow( theGroup );
   SMDS_ElemIteratorPtr     elemIt = GetElements( idSrc, theGroup->GetType() );
   while ( elemIt->more() )
-    _impl->GetMeshDS()->RemoveElement( elemIt->next() );
+  {
+    const SMDS_MeshElement* e = elemIt->next();
+
+    SMDS_ElemIteratorPtr nIt = e->nodesIterator();
+    while ( nIt->more() )
+      nodeIds.push_back( nIt->next()->GetID() );
+
+    _impl->GetMeshDS()->RemoveElement( e );
+  }
+
+  // Remove free nodes
+  if ( theGroup->GetType() != SMESH::NODE )
+    for ( size_t i = 0 ; i < nodeIds.size(); ++i )
+      if ( const SMDS_MeshNode* n = _impl->GetMeshDS()->FindNode( nodeIds[i] ))
+        if ( n->NbInverseElements() == 0 )
+          _impl->GetMeshDS()->RemoveFreeNode( n, /*sm=*/0 );
 
   TPythonDump pyDump; // Supress dump from RemoveGroup()
 
@@ -1561,25 +1611,52 @@ SMESH_Mesh_i::CutListOfGroups(const SMESH::ListOfGroups& theMainGroups,
   return aResGrp._retn();
 }
 
+namespace // functions making checks according to SMESH::NB_COMMON_NODES_ENUM
+{
+  bool isAllNodesCommon(int nbChecked, int nbCommon, int nbNodes, int nbCorners,
+                        bool & toStopChecking )
+  {
+    toStopChecking = ( nbCommon < nbChecked );
+    return nbCommon == nbNodes;
+  }
+  bool isMainNodesCommon(int nbChecked, int nbCommon, int nbNodes, int nbCorners,
+                         bool & toStopChecking )
+  {
+    toStopChecking = ( nbCommon < nbChecked || nbChecked >= nbCorners );
+    return nbCommon == nbCorners;
+  }
+  bool isAtLeastOneNodeCommon(int nbChecked, int nbCommon, int nbNodes, int nbCorners,
+                              bool & toStopChecking )
+  {
+    return nbCommon > 0;
+  }
+  bool isMajorityOfNodesCommon(int nbChecked, int nbCommon, int nbNodes, int nbCorners,
+                               bool & toStopChecking )
+  {
+    return nbCommon >= (nbNodes+1) / 2;
+  }
+}
+
 //=============================================================================
 /*!
-  \brief Create groups of entities from existing groups of superior dimensions 
-  System
-  1) extract all nodes from each group,
-  2) combine all elements of specified dimension laying on these nodes.
-  \param theGroups list of source groups 
-  \param theElemType dimension of elements 
-  \param theName name of new group
-  \return pointer on new group
-  *
-  IMP 19939
+ * Create a group of entities basing on nodes of other groups.
+ *  \param [in] theGroups - list of either groups, sub-meshes or filters.
+ *  \param [in] anElemType - a type of elements to include to the new group.
+ *  \param [in] theName - a name of the new group.
+ *  \param [in] theNbCommonNodes - criterion of inclusion of an element to the new group.
+ *  \param [in] theUnderlyingOnly - if \c True, an element is included to the
+ *         new group provided that it is based on nodes of an element of \a aListOfGroups
+ *  \return SMESH_Group - the created group
 */
+// IMP 19939, bug 22010, IMP 22635
 //=============================================================================
 
 SMESH::SMESH_Group_ptr
-SMESH_Mesh_i::CreateDimGroup(const SMESH::ListOfGroups& theGroups, 
-                             SMESH::ElementType         theElemType, 
-                             const char*                theName )
+SMESH_Mesh_i::CreateDimGroup(const SMESH::ListOfIDSources& theGroups,
+                             SMESH::ElementType            theElemType,
+                             const char*                   theName,
+                             SMESH::NB_COMMON_NODES_ENUM   theNbCommonNodes,
+                             CORBA::Boolean                theUnderlyingOnly)
   throw (SALOME::SALOME_Exception)
 {
   SMESH::SMESH_Group_var aResGrp;
@@ -1595,6 +1672,17 @@ SMESH_Mesh_i::CreateDimGroup(const SMESH::ListOfGroups& theGroups,
 
   SMDSAbs_ElementType anElemType = (SMDSAbs_ElementType)theElemType;
 
+  bool (*isToInclude)(int nbChecked, int nbCommon, int nbNodes, int nbCorners, bool & toStop);
+  SMESH_Comment nbCoNoStr( "SMESH.");
+  switch ( theNbCommonNodes ) {
+  case SMESH::ALL_NODES   : isToInclude = isAllNodesCommon;        nbCoNoStr<<"ALL_NODES"   ;break;
+  case SMESH::MAIN        : isToInclude = isMainNodesCommon;       nbCoNoStr<<"MAIN"        ;break;
+  case SMESH::AT_LEAST_ONE: isToInclude = isAtLeastOneNodeCommon;  nbCoNoStr<<"AT_LEAST_ONE";break;
+  case SMESH::MAJORITY    : isToInclude = isMajorityOfNodesCommon; nbCoNoStr<<"MAJORITY"    ;break;
+  default: return aResGrp._retn();
+  }
+  int nbChecked, nbCommon, nbNodes, nbCorners;
+
   // Create a group
 
   TPythonDump pyDump;
@@ -1607,14 +1695,19 @@ SMESH_Mesh_i::CreateDimGroup(const SMESH::ListOfGroups& theGroups,
     SMESH::DownCast<SMESH_GroupBase_i*>( aResGrp )->GetGroupDS();
   SMDS_MeshGroup& resGroupCore = static_cast< SMESHDS_Group* >( groupBaseDS )->SMDSGroup();
 
+  vector<bool> isNodeInGroups;
+
   for ( int g = 0, n = theGroups.length(); g < n; g++ ) // loop on theGroups
   {
-    SMESH::SMESH_GroupBase_var aGrp = theGroups[ g ];
+    SMESH::SMESH_IDSource_var aGrp = theGroups[ g ];
     if ( CORBA::is_nil( aGrp ) )
       continue;
+    SMESH::SMESH_Mesh_var mesh = aGrp->GetMesh();
+    if ( mesh->_is_nil() || mesh->GetId() != this->GetId() )
+      continue;
 
-    groupBaseDS = SMESH::DownCast<SMESH_GroupBase_i*>( aGrp )->GetGroupDS();
-    SMDS_ElemIteratorPtr elIt = groupBaseDS->GetElements();
+    SMDS_ElemIteratorPtr elIt = GetElements( aGrp, SMESH::ALL );
+    if ( !elIt ) continue;
 
     if ( theElemType == SMESH::NODE ) // get all nodes of elements
     {
@@ -1625,30 +1718,93 @@ SMESH_Mesh_i::CreateDimGroup(const SMESH::ListOfGroups& theGroups,
           resGroupCore.Add( nIt->next() );
       }
     }
-    else // get elements of theElemType based on nodes of every element of group
+    // get elements of theElemType based on nodes of every element of group
+    else if ( theUnderlyingOnly )
     {
       while ( elIt->more() )
       {
-        const SMDS_MeshElement* el = elIt->next(); // an element of group
+        const SMDS_MeshElement* el = elIt->next(); // an element of ref group
         TIDSortedElemSet elNodes( el->begin_nodes(), el->end_nodes() );
         TIDSortedElemSet checkedElems;
-        SMDS_ElemIteratorPtr nIt = el->nodesIterator();
+        SMDS_NodeIteratorPtr nIt = el->nodeIterator();
         while ( nIt->more() )
         {
-          const SMDS_MeshNode* n = static_cast<const SMDS_MeshNode*>( nIt->next() );
+          const SMDS_MeshNode* n = nIt->next();
           SMDS_ElemIteratorPtr elOfTypeIt = n->GetInverseElementIterator( anElemType );
           // check nodes of elements of theElemType around el
           while ( elOfTypeIt->more() )
           {
             const SMDS_MeshElement* elOfType = elOfTypeIt->next();
             if ( !checkedElems.insert( elOfType ).second ) continue;
-
+            nbNodes   = elOfType->NbNodes();
+            nbCorners = elOfType->NbCornerNodes();
+            nbCommon  = 0;
+            bool toStopChecking = false;
             SMDS_ElemIteratorPtr nIt2 = elOfType->nodesIterator();
-            bool allNodesOK = true;
-            while ( nIt2->more() && allNodesOK )
-              allNodesOK = elNodes.count( nIt2->next() );
-            if ( allNodesOK )
-              resGroupCore.Add( elOfType );
+            for ( nbChecked = 1; nIt2->more() && !toStopChecking; ++nbChecked )
+              if ( elNodes.count( nIt2->next() ) &&
+                   isToInclude( nbChecked, ++nbCommon, nbNodes, nbCorners, toStopChecking ))
+              {
+                resGroupCore.Add( elOfType );
+                break;
+              }
+          }
+        }
+      }
+    }
+    // get all nodes of elements of groups
+    else
+    {
+      while ( elIt->more() )
+      {
+        const SMDS_MeshElement* el = elIt->next(); // an element of group
+        SMDS_NodeIteratorPtr nIt = el->nodeIterator();
+        while ( nIt->more() )
+        {
+          const SMDS_MeshNode* n = nIt->next();
+          if ( n->GetID() >= (int) isNodeInGroups.size() )
+            isNodeInGroups.resize( n->GetID() + 1, false );
+          isNodeInGroups[ n->GetID() ] = true;
+        }
+      }
+    }
+  }
+
+  // Get elements of theElemType based on a certain number of nodes of elements of groups
+  if ( !theUnderlyingOnly && !isNodeInGroups.empty() )
+  {
+    const SMDS_MeshNode* n;
+    vector<bool> isElemChecked( aMeshDS->MaxElementID() + 1 );
+    const int isNodeInGroupsSize = isNodeInGroups.size();
+    for ( int iN = 0; iN < isNodeInGroupsSize; ++iN )
+    {
+      if ( !isNodeInGroups[ iN ] ||
+           !( n = aMeshDS->FindNode( iN )))
+        continue;
+
+      // check nodes of elements of theElemType around n
+      SMDS_ElemIteratorPtr elOfTypeIt = n->GetInverseElementIterator( anElemType );
+      while ( elOfTypeIt->more() )
+      {
+        const SMDS_MeshElement*  elOfType = elOfTypeIt->next();
+        vector<bool>::reference isChecked = isElemChecked[ elOfType->GetID() ];
+        if ( isChecked )
+          continue;
+        isChecked = true;
+
+        nbNodes   = elOfType->NbNodes();
+        nbCorners = elOfType->NbCornerNodes();
+        nbCommon  = 0;
+        bool toStopChecking = false;
+        SMDS_ElemIteratorPtr nIt = elOfType->nodesIterator();
+        for ( nbChecked = 1; nIt->more() && !toStopChecking; ++nbChecked )
+        {
+          const int nID = nIt->next()->GetID();
+          if ( nID < isNodeInGroupsSize && isNodeInGroups[ nID ] &&
+               isToInclude( nbChecked, ++nbCommon, nbNodes, nbCorners, toStopChecking ))
+          {
+            resGroupCore.Add( elOfType );
+            break;
           }
         }
       }
@@ -1658,7 +1814,8 @@ SMESH_Mesh_i::CreateDimGroup(const SMESH::ListOfGroups& theGroups,
   // Update Python script
   pyDump << aResGrp << " = " << SMESH::SMESH_Mesh_var( _this())
          << ".CreateDimGroup( "
-         << theGroups << ", " << theElemType << ", '" << theName << "' )";
+         << theGroups << ", " << theElemType << ", '" << theName << "', "
+         << nbCoNoStr << ", " << theUnderlyingOnly << ")";
 
   SMESH_CATCH( SMESH::throwCorbaException );
 
@@ -1694,7 +1851,7 @@ void SMESH_Mesh_i::addGeomGroupData(GEOM::GEOM_Object_ptr theGeomObj,
   CORBA::String_var entry = groupSO->GetID();
   groupData._groupEntry = entry.in();
   // indices
-  for ( int i = 0; i < ids->length(); ++i )
+  for ( CORBA::ULong i = 0; i < ids->length(); ++i )
     groupData._indices.insert( ids[i] );
   // SMESH object
   groupData._smeshObject = CORBA::Object::_duplicate( theSmeshObj );
@@ -1747,7 +1904,7 @@ TopoDS_Shape SMESH_Mesh_i::newGroupShape( TGeomGroupData & groupData)
     GEOM::GEOM_IGroupOperations_wrap groupOp =
       geomGen->GetIGroupOperations( _gen_i->GetCurrentStudyID() );
     GEOM::ListOfLong_var   ids = groupOp->GetObjects( geomGroup );
-    for ( int i = 0; i < ids->length(); ++i )
+    for ( CORBA::ULong i = 0; i < ids->length(); ++i )
       curIndices.insert( ids[i] );
 
     if ( groupData._indices == curIndices )
@@ -1814,14 +1971,20 @@ void SMESH_Mesh_i::CheckGeomModif()
   if ( study->_is_nil() ) return;
 
   GEOM::GEOM_Object_var mainGO = _gen_i->ShapeToGeomObject( _impl->GetShapeToMesh() );
-  if ( mainGO->_is_nil() ) return;
+  //if ( mainGO->_is_nil() ) return;
 
-  if ( mainGO->GetType() == GEOM_GROUP ||
+  // Update after group modification
+
+  if ( mainGO->_is_nil() || /* shape was removed from GEOM_Client by newGroupShape()
+                               called by other mesh (IPAL52735) */
+       mainGO->GetType() == GEOM_GROUP ||
        mainGO->GetTick() == _mainShapeTick )
   {
     CheckGeomGroupModif();
     return;
   }
+
+  // Update after shape transformation like Translate
 
   GEOM_Client* geomClient = _gen_i->GetShapeReader();
   if ( !geomClient ) return;
@@ -2100,9 +2263,11 @@ void SMESH_Mesh_i::CheckGeomGroupModif()
           groupData.push_back
             ( make_pair( TIndexedShape( gog->GetID(),gog->GetShape()), gog->GetType()));
       }
-      // set new shape to mesh -> DS of submeshes and geom groups is deleted
+      // set new shape to mesh -> DS of sub-meshes and geom groups are deleted
+      _impl->Clear();
+      _impl->ShapeToMesh( TopoDS_Shape() ); // IPAL52730
       _impl->ShapeToMesh( newShape );
-      
+
       // reassign hypotheses
       TShapeHypList::iterator indS_hyps = assignedHyps.begin();
       for ( ; indS_hyps != assignedHyps.end(); ++indS_hyps )
@@ -2119,7 +2284,7 @@ void SMESH_Mesh_i::CheckGeomGroupModif()
           continue;
         for ( hypIt = hyps.begin(); hypIt != hyps.end(); ++hypIt )
           _impl->AddHypothesis( geom._shape, (*hypIt)->GetID());
-        // care of submeshes
+        // care of sub-meshes
         SMESH_subMesh* newSubmesh = _impl->GetSubMesh( geom._shape );
         if ( newID != oldID ) {
           _mapSubMesh   [ newID ] = newSubmesh;
@@ -3233,7 +3398,7 @@ void SMESH_Mesh_i::exportMEDFields( DriverMED_W_Field&        fieldWriter,
         {
           const SMDS_MeshElement* e = elemIt->next();
           const int shapeID = e->getshapeId();
-          if ( shapeID < 1 || shapeID >= dblVals.size() )
+          if ( shapeID < 1 || shapeID >= (int) dblVals.size() )
             fieldWriter.AddValue( noneDblValue );
           else
             fieldWriter.AddValue( dblVals[ shapeID ]);
@@ -3243,7 +3408,7 @@ void SMESH_Mesh_i::exportMEDFields( DriverMED_W_Field&        fieldWriter,
         {
           const SMDS_MeshElement* e = elemIt->next();
           const int shapeID = e->getshapeId();
-          if ( shapeID < 1 || shapeID >= intVals.size() )
+          if ( shapeID < 1 || shapeID >= (int) intVals.size() )
             fieldWriter.AddValue( (double) noneIntValue );
           else
             fieldWriter.AddValue( (double) intVals[ shapeID ]);
@@ -3438,8 +3603,16 @@ void SMESH_Mesh_i::ExportCGNS(::SMESH::SMESH_IDSource_ptr meshPart,
 
   PrepareForWriting(file,overwrite);
 
+  std::string meshName("");
+  SALOMEDS::Study_var study = _gen_i->GetCurrentStudy();
+  SALOMEDS::SObject_wrap so = _gen_i->ObjectToSObject( study, meshPart );
+  if ( !so->_is_nil() )
+  {
+    CORBA::String_var name = so->GetName();
+    meshName = name.in();
+  }
   SMESH_MeshPartDS partDS( meshPart );
-  _impl->ExportCGNS(file, &partDS);
+  _impl->ExportCGNS(file, &partDS, meshName.c_str() );
 
   TPythonDump() << SMESH::SMESH_Mesh_var(_this()) << ".ExportCGNS( "
                 << meshPart<< ", r'" << file << "', " << overwrite << ")";
@@ -3592,13 +3765,22 @@ CORBA::Long SMESH_Mesh_i::NbBiQuadQuadrangles()throw(SALOME::SALOME_Exception)
   return _impl->NbBiQuadQuadrangles();
 }
 
-CORBA::Long SMESH_Mesh_i::NbPolygons()throw(SALOME::SALOME_Exception)
+CORBA::Long SMESH_Mesh_i::NbPolygons() throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
   if ( _preMeshInfo )
     return _preMeshInfo->NbPolygons();
 
   return _impl->NbPolygons();
+}
+
+CORBA::Long SMESH_Mesh_i::NbPolygonsOfOrder(SMESH::ElementOrder order) throw(SALOME::SALOME_Exception)
+{
+  Unexpect aCatch(SALOME_SalomeException);
+  if ( _preMeshInfo )
+    return _preMeshInfo->NbPolygons((SMDSAbs_ElementOrder) order);
+
+  return _impl->NbPolygons((SMDSAbs_ElementOrder)order);
 }
 
 CORBA::Long SMESH_Mesh_i::NbFacesOfOrder(SMESH::ElementOrder order)
@@ -4491,7 +4673,7 @@ SMESH::long_array* SMESH_Mesh_i::GetElemFaceNodes(CORBA::Long  elemId,
       {
         aResult->length( vtool.NbFaceNodes( faceIndex ));
         const SMDS_MeshNode** nn = vtool.GetFaceNodes( faceIndex );
-        for ( int i = 0; i < aResult->length(); ++i )
+        for ( CORBA::ULong i = 0; i < aResult->length(); ++i )
           aResult[ i ] = nn[ i ]->GetID();
       }
     }
@@ -4540,7 +4722,7 @@ CORBA::Long SMESH_Mesh_i::FindElementByNodes(const SMESH::long_array& nodes)
   if ( SMESHDS_Mesh* mesh = _impl->GetMeshDS() )
   {
     vector< const SMDS_MeshNode * > nn( nodes.length() );
-    for ( int i = 0; i < nodes.length(); ++i )
+    for ( CORBA::ULong i = 0; i < nodes.length(); ++i )
       if ( !( nn[i] = mesh->FindNode( nodes[i] )))
         return elemID;
 
@@ -4678,6 +4860,7 @@ SMESH_Mesh_i::MakeGroupsOfBadInputElements( int         theSubShapeID,
     THROW_SALOME_CORBA_EXCEPTION( "empty group name",SALOME::BAD_PARAM );
 
   SMESH::ListOfGroups_var groups = new SMESH::ListOfGroups;
+  ::SMESH_MeshEditor::ElemFeatures elemType;
 
   // submesh by subshape id
   if ( !_impl->HasShapeToMesh() ) theSubShapeID = 1;
@@ -4710,7 +4893,7 @@ SMESH_Mesh_i::MakeGroupsOfBadInputElements( int         theSubShapeID,
           if ( elem )
           {
             ::SMESH_MeshEditor editor( _impl );
-            elem = editor.AddElement( nodes, elem->GetType(), elem->IsPoly() );
+            elem = editor.AddElement( nodes, elemType.Init( elem ));
           }
         }
         if ( elem )
@@ -4737,7 +4920,6 @@ SMESH_Mesh_i::MakeGroupsOfBadInputElements( int         theSubShapeID,
           SALOMEDS::SObject_wrap aSO =
             _gen_i->PublishGroup( study, mesh, groups[ iG ],
                                  GEOM::GEOM_Object::_nil(), theGroupName);
-          aSO->_is_nil(); // avoid "unused variable" warning
         }
         SMESH_GroupBase_i* grp_i = SMESH::DownCast< SMESH_GroupBase_i* >( groups[ iG ]);
         if ( !grp_i ) continue;
@@ -4929,11 +5111,11 @@ SMESH::string_array* SMESH_Mesh_i::GetLastParameters()
     SALOMEDS::Study_var    aStudy = gen->GetCurrentStudy();
     if ( !aStudy->_is_nil()) {
       SALOMEDS::ListOfListOfStrings_var aSections = aStudy->ParseVariables(aParameters); 
-      if(aSections->length() > 0) {
-        SALOMEDS::ListOfStrings aVars = aSections[aSections->length()-1];
-        aResult->length(aVars.length());
-        for(int i = 0;i < aVars.length();i++)
-          aResult[i] = CORBA::string_dup( aVars[i]);
+      if ( aSections->length() > 0 ) {
+        SALOMEDS::ListOfStrings aVars = aSections[ aSections->length() - 1 ];
+        aResult->length( aVars.length() );
+        for ( CORBA::ULong i = 0;i < aVars.length(); i++ )
+          aResult[i] = CORBA::string_dup( aVars[i] );
       }
     }
   }
@@ -4959,6 +5141,8 @@ SMESH::array_of_ElementType* SMESH_Mesh_i::GetTypes()
   if (_impl->NbVolumes())    types[nbTypes++] = SMESH::VOLUME;
   if (_impl->Nb0DElements()) types[nbTypes++] = SMESH::ELEM0D;
   if (_impl->NbBalls())      types[nbTypes++] = SMESH::BALL;
+  if (_impl->NbNodes() &&
+      nbTypes == 0 )         types[nbTypes++] = SMESH::NODE;
   types->length( nbTypes );
 
   return types._retn();
@@ -5048,6 +5232,37 @@ void SMESH_Mesh_i::CollectMeshInfo(const SMDS_ElemIteratorPtr theItr,
   while (theItr->more())
     theInfo[ theItr->next()->GetEntityType() ]++;
 }
+//=============================================================================
+/*
+ * Returns mesh unstructed grid information.
+ */
+//=============================================================================
+
+SALOMEDS::TMPFile* SMESH_Mesh_i::GetVtkUgStream()
+{
+  SALOMEDS::TMPFile_var SeqFile;
+  if ( SMESHDS_Mesh* aMeshDS = _impl->GetMeshDS() ) {
+    SMDS_UnstructuredGrid* aGrid = aMeshDS->getGrid();
+    if(aGrid) {
+      vtkUnstructuredGridWriter* aWriter = vtkUnstructuredGridWriter::New();
+      aWriter->WriteToOutputStringOn();
+      aWriter->SetInputData(aGrid);
+      aWriter->SetFileTypeToBinary();
+      aWriter->Write();
+      char* str = aWriter->GetOutputString();
+      int size = aWriter->GetOutputStringLength();
+      
+      //Allocate octect buffer of required size
+      CORBA::Octet* OctetBuf = SALOMEDS::TMPFile::allocbuf(size);
+      //Copy ostrstream content to the octect buffer
+      memcpy(OctetBuf, str, size);
+      //Create and return TMPFile
+      SeqFile = new SALOMEDS::TMPFile(size, size, OctetBuf, 1);
+      aWriter->Delete();
+    }
+  }
+  return SeqFile._retn();
+}
 
 //=============================================================================
 namespace /* Iterators used in SMESH_Mesh_i::GetElements(SMESH::SMESH_IDSource_var obj,
@@ -5131,7 +5346,7 @@ namespace /* Iterators used in SMESH_Mesh_i::GetElements(SMESH::SMESH_IDSource_v
           _elem = _mesh->FindNode( *_idPtr++ );
         }
         else if ((_elem = _mesh->FindElement( *_idPtr++ )) &&
-                 _elem->GetType() != _type )
+                 (_elem->GetType() != _type && _type != SMDSAbs_All ))
         {
           _elem = 0;
         }
@@ -5192,7 +5407,7 @@ SMDS_ElemIteratorPtr SMESH_Mesh_i::GetElements(SMESH::SMESH_IDSource_ptr theObje
                                                SMESH::ElementType        theType)
 {
   SMDS_ElemIteratorPtr  elemIt;
-  bool                  typeOK = false;
+  bool                  typeOK = ( theType == SMESH::ALL );
   SMDSAbs_ElementType elemType = SMDSAbs_ElementType( theType );
 
   SMESH::SMESH_Mesh_var meshVar = theObject->GetMesh();
@@ -5211,7 +5426,7 @@ SMDS_ElemIteratorPtr SMESH_Mesh_i::GetElements(SMESH::SMESH_IDSource_ptr theObje
     if ( sm )
     {
       elemIt = sm->GetElements();
-      if ( elemType != SMDSAbs_Node )
+      if ( elemType != SMDSAbs_Node && elemType != SMDSAbs_All )
       {
         typeOK = ( elemIt && elemIt->more() && elemIt->next()->GetType() == elemType );
         elemIt = typeOK ? sm->GetElements() : SMDS_ElemIteratorPtr();
@@ -5221,15 +5436,19 @@ SMDS_ElemIteratorPtr SMESH_Mesh_i::GetElements(SMESH::SMESH_IDSource_ptr theObje
   else if ( SMESH_GroupBase_i* group_i = SMESH::DownCast<SMESH_GroupBase_i*>( theObject ))
   {
     SMESHDS_GroupBase* groupDS = group_i->GetGroupDS();
-    if ( groupDS && ( groupDS->GetType() == elemType || elemType == SMDSAbs_Node ))
+    if ( groupDS && ( elemType == groupDS->GetType()  ||
+                      elemType == SMDSAbs_Node ||
+                      elemType == SMDSAbs_All ))
     {
       elemIt = groupDS->GetElements();
-      typeOK = ( groupDS->GetType() == elemType );
+      typeOK = ( groupDS->GetType() == elemType || elemType == SMDSAbs_All );
     }
   }
   else if ( SMESH::Filter_i* filter_i = SMESH::DownCast<SMESH::Filter_i*>( theObject ))
   {
-    if ( filter_i->GetElementType() == theType || elemType == SMDSAbs_Node )
+    if ( filter_i->GetElementType() == theType ||
+         elemType == SMDSAbs_Node ||
+         elemType == SMDSAbs_All)
     {
       SMESH::Predicate_i* pred_i = filter_i->GetPredicate_i();
       if ( pred_i && pred_i->GetPredicate() )
@@ -5237,7 +5456,7 @@ SMDS_ElemIteratorPtr SMESH_Mesh_i::GetElements(SMESH::SMESH_IDSource_ptr theObje
         SMDSAbs_ElementType filterType = SMDSAbs_ElementType( filter_i->GetElementType() );
         SMDS_ElemIteratorPtr allElemIt = meshDS->elementsIterator( filterType );
         elemIt = SMDS_ElemIteratorPtr( new PredicateIterator( allElemIt, pred_i->GetPredicate() ));
-        typeOK = ( filterType == elemType );
+        typeOK = ( filterType == elemType || elemType == SMDSAbs_All );
       }
     }
   }
@@ -5245,7 +5464,7 @@ SMDS_ElemIteratorPtr SMESH_Mesh_i::GetElements(SMESH::SMESH_IDSource_ptr theObje
   {
     SMESH::array_of_ElementType_var types = theObject->GetTypes();
     const bool                    isNodes = ( types->length() == 1 && types[0] == SMESH::NODE );
-    if ( isNodes && elemType != SMDSAbs_Node )
+    if ( isNodes && elemType != SMDSAbs_Node && elemType != SMDSAbs_All )
       return elemIt;
     if ( SMESH_MeshEditor_i::IsTemporaryIDSource( theObject ))
     {
@@ -5258,7 +5477,7 @@ SMDS_ElemIteratorPtr SMESH_Mesh_i::GetElements(SMESH::SMESH_IDSource_ptr theObje
       SMESH::long_array_var ids = theObject->GetIDs();
       elemIt = SMDS_ElemIteratorPtr( new IDSourceIterator( meshDS, ids._retn(), elemType ));
     }
-    typeOK = ( isNodes == ( elemType == SMDSAbs_Node ));
+    typeOK = ( isNodes == ( elemType == SMDSAbs_Node )) || ( elemType == SMDSAbs_All );
   }
 
   if ( elemIt && elemIt->more() && !typeOK )
@@ -5418,7 +5637,7 @@ class SMESH_DimHyp
       if ( find( theOther->_hypotheses.begin(), otheEndIt, *hypIt ) != otheEndIt )
         nbSame++;
     // the submeshes are concurrent if their algorithms has different parameters
-    return nbSame != theOther->_hypotheses.size() - 1;
+    return nbSame != (int)theOther->_hypotheses.size() - 1;
   }
 
   // Return true if algorithm of this SMESH_DimHyp is used if no
@@ -5851,14 +6070,14 @@ SMESH_MeshPartDS::SMESH_MeshPartDS(SMESH::SMESH_IDSource_ptr meshPart):
     SMESH::array_of_ElementType_var types = meshPart->GetTypes();
     if ( types->length() == 1 && types[0] == SMESH::NODE ) // group of nodes
     {
-      for (int i=0; i < anIDs->length(); i++)
-        if ( const SMDS_MeshNode * n = _meshDS->FindNode(anIDs[i]))
+      for ( CORBA::ULong i=0; i < anIDs->length(); i++ )
+        if ( const SMDS_MeshNode * n = _meshDS->FindNode( anIDs[i] ))
           if ( _elements[ SMDSAbs_Node ].insert( n ).second )
             tmpInfo.Add( n );
     }
     else
     {
-      for (int i=0; i < anIDs->length(); i++)
+      for ( CORBA::ULong i=0; i < anIDs->length(); i++ )
         if ( const SMDS_MeshElement * e = _meshDS->FindElement(anIDs[i]))
           if ( _elements[ e->GetType() ].insert( e ).second )
           {
@@ -5873,6 +6092,8 @@ SMESH_MeshPartDS::SMESH_MeshPartDS(SMESH::SMESH_IDSource_ptr meshPart):
           }
     }
     myInfo = tmpInfo;
+
+    ShapeToMesh( _meshDS->ShapeToMesh() );
 
     _meshDS = 0; // to enforce iteration on _elements and _nodes
   }

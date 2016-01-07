@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -47,6 +47,26 @@
 }
 
 %include "typemaps.i"
+%include "std_vector.i"
+
+namespace std {
+    %template(VectorInt) vector<int>;
+};
+
+
+/* Selection mode enumeration (corresponds to constants from the SALOME_Selection.h) */
+enum
+  {
+    Node,
+    Cell,
+    EdgeOfCell,
+    Edge,
+    Face,
+    Volume,
+    Actor,
+    Elem0D,
+    Ball
+  };
 
 class SMESH_Swig
 {
@@ -76,4 +96,10 @@ class SMESH_Swig
 
   void CreateAndDisplayActor( const char* Mesh_Entry );
   void EraseActor( const char* Mesh_Entry, const bool allViewers = false );
+
+  // --------------------- for the test purposes -----------------------
+  int  getSelectionMode();
+  void select( const char *id, std::vector<int> ids, bool append = false );
+  void select( const char *id, int id1, bool append = false );
+
 };

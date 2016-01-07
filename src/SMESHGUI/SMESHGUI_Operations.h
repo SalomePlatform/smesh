@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -29,6 +29,7 @@ namespace SMESHOp {
     OpSelectFiltersLibrary   = 1010,   // MENU TOOLS - SELECTION FILTERS LIBRARY
     OpReset                  = 1020,   // RESET
     OpScalarBarProperties    = 1021,   // SCALAR BAR PROPERTIES
+    OpShowScalarBar          = 1022,   // SHOW SCALAR BAR
     OpSaveDistribution       = 1030,   // SAVE DISTRIBUTION
     OpShowDistribution       = 1031,   // SHOW DISTRIBUTION
 #ifndef DISABLE_PLOT2DVIEWER
@@ -144,6 +145,7 @@ namespace SMESHOp {
     OpQuadraticPentahedron   = 4107,   // MENU MODIFICATION - ADD - QUADRATIC PENTAHEDRON
     OpQuadraticHexahedron    = 4108,   // MENU MODIFICATION - ADD - QUADRATIC HEXAHEDRON
     OpTriQuadraticHexahedron = 4109,   // MENU MODIFICATION - ADD - TRIQUADRATIC HEXAHEDRON
+    OpQuadraticPolygon       = 4110,   // MENU MODIFICATION - ADD - QUADRATIC POLYGON
     OpRemoveNodes            = 4200,   // MENU MODIFICATION - REMOVE - NODE
     OpRemoveElements         = 4201,   // MENU MODIFICATION - REMOVE - ELEMENTS
     OpRemoveOrphanNodes      = 4202,   // MENU MODIFICATION - REMOVE - ORPHAN NODES
@@ -174,6 +176,7 @@ namespace SMESHOp {
     OpPatternMapping         = 4512,   // MENU MODIFICATION - PATTERN MAPPING
     OpConvertMeshToQuadratic = 4513,   // MENU MODIFICATION - CONVERT TO/FROM QUADRATIC
     OpCreateBoundaryElements = 4514,   // MENU MODIFICATION - CREATE BOUNDARY ELEMENTS
+    OpSplitBiQuadratic       = 4515,   // MENU MODIFICATION - SPLIT BI-QUADRATIC TO LINEAR
     // Measurements -------------------//--------------------------------
     OpPropertiesLength       = 5000,   // MENU MEASUREMENTS - BASIC PROPERTIES - LENGTH
     OpPropertiesArea         = 5001,   // MENU MEASUREMENTS - BASIC PROPERTIES - AREA

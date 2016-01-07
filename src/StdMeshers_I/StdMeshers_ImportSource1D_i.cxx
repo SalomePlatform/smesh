@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -91,7 +91,7 @@ void StdMeshers_ImportSource1D_i::SetSourceEdges(const SMESH::ListOfGroups& grou
     std::vector<SMESH_Group*> smesh_groups;
     std::vector<string> entries;
     SALOMEDS::Study_var study = SMESH_Gen_i::GetSMESHGen()->GetCurrentStudy();
-    for ( int i = 0; i < groups.length(); ++i )
+    for ( CORBA::ULong i = 0; i < groups.length(); ++i )
       if ( SMESH_GroupBase_i* gp_i = SMESH::DownCast<SMESH_GroupBase_i*>( groups[i] ))
       {
         if ( gp_i->GetType() != SMESH::EDGE )
@@ -109,7 +109,7 @@ void StdMeshers_ImportSource1D_i::SetSourceEdges(const SMESH::ListOfGroups& grou
 
     _groupEntries = new SMESH::string_array;
     _groupEntries->length( entries.size ());
-    for ( int i = 0; i < entries.size(); ++i )
+    for ( size_t i = 0; i < entries.size(); ++i )
       _groupEntries[i] = entries[i].c_str();
   }
   catch ( SALOME_Exception& S_ex )
@@ -173,7 +173,7 @@ char* StdMeshers_ImportSource1D_i::SaveTo()
   os << " " << _groupEntries->length();
 
   SALOMEDS::Study_var study = SMESH_Gen_i::GetSMESHGen()->GetCurrentStudy();
-  for ( int i = 0; i < _groupEntries->length(); ++i )
+  for ( size_t i = 0; i < _groupEntries->length(); ++i )
   {
     // entry
     os << " " << _groupEntries[i];
@@ -208,7 +208,7 @@ void StdMeshers_ImportSource1D_i::LoadFrom( const char* theStream )
   _groupEntries = new SMESH::string_array;
   _groupEntries->length( nbGroups );
   std::string id, entry;
-  for ( int i = 0; i < _groupEntries->length(); ++i )
+  for ( size_t i = 0; i < _groupEntries->length(); ++i )
   {
     if ( is >> entry )
       _groupEntries[i] = entry.c_str();

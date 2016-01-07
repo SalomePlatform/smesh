@@ -1,4 +1,4 @@
-// Copyright (C) 2011-2014  EDF R&D
+// Copyright (C) 2011-2015  EDF R&D
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -140,7 +140,12 @@ static std::string DATAFILE("data.txt");
 static std::string SCRIPTFILE("padder.sh");
 static std::string SEPARATOR(" ");
 
+#ifdef WIN32
+static std::string USER(getenv("USERNAME"));
+#else
 static std::string USER(getenv("USER"));
+#endif
+
 static std::string LOCAL_INPUTDIR("/tmp/spadder.local.inputdir."+USER);
 static std::string LOCAL_RESULTDIR("/tmp/spadder.local.resultdir."+USER);
 static std::string REMOTE_WORKDIR("/tmp/spadder.remote.workdir."+USER);
@@ -410,7 +415,7 @@ CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobParameterList & m
   jobParameters->out_files[0] = CORBA::string_dup(outputfile_name.c_str());
 
   // CAUTION: the maximum duration has to be set with a format like "hh:mm"
-  jobParameters->maximum_duration = CORBA::string_dup("01:00");
+  //jobParameters->maximum_duration = CORBA::string_dup("01:00");
   jobParameters->queue = CORBA::string_dup("");
 
   // Setting resource and additionnal properties (if needed)
@@ -685,6 +690,7 @@ char* MeshJobManager_i::getLastErrorMessage() {
 //
 extern "C"
 {
+  MESHJOBMANAGERENGINE_EXPORT
   PortableServer::ObjectId * MeshJobManagerEngine_factory( CORBA::ORB_ptr orb,
                                                            PortableServer::POA_ptr poa,
                                                            PortableServer::ObjectId * contId,

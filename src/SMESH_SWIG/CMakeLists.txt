@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2012-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -89,6 +89,7 @@ SET(_bin_SCRIPTS
   PAL_MESH_043_2D.py
   PAL_MESH_043_3D.py
   SMESH_reg.py
+  smesh_selection.py
 )
 
 SET(smesh_SCRIPTS

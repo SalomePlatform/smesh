@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -253,6 +253,19 @@ void SMESHDS_Script::AddPolygonalFace (int NewFaceID, const std::vector<int>& no
     return;
   }
   getCommand(SMESHDS_AddPolygon)->AddPolygonalFace(NewFaceID, nodes_ids);
+}
+
+//=======================================================================
+//function : AddQuadPolygonalFace
+//purpose  : 
+//=======================================================================
+void SMESHDS_Script::AddQuadPolygonalFace(int NewFaceID, const std::vector<int>& nodes_ids)
+{
+  if(myIsEmbeddedMode){
+    myIsModified = true;
+    return;
+  }
+  getCommand(SMESHDS_AddQuadPolygon)->AddQuadPolygonalFace(NewFaceID, nodes_ids);
 }
 
 //=======================================================================

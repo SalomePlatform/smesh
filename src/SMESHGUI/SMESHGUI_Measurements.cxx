@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -198,6 +198,7 @@ SMESHGUI_MinDistance::SMESHGUI_MinDistance( QWidget* parent )
   clear();
 
   //setTarget( FirstTgt );
+  selectionChanged();
 }
 
 /*!
@@ -500,13 +501,21 @@ void SMESHGUI_MinDistance::secondEdited()
   setTarget( SecondTgt );
   if ( sender() == mySecondTgt )
     clear();
+  QString text = mySecondTgt->text();
+  if ( !mySecondActor )
+  {
+    selectionChanged();
+    mySecondTgt->setText( text );
+  }
   SVTK_Selector* selector = SMESH::GetViewWindow()->GetSelector();
   if ( mySecondActor && selector ) {
     Handle(SALOME_InteractiveObject) IO = mySecondActor->getIO();
     if ( mySecond->checkedId() == NodeTgt || mySecond->checkedId() == ElementTgt ) {
-      TColStd_MapOfInteger ID;
-      ID.Add( mySecondTgt->text().toLong() );
-      selector->AddOrRemoveIndex( IO, ID, false );
+      if ( !text.isEmpty() ) {
+        TColStd_MapOfInteger ID;
+        ID.Add( text.toLong() );
+        selector->AddOrRemoveIndex( IO, ID, false );
+      }
     }
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow() )
       aViewWindow->highlight( IO, true, true );
@@ -519,8 +528,8 @@ void SMESHGUI_MinDistance::secondEdited()
 void SMESHGUI_MinDistance::compute()
 {
   SUIT_OverrideCursor wc;
-  SMESH::SMESH_IDSource_wrap s1;
-  SMESH::SMESH_IDSource_wrap s2;
+  SMESH::IDSource_wrap s1;
+  SMESH::IDSource_wrap s2;
   bool isOrigin = mySecond->checkedId() == OriginTgt;
 
   // process first target
@@ -760,7 +769,8 @@ void SMESHGUI_BoundingBox::updateSelection()
 
   sourceEdited();
 
-  //selectionChanged();
+  if ( mySource->text().isEmpty() )
+    selectionChanged();
 }
 
 /*!
@@ -1206,6 +1216,9 @@ void SMESHGUI_BasicProperties::updateSelection()
   selMgr->installFilter( myFilter );
   
   connect( selMgr, SIGNAL( currentSelectionChanged() ), this, SLOT( selectionChanged() ) );
+
+  if ( mySource->text().isEmpty() )
+    selectionChanged();
 }
 
 /*!

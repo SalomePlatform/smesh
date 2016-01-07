@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -114,8 +114,6 @@ namespace MeshEditor_I {
       _myMeshDS  = new SMESHDS_Mesh( _id, true );
       myPreviewType = previewElements;
     }
-    //!< Destructor
-    virtual ~TPreviewMesh() { delete _myMeshDS; _myMeshDS = 0; }
     //!< Copy a set of elements
     void Copy(const TIDSortedElemSet & theElements,
               TIDSortedElemSet&        theCopyElements,
@@ -156,20 +154,11 @@ namespace MeshEditor_I {
       }
 
       // creates a corresponding element on copied nodes
-      SMDS_MeshElement* anElemCopy = 0;
-      if ( anElem->IsPoly() && anElem->GetType() == SMDSAbs_Volume )
-      {
-        const SMDS_VtkVolume* ph =
-          dynamic_cast<const SMDS_VtkVolume*> (anElem);
-        if ( ph )
-          anElemCopy = _myMeshDS->AddPolyhedralVolumeWithID
-            (anElemNodesID, ph->GetQuantities(),anElem->GetID());
-      }
-      else {
-        anElemCopy = ::SMESH_MeshEditor(this).AddElement( anElemNodesID,
-                                                          anElem->GetType(),
-                                                          anElem->IsPoly() );
-      }
+      ::SMESH_MeshEditor::ElemFeatures elemType;
+      elemType.Init( anElem, /*basicOnly=*/false );
+      elemType.SetID( anElem->GetID() );
+      SMDS_MeshElement* anElemCopy =
+        ::SMESH_MeshEditor(this).AddElement( anElemNodesID, elemType );
       return anElemCopy;
     }
     //!< Copy a node
@@ -181,6 +170,12 @@ namespace MeshEditor_I {
     void RemoveAll()
     {
       GetMeshDS()->ClearMesh();
+    }
+    void Remove( SMDSAbs_ElementType type )
+    {
+      SMDS_ElemIteratorPtr eIt = GetMeshDS()->elementsIterator( type );
+      while ( eIt->more() )
+        GetMeshDS()->RemoveFreeElement( eIt->next(), /*sm=*/0, /*fromGroups=*/false );
     }
   };// struct TPreviewMesh
 
@@ -302,65 +297,7 @@ namespace MeshEditor_I {
           aMap.insert( aMap.end(), elem );
       }
   }
-  //================================================================================
-  /*!
-   * \brief Retrieve elements of given type from SMESH_IDSource
-   */
-  //================================================================================
 
-  enum IDSource_Error { IDSource_OK, IDSource_INVALID, IDSource_EMPTY };
-
-  bool idSourceToSet(SMESH::SMESH_IDSource_ptr  theIDSource,
-                     const SMESHDS_Mesh*        theMeshDS,
-                     TIDSortedElemSet&          theElemSet,
-                     const SMDSAbs_ElementType  theType,
-                     const bool                 emptyIfIsMesh = false,
-                     IDSource_Error*            error = 0)
-
-  {
-    if ( error ) *error = IDSource_OK;
-
-    if ( CORBA::is_nil( theIDSource ) )
-    {
-      if ( error ) *error = IDSource_INVALID;
-      return false;
-    }
-    if ( emptyIfIsMesh && SMESH::DownCast<SMESH_Mesh_i*>( theIDSource ))
-    {
-      if ( error && theMeshDS->GetMeshInfo().NbElements( theType ) == 0 )
-        *error = IDSource_EMPTY;
-      return true;
-    }
-    SMESH::long_array_var anIDs = theIDSource->GetIDs();
-    if ( anIDs->length() == 0 )
-    {
-      if ( error ) *error = IDSource_EMPTY;
-      return false;
-    }
-    SMESH::array_of_ElementType_var types = theIDSource->GetTypes();
-    if ( types->length() == 1 && types[0] == SMESH::NODE ) // group of nodes
-    {
-      if ( theType == SMDSAbs_All || theType == SMDSAbs_Node )
-      {
-        arrayToSet( anIDs, theMeshDS, theElemSet, SMDSAbs_Node );
-      }
-      else
-      {
-        if ( error ) *error = IDSource_INVALID;
-        return false;
-      }
-    }
-    else
-    {
-      arrayToSet( anIDs, theMeshDS, theElemSet, theType);
-      if ( bool(anIDs->length()) != bool(theElemSet.size()))
-      {
-        if ( error ) *error = IDSource_INVALID;
-        return false;
-      }
-    }
-    return true;
-  }
   //================================================================================
   /*!
    * \brief Retrieve nodes from SMESH_IDSource
@@ -418,7 +355,8 @@ namespace MeshEditor_I {
     if ( !sameElemType )
       elemType = SMDSAbs_All;
 
-    TIDSortedElemSet visitedNodes;
+    vector<bool> isNodeChecked( theMeshDS->NbNodes(), false );
+
     TIDSortedElemSet::const_iterator elemIt = theElements.begin();
     for ( ; elemIt != theElements.end(); ++elemIt )
     {
@@ -427,8 +365,9 @@ namespace MeshEditor_I {
       while ( --i != -1 )
       {
         const SMDS_MeshNode* n = e->GetNode( i );
-        if ( visitedNodes.insert( n ).second )
+        if ( !isNodeChecked[ n->GetID() ])
         {
+          isNodeChecked[ n->GetID() ] = true;
           SMDS_ElemIteratorPtr invIt = n->GetInverseElementIterator(elemType);
           while ( invIt->more() )
           {
@@ -497,6 +436,17 @@ SMESH_MeshEditor_i::~SMESH_MeshEditor_i()
 
 //================================================================================
 /*!
+ * \brief Returns the mesh
+ */
+//================================================================================
+
+SMESH::SMESH_Mesh_ptr SMESH_MeshEditor_i::GetMesh()
+{
+  return myMesh_i->_this();
+}
+
+//================================================================================
+/*!
  * \brief Clear members
  */
 //================================================================================
@@ -511,14 +461,14 @@ void SMESH_MeshEditor_i::initData(bool deleteSearchers)
       TSearchersDeleter::Delete();
   }
   getEditor().GetError().reset();
-  getEditor().CrearLastCreated();
+  getEditor().ClearLastCreated();
 }
 
 //================================================================================
 /*!
  * \brief Increment mesh modif time and optionally record that the performed
  *        modification may influence futher mesh re-compute.
- *  \param [in] isReComputeSafe - true if the modification does not infulence
+ *  \param [in] isReComputeSafe - true if the modification does not influence
  *              futher mesh re-compute
  */
 //================================================================================
@@ -576,7 +526,7 @@ TPreviewMesh * SMESH_MeshEditor_i::getPreviewMesh(SMDSAbs_ElementType previewEle
 
 SMESH::MeshPreviewStruct* SMESH_MeshEditor_i::GetPreviewData()
   throw (SALOME::SALOME_Exception)
-{ 
+{
   SMESH_TRY;
   const bool hasBadElems = ( getEditor().GetError() && getEditor().GetError()->HasBadElems() );
 
@@ -598,7 +548,7 @@ SMESH::MeshPreviewStruct* SMESH_MeshEditor_i::GetPreviewData()
     myPreviewData = new SMESH::MeshPreviewStruct();
     myPreviewData->nodesXYZ.length(aMeshDS->NbNodes());
 
-    
+
     SMDSAbs_ElementType previewType = SMDSAbs_All;
     if ( !hasBadElems )
       if (TPreviewMesh * aPreviewMesh = dynamic_cast< TPreviewMesh* >( getEditor().GetMesh() )) {
@@ -618,7 +568,10 @@ SMESH::MeshPreviewStruct* SMESH_MeshEditor_i::GetPreviewData()
 
     while ( itMeshElems->more() ) {
       const SMDS_MeshElement* aMeshElem = itMeshElems->next();
-      SMDS_NodeIteratorPtr itElemNodes = aMeshElem->nodeIterator();
+      SMDS_NodeIteratorPtr itElemNodes = 
+        (( aMeshElem->GetEntityType() == SMDSEntity_Quad_Polygon ) ?
+         aMeshElem->interlacedNodesIterator() :
+         aMeshElem->nodeIterator() );
       while ( itElemNodes->more() ) {
         const SMDS_MeshNode* aMeshNode = itElemNodes->next();
         int aNodeID = aMeshNode->GetID();
@@ -710,7 +663,7 @@ SMESH::long_array* SMESH_MeshEditor_i::GetLastCreatedElems()
 void SMESH_MeshEditor_i::ClearLastCreated() throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
-  getEditor().CrearLastCreated();
+  getEditor().ClearLastCreated();
   SMESH_CATCH( SMESH::throwCorbaException );
 }
 
@@ -779,21 +732,22 @@ struct SMESH_MeshEditor_i::_IDSource : public virtual POA_SMESH::SMESH_IDSource,
     }
     return types._retn();
   }
+  SALOMEDS::TMPFile* GetVtkUgStream()
+  {
+    SALOMEDS::TMPFile_var SeqFile;
+    return SeqFile._retn();
+  }
 };
 
 SMESH::SMESH_IDSource_ptr SMESH_MeshEditor_i::MakeIDSource(const SMESH::long_array& ids,
                                                            SMESH::ElementType       type)
 {
-  // if ( myAuxIDSources.size() > 10 ) {
-  //   delete myAuxIDSources.front();
-  //   myAuxIDSources.pop_front();
-  // }
-
   _IDSource* idSrc = new _IDSource;
   idSrc->_mesh = myMesh_i->_this();
   idSrc->_ids  = ids;
   idSrc->_type = type;
-  //myAuxIDSources.push_back( idSrc );
+  if ( type == SMESH::ALL && ids.length() > 0 )
+    idSrc->_type = myMesh_i->GetElementType( ids[0], true );
 
   SMESH::SMESH_IDSource_var anIDSourceVar = idSrc->_this();
 
@@ -1099,7 +1053,38 @@ CORBA::Long SMESH_MeshEditor_i::AddFace(const SMESH::long_array & IDsOfNodes)
  *  AddPolygonalFace
  */
 //=============================================================================
+
 CORBA::Long SMESH_MeshEditor_i::AddPolygonalFace (const SMESH::long_array & IDsOfNodes)
+  throw (SALOME::SALOME_Exception)
+{
+  SMESH_TRY;
+  initData();
+
+  int NbNodes = IDsOfNodes.length();
+  std::vector<const SMDS_MeshNode*> nodes (NbNodes);
+  for (int i = 0; i < NbNodes; i++)
+    if ( ! ( nodes[i] = getMeshDS()->FindNode( IDsOfNodes[i] )))
+      return 0;
+
+  const SMDS_MeshElement* elem = getMeshDS()->AddPolygonalFace(nodes);
+
+  // Update Python script
+  TPythonDump() <<"faceID = "<<this<<".AddPolygonalFace( "<<IDsOfNodes<<" )";
+
+  declareMeshModified( /*isReComputeSafe=*/false );
+  return elem ? elem->GetID() : 0;
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+  return 0;
+}
+
+//=============================================================================
+/*!
+ *  AddQuadPolygonalFace
+ */
+//=============================================================================
+
+CORBA::Long SMESH_MeshEditor_i::AddQuadPolygonalFace (const SMESH::long_array & IDsOfNodes)
   throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
@@ -1110,7 +1095,7 @@ CORBA::Long SMESH_MeshEditor_i::AddPolygonalFace (const SMESH::long_array & IDsO
   for (int i = 0; i < NbNodes; i++)
     nodes[i] = getMeshDS()->FindNode(IDsOfNodes[i]);
 
-  const SMDS_MeshElement* elem = getMeshDS()->AddPolygonalFace(nodes);
+  const SMDS_MeshElement* elem = getMeshDS()->AddQuadPolygonalFace(nodes);
 
   // Update Python script
   TPythonDump() <<"faceID = "<<this<<".AddPolygonalFace( "<<IDsOfNodes<<" )";
@@ -1282,7 +1267,6 @@ SMESH_MeshEditor_i::Create0DElementsOnAllNodes(SMESH::SMESH_IDSource_ptr theObje
   TPythonDump pyDump;
 
   TIDSortedElemSet elements, elems0D;
-  prepareIdSource( theObject );
   if ( idSourceToSet( theObject, getMeshDS(), elements, SMDSAbs_All, /*emptyIfIsMesh=*/1))
     getEditor().Create0DElementsOnAllNodes( elements, elems0D );
 
@@ -1667,7 +1651,6 @@ CORBA::Long SMESH_MeshEditor_i::Reorient2D(SMESH::SMESH_IDSource_ptr the2Dgroup,
   initData(/*deleteSearchers=*/false);
 
   TIDSortedElemSet elements;
-  prepareIdSource( the2Dgroup );
   IDSource_Error error;
   idSourceToSet( the2Dgroup, getMeshDS(), elements, SMDSAbs_Face, /*emptyIfIsMesh=*/1, &error );
   if ( error == IDSource_EMPTY )
@@ -1752,7 +1735,6 @@ CORBA::Long SMESH_MeshEditor_i::Reorient2DBy3D(const SMESH::ListOfIDSources& fac
   initData();
 
   TIDSortedElemSet volumes;
-  prepareIdSource( volumeGroup );
   IDSource_Error volsError;
   idSourceToSet( volumeGroup, getMeshDS(), volumes, SMDSAbs_Volume, /*emptyIfMesh=*/1, &volsError);
 
@@ -1760,7 +1742,6 @@ CORBA::Long SMESH_MeshEditor_i::Reorient2DBy3D(const SMESH::ListOfIDSources& fac
   for ( size_t i = 0; i < faceGroups.length(); ++i )
   {
     SMESH::SMESH_IDSource_ptr faceGrp = faceGroups[i].in();
-    prepareIdSource( faceGrp );
 
     TIDSortedElemSet faces;
     IDSource_Error error;
@@ -1958,7 +1939,6 @@ void SMESH_MeshEditor_i::QuadTo4Tri (SMESH::SMESH_IDSource_ptr theObject)
   initData();
 
   TIDSortedElemSet faces;
-  prepareIdSource( theObject );
   if ( !idSourceToSet( theObject, getMeshDS(), faces, SMDSAbs_Face, /*emptyIfIsMesh=*/true ) &&
        faces.empty() )
     THROW_SALOME_CORBA_EXCEPTION("No faces given", SALOME::BAD_PARAM);
@@ -2079,7 +2059,6 @@ void SMESH_MeshEditor_i::SplitVolumesIntoTetra (SMESH::SMESH_IDSource_ptr elems,
 {
   SMESH_TRY;
   initData();
-  prepareIdSource( elems );
 
   ::SMESH_MeshEditor::TFacetOfElem elemSet;
   const int noneFacet = -1;
@@ -2108,7 +2087,7 @@ void SMESH_MeshEditor_i::SplitVolumesIntoTetra (SMESH::SMESH_IDSource_ptr elems,
  */
 //================================================================================
 
-void SMESH_MeshEditor_i::SplitHexahedraIntoPrisms (SMESH::SMESH_IDSource_ptr  elems,
+void SMESH_MeshEditor_i::SplitHexahedraIntoPrisms( SMESH::SMESH_IDSource_ptr  elems,
                                                    const SMESH::PointStruct & startHexPoint,
                                                    const SMESH::DirStruct&    facetToSplitNormal,
                                                    CORBA::Short               methodFlags,
@@ -2156,6 +2135,44 @@ void SMESH_MeshEditor_i::SplitHexahedraIntoPrisms (SMESH::SMESH_IDSource_ptr  el
                 << facetToSplitNormal<< ", "
                 << methodFlags<< ", "
                 << allDomains << " )";
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+}
+
+//================================================================================
+/*!
+ * \brief Split bi-quadratic elements into linear ones without creation of additional nodes:
+ *   - bi-quadratic triangle will be split into 3 linear quadrangles;
+ *   - bi-quadratic quadrangle will be split into 4 linear quadrangles;
+ *   - tri-quadratic hexahedron will be split into 8 linear hexahedra.
+ *   Quadratic elements of lower dimension  adjacent to the split bi-quadratic element
+ *   will be split in order to keep the mesh conformal.
+ *  \param elems - elements to split
+ */
+//================================================================================
+
+void SMESH_MeshEditor_i::SplitBiQuadraticIntoLinear(const SMESH::ListOfIDSources& theElems)
+  throw (SALOME::SALOME_Exception)
+{
+  SMESH_TRY;
+  initData();
+
+  TIDSortedElemSet elemSet;
+  for ( size_t i = 0; i < theElems.length(); ++i )
+  {
+    SMESH::SMESH_IDSource_ptr elems = theElems[i].in();
+    SMESH::SMESH_Mesh_var      mesh = elems->GetMesh();
+    if ( mesh->GetId() != myMesh_i->GetId() )
+      THROW_SALOME_CORBA_EXCEPTION("Wrong mesh of IDSource", SALOME::BAD_PARAM);
+
+    idSourceToSet( elems, getMeshDS(), elemSet, SMDSAbs_All );
+  }
+  getEditor().SplitBiQuadraticIntoLinear( elemSet );
+
+  declareMeshModified( /*isReComputeSafe=*/true ); // it does not influence Compute()
+
+  TPythonDump() << this << ".SplitBiQuadraticIntoLinear( "
+                << theElems << " )";
 
   SMESH_CATCH( SMESH::throwCorbaException );
 }
@@ -2382,648 +2399,313 @@ SMESH::ListOfGroups* SMESH_MeshEditor_i::getGroups(const std::list<int>* groupID
 }
 
 //=======================================================================
-//function : rotationSweep
+//function : RotationSweepObjects
 //purpose  :
 //=======================================================================
 
 SMESH::ListOfGroups*
-SMESH_MeshEditor_i::rotationSweep(const SMESH::long_array & theIDsOfElements,
-                                  const SMESH::AxisStruct & theAxis,
-                                  CORBA::Double             theAngleInRadians,
-                                  CORBA::Long               theNbOfSteps,
-                                  CORBA::Double             theTolerance,
-                                  const bool                theMakeGroups,
-                                  const SMDSAbs_ElementType theElementType)
+SMESH_MeshEditor_i::RotationSweepObjects(const SMESH::ListOfIDSources & theNodes,
+                                         const SMESH::ListOfIDSources & theEdges,
+                                         const SMESH::ListOfIDSources & theFaces,
+                                         const SMESH::AxisStruct &      theAxis,
+                                         CORBA::Double                  theAngleInRadians,
+                                         CORBA::Long                    theNbOfSteps,
+                                         CORBA::Double                  theTolerance,
+                                         const bool                     theMakeGroups)
   throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
 
-  TIDSortedElemSet inElements, copyElements;
-  arrayToSet(theIDsOfElements, getMeshDS(), inElements, theElementType);
+  TIDSortedElemSet elemsNodes[2];
+  for ( int i = 0, nb = theNodes.length(); i < nb; ++i ) {
+    SMDS_ElemIteratorPtr nIt = myMesh_i->GetElements( theNodes[i], SMESH::NODE );
+    while ( nIt->more() ) elemsNodes[1].insert( nIt->next() );
+  }
+  for ( int i = 0, nb = theEdges.length(); i < nb; ++i )
+    idSourceToSet( theEdges[i], getMeshDS(), elemsNodes[0], SMDSAbs_Edge );
+  for ( int i = 0, nb = theFaces.length(); i < nb; ++i )
+    idSourceToSet( theFaces[i], getMeshDS(), elemsNodes[0], SMDSAbs_Face );
 
-  TIDSortedElemSet* workElements = & inElements;
+  TIDSortedElemSet* workElements = & elemsNodes[0], copyElements[2];
   bool              makeWalls=true;
   if ( myIsPreviewMode )
   {
     SMDSAbs_ElementType select = SMDSAbs_All, avoid = SMDSAbs_Volume;
-    getPreviewMesh( SMDSAbs_Face )->Copy( inElements, copyElements, select, avoid );
-    workElements = & copyElements;
-    //makeWalls = false;
+    TPreviewMesh * tmpMesh = getPreviewMesh();
+    tmpMesh->Copy( elemsNodes[0], copyElements[0], select, avoid );
+    tmpMesh->Copy( elemsNodes[1], copyElements[1], select, avoid );
+    workElements = & copyElements[0];
+    //makeWalls = false; -- faces are needed for preview
   }
+
+  TPythonDump aPythonDump; // it is here to prevent dump of getGroups()
 
   gp_Ax1 Ax1 (gp_Pnt( theAxis.x,  theAxis.y,  theAxis.z ),
               gp_Vec( theAxis.vx, theAxis.vy, theAxis.vz ));
 
   ::SMESH_MeshEditor::PGroupIDs groupIds =
-      getEditor().RotationSweep (*workElements, Ax1, theAngleInRadians,
+      getEditor().RotationSweep (workElements, Ax1, theAngleInRadians,
                                  theNbOfSteps, theTolerance, theMakeGroups, makeWalls);
 
+  SMESH::ListOfGroups * aGroups = theMakeGroups ? getGroups( groupIds.get()) : 0;
+
   declareMeshModified( /*isReComputeSafe=*/true ); // does not influence Compute()
 
-  return theMakeGroups ? getGroups(groupIds.get()) : 0;
-
-  SMESH_CATCH( SMESH::throwCorbaException );
-  return 0;
-}
-
-//=======================================================================
-//function : RotationSweep
-//purpose  :
-//=======================================================================
-
-void SMESH_MeshEditor_i::RotationSweep(const SMESH::long_array & theIDsOfElements,
-                                       const SMESH::AxisStruct & theAxis,
-                                       CORBA::Double             theAngleInRadians,
-                                       CORBA::Long               theNbOfSteps,
-                                       CORBA::Double             theTolerance)
-  throw (SALOME::SALOME_Exception)
-{
-  if ( !myIsPreviewMode ) {
-    TPythonDump() << this << ".RotationSweep( "
-                  << theIDsOfElements          << ", "
-                  << theAxis                   << ", "
-                  << TVar( theAngleInRadians ) << ", "
-                  << TVar( theNbOfSteps      ) << ", "
-                  << TVar( theTolerance      ) << " )";
-  }
-  rotationSweep(theIDsOfElements,
-                theAxis,
-                theAngleInRadians,
-                theNbOfSteps,
-                theTolerance,
-                false);
-}
-
-//=======================================================================
-//function : RotationSweepMakeGroups
-//purpose  :
-//=======================================================================
-
-SMESH::ListOfGroups*
-SMESH_MeshEditor_i::RotationSweepMakeGroups(const SMESH::long_array& theIDsOfElements,
-                                            const SMESH::AxisStruct& theAxis,
-                                            CORBA::Double            theAngleInRadians,
-                                            CORBA::Long              theNbOfSteps,
-                                            CORBA::Double            theTolerance)
-  throw (SALOME::SALOME_Exception)
-{
-  TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
-
-  SMESH::ListOfGroups *aGroups = rotationSweep(theIDsOfElements,
-                                               theAxis,
-                                               theAngleInRadians,
-                                               theNbOfSteps,
-                                               theTolerance,
-                                               true);
-  if (!myIsPreviewMode) {
-    dumpGroupsList(aPythonDump, aGroups);
-    aPythonDump << this << ".RotationSweepMakeGroups( "
-                << theIDsOfElements        << ", "
-                << theAxis                   << ", "
-                << TVar( theAngleInRadians ) << ", "
-                << TVar( theNbOfSteps      ) << ", "
-                << TVar( theTolerance      ) << " )";
-  }
-  return aGroups;
-}
-
-//=======================================================================
-//function : RotationSweepObject
-//purpose  :
-//=======================================================================
-
-void SMESH_MeshEditor_i::RotationSweepObject(SMESH::SMESH_IDSource_ptr theObject,
-                                             const SMESH::AxisStruct & theAxis,
-                                             CORBA::Double             theAngleInRadians,
-                                             CORBA::Long               theNbOfSteps,
-                                             CORBA::Double             theTolerance)
-  throw (SALOME::SALOME_Exception)
-{
-  if ( !myIsPreviewMode ) {
-    TPythonDump() << this << ".RotationSweepObject( "
-                  << theObject << ", "
-                  << theAxis << ", "
-                  << theAngleInRadians << ", "
-                  << theNbOfSteps << ", "
-                  << theTolerance << " )";
-  }
-  prepareIdSource( theObject );
-  SMESH::long_array_var anElementsId = theObject->GetIDs();
-  rotationSweep(anElementsId,
-                theAxis,
-                theAngleInRadians,
-                theNbOfSteps,
-                theTolerance,
-                false);
-}
-
-//=======================================================================
-//function : RotationSweepObject1D
-//purpose  :
-//=======================================================================
-
-void SMESH_MeshEditor_i::RotationSweepObject1D(SMESH::SMESH_IDSource_ptr theObject,
-                                               const SMESH::AxisStruct & theAxis,
-                                               CORBA::Double             theAngleInRadians,
-                                               CORBA::Long               theNbOfSteps,
-                                               CORBA::Double             theTolerance)
-  throw (SALOME::SALOME_Exception)
-{
-  if ( !myIsPreviewMode ) {
-    TPythonDump() << this << ".RotationSweepObject1D( "
-                  << theObject                 << ", "
-                  << theAxis                   << ", "
-                  << TVar( theAngleInRadians ) << ", "
-                  << TVar( theNbOfSteps      ) << ", "
-                  << TVar( theTolerance      ) << " )";
-  }
-  prepareIdSource( theObject );
-  SMESH::long_array_var anElementsId = theObject->GetIDs();
-  rotationSweep(anElementsId,
-                theAxis,
-                theAngleInRadians,
-                theNbOfSteps,
-                theTolerance,
-                false,
-                SMDSAbs_Edge);
-}
-
-//=======================================================================
-//function : RotationSweepObject2D
-//purpose  :
-//=======================================================================
-
-void SMESH_MeshEditor_i::RotationSweepObject2D(SMESH::SMESH_IDSource_ptr theObject,
-                                               const SMESH::AxisStruct & theAxis,
-                                               CORBA::Double             theAngleInRadians,
-                                               CORBA::Long               theNbOfSteps,
-                                               CORBA::Double             theTolerance)
-  throw (SALOME::SALOME_Exception)
-{
-  if ( !myIsPreviewMode ) {
-    TPythonDump() << this << ".RotationSweepObject2D( "
-                  << theObject                 << ", "
-                  << theAxis                   << ", "
-                  << TVar( theAngleInRadians ) << ", "
-                  << TVar( theNbOfSteps      ) << ", "
-                  << TVar( theTolerance      ) << " )";
-  }
-  prepareIdSource( theObject );
-  SMESH::long_array_var anElementsId = theObject->GetIDs();
-  rotationSweep(anElementsId,
-                theAxis,
-                theAngleInRadians,
-                theNbOfSteps,
-                theTolerance,
-                false,
-                SMDSAbs_Face);
-}
-
-//=======================================================================
-//function : RotationSweepObjectMakeGroups
-//purpose  :
-//=======================================================================
-
-SMESH::ListOfGroups*
-SMESH_MeshEditor_i::RotationSweepObjectMakeGroups(SMESH::SMESH_IDSource_ptr theObject,
-                                                  const SMESH::AxisStruct&  theAxis,
-                                                  CORBA::Double             theAngleInRadians,
-                                                  CORBA::Long               theNbOfSteps,
-                                                  CORBA::Double             theTolerance)
-  throw (SALOME::SALOME_Exception)
-{
-  TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
-
-  prepareIdSource( theObject );
-  SMESH::long_array_var anElementsId = theObject->GetIDs();
-  SMESH::ListOfGroups *aGroups = rotationSweep(anElementsId,
-                                               theAxis,
-                                               theAngleInRadians,
-                                               theNbOfSteps,
-                                               theTolerance,
-                                               true);
-  if (!myIsPreviewMode) {
-    dumpGroupsList(aPythonDump, aGroups);
-    aPythonDump << this << ".RotationSweepObjectMakeGroups( "
-                << theObject << ", "
-                << theAxis << ", "
-                << theAngleInRadians << ", "
-                << theNbOfSteps << ", "
-                << theTolerance << " )";
-  }
-  return aGroups;
-}
-
-//=======================================================================
-//function : RotationSweepObject1DMakeGroups
-//purpose  :
-//=======================================================================
-
-SMESH::ListOfGroups*
-SMESH_MeshEditor_i::RotationSweepObject1DMakeGroups(SMESH::SMESH_IDSource_ptr theObject,
-                                                    const SMESH::AxisStruct&  theAxis,
-                                                    CORBA::Double             theAngleInRadians,
-                                                    CORBA::Long               theNbOfSteps,
-                                                    CORBA::Double             theTolerance)
-  throw (SALOME::SALOME_Exception)
-{
-  TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
-
-  prepareIdSource( theObject );
-  SMESH::long_array_var anElementsId = theObject->GetIDs();
-  SMESH::ListOfGroups *aGroups = rotationSweep(anElementsId,
-                                               theAxis,
-                                               theAngleInRadians,
-                                               theNbOfSteps,
-                                               theTolerance,
-                                               true,
-                                               SMDSAbs_Edge);
-  if (!myIsPreviewMode) {
-    dumpGroupsList(aPythonDump, aGroups);
-    aPythonDump << this << ".RotationSweepObject1DMakeGroups( "
-                << theObject                 << ", "
-                << theAxis                   << ", "
-                << TVar( theAngleInRadians ) << ", "
-                << TVar( theNbOfSteps )      << ", "
-                << TVar( theTolerance )      << " )";
-  }
-  return aGroups;
-}
-
-//=======================================================================
-//function : RotationSweepObject2DMakeGroups
-//purpose  :
-//=======================================================================
-
-SMESH::ListOfGroups*
-SMESH_MeshEditor_i::RotationSweepObject2DMakeGroups(SMESH::SMESH_IDSource_ptr theObject,
-                                                    const SMESH::AxisStruct&  theAxis,
-                                                    CORBA::Double             theAngleInRadians,
-                                                    CORBA::Long               theNbOfSteps,
-                                                    CORBA::Double             theTolerance)
-  throw (SALOME::SALOME_Exception)
-{
-  TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
-
-  prepareIdSource( theObject );
-  SMESH::long_array_var anElementsId = theObject->GetIDs();
-  SMESH::ListOfGroups *aGroups = rotationSweep(anElementsId,
-                                               theAxis,
-                                               theAngleInRadians,
-                                               theNbOfSteps,
-                                               theTolerance,
-                                               true,
-                                               SMDSAbs_Face);
-  if (!myIsPreviewMode) {
-    dumpGroupsList(aPythonDump, aGroups);
-    aPythonDump << this << ".RotationSweepObject2DMakeGroups( "
-                << theObject                 << ", "
-                << theAxis                   << ", "
-                << TVar( theAngleInRadians ) << ", "
-                << TVar( theNbOfSteps      ) << ", "
-                << TVar( theTolerance      ) << " )";
-  }
-  return aGroups;
-}
-
-
-//=======================================================================
-//function : extrusionSweep
-//purpose  :
-//=======================================================================
-
-SMESH::ListOfGroups*
-SMESH_MeshEditor_i::extrusionSweep(const SMESH::long_array & theIDsOfElements,
-                                   const SMESH::DirStruct &  theStepVector,
-                                   CORBA::Long               theNbOfSteps,
-                                   bool                      theMakeGroups,
-                                   const SMDSAbs_ElementType theElementType)
-  throw (SALOME::SALOME_Exception)
-{
-  SMESH_TRY;
-  initData();
-
-  TIDSortedElemSet elements, copyElements;
-  arrayToSet(theIDsOfElements, getMeshDS(), elements, theElementType);
-
-  const SMESH::PointStruct * P = &theStepVector.PS;
-  gp_Vec stepVec( P->x, P->y, P->z );
-
-  TIDSortedElemSet* workElements = & elements;
-
-  SMDSAbs_ElementType aType = SMDSAbs_Face;
-  if (theElementType == SMDSAbs_Node)
+  if ( !myIsPreviewMode )
   {
-    aType = SMDSAbs_Edge;
+    dumpGroupsList( aPythonDump, aGroups );
+    aPythonDump << this<< ".RotationSweepObjects( "
+                << theNodes                  << ", "
+                << theEdges                  << ", "
+                << theFaces                  << ", "
+                << theAxis                   << ", "
+                << TVar( theAngleInRadians ) << ", "
+                << TVar( theNbOfSteps      ) << ", "
+                << TVar( theTolerance      ) << ", "
+                << theMakeGroups             << " )";
   }
-  if ( myIsPreviewMode ) {
-    SMDSAbs_ElementType select = SMDSAbs_All, avoid = SMDSAbs_Volume;
-    getPreviewMesh( aType )->Copy( elements, copyElements, select, avoid );
-    workElements = & copyElements;
-    theMakeGroups = false;
+  else
+  {
+    getPreviewMesh()->Remove( SMDSAbs_Volume );
   }
 
-  ::SMESH_MeshEditor::TTElemOfElemListMap aHystory;
-  ::SMESH_MeshEditor::PGroupIDs groupIds = 
-      getEditor().ExtrusionSweep (*workElements, stepVec, theNbOfSteps, aHystory, theMakeGroups);
+  return aGroups ? aGroups : new SMESH::ListOfGroups;
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+  return 0;
+}
+
+namespace MeshEditor_I
+{
+  /*!
+   * \brief Structure used to pass extrusion parameters to ::SMESH_MeshEditor
+   */
+  struct ExtrusionParams : public ::SMESH_MeshEditor::ExtrusParam
+  {
+    bool myIsExtrusionByNormal;
+
+    static int makeFlags( CORBA::Boolean MakeGroups,
+                          CORBA::Boolean ByAverageNormal = false,
+                          CORBA::Boolean UseInputElemsOnly = false,
+                          CORBA::Long    Flags = 0,
+                          CORBA::Boolean MakeBoundary = true )
+    {
+      if ( MakeGroups       ) Flags |= ::SMESH_MeshEditor::EXTRUSION_FLAG_GROUPS;
+      if ( ByAverageNormal  ) Flags |= ::SMESH_MeshEditor::EXTRUSION_FLAG_BY_AVG_NORMAL;
+      if ( UseInputElemsOnly) Flags |= ::SMESH_MeshEditor::EXTRUSION_FLAG_USE_INPUT_ELEMS_ONLY;
+      if ( MakeBoundary     ) Flags |= ::SMESH_MeshEditor::EXTRUSION_FLAG_BOUNDARY;
+      return Flags;
+    }
+    // standard params
+    ExtrusionParams(const SMESH::DirStruct &  theDir,
+                    CORBA::Long               theNbOfSteps,
+                    CORBA::Boolean            theMakeGroups):
+      ::SMESH_MeshEditor::ExtrusParam ( gp_Vec( theDir.PS.x,
+                                                theDir.PS.y,
+                                                theDir.PS.z ),
+                                        theNbOfSteps,
+                                        makeFlags( theMakeGroups )),
+      myIsExtrusionByNormal( false )
+    {
+    }
+    // advanced params
+    ExtrusionParams(const SMESH::DirStruct &  theDir,
+                    CORBA::Long               theNbOfSteps,
+                    CORBA::Boolean            theMakeGroups,
+                    CORBA::Long               theExtrFlags,
+                    CORBA::Double             theSewTolerance):
+      ::SMESH_MeshEditor::ExtrusParam ( gp_Vec( theDir.PS.x,
+                                                theDir.PS.y,
+                                                theDir.PS.z ),
+                                        theNbOfSteps,
+                                        makeFlags( theMakeGroups, false, false,
+                                                   theExtrFlags, false ),
+                                        theSewTolerance ),
+      myIsExtrusionByNormal( false )
+    {
+    }
+    // params for extrusion by normal
+    ExtrusionParams(CORBA::Double  theStepSize,
+                    CORBA::Long    theNbOfSteps,
+                    CORBA::Short   theDim,
+                    CORBA::Boolean theByAverageNormal,
+                    CORBA::Boolean theUseInputElemsOnly,
+                    CORBA::Boolean theMakeGroups ):
+      ::SMESH_MeshEditor::ExtrusParam ( theStepSize, 
+                                        theNbOfSteps,
+                                        makeFlags( theMakeGroups,
+                                                   theByAverageNormal, theUseInputElemsOnly ),
+                                        theDim),
+      myIsExtrusionByNormal( true )
+    {
+    }
+
+    void SetNoGroups()
+    {
+      Flags() &= ~(::SMESH_MeshEditor::EXTRUSION_FLAG_GROUPS);
+    }
+  };
+}
+
+//=======================================================================
+/*!
+ * \brief Generate dim+1 elements by extrusion of elements along vector
+ *  \param [in] edges - edges to extrude: a list including groups, sub-meshes or a mesh
+ *  \param [in] faces - faces to extrude: a list including groups, sub-meshes or a mesh
+ *  \param [in] nodes - nodes to extrude: a list including groups, sub-meshes or a mesh
+ *  \param [in] stepVector - vector giving direction and distance of an extrusion step
+ *  \param [in] nbOfSteps - number of elements to generate from one element
+ *  \param [in] toMakeGroups - if true, new elements will be included into new groups
+ *              corresponding to groups the input elements included in.
+ *  \return ListOfGroups - new groups craeted if \a toMakeGroups is true
+ */
+//=======================================================================
+
+SMESH::ListOfGroups*
+SMESH_MeshEditor_i::ExtrusionSweepObjects(const SMESH::ListOfIDSources & theNodes,
+                                          const SMESH::ListOfIDSources & theEdges,
+                                          const SMESH::ListOfIDSources & theFaces,
+                                          const SMESH::DirStruct &       theStepVector,
+                                          CORBA::Long                    theNbOfSteps,
+                                          CORBA::Boolean                 theToMakeGroups)
+  throw (SALOME::SALOME_Exception)
+{
+  SMESH_TRY;
+  initData();
+
+  ExtrusionParams params( theStepVector, theNbOfSteps, theToMakeGroups );
+
+  TIDSortedElemSet elemsNodes[2];
+  for ( int i = 0, nb = theNodes.length(); i < nb; ++i ) {
+    SMDS_ElemIteratorPtr nIt = myMesh_i->GetElements( theNodes[i], SMESH::NODE );
+    while ( nIt->more() ) elemsNodes[1].insert( nIt->next() );
+  }
+  for ( int i = 0, nb = theEdges.length(); i < nb; ++i )
+    idSourceToSet( theEdges[i], getMeshDS(), elemsNodes[0], SMDSAbs_Edge );
+  for ( int i = 0, nb = theFaces.length(); i < nb; ++i )
+    idSourceToSet( theFaces[i], getMeshDS(), elemsNodes[0], SMDSAbs_Face );
+
+  TIDSortedElemSet* workElements = & elemsNodes[0], copyElements[2];
+  SMDSAbs_ElementType previewType = SMDSAbs_All; //SMDSAbs_Face;
+  if ( myIsPreviewMode )
+  {
+    // if ( (*elemsNodes.begin())->GetType() == SMDSAbs_Node )
+    //   previewType = SMDSAbs_Edge;
+
+    SMDSAbs_ElementType select = SMDSAbs_All, avoid = SMDSAbs_Volume;
+    TPreviewMesh * tmpMesh = getPreviewMesh( previewType );
+    tmpMesh->Copy( elemsNodes[0], copyElements[0], select, avoid );
+    tmpMesh->Copy( elemsNodes[1], copyElements[1], select, avoid );
+    workElements = & copyElements[0];
+
+    params.SetNoGroups();
+  }
+  TPythonDump aPythonDump; // it is here to prevent dump of getGroups()
+
+  ::SMESH_MeshEditor::TTElemOfElemListMap aHistory;
+  ::SMESH_MeshEditor::PGroupIDs groupIds =
+      getEditor().ExtrusionSweep( workElements, params, aHistory );
+
+  SMESH::ListOfGroups * aGroups = theToMakeGroups ? getGroups( groupIds.get()) : 0;
 
   declareMeshModified( /*isReComputeSafe=*/true ); // does not influence Compute()
 
-  return theMakeGroups ? getGroups(groupIds.get()) : 0;
+  if ( !myIsPreviewMode )
+  {
+    dumpGroupsList( aPythonDump, aGroups );
+    aPythonDump << this<< ".ExtrusionSweepObjects( "
+                << theNodes             << ", "
+                << theEdges             << ", "
+                << theFaces             << ", "
+                << theStepVector        << ", "
+                << TVar( theNbOfSteps ) << ", "
+                << theToMakeGroups      << " )";
+  }
+  else
+  {
+    getPreviewMesh( previewType )->Remove( SMDSAbs_Volume );
+  }
+
+  return aGroups ? aGroups : new SMESH::ListOfGroups;
 
   SMESH_CATCH( SMESH::throwCorbaException );
   return 0;
 }
 
 //=======================================================================
-//function : ExtrusionSweep
-//purpose  :
-//=======================================================================
-
-void SMESH_MeshEditor_i::ExtrusionSweep(const SMESH::long_array & theIDsOfElements,
-                                        const SMESH::DirStruct &  theStepVector,
-                                        CORBA::Long               theNbOfSteps)
-  throw (SALOME::SALOME_Exception)
-{
-  extrusionSweep (theIDsOfElements, theStepVector, theNbOfSteps, false );
-  if (!myIsPreviewMode) {
-    TPythonDump() << this << ".ExtrusionSweep( "
-                  << theIDsOfElements << ", " << theStepVector <<", " << TVar(theNbOfSteps) << " )";
-  }
-}
-
-//=======================================================================
-//function : ExtrusionSweep0D
-//purpose  :
-//=======================================================================
-
-void SMESH_MeshEditor_i::ExtrusionSweep0D(const SMESH::long_array & theIDsOfElements,
-                                          const SMESH::DirStruct &  theStepVector,
-                                          CORBA::Long               theNbOfSteps)
-  throw (SALOME::SALOME_Exception)
-{
-  extrusionSweep (theIDsOfElements, theStepVector, theNbOfSteps, false, SMDSAbs_Node );
-  if (!myIsPreviewMode) {
-    TPythonDump() << this << ".ExtrusionSweep0D( "
-                  << theIDsOfElements << ", " << theStepVector <<", " << TVar(theNbOfSteps)<< " )";
-  }
-}
-
-//=======================================================================
-//function : ExtrusionSweepObject
-//purpose  :
-//=======================================================================
-
-void SMESH_MeshEditor_i::ExtrusionSweepObject(SMESH::SMESH_IDSource_ptr theObject,
-                                              const SMESH::DirStruct &  theStepVector,
-                                              CORBA::Long               theNbOfSteps)
-  throw (SALOME::SALOME_Exception)
-{
-  prepareIdSource( theObject );
-  SMESH::long_array_var anElementsId = theObject->GetIDs();
-  extrusionSweep (anElementsId, theStepVector, theNbOfSteps, false );
-  if (!myIsPreviewMode) {
-    TPythonDump() << this << ".ExtrusionSweepObject( "
-                  << theObject << ", " << theStepVector << ", " << theNbOfSteps << " )";
-  }
-}
-
-//=======================================================================
-//function : ExtrusionSweepObject0D
-//purpose  :
-//=======================================================================
-
-void SMESH_MeshEditor_i::ExtrusionSweepObject0D(SMESH::SMESH_IDSource_ptr theObject,
-                                                const SMESH::DirStruct &  theStepVector,
-                                                CORBA::Long               theNbOfSteps)
-  throw (SALOME::SALOME_Exception)
-{
-  prepareIdSource( theObject );
-  SMESH::long_array_var anElementsId = theObject->GetIDs();
-  extrusionSweep (anElementsId, theStepVector, theNbOfSteps, false, SMDSAbs_Node );
-  if ( !myIsPreviewMode ) {
-    TPythonDump() << this << ".ExtrusionSweepObject0D( "
-                  << theObject << ", " << theStepVector << ", " << TVar( theNbOfSteps ) << " )";
-  }
-}
-
-//=======================================================================
-//function : ExtrusionSweepObject1D
-//purpose  :
-//=======================================================================
-
-void SMESH_MeshEditor_i::ExtrusionSweepObject1D(SMESH::SMESH_IDSource_ptr theObject,
-                                                const SMESH::DirStruct &  theStepVector,
-                                                CORBA::Long               theNbOfSteps)
-  throw (SALOME::SALOME_Exception)
-{
-  prepareIdSource( theObject );
-  SMESH::long_array_var anElementsId = theObject->GetIDs();
-  extrusionSweep (anElementsId, theStepVector, theNbOfSteps, false, SMDSAbs_Edge );
-  if ( !myIsPreviewMode ) {
-    TPythonDump() << this << ".ExtrusionSweepObject1D( "
-                  << theObject << ", " << theStepVector << ", " << TVar( theNbOfSteps ) << " )";
-  }
-}
-
-//=======================================================================
-//function : ExtrusionSweepObject2D
-//purpose  :
-//=======================================================================
-
-void SMESH_MeshEditor_i::ExtrusionSweepObject2D(SMESH::SMESH_IDSource_ptr theObject,
-                                                const SMESH::DirStruct &  theStepVector,
-                                                CORBA::Long               theNbOfSteps)
-  throw (SALOME::SALOME_Exception)
-{
-  prepareIdSource( theObject );
-  SMESH::long_array_var anElementsId = theObject->GetIDs();
-  extrusionSweep (anElementsId, theStepVector, theNbOfSteps, false, SMDSAbs_Face );
-  if ( !myIsPreviewMode ) {
-    TPythonDump() << this << ".ExtrusionSweepObject2D( "
-                  << theObject << ", " << theStepVector << ", " << TVar( theNbOfSteps ) << " )";
-  }
-}
-
-//=======================================================================
-//function : ExtrusionSweepMakeGroups
+//function : ExtrusionByNormal
 //purpose  :
 //=======================================================================
 
 SMESH::ListOfGroups*
-SMESH_MeshEditor_i::ExtrusionSweepMakeGroups(const SMESH::long_array& theIDsOfElements,
-                                             const SMESH::DirStruct&  theStepVector,
-                                             CORBA::Long              theNbOfSteps)
-  throw (SALOME::SALOME_Exception)
-{
-  TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
-
-  SMESH::ListOfGroups* aGroups = extrusionSweep(theIDsOfElements, theStepVector, theNbOfSteps, true);
-
-  if (!myIsPreviewMode) {
-    dumpGroupsList(aPythonDump, aGroups);
-    aPythonDump << this << ".ExtrusionSweepMakeGroups( " << theIDsOfElements
-                << ", " << theStepVector <<", " << TVar( theNbOfSteps ) << " )";
-  }
-  return aGroups;
-}
-
-//=======================================================================
-//function : ExtrusionSweepMakeGroups0D
-//purpose  :
-//=======================================================================
-
-SMESH::ListOfGroups*
-SMESH_MeshEditor_i::ExtrusionSweepMakeGroups0D(const SMESH::long_array& theIDsOfElements,
-                                               const SMESH::DirStruct&  theStepVector,
-                                               CORBA::Long              theNbOfSteps)
-  throw (SALOME::SALOME_Exception)
-{
-  TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
-
-  SMESH::ListOfGroups* aGroups = extrusionSweep(theIDsOfElements, theStepVector, theNbOfSteps, true,SMDSAbs_Node);
-
-  if (!myIsPreviewMode) {
-    dumpGroupsList(aPythonDump, aGroups);
-    aPythonDump << this << ".ExtrusionSweepMakeGroups0D( " << theIDsOfElements
-                << ", " << theStepVector <<", " << TVar( theNbOfSteps ) << " )";
-  }
-  return aGroups;
-}
-
-//=======================================================================
-//function : ExtrusionSweepObjectMakeGroups
-//purpose  :
-//=======================================================================
-
-SMESH::ListOfGroups*
-SMESH_MeshEditor_i::ExtrusionSweepObjectMakeGroups(SMESH::SMESH_IDSource_ptr theObject,
-                                                   const SMESH::DirStruct&   theStepVector,
-                                                   CORBA::Long               theNbOfSteps)
-  throw (SALOME::SALOME_Exception)
-{
-  TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
-
-  prepareIdSource( theObject );
-  SMESH::long_array_var anElementsId = theObject->GetIDs();
-  SMESH::ListOfGroups * aGroups = extrusionSweep(anElementsId, theStepVector, theNbOfSteps, true);
-
-  if (!myIsPreviewMode) {
-    dumpGroupsList(aPythonDump, aGroups);
-    aPythonDump << this << ".ExtrusionSweepObjectMakeGroups( " << theObject
-                << ", " << theStepVector << ", " << theNbOfSteps << " )";
-  }
-  return aGroups;
-}
-
-//=======================================================================
-//function : ExtrusionSweepObject0DMakeGroups
-//purpose  :
-//=======================================================================
-
-SMESH::ListOfGroups*
-SMESH_MeshEditor_i::ExtrusionSweepObject0DMakeGroups(SMESH::SMESH_IDSource_ptr theObject,
-                                                     const SMESH::DirStruct&   theStepVector,
-                                                     CORBA::Long               theNbOfSteps)
-  throw (SALOME::SALOME_Exception)
-{
-  TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
-
-  prepareIdSource( theObject );
-  SMESH::long_array_var anElementsId = theObject->GetIDs();
-  SMESH::ListOfGroups * aGroups = extrusionSweep(anElementsId, theStepVector,
-                                                 theNbOfSteps, true, SMDSAbs_Node);
-  if (!myIsPreviewMode) {
-    dumpGroupsList(aPythonDump, aGroups);
-    aPythonDump << this << ".ExtrusionSweepObject0DMakeGroups( " << theObject
-                << ", " << theStepVector << ", " << TVar( theNbOfSteps ) << " )";
-  }
-  return aGroups;
-}
-
-//=======================================================================
-//function : ExtrusionSweepObject1DMakeGroups
-//purpose  :
-//=======================================================================
-
-SMESH::ListOfGroups*
-SMESH_MeshEditor_i::ExtrusionSweepObject1DMakeGroups(SMESH::SMESH_IDSource_ptr theObject,
-                                                     const SMESH::DirStruct&   theStepVector,
-                                                     CORBA::Long               theNbOfSteps)
-  throw (SALOME::SALOME_Exception)
-{
-  TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
-
-  prepareIdSource( theObject );
-  SMESH::long_array_var anElementsId = theObject->GetIDs();
-  SMESH::ListOfGroups * aGroups = extrusionSweep(anElementsId, theStepVector,
-                                                 theNbOfSteps, true, SMDSAbs_Edge);
-  if (!myIsPreviewMode) {
-    dumpGroupsList(aPythonDump, aGroups);
-    aPythonDump << this << ".ExtrusionSweepObject1DMakeGroups( " << theObject
-                << ", " << theStepVector << ", " << TVar( theNbOfSteps ) << " )";
-  }
-  return aGroups;
-}
-
-//=======================================================================
-//function : ExtrusionSweepObject2DMakeGroups
-//purpose  :
-//=======================================================================
-
-SMESH::ListOfGroups*
-SMESH_MeshEditor_i::ExtrusionSweepObject2DMakeGroups(SMESH::SMESH_IDSource_ptr theObject,
-                                                     const SMESH::DirStruct&   theStepVector,
-                                                     CORBA::Long               theNbOfSteps)
-  throw (SALOME::SALOME_Exception)
-{
-  TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
-
-  prepareIdSource( theObject );
-  SMESH::long_array_var anElementsId = theObject->GetIDs();
-  SMESH::ListOfGroups * aGroups = extrusionSweep(anElementsId, theStepVector,
-                                                 theNbOfSteps, true, SMDSAbs_Face);
-  if (!myIsPreviewMode) {
-    dumpGroupsList(aPythonDump, aGroups);
-    aPythonDump << this << ".ExtrusionSweepObject2DMakeGroups( " << theObject
-                << ", " << theStepVector << ", " << TVar( theNbOfSteps ) << " )";
-  }
-  return aGroups;
-}
-
-
-//=======================================================================
-//function : advancedExtrusion
-//purpose  :
-//=======================================================================
-
-SMESH::ListOfGroups*
-SMESH_MeshEditor_i::advancedExtrusion(const SMESH::long_array & theIDsOfElements,
-                                      const SMESH::DirStruct &  theStepVector,
-                                      CORBA::Long               theNbOfSteps,
-                                      CORBA::Long               theExtrFlags,
-                                      CORBA::Double             theSewTolerance,
-                                      const bool                theMakeGroups)
+SMESH_MeshEditor_i::ExtrusionByNormal(const SMESH::ListOfIDSources& objects,
+                                      CORBA::Double                 stepSize,
+                                      CORBA::Long                   nbOfSteps,
+                                      CORBA::Boolean                byAverageNormal,
+                                      CORBA::Boolean                useInputElemsOnly,
+                                      CORBA::Boolean                makeGroups,
+                                      CORBA::Short                  dim)
   throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
 
-  TIDSortedElemSet elements;
-  arrayToSet(theIDsOfElements, getMeshDS(), elements);
+  TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
 
-  const SMESH::PointStruct * P = &theStepVector.PS;
-  gp_Vec stepVec( P->x, P->y, P->z );
+  ExtrusionParams params( stepSize, nbOfSteps, dim,
+                          byAverageNormal, useInputElemsOnly, makeGroups );
 
-  ::SMESH_MeshEditor::TTElemOfElemListMap aHystory;
+  SMDSAbs_ElementType elemType = ( dim == 1 ? SMDSAbs_Edge : SMDSAbs_Face );
+  if ( objects.length() > 0 && !SMESH::DownCast<SMESH_Mesh_i*>( objects[0] ))
+  {
+    SMESH::array_of_ElementType_var elemTypes = objects[0]->GetTypes();
+    if (( elemTypes->length() == 1 ) &&
+        ( elemTypes[0] == SMESH::EDGE || elemTypes[0] == SMESH::FACE ))
+      elemType = ( SMDSAbs_ElementType ) elemTypes[0];
+  }
+
+  TIDSortedElemSet elemsNodes[2];
+  for ( int i = 0, nb = objects.length(); i < nb; ++i )
+    idSourceToSet( objects[i], getMeshDS(), elemsNodes[0], elemType );
+
+  TIDSortedElemSet* workElements = & elemsNodes[0], copyElements[2];
+  SMDSAbs_ElementType previewType = SMDSAbs_Face;
+  if ( myIsPreviewMode )
+  {
+    SMDSAbs_ElementType select = SMDSAbs_All, avoid = SMDSAbs_Volume;
+    TPreviewMesh * tmpMesh = getPreviewMesh( previewType );
+    tmpMesh->Copy( elemsNodes[0], copyElements[0], select, avoid );
+    workElements = & copyElements[0];
+
+    params.SetNoGroups();
+  }
+
+  ::SMESH_MeshEditor::TTElemOfElemListMap aHistory;
   ::SMESH_MeshEditor::PGroupIDs groupIds =
-      getEditor().ExtrusionSweep (elements, stepVec, theNbOfSteps, aHystory,
-                                  theMakeGroups, theExtrFlags, theSewTolerance);
+      getEditor().ExtrusionSweep( workElements, params, aHistory );
 
-  declareMeshModified( /*isReComputeSafe=*/true );
+  SMESH::ListOfGroups * aGroups = makeGroups ? getGroups( groupIds.get()) : 0;
 
-  return theMakeGroups ? getGroups(groupIds.get()) : 0;
+  if (!myIsPreviewMode) {
+    dumpGroupsList(aPythonDump, aGroups);
+    aPythonDump << this << ".ExtrusionByNormal( " << objects
+                << ", " << TVar( stepSize )
+                << ", " << TVar( nbOfSteps )
+                << ", " << byAverageNormal
+                << ", " << useInputElemsOnly
+                << ", " << makeGroups
+                << ", " << dim
+                << " )";
+  }
+  else
+  {
+    getPreviewMesh( previewType )->Remove( SMDSAbs_Volume );
+  }
+
+  declareMeshModified( /*isReComputeSafe=*/true ); // does not influence Compute()
+
+  return aGroups ? aGroups : new SMESH::ListOfGroups;
 
   SMESH_CATCH( SMESH::throwCorbaException );
   return 0;
@@ -3034,66 +2716,54 @@ SMESH_MeshEditor_i::advancedExtrusion(const SMESH::long_array & theIDsOfElements
 //purpose  :
 //=======================================================================
 
-void SMESH_MeshEditor_i::AdvancedExtrusion(const SMESH::long_array & theIDsOfElements,
-                                           const SMESH::DirStruct &  theStepVector,
-                                           CORBA::Long               theNbOfSteps,
-                                           CORBA::Long               theExtrFlags,
-                                           CORBA::Double             theSewTolerance)
-  throw (SALOME::SALOME_Exception)
-{
-  if ( !myIsPreviewMode ) {
-    TPythonDump() << "stepVector = " << theStepVector;
-    TPythonDump() << this << ".AdvancedExtrusion("
-                  << theIDsOfElements
-                  << ", stepVector, "
-                  << theNbOfSteps << ","
-                  << theExtrFlags << ", "
-                  << theSewTolerance <<  " )";
-  }
-  advancedExtrusion( theIDsOfElements,
-                     theStepVector,
-                     theNbOfSteps,
-                     theExtrFlags,
-                     theSewTolerance,
-                     false);
-}
-
-//=======================================================================
-//function : AdvancedExtrusionMakeGroups
-//purpose  :
-//=======================================================================
 SMESH::ListOfGroups*
-SMESH_MeshEditor_i::AdvancedExtrusionMakeGroups(const SMESH::long_array& theIDsOfElements,
-                                                const SMESH::DirStruct&  theStepVector,
-                                                CORBA::Long              theNbOfSteps,
-                                                CORBA::Long              theExtrFlags,
-                                                CORBA::Double            theSewTolerance)
+SMESH_MeshEditor_i::AdvancedExtrusion(const SMESH::long_array & theIDsOfElements,
+                                      const SMESH::DirStruct &  theStepVector,
+                                      CORBA::Long               theNbOfSteps,
+                                      CORBA::Long               theExtrFlags,
+                                      CORBA::Double             theSewTolerance,
+                                      CORBA::Boolean            theMakeGroups)
   throw (SALOME::SALOME_Exception)
 {
-  if (!myIsPreviewMode) {
-    TPythonDump() << "stepVector = " << theStepVector;
-  }
-  TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
+  SMESH_TRY;
+  initData();
 
-  SMESH::ListOfGroups * aGroups = advancedExtrusion( theIDsOfElements,
-                                                     theStepVector,
-                                                     theNbOfSteps,
-                                                     theExtrFlags,
-                                                     theSewTolerance,
-                                                     true);
+  TPythonDump aPythonDump; // it is here to prevent dump of getGroups()
 
-  if (!myIsPreviewMode) {
+  ExtrusionParams params( theStepVector, theNbOfSteps, theMakeGroups,
+                          theExtrFlags, theSewTolerance );
+
+  TIDSortedElemSet elemsNodes[2];
+  arrayToSet( theIDsOfElements, getMeshDS(), elemsNodes[0] );
+
+  ::SMESH_MeshEditor::TTElemOfElemListMap aHistory;
+  ::SMESH_MeshEditor::PGroupIDs groupIds =
+      getEditor().ExtrusionSweep( elemsNodes, params, aHistory );
+
+  SMESH::ListOfGroups * aGroups = theMakeGroups ? getGroups( groupIds.get()) : 0;
+
+  declareMeshModified( /*isReComputeSafe=*/true ); // does not influence Compute()
+
+  if ( !myIsPreviewMode ) {
     dumpGroupsList(aPythonDump, aGroups);
-    aPythonDump << this << ".AdvancedExtrusionMakeGroups("
-                << theIDsOfElements
-                << ", stepVector, "
-                << theNbOfSteps << ","
+    aPythonDump << this << ".AdvancedExtrusion( "
+                << theIDsOfElements << ", "
+                << theStepVector << ", "
+                << theNbOfSteps << ", "
                 << theExtrFlags << ", "
-                << theSewTolerance <<  " )";
+                << theSewTolerance << ", "
+                << theMakeGroups << " )";
   }
-  return aGroups;
-}
+  else
+  {
+    getPreviewMesh()->Remove( SMDSAbs_Volume );
+  }
 
+  return aGroups ? aGroups : new SMESH::ListOfGroups;
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+  return 0;
+}
 
 //================================================================================
 /*!
@@ -3101,67 +2771,99 @@ SMESH_MeshEditor_i::AdvancedExtrusionMakeGroups(const SMESH::long_array& theIDsO
  */
 //================================================================================
 
+namespace
+{
 #define RETCASE(enm) case ::SMESH_MeshEditor::enm: return SMESH::SMESH_MeshEditor::enm;
 
-static SMESH::SMESH_MeshEditor::Extrusion_Error convExtrError( const::SMESH_MeshEditor::Extrusion_Error e )
-{
-  switch ( e ) {
-    RETCASE( EXTR_OK );
-    RETCASE( EXTR_NO_ELEMENTS );
-    RETCASE( EXTR_PATH_NOT_EDGE );
-    RETCASE( EXTR_BAD_PATH_SHAPE );
-    RETCASE( EXTR_BAD_STARTING_NODE );
-    RETCASE( EXTR_BAD_ANGLES_NUMBER );
-    RETCASE( EXTR_CANT_GET_TANGENT );
+  SMESH::SMESH_MeshEditor::Extrusion_Error convExtrError( ::SMESH_MeshEditor::Extrusion_Error e )
+  {
+    switch ( e ) {
+      RETCASE( EXTR_OK );
+      RETCASE( EXTR_NO_ELEMENTS );
+      RETCASE( EXTR_PATH_NOT_EDGE );
+      RETCASE( EXTR_BAD_PATH_SHAPE );
+      RETCASE( EXTR_BAD_STARTING_NODE );
+      RETCASE( EXTR_BAD_ANGLES_NUMBER );
+      RETCASE( EXTR_CANT_GET_TANGENT );
+    }
+    return SMESH::SMESH_MeshEditor::EXTR_OK;
   }
-  return SMESH::SMESH_MeshEditor::EXTR_OK;
 }
-
 
 //=======================================================================
 //function : extrusionAlongPath
 //purpose  :
 //=======================================================================
 SMESH::ListOfGroups*
-SMESH_MeshEditor_i::extrusionAlongPath(const SMESH::long_array &   theIDsOfElements,
-                                       SMESH::SMESH_Mesh_ptr       thePathMesh,
-                                       GEOM::GEOM_Object_ptr       thePathShape,
-                                       CORBA::Long                 theNodeStart,
-                                       CORBA::Boolean              theHasAngles,
-                                       const SMESH::double_array & theAngles,
-                                       CORBA::Boolean              theHasRefPoint,
-                                       const SMESH::PointStruct &  theRefPoint,
-                                       const bool                  theMakeGroups,
-                                       SMESH::SMESH_MeshEditor::Extrusion_Error & theError,
-                                       const SMDSAbs_ElementType   theElementType)
+SMESH_MeshEditor_i::ExtrusionAlongPathObjects(const SMESH::ListOfIDSources & theNodes,
+                                              const SMESH::ListOfIDSources & theEdges,
+                                              const SMESH::ListOfIDSources & theFaces,
+                                              SMESH::SMESH_IDSource_ptr      thePathMesh,
+                                              GEOM::GEOM_Object_ptr          thePathShape,
+                                              CORBA::Long                    theNodeStart,
+                                              CORBA::Boolean                 theHasAngles,
+                                              const SMESH::double_array &    theAngles,
+                                              CORBA::Boolean                 theLinearVariation,
+                                              CORBA::Boolean                 theHasRefPoint,
+                                              const SMESH::PointStruct &     theRefPoint,
+                                              bool                           theMakeGroups,
+                                              SMESH::SMESH_MeshEditor::Extrusion_Error& theError)
   throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
-  MESSAGE("extrusionAlongPath");
   initData();
 
-  if ( thePathMesh->_is_nil() || thePathShape->_is_nil() ) {
-    theError = SMESH::SMESH_MeshEditor::EXTR_BAD_PATH_SHAPE;
-    return 0;
-  }
+  SMESH::ListOfGroups_var aGroups = new SMESH::ListOfGroups;
+
+  theError = SMESH::SMESH_MeshEditor::EXTR_BAD_PATH_SHAPE;
+  if ( thePathMesh->_is_nil() )
+    return aGroups._retn();
+
+  // get a sub-mesh
+  SMESH_subMesh* aSubMesh = 0;
   SMESH_Mesh_i* aMeshImp = SMESH::DownCast<SMESH_Mesh_i*>( thePathMesh );
-
-  TopoDS_Shape aShape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape( thePathShape );
-  SMESH_subMesh* aSubMesh = aMeshImp->GetImpl().GetSubMesh( aShape );
-
-  if ( !aSubMesh || !aSubMesh->GetSubMeshDS()) {
-    theError = SMESH::SMESH_MeshEditor::EXTR_BAD_PATH_SHAPE;
-    return 0;
+  if ( thePathShape->_is_nil() )
+  {
+    // thePathMesh should be either a sub-mesh or a mesh with 1D elements only
+    if ( SMESH_subMesh_i* sm = SMESH::DownCast<SMESH_subMesh_i*>( thePathMesh ))
+    {
+      SMESH::SMESH_Mesh_var mesh = thePathMesh->GetMesh();
+      aMeshImp = SMESH::DownCast<SMESH_Mesh_i*>( mesh );
+      if ( !aMeshImp ) return aGroups._retn();
+      aSubMesh = aMeshImp->GetImpl().GetSubMeshContaining( sm->GetId() );
+      if ( !aSubMesh ) return aGroups._retn();
+    }
+    else if ( !aMeshImp ||
+              aMeshImp->NbEdges() != aMeshImp->NbElements() )
+    {
+      return aGroups._retn();
+    }
+  }
+  else
+  {
+    if ( !aMeshImp ) return aGroups._retn();
+    TopoDS_Shape aShape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape( thePathShape );
+    aSubMesh = aMeshImp->GetImpl().GetSubMesh( aShape );
+    if ( !aSubMesh /*|| !aSubMesh->GetSubMeshDS()*/ )
+      return aGroups._retn();
   }
 
-  SMDS_MeshNode* nodeStart = (SMDS_MeshNode*)aMeshImp->GetImpl().GetMeshDS()->FindNode(theNodeStart);
+  SMDS_MeshNode* nodeStart =
+    (SMDS_MeshNode*)aMeshImp->GetImpl().GetMeshDS()->FindNode(theNodeStart);
   if ( !nodeStart ) {
     theError = SMESH::SMESH_MeshEditor::EXTR_BAD_STARTING_NODE;
-    return 0;
+    return aGroups._retn();
   }
 
-  TIDSortedElemSet elements;
-  arrayToSet(theIDsOfElements, getMeshDS(), elements, theElementType);
+  TIDSortedElemSet elemsNodes[2];
+  for ( int i = 0, nb = theNodes.length(); i < nb; ++i ) {
+    SMDS_ElemIteratorPtr nIt = myMesh_i->GetElements( theNodes[i], SMESH::NODE );
+    while ( nIt->more() ) elemsNodes[1].insert( nIt->next() );
+  }
+  for ( int i = 0, nb = theEdges.length(); i < nb; ++i )
+    idSourceToSet( theEdges[i], getMeshDS(), elemsNodes[0], SMDSAbs_Edge );
+  for ( int i = 0, nb = theFaces.length(); i < nb; ++i )
+    idSourceToSet( theFaces[i], getMeshDS(), elemsNodes[0], SMDSAbs_Face );
 
   list<double> angles;
   for (int i = 0; i < theAngles.length(); i++) {
@@ -3172,658 +2874,68 @@ SMESH_MeshEditor_i::extrusionAlongPath(const SMESH::long_array &   theIDsOfEleme
 
   int nbOldGroups = myMesh->NbGroup();
 
-  ::SMESH_MeshEditor::Extrusion_Error error =
-      getEditor().ExtrusionAlongTrack( elements, aSubMesh, nodeStart,
-                                    theHasAngles, angles, false,
-                                    theHasRefPoint, refPnt, theMakeGroups );
+  TIDSortedElemSet* workElements = & elemsNodes[0], copyElements[2];
+  if ( myIsPreviewMode )
+  {
+    SMDSAbs_ElementType select = SMDSAbs_All, avoid = SMDSAbs_Volume;
+    TPreviewMesh * tmpMesh = getPreviewMesh();
+    tmpMesh->Copy( elemsNodes[0], copyElements[0], select, avoid );
+    tmpMesh->Copy( elemsNodes[1], copyElements[1], select, avoid );
+    workElements = & copyElements[0];
+    theMakeGroups = false;
+  }
+
+  ::SMESH_MeshEditor::Extrusion_Error error;
+  if ( !aSubMesh )
+    error = getEditor().ExtrusionAlongTrack( workElements, &(aMeshImp->GetImpl()), nodeStart,
+                                             theHasAngles, angles, theLinearVariation,
+                                             theHasRefPoint, refPnt, theMakeGroups );
+  else
+    error = getEditor().ExtrusionAlongTrack( workElements, aSubMesh, nodeStart,
+                                             theHasAngles, angles, theLinearVariation,
+                                             theHasRefPoint, refPnt, theMakeGroups );
 
   declareMeshModified( /*isReComputeSafe=*/true );
   theError = convExtrError( error );
 
+  TPythonDump aPythonDump; // it is here to prevent dump of getGroups()
   if ( theMakeGroups ) {
     list<int> groupIDs = myMesh->GetGroupIds();
     list<int>::iterator newBegin = groupIDs.begin();
     std::advance( newBegin, nbOldGroups ); // skip old groups
     groupIDs.erase( groupIDs.begin(), newBegin );
-    return getGroups( & groupIDs );
-  }
-  return 0;
-
-  SMESH_CATCH( SMESH::throwCorbaException );
-  return 0;
-}
-
-//=======================================================================
-//function : extrusionAlongPathX
-//purpose  :
-//=======================================================================
-
-SMESH::ListOfGroups*
-SMESH_MeshEditor_i::extrusionAlongPathX(const SMESH::long_array &  IDsOfElements,
-                                        SMESH::SMESH_IDSource_ptr  Path,
-                                        CORBA::Long                NodeStart,
-                                        CORBA::Boolean             HasAngles,
-                                        const SMESH::double_array& Angles,
-                                        CORBA::Boolean             LinearVariation,
-                                        CORBA::Boolean             HasRefPoint,
-                                        const SMESH::PointStruct&  RefPoint,
-                                        bool                       MakeGroups,
-                                        const SMDSAbs_ElementType  ElementType,
-                                        SMESH::SMESH_MeshEditor::Extrusion_Error & Error)
-  throw (SALOME::SALOME_Exception)
-{
-  SMESH_TRY;
-  SMESH::ListOfGroups* EmptyGr = new SMESH::ListOfGroups;
-
-  initData();
-
-  list<double> angles;
-  for (int i = 0; i < Angles.length(); i++) {
-    angles.push_back( Angles[i] );
-  }
-  gp_Pnt refPnt( RefPoint.x, RefPoint.y, RefPoint.z );
-  int nbOldGroups = myMesh->NbGroup();
-
-  if ( Path->_is_nil() ) {
-    Error = SMESH::SMESH_MeshEditor::EXTR_BAD_PATH_SHAPE;
-    return EmptyGr;
+    aGroups = getGroups( & groupIDs );
+    if ( ! &aGroups.in() ) aGroups = new SMESH::ListOfGroups;
   }
 
-  TIDSortedElemSet elements, copyElements;
-  arrayToSet(IDsOfElements, getMeshDS(), elements, ElementType);
-
-  TIDSortedElemSet* workElements = &elements;
-
-  if ( myIsPreviewMode )
-  {
-    SMDSAbs_ElementType select = SMDSAbs_All, avoid = SMDSAbs_Volume;
-    getPreviewMesh( SMDSAbs_Face )->Copy( elements, copyElements, select, avoid );
-    workElements = & copyElements;
-    MakeGroups = false;
-  }
-
-  ::SMESH_MeshEditor::Extrusion_Error error;
-
-  if ( SMESH_Mesh_i* aMeshImp = SMESH::DownCast<SMESH_Mesh_i*>( Path ))
-  {
-    // path as mesh
-    SMDS_MeshNode* aNodeStart =
-      (SMDS_MeshNode*)aMeshImp->GetImpl().GetMeshDS()->FindNode(NodeStart);
-    if ( !aNodeStart ) {
-      Error = SMESH::SMESH_MeshEditor::EXTR_BAD_STARTING_NODE;
-      return EmptyGr;
-    }
-    error = getEditor().ExtrusionAlongTrack( *workElements, &(aMeshImp->GetImpl()), aNodeStart,
-                                             HasAngles, angles, LinearVariation,
-                                             HasRefPoint, refPnt, MakeGroups );
-    declareMeshModified( /*isReComputeSafe=*/true );
-  }
-  else if ( SMESH_subMesh_i* aSubMeshImp = SMESH::DownCast<SMESH_subMesh_i*>( Path ))
-  {
-    // path as submesh
-    SMESH::SMESH_Mesh_ptr aPathMesh = aSubMeshImp->GetFather();
-    aMeshImp = SMESH::DownCast<SMESH_Mesh_i*>( aPathMesh );
-    SMDS_MeshNode* aNodeStart =
-      (SMDS_MeshNode*)aMeshImp->GetImpl().GetMeshDS()->FindNode(NodeStart);
-    if ( !aNodeStart ) {
-      Error = SMESH::SMESH_MeshEditor::EXTR_BAD_STARTING_NODE;
-      return EmptyGr;
-    }
-    SMESH_subMesh* aSubMesh =
-      aMeshImp->GetImpl().GetSubMeshContaining(aSubMeshImp->GetId());
-    error = getEditor().ExtrusionAlongTrack( *workElements, aSubMesh, aNodeStart,
-                                             HasAngles, angles, LinearVariation,
-                                             HasRefPoint, refPnt, MakeGroups );
-    declareMeshModified( /*isReComputeSafe=*/true );
-  }
-  else if ( SMESH::DownCast<SMESH_Group_i*>( Path ))
-  {
-    // path as group of 1D elements
-    // ????????
+  if ( !myIsPreviewMode ) {
+    aPythonDump << "(" << aGroups << ", error) = "
+                << this << ".ExtrusionAlongPathObjects( "
+                << theNodes            << ", "
+                << theEdges            << ", "
+                << theFaces            << ", "
+                << thePathMesh         << ", "
+                << thePathShape        << ", "
+                << theNodeStart        << ", "
+                << theHasAngles        << ", "
+                << theAngles           << ", "
+                << theLinearVariation  << ", "
+                << theHasRefPoint      << ", "
+                << "SMESH.PointStruct( "
+                << ( theHasRefPoint ? theRefPoint.x : 0 ) << ", "
+                << ( theHasRefPoint ? theRefPoint.y : 0 ) << ", "
+                << ( theHasRefPoint ? theRefPoint.z : 0 ) << " ), "
+                << theMakeGroups       << " )";
   }
   else
   {
-    // invalid path
-    Error = SMESH::SMESH_MeshEditor::EXTR_BAD_PATH_SHAPE;
-    return EmptyGr;
+    getPreviewMesh()->Remove( SMDSAbs_Volume );
   }
 
-  Error = convExtrError( error );
-
-  if ( MakeGroups ) {
-    list<int> groupIDs = myMesh->GetGroupIds();
-    list<int>::iterator newBegin = groupIDs.begin();
-    std::advance( newBegin, nbOldGroups ); // skip old groups
-    groupIDs.erase( groupIDs.begin(), newBegin );
-    return getGroups( & groupIDs );
-  }
-  return EmptyGr;
+  return aGroups._retn();
 
   SMESH_CATCH( SMESH::throwCorbaException );
   return 0;
-}
-
-//=======================================================================
-//function : ExtrusionAlongPath
-//purpose  :
-//=======================================================================
-
-SMESH::SMESH_MeshEditor::Extrusion_Error
-SMESH_MeshEditor_i::ExtrusionAlongPath(const SMESH::long_array &   theIDsOfElements,
-                                       SMESH::SMESH_Mesh_ptr       thePathMesh,
-                                       GEOM::GEOM_Object_ptr       thePathShape,
-                                       CORBA::Long                 theNodeStart,
-                                       CORBA::Boolean              theHasAngles,
-                                       const SMESH::double_array & theAngles,
-                                       CORBA::Boolean              theHasRefPoint,
-                                       const SMESH::PointStruct &  theRefPoint)
-  throw (SALOME::SALOME_Exception)
-{
-  MESSAGE("ExtrusionAlongPath");
-  if ( !myIsPreviewMode ) {
-    TPythonDump() << "error = " << this << ".ExtrusionAlongPath( "
-                  << theIDsOfElements << ", "
-                  << thePathMesh      << ", "
-                  << thePathShape     << ", "
-                  << theNodeStart     << ", "
-                  << theHasAngles     << ", "
-                  << theAngles        << ", "
-                  << theHasRefPoint   << ", "
-                  << "SMESH.PointStruct( "
-                  << ( theHasRefPoint ? theRefPoint.x : 0 ) << ", "
-                  << ( theHasRefPoint ? theRefPoint.y : 0 ) << ", "
-                  << ( theHasRefPoint ? theRefPoint.z : 0 ) << " ) )";
-  }
-  SMESH::SMESH_MeshEditor::Extrusion_Error anError;
-  extrusionAlongPath( theIDsOfElements,
-                      thePathMesh,
-                      thePathShape,
-                      theNodeStart,
-                      theHasAngles,
-                      theAngles,
-                      theHasRefPoint,
-                      theRefPoint,
-                      false,
-                      anError);
-  return anError;
-}
-
-//=======================================================================
-//function : ExtrusionAlongPathObject
-//purpose  :
-//=======================================================================
-
-SMESH::SMESH_MeshEditor::Extrusion_Error
-SMESH_MeshEditor_i::ExtrusionAlongPathObject(SMESH::SMESH_IDSource_ptr   theObject,
-                                             SMESH::SMESH_Mesh_ptr       thePathMesh,
-                                             GEOM::GEOM_Object_ptr       thePathShape,
-                                             CORBA::Long                 theNodeStart,
-                                             CORBA::Boolean              theHasAngles,
-                                             const SMESH::double_array & theAngles,
-                                             CORBA::Boolean              theHasRefPoint,
-                                             const SMESH::PointStruct &  theRefPoint)
-  throw (SALOME::SALOME_Exception)
-{
-  if ( !myIsPreviewMode ) {
-    TPythonDump() << "error = " << this << ".ExtrusionAlongPathObject( "
-                  << theObject        << ", "
-                  << thePathMesh      << ", "
-                  << thePathShape     << ", "
-                  << theNodeStart     << ", "
-                  << theHasAngles     << ", "
-                  << theAngles        << ", "
-                  << theHasRefPoint   << ", "
-                  << "SMESH.PointStruct( "
-                  << ( theHasRefPoint ? theRefPoint.x : 0 ) << ", "
-                  << ( theHasRefPoint ? theRefPoint.y : 0 ) << ", "
-                  << ( theHasRefPoint ? theRefPoint.z : 0 ) << " ) )";
-  }
-  SMESH::SMESH_MeshEditor::Extrusion_Error anError;
-  prepareIdSource( theObject );
-  SMESH::long_array_var anElementsId = theObject->GetIDs();
-  extrusionAlongPath( anElementsId,
-                      thePathMesh,
-                      thePathShape,
-                      theNodeStart,
-                      theHasAngles,
-                      theAngles,
-                      theHasRefPoint,
-                      theRefPoint,
-                      false,
-                      anError);
-  return anError;
-}
-
-//=======================================================================
-//function : ExtrusionAlongPathObject1D
-//purpose  :
-//=======================================================================
-
-SMESH::SMESH_MeshEditor::Extrusion_Error
-SMESH_MeshEditor_i::ExtrusionAlongPathObject1D(SMESH::SMESH_IDSource_ptr   theObject,
-                                               SMESH::SMESH_Mesh_ptr       thePathMesh,
-                                               GEOM::GEOM_Object_ptr       thePathShape,
-                                               CORBA::Long                 theNodeStart,
-                                               CORBA::Boolean              theHasAngles,
-                                               const SMESH::double_array & theAngles,
-                                               CORBA::Boolean              theHasRefPoint,
-                                               const SMESH::PointStruct &  theRefPoint)
-  throw (SALOME::SALOME_Exception)
-{
-  if ( !myIsPreviewMode ) {
-    TPythonDump() << "error = " << this << ".ExtrusionAlongPathObject1D( "
-                  << theObject        << ", "
-                  << thePathMesh      << ", "
-                  << thePathShape     << ", "
-                  << theNodeStart     << ", "
-                  << theHasAngles     << ", "
-                  << theAngles        << ", "
-                  << theHasRefPoint   << ", "
-                  << "SMESH.PointStruct( "
-                  << ( theHasRefPoint ? theRefPoint.x : 0 ) << ", "
-                  << ( theHasRefPoint ? theRefPoint.y : 0 ) << ", "
-                  << ( theHasRefPoint ? theRefPoint.z : 0 ) << " ) )";
-  }
-  SMESH::SMESH_MeshEditor::Extrusion_Error anError;
-  prepareIdSource( theObject );
-  SMESH::long_array_var anElementsId = theObject->GetIDs();
-  extrusionAlongPath( anElementsId,
-                      thePathMesh,
-                      thePathShape,
-                      theNodeStart,
-                      theHasAngles,
-                      theAngles,
-                      theHasRefPoint,
-                      theRefPoint,
-                      false,
-                      anError,
-                      SMDSAbs_Edge);
-  return anError;
-}
-
-//=======================================================================
-//function : ExtrusionAlongPathObject2D
-//purpose  :
-//=======================================================================
-
-SMESH::SMESH_MeshEditor::Extrusion_Error
-SMESH_MeshEditor_i::ExtrusionAlongPathObject2D(SMESH::SMESH_IDSource_ptr   theObject,
-                                               SMESH::SMESH_Mesh_ptr       thePathMesh,
-                                               GEOM::GEOM_Object_ptr       thePathShape,
-                                               CORBA::Long                 theNodeStart,
-                                               CORBA::Boolean              theHasAngles,
-                                               const SMESH::double_array & theAngles,
-                                               CORBA::Boolean              theHasRefPoint,
-                                               const SMESH::PointStruct &  theRefPoint)
-  throw (SALOME::SALOME_Exception)
-{
-  if ( !myIsPreviewMode ) {
-    TPythonDump() << "error = " << this << ".ExtrusionAlongPathObject2D( "
-                  << theObject        << ", "
-                  << thePathMesh      << ", "
-                  << thePathShape     << ", "
-                  << theNodeStart     << ", "
-                  << theHasAngles     << ", "
-                  << theAngles        << ", "
-                  << theHasRefPoint   << ", "
-                  << "SMESH.PointStruct( "
-                  << ( theHasRefPoint ? theRefPoint.x : 0 ) << ", "
-                  << ( theHasRefPoint ? theRefPoint.y : 0 ) << ", "
-                  << ( theHasRefPoint ? theRefPoint.z : 0 ) << " ) )";
-  }
-  SMESH::SMESH_MeshEditor::Extrusion_Error anError;
-  prepareIdSource( theObject );
-  SMESH::long_array_var anElementsId = theObject->GetIDs();
-  extrusionAlongPath( anElementsId,
-                      thePathMesh,
-                      thePathShape,
-                      theNodeStart,
-                      theHasAngles,
-                      theAngles,
-                      theHasRefPoint,
-                      theRefPoint,
-                      false,
-                      anError,
-                      SMDSAbs_Face);
-  return anError;
-}
-
-
-//=======================================================================
-//function : ExtrusionAlongPathMakeGroups
-//purpose  :
-//=======================================================================
-
-SMESH::ListOfGroups*
-SMESH_MeshEditor_i::ExtrusionAlongPathMakeGroups(const SMESH::long_array&   theIDsOfElements,
-                                                 SMESH::SMESH_Mesh_ptr      thePathMesh,
-                                                 GEOM::GEOM_Object_ptr      thePathShape,
-                                                 CORBA::Long                theNodeStart,
-                                                 CORBA::Boolean             theHasAngles,
-                                                 const SMESH::double_array& theAngles,
-                                                 CORBA::Boolean             theHasRefPoint,
-                                                 const SMESH::PointStruct&  theRefPoint,
-                                                 SMESH::SMESH_MeshEditor::Extrusion_Error& Error)
-  throw (SALOME::SALOME_Exception)
-{
-  TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
-
-  SMESH::ListOfGroups * aGroups =  extrusionAlongPath( theIDsOfElements,
-                                                       thePathMesh,
-                                                       thePathShape,
-                                                       theNodeStart,
-                                                       theHasAngles,
-                                                       theAngles,
-                                                       theHasRefPoint,
-                                                       theRefPoint,
-                                                       true,
-                                                       Error);
-  if (!myIsPreviewMode) {
-    bool isDumpGroups = aGroups && aGroups->length() > 0;
-    if (isDumpGroups)
-      aPythonDump << "(" << aGroups << ", error)";
-    else
-      aPythonDump <<"error";
-
-    aPythonDump<<" = "<< this << ".ExtrusionAlongPathMakeGroups( "
-               << theIDsOfElements << ", "
-               << thePathMesh      << ", "
-               << thePathShape     << ", "
-               << theNodeStart     << ", "
-               << theHasAngles     << ", "
-               << theAngles        << ", "
-               << theHasRefPoint   << ", "
-               << "SMESH.PointStruct( "
-               << ( theHasRefPoint ? theRefPoint.x : 0 ) << ", "
-               << ( theHasRefPoint ? theRefPoint.y : 0 ) << ", "
-               << ( theHasRefPoint ? theRefPoint.z : 0 ) << " ) )";
-  }
-  return aGroups;
-}
-
-//=======================================================================
-//function : ExtrusionAlongPathObjectMakeGroups
-//purpose  :
-//=======================================================================
-
-SMESH::ListOfGroups* SMESH_MeshEditor_i::
-ExtrusionAlongPathObjectMakeGroups(SMESH::SMESH_IDSource_ptr  theObject,
-                                   SMESH::SMESH_Mesh_ptr      thePathMesh,
-                                   GEOM::GEOM_Object_ptr      thePathShape,
-                                   CORBA::Long                theNodeStart,
-                                   CORBA::Boolean             theHasAngles,
-                                   const SMESH::double_array& theAngles,
-                                   CORBA::Boolean             theHasRefPoint,
-                                   const SMESH::PointStruct&  theRefPoint,
-                                   SMESH::SMESH_MeshEditor::Extrusion_Error& Error)
-  throw (SALOME::SALOME_Exception)
-{
-  TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
-
-  prepareIdSource( theObject );
-  SMESH::long_array_var anElementsId = theObject->GetIDs();
-  SMESH::ListOfGroups * aGroups = extrusionAlongPath( anElementsId,
-                                                      thePathMesh,
-                                                      thePathShape,
-                                                      theNodeStart,
-                                                      theHasAngles,
-                                                      theAngles,
-                                                      theHasRefPoint,
-                                                      theRefPoint,
-                                                      true,
-                                                      Error);
-
-  if (!myIsPreviewMode) {
-    bool isDumpGroups = aGroups && aGroups->length() > 0;
-    if (isDumpGroups)
-      aPythonDump << "(" << aGroups << ", error)";
-    else
-      aPythonDump <<"error";
-
-    aPythonDump << " = " << this << ".ExtrusionAlongPathObjectMakeGroups( "
-                << theObject << ", "
-                << thePathMesh      << ", "
-                << thePathShape     << ", "
-                << theNodeStart     << ", "
-                << theHasAngles     << ", "
-                << theAngles        << ", "
-                << theHasRefPoint   << ", "
-                << "SMESH.PointStruct( "
-                << ( theHasRefPoint ? theRefPoint.x : 0 ) << ", "
-                << ( theHasRefPoint ? theRefPoint.y : 0 ) << ", "
-                << ( theHasRefPoint ? theRefPoint.z : 0 ) << " ) )";
-  }
-  return aGroups;
-}
-
-//=======================================================================
-//function : ExtrusionAlongPathObject1DMakeGroups
-//purpose  :
-//=======================================================================
-
-SMESH::ListOfGroups* SMESH_MeshEditor_i::
-ExtrusionAlongPathObject1DMakeGroups(SMESH::SMESH_IDSource_ptr  theObject,
-                                     SMESH::SMESH_Mesh_ptr      thePathMesh,
-                                     GEOM::GEOM_Object_ptr      thePathShape,
-                                     CORBA::Long                theNodeStart,
-                                     CORBA::Boolean             theHasAngles,
-                                     const SMESH::double_array& theAngles,
-                                     CORBA::Boolean             theHasRefPoint,
-                                     const SMESH::PointStruct&  theRefPoint,
-                                     SMESH::SMESH_MeshEditor::Extrusion_Error& Error)
-  throw (SALOME::SALOME_Exception)
-{
-  TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
-
-  prepareIdSource( theObject );
-  SMESH::long_array_var anElementsId = theObject->GetIDs();
-  SMESH::ListOfGroups * aGroups = extrusionAlongPath( anElementsId,
-                                                      thePathMesh,
-                                                      thePathShape,
-                                                      theNodeStart,
-                                                      theHasAngles,
-                                                      theAngles,
-                                                      theHasRefPoint,
-                                                      theRefPoint,
-                                                      true,
-                                                      Error,
-                                                      SMDSAbs_Edge);
-
-  if (!myIsPreviewMode) {
-    bool isDumpGroups = aGroups && aGroups->length() > 0;
-    if (isDumpGroups)
-      aPythonDump << "(" << aGroups << ", error)";
-    else
-      aPythonDump << "error";
-
-    aPythonDump << " = " << this << ".ExtrusionAlongPathObject1DMakeGroups( "
-                << theObject << ", "
-                << thePathMesh      << ", "
-                << thePathShape     << ", "
-                << theNodeStart     << ", "
-                << theHasAngles     << ", "
-                << theAngles        << ", "
-                << theHasRefPoint   << ", "
-                << "SMESH.PointStruct( "
-                << ( theHasRefPoint ? theRefPoint.x : 0 ) << ", "
-                << ( theHasRefPoint ? theRefPoint.y : 0 ) << ", "
-                << ( theHasRefPoint ? theRefPoint.z : 0 ) << " ) )";
-  }
-  return aGroups;
-}
-
-//=======================================================================
-//function : ExtrusionAlongPathObject2DMakeGroups
-//purpose  :
-//=======================================================================
-
-SMESH::ListOfGroups* SMESH_MeshEditor_i::
-ExtrusionAlongPathObject2DMakeGroups(SMESH::SMESH_IDSource_ptr  theObject,
-                                     SMESH::SMESH_Mesh_ptr      thePathMesh,
-                                     GEOM::GEOM_Object_ptr      thePathShape,
-                                     CORBA::Long                theNodeStart,
-                                     CORBA::Boolean             theHasAngles,
-                                     const SMESH::double_array& theAngles,
-                                     CORBA::Boolean             theHasRefPoint,
-                                     const SMESH::PointStruct&  theRefPoint,
-                                     SMESH::SMESH_MeshEditor::Extrusion_Error& Error)
-  throw (SALOME::SALOME_Exception)
-{
-  TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
-
-  prepareIdSource( theObject );
-  SMESH::long_array_var anElementsId = theObject->GetIDs();
-  SMESH::ListOfGroups * aGroups = extrusionAlongPath( anElementsId,
-                                                      thePathMesh,
-                                                      thePathShape,
-                                                      theNodeStart,
-                                                      theHasAngles,
-                                                      theAngles,
-                                                      theHasRefPoint,
-                                                      theRefPoint,
-                                                      true,
-                                                      Error,
-                                                      SMDSAbs_Face);
-
-  if (!myIsPreviewMode) {
-    bool isDumpGroups = aGroups && aGroups->length() > 0;
-    if (isDumpGroups)
-      aPythonDump << "(" << aGroups << ", error)";
-    else
-      aPythonDump << "error";
-
-    aPythonDump << " = " << this << ".ExtrusionAlongPathObject2DMakeGroups( "
-                << theObject << ", "
-                << thePathMesh      << ", "
-                << thePathShape     << ", "
-                << theNodeStart     << ", "
-                << theHasAngles     << ", "
-                << theAngles        << ", "
-                << theHasRefPoint   << ", "
-                << "SMESH.PointStruct( "
-                << ( theHasRefPoint ? theRefPoint.x : 0 ) << ", "
-                << ( theHasRefPoint ? theRefPoint.y : 0 ) << ", "
-                << ( theHasRefPoint ? theRefPoint.z : 0 ) << " ) )";
-  }
-  return aGroups;
-}
-
-//=======================================================================
-//function : ExtrusionAlongPathObjX
-//purpose  :
-//=======================================================================
-
-SMESH::ListOfGroups* SMESH_MeshEditor_i::
-ExtrusionAlongPathObjX(SMESH::SMESH_IDSource_ptr  Object,
-                       SMESH::SMESH_IDSource_ptr  Path,
-                       CORBA::Long                NodeStart,
-                       CORBA::Boolean             HasAngles,
-                       const SMESH::double_array& Angles,
-                       CORBA::Boolean             LinearVariation,
-                       CORBA::Boolean             HasRefPoint,
-                       const SMESH::PointStruct&  RefPoint,
-                       CORBA::Boolean             MakeGroups,
-                       SMESH::ElementType         ElemType,
-                       SMESH::SMESH_MeshEditor::Extrusion_Error& Error)
-  throw (SALOME::SALOME_Exception)
-{
-  TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
-
-  prepareIdSource( Object );
-  SMESH::long_array_var anElementsId = Object->GetIDs();
-  SMESH::ListOfGroups * aGroups = extrusionAlongPathX(anElementsId,
-                                                      Path,
-                                                      NodeStart,
-                                                      HasAngles,
-                                                      Angles,
-                                                      LinearVariation,
-                                                      HasRefPoint,
-                                                      RefPoint,
-                                                      MakeGroups,
-                                                      (SMDSAbs_ElementType)ElemType,
-                                                      Error);
-
-  if (!myIsPreviewMode) {
-    bool isDumpGroups = aGroups && aGroups->length() > 0;
-    if (isDumpGroups)
-      aPythonDump << "(" << *aGroups << ", error)";
-    else
-      aPythonDump << "error";
-
-    aPythonDump << " = " << this << ".ExtrusionAlongPathObjX( "
-                << Object          << ", "
-                << Path            << ", "
-                << NodeStart       << ", "
-                << HasAngles       << ", "
-                << TVar( Angles )  << ", "
-                << LinearVariation << ", "
-                << HasRefPoint     << ", "
-                << "SMESH.PointStruct( "
-                << TVar( HasRefPoint ? RefPoint.x : 0 ) << ", "
-                << TVar( HasRefPoint ? RefPoint.y : 0 ) << ", "
-                << TVar( HasRefPoint ? RefPoint.z : 0 ) << " ), "
-                << MakeGroups << ", "
-                << ElemType << " )";
-  }
-  return aGroups;
-}
-
-//=======================================================================
-//function : ExtrusionAlongPathX
-//purpose  :
-//=======================================================================
-
-SMESH::ListOfGroups* SMESH_MeshEditor_i::
-ExtrusionAlongPathX(const SMESH::long_array&   IDsOfElements,
-                    SMESH::SMESH_IDSource_ptr  Path,
-                    CORBA::Long                NodeStart,
-                    CORBA::Boolean             HasAngles,
-                    const SMESH::double_array& Angles,
-                    CORBA::Boolean             LinearVariation,
-                    CORBA::Boolean             HasRefPoint,
-                    const SMESH::PointStruct&  RefPoint,
-                    CORBA::Boolean             MakeGroups,
-                    SMESH::ElementType         ElemType,
-                    SMESH::SMESH_MeshEditor::Extrusion_Error& Error)
-  throw (SALOME::SALOME_Exception)
-{
-  TPythonDump aPythonDump; // it is here to prevent dump of GetGroups()
-
-  SMESH::ListOfGroups * aGroups = extrusionAlongPathX(IDsOfElements,
-                                                      Path,
-                                                      NodeStart,
-                                                      HasAngles,
-                                                      Angles,
-                                                      LinearVariation,
-                                                      HasRefPoint,
-                                                      RefPoint,
-                                                      MakeGroups,
-                                                      (SMDSAbs_ElementType)ElemType,
-                                                      Error);
-
-  if (!myIsPreviewMode) {
-    bool isDumpGroups = aGroups && aGroups->length() > 0;
-    if (isDumpGroups)
-      aPythonDump << "(" << *aGroups << ", error)";
-    else
-      aPythonDump <<"error";
-
-    aPythonDump << " = " << this << ".ExtrusionAlongPathX( "
-                << IDsOfElements   << ", "
-                << Path            << ", "
-                << NodeStart       << ", "
-                << HasAngles       << ", "
-                << TVar( Angles )  << ", "
-                << LinearVariation << ", "
-                << HasRefPoint     << ", "
-                << "SMESH.PointStruct( "
-                << TVar( HasRefPoint ? RefPoint.x : 0 ) << ", "
-                << TVar( HasRefPoint ? RefPoint.y : 0 ) << ", "
-                << TVar( HasRefPoint ? RefPoint.z : 0 ) << " ), "
-                << MakeGroups << ", "
-                << ElemType << " )";
-  }
-  return aGroups;
 }
 
 //================================================================================
@@ -4018,7 +3130,6 @@ void SMESH_MeshEditor_i::MirrorObject(SMESH::SMESH_IDSource_ptr           theObj
 
   bool emptyIfIsMesh = myIsPreviewMode ? false : true;
 
-  prepareIdSource( theObject );
   if (idSourceToSet(theObject, getMeshDS(), elements, SMDSAbs_All, emptyIfIsMesh))
     mirror(elements, theAxis, theMirrorType, theCopy, false);
 }
@@ -4068,7 +3179,6 @@ SMESH_MeshEditor_i::MirrorObjectMakeGroups(SMESH::SMESH_IDSource_ptr           t
 
   SMESH::ListOfGroups * aGroups = 0;
   TIDSortedElemSet elements;
-  prepareIdSource( theObject );
   if ( idSourceToSet(theObject, getMeshDS(), elements, SMDSAbs_All, /*emptyIfIsMesh=*/1))
     aGroups = mirror(elements, theMirror, theMirrorType, true, true);
 
@@ -4154,7 +3264,6 @@ SMESH_MeshEditor_i::MirrorObjectMakeMesh(SMESH::SMESH_IDSource_ptr           the
     mesh = makeMesh( theMeshName );
     mesh_i = SMESH::DownCast<SMESH_Mesh_i*>( mesh );
     TIDSortedElemSet elements;
-    prepareIdSource( theObject );
     if ( mesh_i &&
          idSourceToSet(theObject, getMeshDS(), elements, SMDSAbs_All, /*emptyIfIsMesh=*/1))
     {
@@ -4282,8 +3391,7 @@ void SMESH_MeshEditor_i::TranslateObject(SMESH::SMESH_IDSource_ptr theObject,
   TIDSortedElemSet elements;
 
   bool emptyIfIsMesh = myIsPreviewMode ? false : true;
-  
-  prepareIdSource( theObject );
+
   if (idSourceToSet(theObject, getMeshDS(), elements, SMDSAbs_All, emptyIfIsMesh))
     translate(elements, theVector, theCopy, false);
 }
@@ -4329,7 +3437,6 @@ SMESH_MeshEditor_i::TranslateObjectMakeGroups(SMESH::SMESH_IDSource_ptr theObjec
 
   SMESH::ListOfGroups * aGroups = 0;
   TIDSortedElemSet elements;
-  prepareIdSource( theObject );
   if (idSourceToSet(theObject, getMeshDS(), elements, SMDSAbs_All, /*emptyIfIsMesh=*/1))
     aGroups = translate(elements, theVector, true, true);
 
@@ -4412,9 +3519,8 @@ SMESH_MeshEditor_i::TranslateObjectMakeMesh(SMESH::SMESH_IDSource_ptr theObject,
     mesh_i = SMESH::DownCast<SMESH_Mesh_i*>( mesh );
 
     TIDSortedElemSet elements;
-    prepareIdSource( theObject );
     if ( mesh_i &&
-      idSourceToSet(theObject, getMeshDS(), elements, SMDSAbs_All, /*emptyIfIsMesh=*/1))
+         idSourceToSet(theObject, getMeshDS(), elements, SMDSAbs_All, /*emptyIfIsMesh=*/1))
     {
       translate(elements, theVector,false, theCopyGroups, & mesh_i->GetImpl());
       mesh_i->CreateGroupServants();
@@ -4540,7 +3646,6 @@ void SMESH_MeshEditor_i::RotateObject(SMESH::SMESH_IDSource_ptr theObject,
   }
   TIDSortedElemSet elements;
   bool emptyIfIsMesh = myIsPreviewMode ? false : true;
-  prepareIdSource( theObject );
   if (idSourceToSet(theObject, getMeshDS(), elements, SMDSAbs_All, emptyIfIsMesh))
     rotate(elements,theAxis,theAngle,theCopy,false);
 }
@@ -4590,7 +3695,6 @@ SMESH_MeshEditor_i::RotateObjectMakeGroups(SMESH::SMESH_IDSource_ptr theObject,
 
   SMESH::ListOfGroups * aGroups = 0;
   TIDSortedElemSet elements;
-  prepareIdSource( theObject );
   if (idSourceToSet(theObject, getMeshDS(), elements, SMDSAbs_All, /*emptyIfIsMesh=*/1))
     aGroups = rotate(elements, theAxis, theAngle, true, true);
 
@@ -4682,7 +3786,6 @@ SMESH_MeshEditor_i::RotateObjectMakeMesh(SMESH::SMESH_IDSource_ptr theObject,
     mesh_i = SMESH::DownCast<SMESH_Mesh_i*>( mesh );
 
     TIDSortedElemSet elements;
-    prepareIdSource( theObject );
     if (mesh_i &&
         idSourceToSet(theObject, getMeshDS(), elements, SMDSAbs_All, /*emptyIfIsMesh=*/1))
     {
@@ -4735,7 +3838,6 @@ SMESH_MeshEditor_i::scale(SMESH::SMESH_IDSource_ptr  theObject,
     theCopy = false;
 
   TIDSortedElemSet elements;
-  prepareIdSource( theObject );
   bool emptyIfIsMesh = myIsPreviewMode ? false : true;
   if ( !idSourceToSet(theObject, getMeshDS(), elements, SMDSAbs_All, emptyIfIsMesh))
     return 0;
@@ -4745,14 +3847,23 @@ SMESH_MeshEditor_i::scale(SMESH::SMESH_IDSource_ptr  theObject,
     (theScaleFact.length() == 1) ? theScaleFact[0] : theScaleFact[1],
     (theScaleFact.length() == 1) ? theScaleFact[0] : theScaleFact[2],
   };
-  double tol = std::numeric_limits<double>::max();
   gp_Trsf aTrsf;
 
 #if OCC_VERSION_LARGE > 0x06070100
-  aTrsf.SetValues( S[0], 0,    0,    thePoint.x * (1-S[0]),
-                   0,    S[1], 0,    thePoint.y * (1-S[1]),
-                   0,    0,    S[2], thePoint.z * (1-S[2]) );
+  // fight against orthogonalization
+  // aTrsf.SetValues( S[0], 0,    0,    thePoint.x * (1-S[0]),
+  //                  0,    S[1], 0,    thePoint.y * (1-S[1]),
+  //                  0,    0,    S[2], thePoint.z * (1-S[2]) );
+  aTrsf.SetScale( gp::Origin(), 1.0 ); // set form which is used to make group names
+  gp_XYZ & loc = ( gp_XYZ& ) aTrsf.TranslationPart();
+  gp_Mat & M   = ( gp_Mat& ) aTrsf.HVectorialPart();
+  loc.SetCoord( thePoint.x * (1-S[0]),
+                thePoint.y * (1-S[1]),
+                thePoint.z * (1-S[2]));
+  M.SetDiagonal( S[0], S[1], S[2] );
+
 #else
+  double tol = std::numeric_limits<double>::max();
   aTrsf.SetValues( S[0], 0,    0,    thePoint.x * (1-S[0]),
                    0,    S[1], 0,    thePoint.y * (1-S[1]),
                    0,    0,    S[2], thePoint.z * (1-S[2]),   tol, tol);
@@ -4880,58 +3991,18 @@ SMESH_MeshEditor_i::ScaleMakeMesh(SMESH::SMESH_IDSource_ptr  theObject,
 
 
 //=======================================================================
-//function : FindCoincidentNodes
+//function : findCoincidentNodes
 //purpose  :
 //=======================================================================
 
-void SMESH_MeshEditor_i::FindCoincidentNodes (CORBA::Double                  Tolerance,
-                                              SMESH::array_of_long_array_out GroupsOfNodes)
-  throw (SALOME::SALOME_Exception)
+void SMESH_MeshEditor_i::
+findCoincidentNodes (TIDSortedNodeSet &             Nodes,
+                     CORBA::Double                  Tolerance,
+                     SMESH::array_of_long_array_out GroupsOfNodes,
+                     CORBA::Boolean                 SeparateCornersAndMedium)
 {
-  SMESH_TRY;
-  initData();
-
   ::SMESH_MeshEditor::TListOfListOfNodes aListOfListOfNodes;
-  TIDSortedNodeSet nodes; // no input nodes
-  getEditor().FindCoincidentNodes( nodes, Tolerance, aListOfListOfNodes );
-
-  GroupsOfNodes = new SMESH::array_of_long_array;
-  GroupsOfNodes->length( aListOfListOfNodes.size() );
-  ::SMESH_MeshEditor::TListOfListOfNodes::iterator llIt = aListOfListOfNodes.begin();
-  for ( CORBA::Long i = 0; llIt != aListOfListOfNodes.end(); llIt++, i++ ) {
-    list< const SMDS_MeshNode* >& aListOfNodes = *llIt;
-    list< const SMDS_MeshNode* >::iterator lIt = aListOfNodes.begin();;
-    SMESH::long_array& aGroup = (*GroupsOfNodes)[ i ];
-    aGroup.length( aListOfNodes.size() );
-    for ( int j = 0; lIt != aListOfNodes.end(); lIt++, j++ )
-      aGroup[ j ] = (*lIt)->GetID();
-  }
-  TPythonDump() << "coincident_nodes = " << this << ".FindCoincidentNodes( "
-                << Tolerance << " )";
-
-  SMESH_CATCH( SMESH::throwCorbaException );
-}
-
-//=======================================================================
-//function : FindCoincidentNodesOnPart
-//purpose  :
-//=======================================================================
-
-void SMESH_MeshEditor_i::FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr      theObject,
-                                                   CORBA::Double                  Tolerance,
-                                                   SMESH::array_of_long_array_out GroupsOfNodes)
-  throw (SALOME::SALOME_Exception)
-{
-  SMESH_TRY;
-  initData();
-
-  TIDSortedNodeSet nodes;
-  prepareIdSource( theObject );
-  idSourceToNodeSet( theObject, getMeshDS(), nodes );
-
-  ::SMESH_MeshEditor::TListOfListOfNodes aListOfListOfNodes;
-  if(!nodes.empty())
-    getEditor().FindCoincidentNodes( nodes, Tolerance, aListOfListOfNodes );
+  getEditor().FindCoincidentNodes( Nodes, Tolerance, aListOfListOfNodes, SeparateCornersAndMedium );
 
   GroupsOfNodes = new SMESH::array_of_long_array;
   GroupsOfNodes->length( aListOfListOfNodes.size() );
@@ -4945,9 +4016,56 @@ void SMESH_MeshEditor_i::FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr    
     for ( int j = 0; lIt != aListOfNodes.end(); lIt++, j++ )
       aGroup[ j ] = (*lIt)->GetID();
   }
+}
+
+//=======================================================================
+//function : FindCoincidentNodes
+//purpose  :
+//=======================================================================
+
+void SMESH_MeshEditor_i::
+FindCoincidentNodes (CORBA::Double                  Tolerance,
+                     SMESH::array_of_long_array_out GroupsOfNodes,
+                     CORBA::Boolean                 SeparateCornersAndMedium)
+  throw (SALOME::SALOME_Exception)
+{
+  SMESH_TRY;
+  initData();
+
+  TIDSortedNodeSet nodes; // no input nodes
+  findCoincidentNodes( nodes, Tolerance, GroupsOfNodes, SeparateCornersAndMedium );
+
+  TPythonDump() << "coincident_nodes = " << this << ".FindCoincidentNodes( "
+                << Tolerance << ", "
+                << SeparateCornersAndMedium << " )";
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+}
+
+//=======================================================================
+//function : FindCoincidentNodesOnPart
+//purpose  :
+//=======================================================================
+
+void SMESH_MeshEditor_i::
+FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr      theObject,
+                          CORBA::Double                  Tolerance,
+                          SMESH::array_of_long_array_out GroupsOfNodes,
+                          CORBA::Boolean                 SeparateCornersAndMedium)
+  throw (SALOME::SALOME_Exception)
+{
+  SMESH_TRY;
+  initData();
+
+  TIDSortedNodeSet nodes;
+  idSourceToNodeSet( theObject, getMeshDS(), nodes );
+
+  findCoincidentNodes( nodes, Tolerance, GroupsOfNodes, SeparateCornersAndMedium );
+
   TPythonDump() << "coincident_nodes_on_part = " << this << ".FindCoincidentNodesOnPart( "
-                <<theObject<<", "
-                << Tolerance << " )";
+                << theObject <<", "
+                << Tolerance << ", "
+                << SeparateCornersAndMedium << " )";
 
   SMESH_CATCH( SMESH::throwCorbaException );
 }
@@ -4963,44 +4081,30 @@ void SMESH_MeshEditor_i::
 FindCoincidentNodesOnPartBut(SMESH::SMESH_IDSource_ptr      theObject,
                              CORBA::Double                  theTolerance,
                              SMESH::array_of_long_array_out theGroupsOfNodes,
-                             const SMESH::ListOfIDSources&  theExceptSubMeshOrGroups)
+                             const SMESH::ListOfIDSources&  theExceptSubMeshOrGroups,
+                             CORBA::Boolean                 theSeparateCornersAndMedium)
   throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
 
   TIDSortedNodeSet nodes;
-  prepareIdSource( theObject );
   idSourceToNodeSet( theObject, getMeshDS(), nodes );
 
   for ( int i = 0; i < theExceptSubMeshOrGroups.length(); ++i )
   {
-    TIDSortedNodeSet exceptNodes;
-    idSourceToNodeSet( theExceptSubMeshOrGroups[i], getMeshDS(), exceptNodes );
-    TIDSortedNodeSet::iterator avoidNode = exceptNodes.begin();
-    for ( ; avoidNode != exceptNodes.end(); ++avoidNode)
-      nodes.erase( *avoidNode );
+    SMDS_ElemIteratorPtr nodeIt = myMesh_i->GetElements( theExceptSubMeshOrGroups[i],
+                                                         SMESH::NODE );
+    while ( nodeIt->more() )
+      nodes.erase( cast2Node( nodeIt->next() ));
   }
-  ::SMESH_MeshEditor::TListOfListOfNodes aListOfListOfNodes;
-  if(!nodes.empty())
-    getEditor().FindCoincidentNodes( nodes, theTolerance, aListOfListOfNodes );
+  findCoincidentNodes( nodes, theTolerance, theGroupsOfNodes, theSeparateCornersAndMedium );
 
-  theGroupsOfNodes = new SMESH::array_of_long_array;
-  theGroupsOfNodes->length( aListOfListOfNodes.size() );
-  ::SMESH_MeshEditor::TListOfListOfNodes::iterator llIt = aListOfListOfNodes.begin();
-  for ( CORBA::Long i = 0; llIt != aListOfListOfNodes.end(); llIt++, i++ )
-  {
-    list< const SMDS_MeshNode* >& aListOfNodes = *llIt;
-    list< const SMDS_MeshNode* >::iterator lIt = aListOfNodes.begin();;
-    SMESH::long_array& aGroup = (*theGroupsOfNodes)[ i ];
-    aGroup.length( aListOfNodes.size() );
-    for ( int j = 0; lIt != aListOfNodes.end(); lIt++, j++ )
-      aGroup[ j ] = (*lIt)->GetID();
-  }
   TPythonDump() << "coincident_nodes_on_part = " << this << ".FindCoincidentNodesOnPartBut( "
                 << theObject<<", "
                 << theTolerance << ", "
-                << theExceptSubMeshOrGroups << " )";
+                << theExceptSubMeshOrGroups << ", "
+                << theSeparateCornersAndMedium << " )";
 
   SMESH_CATCH( SMESH::throwCorbaException );
 }
@@ -5010,7 +4114,8 @@ FindCoincidentNodesOnPartBut(SMESH::SMESH_IDSource_ptr      theObject,
 //purpose  :
 //=======================================================================
 
-void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfNodes)
+void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfNodes,
+                                     const SMESH::ListOfIDSources&     NodesToKeep)
   throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
@@ -5020,6 +4125,16 @@ void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfN
 
   TPythonDump aTPythonDump;
   aTPythonDump << this << ".MergeNodes([";
+
+  TIDSortedNodeSet setOfNodesToKeep;
+  for ( int i = 0; i < NodesToKeep.length(); ++i )
+  {
+    prepareIdSource( NodesToKeep[i] );
+    SMDS_ElemIteratorPtr nodeIt = myMesh_i->GetElements( NodesToKeep[i], SMESH::NODE );
+    while ( nodeIt->more() )
+      setOfNodesToKeep.insert( setOfNodesToKeep.end(), cast2Node( nodeIt->next() ));
+  }
+
   ::SMESH_MeshEditor::TListOfListOfNodes aListOfListOfNodes;
   for (int i = 0; i < GroupsOfNodes.length(); i++)
   {
@@ -5029,9 +4144,13 @@ void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfN
     for ( int j = 0; j < aNodeGroup.length(); j++ )
     {
       CORBA::Long index = aNodeGroup[ j ];
-      const SMDS_MeshNode * node = aMesh->FindNode(index);
-      if ( node )
-        aListOfNodes.push_back( node );
+      if ( const SMDS_MeshNode * node = aMesh->FindNode( index ))
+      {
+        if ( setOfNodesToKeep.count( node ))
+          aListOfNodes.push_front( node );
+        else
+          aListOfNodes.push_back( node );
+      }
     }
     if ( aListOfNodes.size() < 2 )
       aListOfListOfNodes.pop_back();
@@ -5039,9 +4158,10 @@ void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfN
     if ( i > 0 ) aTPythonDump << ", ";
     aTPythonDump << aNodeGroup;
   }
+
   getEditor().MergeNodes( aListOfListOfNodes );
 
-  aTPythonDump <<  "])";
+  aTPythonDump << "], " << NodesToKeep << ")";
 
   declareMeshModified( /*isReComputeSafe=*/false );
 
@@ -5064,7 +4184,6 @@ void SMESH_MeshEditor_i::FindEqualElements(SMESH::SMESH_IDSource_ptr      theObj
   if ( !(!group->_is_nil() && group->GetType() == SMESH::NODE) )
   {
     TIDSortedElemSet elems;
-    prepareIdSource( theObject );
     idSourceToSet( theObject, getMeshDS(), elems, SMDSAbs_All, /*emptyIfIsMesh=*/true);
 
     ::SMESH_MeshEditor::TListOfListOfElementsID aListOfListOfElementsID;
@@ -5454,6 +4573,225 @@ static SMESH::SMESH_MeshEditor::Sew_Error convError( const::SMESH_MeshEditor::Se
 }
 
 //=======================================================================
+/*!
+ * Returns groups of FreeBorder's coincident within the given tolerance.
+ * If the tolerance <= 0.0 then one tenth of an average size of elements adjacent
+ * to free borders being compared is used.
+ */
+//=======================================================================
+
+SMESH::CoincidentFreeBorders*
+SMESH_MeshEditor_i::FindCoincidentFreeBorders(CORBA::Double tolerance)
+{
+  SMESH::CoincidentFreeBorders_var aCFB = new SMESH::CoincidentFreeBorders;
+
+  SMESH_TRY;
+
+  SMESH_MeshAlgos::CoincidentFreeBorders cfb;
+  SMESH_MeshAlgos::FindCoincidentFreeBorders( *getMeshDS(), tolerance, cfb );
+
+  // copy free borders
+  aCFB->borders.length( cfb._borders.size() );
+  for ( size_t i = 0; i < cfb._borders.size(); ++i )
+  {
+    SMESH_MeshAlgos::TFreeBorder& nodes = cfb._borders[i];
+    SMESH::FreeBorder&             aBRD = aCFB->borders[i];
+    aBRD.nodeIDs.length( nodes.size() );
+    for ( size_t iN = 0; iN < nodes.size(); ++iN )
+      aBRD.nodeIDs[ iN ] = nodes[ iN ]->GetID();
+  }
+
+  // copy coincident parts
+  aCFB->coincidentGroups.length( cfb._coincidentGroups.size() );
+  for ( size_t i = 0; i < cfb._coincidentGroups.size(); ++i )
+  {
+    SMESH_MeshAlgos::TCoincidentGroup& grp = cfb._coincidentGroups[i];
+    SMESH::FreeBordersGroup&          aGRP = aCFB->coincidentGroups[i];
+    aGRP.length( grp.size() );
+    for ( size_t iP = 0; iP < grp.size(); ++iP )
+    {
+      SMESH_MeshAlgos::TFreeBorderPart& part = grp[ iP ];
+      SMESH::FreeBorderPart&           aPART = aGRP[ iP ];
+      aPART.border   = part._border;
+      aPART.node1    = part._node1;
+      aPART.node2    = part._node2;
+      aPART.nodeLast = part._nodeLast;
+    }
+  }
+  SMESH_CATCH( SMESH::doNothing );
+
+  TPythonDump() << "CoincidentFreeBorders = "
+                << this << ".FindCoincidentFreeBorders( " << tolerance << " )";
+
+  return aCFB._retn();
+}
+
+//=======================================================================
+/*!
+ * Sew FreeBorder's of each group
+ */
+//=======================================================================
+
+CORBA::Short SMESH_MeshEditor_i::
+SewCoincidentFreeBorders(const SMESH::CoincidentFreeBorders& freeBorders,
+                         CORBA::Boolean                      createPolygons,
+                         CORBA::Boolean                      createPolyhedra)
+  throw (SALOME::SALOME_Exception)
+{
+  CORBA::Short nbSewed = 0;
+
+  SMESH_MeshAlgos::TFreeBorderVec groups;
+  SMESH_MeshAlgos::TFreeBorder    borderNodes; // triples of nodes for every FreeBorderPart
+
+  // check the input and collect nodes
+  for ( CORBA::ULong i = 0; i < freeBorders.coincidentGroups.length(); ++i )
+  {
+    borderNodes.clear();
+    const SMESH::FreeBordersGroup& aGRP = freeBorders.coincidentGroups[ i ];
+    for ( CORBA::ULong iP = 0; iP < aGRP.length(); ++iP )
+    {
+      const SMESH::FreeBorderPart& aPART = aGRP[ iP ];
+      if ( aPART.border < 0 || aPART.border >= freeBorders.borders.length() )
+        THROW_SALOME_CORBA_EXCEPTION("Invalid FreeBorderPart::border index", SALOME::BAD_PARAM);
+
+      const SMESH::FreeBorder& aBRD = freeBorders.borders[ aPART.border ];
+
+      if ( aPART.node1 < 0 || aPART.node1 > aBRD.nodeIDs.length() )
+        THROW_SALOME_CORBA_EXCEPTION("Invalid FreeBorderPart::node1", SALOME::BAD_PARAM);
+      if ( aPART.node2 < 0 || aPART.node2 > aBRD.nodeIDs.length() )
+        THROW_SALOME_CORBA_EXCEPTION("Invalid FreeBorderPart::node2", SALOME::BAD_PARAM);
+      if ( aPART.nodeLast < 0 || aPART.nodeLast > aBRD.nodeIDs.length() )
+        THROW_SALOME_CORBA_EXCEPTION("Invalid FreeBorderPart::nodeLast", SALOME::BAD_PARAM);
+
+      // do not keep these nodes for further sewing as nodes can be removed by the sewing
+      const SMDS_MeshNode* n1 = getMeshDS()->FindNode( aBRD.nodeIDs[ aPART.node1    ]);
+      const SMDS_MeshNode* n2 = getMeshDS()->FindNode( aBRD.nodeIDs[ aPART.node2    ]);
+      const SMDS_MeshNode* n3 = getMeshDS()->FindNode( aBRD.nodeIDs[ aPART.nodeLast ]);
+      if ( !n1)
+        THROW_SALOME_CORBA_EXCEPTION("Nonexistent FreeBorderPart::node1", SALOME::BAD_PARAM);
+      if ( !n2 )
+        THROW_SALOME_CORBA_EXCEPTION("Nonexistent FreeBorderPart::node2", SALOME::BAD_PARAM);
+      if ( !n3 )
+        THROW_SALOME_CORBA_EXCEPTION("Nonexistent FreeBorderPart::nodeLast", SALOME::BAD_PARAM);
+
+      borderNodes.push_back( n1 );
+      borderNodes.push_back( n2 );
+      borderNodes.push_back( n3 );
+    }
+    groups.push_back( borderNodes );
+  }
+
+  // SewFreeBorder() can merge nodes, thus nodes stored in 'groups' can become dead;
+  // to get nodes that replace other nodes during merge we create 0D elements
+  // on each node and MergeNodes() will replace underlying nodes of 0D elements by
+  // new ones.
+
+  vector< const SMDS_MeshElement* > tmp0Delems;
+  for ( size_t i = 0; i < groups.size(); ++i )
+  {
+    SMESH_MeshAlgos::TFreeBorder& nodes = groups[i];
+    for ( size_t iN = 0; iN < nodes.size(); ++iN )
+    {
+      SMDS_ElemIteratorPtr it0D = nodes[iN]->GetInverseElementIterator(SMDSAbs_0DElement);
+      if ( it0D->more() )
+        tmp0Delems.push_back( it0D->next() );
+      else
+        tmp0Delems.push_back( getMeshDS()->Add0DElement( nodes[iN] ));
+    }
+  }
+
+  // cout << endl << "INIT" << endl;
+  // for ( size_t i = 0; i < tmp0Delems.size(); ++i )
+  // {
+  //   cout << i << " ";
+  //   if ( i % 3 == 0 ) cout << "^ ";
+  //   tmp0Delems[i]->GetNode(0)->Print( cout );
+  // }
+
+  SMESH_TRY;
+
+  ::SMESH_MeshEditor::Sew_Error res, ok = ::SMESH_MeshEditor::SEW_OK;
+  int i0D = 0;
+  for ( size_t i = 0; i < groups.size(); ++i )
+  {
+    bool isBordToBord = true;
+    bool   groupSewed = false;
+    SMESH_MeshAlgos::TFreeBorder& nodes = groups[i];
+    for ( size_t iN = 3; iN+2 < nodes.size(); iN += 3 )
+    {
+      const SMDS_MeshNode* n0 = tmp0Delems[ i0D + 0 ]->GetNode( 0 );
+      const SMDS_MeshNode* n1 = tmp0Delems[ i0D + 1 ]->GetNode( 0 );
+      const SMDS_MeshNode* n2 = tmp0Delems[ i0D + 2 ]->GetNode( 0 );
+
+      const SMDS_MeshNode* n3 = tmp0Delems[ i0D + 0 + iN ]->GetNode( 0 );
+      const SMDS_MeshNode* n4 = tmp0Delems[ i0D + 1 + iN ]->GetNode( 0 );
+      const SMDS_MeshNode* n5 = tmp0Delems[ i0D + 2 + iN ]->GetNode( 0 );
+
+      if ( !n0 || !n1 || !n2 || !n3 || !n4 || !n5 )
+        continue;
+
+      // TIDSortedElemSet emptySet, avoidSet;
+      // if ( !SMESH_MeshAlgos::FindFaceInSet( n0, n1, emptySet, avoidSet))
+      // {
+      //   cout << "WRONG 2nd 1" << endl;
+      //   n0->Print( cout );
+      //   n1->Print( cout );
+      // }
+      // if ( !SMESH_MeshAlgos::FindFaceInSet( n3, n4, emptySet, avoidSet))
+      // {
+      //   cout << "WRONG 2nd 2" << endl;
+      //   n3->Print( cout );
+      //   n4->Print( cout );
+      // }
+
+      if ( !isBordToBord )
+      {
+        n1 = n2; // at border-to-side sewing only last side node (n1) is needed
+        n2 = 0;  //  and n2 is not used
+      }
+      // 1st border moves to 2nd
+      res = getEditor().SewFreeBorder( n3, n4, n5 ,// 1st
+                                       n0 ,n1 ,n2 ,// 2nd
+                                       /*2ndIsFreeBorder=*/ isBordToBord,
+                                       createPolygons, createPolyhedra);
+      groupSewed = ( res == ok );
+
+      isBordToBord = false;
+      // cout << endl << "SEWED GROUP " << i << " PART " << iN / 3 << endl;
+      // for ( size_t t = 0; t < tmp0Delems.size(); ++t )
+      // {
+      //   cout << t << " ";
+      //   if ( t % 3 == 0 ) cout << "^ ";
+      //   tmp0Delems[t]->GetNode(0)->Print( cout );
+      // }
+    }
+    i0D += nodes.size();
+    nbSewed += groupSewed;
+  }
+
+  TPythonDump() << "nbSewed = " << this << ".SewCoincidentFreeBorders( "
+                << freeBorders     << ", "
+                << createPolygons  << ", "
+                << createPolyhedra << " )";
+
+  SMESH_CATCH( SMESH::doNothing );
+
+  declareMeshModified( /*isReComputeSafe=*/false );
+
+  // remove tmp 0D elements
+  SMESH_TRY;
+  set< const SMDS_MeshElement* > removed0D;
+  for ( size_t i = 0; i < tmp0Delems.size(); ++i )
+  {
+    if ( removed0D.insert( tmp0Delems[i] ).second )
+      getMeshDS()->RemoveFreeElement( tmp0Delems[i], /*sm=*/0, /*fromGroups=*/false );
+  }
+  SMESH_CATCH( SMESH::throwCorbaException );
+
+  return nbSewed;
+}
+
+//=======================================================================
 //function : SewFreeBorders
 //purpose  :
 //=======================================================================
@@ -5502,14 +4840,14 @@ SMESH_MeshEditor_i::SewFreeBorders(CORBA::Long FirstNodeID1,
 
   SMESH::SMESH_MeshEditor::Sew_Error error =
     convError( getEditor().SewFreeBorder (aBorderFirstNode,
-                                       aBorderSecondNode,
-                                       aBorderLastNode,
-                                       aSide2FirstNode,
-                                       aSide2SecondNode,
-                                       aSide2ThirdNode,
-                                       true,
-                                       CreatePolygons,
-                                       CreatePolyedrs) );
+                                          aBorderSecondNode,
+                                          aBorderLastNode,
+                                          aSide2FirstNode,
+                                          aSide2SecondNode,
+                                          aSide2ThirdNode,
+                                          true,
+                                          CreatePolygons,
+                                          CreatePolyedrs) );
 
 
   declareMeshModified( /*isReComputeSafe=*/false );
@@ -5562,13 +4900,13 @@ SMESH_MeshEditor_i::SewConformFreeBorders(CORBA::Long FirstNodeID1,
 
   SMESH::SMESH_MeshEditor::Sew_Error error =
     convError( getEditor().SewFreeBorder (aBorderFirstNode,
-                                       aBorderSecondNode,
-                                       aBorderLastNode,
-                                       aSide2FirstNode,
-                                       aSide2SecondNode,
-                                       aSide2ThirdNode,
-                                       true,
-                                       false, false) );
+                                          aBorderSecondNode,
+                                          aBorderLastNode,
+                                          aSide2FirstNode,
+                                          aSide2SecondNode,
+                                          aSide2ThirdNode,
+                                          true,
+                                          false, false) );
 
   declareMeshModified( /*isReComputeSafe=*/false );
   return error;
@@ -5624,14 +4962,14 @@ SMESH_MeshEditor_i::SewBorderToSide(CORBA::Long FirstNodeIDOnFreeBorder,
 
   SMESH::SMESH_MeshEditor::Sew_Error error =
     convError( getEditor().SewFreeBorder (aBorderFirstNode,
-                                       aBorderSecondNode,
-                                       aBorderLastNode,
-                                       aSide2FirstNode,
-                                       aSide2SecondNode,
-                                       aSide2ThirdNode,
-                                       false,
-                                       CreatePolygons,
-                                       CreatePolyedrs) );
+                                          aBorderSecondNode,
+                                          aBorderLastNode,
+                                          aSide2FirstNode,
+                                          aSide2SecondNode,
+                                          aSide2ThirdNode,
+                                          false,
+                                          CreatePolygons,
+                                          CreatePolyedrs) );
 
   declareMeshModified( /*isReComputeSafe=*/false );
   return error;
@@ -5754,11 +5092,12 @@ void SMESH_MeshEditor_i::convertToQuadratic(CORBA::Boolean            theForce3d
   throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
+  initData();
+
   TIDSortedElemSet elems;
   bool elemsOK;
   if ( !( elemsOK = CORBA::is_nil( theObject )))
   {
-    prepareIdSource( theObject );
     elemsOK =  idSourceToSet( theObject, getMeshDS(), elems,
                               SMDSAbs_All, /*emptyIfIsMesh=*/true );
   }
@@ -5784,10 +5123,16 @@ void SMESH_MeshEditor_i::convertToQuadratic(CORBA::Boolean            theForce3d
 CORBA::Boolean SMESH_MeshEditor_i::ConvertFromQuadratic()
   throw (SALOME::SALOME_Exception)
 {
+  SMESH_TRY;
+  initData();
+
   CORBA::Boolean isDone = getEditor().ConvertFromQuadratic();
   TPythonDump() << this << ".ConvertFromQuadratic()";
   declareMeshModified( /*isReComputeSafe=*/!isDone );
   return isDone;
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+  return false;
 }
 
 //=======================================================================
@@ -5840,11 +5185,11 @@ void SMESH_MeshEditor_i::ConvertFromQuadraticObject(SMESH::SMESH_IDSource_ptr th
   throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
+  initData();
 
   TPythonDump pyDump;
 
   TIDSortedElemSet elems;
-  prepareIdSource( theObject );
   if ( idSourceToSet( theObject, getMeshDS(), elems, SMDSAbs_All, /*emptyIfIsMesh=*/true ))
   {
     if ( elems.empty() )
@@ -5944,10 +5289,68 @@ void SMESH_MeshEditor_i::prepareIdSource(SMESH::SMESH_IDSource_ptr theObject)
     filter->SetMesh( mesh );
   }
 }
+//================================================================================
+/*!
+ * \brief Retrieve elements of given type from SMESH_IDSource
+ */
+//================================================================================
+
+bool SMESH_MeshEditor_i::idSourceToSet(SMESH::SMESH_IDSource_ptr  theIDSource,
+                                       const SMESHDS_Mesh*        theMeshDS,
+                                       TIDSortedElemSet&          theElemSet,
+                                       const SMDSAbs_ElementType  theType,
+                                       const bool                 emptyIfIsMesh,
+                                       IDSource_Error*            error)
+
+{
+  if ( error ) *error = IDSource_OK;
+
+  if ( CORBA::is_nil( theIDSource ) )
+  {
+    if ( error ) *error = IDSource_INVALID;
+    return false;
+  }
+  if ( emptyIfIsMesh && SMESH::DownCast<SMESH_Mesh_i*>( theIDSource ))
+  {
+    if ( error && getMeshDS()->GetMeshInfo().NbElements( theType ) == 0 )
+      *error = IDSource_EMPTY;
+    return true;
+  }
+  prepareIdSource( theIDSource );
+  SMESH::long_array_var anIDs = theIDSource->GetIDs();
+  if ( anIDs->length() == 0 )
+  {
+    if ( error ) *error = IDSource_EMPTY;
+    return false;
+  }
+  SMESH::array_of_ElementType_var types = theIDSource->GetTypes();
+  if ( types->length() == 1 && types[0] == SMESH::NODE ) // group of nodes
+  {
+    if ( theType == SMDSAbs_All || theType == SMDSAbs_Node )
+    {
+      arrayToSet( anIDs, getMeshDS(), theElemSet, SMDSAbs_Node );
+    }
+    else
+    {
+      if ( error ) *error = IDSource_INVALID;
+      return false;
+    }
+  }
+  else
+  {
+    arrayToSet( anIDs, getMeshDS(), theElemSet, theType);
+    if ( bool(anIDs->length()) != bool(theElemSet.size()))
+    {
+      if ( error ) *error = IDSource_INVALID;
+      return false;
+    }
+  }
+  return true;
+}
 
 //================================================================================
 /*!
- * \brief Duplicates given elements, i.e. creates new elements based on the 
+ * \brief Duplicates given elements, i.e. creates new elements based on the
  *        same nodes as the given ones.
  * \param theElements - container of elements to duplicate.
  * \param theGroupName - a name of group to contain the generated elements.
@@ -5973,7 +5376,6 @@ SMESH_MeshEditor_i::DoubleElements(SMESH::SMESH_IDSource_ptr theElements,
   TPythonDump pyDump;
 
   TIDSortedElemSet elems;
-  prepareIdSource( theElements );
   if ( idSourceToSet( theElements, getMeshDS(), elems, SMDSAbs_All, /*emptyIfIsMesh=*/true))
   {
     getEditor().DoubleElements( elems );
@@ -7170,7 +6572,6 @@ SMESH_MeshEditor_i::MakeBoundaryMesh(SMESH::SMESH_IDSource_ptr idSource,
 
   TIDSortedElemSet elements;
   SMDSAbs_ElementType elemType = (dim == SMESH::BND_1DFROM2D) ? SMDSAbs_Face : SMDSAbs_Volume;
-  prepareIdSource( idSource );
   if ( idSourceToSet( idSource, aMeshDS, elements, elemType,/*emptyIfIsMesh=*/true ))
   {
     // mesh to fill in
@@ -7260,9 +6661,9 @@ CORBA::Long SMESH_MeshEditor_i::MakeBoundaryElements(SMESH::Bnd_Dimension dim,
     THROW_SALOME_CORBA_EXCEPTION("Invalid boundary dimension", SALOME::BAD_PARAM);
 
   // separate groups belonging to this and other mesh
-  SMESH::ListOfIDSources_var groupsOfThisMesh = new SMESH::ListOfIDSources;
+  SMESH::ListOfIDSources_var groupsOfThisMesh  = new SMESH::ListOfIDSources;
   SMESH::ListOfIDSources_var groupsOfOtherMesh = new SMESH::ListOfIDSources;
-  groupsOfThisMesh->length( groups.length() );
+  groupsOfThisMesh ->length( groups.length() );
   groupsOfOtherMesh->length( groups.length() );
   int nbGroups = 0, nbGroupsOfOtherMesh = 0;
   for ( int i = 0; i < groups.length(); ++i )

@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -104,9 +104,6 @@ SMESHGUI_CreatePatternDlg::SMESHGUI_CreatePatternDlg( SMESHGUI*   theModule,
   aDlgLay->addWidget( aBtnFrame );
 
   aDlgLay->setStretchFactor( aMainFrame, 1 );
-
-  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ) )
-    mySelector = aViewWindow->GetSelector();
 
   myHelpFileName = "pattern_mapping_page.html";
 
@@ -572,7 +569,7 @@ void SMESHGUI_CreatePatternDlg::onSelectionDone()
 {
   try {
     SALOME_ListIO aList;
-    mySelectionMgr->selectedObjects( aList, SVTK_Viewer::Type() );
+    mySelectionMgr->selectedObjects( aList );
     if ( aList.Extent() != 1 )
       return;
 

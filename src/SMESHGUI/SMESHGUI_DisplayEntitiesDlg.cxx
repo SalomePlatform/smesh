@@ -1,4 +1,4 @@
-// Copyright (C) 2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2014-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -22,22 +22,23 @@
 #include "SMESHGUI_DisplayEntitiesDlg.h"
 
 #include "SMESHGUI.h"
+#include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
-#include "SMESHGUI_MeshUtils.h"
 
-#include <QLabel>
-#include <QGroupBox>
-#include <QGridLayout>
-#include <QVBoxLayout>
-#include <QCheckBox>
-
-#include <SUIT_Session.h>
-#include <SUIT_MessageBox.h>
-#include <SUIT_ResourceMgr.h>
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
 #include <SALOME_ListIO.hxx>
+#include <SUIT_MessageBox.h>
+#include <SUIT_OverrideCursor.h>
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Session.h>
+
+#include <QCheckBox>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QLabel>
+#include <QVBoxLayout>
 
 const int MARGIN  = 9;
 const int SPACING = 6;
@@ -176,7 +177,7 @@ SMESHGUI_DisplayEntitiesDlg::~SMESHGUI_DisplayEntitiesDlg()
 }
 
 void SMESHGUI_DisplayEntitiesDlg::InverseEntityMode(unsigned int& theOutputMode,
-						    unsigned int theMode)
+                                                    unsigned int theMode)
 {
   bool anIsNotPresent = ~theOutputMode & theMode;
   if(anIsNotPresent)
@@ -193,7 +194,7 @@ void SMESHGUI_DisplayEntitiesDlg::onChangeEntityMode( bool isChecked )
   QCheckBox* aSender = (QCheckBox*)sender();
   if ( myNbCheckedButtons == 1 && !isChecked ) {
     SUIT_MessageBox::warning(this, tr("SMESH_WRN_WARNING"),
-			     tr("WRN_AT_LEAST_ONE"));
+                             tr("WRN_AT_LEAST_ONE"));
     disconnect( aSender, SIGNAL(toggled(bool)), this, SLOT(onChangeEntityMode(bool)) );
     aSender->setChecked( true );
     connect( aSender, SIGNAL(toggled(bool)), this, SLOT(onChangeEntityMode(bool)) );
@@ -228,11 +229,13 @@ void SMESHGUI_DisplayEntitiesDlg::onHelp()
 */
 void SMESHGUI_DisplayEntitiesDlg::onOk()
 {
+  SUIT_OverrideCursor wc;
+
   const char* entry = myIObject->getEntry();
   
   if ( !myActor ) {
     myActor = SMESH::CreateActor(SMESH::GetActiveStudyDocument(), 
-				 entry, true);
+                                 entry, true);
   }
 
   if( myEntityMode != myActor->GetEntityMode() ) {

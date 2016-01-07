@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -98,7 +98,7 @@ namespace SMESH
       myStream << "[ ";
       for ( size_t i = 1; i <= theVarValue.myVals.size(); ++i )
       {
-        if ( myVarsCounter < varIDs.size() && varIDs[ myVarsCounter ] >= 0 )
+        if ( myVarsCounter < (int)varIDs.size() && varIDs[ myVarsCounter ] >= 0 )
           myStream << TVar::Quote() << varIDs[ myVarsCounter ] << TVar::Quote();
         else
           myStream << theVarValue.myVals[i-1];
@@ -110,7 +110,7 @@ namespace SMESH
     }
     else
     {
-      if ( myVarsCounter < varIDs.size() && varIDs[ myVarsCounter ] >= 0 )
+      if ( myVarsCounter < (int)varIDs.size() && varIDs[ myVarsCounter ] >= 0 )
         myStream << TVar::Quote() << varIDs[ myVarsCounter ] << TVar::Quote();
       else
         myStream << theVarValue.myVals[0];
@@ -247,7 +247,7 @@ namespace SMESH
     else
     {
       theStream << "[ ";
-      for (int i = 1; i <= theArray.length(); i++) {
+      for (CORBA::ULong i = 1; i <= theArray.length(); i++) {
         theStream << theArray[i-1];
         if ( i < theArray.length() )
           theStream << ", ";
@@ -281,7 +281,7 @@ namespace SMESH
   TPythonDump::operator<<(const SMESH::string_array& theArray)
   {
     myStream << "[ ";
-    for (int i = 1; i <= theArray.length(); i++) {
+    for ( CORBA::ULong i = 1; i <= theArray.length(); i++ ) {
       myStream << "'" << theArray[i-1] << "'";
       if ( i < theArray.length() )
         myStream << ", ";
@@ -423,6 +423,7 @@ namespace SMESH
       case FT_MultiConnection2D:     myStream<< "aMultiConnection2D";     break;
       case FT_Length:                myStream<< "aLength";                break;
       case FT_Length2D:              myStream<< "aLength2D";              break;
+      case FT_BelongToMeshGroup:     myStream<< "aBelongToMeshGroup";     break;
       case FT_BelongToGeom:          myStream<< "aBelongToGeom";          break;
       case FT_BelongToPlane:         myStream<< "aBelongToPlane";         break;
       case FT_BelongToCylinder:      myStream<< "aBelongToCylinder";      break;
@@ -546,6 +547,39 @@ namespace SMESH
     DumpArray( theList, *this );
     return *this;
   }
+  TPythonDump& TPythonDump::operator<<(const SMESH::CoincidentFreeBorders& theCFB)
+  {
+    // dump CoincidentFreeBorders as a list of lists, each enclosed list
+    // contains node IDs of a group of coincident free borders where
+    // each consequent triple of IDs describe a free border: (n1, n2, nLast)
+    // For example [[1, 2, 10, 20, 21, 40], [11, 12, 15, 55, 54, 41]] describes
+    // two groups of coincident free borders, each group including two borders
+
+    myStream << "[";
+    for ( CORBA::ULong i = 0; i < theCFB.coincidentGroups.length(); ++i )
+    {
+      const SMESH::FreeBordersGroup& aGRP = theCFB.coincidentGroups[ i ];
+      if ( i ) myStream << ",";
+      myStream << "[";
+      for ( CORBA::ULong iP = 0; iP < aGRP.length(); ++iP )
+      {
+        const SMESH::FreeBorderPart& aPART = aGRP[ iP ];
+        if ( 0 <= aPART.border && aPART.border < (CORBA::Long)theCFB.borders.length() )
+        {
+          if ( iP ) myStream << ", ";
+          const SMESH::FreeBorder& aBRD = theCFB.borders[ aPART.border ];
+          myStream << aBRD.nodeIDs[ aPART.node1    ] << ",";
+          myStream << aBRD.nodeIDs[ aPART.node2    ] << ",";
+          myStream << aBRD.nodeIDs[ aPART.nodeLast ];
+        }
+      }
+      myStream << "]";
+    }
+    myStream << "]";
+
+    return *this;
+  }
+
   const char* TPythonDump::NotPublishedObjectName()
   {
     return theNotPublishedObjectName;
@@ -1145,9 +1179,11 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   if ( importGeom && isMultiFile )
   {
     initPart += ("\n## import GEOM dump file ## \n"
-                 "import string, os, sys, re\n"
-                 "sys.path.insert( 0, os.path.dirname(__file__) )\n"
-                 "exec(\"from \"+re.sub(\"SMESH$\",\"GEOM\",__name__)+\" import *\")\n");
+                 "import string, os, sys, re, inspect\n"
+                 "thisFile   = inspect.getfile( inspect.currentframe() )\n"
+                 "thisModule = os.path.splitext( os.path.basename( thisFile ))[0]\n"
+                 "sys.path.insert( 0, os.path.dirname( thisFile ))\n"
+                 "exec(\"from \"+re.sub(\"SMESH$\",\"GEOM\",thisModule)+\" import *\")\n\n");
   }
   // import python files corresponding to plugins if they are used in anUpdatedScript
   {
@@ -1173,7 +1209,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
       initPart += importStr + "\n";
   }
 
-  if( isMultiFile )
+  if ( isMultiFile )
     initPart += "def RebuildData(theStudy):";
   initPart += "\n";
 
@@ -1237,8 +1273,18 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
 
   anUpdatedScript += removeObjPart + '\n' + setNamePart + '\n' + visualPropertiesPart;
 
-  if( isMultiFile )
-    anUpdatedScript += "\n\tpass";
+  if ( isMultiFile )
+  {
+    anUpdatedScript +=
+      "\n\tpass"
+      "\n"
+      "\nif __name__ == '__main__':"
+      "\n\tSMESH_RebuildData = RebuildData"
+      "\n\texec('import '+re.sub('SMESH$','GEOM',thisModule)+' as GEOM_dump')"
+      "\n\tGEOM_dump.RebuildData( salome.myStudy )"
+      "\n\texec('from '+re.sub('SMESH$','GEOM',thisModule)+' import * ')"
+      "\n\tSMESH_RebuildData( salome.myStudy )";
+  }
   anUpdatedScript += "\n";
 
   // no need now as we use 'tab' and 'nt' variables depending on isMultiFile

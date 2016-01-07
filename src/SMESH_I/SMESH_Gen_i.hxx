@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -356,26 +356,26 @@ public:
     throw ( SALOME::SALOME_Exception );
 
   // Concatenate the given meshes into one mesh
-  SMESH::SMESH_Mesh_ptr ConcatenateCommon(const SMESH::mesh_array& theMeshesArray,
-                                          CORBA::Boolean           theUniteIdenticalGroups,
-                                          CORBA::Boolean           theMergeNodesAndElements,
-                                          CORBA::Double            theMergeTolerance,
-                                          CORBA::Boolean           theCommonGroups)
+  SMESH::SMESH_Mesh_ptr ConcatenateCommon(const SMESH::ListOfIDSources& meshesArray,
+                                          CORBA::Boolean                uniteIdenticalGroups,
+                                          CORBA::Boolean                mergeNodesAndElements,
+                                          CORBA::Double                 mergeTolerance,
+                                          CORBA::Boolean                commonGroups)
     throw ( SALOME::SALOME_Exception );
 
   // Concatenate the given meshes into one mesh
-  SMESH::SMESH_Mesh_ptr Concatenate(const SMESH::mesh_array& theMeshesArray,
-                                    CORBA::Boolean           theUniteIdenticalGroups,
-                                    CORBA::Boolean           theMergeNodesAndElements,
-                                    CORBA::Double            theMergeTolerance)
+  SMESH::SMESH_Mesh_ptr Concatenate(const SMESH::ListOfIDSources& meshesArray,
+                                    CORBA::Boolean                uniteIdenticalGroups,
+                                    CORBA::Boolean                mergeNodesAndElements,
+                                    CORBA::Double                 mergeTolerance)
     throw ( SALOME::SALOME_Exception );
 
   // Concatenate the given meshes into one mesh
   // Create the groups of all elements from initial meshes
-  SMESH::SMESH_Mesh_ptr ConcatenateWithGroups(const SMESH::mesh_array& theMeshesArray,
-                                              CORBA::Boolean           theUniteIdenticalGroups,
-                                              CORBA::Boolean           theMergeNodesAndElements,
-                                              CORBA::Double            theMergeTolerance)
+  SMESH::SMESH_Mesh_ptr ConcatenateWithGroups(const SMESH::ListOfIDSources& meshesArray,
+                                              CORBA::Boolean                uniteIdenticalGroups,
+                                              CORBA::Boolean                mergeNodesAndElements,
+                                              CORBA::Double                 mergeTolerance)
     throw ( SALOME::SALOME_Exception );
 
   // Get MED version of the file by its name
@@ -491,13 +491,6 @@ public:
 
   void CleanPythonTrace (int theStudyID);
 
-  // SIMAN-related functions (check out/check in) : import data to study
-  virtual Engines::ListOfIdentifiers* importData(CORBA::Long studyId,
-                                                 Engines::DataContainer_ptr data,
-                                                 const Engines::ListOfOptions& options);
-  // SIMAN-related functions (check out/check in) : get modified data
-  virtual Engines::ListOfData* getModifiedData(CORBA::Long studyId);
-
   // *****************************************
   // Internal methods
   // *****************************************
@@ -602,10 +595,43 @@ public:
   void Move( const SMESH::sobject_list& what,
              SALOMEDS::SObject_ptr where,
              CORBA::Long row );
+
   CORBA::Boolean IsApplicable ( const char*           theAlgoType,
                                 const char*           theLibName,
                                 GEOM::GEOM_Object_ptr theShapeObject,
                                 CORBA::Boolean        toCheckAll);
+
+  SMESH::long_array* GetInsideSphere( SMESH::SMESH_IDSource_ptr meshPart,
+                                      SMESH::ElementType        theElemType,
+                                      CORBA::Double             theX,
+                                      CORBA::Double             theY,
+                                      CORBA::Double             theZ,
+                                      CORBA::Double             theR);
+
+  SMESH::long_array* GetInsideBox( SMESH::SMESH_IDSource_ptr meshPart,
+                                   SMESH::ElementType        theElemType,
+                                   CORBA::Double             theX1,
+                                   CORBA::Double             theY1,
+                                   CORBA::Double             theZ1,
+                                   CORBA::Double             theX2,
+                                   CORBA::Double             theY2,
+                                   CORBA::Double             theZ2);
+
+  SMESH::long_array* GetInsideCylinder( SMESH::SMESH_IDSource_ptr meshPart,
+                                        SMESH::ElementType        theElemType,
+                                        CORBA::Double             theX,
+                                        CORBA::Double             theY,
+                                        CORBA::Double             theZ,
+                                        CORBA::Double             theDX,
+                                        CORBA::Double             theDY,
+                                        CORBA::Double             theDZ,
+                                        CORBA::Double             theH,
+                                        CORBA::Double             theR );
+
+  SMESH::long_array* GetInside( SMESH::SMESH_IDSource_ptr meshPart,
+                                SMESH::ElementType        theElemType,
+                                GEOM::GEOM_Object_ptr     theGeom,
+                                CORBA::Double             theTolerance );
 
 private:
   // Get hypothesis creator
@@ -630,6 +656,11 @@ private:
   void setCurrentStudy( SALOMEDS::Study_ptr theStudy,
                         bool                theStudyIsBeingClosed=false);
 
+  std::vector<long> _GetInside(SMESH::SMESH_IDSource_ptr meshPart,
+                               SMESH::ElementType     theElemType,
+                               TopoDS_Shape& aShape,
+                               double* theTolerance = NULL);
+
 private:
   static GEOM::GEOM_Gen_var      myGeomGen;
   static CORBA::ORB_var          myOrb;         // ORB reference
@@ -648,6 +679,9 @@ private:
   SALOMEDS::Study_var       myCurrentStudy;     // Current study
   CORBA::Boolean            myIsEmbeddedMode;   // Current mode
 
+  // Default color of groups
+  std::string myDefaultGroupColor;
+
   // To load full mesh data from study at hyp modification or not
   bool myToForgetMeshDataOnHypModif;
 
@@ -657,8 +691,6 @@ private:
   std::vector< int >                                       myLastParamIndex;
   std::vector< std::string >                               myLastParameters;
   std::string                                              myLastObj;
-  int                                                      myImportedStudyId;      // SIMAN: identifier of the imported in importData study to keep no-modifiection flag for getModifiedData method
-  int                                                      myImportedStudyChanged; // SIMAN: flag that indicates that the imported study has been changed (by creation of the additional mesh)
 };
 
 

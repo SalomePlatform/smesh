@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -25,8 +25,11 @@
 // SMESH includes
 //
 #include "StdMeshersGUI_NbSegmentsCreator.h"
+#ifndef DISABLE_PLOT2DVIEWER
+  #include "StdMeshersGUI_DistrPreview.h"
+#endif
 #include "StdMeshersGUI_DistrTable.h"
-#include "StdMeshersGUI_DistrPreview.h"
+#include "StdMeshersGUI_PropagationHelperWdg.h"
 #include "StdMeshersGUI_SubShapeSelectorWdg.h"
 
 #include <SMESHGUI.h>
@@ -63,7 +66,9 @@ StdMeshersGUI_NbSegmentsCreator::StdMeshersGUI_NbSegmentsCreator()
   myDistr( 0 ),
   myScale( 0 ),
   myTable( 0 ),
+#ifndef DISABLE_PLOT2DVIEWER
   myPreview( 0 ),
+#endif
   myExpr( 0 ),
   myConvBox( 0 ),
   myConv( 0 ),
@@ -89,9 +94,10 @@ bool StdMeshersGUI_NbSegmentsCreator::checkParams( QString& msg ) const
   readParamsFromHypo( data_old );
   readParamsFromWidgets( data_new );
   bool res = storeParamsToHypo( data_new );
-  storeParamsToHypo( data_old );
   res = myNbSeg->isValid( msg, true ) && res;
   res = myScale->isValid( msg, true ) && res;
+  if ( !res )
+    storeParamsToHypo( data_old );
   return res;
 }
 
@@ -178,12 +184,14 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
   
        // c)  table
   myTable = new StdMeshersGUI_DistrTableFrame( GroupC1 );
+  myTable->setMinimumHeight(220);
   myDistLayout->addWidget( myTable, 1, 0, 2, 1 );
 
+#ifndef DISABLE_PLOT2DVIEWER
        // d) preview
   myPreview = new StdMeshersGUI_DistrPreview( GroupC1, h.in() );  
-  myPreview->setMinimumHeight(220);
   myDistLayout->addWidget( myPreview, 1, 1, 2, 1 );
+#endif
   
   // 5)  conversion (radiogroup)
   myConvBox = new QGroupBox( tr( "SMESH_CONV_MODE" ), GroupC1 );
@@ -214,20 +222,29 @@ QFrame* StdMeshersGUI_NbSegmentsCreator::buildFrame()
   QString aMainEntry = getMainShapeEntry();
   if ( aGeomEntry == "" )
     aGeomEntry = h->GetObjectEntry();
-  myDirectionWidget->SetGeomShapeEntry( aGeomEntry );
-  myDirectionWidget->SetMainShapeEntry( aMainEntry );
+  myDirectionWidget->SetGeomShapeEntry( aGeomEntry, aMainEntry );
   myDirectionWidget->SetListOfIDs( h->GetReversedEdges() );
   edgeLay->addWidget( myDirectionWidget );
 
   lay->addWidget( myReversedEdgesBox );
-  lay->setStretchFactor( GroupC1, 2);
+  lay->setStretchFactor( GroupC1, 1);
   lay->setStretchFactor( myReversedEdgesBox, 1);
-  
+
+  myReversedEdgesHelper = 0;
+  if ( !aGeomEntry.isEmpty() || !aMainEntry.isEmpty() )
+  {
+    myReversedEdgesHelper = new StdMeshersGUI_PropagationHelperWdg( myDirectionWidget, fr, false );
+    lay->addWidget( myReversedEdgesHelper );
+    lay->setStretchFactor( myReversedEdgesHelper, 1 );
+  }
+
   connect( myNbSeg, SIGNAL( valueChanged( const QString& ) ), this, SLOT( onValueChanged() ) );
   connect( myDistr, SIGNAL( activated( int ) ), this, SLOT( onValueChanged() ) );
   connect( myTable, SIGNAL( valueChanged( int, int ) ), this, SLOT( onValueChanged() ) );
   connect( myExpr,  SIGNAL( textChanged( const QString& ) ), this, SLOT( onValueChanged() ) );
   connect( myConv,  SIGNAL( buttonClicked( int ) ), this, SLOT( onValueChanged() ) );
+
+  onValueChanged();
 
   return fr;
 }
@@ -366,9 +383,10 @@ bool StdMeshersGUI_NbSegmentsCreator::storeParamsToHypo( const NbSegmentsHypothe
 
     h->SetVarParameter( h_data.myNbSegVarName.toLatin1().constData(), "SetNumberOfSegments" );
     h->SetNumberOfSegments( h_data.myNbSeg );
-    int distr = h_data.myDistrType;
-    h->SetDistrType( distr );
     
+    int distr = h_data.myDistrType;
+    if ( distr == 0 )
+      h->SetDistrType( distr ); // this is actually needed at non-uniform -> uniform switch
     if( distr==1 ) {
       h->SetVarParameter( h_data.myScaleVarName.toLatin1().constData(), "SetScaleFactor" );
       h->SetScaleFactor( h_data.myScale );
@@ -431,11 +449,17 @@ void StdMeshersGUI_NbSegmentsCreator::onValueChanged()
 
   myScale->setShown( distr==1 );
   myLScale->setShown( distr==1 );
-  myReversedEdgesBox->setShown( !distr==0 );
-  myDirectionWidget->showPreview( !distr==0 );
+  myReversedEdgesBox->setShown( distr!=0 );
+  if ( myReversedEdgesHelper ) {
+    myReversedEdgesHelper->Clear();
+    myReversedEdgesHelper->setShown( distr!=0 );
+  }
+  myDirectionWidget->ShowPreview( distr!=0 );
 
   bool isFunc = distr==2 || distr==3;
+#ifndef DISABLE_PLOT2DVIEWER
   myPreview->setShown( isFunc );
+#endif
   myConvBox->setShown( isFunc );
   
   myTable->setShown( distr==2 );
@@ -443,6 +467,7 @@ void StdMeshersGUI_NbSegmentsCreator::onValueChanged()
   myLExpr->setShown( distr==3 );
   myInfo->setShown( distr==3);
 
+#ifndef DISABLE_PLOT2DVIEWER
   //change of preview
   int nbSeg = myNbSeg->value();
   if( distr==2 ) //preview for table-described function
@@ -456,6 +481,7 @@ void StdMeshersGUI_NbSegmentsCreator::onValueChanged()
 
   if( isFunc )
     myPreview->setConversion( StdMeshersGUI_DistrPreview::Conversion( myConv->checkedId() ) );
+#endif
 
   if ( (QtxComboBox*)sender() == myDistr && dlg() ) {
     QApplication::instance()->processEvents();

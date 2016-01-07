@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -56,24 +56,27 @@ namespace UNV{
   {
     assert (in_file.good());
     assert (!ds_name.empty());
-    
+
     std::string olds, news;
-    
+
     in_file.seekg(0);
-    while(true){
+    while(true)
+    {
       in_file >> olds >> news;
       /*
        * a "-1" followed by a number means the beginning of a dataset
        * stop combing at the end of the file
        */
-      while( ((olds != "-1") || (news == "-1") ) && !in_file.eof() ){     
+      while( ((olds != "-1") || (news == "-1")))
+      {
         olds = news;
         in_file >> news;
-      }
-      if(in_file.eof())
-      {
-        in_file.clear();
-        return false;
+
+        if ( in_file.eof() || in_file.fail() )
+        {
+          in_file.clear();
+          return false;
+        }
       }
       if (news == ds_name)
         return true;
@@ -90,17 +93,17 @@ namespace UNV{
    */
   inline double D_to_e(std::string& number)
   {
-    /* find "D" in string, start looking at 
+    /* find "D" in string, start looking at
      * 6th element, to improve speed.
      * We dont expect a "D" earlier
      */
-    const int position = number.find("D",6);
-    if(position != std::string::npos){
-      number.replace(position, 1, "e"); 
-    }
+    const size_t position = number.find("D",6);
+    if ( position != std::string::npos )
+      number.replace(position, 1, "e");
+
     return atof (number.c_str());
   }
-  
+
   /**
    * @returns \p false when file is incorrect, \p true otherwise.
    * Check file with name \p theFileName for correct terminate

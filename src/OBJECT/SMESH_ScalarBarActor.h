@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -122,7 +122,7 @@ class SMESHOBJECT_EXPORT SMESH_ScalarBarActor: public vtkActor2D {
   // Set/Get the maximum number of scalar bar segments to show. This may
   // differ from the number of colors in the lookup table, in which case
   // the colors are samples from the lookup table.
-  vtkSetClampMacro(MaximumNumberOfColors, int, 2, VTK_LARGE_INTEGER);
+  vtkSetClampMacro(MaximumNumberOfColors, int, 2, VTK_INT_MAX);
   vtkGetMacro(MaximumNumberOfColors, int);
   
   // Description:

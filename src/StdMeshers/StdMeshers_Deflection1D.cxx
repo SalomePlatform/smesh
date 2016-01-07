@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -212,7 +212,7 @@ bool StdMeshers_Deflection1D::SetParametersByMesh(const SMESH_Mesh*   theMesh,
       if ( SMESH_Algo::GetNodeParamOnEdge( aMeshDS, edge, params ))
       {
         nbEdges++;
-        for ( int i = 1; i < params.size(); ++i )
+        for ( size_t i = 1; i < params.size(); ++i )
           _value = Max( _value, deflection( AdaptCurve, params[ i-1 ], params[ i ]));
       }
     }

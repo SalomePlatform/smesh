@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -112,8 +112,8 @@ SMESHGUI_MultiEditDlg
                         const bool the3d2d,
                         bool       theDoInit):
   SMESHGUI_PreviewDlg(theModule),
-  mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
   mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
+  mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
   mySMESHGUI(theModule)
 {
   setModal(false);
@@ -397,6 +397,8 @@ void SMESHGUI_MultiEditDlg::Init()
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
   connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), SLOT(onDeactivate()));
   connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(reject()));
+  connect(mySMESHGUI, SIGNAL(SignalActivatedViewManager()), SLOT( onOpenView()));
+  connect(mySMESHGUI, SIGNAL(SignalCloseView()), SLOT( onCloseView()));
 
   // dialog controls
   connect(myFilterBtn, SIGNAL(clicked()), SLOT(onFilterBtn()  ));
@@ -475,6 +477,30 @@ void SMESHGUI_MultiEditDlg::reject()
 
   QDialog::reject();
 }
+
+//=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_MultiEditDlg::onOpenView()
+{
+  if(!mySelector) {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    mySMESHGUI->EmitSignalDeactivateDialog();
+    setEnabled(true);
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_MultiEditDlg::onCloseView()
+{
+  onDeactivate();
+  mySelector = 0;
+}
+
 
 //=================================================================================
 // function : onHelp()
@@ -588,6 +614,10 @@ void SMESHGUI_MultiEditDlg::onDeactivate()
 void SMESHGUI_MultiEditDlg::enterEvent (QEvent*)
 {
   if (!isEnabled()) {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+    if ( aViewWindow && !mySelector) {
+      mySelector = aViewWindow->GetSelector();
+    }
     mySMESHGUI->EmitSignalDeactivateDialog();
     setEnabled(true);
     setSelectionMode();
@@ -645,6 +675,9 @@ void SMESHGUI_MultiEditDlg::onFilterAccepted()
 //=======================================================================
 bool SMESHGUI_MultiEditDlg::isIdValid (const int theId) const
 {
+  if ( !myActor )
+    return true; // filter can't work w/o actor
+
   SVTK_Selector* aSelector = SMESH::GetSelector();
   Handle(SMESHGUI_Filter) aFilter =
     Handle(SMESHGUI_Filter)::DownCast(aSelector->GetFilter(myFilterType));
@@ -1079,7 +1112,7 @@ bool SMESHGUI_ChangeOrientationDlg::process (SMESH::SMESH_MeshEditor_ptr theEdit
 
 int SMESHGUI_ChangeOrientationDlg::nbElemsInMesh()
 {
-  return ( myFilterType = SMESH::FaceFilter ) ? myMesh->NbFaces() : myMesh->NbVolumes();
+  return ( myFilterType == SMESH::FaceFilter ) ? myMesh->NbFaces() : myMesh->NbVolumes();
 }
 
 /*!
@@ -1283,7 +1316,7 @@ bool SMESHGUI_CuttingOfQuadsDlg::process (SMESH::SMESH_MeshEditor_ptr theEditor,
     {
       if ( hasObj )
         return theEditor->QuadTo4Tri( obj ), true;
-      SMESH::SMESH_IDSource_wrap elems = theEditor->MakeIDSource( theIds, SMESH::FACE );
+      SMESH::IDSource_wrap elems = theEditor->MakeIDSource( theIds, SMESH::FACE );
       theEditor->QuadTo4Tri( elems );
       return true;
     }
@@ -1539,7 +1572,6 @@ SMESHGUI_SplitVolumesDlg::SMESHGUI_SplitVolumesDlg(SMESHGUI* theModule)
   QLabel* dXLbl = new QLabel( tr("SMESH_DX"), myFacetSelGrp);
   QLabel* dYLbl = new QLabel( tr("SMESH_DY"), myFacetSelGrp);
   QLabel* dZLbl = new QLabel( tr("SMESH_DZ"), myFacetSelGrp);
-  QPushButton* axisBtn[3];
   for ( int i = 0; i < 3; ++i )
   {
     myPointSpin[i] = new SMESHGUI_SpinBox( myFacetSelGrp );
@@ -1619,7 +1651,7 @@ bool SMESHGUI_SplitVolumesDlg::process (SMESH::SMESH_MeshEditor_ptr theEditor,
                                         const SMESH::long_array&    theIds,
                                         SMESH::SMESH_IDSource_ptr   theObj)
 {
-  SMESH::SMESH_IDSource_wrap obj = theObj;
+  SMESH::IDSource_wrap obj = theObj;
   if ( CORBA::is_nil( obj ))
     obj = theEditor->MakeIDSource( theIds, SMESH::VOLUME );
   else
@@ -1950,7 +1982,7 @@ void SMESHGUI_SplitVolumesDlg::onSetDir()
     if ( sender() == myAxisBtn[i] )
       break;
   if ( i == 3 )
-    i == 0;
+    i = 0;
   myDirSpin[i]->SetValue(1.);
 
   if ( myActor && !myMesh->_is_nil() && myMesh->NbNodes() > 0 )

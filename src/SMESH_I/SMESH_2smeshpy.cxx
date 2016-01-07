@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -306,6 +306,8 @@ namespace {
     //   - FT_EntityType            = 36
     // v 7.3.0: FT_Undefined == 46, new items:
     //   - FT_ConnectedElements     = 39
+    // v 7.6.0: FT_Undefined == 47, new items:
+    //   - FT_BelongToMeshGroup     = 22
     //
     // It's necessary to continue recording this history and to fill
     // undef2newItems (see below) accordingly.
@@ -326,6 +328,7 @@ namespace {
       undef2newItems[ 44 ].push_back( 37 );
       undef2newItems[ 45 ].push_back( 36 );
       undef2newItems[ 46 ].push_back( 39 );
+      undef2newItems[ 47 ].push_back( 22 );
 
       ASSERT( undef2newItems.rbegin()->first == SMESH::FT_Undefined );
     }
@@ -384,6 +387,7 @@ namespace {
         "ExtrusionSweepObjectMakeGroups","ExtrusionSweepObject0D",
         "ExtrusionSweepObject1D","ExtrusionSweepObject1DMakeGroups",
         "ExtrusionSweepObject2D","ExtrusionSweepObject2DMakeGroups",
+        "ExtrusionSweepObjects","RotationSweepObjects","ExtrusionAlongPathObjects",
         "Translate","TranslateMakeGroups","TranslateMakeMesh",
         "TranslateObject","TranslateObjectMakeGroups", "TranslateObjectMakeMesh",
         "ExtrusionAlongPathX","ExtrusionAlongPathObjX","SplitHexahedraIntoPrisms"
@@ -431,7 +435,8 @@ namespace {
         "ExportCGNS","ExportGMF",
         "Create0DElementsOnAllNodes","Reorient2D","QuadTo4Tri",
         "ScaleMakeGroups","Scale","ScaleMakeMesh",
-        "FindCoincidentNodesOnPartBut","DoubleElements"
+        "FindCoincidentNodesOnPartBut","DoubleElements",
+        "ExtrusionSweepObjects","RotationSweepObjects","ExtrusionAlongPathObjects"
         ,"" }; // <- mark of the end
       methodsAcceptingList.Insert( methodNames );
     }
@@ -687,6 +692,23 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
   {
     //id_mesh->second->AddProcessedCmd( aCommand );
 
+    // Wrap Export*() into try-except
+    if ( aCommand->MethodStartsFrom("Export"))
+    {
+      _AString    tab = "\t";
+      _AString indent = aCommand->GetIndentation();
+      _AString tryStr = indent + "try:";
+      _AString newCmd = indent + tab + ( aCommand->GetString().ToCString() + indent.Length() );
+      _AString excStr = indent + "except:";
+      _AString msgStr = indent + "\tprint '"; msgStr += method + "() failed. Invalid file name?'";
+
+      myCommands.insert( --myCommands.end(), new _pyCommand( tryStr, myNbCommands ));
+      aCommand->Clear();
+      aCommand->GetString() = newCmd;
+      aCommand->SetOrderNb( ++myNbCommands );
+      myCommands.push_back( new _pyCommand( excStr, ++myNbCommands ));
+      myCommands.push_back( new _pyCommand( msgStr, ++myNbCommands ));
+    }
     // check for mesh editor object
     if ( aCommand->GetMethod() == "GetMeshEditor" ) { // MeshEditor creation
       _pyID editorID = aCommand->GetResultValue();
@@ -888,18 +910,22 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
       if ( Type == "SMESH.FT_ElemGeomType" )
       {
         // set SMESH.GeometryType instead of a numerical Threshold
-        const int nbTypes = SMESH::Geom_BALL+1;
+        const int nbTypes = SMESH::Geom_LAST;
         const char* types[nbTypes] = {
           "Geom_POINT", "Geom_EDGE", "Geom_TRIANGLE", "Geom_QUADRANGLE", "Geom_POLYGON",
           "Geom_TETRA", "Geom_PYRAMID", "Geom_HEXA", "Geom_PENTA", "Geom_HEXAGONAL_PRISM",
           "Geom_POLYHEDRA", "Geom_BALL" };
         if ( -1 < iGeom && iGeom < nbTypes )
           Threshold = SMESH + types[ iGeom ];
+#ifdef _DEBUG_
+        // is types complete? (compilation failure mains that enum GeometryType changed)
+        int _assert[( sizeof(types) / sizeof(const char*) == nbTypes ) ? 1 : -1 ]; _assert[0]=1;
+#endif
       }
       if (Type == "SMESH.FT_EntityType")
       {
         // set SMESH.EntityType instead of a numerical Threshold
-        const int nbTypes = SMESH::Entity_Ball+1;
+        const int nbTypes = SMESH::Entity_Last;
         const char* types[nbTypes] = {
           "Entity_Node", "Entity_0D", "Entity_Edge", "Entity_Quad_Edge",
           "Entity_Triangle", "Entity_Quad_Triangle", "Entity_BiQuad_Triangle",
@@ -911,6 +937,10 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
           "Entity_Polyhedra", "Entity_Quad_Polyhedra", "Entity_Ball" };
         if ( -1 < iGeom && iGeom < nbTypes )
           Threshold = SMESH + types[ iGeom ];
+#ifdef _DEBUG_
+        // is types complete? (compilation failure mains that enum EntityType changed)
+        int _assert[( sizeof(types) / sizeof(const char*) == nbTypes ) ? 1 : -1 ]; _assert[0]=1;
+#endif
       }
     }
     if ( ThresholdID.Length() != 2 ) // neither '' nor ""
@@ -1859,12 +1889,16 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
     }
   }
   // ----------------------------------------------------------------------
-  else if ( method == "GetSubMesh" ) { // collect submeshes of the mesh
+  else if ( method == "GetSubMesh" ) { // collect sub-meshes of the mesh
     Handle(_pySubMesh) subMesh = theGen->FindSubMesh( theCommand->GetResultValue() );
     if ( !subMesh.IsNull() ) {
       subMesh->SetCreator( this );
       mySubmeshes.push_back( subMesh );
     }
+  }
+  // ----------------------------------------------------------------------
+  else if ( method == "GetSubMeshes" ) { // clear as the command does nothing (0023156)
+    theCommand->Clear();
   }
   // ----------------------------------------------------------------------
   else if ( method == "AddHypothesis" ) { // mesh.AddHypothesis(geom, HYPO )
@@ -1881,7 +1915,8 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
   // ----------------------------------------------------------------------
   else if ( method == "CreateGroup" ||
             method == "CreateGroupFromGEOM" ||
-            method == "CreateGroupFromFilter" )
+            method == "CreateGroupFromFilter" ||
+            method == "CreateDimGroup" )
   {
     Handle(_pyGroup) group = new _pyGroup( theCommand );
     myGroups.push_back( group );
@@ -1895,7 +1930,7 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
     TCollection_AsciiString grIDs = theCommand->GetResultValue();
     list< _pyID >          idList = theCommand->GetStudyEntries( grIDs );
     list< _pyID >::iterator  grID = idList.begin();
-    const int nbGroupsBefore = myGroups.size();
+    const size_t nbGroupsBefore = myGroups.size();
     Handle(_pyObject) obj;
     for ( ; grID != idList.end(); ++grID )
     {
@@ -2092,8 +2127,8 @@ bool _pyMesh::NeedMeshAccess( const Handle(_pyCommand)& theCommand )
   if ( sameMethods.empty() ) {
     const char * names[] =
       { "ExportDAT","ExportUNV","ExportSTL","ExportSAUV", "RemoveGroup","RemoveGroupWithContents",
-        "GetGroups","UnionGroups","IntersectGroups","CutGroups","GetLog","GetId","ClearLog",
-        "GetStudyId","HasDuplicatedGroupNamesMED","GetMEDMesh","NbNodes","NbElements",
+        "GetGroups","UnionGroups","IntersectGroups","CutGroups","CreateDimGroup","GetLog","GetId",
+        "ClearLog","GetStudyId","HasDuplicatedGroupNamesMED","GetMEDMesh","NbNodes","NbElements",
         "NbEdges","NbEdgesOfOrder","NbFaces","NbFacesOfOrder","NbTriangles",
         "NbTrianglesOfOrder","NbQuadrangles","NbQuadranglesOfOrder","NbPolygons","NbVolumes",
         "NbVolumesOfOrder","NbTetras","NbTetrasOfOrder","NbHexas","NbHexasOfOrder",
@@ -2394,11 +2429,13 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       "ConvertToQuadratic","ConvertFromQuadratic","RenumberNodes","RenumberElements",
       "RotationSweep","RotationSweepObject","RotationSweepObject1D","RotationSweepObject2D",
       "ExtrusionSweep","AdvancedExtrusion","ExtrusionSweepObject","ExtrusionSweepObject1D",
-      "ExtrusionSweepObject2D","ExtrusionAlongPath","ExtrusionAlongPathObject",
+      "ExtrusionByNormal", "ExtrusionSweepObject2D","ExtrusionAlongPath","ExtrusionAlongPathObject",
       "ExtrusionAlongPathX","ExtrusionAlongPathObject1D","ExtrusionAlongPathObject2D",
+      "ExtrusionSweepObjects","RotationSweepObjects","ExtrusionAlongPathObjects",
       "Mirror","MirrorObject","Translate","TranslateObject","Rotate","RotateObject",
       "FindCoincidentNodes","MergeNodes","FindEqualElements",
       "MergeElements","MergeEqualElements","SewFreeBorders","SewConformFreeBorders",
+      "FindCoincidentFreeBorders", "SewCoincidentFreeBorders",
       "SewBorderToSide","SewSideElements","ChangeElemNodes","GetLastCreatedNodes",
       "GetLastCreatedElems",
       "MirrorMakeMesh","MirrorObjectMakeMesh","TranslateMakeMesh","TranslateObjectMakeMesh",
@@ -2777,7 +2814,7 @@ void _pyHypothesis::Process( const Handle(_pyCommand)& theCommand)
           myArgCommands.push_back( theCommand );
         usedCommand = true;
         while ( crMethod.myArgs.size() < i+1 )
-          crMethod.myArgs.push_back( "[]" );
+          crMethod.myArgs.push_back( "None" );
         crMethod.myArgs[ i ] = theCommand->GetArg( crMethod.myArgNb[i] );
       }
     }
@@ -3096,7 +3133,7 @@ void _pyHypothesis::setCreationArg( const int argNb, const _AString& arg )
 {
   if ( myCurCrMethod )
   {
-    while ( myCurCrMethod->myArgs.size() < argNb )
+    while ( (int) myCurCrMethod->myArgs.size() < argNb )
       myCurCrMethod->myArgs.push_back( "None" );
     if ( arg.IsEmpty() )
       myCurCrMethod->myArgs[ argNb-1 ] = "None";
@@ -3163,7 +3200,7 @@ void _pyComplexParamHypo::Process( const Handle(_pyCommand)& theCommand)
     for ( ; type2meth != myAlgoType2CreationMethod.end(); ++type2meth )
     {
       CreationMethod& crMethod = type2meth->second;
-        while ( crMethod.myArgs.size() < i+1 )
+      while ( (int) crMethod.myArgs.size() < i+1 )
           crMethod.myArgs.push_back( "[]" );
         crMethod.myArgs[ i ] = theCommand->GetArg( 1 ); // arg value
     }
@@ -3548,11 +3585,11 @@ void _pyCommand::SetBegPos( int thePartIndex, int thePosition )
 TCollection_AsciiString _pyCommand::GetIndentation()
 {
   int end = 1;
-  if ( GetBegPos( RESULT_IND ) == UNKNOWN )
-    GetWord( myString, end, true );
-  else
-    end = GetBegPos( RESULT_IND );
-  return myString.SubString( 1, Max( end - 1, 1 ));
+  //while ( end <= Length() && isblank( myString.Value( end )))
+  //ANA: isblank() function isn't provided in VC2010 compiler
+  while ( end <= Length() && ( myString.Value( end ) == ' ' || myString.Value( end ) == '\t') )
+    ++end;
+  return ( end == 1 ) ? _AString("") : myString.SubString( 1, end - 1 );
 }
 
 //================================================================================
@@ -3707,11 +3744,14 @@ const TCollection_AsciiString & _pyCommand::GetMethod()
   if ( GetBegPos( METHOD_IND ) == UNKNOWN )
   {
     // beginning
-    int begPos = GetBegPos( OBJECT_IND ) + myObj.Length();
+    int begPos = GetBegPos( OBJECT_IND );
     bool forward = true;
     if ( begPos < 1 ) {
       begPos = myString.Location( "(", 1, Length() ) - 1;
       forward = false;
+    }
+    else {
+      begPos += myObj.Length();
     }
     // store
     myMeth = GetWord( myString, begPos, forward );

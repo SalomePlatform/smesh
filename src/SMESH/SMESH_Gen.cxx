@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -70,9 +70,7 @@ SMESH_Gen::SMESH_Gen()
   _segmentation = _nbSegments = 10;
   SMDS_Mesh::_meshList.clear();
   MESSAGE(SMDS_Mesh::_meshList.size());
-  //_counters = new counters(100);
   _compute_canceled = false;
-  _sm_current = NULL;
   //vtkDebugLeaks::SetExitError(0);
 }
 
@@ -182,9 +180,9 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
       {
         if (_compute_canceled)
           return false;
-        _sm_current = smToCompute;
+        setCurrentSubMesh( smToCompute );
         smToCompute->ComputeStateEngine( computeEvent );
-        _sm_current = NULL;
+        setCurrentSubMesh( NULL );
       }
 
       // we check all the sub-meshes here and detect if any of them failed to compute
@@ -269,9 +267,9 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
         {
           if (_compute_canceled)
             return false;
-          _sm_current = smToCompute;
+          setCurrentSubMesh( smToCompute );
           smToCompute->ComputeStateEngine( computeEvent );
-          _sm_current = NULL;
+          setCurrentSubMesh( NULL );
           if ( aShapesId )
             aShapesId->insert( smToCompute->GetId() );
         }
@@ -356,9 +354,9 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
 
           if (_compute_canceled)
             return false;
-          _sm_current = sm;
+          setCurrentSubMesh( sm );
           sm->ComputeStateEngine( computeEvent );
-          _sm_current = NULL;
+          setCurrentSubMesh( NULL );
           if ( aShapesId )
             aShapesId->insert( sm->GetId() );
         }
@@ -401,8 +399,9 @@ void SMESH_Gen::PrepareCompute(SMESH_Mesh &          aMesh,
                                const TopoDS_Shape &  aShape)
 {
   _compute_canceled = false;
-  _sm_current = NULL;
+  resetCurrentSubMesh();
 }
+
 //=============================================================================
 /*!
  * Cancel Compute a mesh
@@ -412,10 +411,44 @@ void SMESH_Gen::CancelCompute(SMESH_Mesh &          aMesh,
                               const TopoDS_Shape &  aShape)
 {
   _compute_canceled = true;
-  if(_sm_current)
-    {
-      _sm_current->ComputeStateEngine( SMESH_subMesh::COMPUTE_CANCELED );
-    }
+  if ( const SMESH_subMesh* sm = GetCurrentSubMesh() )
+  {
+    const_cast< SMESH_subMesh* >( sm )->ComputeStateEngine( SMESH_subMesh::COMPUTE_CANCELED );
+  }
+  resetCurrentSubMesh();
+}
+
+//================================================================================
+/*!
+ * \brief Returns a sub-mesh being currently computed
+ */
+//================================================================================
+
+const SMESH_subMesh* SMESH_Gen::GetCurrentSubMesh() const
+{
+  return _sm_current.empty() ? 0 : _sm_current.back();
+}
+
+//================================================================================
+/*!
+ * \brief Sets a sub-mesh being currently computed.
+ *
+ * An algorithm can call Compute() for a sub-shape, hence we keep a stack of sub-meshes
+ */
+//================================================================================
+
+void SMESH_Gen::setCurrentSubMesh(SMESH_subMesh* sm)
+{
+  if ( sm )
+    _sm_current.push_back( sm );
+
+  else if ( !_sm_current.empty() )
+    _sm_current.pop_back();
+}
+
+void SMESH_Gen::resetCurrentSubMesh()
+{
+  _sm_current.clear();
 }
 
 //=============================================================================
@@ -911,7 +944,7 @@ bool SMESH_Gen::GetAlgoState(SMESH_Mesh&               theMesh,
   if ( !hasAlgo ) {
     ret = false;
     theErrors.push_back( TAlgoStateError() );
-    theErrors.back().Set( SMESH_Hypothesis::HYP_MISSING, 1, true );
+    theErrors.back().Set( SMESH_Hypothesis::HYP_MISSING, theMesh.HasShapeToMesh() ? 1 : 3, true );
   }
 
   return ret;

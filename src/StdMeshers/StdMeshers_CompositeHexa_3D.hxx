@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -59,6 +59,7 @@ private:
 
   bool findBoxFaces( const TopoDS_Shape&    shape,
                      list< _QuadFaceGrid >& boxFaceContainer,
+                     SMESH_Mesh&            mesh,
                      _QuadFaceGrid * &      fBottom,
                      _QuadFaceGrid * &      fTop,
                      _QuadFaceGrid * &      fFront,

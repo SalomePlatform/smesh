@@ -14,14 +14,16 @@ in the toolbar.
 <em>"Mesh Information" button</em></center>
 
 The <b>Mesh Information</b> dialog box provides three tab pages:
-- <b>\ref advanced_mesh_infos_anchor "Base Info"</b> - to show base
-information about the selected mesh object.
+- <b>\ref advanced_mesh_infos_anchor "Base Info"</b> - to show
+  base and quantitative information about the selected mesh object.
 - <b>\ref mesh_element_info_anchor "Element Info"</b> - to show
-detailed information about the selected mesh node or element.
-- <b>\ref mesh_addition_info_anchor "Additional Info"</b> - to show additional information available
-for the selected mesh, sub-mesh or group object.
+  detailed information about the selected mesh nodes or elements.
+- <b>\ref mesh_addition_info_anchor "Additional Info"</b> - to show
+  additional information available for the selected mesh, sub-mesh or
+  group object. 
 - <b>\ref mesh_quality_info_anchor "Quality Info"</b> - to show
-overall quality information about the selected mesh, sub-mesh or group object.
+  overall quality information about the selected mesh, sub-mesh or group
+  object. 
 
 \anchor advanced_mesh_infos_anchor
 <h2>Base Information</h2>
@@ -43,7 +45,8 @@ information about the selected mesh node(s) or element(s), namely:
 - For a node:
   - Node ID;
   - Coordinates (X, Y, Z);
-  - Connectivity information (connected elements);
+  - Connectivity information (connected elements); double click in
+    this line reveals information about these elements;
   - Position on a shape (for meshes built on a geometry);
   - Groups information (names of groups the node belongs to).
 
@@ -55,7 +58,8 @@ information about the selected mesh node(s) or element(s), namely:
   - Element ID;
   - Type (triangle, quadrangle, etc.);
   - Gravity center (X, Y, Z coordinates);
-  - Connectivity information (connected nodes);
+  - Connectivity information (connected nodes); double click in
+    a line of a node reveals the information about this node;
   - Quality controls (area, aspect ration, volume, etc.);
   - Position on a shape (for meshes built on a geometry);
   - Groups information (names of groups the element belongs to).
@@ -63,7 +67,7 @@ information about the selected mesh node(s) or element(s), namely:
 <center>\image html eleminfo2.png 
 <em>"Element Info" page, element information</em></center>
 
-The use can either input the ID of a node or element he wants to
+The user can either input the ID of a node or element he wants to
 analyze directly in the dialog box or select the node(s) or element(s) in
 the 3D viewer.
 
@@ -151,6 +155,8 @@ computed only by demand. For this, press the "compute"
 button. Also, values are automatically computed if the number of 
 nodes / elements does not exceed the "Automatic controls compute limit" set 
 via the "Mesh information" preferences (zero value means that there is no limit).
+
+\note The plot functionality is available only if the GUI module is built with Plot 2D Viewer (option SALOME_USE_PLOT2DVIEWER is ON when building GUI module).
 
 The button \b "Dump" allows printing the information displayed in the
 dialog box to a .txt file.

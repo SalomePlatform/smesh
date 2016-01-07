@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -166,7 +166,7 @@ void SMESH_Block::TFace::Set( const int          faceID,
   // pcurves
   vector< int > edgeIdVec;
   GetFaceEdgesIDs( faceID, edgeIdVec );
-  for ( int iE = 0; iE < edgeIdVec.size(); iE++ ) // loop on 4 edges
+  for ( size_t iE = 0; iE < edgeIdVec.size(); iE++ ) // loop on 4 edges
   {
     myCoordInd[ iE ] = GetCoordIndOnEdge( edgeIdVec[ iE ] );
     if ( myC2d[ iE ]) delete myC2d[ iE ];
@@ -596,6 +596,7 @@ Standard_Boolean SMESH_Block::Values(const math_Vector& theXYZ,
       if ( mag > DBL_MIN )
         dPi /= mag;
       drv[ iP - 1 ] = dPi;
+      // drv[ iP - 1 ] = dPi / 0.001;
     }
     for ( int iP = 0; iP < 3; iP++ ) {
 #if 1
@@ -725,7 +726,7 @@ bool SMESH_Block::ComputeParameters(const gp_Pnt& thePoint,
 
   bool hasHint = ( 0 <= theParamsHint.X() && theParamsHint.X() <= 1 &&
                    0 <= theParamsHint.Y() && theParamsHint.Y() <= 1 &&
-                   0 <= theParamsHint.Y() && theParamsHint.Y() <= 1 );
+                   0 <= theParamsHint.Z() && theParamsHint.Z() <= 1 );
   if ( !hasHint && !myGridComputed )
   {
     // define the first guess by thePoint projection on lines
@@ -1798,8 +1799,11 @@ bool SMESH_Block::FindBlockShapes(const TopoDS_Shell&         theShell,
     for (  ; eIt.More(); eIt.Next() ) {
       const TopoDS_Edge& e = TopoDS::Edge( eIt.Value() );
       TopoDS_Vertex v = TopExp::FirstVertex( e );
-      if ( v.IsSame( V000 ))
+      if ( v.IsSame( V000 )) {
         v = TopExp::LastVertex( e );
+        if ( v.IsSame( V000 ))
+          return false;
+      }
       val = dir001 * gp_Vec( p000, BRep_Tool::Pnt( v )).Normalized();
       if ( val > maxVal ) {
         V001 = v;
@@ -2079,7 +2083,7 @@ bool SMESH_Block::LoadFace(const TopoDS_Face& theFace,
   bool isForward[4];
   vector< int > edgeIdVec;
   GetFaceEdgesIDs( theFaceID, edgeIdVec );
-  for ( int iE = 0; iE < edgeIdVec.size(); iE++ ) // loop on 4 edges
+  for ( size_t iE = 0; iE < edgeIdVec.size(); iE++ ) // loop on 4 edges
   {
     if ( edgeIdVec[ iE ] > theShapeIDMap.Extent() )
       return false;

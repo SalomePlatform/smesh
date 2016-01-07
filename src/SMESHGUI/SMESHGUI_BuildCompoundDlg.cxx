@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -200,11 +200,11 @@ void SMESHGUI_BuildCompoundDlg::Init()
 {
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
 
-  myMesh = SMESH::SMESH_Mesh::_nil();
+  myMesh = SMESH::SMESH_IDSource::_nil();
 
-  myMeshFilter = new SMESH_TypeFilter (SMESH::MESH);
+  myMeshFilter = new SMESH_TypeFilter (SMESH::IDSOURCE);
 
-  myMeshArray = new SMESH::mesh_array();
+  myMeshArray = new SMESH::ListOfIDSources();
 
   // signals and slots connections
   connect(buttonOk,     SIGNAL(clicked()), this, SLOT(ClickOnOk()));
@@ -228,7 +228,7 @@ void SMESHGUI_BuildCompoundDlg::Init()
   ComboBoxUnion->addItem(tr("RENAME"));
   ComboBoxUnion->setCurrentIndex(0);
 
-  CheckBoxMerge->setChecked(false);
+  CheckBoxMerge->setChecked(true);
 
   TextLabelTol->setEnabled(CheckBoxMerge->isChecked());
   SpinBoxTol->SetValue(1e-05);
@@ -289,7 +289,7 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
   if (!isValid())
     return false;
 
-  SMESH::SMESH_Mesh_var aCompoundMesh;
+  SMESH::SMESH_Mesh_var aMesh;
 
   if (!myMesh->_is_nil())
   {
@@ -300,22 +300,23 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
     try {
       SUIT_OverrideCursor aWaitCursor;
 
-      myMeshArray[0]->SetParameters( aParameters.join(":").toLatin1().constData() );
+      aMesh = myMeshArray[0]->GetMesh();
+      aMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
 
       SMESH::SMESH_Gen_var aSMESHGen = SMESHGUI::GetSMESHGen();
       // concatenate meshes
       if(CheckBoxCommon->isChecked())
-        aCompoundMesh = aSMESHGen->ConcatenateWithGroups(myMeshArray,
-                                                         !(ComboBoxUnion->currentIndex()),
-                                                         CheckBoxMerge->isChecked(),
-                                                         SpinBoxTol->GetValue());
+        aMesh = aSMESHGen->ConcatenateWithGroups(myMeshArray,
+                                                 !(ComboBoxUnion->currentIndex()),
+                                                 CheckBoxMerge->isChecked(),
+                                                 SpinBoxTol->GetValue());
       else
-        aCompoundMesh = aSMESHGen->Concatenate(myMeshArray,
-                                               !(ComboBoxUnion->currentIndex()),
-                                               CheckBoxMerge->isChecked(),
-                                               SpinBoxTol->GetValue());
+        aMesh = aSMESHGen->Concatenate(myMeshArray,
+                                       !(ComboBoxUnion->currentIndex()),
+                                       CheckBoxMerge->isChecked(),
+                                       SpinBoxTol->GetValue());
 
-      _PTR(SObject) aSO = SMESH::FindSObject( aCompoundMesh );
+      _PTR(SObject) aSO = SMESH::FindSObject( aMesh );
       if( aSO ) {
         SMESH::SetName( aSO, LineEditName->text() );
         anEntryList.append( aSO->GetID().c_str() );
@@ -332,9 +333,11 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
       mySelectionMgr->clearSelected();
       SMESH::UpdateView();
 
-      _PTR(SObject) aSO = SMESH::FindSObject(aCompoundMesh.in());
-      if ( SMESH_Actor* anActor = SMESH::CreateActor(aSO->GetStudy(), aSO->GetID().c_str()) )
+      _PTR(SObject) aSO = SMESH::FindSObject(aMesh.in());
+      if ( SMESH_Actor* anActor = SMESH::CreateActor(aSO->GetStudy(), aSO->GetID().c_str()) ) {
         SMESH::DisplayActor(SMESH::GetActiveWindow(), anActor);
+        SMESH::UpdateView();
+      }
     }// end IPAL21468
 
     if( LightApp_Application* anApp =
@@ -410,12 +413,12 @@ void SMESHGUI_BuildCompoundDlg::SelectionIntoArgument()
     for (int i = 0; nbSel != 0; i++, nbSel--) {
       Handle(SALOME_InteractiveObject) IO = aList.First();
       aList.RemoveFirst();
-      myMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IO);
+      myMesh = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>(IO);
       myMeshArray[i] = myMesh;
     }
   }
   else {
-    myMesh = SMESH::SMESH_Mesh::_nil();
+    myMesh = SMESH::SMESH_IDSource::_nil();
     aString = "";
   }
 

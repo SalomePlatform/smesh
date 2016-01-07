@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -34,8 +34,7 @@ class SMDS_EXPORT SMDS_Mesh0DElement: public SMDS_MeshCell
 {
  public:
   SMDS_Mesh0DElement (const SMDS_MeshNode * node);
-  bool ChangeNode (const SMDS_MeshNode * node);
-  virtual bool ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes) {return false;};
+  virtual bool ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes);
   virtual void Print (std::ostream & OS) const;
 
   virtual SMDSAbs_ElementType  GetType() const;

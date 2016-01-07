@@ -1,4 +1,4 @@
-# Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,7 @@
 
 import salome
 from salome.geom import geomBuilder
-import SMESH
+import SMESH, StdMeshers
 
 ## The base class to define meshing algorithms
 #
@@ -85,6 +85,7 @@ class Mesh_Algorithm:
                     attr = hypo_so_i.FindAttribute("AttributeIOR")[1]
                     if attr is not None:
                         anIOR = attr.Value()
+                        if not anIOR: continue # prevent exception in orb.string_to_object()
                         hypo_o_i = salome.orb.string_to_object(anIOR)
                         if hypo_o_i is not None:
                             # Check if this is a hypothesis
@@ -128,6 +129,7 @@ class Mesh_Algorithm:
                     attr = algo_so_i.FindAttribute("AttributeIOR")[1]
                     if attr is not None:
                         anIOR = attr.Value()
+                        if not anIOR: continue # prevent exception in orb.string_to_object()
                         algo_o_i = salome.orb.string_to_object(anIOR)
                         if algo_o_i is not None:
                             # Check if this is an algorithm
@@ -266,29 +268,41 @@ class Mesh_Algorithm:
     #         the value of \a isFacesToIgnore parameter.
     #  @param isFacesToIgnore if \c True, the Viscous layers are not generated on the
     #         faces specified by the previous parameter (\a faces).
+    #  @param extrMethod extrusion method defines how position of new nodes are found during
+    #         prism construction and how creation of distorted and intersecting prisms is
+    #         prevented. Possible values are:
+    #       - StdMeshers.SURF_OFFSET_SMOOTH (default) method extrudes nodes along normal
+    #         to underlying geometrical surface. Smoothing of internal surface of
+    #         element layers can be used to avoid creation of invalid prisms.
+    #       - StdMeshers.FACE_OFFSET method extrudes nodes along average normal of
+    #         surrounding mesh faces till intersection with a neighbor mesh face
+    #         translated along its own normal by the layers thickness. Thickness
+    #         of layers can be limited to avoid creation of invalid prisms.
+    #       - StdMeshers.NODE_OFFSET method extrudes nodes along average normal of
+    #         surrounding mesh faces by the layers thickness. Thickness of
+    #         layers can be limited to avoid creation of invalid prisms.
     #  @ingroup l3_hypos_additi
     def ViscousLayers(self, thickness, numberOfLayers, stretchFactor,
-                      faces=[], isFacesToIgnore=True ):
+                      faces=[], isFacesToIgnore=True, extrMethod=StdMeshers.SURF_OFFSET_SMOOTH ):
         if not isinstance(self.algo, SMESH._objref_SMESH_3D_Algo):
             raise TypeError, "ViscousLayers are supported by 3D algorithms only"
         if not "ViscousLayers" in self.GetCompatibleHypothesis():
             raise TypeError, "ViscousLayers are not supported by %s"%self.algo.GetName()
         if faces and isinstance( faces[0], geomBuilder.GEOM._objref_GEOM_Object ):
-            import GEOM
             faceIDs = []
-            for f in faces:
-                if self.mesh.geompyD.ShapeIdToType( f.GetType() ) == "GROUP":
-                    faceIDs += f.GetSubShapeIndices()
-                else:
-                    faceIDs += [self.mesh.geompyD.GetSubShapeID(self.mesh.geom, f)]
+            for shape in faces:
+                ff = self.mesh.geompyD.SubShapeAll( shape, self.mesh.geompyD.ShapeType["FACE"] )
+                for f in ff:
+                    faceIDs.append( self.mesh.geompyD.GetSubShapeID(self.mesh.geom, f))
             faces = faceIDs
         hyp = self.Hypothesis("ViscousLayers",
                               [thickness, numberOfLayers, stretchFactor, faces, isFacesToIgnore],
                               toAdd=False)
-        hyp.SetTotalThickness(thickness)
-        hyp.SetNumberLayers(numberOfLayers)
-        hyp.SetStretchFactor(stretchFactor)
-        hyp.SetFaces(faces, isFacesToIgnore)
+        hyp.SetTotalThickness( thickness )
+        hyp.SetNumberLayers( numberOfLayers )
+        hyp.SetStretchFactor( stretchFactor )
+        hyp.SetFaces( faces, isFacesToIgnore )
+        hyp.SetMethod( extrMethod )
         self.mesh.AddHypothesis( hyp, self.geom )
         return hyp
 
@@ -311,7 +325,12 @@ class Mesh_Algorithm:
         if not "ViscousLayers2D" in self.GetCompatibleHypothesis():
             raise TypeError, "ViscousLayers2D are not supported by %s"%self.algo.GetName()
         if edges and isinstance( edges[0], geomBuilder.GEOM._objref_GEOM_Object ):
-            edges = [ self.mesh.geompyD.GetSubShapeID(self.mesh.geom, f) for f in edges ]
+            edgeIDs = []
+            for shape in edges:
+                ee = self.mesh.geompyD.SubShapeAll( shape, self.mesh.geompyD.ShapeType["EDGE"])
+                for e in ee:
+                    edgeIDs.append( self.mesh.geompyD.GetSubShapeID( self.mesh.geom, e ))
+            edges = edgeIDs
         hyp = self.Hypothesis("ViscousLayers2D",
                               [thickness, numberOfLayers, stretchFactor, edges, isEdgesToIgnore],
                               toAdd=False)

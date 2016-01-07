@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -182,7 +182,7 @@ SMESHGUI_EXPORT
 
 
   // type to use instead of SMESH_IDSource_var for automatic UnRegister()
-  typedef SALOME::GenericObj_wrap<SMESH_IDSource> SMESH_IDSource_wrap;
+  typedef SALOME::GenericObj_wrap<SMESH_IDSource> IDSource_wrap;
 
   /*!
    * \brief Class usefull to convert a string returned from a CORBA call
@@ -195,7 +195,7 @@ SMESHGUI_EXPORT
   class toStrT : public _STRING {
     CORBA::String_var myStr;
   public:
-    toStrT( char* s ): myStr(s), _STRING( s )
+    toStrT( char* s ): _STRING( s ), myStr(s)
     {}
     operator const char*() const
     { return myStr.in(); }
@@ -208,6 +208,13 @@ SMESHGUI_EXPORT
     toStdStr( char* s ): toStrT< std::string >(s) {}
   };
 
+  QString fromUtf8( const char* txt );
+  QString fromUtf8( const std::string& txt );
+  struct toUtf8: public std::string
+  {
+    toUtf8( const QString& txt );
+    operator const char*() const { return c_str(); }
+  };
 }
 
 #endif // SMESHGUI_UTILS_H

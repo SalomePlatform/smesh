@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -57,6 +57,26 @@ class STDMESHERS_I_EXPORT StdMeshers_Quadrangle_2D_i:
 
   // Get implementation
   ::StdMeshers_Quadrangle_2D* GetImpl();
+
+  // Return true if the algorithm is applicable to a shape
+  static CORBA::Boolean IsApplicable(const TopoDS_Shape &S, CORBA::Boolean toCheckAll);
+};
+
+// ======================================================
+// Quadrangle (Medial Axis Projection) 2d algorithm
+// ======================================================
+class STDMESHERS_I_EXPORT StdMeshers_QuadFromMedialAxis_1D2D_i:
+  public virtual POA_StdMeshers::StdMeshers_QuadFromMedialAxis_1D2D,
+  public virtual SMESH_2D_Algo_i
+{
+ public:
+  // Constructor
+  StdMeshers_QuadFromMedialAxis_1D2D_i( PortableServer::POA_ptr thePOA,
+                                        int                     theStudyId,
+                                        ::SMESH_Gen*            theGenImpl );
+
+  // Destructor
+  virtual ~StdMeshers_QuadFromMedialAxis_1D2D_i();
 
   // Return true if the algorithm is applicable to a shape
   static CORBA::Boolean IsApplicable(const TopoDS_Shape &S, CORBA::Boolean toCheckAll);

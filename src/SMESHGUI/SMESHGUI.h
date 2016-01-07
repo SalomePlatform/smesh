@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -133,6 +133,8 @@ public :
   void                            EmitSignalStudyFrameChanged();
   void                            EmitSignalCloseAllDialogs();
   void                            EmitSignalVisibilityChanged();
+  void                            EmitSignalCloseView();
+  void                            EmitSignalActivatedViewManager();
 
   virtual void                    contextMenuPopup( const QString&, QMenu*, QString& );
   virtual void                    createPreferences();
@@ -169,12 +171,15 @@ private slots:
   void                            onOperationCommited( SUIT_Operation* );
   void                            onOperationAborted( SUIT_Operation* );
   void                            onHypothesisEdit( int result );
+  void                            onUpdateControlActions();
 
 signals:
   void                            SignalDeactivateActiveDialog();
   void                            SignalStudyFrameChanged();
   void                            SignalCloseAllDialogs();
   void                            SignalVisibilityChanged();
+  void                            SignalCloseView();
+  void                            SignalActivatedViewManager();
 
 protected:
   void                            createSMESHAction( const int,

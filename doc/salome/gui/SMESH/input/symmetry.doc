@@ -5,7 +5,7 @@
 \n This geometrical operation allows to perform a symmetrical copy of
 your mesh or some of its elements.
 
-<em>To create a symmetrical copy of the mesh:</em>
+<em>To create a symmetrical copy:</em>
 
 <ol>
 <li>From the \b Modification menu choose \b Transformation -> \b Symmetry item  or click
@@ -16,67 +16,72 @@ your mesh or some of its elements.
 One of the following dialogs will appear:
 
 It is possible to mirror a mesh or some of its elements through:
-\image html symmetry1.png "a point (defined by a point and a vector)"
-\image html symmetry2.png "an axis"
+\image html symmetry1.png "a point" <br>
+\image html symmetry2.png "an axis" <br>
 \image html symmetry3.png "a plane (defined by a point and a normal to the plane)"
 
 </li>
 
 <li>In the dialog:
 <ul>
-<li>specify the IDs of the elements for the symmetry operation:
+<li>specify the elements for the symmetry operation:
 
 <ul>
 <li><b>Select the whole mesh, submesh or group</b> activating this
 checkbox; or</li>
 <li>choose mesh elements with the mouse in the 3D Viewer. It is
 possible to select a whole area with a mouse frame; or</li> 
-<li>input the element IDs directly in <b>ID Elements</b> field. The selected elements will be highlighted in the
-viewer; or</li>
-<li>apply Filters. <b>Set filter</b> button allows to apply a filter to the selection of elements. See more
-about filters in the \ref selection_filter_library_page "Selection filter library" page.</li>
+<li>input the element IDs directly in <b>ID Elements</b> field. The
+  selected elements will be highlighted in the viewer; or</li>
+<li>apply Filters. <b>Set Filter</b> button allows to apply a 
+  \ref filtering_elements "filter" to the selection of elements.</li> 
 </ul>
 </li>
 
 <li>depending on the nature of the mirror object: 
 <ul>
 <li>if the mesh is mirrored through a point, specify the coordinates
-of the point</li>
+  of the point, either directly or by picking a mesh node;</li>
 <li>if the mesh is mirrored through an axis: 
 <ul>
-<li>specify the cooordinates of the start \b Point of the axis vector;</li>
-<li>specify the axis \b Vector through the coordinates of its
-end point with respect to the coordinates of the start point;</li>
+<li>specify the coordinates of the start \b Point of the axis, either
+  directly or by picking a mesh node;</li>
+<li>specify the components of axis \b Vector, either directly or by
+  picking a mesh node, in which case \b Vector is defined as a shift
+  between the \b Point and the node;</li>
 </ul>
 </li>
 
 <li>if the mesh is mirrored through a plane:
 <ul>
-<li>specify the cooordinates of the \b Point lying on the plane;</li>
-<li>specify the axis \b Vector through the coordinates of its
-end point with respect to the coordinates of the start point.</li>
+<li>specify the cooordinates of the \b Point lying on the plane,
+  either directly or by picking a mesh node;</li>
+<li>specify the components of plane \b Normal, either directly or by
+  picking a mesh node, in which case \b Normal is defined as a shift
+  between the \b Point and the node.</li>
 </ul>
 </li>
 
 <li>specify the conditions of symmetry operation:
 <ul>
-<li>activate <b>Move elements</b> radio button to create  the source
-mesh (or elements) at the new location and erase it from the previous location;</li>
-<li>activate <b>Copy elements</b> radio button to create the source
-mesh (or elements) at the new location, but leave it at the previous
-location, the source mesh will be considered one and single mesh with the result of the rotation;</li>
-<li>activate <b>Create as new mesh</b> radio button to leave the
-source mesh (or elements) at its previous location and create a new
-mesh at the new location, the new mesh appears in the Object Browser
-with the default name MeshName_rotated (it is possible to change this
-name in the adjacent box);</li>
-<li>activate <b> Copy groups </b> checkbox to copy the groups of elements of the source mesh to the newly created mesh.</li>
+<li>activate <b>Move elements</b> radio button to change the location of
+  the selected elements within the current mesh;</li>
+<li>activate <b>Copy elements</b> radio button to duplicate the
+  selected elements at the new location within the current mesh;</li>
+<li>activate <b>Create as new mesh</b> radio button to create a new
+  element in a new mesh; the new mesh appears in the Object Browser
+  with the default name \a MeshName_mirrored (it is possible to change
+  this name in the adjacent box);</li>
+<li>activate <b> Copy groups </b> check-box to put new mesh entities
+  into new groups if source entities belong to some groups. New
+  groups are named by pattern "<old group name>_mirrored".</li>
 </ul>
 </li>
 </ul>
-<li>activate <b>Preview</b> checkbox to show the result of transformation in the viewer </li>
+<li>activate <b>Preview</b> check-box to show the result of
+  transformation in the viewer;</li>
 <li>click \b Apply or <b> Apply and Close</b> button to confirm the
-operation.</li>
+  operation.</li>
 </ul>
 
 </ol>

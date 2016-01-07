@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -32,6 +32,8 @@
 
 using namespace std;
 
+Quantity_Color SMESHDS_GroupBase::myDefaultColor = Quantity_Color( 0.0, 0.0, 0.0, Quantity_TOC_RGB );
+
 //=============================================================================
 /*!
  *  
@@ -44,7 +46,7 @@ SMESHDS_GroupBase::SMESHDS_GroupBase (const int                 theID,
        myID(theID), myMesh(theMesh), myType(theType), myStoreName(""),
        myCurIndex(0), myCurID(-1)
 {
-  myColor = Quantity_Color( 0.0, 0.0, 0.0, Quantity_TOC_RGB );
+  myColor = myDefaultColor;
 }
 
 //=============================================================================

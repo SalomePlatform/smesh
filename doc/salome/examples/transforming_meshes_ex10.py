@@ -20,7 +20,7 @@ aComp = geompy.MakeCompound([box1, box2])
 geompy.addToStudy(aComp, "Two boxes")
 
 # create a mesh on two boxes
-mesh = smesh.Mesh(aComp, "Two faces : quadrangle mesh")
+mesh = smesh.Mesh(aComp, "Sew Side Elements")
 
 algo1D = mesh.Segment()
 algo1D.NumberOfSegments(2)
@@ -33,6 +33,31 @@ algo_local.Propagation()
 mesh.Compute()
 
 # sew side elements
-# IDsOfSide1Elements, IDsOfSide2Elements,
-# NodeID1OfSide1ToMerge, NodeID1OfSide2ToMerge, NodeID2OfSide1ToMerge, NodeID2OfSide2ToMerge
-mesh.SewSideElements([69, 70, 71, 72], [91, 92, 89, 90], 8, 38, 23, 58)
+
+# find elements to sew
+face1 = geompy.GetFaceNearPoint( aComp, geompy.MakeVertex( 5, 10, 5 ))
+IDsOfSide1Elements = mesh.GetSubMeshElementsId( face1 )
+print "side faces 1:",IDsOfSide1Elements
+
+face1Translated = geompy.MakeTranslation( face1, 0,5,0 )
+faceFilter = smesh.GetFilter( SMESH.FACE, SMESH.FT_BelongToGeom,'=', face1Translated )
+IDsOfSide2Elements = mesh.GetIdsFromFilter( faceFilter )
+print "side faces 2:",IDsOfSide2Elements
+
+# find corresponding nodes on sides
+edge1 = geompy.GetEdgeNearPoint( aComp, geompy.MakeVertex( 0, 10, 5 ))
+segs1 = mesh.GetSubMeshElementsId( edge1 ) # mesh segments generated on edge1
+NodeID1OfSide1ToMerge = mesh.GetElemNode( segs1[0], 0 )
+NodeID2OfSide1ToMerge = mesh.GetElemNode( segs1[0], 1 )
+print "nodes of side1:", [NodeID1OfSide1ToMerge,NodeID2OfSide1ToMerge]
+
+edge2 = geompy.GetEdgeNearPoint( aComp, geompy.MakeVertex( 0, 15, 5 ))
+segs2 = mesh.GetSubMeshElementsId( edge2 ) # mesh segments generated on edge2
+NodeID1OfSide2ToMerge = mesh.GetElemNode( segs2[0], 0 )
+NodeID2OfSide2ToMerge = mesh.GetElemNode( segs2[0], 1 )
+print "nodes of side2:", [NodeID1OfSide2ToMerge,NodeID2OfSide2ToMerge]
+
+res = mesh.SewSideElements(IDsOfSide1Elements, IDsOfSide2Elements,
+                           NodeID1OfSide1ToMerge, NodeID1OfSide2ToMerge,
+                           NodeID2OfSide1ToMerge, NodeID2OfSide2ToMerge)
+print res

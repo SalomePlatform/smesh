@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2012-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -119,6 +119,7 @@ SET(StdMeshersEngine_HEADERS
   StdMeshers_ViscousLayers2D_i.hxx
   StdMeshers_CartesianParameters3D_i.hxx
   StdMeshers_Cartesian_3D_i.hxx
+  StdMeshers_PolygonPerFace_2D_i.hxx
 )
 IF(SALOME_SMESH_ENABLE_MEFISTO)
   SET(StdMeshersEngine_HEADERS ${StdMeshersEngine_HEADERS} StdMeshers_MEFISTO_2D_i.hxx)
@@ -173,6 +174,7 @@ SET(StdMeshersEngine_SOURCES
   StdMeshers_CartesianParameters3D_i.cxx
   StdMeshers_Cartesian_3D_i.cxx
   StdMeshers_Adaptive1D_i.cxx 
+  StdMeshers_PolygonPerFace_2D_i.cxx
 )
 
 IF(SALOME_SMESH_ENABLE_MEFISTO)

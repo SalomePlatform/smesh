@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -119,6 +119,8 @@ struct FaceQuadStruct
 
   FaceQuadStruct ( const TopoDS_Face& F = TopoDS_Face(), const std::string& nm="main" );
   UVPtStruct& UVPt( int i, int j ) { return uv_grid[ i + j * iSize ]; }
+  double&        U( int i, int j ) { return UVPt( i, j ).u; }
+  double&        V( int i, int j ) { return UVPt( i, j ).v; }
   void  shift    ( size_t nb, bool keepUnitOri, bool keepGrid=false );
   int & nbNodeOut( int iSide ) { return side[ iSide ].nbNodeOut; }
   bool  findCell ( const gp_XY& uv, int & i, int & j );
@@ -242,9 +244,10 @@ class STDMESHERS_EXPORT StdMeshers_Quadrangle_2D: public SMESH_2D_Algo
 
   struct ForcedPoint
   {
-    gp_XY         uv;
-    gp_XYZ        xyz;
-    TopoDS_Vertex vertex;
+    gp_XY                uv;
+    gp_XYZ               xyz;
+    TopoDS_Vertex        vertex;
+    const SMDS_MeshNode* node;
 
     double U() const { return uv.X(); }
     double V() const { return uv.Y(); }

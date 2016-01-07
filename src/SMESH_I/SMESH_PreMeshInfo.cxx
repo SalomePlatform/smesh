@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -899,7 +899,7 @@ void SMESH_PreMeshInfo::readSubMeshes(DriverMED_R_SMESHDS_Mesh* reader) const
           HDFdataset* aDataset = new HDFdataset( (char*) aDSName.c_str(), aGroup );
           aDataset->OpenOnDisk();
           // read submesh IDs for all elements sorted by ID
-          int nbElems = aDataset->GetSize();
+          size_t nbElems = aDataset->GetSize();
           int* smIDs = new int [ nbElems ];
           aDataset->ReadFromDisk( smIDs );
           aDataset->CloseOnDisk();
@@ -921,7 +921,7 @@ void SMESH_PreMeshInfo::readSubMeshes(DriverMED_R_SMESHDS_Mesh* reader) const
           }
           // add elements to submeshes
           TIDSortedElemSet::iterator iE = elemSet.begin();
-          for ( int i = 0; i < nbElems; ++i, ++iE )
+          for ( size_t i = 0; i < nbElems; ++i, ++iE )
           {
             int smID = smIDs[ i ];
             if ( smID == 0 ) continue;

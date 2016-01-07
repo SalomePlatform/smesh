@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2012-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -35,6 +35,9 @@ INCLUDE_DIRECTORIES(
   ${Boost_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${PROJECT_SOURCE_DIR}/src/SMESHGUI
+  ${PROJECT_SOURCE_DIR}/src/OBJECT
+  ${PROJECT_SOURCE_DIR}/src/SMESHDS
+  ${PROJECT_SOURCE_DIR}/src/SMDS
   ${PROJECT_BINARY_DIR}/idl
 )
 

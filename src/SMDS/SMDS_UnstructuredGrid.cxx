@@ -1,4 +1,4 @@
-// Copyright (C) 2010-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2010-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,7 @@
 #include "SMDS_MeshVolume.hxx"
 
 #include "utilities.h"
+#include "chrono.hxx"
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
@@ -353,12 +354,12 @@ void SMDS_UnstructuredGrid::copyBloc(vtkUnsignedCharArray *newTypes,
 
 int SMDS_UnstructuredGrid::CellIdToDownId(int vtkCellId)
 {
-  if((vtkCellId < 0) || (vtkCellId >= _cellIdToDownId.size()))
-    {
-      //MESSAGE("SMDS_UnstructuredGrid::CellIdToDownId structure not up to date: vtkCellId="
-      //    << vtkCellId << " max="<< _cellIdToDownId.size());
-      return -1;
-    }
+  if ((vtkCellId < 0) || (vtkCellId >= (int)_cellIdToDownId.size()))
+  {
+    //MESSAGE("SMDS_UnstructuredGrid::CellIdToDownId structure not up to date: vtkCellId="
+    //    << vtkCellId << " max="<< _cellIdToDownId.size());
+    return -1;
+  }
   return _cellIdToDownId[vtkCellId];
 }
 
@@ -370,12 +371,12 @@ void SMDS_UnstructuredGrid::setCellIdToDownId(int vtkCellId, int downId)
 
 void SMDS_UnstructuredGrid::CleanDownwardConnectivity()
 {
-  for (int i = 0; i < _downArray.size(); i++)
-    {
-      if (_downArray[i])
-        delete _downArray[i];
-      _downArray[i] = 0;
-    }
+  for (size_t i = 0; i < _downArray.size(); i++)
+  {
+    if (_downArray[i])
+      delete _downArray[i];
+    _downArray[i] = 0;
+  }
   _cellIdToDownId.clear();
 }
 

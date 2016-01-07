@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -41,26 +41,27 @@
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
+class LightApp_SelectionMgr;
+class QAction;
 class QButtonGroup;
+class QCheckBox;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
+class QMenu;
 class QPushButton;
 class QRadioButton;
-class QCheckBox;
-class SalomeApp_IntSpinBox;
-class SMESHGUI_IdValidator;
-class SMESHGUI_SpinBox;
-class SMESHGUI;
-class SMESHGUI_FilterDlg;
-class SMESH_Actor;
-class SVTK_Selector;
-class LightApp_SelectionMgr;
-class SMESH_LogicalFilter;
 class SALOME_Actor;
+class SMESHGUI;
+class SMESHGUI_3TypesSelector;
+class SMESHGUI_FilterDlg;
+class SMESHGUI_IdValidator;
 class SMESHGUI_MeshEditPreview;
-class QMenu;
-class QAction;
+class SMESHGUI_SpinBox;
+class SMESH_Actor;
+class SMESH_LogicalFilter;
+class SVTK_Selector;
+class SalomeApp_IntSpinBox;
 
 //=================================================================================
 // class    : SMESHGUI_RevolutionDlg
@@ -85,27 +86,11 @@ private:
   
   bool                      isValid();
   
-  SMESHGUI_IdValidator*     myIdValidator;
   LightApp_SelectionMgr*    mySelectionMgr;          /* User shape selection */
-  int                       myNbOkElements;          /* to check when elements are defined */
-  QString                   myElementsId;
-  QWidget*                  myEditCurrentArgument;   /* Current  argument */
   SVTK_Selector*            mySelector;
-  Handle(SALOME_InteractiveObject) myIO;
-  
-  SMESH::SMESH_IDSource_var mySelectedObject;
+  QWidget*                  myEditCurrentArgument;   /* Current  argument */
 
-  bool                      myBusy;
-  SMESH::SMESH_Mesh_var     myMesh;
-  SMESH_Actor*              myActor;
-  SMESH_LogicalFilter*      myMeshOrSubMeshOrGroupFilter;
-  SMESHGUI_MeshEditPreview* mySimulation;
-  SALOME_Actor*             myPreviewActor;
-
-  QGroupBox*                ConstructorsBox;
-  QButtonGroup*             GroupConstructors;
-  QRadioButton*             RadioButton1;
-  QRadioButton*             RadioButton2;
+  SMESHGUI_3TypesSelector*  SelectorWdg;
   QGroupBox*                GroupButtons;
   QPushButton*              buttonOk;
   QPushButton*              buttonCancel;
@@ -113,10 +98,6 @@ private:
   QPushButton*              buttonHelp;
   QGroupBox*                GroupArguments;
   QGroupBox*                GroupAxis;
-  QLabel*                   TextLabelElements;
-  QPushButton*              SelectElementsButton;
-  QLineEdit*                LineEditElements;
-  QCheckBox*                CheckBoxMesh;
   QCheckBox*                MakeGroupsCheck;
   QGroupBox*                GroupAngleBox;
   QButtonGroup*             GroupAngle;
@@ -153,17 +134,13 @@ private:
 
   
   QString                   myHelpFileName;
-  QString                   myIDs;
-  
-  QPushButton*              myFilterBtn;
-  SMESHGUI_FilterDlg*       myFilterDlg;
 
 protected slots:
   virtual void              onDisplaySimulation( bool );
-  virtual void                      reject();
+  virtual void              reject();
    
 private slots:
-  void                      ConstructorsClicked( int );
+  void                      CheckIsEnable();
   void                      ClickOnOk();
   bool                      ClickOnApply();
   void                      ClickOnHelp();
@@ -171,13 +148,11 @@ private slots:
   void                      SelectionIntoArgument();
   void                      DeactivateActiveDialog();
   void                      ActivateThisDialog();
-  void                      onTextChange( const QString& );
   void                      onAngleTextChange( const QString& );
-  void                      onSelectMesh( bool );
-  void                      onVectorChanged();
   void                      onSelectVectorMenu( QAction* );
   void                      onSelectVectorButton();
-  void                      setFilters();
+  void                      onOpenView();
+  void                      onCloseView();
 };
 
 #endif // SMESHGUI_REVOLUTIONDLG_H

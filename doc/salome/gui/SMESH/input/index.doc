@@ -4,27 +4,43 @@
 
 \image html a-viewgeneral.png
 
-\n \b MESH module of SALOME is destined for:
+\n \b Mesh module of SALOME is destined for:
 <ul>
-<li>\subpage about_meshes_page "meshing geometrical models"
-previously created or imported by the Geometry component; </li>
-<li>\ref importing_exporting_meshes_page "import and export of meshes in various formats";</li>
-<li>\subpage viewing_meshes_overview_page "viewing created meshes" in
-the VTK viewer;</li>
-<li>\subpage grouping_elements_page "creating groups of mesh elements";</li>
-<li>applying to meshes \subpage quality_page "Quality Controls", 
-allowing to highlight important elements;
-<li>filtering sub-sets of mesh entities (nodes elements) using
-\subpage filters_page "Filters" functionality;</li>
+<li>\subpage about_meshes_page "creating meshes" in different ways:
+ - by meshing geometrical models previously created or imported by the
+   Geometry component; 
+ - bottom-up, using \ref modifying_meshes_page "mesh edition"
+   operations, especially \ref extrusion_page "extrusion" and \ref
+   revolution_page "revolution";
+ - by generation of the 3D mesh from the 2D mesh (the latter can be
+  either \ref importing_exporting_meshes_page "imported" or manually
+  created); 
+ </li>
+<li>\ref importing_exporting_meshes_page "importing and exporting meshes" 
+  in various formats;</li>
 <li>\subpage modifying_meshes_page "modifying meshes" with a vast
-array of dedicated operations;</li> 
-<li>various \subpage measurements_page "measurements" of the mesh objects.
+  array of dedicated operations;</li> 
+<li>\subpage grouping_elements_page "creating groups" of mesh
+  elements;</li>
+<li>filtering mesh entities (nodes or elements) using
+  \subpage filters_page "Filters" functionality for \ref
+  grouping_elements_page "creating groups" and applying \ref
+  modifying_meshes_page "mesh modifications";</li>
+<li>\subpage viewing_meshes_overview_page "viewing meshes" in
+  the VTK viewer and \ref mesh_infos_page "getting info" on mesh
+  and its sub-objects;</li>
+<li>applying to meshes \subpage quality_page "Quality Controls", 
+  allowing to highlight important elements;</li>
+<li>taking various \subpage measurements_page "measurements" of the
+  mesh objects.</li>
 </ul>
 
-It is possible to easily set parameters via the variables predefined in
-\subpage using_notebook_mesh_page "Salome notebook".
+It is possible to use the variables predefined in
+\subpage using_notebook_mesh_page "Salome notebook" to set parameters
+of operations.
 
-Mesh module preferences are described in the \subpage mesh_preferences_page section of SALOME Mesh Help.
+Mesh module preferences are described in the \subpage mesh_preferences_page 
+section of SALOME Mesh Help.
 
 Almost all mesh module functionalities are accessible via
 \subpage smeshpy_interface_page "Mesh module Python interface".

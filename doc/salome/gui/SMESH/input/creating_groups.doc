@@ -2,11 +2,11 @@
 
 \page creating_groups_page Creating groups
 
-\n In MESH you can create a group of elements of a certain type. The
-contents of the group can be defined in different ways. To create a group, in the \b
-Mesh menu select <b>Create Group</b> item (also available in the
-context menu of the mesh).<br> 
-To create a group of any type you should define the following: 
+\n In MESH you can create a \ref grouping_elements_page "group" of
+elements of a certain type. The main way to create a group, is to
+select in the \b Mesh menu <b>Create Group</b> item (also available in
+the context menu of the mesh).<br>
+To create a group you should define the following: 
 <ul>
 <li><b>Mesh</b> - the mesh whose elements will form your
 group. You can select your mesh in the Objet Browser or in the 3D
@@ -22,13 +22,12 @@ elements which will form your group:</li>
 <li><b>Volumes</b></li>
 </ul>
 <li><b>Name</b> field allows to enter the name of your new group.</li>
-<li><b>Color</b> - allows to assign to the group a certain color, for
-example, defining boundary conditions. The chosen color is used to
-display the elements of the group. The color attribute of the group is
-not persistent, it is lost if you save and then load the study from
-the file.</li>
+<li><b>Color</b> - allows to assign to the group a certain color. The
+  chosen color is used to display the elements of the group.<br>
+  Activation of <em>Auto Color</em> item in mesh context menu
+  switches on a random choice of a color for a new group.</li>
 </ul>
-SALOME Platform distinguishes between the three Group types:
+Mesh module distinguishes between the three Group types:
 <b>Standalone Group</b>, <b>Group on Geometry</b> and <b>Group on Filter</b>.
 
 \anchor standalone_group <br><h2>"Standalone Group"</h2>
@@ -37,8 +36,8 @@ SALOME Platform distinguishes between the three Group types:
 the following ways:
 <ul>
 <li>By adding all entities of the chosen type existing in the
-  mesh. For this, turn on the <b>Select All</b> check box. In this mode
-  all controls, which allow selecting the entities in other ways, are
+  mesh. For this, turn on the <b>Select All</b> check-box. In this mode
+  all controls, which allow selecting the entities, are
   disabled.</li>
 <li>By choosing entities manually with the mouse in the 3D Viewer. For
   this, turn on the <b>Enable manual edition</b> check box. You can
@@ -49,14 +48,15 @@ the following ways:
   selection of the elements for your group. See more about filters on
   the \ref selection_filter_library_page "Selection filter library"
   page.</li> 
-<li>By adding entities from either a sub-mesh or an existing
-  group.  For this, turn on the <b>Enable manual edition</b> check
-  box. <b>Select from</b> set of fields allows to select a sub-mesh or
-  a group of the appropriate type.</li>
+<li>By adding entities from either a sub-mesh or another
+  group. For this, turn on the <b>Enable manual edition</b> check
+  box. <b>Select from</b> fields group allows to select a sub-mesh or
+  a group of the appropriate type and to \b Add their elements to the
+  group.</li>
 </ul>
 In the <b>manual edition</b> mode you can
 <ul>
-<li>click the \b Remove button to remove the selected list items from
+<li>click the \b Remove button to remove the selected items from
   the list.</li>
 <li>click the <b>Sort List</b> button to sort the list of IDs of 
   mesh elements.</li>
@@ -70,9 +70,9 @@ existing group and some other faces selected in the viewer:
 <ul>
 <li> Select the \b Face type of entities and input the name of the new group.</li>
 <li> Check the \b Group checkbox in <b>Select From</b> group.</li>
-<li> Select the existing group of faces in the object browser or in the viewer</li>
+<li> Select the existing group of faces in the object browser or in the viewer.</li>
 <li> Click \b Add in \b Content group. <b>Id Elements</b> list will be filled
-with IDs of faces belonging to the exising group.</li>
+with IDs of faces belonging to the selected group.</li>
 <li> Select other faces in the viewer.</li>
 <li> Click \b Add in \b Content group.</li>
 <li> Click \b Apply button to create the new group.</li>
@@ -87,10 +87,6 @@ is changed, the new one is not updated accordingly.
 <center>In this picture the brown cells belong to a group defined
   manually.</center> 
 
-\image html image131.gif
-<center>In this picture the brown cells belong to the group defined by
-  the criterion <b>Taper > 0</b>.</center>
-
 <b>See Also</b> a sample TUI Script of a 
 \ref tui_create_standalone_group "Create a Standalone Group"
 operation.  
@@ -101,13 +97,23 @@ operation.
 To create a group on geometry check <b>Group on geometry</b> in the \b
 Group \b type field. The group on geometry contains the elements
 of a certain type generated on the selected geometrical object. Group
-contents are dynamically updated if the mesh is modified.<br>
-To define a group, select in the Objet Browser or in the 3D viewer a
-geometrical object from which the elements will be taken. After
-confirmation of the operation a new group of mesh elements will be
-created.
+contents are dynamically updated if the mesh is modified. The group on
+geometry can be created only if the mesh is based on geometry.
+
+To define a group, click the \a Selection button and choose
+- <em>Direct geometry selection</em> to select a shape in the Object
+  Browser or in the Viewer;
+- <em>Find geometry by mesh element selection</em> to activate a
+  dialog which retrieves a shape by the selected element generated on
+  this shape.
+
+Note that this choice is available only if the mesh elements are
+already generated.
 
 \image html a-creategroup.png
+
+After confirmation of the operation a new group of mesh elements will
+be created.
 
 \image html image132.gif
 <center>In this picture the cells which belong to a certain
@@ -123,11 +129,13 @@ operation.
 To create a group on filter check <b>Group on filter</b> in the <b>
 Group type</b> field. The group on filter contains the elements
 of a certain type satisfying the defined filter. Group contents are
-dynamically updated if the mesh is modified.<br> To define a group,
-click the <b>Set filter</b> button and define criteria of the
-filter in the opened dialog. After confirmation of the operation a
-new group of mesh elements will be created. See more about filters on
-the \ref selection_filter_library_page "Selection filter library" page.
+dynamically updated if the mesh is modified.
+
+To define a group, click the <b>Set filter</b> button and define
+criteria of the filter in the opened dialog. After the
+operation is confirmed, a new group of mesh elements will be created. See more about
+filters on the 
+\ref selection_filter_library_page "Selection filter library" page. 
 
 \image html creategroup_on_filter.png
 

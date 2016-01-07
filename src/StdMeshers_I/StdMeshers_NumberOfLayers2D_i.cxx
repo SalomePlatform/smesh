@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -38,8 +38,8 @@ StdMeshers_NumberOfLayers2D_i::StdMeshers_NumberOfLayers2D_i
                                            (PortableServer::POA_ptr thePOA,
                                             int                     theStudyId,
                                             ::SMESH_Gen*            theGenImpl)
-: StdMeshers_NumberOfLayers_i(thePOA,theStudyId,theGenImpl),
-  SMESH_Hypothesis_i( thePOA )
+ :SMESH_Hypothesis_i( thePOA ),
+  StdMeshers_NumberOfLayers_i(thePOA,theStudyId,theGenImpl)
 {
   MESSAGE("StdMeshers_NumberOfLayers2D_i::StdMeshers_NumberOfLayers2D_i");
   myBaseImpl = new ::StdMeshers_NumberOfLayers2D(theGenImpl->GetANewId(),

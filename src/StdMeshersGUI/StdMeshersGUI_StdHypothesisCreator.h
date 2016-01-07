@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -54,15 +54,20 @@ protected:
   virtual QPixmap  icon() const;
   virtual QString  type() const;
   virtual QWidget* getCustomWidget( const StdParam&, QWidget*, const int ) const;
+  virtual QWidget* getHelperWidget() const { return myHelperWidget; }
   virtual bool     getParamFromCustomWidget( StdParam& , QWidget* ) const;
 
   virtual QString  hypTypeName( const QString& ) const;
   virtual QWidget* getWidgetForParam( int paramIndex ) const;
   virtual ListOfWidgets* customWidgets() const;
   virtual void     onReject();
-  bool             initVariableName(SMESH::SMESH_Hypothesis_var theHyp, StdParam& theParams, const char* theMethod) const;
-
   virtual void     valueChanged( QWidget* );
+
+  bool             initVariableName(SMESH::SMESH_Hypothesis_var theHyp, StdParam& theParams, const char* theMethod) const;
+  QWidget*         makeReverseEdgesWdg( SMESH::long_array_var edgeIDs,
+                                        CORBA::String_var     shapeEntry) const;
+  
+
 
   template<class T>
     T* widget(int i) const {
@@ -70,6 +75,7 @@ protected:
   }
 
   ListOfWidgets    myCustomWidgets;
+  QWidget*         myHelperWidget;
 };
 
 #endif // STDMESHERSGUI_STDHYPOTHESISCREATOR_H

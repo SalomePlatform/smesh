@@ -3,7 +3,10 @@
 \page make_2dmesh_from_3d_page Generate boundary elements
 
 \n This functionality allows to generate mesh elements on the borders of
-elements of a higher dimension.
+elements of a higher dimension, for example, to create 2D elements
+around a block of 3D elements as in the following figure.
+
+\image html 2d_from_3d_example.png "Missing 2D elements were generated"
 
 <em>To generate border elements:</em>
 <ol>
@@ -25,8 +28,8 @@ the type of operation you would like to perform.</li>
 \n "Create boundary elements" dialog allows creation of boundary elements
 of two types.
 <ul>
-<li><b>2D from 3D</b> creates mesh faces on free facets of volume elements</li>
-<li><b>1D from 2D</b> creates mesh edges on free edges of mesh faces</li>
+<li><b>2D from 3D</b> creates missing mesh faces on free facets of volume elements</li>
+<li><b>1D from 2D</b> creates missing mesh edges on free edges of mesh faces</li>
 </ul>
 Here a <em>free facet</em> means a facet shared by only one volume, a <em>free edge</em>
 means an edge shared by only one mesh face.
@@ -38,7 +41,7 @@ In this dialog:
   <ul>
   <li><b>This mesh</b> adds elements in the selected mesh.</li>
   <li><b>New mesh</b> adds elements to a new mesh. The new mesh appears
-  in the Object Browser with the name that you can change in the adjacent box. </li>
+    in the Object Browser with the name that you can change in the adjacent box. </li>
   </ul></li>
 <li>activate <b>Copy source mesh</b> checkbox to copy all elements of
 the selected mesh to the new mesh, else the new mesh will contain only

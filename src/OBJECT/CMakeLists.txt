@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2012-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -61,12 +61,17 @@ SET(_link_LIBRARIES
   ${GUI_qtx}
   ${GUI_suit}
   ${GUI_std}
-  ${GUI_Plot2d}
-  ${GUI_SPlot2d}
   SMESHClient
   SMDS
   SMESHControls
 )
+
+IF(SALOME_USE_PLOT2DVIEWER)
+  LIST(APPEND _link_LIBRARIES
+    ${GUI_Plot2d}
+    ${GUI_SPlot2d}
+    )
+ENDIF()
 
 # --- headers ---
 

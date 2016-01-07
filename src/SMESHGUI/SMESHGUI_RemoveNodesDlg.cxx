@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -34,6 +34,7 @@
 #include "SMESHGUI_IdValidator.h"
 #include "SMESHGUI_FilterDlg.h"
 
+#include <SMESH_TypeFilter.hxx>
 #include <SMESH_Actor.h>
 #include <SMDS_Mesh.hxx>
 
@@ -80,8 +81,8 @@
 SMESHGUI_RemoveNodesDlg
 ::SMESHGUI_RemoveNodesDlg(SMESHGUI* theModule)
   : QDialog(SMESH::GetDesktop(theModule)),
-    mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
     mySelectionMgr(SMESH::GetSelectionMgr(theModule)),
+    mySelector(SMESH::GetViewWindow(theModule)->GetSelector()),
     mySMESHGUI(theModule),
     myBusy(false),
     myFilterDlg(0)
@@ -204,16 +205,22 @@ void SMESHGUI_RemoveNodesDlg::Init()
   connect(mySMESHGUI, SIGNAL (SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
   /* to close dialog if study change */
-  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(reject()));
+  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()),      this, SLOT(reject()));
+  connect(mySMESHGUI, SIGNAL (SignalActivatedViewManager()), this, SLOT(onOpenView()));
+  connect(mySMESHGUI, SIGNAL (SignalCloseView()),            this, SLOT(onCloseView()));
   connect(myEditCurrentArgument, SIGNAL(textChanged(const QString&)),
-          SLOT(onTextChange(const QString&)));
-  
+          this,                  SLOT (onTextChange(const QString&)));
+
   SMESH::SetPointRepresentation(true);
-  
+
+  mySelectionMgr->clearFilters();
+  mySelectionMgr->installFilter( new SMESH_TypeFilter( SMESH::IDSOURCE ));
+
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(NodeSelection);
 
-  SelectionIntoArgument();
+  //SelectionIntoArgument();
+  mySelectionMgr->setSelectedObjects( SALOME_ListIO() );
 }
 
 //=================================================================================
@@ -281,6 +288,32 @@ void SMESHGUI_RemoveNodesDlg::reject()
   mySelectionMgr->clearFilters();
   mySMESHGUI->ResetState();
   QDialog::reject();
+}
+
+
+//=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_RemoveNodesDlg::onOpenView()
+{
+  if ( mySelector) {
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    ActivateThisDialog();
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_RemoveNodesDlg::onCloseView()
+{
+  DeactivateActiveDialog();
+  mySelector = 0;
 }
 
 //=================================================================================
@@ -384,16 +417,16 @@ void SMESHGUI_RemoveNodesDlg::SelectionIntoArgument()
           myBusy = true;
           myEditCurrentArgument->setText(aString);
           myBusy = false;
-          
+
           // OK
-          
+
           myNbOkNodes = nbNodes;
         } // if (nbNodes > 0)
       } // if (myActor)
     } // if (!myMesh->_is_nil())
   } // if (nbSel == 1)
 
-  updateButtons();        
+  updateButtons();
 }
 
 //=================================================================================
@@ -446,6 +479,9 @@ void SMESHGUI_RemoveNodesDlg::ActivateThisDialog()
 
   mySMESHGUI->SetActiveDialogBox((QDialog*)this); // ??
 
+  mySelectionMgr->clearFilters();
+  mySelectionMgr->installFilter( new SMESH_TypeFilter( SMESH::IDSOURCE ));
+
   SMESH::SetPointRepresentation(true);
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(NodeSelection);
@@ -459,8 +495,13 @@ void SMESHGUI_RemoveNodesDlg::ActivateThisDialog()
 //=================================================================================
 void SMESHGUI_RemoveNodesDlg::enterEvent(QEvent*)
 {
-  if (!GroupConstructors->isEnabled())
+  if (!GroupConstructors->isEnabled()) {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+    if ( aViewWindow && !mySelector) {
+      mySelector = aViewWindow->GetSelector();
+    }
     ActivateThisDialog();
+  }
 }
 
 //=================================================================================

@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -36,8 +36,6 @@
 #include "SMESH_ComputeError.hxx"
 #include "SMESH_Algo.hxx"
 #include "SMESH_Mesh.hxx"
-
-#include "chrono.hxx"
 
 #include <TopoDS_Shape.hxx>
 
@@ -89,7 +87,7 @@ public:
   void CancelCompute(::SMESH_Mesh &        aMesh,
                      const TopoDS_Shape &  aShape);
 
-  const SMESH_subMesh* GetCurrentSubMesh() const { return _sm_current; }
+  const SMESH_subMesh* GetCurrentSubMesh() const;
 
   /*!
    * \brief evaluates size of prospective mesh on a shape 
@@ -127,7 +125,7 @@ public:
     int                 _algoDim;
     bool                _isGlobalAlgo;
 
-    TAlgoStateError(): _algoDim(0),_algo(0),_name(SMESH_Hypothesis::HYP_OK) {}
+    TAlgoStateError(): _name(SMESH_Hypothesis::HYP_OK), _algo(0), _algoDim(0) {}
     void Set(TAlgoStateErrorName name, const SMESH_Algo* algo, bool isGlobal)
     { _name = name; _algo = algo; _algoDim = algo->GetDim(); _isGlobalAlgo = isGlobal; }
     void Set(TAlgoStateErrorName name, const int algoDim,      bool isGlobal)
@@ -175,10 +173,11 @@ private:
   // default number of segments
   int _nbSegments;
 
-  counters *_counters;
+  void setCurrentSubMesh(SMESH_subMesh* sm);
+  void resetCurrentSubMesh();
 
-  volatile bool  _compute_canceled;
-  SMESH_subMesh* _sm_current;
+  volatile bool               _compute_canceled;
+  std::list< SMESH_subMesh* > _sm_current;
 };
 
 #endif

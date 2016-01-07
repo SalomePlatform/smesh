@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -191,10 +191,27 @@ public:
                                           bool   isXConst   = 0,
                                           double constValue = 0) const;
   /*!
-   * \brief Return nodes in the order they encounter while walking along the side.
+   * \brief Return nodes in the order they encounter while walking along
+   *  the while side or a specified EDGE.
     * For a closed side, the 1st point repeats at end
    */
-  std::vector<const SMDS_MeshNode*> GetOrderedNodes() const;
+  std::vector<const SMDS_MeshNode*> GetOrderedNodes(int iE=-1) const;
+
+  /*!
+   * \brief Return nodes of the i-th EDGE.
+   *        Nodes moved to other geometry by MergeNodes() are also returned.
+   * \retval bool - is OK
+   */
+  bool GetEdgeNodes(const size_t                       i,
+                    std::vector<const SMDS_MeshNode*>& nodes,
+                    bool                               inlude1stVertex=true,
+                    bool                               inludeLastVertex=true) const;
+
+  /*!
+   * \brief Return a node from the i-th VERTEX (count starts from zero)
+   *        Nodes moved to other geometry by MergeNodes() are also returned.
+   */
+  const SMDS_MeshNode* VertexNode(std::size_t i, bool* isMoved = 0) const;
 
   /*!
    * \brief Return edge and parameter on edge by normalized parameter
@@ -229,13 +246,17 @@ public:
    */
   const std::vector<TopoDS_Edge>& Edges() const { return myEdge; }
   /*!
-   * \brief Return 1st vertex of the i-the edge (count starts from zero)
+   * \brief Return 1st vertex of the i-th edge (count starts from zero)
    */
   TopoDS_Vertex FirstVertex(int i=0) const;
   /*!
-   * \brief Return last vertex of the i-the edge (count starts from zero)
+   * \brief Return last vertex of the i-th edge (count starts from zero)
    */
   TopoDS_Vertex LastVertex(int i=-1) const;
+  /*!
+   * \brief Return \c true if the chain of EDGEs is closed
+   */
+  bool IsClosed() const;
   /*!
    * \brief Return side length
    */
@@ -258,20 +279,20 @@ public:
    */
   inline Handle(Geom2d_Curve) Curve2d(int i) const;
   /*!
-   * \brief Return first normalized parameter of the i-the edge (count starts from zero)
+   * \brief Return first normalized parameter of the i-th edge (count starts from zero)
    */
   inline double FirstParameter(int i) const;
   /*!
-   * \brief Return last normalized parameter of the i-the edge (count starts from zero)
+   * \brief Return last normalized parameter of the i-th edge (count starts from zero)
    */
   inline double LastParameter(int i) const;
   /*!
-   * \brief Return first parameter of the i-the edge (count starts from zero).
+   * \brief Return first parameter of the i-th edge (count starts from zero).
    *        EDGE orientation is taken into account
    */
   inline double FirstU(int i) const;
   /*!
-   * \brief Return last parameter of the i-the edge (count starts from zero).
+   * \brief Return last parameter of the i-th edge (count starts from zero).
    *        EDGE orientation is taken into account
    */
   inline double LastU(int i) const;
@@ -289,6 +310,7 @@ protected:
   void reverseProxySubmesh( const TopoDS_Edge& E );
 
   // DON't FORGET to update Reverse() when adding one more vector!
+  TopoDS_Face                       myFace;
   std::vector<uvPtStruct>           myPoints, myFalsePoints;
   std::vector<TopoDS_Edge>          myEdge;
   std::vector<int>                  myEdgeID;
@@ -340,7 +362,7 @@ inline double StdMeshers_FaceSide::Parameter(double U, TopoDS_Edge & edge) const
 
 //================================================================================
 /*!
- * \brief Return first normalized parameter of the i-the edge
+ * \brief Return first normalized parameter of the i-th edge
  */
 //================================================================================
 
@@ -351,7 +373,7 @@ inline double StdMeshers_FaceSide::FirstParameter(int i) const
 
 //================================================================================
 /*!
- * \brief Return ast normalized parameter of the i-the edge
+ * \brief Return ast normalized parameter of the i-th edge
  */
 //================================================================================
 
@@ -362,7 +384,7 @@ inline double StdMeshers_FaceSide::LastParameter(int i) const
 
 //================================================================================
 /*!
- * \brief Return first parameter of the i-the edge
+ * \brief Return first parameter of the i-th edge
  */
 //================================================================================
 
@@ -373,7 +395,7 @@ inline double StdMeshers_FaceSide::FirstU(int i) const
 
 //================================================================================
 /*!
- * \brief Return last parameter of the i-the edge
+ * \brief Return last parameter of the i-th edge
  */
 //================================================================================
 

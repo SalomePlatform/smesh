@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -114,6 +114,7 @@ protected:
   virtual void                 attuneStdWidget( QWidget*, const int ) const;
   virtual QWidget*             getCustomWidget( const StdParam&, 
                                                 QWidget*, const int ) const;
+  virtual QWidget*             getHelperWidget() const;
   virtual bool                 getParamFromCustomWidget( StdParam&, QWidget* ) const;
   virtual void                 valueChanged( QWidget* );
   virtual QString              caption() const;
@@ -157,20 +158,19 @@ public:
 protected slots:
   virtual void accept();
   virtual void reject();
-  void onHelp(); 
+  void onHelp();
 
-private:
+ private:
   SMESHGUI_GenericHypothesisCreator* myCreator;
   QLabel *myIconLabel, *myTypeLabel;
   QString myHelpFileName;
 };
 
 /*!
- * \brief Class containing information about hypothesis
-*/
-class HypothesisData
+ * \brief Information about a hypothesis
+ */
+struct HypothesisData
 {
-public:
   HypothesisData( const QString&, const QString&, const QString&,
                   const QString&, const QString&, const QString&,
                   const QString&, const QList<int>&, const bool,

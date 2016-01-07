@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -131,19 +131,22 @@ void SMESH_HypoFilter::IsMoreLocalThanPredicate::findPreferable()
 {
   const int shapeID = _mesh.GetMeshDS()->ShapeToIndex( _shape );
   const TListOfListOfInt& listOfShapeIDList = _mesh.GetMeshOrder();
-  TListOfListOfInt::const_iterator listsIt = listOfShapeIDList.begin();
+  TListOfListOfInt::const_iterator  listsIt = listOfShapeIDList.begin();
   for ( ; listsIt != listOfShapeIDList.end(); ++listsIt )
   {
-    const TListOfInt& idList  = *listsIt;
+    const TListOfInt& idList = *listsIt;
     TListOfInt::const_iterator idIt =
       std::find( idList.begin(), idList.end(), shapeID );
     if ( idIt != idList.end() && *idIt != idList.front() )
     {
-      for ( ; idIt != idList.end(); --idIt )
+      for ( --idIt; true; --idIt )
       {
         const TopoDS_Shape& shape = _mesh.GetMeshDS()->IndexToShape( *idIt );
         if ( !shape.IsNull())
           _preferableShapes.Add( shape );
+
+        if ( idIt == idList.begin() )
+          break;
       }
     }
   }

@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -82,6 +82,7 @@
 #include "SMESHGUI_TranslationDlg.h"
 #include "SMESHGUI_TransparencyDlg.h"
 #include "SMESHGUI_DisplayEntitiesDlg.h"
+#include "SMESHGUI_SplitBiQuad.h"
 
 #include "SMESHGUI_FilterUtils.h"
 #include "SMESHGUI_GEOMGenUtils.h"
@@ -120,8 +121,6 @@
 
 #include <VTKViewer_Algorithm.h>
 
-#include <PyInterp_Interp.h>
-
 #include <SUIT_Desktop.h>
 #include <SUIT_FileDlg.h>
 #include <SUIT_MessageBox.h>
@@ -150,6 +149,8 @@
 #include <QApplication>
 #include <QMenu>
 #include <QTextStream>
+#include <QListView>
+#include <QTreeView>
 
 // BOOST includes
 #include <boost/shared_ptr.hpp>
@@ -168,10 +169,12 @@
 #include <SALOMEDSClient_StudyBuilder.hxx>
 #include <SALOMEDS_Study.hxx>
 #include <SALOMEDS_SObject.hxx>
+#include "utilities.h"
 
 // OCCT includes
 #include <Standard_ErrorHandler.hxx>
 #include <NCollection_DataMap.hxx>
+#include <NCollection_DoubleMap.hxx>
 
 #include <Basics_Utils.hxx>
 
@@ -196,6 +199,8 @@ namespace
   void SetDisplayMode(int theCommandID, SMESHGUI_StudyId2MarkerMap& theMarkerMap);
 
   void SetDisplayEntity(int theCommandID);
+
+  int ActionToControl( int theID, bool theReversed = false );
 
   void Control( int theCommandID );
 
@@ -423,17 +428,16 @@ namespace
     const bool isMED = ( theCommandID == SMESHOp::OpExportMED || theCommandID == SMESHOp::OpPopupExportMED );
     const bool isUNV = ( theCommandID == SMESHOp::OpExportUNV || theCommandID == SMESHOp::OpPopupExportUNV );
     const bool isSTL = ( theCommandID == SMESHOp::OpExportSTL || theCommandID == SMESHOp::OpPopupExportSTL );
-  #ifdef WITH_CGNS
+#ifdef WITH_CGNS
     const bool isCGNS= ( theCommandID == SMESHOp::OpExportCGNS || theCommandID == SMESHOp::OpPopupExportCGNS );
-  #else
+#else
     const bool isCGNS= false;
-  #endif
+#endif
     const bool isSAUV= ( theCommandID == SMESHOp::OpExportSAUV || theCommandID == SMESHOp::OpPopupExportSAUV );
     const bool isGMF = ( theCommandID == SMESHOp::OpExportGMF || theCommandID == SMESHOp::OpPopupExportGMF );
 
-    // actually, the following condition can't be met (added for insurance)
-    if( selected.Extent() == 0 ||
-        ( selected.Extent() > 1 && !isMED && !isSTL ))
+    const bool multiMeshSupported = ( isMED || isCGNS ); // file can hold several meshes
+    if ( selected.Extent() == 0 || ( selected.Extent() > 1 && !multiMeshSupported ))
       return;
 
     // get mesh object from selection and check duplication of their names
@@ -532,7 +536,6 @@ namespace
     {
       format = "CGNS";
       notSupportedElemTypes.push_back( SMESH::Entity_Ball );
-      notSupportedElemTypes.push_back( SMESH::Entity_BiQuad_Triangle );
     }
     else if ( isSAUV )
     {
@@ -543,6 +546,7 @@ namespace
       notSupportedElemTypes.push_back( SMESH::Entity_TriQuad_Hexa );
       notSupportedElemTypes.push_back( SMESH::Entity_Hexagonal_Prism );
       notSupportedElemTypes.push_back( SMESH::Entity_Polygon );
+      notSupportedElemTypes.push_back( SMESH::Entity_Quad_Polygon );
       notSupportedElemTypes.push_back( SMESH::Entity_Polyhedra );
     }
     else if ( isGMF )
@@ -714,6 +718,16 @@ namespace
       if ( !anInitialPath.isEmpty() )
         fd->setDirectory( anInitialPath );
       fd->selectFile(aMeshName);
+      
+      
+      QListView *lview = fd->findChild<QListView*>("listView");
+      if( lview ) {
+        lview->setMinimumHeight(200);
+      }
+      QTreeView *tview = fd->findChild<QTreeView*>("treeView");
+      if( tview ) {
+        tview->setMinimumHeight(200);
+      }
 
       SMESHGUI_FileValidator* fv = new SMESHGUI_FileValidator( fd );
       fd->setValidator( fv );
@@ -1162,7 +1176,7 @@ namespace
                   out << "# Control: " << functorToString( aFunctor ) << endl;
                   out << "#" << endl;
                   out.setFieldWidth( 10 );
-                  for ( int i = 0; i < qMin( nbEvents.size(), funValues.size()-1 ); i++ )
+                  for ( int i = 0; i < (int)qMin( nbEvents.size(), funValues.size()-1 ); i++ )
                     out << funValues[i] << "\t" << funValues[i+1] << "\t" << nbEvents[i] << endl;
                   f.close();
                 }
@@ -1174,7 +1188,7 @@ namespace
     }
   }
 
-  void ShowDistribution() {
+  void ShowElement(int theCommandID ) {
     LightApp_SelectionMgr* aSel = SMESHGUI::selectionMgr();
     SALOME_ListIO selected;
     if ( aSel )
@@ -1186,7 +1200,12 @@ namespace
         SMESH_Actor* anActor = SMESH::FindActorByEntry( anIO->getEntry() );
         if ( anActor && anActor->GetScalarBarActor() && anActor->GetControlMode() != SMESH_Actor::eNone ) {
           SMESH_ScalarBarActor *aScalarBarActor = anActor->GetScalarBarActor();
-          aScalarBarActor->SetDistributionVisibility(!aScalarBarActor->GetDistributionVisibility());
+          if ( theCommandID == SMESHOp::OpShowDistribution ) {
+            aScalarBarActor->SetDistributionVisibility(!aScalarBarActor->GetDistributionVisibility());
+          }
+          else if ( theCommandID == SMESHOp::OpShowScalarBar ) {
+            aScalarBarActor->SetVisibility( !aScalarBarActor->GetVisibility());
+          }
         }
       }
     }
@@ -1310,7 +1329,7 @@ namespace
         QColor orientationColor, outlineColor, volumeColor;
         int deltaF = 0, deltaV = 0;
         int elem0dSize   = 1;
-        int ballSize     = 1;
+        //int ballSize     = 1;
         double ballScale = 1.0;
         int edgeWidth    = 1;
         int outlineWidth = 1;
@@ -1355,7 +1374,7 @@ namespace
             // balls: color, size
             anActor->GetBallColor( color[0], color[1], color[2] );
             ballColor.setRgbF( color[0], color[1], color[2] );
-            ballSize = qMax( (int)anActor->GetBallSize(), 1 ); // minimum allowed size is 1
+            //ballSize = qMax( (int)anActor->GetBallSize(), 1 ); // minimum allowed size is 1
             ballScale = qMax( (double)anActor->GetBallScale(), 1e-2 ); // minimum allowed scale is 1e-2
             // outlines: color
             anActor->GetOutlineColor( color[0], color[1], color[2] );
@@ -1412,7 +1431,7 @@ namespace
         dlg.setElem0dSize( elem0dSize );
         // balls: color, size
         dlg.setBallColor( ballColor );
-        dlg.setBallSize( ballSize );
+        //dlg.setBallSize( ballSize );
         dlg.setBallScale( ballScale );
         // orientation: color, scale, 3d flag
         dlg.setOrientationColor( orientationColor );
@@ -1439,7 +1458,7 @@ namespace
           elem0dColor      = dlg.elem0dColor();
           elem0dSize       = dlg.elem0dSize();
           ballColor        = dlg.ballColor();
-          ballSize         = dlg.ballSize();
+         // ballSize         = dlg.ballSize();
           ballScale        = dlg.ballScale();
           orientationColor = dlg.orientationColor();
           orientationScale = dlg.orientationSize() / 100.;
@@ -1483,7 +1502,7 @@ namespace
             anActor->Set0DSize( elem0dSize );
             // balls: color, size
             anActor->SetBallColor( ballColor.redF(), ballColor.greenF(), ballColor.blueF() );
-            anActor->SetBallSize( ballSize );
+            // anActor->SetBallSize( ballSize );
             anActor->SetBallScale( ballScale );
             // orientation: color, scale, 3d flag
             anActor->SetFacesOrientationColor( orientationColor.redF(), orientationColor.greenF(), orientationColor.blueF() );
@@ -1564,89 +1583,43 @@ namespace
     }
   }
 
+  int ActionToControl( int theID, bool theReversed )
+  {
+    NCollection_DoubleMap<int,int> ActionControl;
+    ActionControl.Bind( 0,                                SMESH_Actor::eNone );
+    ActionControl.Bind( SMESHOp::OpFreeNode,              SMESH_Actor::eFreeNodes );
+    ActionControl.Bind( SMESHOp::OpEqualNode,             SMESH_Actor::eCoincidentNodes );
+    ActionControl.Bind( SMESHOp::OpFreeEdge,              SMESH_Actor::eFreeEdges );
+    ActionControl.Bind( SMESHOp::OpFreeBorder,            SMESH_Actor::eFreeBorders );
+    ActionControl.Bind( SMESHOp::OpLength,                SMESH_Actor::eLength );
+    ActionControl.Bind( SMESHOp::OpConnection,            SMESH_Actor::eMultiConnection );
+    ActionControl.Bind( SMESHOp::OpEqualEdge,             SMESH_Actor::eCoincidentElems1D );
+    ActionControl.Bind( SMESHOp::OpFreeFace,              SMESH_Actor::eFreeFaces );
+    ActionControl.Bind( SMESHOp::OpBareBorderFace,        SMESH_Actor::eBareBorderFace );
+    ActionControl.Bind( SMESHOp::OpOverConstrainedFace,   SMESH_Actor::eOverConstrainedFace );
+    ActionControl.Bind( SMESHOp::OpLength2D,              SMESH_Actor::eLength2D );
+    ActionControl.Bind( SMESHOp::OpConnection2D,          SMESH_Actor::eMultiConnection2D );
+    ActionControl.Bind( SMESHOp::OpArea,                  SMESH_Actor::eArea );
+    ActionControl.Bind( SMESHOp::OpTaper,                 SMESH_Actor::eTaper );
+    ActionControl.Bind( SMESHOp::OpAspectRatio,           SMESH_Actor::eAspectRatio );
+    ActionControl.Bind( SMESHOp::OpMinimumAngle,          SMESH_Actor::eMinimumAngle );
+    ActionControl.Bind( SMESHOp::OpWarpingAngle,          SMESH_Actor::eWarping );
+    ActionControl.Bind( SMESHOp::OpSkew,                  SMESH_Actor::eSkew );
+    ActionControl.Bind( SMESHOp::OpMaxElementLength2D,    SMESH_Actor::eMaxElementLength2D );
+    ActionControl.Bind( SMESHOp::OpEqualFace,             SMESH_Actor::eCoincidentElems2D );
+    ActionControl.Bind( SMESHOp::OpAspectRatio3D,         SMESH_Actor::eAspectRatio3D );
+    ActionControl.Bind( SMESHOp::OpVolume,                SMESH_Actor::eVolume3D );
+    ActionControl.Bind( SMESHOp::OpMaxElementLength3D,    SMESH_Actor::eMaxElementLength3D );
+    ActionControl.Bind( SMESHOp::OpBareBorderVolume,      SMESH_Actor::eBareBorderVolume );
+    ActionControl.Bind( SMESHOp::OpOverConstrainedVolume, SMESH_Actor::eOverConstrainedVolume );
+    ActionControl.Bind( SMESHOp::OpEqualVolume,           SMESH_Actor::eCoincidentElems3D );
+
+    return theReversed ? ActionControl.Find2( theID ) : ActionControl.Find1( theID );
+  }
+
   void Control( int theCommandID )
   {
-    SMESH_Actor::eControl aControl = SMESH_Actor::eNone;
-    switch ( theCommandID ){
-    case SMESHOp::OpFreeNode:
-      aControl = SMESH_Actor::eFreeNodes;
-      break;
-    case SMESHOp::OpEqualNode:
-      aControl = SMESH_Actor::eCoincidentNodes;
-      break;
-    case SMESHOp::OpFreeEdge:
-      aControl = SMESH_Actor::eFreeEdges;
-      break;
-    case SMESHOp::OpFreeBorder:
-      aControl = SMESH_Actor::eFreeBorders;
-      break;
-    case SMESHOp::OpLength:
-      aControl = SMESH_Actor::eLength;
-      break;
-    case SMESHOp::OpConnection:
-      aControl = SMESH_Actor::eMultiConnection;
-      break;
-    case SMESHOp::OpEqualEdge:
-      aControl = SMESH_Actor::eCoincidentElems1D;
-      break;
-    case SMESHOp::OpFreeFace:
-      aControl = SMESH_Actor::eFreeFaces;
-      break;
-    case SMESHOp::OpBareBorderFace:
-      aControl = SMESH_Actor::eBareBorderFace;
-      break;
-    case SMESHOp::OpOverConstrainedFace:
-      aControl = SMESH_Actor::eOverConstrainedFace;
-      break;
-    case SMESHOp::OpLength2D:
-      aControl = SMESH_Actor::eLength2D;
-      break;
-    case SMESHOp::OpConnection2D:
-      aControl = SMESH_Actor::eMultiConnection2D;
-      break;
-    case SMESHOp::OpArea:
-      aControl = SMESH_Actor::eArea;
-      break;
-    case SMESHOp::OpTaper:
-      aControl = SMESH_Actor::eTaper;
-      break;
-    case SMESHOp::OpAspectRatio:
-      aControl = SMESH_Actor::eAspectRatio;
-      break;
-    case SMESHOp::OpMinimumAngle:
-      aControl = SMESH_Actor::eMinimumAngle;
-      break;
-    case SMESHOp::OpWarpingAngle:
-      aControl = SMESH_Actor::eWarping;
-      break;
-    case SMESHOp::OpSkew:
-      aControl = SMESH_Actor::eSkew;
-      break;
-    case SMESHOp::OpMaxElementLength2D:
-      aControl = SMESH_Actor::eMaxElementLength2D;
-      break;
-    case SMESHOp::OpEqualFace:
-      aControl = SMESH_Actor:: eCoincidentElems2D;
-      break;
-    case SMESHOp::OpAspectRatio3D:
-      aControl = SMESH_Actor::eAspectRatio3D;
-      break;
-    case SMESHOp::OpVolume:
-      aControl = SMESH_Actor::eVolume3D;
-      break;
-    case SMESHOp::OpMaxElementLength3D:
-      aControl = SMESH_Actor::eMaxElementLength3D;
-      break;
-    case SMESHOp::OpBareBorderVolume:
-      aControl = SMESH_Actor::eBareBorderVolume;
-      break;
-    case SMESHOp::OpOverConstrainedVolume:
-      aControl = SMESH_Actor::eOverConstrainedVolume;
-      break;
-    case SMESHOp::OpEqualVolume:
-      aControl = SMESH_Actor::eCoincidentElems3D;
-      break;
-    }
+    SMESH_Actor::eControl aControl = SMESH_Actor::eControl( ActionToControl( theCommandID ) );
     _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
     LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
     SALOME_ListIO selected;
@@ -1661,7 +1634,7 @@ namespace
         if(!anIO.IsNull()){
           _PTR(SObject) SO = aStudy->FindObjectID( It.Value()->getEntry() );
           if ( SO ) {
-            CORBA::Object_var aObject = SMESH::SObjectToObject( SO );
+            CORBA::Object_var           aObject = SMESH::SObjectToObject( SO );
             SMESH::SMESH_Mesh_var      aMesh    = SMESH::SMESH_Mesh::_narrow( aObject );
             SMESH::SMESH_subMesh_var   aSubMesh = SMESH::SMESH_subMesh::_narrow( aObject );
             SMESH::SMESH_GroupBase_var aGroup   = SMESH::SMESH_GroupBase::_narrow( aObject );
@@ -1978,7 +1951,7 @@ SalomeApp_Module( "SMESH" )
     nbSeg = aResourceMgr->integerValue( "SMESH", "nb_segments_per_edge", 15 );
     myComponentSMESH->SetDefaultNbSegments( nbSeg );
 
-    const char* options[] = { "historical_python_dump", "forget_mesh_on_hyp_modif" };
+    const char* options[] = { "historical_python_dump", "forget_mesh_on_hyp_modif", "default_grp_color" };
     for ( size_t i = 0; i < sizeof(options)/sizeof(char*); ++i )
       if ( aResourceMgr->hasValue( "SMESH", options[i] ))
       {
@@ -2064,7 +2037,7 @@ bool SMESHGUI::automaticUpdate( SMESH::SMESH_IDSource_ptr theMesh,
   long nbEdges   = info[SMDSEntity_Edge] + info[SMDSEntity_Quad_Edge];
   long nbFaces   = info[SMDSEntity_Triangle]   + info[SMDSEntity_Quad_Triangle]   + info[SMDSEntity_BiQuad_Triangle] + 
                    info[SMDSEntity_Quadrangle] + info[SMDSEntity_Quad_Quadrangle] + info[SMDSEntity_BiQuad_Quadrangle] + 
-                   info[SMDSEntity_Polygon];
+                   info[SMDSEntity_Polygon] + info[SMDSEntity_Quad_Polygon];
   long nbVolumes = info[SMDSEntity_Tetra]   + info[SMDSEntity_Quad_Tetra] + 
                    info[SMDSEntity_Hexa]    + info[SMDSEntity_Quad_Hexa] + info[SMDSEntity_TriQuad_Hexa] + 
                    info[SMDSEntity_Pyramid] + info[SMDSEntity_Quad_Pyramid] + 
@@ -2245,6 +2218,26 @@ void SMESHGUI::EmitSignalCloseAllDialogs()
 void SMESHGUI::EmitSignalVisibilityChanged()
 {
   emit SignalVisibilityChanged();
+}
+
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
+void SMESHGUI::EmitSignalCloseView()
+{
+  emit SignalCloseView();
+}
+
+//=============================================================================
+/*!
+ *
+ */
+//=============================================================================
+void SMESHGUI::EmitSignalActivatedViewManager()
+{
+  emit SignalActivatedViewManager();
 }
 
 //=============================================================================
@@ -2451,8 +2444,9 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if( aSel )
         aSel->selectedObjects( selected );
 
-      if( selected.Extent() ) {
-        Handle(SALOME_InteractiveObject) anIO = selected.First();
+      SALOME_ListIteratorOfListIO it(selected);
+      for( ; it.More(); it.Next()) {
+        Handle(SALOME_InteractiveObject) anIO = it.Value();
         if( anIO->hasEntry() ) {
           if( SMESH_Actor* anActor = SMESH::FindActorByEntry( anIO->getEntry() ) ) {
             anActor->SetControlMode( SMESH_Actor::eNone );
@@ -2462,11 +2456,18 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
           }
         }
       }
+      SMESH::UpdateView();
       break;
     }
   case SMESHOp::OpScalarBarProperties:
     {
       SMESHGUI_Preferences_ScalarBarDlg::ScalarBarProperties( this );
+      break;
+    }
+  case SMESHOp::OpShowScalarBar:
+    {
+      // show/hide scalar bar
+      ::ShowElement(theCommandID);
       break;
     }
   case SMESHOp::OpSaveDistribution:
@@ -2478,8 +2479,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
   case SMESHOp::OpShowDistribution:
     {
-      // show/ distribution
-      ::ShowDistribution();
+      // show/hide distribution
+      ::ShowElement(theCommandID);
       break;
     }
 
@@ -2583,8 +2584,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       SMESH::EDisplaing anAction;
       switch (theCommandID) {
-      case SMESHOp::OpHide: anAction = SMESH::eErase; break;
-      case SMESHOp::OpShow: anAction = SMESH::eDisplay; break;
+      case SMESHOp::OpHide:     anAction = SMESH::eErase; break;
+      case SMESHOp::OpShow:     anAction = SMESH::eDisplay; break;
       case SMESHOp::OpShowOnly: anAction = SMESH::eDisplayOnly; break;
       }
 
@@ -2593,7 +2594,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if (aSel)
         aSel->selectedObjects( sel_objects );
 
-      if( theCommandID==SMESHOp::OpShowOnly )
+      if ( theCommandID==SMESHOp::OpShowOnly )
       {
         MESSAGE("anAction = SMESH::eDisplayOnly");
         startOperation( myEraseAll );
@@ -2607,20 +2608,17 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 #endif
         if (vtkwnd) {
           SALOME_ListIteratorOfListIO It( to_process );
-          for ( ; It.More(); It.Next()) {
-            MESSAGE("---");
+          for ( ; It.More(); It.Next())
+          {
             Handle(SALOME_InteractiveObject) IOS = It.Value();
-            if (IOS->hasEntry()) {
-              MESSAGE("---");
-              if (!SMESH::UpdateView(anAction, IOS->getEntry())) {
+            if ( IOS->hasEntry() )
+            {
+              if ( !SMESH::UpdateView( anAction, IOS->getEntry() )) {
                 SMESHGUI::GetSMESHGUI()->EmitSignalVisibilityChanged();
                 break; // PAL16774 (Crash after display of many groups)
               }
               if (anAction == SMESH::eDisplayOnly)
-              {
-                MESSAGE("anAction = SMESH::eDisplayOnly");
                 anAction = SMESH::eDisplay;
-              }
             }
           }
         }
@@ -2812,6 +2810,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
       break;
     }
+  case SMESHOp::OpSplitBiQuadratic:
   case SMESHOp::OpConvertMeshToQuadratic:
   case SMESHOp::OpCreateBoundaryElements: // create 2D mesh from 3D
   case SMESHOp::OpReorientFaces:
@@ -3233,6 +3232,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpBiQuadraticTriangle:
   case SMESHOp::OpQuadraticQuadrangle:
   case SMESHOp::OpBiQuadraticQuadrangle:
+  case SMESHOp::OpQuadraticPolygon:
   case SMESHOp::OpQuadraticTetrahedron:
   case SMESHOp::OpQuadraticPyramid:
   case SMESHOp::OpQuadraticPentahedron:
@@ -3245,15 +3245,16 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         SMDSAbs_EntityType type = SMDSEntity_Last;
 
         switch (theCommandID) {
-        case SMESHOp::OpQuadraticEdge: type = SMDSEntity_Quad_Edge; break;
-        case SMESHOp::OpQuadraticTriangle: type = SMDSEntity_Quad_Triangle; break;
-        case SMESHOp::OpBiQuadraticTriangle: type = SMDSEntity_BiQuad_Triangle; break;
-        case SMESHOp::OpQuadraticQuadrangle: type = SMDSEntity_Quad_Quadrangle; break;
-        case SMESHOp::OpBiQuadraticQuadrangle: type = SMDSEntity_BiQuad_Quadrangle; break;
-        case SMESHOp::OpQuadraticTetrahedron: type = SMDSEntity_Quad_Tetra; break;
-        case SMESHOp::OpQuadraticPyramid: type = SMDSEntity_Quad_Pyramid; break;
-        case SMESHOp::OpQuadraticPentahedron: type = SMDSEntity_Quad_Penta; break;
-        case SMESHOp::OpQuadraticHexahedron: type = SMDSEntity_Quad_Hexa; break;
+        case SMESHOp::OpQuadraticEdge:          type = SMDSEntity_Quad_Edge; break;
+        case SMESHOp::OpQuadraticTriangle:      type = SMDSEntity_Quad_Triangle; break;
+        case SMESHOp::OpBiQuadraticTriangle:    type = SMDSEntity_BiQuad_Triangle; break;
+        case SMESHOp::OpQuadraticQuadrangle:    type = SMDSEntity_Quad_Quadrangle; break;
+        case SMESHOp::OpBiQuadraticQuadrangle:  type = SMDSEntity_BiQuad_Quadrangle; break;
+        case SMESHOp::OpQuadraticPolygon:       type = SMDSEntity_Quad_Polygon; break;
+        case SMESHOp::OpQuadraticTetrahedron:   type = SMDSEntity_Quad_Tetra; break;
+        case SMESHOp::OpQuadraticPyramid:       type = SMDSEntity_Quad_Pyramid; break;
+        case SMESHOp::OpQuadraticPentahedron:   type = SMDSEntity_Quad_Penta; break;
+        case SMESHOp::OpQuadraticHexahedron:    type = SMDSEntity_Quad_Hexa; break;
         case SMESHOp::OpTriQuadraticHexahedron: type = SMDSEntity_TriQuad_Hexa; break;
         default: break;
         }
@@ -3765,7 +3766,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   // ----- create actions --------------
 
   //createSMESHAction(  SMESHOp::OpImportDAT, "IMPORT_DAT", "", (Qt::CTRL+Qt::Key_B) );
-  createSMESHAction( SMESHOp::OpImportUNV, "IMPORT_UNV", "", (Qt::CTRL+Qt::Key_U) );
+  createSMESHAction( SMESHOp::OpImportUNV, "IMPORT_UNV", "", (Qt::CTRL+Qt::Key_I) );
   createSMESHAction( SMESHOp::OpImportMED, "IMPORT_MED", "", (Qt::CTRL+Qt::Key_M) );
   //createSMESHAction(  114, "NUM" );
   createSMESHAction( SMESHOp::OpImportSTL, "IMPORT_STL"  );
@@ -3802,8 +3803,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpCopyMesh,             "COPY_MESH",               "ICON_COPY_MESH" );
   createSMESHAction( SMESHOp::OpCompute,              "COMPUTE",                 "ICON_COMPUTE" );
   createSMESHAction( SMESHOp::OpPreCompute,           "PRECOMPUTE",              "ICON_PRECOMPUTE" );
-  createSMESHAction( SMESHOp::OpEvaluate,             "EVALUATE",                "ICON_COMPUTE" );
-  createSMESHAction( SMESHOp::OpMeshOrder,            "MESH_ORDER",              "ICON_COMPUTE" );
+  createSMESHAction( SMESHOp::OpEvaluate,             "EVALUATE",                "ICON_EVALUATE" );
+  createSMESHAction( SMESHOp::OpMeshOrder,            "MESH_ORDER",              "ICON_MESH_ORDER");
   createSMESHAction( SMESHOp::OpCreateGroup,          "CREATE_GROUP",            "ICON_CREATE_GROUP" );
   createSMESHAction( SMESHOp::OpCreateGeometryGroup,  "CREATE_GEO_GROUP",        "ICON_CREATE_GEO_GROUP" );
   createSMESHAction( SMESHOp::OpConstructGroup,       "CONSTRUCT_GROUP",         "ICON_CONSTRUCT_GROUP" );
@@ -3868,6 +3869,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpBiQuadraticTriangle,    "BIQUADRATIC_TRIANGLE",    "ICON_DLG_BIQUADRATIC_TRIANGLE" );
   createSMESHAction( SMESHOp::OpQuadraticQuadrangle,    "QUADRATIC_QUADRANGLE",    "ICON_DLG_QUADRATIC_QUADRANGLE" );
   createSMESHAction( SMESHOp::OpBiQuadraticQuadrangle,  "BIQUADRATIC_QUADRANGLE",  "ICON_DLG_BIQUADRATIC_QUADRANGLE" );
+  createSMESHAction( SMESHOp::OpQuadraticPolygon,       "QUADRATIC_POLYGON",       "ICON_DLG_QUADRATIC_POLYGON" );
   createSMESHAction( SMESHOp::OpQuadraticTetrahedron,   "QUADRATIC_TETRAHEDRON",   "ICON_DLG_QUADRATIC_TETRAHEDRON" );
   createSMESHAction( SMESHOp::OpQuadraticPyramid,       "QUADRATIC_PYRAMID",       "ICON_DLG_QUADRATIC_PYRAMID" );
   createSMESHAction( SMESHOp::OpQuadraticPentahedron,   "QUADRATIC_PENTAHEDRON",   "ICON_DLG_QUADRATIC_PENTAHEDRON" );
@@ -3898,6 +3900,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpUnionOfTriangles,       "UNION",           "ICON_UNIONTRI" );
   createSMESHAction( SMESHOp::OpCuttingOfQuadrangles,   "CUT",             "ICON_CUTQUAD" );
   createSMESHAction( SMESHOp::OpSplitVolumes,           "SPLIT_TO_TETRA",  "ICON_SPLIT_TO_TETRA" );
+  createSMESHAction( SMESHOp::OpSplitBiQuadratic,       "SPLIT_BIQUAD",    "ICON_SPLIT_BIQUAD" );
   createSMESHAction( SMESHOp::OpSmoothing,              "SMOOTH",          "ICON_DLG_SMOOTHING" );
   createSMESHAction( SMESHOp::OpExtrusion,              "EXTRUSION",       "ICON_EXTRUSION" );
   createSMESHAction( SMESHOp::OpExtrusionAlongAPath,    "EXTRUSION_ALONG", "ICON_EXTRUSION_ALONG" );
@@ -3908,6 +3911,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   createSMESHAction( SMESHOp::OpReset,               "RESET" );
   createSMESHAction( SMESHOp::OpScalarBarProperties, "SCALAR_BAR_PROP" );
+  createSMESHAction( SMESHOp::OpShowScalarBar,       "SHOW_SCALAR_BAR","",0, true  );
   createSMESHAction( SMESHOp::OpSaveDistribution,    "SAVE_DISTRIBUTION" );
   createSMESHAction( SMESHOp::OpShowDistribution,    "SHOW_DISTRIBUTION","",0, true );
 #ifndef DISABLE_PLOT2DVIEWER
@@ -3981,12 +3985,14 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   createMenu( separator(), fileId );
 
+  QMenu* nodeMenu = new QMenu(); QMenu* edgeMenu = new QMenu();
+  QMenu* faceMenu = new QMenu(); QMenu* volumeMenu = new QMenu();
   int importId = createMenu( tr( "MEN_IMPORT" ), fileId, -1, 10 ),
       exportId = createMenu( tr( "MEN_EXPORT" ), fileId, -1, 10 ),
-      nodeId   = createMenu( tr( "MEN_NODE_CTRL" ), ctrlId, -1, 10 ),
-      edgeId   = createMenu( tr( "MEN_EDGE_CTRL" ), ctrlId, -1, 10 ),
-      faceId   = createMenu( tr( "MEN_FACE_CTRL" ), ctrlId, -1, 10 ),
-      volumeId = createMenu( tr( "MEN_VOLUME_CTRL" ), ctrlId, -1, 10 ),
+      nodeId   = createMenu( tr( "MEN_NODE_CTRL" ), ctrlId, -1, 10, -1, nodeMenu ),
+      edgeId   = createMenu( tr( "MEN_EDGE_CTRL" ), ctrlId, -1, 10, -1, edgeMenu ),
+      faceId   = createMenu( tr( "MEN_FACE_CTRL" ), ctrlId, -1, 10, -1, faceMenu ),
+      volumeId = createMenu( tr( "MEN_VOLUME_CTRL" ), ctrlId, -1, 10, -1, volumeMenu ),
       addId    = createMenu( tr( "MEN_ADD" ),    modifyId, 402 ),
       removeId = createMenu( tr( "MEN_REMOVE" ), modifyId, 403 ),
     //renumId  = createMenu( tr( "MEN_RENUM" ),  modifyId, 404 ),
@@ -4048,11 +4054,11 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   createMenu( SMESHOp::OpFreeNode,              nodeId,   -1 );
   createMenu( SMESHOp::OpEqualNode,             nodeId,   -1 );
-  createMenu( SMESHOp::OpFreeEdge,              edgeId,   -1 );
   createMenu( SMESHOp::OpFreeBorder,            edgeId,   -1 );
   createMenu( SMESHOp::OpLength,                edgeId,   -1 );
   createMenu( SMESHOp::OpConnection,            edgeId,   -1 );
   createMenu( SMESHOp::OpEqualEdge,             edgeId,   -1 );
+  createMenu( SMESHOp::OpFreeEdge,              faceId,   -1 );
   createMenu( SMESHOp::OpFreeFace,              faceId,   -1 );
   createMenu( SMESHOp::OpBareBorderFace,        faceId,   -1 );
   createMenu( SMESHOp::OpOverConstrainedFace,   faceId,   -1 );
@@ -4097,6 +4103,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( SMESHOp::OpBiQuadraticTriangle ,   addId, -1 );
   createMenu( SMESHOp::OpQuadraticQuadrangle,    addId, -1 );
   createMenu( SMESHOp::OpBiQuadraticQuadrangle,  addId, -1 );
+  createMenu( SMESHOp::OpQuadraticPolygon,       addId, -1 );
   createMenu( SMESHOp::OpQuadraticTetrahedron,   addId, -1 );
   createMenu( SMESHOp::OpQuadraticPyramid,       addId, -1 );
   createMenu( SMESHOp::OpQuadraticPentahedron,   addId, -1 );
@@ -4131,6 +4138,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( SMESHOp::OpUnionOfTriangles,       modifyId, -1 );
   createMenu( SMESHOp::OpCuttingOfQuadrangles,   modifyId, -1 );
   createMenu( SMESHOp::OpSplitVolumes,           modifyId, -1 );
+  createMenu( SMESHOp::OpSplitBiQuadratic,       modifyId, -1 );
   createMenu( SMESHOp::OpSmoothing,              modifyId, -1 );
   createMenu( SMESHOp::OpExtrusion,              modifyId, -1 );
   createMenu( SMESHOp::OpExtrusionAlongAPath ,   modifyId, -1 );
@@ -4145,6 +4153,11 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( SMESHOp::OpPropertiesArea,   basicPropId, -1 );
   createMenu( SMESHOp::OpPropertiesVolume, basicPropId, -1 );
   createMenu( SMESHOp::OpUpdate,           viewId,      -1 );
+
+  connect( nodeMenu, SIGNAL( aboutToShow() ), this, SLOT( onUpdateControlActions() ) );
+  connect( edgeMenu, SIGNAL( aboutToShow() ), this, SLOT( onUpdateControlActions() ) );
+  connect( faceMenu, SIGNAL( aboutToShow() ), this, SLOT( onUpdateControlActions() ) );
+  connect( volumeMenu, SIGNAL( aboutToShow() ), this, SLOT( onUpdateControlActions() ) );
 
   // ----- create toolbars --------------
   int meshTb       = createTool( tr( "TB_MESH" ),      QString( "SMESHMeshToolbar" ) ),
@@ -4187,12 +4200,12 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( SMESHOp::OpFreeNode,  ctrl0dTb );
   createTool( SMESHOp::OpEqualNode, ctrl0dTb );
 
-  createTool( SMESHOp::OpFreeEdge,   ctrl1dTb );
   createTool( SMESHOp::OpFreeBorder, ctrl1dTb );
   createTool( SMESHOp::OpLength,     ctrl1dTb );
   createTool( SMESHOp::OpConnection, ctrl1dTb );
   createTool( SMESHOp::OpEqualEdge,  ctrl1dTb );
 
+  createTool( SMESHOp::OpFreeEdge,            ctrl2dTb );
   createTool( SMESHOp::OpFreeFace,            ctrl2dTb );
   createTool( SMESHOp::OpBareBorderFace,      ctrl2dTb );
   createTool( SMESHOp::OpOverConstrainedFace, ctrl2dTb );
@@ -4234,6 +4247,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( SMESHOp::OpBiQuadraticTriangle,    addNonElemTb );
   createTool( SMESHOp::OpQuadraticQuadrangle,    addNonElemTb );
   createTool( SMESHOp::OpBiQuadraticQuadrangle,  addNonElemTb );
+  createTool( SMESHOp::OpQuadraticPolygon,       addNonElemTb );
   createTool( SMESHOp::OpQuadraticTetrahedron,   addNonElemTb );
   createTool( SMESHOp::OpQuadraticPyramid,       addNonElemTb );
   createTool( SMESHOp::OpQuadraticPentahedron,   addNonElemTb );
@@ -4265,6 +4279,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( SMESHOp::OpUnionOfTriangles,       modifyTb );
   createTool( SMESHOp::OpCuttingOfQuadrangles,   modifyTb );
   createTool( SMESHOp::OpSplitVolumes,           modifyTb );
+  createTool( SMESHOp::OpSplitBiQuadratic,       modifyTb );
   createTool( SMESHOp::OpSmoothing,              modifyTb );
   createTool( SMESHOp::OpExtrusion,              modifyTb );
   createTool( SMESHOp::OpExtrusionAlongAPath,    modifyTb );
@@ -4314,37 +4329,38 @@ void SMESHGUI::initialize( CAM_Application* app )
     hasElems0d("({'Elem0d'} in elemTypes)"),
     hasEdges("({'Edge'} in elemTypes)"),
     hasFaces("({'Face'} in elemTypes)"),
-    hasVolumes("({'Volume'} in elemTypes)");
+    hasVolumes("({'Volume'} in elemTypes)"),
+    hasFacesOrVolumes("(({'Face'} in elemTypes) || ({'Volume'} in elemTypes)) ");
 
   createPopupItem( SMESHOp::OpFileInformation,      OB, mesh, "&& selcount=1 && isImported" );
-  createPopupItem( SMESHOp::OpCreateSubMesh,        OB, mesh, "&& isComputable");
-  createPopupItem( SMESHOp::OpEditMeshOrSubMesh,    OB, mesh, "&& isComputable");
-  createPopupItem( SMESHOp::OpEditMeshOrSubMesh,    OB, subMesh, "&& isComputable" );
+  createPopupItem( SMESHOp::OpCreateSubMesh,        OB, mesh, "&& hasGeomReference");
+  createPopupItem( SMESHOp::OpEditMeshOrSubMesh,    OB, mesh );
+  createPopupItem( SMESHOp::OpEditMeshOrSubMesh,    OB, subMesh, "&& hasGeomReference" );
   createPopupItem( SMESHOp::OpEditGroup,            OB, group );
   createPopupItem( SMESHOp::OpEditGeomGroupAsGroup, OB, group, "&& groupType != 'Group'" );
 
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( SMESHOp::OpCompute,                OB, mesh, "&& isComputable" );
-  createPopupItem( SMESHOp::OpPreCompute,             OB, mesh, "&& isComputable && isPreComputable" );
+  createPopupItem( SMESHOp::OpPreCompute,             OB, mesh, "&& isPreComputable" );
   createPopupItem( SMESHOp::OpEvaluate,               OB, mesh, "&& isComputable" );
-  createPopupItem( SMESHOp::OpMeshOrder,              OB, mesh, "&& isComputable" );
+  createPopupItem( SMESHOp::OpMeshOrder,              OB, mesh, "&& isComputable && hasGeomReference" );
   createPopupItem( SMESHOp::OpUpdate,                 OB, mesh_part );
   createPopupItem( SMESHOp::OpMeshInformation,        OB, mesh_part );
   createPopupItem( SMESHOp::OpFindElementByPoint,     OB, mesh_group );
   createPopupItem( SMESHOp::OpOverallMeshQuality,     OB, mesh_part );
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( SMESHOp::OpCreateGroup,            OB, mesh );
-  createPopupItem( SMESHOp::OpCreateGeometryGroup,    OB, mesh );
+  createPopupItem( SMESHOp::OpCreateGeometryGroup,    OB, mesh, "&& hasGeomReference" );
   createPopupItem( SMESHOp::OpConstructGroup,         OB, subMesh );
   popupMgr()->insert( separator(), -1, 0 );
-  createPopupItem( SMESHOp::OpEditHypothesis,         OB, hypo);
+  createPopupItem( SMESHOp::OpEditHypothesis,         OB, hypo, "&& isEditableHyp");
   createPopupItem( SMESHOp::OpUnassign,               OB, hyp_alg );     // REMOVE HYPOTHESIS / ALGORITHMS
-  popupMgr()->insert( separator(), -1, 0 );
-  createPopupItem( SMESHOp::OpClearMesh,              OB, mesh );
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( SMESHOp::OpConvertMeshToQuadratic, OB, mesh + " " + subMesh );  // convert to quadratic
   createPopupItem( SMESHOp::OpCreateBoundaryElements, OB, mesh + " " + group,      // create 2D mesh from 3D
                    "&& dim>=2");
+  popupMgr()->insert( separator(), -1, 0 );
+  createPopupItem( SMESHOp::OpClearMesh,              OB, mesh );
   popupMgr()->insert( separator(), -1, 0 );
 
   QString only_one_non_empty = QString( " && %1=1 && numberOfNodes>0" ).arg( dc );
@@ -4358,9 +4374,9 @@ void SMESHGUI::initialize( CAM_Application* app )
 #ifdef WITH_CGNS
   createPopupItem( SMESHOp::OpPopupExportCGNS, OB, mesh_group, multiple_non_empty, anId );
 #endif
-  createPopupItem( SMESHOp::OpPopupExportSAUV, OB, mesh_group, multiple_non_empty, anId );
-  createPopupItem( SMESHOp::OpPopupExportGMF,  OB, mesh_group, multiple_non_empty, anId );
-  createPopupItem( SMESHOp::OpPopupExportDAT,  OB, mesh_group, multiple_non_empty, anId );
+  createPopupItem( SMESHOp::OpPopupExportSAUV, OB, mesh_group, only_one_non_empty, anId );
+  createPopupItem( SMESHOp::OpPopupExportGMF,  OB, mesh_group, only_one_non_empty, anId );
+  createPopupItem( SMESHOp::OpPopupExportDAT,  OB, mesh_group, only_one_non_empty, anId );
   createPopupItem( SMESHOp::OpDelete,          OB, mesh_part + " " + hyp_alg );
   createPopupItem( SMESHOp::OpDeleteGroup,     OB, group );
   popupMgr()->insert( separator(), -1, 0 );
@@ -4525,12 +4541,8 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   aSubId = popupMgr()->insert( tr( "MEN_EDGE_CTRL" ), anId, -1 ); // EDGE CONTROLS
 
-  popupMgr()->insert( action( SMESHOp::OpFreeEdge ), aSubId, -1 );
-  popupMgr()->setRule( action( SMESHOp::OpFreeEdge ), aMeshInVtkHasEdges, QtxPopupMgr::VisibleRule );
-  popupMgr()->setRule( action( SMESHOp::OpFreeEdge ), "controlMode = 'eFreeEdges'", QtxPopupMgr::ToggleRule );
-
   popupMgr()->insert( action( SMESHOp::OpFreeBorder ), aSubId, -1 );
-  popupMgr()->setRule( action( SMESHOp::OpFreeBorder ), aMeshInVtkHasEdges, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( SMESHOp::OpFreeBorder ), aMeshInVTK + "&&" + hasEdges + "&&" + hasFacesOrVolumes, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( SMESHOp::OpFreeBorder ), "controlMode = 'eFreeBorders'", QtxPopupMgr::ToggleRule );
 
   popupMgr()->insert( action( SMESHOp::OpLength ), aSubId, -1 );
@@ -4545,6 +4557,10 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->setRule( action( SMESHOp::OpEqualEdge ), "controlMode = 'eCoincidentElems1D'", QtxPopupMgr::ToggleRule);
 
   aSubId = popupMgr()->insert( tr( "MEN_FACE_CTRL" ), anId, -1 ); // FACE CONTROLS
+
+  popupMgr()->insert( action( SMESHOp::OpFreeEdge ), aSubId, -1 );
+  popupMgr()->setRule( action( SMESHOp::OpFreeEdge ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( SMESHOp::OpFreeEdge ), "controlMode = 'eFreeEdges'", QtxPopupMgr::ToggleRule );
 
   popupMgr()->insert ( action( SMESHOp::OpFreeFace ), aSubId, -1 );
   popupMgr()->setRule( action( SMESHOp::OpFreeFace ), aMeshInVtkHasFaces /*aMeshInVtkHasVolumes*/,
@@ -4626,6 +4642,9 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   popupMgr()->insert( separator(), anId, -1 );
 
+  popupMgr()->insert( action( SMESHOp::OpShowScalarBar ), anId, -1 );
+  popupMgr()->setRule( action( SMESHOp::OpShowScalarBar ), aMeshInVTK + "&& controlMode <> 'eNone'", QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( SMESHOp::OpShowScalarBar ), aMeshInVTK + "&& controlMode <> 'eNone' && isScalarBarVisible", QtxPopupMgr::ToggleRule );
   popupMgr()->insert( action( SMESHOp::OpScalarBarProperties ), anId, -1 );
   popupMgr()->setRule( action( SMESHOp::OpScalarBarProperties ), aMeshInVTK + "&& controlMode <> 'eNone'", QtxPopupMgr::VisibleRule );
 
@@ -4638,7 +4657,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   popupMgr()->insert( action( SMESHOp::OpShowDistribution ), aSubId, -1 );
   popupMgr()->setRule( action( SMESHOp::OpShowDistribution ), aMeshInVTK + "&& isNumFunctor", QtxPopupMgr::VisibleRule );
-  popupMgr()->setRule( action( SMESHOp::OpShowDistribution ), aMeshInVTK + "&& isNumFunctor && isDistributionVisible", QtxPopupMgr::ToggleRule);
+  popupMgr()->setRule( action( SMESHOp::OpShowDistribution ), aMeshInVTK + "&& isNumFunctor && isScalarBarVisible && isDistributionVisible", QtxPopupMgr::ToggleRule);
 
 #ifndef DISABLE_PLOT2DVIEWER
   popupMgr()->insert( action( SMESHOp::OpPlotDistribution ), aSubId, -1 );
@@ -4721,32 +4740,28 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
 
   // import Python module that manages SMESH plugins (need to be here because SalomePyQt API uses active module)
   PyGILState_STATE gstate = PyGILState_Ensure();
-  PyObjWrapper pluginsmanager = PyImport_ImportModuleNoBlock((char*)"salome_pluginsmanager");
+  PyObject* pluginsmanager = PyImport_ImportModuleNoBlock((char*)"salome_pluginsmanager");
   if ( !pluginsmanager ) {
     PyErr_Print();
   }
   else {
-    PyObjWrapper result = PyObject_CallMethod( pluginsmanager, (char*)"initialize", (char*)"isss",1,"smesh",tr("MEN_MESH").toStdString().c_str(),tr("SMESH_PLUGINS_OTHER").toStdString().c_str());
+    PyObject* result = PyObject_CallMethod( pluginsmanager, (char*)"initialize", (char*)"isss",1,"smesh",tr("MEN_MESH").toUtf8().data(),tr("SMESH_PLUGINS_OTHER").toUtf8().data());
     if ( !result )
       PyErr_Print();
+    Py_XDECREF(result);
   }
   PyGILState_Release(gstate);
   // end of SMESH plugins loading
 
   // Reset actions accelerator keys
-  //action(SMESHOp::OpImportDAT)->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_B));
-  action(SMESHOp::OpImportUNV)->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_U));
-  action(SMESHOp::OpImportMED)->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_M));
-
   action(SMESHOp::OpDelete)->setEnabled(true); // Delete: Key_Delete
 
   //  0020210. Make SMESH_Gen update meshes at switching GEOM->SMESH
   GetSMESHGen()->SetCurrentStudy(SALOMEDS::Study::_nil());
-  if ( SalomeApp_Study* s = dynamic_cast<SalomeApp_Study*>( study ))
-    if ( _PTR(Study) aStudy = s->studyDS()) {
+  if ( SalomeApp_Study* s = dynamic_cast<SalomeApp_Study*>( study )) {
+    if ( _PTR(Study) aStudy = s->studyDS() )
       GetSMESHGen()->SetCurrentStudy( _CAST(Study,aStudy)->GetStudy() );
-      updateObjBrowser(); // objects can be removed
-    }
+  }
 
   // get all view currently opened in the study and connect their signals  to
   // the corresponding slots of the class.
@@ -4758,6 +4773,7 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
       connectView( wnd );
   }
 
+  Py_XDECREF(pluginsmanager);
   return res;
 }
 
@@ -4769,10 +4785,6 @@ bool SMESHGUI::deactivateModule( SUIT_Study* study )
   EmitSignalCloseAllDialogs();
 
   // Unset actions accelerator keys
-  //action(SMESHOp::OpImportDAT)->setShortcut(QKeySequence());
-  action(SMESHOp::OpImportUNV)->setShortcut(QKeySequence());
-  action(SMESHOp::OpImportMED)->setShortcut(QKeySequence());
-
   action(SMESHOp::OpDelete)->setEnabled(false); // Delete: Key_Delete
 
   return SalomeApp_Module::deactivateModule( study );
@@ -4829,7 +4841,7 @@ void SMESHGUI::contextMenuPopup( const QString& client, QMenu* menu, QString& ti
     _PTR(Study) study = appStudy->studyDS();
     _PTR(SObject) obj = study->FindObjectID( io->getEntry() );
     if ( obj ) {
-      QString aName = QString( QString::fromUtf8(obj->GetName().c_str()) );
+      QString aName = QString( SMESH::fromUtf8(obj->GetName()) );
       while ( aName.at( aName.length() - 1 ) == ' ' ) // Remove extraspaces in Name of Popup
           aName.remove( (aName.length() - 1), 1 );
       title = aName;
@@ -4846,7 +4858,9 @@ void SMESHGUI::windows( QMap<int, int>& aMap ) const
 {
   aMap.insert( SalomeApp_Application::WT_ObjectBrowser, Qt::LeftDockWidgetArea );
   aMap.insert( SalomeApp_Application::WT_NoteBook, Qt::LeftDockWidgetArea );
+#ifndef DISABLE_PYCONSOLE
   aMap.insert( SalomeApp_Application::WT_PyConsole, Qt::BottomDockWidgetArea );
+#endif
 }
 
 void SMESHGUI::viewManagers( QStringList& list ) const
@@ -4864,6 +4878,7 @@ void SMESHGUI::onViewManagerActivated( SUIT_ViewManager* mgr )
       SUIT_ViewWindow *sf = aViews[i];
       connectView( sf );
     }
+    EmitSignalActivatedViewManager();
   }
 }
 
@@ -4886,7 +4901,7 @@ void SMESHGUI::ProcessEvents( vtkObject* theObject,
                               void* theCallData )
 {
   if( SMESHGUI* aSMESHGUI = reinterpret_cast<SMESHGUI*>( theClientData ) ) {
-    if( theObject && theEvent == SMESH::DeleteActorEvent ) {
+    if( theObject && (int) theEvent == SMESH::DeleteActorEvent ) {
       if( SMESH_Actor* anActor = SMESH_Actor::SafeDownCast( theObject ) ) {
         SMESHGUI_ClippingPlaneInfoMap& aClippingPlaneInfoMap = aSMESHGUI->getClippingPlaneInfoMap();
         SMESHGUI_ClippingPlaneInfoMap::iterator anIter1 = aClippingPlaneInfoMap.begin();
@@ -4937,7 +4952,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( doubleNodesTol, "max", 1000000.0 );
   setPreferenceProperty( doubleNodesTol, "step", 0.0000001 );
 
-  int dispgroup = addPreference( tr( "PREF_DISPLAY_MODE" ), genTab );
+  int dispgroup = addPreference( tr( "PREF_DISPLAY_MODE_GROUP" ), genTab );
   setPreferenceProperty( dispgroup, "columns", 2 );
   int dispmode = addPreference( tr( "PREF_DISPLAY_MODE" ), dispgroup, LightApp_Preferences::Selector, "SMESH", "display_mode" );
   QStringList modes;
@@ -4953,7 +4968,7 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( dispmode, "strings", modes );
   setPreferenceProperty( dispmode, "indexes", indices );
 
-  int arcgroup = addPreference( tr( "QUADRATIC_REPRESENT_MODE" ), genTab );
+  int arcgroup = addPreference( tr( "QUADRATIC_REPRESENT_MODE_GROUP" ), genTab );
   setPreferenceProperty( arcgroup, "columns", 2 );
   int quadraticmode = addPreference( tr( "QUADRATIC_REPRESENT_MODE" ), arcgroup, LightApp_Preferences::Selector, "SMESH", "quadratic_mode" );
   QStringList quadraticModes;
@@ -5124,8 +5139,10 @@ void SMESHGUI::createPreferences()
 
   int size0d = addPreference(tr("PREF_SIZE_0D"), elemGroup,
                              LightApp_Preferences::IntSpin, "SMESH", "elem0d_size");
-  int ballSize = addPreference(tr("PREF_BALL_SIZE"), elemGroup,
-                             LightApp_Preferences::IntSpin, "SMESH", "ball_elem_size");
+  /* int ballSize = addPreference(tr("PREF_BALL_SIZE"), elemGroup,
+                             LightApp_Preferences::IntSpin, "SMESH", "ball_elem_size"); */
+  double ballDiameter = addPreference(tr("PREF_BALL_DIAMETER"), elemGroup,
+                             LightApp_Preferences::DblSpin, "SMESH", "ball_elem_diameter");
   double ballScale = addPreference(tr("PREF_BALL_SCALE"), elemGroup,
                              LightApp_Preferences::DblSpin, "SMESH", "ball_elem_scale");
   int elemW  = addPreference(tr("PREF_WIDTH"), elemGroup,
@@ -5138,8 +5155,12 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( size0d, "min", 1 );
   setPreferenceProperty( size0d, "max", 10 );
 
-  setPreferenceProperty( ballSize, "min", 1 );
-  setPreferenceProperty( ballSize, "max", 10 );
+ // setPreferenceProperty( ballSize, "min", 1 );
+ // setPreferenceProperty( ballSize, "max", 10 );
+
+  setPreferenceProperty( ballDiameter, "min", 1e-7 );
+  setPreferenceProperty( ballDiameter, "max", 1e9 );
+  setPreferenceProperty( ballDiameter, "step", 0.1 );
 
   setPreferenceProperty( ballScale, "min", 1e-2 );
   setPreferenceProperty( ballScale, "max", 1e7 );
@@ -5284,79 +5305,92 @@ void SMESHGUI::createPreferences()
 
 void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
 {
-  if( sect=="SMESH" ) {
-    float sbX1,sbY1,sbW,sbH;
+  if ( sect=="SMESH" ) {
+    float sbX1 = 0.01, sbY1 = 0.01, sbW = 0.08, sbH = 0.08;
     float aTol = 1.00000009999999;
     std::string aWarning;
     SUIT_ResourceMgr* aResourceMgr = SMESH::GetResourceMgr(this);
-    if( name=="selection_object_color" || name=="selection_element_color" ||
-        name=="highlight_color" ||
-        name=="selection_precision_node" || name=="selection_precision_element" ||
-        name=="selection_precision_object")
+
+    if ( name== "selection_object_color" ||
+         name=="selection_element_color" ||
+         name==        "highlight_color" ||
+         name=="selection_precision_node"    ||
+         name=="selection_precision_element" ||
+         name=="selection_precision_object"   )
+    {
       SMESH::UpdateSelectionProp( this );
-    else if (name == QString("scalar_bar_vertical_x") || name == QString("scalar_bar_vertical_width")){
-      sbX1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_x", sbX1);
-      sbW = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_width", sbW);
-      if(sbX1+sbW > aTol){
+    }
+    else if (name == "scalar_bar_vertical_x" || name == "scalar_bar_vertical_width")
+    {
+      sbX1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_x",     sbX1);
+      sbW  = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_width", sbW);
+      if ( sbX1+sbW > aTol ) {
         aWarning = "Origin and Size Vertical: X+Width > 1\n";
-        sbX1=0.01;
-        sbW=0.08;
-        aResourceMgr->setValue("SMESH", "scalar_bar_vertical_x", sbX1);
+        sbX1 = 0.01;
+        sbW  = 0.08;
+        aResourceMgr->setValue("SMESH", "scalar_bar_vertical_x",     sbX1);
         aResourceMgr->setValue("SMESH", "scalar_bar_vertical_width", sbW);
       }
     }
-    else if(name == QString("scalar_bar_vertical_y") || name == QString("scalar_bar_vertical_height")){
-      sbY1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_y", sbY1);
-      sbH = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_height",sbH);
-      if(sbY1+sbH > aTol){
+    else if (name == "scalar_bar_vertical_y" || name == "scalar_bar_vertical_height" )
+    {
+      sbY1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_y",     sbY1);
+      sbH  = aResourceMgr->doubleValue("SMESH", "scalar_bar_vertical_height",sbH);
+      if ( sbY1 + sbH > aTol ) {
         aWarning = "Origin and Size Vertical: Y+Height > 1\n";
-        aResourceMgr->setValue("SMESH", "scalar_bar_vertical_y", sbY1);
+        aResourceMgr->setValue("SMESH", "scalar_bar_vertical_y",     sbY1);
         aResourceMgr->setValue("SMESH", "scalar_bar_vertical_height",sbH);
       }
     }
-    else if(name ==  QString("scalar_bar_horizontal_x") || name ==  QString("scalar_bar_horizontal_width")){
-      sbX1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_x", sbX1);
-      sbW = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_width", sbW);
-      if(sbX1+sbW > aTol){
+    else if (name == "scalar_bar_horizontal_x" || name ==  "scalar_bar_horizontal_width")
+    {
+      sbX1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_x",     sbX1);
+      sbW  = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_width", sbW);
+      if ( sbX1 + sbW > aTol ) {
         aWarning = "Origin and Size Horizontal: X+Width > 1\n";
         sbX1=0.1;
-        sbW=0.08;
+        sbW =0.08;
         aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_x", sbX1);
         aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_width", sbW);
       }
     }
-    else if(name ==  QString("scalar_bar_horizontal_y") || name ==  QString("scalar_bar_horizontal_height")){
-      sbY1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_y", sbY1);
-      sbH = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_height",sbH);
-      if(sbY1+sbH > aTol){
+    else if (name == "scalar_bar_horizontal_y" || name ==  "scalar_bar_horizontal_height")
+    {
+      sbY1 = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_y",     sbY1);
+      sbH  = aResourceMgr->doubleValue("SMESH", "scalar_bar_horizontal_height",sbH);
+      if ( sbY1 + sbH > aTol ) {
         aWarning = "Origin and Size Horizontal: Y+Height > 1\n";
         sbY1=0.01;
-        sbH=0.08;
+        sbH =0.08;
         aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_y", sbY1);
         aResourceMgr->setValue("SMESH", "scalar_bar_horizontal_height",sbH);
       }
     }
-    else if ( name == "segmentation" ) {
+    else if ( name == "segmentation" )
+    {
       int nbSeg = aResourceMgr->integerValue( "SMESH", "segmentation", 10 );
       myComponentSMESH->SetBoundaryBoxSegmentation( nbSeg );
     }
-    else if ( name == "nb_segments_per_edge" ) {
+    else if ( name == "nb_segments_per_edge" )
+    {
       int nbSeg = aResourceMgr->integerValue( "SMESH", "nb_segments_per_edge", 15 );
       myComponentSMESH->SetDefaultNbSegments( nbSeg );
     }
-    else if ( name == "historical_python_dump" ||
-              name == "forget_mesh_on_hyp_modif") {
+    else if ( name == "historical_python_dump" || name == "forget_mesh_on_hyp_modif" || name == "default_grp_color" )
+    {
       QString val = aResourceMgr->stringValue( "SMESH", name );
       myComponentSMESH->SetOption( name.toLatin1().constData(), val.toLatin1().constData() );
     }
-    else if ( name == QString( "numbering_node_color" ) || name == QString( "numbering_node_font" ) ) {
-      SMESH::UpdateFontProp( this );    
+    else if ( name == "numbering_node_color" || name == "numbering_node_font" )
+    {
+      SMESH::UpdateFontProp( this );
     }
-    else if ( name == QString( "numbering_elem_color" ) || name == QString( "numbering_elem_font" ) ) {
+    else if ( name == "numbering_elem_color" || name == "numbering_elem_font" )
+    {
       SMESH::UpdateFontProp( this );
     }
 
-    if(aWarning.size() != 0){
+    if ( aWarning.size() != 0 ) {
       aWarning += "The default values are applied instead.";
       SUIT_MessageBox::warning(SMESHGUI::desktop(),
                                QObject::tr("SMESH_ERR_SCALARBAR_PARAMS"),
@@ -5428,6 +5462,9 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
   // to do : create operation here
   switch( id )
   {
+    case SMESHOp::OpSplitBiQuadratic:
+      op = new SMESHGUI_SplitBiQuadOp();
+    break;
     case SMESHOp::OpConvertMeshToQuadratic:
       op = new SMESHGUI_ConvToQuadOp();
     break;
@@ -5816,7 +5853,8 @@ void SMESHGUI::storeVisualParameters (int savePoint)
                   sizeStr << "elem0d";
                   sizeStr << QString::number((int)aSmeshActor->Get0DSize());
                   sizeStr << "ball";
-                  sizeStr << QString::number((int)aSmeshActor->GetBallSize());
+                  //sizeStr << QString::number((int)aSmeshActor->GetBallSize());
+                  sizeStr << QString::number((double)aSmeshActor->GetBallSize());
                   sizeStr << QString::number((double)aSmeshActor->GetBallScale());
                   sizeStr << "shrink";
                   sizeStr << QString::number(aSmeshActor->GetShrinkFactor());
@@ -6401,7 +6439,8 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
               int lineWidth = -1;
               int outlineWidth = -1;
               int elem0dSize = -1;
-              int ballSize = -1;
+              //int ballSize = -1;
+              double ballDiameter = -1.0;
               double ballScale = -1.0;
               double shrinkSize = -1;
               double orientationSize = -1;
@@ -6434,10 +6473,12 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
                   // - size - is a integer value specifying size
                   // - scale - is a double value specifying scale factor
                   if ( i+1 >= sizes.count() ) break;                       // format error
-                  int v1 = sizes[i+1].toInt( &bOk ); if ( !bOk ) break;    // format error
+                  //int v1 = sizes[i+1].toInt( &bOk ); if ( !bOk ) break;    // format error
+                  double v1 = sizes[i+1].toInt( &bOk ); if ( !bOk ) break;    // format error
                   if ( i+2 >= sizes.count() ) break;                       // format error
                   double v2 = sizes[i+2].toDouble( &bOk ); if ( !bOk ) break; // format error
-                  ballSize = v1;
+                  //ballSize = v1;
+                  ballDiameter = v1;
                   ballScale = v2;
                   i += 2;
                 }
@@ -6473,8 +6514,11 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
               if ( elem0dSize > 0 )
                 aSmeshActor->Set0DSize( elem0dSize );
               // ball size
-              if ( ballSize > 0 )
-                aSmeshActor->SetBallSize( ballSize );
+              /*if ( ballSize > 0 )
+                aSmeshActor->SetBallSize( ballSize );*/
+              // ball diameter
+              if ( ballDiameter > 0 )
+                aSmeshActor->SetBallSize( ballDiameter );
               // ball scale
               if ( ballScale > 0.0 )
                 aSmeshActor->SetBallScale( ballScale );
@@ -6781,6 +6825,47 @@ void SMESHGUI::onHypothesisEdit( int result )
   updateObjBrowser( true );
 }
 
+/*!
+  \brief Actions after choosing menu of control modes
+  Updates control mode actions according to current selection
+*/
+void SMESHGUI::onUpdateControlActions()
+{
+  LightApp_SelectionMgr* aSel = SMESHGUI::selectionMgr();
+  SALOME_ListIO selected;
+  if ( aSel )
+    aSel->selectedObjects( selected );
+
+  SMESH_Actor::eControl aControl = SMESH_Actor::eNone;
+  if ( selected.Extent() ) {
+    if ( selected.First()->hasEntry() ) {
+      aControl = SMESH::FindActorByEntry( selected.First()->getEntry() )->GetControlMode();
+      SALOME_ListIteratorOfListIO it(selected);
+      for ( ; it.More(); it.Next() ) {
+        Handle(SALOME_InteractiveObject) anIO = it.Value();
+        if ( anIO->hasEntry() ) {
+          if ( SMESH_Actor* anActor = SMESH::FindActorByEntry( anIO->getEntry() ) ) {
+            if ( aControl != anActor->GetControlMode() ) {
+              aControl = SMESH_Actor::eNone;
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  int anAction = ActionToControl( aControl, true );
+  if ( anAction)
+    action( anAction )->setChecked( true );
+  else {
+    QMenu* send = (QMenu*)sender();
+    QList<QAction*> actions = send->actions();
+    for ( int i = 0; i < actions.size(); i++ )
+      actions[i]->setChecked( false );
+  }
+}
+
 
 /*!
   \brief Signal handler closing(SUIT_ViewWindow*) of a view
@@ -6791,6 +6876,7 @@ void SMESHGUI::onViewClosed( SUIT_ViewWindow* pview ) {
   //Crear all Plot2d Viewers if need.
   SMESH::ClearPlot2Viewers(pview);
 #endif
+  EmitSignalCloseView();
 }
 
 void SMESHGUI::message( const QString& msg )
@@ -6809,7 +6895,7 @@ void SMESHGUI::message( const QString& msg )
       _PTR(SObject) obj = study->FindObjectID( entry.toLatin1().constData() );
       QString name;
       if ( obj )
-        name = QString::fromUtf8(obj->GetName().c_str());
+        name = SMESH::fromUtf8(obj->GetName());
       if ( name.isEmpty() )
         return;
       

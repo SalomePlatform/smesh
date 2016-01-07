@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -265,31 +265,29 @@ static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
   SALOMEDS::StudyBuilder_var     aStudyBuilder = theStudy->NewBuilder();
   SALOMEDS::UseCaseBuilder_wrap useCaseBuilder = theStudy->GetUseCaseBuilder();
   SALOMEDS::SObject_wrap objAfter;
+  bool isNewSO = false;
   if ( SO->_is_nil() )
   {
     if ( theTag == 0 ) {
       SO = aStudyBuilder->NewObject( theFatherObject );
+      isNewSO = true;
     }
     else if ( !theFatherObject->FindSubObject( theTag, SO.inout() ))
     {
       SO = aStudyBuilder->NewObjectToTag( theFatherObject, theTag );
+      isNewSO = true;
 
       // define the next tag after given one in the data tree to insert SObject
-      std::string anEntry;
-      int last2Pnt_pos = -1;
-      int tagAfter = -1;
-      CORBA::String_var entry;
       SALOMEDS::SObject_wrap curObj;
-      SALOMEDS::UseCaseIterator_wrap anUseCaseIter = useCaseBuilder->GetUseCaseIterator(theFatherObject);
-      for ( ; anUseCaseIter->More(); anUseCaseIter->Next() ) {
-        curObj = anUseCaseIter->Value();
-        entry = curObj->GetID();
-        anEntry = entry.in();
-        last2Pnt_pos = anEntry.rfind( ":" );
-        tagAfter = atoi( anEntry.substr( last2Pnt_pos+1 ).c_str() );
-        if ( tagAfter > theTag  ) {
-          objAfter = curObj;
-          break;
+      if ( theFatherObject->GetLastChildTag() > theTag )
+      {
+        SALOMEDS::UseCaseIterator_wrap anUseCaseIter = useCaseBuilder->GetUseCaseIterator(theFatherObject);
+        for ( ; anUseCaseIter->More(); anUseCaseIter->Next() ) {
+          curObj = anUseCaseIter->Value();
+          if ( curObj->Tag() > theTag  ) {
+            objAfter = curObj;
+            break;
+          }
         }
       }
     }
@@ -319,18 +317,19 @@ static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
 
   // add object to the use case tree
   // (to support tree representation customization and drag-n-drop)
-  if ( !CORBA::is_nil( objAfter ) ) {
-    useCaseBuilder->InsertBefore( SO, objAfter );    // insert at given tag
-  } else if ( !useCaseBuilder->IsUseCaseNode( SO ) ) {
-    useCaseBuilder->AppendTo( theFatherObject, SO ); // append to the end of list
+  if ( isNewSO )
+  {
+    if ( !CORBA::is_nil( objAfter ) )
+      useCaseBuilder->InsertBefore( SO, objAfter );    // insert at given tag
+    else if ( !useCaseBuilder->IsUseCaseNode( SO ) )
+      useCaseBuilder->AppendTo( theFatherObject, SO ); // append to the end of list
   }
-
   return SO._retn();
 }
 
 //=======================================================================
 //function : setName
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMESH_Gen_i::SetName(SALOMEDS::SObject_ptr theSObject,
@@ -420,14 +419,21 @@ static void addReference (SALOMEDS::Study_ptr   theStudy,
         theTag = tag;
     }
     if ( !theSObject->FindSubObject( theTag, aReferenceSO.inout() ))
-    {
       aReferenceSO = aStudyBuilder->NewObjectToTag( theSObject, theTag );
-      // add reference to the use case tree
-      // (to support tree representation customization and drag-n-drop)
-      SALOMEDS::UseCaseBuilder_wrap useCaseBuilder = theStudy->GetUseCaseBuilder();
-      useCaseBuilder->AppendTo( aReferenceSO->GetFather(), aReferenceSO );
-    }
+
     aStudyBuilder->Addreference( aReferenceSO, aToObjSO );
+
+    // add reference to the use case tree
+    // (to support tree representation customization and drag-n-drop)
+    SALOMEDS::UseCaseBuilder_wrap  useCaseBuilder = theStudy->GetUseCaseBuilder();
+    SALOMEDS::UseCaseIterator_wrap    useCaseIter = useCaseBuilder->GetUseCaseIterator(theSObject);
+    for ( ; useCaseIter->More(); useCaseIter->Next() )
+    {
+      SALOMEDS::SObject_wrap curSO = useCaseIter->Value();
+      if ( curSO->Tag() == theTag )
+        return;
+    }
+    useCaseBuilder->AppendTo( theSObject, aReferenceSO );
   }
 }
 
@@ -534,32 +540,6 @@ SALOMEDS::SComponent_ptr SMESH_Gen_i::PublishComponent(SALOMEDS::Study_ptr theSt
   return father._retn();
 }
 
-//=============================================================================
-/*!
- *  findMaxChildTag [ static internal ]
- *
- *  Finds maximum child tag for the given object
- */
-//=============================================================================
-
-static long findMaxChildTag( SALOMEDS::SObject_ptr theSObject )
-{
-  long aTag = 0;
-  if ( !theSObject->_is_nil() ) {
-    SALOMEDS::Study_var aStudy = theSObject->GetStudy();
-    if ( !aStudy->_is_nil() ) {
-      SALOMEDS::ChildIterator_wrap anIter = aStudy->NewChildIterator( theSObject );
-      for ( ; anIter->More(); anIter->Next() ) {
-        SALOMEDS::SObject_wrap anSO = anIter->Value();
-        long nTag = anSO->Tag();
-        if ( nTag > aTag )
-          aTag = nTag;
-      }
-    }
-  }
-  return aTag;
-}
-
 //=======================================================================
 //function : PublishMesh
 //purpose  : 
@@ -584,7 +564,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishMesh (SALOMEDS::Study_ptr   theStudy,
       return aMeshSO._retn();
 
     // Find correct free tag
-    long aTag = findMaxChildTag( father.in() );
+    long aTag = father->GetLastChildTag();
     if ( aTag <= GetAlgorithmsRootTag() )
       aTag = GetAlgorithmsRootTag() + 1;
     else
@@ -605,7 +585,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishMesh (SALOMEDS::Study_ptr   theStudy,
     // Publish global hypotheses
 
     SMESH::ListOfHypothesis_var hypList = theMesh->GetHypothesisList( aShapeObject );
-    for ( int i = 0; i < hypList->length(); i++ )
+    for ( CORBA::ULong i = 0; i < hypList->length(); i++ )
     {
       SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( hypList[ i ]);
       SALOMEDS::SObject_wrap so = PublishHypothesis( theStudy, aHyp );
@@ -730,7 +710,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishSubMesh (SALOMEDS::Study_ptr      theS
   // Publish hypothesis
 
   SMESH::ListOfHypothesis_var hypList = theMesh->GetHypothesisList( theShapeObject );
-  for ( int i = 0; i < hypList->length(); i++ ) {
+  for ( CORBA::ULong i = 0; i < hypList->length(); i++ ) {
     SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( hypList[ i ]);
     SALOMEDS::SObject_wrap so = PublishHypothesis( theStudy, aHyp );
     AddHypothesisToShape( theStudy, theMesh, theShapeObject, aHyp );
@@ -762,7 +742,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishGroup (SALOMEDS::Study_ptr    theStudy
       if ( aMeshSO->_is_nil())
         return SALOMEDS::SObject::_nil();
     }
-    int aType = (int)theGroup->GetType();
+    size_t aType = (int)theGroup->GetType();
     const char* aRootNames[] = {
       "Compound Groups", "Groups of Nodes", "Groups of Edges",
       "Groups of Faces", "Groups of Volumes", "Groups of 0D Elements",
@@ -791,9 +771,14 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishGroup (SALOMEDS::Study_ptr    theStudy
       }
       else if ( SMESH::DownCast< SMESH_Group_i* > ( theGroup ))
       {
-        SMESH::array_of_ElementType_var allElemTypes = theMesh->GetTypes();
-        for ( size_t i =0; i < allElemTypes->length() && isEmpty; ++i )
-          isEmpty = ( allElemTypes[i] != theGroup->GetType() );
+        if ( theGroup->GetType() == SMESH::NODE )
+          isEmpty = ( theMesh->NbNodes() == 0 );
+        else
+        {
+          SMESH::array_of_ElementType_var allElemTypes = theMesh->GetTypes();
+          for ( size_t i =0; i < allElemTypes->length() && isEmpty; ++i )
+            isEmpty = ( allElemTypes[i] != theGroup->GetType() );
+        }
       }
       aGroupSO = publish (theStudy, theGroup, aRootSO, 0, pm[isEmpty].c_str() );
     }
@@ -971,7 +956,7 @@ bool SMESH_Gen_i::RemoveHypothesisFromShape(SALOMEDS::Study_ptr         theStudy
 
   CORBA::String_var hypEntry = aHypSO->GetID();
 
-  // Find a mesh or submesh refering to theShape
+  // Find a mesh or sub-mesh referring to theShape
   SALOMEDS::SObject_wrap aMeshOrSubMesh =
     GetMeshOrSubmeshByShape( theStudy, theMesh, theShape );
   if ( aMeshOrSubMesh->_is_nil() )

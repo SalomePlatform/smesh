@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -71,8 +71,7 @@ using namespace std;
 #ifdef _DEBUG_
 #define DBGOUT(msg) //cout << msg << endl;
 #define SHOWYXZ(msg, xyz)                                               \
-  // { gp_Pnt p (xyz);                                                     \
-  //   cout << msg << " ("<< p.X() << "; " <<p.Y() << "; " <<p.Z() << ") " <<endl; }
+  //{ gp_Pnt p (xyz); cout << msg << " ("<< p.X() << "; " <<p.Y() << "; " <<p.Z() << ") " <<endl; }
 #else
 #define DBGOUT(msg)
 #define SHOWYXZ(msg, xyz)
@@ -408,8 +407,8 @@ namespace {
       if ( nbQuads > 0 )
         toRemove = helper->IsStructured( faceSm );
       else
-        toRemove = quadAlgo->CheckNbEdges( *helper->GetMesh(),
-                                           faceSm->GetSubShape() );
+        toRemove = ( quadAlgo->CheckNbEdges( *helper->GetMesh(),
+                                             faceSm->GetSubShape() ) != NULL );
       nbRemoved += toRemove;
       if ( toRemove )
         smIt = notQuadSubMesh.erase( smIt );
@@ -905,7 +904,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
       return error( err );
     }
   }
-  return true;
+  return error( COMPERR_OK );
 }
 
 //================================================================================
@@ -2549,7 +2548,7 @@ namespace // utils used by StdMeshers_Prism_3D::IsApplicable()
       for ( iE = 0; iE < *nbE; ++e, ++iE )
         if ( SMESH_Algo::isDegenerated( *e ))
         {
-          ee.erase( e );
+          e = --ee.erase( e );
           --(*nbE);
           --iE;
         }
@@ -3476,10 +3475,8 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
     }
   }
 
-// #define SHOWYXZ(msg, xyz) {                     \
-//     gp_Pnt p (xyz);                                                     \
-//     cout << msg << " ("<< p.X() << "; " <<p.Y() << "; " <<p.Z() << ") " <<endl; \
-//   }
+// #define SHOWYXZ(msg, xyz) { gp_Pnt p(xyz); cout << msg << " ("<< p.X() << "; " <<p.Y() << "; " <<p.Z() << ") " <<endl; }
+
 //   double _u[]={ 0.1, 0.1, 0.9, 0.9 };
 //   double _v[]={ 0.1, 0.9, 0.1, 0.9 };
 //   for ( int z = 0; z < 2; ++z )

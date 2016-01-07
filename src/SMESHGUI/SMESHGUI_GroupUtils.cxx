@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -42,7 +42,7 @@ namespace SMESH
     SMESH::SMESH_Group_var aGroup;
     try {
       if ( !theMesh->_is_nil() )
-        aGroup = theMesh->CreateGroup( theType, theGroupName.toUtf8().data() );
+        aGroup = theMesh->CreateGroup( theType, SMESH::toUtf8(theGroupName) );
     }
     catch( const SALOME::SALOME_Exception& S_ex ) {
       SalomeApp_Tools::QtCatchCorbaException( S_ex );

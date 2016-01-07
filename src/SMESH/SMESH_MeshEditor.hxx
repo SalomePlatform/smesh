@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -70,24 +70,52 @@ public:
 
   const SMESH_SequenceOfElemPtr& GetLastCreatedNodes() const { return myLastCreatedNodes; }
   const SMESH_SequenceOfElemPtr& GetLastCreatedElems() const { return myLastCreatedElems; }
-  void                           CrearLastCreated();
+  void                           ClearLastCreated();
   SMESH_ComputeErrorPtr &        GetError() { return myError; }
+
+  // --------------------------------------------------------------------------------
+  struct ElemFeatures //!< Features of element to create
+  {
+    SMDSAbs_ElementType myType;
+    bool                myIsPoly, myIsQuad;
+    int                 myID;
+    double              myBallDiameter;
+    std::vector<int>    myPolyhedQuantities;
+
+    SMESH_EXPORT ElemFeatures( SMDSAbs_ElementType type=SMDSAbs_All, bool isPoly=false, bool isQuad=false )
+      :myType( type ), myIsPoly(isPoly), myIsQuad(isQuad), myID(-1), myBallDiameter(0) {}
+
+    SMESH_EXPORT ElemFeatures& Init( SMDSAbs_ElementType type, bool isPoly=false, bool isQuad=false )
+    { myType = type; myIsPoly = isPoly; myIsQuad = isQuad; return *this; }
+
+    SMESH_EXPORT ElemFeatures& Init( const SMDS_MeshElement* elem, bool basicOnly=true );
+
+    SMESH_EXPORT ElemFeatures& Init( double diameter )
+    { myType = SMDSAbs_Ball; myBallDiameter = diameter; return *this; }
+
+    SMESH_EXPORT ElemFeatures& Init( vector<int>& quanities, bool isQuad=false )
+    { myType = SMDSAbs_Volume; myIsPoly = 1; myIsQuad = isQuad;
+      myPolyhedQuantities.swap( quanities ); return *this; }
+
+    SMESH_EXPORT ElemFeatures& Init( const vector<int>& quanities, bool isQuad=false )
+    { myType = SMDSAbs_Volume; myIsPoly = 1; myIsQuad = isQuad;
+      myPolyhedQuantities = quanities; return *this; }
+
+    SMESH_EXPORT ElemFeatures& SetPoly(bool isPoly) { myIsPoly = isPoly; return *this; }
+    SMESH_EXPORT ElemFeatures& SetQuad(bool isQuad) { myIsQuad = isQuad; return *this; }
+    SMESH_EXPORT ElemFeatures& SetID  (int ID)      { myID = ID; return *this; }
+  };
 
   /*!
    * \brief Add element
    */
   SMDS_MeshElement* AddElement(const std::vector<const SMDS_MeshNode*> & nodes,
-                               const SMDSAbs_ElementType                 type,
-                               const bool                                isPoly,
-                               const int                                 ID = -1,
-                               const double                              ballDiameter=0.);
+                               const ElemFeatures&                       features);
   /*!
    * \brief Add element
    */
-  SMDS_MeshElement* AddElement(const std::vector<int>  & nodeIDs,
-                               const SMDSAbs_ElementType type,
-                               const bool                isPoly,
-                               const int                 ID = -1);
+  SMDS_MeshElement* AddElement(const std::vector<int> & nodeIDs,
+                               const ElemFeatures&      features);
 
   int Remove (const std::list< int >& theElemIDs, const bool isNodes);
   // Remove a node or an element.
@@ -193,7 +221,7 @@ public:
 
   /*!
    * \brief For hexahedra that will be split into prisms, finds facets to
-   *        split into triangles 
+   *        split into triangles
    *  \param [in,out] theHexas - the hexahedra
    *  \param [in]     theFacetNormal - facet normal
    *  \param [out]    theFacets - the hexahedra and found facet IDs
@@ -202,6 +230,16 @@ public:
                              const gp_Ax1&     theFacetNormal,
                              TFacetOfElem &    theFacets);
 
+  /*!
+   * \brief Split bi-quadratic elements into linear ones without creation of additional nodes
+   *   - bi-quadratic triangle will be split into 3 linear quadrangles;
+   *   - bi-quadratic quadrangle will be split into 4 linear quadrangles;
+   *   - tri-quadratic hexahedron will be split into 8 linear hexahedra;
+   *   Quadratic elements of lower dimension  adjacent to the split bi-quadratic element
+   *   will be split in order to keep the mesh conformal.
+   *  \param elems - elements to split
+   */
+  void SplitBiQuadraticIntoLinear(TIDSortedElemSet& theElems);
 
   enum SmoothMethod { LAPLACIAN = 0, CENTROIDAL };
 
@@ -229,7 +267,7 @@ public:
   typedef std::map<const SMDS_MeshElement*, TVecOfNnlmiMap, TElemSort >    TElemOfVecOfNnlmiMap;
   typedef std::auto_ptr< std::list<int> > PGroupIDs;
 
-  PGroupIDs RotationSweep (TIDSortedElemSet & theElements,
+  PGroupIDs RotationSweep (TIDSortedElemSet   theElements[2],
                            const gp_Ax1&      theAxis,
                            const double       theAngle,
                            const int          theNbSteps,
@@ -240,33 +278,98 @@ public:
   // by theAngle by theNbSteps
 
   /*!
-   * Auxilary flag for advanced extrusion.
+   * Flags of extrusion.
    * BOUNDARY: create or not boundary for result of extrusion
    * SEW:      try to use existing nodes or create new nodes in any case
+   * GROUPS:   to create groups
+   * BY_AVG_NORMAL: step size is measured along average normal to elements,
+   *                else step size is measured along average normal of any element
+   * USE_INPUT_ELEMS_ONLY: to use only input elements to compute extrusion direction
+   *                       for ExtrusionByNormal()
    */
   enum ExtrusionFlags {
     EXTRUSION_FLAG_BOUNDARY = 0x01,
-    EXTRUSION_FLAG_SEW = 0x02
-  };
-  
-  /*!
-   * special structure for control of extrusion functionality
-   */
-  struct ExtrusParam {
-    gp_Dir myDir; // direction of extrusion
-    Handle(TColStd_HSequenceOfReal) mySteps; // magnitudes for each step
-    SMESH_SequenceOfNode myNodes; // nodes for using in sewing
+    EXTRUSION_FLAG_SEW = 0x02,
+    EXTRUSION_FLAG_GROUPS = 0x04,
+    EXTRUSION_FLAG_BY_AVG_NORMAL = 0x08,
+    EXTRUSION_FLAG_USE_INPUT_ELEMS_ONLY = 0x10
   };
 
   /*!
-   * Create new node in the mesh with given coordinates
-   * (auxiliary for advanced extrusion)
+   * Generator of nodes for extrusion functionality
    */
-  const SMDS_MeshNode* CreateNode(const double x,
-                                  const double y,
-                                  const double z,
-                                  const double tolnode,
-                                  SMESH_SequenceOfNode& aNodes);
+  class SMESH_EXPORT ExtrusParam {
+    gp_Dir                          myDir;   // direction of extrusion
+    Handle(TColStd_HSequenceOfReal) mySteps; // magnitudes for each step
+    SMESH_SequenceOfNode            myNodes; // nodes for using in sewing
+    int                             myFlags; // see ExtrusionFlags
+    double                          myTolerance; // tolerance for sewing nodes
+    const TIDSortedElemSet*         myElemsToUse; // elements to use for extrusion by normal
+
+    int (ExtrusParam::*myMakeNodesFun)(SMESHDS_Mesh*                     mesh,
+                                       const SMDS_MeshNode*              srcNode,
+                                       std::list<const SMDS_MeshNode*> & newNodes,
+                                       const bool                        makeMediumNodes);
+
+  public:
+    ExtrusParam( const gp_Vec&  theStep,
+                 const int      theNbSteps,
+                 const int      theFlags = 0,
+                 const double   theTolerance = 1e-6);
+    ExtrusParam( const gp_Dir&                   theDir,
+                 Handle(TColStd_HSequenceOfReal) theSteps,
+                 const int                       theFlags = 0,
+                 const double                    theTolerance = 1e-6);
+    ExtrusParam( const double theStep,
+                 const int    theNbSteps,
+                 const int    theFlags,
+                 const int    theDim); // for extrusion by normal
+
+    SMESH_SequenceOfNode& ChangeNodes() { return myNodes; }
+    int& Flags()                   { return myFlags; }
+    bool ToMakeBoundary()    const { return myFlags & EXTRUSION_FLAG_BOUNDARY; }
+    bool ToMakeGroups()      const { return myFlags & EXTRUSION_FLAG_GROUPS; }
+    bool ToUseInpElemsOnly() const { return myFlags & EXTRUSION_FLAG_USE_INPUT_ELEMS_ONLY; }
+    int  NbSteps()           const { return mySteps->Length(); }
+
+    // stores elements to use for extrusion by normal, depending on
+    // state of EXTRUSION_FLAG_USE_INPUT_ELEMS_ONLY flag
+    void SetElementsToUse( const TIDSortedElemSet& elems );
+
+    // creates nodes and returns number of nodes added in \a newNodes
+    int MakeNodes( SMESHDS_Mesh*                     mesh,
+                   const SMDS_MeshNode*              srcNode,
+                   std::list<const SMDS_MeshNode*> & newNodes,
+                   const bool                        makeMediumNodes)
+    {
+      return (this->*myMakeNodesFun)( mesh, srcNode, newNodes, makeMediumNodes );
+    }
+  private:
+
+    int makeNodesByDir( SMESHDS_Mesh*                     mesh,
+                        const SMDS_MeshNode*              srcNode,
+                        std::list<const SMDS_MeshNode*> & newNodes,
+                        const bool                        makeMediumNodes);
+    int makeNodesByDirAndSew( SMESHDS_Mesh*                     mesh,
+                              const SMDS_MeshNode*              srcNode,
+                              std::list<const SMDS_MeshNode*> & newNodes,
+                              const bool                        makeMediumNodes);
+    int makeNodesByNormal2D( SMESHDS_Mesh*                     mesh,
+                             const SMDS_MeshNode*              srcNode,
+                             std::list<const SMDS_MeshNode*> & newNodes,
+                             const bool                        makeMediumNodes);
+    int makeNodesByNormal1D( SMESHDS_Mesh*                     mesh,
+                             const SMDS_MeshNode*              srcNode,
+                             std::list<const SMDS_MeshNode*> & newNodes,
+                             const bool                        makeMediumNodes);
+    // step iteration
+    void   beginStepIter( bool withMediumNodes );
+    bool   moreSteps();
+    double nextStep();
+    std::vector< double > myCurSteps;
+    bool                  myWithMediumNodes;
+    int                   myNextStep;
+  };
 
   /*!
    * Generate new elements by extrusion of theElements
@@ -280,12 +383,11 @@ public:
    * @param theTolerance - uses for comparing locations of nodes if flag
    *   EXTRUSION_FLAG_SEW is set
    */
-  PGroupIDs ExtrusionSweep (TIDSortedElemSet &   theElems,
+  PGroupIDs ExtrusionSweep (TIDSortedElemSet     theElems[2],
                             const gp_Vec&        theStep,
                             const int            theNbSteps,
                             TTElemOfElemListMap& newElemsMap,
-                            const bool           theMakeGroups,
-                            const int            theFlags = EXTRUSION_FLAG_BOUNDARY,
+                            const int            theFlags,
                             const double         theTolerance = 1.e-6);
   
   /*!
@@ -298,12 +400,9 @@ public:
    *   EXTRUSION_FLAG_SEW is set
    * @param theParams - special structure for manage of extrusion
    */
-  PGroupIDs ExtrusionSweep (TIDSortedElemSet &   theElems,
+  PGroupIDs ExtrusionSweep (TIDSortedElemSet     theElems[2],
                             ExtrusParam&         theParams,
-                            TTElemOfElemListMap& newElemsMap,
-                            const bool           theMakeGroups,
-                            const int            theFlags,
-                            const double         theTolerance);
+                            TTElemOfElemListMap& newElemsMap);
 
 
   // Generate new elements by extrusion of theElements 
@@ -319,7 +418,7 @@ public:
     EXTR_CANT_GET_TANGENT
     };
   
-  Extrusion_Error ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
+  Extrusion_Error ExtrusionAlongTrack (TIDSortedElemSet     theElements[2],
                                        SMESH_subMesh*       theTrackPattern,
                                        const SMDS_MeshNode* theNodeStart,
                                        const bool           theHasAngles,
@@ -328,7 +427,7 @@ public:
                                        const bool           theHasRefPoint,
                                        const gp_Pnt&        theRefPoint,
                                        const bool           theMakeGroups);
-  Extrusion_Error ExtrusionAlongTrack (TIDSortedElemSet &   theElements,
+  Extrusion_Error ExtrusionAlongTrack (TIDSortedElemSet     theElements[2],
                                        SMESH_Mesh*          theTrackPattern,
                                        const SMDS_MeshNode* theNodeStart,
                                        const bool           theHasAngles,
@@ -351,7 +450,8 @@ public:
 
   void FindCoincidentNodes (TIDSortedNodeSet &   theNodes,
                             const double         theTolerance,
-                            TListOfListOfNodes & theGroupsOfNodes);
+                            TListOfListOfNodes & theGroupsOfNodes,
+                            bool                 theSeparateCornersAndMedium);
   // Return list of group of nodes close to each other within theTolerance.
   // Search among theNodes or in the whole mesh if theNodes is empty.
 
@@ -630,7 +730,7 @@ public:
   void sweepElement(const SMDS_MeshElement*                    elem,
                     const std::vector<TNodeOfNodeListMapItr> & newNodesItVec,
                     std::list<const SMDS_MeshElement*>&        newElems,
-                    const int                                  nbSteps,
+                    const size_t                               nbSteps,
                     SMESH_SequenceOfElemPtr&                   srcElements);
 
   /*!
@@ -669,7 +769,7 @@ public:
                                      const TopoDS_Edge&                     aTrackEdge,
                                      bool                                   aFirstIsStart,
                                      std::list<SMESH_MeshEditor_PathPoint>& aLPP);
-  Extrusion_Error MakeExtrElements(TIDSortedElemSet&                      theElements,
+  Extrusion_Error MakeExtrElements(TIDSortedElemSet                       theElements[2],
                                    std::list<SMESH_MeshEditor_PathPoint>& theFullList,
                                    const bool                             theHasAngles,
                                    std::list<double>&                     theAngles,
@@ -680,11 +780,14 @@ public:
   void LinearAngleVariation(const int     NbSteps,
                             list<double>& theAngles);
 
-  bool doubleNodes( SMESHDS_Mesh*                                           theMeshDS,
-                    const TIDSortedElemSet&                                 theElems,
-                    const TIDSortedElemSet&                                 theNodesNot,
-                    std::map< const SMDS_MeshNode*, const SMDS_MeshNode* >& theNodeNodeMap,
-                    const bool                                              theIsDoubleElem );
+  bool doubleNodes( SMESHDS_Mesh*           theMeshDS,
+                    const TIDSortedElemSet& theElems,
+                    const TIDSortedElemSet& theNodesNot,
+                    TNodeNodeMap&           theNodeNodeMap,
+                    const bool              theIsDoubleElem );
+
+  void copyPosition( const SMDS_MeshNode* from,
+                     const SMDS_MeshNode* to );
 
 private:
 

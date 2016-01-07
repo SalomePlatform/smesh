@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -29,7 +29,7 @@
 #include "SMESHGUI.h"
 #include "SMESHGUI_Selection.h"
 #include "SMESH_Type.h"
-
+#include "SMESH_MeshAlgos.hxx"
 #include <SMDS_MeshNode.hxx>
 #include <SMDS_MeshFace.hxx>
 
@@ -51,6 +51,10 @@
 #include <TColgp_Array1OfXYZ.hxx>
 
 #include CORBA_SERVER_HEADER(SMESH_Group)
+
+//VSR: uncomment below macro to support unicode text properly in SALOME
+//     current commented out due to regressions
+//#define PAL22528_UNICODE
 
 namespace SMESH
 {
@@ -185,7 +189,7 @@ namespace SMESH
   }
 
   CORBA::Object_var SObjectToObject (_PTR(SObject) theSObject,
-                                     _PTR(Study)   theStudy)
+                                     _PTR(Study)   /*theStudy*/)
   {
     SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>
       (SUIT_Session::session()->activeApplication());
@@ -193,11 +197,11 @@ namespace SMESH
       _PTR(GenericAttribute) anAttr;
       if (theSObject->FindAttribute(anAttr, "AttributeIOR")) {
         _PTR(AttributeIOR) anIOR = anAttr;
-        CORBA::String_var aVal = anIOR->Value().c_str();
+        std::string aVal = anIOR->Value();
         // string_to_object() DOC: If the input string is not valid ...
         // a CORBA::SystemException is thrown.
-        if ( aVal && strlen( aVal ) > 0 )
-          return app->orb()->string_to_object(aVal);
+        if ( aVal.size() > 0 )
+          return app->orb()->string_to_object( aVal.c_str() );
       }
     }
     return CORBA::Object::_nil();
@@ -205,7 +209,7 @@ namespace SMESH
 
   CORBA::Object_var SObjectToObject (_PTR(SObject) theSObject)
   {
-    _PTR(Study) aStudy = GetActiveStudyDocument();
+    _PTR(Study) aStudy;// = GetActiveStudyDocument(); -- aStudy is not used
     return SObjectToObject(theSObject,aStudy);
   }
 
@@ -294,19 +298,25 @@ namespace SMESH
     aPixmap->SetPixMap( pmName );
 
     _PTR(ChildIterator) anIter = aStudy->NewChildIterator(theSObject);
-    for (int i = 1; anIter->More(); anIter->Next(), i++) {
+    for ( ; anIter->More(); anIter->Next() ) {
       _PTR(SObject) aSObj = anIter->Value();
-      if (i >= 4) {
+      if ( aSObj->Tag() >= SMESH::Tag_FirstSubMesh )
+      {
         _PTR(ChildIterator) anIter1 = aStudy->NewChildIterator(aSObj);
         for ( ; anIter1->More(); anIter1->Next())
         {
           _PTR(SObject) aSObj1 = anIter1->Value();
+          _PTR(SObject) aSObjectRef;
+          if (aSObj1->ReferencedObject(aSObjectRef))
+            continue; // reference to an object
 
           anAttr = aBuilder->FindOrCreateAttribute(aSObj1, "AttributePixMap");
           aPixmap = anAttr;
 
           std::string entry = aSObj1->GetID();
           int objType = SMESHGUI_Selection::type( entry.c_str(), aStudy );
+          if ( objType == SMESH::HYPOTHESIS || objType == SMESH::ALGORITHM )
+            continue;
 
           SMESH::SMESH_IDSource_var idSrc = SObjectToInterface<SMESH::SMESH_IDSource>( aSObj1 );
           if ( !idSrc->_is_nil() )
@@ -316,7 +326,7 @@ namespace SMESH
             const bool isGroupOnFilter = !gof->_is_nil();
 
             bool isEmpty = false;
-            if ( !isGroupOnFilter ) // GetTypes() can be very long on isGroupOnFilter!
+            if ( !isGroupOnFilter ) // GetTypes() can be very long on GroupOnFilter!
             {
               SMESH::array_of_ElementType_var elemTypes = idSrc->GetTypes();
               isEmpty = ( elemTypes->length() == 0 );
@@ -330,7 +340,7 @@ namespace SMESH
             else
               aPixmap->SetPixMap( "ICON_SMESH_TREE_GROUP" );
           }
-          else
+          else // is it necessary?
           {
             if ( !theIsNotModif )
               aPixmap->SetPixMap( pmName );
@@ -369,26 +379,31 @@ namespace SMESH
   gp_XYZ getNormale( const SMDS_MeshFace* theFace )
   {
     gp_XYZ n;
-    int aNbNode = theFace->NbNodes();
-    TColgp_Array1OfXYZ anArrOfXYZ(1,4);
-    SMDS_ElemIteratorPtr aNodeItr = theFace->nodesIterator();
-    int i = 1;
-    for ( ; aNodeItr->more() && i <= 4; i++ ) {
-      SMDS_MeshNode* aNode = (SMDS_MeshNode*)aNodeItr->next();
-      anArrOfXYZ.SetValue(i, gp_XYZ( aNode->X(), aNode->Y(), aNode->Z() ) );
-    }
-    
-    gp_XYZ q1 = anArrOfXYZ.Value(2) - anArrOfXYZ.Value(1);
-    gp_XYZ q2 = anArrOfXYZ.Value(3) - anArrOfXYZ.Value(1);
-    n  = q1 ^ q2;
-    if ( aNbNode > 3 ) {
-      gp_XYZ q3 = anArrOfXYZ.Value(4) - anArrOfXYZ.Value(1);
-      n += q2 ^ q3;
-    }
-    double len = n.Modulus();
-    if ( len > 0 )
-      n /= len;
+    SMESH_MeshAlgos::FaceNormal( theFace, n, /*normalized=*/true );
     return n;
   }
   
+  QString fromUtf8( const char* txt )
+  {
+#ifdef PAL22528_UNICODE
+    return QString::fromUtf8( txt );
+#else
+    return QString( txt );
+#endif
+  }
+
+  QString fromUtf8( const std::string& txt )
+  {
+    return fromUtf8( txt.c_str() );
+  }
+
+  toUtf8::toUtf8( const QString& txt )
+  {
+#ifdef PAL22528_UNICODE
+    assign( txt.toUtf8().constData() );
+#else
+    assign( txt.toLatin1().constData() );
+#endif
+  }
+
 } // end of namespace SMESH

@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -407,7 +407,7 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
   {
     // get ids of existing groups
     std::set< int > groupIDs;
-    const std::set<SMESHDS_GroupBase*>& groups = myMesh->GetGroups();
+    const std::set<SMESHDS_GroupBase*>&          groups = myMesh->GetGroups();
     std::set<SMESHDS_GroupBase*>::const_iterator grIter = groups.begin();
     for ( ; grIter != groups.end(); ++grIter )
       groupIDs.insert( (*grIter)->GetID() );

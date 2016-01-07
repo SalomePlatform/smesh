@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -18,7 +18,12 @@
 //
 #include "StdMeshersGUI_RadioButtonsGrpWdg.h"
 
-#include <QVBoxLayout>
+#include "SMESHGUI.h"
+
+#include <SUIT_ResourceMgr.h>
+
+#include <QGridLayout>
+#include <QLabel>
 #include <QRadioButton>
 #include <QButtonGroup>
 #include <QStringList>
@@ -44,17 +49,28 @@ StdMeshersGUI_RadioButtonsGrpWdg::StdMeshersGUI_RadioButtonsGrpWdg( const QStrin
  */
 //================================================================================
 
-void StdMeshersGUI_RadioButtonsGrpWdg::setButtonLabels( const QStringList& buttonLabels )
+void StdMeshersGUI_RadioButtonsGrpWdg::setButtonLabels( const QStringList& buttonLabels,
+                                                        const QStringList& buttonIcons )
 {
-  QVBoxLayout* layout = new QVBoxLayout( this );
+  QGridLayout* layout = new QGridLayout( this );
   layout->setSpacing(SPACING);
   layout->setMargin(MARGIN);
 
   for ( int id = 0; id < buttonLabels.size(); ++id )
   {
     QRadioButton* button = new QRadioButton( buttonLabels.at(id), this );
-    layout->addWidget( button );
+    layout->addWidget( button, id, 0 );
     myButtonGrp->addButton( button, id );
+
+    if ( id < buttonIcons.count() )
+    {
+      QPixmap pmi (SMESHGUI::resourceMgr()->loadPixmap("SMESH", buttonIcons.at(id)));
+      if ( !pmi.isNull() ) {
+        QLabel* pixLabel = new QLabel( this );
+        pixLabel->setPixmap( pmi );
+        layout->addWidget( pixLabel, id, 1 );
+      }
+    }
   }
 }
 

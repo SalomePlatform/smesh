@@ -2,16 +2,18 @@
 
 \page tui_filters_page Filters usage
 
+\tableofcontents
+
 Filters allow picking only the mesh elements satisfying to a
 specific condition or a set of conditions. Filters can be used to create
 or edit mesh groups, remove elements from the mesh object, control
 mesh quality by different parameters, etc.
 
-Several filters can be combined together by using logical operators \a
-AND and \a OR. In addition, applied filter criterion can be reverted
-using logical operator \a NOT.
+Several filtering criteria can be combined together by using logical
+operators \a AND and \a OR. In addition, a filtering criterion can
+be reverted using logical operator \a NOT.
 
-Mesh filters use the functionality of mesh quality controls to filter
+Mesh filters can use the functionality of mesh quality controls to filter
 mesh nodes / elements by a specific characteristic (Area, Length, etc).
 
 This page provides a short description of the existing mesh filters,
@@ -300,6 +302,16 @@ Filter over-constrained volumes:
 
 \sa \ref tui_over_constrained_faces
 
+\section filter_belong_to_group Belong to Mesh Group
+
+Filter mesh entities (nodes or elements) included in a mesh group
+defined by threshold value:
+- element type can be any entity type, from \a  SMESH.NODE to \a SMESH.VOLUME
+- functor type should be \a SMESH.FT_BelongToMeshGroup
+- threshold is mesh group object
+
+\tui_script{filters_belong2group.py}
+
 \section filter_belong_to_geom Belong to Geom
 
 Filter mesh entities (nodes or elements) which all nodes lie on the
@@ -404,9 +416,9 @@ entity type.
 
 \tui_script{filters_ex35.py}
 
-\section combining_filters How to combine filters with Criterion structures?
+\section combining_filters How to combine several criteria into a filter?
 
-Filters can be combined by making use of "criteria".
+Several criteria can be combined into a filter.
 
 Example :
 

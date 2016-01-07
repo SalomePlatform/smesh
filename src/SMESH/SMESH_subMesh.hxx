@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -81,6 +81,7 @@ class SMESH_EXPORT SMESH_subMesh
 
   const std::map < int, SMESH_subMesh * >& DependsOn();
   bool DependsOn( const SMESH_subMesh* other ) const;
+  bool DependsOn( const int shapeID ) const;
   /*!
    * \brief Return iterator on the sub-meshes this one depends on. By default
    *        most simple sub-meshes go first.
@@ -280,7 +281,7 @@ public:
 
 protected:
   // ==================================================================
-  void insertDependence(const TopoDS_Shape aSubShape);
+  void insertDependence(const TopoDS_Shape aShape, TopAbs_ShapeEnum aSubType );
 
   void removeSubMeshElementsAndNodes();
   void updateDependantsState(const compute_event theEvent);
@@ -327,7 +328,7 @@ protected:
   int                   _Id;
 
   std::map < int, SMESH_subMesh * >_mapDepend;
-  bool                  _dependenceAnalysed;
+  bool                             _dependenceAnalysed;
   std::vector< SMESH_subMesh * >   _ancestors;
 
   SMESH_Algo *          _algo; // the algorithm found by last *StateEngine() call

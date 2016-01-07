@@ -2,13 +2,20 @@
 
 \page constructing_submeshes_page Constructing sub-meshes
 
-Sub-mesh is a mesh on a geometrical sub-object (sub-shape) used to assign
-different meshing algorithms and/or hypotheses than the algorithms and
-hypotheses assigned to the parent mesh on the parent geometrical
-object, that allows getting a local mesh refinement.
+By purpose, the sub-mesh is an object used to assign to a sub-shape
+different meshing parameters than those assigned to the main shape.
 
-A sub-shape to create a sub-mesh on should be retrieved from the shape
-of the parent mesh one of the following ways: <ul>
+Structurally, the sub-mesh is a mesh on a certain sub-shape, or a group of
+sub-shapes, possibly generated using different meshing algorithms
+and/or hypotheses than those used to generate the mesh on other
+sub-shapes.
+
+Creation of a sub-mesh allows to control individually meshing of a
+certain sub-shape, thus to get a locally coarser or finer mesh, to get
+elements of different types in the same mesh, etc.
+
+A sub-shape to create a sub-mesh on should be retrieved from the main shape
+in one of the following ways: <ul>
 <li> In Geometry module, via <em>New Entity > Explode</em> menu.</li>
 <li> In Geometry module, by creation of a group (<em>New Entity >
     Group > Create Group</em> menu).</li> 
@@ -16,33 +23,53 @@ of the parent mesh one of the following ways: <ul>
   \ref subshape_by_mesh_elem "selecting a mesh element" generated on a
   sub-shape of interest. This way is accessible if the mesh is
   already computed.</li> 
+<li> In Mesh module, by clicking <em>Publish Sub-shape</em> button in a
+      dialog showing \ref meshing_failed_anchor "meshing errors".</li> 
 </ul>
 
-If a geometrical sub-object belongs to several geometrical objects
-having different meshes or sub-meshes, it will be meshed with the
-hypotheses of a sub-mesh of a lower dimension.<br>
-For example, a face of a box is meshed with a sub-mesh using algorithms
-and hypotheses other than the parent mesh on the whole box. The face
-and the box share four edges, which will be meshed with algorithms and
-hypotheses of the sub-mesh on the face, because the face is a 2D object
-while the box is a 3D object.  <br>
- If the dimensions are the same, an arbitrary algorithm/hypothesis
- will be used. This means that an edge shared by two faces each having
- its own different sub-mesh, will be meshed using algorithms and
- hypotheses of any of the two, chosen randomly. This indeterminacy can
- be fixed by defining \ref submesh_order_anchor "Sub-mesh priority". The
- default sub-meshes priority is such that multi-dimensional algorithms
- are processed first.
-<br>
+Internally, definition of meshing parameters to apply for
+discretization of a certain sub-shape, for example an edge of a
+compound of solids, starts from searching an algorithm, 1D as for the
+edge. The following sub-shapes are sequentially checked for presence
+of a sub-mesh where 1D algorithm is assigned:
+<ul>
+<li> the \b edge itself</li>
+<li> <b>groups of edges</b> containing the edge, if any</li>
+<li> \b wires sharing the edge</li>
+<li> \b faces sharing the edge</li>
+<li> <b>groups of faces</b> sharing the edge, if any</li>
+<li> \b shells sharing the edge</li>
+<li> \b solids sharing the edge</li>
+<li> <b>groups of solids</b> sharing the edge, if any</li>
+<li> the <b>main shape</b></li>
+</ul>
+(This sequence of sub-shapes defines the priority of sub-meshes. Thus more
+local, i.e. assigned to sub-shape of lower dimension, algorithms and
+hypotheses have higher priority during the search of hypotheses to
+apply.)
+
+As soon as a 1D algorithm is found, the search stops and the same
+sequence of sub-shapes is checked to find the main and additional 1D
+hypotheses, which can be taken into account by the found 1D algorithm. 
+
+The multi-dimensional algorithms have a higher priority than
+uni-dimensional ones if they are assigned to sub-meshes of the
+same priority.
+
+If meshing parameters are defined on sub-meshes of the same priority,
+for example, different 1D hypotheses are assigned to two faces sharing
+an edge, the hypothesis assigned to a sub-shape with a lower ID will
+be used for meshing. You can \ref submesh_order_anchor "change" mutual
+priority of such concurrent sub-meshes. 
 
 \n Construction of a sub-mesh consists of:
 <ul>
-<li>Selecting a mesh which will encapsulate your sub-mesh</li>
-<li>Selecting a geometrical object for meshing</li>
-<li>Applying one or several previously described 
+<li>Selecting a mesh which will encapsulate the sub-mesh</li>
+<li>Selecting a sub-shape for meshing</li>
+<li>Applying one or several
 \ref about_hypo_page "hypotheses" and 
 \ref basic_meshing_algos_page "meshing algorithms" which will be used
-at computation of this sub-mesh</li>
+for discretization of this sub-shape.</li>
 </ul>
 
 <br><em>To construct a sub-mesh:</em>
@@ -61,13 +88,15 @@ The following dialog box will appear:
 \par
 \image html createmesh-inv2.png
 
-\par
 It allows to define the \b Name, the parent \b Mesh and the \b
 Geometry (e.g. a face if the parent mesh has been built on box) of the
-sub-mesh. You can select meshing algorithms and hypotheses in the same way as
-in \ref constructing_meshes_page "Create mesh" menu.
+sub-mesh. You can define meshing algorithms and hypotheses in the same way as
+in \ref constructing_meshes_page "Create mesh" dialog. 
 
-\par
+Later you can change the applied hypotheses or their parameters in 
+\ref editing_meshes_page "Edit mesh/sub-mesh" dialog. Mesh entities
+generated using changed hypotheses are automatically removed.
+
 \anchor subshape_by_mesh_elem
 If the parent mesh is already computed, then you can define the
 \b Geometry by picking mesh elements computed on a sub-shape of interest
@@ -78,42 +107,36 @@ already down, then click it to release and then click it again. The
 following pop-up menu allowing to choose a way of geometry definition will
 appear.
 
-\par
 \image html choose_geom_selection_way.png
 
-\par
 <b>Direct geometry selection</b> enables selecting the sub-shape in the Object
 Browser.
 <b>Find geometry by mesh element selection</b> activates the following dialog.
 
-\par
 \image html find_geom_by_mesh_elem.png
 
-\par
 In this dialog, <b> Element Type </b> defines a kind of element to pick in the
 Viewer.
 Instead of picking an element in the Viewer, you can type its
 ID in <b> Element ID</b> field. 
-<b> Geometry name </b> field allows defining a name of the sub-shape
+<b> Geometry name </b> field allows defining a name of the sub-shape, 
 with which the sub-shape will appear in the Object Browser (if not yet
 there).
 
-\par
 In the Object Browser the structure of the new sub-mesh will be
 displayed as follows:
 
 \image html image10.jpg
 
-\par
 It contains:
 <ul>
 <li>a sub-mesh name (\a SubMeshFace1)
 <li>a reference to the geometrical object on the basis of which the
   sub-mesh has been constructed (<em>Cylindrical Face_1</em>);</li>
-<li><b>Applied hypotheses</b> folder containing the references to the
-hypotheses selected at the construction of the sub-mesh;</li>
-<li><b>Applied algorithms</b> folder containing the references to the
-algorithms selected at the construction of the sub-mesh.</li>
+<li><em>Applied hypotheses</em> folder containing the references to the
+hypotheses assigned to the sub-mesh;</li>
+<li><em>Applied algorithms</em> folder containing the references to the
+algorithms assigned to the sub-mesh.</li>
 </ul>
 
 <br><b>See Also</b> a sample TUI Script of a 

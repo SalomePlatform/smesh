@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -71,7 +71,7 @@ namespace MED{
                 eQUAD4=204, eTRIA6=206, eTRIA7=207, eQUAD8=208, eQUAD9=209,eTETRA4=304,
                 ePYRA5=305, ePENTA6=306, eHEXA8=308, eOCTA12=312, eTETRA10=310, 
                 ePYRA13=313, ePENTA15=315, eHEXA20=320, eHEXA27=327,
-                ePOLYGONE=400, ePOLYEDRE=500, eNONE=0, 
+                ePOLYGONE=400, ePOLYGON2=420, ePOLYEDRE=500, eNONE=0, 
                 eBALL=1101 /*no such a type in med.h, it's just a trick*/,
                 eAllGeoType=-1 } EGeometrieElement;
 

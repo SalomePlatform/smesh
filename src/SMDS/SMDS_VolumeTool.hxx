@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -38,6 +38,7 @@ class SMDS_MeshVolume;
 
 #include <vector>
 #include <set>
+#include <map>
 
 // =========================================================================
 //
@@ -90,10 +91,10 @@ class SMDS_EXPORT SMDS_VolumeTool
   // top and bottom faces are reversed.
   // Result of IsForward() and methods returning nodes change
 
-  const SMDS_MeshNode** GetNodes() { return myVolumeNodes; }
+  const SMDS_MeshNode** GetNodes() { return &myVolumeNodes[0]; }
   // Return array of volume nodes
 
-  int NbNodes() { return myVolumeNbNodes; }
+  int NbNodes() { return myVolumeNodes.size(); }
   // Return array of volume nodes
 
   double GetSize() const;
@@ -242,9 +243,11 @@ class SMDS_EXPORT SMDS_VolumeTool
   static int GetOppFaceIndexOfHex( int faceIndex );
   // Return index of the opposite face of the hexahedron
 
-private:
+ private:
 
   bool setFace( int faceIndex ) const;
+
+  bool projectNodesToNormal( int faceIndex, double& minProj, double& maxProj ) const;
 
   const SMDS_MeshElement* myVolume;
   const SMDS_VtkVolume*   myPolyedre;
@@ -252,21 +255,30 @@ private:
 
   bool                    myVolForward;
   int                     myNbFaces;
-  int                     myVolumeNbNodes;
-  const SMDS_MeshNode**   myVolumeNodes;
-  std::vector< int >      myPolyIndices;
+  std::vector<const SMDS_MeshNode*> myVolumeNodes;
+  std::vector< int >      myPolyIndices; // of a myCurFace
+  std::vector< int >      myPolyQuantities;
+  std::vector< int >      myPolyFacetOri; // -1-in, +1-out, 0-undef
 
-  mutable bool                    myExternalFaces;
+  typedef std::pair<int,int> Link;
+  std::map<Link, int>     myFwdLinks; // used in IsFaceExternal() to find out myPolyFacetOri
 
-  mutable const int*              myAllFacesNodeIndices_F;
-  mutable const int*              myAllFacesNodeIndices_RE;
-  mutable const int*              myAllFacesNbNodes;
-  mutable int                     myMaxFaceNbNodes;
+  mutable bool            myExternalFaces;
 
-  mutable int                     myCurFace;
-  mutable int                     myFaceNbNodes;
-  mutable int*                    myFaceNodeIndices;
-  mutable const SMDS_MeshNode**   myFaceNodes;
+  mutable const int*      myAllFacesNodeIndices_F;
+  mutable const int*      myAllFacesNodeIndices_RE;
+  mutable const int*      myAllFacesNbNodes;
+  mutable int             myMaxFaceNbNodes;
+
+  struct SaveFacet;
+  struct Facet
+  {
+    int                   myIndex;
+    int                   myNbNodes;
+    int*                  myNodeIndices;
+    std::vector<const SMDS_MeshNode*> myNodes;
+  };
+  mutable Facet           myCurFace;
 
 };
 #endif

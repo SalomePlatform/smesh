@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -128,12 +128,14 @@ QVariant SMESHGUI_Selection::parameter( const int ind, const QString& p ) const
   else if ( p=="displayMode" )          val = QVariant( displayMode( ind ) );
   else if ( p=="isComputable" )         val = QVariant( isComputable( ind ) );
   else if ( p=="isPreComputable" )      val = QVariant( isPreComputable( ind ) );
-  else if ( p=="hasReference" )         val = QVariant( hasReference( ind ) );
+  else if ( p=="hasGeomReference" )     val = QVariant( hasGeomReference( ind ) );
+  else if ( p=="isEditableHyp" )        val = QVariant( isEditableHyp( ind ) );
   else if ( p=="isImported" )           val = QVariant( isImported( ind ) );
   else if ( p=="facesOrientationMode" ) val = QVariant( facesOrientationMode( ind ) );
   else if ( p=="groupType" )            val = QVariant( groupType( ind ) );
   else if ( p=="quadratic2DMode")       val = QVariant( quadratic2DMode( ind ) );
   else if ( p=="isDistributionVisible") val = QVariant( isDistributionVisible( ind ) );
+  else if ( p=="isScalarBarVisible")    val = QVariant( isScalarBarVisible( ind ) );
   else if ( p=="hasChildren")           val = QVariant( hasChildren( ind ) );
   else if ( p=="nbChildren")            val = QVariant( nbChildren( ind ) );
   else if ( p=="isContainer")           val = QVariant( isContainer( ind ) );
@@ -258,6 +260,16 @@ bool SMESHGUI_Selection::isDistributionVisible(int ind) const {
 } 
 
 //=======================================================================
+//function : isScalarBarVisible
+//purpose  : Visible/Invisible Scalar Bar
+//=======================================================================
+
+bool SMESHGUI_Selection::isScalarBarVisible(int ind) const {
+  SMESH_Actor* actor = getActor( ind );
+  return (actor && actor->GetScalarBarActor() && actor->GetScalarBarActor()->GetVisibility());
+}
+
+//=======================================================================
 //function : shrinkMode
 //purpose  : return either 'IsSrunk', 'IsNotShrunk' or 'IsNotShrinkable'
 //=======================================================================
@@ -344,7 +356,7 @@ QString SMESHGUI_Selection::controlMode() const
     QString mode = myControls[0];
     for( int ind = 1; ind < myControls.count(); ind++ ) {
       if( mode != myControls[ind] )
-        return "eNone";
+        return "eMixed"; // different controls used for different actors
     }
     return mode;
   }
@@ -463,7 +475,7 @@ int SMESHGUI_Selection::dim( int ind ) const
       if ( !CORBA::is_nil( idSrc ) )
       {
         SMESH::array_of_ElementType_var types = idSrc->GetTypes();
-        for ( int i = 0; i < types->length(); ++ i) {
+        for ( size_t i = 0; i < types->length(); ++ i) {
           switch ( types[i] ) {
           case SMESH::EDGE  : dim = std::max( dim, 1 ); break;
           case SMESH::FACE  : dim = std::max( dim, 2 ); break;
@@ -481,62 +493,78 @@ int SMESHGUI_Selection::dim( int ind ) const
 
 //=======================================================================
 //function : isComputable
-//purpose  : 
+//purpose  : return true for a ready-to-compute mesh
 //=======================================================================
 
-QVariant SMESHGUI_Selection::isComputable( int ind ) const
+bool SMESHGUI_Selection::isComputable( int ind ) const
 {
-  if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
+  if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] == "Mesh" )
   {
+    QMap<int,int> modeMap;
     _PTR(SObject) so = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
-    CORBA::Object_var obj = SMESH::SObjectToObject( so, SMESH::GetActiveStudyDocument() );
-    if( !CORBA::is_nil( obj ) ) {
-      SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( obj );
-      if ( !CORBA::is_nil( mesh ) ) {
-        if ( mesh->HasShapeToMesh() ) {
-          GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );
-          return QVariant( !shape->_is_nil() );
-        }
-        else
-        {
-          return QVariant( mesh->NbFaces() !=0 );
-        }
-      }
-      else
-      {
-        GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );
-        return QVariant( !shape->_is_nil() );
-      }
-    }
+    SMESHGUI_PrecomputeOp::getAssignedAlgos( so, modeMap );
+    return modeMap.size() > 0;
   }
-  return QVariant( false );
+  return false;
 }
 
 //=======================================================================
 //function : isPreComputable
-//purpose  : 
+//purpose  : returns true for a mesh with algorithms
 //=======================================================================
 
-QVariant SMESHGUI_Selection::isPreComputable( int ind ) const
+bool SMESHGUI_Selection::isPreComputable( int ind ) const
 {
-  if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
+  if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] == "Mesh" )
   {
-    QMap<int,int> modeMap;
-    _PTR(SObject) pMesh = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
-    SMESHGUI_PrecomputeOp::getAssignedAlgos( pMesh, modeMap );
-    return QVariant( modeMap.size() > 1 );
+    int maxDim = dim( ind );
+    if ( maxDim < 2 ) // we can preview 1D or 2D
+    {
+      QMap<int,int> modeMap;
+      _PTR(SObject) pMesh = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
+      SMESHGUI_PrecomputeOp::getAssignedAlgos( pMesh, modeMap );
+      if ( modeMap.size() > 1 )
+        return (( modeMap.contains( SMESH::DIM_3D )) ||
+                ( modeMap.contains( SMESH::DIM_2D ) && maxDim < 1 ));
+    }
   }
-  return QVariant( false );
+  return false;
 }
 
 //=======================================================================
-//function : hasReference
+//function : hasGeomReference
+//purpose  : returns true for a mesh or sub-mesh on geometry
+//=======================================================================
+
+bool SMESHGUI_Selection::hasGeomReference( int ind ) const
+{
+  if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
+  {
+    _PTR(SObject) so = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
+    GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );
+    return !shape->_is_nil();
+  }
+  return false;
+}
+
+//=======================================================================
+//function : isEditableHyp
 //purpose  : 
 //=======================================================================
 
-QVariant SMESHGUI_Selection::hasReference( int ind ) const
+bool SMESHGUI_Selection::isEditableHyp( int ind ) const
 {
-  return QVariant( isReference( ind ) );
+  bool isEditable = true;
+  if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] == "Hypothesis" )
+  {
+    _PTR(SObject) so = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
+    SMESH::SMESH_Hypothesis_var hyp = SMESH::SObjectToInterface<SMESH::SMESH_Hypothesis>( so );
+    if ( !hyp->_is_nil() )
+    {
+      isEditable = hyp->HasParameters();
+    }
+  }
+  return isEditable;
 }
 
 //=======================================================================
@@ -544,17 +572,17 @@ QVariant SMESHGUI_Selection::hasReference( int ind ) const
 //purpose  : 
 //=======================================================================
 
-QVariant SMESHGUI_Selection::isVisible( int ind ) const
+bool SMESHGUI_Selection::isVisible( int ind ) const
 {
   if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
   {
     SMESH_Actor* actor = SMESH::FindActorByEntry( entry( ind ).toLatin1().data() );
     if ( actor && actor->hasIO() ) {
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetCurrentVtkView() )
-        return QVariant( aViewWindow->isVisible( actor->getIO() ) );
+        return aViewWindow->isVisible( actor->getIO() );
     }
   }
-  return QVariant( false );
+  return false;
 }
 
 //=======================================================================

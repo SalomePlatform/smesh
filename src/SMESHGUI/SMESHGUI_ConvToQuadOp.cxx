@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -105,7 +105,7 @@ void SMESHGUI_ConvToQuadOp::startOperation()
 
   SMESHGUI_SelectionOp::startOperation();
 
-  myDlg->SetMediumNdsOnGeom( false );
+  myDlg->SetMediumNdsOnGeom( true );
   myDlg->activateObject( 0 );
   myDlg->ShowWarning( false );
   myDlg->show();
@@ -346,6 +346,7 @@ SMESHGUI_ConvToQuadOp::DestinationMesh( const SMESH::SMESH_IDSource_var& idSourc
                    nbElemOfType[SMDSEntity_Quad_Tetra     ] ||
                    nbElemOfType[SMDSEntity_Quad_Hexa      ] ||
                    nbElemOfType[SMDSEntity_Quad_Pyramid   ] ||
+                   nbElemOfType[SMDSEntity_Quad_Polygon   ] ||
                    nbElemOfType[SMDSEntity_Quad_Penta     ] );
 
   bool hasLin  = ( nbElemOfType[SMDSEntity_Edge      ] ||
@@ -354,6 +355,7 @@ SMESHGUI_ConvToQuadOp::DestinationMesh( const SMESH::SMESH_IDSource_var& idSourc
                    nbElemOfType[SMDSEntity_Tetra     ] ||
                    nbElemOfType[SMDSEntity_Hexa      ] ||
                    nbElemOfType[SMDSEntity_Pyramid   ] ||
+                   nbElemOfType[SMDSEntity_Polygon   ] ||
                    nbElemOfType[SMDSEntity_Penta     ] );
 
   int tgtType = 0;

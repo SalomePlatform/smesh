@@ -1,4 +1,4 @@
-# Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -42,9 +42,14 @@ Hexa        = "Hexa_3D"
 QUADRANGLE  = "Quadrangle_2D"
 ## Algorithm type: Radial Quadrangle 1D-2D algorithm, see StdMeshersBuilder_RadialQuadrangle1D2D
 RADIAL_QUAD = "RadialQuadrangle_1D2D"
+## Algorithm type: Quadrangle (Medial Axis Projection) 1D-2D algorithm, see StdMeshersBuilder_QuadMA_1D2D
+QUAD_MA_PROJ = "QuadFromMedialAxis_1D2D"
+## Algorithm type: Polygon Per Face 2D algorithm, see StdMeshersBuilder_PolygonPerFace
+POLYGON     = "PolygonPerFace_2D"
 
-# import items of enum QuadType
+# import items of enums
 for e in StdMeshers.QuadType._items: exec('%s = StdMeshers.%s'%(e,e))
+for e in StdMeshers.VLExtrusionMethod._items: exec('%s = StdMeshers.%s'%(e,e))
 
 #----------------------
 # Algorithms
@@ -63,7 +68,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
     ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = REGULAR
-    ## flag pointing either this algorithm should be used by default in dynamic method
+    ## flag pointing whether this algorithm should be used by default in dynamic method
     #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True
@@ -143,7 +148,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
             reversedEdges, UseExisting = [], reversedEdges
         entry = self.MainShapeEntry()
         reversedEdgeInd = self.ReversedEdgeIndices(reversedEdges)
-        if s == []:
+        if not s:
             hyp = self.Hypothesis("NumberOfSegments", [n, reversedEdgeInd, entry],
                                   UseExisting=UseExisting,
                                   CompareMethod=self._compareNumberOfSegments)
@@ -151,7 +156,6 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
             hyp = self.Hypothesis("NumberOfSegments", [n,s, reversedEdgeInd, entry],
                                   UseExisting=UseExisting,
                                   CompareMethod=self._compareNumberOfSegments)
-            hyp.SetDistrType( 1 )
             hyp.SetScaleFactor(s)
         hyp.SetNumberOfSegments(n)
         hyp.SetReversedEdges( reversedEdgeInd )
@@ -422,7 +426,7 @@ class StdMeshersBuilder_CompositeSegment(StdMeshersBuilder_Segment):
     ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = COMPOSITE
-    ## flag pointing either this algorithm should be used by default in dynamic method
+    ## flag pointing whether this algorithm should be used by default in dynamic method
     #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = False
@@ -453,9 +457,6 @@ class StdMeshersBuilder_Segment_Python(Mesh_Algorithm):
     ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = PYTHON
-    ## doc string of the method
-    #  @internal
-    docHelper  = "Creates tetrahedron 3D algorithm for solids"
     ## doc string of the method
     #  @internal
     docHelper  = "Creates segment 1D algorithm for edges"
@@ -498,7 +499,7 @@ class StdMeshersBuilder_Triangle_MEFISTO(Mesh_Algorithm):
     ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = MEFISTO
-    ## flag pointing either this algorithm should be used by default in dynamic method
+    ## flag pointing whether this algorithm should be used by default in dynamic method
     #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True
@@ -552,7 +553,7 @@ class StdMeshersBuilder_Quadrangle(Mesh_Algorithm):
     ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = QUADRANGLE
-    ## flag pointing either this algorithm should be used by default in dynamic method
+    ## flag pointing whether this algorithm should be used by default in dynamic method
     #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True
@@ -699,7 +700,7 @@ class StdMeshersBuilder_Hexahedron(Mesh_Algorithm):
     ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = Hexa
-    ## flag pointing either this algorithm should be used by default in dynamic method
+    ## flag pointing whether this algorithm should be used by default in dynamic method
     #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True
@@ -731,7 +732,7 @@ class StdMeshersBuilder_Projection1D(Mesh_Algorithm):
     ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = "Projection_1D"
-    ## flag pointing either this algorithm should be used by default in dynamic method
+    ## flag pointing whether this algorithm should be used by default in dynamic method
     #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True
@@ -789,7 +790,7 @@ class StdMeshersBuilder_Projection2D(Mesh_Algorithm):
     ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = "Projection_2D"
-    ## flag pointing either this algorithm should be used by default in dynamic method
+    ## flag pointing whether this algorithm should be used by default in dynamic method
     #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True
@@ -856,7 +857,7 @@ class StdMeshersBuilder_Projection1D2D(StdMeshersBuilder_Projection2D):
     algoType   = "Projection_1D2D"
     ## doc string of the method
     #  @internal
-    docHelper  = "Creates projection 1D-2D algorithm for edges and faces"
+    docHelper  = "Creates projection 1D-2D algorithm for faces"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to
@@ -1037,11 +1038,10 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
         if self.algoType != "RadialPrism_3D":
             print "Prism_3D algorith doesn't support any hyposesis"
             return None
-        if s == []:
+        if not s:
             hyp = self.OwnHypothesis("NumberOfSegments", [n])
         else:
             hyp = self.OwnHypothesis("NumberOfSegments", [n,s])
-            hyp.SetDistrType( 1 )
             hyp.SetScaleFactor(s)
         hyp.SetNumberOfSegments(n)
         return hyp
@@ -1100,8 +1100,7 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
 
     pass # end of StdMeshersBuilder_Prism3D class
 
-## Defines a Prism 3D algorithm, which is either "Extrusion 3D" or "Radial Prism"
-#  depending on geometry
+## Defines a Prism 3D algorithm
 # 
 #  It is created by calling smeshBuilder.Mesh.Prism(geom=0)
 #
@@ -1116,7 +1115,7 @@ class StdMeshersBuilder_RadialPrism3D(StdMeshersBuilder_Prism3D):
     algoType   = "RadialPrism_3D"
     ## doc string of the method
     #  @internal
-    docHelper  = "Creates prism 3D algorithm for volumes"
+    docHelper  = "Creates Raial Prism 3D algorithm for volumes"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to
@@ -1133,30 +1132,12 @@ class StdMeshersBuilder_RadialPrism3D(StdMeshersBuilder_Prism3D):
         self.nbLayers = None
         return
 
-## Defines a Radial Quadrangle 1D-2D algorithm
+## Base class for algorithms supporting radial distribution hypotheses
 # 
-#  It is created by calling smeshBuilder.Mesh.Quadrangle(smeshBuilder.RADIAL_QUAD,geom=0)
-#
-#  @ingroup l2_algos_radialq
-class StdMeshersBuilder_RadialQuadrangle1D2D(Mesh_Algorithm):
+class StdMeshersBuilder_RadialAlgorithm(Mesh_Algorithm):
 
-    ## name of the dynamic method in smeshBuilder.Mesh class
-    #  @internal
-    meshMethod = "Quadrangle"
-    ## type of algorithm used with helper function in smeshBuilder.Mesh class
-    #  @internal
-    algoType   = RADIAL_QUAD
-    ## doc string of the method
-    #  @internal
-    docHelper  = "Creates quadrangle 1D-2D algorithm for triangular faces"
-
-    ## Private constructor.
-    #  @param mesh parent mesh object algorithm is assigned to
-    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
-    #              if it is @c 0 (default), the algorithm is assigned to the main shape
-    def __init__(self, mesh, geom=0):
+    def __init__(self):
         Mesh_Algorithm.__init__(self)
-        self.Create(mesh, geom, self.algoType)
 
         self.distribHyp = None #self.Hypothesis("LayerDistribution2D", UseExisting=0)
         self.nbLayers = None
@@ -1259,6 +1240,96 @@ class StdMeshersBuilder_RadialQuadrangle1D2D(Mesh_Algorithm):
 
     pass # end of StdMeshersBuilder_RadialQuadrangle1D2D class
 
+## Defines a Radial Quadrangle 1D-2D algorithm
+# 
+#  It is created by calling smeshBuilder.Mesh.Quadrangle(smeshBuilder.RADIAL_QUAD,geom=0)
+#
+#  @ingroup l2_algos_radialq
+class StdMeshersBuilder_RadialQuadrangle1D2D(StdMeshersBuilder_RadialAlgorithm):
+
+    ## name of the dynamic method in smeshBuilder.Mesh class
+    #  @internal
+    meshMethod = "Quadrangle"
+    ## type of algorithm used with helper function in smeshBuilder.Mesh class
+    #  @internal
+    algoType   = RADIAL_QUAD
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates quadrangle 1D-2D algorithm for faces having a shape of disk or a disk segment"
+
+    ## Private constructor.
+    #  @param mesh parent mesh object algorithm is assigned to
+    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
+    #              if it is @c 0 (default), the algorithm is assigned to the main shape
+    def __init__(self, mesh, geom=0):
+        StdMeshersBuilder_RadialAlgorithm.__init__(self)
+        self.Create(mesh, geom, self.algoType)
+
+        self.distribHyp = None #self.Hypothesis("LayerDistribution2D", UseExisting=0)
+        self.nbLayers = None
+        pass
+
+
+## Defines a Quadrangle (Medial Axis Projection) 1D-2D algorithm
+# 
+#  It is created by calling smeshBuilder.Mesh.Quadrangle(smeshBuilder.QUAD_MA_PROJ,geom=0)
+#
+#  @ingroup l2_algos_quad_ma
+class StdMeshersBuilder_QuadMA_1D2D(StdMeshersBuilder_RadialAlgorithm):
+
+    ## name of the dynamic method in smeshBuilder.Mesh class
+    #  @internal
+    meshMethod = "Quadrangle"
+    ## type of algorithm used with helper function in smeshBuilder.Mesh class
+    #  @internal
+    algoType   = QUAD_MA_PROJ
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates quadrangle 1D-2D algorithm for faces"
+
+    ## Private constructor.
+    #  @param mesh parent mesh object algorithm is assigned to
+    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
+    #              if it is @c 0 (default), the algorithm is assigned to the main shape
+    def __init__(self, mesh, geom=0):
+        StdMeshersBuilder_RadialAlgorithm.__init__(self)
+        self.Create(mesh, geom, self.algoType)
+        pass
+
+    pass
+
+## Defines a Polygon Per Face 2D algorithm
+# 
+#  It is created by calling smeshBuilder.Mesh.Polygon(geom=0)
+#
+#  @ingroup l2_algos_quad_ma
+class StdMeshersBuilder_PolygonPerFace(Mesh_Algorithm):
+
+    ## name of the dynamic method in smeshBuilder.Mesh class
+    #  @internal
+    meshMethod = "Polygon"
+    ## type of algorithm used with helper function in smeshBuilder.Mesh class
+    #  @internal
+    algoType   = POLYGON
+    ## flag pointing whether this algorithm should be used by default in dynamic method
+    #  of smeshBuilder.Mesh class
+    #  @internal
+    isDefault  = True
+    ## doc string of the method
+    #  @internal
+    docHelper  = "Creates polygon 2D algorithm for faces"
+
+    ## Private constructor.
+    #  @param mesh parent mesh object algorithm is assigned to
+    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
+    #              if it is @c 0 (default), the algorithm is assigned to the main shape
+    def __init__(self, mesh, geom=0):
+        Mesh_Algorithm.__init__(self)
+        self.Create(mesh, geom, self.algoType)
+        pass
+
+    pass
+
 ## Defines a Use Existing Elements 1D algorithm
 #
 #  It is created by calling smeshBuilder.Mesh.UseExisting1DElements(geom=0)
@@ -1272,7 +1343,7 @@ class StdMeshersBuilder_UseExistingElements_1D(Mesh_Algorithm):
     ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = "Import_1D"
-    ## flag pointing either this algorithm should be used by default in dynamic method
+    ## flag pointing whether this algorithm should be used by default in dynamic method
     #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True
@@ -1322,13 +1393,13 @@ class StdMeshersBuilder_UseExistingElements_1D2D(Mesh_Algorithm):
     ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = "Import_1D2D"
-    ## flag pointing either this algorithm should be used by default in dynamic method
+    ## flag pointing whether this algorithm should be used by default in dynamic method
     #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True
     ## doc string of the method
     #  @internal
-    docHelper  = "Creates 1D-2D algorithm for edges/faces with reusing of existing mesh elements"
+    docHelper  = "Creates 1D-2D algorithm for faces with reusing of existing mesh elements"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to
@@ -1346,15 +1417,16 @@ class StdMeshersBuilder_UseExistingElements_1D2D(Mesh_Algorithm):
     #  @param UseExisting if ==true - searches for the existing hypothesis created with
     #                     the same parameters, else (default) - creates a new one
     def SourceFaces(self, groups, toCopyMesh=False, toCopyGroups=False, UseExisting=False):
-        for group in groups:
-            from salome.smesh.smeshBuilder import AssureGeomPublished
-            AssureGeomPublished( self.mesh, group )
+        import SMESH
         compFun = lambda hyp, args: ( hyp.GetSourceFaces() == args[0] and \
                                       hyp.GetCopySourceMesh() == args[1], args[2] )
         hyp = self.Hypothesis("ImportSource2D", [groups, toCopyMesh, toCopyGroups],
-                              UseExisting=UseExisting, CompareMethod=compFun)
+                              UseExisting=UseExisting, CompareMethod=compFun, toAdd=False)
+        if groups and isinstance( groups, SMESH._objref_SMESH_GroupBase ):
+            groups = [groups]
         hyp.SetSourceFaces(groups)
         hyp.SetCopySourceMesh(toCopyMesh, toCopyGroups)
+        self.mesh.AddHypothesis(hyp, self.geom)
         return hyp
 
     pass # end of StdMeshersBuilder_UseExistingElements_1D2D class
@@ -1372,13 +1444,13 @@ class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
     ## type of algorithm used with helper function in smeshBuilder.Mesh class
     #  @internal
     algoType   = "Cartesian_3D"
-    ## flag pointing either this algorithm should be used by default in dynamic method
+    ## flag pointing whether this algorithm should be used by default in dynamic method
     #  of smeshBuilder.Mesh class
     #  @internal
     isDefault  = True
     ## doc string of the method
     #  @internal
-    docHelper  = "Creates body fitting 3D algorithm for volumes"
+    docHelper  = "Creates Body Fitting 3D algorithm for volumes"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to
@@ -1508,7 +1580,7 @@ class StdMeshersBuilder_UseExisting_1D(Mesh_Algorithm):
     algoType   = "UseExisting_1D"
     ## doc string of the method
     #  @internal
-    docHelper  = "Creates 1D algorithm for edges with reusing of existing mesh elements"
+    docHelper  = "Creates 1D algorithm allowing batch meshing of edges"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to
@@ -1536,7 +1608,7 @@ class StdMeshersBuilder_UseExisting_2D(Mesh_Algorithm):
     algoType   = "UseExisting_2D"
     ## doc string of the method
     #  @internal
-    docHelper  = "Creates 2D algorithm for faces with reusing of existing mesh elements"
+    docHelper  = "Creates 2D algorithm allowing batch meshing of faces"
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to

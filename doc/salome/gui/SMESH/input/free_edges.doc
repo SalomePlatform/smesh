@@ -2,8 +2,8 @@
 
 \page free_edges_page Free edges
 
-\n This mesh quality control highlights borders of  elements of mesh
-consisting of edges belonging to one element of mesh only.
+\n This mesh quality control highlights borders of faces
+(links between nodes, not mesh segments) belonging to one face only.
 
 \image html free_edges.png
 <center>In this picture some elements of mesh have been deleted and

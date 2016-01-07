@@ -1,4 +1,4 @@
-// Copyright (C) 2006-2014  EDF R&D
+// Copyright (C) 2006-2015  EDF R&D
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -20,10 +20,7 @@
 #ifndef __MESHCUT_UTILS_HXX__
 #define __MESHCUT_UTILS_HXX__
 
-extern "C"
-  {
 #include <med.h>
-  }
 
 #include <string>
 #include <vector>

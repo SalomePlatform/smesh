@@ -1,4 +1,4 @@
-// Copyright (C) 2010-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2010-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -45,16 +45,27 @@ public:
   static const std::vector<int>& fromVtkOrder(VTKCellType vtkType);
   static const std::vector<int>& fromVtkOrder(SMDSAbs_EntityType smdsType);
 
-  static const std::vector<int>& reverseSmdsOrder(SMDSAbs_EntityType smdsType);
-  static const std::vector<int>& interlacedSmdsOrder(SMDSAbs_EntityType smdsType);
+  static const std::vector<int>& reverseSmdsOrder(SMDSAbs_EntityType smdsType,
+                                                  const size_t       nbNodes=0);
+  static const std::vector<int>& interlacedSmdsOrder(SMDSAbs_EntityType smdsType,
+                                                     const size_t       nbNodes=0);
 
-  template< class VECT >
+  template< class VECT > // interlacedIDs[i] = smdsIDs[ indices[ i ]]
     static void applyInterlace( const std::vector<int>& interlace, VECT & data)
   {
     if ( interlace.empty() ) return;
     VECT tmpData( data.size() );
     for ( size_t i = 0; i < data.size(); ++i )
       tmpData[i] = data[ interlace[i] ];
+    data.swap( tmpData );
+  }
+  template< class VECT > // interlacedIDs[ indices[ i ]] = smdsIDs[i]
+    static void applyInterlaceRev( const std::vector<int>& interlace, VECT & data)
+  {
+    if ( interlace.empty() ) return;
+    VECT tmpData( data.size() );
+    for ( size_t i = 0; i < data.size(); ++i )
+      tmpData[ interlace[i] ] = data[i];
     data.swap( tmpData );
   }
 

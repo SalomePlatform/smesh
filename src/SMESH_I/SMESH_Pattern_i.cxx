@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -83,28 +83,31 @@ SMESH::SMESH_Pattern_ptr SMESH_Gen_i::GetPattern()
 //=======================================================================
 
 SMESH_Pattern_i::SMESH_Pattern_i( SMESH_Gen_i* theGen_i ):
-       myGen( theGen_i )
+  myGen( theGen_i )
 {
 }
 
 //=======================================================================
 //function : getMesh
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 ::SMESH_Mesh* SMESH_Pattern_i::getMesh( SMESH::SMESH_Mesh_ptr & theMesh )
 {
-  SMESH_Mesh_i* anImplPtr = 
+  SMESH_Mesh_i* anImplPtr =
     dynamic_cast<SMESH_Mesh_i*>( SMESH_Gen_i::GetServant( theMesh ).in() );
   if ( anImplPtr )
+  {
+    anImplPtr->Load();
     return & anImplPtr->GetImpl();
+  }
 
   return 0;
 }
 
 //=======================================================================
 //function : LoadFromFile
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 CORBA::Boolean SMESH_Pattern_i::LoadFromFile(const char* theFileContents)
@@ -281,7 +284,7 @@ SMESH::point_array*
 
   list<const gp_XYZ *> xyzList;
   set<const SMDS_MeshFace*> fset;
-  for (int i = 0; i < theFacesIDs.length(); i++)
+  for ( CORBA::ULong i = 0; i < theFacesIDs.length(); i++)
   {
     CORBA::Long index = theFacesIDs[i];
     const SMDS_MeshElement * elem = aMesh->GetMeshDS()->FindElement(index);
@@ -342,7 +345,7 @@ SMESH::point_array*
 
   list<const gp_XYZ *> xyzList;
   set<const SMDS_MeshVolume*> vset;
-  for (int i = 0; i < theVolumesIDs.length(); i++)
+  for ( CORBA::ULong i = 0; i < theVolumesIDs.length(); i++)
   {
     CORBA::Long index = theVolumesIDs[i];
     const SMDS_MeshElement * elem = aMesh->GetMeshDS()->FindElement(index);

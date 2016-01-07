@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -657,7 +657,7 @@ void StdMeshers_Penta_3D::MakeVolumeMesh()
   }
   //
   // 2. Make pentahedrons
-  int aID0, k , aJ[3];
+  int aID0, k , aJ[4];
   vector<const SMDS_MeshNode*> aN;
   //
   SMDS_ElemIteratorPtr itf, aItNodes;
@@ -674,7 +674,7 @@ void StdMeshers_Penta_3D::MakeVolumeMesh()
     int nbFaceNodes = pE0->NbNodes();
     if(myCreateQuadratic)
       nbFaceNodes = nbFaceNodes/2;
-    if ( aN.size() < nbFaceNodes * 2 )
+    if ( (int) aN.size() < nbFaceNodes * 2 )
       aN.resize( nbFaceNodes * 2 );
     //
     for ( k=0; k<nbFaceNodes; ++k ) {
@@ -806,7 +806,7 @@ void StdMeshers_Penta_3D::MakeMeshOnFxy1()
     aNbNodes = pE0->NbNodes();
     if(myCreateQuadratic)
       aNbNodes = aNbNodes/2;
-    if ( aNodes1.size() < aNbNodes )
+    if ( (int) aNodes1.size() < aNbNodes )
       aNodes1.resize( aNbNodes );
     //
     k = aNbNodes-1; // reverse a face
@@ -1476,7 +1476,7 @@ bool StdMeshers_Penta_3D::LoadIJNodes(StdMeshers_IJNodeMap & theIJNodes,
     nVec.resize( vsize, nullNode );
     loadedNodes.insert( nVec[ 0 ] = node );
   }
-  if ( theIJNodes.size() != hsize ) {
+  if ( (int) theIJNodes.size() != hsize ) {
     MESSAGE( "Wrong node positions on theBaseEdge" );
     return false;
   }

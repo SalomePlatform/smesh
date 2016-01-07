@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -66,6 +66,17 @@ StdMeshers_Projection_3D_i::~StdMeshers_Projection_3D_i()
   return ( ::StdMeshers_Projection_3D* )myBaseImpl;
 }
 
+//================================================================================
+/*!
+ * \brief Return true if the algorithm is applicable to a shape
+ */
+//================================================================================
+
+CORBA::Boolean StdMeshers_Projection_3D_i::IsApplicable(const TopoDS_Shape &S,
+                                                        CORBA::Boolean toCheckAll)
+{
+  return ::StdMeshers_Projection_3D::IsApplicable( S, toCheckAll );
+}
 
 //=============================================================================
 /*!

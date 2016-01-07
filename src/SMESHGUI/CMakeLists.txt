@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2012-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -39,9 +39,7 @@ INCLUDE_DIRECTORIES(
   ${PROJECT_SOURCE_DIR}/src/SMESHFiltersSelection
   ${PROJECT_SOURCE_DIR}/src/SMDS
   ${PROJECT_SOURCE_DIR}/src/SMESHDS
-  ${PROJECT_SOURCE_DIR}/src/SMESH
   ${PROJECT_SOURCE_DIR}/src/SMESHUtils
-  ${PROJECT_SOURCE_DIR}/src/SMESH_I
   ${PROJECT_SOURCE_DIR}/src/Controls
   ${PROJECT_SOURCE_DIR}/src/SMESHClient
   ${PROJECT_SOURCE_DIR}/src/MEDWrapper/Base
@@ -143,6 +141,9 @@ SET(_moc_HEADERS
   SMESHGUI_Add0DElemsOnAllNodesDlg.h
   SMESHGUI_FieldSelectorWdg.h
   SMESHGUI_DisplayEntitiesDlg.h
+  SMESHGUI_SplitBiQuad.h
+  SMESHGUI_PreVisualObj.h
+  SMESHGUI_IdPreview.h
 )
 
 # header files / no moc processing
@@ -251,6 +252,9 @@ SET(_other_SOURCES
   SMESHGUI_FileValidator.cxx
   SMESHGUI_FieldSelectorWdg.cxx
   SMESHGUI_DisplayEntitiesDlg.cxx
+  SMESHGUI_SplitBiQuad.cxx
+  SMESHGUI_PreVisualObj.cxx
+  SMESHGUI_IdPreview.cxx
 )
 
 # sources / to compile

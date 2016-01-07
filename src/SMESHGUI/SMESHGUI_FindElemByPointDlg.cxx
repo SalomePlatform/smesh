@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2014  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -101,7 +101,7 @@ void SMESHGUI_FindElemByPointDlg::setTypes(SMESH::array_of_ElementType_var & typ
   myElemTypeCombo->blockSignals(true);
   myElemTypeCombo->clear();
   int nbTypes = 0, hasNodes = 0;
-  for ( int i = 0; i < types->length(); ++i )
+  for ( int i = 0; i < (int) types->length(); ++i )
   {
     switch ( types[i] ) {
     case SMESH::NODE:
@@ -238,6 +238,7 @@ SMESHGUI_FindElemByPointOp::SMESHGUI_FindElemByPointOp()
   :SMESHGUI_SelectionOp()
 {
   mySimulation = 0;
+  mySMESHGUI = 0;
   myDlg = new SMESHGUI_FindElemByPointDlg;
   myHelpFileName = "find_element_by_point_page.html";
 
@@ -279,7 +280,10 @@ void SMESHGUI_FindElemByPointOp::startOperation()
 {
   // init simulation with a current View
   if ( mySimulation ) delete mySimulation;
-  mySimulation = new SMESHGUI_MeshEditPreview(SMESH::GetViewWindow( getSMESHGUI() ));
+  mySMESHGUI = getSMESHGUI();
+  mySimulation = new SMESHGUI_MeshEditPreview(SMESH::GetViewWindow( mySMESHGUI ) );
+  connect(mySMESHGUI, SIGNAL (SignalActivatedViewManager()), this, SLOT(onOpenView()));
+  connect(mySMESHGUI, SIGNAL (SignalCloseView()), this, SLOT(onCloseView()));
   vtkProperty* aProp = vtkProperty::New();
   aProp->SetRepresentationToWireframe();
   aProp->SetColor(250, 0, 250);
@@ -309,10 +313,37 @@ void SMESHGUI_FindElemByPointOp::stopOperation()
     delete mySimulation;
     mySimulation = 0;
   }
+  disconnect(mySMESHGUI, SIGNAL (SignalActivatedViewManager()), this, SLOT(onOpenView()));
+  disconnect(mySMESHGUI, SIGNAL (SignalCloseView()), this, SLOT(onCloseView()));
   selectionMgr()->removeFilter( myFilter );
   SMESHGUI_SelectionOp::stopOperation();
 }
 
+//=================================================================================
+/*!
+ * \brief SLOT called when the viewer opened
+ */
+//=================================================================================
+void SMESHGUI_FindElemByPointOp::onOpenView()
+{
+  if ( mySimulation ) {
+    mySimulation->SetVisibility(false);
+  }
+  else {
+    mySimulation = new SMESHGUI_MeshEditPreview(SMESH::GetViewWindow( mySMESHGUI ));
+  }
+}
+
+//=================================================================================
+/*!
+ * \brief SLOT called when the viewer closed
+ */
+//=================================================================================
+void SMESHGUI_FindElemByPointOp::onCloseView()
+{
+  delete mySimulation;
+  mySimulation = 0;
+}
 //================================================================================
 /*!
  * \brief hilight found selected elements
@@ -418,7 +449,7 @@ void SMESHGUI_FindElemByPointOp::onFind()
                                                myDlg->myZ->GetValue(),
                                                SMESH::ElementType( myDlg->myElemTypeCombo->currentId()));
     myDlg->myFoundList->clear();
-    for ( int i = 0; i < foundIds->length(); ++i )
+    for ( int i = 0; i < (int) foundIds->length(); ++i )
       myDlg->myFoundList->addItem( QString::number( foundIds[i] ));
 
     if ( foundIds->length() > 0 )
@@ -503,7 +534,8 @@ void SMESHGUI_FindElemByPointOp::redisplayPreview()
   myPreview->nodesXYZ[0].x = myDlg->myX->GetValue();
   myPreview->nodesXYZ[0].y = myDlg->myY->GetValue();
   myPreview->nodesXYZ[0].z = myDlg->myZ->GetValue();
-
+  if (!mySimulation)
+    mySimulation = new SMESHGUI_MeshEditPreview(SMESH::GetViewWindow( mySMESHGUI ));
   mySimulation->SetData(&myPreview.in());
 }
 
