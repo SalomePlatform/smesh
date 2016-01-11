@@ -30,7 +30,7 @@ from blocFissure.gmu import initLog
 initLog.setVerbose()
 
 from blocFissure.gmu import geomsmesh
-from blocFissure.casStandard import casStandard
+from blocFissure.gmu.casStandard import casStandard
 
 from blocFissure.ihm.fissureCoude_ihm import fissureCoude_ihm
 
