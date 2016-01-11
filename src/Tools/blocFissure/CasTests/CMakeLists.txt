@@ -55,4 +55,4 @@ SET(plugin_SCRIPTS
 
 # --- rules ---
 
-SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS}/blocFissure/CasTests)
+SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/blocFissure/CasTests)

@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 
 import sys
 import salome
@@ -35,7 +35,7 @@ Vertex_2 = geompy.MakeVertex(-5, -5, 90)
 Vertex_3 = geompy.MakeVertex(65, 65, 110)
 Box_2 = geompy.MakeBoxTwoPnt(Vertex_3, Vertex_2)
 Common_1 = geompy.MakeCommon(Disk_1, Box_2)
-geompy.Export(Common_1, os.path.join(gmu.pathBloc, "materielCasTests/CubeAngleFiss.brep"), "BREP")
+geompy.ExportBREP(Common_1, os.path.join(gmu.pathBloc, "materielCasTests/CubeAngleFiss.brep"))
 geompy.addToStudy( O, 'O' )
 geompy.addToStudy( OX, 'OX' )
 geompy.addToStudy( OY, 'OY' )

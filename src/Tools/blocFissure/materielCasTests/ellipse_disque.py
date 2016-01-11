@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 
 import sys
 import salome
@@ -35,7 +35,7 @@ Vertex_2 = geompy.MakeVertex(98, -2, -2)
 Vertex_3 = geompy.MakeVertex(120, 2, 60)
 Box_1 = geompy.MakeBoxTwoPnt(Vertex_3, Vertex_2)
 Ellipse_disque = geompy.MakeCommon(Box_1, Scale_1)
-geompy.Export(Ellipse_disque, os.path.join(gmu.pathBloc, "materielCasTests/ellipse_disque.brep"), "BREP")
+geompy.ExportBREP(Ellipse_disque, os.path.join(gmu.pathBloc, "materielCasTests/ellipse_disque.brep"))
 geompy.addToStudy( O, 'O' )
 geompy.addToStudy( OX, 'OX' )
 geompy.addToStudy( OY, 'OY' )

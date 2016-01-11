@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 
 import sys
 import salome
@@ -45,8 +45,8 @@ Plane_2 = geompy.MakePlane(Vertex_1, Line_1, 2000)
 geomObj_4 = geompy.MakeMarker(0, 0, 0, 1, 0, 0, 0, 1, 0)
 Sketch_2 = geompy.MakeSketcherOnPlane("Sketcher:F 0.000000 0.000000:T 120.000000 0.000000:T 0.000000 100.000000:T -120.000000 20.000000:WW", Plane_2 )
 SectionInclinee = geompy.MakeFaceWires([Sketch_2], 1)
-geompy.Export(sectionDroite, os.path.join(gmu.pathBloc, "materielCasTests/EprouvetteDroiteFissPb1.brep"), "BREP")
-geompy.Export(SectionInclinee, os.path.join(gmu.pathBloc, "materielCasTests/EprouvetteDroiteFiss2.brep"), "BREP")
+geompy.ExportBREP(sectionDroite, os.path.join(gmu.pathBloc, "materielCasTests/EprouvetteDroiteFissPb1.brep"))
+geompy.ExportBREP(SectionInclinee, os.path.join(gmu.pathBloc, "materielCasTests/EprouvetteDroiteFiss2.brep"))
 Vertex_2 = geompy.MakeVertex(110, -10, 200)
 Vertex_3 = geompy.MakeVertex(110, 80, 200)
 Vertex_4 = geompy.MakeVertex(-10, 80, 200)
@@ -63,8 +63,8 @@ Line_7 = geompy.MakeLineTwoPnt(Vertex_5, Vertex_6)
 Face_1_vertex_9 = geompy.GetSubShape(Face_1, [9])
 Line_8 = geompy.MakeLineTwoPnt(Vertex_6, Face_1_vertex_9)
 Face_2 = geompy.MakeFaceWires([Line_5, Line_6, Line_7, Line_8], 1)
-geompy.Export(Face_1, os.path.join(gmu.pathBloc, "materielCasTests/EprouvetteDroiteFiss_1.brep"), "BREP")
-geompy.Export(Face_2, os.path.join(gmu.pathBloc, "materielCasTests/EprouvetteDroiteFiss_2.brep"), "BREP")
+geompy.ExportBREP(Face_1, os.path.join(gmu.pathBloc, "materielCasTests/EprouvetteDroiteFiss_1.brep"))
+geompy.ExportBREP(Face_2, os.path.join(gmu.pathBloc, "materielCasTests/EprouvetteDroiteFiss_2.brep"))
 geompy.addToStudy( O, 'O' )
 geompy.addToStudy( OX, 'OX' )
 geompy.addToStudy( OY, 'OY' )

@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 
 import sys
 import salome
@@ -43,7 +43,7 @@ EprouvetteCourbe = geompy.MakeCut(Common_1, Cylinder_3)
 geomObj_1 = geompy.MakeMarker(0, 0, 0, 1, 0, 0, 0, 1, 0)
 Sketch_1 = geompy.MakeSketcherOnPlane("Sketcher:F -110.000000 85.000000:T 220.000000 0.000000:T 0.000000 75.000000:T -220.000000 0.000000:WW", geomObj_1 )
 SectionDroite = geompy.MakeFaceWires([Sketch_1], 1)
-geompy.Export(SectionDroite, os.path.join(gmu.pathBloc, "materielCasTests/EprouvetteCourbeFiss.brep"), "BREP")
+geompy.ExportBREP(SectionDroite, os.path.join(gmu.pathBloc, "materielCasTests/EprouvetteCourbeFiss.brep"))
 geompy.addToStudy( O, 'O' )
 geompy.addToStudy( OX, 'OX' )
 geompy.addToStudy( OY, 'OY' )

@@ -93,9 +93,9 @@ geompy.addToStudy( O_1, 'O' )
 geompy.addToStudy( OX_1, 'OX' )
 geompy.addToStudy( OY_1, 'OY' )
 geompy.addToStudy( OZ_1, 'OZ' )
-geompy.Export(cubeFin_Transverse, os.path.join(gmu.pathBloc, "materielCasTests/cubeFin_Transverse.brep"), "BREP")
-geompy.Export(cubeFin_Coin, os.path.join(gmu.pathBloc, "materielCasTests/cubeFin_Coin.brep"), "BREP")
-geompy.Export(cubeFin_Milieu, os.path.join(gmu.pathBloc, "materielCasTests/cubeFin_Milieu.brep"), "BREP")
+geompy.ExportBREP(cubeFin_Transverse, os.path.join(gmu.pathBloc, "materielCasTests/cubeFin_Transverse.brep"))
+geompy.ExportBREP(cubeFin_Coin, os.path.join(gmu.pathBloc, "materielCasTests/cubeFin_Coin.brep"))
+geompy.ExportBREP(cubeFin_Milieu, os.path.join(gmu.pathBloc, "materielCasTests/cubeFin_Milieu.brep"))
 
 ###
 ### SMESH component

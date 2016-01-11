@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 
 import sys
 import salome
@@ -62,14 +62,14 @@ FissInCylindre = geompy.MakeFaceWires([Curve_2, Arc_1], 1)
 Divided_Cylinder_1 = geompy.MakeDividedCylinder(145, 800, GEOM.SQUARE)
 CylindreSain = geompy.MakeRotation(Divided_Cylinder_1, OZ, 45*math.pi/180.0)
 [Compound_1, vertical, radial, Compound_4] = geompy.Propagate(CylindreSain)
-geompy.Export(FissInCylindre, os.path.join(gmu.pathBloc, "materielCasTests/FissInCylindre.brep"), "BREP")
+geompy.ExportBREP(FissInCylindre, os.path.join(gmu.pathBloc, "materielCasTests/FissInCylindre.brep"))
 Vertex_12 = geompy.MakeVertex(0, -145, 500)
 Circle_2 = geompy.MakeCircle(Vertex_12, None, 145)
 Face_1 = geompy.MakeFaceWires([Circle_2], 1)
 Vertex_13 = geompy.MakeVertex(0, 0, 500)
 Disk_1 = geompy.MakeDiskPntVecR(Vertex_13, OZ_1, 170)
 FissInCylindre2 = geompy.MakeCommon(Face_1, Disk_1)
-geompy.Export(FissInCylindre2, os.path.join(gmu.pathBloc, "materielCasTests/FissInCylindre2.brep"), "BREP")
+geompy.ExportBREP(FissInCylindre2, os.path.join(gmu.pathBloc, "materielCasTests/FissInCylindre2.brep"))
 geompy.addToStudy( O, 'O' )
 geompy.addToStudy( OX, 'OX' )
 geompy.addToStudy( OY, 'OY' )

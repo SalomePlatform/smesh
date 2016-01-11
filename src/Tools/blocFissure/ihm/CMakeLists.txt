@@ -26,6 +26,7 @@ SET(plugin_SCRIPTS
   __init__.py
   fissureCoude_ihm.py
   fissureCoude_plugin.py
+  dialogFissureCoude.dic
 )
 
 # --- resources ---
@@ -41,6 +42,6 @@ PYQT4_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_files})
 
 # --- rules ---
 
-SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS}/blocFissure/ihm)
+SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/blocFissure/ihm)
 
-SALOME_INSTALL_SCRIPTS("${_pyuic_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS}/blocFissure/ihm)
+SALOME_INSTALL_SCRIPTS("${_pyuic_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/blocFissure/ihm)

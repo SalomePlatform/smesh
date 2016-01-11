@@ -1,4 +1,4 @@
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 
 import sys
 import salome
@@ -54,7 +54,7 @@ geompy.addToStudy( Vertex_4, 'Vertex_4' )
 geompy.addToStudy( Box_1, 'Box_1' )
 geompy.addToStudy( ellipse1, 'ellipse1' )
 geompy.addToStudyInFather( ellipse1, fondFiss, 'fondFiss' )
-geompy.Export(ellipse1, os.path.join(gmu.pathBloc, "materielCasTests/ellipse1.brep"), "BREP")
+geompy.ExportBREP(ellipse1, os.path.join(gmu.pathBloc, "materielCasTests/ellipse1.brep"))
 
 
 if salome.sg.hasDesktop():
