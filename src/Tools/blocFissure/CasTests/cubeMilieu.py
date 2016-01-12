@@ -6,7 +6,7 @@ from blocFissure import gmu
 dicoParams = dict(nomCas            = 'cubeMilieu',
                   maillageSain      = os.path.join(gmu.pathBloc, 'materielCasTests/cubeFin.med'),
                   brepFaceFissure   = os.path.join(gmu.pathBloc, "materielCasTests/cubeFin_Milieu.brep"),
-                  edgeFissIds       = [4],
+                  edgeFissIds       = [7],
                   lgInfluence       = 50,
                   meshBrep          = (5,10),
                   rayonPipe         = 10,
