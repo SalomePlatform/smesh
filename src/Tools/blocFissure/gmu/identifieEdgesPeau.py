@@ -96,6 +96,7 @@ def identifieEdgesPeau(edgesFissExtPipe,verticesPipePeau, facePeau, facesPeauSor
   geompy.UnionList(groupEdgesBordPeau, edgesBords)
   bordsVifs = None
   if aretesVivesC is not None:
+    logging.debug("identification des bords vifs par GetInPlace (old)")
     bordsVifs = geompy.GetInPlace(facePeau, aretesVivesC)
   if bordsVifs is not None:
     geomPublishInFather(initLog.debug, facePeau, bordsVifs, "bordsVifs")

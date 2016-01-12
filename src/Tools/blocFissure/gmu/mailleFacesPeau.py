@@ -31,7 +31,8 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut,
   for ifil in range(nbFacesFilling):
     meshFacePeau = None
     if partitionsPeauFissFond[ifil] is None: # face de peau maillage sain intacte
-      
+
+      logging.debug("meshFacePeau %d intacte", ifil)
       # --- edges de bord de la face de filling
       filling = facesDefaut[ifil]
       edgesFilling = geompy.ExtractShapes(filling, geompy.ShapeType["EDGE"], False)
@@ -49,6 +50,7 @@ def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut,
       
     else:
       
+      logging.debug("meshFacePeau %d coupée par la fissure", ifil)
       facePeau           = facesPeaux[ifil] # pour chaque face : la face de peau finale a mailler (percée des faces débouchantes)
       edgesCircPeau      = edCircPeau[ifil] # pour chaque face de peau : [subshape edge circulaire aux débouchés du pipe]
       verticesCircPeau   = ptCircPeau[ifil] # pour chaque face de peau : [subshape point sur edge circulaire aux débouchés du pipe]

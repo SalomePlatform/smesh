@@ -22,13 +22,14 @@ def compoundFromList(elements, nom=None):
       
   if nom is not None:
     for i,a in enumerate(shapeList):
-      nom = nom +"%d"%i
-      logging.debug('nom: %s',nom)
-      geomPublish(initLog.debug, a, nom)
+      nomi = nom +"%d"%i
+      logging.debug('nom: %s',nomi)
+      geomPublish(initLog.debug, a, nomi)
 
   shapeCompound = None
   if len(shapeList) > 0:
     shapeCompound =geompy.MakeCompound(shapeList)
-
+    nomc = "compound_%s"%nom
+    geomPublish(initLog.debug, shapeCompound, nomc)
   return shapeCompound
     
