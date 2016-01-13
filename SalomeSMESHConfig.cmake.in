@@ -75,32 +75,34 @@ IF(SALOME_SMESH_USE_TBB)
   SET_AND_CHECK(TBB_ROOT_DIR_EXP "@PACKAGE_TBB_ROOT_DIR@")
 ENDIF()
 
-# For all prerequisites, load the corresponding targets if the package was used 
+# For all prerequisites, load the corresponding targets if the package was used
 # in CONFIG mode. This ensures dependent projects link correctly
 # without having to set LD_LIBRARY_PATH:
-SET(_PREREQ @_PREREQ_LIST@)
-SET(_PREREQ_CONFIG_DIR @_PREREQ_DIR_LIST@)
-SET(_PREREQ_COMPONENTS "@_PREREQ_COMPO_LIST@")
-LIST(LENGTH _PREREQ_CONFIG_DIR _list_len)
-IF(NOT _list_len EQUAL 0)
+SET(_PREREQ_@PROJECT_NAME@ @_PREREQ_LIST@)
+SET(_PREREQ_@PROJECT_NAME@_CONFIG_DIR @_PREREQ_DIR_LIST@)
+SET(_PREREQ_@PROJECT_NAME@_COMPONENTS "@_PREREQ_COMPO_LIST@")
+LIST(LENGTH _PREREQ_@PROJECT_NAME@_CONFIG_DIR _list_len_@PROJECT_NAME@)
+IF(NOT _list_len_@PROJECT_NAME@ EQUAL 0)
   # Another CMake stupidity - FOREACH(... RANGE r) generates r+1 numbers ...
-  MATH(EXPR _range "${_list_len}-1")
-  FOREACH(_p RANGE ${_range})  
-    LIST(GET _PREREQ            ${_p} _pkg    )
-    LIST(GET _PREREQ_CONFIG_DIR ${_p} _pkg_dir)
-    LIST(GET _PREREQ_COMPONENTS ${_p} _pkg_compo)
-    MESSAGE(STATUS "===> Reloading targets from ${_pkg} ...")
-    IF(NOT _pkg_compo)
-      FIND_PACKAGE(${_pkg} REQUIRED NO_MODULE 
-          PATHS "${_pkg_dir}" 
-          NO_DEFAULT_PATH)
-    ELSE()
-      STRING(REPLACE "," ";" _compo_lst "${_pkg_compo}")
-      MESSAGE(STATUS "===> (components: ${_pkg_compo})")
-      FIND_PACKAGE(${_pkg} REQUIRED NO_MODULE
-          COMPONENTS ${_compo_lst} 
-          PATHS "${_pkg_dir}"
-          NO_DEFAULT_PATH)
+  MATH(EXPR _range_@PROJECT_NAME@ "${_list_len_@PROJECT_NAME@}-1")
+  FOREACH(_p_@PROJECT_NAME@ RANGE ${_range_@PROJECT_NAME@})
+    LIST(GET _PREREQ_@PROJECT_NAME@            ${_p_@PROJECT_NAME@} _pkg_@PROJECT_NAME@    )
+    LIST(GET _PREREQ_@PROJECT_NAME@_CONFIG_DIR ${_p_@PROJECT_NAME@} _pkg_dir_@PROJECT_NAME@)
+    LIST(GET _PREREQ_@PROJECT_NAME@_COMPONENTS ${_p_@PROJECT_NAME@} _pkg_compo_@PROJECT_NAME@)
+    IF(NOT OMIT_DETECT_PACKAGE_${_pkg_@PROJECT_NAME@})
+      MESSAGE(STATUS "===> Reloading targets from ${_pkg_@PROJECT_NAME@} ...")
+      IF(NOT _pkg_compo_@PROJECT_NAME@)
+        FIND_PACKAGE(${_pkg_@PROJECT_NAME@} REQUIRED NO_MODULE
+            PATHS "${_pkg_dir_@PROJECT_NAME@}"
+            NO_DEFAULT_PATH)
+      ELSE()
+        STRING(REPLACE "," ";" _compo_lst_@PROJECT_NAME@ "${_pkg_compo_@PROJECT_NAME@}")
+        MESSAGE(STATUS "===> (components: ${_pkg_compo_@PROJECT_NAME@})")
+        FIND_PACKAGE(${_pkg_@PROJECT_NAME@} REQUIRED NO_MODULE
+            COMPONENTS ${_compo_lst_@PROJECT_NAME@}
+            PATHS "${_pkg_dir_@PROJECT_NAME@}"
+            NO_DEFAULT_PATH)
+      ENDIF()
     ENDIF()
   ENDFOREACH()
 ENDIF()
