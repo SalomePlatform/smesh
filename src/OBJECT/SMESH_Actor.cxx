@@ -1707,13 +1707,14 @@ void SMESH_ActorDef::SetRepresentation (int theMode)
   my0DActor->SetRepresentation(aReperesent);
   myBallActor->SetRepresentation(aReperesent);
 
-  switch(myControlMode){
+  switch ( myControlMode ) {
   case eLength:
   case eMultiConnection:
     aProp = aBackProp = my1DProp;
     if(myRepresentation != ePoint)
       aReperesent = SMESH_DeviceActor::eInsideframe;
     break;
+  default:;
   }
 
   if(aQuadraticMode == SMESH_Actor::eLines)
@@ -2253,7 +2254,7 @@ vtkPlane*
 SMESH_ActorDef::
 GetClippingPlane(vtkIdType theID)
 {
-  if(theID >= myCippingPlaneCont.size())
+  if ( theID >= (vtkIdType)myCippingPlaneCont.size() )
     return NULL;
   return myCippingPlaneCont[theID].Get();
 }
@@ -2487,7 +2488,7 @@ SPlot2d_Histogram* SMESH_ActorDef::UpdatePlot2Histogram() {
     bool isLogarithmic = lookupTable->GetScale() == VTK_SCALE_LOG10;
     fun->GetHistogram(nbIntervals, nbEvents, funValues, elemIds, range, isLogarithmic);
 
-    for ( int i = 0; i < std::min( nbEvents.size(), funValues.size() -1 ); i++ )
+    for ( size_t i = 0; i < std::min( nbEvents.size(), funValues.size() -1 ); i++ )
       my2dHistogram->addPoint(funValues[i] + (funValues[i+1] - funValues[i])/2.0, static_cast<double>(nbEvents[i]));
 
     if(funValues.size() >= 2)

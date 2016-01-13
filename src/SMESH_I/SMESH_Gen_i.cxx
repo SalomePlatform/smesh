@@ -960,7 +960,7 @@ void SMESH_Gen_i::SetOption(const char* name, const char* value)
       // color must be presented as a string of next form:
       if ( str.at(0) == '#' && str.length() == 7 ) { // hexadecimal color ("#ffaa00", for example)
         str = str.substr(1);
-        for ( int i = 0; i < str.length()/2; i++ )
+        for ( size_t i = 0; i < str.length()/2; i++ )
           if ( str.at(i*2) >= '0' && str.at(i*2) <= 'f' && str.at(i*2+1) >= '0' && str.at(i*2+1) <= 'f' )
             color.push_back( strtol( str.substr( i*2, 2 ).c_str(), NULL, 16 ) );
       }
@@ -4896,7 +4896,7 @@ bool SMESH_Gen_i::LoadASCII( SALOMEDS::SComponent_ptr theComponent,
   _CORBA_Octet* buffer = new _CORBA_Octet[real_size];
   char tmp[3];
   tmp[2]='\0';
-  int c = -1;
+  uint c = -1;
   for ( int i = 0; i < real_size; i++ )
   {
     memcpy( &(tmp[0]), &(theStream[i*3+1]), 2 );

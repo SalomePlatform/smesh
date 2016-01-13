@@ -132,8 +132,8 @@ bool FunctionTable::value( const double t, double& f ) const
 
 double FunctionTable::integral( const int i ) const
 {
-  if( i>=0 && i<myData.size()-1 )
-    return integral( i, myData[2*(i+1)]-myData[2*i] );
+  if ( i >= 0  &&  i < (int)myData.size()-1 )
+    return integral( i, myData[2*(i+1)] - myData[2*i] );
   else
     return 0;
 }

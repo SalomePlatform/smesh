@@ -271,7 +271,7 @@ namespace SMESH
     GEOM_Actor* getActor(const TopoDS_Shape& shape)
     {
       int index = myIndexToShape.FindIndex( shape ) - 1;
-      if ( index < 0 || index >= myActors.size() )
+      if ( index < 0 || index >= (int) myActors.size() )
         return 0;
       GEOM_Actor* & actor = myActors[ index ];
       if ( !actor ) {
@@ -887,7 +887,7 @@ void SMESHGUI_BaseComputeOp::computeMesh()
 #endif
       aCompErrors = gen->GetComputeErrors( myMesh, myMainShape );
       // check if there are memory problems
-      for ( int i = 0; (i < aCompErrors->length()) && !memoryLack; ++i )
+      for ( CORBA::ULong i = 0; (i < aCompErrors->length()) && !memoryLack; ++i )
         memoryLack = ( aCompErrors[ i ].code == SMESH::COMPERR_MEMORY_PB );
     }
     catch(const SALOME::SALOME_Exception & S_ex) {
@@ -922,7 +922,7 @@ void SMESHGUI_BaseComputeOp::computeMesh()
         aListToUpdate.append( QPair< SMESH::SMESH_IDSource_var, _PTR(SObject) >(aMeshObj, aMeshSObj) );
         SMESH::submesh_array_var aSubMeshes = myMesh->GetSubMeshes();
         // put SubMeshes into list
-        for ( int i = 0; i < aSubMeshes->length(); i++ ) {
+        for ( CORBA::ULong i = 0; i < aSubMeshes->length(); i++ ) {
           SMESH::SMESH_subMesh_var sm = aSubMeshes[i];
           if ( CORBA::is_nil( sm ) ) continue;
           _PTR(SObject) smSObj = SMESH::ObjectToSObject( sm );
@@ -1081,7 +1081,7 @@ void SMESHGUI_BaseComputeOp::showComputeResult( const bool theMemoryLack,
   else
   {
     bool onlyWarnings = !theNoCompError; // == valid mesh computed but there are errors reported
-    for ( int i = 0; i < theCompErrors->length() && onlyWarnings; ++i )
+    for ( CORBA::ULong i = 0; i < theCompErrors->length() && onlyWarnings; ++i )
       onlyWarnings = ( theCompErrors[ i ].code == SMESH::COMPERR_WARNING ||
                        theCompErrors[ i ].code == SMESH::COMPERR_NO_MESH_ON_SHAPE );
 
@@ -1136,7 +1136,7 @@ void SMESHGUI_BaseComputeOp::showComputeResult( const bool theMemoryLack,
       tbl->setColumnWidth( COL_ERROR, 200 );
 
       bool hasBadMesh = false;
-      for ( int row = 0; row < theCompErrors->length(); ++row )
+      for ( int row = 0; row < (int) theCompErrors->length(); ++row )
       {
         SMESH::ComputeError & err = theCompErrors[ row ];
 
@@ -1542,15 +1542,15 @@ LightApp_Dialog* SMESHGUI_ComputeOp::dlg() const
 //================================================================================
 /*!
  * \brief Constructor
-*/
+ */
 //================================================================================
 
 SMESHGUI_PrecomputeOp::SMESHGUI_PrecomputeOp()
   : SMESHGUI_BaseComputeOp(),
-    myDlg( 0 ),
-    myOrderMgr( 0 ),
     myActiveDlg( 0 ),
-    myPreviewDisplayer( 0 )
+    myDlg( 0 ),
+    myPreviewDisplayer( 0 ),
+    myOrderMgr( 0 )
 {
 }
 
@@ -1962,7 +1962,7 @@ void SMESHGUI_PrecomputeOp::onPreview()
 #endif
     aCompErrors = gen->GetComputeErrors( myMesh, myMainShape );
     // check if there are memory problems
-    for ( int i = 0; (i < aCompErrors->length()) && !memoryLack; ++i )
+    for ( CORBA::ULong i = 0; (i < aCompErrors->length()) && !memoryLack; ++i )
       memoryLack = ( aCompErrors[ i ].code == SMESH::COMPERR_MEMORY_PB );
   }
   catch(const SALOME::SALOME_Exception & S_ex){
@@ -2293,7 +2293,7 @@ void SMESHGUI_BaseComputeOp::showEvaluateResult(const SMESH::long_array& theRes,
       tbl->setColumnWidth( COL_ERROR, 200 );
 
       bool hasBadMesh = false;
-      for ( int row = 0; row < theCompErrors->length(); ++row )
+      for ( int row = 0; row < (int) theCompErrors->length(); ++row )
       {
         SMESH::ComputeError & err = theCompErrors[ row ];
 

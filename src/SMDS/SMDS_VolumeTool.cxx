@@ -843,7 +843,7 @@ bool SMDS_VolumeTool::GetBaryCenter(double & X, double & Y, double & Z) const
   if ( !myVolume )
     return false;
 
-  for ( int i = 0; i < myVolumeNodes.size(); i++ ) {
+  for ( size_t i = 0; i < myVolumeNodes.size(); i++ ) {
     X += myVolumeNodes[ i ]->X();
     Y += myVolumeNodes[ i ]->Y();
     Z += myVolumeNodes[ i ]->Z();
@@ -1390,7 +1390,7 @@ bool SMDS_VolumeTool::IsLinked (const SMDS_MeshNode* theNode1,
 
   // find nodes indices
   int i1 = -1, i2 = -1, nbFound = 0;
-  for ( int i = 0; i < myVolumeNodes.size() && nbFound < 2; i++ )
+  for ( size_t i = 0; i < myVolumeNodes.size() && nbFound < 2; i++ )
   {
     if ( myVolumeNodes[ i ] == theNode1 )
       i1 = i, ++nbFound;
@@ -1418,7 +1418,7 @@ bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
   int minInd = min( theNode1Index, theNode2Index );
   int maxInd = max( theNode1Index, theNode2Index );
 
-  if ( minInd < 0 || maxInd > myVolumeNodes.size() - 1 || maxInd == minInd )
+  if ( minInd < 0 || maxInd > (int)myVolumeNodes.size() - 1 || maxInd == minInd )
     return false;
 
   VolumeType type = GetVolumeType();
@@ -1535,7 +1535,7 @@ bool SMDS_VolumeTool::IsLinked (const int theNode1Index,
 int SMDS_VolumeTool::GetNodeIndex(const SMDS_MeshNode* theNode) const
 {
   if ( myVolume ) {
-    for ( int i = 0; i < myVolumeNodes.size(); i++ ) {
+    for ( size_t i = 0; i < myVolumeNodes.size(); i++ ) {
       if ( myVolumeNodes[ i ] == theNode )
         return i;
     }
@@ -1596,8 +1596,8 @@ int SMDS_VolumeTool::GetAllExistingEdges(vector<const SMDS_MeshElement*> & edges
 {
   edges.clear();
   edges.reserve( myVolumeNodes.size() * 2 );
-  for ( int i = 0; i < myVolumeNodes.size()-1; ++i ) {
-    for ( int j = i + 1; j < myVolumeNodes.size(); ++j ) {
+  for ( size_t i = 0; i < myVolumeNodes.size()-1; ++i ) {
+    for ( size_t j = i + 1; j < myVolumeNodes.size(); ++j ) {
       if ( IsLinked( i, j )) {
         const SMDS_MeshElement* edge =
           SMDS_Mesh::FindEdge( myVolumeNodes[i], myVolumeNodes[j] );

@@ -773,8 +773,9 @@ module SMESH
       SEW_DIFF_NB_OF_ELEMENTS,
       SEW_TOPO_DIFF_SETS_OF_ELEMENTS,
       SEW_BAD_SIDE1_NODES,
-      SEW_BAD_SIDE2_NODES
-      };
+      SEW_BAD_SIDE2_NODES,
+      SEW_INTERNAL_ERROR
+    };
 
     Sew_Error SewFreeBorders (in long FirstNodeID1,
                               in long SecondNodeID1,

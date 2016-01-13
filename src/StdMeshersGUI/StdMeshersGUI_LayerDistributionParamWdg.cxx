@@ -45,7 +45,7 @@
 //================================================================================
 /*!
  * \brief Constructor initialized by filter
-  * \param f - object filter
+ * \param f - object filter
  */
 //================================================================================
 
@@ -53,8 +53,8 @@ StdMeshersGUI_LayerDistributionParamWdg
 ::StdMeshersGUI_LayerDistributionParamWdg(SMESH::SMESH_Hypothesis_ptr holderHyp,
                                           SMESH::SMESH_Hypothesis_ptr distribHyp,
                                           const QString&              name,
-                                          QDialog*                    dlg): 
-  QWidget(), myName(name), myDlg( dlg )
+                                          QDialog*                    dlg):
+  QWidget(), myDlg( dlg ), myName(name)
 {
   myHolderHyp = SMESH::SMESH_Hypothesis::_duplicate( holderHyp );
   init();

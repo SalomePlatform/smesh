@@ -64,19 +64,19 @@ Plot2d_QwtLegendLabel* getLegendLabel( QwtPlotCurve* plotCurve )
   QwtLegend* legend = dynamic_cast<QwtLegend*>( plotCurve->plot()->legend() );
   QWidget* widget = legend->legendWidget( itemInfo );
   QwtLegendLabel* label = dynamic_cast<QwtLegendLabel*>( widget );
-  if( Plot2d_QwtLegendLabel* anItem = (Plot2d_QwtLegendLabel*)label )
-    return anItem;
+  Plot2d_QwtLegendLabel* anItem = (Plot2d_QwtLegendLabel*)label;
+  return anItem;
 }
 
 StdMeshersGUI_DistrPreview::StdMeshersGUI_DistrPreview( QWidget* p, StdMeshers::StdMeshers_NumberOfSegments_ptr h )
-: QwtPlot( p ),
-  myPoints( 50 ),
-  myIsTable( false ),
-  myVars( 1, 1 ),
-  myValues( 1, 1 ),
-  myConv( CUT_NEGATIVE ),
-  myIsDone( true ),
-  myNbSeg( 1 )
+  : QwtPlot( p ),
+    myPoints( 50 ),
+    myNbSeg( 1 ),
+    myIsTable( false ),
+    myConv( CUT_NEGATIVE ),
+    myVars( 1, 1 ),
+    myValues( 1, 1 ),
+    myIsDone( true )
 {
   Kernel_Utils::Localizer loc;
   myHypo = StdMeshers::StdMeshers_NumberOfSegments::_duplicate( h );

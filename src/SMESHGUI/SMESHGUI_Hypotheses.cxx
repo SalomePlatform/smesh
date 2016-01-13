@@ -239,7 +239,9 @@ QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
           }
         }
         break;
-      }
+
+      default:;
+      } // switch( (*anIt).myValue.type() )
 
     if( w )
     {
@@ -297,7 +299,7 @@ void SMESHGUI_GenericHypothesisCreator::onDialogFinished( int result )
   {
     SMESH::SObjectList listSOmesh = SMESH::GetMeshesUsingAlgoOrHypothesis( myHypo );
     if( listSOmesh.size() > 0 )
-      for( int i = 0; i < listSOmesh.size(); i++ )
+      for( size_t i = 0; i < listSOmesh.size(); i++ )
       {
         _PTR(SObject) submSO = listSOmesh[i];
         SMESH::SMESH_Mesh_var aMesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( submSO );
@@ -391,8 +393,8 @@ QString SMESHGUI_GenericHypothesisCreator::stdParamValues( const ListOfStdParams
 {
   QString valueStr = "";
   ListOfStdParams::const_iterator param = params.begin(), aLast = params.end();
-  uint len0 = 0;
-  for( int i=0; param!=aLast; param++, i++ )
+  int len0 = 0;
+  for ( ; param != aLast; param++ )
   {
     if ( valueStr.length() > len0 ) {
       valueStr += "; ";
@@ -749,12 +751,12 @@ HypothesisData::HypothesisData( const QString& theTypeName,
     Context( theContext ),
     Dim( theDim ),
     IsAuxOrNeedHyp( theIsAuxOrNeedHyp ),
+    IsNeedGeometry( theIsNeedGeometry ),
+    IsSupportSubmeshes( supportSub ),
     BasicHypos( theBasicHypos ),
     OptionalHypos( theOptionalHypos ),
     InputTypes( theInputTypes ),
-    OutputTypes( theOutputTypes ),
-    IsNeedGeometry( theIsNeedGeometry ),
-    IsSupportSubmeshes( supportSub )
+    OutputTypes( theOutputTypes )
 {
 }
 

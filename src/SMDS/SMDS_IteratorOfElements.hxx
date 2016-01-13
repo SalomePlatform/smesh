@@ -43,11 +43,11 @@ class SMDS_EXPORT SMDS_IteratorOfElements:public SMDS_ElemIterator
         const SMDS_MeshElement * next();
 
   private:
-        SMDS_ElemIteratorPtr t2Iterator;
         SMDS_ElemIteratorPtr t1Iterator;
+        SMDS_ElemIteratorPtr t2Iterator;
         SMDSAbs_ElementType myType;     
-        const SMDS_MeshElement * myProxyElement;
         const SMDS_MeshElement * myElement;             
+        const SMDS_MeshElement * myProxyElement;
         bool myReverseIteration;
 
         std::set<const SMDS_MeshElement*> alreadyReturnedElements;

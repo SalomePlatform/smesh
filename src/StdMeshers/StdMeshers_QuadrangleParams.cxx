@@ -153,16 +153,16 @@ ostream & StdMeshers_QuadrangleParams::SaveTo(ostream & save)
 istream & StdMeshers_QuadrangleParams::LoadFrom(istream & load)
 {
   bool isOK = true;
-  isOK = (load >> _triaVertexID);
+  isOK = static_cast<bool>(load >> _triaVertexID);
   if (!isOK)
     load.clear(ios::badbit | load.rdstate());
 
-  isOK = (load >> _objEntry);
+  isOK = static_cast<bool>(load >> _objEntry);
   if (!isOK)
     load.clear(ios::badbit | load.rdstate());
 
   int type;
-  isOK = (load >> type);
+  isOK = static_cast<bool>(load >> type);
   if (isOK)
     _quadType = StdMeshers_QuadType(type);
 

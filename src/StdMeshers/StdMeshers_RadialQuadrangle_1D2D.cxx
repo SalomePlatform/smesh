@@ -537,8 +537,8 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
     gp_Vec2d aVec2d(PC,p2dV);
     Nodes1.resize( myLayerPositions.size()+1 );
     Nodes2.resize( myLayerPositions.size()+1 );
-    int i = 0;
-    for(; i<myLayerPositions.size(); i++) {
+    size_t i = 0;
+    for ( ; i < myLayerPositions.size(); i++ ) {
       gp_Pnt P( P0.X() + aVec.X()*myLayerPositions[i],
                 P0.Y() + aVec.Y()*myLayerPositions[i],
                 P0.Z() + aVec.Z()*myLayerPositions[i] );
@@ -648,7 +648,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
       meshDS->SetNodeOnEdge(NC, edgeID, cp);
       Nodes1.resize( myLayerPositions.size()+1 );
       Nodes2.resize( myLayerPositions.size()+1 );
-      int i = 0;
+      size_t i = 0;
       for(; i<myLayerPositions.size(); i++) {
         gp_Pnt P( P0.X() + aVec.X()*myLayerPositions[i],
                   P0.Y() + aVec.Y()*myLayerPositions[i],
@@ -774,8 +774,8 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
       bool nodesFromP0ToP1 = ( theNodes.rbegin()->second == NF );
       NC = const_cast<SMDS_MeshNode*>
         ( nodesFromP0ToP1 ? theNodes.begin()->second : theNodes.rbegin()->second );
-      int i = 0, ir = Nodes1.size()-1;
-      int * pi = nodesFromP0ToP1 ? &i : &ir;
+      size_t i = 0, ir = Nodes1.size()-1;
+      size_t * pi = nodesFromP0ToP1 ? &i : &ir;
       itn = theNodes.begin();
       if ( nodesFromP0ToP1 ) ++itn;
       for ( ; i < Nodes1.size(); ++i, --ir, ++itn )
@@ -817,8 +817,8 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
         meshDS->SetNodeOnVertex(NC, vertID);
       }
       double dp = lp-fp;
-      int i = 0;
-      for(; i<myLayerPositions.size(); i++) {
+      size_t i = 0;
+      for ( ; i < myLayerPositions.size(); i++ ) {
         gp_Pnt P( P0.X() + aVec.X()*myLayerPositions[i],
                   P0.Y() + aVec.Y()*myLayerPositions[i],
                   P0.Z() + aVec.Z()*myLayerPositions[i] );
@@ -826,7 +826,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
         SMDS_MeshNode * node = meshDS->AddNode(P.X(), P.Y(), P.Z());
         Nodes1[i] = node;
         double param;
-        if(!ori)
+        if ( !ori )
           param = fp + dp*(1-myLayerPositions[i]);
         else
           param = fp + dp*myLayerPositions[i];
@@ -840,11 +840,11 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
       // create 1D elements on edge
       SMDS_MeshEdge* ME = myHelper->AddEdge( NC, Nodes1[0] );
       if(ME) meshDS->SetMeshElementOnShape(ME, edgeID);
-      for(i=1; i<Nodes1.size(); i++) {
+      for ( i = 1; i < Nodes1.size(); i++ ) {
         ME = myHelper->AddEdge( Nodes1[i-1], Nodes1[i] );
         if(ME) meshDS->SetMeshElementOnShape(ME, edgeID);
       }
-      if (nbe==2 && LinEdge1.Orientation() == TopAbs_INTERNAL )
+      if ( nbe == 2 && LinEdge1.Orientation() == TopAbs_INTERNAL )
         Nodes2 = Nodes1;
     }
     markEdgeAsComputedByMe( LinEdge1, aMesh.GetSubMesh( F ));
@@ -856,8 +856,8 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
         return error("Invalid mesh on a straight edge");
 
       bool nodesFromP0ToP2 = ( theNodes.rbegin()->second == NL );
-      int i = 0, ir = Nodes1.size()-1;
-      int * pi = nodesFromP0ToP2 ? &i : &ir;
+      size_t i = 0, ir = Nodes1.size()-1;
+      size_t * pi = nodesFromP0ToP2 ? &i : &ir;
       itn = theNodes.begin();
       if ( nodesFromP0ToP2 ) ++itn;
       for ( ; i < Nodes2.size(); ++i, --ir, ++itn )
@@ -886,7 +886,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
         PC = PL;
       }
       double dp = lp-fp;
-      for(int i=0; i<myLayerPositions.size(); i++) {
+      for ( size_t i = 0; i < myLayerPositions.size(); i++ ) {
         gp_Pnt P( P0.X() + aVec.X()*myLayerPositions[i],
                   P0.Y() + aVec.Y()*myLayerPositions[i],
                   P0.Z() + aVec.Z()*myLayerPositions[i] );
@@ -905,8 +905,8 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
       Nodes2[ myLayerPositions.size() ] = NL;
       // create 1D elements on edge
       SMDS_MeshEdge* ME = myHelper->AddEdge( NC, Nodes2[0] );
-      if(ME) meshDS->SetMeshElementOnShape(ME, edgeID);
-      for(int i=1; i<Nodes2.size(); i++) {
+      if ( ME ) meshDS->SetMeshElementOnShape(ME, edgeID);
+      for ( size_t i = 1; i < Nodes2.size(); i++ ) {
         ME = myHelper->AddEdge( Nodes2[i-1], Nodes2[i] );
         if(ME) meshDS->SetMeshElementOnShape(ME, edgeID);
       }
@@ -953,7 +953,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
     // create faces
     tmpNodes.push_back( CNodes[i] );
     // quad
-    for(j=0; j<Nodes1.size()-1; j++) {
+    for ( j = 0; j < (int)Nodes1.size() - 1; j++ ) {
       SMDS_MeshFace* MF;
       if(IsForward)
         MF = myHelper->AddFace( tmpNodes[j], Nodes1[j],
@@ -969,14 +969,14 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
       MF = myHelper->AddFace( NC, Nodes1[0], tmpNodes[0] );
     else
       MF = myHelper->AddFace( NC, tmpNodes[0], Nodes1[0] );
-    if(MF) meshDS->SetMeshElementOnShape(MF, faceID);
-    for(j=0; j<Nodes1.size(); j++) {
+    if ( MF ) meshDS->SetMeshElementOnShape(MF, faceID);
+    for ( j = 0; j < (int) Nodes1.size(); j++ ) {
       Nodes1[j] = tmpNodes[j];
     }
   }
   // create last faces
   // quad
-  for(i=0; i<Nodes1.size()-1; i++) {
+  for ( i = 0; i < (int)Nodes1.size()-1; i++ ) {
     SMDS_MeshFace* MF;
     if(IsForward)
       MF = myHelper->AddFace( Nodes2[i], Nodes1[i],
@@ -1106,7 +1106,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::computeLayerPositions(const gp_Pnt&      
       }
       else {
         
-        if ( myLayerPositions.size() != nbNodes )
+        if ((int) myLayerPositions.size() != nbNodes )
           return error("Radial edge is meshed by other algorithm");
       }
     }
@@ -1196,7 +1196,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Evaluate(SMESH_Mesh& aMesh,
     ok = !aResMap.count( aMesh.GetSubMesh(LinEdge1) );
     if ( !ok ) {
       const vector<int>& aVec = aResMap[ aMesh.GetSubMesh(LinEdge1) ];
-      ok = ( aVec[SMDSEntity_Node] == myLayerPositions.size() );
+      ok = ( aVec[SMDSEntity_Node] == (int) myLayerPositions.size() );
     }
     if(ok) {
       ok = algo1d->EvaluateCircularEdge( aMesh, CircEdge, aResMap );
@@ -1243,7 +1243,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Evaluate(SMESH_Mesh& aMesh,
       // other curve not line
       return error(COMPERR_BAD_SHAPE);
     }
-    int nbLayers = myLayerPositions.size();
+    size_t nbLayers = myLayerPositions.size();
     computeLayerPositions( P0, P1, LinEdge2 );
     if ( nbLayers != myLayerPositions.size() )
       return error("Different hypotheses apply to radial edges");
@@ -1254,7 +1254,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Evaluate(SMESH_Mesh& aMesh,
         ok = true; // override other 1d hyps
       else {
         const vector<int>& aVec = aResMap[ aMesh.GetSubMesh(LinEdge1) ];
-        ok = ( aVec[SMDSEntity_Node] == myLayerPositions.size() );
+        ok = ( aVec[SMDSEntity_Node] == (int) myLayerPositions.size() );
       }
     }
     if( ok && aResMap.count( aMesh.GetSubMesh(LinEdge2) )) {
@@ -1262,7 +1262,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Evaluate(SMESH_Mesh& aMesh,
         ok = true; // override other 1d hyps
       else {
         const vector<int>& aVec = aResMap[ aMesh.GetSubMesh(LinEdge2) ];
-        ok = ( aVec[SMDSEntity_Node] == myLayerPositions.size() );
+        ok = ( aVec[SMDSEntity_Node] == (int) myLayerPositions.size() );
       }
     }
     if(ok) {

@@ -574,7 +574,7 @@ StdMeshersGUI_DistrTableFrame::
 setData( const DataArray& array )
 {
   QList<double> d;
-  for ( int i = 0; i < array.length(); i++ )
+  for ( CORBA::ULong i = 0; i < array.length(); i++ )
     d.append( array[i] );
 
   sortData( d );

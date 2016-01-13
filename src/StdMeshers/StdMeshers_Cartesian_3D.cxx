@@ -696,17 +696,17 @@ namespace
                            int& di, double tol )
   {
     //val += values[0]; // input \a val is measured from 0.
-    if ( i > values.size()-2 )
+    if ( i > (int) values.size()-2 )
       i = values.size()-2;
     else
-      while ( i+2 < values.size() && val > values[ i+1 ])
+      while ( i+2 < (int) values.size() && val > values[ i+1 ])
         ++i;
     while ( i > 0 && val < values[ i ])
       --i;
 
     if ( i > 0 && val - values[ i ] < tol )
       di = -1;
-    else if ( i+2 < values.size() && values[ i+1 ] - val < tol )
+    else if ( i+2 < (int) values.size() && values[ i+1 ] - val < tol )
       di = 1;
     else
       di = 0;
@@ -1776,7 +1776,7 @@ namespace
         if ( quad._eIntNodes[ iP ]->IsUsedInFace( polygon ))
           quad._eIntNodes[ iP ]->_usedInFace = 0;
 #endif
-      int nbUsedEdgeNodes = 0;
+      size_t nbUsedEdgeNodes = 0;
       _Face* prevPolyg = 0; // polygon previously created from this quad
 
       while ( nbSplits > 0 )
@@ -1839,7 +1839,7 @@ namespace
             else
             {
               _OrientedLink foundSplit;
-              for ( int i = iS; i < splits.size() && !foundSplit; ++i )
+              for ( size_t i = iS; i < splits.size() && !foundSplit; ++i )
                 if (( foundSplit = splits[ i ]) &&
                     ( n2->IsLinked( foundSplit.FirstNode()->_intPoint )))
                 {
@@ -2100,7 +2100,7 @@ namespace
             {
               sortVertexNodes( chainNodes, curNode, curFace );
             }
-            for ( int i = 0; i < chainNodes.size(); ++i )
+            for ( size_t i = 0; i < chainNodes.size(); ++i )
             {
               polygon.AddPolyLink( chainNodes[ i ], curNode );
               curNode = chainNodes[ i ];
@@ -2322,9 +2322,9 @@ namespace
             i = int(lineInd.I()) + dInd[iL][0];
             j = int(lineInd.J()) + dInd[iL][1];
             k = int(lineInd.K()) + dInd[iL][2];
-            if ( i < 0 || i >= nbCells[0] ||
-                 j < 0 || j >= nbCells[1] ||
-                 k < 0 || k >= nbCells[2] ) continue;
+            if ( i < 0 || i >= (int) nbCells[0] ||
+                 j < 0 || j >= (int) nbCells[1] ||
+                 k < 0 || k >= (int) nbCells[2] ) continue;
 
             const size_t hexIndex = _grid->CellIndex( i,j,k );
             Hexahedron *& hex = allHexa[ hexIndex ];
@@ -2436,7 +2436,7 @@ namespace
         planes._zProjs [0] = 0;
         const double       zFactor = _grid->_axes[ iDirZ ] * planes._zNorm;
         const vector< double > & u = _grid->_coords[ iDirZ ];
-        for ( int i = 1; i < planes._zProjs.size(); ++i )
+        for ( size_t i = 1; i < planes._zProjs.size(); ++i )
         {
           planes._zProjs [i] = zFactor * ( u[i] - u[0] );
         }
@@ -2870,7 +2870,7 @@ namespace
   {
     bool isOut = false;
 
-    const bool moreIntPoints = ( iP+1 < link._fIntPoints.size() );
+    const bool moreIntPoints = ( iP+1 < (int) link._fIntPoints.size() );
 
     // get 2 _Node's
     _Node* n1 = link._fIntNodes[ iP ];
@@ -3049,7 +3049,7 @@ namespace
     // sort nodes accoring to the order of edges
     _Node*  orderNodes   [20];
     TGeomID orderShapeIDs[20];
-    int nbN = 0;
+    size_t nbN = 0;
     TGeomID id, *pID;
     for ( e = edges.begin(); e != edges.end(); ++e )
     {
@@ -3536,7 +3536,7 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
     map< TGeomID, vector< TGeomID > > edge2faceIDsMap;
     TopExp_Explorer eExp;
     Bnd_Box shapeBox;
-    for ( int i = 0; i < faceVec.size(); ++i )
+    for ( size_t i = 0; i < faceVec.size(); ++i )
     {
       facesItersectors[i]._face   = TopoDS::Face    ( faceVec[i] );
       facesItersectors[i]._faceID = grid._shapes.Add( faceVec[i] );

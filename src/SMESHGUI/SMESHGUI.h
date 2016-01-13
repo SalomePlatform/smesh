@@ -84,7 +84,7 @@ typedef std::map<SUIT_ViewManager*, SMESHGUI_ClippingPlaneInfoList> SMESHGUI_Cli
 //=================================================================================
 class SMESHGUI_EXPORT SMESHGUI : public SalomeApp_Module
 {
-  Q_OBJECT;
+  Q_OBJECT
 
 public :
   SMESHGUI();

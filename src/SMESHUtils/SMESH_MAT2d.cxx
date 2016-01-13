@@ -448,14 +448,14 @@ namespace
                   addedEdges.insert( bndSegs[i]._edge->twin() ).second )
         {
           v2n = v2Node.insert( make_pair( bndSegs[i]._edge->vertex0(), v2Node.size() + 1 )).first;
-          int n0 = v2n->second;
+          size_t n0 = v2n->second;
           if ( n0 == v2Node.size() )
             text << "n" << n0 << " = m.AddNode( "
                  << bndSegs[i]._edge->vertex0()->x() / theScale[0] << ", "
                  << bndSegs[i]._edge->vertex0()->y() / theScale[1] << ", 0 )\n";
 
           v2n = v2Node.insert( make_pair( bndSegs[i]._edge->vertex1(), v2Node.size() + 1 )).first;
-          int n1 = v2n->second;
+          size_t n1 = v2n->second;
           if ( n1 == v2Node.size() )
             text << "n" << n1 << " = m.AddNode( "
                  << bndSegs[i]._edge->vertex1()->x() / theScale[0] << ", "
@@ -1210,7 +1210,7 @@ namespace
             else // bndSegs[ i ]._branchID > 0
             {
               dInd = +1;
-              for ( edgeInd = 0; edgeInd < branchEdges[ brID ].size(); ++edgeInd )
+              for ( edgeInd = 0; edgeInd < (int)branchEdges[ brID ].size(); ++edgeInd )
                 if ( branchEdges[ brID ][ edgeInd ] == bndSegs[ i ]._edge )
                   break;
             }
@@ -1386,7 +1386,7 @@ bool SMESH_MAT2d::Boundary::getBranchPoint( const std::size_t iEdge,
     int di = ( points._params[0] == points._params[i] ) ? +1 : -1;
     while ( points._params[i] == points._params[i+1] )
       i += di;
-    if ( i < 0 || i+1 >= points._params.size() )
+    if ( i < 0 || i+1 >= (int)points._params.size() )
       i = 0;
   }
 
@@ -1394,9 +1394,9 @@ bool SMESH_MAT2d::Boundary::getBranchPoint( const std::size_t iEdge,
 
   if ( !points._maEdges[ i ].second ) // no branch at the EDGE end, look for a closest branch
   {
-    if ( i < points._maEdges.size() / 2 ) // near 1st point
+    if ( i < (int)points._maEdges.size() / 2 ) // near 1st point
     {
-      while ( i < points._maEdges.size()-1 && !points._maEdges[ i ].second )
+      while ( i < (int)points._maEdges.size()-1 && !points._maEdges[ i ].second )
         ++i;
       edgeParam = edgeReverse;
     }
@@ -1699,7 +1699,7 @@ bool SMESH_MAT2d::Branch::getParameter(const BranchPoint & p, double & u ) const
   if ( p._iEdge > _params.size()-1 )
     return false;
   if ( p._iEdge == _params.size()-1 )
-    return u = 1.;
+    return ( u = 1. );
 
   u = ( _params[ p._iEdge   ] * ( 1 - p._edgeParam ) +
         _params[ p._iEdge+1 ] * p._edgeParam );
@@ -1805,7 +1805,7 @@ bool SMESH_MAT2d::Branch::addDivPntForConcaVertex( std::vector< std::size_t >&  
   {
     // look for a VERTEX of the opposite EDGE
     // iNext - next after all null-length segments
-    while ( maE = ++iNext )
+    while (( maE = ++iNext ))
     {
       iSeg2 = getBndSegment( maE );
       if ( !_boundary->isConcaveSegment( ie1, iSeg2 ))
@@ -1837,7 +1837,7 @@ bool SMESH_MAT2d::Branch::addDivPntForConcaVertex( std::vector< std::size_t >&  
   else if ( isConcaPrev )
   {
     // all null-length segments passed, find their beginning
-    while ( maE = iPrev.edgePrev() )
+    while (( maE = iPrev.edgePrev() ))
     {
       iSeg1 = getBndSegment( maE );
       if ( _boundary->isConcaveSegment( edgeIDs1.back(), iSeg1 ))
@@ -1909,7 +1909,7 @@ void SMESH_MAT2d::Branch::getOppositeGeomEdges( std::vector< std::size_t >& edge
   BranchPoint divisionPnt;
   divisionPnt._branch = this;
 
-  for ( ++maIter, ++twIter; maIter.index() < _maEdges.size(); ++maIter, ++twIter )
+  for ( ++maIter, ++twIter; maIter.index() < (int)_maEdges.size(); ++maIter, ++twIter )
   {
     size_t ie1 = getGeomEdge( maIter.edge() );
     size_t ie2 = getGeomEdge( twIter.edge() );

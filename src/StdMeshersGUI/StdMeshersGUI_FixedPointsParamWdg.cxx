@@ -360,7 +360,7 @@ SMESH::double_array_var StdMeshersGUI_FixedPointsParamWdg::GetListOfPoints()
 void StdMeshersGUI_FixedPointsParamWdg::SetListOfPoints( SMESH::double_array_var thePoints)
 {
   clear();
-  for ( int i = 0; i < thePoints->length(); i++ ) {
+  for ( CORBA::ULong i = 0; i < thePoints->length(); i++ ) {
     addPoint( thePoints[ i ] );
   }
 }
@@ -388,7 +388,7 @@ void StdMeshersGUI_FixedPointsParamWdg::SetListOfSegments( SMESH::long_array_var
 {
   if ( myListWidget->count() > 0 && theSegments->length() == 1)
     mySameValues->setChecked(true);
-  for ( int i = 0; i < theSegments->length(); i++ ) {
+  for ( CORBA::ULong i = 0; i < theSegments->length(); i++ ) {
     setNbSegments( i, theSegments[i] );
   }
 }

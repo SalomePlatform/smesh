@@ -271,7 +271,7 @@ void SMESH_File::rewind()
 
 bool SMESH_File::getInts(std::vector<int>& ints)
 {
-  int i = 0;
+  size_t i = 0;
   while ( i < ints.size() )
   {
     while ( !isdigit( *_pos ) && !eof()) ++_pos;
@@ -330,7 +330,7 @@ bool SMESH_File::writeRaw(const void* data, size_t size)
 #else
 
   ssize_t nbWritten = ::write( _file, data, size );
-  return ( nbWritten == size );
+  return ( nbWritten == (ssize_t) size );
 
 #endif
 }

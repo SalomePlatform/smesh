@@ -601,12 +601,12 @@ SMESHGUI_ClippingDlg::~SMESHGUI_ClippingDlg()
   if (myViewWindow)
     SMESH::RenderViewWindow(myViewWindow);
 
-  for( int i=0; i< myPlanes.size(); i++ ) {
+  for ( size_t i = 0; i < myPlanes.size(); i++ ) {
     SMESH::TPlaneData aPlaneData = myPlanes[i];
     aPlaneData.Plane->Delete();
   }
 
-  if (myPreviewWidget) {
+  if ( myPreviewWidget ) {
     myPreviewWidget->Off();
     myPreviewWidget->Delete();
   }

@@ -37,7 +37,7 @@ namespace SMESH
   enum LabelFont { 
     FntArial,    //!< arial font family
     FntCourier,  //!< courier font family
-    FntTimes,    //!< times font family
+    FntTimes     //!< times font family
   };
 
 SMESHOBJECT_EXPORT  

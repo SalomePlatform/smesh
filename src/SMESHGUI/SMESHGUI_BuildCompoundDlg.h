@@ -56,7 +56,7 @@ class SUIT_SelectionFilter;
 //=================================================================================
 class SMESHGUI_EXPORT SMESHGUI_BuildCompoundDlg : public QDialog
 {
-  Q_OBJECT;
+  Q_OBJECT
 
 public:
 

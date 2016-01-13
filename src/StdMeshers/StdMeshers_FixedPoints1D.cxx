@@ -150,37 +150,37 @@ istream & StdMeshers_FixedPoints1D::LoadFrom(istream & load)
   int intVal;
   double dblVal;
 
-  isOK = (load >> intVal);
+  isOK = static_cast<bool>(load >> intVal);
   if (isOK && intVal > 0) {
     _params.clear();
     _params.reserve( intVal );
     for ( size_t i = 0; i < _params.capacity() && isOK; i++) {
-      isOK = (load >> dblVal);
+      isOK = static_cast<bool>(load >> dblVal);
       if ( isOK ) _params.push_back( dblVal );
     }
   }
 
-  isOK = (load >> intVal);
+  isOK = static_cast<bool>(load >> intVal);
   if (isOK && intVal > 0) {
     _nbsegs.clear();
     _nbsegs.reserve( intVal );
     for ( size_t i = 0; i < _nbsegs.capacity() && isOK; i++) {
-      isOK = (load >> intVal);
+      isOK = static_cast<bool>(load >> intVal);
       if ( isOK ) _nbsegs.push_back( intVal );
     }
   }
 
-  isOK = (load >> intVal);
+  isOK = static_cast<bool>(load >> intVal);
   if (isOK && intVal > 0) {
     _edgeIDs.clear();
     _edgeIDs.reserve( intVal );
     for ( size_t i = 0; i < _edgeIDs.capacity() && isOK; i++) {
-      isOK = (load >> intVal);
+      isOK = static_cast<bool>(load >> intVal);
       if ( isOK ) _edgeIDs.push_back( intVal );
     }
   }
 
-  isOK = (load >> _objEntry);
+  isOK = static_cast<bool>(load >> _objEntry);
 
   return load;
 }

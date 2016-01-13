@@ -138,8 +138,8 @@ SMESH_Tree<BND_BOX,NB_CHILDREN>::SMESH_Tree (SMESH_TreeLimit* limit):
   myFather(0),
   myIsLeaf( false ),
   myLimit( limit ),
-  myLevel(0),
-  myBox(0)
+  myBox(0),
+  myLevel(0)
 {
   //if ( !myLimit ) myLimit = new SMESH_TreeLimit();
 }

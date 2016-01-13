@@ -295,13 +295,13 @@ QString StdMeshersGUI_NbSegmentsCreator::storeParams() const
   case Regular :
     valStr += tr("SMESH_DISTR_REGULAR");
     break;
-  case Scale   : 
-    valStr += tr("SMESH_NB_SEGMENTS_SCALE_PARAM") + " = " + QString::number( data.myScale );\
+  case Scale   :
+    valStr += tr("SMESH_NB_SEGMENTS_SCALE_PARAM") + " = " + QString::number( data.myScale );
     break;
   case TabFunc : {
     //valStr += tr("SMESH_TAB_FUNC");
     bool param = true;
-    for( int i=0; i < data.myTable.length(); i++, param = !param ) {
+    for( CORBA::ULong i = 0; i < data.myTable.length(); i++, param = !param ) {
       if ( param )
         valStr += "[";
       valStr += QString::number( data.myTable[ i ]);

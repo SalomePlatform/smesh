@@ -3149,6 +3149,7 @@ void SMDS_Mesh::addChildrenWithNodes(set<const SMDS_MeshElement*>& setOfChildren
     MESSAGE("Internal Error: This should not happen");
     break;
   case SMDSAbs_0DElement:
+  case SMDSAbs_Ball:
   {
   }
   break;
@@ -3199,6 +3200,7 @@ void SMDS_Mesh::addChildrenWithNodes(set<const SMDS_MeshElement*>& setOfChildren
         addChildrenWithNodes(setOfChildren, ite->next(), nodes);
     }
   }
+  case SMDSAbs_NbElementTypes:
   case SMDSAbs_All: break;
   }
 }

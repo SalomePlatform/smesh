@@ -66,7 +66,7 @@ std::ostream & StdMeshers_Reversible1D::SaveTo(std::ostream & save)
 
   if ( !_edgeIDs.empty() )
   {
-    for ( size_t i = 0; i < _edgeIDs.size(); i++)
+    for ( size_t i = 0; i < _edgeIDs.size(); i++ )
       save << " " << _edgeIDs[i];
     save << " " << _objEntry << " ";
   }
@@ -76,7 +76,7 @@ std::ostream & StdMeshers_Reversible1D::SaveTo(std::ostream & save)
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -85,14 +85,14 @@ std::istream & StdMeshers_Reversible1D::LoadFrom(std::istream & load)
   bool isOK;
   int intVal;
 
-  isOK = (load >> intVal);
+  isOK = static_cast<bool>(load >> intVal);
   if (isOK && intVal > 0) {
     _edgeIDs.reserve( intVal );
-    for (int i = 0; i < _edgeIDs.capacity() && isOK; i++) {
-      isOK = (load >> intVal);
+    for ( size_t i = 0; i < _edgeIDs.capacity() && isOK; i++ ) {
+      isOK = static_cast<bool>(load >> intVal);
       if ( isOK ) _edgeIDs.push_back( intVal );
     }
-    isOK = (load >> _objEntry);
+    isOK = static_cast<bool>(load >> _objEntry);
   }
 
   return load;

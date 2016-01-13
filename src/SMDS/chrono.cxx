@@ -60,7 +60,7 @@ void counters::stats()
 }
 
 chrono::chrono(int i) :
-  _ctr(i), _run(true)
+  _run(true), _ctr(i)
 {
   //MESSAGE("chrono::chrono " << _ctr << " " << _run);
   _start = clock();

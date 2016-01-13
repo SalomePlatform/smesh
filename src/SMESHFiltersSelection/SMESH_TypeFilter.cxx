@@ -264,6 +264,7 @@ bool SMESH_TypeFilter::isOk (const SUIT_DataOwner* theDataOwner) const
           Ok = isIDSourceOfType( obj, SMESH::VOLUME );
           break;
         }
+    default:;
     }
   }
   return Ok;

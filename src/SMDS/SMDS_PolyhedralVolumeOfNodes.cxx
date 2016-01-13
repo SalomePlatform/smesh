@@ -101,7 +101,7 @@ int SMDS_PolyhedralVolumeOfNodes::NbEdges() const
 {
   int nbEdges = 0;
 
-  for (int ifa = 0; ifa < myQuantities.size(); ifa++) {
+  for ( size_t ifa = 0; ifa < myQuantities.size(); ifa++) {
     nbEdges += myQuantities[ifa];
   }
   nbEdges /= 2;
@@ -124,7 +124,7 @@ int SMDS_PolyhedralVolumeOfNodes::NbFaces() const
 //=======================================================================
 int SMDS_PolyhedralVolumeOfNodes::NbFaceNodes (const int face_ind) const
 {
-  if (face_ind < 1 || myQuantities.size() < face_ind)
+  if (face_ind < 1 || (int)myQuantities.size() < face_ind)
     return 0;
   return myQuantities[face_ind - 1];
 }
@@ -201,7 +201,7 @@ struct _MyIterator:public SMDS_NodeVectorElemIterator
 class _MySubIterator : public SMDS_ElemIterator
 {
   vector< const SMDS_MeshElement* > myElems;
-  int myIndex;
+  size_t                            myIndex;
 public:
   _MySubIterator(const SMDS_MeshVolume* vol, SMDSAbs_ElementType type):myIndex(0) {
     SMDS_VolumeTool vTool(vol);

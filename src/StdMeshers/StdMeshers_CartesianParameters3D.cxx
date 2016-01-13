@@ -799,51 +799,51 @@ std::istream & StdMeshers_CartesianParameters3D::LoadFrom(std::istream & load)
 {
   bool ok;
 
-  ok = ( load >> _sizeThreshold );
+  ok = static_cast<bool>( load >> _sizeThreshold );
   for ( int ax = 0; ax < 3; ++ax )
   {
     if (ok)
     {
       size_t i = 0;
-      ok = (load >> i  );
+      ok = static_cast<bool>(load >> i  );
       if ( i > 0 && ok )
       {
         _coords[ax].resize( i );
         for ( i = 0; i < _coords[ax].size() && ok; ++i )
-          ok = (load >> _coords[ax][i]  );
+          ok = static_cast<bool>(load >> _coords[ax][i]  );
       }
     }
     if (ok)
     {
       size_t i = 0;
-      ok = (load >> i  );
+      ok = static_cast<bool>(load >> i  );
       if ( i > 0 && ok )
       {
         _internalPoints[ax].resize( i );
         for ( i = 0; i < _internalPoints[ax].size() && ok; ++i )
-          ok = (load >> _internalPoints[ax][i]  );
+          ok = static_cast<bool>(load >> _internalPoints[ax][i]  );
       }
     }
     if (ok)
     {
       size_t i = 0;
-      ok = (load >> i  );
+      ok = static_cast<bool>(load >> i  );
       if ( i > 0 && ok )
       {
         _spaceFunctions[ax].resize( i );
         for ( i = 0; i < _spaceFunctions[ax].size() && ok; ++i )
-          ok = (load >> _spaceFunctions[ax][i]  );
+          ok = static_cast<bool>(load >> _spaceFunctions[ax][i]  );
       }
     }
   }
 
-  ok = ( load >> _toAddEdges );
+  ok = static_cast<bool>( load >> _toAddEdges );
 
   for ( int i = 0; i < 9 && ok; ++i )
-    ok = ( load >> _axisDirs[i]);
+    ok = static_cast<bool>( load >> _axisDirs[i]);
 
   for ( int i = 0; i < 3 && ok ; ++i )
-    ok = ( load >> _fixedPoint[i]);
+    ok = static_cast<bool>( load >> _fixedPoint[i]);
 
   return load;
 }

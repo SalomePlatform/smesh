@@ -285,13 +285,13 @@ namespace MeshEditor_I {
     SMDS_MeshElement::Filter & filter = *aFilter;
 
     if ( aType == SMDSAbs_Node )
-      for (int i=0; i<IDs.length(); i++) {
+      for ( CORBA::ULong i = 0; i < IDs.length(); i++ ) {
         const SMDS_MeshElement * elem = aMesh->FindNode( IDs[i] );
         if ( filter( elem ))
           aMap.insert( aMap.end(), elem );
       }
     else
-      for (int i=0; i<IDs.length(); i++) {
+      for ( CORBA::ULong i = 0; i<IDs.length(); i++) {
         const SMDS_MeshElement * elem = aMesh->FindElement( IDs[i] );
         if ( filter( elem ))
           aMap.insert( aMap.end(), elem );
@@ -315,7 +315,7 @@ namespace MeshEditor_I {
     SMESH::long_array_var     aElementsId = theObject->GetIDs();
     if ( types->length() == 1 && types[0] == SMESH::NODE)
     {
-      for(int i = 0; i < aElementsId->length(); i++)
+      for ( CORBA::ULong i = 0; i < aElementsId->length(); i++ )
         if ( const SMDS_MeshNode * n = theMeshDS->FindNode( aElementsId[i] ))
           theNodeSet.insert( theNodeSet.end(), n);
     }
@@ -323,13 +323,13 @@ namespace MeshEditor_I {
     {
       SMDS_NodeIteratorPtr nIt = theMeshDS->nodesIterator();
       while ( nIt->more( ))
-        if( const SMDS_MeshElement * elem = nIt->next() )
+        if ( const SMDS_MeshElement * elem = nIt->next() )
           theNodeSet.insert( elem->begin_nodes(), elem->end_nodes());
     }
     else
     {
-      for(int i = 0; i < aElementsId->length(); i++)
-        if( const SMDS_MeshElement * elem = theMeshDS->FindElement( aElementsId[i] ))
+      for ( CORBA::ULong i = 0; i < aElementsId->length(); i++ )
+        if ( const SMDS_MeshElement * elem = theMeshDS->FindElement( aElementsId[i] ))
           theNodeSet.insert( elem->begin_nodes(), elem->end_nodes());
     }
   }
@@ -349,7 +349,7 @@ namespace MeshEditor_I {
     SMDSAbs_ElementType elemType    = (*theElements.begin())->GetType();
     bool sameElemType = ( elemType == (*theElements.rbegin())->GetType() );
     if ( sameElemType &&
-         theMeshDS->GetMeshInfo().NbElements( elemType ) == theElements.size() )
+         theMeshDS->GetMeshInfo().NbElements( elemType ) == (int) theElements.size() )
       return; // all the elements are in theElements
 
     if ( !sameElemType )
@@ -794,7 +794,7 @@ SMESH_MeshEditor_i::RemoveElements(const SMESH::long_array & IDsOfElements)
 
   list< int > IdList;
 
-  for (int i = 0; i < IDsOfElements.length(); i++)
+  for ( CORBA::ULong i = 0; i < IDsOfElements.length(); i++ )
     IdList.push_back( IDsOfElements[i] );
 
   // Update Python script
@@ -823,7 +823,7 @@ CORBA::Boolean SMESH_MeshEditor_i::RemoveNodes(const SMESH::long_array & IDsOfNo
   initData();
 
   list< int > IdList;
-  for (int i = 0; i < IDsOfNodes.length(); i++)
+  for ( CORBA::ULong i = 0; i < IDsOfNodes.length(); i++)
     IdList.push_back( IDsOfNodes[i] );
 
   // Update Python script
@@ -859,9 +859,7 @@ CORBA::Long SMESH_MeshEditor_i::RemoveOrphanNodes()
   SMESH::Controls::Filter::GetElementsId( getMeshDS(), predicate, seq );
 
   // remove orphan nodes (if there are any)
-  list< int > IdList;
-  for ( int i = 0; i < seq.size(); i++ )
-    IdList.push_back( seq[i] );
+  list< int > IdList( seq.begin(), seq.end() );
 
   int nbNodesBefore = myMesh->NbNodes();
   getEditor().Remove( IdList, true );
@@ -1584,7 +1582,7 @@ CORBA::Boolean SMESH_MeshEditor_i::Reorient(const SMESH::long_array & IDsOfEleme
   SMESH_TRY;
   initData();
 
-  for (int i = 0; i < IDsOfElements.length(); i++)
+  for ( CORBA::ULong i = 0; i < IDsOfElements.length(); i++ )
   {
     CORBA::Long index = IDsOfElements[i];
     const SMDS_MeshElement * elem = getMeshDS()->FindElement(index);
@@ -2273,7 +2271,7 @@ SMESH_MeshEditor_i::smooth(const SMESH::long_array &              IDsOfElements,
   arrayToSet(IDsOfElements, aMesh, elements, SMDSAbs_Face);
 
   set<const SMDS_MeshNode*> fixedNodes;
-  for (int i = 0; i < IDsOfFixedNodes.length(); i++) {
+  for ( CORBA::ULong i = 0; i < IDsOfFixedNodes.length(); i++) {
     CORBA::Long index = IDsOfFixedNodes[i];
     const SMDS_MeshNode * node = aMesh->FindNode(index);
     if ( node )
@@ -2866,7 +2864,7 @@ SMESH_MeshEditor_i::ExtrusionAlongPathObjects(const SMESH::ListOfIDSources & the
     idSourceToSet( theFaces[i], getMeshDS(), elemsNodes[0], SMDSAbs_Face );
 
   list<double> angles;
-  for (int i = 0; i < theAngles.length(); i++) {
+  for ( CORBA::ULong i = 0; i < theAngles.length(); i++ ) {
     angles.push_back( theAngles[i] );
   }
 
@@ -4091,7 +4089,7 @@ FindCoincidentNodesOnPartBut(SMESH::SMESH_IDSource_ptr      theObject,
   TIDSortedNodeSet nodes;
   idSourceToNodeSet( theObject, getMeshDS(), nodes );
 
-  for ( int i = 0; i < theExceptSubMeshOrGroups.length(); ++i )
+  for ( CORBA::ULong i = 0; i < theExceptSubMeshOrGroups.length(); ++i )
   {
     SMDS_ElemIteratorPtr nodeIt = myMesh_i->GetElements( theExceptSubMeshOrGroups[i],
                                                          SMESH::NODE );
@@ -4127,7 +4125,7 @@ void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfN
   aTPythonDump << this << ".MergeNodes([";
 
   TIDSortedNodeSet setOfNodesToKeep;
-  for ( int i = 0; i < NodesToKeep.length(); ++i )
+  for ( CORBA::ULong i = 0; i < NodesToKeep.length(); ++i )
   {
     prepareIdSource( NodesToKeep[i] );
     SMDS_ElemIteratorPtr nodeIt = myMesh_i->GetElements( NodesToKeep[i], SMESH::NODE );
@@ -4136,12 +4134,12 @@ void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfN
   }
 
   ::SMESH_MeshEditor::TListOfListOfNodes aListOfListOfNodes;
-  for (int i = 0; i < GroupsOfNodes.length(); i++)
+  for ( CORBA::ULong i = 0; i < GroupsOfNodes.length(); i++ )
   {
     const SMESH::long_array& aNodeGroup = GroupsOfNodes[ i ];
     aListOfListOfNodes.push_back( list< const SMDS_MeshNode* >() );
     list< const SMDS_MeshNode* >& aListOfNodes = aListOfListOfNodes.back();
-    for ( int j = 0; j < aNodeGroup.length(); j++ )
+    for ( CORBA::ULong j = 0; j < aNodeGroup.length(); j++ )
     {
       CORBA::Long index = aNodeGroup[ j ];
       if ( const SMDS_MeshNode * node = aMesh->FindNode( index ))
@@ -4227,11 +4225,11 @@ void SMESH_MeshEditor_i::MergeElements(const SMESH::array_of_long_array& GroupsO
 
   ::SMESH_MeshEditor::TListOfListOfElementsID aListOfListOfElementsID;
 
-  for (int i = 0; i < GroupsOfElementsID.length(); i++) {
+  for ( CORBA::ULong i = 0; i < GroupsOfElementsID.length(); i++ ) {
     const SMESH::long_array& anElemsIDGroup = GroupsOfElementsID[ i ];
     aListOfListOfElementsID.push_back( list< int >() );
     list< int >& aListOfElemsID = aListOfListOfElementsID.back();
-    for ( int j = 0; j < anElemsIDGroup.length(); j++ ) {
+    for ( CORBA::ULong j = 0; j < anElemsIDGroup.length(); j++ ) {
       CORBA::Long id = anElemsIDGroup[ j ];
       aListOfElemsID.push_back( id );
     }
@@ -4456,7 +4454,7 @@ SMESH::long_array* SMESH_MeshEditor_i::FindElementsByPoint(CORBA::Double      x,
                                            SMDSAbs_ElementType( type ),
                                            foundElems);
   res->length( foundElems.size() );
-  for ( int i = 0; i < foundElems.size(); ++i )
+  for ( size_t i = 0; i < foundElems.size(); ++i )
     res[i] = foundElems[i]->GetID();
 
   return res._retn();
@@ -4517,7 +4515,7 @@ SMESH_MeshEditor_i::FindAmongElementsByPoint(SMESH::SMESH_IDSource_ptr elementID
                                            SMDSAbs_ElementType( type ),
                                            foundElems);
   res->length( foundElems.size() );
-  for ( int i = 0; i < foundElems.size(); ++i )
+  for ( size_t i = 0; i < foundElems.size(); ++i )
     res[i] = foundElems[i]->GetID();
 
   return res._retn();
@@ -4568,6 +4566,7 @@ static SMESH::SMESH_MeshEditor::Sew_Error convError( const::SMESH_MeshEditor::Se
     RETCASE( SEW_TOPO_DIFF_SETS_OF_ELEMENTS );
     RETCASE( SEW_BAD_SIDE1_NODES );
     RETCASE( SEW_BAD_SIDE2_NODES );
+    RETCASE( SEW_INTERNAL_ERROR );
   }
   return SMESH::SMESH_MeshEditor::SEW_OK;
 }
@@ -4651,16 +4650,16 @@ SewCoincidentFreeBorders(const SMESH::CoincidentFreeBorders& freeBorders,
     for ( CORBA::ULong iP = 0; iP < aGRP.length(); ++iP )
     {
       const SMESH::FreeBorderPart& aPART = aGRP[ iP ];
-      if ( aPART.border < 0 || aPART.border >= freeBorders.borders.length() )
+      if ( aPART.border < 0 || aPART.border >= (int) freeBorders.borders.length() )
         THROW_SALOME_CORBA_EXCEPTION("Invalid FreeBorderPart::border index", SALOME::BAD_PARAM);
 
       const SMESH::FreeBorder& aBRD = freeBorders.borders[ aPART.border ];
 
-      if ( aPART.node1 < 0 || aPART.node1 > aBRD.nodeIDs.length() )
+      if ( aPART.node1 < 0 || aPART.node1 > (int) aBRD.nodeIDs.length() )
         THROW_SALOME_CORBA_EXCEPTION("Invalid FreeBorderPart::node1", SALOME::BAD_PARAM);
-      if ( aPART.node2 < 0 || aPART.node2 > aBRD.nodeIDs.length() )
+      if ( aPART.node2 < 0 || aPART.node2 > (int) aBRD.nodeIDs.length() )
         THROW_SALOME_CORBA_EXCEPTION("Invalid FreeBorderPart::node2", SALOME::BAD_PARAM);
-      if ( aPART.nodeLast < 0 || aPART.nodeLast > aBRD.nodeIDs.length() )
+      if ( aPART.nodeLast < 0 || aPART.nodeLast > (int) aBRD.nodeIDs.length() )
         THROW_SALOME_CORBA_EXCEPTION("Invalid FreeBorderPart::nodeLast", SALOME::BAD_PARAM);
 
       // do not keep these nodes for further sewing as nodes can be removed by the sewing
@@ -6500,7 +6499,7 @@ void SMESH_MeshEditor_i::CreateHoleSkin(CORBA::Double                  radius,
     theNodeSearcher = SMESH_MeshAlgos::GetNodeSearcher( *getMeshDS() );
 
   vector<double> nodesCoords;
-  for (int i = 0; i < theNodesCoords.length(); i++)
+  for ( CORBA::ULong i = 0; i < theNodesCoords.length(); i++)
   {
     nodesCoords.push_back( theNodesCoords[i] );
   }
@@ -6666,7 +6665,7 @@ CORBA::Long SMESH_MeshEditor_i::MakeBoundaryElements(SMESH::Bnd_Dimension dim,
   groupsOfThisMesh ->length( groups.length() );
   groupsOfOtherMesh->length( groups.length() );
   int nbGroups = 0, nbGroupsOfOtherMesh = 0;
-  for ( int i = 0; i < groups.length(); ++i )
+  for ( CORBA::ULong i = 0; i < groups.length(); ++i )
   {
     SMESH::SMESH_Mesh_var m = groups[i]->GetMesh();
     if ( myMesh_i != SMESH::DownCast<SMESH_Mesh_i*>( m ))

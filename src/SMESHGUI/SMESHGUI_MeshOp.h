@@ -157,15 +157,15 @@ private:
   bool                           myHasConcurrentSubBefore;
 
   TDim2Type2HypList              myExistingHyps; //!< all hypothesis of SMESH module
-  TDim2Type2HypList              myObjHyps;      //!< hypothesis assigned to the current 
+  TDim2Type2HypList              myObjHyps;      //!< hypothesis assigned to the current
                                                  //   edited mesh/sub-mesh
   // hypdata corresponding to hypotheses present in myDlg
   THypDataList                   myAvailableHypData[4][NbHypTypes];
   QString                        myLastGeomToSelect;
   THypLabelIsAppMap              myHypMapIsApplicable;
   bool                           myIgnoreAlgoSelection;
-  HypothesesSet* myHypoSet;
-  int myDim, myType, myMaxShapeDim;
+  HypothesesSet*                 myHypoSet;
+  int                            myDim, myType, myMaxShapeDim;
 
   QString                        myObjectToSelect;
 };

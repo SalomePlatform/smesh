@@ -53,7 +53,7 @@ namespace
    */
   void SetVariable(Handle(_pyCommand) theCommand,
                    const SMESH_ObjectStates* theStates,
-                   int position, int theArgNb)
+                   size_t position, int theArgNb)
   {
     if(theStates->GetCurrectState().size() > position)
       if(!theStates->GetCurrectState().at(position).IsEmpty())
@@ -100,7 +100,7 @@ void SMESH_ObjectStates::AddState(const TState &theState)
 //================================================================================
 TState SMESH_ObjectStates::GetCurrectState() const
 {
-  if(_states.size() > _dumpstate)
+  if ( (int) _states.size() > _dumpstate)
     return _states[_dumpstate];
   TState empty;
   return empty;
@@ -236,7 +236,7 @@ SMESH_NoteBook::~SMESH_NoteBook()
 //================================================================================
 void SMESH_NoteBook::ReplaceVariables()
 {
-  for(int i=0;i<_commands.size();i++)
+  for ( size_t i = 0 ; i < _commands.size(); i++ )
   {
     Handle(_pyCommand) aCmd = _commands[i];
     TCollection_AsciiString aMethod      = aCmd->GetMethod();
@@ -714,7 +714,7 @@ void SMESH_NoteBook::ReplaceVariables()
         {
           TState aCurrentState = aStates->GetCurrectState();
           int         argIndex = h->getParamIndex( aMethod, aCurrentState.size() );
-          if ( 0 <= argIndex && argIndex < aCurrentState.size() &&
+          if ( 0 <= argIndex && argIndex < (int)aCurrentState.size() &&
                !aCurrentState[argIndex].IsEmpty() )
             aCmd->SetArg( 1, aCurrentState[argIndex] );
 
@@ -790,10 +790,10 @@ void SMESH_NoteBook::InitObjectMap()
       else
         aState = new SMESH_ObjectStates(anObjType);
 
-      for(int i = 0; i < aSections->length(); i++) {
+      for ( size_t i = 0; i < aSections->length(); i++ ) {
         TState aVars;
         SALOMEDS::ListOfStrings aListOfVars = aSections[i];
-        for ( int j = 0; j<aListOfVars.length(); j++)
+        for ( size_t j = 0; j < aListOfVars.length(); j++)
         {
           TCollection_AsciiString aVar(aListOfVars[j].in());
           if(!aVar.IsEmpty() && aStudy->IsVariable(aVar.ToCString())) {
@@ -859,8 +859,8 @@ void SMESH_NoteBook::ProcessLayerDistribution()
     return;
   
   // 2) Initialize all type of 1D Distribution hypothesis
-  for(int i=0;i<_commands.size();i++){
-    for(int j =0;j < aLDS.size();j++){
+  for ( size_t i = 0; i < _commands.size(); i++ ) {
+    for ( size_t j = 0; j < aLDS.size(); j++ ) {
       TCollection_AsciiString aResultValue = _commands[i]->GetResultValue();
       if(_commands[i]->GetMethod() == "CreateHypothesis" &&
          aLDS[j]->HasDistribution(aResultValue)){
@@ -872,8 +872,8 @@ void SMESH_NoteBook::ProcessLayerDistribution()
   }
   // 3) ... and replase variables ...
 
-  for(int i=0;i<_commands.size();i++){
-    for(int j =0;j < aLDS.size();j++){
+  for ( size_t i = 0; i < _commands.size(); i++ ) {
+    for ( size_t j = 0; j < aLDS.size(); j++ ) {
       TCollection_AsciiString anObject = _commands[i]->GetObject();
 
       if(aLDS[j]->HasDistribution(anObject)) {
@@ -929,8 +929,8 @@ void SMESH_NoteBook::ProcessLayerDistribution()
 TCollection_AsciiString SMESH_NoteBook::GetResultScript() const
 {
   TCollection_AsciiString aResult;
-  for(int i=0;i<_commands.size();i++)
-    aResult+=_commands[i]->GetString()+"\n";
+  for ( size_t i = 0; i < _commands.size(); i++ )
+    aResult += _commands[i]->GetString() + "\n";
   return aResult;
 }
 
@@ -941,7 +941,7 @@ TCollection_AsciiString SMESH_NoteBook::GetResultScript() const
 //================================================================================
 void SMESH_NoteBook::GetResultLines(std::list< TCollection_AsciiString >& lines) const
 {
-  for(int i=0;i<_commands.size();i++)
+  for ( size_t i = 0; i < _commands.size(); i++ )
     lines.push_back( _commands[i]->GetString() );
 }
 

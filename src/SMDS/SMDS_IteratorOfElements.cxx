@@ -54,24 +54,24 @@ const SMDS_MeshElement * SMDS_IteratorOfElements::subNext()
 /// Create an iterator which look for elements of type type which are linked 
 /// to the element element. it is the iterator to get connectivity of element
 //////////////////////////////////////////////////////////////////////////////
-SMDS_IteratorOfElements::SMDS_IteratorOfElements(const SMDS_MeshElement * element,
-                                                 SMDSAbs_ElementType type,
+SMDS_IteratorOfElements::SMDS_IteratorOfElements(const SMDS_MeshElement *    element,
+                                                 SMDSAbs_ElementType         type,
                                                  const SMDS_ElemIteratorPtr& it)
-     : t1Iterator(it),
-       t2Iterator(SMDS_ElemIteratorPtr((SMDS_ElemIterator*)NULL)),
-       myType(type), myElement(element),
-       myProxyElement(NULL)
+  : t1Iterator(it),
+    t2Iterator(SMDS_ElemIteratorPtr((SMDS_ElemIterator*)NULL)),
+    myType(type), myElement(element),
+    myProxyElement(NULL)
 {
-        while(subMore())
-                alreadyReturnedElements.insert(subNext());
-        itAlreadyReturned= alreadyReturnedElements.begin();
-        switch(myElement->GetType())
-        {
-        case SMDSAbs_Node: 
-        case SMDSAbs_Edge: myReverseIteration=true; break;
-        case SMDSAbs_Face: myReverseIteration=(type==SMDSAbs_Volume); break;
-        default: myReverseIteration=false;
-        }       
+  while(subMore())
+    alreadyReturnedElements.insert(subNext());
+  itAlreadyReturned= alreadyReturnedElements.begin();
+  switch(myElement->GetType())
+  {
+  case SMDSAbs_Node:
+  case SMDSAbs_Edge: myReverseIteration=true; break;
+  case SMDSAbs_Face: myReverseIteration=(type==SMDSAbs_Volume); break;
+  default: myReverseIteration=false;
+  }
 }
 
 bool SMDS_IteratorOfElements::more()

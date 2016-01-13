@@ -435,6 +435,7 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
               const SMDS_MeshElement* aElement = myMesh->FindElement(aRec.ElementList[i]);
               if (aElement) {
                 switch (aElement->GetType()) {
+
                 case SMDSAbs_Edge:
                   if (!aEdgesGroup) {
                     aEdgesGroup = (SMDS_MeshGroup*) myGroup->AddSubGroup(SMDSAbs_Edge);
@@ -449,6 +450,7 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
                   }
                   aEdgesGroup->Add(aElement);
                   break;
+
                 case SMDSAbs_Face:
                   if (!aFacesGroup) {
                     aFacesGroup = (SMDS_MeshGroup*) myGroup->AddSubGroup(SMDSAbs_Face);
@@ -463,6 +465,7 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
                   }
                   aFacesGroup->Add(aElement);
                   break;
+
                 case SMDSAbs_Volume:
                   if (!aVolumeGroup) {
                     aVolumeGroup = (SMDS_MeshGroup*) myGroup->AddSubGroup(SMDSAbs_Volume);
@@ -477,6 +480,8 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
                   }
                   aVolumeGroup->Add(aElement);
                   break;
+
+                default:;
                 }
               } 
             }

@@ -215,7 +215,7 @@ bool SMDS_QuadraticVolumeOfNodes::IsMediumNode(const SMDS_MeshNode* node) const
   case 15: nbCorners = 6; break;
   default: nbCorners = 8;
   }
-  for ( int i = nbCorners; i<myNodes.size(); i++) {
+  for ( size_t i = nbCorners; i<myNodes.size(); i++) {
     if(myNodes[i]==node) return true;
   }
   return false;
@@ -318,7 +318,7 @@ public:
 class _MySubIterator : public SMDS_ElemIterator
 {
   vector< const SMDS_MeshElement* > myElems;
-  int myIndex;
+  size_t                            myIndex;
 public:
   _MySubIterator(const SMDS_MeshVolume* vol, SMDSAbs_ElementType type):myIndex(0) {
     SMDS_VolumeTool vTool(vol);

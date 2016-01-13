@@ -39,7 +39,7 @@
  #define SMESHFILTERSSELECTION_EXPORT
 #endif
 
-namespace SMESH{
+namespace SMESH {
   enum MeshObjectType {
     HYPOTHESIS,
     ALGORITHM,
@@ -64,5 +64,5 @@ namespace SMESH{
     IDSOURCE_FACE,
     IDSOURCE_VOLUME
   };
-};
+}
 #endif

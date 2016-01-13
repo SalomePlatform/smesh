@@ -217,13 +217,13 @@ void SMDS_Down1D::initCell(int cellId)
  */
 void SMDS_Down1D::allocate(int nbElems)
 {
-  if (nbElems >= _vtkCellIds.size())
-    {
-      _vtkCellIds.resize(nbElems + SMDS_Mesh::chunkSize, -1);
-      _cellIds.resize(_nbDownCells * (nbElems + SMDS_Mesh::chunkSize), -1);
-      _upCellIdsVector.resize(nbElems + SMDS_Mesh::chunkSize);
-      _upCellTypesVector.resize(nbElems + SMDS_Mesh::chunkSize);
-    }
+  if (nbElems >= (int)_vtkCellIds.size())
+  {
+    _vtkCellIds.resize(nbElems + SMDS_Mesh::chunkSize, -1);
+    _cellIds.resize(_nbDownCells * (nbElems + SMDS_Mesh::chunkSize), -1);
+    _upCellIdsVector.resize(nbElems + SMDS_Mesh::chunkSize);
+    _upCellTypesVector.resize(nbElems + SMDS_Mesh::chunkSize);
+  }
 }
 
 void SMDS_Down1D::compactStorage()
@@ -239,15 +239,15 @@ void SMDS_Down1D::compactStorage()
   _upCellIndex.resize(_maxId + 1, -1); // id and types of rank i correspond to [ _upCellIndex[i], _upCellIndex[i+1] [
   int current = 0;
   for (int i = 0; i < _maxId; i++)
+  {
+    _upCellIndex[i] = current;
+    for (size_t j = 0; j < _upCellIdsVector[i].size(); j++)
     {
-      _upCellIndex[i] = current;
-      for (int j = 0; j < _upCellIdsVector[i].size(); j++)
-        {
-          _upCellIds[current] = _upCellIdsVector[i][j];
-          _upCellTypes[current] = _upCellTypesVector[i][j];
-          current++;
-        }
+      _upCellIds[current] = _upCellIdsVector[i][j];
+      _upCellTypes[current] = _upCellTypesVector[i][j];
+      current++;
     }
+  }
   _upCellIndex[_maxId] = current;
 
   _upCellIdsVector.clear();
@@ -674,14 +674,14 @@ bool SMDS_Down2D::isInFace(int cellId, int *pts, int npts)
  */
 void SMDS_Down2D::allocate(int nbElems)
 {
-  if (nbElems >= _vtkCellIds.size())
-    {
-      _cellIds.resize(_nbDownCells * (nbElems + SMDS_Mesh::chunkSize), -1);
-      _vtkCellIds.resize(nbElems + SMDS_Mesh::chunkSize, -1);
-      _upCellIds.resize(2 * (nbElems + SMDS_Mesh::chunkSize), -1);
-      _upCellTypes.resize(2 * (nbElems + SMDS_Mesh::chunkSize), -1);
-      _tempNodes.resize(_nbNodes * (nbElems + SMDS_Mesh::chunkSize), -1);
-    }
+  if (nbElems >= (int)_vtkCellIds.size())
+  {
+    _cellIds.resize    (_nbDownCells * (nbElems + SMDS_Mesh::chunkSize), -1);
+    _vtkCellIds.resize (nbElems + SMDS_Mesh::chunkSize, -1);
+    _upCellIds.resize  (2 * (nbElems + SMDS_Mesh::chunkSize), -1);
+    _upCellTypes.resize(2 * (nbElems + SMDS_Mesh::chunkSize), -1);
+    _tempNodes.resize  (_nbNodes * (nbElems + SMDS_Mesh::chunkSize), -1);
+  }
 }
 
 void SMDS_Down2D::compactStorage()
@@ -764,11 +764,11 @@ SMDS_Down3D::~SMDS_Down3D()
 
 void SMDS_Down3D::allocate(int nbElems)
 {
-  if (nbElems >= _vtkCellIds.size())
-    {
-      _cellIds.resize(_nbDownCells * (nbElems + SMDS_Mesh::chunkSize), -1);
-      _vtkCellIds.resize(nbElems + SMDS_Mesh::chunkSize, -1);
-    }
+  if (nbElems >= (int)_vtkCellIds.size())
+  {
+    _cellIds.resize(_nbDownCells * (nbElems + SMDS_Mesh::chunkSize), -1);
+    _vtkCellIds.resize(nbElems + SMDS_Mesh::chunkSize, -1);
+  }
 }
 
 void SMDS_Down3D::compactStorage()
@@ -1121,7 +1121,7 @@ void SMDS_DownTetra::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& o
 {
   set<int> setNodes;
   setNodes.clear();
-  for (int i = 0; i < orderedNodes.size(); i++)
+  for ( size_t i = 0; i < orderedNodes.size(); i++ )
     setNodes.insert(orderedNodes[i]);
   //MESSAGE("cellId = " << cellId);
 
@@ -1131,19 +1131,19 @@ void SMDS_DownTetra::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& o
 
   set<int> tofind;
   int ids[12] = { 0, 1, 2,  0, 3, 1,  2, 3, 0,   1, 3, 2 };
-//int ids[12] = { 2, 1, 0,  1, 3, 0,  0, 3, 2,   2, 3, 1 };
+  //int ids[12] = { 2, 1, 0,  1, 3, 0,  0, 3, 2,   2, 3, 1 };
   for (int k = 0; k < 4; k++)
+  {
+    tofind.clear();
+    for (int i = 0; i < 3; i++)
+      tofind.insert(nodes[ids[3 * k + i]]);
+    if (setNodes == tofind)
     {
-      tofind.clear();
       for (int i = 0; i < 3; i++)
-        tofind.insert(nodes[ids[3 * k + i]]);
-      if (setNodes == tofind)
-        {
-          for (int i = 0; i < 3; i++)
-            orderedNodes[i] = nodes[ids[3 * k + i]];
-          return;
-        }
+        orderedNodes[i] = nodes[ids[3 * k + i]];
+      return;
     }
+  }
   MESSAGE("=== Problem volume " << _vtkCellIds[cellId] << " " << _grid->_mesh->fromVtkToSmds(_vtkCellIds[cellId]));
   MESSAGE(orderedNodes[0] << " " << orderedNodes[1] << " " << orderedNodes[2]);
   MESSAGE(nodes[0] << " " << nodes[1] << " " << nodes[2] << " " << nodes[3]);
@@ -1229,7 +1229,7 @@ void SMDS_DownQuadTetra::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType
 {
   set<int> setNodes;
   setNodes.clear();
-  for (int i = 0; i < orderedNodes.size(); i++)
+  for ( size_t i = 0; i < orderedNodes.size(); i++ )
     setNodes.insert(orderedNodes[i]);
   //MESSAGE("cellId = " << cellId);
 
@@ -1239,19 +1239,19 @@ void SMDS_DownQuadTetra::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType
 
   set<int> tofind;
   int ids[24] = { 0, 1, 2, 4, 5, 6,  0, 3, 1, 7, 8, 4,  2, 3, 0, 9, 7, 6,  1, 3, 2, 8, 9, 5 };
-//int ids[24] = { 2, 1, 0, 5, 4, 6,  1, 3, 0, 8, 7, 4,  0, 3, 2, 7, 9, 6,  2, 3, 1, 9, 8, 5 };
+  //int ids[24] = { 2, 1, 0, 5, 4, 6,  1, 3, 0, 8, 7, 4,  0, 3, 2, 7, 9, 6,  2, 3, 1, 9, 8, 5 };
   for (int k = 0; k < 4; k++)
+  {
+    tofind.clear();
+    for (int i = 0; i < 6; i++)
+      tofind.insert(nodes[ids[6 * k + i]]);
+    if (setNodes == tofind)
     {
-      tofind.clear();
       for (int i = 0; i < 6; i++)
-        tofind.insert(nodes[ids[6 * k + i]]);
-      if (setNodes == tofind)
-        {
-          for (int i = 0; i < 6; i++)
-            orderedNodes[i] = nodes[ids[6 * k + i]];
-          return;
-        }
+        orderedNodes[i] = nodes[ids[6 * k + i]];
+      return;
     }
+  }
   MESSAGE("=== Problem volume " << _vtkCellIds[cellId] << " " << _grid->_mesh->fromVtkToSmds(_vtkCellIds[cellId]));
   MESSAGE(orderedNodes[0] << " " << orderedNodes[1] << " " << orderedNodes[2]);
   MESSAGE(nodes[0] << " " << nodes[1] << " " << nodes[2] << " " << nodes[3]);
@@ -1352,7 +1352,7 @@ void SMDS_DownPyramid::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>&
 {
   set<int> setNodes;
   setNodes.clear();
-  for (int i = 0; i < orderedNodes.size(); i++)
+  for ( size_t i = 0; i < orderedNodes.size(); i++ )
     setNodes.insert(orderedNodes[i]);
   //MESSAGE("cellId = " << cellId);
 
@@ -1368,24 +1368,24 @@ void SMDS_DownPyramid::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>&
   for (int i = 0; i < 4; i++)
     tofind.insert(nodes[ids[i]]);
   if (setNodes == tofind)
-    {
-      for (int i = 0; i < 4; i++)
-        orderedNodes[i] = nodes[ids[i]];
-      return;
-    }
+  {
+    for (int i = 0; i < 4; i++)
+      orderedNodes[i] = nodes[ids[i]];
+    return;
+  }
   // Triangular faces
   for (int k = 0; k < 4; k++)
+  {
+    tofind.clear();
+    for (int i = 0; i < 3; i++)
+      tofind.insert(nodes[ids[4 + 3 * k + i]]);
+    if (setNodes == tofind)
     {
-      tofind.clear();
       for (int i = 0; i < 3; i++)
-        tofind.insert(nodes[ids[4 + 3 * k + i]]);
-      if (setNodes == tofind)
-        {
-          for (int i = 0; i < 3; i++)
-            orderedNodes[i] = nodes[ids[4 + 3 * k + i]];
-          return;
-        }
+        orderedNodes[i] = nodes[ids[4 + 3 * k + i]];
+      return;
     }
+  }
   MESSAGE("=== Problem volume " << _vtkCellIds[cellId] << " " << _grid->_mesh->fromVtkToSmds(_vtkCellIds[cellId]));
   MESSAGE(orderedNodes[0] << " " << orderedNodes[1] << " " << orderedNodes[2]);
   MESSAGE(nodes[0] << " " << nodes[1] << " " << nodes[2] << " " << nodes[3]);
@@ -1492,10 +1492,10 @@ SMDS_DownQuadPyramid::~SMDS_DownQuadPyramid()
 
 void SMDS_DownQuadPyramid::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& orderedNodes)
 {
-//   MESSAGE("SMDS_DownQuadPyramid::getOrderedNodesOfFace cellId = " << cellId);
+  //   MESSAGE("SMDS_DownQuadPyramid::getOrderedNodesOfFace cellId = " << cellId);
   set<int> setNodes;
   setNodes.clear();
-  for (int i = 0; i < orderedNodes.size(); i++)
+  for ( size_t i = 0; i < orderedNodes.size(); i++)
     setNodes.insert(orderedNodes[i]);
   //MESSAGE("cellId = " << cellId);
 
@@ -1512,24 +1512,24 @@ void SMDS_DownQuadPyramid::getOrderedNodesOfFace(int cellId, std::vector<vtkIdTy
   for (int i = 0; i < 8; i++)
     tofind.insert(nodes[ids[i]]);
   if (setNodes == tofind)
-    {
-      for (int i = 0; i < 8; i++)
-        orderedNodes[i] = nodes[ids[i]];
-      return;
-    }
+  {
+    for (int i = 0; i < 8; i++)
+      orderedNodes[i] = nodes[ids[i]];
+    return;
+  }
   // Triangular faces
   for (int k = 0; k < 4; k++)
+  {
+    tofind.clear();
+    for (int i = 0; i < 6; i++)
+      tofind.insert(nodes[ids[8 + 6 * k + i]]);
+    if (setNodes == tofind)
     {
-      tofind.clear();
       for (int i = 0; i < 6; i++)
-        tofind.insert(nodes[ids[8 + 6 * k + i]]);
-      if (setNodes == tofind)
-        {
-          for (int i = 0; i < 6; i++)
-            orderedNodes[i] = nodes[ids[8 + 6 * k + i]];
-          return;
-        }
+        orderedNodes[i] = nodes[ids[8 + 6 * k + i]];
+      return;
     }
+  }
   MESSAGE("=== Problem volume " << _vtkCellIds[cellId] << " " << _grid->_mesh->fromVtkToSmds(_vtkCellIds[cellId]));
   MESSAGE(orderedNodes[0] << " " << orderedNodes[1] << " " << orderedNodes[2] << " " << orderedNodes[3]);
   MESSAGE(nodes[0] << " " << nodes[1] << " " << nodes[2] << " " << nodes[3]);
@@ -1655,7 +1655,7 @@ void SMDS_DownPenta::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& o
 {
   set<int> setNodes;
   setNodes.clear();
-  for (int i = 0; i < orderedNodes.size(); i++)
+  for ( size_t i = 0; i < orderedNodes.size(); i++)
     setNodes.insert(orderedNodes[i]);
   //MESSAGE("cellId = " << cellId);
 
@@ -1664,35 +1664,35 @@ void SMDS_DownPenta::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& o
   _grid->GetCellPoints(this->_vtkCellIds[cellId], npts, nodes);
 
   set<int> tofind;
-//int ids[18] = { 0, 2, 1,  3, 4, 5,   0, 1, 4, 3,   1, 2, 5, 4,   2, 0, 3, 5 };
+  //int ids[18] = { 0, 2, 1,  3, 4, 5,   0, 1, 4, 3,   1, 2, 5, 4,   2, 0, 3, 5 };
   int ids[18] = { 0, 1, 2,  3, 5, 4,   0, 3, 4, 1,   1, 4, 5, 2,   2, 5, 3, 0 };
 
   // Triangular faces
   for (int k = 0; k < 2; k++)
+  {
+    tofind.clear();
+    for (int i = 0; i < 3; i++)
+      tofind.insert(nodes[ids[3 * k + i]]);
+    if (setNodes == tofind)
     {
-      tofind.clear();
       for (int i = 0; i < 3; i++)
-        tofind.insert(nodes[ids[3 * k + i]]);
-      if (setNodes == tofind)
-        {
-          for (int i = 0; i < 3; i++)
-            orderedNodes[i] = nodes[ids[3 * k + i]];
-          return;
-        }
+        orderedNodes[i] = nodes[ids[3 * k + i]];
+      return;
     }
+  }
   // Quadrangular faces
   for (int k = 0; k < 3; k++)
+  {
+    tofind.clear();
+    for (int i = 0; i < 4; i++)
+      tofind.insert(nodes[ids[6 + 4 * k + i]]);
+    if (setNodes == tofind)
     {
-      tofind.clear();
       for (int i = 0; i < 4; i++)
-        tofind.insert(nodes[ids[6 + 4 * k + i]]);
-      if (setNodes == tofind)
-        {
-          for (int i = 0; i < 4; i++)
-            orderedNodes[i] = nodes[ids[6 + 4 * k + i]];
-          return;
-        }
+        orderedNodes[i] = nodes[ids[6 + 4 * k + i]];
+      return;
     }
+  }
   MESSAGE("=== Problem volume " << _vtkCellIds[cellId] << " " << _grid->_mesh->fromVtkToSmds(_vtkCellIds[cellId]));
   MESSAGE(orderedNodes[0] << " " << orderedNodes[1] << " " << orderedNodes[2]);
   MESSAGE(nodes[0] << " " << nodes[1] << " " << nodes[2] << " " << nodes[3]);
@@ -1704,7 +1704,7 @@ void SMDS_DownPenta::addDownCell(int cellId, int lowCellId, unsigned char aType)
   int *faces = &_cellIds[_nbDownCells * cellId];
   if (aType == VTK_QUAD)
     for (int i = 0; i < 3; i++)
-      {
+    {
         if (faces[i] < 0)
           {
             faces[i] = lowCellId;
@@ -1805,7 +1805,7 @@ void SMDS_DownQuadPenta::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType
 {
   set<int> setNodes;
   setNodes.clear();
-  for (int i = 0; i < orderedNodes.size(); i++)
+  for ( size_t i = 0; i < orderedNodes.size(); i++ )
     setNodes.insert(orderedNodes[i]);
   //MESSAGE("cellId = " << cellId);
 
@@ -1814,36 +1814,36 @@ void SMDS_DownQuadPenta::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType
   _grid->GetCellPoints(this->_vtkCellIds[cellId], npts, nodes);
 
   set<int> tofind;
-//int ids[18] = { 0, 2, 1,  3, 4, 5,   0, 1, 4, 3,   1, 2, 5, 4,   2, 0, 3, 5 };
+  //int ids[18] = { 0, 2, 1,  3, 4, 5,   0, 1, 4, 3,   1, 2, 5, 4,   2, 0, 3, 5 };
   int ids[36] = { 0, 1, 2, 6, 7, 8,  3, 5, 4, 11, 10, 9,
                   0, 3, 4, 1, 12, 9, 13, 6,   1, 4, 5, 2, 13, 10, 14, 7,   2, 5, 3, 0, 14, 11, 12, 8 };
 
   // Triangular faces
   for (int k = 0; k < 2; k++)
+  {
+    tofind.clear();
+    for (int i = 0; i < 6; i++)
+      tofind.insert(nodes[ids[6 * k + i]]);
+    if (setNodes == tofind)
     {
-      tofind.clear();
       for (int i = 0; i < 6; i++)
-        tofind.insert(nodes[ids[6 * k + i]]);
-      if (setNodes == tofind)
-        {
-          for (int i = 0; i < 6; i++)
-            orderedNodes[i] = nodes[ids[6 * k + i]];
-          return;
-        }
+        orderedNodes[i] = nodes[ids[6 * k + i]];
+      return;
     }
+  }
   // Quadrangular faces
   for (int k = 0; k < 3; k++)
+  {
+    tofind.clear();
+    for (int i = 0; i < 8; i++)
+      tofind.insert(nodes[ids[12 + 8 * k + i]]);
+    if (setNodes == tofind)
     {
-      tofind.clear();
       for (int i = 0; i < 8; i++)
-        tofind.insert(nodes[ids[12 + 8 * k + i]]);
-      if (setNodes == tofind)
-        {
-          for (int i = 0; i < 8; i++)
-            orderedNodes[i] = nodes[ids[12 + 8 * k + i]];
-          return;
-        }
+        orderedNodes[i] = nodes[ids[12 + 8 * k + i]];
+      return;
     }
+  }
   MESSAGE("=== Problem volume " << _vtkCellIds[cellId] << " " << _grid->_mesh->fromVtkToSmds(_vtkCellIds[cellId]));
   MESSAGE(orderedNodes[0] << " " << orderedNodes[1] << " " << orderedNodes[2]);
   MESSAGE(nodes[0] << " " << nodes[1] << " " << nodes[2] << " " << nodes[3]);
@@ -1976,7 +1976,7 @@ void SMDS_DownHexa::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& or
 {
   set<int> setNodes;
   setNodes.clear();
-  for (int i = 0; i < orderedNodes.size(); i++)
+  for ( size_t i = 0; i < orderedNodes.size(); i++ )
     setNodes.insert(orderedNodes[i]);
   //MESSAGE("cellId = " << cellId);
 
@@ -1985,20 +1985,20 @@ void SMDS_DownHexa::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& or
   _grid->GetCellPoints(this->_vtkCellIds[cellId], npts, nodes);
 
   set<int> tofind;
-//int ids[24] = { 0, 1, 2, 3,  7, 6, 5, 4,  4, 0, 3, 7,  5, 1, 0, 4,  6, 2, 1, 5,  7, 3, 2, 6};
+  //int ids[24] = { 0, 1, 2, 3,  7, 6, 5, 4,  4, 0, 3, 7,  5, 1, 0, 4,  6, 2, 1, 5,  7, 3, 2, 6};
   int ids[24] = { 3, 2, 1, 0,  4, 5, 6, 7,  7, 3, 0, 4,  4, 0, 1, 5,  5, 1, 2, 6,  6, 2, 3, 7};
   for (int k = 0; k < 6; k++) // loop on the 6 faces
+  {
+    tofind.clear();
+    for (int i = 0; i < 4; i++)
+      tofind.insert(nodes[ids[4 * k + i]]); // node ids of the face i
+    if (setNodes == tofind)
     {
-      tofind.clear();
       for (int i = 0; i < 4; i++)
-        tofind.insert(nodes[ids[4 * k + i]]); // node ids of the face i
-      if (setNodes == tofind)
-        {
-          for (int i = 0; i < 4; i++)
-            orderedNodes[i] = nodes[ids[4 * k + i]];
-          return;
-        }
+        orderedNodes[i] = nodes[ids[4 * k + i]];
+      return;
     }
+  }
   MESSAGE("=== Problem volume " << _vtkCellIds[cellId] << " " << _grid->_mesh->fromVtkToSmds(_vtkCellIds[cellId]));
   MESSAGE(orderedNodes[0] << " " << orderedNodes[1] << " " << orderedNodes[2] << " " << orderedNodes[3]);
   MESSAGE(nodes[0] << " " << nodes[1] << " " << nodes[2] << " " << nodes[3]);
@@ -2107,7 +2107,7 @@ void SMDS_DownQuadHexa::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>
 {
   set<int> setNodes;
   setNodes.clear();
-  for (int i = 0; i < orderedNodes.size(); i++)
+  for ( size_t i = 0; i < orderedNodes.size(); i++ )
     setNodes.insert(orderedNodes[i]);
   //MESSAGE("cellId = " << cellId);
 
@@ -2120,17 +2120,17 @@ void SMDS_DownQuadHexa::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>
   int ids[48] = { 3, 2, 1, 0,10, 9, 8,11,   4, 5, 6, 7,12,13,14,15,   7, 3, 0, 4,19,11,16,15,
                   4, 0, 1, 5,16, 8,17,12,   5, 1, 2, 6,17, 9,18,13,   6, 2, 3, 7,18,10,19,14};
   for (int k = 0; k < 6; k++)
+  {
+    tofind.clear();
+    for (int i = 0; i < 8; i++)
+      tofind.insert(nodes[ids[8 * k + i]]);
+    if (setNodes == tofind)
     {
-      tofind.clear();
       for (int i = 0; i < 8; i++)
-        tofind.insert(nodes[ids[8 * k + i]]);
-      if (setNodes == tofind)
-        {
-          for (int i = 0; i < 8; i++)
-            orderedNodes[i] = nodes[ids[8 * k + i]];
-          return;
-        }
+        orderedNodes[i] = nodes[ids[8 * k + i]];
+      return;
     }
+  }
   MESSAGE("=== Problem volume " << _vtkCellIds[cellId] << " " << _grid->_mesh->fromVtkToSmds(_vtkCellIds[cellId]));
   MESSAGE(orderedNodes[0] << " " << orderedNodes[1] << " " << orderedNodes[2] << " " << orderedNodes[3]);
   MESSAGE(nodes[0] << " " << nodes[1] << " " << nodes[2] << " " << nodes[3]);

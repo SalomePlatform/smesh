@@ -33,9 +33,9 @@
 
 #include <IntAna_IntConicQuad.hxx>
 #include <IntAna_Quadric.hxx>
-#include <TColgp_HArray1OfPnt.hxx>
-#include <TColgp_HArray1OfVec.hxx>
-#include <TColgp_HSequenceOfPnt.hxx>
+#include <TColgp_Array1OfPnt.hxx>
+#include <TColgp_Array1OfVec.hxx>
+#include <TColgp_SequenceOfPnt.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopoDS.hxx>
 #include <gp_Lin.hxx>
@@ -495,26 +495,23 @@ static bool HasIntersection3(const gp_Pnt& P, const gp_Pnt& PC, gp_Pnt& Pint,
 //=======================================================================
 
 static bool HasIntersection(const gp_Pnt& P, const gp_Pnt& PC, gp_Pnt& Pint,
-                            Handle(TColgp_HSequenceOfPnt)& aContour)
+                            TColgp_SequenceOfPnt& aContour)
 {
-  if(aContour->Length()==3) {
-    return HasIntersection3( P, PC, Pint, aContour->Value(1),
-                             aContour->Value(2), aContour->Value(3) );
+  if ( aContour.Length() == 3 ) {
+    return HasIntersection3( P, PC, Pint, aContour(1), aContour(2), aContour(3) );
   }
   else {
     bool check = false;
-    if( (aContour->Value(1).Distance(aContour->Value(2)) > 1.e-6) &&
-        (aContour->Value(1).Distance(aContour->Value(3)) > 1.e-6) &&
-        (aContour->Value(2).Distance(aContour->Value(3)) > 1.e-6) ) {
-      check = HasIntersection3( P, PC, Pint, aContour->Value(1),
-                                aContour->Value(2), aContour->Value(3) );
+    if( (aContour(1).Distance(aContour(2)) > 1.e-6) &&
+        (aContour(1).Distance(aContour(3)) > 1.e-6) &&
+        (aContour(2).Distance(aContour(3)) > 1.e-6) ) {
+      check = HasIntersection3( P, PC, Pint, aContour(1), aContour(2), aContour(3) );
     }
     if(check) return true;
-    if( (aContour->Value(1).Distance(aContour->Value(4)) > 1.e-6) &&
-        (aContour->Value(1).Distance(aContour->Value(3)) > 1.e-6) &&
-        (aContour->Value(4).Distance(aContour->Value(3)) > 1.e-6) ) {
-      check = HasIntersection3( P, PC, Pint, aContour->Value(1),
-                                aContour->Value(3), aContour->Value(4) );
+    if( (aContour(1).Distance(aContour(4)) > 1.e-6) &&
+        (aContour(1).Distance(aContour(3)) > 1.e-6) &&
+        (aContour(4).Distance(aContour(3)) > 1.e-6) ) {
+      check = HasIntersection3( P, PC, Pint, aContour(1), aContour(3), aContour(4) );
     }
     if(check) return true;
   }
@@ -546,24 +543,23 @@ bool StdMeshers_QuadToTriaAdaptor::CheckIntersection (const gp_Pnt&       P,
     myElemSearcher = SMESH_MeshAlgos::GetElementSearcher( *aMesh.GetMeshDS() );
   SMESH_ElementSearcher* searcher = const_cast<SMESH_ElementSearcher*>(myElemSearcher);
 
-  //SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
-  //cout<<"    CheckIntersection: meshDS->NbFaces() = "<<meshDS->NbFaces()<<endl;
   bool    res = false;
-  double dist = RealLast(); // find intersection closest to the segment
+  double dist = RealLast(); // find intersection closest to PC
   gp_Pnt Pres;
 
   gp_Ax1 line( P, gp_Vec(P,PC));
   vector< const SMDS_MeshElement* > suspectElems;
   searcher->GetElementsNearLine( line, SMDSAbs_Face, suspectElems);
 
+  TColgp_SequenceOfPnt aContour;
   for ( size_t iF = 0; iF < suspectElems.size(); ++iF )
   {
     const SMDS_MeshElement* face = suspectElems[iF];
     if ( face == NotCheckedFace ) continue;
-    Handle(TColgp_HSequenceOfPnt) aContour = new TColgp_HSequenceOfPnt;
+    aContour.Clear();
     for ( int i = 0; i < face->NbCornerNodes(); ++i )
-      aContour->Append( SMESH_TNodeXYZ( face->GetNode(i) ));
-    if( HasIntersection(P, PC, Pres, aContour) ) {
+      aContour.Append( SMESH_TNodeXYZ( face->GetNode(i) ));
+    if ( HasIntersection(P, PC, Pres, aContour)) {
       res = true;
       double tmp = PC.Distance(Pres);
       if ( tmp < dist ) {
@@ -591,8 +587,8 @@ bool StdMeshers_QuadToTriaAdaptor::CheckIntersection (const gp_Pnt&       P,
 //================================================================================
 
 int StdMeshers_QuadToTriaAdaptor::Preparation(const SMDS_MeshElement*       face,
-                                              Handle(TColgp_HArray1OfPnt)&  PN,
-                                              Handle(TColgp_HArray1OfVec)&  VN,
+                                              TColgp_Array1OfPnt&           PN,
+                                              TColgp_Array1OfVec&           VN,
                                               vector<const SMDS_MeshNode*>& FNodes,
                                               gp_Pnt&                       PC,
                                               gp_Vec&                       VNorm,
@@ -608,7 +604,7 @@ int StdMeshers_QuadToTriaAdaptor::Preparation(const SMDS_MeshElement*       face
   for ( i = 0; i < 4; ++i )
   {
     gp_XYZ p = SMESH_TNodeXYZ( FNodes[i] = face->GetNode(i) );
-    PN->SetValue( i+1, p );
+    PN.SetValue( i+1, p );
     xyzC += p;
   }
   PC = xyzC/4;
@@ -619,7 +615,7 @@ int StdMeshers_QuadToTriaAdaptor::Preparation(const SMDS_MeshElement*       face
   for(i=1; i<4; i++) {
     j = i+1;
     for(; j<=4; j++) {
-      if( PN->Value(i).Distance(PN->Value(j)) < 1.e-6 )
+      if( PN(i).Distance(PN(j)) < 1.e-6 )
         break;
     }
     if(j<=4) break;
@@ -630,7 +626,7 @@ int StdMeshers_QuadToTriaAdaptor::Preparation(const SMDS_MeshElement*       face
   if(i<4) {
     //cout<<"find degeneration"<<endl;
     hasdeg = true;
-    gp_Pnt Pdeg = PN->Value(i);
+    gp_Pnt Pdeg = PN(i);
 
     list< const SMDS_MeshNode* >::iterator itdg = myDegNodes.begin();
     const SMDS_MeshNode* DegNode = 0;
@@ -651,24 +647,24 @@ int StdMeshers_QuadToTriaAdaptor::Preparation(const SMDS_MeshElement*       face
       FNodes[i-1] = DegNode;
     }
     for(i=j; i<4; i++) {
-      PN->SetValue(i,PN->Value(i+1));
+      PN.SetValue(i,PN.Value(i+1));
       FNodes[i-1] = FNodes[i];
     }
     nbp = 3;
   }
 
-  PN->SetValue(nbp+1,PN->Value(1));
+  PN.SetValue(nbp+1,PN(1));
   FNodes[nbp] = FNodes[0];
   // find normal direction
-  gp_Vec V1(PC,PN->Value(nbp));
-  gp_Vec V2(PC,PN->Value(1));
+  gp_Vec V1(PC,PN(nbp));
+  gp_Vec V2(PC,PN(1));
   VNorm = V1.Crossed(V2);
-  VN->SetValue(nbp,VNorm);
+  VN.SetValue(nbp,VNorm);
   for(i=1; i<nbp; i++) {
-    V1 = gp_Vec(PC,PN->Value(i));
-    V2 = gp_Vec(PC,PN->Value(i+1));
+    V1 = gp_Vec(PC,PN(i));
+    V2 = gp_Vec(PC,PN(i+1));
     gp_Vec Vtmp = V1.Crossed(V2);
-    VN->SetValue(i,Vtmp);
+    VN.SetValue(i,Vtmp);
     VNorm += Vtmp;
   }
 
@@ -736,8 +732,8 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh&         aMesh,
     myElemSearcher = SMESH_MeshAlgos::GetElementSearcher( *meshDS );
 
   const SMESHDS_SubMesh * aSubMeshDSFace;
-  Handle(TColgp_HArray1OfPnt) PN = new TColgp_HArray1OfPnt(1,5);
-  Handle(TColgp_HArray1OfVec) VN = new TColgp_HArray1OfVec(1,4);
+  TColgp_Array1OfPnt PN(1,5);
+  TColgp_Array1OfVec VN(1,4);
   vector<const SMDS_MeshNode*> FNodes(5);
   gp_Pnt PC;
   gp_Vec VNorm;
@@ -796,9 +792,9 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh&         aMesh,
             for(; i<=4; i++) {
               gp_Pnt Pbest;
               if(!isRev)
-                Pbest = FindBestPoint(PN->Value(i), PN->Value(i+1), PC, VN->Value(i).Reversed());
+                Pbest = FindBestPoint(PN(i), PN(i+1), PC, VN(i).Reversed());
               else
-                Pbest = FindBestPoint(PN->Value(i), PN->Value(i+1), PC, VN->Value(i));
+                Pbest = FindBestPoint(PN(i), PN(i+1), PC, VN(i));
               xc += Pbest.X();
               yc += Pbest.Y();
               zc += Pbest.Z();
@@ -807,31 +803,21 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh&         aMesh,
 
             // check PCbest
             double height = PCbest.Distance(PC);
-            if(height<1.e-6) {
+            if ( height < 1.e-6 ) {
               // create new PCbest using a bit shift along VNorm
               PCbest = PC.XYZ() + VNorm.XYZ() * 0.001;
             }
             else {
               // check possible intersection with other faces
               gp_Pnt Pint;
-              bool check = CheckIntersection(PCbest, PC, Pint, aMesh, aShape, face);
-              if(check) {
-                //cout<<"--PC("<<PC.X()<<","<<PC.Y()<<","<<PC.Z()<<")"<<endl;
-                //cout<<"  PCbest("<<PCbest.X()<<","<<PCbest.Y()<<","<<PCbest.Z()<<")"<<endl;
+              gp_Vec VB(PC,PCbest);
+              gp_Pnt PCbestTmp = PC.XYZ() + VB.XYZ() * 3.0;
+              bool hasInters = CheckIntersection(PCbestTmp, PC, Pint, aMesh, aShape, face);
+              if ( hasInters ) {
                 double dist = PC.Distance(Pint)/3.;
-                gp_Dir aDir(gp_Vec(PC,PCbest));
-                PCbest = PC.XYZ() + aDir.XYZ() * dist;
-              }
-              else {
-                gp_Vec VB(PC,PCbest);
-                gp_Pnt PCbestTmp = PC.XYZ() + VB.XYZ() * 3.0;
-                check = CheckIntersection(PCbestTmp, PC, Pint, aMesh, aShape, face);
-                if(check) {
-                  double dist = PC.Distance(Pint)/3.;
-                  if(dist<height) {
-                    gp_Dir aDir(gp_Vec(PC,PCbest));
-                    PCbest = PC.XYZ() + aDir.XYZ() * dist;
-                  }
+                if ( dist < height ) {
+                  gp_Dir aDir( VB );
+                  PCbest = PC.XYZ() + aDir.XYZ() * dist;
                 }
               }
             }
@@ -945,15 +931,17 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
     myElemSearcher = SMESH_MeshAlgos::GetElementSearcher( *meshDS );
   SMESH_ElementSearcher* searcher = const_cast<SMESH_ElementSearcher*>(myElemSearcher);
 
+  TColgp_Array1OfPnt PN(1,5);
+  TColgp_Array1OfVec VN(1,4);
+  vector<const SMDS_MeshNode*> FNodes(5);
+  TColgp_SequenceOfPnt aContour;
+
   SMDS_FaceIteratorPtr fIt = meshDS->facesIterator(/*idInceasingOrder=*/true);
   while( fIt->more())
   {
     const SMDS_MeshElement* face = fIt->next();
     if ( !face ) continue;
     // retrieve needed information about a face
-    Handle(TColgp_HArray1OfPnt) PN = new TColgp_HArray1OfPnt(1,5);
-    Handle(TColgp_HArray1OfVec) VN = new TColgp_HArray1OfVec(1,4);
-    vector<const SMDS_MeshNode*> FNodes(5);
     gp_Pnt PC;
     gp_Vec VNorm;
     const SMDS_MeshElement* volumes[2];
@@ -970,7 +958,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
       SMDS_MeshFace* NewFace;
 
       // check orientation
-      double tmp = PN->Value(1).Distance(PN->Value(2)) + PN->Value(2).Distance(PN->Value(3));
+      double tmp = PN(1).Distance(PN(2)) + PN(2).Distance(PN(3));
       // far points in VNorm direction
       gp_Pnt Ptmp1 = PC.XYZ() + VNorm.XYZ() * tmp * 1.e6;
       gp_Pnt Ptmp2 = PC.XYZ() - VNorm.XYZ() * tmp * 1.e6;
@@ -989,9 +977,9 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
       for ( size_t iF = 0; iF < suspectElems.size(); ++iF ) {
         const SMDS_MeshElement* F = suspectElems[iF];
         if ( F == face ) continue;
-        Handle(TColgp_HSequenceOfPnt) aContour = new TColgp_HSequenceOfPnt;
+        aContour.Clear();
         for ( int i = 0; i < 4; ++i )
-          aContour->Append( SMESH_TNodeXYZ( F->GetNode(i) ));
+          aContour.Append( SMESH_TNodeXYZ( F->GetNode(i) ));
         gp_Pnt PPP;
         if ( !volumes[0] && HasIntersection( Ptmp1, PC, PPP, aContour )) {
           IsOK1 = true;
@@ -1045,7 +1033,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
     gp_XYZ PCbest(0., 0., 0.); // pyramid peak
     int i = 1;
     for ( ; i <= 4; i++ ) {
-      gp_Pnt Pbest = FindBestPoint(PN->Value(i), PN->Value(i+1), PC, VN->Value(i));
+      gp_Pnt Pbest = FindBestPoint(PN(i), PN(i+1), PC, VN(i));
       PCbest += Pbest.XYZ();
     }
     PCbest /= 4;
@@ -1061,7 +1049,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
 
     // Restrict pyramid height by intersection with other faces
     gp_Vec tmpDir(PC,PCbest); tmpDir.Normalize();
-    double tmp = PN->Value(1).Distance(PN->Value(3)) + PN->Value(2).Distance(PN->Value(4));
+    double tmp = PN(1).Distance(PN(3)) + PN(2).Distance(PN(4));
     // far points: in (PC, PCbest) direction and vice-versa
     gp_Pnt farPnt[2] = { PC.XYZ() + tmpDir.XYZ() * tmp * 1.e6,
                          PC.XYZ() - tmpDir.XYZ() * tmp * 1.e6 };
@@ -1078,10 +1066,10 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
     {
       const SMDS_MeshElement* F = suspectElems[iF];
       if ( F == face ) continue;
-      Handle(TColgp_HSequenceOfPnt) aContour = new TColgp_HSequenceOfPnt;
-      int nbN = F->NbNodes() / ( F->IsQuadratic() ? 2 : 1 );
+      aContour.Clear();
+      int nbN = F->NbCornerNodes();
       for ( i = 0; i < nbN; ++i )
-        aContour->Append( SMESH_TNodeXYZ( F->GetNode(i) ));
+        aContour.Append( SMESH_TNodeXYZ( F->GetNode(i) ));
       gp_Pnt intP;
       for ( int isRev = 0; isRev < 2; ++isRev )
       {

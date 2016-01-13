@@ -338,8 +338,8 @@ SMESHGUI_AddQuadraticElementDlg::SMESHGUI_AddQuadraticElementDlg( SMESHGUI* theM
   : QDialog( SMESH::GetDesktop( theModule ) ),
     mySMESHGUI( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) ),
-    myGeomType( theType ),
-    myBusy( false )
+    myBusy( false ),
+    myGeomType( theType )
 {
   setModal( false );
   setAttribute( Qt::WA_DeleteOnClose, true );
@@ -599,6 +599,7 @@ void SMESHGUI_AddQuadraticElementDlg::Init()
     myNbCenterNodes = 1;
     myHelpFileName = "adding_quadratic_elements_page.html#?"; //Adding_hexahedrons
     break;
+  default:;
   }
 
   myMidFaceLabel       ->setVisible( myNbMidFaceNodes );
@@ -724,6 +725,7 @@ bool SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
       anIds.push_back( aListId[ 0 ].toInt() );
     }
     break;
+  default:;
   }
   if ( myReverseCB->isChecked())
     ReverseConnectivity( anIds, myGeomType, /*toReverse=*/true, /*toVtkOrder=*/false );
@@ -849,6 +851,7 @@ bool SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
     case SMESH::VOLUME:
       myActor->SetRepresentation(SMESH_Actor::eSurface);
       myActor->SetEntityMode( aMode |= SMESH_Actor::eVolumes ); break;
+    default:;
     }
   }
 
@@ -1068,6 +1071,7 @@ void SMESHGUI_AddQuadraticElementDlg::SelectionIntoArgument()
     case SMDSEntity_Quad_Hexa:
     case SMDSEntity_TriQuad_Hexa:
       anElementType = SMESH::VOLUME; break;
+    default:;
     }
     myGroups.clear();
     ComboBox_GroupName->clear();
@@ -1309,7 +1313,7 @@ bool SMESHGUI_AddQuadraticElementDlg::IsValid()
     okIDs.insert( anID );
   }
 
-  return okIDs.size() == myTable->rowCount() + myNbMidFaceNodes + myNbCenterNodes;
+  return (int) okIDs.size() == myTable->rowCount() + myNbMidFaceNodes + myNbCenterNodes;
 }
 
 //=================================================================================
@@ -1406,6 +1410,7 @@ void SMESHGUI_AddQuadraticElementDlg::UpdateTable( bool theConersValidity )
       aFirstColIds = FirstHexahedronIds;
       aLastColIds  = LastHexahedronIds;
       break;
+    default:;
     }
 
     // fill the First and the Last columns

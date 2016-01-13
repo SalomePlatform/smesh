@@ -88,10 +88,10 @@
 //================================================================================
 SMESHGUI_MeshOp::SMESHGUI_MeshOp( const bool theToCreate, const bool theIsMesh )
 : SMESHGUI_SelectionOp(),
-  myToCreate( theToCreate ),
-  myIsMesh( theIsMesh ),
   myDlg( 0 ),
   myShapeByMeshOp( 0 ),
+  myToCreate( theToCreate ),
+  myIsMesh( theIsMesh ),
   myHypoSet( 0 )
 {
   if ( GeometryGUI::GetGeomGen()->_is_nil() )// check that GEOM_Gen exists
@@ -576,7 +576,7 @@ void SMESHGUI_MeshOp::selectionDone()
 
       if (aSeq->length() > 0) {
         shapeDim = -1;
-        for (int iss = 0; iss < aSeq->length() && shapeDim < 3; iss++) {
+        for ( CORBA::ULong iss = 0; iss < aSeq->length() && shapeDim < 3; iss++) {
           GEOM::GEOM_Object_var aGeomVar = aSeq[iss];
           switch ( aGeomVar->GetShapeType() ) {
           case GEOM::SOLID:  shapeDim = 3; break;
