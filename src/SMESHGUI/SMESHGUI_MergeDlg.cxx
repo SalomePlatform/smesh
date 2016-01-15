@@ -102,7 +102,7 @@ QPixmap SMESHGUI_MergeDlg::IconFirst()
     "  ..   ...   ...  ",
     "  ..    ..    ..  ",
     "         .     .  "};
-  return iconFirst;
+  return QPixmap( iconFirst );
 }
 
 //=================================================================================

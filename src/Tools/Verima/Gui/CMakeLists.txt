@@ -17,7 +17,7 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-INCLUDE(UsePyQt4)
+INCLUDE(UsePyQt)
 
 # --- scripts ---
 
@@ -44,7 +44,7 @@ SET(_pyuic_files
 )
 
 # scripts / pyuic wrappings
-PYQT4_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_files})
+PYQT_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_files})
 
 # --- rules ---
 

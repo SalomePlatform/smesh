@@ -21,7 +21,7 @@ IF(SALOME_BUILD_DOC)
   ADD_SUBDIRECTORY(doc)
 ENDIF(SALOME_BUILD_DOC)
 
-INCLUDE(UsePyQt4)
+INCLUDE(UsePyQt)
 
 # --- scripts ---
 
@@ -41,7 +41,7 @@ SET(_pyuic_files
 )
 
 # scripts / pyuic wrappings
-PYQT4_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_files})
+PYQT_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_files})
 
 # --- rules ---
 

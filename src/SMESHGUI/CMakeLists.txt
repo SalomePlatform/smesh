@@ -17,7 +17,7 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-INCLUDE(UseQt4Ext)
+INCLUDE(UseQtExt)
 
 # --- options ---
 # additional include directories
@@ -173,7 +173,7 @@ SET(SMESH_HEADERS ${_moc_HEADERS} ${_other_HEADERS})
 # --- sources ---
 
 # sources / moc wrappings
-QT4_WRAP_CPP(_moc_SOURCES ${_moc_HEADERS})
+QT_WRAP_MOC(_moc_SOURCES ${_moc_HEADERS})
 
 # sources / static
 SET(_other_SOURCES
@@ -278,4 +278,4 @@ INSTALL(TARGETS SMESH EXPORT ${PROJECT_NAME}TargetGroup DESTINATION ${SALOME_INS
 
 INSTALL(FILES ${SMESH_HEADERS} DESTINATION ${SALOME_INSTALL_HEADERS})
 
-QT4_INSTALL_TS_RESOURCES("${_ts_RESOURCES}" "${SALOME_SMESH_INSTALL_RES_DATA}")
+QT_INSTALL_TS_RESOURCES("${_ts_RESOURCES}" "${SALOME_SMESH_INSTALL_RES_DATA}")

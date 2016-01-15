@@ -809,10 +809,10 @@ void SMESHGUI_MeshPatternDlg::onOpen()
   SUIT_FileDlg* aDlg = new SUIT_FileDlg (this, true);
   aDlg->setWindowTitle(tr("LOAD_PATTERN"));
   aDlg->setFileMode(QFileDialog::ExistingFile);
-  aDlg->setFilters(prepareFilters());
+  aDlg->setNameFilters(prepareFilters());
   if (!myName->text().isEmpty())
     aDlg->selectFile(myName->text() + ".smp");
-  QPushButton* anOkBtn = qFindChild<QPushButton*>( aDlg, "OK" );
+  QPushButton* anOkBtn = aDlg->findChild<QPushButton*>( "OK" );
   if (anOkBtn != 0)
     anOkBtn->setText(tr("SMESH_BUT_OK"));
 
@@ -826,9 +826,9 @@ void SMESHGUI_MeshPatternDlg::onOpen()
   if (QFileInfo(fName).suffix().isEmpty())
     fName = autoExtension(fName);
 
-  fName = QDir::convertSeparators(fName);
+  fName = QDir::toNativeSeparators(fName);
 
-  QString prev = QDir::convertSeparators(myName->text());
+  QString prev = QDir::toNativeSeparators(myName->text());
   if (prev == fName)
     return;
 

@@ -127,12 +127,20 @@ IF(SALOME_BUILD_GUI)
     ##
     ## Prerequisites From GUI:
     ##
-    # Qt4
-    FIND_PACKAGE(SalomeQt4 REQUIRED COMPONENTS QtCore QtGui QtXml)
+    # Qt
+    IF(NOT SALOME_GUI_BUILD_WITH_QT5)
+      FIND_PACKAGE(SalomeQt4 REQUIRED COMPONENTS QtCore QtGui QtXml)
+    ELSE()
+      FIND_PACKAGE(SalomeQt5 REQUIRED)
+    ENDIF()
     # SIP
-    FIND_PACKAGE(SalomeSIP REQUIRED)  # should come after Python and before PyQt4
-    # PyQt4
-    FIND_PACKAGE(SalomePyQt4 REQUIRED)
+    FIND_PACKAGE(SalomeSIP REQUIRED)  # should come after Python and before PyQt5
+    # PyQt
+    IF (NOT SALOME_GUI_BUILD_WITH_QT5)
+      FIND_PACKAGE(SalomePyQt4 REQUIRED)
+    ELSE()
+      FIND_PACKAGE(SalomePyQt5 REQUIRED)
+    ENDIF()
     # Qwt
     FIND_PACKAGE(SalomeQwt REQUIRED)
   ELSE(EXISTS ${GUI_ROOT_DIR})
