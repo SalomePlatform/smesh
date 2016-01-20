@@ -1504,6 +1504,7 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
       QString anCompareType = currentMeshTypeName(myDlg->currentMeshType());
       bool is2dtype = ( anCompareType == "QUAD" ) || ( anCompareType == "TRIA" );
       int dim = is2dtype ? SMESH::DIM_2D : SMESH::DIM_3D;
+      dim = ( myMaxShapeDim < dim ) ? myMaxShapeDim : dim;
       for (int i = dim; i >= SMESH::DIM_0D; i--) {
         if ( i != aDim ) {
           if ( algoData && algoData->InputTypes.isEmpty() ) {
@@ -2746,18 +2747,14 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
       setCurrentHyp( dim, Algo, anCurrentAvailableAlgo );
     }
 
-    if ( aDim == SMESH::DIM_2D) {
-      myDlg->disableTab( SMESH::DIM_3D );
-      setCurrentHyp( SMESH::DIM_3D, Algo, -1);
-    }
-    for ( int i = myMaxShapeDim; i > SMESH::DIM_0D; i-- ) {
+    for ( int i = myMaxShapeDim; i >= SMESH::DIM_0D; i-- ) {
       bool isNoneAlg = currentHyp( i, Algo ) < 0;
       if ( !isNoneAlg )
         isReqDisBound = myAvailableHypData[i][Algo].at( currentHyp( i, Algo ) )->InputTypes.isEmpty();
       else
         isReqDisBound = true;
-      if ( isReqDisBound && !isNoneAlg) {
-        for (int j = i; j >= SMESH::DIM_0D; j--) {
+      if ( isReqDisBound && !isNoneAlg && i <= aDim) {
+        for (int j = myMaxShapeDim; j >= SMESH::DIM_0D; j--) {
           if ( currentHyp( j, Algo ) < 0 ) {
             myDlg->disableTab( j );
             setCurrentHyp( j , Algo, -1 );
@@ -2765,7 +2762,15 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
         }
         break;
       }
+      else {
+        myDlg->enableTab( i );
+      }
     }
+    if ( aDim == SMESH::DIM_2D) {
+      myDlg->disableTab( SMESH::DIM_3D );
+      setCurrentHyp( SMESH::DIM_3D, Algo, -1);
+    }
+
     int currentTab = ( theTabIndex <= aDim ) ? theTabIndex : aDim;
     myDlg->setCurrentTab( currentTab );
   }
