@@ -89,6 +89,13 @@ struct SMESHUtils_EXPORT SMESH_ElementSearcher
                                     SMDSAbs_ElementType                     type,
                                     std::vector< const SMDS_MeshElement* >& foundElems) = 0;
   /*!
+   * \brief Return elements whose bounding box intersects a sphere
+   */
+  virtual void GetElementsInSphere( const gp_XYZ&                           center,
+                                    const double                            radius,
+                                    SMDSAbs_ElementType                     type,
+                                    std::vector< const SMDS_MeshElement* >& foundElems) = 0;
+  /*!
    * \brief Find out if the given point is out of closed 2D mesh.
    */
   virtual TopAbs_State GetPointState(const gp_Pnt& point) = 0;

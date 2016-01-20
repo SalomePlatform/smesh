@@ -71,10 +71,13 @@ protected:
                   gp_Pnt& PC, gp_Vec& VNorm,
                   const SMDS_MeshElement** volumes=0);
 
-  bool CheckIntersection(const gp_Pnt& P, const gp_Pnt& PC,
-                         gp_Pnt& Pint, SMESH_Mesh& aMesh,
-                         const TopoDS_Shape& aShape,
-                         const SMDS_MeshElement* NotCheckedFace);
+  void LimitHeight (gp_Pnt&                                  Papex,
+                    const gp_Pnt&                            PC,
+                    const TColgp_Array1OfPnt&                PN,
+                    const std::vector<const SMDS_MeshNode*>& FNodes,
+                    SMESH_Mesh&                              aMesh,
+                    const SMDS_MeshElement*                  NotCheckedFace,
+                    const bool                               UseApexRay);
 
   bool Compute2ndPart(SMESH_Mesh&                                 aMesh,
                       const std::vector<const SMDS_MeshElement*>& pyramids);
@@ -85,7 +88,8 @@ protected:
                       std::set<const SMDS_MeshNode*> & nodesToMove);
 
   void MergeAdjacent(const SMDS_MeshElement*         PrmI,
-                     std::set<const SMDS_MeshNode*>& nodesToMove);
+                     std::set<const SMDS_MeshNode*>& nodesToMove,
+                     const bool                      isRecursion = false);
 
 
   TopoDS_Shape                      myShape;

@@ -3228,7 +3228,6 @@ void SMDS_Mesh::RemoveElement(const SMDS_MeshElement *        elem,
                               list<const SMDS_MeshElement *>& removedNodes,
                               bool                            removenodes)
 {
-  //MESSAGE("SMDS_Mesh::RemoveElement " << elem->getVtkId() << " " << removenodes);
   // get finite elements built on elem
   set<const SMDS_MeshElement*> * s1;
   if (    (elem->GetType() == SMDSAbs_0DElement)
@@ -3273,19 +3272,16 @@ void SMDS_Mesh::RemoveElement(const SMDS_MeshElement *        elem,
       // Remove element from <InverseElements> of its nodes
       SMDS_ElemIteratorPtr itn = (*it)->nodesIterator();
       while (itn->more())
-        {
-          SMDS_MeshNode * n = static_cast<SMDS_MeshNode *> (const_cast<SMDS_MeshElement *> (itn->next()));
-          n->RemoveInverseElement((*it));
-        }
+      {
+        SMDS_MeshNode * n = static_cast<SMDS_MeshNode *> (const_cast<SMDS_MeshElement *> (itn->next()));
+        n->RemoveInverseElement((*it));
+      }
       int IdToRemove = (*it)->GetID();
       int vtkid = (*it)->getVtkId();
-      //MESSAGE("elem Id to remove " << IdToRemove << " vtkid " << vtkid <<
-      //        " vtktype " << (*it)->GetVtkType() << " type " << (*it)->GetType());
       switch ((*it)->GetType())
       {
         case SMDSAbs_Node:
-          MYASSERT("Internal Error: This should not happen")
-          ;
+          MYASSERT("Internal Error: This should not happen");
           break;
         case SMDSAbs_0DElement:
           if (IdToRemove >= 0)
@@ -3305,8 +3301,10 @@ void SMDS_Mesh::RemoveElement(const SMDS_MeshElement *        elem,
             }
           removedElems.push_back((*it));
           myElementIDFactory->ReleaseID(IdToRemove, vtkid);
-          if (const SMDS_VtkEdge* vtkElem = dynamic_cast<const SMDS_VtkEdge*>(*it))
+          if (const SMDS_VtkEdge* vtkElem = dynamic_cast<const SMDS_VtkEdge*>(*it)) {
             myEdgePool->destroy((SMDS_VtkEdge*) vtkElem);
+            ((SMDS_MeshElement*) *it)->init( -1, -1, -1 ); // avoid reuse
+          }
           else
             delete (*it);
           break;
@@ -3318,8 +3316,10 @@ void SMDS_Mesh::RemoveElement(const SMDS_MeshElement *        elem,
             }
           removedElems.push_back((*it));
           myElementIDFactory->ReleaseID(IdToRemove, vtkid);
-          if (const SMDS_VtkFace* vtkElem = dynamic_cast<const SMDS_VtkFace*>(*it))
+          if (const SMDS_VtkFace* vtkElem = dynamic_cast<const SMDS_VtkFace*>(*it)) {
             myFacePool->destroy((SMDS_VtkFace*) vtkElem);
+            ((SMDS_MeshElement*) *it)->init( -1, -1, -1 ); // avoid reuse
+          }
           else
             delete (*it);
           break;
@@ -3331,8 +3331,10 @@ void SMDS_Mesh::RemoveElement(const SMDS_MeshElement *        elem,
             }
           removedElems.push_back((*it));
           myElementIDFactory->ReleaseID(IdToRemove, vtkid);
-          if (const SMDS_VtkVolume* vtkElem = dynamic_cast<const SMDS_VtkVolume*>(*it))
+          if (const SMDS_VtkVolume* vtkElem = dynamic_cast<const SMDS_VtkVolume*>(*it)) {
             myVolumePool->destroy((SMDS_VtkVolume*) vtkElem);
+            ((SMDS_MeshElement*) *it)->init( -1, -1, -1 ); // avoid reuse
+          }
           else
             delete (*it);
           break;
@@ -3344,18 +3346,19 @@ void SMDS_Mesh::RemoveElement(const SMDS_MeshElement *        elem,
             }
           removedElems.push_back((*it));
           myElementIDFactory->ReleaseID(IdToRemove, vtkid);
-          if (const SMDS_BallElement* vtkElem = dynamic_cast<const SMDS_BallElement*>(*it))
+          if (const SMDS_BallElement* vtkElem = dynamic_cast<const SMDS_BallElement*>(*it)) {
             myBallPool->destroy(const_cast<SMDS_BallElement*>( vtkElem ));
+            ((SMDS_MeshElement*) *it)->init( -1, -1, -1 ); // avoid reuse
+          }
           else
             delete (*it);
           break;
 
-        case SMDSAbs_All:
+        case SMDSAbs_All: // avoid compilation warning
         case SMDSAbs_NbElementTypes: break;
       }
       if (vtkid >= 0)
         {
-          //MESSAGE("VTK_EMPTY_CELL in " << vtkid);
           this->myGrid->GetCellTypesArray()->SetValue(vtkid, VTK_EMPTY_CELL);
         }
       it++;
@@ -3368,7 +3371,6 @@ void SMDS_Mesh::RemoveElement(const SMDS_MeshElement *        elem,
       while (it != s2->end())
         {
           int IdToRemove = (*it)->GetID();
-          //MESSAGE( "SMDS: RM node " << IdToRemove);
           if (IdToRemove >= 0)
             {
               myNodes[IdToRemove] = 0;
@@ -3430,11 +3432,12 @@ void SMDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elem)
     }
 
     // in meshes without descendants elements are always free
-     switch (aType) {
+    switch (aType) {
     case SMDSAbs_0DElement:
       myCells[elemId] = 0;
       myInfo.remove(elem);
       delete elem;
+      elem = 0;
       break;
     case SMDSAbs_Edge:
       myCells[elemId] = 0;
@@ -3463,6 +3466,9 @@ void SMDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elem)
 
     this->myGrid->GetCellTypesArray()->SetValue(vtkId, VTK_EMPTY_CELL);
     // --- to do: keep vtkid in a list of reusable cells
+
+    if ( elem )
+      ((SMDS_MeshElement*) elem)->init( -1, -1, -1 ); // avoid reuse
   }
 }
 

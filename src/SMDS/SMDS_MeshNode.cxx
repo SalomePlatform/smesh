@@ -182,17 +182,14 @@ public:
       MESSAGE("SMDS_MeshNode_MyInvIterator problem Null element");
       throw SALOME_Exception("SMDS_MeshNode_MyInvIterator problem Null element");
     }
-    //MESSAGE("vtkId " << vtkId << " smdsId " << smdsId << " " << elem->GetType());
     iter++;
     return elem;
   }
 };
 
-SMDS_ElemIteratorPtr SMDS_MeshNode::
-GetInverseElementIterator(SMDSAbs_ElementType type) const
+SMDS_ElemIteratorPtr SMDS_MeshNode::GetInverseElementIterator(SMDSAbs_ElementType type) const
 {
   vtkCellLinks::Link l = SMDS_Mesh::_meshList[myMeshId]->getGrid()->GetCellLinks()->GetLink(myVtkID);
-  //MESSAGE("myID " << myID << " ncells " << l.ncells);
   return SMDS_ElemIteratorPtr(new SMDS_MeshNode_MyInvIterator(SMDS_Mesh::_meshList[myMeshId], l.cells, l.ncells, type));
 }
 

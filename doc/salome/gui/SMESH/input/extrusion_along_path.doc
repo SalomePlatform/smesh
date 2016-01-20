@@ -153,7 +153,7 @@ The following dialog will appear:
 
 <b>Linear variation of the angles</b> option allows defining the angle
 of gradual rotation for the whole path. At each step the elements will
-be rotated by <code>angle / nb. of steps</code>.
+be rotated by <code>( angle / nb. of steps )</code>.
 </li>
 </ul>
 </li>
