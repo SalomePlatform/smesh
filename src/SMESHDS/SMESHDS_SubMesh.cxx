@@ -117,13 +117,22 @@ bool SMESHDS_SubMesh::RemoveElement(const SMDS_MeshElement * ME, bool isElemDele
 {
   if (!ME)
   {
-    MESSAGE("-----------------> Remove Null Element " << isElemDeleted);
     return false;
   }
   if (!IsComplexSubmesh())
   {
-    if ( ME->getshapeId() != myIndex )
+    if ( ME->getshapeId() != myIndex ) // elem not in a pool can loose it's data already
+    {
+      if ( isElemDeleted )
+        for ( size_t i = 0; i < myElements.size(); ++i )
+          if ( myElements[i] == ME )
+          {
+            myElements[i] = 0;
+            ++myUnusedIdElements;
+            return true;
+          }
       return false;
+    }
     int idInSubShape = ME->getIdInShape();
     SMDS_MeshElement* elem = (SMDS_MeshElement*) (ME);
     elem->setShapeId(0);
@@ -140,7 +149,6 @@ bool SMESHDS_SubMesh::RemoveElement(const SMDS_MeshElement * ME, bool isElemDele
     }
     return false;
   }
-  MESSAGE("Try to remove an element from a complex submesh ");
   return false;
 }
 
@@ -182,7 +190,17 @@ bool SMESHDS_SubMesh::RemoveNode(const SMDS_MeshNode * N, bool isNodeDeleted)
   if (!IsComplexSubmesh())
   {
     if ( N->getshapeId() != myIndex )
+    {
+      if ( isNodeDeleted )
+        for ( size_t i = 0; i < myNodes.size(); ++i )
+          if ( myNodes[i] == N )
+          {
+            myNodes[i] = 0;
+            ++myUnusedIdNodes;
+            return true;
+          }
       return false;
+    }
     int idInSubShape = N->getIdInShape();
     SMDS_MeshNode* node = (SMDS_MeshNode*) (N);
     node->setShapeId(0);
@@ -199,13 +217,12 @@ bool SMESHDS_SubMesh::RemoveNode(const SMDS_MeshNode * N, bool isNodeDeleted)
     }
     return false;
   }
-  MESSAGE("Try to remove a node from a complex submesh");
   return false;
 }
 
 //=======================================================================
 //function : NbElements
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 int SMESHDS_SubMesh::NbElements() const

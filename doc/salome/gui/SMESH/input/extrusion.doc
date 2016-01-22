@@ -68,30 +68,30 @@ The following dialog will appear:
         the \ref filtering_elements "Selection filters" page.</li> 
     </ul>
   </li>
-  <li>If the <b>Extrusion to Distance</b> radio button is selected
-    - specify the translation vector by which the elements will be extruded.
-  </li>
-  <p><br></p>
 
-\image html extrusionalongaline2.png  
+  <li>If the <b>Extrusion to Distance</b> radio button is selected
+    <ul>
+      <li> specify the translation vector by which the elements will
+      be extruded.</li>
+    </ul>
+  </li>
 
  <li>If the <b>Extrusion Along Vector</b> radio button is selected
+\image html extrusionalongaline2.png  
     <ul>
-      <li>specify the coordinates of the \b Vector along which the elements
+      <li>specify the components of the \b Vector along which the elements
         will be extruded, either directly or by selecting the mesh face (the
         normal to the face will define the vector),</li>
       <li>specify the \b Distance of extrusion along the vector (it can
         be negative).</li>
     </ul>
   </li>
-  <p><br></p>
 
-\image html extrusionalongaline3.png  
-  
   <li>If the <b>Extrusion By Normal</b> radio button is selected,
     every node of the selected faces is extruded along the \a average
     of the \a normal vectors to the faces sharing the node. (Nodes and
     edges cannot be extruded in this mode.)
+\image html extrusionalongaline3.png 
     <ul>
       <li>Specify the \b Distance of extrusion (it can be negative),</li>
       <li>Use <b>Along average normal</b> check-box to specify along

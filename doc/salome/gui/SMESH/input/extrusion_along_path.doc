@@ -134,9 +134,11 @@ The following dialog will appear:
 <li>If the path of extrusion is curvilinear, at each iteration the
   extruded elements are rotated to keep its initial angularity to the
   curve. By default, the <b>Base Point</b> around which the elements
-  are rotated is the mass center of the elements, however, you can
-  specify any point as the <b>Base Point</b> and the elements will be
-  rotated with respect to this point.<br>
+  are rotated is the mass center of the elements (note that it can
+  differ from the gravity center computed by \a Geometry module for the
+  underlying shape), however, you can specify any point as the <b>Base
+  Point</b> and the elements will be rotated with respect to this
+  point.<br>
   Note that only the displacement of the <b>Base Point</b> exactly
   equals to the path, and all other extruded elements simply keep
   their position relatively to the <b>Base Point</b> at each
