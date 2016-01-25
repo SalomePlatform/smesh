@@ -764,7 +764,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh&         aMesh,
   else
   {
     for ( TopExp_Explorer exp(aShape,TopAbs_FACE); exp.More(); exp.Next() )
-      if (( aSubMeshDSFace = aProxyMesh->GetSubMesh( exp.Current() )))
+      if (( aSubMeshDSFace = meshDS->MeshElements( exp.Current() )))
         itVec.push_back( aSubMeshDSFace->GetElements() );
   }
   typedef
