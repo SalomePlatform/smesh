@@ -458,6 +458,10 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
   void GetElementsNearLine( const gp_Ax1&                      line,
                             SMDSAbs_ElementType                type,
                             vector< const SMDS_MeshElement* >& foundElems);
+  void GetElementsInSphere( const gp_XYZ&                      center,
+                            const double                       radius,
+                            SMDSAbs_ElementType                type,
+                            vector< const SMDS_MeshElement* >& foundElems);
   double getTolerance();
   bool getIntersParamOnLine(const gp_Lin& line, const SMDS_MeshElement* face,
                             const double tolerance, double & param);
@@ -466,6 +470,7 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
   {
     return _outerFaces.empty() || _outerFaces.count(face);
   }
+
   struct TInters //!< data of intersection of the line and the mesh face (used in GetPointState())
   {
     const SMDS_MeshElement* _face;
@@ -646,6 +651,7 @@ void SMESH_ElementSearcherImpl::findOuterBoundary(const SMDS_MeshElement* outerF
         set< const SMDS_MeshElement*, TIDCompare >::const_iterator face = faces.begin();
         for ( ; face != faces.end(); ++face )
         {
+          if ( *face == outerFace ) continue;
           if ( !SMESH_MeshAlgos::FaceNormal( *face, fNorm, /*normalized=*/false ))
             continue;
           gp_Vec dirInF = gp_Vec( fNorm ) ^ n1n2;
@@ -660,8 +666,8 @@ void SMESH_ElementSearcherImpl::findOuterBoundary(const SMDS_MeshElement* outerF
     // store the found outer face and add its links to continue seaching from
     if ( outerFace2 )
     {
-      _outerFaces.insert( outerFace );
-      int nbNodes = outerFace2->NbNodes()/( outerFace2->IsQuadratic() ? 2 : 1 );
+      _outerFaces.insert( outerFace2 );
+      int nbNodes = outerFace2->NbCornerNodes();
       for ( int i = 0; i < nbNodes; ++i )
       {
         SMESH_TLink link2( outerFace2->GetNode(i), outerFace2->GetNode((i+1)%nbNodes));
@@ -1076,6 +1082,27 @@ void SMESH_ElementSearcherImpl::GetElementsNearLine( const gp_Ax1&              
   TIDSortedElemSet suspectFaces; // elements possibly intersecting the line
   _ebbTree->getElementsNearLine( line, suspectFaces );
   foundElems.assign( suspectFaces.begin(), suspectFaces.end());
+}
+
+//=======================================================================
+/*
+ * Return elements whose bounding box intersects a sphere
+ */
+//=======================================================================
+
+void SMESH_ElementSearcherImpl::GetElementsInSphere( const gp_XYZ&                      center,
+                                                     const double                       radius,
+                                                     SMDSAbs_ElementType                type,
+                                                     vector< const SMDS_MeshElement* >& foundElems)
+{
+  if ( !_ebbTree || _elementType != type )
+  {
+    if ( _ebbTree ) delete _ebbTree;
+    _ebbTree = new ElementBndBoxTree( *_mesh, _elementType = type, _meshPartIt );
+  }
+  TIDSortedElemSet suspectFaces; // elements possibly intersecting the line
+  _ebbTree->getElementsInSphere( center, radius, suspectFaces );
+  foundElems.assign( suspectFaces.begin(), suspectFaces.end() );
 }
 
 //=======================================================================

@@ -1134,9 +1134,10 @@ void SMESHGUI_ClippingDlg::updateActorItem( QListWidgetItem* theItem,
           anActorList.remove( anActor );
 
         if( SMESH::ComputeBounds( anActorList, myBounds ) ) {
-          myPreviewWidget->On();
           myPreviewWidget->PlaceWidget( myBounds[0], myBounds[1], myBounds[2],
                                         myBounds[3], myBounds[4], myBounds[5] );
+          if( PreviewCheckBox->isChecked() )
+            myPreviewWidget->On();
         }
         else
           myPreviewWidget->Off();
@@ -1249,9 +1250,10 @@ void SMESHGUI_ClippingDlg::ClickOnNew()
     bool anIsBlocked = ActorList->blockSignals( true );
 
     if( SMESH::ComputeBounds( anActorList, myBounds ) ) {
-      myPreviewWidget->On();
       myPreviewWidget->PlaceWidget( myBounds[0], myBounds[1], myBounds[2],
                                     myBounds[3], myBounds[4], myBounds[5] );
+      if( PreviewCheckBox->isChecked() )
+        myPreviewWidget->On();
     }
     else
       myPreviewWidget->Off();
@@ -1342,9 +1344,10 @@ void SMESHGUI_ClippingDlg::onSelectPlane ( int theIndex )
   myIsSelectPlane = false;
 
   if( SMESH::ComputeBounds( aPlaneData.ActorList, myBounds ) ) {
-    myPreviewWidget->On();
     myPreviewWidget->PlaceWidget( myBounds[0], myBounds[1], myBounds[2],
                                   myBounds[3], myBounds[4], myBounds[5] );
+    if( PreviewCheckBox->isChecked() )
+      myPreviewWidget->On();
   }
   else
     myPreviewWidget->Off();

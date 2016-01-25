@@ -894,16 +894,7 @@ void SMESHDS_Mesh::RemoveNode(const SMDS_MeshNode * n)
 {
   if ( n->NbInverseElements() == 0 && !(hasConstructionEdges() || hasConstructionFaces()))
   {
-    SMESHDS_SubMesh* subMesh = MeshElements( n->getshapeId() );
-    SMESHDS_SubMeshIteratorPtr subIt;
-    if ( !subMesh )
-      subIt = SubMeshes();
-    for ( ; !subMesh && subIt->more(); ) {
-      subMesh = const_cast< SMESHDS_SubMesh* >( subIt->next() );
-      if ( subMesh->IsComplexSubmesh() || !subMesh->Contains( n ))
-        subMesh = 0;
-    }
-    RemoveFreeNode( n, subMesh, true);
+    RemoveFreeNode( n, 0, true );
     return;
   }
 

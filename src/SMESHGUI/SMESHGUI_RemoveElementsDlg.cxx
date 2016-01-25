@@ -42,6 +42,7 @@
 #include <SUIT_Desktop.h>
 #include <SUIT_Session.h>
 #include <SUIT_MessageBox.h>
+#include <SUIT_OverrideCursor.h>
 
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
@@ -225,7 +226,10 @@ void SMESHGUI_RemoveElementsDlg::ClickOnApply()
   if (mySMESHGUI->isActiveStudyLocked())
     return;
 
-  if (myNbOkElements) {
+  if (myNbOkElements)
+  {
+    SUIT_OverrideCursor wc;
+
     QStringList aListId = myEditCurrentArgument->text().split(" ", QString::SkipEmptyParts);
     SMESH::long_array_var anArrayOfIdeces = new SMESH::long_array;
     anArrayOfIdeces->length(aListId.count());
@@ -233,7 +237,8 @@ void SMESHGUI_RemoveElementsDlg::ClickOnApply()
       anArrayOfIdeces[i] = aListId[ i ].toInt();
 
     bool aResult = false;
-    try {
+    try
+    {
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
       aResult = aMeshEditor->RemoveElements(anArrayOfIdeces.in());
 

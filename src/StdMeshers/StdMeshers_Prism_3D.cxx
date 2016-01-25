@@ -339,7 +339,7 @@ namespace {
     // gravity center of a layer
     gp_XYZ O(0,0,0);
     int vertexCol = -1;
-    for ( int i = 0; i < columns.size(); ++i )
+    for ( size_t i = 0; i < columns.size(); ++i )
     {
       O += gpXYZ( (*columns[ i ])[ z ]);
       if ( vertexCol < 0 &&
@@ -351,7 +351,7 @@ namespace {
     // Z axis
     gp_Vec Z(0,0,0);
     int iPrev = columns.size()-1;
-    for ( int i = 0; i < columns.size(); ++i )
+    for ( size_t i = 0; i < columns.size(); ++i )
     {
       gp_Vec v1( O, gpXYZ( (*columns[ iPrev ])[ z ]));
       gp_Vec v2( O, gpXYZ( (*columns[ i ]    )[ z ]));
@@ -363,11 +363,11 @@ namespace {
     {
       O = gpXYZ( (*columns[ vertexCol ])[ z ]);
     }
-    if ( xColumn < 0 || xColumn >= columns.size() )
+    if ( xColumn < 0 || xColumn >= (int) columns.size() )
     {
       // select a column for X dir
       double maxDist = 0;
-      for ( int i = 0; i < columns.size(); ++i )
+      for ( size_t i = 0; i < columns.size(); ++i )
       {
         double dist = ( O - gpXYZ((*columns[ i ])[ z ])).SquareModulus();
         if ( dist > maxDist )
@@ -454,9 +454,9 @@ namespace {
     std::advance( edgeIt, nbEdges-1 );
     TopoDS_Edge   prevE = *edgeIt;
     // bool isPrevStraight = SMESH_Algo::IsStraight( prevE );
-    int           iPrev = nbEdges - 1;
+    // int           iPrev = nbEdges - 1;
 
-    int iUnite = -1; // the first of united EDGEs
+    // int iUnite = -1; // the first of united EDGEs
 
     // analyse angles between EDGEs
     int nbCorners = 0;
@@ -524,7 +524,7 @@ namespace {
   void pointsToPython(const std::vector<gp_XYZ>& p)
   {
 #ifdef _DEBUG_
-    for ( int i = SMESH_Block::ID_V000; i < p.size(); ++i )
+    for ( size_t i = SMESH_Block::ID_V000; i < p.size(); ++i )
     {
       cout << "mesh.AddNode( " << p[i].X() << ", "<< p[i].Y() << ", "<< p[i].Z() << ") # " << i <<" " ;
       SMESH_Block::DumpShapeID( i, cout ) << endl;
@@ -933,6 +933,7 @@ bool StdMeshers_Prism_3D::getWallFaces( Prism_3D::TPrismTopo & thePrism,
 
   list< TopoDS_Edge >::iterator edge = thePrism.myBottomEdges.begin();
   std::list< int >::iterator     nbE = thePrism.myNbEdgesInWires.begin();
+  std::list< int > nbQuadsPerWire;
   int iE = 0;
   double f,l;
   while ( edge != thePrism.myBottomEdges.end() )
@@ -976,6 +977,8 @@ bool StdMeshers_Prism_3D::getWallFaces( Prism_3D::TPrismTopo & thePrism,
     {
       iE = 0;
       ++nbE;
+      int nbQuadPrev = nbQuadsPerWire.empty() ? 0 : nbQuadsPerWire.back();
+      nbQuadsPerWire.push_back( thePrism.myWallQuads.size() - nbQuadPrev );
     }
   }
 
@@ -987,12 +990,14 @@ bool StdMeshers_Prism_3D::getWallFaces( Prism_3D::TPrismTopo & thePrism,
   // that is not so evident in case of several WIREs in the bottom FACE
   thePrism.myRightQuadIndex.clear();
   for ( size_t i = 0; i < thePrism.myWallQuads.size(); ++i )
-    thePrism.myRightQuadIndex.push_back( i+1 );
-  list< int >::iterator nbEinW = thePrism.myNbEdgesInWires.begin();
-  for ( int iLeft = 0; nbEinW != thePrism.myNbEdgesInWires.end(); ++nbEinW )
   {
-    thePrism.myRightQuadIndex[ iLeft + *nbEinW - 1 ] = iLeft; // 1st EDGE index of a current WIRE
-    iLeft += *nbEinW;
+    thePrism.myRightQuadIndex.push_back( i+1 ); // OK for all but the last EDGE of a WIRE
+  }
+  list< int >::iterator nbQinW = nbQuadsPerWire.begin();
+  for ( int iLeft = 0; nbQinW != nbQuadsPerWire.end(); ++nbQinW )
+  {
+    thePrism.myRightQuadIndex[ iLeft + *nbQinW - 1 ] = iLeft; // for the last EDGE of a WIRE
+    iLeft += *nbQinW;
   }
 
   while ( totalNbFaces - faceMap.Extent() > 2 )
@@ -1072,7 +1077,7 @@ bool StdMeshers_Prism_3D::getWallFaces( Prism_3D::TPrismTopo & thePrism,
   {
     // now only top and bottom FACEs are not in the faceMap
     faceMap.Add( thePrism.myBottom );
-    for ( TopExp_Explorer f( thePrism.myShape3D, TopAbs_FACE );f.More(); f.Next() )
+    for ( TopExp_Explorer f( thePrism.myShape3D, TopAbs_FACE ); f.More(); f.Next() )
       if ( !faceMap.Contains( f.Current() )) {
         thePrism.myTop = TopoDS::Face( f.Current() );
         break;
@@ -1975,7 +1980,7 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top( const gp_Trsf & bottomToTopTrsf
     n2nMapPtr = & TProjction2dAlgo::instance( this )->GetNodesMap();
   }
 
-  if ( !n2nMapPtr || n2nMapPtr->size() < botSMDS->NbNodes() )
+  if ( !n2nMapPtr || (int) n2nMapPtr->size() < botSMDS->NbNodes() )
   {
     // associate top and bottom faces
     NSProjUtils::TShapeShapeMap shape2ShapeMap;
@@ -2510,6 +2515,8 @@ namespace // utils used by StdMeshers_Prism_3D::IsApplicable()
     int                         _nbCheckedEdges; // nb of EDGEs whose location is defined
     PrismSide                  *_leftSide;
     PrismSide                  *_rightSide;
+    void SetExcluded() { _leftSide = _rightSide = NULL; }
+    bool IsExcluded() const { return !_leftSide; }
     const TopoDS_Edge& Edge( int i ) const
     {
       return (*_edges)[ i ]._edge;
@@ -2571,15 +2578,33 @@ namespace // utils used by StdMeshers_Prism_3D::IsApplicable()
   /*!
    * \brief Return another faces sharing an edge
    */
-  const TopoDS_Shape & getAnotherFace( const TopoDS_Face& face,
-                                       const TopoDS_Edge& edge,
-                                       TopTools_IndexedDataMapOfShapeListOfShape& facesOfEdge)
+  const TopoDS_Face & getAnotherFace( const TopoDS_Face& face,
+                                      const TopoDS_Edge& edge,
+                                      TopTools_IndexedDataMapOfShapeListOfShape& facesOfEdge)
   {
     TopTools_ListIteratorOfListOfShape faceIt( facesOfEdge.FindFromKey( edge ));
     for ( ; faceIt.More(); faceIt.Next() )
       if ( !face.IsSame( faceIt.Value() ))
-        return faceIt.Value();
+        return TopoDS::Face( faceIt.Value() );
     return face;
+  }
+
+  //--------------------------------------------------------------------------------
+  /*!
+   * \brief Return number of faces sharing given edges
+   */
+  int nbAdjacentFaces( const std::vector< EdgeWithNeighbors >&          edges,
+                       const TopTools_IndexedDataMapOfShapeListOfShape& facesOfEdge )
+  {
+    TopTools_MapOfShape adjFaces;
+
+    for ( size_t i = 0; i < edges.size(); ++i )
+    {
+      TopTools_ListIteratorOfListOfShape faceIt( facesOfEdge.FindFromKey( edges[i]._edge ));
+      for ( ; faceIt.More(); faceIt.Next() )
+        adjFaces.Add( faceIt.Value() );
+    }
+    return adjFaces.Extent();
   }
 }
 
@@ -2646,11 +2671,13 @@ bool StdMeshers_Prism_3D::IsApplicable(const TopoDS_Shape & shape, bool toCheckA
 
     typedef vector< EdgeWithNeighbors > TEdgeWithNeighborsVec;
     vector< TEdgeWithNeighborsVec > faceEdgesVec( allFaces.Extent() + 1 );
-    TopTools_IndexedMapOfShape* facesOfSide = new TopTools_IndexedMapOfShape[ faceEdgesVec.size() ];
+    const size_t nbEdgesMax = facesOfEdge.Extent() * 2; // there can be seam EDGES
+    TopTools_IndexedMapOfShape* facesOfSide = new TopTools_IndexedMapOfShape[ nbEdgesMax ];
     SMESHUtils::ArrayDeleter<TopTools_IndexedMapOfShape> delFacesOfSide( facesOfSide );
 
     // try to use each face as a bottom one
     bool prismDetected = false;
+    vector< PrismSide > sides;
     for ( int iF = 1; iF < allFaces.Extent() && !prismDetected; ++iF )
     {
       const TopoDS_Face& botF = TopoDS::Face( allFaces( iF ));
@@ -2663,11 +2690,12 @@ bool StdMeshers_Prism_3D::IsApplicable(const TopoDS_Shape & shape, bool toCheckA
         continue; // all faces are adjacent to botF - no top FACE
 
       // init data of side FACEs
-      vector< PrismSide > sides( botEdges.size() );
-      for ( int iS = 0; iS < botEdges.size(); ++iS )
+      sides.clear();
+      sides.resize( botEdges.size() );
+      for ( size_t iS = 0; iS < botEdges.size(); ++iS )
       {
-        sides[ iS ]._topEdge = botEdges[ iS ]._edge;
-        sides[ iS ]._face    = botF;
+        sides[ iS ]._topEdge   = botEdges[ iS ]._edge;
+        sides[ iS ]._face      = botF;
         sides[ iS ]._leftSide  = & sides[ botEdges[ iS ]._iR ];
         sides[ iS ]._rightSide = & sides[ botEdges[ iS ]._iL ];
         sides[ iS ]._faces = & facesOfSide[ iS ];
@@ -2699,8 +2727,8 @@ bool StdMeshers_Prism_3D::IsApplicable(const TopoDS_Shape & shape, bool toCheckA
                 if ( side._isCheckedEdge[ iE ] ) continue;
                 const TopoDS_Edge&      vertE = side.Edge( iE );
                 const TopoDS_Shape& neighborF = getAnotherFace( side._face, vertE, facesOfEdge );
-                bool isEdgeShared = adjSide->IsSideFace( neighborF );
-                if ( isEdgeShared )
+                bool             isEdgeShared = adjSide->IsSideFace( neighborF );
+                if ( isEdgeShared )               // vertE is shared with adjSide
                 {
                   isAdvanced = true;
                   side._isCheckedEdge[ iE ] = true;
@@ -2811,7 +2839,7 @@ bool StdMeshers_Prism_3D::IsApplicable(const TopoDS_Shape & shape, bool toCheckA
           const TopoDS_Shape& topFace = sides[0]._faces->FindKey( nbFaces );
           size_t iS;
           for ( iS = 1; iS < sides.size(); ++iS )
-            if ( !sides[ iS ]._faces->Contains( topFace ))
+            if ( ! sides[ iS ]._faces->Contains( topFace ))
               break;
           prismDetected = ( iS == sides.size() );
         }
@@ -3285,7 +3313,7 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
       if ( nbUnitePerEdge[ iE ] < 0 )
         continue;
       // look for already united faces
-      for ( int i = iE; i < iE + nbExraFaces; ++i )
+      for ( size_t i = iE; i < iE + nbExraFaces; ++i )
       {
         if ( nbUnitePerEdge[ i ] > 0 ) // a side including nbUnitePerEdge[i]+1 edge
           nbExraFaces += nbUnitePerEdge[ i ];
@@ -3324,7 +3352,7 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
     else if ( nbExraFaces > 1 ) // unite
     {
       double u0 = 0, sumLen = 0;
-      for ( int i = iE; i < iE + nbExraFaces; ++i )
+      for ( size_t i = iE; i < iE + nbExraFaces; ++i )
         sumLen += edgeLength[ i ];
 
       vector< TSideFace* >        components( nbExraFaces );
@@ -3568,7 +3596,7 @@ bool StdMeshers_PrismAsBlock::GetLayersTransformation(vector<gp_Trsf> &         
   double tol2;
   {
     Bnd_B3d bndBox;
-    for ( int i = 0; i < columns.size(); ++i )
+    for ( size_t i = 0; i < columns.size(); ++i )
       bndBox.Add( gpXYZ( columns[i]->front() ));
     tol2 = bndBox.SquareExtent() * 1e-5;
   }
@@ -3591,7 +3619,7 @@ bool StdMeshers_PrismAsBlock::GetLayersTransformation(vector<gp_Trsf> &         
     //t.SetScaleFactor( distZ/dist0 ); - it does not work properly, wrong base point
 
     // check a transformation
-    for ( int i = 0; i < columns.size(); ++i )
+    for ( size_t i = 0; i < columns.size(); ++i )
     {
       gp_Pnt p0 = gpXYZ( (*columns[i])[0] );
       gp_Pnt pz = gpXYZ( (*columns[i])[z] );
@@ -3795,7 +3823,7 @@ StdMeshers_PrismAsBlock::TSideFace::TSideFace( const TSideFace& other ):
   myComponents       ( other.myComponents.size() ),
   myHelper           ( *other.myHelper.GetMesh() )
 {
-  for (int i = 0 ; i < myComponents.size(); ++i )
+  for ( size_t i = 0 ; i < myComponents.size(); ++i )
     myComponents[ i ] = new TSideFace( *other.myComponents[ i ]);
 }
 
@@ -3807,7 +3835,7 @@ StdMeshers_PrismAsBlock::TSideFace::TSideFace( const TSideFace& other ):
 
 StdMeshers_PrismAsBlock::TSideFace::~TSideFace()
 {
-  for (int i = 0 ; i < myComponents.size(); ++i )
+  for ( size_t i = 0 ; i < myComponents.size(); ++i )
     if ( myComponents[ i ] )
       delete myComponents[ i ];
 }
@@ -3907,7 +3935,7 @@ StdMeshers_PrismAsBlock::TSideFace::GetComponent(const double U,double & localU)
   if ( myComponents.empty() )
     return const_cast<TSideFace*>( this );
 
-  int i;
+  size_t i;
   for ( i = 0; i < myComponents.size(); ++i )
     if ( U < myParams[ i ].second )
       break;
@@ -4346,9 +4374,9 @@ gp_Pnt StdMeshers_PrismAsBlock::TVerticalEdgeAdaptor::Value(const Standard_Real 
 void StdMeshers_PrismAsBlock::TVerticalEdgeAdaptor::dumpNodes(int nbNodes) const
 {
 #ifdef _DEBUG_
-  for ( int i = 0; i < nbNodes && i < myNodeColumn->size(); ++i )
+  for ( int i = 0; i < nbNodes && i < (int)myNodeColumn->size(); ++i )
     cout << (*myNodeColumn)[i]->GetID() << " ";
-  if ( nbNodes < myNodeColumn->size() )
+  if ( nbNodes < (int) myNodeColumn->size() )
     cout << myNodeColumn->back()->GetID();
 #endif
 }

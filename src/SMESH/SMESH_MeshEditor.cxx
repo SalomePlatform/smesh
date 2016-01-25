@@ -2939,14 +2939,13 @@ bool SMESH_MeshEditor::QuadToTri (TIDSortedElemSet & theElems,
   SMESH_MesherHelper   helper( *GetMesh() );
 
   TIDSortedElemSet::iterator itElem;
-  for ( itElem = theElems.begin(); itElem != theElems.end(); itElem++ ) {
+  for ( itElem = theElems.begin(); itElem != theElems.end(); itElem++ )
+  {
     const SMDS_MeshElement* elem = *itElem;
-    if ( !elem || elem->GetType() != SMDSAbs_Face )
+    if ( !elem || elem->GetGeomType() != SMDSGeom_QUADRANGLE )
       continue;
-    bool isquad = elem->NbNodes()==4 || elem->NbNodes()==8;
-    if(!isquad) continue;
 
-    if(elem->NbNodes()==4) {
+    if ( elem->NbNodes() == 4 ) {
       // retrieve element nodes
       const SMDS_MeshNode* aNodes [4];
       SMDS_ElemIteratorPtr itN = elem->nodesIterator();
@@ -2969,10 +2968,10 @@ bool SMESH_MeshEditor::QuadToTri (TIDSortedElemSet & theElems,
       myLastCreatedElems.Append(newElem2);
       // put a new triangle on the same shape and add to the same groups
       if ( aShapeId )
-        {
-          aMesh->SetMeshElementOnShape( newElem1, aShapeId );
-          aMesh->SetMeshElementOnShape( newElem2, aShapeId );
-        }
+      {
+        aMesh->SetMeshElementOnShape( newElem1, aShapeId );
+        aMesh->SetMeshElementOnShape( newElem2, aShapeId );
+      }
       AddToSameGroups( newElem1, elem, aMesh );
       AddToSameGroups( newElem2, elem, aMesh );
       aMesh->RemoveElement( elem );
@@ -2980,8 +2979,8 @@ bool SMESH_MeshEditor::QuadToTri (TIDSortedElemSet & theElems,
 
     // Quadratic quadrangle
 
-    if( elem->NbNodes()==8 && elem->IsQuadratic() ) {
-
+    else if ( elem->NbNodes() == 8 )
+    {
       // get surface elem is on
       int aShapeId = FindShape( elem );
       if ( aShapeId != helper.GetSubShapeID() ) {
@@ -3001,14 +3000,14 @@ bool SMESH_MeshEditor::QuadToTri (TIDSortedElemSet & theElems,
       const SMDS_MeshNode* inFaceNode = 0;
       SMDS_ElemIteratorPtr itN = elem->nodesIterator();
       int i = 0;
-      while ( itN->more() ) {
-        aNodes[ i++ ] = static_cast<const SMDS_MeshNode*>( itN->next() );
-        if ( !inFaceNode && helper.GetNodeUVneedInFaceNode() &&
-             aNodes[ i-1 ]->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE )
-        {
-          inFaceNode = aNodes[ i-1 ];
+      if ( helper.GetNodeUVneedInFaceNode() )
+        while ( itN->more() && !inFaceNode ) {
+          aNodes[ i++ ] = static_cast<const SMDS_MeshNode*>( itN->next() );
+          if ( aNodes[ i-1 ]->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE )
+          {
+            inFaceNode = aNodes[ i-1 ];
+          }
         }
-      }
 
       // find middle point for (0,1,2,3)
       // and create a node in this point;
@@ -3048,10 +3047,10 @@ bool SMESH_MeshEditor::QuadToTri (TIDSortedElemSet & theElems,
       myLastCreatedElems.Append(newElem2);
       // put a new triangle on the same shape and add to the same groups
       if ( aShapeId )
-        {
-          aMesh->SetMeshElementOnShape( newElem1, aShapeId );
-          aMesh->SetMeshElementOnShape( newElem2, aShapeId );
-        }
+      {
+        aMesh->SetMeshElementOnShape( newElem1, aShapeId );
+        aMesh->SetMeshElementOnShape( newElem2, aShapeId );
+      }
       AddToSameGroups( newElem1, elem, aMesh );
       AddToSameGroups( newElem2, elem, aMesh );
       aMesh->RemoveElement( elem );
