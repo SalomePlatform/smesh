@@ -1,10 +1,6 @@
 import os
 import subprocess
 import time
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-from PyQt4.QtSql import *
-
 
 class Ref:
   def __init__(self,maBase,idMaillage,idVersion,machine):    

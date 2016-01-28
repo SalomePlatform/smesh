@@ -1,4 +1,4 @@
-from PyQt4 import QtSql, QtCore
+from qtsalome import QSqlQuery
 from tableDeBase import TableDeBase
 import os
 
@@ -9,7 +9,7 @@ class TableMachines (TableDeBase):
             self.setTypeField(('str','str'),('nomMachine'))
 
         def createSqlTable(self):
-            query=QtSql.QSqlQuery()
+            query=QSqlQuery()
             print "creation de TableMachine : ", query.exec_("create table Machines(  nomMachine varchar(10) primary key, os varchar(10));")
 
         def creeMachine(self):
@@ -18,7 +18,7 @@ class TableMachines (TableDeBase):
             self.insereLigne((nomMachine,nomOs))
 
         def chercheMachine(self):
-            query=QtSql.QSqlQuery()
+            query=QSqlQuery()
             machine=os.uname()[1]
             texteQuery ="select nomMachine from Machines where nomMachine ='" + machine +"' ;"
             query.exec_(texteQuery)

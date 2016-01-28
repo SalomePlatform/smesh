@@ -1,4 +1,4 @@
-from PyQt4 import QtSql, QtCore
+from qtsalome import QSqlQuery
 from tableDeBase import TableDeBase
 
 class TableGroupes (TableDeBase):
@@ -9,7 +9,7 @@ class TableGroupes (TableDeBase):
 
 
       def createSqlTable(self):
-          query=QtSql.QSqlQuery()
+          query=QSqlQuery()
 
 
           texteQuery ="create table Groupes( nomGroupe varchar(40),idMaillage int, idVersion int,"
@@ -23,7 +23,7 @@ class TableGroupes (TableDeBase):
 
       def getVal(self,nomGroupe,idMaillage,idVersion,typeMaille):
           val=0                          # Valeur si l enregistrement n existe pas
-          query=QtSql.QSqlQuery()
+          query=QSqlQuery()
           texteQuery ='select NbEntite from Groupes  where nomGroupe ="' + nomGroupe +'"'
           texteQuery +=' and idMaillage=' + str(idMaillage)
           texteQuery +=' and idVersion = ' + str(idVersion)
@@ -37,7 +37,7 @@ class TableGroupes (TableDeBase):
 
 
       def getAllEntity(self):
-            query=QtSql.QSqlQuery()
+            query=QSqlQuery()
             texteQuery ="select distinct Entite from Groupes;"
             query.exec_(texteQuery)
             maListe=[]

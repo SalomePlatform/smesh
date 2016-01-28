@@ -1,4 +1,4 @@
-from PyQt4 import QtSql, QtCore
+from qtsalome import QSqlQuery
 from tableDeBase import TableDeBase
 
 class TableTailles (TableDeBase):
@@ -8,7 +8,7 @@ class TableTailles (TableDeBase):
           self.setTypeField(('int','int','str','float','float','float','float','float','float'),('idMaillage','idVersion'))
 
       def createSqlTable(self):
-          query=QtSql.QSqlQuery()
+          query=QSqlQuery()
 
           texteQuery ="create table Tailles(idMaillage int, idVersion int, "
           texteQuery+="TailleMax float, TailleMin float, "
@@ -23,7 +23,7 @@ class TableTailles (TableDeBase):
           print "Creation de TableTailles : " , query.exec_(texteQuery)
 
       def getVal(self,idMaillage, idVersion, Entite):
-          query=QtSql.QSqlQuery()
+          query=QSqlQuery()
           texteQuery ='select '+ str(Entite) + ' from Tailles where idMaillage='+str(idMaillage)
           texteQuery+=' and  idVersion='+str(idVersion)
           query.exec_(texteQuery)

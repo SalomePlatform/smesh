@@ -1,4 +1,4 @@
-from PyQt4 import QtSql, QtCore
+from qtsalome import QSqlQuery
 from tableDeBase import TableDeBase
 
 class TableRatios (TableDeBase):
@@ -8,7 +8,7 @@ class TableRatios (TableDeBase):
           self.setTypeField(('int','int','float','float','float','float','float','float'),('idMaillage','idVersion','Machine'))
 
       def createSqlTable(self):
-          query=QtSql.QSqlQuery()
+          query=QSqlQuery()
 
           texteQuery ="create table Ratios(idMaillage int, idVersion int, "
           texteQuery+="RatioMax float, RatioMin float, "
@@ -23,7 +23,7 @@ class TableRatios (TableDeBase):
           print "Creation de TableRatios : " , query.exec_(texteQuery)
 
       def getVal(self,idMaillage, idVersion,  Entite):
-          query=QtSql.QSqlQuery()
+          query=QSqlQuery()
           texteQuery ='select '+ str(Entite) + ' from Ratios where idMaillage='+str(idMaillage)
           texteQuery+=' and  idVersion='+str(idVersion)
           query.exec_(texteQuery)

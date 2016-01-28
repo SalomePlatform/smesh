@@ -30,8 +30,7 @@ from salome.smesh.smeshstudytools import SMeshStudyTools
 
 from omniORB import CORBA
 
-from PyQt4.QtCore import QObject, SIGNAL, SLOT
-from PyQt4.QtGui import QIcon, QStandardItemModel, QStandardItem, QMessageBox
+from qtsalome import QIcon, QStandardItemModel, QStandardItem, QMessageBox, pyqtSignal
 
 from inputframe_ui import Ui_InputFrame
 from inputdata import InputData
@@ -42,6 +41,8 @@ GROUPNAME_MAXLENGTH=8
 class InputDialog(GenericDialog):
 
     TBL_HEADER_LABEL=["Input Mesh", "Output group name"]
+    
+    inputValidated = pyqtSignal()
 
     def __init__(self, parent=None, name="InputDialog", modal=0):
         """
@@ -100,9 +101,9 @@ class InputDialog(GenericDialog):
         # The click on btnSmeshObject (signal clicked() emitted by the
         # button btnSmeshObject) is connected to the slot
         # onSelectSmeshObject, etc ...
-        self.connect(self.__ui.btnSmeshObject, SIGNAL('clicked()'), self.onSelectSmeshObject )
-        self.connect(self.__ui.btnAddInput,    SIGNAL('clicked()'), self.onAddInput )
-        self.connect(self.__ui.btnDeleteInput, SIGNAL('clicked()'), self.onDeleteInput )
+        self.__ui.btnSmeshObject.clicked.connect( self.onSelectSmeshObject )
+        self.__ui.btnAddInput.clicked.connect( self.onAddInput )
+        self.__ui.btnDeleteInput.clicked.connect(  self.onDeleteInput )
 
         # Set up the model of the Qt table list
         self.__inputModel = QStandardItemModel(0,2)
@@ -148,7 +149,7 @@ class InputDialog(GenericDialog):
         # been validated so that it can process the event
         GenericDialog.accept(self)
         if self.wasOk():
-            self.emit(SIGNAL('inputValidated()'))
+            self.inputValidated.emit()
 
     def onSelectSmeshObject(self):
         '''
@@ -188,10 +189,10 @@ class InputDialog(GenericDialog):
         creates a new entry in the list of input data, or updates this
         entry if it already exists.
         """
-        meshName   = str(self.__ui.txtSmeshObject.text().trimmed())
+        meshName   = str(self.__ui.txtSmeshObject.text()).strip()
         meshObject = self.__selectedMesh
         meshType   = self.__ui.cmbMeshType.currentIndex()
-        groupName  = str(self.__ui.txtGroupName.text().trimmed())
+        groupName  = str(self.__ui.txtGroupName.text()).strip()
 
         self.__addInputInGui(meshName, meshObject, meshType, groupName)
         self.__addInputInMap(meshName, meshObject, meshType, groupName)
@@ -331,10 +332,9 @@ class InputDialog(GenericDialog):
 #
 def TEST_InputDialog():
     import sys
-    from PyQt4.QtCore import QObject, SIGNAL, SLOT
-    from PyQt4.QtGui import QApplication
+    from qtsalome import QApplication
     app = QApplication(sys.argv)
-    QObject.connect(app, SIGNAL("lastWindowClosed()"), app, SLOT("quit()"))
+    app.lastWindowClosed.connect( app.quit )
 
     dlg=InputDialog()
     dlg.displayAndWait()
@@ -343,10 +343,9 @@ def TEST_InputDialog():
 
 def TEST_InputDialog_setData():
     import sys
-    from PyQt4.QtCore import QObject, SIGNAL, SLOT
-    from PyQt4.QtGui import QApplication
+    from qtsalome import QApplication
     app = QApplication(sys.argv)
-    QObject.connect(app, SIGNAL("lastWindowClosed()"), app, SLOT("quit()"))
+    app.lastWindowClosed.connect( app.quit )
 
     dlg=InputDialog()
 

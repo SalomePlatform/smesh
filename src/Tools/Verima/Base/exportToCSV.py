@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import sys,os
-from PyQt4 import QtGui,QtCore
 
 pathRacine=os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),'..'))
 if os.path.dirname(pathRacine) not in sys.path :

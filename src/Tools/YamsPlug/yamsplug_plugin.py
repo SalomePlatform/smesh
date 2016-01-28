@@ -30,10 +30,7 @@ def YamsLct(context):
   import os
   import subprocess
   import tempfile
-  from PyQt4 import QtCore
-  from PyQt4 import QtGui
-  from PyQt4.QtGui import QFileDialog
-  from PyQt4.QtGui import QMessageBox
+  from qtsalome import QFileDialog, QMessageBox
   
   #prior test to avoid unnecessary user GUI work with ending crash
   try :

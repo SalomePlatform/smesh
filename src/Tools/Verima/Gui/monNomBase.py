@@ -1,6 +1,4 @@
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtSql import *
+from qtsalome import *
 from nomBase_ui import Ui_LEDataBaseName
 
 
@@ -11,7 +9,7 @@ class DataBaseName(Ui_LEDataBaseName,QDialog):
          self.setupUi(self)
          self.setModal(True)
          self.parent=parent
-         self.connect(self.LEBaseName, SIGNAL("returnPressed()"), self.LEDBreturnPressed)
+         self.LEBaseName.returnPressed.connect(self.LEDBreturnPressed)
 
 
      def LEDBreturnPressed(self):

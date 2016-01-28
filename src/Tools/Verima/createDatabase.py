@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import sys
-from PyQt4 import QtGui,QtCore
 from Base.dataBase import Base
 
 def creeDatabase(fichier):

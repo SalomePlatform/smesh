@@ -1,4 +1,4 @@
-from PyQt4 import QtSql, QtCore
+from qtsalome import QSqlQuery
 from tableDeBase import TableDeBase
 
 class TableMaillages (TableDeBase):
@@ -9,7 +9,7 @@ class TableMaillages (TableDeBase):
             self.setTypeField(('int','str','str','str','int','int','int','int','int','int','str'),('id'))
 
         def createSqlTable(self):
-            query=QtSql.QSqlQuery()
+            query=QSqlQuery()
             texteQuery ="create table Maillages(id integer primary key autoincrement, nomMaillage varchar(10), "
             texteQuery+="nomScript varchar(40), medResultat varchar(15), idMailleur int, dimension int,"
             texteQuery+="seuilCPU int, seuilRatio int, seuilTaille int, seuilNbMaille int, commentaire varchar(60), "
@@ -17,7 +17,7 @@ class TableMaillages (TableDeBase):
             print "creation de TableMaillages : " , query.exec_(texteQuery)
 
         def getVal(self,idMaillage, nomChamp):
-            query=QtSql.QSqlQuery()
+            query=QSqlQuery()
             valeur=None
             texteQuery ='select '+ nomChamp + ' from Maillages  where id=' + str(idMaillage) + ";"
             query.exec_(texteQuery)
@@ -30,7 +30,7 @@ class TableMaillages (TableDeBase):
 
         def dejaRemplie(self):
             texteQuery="select * from  Maillages where medResultat='/tmp/tetra.med';"
-            maQuery=QtSql.QSqlQuery()
+            maQuery=QSqlQuery()
             maQuery.exec_(texteQuery)
             nb=0
             while(maQuery.next()): nb=nb+1
@@ -44,7 +44,7 @@ class TableMaillages (TableDeBase):
 #            self.insereLigneAutoId(('Fiche_7957_AILETTE', '/home/H77945/CAS_TEST/MAILLEUR/FICHE_7957_AILETTE/Fiche_7957_AILETTE.py', '/tmp/Fiche_7957_AILETTE.med', 1,2,10,10,10,10, 'Maillage d une attache d aillette'))
         
         def construitListeMaillages(self):
-            maQuery=QtSql.QSqlQuery()
+            maQuery=QSqlQuery()
             texteQuery="select id, nomScript,medResultat from Maillages;"
             maQuery.exec_(texteQuery)
             listeMaillages=[]
@@ -54,7 +54,7 @@ class TableMaillages (TableDeBase):
            
         def verifieListeMaillages(self,listeMaillage):
             newListeMaillages=[]
-            maQuery=QtSql.QSqlQuery()
+            maQuery=QSqlQuery()
             for idM in listeMaillage:
                 texteQuery="select id, nomScript,medResultat from Maillages where id = " + str(idM) +';'
                 maQuery.exec_(texteQuery)
@@ -68,7 +68,7 @@ class TableMaillages (TableDeBase):
 
         def getSeuilsPourMaillage(self,idMaillage):
             texteQuery="select id,nomMaillage,seuilCPU,seuilRatio,seuilTaille,seuilNbMaille from  Maillages where id = "+ str(idMaillage) +"  ;"
-            maQuery=QtSql.QSqlQuery()
+            maQuery=QSqlQuery()
             maQuery.exec_(texteQuery)
             while(maQuery.next()): 
                  l1 = maQuery.value(0).toInt()[0]
@@ -82,7 +82,7 @@ class TableMaillages (TableDeBase):
         def getTous(self):
             maillagesIdListe=[]; maillagesNomListe=[]
             texteQuery="select id,nomMaillage from  Maillages order by id;"
-            maQuery=QtSql.QSqlQuery()
+            maQuery=QSqlQuery()
             maQuery.exec_(texteQuery)
             while(maQuery.next()):
                  maillagesIdListe.append( maQuery.value(0).toInt()[0])
@@ -91,7 +91,7 @@ class TableMaillages (TableDeBase):
 
         def getMailleurId(self,idMaillage):
             texteQuery="select idMailleur from  Maillages where id = "+ str(idMaillage) +"  ;"
-            maQuery=QtSql.QSqlQuery()
+            maQuery=QSqlQuery()
             print texteQuery
             print maQuery.exec_(texteQuery)
             maQuery.exec_(texteQuery)

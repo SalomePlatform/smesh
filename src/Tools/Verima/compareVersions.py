@@ -3,7 +3,6 @@
 
 import sys
 import os
-from PyQt4 import QtGui,QtCore
 from Base.dataBase import Base
 from Base.versions import  Chercheversion
 

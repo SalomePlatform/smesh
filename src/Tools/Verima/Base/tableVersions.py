@@ -1,4 +1,4 @@
-from PyQt4 import QtSql, QtCore
+from qtsalome import QSqlQuery
 from tableDeBase import TableDeBase
 
 class TableVersions (TableDeBase):
@@ -9,7 +9,7 @@ class TableVersions (TableDeBase):
             self.cols=" (nomVersion, commentaire) "
 
         def createSqlTable(self):
-            query=QtSql.QSqlQuery()
+            query=QSqlQuery()
             texteQuery ="create table Versions(id integer primary key autoincrement, nomVersion varchar(10),"
             texteQuery+="commentaire varchar(30));"
             print "Creation de TableVersions : " , query.exec_(texteQuery)
@@ -25,9 +25,9 @@ class TableVersions (TableDeBase):
 
         
         def chercheVersion(self,version):
-            query=QtSql.QSqlQuery()
+            query=QSqlQuery()
             version=str(version)
-            if QtCore.QString(version).toInt()[1]==True :
+            if bool(version) == True :
                texteQuery ="select id, nomVersion from Versions where id = " + str(version) +";"
             else:
                texteQuery ="select id, nomVersion from Versions where nomVersion ='" + version +"' ;"

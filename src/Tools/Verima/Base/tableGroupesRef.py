@@ -1,4 +1,4 @@
-from PyQt4 import QtSql, QtCore
+from qtsalome import QSqlQuery
 from tableDeBase import TableDeBase
 
 class TableGroupesRef (TableDeBase):
@@ -8,14 +8,14 @@ class TableGroupesRef (TableDeBase):
             self.setTypeField(('str','int'),('nomGroupe'))
 
         def createSqlTable(self):
-            query=QtSql.QSqlQuery()
+            query=QSqlQuery()
             texteQuery ="create table GroupesRef(nomGroupe varchar(40), idMaillage int,"
             texteQuery+="foreign key (idMaillage) references Maillages(idMaillage),"
             texteQuery+="primary key (nomGroupe,idMaillage));"
             print "Creation de TableGroupesRef : " , query.exec_(texteQuery)
 
         def getVals(self,idMaillage):
-            query=QtSql.QSqlQuery()
+            query=QSqlQuery()
             texteQuery ='select NomGroupe from GroupesRef where idMaillage='+str(idMaillage) +";"
             listeGroupes=[]
             query.exec_(texteQuery)

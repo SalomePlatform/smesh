@@ -1,7 +1,4 @@
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtSql import *
-
+from qtsalome import *
 
 class TableEditor(QDialog):
 
@@ -20,7 +17,7 @@ class TableEditor(QDialog):
          quitButton=QPushButton("Quit")
          buttonBox=QDialogButtonBox(Qt.Vertical)
          buttonBox.addButton(quitButton, QDialogButtonBox.RejectRole);
-         self.connect(quitButton, SIGNAL("clicked()"), self, SLOT("close()"))
+         quitButton.clicked.connect(self.close())
 
          mainLayout = QHBoxLayout(self)
          mainLayout.addWidget(self.view)
@@ -33,11 +30,11 @@ class TableEditor(QDialog):
          self.view.resizeColumnsToContents()
          self.view.adjustSize()
          self.adjustSize()
-         self.connect(self.view,SIGNAL("pressed(QModelIndex*)"),self.donneLigne)
-         self.connect(self.view,SIGNAL("itemPressed(QTableWidgetItem*)"),self.donneLigne)
-         self.connect(self.view,SIGNAL("clicked(QModelIndex*)"),self.donneLigne)
-         self.connect(self.view,SIGNAL("clicked()"),self.donneLigne)
-         self.connect(self.view,SIGNAL("pressed()"),self.donneLigne)
+         self.view.pressed[QModelIndex].connect(self.donneLigne)
+         self.view.itemPressed[QTableWidgetItem].conect(self.donneLigne)
+         self.view.clicked[QModelIndex].connect(self.donneLigne)
+         self.view.clicked.connect(self.donneLigne)
+         self.view.pressed.connect(self.donneLigne)
 
      def donneLigne(self):
          print "jjjjjjjjjjjjjjjj"

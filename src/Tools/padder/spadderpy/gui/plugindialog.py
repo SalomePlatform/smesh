@@ -20,8 +20,7 @@
 # Author : Guillaume Boulant (EDF)
 #
 
-from PyQt4.QtGui import QDialog, QIcon
-from PyQt4.QtCore import QObject, SIGNAL, SLOT, Qt
+from qtsalome import QDialog, QIcon, Qt
 
 from plugindialog_ui import Ui_PluginDialog
 from inputdialog import InputDialog
@@ -87,11 +86,11 @@ class PluginDialog(QDialog):
         self.__ui.btnClear.setIcon(icon)
 
         # Then, we can connect the slot to there associated button event
-        self.connect(self.__ui.btnInput,       SIGNAL('clicked()'), self.onInput )
-        self.connect(self.__ui.btnCompute,     SIGNAL('clicked()'), self.onCompute )
-        self.connect(self.__ui.btnRefresh,     SIGNAL('clicked()'), self.onRefresh )
-        self.connect(self.__ui.btnPublish,     SIGNAL('clicked()'), self.onPublish )
-        self.connect(self.__ui.btnClear,       SIGNAL('clicked()'), self.onClear )
+	self.__ui.btnInput.clicked.connect( self.onInput )
+        self.__ui.btnCompute.clicked.connect( self.onCompute )
+        self.__ui.btnRefresh.clicked.connect( self.onRefresh )
+        self.__ui.btnPublish.clicked.connect( self.onPublish )
+        self.__ui.btnClear.clicked.connect( self.onClear )
 
         self.clear()
 
@@ -140,7 +139,7 @@ class PluginDialog(QDialog):
                 self.__inputDialog.windowFlags() | Qt.WindowStaysOnTopHint)
             # The signal inputValidated emited from inputDialog is
             # connected to the slot function onProcessInput:
-            self.connect(self.__inputDialog, SIGNAL('inputValidated()'), self.onProcessInput)
+    	    self.__inputDialog.inputValidated.connect( self.onProcessInput )
             
         else:
             self.__ui.frameInput.setVisible(True)
@@ -393,10 +392,9 @@ def getDialog():
 #
 def TEST_PluginDialog():
     import sys
-    from PyQt4.QtGui import QApplication
-    from PyQt4.QtCore import QObject, SIGNAL, SLOT
+    from qtsalome import QApplication
     app = QApplication(sys.argv)
-    QObject.connect(app, SIGNAL("lastWindowClosed()"), app, SLOT("quit()"))
+    app.lastWindowClosed.connect( app.quit )
 
     dlg=PluginDialog()
     dlg.exec_()

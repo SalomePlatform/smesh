@@ -1,4 +1,4 @@
-from PyQt4 import QtSql, QtCore
+from qtsalome import QSqlQuery
 from tableDeBase import TableDeBase
 
 class TableMailles (TableDeBase):
@@ -9,7 +9,7 @@ class TableMailles (TableDeBase):
 
 
       def createSqlTable(self):
-          query=QtSql.QSqlQuery()
+          query=QSqlQuery()
 
 
           texteQuery ="create table Mailles(idMaillage int, idVersion int,  Entite var(40), NbEntite int, "
@@ -21,7 +21,7 @@ class TableMailles (TableDeBase):
 
  
       def getVal(self,idMaillage, idVersion,  Entite):
-            query=QtSql.QSqlQuery()
+            query=QSqlQuery()
             texteQuery ='select NbEntite from Mailles where idMaillage='+str(idMaillage) 
             texteQuery+=' and  idVersion='+str(idVersion) 
             texteQuery+=" and Entite='" + str(Entite)  +"';"
@@ -36,7 +36,7 @@ class TableMailles (TableDeBase):
 
 
       def getAllEntity(self):
-            query=QtSql.QSqlQuery()
+            query=QSqlQuery()
             texteQuery ="select distinct Entite from Mailles;"
             query.exec_(texteQuery)
             maListe=[]

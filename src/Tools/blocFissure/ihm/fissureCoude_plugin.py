@@ -43,18 +43,13 @@ def fissureCoudeDlg(context):
   import os
   #import subprocess
   #import tempfile
-  from PyQt4 import QtCore
-  from PyQt4 import QtGui
-  from PyQt4.QtGui import QFileDialog
-  from PyQt4.QtGui import QMessageBox
-  from PyQt4.QtGui import QPalette
-  from PyQt4.QtGui import QColor
+  from qtsalome import QFileDialog, QMessageBox, QPalette, QColor, QDialog
   from fissureCoude_ui import Ui_Dialog
   
-  class fissureCoudeDialog(QtGui.QDialog):
+  class fissureCoudeDialog(QDialog):
     
     def __init__(self):
-      QtGui.QDialog.__init__(self)
+      QDialog.__init__(self)
       # Set up the user interface from Designer.
       self.ui = Ui_Dialog()
       self.ui.setupUi(self)
@@ -86,17 +81,12 @@ def fissureCoudeDlg(context):
       self.ui.lb_calcul.hide()
       
       # Connect up the buttons.
-      self.connect(self.ui.pb_valPrec, QtCore.SIGNAL("clicked()"),
-                   self.readValPrec)
-      self.connect(self.ui.pb_reset, QtCore.SIGNAL("clicked()"),
-                   self.resetVal)
-      self.connect(self.ui.pb_recharger, QtCore.SIGNAL("clicked()"),
-                   self.recharger)
-      self.connect(self.ui.pb_sauver, QtCore.SIGNAL("clicked()"),
-                   self.sauver)
-      self.disconnect(self.ui.buttonBox, QtCore.SIGNAL("accepted()"), self.accept)
-      self.connect(self.ui.buttonBox, QtCore.SIGNAL("accepted()"),
-                   self.execute)
+      self.ui.pb_valPrec.clicked.connect(self.readValPrec)
+      self.ui.pb_reset.clicked.connect(self.resetVal)
+      self.ui.pb_recharger.clicked.connect(self.recharger)
+      self.ui.pb_sauver.clicked.connect(self.sauver)
+      self.ui.buttonBox.accepted.disconnect(self.accept)
+      self.ui.buttonBox.accepted.connect(self.execute)
     
     def initDefaut(self):
       self.defaut = dict(

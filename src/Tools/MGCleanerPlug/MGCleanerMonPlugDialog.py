@@ -24,8 +24,7 @@
 import os, subprocess
 from MGCleanerPlugDialog_ui import Ui_MGCleanerPlugDialog
 from MGCleanerMonViewText import MGCleanerMonViewText
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from qtsalome import *
 
 
 class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
@@ -105,28 +104,28 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     self.clean()
 
   def connecterSignaux(self) :
-    self.connect(self.PB_Cancel,SIGNAL("clicked()"),self.PBCancelPressed)
-    self.connect(self.PB_Default,SIGNAL("clicked()"),self.clean)
-    self.connect(self.PB_Help,SIGNAL("clicked()"),self.PBHelpPressed)
-    self.connect(self.PB_OK,SIGNAL("clicked()"),self.PBOKPressed)
+    self.PB_Cancel.clicked.connect(self.PBCancelPressed)
+    self.PB_Default.clicked.connect(self.clean)
+    self.PB_Help.clicked.connect(self.PBHelpPressed)
+    self.PB_OK.clicked.connect(self.PBOKPressed)
     
-    self.connect(self.PB_Load,SIGNAL("clicked()"),self.PBLoadPressed)
-    self.connect(self.PB_Save,SIGNAL("clicked()"),self.PBSavePressed)
-    self.connect(self.PB_LoadHyp,SIGNAL("clicked()"),self.PBLoadHypPressed)
-    self.connect(self.PB_SaveHyp,SIGNAL("clicked()"),self.PBSaveHypPressed)
+    self.PB_Load.clicked.connect(self.PBLoadPressed)
+    self.PB_Save.clicked.connect(self.PBSavePressed)
+    self.PB_LoadHyp.clicked.connect(self.PBLoadHypPressed)
+    self.PB_SaveHyp.clicked.connect(self.PBSaveHypPressed)
     
-    self.connect(self.PB_MeshFile,SIGNAL("clicked()"),self.PBMeshFilePressed)
-    self.connect(self.PB_MeshSmesh,SIGNAL("clicked()"),self.PBMeshSmeshPressed)
-    self.connect(self.LE_MeshSmesh,SIGNAL("returnPressed()"),self.meshSmeshNameChanged)
-    self.connect(self.PB_ParamsFileExplorer,SIGNAL("clicked()"),self.setParamsFileName)
-    self.connect(self.LE_MeshFile,SIGNAL("returnPressed()"),self.meshFileNameChanged)
-    self.connect(self.LE_ParamsFile,SIGNAL("returnPressed()"),self.paramsFileNameChanged)
+    self.PB_MeshFile.clicked.connect(self.PBMeshFilePressed)
+    self.PB_MeshSmesh.clicked.connect(self.PBMeshSmeshPressed)
+    self.LE_MeshSmesh.returnPressed.connect(self.meshSmeshNameChanged)
+    self.PB_ParamsFileExplorer.clicked.connect(self.setParamsFileName)
+    self.LE_MeshFile.returnPressed.connect(self.meshFileNameChanged)
+    self.LE_ParamsFile.returnPressed.connect(self.paramsFileNameChanged)
 
     #QtCore.QObject.connect(self.checkBox, QtCore.SIGNAL("stateChanged(int)"), self.change) 
-    self.connect(self.CB_FillHoles,SIGNAL("stateChanged(int)"),self.SP_MinHoleSize.setEnabled)
-    self.connect(self.CB_ComputedToleranceDisplacement,SIGNAL("stateChanged(int)"),self.SP_ToleranceDisplacement.setDisabled)
-    self.connect(self.CB_ComputedResolutionLength,SIGNAL("stateChanged(int)"),self.SP_ResolutionLength.setDisabled)
-    self.connect(self.CB_ComputedOverlapDistance,SIGNAL("stateChanged(int)"),self.SP_OverlapDistance.setDisabled)
+    self.CB_FillHoles.stateChanged[int].connect(self.SP_MinHoleSize.setEnabled)
+    self.CB_ComputedToleranceDisplacement.stateChanged[int].connect(self.SP_ToleranceDisplacement.setDisabled)
+    self.CB_ComputedResolutionLength.stateChanged[int].connect(self.SP_ResolutionLength.setDisabled)
+    self.CB_ComputedOverlapDistance.stateChanged[int].connect(self.SP_OverlapDistance.setDisabled)
 
   def PBHelpPressed(self):
     import SalomePyQt
@@ -406,7 +405,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     if fd.exec_():
       infile = fd.selectedFiles()[0]
       self.LE_MeshFile.setText(infile)
-      self.fichierIn=infile.toLatin1()
+      self.fichierIn=unicode(infile).encode("latin-1")
       self.MeshIn=""
       self.LE_MeshSmesh.setText("")
 
@@ -415,7 +414,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     if fd.exec_():
       infile = fd.selectedFiles()[0]
       self.LE_ParamsFile.setText(infile)
-      self.paramsFile=infile.toLatin1()
+      self.paramsFile=unicode(infile).encode("latin-1")
 
   def meshFileNameChanged(self):
     self.fichierIn=str(self.LE_MeshFile.text())
@@ -595,10 +594,9 @@ def TEST_standalone():
 #
 def TEST_MGCleanerMonPlugDialog():
   import sys
-  from PyQt4.QtGui import QApplication
-  from PyQt4.QtCore import QObject, SIGNAL, SLOT
+  from qtsalome import QApplication
   app = QApplication(sys.argv)
-  QObject.connect(app, SIGNAL("lastWindowClosed()"), app, SLOT("quit()"))
+  app.lastWindowClosed.connect(app.quit)
 
   dlg=MGCleanerMonPlugDialog()
   dlg.show()

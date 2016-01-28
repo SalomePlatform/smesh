@@ -1,4 +1,4 @@
-from PyQt4 import QtSql, QtCore
+from qtsalome import QSqlQuery
 from tableDeBase import TableDeBase
 
 class TableGroupeTailles (TableDeBase):
@@ -8,7 +8,7 @@ class TableGroupeTailles (TableDeBase):
           self.setTypeField(('int','int','str','float','float','float','float','float','float'),('idMaillage','idVersion'))
 
       def createSqlTable(self):
-          query=QtSql.QSqlQuery()
+          query=QSqlQuery()
 
           texteQuery ="create table GroupeTailles(idMaillage int, idVersion int, "
           texteQuery+="Groupe varchar(40),TailleMax float, TailleMin float, "
@@ -24,7 +24,7 @@ class TableGroupeTailles (TableDeBase):
           print "Creation de TableGroupeTailles : " , query.exec_(texteQuery)
 
       def getVal(self,idMaillage, idVersion, Groupe,  Entite):
-          query=QtSql.QSqlQuery()
+          query=QSqlQuery()
           texteQuery ='select '+ str(Entite) + ' from GroupeTailles where idMaillage='+str(idMaillage)
           texteQuery+=' and  idVersion='+str(idVersion)
           texteQuery+=" and Groupe='" + str(Groupe) +"';"

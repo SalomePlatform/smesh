@@ -1017,7 +1017,7 @@
    <sender>cb_optDiscrSain</sender>
    <signal>clicked(bool)</signal>
    <receiver>gb_discrSain</receiver>
-   <slot>setShown(bool)</slot>
+   <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>69</x>
@@ -1033,7 +1033,7 @@
    <sender>cb_optDiscrFiss</sender>
    <signal>clicked(bool)</signal>
    <receiver>gb_discrFacesExternes</receiver>
-   <slot>setShown(bool)</slot>
+   <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>1033</x>
@@ -1049,7 +1049,7 @@
    <sender>cb_optDiscrFiss</sender>
    <signal>clicked(bool)</signal>
    <receiver>gb_zoneRemail</receiver>
-   <slot>setShown(bool)</slot>
+   <slot>setVisible(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>1033</x>

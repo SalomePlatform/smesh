@@ -5,7 +5,7 @@ rep=os.path.dirname(os.path.abspath(__file__))
 installDir=os.path.join(rep,'..')
 sys.path.insert(0,installDir)
 
-from PyQt4 import QtGui,QtCore
+from qtsalome import QApplication
 from Gui.maFenetreChoix_ui import MaFenetreChoix
 from Base.dataBase import Base
 
@@ -17,7 +17,7 @@ if __name__ == "__main__":
       p.add_option('-d',dest='database',default="myMesh.db",help='nom de la database')
       options, args = p.parse_args()
 
-      app = QtGui.QApplication(sys.argv)
+      app = QApplication(sys.argv)
       maBase=Base(options.database)
       maBase.initialise()
       window = MaFenetreChoix(maBase)

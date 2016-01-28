@@ -1,34 +1,32 @@
 from desFenetreChoix_ui import Ui_Choix
-from PyQt4  import *
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qtsalome import *
 from monEditor import TableEditor
 
 # Import des panels
 
-class MaFenetreChoix(Ui_Choix ,QtGui.QDialog):
+class MaFenetreChoix(Ui_Choix ,QDialog):
   """
   """
   def __init__(self,db):
-      QtGui.QDialog.__init__(self)
+      QDialog.__init__(self)
       self.setModal(True)
       self.setupUi(self)
       self.db=db
       self.connecterSignaux()
 
   def connecterSignaux(self):
-      self.connect(self.PBMailleur,SIGNAL("clicked()"),self.MailleurPush)
-      self.connect(self.PBMaillage,SIGNAL("clicked()"),self.MaillagePush)
-      self.connect(self.PBVersion,SIGNAL("clicked()"),self.VersionPush)
-      self.connect(self.PBMachine,SIGNAL("clicked()"),self.MachinePush)
-      self.connect(self.PBGroupe,SIGNAL("clicked()"),self.GroupePush)
-      self.connect(self.PBRatio,SIGNAL("clicked()"),self.RatioPush)
-      self.connect(self.PBGroupeRatio,SIGNAL("clicked()"),self.GroupeRatioPush)
-      self.connect(self.PBGroupeTaille,SIGNAL("clicked()"),self.GroupeTaillePush)
-      self.connect(self.PBPerf,SIGNAL("clicked()"),self.PerfPush)
-      self.connect(self.PBMaille,SIGNAL("clicked()"),self.MaillePush)
-      self.connect(self.PBTaille,SIGNAL("clicked()"),self.TaillePush)
-      self.connect(self.PBGroupesRef,SIGNAL("clicked()"),self.GroupesRefPush)
+      self.PBMailleur.clicked.connect(self.MailleurPush)
+      self.PBMaillage.clicked.connect(self.MaillagePush)
+      self.PBVersion.clicked.connect(self.VersionPush)
+      self.PBMachine.clicked.connect(self.MachinePush)
+      self.PBGroupe.clicked.connect(self.GroupePush)
+      self.PBRatio.clicked.connect(self.RatioPush)
+      self.PBGroupeRatio.clicked.connect(self.GroupeRatioPush)
+      self.PBGroupeTaille.clicked.connect(self.GroupeTaillePush)
+      self.PBPerf.clicked.connect(self.PerfPush)
+      self.PBMaille.clicked.connect(self.MaillePush)
+      self.PBTaille.clicked.connect(self.TaillePush)
+      self.PBGroupesRef.clicked.connect(self.GroupesRefPush)
 
   def MailleurPush(self):
       editor=TableEditor(self.db.maTableMailleurs,self)

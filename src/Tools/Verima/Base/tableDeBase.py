@@ -1,5 +1,4 @@
-from PyQt4 import QtSql, QtCore
-from PyQt4.QtSql import *
+from qtsalome import QSqlQuery
 import datetime
 
 class TableDeBase :

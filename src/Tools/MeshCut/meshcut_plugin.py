@@ -29,26 +29,20 @@ def MeshCut(context):
   import os
   import subprocess
   import tempfile
-  from PyQt4 import QtCore
-  from PyQt4 import QtGui
-  from PyQt4.QtGui import QFileDialog
-  from PyQt4.QtGui import QMessageBox
+  from qtsalome import QFileDialog, QMessageBox, QDialog
   from MeshCutDialog_ui import Ui_Dialog
   
-  class CutDialog(QtGui.QDialog):
+  class CutDialog(QDialog):
     
     def __init__(self):
-      QtGui.QDialog.__init__(self)
+      QDialog.__init__(self)
       # Set up the user interface from Designer.
       self.ui = Ui_Dialog()
       self.ui.setupUi(self)
       # Connect up the buttons.
-      self.connect(self.ui.pb_origMeshFile, QtCore.SIGNAL("clicked()"),
-                   self.setInputFile)
-      self.connect(self.ui.pb_cutMeshFile, QtCore.SIGNAL("clicked()"),
-                   self.setOutputFile)
-      self.connect(self.ui.pb_help, QtCore.SIGNAL("clicked()"),
-                   self.helpMessage)
+      self.ui.pb_origMeshFile.clicked.connect(self.setInputFile)
+      self.ui.pb_cutMeshFile.clicked.connect(self.setOutputFile)
+      self.ui.pb_help.clicked.connect(self.helpMessage)
       pass
     
     def setInputFile(self):
@@ -56,7 +50,7 @@ def MeshCut(context):
       if fd.exec_():
         infile = fd.selectedFiles()[0]
         self.ui.le_origMeshFile.setText(infile)
-        insplit = os.path.splitext(infile.toLocal8Bit().data())
+        insplit = os.path.splitext(unicode(infile).encode())
         outfile = insplit[0] + '_cut' + insplit[1]
         self.ui.le_cutMeshFile.setText(outfile)
       pass
@@ -103,11 +97,11 @@ and T the tolerance.
     if result:
       # dialog accepted
       args = ['MeshCut']
-      args += [window.ui.le_origMeshFile.text().toLocal8Bit().data()]
-      args += [window.ui.le_cutMeshFile.text().toLocal8Bit().data()]
-      args += [window.ui.le_outMeshName.text().toLocal8Bit().data()]
-      args += [window.ui.le_groupAbove.text().toLocal8Bit().data()]
-      args += [window.ui.le_groupBelow.text().toLocal8Bit().data()]
+      args += [unicode(window.ui.le_origMeshFile.text()).encode()]
+      args += [unicode(window.ui.le_cutMeshFile.text()).encode()]
+      args += [unicode(window.ui.le_outMeshName.text()).encode()]
+      args += [unicode(window.ui.le_groupAbove.text()).encode()]
+      args += [unicode(window.ui.le_groupBelow.text()).encode()]
       args += [str(window.ui.dsb_normX.value())]
       args += [str(window.ui.dsb_normY.value())]
       args += [str(window.ui.dsb_normZ.value())]

@@ -22,9 +22,7 @@
 import string,types,os
 import traceback
 
-from PyQt4 import *
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
+from qtsalome import *
 
 # Import des panels
 
@@ -38,13 +36,13 @@ class MonViewText(Ui_ViewExe, QDialog):
         QDialog.__init__(self,parent)
         self.setupUi(self)
         self.resize( QSize(1000,600).expandedTo(self.minimumSizeHint()) )
-        #self.connect( self.PB_Ok,SIGNAL("clicked()"), self, SLOT("close()") )
-        self.connect( self.PB_Ok,SIGNAL("clicked()"), self.theClose )
-        self.connect( self.PB_Save,SIGNAL("clicked()"), self.saveFile )
+        # self.PB_Ok.clicked.connect(self.close)
+        self.PB_Ok.clicked.connect( self.theClose )
+        self.PB_Save.clicked.connect( self.saveFile )
         self.monExe=QProcess(self)
 
-        self.connect(self.monExe, SIGNAL("readyReadStandardOutput()"), self.readFromStdOut )
-        self.connect(self.monExe, SIGNAL("readyReadStandardError()"), self.readFromStdErr )
+        self.monExe.readyReadStandardOutput.connect( self.readFromStdOut )
+        self.monExe.readyReadStandardError.connect( self.readFromStdErr )
       
         # Je n arrive pas a utiliser le setEnvironment du QProcess
         # fonctionne hors Salome mais pas dans Salome ???
@@ -67,7 +65,7 @@ class MonViewText(Ui_ViewExe, QDialog):
     def saveFile(self):
         #recuperation du nom du fichier
         savedir=os.environ['HOME']
-        fn = QFileDialog.getSaveFileName(None, self.trUtf8("Save File"),savedir)
+        fn = QFileDialog.getSaveFileName(None,"Save File",savedir)
         if fn.isNull() : return
         ulfile = os.path.abspath(unicode(fn))
         try:
@@ -75,17 +73,16 @@ class MonViewText(Ui_ViewExe, QDialog):
            f.write(str(self.TB_Exe.toPlainText()))
            f.close()
         except IOError, why:
-           QMessageBox.critical(self, self.trUtf8('Save File'),
-                self.trUtf8('The file <b>%1</b> could not be saved.<br>Reason: %2')
-                    .arg(unicode(fn)).arg(str(why)))
+           QMessageBox.critical(self, 'Save File',
+        	'The file <b>%1</b> could not be saved.<br>Reason: %2'%(unicode(fn), str(why)))
 
     def readFromStdErr(self):
         a=self.monExe.readAllStandardError()
-        self.TB_Exe.append(QString.fromUtf8(a.data(),len(a)))
+        self.TB_Exe.append(unicode(a.data().encode()))
 
     def readFromStdOut(self) :
         a=self.monExe.readAllStandardOutput()
-        aa=QString.fromUtf8(a.data(),len(a))
+        aa=unicode(a.data(),len(a))
         self.TB_Exe.append(aa)
         if "END_OF_Yams" in aa:
           self.parent().enregistreResultat()

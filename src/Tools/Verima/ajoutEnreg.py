@@ -5,7 +5,7 @@ rep=os.path.dirname(os.path.abspath(__file__))
 installDir=os.path.join(rep,'..')
 sys.path.insert(0,installDir)
 
-from PyQt4 import QtGui,QtCore,QtSql
+from qtsalome import *
 from Base.dataBase import Base
 
 def completeDatabase(fichier,table,enregistrement):
@@ -13,7 +13,7 @@ def completeDatabase(fichier,table,enregistrement):
       maBase.initialise()
       nomTable="ma"+str(table)
       matable=getattr(maBase,nomTable)
-      model= QtSql.QSqlTableModel()
+      model= QSqlTableModel()
       model.setTable(matable.nom)
       nbCols=model.columnCount() -1
       if table == "TableGroupesRef" : nbCols==nbCols+1

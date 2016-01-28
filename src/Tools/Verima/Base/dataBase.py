@@ -4,7 +4,7 @@ import os
 import datetime
 import sys
 
-from PyQt4 import QtSql, QtCore
+from qtsalome import QSqlQuery
 from tableMaillages  import TableMaillages
 from tableMailleurs  import TableMailleurs
 from tableMachines   import TableMachines
@@ -23,7 +23,7 @@ from CreeDocuments.jobHtml       import Document
 
 class Base:
   def __init__(self,file):    
-       self.db  = QtSql.QSqlDatabase.addDatabase("QSQLITE")
+       self.db  = QSqlDatabase.addDatabase("QSQLITE")
        self.db.setDatabaseName(file)
        self.db.setHostName("localhost");
        self.db.setUserName("");

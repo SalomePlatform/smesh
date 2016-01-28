@@ -1,4 +1,4 @@
-from PyQt4 import QtSql, QtCore
+from qtsalome import QSqlQuery
 from tableDeBase import TableDeBase
 
 class TablePerfs (TableDeBase):
@@ -8,7 +8,7 @@ class TablePerfs (TableDeBase):
           self.setTypeField(('int','int','str','int','int'),('idMaillage','idVersion','Machine'))
 
       def createSqlTable(self):
-          query=QtSql.QSqlQuery()
+          query=QSqlQuery()
           texteQuery ="create table Perfs(idMaillage int, idVersion int, Machine varchar(10),  NbCpu int, Mem int, "
           texteQuery+="foreign key (idMaillage) references Maillages(id)," 
           texteQuery+="foreign key (idVersion) references Versions(id)," 
@@ -18,7 +18,7 @@ class TablePerfs (TableDeBase):
           print "Creation de TablePerfs : " , query.exec_(texteQuery)
 
       def getVal(self,idMaillage,idVersion,Machine):
-          query=QtSql.QSqlQuery()
+          query=QSqlQuery()
           texteQuery ='select NbCpu from Perfs  where idMaillage=' + str(idMaillage)
           texteQuery +=' and idVersion = ' + str(idVersion)
           texteQuery +=" and Machine ='"  + Machine + "';" 

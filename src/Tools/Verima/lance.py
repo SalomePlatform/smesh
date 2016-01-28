@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-from PyQt4  import *
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qtsalome import *
 from Gui.myMain_ui import Ui_Gestion
 import sys
 
@@ -18,11 +16,11 @@ class MonAppli(Ui_Gestion,QWidget):
          self.version=""
 
      def connectSignaux(self) :
-         self.connect(self.BExp,SIGNAL("clicked()"),self.BExpPressed)
-         self.connect(self.BImp,SIGNAL("clicked()"),self.BImpPressed)
-         self.connect(self.BCree,SIGNAL("clicked()"),self.BCreePressed)
-         self.connect(self.BVue,SIGNAL("clicked()"),self.BVuePressed)
-         self.connect(self.BStat,SIGNAL("clicked()"),self.BStatPressed)
+         self.BExp.clicked.connect(self.BExpPressed)
+         self.BImp.clicked.connect(self.BImpPressed)
+         self.BCree.clicked.connect(self.BCreePressed)
+         self.BVue.clicked.connect(BVuePressed)
+         self.BStat.clicked.connect(BStatPressed)
 
 
      def BExpPressed(self):

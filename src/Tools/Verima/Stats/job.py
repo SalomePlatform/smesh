@@ -1,9 +1,6 @@
 import os
 import subprocess
 import time
-from PyQt4.QtGui import *
-from PyQt4.QtCore import *
-
 
 class Job:
   def __init__(self,listeParamMaillage,salomePath,versionId,mesGroupesRef):    
