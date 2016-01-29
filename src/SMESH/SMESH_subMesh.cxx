@@ -438,7 +438,8 @@ const map < int, SMESH_subMesh * >& SMESH_subMesh::DependsOn()
   }
   break;
   case TopAbs_COMPSOLID: insertDependence( _subShape, TopAbs_SOLID ); break;
-  case TopAbs_SOLID:     insertDependence( _subShape, TopAbs_FACE ); break;
+  case TopAbs_SOLID:     insertDependence( _subShape, TopAbs_FACE );
+  { /*internal EDGE*/    insertDependence( _subShape, TopAbs_EDGE, TopAbs_WIRE ); break; }
   case TopAbs_SHELL:     insertDependence( _subShape, TopAbs_FACE ); break;
   case TopAbs_FACE:      insertDependence( _subShape, TopAbs_EDGE ); break;
   case TopAbs_WIRE:      insertDependence( _subShape, TopAbs_EDGE ); break;
@@ -477,9 +478,10 @@ namespace
 //=============================================================================
 
 void SMESH_subMesh::insertDependence(const TopoDS_Shape aShape,
-                                     TopAbs_ShapeEnum   aSubType)
+                                     TopAbs_ShapeEnum   aSubType,
+                                     TopAbs_ShapeEnum   avoidType)
 {
-  TopExp_Explorer sub( aShape, aSubType );
+  TopExp_Explorer sub( aShape, aSubType, avoidType );
   for ( ; sub.More(); sub.Next() )
   {
     SMESH_subMesh *aSubMesh = _father->GetSubMesh( sub.Current() );

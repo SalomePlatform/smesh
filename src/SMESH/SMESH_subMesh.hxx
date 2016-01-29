@@ -281,7 +281,9 @@ public:
 
 protected:
   // ==================================================================
-  void insertDependence(const TopoDS_Shape aShape, TopAbs_ShapeEnum aSubType );
+  void insertDependence(const TopoDS_Shape aShape,
+                        TopAbs_ShapeEnum   aSubType,
+                        TopAbs_ShapeEnum   avoidType=TopAbs_SHAPE);
 
   void removeSubMeshElementsAndNodes();
   void updateDependantsState(const compute_event theEvent);
