@@ -172,7 +172,7 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
       //------------------------------------------------------
       PNodeInfo aNodeInfo = aMed->GetPNodeInfo(aMeshInfo);
       if (!aNodeInfo) {
-        aResult = DRS_FAIL;
+        aResult = addMessage("No nodes", /*isFatal=*/true );
         continue;
       }
       aMeshInfo->myDim=aMeshInfo->mySpaceDim;// ignore meshdim in MEDFile because it can be false
@@ -365,9 +365,9 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
                 }
 #ifndef _DEXCEPT_
               } catch(const std::exception& exc) {
-                aResult = DRS_FAIL;
+                aResult = addMessage( exc.what(), /*isFatal=*/true );
               } catch (...) {
-                aResult = DRS_FAIL;
+                aResult = addMessage( "Unknown exception", /*isFatal=*/true );
               }
 #endif
               if ( !anElement ) {
@@ -522,10 +522,10 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 #ifndef _DEXCEPT_
               }catch(const std::exception& exc){
                 INFOS("Following exception was caught:\n\t"<<exc.what());
-                aResult = DRS_FAIL;
+                aResult = addMessage( exc.what(), /*isFatal=*/true );
               }catch(...){
                 INFOS("Unknown exception was caught !!!");
-                aResult = DRS_FAIL;
+                aResult = addMessage( "Unknown exception", /*isFatal=*/true );
               }
 #endif          
               if(!anIsValidConnect)
@@ -958,10 +958,10 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 #ifndef _DEXCEPT_
               } catch(const std::exception& exc) {
                 INFOS("The following exception was caught:\n\t"<<exc.what());
-                aResult = DRS_FAIL;
+                aResult = addMessage( exc.what(), /*isFatal=*/true );
               } catch(...) {
                 INFOS("Unknown exception was caught !!!");
-                aResult = DRS_FAIL;
+                aResult = addMessage( "Unknown exception", /*isFatal=*/true );
               }
 #endif
               if (!anElement) {
@@ -993,12 +993,12 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
   catch(const std::exception& exc)
   {
     INFOS("The following exception was caught:\n\t"<<exc.what());
-    aResult = DRS_FAIL;
+    aResult = addMessage( exc.what(), /*isFatal=*/true );
   }
   catch(...)
   {
     INFOS("Unknown exception was caught !!!");
-    aResult = DRS_FAIL;
+    aResult = addMessage( "Unknown exception", /*isFatal=*/true );
   }
 #endif
   if (myMesh)
