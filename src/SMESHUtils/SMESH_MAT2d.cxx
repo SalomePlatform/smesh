@@ -1890,27 +1890,6 @@ void SMESH_MAT2d::Branch::getOppositeGeomEdges( std::vector< std::size_t >& edge
   for ( size_t i = 0; i < _maEdges.size(); ++i )
     twins[i] = _maEdges[i]->twin();
 
-  // size_t lastConcaE1 = _boundary.nbEdges();
-  // size_t lastConcaE2 = _boundary.nbEdges();
-
-  BranchPoint divisionPnt;
-  divisionPnt._branch = this;
-
-  for ( size_t i = 0; i < _maEdges.size(); ++i )
-  {
-    size_t ie1 = getGeomEdge( _maEdges[i] );
-    size_t ie2 = getGeomEdge( _maEdges[i]->twin() );
-    
-    if ( edgeIDs1.back() != ie1 || edgeIDs2.back() != ie2 )
-    {
-      bool isConcaveV = false;
-      if ( edgeIDs1.back() != ie1 && edgeIDs2.back() == ie2 )
-      {
-        isConcaveV = addDivPntForConcaVertex( edgeIDs1, edgeIDs2, divPoints, _maEdges, twins, i );
-      }
-      if ( edgeIDs1.back() == ie1 && edgeIDs2.back() != ie2 )
-      {
-        isConcaveV = addDivPntForConcaVertex( edgeIDs2, edgeIDs1, divPoints, twins, _maEdges, i );
   BranchIterator maIter ( _maEdges, 0 );
   BranchIterator twIter ( twins, 0 );
   // size_t lastConcaE1 = _boundary.nbEdges();
