@@ -415,7 +415,7 @@ CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobParameterList & m
   jobParameters->out_files[0] = CORBA::string_dup(outputfile_name.c_str());
 
   // CAUTION: the maximum duration has to be set with a format like "hh:mm"
-  jobParameters->maximum_duration = CORBA::string_dup("01:00");
+  //jobParameters->maximum_duration = CORBA::string_dup("01:00");
   jobParameters->queue = CORBA::string_dup("");
 
   // Setting resource and additionnal properties (if needed)

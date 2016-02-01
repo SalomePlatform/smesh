@@ -106,6 +106,8 @@ private slots:
   void                   DeactivateActiveDialog();
   void                   ActivateThisDialog();
   void                   onTextChange( const QString& );
+  void                   onOpenView();
+  void                   onCloseView();
   void                   setFilters();
   void                   updateButtons();
 };

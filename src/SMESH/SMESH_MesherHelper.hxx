@@ -34,6 +34,7 @@
 #include <SMDS_QuadraticEdge.hxx>
 
 #include <Geom_Surface.hxx>
+#include <ShapeAnalysis_Surface.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Shape.hxx>
 #include <gp_Pnt2d.hxx>
@@ -258,12 +259,9 @@ public:
    * quadratic elements will be created. Also fill myTLinkNodeMap
    */
   bool IsQuadraticSubMesh(const TopoDS_Shape& theShape);
-  /*!
-   * \brief Set order of elements to create without calling IsQuadraticSubMesh()
-   */
 
   /*!
-   * \brief Set myCreateQuadratic flag
+   * \brief Set order of elements to create without calling IsQuadraticSubMesh()
    */
   void SetIsQuadratic(const bool theBuildQuadratic)
   { myCreateQuadratic = theBuildQuadratic; }
@@ -531,13 +529,17 @@ public:
   GeomAPI_ProjectPointOnSurf& GetProjector(const TopoDS_Face& F,
                                            TopLoc_Location&   loc,
                                            double             tol=0 ) const; 
+  /*!
+   * \brief Return a cached ShapeAnalysis_Surface of a FACE
+   */
+  Handle(ShapeAnalysis_Surface) GetSurface(const TopoDS_Face& F ) const;
 
   /*!
    * \brief Check if shape is a degenerated edge or it's vertex
-    * \param subShape - edge or vertex index in SMESHDS
-    * \retval bool - true if subShape is a degenerated shape
-    *
-    * It works only if IsQuadraticSubMesh() or SetSubShape() has been called
+   *  \param subShape - edge or vertex index in SMESHDS
+   *  \retval bool - true if subShape is a degenerated shape
+   *
+   * It works only if IsQuadraticSubMesh() or SetSubShape() has been called
    */
   bool IsDegenShape(const int subShape) const
   { return myDegenShapeIds.find( subShape ) != myDegenShapeIds.end(); }
@@ -734,8 +736,10 @@ public:
 
   std::map< int, double > myFaceMaxTol;
 
+  typedef std::map< int, Handle(ShapeAnalysis_Surface)> TID2Surface;
   typedef std::map< int, GeomAPI_ProjectPointOnSurf* >  TID2ProjectorOnSurf;
   typedef std::map< int, GeomAPI_ProjectPointOnCurve* > TID2ProjectorOnCurve;
+  mutable TID2Surface  myFace2Surface;
   TID2ProjectorOnSurf  myFace2Projector;
   TID2ProjectorOnCurve myEdge2Projector;
 

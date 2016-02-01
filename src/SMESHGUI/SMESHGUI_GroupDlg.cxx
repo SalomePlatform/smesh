@@ -462,7 +462,8 @@ void SMESHGUI_GroupDlg::initDialog( bool create)
   connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()),        this, SLOT(reject()));
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()),  this, SLOT(onObjectSelectionChanged()));
   connect(mySMESHGUI, SIGNAL(SignalVisibilityChanged()),      this, SLOT(onVisibilityChanged()));
-
+  connect(mySMESHGUI, SIGNAL(SignalActivatedViewManager()),   this, SLOT(onOpenView()));
+  connect(mySMESHGUI, SIGNAL(SignalCloseView()),              this, SLOT(onCloseView()));
   rb1->setChecked(true); // VSR !!!
   onGrpTypeChanged(0); // VSR!!!
 
@@ -1826,6 +1827,8 @@ void SMESHGUI_GroupDlg::onAdd()
 
   if (aNbSel == 0 || myActorsList.count() == 0 || myMesh->_is_nil()) return;
 
+  SUIT_OverrideCursor wc;
+
   myIsBusy = true;
   int sizeBefore = myElements->count();
 
@@ -2249,6 +2252,32 @@ void SMESHGUI_GroupDlg::reject()
 }
 
 //=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_GroupDlg::onOpenView()
+{
+  if ( mySelector ) {
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    mySMESHGUI->EmitSignalDeactivateDialog();
+    setEnabled(true);
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_GroupDlg::onCloseView()
+{
+  onDeactivate();
+  mySelector = 0;
+}
+
+//=================================================================================
 // function : onHelp()
 // purpose  :
 //=================================================================================
@@ -2289,6 +2318,10 @@ void SMESHGUI_GroupDlg::onDeactivate()
 void SMESHGUI_GroupDlg::enterEvent (QEvent*)
 {
   if (!isEnabled()) {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+    if ( aViewWindow && !mySelector) {
+      mySelector = aViewWindow->GetSelector();
+    }
     mySMESHGUI->EmitSignalDeactivateDialog();
     setEnabled(true);
     mySelectionMode = grpNoSelection;
@@ -2540,7 +2573,7 @@ void SMESHGUI_GroupDlg::setDefaultGroupColor()
 // function : SetAppropriateActor()
 // purpose  : Find more appropriate of visible actors, set it to myActor, allow picking
 //            NPAL19389: create a group with a selection in another group.
-//            if mesh actor is not visible - find any first visible group or submesh
+//            if mesh actor is not visible - find any first visible group or sub-mesh
 //=================================================================================
 bool SMESHGUI_GroupDlg::SetAppropriateActor()
 {
@@ -2551,21 +2584,23 @@ bool SMESHGUI_GroupDlg::SetAppropriateActor()
 
   SVTK_ViewWindow* aViewWindow = SMESH::GetCurrentVtkView();
 
-  if (myGeomGroupBtn->isChecked()) {   // try current group on geometry actor
-    if (!isActor) {
-      if (!myGroupOnGeom->_is_nil()) {
-        SMESH_Actor* anActor = SMESH::FindActorByObject(myGroupOnGeom);
-        if (anActor && anActor->hasIO())
-          {
-            isActor = true;
-            if (aViewWindow && !aViewWindow->isVisible(anActor->getIO()))
-              isActor = false;
-            else
-              myActorsList.append(anActor);
-          }
-      }
+  if (myGrpTypeGroup->checkedId() > 0) {   // try current group on geometry actor
+    SMESH_Actor* anActor = 0;
+    if (!myGroupOnGeom->_is_nil())
+      anActor = SMESH::FindActorByObject(myGroupOnGeom);
+    if (!myGroupOnFilter->_is_nil())
+      anActor = SMESH::FindActorByObject(myGroupOnFilter);
+    if (anActor && anActor->hasIO())
+    {
+      isActor = true;
+      if (aViewWindow && !aViewWindow->isVisible(anActor->getIO()))
+        isActor = false;
+      else
+        myActorsList.append(anActor);
     }
-  } else {
+    return anActor;
+  }
+  else {
     // try mesh actor
     SMESH_Actor* anActor = SMESH::FindActorByObject(myMesh);
     if (anActor && anActor->hasIO()) {
@@ -2575,42 +2610,50 @@ bool SMESHGUI_GroupDlg::SetAppropriateActor()
       else
         myActorsList.append(anActor);
     }
-    
+
     // try group actor
+    SMESH_Actor* aGroupActor = 0;
     if (!isActor && !myGroup->_is_nil()) {
-      SMESH_Actor* anActor = SMESH::FindActorByObject(myGroup);
-      if (anActor && anActor->hasIO())
-        myActorsList.append(anActor);
+      aGroupActor = SMESH::FindActorByObject(myGroup);
+      if (aGroupActor && aGroupActor->hasIO())
+        myActorsList.append(aGroupActor);
     }
-    
-    // try any visible actor of group or submesh of current mesh
+
+    // try any visible actor of group or sub-mesh of current mesh
     if (aViewWindow) {
       // mesh entry
       _PTR(SObject) aSObject = SMESH::FindSObject(myMesh);
       if (aSObject) {
         CORBA::String_var meshEntry = aSObject->GetID().c_str();
         int len = strlen(meshEntry);
-        
+
         // iterate on all actors in current view window, search for
         // any visible actor, that belongs to group or submesh of current mesh
         VTK::ActorCollectionCopy aCopy(aViewWindow->getRenderer()->GetActors());
         vtkActorCollection *aCollection = aCopy.GetActors();
         int nbItems = aCollection->GetNumberOfItems();
         for (int i=0; i<nbItems && !isActor; i++)
-          {
-            SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(aCollection->GetItemAsObject(i));
-            if (anActor && anActor->hasIO()) {
-              Handle(SALOME_InteractiveObject) anIO = anActor->getIO();
-              if (aViewWindow->isVisible(anIO)) {
-                if (anIO->hasEntry() && strncmp(anIO->getEntry(), meshEntry, len) == 0 && !myActorsList.contains(anActor) )
-                  myActorsList.append(anActor);
-              }
+        {
+          SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(aCollection->GetItemAsObject(i));
+          if (anActor && anActor->hasIO()) {
+            Handle(SALOME_InteractiveObject) anIO = anActor->getIO();
+            if (aViewWindow->isVisible(anIO)) {
+              if (anIO->hasEntry() && strncmp(anIO->getEntry(), meshEntry, len) == 0 && !myActorsList.contains(anActor) )
+                myActorsList.append(anActor);
             }
           }
+        }
       }
     }
+
+    // Show a standalone group if nothing else is visible (IPAL52227)
+    if ( myActorsList.count() == 1 &&
+         myActorsList[0] == aGroupActor &&
+         aViewWindow && !aViewWindow->isVisible(aGroupActor->getIO()))
+      SMESH::UpdateView( aViewWindow, SMESH::eDisplay, aGroupActor->getIO()->getEntry() );
   }
-  
+
+
   if (myActorsList.count() > 0) {
     QListIterator<SMESH_Actor*> it( myActorsList );
     while ( it.hasNext() ) {
@@ -2619,10 +2662,10 @@ bool SMESHGUI_GroupDlg::SetAppropriateActor()
         anActor->SetPickable(true);
     }
   }
-  
+
   return ( isActor || (myActorsList.count() > 0) );
 }
-  
+
 //=======================================================================
 //function : setShowEntityMode
 //purpose  : make shown only entity corresponding to my type

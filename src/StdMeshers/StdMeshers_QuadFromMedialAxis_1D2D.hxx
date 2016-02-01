@@ -51,15 +51,19 @@ class STDMESHERS_EXPORT StdMeshers_QuadFromMedialAxis_1D2D: public StdMeshers_Qu
                         const TopoDS_Shape & aShape,
                         MapShapeNbElems&     aResMap);
 
- private:
+  virtual void SetEventListener(SMESH_subMesh* subMesh);
 
-  bool computeQuads( SMESH_MesherHelper&            theHelper,
-                     const TopoDS_Face&             theFace,
-                     const std::vector<TopoDS_Edge> theSinuEdges[2],
-                     const std::vector<TopoDS_Edge> theShortEdges[2]);
+  static bool IsApplicable(const TopoDS_Shape & aShape, bool toCheckAll);
 
   class Algo1D;
-  Algo1D* _regular1D;
+
+ private:
+
+  bool computeQuads( SMESH_MesherHelper& theHelper,
+                     FaceQuadStruct::Ptr theQuad);
+
+  Algo1D*                   _regular1D;
+  const SMESHDS_Hypothesis* _hyp2D;
 };
 
 #endif

@@ -2,7 +2,7 @@
 
 \page uniting_set_of_triangles_page Uniting a set of triangles
 
-\n In MESH you can union many neighboring triangles (cells) into
+\n It is possible to unite many neighboring triangles into
 quadrangles by deletion of the common edge.
 
 <em>To union several triangles:</em>
@@ -10,7 +10,7 @@ quadrangles by deletion of the common edge.
 <li>Select a mesh (and display it in the 3D Viewer if you are going to
   pick elements by mouse).</li>
 <li>In the \b Modification menu select the <b>Union of triangles</b>
-  item or click <em>"Union of triangles"</em> button in the toolbar.
+  item or click <em>"Union of triangles"</em> button in the tool-bar.
 
 \image html image80.png
 <center><em>"Union of triangles" button</em></center>

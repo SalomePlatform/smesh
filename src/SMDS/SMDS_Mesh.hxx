@@ -58,7 +58,7 @@
 
 #define MYASSERT(val) if (!(val)) throw SALOME_Exception(LOCALIZED("assertion not verified"));
 
-class SMDS_EXPORT SMDS_Mesh:public SMDS_MeshObject
+class SMDS_EXPORT SMDS_Mesh : public SMDS_MeshObject
 {
 public:
   friend class SMDS_MeshIDFactory;
@@ -576,14 +576,22 @@ public:
 
   virtual SMDS_MeshFace* AddPolygonalFace (const std::vector<const SMDS_MeshNode*> & nodes);
 
-  virtual SMDS_MeshVolume* AddPolyhedralVolumeWithID
-                           (const std::vector<int> & nodes_ids,
-                            const std::vector<int> & quantities,
-                            const int                ID);
+  virtual SMDS_MeshFace* AddQuadPolygonalFaceWithID(const std::vector<int> & nodes_ids,
+                                                    const int                ID);
+
+  virtual SMDS_MeshFace* AddQuadPolygonalFaceWithID(const std::vector<const SMDS_MeshNode*> & nodes,
+                                                    const int                                 ID);
+
+  virtual SMDS_MeshFace* AddQuadPolygonalFace(const std::vector<const SMDS_MeshNode*> & nodes);
 
   virtual SMDS_MeshVolume* AddPolyhedralVolumeWithID
-                           (const std::vector<const SMDS_MeshNode*> & nodes,
-                            const std::vector<int>                  & quantities,
+    (const std::vector<int> & nodes_ids,
+     const std::vector<int> & quantities,
+     const int                ID);
+
+  virtual SMDS_MeshVolume* AddPolyhedralVolumeWithID
+    (const std::vector<const SMDS_MeshNode*> & nodes,
+     const std::vector<int>                  & quantities,
                             const int                                 ID);
 
   virtual SMDS_MeshVolume* AddPolyhedralVolume

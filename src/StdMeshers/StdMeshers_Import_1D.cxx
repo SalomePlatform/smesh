@@ -841,6 +841,7 @@ void StdMeshers_Import_1D::importMesh(const SMESH_Mesh*          srcMesh,
 
   // 1. Copy mesh
 
+  SMESH_MeshEditor::ElemFeatures elemType;
   vector<const SMDS_MeshNode*> newNodes;
   const SMESHDS_Mesh* srcMeshDS = srcMesh->GetMeshDS();
   SMDS_ElemIteratorPtr eIt = srcMeshDS->elementsIterator();
@@ -865,7 +866,7 @@ void StdMeshers_Import_1D::importMesh(const SMESH_Mesh*          srcMesh,
       tgtMeshDS->FindElement( newNodes, elem->GetType(), /*noMedium=*/false );
     if ( !newElem )
     {
-      newElem = additor.AddElement( newNodes, elem->GetType(), elem->IsPoly());
+      newElem = additor.AddElement( newNodes, elemType.Init( elem, /*basicOnly=*/false ));
       tgtSubMesh->AddElement( newElem );
     }
     if ( toCopyGroups )

@@ -98,6 +98,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_tetra.png
   mesh_tree_algo_hexa.png
   mesh_tree_algo_mefisto.png
+  mesh_tree_algo_polygon.png
   mesh_tree_algo.png
   mesh_tree_algo_0D.png
   mesh_tree_algo_quad.png
@@ -170,6 +171,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_quad_edge.png
   mesh_quad_triangle.png
   mesh_quad_quadrangle.png
+  mesh_quad_polygon.png
   mesh_quad_tetrahedron.png
   mesh_quad_pyramid.png
   mesh_quad_pentahedron.png
@@ -201,6 +203,7 @@ SET(SMESH_RESOURCES_FILES
   scale.png
   scale_along_axes.png
   split_into_tetra.png
+  split_biquad.png
   mesh_duplicate_nodes.png
   mesh_duplicate_nodes_with_elem.png
   mesh_duplicate_elem_only.png

@@ -39,7 +39,9 @@ class SalomeApp_IntSpinBox;
 class QtxComboBox;
 class SMESHGUI_SpinBox;
 class StdMeshersGUI_DistrTableFrame;
-class StdMeshersGUI_DistrPreview;
+#ifndef DISABLE_PLOT2DVIEWER
+  class StdMeshersGUI_DistrPreview;
+#endif
 class QLineEdit;
 class QButtonGroup;
 class QGroupBox;
@@ -86,7 +88,9 @@ private:
   QtxComboBox*     myDistr;
   SMESHGUI_SpinBox*   myScale;
   StdMeshersGUI_DistrTableFrame*  myTable;
+#ifndef DISABLE_PLOT2DVIEWER
   StdMeshersGUI_DistrPreview* myPreview;
+#endif
   QLineEdit       *myName, *myExpr;
   QGroupBox*       myConvBox;
   QButtonGroup*    myConv;

@@ -57,6 +57,8 @@ class SMESHDS_EXPORT SMESHDS_Command
                        int idnode9, int idnode10, int idnode11, int idnode12);
         void AddPolygonalFace (const int               ElementID,
                                const std::vector<int>& nodes_ids);
+        void AddQuadPolygonalFace (const int               ElementID,
+                                   const std::vector<int>& nodes_ids);
         void AddPolyhedralVolume (const int               ElementID,
                                   const std::vector<int>& nodes_ids,
                                   const std::vector<int>& quantities);

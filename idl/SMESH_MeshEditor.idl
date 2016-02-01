@@ -29,13 +29,37 @@
 
 module SMESH
 {
+  interface NumericalFunctor;
+
   enum Bnd_Dimension { BND_2DFROM3D, BND_1DFROM3D, BND_1DFROM2D };
+
+
+  struct FreeBorder
+  {
+    SMESH::long_array nodeIDs; // all nodes defining a free border
+    // 1st and last node is same in a closed border
+  };
+  struct FreeBorderPart
+  {
+    short border; // border index within a sequence<FreeBorder>
+    long  node1;  // node index within the border-th FreeBorder
+    long  node2;
+    long  nodeLast;
+  };
+  typedef sequence<FreeBorder>       ListOfFreeBorders;
+  typedef sequence<FreeBorderPart>   FreeBordersGroup;
+  typedef sequence<FreeBordersGroup> ListOfFreeBorderGroups;
+
+  struct CoincidentFreeBorders
+  {
+    ListOfFreeBorders      borders;          // nodes of all free borders
+    ListOfFreeBorderGroups coincidentGroups; // groups of coincident parts of borders
+  };
+
 
   /*!
    * This interface makes modifications on the Mesh - removing elements and nodes etc.
    */
-  interface NumericalFunctor;
-
   interface SMESH_MeshEditor
   {
    /*!
@@ -142,6 +166,13 @@ module SMESH
     long AddFace(in long_array IDsOfNodes) raises (SALOME::SALOME_Exception);
 
     long AddPolygonalFace(in long_array IdsOfNodes) raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Create a quadratic polygonal face
+     *  \param IdsOfNodes - nodes of the polygon; corner nodes follow first
+     *  \return long - ID of a new polygon
+     */
+    long AddQuadPolygonalFace(in long_array IdsOfNodes) raises (SALOME::SALOME_Exception);
 
     /*!
      *  Create volume, either linear and quadratic (this is determed
@@ -353,11 +384,23 @@ module SMESH
      *         to \a facetToSplitNormal location are split, else \a facetToSplitNormal
      *         is used to find the facet to split in all domains present in \a elems.
      */
-    void SplitHexahedraIntoPrisms(in SMESH_IDSource     elems, 
+    void SplitHexahedraIntoPrisms(in SMESH_IDSource     elems,
                                   in SMESH::PointStruct startHexPoint,
                                   in SMESH::DirStruct   facetToSplitNormal,
                                   in short              methodFlags,
                                   in boolean            allDomains)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * \brief Split bi-quadratic elements into linear ones without creation of additional nodes.
+     *   - bi-quadratic triangle will be split into 3 linear quadrangles;
+     *   - bi-quadratic quadrangle will be split into 4 linear quadrangles;
+     *   - tri-quadratic hexahedron will be split into 8 linear hexahedra;
+     *   Quadratic elements of lower dimension  adjacent to the split bi-quadratic element
+     *   will be split in order to keep the mesh conformal.
+     *  \param elems - elements to split
+     */
+    void SplitBiQuadraticIntoLinear(in ListOfIDSources elems)
       raises (SALOME::SALOME_Exception);
 
 
@@ -602,41 +645,45 @@ module SMESH
                                in AxisStruct Axis,
                                in double     AngleInRadians,
                                in boolean    CopyGroups,
-                               in string     MeshName) 
+                               in string     MeshName)
       raises (SALOME::SALOME_Exception);
 
     void RotateObject (in SMESH_IDSource theObject,
                        in AxisStruct     Axis,
                        in double         AngleInRadians,
-                       in boolean        Copy) 
+                       in boolean        Copy)
       raises (SALOME::SALOME_Exception);
     ListOfGroups RotateObjectMakeGroups (in SMESH_IDSource theObject,
                                          in AxisStruct     Axis,
-                                         in double         AngleInRadians) 
+                                         in double         AngleInRadians)
       raises (SALOME::SALOME_Exception);
     SMESH_Mesh RotateObjectMakeMesh (in SMESH_IDSource theObject,
                                      in AxisStruct     Axis,
                                      in double         AngleInRadians,
                                      in boolean        CopyGroups,
-                                     in string         MeshName) 
+                                     in string         MeshName)
       raises (SALOME::SALOME_Exception);
 
     void FindCoincidentNodes (in  double              Tolerance,
-                              out array_of_long_array GroupsOfNodes) 
+                              out array_of_long_array GroupsOfNodes,
+                              in  boolean             SeparateCornersAndMedium)
       raises (SALOME::SALOME_Exception);
 
     void FindCoincidentNodesOnPart (in  SMESH_IDSource      SubMeshOrGroup,
                                     in  double              Tolerance,
-                                    out array_of_long_array GroupsOfNodes) 
+                                    out array_of_long_array GroupsOfNodes,
+                                    in  boolean             SeparateCornersAndMedium)
       raises (SALOME::SALOME_Exception);
 
     void FindCoincidentNodesOnPartBut (in  SMESH_IDSource      SubMeshOrGroup,
                                        in  double              Tolerance,
                                        out array_of_long_array GroupsOfNodes,
-                                       in  ListOfIDSources     ExceptSubMeshOrGroups) 
+                                       in  ListOfIDSources     ExceptSubMeshOrGroups,
+                                       in  boolean             SeparateCornersAndMedium)
       raises (SALOME::SALOME_Exception);
 
-    void MergeNodes (in array_of_long_array GroupsOfNodes) 
+    void MergeNodes (in array_of_long_array    GroupsOfNodes,
+                     in SMESH::ListOfIDSources NodesToKeep)
       raises (SALOME::SALOME_Exception);
 
     /*!
@@ -698,6 +745,21 @@ module SMESH
      * TopAbs_UNKNOWN state means that either mesh is wrong or the analysis fails.
      */
     short GetPointState(in double x, in double y, in double z) 
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns groups of FreeBorder's coincident within the given tolerance.
+     * If the tolerance <= 0.0 then one tenth of an average size of elements adjacent
+     * to free borders being compared is used.
+     */
+    CoincidentFreeBorders FindCoincidentFreeBorders(in double tolerance);
+
+    /*!
+     * Sew FreeBorder's of each group
+     */
+    short SewCoincidentFreeBorders (in CoincidentFreeBorders freeBorders,
+                                    in boolean               createPolygons,
+                                    in boolean               createPolyedrs)
       raises (SALOME::SALOME_Exception);
 
     enum Sew_Error {

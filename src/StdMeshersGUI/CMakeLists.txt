@@ -72,7 +72,6 @@ SET(_link_LIBRARIES
 # header files / to be processed by moc
 SET(_moc_HEADERS
   StdMeshersGUI_StdHypothesisCreator.h
-  StdMeshersGUI_DistrPreview.h
   StdMeshersGUI_DistrTable.h
   StdMeshersGUI_NbSegmentsCreator.h
   StdMeshersGUI_ObjectReferenceParamWdg.h
@@ -84,6 +83,12 @@ SET(_moc_HEADERS
   StdMeshersGUI_RadioButtonsGrpWdg.h
   StdMeshersGUI_PropagationHelperWdg.h
 )
+
+IF(SALOME_USE_PLOT2DVIEWER)
+  LIST(APPEND _moc_HEADERS
+    StdMeshersGUI_DistrPreview.h
+    )
+ENDIF()
 
 # header files / no moc processing
 SET(_other_HEADERS
@@ -102,7 +107,6 @@ QT4_WRAP_CPP(_moc_SOURCES ${_moc_HEADERS})
 SET(_other_SOURCES
   StdMeshersGUI.cxx
   StdMeshersGUI_StdHypothesisCreator.cxx
-  StdMeshersGUI_DistrPreview.cxx
   StdMeshersGUI_DistrTable.cxx
   StdMeshersGUI_NbSegmentsCreator.cxx
   StdMeshersGUI_ObjectReferenceParamWdg.cxx
@@ -114,6 +118,12 @@ SET(_other_SOURCES
   StdMeshersGUI_RadioButtonsGrpWdg.cxx
   StdMeshersGUI_PropagationHelperWdg.cxx
 )
+
+IF(SALOME_USE_PLOT2DVIEWER)
+  LIST(APPEND _other_SOURCES
+    StdMeshersGUI_DistrPreview.cxx
+    )
+ENDIF()
 
 # sources / to compile
 SET(StdMeshersGUI_SOURCES ${_other_SOURCES} ${_moc_SOURCES})

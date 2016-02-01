@@ -117,6 +117,8 @@ public:
     throw (SALOME::SALOME_Exception);
   CORBA::Long AddPolygonalFace(const SMESH::long_array & IDsOfNodes)
     throw (SALOME::SALOME_Exception);
+  CORBA::Long AddQuadPolygonalFace(const SMESH::long_array & IDsOfNodes)
+    throw (SALOME::SALOME_Exception);
   CORBA::Long AddVolume(const SMESH::long_array & IDsOfNodes)
     throw (SALOME::SALOME_Exception);
   CORBA::Long AddPolyhedralVolume(const SMESH::long_array & IDsOfNodes,
@@ -219,7 +221,7 @@ public:
                              CORBA::Boolean                 outsideNormal)
     throw (SALOME::SALOME_Exception);
 
-  // Split/Join faces
+  // Split/Join
   CORBA::Boolean TriToQuad       (const SMESH::long_array &   IDsOfElements,
                                   SMESH::NumericalFunctor_ptr Criterion,
                                   CORBA::Double               MaxAngle)
@@ -253,6 +255,8 @@ public:
                                           const SMESH::DirStruct&    facetToSplitNormal,
                                           CORBA::Short               methodFlags,
                                           CORBA::Boolean             allDomains)
+    throw (SALOME::SALOME_Exception);
+  void           SplitBiQuadraticIntoLinear(const SMESH::ListOfIDSources& elems)
     throw (SALOME::SALOME_Exception);
 
   CORBA::Boolean Smooth(const SMESH::long_array &              IDsOfElements,
@@ -470,18 +474,22 @@ public:
     throw (SALOME::SALOME_Exception);
 
   void FindCoincidentNodes (CORBA::Double                  Tolerance,
-                            SMESH::array_of_long_array_out GroupsOfNodes)
+                            SMESH::array_of_long_array_out GroupsOfNodes,
+                            CORBA::Boolean                 SeparateCornersAndMedium)
     throw (SALOME::SALOME_Exception);
   void FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr      Object,
                                  CORBA::Double                  Tolerance,
-                                 SMESH::array_of_long_array_out GroupsOfNodes)
+                                 SMESH::array_of_long_array_out GroupsOfNodes,
+                                 CORBA::Boolean                 SeparateCornersAndMedium)
     throw (SALOME::SALOME_Exception);
   void FindCoincidentNodesOnPartBut(SMESH::SMESH_IDSource_ptr      Object,
                                     CORBA::Double                  Tolerance,
                                     SMESH::array_of_long_array_out GroupsOfNodes,
-                                    const SMESH::ListOfIDSources&  ExceptSubMeshOrGroups)
+                                    const SMESH::ListOfIDSources&  ExceptSubMeshOrGroups,
+                                    CORBA::Boolean                 SeparateCornersAndMedium)
     throw (SALOME::SALOME_Exception);
-  void MergeNodes (const SMESH::array_of_long_array& GroupsOfNodes)
+  void MergeNodes (const SMESH::array_of_long_array& GroupsOfNodes,
+                   const SMESH::ListOfIDSources&     NodesToKeep )
     throw (SALOME::SALOME_Exception);
   void FindEqualElements(SMESH::SMESH_IDSource_ptr      Object,
                          SMESH::array_of_long_array_out GroupsOfElementsID)
@@ -530,6 +538,12 @@ public:
   CORBA::Short GetPointState(CORBA::Double x, CORBA::Double y, CORBA::Double z)
     throw (SALOME::SALOME_Exception);
 
+  SMESH::CoincidentFreeBorders* FindCoincidentFreeBorders(CORBA::Double tolerance);
+  CORBA::Short SewCoincidentFreeBorders(const SMESH::CoincidentFreeBorders& freeBorders,
+                                        CORBA::Boolean                      createPolygons,
+                                        CORBA::Boolean                      createPolyedrs)
+    throw (SALOME::SALOME_Exception);
+
   SMESH::SMESH_MeshEditor::Sew_Error
   SewFreeBorders(CORBA::Long FirstNodeID1,
                  CORBA::Long SecondNodeID1,
@@ -538,15 +552,13 @@ public:
                  CORBA::Long SecondNodeID2,
                  CORBA::Long LastNodeID2,
                  CORBA::Boolean CreatePolygons,
-                 CORBA::Boolean CreatePolyedrs)
-    throw (SALOME::SALOME_Exception);
+                 CORBA::Boolean CreatePolyedrs) throw (SALOME::SALOME_Exception);
   SMESH::SMESH_MeshEditor::Sew_Error
   SewConformFreeBorders(CORBA::Long FirstNodeID1,
                         CORBA::Long SecondNodeID1,
                         CORBA::Long LastNodeID1,
                         CORBA::Long FirstNodeID2,
-                        CORBA::Long SecondNodeID2)
-    throw (SALOME::SALOME_Exception);
+                        CORBA::Long SecondNodeID2) throw (SALOME::SALOME_Exception);
   SMESH::SMESH_MeshEditor::Sew_Error
   SewBorderToSide(CORBA::Long FirstNodeIDOnFreeBorder,
                   CORBA::Long SecondNodeIDOnFreeBorder,
@@ -554,16 +566,14 @@ public:
                   CORBA::Long FirstNodeIDOnSide,
                   CORBA::Long LastNodeIDOnSide,
                   CORBA::Boolean CreatePolygons,
-                  CORBA::Boolean CreatePolyedrs)
-    throw (SALOME::SALOME_Exception);
+                  CORBA::Boolean CreatePolyedrs) throw (SALOME::SALOME_Exception);
   SMESH::SMESH_MeshEditor::Sew_Error
   SewSideElements(const SMESH::long_array& IDsOfSide1Elements,
                   const SMESH::long_array& IDsOfSide2Elements,
                   CORBA::Long NodeID1OfSide1ToMerge,
                   CORBA::Long NodeID1OfSide2ToMerge,
                   CORBA::Long NodeID2OfSide1ToMerge,
-                  CORBA::Long NodeID2OfSide2ToMerge)
-    throw (SALOME::SALOME_Exception);
+                  CORBA::Long NodeID2OfSide2ToMerge) throw (SALOME::SALOME_Exception);
 
   /*!
    * Set new nodes for given element.
@@ -900,6 +910,12 @@ private: //!< private methods
                      const SMDSAbs_ElementType  theType,
                      const bool                 emptyIfIsMesh = false,
                      IDSource_Error*            error = 0);
+
+  void findCoincidentNodes( TIDSortedNodeSet &             Nodes,
+                            CORBA::Double                  Tolerance,
+                            SMESH::array_of_long_array_out GroupsOfNodes,
+                            CORBA::Boolean                 SeparateCornersAndMedium);
+
 
 
  private: //!< fields

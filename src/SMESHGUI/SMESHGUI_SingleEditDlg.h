@@ -70,6 +70,11 @@ protected slots:
   void                    onSelectionDone();
   void                    onTextChange( const QString& );
 
+private slots:
+  void                    onOpenView();
+  void                    onCloseView();
+
+
 protected:
   void                    enterEvent( QEvent* );
   void                    keyPressEvent( QKeyEvent* );

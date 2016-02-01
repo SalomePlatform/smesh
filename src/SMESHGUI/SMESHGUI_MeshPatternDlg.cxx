@@ -391,6 +391,8 @@ void SMESHGUI_MeshPatternDlg::Init()
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
   connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), SLOT(onDeactivate()));
   connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(reject()));
+  connect(mySMESHGUI, SIGNAL(SignalActivatedViewManager()), SLOT( onOpenView()));
+  connect(mySMESHGUI, SIGNAL(SignalCloseView()), SLOT( onCloseView()));
 
   myTypeGrp->button(Type_2d)->setChecked(true);
   onTypeChanged(Type_2d);
@@ -559,6 +561,32 @@ void SMESHGUI_MeshPatternDlg::reject()
 }
 
 //=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_MeshPatternDlg::onOpenView()
+{
+  if(!mySelector) {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    mySMESHGUI->EmitSignalDeactivateDialog();
+    setEnabled(true);
+    activateSelection();
+    connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), SLOT(onSelectionDone()));
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_MeshPatternDlg::onCloseView()
+{
+  onDeactivate();
+  mySelector = 0;
+}
+
+
+//=================================================================================
 // function : onHelp()
 // purpose  :
 //=================================================================================
@@ -715,8 +743,13 @@ void SMESHGUI_MeshPatternDlg::enterEvent (QEvent*)
   if (myIsCreateDlgOpen)
     return;
 
-  if (myReverseChk->isChecked())
+  if (myReverseChk->isChecked()) {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+    if ( aViewWindow && !mySelector) {
+      mySelector = aViewWindow->GetSelector();
+    }
     displayPreview();
+  }
   mySMESHGUI->EmitSignalDeactivateDialog();
   setEnabled(true);
   activateSelection();

@@ -8,7 +8,7 @@ mesh of plus one dimension are additionally created. All created
 elements can be automatically grouped. Extrusion can be used to create
 a \ref extrusion_struct "structured mesh from scratch".
 
-\image html extrusion_box.png "If you extrude several quadrangles, you get exactly same mesh as if you meshed a geometrical box (except that the initial quadrangles can be incorrectly oriented): quadrangles and segments on boundary of generated mesh are created"
+\image html extrusion_box.png "If you extrude several quadrangles, you get exactly the same mesh as if you meshed a geometrical box (except for that the initial quadrangles can be incorrectly oriented): quadrangles and segments are created on the boundary of the generated mesh"
 
 <p>Any node, segment or 2D element can be extruded. Each type of
 elements is extruded into a corresponding type of result elements:
@@ -22,6 +22,14 @@ elements is extruded into a corresponding type of result elements:
 <tr><td>Hexagonal polygon </td><td> Hexagonal prism </td></tr>
 </table>
 
+When 2D elements are extruded, in addition to 3D elements segments are
+created on ribs of the result 3D mesh. Free edges of input 2D elements
+generate logically horizontal rib segments. Logically vertical rib
+segments are generated from nodes belonging to a sole input 2D element
+(a figure below illustrates this rule).
+
+\image html extru_rib_segs.png "Two triangles extruded: no vertical rib segments generated from nodes #2 and #3 as they are shared by both triangles"
+
 <em>To use extrusion:</em>
 <ol>
 <li>From the \b Modification menu choose the \b Extrusion item or click
@@ -32,24 +40,24 @@ elements is extruded into a corresponding type of result elements:
 <em>"Extrusion" button</em>
 </center>
 
-The following dialog, looking different depending on selected options,
-will appear:
+The following dialog will appear:
 
 \image html extrusionalongaline1.png
-
-\image html extrusionalongaline2.png
-
-\image html extrusionalongaline3.png
 
 </li>
 
 <li>In this dialog:
 <ul>
+  <li>Use \a Selection button to specify what you are going to
+    select at a given moment, \b Nodes, \b Edges or \b Faces.
+    \image html image120.png
+    <center><em>"Selection" button</em></center>
+  </li>
   <li>Specify \b Nodes, \b Edges and \b Faces, which will be extruded, by one
     of following means:
     <ul>
-      <li><b>Select the whole mesh, sub-mesh or group</b> activating this
-        checkbox.</li>
+      <li><b>Select the whole mesh, sub-mesh or group</b> activating the
+        corresponding check-box.</li>
       <li>Choose mesh elements with the mouse in the 3D Viewer. It is
         possible to select a whole area with a mouse frame.</li> 
       <li>Input the element IDs directly in <b>Node IDs</b>, <b>Edge
@@ -63,7 +71,11 @@ will appear:
   <li>If the <b>Extrusion to Distance</b> radio button is selected
     - specify the translation vector by which the elements will be extruded.
   </li>
-  <li>If the <b>Extrusion Along Vector</b> radio button is selected
+  <p><br></p>
+
+\image html extrusionalongaline2.png  
+
+ <li>If the <b>Extrusion Along Vector</b> radio button is selected
     <ul>
       <li>specify the coordinates of the \b Vector along which the elements
         will be extruded, either directly or by selecting the mesh face (the
@@ -72,19 +84,23 @@ will appear:
         be negative).</li>
     </ul>
   </li>
+  <p><br></p>
+
+\image html extrusionalongaline3.png  
+  
   <li>If the <b>Extrusion By Normal</b> radio button is selected,
-    every node of selected faces is extruded along the \a average
+    every node of the selected faces is extruded along the \a average
     of the \a normal vectors to the faces sharing the node. (Nodes and
-    edges can't be extruded in this mode.)
+    edges cannot be extruded in this mode.)
     <ul>
       <li>Specify the \b Distance of extrusion (it can be negative),</li>
       <li>Use <b>Along average normal</b> check-box to specify along
-        what vector the distance is measured.
+        which vector the distance is measured.
         <ul>
           <li>If it is \a activated the distance is measured along the
             average normal mentioned above. </li>
           <li>If it is \a deactivated every node is extruded along the
-            average normal till its intersection with the virtual plane got
+            average normal till its intersection with a virtual plane obtained
             by translation of the face sharing the node along its own normal
             by the \b Distance.</li>
         </ul>
@@ -95,8 +111,8 @@ will appear:
         \image html extrusionbynormal_alongavgnorm.png "'Along average normal' activated (to the left) and deactivated (to the right)"
         <p></li>
 
-      <li>Using <b>Use only input elements</b> check-box specify what
-        elements to use to compute the average normal.<ul>
+      <li><b>Use only input elements</b> check-box specifies what
+        elements will be used to compute the average normal.<ul>
           <li> If it is \a activated only selected faces, among faces
             sharing the node, are used to compute the average normal at
             the node. </li>

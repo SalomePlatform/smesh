@@ -64,21 +64,21 @@ possible to select a whole area with a mouse frame; or</li>
 
 <li>specify the conditions of symmetry operation:
 <ul>
-<li>activate <b>Move elements</b> radio button to change location of
+<li>activate <b>Move elements</b> radio button to change the location of
   the selected elements within the current mesh;</li>
 <li>activate <b>Copy elements</b> radio button to duplicate the
   selected elements at the new location within the current mesh;</li>
-<li>activate <b>Create as new mesh</b> radio button to create new
+<li>activate <b>Create as new mesh</b> radio button to create a new
   element in a new mesh; the new mesh appears in the Object Browser
-  with the default name MeshName_mirrored (it is possible to change
+  with the default name \a MeshName_mirrored (it is possible to change
   this name in the adjacent box);</li>
-<li>activate <b> Copy groups </b> checkbox to put new mesh enities
-  into new groups if source entities belongs to some groups. New
+<li>activate <b> Copy groups </b> check-box to put new mesh entities
+  into new groups if source entities belong to some groups. New
   groups are named by pattern "<old group name>_mirrored".</li>
 </ul>
 </li>
 </ul>
-<li>activate <b>Preview</b> checkbox to show the result of
+<li>activate <b>Preview</b> check-box to show the result of
   transformation in the viewer;</li>
 <li>click \b Apply or <b> Apply and Close</b> button to confirm the
   operation.</li>

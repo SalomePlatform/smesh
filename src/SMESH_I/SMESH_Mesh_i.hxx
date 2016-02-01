@@ -318,6 +318,9 @@ public:
   CORBA::Long NbPolygons()
     throw (SALOME::SALOME_Exception);
 
+  CORBA::Long NbPolygonsOfOrder(SMESH::ElementOrder order=SMESH::ORDER_ANY)
+    throw (SALOME::SALOME_Exception);
+
   CORBA::Long NbVolumes()
     throw (SALOME::SALOME_Exception);
 

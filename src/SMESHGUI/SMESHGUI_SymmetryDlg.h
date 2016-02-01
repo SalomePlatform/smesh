@@ -139,7 +139,7 @@ private:
 protected slots:
   virtual void           onDisplaySimulation( bool );
   virtual void           reject();
-   
+
 private slots:
   void                   ConstructorsClicked( int );
   void                   ClickOnOk();
@@ -153,6 +153,8 @@ private slots:
   void                   onSelectMesh( bool );
   void                   onVectorChanged();
   void                   onActionClicked( int );
+  void                   onOpenView();
+  void                   onCloseView();
   void                   setFilters();
 };
 

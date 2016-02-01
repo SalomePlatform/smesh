@@ -32,7 +32,6 @@
 #include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_IdValidator.h"
 #include "SMESHGUI_FilterDlg.h"
-#include "SMESHGUI_MeshEditPreview.h"
 
 #include <SMESH_Actor.h>
 #include <SMESH_TypeFilter.hxx>
@@ -312,7 +311,10 @@ SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule )
   connect(mySMESHGUI,     SIGNAL(SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()),      this, SLOT(SelectionIntoArgument()));
   /* to close dialog if study change */
-  connect(mySMESHGUI,       SIGNAL(SignalCloseAllDialogs()), this, SLOT(reject()));
+  connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()),      this, SLOT(reject()));
+  connect(mySMESHGUI, SIGNAL(SignalActivatedViewManager()), this, SLOT(onOpenView()));
+  connect(mySMESHGUI, SIGNAL(SignalCloseView()),            this, SLOT(onCloseView()));
+
   connect(LineEditElements, SIGNAL(textChanged(const QString&)),   SLOT(onTextChange(const QString&)));
   connect(CheckBoxMesh,     SIGNAL(toggled(bool)),                 SLOT(onSelectMesh(bool)));
   connect(ActionGroup,      SIGNAL(buttonClicked(int)),            SLOT(onActionClicked(int)));
@@ -355,14 +357,25 @@ void SMESHGUI_SymmetryDlg::Init (bool ResetControls)
   myObjects.clear();
   myObjectsNames.clear();
 
-  myEditCurrentArgument = 0;
-  LineEditElements->clear();
+  myEditCurrentArgument = LineEditElements;
+  LineEditElements->setFocus();
   myElementsId = "";
   myNbOkElements = 0;
 
   buttonOk->setEnabled(false);
   buttonApply->setEnabled(false);
 
+  if ( !ResetControls && !isApplyAndClose() && // make highlight move upon [Apply] (IPAL20729)
+       myActor && !myActor->getIO().IsNull() &&
+       ActionGroup->button( MOVE_ELEMS_BUTTON )->isChecked() &&
+       !CheckBoxMesh->isChecked() ) // move selected elements
+  {
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    {
+      aViewWindow->highlight( myActor->getIO(), false, false );
+      aViewWindow->highlight( myActor->getIO(), true, true );
+    }
+  }
   myActor = 0;
 
   if (ResetControls) {
@@ -377,11 +390,8 @@ void SMESHGUI_SymmetryDlg::Init (bool ResetControls)
     CheckBoxMesh->setChecked(false);
     myPreviewCheckBox->setChecked(false);
     onDisplaySimulation(false);
-
-//     MakeGroupsCheck->setChecked(false);
-//     MakeGroupsCheck->setEnabled(false);
-    onSelectMesh(false);
   }
+  onSelectMesh(CheckBoxMesh->isChecked());
 }
 
 //=================================================================================
@@ -581,8 +591,6 @@ bool SMESHGUI_SymmetryDlg::ClickOnApply()
         anApp->browseObjects( anEntryList, isApplyAndClose() );
     }
     Init(false);
-    ConstructorsClicked(GetConstructorId());
-    SelectionIntoArgument();
 
     SMESHGUI::Modified();
   }
@@ -617,6 +625,31 @@ void SMESHGUI_SymmetryDlg::reject()
     aViewWindow->SetSelectionMode(ActorSelection);
   mySMESHGUI->ResetState();
   QDialog::reject();
+}
+
+//=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_SymmetryDlg::onOpenView()
+{
+  if ( mySelector ) {
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    ActivateThisDialog();
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_SymmetryDlg::onCloseView()
+{
+  DeactivateActiveDialog();
+  mySelector = 0;
 }
 
 //=================================================================================
@@ -968,8 +1001,13 @@ void SMESHGUI_SymmetryDlg::ActivateThisDialog()
 //=================================================================================
 void SMESHGUI_SymmetryDlg::enterEvent (QEvent*)
 {
-  if (!ConstructorsBox->isEnabled())
+  if (!ConstructorsBox->isEnabled()) {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+    if ( aViewWindow && !mySelector) {
+      mySelector = aViewWindow->GetSelector();
+    }
     ActivateThisDialog();
+  }
 }
 
 //=======================================================================

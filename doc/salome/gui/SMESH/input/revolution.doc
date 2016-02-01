@@ -6,7 +6,9 @@
 dimension than the input ones.  Boundary elements around generated
 mesh of plus one dimension are additionally created. All created
 elements can be automatically grouped. Revolution can be used to create
-a \ref extrusion_struct "structured mesh from scratch".
+a \ref extrusion_struct "structured mesh from scratch". 
+See \ref extrusion_page page for general information on Revolution
+which can be viewed as extrusion along a circular path.
 
 <em>To apply revolution:</em>
 <ol>
@@ -33,7 +35,7 @@ The following dialog will appear:
       of following means:
       <ul>
         <li><b>Select the whole mesh, sub-mesh or group</b> activating this
-          checkbox.</li>
+          check-box.</li>
         <li>Choose mesh elements with the mouse in the 3D Viewer. It is
           possible to select a whole area with a mouse frame.</li>
         <li>Input the element IDs directly in <b>Node IDs</b>, <b>Edge
@@ -46,14 +48,14 @@ The following dialog will appear:
     </li>
     <li>Specify the \b Axis of revolution:
       <ul>
-        <li>Specify the cooordinates of the start \b Point of the
+        <li>Specify the coordinates of the start \b Point of the
           axis of revolution; either directly or by picking a node
           in the Viewer (selection of nodes is activated as you click
           the \a Selection button).</li>
         <li>Specify the \b Vector of the axis in either of three ways:
           <ul>
             <li>directly adjust vector components;</li>
-            <li>click \a Selection button, chose <em>From Origin to
+            <li>click \a Selection button, choose <em>From Origin to
                 selected Point</em> in the opened menu and pick a node
                 in the Viewer; </li>
             <li>click \a Selection button, chose <em>Normal to
@@ -66,16 +68,16 @@ The following dialog will appear:
       <ul> 
         <li> <b>Angle by Step</b> - the elements are revolved by the
           specified angle at each step (i.e. for Angle=30 and Number of
-          Steps=2, the elements will be extruded by 30 degrees twice for a
-          total of 30*2=60)
-\image html revolutionsn2.png "Example of Revolution with Angle by Step"
+          Steps=3, the elements will be extruded by 30 degrees twice for a
+          total of 30*3=90)
+\image html revolutionsn2.png "Example of Revolution with Angle by Step. Angle=30 and Number of Steps=3"
         </li>
         <li> <b>Total Angle</b> - the elements are revolved by the
           specified angle only once and the number of steps defines the
-          number of iterations (i.e. for Angle=30 and Number of Steps=2,
-          the elements will be revolved by 30/2=15 degrees twice for a
+          number of iterations (i.e. for Angle=30 and Number of Steps=3,
+          the elements will be revolved by 30/3=10 degrees twice for a
           total of 30).
-\image html revolutionsn1.png "Example of Revolution with Total Angle"
+\image html revolutionsn1.png "Example of Revolution with Total Angle. Angle=30 and Number of Steps=3"
         </li>
       </ul>
     </li>

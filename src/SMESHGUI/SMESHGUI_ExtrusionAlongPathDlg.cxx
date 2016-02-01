@@ -253,7 +253,7 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   OkButton->setAutoDefault(true);
   OkButton->setDefault(true);
 
-  ApplyButton = new QPushButton(tr("SMESH_BUT_APPLY"), GroupButtons);
+  ApplyButton = new QPushButton(tr("SMESH_BUT_APPLY"), GroupButtons); 
   ApplyButton->setAutoDefault(true);
 
   CloseButton = new QPushButton(tr("SMESH_BUT_CLOSE"), GroupButtons);
@@ -309,6 +309,8 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   connect(BasePointGrp,       SIGNAL(toggled(bool)), this, SLOT(SetEditCurrentArgument()));
 
   connect(mySMESHGUI,  SIGNAL(SignalCloseAllDialogs()),        SLOT(reject()));
+  connect(mySMESHGUI,  SIGNAL(SignalActivatedViewManager()),   SLOT(onOpenView()));
+  connect(mySMESHGUI,  SIGNAL(SignalCloseView()),              SLOT(onCloseView()));
   connect(mySMESHGUI,  SIGNAL(SignalDeactivateActiveDialog()), SLOT(DeactivateActiveDialog()));
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()),   SLOT(SelectionIntoArgument()));
   connect(SelectorWdg,    SIGNAL(selectionChanged()), this,    SLOT(toDisplaySimulation()));
@@ -442,64 +444,64 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
 
     mesh->SetParameters( aParameters.join(":").toLatin1().constData() );
 
-      SMESH::ListOfIDSources_var nodes = new SMESH::ListOfIDSources();
-      SMESH::ListOfIDSources_var edges = new SMESH::ListOfIDSources();
-      SMESH::ListOfIDSources_var faces = new SMESH::ListOfIDSources();
-      maxSelType = SelectorWdg->GetSelected( nodes, edges, faces );
+    SMESH::ListOfIDSources_var nodes = new SMESH::ListOfIDSources();
+    SMESH::ListOfIDSources_var edges = new SMESH::ListOfIDSources();
+    SMESH::ListOfIDSources_var faces = new SMESH::ListOfIDSources();
+    maxSelType = SelectorWdg->GetSelected( nodes, edges, faces );
 
-      // is it necessary to switch on the next Display Mode?
-      SMESH::ElementType newType = (SMESH::ElementType)( maxSelType + 1 );
-      SMESH::array_of_ElementType_var oldTypes = mesh->GetTypes();
-      meshHadNewTypeBefore = false;
-      for ( size_t i = 0; i < oldTypes->length() && !meshHadNewTypeBefore; ++i )
-        meshHadNewTypeBefore = ( oldTypes[i] >= newType );
+    // is it necessary to switch on the next Display Mode?
+    SMESH::ElementType newType = (SMESH::ElementType)( maxSelType + 1 );
+    SMESH::array_of_ElementType_var oldTypes = mesh->GetTypes();
+    meshHadNewTypeBefore = false;
+    for ( size_t i = 0; i < oldTypes->length() && !meshHadNewTypeBefore; ++i )
+      meshHadNewTypeBefore = ( oldTypes[i] >= newType );
 
-      SMESH::SMESH_MeshEditor_var aMeshEditor = mesh->GetMeshEditor();
-      SMESH::SMESH_MeshEditor::Extrusion_Error retVal;
+    SMESH::SMESH_MeshEditor_var aMeshEditor = mesh->GetMeshEditor();
+    SMESH::SMESH_MeshEditor::Extrusion_Error retVal;
 
-      SMESH::ListOfGroups_var groups =
-        aMeshEditor->ExtrusionAlongPathObjects( nodes, edges, faces, myPath,
-                                                GEOM::GEOM_Object::_nil(),
-                                                aNodeStart, AnglesGrp->isChecked(),
-                                                anAngles, LinearAnglesCheck->isChecked(),
-                                                BasePointGrp->isChecked(), aBasePoint,
-                                                makeGroups, retVal );
+    SMESH::ListOfGroups_var groups =
+      aMeshEditor->ExtrusionAlongPathObjects( nodes, edges, faces, myPath,
+                                              GEOM::GEOM_Object::_nil(),
+                                              aNodeStart, AnglesGrp->isChecked(),
+                                              anAngles, LinearAnglesCheck->isChecked(),
+                                              BasePointGrp->isChecked(), aBasePoint,
+                                              makeGroups, retVal );
 
-      wc.suspend();
-      switch (retVal) {
-      case SMESH::SMESH_MeshEditor::EXTR_NO_ELEMENTS:
-        SUIT_MessageBox::warning(this,
-                                 tr("SMESH_ERROR"),
-                                 tr("NO_ELEMENTS_SELECTED"));
-        return false; break;
-      case SMESH::SMESH_MeshEditor::EXTR_PATH_NOT_EDGE:
-        SUIT_MessageBox::warning(this,
-                                 tr("SMESH_ERROR"),
-                                 tr("SELECTED_PATH_IS_NOT_EDGE"));
-        return false; break;
-      case SMESH::SMESH_MeshEditor::EXTR_BAD_PATH_SHAPE:
-        SUIT_MessageBox::warning(this,
-                                 tr("SMESH_ERROR"),
-                                 tr("BAD_SHAPE_TYPE"));
-        return false; break;
-      case SMESH::SMESH_MeshEditor::EXTR_BAD_STARTING_NODE:
-        SUIT_MessageBox::warning(this,
-                                 tr("SMESH_ERROR"),
-                                 tr("EXTR_BAD_STARTING_NODE"));
-        return false; break;
-      case SMESH::SMESH_MeshEditor::EXTR_BAD_ANGLES_NUMBER:
-        SUIT_MessageBox::warning(this,
-                                 tr("SMESH_ERROR"),
-                                 tr("WRONG_ANGLES_NUMBER"));
-        return false; break;
-      case SMESH::SMESH_MeshEditor::EXTR_CANT_GET_TANGENT:
-        SUIT_MessageBox::warning(this,
-                                 tr("SMESH_ERROR"),
-                                 tr("CANT_GET_TANGENT"));
-        return false; break;
-      case SMESH::SMESH_MeshEditor::EXTR_OK:
-        break;
-      }
+    wc.suspend();
+    switch (retVal) {
+    case SMESH::SMESH_MeshEditor::EXTR_NO_ELEMENTS:
+      SUIT_MessageBox::warning(this,
+                               tr("SMESH_ERROR"),
+                               tr("NO_ELEMENTS_SELECTED"));
+      return false; break;
+    case SMESH::SMESH_MeshEditor::EXTR_PATH_NOT_EDGE:
+      SUIT_MessageBox::warning(this,
+                               tr("SMESH_ERROR"),
+                               tr("SELECTED_PATH_IS_NOT_EDGE"));
+      return false; break;
+    case SMESH::SMESH_MeshEditor::EXTR_BAD_PATH_SHAPE:
+      SUIT_MessageBox::warning(this,
+                               tr("SMESH_ERROR"),
+                               tr("BAD_SHAPE_TYPE"));
+      return false; break;
+    case SMESH::SMESH_MeshEditor::EXTR_BAD_STARTING_NODE:
+      SUIT_MessageBox::warning(this,
+                               tr("SMESH_ERROR"),
+                               tr("EXTR_BAD_STARTING_NODE"));
+      return false; break;
+    case SMESH::SMESH_MeshEditor::EXTR_BAD_ANGLES_NUMBER:
+      SUIT_MessageBox::warning(this,
+                               tr("SMESH_ERROR"),
+                               tr("WRONG_ANGLES_NUMBER"));
+      return false; break;
+    case SMESH::SMESH_MeshEditor::EXTR_CANT_GET_TANGENT:
+      SUIT_MessageBox::warning(this,
+                               tr("SMESH_ERROR"),
+                               tr("CANT_GET_TANGENT"));
+      return false; break;
+    case SMESH::SMESH_MeshEditor::EXTR_OK:
+      break;
+    }
   } catch (...) {
     return false;
   }
@@ -585,6 +587,31 @@ void SMESHGUI_ExtrusionAlongPathDlg::reject()
   mySMESHGUI->ResetState();
 
   QDialog::reject();
+}
+
+//=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_ExtrusionAlongPathDlg::onOpenView()
+{
+  if ( mySelector ) {
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    ActivateThisDialog();
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_ExtrusionAlongPathDlg::onCloseView()
+{
+  DeactivateActiveDialog();
+  mySelector = 0;
 }
 
 //=======================================================================
@@ -799,7 +826,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::SetEditCurrentArgument (QPushButton* button
     if (!myPath->_is_nil()) {
       SMESH_Actor* aPathActor = SMESH::FindActorByObject(myPath);
       if (aPathActor) {
-        SMESH::SetPointRepresentation(true);
+        aPathActor->SetPointRepresentation( true );
         if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
           aViewWindow->SetSelectionMode(NodeSelection);
         SMESH::SetPickable(aPathActor);
@@ -865,12 +892,17 @@ void SMESHGUI_ExtrusionAlongPathDlg::ActivateThisDialog()
 
 //=================================================================================
 // function : enterEvent()
-// purpose  : Mouse enter event
+// purpose  :
 //=================================================================================
 void SMESHGUI_ExtrusionAlongPathDlg::enterEvent (QEvent*)
 {
-  if (!GroupButtons->isEnabled())
+  if ( !GroupButtons->isEnabled() ) {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+    if ( aViewWindow && !mySelector) {
+      mySelector = aViewWindow->GetSelector();
+    }
     ActivateThisDialog();
+  }
 }
 
 //=======================================================================
@@ -1016,11 +1048,19 @@ bool SMESHGUI_ExtrusionAlongPathDlg::isValuesValid()
   if ( type != SMESH::NODE )
     return false;
 
-  SMESH::long_array_var elems = mesh->GetNodeInverseElements( aNodeStart );
-  if ( elems->length() != 1 ||
-       mesh->GetElementType( elems[0], true ) != SMESH::EDGE )
-    return false;
-
+  if ( mesh->HasShapeToMesh() )
+  {
+    SMESH::NodePosition_var pos = mesh->GetNodePosition( aNodeStart );
+    if ( pos->shapeType != GEOM::VERTEX )
+      return false;
+  }
+  else
+  {
+    SMESH::long_array_var elems = mesh->GetNodeInverseElements( aNodeStart );
+    if ( elems->length() != 1 ||
+         mesh->GetElementType( elems[0], true ) != SMESH::EDGE )
+      return false;
+  }
   return true;
 }
 

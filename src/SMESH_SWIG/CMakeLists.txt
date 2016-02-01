@@ -89,6 +89,7 @@ SET(_bin_SCRIPTS
   PAL_MESH_043_2D.py
   PAL_MESH_043_3D.py
   SMESH_reg.py
+  smesh_selection.py
 )
 
 SET(smesh_SCRIPTS

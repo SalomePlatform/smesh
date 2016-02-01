@@ -41,11 +41,9 @@ To apply this algorithm when you define your mesh, select <b>Body
 This dialog allows to define
 <ul>
   <li>\b Name of the algorithm. </li>
-  
   <li> Minimal size of a cell truncated by the geometry boundary. If the
     size of a truncated grid cell is \b Threshold times less than a
     initial cell size, then a mesh element is not created. </li>
-	
   <li> <b> Implement Edges </b> check-box activates incorporation of
   geometrical edges in the mesh.
   
@@ -64,9 +62,10 @@ This dialog allows to define
         System.</li>
       <li> You can define the \b Spacing of a grid as an algebraic formula
         <em>f(t)</em> where \a t is a position along a grid axis
-        normalized at [0.0,1.0]. The whole range of geometry can be
-        divided into sub-ranges with their own spacing formulas to apply;
-        \a t varies between 0.0 and 1.0 within each sub-range. \b Insert button
+        normalized at [0.0,1.0]. <em>f(t)</em> must be non-negative
+        at 0. <= \a t <= 1. The whole extent of geometry can be
+        divided into ranges with their own spacing formulas to apply;
+        \a t varies between 0.0 and 1.0 within each \b Range. \b Insert button
         divides a selected range into two. \b Delete button adds the
         selected sub-range to the previous one. Double click on a range in
         the list enables edition of its right boundary. Double click on a

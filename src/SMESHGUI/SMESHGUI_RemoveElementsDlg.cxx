@@ -204,7 +204,9 @@ void SMESHGUI_RemoveElementsDlg::Init()
   connect(mySMESHGUI, SIGNAL (SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
   /* to close dialog if study change */
-  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()), this, SLOT(reject()));
+  connect(mySMESHGUI, SIGNAL (SignalCloseAllDialogs()),      this, SLOT(reject()));
+  connect(mySMESHGUI, SIGNAL (SignalActivatedViewManager()), this, SLOT(onOpenView()));
+  connect(mySMESHGUI, SIGNAL (SignalCloseView()),            this, SLOT(onCloseView()));
   connect(myEditCurrentArgument, SIGNAL(textChanged(const QString&)),
           SLOT(onTextChange(const QString&)));
 
@@ -234,6 +236,10 @@ void SMESHGUI_RemoveElementsDlg::ClickOnApply()
     try {
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
       aResult = aMeshEditor->RemoveElements(anArrayOfIdeces.in());
+
+      if ( myActor && myMesh->NbElements() == 0 )
+        myActor->SetRepresentation(SMESH_Actor::ePoint);
+
     } catch (const SALOME::SALOME_Exception& S_ex) {
       SalomeApp_Tools::QtCatchCorbaException(S_ex);
       myEditCurrentArgument->clear();
@@ -275,6 +281,28 @@ void SMESHGUI_RemoveElementsDlg::reject()
   mySelectionMgr->clearFilters();
   mySMESHGUI->ResetState();
   QDialog::reject();
+}
+
+//=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_RemoveElementsDlg::onOpenView()
+{
+  if(!mySelector) {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    ActivateThisDialog();
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_RemoveElementsDlg::onCloseView()
+{
+  DeactivateActiveDialog();
+  mySelector = 0;
 }
 
 //=================================================================================
@@ -458,8 +486,13 @@ void SMESHGUI_RemoveElementsDlg::ActivateThisDialog()
 //=================================================================================
 void SMESHGUI_RemoveElementsDlg::enterEvent(QEvent*)
 {
-  if (!GroupConstructors->isEnabled())
+  if (!GroupConstructors->isEnabled()) {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+    if ( aViewWindow && !mySelector) {
+      mySelector = aViewWindow->GetSelector();
+    }
     ActivateThisDialog();
+  }
 }
 
 //=================================================================================
@@ -488,11 +521,20 @@ void SMESHGUI_RemoveElementsDlg::setFilters()
     SUIT_MessageBox::critical(this,
                               tr("SMESH_ERROR"),
                               tr("NO_MESH_SELECTED"));
-   return;
+    return;
   }
   if ( !myFilterDlg )
     myFilterDlg = new SMESHGUI_FilterDlg( mySMESHGUI, SMESH::ALL );
 
+  QList<int> types;
+  if ( myMesh->NbEdges()     ) types << SMESH::EDGE;
+  if ( myMesh->NbFaces()     ) types << SMESH::FACE;
+  if ( myMesh->NbVolumes()   ) types << SMESH::VOLUME;
+  if ( myMesh->NbBalls()     ) types << SMESH::BALL;
+  if ( myMesh->Nb0DElements()) types << SMESH::ELEM0D;
+  if ( types.count() > 1 )     types << SMESH::ALL;
+
+  myFilterDlg->Init( types );
   myFilterDlg->SetSelection();
   myFilterDlg->SetMesh( myMesh );
   myFilterDlg->SetSourceWg( LineEditC1A1 );

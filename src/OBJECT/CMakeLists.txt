@@ -61,12 +61,17 @@ SET(_link_LIBRARIES
   ${GUI_qtx}
   ${GUI_suit}
   ${GUI_std}
-  ${GUI_Plot2d}
-  ${GUI_SPlot2d}
   SMESHClient
   SMDS
   SMESHControls
 )
+
+IF(SALOME_USE_PLOT2DVIEWER)
+  LIST(APPEND _link_LIBRARIES
+    ${GUI_Plot2d}
+    ${GUI_SPlot2d}
+    )
+ENDIF()
 
 # --- headers ---
 

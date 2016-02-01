@@ -5,8 +5,8 @@
 \n This operation allows fixing the orientation of a set of faces in
 the following ways:
 <ul>
-<li>The desired orientation of a set of neighboring faces can be defined
-  by a vector giving a desired direction of a normal of a certain face. <br>
+<li>The required orientation of a set of neighboring faces can be defined
+  by a vector giving the direction of a normal to a certain face. <br>
   Since the direction of face normals in the set can be even opposite,
   it is necessary to specify a \a control face, the normal to which
   will be compared with the vector. This face can be either:
@@ -41,7 +41,7 @@ The orientation of a face is changed by reverting the order of its nodes.
 <li>To reorient by direction of the face normal:
     <ul>
     <li>Specify the coordinates of the \b Point by which the control face
-      will be found. You can specify the \b Point by either picking a
+      will be found. You can specify the \b Point by picking a
       node in the 3D Viewer or selecting a vertex in the Object
       Browser.</li>
     <li>Set up the \b Direction vector to be compared with the normal of the
@@ -61,7 +61,7 @@ The orientation of a face is changed by reverting the order of its nodes.
 
 </li>
 
-<li>In the second mode it is possible to either pick the \b Face by mouse in the 3D Viewer or directly input the \b Face ID in the corresponding field.
+<li>In the second mode it is possible to pick the \b Face by mouse in the 3D Viewer or directly input the \b Face ID in the corresponding field.
 
 <center>
 \image html reorient_2d_face.png "The orientation of adjacent faces is chosen according to a vector. The control face is explicitly given."
@@ -81,7 +81,7 @@ The orientation of a face is changed by reverting the order of its nodes.
 
 <br>
 <center>
-\image html reorient_2d_volume.png "The orientation of faces is chosen with relation to adjacent volumes."
+\image html reorient_2d_volume.png "The orientation of faces is chosen relatively to adjacent volumes."
 </center>
 
 </li>

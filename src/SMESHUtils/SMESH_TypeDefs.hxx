@@ -137,13 +137,20 @@ struct SMESH_TNodeXYZ : public gp_XYZ
 {
   const SMDS_MeshNode* _node;
   double               _xyz[3];
-  SMESH_TNodeXYZ( const SMDS_MeshElement* e=0):gp_XYZ(0,0,0),_node(0) {
+  SMESH_TNodeXYZ( const SMDS_MeshElement* e=0):gp_XYZ(0,0,0),_node(0)
+  {
+    Set(e);
+  }
+  bool Set( const SMDS_MeshElement* e=0 )
+  {
     if (e) {
       assert( e->GetType() == SMDSAbs_Node );
       _node = static_cast<const SMDS_MeshNode*>(e);
       _node->GetXYZ(_xyz); // - thread safe getting coords
       SetCoord( _xyz[0], _xyz[1], _xyz[2] );
+      return true;
     }
+    return false;
   }
   double Distance(const SMDS_MeshNode* n)       const { return (SMESH_TNodeXYZ( n )-*this).Modulus(); }
   double SquareDistance(const SMDS_MeshNode* n) const { return (SMESH_TNodeXYZ( n )-*this).SquareModulus(); }

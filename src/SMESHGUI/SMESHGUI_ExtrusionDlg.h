@@ -203,6 +203,9 @@ private slots:
   void                            SelectionIntoArgument();
   void                            DeactivateActiveDialog();
   void                            ActivateThisDialog();
+  void                            onOpenView();
+  void                            onCloseView();
+
 };
 
 #endif // SMESHGUI_EXTRUSIONDLG_H

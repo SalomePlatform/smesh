@@ -103,7 +103,7 @@ inline int getInt( const char * theSring )
   int val = strtol( theSring, &ptr, 10 );
   if ( ptr == theSring ||
       // there must not be neither '.' nor ',' nor 'E' ...
-      (*ptr != ' ' && *ptr != '\n' && *ptr != '\0'))
+      (*ptr != ' ' && *ptr != '\n' && *ptr != '\0' && *ptr != '\r'))
     return -1;
 
   return val;
@@ -620,39 +620,26 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
     // ---------------------------------------------------------------
 
     // get all faces
-    list< const SMDS_MeshElement* > faces;
-    if ( nbElems > 0 ) {
-      SMDS_ElemIteratorPtr fIt = fSubMesh->GetElements();
-      while ( fIt->more() ) {
-        const SMDS_MeshElement* f = fIt->next();
-        if ( f && f->GetType() == SMDSAbs_Face )
-          faces.push_back( f );
-      }
-    }
-    else {
-      SMDS_FaceIteratorPtr fIt = aMeshDS->facesIterator();
-      while ( fIt->more() )
-        faces.push_back( fIt->next() );
-    }
+    SMDS_ElemIteratorPtr fIt;
+    if ( nbElems > 0 )
+      fIt = fSubMesh->GetElements();
+    else
+      fIt = aMeshDS->elementsIterator( SMDSAbs_Face );
 
     // put nodes of all faces into the nodePointIDMap and fill myElemPointIDs
-    list< const SMDS_MeshElement* >::iterator fIt = faces.begin();
-    for ( ; fIt != faces.end(); ++fIt )
+    while ( fIt->more() )
     {
+      const SMDS_MeshElement* face = fIt->next();
       myElemPointIDs.push_back( TElemDef() );
       TElemDef& elemPoints = myElemPointIDs.back();
-      int nbNodes = (*fIt)->NbCornerNodes();
+      int nbNodes = face->NbCornerNodes();
       for ( int i = 0;i < nbNodes; ++i )
       {
-        const SMDS_MeshElement* node = (*fIt)->GetNode( i );
+        const SMDS_MeshElement* node = face->GetNode( i );
         TNodePointIDMap::iterator nIdIt = nodePointIDMap.insert( make_pair( node, -1 )).first;
         if ( nIdIt->second == -1 )
-        {
-          elemPoints.push_back( iPoint );
           nIdIt->second = iPoint++;
-        }
-        else
-          elemPoints.push_back( (*nIdIt).second );
+        elemPoints.push_back( (*nIdIt).second );
       }
     }
     myPoints.resize( iPoint );
@@ -3554,13 +3541,7 @@ void SMESH_Pattern::
   myPolyElems.reserve( myIdsOnBoundary.size() );
 
   // make a set of refined elements
-  TIDSortedElemSet avoidSet, elemSet;
-  std::vector<const SMDS_MeshElement*>::iterator itv =  myElements.begin();
-  for(; itv!=myElements.end(); itv++) {
-    const SMDS_MeshElement* el = (*itv);
-    avoidSet.insert( el );
-  }
-  //avoidSet.insert( myElements.begin(), myElements.end() );
+  TIDSortedElemSet elemSet, avoidSet( myElements.begin(), myElements.end() );
 
   map< TNodeSet, list< list< int > > >::iterator indListIt, nn_IdList;
 

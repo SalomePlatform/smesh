@@ -67,19 +67,20 @@ class SMESHDS_EXPORT SMESHDS_SubMesh
   virtual int NbNodes() const;
   virtual SMDS_NodeIteratorPtr GetNodes() const;
   virtual bool Contains(const SMDS_MeshElement * ME) const;      // check if elem or node is in
+  virtual bool IsQuadratic() const;
 
   // clear the contents
   virtual void Clear();
-  int getSize();
+  int  getSize();
   void compactList();
 
-  SMESHDS_Mesh *GetParent()   { return myParent; }
-  int           GetID() const { return myIndex; }
+  SMESHDS_Mesh* GetParent() const { return const_cast< SMESHDS_Mesh*>( myParent ); }
+  int           GetID()     const { return myIndex; }
 
  private:
-  SMESHDS_Mesh * myParent;
+  SMESHDS_Mesh *                       myParent;
   std::vector<const SMDS_MeshElement*> myElements;
-  std::vector<const SMDS_MeshNode*> myNodes;
+  std::vector<const SMDS_MeshNode*>    myNodes;
 
   int myUnusedIdNodes;
   int myUnusedIdElements;

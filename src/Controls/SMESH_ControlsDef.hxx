@@ -67,7 +67,7 @@ namespace SMESH{
     public:
       TSequenceOfXYZ();
 
-      TSequenceOfXYZ(size_type n);
+      explicit TSequenceOfXYZ(size_type n);
 
       TSequenceOfXYZ(size_type n, const gp_XYZ& t);
 
@@ -92,8 +92,16 @@ namespace SMESH{
 
       size_type size() const;
 
+
+      void setElement(const SMDS_MeshElement* e) { myElem = e; }
+
+      const SMDS_MeshElement* getElement() const { return myElem; }
+
+      SMDSAbs_EntityType getElementEntity() const;
+
     private:
-      std::vector<gp_XYZ> myArray;
+      std::vector<gp_XYZ>     myArray;
+      const SMDS_MeshElement* myElem;
     };
 
     /*!

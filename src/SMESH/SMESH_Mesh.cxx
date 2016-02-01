@@ -752,7 +752,7 @@ SMESH_Hypothesis::Hypothesis_Status
   // shape 
   
   bool isAlgo = ( !anHyp->GetType() == SMESHDS_Hypothesis::PARAM_ALGO );
-  int event = isAlgo ? SMESH_subMesh::REMOVE_ALGO : SMESH_subMesh::REMOVE_HYP;
+  int   event = isAlgo ? SMESH_subMesh::REMOVE_ALGO : SMESH_subMesh::REMOVE_HYP;
 
   SMESH_subMesh *subMesh = GetSubMesh(aSubShape);
 
@@ -1117,7 +1117,7 @@ throw(SALOME_Exception)
 
 //================================================================================
 /*!
- * \brief Return submeshes of groups containing the given sub-shape
+ * \brief Return sub-meshes of groups containing the given sub-shape
  */
 //================================================================================
 
@@ -1131,8 +1131,8 @@ SMESH_Mesh::GetGroupSubMeshesContaining(const TopoDS_Shape & aSubShape) const
   if ( !subMesh )
     return found;
 
-  // submeshes of groups have max IDs, so search from the map end
-SMESH_subMeshIteratorPtr smIt( _subMeshHolder->GetIterator( /*reverse=*/true ) );
+  // sub-meshes of groups have max IDs, so search from the map end
+  SMESH_subMeshIteratorPtr smIt( _subMeshHolder->GetIterator( /*reverse=*/true ) );
   while ( smIt->more() ) {
     SMESH_subMesh*    sm = smIt->next();
     SMESHDS_SubMesh * ds = sm->GetSubMeshDS();
@@ -1157,6 +1157,12 @@ SMESH_subMeshIteratorPtr smIt( _subMeshHolder->GetIterator( /*reverse=*/true ) )
              SMESH_MesherHelper::IsSubShape( aSubShape, mainSM->GetSubShape() ))
           found.push_back( mainSM );
       }
+  }
+  else // issue 0023068
+  {
+    if ( SMESH_subMesh * mainSM = GetSubMeshContaining(1) )
+      if ( mainSM->GetSubShape().ShapeType() == TopAbs_COMPOUND )
+        found.push_back( mainSM );
   }
   return found;
 }
@@ -1328,7 +1334,7 @@ bool SMESH_Mesh::HasModificationsToDiscard() const
   // return true if the next Compute() will be partial and
   // existing but changed elements may prevent successful re-compute
   bool hasComputed = false, hasNotComputed = false;
-SMESH_subMeshIteratorPtr smIt( _subMeshHolder->GetIterator() );
+  SMESH_subMeshIteratorPtr smIt( _subMeshHolder->GetIterator() );
   while ( smIt->more() )
   {
     const SMESH_subMesh* aSubMesh = smIt->next();
@@ -1783,10 +1789,10 @@ int SMESH_Mesh::NbBiQuadQuadrangles() const throw(SALOME_Exception)
  */
 //================================================================================
 
-int SMESH_Mesh::NbPolygons() const throw(SALOME_Exception)
+int SMESH_Mesh::NbPolygons(SMDSAbs_ElementOrder order) const throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  return _myMeshDS->GetMeshInfo().NbPolygons();
+  return _myMeshDS->GetMeshInfo().NbPolygons(order);
 }
 
 //================================================================================

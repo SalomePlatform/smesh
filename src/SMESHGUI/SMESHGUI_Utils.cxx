@@ -305,6 +305,9 @@ namespace SMESH
         for ( ; anIter1->More(); anIter1->Next())
         {
           _PTR(SObject) aSObj1 = anIter1->Value();
+          _PTR(SObject) aSObjectRef;
+          if (aSObj1->ReferencedObject(aSObjectRef))
+            continue; // reference to an object
 
           anAttr = aBuilder->FindOrCreateAttribute(aSObj1, "AttributePixMap");
           aPixmap = anAttr;
@@ -322,7 +325,7 @@ namespace SMESH
             const bool isGroupOnFilter = !gof->_is_nil();
 
             bool isEmpty = false;
-            if ( !isGroupOnFilter ) // GetTypes() can be very long on isGroupOnFilter!
+            if ( !isGroupOnFilter ) // GetTypes() can be very long on GroupOnFilter!
             {
               SMESH::array_of_ElementType_var elemTypes = idSrc->GetTypes();
               isEmpty = ( elemTypes->length() == 0 );

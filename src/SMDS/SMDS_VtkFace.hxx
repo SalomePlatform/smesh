@@ -34,6 +34,7 @@ public:
   ~SMDS_VtkFace();
   void init(const std::vector<vtkIdType>& nodeIds, SMDS_Mesh* mesh);
   void initPoly(const std::vector<vtkIdType>& nodeIds, SMDS_Mesh* mesh);
+  void initQuadPoly(const std::vector<vtkIdType>& nodeIds, SMDS_Mesh* mesh);
 
   bool ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes);
   void ChangeApex(SMDS_MeshNode* node); // to use only for tmp triangles

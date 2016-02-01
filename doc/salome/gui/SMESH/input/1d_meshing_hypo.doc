@@ -5,31 +5,31 @@
 Basic 1D hypothesis specifies:
 <ul>
 <li>how \ref a1d_algos_anchor "Wire Discretization" should divide the edge;</li>
-<li>how \ref a1d_algos_anchor "Composite Side Discretization" should divide the group of C1-continues edges.</li>
+<li>how \ref a1d_algos_anchor "Composite Side Discretization" should divide the group of C1-continuous edges.</li>
 </ul>
 
-By type of nodes distribution the 1D hypotheses can be categorized as follows:
+1D hypotheses can be categorized by type of nodes distribution as follows:
 <ul>
-<li>Uniform distribution
+<li>Uniform distribution:
   <ul>
     <li>\ref average_length_anchor "Local Length"</li>
     <li>\ref max_length_anchor "Max Size"</li>
     <li>\ref number_of_segments_anchor "Number of segments" with Equidistant distribution</li>
     <li>\ref automatic_length_anchor "Automatic Length"</li>
 </ul></li>
-<li>Constantly increasing or decreasing length of segments
+<li>Constantly increasing or decreasing length of segments:
   <ul>
     <li>\ref arithmetic_1d_anchor "Arithmetic 1D"</li>
     <li>\ref geometric_1d_anchor "Geometric Progression"</li>
     <li>\ref start_and_end_length_anchor "Start and end length"</li>
     <li>\ref number_of_segments_anchor "Number of segments" with Scale distribution</li>
 </ul></li>
-<li>Distribution depending on curvature
+<li>Distribution depending on curvature:
   <ul>
     <li>\ref adaptive_1d_anchor "Adaptive"</li>
     <li>\ref deflection_1d_anchor "Deflection 1D"</li>
 </ul></li>
-<li>Arbitrary distribution
+<li>Arbitrary distribution:
   <ul>
     <li>\ref fixed_points_1d_anchor "Fixed points 1D"</li>
     <li>\ref number_of_segments_anchor "Number of segments" with
@@ -144,12 +144,17 @@ composing your geometrical object. Definition of this hypothesis
 consists of setting the \b length of segments, which will approximate these
 edges, and the \b precision of rounding.
 
-The \b precision parameter is used to round a number of segments,
-calculated by dividing the edge length by the specified \b length of
-segment, to the higher integer if the remainder exceeds the precision
-and to the lower integer otherwise. Use value 0.5 to provide rounding
-to the nearest integer, 1.0 for the lower integer, 0.0 for the higher
-integer. Default value is 1e-07.
+The \b precision parameter is used to round a <em>number of segments</em>,
+calculated by dividing the <em>edge length</em> by the specified \b length of
+segment, to the higher integer if the \a remainder exceeds the \b precision
+and to the lower integer otherwise. <br>
+Use value 0.5 to provide rounding to the nearest integer, 1.0 for the lower integer, 0.0 for the higher integer. Default value is 1e-07.
+
+For example: if <em>edge length</em> is 10.0 and the segment \b length
+is 3.0 then their division gives 10./3. = 3.33(3) and the \a remainder is 0.33(3).
+If \b precision is less than 0.33(3) then the edge is divided into 3 segments.
+If \b precision is more than 0.33(3) then the edge is divided into 4 segments.
+
 
 \image html image41.gif
 
@@ -245,6 +250,7 @@ negative</b>.
 \ref tui_deflection_1d "Defining Number of Segments" hypothesis
 operation.
 
+\note The plot functionality is available only if GUI module is builded with Plot 2D Viewer (set option SALOME_USE_PLOT2DVIEWER to ON when building GUI module).
 
 <br>
 \anchor start_and_end_length_anchor
@@ -316,7 +322,7 @@ possible to select the edges to be reversed either directly picking them in
 the 3D viewer or selecting the edges or groups of edges in the
 Object Browser.
 
-\ref reversed_edges_helper_anchor "Helper" group assists you in
+\ref reversed_edges_helper_anchor "Helper" group assists in
 defining <b>Reversed Edges</b> parameter.
 
 
@@ -330,23 +336,23 @@ defining <b>Reversed Edges</b> parameter.
 
 \image html rev_edges_helper_dlg.png
 
-\b Helper group assists you in defining <b>Reversed Edges</b>
+\b Helper group assists in defining <b>Reversed Edges</b>
 parameter of the hypotheses depending on edge direction.
 
-<b>Show whole geometry</b> check-box lets you see the whole
-geometrical model in the 3D Viewer. This can help you to understand
-location within the model of a set of edges shown in the Viewer.
+<b>Show whole geometry</b> check-box allows seeing the whole
+geometrical model in the 3D Viewer, which can help to understand the
+location of a set of edges within the model.
 
-<b>Propagation chains</b> group helps you to define 
-<b>Reversed Edges</b> so that opposite edges of quadrilateral faces
-will be split in the logically same direction. When this group is
+<b>Propagation chains</b> group allows defining <b>Reversed Edges</b>
+for splitting opposite edges of quadrilateral faces
+in a logically uniform direction. When this group is
 activated, the list is filled with propagation chains found within the
-model. When you select a chain in the list, edges of the chain are
-shown in the Viewer with arrows so that you can chose a common
-direction for all chain edges. \b Reverse button inverses the common
-direction of chain edges. If \b Add button is active, this means that some
-edges of a chain have different direction and you can click \b Add
-button to add such edges to <b>Reversed Edges</b> list.
+model. When a chain is selected in the list its edges are
+shown in the Viewer with arrows, which enables choosing a common
+direction for all chain edges. \b Reverse button inverts the common
+direction of chain edges. If \b Add button is active, some
+edges of a chain have a different direction, so you can click \b Add
+button to add them to <b>Reversed Edges</b> list.
 
 \image html propagation_chain.png "The whole geometry and a propagation chain"
 

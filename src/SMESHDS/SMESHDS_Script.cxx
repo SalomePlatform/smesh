@@ -256,6 +256,19 @@ void SMESHDS_Script::AddPolygonalFace (int NewFaceID, const std::vector<int>& no
 }
 
 //=======================================================================
+//function : AddQuadPolygonalFace
+//purpose  : 
+//=======================================================================
+void SMESHDS_Script::AddQuadPolygonalFace(int NewFaceID, const std::vector<int>& nodes_ids)
+{
+  if(myIsEmbeddedMode){
+    myIsModified = true;
+    return;
+  }
+  getCommand(SMESHDS_AddQuadPolygon)->AddQuadPolygonalFace(NewFaceID, nodes_ids);
+}
+
+//=======================================================================
 //function : AddPolyhedralVolume
 //purpose  : 
 //=======================================================================

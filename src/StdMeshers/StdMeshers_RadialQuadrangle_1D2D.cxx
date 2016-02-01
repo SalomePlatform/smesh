@@ -75,10 +75,12 @@ StdMeshers_RadialQuadrangle_1D2D::StdMeshers_RadialQuadrangle_1D2D(int hypId,
 
   _compatibleHypothesis.push_back("LayerDistribution2D");
   _compatibleHypothesis.push_back("NumberOfLayers2D");
-  myNbLayerHypo = 0;
-  myDistributionHypo = 0;
   _requireDiscreteBoundary = false;
   _supportSubmeshes = true;
+  _neededLowerHyps[ 1 ] = true;  // suppress warning on hiding a global 1D algo
+
+  myNbLayerHypo      = 0;
+  myDistributionHypo = 0;
 }
 
 
@@ -278,6 +280,38 @@ namespace
     }
     return nbe;
   }
+  //================================================================================
+  /*!
+   * \brief Checks if the common vertex between LinEdge's lies inside the circle
+   *  and not outside
+   *  \param [in] CircEdge - 
+   *  \param [in] LinEdge1 - 
+   *  \param [in] LinEdge2 - 
+   *  \return bool - false if there are 3 EDGEs and the corner is outside
+   */
+  //================================================================================
+
+  bool isCornerInsideCircle(const TopoDS_Edge& CircEdge,
+                            const TopoDS_Edge& LinEdge1,
+                            const TopoDS_Edge& LinEdge2)
+  {
+    if ( !CircEdge.IsNull() &&
+         !LinEdge1.IsNull() &&
+         !LinEdge2.IsNull() )
+    {
+      Handle(Geom_Circle) aCirc = Handle(Geom_Circle)::DownCast( getCurve( CircEdge ));
+      TopoDS_Vertex aCommonV;
+      if ( !aCirc.IsNull() &&
+           TopExp::CommonVertex( LinEdge1, LinEdge2, aCommonV ))
+      {
+        gp_Pnt aCommonP = BRep_Tool::Pnt( aCommonV );
+        gp_Pnt  aCenter = aCirc->Location();
+        double     dist = aCenter.Distance( aCommonP );
+        return dist < 0.1 * aCirc->Radius();
+      }
+    }
+    return true;
+  }
 
 //================================================================================
 //================================================================================
@@ -436,7 +470,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
   TopoDS_Edge CircEdge, LinEdge1, LinEdge2;
   int nbe = analyseFace( aShape, CircEdge, LinEdge1, LinEdge2 );
   Handle(Geom_Circle) aCirc = Handle(Geom_Circle)::DownCast( getCurve( CircEdge ));
-  if( nbe>3 || nbe < 1 || aCirc.IsNull() )
+  if( nbe > 3 || nbe < 1 || aCirc.IsNull() )
     return error("The face must be a full circle or a part of circle (i.e. the number "
                  "of edges is less or equal to 3 and one of them is a circle curve)");
 
@@ -669,15 +703,17 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
     // segments of line
     double fp, lp;
     Handle(Geom_Circle) aCirc = Handle(Geom_Circle)::DownCast( getCurve( CircEdge ));
-    Handle(Geom_Line)  aLine1 = Handle(Geom_Line)::DownCast( getCurve( LinEdge1 ));
-    Handle(Geom_Line)  aLine2 = Handle(Geom_Line)::DownCast( getCurve( LinEdge2 ));
-    if( aCirc.IsNull() || aLine1.IsNull() || aLine2.IsNull() )
+    Handle(Geom_Line)  aLine1 = Handle(Geom_Line  )::DownCast( getCurve( LinEdge1 ));
+    Handle(Geom_Line)  aLine2 = Handle(Geom_Line  )::DownCast( getCurve( LinEdge2 ));
+    if ( aCirc.IsNull() || aLine1.IsNull() || aLine2.IsNull() )
+      return error(COMPERR_BAD_SHAPE);
+    if ( !isCornerInsideCircle( CircEdge, LinEdge1, LinEdge2 ))
       return error(COMPERR_BAD_SHAPE);
 
     if ( !algo1d->ComputeCircularEdge( aMesh, CircEdge ))
       return error( algo1d->GetComputeError() );
     map< double, const SMDS_MeshNode* > theNodes;
-    if ( !GetSortedNodesOnEdge(aMesh.GetMeshDS(),CircEdge,true,theNodes))
+    if ( !GetSortedNodesOnEdge( aMesh.GetMeshDS(), CircEdge, true, theNodes ))
       return error("Circular edge is incorrectly meshed");
 
     myHelper->IsQuadraticSubMesh( aShape );
@@ -894,8 +930,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
   //cout<<"Angles.Length() = "<<Angles.Length()<<"   Points.Length() = "<<Points.Length()<<endl;
   //cout<<"Nodes1.size() = "<<Nodes1.size()<<"   Pnts2d1.Length() = "<<Pnts2d1.Length()<<endl;
   for(; i<Angles.Length(); i++) {
-    vector< const SMDS_MeshNode* > tmpNodes;
-    tmpNodes.reserve(Nodes1.size());
+    vector< const SMDS_MeshNode* > tmpNodes(Nodes1.size());
     gp_Trsf aTrsf;
     gp_Ax1 theAxis(P0,gp_Dir(Axis));
     aTrsf.SetRotation( theAxis, Angles.Value(i) );
@@ -1290,18 +1325,20 @@ bool StdMeshers_RadialQuadrangle_1D2D::Evaluate(SMESH_Mesh& aMesh,
 
 //================================================================================
 /*!
- * \brief Return true if applied compute mesh on this shape
+ * \brief Return true if the algorithm can compute mesh on this shape
  */
 //================================================================================
 
 bool StdMeshers_RadialQuadrangle_1D2D::IsApplicable( const TopoDS_Shape & aShape, bool toCheckAll )
 {
   int nbFoundFaces = 0;
-  for (TopExp_Explorer exp( aShape, TopAbs_FACE ); exp.More(); exp.Next(), ++nbFoundFaces ){
+  for (TopExp_Explorer exp( aShape, TopAbs_FACE ); exp.More(); exp.Next(), ++nbFoundFaces )
+  {
     TopoDS_Edge CircEdge, LinEdge1, LinEdge2;
     int nbe = analyseFace( exp.Current(), CircEdge, LinEdge1, LinEdge2 );
     Handle(Geom_Circle) aCirc = Handle(Geom_Circle)::DownCast( getCurve( CircEdge ));
-    bool ok = ( nbe <= 3 && nbe >= 1 && !aCirc.IsNull() );
+    bool ok = ( nbe <= 3 && nbe >= 1 && !aCirc.IsNull() &&
+                isCornerInsideCircle( CircEdge, LinEdge1, LinEdge2 ));
     if( toCheckAll  && !ok ) return false;
     if( !toCheckAll && ok  ) return true;
   }

@@ -313,10 +313,13 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule ) :
   connect(mySMESHGUI, SIGNAL (SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()),   this, SLOT(SelectionIntoArgument()));
   /* to close dialog if study change */
-  connect(mySMESHGUI,       SIGNAL (SignalCloseAllDialogs()), this, SLOT(reject()));
-  connect(LineEditElements, SIGNAL(textChanged(const QString&)),    SLOT(onTextChange(const QString&)));
-  connect(CheckBoxMesh,     SIGNAL(toggled(bool)),                  SLOT(onSelectMesh(bool)));
-  connect(ActionGroup,      SIGNAL(buttonClicked(int)),             SLOT(onActionClicked(int)));
+  connect(mySMESHGUI,       SIGNAL (SignalCloseAllDialogs()),      this, SLOT(reject()));
+  connect(mySMESHGUI,       SIGNAL (SignalActivatedViewManager()), this, SLOT(onOpenView()));
+  connect(mySMESHGUI,       SIGNAL (SignalCloseView()),            this, SLOT(onCloseView()));
+
+  connect(LineEditElements, SIGNAL(textChanged(const QString&)),         SLOT(onTextChange(const QString&)));
+  connect(CheckBoxMesh,     SIGNAL(toggled(bool)),                       SLOT(onSelectMesh(bool)));
+  connect(ActionGroup,      SIGNAL(buttonClicked(int)),                  SLOT(onActionClicked(int)));
 
   connect(SpinBox1_1,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
   connect(SpinBox1_2,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
@@ -359,14 +362,25 @@ void SMESHGUI_TranslationDlg::Init (bool ResetControls)
   myObjectsNames.clear();
   myMeshes.clear();
 
-  myEditCurrentArgument = 0;
-  LineEditElements->clear();
+  myEditCurrentArgument = LineEditElements;
+  LineEditElements->setFocus();
   myElementsId = "";
   myNbOkElements = 0;
 
   buttonOk->setEnabled(false);
   buttonApply->setEnabled(false);
 
+  if ( !ResetControls && !isApplyAndClose() && // make highlight move upon [Apply] (IPAL20729)
+       myActor && !myActor->getIO().IsNull() &&
+       ActionGroup->button( MOVE_ELEMS_BUTTON )->isChecked() &&
+       !CheckBoxMesh->isChecked() ) // move selected elements
+  {
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    {
+      aViewWindow->highlight( myActor->getIO(), false, false );
+      aViewWindow->highlight( myActor->getIO(), true, true );
+    }
+  }
   myActor = 0;
 
   if (ResetControls) {
@@ -379,12 +393,10 @@ void SMESHGUI_TranslationDlg::Init (bool ResetControls)
 
     ActionGroup->button( MOVE_ELEMS_BUTTON )->setChecked(true);
     CheckBoxMesh->setChecked(false);
-//     MakeGroupsCheck->setChecked(false);
-//     MakeGroupsCheck->setEnabled(false);
     myPreviewCheckBox->setChecked(false);
     onDisplaySimulation(false);
-    onSelectMesh(false);
   }
+  onSelectMesh(CheckBoxMesh->isChecked());
 }
 
 //=================================================================================
@@ -590,7 +602,6 @@ bool SMESHGUI_TranslationDlg::ClickOnApply()
       
     Init(false);
     ConstructorsClicked(GetConstructorId());
-    SelectionIntoArgument();
 
     SMESHGUI::Modified();
   }
@@ -626,6 +637,31 @@ void SMESHGUI_TranslationDlg::reject()
     aViewWindow->SetSelectionMode( ActorSelection );
   mySMESHGUI->ResetState();
   QDialog::reject();
+}
+
+//=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_TranslationDlg::onOpenView()
+{
+  if ( mySelector ) {
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    ActivateThisDialog();
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_TranslationDlg::onCloseView()
+{
+  DeactivateActiveDialog();
+  mySelector = 0;
 }
 
 //=================================================================================
@@ -689,7 +725,6 @@ void SMESHGUI_TranslationDlg::onTextChange (const QString& theNewText)
         myNbOkElements++;
       }
     }
-
     mySelector->AddOrRemoveIndex( anIO, newIndices, false );
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
       aViewWindow->highlight( anIO, true, true );
@@ -805,7 +840,6 @@ void SMESHGUI_TranslationDlg::SelectionIntoArgument()
       anActor = SMESH::FindActorByEntry(IO->getEntry());
     if (!anActor && !CheckBoxMesh->isChecked())
       return;
-
     aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);
     if (aNbUnits != 1)
       return;
@@ -933,8 +967,13 @@ void SMESHGUI_TranslationDlg::ActivateThisDialog()
 //=================================================================================
 void SMESHGUI_TranslationDlg::enterEvent (QEvent*)
 {
-  if (!ConstructorsBox->isEnabled())
+  if (!ConstructorsBox->isEnabled()) {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+    if ( aViewWindow && !mySelector) {
+      mySelector = aViewWindow->GetSelector();
+    }
     ActivateThisDialog();
+  }
 }
 
 //=======================================================================
@@ -968,7 +1007,6 @@ void SMESHGUI_TranslationDlg::onSelectMesh (bool toSelectMesh)
       aViewWindow->SetSelectionMode( CellSelection );
     LineEditElements->setReadOnly(false);
     LineEditElements->setValidator(myIdValidator);
-    onTextChange(LineEditElements->text());
     hidePreview();
   }
 
@@ -1107,12 +1145,13 @@ bool SMESHGUI_TranslationDlg::isValid()
 // function : onDisplaySimulation
 // purpose  : Show/Hide preview
 //=================================================================================
-void SMESHGUI_TranslationDlg::onDisplaySimulation( bool toDisplayPreview ) {
+void SMESHGUI_TranslationDlg::onDisplaySimulation( bool toDisplayPreview )
+{
   if (myPreviewCheckBox->isChecked() && toDisplayPreview) {
-    
+
     if (isValid() && myNbOkElements) {
       QStringList aListElementsId = myElementsId.split(" ", QString::SkipEmptyParts);
-      
+
       SMESH::long_array_var anElementsId = new SMESH::long_array;
 
       anElementsId->length(aListElementsId.count());
@@ -1148,7 +1187,7 @@ void SMESHGUI_TranslationDlg::onDisplaySimulation( bool toDisplayPreview ) {
         }
         setSimulationPreview( aMeshPreviewStruct );
       } catch (...) {
-        
+
       }
     }
     else {

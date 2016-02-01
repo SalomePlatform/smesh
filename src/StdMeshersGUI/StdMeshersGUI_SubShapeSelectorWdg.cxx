@@ -255,24 +255,27 @@ void StdMeshersGUI_SubShapeSelectorWdg::selectionIntoArgument()
 
       GEOM::GEOM_Object_var aGeomObj = GetGeomObjectByEntry( IO->getEntry() );
       if ( !CORBA::is_nil( aGeomObj ) ) { // Selected Object From Study
-        GEOM::GEOM_Object_var aGeomFatherObj = aGeomObj->GetMainShape();
-        QString aFatherEntry = "";
-        QString aMainFatherEntry = "";
-        TopoDS_Shape shape;
-        if ( !CORBA::is_nil( aGeomFatherObj ) ) {
-          // Get Main Shape
-          GEOM::GEOM_Object_var aGeomMain = GetGeomObjectByEntry( myEntry.c_str() );
-          if ( !CORBA::is_nil( aGeomMain ) && aGeomMain->GetType() == 37 ) {  // Main Shape is a Group
-            GEOM::GEOM_Object_var aMainFatherObj = aGeomMain->GetMainShape();
-            if ( !CORBA::is_nil( aMainFatherObj ) )
-              aMainFatherEntry = aMainFatherObj->GetStudyEntry();
-          }
-          aFatherEntry = aGeomFatherObj->GetStudyEntry();
-        }
+        // commented for IPAL52836
+        //
+        // GEOM::GEOM_Object_var aGeomFatherObj = aGeomObj->GetMainShape();
+        // QString aFatherEntry = "";
+        // QString aMainFatherEntry = "";
+        // TopoDS_Shape shape;
+        // if ( !CORBA::is_nil( aGeomFatherObj ) ) {
+        //   // Get Main Shape
+        //   GEOM::GEOM_Object_var aGeomMain = GetGeomObjectByEntry( myEntry.c_str() );
+        //   if ( !CORBA::is_nil( aGeomMain ) && aGeomMain->GetType() == 37 ) {  // Main Shape is a Group
+        //     GEOM::GEOM_Object_var aMainFatherObj = aGeomMain->GetMainShape();
+        //     if ( !CORBA::is_nil( aMainFatherObj ) )
+        //       aMainFatherEntry = aMainFatherObj->GetStudyEntry();
+        //   }
+        //   aFatherEntry = aGeomFatherObj->GetStudyEntry();
+        // }
 
-        if (( ! aFatherEntry.isEmpty() ) &&
-            ( aFatherEntry == myEntry.c_str() || aFatherEntry == aMainFatherEntry ) )
+        // if (( ! aFatherEntry.isEmpty() ) &&
+        //     ( aFatherEntry == myEntry.c_str() || aFatherEntry == aMainFatherEntry ) )
         {
+          TopoDS_Shape shape;
           if ( aGeomObj->GetType() == 37 /*GEOM_GROUP*/ ) { // Selected Group that belongs the main object
             GEOMBase::GetShape(aGeomObj, shape);
             if ( !shape.IsNull() ) {
@@ -285,7 +288,9 @@ void StdMeshersGUI_SubShapeSelectorWdg::selectionIntoArgument()
                 }
               }
             }
-          } else if ( aGeomObj->GetType() == 28 /*GEOM_SUBSHAPE*/  ) {
+          } else if ( aGeomObj->GetType() == 28 /*GEOM_SUBSHAPE*/ ||
+                      myEntry == IO->getEntry() )
+          {
             GEOMBase::GetShape(aGeomObj, shape); 
             if ( !shape.IsNull() && shape.ShapeType() == mySubShType ) {
               int index = myPreviewActor->GetIndexByShape( shape );
@@ -412,7 +417,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::onListSelectionChanged()
   if ( !myPreviewActor )
     return;
 
-  mySelectionMgr->clearSelected();
+  //mySelectionMgr->clearSelected();
   TColStd_MapOfInteger aIndexes;
   QList<QListWidgetItem*> selItems = myListWidget->selectedItems();
   QListWidgetItem* anItem;
@@ -421,6 +426,8 @@ void StdMeshersGUI_SubShapeSelectorWdg::onListSelectionChanged()
 
   // update remove button
   myRemoveButton->setEnabled( selItems.size() > 0 );
+
+  emit selectionChanged();
 }
 
 //=================================================================================
@@ -525,9 +532,6 @@ SMESH::long_array_var StdMeshersGUI_SubShapeSelectorWdg::GetListOfIDs()
 {
   SMESH::long_array_var anArray = new SMESH::long_array;
 
-  // if ( myMainEntry != "" && myIsNotCorrected )
-  //   myListOfIDs = GetCorrectedListOfIDs( true );
-
   int size = myListOfIDs.size();
   anArray->length( size );
   for (int i = 0; i < size; i++)
@@ -571,17 +575,6 @@ bool StdMeshersGUI_SubShapeSelectorWdg::SetListOfIDs( SMESH::long_array_var theI
 }
 
 //=================================================================================
-// function : SetMainShapeEntry
-// purpose  : Called to set the Entry of main shape of the mesh
-//=================================================================================
-// void StdMeshersGUI_SubShapeSelectorWdg::SetMainShapeEntry( const QString& theEntry )
-// {
-//   myMainEntry = theEntry;
-//   myMainShape = GetTopoDSByEntry( theEntry );
-//   myIsNotCorrected = true;
-// }
-
-//=================================================================================
 // function : GetMainShapeEntry
 // purpose  : Called to get the Main Object Entry
 //=================================================================================
@@ -590,82 +583,6 @@ const char* StdMeshersGUI_SubShapeSelectorWdg::GetMainShapeEntry()
   if ( myMainEntry.empty() ) myMainEntry = "";
   return myMainEntry.c_str();
 }
-
-//=================================================================================
-// function : GetCorrectedListOfIds
-// purpose  : Called to convert the list of IDs from sub-shape IDs to main shape IDs
-//=================================================================================
-// QList<int>
-// StdMeshersGUI_SubShapeSelectorWdg::GetCorrectedListOfIDs( bool fromSubshapeToMainshape,
-//                                                           bool* isOK )
-// {
-//   if (( myMainShape.IsNull() || myGeomShape.IsNull() ) &&  fromSubshapeToMainshape )
-//     return myListOfIDs;
-//   else if (( myMainShape.IsNull() /*||*/&& myGeomShape.IsNull() ) &&  !fromSubshapeToMainshape )
-//     return mySelectedIDs;
-
-//   if ( !fromSubshapeToMainshape ) // called from SetListOfIDs
-//   {
-//     if ( myMainShape.IsNull() )
-//       std::swap( myMainShape, myGeomShape );
-//   }
-
-//   QList<int> aList;
-//   TopTools_IndexedMapOfShape aGeomMap, aMainMap;
-//   TopExp::MapShapes(myMainShape, aMainMap);
-//   if ( !myGeomShape.IsNull() )
-//     TopExp::MapShapes(myGeomShape, aGeomMap);
-
-//   bool ok = true;
-//   if ( fromSubshapeToMainshape ) // convert indexes from sub-shape to mainshape
-//   {
-//     int size = myListOfIDs.size();
-//     for (int i = 0; i < size; i++) {
-//       int index = myListOfIDs.at(i);
-//       if ( aGeomMap.Extent() < index )
-//       {
-//         ok = false;
-//       }
-//       else
-//       {
-//         TopoDS_Shape aSubShape = aGeomMap.FindKey( index );
-//         if ( mySubShType != aSubShape.ShapeType() )
-//           ok = false;
-//         if ( !aMainMap.Contains( aSubShape ))
-//           ok = false;
-//         else
-//           index = aMainMap.FindIndex( aSubShape );
-//       }
-//       aList.append( index );
-//     }
-//     myIsNotCorrected = false;
-//   }
-//   else // convert indexes from main shape to sub-shape, or just check indices
-//   {
-//     int size = mySelectedIDs.size();
-//     for (int i = 0; i < size; i++) {
-//       int index = mySelectedIDs.at(i);
-//       if ( aMainMap.Extent() < index )
-//       {
-//         ok = false;
-//       }
-//       else
-//       {
-//         TopoDS_Shape aSubShape = aMainMap.FindKey( index );
-//         if ( mySubShType != aSubShape.ShapeType() )
-//           ok = false;
-//         if ( !aGeomMap.Contains( aSubShape ) && !aGeomMap.IsEmpty() )
-//           ok = false;
-//         else
-//           index = aGeomMap.FindIndex( aSubShape );
-//       }
-//       aList.append( index );
-//     }
-//   }
-//   if ( isOK ) *isOK = ok;
-
-//   return aList;
-// }
 
 void StdMeshersGUI_SubShapeSelectorWdg::updateButtons()
 {

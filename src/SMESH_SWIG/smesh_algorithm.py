@@ -85,6 +85,7 @@ class Mesh_Algorithm:
                     attr = hypo_so_i.FindAttribute("AttributeIOR")[1]
                     if attr is not None:
                         anIOR = attr.Value()
+                        if not anIOR: continue # prevent exception in orb.string_to_object()
                         hypo_o_i = salome.orb.string_to_object(anIOR)
                         if hypo_o_i is not None:
                             # Check if this is a hypothesis
@@ -128,6 +129,7 @@ class Mesh_Algorithm:
                     attr = algo_so_i.FindAttribute("AttributeIOR")[1]
                     if attr is not None:
                         anIOR = attr.Value()
+                        if not anIOR: continue # prevent exception in orb.string_to_object()
                         algo_o_i = salome.orb.string_to_object(anIOR)
                         if algo_o_i is not None:
                             # Check if this is an algorithm
@@ -287,13 +289,11 @@ class Mesh_Algorithm:
         if not "ViscousLayers" in self.GetCompatibleHypothesis():
             raise TypeError, "ViscousLayers are not supported by %s"%self.algo.GetName()
         if faces and isinstance( faces[0], geomBuilder.GEOM._objref_GEOM_Object ):
-            import GEOM
             faceIDs = []
-            for f in faces:
-                if self.mesh.geompyD.ShapeIdToType( f.GetType() ) == "GROUP":
-                    faceIDs += f.GetSubShapeIndices()
-                else:
-                    faceIDs += [self.mesh.geompyD.GetSubShapeID(self.mesh.geom, f)]
+            for shape in faces:
+                ff = self.mesh.geompyD.SubShapeAll( shape, self.mesh.geompyD.ShapeType["FACE"] )
+                for f in ff:
+                    faceIDs.append( self.mesh.geompyD.GetSubShapeID(self.mesh.geom, f))
             faces = faceIDs
         hyp = self.Hypothesis("ViscousLayers",
                               [thickness, numberOfLayers, stretchFactor, faces, isFacesToIgnore],
@@ -325,7 +325,12 @@ class Mesh_Algorithm:
         if not "ViscousLayers2D" in self.GetCompatibleHypothesis():
             raise TypeError, "ViscousLayers2D are not supported by %s"%self.algo.GetName()
         if edges and isinstance( edges[0], geomBuilder.GEOM._objref_GEOM_Object ):
-            edges = [ self.mesh.geompyD.GetSubShapeID(self.mesh.geom, f) for f in edges ]
+            edgeIDs = []
+            for shape in edges:
+                ee = self.mesh.geompyD.SubShapeAll( shape, self.mesh.geompyD.ShapeType["EDGE"])
+                for e in ee:
+                    edgeIDs.append( self.mesh.geompyD.GetSubShapeID( self.mesh.geom, e ))
+            edges = edgeIDs
         hyp = self.Hypothesis("ViscousLayers2D",
                               [thickness, numberOfLayers, stretchFactor, edges, isEdgesToIgnore],
                               toAdd=False)

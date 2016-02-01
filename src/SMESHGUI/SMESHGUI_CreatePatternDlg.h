@@ -115,7 +115,6 @@ private:
   QCheckBox*               myProjectChk;
 
   SMESHGUI*                mySMESHGUI;
-  SVTK_Selector*           mySelector;
   LightApp_SelectionMgr*   mySelectionMgr;
   int                      myType;
 

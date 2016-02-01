@@ -439,6 +439,79 @@ module SMESH
                           in string             theLibName,
                           in GEOM::GEOM_Object  theShapeObject,
                           in boolean            toCheckAll );
+
+
+    /*!
+     * Return indices of elements, which are located inside the sphere
+     *  \param theSource - mesh, sub-mesh or group
+     *  \param theElemType - mesh element type
+     *  \param theX - x cooridate of the center of the sphere
+     *  \param theY - y cooridate of the center of the sphere
+     *  \param theZ - y cooridate of the center of the sphere
+     *  \param theR - radius of the sphere
+     */
+    long_array GetInsideSphere( in SMESH_IDSource theSource,
+				in ElementType    theElemType,
+				in double theX, 
+				in double theY, 
+				in double theZ,
+				in double theR );    
+
+    /*!
+     * Return indices of elements, which are located inside the box
+     *  \param theSource - mesh, sub-mesh or group
+     *  \param theElemType - mesh element type
+     *  \param theX1 - x cooridate of the first opposite point
+     *  \param theY1 - y cooridate of the first opposite point
+     *  \param theZ1 - y cooridate of the first opposite point
+     *  \param theX2 - x cooridate of the second opposite point
+     *  \param theY2 - y cooridate of the second opposite point
+     *  \param theZ2 - y cooridate of the second opposite point
+     */
+    long_array GetInsideBox( in SMESH_IDSource theSource,
+			     in ElementType    theElemType,
+			     in double theX1, 
+			     in double theY1, 
+			     in double theZ1,
+			     in double theX2,
+			     in double theY2,
+			     in double theZ2);    
+    /*!
+     * Return indices of elements, which are located inside the box
+     *  \param theSource - mesh, sub-mesh or group
+     *  \param theElemType - mesh element type
+     *  \param theX - x cooridate of the cented of the bottom face
+     *  \param theY - y cooridate of the cented of the bottom face
+     *  \param theZ - y cooridate of the cented of the bottom face
+     *  \param theDX - x cooridate of the cented of the base vector
+     *  \param theDY - y cooridate of the cented of the base vector
+     *  \param theDZ - z cooridate of the cented of the base vector
+     *  \param theH - height of the cylinder
+     *  \param theR - radius of the cylinder
+     */
+    long_array GetInsideCylinder( in SMESH_IDSource theSource,
+				  in ElementType    theElemType,
+				  in double theX, 
+				  in double theY, 
+				  in double theZ,
+				  in double theDX,
+				  in double theDY,
+				  in double theDZ,
+				  in double theH,
+				  in double theR );    
+    /*!
+     * Return indices of elements, which are located inside the geometry
+     *  \param theSource - mesh, sub-mesh or group
+     *  \param theElemType - mesh element type
+     *  \param theGeom - geometrical object
+     *  \param theTolerance - tolerance for selection.
+     */
+    long_array GetInside( in SMESH_IDSource theSource,
+			  in ElementType    theElemType,
+			  in GEOM::GEOM_Object theGeom,
+			  in double theTolerance );    
+
+
   };
 
 };

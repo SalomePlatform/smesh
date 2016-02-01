@@ -454,7 +454,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
 
         if ( geomNorm * meshNorm < 0 )
           SMDS_MeshCell::applyInterlace
-            ( SMDS_MeshCell::reverseSmdsOrder( face->GetEntityType() ), newNodes );
+            ( SMDS_MeshCell::reverseSmdsOrder( face->GetEntityType(), newNodes.size() ), newNodes );
       }
 
       // make a new face

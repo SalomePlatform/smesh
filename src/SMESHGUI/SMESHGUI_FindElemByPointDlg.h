@@ -68,11 +68,14 @@ private slots:
   void                           onElemSelected();
   void                           onElemTypeChange(int);
   void                           redisplayPreview();
+  void                           onOpenView();
+  void                           onCloseView();
 
 private:
   SMESHGUI_FindElemByPointDlg*     myDlg;
 
   SUIT_SelectionFilter*            myFilter;
+  SMESHGUI*                        mySMESHGUI;
   SMESHGUI_MeshEditPreview*        mySimulation; // to show point coordinates
   SMESH::SMESH_IDSource_var        myMeshOrPart;
   SMESH::MeshPreviewStruct_var     myPreview;

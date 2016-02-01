@@ -28,7 +28,11 @@
 #include "SMESH_SMESHGUI.hxx"
 #include "SMESH_ControlsDef.hxx"
 
-#include <Plot2d_Histogram.h>
+#ifndef DISABLE_PLOT2DVIEWER
+  #include <Plot2d_Histogram.h>
+#else
+  #include <qwt_plot.h>
+#endif
 
 #include <QFrame>
 #include <QDialog>
@@ -246,7 +250,7 @@ class GrpComputor: public QObject
   Q_OBJECT;
 
 public:
-  GrpComputor( SMESH::SMESH_GroupBase_ptr, QTreeWidgetItem*, QObject* );
+  GrpComputor( SMESH::SMESH_GroupBase_ptr, QTreeWidgetItem*, QObject*, bool = false);
   QTreeWidgetItem* getItem() { return myItem; }
 
 public slots:
@@ -255,6 +259,7 @@ public slots:
 private:
   SMESH::SMESH_GroupBase_var myGroup;
   QTreeWidgetItem*           myItem;
+  bool                       myToComputeSize;
 };
 
 class SMESHGUI_EXPORT SMESHGUI_AddInfo : public QTreeWidget
@@ -310,7 +315,9 @@ private:
   QwtPlot*              createPlot( QWidget* );
   void                  setFontAttributes( QWidget* );
   void                  clearInternal();
+#ifndef DISABLE_PLOT2DVIEWER
   Plot2d_Histogram*     getHistogram( SMESH::NumericalFunctor_ptr functor );
+#endif
   void                  computeNb( int ft, int iBut, int iWdg );
 
 private slots:

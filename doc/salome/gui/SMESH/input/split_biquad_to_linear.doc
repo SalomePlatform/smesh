@@ -1,0 +1,37 @@
+/*!
+
+\page split_biquad_to_linear_page Split bi-quadratic into linear
+
+\n This functionality allows to split bi-quadratic elements into
+linear ones without creation of additional nodes.
+
+So that
+- bi-quadratic triangle will be split into 3 linear quadrangles;
+- bi-quadratic quadrangle will be split into 4 linear quadrangles;
+- tri-quadratic hexahedron will be split into 8 linear hexahedra;
+- quadratic segments adjacent to the split bi-quadratic element will
+  be split into 2 liner segments.
+
+\image html split_biquad_to_linear_mesh.png "Mesh before and after splitting"
+
+<em>To split bi-quadratic elements into linear:</em>
+<ol>
+<li>From the \b Modification menu choose the <b>Split bi-quadratic into linear</b> item or
+click <em>"Split bi-quadratic into linear"</em> button in the toolbar.
+
+\image html split_biquad_to_linear_icon.png
+<center><em>"Split bi-quadratic into linear" button</em></center>
+
+The following dialog box shall appear:
+
+\image html split_biquad_to_linear_dlg.png
+ 
+</li>
+<li>Select a mesh, groups or sub-meshes in the Object Browser or in the
+  Viewer.</li>
+<li>Click the \b Apply or <b>Apply and Close</b> button.</li>
+</ol>
+
+<br><b>See Also</b> a sample TUI Script of a \ref tui_split_biquad "Split bi-quadratic into linear" operation.
+
+*/

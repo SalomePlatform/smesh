@@ -14,17 +14,16 @@ The choice of a hypothesis depends on the selected algorithm.
 
 Hypotheses are created during creation and edition of 
 \ref constructing_meshes_page "meshes" and
-\ref constructing_submeshes_page "sub-mesh". 
-Once created a hypotheses can be reused during creation and
-edition of other meshes and sub-meshes. All created hypotheses and
-algorithms are present in the Object Browser in \a Hypotheses and
-\a Algorithms folders correspondingly. From the context menu of the
-hypothesis you can invoke a dialog for modification of its parameters,
-and \b Unassign command that will unassign the hypothesis from all
-the meshes and sub-meshes using it.
-Modification of any hypothesis parameter and unassignment of a
-hypothesis leads to automatic removal of elements generated with use
-of this hypothesis.
+\ref constructing_submeshes_page "sub-meshes". 
+Once created a hypotheses can be reused during creation and edition of
+other meshes and sub-meshes. All created hypotheses and algorithms are
+present in the Object Browser in \a Hypotheses and \a Algorithms
+folders correspondingly. It is possible to open a dialog to modify the
+parameters of a hypothesis from its context menu. This menu also
+provides \b Unassign command that will unassign the hypothesis from
+all meshes and sub-meshes using it. Modification of any parameter of a
+hypothesis and its unassignment leads to automatic removal of elements
+generated using it.
 
 In \b MESH there are the following Basic Hypotheses:
 <ul>

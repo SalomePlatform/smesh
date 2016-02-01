@@ -326,7 +326,8 @@ void SMESHGUI_MakeNodeAtPointDlg::ConstructorsClicked (int constructorId)
       myDestDX->hide();
       myDestDY->hide();
       myDestDZ->hide();
-      if (myNodeToMoveGrp->isVisible()) {myNodeToMoveGrp->hide();}
+      if (myNodeToMoveGrp->isVisible()) myNodeToMoveGrp->hide();
+      myDestBtn->setChecked( true );
       break;
     }
   }
@@ -346,6 +347,7 @@ void SMESHGUI_MakeNodeAtPointDlg::ConstructorsClicked (int constructorId)
 SMESHGUI_MakeNodeAtPointOp::SMESHGUI_MakeNodeAtPointOp()
 {
   mySimulation = 0;
+  mySMESHGUI = 0;
   myDlg = new SMESHGUI_MakeNodeAtPointDlg;
   myFilter = 0;
   myHelpFileName = "mesh_through_point_page.html";
@@ -355,14 +357,15 @@ SMESHGUI_MakeNodeAtPointOp::SMESHGUI_MakeNodeAtPointOp()
   myDestCoordChanged = true;
 
   // connect signals and slots
-  connect(myDlg->myDestinationX, SIGNAL (valueChanged(double)), this, SLOT(redisplayPreview()));
-  connect(myDlg->myDestinationY, SIGNAL (valueChanged(double)), this, SLOT(redisplayPreview()));
-  connect(myDlg->myDestinationZ, SIGNAL (valueChanged(double)), this, SLOT(redisplayPreview()));
-  connect(myDlg->myDestDX, SIGNAL (valueChanged(double)), this, SLOT(onDestCoordChanged()));
-  connect(myDlg->myDestDY, SIGNAL (valueChanged(double)), this, SLOT(onDestCoordChanged()));
-  connect(myDlg->myDestDZ, SIGNAL (valueChanged(double)), this, SLOT(onDestCoordChanged()));
-  connect(myDlg->myId,SIGNAL (textChanged(const QString&)),SLOT(redisplayPreview()));
-  connect(myDlg->myPreviewChkBox,   SIGNAL (toggled(bool)),SLOT(redisplayPreview()));
+  connect(myDlg->myDestinationX,  SIGNAL (valueChanged(double)), this, SLOT(redisplayPreview()));
+  connect(myDlg->myDestinationY,  SIGNAL (valueChanged(double)), this, SLOT(redisplayPreview()));
+  connect(myDlg->myDestinationZ,  SIGNAL (valueChanged(double)), this, SLOT(redisplayPreview()));
+  connect(myDlg->myDestDX,        SIGNAL (valueChanged(double)), this, SLOT(onDestCoordChanged()));
+  connect(myDlg->myDestDY,        SIGNAL (valueChanged(double)), this, SLOT(onDestCoordChanged()));
+  connect(myDlg->myDestDZ,        SIGNAL (valueChanged(double)), this, SLOT(onDestCoordChanged()));
+  connect(myDlg->myId,            SIGNAL (textChanged(const QString&)),SLOT(redisplayPreview()));
+  connect(myDlg->myPreviewChkBox, SIGNAL (toggled(bool)),              SLOT(redisplayPreview()));
+  connect(myDlg->myButtonGroup,   SIGNAL (buttonClicked(int)),         SLOT(redisplayPreview()));
 
   // IPAL22913: TC6.5.0: selected in "Move node" dialog box node is not highlighted
   // note: this slot seems to be lost together with removed obsolete SMESHGUI_MoveNodesDlg class
@@ -395,7 +398,10 @@ void SMESHGUI_MakeNodeAtPointOp::startOperation()
 
   // init simulation with a current View
   if ( mySimulation ) delete mySimulation;
-  mySimulation = new SMESHGUI_MeshEditPreview(SMESH::GetViewWindow( getSMESHGUI() ));
+  mySMESHGUI = getSMESHGUI();
+  mySimulation = new SMESHGUI_MeshEditPreview(SMESH::GetViewWindow( mySMESHGUI ) );
+  connect(mySMESHGUI, SIGNAL (SignalActivatedViewManager()), this, SLOT(onOpenView()));
+  connect(mySMESHGUI, SIGNAL (SignalCloseView()), this, SLOT(onCloseView()));
   vtkProperty* aProp = vtkProperty::New();
   aProp->SetRepresentationToWireframe();
   aProp->SetColor(250, 0, 250);
@@ -436,13 +442,6 @@ void SMESHGUI_MakeNodeAtPointOp::startOperation()
   myDlg->show();
 
   onSelectionDone(); // init myMeshActor
-
-  if ( myMeshActor ) {
-//     myMeshActor->SetRepresentation( VTK_WIREFRAME );
-    myMeshActor->SetPointRepresentation(true);
-    SMESH::RepaintCurrentView();
-    redisplayPreview();
-  }
 }
 
 //=================================================================================
@@ -463,12 +462,19 @@ int SMESHGUI_MakeNodeAtPointOp::GetConstructorId()
 void SMESHGUI_MakeNodeAtPointOp::stopOperation()
 {
   myNoPreview = true;
-  mySimulation->SetVisibility(false);
+  if ( mySimulation )
+  {
+    mySimulation->SetVisibility(false);
+    delete mySimulation;
+    mySimulation = 0;
+  }
   if ( myMeshActor ) {
     myMeshActor->SetPointRepresentation(false);
     SMESH::RepaintCurrentView();
     myMeshActor = 0;
   }
+  disconnect(mySMESHGUI, SIGNAL (SignalActivatedViewManager()), this, SLOT(onOpenView()));
+  disconnect(mySMESHGUI, SIGNAL (SignalCloseView()), this, SLOT(onCloseView()));
   selectionMgr()->removeFilter( myFilter );
   SMESHGUI_SelectionOp::stopOperation();
 }
@@ -593,6 +599,8 @@ void SMESHGUI_MakeNodeAtPointOp::onSelectionDone()
 {
   if ( !myDlg->isVisible() || !myDlg->isEnabled() )
     return;
+
+  myNoPreview = true;
   try {
     SALOME_ListIO aList;
     selectionMgr()->selectedObjects(aList, SVTK_Viewer::Type());
@@ -600,6 +608,10 @@ void SMESHGUI_MakeNodeAtPointOp::onSelectionDone()
       return;
     Handle(SALOME_InteractiveObject) anIO = aList.First();
     SMESH_Actor* aMeshActor = SMESH::FindActorByEntry(anIO->getEntry());
+
+    if (( myDlg->myIdBtn->isChecked() && myDlg->myIdBtn->isEnabled() ) ||
+        ( !myDlg->myNodeToMoveGrp->isVisible() ))
+      myMeshActor = aMeshActor;
 
     if (!aMeshActor) { // coord by geom
       if ( myDlg->myDestBtn->isChecked() ) {
@@ -609,63 +621,56 @@ void SMESHGUI_MakeNodeAtPointOp::onSelectionDone()
           if ( GEOMBase::GetShape(geom, aShape) &&
                aShape.ShapeType() == TopAbs_VERTEX ) {
             gp_Pnt P = BRep_Tool::Pnt(aShape);
-            myNoPreview = true;
             myDlg->myDestinationX->SetValue(P.X());
             myDlg->myDestinationY->SetValue(P.Y());
             myDlg->myDestinationZ->SetValue(P.Z());
-            myNoPreview = false;
-            redisplayPreview();
           }
         }
+        myNoPreview = false;
+        redisplayPreview();
         return;
       }
     }
-
-    if ( !myMeshActor )
-      myMeshActor = aMeshActor;
 
     QString aString;
     int nbElems = SMESH::GetNameOfSelectedElements(selector(),anIO, aString);
     if (nbElems == 1) {
       if (SMDS_Mesh* aMesh = aMeshActor->GetObject()->GetMesh()) {
         if (const SMDS_MeshNode* aNode = aMesh->FindNode(aString.toInt())) {
-          myNoPreview = true;
           if ( myDlg->myDestBtn->isChecked() ) { // set coord
             myDlg->myDestinationX->SetValue(aNode->X());
             myDlg->myDestinationY->SetValue(aNode->Y());
             myDlg->myDestinationZ->SetValue(aNode->Z());
-            myNoPreview = false;
-            redisplayPreview();
           }
           else if ( myDlg->myIdBtn->isChecked() &&
                     myDlg->myIdBtn->isEnabled() ) { // set node to move
             myDlg->myId->setText(aString);
-            myNoPreview = false;
+            myDlg->myCurrentX->SetValue( aNode->X() );
+            myDlg->myCurrentY->SetValue( aNode->Y() );
+            myDlg->myCurrentZ->SetValue( aNode->Z() );
             redisplayPreview();
           }
 
-          if (const SMDS_MeshNode* aCurrentNode = aMesh->FindNode(myDlg->myId->text().toInt())) {
-            double x = aCurrentNode->X();
-            double y = aCurrentNode->Y();
-            double z = aCurrentNode->Z();
-            double dx = myDlg->myDestinationX->GetValue() - x;
-            double dy = myDlg->myDestinationY->GetValue() - y;
-            double dz = myDlg->myDestinationZ->GetValue() - z;
-            myDlg->myCurrentX->SetValue(x);
-            myDlg->myCurrentY->SetValue(y);
-            myDlg->myCurrentZ->SetValue(z);
-            myDlg->myDestDX->SetValue(dx);
-            myDlg->myDestDY->SetValue(dy);
-            myDlg->myDestDZ->SetValue(dz);
-            myDlg->myDestDX->setReadOnly(false);
-            myDlg->myDestDY->setReadOnly(false);
-            myDlg->myDestDZ->setReadOnly(false);
-          }
+          double x = myDlg->myCurrentX->GetValue();
+          double y = myDlg->myCurrentY->GetValue();
+          double z = myDlg->myCurrentZ->GetValue();
+          double dx = myDlg->myDestinationX->GetValue() - x;
+          double dy = myDlg->myDestinationY->GetValue() - y;
+          double dz = myDlg->myDestinationZ->GetValue() - z;
+          myDlg->myDestDX->SetValue(dx);
+          myDlg->myDestDY->SetValue(dy);
+          myDlg->myDestDZ->SetValue(dz);
+          myDlg->myDestDX->setReadOnly(false);
+          myDlg->myDestDY->setReadOnly(false);
+          myDlg->myDestDZ->setReadOnly(false);
         }
       }
     }
   } catch (...) {
   }
+
+  myNoPreview = false;
+  redisplayPreview();
 }
 
 //================================================================================
@@ -685,7 +690,7 @@ void SMESHGUI_MakeNodeAtPointOp::redisplayPreview()
   bool moveShown = false;
   if ( myMeshActor)
   {
-    const bool isPreview = myDlg->myPreviewChkBox->isChecked();
+    const bool  isPreview = myDlg->myPreviewChkBox->isChecked();
     const bool isMoveNode = myDlg->myRButMoveWithoutNode->isChecked();
     QString msg;
     if ( isValid( msg ) )
@@ -714,22 +719,28 @@ void SMESHGUI_MakeNodeAtPointOp::redisplayPreview()
                 myDlg->myDestinationX->SetValue(x);
                 myDlg->myDestinationY->SetValue(y);
                 myDlg->myDestinationZ->SetValue(z);
-              }
-              if ( myDestCoordChanged ) {
-                dx = myDlg->myDestinationX->GetValue() - x;
-                dy = myDlg->myDestinationY->GetValue() - y;
-                dz = myDlg->myDestinationZ->GetValue() - z;
                 myDlg->myDestDX->SetValue(dx);
                 myDlg->myDestDY->SetValue(dy);
                 myDlg->myDestDZ->SetValue(dz);
               }
-              else {
-                dx = myDlg->myDestDX->GetValue() + x;
-                dy = myDlg->myDestDY->GetValue() + y;
-                dz = myDlg->myDestDZ->GetValue() + z;
-                myDlg->myDestinationX->SetValue(dx);
-                myDlg->myDestinationY->SetValue(dy);
-                myDlg->myDestinationZ->SetValue(dz);
+              else
+              {
+                if ( myDestCoordChanged ) {
+                  dx = myDlg->myDestinationX->GetValue() - x;
+                  dy = myDlg->myDestinationY->GetValue() - y;
+                  dz = myDlg->myDestinationZ->GetValue() - z;
+                  myDlg->myDestDX->SetValue(dx);
+                  myDlg->myDestDY->SetValue(dy);
+                  myDlg->myDestDZ->SetValue(dz);
+                }
+                else {
+                  dx = myDlg->myDestDX->GetValue() + x;
+                  dy = myDlg->myDestDY->GetValue() + y;
+                  dz = myDlg->myDestDZ->GetValue() + z;
+                  myDlg->myDestinationX->SetValue(dx);
+                  myDlg->myDestinationY->SetValue(dy);
+                  myDlg->myDestinationZ->SetValue(dz);
+                }
               }
               myDlg->myCurrentX->SetValue(x);
               myDlg->myCurrentY->SetValue(y);
@@ -787,7 +798,8 @@ void SMESHGUI_MakeNodeAtPointOp::redisplayPreview()
     aMeshPreviewStruct->elementConnectivities.length(1);
     aMeshPreviewStruct->elementConnectivities[0] = 0;
   }
-
+  if (!mySimulation)
+    mySimulation = new SMESHGUI_MeshEditPreview(SMESH::GetViewWindow( mySMESHGUI ));
   // display data
   if ( aMeshPreviewStruct.operator->() )
   {
@@ -799,6 +811,33 @@ void SMESHGUI_MakeNodeAtPointOp::redisplayPreview()
   }
 
   myNoPreview = false;
+}
+
+//=================================================================================
+/*!
+ * \brief SLOT called when the viewer opened
+ */
+//=================================================================================
+void SMESHGUI_MakeNodeAtPointOp::onOpenView()
+{
+  if ( mySimulation ) {
+    mySimulation->SetVisibility(false);
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    mySimulation = new SMESHGUI_MeshEditPreview(SMESH::GetViewWindow( mySMESHGUI ));
+  }
+}
+
+//=================================================================================
+/*!
+ * \brief SLOT called when the viewer closed
+ */
+//=================================================================================
+void SMESHGUI_MakeNodeAtPointOp::onCloseView()
+{
+  delete mySimulation;
+  mySimulation = 0;
 }
 
 //================================================================================
@@ -839,7 +878,7 @@ void SMESHGUI_MakeNodeAtPointOp::onTextChange( const QString& theText )
 void SMESHGUI_MakeNodeAtPointOp::activateSelection()
 {
   selectionMgr()->clearFilters();
-  SMESH::SetPointRepresentation(false);
+  SMESH::SetPointRepresentation( true );
   selectionMgr()->installFilter( myFilter );
   setSelectionMode( NodeSelection );
 }

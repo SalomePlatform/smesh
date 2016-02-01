@@ -30,16 +30,17 @@
 #ifndef _SMESH_OCTREENODE_HXX_
 #define _SMESH_OCTREENODE_HXX_
 
-#include "SMESH_Utils.hxx"
-#include "SMESH_Octree.hxx"
-#include <gp_Pnt.hxx>
+#include "SMDS_ElemIterator.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "SMESH_Octree.hxx"
+#include "SMESH_Utils.hxx"
+
+#include <gp_Pnt.hxx>
 
 #include <list>
 #include <set>
 #include <map>
-
-#include "SMDS_ElemIterator.hxx"
+#include <vector>
 
 //forward declaration
 class SMDS_MeshNode;
@@ -49,33 +50,34 @@ typedef SMDS_Iterator<SMESH_OctreeNode*>              SMESH_OctreeNodeIterator;
 typedef boost::shared_ptr<SMESH_OctreeNodeIterator>   SMESH_OctreeNodeIteratorPtr;
 typedef std::set< const SMDS_MeshNode*, TIDCompare >  TIDSortedNodeSet;
 
-class SMESHUtils_EXPORT SMESH_OctreeNode : public SMESH_Octree {
-
-public:
+class SMESHUtils_EXPORT SMESH_OctreeNode : public SMESH_Octree
+{
+ public:
 
   // Constructor
   SMESH_OctreeNode (const TIDSortedNodeSet& theNodes, const int maxLevel = 8,
                     const int maxNbNodes = 5, const double minBoxSize = 0.);
 
-//=============================
-/*!
- * \brief Empty destructor
- */
-//=============================
+  // destructor
   virtual ~SMESH_OctreeNode () {};
 
   // Tells us if Node is inside the current box with the precision "precision"
   virtual const bool isInside(const gp_XYZ& p, const double precision = 0.);
 
   // Return in Result a list of Nodes potentials to be near Node
-  void               NodesAround(const SMDS_MeshNode *            Node,
-                                 std::list<const SMDS_MeshNode*>* Result,
+  void               NodesAround(const SMDS_MeshNode *            node,
+                                 std::list<const SMDS_MeshNode*>* result,
                                  const double                     precision = 0.);
 
   // Return in dist2Nodes nodes mapped to their square distance from Node
-  bool               NodesAround(const gp_XYZ& node,
+  bool               NodesAround(const gp_XYZ&                           point,
                                  std::map<double, const SMDS_MeshNode*>& dist2Nodes,
                                  double                                  precision);
+
+  // Return a list of Nodes close to a point
+  void               NodesAround(const gp_XYZ&                      point,
+                                 std::vector<const SMDS_MeshNode*>& nodes,
+                                 double                             precision);
 
   // Return in theGroupsOfNodes a list of group of nodes close to each other within theTolerance
   // Search for all the nodes in nodes

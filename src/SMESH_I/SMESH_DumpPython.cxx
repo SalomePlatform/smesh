@@ -547,6 +547,39 @@ namespace SMESH
     DumpArray( theList, *this );
     return *this;
   }
+  TPythonDump& TPythonDump::operator<<(const SMESH::CoincidentFreeBorders& theCFB)
+  {
+    // dump CoincidentFreeBorders as a list of lists, each enclosed list
+    // contains node IDs of a group of coincident free borders where
+    // each consequent triple of IDs describe a free border: (n1, n2, nLast)
+    // For example [[1, 2, 10, 20, 21, 40], [11, 12, 15, 55, 54, 41]] describes
+    // two groups of coincident free borders, each group including two borders
+
+    myStream << "[";
+    for ( CORBA::ULong i = 0; i < theCFB.coincidentGroups.length(); ++i )
+    {
+      const SMESH::FreeBordersGroup& aGRP = theCFB.coincidentGroups[ i ];
+      if ( i ) myStream << ",";
+      myStream << "[";
+      for ( CORBA::ULong iP = 0; iP < aGRP.length(); ++iP )
+      {
+        const SMESH::FreeBorderPart& aPART = aGRP[ iP ];
+        if ( 0 <= aPART.border && aPART.border < theCFB.borders.length() )
+        {
+          if ( iP ) myStream << ", ";
+          const SMESH::FreeBorder& aBRD = theCFB.borders[ aPART.border ];
+          myStream << aBRD.nodeIDs[ aPART.node1    ] << ",";
+          myStream << aBRD.nodeIDs[ aPART.node2    ] << ",";
+          myStream << aBRD.nodeIDs[ aPART.nodeLast ];
+        }
+      }
+      myStream << "]";
+    }
+    myStream << "]";
+
+    return *this;
+  }
+
   const char* TPythonDump::NotPublishedObjectName()
   {
     return theNotPublishedObjectName;

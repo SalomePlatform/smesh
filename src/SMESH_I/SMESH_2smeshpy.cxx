@@ -692,6 +692,23 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
   {
     //id_mesh->second->AddProcessedCmd( aCommand );
 
+    // Wrap Export*() into try-except
+    if ( aCommand->MethodStartsFrom("Export"))
+    {
+      _AString    tab = "\t";
+      _AString indent = aCommand->GetIndentation();
+      _AString tryStr = indent + "try:";
+      _AString newCmd = indent + tab + ( aCommand->GetString().ToCString() + indent.Length() );
+      _AString excStr = indent + "except:";
+      _AString msgStr = indent + "\tprint '"; msgStr += method + "() failed. Invalid file name?'";
+
+      myCommands.insert( --myCommands.end(), new _pyCommand( tryStr, myNbCommands ));
+      aCommand->Clear();
+      aCommand->GetString() = newCmd;
+      aCommand->SetOrderNb( ++myNbCommands );
+      myCommands.push_back( new _pyCommand( excStr, ++myNbCommands ));
+      myCommands.push_back( new _pyCommand( msgStr, ++myNbCommands ));
+    }
     // check for mesh editor object
     if ( aCommand->GetMethod() == "GetMeshEditor" ) { // MeshEditor creation
       _pyID editorID = aCommand->GetResultValue();
@@ -1872,12 +1889,16 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
     }
   }
   // ----------------------------------------------------------------------
-  else if ( method == "GetSubMesh" ) { // collect submeshes of the mesh
+  else if ( method == "GetSubMesh" ) { // collect sub-meshes of the mesh
     Handle(_pySubMesh) subMesh = theGen->FindSubMesh( theCommand->GetResultValue() );
     if ( !subMesh.IsNull() ) {
       subMesh->SetCreator( this );
       mySubmeshes.push_back( subMesh );
     }
+  }
+  // ----------------------------------------------------------------------
+  else if ( method == "GetSubMeshes" ) { // clear as the command does nothing (0023156)
+    theCommand->Clear();
   }
   // ----------------------------------------------------------------------
   else if ( method == "AddHypothesis" ) { // mesh.AddHypothesis(geom, HYPO )
@@ -1894,7 +1915,8 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
   // ----------------------------------------------------------------------
   else if ( method == "CreateGroup" ||
             method == "CreateGroupFromGEOM" ||
-            method == "CreateGroupFromFilter" )
+            method == "CreateGroupFromFilter" ||
+            method == "CreateDimGroup" )
   {
     Handle(_pyGroup) group = new _pyGroup( theCommand );
     myGroups.push_back( group );
@@ -2413,6 +2435,7 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       "Mirror","MirrorObject","Translate","TranslateObject","Rotate","RotateObject",
       "FindCoincidentNodes","MergeNodes","FindEqualElements",
       "MergeElements","MergeEqualElements","SewFreeBorders","SewConformFreeBorders",
+      "FindCoincidentFreeBorders", "SewCoincidentFreeBorders",
       "SewBorderToSide","SewSideElements","ChangeElemNodes","GetLastCreatedNodes",
       "GetLastCreatedElems",
       "MirrorMakeMesh","MirrorObjectMakeMesh","TranslateMakeMesh","TranslateObjectMakeMesh",
@@ -3562,11 +3585,11 @@ void _pyCommand::SetBegPos( int thePartIndex, int thePosition )
 TCollection_AsciiString _pyCommand::GetIndentation()
 {
   int end = 1;
-  if ( GetBegPos( RESULT_IND ) == UNKNOWN )
-    GetWord( myString, end, true );
-  else
-    end = GetBegPos( RESULT_IND );
-  return myString.SubString( 1, Max( end - 1, 1 ));
+  //while ( end <= Length() && isblank( myString.Value( end )))
+  //ANA: isblank() function isn't provided in VC2010 compiler
+  while ( end <= Length() && ( myString.Value( end ) == ' ' || myString.Value( end ) == '\t') )
+    ++end;
+  return ( end == 1 ) ? _AString("") : myString.SubString( 1, end - 1 );
 }
 
 //================================================================================
@@ -3721,11 +3744,14 @@ const TCollection_AsciiString & _pyCommand::GetMethod()
   if ( GetBegPos( METHOD_IND ) == UNKNOWN )
   {
     // beginning
-    int begPos = GetBegPos( OBJECT_IND ) + myObj.Length();
+    int begPos = GetBegPos( OBJECT_IND );
     bool forward = true;
     if ( begPos < 1 ) {
       begPos = myString.Location( "(", 1, Length() ) - 1;
       forward = false;
+    }
+    else {
+      begPos += myObj.Length();
     }
     // store
     myMeth = GetWord( myString, begPos, forward );

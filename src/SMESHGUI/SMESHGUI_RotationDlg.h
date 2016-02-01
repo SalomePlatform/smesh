@@ -148,6 +148,8 @@ private slots:
   void                   onSelectMesh( bool );
   void                   onVectorChanged();
   void                   onActionClicked( int );
+  void                   onOpenView();
+  void                   onCloseView();
   void                   setFilters();
 };
 

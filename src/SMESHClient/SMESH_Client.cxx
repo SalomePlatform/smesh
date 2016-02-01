@@ -245,6 +245,33 @@ namespace
 
 
   //=======================================================================
+  //function : AddQaudPolygonsWithID
+  //=======================================================================
+  inline void AddQuadPolygonsWithID(SMDS_Mesh* theMesh,
+                                    SMESH::log_array_var& theSeq,
+                                    CORBA::Long theId)
+  {
+    const SMESH::long_array& anIndexes = theSeq[theId].indexes;
+    CORBA::Long anIndexId = 0, aNbElems = theSeq[theId].number;
+
+    for (CORBA::Long anElemId = 0; anElemId < aNbElems; anElemId++) {
+      int aFaceId = anIndexes[anIndexId++];
+
+      int aNbNodes = anIndexes[anIndexId++];
+      std::vector<int> nodes_ids (aNbNodes);
+      for (int i = 0; i < aNbNodes; i++) {
+        nodes_ids[i] = anIndexes[anIndexId++];
+      }
+
+      SMDS_MeshElement* anElem = theMesh->AddQuadPolygonalFaceWithID(nodes_ids, aFaceId);
+      if (!anElem)
+        EXCEPTION(runtime_error, "SMDS_Mesh::FindElement - cannot AddQaudPolygonalFaceWithID for ID = "
+                  << anElemId);
+    }
+  }
+
+
+  //=======================================================================
   //function : AddTetrasWithID
   //=======================================================================
   inline void AddTetrasWithID(SMDS_Mesh* theMesh,
@@ -903,6 +930,7 @@ SMESH_Client::Update(bool theIsClear)
         case SMESH::ADD_QUADEDGE         : AddQuadEdgesWithID   ( mySMDSMesh, aSeq, anId ); break;
         case SMESH::ADD_QUADTRIANGLE     : AddQuadTriasWithID   ( mySMDSMesh, aSeq, anId ); break;
         case SMESH::ADD_QUADQUADRANGLE   : AddQuadQuadsWithID   ( mySMDSMesh, aSeq, anId ); break;
+        case SMESH::ADD_QUADPOLYGON      : AddQuadPolygonsWithID( mySMDSMesh, aSeq, anId ); break;
         case SMESH::ADD_QUADTETRAHEDRON  : AddQuadTetrasWithID  ( mySMDSMesh, aSeq, anId ); break;
         case SMESH::ADD_QUADPYRAMID      : AddQuadPiramidsWithID( mySMDSMesh, aSeq, anId ); break;
         case SMESH::ADD_QUADPENTAHEDRON  : AddQuadPentasWithID  ( mySMDSMesh, aSeq, anId ); break;

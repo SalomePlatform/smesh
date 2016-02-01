@@ -31,12 +31,13 @@ The following additional hypothesis are available:
 <h2>Propagation of 1D Hypothesis on opposite edges</h2>
 
 <b>Propagation of 1D Hypothesis on opposite edges</b> allows to mesh
-opposite sides of a quadrangle face, and of other adjacent quadrangles,
-using the same hypothesis assigned to one edge only.<br>
-Thus you define a sub-mesh on an edge where you define 1D meshing
-parameters and a \b Propagation hypothesis. These local meshing
+opposite sides of a quadrangle face and other adjacent quadrangles,
+using the same hypothesis assigned to only one edge.<br>
+Thus you define a sub-mesh on the edge where you define 1D meshing
+parameters and the \b Propagation hypothesis. These local meshing
 parameters will be propagated via opposite sides of quadrangles to the
-whole geometry, or till an edge with other local meshing parameters.
+whole geometry, and this propagation stops at an edge with other local
+meshing parameters.
 
 This hypothesis can be taken into account by 
 \ref a1d_algos_anchor "Wire Discretization" and 
@@ -84,17 +85,17 @@ computations.
 <li><b>Stretch factor</b> - defines the growth factor of element height
   from the mesh boundary inwards.</li>
 <li><b>Extrusion method</b> (available in 3D only) - defines how
-  position of nodes are found during prism construction and how
-  creation of distorted and intersecting prisms is prevented.
-<ul><li><b>Surface offset + smooth</b> method extrudes nodes along normal
-    to underlying geometrical surface. Smoothing of internal surface of
+  positions of nodes are found during prism construction and how
+  the creation of distorted and intersecting prisms is prevented.
+<ul><li><b>Surface offset + smooth</b> method extrudes nodes along the normal
+    to the underlying geometrical surface. Smoothing of the internal surface of
     element layers is possible to avoid creation of invalid prisms.</li>
-  <li><b>Face offset</b> method extrudes nodes along average normal of
-    surrounding mesh faces till intersection with a neighbor mesh face
-    translated along its own normal by the layers thickness. Thickness
+  <li><b>Face offset</b> method extrudes nodes along the average normal of
+    surrounding mesh faces to the intersection with a neighbor mesh face
+    translated along its own normal by the thickness of layers. The thickness
     of layers can be limited to avoid creation of invalid prisms.</li>
-  <li><b>Node offset</b> method extrudes nodes along average normal of
-    surrounding mesh faces by the layers thickness. Thickness of
+  <li><b>Node offset</b> method extrudes nodes along the average normal of
+    surrounding mesh faces by the thickness of layers. The thickness of
     layers can be limited to avoid creation of invalid prisms.</li> 
 \image html viscous_layers_extrusion_method.png "Prisms created by the tree extrusion methods at the same other parameters"
 </ul></li>
@@ -107,9 +108,9 @@ computations.
   Faces (or edges) can be selected either in the Object Browser or in
   the VTK Viewer.
   \note A mesh shown in the 3D Viewer can prevent selection of faces
-  and edges, just hide the mesh to avoid this. Sometimes a face to
-  select is hidden by other faces, in this case consider creating a
-  group of faces you want to select in the Geometry module.<br>
+  and edges, just hide the mesh to avoid this. If a face, which should be
+  selected, is hidden by other faces, consider creating a
+  group of faces to be selected in the Geometry module.<br>
   To avoid a long wait when a
   geometry with many faces (or edges) is displayed, the number of faces
   (edges) shown at a time is limited by the value of "Sub-shapes
@@ -150,12 +151,12 @@ computations.
 
 Quadratic Mesh hypothesis allows to build a quadratic mesh (in which
 links between element nodes are not straight but curved lines due to
-presence of an additional midside node).
+presence of an additional mid-side node).
 
 This 1D hypothesis can be taken into account by 
 \ref a1d_algos_anchor "Wire Discretization" and 
 \ref a1d_algos_anchor "Composite Side Discretization" algorithms. To
-make a quadratic mesh assign this hypothesis at 
+create a quadratic mesh assign this hypothesis at 
 \ref constructing_meshes_page "mesh construction".
 
 See \ref adding_quadratic_elements_page
@@ -168,9 +169,13 @@ for more information about quadratic meshes.
 This additional hypothesis can be used together with 2D triangulation algorithms.
 It allows 2D triangulation algorithms to build quadrangular meshes.
 
-When used with "Quadrangle (Mapping)" meshing algorithm, that is obsolete
- since introducing \ref hypo_quad_params_anchor "Quadrangle parameters" 
-hypothesis, this hypothesis has one restriction on its work: the total quantity of 
-segments on all four sides of the face must be even (divisible by 2).
-
+Usage of this hypothesis with "Quadrangle (Mapping)" meshing algorithm
+is obsolete since introducing
+\ref hypo_quad_params_anchor "Quadrangle parameters" hypothesis.
+Usage of this hypothesis with "Quadrangle (Mapping)" meshing algorithm
+corresponds to specifying "Quadrangle Preference" transition type of
+\ref hypo_quad_params_anchor "Quadrangle parameters" hypothesis.
+\note "Quadrangle Preference" transition type can be used only if the
+total quantity of segments on all sides of the face is even (divisible
+by 2), else "Standard" transition type is used.
 */

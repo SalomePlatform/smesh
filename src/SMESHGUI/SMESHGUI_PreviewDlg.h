@@ -58,8 +58,9 @@ protected:
 
 protected slots:
  void                      toDisplaySimulation();
+ void                      onCloseView();
+ void                      onOpenView();
  virtual void              onDisplaySimulation( bool );
-
   
 protected:
   SMESHGUI*                 mySMESHGUI;              /* Current SMESHGUI object */  
@@ -87,6 +88,7 @@ protected:
 
 protected slots:
  void                      toDisplaySimulation();
+ void                      onCloseView();
  virtual void              onDisplaySimulation( bool );
 
   

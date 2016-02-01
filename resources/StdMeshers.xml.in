@@ -314,12 +314,27 @@
     <algorithm type     ="QuadFromMedialAxis_1D2D"
                label-id ="Quadrangle (Medial Axis Projection)"
                icon-id  ="mesh_algo_quad.png"
+               hypos    ="NumberOfLayers2D, LayerDistribution2D"
                opt-hypos="ViscousLayers2D"
                input    ="EDGE"
                output   ="QUAD"
                dim      ="2">
       <python-wrap>
         <algo>QuadFromMedialAxis_1D2D=Quadrangle(algo=smeshBuilder.QUAD_MA_PROJ)</algo>
+        <hypo>ViscousLayers2D=ViscousLayers2D(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetIgnoreEdges())</hypo>
+        <hypo>NumberOfLayers2D=NumberOfLayers(SetNumberOfLayers())</hypo>
+      </python-wrap>
+    </algorithm>
+
+    <algorithm type     ="PolygonPerFace_2D"
+               label-id ="Polygon per Face"
+               icon-id  ="mesh_algo_polygon.png"
+               opt-hypos="ViscousLayers2D"
+               input    ="EDGE"
+               output   ="POLYGON,QUAD,TRIA"
+               dim      ="2">
+      <python-wrap>
+        <algo>PolygonPerFace_2D=Polygon()</algo>
         <hypo>ViscousLayers2D=ViscousLayers2D(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetIgnoreEdges())</hypo>
       </python-wrap>
     </algorithm>

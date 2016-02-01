@@ -26,9 +26,9 @@ which will compose the mesh of these faces.
 \anchor length_from_edges_anchor
 <h2>Length from Edges</h2>
 
-<b>Length from edges</b> hypothesis defines maximum linear size of
-mesh faces as an average length of mesh edges approximating a boundary
-of a face being meshed.
+<b>Length from edges</b> hypothesis defines the maximum linear size of
+mesh faces as an average length of mesh edges approximating
+the meshed face boundary.
 
 <b>See Also</b> a sample TUI Script of a 
 \ref tui_length_from_edges "Length from Edges" hypothesis operation.
@@ -38,7 +38,7 @@ of a face being meshed.
 
 \image html hypo_quad_params_dialog.png "Quadrangle parameters: Transition"
 
-<b>Quadrangle parameters</b> is a hypothesis for Quadrangle (Mapping) algorithm.
+<b>Quadrangle parameters</b> is a hypothesis for \ref quad_ijk_algo_page.
 
 <b>Transition</b> tab is used to define the algorithm of transition
 between opposite sides of the face with a different number of
@@ -113,7 +113,7 @@ of the enforced nodes.
     projected to the meshed face and located close enough to the
     meshed face will be used to create the enforced nodes.</li>
 </ul>
-\note <b>Enforced nodes</b> can't be created at \b Reduced transition type.
+\note <b>Enforced nodes</b> cannot be created at \b Reduced transition type.
 
 Let us see how the algorithm works:
 <ul>

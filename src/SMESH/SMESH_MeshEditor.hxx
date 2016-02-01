@@ -73,21 +73,49 @@ public:
   void                           ClearLastCreated();
   SMESH_ComputeErrorPtr &        GetError() { return myError; }
 
+  // --------------------------------------------------------------------------------
+  struct ElemFeatures //!< Features of element to create
+  {
+    SMDSAbs_ElementType myType;
+    bool                myIsPoly, myIsQuad;
+    int                 myID;
+    double              myBallDiameter;
+    std::vector<int>    myPolyhedQuantities;
+
+    SMESH_EXPORT ElemFeatures( SMDSAbs_ElementType type=SMDSAbs_All, bool isPoly=false, bool isQuad=false )
+      :myType( type ), myIsPoly(isPoly), myIsQuad(isQuad), myID(-1), myBallDiameter(0) {}
+
+    SMESH_EXPORT ElemFeatures& Init( SMDSAbs_ElementType type, bool isPoly=false, bool isQuad=false )
+    { myType = type; myIsPoly = isPoly; myIsQuad = isQuad; return *this; }
+
+    SMESH_EXPORT ElemFeatures& Init( const SMDS_MeshElement* elem, bool basicOnly=true );
+
+    SMESH_EXPORT ElemFeatures& Init( double diameter )
+    { myType = SMDSAbs_Ball; myBallDiameter = diameter; return *this; }
+
+    SMESH_EXPORT ElemFeatures& Init( vector<int>& quanities, bool isQuad=false )
+    { myType = SMDSAbs_Volume; myIsPoly = 1; myIsQuad = isQuad;
+      myPolyhedQuantities.swap( quanities ); return *this; }
+
+    SMESH_EXPORT ElemFeatures& Init( const vector<int>& quanities, bool isQuad=false )
+    { myType = SMDSAbs_Volume; myIsPoly = 1; myIsQuad = isQuad;
+      myPolyhedQuantities = quanities; return *this; }
+
+    SMESH_EXPORT ElemFeatures& SetPoly(bool isPoly) { myIsPoly = isPoly; return *this; }
+    SMESH_EXPORT ElemFeatures& SetQuad(bool isQuad) { myIsQuad = isQuad; return *this; }
+    SMESH_EXPORT ElemFeatures& SetID  (int ID)      { myID = ID; return *this; }
+  };
+
   /*!
    * \brief Add element
    */
   SMDS_MeshElement* AddElement(const std::vector<const SMDS_MeshNode*> & nodes,
-                               const SMDSAbs_ElementType                 type,
-                               const bool                                isPoly,
-                               const int                                 ID = -1,
-                               const double                              ballDiameter=0.);
+                               const ElemFeatures&                       features);
   /*!
    * \brief Add element
    */
-  SMDS_MeshElement* AddElement(const std::vector<int>  & nodeIDs,
-                               const SMDSAbs_ElementType type,
-                               const bool                isPoly,
-                               const int                 ID = -1);
+  SMDS_MeshElement* AddElement(const std::vector<int> & nodeIDs,
+                               const ElemFeatures&      features);
 
   int Remove (const std::list< int >& theElemIDs, const bool isNodes);
   // Remove a node or an element.
@@ -193,7 +221,7 @@ public:
 
   /*!
    * \brief For hexahedra that will be split into prisms, finds facets to
-   *        split into triangles 
+   *        split into triangles
    *  \param [in,out] theHexas - the hexahedra
    *  \param [in]     theFacetNormal - facet normal
    *  \param [out]    theFacets - the hexahedra and found facet IDs
@@ -202,6 +230,16 @@ public:
                              const gp_Ax1&     theFacetNormal,
                              TFacetOfElem &    theFacets);
 
+  /*!
+   * \brief Split bi-quadratic elements into linear ones without creation of additional nodes
+   *   - bi-quadratic triangle will be split into 3 linear quadrangles;
+   *   - bi-quadratic quadrangle will be split into 4 linear quadrangles;
+   *   - tri-quadratic hexahedron will be split into 8 linear hexahedra;
+   *   Quadratic elements of lower dimension  adjacent to the split bi-quadratic element
+   *   will be split in order to keep the mesh conformal.
+   *  \param elems - elements to split
+   */
+  void SplitBiQuadraticIntoLinear(TIDSortedElemSet& theElems);
 
   enum SmoothMethod { LAPLACIAN = 0, CENTROIDAL };
 
@@ -412,7 +450,8 @@ public:
 
   void FindCoincidentNodes (TIDSortedNodeSet &   theNodes,
                             const double         theTolerance,
-                            TListOfListOfNodes & theGroupsOfNodes);
+                            TListOfListOfNodes & theGroupsOfNodes,
+                            bool                 theSeparateCornersAndMedium);
   // Return list of group of nodes close to each other within theTolerance.
   // Search among theNodes or in the whole mesh if theNodes is empty.
 
@@ -741,11 +780,11 @@ public:
   void LinearAngleVariation(const int     NbSteps,
                             list<double>& theAngles);
 
-  bool doubleNodes( SMESHDS_Mesh*                                           theMeshDS,
-                    const TIDSortedElemSet&                                 theElems,
-                    const TIDSortedElemSet&                                 theNodesNot,
-                    std::map< const SMDS_MeshNode*, const SMDS_MeshNode* >& theNodeNodeMap,
-                    const bool                                              theIsDoubleElem );
+  bool doubleNodes( SMESHDS_Mesh*           theMeshDS,
+                    const TIDSortedElemSet& theElems,
+                    const TIDSortedElemSet& theNodesNot,
+                    TNodeNodeMap&           theNodeNodeMap,
+                    const bool              theIsDoubleElem );
 
   void copyPosition( const SMDS_MeshNode* from,
                      const SMDS_MeshNode* to );

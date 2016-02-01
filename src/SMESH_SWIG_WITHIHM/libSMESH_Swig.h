@@ -38,6 +38,26 @@
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SALOMEDS)
 
+//std includes
+#include <vector>
+
+#include <SVTK_Selection.h>
+
+#include <SVTK_Selection.h>
+
+enum
+  {
+    Node       = NodeSelection,
+    Cell       = CellSelection,
+    EdgeOfCell = EdgeOfCellSelection,
+    Edge       = EdgeSelection,
+    Face       = FaceSelection,
+    Volume     = VolumeSelection,
+    Actor      = ActorSelection,
+    Elem0D     = Elem0DSelection,
+    Ball       = BallSelection
+  };
+
 class SMESH_SWIG_EXPORT SMESH_Swig
 {
 public:
@@ -73,6 +93,11 @@ public:
     * \param isComputed - is mesh computed or not
    */
   void                       SetMeshIcon( const char*, const bool, const bool );
+
+  // --------------------- for the test purposes -----------------------
+  int  getSelectionMode();
+  void select( const char *id, std::vector<int> ids, bool append = false );
+  void select( const char *id, int id1, bool append = false );
 
 private:
   SALOMEDS::Study_var        myStudy;

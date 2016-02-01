@@ -99,6 +99,8 @@ class SMESHGUI_EXPORT SMESHGUI_Add0DElemsOnAllNodesOp : public SMESHGUI_Selectio
   virtual bool                   onApply();
   void                           onSelTypeChange(int);
   void                           onSetFilter();
+  virtual void                   onTextChanged( int, const QStringList& );
+  void                           updateButtons();
 
  private:
   SMESHGUI_Add0DElemsOnAllNodesDlg* myDlg;

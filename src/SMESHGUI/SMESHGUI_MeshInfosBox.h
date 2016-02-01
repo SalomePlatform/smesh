@@ -69,6 +69,8 @@ private:
   QLabel* myNbQuadFace;
   QLabel* myNbBiQuadFace;
   QLabel* myNbPolyg;
+  QLabel* myNbLinPolyg;
+  QLabel* myNbQuadPolyg;
   QLabel* myNbHexa;
   QLabel* myNbLinHexa;
   QLabel* myNbQuadHexa;

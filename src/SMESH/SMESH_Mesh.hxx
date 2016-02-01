@@ -283,7 +283,7 @@ class SMESH_EXPORT SMESH_Mesh
   int NbQuadrangles(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
   int NbBiQuadQuadrangles() const throw(SALOME_Exception);
   int NbBiQuadTriangles() const throw(SALOME_Exception);
-  int NbPolygons() const throw(SALOME_Exception);
+  int NbPolygons(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
   
   int NbVolumes(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
   int NbTetras(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);

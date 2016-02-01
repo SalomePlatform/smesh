@@ -170,6 +170,18 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
 
   //---------------------------------------------------------------------
   /*!
+   * \brief Finds nodes located within a tolerance near a point 
+   */
+  int FindNearPoint(const gp_Pnt&                        point,
+                    const double                         tolerance,
+                    std::vector< const SMDS_MeshNode* >& foundNodes)
+  {
+    myOctreeNode->NodesAround( point.Coord(), foundNodes, tolerance );
+    return foundNodes.size();
+  }
+
+  //---------------------------------------------------------------------
+  /*!
    * \brief Destructor
    */
   ~SMESH_NodeSearcherImpl() { delete myOctreeNode; }
@@ -427,8 +439,10 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
   bool                         _outerFacesFound;
   set<const SMDS_MeshElement*> _outerFaces; // empty means "no internal faces at all"
 
-  SMESH_ElementSearcherImpl( SMDS_Mesh& mesh, SMDS_ElemIteratorPtr elemIt=SMDS_ElemIteratorPtr())
-    : _mesh(&mesh),_meshPartIt(elemIt),_ebbTree(0),_nodeSearcher(0),_tolerance(-1),_outerFacesFound(false) {}
+  SMESH_ElementSearcherImpl( SMDS_Mesh&           mesh,
+                             double               tol=-1,
+                             SMDS_ElemIteratorPtr elemIt=SMDS_ElemIteratorPtr())
+    : _mesh(&mesh),_meshPartIt(elemIt),_ebbTree(0),_nodeSearcher(0),_tolerance(tol),_outerFacesFound(false) {}
   virtual ~SMESH_ElementSearcherImpl()
   {
     if ( _ebbTree )      delete _ebbTree;      _ebbTree      = 0;
@@ -696,21 +710,21 @@ FindElementsByPoint(const gp_Pnt&                      point,
     if ( !_nodeSearcher )
       _nodeSearcher = new SMESH_NodeSearcherImpl( _mesh );
 
-    const SMDS_MeshNode* closeNode = _nodeSearcher->FindClosestTo( point );
-    if ( !closeNode ) return foundElements.size();
-
-    if ( point.Distance( SMESH_TNodeXYZ( closeNode )) > tolerance )
-      return foundElements.size(); // to far from any node
+    std::vector< const SMDS_MeshNode* > foundNodes;
+    _nodeSearcher->FindNearPoint( point, tolerance, foundNodes );
 
     if ( type == SMDSAbs_Node )
     {
-      foundElements.push_back( closeNode );
+      foundElements.assign( foundNodes.begin(), foundNodes.end() );
     }
     else
     {
-      SMDS_ElemIteratorPtr elemIt = closeNode->GetInverseElementIterator( type );
-      while ( elemIt->more() )
-        foundElements.push_back( elemIt->next() );
+      for ( size_t i = 0; i < foundNodes.size(); ++i )
+      {
+        SMDS_ElemIteratorPtr elemIt = foundNodes[i]->GetInverseElementIterator( type );
+        while ( elemIt->more() )
+          foundElements.push_back( elemIt->next() );
+      }
     }
   }
   // =================================================================================
@@ -1079,32 +1093,22 @@ bool SMESH_MeshAlgos::IsOut( const SMDS_MeshElement* element, const gp_Pnt& poin
 
   // get ordered nodes
 
-  vector< gp_XYZ > xyz;
-  vector<const SMDS_MeshNode*> nodeList;
+  vector< SMESH_TNodeXYZ > xyz;
 
-  SMDS_ElemIteratorPtr nodeIt = element->nodesIterator();
-  if ( element->IsQuadratic() ) {
-    nodeIt = element->interlacedNodesElemIterator();
-    // if (const SMDS_VtkFace* f=dynamic_cast<const SMDS_VtkFace*>(element))
-    //   nodeIt = f->interlacedNodesElemIterator();
-    // else if (const SMDS_VtkEdge*  e =dynamic_cast<const SMDS_VtkEdge*>(element))
-    //   nodeIt = e->interlacedNodesElemIterator();
-  }
+  SMDS_ElemIteratorPtr nodeIt = element->interlacedNodesElemIterator();
   while ( nodeIt->more() )
   {
     SMESH_TNodeXYZ node = nodeIt->next();
     xyz.push_back( node );
-    nodeList.push_back(node._node);
   }
 
-  int i, nbNodes = (int) nodeList.size(); // central node of biquadratic is missing
+  int i, nbNodes = (int) xyz.size(); // central node of biquadratic is missing
 
   if ( element->GetType() == SMDSAbs_Face ) // --------------------------------------------------
   {
     // compute face normal
     gp_Vec faceNorm(0,0,0);
     xyz.push_back( xyz.front() );
-    nodeList.push_back( nodeList.front() );
     for ( i = 0; i < nbNodes; ++i )
     {
       gp_Vec edge1( xyz[i+1], xyz[i]);
@@ -1117,7 +1121,7 @@ bool SMESH_MeshAlgos::IsOut( const SMDS_MeshElement* element, const gp_Pnt& poin
       // degenerated face: point is out if it is out of all face edges
       for ( i = 0; i < nbNodes; ++i )
       {
-        SMDS_LinearEdge edge( nodeList[i], nodeList[i+1] );
+        SMDS_LinearEdge edge( xyz[i]._node, xyz[i+1]._node );
         if ( !IsOut( &edge, point, tol ))
           return false;
       }
@@ -1204,13 +1208,22 @@ bool SMESH_MeshAlgos::IsOut( const SMDS_MeshElement* element, const gp_Pnt& poin
     // (we consider quadratic edge as being composed of two straight parts)
     for ( i = 1; i < nbNodes; ++i )
     {
-      gp_Vec edge( xyz[i-1], xyz[i]);
-      gp_Vec n1p ( xyz[i-1], point);
-      double dist = ( edge ^ n1p ).Magnitude() / edge.Magnitude();
-      if ( dist > tol )
+      gp_Vec edge( xyz[i-1], xyz[i] );
+      gp_Vec n1p ( xyz[i-1], point  );
+      double u = ( edge * n1p ) / edge.SquareMagnitude(); // param [0,1] on the edge
+      if ( u <= 0. ) {
+        if ( n1p.SquareMagnitude() < tol * tol )
+          return false;
         continue;
-      gp_Vec n2p( xyz[i], point );
-      if ( fabs( edge.Magnitude() - n1p.Magnitude() - n2p.Magnitude()) > tol )
+      }
+      if ( u >= 1. ) {
+        if ( point.SquareDistance( xyz[i] ) < tol * tol )
+          return false;
+        continue;
+      }
+      gp_XYZ proj = ( 1. - u ) * xyz[i-1] + u * xyz[i]; // projection of the point on the edge
+      double dist2 = point.SquareDistance( proj );
+      if ( dist2 > tol * tol )
         continue;
       return false; // point is ON this part
     }
@@ -1219,7 +1232,7 @@ bool SMESH_MeshAlgos::IsOut( const SMDS_MeshElement* element, const gp_Pnt& poin
   // Node or 0D element -------------------------------------------------------------------------
   {
     gp_Vec n2p ( xyz[0], point );
-    return n2p.Magnitude() <= tol;
+    return n2p.SquareMagnitude() <= tol * tol;
   }
   return true;
 }
@@ -1528,10 +1541,8 @@ SMESH_MeshAlgos::FindFaceInSet(const SMDS_MeshNode*    n1,
   const SMDS_MeshElement* face = 0;
 
   SMDS_ElemIteratorPtr invElemIt = n1->GetInverseElementIterator(SMDSAbs_Face);
-  //MESSAGE("n1->GetInverseElementIterator(SMDSAbs_Face) " << invElemIt);
   while ( invElemIt->more() && !face ) // loop on inverse faces of n1
   {
-    //MESSAGE("in while ( invElemIt->more() && !face )");
     const SMDS_MeshElement* elem = invElemIt->next();
     if (avoidSet.count( elem ))
       continue;
@@ -1550,9 +1561,6 @@ SMESH_MeshAlgos::FindFaceInSet(const SMDS_MeshNode*    n1,
     if ( !face && elem->IsQuadratic())
     {
       // analysis for quadratic elements using all nodes
-      // const SMDS_VtkFace* F = dynamic_cast<const SMDS_VtkFace*>(elem);
-      // if (!F) throw SALOME_Exception(LOCALIZED("not an SMDS_VtkFace"));
-      // use special nodes iterator
       SMDS_ElemIteratorPtr anIter = elem->interlacedNodesElemIterator();
       const SMDS_MeshNode* prevN = static_cast<const SMDS_MeshNode*>( anIter->next() );
       for ( i1 = -1, i2 = 0; anIter->more() && !face; i1++, i2++ )
@@ -1587,7 +1595,7 @@ bool SMESH_MeshAlgos::FaceNormal(const SMDS_MeshElement* F, gp_XYZ& normal, bool
     return false;
 
   normal.SetCoord(0,0,0);
-  int nbNodes = F->IsQuadratic() ? F->NbNodes()/2 : F->NbNodes();
+  int nbNodes = F->NbCornerNodes();
   for ( int i = 0; i < nbNodes-2; ++i )
   {
     gp_XYZ p[3];
@@ -1638,9 +1646,10 @@ SMESH_NodeSearcher* SMESH_MeshAlgos::GetNodeSearcher(SMDS_Mesh& mesh)
  */
 //=======================================================================
 
-SMESH_ElementSearcher* SMESH_MeshAlgos::GetElementSearcher(SMDS_Mesh& mesh)
+SMESH_ElementSearcher* SMESH_MeshAlgos::GetElementSearcher(SMDS_Mesh& mesh,
+                                                           double     tolerance)
 {
-  return new SMESH_ElementSearcherImpl( mesh );
+  return new SMESH_ElementSearcherImpl( mesh, tolerance );
 }
 
 //=======================================================================
@@ -1650,7 +1659,8 @@ SMESH_ElementSearcher* SMESH_MeshAlgos::GetElementSearcher(SMDS_Mesh& mesh)
 //=======================================================================
 
 SMESH_ElementSearcher* SMESH_MeshAlgos::GetElementSearcher(SMDS_Mesh&           mesh,
-                                                           SMDS_ElemIteratorPtr elemIt)
+                                                           SMDS_ElemIteratorPtr elemIt,
+                                                           double               tolerance)
 {
-  return new SMESH_ElementSearcherImpl( mesh, elemIt );
+  return new SMESH_ElementSearcherImpl( mesh, tolerance, elemIt );
 }

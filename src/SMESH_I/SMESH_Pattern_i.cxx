@@ -83,28 +83,31 @@ SMESH::SMESH_Pattern_ptr SMESH_Gen_i::GetPattern()
 //=======================================================================
 
 SMESH_Pattern_i::SMESH_Pattern_i( SMESH_Gen_i* theGen_i ):
-       myGen( theGen_i )
+  myGen( theGen_i )
 {
 }
 
 //=======================================================================
 //function : getMesh
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 ::SMESH_Mesh* SMESH_Pattern_i::getMesh( SMESH::SMESH_Mesh_ptr & theMesh )
 {
-  SMESH_Mesh_i* anImplPtr = 
+  SMESH_Mesh_i* anImplPtr =
     dynamic_cast<SMESH_Mesh_i*>( SMESH_Gen_i::GetServant( theMesh ).in() );
   if ( anImplPtr )
+  {
+    anImplPtr->Load();
     return & anImplPtr->GetImpl();
+  }
 
   return 0;
 }
 
 //=======================================================================
 //function : LoadFromFile
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 CORBA::Boolean SMESH_Pattern_i::LoadFromFile(const char* theFileContents)

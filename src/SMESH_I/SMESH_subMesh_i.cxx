@@ -35,8 +35,9 @@
 #include "OpUtil.hxx"
 #include "Utils_ExceptHandlers.hxx"
 
-#include <TopoDS_Iterator.hxx>
 #include <TopExp_Explorer.hxx>
+#include <TopTools_ListIteratorOfListOfShape.hxx>
+#include <TopoDS_Iterator.hxx>
 
 using namespace std;
 
@@ -99,50 +100,87 @@ bool getSubMeshes(::SMESH_subMesh*  theSubMesh,
   SMESH_Mesh*      aMesh      = theSubMesh->GetFather();
   SMESHDS_Mesh*    aMeshDS    = aMesh->GetMeshDS();
   SMESHDS_SubMesh* aSubMeshDS = theSubMesh->GetSubMeshDS();
+  ::SMESH_subMesh* sm;
 
   // nodes can be bound to either vertex, edge, face or solid_or_shell
-  TopoDS_Shape aShape = theSubMesh->GetSubShape();
-  switch ( aShape.ShapeType() )
+  TopoDS_Shape         aShape = theSubMesh->GetSubShape();
+  TopAbs_ShapeEnum aShapeType = aShape.ShapeType();
+
+  // IPAL18558: Wrong information of the created sub-mesh is shown. (Sub-mesh on a FACE
+  // with only 1D algo assigned
+  // Find dimension of sub-meshes to return as highest dimension of the assigned algorithm
+  if ( theSubMesh->IsEmpty() && !theSubMesh->GetAlgo() )
   {
-  case TopAbs_SOLID: {
-    // add submesh of solid itself
-    aSubMeshDS = aMeshDS->MeshElements( aShape );
-    if ( aSubMeshDS )
+    // on father sub-meshes, check presence of an algo which will mesh this sub-mesh
+    // even if no algo is assigned to this sub-mesh
+    bool topAlgoPresent = false;
+    TopTools_ListIteratorOfListOfShape ancestors( aMesh->GetAncestors( aShape ));
+    for ( ; ancestors.More() && !topAlgoPresent; ancestors.Next() )
+      if (( sm = aMesh->GetSubMeshContaining( ancestors.Value() )))
+        topAlgoPresent = ( sm->GetAlgo() && !sm->GetAlgo()->NeedDiscreteBoundary() );
+
+    if ( !topAlgoPresent )
+    {
+      // look for a sub-mesh with an algo
+      SMESH_subMeshIteratorPtr smIt =
+        theSubMesh->getDependsOnIterator(/*includeSelf=*/false, /*complexShapeFirst=*/true);
+      TopAbs_ShapeEnum algoShape = TopAbs_SHAPE;
+      while ( smIt->more() && algoShape == TopAbs_SHAPE )
+      {
+        sm = smIt->next();
+        if ( sm->GetAlgo() )
+          algoShape = sm->GetSubShape().ShapeType();
+      }
+      if ( algoShape != TopAbs_SHAPE )
+      {
+        // return all sub-meshes on this shape type
+        smIt = theSubMesh->getDependsOnIterator(/*includeSelf=*/false, /*complexShapeFirst=*/true);
+        while ( smIt->more() )
+        {
+          sm = smIt->next();
+          if ( sm->GetSubShape().ShapeType() == algoShape && sm->GetSubMeshDS() )
+            theSubMeshList.push_back( sm->GetSubMeshDS() );
+        }
+        return size < theSubMeshList.size();
+      }
+    }
+  }
+
+  switch ( aShapeType )
+  {
+  case TopAbs_SOLID:
+  {
+    // add sub-mesh of solid itself
+    if (( aSubMeshDS = aMeshDS->MeshElements( aShape )))
       theSubMeshList.push_back( aSubMeshDS );
+
     // and of the first shell
     TopExp_Explorer exp( aShape, TopAbs_SHELL );
-    if ( exp.More() ) {
-      aSubMeshDS = aMeshDS->MeshElements( exp.Current() );
-      if ( aSubMeshDS )
+    if ( exp.More() )
+      if (( aSubMeshDS = aMeshDS->MeshElements( exp.Current() )))
         theSubMeshList.push_back( aSubMeshDS );
-    }
     break;
   }
   case TopAbs_WIRE:
   case TopAbs_COMPOUND:
-  case TopAbs_COMPSOLID: {
+  case TopAbs_COMPSOLID:
+  {
     // call getSubMeshes() for sub-shapes
     list<TopoDS_Shape> shapeList;
     shapeList.push_back( aShape );
     list<TopoDS_Shape>::iterator sh = shapeList.begin();
     for ( ; sh != shapeList.end(); ++sh ) {
       for ( TopoDS_Iterator it( *sh ); it.More(); it.Next() ) {
-        if ( ::SMESH_subMesh* aSubMesh = aMesh->GetSubMeshContaining( it.Value() ))
-          getSubMeshes( aSubMesh, theSubMeshList ); // add found submesh or explore deeper
+        if (( sm = aMesh->GetSubMeshContaining( it.Value() )))
+          getSubMeshes( sm, theSubMeshList ); // add found sub-mesh or explore deeper
         else
           // no submesh for a compound inside compound
           shapeList.push_back( it.Value() );
       }
     }
-    // return only unique submeshes
-    set<SMESHDS_SubMesh*> smSet;
-    TListOfSubMeshes::iterator sm = theSubMeshList.begin();
-    while ( sm != theSubMeshList.end() ) {
-      if ( !smSet.insert( *sm ).second )
-        sm = theSubMeshList.erase( sm );
-      else
-        ++sm;
-    }
+    // return only unique sub-meshes
+    set<SMESHDS_SubMesh*> smSet( theSubMeshList.begin(), theSubMeshList.end() );
+    theSubMeshList.assign( smSet.begin(), smSet.end() );
     break;
   }
   default:

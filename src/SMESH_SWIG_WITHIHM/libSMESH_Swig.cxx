@@ -24,9 +24,12 @@
 //
 #include "libSMESH_Swig.h"
 
+
 #include <SMESHGUI.h>
 #include <SMESHGUI_Utils.h>
 #include <SMESHGUI_Displayer.h>
+#include <SMESHGUI_VTKUtils.h>
+#include <SMESH_Actor.h>
 
 // SALOME KERNEL includes
 #include <Utils_ORB_INIT.hxx>
@@ -40,12 +43,16 @@
 #include <SUIT_ViewManager.h>
 #include <SALOME_Prs.h>
 #include <SUIT_ViewWindow.h>
+#include <SVTK_ViewWindow.h>
 #include <VTKViewer_ViewModel.h>
 #include <SALOME_Event.h>
 #include <SalomeApp_Application.h>
+#include <LightApp_SelectionMgr.h>
+#include <SVTK_RenderWindowInteractor.h>
 
 // OCCT includes
 #include <TopAbs.hxx>
+#include <TColStd_MapOfInteger.hxx>
 
 // Qt includes
 #include <QApplication>
@@ -729,4 +736,113 @@ void SMESH_Swig::SetMeshIcon(const char* theMeshEntry,
                               theMeshEntry,
                               theIsComputed,
                               isEmpty));
+}
+
+/*!
+  \brief Helper class for selection event.
+*/
+class TSelectListEvent: public SALOME_Event
+{
+  const char*       myId;
+  std::vector<int>  myIdsList;
+  bool              myIsAppend;
+
+public:
+  TSelectListEvent(const char* id, std::vector<int> ids, bool append) :
+    myId(id),
+    myIdsList(ids),
+    myIsAppend(append)
+  {}
+  virtual void Execute()
+  {
+    SMESHGUI* aSMESHGUI = SMESHGUI::GetSMESHGUI();
+    if( !aSMESHGUI ) 
+      return;
+    
+    LightApp_SelectionMgr* selMgr = SMESH::GetSelectionMgr( aSMESHGUI );
+    if( !selMgr )
+      return;
+    
+    selMgr->clearFilters();
+
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( aSMESHGUI );
+    if(!aViewWindow)
+      return;
+
+    SMESH_Actor* anActor = SMESH::FindActorByEntry( myId );
+    
+    if (!anActor || !anActor->hasIO())
+      return;
+    
+    Handle(SALOME_InteractiveObject) anIO = anActor->getIO();
+    SALOME_ListIO aList;
+    aList.Append(anIO);
+    selMgr->setSelectedObjects(aList, false);
+
+    if ( aViewWindow->SelectionMode() ==  ActorSelection ) {
+      return;
+    }
+        
+    TColStd_MapOfInteger aMap;
+    std::vector<int>::const_iterator anIter;
+    for (anIter = myIdsList.begin(); anIter != myIdsList.end(); ++anIter) {
+      aMap.Add(*anIter);
+    }
+
+    // Set new selection
+    SVTK_Selector* aSelector  = aViewWindow->GetSelector();
+    aSelector->AddOrRemoveIndex(anIO, aMap, myIsAppend);
+    aViewWindow->highlight( anIO, true, true );
+    aViewWindow->GetInteractor()->onEmitSelectionChanged();
+  }
+};
+
+/*!
+  \brief Select the elements on the mesh, sub-mesh or group.
+  \param id object entry
+  \param ids list of the element ids
+  \param mode selection mode
+*/
+void SMESH_Swig::select( const char* id, std::vector<int> ids, bool append ) {
+  ProcessVoidEvent( new TSelectListEvent( id, ids, append ) );
+}
+  
+/*!
+  \brief Select the elements on the mesh, sub-mesh or group.
+  \param id object entry
+  \param id id of the element
+  \param mode selection mode
+*/
+void SMESH_Swig::select( const char* id, int id1, bool append ) {
+  std::vector<int> ids;
+  ids.push_back( id1 );
+  ProcessVoidEvent( new TSelectListEvent( id, ids, append ) );
+}
+
+
+class TGetSelectionModeEvent : public SALOME_Event
+{
+public:
+  typedef int TResult;
+  TResult myResult;
+  TGetSelectionModeEvent() : myResult( -1 ) {}
+  virtual void Execute()
+  {
+    SMESHGUI* aSMESHGUI = SMESHGUI::GetSMESHGUI();
+    if( !aSMESHGUI ) 
+      return;
+
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( aSMESHGUI );
+    if(!aViewWindow)
+      return;
+    
+    myResult = aViewWindow->SelectionMode();
+  }
+};
+
+/*!
+  \brief Get selection mode of the active VTK View window.
+*/
+int SMESH_Swig::getSelectionMode() {
+  return ProcessEvent( new TGetSelectionModeEvent() );
 }

@@ -23,7 +23,9 @@ elements which will form your group:</li>
 </ul>
 <li><b>Name</b> field allows to enter the name of your new group.</li>
 <li><b>Color</b> - allows to assign to the group a certain color. The
-  chosen color is used to display the elements of the group.</li>
+  chosen color is used to display the elements of the group.<br>
+  Activation of <em>Auto Color</em> item in mesh context menu
+  switches on a random choice of a color for a new group.</li>
 </ul>
 Mesh module distinguishes between the three Group types:
 <b>Standalone Group</b>, <b>Group on Geometry</b> and <b>Group on Filter</b>.
@@ -98,11 +100,11 @@ of a certain type generated on the selected geometrical object. Group
 contents are dynamically updated if the mesh is modified. The group on
 geometry can be created only if the mesh is based on geometry.
 
-To define a group, click a \a Selection button and chose
+To define a group, click the \a Selection button and choose
 - <em>Direct geometry selection</em> to select a shape in the Object
   Browser or in the Viewer;
 - <em>Find geometry by mesh element selection</em> to activate a
-  dialog which retrieves a shape by a selected element generated on
+  dialog which retrieves a shape by the selected element generated on
   this shape.
 
 Note that this choice is available only if the mesh elements are
@@ -130,8 +132,8 @@ of a certain type satisfying the defined filter. Group contents are
 dynamically updated if the mesh is modified.
 
 To define a group, click the <b>Set filter</b> button and define
-criteria of the filter in the opened dialog. After confirmation of the
-operation a new group of mesh elements will be created. See more about
+criteria of the filter in the opened dialog. After the
+operation is confirmed, a new group of mesh elements will be created. See more about
 filters on the 
 \ref selection_filter_library_page "Selection filter library" page. 
 

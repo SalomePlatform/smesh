@@ -105,6 +105,9 @@ private slots:
 
   void                      onDeactivate();
 
+  void                      onOpenView();
+  void                      onCloseView();
+
 private:
   QWidget*                  createButtonFrame( QWidget* );
   QWidget*                  createMainFrame  ( QWidget* );

@@ -346,6 +346,7 @@ SMESHGUI_ConvToQuadOp::DestinationMesh( const SMESH::SMESH_IDSource_var& idSourc
                    nbElemOfType[SMDSEntity_Quad_Tetra     ] ||
                    nbElemOfType[SMDSEntity_Quad_Hexa      ] ||
                    nbElemOfType[SMDSEntity_Quad_Pyramid   ] ||
+                   nbElemOfType[SMDSEntity_Quad_Polygon   ] ||
                    nbElemOfType[SMDSEntity_Quad_Penta     ] );
 
   bool hasLin  = ( nbElemOfType[SMDSEntity_Edge      ] ||
@@ -354,6 +355,7 @@ SMESHGUI_ConvToQuadOp::DestinationMesh( const SMESH::SMESH_IDSource_var& idSourc
                    nbElemOfType[SMDSEntity_Tetra     ] ||
                    nbElemOfType[SMDSEntity_Hexa      ] ||
                    nbElemOfType[SMDSEntity_Pyramid   ] ||
+                   nbElemOfType[SMDSEntity_Polygon   ] ||
                    nbElemOfType[SMDSEntity_Penta     ] );
 
   int tgtType = 0;

@@ -1260,7 +1260,7 @@ bool AdaptiveAlgo::Compute(SMESH_Mesh &         theMesh,
         double maxSegSize = 0;
 
         // get points to check distance to the face
-        EdgeData::TPntIter pIt2 = eData.myPoints.begin(), pIt1 = pIt2++;
+        EdgeData::TPntIter pIt2 = eData.myPoints.begin(), pIt1 = pIt2++, pItLast;
         maxSegSize = pIt1->mySegSize = Min( pIt1->mySegSize, sizeTree.GetSize( pIt1->myP ));
         for ( ; pIt2 != eData.myPoints.end(); )
         {
@@ -1290,6 +1290,7 @@ bool AdaptiveAlgo::Compute(SMESH_Mesh &         theMesh,
         //cout << "E " << theMesh.GetMeshDS()->ShapeToIndex( eData.Edge() ) << endl;
         sizeDecreased = false;
         const gp_Pnt* avoidPnt = & eData.First().myP;
+        pItLast = --eData.myPoints.end();
         for ( pIt1 = eData.myPoints.begin(); pIt1 != eData.myPoints.end();  )
         {
           double distToFace =
@@ -1316,7 +1317,7 @@ bool AdaptiveAlgo::Compute(SMESH_Mesh &         theMesh,
             pIt1->mySegSize = allowedSize;
           }
           ++pIt1;
-          if ( & (*pIt1) == & eData.Last() )
+          if ( pIt1 == pItLast )
             avoidPnt = & eData.Last().myP;
           else
             avoidPnt = NULL;

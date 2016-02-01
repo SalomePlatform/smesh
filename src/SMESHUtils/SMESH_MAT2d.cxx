@@ -47,7 +47,7 @@
 #include <TopoDS_Wire.hxx>
 
 #ifdef _DEBUG_
-//#define _MYDEBUG_
+#define _MYDEBUG_
 #include "SMESH_File.hxx"
 #include "SMESH_Comment.hxx"
 #endif
@@ -95,6 +95,9 @@ namespace
     InSegment( InPoint * p0, InPoint * p1, size_t iE)
       : _p0(p0), _p1(p1), _geomEdgeInd(iE) {}
     InSegment() : _p0(0), _p1(0), _geomEdgeInd(0) {}
+
+    const InPoint& point0() const { return *_p0; }
+    const InPoint& point1() const { return *_p1; }
 
     inline bool isConnected( const TVDEdge* edge );
 
@@ -258,8 +261,9 @@ namespace boost {
 
 namespace
 {
-  const int theNoBrachID = 0; // std::numeric_limits<int>::max();
-  double theScale[2]; // scale used in bndSegsToMesh()
+  const int    theNoBrachID = 0;
+  double       theScale[2]; // scale used in bndSegsToMesh()
+  const size_t theNoEdgeID = std::numeric_limits<size_t>::max() / 1000;
 
   // -------------------------------------------------------------------------------------
   /*!
@@ -277,17 +281,18 @@ namespace
   };
   // -------------------------------------------------------------------------------------
   /*!
-   * \brief A segment on EDGE, used to create BndPoints
+   * \brief Segment of EDGE, used to create BndPoints
    */
   struct BndSeg
   {
     InSegment*       _inSeg;
     const TVDEdge*   _edge;
     double           _uLast;
+    BndSeg*          _prev; // previous BndSeg in FACE boundary
     int              _branchID; // negative ID means reverse direction
 
     BndSeg( InSegment* seg, const TVDEdge* edge, double u ):
-      _inSeg(seg), _edge(edge), _uLast(u), _branchID( theNoBrachID ) {}
+      _inSeg(seg), _edge(edge), _uLast(u), _prev(0), _branchID( theNoBrachID ) {}
 
     void setIndexToEdge( size_t id )
     {
@@ -298,27 +303,48 @@ namespace
 
     size_t geomEdge() const { return _inSeg->_geomEdgeInd; }
 
-    void setBranch( int branchID, vector< BndSeg >& bndSegs )
+    static BndSeg* getBndSegOfEdge( const TVDEdge*              edge,
+                                    vector< vector< BndSeg > >& bndSegsPerEdge )
+    {
+      BndSeg* seg = 0;
+      if ( edge )
+      {
+        size_t oppSegIndex  = SMESH_MAT2d::Branch::getBndSegment( edge );
+        size_t oppEdgeIndex = SMESH_MAT2d::Branch::getGeomEdge  ( edge );
+        if ( oppEdgeIndex < bndSegsPerEdge.size() &&
+             oppSegIndex < bndSegsPerEdge[ oppEdgeIndex ].size() )
+        {
+          seg = & bndSegsPerEdge[ oppEdgeIndex ][ oppSegIndex ];
+        }
+      }
+      return seg;
+    }
+
+    void setBranch( int branchID, vector< vector< BndSeg > >& bndSegsPerEdge )
     {
       _branchID = branchID;
 
-      if ( _edge ) // pass branch to an opposite BndSeg
-      {
-        size_t oppSegIndex = SMESH_MAT2d::Branch::getBndSegment( _edge->twin() );
-        if ( oppSegIndex < bndSegs.size() && bndSegs[ oppSegIndex ]._branchID == theNoBrachID )
-          bndSegs[ oppSegIndex ]._branchID = -branchID;
-      }
+      // pass branch to an opposite BndSeg
+      if ( _edge )
+        if ( BndSeg* oppSeg = getBndSegOfEdge( _edge->twin(), bndSegsPerEdge ))
+        {
+          if ( oppSeg->_branchID == theNoBrachID )
+            oppSeg->_branchID = -branchID;
+        }
     }
-    bool hasOppositeEdge( const size_t noEdgeID )
+    bool hasOppositeEdge()
     {
       if ( !_edge ) return false;
-      return ( _inSeg->getGeomEdge( _edge->twin()->cell() ) != noEdgeID );
+      return ( _inSeg->getGeomEdge( _edge->twin()->cell() ) != theNoEdgeID );
     }
 
     // check a next segment in CW order
     bool isSameBranch( const BndSeg& seg2 )
     {
       if ( !_edge || !seg2._edge )
+        return true;
+
+      if ( _edge->twin() == seg2._edge )
         return true;
 
       const TVDCell* cell1 = this->_edge->twin()->cell();
@@ -344,14 +370,44 @@ namespace
       else if ( edgeMedium1->is_primary() && edgeMedium2->is_primary() )
       {
         if ( edgeMedium1->twin() == edgeMedium2 &&
-             SMESH_MAT2d::Branch::getBndSegment( edgeMedium1 ) ==
-             SMESH_MAT2d::Branch::getBndSegment( edgeMedium2 ))
+             SMESH_MAT2d::Branch::getGeomEdge( edgeMedium1 ) ==
+             SMESH_MAT2d::Branch::getGeomEdge( edgeMedium2 ))
           // this is an ignored MA edge between inSegment's on one EDGE forming a convex corner
           return true;
       }
 
       return false;
     }
+  }; // struct BndSeg
+
+  // -------------------------------------------------------------------------------------
+  /*!
+   * \brief Iterator 
+   */
+  struct BranchIterator
+  {
+    int                                 _i, _size;
+    const std::vector<const TVDEdge*> & _edges;
+    bool                                _closed;
+
+    BranchIterator(const std::vector<const TVDEdge*> & edges, int i )
+      :_i( i ), _size( edges.size() ), _edges( edges )
+    {
+      _closed = ( edges[0]->vertex1() == edges.back()->vertex0() || // closed branch
+                  edges[0]->vertex0() == edges.back()->vertex1() );
+    }
+    const TVDEdge* operator++() { ++_i; return edge(); }
+    const TVDEdge* operator--() { --_i; return edge(); }
+    bool operator<( const BranchIterator& other ) { return _i < other._i; }
+    BranchIterator& operator=( const BranchIterator& other ) { _i = other._i; return *this; }
+    void set(int i) { _i = i; }
+    int  index() const { return _i; }
+    int  indexMod() const { return ( _i + _size ) % _size; }
+    const TVDEdge* edge() const {
+      return _closed ? _edges[ indexMod() ] : ( _i < 0 || _i >= _size ) ? 0 : _edges[ _i ];
+    }
+    const TVDEdge* edgePrev() { --_i; const TVDEdge* e = edge(); ++_i; return e; }
+    const TVDEdge* edgeNext() { ++_i; const TVDEdge* e = edge(); --_i; return e; }
   };
 
   //================================================================================
@@ -360,7 +416,7 @@ namespace
    */
   //================================================================================
 
-  void bndSegsToMesh( const vector< BndSeg >& bndSegs )
+  void bndSegsToMesh( const vector< vector< BndSeg > >& bndSegsPerEdge )
   {
 #ifdef _MYDEBUG_
     if ( !getenv("bndSegsToMesh")) return;
@@ -378,36 +434,40 @@ namespace
     text << "from salome.smesh import smeshBuilder\n";
     text << "smesh = smeshBuilder.New(salome.myStudy)\n";
     text << "m=smesh.Mesh()\n";
-    for ( size_t i = 0; i < bndSegs.size(); ++i )
+    for ( size_t iE = 0; iE < bndSegsPerEdge.size(); ++iE )
     {
-      if ( !bndSegs[i]._edge )
-        text << "# " << i << " NULL edge";
-      else if ( !bndSegs[i]._edge->vertex0() ||
-                !bndSegs[i]._edge->vertex1() )
-        text << "# " << i << " INFINITE edge";
-      else if ( addedEdges.insert( bndSegs[i]._edge ).second &&
-                addedEdges.insert( bndSegs[i]._edge->twin() ).second )
+      const vector< BndSeg >& bndSegs = bndSegsPerEdge[ iE ];
+      for ( size_t i = 0; i < bndSegs.size(); ++i )
       {
-        v2n = v2Node.insert( make_pair( bndSegs[i]._edge->vertex0(), v2Node.size() + 1 )).first;
-        int n0 = v2n->second;
-        if ( n0 == v2Node.size() )
-          text << "n" << n0 << " = m.AddNode( "
-               << bndSegs[i]._edge->vertex0()->x() / theScale[0] << ", "
-               << bndSegs[i]._edge->vertex0()->y() / theScale[1] << ", 0 )\n";
+        if ( !bndSegs[i]._edge )
+          text << "# E=" << iE << " i=" << i << " NULL edge\n";
+        else if ( !bndSegs[i]._edge->vertex0() ||
+                  !bndSegs[i]._edge->vertex1() )
+          text << "# E=" << iE << " i=" << i << " INFINITE edge\n";
+        else if ( addedEdges.insert( bndSegs[i]._edge ).second &&
+                  addedEdges.insert( bndSegs[i]._edge->twin() ).second )
+        {
+          v2n = v2Node.insert( make_pair( bndSegs[i]._edge->vertex0(), v2Node.size() + 1 )).first;
+          int n0 = v2n->second;
+          if ( n0 == v2Node.size() )
+            text << "n" << n0 << " = m.AddNode( "
+                 << bndSegs[i]._edge->vertex0()->x() / theScale[0] << ", "
+                 << bndSegs[i]._edge->vertex0()->y() / theScale[1] << ", 0 )\n";
 
-        v2n = v2Node.insert( make_pair( bndSegs[i]._edge->vertex1(), v2Node.size() + 1 )).first;
-        int n1 = v2n->second;
-        if ( n1 == v2Node.size() )
-          text << "n" << n1 << " = m.AddNode( "
-               << bndSegs[i]._edge->vertex1()->x() / theScale[0] << ", "
-               << bndSegs[i]._edge->vertex1()->y() / theScale[1] << ", 0 )\n";
+          v2n = v2Node.insert( make_pair( bndSegs[i]._edge->vertex1(), v2Node.size() + 1 )).first;
+          int n1 = v2n->second;
+          if ( n1 == v2Node.size() )
+            text << "n" << n1 << " = m.AddNode( "
+                 << bndSegs[i]._edge->vertex1()->x() / theScale[0] << ", "
+                 << bndSegs[i]._edge->vertex1()->y() / theScale[1] << ", 0 )\n";
 
-        text << "e" << i << " = m.AddEdge([ n" << n0 << ", n" << n1 << " ])\n";
+          text << "e" << i << " = m.AddEdge([ n" << n0 << ", n" << n1 << " ])\n";
+        }
       }
     }
     text << "\n";
     file.write( text.c_str(), text.size() );
-    cout << "Write " << fileName << endl;
+    cout << "execfile( '" << fileName << "')" << endl;
 #endif
   }
 
@@ -670,22 +730,25 @@ namespace
    */
   //================================================================================
 
-  void updateJoinedBranch( vector< const TVDEdge* > & branchEdges,
-                           const size_t               newID,
-                           vector< BndSeg > &         bndSegs,
-                           const bool                 reverse)
+  void updateJoinedBranch( vector< const TVDEdge* > &   branchEdges,
+                           const size_t                 newID,
+                           vector< vector< BndSeg > > & bndSegs,
+                           const bool                   reverse)
   {
+    BndSeg *seg1, *seg2;
     if ( reverse )
     {
       for ( size_t i = 0; i < branchEdges.size(); ++i )
       {
-        size_t seg1 = SMESH_MAT2d::Branch::getBndSegment( branchEdges[i] );
-        size_t seg2 = SMESH_MAT2d::Branch::getBndSegment( branchEdges[i]->twin() );
-        bndSegs[ seg1 ]._branchID /= bndSegs[ seg1 ].branchID();
-        bndSegs[ seg2 ]._branchID /= bndSegs[ seg2 ].branchID();
-        bndSegs[ seg1 ]._branchID *= -newID;
-        bndSegs[ seg2 ]._branchID *= -newID;
-        branchEdges[i] = branchEdges[i]->twin();
+        if (( seg1 = BndSeg::getBndSegOfEdge( branchEdges[i],         bndSegs )) &&
+            ( seg2 = BndSeg::getBndSegOfEdge( branchEdges[i]->twin(), bndSegs )))
+        {
+          seg1->_branchID /= seg1->branchID();
+          seg2->_branchID /= seg2->branchID();
+          seg1->_branchID *= -newID;
+          seg2->_branchID *= -newID;
+          branchEdges[i] = branchEdges[i]->twin();
+        }
       }
       std::reverse( branchEdges.begin(), branchEdges.end() );
     }
@@ -693,12 +756,14 @@ namespace
     {
       for ( size_t i = 0; i < branchEdges.size(); ++i )
       {
-        size_t seg1 = SMESH_MAT2d::Branch::getBndSegment( branchEdges[i] );
-        size_t seg2 = SMESH_MAT2d::Branch::getBndSegment( branchEdges[i]->twin() );
-        bndSegs[ seg1 ]._branchID /= bndSegs[ seg1 ].branchID();
-        bndSegs[ seg2 ]._branchID /= bndSegs[ seg2 ].branchID();
-        bndSegs[ seg1 ]._branchID *= newID;
-        bndSegs[ seg2 ]._branchID *= newID;
+        if (( seg1 = BndSeg::getBndSegOfEdge( branchEdges[i],         bndSegs )) &&
+            ( seg2 = BndSeg::getBndSegOfEdge( branchEdges[i]->twin(), bndSegs )))
+        {
+          seg1->_branchID /= seg1->branchID();
+          seg2->_branchID /= seg2->branchID();
+          seg1->_branchID *= newID;
+          seg2->_branchID *= newID;
+        }
       }
     }
   }
@@ -723,9 +788,7 @@ namespace
                vector< const SMESH_MAT2d::BranchEnd* >& branchPnt,
                SMESH_MAT2d::Boundary&                   boundary )
   {
-    const size_t noEdgeID = inSegments.size() + 1; // ID of non-existent geom EDGE
-
-    // Associate MA cells with inSegments
+    // Associate MA cells with geom EDGEs
     for (TVD::const_cell_iterator it = vd.cells().begin(); it != vd.cells().end(); ++it)
     {
       const TVDCell* cell = &(*it);
@@ -737,7 +800,7 @@ namespace
       }
       else
       {
-        InSegment::setGeomEdgeToCell( cell, noEdgeID );
+        InSegment::setGeomEdgeToCell( cell, theNoEdgeID );
       }
     }
 
@@ -806,7 +869,7 @@ namespace
         {
           if ( edge->is_primary() ) break; // this should not happen
           const TVDEdge* edge2 = edge->twin(); // we are in a neighbor cell, add MA edges to inPnt
-          if ( inSeg.getGeomEdge( edge2->cell() ) != noEdgeID )
+          if ( inSeg.getGeomEdge( edge2->cell() ) != theNoEdgeID )
             break; // cell of an InSegment
           bool hasInfinite = false;
           list< const TVDEdge* > pointEdges;
@@ -840,63 +903,96 @@ namespace
     if ( inPoints.front() == inPoints.back() /*&& !inPoints[0]._edges.empty()*/ )
     {
       inPntChecked[0] = false; // do not use the 1st point twice
-      //InSegment::setGeomEdgeToCell( inPoints[0]._edges.back()->cell(), noEdgeID );
+      //InSegment::setGeomEdgeToCell( inPoints[0]._edges.back()->cell(), theNoEdgeID );
       inPoints[0]._edges.clear();
     }
 
     // Divide InSegment's into BndSeg's (so that each BndSeg corresponds to one MA edge)
 
-    vector< BndSeg > bndSegs;
-    bndSegs.reserve( inSegments.size() * 3 );
-
-    list< const TVDEdge* >::reverse_iterator e;
-    for ( size_t i = 0; i < inSegments.size(); ++i )
+    vector< vector< BndSeg > > bndSegsPerEdge( boundary.nbEdges() ); // all BndSeg's
     {
-      InSegment& inSeg = inSegments[i];
+      vector< BndSeg > bndSegs; // bndSeg's of a current EDGE
+      size_t prevGeomEdge = theNoEdgeID;
 
-      // segments around 1st concave point
-      size_t ip0 = inSeg._p0->index( inPoints );
-      if ( inPntChecked[ ip0 ] )
-        for ( e = inSeg._p0->_edges.rbegin(); e != inSeg._p0->_edges.rend(); ++e )
-          bndSegs.push_back( BndSeg( &inSeg, *e, inSeg._p0->_param ));
-      inPntChecked[ ip0 ] = false;
+      list< const TVDEdge* >::reverse_iterator e;
+      for ( size_t i = 0; i < inSegments.size(); ++i )
+      {
+        InSegment& inSeg = inSegments[i];
 
-      // segments of InSegment's
-      const size_t nbMaEdges = inSeg._edges.size();
-      switch ( nbMaEdges ) {
-      case 0: // "around" circle center
-        bndSegs.push_back( BndSeg( &inSeg, 0, inSeg._p1->_param )); break;
-      case 1:
-        bndSegs.push_back( BndSeg( &inSeg, inSeg._edges.back(), inSeg._p1->_param )); break;
-      default:
-        gp_XY inSegDir( inSeg._p1->_a - inSeg._p0->_a,
-                        inSeg._p1->_b - inSeg._p0->_b );
-        const double inSegLen2 = inSegDir.SquareModulus();
-        e = inSeg._edges.rbegin();
-        for ( size_t iE = 1; iE < nbMaEdges; ++e, ++iE )
+        if ( inSeg._geomEdgeInd != prevGeomEdge )
         {
-          gp_XY toMA( (*e)->vertex0()->x() - inSeg._p0->_a,
-                      (*e)->vertex0()->y() - inSeg._p0->_b );
-          double r = toMA * inSegDir / inSegLen2;
-          double u = r * inSeg._p1->_param + ( 1. - r ) * inSeg._p0->_param;
-          bndSegs.push_back( BndSeg( &inSeg, *e, u ));
+          if ( !bndSegs.empty() )
+            bndSegsPerEdge[ prevGeomEdge ].swap( bndSegs );
+          prevGeomEdge = inSeg._geomEdgeInd;
         }
-        bndSegs.push_back( BndSeg( &inSeg, *e, inSeg._p1->_param ));
-      }
-      // segments around 2nd concave point
-      size_t ip1 = inSeg._p1->index( inPoints );
-      if ( inPntChecked[ ip1 ] )
-        for ( e = inSeg._p1->_edges.rbegin(); e != inSeg._p1->_edges.rend(); ++e )
+
+        // segments around 1st concave point
+        size_t ip0 = inSeg._p0->index( inPoints );
+        if ( inPntChecked[ ip0 ] )
+          for ( e = inSeg._p0->_edges.rbegin(); e != inSeg._p0->_edges.rend(); ++e )
+            bndSegs.push_back( BndSeg( &inSeg, *e, inSeg._p0->_param ));
+        inPntChecked[ ip0 ] = false;
+
+        // segments of InSegment's
+        const size_t nbMaEdges = inSeg._edges.size();
+        switch ( nbMaEdges ) {
+        case 0: // "around" circle center
+          bndSegs.push_back( BndSeg( &inSeg, 0, inSeg._p1->_param )); break;
+        case 1:
+          bndSegs.push_back( BndSeg( &inSeg, inSeg._edges.back(), inSeg._p1->_param )); break;
+        default:
+          gp_XY inSegDir( inSeg._p1->_a - inSeg._p0->_a,
+                          inSeg._p1->_b - inSeg._p0->_b );
+          const double inSegLen2 = inSegDir.SquareModulus();
+          e = inSeg._edges.rbegin();
+          for ( size_t iE = 1; iE < nbMaEdges; ++e, ++iE )
+          {
+            gp_XY toMA( (*e)->vertex0()->x() - inSeg._p0->_a,
+                        (*e)->vertex0()->y() - inSeg._p0->_b );
+            double r = toMA * inSegDir / inSegLen2;
+            double u = r * inSeg._p1->_param + ( 1. - r ) * inSeg._p0->_param;
+            bndSegs.push_back( BndSeg( &inSeg, *e, u ));
+          }
           bndSegs.push_back( BndSeg( &inSeg, *e, inSeg._p1->_param ));
-      inPntChecked[ ip1 ] = false;
+        }
+        // segments around 2nd concave point
+        size_t ip1 = inSeg._p1->index( inPoints );
+        if ( inPntChecked[ ip1 ] )
+          for ( e = inSeg._p1->_edges.rbegin(); e != inSeg._p1->_edges.rend(); ++e )
+            bndSegs.push_back( BndSeg( &inSeg, *e, inSeg._p1->_param ));
+        inPntChecked[ ip1 ] = false;
+      }
+      if ( !bndSegs.empty() )
+        bndSegsPerEdge[ prevGeomEdge ].swap( bndSegs );
     }
 
-    // make TVDEdge's know it's BndSeg to enable passing branchID to
-    // an opposite BndSeg in BndSeg::setBranch()
-    for ( size_t i = 0; i < bndSegs.size(); ++i )
-      bndSegs[i].setIndexToEdge( i );
+    // prepare to MA branch search
+    for ( size_t iE = 0; iE < bndSegsPerEdge.size(); ++iE )
+    {
+      // 1) make TVDEdge's know it's BndSeg to enable passing branchID to
+      // an opposite BndSeg in BndSeg::setBranch(); geom EDGE ID is known from TVDCell
+      // 2) connect bndSegs via BndSeg::_prev
 
-    bndSegsToMesh( bndSegs ); // debug: visually check found MA edges
+      vector< BndSeg >& bndSegs = bndSegsPerEdge[ iE ];
+      if ( bndSegs.empty() ) continue;
+
+      for ( size_t i = 1; i < bndSegs.size(); ++i )
+      {
+        bndSegs[i]._prev = & bndSegs[i-1];
+        bndSegs[i].setIndexToEdge( i );
+      }
+      // look for the last bndSeg of previous EDGE to set bndSegs[0]._prev
+      const InPoint& p0 = bndSegs[0]._inSeg->point0();
+      for ( size_t iE2 = 0; iE2 < bndSegsPerEdge.size(); ++iE2 )
+        if ( p0 == bndSegsPerEdge[ iE2 ].back()._inSeg->point1() )
+        {
+          bndSegs[0]._prev = & bndSegsPerEdge[ iE2 ].back();
+          break;
+        }
+      bndSegs[0].setIndexToEdge( 0 );
+    }
+
+    bndSegsToMesh( bndSegsPerEdge ); // debug: visually check found MA edges
 
 
     // Find TVDEdge's of Branches and associate them with bndSegs
@@ -907,71 +1003,69 @@ namespace
     map< const TVDVertex*, SMESH_MAT2d::BranchEndType > endType;
 
     int branchID = 1; // we code orientation as branchID sign
-    branchEdges.resize( branchID + 1 );
+    branchEdges.resize( branchID );
 
-    size_t i1st = 0;
-    while ( i1st < bndSegs.size() && !bndSegs[i1st].hasOppositeEdge( noEdgeID ))
-      ++i1st;
-    bndSegs[i1st].setBranch( branchID, bndSegs ); // set to the i-th and to the opposite bndSeg
-    branchEdges[ branchID ].push_back( bndSegs[i1st]._edge );
-
-    for ( size_t i = i1st+1; i < bndSegs.size(); ++i )
+    for ( size_t iE = 0; iE < bndSegsPerEdge.size(); ++iE )
     {
-      if ( bndSegs[i].branchID() )
+      vector< BndSeg >& bndSegs = bndSegsPerEdge[ iE ];
+      for ( size_t i = 0; i < bndSegs.size(); ++i )
       {
-        branchID = bndSegs[i]._branchID; // with sign
-
-        if ( bndSegs[i]._branchID == -bndSegs[i-1]._branchID &&
-             bndSegs[i]._edge )
+        if ( bndSegs[i].branchID() )
         {
-          SMESH_MAT2d::BranchEndType type =
-            ( bndSegs[i]._inSeg->isConnected( bndSegs[i]._edge ) ?
-              SMESH_MAT2d::BE_ON_VERTEX :
-              SMESH_MAT2d::BE_END );
-          endType.insert( make_pair( bndSegs[i]._edge->vertex1(), type ));
+          if ( bndSegs[i]._prev &&
+               bndSegs[i]._branchID == -bndSegs[i]._prev->_branchID &&
+               bndSegs[i]._edge )
+          {
+            SMESH_MAT2d::BranchEndType type =
+              ( bndSegs[i]._inSeg->isConnected( bndSegs[i]._edge ) ?
+                SMESH_MAT2d::BE_ON_VERTEX :
+                SMESH_MAT2d::BE_END );
+            endType.insert( make_pair( bndSegs[i]._edge->vertex1(), type ));
+          }
+          continue;
         }
-        continue;
+        if ( !bndSegs[i]._prev &&
+             !bndSegs[i].hasOppositeEdge() )
+          continue;
+
+        if ( !bndSegs[i]._prev ||
+             !bndSegs[i]._prev->isSameBranch( bndSegs[i] ))
+        {
+          branchEdges.resize(( branchID = branchEdges.size()) + 1 );
+          if ( bndSegs[i]._edge && bndSegs[i]._prev )
+            endType.insert( make_pair( bndSegs[i]._edge->vertex1(), SMESH_MAT2d::BE_BRANCH_POINT ));
+        }
+        else if ( bndSegs[i]._prev->_branchID )
+        {
+          branchID = bndSegs[i]._prev->_branchID;  // with sign
+        }
+        else if ( bndSegs[i]._edge ) // 1st bndSeg of a WIRE
+        {
+          branchEdges.resize(( branchID = branchEdges.size()) + 1 );
+          if ( bndSegs[i]._inSeg->isConnected( bndSegs[i]._edge ))
+          {
+            if ( bndSegs[i]._inSeg->point0() == bndSegs[i]._edge->vertex1() )
+              endType.insert( make_pair( bndSegs[i]._edge->vertex1(), SMESH_MAT2d::BE_ON_VERTEX ));
+            else
+              endType.insert( make_pair( bndSegs[i]._edge->vertex0(), SMESH_MAT2d::BE_ON_VERTEX ));
+          }
+        }
+
+        bndSegs[i].setBranch( branchID, bndSegsPerEdge ); // set to i-th and to the opposite bndSeg
+        if ( bndSegs[i].hasOppositeEdge() )
+          branchEdges[ bndSegs[i].branchID() ].push_back( bndSegs[i]._edge );
       }
-      if ( !bndSegs[i-1].isSameBranch( bndSegs[i] ))
-      {
-        branchEdges.resize(( branchID = branchEdges.size()) + 1 );
-        if ( bndSegs[i]._edge )
-          endType.insert( make_pair( bndSegs[i]._edge->vertex1(),
-                                     SMESH_MAT2d::BE_BRANCH_POINT ));
-      }
-      bndSegs[i].setBranch( branchID, bndSegs ); // set to i-th and to the opposite bndSeg
-      if ( bndSegs[i].hasOppositeEdge( noEdgeID ))
-        branchEdges[ bndSegs[i].branchID() ].push_back( bndSegs[i]._edge );
     }
-    // define BranchEndType of the first TVDVertex
-    if ( bndSegs.front()._branchID == -bndSegs.back()._branchID )
-    {
-      if ( bndSegs[0]._edge )
-      {
-        SMESH_MAT2d::BranchEndType type =
-          ( bndSegs[0]._inSeg->isConnected( bndSegs[0]._edge ) ?
-            SMESH_MAT2d::BE_ON_VERTEX :
-            SMESH_MAT2d::BE_END );
-        endType.insert( make_pair( bndSegs[0]._edge->vertex1(), type ));
-      }
-      else if ( bndSegs.back()._edge )
-      {
-        SMESH_MAT2d::BranchEndType type =
-          ( bndSegs.back()._inSeg->isConnected( bndSegs.back()._edge ) ?
-            SMESH_MAT2d::BE_ON_VERTEX :
-            SMESH_MAT2d::BE_END );
-        endType.insert( make_pair( bndSegs.back()._edge->vertex0(), type ));
-      }
-    }
+
     // join the 1st and the last branch edges if it is the same branch
-    if ( bndSegs.back().branchID() != bndSegs.front().branchID() &&
-         bndSegs.back().isSameBranch( bndSegs.front() ))
-    {
-      vector<const TVDEdge*> & br1 = branchEdges[ bndSegs.front().branchID() ];
-      vector<const TVDEdge*> & br2 = branchEdges[ bndSegs.back().branchID()  ];
-      br1.insert( br1.begin(), br2.begin(), br2.end() );
-      br2.clear();
-    }
+    // if ( bndSegs.back().branchID() != bndSegs.front().branchID() &&
+    //      bndSegs.back().isSameBranch( bndSegs.front() ))
+    // {
+    //   vector<const TVDEdge*> & br1 = branchEdges[ bndSegs.front().branchID() ];
+    //   vector<const TVDEdge*> & br2 = branchEdges[ bndSegs.back().branchID()  ];
+    //   br1.insert( br1.begin(), br2.begin(), br2.end() );
+    //   br2.clear();
+    // }
 
     // remove branches ending at BE_ON_VERTEX
 
@@ -1010,34 +1104,38 @@ namespace
         if ( !v0 && !v1 )
           continue;
 
-        size_t iBrToJoin = 0;
-        for ( size_t iB2 = 1; iB2 < branchEdges.size(); ++iB2 )
+        for ( int isV0 = 0; isV0 < 2; ++isV0 )
         {
-          if ( branchEdges[iB2].empty() || isBranchRemoved[iB2] || iB == iB2 )
-            continue;
-          const TVDVertex* v02 = branchEdges[iB2][0]->vertex1();
-          const TVDVertex* v12 = branchEdges[iB2].back()->vertex0();
-          if ( v0 == v02 || v0 == v12 || v1 == v02 || v1 == v12 )
+          const TVDVertex* v = isV0 ? v0 : v1;
+          size_t iBrToJoin = 0;
+          for ( size_t iB2 = 1; iB2 < branchEdges.size(); ++iB2 )
           {
-            if ( iBrToJoin > 0 )
+            if ( branchEdges[iB2].empty() || isBranchRemoved[iB2] || iB == iB2 )
+              continue;
+            const TVDVertex* v02 = branchEdges[iB2][0]->vertex1();
+            const TVDVertex* v12 = branchEdges[iB2].back()->vertex0();
+            if ( v == v02 || v == v12 )
             {
-              iBrToJoin = 0;
-              break; // more than 2 not removed branches meat at a TVDVertex
+              if ( iBrToJoin > 0 )
+              {
+                iBrToJoin = 0;
+                break; // more than 2 not removed branches meat at a TVDVertex
+              }
+              iBrToJoin = iB2;
             }
-            iBrToJoin = iB2;
           }
-        }
-        if ( iBrToJoin > 0 )
-        {
-          vector<const TVDEdge*>& branch = branchEdges[ iBrToJoin ];
-          const TVDVertex* v02 = branch[0]->vertex1();
-          const TVDVertex* v12 = branch.back()->vertex0();
-          updateJoinedBranch( branch, iB, bndSegs, /*reverse=*/(v0 == v02 || v1 == v12 ));
-          if ( v0 == v02 || v0 == v12 )
-            branchEdges[iB].insert( branchEdges[iB].begin(), branch.begin(), branch.end() );
-          else
-            branchEdges[iB].insert( branchEdges[iB].end(),   branch.begin(), branch.end() );
-          branch.clear();
+          if ( iBrToJoin > 0 )
+          {
+            vector<const TVDEdge*>& branch = branchEdges[ iBrToJoin ];
+            const TVDVertex* v02 = branch[0]->vertex1();
+            const TVDVertex* v12 = branch.back()->vertex0();
+            updateJoinedBranch( branch, iB, bndSegsPerEdge, /*reverse=*/(v0 == v02 || v1 == v12 ));
+            if ( v0 == v02 || v0 == v12 )
+              branchEdges[iB].insert( branchEdges[iB].begin(), branch.begin(), branch.end() );
+            else
+              branchEdges[iB].insert( branchEdges[iB].end(),   branch.begin(), branch.end() );
+            branch.clear();
+          }
         }
       } // loop on branchEdges
     } // if ( ignoreCorners )
@@ -1064,36 +1162,31 @@ namespace
 
     // Fill in BndPoints of each EDGE of the boundary
 
-    size_t iSeg = 0;
+    //size_t iSeg = 0;
     int edgeInd = -1, dInd = 0;
-    while ( iSeg < bndSegs.size() )
+    for ( size_t iE = 0; iE < bndSegsPerEdge.size(); ++iE )
     {
-      const size_t                geomID = bndSegs[ iSeg ].geomEdge();
-      SMESH_MAT2d::BndPoints & bndPoints = boundary.getPoints( geomID );
-
-      size_t nbSegs = 0;
-      for ( size_t i = iSeg; i < bndSegs.size() && geomID == bndSegs[ i ].geomEdge(); ++i )
-        ++nbSegs;
-      size_t iSegEnd = iSeg + nbSegs;
+      vector< BndSeg >&          bndSegs = bndSegsPerEdge[ iE ];
+      SMESH_MAT2d::BndPoints & bndPoints = boundary.getPoints( iE );
 
       // make TVDEdge know an index of bndSegs within BndPoints
-      for ( size_t i = iSeg; i < iSegEnd; ++i )
+      for ( size_t i = 0; i < bndSegs.size(); ++i )
         if ( bndSegs[i]._edge )
-          SMESH_MAT2d::Branch::setBndSegment( i - iSeg, bndSegs[i]._edge );
+          SMESH_MAT2d::Branch::setBndSegment( i, bndSegs[i]._edge );
 
       // parameters on EDGE
 
-      bndPoints._params.reserve( nbSegs + 1 );
-      bndPoints._params.push_back( bndSegs[ iSeg ]._inSeg->_p0->_param );
+      bndPoints._params.reserve( bndSegs.size() + 1 );
+      bndPoints._params.push_back( bndSegs[ 0 ]._inSeg->_p0->_param );
 
-      for ( size_t i = iSeg; i < iSegEnd; ++i )
+      for ( size_t i = 0; i < bndSegs.size(); ++i )
         bndPoints._params.push_back( bndSegs[ i ]._uLast );
 
       // MA edges
 
-      bndPoints._maEdges.reserve( nbSegs );
+      bndPoints._maEdges.reserve( bndSegs.size() );
 
-      for ( size_t i = iSeg; i < iSegEnd; ++i )
+      for ( size_t i = 0; i < bndSegs.size(); ++i )
       {
         const size_t              brID = bndSegs[ i ].branchID();
         const SMESH_MAT2d::Branch*  br = branchByID[ brID ];
@@ -1136,9 +1229,6 @@ namespace
         bndPoints._maEdges.push_back( make_pair( br, ( 1 + edgeInd ) * dInd ));
 
       } // loop on bndSegs of an EDGE
-
-      iSeg = iSegEnd;
-
     } // loop on all bndSegs to construct Boundary
 
     // Initialize branches
@@ -1291,6 +1381,15 @@ bool SMESH_MAT2d::Boundary::getBranchPoint( const std::size_t iEdge,
     while ( points._params[i+1] < u ) ++i;
   }
 
+  if ( points._params[i] == points._params[i+1] ) // coincident points at some end
+  {
+    int di = ( points._params[0] == points._params[i] ) ? +1 : -1;
+    while ( points._params[i] == points._params[i+1] )
+      i += di;
+    if ( i < 0 || i+1 >= points._params.size() )
+      i = 0;
+  }
+
   double edgeParam = ( u - points._params[i] ) / ( points._params[i+1] - points._params[i] );
 
   if ( !points._maEdges[ i ].second ) // no branch at the EDGE end, look for a closest branch
@@ -1316,6 +1415,21 @@ bool SMESH_MAT2d::Boundary::getBranchPoint( const std::size_t iEdge,
   p._edgeParam = ( maE.first && maReverse ) ? ( 1. - edgeParam ) : edgeParam;
 
   return true;
+}
+
+//================================================================================
+/*!
+ * \brief Returns a BranchPoint corresponding to a given BoundaryPoint on a geom EDGE
+ *  \param [in] bp - the BoundaryPoint
+ *  \param [out] p - the found BranchPoint
+ *  \return bool - is OK
+ */
+//================================================================================
+
+bool SMESH_MAT2d::Boundary::getBranchPoint( const BoundaryPoint& bp,
+                                            BranchPoint&         p ) const
+{
+  return getBranchPoint( bp._edgeIndex, bp._param, p );
 }
 
 //================================================================================
@@ -1352,7 +1466,7 @@ bool SMESH_MAT2d::Boundary::moveToClosestEdgeEnd( BoundaryPoint& bp ) const
     return false;
 
   const BndPoints& points = _pointsPerEdge[ bp._edgeIndex ];
-  if ( bp._param - points._params[0] < points._params.back() - bp._param )
+  if ( Abs( bp._param - points._params[0]) < Abs( points._params.back() - bp._param ))
     bp._param = points._params[0];
   else 
     bp._param = points._params.back();
@@ -1658,7 +1772,7 @@ bool SMESH_MAT2d::Branch::addDivPntForConcaVertex( std::vector< std::size_t >&  
                                                    std::vector< BranchPoint >&   divPoints,
                                                    const vector<const TVDEdge*>& maEdges,
                                                    const vector<const TVDEdge*>& maEdgesTwin,
-                                                   size_t &                    i) const
+                                                   int &                         i) const
 {
   // if there is a concave vertex between EDGEs
   // then position of a dividing BranchPoint is undefined, it is somewhere
@@ -1670,11 +1784,13 @@ bool SMESH_MAT2d::Branch::addDivPntForConcaVertex( std::vector< std::size_t >&  
   BranchPoint divisionPnt;
   divisionPnt._branch = this;
 
+  BranchIterator iCur( maEdges, i );
+
   size_t ie1 = getGeomEdge( maEdges    [i] );
   size_t ie2 = getGeomEdge( maEdgesTwin[i] );
 
-  size_t iSeg1  = getBndSegment( maEdges[ i-1 ] );
-  size_t iSeg2  = getBndSegment( maEdges[ i ] );
+  size_t iSeg1  = getBndSegment( iCur.edgePrev() );
+  size_t iSeg2  = getBndSegment( iCur.edge() );
   bool isConcaPrev = _boundary->isConcaveSegment( edgeIDs1.back(), iSeg1 );
   bool isConcaNext = _boundary->isConcaveSegment( ie1,             iSeg2 );
   if ( !isConcaNext && !isConcaPrev )
@@ -1682,46 +1798,48 @@ bool SMESH_MAT2d::Branch::addDivPntForConcaVertex( std::vector< std::size_t >&  
 
   bool isConcaveV = false;
 
-  int iPrev = i-1, iNext = i;
+  const TVDEdge* maE;
+  BranchIterator iPrev( maEdges, i ), iNext( maEdges, i );
+   --iPrev;
   if ( isConcaNext ) // all null-length segments follow
   {
     // look for a VERTEX of the opposite EDGE
-    ++iNext; // end of null-length segments
-    while ( iNext < maEdges.size() )
+    // iNext - next after all null-length segments
+    while ( maE = ++iNext )
     {
-      iSeg2 = getBndSegment( maEdges[ iNext ] );
-      if ( _boundary->isConcaveSegment( ie1, iSeg2 ))
-        ++iNext;
-      else
+      iSeg2 = getBndSegment( maE );
+      if ( !_boundary->isConcaveSegment( ie1, iSeg2 ))
         break;
     }
     bool vertexFound = false;
-    for ( size_t iE = i+1; iE < iNext; ++iE )
+    for ( ++iCur; iCur < iNext; ++iCur )
     {
-      ie2 = getGeomEdge( maEdgesTwin[iE] );
+      ie2 = getGeomEdge( maEdgesTwin[ iCur.indexMod() ] );
       if ( ie2 != edgeIDs2.back() )
       {
         // opposite VERTEX found
-        divisionPnt._iEdge = iE;
+        divisionPnt._iEdge = iCur.indexMod();
         divisionPnt._edgeParam = 0;
         divPoints.push_back( divisionPnt );
         edgeIDs1.push_back( ie1 );
         edgeIDs2.push_back( ie2 );
         vertexFound = true;
-        }
+      }
     }
     if ( vertexFound )
     {
-      iPrev = i = --iNext; // not to add a BP in the moddle
+      --iNext;
+      iPrev = iNext; // not to add a BP in the moddle
+      i = iNext.indexMod();
       isConcaveV = true;
     }
   }
   else if ( isConcaPrev )
   {
     // all null-length segments passed, find their beginning
-    while ( iPrev-1 >= 0 )
+    while ( maE = iPrev.edgePrev() )
     {
-      iSeg1 = getBndSegment( maEdges[ iPrev-1 ] );
+      iSeg1 = getBndSegment( maE );
       if ( _boundary->isConcaveSegment( edgeIDs1.back(), iSeg1 ))
         --iPrev;
       else
@@ -1729,17 +1847,18 @@ bool SMESH_MAT2d::Branch::addDivPntForConcaVertex( std::vector< std::size_t >&  
     }
   }
 
-  if ( iPrev < i-1 || iNext > i )
+  if ( iPrev.index() < i-1 || iNext.index() > i )
   {
     // no VERTEX on the opposite EDGE, put the Branch Point in the middle
-    double par1 = _params[ iPrev+1 ], par2 = _params[ iNext ];
+    divisionPnt._iEdge = iPrev.indexMod();
+    ++iPrev;
+    double   par1 = _params[ iPrev.indexMod() ], par2 = _params[ iNext.indexMod() ];
     double midPar = 0.5 * ( par1 + par2 );
-    divisionPnt._iEdge = iPrev;
-    while ( _params[ divisionPnt._iEdge + 1 ] < midPar )
-      ++divisionPnt._iEdge;
+    for ( ; _params[ iPrev.indexMod() ] < midPar; ++iPrev )
+      divisionPnt._iEdge = iPrev.indexMod();
     divisionPnt._edgeParam =
-      ( _params[ divisionPnt._iEdge + 1 ] - midPar ) /
-      ( _params[ divisionPnt._iEdge + 1 ] - _params[ divisionPnt._iEdge ] );
+      ( _params[ iPrev.indexMod() ] - midPar ) /
+      ( _params[ iPrev.indexMod() ] - _params[ divisionPnt._iEdge ] );
     divPoints.push_back( divisionPnt );
     isConcaveV = true;
   }
@@ -1767,9 +1886,6 @@ void SMESH_MAT2d::Branch::getOppositeGeomEdges( std::vector< std::size_t >& edge
   edgeIDs2.clear();
   divPoints.clear();
 
-  edgeIDs1.push_back( getGeomEdge( _maEdges[0] ));
-  edgeIDs2.push_back( getGeomEdge( _maEdges[0]->twin() ));
-
   std::vector<const TVDEdge*> twins( _maEdges.size() );
   for ( size_t i = 0; i < _maEdges.size(); ++i )
     twins[i] = _maEdges[i]->twin();
@@ -1795,22 +1911,70 @@ void SMESH_MAT2d::Branch::getOppositeGeomEdges( std::vector< std::size_t >& edge
       if ( edgeIDs1.back() == ie1 && edgeIDs2.back() != ie2 )
       {
         isConcaveV = addDivPntForConcaVertex( edgeIDs2, edgeIDs1, divPoints, twins, _maEdges, i );
+  BranchIterator maIter ( _maEdges, 0 );
+  BranchIterator twIter ( twins, 0 );
+  // size_t lastConcaE1 = _boundary.nbEdges();
+  // size_t lastConcaE2 = _boundary.nbEdges();
+
+  // if ( maIter._closed ) // closed branch
+  // {
+  //   edgeIDs1.push_back( getGeomEdge( _maEdges.back() ));
+  //   edgeIDs2.push_back( getGeomEdge( _maEdges.back()->twin() ));
+  // }
+  // else
+  {
+    edgeIDs1.push_back( getGeomEdge( maIter.edge() ));
+    edgeIDs2.push_back( getGeomEdge( twIter.edge() ));
+  }
+
+  BranchPoint divisionPnt;
+  divisionPnt._branch = this;
+
+  for ( ++maIter, ++twIter; maIter.index() < _maEdges.size(); ++maIter, ++twIter )
+  {
+    size_t ie1 = getGeomEdge( maIter.edge() );
+    size_t ie2 = getGeomEdge( twIter.edge() );
+
+    bool otherE1 = ( edgeIDs1.back() != ie1 );
+    bool otherE2 = ( edgeIDs2.back() != ie2 );
+
+    if ( !otherE1 && !otherE2 && maIter._closed )
+    {
+      int iSegPrev1 = getBndSegment( maIter.edgePrev() );
+      int iSegCur1  = getBndSegment( maIter.edge() );
+      otherE1 = Abs( iSegPrev1 - iSegCur1 ) != 1;
+      int iSegPrev2 = getBndSegment( twIter.edgePrev() );
+      int iSegCur2  = getBndSegment( twIter.edge() );
+      otherE2 = Abs( iSegPrev2 - iSegCur2 ) != 1;
+    }
+
+    if ( otherE1 || otherE2 )
+    {
+      bool isConcaveV = false;
+      if ( otherE1 && !otherE2 )
+      {
+        isConcaveV = addDivPntForConcaVertex( edgeIDs1, edgeIDs2, divPoints,
+                                              _maEdges, twins, maIter._i );
+      }
+      if ( !otherE1 && otherE2 )
+      {
+        isConcaveV = addDivPntForConcaVertex( edgeIDs2, edgeIDs1, divPoints,
+                                              twins, _maEdges, maIter._i );
       }
 
       if ( isConcaveV )
       {
-        ie1 = getGeomEdge( _maEdges[i] );
-        ie2 = getGeomEdge( _maEdges[i]->twin() );
+        ie1 = getGeomEdge( maIter.edge() );
+        ie2 = getGeomEdge( twIter.edge() );
       }
-      if (( !isConcaveV ) ||
-          ( edgeIDs1.back() != ie1 || edgeIDs2.back() != ie2 ))
+      if ( !isConcaveV || otherE1 || otherE2 )
       {
         edgeIDs1.push_back( ie1 );
         edgeIDs2.push_back( ie2 );
       }
       if ( divPoints.size() < edgeIDs1.size() - 1 )
       {
-        divisionPnt._iEdge = i;
+        divisionPnt._iEdge = maIter.index();
         divisionPnt._edgeParam = 0;
         divPoints.push_back( divisionPnt );
       }

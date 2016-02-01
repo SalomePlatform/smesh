@@ -657,7 +657,7 @@ void StdMeshers_Penta_3D::MakeVolumeMesh()
   }
   //
   // 2. Make pentahedrons
-  int aID0, k , aJ[3];
+  int aID0, k , aJ[4];
   vector<const SMDS_MeshNode*> aN;
   //
   SMDS_ElemIteratorPtr itf, aItNodes;

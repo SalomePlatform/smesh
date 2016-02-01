@@ -27,6 +27,7 @@
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
+#include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 #include CORBA_SERVER_HEADER(GEOM_Gen)
 #include CORBA_SERVER_HEADER(SALOMEDS)
 
@@ -228,6 +229,9 @@ namespace SMESH
 
     TPythonDump&
     operator<<(const SMESH::ListOfIDSources& theList);
+
+    TPythonDump&
+    operator<<(const SMESH::CoincidentFreeBorders& theCFB);
 
     static const char* SMESHGenName() { return "smeshgen"; }
     static const char* MeshEditorName() { return "mesh_editor"; }

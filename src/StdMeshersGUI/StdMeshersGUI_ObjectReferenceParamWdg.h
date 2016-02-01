@@ -57,7 +57,7 @@ public:
   StdMeshersGUI_ObjectReferenceParamWdg( SUIT_SelectionFilter* filter, 
                                          QWidget*              parent,
                                          bool                  multiSelection=false
-					 /* ,bool                  stretch=true*/);
+                                         /* ,bool                  stretch=true*/);
   StdMeshersGUI_ObjectReferenceParamWdg( SMESH::MeshObjectType objType,
                                          QWidget*       parent,
                                          bool           multiSelection=false);

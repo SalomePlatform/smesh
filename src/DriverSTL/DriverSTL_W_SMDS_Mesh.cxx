@@ -33,12 +33,15 @@
 #include "SMDS_Mesh.hxx"
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "SMDS_PolygonalFaceOfNodes.hxx"
 #include "SMDS_SetIterator.hxx"
 #include "SMDS_VolumeTool.hxx"
 #include "SMESH_File.hxx"
 #include "SMESH_TypeDefs.hxx"
 
-//#include "utilities.h"
+#include <Standard_ErrorHandler.hxx>
+#include <Standard_Failure.hxx>
+#include <gp_Ax2.hxx>
 
 #include <limits>
 
@@ -74,6 +77,7 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::Perform()
 
   return aResult;
 }
+
 //================================================================================
 /*!
  * \brief Destructor deletes temporary faces
@@ -82,8 +86,8 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::Perform()
 
 DriverSTL_W_SMDS_Mesh::~DriverSTL_W_SMDS_Mesh()
 {
-  for ( unsigned i = 0; i < myVolumeTrias.size(); ++i )
-    delete myVolumeTrias[i];
+  for ( unsigned i = 0; i < myVolumeFacets.size(); ++i )
+    delete myVolumeFacets[i];
 }
 
 //================================================================================
@@ -94,6 +98,8 @@ DriverSTL_W_SMDS_Mesh::~DriverSTL_W_SMDS_Mesh()
 
 void DriverSTL_W_SMDS_Mesh::findVolumeTriangles()
 {
+  myNbVolumeTrias = 0;
+
   SMDS_VolumeTool theVolume;
   SMDS_VolumeIteratorPtr vIt = myMesh->volumesIterator();
   std::vector< const SMDS_MeshNode*> nodes;
@@ -106,19 +112,20 @@ void DriverSTL_W_SMDS_Mesh::findVolumeTriangles()
         const SMDS_MeshNode** n = theVolume.GetFaceNodes(iF);
         int                 nbN = theVolume.NbFaceNodes(iF);
         nodes.assign( n, n+nbN );
-        if ( !myMesh->FindElement( nodes, SMDSAbs_Face, /*Nomedium=*/false))
+        if ( !myMesh->FindElement( nodes, SMDSAbs_Face, /*noMedium=*/false))
         {
-          if ( nbN == 9 && !theVolume.IsPoly() ) // facet is SMDSEntity_BiQuad_Quadrangle
+          if (( nbN == 9 || nbN == 7 ) &&
+              ( !theVolume.IsPoly() )) // facet is bi-quaratic
           {
             int nbTria = nbN - 1;
             for ( int iT = 0; iT < nbTria; ++iT )
-              myVolumeTrias.push_back( new SMDS_FaceOfNodes( n[8], n[0+iT], n[1+iT] ));
+              myVolumeFacets.push_back( new SMDS_FaceOfNodes( n[8], n[0+iT], n[1+iT] ));
+            myNbVolumeTrias += nbTria;
           }
           else
           {
-            int nbTria = nbN - 2;
-            for ( int iT = 0; iT < nbTria; ++iT )
-              myVolumeTrias.push_back( new SMDS_FaceOfNodes( n[0], n[1+iT], n[2+iT] ));
+            myVolumeFacets.push_back( new SMDS_PolygonalFaceOfNodes( nodes ));
+            myNbVolumeTrias += nbN - 2;
           }
         }
       }
@@ -134,8 +141,8 @@ void DriverSTL_W_SMDS_Mesh::findVolumeTriangles()
 SMDS_ElemIteratorPtr DriverSTL_W_SMDS_Mesh::getFaces() const
 {
   SMDS_ElemIteratorPtr facesIter = myMesh->elementsIterator(SMDSAbs_Face);
-  SMDS_ElemIteratorPtr tmpTriaIter( new SMDS_ElementVectorIterator( myVolumeTrias.begin(),
-                                                                    myVolumeTrias.end()));
+  SMDS_ElemIteratorPtr tmpTriaIter( new SMDS_ElementVectorIterator( myVolumeFacets.begin(),
+                                                                    myVolumeFacets.end()));
   typedef std::vector< SMDS_ElemIteratorPtr > TElemIterVector;
   TElemIterVector iters(2);
   iters[0] = facesIter;
@@ -201,6 +208,177 @@ static gp_XYZ getNormale( const SMDS_MeshNode* n1,
   return n;
 }
 
+namespace
+{
+  /*!
+   * \brief Vertex of a polygon. Together with 2 neighbor Vertices represents a triangle
+   */
+  struct PolyVertex
+  {
+    SMESH_TNodeXYZ _nxyz;
+    gp_XY          _xy;
+    PolyVertex*    _prev;
+    PolyVertex*    _next;
+
+    void SetNodeAndNext( const SMDS_MeshNode* n, PolyVertex& v )
+    {
+      _nxyz.Set( n );
+      _next = &v;
+      v._prev = this;
+    }
+    PolyVertex* Delete()
+    {
+      _prev->_next = _next;
+      _next->_prev = _prev;
+      return _next;
+    }
+    void GetTriaNodes( const SMDS_MeshNode** nodes) const
+    {
+      nodes[0] = _prev->_nxyz._node;
+      nodes[1] =  this->_nxyz._node;
+      nodes[2] = _next->_nxyz._node;
+    }
+
+    inline static double Area( const PolyVertex* v0, const PolyVertex* v1, const PolyVertex* v2 )
+    {
+      gp_XY vPrev = v0->_xy - v1->_xy;
+      gp_XY vNext = v2->_xy - v1->_xy;
+      return vNext ^ vPrev;
+    }
+    double TriaArea() const { return Area( _prev, this, _next ); }
+
+    bool IsInsideTria( const PolyVertex* v )
+    {
+      gp_XY p = _prev->_xy - v->_xy;
+      gp_XY t =  this->_xy - v->_xy;
+      gp_XY n = _next->_xy - v->_xy;
+      const double tol = -1e-12;
+      return (( p ^ t ) >= tol &&
+              ( t ^ n ) >= tol &&
+              ( n ^ p ) >= tol );
+      // return ( Area( _prev, this, v ) > 0 &&
+      //          Area( this, _next, v ) > 0 &&
+      //          Area( _next, _prev, v ) > 0 );
+    }
+  };
+
+  //================================================================================
+  /*!
+   * \brief Triangulate a polygon. Assure correct orientation for concave polygons
+   */
+  //================================================================================
+
+  bool triangulate( std::vector< const SMDS_MeshNode*>& nodes, const size_t nbNodes )
+  {
+    // connect nodes into a ring
+    std::vector< PolyVertex > pv( nbNodes );
+    for ( size_t i = 1; i < nbNodes; ++i )
+      pv[i-1].SetNodeAndNext( nodes[i-1], pv[i] );
+    pv[ nbNodes-1 ].SetNodeAndNext( nodes[ nbNodes-1 ], pv[0] );
+
+    // get a polygon normal
+    gp_XYZ normal(0,0,0), p0,v01,v02;
+    p0  = pv[0]._nxyz;
+    v01 = pv[1]._nxyz - p0;
+    for ( size_t i = 2; i < nbNodes; ++i )
+    {
+      v02 = pv[i]._nxyz - p0;
+      normal += v01 ^ v02;
+      v01 = v02;
+    }
+    // project nodes to the found plane
+    gp_Ax2 axes;
+    try {
+      axes = gp_Ax2( p0, normal, v01 );
+    }
+    catch ( Standard_Failure ) {
+      return false;
+    }
+    for ( size_t i = 0; i < nbNodes; ++i )
+    {
+      gp_XYZ p = pv[i]._nxyz - p0;
+      pv[i]._xy.SetX( axes.XDirection().XYZ() * p );
+      pv[i]._xy.SetY( axes.YDirection().XYZ() * p );
+    }
+
+    // in a loop, find triangles with positive area and having no vertices inside
+    int iN = 0, nbTria = nbNodes - 2;
+    nodes.reserve( nbTria * 3 );
+    const double minArea = 1e-6;
+    PolyVertex* v = &pv[0], *vi;
+    int nbVertices = nbNodes, nbBadTria = 0, isGoodTria;
+    while ( nbBadTria < nbVertices )
+    {
+      if (( isGoodTria = v->TriaArea() > minArea ))
+      {
+        for ( vi = v->_next->_next;
+              vi != v->_prev;
+              vi = vi->_next )
+        {
+          if ( v->IsInsideTria( vi ))
+            break;
+        }
+        isGoodTria = ( vi == v->_prev );
+      }
+      if ( isGoodTria )
+      {
+        v->GetTriaNodes( &nodes[ iN ] );
+        iN += 3;
+        v = v->Delete();
+        if ( --nbVertices == 3 )
+        {
+          // last triangle remains
+          v->GetTriaNodes( &nodes[ iN ] );
+          return true;
+        }
+        nbBadTria = 0;
+      }
+      else
+      {
+        v = v->_next;
+        ++nbBadTria;
+      }
+    }
+
+    // the polygon is invalid; add triangles with positive area
+    nbBadTria = 0;
+    while ( nbBadTria < nbVertices )
+    {
+      isGoodTria = v->TriaArea() > minArea;
+      if ( isGoodTria )
+      {
+        v->GetTriaNodes( &nodes[ iN ] );
+        iN += 3;
+        v = v->Delete();
+        if ( --nbVertices == 3 )
+        {
+          // last triangle remains
+          v->GetTriaNodes( &nodes[ iN ] );
+          return true;
+        }
+        nbBadTria = 0;
+      }
+      else
+      {
+        v = v->_next;
+        ++nbBadTria;
+      }
+    }
+
+    // add all the rest triangles
+    while ( nbVertices >= 3 )
+    {
+      v->GetTriaNodes( &nodes[ iN ] );
+      iN += 3;
+      v = v->Delete();
+      --nbVertices;
+    }
+
+    return true;
+
+  } // triangulate()
+} // namespace
+
 //================================================================================
 /*!
  * \brief Return nb triangles in a decomposed mesh face
@@ -235,12 +413,13 @@ static int getNbTriangles( const SMDS_MeshElement* face)
  */
 //================================================================================
 
-static int getTriangles( const SMDS_MeshElement* face,
-                         const SMDS_MeshNode**   nodes)
+static int getTriangles( const SMDS_MeshElement*             face,
+                         std::vector< const SMDS_MeshNode*>& nodes)
 {
   // WARNING: decomposing into triangles must be coherent with getNbTriangles()
-  int nbTria, i = 0;
+  int nbTria, i = 0, nbNodes = face->NbNodes();
   SMDS_NodeIteratorPtr nIt = face->interlacedNodesIterator();
+  nodes.resize( nbNodes * 3 );
   nodes[ i++ ] = nIt->next();
   nodes[ i++ ] = nIt->next();
 
@@ -251,30 +430,42 @@ static int getTriangles( const SMDS_MeshElement* face,
   case SMDSEntity_BiQuad_Quadrangle:
     nbTria = ( type == SMDSEntity_BiQuad_Triangle ) ? 6 : 8;
     nodes[ i++ ] = face->GetNode( nbTria );
-    while ( i < 3*(nbTria-1) )
+    for ( i = 3; i < 3*(nbTria-1); i += 3 )
     {
-      nodes[ i++ ] = nodes[ i-2 ];
-      nodes[ i++ ] = nIt->next();
-      nodes[ i++ ] = nodes[ 2 ];
+      nodes[ i+0 ] = nodes[ i-2 ];
+      nodes[ i+1 ] = nIt->next();
+      nodes[ i+2 ] = nodes[ 2 ];
     }
-    nodes[ i++ ] = nodes[ i-2 ];
-    nodes[ i++ ] = nodes[ 0 ];
-    nodes[ i++ ] = nodes[ 2 ];
+    nodes[ i+0 ] = nodes[ i-2 ];
+    nodes[ i+1 ] = nodes[ 0 ];
+    nodes[ i+2 ] = nodes[ 2 ];
+    break;
+  case SMDSEntity_Triangle:
+    nbTria = 1;
+    nodes[ i++ ] = nIt->next();
     break;
   default:
-    // case SMDSEntity_Triangle:
     // case SMDSEntity_Quad_Triangle:
     // case SMDSEntity_Quadrangle:
     // case SMDSEntity_Quad_Quadrangle:
     // case SMDSEntity_Polygon:
     // case SMDSEntity_Quad_Polygon:
-    nbTria = face->NbNodes() - 2;
-    nodes[ i++ ] = nIt->next();
-    while ( i < 3*nbTria )
-    {
-      nodes[ i++ ] = nodes[ 0 ];
-      nodes[ i++ ] = nodes[ i-2 ];
+    nbTria = nbNodes - 2;
+    while ( nIt->more() )
       nodes[ i++ ] = nIt->next();
+
+    if ( !triangulate( nodes, nbNodes ))
+    {
+      nIt = face->interlacedNodesIterator();
+      nodes[ 0 ] = nIt->next();
+      nodes[ 1 ] = nIt->next();
+      nodes[ 2 ] = nIt->next();
+      for ( i = 3; i < 3*nbTria; i += 3 )
+      {
+        nodes[ i+0 ] = nodes[ 0 ];
+        nodes[ i+1 ] = nodes[ i-1 ];
+        nodes[ i+2 ] = nIt->next();
+      }
     }
     break;
   }
@@ -298,7 +489,7 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::writeAscii() const
   aFile.writeRaw( buf.c_str(), buf.size() );
 
   char sval[128];
-  const SMDS_MeshNode* triaNodes[2048];
+  std::vector< const SMDS_MeshNode* > triaNodes;
 
   SMDS_ElemIteratorPtr itFaces = getFaces();
   while ( itFaces->more() )
@@ -354,7 +545,7 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::writeBinary() const
   aFile.openForWriting();
 
   // we first count the number of triangles
-  int nbTri = myVolumeTrias.size();
+  int nbTri = myNbVolumeTrias;
   {
     SMDS_FaceIteratorPtr itFaces = myMesh->facesIterator();
     while ( itFaces->more() ) {
@@ -372,7 +563,7 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::writeBinary() const
 
   int dum=0;
 
-  const SMDS_MeshNode* triaNodes[2048];
+  std::vector< const SMDS_MeshNode* > triaNodes;
 
   SMDS_ElemIteratorPtr itFaces = getFaces();
   while ( itFaces->more() )

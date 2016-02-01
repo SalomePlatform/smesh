@@ -3,7 +3,7 @@
 \page borders_at_multi_connection_2d_page Borders at multi-connection 2D
 
 \n This mesh quality control highlights borders of faces (links
-between nodes) according to number of faces the link belongs to.
+between nodes) according to the number of faces, to which the link belongs.
 
 \image html image127.gif
 

@@ -1012,6 +1012,7 @@ void SMESHGUI_FilterTable::Init (const QList<int>& theTypes)
         Table* aTable = createTable(mySwitchTableGrp, *typeIt);
         myTables[ *typeIt ] = aTable;
         ((QVBoxLayout*)mySwitchTableGrp->layout())->addWidget(myTables[ *typeIt ]);
+        myEntityType = -1;
       }
     }
   }
@@ -1740,7 +1741,7 @@ static QList<int> entityTypes( const int theType )
     typeIds.append( SMDSEntity_Quad_Quadrangle );
     typeIds.append( SMDSEntity_BiQuad_Quadrangle );
     typeIds.append( SMDSEntity_Polygon );
-    //typeIds.append( SMDSEntity_Quad_Polygon );
+    typeIds.append( SMDSEntity_Quad_Polygon );
     break;
   case SMESH::VOLUME:
     typeIds.append( SMDSEntity_Tetra );
@@ -2891,6 +2892,11 @@ void SMESHGUI_FilterDlg::Init (const int type, const bool setInViewer)
 //=======================================================================
 void SMESHGUI_FilterDlg::Init (const QList<int>& theTypes, const bool setInViewer)
 {
+  if ( theTypes.empty() )
+  {
+    Init( SMESH::ALL, setInViewer );
+    return;
+  }
   mySourceWg  = 0;
   myTypes     = theTypes;
   myMesh      = SMESH::SMESH_Mesh::_nil();
@@ -2925,6 +2931,8 @@ void SMESHGUI_FilterDlg::Init (const QList<int>& theTypes, const bool setInViewe
 
   connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), SLOT(onDeactivate()));
   connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()), SLOT(reject()));
+  connect(mySMESHGUI, SIGNAL(SignalActivatedViewManager()), SLOT(onOpenView()));
+  connect(mySMESHGUI, SIGNAL(SignalCloseView()), SLOT(onCloseView()));
   
   updateMainButtons();
   updateSelection();
@@ -3008,6 +3016,29 @@ void SMESHGUI_FilterDlg::reject()
   disconnect(mySelectionMgr, 0, this, 0);
   mySMESHGUI->ResetState();
   QDialog::reject();
+}
+
+//=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_FilterDlg::onOpenView()
+{
+  if ( mySelector ) {
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_FilterDlg::onCloseView()
+{
+  mySelector = 0;
 }
 
 //=================================================================================
@@ -3333,7 +3364,7 @@ bool SMESHGUI_FilterDlg::onApply()
     insertFilterInViewer();
 
     if (!myFilter[ aCurrType ]->GetPredicate()->_is_nil()) {
-      // 
+      //
       bool toFilter = (( SMESH::FindActorByObject( myMesh )) ||
                        ( myInitSourceWgOnApply && mySourceWg ) ||
                        ( mySourceGrp->checkedId() == Dialog && mySourceWg ));
@@ -3342,6 +3373,9 @@ bool SMESHGUI_FilterDlg::onApply()
         filterSource(aCurrType, aResultIds);
         // select in viewer
         selectInViewer(aCurrType, aResultIds);
+        // set ids to the dialog
+        if ( myInitSourceWgOnApply || mySourceGrp->checkedId() == Dialog )
+          setIdsToWg(mySourceWg, aResultIds);
       }
     }
 
@@ -3517,9 +3551,6 @@ void SMESHGUI_FilterDlg::filterSource (const int theType,
       if (aPred->IsSatisfy(*anIter))
         theResIds.append(*anIter);
   }
-  // set ids to the dialog
-  if (myInitSourceWgOnApply || aSourceId == Dialog)
-    setIdsToWg(mySourceWg, theResIds);
 }
 
 //=======================================================================

@@ -98,6 +98,8 @@ private slots:
   void                                onCloseCreationDlg();
   void                                onTextChanged( const QString& );
   void                                onNodeChanged( int );
+  void                                onOpenView();
+  void                                onCloseView();
 
 private:
   QWidget*                            createButtonFrame( QWidget* );

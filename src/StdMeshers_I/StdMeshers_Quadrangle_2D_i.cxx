@@ -136,3 +136,15 @@ StdMeshers_QuadFromMedialAxis_1D2D_i::~StdMeshers_QuadFromMedialAxis_1D2D_i()
 {
   MESSAGE( "StdMeshers_QuadFromMedialAxis_1D2D_i::~StdMeshers_QuadFromMedialAxis_1D2D_i" );
 }
+
+//================================================================================
+/*!
+ * \brief Return true if the algorithm is applicable to a shape
+ */
+//================================================================================
+
+CORBA::Boolean StdMeshers_QuadFromMedialAxis_1D2D_i::IsApplicable( const TopoDS_Shape &S,
+                                                                   CORBA::Boolean toCheckAll )
+{
+  return ::StdMeshers_QuadFromMedialAxis_1D2D::IsApplicable( S, toCheckAll );
+}

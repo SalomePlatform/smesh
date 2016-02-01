@@ -777,7 +777,9 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   connect(SelectorWdg,          SIGNAL(selectionChanged()), this, SLOT(toDisplaySimulation()));
   connect(SelectorWdg,          SIGNAL(selectionChanged()), this, SLOT(CheckIsEnable()));
   /* to close dialog if study change */
-  connect(mySMESHGUI,           SIGNAL(SignalCloseAllDialogs()),   this, SLOT(reject()));
+  connect(mySMESHGUI,           SIGNAL(SignalCloseAllDialogs()),      this, SLOT(reject()));
+  connect(mySMESHGUI,           SIGNAL(SignalActivatedViewManager()), this, SLOT(onOpenView()));
+  connect(mySMESHGUI,           SIGNAL(SignalCloseView()),            this, SLOT(onCloseView()));
 
   connect(SpinBox_Dx,      SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
   connect(SpinBox_Dy,      SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
@@ -1120,6 +1122,31 @@ void SMESHGUI_ExtrusionDlg::reject()
 }
 
 //=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_ExtrusionDlg::onOpenView()
+{
+  if ( mySelector ) {
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    ActivateThisDialog();
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_ExtrusionDlg::onCloseView()
+{
+  DeactivateActiveDialog();
+  mySelector = 0;
+}
+
+//=================================================================================
 // function : ClickOnHelp()
 // purpose  :
 //=================================================================================
@@ -1240,12 +1267,17 @@ void SMESHGUI_ExtrusionDlg::ActivateThisDialog()
 
 //=================================================================================
 // function : enterEvent()
-// purpose  : Mouse enter event
+// purpose  :
 //=================================================================================
 void SMESHGUI_ExtrusionDlg::enterEvent (QEvent*)
 {
-  if (!GroupButtons->isEnabled())
+  if ( !GroupButtons->isEnabled() ) {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+    if ( aViewWindow && !mySelector) {
+      mySelector = aViewWindow->GetSelector();
+    }
     ActivateThisDialog();
+  }
 }
 
 //=================================================================================

@@ -154,20 +154,11 @@ namespace MeshEditor_I {
       }
 
       // creates a corresponding element on copied nodes
-      SMDS_MeshElement* anElemCopy = 0;
-      if ( anElem->IsPoly() && anElem->GetType() == SMDSAbs_Volume )
-      {
-        const SMDS_VtkVolume* ph =
-          dynamic_cast<const SMDS_VtkVolume*> (anElem);
-        if ( ph )
-          anElemCopy = _myMeshDS->AddPolyhedralVolumeWithID
-            (anElemNodesID, ph->GetQuantities(),anElem->GetID());
-      }
-      else {
-        anElemCopy = ::SMESH_MeshEditor(this).AddElement( anElemNodesID,
-                                                          anElem->GetType(),
-                                                          anElem->IsPoly() );
-      }
+      ::SMESH_MeshEditor::ElemFeatures elemType;
+      elemType.Init( anElem, /*basicOnly=*/false );
+      elemType.SetID( anElem->GetID() );
+      SMDS_MeshElement* anElemCopy =
+        ::SMESH_MeshEditor(this).AddElement( anElemNodesID, elemType );
       return anElemCopy;
     }
     //!< Copy a node
@@ -535,7 +526,7 @@ TPreviewMesh * SMESH_MeshEditor_i::getPreviewMesh(SMDSAbs_ElementType previewEle
 
 SMESH::MeshPreviewStruct* SMESH_MeshEditor_i::GetPreviewData()
   throw (SALOME::SALOME_Exception)
-{ 
+{
   SMESH_TRY;
   const bool hasBadElems = ( getEditor().GetError() && getEditor().GetError()->HasBadElems() );
 
@@ -557,7 +548,7 @@ SMESH::MeshPreviewStruct* SMESH_MeshEditor_i::GetPreviewData()
     myPreviewData = new SMESH::MeshPreviewStruct();
     myPreviewData->nodesXYZ.length(aMeshDS->NbNodes());
 
-    
+
     SMDSAbs_ElementType previewType = SMDSAbs_All;
     if ( !hasBadElems )
       if (TPreviewMesh * aPreviewMesh = dynamic_cast< TPreviewMesh* >( getEditor().GetMesh() )) {
@@ -577,7 +568,10 @@ SMESH::MeshPreviewStruct* SMESH_MeshEditor_i::GetPreviewData()
 
     while ( itMeshElems->more() ) {
       const SMDS_MeshElement* aMeshElem = itMeshElems->next();
-      SMDS_NodeIteratorPtr itElemNodes = aMeshElem->nodeIterator();
+      SMDS_NodeIteratorPtr itElemNodes = 
+        (( aMeshElem->GetEntityType() == SMDSEntity_Quad_Polygon ) ?
+         aMeshElem->interlacedNodesIterator() :
+         aMeshElem->nodeIterator() );
       while ( itElemNodes->more() ) {
         const SMDS_MeshNode* aMeshNode = itElemNodes->next();
         int aNodeID = aMeshNode->GetID();
@@ -1059,7 +1053,38 @@ CORBA::Long SMESH_MeshEditor_i::AddFace(const SMESH::long_array & IDsOfNodes)
  *  AddPolygonalFace
  */
 //=============================================================================
+
 CORBA::Long SMESH_MeshEditor_i::AddPolygonalFace (const SMESH::long_array & IDsOfNodes)
+  throw (SALOME::SALOME_Exception)
+{
+  SMESH_TRY;
+  initData();
+
+  int NbNodes = IDsOfNodes.length();
+  std::vector<const SMDS_MeshNode*> nodes (NbNodes);
+  for (int i = 0; i < NbNodes; i++)
+    if ( ! ( nodes[i] = getMeshDS()->FindNode( IDsOfNodes[i] )))
+      return 0;
+
+  const SMDS_MeshElement* elem = getMeshDS()->AddPolygonalFace(nodes);
+
+  // Update Python script
+  TPythonDump() <<"faceID = "<<this<<".AddPolygonalFace( "<<IDsOfNodes<<" )";
+
+  declareMeshModified( /*isReComputeSafe=*/false );
+  return elem ? elem->GetID() : 0;
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+  return 0;
+}
+
+//=============================================================================
+/*!
+ *  AddQuadPolygonalFace
+ */
+//=============================================================================
+
+CORBA::Long SMESH_MeshEditor_i::AddQuadPolygonalFace (const SMESH::long_array & IDsOfNodes)
   throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
@@ -1070,7 +1095,7 @@ CORBA::Long SMESH_MeshEditor_i::AddPolygonalFace (const SMESH::long_array & IDsO
   for (int i = 0; i < NbNodes; i++)
     nodes[i] = getMeshDS()->FindNode(IDsOfNodes[i]);
 
-  const SMDS_MeshElement* elem = getMeshDS()->AddPolygonalFace(nodes);
+  const SMDS_MeshElement* elem = getMeshDS()->AddQuadPolygonalFace(nodes);
 
   // Update Python script
   TPythonDump() <<"faceID = "<<this<<".AddPolygonalFace( "<<IDsOfNodes<<" )";
@@ -2062,7 +2087,7 @@ void SMESH_MeshEditor_i::SplitVolumesIntoTetra (SMESH::SMESH_IDSource_ptr elems,
  */
 //================================================================================
 
-void SMESH_MeshEditor_i::SplitHexahedraIntoPrisms (SMESH::SMESH_IDSource_ptr  elems,
+void SMESH_MeshEditor_i::SplitHexahedraIntoPrisms( SMESH::SMESH_IDSource_ptr  elems,
                                                    const SMESH::PointStruct & startHexPoint,
                                                    const SMESH::DirStruct&    facetToSplitNormal,
                                                    CORBA::Short               methodFlags,
@@ -2110,6 +2135,44 @@ void SMESH_MeshEditor_i::SplitHexahedraIntoPrisms (SMESH::SMESH_IDSource_ptr  el
                 << facetToSplitNormal<< ", "
                 << methodFlags<< ", "
                 << allDomains << " )";
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+}
+
+//================================================================================
+/*!
+ * \brief Split bi-quadratic elements into linear ones without creation of additional nodes:
+ *   - bi-quadratic triangle will be split into 3 linear quadrangles;
+ *   - bi-quadratic quadrangle will be split into 4 linear quadrangles;
+ *   - tri-quadratic hexahedron will be split into 8 linear hexahedra.
+ *   Quadratic elements of lower dimension  adjacent to the split bi-quadratic element
+ *   will be split in order to keep the mesh conformal.
+ *  \param elems - elements to split
+ */
+//================================================================================
+
+void SMESH_MeshEditor_i::SplitBiQuadraticIntoLinear(const SMESH::ListOfIDSources& theElems)
+  throw (SALOME::SALOME_Exception)
+{
+  SMESH_TRY;
+  initData();
+
+  TIDSortedElemSet elemSet;
+  for ( size_t i = 0; i < theElems.length(); ++i )
+  {
+    SMESH::SMESH_IDSource_ptr elems = theElems[i].in();
+    SMESH::SMESH_Mesh_var      mesh = elems->GetMesh();
+    if ( mesh->GetId() != myMesh_i->GetId() )
+      THROW_SALOME_CORBA_EXCEPTION("Wrong mesh of IDSource", SALOME::BAD_PARAM);
+
+    idSourceToSet( elems, getMeshDS(), elemSet, SMDSAbs_All );
+  }
+  getEditor().SplitBiQuadraticIntoLinear( elemSet );
+
+  declareMeshModified( /*isReComputeSafe=*/true ); // it does not influence Compute()
+
+  TPythonDump() << this << ".SplitBiQuadraticIntoLinear( "
+                << theElems << " )";
 
   SMESH_CATCH( SMESH::throwCorbaException );
 }
@@ -2781,7 +2844,7 @@ SMESH_MeshEditor_i::ExtrusionAlongPathObjects(const SMESH::ListOfIDSources & the
     if ( !aMeshImp ) return aGroups._retn();
     TopoDS_Shape aShape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape( thePathShape );
     aSubMesh = aMeshImp->GetImpl().GetSubMesh( aShape );
-    if ( !aSubMesh || !aSubMesh->GetSubMeshDS() )
+    if ( !aSubMesh /*|| !aSubMesh->GetSubMeshDS()*/ )
       return aGroups._retn();
   }
 
@@ -3928,57 +3991,18 @@ SMESH_MeshEditor_i::ScaleMakeMesh(SMESH::SMESH_IDSource_ptr  theObject,
 
 
 //=======================================================================
-//function : FindCoincidentNodes
+//function : findCoincidentNodes
 //purpose  :
 //=======================================================================
 
-void SMESH_MeshEditor_i::FindCoincidentNodes (CORBA::Double                  Tolerance,
-                                              SMESH::array_of_long_array_out GroupsOfNodes)
-  throw (SALOME::SALOME_Exception)
+void SMESH_MeshEditor_i::
+findCoincidentNodes (TIDSortedNodeSet &             Nodes,
+                     CORBA::Double                  Tolerance,
+                     SMESH::array_of_long_array_out GroupsOfNodes,
+                     CORBA::Boolean                 SeparateCornersAndMedium)
 {
-  SMESH_TRY;
-  initData();
-
   ::SMESH_MeshEditor::TListOfListOfNodes aListOfListOfNodes;
-  TIDSortedNodeSet nodes; // no input nodes
-  getEditor().FindCoincidentNodes( nodes, Tolerance, aListOfListOfNodes );
-
-  GroupsOfNodes = new SMESH::array_of_long_array;
-  GroupsOfNodes->length( aListOfListOfNodes.size() );
-  ::SMESH_MeshEditor::TListOfListOfNodes::iterator llIt = aListOfListOfNodes.begin();
-  for ( CORBA::Long i = 0; llIt != aListOfListOfNodes.end(); llIt++, i++ ) {
-    list< const SMDS_MeshNode* >& aListOfNodes = *llIt;
-    list< const SMDS_MeshNode* >::iterator lIt = aListOfNodes.begin();;
-    SMESH::long_array& aGroup = (*GroupsOfNodes)[ i ];
-    aGroup.length( aListOfNodes.size() );
-    for ( int j = 0; lIt != aListOfNodes.end(); lIt++, j++ )
-      aGroup[ j ] = (*lIt)->GetID();
-  }
-  TPythonDump() << "coincident_nodes = " << this << ".FindCoincidentNodes( "
-                << Tolerance << " )";
-
-  SMESH_CATCH( SMESH::throwCorbaException );
-}
-
-//=======================================================================
-//function : FindCoincidentNodesOnPart
-//purpose  :
-//=======================================================================
-
-void SMESH_MeshEditor_i::FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr      theObject,
-                                                   CORBA::Double                  Tolerance,
-                                                   SMESH::array_of_long_array_out GroupsOfNodes)
-  throw (SALOME::SALOME_Exception)
-{
-  SMESH_TRY;
-  initData();
-
-  TIDSortedNodeSet nodes;
-  idSourceToNodeSet( theObject, getMeshDS(), nodes );
-
-  ::SMESH_MeshEditor::TListOfListOfNodes aListOfListOfNodes;
-  if(!nodes.empty())
-    getEditor().FindCoincidentNodes( nodes, Tolerance, aListOfListOfNodes );
+  getEditor().FindCoincidentNodes( Nodes, Tolerance, aListOfListOfNodes, SeparateCornersAndMedium );
 
   GroupsOfNodes = new SMESH::array_of_long_array;
   GroupsOfNodes->length( aListOfListOfNodes.size() );
@@ -3992,9 +4016,56 @@ void SMESH_MeshEditor_i::FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr    
     for ( int j = 0; lIt != aListOfNodes.end(); lIt++, j++ )
       aGroup[ j ] = (*lIt)->GetID();
   }
+}
+
+//=======================================================================
+//function : FindCoincidentNodes
+//purpose  :
+//=======================================================================
+
+void SMESH_MeshEditor_i::
+FindCoincidentNodes (CORBA::Double                  Tolerance,
+                     SMESH::array_of_long_array_out GroupsOfNodes,
+                     CORBA::Boolean                 SeparateCornersAndMedium)
+  throw (SALOME::SALOME_Exception)
+{
+  SMESH_TRY;
+  initData();
+
+  TIDSortedNodeSet nodes; // no input nodes
+  findCoincidentNodes( nodes, Tolerance, GroupsOfNodes, SeparateCornersAndMedium );
+
+  TPythonDump() << "coincident_nodes = " << this << ".FindCoincidentNodes( "
+                << Tolerance << ", "
+                << SeparateCornersAndMedium << " )";
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+}
+
+//=======================================================================
+//function : FindCoincidentNodesOnPart
+//purpose  :
+//=======================================================================
+
+void SMESH_MeshEditor_i::
+FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr      theObject,
+                          CORBA::Double                  Tolerance,
+                          SMESH::array_of_long_array_out GroupsOfNodes,
+                          CORBA::Boolean                 SeparateCornersAndMedium)
+  throw (SALOME::SALOME_Exception)
+{
+  SMESH_TRY;
+  initData();
+
+  TIDSortedNodeSet nodes;
+  idSourceToNodeSet( theObject, getMeshDS(), nodes );
+
+  findCoincidentNodes( nodes, Tolerance, GroupsOfNodes, SeparateCornersAndMedium );
+
   TPythonDump() << "coincident_nodes_on_part = " << this << ".FindCoincidentNodesOnPart( "
-                <<theObject<<", "
-                << Tolerance << " )";
+                << theObject <<", "
+                << Tolerance << ", "
+                << SeparateCornersAndMedium << " )";
 
   SMESH_CATCH( SMESH::throwCorbaException );
 }
@@ -4010,7 +4081,8 @@ void SMESH_MeshEditor_i::
 FindCoincidentNodesOnPartBut(SMESH::SMESH_IDSource_ptr      theObject,
                              CORBA::Double                  theTolerance,
                              SMESH::array_of_long_array_out theGroupsOfNodes,
-                             const SMESH::ListOfIDSources&  theExceptSubMeshOrGroups)
+                             const SMESH::ListOfIDSources&  theExceptSubMeshOrGroups,
+                             CORBA::Boolean                 theSeparateCornersAndMedium)
   throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
@@ -4021,32 +4093,18 @@ FindCoincidentNodesOnPartBut(SMESH::SMESH_IDSource_ptr      theObject,
 
   for ( int i = 0; i < theExceptSubMeshOrGroups.length(); ++i )
   {
-    TIDSortedNodeSet exceptNodes;
-    idSourceToNodeSet( theExceptSubMeshOrGroups[i], getMeshDS(), exceptNodes );
-    TIDSortedNodeSet::iterator avoidNode = exceptNodes.begin();
-    for ( ; avoidNode != exceptNodes.end(); ++avoidNode)
-      nodes.erase( *avoidNode );
+    SMDS_ElemIteratorPtr nodeIt = myMesh_i->GetElements( theExceptSubMeshOrGroups[i],
+                                                         SMESH::NODE );
+    while ( nodeIt->more() )
+      nodes.erase( cast2Node( nodeIt->next() ));
   }
-  ::SMESH_MeshEditor::TListOfListOfNodes aListOfListOfNodes;
-  if(!nodes.empty())
-    getEditor().FindCoincidentNodes( nodes, theTolerance, aListOfListOfNodes );
+  findCoincidentNodes( nodes, theTolerance, theGroupsOfNodes, theSeparateCornersAndMedium );
 
-  theGroupsOfNodes = new SMESH::array_of_long_array;
-  theGroupsOfNodes->length( aListOfListOfNodes.size() );
-  ::SMESH_MeshEditor::TListOfListOfNodes::iterator llIt = aListOfListOfNodes.begin();
-  for ( CORBA::Long i = 0; llIt != aListOfListOfNodes.end(); llIt++, i++ )
-  {
-    list< const SMDS_MeshNode* >& aListOfNodes = *llIt;
-    list< const SMDS_MeshNode* >::iterator lIt = aListOfNodes.begin();;
-    SMESH::long_array& aGroup = (*theGroupsOfNodes)[ i ];
-    aGroup.length( aListOfNodes.size() );
-    for ( int j = 0; lIt != aListOfNodes.end(); lIt++, j++ )
-      aGroup[ j ] = (*lIt)->GetID();
-  }
   TPythonDump() << "coincident_nodes_on_part = " << this << ".FindCoincidentNodesOnPartBut( "
                 << theObject<<", "
                 << theTolerance << ", "
-                << theExceptSubMeshOrGroups << " )";
+                << theExceptSubMeshOrGroups << ", "
+                << theSeparateCornersAndMedium << " )";
 
   SMESH_CATCH( SMESH::throwCorbaException );
 }
@@ -4056,7 +4114,8 @@ FindCoincidentNodesOnPartBut(SMESH::SMESH_IDSource_ptr      theObject,
 //purpose  :
 //=======================================================================
 
-void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfNodes)
+void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfNodes,
+                                     const SMESH::ListOfIDSources&     NodesToKeep)
   throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
@@ -4066,6 +4125,16 @@ void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfN
 
   TPythonDump aTPythonDump;
   aTPythonDump << this << ".MergeNodes([";
+
+  TIDSortedNodeSet setOfNodesToKeep;
+  for ( int i = 0; i < NodesToKeep.length(); ++i )
+  {
+    prepareIdSource( NodesToKeep[i] );
+    SMDS_ElemIteratorPtr nodeIt = myMesh_i->GetElements( NodesToKeep[i], SMESH::NODE );
+    while ( nodeIt->more() )
+      setOfNodesToKeep.insert( setOfNodesToKeep.end(), cast2Node( nodeIt->next() ));
+  }
+
   ::SMESH_MeshEditor::TListOfListOfNodes aListOfListOfNodes;
   for (int i = 0; i < GroupsOfNodes.length(); i++)
   {
@@ -4075,9 +4144,13 @@ void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfN
     for ( int j = 0; j < aNodeGroup.length(); j++ )
     {
       CORBA::Long index = aNodeGroup[ j ];
-      const SMDS_MeshNode * node = aMesh->FindNode(index);
-      if ( node )
-        aListOfNodes.push_back( node );
+      if ( const SMDS_MeshNode * node = aMesh->FindNode( index ))
+      {
+        if ( setOfNodesToKeep.count( node ))
+          aListOfNodes.push_front( node );
+        else
+          aListOfNodes.push_back( node );
+      }
     }
     if ( aListOfNodes.size() < 2 )
       aListOfListOfNodes.pop_back();
@@ -4085,9 +4158,10 @@ void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfN
     if ( i > 0 ) aTPythonDump << ", ";
     aTPythonDump << aNodeGroup;
   }
+
   getEditor().MergeNodes( aListOfListOfNodes );
 
-  aTPythonDump <<  "])";
+  aTPythonDump << "], " << NodesToKeep << ")";
 
   declareMeshModified( /*isReComputeSafe=*/false );
 
@@ -4499,6 +4573,225 @@ static SMESH::SMESH_MeshEditor::Sew_Error convError( const::SMESH_MeshEditor::Se
 }
 
 //=======================================================================
+/*!
+ * Returns groups of FreeBorder's coincident within the given tolerance.
+ * If the tolerance <= 0.0 then one tenth of an average size of elements adjacent
+ * to free borders being compared is used.
+ */
+//=======================================================================
+
+SMESH::CoincidentFreeBorders*
+SMESH_MeshEditor_i::FindCoincidentFreeBorders(CORBA::Double tolerance)
+{
+  SMESH::CoincidentFreeBorders_var aCFB = new SMESH::CoincidentFreeBorders;
+
+  SMESH_TRY;
+
+  SMESH_MeshAlgos::CoincidentFreeBorders cfb;
+  SMESH_MeshAlgos::FindCoincidentFreeBorders( *getMeshDS(), tolerance, cfb );
+
+  // copy free borders
+  aCFB->borders.length( cfb._borders.size() );
+  for ( size_t i = 0; i < cfb._borders.size(); ++i )
+  {
+    SMESH_MeshAlgos::TFreeBorder& nodes = cfb._borders[i];
+    SMESH::FreeBorder&             aBRD = aCFB->borders[i];
+    aBRD.nodeIDs.length( nodes.size() );
+    for ( size_t iN = 0; iN < nodes.size(); ++iN )
+      aBRD.nodeIDs[ iN ] = nodes[ iN ]->GetID();
+  }
+
+  // copy coincident parts
+  aCFB->coincidentGroups.length( cfb._coincidentGroups.size() );
+  for ( size_t i = 0; i < cfb._coincidentGroups.size(); ++i )
+  {
+    SMESH_MeshAlgos::TCoincidentGroup& grp = cfb._coincidentGroups[i];
+    SMESH::FreeBordersGroup&          aGRP = aCFB->coincidentGroups[i];
+    aGRP.length( grp.size() );
+    for ( size_t iP = 0; iP < grp.size(); ++iP )
+    {
+      SMESH_MeshAlgos::TFreeBorderPart& part = grp[ iP ];
+      SMESH::FreeBorderPart&           aPART = aGRP[ iP ];
+      aPART.border   = part._border;
+      aPART.node1    = part._node1;
+      aPART.node2    = part._node2;
+      aPART.nodeLast = part._nodeLast;
+    }
+  }
+  SMESH_CATCH( SMESH::doNothing );
+
+  TPythonDump() << "CoincidentFreeBorders = "
+                << this << ".FindCoincidentFreeBorders( " << tolerance << " )";
+
+  return aCFB._retn();
+}
+
+//=======================================================================
+/*!
+ * Sew FreeBorder's of each group
+ */
+//=======================================================================
+
+CORBA::Short SMESH_MeshEditor_i::
+SewCoincidentFreeBorders(const SMESH::CoincidentFreeBorders& freeBorders,
+                         CORBA::Boolean                      createPolygons,
+                         CORBA::Boolean                      createPolyhedra)
+  throw (SALOME::SALOME_Exception)
+{
+  CORBA::Short nbSewed = 0;
+
+  SMESH_MeshAlgos::TFreeBorderVec groups;
+  SMESH_MeshAlgos::TFreeBorder    borderNodes; // triples of nodes for every FreeBorderPart
+
+  // check the input and collect nodes
+  for ( CORBA::ULong i = 0; i < freeBorders.coincidentGroups.length(); ++i )
+  {
+    borderNodes.clear();
+    const SMESH::FreeBordersGroup& aGRP = freeBorders.coincidentGroups[ i ];
+    for ( CORBA::ULong iP = 0; iP < aGRP.length(); ++iP )
+    {
+      const SMESH::FreeBorderPart& aPART = aGRP[ iP ];
+      if ( aPART.border < 0 || aPART.border >= freeBorders.borders.length() )
+        THROW_SALOME_CORBA_EXCEPTION("Invalid FreeBorderPart::border index", SALOME::BAD_PARAM);
+
+      const SMESH::FreeBorder& aBRD = freeBorders.borders[ aPART.border ];
+
+      if ( aPART.node1 < 0 || aPART.node1 > aBRD.nodeIDs.length() )
+        THROW_SALOME_CORBA_EXCEPTION("Invalid FreeBorderPart::node1", SALOME::BAD_PARAM);
+      if ( aPART.node2 < 0 || aPART.node2 > aBRD.nodeIDs.length() )
+        THROW_SALOME_CORBA_EXCEPTION("Invalid FreeBorderPart::node2", SALOME::BAD_PARAM);
+      if ( aPART.nodeLast < 0 || aPART.nodeLast > aBRD.nodeIDs.length() )
+        THROW_SALOME_CORBA_EXCEPTION("Invalid FreeBorderPart::nodeLast", SALOME::BAD_PARAM);
+
+      // do not keep these nodes for further sewing as nodes can be removed by the sewing
+      const SMDS_MeshNode* n1 = getMeshDS()->FindNode( aBRD.nodeIDs[ aPART.node1    ]);
+      const SMDS_MeshNode* n2 = getMeshDS()->FindNode( aBRD.nodeIDs[ aPART.node2    ]);
+      const SMDS_MeshNode* n3 = getMeshDS()->FindNode( aBRD.nodeIDs[ aPART.nodeLast ]);
+      if ( !n1)
+        THROW_SALOME_CORBA_EXCEPTION("Nonexistent FreeBorderPart::node1", SALOME::BAD_PARAM);
+      if ( !n2 )
+        THROW_SALOME_CORBA_EXCEPTION("Nonexistent FreeBorderPart::node2", SALOME::BAD_PARAM);
+      if ( !n3 )
+        THROW_SALOME_CORBA_EXCEPTION("Nonexistent FreeBorderPart::nodeLast", SALOME::BAD_PARAM);
+
+      borderNodes.push_back( n1 );
+      borderNodes.push_back( n2 );
+      borderNodes.push_back( n3 );
+    }
+    groups.push_back( borderNodes );
+  }
+
+  // SewFreeBorder() can merge nodes, thus nodes stored in 'groups' can become dead;
+  // to get nodes that replace other nodes during merge we create 0D elements
+  // on each node and MergeNodes() will replace underlying nodes of 0D elements by
+  // new ones.
+
+  vector< const SMDS_MeshElement* > tmp0Delems;
+  for ( size_t i = 0; i < groups.size(); ++i )
+  {
+    SMESH_MeshAlgos::TFreeBorder& nodes = groups[i];
+    for ( size_t iN = 0; iN < nodes.size(); ++iN )
+    {
+      SMDS_ElemIteratorPtr it0D = nodes[iN]->GetInverseElementIterator(SMDSAbs_0DElement);
+      if ( it0D->more() )
+        tmp0Delems.push_back( it0D->next() );
+      else
+        tmp0Delems.push_back( getMeshDS()->Add0DElement( nodes[iN] ));
+    }
+  }
+
+  // cout << endl << "INIT" << endl;
+  // for ( size_t i = 0; i < tmp0Delems.size(); ++i )
+  // {
+  //   cout << i << " ";
+  //   if ( i % 3 == 0 ) cout << "^ ";
+  //   tmp0Delems[i]->GetNode(0)->Print( cout );
+  // }
+
+  SMESH_TRY;
+
+  ::SMESH_MeshEditor::Sew_Error res, ok = ::SMESH_MeshEditor::SEW_OK;
+  int i0D = 0;
+  for ( size_t i = 0; i < groups.size(); ++i )
+  {
+    bool isBordToBord = true;
+    bool   groupSewed = false;
+    SMESH_MeshAlgos::TFreeBorder& nodes = groups[i];
+    for ( size_t iN = 3; iN+2 < nodes.size(); iN += 3 )
+    {
+      const SMDS_MeshNode* n0 = tmp0Delems[ i0D + 0 ]->GetNode( 0 );
+      const SMDS_MeshNode* n1 = tmp0Delems[ i0D + 1 ]->GetNode( 0 );
+      const SMDS_MeshNode* n2 = tmp0Delems[ i0D + 2 ]->GetNode( 0 );
+
+      const SMDS_MeshNode* n3 = tmp0Delems[ i0D + 0 + iN ]->GetNode( 0 );
+      const SMDS_MeshNode* n4 = tmp0Delems[ i0D + 1 + iN ]->GetNode( 0 );
+      const SMDS_MeshNode* n5 = tmp0Delems[ i0D + 2 + iN ]->GetNode( 0 );
+
+      if ( !n0 || !n1 || !n2 || !n3 || !n4 || !n5 )
+        continue;
+
+      // TIDSortedElemSet emptySet, avoidSet;
+      // if ( !SMESH_MeshAlgos::FindFaceInSet( n0, n1, emptySet, avoidSet))
+      // {
+      //   cout << "WRONG 2nd 1" << endl;
+      //   n0->Print( cout );
+      //   n1->Print( cout );
+      // }
+      // if ( !SMESH_MeshAlgos::FindFaceInSet( n3, n4, emptySet, avoidSet))
+      // {
+      //   cout << "WRONG 2nd 2" << endl;
+      //   n3->Print( cout );
+      //   n4->Print( cout );
+      // }
+
+      if ( !isBordToBord )
+      {
+        n1 = n2; // at border-to-side sewing only last side node (n1) is needed
+        n2 = 0;  //  and n2 is not used
+      }
+      // 1st border moves to 2nd
+      res = getEditor().SewFreeBorder( n3, n4, n5 ,// 1st
+                                       n0 ,n1 ,n2 ,// 2nd
+                                       /*2ndIsFreeBorder=*/ isBordToBord,
+                                       createPolygons, createPolyhedra);
+      groupSewed = ( res == ok );
+
+      isBordToBord = false;
+      // cout << endl << "SEWED GROUP " << i << " PART " << iN / 3 << endl;
+      // for ( size_t t = 0; t < tmp0Delems.size(); ++t )
+      // {
+      //   cout << t << " ";
+      //   if ( t % 3 == 0 ) cout << "^ ";
+      //   tmp0Delems[t]->GetNode(0)->Print( cout );
+      // }
+    }
+    i0D += nodes.size();
+    nbSewed += groupSewed;
+  }
+
+  TPythonDump() << "nbSewed = " << this << ".SewCoincidentFreeBorders( "
+                << freeBorders     << ", "
+                << createPolygons  << ", "
+                << createPolyhedra << " )";
+
+  SMESH_CATCH( SMESH::doNothing );
+
+  declareMeshModified( /*isReComputeSafe=*/false );
+
+  // remove tmp 0D elements
+  SMESH_TRY;
+  set< const SMDS_MeshElement* > removed0D;
+  for ( size_t i = 0; i < tmp0Delems.size(); ++i )
+  {
+    if ( removed0D.insert( tmp0Delems[i] ).second )
+      getMeshDS()->RemoveFreeElement( tmp0Delems[i], /*sm=*/0, /*fromGroups=*/false );
+  }
+  SMESH_CATCH( SMESH::throwCorbaException );
+
+  return nbSewed;
+}
+
+//=======================================================================
 //function : SewFreeBorders
 //purpose  :
 //=======================================================================
@@ -4547,14 +4840,14 @@ SMESH_MeshEditor_i::SewFreeBorders(CORBA::Long FirstNodeID1,
 
   SMESH::SMESH_MeshEditor::Sew_Error error =
     convError( getEditor().SewFreeBorder (aBorderFirstNode,
-                                       aBorderSecondNode,
-                                       aBorderLastNode,
-                                       aSide2FirstNode,
-                                       aSide2SecondNode,
-                                       aSide2ThirdNode,
-                                       true,
-                                       CreatePolygons,
-                                       CreatePolyedrs) );
+                                          aBorderSecondNode,
+                                          aBorderLastNode,
+                                          aSide2FirstNode,
+                                          aSide2SecondNode,
+                                          aSide2ThirdNode,
+                                          true,
+                                          CreatePolygons,
+                                          CreatePolyedrs) );
 
 
   declareMeshModified( /*isReComputeSafe=*/false );
@@ -4607,13 +4900,13 @@ SMESH_MeshEditor_i::SewConformFreeBorders(CORBA::Long FirstNodeID1,
 
   SMESH::SMESH_MeshEditor::Sew_Error error =
     convError( getEditor().SewFreeBorder (aBorderFirstNode,
-                                       aBorderSecondNode,
-                                       aBorderLastNode,
-                                       aSide2FirstNode,
-                                       aSide2SecondNode,
-                                       aSide2ThirdNode,
-                                       true,
-                                       false, false) );
+                                          aBorderSecondNode,
+                                          aBorderLastNode,
+                                          aSide2FirstNode,
+                                          aSide2SecondNode,
+                                          aSide2ThirdNode,
+                                          true,
+                                          false, false) );
 
   declareMeshModified( /*isReComputeSafe=*/false );
   return error;
@@ -4669,14 +4962,14 @@ SMESH_MeshEditor_i::SewBorderToSide(CORBA::Long FirstNodeIDOnFreeBorder,
 
   SMESH::SMESH_MeshEditor::Sew_Error error =
     convError( getEditor().SewFreeBorder (aBorderFirstNode,
-                                       aBorderSecondNode,
-                                       aBorderLastNode,
-                                       aSide2FirstNode,
-                                       aSide2SecondNode,
-                                       aSide2ThirdNode,
-                                       false,
-                                       CreatePolygons,
-                                       CreatePolyedrs) );
+                                          aBorderSecondNode,
+                                          aBorderLastNode,
+                                          aSide2FirstNode,
+                                          aSide2SecondNode,
+                                          aSide2ThirdNode,
+                                          false,
+                                          CreatePolygons,
+                                          CreatePolyedrs) );
 
   declareMeshModified( /*isReComputeSafe=*/false );
   return error;
@@ -6368,9 +6661,9 @@ CORBA::Long SMESH_MeshEditor_i::MakeBoundaryElements(SMESH::Bnd_Dimension dim,
     THROW_SALOME_CORBA_EXCEPTION("Invalid boundary dimension", SALOME::BAD_PARAM);
 
   // separate groups belonging to this and other mesh
-  SMESH::ListOfIDSources_var groupsOfThisMesh = new SMESH::ListOfIDSources;
+  SMESH::ListOfIDSources_var groupsOfThisMesh  = new SMESH::ListOfIDSources;
   SMESH::ListOfIDSources_var groupsOfOtherMesh = new SMESH::ListOfIDSources;
-  groupsOfThisMesh->length( groups.length() );
+  groupsOfThisMesh ->length( groups.length() );
   groupsOfOtherMesh->length( groups.length() );
   int nbGroups = 0, nbGroupsOfOtherMesh = 0;
   for ( int i = 0; i < groups.length(); ++i )

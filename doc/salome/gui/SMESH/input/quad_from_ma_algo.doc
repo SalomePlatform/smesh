@@ -5,15 +5,20 @@
 Medial Axis Projection algorithm can be used for meshing faces with
 sinuous borders and having channel-like shape, for which is it
 difficult to define 1D hypotheses so that generated quadrangles to be
-of good shape.
+of good shape. The algorithm can be also applied to faces with ring
+topology, which can be viewed as a closed 'channel'. In the latter
+case radial discretization of a ring can be specified by
+using <em>Number of Layers</em> or <em>Distribution of Layers</em>
+hypothesis.
 
-\image html quad_from_ma_mesh.png "A mesh of a river model"
+\image html quad_from_ma_mesh.png "A mesh of a river model to the left and of a ring-face to the right"
 
 The algorithm assures good shape of quadrangles by constructing Medial
 Axis between sinuous borders of the face and using it to
-discretize the borders.
+discretize the borders. (Shape of quadrangles can be not perfect at
+locations where opposite sides of a 'channel' are far from being parallel.)
 
-\image html quad_from_ma_medial_axis.png "Media Axis between two blue sinuous borders"
+\image html quad_from_ma_medial_axis.png "Medial Axis between two blue sinuous borders"
 
 The Medial Axis is used in two ways:
 <ol>
@@ -22,9 +27,9 @@ The Medial Axis is used in two ways:
   Axis.</li>
 <li> If there is no sub-meshes on the sinuous borders, then a part of
   the Medial Axis that can be mapped to both borders is discretized
-  using a hypothesis assigned to the face or its ancestor shapes,
+  using a 1D hypothesis assigned to the face or its ancestor shapes,
   and the division points are mapped from the Medial Axis to the both
-  borders.</li>
+  borders to find positions of nodes.</li>
 </ol>
 
 */

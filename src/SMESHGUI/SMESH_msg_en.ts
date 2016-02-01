@@ -793,6 +793,10 @@
         <translation>Polygon</translation>
     </message>
     <message>
+        <source>MEN_QUADRATIC_POLYGON</source>
+        <translation>Quadratic Polygon</translation>
+    </message>
+    <message>
         <source>MEN_POLYHEDRON</source>
         <translation>Polyhedron</translation>
     </message>
@@ -1085,6 +1089,18 @@
         <translation>Split Volumes</translation>
     </message>
     <message>
+        <source>MEN_SPLIT_BIQUAD</source>
+        <translation>Split bi-quadratic into linear</translation>
+    </message>
+    <message>
+        <source>TOP_SPLIT_BIQUAD</source>
+        <translation>Split bi-quadratic into linear</translation>
+    </message>
+    <message>
+        <source>STB_SPLIT_BIQUAD</source>
+        <translation>Split bi-quadratic into linear</translation>
+    </message>
+    <message>
         <source>MESHERS_FILE_CANT_OPEN</source>
         <translation>Can not open resource file</translation>
     </message>
@@ -1127,8 +1143,13 @@ Please, select a mesh and try again</translation>
 Please enter a name of new group to be created or choose an existing one.</translation>
     </message>
     <message>
-        <source>MESH_STANDALONE_GRP_CHOSEN</source>
+        <source>MESH_GEOM_GRP_CHOSEN</source>
         <translation>Group on geometry is chosen: %1.
+Do you want to convert it to the standalone group?</translation>
+    </message>
+    <message>
+        <source>MESH_FILTER_GRP_CHOSEN</source>
+        <translation>Group on filter is chosen: %1.
 Do you want to convert it to the standalone group?</translation>
     </message>
     <message>
@@ -1224,6 +1245,14 @@ Please enter correct values and try again</translation>
     <message>
         <source>SMESH_ADD_POLYGON_TITLE</source>
         <translation>Add Polygon</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_QUADRATIC_POLYGON</source>
+        <translation>Add Quadratic polygon</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_QUADRATIC_POLYGON_TITLE</source>
+        <translation>Add Quadratic Polygon</translation>
     </message>
     <message>
         <source>SMESH_ADD_PENTA</source>
@@ -1855,6 +1884,10 @@ Check algorithm documentation for supported geometry</translation>
     <message>
         <source>SMESH_HYP_9</source>
         <translation>Such dimention hypothesis is already assigned to the shape</translation>
+    </message>
+    <message>
+        <source>SMESH_ID_DIAGONAL</source>
+        <translation>Edges IDs</translation>
     </message>
     <message>
         <source>SMESH_ID_EDGES</source>
@@ -3225,6 +3258,10 @@ Use Display Entity menu command to show them.
         <translation>Polygon</translation>
     </message>
     <message>
+        <source>STB_QUADRATIC_POLYGON</source>
+        <translation>Quadratic Polygon</translation>
+    </message>
+    <message>
         <source>STB_POLYHEDRON</source>
         <translation>Polyhedron</translation>
     </message>
@@ -3301,6 +3338,10 @@ Use Display Entity menu command to show them.
         <translation>Show Distribution</translation>
     </message>
     <message>
+        <source>STB_SHOW_SCALAR_BAR</source>
+        <translation>Show Scalar bar</translation>
+    </message>
+    <message>
         <source>STB_REVOLUTION</source>
         <translation>Revolution</translation>
     </message>
@@ -3335,10 +3376,6 @@ Use Display Entity menu command to show them.
     <message>
         <source>STB_SHOW</source>
         <translation>Show</translation>
-    </message>
-    <message>
-        <source>STB_SHOW_SCALAR_BAR</source>
-        <translation>Show Scalar Bar</translation>
     </message>
     <message>
         <source>STB_SHRINK</source>
@@ -3879,6 +3916,10 @@ Use Display Entity menu command to show them.
     <message>
         <source>TOP_POLYGON</source>
         <translation>Polygon</translation>
+    </message>
+    <message>
+        <source>TOP_QUADRATIC_POLYGON</source>
+        <translation>Quadratic Polygon</translation>
     </message>
     <message>
         <source>TOP_POLYHEDRON</source>
@@ -4861,9 +4902,7 @@ Please, create VTK viewer and try again</translation>
     <name>SMESHGUI_PrecomputeOp</name>
     <message>
         <source>CLEAR_SUBMESH_QUESTION</source>
-        <translation>Temporary sub-meshes on the selected geometry
-were created during preview operation.
-Do you want to remove all these sub-meshes?</translation>
+        <translation>Do you want to remove mesh entities generated during preview operation?</translation>
     </message>
     <message>
         <source>SMESH_WRN_NOTHING_PREVIEW</source>
@@ -4873,6 +4912,33 @@ Do you want to remove all these sub-meshes?</translation>
         <source>SMESH_REJECT_MESH_ORDER</source>
         <translation>The sub-mesh priority changed during preview operation.
 Do you want to restore original sub-mesh priority?</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_SplitBiQuadDlg</name>
+    <message>
+        <source>CAPTION</source>
+        <translation>Split bi-quadratic into linear</translation>
+    </message>
+    <message>
+        <source>MESH</source>
+        <translation>Mesh, Group or Sub-mesh</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_SplitBiQuadOp</name>
+    <message>
+        <source>MESH_IS_NOT_SELECTED</source>
+        <translation>No object to split is selected.
+Please specify it and try again</translation>
+    </message>
+    <message>
+        <source>REF_IS_NULL</source>
+        <translation>No valid mesh object selected</translation>
+    </message>
+    <message>
+        <source>DIFFERENT_MESHES</source>
+        <translation>Selected objects belong to different meshes</translation>
     </message>
 </context>
 <context>
@@ -5056,8 +5122,12 @@ Please select a group and try again</translation>
         <translation>Detect</translation>
     </message>
     <message>
-        <source>EDIT_SELECTED_GROUP</source>
-        <translation>Edit selected group</translation>
+        <source>EDIT_SELECTED_NODE_GROUP</source>
+        <translation>Edit selected group of coincident nodes</translation>
+    </message>
+    <message>
+        <source>EDIT_SELECTED_ELEM_GROUP</source>
+        <translation>Edit selected group of coincident elements</translation>
     </message>
     <message>
         <source>SELECT_ALL</source>
@@ -5073,7 +5143,23 @@ Please select a group and try again</translation>
     </message>
     <message>
         <source>EXCLUDE_GROUPS</source>
-        <translation>Exclude Groups</translation>
+        <translation>Exclude groups from detection</translation>
+    </message>
+    <message>
+        <source>SEPARATE_CORNERS_AND_MEDIUM</source>
+        <translation>No merge of corner and medium nodes of quadratic cells</translation>
+    </message>
+    <message>
+        <source>KEEP_NODES</source>
+        <translation>Nodes to keep during the merge</translation>
+    </message>
+    <message>
+        <source>GROUP_SUBMESH</source>
+        <translation>Groups and sub-meshes</translation>
+    </message>
+    <message>
+        <source>SELECT</source>
+        <translation>Select: </translation>
     </message>
 </context>
 <context>
@@ -5227,7 +5313,7 @@ Please select valid object and try again</translation>
     </message>
     <message>
         <source>SHAPE_IS_NOT_A_CYLINDER</source>
-        <translation>&quot;%1&quot; is not a cylinderical face
+        <translation>&quot;%1&quot; is not a cylindrical face
 Please select a cylindrical face and try again</translation>
     </message>
     <message>
@@ -5654,7 +5740,7 @@ Please enter correct value and try again</translation>
     </message>
     <message>
         <source>ELEMENTS</source>
-        <translation>Elements</translation>
+        <translation>All</translation>
     </message>
     <message>
         <source>ENTITY_TYPE</source>
@@ -6580,6 +6666,42 @@ It is impossible to read point coordinates from file</translation>
     <message>
         <source>SIDE_2</source>
         <translation>Side 2</translation>
+    </message>
+    <message>
+        <source>AUTO_SEWING</source>
+        <translation>Auto Sewing</translation>
+    </message>
+    <message>
+        <source>COINCIDENT_FREE_BORDERS</source>
+        <translation>Coincident Free Borders</translation>
+    </message>
+    <message>
+        <source>DETECT</source>
+        <translation>Detect</translation>
+    </message>
+    <message>
+        <source>SELECT_ALL</source>
+        <translation>Select all</translation>
+    </message>
+    <message>
+        <source>EDIT_SELECTED_GROUP</source>
+        <translation>Edit Selected Group</translation>
+    </message>
+    <message>
+        <source>STEP</source>
+        <translation>Step</translation>
+    </message>
+    <message>
+        <source>NO_BORDERS_TO_SEW</source>
+        <translation>No free borders to sew found</translation>
+    </message>
+    <message>
+        <source>NOT_ALL_BORDERS_SEWED</source>
+        <translation>%1 of %2 groups of borders sewed</translation>
+    </message>
+    <message>
+        <source>ALL_BORDERS_SEWED</source>
+        <translation>%1 group(s) of borders sewed</translation>
     </message>
 </context>
 <context>

@@ -58,7 +58,7 @@ public:
   virtual int             dim( int ) const;
   virtual QVariant        isComputable( int ) const;
   virtual QVariant        isPreComputable( int ) const;
-  virtual QVariant        hasReference( int ) const;
+  virtual QVariant        hasGeomReference( int ) const;
   virtual QVariant        isVisible( int ) const;
 
   virtual QString         quadratic2DMode( int ) const;

@@ -234,6 +234,10 @@ SMESHGUI_CopyMeshDlg::SMESHGUI_CopyMeshDlg( SMESHGUI* theModule )
           this,           SLOT   (SelectionIntoArgument()));
   connect(mySMESHGUI,     SIGNAL (SignalCloseAllDialogs()),/* to close dialog if study change */
           this,           SLOT   (reject()));
+  connect(mySMESHGUI,     SIGNAL (SignalActivatedViewManager()),
+          this,           SLOT   (onOpenView()));
+  connect(mySMESHGUI,     SIGNAL (SignalCloseView()),
+          this,           SLOT   (onCloseView()));
 
   connect(myLineEditElements, SIGNAL(textChanged(const QString&)),
           this,               SLOT  (onTextChange(const QString&)));
@@ -379,6 +383,31 @@ void SMESHGUI_CopyMeshDlg::reject()
     aViewWindow->SetSelectionMode( ActorSelection );
   mySMESHGUI->ResetState();
   QDialog::reject();
+}
+
+//=================================================================================
+// function : onOpenView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_CopyMeshDlg::onOpenView()
+{
+  if ( mySelector ) {
+    SMESH::SetPointRepresentation(false);
+  }
+  else {
+    mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
+    ActivateThisDialog();
+  }
+}
+
+//=================================================================================
+// function : onCloseView()
+// purpose  :
+//=================================================================================
+void SMESHGUI_CopyMeshDlg::onCloseView()
+{
+  DeactivateActiveDialog();
+  mySelector = 0;
 }
 
 //=================================================================================
@@ -602,16 +631,21 @@ void SMESHGUI_CopyMeshDlg::ActivateThisDialog()
   SelectionIntoArgument();
 }
 
+
 //=================================================================================
 // function : enterEvent()
 // purpose  :
 //=================================================================================
 void SMESHGUI_CopyMeshDlg::enterEvent (QEvent*)
 {
-  if (!ConstructorsBox->isEnabled())
+  if ( !ConstructorsBox->isEnabled() ) {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
+    if ( aViewWindow && !mySelector ) {
+      mySelector = aViewWindow->GetSelector();
+    }
     ActivateThisDialog();
+  }
 }
-
 //=================================================================================
 // function : keyPressEvent()
 // purpose  :

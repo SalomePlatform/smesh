@@ -220,6 +220,10 @@
             <translation>mesh_biquad_quadrangle.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_QUADRATIC_POLYGON</source>
+            <translation>mesh_quad_polygon.png</translation>
+        </message>
+        <message>
             <source>ICON_DLG_QUADRATIC_TETRAHEDRON</source>
             <translation>mesh_quad_tetrahedron.png</translation>
         </message>
@@ -594,6 +598,10 @@
         <message>
             <source>ICON_SPLIT_TO_TETRA</source>
             <translation>split_into_tetra.png</translation>
+        </message>
+        <message>
+            <source>ICON_SPLIT_BIQUAD</source>
+            <translation>split_biquad.png</translation>
         </message>
 	<message>
             <source>ICON_MEASURE_LENGTH</source>

@@ -19,12 +19,12 @@ In this dialog box specify <ul>
       <li>\b All - include if all nodes are common;</li>
       <li>\b Main - include if all corner nodes are common (meaningful for
         a quadratic mesh) </li>
-      <li><b>At least one</b> - include if one or more node is common</li>
-      <li>\b Majority - include if half of nodes or more is common</li></ul>
+      <li><b>At least one</b> - include if one or more nodes are common</li>
+      <li>\b Majority - include if half or more nodes are common</li></ul>
   </li>
   <li> select reference groups,</li>
-  <li> <b>Include underlying entities only</b> option if activated
-  allows inclusion of an entity provided that it is based on nodes of
+  <li> If <b>Include underlying entities only</b> option is activated
+  an entity can be included if it is based on nodes of
   one element of a reference group.</li>
 </ul>
 

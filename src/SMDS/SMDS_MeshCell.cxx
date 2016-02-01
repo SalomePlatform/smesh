@@ -56,7 +56,7 @@ VTKCellType SMDS_MeshCell::toVtkType (SMDSAbs_EntityType smdsType)
     vtkTypes[ SMDSEntity_Quad_Quadrangle ]   = VTK_QUADRATIC_QUAD;
     vtkTypes[ SMDSEntity_BiQuad_Quadrangle ] = VTK_BIQUADRATIC_QUAD;
     vtkTypes[ SMDSEntity_Polygon ]           = VTK_POLYGON;
-    //vtkTypes[ SMDSEntity_Quad_Polygon ]      = ;
+    vtkTypes[ SMDSEntity_Quad_Polygon ]      = VTK_QUADRATIC_POLYGON;
     vtkTypes[ SMDSEntity_Tetra ]             = VTK_TETRA;
     vtkTypes[ SMDSEntity_Quad_Tetra ]        = VTK_QUADRATIC_TETRA;
     vtkTypes[ SMDSEntity_Pyramid ]           = VTK_PYRAMID;
@@ -166,12 +166,14 @@ const std::vector< int >& SMDS_MeshCell::toVtkOrder(SMDSAbs_EntityType smdsType)
 
 //================================================================================
 /*!
- * \brief Return indices to reverse an SMDS cell of given type
+ * \brief Return indices to reverse an SMDS cell of given type.
+ *        nbNodes is useful for polygons
  * Usage: reverseIDs[i] = forwardIDs[ indices[ i ]]
  */
 //================================================================================
 
-const std::vector<int>& SMDS_MeshCell::reverseSmdsOrder(SMDSAbs_EntityType smdsType)
+const std::vector<int>& SMDS_MeshCell::reverseSmdsOrder(SMDSAbs_EntityType smdsType,
+                                                        const size_t       nbNodes)
 {
   static std::vector< std::vector< int > > reverseInterlaces;
   if ( reverseInterlaces.empty() )
@@ -256,6 +258,31 @@ const std::vector<int>& SMDS_MeshCell::reverseSmdsOrder(SMDSAbs_EntityType smdsT
       reverseInterlaces[SMDSEntity_Hexagonal_Prism].assign( &ids[0], &ids[0]+12 );
     }
   }
+
+  if ( smdsType == SMDSEntity_Polygon )
+  {
+    if ( reverseInterlaces[ smdsType ].size() != nbNodes )
+    {
+      reverseInterlaces[ smdsType ].resize( nbNodes );
+      for ( size_t i = 0; i < nbNodes; ++i )
+        reverseInterlaces[ smdsType ][i] = nbNodes - i - 1;
+    }
+  }
+  else if ( smdsType == SMDSEntity_Quad_Polygon )
+  {
+    if ( reverseInterlaces[ smdsType ].size() != nbNodes )
+    {
+      // e.g. for 8 nodes: [ 0, 3,2,1, 7,6,5,4 ]
+      reverseInterlaces[ smdsType ].resize( nbNodes );
+      size_t pos = 0;
+      reverseInterlaces[ smdsType ][pos++] = 0;
+      for ( int i = nbNodes / 2 - 1; i > 0 ; --i ) // 3,2,1
+        reverseInterlaces[ smdsType ][pos++] = i;
+      for ( int i = nbNodes - 1; i >= nbNodes / 2; --i ) // 7,6,5,4
+        reverseInterlaces[ smdsType ][pos++] = i;
+    }
+  }
+  
   return reverseInterlaces[smdsType];
 }
 
@@ -266,7 +293,8 @@ const std::vector<int>& SMDS_MeshCell::reverseSmdsOrder(SMDSAbs_EntityType smdsT
  */
 //================================================================================
 
-const std::vector<int>& SMDS_MeshCell::interlacedSmdsOrder(SMDSAbs_EntityType smdsType)
+const std::vector<int>& SMDS_MeshCell::interlacedSmdsOrder(SMDSAbs_EntityType smdsType,
+                                                           const size_t       nbNodes)
 {
   static std::vector< std::vector< int > > interlace;
   if ( interlace.empty() )
@@ -278,13 +306,26 @@ const std::vector<int>& SMDS_MeshCell::interlacedSmdsOrder(SMDSAbs_EntityType sm
     }
     {
       const int ids[] = {0,3,1,4,2,5,6};
-      interlace[SMDSEntity_Quad_Triangle].assign( &ids[0], &ids[0]+6 );
+      interlace[SMDSEntity_Quad_Triangle  ].assign( &ids[0], &ids[0]+6 );
       interlace[SMDSEntity_BiQuad_Triangle].assign( &ids[0], &ids[0]+7 );
     }
     {
       const int ids[] = {0,4,1,5,2,6,3,7,8};
-      interlace[SMDSEntity_Quad_Quadrangle].assign( &ids[0], &ids[0]+8 );
+      interlace[SMDSEntity_Quad_Quadrangle  ].assign( &ids[0], &ids[0]+8 );
       interlace[SMDSEntity_BiQuad_Quadrangle].assign( &ids[0], &ids[0]+9 );
+    }
+  }
+
+  if ( smdsType == SMDSEntity_Quad_Polygon )
+  {
+    if ( interlace[smdsType].size() != nbNodes )
+    {
+      interlace[smdsType].resize( nbNodes );
+      for ( size_t i = 0; i < nbNodes / 2; ++i )
+      {
+        interlace[smdsType][i*2+0] = i;
+        interlace[smdsType][i*2+1] = i + nbNodes / 2;
+      }
     }
   }
   return interlace[smdsType];
