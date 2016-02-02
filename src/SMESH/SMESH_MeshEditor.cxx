@@ -1601,12 +1601,12 @@ void SMESH_MeshEditor::QuadTo4Tri (TIDSortedElemSet & theElems)
 
     // create 4 triangles
 
-    GetMeshDS()->RemoveFreeElement( quad, subMeshDS, /*fromGroups=*/false );
-    
     helper.SetIsQuadratic  ( nodes.size() > 4 );
     helper.SetIsBiQuadratic( nodes.size() == 9 );
     if ( helper.GetIsQuadratic() )
       helper.AddTLinks( static_cast< const SMDS_MeshFace*>( quad ));
+
+    GetMeshDS()->RemoveFreeElement( quad, subMeshDS, /*fromGroups=*/false );
 
     for ( int i = 0; i < 4; ++i )
     {
@@ -2997,30 +2997,27 @@ bool SMESH_MeshEditor::QuadToTri (TIDSortedElemSet & theElems,
       }
 
       const SMDS_MeshNode* aNodes [8];
-      const SMDS_MeshNode* inFaceNode = 0;
       SMDS_ElemIteratorPtr itN = elem->nodesIterator();
-      int i = 0;
+      for ( int i = 0; itN->more(); ++i )
+        aNodes[ i ] = static_cast<const SMDS_MeshNode*>( itN->next() );
+
+      const SMDS_MeshNode* inFaceNode = 0;
       if ( helper.GetNodeUVneedInFaceNode() )
-        while ( itN->more() && !inFaceNode ) {
-          aNodes[ i++ ] = static_cast<const SMDS_MeshNode*>( itN->next() );
-          if ( aNodes[ i-1 ]->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE )
-          {
-            inFaceNode = aNodes[ i-1 ];
-          }
-        }
+        for ( int i = 0; i < 8 &&  !inFaceNode; ++i )
+          if ( aNodes[ i ]->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE )
+            inFaceNode = aNodes[ i ];
 
       // find middle point for (0,1,2,3)
       // and create a node in this point;
       gp_XYZ p( 0,0,0 );
       if ( surface.IsNull() ) {
-        for(i=0; i<4; i++)
-          p += gp_XYZ(aNodes[i]->X(), aNodes[i]->Y(), aNodes[i]->Z() );
+        for ( int i = 0; i < 4; i++ ) p += SMESH_TNodeXYZ( aNodes[i] );
         p /= 4;
       }
       else {
         TopoDS_Face geomFace = TopoDS::Face( helper.GetSubShape() );
         gp_XY uv( 0,0 );
-        for(i=0; i<4; i++)
+        for ( int i = 0; i < 4; i++ )
           uv += helper.GetNodeUV( geomFace, aNodes[i], inFaceNode );
         uv /= 4.;
         p = surface->Value( uv.X(), uv.Y() ).XYZ();
