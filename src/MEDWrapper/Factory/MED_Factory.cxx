@@ -25,6 +25,7 @@
 #include "MED_V2_2_Wrapper.hxx"
 
 #include <stdio.h>
+#include <errno.h>
 #include <sstream>
 
 #include <med.h>
@@ -53,7 +54,7 @@ namespace MED
 #ifndef WIN32
     if (access(theFileName.c_str(),F_OK))
       return aVersion;
-    if(theDoPreCheckInSeparateProcess){
+    if ( theDoPreCheckInSeparateProcess ) {
       // First check, is it possible to deal with the file
       std::ostringstream aStr;
       // File name is in quotes for the case of space(s) inside it (PAL13009)
@@ -64,8 +65,9 @@ namespace MED
       std::string aCommand = aStr.str();
       int aStatus = system(aCommand.c_str());
 
-      BEGMSG(MYDEBUG,"aCommand = '"<<aCommand<<"'; aStatus = "<<aStatus<<std::endl);
-      if(aStatus != 0)
+      BEGMSG( MYDEBUG,"aCommand = '" << aCommand << "'; aStatus = " << aStatus
+             << "; errno = " << errno << " = " << strerror( errno ) << std::endl );
+      if ( aStatus != 0 && errno != EAGAIN && errno != ENOMEM ) // "Cannot allocate memory" is OK
         return aVersion;
     }
 #endif

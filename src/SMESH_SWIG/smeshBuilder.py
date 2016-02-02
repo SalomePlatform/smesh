@@ -1424,8 +1424,10 @@ class Mesh:
 
             # Treat compute errors
             computeErrors = self.smeshpyD.GetComputeErrors( self.mesh, geom )
+            shapeText = ""
             for err in computeErrors:
-                shapeText = " on %s" % self.GetSubShapeName( err.subShapeID )
+                if self.mesh.HasShapeToMesh():
+                    shapeText = " on %s" % self.GetSubShapeName( err.subShapeID )
                 errText = ""
                 stdErrors = ["OK",                   #COMPERR_OK
                              "Invalid input mesh",   #COMPERR_BAD_INPUT_MESH

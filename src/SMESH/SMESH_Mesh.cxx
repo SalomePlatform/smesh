@@ -536,6 +536,10 @@ int SMESH_Mesh::MEDToMesh(const char* theFileName, const char* theMeshName)
     MESSAGE("MEDToMesh - _myMeshDS->NbFaces() = "<<_myMeshDS->NbFaces());
     MESSAGE("MEDToMesh - _myMeshDS->NbVolumes() = "<<_myMeshDS->NbVolumes());
   }
+#ifdef _DEBUG_
+  SMESH_ComputeErrorPtr er = myReader.GetError();
+  if ( er && !er->IsOK() ) cout << er->myComment << endl;
+#endif
 
   // Reading groups (sub-meshes are out of scope of MED import functionality)
   list<TNameAndType> aGroupNames = myReader.GetGroupNamesAndTypes();
