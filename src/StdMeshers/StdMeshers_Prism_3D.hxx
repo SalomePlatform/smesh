@@ -472,7 +472,7 @@ public:
     * \param nodeColumns - columns of nodes generated from nodes of a mesh face
     * \param helper - helper initialized by mesh and shape to add prisms to
    */
-  static void AddPrisms( std::vector<const TNodeColumn*> & nodeColumns,
+  static bool AddPrisms( std::vector<const TNodeColumn*> & nodeColumns,
                          SMESH_MesherHelper*               helper);
 
   static bool IsApplicable(const TopoDS_Shape & aShape, bool toCheckAll);

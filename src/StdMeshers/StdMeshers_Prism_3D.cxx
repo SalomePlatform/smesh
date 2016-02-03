@@ -62,6 +62,7 @@
 #include <gp_Ax3.hxx>
 
 #include <limits>
+#include <numeric>
 
 using namespace std;
 
@@ -977,7 +978,7 @@ bool StdMeshers_Prism_3D::getWallFaces( Prism_3D::TPrismTopo & thePrism,
     {
       iE = 0;
       ++nbE;
-      int nbQuadPrev = nbQuadsPerWire.empty() ? 0 : nbQuadsPerWire.back();
+      int nbQuadPrev = std::accumulate( nbQuadsPerWire.begin(), nbQuadsPerWire.end(), 0 );
       nbQuadsPerWire.push_back( thePrism.myWallQuads.size() - nbQuadPrev );
     }
   }
@@ -1291,6 +1292,7 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
   if ( !smDS ) return toSM( error(COMPERR_BAD_INPUT_MESH, "Null submesh"));
 
   // loop on bottom mesh faces
+  vector< const TNodeColumn* > columns;
   SMDS_ElemIteratorPtr faceIt = smDS->GetElements();
   while ( faceIt->more() )
   {
@@ -1300,7 +1302,7 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
 
     // find node columns for each node
     int nbNodes = face->NbCornerNodes();
-    vector< const TNodeColumn* > columns( nbNodes );
+    columns.resize( nbNodes );
     for ( int i = 0; i < nbNodes; ++i )
     {
       const SMDS_MeshNode* n = face->GetNode( i );
@@ -1317,7 +1319,8 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
       }
     }
     // create prisms
-    AddPrisms( columns, myHelper );
+    if ( !AddPrisms( columns, myHelper ))
+      return toSM( error("Different 'vertical' discretization"));
 
   } // loop on bottom mesh faces
 
@@ -1815,17 +1818,20 @@ bool StdMeshers_Prism_3D::Evaluate(SMESH_Mesh&         theMesh,
  */
 //================================================================================
 
-void StdMeshers_Prism_3D::AddPrisms( vector<const TNodeColumn*> & columns,
+bool StdMeshers_Prism_3D::AddPrisms( vector<const TNodeColumn*> & columns,
                                      SMESH_MesherHelper*          helper)
 {
-  int nbNodes = columns.size();
-  int nbZ     = columns[0]->size();
-  if ( nbZ < 2 ) return;
+  size_t nbNodes = columns.size();
+  size_t nbZ     = columns[0]->size();
+  if ( nbZ < 2 ) return false;
+  for ( size_t i = 1; i < nbNodes; ++i )
+    if ( columns[i]->size() != nbZ )
+      return false;
 
   // find out orientation
   bool isForward = true;
   SMDS_VolumeTool vTool;
-  int z = 1;
+  size_t z = 1;
   switch ( nbNodes ) {
   case 3: {
     SMDS_VolumeOfNodes tmpPenta ( (*columns[0])[z-1], // bottom
@@ -1911,7 +1917,7 @@ void StdMeshers_Prism_3D::AddPrisms( vector<const TNodeColumn*> & columns,
     vector<const SMDS_MeshNode*> nodes( 2*nbNodes + 4*nbNodes);
     for ( z = 1; z < nbZ; ++z )
     {
-      for ( int i = 0; i < nbNodes; ++i ) {
+      for ( size_t i = 0; i < nbNodes; ++i ) {
         nodes[ i             ] = (*columns[ i ])[z+iBase1]; // bottom or top
         nodes[ 2*nbNodes-i-1 ] = (*columns[ i ])[z+iBase2]; // top or bottom
         // side
@@ -1925,6 +1931,8 @@ void StdMeshers_Prism_3D::AddPrisms( vector<const TNodeColumn*> & columns,
     }
 
   } // switch ( nbNodes )
+
+  return true;
 }
 
 //================================================================================

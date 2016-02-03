@@ -5304,7 +5304,7 @@ bool SMESH_MeshEditor_i::idSourceToSet(SMESH::SMESH_IDSource_ptr  theIDSource,
 {
   if ( error ) *error = IDSource_OK;
 
-  if ( CORBA::is_nil( theIDSource ) )
+  if ( CORBA::is_nil( theIDSource ))
   {
     if ( error ) *error = IDSource_INVALID;
     return false;
