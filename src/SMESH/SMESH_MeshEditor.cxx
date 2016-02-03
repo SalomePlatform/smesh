@@ -2979,7 +2979,7 @@ bool SMESH_MeshEditor::QuadToTri (TIDSortedElemSet & theElems,
 
     // Quadratic quadrangle
 
-    else if ( elem->NbNodes() == 8 )
+    else if ( elem->NbNodes() >= 8 )
     {
       // get surface elem is on
       int aShapeId = FindShape( elem );
@@ -2996,49 +2996,34 @@ bool SMESH_MeshEditor::QuadToTri (TIDSortedElemSet & theElems,
         }
       }
 
-      const SMDS_MeshNode* aNodes [8];
+      const SMDS_MeshNode* aNodes [9]; aNodes[8] = 0;
       SMDS_ElemIteratorPtr itN = elem->nodesIterator();
       for ( int i = 0; itN->more(); ++i )
         aNodes[ i ] = static_cast<const SMDS_MeshNode*>( itN->next() );
 
-      const SMDS_MeshNode* inFaceNode = 0;
-      if ( helper.GetNodeUVneedInFaceNode() )
-        for ( int i = 0; i < 8 &&  !inFaceNode; ++i )
-          if ( aNodes[ i ]->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE )
-            inFaceNode = aNodes[ i ];
-
-      // find middle point for (0,1,2,3)
-      // and create a node in this point;
-      gp_XYZ p( 0,0,0 );
-      if ( surface.IsNull() ) {
-        for ( int i = 0; i < 4; i++ ) p += SMESH_TNodeXYZ( aNodes[i] );
-        p /= 4;
+      const SMDS_MeshNode* centrNode = aNodes[8];
+      if ( centrNode == 0 )
+      {
+        centrNode = helper.GetCentralNode( aNodes[0], aNodes[1], aNodes[2], aNodes[3],
+                                           aNodes[4], aNodes[5], aNodes[6], aNodes[7],
+                                           surface.IsNull() );
+        myLastCreatedNodes.Append(centrNode);
       }
-      else {
-        TopoDS_Face geomFace = TopoDS::Face( helper.GetSubShape() );
-        gp_XY uv( 0,0 );
-        for ( int i = 0; i < 4; i++ )
-          uv += helper.GetNodeUV( geomFace, aNodes[i], inFaceNode );
-        uv /= 4.;
-        p = surface->Value( uv.X(), uv.Y() ).XYZ();
-      }
-      const SMDS_MeshNode* newN = aMesh->AddNode( p.X(), p.Y(), p.Z() );
-      myLastCreatedNodes.Append(newN);
 
       // create a new element
       const SMDS_MeshElement* newElem1 = 0;
       const SMDS_MeshElement* newElem2 = 0;
       if ( the13Diag ) {
         newElem1 = aMesh->AddFace(aNodes[2], aNodes[3], aNodes[0],
-                                  aNodes[6], aNodes[7], newN );
+                                  aNodes[6], aNodes[7], centrNode );
         newElem2 = aMesh->AddFace(aNodes[2], aNodes[0], aNodes[1],
-                                  newN,      aNodes[4], aNodes[5] );
+                                  centrNode, aNodes[4], aNodes[5] );
       }
       else {
         newElem1 = aMesh->AddFace(aNodes[3], aNodes[0], aNodes[1],
-                                  aNodes[7], aNodes[4], newN );
+                                  aNodes[7], aNodes[4], centrNode );
         newElem2 = aMesh->AddFace(aNodes[3], aNodes[1], aNodes[2],
-                                  newN,      aNodes[5], aNodes[6] );
+                                  centrNode, aNodes[5], aNodes[6] );
       }
       myLastCreatedElems.Append(newElem1);
       myLastCreatedElems.Append(newElem2);
