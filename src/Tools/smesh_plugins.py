@@ -21,43 +21,61 @@
 #
 import salome_pluginsmanager
 
-from spadderPlugin import runSpadderPlugin
-from meshcut_plugin import MeshCut
-from yamsplug_plugin import YamsLct
-from MGCleanerplug_plugin import MGCleanerLct
-from blocFissure.ihm.fissureCoude_plugin import fissureCoudeDlg
+try:
+  from spadderPlugin import runSpadderPlugin
+  salome_pluginsmanager.AddFunction('PADDER mesher',
+                                    'Create a mesh with PADDER',
+                                    runSpadderPlugin)
+except:
+  salome_pluginsmanager.logger.info('ERROR: PADDER mesher plug-in is unavailable')
+  pass
 
-salome_pluginsmanager.AddFunction('PADDER mesher',
-                                  'Create a mesh with PADDER',
-                                  runSpadderPlugin)
+try:
+  from meshcut_plugin import MeshCut
+  salome_pluginsmanager.AddFunction('MeshCut',
+                                    'Cut a tetrahedron mesh by a plane',
+                                    MeshCut)
 
-salome_pluginsmanager.AddFunction('MeshCut',
-                                  'Cut a tetrahedron mesh by a plane',
-                                  MeshCut)
+except:
+  salome_pluginsmanager.logger.info('ERROR: MeshCut plug-in is unavailable')
+  pass
 
-salome_pluginsmanager.AddFunction('ReMesh with MGSurfOpt ( formerly Yams )',
-                                  'Run Yams',
-                                  YamsLct)
+try:
+  from yamsplug_plugin import YamsLct
+  salome_pluginsmanager.AddFunction('ReMesh with MGSurfOpt ( formerly Yams )',
+                                    'Run Yams',
+                                    YamsLct)
+except:
+  salome_pluginsmanager.logger.info('ERROR: MGSurfOpt (Yams) plug-in is unavailable')
+  pass
 
-salome_pluginsmanager.AddFunction('ReMesh with MGCleaner',
-                                  'Run MGCleaner',
-                                  MGCleanerLct)
+try:
+  from MGCleanerplug_plugin import MGCleanerLct
+  salome_pluginsmanager.AddFunction('ReMesh with MGCleaner',
+                                    'Run MGCleaner',
+                                    MGCleanerLct)
+except:
+  salome_pluginsmanager.logger.info('ERROR: MGCleaner plug-in is unavailable')
+  pass
 
-salome_pluginsmanager.AddFunction('Meshed Pipe with a crack',
-                                  'Create a mesh with blocFissure tool',
-                                  fissureCoudeDlg)
+try:
+  from blocFissure.ihm.fissureCoude_plugin import fissureCoudeDlg
+  salome_pluginsmanager.AddFunction('Meshed Pipe with a crack',
+                                    'Create a mesh with blocFissure tool',
+                                    fissureCoudeDlg)
+except:
+  salome_pluginsmanager.logger.info('ERROR: Meshed Pipe with a crack plug-in is unavailable')
+  pass
 
 # ZCracks plugin requires the module EFICAS to be installed
 # thus it is first tested if this module is available before
 # adding the plugin to salome_pluginsmanager
-enable_zcracks = True
 try:
   import eficasSalome
-except:
-  enable_zcracks = False
-
-if enable_zcracks:
   from zcracks_plugin import ZcracksLct
   salome_pluginsmanager.AddFunction('Run Zcrack',
                                     'Run Zcrack',
                                     ZcracksLct)
+except:
+  salome_pluginsmanager.logger.info('ERROR: Zcrack plug-in is unavailable')
+  pass
