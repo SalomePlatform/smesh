@@ -110,9 +110,10 @@ SALOME supports elements of second order, without a central node
 (quadratic triangle, quadrangle, polygon, tetrahedron, hexahedron,
 pentahedron and pyramid) and with central nodes (bi-quadratic triangle
 and quadrangle and tri-quadratic hexahedron).<br>
-Quadratic mesh can be obtained in two ways:
+Quadratic mesh can be obtained in three ways:
 - Using a global \ref quadratic_mesh_anchor "Quadratic Mesh"
 hypothesis. (Elements with the central node are not generated in this way).
 - Using \ref convert_to_from_quadratic_mesh_page operation.
-
+- Using an appropriate option of some meshing algorithms, which
+generate elements of several dimensions starting from mesh segments.
 */

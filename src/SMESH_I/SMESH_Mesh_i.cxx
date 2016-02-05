@@ -293,7 +293,7 @@ void SMESH_Mesh_i::Clear() throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
   if ( _preMeshInfo )
-    _preMeshInfo->ForgetAllData();
+    _preMeshInfo->ForgetOrLoad(); // load in case if !HasShapeToMesh()
 
   try {
     _impl->Clear();
