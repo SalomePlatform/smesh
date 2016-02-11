@@ -30,7 +30,6 @@
 #include <SMESHGUI_HypothesesUtils.h>
 #include <SMESHGUI_Utils.h>
 #include <SMESHGUI_GEOMGenUtils.h>
-
 #include <SMESH_TypeFilter.hxx>
 #include <SMESH_NumberFilter.hxx>
 
@@ -47,8 +46,9 @@
 #include <GEOM_wrap.hxx>
 
 // SALOME GUI includes
-#include <SUIT_ResourceMgr.h>
 #include <SUIT_MessageBox.h>
+#include <SUIT_ResourceMgr.h>
+#include <SalomeApp_IntSpinBox.h>
 
 // IDL includes
 #include <SALOMEconfig.h>
@@ -1381,6 +1381,14 @@ void StdMeshersGUI_StdHypothesisCreator::attuneStdWidget (QWidget* w, const int)
     else // default validator for possible ancestors
     {
       sb->RangeStepAndValidator( VALUE_SMALL, VALUE_MAX, 1.0, "length_precision" );
+    }
+  }
+  else if ( SalomeApp_IntSpinBox* sb = qobject_cast< SalomeApp_IntSpinBox* >( w ))
+  {
+    if ( hypType().startsWith( "NumberOfLayers" ) ||
+         hypType().startsWith( "ViscousLayers" ))
+    {
+      sb->setMinimum( 1 );
     }
   }
 }

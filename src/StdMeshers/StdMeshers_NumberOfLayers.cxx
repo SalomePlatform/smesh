@@ -77,7 +77,7 @@ void StdMeshers_NumberOfLayers::SetNumberOfLayers(int numberOfLayers)
 {
   if ( _nbLayers != numberOfLayers ) {
     if ( numberOfLayers <= 0 )
-      throw SALOME_Exception(LOCALIZED("numberOfLayers must be positive"));
+      throw SALOME_Exception(LOCALIZED("numberOfLayers must be more than zero"));
     _nbLayers = numberOfLayers;
 
     NotifySubMeshesHypothesisModification();
