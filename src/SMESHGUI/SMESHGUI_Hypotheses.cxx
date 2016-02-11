@@ -41,6 +41,7 @@
 #include <SUIT_ResourceMgr.h>
 #include <SUIT_Session.h>
 #include <SalomeApp_IntSpinBox.h>
+#include <SalomeApp_Tools.h>
 
 // Qt includes
 #include <QFrame>
@@ -273,13 +274,20 @@ void SMESHGUI_GenericHypothesisCreator::onDialogFinished( int result )
   bool res = result==QDialog::Accepted;
   if( res )
   {
-    SUIT_OverrideCursor wc;
-      /*QString paramValues = */storeParams();
+    try
+    {
+      SUIT_OverrideCursor wc;
+      storeParams();
       // No longer needed since NoteBook appears and "Value" OB field shows names of variable
-//       if ( !paramValues.isEmpty() ) {
-//         if ( _PTR(SObject) SHyp = SMESH::FindSObject( myHypo ))
-//           SMESH::SetValue( SHyp, paramValues );
-//       }
+      // QString paramValues = storeParams();
+      // if ( !paramValues.isEmpty() ) {
+      //   if ( _PTR(SObject) SHyp = SMESH::FindSObject( myHypo ))
+      //     SMESH::SetValue( SHyp, paramValues );
+      // }
+    }
+    catch ( const SALOME::SALOME_Exception& S_ex ) {
+      SalomeApp_Tools::QtCatchCorbaException( S_ex );
+    }
   }
 
   changeWidgets().clear();

@@ -5,8 +5,8 @@
 \n Selection filter library allows creating and storing in files
 the filters that can be later reused for operations on meshes. You can
 access it from the Main Menu via <b>Tools / Selection filter library</b>.
-It is also possible to save any filter by invoking the filter library
-from \a Filter dialog launched from any mesh operation.
+It is also possible to save/load a filter by invoking the filter library
+from \ref filtering_elements "Filter dialog" launched from any mesh operation.
 
 \image html selectionfilterlibrary.png
 
@@ -19,6 +19,7 @@ the current study. You can \b Add or \b Delete filters.
 filter. By default it is prefixed with the corresponding entity type.
 
 \anchor filtering_elements
+<h2>Filter Dialog</h2>
 
 When we use filters during group creation or another operation (by 
 clicking <b>Set Filter</b> button in the corresponding dialog), the
@@ -66,15 +67,22 @@ created. You have to select the mesh and the button will be enabled.
 Some criteria are applicable to all <b>Entity types</b>:
 <ul><li>
 <b>Belong to Geom</b> selects entities whose all nodes lie on the
-shape defined by <b>Threshold Value</b>. If the threshold shape is a
-sub-shape of the main shape of the mesh the algorithm works faster, if
-this is any other shape the algorithm works slower.
+shape defined by <b>Threshold Value</b>. 
+If the threshold shape is a sub-shape of the main shape of the mesh,
+the filtering algorithm works faster because node-to-shape association
+is used instead of measuring distance between nodes and the shape, and
+\b Tolerance is not used. If the threshold shape is any other shape,
+the algorithm works slower because distance between nodes and the
+shape is measured and is compared with \b Tolerance.
 </li><li>
 <b>Lying on Geom</b> selects entities whose at least one node
 lies on the shape defined by the <b>Threshold Value</b>.
-If the threshold shape is a sub-shape of the main shape of the mesh the
-algorithm works faster, if this is any other
-shape, the algorithm works slower.
+If the threshold shape is a sub-shape of the main shape of the mesh,
+the filtering algorithm works faster because node-to-shape association
+is used instead of measuring distance between nodes and the shape, and
+\b Tolerance is not used. If the threshold shape is any other shape,
+the algorithm works slower because distance between nodes and the
+shape is measured and is compared with \b Tolerance.
 </li><li>
 <b>Belong to Mesh Group</b> selects entities included into the mesh group
 defined by the <b>Threshold Value</b>.
@@ -97,7 +105,7 @@ other parts. <b>Threshold Value</b> locating any element of the domain can be ei
 </li>
 </ul>
 
-Some criteria are applicable to all <b>Entity types</b> of dimension
+Some criteria are applicable to entities of dimension
 more than zero, i.e. to \b Edges, \b Faces and \b Volumes:
 <ul><li>
 <b>Linear</b> allows selection of Linear or Quadratic elements (if Unary is set to "Not")
@@ -111,8 +119,8 @@ as a combination of geometry type and the number of nodes.
 </li>
 </ul>
 
-The following criteria are applicable to all <b>Entity types</b>
-except for <b>Volumes</b>:
+The following criteria are applicable to Entities of \b all types
+except for \a Volumes:
 <ul><li>
 <b>Belong to Plane</b> selects entities whose all nodes belong to a
 specified plane within a given <b>Tolerance</b>.
@@ -222,7 +230,7 @@ diagonals with a value of length, which is more, less or equal
 </li>
 </ul>
 
-The following criteria allow selecting  mesh <b>Volumes</b>:
+The following criteria allow selecting mesh <b>Volumes</b>:
 <ul><li>
 <b>Aspect ratio 3D</b> selects 3D mesh elements with an aspect ratio (see also an
 \ref aspect_ratio_3d_page "Aspect Ratio 3D quality control"), which is more, less or equal
