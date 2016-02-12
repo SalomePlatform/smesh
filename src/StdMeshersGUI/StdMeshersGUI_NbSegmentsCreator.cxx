@@ -447,25 +447,25 @@ void StdMeshersGUI_NbSegmentsCreator::onValueChanged()
     myTable->setData( arr ); //update data in table
   }
 
-  myScale->setShown( distr==1 );
-  myLScale->setShown( distr==1 );
-  myReversedEdgesBox->setShown( distr!=0 );
+  myScale->setVisible( distr==1 );
+  myLScale->setVisible( distr==1 );
+  myReversedEdgesBox->setVisible( distr!=0 );
   if ( myReversedEdgesHelper ) {
     myReversedEdgesHelper->Clear();
-    myReversedEdgesHelper->setShown( distr!=0 );
+    myReversedEdgesHelper->setVisible( distr!=0 );
   }
   myDirectionWidget->ShowPreview( distr!=0 );
 
   bool isFunc = distr==2 || distr==3;
 #ifndef DISABLE_PLOT2DVIEWER
-  myPreview->setShown( isFunc );
+  myPreview->setVisible( isFunc );
 #endif
-  myConvBox->setShown( isFunc );
+  myConvBox->setVisible( isFunc );
   
-  myTable->setShown( distr==2 );
-  myExpr->setShown( distr==3 );
-  myLExpr->setShown( distr==3 );
-  myInfo->setShown( distr==3);
+  myTable->setVisible( distr==2 );
+  myExpr->setVisible( distr==3 );
+  myLExpr->setVisible( distr==3 );
+  myInfo->setVisible( distr==3);
 
 #ifndef DISABLE_PLOT2DVIEWER
   //change of preview

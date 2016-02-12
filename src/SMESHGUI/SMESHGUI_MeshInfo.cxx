@@ -3147,7 +3147,7 @@ void SMESHGUI_MeshInfoDlg::dump()
 
   DumpFileDlg fd( this );
   fd.setWindowTitle( tr( "SAVE_INFO" ) );
-  fd.setFilters( aFilters );
+  fd.setNameFilters( aFilters );
   fd.myBaseChk->setChecked( anIsBase );
   fd.myElemChk->setChecked( anIsElem );
   fd.myAddChk ->setChecked( anIsAdd );
@@ -3858,7 +3858,7 @@ void SMESHGUI_CtrlInfoDlg::dump()
 
   DumpFileDlg fd( this );
   fd.setWindowTitle( tr( "SAVE_INFO" ) );
-  fd.setFilters( aFilters );
+  fd.setNameFilters( aFilters );
   fd.myBaseChk->hide();
   fd.myElemChk->hide();
   fd.myAddChk ->hide();

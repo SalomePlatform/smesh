@@ -611,7 +611,7 @@ void SMESHGUI_FilterLibraryDlg::onBrowse()
 
   //aDlg->setMode(myMode == COPY_FROM ? QFileDialogP::ExistingFile : QFileDialogP::AnyFile);
   aDlg->setFileMode(myMode == COPY_FROM ? QFileDialog::ExistingFile : QFileDialog::AnyFile);
-  aDlg->setFilters(prepareFilters());
+  aDlg->setNameFilters(prepareFilters());
   aDlg->selectFile(getFileName());
 
   QPushButton* anOkBtn = (QPushButton*)aDlg->findChild<QPushButton*>("OK");
@@ -629,8 +629,8 @@ void SMESHGUI_FilterLibraryDlg::onBrowse()
   if (QFileInfo(fName).suffix().isEmpty())
     fName = autoExtension(fName);
 
-  fName = QDir::convertSeparators(fName);
-  QString prev = QDir::convertSeparators(getFileName());
+  fName = QDir::toNativeSeparators(fName);
+  QString prev = QDir::toNativeSeparators(getFileName());
 
   if (prev == fName)
     return;
@@ -756,7 +756,7 @@ bool SMESHGUI_FilterLibraryDlg::isPermissionValid(const bool theIsExistingOnly)
   if (QFileInfo(fName).suffix().isEmpty())
     fName = autoExtension(fName);
 
-  fName = QDir::convertSeparators(fName);
+  fName = QDir::toNativeSeparators(fName);
 
   if (QFileInfo(fName).exists()) {
     isWritable = QFileInfo(fName).isWritable();

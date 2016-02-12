@@ -1733,7 +1733,7 @@ void SMESHGUI_PrecomputeOp::initDialog()
   myOrderMgr = new SMESHGUI_MeshOrderMgr( myDlg->getMeshOrderBox() );
   myOrderMgr->SetMesh( myMesh );
   bool isOrder = myOrderMgr->GetMeshOrder(myPrevOrder);
-  myDlg->getMeshOrderBox()->setShown(isOrder);
+  myDlg->getMeshOrderBox()->setVisible(isOrder);
   if ( !isOrder ) {
     delete myOrderMgr;
     myOrderMgr = 0;
