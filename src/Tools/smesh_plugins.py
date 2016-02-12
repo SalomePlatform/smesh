@@ -66,6 +66,14 @@ try:
 except:
   salome_pluginsmanager.logger.info('ERROR: Meshed Pipe with a crack plug-in is unavailable')
   pass
+try:
+  from blocFissure.ihm.fissureGenerale_plugin import fissureGeneraleDlg
+  salome_pluginsmanager.AddFunction('Add a crack in a mesh',
+                                    'Insert a crack in an hexahedral mesh with blocFissure tool',
+                                    fissureGeneraleDlg)
+except:
+  salome_pluginsmanager.logger.info('ERROR: Meshed Pipe with a crack plug-in is unavailable')
+  pass
 
 # ZCracks plugin requires the module EFICAS to be installed
 # thus it is first tested if this module is available before

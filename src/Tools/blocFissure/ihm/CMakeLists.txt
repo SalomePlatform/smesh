@@ -26,6 +26,7 @@ SET(plugin_SCRIPTS
   __init__.py
   fissureCoude_ihm.py
   fissureCoude_plugin.py
+  fissureGenerale_plugin.py
   dialogFissureCoude.dic
 )
 
