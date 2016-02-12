@@ -28,17 +28,15 @@
 #include <SalomeApp_Application.h>
 #include <SUIT_Session.h>
 
-#include <SALOME_ListIO.hxx>
-#include <GEOM_Client.hxx>
-#include <SMESHGUI_Utils.h>
-#include <boost/shared_ptr.hpp>
 #include <GEOMImpl_Types.hxx>
+#include <GEOM_Client.hxx>
 #include <GEOM_wrap.hxx>
+#include <SALOME_ListIO.hxx>
+#include <SMESHGUI_Utils.h>
 
-#include <TopoDS.hxx>
-#include <BRep_Tool.hxx>
-#include <Handle_Geom_Surface.hxx>
 #include <BRepAdaptor_Surface.hxx>
+#include <TopoDS.hxx>
+#include <TopoDS_Iterator.hxx>
 
 #include "utilities.h"
 
@@ -237,6 +235,12 @@ TopAbs_ShapeEnum GeomSelectionTools::entryToShapeType(std::string entry){
 //             MESSAGE("GEOM client is OK and GEOM engine is not null");
             S = aClient->GetShape( _geomEngine, aShape );
             ShapeType=S.ShapeType();
+            if ( ShapeType == TopAbs_COMPOUND )
+            {
+              TopoDS_Iterator it( S );
+              if ( it.More() )
+                ShapeType = it.Value().ShapeType();
+            }
           }
         }
       }
@@ -275,7 +279,6 @@ GeomAbs_SurfaceType GeomSelectionTools::getFaceInformation(TopoDS_Shape S)
   GeomAbs_SurfaceType surf_type=GeomAbs_OtherSurface ;
   if (!S.IsNull() &&  S.ShapeType()==TopAbs_FACE){
     TopoDS_Face f=TopoDS::Face(S);
-    Handle(Geom_Surface) surf = BRep_Tool::Surface(f);
     BRepAdaptor_Surface surf_adap(f);
 
     /* Global Information */
