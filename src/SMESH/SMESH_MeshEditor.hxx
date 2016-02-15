@@ -93,11 +93,11 @@ public:
     SMESH_EXPORT ElemFeatures& Init( double diameter )
     { myType = SMDSAbs_Ball; myBallDiameter = diameter; return *this; }
 
-    SMESH_EXPORT ElemFeatures& Init( vector<int>& quanities, bool isQuad=false )
+    SMESH_EXPORT ElemFeatures& Init( std::vector<int>& quanities, bool isQuad=false )
     { myType = SMDSAbs_Volume; myIsPoly = 1; myIsQuad = isQuad;
       myPolyhedQuantities.swap( quanities ); return *this; }
 
-    SMESH_EXPORT ElemFeatures& Init( const vector<int>& quanities, bool isQuad=false )
+    SMESH_EXPORT ElemFeatures& Init( const std::vector<int>& quanities, bool isQuad=false )
     { myType = SMDSAbs_Volume; myIsPoly = 1; myIsQuad = isQuad;
       myPolyhedQuantities = quanities; return *this; }
 
@@ -777,8 +777,8 @@ public:
                                    const bool                             theHasRefPoint,
                                    const gp_Pnt&                          theRefPoint,
                                    const bool                             theMakeGroups);
-  void LinearAngleVariation(const int     NbSteps,
-                            list<double>& theAngles);
+  void LinearAngleVariation(const int          NbSteps,
+                            std::list<double>& theAngles);
 
   bool doubleNodes( SMESHDS_Mesh*           theMeshDS,
                     const TIDSortedElemSet& theElems,

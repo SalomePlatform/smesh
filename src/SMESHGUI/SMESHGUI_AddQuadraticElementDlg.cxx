@@ -118,8 +118,8 @@ namespace
   static int FirstHexahedronIds[] = {0,1,2,3,4,5,6,7,0,1,2,3};
   static int LastHexahedronIds[] =  {1,2,3,0,5,6,7,4,4,5,6,7};
 
-  static vector<int> FirstPolygonIds;
-  static vector<int> LastPolygonIds;
+  static std::vector<int> FirstPolygonIds;
+  static std::vector<int> LastPolygonIds;
 
   void ReverseConnectivity( std::vector<vtkIdType> & ids, SMDSAbs_EntityType type,
                             bool toReverse, // inverse element

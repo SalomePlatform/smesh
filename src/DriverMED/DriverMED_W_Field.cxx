@@ -95,7 +95,7 @@ bool DriverMED_W_Field::Set(SMESHDS_Mesh *      mesh,
   if ( _nbElemsByGeom.empty() || _elemType != type )
   {
     _elemType = type;
-    _nbElemsByGeom.resize( 1, make_pair( SMDSEntity_Last, 0 ));
+    _nbElemsByGeom.resize( 1, std::make_pair( SMDSEntity_Last, 0 ));
 
     // count nb of elems of each geometry
     for ( int iG = 0; iG < SMDSEntity_Last; ++iG )
@@ -107,7 +107,7 @@ bool DriverMED_W_Field::Set(SMESHDS_Mesh *      mesh,
       nbElems = mesh->GetMeshInfo().NbElements( geom );
       if ( nbElems < 1 ) continue;
 
-      _nbElemsByGeom.push_back( make_pair( geom, nbElems + _nbElemsByGeom.back().second ));
+      _nbElemsByGeom.push_back( std::make_pair( geom, nbElems + _nbElemsByGeom.back().second ));
     }
     // add nodes of missing 0D elements on VERTEXes
     if ( _addODOnVertices && _elemType == SMDSAbs_0DElement )
@@ -118,8 +118,8 @@ bool DriverMED_W_Field::Set(SMESHDS_Mesh *      mesh,
       if ( !nodes.empty() )
       {
         if ( _nbElemsByGeom.size() == 1 )
-          _nbElemsByGeom.push_back( make_pair( SMDSEntity_0D, 0));
-        _nbElemsByGeom.push_back( make_pair( SMDSEntity_Node,
+          _nbElemsByGeom.push_back( std::make_pair( SMDSEntity_0D, 0));
+        _nbElemsByGeom.push_back( std::make_pair( SMDSEntity_Node,
                                              nodes.size() + _nbElemsByGeom.back().second ));
       }
     }
@@ -314,7 +314,7 @@ Driver_Mesh::Status DriverMED_W_Field::Perform()
     SMDSAbs_EntityType    smdsType = _nbElemsByGeom[iG].first;
     MED::EGeometrieElement medType = (MED::EGeometrieElement) DriverMED::GetMedGeoType( smdsType );
     int                    nbElems = _nbElemsByGeom[iG].second - _nbElemsByGeom[iG-1].second;
-    type2nb.insert( make_pair( medType, nbElems ));
+    type2nb.insert( std::make_pair( medType, nbElems ));
   }
 
   MED::EEntiteMaillage       entity = ( _elemType == SMDSAbs_Node ? MED::eNOEUD : MED::eMAILLE );

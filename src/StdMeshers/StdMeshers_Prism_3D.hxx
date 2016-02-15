@@ -270,7 +270,7 @@ private:
     TParam2ColumnMap*               myParamToColumnMap;
     PSurface                        mySurface;
     TopoDS_Edge                     myBaseEdge;
-    map< int, PSurface >            myShapeID2Surf;
+    std::map< int, PSurface >       myShapeID2Surf;
     // first and last normalized params and orientaion for each component or it-self
     std::vector< std::pair< double, double> > myParams; // select my columns in myParamToColumnMap
     bool                            myIsForward;

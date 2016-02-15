@@ -166,7 +166,7 @@ bool StdMeshers_Geometric1D::SetParametersByMesh(const SMESH_Mesh*   theMesh,
     const TopoDS_Edge& edge = TopoDS::Edge( edgeMap( i ));
     BRepAdaptor_Curve C( edge );
 
-    vector< double > params;
+    std::vector< double > params;
     if ( SMESH_Algo::GetNodeParamOnEdge( theMesh->GetMeshDS(), edge, params ))
     {
       nbEdges++;

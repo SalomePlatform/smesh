@@ -1852,7 +1852,7 @@ void SMESHGUI_SplitVolumesDlg::showFacetByElement( int elemID )
   gp_XYZ bc( 0,0,0 );
   Bnd_B3d bbox;
   SMDS_NodeIteratorPtr nIt = elem->nodeIterator();
-  vector< const SMDS_MeshNode* > nodes;
+  std::vector< const SMDS_MeshNode* > nodes;
   nodes.reserve( elem->NbNodes() );
   while ( nIt->more() )
   {

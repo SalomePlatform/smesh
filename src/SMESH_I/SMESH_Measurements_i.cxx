@@ -221,12 +221,12 @@ static void enlargeBoundingBox(const SMDS_MeshNode* theNode,
     theMeasure.node1 = theNode->GetID();
   }
   else {
-    theMeasure.minX = min( theMeasure.minX, theNode->X() );
-    theMeasure.maxX = max( theMeasure.maxX, theNode->X() );
-    theMeasure.minY = min( theMeasure.minY, theNode->Y() );
-    theMeasure.maxY = max( theMeasure.maxY, theNode->Y() );
-    theMeasure.minZ = min( theMeasure.minZ, theNode->Z() );
-    theMeasure.maxZ = max( theMeasure.maxZ, theNode->Z() );
+    theMeasure.minX = std::min( theMeasure.minX, theNode->X() );
+    theMeasure.maxX = std::max( theMeasure.maxX, theNode->X() );
+    theMeasure.minY = std::min( theMeasure.minY, theNode->Y() );
+    theMeasure.maxY = std::max( theMeasure.maxY, theNode->Y() );
+    theMeasure.minZ = std::min( theMeasure.minZ, theNode->Z() );
+    theMeasure.maxZ = std::max( theMeasure.maxZ, theNode->Z() );
   }
 }
 

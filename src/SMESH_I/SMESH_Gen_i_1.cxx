@@ -47,11 +47,11 @@
 
 #ifdef _DEBUG_
 static int MYDEBUG = 0;
-//static int VARIABLE_DEBUG = 0;
 #else
 static int MYDEBUG = 0;
-//static int VARIABLE_DEBUG = 0;
 #endif
+
+using namespace std;
 
 //=============================================================================
 /*!
@@ -281,7 +281,8 @@ static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
       SALOMEDS::SObject_wrap curObj;
       if ( theFatherObject->GetLastChildTag() > theTag )
       {
-        SALOMEDS::UseCaseIterator_wrap anUseCaseIter = useCaseBuilder->GetUseCaseIterator(theFatherObject);
+        SALOMEDS::UseCaseIterator_wrap
+          anUseCaseIter = useCaseBuilder->GetUseCaseIterator(theFatherObject);
         for ( ; anUseCaseIter->More(); anUseCaseIter->Next() ) {
           curObj = anUseCaseIter->Value();
           if ( curObj->Tag() > theTag  ) {
@@ -294,21 +295,29 @@ static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
   }
 
   SALOMEDS::GenericAttribute_wrap anAttr;
-  if ( !CORBA::is_nil( theIOR )) {
+  if ( !CORBA::is_nil( theIOR ))
+  {
     anAttr = aStudyBuilder->FindOrCreateAttribute( SO, "AttributeIOR" );
     CORBA::String_var objStr = SMESH_Gen_i::GetORB()->object_to_string( theIOR );
     SALOMEDS::AttributeIOR_wrap iorAttr = anAttr;
-    iorAttr->SetValue( objStr.in() );
-    // UnRegister() !!!
-    SALOME::GenericObj_var genObj = SALOME::GenericObj::_narrow( theIOR );
-    if ( !genObj->_is_nil() )
-      genObj->UnRegister();
+    CORBA::String_var objStrCur = iorAttr->Value();
+    bool sameIOR = ( objStrCur.in() && strcmp( objStr.in(), objStrCur.in() ) == 0 );
+    if ( !sameIOR )
+    {
+      iorAttr->SetValue( objStr.in() );
+      // UnRegister() !!!
+      SALOME::GenericObj_var genObj = SALOME::GenericObj::_narrow( theIOR );
+      if ( !genObj->_is_nil() )
+        genObj->UnRegister();
+    }
   }
+
   if ( thePixMap ) {
     anAttr  = aStudyBuilder->FindOrCreateAttribute( SO, "AttributePixMap" );
     SALOMEDS::AttributePixMap_wrap pm = anAttr;
     pm->SetPixMap( thePixMap );
   }
+
   if ( !theSelectable ) {
     anAttr = aStudyBuilder->FindOrCreateAttribute( SO, "AttributeSelectable" );
     SALOMEDS::AttributeSelectable_wrap selAttr = anAttr;

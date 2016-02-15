@@ -37,6 +37,7 @@
 #include "SMESH_PythonDump.hxx"
 #include "SMESH_MeshEditor.hxx"
 #include <list>
+#include <string>
 
 class SMESH_Mesh_i;
 
@@ -897,7 +898,7 @@ private: //!< private methods
   void dumpGroupsList(SMESH::TPythonDump &        theDumpPython,
                       const SMESH::ListOfGroups * theGroupList);
 
-  string generateGroupName(const string& thePrefix);
+  std::string generateGroupName(const std::string& thePrefix);
 
   void prepareIdSource(SMESH::SMESH_IDSource_ptr theObject);
 

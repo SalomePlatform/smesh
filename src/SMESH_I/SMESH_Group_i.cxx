@@ -502,8 +502,8 @@ namespace
    */
   //================================================================================
 
-  void getNodesOfElements(SMDS_ElemIteratorPtr        elemIt,
-                          set<const SMDS_MeshNode* >& nodes)
+  void getNodesOfElements(SMDS_ElemIteratorPtr             elemIt,
+                          std::set<const SMDS_MeshNode* >& nodes)
   {
     while ( elemIt->more() )
     {
@@ -531,7 +531,7 @@ CORBA::Long SMESH_GroupBase_i::GetNumberOfNodes()
   {
     if ( myNbNodes < 0 || g->GetTic() != myGroupDSTic )
     {      
-      set<const SMDS_MeshNode* > nodes;
+      std::set<const SMDS_MeshNode* > nodes;
       getNodesOfElements( g->GetElements(), nodes );
       myNbNodes = nodes.size();
       myGroupDSTic = g->GetTic();
@@ -574,10 +574,10 @@ SMESH::long_array* SMESH_GroupBase_i::GetNodeIDs()
   SMESH::long_array_var aRes = new SMESH::long_array();
   if ( SMESHDS_GroupBase* g = GetGroupDS())
   {
-    set<const SMDS_MeshNode* > nodes;
+    std::set<const SMDS_MeshNode* > nodes;
     getNodesOfElements( g->GetElements(), nodes );
     aRes->length( nodes.size() );
-    set<const SMDS_MeshNode*>::iterator nIt = nodes.begin(), nEnd = nodes.end();
+    std::set<const SMDS_MeshNode*>::iterator nIt = nodes.begin(), nEnd = nodes.end();
     for ( int i = 0; nIt != nEnd; ++nIt, ++i )
       aRes[i] = (*nIt)->GetID();
   }
@@ -918,7 +918,7 @@ SMESH::long_array* SMESH_GroupOnFilter_i::GetMeshInfo()
 
     if ( g->GetType() != SMDSAbs_Node )
     {
-      vector< int > nbElems = static_cast< SMESHDS_GroupOnFilter* >( g )->GetMeshInfo();
+      std::vector< int > nbElems = static_cast< SMESHDS_GroupOnFilter* >( g )->GetMeshInfo();
       for ( size_t i = SMESH::Entity_Node; i < SMESH::Entity_Last; i++)
         if ( i < nbElems.size() )
           aRes[i] = nbElems[ i ];

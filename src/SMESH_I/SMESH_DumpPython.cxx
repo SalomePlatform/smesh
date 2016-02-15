@@ -1297,7 +1297,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
 
   TCollection_AsciiString aLongString, aFunctionType;
   int where = 1;
-  set< string > functionNameSet;
+  std::set< std::string > functionNameSet;
   while ( SMESH::TPythonDump::CutoutLongString( anUpdatedScript, where, aLongString, aFunctionType ))
   {
     // make a python string literal

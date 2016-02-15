@@ -61,6 +61,8 @@
 #include <list>
 #include <vector>
 
+using namespace std;
+
 //================================================================================
 /*!
  * \brief 1D algo

@@ -290,7 +290,7 @@ namespace
   void BNode::AddClose ( const BEdge* e, double u ) const
   {
     if ( ! e->Contains( this ))
-      myCloseEdges.push_back( make_pair( const_cast< BEdge* >( e ), u ));
+      myCloseEdges.push_back( std::make_pair( const_cast< BEdge* >( e ), u ));
   }
   BEdge* BNode::GetCloseEdgeOfBorder( int borderID, double * uPtr ) const
   {
@@ -569,9 +569,9 @@ void SMESH_MeshAlgos::FindCoincidentFreeBorders(SMDS_Mesh&              mesh,
 
   // form groups of coincident parts of free borders
 
-  TFreeBorderPart  part;
-  TCoincidentGroup group;
-  vector< BEdge* > ranges; // couples of edges delimiting parts
+  TFreeBorderPart       part;
+  TCoincidentGroup      group;
+  std::vector< BEdge* > ranges; // couples of edges delimiting parts
   BEdge* be = 0; // a current edge
   int skipGroup = bEdges.size(); // a group ID used to avoid repeating treatment of edges
 

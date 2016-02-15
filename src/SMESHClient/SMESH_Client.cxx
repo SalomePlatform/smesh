@@ -61,6 +61,7 @@ static int MYDEBUG = 0;
 
 namespace
 {
+  using std::runtime_error;
 
   //=======================================================================
   //function : FindNode
@@ -972,7 +973,7 @@ SMESH_Client::Update(bool theIsClear)
             int nbNodes = anIndexes[i++];
             // nodes
             //ASSERT( nbNodes < 9 );
-            vector<const SMDS_MeshNode*> aNodes( nbNodes );
+            std::vector<const SMDS_MeshNode*> aNodes( nbNodes );
             for ( int iNode = 0; iNode < nbNodes; iNode++ )
               aNodes[ iNode ] = FindNode( mySMDSMesh, anIndexes[i++] );
             // change

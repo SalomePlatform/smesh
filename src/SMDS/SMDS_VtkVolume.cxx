@@ -95,7 +95,7 @@ void SMDS_VtkVolume::initPoly(const std::vector<vtkIdType>& nodeIds,
   SMDS_UnstructuredGrid* grid = mesh->getGrid();
   //double center[3];
   //this->gravityCenter(grid, &nodeIds[0], nodeIds.size(), &center[0]);
-  vector<vtkIdType> ptIds;
+  std::vector<vtkIdType> ptIds;
   vtkIdType nbFaces = nbNodesPerFace.size();
   int k = 0;
   for (int i = 0; i < nbFaces; i++)
@@ -365,7 +365,7 @@ const SMDS_MeshNode* SMDS_VtkVolume::GetFaceNode(const int face_ind, const int n
  */
 std::vector<int> SMDS_VtkVolume::GetQuantities() const
 {
-  vector<int> quantities;
+  std::vector<int> quantities;
   SMDS_Mesh *mesh = SMDS_Mesh::_meshList[myMeshId];
   vtkUnstructuredGrid* grid = mesh->getGrid();
   vtkIdType aVtkType = grid->GetCellType(this->myVtkID);

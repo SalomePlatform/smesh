@@ -54,6 +54,7 @@
 
 #include CORBA_SERVER_HEADER(SALOME_Session)
 
+using namespace std;
 
 #define MYDEBUGOUT(msg) //std::cout << msg << std::endl;
 
@@ -62,7 +63,7 @@ namespace
   enum {  GroupOnFilter_OutOfDate = -1 };
 
   // a map to count not yet loaded meshes 
-  static map< int, int > theStudyIDToMeshCounter;
+  static std::map< int, int > theStudyIDToMeshCounter;
 
   //================================================================================
   /*!
@@ -72,8 +73,8 @@ namespace
 
   void meshInfoLoaded( SMESH_Mesh_i* mesh )
   {
-    map< int, int >::iterator id2counter =
-      theStudyIDToMeshCounter.insert( make_pair( (int) mesh->GetStudyId(), 0 )).first;
+    std::map< int, int >::iterator id2counter =
+      theStudyIDToMeshCounter.insert( std::make_pair( (int) mesh->GetStudyId(), 0 )).first;
     id2counter->second++;
   }
   //================================================================================
@@ -88,7 +89,7 @@ namespace
   {
     if ( --theStudyIDToMeshCounter[ (int) mesh->GetStudyId() ] == 0 )
     {
-      string tmpDir = SALOMEDS_Tool::GetDirFromPath( hdfFile );
+      std::string tmpDir = SALOMEDS_Tool::GetDirFromPath( hdfFile );
 
       SALOMEDS::ListOfFileNames_var aFiles = new SALOMEDS::ListOfFileNames;
       aFiles->length(2);
@@ -109,7 +110,7 @@ namespace
 
   class SignalToGUI
   {
-    string              _messagePrefix;
+    std::string         _messagePrefix;
     SALOME::Session_var _session;
   public:
     SignalToGUI( SMESH_Mesh_i* mesh )
@@ -127,7 +128,7 @@ namespace
           _messagePrefix = "SMESH/mesh_loading/";
           _messagePrefix += meshEntry.in();
 
-          string msgToGUI = _messagePrefix + "/";
+          std::string msgToGUI = _messagePrefix + "/";
           msgToGUI += SMESH_Comment( mesh->NbNodes() );
           msgToGUI += "/";
           msgToGUI += SMESH_Comment( mesh->NbElements() );
@@ -140,7 +141,7 @@ namespace
     {
       if ( !_messagePrefix.empty() )
       {
-        string msgToGUI = _messagePrefix + "/stop";
+        std::string msgToGUI = _messagePrefix + "/stop";
         _session->emitMessageOneWay( msgToGUI.c_str());
         _messagePrefix.clear();
       }
@@ -173,7 +174,7 @@ namespace
     SMDS_PositionPtr vertexPosition()  const { return SMDS_PositionPtr( new SMDS_VertexPosition); }
     SMDS_PositionPtr defaultPosition() const { return SMDS_SpacePosition::originSpacePosition();  }
     typedef SMDS_PositionPtr (PositionCreator:: * FmakePos)() const;
-    vector<FmakePos> myFuncTable;
+    std::vector<FmakePos> myFuncTable;
   };
 
   //================================================================================
@@ -182,12 +183,12 @@ namespace
    */
   //================================================================================
 
-  vector<int> getSimpleSubMeshIds( SMESHDS_Mesh* meshDS, int shapeId )
+  std::vector<int> getSimpleSubMeshIds( SMESHDS_Mesh* meshDS, int shapeId )
   {
-    vector<int> ids;
+    std::vector<int> ids;
 
-    list<TopoDS_Shape> shapeQueue( 1, meshDS->IndexToShape( shapeId ));
-    list<TopoDS_Shape>::iterator shape = shapeQueue.begin();
+    std::list<TopoDS_Shape> shapeQueue( 1, meshDS->IndexToShape( shapeId ));
+    std::list<TopoDS_Shape>::iterator shape = shapeQueue.begin();
     for ( ; shape != shapeQueue.end(); ++shape )
     {
       if ( shape->IsNull() ) continue;
@@ -222,10 +223,10 @@ namespace
    */
   //================================================================================
 
-  typedef map< MED::EGeometrieElement, SMDSAbs_EntityType > Tmed2smeshElemTypeMap;
+  typedef std::map< MED::EGeometrieElement, SMDSAbs_EntityType > Tmed2smeshElemTypeMap;
   const Tmed2smeshElemTypeMap& med2smeshElemTypeMap()
   {
-    static map< MED::EGeometrieElement, SMDSAbs_EntityType> med2smeshTypes;
+    static Tmed2smeshElemTypeMap med2smeshTypes;
     if ( med2smeshTypes.empty() )
     {
       for  ( int iG = 0; iG < SMDSEntity_Last; ++iG )
@@ -233,7 +234,7 @@ namespace
         SMDSAbs_EntityType    smdsType = (SMDSAbs_EntityType) iG;
         MED::EGeometrieElement medType =
           (MED::EGeometrieElement) DriverMED::GetMedGeoType( smdsType );
-        med2smeshTypes.insert( make_pair( medType, smdsType ));
+        med2smeshTypes.insert( std::make_pair( medType, smdsType ));
       }
     }
     return med2smeshTypes;
@@ -254,7 +255,7 @@ namespace
     // change at insertion of new items in the middle.
     //const vector<MED::EGeometrieElement>& medTypes = mesh2medElemType();
 
-    vector<int> data;
+    std::vector<int> data;
 
     for ( size_t i = 0; i < meshInfo->length(); ++i )
       if ( meshInfo[i] > 0 )
@@ -298,7 +299,7 @@ void SMESH_PreMeshInfo::hdf2meshInfo( const std::string& name,
     // // array->GetDim( datasetSize );
     // int size = dataset->GetSize();
 
-    vector<int> info( SMDSEntity_Last * 2, 0 );
+    std::vector<int> info( SMDSEntity_Last * 2, 0 );
     dataset->ReadFromDisk( &info[0] );
     dataset->CloseOnDisk();
 
@@ -429,7 +430,7 @@ bool SMESH_PreMeshInfo::readPreInfoFromHDF()
         group_i->changePreMeshInfo() = newInstance();
         if ( SMESHDS_GroupBase* group = group_i->GetGroupDS() )
         {
-          const string name = group->GetStoreName();
+          const std::string name = group->GetStoreName();
           group_i->changePreMeshInfo()->hdf2meshInfo( name, infoHdfGroup );
         }
       }
@@ -499,7 +500,7 @@ void SMESH_PreMeshInfo::readGroupInfo()
   if ( _mesh->_mapGroups.empty() ) return;
 
   // make SMESH_PreMeshInfo of groups
-  map< string, SMESH_PreMeshInfo* > name2GroupInfo;
+  map< std::string, SMESH_PreMeshInfo* > name2GroupInfo;
   map<int, SMESH::SMESH_GroupBase_ptr>::const_iterator i2group = _mesh->_mapGroups.begin();
   for ( ; i2group != _mesh->_mapGroups.end(); ++i2group )
   {
@@ -510,8 +511,8 @@ void SMESH_PreMeshInfo::readGroupInfo()
       group_i->changePreMeshInfo() = info;
       if ( SMESHDS_Group* group = dynamic_cast< SMESHDS_Group* >( group_i->GetGroupDS() ))
       {
-        string name = group->GetStoreName();
-        name2GroupInfo.insert( make_pair( name, info ));
+        std::string name = group->GetStoreName();
+        name2GroupInfo.insert( std::make_pair( name, info ));
         info->_isInfoOk = true;
       }
     }
@@ -534,8 +535,8 @@ void SMESH_PreMeshInfo::readGroupInfo()
     vector< SMESH_PreMeshInfo* >& grInfoVec = famId2grInfo[ medFamInfo->GetId() ];
     for ( int iG = 0; iG < nbGroups; ++iG )
     {
-      const string grName = medFamInfo->GetGroupName( iG );
-      map< string, SMESH_PreMeshInfo* >::iterator n2i = name2GroupInfo.find( grName );
+      const std::string grName = medFamInfo->GetGroupName( iG );
+      map< std::string, SMESH_PreMeshInfo* >::iterator n2i = name2GroupInfo.find( grName );
       if ( n2i != name2GroupInfo.end() )
         grInfoVec.push_back( n2i->second );
     }
@@ -560,14 +561,14 @@ void SMESH_PreMeshInfo::readGroupInfo()
         f2infos = famId2grInfo.find( famNums[i] );
         if ( f2infos == famId2grInfo.end() )
           f2infos = famId2grInfo.insert
-            ( make_pair( famNums[i], vector< SMESH_PreMeshInfo*>())).first;
+            ( std::make_pair( famNums[i], vector< SMESH_PreMeshInfo*>())).first;
       }
       vector< SMESH_PreMeshInfo* >& infoVec = f2infos->second ;
       for ( size_t j = 0; j < infoVec.size(); ++j )
         infoVec[j]->_elemCounter++;
     }
     // pass _elemCounter to a real elem type
-    map< string, SMESH_PreMeshInfo* >::iterator n2i = name2GroupInfo.begin();
+    map< std::string, SMESH_PreMeshInfo* >::iterator n2i = name2GroupInfo.begin();
     for ( ; n2i != name2GroupInfo.end(); ++n2i )
     {
       SMESH_PreMeshInfo* info = n2i->second;
@@ -618,7 +619,7 @@ void SMESH_PreMeshInfo::readSubMeshInfo()
 
       for ( int isNode = 0; isNode < 2; ++isNode )
       {
-        string aDSName( isNode ? "Node Submeshes" : "Element Submeshes");
+        std::string aDSName( isNode ? "Node Submeshes" : "Element Submeshes");
         if ( aGroup->ExistInternalObject( (char*) aDSName.c_str() ))
         {
           // read sub-mesh id of all nodes or elems
@@ -893,7 +894,7 @@ void SMESH_PreMeshInfo::readSubMeshes(DriverMED_R_SMESHDS_Mesh* reader) const
       SMDS_ElemIteratorPtr eIt = meshDS->elementsIterator();
       for ( int isNode = 0; isNode < 2; ++isNode )
       {
-        string aDSName( isNode ? "Node Submeshes" : "Element Submeshes");
+        std::string aDSName( isNode ? "Node Submeshes" : "Element Submeshes");
         if ( aGroup->ExistInternalObject( (char*) aDSName.c_str() ))
         {
           HDFdataset* aDataset = new HDFdataset( (char*) aDSName.c_str(), aGroup );

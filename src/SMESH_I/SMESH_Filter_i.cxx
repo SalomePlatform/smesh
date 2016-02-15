@@ -1628,7 +1628,7 @@ void ConnectedElements_i::SetThreshold ( const char*                            
   {
   case SMESH::ConnectedElements::POINT: // read 3 node coordinates ///////////////////
     {
-      vector< double > xyz;
+      std::vector< double > xyz;
       char* endptr;
       do
       {
