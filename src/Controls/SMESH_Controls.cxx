@@ -175,7 +175,7 @@ namespace {
       n += q2 ^ q3;
     }
     double len = n.Modulus();
-    bool zeroLen = ( len <= numeric_limits<double>::min());
+    bool zeroLen = ( len <= std::numeric_limits<double>::min());
     if ( !zeroLen )
       n /= len;
 
@@ -312,12 +312,12 @@ double NumericalFunctor::Round( const double & aVal )
  */
 //================================================================================
 
-void NumericalFunctor::GetHistogram(int                  nbIntervals,
-                                    std::vector<int>&    nbEvents,
-                                    std::vector<double>& funValues,
-                                    const vector<int>&   elements,
-                                    const double*        minmax,
-                                    const bool           isLogarithmic)
+void NumericalFunctor::GetHistogram(int                     nbIntervals,
+                                    std::vector<int>&       nbEvents,
+                                    std::vector<double>&    funValues,
+                                    const std::vector<int>& elements,
+                                    const double*           minmax,
+                                    const bool              isLogarithmic)
 {
   if ( nbIntervals < 1 ||
        !myMesh ||
@@ -336,7 +336,7 @@ void NumericalFunctor::GetHistogram(int                  nbIntervals,
   }
   else
   {
-    vector<int>::const_iterator id = elements.begin();
+    std::vector<int>::const_iterator id = elements.begin();
     for ( ; id != elements.end(); ++id )
       values.insert( GetValue( *id ));
   }
@@ -2163,7 +2163,7 @@ bool BareBorderVolume::IsSatisfy(long theElementId )
       if ( myTool.IsFreeFace( iF ))
       {
         const SMDS_MeshNode** n = myTool.GetFaceNodes(iF);
-        vector< const SMDS_MeshNode*> nodes( n, n+myTool.NbFaceNodes(iF));
+        std::vector< const SMDS_MeshNode*> nodes( n, n+myTool.NbFaceNodes(iF));
         if ( !myMesh->FindElement( nodes, SMDSAbs_Face, /*Nomedium=*/false))
           return true;
       }
@@ -2302,15 +2302,15 @@ void CoincidentNodes::SetMesh( const SMDS_Mesh* theMesh )
     while ( nIt->more() )
       nodesToCheck.insert( nodesToCheck.end(), nIt->next() );
 
-    list< list< const SMDS_MeshNode*> > nodeGroups;
+    std::list< std::list< const SMDS_MeshNode*> > nodeGroups;
     SMESH_OctreeNode::FindCoincidentNodes ( nodesToCheck, &nodeGroups, myToler );
 
     myCoincidentIDs.Clear();
-    list< list< const SMDS_MeshNode*> >::iterator groupIt = nodeGroups.begin();
+    std::list< std::list< const SMDS_MeshNode*> >::iterator groupIt = nodeGroups.begin();
     for ( ; groupIt != nodeGroups.end(); ++groupIt )
     {
-      list< const SMDS_MeshNode*>& coincNodes = *groupIt;
-      list< const SMDS_MeshNode*>::iterator n = coincNodes.begin();
+      std::list< const SMDS_MeshNode*>& coincNodes = *groupIt;
+      std::list< const SMDS_MeshNode*>::iterator n = coincNodes.begin();
       for ( ; n != coincNodes.end(); ++n )
         myCoincidentIDs.Add( (*n)->GetID() );
     }
@@ -2342,7 +2342,7 @@ bool CoincidentElements::IsSatisfy( long theElementId )
   if ( const SMDS_MeshElement* e = myMesh->FindElement( theElementId ))
   {
     if ( e->GetType() != GetType() ) return false;
-    set< const SMDS_MeshNode* > elemNodes( e->begin_nodes(), e->end_nodes() );
+    std::set< const SMDS_MeshNode* > elemNodes( e->begin_nodes(), e->end_nodes() );
     const int nbNodes = e->NbNodes();
     SMDS_ElemIteratorPtr invIt = (*elemNodes.begin())->GetInverseElementIterator( GetType() );
     while ( invIt->more() )
@@ -2589,18 +2589,20 @@ bool FreeFaces::IsSatisfy( long theId )
   int nbNode = aFace->NbNodes();
 
   // collect volumes to check that number of volumes with count equal nbNode not less than 2
-  typedef map< SMDS_MeshElement*, int > TMapOfVolume; // map of volume counters
-  typedef map< SMDS_MeshElement*, int >::iterator TItrMapOfVolume; // iterator
+  typedef std::map< SMDS_MeshElement*, int > TMapOfVolume; // map of volume counters
+  typedef std::map< SMDS_MeshElement*, int >::iterator TItrMapOfVolume; // iterator
   TMapOfVolume mapOfVol;
 
   SMDS_ElemIteratorPtr nodeItr = aFace->nodesIterator();
-  while ( nodeItr->more() ) {
+  while ( nodeItr->more() )
+  {
     const SMDS_MeshNode* aNode = static_cast<const SMDS_MeshNode*>(nodeItr->next());
     if ( !aNode ) continue;
     SMDS_ElemIteratorPtr volItr = aNode->GetInverseElementIterator(SMDSAbs_Volume);
-    while ( volItr->more() ) {
+    while ( volItr->more() )
+    {
       SMDS_MeshElement* aVol = (SMDS_MeshElement*)volItr->next();
-      TItrMapOfVolume itr = mapOfVol.insert(make_pair(aVol, 0)).first;
+      TItrMapOfVolume    itr = mapOfVol.insert( std::make_pair( aVol, 0 )).first;
       (*itr).second++;
     } 
   }
@@ -2704,8 +2706,8 @@ void GroupColor::SetMesh( const SMDS_Mesh* theMesh )
     return;
 
   // iterates on groups and find necessary elements ids
-  const std::set<SMESHDS_GroupBase*>& aGroups = aMesh->GetGroups();
-  set<SMESHDS_GroupBase*>::const_iterator GrIt = aGroups.begin();
+  const std::set<SMESHDS_GroupBase*>&       aGroups = aMesh->GetGroups();
+  std::set<SMESHDS_GroupBase*>::const_iterator GrIt = aGroups.begin();
   for (; GrIt != aGroups.end(); GrIt++)
   {
     SMESHDS_GroupBase* aGrp = (*GrIt);
@@ -2932,10 +2934,10 @@ void ConnectedElements::SetPoint( double x, double y, double z )
   // find myNodeID by myXYZ if possible
   if ( myMeshModifTracer.GetMesh() )
   {
-    auto_ptr<SMESH_ElementSearcher> searcher
+    SMESHUtils::Deleter<SMESH_ElementSearcher> searcher
       ( SMESH_MeshAlgos::GetElementSearcher( (SMDS_Mesh&) *myMeshModifTracer.GetMesh() ));
 
-    vector< const SMDS_MeshElement* > foundElems;
+    std::vector< const SMDS_MeshElement* > foundElems;
     searcher->FindElementsByPoint( gp_Pnt(x,y,z), SMDSAbs_All, foundElems );
 
     if ( !foundElems.empty() )
@@ -2961,7 +2963,7 @@ bool ConnectedElements::IsSatisfy( long theElementId )
     if ( !node0 )
       return false;
 
-    list< const SMDS_MeshNode* > nodeQueue( 1, node0 );
+    std::list< const SMDS_MeshNode* > nodeQueue( 1, node0 );
     std::set< int > checkedNodeIDs;
     // algo:
     // foreach node in nodeQueue:
@@ -3050,8 +3052,8 @@ void CoplanarFaces::SetMesh( const SMDS_Mesh* theMesh )
     const double cosTol = Cos( myToler * M_PI / 180. );
     NCollection_Map< SMESH_TLink, SMESH_TLink > checkedLinks;
 
-    std::list< pair< const SMDS_MeshElement*, gp_Vec > > faceQueue;
-    faceQueue.push_back( make_pair( face, myNorm ));
+    std::list< std::pair< const SMDS_MeshElement*, gp_Vec > > faceQueue;
+    faceQueue.push_back( std::make_pair( face, myNorm ));
     while ( !faceQueue.empty() )
     {
       face   = faceQueue.front().first;
@@ -3074,7 +3076,7 @@ void CoplanarFaces::SetMesh( const SMDS_Mesh* theMesh )
             if (!normOK || isLessAngle( myNorm, norm, cosTol))
             {
               myCoplanarIDs.Add( f->GetID() );
-              faceQueue.push_back( make_pair( f, norm ));
+              faceQueue.push_back( std::make_pair( f, norm ));
             }
           }
         }

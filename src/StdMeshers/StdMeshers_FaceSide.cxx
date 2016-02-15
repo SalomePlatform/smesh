@@ -56,6 +56,8 @@
 
 #include "utilities.h"
 
+using namespace std;
+
 //================================================================================
 /*!
  * \brief Constructor of a side of one edge
@@ -71,7 +73,7 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face&   theFace,
                                          const bool           theIgnoreMediumNodes,
                                          SMESH_ProxyMesh::Ptr theProxyMesh)
 {
-  list<TopoDS_Edge> edges(1,theEdge);
+  std::list<TopoDS_Edge> edges(1,theEdge);
   *this = StdMeshers_FaceSide( theFace, edges, theMesh, theIsForward,
                                theIgnoreMediumNodes, theProxyMesh );
 }
@@ -82,12 +84,12 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face&   theFace,
  */
 //================================================================================
 
-StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face&   theFace,
-                                         list<TopoDS_Edge>&   theEdges,
-                                         SMESH_Mesh*          theMesh,
-                                         const bool           theIsForward,
-                                         const bool           theIgnoreMediumNodes,
-                                         SMESH_ProxyMesh::Ptr theProxyMesh)
+StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face&      theFace,
+                                         std::list<TopoDS_Edge>& theEdges,
+                                         SMESH_Mesh*             theMesh,
+                                         const bool              theIsForward,
+                                         const bool              theIgnoreMediumNodes,
+                                         SMESH_ProxyMesh::Ptr    theProxyMesh)
 {
   int nbEdges = theEdges.size();
   myEdge.resize      ( nbEdges );
@@ -112,7 +114,7 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face&   theFace,
   SMESHDS_Mesh* meshDS = myProxyMesh->GetMeshDS();
 
   int nbDegen = 0;
-  list<TopoDS_Edge>::iterator edge = theEdges.begin();
+  std::list<TopoDS_Edge>::iterator edge = theEdges.begin();
   for ( int index = 0; edge != theEdges.end(); ++index, ++edge )
   {
     int i = theIsForward ? index : nbEdges-index-1;
@@ -302,8 +304,8 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(UVPtStructVec&     theSideNodes,
  */
 //================================================================================
 
-const vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
-                                                             double constValue) const
+const std::vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXConst,
+                                                                  double constValue) const
 {
   if ( myPoints.empty() )
   {

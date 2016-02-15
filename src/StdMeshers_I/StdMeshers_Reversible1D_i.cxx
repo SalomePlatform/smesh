@@ -79,7 +79,7 @@ void StdMeshers_Reversible1D_i::SetReversedEdges( const SMESH::long_array& theId
 
 void StdMeshers_Reversible1D_i::SetObjectEntry( const char* theEntry )
 {
-  string entry(theEntry); // actually needed as theEntry is spoiled by moment of dumping
+  std::string entry(theEntry); // actually needed as theEntry is spoiled by moment of dumping
   try {
     this->GetImpl()->SetObjectEntry( entry.c_str() );
     // Update Python script

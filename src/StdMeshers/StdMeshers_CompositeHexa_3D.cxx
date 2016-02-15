@@ -58,6 +58,7 @@
 #include <set>
 #include <vector>
 
+using namespace std;
 
 #ifdef _DEBUG_
 // #define DEB_FACES

@@ -178,8 +178,8 @@ void StdMeshers_CartesianParameters3D_i::SetGridSpacing(const SMESH::string_arra
                                                         CORBA::Short               axis)
   throw (SALOME::SALOME_Exception)
 {
-  vector<string> funVec;
-  vector<double> pointVec;
+  std::vector<std::string> funVec;
+  std::vector<double>      pointVec;
   _array2vec( spaceFunctions, funVec, (const char*) );
   _array2vec( internalPoints, pointVec, );
 
@@ -209,8 +209,8 @@ void StdMeshers_CartesianParameters3D_i::GetGridSpacing(SMESH::string_array_out 
 {
   ASSERT( myBaseImpl );
   try {
-    vector<string> funVec;
-    vector<double> pointVec;
+    std::vector<std::string> funVec;
+    std::vector<double>      pointVec;
     this->GetImpl()->GetGridSpacing( funVec, pointVec, axis );
 
     xSpaceFunctions = new SMESH::string_array();
@@ -394,8 +394,8 @@ StdMeshers_CartesianParameters3D_i::ComputeCoordinates(CORBA::Double            
                                                        const char*                axisName )
   throw (SALOME::SALOME_Exception)
 {
-  vector<string> xFuns;
-  vector<double> xPoints, coords;
+  std::vector<std::string> xFuns;
+  std::vector<double>      xPoints, coords;
   _array2vec( spaceFuns, xFuns, (const char*) );
   _array2vec( points, xPoints, );
 

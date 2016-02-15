@@ -215,7 +215,7 @@ class SMESH_EXPORT SMESH_Algo : public SMESH_Hypothesis
    *  have a name (type) listed in the algorithm. Hypothesis associated to
    *  father shape -are not- taken into account (see GetUsedHypothesis)
    */
-  const list <const SMESHDS_Hypothesis *> &
+  const std::list <const SMESHDS_Hypothesis *> &
   GetAppliedHypothesis(SMESH_Mesh &         aMesh,
                        const TopoDS_Shape & aShape,
                        const bool           ignoreAuxiliary=true) const;

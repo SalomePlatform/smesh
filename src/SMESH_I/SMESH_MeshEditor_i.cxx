@@ -5249,10 +5249,10 @@ void SMESH_MeshEditor_i::dumpGroupsList(TPythonDump &               theDumpPytho
 */
 //================================================================================
 
-string SMESH_MeshEditor_i::generateGroupName(const string& thePrefix)
+std::string SMESH_MeshEditor_i::generateGroupName(const std::string& thePrefix)
 {
   SMESH::ListOfGroups_var groups = myMesh_i->GetGroups();
-  set<string> groupNames;
+  set<std::string> groupNames;
 
   // Get existing group names
   for (int i = 0, nbGroups = groups->length(); i < nbGroups; i++ ) {
@@ -5265,7 +5265,7 @@ string SMESH_MeshEditor_i::generateGroupName(const string& thePrefix)
   }
 
   // Find new name
-  string name = thePrefix;
+  std::string name = thePrefix;
   int index = 0;
 
   while (!groupNames.insert(name).second)
@@ -5573,8 +5573,8 @@ SMESH_MeshEditor_i::DoubleNodeGroupNew( SMESH::SMESH_GroupBase_ptr theNodes,
     // Create group with newly created nodes
     SMESH::long_array_var anIds = GetLastCreatedNodes();
     if (anIds->length() > 0) {
-      string anUnindexedName (theNodes->GetName());
-      string aNewName = generateGroupName(anUnindexedName + "_double");
+      std::string anUnindexedName (theNodes->GetName());
+      std::string aNewName = generateGroupName(anUnindexedName + "_double");
       aNewGroup = myMesh_i->CreateGroup(SMESH::NODE, aNewName.c_str());
       aNewGroup->Add(anIds);
       pyDump << aNewGroup << " = ";
@@ -5672,8 +5672,8 @@ SMESH_MeshEditor_i::DoubleNodeGroupsNew( const SMESH::ListOfGroups& theNodes,
     // Create group with newly created nodes
     SMESH::long_array_var anIds = GetLastCreatedNodes();
     if (anIds->length() > 0) {
-      string anUnindexedName (theNodes[0]->GetName());
-      string aNewName = generateGroupName(anUnindexedName + "_double");
+      std::string anUnindexedName (theNodes[0]->GetName());
+      std::string aNewName = generateGroupName(anUnindexedName + "_double");
       aNewGroup = myMesh_i->CreateGroup(SMESH::NODE, aNewName.c_str());
       aNewGroup->Add(anIds);
       pyDump << aNewGroup << " = ";
@@ -5897,7 +5897,7 @@ SMESH_MeshEditor_i::DoubleNodeElemGroup2New(SMESH::SMESH_GroupBase_ptr theElems,
   {
     // Create group with newly created elements
     CORBA::String_var elemGroupName = theElems->GetName();
-    string aNewName = generateGroupName( string(elemGroupName.in()) + "_double");
+    std::string aNewName = generateGroupName( std::string(elemGroupName.in()) + "_double");
     if ( !getEditor().GetLastCreatedElems().IsEmpty() && theElemGroupNeeded )
     {
       SMESH::long_array_var anIds = GetLastCreatedElems();
@@ -6129,7 +6129,7 @@ SMESH_MeshEditor_i::DoubleNodeElemGroups2New(const SMESH::ListOfGroups& theElems
   {
     // Create group with newly created elements
     CORBA::String_var elemGroupName = theElems[0]->GetName();
-    string aNewName = generateGroupName( string(elemGroupName.in()) + "_double");
+    std::string aNewName = generateGroupName( std::string(elemGroupName.in()) + "_double");
     if ( !getEditor().GetLastCreatedElems().IsEmpty() && theElemGroupNeeded )
     {
       SMESH::long_array_var anIds = GetLastCreatedElems();

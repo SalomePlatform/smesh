@@ -70,9 +70,9 @@ extern "C"
   elem->getshapeId() );                         \
   }}
 
-#define END_ELEM_WRITE_ADD_TO_MAP( elem, e2id )         \
-  elem->getshapeId() );                                 \
-  e2id.insert( e2id.end(), make_pair( elem, gmfID ));   \
+#define END_ELEM_WRITE_ADD_TO_MAP( elem, e2id )            \
+  elem->getshapeId() );                                    \
+  e2id.insert( e2id.end(), std::make_pair( elem, gmfID )); \
   }}
 
 #define END_EXTRA_VERTICES_WRITE()           \
@@ -145,7 +145,7 @@ Driver_Mesh::Status DriverGMF_Write::Perform()
     const SMDS_MeshNode* n = nodeIt->next();
     n->GetXYZ( xyz );
     GmfSetLin( meshID, GmfVertices, xyz[0], xyz[1], xyz[2], n->getshapeId() );
-    node2IdMap.insert( node2IdMap.end(), make_pair( n, ++iN ));
+    node2IdMap.insert( node2IdMap.end(), std::make_pair( n, ++iN ));
   }
   if ( iN != nbNodes )
     return addMessage("Wrong nb of nodes returned by nodesIterator", /*fatal=*/true);

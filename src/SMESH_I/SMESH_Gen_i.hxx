@@ -71,16 +71,16 @@ public:
     mapIdToId.clear();
   }
   // register object in the internal map and return its id
-  int addObject( string theIOR )
+  int addObject( std::string theIOR )
   {
     int nextId = getNextId();
     mapIdToIOR[ nextId ]  = theIOR;
     return nextId;
   }
   // find the object id in the internal map by the IOR
-  int findId( string theIOR )
+  int findId( std::string theIOR )
   {
-    map<int, string>::iterator imap;
+    std::map<int, std::string>::iterator imap;
     for ( imap = mapIdToIOR.begin(); imap != mapIdToIOR.end(); ++imap ) {
       if ( imap->second == theIOR )
         return imap->first;
@@ -88,18 +88,18 @@ public:
     return 0;
   }
   // get object's IOR by id
-  string getIORbyId( const int theId )
+  std::string getIORbyId( const int theId )
   {
     if ( mapIdToIOR.find( theId ) != mapIdToIOR.end() )
       return mapIdToIOR[ theId ];
-    return string( "" );
+    return std::string( "" );
   }
   // get object's IOR by old id
-  string getIORbyOldId( const int theOldId )
+  std::string getIORbyOldId( const int theOldId )
   {
     if ( mapIdToId.find( theOldId ) != mapIdToId.end() )
       return getIORbyId( mapIdToId[ theOldId ] );
-    return string( "" );
+    return std::string( "" );
   }
   // maps old object id to the new one (used when restoring data)
   void mapOldToNew( const int oldId, const int newId ) {
@@ -107,7 +107,7 @@ public:
   }
   // get old id by a new one
   int getOldId( const int newId ) {
-    map<int, int>::iterator imap;
+    std::map<int, int>::iterator imap;
     for ( imap = mapIdToId.begin(); imap != mapIdToId.end(); ++imap ) {
       if ( imap->second == newId )
         return imap->first;
@@ -125,8 +125,8 @@ private:
     return id;
   }
 
-  map<int, string> mapIdToIOR;      // persistent-to-transient map
-  map<int, int>    mapIdToId;       // used to translate object from persistent to transient form
+  std::map<int, std::string> mapIdToIOR; // persistent-to-transient map
+  std::map<int, int>         mapIdToId;  // to translate object from persistent to transient form
 };
 
 // ===========================================================
@@ -568,7 +568,7 @@ public:
   typename TInterface::_var_type GetObjectByOldId( const int oldID )
   {
     if ( StudyContext* myStudyContext = GetCurrentStudyContext() ) {
-      string ior = myStudyContext->getIORbyOldId( oldID );
+      std::string ior = myStudyContext->getIORbyOldId( oldID );
       if ( !ior.empty() )
         return TInterface::_narrow(GetORB()->string_to_object( ior.c_str() ));
     }
@@ -671,13 +671,13 @@ private:
   ::SMESH_Gen                    myGen;         // SMESH_Gen local implementation
 
   // hypotheses managing
-  map<string, GenericHypothesisCreator_i*> myHypCreatorMap;
+  std::map<std::string, GenericHypothesisCreator_i*> myHypCreatorMap;
 
-  map<int, StudyContext*>   myStudyContextMap;  // Map of study context objects
+  std::map<int, StudyContext*>   myStudyContextMap;  // Map of study context objects
 
-  GEOM_Client*              myShapeReader;      // Shape reader
-  SALOMEDS::Study_var       myCurrentStudy;     // Current study
-  CORBA::Boolean            myIsEmbeddedMode;   // Current mode
+  GEOM_Client*                   myShapeReader;      // Shape reader
+  SALOMEDS::Study_var            myCurrentStudy;     // Current study
+  CORBA::Boolean                 myIsEmbeddedMode;   // Current mode
 
   // Default color of groups
   std::string myDefaultGroupColor;

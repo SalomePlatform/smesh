@@ -45,6 +45,8 @@
 #include <sstream>
 #include <set>
 
+using namespace std;
+
 using SMESH::TPythonDump;
 using SMESH::TVar;
 

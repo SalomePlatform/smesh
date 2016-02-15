@@ -747,7 +747,7 @@ public:
   void incrementNodesCapacity(int nbNodes);
   void incrementCellsCapacity(int nbCells);
   void adjustStructure();
-  void dumpGrid(string ficdump="dumpGrid");
+  void dumpGrid(std::string ficdump="dumpGrid");
   static int chunkSize;
 
   //! low level modification: add, change or remove node or element

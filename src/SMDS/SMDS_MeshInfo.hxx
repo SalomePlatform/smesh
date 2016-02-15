@@ -25,7 +25,6 @@
 #define SMDS_MeshInfo_HeaderFile
 
 #include <vector>
-using namespace std;
 
 #include "SMESH_SMDS.hxx"
 

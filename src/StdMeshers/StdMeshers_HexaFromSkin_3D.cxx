@@ -33,6 +33,8 @@
 
 #include <limits>
 
+using namespace std;
+
 // Define error message and _MYDEBUG_ if needed
 #ifdef _DEBUG_
 #define BAD_MESH_ERR \

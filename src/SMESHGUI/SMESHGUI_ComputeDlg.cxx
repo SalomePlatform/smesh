@@ -108,6 +108,7 @@
 #define MARGIN  11
 
 #define COLONIZE(str)   (QString(str).contains(":") > 0 ? QString(str) : QString(str) + " :" )
+#define __SHAPE_RGB__ 250, 0, 250
 
 enum TCol {
   COL_ALGO = 0, COL_SHAPE, COL_ERROR, COL_SHAPEID, COL_PUBLISHED, COL_BAD_MESH, NB_COLUMNS
@@ -147,10 +148,10 @@ namespace SMESH
     {
       myProperty = vtkProperty::New();
       myProperty->SetRepresentationToWireframe();
-      myProperty->SetColor( 250, 0, 250 );
-      myProperty->SetAmbientColor( 250, 0, 250 );
-      myProperty->SetDiffuseColor( 250, 0, 250 );
-      //myProperty->SetSpecularColor( 250, 0, 250 );
+      myProperty->SetColor( __SHAPE_RGB__ );
+      myProperty->SetAmbientColor( __SHAPE_RGB__ );
+      myProperty->SetDiffuseColor( __SHAPE_RGB__ );
+      //myProperty->SetSpecularColor( __SHAPE_RGB__ );
       myProperty->SetLineWidth( 5 );
     }
     // -----------------------------------------------------------------------
@@ -278,13 +279,18 @@ namespace SMESH
         actor = GEOM_Actor::New();
         if ( actor ) {
           actor->SetShape(shape,0,0);
-          actor->SetProperty(myProperty);
-          actor->SetShadingProperty(myProperty);
-          actor->SetWireframeProperty(myProperty);
-          actor->SetPreviewProperty(myProperty);
+          // actor->SetProperty(myProperty);
+          // actor->SetShadingProperty(myProperty);
+          // actor->SetWireframeProperty(myProperty);
+          // actor->SetPreviewProperty(myProperty);
           actor->PickableOff();
-          //         if ( shape.ShapeType() == TopAbs_EDGE )
-          //           actor->SubShapeOn();
+          //
+          actor->SetWidth( myProperty->GetLineWidth() );
+          actor->SetIsosWidth( myProperty->GetLineWidth() );
+          actor->SetIsosColor( __SHAPE_RGB__ );
+          actor->SetColor( __SHAPE_RGB__ );
+          // if ( shape.ShapeType() == TopAbs_EDGE )
+          //   actor->SubShapeOn();
           myViewWindow->AddActor( actor );
         }
       }
@@ -736,10 +742,11 @@ void SMESHGUI_ComputeDlg_QThread::cancel()
 //================================================================================
 //================================================================================
 
-SMESHGUI_ComputeDlg_QThreadQDialog::SMESHGUI_ComputeDlg_QThreadQDialog(QWidget             * parent,
-                                                                       SMESH::SMESH_Gen_var  gen,
-                                                                       SMESH::SMESH_Mesh_var mesh,
-                                                                       GEOM::GEOM_Object_var mainShape)
+SMESHGUI_ComputeDlg_QThreadQDialog::
+SMESHGUI_ComputeDlg_QThreadQDialog(QWidget             * parent,
+                                   SMESH::SMESH_Gen_var  gen,
+                                   SMESH::SMESH_Mesh_var mesh,
+                                   GEOM::GEOM_Object_var mainShape)
   : QDialog(parent,
             Qt::WindowSystemMenuHint |
             Qt::WindowCloseButtonHint |
@@ -920,23 +927,28 @@ void SMESHGUI_BaseComputeOp::computeMesh()
       if ( !memoryLack )
       {
         // List of objects that will be updated automatically
-        QList< QPair< SMESH::SMESH_IDSource_var, _PTR(SObject) > > aListToUpdate;
-        SMESH::SMESH_IDSource_var aMeshObj = SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( aMeshSObj );
+        typedef QList< QPair< SMESH::SMESH_IDSource_var, _PTR(SObject) > > TListOf_IDSrc_SObj;
+        TListOf_IDSrc_SObj aListToUpdate;
+        SMESH::SMESH_IDSource_var aMeshObj =
+          SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( aMeshSObj );
         // put Mesh into list
-        aListToUpdate.append( QPair< SMESH::SMESH_IDSource_var, _PTR(SObject) >(aMeshObj, aMeshSObj) );
+        aListToUpdate.append( TListOf_IDSrc_SObj::value_type( aMeshObj, aMeshSObj ));
         SMESH::submesh_array_var aSubMeshes = myMesh->GetSubMeshes();
         // put SubMeshes into list
-        for ( CORBA::ULong i = 0; i < aSubMeshes->length(); i++ ) {
+        for ( CORBA::ULong i = 0; i < aSubMeshes->length(); i++ )
+        {
           SMESH::SMESH_subMesh_var sm = aSubMeshes[i];
           if ( CORBA::is_nil( sm ) ) continue;
           _PTR(SObject) smSObj = SMESH::ObjectToSObject( sm );
           if ( !smSObj ) continue;
-          SMESH::SMESH_IDSource_var aSubMeshObj = SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( smSObj );
-          aListToUpdate.append( QPair< SMESH::SMESH_IDSource_var, _PTR(SObject) >(aSubMeshObj, smSObj) );
+          SMESH::SMESH_IDSource_var aSubMeshObj =
+            SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( smSObj );
+          aListToUpdate.append( TListOf_IDSrc_SObj::value_type( aSubMeshObj, smSObj ));
         }
         // put Groups into list
-        SMESH::ListOfGroups_var  aGroups = myMesh->GetGroups();
-        for ( size_t i = 0; i < aGroups->length(); ++i ) {
+        SMESH::ListOfGroups_var aGroups = myMesh->GetGroups();
+        for ( size_t i = 0; i < aGroups->length(); ++i )
+        {
           SMESH::SMESH_GroupBase_var aGrp = aGroups[i];
           if ( CORBA::is_nil( aGrp ) ) continue;
           SMESH::SMESH_Group_var         aStdGroup  = SMESH::SMESH_Group::_narrow( aGrp );
@@ -945,26 +957,31 @@ void SMESHGUI_BaseComputeOp::computeMesh()
           if ( !aStdGroup->_is_nil() ) continue; // don't update the standalone groups
           _PTR(SObject) aGroupSO = SMESH::FindSObject( aGrp );
           if ( !aGroupSO ) continue;
-          SMESH::SMESH_IDSource_var aGroupObj = SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( aGroupSO );
-          aListToUpdate.append( QPair< SMESH::SMESH_IDSource_var, _PTR(SObject) >(aGroupObj, aGroupSO) );
+          SMESH::SMESH_IDSource_var aGroupObj =
+            SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( aGroupSO );
+          aListToUpdate.append( TListOf_IDSrc_SObj::value_type( aGroupObj, aGroupSO ));
         }
 
         // update mesh, sub-mesh and groups, if it's possible
-        QList< QPair< SMESH::SMESH_IDSource_var, _PTR(SObject) > >::iterator anIter;
-        for( anIter = aListToUpdate.begin(); anIter != aListToUpdate.end(); anIter++ ) {
-          SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow( SMESH::SObjectToObject( (*anIter).second ));
-          if ( getSMESHGUI()->automaticUpdate( (*anIter).first, &entities, &limitExceeded, &hidden, &nbElements ) )
+        TListOf_IDSrc_SObj::iterator anIter;
+        for ( anIter = aListToUpdate.begin(); anIter != aListToUpdate.end(); anIter++ )
+        {
+          SMESH::SMESH_Mesh_var aMesh =
+            SMESH::SMESH_Mesh::_narrow( SMESH::SObjectToObject( (*anIter).second ));
+
+          if ( getSMESHGUI()->automaticUpdate( (*anIter).first, &entities, &limitExceeded,
+                                               &hidden, &nbElements ) )
           {
             try {
-#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
               OCC_CATCH_SIGNALS;
-#endif
               bool toDisplay = false;
-
-              if ( !aMesh->_is_nil() ) { // display a mesh only
+              if ( !aMesh->_is_nil() ) // display only a mesh
+              {
                 toDisplay = true;
                 SMESH_Actor *anActor = SMESH::FindActorByObject( aMesh );
-                if ( !anActor ) anActor = SMESH::CreateActor( (*anIter).second->GetStudy(), (*anIter).second->GetID().c_str(), true );    
+                if ( !anActor ) anActor = SMESH::CreateActor( (*anIter).second->GetStudy(),
+                                                              (*anIter).second->GetID().c_str(),
+                                                              /*clearLog =*/ true );
                 if ( anActor ) // actor is not created for an empty mesh
                 {
                   anActor->SetEntityMode( entities );
@@ -985,7 +1002,10 @@ void SMESHGUI_BaseComputeOp::computeMesh()
                 if ( hidden & SMESH_Actor::eBallElem )   hiddenMsg << tr( "SMESH_BALLS" );
                 SUIT_MessageBox::warning( desktop(),
                                           tr( "SMESH_WRN_WARNING" ),
-                                          tr( "SMESH_WRN_SIZE_INC_LIMIT_EXCEEDED" ).arg( nbElements ).arg( limitSize ).arg( hiddenMsg.join(", ") ) );
+                                          tr( "SMESH_WRN_SIZE_INC_LIMIT_EXCEEDED" ).
+                                          arg( nbElements ).
+                                          arg( limitSize ).
+                                          arg( hiddenMsg.join(", ")));
               }
             }
             catch (...) {
@@ -1004,12 +1024,12 @@ void SMESHGUI_BaseComputeOp::computeMesh()
           {
             SUIT_MessageBox::warning( desktop(),
                                       tr( "SMESH_WRN_WARNING" ),
-                                      tr( "SMESH_WRN_SIZE_LIMIT_EXCEEDED" ).arg( nbElements ).arg( limitSize ) );
+                                      tr( "SMESH_WRN_SIZE_LIMIT_EXCEEDED" ).
+                                      arg( nbElements ).arg( limitSize ) );
           }
         }
       }
-      LightApp_SelectionMgr *Sel = selectionMgr();
-      if ( Sel )
+      if ( LightApp_SelectionMgr *Sel = selectionMgr() )
       {
         SALOME_ListIO selected;
         selected.Append( myIObject );
@@ -1021,10 +1041,11 @@ void SMESHGUI_BaseComputeOp::computeMesh()
   if ( memoryLack )
     aMemoryReserve.release();
 
-  myCompDlg->setWindowTitle(tr( computeFailed ? "SMESH_WRN_COMPUTE_FAILED" : "SMESH_COMPUTE_SUCCEED"));
+  myCompDlg->setWindowTitle
+    ( tr( computeFailed ? "SMESH_WRN_COMPUTE_FAILED" : "SMESH_COMPUTE_SUCCEED" ));
 
   // SHOW ERRORS
-  
+
   bool noCompError = ( !aCompErrors.operator->() || aCompErrors->length() == 0 );
   bool noHypoError = ( aHypErrors.isEmpty() );
 
@@ -1238,8 +1259,9 @@ void SMESHGUI_BaseComputeOp::onPublishShape()
       if ( !SMESH::getSubShapeSO( 1, myMainShape )) // the main shape not published
       {
         QString name = GEOMBase::GetDefaultName( SMESH::shapeTypeName( myMainShape, "MAIN_SHAPE" ));
-        SALOMEDS::SObject_wrap so =
-          geomGen->AddInStudy( study, myMainShape, name.toLatin1().data(), GEOM::GEOM_Object::_nil());
+        SALOMEDS::SObject_wrap so = geomGen->AddInStudy( study, myMainShape,
+                                                         name.toLatin1().data(),
+                                                         GEOM::GEOM_Object::_nil());
         // look for myMainShape in the table
         for ( int r = 0, nr = table()->rowCount(); r < nr; ++r ) {
           if ( table()->item( r, COL_SHAPEID )->text() == "1" ) {
@@ -1256,7 +1278,8 @@ void SMESHGUI_BaseComputeOp::onPublishShape()
         if ( curSub == 1 ) continue;
       }
       QString name = GEOMBase::GetDefaultName( SMESH::shapeTypeName( shape, "ERROR_SHAPE" ));
-      SALOMEDS::SObject_wrap so = geomGen->AddInStudy( study, shape, name.toLatin1().data(), myMainShape);
+      SALOMEDS::SObject_wrap so = geomGen->AddInStudy( study, shape,
+                                                       name.toLatin1().data(), myMainShape);
       if ( !so->_is_nil() ) {
         CORBA::String_var name  = so->GetName();
         CORBA::String_var entry = so->GetID();
@@ -1999,7 +2022,8 @@ void SMESHGUI_PrecomputeOp::onPreview()
   if ( isShowError )
   {
     myDlg->hide();
-    aCompDlg->setWindowTitle(tr( computeFailed ? "SMESH_WRN_COMPUTE_FAILED" : "SMESH_COMPUTE_SUCCEED"));
+    aCompDlg->setWindowTitle
+      ( tr( computeFailed ? "SMESH_WRN_COMPUTE_FAILED" : "SMESH_COMPUTE_SUCCEED" ));
     showComputeResult( memoryLack, noCompError, aCompErrors, noHypoError, aHypErrors );
   }
 }
@@ -2202,10 +2226,11 @@ void SMESHGUI_BaseComputeOp::evaluateMesh()
     aMemoryReserve.release();
 
   evaluateFailed =  ( aCompErrors->length() > 0 );
-  myCompDlg->setWindowTitle(tr( evaluateFailed ? "SMESH_WRN_EVALUATE_FAILED" : "SMESH_EVALUATE_SUCCEED"));
+  myCompDlg->setWindowTitle
+    ( tr( evaluateFailed ? "SMESH_WRN_EVALUATE_FAILED" : "SMESH_EVALUATE_SUCCEED" ));
 
   // SHOW ERRORS
-  
+
   bool noCompError = ( !aCompErrors.operator->() || aCompErrors->length() == 0 );
   bool noHypoError = ( aHypErrors.isEmpty() );
 

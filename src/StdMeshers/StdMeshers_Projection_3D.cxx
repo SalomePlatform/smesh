@@ -57,6 +57,7 @@
 
 namespace TAssocTool = StdMeshers_ProjectionUtils;
 
+using namespace std;
 
 //=======================================================================
 //function : StdMeshers_Projection_3D
