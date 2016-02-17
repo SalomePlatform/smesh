@@ -120,9 +120,9 @@ namespace SMESH_MAT2d
 
   public: // internal: construction
 
-    void init( std::vector<const TVDEdge*>&                maEdges,
-               const Boundary*                             boundary,
-               std::map< const TVDVertex*, BranchEndType > endType);
+    void init( std::vector<const TVDEdge*>&                 maEdges,
+               const Boundary*                              boundary,
+               std::map< const TVDVertex*, BranchEndType >& endType);
     void setBranchesToEnds( const std::vector< Branch >&   branches);
     BranchPoint getPoint( const TVDVertex* vertex ) const;
     void setRemoved( const BranchPoint& proxyPoint );
