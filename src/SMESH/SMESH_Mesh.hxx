@@ -344,7 +344,7 @@ class SMESH_EXPORT SMESH_Mesh
   bool IsOrderOK( const SMESH_subMesh* smBefore,
                   const SMESH_subMesh* smAfter ) const;
 
-  ostream& Dump(ostream & save);
+  std::ostream& Dump(ostream & save);
   
 private:
 

@@ -47,7 +47,7 @@
 #include <TopoDS_Wire.hxx>
 
 #ifdef _DEBUG_
-#define _MYDEBUG_
+//#define _MYDEBUG_
 #include "SMESH_File.hxx"
 #include "SMESH_Comment.hxx"
 #endif
@@ -162,6 +162,8 @@ namespace
     if ( inSegments.size() > 1000 )
       return;
     const char* fileName = "/misc/dn25/salome/eap/salome/misc/Code/C++/MAdebug.txt";
+    const char*     user = getenv("USER");
+    if ( !user || strcmp( user, "eap" )) return;
     SMESH_File file(fileName, false );
     file.remove();
     file.openForWriting();
@@ -1518,9 +1520,9 @@ Adaptor3d_Curve* SMESH_MAT2d::MedialAxis::make3DCurve(const Branch& branch) cons
  */
 //================================================================================
 
-void SMESH_MAT2d::Branch::init( vector<const TVDEdge*>&                maEdges,
-                                const Boundary*                        boundary,
-                                map< const TVDVertex*, BranchEndType > endType )
+void SMESH_MAT2d::Branch::init( vector<const TVDEdge*>&                 maEdges,
+                                const Boundary*                         boundary,
+                                map< const TVDVertex*, BranchEndType >& endType )
 {
   if ( maEdges.empty() ) return;
 

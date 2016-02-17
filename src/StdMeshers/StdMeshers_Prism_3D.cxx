@@ -2512,16 +2512,17 @@ namespace // utils used by StdMeshers_Prism_3D::IsApplicable()
     }
     EdgeWithNeighbors() {}
   };
-  struct PrismSide
+  // PrismSide contains all FACEs linking a bottom EDGE with a top one. 
+  struct PrismSide 
   {
-    TopoDS_Face                 _face;
-    TopTools_IndexedMapOfShape *_faces; // pointer because its copy constructor is private
-    TopoDS_Edge                 _topEdge;
-    vector< EdgeWithNeighbors >*_edges;
-    int                         _iBotEdge;
-    vector< bool >              _isCheckedEdge;
+    TopoDS_Face                 _face;    // a currently treated upper FACE
+    TopTools_IndexedMapOfShape *_faces;   // all FACEs (pointer because of a private copy constructor)
+    TopoDS_Edge                 _topEdge; // a current top EDGE
+    vector< EdgeWithNeighbors >*_edges;   // all EDGEs of _face
+    int                         _iBotEdge;       // index of _topEdge within _edges
+    vector< bool >              _isCheckedEdge;  // mark EDGEs whose two owner FACEs found
     int                         _nbCheckedEdges; // nb of EDGEs whose location is defined
-    PrismSide                  *_leftSide;
+    PrismSide                  *_leftSide;       // neighbor sides
     PrismSide                  *_rightSide;
     void SetExcluded() { _leftSide = _rightSide = NULL; }
     bool IsExcluded() const { return !_leftSide; }
@@ -2679,7 +2680,7 @@ bool StdMeshers_Prism_3D::IsApplicable(const TopoDS_Shape & shape, bool toCheckA
 
     typedef vector< EdgeWithNeighbors > TEdgeWithNeighborsVec;
     vector< TEdgeWithNeighborsVec > faceEdgesVec( allFaces.Extent() + 1 );
-    const size_t nbEdgesMax = facesOfEdge.Extent() * 2; // there can be seam EDGES
+    const size_t nbEdgesMax = facesOfEdge.Extent() * 2; // there can be seam EDGEs
     TopTools_IndexedMapOfShape* facesOfSide = new TopTools_IndexedMapOfShape[ nbEdgesMax ];
     SMESHUtils::ArrayDeleter<TopTools_IndexedMapOfShape> delFacesOfSide( facesOfSide );
 
@@ -2814,6 +2815,10 @@ bool StdMeshers_Prism_3D::IsApplicable(const TopoDS_Shape & shape, bool toCheckA
               side._isCheckedEdge.resize( nbE, false );
               side._isCheckedEdge[ side._iBotEdge ] = true;
               side._nbCheckedEdges = 1; // bottom EDGE is known
+            }
+            else // probably a triangular top face found
+            {
+              side._face.Nullify();
             }
             side._topEdge.Nullify();
             isOK = ( !side._edges->empty() || side._faces->Extent() > 1 );
