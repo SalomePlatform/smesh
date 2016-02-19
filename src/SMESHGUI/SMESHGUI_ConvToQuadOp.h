@@ -52,12 +52,12 @@ public:
   
   virtual LightApp_Dialog*       dlg() const;  
 
+  static MeshDestinationType     DestinationMesh( const SMESH::SMESH_IDSource_var& ,
+                                                  bool* isMixOrder = 0);
 protected:
   virtual void                   startOperation();
   virtual void                   selectionDone();
   virtual SUIT_SelectionFilter*  createFilter( const int ) const;
-  MeshDestinationType            DestinationMesh( const SMESH::SMESH_IDSource_var& ,
-                                                  bool* isMixOrder = 0) const;
 
 protected slots:
   virtual bool                   onApply();

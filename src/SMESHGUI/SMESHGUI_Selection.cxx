@@ -32,6 +32,7 @@
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_GEOMGenUtils.h"
 #include "SMESHGUI_ComputeDlg.h"
+#include "SMESHGUI_ConvToQuadOp.h"
 
 #include <SMESH_Type.h>
 #include <SMESH_Actor.h>
@@ -133,6 +134,7 @@ QVariant SMESHGUI_Selection::parameter( const int ind, const QString& p ) const
   else if ( p=="isImported" )           val = QVariant( isImported( ind ) );
   else if ( p=="facesOrientationMode" ) val = QVariant( facesOrientationMode( ind ) );
   else if ( p=="groupType" )            val = QVariant( groupType( ind ) );
+  else if ( p=="isQuadratic" )          val = QVariant( isQuadratic( ind ) );
   else if ( p=="quadratic2DMode")       val = QVariant( quadratic2DMode( ind ) );
   else if ( p=="isDistributionVisible") val = QVariant( isDistributionVisible( ind ) );
   else if ( p=="isScalarBarVisible")    val = QVariant( isScalarBarVisible( ind ) );
@@ -231,6 +233,24 @@ QString SMESHGUI_Selection::displayMode( int ind ) const
   return "Unknown";
 }
 
+//=======================================================================
+//function : isQuadratic
+//purpose  : return true if the mesh has quadratic/bi-quadratic type
+//=======================================================================
+
+bool SMESHGUI_Selection::isQuadratic( int ind ) const
+{
+  _PTR(SObject) so = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
+  if ( !so )
+    return false;
+  SMESH::SMESH_IDSource_var idSource =  SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( so );
+  if ( idSource->_is_nil() )
+    return false;
+  SMESHGUI_ConvToQuadOp::MeshDestinationType meshTgtType = SMESHGUI_ConvToQuadOp::DestinationMesh( idSource );
+  if ( meshTgtType & SMESHGUI_ConvToQuadOp::MeshDestinationType::Linear )
+    return true;
+  return false;
+}
 
 //=======================================================================
 //function : quadratic2DMode

@@ -62,6 +62,7 @@ public:
   virtual bool            isEditableHyp( int ) const;
   virtual bool            isVisible( int ) const;
 
+  virtual bool            isQuadratic( int ) const;
   virtual QString         quadratic2DMode( int ) const;
 
   virtual bool            isDistributionVisible( int ) const;
