@@ -4487,11 +4487,11 @@ void SMESHGUI::initialize( CAM_Application* app )
   //-------------------------------------------------
   anId = popupMgr()->insert( tr( "MEN_QUADRATIC_REPRESENT" ), -1, -1 );
   popupMgr()->insert( action( SMESHOp::OpRepresentationLines ), anId, -1 );
-  popupMgr()->setRule( action( SMESHOp::OpRepresentationLines ), aMeshInVTK + "and isVisible",QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( SMESHOp::OpRepresentationLines ), aMeshInVTK + "&& isVisible && isQuadratic",QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( SMESHOp::OpRepresentationLines ), "quadratic2DMode = 'eLines'", QtxPopupMgr::ToggleRule );
 
   popupMgr()->insert( action( SMESHOp::OpRepresentationArcs ), anId, -1 );
-  popupMgr()->setRule( action( SMESHOp::OpRepresentationArcs ), aMeshInVTK + "and isVisible", QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( SMESHOp::OpRepresentationArcs ), aMeshInVTK + "&& isVisible && isQuadratic", QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( SMESHOp::OpRepresentationArcs ), "quadratic2DMode = 'eArcs'", QtxPopupMgr::ToggleRule );
 
   //-------------------------------------------------

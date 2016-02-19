@@ -326,7 +326,7 @@ void SMESHGUI_ConvToQuadOp::onWarningWinFinished()
 
 SMESHGUI_ConvToQuadOp::MeshDestinationType
 SMESHGUI_ConvToQuadOp::DestinationMesh( const SMESH::SMESH_IDSource_var& idSource,
-                                        bool*                            isMixOrder) const
+                                        bool*                            isMixOrder)
 {
   SMESH::long_array_var nbElemOfType = idSource->GetMeshInfo();
 
