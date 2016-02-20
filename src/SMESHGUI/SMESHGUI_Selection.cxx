@@ -247,7 +247,7 @@ bool SMESHGUI_Selection::isQuadratic( int ind ) const
   if ( idSource->_is_nil() )
     return false;
   SMESHGUI_ConvToQuadOp::MeshDestinationType meshTgtType = SMESHGUI_ConvToQuadOp::DestinationMesh( idSource );
-  if ( meshTgtType & SMESHGUI_ConvToQuadOp::MeshDestinationType::Linear )
+  if ( meshTgtType & SMESHGUI_ConvToQuadOp::Linear )
     return true;
   return false;
 }
