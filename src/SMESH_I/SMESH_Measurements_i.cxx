@@ -22,6 +22,10 @@
 //  File   : SMESH_Measurements_i.cxx
 //  Author : Pavel TELKOV, Open CASCADE S.A.S. (pavel.telkov@opencascade.com)
 
+#ifdef WIN32
+#define NOMINMAX
+#endif
+
 #include "SMESH_Measurements_i.hxx"
 
 #include "SMESH_Gen_i.hxx"
