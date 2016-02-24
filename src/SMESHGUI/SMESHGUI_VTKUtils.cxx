@@ -72,7 +72,6 @@
 #include <vtkUnstructuredGrid.h>
 
 // OCCT includes
-#include <TColStd_IndexedMapOfInteger.hxx>
 #include <Standard_ErrorHandler.hxx>
 
 namespace SMESH

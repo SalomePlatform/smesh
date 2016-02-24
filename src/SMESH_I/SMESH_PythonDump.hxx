@@ -32,6 +32,7 @@
 #include CORBA_SERVER_HEADER(SALOMEDS)
 
 #include <TCollection_AsciiString.hxx>
+#include <Resource_DataMapOfAsciiStringAsciiString.hxx>
 
 #include <sstream>
 #include <vector>
@@ -40,7 +41,6 @@
 
 class SMESH_Gen_i;
 class SMESH_MeshEditor_i;
-class Resource_DataMapOfAsciiStringAsciiString;
 
 // ===========================================================================================
 /*!

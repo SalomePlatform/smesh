@@ -70,7 +70,7 @@ public:
   Standard_EXPORT virtual bool IsObjValid( const int ) const = 0;
 
 public:
-  DEFINE_STANDARD_RTTI(SMESHGUI_Filter)
+  OCCT_DEFINE_STANDARD_RTTIEXT(SMESHGUI_Filter,VTKViewer_Filter)
 };
 
 /*
@@ -99,7 +99,7 @@ private:
   SMESH::Predicate_var        myPred;
 
 public:
-  DEFINE_STANDARD_RTTI(SMESHGUI_PredicateFilter)
+  OCCT_DEFINE_STANDARD_RTTIEXT(SMESHGUI_PredicateFilter,SMESHGUI_Filter)
 };
 
 /*
@@ -121,7 +121,7 @@ public:
   Standard_EXPORT virtual bool IsNodeFilter() const;
 
 public:
-  DEFINE_STANDARD_RTTI(SMESHGUI_QuadrangleFilter)
+  OCCT_DEFINE_STANDARD_RTTIEXT(SMESHGUI_QuadrangleFilter,SMESHGUI_Filter)
 };
 
 /*
@@ -143,7 +143,7 @@ public:
   Standard_EXPORT virtual bool IsNodeFilter() const;  
 
 public:
-  DEFINE_STANDARD_RTTI(SMESHGUI_TriangleFilter)
+  OCCT_DEFINE_STANDARD_RTTIEXT(SMESHGUI_TriangleFilter,SMESHGUI_Filter)
 };
 
 /*
@@ -165,7 +165,7 @@ public:
   Standard_EXPORT virtual bool IsNodeFilter() const;  
 
 public:
-  DEFINE_STANDARD_RTTI(SMESHGUI_FacesFilter)
+  OCCT_DEFINE_STANDARD_RTTIEXT(SMESHGUI_FacesFilter,SMESHGUI_Filter)
 };
 
 /*
@@ -187,7 +187,7 @@ public:
   Standard_EXPORT virtual bool IsNodeFilter() const;
 
 public:
-  DEFINE_STANDARD_RTTI(SMESHGUI_VolumesFilter)
+  OCCT_DEFINE_STANDARD_RTTIEXT(SMESHGUI_VolumesFilter,SMESHGUI_Filter)
 };
 
 /*
@@ -211,7 +211,7 @@ public:
   Standard_EXPORT static int GetId( SMDSAbs_GeometryType geom );
 
 public:
-  DEFINE_STANDARD_RTTI(SMESHGUI_VolumeShapeFilter)
+  OCCT_DEFINE_STANDARD_RTTIEXT(SMESHGUI_VolumeShapeFilter,SMESHGUI_Filter)
 };
 
 #endif // SMESHGUI_FILTER_H

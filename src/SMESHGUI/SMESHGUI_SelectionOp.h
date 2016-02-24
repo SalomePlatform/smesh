@@ -40,8 +40,10 @@
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
+// OCCT includes
+#include <TColStd_MapOfInteger.hxx>
+
 class SUIT_SelectionFilter;
-class TColStd_MapOfInteger;
 class SVTK_ViewWindow;
 class SVTK_Selector;
 class SMESH_Actor;

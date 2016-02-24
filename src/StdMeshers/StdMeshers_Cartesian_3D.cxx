@@ -1369,7 +1369,11 @@ namespace
     }
     if ( surf->IsKind( STANDARD_TYPE(Geom_BSplineSurface )) ||
          surf->IsKind( STANDARD_TYPE(Geom_BezierSurface )))
+#if OCC_VERSION_MAJOR < 7
       if ( !noSafeTShapes.insert((const Standard_Transient*) _face.TShape() ).second )
+#else
+      if ( !noSafeTShapes.insert( _face.TShape().get() ).second )
+#endif
         isSafe = false;
 
     double f, l;
@@ -1409,7 +1413,11 @@ namespace
             edgeIsSafe = false;
         }
       }
+#if OCC_VERSION_MAJOR < 7
       if ( !edgeIsSafe && !noSafeTShapes.insert((const Standard_Transient*) e.TShape() ).second )
+#else
+      if ( !edgeIsSafe && !noSafeTShapes.insert( _face.TShape().get() ).second )
+#endif
         isSafe = false;
     }
     return isSafe;

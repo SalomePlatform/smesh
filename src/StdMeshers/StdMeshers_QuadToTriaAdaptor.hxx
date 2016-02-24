@@ -27,13 +27,14 @@
 
 #include "SMESH_ProxyMesh.hxx"
 
+#include <TColgp_Array1OfPnt.hxx>
+#include <TColgp_Array1OfVec.hxx>
+
 class SMESH_Mesh;
 class SMESH_ElementSearcher;
 class SMDS_MeshElement;
 class SMDS_MeshNode;
 class SMDS_MeshFace;
-class TColgp_Array1OfPnt;
-class TColgp_Array1OfVec;
 class gp_Pnt;
 class gp_Vec;
 

@@ -33,6 +33,8 @@
 #include "SMDS_MeshElement.hxx"
 
 #include <TopTools_DataMapOfShapeShape.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
+#include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Vertex.hxx>
@@ -47,8 +49,6 @@ class SMESH_Algo;
 class SMESH_Hypothesis;
 class SMESH_Mesh;
 class SMESH_subMesh;
-class TopTools_IndexedDataMapOfShapeListOfShape;
-class TopTools_IndexedMapOfShape;
 class TopoDS_Shape;
 
 /*!

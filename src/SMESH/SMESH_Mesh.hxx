@@ -40,6 +40,7 @@
 
 #include <TopoDS_Shape.hxx>
 #include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
+#include <TopTools_ListOfShape.hxx>
 
 #include <map>
 #include <list>
@@ -53,7 +54,6 @@
 class SMESH_Gen;
 class SMESHDS_Document;
 class SMESH_Group;
-class TopTools_ListOfShape;
 class SMESH_subMesh;
 class SMESH_HypoFilter;
 class TopoDS_Solid;

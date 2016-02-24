@@ -40,6 +40,8 @@
 #include <SALOMEDS_wrap.hxx>
 #include <GEOM_wrap.hxx>
 
+#include <Basics_OCCTVersion.hxx>
+
 #include <BRep_Tool.hxx>
 #include <Geom_CylindricalSurface.hxx>
 #include <Geom_Plane.hxx>
@@ -3913,6 +3915,7 @@ CORBA::Boolean FilterLibrary_i::Save()
   if ( myFileName == 0 || strlen( myFileName ) == 0 )
     return false;
 
+#if OCC_VERSION_MAJOR < 7
   FILE* aOutFile = fopen( myFileName, "wt" );
   if ( !aOutFile )
     return false;
@@ -3921,6 +3924,17 @@ CORBA::Boolean FilterLibrary_i::Save()
   aWriter.SetIndentation( 2 );
   aWriter << myDoc;
   fclose( aOutFile );
+#else
+  std::filebuf fb;
+  fb.open( myFileName, std::ios::out );
+
+  Standard_OStream os( &fb );
+
+  LDOM_XmlWriter aWriter;
+  aWriter.SetIndentation( 2 );
+  aWriter.Write( os, myDoc );
+  fb.close();
+#endif
 
   TPythonDump()<<this<<".Save()";
   return true;

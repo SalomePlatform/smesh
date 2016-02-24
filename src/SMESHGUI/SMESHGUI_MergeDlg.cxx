@@ -54,7 +54,6 @@
 #include <SALOME_ListIO.hxx>
 
 // OCCT includes
-#include <TColStd_MapOfInteger.hxx>
 #include <TColStd_MapIteratorOfMapOfInteger.hxx>
 
 // IDL includes

@@ -28,12 +28,13 @@
 #include <list>
 #include <vector>
 
+#include <TColStd_MapOfInteger.hxx>
+
 #include <gp_XYZ.hxx>
 
 class SALOME_Actor;
 class SMDS_Mesh;
 class SVTK_ViewWindow;
-class TColStd_MapOfInteger;
 class vtkActor2D;
 class vtkLabeledDataMapper;
 class vtkMaskPoints;

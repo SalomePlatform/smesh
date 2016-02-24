@@ -33,12 +33,14 @@
 // SALOME KERNEL includes
 #include <SALOMEDSClient_definitions.hxx>
 
+// GUI includes
+#include <SALOME_InteractiveObject.hxx>
+
 // IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(GEOM_Gen)
 
 class SALOMEDSClient_SObject;
-class Handle_SALOME_InteractiveObject;
 class QString;
 
 namespace SMESH
@@ -53,7 +55,7 @@ namespace SMESH
 
   SMESHGUI_EXPORT GEOM::GEOM_Object_ptr GetSubShape( GEOM::GEOM_Object_ptr, long );
 
-  SMESHGUI_EXPORT bool GetGeomEntries( Handle_SALOME_InteractiveObject& hypIO,
+  SMESHGUI_EXPORT bool GetGeomEntries( Handle(SALOME_InteractiveObject)& hypIO,
                                        QString& subGeom, QString& meshGeom);
 }
 

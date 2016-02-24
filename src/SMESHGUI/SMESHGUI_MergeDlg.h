@@ -35,6 +35,7 @@
 
 // OCCT includes
 #include <gp_XYZ.hxx>
+#include <TColStd_MapOfInteger.hxx>
 
 // STL includes
 #include <list>
@@ -59,7 +60,6 @@ class SMESHGUI_SpinBox;
 class SMESH_Actor;
 class SUIT_SelectionFilter;
 class SVTK_Selector;
-class TColStd_MapOfInteger;
 
 namespace SMESH
 {

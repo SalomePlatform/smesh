@@ -40,7 +40,8 @@
 #include <SALOME_InteractiveObject.hxx>
 #include <VTKViewer_Filter.h>
 
-class TColStd_IndexedMapOfInteger;
+// OCCT includes
+#include <TColStd_IndexedMapOfInteger.hxx>
 
 class SALOMEDSClient_Study;
 

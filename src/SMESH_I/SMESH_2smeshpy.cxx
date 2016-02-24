@@ -50,38 +50,22 @@
 #include <unistd.h>
 #endif
 
-
-IMPLEMENT_STANDARD_HANDLE (_pyObject          ,Standard_Transient);
-IMPLEMENT_STANDARD_HANDLE (_pyCommand         ,Standard_Transient);
-IMPLEMENT_STANDARD_HANDLE (_pyHypothesisReader,Standard_Transient);
-IMPLEMENT_STANDARD_HANDLE (_pyGen             ,_pyObject);
-IMPLEMENT_STANDARD_HANDLE (_pyMesh            ,_pyObject);
-IMPLEMENT_STANDARD_HANDLE (_pySubMesh         ,_pyObject);
-IMPLEMENT_STANDARD_HANDLE (_pyMeshEditor      ,_pyObject);
-IMPLEMENT_STANDARD_HANDLE (_pyHypothesis      ,_pyObject);
-IMPLEMENT_STANDARD_HANDLE (_pySelfEraser      ,_pyObject);
-IMPLEMENT_STANDARD_HANDLE (_pyGroup           ,_pyObject);
-IMPLEMENT_STANDARD_HANDLE (_pyFilter          ,_pyObject);
-IMPLEMENT_STANDARD_HANDLE (_pyAlgorithm       ,_pyHypothesis);
-IMPLEMENT_STANDARD_HANDLE (_pyComplexParamHypo,_pyHypothesis);
-IMPLEMENT_STANDARD_HANDLE (_pyNumberOfSegmentsHyp,_pyHypothesis);
-
-IMPLEMENT_STANDARD_RTTIEXT(_pyObject          ,Standard_Transient);
-IMPLEMENT_STANDARD_RTTIEXT(_pyCommand         ,Standard_Transient);
-IMPLEMENT_STANDARD_RTTIEXT(_pyHypothesisReader,Standard_Transient);
-IMPLEMENT_STANDARD_RTTIEXT(_pyGen             ,_pyObject);
-IMPLEMENT_STANDARD_RTTIEXT(_pyMesh            ,_pyObject);
-IMPLEMENT_STANDARD_RTTIEXT(_pySubMesh         ,_pyObject);
-IMPLEMENT_STANDARD_RTTIEXT(_pyMeshEditor      ,_pyObject);
-IMPLEMENT_STANDARD_RTTIEXT(_pyHypothesis      ,_pyObject);
-IMPLEMENT_STANDARD_RTTIEXT(_pySelfEraser      ,_pyObject);
-IMPLEMENT_STANDARD_RTTIEXT(_pyGroup           ,_pyObject);
-IMPLEMENT_STANDARD_RTTIEXT(_pyFilter          ,_pyObject);
-IMPLEMENT_STANDARD_RTTIEXT(_pyAlgorithm       ,_pyHypothesis);
-IMPLEMENT_STANDARD_RTTIEXT(_pyComplexParamHypo,_pyHypothesis);
-IMPLEMENT_STANDARD_RTTIEXT(_pyNumberOfSegmentsHyp,_pyHypothesis);
-IMPLEMENT_STANDARD_RTTIEXT(_pyLayerDistributionHypo,_pyHypothesis);
-IMPLEMENT_STANDARD_RTTIEXT(_pySegmentLengthAroundVertexHyp,_pyHypothesis);
+OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyObject          ,Standard_Transient);
+OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyCommand         ,Standard_Transient);
+OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyHypothesisReader,Standard_Transient);
+OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyGen             ,_pyObject);
+OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyMesh            ,_pyObject);
+OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pySubMesh         ,_pyObject);
+OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyMeshEditor      ,_pyObject);
+OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyHypothesis      ,_pyObject);
+OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pySelfEraser      ,_pyObject);
+OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyGroup           ,_pyObject);
+OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyFilter          ,_pyObject);
+OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyAlgorithm       ,_pyHypothesis);
+OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyComplexParamHypo,_pyHypothesis);
+OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyNumberOfSegmentsHyp,_pyHypothesis);
+OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyLayerDistributionHypo,_pyHypothesis);
+OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pySegmentLengthAroundVertexHyp,_pyHypothesis);
 
 using namespace std;
 using SMESH::TPythonDump;
@@ -1529,9 +1513,10 @@ _pyID _pyGen::GenerateNewID( const _pyID& theID )
   }
   while ( myObjectNames.IsBound( aNewID ) );
 
-  myObjectNames.Bind( aNewID, myObjectNames.IsBound( theID )
-                      ? (myObjectNames.Find( theID ) + _pyID( "_" ) + _pyID( index-1 ))
-                      : _pyID( "A" ) + aNewID );
+  if ( myObjectNames.IsBound( theID ) )
+    myObjectNames.Bind( aNewID, ( myObjectNames.Find( theID ) + _pyID( "_" ) + _pyID( index-1 ) ) );
+  else
+    myObjectNames.Bind( aNewID, ( _pyID( "A" ) + aNewID ) );
   return aNewID;
 }
 
@@ -1577,8 +1562,11 @@ void _pyGen::CheckObjectIsReCreated( Handle(_pyObject)& theObj )
     return;
 
   const bool isHyp = theObj->IsKind( STANDARD_TYPE( _pyHypothesis ));
-  Handle(_pyObject) existing =
-    isHyp ? FindHyp( theObj->GetID() ) : FindObject( theObj->GetID() );
+  Handle(_pyObject) existing;
+  if( isHyp )
+    existing = Handle(_pyObject)::DownCast( FindHyp( theObj->GetID() ) );
+  else
+    existing = FindObject( theObj->GetID() );
   if ( !existing.IsNull() && existing != theObj )
   {
     existing->SetRemovedFromStudy( true );
@@ -1636,7 +1624,7 @@ Handle(_pyObject) _pyGen::FindObject( const _pyID& theObjID )  const
   {
     map< _pyID, Handle(_pyMesh) >::const_iterator id_obj = myMeshes.find( theObjID );
     if ( id_obj != myMeshes.end() )
-      return id_obj->second;
+      return Handle(_pyObject)::DownCast( id_obj->second );
   }
   // {
   //   map< _pyID, Handle(_pyMeshEditor) >::const_iterator id_obj = myMeshEditors.find( theObjID );

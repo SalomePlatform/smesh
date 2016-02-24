@@ -26,7 +26,6 @@
 #include <SMDS_Mesh.hxx>
 #include <SVTK_ViewWindow.h>
 
-#include <TColStd_MapOfInteger.hxx>
 #include <TColStd_MapIteratorOfMapOfInteger.hxx>
 
 #include <vtkActor2D.h>
