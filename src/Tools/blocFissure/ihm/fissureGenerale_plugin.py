@@ -74,6 +74,10 @@ def fissureGeneraleDlg(context):
                    self.selectMaillage)
       self.connect(self.ui.pb_facefiss, QtCore.SIGNAL("clicked()"),
                    self.selectFacefiss)
+      self.connect(self.ui.pb_reptrav, QtCore.SIGNAL("clicked()"),
+                   self.selectReptrav)
+      self.connect(self.ui.pb_nomres, QtCore.SIGNAL("clicked()"),
+                   self.selectNomres)
       self.disconnect(self.ui.bb_OkCancel, QtCore.SIGNAL("accepted()"), self.accept)
       self.connect(self.ui.bb_OkCancel, QtCore.SIGNAL("accepted()"),
                    self.execute)
@@ -90,7 +94,9 @@ def fissureGeneraleDlg(context):
         lenSegPipe        = 2.5,
         nbSegRad          = 5,
         nbSegCercle       = 32,
-        areteFaceFissure  = 10)
+        areteFaceFissure  = 10,
+        reptrav           = '.',
+        nomres            = 'casStandard_fissure.med')
 
       
     def initDialog(self, dico):
@@ -105,6 +111,8 @@ def fissureGeneraleDlg(context):
       self.ui.sb_couronnes.setValue(dico['nbSegRad'])
       self.ui.sb_secteurs.setValue(dico['nbSegCercle'])
       self.ui.dsb_areteFaceFissure.setValue(dico['areteFaceFissure'])
+      self.ui.le_reptrav.setText(os.path.abspath(dico['reptrav']))
+      self.ui.le_nomres.setText(os.path.split(dico['nomres'])[1])
       incomplet = self.testval(dico)
       pass
   
@@ -256,6 +264,35 @@ def fissureGeneraleDlg(context):
         print filedef
         self.ui.le_facefiss.setText(filedef)
          
+    def selectReptrav(self):
+      fileDiag = QFileDialog(self)
+      fileDiag.setFileMode(QFileDialog.Directory)
+      fileDiag.setViewMode(QFileDialog.Detail)
+      fileDiag.setDirectory(self.ui.le_reptrav.text())
+      if fileDiag.exec_() :
+        fileNames = fileDiag.selectedFiles()
+        reptrav = str(fileNames[0])
+        print "reptrav ", reptrav
+        self.ui.le_reptrav.setText(os.path.abspath(reptrav))
+        
+         
+    def selectNomres(self):
+      fileDiag = QFileDialog(self)
+      fileDiag.setFileMode(QFileDialog.AnyFile)
+      fileDiag.setViewMode(QFileDialog.Detail)
+      nomres=str(os.path.split(str(self.ui.le_nomres.text()))[1])
+      fileDiag.setDirectory(self.ui.le_reptrav.text())
+      fileDiag.selectFile(nomres)
+      fileDiag.setNameFilter("Maillage *.med (*.med)")
+      self.ui.le_nomres.setText(nomres)
+      if fileDiag.exec_() :
+        fileNames = fileDiag.selectedFiles()
+        tempnom = os.path.split(str(fileNames[0]))[1]
+        print "nomres ", tempnom
+        self.ui.le_nomres.setText(tempnom)
+      else:
+        self.ui.le_nomres.setText(nomres)
+         
     def creeDico(self):
       dico = dict(
                   maillageSain     = str(self.ui.le_maillage.text()),
@@ -267,7 +304,9 @@ def fissureGeneraleDlg(context):
                   lenSegPipe       = self.ui.dsb_lenSegPipe.value(),
                   nbSegRad         = self.ui.sb_couronnes.value(),
                   nbSegCercle      = self.ui.sb_secteurs.value(),
-                  areteFaceFissure = self.ui.dsb_areteFaceFissure.value()
+                  areteFaceFissure = self.ui.dsb_areteFaceFissure.value(),
+                  reptrav          = str(self.ui.le_reptrav.text()),
+                  nomres           = str(self.ui.le_nomres.text()),
                   )
       print dico
       return dico

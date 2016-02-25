@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>629</width>
-    <height>536</height>
+    <width>666</width>
+    <height>589</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -269,12 +269,7 @@
          </spacer>
         </item>
        </layout>
-       <zorder>groupBox_3</zorder>
-       <zorder>groupBox_7</zorder>
-       <zorder>horizontalSpacer_3</zorder>
        <zorder>verticalSpacer</zorder>
-       <zorder>horizontalSpacer_3</zorder>
-       <zorder>horizontalSpacer_9</zorder>
       </widget>
      </item>
      <item>
@@ -457,6 +452,38 @@
          </widget>
         </item>
        </layout>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="gridLayout_5">
+     <item row="0" column="0">
+      <widget class="QPushButton" name="pb_reptrav">
+       <property name="text">
+        <string>répertoire de travail</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="le_reptrav">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Répertoire dans lequel seront rangés le maillage final, les objets intermédiaires, la log d'exécution.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QPushButton" name="pb_nomres">
+       <property name="text">
+        <string>nom résultat</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="le_nomres">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;nom du fichier maillage résultat&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
       </widget>
      </item>
     </layout>
