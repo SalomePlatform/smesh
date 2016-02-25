@@ -25,12 +25,6 @@
 import sys, traceback
 import math
 from blocFissure import gmu
-from blocFissure.gmu import initLog
-#initLog.setDebug()
-initLog.setVerbose()
-
-from blocFissure.gmu import geomsmesh
-from blocFissure.gmu.casStandard import casStandard
 
 def fissureGeneraleDlg(context):
   # get context study, studyId, salomeGui
@@ -52,6 +46,7 @@ def fissureGeneraleDlg(context):
   class fissureGeneraleDialog(QtGui.QDialog):
     
     def __init__(self):
+      print "__init__"
       QtGui.QDialog.__init__(self)
       # Set up the user interface from Designer.
       self.ui = Ui_Dialog()
@@ -195,6 +190,19 @@ def fissureGeneraleDlg(context):
       #self.initDefaut()
       self.initDialog(self.defaut)
       
+    def setLogVerbosity(self):
+      from blocFissure.gmu import initLog # le mode de log s'initialise une seule fois
+      print "setLogVerbosity"
+      index = self.ui.cb_log.currentIndex()
+      print index
+      if index == 0:
+        initLog.setRelease()
+      elif index == 1:
+        initLog.setVerbose()
+      elif index == 2:
+        initLog.setDebug()
+      
+      
     def sauver(self):
       print "sauver"
       fileDiag = QFileDialog(self)
@@ -268,11 +276,15 @@ def fissureGeneraleDlg(context):
       return self.NOK
 
     def execute(self):
+      print "execute"
       dico = self.creeDico()
       NOK = self.testval(dico)
       if not(NOK):
         self.writeDefault(dico)
         self.ui.lb_calcul.show()
+        self.setLogVerbosity()
+        from blocFissure.gmu import geomsmesh               # après intialisation log dans setLogVerbosity
+        from blocFissure.gmu.casStandard import casStandard # après intialisation log dans setLogVerbosity
         execInstance = casStandard(dico)
       self.NOK = NOK
       self.accept()
@@ -280,7 +292,8 @@ def fissureGeneraleDlg(context):
     pass 
 
 # ----------------------------------------------------------------------------
-                     
+  
+  print "main"                   
   window = fissureGeneraleDialog()
   retry = True
   while(retry):

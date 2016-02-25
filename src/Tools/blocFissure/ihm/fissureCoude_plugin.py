@@ -25,14 +25,6 @@
 import sys, traceback
 import math
 from blocFissure import gmu
-from blocFissure.gmu import initLog
-#initLog.setDebug()
-initLog.setVerbose()
-
-from blocFissure.gmu import geomsmesh
-from blocFissure.gmu.casStandard import casStandard
-
-from blocFissure.ihm.fissureCoude_ihm import fissureCoude_ihm
 
 def fissureCoudeDlg(context):
   # get context study, studyId, salomeGui
@@ -363,6 +355,13 @@ def fissureCoudeDlg(context):
       return self.NOK
 
     def execute(self):
+      from blocFissure.gmu import initLog
+      #initLog.setDebug()
+      initLog.setVerbose() # don't set the level too early, to be able to modify it
+      from blocFissure.gmu import geomsmesh
+      from blocFissure.gmu.casStandard import casStandard
+      from blocFissure.ihm.fissureCoude_ihm import fissureCoude_ihm
+      
       dico = self.creeDico()
       NOK = self.testval(dico)
       if not(NOK):
