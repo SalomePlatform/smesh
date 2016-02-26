@@ -198,17 +198,17 @@ def fissureGeneraleDlg(context):
       #self.initDefaut()
       self.initDialog(self.defaut)
       
-    def setLogVerbosity(self):
+    def setLogVerbosity(self, logfile):
       from blocFissure.gmu import initLog # le mode de log s'initialise une seule fois
       print "setLogVerbosity"
       index = self.ui.cb_log.currentIndex()
       print index
       if index == 0:
-        initLog.setRelease()
+        initLog.setRelease(logfile)
       elif index == 1:
-        initLog.setVerbose()
+        initLog.setVerbose(logfile)
       elif index == 2:
-        initLog.setDebug()
+        initLog.setDebug(logfile)
       
       
     def sauver(self):
@@ -321,7 +321,8 @@ def fissureGeneraleDlg(context):
       if not(NOK):
         self.writeDefault(dico)
         self.ui.lb_calcul.show()
-        self.setLogVerbosity()
+        logfile=os.path.join(dico['reptrav'], dico['nomres']+".log")
+        self.setLogVerbosity(logfile)
         from blocFissure.gmu import geomsmesh               # après intialisation log dans setLogVerbosity
         from blocFissure.gmu.casStandard import casStandard # après intialisation log dans setLogVerbosity
         execInstance = casStandard(dico)
