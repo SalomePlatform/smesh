@@ -35,7 +35,7 @@
         <item>
          <widget class="QLineEdit" name="le_fondfiss">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Index des edges décrivant le fond de fissure, dans la face de fissure.&lt;/p&gt;&lt;p&gt;Sous forme d'une liste Python.&lt;/p&gt;&lt;p&gt;Exemples :&lt;span style=&quot; color:#00ffff;&quot;/&gt;&lt;span style=&quot; font-style:italic; color:#000080;&quot;&gt;[5,9]&lt;/span&gt; ou &lt;span style=&quot; font-style:italic; color:#000080;&quot;&gt;[3]&lt;/span&gt;&lt;/p&gt;&lt;p&gt;(on peut récupérer ces valeurs à l'aide du dialogue de création de groupes d'edges, dans GEOM)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Index des edges décrivant le fond de fissure, dans la face de fissure.&lt;/p&gt;&lt;p&gt;Sous forme d'une liste Python.&lt;/p&gt;&lt;p&gt;Exemples : &lt;span style=&quot; font-weight:600; font-style:italic; color:#000080;&quot;&gt;[5,9]&lt;/span&gt; ou&lt;span style=&quot; font-weight:600;&quot;/&gt;&lt;span style=&quot; font-weight:600; font-style:italic; color:#000080;&quot;&gt;[3]&lt;/span&gt;&lt;/p&gt;&lt;p&gt;(on peut récupérer ces valeurs à l'aide du dialogue de création de groupes d'edges, dans GEOM)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
          </widget>
         </item>
@@ -216,7 +216,7 @@
                <item>
                 <widget class="QComboBox" name="cb_log">
                  <property name="toolTip">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;L'affichage de messages pendant le calcul peut aider à la mise au point du maillage.&lt;/p&gt;&lt;p&gt;- Le mode &lt;span style=&quot; font-weight:600;&quot;&gt;silencieux&lt;/span&gt; donne très peu d'information,&lt;/p&gt;&lt;p&gt;- Le mode &lt;span style=&quot; font-weight:600;&quot;&gt;verbeux&lt;/span&gt; liste les principales étapes du calcul,&lt;/p&gt;&lt;p&gt;- Le mode &lt;span style=&quot; font-weight:600;&quot;&gt;debug&lt;/span&gt; donne un maximum de détail, et publie des objets intermédiaires dans l'étude.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;L'affichage de messages pendant le calcul peut aider à la mise au point du maillage. Les messages sont écrits dans un fichier de log, dans le répertoire d'exécution.&lt;/p&gt;&lt;p&gt;- Le mode &lt;span style=&quot; font-weight:600;&quot;&gt;silencieux&lt;/span&gt; donne très peu d'information,&lt;/p&gt;&lt;p&gt;- Le mode &lt;span style=&quot; font-weight:600;&quot;&gt;verbeux&lt;/span&gt; liste les principales étapes du calcul,&lt;/p&gt;&lt;p&gt;- Le mode &lt;span style=&quot; font-weight:600;&quot;&gt;debug&lt;/span&gt; donne un maximum de détail, et publie des objets intermédiaires dans l'étude.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <item>
                   <property name="text">
@@ -482,7 +482,7 @@
      <item row="1" column="1">
       <widget class="QLineEdit" name="le_nomres">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;nom du fichier maillage résultat&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Nom des résultats.&lt;/p&gt;&lt;p&gt;Le fichier maillage résultat sera rangé dans le répertoire de travail, sous le nom fissure_&lt;span style=&quot; font-weight:600; font-style:italic; color:#0055ff;&quot;&gt;Nom&lt;/span&gt;.med&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
