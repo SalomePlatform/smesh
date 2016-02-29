@@ -39,7 +39,7 @@ def partitionneFissureParPipe(shapesFissure, elementsDefaut, rayonPipe):
     pipeFiss = geompy.MakePipe(cercle, fondFissProlonge)
   except:
     texte = "génération du pipe le long de la ligne de fond de fissure prolongée impossible. "
-    texte += "Cause éventuelle : la ligne s'autointersecte lorsqu'on la prolonge."
+    texte += "Cause possible : la ligne s'autointersecte lorsqu'on la prolonge."
     raise fissError(traceback.extract_stack(),texte)
   geomPublish(initLog.debug, pipeFiss, 'pipeFiss')
   partFissPipe = geompy.MakePartition([shapeDefaut, pipeFiss], [], [], [], geompy.ShapeType["FACE"], 0, [], 1)

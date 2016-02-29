@@ -6,6 +6,8 @@ from geomsmesh import geomPublish
 from geomsmesh import geomPublishInFather
 import initLog
 from sortFaces import sortFaces
+import traceback
+from fissError import fissError
 
 def restreintFaceFissure(shapeDefaut, facesDefaut, pointInterne):
   """
@@ -22,7 +24,13 @@ def restreintFaceFissure(shapeDefaut, facesDefaut, pointInterne):
     logging.debug("selection de la face la plus proche du point interne, distance=%s",distfaces[0][0])
     facesPortFissure = distfaces[0][2]
   else:
-    facesPartShapeDefautSorted, minSurf, maxSurf = sortFaces(facesPartShapeDefaut) # la face de fissure dans le volume doit être la plus grande
+    try:
+      facesPartShapeDefautSorted, minSurf, maxSurf = sortFaces(facesPartShapeDefaut) # la face de fissure dans le volume doit être la plus grande
+    except:
+      texte = "Restriction de la face de fissure au domaine solide impossible. "
+      texte += "Cause possible : la face de fissure est tangente à la paroi solide. "
+      texte += "Elle doit déboucher franchement, sans que la surface dehors ne devienne plus grande que la surface dans le solide. "
+      raise fissError(traceback.extract_stack(),texte)
     logging.debug("surfaces faces fissure étendue, min %s, max %s", minSurf, maxSurf)
     facesPortFissure = facesPartShapeDefautSorted[-1]
   
