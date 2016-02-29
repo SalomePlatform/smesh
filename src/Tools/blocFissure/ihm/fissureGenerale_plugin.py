@@ -41,6 +41,7 @@ def fissureGeneraleDlg(context):
   from PyQt4.QtGui import QMessageBox
   from PyQt4.QtGui import QPalette
   from PyQt4.QtGui import QColor
+  from PyQt4.QtCore import QString
   from fissureGenerale_ui import Ui_Dialog
   
   class fissureGeneraleDialog(QtGui.QDialog):
@@ -307,6 +308,7 @@ def fissureGeneraleDlg(context):
                   areteFaceFissure = self.ui.dsb_areteFaceFissure.value(),
                   reptrav          = str(self.ui.le_reptrav.text()),
                   nomres           = str(self.ui.le_nomres.text()),
+                  verbosite        = self.ui.cb_log.currentIndex()
                   )
       print dico
       return dico
@@ -325,7 +327,28 @@ def fissureGeneraleDlg(context):
         self.setLogVerbosity(logfile)
         from blocFissure.gmu import geomsmesh               # après intialisation log dans setLogVerbosity
         from blocFissure.gmu.casStandard import casStandard # après intialisation log dans setLogVerbosity
-        execInstance = casStandard(dico)
+        from blocFissure.gmu.fissError import fissError
+        try:
+          execInstance = casStandard(dico)
+        except fissError as erreur:
+          print '-'*60
+          print type(erreur)
+          print '-'*60
+          print erreur.msg
+          print '-'*60
+          for ligne in erreur.pile:
+            print repr(ligne)        
+          print '-'*60
+          texte = erreur.msg
+#           texte += +"<br>" +'-'*60 +"<br>"
+#           for ligne in erreur.pile:
+#             texte += repr(ligne) +"<br>"
+          mbox = QMessageBox(self)
+          mbox.setWindowTitle("erreur blocFissure")
+          mbox.setText(QString.fromUtf8(texte))
+          mbox.exec_()          
+#        except Exception as erreur:
+#          print "exception non répertoriée"
       self.NOK = NOK
       self.accept()
     

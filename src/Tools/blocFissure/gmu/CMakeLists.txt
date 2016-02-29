@@ -51,6 +51,7 @@ SET(plugin_SCRIPTS
   facesVolumesToriques.py
   findWireEndVertices.py
   findWireIntermediateVertices.py
+  fissError.py
   fissureCoude.py
   fissureGenerique.py
   fusionMaillageAttributionDefaut.py
