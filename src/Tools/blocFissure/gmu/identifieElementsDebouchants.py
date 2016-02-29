@@ -7,6 +7,8 @@ from geomsmesh import geompy
 from geomsmesh import geomPublish
 from geomsmesh import geomPublishInFather
 import initLog
+import traceback
+from fissError import fissError
 
 from produitMixte import produitMixte
 from whichSide import whichSide
@@ -94,7 +96,13 @@ def identifieElementsDebouchants(ifil, facesDefaut, partitionPeauFissFond,
     edgesLoc = geompy.ExtractShapes(locEdgePart, geompy.ShapeType["EDGE"], False)
     edgesLocSorted =[(geompy.MinDistance(edge, locPt0), kk, edge) for kk, edge in enumerate(edgesLoc)]
     edgesLocSorted.sort()
-    ofp = geompy.BasicProperties(edgesLocSorted[0][2])[0] # distance curviligne centre locPt0
+    try:
+      ofp = geompy.BasicProperties(edgesLocSorted[0][2])[0] # distance curviligne centre locPt0
+    except:
+      texte = "Identification des éléments au débouché du pipe sur la face externe impossible. "
+      texte += "Cause éventuelle : la ligne de fond de fissure comprend un point géométrique coincidant avec la face externe. "
+      texte += "La ligne de fond de fissure doit déboucher franchement de la face externe, et ne doit pas être coupée au niveau de la face"
+      raise fissError(traceback.extract_stack(),texte)
     logging.debug("distance curviligne centre extremite0: %s", ofp)
     p1 = geompy.MakeVertexOnCurveByLength(localEdgeInFondFiss, ofp +lgp, locPt0)
     p2 = geompy.MakeVertexOnCurveByLength(localEdgeInFondFiss, ofp -lgp, locPt0)

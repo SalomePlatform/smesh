@@ -6,9 +6,9 @@ from geomsmesh import geompy
 from geomsmesh import geomPublish
 from geomsmesh import geomPublishInFather
 import initLog
-import traceback
 from findWireEndVertices import findWireEndVertices
 from prolongeWire import prolongeWire
+import traceback
 from fissError import fissError
 
 def partitionneFissureParPipe(shapesFissure, elementsDefaut, rayonPipe):
