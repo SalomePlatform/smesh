@@ -97,7 +97,8 @@ def fissureGeneraleDlg(context):
         nbSegCercle       = 32,
         areteFaceFissure  = 10,
         reptrav           = '.',
-        nomres            = 'casStandard_fissure.med')
+        nomres            = 'casStandard_fissure.med',
+        verbosite         = 0)
 
       
     def initDialog(self, dico):
@@ -114,6 +115,7 @@ def fissureGeneraleDlg(context):
       self.ui.dsb_areteFaceFissure.setValue(dico['areteFaceFissure'])
       self.ui.le_reptrav.setText(os.path.abspath(dico['reptrav']))
       self.ui.le_nomres.setText(os.path.split(dico['nomres'])[1])
+      self.ui.cb_log.setCurrentIndex(dico['verbosite'])
       incomplet = self.testval(dico)
       pass
   
