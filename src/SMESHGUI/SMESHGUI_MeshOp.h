@@ -128,7 +128,7 @@ private:
   bool                           isSelectedHyp( int, int, int ) const;
   int                            nbDlgHypTypes( const int ) const;
   bool                           isAccessibleDim( const int ) const;
-  void                           setCurrentHyp( const int, const int, const int );
+  void                           setCurrentHyp( const int, const int, const int, const bool=false);
   void                           setDefaultName( const QString& prefix="" ) const;
   SMESH::SMESH_Hypothesis_var    getAlgo( const int );
   void                           readMesh();

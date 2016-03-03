@@ -1,4 +1,5 @@
 # Aspect ratio
+# This script demonstrates various usages of filters
 
 # create mesh
 from SMESH_mechanic import *

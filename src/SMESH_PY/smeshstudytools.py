@@ -127,8 +127,8 @@ class SMeshStudyTools:
         from salome.smesh import smeshBuilder
         smesh = smeshBuilder.New(self.editor.study)
 
-        meshObject=smesh.IDToObject(entry)
-        return meshObject
+        meshObject=salome.IDToObject(entry)
+        return smesh.Mesh( meshObject )
     
     ## Returns the SMESH object associated to the specified \em SObject,
     #  (the SObject is an item in the objects browser).

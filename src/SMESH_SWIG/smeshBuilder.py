@@ -1970,7 +1970,7 @@ class Mesh:
     #  @param groupName the name of the mesh group
     #  @param elementType the type of elements in the group; either of 
     #         (SMESH.NODE, SMESH.EDGE, SMESH.FACE, SMESH.VOLUME).
-    #  @param elemIDs the list of ids
+    #  @param elemIDs either the list of ids, group, sub-mesh, or filter
     #  @return SMESH_Group
     #  @ingroup l2_grps_create
     def MakeGroupByIds(self, groupName, elementType, elemIDs):

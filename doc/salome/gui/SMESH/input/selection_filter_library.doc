@@ -73,7 +73,9 @@ the filtering algorithm works faster because node-to-shape association
 is used instead of measuring distance between nodes and the shape, and
 \b Tolerance is not used. If the threshold shape is any other shape,
 the algorithm works slower because distance between nodes and the
-shape is measured and is compared with \b Tolerance.
+shape is measured and is compared with \b Tolerance. The latter
+approach (distance measurement) is also used if an element is not
+associated to any shape.
 </li><li>
 <b>Lying on Geom</b> selects entities whose at least one node
 lies on the shape defined by the <b>Threshold Value</b>.
@@ -82,7 +84,9 @@ the filtering algorithm works faster because node-to-shape association
 is used instead of measuring distance between nodes and the shape, and
 \b Tolerance is not used. If the threshold shape is any other shape,
 the algorithm works slower because distance between nodes and the
-shape is measured and is compared with \b Tolerance.
+shape is measured and is compared with \b Tolerance. The latter
+approach (distance measurement) is also used if an element is not
+associated to any shape.
 </li><li>
 <b>Belong to Mesh Group</b> selects entities included into the mesh group
 defined by the <b>Threshold Value</b>.
