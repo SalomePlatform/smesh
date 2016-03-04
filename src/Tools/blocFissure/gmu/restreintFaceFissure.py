@@ -27,7 +27,7 @@ def restreintFaceFissure(shapeDefaut, facesDefaut, pointInterne):
     try:
       facesPartShapeDefautSorted, minSurf, maxSurf = sortFaces(facesPartShapeDefaut) # la face de fissure dans le volume doit être la plus grande
     except:
-      texte = "Restriction de la face de fissure au domaine solide impossible. "
+      texte = "Restriction de la face de fissure au domaine solide impossible.<br>"
       texte += "Causes possibles :<ul>"
       texte += "<li>La face de fissure est tangente à la paroi solide."
       texte += "Elle doit déboucher franchement, sans que la surface dehors ne devienne plus grande que la surface dans le solide.</li>"

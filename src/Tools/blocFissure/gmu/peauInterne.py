@@ -55,10 +55,11 @@ def peauInterne(fichierMaillage, shapeDefaut, nomZones):
     if i == "Entity_Hexa":
       nbhexa+=info[i]
   if (nbelem == 0) or (nbhexa < nbelem) :
-    texte = "La zone a remailler est incorrecte : "
+    texte = "La zone a remailler est incorrecte.<br>"
     texte += "Causes possibles :<ul>"
     texte += "<li>Les mailles à enlever dans le maillage sain n'ont pas été détectées.</li>"
-    texte += "<li>Il n'y a pas que des Hexaèdres linéaires dans la zone à remailler (mailles quadratiques, tetraèdres non traités)</li></ul>"
+    texte += "<li>Certaines faces du maillage sain sont à l'envers : les normales aux faces en paroi de volume doivent être sortantes.</li>"
+    texte += "<li>Il n'y a pas que des Hexaèdres réglés linéaires dans la zone à remailler (notamment mailles quadratiques, tetraèdres non traités)</li></ul>"
     raise fissError(traceback.extract_stack(),texte)
 
   nbAdded, maillageSain, DefautBoundary = maillageSain.MakeBoundaryElements( SMESH.BND_2DFROM3D, 'DefBound', '', 0, [ zoneDefaut ])
