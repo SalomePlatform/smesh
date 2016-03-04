@@ -28,8 +28,11 @@ def restreintFaceFissure(shapeDefaut, facesDefaut, pointInterne):
       facesPartShapeDefautSorted, minSurf, maxSurf = sortFaces(facesPartShapeDefaut) # la face de fissure dans le volume doit être la plus grande
     except:
       texte = "Restriction de la face de fissure au domaine solide impossible. "
-      texte += "Cause possible : la face de fissure est tangente à la paroi solide. "
-      texte += "Elle doit déboucher franchement, sans que la surface dehors ne devienne plus grande que la surface dans le solide. "
+      texte += "Causes possibles :<ul>"
+      texte += "<li>La face de fissure est tangente à la paroi solide."
+      texte += "Elle doit déboucher franchement, sans que la surface dehors ne devienne plus grande que la surface dans le solide.</li>"
+      texte += "<li>le prémaillage de la face de fissure est trop grossier, les mailles à enlever dans le maillage sain "
+      texte += "n'ont pas toutes été détectées.</li></ul>"
       raise fissError(traceback.extract_stack(),texte)
     logging.debug("surfaces faces fissure étendue, min %s, max %s", minSurf, maxSurf)
     facesPortFissure = facesPartShapeDefautSorted[-1]

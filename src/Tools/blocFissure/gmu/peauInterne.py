@@ -3,6 +3,8 @@
 import logging
 from geomsmesh import smesh
 import SMESH
+import traceback
+from fissError import fissError
 
 from listOfExtraFunctions import lookForCorner
 from fusionMaillageAttributionDefaut import fusionMaillageDefaut
@@ -40,6 +42,24 @@ def peauInterne(fichierMaillage, shapeDefaut, nomZones):
     if grp.GetName() == nomZones + "_internalEdges":
       zoneDefaut_internalEdges = grp
       break
+    
+  # --- Le groupe ZoneDefaut ne doit contenir que des Hexaèdres"
+  
+  info=maillageSain.GetMeshInfo(zoneDefaut)
+  keys = info.keys(); keys.sort()
+  nbelem=0
+  nbhexa=0
+  for i in keys:
+    #print "  %s  :  %d" % ( i, info[i] )
+    nbelem+=info[i]
+    if i == "Entity_Hexa":
+      nbhexa+=info[i]
+  if (nbelem == 0) or (nbhexa < nbelem) :
+    texte = "La zone a remailler est incorrecte : "
+    texte += "Causes possibles :<ul>"
+    texte += "<li>Les mailles à enlever dans le maillage sain n'ont pas été détectées.</li>"
+    texte += "<li>Il n'y a pas que des Hexaèdres linéaires dans la zone à remailler (mailles quadratiques, tetraèdres non traités)</li></ul>"
+    raise fissError(traceback.extract_stack(),texte)
 
   nbAdded, maillageSain, DefautBoundary = maillageSain.MakeBoundaryElements( SMESH.BND_2DFROM3D, 'DefBound', '', 0, [ zoneDefaut ])
   internal = maillageSain.GetMesh().CutListOfGroups( [ DefautBoundary ], [ zoneDefaut_skin ], 'internal' )
