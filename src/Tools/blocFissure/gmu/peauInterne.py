@@ -52,7 +52,7 @@ def peauInterne(fichierMaillage, shapeDefaut, nomZones):
   for i in keys:
     #print "  %s  :  %d" % ( i, info[i] )
     nbelem+=info[i]
-    if i == "Entity_Hexa":
+    if "Entity_Hexa" in str(i):
       nbhexa+=info[i]
   if (nbelem == 0) or (nbhexa < nbelem) :
     texte = "La zone a remailler est incorrecte.<br>"
