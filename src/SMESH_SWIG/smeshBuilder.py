@@ -252,7 +252,7 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo, mesh):
         if mesh:
             meshName = GetName( mesh )
             if meshName and meshName != NO_NAME:
-                where = '"%s" in "%s"' % ( geomName, meshName )
+                where = '"%s" shape in "%s" mesh ' % ( geomName, meshName )
     if status < HYP_UNKNOWN_FATAL and where:
         print '"%s" was assigned to %s but %s' %( hypName, where, reason )
     elif where:
