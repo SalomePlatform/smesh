@@ -37,6 +37,10 @@
 #include "SMDS_SetIterator.hxx"
 #include "SMESHDS_Mesh.hxx"
 
+#include <BRep_Tool.hxx>
+#include <TopExp_Explorer.hxx>
+#include <TopoDS.hxx>
+
 #include <utilities.h>
 
 
@@ -350,17 +354,34 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
           
           aBounds[2] = min(aBounds[2],aNode->Y());
           aBounds[3] = max(aBounds[3],aNode->Y());
-          
+
           aBounds[4] = min(aBounds[4],aNode->Z());
           aBounds[5] = max(aBounds[5],aNode->Z());
         }
 
         double EPS = 1.0E-7;
+        TopoDS_Shape mainShape = myMesh->ShapeToMesh();
+        bool    hasShapeToMesh = ( myMesh->SubMeshIndices().size() > 1 );
+        if ( !mainShape.IsNull() && hasShapeToMesh )
+        {
+          // define EPS by max tolerance of the mainShape (IPAL53097)
+          TopExp_Explorer subShape;
+          for ( subShape.Init( mainShape, TopAbs_FACE ); subShape.More(); subShape.Next() ) {
+            EPS = Max( EPS, BRep_Tool::Tolerance( TopoDS::Face( subShape.Current() )));
+          }
+          for ( subShape.Init( mainShape, TopAbs_EDGE ); subShape.More(); subShape.Next() ) {
+            EPS = Max( EPS, BRep_Tool::Tolerance( TopoDS::Edge( subShape.Current() )));
+          }
+          for ( subShape.Init( mainShape, TopAbs_VERTEX ); subShape.More(); subShape.Next() ) {
+            EPS = Max( EPS, BRep_Tool::Tolerance( TopoDS::Vertex( subShape.Current() )));
+          }
+          EPS *= 2.;
+        }
         anIsXDimension = (aBounds[1] - aBounds[0]) + abs(aBounds[1]) + abs(aBounds[0]) > EPS;
         anIsYDimension = (aBounds[3] - aBounds[2]) + abs(aBounds[3]) + abs(aBounds[2]) > EPS;
         anIsZDimension = (aBounds[5] - aBounds[4]) + abs(aBounds[5]) + abs(aBounds[4]) > EPS;
         aSpaceDimension = anIsXDimension + anIsYDimension + anIsZDimension;
-        if(!aSpaceDimension)
+        if ( !aSpaceDimension )
           aSpaceDimension = 3;
         // PAL16857(SMESH not conform to the MED convention):
         if ( aSpaceDimension == 2 && anIsZDimension ) // 2D only if mesh is in XOY plane
@@ -377,7 +398,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       }
 
       SMDS_NodeIteratorPtr aNodesIter = myMesh->nodesIterator(/*idInceasingOrder=*/true);
-      switch(aSpaceDimension){
+      switch ( aSpaceDimension ) {
       case 3:
         aCoordHelperPtr.reset(new TCoordHelper(aNodesIter,aXYZGetCoord,aXYZName));
         break;
@@ -444,7 +465,8 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
          myDoGroupOfVolumes && nbVolumes,
          myDoGroupOf0DElems && nb0DElements,
          myDoGroupOfBalls   && nbBalls);
-    } else {
+    }
+    else {
       aFamilies = DriverMED_Family::MakeFamilies
         (getIterator( mySubMeshes ), myGroups,
          myDoGroupOfNodes   && nbNodes,
@@ -477,7 +499,6 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     PNodeInfo aNodeInfo = myMed->CrNodeInfo(aMeshInfo, aNbNodes,
                                             theMode, theSystem, theIsElemNum, theIsElemNames);
 
-    //cout << " fillElemFamilyMap( SMDSAbs_Node )" << endl;
     // find family numbers for nodes
     TElemFamilyMap anElemFamMap;
     fillElemFamilyMap( anElemFamMap, aFamilies, SMDSAbs_Node );
@@ -687,21 +708,11 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 
       int defaultFamilyId = 0;
       switch ( aElemTypeData->_smdsType ) {
-      case SMDSAbs_0DElement:
-        defaultFamilyId = my0DElementsDefaultFamilyId;
-        break;
-      case SMDSAbs_Ball:
-        defaultFamilyId = myBallsDefaultFamilyId;
-        break;
-      case SMDSAbs_Edge:
-        defaultFamilyId = myEdgesDefaultFamilyId;
-        break;
-      case SMDSAbs_Face:
-        defaultFamilyId = myFacesDefaultFamilyId;
-        break;
-      case SMDSAbs_Volume:
-        defaultFamilyId = myVolumesDefaultFamilyId;
-        break;
+      case SMDSAbs_0DElement: defaultFamilyId = my0DElementsDefaultFamilyId; break;
+      case SMDSAbs_Ball:      defaultFamilyId = myBallsDefaultFamilyId;      break;
+      case SMDSAbs_Edge:      defaultFamilyId = myEdgesDefaultFamilyId;      break;
+      case SMDSAbs_Face:      defaultFamilyId = myFacesDefaultFamilyId;      break;
+      case SMDSAbs_Volume:    defaultFamilyId = myVolumesDefaultFamilyId;    break;
       default:
         continue;
       }
@@ -783,7 +794,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
         if ( nbPolyhedronNodes == 0 ) {
           // Count nb of nodes
           while ( elemIterator->more() ) {
-            const SMDS_MeshElement* anElem = elemIterator->next();
+            const SMDS_MeshElement*  anElem = elemIterator->next();
             const SMDS_VtkVolume *aPolyedre = dynamic_cast<const SMDS_VtkVolume*>(anElem);
             if ( !aPolyedre ) continue;
             nbPolyhedronNodes += aPolyedre->NbNodes();
@@ -812,7 +823,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
           TInt iFace = 0, iNode = 0;
           while ( elemIterator->more() )
           {
-            const SMDS_MeshElement* anElem = elemIterator->next();
+            const SMDS_MeshElement*  anElem = elemIterator->next();
             const SMDS_VtkVolume *aPolyedre = dynamic_cast<const SMDS_VtkVolume*>(anElem);
             if ( !aPolyedre ) continue;
             // index
@@ -854,8 +865,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       else if (aElemTypeData->_geomType == eBALL )
       {
         // allocate data arrays
-        PBallInfo aBallInfo = myMed->CrBallInfo( aMeshInfo,
-                                                 aElemTypeData->_nbElems );
+        PBallInfo aBallInfo = myMed->CrBallInfo( aMeshInfo, aElemTypeData->_nbElems );
 
         // build map of family numbers for this type
         if ( !isElemFamMapBuilt[ aElemTypeData->_smdsType ])
