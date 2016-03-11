@@ -2,73 +2,58 @@
 
 \page tui_transforming_meshes_page Transforming Meshes
 
-<br><h2>Transforming Meshes</h2>
+\tableofcontents
 
 <br>
-\anchor tui_translation
-<h3>Translation</h3>
+\section tui_translation Translation
 \tui_script{transforming_meshes_ex01.py}
 
 <br>
-\anchor tui_rotation
-<h3>Rotation</h3>
+\section tui_rotation Rotation
 \tui_script{transforming_meshes_ex02.py}
 
 <br>
-\anchor tui_scale
-<h3>Scale</h3>
+\section tui_scale Scale
 \tui_script{transforming_meshes_ex03.py}
 
 <br>
-\anchor tui_symmetry
-<h3>Symmetry</h3>
+\section tui_symmetry Symmetry
 \tui_script{transforming_meshes_ex04.py}
 
 <br>
-\anchor tui_merging_nodes
-<h3>Merging Nodes</h3>
+\section tui_merging_nodes Merging Nodes
 \tui_script{transforming_meshes_ex05.py}
 
 <br>
-\anchor tui_merging_elements
-<h3>Merging Elements</h3>
+\section tui_merging_elements Merging Elements
 \tui_script{transforming_meshes_ex06.py}
 
-<br><h2>Sewing Meshes</h2>
-
 <br>
-\anchor tui_sew_meshes_border_to_side
-<h3>Sew Meshes Border to Side</h3>
+\section tui_sew_meshes_border_to_side Sew Meshes Border to Side
 \tui_script{transforming_meshes_ex07.py}
 
 <br>
-\anchor tui_sew_conform_free_borders
-<h3>Sew Conform Free Borders</h3>
+\section tui_sew_conform_free_borders Sew Conform Free Borders
 \tui_script{transforming_meshes_ex08.py}
 
 <br>
-\anchor tui_sew_free_borders
-<h3>Sew Free Borders</h3>
+\section tui_sew_free_borders Sew Free Borders
 \tui_script{transforming_meshes_ex09.py}
 
 <br>
-\anchor tui_sew_side_elements
-<h3>Sew Side Elements</h3>
+\section tui_sew_side_elements Sew Side Elements
 \tui_script{transforming_meshes_ex10.py}
 
 <br>
-\anchor tui_duplicate_nodes
-<h3>Duplicate nodes or/and elements</h3>
+\section tui_duplicate_nodes Duplicate nodes or/and elements
 \tui_script{transforming_meshes_ex11.py}
 
 <br>
-\anchor tui_make_2dmesh_from_3d
-<h3>Create boundary elements</h3>
+\section tui_make_2dmesh_from_3d Create boundary elements
 \tui_script{transforming_meshes_ex12.py}
 
 <br>
-\anchor tui_reorient_faces
-<h3>Reorient faces</h3>
+\section tui_reorient_faces Reorient faces
 \tui_script{transforming_meshes_ex13.py}
 
 */

@@ -2320,6 +2320,7 @@ GrpComputor::GrpComputor( SMESH::SMESH_GroupBase_ptr grp,
 void GrpComputor::compute()
 {
   if ( !CORBA::is_nil( myGroup ) && myItem ) {
+    SUIT_OverrideCursor wc;
     QTreeWidgetItem* item = myItem;
     myItem = 0;
     int nb = myToComputeSize ? myGroup->Size() : myGroup->GetNumberOfNodes();

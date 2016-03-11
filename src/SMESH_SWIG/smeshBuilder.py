@@ -32,7 +32,6 @@
 ##   @{
 ##     @defgroup l3_algos_basic   Basic meshing algorithms
 ##     @defgroup l3_algos_proj    Projection Algorithms
-##     @defgroup l3_algos_radialp Radial Prism
 ##     @defgroup l3_algos_segmarv Segments around Vertex
 ##     @defgroup l3_algos_3dextr  3D extrusion meshing algorithm
 
@@ -70,10 +69,9 @@
 ##   @defgroup l2_modif_trsf     Transforming meshes (Translation, Rotation, Symmetry, Sewing, Merging)
 ##   @defgroup l2_modif_movenode Moving nodes
 ##   @defgroup l2_modif_throughp Mesh through point
-##   @defgroup l2_modif_invdiag  Diagonal inversion of elements
 ##   @defgroup l2_modif_unitetri Uniting triangles
-##   @defgroup l2_modif_changori Changing orientation of elements
 ##   @defgroup l2_modif_cutquadr Cutting elements
+##   @defgroup l2_modif_changori Changing orientation of elements
 ##   @defgroup l2_modif_smooth   Smoothing
 ##   @defgroup l2_modif_extrurev Extrusion and Revolution
 ##   @defgroup l2_modif_patterns Pattern mapping
@@ -310,9 +308,9 @@ engine = None
 doLcc = False
 created = False
 
-## This class allows to create, load or manipulate meshes
-#  It has a set of methods to create load or copy meshes, to combine several meshes.
-#  It also has methods to get infos on meshes.
+## This class allows to create, load or manipulate meshes.
+#  It has a set of methods to create, load or copy meshes, to combine several meshes, etc.
+#  It also has methods to get infos and measure meshes.
 class smeshBuilder(object, SMESH._objref_SMESH_Gen):
 
     # MirrorType enumeration
@@ -614,6 +612,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
     #  @param allGroups forces creation of groups corresponding to every input mesh
     #  @param name name of a new mesh
     #  @return an instance of Mesh class
+    #  @ingroup l2_compounds
     def Concatenate( self, meshes, uniteIdenticalGroups,
                      mergeNodesAndElements = False, mergeTolerance = 1e-5, allGroups = False,
                      name = ""):
@@ -1162,7 +1161,7 @@ omniORB.registerObjref(SMESH._objref_SMESH_Gen._NP_RepositoryId, smeshBuilder)
 #    import salome
 #    salome.salome_init()
 #    from salome.smesh import smeshBuilder
-#    smesh = smeshBuilder.New(theStudy)
+#    smesh = smeshBuilder.New(salome.myStudy)
 #  \endcode
 #  @param  study     SALOME study, generally obtained by salome.myStudy.
 #  @param  instance  CORBA proxy of SMESH Engine. If None, the default Engine is used.
@@ -1177,7 +1176,7 @@ def New( study, instance=None):
         import salome
         salome.salome_init()
         from salome.smesh import smeshBuilder
-        smesh = smeshBuilder.New(theStudy)
+        smesh = smeshBuilder.New(salome.myStudy)
 
     Parameters:
         study     SALOME study, generally obtained by salome.myStudy.
@@ -2153,7 +2152,7 @@ class Mesh:
 
     ##
     #  Create a standalone group of entities basing on nodes of other groups.
-    #  \param groups - list of groups, sub-meshes or filters, of any type.
+    #  \param groups - list of reference groups, sub-meshes or filters, of any type.
     #  \param elemType - a type of elements to include to the new group; either of 
     #         (SMESH.NODE, SMESH.EDGE, SMESH.FACE, SMESH.VOLUME).
     #  \param name - a name of the new group.
@@ -2165,7 +2164,10 @@ class Mesh:
     #         - SMESH.AT_LEAST_ONE - include if one or more node is common,
     #         - SMEHS.MAJORITY - include if half of nodes or more are common.
     #  \param underlyingOnly - if \c True (default), an element is included to the
-    #         new group provided that it is based on nodes of one element of \a groups.
+    #         new group provided that it is based on nodes of an element of \a groups;
+    #         in this case the reference \a groups are supposed to be of higher dimension
+    #         than \a elemType, which can be useful for example to get all faces lying on
+    #         volumes of the reference \a groups.
     #  @return an instance of SMESH_Group
     #  @ingroup l2_grps_operon
     def CreateDimGroup(self, groups, elemType, name,
@@ -2176,7 +2178,7 @@ class Mesh:
 
 
     ## Convert group on geom into standalone group
-    #  @ingroup l2_grps_delete
+    #  @ingroup l2_grps_edit
     def ConvertToStandalone(self, group):
         return self.mesh.ConvertToStandalone(group)
 
@@ -3073,7 +3075,7 @@ class Mesh:
     #  @param NodeID1  the ID of the first node
     #  @param NodeID2  the ID of the second node
     #  @return false if proper faces were not found
-    #  @ingroup l2_modif_invdiag
+    #  @ingroup l2_modif_cutquadr
     def InverseDiag(self, NodeID1, NodeID2):
         return self.editor.InverseDiag(NodeID1, NodeID2)
 

@@ -920,7 +920,7 @@ void SMESH_PreMeshInfo::readSubMeshes(DriverMED_R_SMESHDS_Mesh* reader) const
 #endif
             nbElems = elemSet.size();
           }
-          // add elements to submeshes
+          // add elements to sub-meshes
           TIDSortedElemSet::iterator iE = elemSet.begin();
           for ( size_t i = 0; i < nbElems; ++i, ++iE )
           {

@@ -232,8 +232,8 @@ void SMESH_VisualObjDef::createPoints( vtkPoints* thePoints )
     {
       thePoints->SetPoint( nbPoints, aNode->X(), aNode->Y(), aNode->Z() );
       int anId = aNode->GetID();
-      mySMDS2VTKNodes.insert( TMapOfIds::value_type( anId, nbPoints ) );
-      myVTK2SMDSNodes.insert( TMapOfIds::value_type( nbPoints, anId ) );
+      mySMDS2VTKNodes.insert( mySMDS2VTKNodes.end(), std::make_pair( anId, nbPoints ));
+      myVTK2SMDSNodes.insert( myVTK2SMDSNodes.end(), std::make_pair( nbPoints, anId ));
       nbPoints++;
     }
   }
@@ -251,48 +251,48 @@ void SMESH_VisualObjDef::buildPrs(bool buildGrid)
   MESSAGE("----------------------------------------------------------SMESH_VisualObjDef::buildPrs " << buildGrid);
   if (buildGrid)
   {
-        myLocalGrid = true;
-        try
-        {
-                mySMDS2VTKNodes.clear();
-                myVTK2SMDSNodes.clear();
-                mySMDS2VTKElems.clear();
-                myVTK2SMDSElems.clear();
+    myLocalGrid = true;
+    try
+    {
+      mySMDS2VTKNodes.clear();
+      myVTK2SMDSNodes.clear();
+      mySMDS2VTKElems.clear();
+      myVTK2SMDSElems.clear();
 
-                if ( IsNodePrs() )
-                        buildNodePrs();
-                else
-                        buildElemPrs();
-        }
-        catch(...)
-        {
-                mySMDS2VTKNodes.clear();
-                myVTK2SMDSNodes.clear();
-                mySMDS2VTKElems.clear();
-                myVTK2SMDSElems.clear();
+      if ( IsNodePrs() )
+        buildNodePrs();
+      else
+        buildElemPrs();
+    }
+    catch(...)
+    {
+      mySMDS2VTKNodes.clear();
+      myVTK2SMDSNodes.clear();
+      mySMDS2VTKElems.clear();
+      myVTK2SMDSElems.clear();
 
-                myGrid->SetPoints( 0 );
-                myGrid->SetCells( 0, 0, 0, 0, 0 );
-                throw;
-        }
+      myGrid->SetPoints( 0 );
+      myGrid->SetCells( 0, 0, 0, 0, 0 );
+      throw;
+    }
   }
   else
   {
-        myLocalGrid = false;
-        if (!GetMesh()->isCompacted())
-          {
-            MESSAGE("*** buildPrs ==> compactMesh!");
-            GetMesh()->compactMesh();
-          }
-        vtkUnstructuredGrid *theGrid = GetMesh()->getGrid();
-        updateEntitiesFlags();
-        myGrid->ShallowCopy(theGrid);
-        //MESSAGE(myGrid->GetReferenceCount());
-        //MESSAGE( "Update - myGrid->GetNumberOfCells() = "<<myGrid->GetNumberOfCells() );
-        //MESSAGE( "Update - myGrid->GetNumberOfPoints() = "<<myGrid->GetNumberOfPoints() );
-        if( MYDEBUGWITHFILES ) {
-          SMESH::WriteUnstructuredGrid( myGrid,"myPrs.vtu" );
-        }
+    myLocalGrid = false;
+    if (!GetMesh()->isCompacted())
+    {
+      MESSAGE("*** buildPrs ==> compactMesh!");
+      GetMesh()->compactMesh();
+    }
+    vtkUnstructuredGrid *theGrid = GetMesh()->getGrid();
+    updateEntitiesFlags();
+    myGrid->ShallowCopy(theGrid);
+    //MESSAGE(myGrid->GetReferenceCount());
+    //MESSAGE( "Update - myGrid->GetNumberOfCells() = "<<myGrid->GetNumberOfCells() );
+    //MESSAGE( "Update - myGrid->GetNumberOfPoints() = "<<myGrid->GetNumberOfPoints() );
+    if( MYDEBUGWITHFILES ) {
+      SMESH::WriteUnstructuredGrid( myGrid,"myPrs.vtu" );
+    }
   }
 }
 
@@ -454,8 +454,8 @@ void SMESH_VisualObjDef::buildElemPrs()
 
         int anId = anElem->GetID();
 
-        mySMDS2VTKElems.insert( TMapOfIds::value_type( anId, iElem ) );
-        myVTK2SMDSElems.insert( TMapOfIds::value_type( iElem, anId ) );
+        mySMDS2VTKElems.insert( mySMDS2VTKElems.end(), std::make_pair( anId, iElem ));
+        myVTK2SMDSElems.insert( myVTK2SMDSElems.end(), std::make_pair( iElem, anId ));
 
         SMDS_ElemIteratorPtr aNodesIter = anElem->nodesIterator();
         {
@@ -986,7 +986,7 @@ static int getNodesFromElems( SMESH::long_array_var&              theElemIds,
 // function : getPointers
 // purpose  : Get std::list<const SMDS_MeshElement*> from list of IDs
 //=================================================================================
-static int getPointers( const SMDSAbs_ElementType            theRequestType,
+static int getPointers( const SMDSAbs_ElementType           theRequestType,
                         SMESH::long_array_var&              theElemIds,
                         const SMDS_Mesh*                    theMesh,
                         std::list<const SMDS_MeshElement*>& theResList )

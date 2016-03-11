@@ -254,7 +254,6 @@ namespace
                           const SMDSAbs_ElementType   anElemType)
   {
     anElemFamMap.Clear();
-    //anElemFamMap.clear();
     list<DriverMED_FamilyPtr>::iterator aFamsIter = aFamilies.begin();
     while ( aFamsIter != aFamilies.end() )
     {
@@ -263,12 +262,11 @@ namespace
       }
       else {
         int aFamId = (*aFamsIter)->GetId();
-        const set<const SMDS_MeshElement *>& anElems = (*aFamsIter)->GetElements();
-        set<const SMDS_MeshElement *>::const_iterator anElemsIter = anElems.begin();
+        const ElementsSet&              anElems = (*aFamsIter)->GetElements();
+        ElementsSet::const_iterator anElemsIter = anElems.begin();
         for (; anElemsIter != anElems.end(); anElemsIter++)
         {
           anElemFamMap.Bind( (Standard_Address)*anElemsIter, aFamId );
-          //anElemFamMap[*anElemsIter] = aFamId;
         }
         // remove a family from the list
         aFamilies.erase( aFamsIter++ );
@@ -288,9 +286,7 @@ namespace
   {
     if ( anElemFamMap.IsBound( (Standard_Address) anElement ))
       return anElemFamMap( (Standard_Address) anElement );
-//     TElemFamilyMap::iterator elem_famNum = anElemFamMap.find( anElement );
-//     if ( elem_famNum != anElemFamMap.end() )
-//       return elem_famNum->second;
+
     return aDefaultFamilyId;
   }
 

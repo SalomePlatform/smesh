@@ -7,49 +7,66 @@ be used for easy mesh creation and edition.
 
 Documentation for SALOME %Mesh module Python API is available in two forms:
 - <a href="smeshpy_doc/modules.html">Structured documentation</a>, where all methods and
-classes are grouped by their functionality, like it is done in the GUI documentation
+classes are grouped by their functionality.
 - <a href="smeshpy_doc/namespaces.html">Linear documentation</a> grouped only by classes, declared
 in the \ref smeshBuilder and \ref StdMeshersBuilder Python packages.
 
-\n With SALOME 7.2, the Python interface for %Mesh has been slightly modified to offer new functionality,
+\n With SALOME 7.2, the Python interface for %Mesh has been slightly modified to offer new functionality.
 \n You may have to modify your scripts generated with SALOME 6 or older versions.
-\n Please see \ref smesh_migration_page
-
-The SMESH python package contains helper functions to manipulate mesh elements and 
-interact with these elements.
-
-Note that these functions either encapsulate the python programming interface of SMESH core 
-(the CORBA or SWIG interface for example) or extend existing utilities as the smesh.py module.
-
-The functions are distributed in the python package \b salome.smesh.
-
-\note
-The main package \b salome contains other sub-packages that are distributed with the other 
-SALOME modules. For example, the KERNEL module provides the python package \b salome.kernel 
-and GEOM the package \b salome.geom.
+\n Please see \ref smesh_migration_page.
 
 Class \ref smeshBuilder.smeshBuilder "smeshBuilder" provides an interface to create and handle
 meshes. It can be used to create an empty mesh or to import mesh from the data file.
 
-Class \ref smeshstudytools.SMeshStudyTools "SMeshStudyTools" provides several methods to manipulate mesh objects in Salome study. 
-
 As soon as mesh is created, it is possible to manage it via its own
 methods, described in class \ref smeshBuilder.Mesh "Mesh" documentation.
 
-Class \ref smeshBuilder.Mesh "Mesh" allows assigning algorithms to a mesh.
-Please note that some algorithms, included in the standard SALOME
-distribution are always available. Python package \ref StdMeshersBuilder "StdMeshersBuilder"
-provides an interface for standard meshing algorithms included into
-the SALOME %Mesh module distribution, like:
-- REGULAR (1D)
-- COMPOSITE (1D)
-- MEFISTO (2D)
-- Quadrangle (2D)
-- Hexa(3D)
-- etc ...
+Class \ref smeshstudytools.SMeshStudyTools "SMeshStudyTools" provides several methods to manipulate mesh objects in Salome study. 
 
-To add meshing hypotheses, it is possible to use the functions provided by the
-algorithms interfaces.
+A usual workflow to generate a mesh on geometry is following:
+<ol>
+  <li>Create an instance of \ref smeshBuilder.smeshBuilder "smeshBuilder":
+    <pre>
+      from salome.smesh import smeshBuilder
+      smesh = smeshBuilder.New( salome.myStudy )
+    </pre></li>
+  <li>Create a \ref smeshBuilder.Mesh "mesh" object:
+    <pre>
+      mesh = \ref smeshBuilder.smeshBuilder.Mesh "smesh.Mesh( geometry )" 
+    </pre></li>
+  <li> Create and assign \ref basic_meshing_algos_page "algorithms" by
+  calling corresponding methods of the mesh. If a sub-shape is
+  provided as an argument, a \ref constructing_submeshes_page "sub-mesh"
+  is implicitly created on this sub-shape:
+    <pre>
+      regular1D = \ref smeshBuilder.Mesh.Segment "mesh.Segment"()
+      mefisto   = \ref smeshBuilder.Mesh.Triangle "mesh.Triangle"( smeshBuilder.MEFISTO )
+      # use other triangle algorithm on a face -- a sub-mesh appears in the mesh
+      netgen    = \ref smeshBuilder.Mesh.Triangle "mesh.Triangle"( smeshBuilder.NETGEN_1D2D, face )
+    </pre></li>
+  <li> Create and assign \ref about_hypo_page "hypotheses" by calling
+  corresponding methods of algorithms:
+    <pre>
+      segLen10 = \ref StdMeshersBuilder.StdMeshersBuilder_Segment.LocalLength "regular1D.LocalLength"( 10. )
+      maxArea  = \ref StdMeshersBuilder.StdMeshersBuilder_Segment.LocalLength "mefisto.MaxElementArea"( 100. )
+      netgen.SetMaxSize( 20. )
+      netgen.SetFineness( smeshBuilder.VeryCoarse )
+    </pre>
+  </li>
+  <li> \ref compute_anchor "Compute" the mesh (generate mesh nodes and elements):
+    <pre>
+      \ref Mesh.Compute "mesh.Compute"()
+    </pre>
+    </li>
+</ol>
+
+An easiest way to start with Python scripting is to do something in
+GUI and then to get a corresponding Python script via 
+<b> File > Dump Study </b> menu item. Don't forget that you can get
+all methods of any object in hand (e.g. a mesh group or a hypothesis)
+by calling \a dir() Python built-in function.
+
+All methods of the Mesh Group can be found in \ref tui_create_standalone_group sample script.
 
 An example below demonstrates usage of the Python API for 3d mesh generation. 
 
@@ -61,19 +78,19 @@ Examples of Python scripts for Mesh operations are available by
 the following links:
 
 - \subpage tui_creating_meshes_page
-- \subpage tui_cartesian_algo
-- \subpage tui_use_existing_faces
-- \subpage tui_viewing_meshes_page
 - \subpage tui_defining_hypotheses_page
-- \subpage tui_quality_controls_page
-- \subpage tui_filters_page
 - \subpage tui_grouping_elements_page
+- \subpage tui_filters_page
 - \subpage tui_modifying_meshes_page
 - \subpage tui_transforming_meshes_page
-- \subpage tui_notebook_smesh_page
+- \subpage tui_viewing_meshes_page
+- \subpage tui_quality_controls_page
 - \subpage tui_measurements_page
-- \subpage tui_generate_flat_elements_page
 - \subpage tui_work_on_objects_from_gui
+- \subpage tui_notebook_smesh_page
+- \subpage tui_cartesian_algo
+- \subpage tui_use_existing_faces
 - \subpage tui_prism_3d_algo
+- \subpage tui_generate_flat_elements_page
 
 */

@@ -1100,7 +1100,7 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
 
     pass # end of StdMeshersBuilder_Prism3D class
 
-## Defines a Prism 3D algorithm
+## Defines Radial Prism 3D algorithm
 # 
 #  It is created by calling smeshBuilder.Mesh.Prism(geom=0)
 #

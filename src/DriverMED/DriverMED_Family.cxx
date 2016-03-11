@@ -69,7 +69,7 @@ void
 DriverMED_Family
 ::AddElement(const SMDS_MeshElement* theElement)
 {
-  myElements.insert(theElement); 
+  myElements.insert( myElements.end(), theElement );
 }
 
 void
@@ -414,7 +414,7 @@ void DriverMED_Family::Init (SMESHDS_GroupBase* theGroup)
   SMDS_ElemIteratorPtr elemIt = theGroup->GetElements();
   while (elemIt->more())
   {
-    myElements.insert(elemIt->next());
+    myElements.insert( myElements.end(), elemIt->next() );
   }
 
   // Type

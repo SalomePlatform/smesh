@@ -2275,7 +2275,7 @@ void SMESHDS_Mesh::compactMesh()
   int newSmdsId = 0;
   for (int i = 0; i < myCellsSize; i++)
   {
-    if (myCells[i])
+    if ( myCells[i] )
     {
       newSmdsId++; // SMDS id start to 1
       assert(newSmdsId <= newCellSize);

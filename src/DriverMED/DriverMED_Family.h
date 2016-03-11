@@ -49,10 +49,10 @@
 #define REST_BALL_FAMILY    -5
 #define FIRST_ELEM_FAMILY   -6
 
-typedef std::list<DriverMED_FamilyPtr     > DriverMED_FamilyPtrList;
-typedef std::map<int,SMESHDS_SubMesh*     > SMESHDS_SubMeshPtrMap;
-typedef std::list<SMESHDS_GroupBase*      > SMESHDS_GroupBasePtrList;
-typedef std::set<const SMDS_MeshElement*  > ElementsSet;
+typedef std::list<DriverMED_FamilyPtr               > DriverMED_FamilyPtrList;
+typedef std::map<int,SMESHDS_SubMesh*               > SMESHDS_SubMeshPtrMap;
+typedef std::list<SMESHDS_GroupBase*                > SMESHDS_GroupBasePtrList;
+typedef std::set<const SMDS_MeshElement*,TIDCompare > ElementsSet;
 
 class MESHDRIVERMED_EXPORT DriverMED_Family
 {
