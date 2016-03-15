@@ -107,9 +107,10 @@ bool getSubMeshes(::SMESH_subMesh*  theSubMesh,
   TopAbs_ShapeEnum aShapeType = aShape.ShapeType();
 
   // IPAL18558: Wrong information of the created sub-mesh is shown. (Sub-mesh on a FACE
-  // with only 1D algo assigned
+  // with only 1D algo assigned)
   // Find dimension of sub-meshes to return as highest dimension of the assigned algorithm
-  if ( theSubMesh->IsEmpty() && !theSubMesh->GetAlgo() )
+  if (( theSubMesh->IsEmpty() || ( aSubMeshDS && aSubMeshDS->IsComplexSubmesh() )) &&
+      ( !theSubMesh->GetAlgo() ))
   {
     // on father sub-meshes, check presence of an algo which will mesh this sub-mesh
     // even if no algo is assigned to this sub-mesh
@@ -121,20 +122,22 @@ bool getSubMeshes(::SMESH_subMesh*  theSubMesh,
 
     if ( !topAlgoPresent )
     {
-      // look for a sub-mesh with an algo
-      SMESH_subMeshIteratorPtr smIt =
-        theSubMesh->getDependsOnIterator(/*includeSelf=*/false, /*complexShapeFirst=*/true);
+      // find max dimension of an assigned algo
       TopAbs_ShapeEnum algoShape = TopAbs_SHAPE;
-      while ( smIt->more() && algoShape == TopAbs_SHAPE )
-      {
-        sm = smIt->next();
-        if ( sm->GetAlgo() )
-          algoShape = sm->GetSubShape().ShapeType();
-      }
+      const std::list <const SMESHDS_Hypothesis * >& hyps = aMesh->GetHypothesisList( aShape );
+      std::list <const SMESHDS_Hypothesis * >::const_iterator hypIt = hyps.begin();
+      for ( ; hypIt != hyps.end(); ++hypIt )
+        if ( const SMESH_Algo* algo = dynamic_cast< const SMESH_Algo* >( *hypIt ))
+          switch ( algo->GetDim() ) {
+          case 1: algoShape = TopAbs_EDGE; break;
+          case 2: algoShape = TopAbs_FACE; break;
+          case 3: algoShape = TopAbs_SOLID; break;
+          case 0: algoShape = TopAbs_VERTEX; break;
+          }
       if ( algoShape != TopAbs_SHAPE )
       {
-        // return all sub-meshes on this shape type
-        smIt = theSubMesh->getDependsOnIterator(/*includeSelf=*/false, /*complexShapeFirst=*/true);
+        // return all sub-meshes on this dimension
+        SMESH_subMeshIteratorPtr smIt = theSubMesh->getDependsOnIterator(/*includeSelf=*/false);
         while ( smIt->more() )
         {
           sm = smIt->next();
@@ -209,6 +212,8 @@ CORBA::Long SMESH_subMesh_i::GetNumberOfElements()
 
   ::SMESH_subMesh* aSubMesh = _mesh_i->_mapSubMesh[_localId];
   SMESHDS_SubMesh* aSubMeshDS = aSubMesh->GetSubMeshDS();
+  if ( aSubMeshDS && aSubMeshDS->IsComplexSubmesh() )
+    aSubMeshDS = 0;
 
   int nbElems = aSubMeshDS ? aSubMeshDS->NbElements() : 0;
 
@@ -244,6 +249,8 @@ CORBA::Long SMESH_subMesh_i::GetNumberOfNodes(CORBA::Boolean all)
   }
   ::SMESH_subMesh* aSubMesh = _mesh_i->_mapSubMesh[_localId];
   SMESHDS_SubMesh* aSubMeshDS = aSubMesh->GetSubMeshDS();
+  if ( aSubMeshDS && aSubMeshDS->IsComplexSubmesh() )
+    aSubMeshDS = 0;
 
   if ( aSubMeshDS && aSubMeshDS->IsComplexSubmesh() )
   {
@@ -292,6 +299,8 @@ SMESH::long_array* SMESH_subMesh_i::GetElementsId()
 
   ::SMESH_subMesh* aSubMesh = _mesh_i->_mapSubMesh[_localId];
   SMESHDS_SubMesh* aSubMeshDS = aSubMesh->GetSubMeshDS();
+  if ( aSubMeshDS && aSubMeshDS->IsComplexSubmesh() )
+    aSubMeshDS = 0;
 
   int nbElems = aSubMeshDS ? aSubMeshDS->NbElements() : 0;
   TListOfSubMeshes smList;
@@ -342,6 +351,8 @@ SMESH::long_array* SMESH_subMesh_i::GetElementsByType( SMESH::ElementType theEle
 
   ::SMESH_subMesh* aSubMesh = _mesh_i->_mapSubMesh[_localId];
   SMESHDS_SubMesh* aSubMeshDS = aSubMesh->GetSubMeshDS();
+  if ( aSubMeshDS && aSubMeshDS->IsComplexSubmesh() )
+    aSubMeshDS = 0;
 
   // PAL5440, return all nodes belonging to elements of submesh
   set<int> nodeIds;

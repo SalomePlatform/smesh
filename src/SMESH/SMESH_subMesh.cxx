@@ -1217,8 +1217,6 @@ void SMESH_subMesh::cleanDependsOn( SMESH_Algo* algoRequiringCleaning/*=0*/ )
   }
   else if ( algoRequiringCleaning && algoRequiringCleaning->SupportSubmeshes() )
   {
-    SMESHDS_Mesh* meshDS = _father->GetMeshDS();
-
     // find sub-meshes to keep elements on
     set< SMESH_subMesh* > smToKeep;
     TopAbs_ShapeEnum prevShapeType = TopAbs_SHAPE;
@@ -1242,13 +1240,14 @@ void SMESH_subMesh::cleanDependsOn( SMESH_Algo* algoRequiringCleaning/*=0*/ )
         }
         if ( !keepSubMeshes )
         {
-          // look for an algo assigned to sm
-          bool algoFound = false;
-          const list<const SMESHDS_Hypothesis*>& hyps = meshDS->GetHypothesis( sm->_subShape );
-          list<const SMESHDS_Hypothesis*>::const_iterator h = hyps.begin();
-          for ( ; ( !algoFound && h != hyps.end() ); ++h )
-            algoFound = ((*h)->GetType() != SMESHDS_Hypothesis::PARAM_ALGO );
-          keepSubMeshes = algoFound;
+          // look for a local algo used to mesh sm
+          TopoDS_Shape algoShape = SMESH_MesherHelper::GetShapeOfHypothesis
+            ( algoRequiringCleaning, _subShape, _father );
+          SMESH_HypoFilter moreLocalAlgo;
+          moreLocalAlgo.Init( SMESH_HypoFilter::IsMoreLocalThan( algoShape, *_father ));
+          moreLocalAlgo.And ( SMESH_HypoFilter::IsAlgo() );
+          bool localAlgoFound = _father->GetHypothesis( sm->_subShape, moreLocalAlgo, true );
+          keepSubMeshes = localAlgoFound;
         }
         // remember all sub-meshes of sm
         if ( keepSubMeshes )
