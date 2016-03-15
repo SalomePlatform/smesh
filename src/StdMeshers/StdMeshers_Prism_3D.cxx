@@ -3298,6 +3298,9 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
       if ( !myHelper->LoadNodeColumns( faceColumns, (*quad)->face, quadBot, meshDS ))
         return error(COMPERR_BAD_INPUT_MESH, TCom("Can't find regular quadrangle mesh ")
                      << "on a side face #" << MeshDS()->ShapeToIndex( (*quad)->face ));
+
+      if ( !faceColumns.empty() && (int)faceColumns.begin()->second.size() != VerticalSize() )
+        return error(COMPERR_BAD_INPUT_MESH, "Different 'vertical' discretization");
     }
     // edge columns
     int id = MeshDS()->ShapeToIndex( *edgeIt );
