@@ -219,7 +219,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
     bndBox2d.Enlarge( 1e-2 * Sqrt( bndBox2d.SquareExtent() ));
 
     BRepBndLib::Add( geomFace, bndBox3d );
-    bndBox3d.Enlarge( 1e-5 * sqrt( bndBox3d.SquareExtent() ));
+    bndBox3d.Enlarge( 1e-2 * sqrt( bndBox3d.SquareExtent() ));
   }
 
   set<int> subShapeIDs;
