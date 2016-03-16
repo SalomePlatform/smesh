@@ -1868,7 +1868,7 @@ StdMeshers_ProjectionUtils::GetPropagationEdge( SMESH_Mesh*                 aMes
             int prevChainSize = aChain.Extent();
             if ( aChain.Add(anOppE) > prevChainSize ) { // ... anOppE is not in aChain
               // Add found edge to the chain oriented so that to
-              // have it co-directed with a forward MainEdge
+              // have it co-directed with a fromEdge
               TopAbs_Orientation ori = anE.Orientation();
               if ( anOppE.Orientation() == fourEdges[found].Orientation() )
                 ori = TopAbs::Reverse( ori );
@@ -1931,7 +1931,7 @@ FindMatchingNodesOnFaces( const TopoDS_Face&     face1,
 
   helper1.SetSubShape( face1 );
   helper2.SetSubShape( face2 );
-  if ( helper1.HasSeam() != helper2.HasSeam() )
+  if ( helper1.HasRealSeam() != helper2.HasRealSeam() )
     RETURN_BAD_RESULT("Different faces' geometry");
 
   // Data to call SMESH_MeshEditor::FindMatchingNodes():

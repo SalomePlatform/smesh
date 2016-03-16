@@ -1330,7 +1330,7 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
 
   // update state of sub-meshes (mostly in order to erase improper errors)
   SMESH_subMesh* sm = myHelper->GetMesh()->GetSubMesh( thePrism.myShape3D );
-  SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(/*includeSelf=*/false);
+  SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(/*includeSelf=*/true);
   while ( smIt->more() )
   {
     sm = smIt->next();

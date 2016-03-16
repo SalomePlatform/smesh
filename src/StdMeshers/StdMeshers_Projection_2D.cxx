@@ -821,8 +821,8 @@ namespace {
         // find trsf
         const int totNbSeg = 50;
         vector< gp_XY > srcPnts, tgtPnts;
-        srcPnts.resize( totNbSeg );
-        tgtPnts.resize( totNbSeg );
+        srcPnts.reserve( totNbSeg );
+        tgtPnts.reserve( totNbSeg );
         for ( size_t iW = 0; iW < srcWires.size(); ++iW )
         {
           const double minSegLen = srcWires[iW]->Length() / totNbSeg;
@@ -1392,10 +1392,19 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
         }
       }
     }
-    else if ( nbEdgesInWires.front() == 1 )
+    else if ( nbEdgesInWires.front() == 1 ) // a sole edge in a wire
     {
-      // TODO::Compare orientation of curves in a sole edge
-      //RETURN_BAD_RESULT("Not implemented case");
+      TopoDS_Edge srcE1 = srcEdges.front(), tgtE1 = tgtEdges.front();
+      for ( size_t iW = 0; iW < srcWires.size(); ++iW )
+      {
+        StdMeshers_FaceSidePtr srcWire = srcWires[iW];
+        for ( int iE = 0; iE < srcWire->NbEdges(); ++iE )
+          if ( srcE1.IsSame( srcWire->Edge( iE )))
+          {
+            reverse = ( tgtE1.Orientation() != tgtWires[iW]->Edge( iE ).Orientation() );
+            break;
+          }
+      }
     }
     else
     {
