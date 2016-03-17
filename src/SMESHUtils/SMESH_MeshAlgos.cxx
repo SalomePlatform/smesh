@@ -1259,7 +1259,7 @@ bool SMESH_MeshAlgos::IsOut( const SMDS_MeshElement* element, const gp_Pnt& poin
   // Node or 0D element -------------------------------------------------------------------------
   {
     gp_Vec n2p ( xyz[0], point );
-    return n2p.SquareMagnitude() <= tol * tol;
+    return n2p.SquareMagnitude() > tol * tol;
   }
   return true;
 }

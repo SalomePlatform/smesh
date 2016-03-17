@@ -24,12 +24,13 @@ tria = smesh.Mesh(face1, "Face : triangle 2D mesh")
 
 # Define 1D meshing
 algo1D = tria.Segment()
-algo1D.NumberOfSegments(2)
+algo1D.LocalLength(3.)
 
 # create and assign the algorithm for 2D meshing with triangles
 algo2D = tria.Triangle()
 
-# create and assign "LengthFromEdges" hypothesis to build triangles based on the length of the edges taken from the wire
+# create and assign "LengthFromEdges" hypothesis to build triangles with
+# linear size close to the length of the segments generated on the face wires (3.)
 algo2D.LengthFromEdges()
 
 # compute the mesh
