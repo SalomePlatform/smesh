@@ -1,5 +1,8 @@
 # Creating a hexahedral mesh on a cylinder.
-# Note: it is a copy of 'ex24_cylinder.py' from SMESH_SWIG
+#
+# This example uses Partition to divide the cylinder into blocks, which is
+# a general approach. But for the case of cylinder there is a dedicated
+# command creating a blocked cylinder: geompy.MakeDividedCylinder()
 
 import salome
 salome.salome_init()

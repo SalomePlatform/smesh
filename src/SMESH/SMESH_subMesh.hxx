@@ -216,10 +216,10 @@ protected:
 public:
 
   SMESH_Hypothesis::Hypothesis_Status
-    AlgoStateEngine(int event, SMESH_Hypothesis * anHyp);
+    AlgoStateEngine(algo_event event, SMESH_Hypothesis * anHyp);
 
   SMESH_Hypothesis::Hypothesis_Status
-    SubMeshesAlgoStateEngine(int event, SMESH_Hypothesis * anHyp, bool exitOnFatal=false);
+    SubMeshesAlgoStateEngine(algo_event event, SMESH_Hypothesis * anHyp, bool exitOnFatal=false);
 
   algo_state             GetAlgoState() const    { return _algoState; }
   compute_state          GetComputeState() const { return _computeState; }
@@ -227,8 +227,8 @@ public:
 
   void DumpAlgoState(bool isMain);
 
-  bool ComputeStateEngine(int event);
-  void ComputeSubMeshStateEngine(int event, const bool includeSelf=false);
+  bool ComputeStateEngine(compute_event event);
+  void ComputeSubMeshStateEngine(compute_event event, const bool includeSelf=false);
 
   bool Evaluate(MapShapeNbElems& aResMap);
 

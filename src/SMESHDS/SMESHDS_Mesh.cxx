@@ -980,7 +980,7 @@ void SMESHDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elt,
 {
   //MESSAGE(" --------------------------------> SMESHDS_Mesh::RemoveFreeElement " << subMesh << " " << fromGroups);
   if (elt->GetType() == SMDSAbs_Node) {
-    RemoveFreeNode( static_cast<const SMDS_MeshNode*>(elt), subMesh);
+    RemoveFreeNode( static_cast<const SMDS_MeshNode*>(elt), subMesh, fromGroups);
     return;
   }
 

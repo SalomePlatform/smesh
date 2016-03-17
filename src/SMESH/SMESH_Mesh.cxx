@@ -679,8 +679,8 @@ SMESH_Mesh::AddHypothesis(const TopoDS_Shape & aSubShape,
 
   // shape
 
-  bool isAlgo = ( anHyp->GetType() != SMESHDS_Hypothesis::PARAM_ALGO );
-  int   event = isAlgo ? SMESH_subMesh::ADD_ALGO : SMESH_subMesh::ADD_HYP;
+  bool                     isAlgo = ( anHyp->GetType() != SMESHDS_Hypothesis::PARAM_ALGO );
+  SMESH_subMesh::algo_event event = isAlgo ? SMESH_subMesh::ADD_ALGO : SMESH_subMesh::ADD_HYP;
 
   SMESH_Hypothesis::Hypothesis_Status ret = subMesh->AlgoStateEngine(event, anHyp);
 
@@ -755,8 +755,8 @@ SMESH_Hypothesis::Hypothesis_Status
   
   // shape 
   
-  bool isAlgo = ( !anHyp->GetType() == SMESHDS_Hypothesis::PARAM_ALGO );
-  int   event = isAlgo ? SMESH_subMesh::REMOVE_ALGO : SMESH_subMesh::REMOVE_HYP;
+  bool                     isAlgo = ( !anHyp->GetType() == SMESHDS_Hypothesis::PARAM_ALGO );
+  SMESH_subMesh::algo_event event = isAlgo ? SMESH_subMesh::REMOVE_ALGO : SMESH_subMesh::REMOVE_HYP;
 
   SMESH_subMesh *subMesh = GetSubMesh(aSubShape);
 
