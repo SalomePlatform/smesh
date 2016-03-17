@@ -4480,13 +4480,15 @@ SMESH_MeshEditor_i::FindAmongElementsByPoint(SMESH::SMESH_IDSource_ptr elementID
 {
   SMESH_TRY;
   SMESH::long_array_var res = new SMESH::long_array;
-  
-  SMESH::array_of_ElementType_var types = elementIDs->GetTypes();
-  if ( types->length() == 1 && // a part contains only nodes or 0D elements
-       ( types[0] == SMESH::NODE || types[0] == SMESH::ELEM0D || types[0] == SMESH::BALL) &&
-       type != types[0] ) // but search of elements of dim > 0
-    return res._retn();
 
+  if ( type != SMESH::NODE )
+  {
+    SMESH::array_of_ElementType_var types = elementIDs->GetTypes();
+    if ( types->length() == 1 && // a part contains only nodes or 0D elements
+         ( types[0] == SMESH::NODE || types[0] == SMESH::ELEM0D || types[0] == SMESH::BALL) &&
+         type != types[0] ) // but search of elements of dim > 0
+      return res._retn();
+  }
   if ( SMESH::DownCast<SMESH_Mesh_i*>( elementIDs )) // elementIDs is the whole mesh 
     return FindElementsByPoint( x,y,z, type );
 
@@ -4500,7 +4502,8 @@ SMESH_MeshEditor_i::FindAmongElementsByPoint(SMESH::SMESH_IDSource_ptr elementID
     SMESHDS_Mesh* meshDS = SMESH::DownCast<SMESH_Mesh_i*>( mesh )->GetImpl().GetMeshDS();
 
     if ( !idSourceToSet( elementIDs, meshDS, elements,
-                         SMDSAbs_ElementType(type), /*emptyIfIsMesh=*/true))
+                         ( type == SMESH::NODE ? SMDSAbs_All : (SMDSAbs_ElementType) type ),
+                         /*emptyIfIsMesh=*/true))
       return res._retn();
 
     typedef SMDS_SetIterator<const SMDS_MeshElement*, TIDSortedElemSet::const_iterator > TIter;
