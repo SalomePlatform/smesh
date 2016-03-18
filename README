@@ -1,0 +1,119 @@
+*****************
+About SALOME Mesh
+*****************
+
+SALOME Mesh module implements the functionalities for:
+- Creating meshes in different ways:
+  * By meshing geometrical models previously created or imported by the Geometry
+    component;
+  * Bottom-up, using mesh edition operations, especially extrusion and revolution;
+  * By generation of the 3D mesh from the 2D mesh (the latter can be either imported
+    or manually created).
+- Importing and exporting meshes in various formats.
+- Modifying meshes with a vast array of dedicated operations.
+- Creating groups of mesh elements.
+- Filtering mesh entities (nodes or elements) using Filters functionality for
+  creating groups and applying mesh modifications.
+- Viewing meshes in the VTK viewer and getting info on mesh and its sub-objects.
+- Applying to meshes Quality Controls, allowing to highlight important elements.
+- Taking various measurements of the mesh objects.
+
+For more information please visit the SALOME platform web site:
+
+  <http://www.salome-platform.org/>
+
+=======
+License
+=======
+
+SALOME platform is distributed under the GNU Lesser General Public License.
+See COPYING file for more details.
+
+Also, additional information can be found at SALOME platform web site:
+
+  <http://www.salome-platform.org/downloads/license/>
+
+============
+Installation
+============
+
+--------------
+Pre-requisites
+--------------
+
+SALOME platform relies on a set of third-party softwares; some of them are needed
+at build time only, while other ones are needed in runtime also.
+
+For more information about the pre-requisites please visit SALOME platform web
+site:
+
+* Check Release Notes and Software Requirements of the latest SALOME release at
+
+  <http://www.salome-platform.org/downloads/current-version/>
+
+* Pre-requisites page at SALOME web site:
+
+  <http://www.salome-platform.org/downloads/license/>
+
+Note: SALOME Mesh module needs SALOME KERNEL, SALOME GUI and SALOME Geometry as
+pre-requisites.
+
+------------------
+Basic Installation
+------------------
+
+The build procedure of the SALOME platform is implemented with CMake.
+In order to build the module you have to do the following actions: 
+
+1. Set up environment for pre-requisites (see "Pre-requisites" section above).
+
+2. Create a build directory:
+
+   % mkdir SMESH_BUILD
+
+3. Configure the build procedure:
+
+   % cd SMESH_BUILD
+   % cmake -DCMAKE_BUILD_TYPE=<mode> -DCMAKE_INSTALL_PREFIX=<installation_directory> <path_to_src_dir>
+
+   where
+   - <mode> is either Release or Debug (default: Release);
+   - <installation_directory> is a destination folder to install SALOME Mesh
+      module (default: /usr); 
+   - <path_to_src_dir> is a path to the SALOME Mesh sources directory.
+
+   Note: by default (if CMAKE_INSTALL_PREFIX option is not given), SALOME Mesh
+   module will be configured for installation to the /usr directory that requires
+   root permissions to complete the installation.
+
+4. Build and install:
+
+   % make
+   % make install
+
+   This will install SALOME Mesh module to the <installation_directory>
+   specified to cmake command on the previous step.
+
+-------------------
+Custom installation
+-------------------
+
+SALOME Mesh module supports a set of advanced configuration options;
+for more details learn CMakeLists.txt file in the root source directory.
+
+You can also use other options of cmake command to customize your installation.
+Learn more about available options by typing
+
+   % cmake --help
+
+=============
+Documentation
+=============
+
+The directory doc contains additional documentation file of SALOME Mesh module.
+
+===============
+Troubleshooting
+===============
+
+Please, send a mail to webmaster.salome@opencascade.com.
