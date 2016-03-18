@@ -404,3 +404,14 @@ vtkUnstructuredGrid* SMESHGUI_MeshEditPreview::GetGrid() const
 {
   return myGrid;
 }
+
+//================================================================================
+/*!
+ * \brief Returns myViewWindow
+ */
+//================================================================================
+
+SVTK_ViewWindow* SMESHGUI_MeshEditPreview::GetViewWindow() const
+{
+  return myViewWindow;
+}

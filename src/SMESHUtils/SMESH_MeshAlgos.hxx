@@ -159,6 +159,9 @@ namespace SMESH_MeshAlgos
   SMESHUtils_EXPORT
   SMESH_NodeSearcher* GetNodeSearcher( SMDS_Mesh& mesh );
 
+  SMESHUtils_EXPORT
+  SMESH_NodeSearcher* GetNodeSearcher( SMDS_ElemIteratorPtr elemIt );
+
   /*!
    * \brief Return SMESH_ElementSearcher. The caller is responsible for deleting it
    */

@@ -60,7 +60,8 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
   /*!
    * \brief Constructor
    */
-  SMESH_NodeSearcherImpl( const SMDS_Mesh* theMesh )
+  SMESH_NodeSearcherImpl( const SMDS_Mesh*     theMesh   = 0,
+                          SMDS_ElemIteratorPtr theElemIt = SMDS_ElemIteratorPtr() )
   {
     myMesh = ( SMDS_Mesh* ) theMesh;
 
@@ -69,6 +70,14 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
       SMDS_NodeIteratorPtr nIt = theMesh->nodesIterator(/*idInceasingOrder=*/true);
       while ( nIt->more() )
         nodes.insert( nodes.end(), nIt->next() );
+    }
+    else if ( theElemIt )
+    {
+      while ( theElemIt->more() )
+      {
+        const SMDS_MeshElement* e = theElemIt->next();
+        nodes.insert( e->begin_nodes(), e->end_nodes() );
+      }
     }
     myOctreeNode = new SMESH_OctreeNode(nodes) ;
 
@@ -714,8 +723,12 @@ FindElementsByPoint(const gp_Pnt&                      point,
   if ( type == SMDSAbs_Node || type == SMDSAbs_0DElement || type == SMDSAbs_Ball)
   {
     if ( !_nodeSearcher )
-      _nodeSearcher = new SMESH_NodeSearcherImpl( _mesh );
-
+    {
+      if ( _meshPartIt )
+        _nodeSearcher = new SMESH_NodeSearcherImpl( 0, _meshPartIt );
+      else
+        _nodeSearcher = new SMESH_NodeSearcherImpl( _mesh );
+    }
     std::vector< const SMDS_MeshNode* > foundNodes;
     _nodeSearcher->FindNearPoint( point, tolerance, foundNodes );
 
@@ -1693,6 +1706,17 @@ vector< const SMDS_MeshNode*> SMESH_MeshAlgos::GetCommonNodes(const SMDS_MeshEle
 SMESH_NodeSearcher* SMESH_MeshAlgos::GetNodeSearcher(SMDS_Mesh& mesh)
 {
   return new SMESH_NodeSearcherImpl( &mesh );
+}
+
+//=======================================================================
+/*!
+ * \brief Return SMESH_NodeSearcher
+ */
+//=======================================================================
+
+SMESH_NodeSearcher* SMESH_MeshAlgos::GetNodeSearcher(SMDS_ElemIteratorPtr elemIt)
+{
+  return new SMESH_NodeSearcherImpl( 0, elemIt );
 }
 
 //=======================================================================

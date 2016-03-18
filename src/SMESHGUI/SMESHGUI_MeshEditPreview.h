@@ -74,6 +74,7 @@ public:
 
   SALOME_Actor*        GetActor() const;
   vtkUnstructuredGrid* GetGrid() const;
+  SVTK_ViewWindow*     GetViewWindow() const;
 };
 
 #endif // SMESHGUI_MESHEDITPREVIEW_H
