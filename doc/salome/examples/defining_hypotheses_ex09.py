@@ -14,7 +14,7 @@ smesh =  smeshBuilder.New(salome.myStudy)
 box = geompy.MakeBoxDXDYDZ(10., 10., 10.)
 geompy.addToStudy(box, "Box")
 
-# 1. Create a hexahedral mesh on the box
+# Create a hexahedral mesh on the box
 hexa = smesh.Mesh(box, "Box : hexahedrical mesh")
 
 # create a Regular 1D algorithm for edges

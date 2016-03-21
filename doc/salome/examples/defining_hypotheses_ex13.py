@@ -13,8 +13,7 @@ smesh =  smeshBuilder.New(salome.myStudy)
 # Create face from the wire and add to study
 Face = geompy.MakeSketcher("Sketcher:F 0 0:TT 20 0:R 90:C 20 90:WF", [0, 0, 0, 1, 0, 0, 0, 0, 1])
 geompy.addToStudy(Face,"Face")
-edges = geompy.SubShapeAllSorted(Face, geompy.ShapeType["EDGE"])
-circle, radius1, radius2 = edges
+circle, radius1, radius2 = geompy.SubShapeAllSorted(Face, geompy.ShapeType["EDGE"])
 geompy.addToStudyInFather(Face, radius1,"radius1")
 geompy.addToStudyInFather(Face, radius2,"radius2")
 geompy.addToStudyInFather(Face, circle,"circle")
