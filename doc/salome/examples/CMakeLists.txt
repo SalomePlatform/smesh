@@ -94,7 +94,6 @@ SET(GOOD_TESTS
   filters_ex31.py
   filters_ex33.py
   filters_ex34.py
-  filters_ex35.py
   filters_ex36.py
   filters_ex37.py
   filters_ex38.py
