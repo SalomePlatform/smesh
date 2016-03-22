@@ -19,8 +19,9 @@
 #
 
 # Modules Python
-import string,types,os
+import string,types,os, sys
 import traceback
+import tempfile
 
 from PyQt4 import *
 from PyQt4.QtGui import *
@@ -49,16 +50,25 @@ class MonViewText(Ui_ViewExe, QDialog):
         # Je n arrive pas a utiliser le setEnvironment du QProcess
         # fonctionne hors Salome mais pas dans Salome ???
         cmds=''
-        cmds+='rm -f '+self.parent().fichierOut+'\n'
+        #cmds+='#! /usr/bin/env python\n'
+        #cmds+='# -*- coding: utf-8 -*-\n'
         cmds+=txt+'\n'
-        cmds+='echo END_OF_Yams\n'
-        pid=self.monExe.pid()
-        nomFichier='/tmp/Yams_'+str(pid)+'.sh'
+        cmds+='echo "END_OF_Yams"\n'
+        if os.path.exists(self.parent().fichierOut):
+            os.remove(self.parent().fichierOut)
+
+        ext=''
+        if sys.platform == "win32":
+            ext = '.bat'
+        else:
+            ext = '.sh'
+
+        nomFichier=tempfile.mktemp(suffix=ext,prefix='Yams_')
         f=open(nomFichier,'w')
         f.write(cmds)
         f.close()
 
-        maBidouille='sh  ' + nomFichier
+        maBidouille=nomFichier
         self.monExe.start(maBidouille)
         self.monExe.closeWriteChannel()
         self.enregistreResultatsDone=False

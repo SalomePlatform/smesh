@@ -19,7 +19,8 @@
 #
 
 # Modules Python
-import string,types,os
+import string,types,os,sys
+import tempfile
 import traceback
 
 from PyQt4 import *
@@ -51,16 +52,39 @@ class MGCleanerMonViewText(Ui_ViewExe, QDialog):
         # Je n arrive pas a utiliser le setEnvironment du QProcess
         # fonctionne hors Salome mais pas dans Salome ???
         cmds=''
+        '''
+        try :
+          LICENCE_FILE=os.environ["DISTENE_LICENCE_FILE_FOR_MGCLEANER"]
+        except:
+          LICENCE_FILE=''
+        try :
+          PATH=os.environ["DISTENE_PATH_FOR_MGCLEANER"]
+        except:
+          PATH=''
+        if LICENCE_FILE != '': 
+          cmds+='source '+LICENCE_FILE+'\n'
+        else:
+          cmds+="# $DISTENE_LICENCE_FILE_FOR_MGCLEANER NOT SET\n"
+        if PATH != '': 
+          cmds+='export PATH='+PATH+':$PATH\n'
+        else:
+          cmds+="# $DISTENE_PATH_FOR_MGCLEANER NOT SET\n"
+        #cmds+='env\n'
         cmds+='rm -f '+self.parent().fichierOut+'\n'
+        '''
         cmds+=txt+'\n'
         cmds+='echo END_OF_MGCleaner\n'
-        pid=self.monExe.pid()
-        nomFichier='/tmp/MGCleaner_'+str(pid)+'.sh'
+        ext=''
+        if sys.platform == "win32":
+            ext = '.bat'
+        else:
+            ext = '.sh'
+        nomFichier=tempfile.mktemp(suffix=ext,prefix="MGCleaner_")
         f=open(nomFichier,'w')
         f.write(cmds)
         f.close()
 
-        maBidouille='sh ' + nomFichier
+        maBidouille=nomFichier
         self.monExe.start(maBidouille)
         self.monExe.closeWriteChannel()
         self.enregistreResultatsDone=False
