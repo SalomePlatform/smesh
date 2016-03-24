@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2016  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -128,7 +128,7 @@ private:
   bool                           isSelectedHyp( int, int, int ) const;
   int                            nbDlgHypTypes( const int ) const;
   bool                           isAccessibleDim( const int ) const;
-  void                           setCurrentHyp( const int, const int, const int );
+  void                           setCurrentHyp( const int, const int, const int, const bool=false);
   void                           setDefaultName( const QString& prefix="" ) const;
   SMESH::SMESH_Hypothesis_var    getAlgo( const int );
   void                           readMesh();

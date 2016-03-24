@@ -41,8 +41,14 @@ class casStandard(fissureGenerique):
     self.dicoParams = dicoParams
     if self.dicoParams.has_key('nomCas'):
       self.nomCas = self.dicoParams['nomCas']
+    elif self.dicoParams.has_key('nomres'):
+      self.nomCas = os.path.splitext(os.path.split(self.dicoParams['nomres'])[1])[0]
     else:
-      self.nomCas = 'casStandard'    
+      self.nomCas = 'casStandard'
+    if self.dicoParams.has_key('reptrav'):
+      self.reptrav = self.dicoParams['reptrav']
+    else:
+      reptrav = '.'  
     self.numeroCas = numeroCas
     if self.numeroCas != 0:
       self.nomCas = self.nomProbleme +"_%d"%(self.numeroCas)
@@ -110,7 +116,7 @@ class casStandard(fissureGenerique):
 
   # ---------------------------------------------------------------------------
   def setParamMaillageFissure(self):
-    self.maillageFissureParams = dict(nomRep           = '.',
+    self.maillageFissureParams = dict(nomRep           = self.reptrav,
                                       nomFicSain       = self.nomCas,
                                       nomFicFissure    = 'fissure_' + self.nomCas,
                                       nbsegRad         = self.dicoParams['nbSegRad'],

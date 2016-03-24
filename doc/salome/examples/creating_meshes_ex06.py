@@ -1,5 +1,8 @@
 # Creating a hexahedral mesh on a cylinder.
-# Note: it is a copy of 'ex24_cylinder.py' from SMESH_SWIG
+#
+# This example uses Partition to divide the cylinder into blocks, which is
+# a general approach. But for the case of cylinder there is a dedicated
+# command creating a blocked cylinder: geompy.MakeDividedCylinder()
 
 import salome
 salome.salome_init()
@@ -22,7 +25,7 @@ height = 200
 # Build a cylinder
 # ----------------
 
-base = geompy.MakeVertex(0, 0, 0)
+base      = geompy.MakeVertex(0, 0, 0)
 direction = geompy.MakeVectorDXDYDZ(0, 0, 1)
 
 cylinder = geompy.MakeCylinder(base, direction, radius, height)
@@ -34,9 +37,9 @@ geompy.addToStudy(cylinder, "cylinder")
 
 size = radius/2.0
 
-box_rot = geompy.MakeBox(-size, -size, 0,  +size, +size, height)
+box_rot  = geompy.MakeBox(-size, -size, 0,  +size, +size, height)
 box_axis = geompy.MakeLine(base, direction)
-box = geompy.MakeRotation(box_rot, box_axis, math.pi/4)
+box      = geompy.MakeRotation(box_rot, box_axis, math.pi/4)
 
 hole = geompy.MakeCut(cylinder, box)
 
@@ -47,8 +50,8 @@ plane_b = geompy.MakePlane(base, geompy.MakeVectorDXDYDZ(0, 1, 0), plane_trim)
 
 blocks_part = geompy.MakePartition([hole], [plane_a, plane_b], [], [], geompy.ShapeType["SOLID"])
 blocks_list = [box] + geompy.SubShapeAll(blocks_part, geompy.ShapeType["SOLID"])
-blocks_all = geompy.MakeCompound(blocks_list)
-blocks = geompy.MakeGlueFaces(blocks_all, 0.0001)
+blocks_all  = geompy.MakeCompound(blocks_list)
+blocks      = geompy.MakeGlueFaces(blocks_all, 0.0001)
 
 geompy.addToStudy(blocks, "cylinder:blocks")
 
@@ -59,8 +62,7 @@ def group(name, shape, type, base=None, direction=None):
     t = geompy.ShapeType[type]
     g = geompy.CreateGroup(shape, t)
 
-    geompy.addToStudy(g, name)
-    g.SetName(name)
+    geompy.addToStudyInFather(shape, g, name)
 
     if base!=None:
         l = geompy.GetShapesOnPlaneWithLocationIDs(shape, t, direction, base, GEOM.ST_ON)
@@ -73,7 +75,7 @@ group_a = group("baseA", blocks, "FACE", base, direction)
 base_b  = geompy.MakeVertex(0, 0, height)
 group_b = group("baseB", blocks, "FACE", base_b, direction)
 
-group_1 = group("limit", blocks, "SOLID")
+group_1     = group("limit", blocks, "SOLID")
 group_1_all = geompy.SubShapeAllIDs(blocks, geompy.ShapeType["SOLID"])
 geompy.UnionIDs(group_1, group_1_all)
 group_1_box = geompy.GetBlockNearPoint(blocks, base)
@@ -84,12 +86,12 @@ geompy.DifferenceList(group_1, [group_1_box])
 
 smesh.SetCurrentStudy(salome.myStudy)
 
-def discretize(x, y, z,  n, s=blocks):
-    p = geompy.MakeVertex(x, y, z)
-    e = geompy.GetEdgeNearPoint(s, p)
-    a = hexa.Segment(e)
-    a.NumberOfSegments(n)
-    a.Propagation()
+def discretize(x, y, z,  nbSeg, shape=blocks):
+    vert = geompy.MakeVertex( x, y, z )
+    edge = geompy.GetEdgeNearPoint( shape, vert )
+    algo = hexa.Segment( edge )
+    algo.NumberOfSegments( nbSeg )
+    algo.Propagation()
 
 hexa = smesh.Mesh(blocks)
 

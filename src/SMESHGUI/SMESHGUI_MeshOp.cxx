@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2016  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -2010,6 +2010,9 @@ int SMESHGUI_MeshOp::currentHyp( const int theDim, const int theHypType ) const
 
 bool SMESHGUI_MeshOp::isSelectedHyp( int theDim, int theHypType, int theIndex) const
 {
+  if ( theIndex < 0 )
+    return false;
+
   if ( theHypType < AddHyp ) // only one hyp can be selected
     return currentHyp( theDim, theHypType ) == theIndex;
 
@@ -2050,17 +2053,28 @@ bool SMESHGUI_MeshOp::isAccessibleDim( const int theDim ) const
   * \param theDim - dimension of hypothesis or algorithm
   * \param theHypType - Type of hypothesis (Algo, MainHyp, AddHyp)
   * \param theIndex - Index of hypothesis
+  * \param updateHypsOnAlgoDeselection - to clear and disable hyps if algo deselected
  *
  * Gets current hypothesis or algorithms
  */
 //================================================================================
-void SMESHGUI_MeshOp::setCurrentHyp( const int theDim,
-                                     const int theHypType,
-                                     const int theIndex )
+void SMESHGUI_MeshOp::setCurrentHyp( const int  theDim,
+                                     const int  theHypType,
+                                     const int  theIndex,
+                                     const bool updateHypsOnAlgoDeselection)
 {
   myIgnoreAlgoSelection = true;
   myDlg->tab( theDim )->setCurrentHyp( theHypType, theIndex + 1 );
   myIgnoreAlgoSelection = false;
+
+  if ( updateHypsOnAlgoDeselection && theHypType == Algo && theIndex < 0 )
+  {
+    const QStringList noHyps;
+    myDlg->tab( theDim )->setAvailableHyps( MainHyp, noHyps );
+    myDlg->tab( theDim )->setExistingHyps ( MainHyp, noHyps );
+    myDlg->tab( theDim )->setAvailableHyps( AddHyp,  noHyps );
+    myDlg->tab( theDim )->setExistingHyps ( AddHyp,  noHyps );
+  }
 }
 
 //================================================================================
@@ -2645,7 +2659,7 @@ void SMESHGUI_MeshOp::setAvailableMeshType( const QStringList& theTypeMesh )
   * \param theIndex - Index of current type of mesh
  */
 //================================================================================
-void SMESHGUI_MeshOp::onAlgoSetByMeshType( const int theTabIndex, const int theIndex)
+void SMESHGUI_MeshOp::onAlgoSetByMeshType( const int theTabIndex, const int theIndex )
 {
   setFilteredAlgoData( theTabIndex, theIndex);
 }
@@ -2705,8 +2719,8 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
       }
     else
       for ( int i = SMESH::DIM_0D; i <= SMESH::DIM_3D; i++ ) {
-        if ( i > myMaxShapeDim || ( isReqDisBound && i != aReqDim ) ) myDlg->disableTab( i );
-        else                                                          myDlg->enableTab( i );
+        if ( i > myMaxShapeDim || ( isReqDisBound && i < aReqDim ) ) myDlg->disableTab( i );
+        else                                                         myDlg->enableTab( i );
       }
     myDlg->setCurrentTab( theTabIndex );
   }
@@ -2740,7 +2754,7 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
       //set new algorithm list and select the current algorithm
       myDlg->tab( dim )->setAvailableHyps( Algo, anAvailableAlgs );
       anCurrentCompareType = ( anCompareType == "HEXA" || anCompareType == "QUAD" ) ? "QUAD" : "TRIA";
-      setCurrentHyp( dim, Algo, anCurrentAvailableAlgo );
+      setCurrentHyp( dim, Algo, anCurrentAvailableAlgo, /*updateHyps=*/true );
     }
 
     for ( int i = myMaxShapeDim; i >= SMESH::DIM_0D; i-- ) {
@@ -2753,7 +2767,7 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
         for (int j = myMaxShapeDim; j >= SMESH::DIM_0D; j--) {
           if ( currentHyp( j, Algo ) < 0 ) {
             myDlg->disableTab( j );
-            setCurrentHyp( j , Algo, -1 );
+            setCurrentHyp( j , Algo, -1, /*updateHyps=*/true );
           }
         }
         break;
@@ -2763,8 +2777,8 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
       }
     }
     if ( aDim == SMESH::DIM_2D) {
+      setCurrentHyp( SMESH::DIM_3D, Algo, -1, /*updateHyps=*/true );
       myDlg->disableTab( SMESH::DIM_3D );
-      setCurrentHyp( SMESH::DIM_3D, Algo, -1);
     }
 
     int currentTab = ( theTabIndex <= aDim ) ? theTabIndex : aDim;

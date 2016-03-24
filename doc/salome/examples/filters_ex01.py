@@ -1,16 +1,22 @@
 # Aspect ratio
+# This script demonstrates various usages of filters
 
 # create mesh
 from SMESH_mechanic import *
 
-# get faces with aspect ratio > 1.5
-filter = smesh.GetFilter(SMESH.FACE, SMESH.FT_AspectRatio, SMESH.FT_MoreThan, 1.5)
+# get faces with aspect ratio > 2.5
+filter = smesh.GetFilter(SMESH.FACE, SMESH.FT_AspectRatio, SMESH.FT_MoreThan, 2.5)
 ids = mesh.GetIdsFromFilter(filter)
+print "Number of faces with aspect ratio > 2.5:", len(ids)
+
+# get faces with aspect ratio > 1.5
+filter = smesh.GetFilter(SMESH.FACE, SMESH.FT_AspectRatio, '>', 1.5, mesh=mesh)
+ids = filter.GetIDs()
 print "Number of faces with aspect ratio > 1.5:", len(ids)
 
 # copy the faces with aspect ratio > 1.5 to another mesh;
 # this demostrates that a filter can be used where usually a group or sub-mesh is acceptable
-filter.SetMesh( mesh.GetMesh() )
+filter.SetMesh( mesh.GetMesh() ) # - actually non necessary as mesh is set at filter creation
 mesh2 = smesh.CopyMesh( filter, "AR > 1.5" )
 print "Number of copied faces with aspect ratio > 1.5:", mesh2.NbFaces()
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2016  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -338,16 +338,23 @@ void SMESHGUI_MeshTab::setCurrentHyp( const int theId, const int theIndex )
   }
   else // more than one additional hyp assigned
   {
-    // move a hyp from myHypCombo[ AddHyp ] to myAddHypList
-    for ( int i = 1, nb = myHypCombo[ AddHyp ]->count(); i < nb; ++i )
+    if ( theIndex > 0 )
     {
-      int curIndex = myHypCombo[ AddHyp ]->itemData( i ).toInt();
-      if ( theIndex == curIndex )
+      // move a hyp from myHypCombo[ AddHyp ] to myAddHypList
+      for ( int i = 1, nb = myHypCombo[ AddHyp ]->count(); i < nb; ++i )
       {
-        addItem( myHypCombo[ AddHyp ]->itemText( i ), theId, theIndex );
-        myHypCombo[ AddHyp ]->removeItem( i );
-        break;
+        int curIndex = myHypCombo[ AddHyp ]->itemData( i ).toInt();
+        if ( theIndex == curIndex )
+        {
+          addItem( myHypCombo[ AddHyp ]->itemText( i ), theId, theIndex );
+          myHypCombo[ AddHyp ]->removeItem( i );
+          break;
+        }
       }
+    }
+    else
+    {
+      myAddHypList->clear();
     }
   }
 }

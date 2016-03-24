@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2016  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -980,7 +980,7 @@ void SMESHDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elt,
 {
   //MESSAGE(" --------------------------------> SMESHDS_Mesh::RemoveFreeElement " << subMesh << " " << fromGroups);
   if (elt->GetType() == SMDSAbs_Node) {
-    RemoveFreeNode( static_cast<const SMDS_MeshNode*>(elt), subMesh);
+    RemoveFreeNode( static_cast<const SMDS_MeshNode*>(elt), subMesh, fromGroups);
     return;
   }
 
@@ -2275,7 +2275,7 @@ void SMESHDS_Mesh::compactMesh()
   int newSmdsId = 0;
   for (int i = 0; i < myCellsSize; i++)
   {
-    if (myCells[i])
+    if ( myCells[i] )
     {
       newSmdsId++; // SMDS id start to 1
       assert(newSmdsId <= newCellSize);

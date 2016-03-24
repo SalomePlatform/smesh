@@ -41,7 +41,8 @@ The \b Global algorithms and hypotheses to be chosen at
 <li> 1D algorithm and hypothesis that will be applied for meshing
   (logically) vertical edges of the prism (which connect the top and the
   base faces of the prism). In the sample picture above these are
-  "Regular_1D" algorithm and "Nb. Segments_1" hypothesis.</li>
+  "Regular_1D" algorithm and "Nb. Segments" hypothesis named "Vertical
+  Nb. Segments".</li>
 </ul>
 
 The \b Local algorithms and hypotheses to be chosen at 
@@ -51,9 +52,9 @@ The \b Local algorithms and hypotheses to be chosen at
     meshing the top and the base prism faces. These faces can be meshed
     with any type of 2D elements: quadrangles, triangles, polygons or
     their mix. It is enough to define a sub-mesh on either the top or the base
-    face. In the sample picture above, "BLSURF" algorithm meshes
-    "Face_1" base surface with triangles. (1D algorithm is not
-    assigned as "BLSURF" does not require divided edges to create a 2D mesh.)
+    face. In the sample picture above, "NETGEN_1D2D" algorithm meshes
+    "bottom disk" face with triangles. (1D algorithm is not
+    assigned as "NETGEN_1D2D" does not require divided edges to create a 2D mesh.)
   </li>
   <li> Optionally you can define a 1D sub-mesh on some vertical edges
     of stacked prisms, which will override the global 1D hypothesis mentioned

@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2015  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2012-2016  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -95,6 +95,9 @@ SET(GOOD_TESTS
   filters_ex33.py
   filters_ex34.py
   filters_ex36.py
+  filters_ex37.py
+  filters_ex38.py
+  filters_ex39.py
   filters_belong2group.py
   grouping_elements_ex01.py
   grouping_elements_ex02.py

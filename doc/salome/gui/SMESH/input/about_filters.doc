@@ -4,11 +4,11 @@
 
 \b Filters allow picking only the mesh elements satisfying to a
 specific condition or a set of conditions. Filters can be used to create
-or edit mesh groups, remove elements from the mesh object, control
+or edit mesh groups, remove elements from the mesh, control
 mesh quality by different parameters, etc.
 
 Several criteria can be combined together by using logical operators \a
-AND and \a OR. In addition, applied filter criterion can be reverted
+AND and \a OR. In addition, a filter criterion can be reverted
 using logical operator \a NOT.
 
 Some filtering criteria use the functionality of \ref quality_page "mesh quality controls"
@@ -27,6 +27,8 @@ about selection filters and their usage in GUI.
   entities (nodes or elements) for the operations, which require the
   list of entities as input parameter (create/modify group, remove
   nodes/elements, etc) and for the operations, which accept objects
-  as input parameter. The page \ref tui_filters_page provides
-  examples of the filters usage in Python scripts.
+  (groups, sub-meshes) as input parameter. The page \ref
+  tui_filters_page provides examples of the filters usage in Python
+  scripts.
+
 */

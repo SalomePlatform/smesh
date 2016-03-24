@@ -2,6 +2,8 @@
 
 \page tui_quality_controls_page Quality Controls
 
+\tableofcontents
+
 \section tui_free_borders Free Borders
 \tui_script{quality_controls_ex01.py}
 

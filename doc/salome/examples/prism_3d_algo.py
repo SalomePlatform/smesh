@@ -1,4 +1,4 @@
-# Use 3D extrusion meshing algorithm
+# Usage of 3D Extrusion meshing algorithm
 
 import salome
 salome.salome_init()
@@ -58,7 +58,7 @@ mesh = smesh.Mesh( prisms )
 
 # assign Global hypotheses
 
-# 1D algorithm and hypothesis for vertical division
+# 1D algorithm and hypothesis for division along the pipe
 mesh.Segment().NumberOfSegments(15)
 
 # Extrusion 3D algo

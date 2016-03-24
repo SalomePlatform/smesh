@@ -100,7 +100,8 @@ The mesh can include the following entities:
 Every mesh entity has an attribute associating it to a sub-shape it is
 generated on (if any). The node generated on the geometrical edge or
 surface in addition stores its position in parametric space of the
-associated geometrical entity.
+associated geometrical entity. This attribute is set up by meshing
+algorithms generating elements and nodes.
 
 Mesh entities are identified by integer IDs starting from 1.
 Nodes and elements are counted separately, i.e. there can be a node

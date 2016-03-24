@@ -8,6 +8,8 @@ from geomsmesh import geomPublishInFather
 import initLog
 from findWireEndVertices import findWireEndVertices
 from prolongeWire import prolongeWire
+import traceback
+from fissError import fissError
 
 def partitionneFissureParPipe(shapesFissure, elementsDefaut, rayonPipe):
   """
@@ -33,7 +35,12 @@ def partitionneFissureParPipe(shapesFissure, elementsDefaut, rayonPipe):
   cercle = geompy.MakeRotation(cercle, norms[0], math.pi/3.0 ) # éviter d'avoir l'arête de couture du pipe presque confondue avec la face fissure
   geomPublish(initLog.debug, cercle, 'cercle')
   fondFissProlonge = prolongeWire(fondFiss, extrem, norms, 2*rayonPipe)
-  pipeFiss = geompy.MakePipe(cercle, fondFissProlonge)
+  try:
+    pipeFiss = geompy.MakePipe(cercle, fondFissProlonge)
+  except:
+    texte = "génération du pipe le long de la ligne de fond de fissure prolongée impossible. "
+    texte += "Cause possible : la ligne s'autointersecte lorsqu'on la prolonge."
+    raise fissError(traceback.extract_stack(),texte)
   geomPublish(initLog.debug, pipeFiss, 'pipeFiss')
   partFissPipe = geompy.MakePartition([shapeDefaut, pipeFiss], [], [], [], geompy.ShapeType["FACE"], 0, [], 1)
   geomPublish(initLog.debug, partFissPipe, 'partFissPipe')

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2007-2016  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -127,8 +127,8 @@ class SMeshStudyTools:
         from salome.smesh import smeshBuilder
         smesh = smeshBuilder.New(self.editor.study)
 
-        meshObject=smesh.IDToObject(entry)
-        return meshObject
+        meshObject=salome.IDToObject(entry)
+        return smesh.Mesh( meshObject )
     
     ## Returns the SMESH object associated to the specified \em SObject,
     #  (the SObject is an item in the objects browser).

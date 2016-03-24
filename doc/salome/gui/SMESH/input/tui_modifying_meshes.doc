@@ -2,9 +2,10 @@
 
 \page tui_modifying_meshes_page Modifying Meshes
 
+\tableofcontents
+
 <br>
-\anchor tui_adding_nodes_and_elements
-<h2>Adding Nodes and Elements</h2>
+\section tui_adding_nodes_and_elements Adding Nodes and Elements
 
 <br>
 \anchor tui_add_node
@@ -57,8 +58,7 @@
 \tui_script{modifying_meshes_ex10.py}
 
 <br>
-\anchor tui_removing_nodes_and_elements
-<h2>Removing Nodes and Elements</h2>
+\section tui_removing_nodes_and_elements Removing Nodes and Elements
 
 <br>
 \anchor tui_removing_nodes
@@ -76,73 +76,59 @@
 \tui_script{modifying_meshes_ex13.py}
 
 <br>
-\anchor tui_renumbering_nodes_and_elements
-<h2>Renumbering Nodes and Elements</h2>
+\section tui_renumbering_nodes_and_elements Renumbering Nodes and Elements
 \tui_script{modifying_meshes_ex14.py}
 
 <br>
-\anchor tui_moving_nodes
-<h2>Moving Nodes</h2>
+\section tui_moving_nodes Moving Nodes
 \tui_script{modifying_meshes_ex15.py}
 
 <br>
-\anchor tui_diagonal_inversion
-<h2>Diagonal Inversion</h2>
+\section tui_diagonal_inversion Diagonal Inversion
 \tui_script{modifying_meshes_ex16.py}
 
 <br>
-\anchor tui_uniting_two_triangles
-<h2>Uniting two Triangles</h2>
+\section tui_uniting_two_triangles Uniting two Triangles
 \tui_script{modifying_meshes_ex17.py}
 
 <br>
-\anchor tui_uniting_set_of_triangles
-<h2>Uniting a Set of Triangles</h2>
+\section tui_uniting_set_of_triangles Uniting a Set of Triangles
 \tui_script{modifying_meshes_ex18.py}
 
 <br>
-\anchor tui_orientation
-<h2>Orientation</h2>
+\section tui_orientation Orientation
 \tui_script{modifying_meshes_ex19.py}
 
 <br>
-\anchor tui_cutting_quadrangles
-<h2>Cutting Quadrangles</h2>
+\section tui_cutting_quadrangles Cutting Quadrangles
 \tui_script{modifying_meshes_ex20.py}
 
 <br>
-\anchor tui_smoothing
-<h2>Smoothing</h2>
+\section tui_smoothing Smoothing
 \tui_script{modifying_meshes_ex21.py}
 
 <br>
-\anchor tui_extrusion
-<h2>Extrusion</h2>
+\section tui_extrusion Extrusion
 \tui_script{modifying_meshes_ex22.py}
 
 <br>
-\anchor tui_extrusion_along_path
-<h2>Extrusion along a Path</h2>
+\section tui_extrusion_along_path Extrusion along a Path
 \tui_script{modifying_meshes_ex23.py}
 
 <br>
-\anchor tui_revolution
-<h2>Revolution</h2>
+\section tui_revolution Revolution
 \tui_script{modifying_meshes_ex24.py}
 
 <br>
-\anchor tui_pattern_mapping
-<h2>Pattern Mapping</h2>
+\section tui_pattern_mapping Pattern Mapping
 \tui_script{modifying_meshes_ex25.py}
 
 <br>
-\anchor tui_quadratic
-<h2>Convert mesh to/from quadratic</h2>
+\section tui_quadratic Convert mesh to/from quadratic
 \tui_script{modifying_meshes_ex26.py}
 
 <br>
-\anchor tui_split_biquad
-<h2>Split bi-quadratic into linear</h2>
+\section tui_split_biquad Split bi-quadratic into linear
 \tui_script{split_biquad.py}
 
 */

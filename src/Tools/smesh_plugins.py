@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2011-2015  EDF R&D
+# Copyright (C) 2011-2016  EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -63,6 +63,14 @@ try:
   salome_pluginsmanager.AddFunction('Meshed Pipe with a crack',
                                     'Create a mesh with blocFissure tool',
                                     fissureCoudeDlg)
+except:
+  salome_pluginsmanager.logger.info('ERROR: Meshed Pipe with a crack plug-in is unavailable')
+  pass
+try:
+  from blocFissure.ihm.fissureGenerale_plugin import fissureGeneraleDlg
+  salome_pluginsmanager.AddFunction('Add a crack in a mesh',
+                                    'Insert a crack in an hexahedral mesh with blocFissure tool',
+                                    fissureGeneraleDlg)
 except:
   salome_pluginsmanager.logger.info('ERROR: Meshed Pipe with a crack plug-in is unavailable')
   pass

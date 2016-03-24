@@ -10,38 +10,63 @@ critical = 50
 
 loglevel = warning
 
-def setDebug():
+def setDebug(logfile=None):
   global loglevel
-  logging.basicConfig(format='%(relativeCreated)d %(funcName)s[%(lineno)d] %(message)s',
-                      level=logging.DEBUG)
+  if logfile:
+    logging.basicConfig(filename=logfile,
+                        format='%(relativeCreated)d %(funcName)s[%(lineno)d] %(message)s',
+                        level=logging.DEBUG)
+  else:
+    logging.basicConfig(format='%(relativeCreated)d %(funcName)s[%(lineno)d] %(message)s',
+                        level=logging.DEBUG)    
   loglevel = debug
   logging.info('start Debug %s', loglevel)
 
-def setVerbose():
+def setVerbose(logfile=None):
   global loglevel
-  logging.basicConfig(format='%(relativeCreated)d %(funcName)s[%(lineno)d] %(message)s',
-                      level=logging.INFO)
+  if logfile:
+    logging.basicConfig(filename=logfile,
+                        format='%(relativeCreated)d %(funcName)s[%(lineno)d] %(message)s',
+                        level=logging.INFO)
+  else:
+    logging.basicConfig(format='%(relativeCreated)d %(funcName)s[%(lineno)d] %(message)s',
+                        level=logging.INFO)    
   loglevel = info
   logging.info('start Verbose %s', loglevel)
 
-def setRelease():
+def setRelease(logfile=None):
   global loglevel
-  logging.basicConfig(format='%(funcName)s[%(lineno)d] %(message)s',
-                      level=logging.WARNING)
+  if logfile:
+    logging.basicConfig(filename=logfile,
+                        format='%(funcName)s[%(lineno)d] %(message)s',
+                        level=logging.WARNING)
+  else:
+    logging.basicConfig(format='%(funcName)s[%(lineno)d] %(message)s',
+                        level=logging.WARNING)
   loglevel = warning
   logging.warning('start Release %s', loglevel)
   
-def setUnitTests():
+def setUnitTests(logfile=None):
   global loglevel
-  logging.basicConfig(format='%(funcName)s[%(lineno)d] %(message)s',
-                      level=logging.CRITICAL)
+  if logfile:
+    logging.basicConfig(filename=logfile,
+                        format='%(funcName)s[%(lineno)d] %(message)s',
+                        level=logging.CRITICAL)
+  else:
+    logging.basicConfig(format='%(funcName)s[%(lineno)d] %(message)s',
+                        level=logging.CRITICAL)
   loglevel = critical
   logging.critical('start UnitTests %s', loglevel)
   
-def setPerfTests():
+def setPerfTests(logfile=None):
   global loglevel
-  logging.basicConfig(format='%(relativeCreated)d %(funcName)s[%(lineno)d] %(message)s',
-                      level=logging.CRITICAL)
+  if logfile:
+    logging.basicConfig(filename=logfile,
+                        format='%(relativeCreated)d %(funcName)s[%(lineno)d] %(message)s',
+                        level=logging.CRITICAL)
+  else:
+    logging.basicConfig(format='%(relativeCreated)d %(funcName)s[%(lineno)d] %(message)s',
+                        level=logging.CRITICAL)    
   loglevel = critical
   logging.info('start PerfTests %s', loglevel)
   

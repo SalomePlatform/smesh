@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2016  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -609,7 +609,7 @@ bool SMESH_subMesh::IsApplicableHypotesis(const SMESH_Hypothesis* theHypothesis,
 //================================================================================
 
 SMESH_Hypothesis::Hypothesis_Status
-  SMESH_subMesh::AlgoStateEngine(int event, SMESH_Hypothesis * anHyp)
+  SMESH_subMesh::AlgoStateEngine(algo_event event, SMESH_Hypothesis * anHyp)
 {
   // **** les retour des evenement shape sont significatifs
   // (add ou remove fait ou non)
@@ -1167,7 +1167,7 @@ void SMESH_subMesh::setAlgoState(algo_state state)
 //================================================================================
 
 SMESH_Hypothesis::Hypothesis_Status
-  SMESH_subMesh::SubMeshesAlgoStateEngine(int                event,
+  SMESH_subMesh::SubMeshesAlgoStateEngine(algo_event         event,
                                           SMESH_Hypothesis * anHyp,
                                           bool               exitOnFatal)
 {
@@ -1217,8 +1217,6 @@ void SMESH_subMesh::cleanDependsOn( SMESH_Algo* algoRequiringCleaning/*=0*/ )
   }
   else if ( algoRequiringCleaning && algoRequiringCleaning->SupportSubmeshes() )
   {
-    SMESHDS_Mesh* meshDS = _father->GetMeshDS();
-
     // find sub-meshes to keep elements on
     set< SMESH_subMesh* > smToKeep;
     TopAbs_ShapeEnum prevShapeType = TopAbs_SHAPE;
@@ -1234,21 +1232,24 @@ void SMESH_subMesh::cleanDependsOn( SMESH_Algo* algoRequiringCleaning/*=0*/ )
         if ( !sameShapeType )
         {
           // check if the algo allows presence of global algos of dimension the algo
-          // can generate it-self
+          // can generate it-self;
+          // always keep a node on VERTEX, as this node can be shared by segments
+          // lying on EDGEs not shared by the VERTEX of sm, due to MergeNodes (PAL23068)
           int  shapeDim = SMESH_Gen::GetShapeDim( sm->GetSubShape() );
-          keepSubMeshes = algoRequiringCleaning->NeedLowerHyps( shapeDim );
+          keepSubMeshes = ( algoRequiringCleaning->NeedLowerHyps( shapeDim ) || shapeDim == 0 );
           prevShapeType = sm->GetSubShape().ShapeType();
           toKeepPrevShapeType = keepSubMeshes;
         }
         if ( !keepSubMeshes )
         {
-          // look for an algo assigned to sm
-          bool algoFound = false;
-          const list<const SMESHDS_Hypothesis*>& hyps = meshDS->GetHypothesis( sm->_subShape );
-          list<const SMESHDS_Hypothesis*>::const_iterator h = hyps.begin();
-          for ( ; ( !algoFound && h != hyps.end() ); ++h )
-            algoFound = ((*h)->GetType() != SMESHDS_Hypothesis::PARAM_ALGO );
-          keepSubMeshes = algoFound;
+          // look for a local algo used to mesh sm
+          TopoDS_Shape algoShape = SMESH_MesherHelper::GetShapeOfHypothesis
+            ( algoRequiringCleaning, _subShape, _father );
+          SMESH_HypoFilter moreLocalAlgo;
+          moreLocalAlgo.Init( SMESH_HypoFilter::IsMoreLocalThan( algoShape, *_father ));
+          moreLocalAlgo.And ( SMESH_HypoFilter::IsAlgo() );
+          bool localAlgoFound = _father->GetHypothesis( sm->_subShape, moreLocalAlgo, true );
+          keepSubMeshes = localAlgoFound;
         }
         // remember all sub-meshes of sm
         if ( keepSubMeshes )
@@ -1346,7 +1347,7 @@ static void cleanSubMesh( SMESH_subMesh * subMesh )
  */
 //=============================================================================
 
-bool SMESH_subMesh::ComputeStateEngine(int event)
+bool SMESH_subMesh::ComputeStateEngine(compute_event event)
 {
   switch ( event ) {
   case MODIF_ALGO_STATE:
@@ -1983,7 +1984,7 @@ void SMESH_subMesh::updateSubMeshState(const compute_state theState)
 //purpose  :
 //=======================================================================
 
-void SMESH_subMesh::ComputeSubMeshStateEngine(int event, const bool includeSelf)
+void SMESH_subMesh::ComputeSubMeshStateEngine(compute_event event, const bool includeSelf)
 {
   SMESH_subMeshIteratorPtr smIt = getDependsOnIterator(includeSelf,false);
   while ( smIt->more() )
@@ -2454,7 +2455,7 @@ void SMESH_subMeshEventListener::ProcessEvent(const int          event,
     switch ( event ) {
     case SMESH_subMesh::CLEAN:
       for ( ; smIt != smEnd; ++ smIt)
-        (*smIt)->ComputeStateEngine( event );
+        (*smIt)->ComputeStateEngine( SMESH_subMesh::compute_event( event ));
       break;
     case SMESH_subMesh::COMPUTE:
     case SMESH_subMesh::COMPUTE_SUBMESH:

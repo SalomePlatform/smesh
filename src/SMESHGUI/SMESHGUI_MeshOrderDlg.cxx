@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2016  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -293,7 +293,7 @@ bool SMESHGUI_MeshOrderBox:: IsOrderChanged() const
 // =========================================================================================
 
 SMESHGUI_MeshOrderDlg::SMESHGUI_MeshOrderDlg(QWidget* theParent)
-: SMESHGUI_Dialog( theParent, false, false, OK | Cancel | Help )
+: SMESHGUI_Dialog( theParent, true, false, OK | Cancel | Help )
 {
   setWindowTitle( tr( "SMESH_MESHORDER_TITLE") );
   QFrame* main = mainFrame();
