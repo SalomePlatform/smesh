@@ -1437,6 +1437,9 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     if ( mapper.GetErrorCode() != SMESH_Pattern::ERR_OK )
       return error("Can't make mesh by source mesh pattern");
 
+  } // end of projection using Pattern mapping
+
+  {
     // -------------------------------------------------------------------------
     // mapper doesn't take care of nodes already existing on edges and vertices,
     // so we must merge nodes created by it with existing ones
@@ -1476,7 +1479,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
         continue; // do not treat sm of degen VERTEX
       }
 
-      // Sort new and old nodes of a submesh separately
+      // Sort new and old nodes of a sub-mesh separately
 
       bool isSeam = helper.IsRealSeam( sm->GetId() );
 
@@ -1600,6 +1603,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     // The mapper can't create quadratic elements, so convert if needed
     // ----------------------------------------------------------------
 
+    SMDS_ElemIteratorPtr faceIt;
     faceIt         = srcSubMesh->GetSubMeshDS()->GetElements();
     bool srcIsQuad = faceIt->next()->IsQuadratic();
     faceIt         = tgtSubMesh->GetSubMeshDS()->GetElements();
@@ -1613,8 +1617,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
       editor.ConvertToQuadratic(/*theForce3d=*/false, tgtFaces, false);
     }
-
-  } // end of projection using Pattern mapping
+  } // end of coincident nodes and quadratic elements treatment
 
 
   if ( !projDone || is1DComputed )
