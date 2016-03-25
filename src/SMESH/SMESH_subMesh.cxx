@@ -241,7 +241,7 @@ bool SMESH_subMesh::IsMeshComputed() const
 {
   if ( _alwaysComputed )
     return true;
-  // algo may bind a submesh not to _subShape, eg 3D algo
+  // algo may bind a sub-mesh not to _subShape, eg 3D algo
   // sets nodes on SHELL while _subShape may be SOLID
 
   SMESHDS_Mesh* meshDS = _father->GetMeshDS();
@@ -280,7 +280,7 @@ bool SMESH_subMesh::SubMeshesComputed(bool * isFailedToCompute/*=0*/) const
   int dimToCheck = myDim - 1;
   bool subMeshesComputed = true;
   if ( isFailedToCompute ) *isFailedToCompute = false;
-  // check subMeshes with upper dimension => reverse iteration
+  // check sub-meshes with upper dimension => reverse iteration
   SMESH_subMeshIteratorPtr smIt = getDependsOnIterator(false,true);
   while ( smIt->more() )
   {
@@ -291,66 +291,21 @@ bool SMESH_subMesh::SubMeshesComputed(bool * isFailedToCompute/*=0*/) const
 
     // MSV 07.04.2006: restrict checking to myDim-1 only. Ex., there is no sense
     // in checking of existence of edges if the algo needs only faces. Moreover,
-    // degenerated edges may have no submesh, as after computing NETGEN_2D.
+    // degenerated edges may have no sub-mesh, as after computing NETGEN_2D.
     if ( !_algo || _algo->NeedDiscreteBoundary() ) {
       int dim = SMESH_Gen::GetShapeDim( ss );
       if (dim < dimToCheck)
-        break; // the rest subMeshes are all of less dimension
+        break; // the rest sub-meshes are all of less dimension
     }
     SMESHDS_SubMesh * ds = sm->GetSubMeshDS();
-    bool computeOk = (sm->GetComputeState() == COMPUTE_OK ||
-                      (ds && ( dimToCheck ? ds->NbElements() : ds->NbNodes()  )));
+    bool computeOk = ((sm->GetComputeState() == COMPUTE_OK ) ||
+                      (ds && ( dimToCheck ? ds->NbElements() : ds->NbNodes() )));
     if (!computeOk)
     {
       subMeshesComputed = false;
+
       if ( isFailedToCompute && !(*isFailedToCompute) )
         *isFailedToCompute = ( sm->GetComputeState() == FAILED_TO_COMPUTE );
-
-      // int type = ss.ShapeType();
-
-      // switch (type)
-      // {
-      // case TopAbs_COMPOUND:
-      //   {
-      //     MESSAGE("The not computed sub mesh is a COMPOUND");
-      //     break;
-      //   }
-      // case TopAbs_COMPSOLID:
-      //   {
-      //     MESSAGE("The not computed sub mesh is a COMPSOLID");
-      //     break;
-      //   }
-      // case TopAbs_SHELL:
-      //   {
-      //     MESSAGE("The not computed sub mesh is a SHEL");
-      //     break;
-      //   }
-      // case TopAbs_WIRE:
-      //   {
-      //     MESSAGE("The not computed sub mesh is a WIRE");
-      //     break;
-      //   }
-      // case TopAbs_SOLID:
-      //   {
-      //     MESSAGE("The not computed sub mesh is a SOLID");
-      //     break;
-      //   }
-      // case TopAbs_FACE:
-      //   {
-      //     MESSAGE("The not computed sub mesh is a FACE");
-      //     break;
-      //   }
-      // case TopAbs_EDGE:
-      //   {
-      //     MESSAGE("The not computed sub mesh is a EDGE");
-      //     break;
-      //   }
-      // default:
-      //   {
-      //     MESSAGE("The not computed sub mesh is of unknown type");
-      //     break;
-      //   }
-      // }
 
       if ( !isFailedToCompute )
         break;
@@ -1254,7 +1209,7 @@ void SMESH_subMesh::cleanDependsOn( SMESH_Algo* algoRequiringCleaning/*=0*/ )
         // remember all sub-meshes of sm
         if ( keepSubMeshes )
         {
-          SMESH_subMeshIteratorPtr smIt2 = getDependsOnIterator(false);
+          SMESH_subMeshIteratorPtr smIt2 = sm->getDependsOnIterator(true);
           while ( smIt2->more() )
             smToKeep.insert( smIt2->next() );
         }
@@ -1622,6 +1577,36 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
         if (ret && _computeError && _computeError->myName != COMPERR_WARNING )
         {
           _computeError.reset();
+        }
+
+        // transform errors into warnings if it is caused by mesh edition (imp 0023068)
+        if (!ret && _father->GetIsModified() )
+        {
+          for (subS.ReInit(); subS.More(); subS.Next())
+          {
+            SMESH_subMesh* sm = _father->GetSubMesh( subS.Current() );
+            if ( !sm->IsMeshComputed() && sm->_computeError )
+            {
+              // check if there is a VERTEX w/o nodes
+              // with READY_TO_COMPUTE state (after MergeNodes())
+              SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(false,false);
+              while ( smIt->more() )
+              {
+                SMESH_subMesh * vertSM = smIt->next();
+                if ( vertSM->_subShape.ShapeType() != TopAbs_VERTEX ) break;
+                if ( vertSM->GetComputeState() == READY_TO_COMPUTE )
+                {
+                  SMESHDS_SubMesh * ds = vertSM->GetSubMeshDS();
+                  if ( !ds || ds->NbNodes() == 0 )
+                  {
+                    sm->_computeState = READY_TO_COMPUTE;
+                    sm->_computeError->myName = COMPERR_WARNING;
+                    break;
+                  }
+                }
+              }
+            }
+          }
         }
 
         // send event SUBMESH_COMPUTED

@@ -96,8 +96,7 @@ class SMESH_EXPORT SMESH_subMesh
 
   enum compute_state
   {
-    NOT_READY, READY_TO_COMPUTE,
-    COMPUTE_OK, FAILED_TO_COMPUTE
+    NOT_READY, READY_TO_COMPUTE, COMPUTE_OK, FAILED_TO_COMPUTE
   };
   enum algo_state
   {
@@ -123,7 +122,7 @@ class SMESH_EXPORT SMESH_subMesh
   };
 
   // ==================================================================
-  // Members to track non hierarchical dependencies between submeshes 
+  // Members to track non hierarchical dependencies between sub-meshes 
   // ==================================================================
 
   /*!
