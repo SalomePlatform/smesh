@@ -1209,7 +1209,7 @@ void SMESH_subMesh::cleanDependsOn( SMESH_Algo* algoRequiringCleaning/*=0*/ )
         // remember all sub-meshes of sm
         if ( keepSubMeshes )
         {
-          SMESH_subMeshIteratorPtr smIt2 = sm->getDependsOnIterator(false);
+          SMESH_subMeshIteratorPtr smIt2 = sm->getDependsOnIterator(true);
           while ( smIt2->more() )
             smToKeep.insert( smIt2->next() );
         }
