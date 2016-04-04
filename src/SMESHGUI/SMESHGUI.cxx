@@ -586,7 +586,7 @@ namespace
         "SMESH_OCTAHEDRA","SMESH_POLYEDRONS","SMESH_QUADRATIC_POLYEDRONS","SMESH_BALLS"
       };
       // is typeMsg complete? (compilation failure mains that enum SMDSAbs_EntityType changed)
-      int nbTypes = sizeof( typeMsg ) / sizeof( const char* );
+      const int nbTypes = sizeof( typeMsg ) / sizeof( const char* );
       int _assert[( nbTypes == SMESH::Entity_Last ) ? 1 : -1 ]; _assert[0]=1;
 
       QString andStr = " " + QObject::tr("SMESH_AND") + " ", comma(", ");
