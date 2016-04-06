@@ -144,7 +144,7 @@ Nb_Segments_3 = Regular_1D_2.NumberOfSegments(6,[],[  ])
 Nb_Segments_3.SetDistrType( 0 )
 isDone = CylindreSain_1.Compute()
 smesh.SetName(CylindreSain_1, 'CylindreSain')
-CylindreSain_1.ExportMED( os.path.join(gmu.pathBloc, "materielCasTests//CylindreSain.med"), 0, SMESH.MED_V2_2, 1 )
+CylindreSain_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests//CylindreSain.med"))
 SubMesh_1 = Regular_1D_1.GetSubMesh()
 SubMesh_2 = Regular_1D_2.GetSubMesh()
 

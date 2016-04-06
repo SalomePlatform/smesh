@@ -87,7 +87,7 @@ Nb_Segments_3 = Regular_1D_2.NumberOfSegments(25)
 Nb_Segments_3.SetDistrType( 0 )
 isDone = EprouvetteCourbe_1.Compute()
 smesh.SetName(EprouvetteCourbe_1, 'EprouvetteCourbe')
-EprouvetteCourbe_1.ExportMED( os.path.join(gmu.pathBloc, "materielCasTests/EprouvetteCourbe.med"), 0, SMESH.MED_V2_2, 1 )
+EprouvetteCourbe_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests/EprouvetteCourbe.med"))
 SubMesh_1 = Regular_1D_1.GetSubMesh()
 SubMesh_2 = Regular_1D_2.GetSubMesh()
 

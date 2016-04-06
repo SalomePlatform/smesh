@@ -383,9 +383,14 @@ public:
                                               CORBA::Double                 mergeTolerance)
     throw ( SALOME::SALOME_Exception );
 
+  // Get version of MED format being used.
+  char* GetMEDFileVersion();
+
   // Get MED version of the file by its name
-  CORBA::Boolean GetMEDVersion(const char* theFileName,
-                               SMESH::MED_VERSION& theVersion);
+  char* GetMEDVersion(const char* theFileName);
+
+  // Check compatibility of file with MED format being used.
+  CORBA::Boolean CheckCompatibility(const char* theFileName);
 
   // Get names of meshes defined in file with the specified name
   SMESH::string_array* GetMeshNames(const char* theFileName);

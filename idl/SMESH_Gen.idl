@@ -412,9 +412,19 @@ module SMESH
     long GetObjectId(in Object theObject);
 
     /*!
+     * \brief Get version of MED format being used.
+     */
+    string GetMEDFileVersion();
+
+    /*!
      * \brief Get MED version of the file by its name.
      */
-    boolean GetMEDVersion(in string theFileName, out MED_VERSION theVersion);
+    string GetMEDVersion(in string theFileName);
+
+    /*!
+     * \brief Check compatibility of file with MED format being used.
+     */
+    boolean CheckCompatibility(in string theFileName);
 
     /*!
      * \brief Get names of meshes defined in file with the specified name.

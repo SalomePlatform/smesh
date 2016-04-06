@@ -110,7 +110,7 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
 #endif
     myFamilies.clear();
     if(MYDEBUG) MESSAGE("Perform - myFile : "<<myFile);
-    PWrapper aMed = CrWrapper(myFile,true);
+    PWrapper aMed = CrWrapperR(myFile);
 
     aResult = DRS_EMPTY;
     TInt aNbMeshes = aMed->GetNbMeshes();
@@ -1022,7 +1022,7 @@ list<string> DriverMED_R_SMESHDS_Mesh::GetMeshNames(Status& theStatus)
   try {
     if(MYDEBUG) MESSAGE("GetMeshNames - myFile : " << myFile);
     theStatus = DRS_OK;
-    PWrapper aMed = CrWrapper(myFile);
+    PWrapper aMed = CrWrapperR(myFile);
 
     if (TInt aNbMeshes = aMed->GetNbMeshes()) {
       for (int iMesh = 0; iMesh < aNbMeshes; iMesh++) {

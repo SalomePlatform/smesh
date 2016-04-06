@@ -25,8 +25,7 @@ INCLUDE_DIRECTORIES(
   ${CAS_INCLUDE_DIRS}
   ${VTK_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
-  ${PROJECT_SOURCE_DIR}/src/MEDWrapper/Base
-  ${PROJECT_SOURCE_DIR}/src/MEDWrapper/Factory
+  ${PROJECT_SOURCE_DIR}/src/MEDWrapper
   ${PROJECT_SOURCE_DIR}/src/Driver
   ${PROJECT_SOURCE_DIR}/src/SMDS
   ${PROJECT_SOURCE_DIR}/src/SMESHUtils
@@ -45,8 +44,6 @@ SET(_link_LIBRARIES
   ${Boost_LIBRARIES}
   MeshDriver
   MEDWrapper
-  MEDWrapperBase
-  MEDWrapper_V2_2
 )
 
 SET(_link_LIBRARIES_bin

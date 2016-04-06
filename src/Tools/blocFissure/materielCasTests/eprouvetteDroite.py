@@ -121,7 +121,7 @@ Nb_Segments_3 = Regular_1D_2.NumberOfSegments(10,[],[  ])
 Nb_Segments_3.SetDistrType( 0 )
 isDone = eprouvetteDroite_1.Compute()
 smesh.SetName(eprouvetteDroite_1, 'eprouvetteDroite')
-eprouvetteDroite_1.ExportMED( os.path.join(gmu.pathBloc, "materielCasTests/eprouvetteDroite.med"), 0, SMESH.MED_V2_2, 1 )
+eprouvetteDroite_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests/eprouvetteDroite.med"))
 SubMesh_1 = Regular_1D_1.GetSubMesh()
 SubMesh_2 = Regular_1D_2.GetSubMesh()
 

@@ -109,7 +109,7 @@ def cube3D(L, N, outFile):
     aFilter_1.SetMesh(Maillage_1.GetMesh())
     FACE_temp = Maillage_1.GroupOnFilter( SMESH.FACE, noms[cont], aFilter_1 )
  
-  Maillage_1.ExportMED( outFile, 0, SMESH.MED_V2_2, 1, None ,1)
+  Maillage_1.ExportMED(outFile)
 
   #if salome.sg.hasDesktop():
     #salome.sg.updateObjBrowser(True)
@@ -191,7 +191,7 @@ def cube2D(L, N, outFile):
     aFilter_1.SetMesh(Maillage_1.GetMesh())
     EDGE_temp = Maillage_1.GroupOnFilter( SMESH.EDGE, noms[cont], aFilter_1 )
  
-  Maillage_1.ExportMED( outFile, 0, SMESH.MED_V2_2, 1, None ,1)
+  Maillage_1.ExportMED(outFile)
 
   #if salome.sg.hasDesktop():
     #salome.sg.updateObjBrowser(True)

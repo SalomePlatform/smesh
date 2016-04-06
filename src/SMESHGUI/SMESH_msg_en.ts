@@ -12,6 +12,10 @@
         <translation>MED files</translation>
     </message>
     <message>
+        <source>SAUV_FILES_FILTER</source>
+        <translation>SAUV files</translation>
+    </message>
+    <message>
         <source>IDEAS_FILES_FILTER</source>
         <translation>IDEAS files</translation>
     </message>
@@ -22,10 +26,6 @@
     <message>
         <source>TEXT_FILES_FILTER</source>
         <translation>TXT files</translation>
-    </message>
-    <message>
-        <source>MED_VX_FILES_FILTER</source>
-        <translation>MED %1 files</translation>
     </message>
     <message>
         <source>STL_FILES_FILTER</source>
@@ -1764,13 +1764,6 @@ Do you want to continue?</translation>
         <source>SMESH_EXPORT_ONLY_GPOUP</source>
         <translation>You are going to export the group without its mesh.
 Do you want to continue?</translation>
-    </message>
-    <message>
-        <source>SMESH_EXPORT_MED_V2_1</source>
-        <translation>During export mesh with name - &quot;%1&quot; to MED 2.1
-polygons and polyhedrons elements will be missed
-For correct export use MED 2.2
-Are you sure want to export to MED 2.1?</translation>
     </message>
     <message>
         <source>SMESH_EXPORT_MED_VERSION_COLLISION</source>

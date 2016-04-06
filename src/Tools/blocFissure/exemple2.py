@@ -56,7 +56,7 @@ Quadrangle_2D = boite.Quadrangle(algo=smeshBuilder.QUADRANGLE)
 Hexa_3D = boite.Hexahedron(algo=smeshBuilder.Hexa)
 isDone = boite.Compute()
 smesh.SetName(boite, 'boite')
-boite.ExportMED( r'boite.med', 0, SMESH.MED_V2_2, 1 )
+boite.ExportMED(r'boite.med')
 
 ## set object names
 smesh.SetName(boite.GetMesh(), 'boite')

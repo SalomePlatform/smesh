@@ -228,7 +228,7 @@ def generateCustom(crack, outFile):
   else:
     Group_1 = Maillage_1.CreateEmptyGroup( SMESH.NODE, 'crack' )
     nbAdd = Group_1.AddFrom( Maillage_1.GetMesh() )
-    Maillage_1.ExportMED( outFile, 0, SMESH.MED_V2_2, 1, None ,1)
+    Maillage_1.ExportMED(outFile)
   return(True)
 
 

@@ -71,8 +71,6 @@ SET(_link_LIBRARIES
   SMESHDS
   SMESHControls
   MEDWrapper
-  MEDWrapperBase
-  MEDWrapper_V2_2
 )
 
 # --- headers ---

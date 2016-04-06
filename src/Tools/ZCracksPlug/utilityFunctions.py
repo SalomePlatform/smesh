@@ -233,7 +233,7 @@ def extendElsets(meshFile, outFile=None):
     if len(front)==0: crackOnly=False
 
   if crackOnly:
-    mesh.ExportMED(outFile, 0, SMESH.MED_V2_2, 1, None ,1)
+    mesh.ExportMED(outFile)
     return('crack')
 
   # Propagates color using elem connectivity
@@ -304,7 +304,7 @@ def extendElsets(meshFile, outFile=None):
       mesh.MakeGroupByIds('Extended_side%d' %n ,SMESH.EDGE,grElemList[2][n])
 
   if outFile==None: outFile=meshFile
-  mesh.ExportMED(outFile, 0, SMESH.MED_V2_2, 1, None ,1)
+  mesh.ExportMED(outFile)
   return(True)
 
 

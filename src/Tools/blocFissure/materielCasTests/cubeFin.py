@@ -122,7 +122,7 @@ smesh.SetName(ENCASTR_1, 'ENCASTR')
 smesh.SetName(cubeFin_1.GetMesh(), 'cubeFin')
 smesh.SetName(Nb_Segments_1, 'Nb. Segments_1')
 
-cubeFin_1.ExportMED( os.path.join(gmu.pathBloc, "materielCasTests/cubeFin.med"), 0, SMESH.MED_V2_2, 1 )
+cubeFin_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests/cubeFin.med"))
 
 if salome.sg.hasDesktop():
   salome.sg.updateObjBrowser()

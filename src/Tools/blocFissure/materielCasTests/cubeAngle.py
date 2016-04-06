@@ -63,7 +63,7 @@ Quadrangle_2D = Mesh_1.Quadrangle(algo=smeshBuilder.QUADRANGLE)
 Hexa_3D = Mesh_1.Hexahedron(algo=smeshBuilder.Hexa)
 isDone = Mesh_1.Compute()
 smesh.SetName(Mesh_1, 'Mesh_1')
-Mesh_1.ExportMED(  os.path.join(gmu.pathBloc, "materielCasTests/CubeAngle.med"), 0, SMESH.MED_V2_2, 1 )
+Mesh_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests/CubeAngle.med"))
 
 ## set object names
 smesh.SetName(Mesh_1.GetMesh(), 'Mesh_1')

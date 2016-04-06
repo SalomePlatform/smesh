@@ -19,38 +19,35 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef MED_CoordUtils_HeaderFile
 #define MED_CoordUtils_HeaderFile
 
-#include "MED_WrapperBase.hxx"
-
+#include "MED_WrapperDef.hxx"
 #include "MED_Structures.hxx"
 
 namespace MED
 {
   typedef TFloat (*TGetCoord)(const TCCoordSlice& theCoordSlice);
 
-
   //---------------------------------------------------------------
   class MEDWRAPPER_EXPORT TCoordHelper
   {
     TGetCoord* myGetCoord;
-    
+
   public:
     TCoordHelper(TGetCoord* theGetCoord);
 
-    TFloat 
-    GetCoord(TCCoordSlice& theCoordSlice, 
+    TFloat
+    GetCoord(TCCoordSlice& theCoordSlice,
              TInt theCoordId);
   };
   typedef SharedPtr<TCoordHelper> PCoordHelper;
 
-
   //---------------------------------------------------------------
-  MEDWRAPPER_EXPORT 
+  MEDWRAPPER_EXPORT
   PCoordHelper
   GetCoordHelper(PNodeInfo theNodeInfo);
-
 }
 
-#endif
+#endif // MED_CoordUtils_HeaderFile

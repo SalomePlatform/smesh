@@ -57,7 +57,7 @@ def creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure,
   [origShapes, verticesShapes, dmoyen] = \
     creeZoneDefautMaillage(maillagesSains, shapeDefaut, tailleDefaut, nomZones, coordsNoeudsFissure)
 
-  maillageSain.ExportMED( fichierMaillageSain, 0, SMESH.MED_V2_2, 1 )
+  maillageSain.ExportMED(fichierMaillageSain)
   logging.debug("fichier maillage sain %s", fichierMaillageSain)
   [maillageSain, internalBoundary, zoneDefaut, zoneDefaut_skin, zoneDefaut_internalFaces, zoneDefaut_internalEdges] = \
     peauInterne(fichierMaillageSain, shapeDefaut, nomZones)

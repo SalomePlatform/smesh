@@ -19,6 +19,7 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef MED_SharedPtr_HeaderFile
 #define MED_SharedPtr_HeaderFile
 
@@ -26,11 +27,10 @@
 
 namespace MED
 {
-
   //! To extend the boost::shared_ptr to support such features automatic dynamic cast
   /*!
     All entities of the MEDWrapper package are handled as pointer.
-    This class was introduced to provide correct and flexible memory management 
+    This class was introduced to provide correct and flexible memory management
     for all of the MEDWrapper objects.
   */
   template<class T> class SharedPtr: public boost::shared_ptr<T>
@@ -41,8 +41,8 @@ namespace MED
 
     //! Construct the class by any type of a pointer
     template<class Y>
-    explicit SharedPtr(Y * p): 
-      boost::shared_ptr<T>(p) 
+    explicit SharedPtr(Y * p):
+      boost::shared_ptr<T>(p)
     {}
 
     //! Construct the class by any specialisation of the class
@@ -53,7 +53,7 @@ namespace MED
 
     //! Copy-constructor
     template<class Y>
-    SharedPtr& 
+    SharedPtr&
     operator=(SharedPtr<Y> const & r)
     {
       SharedPtr<T>(r).swap(*this);
@@ -61,35 +61,33 @@ namespace MED
     }
 
     //! Introduce a flexible way to reset the wrapped pointer
-    template<class Y> 
-    SharedPtr& 
+    template<class Y>
+    SharedPtr&
     operator()(Y * p) // Y must be complete
     {
       return operator=<Y>(SharedPtr<Y>(p));
     }
 
     //! Introduce a flexible way to reset the wrapped pointer
-    template<class Y> 
-    SharedPtr& 
+    template<class Y>
+    SharedPtr&
     operator()(SharedPtr<Y> const & r) // Y must be complete
     {
       return operator=<Y>(SharedPtr<Y>(r));
     }
 
     //! To provide a flexible way to use reference to the wrapped pointer (const version)
-    operator const T& () const 
-    { 
+    operator const T& () const
+    {
       return *(this->get());
     }
 
     //! To provide a flexible way to use reference to the wrapped pointer
-    operator T& () 
-    { 
+    operator T& ()
+    {
       return *(this->get());
     }
   };
-
 }
 
-
-#endif
+#endif // MED_SharedPtr_HeaderFile

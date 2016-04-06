@@ -19,17 +19,17 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef MED_Utilities_HeaderFile
 #define MED_Utilities_HeaderFile
 
-#include "MED_WrapperBase.hxx"
+#include "MED_WrapperDef.hxx"
 
-#include <iostream>     
-#include <sstream>      
+#include <iostream>
+#include <sstream>
 #include <string>
 #include <string.h>
 #include <stdexcept>
-
 
 namespace MED
 {
@@ -51,14 +51,13 @@ namespace MED
   #define INITMSGA(deb,lev,msg) MED::PrefixPrinter aPrefixPrinter_##lev(deb); BEGMSG(deb,msg)
   #define INITMSG(deb,msg) INITMSGA(deb,,msg)
   #define ADDMSG(deb,msg) if(deb) std::cout<<msg
-#else
+#else // _DEBUG_
   #define MSG(deb,msg)
   #define BEGMSG(deb,msg)
   #define INITMSGA(deb,lev,msg)
   #define INITMSG(deb,msg)
   #define ADDMSG(deb,msg)
-#endif
-
+#endif // _DEBUG_
 
 #ifndef EXCEPTION
 
@@ -68,6 +67,6 @@ namespace MED
   throw TYPE(aStream.str().c_str());\
 }
 
-#endif
+#endif // EXCEPTION
 
-#endif
+#endif // MED_Utilities_HeaderFile

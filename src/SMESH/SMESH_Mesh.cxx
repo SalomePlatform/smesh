@@ -1376,7 +1376,6 @@ bool SMESH_Mesh::HasDuplicatedGroupNamesMED()
  *  \param [in] theAutoGroups - boolean parameter for creating/not creating
  *              the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
  *              the typical use is auto_groups=false.
- *  \param [in] theVersion - defines the version of format of MED file, that will be created
  *  \param [in] meshPart - mesh data to export
  *  \param [in] theAutoDimension - if \c true, a space dimension of a MED mesh can be either
      *         - 1D if all mesh nodes lie on OX coordinate axis, or
@@ -1392,7 +1391,6 @@ bool SMESH_Mesh::HasDuplicatedGroupNamesMED()
 void SMESH_Mesh::ExportMED(const char *        file, 
                            const char*         theMeshName, 
                            bool                theAutoGroups,
-                           int                 theVersion,
                            const SMESHDS_Mesh* meshPart,
                            bool                theAutoDimension,
                            bool                theAddODOnVertices,
@@ -1402,7 +1400,7 @@ void SMESH_Mesh::ExportMED(const char *        file,
   SMESH_TRY;
 
   DriverMED_W_SMESHDS_Mesh myWriter;
-  myWriter.SetFile         ( file, MED::EVersion(theVersion) );
+  myWriter.SetFile         ( file );
   myWriter.SetMesh         ( meshPart ? (SMESHDS_Mesh*) meshPart : _myMeshDS   );
   myWriter.SetAutoDimension( theAutoDimension );
   myWriter.AddODOnVertices ( theAddODOnVertices );
@@ -1478,7 +1476,7 @@ void SMESH_Mesh::ExportSAUV(const char *file,
   cmd += "from medutilities import my_remove ; my_remove(r'" + medfilename + "')";
   cmd += "\"";
   system(cmd.c_str());
-  ExportMED(medfilename.c_str(), theMeshName, theAutoGroups, /*theVersion=*/1,
+  ExportMED(medfilename.c_str(), theMeshName, theAutoGroups,
             /*meshPart=*/NULL, /*theAutoDimension=*/false, /*theAddODOnVertices=*/false,
             /*theAllElemsToGroup=*/true ); // theAllElemsToGroup is for PAL0023413
 #ifdef WIN32

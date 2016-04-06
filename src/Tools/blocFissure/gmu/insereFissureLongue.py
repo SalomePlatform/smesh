@@ -649,7 +649,7 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   #isDone = maillageComplet.ReorientObject( grps[0] )
   fond = maillageComplet.GetMesh().CreateDimGroup( grps, SMESH.NODE, 'FACE2' )
 
-  maillageComplet.ExportMED( fichierMaillageFissure, 0, SMESH.MED_V2_2, 1 )
+  maillageComplet.ExportMED(fichierMaillageFissure)
   putName(maillageComplet, nomFicFissure)
   logging.info("fichier maillage fissure %s", fichierMaillageFissure)
 

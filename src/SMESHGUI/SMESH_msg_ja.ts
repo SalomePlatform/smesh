@@ -12,6 +12,10 @@
       <translation>MEDファイル</translation>
     </message>
     <message>
+        <source>SAUV_FILES_FILTER</source>
+        <translation>SAUVファイル</translation>
+    </message>
+    <message>
       <source>IDEAS_FILES_FILTER</source>
       <translation>IDEAS ファイル</translation>
     </message>
@@ -22,10 +26,6 @@
     <message>
       <source>TEXT_FILES_FILTER</source>
       <translation>TXT ファイル</translation>
-    </message>
-    <message>
-      <source>MED_VX_FILES_FILTER</source>
-      <translation>ファイル MED %1</translation>
     </message>
     <message>
       <source>STL_FILES_FILTER</source>
@@ -1730,10 +1730,6 @@
     <message>
       <source>SMESH_EXPORT_ONLY_GPOUP</source>
       <translation>そのメッシュなしでグループのエクスポートをしようとしています。続行しますか？</translation>
-    </message>
-    <message>
-      <source>SMESH_EXPORT_MED_V2_1</source>
-      <translation>多角形、多面体要素は正しいエクスポート用 MED 2.1 MED 2.2 にメッシュ '%' のエクスポートの場合省略されます。MED 2.1 をエクスポートしますか。</translation>
     </message>
     <message>
       <source>SMESH_EXPORT_MED_VERSION_COLLISION</source>

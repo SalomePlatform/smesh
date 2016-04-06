@@ -440,6 +440,18 @@ namespace {
       }
     }
   }
+
+  bool _FilterArg( const _AString& theArg  )
+  {
+    static std::list<_AString> filteredArgs;
+    static bool initialized = false;
+    if ( !initialized ) {
+      initialized = true;
+      filteredArgs.push_back( "SMESH.MED_V2_1" );
+      filteredArgs.push_back( "SMESH.MED_V2_2" );
+    }  
+    return std::find( filteredArgs.begin(), filteredArgs.end(), theArg ) != filteredArgs.end();
+  }
 }
 
 //================================================================================
@@ -1971,16 +1983,26 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
   // ----------------------------------------------------------------------
   else if ( theCommand->MethodStartsFrom( "Export" ))
   {
-    if ( method == "ExportToMED" ||  // ExportToMED()  --> ExportMED()
-         method == "ExportToMEDX" )  // ExportToMEDX() --> ExportMED()
+    if ( method == "ExportToMED"  || // ExportToMED()  --> ExportMED()
+         method == "ExportToMEDX" || // ExportToMEDX() --> ExportMED()
+         method == "ExportMED" )
     {
       theCommand->SetMethod( "ExportMED" );
-      if ( theCommand->GetNbArgs() == 5 )
+      // filter out deprecated version parameter
+      vector< _AString > args;
+      for ( int i = 1; i <= theCommand->GetNbArgs(); i++ ) {
+        if ( !_FilterArg( theCommand->GetArg( i ) ) )
+          args.push_back( theCommand->GetArg( i ) );
+      }
+      theCommand->RemoveArgs();
+      for ( uint i = 0; i < args.size(); i++ )
+        theCommand->SetArg( i+1, args[i] );
+      if ( theCommand->GetNbArgs() == 4 )
       {
         // ExportToMEDX(...,autoDimension) -> ExportToMEDX(...,meshPart=None,autoDimension)
-        _AString autoDimension = theCommand->GetArg( 5 );
-        theCommand->SetArg( 5, "None" );
-        theCommand->SetArg( 6, autoDimension );
+        _AString autoDimension = theCommand->GetArg( 4 );
+        theCommand->SetArg( 4, "None" );
+        theCommand->SetArg( 5, autoDimension );
       }
     }
     else if ( method == "ExportCGNS" )
@@ -2006,6 +2028,15 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
       TCollection_AsciiString newMethod = method;
       newMethod.Remove( /*where=*/7, /*howmany=*/6 );
       theCommand->SetMethod( newMethod );
+      // filter out deprecated version parameter
+      vector< _AString > args;
+      for ( int i = 1; i <= theCommand->GetNbArgs(); i++ ) {
+        if ( !_FilterArg( theCommand->GetArg( i ) ) )
+          args.push_back( theCommand->GetArg( i ) );
+      }
+      theCommand->RemoveArgs();
+      for ( uint i = 0; i < args.size(); i++ )
+        theCommand->SetArg( i+1, args[i] );
       // make the 1st arg be the last one (or last but three for ExportMED())
       _pyID partID = theCommand->GetArg( 1 );
       int nbArgs = theCommand->GetNbArgs() - 3 * (newMethod == "ExportMED");

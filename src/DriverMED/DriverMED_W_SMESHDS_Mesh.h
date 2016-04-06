@@ -47,11 +47,8 @@ class MESHDRIVERMED_EXPORT DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
 
   DriverMED_W_SMESHDS_Mesh();
 
-  virtual void SetFile(const std::string& theFileName);
-  void SetFile(const std::string& theFileName, MED::EVersion theId);
+  void SetFile(const std::string& theFileName);
   void SetAutoDimension(bool toFindOutDimension) { myAutoDimension = toFindOutDimension; }
-
-  static std::string GetVersionString(const MED::EVersion theVersion, int theNbDigits=2);
 
   void AddGroupOfNodes();
   void AddGroupOfEdges();
@@ -77,7 +74,6 @@ class MESHDRIVERMED_EXPORT DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
 
  private:
 
-  MED::EVersion myMedVersion;
   std::list<SMESHDS_GroupBase*> myGroups;
   bool myAllSubMeshes;
   std::vector<SMESHDS_SubMesh*> mySubMeshes;

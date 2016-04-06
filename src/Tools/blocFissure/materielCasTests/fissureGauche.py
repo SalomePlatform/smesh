@@ -116,7 +116,7 @@ Nb_Segments_3 = Regular_1D_2.NumberOfSegments(5,[],[  ])
 Nb_Segments_3.SetDistrType( 0 )
 isDone = objetSain_1.Compute()
 smesh.SetName(objetSain_1, 'objetSain')
-objetSain_1.ExportMED( os.path.join(gmu.pathBloc, "materielCasTests/faceGaucheSain.med"), 0, SMESH.MED_V2_2, 1 )
+objetSain_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests/faceGaucheSain.med"))
 SubMesh_1 = Regular_1D_1.GetSubMesh()
 SubMesh_2 = Regular_1D_2.GetSubMesh()
 

@@ -238,8 +238,8 @@ namespace
     }
     else if ( theCommandID == SMESHOp::OpImportSAUV ||
               theCommandID == SMESHOp::OpPopupImportSAUV ) {
-      filter.append( QObject::tr( "SAUV files (*.sauv*)" ) );
-      filter.append( QObject::tr( "All files (*)" ) );
+      filter.append( QObject::tr( "SAUV_FILES_FILTER" ) + " (*.sauv *.sauve)" );
+      filter.append( QObject::tr( "ALL_FILES_FILTER" ) + " (*)" );
     }
     else if ( theCommandID == SMESHOp::OpImportGMF ||
               theCommandID == SMESHOp::OpPopupImportGMF ) {
@@ -650,8 +650,7 @@ namespace
 
     // Get parameters of export operation
 
-    QString            aFilename;
-    SMESH::MED_VERSION aFormat = SMESH::MED_V2_2;
+    QString aFilename;
     // Init the parameters with the default values
     bool aIsASCII_STL   = true;
     bool toCreateGroups = false;
@@ -728,27 +727,14 @@ namespace
     }
     else if ( isMED || isSAUV ) // Export to MED or SAUV
     {
-      QMap<QString, SMESH::MED_VERSION> aFilterMap;
-      //QString v21 (aMesh->GetVersionString(SMESH::MED_V2_1, 2));
+      QStringList filters;
       if ( isMED ) {
-        QString v22 (aMesh->GetVersionString(SMESH::MED_V2_2, 2));
-        //aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( v21 ) + " (*.med)", SMESH::MED_V2_1 );
-        aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( v22 ) + " (*.med)", SMESH::MED_V2_2 );
+        filters << QObject::tr( "MED_FILES_FILTER" ) + " (*.med)";
       }
       else { // isSAUV
-        aFilterMap.insert("All files (*)", SMESH::MED_V2_1 );
-        aFilterMap.insert("SAUV files (*.sauv)", SMESH::MED_V2_2 );
-        aFilterMap.insert("SAUV files (*.sauve)", SMESH::MED_V2_1 );
+        filters << QObject::tr( "SAUV_FILES_FILTER" ) + " (*.sauv *.sauve)";
       }
 
-      QStringList filters;
-      QString aDefaultFilter;
-      QMap<QString, SMESH::MED_VERSION>::const_iterator it = aFilterMap.begin();
-      for ( ; it != aFilterMap.end(); ++it ) {
-        filters.push_back( it.key() );
-        if (it.value() == SMESH::MED_V2_2)
-          aDefaultFilter = it.key();
-      }
       QStringList checkBoxes;
       checkBoxes << QObject::tr("SMESH_AUTO_GROUPS") << QObject::tr("SMESH_AUTO_DIM");
 
@@ -761,7 +747,6 @@ namespace
         new SalomeApp_CheckFileDlg ( SMESHGUI::desktop(), false, checkBoxes, true, true, wdgList );
       fd->setWindowTitle( aTitle );
       fd->setNameFilters( filters );
-      fd->selectNameFilter( aDefaultFilter );
       fd->SetChecked( toCreateGroups, 0 );
       fd->SetChecked( toFindOutDim,   1 );
       if ( !anInitialPath.isEmpty() )
@@ -789,34 +774,13 @@ namespace
           aFilename = QString::null;
           break;
         }
-        aFormat = aFilterMap[fd->selectedNameFilter()];
         toOverwrite = fv->isOverwrite();
         is_ok = true;
         if ( !aFilename.isEmpty() ) {
-          // med-2.1 does not support poly elements
-          if ( aFormat==SMESH::MED_V2_1 )
-            for( aMeshIter = aMeshList.begin(); aMeshIter != aMeshList.end(); aMeshIter++ ) {
-              SMESH::SMESH_IDSource_var aMeshItem = (*aMeshIter).first;
-              SMESH::long_array_var nbElems = aMeshItem->GetMeshInfo();
-              if ( nbElems[ SMESH::Entity_Polygon   ] + nbElems[ SMESH::Entity_Quad_Polygon   ] +
-                   nbElems[ SMESH::Entity_Polyhedra ] + nbElems[ SMESH::Entity_Quad_Polyhedra ])
-              {
-                int aRet = SUIT_MessageBox::warning(SMESHGUI::desktop(),
-                                                    QObject::tr("SMESH_WRN_WARNING"),
-                                                    QObject::tr("SMESH_EXPORT_MED_V2_1").arg((*aMeshIter).second),
-                                                    QObject::tr("SMESH_BUT_YES"),
-                                                    QObject::tr("SMESH_BUT_NO"), 0, 1);
-                if (aRet != 0) {
-                  is_ok = false;
-                  break;
-                }
-              }
-            }
           if( !toOverwrite ) {
             // can't append to an existing using other format
-            SMESH::MED_VERSION aVersion = SMESH::MED_V2_1;
-            bool isVersionOk = SMESHGUI::GetSMESHGen()->GetMEDVersion( aFilename.toUtf8().constData(), aVersion );
-            if( !isVersionOk || aVersion != aFormat ) {
+            bool isVersionOk = SMESHGUI::GetSMESHGen()->CheckCompatibility( aFilename.toUtf8().constData() );
+            if ( !isVersionOk ) {
               int aRet = SUIT_MessageBox::warning(SMESHGUI::desktop(),
                                                   QObject::tr("SMESH_WRN_WARNING"),
                                                   QObject::tr("SMESH_EXPORT_MED_VERSION_COLLISION").arg(aFilename),
@@ -901,11 +865,11 @@ namespace
             const QString&            geoAssFields = aFieldList[ aMeshIndex ].second;
             const bool                   hasFields = ( fields.length() || !geoAssFields.isEmpty() );
             if ( !hasFields && aMeshOrGroup->_is_equivalent( aMeshItem ))
-              aMeshItem->ExportToMEDX( aFilename.toUtf8().data(), toCreateGroups,
-                                       aFormat, toOverwrite && aMeshIndex == 0, toFindOutDim );
+              aMeshItem->ExportMED( aFilename.toUtf8().data(), toCreateGroups,
+                                    toOverwrite && aMeshIndex == 0, toFindOutDim );
             else
               aMeshItem->ExportPartToMED( aMeshOrGroup, aFilename.toUtf8().data(), toCreateGroups,
-                                          aFormat, toOverwrite && aMeshIndex == 0, toFindOutDim,
+                                          toOverwrite && aMeshIndex == 0, toFindOutDim,
                                           fields, geoAssFields.toLatin1().data() );
           }
         }

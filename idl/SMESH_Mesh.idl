@@ -235,15 +235,6 @@ module SMESH
     DRS_FAIL            // general failure (exception etc.)
   };
 
-  /*!
-   * Enumeration for ExportToMED*()
-   */
-  enum MED_VERSION
-  {
-    MED_V2_1,
-    MED_V2_2
-  };
-
   /*! 
    * \brief A structure containing information about MED file
    */
@@ -623,13 +614,12 @@ module SMESH
     boolean HasDuplicatedGroupNamesMED();
 
     /*!
-     * Export Mesh to a MED Format file
+     * Export a Mesh to MED file.
      * @params
-     * - file : name of the MED file
+     * - fileName : name of the MED file
      * - auto_groups : boolean parameter for creating/not creating
      *                 the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
      *                 the typical use is auto_groups=false.
-     * - version : defines the version of format of MED file, that will be created
      * - overwrite : boolean parameter for overwriting/not overwriting the file, if it exists
      * - autoDimension : if @c true, a space dimension of a MED mesh can be either
      *         - 1D if all mesh nodes lie on OX coordinate axis, or
@@ -637,18 +627,16 @@ module SMESH
      *         - 3D in the rest cases.
      *         If @a autoDimension is @c false, the space dimension is always 3.
      */
-    void ExportToMEDX( in string      file, 
-                       in boolean     auto_groups, 
-                       in MED_VERSION version, 
-                       in boolean     overwrite,
-                       in boolean     autoDimension) raises (SALOME::SALOME_Exception);
+    void ExportMED( in string      fileName, 
+		    in boolean     auto_groups, 
+		    in boolean     overwrite,
+		    in boolean     autoDimension) raises (SALOME::SALOME_Exception);
 
     /*!
      * Export a [part of] Mesh into a MED file
      * @params
      * - meshPart : a part of mesh to store
-     * - file : name of the MED file
-     * - version : define the version of format of MED file, that will be created
+     * - fileName : name of the MED file
      * - overwrite : boolean parameter for overwriting/not overwriting the file, if it exists
      * - autoDimension : if @c True, a space dimension for export is defined by mesh 
      *                 configuration; for example a planar mesh lying on XOY plane
@@ -663,30 +651,12 @@ module SMESH
      *         - 's' stands for _solids_ field.
      */
     void ExportPartToMED( in SMESH_IDSource     meshPart,
-                          in string             file,
+                          in string             fileName,
                           in boolean            auto_groups,
-                          in MED_VERSION        version,
                           in boolean            overwrite,
                           in boolean            autoDimension,
                           in GEOM::ListOfFields fields,
                           in string             geomAssocFields ) raises (SALOME::SALOME_Exception);
-
-    /*!
-     * Export Mesh to a MED Format file
-     * Works, just the same as ExportToMEDX, with overwrite parameter equal to true.
-     * The method is kept in order to support old functionality
-     */
-    void ExportToMED( in string file, in boolean auto_groups, in MED_VERSION theVersion )
-      raises (SALOME::SALOME_Exception);
-
-    /*!
-     * Export Mesh to MED_V2_1 MED format
-     * Works, just the same as ExportToMEDX with MED_VERSION parameter equal to MED_V2_1
-     * and overwrite parameter equal to true
-     * The method is kept in order to support old functionality
-     */
-    void ExportMED( in string file, in boolean auto_groups )
-      raises (SALOME::SALOME_Exception);
 
     /*!
      * Export Mesh to SAUV formatted file
@@ -694,11 +664,6 @@ module SMESH
      */
     void ExportSAUV( in string file, in boolean auto_groups )
       raises (SALOME::SALOME_Exception);
-
-    /*!
-     * Return string representation of a MED file version comprising nbDigits
-     */
-    string GetVersionString(in MED_VERSION version, in short nbDigits);
 
     /*!
      * Export Mesh to different Formats

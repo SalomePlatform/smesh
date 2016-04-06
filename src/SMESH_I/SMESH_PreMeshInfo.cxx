@@ -460,10 +460,7 @@ bool SMESH_PreMeshInfo::readMeshInfo()
 {
   _isInfoOk = true;
 
-  MED::PWrapper aMed = MED::CrWrapper(_medFileName,true);
-  // if ( aMed->GetVersion() != MED::eV2_2 )
-  //   return false;
-
+  MED::PWrapper aMed = MED::CrWrapperR(_medFileName);
   MED::PMeshInfo medMeshInfo = aMed->CrMeshInfo(3,3,SMESH_Comment( _meshID ));
 
   // read nb nodes
@@ -516,7 +513,7 @@ void SMESH_PreMeshInfo::readGroupInfo()
 
   map< int, vector< SMESH_PreMeshInfo* > > famId2grInfo;
 
-  MED::PWrapper aMed = MED::CrWrapper(_medFileName,false);
+  MED::PWrapper aMed = MED::CrWrapperR(_medFileName);
   MED::PMeshInfo medMeshInfo = aMed->CrMeshInfo(3,3,SMESH_Comment( _meshID ));
 
   // read families to fill in famId2grInfo

@@ -19,11 +19,11 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef MED_GaussUtils_HeaderFile
 #define MED_GaussUtils_HeaderFile
 
-#include "MED_WrapperBase.hxx"
-
+#include "MED_WrapperDef.hxx"
 #include "MED_Structures.hxx"
 
 namespace MED
@@ -34,7 +34,7 @@ namespace MED
 
   //! Define a helper class to handle Gauss Points coordinates
   class MEDWRAPPER_EXPORT TGaussCoord:
-    virtual TModeSwitchInfo 
+    virtual TModeSwitchInfo
   {
     TInt myNbElem;
     TInt myNbGauss;
@@ -45,7 +45,7 @@ namespace MED
     TNodeCoord myGaussCoord;
 
   public:
-    
+
     TGaussCoord();
 
     //! To init the class
@@ -72,27 +72,25 @@ namespace MED
     GetCoordSliceArr(TInt theElemId) const;
 
     //! Get slice of the coordinate that corresponds to defined cell
-    TCoordSliceArr 
+    TCoordSliceArr
     GetCoordSliceArr(TInt theElemId);
   };
   typedef SharedPtr<TGaussCoord> PGaussCoord;
 
-
   //---------------------------------------------------------------
   //! To calculate Gauss Points coordinates
-  MEDWRAPPER_EXPORT 
+  MEDWRAPPER_EXPORT
   bool
-  GetGaussCoord3D(const TGaussInfo& theGaussInfo, 
+  GetGaussCoord3D(const TGaussInfo& theGaussInfo,
                   const TCellInfo& theCellInfo,
                   const TNodeInfo& theNodeInfo,
                   TGaussCoord& theGaussCoord,
                   const TElemNum& theElemNum = TElemNum(),
                   EModeSwitch theMode = eFULL_INTERLACE);
 
-
   //---------------------------------------------------------------
   //! To calculate Gauss Points coordinates for defined TCellInfo as its bary center
-  MEDWRAPPER_EXPORT 
+  MEDWRAPPER_EXPORT
   bool
   GetBaryCenter(const TCellInfo& theCellInfo,
                 const TNodeInfo& theNodeInfo,
@@ -101,7 +99,7 @@ namespace MED
                 EModeSwitch theMode = eFULL_INTERLACE);
 
   //! To calculate Gauss Points coordinates for defined TPolygoneInfo as its bary center
-  MEDWRAPPER_EXPORT 
+  MEDWRAPPER_EXPORT
   bool
   GetBaryCenter(const TPolygoneInfo& thePolygoneInfo,
                 const TNodeInfo& theNodeInfo,
@@ -110,7 +108,7 @@ namespace MED
                 EModeSwitch theMode = eFULL_INTERLACE);
 
   //! To calculate Gauss Points coordinates for defined TPolyedreInfo as its bary center
-  MEDWRAPPER_EXPORT 
+  MEDWRAPPER_EXPORT
   bool
   GetBaryCenter(const TPolyedreInfo& thePolyedreInfo,
                 const TNodeInfo& theNodeInfo,
@@ -124,7 +122,7 @@ namespace MED
   struct MEDWRAPPER_EXPORT TShapeFun
   {
     class TFun;
-    
+
     TFloatVector myRefCoord;
     TInt myDim;
     TInt myNbRef;
@@ -140,7 +138,7 @@ namespace MED
     void GetFun(const TCCoordSliceArr& theRef,
                 const TCCoordSliceArr& theGauss,
                 TFun& theFun) const;
-    virtual 
+    virtual
     void InitFun(const TCCoordSliceArr& theRef,
                  const TCCoordSliceArr& theGauss,
                  TFun& theFun) const = 0;
@@ -359,7 +357,6 @@ namespace MED
                          TFun& theFun) const;
   };
   //---------------------------------------------------------------
-
 }
 
-#endif
+#endif // MED_GaussUtils_HeaderFile

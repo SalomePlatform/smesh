@@ -19,68 +19,67 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "MED_CoordUtils.hxx"
 #include "MED_Utilities.hxx"
- 
+
 namespace MED
 {
-
   enum ECoordName{eX, eY, eZ, eNone};
 
   template<ECoordName TCoordId>
-  TFloat 
+  TFloat
   GetCoord(const TCCoordSlice& theCoordSlice)
   {
     return theCoordSlice[TCoordId];
   }
 
   template<>
-  TFloat 
+  TFloat
   GetCoord<eNone>(const TCCoordSlice& theCoordSlice)
   {
     return 0.0;
   }
-  
+
   TGetCoord
   aXYZGetCoord[3] = {
-    &GetCoord<eX>, 
-    &GetCoord<eY>, 
+    &GetCoord<eX>,
+    &GetCoord<eY>,
     &GetCoord<eZ>
   };
-  
+
   TGetCoord
   aXYGetCoord[3] = {
-    &GetCoord<eX>, 
-    &GetCoord<eY>, 
+    &GetCoord<eX>,
+    &GetCoord<eY>,
     &GetCoord<eNone>
   };
-  
+
   TGetCoord
   aYZGetCoord[3] = {
     &GetCoord<eNone>,
-    &GetCoord<eX>, 
+    &GetCoord<eX>,
     &GetCoord<eY>
   };
-  
-  TGetCoord 
+
+  TGetCoord
   aXZGetCoord[3] = {
-    &GetCoord<eX>, 
+    &GetCoord<eX>,
     &GetCoord<eNone>,
     &GetCoord<eY>
   };
-  
-  
-  TGetCoord 
+
+  TGetCoord
   aXGetCoord[3] = {
-    &GetCoord<eX>, 
+    &GetCoord<eX>,
     &GetCoord<eNone>,
     &GetCoord<eNone>
   };
-  
+
   TGetCoord
   aYGetCoord[3] = {
     &GetCoord<eNone>,
-    &GetCoord<eX>, 
+    &GetCoord<eX>,
     &GetCoord<eNone>
   };
 
@@ -91,21 +90,19 @@ namespace MED
     &GetCoord<eX>
   };
 
-  
   //---------------------------------------------------------------
   TCoordHelper
   ::TCoordHelper(TGetCoord* theGetCoord):
     myGetCoord(theGetCoord)
   {}
 
-  TFloat 
+  TFloat
   TCoordHelper
-  ::GetCoord(TCCoordSlice& theCoordSlice, 
+  ::GetCoord(TCCoordSlice& theCoordSlice,
              TInt theCoordId)
   {
     return (*myGetCoord[theCoordId])(theCoordSlice);
   }
-
 
   //---------------------------------------------------------------
   PCoordHelper

@@ -23,7 +23,9 @@
 #ifndef MED_Common_HeaderFile
 #define MED_Common_HeaderFile
 
-#include "MED_WrapperBase.hxx"
+#include "MED_WrapperDef.hxx"
+#include "MED_Vector.hxx"
+#include "MED_SharedPtr.hxx"
 
 #include <string>
 #include <set>
@@ -31,114 +33,65 @@
 
 #include <hdf5.h>
 
-#include <boost/tuple/tuple.hpp>
-
-#include "SALOMEconfig.h"
-
-#include "MED_Vector.hxx"
-#include "MED_SharedPtr.hxx"
-#include "MED_SliceArray.hxx"
-
 #ifdef WIN32
 #pragma warning(disable:4099)
 #endif
 
-namespace MED{
-
-  enum EVersion {eVUnknown = -1, eV2_1, eV2_2};
-  
-  typedef enum {eFAUX, eVRAI} EBooleen ; 
+namespace MED
+{
+  typedef enum {eFAUX, eVRAI} EBooleen;
   typedef double TFloat;
 #if defined(HAVE_F77INT64)
   typedef long TInt;
 #else
   typedef int TInt;
-#endif 
+#endif
   typedef hid_t TIdt;
   typedef herr_t TErr;
 
   typedef enum {eFULL_INTERLACE, eNO_INTERLACE} EModeSwitch;
 
-  typedef enum {eFLOAT64=6, eINT=24, eLONG=26 } ETypeChamp;
+  typedef enum {eFLOAT64=6, eINT=24, eLONG=26} ETypeChamp;
 
   typedef enum {eNON_STRUCTURE, eSTRUCTURE} EMaillage;
 
-  typedef enum {eCART, eCYL, eSPHER} ERepere; 
+  typedef enum {eCART, eCYL, eSPHER} ERepere;
 
-  typedef enum {eNOD, eDESC} EConnectivite ; 
+  typedef enum {eNOD, eDESC} EConnectivite;
 
   typedef enum {ePOINT1=1, eSEG2=102, eSEG3=103, eTRIA3=203,
-                eQUAD4=204, eTRIA6=206, eTRIA7=207, eQUAD8=208, eQUAD9=209,eTETRA4=304,
-                ePYRA5=305, ePENTA6=306, eHEXA8=308, eOCTA12=312, eTETRA10=310, 
+                eQUAD4=204, eTRIA6=206, eTRIA7=207, eQUAD8=208, eQUAD9=209, eTETRA4=304,
+                ePYRA5=305, ePENTA6=306, eHEXA8=308, eOCTA12=312, eTETRA10=310,
                 ePYRA13=313, ePENTA15=315, eHEXA20=320, eHEXA27=327,
-                ePOLYGONE=400, ePOLYGON2=420, ePOLYEDRE=500, eNONE=0, 
-                eBALL=1101 /*no such a type in med.h, it's just a trick*/,
-                eAllGeoType=-1 } EGeometrieElement;
+                ePOLYGONE=400, ePOLYGON2=420, ePOLYEDRE=500, eNONE=0,
+                eBALL=1101, // no such a type in med.h, it's just a trick
+                eAllGeoType=-1} EGeometrieElement;
 
-  typedef enum {eMAILLE, eFACE, eARETE, eNOEUD, eNOEUD_ELEMENT, eSTRUCT_ELEMENT} EEntiteMaillage; 
+  typedef enum {eMAILLE, eFACE, eARETE, eNOEUD, eNOEUD_ELEMENT, eSTRUCT_ELEMENT} EEntiteMaillage;
 
-  typedef enum {eNO_PFLMOD, eGLOBAL, eCOMPACT}  EModeProfil; 
+  typedef enum {eNO_PFLMOD, eGLOBAL, eCOMPACT} EModeProfil;
 
   typedef enum {eGRILLE_CARTESIENNE, eGRILLE_POLAIRE, eGRILLE_STANDARD} EGrilleType;
 
   typedef enum {eCOOR, eCONN, eNOM, eNUM, eFAM, eCOOR_IND1, eCOOR_IND2, eCOOR_IND3} ETable;
 
+  typedef TVector<TInt> TIntVector;
   typedef TVector<TFloat> TFloatVector;
   typedef TVector<std::string> TStringVector;
-  typedef TVector<TInt> TIntVector;
   typedef std::set<std::string> TStringSet;
-  
+
   typedef std::map<EGeometrieElement,TInt> TGeom2Size;
   typedef std::map<EEntiteMaillage,TGeom2Size> TEntityInfo;
 
   typedef std::set<EGeometrieElement> TGeomSet;
   typedef std::map<EEntiteMaillage,TGeomSet> TEntity2GeomSet;
 
-  MEDWRAPPER_EXPORT 
-  const TEntity2GeomSet& 
-  GetEntity2GeomSet();
-
-  template<EVersion>
-  TInt MEDWRAPPER_EXPORT
-  GetDESCLength();
-  
-  template<EVersion>
-  TInt MEDWRAPPER_EXPORT
-  GetIDENTLength();
-  
-  template<EVersion>
-  TInt MEDWRAPPER_EXPORT
-  GetNOMLength();
-  
-  template<EVersion>
-  TInt MEDWRAPPER_EXPORT
-  GetLNOMLength();
-  
-  template<EVersion>
-  TInt MEDWRAPPER_EXPORT
-  GetPNOMLength();
-  
-  template<EVersion>
-  void MEDWRAPPER_EXPORT
-  GetVersionRelease(TInt& majeur, TInt& mineur, TInt& release);
-  
-  template<EVersion>
-  MEDWRAPPER_EXPORT
-  TInt
-  GetNbConn(EGeometrieElement typmai,
-            EEntiteMaillage typent,
-            TInt mdim);
-  
-  MEDWRAPPER_EXPORT
-  TInt 
-  GetNbNodes(EGeometrieElement typmai);
-
   struct TNameInfo;
   typedef SharedPtr<TNameInfo> PNameInfo;
-  
+
   struct TMeshInfo;
   typedef SharedPtr<TMeshInfo> PMeshInfo;
-  
+
   struct TFamilyInfo;
   typedef SharedPtr<TFamilyInfo> PFamilyInfo;
 
@@ -168,10 +121,10 @@ namespace MED{
 
   struct TProfileInfo;
   typedef SharedPtr<TProfileInfo> PProfileInfo;
-  
+
   struct TGaussInfo;
   typedef SharedPtr<TGaussInfo> PGaussInfo;
-  
+
   class TGrilleInfo;
   typedef SharedPtr<TGrilleInfo> PGrilleInfo;
 
@@ -180,7 +133,42 @@ namespace MED{
 
   struct TWrapper;
   typedef SharedPtr<TWrapper> PWrapper;
+
+  MEDWRAPPER_EXPORT
+  TInt
+  GetDESCLength();
+
+  MEDWRAPPER_EXPORT
+  TInt
+  GetIDENTLength();
+
+  MEDWRAPPER_EXPORT
+  TInt
+  GetNOMLength();
+
+  MEDWRAPPER_EXPORT
+  TInt
+  GetLNOMLength();
+
+  MEDWRAPPER_EXPORT
+  TInt
+  GetPNOMLength();
+
+  MEDWRAPPER_EXPORT
+  void
+  GetVersionRelease(TInt&, TInt&, TInt&);
+
+  MEDWRAPPER_EXPORT
+  TInt
+  GetNbConn(EGeometrieElement, EEntiteMaillage, TInt);
+
+  MEDWRAPPER_EXPORT
+  TInt
+  GetNbNodes(EGeometrieElement typmai);
+
+  MEDWRAPPER_EXPORT
+  const TEntity2GeomSet&
+  GetEntity2GeomSet();
 }
 
-
-#endif
+#endif // MED_Common_HeaderFile

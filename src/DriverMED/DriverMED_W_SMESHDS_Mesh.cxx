@@ -52,7 +52,6 @@ using namespace MED;
 
 
 DriverMED_W_SMESHDS_Mesh::DriverMED_W_SMESHDS_Mesh():
-  myMedVersion(MED::eV2_2),
   myAllSubMeshes (false),
   myDoGroupOfNodes (false),
   myDoGroupOfEdges (false),
@@ -65,34 +64,9 @@ DriverMED_W_SMESHDS_Mesh::DriverMED_W_SMESHDS_Mesh():
   myDoAllInGroups(false)
 {}
 
-void DriverMED_W_SMESHDS_Mesh::SetFile(const std::string& theFileName, 
-                                       MED::EVersion      theId)
-{
-  Driver_SMESHDS_Mesh::SetFile(theFileName);
-  myMedVersion = theId;
-}
-
 void DriverMED_W_SMESHDS_Mesh::SetFile(const std::string& theFileName)
 {
   Driver_SMESHDS_Mesh::SetFile(theFileName);
-}
-
-string DriverMED_W_SMESHDS_Mesh::GetVersionString(const MED::EVersion theVersion, int theNbDigits)
-{
-  TInt majeur, mineur, release;
-  majeur =  mineur = release = 0;
-//   if ( theVersion == eV2_1 )
-//     MED::GetVersionRelease<eV2_1>(majeur, mineur, release);
-//   else
-    MED::GetVersionRelease<eV2_2>(majeur, mineur, release);
-  ostringstream name;
-  if ( theNbDigits > 0 )
-    name << majeur;
-  if ( theNbDigits > 1 )
-    name << "." << mineur;
-  if ( theNbDigits > 2 )
-    name << "." << release;
-  return name.str();
 }
 
 void DriverMED_W_SMESHDS_Mesh::AddGroup(SMESHDS_GroupBase* theGroup)
@@ -457,7 +431,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       }
     }
 
-    MED::PWrapper myMed = CrWrapper(myFile,myMedVersion);
+    MED::PWrapper myMed = CrWrapperW(myFile);
     PMeshInfo aMeshInfo = myMed->CrMeshInfo(aMeshDimension,aSpaceDimension,aMeshName);
     //MESSAGE("Add - aMeshName : "<<aMeshName<<"; "<<aMeshInfo->GetName());
     myMed->SetMeshInfo(aMeshInfo);

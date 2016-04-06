@@ -296,7 +296,7 @@ INCLUDE(CMakePackageConfigHelpers)
 # They all have to be INSTALL'd with the option "EXPORT ${PROJECT_NAME}TargetGroup"
 SET(_${PROJECT_NAME}_exposed_targets 
   SMESHControls MeshDriver MeshDriverDAT MeshDriverGMF MeshDriverMED
-  MeshDriverSTL MeshDriverUNV MEDWrapperBase MEDWrapper MEDWrapper_V2_2
+  MeshDriverSTL MeshDriverUNV MEDWrapper
   SMDS SMESHimpl SMESHEngine SMESHClient SMESHDS
   SMESHUtils StdMeshers StdMeshersEngine MeshJobManagerEngine
   SPADDERPluginTesterEngine SalomeIDLSMESH SalomeIDLSPADDER

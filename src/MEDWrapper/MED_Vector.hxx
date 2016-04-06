@@ -19,6 +19,7 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef MED_Vector_HeaderFile
 #define MED_Vector_HeaderFile
 
@@ -31,8 +32,7 @@
 
 namespace MED
 {
-
-  //! Main purpose to introduce the class was to customize operator [] 
+  //! Main purpose to introduce the class was to customize operator []
   template<typename _Tp, typename _Alloc = std::allocator<_Tp> >
   class TVector : public std::vector<_Tp, _Alloc>
   {
@@ -68,15 +68,15 @@ namespace MED
 
   public:
     explicit
-    TVector(const allocator_type& __a = allocator_type()): 
-      superclass(__a) 
+    TVector(const allocator_type& __a = allocator_type()):
+      superclass(__a)
     {}
-    
+
     TVector(size_type __n, const value_type& __val,
             const allocator_type& __a = allocator_type()):
       superclass(__n, __val, __a)
     {}
-    
+
     explicit
     TVector(size_type __n):
       superclass(__n)
@@ -144,9 +144,8 @@ namespace MED
       return get_value(__n);
     }
   };
-
 }
 
 #undef MED_TVECTOR_CHECK_RANGE
 
-#endif
+#endif // MED_Vector_HeaderFile

@@ -19,28 +19,30 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-//  File   : MED_WrapperFactory.hxx
-//  Author : Alexander A. BORODIN
-//
-#ifndef _MED_WrapperFactory_HXX_
-#define _MED_WrapperFactory_HXX_
 
-#ifdef WIN32
- #if defined MEDWRAPPER_FACTORY_EXPORTS || defined MEDWrapper_EXPORTS
-  #if defined WIN32
-   #define MEDWRAPPER_FACTORY_EXPORT __declspec( dllexport )
-  #else
-   #define MEDWRAPPER_FACTORY_EXPORT
-  #endif
- #else
-  #if defined WIN32
-   #define MEDWRAPPER_FACTORY_EXPORT __declspec( dllimport )
-  #else
-   #define MEDWRAPPER_FACTORY_EXPORT
-  #endif
- #endif
-#else
- #define MEDWRAPPER_FACTORY_EXPORT
-#endif
+#include <med.h>
 
-#endif
+#include <stdio.h>
+#include <stdlib.h>
+
+int main (int argc, char **argv)
+{
+  if ( argc < 2 )
+    return -1;
+
+  med_idt fid = MEDfileOpen(argv[1], MED_ACC_RDONLY);
+  if (fid < 0)
+    return 1;
+
+  med_int major, minor, release;
+  med_err aRet = MEDfileNumVersionRd(fid, &major, &minor, &release);
+  MEDfileClose(fid);
+  if (aRet < 0) {
+    // VSR: simulate med 2.3.6 behavior, med file version is assumed to be 2.1 or older
+    major = 2;
+    minor = release = -1;
+  }
+
+  printf("%d.%d.%d\n", major, minor, release);
+  return 0;
+}

@@ -468,7 +468,6 @@ namespace SMESH
     return *this;
   }
 
-
   TPythonDump& TPythonDump:: operator<<(SMESH_Gen_i* theArg)
   {
     myStream << SMESHGenName(); return *this;
@@ -482,17 +481,6 @@ namespace SMESH
   TPythonDump& TPythonDump::operator<<(const TCollection_AsciiString & theStr)
   {
     myStream << theStr; return *this;
-  }
-
-
-  TPythonDump& TPythonDump::operator<<(SMESH::MED_VERSION theVersion)
-  {
-    switch (theVersion) {
-    case SMESH::MED_V2_1: myStream << "SMESH.MED_V2_1"; break;
-    case SMESH::MED_V2_2: myStream << "SMESH.MED_V2_2"; break;
-    default: myStream << theVersion;
-    }
-    return *this;
   }
 
   TPythonDump& TPythonDump::operator<<(const SMESH::AxisStruct & theAxis)
