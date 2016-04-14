@@ -1116,7 +1116,7 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
       ( ! botSM->GetAlgo() ||
         ! _gen->Compute( *botSM->GetFather(), botSM->GetSubShape(), /*shapeOnly=*/true )))
     return error( COMPERR_BAD_INPUT_MESH,
-                  TCom( "No mesher defined to compute the face #")
+                  TCom( "No mesher defined to compute the base face #")
                   << shapeID( thePrism.myBottom ));
 
   // Make all side FACEs of thePrism meshed with quads
