@@ -12,6 +12,7 @@ from salome.smesh import smeshBuilder
 import SMESH
 import math
 import bisect
+import traceback
 
 # from extractionOrientee import extractionOrientee
 # from extractionOrienteeMulti import extractionOrienteeMulti
@@ -51,6 +52,7 @@ from construitMaillagePipe import construitMaillagePipe
 from mailleAretesEtJonction import mailleAretesEtJonction
 from mailleFacesFissure import mailleFacesFissure
 from mailleFacesPeau import mailleFacesPeau
+from fissError import fissError
 
 # -----------------------------------------------------------------------------
 # --- procédure complète fissure générale

@@ -12,6 +12,7 @@ loglevel = warning
 
 def setDebug(logfile=None):
   global loglevel
+  logging.shutdown()
   if logfile:
     logging.basicConfig(filename=logfile,
                         format='%(relativeCreated)d %(funcName)s[%(lineno)d] %(message)s',
@@ -24,6 +25,7 @@ def setDebug(logfile=None):
 
 def setVerbose(logfile=None):
   global loglevel
+  logging.shutdown()
   if logfile:
     logging.basicConfig(filename=logfile,
                         format='%(relativeCreated)d %(funcName)s[%(lineno)d] %(message)s',
@@ -36,6 +38,7 @@ def setVerbose(logfile=None):
 
 def setRelease(logfile=None):
   global loglevel
+  logging.shutdown()
   if logfile:
     logging.basicConfig(filename=logfile,
                         format='%(funcName)s[%(lineno)d] %(message)s',
@@ -48,6 +51,7 @@ def setRelease(logfile=None):
   
 def setUnitTests(logfile=None):
   global loglevel
+  logging.shutdown()
   if logfile:
     logging.basicConfig(filename=logfile,
                         format='%(funcName)s[%(lineno)d] %(message)s',
@@ -60,6 +64,7 @@ def setUnitTests(logfile=None):
   
 def setPerfTests(logfile=None):
   global loglevel
+  logging.shutdown()
   if logfile:
     logging.basicConfig(filename=logfile,
                         format='%(relativeCreated)d %(funcName)s[%(lineno)d] %(message)s',
