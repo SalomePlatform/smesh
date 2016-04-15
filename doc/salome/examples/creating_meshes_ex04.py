@@ -46,8 +46,7 @@ tria.Compute()
 PrintMeshInfo(tria)
 
 # remove a local hypothesis
-mesh = tria.GetMesh()
-mesh.RemoveHypothesis(edge, hyp4)
+tria.RemoveHypothesis(hyp4, edge)
 
 # compute the mesh
 tria.Compute()

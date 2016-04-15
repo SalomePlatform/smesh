@@ -6,7 +6,7 @@ It is sometimes useful to work alternatively in the GUI of SALOME and in the Pyt
 
 \code
 myMesh_ref = salome.IDToObject("ID")  
-// were ID is the number that appears in the object browser in the Entry column 
+// were ID is the string looking like "0:1:2:3" that appears in the object browser in the Entry column 
 // ( If hidden show it by right clicking and checking the checkbox Entry)
 myMesh = smesh.Mesh(myMesh_ref)
 \endcode

@@ -1,4 +1,4 @@
-# Construction of a Submesh
+# Construction of a Sub-mesh
 
 import salome
 salome.salome_init()
@@ -20,27 +20,31 @@ EdgeX = geompy.GetEdgeNearPoint(box, p5)
 geompy.addToStudyInFather(box, EdgeX, "Edge [0,0,0 - 10,0,0]")
 
 # create a hexahedral mesh on the box
-quadra = smesh.Mesh(box, "Box : quadrangle 2D mesh")
+mesh = smesh.Mesh(box, "Box : hexahedral 3D mesh")
 
-# create a regular 1D algorithm for the faces
-algo1D = quadra.Segment()
+# create a Regular_1D algorithm for discretization of edges
+algo1D = mesh.Segment()
 
 # define "NumberOfSegments" hypothesis to cut
 # all the edges in a fixed number of segments
 algo1D.NumberOfSegments(4)
 
 # create a quadrangle 2D algorithm for the faces
-quadra.Quadrangle()
+mesh.Quadrangle()
 
-# construct a submesh on the edge with a local hypothesis
-algo_local = quadra.Segment(EdgeX)
+# construct a sub-mesh on the edge with a local Regular_1D algorithm
+algo_local = mesh.Segment(EdgeX)
 
-# define "Arithmetic1D" hypothesis to cut the edge in several segments with increasing arithmetic length
+# define "Arithmetic1D" hypothesis to cut EdgeX in several segments with length arithmetically
+# increasing from 1.0 to 4.0
 algo_local.Arithmetic1D(1, 4)
 
-# define "Propagation" hypothesis that propagates all other hypotheses
-# on all edges of the opposite side in case of quadrangular faces
+# define "Propagation" hypothesis that propagates algo_local and "Arithmetic1D" hypothesis
+# on all parallel edges of the box
 algo_local.Propagation()
 
+# assign a hexahedral algorithm
+mesh.Hexahedron()
+
 # compute the mesh
-quadra.Compute()
+mesh.Compute()

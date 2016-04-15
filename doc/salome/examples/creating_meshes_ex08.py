@@ -14,7 +14,7 @@ smesh =  smeshBuilder.New(salome.myStudy)
 box = geompy.MakeBoxDXDYDZ(100,100,100)
 face = geompy.SubShapeAllSorted(box, geompy.ShapeType["FACE"])[0]
 
-# generate 3D mesh
+# generate a prismatic 3D mesh
 mesh = smesh.Mesh(box)
 localAlgo = mesh.Triangle(face)
 mesh.AutomaticHexahedralization()
@@ -44,4 +44,4 @@ nodeIds = nGroup.GetIDs()[-10:]
 newMesh = smesh.CopyMesh( mesh.GetIDSource( nodeIds, SMESH.NODE), "some nodes copy")
 
 # 6. copy a sub-mesh
-newMesh = smesh.CopyMesh( subMesh, "submesh copy" )
+newMesh = smesh.CopyMesh( subMesh, "sub-mesh copy" )

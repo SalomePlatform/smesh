@@ -307,7 +307,7 @@ filters over-constrained volumes, whose all nodes are on the mesh boundary:
 
 filters mesh entities (nodes or elements) included in a mesh group
 defined by threshold value:
-- element type can be any entity type, from \a  SMESH.NODE to \a SMESH.VOLUME
+- element type can be any, from \a  SMESH.NODE to \a SMESH.BALL
 - functor type should be \a SMESH.FT_BelongToMeshGroup
 - threshold is mesh group object
 
@@ -317,7 +317,7 @@ defined by threshold value:
 
 filters mesh entities (nodes or elements) which all nodes lie on the
 shape defined by threshold value:
-- element type can be any entity type, from \a  SMESH.NODE to \a SMESH.VOLUME
+- element type can be any, from \a  SMESH.NODE to \a SMESH.BALL
 - functor type should be \a SMESH.FT_BelongToGeom
 - threshold is geometrical object
 - tolerance is a distance between a node and the geometrical object;
@@ -329,7 +329,7 @@ it is used if an node is not associated to any geometry.
 
 filters mesh entities (nodes or elements) at least one node of which lies on the
 shape defined by threshold value:
-- element type can be any entity type, from \a  SMESH.NODE to \a SMESH.VOLUME
+- element type can be any, from \a  SMESH.NODE to \a SMESH.BALL
 - functor type should be \a SMESH.FT_LyingOnGeom
 - threshold is geometrical object
 - tolerance is a distance between a node and the geometrical object;
@@ -341,7 +341,7 @@ it is used if an node is not associated to any geometry.
 
 filters mesh entities (nodes or elements) which all nodes belong to the
 plane defined by threshold value with the given tolerance:
-- element type can be: \a  SMESH.NODE, \a SMESH.EDGE, \a SMESH.FACE
+- element type can be any except \a  SMESH.VOLUME
 - functor type should be \a SMESH.FT_BelongToPlane
 - threshold is geometrical object (plane)
 - default tolerance is 1.0e-7
@@ -352,7 +352,7 @@ plane defined by threshold value with the given tolerance:
 
 filters mesh entities (nodes or elements) which all nodes belong to the
 cylindrical face defined by threshold value with the given tolerance:
-- element type can be: \a , \a SMESH.EDGE, \a SMESH.FACE
+- element type can be any except \a  SMESH.VOLUME
 - functor type should be \a SMESH.FT_BelongToCylinder
 - threshold is geometrical object (cylindrical face)
 - default tolerance is 1.0e-7
@@ -363,7 +363,7 @@ cylindrical face defined by threshold value with the given tolerance:
 
 filters mesh entities (nodes or elements) which all nodes belong to the
 arbitrary surface defined by threshold value with the given tolerance:
-- element type can be: \a  SMESH.NODE, \a SMESH.EDGE, \a SMESH.FACE
+- element type can be any except \a  SMESH.VOLUME
 - functor type should be \a SMESH.FT_BelongToGenSurface
 - threshold is geometrical object (arbitrary surface)
 - default tolerance is 1.0e-7
@@ -374,7 +374,7 @@ arbitrary surface defined by threshold value with the given tolerance:
 
 filters mesh entities elements (nodes or elements) according to the
 specified identifiers range:
-- element type can be any entity type, from \a  SMESH.NODE to \a SMESH.VOLUME
+- element type can be any, from \a  SMESH.NODE to \a SMESH.BALL
 - functor type is \a SMESH.FT_RangeOfIds
 - threshold is string listing required IDs and/or ranges of IDs, e.g."1,2,3,50-60,63,67,70-78"	
 
@@ -393,7 +393,7 @@ the point of view of MED convention.
 \section filter_linear_or_quadratic Linear / quadratic
 
 filters linear / quadratic mesh elements:
-- element type should be any element type, e.g.: \a SMESH.EDGE, \a SMESH.FACE, \a SMESH.VOLUME
+- element type should be either \a SMESH.EDGE, \a SMESH.FACE or \a SMESH.VOLUME
 - functor type is \a SMESH.FT_LinearOrQuadratic
 - threshold is not required
 - if unary operator is set to SMESH.FT_LogicalNOT, the quadratic
@@ -404,7 +404,7 @@ elements are selected, otherwise (by default) linear elements are selected
 \section filter_group_color Group color
 
 filters mesh entities, belonging to the group with the color defined by the threshold value.
-- element type can be any entity type, from \a  SMESH.NODE to \a SMESH.VOLUME
+- element type can be any, from \a  SMESH.NODE to \a SMESH.BALL
 - functor type is \a SMESH.FT_GroupColor
 - threshold should be of SALOMEDS.Color type
 
@@ -415,11 +415,38 @@ filters mesh entities, belonging to the group with the color defined by the thre
 filters mesh elements by the geometric type defined with the threshold
 value. The list of available geometric types depends on the element
 entity type.
-- element type should be any element type, e.g.: \a SMESH.EDGE, \a SMESH.FACE, \a SMESH.VOLUME
+- element type can be any, e.g.: \a SMESH.EDGE, \a SMESH.FACE, \a SMESH.VOLUME, etc.
 - functor type should be \a SMESH.FT_ElemGeomType
-- threshold is of smesh.GeometryType value
+- threshold is either of smesh.GeometryType values. Type \a SMESH.GeometryType._items in the Python Console to see all geometric types.
 
 \tui_script{filters_ex35.py}
+
+\section filter_entity_type Entity type
+
+filters mesh elements by the geometric type and number of nodes. 
+- element type can be any, e.g.: \a SMESH.EDGE, \a SMESH.FACE, \a SMESH.VOLUME, etc.
+- functor type should be \a SMESH.FT_EntityType
+- threshold is either of SMESH.EntityType values. Type \a SMESH.EntityType._items in the Python Console to see all entity types.
+
+\tui_script{filters_ex37.py}
+
+\section filter_ball_diam Ball diameter
+
+filters ball elements by diameter. 
+- element type should be \a SMESH.BALL
+- functor type should be \a SMESH.FT_BallDiameter
+- threshold is floating point value (ball diameter)
+
+\tui_script{filters_ex38.py}
+
+\section filter_domain Elements of a domain
+
+filters elements of a specified domain. 
+- element type can be any, e.g.: \a SMESH.EDGE, \a SMESH.FACE, \a SMESH.VOLUME, etc.
+- functor type should be \a SMESH.FT_ConnectedElements
+- threshold is either (1) node ID or (2)  geometrical vertex or (3) 3 coordinates of a point.
+
+\tui_script{filters_ex39.py}
 
 \section combining_filters How to combine several criteria into a filter?
 

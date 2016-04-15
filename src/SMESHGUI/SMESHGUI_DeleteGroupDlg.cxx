@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2016  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -37,6 +37,7 @@
 #include <SUIT_Session.h>
 #include <SUIT_MessageBox.h>
 #include <SUIT_ResourceMgr.h>
+#include <SUIT_OverrideCursor.h>
 
 #include <SalomeApp_Study.h>
 #include <LightApp_Application.h>
@@ -204,6 +205,8 @@ bool SMESHGUI_DeleteGroupDlg::onApply()
 {
   if (!isValid())
     return false;
+
+  SUIT_OverrideCursor wc;
 
   myBlockSelection = true;
 

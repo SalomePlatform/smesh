@@ -37,7 +37,7 @@ algo.NumberOfSegments(20)
 # assign triangulation algorithm
 algo = tria_mesh.Triangle()
 
-# apply "Max Element Area" hypothesis to each triangle
+# assign "Max Element Area" hypothesis
 algo.MaxElementArea(100)
 
 # compute the mesh

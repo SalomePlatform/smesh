@@ -13,10 +13,11 @@ There are three types of groups different by their internal
 organization:<ol>
 <li><b>Standalone group</b> is a static set of mesh entities. Its
   contents can be explicitly controlled by the user. Upon removal of
-  the entities included into the group, the group becomes empty and
-  its content can be restored only manually. Hence it is
-  reasonable to create standalone groups when the mesh generation is
-  finished and mesh quality is verified.
+  the entities included into the group, e.g. due to modification of
+  meshing parameter, the group becomes empty and its content can be
+  restored only manually. Hence it is reasonable to create standalone
+  groups when the mesh generation is finished and mesh quality is
+  verified.
   \warning Creation and edition of large standalone groups in
   \ref creating_groups_page "Create group" dialog using manual edition
   is problematic due to poor performance of the dialog.</li>
@@ -27,11 +28,11 @@ organization:<ol>
   established at group construction and cannot be changed. The group
   contents are always updated automatically, hence the
   group can be created even before mesh elements generation.</li>
-<li><b>Group on filter</b> encapsulates a filter, which is used to
-  select mesh entities composing the group from the whole
-  mesh. Criteria of the filter can be changed at any time. The
-  group contents are always updated automatically, hence
-  the group can be created even before mesh elements generation.</li>
+<li><b>Group on filter</b> encapsulates a \ref filters_page "filter",
+  which is used to select mesh entities composing the group from the
+  whole mesh. Criteria of the filter can be changed at any time. The
+  group contents are always updated automatically, hence the group can
+  be created even before mesh elements generation.</li>
 </ol>
 The group on geometry and group on filter can be converted to
 a standalone group.

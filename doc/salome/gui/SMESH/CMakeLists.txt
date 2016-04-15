@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2015  CEA/DEN, EDF R&D, OPEN CASCADE
+# Copyright (C) 2012-2016  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -30,8 +30,8 @@ SET(kernel_file "${KERNEL_ROOT_DIR}/bin/salome/prepare_generating_doc.py")
 
 SALOME_ACCUMULATE_ENVIRONMENT(SMESH_MeshersList NOCHECK ${DOC_SMESH_MeshersList})
 
-SET(_cmd_options ${smesh_file} -d -o tmp1/smeshBuilder.py StdMeshers)
-SALOME_GENERATE_ENVIRONMENT_SCRIPT(_cmd env_script "${PYTHON_EXECUTABLE}" "${_cmd_options}")            
+SET(_cmd_options ${smesh_file} -o tmp1/smeshBuilder.py StdMeshers)
+SALOME_GENERATE_ENVIRONMENT_SCRIPT(_cmd env_script "${PYTHON_EXECUTABLE}" "${_cmd_options}")
 
 ADD_CUSTOM_TARGET(usr_docs ${CMAKE_COMMAND} -E make_directory tmp1
   COMMAND ${CMAKE_COMMAND} -E make_directory tmp2

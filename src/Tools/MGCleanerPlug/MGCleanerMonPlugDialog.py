@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2013-2015  EDF R&D
+# Copyright (C) 2013-2016  EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -22,6 +22,7 @@
 # Modules Eficas
 
 import os, subprocess
+import tempfile
 from MGCleanerPlugDialog_ui import Ui_MGCleanerPlugDialog
 from MGCleanerMonViewText import MGCleanerMonViewText
 from PyQt4.QtGui import *
@@ -470,7 +471,9 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     self.fichierIn=""
 
   def prepareFichier(self):
-    self.fichierIn="/tmp/ForMGCleaner_"+str(self.num)+".mesh"
+    self.fichierIn=tempfile.mktemp(suffix=".mesh",prefix="ForMGCleaner_")
+    if os.path.exists(self.fichierIn):
+        os.remove(self.fichierIn)
     self.__selectedMesh.ExportGMF(self.__selectedMesh, self.fichierIn, True)
 
   def PrepareLigneCommande(self):

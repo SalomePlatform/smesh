@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2016  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -771,8 +771,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishGroup (SALOMEDS::Study_ptr    theStudy
         SetName( aRootSO, aRootNames[aType] );
 
       // Add new group to corresponding sub-tree
-      SMESH::array_of_ElementType_var elemTypes = theGroup->GetTypes();
-      int isEmpty = ( elemTypes->length() == 0 );
+      int isEmpty = false;
       std::string pm[2] = { "ICON_SMESH_TREE_GROUP", "ICON_SMESH_TREE_MESH_WARN" };
       if ( SMESH::DownCast< SMESH_GroupOnFilter_i* > ( theGroup ))
       {

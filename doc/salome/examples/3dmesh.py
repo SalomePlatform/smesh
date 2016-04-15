@@ -2,17 +2,16 @@
 
 import salome
 salome.salome_init()
-import GEOM
 from salome.geom import geomBuilder
 geompy = geomBuilder.New(salome.myStudy)
 
-import SMESH, SALOMEDS
+import SMESH
 from salome.smesh import smeshBuilder
 smesh =  smeshBuilder.New(salome.myStudy)
 
 ###
 # Geometry: an assembly of a box, a cylinder and a truncated cone
-# meshed with tetrahedral 
+# to be meshed with tetrahedra
 ###
 
 # Define values
@@ -44,14 +43,14 @@ piece = geompy.MakeFuse(box_cyl, cone)
 geompy.addToStudy(piece, name) 
 
 # Create a group of faces
-group = geompy.CreateGroup(piece, geompy.ShapeType["FACE"]) 
+faces_group = geompy.CreateGroup(piece, geompy.ShapeType["FACE"]) 
 group_name = name + "_grp" 
-geompy.addToStudy(group, group_name) 
-group.SetName(group_name) 
+geompy.addToStudy(faces_group, group_name) 
+faces_group.SetName(group_name) 
 
 # Add faces to the group
 faces = geompy.SubShapeAllIDs(piece, geompy.ShapeType["FACE"]) 
-geompy.UnionIDs(group, faces) 
+geompy.UnionIDs(faces_group, faces) 
 
 ###
 # Create a mesh
@@ -60,20 +59,20 @@ geompy.UnionIDs(group, faces)
 # Define a mesh on a geometry
 tetra = smesh.Mesh(piece, name) 
 
-# Define 1D hypothesis
+# Define 1D algorithm and hypothesis
 algo1d = tetra.Segment() 
 algo1d.LocalLength(10) 
 
-# Define 2D hypothesis
+# Define 2D algorithm and hypothesis
 algo2d = tetra.Triangle() 
 algo2d.LengthFromEdges() 
 
-# Define 3D hypothesis
+# Define 3D algorithm and hypothesis
 algo3d = tetra.Tetrahedron()
 algo3d.MaxElementVolume(100) 
 
 # Compute the mesh
 tetra.Compute() 
 
-# Create a groupe of faces
-tetra.Group(group)
+# Create a mesh group of all triangles generated on geom faces present in faces_group
+group = tetra.Group(faces_group)

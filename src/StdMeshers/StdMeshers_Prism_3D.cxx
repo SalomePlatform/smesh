@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2016  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -1116,7 +1116,7 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
       ( ! botSM->GetAlgo() ||
         ! _gen->Compute( *botSM->GetFather(), botSM->GetSubShape(), /*shapeOnly=*/true )))
     return error( COMPERR_BAD_INPUT_MESH,
-                  TCom( "No mesher defined to compute the face #")
+                  TCom( "No mesher defined to compute the base face #")
                   << shapeID( thePrism.myBottom ));
 
   // Make all side FACEs of thePrism meshed with quads
@@ -1330,7 +1330,7 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
 
   // update state of sub-meshes (mostly in order to erase improper errors)
   SMESH_subMesh* sm = myHelper->GetMesh()->GetSubMesh( thePrism.myShape3D );
-  SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(/*includeSelf=*/false);
+  SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(/*includeSelf=*/true);
   while ( smIt->more() )
   {
     sm = smIt->next();
@@ -3298,6 +3298,9 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
       if ( !myHelper->LoadNodeColumns( faceColumns, (*quad)->face, quadBot, meshDS ))
         return error(COMPERR_BAD_INPUT_MESH, TCom("Can't find regular quadrangle mesh ")
                      << "on a side face #" << MeshDS()->ShapeToIndex( (*quad)->face ));
+
+      if ( !faceColumns.empty() && (int)faceColumns.begin()->second.size() != VerticalSize() )
+        return error(COMPERR_BAD_INPUT_MESH, "Different 'vertical' discretization");
     }
     // edge columns
     int id = MeshDS()->ShapeToIndex( *edgeIt );

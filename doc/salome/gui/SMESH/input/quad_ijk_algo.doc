@@ -20,8 +20,8 @@ The algorithm treats any face as quadrangle. If a face is bound by
 more than four edges, four most sharp vertices are considered as
 corners of the quadrangle and all edges between these vertices are
 treated as quadrangle sides. In the case of three edges, the vertex
-specified by the user is considered as a degenerated side of the
-quadrangle. 
+specified by the user is considered as a fourth degenerated side of the
+quadrangle.
 
 \image html quad_meshes.png "Algorithm generates a structured mesh on complex faces provided that edges are properly discretized"
 

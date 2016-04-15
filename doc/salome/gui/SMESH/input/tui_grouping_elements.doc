@@ -2,27 +2,24 @@
 
 \page tui_grouping_elements_page Grouping Elements
 
+\tableofcontents
+
 <br>
-\anchor tui_create_standalone_group
-<h2>Create a Standalone Group</h2>
+\section tui_create_standalone_group Create a Standalone Group
 \tui_script{grouping_elements_ex01.py}
 
 \image html create_group.png
 
 <br>
-\anchor tui_create_group_on_geometry
-<h2>Create a Group on Geometry</h2>
+\section tui_create_group_on_geometry Create a Group on Geometry
 \tui_script{grouping_elements_ex02.py}
 
 <br>
-\anchor tui_create_group_on_filter
-
-<h2>Create a Group on Filter</h2>
+\section tui_create_group_on_filter Create a Group on Filter
 \tui_script{grouping_elements_ex03.py}
 
 <br>
-\anchor tui_edit_group
-<h2>Edit a Group</h2>
+\section tui_edit_group Edit a Group
 \tui_script{grouping_elements_ex04.py}
 
 \image html editing_groups1.png
@@ -30,8 +27,7 @@
 \image html editing_groups2.png
 
 <br>
-\anchor tui_union_of_groups
-<h2>Union of groups</h2>
+\section tui_union_of_groups Union of groups
 \tui_script{grouping_elements_ex05.py}
 
 \image html union_groups1.png
@@ -41,8 +37,7 @@
 \image html union_groups3.png
 
 <br>
-\anchor tui_intersection_of_groups
-<h2>Intersection of groups</h2>
+\section tui_intersection_of_groups Intersection of groups
 \tui_script{grouping_elements_ex06.py}
 
 \image html intersect_groups1.png
@@ -52,8 +47,7 @@
 \image html intersect_groups3.png
 
 <br>
-\anchor tui_cut_of_groups
-<h2>Cut of groups</h2>
+\section tui_cut_of_groups Cut of groups
 \tui_script{grouping_elements_ex07.py}
 
 \image html cut_groups1.png
@@ -63,8 +57,7 @@
 \image html cut_groups3.png
 
 <br>
-\anchor tui_create_dim_group
-<h2>Creating groups of entities from existing groups of superior dimensions</h2>
+\section tui_create_dim_group Creating groups of entities from existing groups of superior dimensions
 \tui_script{grouping_elements_ex08.py}
 
 \image html dimgroup_tui1.png

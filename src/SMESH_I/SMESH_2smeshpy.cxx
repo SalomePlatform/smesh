@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2016  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -911,7 +911,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
       {
         // set SMESH.GeometryType instead of a numerical Threshold
         const int nbTypes = SMESH::Geom_LAST;
-        const char* types[nbTypes] = {
+        const char* types[] = {
           "Geom_POINT", "Geom_EDGE", "Geom_TRIANGLE", "Geom_QUADRANGLE", "Geom_POLYGON",
           "Geom_TETRA", "Geom_PYRAMID", "Geom_HEXA", "Geom_PENTA", "Geom_HEXAGONAL_PRISM",
           "Geom_POLYHEDRA", "Geom_BALL" };
@@ -926,7 +926,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
       {
         // set SMESH.EntityType instead of a numerical Threshold
         const int nbTypes = SMESH::Entity_Last;
-        const char* types[nbTypes] = {
+        const char* types[] = {
           "Entity_Node", "Entity_0D", "Entity_Edge", "Entity_Quad_Edge",
           "Entity_Triangle", "Entity_Quad_Triangle", "Entity_BiQuad_Triangle",
           "Entity_Quadrangle", "Entity_Quad_Quadrangle", "Entity_BiQuad_Quadrangle",

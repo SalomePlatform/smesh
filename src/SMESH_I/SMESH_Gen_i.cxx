@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2015  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2016  CEA/DEN, EDF R&D, OPEN CASCADE
 //
 // Copyright (C) 2003-2007  OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN,
 // CEDRAT, EDF R&D, LEG, PRINCIPIA R&D, BUREAU VERITAS
@@ -4896,7 +4896,7 @@ bool SMESH_Gen_i::LoadASCII( SALOMEDS::SComponent_ptr theComponent,
   _CORBA_Octet* buffer = new _CORBA_Octet[real_size];
   char tmp[3];
   tmp[2]='\0';
-  uint c = -1;
+  unsigned int c = -1;
   for ( int i = 0; i < real_size; i++ )
   {
     memcpy( &(tmp[0]), &(theStream[i*3+1]), 2 );

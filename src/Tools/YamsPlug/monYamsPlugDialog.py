@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (C) 2007-2015  EDF R&D
+# Copyright (C) 2007-2016  EDF R&D
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -22,6 +22,7 @@
 # Modules Eficas
 
 import os, subprocess
+import tempfile
 from YamsPlugDialog_ui import Ui_YamsPlugDialog
 from monViewText import MonViewText
 from PyQt4.QtGui import *
@@ -430,7 +431,9 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     self.fichierIn=""
 
   def prepareFichier(self):
-    self.fichierIn="/tmp/ForSurfOpt_"+str(self.num)+".meshb"
+    self.fichierIn=tempfile.mktemp(suffix=".meshb",prefix="ForSurfOpt_")
+    if os.path.exists(self.fichierIn):
+        os.remove(self.fichierIn)
     self.__selectedMesh.ExportGMF(self.__selectedMesh, self.fichierIn, True)
 
   def PrepareLigneCommande(self):

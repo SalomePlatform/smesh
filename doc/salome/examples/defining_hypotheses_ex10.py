@@ -24,7 +24,7 @@ faces = geompy.SubShapeAll(box, geompy.ShapeType["FACE"])
 f1 = faces[2]
 f2 = faces[0]
 # face opposite to f2
-f2opp = faces[1]
+f2opp = geompy.GetOppositeFace( box, f2 )
 
 # Get vertices used to specify how to associate sides of faces at projection
 [v1F1, v2F1] = geompy.SubShapeAll(f1, geompy.ShapeType["VERTEX"])[:2]
@@ -48,7 +48,7 @@ src_mesh = smesh.Mesh(box, "Source mesh")
 src_mesh.Segment().NumberOfSegments(9,10)
 src_mesh.Quadrangle()
 src_mesh.Hexahedron()
-src_mesh.Triangle(f1) # triangular sumbesh 
+src_mesh.Triangle(f1) # triangular sub-mesh
 src_mesh.Compute()
 
 
