@@ -184,6 +184,7 @@ bool StdMeshers_Regular_1D::CheckHypothesis( SMESH_Mesh&         aMesh,
 
   else if (hypName == "NumberOfSegments")
   {
+	MESSAGE("CheckHypothesis: NumberOfSegments");
     const StdMeshers_NumberOfSegments * hyp =
       dynamic_cast <const StdMeshers_NumberOfSegments * >(theHyp);
     ASSERT(hyp);
@@ -591,6 +592,7 @@ void StdMeshers_Regular_1D::redistributeNearVertices (SMESH_Mesh &          theM
       }
       if ( _hypType == NB_SEGMENTS )
       {
+    	MESSAGE("redistributeNearVertices NB_SEGMENTS");
         compensateError(0, vertexLength, f, l, theLength, theC3d, theParameters, true );
       }
       else if ( nPar <= 3 )
@@ -665,6 +667,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
                                                       const bool       theReverse,
                                                       bool             theConsiderPropagation)
 {
+  MESSAGE("computeInternalParameters");
   theParams.clear();
 
   double f = theFirstU, l = theLastU;
@@ -686,7 +689,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     if ( ! SMESH_Algo::GetSortedNodesOnEdge( theMesh.GetMeshDS(), mainEdge, _quadraticMesh,
                                              mainEdgeParamsOfNodes, SMDSAbs_Edge ))
       return error("Bad node parameters on the source edge of Propagation Of Distribution");
-
+    MESSAGE("mainEdgeParamsOfNodes.size(): " << mainEdgeParamsOfNodes.size());
     vector< double > segLen( mainEdgeParamsOfNodes.size() - 1 );
     double totalLen = 0;
     BRepAdaptor_Curve mainEdgeCurve( mainEdge );
@@ -715,7 +718,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
       ++nbParams;
     }
     if ( nbParams != segLen.size()-1 )
-      return error( SMESH_Comment("Can't divide into ") << segLen.size() << " segements");
+      return error( SMESH_Comment("Can't divide into ") << segLen.size() << " segments");
 
     compensateError( segLen[ theReverse ? segLen.size()-1 : 0 ],
                      segLen[ theReverse ? 0 : segLen.size()-1 ],
@@ -729,7 +732,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
   case LOCAL_LENGTH:
   case MAX_LENGTH:
   case NB_SEGMENTS: {
-
+    MESSAGE("computeInternalParameters: LOCAL_LENGTH MAX_LENGTH NB_SEGMENTS");
     double eltSize = 1;
     int nbSegments;
     if ( _hypType == MAX_LENGTH )
@@ -762,6 +765,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
           if (computed) {
             SMESHDS_SubMesh* smds = sm->GetSubMeshDS();
             int nb_segments = smds->NbElements();
+            MESSAGE("nb_segments: "<<nb_segments);
             if (nbseg - 1 <= nb_segments && nb_segments <= nbseg + 1) {
               isFound = true;
               nbseg = nb_segments;
@@ -842,6 +846,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
         break;
       case StdMeshers_NumberOfSegments::DT_Regular:
         eltSize = theLength / nbSegments;
+        MESSAGE("eltSize = theLength / nbSegments " << eltSize << " = " << theLength << " / " << nbSegments );
         break;
       default:
         return false;
@@ -855,6 +860,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     for ( int i = 2; i < NbPoints; i++ ) // skip 1st and last points
     {
       double param = Discret.Parameter(i);
+      MESSAGE("computeInternalParameters: theParams  " << i << " " <<  param);
       theParams.push_back( param );
     }
     compensateError( eltSize, eltSize, f, l, theLength, theC3d, theParams, true ); // for PAL9899
@@ -1108,6 +1114,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
 
 bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & theShape)
 {
+  MESSAGE("Compute");
   if ( _hypType == NONE )
     return false;
 
@@ -1207,6 +1214,7 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
 
       //Add the Node in the DataStructure
       SMDS_MeshNode * node = meshDS->AddNode(P.X(), P.Y(), P.Z());
+      MESSAGE("meshDS->AddNode parameter " << param << " coords=" << "("<< P.X() <<", " << P.Y() << ", " << P.Z() << ")");
       meshDS->SetNodeOnEdge(node, shapeID, param);
 
       if(_quadraticMesh) {
