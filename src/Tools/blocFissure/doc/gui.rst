@@ -3,7 +3,8 @@
 With GUI
 =====================================
 
-To make the use of « Bloc Fissure » easier, a Graphical User Interface (GUI) was developed. Inputs are similar to those of :ref:`script mode <script>`. GUI is accessible in the SMESH extension *XXXXXXXXXXXXXXXXXXXXXXXX*
+To make the use of « Bloc Fissure » easier, a Graphical User Interface (GUI) was developed.
+Inputs are similar to those of :ref:`script mode <script>`. GUI is accessible in the SMESH extension *Add a crack in a mesh*
 
 .. figure:: images/BF_GUI_capture.png
    :width: 700
