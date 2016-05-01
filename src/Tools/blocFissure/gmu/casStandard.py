@@ -117,8 +117,8 @@ class casStandard(fissureGenerique):
   # ---------------------------------------------------------------------------
   def setParamMaillageFissure(self):
     self.maillageFissureParams = dict(nomRep           = self.reptrav,
-                                      nomFicSain       = self.nomCas,
-                                      nomFicFissure    = 'fissure_' + self.nomCas,
+                                      nomFicSain       = self.nomCas +'_sain',
+                                      nomFicFissure    = self.nomCas,
                                       nbsegRad         = self.dicoParams['nbSegRad'],
                                       nbsegCercle      = self.dicoParams['nbSegCercle'],
                                       areteFaceFissure = self.dicoParams['areteFaceFissure'])
