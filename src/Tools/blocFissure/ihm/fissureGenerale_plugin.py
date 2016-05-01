@@ -196,7 +196,7 @@ def fissureGeneraleDlg(context):
       if (os.path.exists(maillageSain) and os.path.exists(brepFaceFissure)):
         self.initDialog(self.defaut)
       else:
-        self.ui.lb_calcul.setText("--- Génération exemples en cours ---")
+        self.ui.lb_calcul.setText("--- Generation exemples en cours ---")
         self.ui.lb_calcul.show()
         from blocFissure.materielCasTests import genereMateriel
         self.ui.lb_calcul.hide()
