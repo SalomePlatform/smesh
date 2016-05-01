@@ -63,6 +63,8 @@ def fissureGeneraleDlg(context):
       self.ui.lb_calcul.hide()
       
       # Connect up the buttons.
+      self.connect(self.ui.pb_exemple, QtCore.SIGNAL("clicked()"),
+                   self.genereExemples)
       self.connect(self.ui.pb_valPrec, QtCore.SIGNAL("clicked()"),
                    self.readValPrec)
       self.connect(self.ui.pb_reset, QtCore.SIGNAL("clicked()"),
@@ -188,6 +190,18 @@ def fissureGeneraleDlg(context):
       f.write(str(dico))
       f.close()
     
+    def genereExemples(self):
+      maillageSain      = os.path.join(gmu.pathBloc, 'materielCasTests/CubeAngle.med')
+      brepFaceFissure   = os.path.join(gmu.pathBloc, "materielCasTests/CubeAngleFiss.brep")
+      if (os.path.exists(maillageSain) and os.path.exists(brepFaceFissure)):
+        self.initDialog(self.defaut)
+      else:
+        self.ui.lb_calcul.setText("--- Génération exemples en cours ---")
+        self.ui.lb_calcul.show()
+        from blocFissure.materielCasTests import genereMateriel
+        self.ui.lb_calcul.hide()
+        self.initDialog(self.defaut)
+      
     def readValPrec(self):
       filedef = self.fileDefault()
       if os.path.exists(filedef):
@@ -223,6 +237,8 @@ def fissureGeneraleDlg(context):
       if fileDiag.exec_() :
         fileNames = fileDiag.selectedFiles()
         filedef = fileNames[0]
+        if filedef[-4:] not in ['.dic']:
+          filedef += '.dic'
         dico = self.creeDico()
         f = open(filedef, 'w')
         f.write(str(dico))
@@ -324,6 +340,7 @@ def fissureGeneraleDlg(context):
       NOK = self.testval(dico)
       if not(NOK):
         self.writeDefault(dico)
+        self.ui.lb_calcul.setText("--- Calcul en cours ---")
         self.ui.lb_calcul.show()
         logfile=os.path.join(dico['reptrav'], dico['nomres']+".log")
         self.setLogVerbosity(logfile)
@@ -352,7 +369,8 @@ def fissureGeneraleDlg(context):
 #        except Exception as erreur:
 #          print "exception non répertoriée"
       self.NOK = NOK
-      self.accept()
+      self.ui.lb_calcul.hide()
+      #self.accept()
     
     pass 
 

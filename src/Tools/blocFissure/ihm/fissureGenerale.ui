@@ -66,7 +66,7 @@
         <item row="1" column="0">
          <widget class="QPushButton" name="pb_facefiss">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;sélection du fichier brep (géométrie) décrivant la face de fissure.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;sélection du fichier brep (géométrie) décrivant la face de fissure.&lt;/p&gt;&lt;p&gt;Un champ rouge correspond à un fichier inexistant.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>face fissure</string>
@@ -83,7 +83,7 @@
         <item row="0" column="0">
          <widget class="QPushButton" name="pb_maillage">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;sélection du fichier med du maillage sain (hexaèdres)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;sélection du fichier med du maillage sain (hexaèdres)&lt;/p&gt;&lt;p&gt;Un champ rouge correspond à un fichier inexistant.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>maillage sain</string>
@@ -546,6 +546,16 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
+      <widget class="QPushButton" name="pb_exemple">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;génération de jeux de données exemple :&lt;/p&gt;&lt;p&gt;maillages sain et face de fissure.&lt;/p&gt;&lt;p&gt;(from blocFissure.materielCasTests import genereMateriel)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Exemple</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="pb_reset">
        <property name="toolTip">
         <string>réinitialisation de tous les paramètres à leur valeur par défaut</string>
@@ -600,11 +610,14 @@
      </item>
      <item>
       <widget class="QDialogButtonBox" name="bb_OkCancel">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;OK : lancer le calcul, sans sauver les paramètres.&lt;/p&gt;&lt;p&gt;Close : fermer le dialogue sans exécution ni sauvegarde.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
        <property name="standardButtons">
-        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+        <set>QDialogButtonBox::Close|QDialogButtonBox::Ok</set>
        </property>
       </widget>
      </item>
