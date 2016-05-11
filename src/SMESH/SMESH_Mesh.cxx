@@ -112,7 +112,7 @@ SMESH_Mesh::SMESH_Mesh(int               theLocalId,
                        SMESHDS_Document* theDocument):
   _groupId( 0 ), _nbSubShapes( 0 )
 {
-  MESSAGE("SMESH_Mesh::SMESH_Mesh(int localId)");
+  if(MYDEBUG) MESSAGE("SMESH_Mesh::SMESH_Mesh(int localId)");
   _id            = theLocalId;
   _studyId       = theStudyId;
   _gen           = theGen;
@@ -179,7 +179,7 @@ namespace
 
 SMESH_Mesh::~SMESH_Mesh()
 {
-  MESSAGE("SMESH_Mesh::~SMESH_Mesh");
+  if(MYDEBUG) MESSAGE("SMESH_Mesh::~SMESH_Mesh");
 
   // avoid usual removal of elements while processing RemoveHypothesis( algo ) event
   SMESHDS_SubMeshIteratorPtr smIt = _myMeshDS->SubMeshes();
@@ -361,10 +361,19 @@ double SMESH_Mesh::GetShapeDiagonalSize(const TopoDS_Shape & aShape)
     int nbFaces = 0;
     for ( TopExp_Explorer f( aShape, TopAbs_FACE ); f.More() && nbFaces < maxNbFaces; f.Next() )
       ++nbFaces;
+    bool isPrecise = false;
     if ( nbFaces < maxNbFaces )
-      GEOMUtils::PreciseBoundingBox(aShape, Box);
-    else
-      BRepBndLib::Add( aShape, Box);
+      try {
+        GEOMUtils::PreciseBoundingBox( aShape, Box );
+        isPrecise = true;
+      }
+      catch (...) {
+        isPrecise = false;
+      }
+    if ( !isPrecise )
+    {
+      BRepBndLib::Add( aShape, Box );
+    }
     if ( !Box.IsVoid() )
       return sqrt( Box.SquareExtent() );
   }

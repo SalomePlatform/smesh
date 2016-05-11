@@ -27,6 +27,7 @@
 #include "StdMeshers_ViscousLayers.hxx"
 
 class TopoDS_Face;
+class StdMeshers_FaceSide;
 
 /*!
  * \brief Hypothesis defining parameters of viscous layers
@@ -71,6 +72,9 @@ public:
   { return false; }
 
   static const char* GetHypType() { return "ViscousLayers2D"; }
+
+  static void SetProxyMeshOfEdge( const StdMeshers_FaceSide& edgeNodes );
+  static bool HasProxyMesh( const TopoDS_Face& face, SMESH_Mesh& theMesh );
 
  private:
 };
