@@ -40,7 +40,6 @@ using namespace std;
 
 SMDS_CellLinks* SMDS_CellLinks::New()
 {
-  MESSAGE("SMDS_CellLinks::New");
   return new SMDS_CellLinks();
 }
 
@@ -65,7 +64,6 @@ SMDS_CellLinks::~SMDS_CellLinks()
 
 SMDS_UnstructuredGrid* SMDS_UnstructuredGrid::New()
 {
-  MESSAGE("SMDS_UnstructuredGrid::New");
   return new SMDS_UnstructuredGrid();
 }
 
@@ -85,27 +83,23 @@ SMDS_UnstructuredGrid::~SMDS_UnstructuredGrid()
 unsigned long SMDS_UnstructuredGrid::GetMTime()
 {
   unsigned long mtime = vtkUnstructuredGrid::GetMTime();
-  MESSAGE("vtkUnstructuredGrid::GetMTime: " << mtime);
   return mtime;
 }
 // OUV_PORTING_VTK6: seems to be useless
 /*
 void SMDS_UnstructuredGrid::Update()
 {
-  MESSAGE("SMDS_UnstructuredGrid::Update");
   return vtkUnstructuredGrid::Update();
 }
 
 void SMDS_UnstructuredGrid::UpdateInformation()
 {
-  MESSAGE("SMDS_UnstructuredGrid::UpdateInformation");
   return vtkUnstructuredGrid::UpdateInformation();
 }
 */
 vtkPoints* SMDS_UnstructuredGrid::GetPoints()
 {
   // TODO erreur incomprehensible de la macro vtk GetPoints apparue avec la version paraview de fin aout 2010
-  //MESSAGE("*********************** SMDS_UnstructuredGrid::GetPoints " << this->Points << " " << vtkUnstructuredGrid::GetPoints());
   return this->Points;
 }
 
@@ -116,7 +110,6 @@ int SMDS_UnstructuredGrid::InsertNextLinkedCell(int type, int npts, vtkIdType *p
     return vtkUnstructuredGrid::InsertNextLinkedCell(type, npts, pts);
 
   // --- type = VTK_POLYHEDRON
-  //MESSAGE("InsertNextLinkedCell VTK_POLYHEDRON");
   int cellid = this->InsertNextCell(type, npts, pts);
 
   set<vtkIdType> setOfNodes;
@@ -129,7 +122,6 @@ int SMDS_UnstructuredGrid::InsertNextLinkedCell(int type, int npts, vtkIdType *p
       i++;
       for (int k = 0; k < nbnodes; k++)
         {
-          //MESSAGE(" cell " << cellid << " face " << nf << " node " << pts[i]);
           setOfNodes.insert(pts[i]);
           i++;
         }
@@ -138,7 +130,6 @@ int SMDS_UnstructuredGrid::InsertNextLinkedCell(int type, int npts, vtkIdType *p
   set<vtkIdType>::iterator it = setOfNodes.begin();
   for (; it != setOfNodes.end(); ++it)
     {
-      //MESSAGE("reverse link for node " << *it << " cell " << cellid);
       this->Links->ResizeCellList(*it, 1);
       this->Links->AddCellReference(cellid, *it);
     }
@@ -155,7 +146,7 @@ void SMDS_UnstructuredGrid::setSMDS_mesh(SMDS_Mesh *mesh)
 void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int newNodeSize,
                                         std::vector<int>& idCellsOldToNew, int newCellSize)
 {
-  MESSAGE("------------------------- SMDS_UnstructuredGrid::compactGrid " << newNodeSize << " " << newCellSize);//CHRONO(1);
+  //MESSAGE("------------------------- compactGrid " << newNodeSize << " " << newCellSize);//CHRONO(1);
   int alreadyCopied = 0;
 
   // --- if newNodeSize, create a new compacted vtkPoints
@@ -165,7 +156,6 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
   newPoints->SetNumberOfPoints(newNodeSize);
   if (newNodeSize)
     {
-      MESSAGE("-------------- compactGrid, newNodeSize " << newNodeSize);
       // rnv: to fix bug "21125: EDF 1233 SMESH: Degradation of precision in a test case for quadratic conversion"
       // using double type for storing coordinates of nodes instead float.
       int oldNodeSize = idNodesOldToNew.size();
@@ -194,7 +184,6 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
   newConnectivity->Initialize();
   int oldCellDataSize = this->Connectivity->GetData()->GetSize();
   newConnectivity->Allocate(oldCellDataSize);
-  MESSAGE("oldCellSize="<< oldCellSize << " oldCellDataSize=" << oldCellDataSize);
 
   vtkUnsignedCharArray *newTypes = vtkUnsignedCharArray::New();
   newTypes->Initialize();
@@ -230,11 +219,9 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
   newConnectivity->Squeeze();
 
   if (1/*newNodeSize*/)
-    {
-      MESSAGE("------- newNodeSize, setPoints");
-      this->SetPoints(newPoints);
-      MESSAGE("NumberOfPoints: " << this->GetNumberOfPoints());
-    }
+  {
+    this->SetPoints(newPoints);
+  }
 
   if (vtkDoubleArray* diameters =
       vtkDoubleArray::SafeDownCast( vtkDataSet::CellData->GetScalars() )) // Balls
@@ -250,46 +237,46 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
   }
 
   if (this->FaceLocations)
+  {
+    vtkIdTypeArray *newFaceLocations = vtkIdTypeArray::New();
+    newFaceLocations->Initialize();
+    newFaceLocations->Allocate(newTypes->GetSize());
+    vtkIdTypeArray *newFaces = vtkIdTypeArray::New();
+    newFaces->Initialize();
+    newFaces->Allocate(this->Faces->GetSize());
+    for (int i = 0; i < oldCellSize; i++)
     {
-      vtkIdTypeArray *newFaceLocations = vtkIdTypeArray::New();
-      newFaceLocations->Initialize();
-      newFaceLocations->Allocate(newTypes->GetSize());
-      vtkIdTypeArray *newFaces = vtkIdTypeArray::New();
-      newFaces->Initialize();
-      newFaces->Allocate(this->Faces->GetSize());
-      for (int i = 0; i < oldCellSize; i++)
+      if (this->Types->GetValue(i) == VTK_EMPTY_CELL)
+        continue;
+      int newCellId = idCellsOldToNew[i];
+      if (newTypes->GetValue(newCellId) == VTK_POLYHEDRON)
+      {
+        newFaceLocations->InsertNextValue(newFaces->GetMaxId()+1);
+        int oldFaceLoc = this->FaceLocations->GetValue(i);
+        int nCellFaces = this->Faces->GetValue(oldFaceLoc++);
+        newFaces->InsertNextValue(nCellFaces);
+        for (int n=0; n<nCellFaces; n++)
         {
-          if (this->Types->GetValue(i) == VTK_EMPTY_CELL)
-            continue;
-          int newCellId = idCellsOldToNew[i];
-          if (newTypes->GetValue(newCellId) == VTK_POLYHEDRON)
-            {
-               newFaceLocations->InsertNextValue(newFaces->GetMaxId()+1);
-               int oldFaceLoc = this->FaceLocations->GetValue(i);
-               int nCellFaces = this->Faces->GetValue(oldFaceLoc++);
-               newFaces->InsertNextValue(nCellFaces);
-               for (int n=0; n<nCellFaces; n++)
-                 {
-                   int nptsInFace = this->Faces->GetValue(oldFaceLoc++);
-                   newFaces->InsertNextValue(nptsInFace);
-                   for (int k=0; k<nptsInFace; k++)
-                     {
-                       int oldpt = this->Faces->GetValue(oldFaceLoc++);
-                       newFaces->InsertNextValue(idNodesOldToNew[oldpt]);
-                     }
-                 }
-            }
-          else
-            {
-               newFaceLocations->InsertNextValue(-1);
-            }
+          int nptsInFace = this->Faces->GetValue(oldFaceLoc++);
+          newFaces->InsertNextValue(nptsInFace);
+          for (int k=0; k<nptsInFace; k++)
+          {
+            int oldpt = this->Faces->GetValue(oldFaceLoc++);
+            newFaces->InsertNextValue(idNodesOldToNew[oldpt]);
+          }
         }
-      newFaceLocations->Squeeze();
-      newFaces->Squeeze();
-      this->SetCells(newTypes, newLocations, newConnectivity, newFaceLocations, newFaces);
-      newFaceLocations->Delete();
-      newFaces->Delete();
+      }
+      else
+      {
+        newFaceLocations->InsertNextValue(-1);
+      }
     }
+    newFaceLocations->Squeeze();
+    newFaces->Squeeze();
+    this->SetCells(newTypes, newLocations, newConnectivity, newFaceLocations, newFaces);
+    newFaceLocations->Delete();
+    newFaces->Delete();
+  }
   else
   {
     this->SetCells(newTypes, newLocations, newConnectivity, FaceLocations, Faces);
@@ -302,10 +289,12 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
   this->BuildLinks();
 }
 
-void SMDS_UnstructuredGrid::copyNodes(vtkPoints *newPoints, std::vector<int>& idNodesOldToNew, int& alreadyCopied,
-                                      int start, int end)
+void SMDS_UnstructuredGrid::copyNodes(vtkPoints *       newPoints,
+                                      std::vector<int>& idNodesOldToNew,
+                                      int&              alreadyCopied,
+                                      int               start,
+                                      int               end)
 {
-  MESSAGE("copyNodes " << alreadyCopied << " " << start << " " << end << " size: " << end - start << " total: " << alreadyCopied + end - start);
   void *target = newPoints->GetVoidPointer(3 * alreadyCopied);
   void *source = this->Points->GetVoidPointer(3 * start);
   int nbPoints = end - start;
@@ -327,7 +316,6 @@ void SMDS_UnstructuredGrid::copyBloc(vtkUnsignedCharArray *newTypes,
                                      int                   start,
                                      int                   end)
 {
-  //MESSAGE("copyBloc " << alreadyCopied << " " << start << " " << end << " size: " << end - start << " total: " << alreadyCopied + end - start);
   for (int j = start; j < end; j++)
     {
       newTypes->SetValue(alreadyCopied, this->Types->GetValue(j));
@@ -337,16 +325,13 @@ void SMDS_UnstructuredGrid::copyBloc(vtkUnsignedCharArray *newTypes,
       vtkIdType *oldPtsCell = 0;
       this->Connectivity->GetCell(oldLoc, nbpts, oldPtsCell);
       assert(nbpts < NBMAXNODESINCELL);
-      //MESSAGE(j << " " << alreadyCopied << " " << (int)this->Types->GetValue(j) << " " << oldLoc << " " << nbpts );
       for (int l = 0; l < nbpts; l++)
         {
           int oldval = oldPtsCell[l];
           pointsCell[l] = idNodesOldToNew[oldval];
-          //MESSAGE("   " << oldval << " " << pointsCell[l]);
         }
       /*int newcnt = */newConnectivity->InsertNextCell(nbpts, pointsCell);
       int newLoc = newConnectivity->GetInsertLocation(nbpts);
-      //MESSAGE(newcnt << " " << newLoc);
       newLocations->SetValue(alreadyCopied, newLoc);
       alreadyCopied++;
     }
@@ -356,8 +341,6 @@ int SMDS_UnstructuredGrid::CellIdToDownId(int vtkCellId)
 {
   if ((vtkCellId < 0) || (vtkCellId >= (int)_cellIdToDownId.size()))
   {
-    //MESSAGE("SMDS_UnstructuredGrid::CellIdToDownId structure not up to date: vtkCellId="
-    //    << vtkCellId << " max="<< _cellIdToDownId.size());
     return -1;
   }
   return _cellIdToDownId[vtkCellId];
@@ -1016,12 +999,13 @@ void SMDS_UnstructuredGrid::BuildLinks()
  * @param nodeDomains: map(original id --> map(domain --> duplicated node id))
  * @return ok if success.
  */
-SMDS_MeshCell* SMDS_UnstructuredGrid::extrudeVolumeFromFace(int vtkVolId,
-                                                  int domain1,
-                                                  int domain2,
-                                                  std::set<int>& originalNodes,
-                                                  std::map<int, std::map<int, int> >& nodeDomains,
-                                                  std::map<int, std::map<long, int> >& nodeQuadDomains)
+SMDS_MeshCell*
+SMDS_UnstructuredGrid::extrudeVolumeFromFace(int vtkVolId,
+                                             int domain1,
+                                             int domain2,
+                                             std::set<int>& originalNodes,
+                                             std::map<int, std::map<int, int> >& nodeDomains,
+                                             std::map<int, std::map<long, int> >& nodeQuadDomains)
 {
   //MESSAGE("extrudeVolumeFromFace " << vtkVolId);
   vector<vtkIdType> orderedOriginals;
@@ -1037,16 +1021,16 @@ SMDS_MeshCell* SMDS_UnstructuredGrid::extrudeVolumeFromFace(int vtkVolId,
   bool isQuadratic = false;
   switch (orderedOriginals.size())
   {
-    case 3:
-      if (dim == 2)
-        isQuadratic = true;
-      break;
-    case 6:
-    case 8:
+  case 3:
+    if (dim == 2)
       isQuadratic = true;
-      break;
-    default:
-      isQuadratic = false;
+    break;
+  case 6:
+  case 8:
+    isQuadratic = true;
+    break;
+  default:
+    isQuadratic = false;
       break;
   }
 

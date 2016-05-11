@@ -108,7 +108,6 @@ SMESH_Mesh_i::SMESH_Mesh_i( PortableServer::POA_ptr thePOA,
                             CORBA::Long             studyId )
 : SALOME::GenericObj_i( thePOA )
 {
-  MESSAGE("SMESH_Mesh_i");
   _impl          = NULL;
   _gen_i         = gen_i;
   _id            = _idGenerator++;
@@ -127,8 +126,6 @@ SMESH_Mesh_i::SMESH_Mesh_i( PortableServer::POA_ptr thePOA,
 
 SMESH_Mesh_i::~SMESH_Mesh_i()
 {
-  MESSAGE("~SMESH_Mesh_i");
-
   // destroy groups
   map<int, SMESH::SMESH_GroupBase_ptr>::iterator itGr;
   for (itGr = _mapGroups.begin(); itGr != _mapGroups.end(); itGr++)
@@ -4265,8 +4262,7 @@ CORBA::LongLong SMESH_Mesh_i::GetMeshPtr()
     _preMeshInfo->FullLoadFromFile();
 
   CORBA::LongLong pointeur = CORBA::LongLong(_impl);
-  if ( MYDEBUG )
-    MESSAGE("CORBA::LongLong SMESH_Mesh_i::GetMeshPtr() "<<pointeur);
+  if ( MYDEBUG ) MESSAGE("CORBA::LongLong SMESH_Mesh_i::GetMeshPtr() "<<pointeur);
   return pointeur;
 }
 

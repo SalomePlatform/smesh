@@ -64,12 +64,10 @@ using namespace std;
 
 SMESH_Gen::SMESH_Gen()
 {
-  MESSAGE("SMESH_Gen::SMESH_Gen");
   _localId = 0;
   _hypId   = 0;
   _segmentation = _nbSegments = 10;
   SMDS_Mesh::_meshList.clear();
-  MESSAGE(SMDS_Mesh::_meshList.size());
   _compute_canceled = false;
   //vtkDebugLeaks::SetExitError(0);
 }
@@ -82,7 +80,6 @@ SMESH_Gen::SMESH_Gen()
 
 SMESH_Gen::~SMESH_Gen()
 {
-  MESSAGE("SMESH_Gen::~SMESH_Gen");
   std::map < int, StudyContextStruct * >::iterator i_sc = _mapStudyContext.begin();
   for ( ; i_sc != _mapStudyContext.end(); ++i_sc )
   {
@@ -102,7 +99,6 @@ SMESH_Mesh* SMESH_Gen::CreateMesh(int theStudyId, bool theIsEmbeddedMode)
   throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
-  MESSAGE("SMESH_Gen::CreateMesh");
 
   // Get studyContext, create it if it does'nt exist, with a SMESHDS_Document
   StudyContextStruct *aStudyContext = GetStudyContext(theStudyId);
@@ -131,7 +127,6 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
                         const ::MeshDimension aDim /*=::MeshDim_3D*/,
                         TSetOfInt*            aShapesId /*=0*/)
 {
-  MESSAGE("SMESH_Gen::Compute");
   MEMOSTAT;
 
   bool ret = true;
@@ -369,11 +364,10 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
     ret = Compute( aMesh, aShape, aShapeOnly, /*anUpward=*/true, aDim, aShapesId );
   }
 
-  MESSAGE( "VSR - SMESH_Gen::Compute() finished, OK = " << ret);
   MEMOSTAT;
 
   SMESHDS_Mesh *myMesh = aMesh.GetMeshDS();
-  MESSAGE("*** compactMesh after compute");
+  //MESSAGE("*** compactMesh after compute");
   myMesh->compactMesh();
 
   // fix quadratic mesh by bending iternal links near concave boundary
@@ -463,8 +457,6 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
                          const bool            anUpward,
                          TSetOfInt*            aShapesId)
 {
-  MESSAGE("SMESH_Gen::Evaluate");
-
   bool ret = true;
 
   SMESH_subMesh *sm = aMesh.GetSubMesh(aShape);
@@ -707,8 +699,6 @@ static bool checkMissing(SMESH_Gen*                aGen,
   if ( aCheckedMap.count( aSubMesh ))
     return true;
 
-  //MESSAGE("=====checkMissing");
-
   int ret = true;
   SMESH_Algo* algo = 0;
 
@@ -829,8 +819,6 @@ bool SMESH_Gen::GetAlgoState(SMESH_Mesh&               theMesh,
                              const TopoDS_Shape&       theShape,
                              list< TAlgoStateError > & theErrors)
 {
-  //MESSAGE("SMESH_Gen::CheckAlgoState");
-
   bool ret = true;
   bool hasAlgo = false;
 
@@ -907,8 +895,6 @@ bool SMESH_Gen::GetAlgoState(SMESH_Mesh&               theMesh,
   // info on missing hypothesis and find out if all needed algos are
   // well defined
   // ----------------------------------------------------------------
-
-  //MESSAGE( "---info on missing hypothesis and find out if all needed algos are");
 
   // find max dim of global algo
   int aTopAlgoDim = 0;

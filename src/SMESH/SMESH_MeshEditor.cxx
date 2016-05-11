@@ -683,7 +683,6 @@ static bool getNodesFromTwoTria(const SMDS_MeshElement * theTria1,
 bool SMESH_MeshEditor::InverseDiag (const SMDS_MeshElement * theTria1,
                                     const SMDS_MeshElement * theTria2 )
 {
-  MESSAGE("InverseDiag");
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
 
@@ -888,8 +887,6 @@ bool SMESH_MeshEditor::InverseDiag (const SMDS_MeshNode * theNode1,
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
 
-  MESSAGE( "::InverseDiag()" );
-
   const SMDS_MeshElement *tr1, *tr2;
   if ( !findTriangles( theNode1, theNode2, tr1, tr2 ))
     return false;
@@ -1011,8 +1008,6 @@ bool SMESH_MeshEditor::DeleteDiag (const SMDS_MeshNode * theNode1,
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
 
-  MESSAGE( "::DeleteDiag()" );
-
   const SMDS_MeshElement *tr1, *tr2;
   if ( !findTriangles( theNode1, theNode2, tr1, tr2 ))
     return false;
@@ -1105,7 +1100,6 @@ bool SMESH_MeshEditor::DeleteDiag (const SMDS_MeshNode * theNode1,
 
 bool SMESH_MeshEditor::Reorient (const SMDS_MeshElement * theElem)
 {
-  MESSAGE("Reorient");
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
 
@@ -2931,8 +2925,6 @@ bool SMESH_MeshEditor::QuadToTri (TIDSortedElemSet & theElems,
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
 
-  MESSAGE( "::QuadToTri()" );
-
   SMESHDS_Mesh * aMesh = GetMeshDS();
 
   Handle(Geom_Surface) surface;
@@ -3152,8 +3144,6 @@ bool SMESH_MeshEditor::TriToQuad (TIDSortedElemSet &                   theElems,
 {
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
-
-  MESSAGE( "::TriToQuad()" );
 
   if ( !theCrit.get() )
     return false;
@@ -3938,8 +3928,6 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
 
-  MESSAGE((theSmoothMethod==LAPLACIAN ? "LAPLACIAN" : "CENTROIDAL") << "--::Smooth()");
-
   if ( theTgtAspectRatio < 1.0 )
     theTgtAspectRatio = 1.0;
 
@@ -4476,7 +4464,6 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
                                     const size_t                          nbSteps,
                                     SMESH_SequenceOfElemPtr&              srcElements)
 {
-  //MESSAGE("sweepElement " << nbSteps);
   SMESHDS_Mesh* aMesh = GetMeshDS();
 
   const int           nbNodes = elem->NbNodes();
@@ -5368,7 +5355,6 @@ SMESH_MeshEditor::RotationSweep(TIDSortedElemSet   theElemSets[2],
   // source elements for each generated one
   SMESH_SequenceOfElemPtr srcElems, srcNodes;
 
-  MESSAGE( "RotationSweep()");
   gp_Trsf aTrsf;
   aTrsf.SetRotation( theAxis, theAngle );
   gp_Trsf aTrsf2;
@@ -5939,7 +5925,6 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet     theElements[2],
                                        const gp_Pnt&        theRefPoint,
                                        const bool           theMakeGroups)
 {
-  MESSAGE("ExtrusionAlongTrack");
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
 
@@ -6732,37 +6717,29 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
   string groupPostfix;
   switch ( theTrsf.Form() ) {
   case gp_PntMirror:
-    MESSAGE("gp_PntMirror");
     needReverse = true;
     groupPostfix = "mirrored";
     break;
   case gp_Ax1Mirror:
-    MESSAGE("gp_Ax1Mirror");
     groupPostfix = "mirrored";
     break;
   case gp_Ax2Mirror:
-    MESSAGE("gp_Ax2Mirror");
     needReverse = true;
     groupPostfix = "mirrored";
     break;
   case gp_Rotation:
-    MESSAGE("gp_Rotation");
     groupPostfix = "rotated";
     break;
   case gp_Translation:
-    MESSAGE("gp_Translation");
     groupPostfix = "translated";
     break;
   case gp_Scale:
-    MESSAGE("gp_Scale");
     groupPostfix = "scaled";
     break;
   case gp_CompoundTrsf: // different scale by axis
-    MESSAGE("gp_CompoundTrsf");
     groupPostfix = "scaled";
     break;
   default:
-    MESSAGE("default");
     needReverse = false;
     groupPostfix = "transformed";
   }
@@ -7271,7 +7248,6 @@ int SMESH_MeshEditor::SimplifyFace (const vector<const SMDS_MeshNode *>& faceNod
 
 void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
 {
-  MESSAGE("MergeNodes");
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
 
@@ -8120,7 +8096,6 @@ SMESH_MeshEditor::SewFreeBorder (const SMDS_MeshNode* theBordFirstNode,
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
 
-  MESSAGE("::SewFreeBorder()");
   Sew_Error aResult = SEW_OK;
 
   // ====================================
@@ -9757,7 +9732,6 @@ SMESH_MeshEditor::SewSideElements (TIDSortedElemSet&    theSide1,
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
 
-  MESSAGE ("::::SewSideElements()");
   if ( theSide1.size() != theSide2.size() )
     return SEW_DIFF_NB_OF_ELEMENTS;
 
@@ -10538,7 +10512,6 @@ bool SMESH_MeshEditor::doubleNodes(SMESHDS_Mesh*           theMeshDS,
                                    TNodeNodeMap&           theNodeNodeMap,
                                    const bool              theIsDoubleElem )
 {
-  MESSAGE("doubleNodes");
   // iterate through element and duplicate them (by nodes duplication)
   bool res = false;
   std::vector<const SMDS_MeshNode*> newNodes;
@@ -10603,7 +10576,6 @@ bool SMESH_MeshEditor::doubleNodes(SMESHDS_Mesh*           theMeshDS,
 bool SMESH_MeshEditor::DoubleNodes( const std::list< int >& theListOfNodes,
                                     const std::list< int >& theListOfModifiedElems )
 {
-  MESSAGE("DoubleNodes");
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
 
@@ -10677,10 +10649,9 @@ bool SMESH_MeshEditor::DoubleNodes( const std::list< int >& theListOfNodes,
     const SMDS_MeshElement* anElem = anElemToNodesIter->first;
     vector<const SMDS_MeshNode*> aNodeArr = anElemToNodesIter->second;
     if ( anElem )
-      {
-      MESSAGE("ChangeElementNodes");
+    {
       aMeshDS->ChangeElementNodes( anElem, &aNodeArr[ 0 ], anElem->NbNodes() );
-      }
+    }
   }
 
   return true;
@@ -10788,7 +10759,6 @@ bool SMESH_MeshEditor::AffectedElemGroupsInRegion( const TIDSortedElemSet& theEl
         continue;
       gp_XYZ normal;
       SMESH_MeshAlgos::FaceNormal( anElem, normal, /*normalized=*/true );
-      MESSAGE("element " << ielem++ <<  " normal " << normal.X() << " " << normal.Y() << " " << normal.Z());
       std::set<const SMDS_MeshNode*> nodesElem;
       nodesElem.clear();
       SMDS_ElemIteratorPtr nodeItr = anElem->nodesIterator();
@@ -10800,7 +10770,6 @@ bool SMESH_MeshEditor::AffectedElemGroupsInRegion( const TIDSortedElemSet& theEl
       std::set<const SMDS_MeshNode*>::iterator nodit = nodesElem.begin();
       for (; nodit != nodesElem.end(); nodit++)
       {
-        MESSAGE("  noeud ");
         const SMDS_MeshNode* aNode = *nodit;
         if ( !aNode || theNodesNot.find(aNode) != theNodesNot.end() )
           continue;
@@ -10810,7 +10779,6 @@ bool SMESH_MeshEditor::AffectedElemGroupsInRegion( const TIDSortedElemSet& theEl
         SMDS_ElemIteratorPtr backElemItr = aNode->GetInverseElementIterator();
         while ( backElemItr->more() )
         {
-          MESSAGE("    backelem ");
           const SMDS_MeshElement* curElem = backElemItr->next();
           if (alreadyCheckedElems.find(curElem) != alreadyCheckedElems.end())
             continue;
@@ -10832,10 +10800,8 @@ bool SMESH_MeshEditor::AffectedElemGroupsInRegion( const TIDSortedElemSet& theEl
           p.SetCoord( x/nb -aNode->X(),
                       y/nb -aNode->Y(),
                       z/nb -aNode->Z() );
-          MESSAGE("      check " << p.X() << " " << p.Y() << " " << p.Z());
           if (normal*p > 0)
           {
-            MESSAGE("    --- inserted")
             theAffectedElems.insert( curElem );
           }
           else if (curElem->GetType() == SMDSAbs_Edge)
@@ -10861,7 +10827,6 @@ bool SMESH_MeshEditor::AffectedElemGroupsInRegion( const TIDSortedElemSet& theEl
       }
       if (onside)
       {
-        MESSAGE("    --- edge onside inserted")
         theAffectedElems.insert(anEdge);
       }
     }
@@ -10886,21 +10851,18 @@ bool SMESH_MeshEditor::AffectedElemGroupsInRegion( const TIDSortedElemSet& theEl
     int ielem;
     for ( ielem = 1;  elemItr != theElems.end(); ++elemItr )
     {
-      MESSAGE("element " << ielem++);
       SMDS_MeshElement* anElem = (SMDS_MeshElement*)*elemItr;
       if (!anElem)
         continue;
       SMDS_ElemIteratorPtr nodeItr = anElem->nodesIterator();
       while ( nodeItr->more() )
       {
-        MESSAGE("  noeud ");
         const SMDS_MeshNode* aNode = cast2Node(nodeItr->next());
         if ( !aNode || theNodesNot.find(aNode) != theNodesNot.end() )
           continue;
         SMDS_ElemIteratorPtr backElemItr = aNode->GetInverseElementIterator();
         while ( backElemItr->more() )
         {
-          MESSAGE("    backelem ");
           const SMDS_MeshElement* curElem = backElemItr->next();
           if ( curElem && theElems.find(curElem) == theElems.end() &&
               ( bsc3d.get() ?
@@ -10986,10 +10948,6 @@ bool SMESH_MeshEditor::DoubleNodesInRegion( const TIDSortedElemSet& theElems,
  */
 double SMESH_MeshEditor::OrientedAngle(const gp_Pnt& p0, const gp_Pnt& p1, const gp_Pnt& g1, const gp_Pnt& g2)
 {
-//  MESSAGE("    p0: " << p0.X() << " " << p0.Y() << " " << p0.Z());
-//  MESSAGE("    p1: " << p1.X() << " " << p1.Y() << " " << p1.Z());
-//  MESSAGE("    g1: " << g1.X() << " " << g1.Y() << " " << g1.Z());
-//  MESSAGE("    g2: " << g2.X() << " " << g2.Y() << " " << g2.Z());
   gp_Vec vref(p0, p1);
   gp_Vec v1(p0, g1);
   gp_Vec v2(p0, g2);

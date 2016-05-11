@@ -418,11 +418,14 @@ void StdMeshersGUI_SubShapeSelectorWdg::onListSelectionChanged()
     return;
 
   //mySelectionMgr->clearSelected();
-  TColStd_MapOfInteger aIndexes;
+  myPreviewActor->HighlightAll( false );
   QList<QListWidgetItem*> selItems = myListWidget->selectedItems();
   QListWidgetItem* anItem;
   foreach(anItem, selItems)
     myPreviewActor->HighlightID( anItem->text().toInt() );
+
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+    aViewWindow->Repaint();
 
   // update remove button
   myRemoveButton->setEnabled( selItems.size() > 0 );

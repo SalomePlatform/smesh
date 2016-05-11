@@ -134,8 +134,6 @@ extern "C"
 STDMESHERS_I_EXPORT
   GenericHypothesisCreator_i* GetHypothesisCreator (const char* aHypName)
   {
-    MESSAGE("Get HypothesisCreator for " << aHypName);
-
     GenericHypothesisCreator_i* aCreator = 0;
 
     // Hypotheses

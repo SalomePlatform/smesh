@@ -42,25 +42,23 @@ SMDS_MeshIDFactory::SMDS_MeshIDFactory():myMaxID(0), myMesh(0)
 
 int SMDS_MeshIDFactory::GetFreeID()
 {
-        int newid;
-        if (myPoolOfID.empty())
-        {
-            newid = ++myMaxID;
-            //MESSAGE("GetFreeID new " << newid);
-        }
-        else
-        {
-                set<int>::iterator i = myPoolOfID.begin();
-                newid = *i;//myPoolOfID.top();
-                myPoolOfID.erase( i );//myPoolOfID.pop();
-                //MESSAGE("GetFreeID pool " << newid);
-        }
-    return newid;
+  int newid;
+  if (myPoolOfID.empty())
+  {
+    newid = ++myMaxID;
+  }
+  else
+  {
+    set<int>::iterator i = myPoolOfID.begin();
+    newid = *i;//myPoolOfID.top();
+    myPoolOfID.erase( i );//myPoolOfID.pop();
+  }
+  return newid;
 }
 
 //=======================================================================
 //function : ReleaseID
-//purpose  : 
+//purpose  :
 //=======================================================================
 void SMDS_MeshIDFactory::ReleaseID(int ID, int vtkId)
 {
@@ -91,24 +89,23 @@ void SMDS_MeshIDFactory::ReleaseID(int ID, int vtkId)
 
 void SMDS_MeshIDFactory::Clear()
 {
-        myMaxID = 0;
-        myPoolOfID.clear();
+  myMaxID = 0;
+  myPoolOfID.clear();
 }
 
 void SMDS_MeshIDFactory::SetMesh(SMDS_Mesh *mesh)
 {
-        myMesh = mesh;
+  myMesh = mesh;
 }
 
 SMDS_Mesh* SMDS_MeshIDFactory::GetMesh()
 {
-        return myMesh;
+  return myMesh;
 }
 
 void SMDS_MeshIDFactory::emptyPool(int maxId)
 {
-        MESSAGE("SMDS_MeshIDFactory::emptyPool " << myMaxID << " --> " << maxId);
-        myMaxID = maxId;
-        myPoolOfID.clear();
+  myMaxID = maxId;
+  myPoolOfID.clear();
 }
 

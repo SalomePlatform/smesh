@@ -285,7 +285,6 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
                           const char*               interfaceName )
   : Engines_Component_i( orb, poa, contId, instanceName, interfaceName )
 {
-  MESSAGE( "SMESH_Gen_i::SMESH_Gen_i : standard constructor" );
 
   myOrb = CORBA::ORB::_duplicate(orb);
   myPoa = PortableServer::POA::_duplicate(poa);
@@ -335,8 +334,6 @@ SMESH_Gen_i::SMESH_Gen_i( CORBA::ORB_ptr            orb,
 
 SMESH_Gen_i::~SMESH_Gen_i()
 {
-  MESSAGE( "SMESH_Gen_i::~SMESH_Gen_i" );
-
   // delete hypothesis creators
   map<string, GenericHypothesisCreator_i*>::iterator itHyp, itHyp2;
   for (itHyp = myHypCreatorMap.begin(); itHyp != myHypCreatorMap.end(); itHyp++)
@@ -512,7 +509,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::createMesh()
     // create a new mesh object servant, store it in a map in study context
     SMESH_Mesh_i* meshServant = new SMESH_Mesh_i( GetPOA(), this, GetCurrentStudyID() );
     // create a new mesh object
-    MESSAGE("myIsEmbeddedMode " << myIsEmbeddedMode);
+    if(MYDEBUG) MESSAGE("myIsEmbeddedMode " << myIsEmbeddedMode);
     meshServant->SetImpl( myGen.CreateMesh( GetCurrentStudyID(), myIsEmbeddedMode ));
 
     // activate the CORBA servant of Mesh
@@ -571,7 +568,6 @@ void SMESH_Gen_i::SetGeomEngine( GEOM::GEOM_Gen_ptr geomcompo )
 void SMESH_Gen_i::SetEmbeddedMode( CORBA::Boolean theMode )
 {
   myIsEmbeddedMode = theMode;
-  MESSAGE("myIsEmbeddedMode " << myIsEmbeddedMode);
 
   if ( !myIsEmbeddedMode ) {
     //PAL10867: disable signals catching with "noexcepthandler" option

@@ -1159,7 +1159,6 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 {
   _src2tgtNodes.clear();
 
-  MESSAGE("Projection_2D Compute");
   if ( !_sourceHypo )
     return false;
 
@@ -1257,7 +1256,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   {
     // projection in case if the faces are similar in 2D space
     projDone = projectBy2DSimilarity( tgtFace, srcFace, tgtWires, srcWires,
-                                      shape2ShapeMap, _src2tgtNodes, is1DComputed);
+                                      shape2ShapeMap, _src2tgtNodes, is1DComputed );
   }
   if ( !projDone )
   {

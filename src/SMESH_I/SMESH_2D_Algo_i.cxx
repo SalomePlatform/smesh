@@ -45,7 +45,6 @@ SMESH_2D_Algo_i::SMESH_2D_Algo_i( PortableServer::POA_ptr thePOA )
        SMESH_Hypothesis_i( thePOA ), 
        SMESH_Algo_i( thePOA ) 
 {
-  MESSAGE( "SMESH_2D_Algo_i::SMESH_2D_Algo_i" );
 }
 
 //=============================================================================
@@ -58,7 +57,6 @@ SMESH_2D_Algo_i::SMESH_2D_Algo_i( PortableServer::POA_ptr thePOA )
 
 SMESH_2D_Algo_i::~SMESH_2D_Algo_i()
 {
-  MESSAGE( "SMESH_2D_Algo_i::~SMESH_2D_Algo_i" );
 }
 
 //================================================================================

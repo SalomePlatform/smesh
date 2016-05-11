@@ -39,7 +39,7 @@ void memostat(const char* f, int l)
 }
 
 #if defined(_DEBUG_) || defined(_DEBUG)
-#define MEMOSTAT memostat( __FILE__, __LINE__ )
+#define MEMOSTAT //memostat( __FILE__, __LINE__ )
 #else
 #define MEMOSTAT
 #endif

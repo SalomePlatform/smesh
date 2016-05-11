@@ -1649,19 +1649,17 @@ namespace
         if(!anIO.IsNull()){
           _PTR(SObject) SO = aStudy->FindObjectID( It.Value()->getEntry() );
           if ( SO ) {
-            CORBA::Object_var          aObject  = SMESH::SObjectToObject( SO );
-            SMESH::SMESH_Mesh_var      aMesh    = SMESH::SMESH_Mesh::_narrow( aObject );
-            SMESH::SMESH_subMesh_var   aSubMesh = SMESH::SMESH_subMesh::_narrow( aObject );
-            SMESH::SMESH_GroupBase_var aGroup   = SMESH::SMESH_GroupBase::_narrow( aObject );
-            if ( !aMesh->_is_nil() || !aSubMesh->_is_nil() || !aGroup->_is_nil() ) {
-              if ( SMESH_Actor *anActor = SMESH::FindActorByEntry(anIO->getEntry()) ) {
-                anActor->SetControlMode(aControl);
-                anActor->GetScalarBarActor()->SetTitle( functorToString( anActor->GetFunctor() ).toLatin1().constData() );
+            CORBA::Object_var         aObject = SMESH::SObjectToObject( SO );
+            SMESH::SMESH_IDSource_var anIDSrc = SMESH::SMESH_IDSource::_narrow( aObject );
+            if ( !anIDSrc->_is_nil() ) {
+              if ( SMESH_Actor *anActor = SMESH::FindActorByEntry( anIO->getEntry()) ) {
+                QString functorName = functorToString( anActor->GetFunctor() );
+                anActor->SetControlMode( aControl );
+                anActor->GetScalarBarActor()->SetTitle( functorName.toLatin1().constData() );
                 SMESH::RepaintCurrentView();
 #ifndef DISABLE_PLOT2DVIEWER
                 if ( anActor->GetPlot2Histogram() ) {
                   SPlot2d_Histogram* aHistogram = anActor->UpdatePlot2Histogram();
-                  QString functorName = functorToString( anActor->GetFunctor() );
                   QString aHistogramName("%1 : %2");
                   aHistogramName = aHistogramName.arg( anIO->getName() ).arg( functorName );
                   aHistogram->setName( aHistogramName );
@@ -1956,7 +1954,7 @@ SalomeApp_Module( "SMESH" )
   {
     CORBA::Boolean anIsEmbeddedMode;
     myComponentSMESH = SMESH_Client::GetSMESHGen(getApp()->orb(),anIsEmbeddedMode);
-    MESSAGE("-------------------------------> anIsEmbeddedMode=" << anIsEmbeddedMode);
+    //MESSAGE("-------------------------------> anIsEmbeddedMode=" << anIsEmbeddedMode);
 
     //  0019923: EDF 765 SMESH : default values of hypothesis
     SUIT_ResourceMgr* aResourceMgr = SMESH::GetResourceMgr(this);
@@ -2596,6 +2594,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpShow:
   case SMESHOp::OpShowOnly:
     {
+      SUIT_OverrideCursor wc;
       SMESH::EDisplaing anAction;
       switch (theCommandID) {
       case SMESHOp::OpHide:     anAction = SMESH::eErase; break;
@@ -2610,7 +2609,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
       if ( theCommandID==SMESHOp::OpShowOnly )
       {
-        MESSAGE("anAction = SMESH::eDisplayOnly");
+        //MESSAGE("anAction = SMESH::eDisplayOnly");
         startOperation( myEraseAll );
       }
 
@@ -2639,7 +2638,6 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
         // PAL13338 + PAL15161 -->
         if ( ( theCommandID==SMESHOp::OpShow || theCommandID==SMESHOp::OpShowOnly ) && !checkLock(aStudy)) {
-          MESSAGE("anAction = SMESH::eDisplayOnly");
           SMESH::UpdateView();
           SMESHGUI::GetSMESHGUI()->EmitSignalVisibilityChanged();
         }
@@ -2650,7 +2648,6 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
 
       if (anAction == SMESH::eErase) {
-        MESSAGE("anAction == SMESH::eErase");
         SALOME_ListIO l1;
         aSel->setSelectedObjects( l1 );
       }
@@ -2670,9 +2667,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         ( new SMESHGUI_NodesDlg( this ) )->show();
       }
       else {
-        SUIT_MessageBox::warning(desktop(),
-                                 tr("SMESH_WRN_WARNING"),
-                                 tr("SMESH_WRN_VIEWER_VTK"));
+        SUIT_MessageBox::warning(desktop(),tr("SMESH_WRN_WARNING"),tr("SMESH_WRN_VIEWER_VTK"));
       }
       break;
     }
@@ -2706,8 +2701,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if ( !vtkwnd )
       {
-        SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),
-                                  tr( "NOT_A_VTK_VIEWER" ) );
+        SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ), tr( "NOT_A_VTK_VIEWER" ) );
         break;
       }
 
@@ -2737,8 +2731,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if ( !vtkwnd )
       {
-        SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),
-                                  tr( "NOT_A_VTK_VIEWER" ) );
+        SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ), tr( "NOT_A_VTK_VIEWER" ) );
         break;
       }
 
@@ -2767,8 +2760,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         ( new SMESHGUI_SmoothingDlg( this ) )->show();
       }
       else {
-        SUIT_MessageBox::warning(desktop(),
-                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+        SUIT_MessageBox::warning(desktop(), tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
       }
       break;
     }
@@ -2779,8 +2771,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_ExtrusionDlg ( this ) )->show();
       } else {
-        SUIT_MessageBox::warning(desktop(),
-                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+        SUIT_MessageBox::warning(desktop(),tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
       }
       break;
     }
@@ -2791,8 +2782,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_ExtrusionAlongPathDlg( this ) )->show();
       } else {
-        SUIT_MessageBox::warning(desktop(),
-                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+        SUIT_MessageBox::warning(desktop(),tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
       }
       break;
     }
@@ -2804,8 +2794,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         ( new SMESHGUI_RevolutionDlg( this ) )->show();
       }
       else {
-        SUIT_MessageBox::warning(desktop(),
-                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+        SUIT_MessageBox::warning(desktop(),tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
       }
       break;
     }
@@ -2819,8 +2808,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         ( new SMESHGUI_MeshPatternDlg( this ) )->show();
       }
       else {
-        SUIT_MessageBox::warning(desktop(),
-                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+        SUIT_MessageBox::warning(desktop(),tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
       }
       break;
     }
@@ -2837,8 +2825,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if ( !vtkwnd )
       {
-        SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),
-                                  tr( "NOT_A_VTK_VIEWER" ) );
+        SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),tr( "NOT_A_VTK_VIEWER" ) );
         break;
       }
 
@@ -2865,8 +2852,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if ( !vtkwnd )
       {
-        SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),
-                                  tr( "NOT_A_VTK_VIEWER" ) );
+        SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),tr( "NOT_A_VTK_VIEWER" ) );
         break;
       }
 
@@ -2943,8 +2929,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if ( !vtkwnd )
       {
-        SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),
-                                  tr( "NOT_A_VTK_VIEWER" ) );
+        SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),tr( "NOT_A_VTK_VIEWER" ) );
         break;
       }
 
@@ -3000,8 +2985,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if ( !vtkwnd )
       {
-        SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),
-                                  tr( "NOT_A_VTK_VIEWER" ) );
+        SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),tr( "NOT_A_VTK_VIEWER" ) );
         break;
       }
 
@@ -3041,8 +3025,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if ( !vtkwnd )
       {
-        SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),
-                                  tr( "NOT_A_VTK_VIEWER" ) );
+        SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),tr( "NOT_A_VTK_VIEWER" ) );
         break;
       }
 
@@ -3080,8 +3063,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if ( !vtkwnd )
       {
-        SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),
-                                  tr( "NOT_A_VTK_VIEWER" ) );
+        SUIT_MessageBox::warning( desktop(), tr( "SMESH_WRN_WARNING" ),tr( "NOT_A_VTK_VIEWER" ) );
         break;
       }
 
@@ -3223,8 +3205,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         ( new SMESHGUI_AddMeshElementDlg( this, type ) )->show();
       }
       else {
-        SUIT_MessageBox::warning(desktop(),
-                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+        SUIT_MessageBox::warning(desktop(),tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
       }
       break;
     }
@@ -3236,8 +3217,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         ( new SMESHGUI_CreatePolyhedralVolumeDlg( this ) )->show();
       }
       else {
-        SUIT_MessageBox::warning(SMESHGUI::desktop(),
-                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+        SUIT_MessageBox::warning(desktop(),tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
       }
       break;
     }

@@ -82,9 +82,7 @@
 #include "utilities.h"
 
 #ifdef _DEBUG_
-static int MYDEBUG = 1;
-#else
-static int MYDEBUG = 1;
+static int MYDEBUG = 0;
 #endif
 
 static int aLineWidthInc = 2;
@@ -799,8 +797,7 @@ SetControlMode(eControl theMode)
 
 void
 SMESH_ActorDef::
-SetControlMode(eControl theMode,
-               bool theCheckEntityMode)
+SetControlMode( eControl theMode, bool theCheckEntityMode )
 {
   vtkLookupTable* lookupTable = static_cast<vtkLookupTable*>(myScalarBarActor->GetLookupTable());
   bool isLogarithmic = lookupTable->GetScale() == VTK_SCALE_LOG10;
