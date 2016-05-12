@@ -98,6 +98,7 @@ def fissureGeneraleDlg(context):
         nbSegRad          = 5,
         nbSegCercle       = 32,
         areteFaceFissure  = 10,
+        areteVives        = 0,
         reptrav           = '.',
         nomres            = 'casStandard_fissure.med',
         verbosite         = 0)
@@ -115,6 +116,10 @@ def fissureGeneraleDlg(context):
       self.ui.sb_couronnes.setValue(dico['nbSegRad'])
       self.ui.sb_secteurs.setValue(dico['nbSegCercle'])
       self.ui.dsb_areteFaceFissure.setValue(dico['areteFaceFissure'])
+      if dico.has_key('aretesVives'):
+        self.ui.dsb_aretesVives.setValue(dico['aretesVives'])
+      else:
+        self.ui.dsb_aretesVives.setValue(0)
       self.ui.le_reptrav.setText(os.path.abspath(dico['reptrav']))
       self.ui.le_nomres.setText(os.path.split(dico['nomres'])[1])
       self.ui.cb_log.setCurrentIndex(dico['verbosite'])
@@ -324,6 +329,7 @@ def fissureGeneraleDlg(context):
                   nbSegRad         = self.ui.sb_couronnes.value(),
                   nbSegCercle      = self.ui.sb_secteurs.value(),
                   areteFaceFissure = self.ui.dsb_areteFaceFissure.value(),
+                  aretesVives      = self.ui.dsb_aretesVives.value(),
                   reptrav          = str(self.ui.le_reptrav.text()),
                   nomres           = str(self.ui.le_nomres.text()),
                   verbosite        = self.ui.cb_log.currentIndex()

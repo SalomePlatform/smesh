@@ -8,7 +8,7 @@ import SMESH
 
 from putName import putName
   
-def mailleAretesEtJonction(internalBoundary, aretesVivesCoupees, dmoyen):
+def mailleAretesEtJonction(internalBoundary, aretesVivesCoupees, lgAretesVives):
   """
   edges de bord, faces défaut à respecter
   """
@@ -36,7 +36,7 @@ def mailleAretesEtJonction(internalBoundary, aretesVivesCoupees, dmoyen):
     aretesVivesC = geompy.MakeCompound(aretesVivesCoupees)
     meshAretesVives = smesh.Mesh(aretesVivesC)
     algo1d = meshAretesVives.Segment()
-    hypo1d = algo1d.LocalLength(dmoyen,[],1e-07)
+    hypo1d = algo1d.LocalLength(lgAretesVives,[],1e-07)
     putName(algo1d.GetSubMesh(), "aretesVives")
     putName(algo1d, "algo1d_aretesVives")
     putName(hypo1d, "hypo1d_aretesVives")
