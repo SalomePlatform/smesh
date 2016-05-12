@@ -83,6 +83,8 @@
 
 #ifdef _DEBUG_
 static int MYDEBUG = 0;
+#else
+static int MYDEBUG = 0;
 #endif
 
 static int aLineWidthInc = 2;

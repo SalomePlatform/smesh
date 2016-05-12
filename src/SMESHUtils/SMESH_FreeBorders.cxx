@@ -36,6 +36,7 @@
 #include <vector>
 
 #include <NCollection_DataMap.hxx>
+#include <Precision.hxx>
 #include <gp_Pnt.hxx>
 
 using namespace SMESH_MeshAlgos;
@@ -62,6 +63,7 @@ namespace
     bool   HasCloseEdgeWithNode( const BNode* n ) const;
     bool   IsCloseEdge( const BEdge*, double * u = 0 ) const;
     bool operator<(const BNode& other) const { return Node()->GetID() < other.Node()->GetID(); }
+    double SquareDistance(const BNode& e2) const { return ( e2 - *this ).SquareModulus(); }
   };
   /*!
    * \brief Edge of a free border
@@ -133,6 +135,12 @@ namespace
           myNext->SetID( id + 1 );
       }
     }
+    //================================================================================
+    /*!
+     * \brief Checks if a point is closer to this BEdge than tol
+     */
+    //================================================================================
+
     bool IsOut( const gp_XYZ& point, const double tol, double& u ) const
     {
       gp_XYZ  me = *myBNode2 - *myBNode1;
@@ -145,6 +153,12 @@ namespace
       double dist2 = ( point - proj ).SquareModulus();
       return ( dist2 > tol * tol );
     }
+    //================================================================================
+    /*!
+     * \brief Checks if two BEdges can be considered as overlapping
+     */
+    //================================================================================
+
     bool IsOverlappingProjection( const BEdge* toE, const double u, bool is1st ) const
     {
       // is1st shows which end of toE is projected on this at u
@@ -160,6 +174,12 @@ namespace
         return Abs( u - u2 ) > eps;
       return false;
     }
+    //================================================================================
+    /*!
+     * \brief Finds all neighbor BEdge's having the same close borders
+     */
+    //================================================================================
+
     bool GetRangeOfSameCloseBorders(BEdge* eRange[2], const std::set< int >& bordIDs)
     {
       if ( this->myCloseBorders != bordIDs )
@@ -221,6 +241,64 @@ namespace
     }
   }; // class BEdge
 
+  //================================================================================
+  /*!
+   * \brief Checks if all border parts include the whole closed border, and if so
+   *        returns \c true and choose starting BEdge's with most coincident nodes
+   */
+  //================================================================================
+
+  bool chooseStartOfClosedBorders( std::vector< BEdge* >& ranges ) // PAL23078#c21002
+  {
+    bool allClosed = true;
+    for ( size_t iR = 1; iR < ranges.size() && allClosed; iR += 2 )
+      allClosed = ( ranges[ iR-1 ]->myPrev == ranges[ iR ] );
+    if ( !allClosed )
+      return allClosed;
+
+    double u, minDiff = Precision::Infinite();
+    std::vector< BEdge* > start( ranges.size() / 2 );
+    BEdge* range0 = start[0] = ranges[0];
+    do
+    {
+      double maxDiffU = 0;
+      double  maxDiff = 0;
+      for ( size_t iR = 3; iR < ranges.size(); iR += 2 )
+      {
+        int borderID = ranges[iR]->myBorderID;
+        if ( BEdge* e = start[0]->myBNode1->GetCloseEdgeOfBorder( borderID, & u ))
+        {
+          start[ iR / 2 ] = e;
+          double diffU = Min( Abs( u ), Abs( 1.-u ));
+          double  diff = e->myBNode1->SquareDistance( *e->myBNode2 ) * diffU * diffU;
+          maxDiffU = Max( diffU, maxDiffU );
+          maxDiff  = Max( diff,  maxDiff );
+        }
+      }
+      if ( maxDiff < minDiff )
+      {
+        minDiff = maxDiff;
+        for ( size_t iR = 1; iR < ranges.size(); iR += 2 )
+        {
+          ranges[ iR-1 ] = start[ iR/2 ];
+          ranges[ iR   ] = ranges[ iR-1]->myPrev;
+        }
+      }
+      if ( maxDiffU < 1e-6 )
+        break;
+      start[0] = start[0]->myNext;
+    }
+    while ( start[0] != range0 );
+
+    return allClosed;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Tries to include neighbor BEdge's into a border part
+   */
+  //================================================================================
+
   void extendPart( BEdge* & e1, BEdge* & e2, const std::set< int >& bordIDs, int groupID )
   {
     if (( e1->myPrev == e2 ) ||
@@ -267,6 +345,12 @@ namespace
       e2->myInGroup = groupID;
     }
   }
+
+  //================================================================================
+  /*!
+   * \brief Connect BEdge's incident at this node
+   */
+  //================================================================================
 
   void BNode::AddLinked( BEdge* e ) const
   {
@@ -670,8 +754,9 @@ void SMESH_MeshAlgos::FindCoincidentFreeBorders(SMDS_Mesh&              mesh,
 
     if ( ranges.size() > 2 )
     {
-      for ( size_t iR = 1; iR < ranges.size(); iR += 2 )
-        extendPart( ranges[ iR-1 ], ranges[ iR ], be1st->myCloseBorders, groupID );
+      if ( !chooseStartOfClosedBorders( ranges ))
+        for ( size_t iR = 1; iR < ranges.size(); iR += 2 )
+          extendPart( ranges[ iR-1 ], ranges[ iR ], be1st->myCloseBorders, groupID );
 
       // fill in a group
       beRange[0] = ranges[0];
