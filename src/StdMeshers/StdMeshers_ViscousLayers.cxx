@@ -457,7 +457,7 @@ namespace VISCOUS_3D
     void SmoothPos( const vector< double >& segLen, const double tol );
     int  Smooth(const int step, const bool isConcaveFace, bool findBest);
     int  Smooth(const int step, bool findBest, vector< _LayerEdge* >& toSmooth );
-    int  CheckNeiborsOnBoundary(vector< _LayerEdge* >* badNeibors = 0 );
+    int  CheckNeiborsOnBoundary(vector< _LayerEdge* >* badNeibors = 0, bool * needSmooth = 0 );
     void SmoothWoCheck();
     bool SmoothOnEdge(Handle(ShapeAnalysis_Surface)& surface,
                       const TopoDS_Face&             F,
@@ -4670,8 +4670,8 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
       _LayerEdge*      edge = eos._edges[i];
       if ( edge->_nodes.size() < 2 ) continue;
       SMESH_TNodeXYZ tgtXYZ = edge->_nodes.back();
-      //const gp_XYZ& prevXYZ = edge->PrevCheckPos();
-      const gp_XYZ& prevXYZ = edge->PrevPos();
+      const gp_XYZ& prevXYZ = edge->PrevCheckPos();
+      //const gp_XYZ& prevXYZ = edge->PrevPos();
       for ( size_t j = 0; j < edge->_simplices.size(); ++j )
         if ( !edge->_simplices[j].IsForward( &prevXYZ, &tgtXYZ, vol ))
         {
@@ -4849,45 +4849,90 @@ int _ViscousBuilder::invalidateBadSmooth( _SolidData&               data,
   data.UnmarkEdges();
 
   double vol;
+  vector< _LayerEdge* > simplexNeibors(2);
   for ( size_t i = 0; i < badSmooEdges.size(); ++i )
   {
     _LayerEdge* edge = badSmooEdges[i];
-    if ( edge->NbSteps() < 2 || edge->Is( _LayerEdge::MARKED ))
+    if ( edge->Is( _LayerEdge::MARKED ))
       continue;
-    _EdgesOnShape* eos = data.GetShapeEdges( edge );
-    edge->InvalidateStep( edge->NbSteps(), *eos, /*restoreLength=*/true );
-    edge->Block( data );
-    edge->Set( _LayerEdge::MARKED );
-
-    if ( eos->ShapeType() == TopAbs_VERTEX )
-    {
-      // re-smooth on analytical EDGEs
-      PShapeIteratorPtr eIt = helper.GetAncestors( eos->_shape, *_mesh, TopAbs_EDGE );
-      while ( const TopoDS_Shape* e = eIt->next() )
-        if ( _EdgesOnShape* eoe = data.GetShapeEdges( *e ))
-          if ( eoe->_edgeSmoother && eoe->_edgeSmoother->isAnalytic() )
-          {
-            TopoDS_Face F; Handle(ShapeAnalysis_Surface) surface;
-            if ( eoe->SWOLType() == TopAbs_FACE ) {
-              F       = TopoDS::Face( eoe->_sWOL );
-              surface = helper.GetSurface( F );
-            }
-            eoe->_edgeSmoother->Perform( data, surface, F, helper );
-          }
-    }
 
     // look for _LayerEdge's of bad _simplices
     SMESH_TNodeXYZ tgtXYZ = edge->_nodes.back();
-    const gp_XYZ& prevXYZ = edge->PrevCheckPos();
+    const gp_XYZ* prevXYZ = & edge->PrevCheckPos();
     for ( size_t j = 0; j < edge->_simplices.size(); ++j )
     {
-      if ( edge->_simplices[j].IsForward( &prevXYZ, &tgtXYZ, vol ))
+      if ( edge->_simplices[j].IsForward( prevXYZ, &tgtXYZ, vol ))
         continue;
-      for ( size_t iN = 0; iN < edge->_neibors.size(); ++iN )
+      simplexNeibors.clear();
+      for ( size_t iN = 0; iN < edge->_neibors.size() && simplexNeibors.size() < 2; ++iN )
         if ( edge->_simplices[j].Includes( edge->_neibors[iN]->_nodes.back() ))
-          badSmooEdges.push_back( edge->_neibors[iN] );
-    }
-  }
+          simplexNeibors.push_back( edge->_neibors[iN] );
+      if ( simplexNeibors.size() < 2 ) continue;
+
+      // select a _LayerEdge to invalidate
+      _LayerEdge* invaE = 0;
+      double maxVol = 0;
+      simplexNeibors.push_back( edge );
+      for ( int iE = 0; iE < 3; ++iE )
+      {
+        _LayerEdge* e = simplexNeibors[ iE ];
+        if ( e->Is( _LayerEdge::MARKED ) ||
+             //e->Is( _LayerEdge::BLOCKED ) ||
+             e->NbSteps() < 2 )
+          continue;
+        _EdgesOnShape* eos = data.GetShapeEdges( e );
+        double len = e->_len;
+        e->InvalidateStep( e->NbSteps(), *eos, /*restoreLength=*/true );
+        if ( e == edge ) {
+          tgtXYZ.Set( edge->_nodes.back() );
+          prevXYZ = & edge->PrevCheckPos();
+        }
+        if ( edge->_simplices[j].IsForward( & edge->PrevCheckPos(), &tgtXYZ, vol ) &&
+             vol > maxVol )
+        {
+          invaE = e;
+          maxVol = vol;
+        }
+        e->SetNewLength( len, *eos, helper );
+        if ( e == edge ) {
+          tgtXYZ.Set( edge->_nodes.back() );
+          prevXYZ = & edge->PrevCheckPos();
+        }
+      }
+
+      // invalidate
+      if ( invaE )
+      {
+        if ( invaE == edge ) {
+          tgtXYZ.Set( edge->_nodes.back() );
+          prevXYZ = & edge->PrevCheckPos();
+        }
+        _EdgesOnShape* eos = data.GetShapeEdges( invaE );
+        invaE->InvalidateStep( invaE->NbSteps(), *eos, /*updLen=*/true );
+        invaE->Block( data );
+        invaE->Set( _LayerEdge::MARKED );
+        if ( eos->ShapeType() == TopAbs_VERTEX )
+        {
+          // re-smooth on analytical EDGEs
+          PShapeIteratorPtr eIt = helper.GetAncestors( eos->_shape, *_mesh, TopAbs_EDGE );
+          while ( const TopoDS_Shape* e = eIt->next() )
+            if ( _EdgesOnShape* eoe = data.GetShapeEdges( *e ))
+              if ( eoe->_edgeSmoother && eoe->_edgeSmoother->isAnalytic() )
+              {
+                TopoDS_Face F; Handle(ShapeAnalysis_Surface) surface;
+                if ( eoe->SWOLType() == TopAbs_FACE ) {
+                  F       = TopoDS::Face( eoe->_sWOL );
+                  surface = helper.GetSurface( F );
+                }
+                eoe->_edgeSmoother->Perform( data, surface, F, helper );
+              }
+        }
+      }
+    } // loop on edge->_simplices
+  } // loop on badSmooEdges
+
+
+  // check result of invalidation
 
   int badNb = 0;
   for ( size_t iEOS = 0; iEOS < eosC1.size(); ++iEOS )
@@ -7459,7 +7504,7 @@ void _LayerEdge::SmoothWoCheck()
  */
 //================================================================================
 
-int _LayerEdge::CheckNeiborsOnBoundary( vector< _LayerEdge* >* badNeibors )
+int _LayerEdge::CheckNeiborsOnBoundary( vector< _LayerEdge* >* badNeibors, bool * needSmooth )
 {
   if ( ! Is( NEAR_BOUNDARY ))
     return 0;
@@ -7471,6 +7516,9 @@ int _LayerEdge::CheckNeiborsOnBoundary( vector< _LayerEdge* >* badNeibors )
     _LayerEdge* eN = _neibors[iN];
     if ( eN->_nodes[0]->getshapeId() == _nodes[0]->getshapeId() )
       continue;
+    if ( needSmooth )
+      *needSmooth |= ( eN->Is( _LayerEdge::BLOCKED ) || eN->Is( _LayerEdge::NORMAL_UPDATED ));
+
     SMESH_TNodeXYZ curPosN ( eN->_nodes.back() );
     SMESH_TNodeXYZ prevPosN( eN->_nodes[0] );
     for ( size_t i = 0; i < eN->_simplices.size(); ++i )
@@ -7527,13 +7575,14 @@ int _LayerEdge::Smooth(const int step, bool findBest, vector< _LayerEdge* >& toS
   }
   int nbBad = _simplices.size() - nbOkBefore;
 
+  bool bndNeedSmooth = false;
   if ( nbBad == 0 )
-    nbBad = CheckNeiborsOnBoundary();
+    nbBad = CheckNeiborsOnBoundary( 0, & bndNeedSmooth );
   if ( nbBad > 0 )
     Set( DISTORTED );
 
   // evaluate min angle
-  if ( nbBad == 0 && !findBest )
+  if ( nbBad == 0 && !findBest && !bndNeedSmooth )
   {
     size_t nbGoodAngles = _simplices.size();
     double angle;
@@ -8635,7 +8684,9 @@ void _LayerEdge::InvalidateStep( size_t curStep, const _EdgesOnShape& eos, bool 
     dumpMove( n );
 
     if ( restoreLength )
+    {
       _len -= ( nXYZ.XYZ() - curXYZ ).Modulus() / _lenFactor;
+    }
   }
 }
 
