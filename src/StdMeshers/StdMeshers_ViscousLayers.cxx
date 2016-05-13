@@ -4849,86 +4849,47 @@ int _ViscousBuilder::invalidateBadSmooth( _SolidData&               data,
   data.UnmarkEdges();
 
   double vol;
-  vector< _LayerEdge* > simplexNeibors(2);
+  //size_t iniNbBad = badSmooEdges.size();
   for ( size_t i = 0; i < badSmooEdges.size(); ++i )
   {
     _LayerEdge* edge = badSmooEdges[i];
-    if ( edge->Is( _LayerEdge::MARKED ))
+    if ( edge->NbSteps() < 2 || edge->Is( _LayerEdge::MARKED ))
       continue;
+
+    _EdgesOnShape* eos = data.GetShapeEdges( edge );
+    edge->InvalidateStep( edge->NbSteps(), *eos, /*restoreLength=*/true );
+    edge->Block( data );
+    edge->Set( _LayerEdge::MARKED );
 
     // look for _LayerEdge's of bad _simplices
     SMESH_TNodeXYZ tgtXYZ = edge->_nodes.back();
-    const gp_XYZ* prevXYZ = & edge->PrevCheckPos();
+    const gp_XYZ& prevXYZ = edge->PrevCheckPos();
     for ( size_t j = 0; j < edge->_simplices.size(); ++j )
     {
-      if ( edge->_simplices[j].IsForward( prevXYZ, &tgtXYZ, vol ))
+      if ( edge->_simplices[j].IsForward( &prevXYZ, &tgtXYZ, vol ))
         continue;
-      simplexNeibors.clear();
-      for ( size_t iN = 0; iN < edge->_neibors.size() && simplexNeibors.size() < 2; ++iN )
+      for ( size_t iN = 0; iN < edge->_neibors.size(); ++iN )
         if ( edge->_simplices[j].Includes( edge->_neibors[iN]->_nodes.back() ))
-          simplexNeibors.push_back( edge->_neibors[iN] );
-      if ( simplexNeibors.size() < 2 ) continue;
+          badSmooEdges.push_back( edge->_neibors[iN] );
+    }
 
-      // select a _LayerEdge to invalidate
-      _LayerEdge* invaE = 0;
-      double maxVol = 0;
-      simplexNeibors.push_back( edge );
-      for ( int iE = 0; iE < 3; ++iE )
-      {
-        _LayerEdge* e = simplexNeibors[ iE ];
-        if ( e->Is( _LayerEdge::MARKED ) ||
-             //e->Is( _LayerEdge::BLOCKED ) ||
-             e->NbSteps() < 2 )
-          continue;
-        _EdgesOnShape* eos = data.GetShapeEdges( e );
-        double len = e->_len;
-        e->InvalidateStep( e->NbSteps(), *eos, /*restoreLength=*/true );
-        if ( e == edge ) {
-          tgtXYZ.Set( edge->_nodes.back() );
-          prevXYZ = & edge->PrevCheckPos();
-        }
-        if ( edge->_simplices[j].IsForward( & edge->PrevCheckPos(), &tgtXYZ, vol ) &&
-             vol > maxVol )
-        {
-          invaE = e;
-          maxVol = vol;
-        }
-        e->SetNewLength( len, *eos, helper );
-        if ( e == edge ) {
-          tgtXYZ.Set( edge->_nodes.back() );
-          prevXYZ = & edge->PrevCheckPos();
-        }
-      }
+    if ( eos->ShapeType() == TopAbs_VERTEX )
+    {
+      // re-smooth on analytical EDGEs
+      PShapeIteratorPtr eIt = helper.GetAncestors( eos->_shape, *_mesh, TopAbs_EDGE );
+      while ( const TopoDS_Shape* e = eIt->next() )
+        if ( _EdgesOnShape* eoe = data.GetShapeEdges( *e ))
+          if ( eoe->_edgeSmoother && eoe->_edgeSmoother->isAnalytic() )
+          {
+            TopoDS_Face F; Handle(ShapeAnalysis_Surface) surface;
+            if ( eoe->SWOLType() == TopAbs_FACE ) {
+              F       = TopoDS::Face( eoe->_sWOL );
+              surface = helper.GetSurface( F );
+            }
+            eoe->_edgeSmoother->Perform( data, surface, F, helper );
+          }
 
-      // invalidate
-      if ( invaE )
-      {
-        if ( invaE == edge ) {
-          tgtXYZ.Set( edge->_nodes.back() );
-          prevXYZ = & edge->PrevCheckPos();
-        }
-        _EdgesOnShape* eos = data.GetShapeEdges( invaE );
-        invaE->InvalidateStep( invaE->NbSteps(), *eos, /*updLen=*/true );
-        invaE->Block( data );
-        invaE->Set( _LayerEdge::MARKED );
-        if ( eos->ShapeType() == TopAbs_VERTEX )
-        {
-          // re-smooth on analytical EDGEs
-          PShapeIteratorPtr eIt = helper.GetAncestors( eos->_shape, *_mesh, TopAbs_EDGE );
-          while ( const TopoDS_Shape* e = eIt->next() )
-            if ( _EdgesOnShape* eoe = data.GetShapeEdges( *e ))
-              if ( eoe->_edgeSmoother && eoe->_edgeSmoother->isAnalytic() )
-              {
-                TopoDS_Face F; Handle(ShapeAnalysis_Surface) surface;
-                if ( eoe->SWOLType() == TopAbs_FACE ) {
-                  F       = TopoDS::Face( eoe->_sWOL );
-                  surface = helper.GetSurface( F );
-                }
-                eoe->_edgeSmoother->Perform( data, surface, F, helper );
-              }
-        }
-      }
-    } // loop on edge->_simplices
+    }
   } // loop on badSmooEdges
 
 
@@ -5198,8 +5159,6 @@ bool _Smoother1D::smoothAnalyticEdge( _SolidData&                    data,
       gp_XYZ newPos;
       for ( size_t i = iFrom; i < iTo; ++i )
       {
-        if ( _eos._edges[i]->Is( _LayerEdge::BLOCKED )) continue;
-
         _LayerEdge*       edge = _eos._edges[i];
         SMDS_MeshNode* tgtNode = const_cast<SMDS_MeshNode*>( edge->_nodes.back() );
         newPos = p0 * ( 1. - _leParams[i] ) + p1 * _leParams[i];
@@ -5211,6 +5170,14 @@ bool _Smoother1D::smoothAnalyticEdge( _SolidData&                    data,
           double   shift = ( lineDir * ( newPos - pSrc0 ) -
                              lineDir * ( curPos - pSrc0 ));
           newPos = curPos + lineDir * shift / lineDir.SquareModulus();
+        }
+        if ( _eos._edges[i]->Is( _LayerEdge::BLOCKED ))
+        {
+          SMESH_TNodeXYZ pSrc( edge->_nodes[0] );
+          double curThick = pSrc.SquareDistance( tgtNode );
+          double newThink = ( pSrc - newPos ).SquareModulus();
+          if ( newThink > curThick )
+            continue;
         }
         edge->_pos.back() = newPos;
         tgtNode->setXYZ( newPos.X(), newPos.Y(), newPos.Z() );
@@ -7554,7 +7521,7 @@ int _LayerEdge::CheckNeiborsOnBoundary( vector< _LayerEdge* >* badNeibors, bool 
 
 int _LayerEdge::Smooth(const int step, bool findBest, vector< _LayerEdge* >& toSmooth )
 {
-  if ( !Is( MOVED ) || Is( SMOOTHED ))
+  if ( !Is( MOVED ) || Is( SMOOTHED ) || Is( BLOCKED ))
     return 0; // shape of simplices not changed
   if ( _simplices.size() < 2 )
     return 0; // _LayerEdge inflated along EDGE or FACE
@@ -8636,7 +8603,9 @@ void _LayerEdge::Block( _SolidData& data )
         if ( neibor->_maxLen < neibor->_len )
         {
           _EdgesOnShape* eos = data.GetShapeEdges( neibor );
-          neibor->InvalidateStep( neibor->NbSteps(), *eos, /*restoreLength=*/true );
+          while ( neibor->_len > neibor->_maxLen &&
+                  neibor->NbSteps() > 1 )
+            neibor->InvalidateStep( neibor->NbSteps(), *eos, /*restoreLength=*/true );
           neibor->SetNewLength( neibor->_maxLen, *eos, data.GetHelper() );
         }
         queue.push( neibor );
@@ -8881,7 +8850,12 @@ bool _ViscousBuilder::refine(_SolidData& data)
           {
             swapped = false;
             for ( size_t j = 1; j < edge._pos.size(); ++j )
-              if ( segLen[j] < segLen[j-1] )
+              if ( segLen[j] > segLen.back() )
+              {
+                segLen[j]    = segLen[j-1];
+                edge._pos[j] = edge._pos[j-1];
+              }
+              else if ( segLen[j] < segLen[j-1] )
               {
                 std::swap( segLen[j], segLen[j-1] );
                 std::swap( edge._pos[j], edge._pos[j-1] );
