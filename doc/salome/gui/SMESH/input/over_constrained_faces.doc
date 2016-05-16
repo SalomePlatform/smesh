@@ -4,10 +4,11 @@
 
 \n This mesh quality control highlights faces sharing only one border
 with other faces. In other words, the faces having all thier nodes on
-the external border of the mesh are highlighted.
+the free border of the 2D mesh are highlighted.
 
-\note The highlighted faces are actually over-constrained only if, at the computation time, 
-the boundary conditions on the borders where the nodes are located are all Dirichlet boundary conditions.
+\note The highlighted faces are actually over-constrained only if, at
+the computation time, the boundary conditions on the borders where the
+nodes are located are all Dirichlet boundary conditions.
 
 \image html over_constrained_faces.png
 
