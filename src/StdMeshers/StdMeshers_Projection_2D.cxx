@@ -1147,6 +1147,51 @@ namespace {
     return true;
   }
 
+  //=======================================================================
+  /*
+   * Set initial association of VERTEXes for the case of projection
+   * from a quadrangle FACE to a closed FACE, where opposite src EDGEs
+   * have different nb of segments
+   */
+  //=======================================================================
+
+  void initAssoc4Quad2Closed(const TopoDS_Shape&          tgtFace,
+                             SMESH_MesherHelper&          tgtHelper,
+                             const TopoDS_Shape&          srcFace,
+                             SMESH_Mesh*                  srcMesh,
+                             TAssocTool::TShapeShapeMap & assocMap)
+  {
+    if ( !tgtHelper.HasRealSeam() )
+      return; // no seam edge
+    list< TopoDS_Edge > tgtEdges, srcEdges;
+    list< int > tgtNbEW, srcNbEW;
+    int tgtNbW = SMESH_Block::GetOrderedEdges( TopoDS::Face( tgtFace ), tgtEdges, tgtNbEW );
+    int srcNbW = SMESH_Block::GetOrderedEdges( TopoDS::Face( srcFace ), srcEdges, srcNbEW );
+    if ( tgtNbW != 1 || srcNbW != 1 ||
+         tgtNbEW.front() != 4 || srcNbEW.front() != 4 )
+      return; // not quads
+
+    int srcNbSeg[4];
+    list< TopoDS_Edge >::iterator edgeS = srcEdges.begin(), edgeT = tgtEdges.begin();
+    for ( int i = 0; edgeS != srcEdges.end(); ++i, ++edgeS )
+      if ( SMESHDS_SubMesh* sm = srcMesh->GetMeshDS()->MeshElements( *edgeS ))
+        srcNbSeg[ i ] = sm->NbNodes();
+      else
+        return; // not meshed
+    if ( srcNbSeg[0] == srcNbSeg[2] && srcNbSeg[1] == srcNbSeg[3] )
+      return; // same nb segments
+    if ( srcNbSeg[0] != srcNbSeg[2] && srcNbSeg[1] != srcNbSeg[3] )
+      return; // all different nb segments
+
+    edgeS = srcEdges.begin();
+    if ( srcNbSeg[0] != srcNbSeg[2] )
+      ++edgeS;
+    TAssocTool::InsertAssociation( tgtHelper.IthVertex( 0,*edgeT ),
+                                   tgtHelper.IthVertex( 0,*edgeS ), assocMap );
+    TAssocTool::InsertAssociation( tgtHelper.IthVertex( 1,*edgeT ),
+                                   tgtHelper.IthVertex( 1,*edgeS ), assocMap );
+  }
+
 } // namespace
 
 
@@ -1177,8 +1222,12 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   TopoDS_Face   tgtFace = TopoDS::Face( theShape.Oriented(TopAbs_FORWARD));
   TopoDS_Shape srcShape = _sourceHypo->GetSourceFace().Oriented(TopAbs_FORWARD);
 
+  helper.SetSubShape( tgtFace );
+
   TAssocTool::TShapeShapeMap shape2ShapeMap;
   TAssocTool::InitVertexAssociation( _sourceHypo, shape2ShapeMap );
+  if ( shape2ShapeMap.IsEmpty() )
+    initAssoc4Quad2Closed( tgtFace, helper, srcShape, srcMesh, shape2ShapeMap );
   if ( !TAssocTool::FindSubShapeAssociation( tgtFace, tgtMesh, srcShape, srcMesh,
                                              shape2ShapeMap)  ||
        !shape2ShapeMap.IsBound( tgtFace ))
@@ -1264,8 +1313,6 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     // projDone = projectQuads( tgtFace, srcFace, tgtWires, srcWires,
     //                          shape2ShapeMap, _src2tgtNodes, is1DComputed);
   }
-
-  helper.SetSubShape( tgtFace );
 
   // it will remove mesh built on edges and vertices in failure case
   MeshCleaner cleaner( tgtSubMesh );
