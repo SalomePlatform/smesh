@@ -93,7 +93,7 @@
 #include <string>
 
 #ifdef _DEBUG_
-#define __myDEBUG
+//#define __myDEBUG
 //#define __NOT_INVALIDATE_BAD_SMOOTH
 #endif
 
@@ -4267,7 +4267,10 @@ bool _ViscousBuilder::inflate(_SolidData& data)
     if ( data._edgesOnShape[i].ShapeType() == TopAbs_VERTEX &&
          data._edgesOnShape[i]._edges.size() > 0 &&
          data._edgesOnShape[i]._edges[0]->Is( _LayerEdge::MULTI_NORMAL ))
+    {
+      data._edgesOnShape[i]._edges[0]->Unset( _LayerEdge::BLOCKED );
       data._edgesOnShape[i]._edges[0]->Block( data );
+    }
 
   const double safeFactor = ( 2*data._maxThickness < data._geomSize ) ? 1 : theThickToIntersection;
 
@@ -4853,7 +4856,7 @@ int _ViscousBuilder::invalidateBadSmooth( _SolidData&               data,
   for ( size_t i = 0; i < badSmooEdges.size(); ++i )
   {
     _LayerEdge* edge = badSmooEdges[i];
-    if ( edge->NbSteps() < 2 || edge->Is( _LayerEdge::MARKED ))
+    if ( edge->NbSteps() < 2 /*|| edge->Is( _LayerEdge::MARKED )*/)
       continue;
 
     _EdgesOnShape* eos = data.GetShapeEdges( edge );
@@ -4862,11 +4865,13 @@ int _ViscousBuilder::invalidateBadSmooth( _SolidData&               data,
     edge->Set( _LayerEdge::MARKED );
 
     // look for _LayerEdge's of bad _simplices
-    SMESH_TNodeXYZ tgtXYZ = edge->_nodes.back();
-    const gp_XYZ& prevXYZ = edge->PrevCheckPos();
+    SMESH_TNodeXYZ tgtXYZ  = edge->_nodes.back();
+    const gp_XYZ& prevXYZ1 = edge->PrevCheckPos();
+    const gp_XYZ& prevXYZ2 = edge->PrevPos();
     for ( size_t j = 0; j < edge->_simplices.size(); ++j )
     {
-      if ( edge->_simplices[j].IsForward( &prevXYZ, &tgtXYZ, vol ))
+      if (( edge->_simplices[j].IsForward( &prevXYZ1, &tgtXYZ, vol )) &&
+          ( &prevXYZ1 == &prevXYZ2 || edge->_simplices[j].IsForward( &prevXYZ2, &tgtXYZ, vol )))
         continue;
       for ( size_t iN = 0; iN < edge->_neibors.size(); ++iN )
         if ( edge->_simplices[j].Includes( edge->_neibors[iN]->_nodes.back() ))
@@ -5184,7 +5189,7 @@ bool _Smoother1D::smoothAnalyticEdge( _SolidData&                    data,
         dumpMove( tgtNode );
       }
     }
-    else
+    else // 2D
     {
       _LayerEdge* e0 = getLEdgeOnV( 0 );
       _LayerEdge* e1 = getLEdgeOnV( 1 );
@@ -8668,7 +8673,7 @@ void _LayerEdge::InvalidateStep( size_t curStep, const _EdgesOnShape& eos, bool 
 void _LayerEdge::SmoothPos( const vector< double >& segLen, const double tol )
 {
   //return;
-  if ( Is( NORMAL_UPDATED ) || _pos.size() <= 2 )
+  if ( /*Is( NORMAL_UPDATED ) ||*/ _pos.size() <= 2 )
     return;
 
   // find the 1st smoothed _pos
@@ -8685,30 +8690,54 @@ void _LayerEdge::SmoothPos( const vector< double >& segLen, const double tol )
   {
     // if ( segLen[ iSmoothed ] / segLen.back() < 0.5 )
     //   return;
-    for ( size_t i = Max( 1, iSmoothed-1 ); i < _pos.size()-1; ++i )
+    gp_XYZ normal = _normal;
+    if ( Is( NORMAL_UPDATED ))
+      for ( size_t i = 1; i < _pos.size(); ++i )
+      {
+        normal = _pos[i] - _pos[0];
+        double size = normal.Modulus();
+        if ( size > RealSmall() )
+        {
+          normal /= size;
+          break;
+        }
+      }
+    const double r = 0.2;
+    for ( int iter = 0; iter < 3; ++iter )
     {
-      gp_XYZ midPos = 0.5 * ( _pos[i-1] + _pos[i+1] );
-      gp_XYZ newPos = 0.5 * ( midPos + _pos[i] );
-      _pos[i] = newPos;
-      double midLen = 0.5 * ( segLen[i-1] + segLen[i+1] );
-      double newLen = 0.5 * ( midLen + segLen[i] );
-      const_cast< double& >( segLen[i] ) = newLen;
+      double minDot = 1;
+      for ( size_t i = Max( 1, iSmoothed-1-iter ); i < _pos.size()-1; ++i )
+      {
+        gp_XYZ midPos = 0.5 * ( _pos[i-1] + _pos[i+1] );
+        gp_XYZ newPos = ( 1-r ) * midPos + r * _pos[i];
+        _pos[i] = newPos;
+        double midLen = 0.5 * ( segLen[i-1] + segLen[i+1] );
+        double newLen = ( 1-r ) * midLen + r * segLen[i];
+        const_cast< double& >( segLen[i] ) = newLen;
+        // check angle between normal and (_pos[i+1], _pos[i] )
+        gp_XYZ posDir = _pos[i+1] - _pos[i];
+        double size   = posDir.Modulus();
+        if ( size > RealSmall() )
+          minDot = Min( minDot, ( normal * posDir ) / size );
+      }
+      if ( minDot > 0.5 )
+        break;
     }
   }
-  else
-  {
-    for ( size_t i = 1; i < _pos.size()-1; ++i )
-    {
-      if ((int) i < iSmoothed  &&  ( segLen[i] / segLen.back() < 0.5 ))
-        continue;
+  // else
+  // {
+  //   for ( size_t i = 1; i < _pos.size()-1; ++i )
+  //   {
+  //     if ((int) i < iSmoothed  &&  ( segLen[i] / segLen.back() < 0.5 ))
+  //       continue;
 
-      double     wgt = segLen[i] / segLen.back();
-      gp_XYZ normPos = _pos[0] + _normal * wgt * _len;
-      gp_XYZ tgtPos  = ( 1 - wgt ) * _pos[0] +  wgt * _pos.back();
-      gp_XYZ newPos  = ( 1 - wgt ) * normPos +  wgt * tgtPos;
-      _pos[i] = newPos;
-    }
-  }
+  //     double     wgt = segLen[i] / segLen.back();
+  //     gp_XYZ normPos = _pos[0] + _normal * wgt * _len;
+  //     gp_XYZ tgtPos  = ( 1 - wgt ) * _pos[0] +  wgt * _pos.back();
+  //     gp_XYZ newPos  = ( 1 - wgt ) * normPos +  wgt * tgtPos;
+  //     _pos[i] = newPos;
+  //   }
+  // }
 }
 
 //================================================================================
@@ -8852,8 +8881,8 @@ bool _ViscousBuilder::refine(_SolidData& data)
             for ( size_t j = 1; j < edge._pos.size(); ++j )
               if ( segLen[j] > segLen.back() )
               {
-                segLen[j]    = segLen[j-1];
-                edge._pos[j] = edge._pos[j-1];
+                segLen.erase( segLen.begin() + j );
+                edge._pos.erase( edge._pos.begin() + j );
               }
               else if ( segLen[j] < segLen[j-1] )
               {
@@ -8864,8 +8893,8 @@ bool _ViscousBuilder::refine(_SolidData& data)
           }
         }
         // smooth a path formed by edge._pos
-        if (( smoothed ) &&
-            ( eos.ShapeType() == TopAbs_FACE || edge.Is( _LayerEdge::SMOOTHED_C1 )))
+        if (( smoothed ) /*&&
+            ( eos.ShapeType() == TopAbs_FACE || edge.Is( _LayerEdge::SMOOTHED_C1 ))*/)
           edge.SmoothPos( segLen, preci );
       }
       else if ( eos._isRegularSWOL ) // usual SWOL
