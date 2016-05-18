@@ -1161,7 +1161,7 @@ namespace {
                              SMESH_Mesh*                  srcMesh,
                              TAssocTool::TShapeShapeMap & assocMap)
   {
-    if ( !tgtHelper.HasRealSeam() )
+    if ( !tgtHelper.HasRealSeam() || srcFace.ShapeType() != TopAbs_FACE )
       return; // no seam edge
     list< TopoDS_Edge > tgtEdges, srcEdges;
     list< int > tgtNbEW, srcNbEW;
