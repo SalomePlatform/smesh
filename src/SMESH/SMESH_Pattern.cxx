@@ -499,7 +499,7 @@ static gp_XY project (const SMDS_MeshNode* theNode,
     MESSAGE( "SMESH_Pattern: point projection FAILED");
     return gp_XY(0.,0.);
   }
-  double u, v, minVal = DBL_MAX;
+  double u =0, v =0, minVal = DBL_MAX;
   for ( int i = theProjectorPS.NbExt(); i > 0; i-- )
     if ( theProjectorPS.SquareDistance( i ) < minVal ) {
       minVal = theProjectorPS.SquareDistance( i );
@@ -2339,7 +2339,7 @@ bool SMESH_Pattern::sortSameSizeWires (TListOfEdgesList &                theWire
 //   " \t vertex: " << vGcVec[iW].X() << " " << vGcVec[iW].Y() << endl;
     double minDist = DBL_MAX;
     gp_XY & wGc = vGcVec[ iW ];
-    int bIndex;
+    int bIndex = 0;
     for ( int iB = 0; iB < nbWires; iB++ ) {
       if ( bndFound[ iB ] ) continue;
       double dist = ( wGc - gcVec[ iB ] ).SquareModulus();

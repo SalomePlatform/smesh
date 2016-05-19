@@ -608,7 +608,7 @@ namespace
     // Get parameters of export operation
 
     QString            aFilename;
-    SMESH::MED_VERSION aFormat;
+    SMESH::MED_VERSION aFormat = SMESH::MED_V2_2;
     // Init the parameters with the default values
     bool aIsASCII_STL   = true;
     bool toCreateGroups = false;
@@ -6047,6 +6047,12 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
         continue;
 
       TPlaneData aPlaneData;
+      aPlaneData.AbsoluteOrientation = false;
+      aPlaneData.RelativeOrientation = 0;
+      aPlaneData.Distance = aPlaneData.Angle[0] = aPlaneData.Angle[1] = 0;
+      aPlaneData.X = aPlaneData.Y = aPlaneData.Z = 0;
+      aPlaneData.Dx = aPlaneData.Dy = aPlaneData.Dz = 0;
+
       aPlaneData.Id = aClippingPlaneId;
 
       ok = false;

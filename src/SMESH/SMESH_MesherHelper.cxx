@@ -1613,7 +1613,7 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
 
   // get type of shape for the new medium node
   int faceID = -1, edgeID = -1;
-  TopoDS_Edge E; double u [2];
+  TopoDS_Edge E; double u [2] = {0.,0.};
   TopoDS_Face F; gp_XY  uv[2];
   bool uvOK[2] = { true, true };
   const bool useCurSubShape = ( !myShape.IsNull() && myShape.ShapeType() == TopAbs_EDGE );

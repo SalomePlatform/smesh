@@ -1512,7 +1512,7 @@ void SMESH_MeshEditor::QuadTo4Tri (TIDSortedElemSet & theElems)
   gp_XY  uv [9]; uv[8] = gp_XY(0,0);
   gp_XYZ xyz[9];
   vector< const SMDS_MeshNode* > nodes;
-  SMESHDS_SubMesh*               subMeshDS;
+  SMESHDS_SubMesh*               subMeshDS = 0;
   TopoDS_Face                    F;
   Handle(Geom_Surface)           surface;
   TopLoc_Location                loc;
@@ -3249,7 +3249,7 @@ bool SMESH_MeshEditor::TriToQuad (TIDSortedElemSet &                   theElems,
       if ( startElem ) {
         // Get candidates to be fused
         const SMDS_MeshElement *tr1 = startElem, *tr2 = 0, *tr3 = 0;
-        const SMESH_TLink *link12, *link13;
+        const SMESH_TLink *link12 = 0, *link13 = 0;
         startElem = 0;
         ASSERT( mapEl_setLi.find( tr1 ) != mapEl_setLi.end() );
         set< SMESH_TLink >& setLi = mapEl_setLi[ tr1 ];
@@ -8203,7 +8203,7 @@ SMESH_MeshEditor::SewFreeBorder (const SMDS_MeshNode* theBordFirstNode,
     //const SMDS_MeshNode* faceNodes[ 4 ];
 
     const SMDS_MeshNode*    sideNode;
-    const SMDS_MeshElement* sideElem;
+    const SMDS_MeshElement* sideElem  = 0;
     const SMDS_MeshNode* prevSideNode = theSideFirstNode;
     const SMDS_MeshNode* prevBordNode = theBordFirstNode;
     nBordIt = bordNodes.begin();
@@ -8228,7 +8228,7 @@ SMESH_MeshEditor::SewFreeBorder (const SMDS_MeshNode* theBordFirstNode,
       {
         const SMDS_MeshElement* elem = invElemIt->next();
         // prepare data for a loop on links coming to prevSideNode, of a face or a volume
-        int iPrevNode, iNode = 0, nbNodes = elem->NbNodes();
+        int iPrevNode = 0, iNode = 0, nbNodes = elem->NbNodes();
         vector< const SMDS_MeshNode* > faceNodes( nbNodes, (const SMDS_MeshNode*)0 );
         bool isVolume = volume.Set( elem );
         const SMDS_MeshNode** nodes = isVolume ? volume.GetNodes() : & faceNodes[0];
@@ -8776,7 +8776,7 @@ void SMESH_MeshEditor::InsertNodesIntoLink(const SMDS_MeshElement*     theElemen
     }
     // decide how to split a quadrangle: compare possible variants
     // and choose which of splits to be a quadrangle
-    int i1, i2, iSplit, nbSplits = nbLinkNodes - 1, iBestQuad;
+    int i1, i2, iSplit, nbSplits = nbLinkNodes - 1, iBestQuad = 0;
     if ( nbFaceNodes == 3 ) {
       iBestQuad = nbSplits;
       i4 = i3;
@@ -10410,7 +10410,7 @@ void SMESH_MeshEditor::DoubleElements( const TIDSortedElemSet& theElements )
 
   // get an element type and an iterator over elements
 
-  SMDSAbs_ElementType type;
+  SMDSAbs_ElementType type = SMDSAbs_All;
   SMDS_ElemIteratorPtr elemIt;
   vector< const SMDS_MeshElement* > allElems;
   if ( theElements.empty() )

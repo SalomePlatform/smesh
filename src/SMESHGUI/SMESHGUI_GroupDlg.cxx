@@ -936,7 +936,7 @@ bool SMESHGUI_GroupDlg::onApply()
   QStringList anEntryList;
 
   SMESH::SMESH_GroupBase_var resultGroup;
-  bool isCreation, isConversion = false;
+  bool isCreation = false, isConversion = false;
     
   SUIT_OverrideCursor wc;
 

@@ -1194,7 +1194,7 @@ bool SMESH_MeshAlgos::IsOut( const SMDS_MeshElement* element, const gp_Pnt& poin
     dist.back() = dist.front();
     // find the closest intersection
     int    iClosest = -1;
-    double rClosest, distClosest = 1e100;;
+    double rClosest = 0, distClosest = 1e100;;
     gp_Pnt pClosest;
     for ( i = 0; i < nbNodes; ++i )
     {

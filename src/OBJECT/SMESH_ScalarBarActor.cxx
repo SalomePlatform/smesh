@@ -321,8 +321,8 @@ int SMESH_ScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
     // rnv begin
     // Customization of the vtkScalarBarActor to show distribution histogram.
     bool distrVisibility =  (numColors == (int)this->myNbValues.size());
-    vtkPoints *distrPts;
-    vtkCellArray *distrPolys;
+    vtkPoints *distrPts = 0;
+    vtkCellArray *distrPolys = 0;
     vtkUnsignedCharArray *distColors = 0;
     int numDistrPts = 0, numPositiveVal=0, maxValue=0;
     if(!distrVisibility)

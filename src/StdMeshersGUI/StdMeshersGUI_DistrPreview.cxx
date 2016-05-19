@@ -293,7 +293,7 @@ void StdMeshersGUI_DistrPreview::update()
 
   int size = graph.length()/2;
   double* x = new double[size], *y = new double[size];
-  double min_x, max_x, min_y, max_y;
+  double min_x = 0, max_x = 0, min_y = 0, max_y = 0;
   for( int i=0; i<size; i++ )
   {
     x[i] = graph[2*i];

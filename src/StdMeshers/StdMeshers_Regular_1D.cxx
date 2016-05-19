@@ -931,7 +931,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
 
   case GEOMETRIC_1D:
   {
-    double a1 = _value[ BEG_LENGTH_IND ], an;
+    double a1 = _value[ BEG_LENGTH_IND ], an = 0;
     double q  = _value[ END_LENGTH_IND ];
 
     double U1 = theReverse ? l : f;

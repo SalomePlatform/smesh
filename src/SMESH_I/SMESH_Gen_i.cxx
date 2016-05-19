@@ -4485,7 +4485,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 
       // --> try to find SUB-MESHES containers for each type of submesh
       for ( int j = GetSubMeshOnVertexTag(); j <= GetSubMeshOnCompoundTag(); j++ ) {
-        const char* name_meshgroup;
+        const char* name_meshgroup = 0;
         if ( j == GetSubMeshOnVertexTag() )
           name_meshgroup = "SubMeshes On Vertex";
         else if ( j == GetSubMeshOnEdgeTag() )

@@ -3050,7 +3050,7 @@ namespace
     _Node*  orderNodes   [20];
     TGeomID orderShapeIDs[20];
     size_t nbN = 0;
-    TGeomID id, *pID;
+    TGeomID id, *pID = 0;
     for ( e = edges.begin(); e != edges.end(); ++e )
     {
       if (( id = _grid->_shapes.FindIndex( SMESH_MesherHelper::IthVertex( 0, *e ))) &&

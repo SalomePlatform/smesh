@@ -534,7 +534,7 @@ int MESHCUT::copieFichier(std::string source, std::string cible)
 
 med_geometry_type MESHCUT::InstanceMGE(TYPE_MAILLE TYPE)
 {
-  med_geometry_type typeBanaliseMED;
+  med_geometry_type typeBanaliseMED = MED_NONE;
 
   switch (TYPE)
   {

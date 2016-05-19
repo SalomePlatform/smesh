@@ -3155,7 +3155,7 @@ bool StdMeshers_Prism_3D::initPrism(Prism_3D::TPrismTopo& thePrism,
 
   // find vertex 000 - the one with smallest coordinates (for easy DEBUG :-)
   TopoDS_Vertex V000;
-  double minVal = DBL_MAX, minX, val;
+  double minVal = DBL_MAX, minX = 0, val;
   for ( TopExp_Explorer exp( botSM->GetSubShape(), TopAbs_VERTEX );
         exp.More(); exp.Next() )
   {

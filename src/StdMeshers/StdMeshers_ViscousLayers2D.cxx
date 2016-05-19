@@ -300,6 +300,8 @@ namespace VISCOUS_2D
     double   _D;               // _vec1.Crossed( _vec2 )
     double   _param1, _param2; // intersection param on _seg1 and _seg2
 
+    _SegmentIntersection(): _param1(0), _param2(0), _D(0) {}
+
     bool Compute(const _Segment& seg1, const _Segment& seg2, bool seg2IsRay = false )
     {
       // !!! If seg2IsRay, returns true at any _param2 !!!
@@ -1819,7 +1821,7 @@ bool _ViscousBuilder2D::shrink()
     //  x-x-x-x-----x-----x----
     //  | | | |  e1    e2    e3
 
-    int isRShrinkedForAdjacent;
+    int isRShrinkedForAdjacent = 0;
     UVPtStructVec nodeDataForAdjacent;
     for ( int isR = 0; isR < 2; ++isR )
     {

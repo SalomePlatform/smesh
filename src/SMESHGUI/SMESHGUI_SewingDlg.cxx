@@ -1308,7 +1308,7 @@ bool SMESHGUI_SewingDlg::ClickOnApply()
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
 
       int aConstructorId = GetConstructorId();
-      SMESH::SMESH_MeshEditor::Sew_Error anError;
+      SMESH::SMESH_MeshEditor::Sew_Error anError = SMESH::SMESH_MeshEditor::SEW_OK;
 
       if (aConstructorId == 0)
       {

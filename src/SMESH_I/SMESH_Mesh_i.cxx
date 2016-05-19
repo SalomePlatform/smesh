@@ -4076,7 +4076,7 @@ SMESH::long_array* SMESH_Mesh_i::GetNodesId()
 SMESH::ElementType SMESH_Mesh_i::GetElementType( const CORBA::Long id, const bool iselem )
   throw (SALOME::SALOME_Exception)
 {
-  SMESH::ElementType type;
+  SMESH::ElementType type = SMESH::ALL;
   SMESH_TRY;
 
   if ( _preMeshInfo )
@@ -4224,7 +4224,7 @@ SMESH::long_array* SMESH_Mesh_i::GetSubMeshNodesId(const CORBA::Long ShapeID,
 SMESH::ElementType SMESH_Mesh_i::GetSubMeshElementType(const CORBA::Long ShapeID)
   throw (SALOME::SALOME_Exception)
 {
-  SMESH::ElementType type;
+  SMESH::ElementType type = SMESH::ALL;
 
   SMESH_TRY;
   if ( _preMeshInfo )

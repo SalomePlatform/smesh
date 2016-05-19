@@ -2739,7 +2739,7 @@ namespace MED
       }
 
       if(aMaillageType == eSTRUCTURE && aGrilleType != eGRILLE_STANDARD){
-        ETable aTable;
+        ETable aTable = eCOOR_IND1;
         for(med_int anAxis = 1; anAxis <= aMeshInfo.myDim; anAxis++){
           switch(anAxis){
           case 1 :

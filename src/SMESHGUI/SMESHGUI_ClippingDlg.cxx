@@ -766,7 +766,7 @@ bool SMESHGUI_ClippingDlg::AddPlane ( SMESH::TActorList       theActorList,
   double aDir[2][3] = {{0, 0, 0}, {0, 0, 0}};
   static double aCoeff = vtkMath::Pi()/180.0;
 
-  int anOrientation;
+  int anOrientation = 0;
   if ( thePlane->PlaneMode == SMESH::Absolute )
     anOrientation = thePlane->myAbsoluteOrientation;
   else if ( thePlane->PlaneMode == SMESH::Relative )
@@ -1436,7 +1436,7 @@ void SMESHGUI_ClippingDlg::SetCurrentPlaneParam()
   static double aCoeff = vtkMath::Pi()/180.0;
 
   double aRot[2] = { getRotation1(), getRotation2() };
-  int anOrient;
+  int anOrient = 0;
   if ( aPlane->PlaneMode == SMESH::Absolute )
     anOrient = CBAbsoluteOrientation->currentIndex();
   else if ( aPlane->PlaneMode == SMESH::Relative )
@@ -1623,8 +1623,8 @@ void SMESHGUI_ClippingDlg::absolutePlaneToRelative ( double theOrigin[3], double
   double eps = 0.0001;
 
   int anOrientation = CBRelativeOrientation->currentIndex();
-  double aDirection[3];
-  double aRotation1, aRotation2;
+  double aDirection[3] = { 0.,0.,0. };
+  double aRotation1 = 0, aRotation2 = 0;
   switch( anOrientation ) {
   case 0:
     aDirection[0] = theDir[0] + eps;

@@ -311,7 +311,7 @@ SMESH_DeviceActor
     vtkIdType aNbCells = aGrid->GetNumberOfCells();
     aScalars->SetNumberOfComponents(1);
     aScalars->SetNumberOfTuples(aNbCells);
-    double* range;// = aScalars->GetRange();
+    double* range = 0;// = aScalars->GetRange();
     
     myVisualObj->UpdateFunctor(theFunctor);
 

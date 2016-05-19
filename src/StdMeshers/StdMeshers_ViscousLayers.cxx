@@ -94,7 +94,7 @@
 #include <string>
 
 #ifdef _DEBUG_
-//#define __myDEBUG
+#define __myDEBUG
 //#define __NOT_INVALIDATE_BAD_SMOOTH
 #endif
 
@@ -2890,7 +2890,7 @@ bool _ViscousBuilder::findShapesToSmooth( _SolidData& data )
     {
       TGeomID iV = getMeshDS()->ShapeToIndex( vIt.Value() );
       vector<_LayerEdge*>& eV = edgesByGeom[ iV ]._edges;
-      if ( eV.empty() ) continue;
+      if ( eV.empty() || eV[0]->Is( _LayerEdge::MULTI_NORMAL )) continue;
       gp_Vec  eDir    = getEdgeDir( E, TopoDS::Vertex( vIt.Value() ));
       double angle    = eDir.Angle( eV[0]->_normal );
       double cosin    = Cos( angle );
@@ -4727,39 +4727,42 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
         continue;
       if ( eos._edges[i]->FindIntersection( *searcher, dist, data._epsilon, eos, &intFace ))
       {
+        return false;
+        // commented due to "Illegal hash-positionPosition" error in NETGEN
+        // on Debian60 on viscous_layers_01/B2 case
         // Collision; try to deflate _LayerEdge's causing it
-        badEdges.clear();
-        badEdges.push_back( eos._edges[i] );
-        eosC1[0] = & eos;
-        int nbBad = invalidateBadSmooth( data, helper, badEdges, eosC1, infStep );
-        if ( nbBad > 0 )
-          return false;
+        // badEdges.clear();
+        // badEdges.push_back( eos._edges[i] );
+        // eosC1[0] = & eos;
+        // int nbBad = invalidateBadSmooth( data, helper, badEdges, eosC1, infStep );
+        // if ( nbBad > 0 )
+        //   return false;
 
-        badEdges.clear();
-        if ( _EdgesOnShape* eof = data.GetShapeEdges( intFace->getshapeId() ))
-        {
-          if ( const _TmpMeshFace* f = dynamic_cast< const _TmpMeshFace*>( intFace ))
-          {
-            const SMDS_MeshElement* srcFace =
-              eof->_subMesh->GetSubMeshDS()->GetElement( f->getIdInShape() );
-            SMDS_ElemIteratorPtr nIt = srcFace->nodesIterator();
-            while ( nIt->more() )
-            {
-              const SMDS_MeshNode* srcNode = static_cast<const SMDS_MeshNode*>( nIt->next() );
-              TNode2Edge::iterator n2e = data._n2eMap.find( srcNode );
-              if ( n2e != data._n2eMap.end() )
-                badEdges.push_back( n2e->second );
-            }
-            eosC1[0] = eof;
-            nbBad = invalidateBadSmooth( data, helper, badEdges, eosC1, infStep );
-            if ( nbBad > 0 )
-              return false;
-          }
-        }
-        if ( eos._edges[i]->FindIntersection( *searcher, dist, data._epsilon, eos, &intFace ))
-          return false;
-        else
-          continue;
+        // badEdges.clear();
+        // if ( _EdgesOnShape* eof = data.GetShapeEdges( intFace->getshapeId() ))
+        // {
+        //   if ( const _TmpMeshFace* f = dynamic_cast< const _TmpMeshFace*>( intFace ))
+        //   {
+        //     const SMDS_MeshElement* srcFace =
+        //       eof->_subMesh->GetSubMeshDS()->GetElement( f->getIdInShape() );
+        //     SMDS_ElemIteratorPtr nIt = srcFace->nodesIterator();
+        //     while ( nIt->more() )
+        //     {
+        //       const SMDS_MeshNode* srcNode = static_cast<const SMDS_MeshNode*>( nIt->next() );
+        //       TNode2Edge::iterator n2e = data._n2eMap.find( srcNode );
+        //       if ( n2e != data._n2eMap.end() )
+        //         badEdges.push_back( n2e->second );
+        //     }
+        //     eosC1[0] = eof;
+        //     nbBad = invalidateBadSmooth( data, helper, badEdges, eosC1, infStep );
+        //     if ( nbBad > 0 )
+        //       return false;
+        //   }
+        // }
+        // if ( eos._edges[i]->FindIntersection( *searcher, dist, data._epsilon, eos, &intFace ))
+        //   return false;
+        // else
+        //   continue;
       }
       if ( !intFace )
       {
@@ -5387,7 +5390,7 @@ bool _Smoother1D::smoothComplexEdge( _SolidData&                    data,
     _offPoints[i]._len  = avgLen;
   }
 
-  double fTol;
+  double fTol = 0;
   if ( !surface.IsNull() ) // project _offPoints to the FACE
   {
     fTol = 100 * BRep_Tool::Tolerance( F );
@@ -5414,7 +5417,7 @@ bool _Smoother1D::smoothComplexEdge( _SolidData&                    data,
     int  i = _iSeg[ is2nd ];
     int di = is2nd ? -1 : +1;
     bool projected = false;
-    double uOnSeg, uOnSegDiff, uOnSegBestDiff = Precision::Infinite(), uOnSegPrevDiff;
+    double uOnSeg, uOnSegDiff, uOnSegBestDiff = Precision::Infinite(), uOnSegPrevDiff = 0;
     int nbWorse = 0;
     do {
       gp_Vec v0p( _offPoints[i]._xyz, pExtreme[ is2nd ]    );
@@ -8844,7 +8847,7 @@ bool _ViscousBuilder::refine(_SolidData& data)
   TopoDS_Edge geomEdge;
   TopoDS_Face geomFace;
   TopLoc_Location loc;
-  double f,l, u;
+  double f,l, u = 0;
   gp_XY uv;
   vector< gp_XYZ > pos3D;
   bool isOnEdge;
