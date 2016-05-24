@@ -54,7 +54,7 @@
 #endif
 
 #ifdef _DEBUG_
-static int MYDEBUG = 1;
+static int MYDEBUG = 0;
 #else
 static int MYDEBUG = 0;
 #endif
@@ -886,20 +886,22 @@ bool
 SMESH_Client::Update(bool theIsClear)
 {
   bool anIsModified = true;
-  if(mySMESHDSMesh){
-        MESSAGE("Update mySMESHDSMesh");
+  if(mySMESHDSMesh)
+  {
+    if ( MYDEBUG ) MESSAGE("Update mySMESHDSMesh");
     SMESHDS_Script* aScript = mySMESHDSMesh->GetScript();
     anIsModified = aScript->IsModified();
     aScript->SetModified(false);
-  }else{
-        MESSAGE("Update CORBA");
+  }
+  else
+  {
+    if ( MYDEBUG ) MESSAGE("Update CORBA");
     SMESH::log_array_var aSeq = myMeshServer->GetLog( theIsClear );
     CORBA::Long aLength = aSeq->length();
     anIsModified = aLength > 0;
-    if( MYDEBUG )
-      MESSAGE( "Update: length of the script is "<<aLength );
+    if ( MYDEBUG ) MESSAGE( "Update: length of the script is "<<aLength );
 
-    if(!anIsModified)
+    if ( !anIsModified )
       return false;
 
     // update client mesh structure by logged changes commands

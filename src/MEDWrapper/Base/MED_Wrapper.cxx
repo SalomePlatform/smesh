@@ -644,7 +644,7 @@ namespace MED
       TIntVector aVec;
       aVec.resize(theMeshInfo->GetDim());
       for(int aAxe=0;aAxe<theMeshInfo->GetDim();aAxe++){
-        ETable aATable;
+        ETable aATable = eCOOR_IND1;
         switch(aAxe){
         case 0:
           aATable = eCOOR_IND1;

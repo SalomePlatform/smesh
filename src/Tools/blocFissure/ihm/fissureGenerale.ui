@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>666</width>
-    <height>589</height>
+    <width>663</width>
+    <height>624</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -66,7 +66,7 @@
         <item row="1" column="0">
          <widget class="QPushButton" name="pb_facefiss">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;sélection du fichier brep (géométrie) décrivant la face de fissure.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;sélection du fichier brep (géométrie) décrivant la face de fissure.&lt;/p&gt;&lt;p&gt;Un champ rouge correspond à un fichier inexistant.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>face fissure</string>
@@ -83,7 +83,7 @@
         <item row="0" column="0">
          <widget class="QPushButton" name="pb_maillage">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;sélection du fichier med du maillage sain (hexaèdres)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;sélection du fichier med du maillage sain (hexaèdres)&lt;/p&gt;&lt;p&gt;Un champ rouge correspond à un fichier inexistant.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>maillage sain</string>
@@ -416,24 +416,48 @@
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout_11">
            <item>
-            <widget class="QLabel" name="label_9">
-             <property name="text">
-              <string>aretes face fissure</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QDoubleSpinBox" name="dsb_areteFaceFissure">
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Faces externes de la zone à remailler.&lt;/p&gt;&lt;p&gt;Mailage en triangles : valeur cible des arêtes.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="decimals">
-              <number>5</number>
-             </property>
-             <property name="maximum">
-              <double>1000000.000000000000000</double>
-             </property>
-            </widget>
+            <layout class="QGridLayout" name="gridLayout_6">
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_9">
+               <property name="text">
+                <string>triangles face fissure</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QDoubleSpinBox" name="dsb_areteFaceFissure">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Faces externes de la zone à remailler.&lt;/p&gt;&lt;p&gt;Maillage en triangles : valeur cible des arêtes des triangles.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="decimals">
+                <number>5</number>
+               </property>
+               <property name="maximum">
+                <double>1000000.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="label_11">
+               <property name="text">
+                <string>aretes vives</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QDoubleSpinBox" name="dsb_aretesVives">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Arêtes vives de la zone à remailler.&lt;/p&gt;&lt;p&gt;Longueur des segments sur ces arêtes.&lt;/p&gt;&lt;p&gt;Ce paramètre est &lt;span style=&quot; font-weight:600; font-style:italic; color:#2631c1;&quot;&gt;optionnel&lt;/span&gt; : laissé à 0,&lt;/p&gt;&lt;p&gt;il est est ajusté automatiquement.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="decimals">
+                <number>5</number>
+               </property>
+               <property name="maximum">
+                <double>100000.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
            <item>
             <spacer name="horizontalSpacer_5">
@@ -482,7 +506,7 @@
      <item row="1" column="1">
       <widget class="QLineEdit" name="le_nomres">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Nom des résultats.&lt;/p&gt;&lt;p&gt;Le fichier maillage résultat sera rangé dans le répertoire de travail, sous le nom fissure_&lt;span style=&quot; font-weight:600; font-style:italic; color:#0055ff;&quot;&gt;Nom&lt;/span&gt;.med&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Nom des résultats.&lt;/p&gt;&lt;p&gt;Le fichier maillage résultat sera rangé dans le répertoire de travail, sous le nom &lt;span style=&quot; font-weight:600; font-style:italic; color:#0055ff;&quot;&gt;Nom&lt;/span&gt;.med&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
       </widget>
      </item>
@@ -546,6 +570,16 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
+      <widget class="QPushButton" name="pb_exemple">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;génération de jeux de données exemple :&lt;/p&gt;&lt;p&gt;maillages sain et face de fissure.&lt;/p&gt;&lt;p&gt;(from blocFissure.materielCasTests import genereMateriel)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Exemple</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="pb_reset">
        <property name="toolTip">
         <string>réinitialisation de tous les paramètres à leur valeur par défaut</string>
@@ -600,11 +634,14 @@
      </item>
      <item>
       <widget class="QDialogButtonBox" name="bb_OkCancel">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;OK : lancer le calcul, sans sauver les paramètres.&lt;/p&gt;&lt;p&gt;Close : fermer le dialogue sans exécution ni sauvegarde.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
        <property name="standardButtons">
-        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+        <set>QDialogButtonBox::Close|QDialogButtonBox::Ok</set>
        </property>
       </widget>
      </item>

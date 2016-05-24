@@ -48,7 +48,7 @@ class casStandard(fissureGenerique):
     if self.dicoParams.has_key('reptrav'):
       self.reptrav = self.dicoParams['reptrav']
     else:
-      reptrav = '.'  
+      self.reptrav = '.'  
     self.numeroCas = numeroCas
     if self.numeroCas != 0:
       self.nomCas = self.nomProbleme +"_%d"%(self.numeroCas)
@@ -62,6 +62,8 @@ class casStandard(fissureGenerique):
       step = self.dicoParams['step']
     else:
       step = -1 # exécuter toutes les étapes
+    if not self.dicoParams.has_key('aretesVives'):
+      self.dicoParams['aretesVives'] = 0
     if self.numeroCas == 0: # valeur par défaut : exécution immédiate, sinon execution différée dans le cas d'une liste de problèmes
       self.executeProbleme(step)
     
@@ -117,11 +119,12 @@ class casStandard(fissureGenerique):
   # ---------------------------------------------------------------------------
   def setParamMaillageFissure(self):
     self.maillageFissureParams = dict(nomRep           = self.reptrav,
-                                      nomFicSain       = self.nomCas,
-                                      nomFicFissure    = 'fissure_' + self.nomCas,
+                                      nomFicSain       = self.nomCas +'_sain',
+                                      nomFicFissure    = self.nomCas,
                                       nbsegRad         = self.dicoParams['nbSegRad'],
                                       nbsegCercle      = self.dicoParams['nbSegCercle'],
-                                      areteFaceFissure = self.dicoParams['areteFaceFissure'])
+                                      areteFaceFissure = self.dicoParams['areteFaceFissure'],
+                                      aretesVives      = self.dicoParams['aretesVives'])
 
   # ---------------------------------------------------------------------------
   def genereZoneDefaut(self, geometriesSaines, maillagesSains, shapesFissure, shapeFissureParams, maillageFissureParams):

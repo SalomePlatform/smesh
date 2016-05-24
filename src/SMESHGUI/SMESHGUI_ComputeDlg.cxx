@@ -943,7 +943,9 @@ void SMESHGUI_BaseComputeOp::computeMesh()
           if ( !smSObj ) continue;
           SMESH::SMESH_IDSource_var aSubMeshObj =
             SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( smSObj );
-          aListToUpdate.append( TListOf_IDSrc_SObj::value_type( aSubMeshObj, smSObj ));
+          SMESH_Actor *anActor = SMESH::FindActorByObject( aSubMeshObj );
+          if ( anActor && anActor->GetVisibility() )
+            aListToUpdate.append( TListOf_IDSrc_SObj::value_type( aSubMeshObj, smSObj ));
         }
         // put Groups into list
         SMESH::ListOfGroups_var aGroups = myMesh->GetGroups();
@@ -959,7 +961,9 @@ void SMESHGUI_BaseComputeOp::computeMesh()
           if ( !aGroupSO ) continue;
           SMESH::SMESH_IDSource_var aGroupObj =
             SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( aGroupSO );
-          aListToUpdate.append( TListOf_IDSrc_SObj::value_type( aGroupObj, aGroupSO ));
+          SMESH_Actor *anActor = SMESH::FindActorByObject( aGroupObj );
+          if ( anActor && anActor->GetVisibility() )
+            aListToUpdate.append( TListOf_IDSrc_SObj::value_type( aGroupObj, aGroupSO ));
         }
 
         // update mesh, sub-mesh and groups, if it's possible

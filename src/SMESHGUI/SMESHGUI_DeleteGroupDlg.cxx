@@ -37,6 +37,7 @@
 #include <SUIT_Session.h>
 #include <SUIT_MessageBox.h>
 #include <SUIT_ResourceMgr.h>
+#include <SUIT_OverrideCursor.h>
 
 #include <SalomeApp_Study.h>
 #include <LightApp_Application.h>
@@ -204,6 +205,8 @@ bool SMESHGUI_DeleteGroupDlg::onApply()
 {
   if (!isValid())
     return false;
+
+  SUIT_OverrideCursor wc;
 
   myBlockSelection = true;
 

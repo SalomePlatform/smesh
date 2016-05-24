@@ -113,6 +113,7 @@ namespace VISCOUS_2D
       //virtual int NbElements() const { return _elements.size()+1; }
       virtual int NbNodes() const { return Max( 0, _uvPtStructVec.size()-2 ); }
       void SetUVPtStructVec(UVPtStructVec& vec) { _uvPtStructVec.swap( vec ); }
+      UVPtStructVec& GetUVPtStructVec() { return _uvPtStructVec; }
     };
     _ProxyMeshOfFace(const SMESH_Mesh& mesh): SMESH_ProxyMesh(mesh) {}
     _EdgeSubMesh* GetEdgeSubMesh(int ID) { return (_EdgeSubMesh*) getProxySubMesh(ID); }
@@ -298,6 +299,8 @@ namespace VISCOUS_2D
     gp_XY    _vec21;           // Vec( _seg2.p1(), _seg1.p1() )
     double   _D;               // _vec1.Crossed( _vec2 )
     double   _param1, _param2; // intersection param on _seg1 and _seg2
+
+    _SegmentIntersection(): _param1(0), _param2(0), _D(0) {}
 
     bool Compute(const _Segment& seg1, const _Segment& seg2, bool seg2IsRay = false )
     {
@@ -515,27 +518,51 @@ SMESH_ProxyMesh::Ptr
 StdMeshers_ViscousLayers2D::Compute(SMESH_Mesh&        theMesh,
                                     const TopoDS_Face& theFace)
 {
-  SMESH_ProxyMesh::Ptr pm;
-
+  using namespace VISCOUS_2D;
   vector< const StdMeshers_ViscousLayers2D* > hyps;
   vector< TopoDS_Shape >                      hypShapes;
-  if ( VISCOUS_2D::findHyps( theMesh, theFace, hyps, hypShapes ))
+
+  SMESH_ProxyMesh::Ptr pm = _ProxyMeshHolder::FindProxyMeshOfFace( theFace, theMesh );
+  if ( !pm )
   {
-    VISCOUS_2D::_ViscousBuilder2D builder( theMesh, theFace, hyps, hypShapes );
-    pm = builder.Compute();
-    SMESH_ComputeErrorPtr error = builder.GetError();
-    if ( error && !error->IsOK() )
-      theMesh.GetSubMesh( theFace )->GetComputeError() = error;
-    else if ( !pm )
+    if ( findHyps( theMesh, theFace, hyps, hypShapes ))
+    {
+      VISCOUS_2D::_ViscousBuilder2D builder( theMesh, theFace, hyps, hypShapes );
+      pm = builder.Compute();
+      SMESH_ComputeErrorPtr error = builder.GetError();
+      if ( error && !error->IsOK() )
+        theMesh.GetSubMesh( theFace )->GetComputeError() = error;
+      else if ( !pm )
+        pm.reset( new SMESH_ProxyMesh( theMesh ));
+      if ( getenv("__ONLY__VL2D__"))
+        pm.reset();
+    }
+    else
+    {
       pm.reset( new SMESH_ProxyMesh( theMesh ));
-    if ( getenv("__ONLY__VL2D__"))
-      pm.reset();
-  }
-  else
-  {
-    pm.reset( new SMESH_ProxyMesh( theMesh ));
+    }
   }
   return pm;
+}
+// --------------------------------------------------------------------------------
+void StdMeshers_ViscousLayers2D::SetProxyMeshOfEdge( const StdMeshers_FaceSide& edgeNodes )
+{
+  using namespace VISCOUS_2D;
+  SMESH_ProxyMesh::Ptr pm =
+    _ProxyMeshHolder::FindProxyMeshOfFace( edgeNodes.Face(), *edgeNodes.GetMesh() );
+  if ( !pm ) {
+    _ProxyMeshOfFace* proxyMeshOfFace = new _ProxyMeshOfFace( *edgeNodes.GetMesh() );
+    pm.reset( proxyMeshOfFace );
+    new _ProxyMeshHolder( edgeNodes.Face(), pm );
+  }
+  _ProxyMeshOfFace*  proxyMeshOfFace = static_cast<_ProxyMeshOfFace*>( pm.get() );
+  _ProxyMeshOfFace::_EdgeSubMesh* sm = proxyMeshOfFace->GetEdgeSubMesh( edgeNodes.EdgeID(0) );
+  sm->GetUVPtStructVec() = edgeNodes.GetUVPtStruct();
+}
+// --------------------------------------------------------------------------------
+bool StdMeshers_ViscousLayers2D::HasProxyMesh( const TopoDS_Face& face, SMESH_Mesh& mesh )
+{
+  return VISCOUS_2D::_ProxyMeshHolder::FindProxyMeshOfFace( face, mesh );
 }
 // --------------------------------------------------------------------------------
 SMESH_ComputeErrorPtr
@@ -1794,7 +1821,7 @@ bool _ViscousBuilder2D::shrink()
     //  x-x-x-x-----x-----x----
     //  | | | |  e1    e2    e3
 
-    int isRShrinkedForAdjacent;
+    int isRShrinkedForAdjacent = 0;
     UVPtStructVec nodeDataForAdjacent;
     for ( int isR = 0; isR < 2; ++isR )
     {

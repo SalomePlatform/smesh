@@ -684,6 +684,8 @@ public:
   
   virtual ~SMESH_MesherHelper();
 
+  static void WriteShape(const TopoDS_Shape& s);
+
  protected:
 
   /*!

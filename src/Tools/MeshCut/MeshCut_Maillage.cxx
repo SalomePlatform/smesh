@@ -204,7 +204,7 @@ float Maillage::distanceNoeudMaille(int ngnoeud, int imaille, TYPE_MAILLE tm)
 int Maillage::noeudVoisin(int ngnoeud, int imaille, TYPE_MAILLE tm)
 {
   float x, y, z;
-  int ngv;
+  int ngv = -1;
   float x0 = XX[ngnoeud - 1];
   float y0 = YY[ngnoeud - 1];
   float z0 = ZZ[ngnoeud - 1];
@@ -557,13 +557,13 @@ void Maillage::inputMED(std::string fichierMED)
   ostringstream OSCOORD;
 
   med_int nnoe = 0; // Nbre de noeuds
-  med_float *coo1; // Table des coordonnées
+  med_float *coo1 = 0; // Table des coordonnées
   //  char nomcoo[mdim * MED_SNAME_SIZE + 1]; // Table des noms des coordonnées
   //  char unicoo[mdim * MED_SNAME_SIZE + 1]; // Table des unités des coordonnées
-  char *nomnoe;
+  char *nomnoe = 0;
 
-  med_int *numnoe;
-  med_int *nufano;
+  med_int *numnoe = 0;
+  med_int *nufano = 0;
   //  med_grid_type rep;
   //  med_bool inonoe, inunoe;
   //  med_int profil[2] = { 2, 3 };
@@ -1133,7 +1133,7 @@ void Maillage::outputMED(std::string fichierMED)
   //  float x, y, z;
 
   med_int nnoe = nombreNoeudsMaillage; // Nombre de noeuds
-  med_float *coo; // Table des coordonnées
+  med_float *coo = 0; // Table des coordonnées
 
   // Noms des coordonnées (variable nomcoo)
   char* nomcoo = new char[mdim * MED_SNAME_SIZE + 1];
@@ -1169,9 +1169,9 @@ void Maillage::outputMED(std::string fichierMED)
 
   // Tables des noms, numeros, numeros de familles des noeuds
   //    autant d'elements que de noeuds - les noms ont pout longueur MED_SNAME_SIZE
-  char *nomnoe;
+  char *nomnoe = 0;
   med_int *numnoe = NULL;
-  med_int *nufano;
+  med_int *nufano = NULL;
   med_bool inonoe = MED_FALSE;
   med_bool inunoe = MED_FALSE;
 
@@ -1580,7 +1580,7 @@ int Maillage::NGLOBAL(TYPE_MAILLE typeMaille, int nlocal)
 TYPE_MAILLE Maillage::TYPE(int nglobal)
 {
   // Attention, les num. globaux commencent à 1, les num. locaux à 0
-  TYPE_MAILLE resultat;
+  TYPE_MAILLE resultat = (TYPE_MAILLE)-1;
   int cpt = 0;
   for (int itm = (int) POI1; itm <= (int) HEXA20; itm++)
     {

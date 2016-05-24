@@ -1227,7 +1227,7 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
           int shapeID = pos->shapeID;
           if ( shapeID > 0 ) {
             QString shapeType;
-            double u, v;
+            double u = 0, v = 0;
             switch ( pos->shapeType ) {
             case GEOM::EDGE:
               shapeType = SMESHGUI_ElemInfo::tr( "GEOM_EDGE" );
@@ -1751,7 +1751,7 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
           int shapeID = pos->shapeID;
           if ( shapeID > 0 ) {
             QString shapeType;
-            double u, v;
+            double u = 0, v = 0;
             switch ( pos->shapeType ) {
             case GEOM::EDGE:
               shapeType = SMESHGUI_ElemInfo::tr( "GEOM_EDGE" );

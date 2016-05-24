@@ -1308,7 +1308,7 @@ bool SMESHGUI_SewingDlg::ClickOnApply()
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
 
       int aConstructorId = GetConstructorId();
-      SMESH::SMESH_MeshEditor::Sew_Error anError;
+      SMESH::SMESH_MeshEditor::Sew_Error anError = SMESH::SMESH_MeshEditor::SEW_OK;
 
       if (aConstructorId == 0)
       {
@@ -1954,11 +1954,15 @@ void SMESHGUI_SewingDlg::BorderGroupDisplayer::getPartEnds( int                p
 
   ids.push_back( aBRD.nodeIDs[ aPART.node1 ]);
   ids.push_back( aBRD.nodeIDs[ aPART.nodeLast ]);
+  if ( aPART.node1 == aPART.nodeLast )
+    ids.push_back( aBRD.nodeIDs[ aPART.node2 ]);
 
   SMDS_Mesh* mesh = myPartActors[ partIndex ]->GetObject()->GetMesh();
 
   coords.push_back( SMESH_TNodeXYZ( mesh->FindNode( aPART.node1+1 )));
   coords.push_back( SMESH_TNodeXYZ( mesh->FindNode( aPART.nodeLast+1 )));
+  if ( aPART.node1 == aPART.nodeLast )
+    coords.push_back( SMESH_TNodeXYZ( mesh->FindNode( aPART.node2+1 )));
 }
 
 void SMESHGUI_SewingDlg::BorderGroupDisplayer::Update()

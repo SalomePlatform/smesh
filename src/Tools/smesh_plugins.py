@@ -60,7 +60,7 @@ except:
 
 try:
   from blocFissure.ihm.fissureCoude_plugin import fissureCoudeDlg
-  salome_pluginsmanager.AddFunction('Meshed Pipe with a crack',
+  salome_pluginsmanager.AddFunction('Meshed Pipe with a crack (blocFissure plugin)',
                                     'Create a mesh with blocFissure tool',
                                     fissureCoudeDlg)
 except:
@@ -68,7 +68,7 @@ except:
   pass
 try:
   from blocFissure.ihm.fissureGenerale_plugin import fissureGeneraleDlg
-  salome_pluginsmanager.AddFunction('Add a crack in a mesh',
+  salome_pluginsmanager.AddFunction('Add a crack in a mesh (blocFissure plugin)',
                                     'Insert a crack in an hexahedral mesh with blocFissure tool',
                                     fissureGeneraleDlg)
 except:

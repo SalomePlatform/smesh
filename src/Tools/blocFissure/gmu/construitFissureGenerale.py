@@ -12,6 +12,7 @@ from salome.smesh import smeshBuilder
 import SMESH
 import math
 import bisect
+import traceback
 
 # from extractionOrientee import extractionOrientee
 # from extractionOrienteeMulti import extractionOrienteeMulti
@@ -51,6 +52,7 @@ from construitMaillagePipe import construitMaillagePipe
 from mailleAretesEtJonction import mailleAretesEtJonction
 from mailleFacesFissure import mailleFacesFissure
 from mailleFacesPeau import mailleFacesPeau
+from fissError import fissError
 
 # -----------------------------------------------------------------------------
 # --- procédure complète fissure générale
@@ -79,6 +81,9 @@ def construitFissureGenerale(maillagesSains,
   nbsegRad          = maillageFissureParams['nbsegRad']      # nombre de couches selon un rayon du pipe
   nbsegCercle       = maillageFissureParams['nbsegCercle']   # nombre de secteur dans un cercle du pipe
   areteFaceFissure  = maillageFissureParams['areteFaceFissure']
+  lgAretesVives     = 0
+  if maillageFissureParams.has_key('aretesVives'):
+    lgAretesVives   = maillageFissureParams['aretesVives']
 
   pointIn_x = 0.0
   pointIn_y = 0.0
@@ -119,6 +124,9 @@ def construitFissureGenerale(maillagesSains,
   #edgeFondExt              = elementsDefaut[14]
   centreFondFiss           = elementsDefaut[15]
   #tgtCentre                = elementsDefaut[16]
+  if lgAretesVives == 0:
+     lgAretesVives = dmoyen
+
 
   O, OX, OY, OZ = triedreBase()
 
@@ -244,7 +252,7 @@ def construitFissureGenerale(maillagesSains,
   
   # --- edges de bord, faces défaut à respecter
   
-  (internalBoundary, bordsLibres, grpAretesVives) = mailleAretesEtJonction(internalBoundary, aretesVivesCoupees, dmoyen)
+  (internalBoundary, bordsLibres, grpAretesVives) = mailleAretesEtJonction(internalBoundary, aretesVivesCoupees, lgAretesVives)
 
   # --- maillage faces de fissure
   

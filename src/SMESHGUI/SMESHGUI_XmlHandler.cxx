@@ -104,7 +104,7 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
       QString aResName = atts.value("resources");
       if (aResName != "")
       {
-        MESSAGE("Loading Resources " << aResName.toLatin1().data());
+        //MESSAGE("Loading Resources " << aResName.toLatin1().data());
         SUIT_ResourceMgr* resMgr = SMESHGUI::resourceMgr();
         QString lang = resMgr->stringValue( resMgr->langSection(), "language", "en" );
         resMgr->loadTranslator( "resources", QString( "%1_msg_%2.qm" ).arg( aResName, lang ) );

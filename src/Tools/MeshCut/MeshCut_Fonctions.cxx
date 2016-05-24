@@ -84,7 +84,7 @@ int MESHCUT::positionNoeudPlan(int indiceNoeud)
 int MESHCUT::intersectionSegmentPlan(int it4, int na)
 {
 
-  int ngA, ngB; // Numéros des noeuds extrémités AB
+  int ngA = -1, ngB = -1; // Numéros des noeuds extrémités AB
   float lambda, ps; //, ab; // ab = longueur AB
   float A[3], B[3];
 

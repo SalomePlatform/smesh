@@ -72,7 +72,6 @@ SMESH_Group_i::SMESH_Group_i( PortableServer::POA_ptr thePOA,
   : SALOME::GenericObj_i( thePOA ),
     SMESH_GroupBase_i( thePOA, theMeshServant, theLocalID )
 {
-  //MESSAGE("SMESH_Group_i; this = "<<this );
 }
 
 SMESH_GroupOnGeom_i::SMESH_GroupOnGeom_i( PortableServer::POA_ptr thePOA,
@@ -81,7 +80,6 @@ SMESH_GroupOnGeom_i::SMESH_GroupOnGeom_i( PortableServer::POA_ptr thePOA,
   : SALOME::GenericObj_i( thePOA ),
     SMESH_GroupBase_i( thePOA, theMeshServant, theLocalID )
 {
-  //MESSAGE("SMESH_GroupOnGeom_i; this = "<<this );
 }
 
 SMESH_GroupOnFilter_i::SMESH_GroupOnFilter_i( PortableServer::POA_ptr thePOA,
@@ -90,7 +88,6 @@ SMESH_GroupOnFilter_i::SMESH_GroupOnFilter_i( PortableServer::POA_ptr thePOA,
   : SALOME::GenericObj_i( thePOA ),
     SMESH_GroupBase_i( thePOA, theMeshServant, theLocalID )
 {
-  //MESSAGE("SMESH_GroupOnGeom_i; this = "<<this );
 }
 
 //=============================================================================
@@ -176,7 +173,6 @@ char* SMESH_GroupBase_i::GetName()
   ::SMESH_Group* aGroup = GetSmeshGroup();
   if (aGroup)
     return CORBA::string_dup (aGroup->GetName());
-  MESSAGE("get name of a vague group");
   return CORBA::string_dup( "NO_NAME" );
 }
 
@@ -203,7 +199,6 @@ SMESH::ElementType SMESH_GroupBase_i::GetType()
     }
     return aType;
   }
-  MESSAGE("get type of a vague group");
   return SMESH::ALL;
 }
 
@@ -222,7 +217,6 @@ CORBA::Long SMESH_GroupBase_i::Size()
   SMESHDS_GroupBase* aGroupDS = GetGroupDS();
   if (aGroupDS)
     return aGroupDS->Extent();
-  MESSAGE("get size of a vague group");
   return 0;
 }
 
@@ -240,7 +234,6 @@ CORBA::Boolean SMESH_GroupBase_i::IsEmpty()
   SMESHDS_GroupBase* aGroupDS = GetGroupDS();
   if (aGroupDS)
     return aGroupDS->IsEmpty();
-  MESSAGE("checking IsEmpty of a vague group");
   return true;
 }
 
@@ -280,8 +273,6 @@ void SMESH_Group_i::Clear()
     return;
   }
   Modified(); // notify dependent Filter with FT_BelongToMeshGroup criterion
-
-  MESSAGE("attempt to clear a vague group");
 }
 
 //=============================================================================
@@ -298,7 +289,6 @@ CORBA::Boolean SMESH_GroupBase_i::Contains( CORBA::Long theID )
   SMESHDS_GroupBase* aGroupDS = GetGroupDS();
   if (aGroupDS)
     return aGroupDS->Contains(theID);
-  MESSAGE("attempt to check contents of a vague group");
   return false;
 }
 
@@ -631,7 +621,6 @@ SALOMEDS::Color SMESH_GroupBase_i::GetColor()
 
     return aColor;
   }
-  MESSAGE("get color of a group");
   return SALOMEDS::Color();
 }
 
@@ -889,7 +878,6 @@ SMESH::long_array* SMESH_GroupOnFilter_i::GetListOfID()
     if ( 0 < aRes->length() && aRes->length() < 100 ) // for comfortable testing ;)
       std::sort( &aRes[0], &aRes[0] + aRes->length() );
   }
-  MESSAGE("get list of IDs of a vague group");
   return aRes._retn();
 }
 

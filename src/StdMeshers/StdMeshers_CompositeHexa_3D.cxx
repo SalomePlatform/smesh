@@ -382,12 +382,12 @@ namespace
                          const TopTools_MapOfShape& cornerVV,
                          TopTools_MapOfShape&       internEE)
   {
-    TopTools_IndexedMapOfShape subEE, subFF;
+    TopTools_IndexedMapOfShape subEE;
     TopExp::MapShapes( shape, TopAbs_EDGE, subEE );
-    TopExp::MapShapes( shape, TopAbs_FACE, subFF );
+    //TopExp::MapShapes( shape, TopAbs_FACE, subFF );
 
     TopoDS_Vertex VV[2];
-    TopTools_MapOfShape subChecked/*, ridgeEE*/;
+    TopTools_MapOfShape subChecked, ridgeEE;
     TopTools_MapIteratorOfMapOfShape vIt( cornerVV );
     for ( ; vIt.More(); vIt.Next() )
     {
@@ -401,6 +401,8 @@ namespace
         TopoDS_Edge ridgeE = TopoDS::Edge( *riE );
         while ( !ridgeE.IsNull() )
         {
+          if ( !ridgeEE.Add( ridgeE ))
+            break;
           TopExp::Vertices( ridgeE, VV[0], VV[1] );
           TopoDS_Shape V1 = VV[ V0.IsSame( VV[0] )];
           if ( cornerVV.Contains( V1 ) )
@@ -450,6 +452,11 @@ namespace
         } // check EDGEs around the last VERTEX of ridgeE 
       } // loop on ridge EDGEs around a corner VERTEX
     } // loop on on corner VERTEXes
+
+    if ( subEE.Extent() > ridgeEE.Extent() + internEE.Extent() ) // PAL23269
+      for ( int i = 1; i < subEE.Extent(); ++i )
+        if ( !ridgeEE.Contains( subEE(i) ))
+          internEE.Add( subEE(i) );
 
     return true;
   } // getInternalEdges()

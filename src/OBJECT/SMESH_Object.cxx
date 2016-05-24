@@ -67,7 +67,7 @@ using namespace std;
 #endif
 
 #ifdef _DEBUG_
-static int MYDEBUG = 1;
+static int MYDEBUG = 0;
 static int MYDEBUGWITHFILES = 0;//1;
 #else
 static int MYDEBUG = 0;
@@ -133,7 +133,7 @@ static int MYDEBUGWITHFILES = 0;
 //=================================================================================
 SMESH_VisualObjDef::SMESH_VisualObjDef()
 {
-  MESSAGE("---------------------------------------------SMESH_VisualObjDef::SMESH_VisualObjDef");
+  if ( MYDEBUG ) MESSAGE("-------------------------------SMESH_VisualObjDef::SMESH_VisualObjDef");
   myGrid = vtkUnstructuredGrid::New();
   myLocalGrid = false;
   ClearEntitiesFlags();
@@ -141,9 +141,8 @@ SMESH_VisualObjDef::SMESH_VisualObjDef()
 }
 SMESH_VisualObjDef::~SMESH_VisualObjDef()
 {
-  MESSAGE("---------------------------------------------SMESH_VisualObjDef::~SMESH_VisualObjDef");
-  //if ( MYDEBUG )
-    MESSAGE( "~SMESH_MeshObj - myGrid->GetReferenceCount() = " << myGrid->GetReferenceCount() );
+  if ( MYDEBUG ) MESSAGE("--------------------------------SMESH_VisualObjDef::~SMESH_VisualObjDef");
+  if ( MYDEBUG ) MESSAGE( "myGrid->GetReferenceCount() = " << myGrid->GetReferenceCount() );
   myGrid->Delete();
 }
 
@@ -248,7 +247,7 @@ void SMESH_VisualObjDef::createPoints( vtkPoints* thePoints )
 //=================================================================================
 void SMESH_VisualObjDef::buildPrs(bool buildGrid)
 {
-  MESSAGE("----------------------------------------------------------SMESH_VisualObjDef::buildPrs " << buildGrid);
+  if ( MYDEBUG ) MESSAGE("---------------------------SMESH_VisualObjDef::buildPrs " << buildGrid);
   if (buildGrid)
   {
     myLocalGrid = true;
@@ -281,7 +280,7 @@ void SMESH_VisualObjDef::buildPrs(bool buildGrid)
     myLocalGrid = false;
     if (!GetMesh()->isCompacted())
     {
-      MESSAGE("*** buildPrs ==> compactMesh!");
+      if ( MYDEBUG ) MESSAGE("*** buildPrs ==> compactMesh!");
       GetMesh()->compactMesh();
     }
     vtkUnstructuredGrid *theGrid = GetMesh()->getGrid();
@@ -697,9 +696,9 @@ SMESH_MeshObj::~SMESH_MeshObj()
 bool SMESH_MeshObj::Update( int theIsClear )
 {
   // Update SMDS_Mesh on client part
-  MESSAGE("SMESH_MeshObj::Update " << this);
+  if ( MYDEBUG ) MESSAGE("SMESH_MeshObj::Update " << this);
   if ( myClient.Update(theIsClear) || GetUnstructuredGrid()->GetNumberOfPoints()==0) {
-    MESSAGE("buildPrs");
+    if ( MYDEBUG ) MESSAGE("buildPrs");
     buildPrs();  // Fill unstructured grid
     return true;
   }
@@ -708,7 +707,7 @@ bool SMESH_MeshObj::Update( int theIsClear )
 
 bool SMESH_MeshObj::NulData()
 {
-  MESSAGE ("SMESH_MeshObj::NulData() ==================================================================================");
+  if ( MYDEBUG ) MESSAGE ("SMESH_MeshObj::NulData() =============================================");
   if (!myEmptyGrid)
   {
     myEmptyGrid = SMDS_UnstructuredGrid::New();
@@ -901,7 +900,7 @@ void SMESH_SubMeshObj::UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunc
 //=================================================================================
 bool SMESH_SubMeshObj::Update( int theIsClear )
 {
-  MESSAGE("SMESH_SubMeshObj::Update " << this)
+  if ( MYDEBUG ) MESSAGE("SMESH_SubMeshObj::Update " << this)
   bool changed = myMeshObj->Update( theIsClear );
   buildPrs(true);
   return changed;

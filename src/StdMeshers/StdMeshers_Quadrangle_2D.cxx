@@ -519,7 +519,7 @@ bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
     // for each node of the down edge find nearest node
     // in the first row of the regular grid and link them
     for (i = 0; i < stop; i++) {
-      const SMDS_MeshNode *a, *b, *c, *d;
+      const SMDS_MeshNode *a, *b, *c=0, *d;
       a = uv_e0[i].node;
       b = uv_e0[i + 1].node;
       gp_Pnt pb (b->X(), b->Y(), b->Z());
@@ -533,6 +533,7 @@ bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
       }
       else {
         // find in the grid node c, nearest to the b
+        c = 0;
         double mind = RealLast();
         for (int k = g; k <= iup; k++) {
           
@@ -734,6 +735,7 @@ bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
       gp_Pnt pb (b->X(), b->Y(), b->Z());
 
       // find node c in the grid, nearest to the b
+      c = 0;
       int near = g;
       if (i == stop - 1) { // up bondary reached
         c = quad->uv_grid[nbhoriz*(jup + 1) - 2].node;
@@ -2138,7 +2140,7 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
     npl.Append(uv_el[i].normParam);
   }
 
-  int dl,dr;
+  int dl = 0, dr = 0;
   if (OldVersion) {
     // add some params to right and left after the first param
     // insert to right
@@ -2380,7 +2382,7 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
         TColgp_SequenceOfXY UVtmp;
         double drparam = npr.Value(nr) - npr.Value(nnn-1);
         double dlparam = npl.Value(nnn) - npl.Value(nnn-1);
-        double y0,y1;
+        double y0 = 0, y1 = 0;
         for (i=1; i<=drl; i++) {
           // add existed nodes from right edge
           NodesC.SetValue(nb,i+1,uv_er[nnn+i-2].node);
@@ -3296,7 +3298,11 @@ bool StdMeshers_Quadrangle_2D::computeReduced (SMESH_Mesh &        aMesh,
 
     vector<UVPtStruct> curr_base = uv_eb, next_base;
 
-    UVPtStruct nullUVPtStruct; nullUVPtStruct.node = 0;
+    UVPtStruct nullUVPtStruct;
+    nullUVPtStruct.node = 0;
+    nullUVPtStruct.x = nullUVPtStruct.y = nullUVPtStruct.u = nullUVPtStruct.y = 0;
+    nullUVPtStruct.param = 0;
+    
 
     int curr_base_len = nb;
     int next_base_len = 0;
@@ -4108,7 +4114,7 @@ bool StdMeshers_Quadrangle_2D::check()
     StdMeshers_FaceSidePtr wire = wireVec[0];
 
     // find a right angle VERTEX
-    int iVertex;
+    int     iVertex = 0;
     double maxAngle = -1e100;
     for ( int i = 0; i < wire->NbEdges(); ++i )
     {
@@ -5145,6 +5151,8 @@ void StdMeshers_Quadrangle_2D::updateSideUV( FaceQuadStruct::Side&  side,
         for ( iS = 0; iS < q->side.size(); ++iS )
           if ( side.grid == q->side[ iS ].grid )
             break;
+        if ( iS == q->side.size() )
+          continue;
         bool isOut;
         if ( !q->side[ iS ].IsReversed() )
           isOut = ( q->side[ iS ].from > iCur || q->side[ iS ].to-1 <= iCur );

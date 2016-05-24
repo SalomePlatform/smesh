@@ -1832,10 +1832,10 @@ void Length2D::GetValues(TValues& theValues)
         dynamic_cast<const SMDS_VtkFace*>(anElem);
       // use special nodes iterator
       SMDS_ElemIteratorPtr anIter = F->interlacedNodesElemIterator();
-      long aNodeId[4];
+      long aNodeId[4] = { 0,0,0,0 };
       gp_Pnt P[4];
 
-      double aLength;
+      double aLength = 0;
       const SMDS_MeshElement* aNode;
       if(anIter->more()){
         aNode = anIter->next();
@@ -1957,7 +1957,7 @@ double MultiConnection2D::GetValue( long theElementId )
       SMDS_ElemIteratorPtr anIter = aFaceElem->nodesIterator();
       if (!anIter) break;
 
-      const SMDS_MeshNode *aNode, *aNode0;
+      const SMDS_MeshNode *aNode, *aNode0 = 0;
       TColStd_MapOfInteger aMap, aMapPrev;
 
       for (i = 0; i <= len; i++) {
@@ -2038,7 +2038,7 @@ void MultiConnection2D::GetValues(MValues& theValues)
         (anElem)->interlacedNodesElemIterator();
     else
       aNodesIter = anElem->nodesIterator();
-    long aNodeId[3];
+    long aNodeId[3] = {0,0,0};
 
     //int aNbConnects=0;
     const SMDS_MeshNode* aNode0;
@@ -2511,7 +2511,7 @@ void FreeEdges::GetBoreders(TBorders& theBorders)
         interlacedNodesElemIterator();
     else
       aNodesIter = anElem->nodesIterator();
-    long aNodeId[2];
+    long aNodeId[2] = {0,0};
     const SMDS_MeshElement* aNode;
     if(aNodesIter->more()){
       aNode = aNodesIter->next();

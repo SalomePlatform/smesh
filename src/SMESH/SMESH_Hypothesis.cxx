@@ -59,7 +59,6 @@ SMESH_Hypothesis::SMESH_Hypothesis(int hypId,
 
 SMESH_Hypothesis::~SMESH_Hypothesis()
 {
-  MESSAGE("SMESH_Hypothesis::~SMESH_Hypothesis");
   StudyContextStruct* myStudyContext = _gen->GetStudyContext(_studyId);
   myStudyContext->mapHypothesis[_hypId] = 0;
 }
@@ -115,8 +114,6 @@ int SMESH_Hypothesis::GetStudyId() const
 
 void SMESH_Hypothesis::NotifySubMeshesHypothesisModification()
 {
-  MESSAGE("SMESH_Hypothesis::NotifySubMeshesHypothesisModification");
-
   // for all meshes in study
 
   StudyContextStruct* myStudyContext = _gen->GetStudyContext(_studyId);

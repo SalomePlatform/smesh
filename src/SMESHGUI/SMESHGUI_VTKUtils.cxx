@@ -854,7 +854,7 @@ namespace SMESH
 
   bool Update(const Handle(SALOME_InteractiveObject)& theIO, bool theDisplay)
   {
-    MESSAGE("Update");
+    //MESSAGE("Update");
     _PTR(Study) aStudy = GetActiveStudyDocument();
     CORBA::Long anId = aStudy->StudyId();
     if ( TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId,theIO->getEntry())) {
@@ -867,7 +867,7 @@ namespace SMESH
 
   bool UpdateNulData(const Handle(SALOME_InteractiveObject)& theIO, bool theDisplay)
   {
-    MESSAGE("UpdateNulData");
+    //MESSAGE("UpdateNulData");
     _PTR(Study) aStudy = GetActiveStudyDocument();
     CORBA::Long anId = aStudy->StudyId();
     if ( TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId,theIO->getEntry(), true)) {
@@ -878,7 +878,8 @@ namespace SMESH
     return false;
   }
 
-  void UpdateSelectionProp( SMESHGUI* theModule ) {
+  void UpdateSelectionProp( SMESHGUI* theModule )
+  {
     if( !theModule )
       return;
 
@@ -905,25 +906,29 @@ namespace SMESH
       return;
     }
 
-    QColor aHiColor = mgr->colorValue( "SMESH", "selection_object_color", Qt::white ),
-           aSelColor = mgr->colorValue( "SMESH", "selection_element_color", Qt::yellow ),
-           aPreColor = mgr->colorValue( "SMESH", "highlight_color", Qt::cyan );
+    QColor
+      aHiColor = mgr->colorValue( "SMESH", "selection_object_color", Qt::white ),
+      aSelColor = mgr->colorValue( "SMESH", "selection_element_color", Qt::yellow ),
+      aPreColor = mgr->colorValue( "SMESH", "highlight_color", Qt::cyan );
 
     int aElem0DSize = mgr->integerValue("SMESH", "elem0d_size", 5);
-   // int aBallSize   = mgr->integerValue("SMESH", "ball_elem_size", 5);
+    // int aBallSize   = mgr->integerValue("SMESH", "ball_elem_size", 5);
     int aLineWidth  = mgr->integerValue("SMESH", "element_width", 1);
     int maxSize = aElem0DSize;
     if (aElem0DSize > maxSize) maxSize = aElem0DSize;
     if (aLineWidth > maxSize) maxSize = aLineWidth;
-  //  if (aBallSize > maxSize) maxSize = aBallSize;
+    //  if (aBallSize > maxSize) maxSize = aBallSize;
 
-    double SP1 = mgr->doubleValue( "SMESH", "selection_precision_node", 0.025 ),
-           SP2 = mgr->doubleValue( "SMESH", "selection_precision_element", 0.001 ),
-           SP3 = mgr->doubleValue( "SMESH", "selection_precision_object", 0.025 );
+    double
+      SP1 = mgr->doubleValue( "SMESH", "selection_precision_node", 0.025 ),
+      SP2 = mgr->doubleValue( "SMESH", "selection_precision_element", 0.001 ),
+      SP3 = mgr->doubleValue( "SMESH", "selection_precision_object", 0.025 );
 
-    for ( int i=0, n=views.count(); i<n; i++ ){
+    for ( int i=0, n=views.count(); i<n; i++ )
+    {
       // update VTK viewer properties
-      if(SVTK_ViewWindow* aVtkView = GetVtkViewWindow( views[i] )){
+      if ( SVTK_ViewWindow* aVtkView = GetVtkViewWindow( views[i] ))
+      {
         // mesh element selection
         aVtkView->SetSelectionProp(aSelColor.red()/255.,
                                    aSelColor.green()/255.,
@@ -940,8 +945,8 @@ namespace SMESH
         VTK::ActorCollectionCopy aCopy(aRenderer->GetActors());
         vtkActorCollection *aCollection = aCopy.GetActors();
         aCollection->InitTraversal();
-        while(vtkActor *anAct = aCollection->GetNextActor()){
-          if(SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)){
+        while ( vtkActor *anAct = aCollection->GetNextActor() ) {
+          if ( SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct) ) {
             anActor->SetHighlightColor(aHiColor.red()/255.,
                                        aHiColor.green()/255.,
                                        aHiColor.blue()/255.);
@@ -1076,8 +1081,9 @@ namespace SMESH
 
 
   //----------------------------------------------------------------------------
-  void SetPointRepresentation(bool theIsVisible){
-    if(SVTK_ViewWindow* aViewWindow = GetCurrentVtkView()){
+  void SetPointRepresentation(bool theIsVisible)
+  {
+    if ( SVTK_ViewWindow* aViewWindow = GetCurrentVtkView() ) {
       vtkRenderer *aRenderer = aViewWindow->getRenderer();
       VTK::ActorCollectionCopy aCopy(aRenderer->GetActors());
       vtkActorCollection *aCollection = aCopy.GetActors();
@@ -1094,8 +1100,9 @@ namespace SMESH
   }
 
 
-  void SetPickable(SMESH_Actor* theActor){
-    if(SVTK_ViewWindow* aWnd = GetCurrentVtkView()){
+  void SetPickable(SMESH_Actor* theActor)
+  {
+    if ( SVTK_ViewWindow* aWnd = GetCurrentVtkView() ) {
       int anIsAllPickable = (theActor == NULL);
       vtkRenderer *aRenderer = aWnd->getRenderer();
       VTK::ActorCollectionCopy aCopy(aRenderer->GetActors());
@@ -1116,9 +1123,9 @@ namespace SMESH
 
 
   //----------------------------------------------------------------------------
-  int GetNameOfSelectedNodes(SVTK_Selector* theSelector,
+  int GetNameOfSelectedNodes(SVTK_Selector*                          theSelector,
                              const Handle(SALOME_InteractiveObject)& theIO,
-                             QString& theName)
+                             QString&                                theName)
   {
     theName = "";
     TColStd_IndexedMapOfInteger aMapIndex;
@@ -1204,7 +1211,8 @@ namespace SMESH
     return -1;
   }
 
-  int GetNameOfSelectedNodes(LightApp_SelectionMgr *theMgr, QString& theName){
+  int GetNameOfSelectedNodes(LightApp_SelectionMgr *theMgr, QString& theName)
+  {
     theName = "";
     SALOME_ListIO selected; theMgr->selectedObjects( selected );
     if(selected.Extent() == 1){
@@ -1215,9 +1223,9 @@ namespace SMESH
   }
 
 
-  int GetNameOfSelectedElements(LightApp_SelectionMgr *theMgr,
+  int GetNameOfSelectedElements(LightApp_SelectionMgr *                 theMgr,
                                 const Handle(SALOME_InteractiveObject)& theIO,
-                                QString& theName)
+                                QString&                                theName)
   {
     theName = "";
     if(theIO->hasEntry()){
@@ -1342,13 +1350,13 @@ namespace SMESH
     }
 
     double aBoundPoints[8][3] = { {theBounds[0],theBounds[2],theBounds[4]},
-                                                {theBounds[1],theBounds[2],theBounds[4]},
-                                                {theBounds[0],theBounds[3],theBounds[4]},
-                                                {theBounds[1],theBounds[3],theBounds[4]},
-                                                {theBounds[0],theBounds[2],theBounds[5]},
-                                                {theBounds[1],theBounds[2],theBounds[5]}, 
-                                                {theBounds[0],theBounds[3],theBounds[5]}, 
-                                                {theBounds[1],theBounds[3],theBounds[5]}};
+                                  {theBounds[1],theBounds[2],theBounds[4]},
+                                  {theBounds[0],theBounds[3],theBounds[4]},
+                                  {theBounds[1],theBounds[3],theBounds[4]},
+                                  {theBounds[0],theBounds[2],theBounds[5]},
+                                  {theBounds[1],theBounds[2],theBounds[5]},
+                                  {theBounds[0],theBounds[3],theBounds[5]},
+                                  {theBounds[1],theBounds[3],theBounds[5]}};
 
     int aMaxId = 0;
     theMaxBoundPrj = vtkMath::Dot(theDirection,aBoundPoints[aMaxId]);
@@ -1445,8 +1453,9 @@ namespace SMESH
    */
   //================================================================================
 
-  void ClearPlot2Viewers( SUIT_ViewWindow* theWindow ) {
-    if(SVTK_ViewWindow* aViewWindow = GetVtkViewWindow(theWindow)){
+  void ClearPlot2Viewers( SUIT_ViewWindow* theWindow )
+  {
+    if ( SVTK_ViewWindow* aViewWindow = GetVtkViewWindow(theWindow) ) {
       vtkRenderer *aRenderer = aViewWindow->getRenderer();
       VTK::ActorCollectionCopy aCopy(aRenderer->GetActors());
       vtkActorCollection *aCollection = aCopy.GetActors();
@@ -1460,7 +1469,7 @@ namespace SMESH
       }
     }
   }
-  
+
 #endif
 
 } // end of namespace SMESH

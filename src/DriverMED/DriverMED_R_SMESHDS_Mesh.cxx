@@ -42,7 +42,7 @@
 //#include <stdlib.h>
 
 #ifdef _DEBUG_
-static int MYDEBUG = 1;
+static int MYDEBUG = 0;
 //#define _DEXCEPT_
 #else
 static int MYDEBUG = 0;

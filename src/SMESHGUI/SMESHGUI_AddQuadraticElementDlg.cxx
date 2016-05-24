@@ -537,7 +537,7 @@ void SMESHGUI_AddQuadraticElementDlg::Init()
   myNbMidFaceNodes = 0;
   myNbCenterNodes = 0;
 
-  int aNumRows;
+  int aNumRows = 0;
 
   switch (myGeomType) {
   case SMDSEntity_Quad_Edge:
@@ -768,7 +768,7 @@ bool SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
     }
   }
 
-  SMESH::ElementType anElementType;
+  SMESH::ElementType anElementType = SMESH::ALL;
   long anElemId = -1, nbElemsBefore = 0;
   SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
   switch (myGeomType) {
@@ -1055,7 +1055,7 @@ void SMESHGUI_AddQuadraticElementDlg::SelectionIntoArgument()
 
   // process groups
   if ( !myMesh->_is_nil() && myEntry != aCurrentEntry ) {
-    SMESH::ElementType anElementType;
+    SMESH::ElementType anElementType = SMESH::ALL;
     switch ( myGeomType ) {
     case SMDSEntity_Quad_Edge:
       anElementType = SMESH::EDGE; break;
@@ -1371,8 +1371,8 @@ void SMESHGUI_AddQuadraticElementDlg::UpdateTable( bool theConersValidity )
     for ( int row = 0; row < myTable->rowCount(); row++ )
       myTable->item( row, 1 )->setText("");
 
-    int* aFirstColIds;
-    int* aLastColIds;
+    int* aFirstColIds = 0;
+    int* aLastColIds  = 0;
 
     switch (myGeomType) {
     case SMDSEntity_Quad_Edge:

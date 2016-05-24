@@ -308,11 +308,18 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
           {
             double f,l, r = 0.2345;
             Handle(Geom2d_Curve) C2d = BRep_Tool::CurveOnSurface( edge, face, f, l );
-            uv2 = C2d->Value( f * r + l * ( 1.-r ));
-            if ( du < Precision::PConfusion() )
-              isSeam = ( Abs( uv1.Coord(1) - uv2.Coord(1) ) < Precision::PConfusion() );
+            if ( C2d.IsNull() )
+            {
+              isSeam = false;
+            }
             else
-              isSeam = ( Abs( uv1.Coord(2) - uv2.Coord(2) ) < Precision::PConfusion() );
+            {
+              uv2 = C2d->Value( f * r + l * ( 1.-r ));
+              if ( du < Precision::PConfusion() )
+                isSeam = ( Abs( uv1.Coord(1) - uv2.Coord(1) ) < Precision::PConfusion() );
+              else
+                isSeam = ( Abs( uv1.Coord(2) - uv2.Coord(2) ) < Precision::PConfusion() );
+            }
           }
         }
         if ( isSeam )
@@ -653,8 +660,7 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
       {
         if ( !IsSubShape( V, F ))
         {
-          MESSAGE ( "SMESH_MesherHelper::GetNodeUV(); Vertex " << vertexID
-                    << " not in face " << GetMeshDS()->ShapeToIndex( F ) );
+          MESSAGE("GetNodeUV() Vertex "<< vertexID <<" not in face "<< GetMeshDS()->ShapeToIndex(F));
           // get UV of a vertex closest to the node
           double dist = 1e100;
           gp_Pnt pn = XYZ( n );
@@ -1073,7 +1079,6 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
         }
         Quantity_Parameter U = projector->LowerDistanceParameter();
         u = double( U );
-        MESSAGE(" f " << f << " l " << l << " u " << u);
         curvPnt = curve->Value( u );
         dist = nodePnt.Distance( curvPnt );
         if ( distXYZ ) {
@@ -1083,8 +1088,7 @@ bool SMESH_MesherHelper::CheckNodeU(const TopoDS_Edge&   E,
         }
         if ( dist > tol )
         {
-          MESSAGE( "SMESH_MesherHelper::CheckNodeU(), invalid projection" );
-          MESSAGE("distance " << dist << " " << tol );
+          MESSAGE( "CheckNodeU(), invalid projection; distance " << dist << "; tol " << tol );
           return false;
         }
         // store the fixed U on the edge
@@ -1609,7 +1613,7 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
 
   // get type of shape for the new medium node
   int faceID = -1, edgeID = -1;
-  TopoDS_Edge E; double u [2];
+  TopoDS_Edge E; double u [2] = {0.,0.};
   TopoDS_Face F; gp_XY  uv[2];
   bool uvOK[2] = { true, true };
   const bool useCurSubShape = ( !myShape.IsNull() && myShape.ShapeType() == TopAbs_EDGE );
@@ -3049,8 +3053,6 @@ bool SMESH_MesherHelper::IsSubShape( const TopoDS_Shape& shape,
       if ( shape.IsSame( exp.Current() ))
         return true;
   }
-  SCRUTE((shape.IsNull()));
-  SCRUTE((mainShape.IsNull()));
   return false;
 }
 
@@ -5324,3 +5326,19 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
     }
   }
 }
+
+//================================================================================
+/*!
+ * \brief DEBUG
+ */
+//================================================================================
+
+void SMESH_MesherHelper::WriteShape(const TopoDS_Shape& s)
+{
+  const char* name = "/tmp/shape.brep";
+  BRepTools::Write( s, name );
+#ifdef _DEBUG_
+  std::cout << name << std::endl;
+#endif
+}
+

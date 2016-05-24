@@ -186,6 +186,7 @@ typedef struct uvPtStruct
   uvPtStruct(): node(NULL) {}
 
   inline gp_XY UV() const { return gp_XY( u, v ); }
+  inline void  SetUV( const gp_XY& uv ) { u = uv.X(); v = uv.Y(); }
 
   struct NodeAccessor // accessor to iterate on nodes in UVPtStructVec
   {

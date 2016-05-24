@@ -378,7 +378,7 @@ namespace SMESH
       return false;
     if ( algoData->BasicHypos.contains( hypType ))
       return true;
-    if ( algoData->OptionalHypos.contains( hypType)) {
+    if ( algoData->OptionalHypos.contains( hypType )) {
       isAuxiliary = true;
       return true;
     }

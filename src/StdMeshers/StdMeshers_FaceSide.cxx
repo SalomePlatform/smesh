@@ -144,7 +144,6 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face&      theFace,
         double p4 = myFirst[i]+(myLast[i]-myFirst[i])/4.;
         double d2 = GCPnts_AbscissaPoint::Length( A2dC, myFirst[i], p2 );
         double d4 = GCPnts_AbscissaPoint::Length( A2dC, myFirst[i], p4 );
-        //cout<<"len = "<<len<<"  d2 = "<<d2<<"  fabs(2*d2/len-1.0) = "<<fabs(2*d2/len-1.0)<<endl;
         myIsUniform[i] = !( fabs(2*d2/myEdgeLength[i]-1.0) > 0.01 || fabs(2*d4/d2-1.0) > 0.01 );
         Handle(Geom_Curve) C3d = BRep_Tool::Curve(myEdge[i],d2,d4);
         myC3dAdaptor[i].Load( C3d, d2,d4 );
@@ -232,9 +231,11 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const StdMeshers_FaceSide*  theSide,
 //================================================================================
 
 StdMeshers_FaceSide::StdMeshers_FaceSide(UVPtStructVec&     theSideNodes,
-                                         const TopoDS_Face& theFace)
+                                         const TopoDS_Face& theFace,
+                                         const TopoDS_Edge& theEdge,
+                                         SMESH_Mesh*        theMesh)
 {
-  myEdge.resize( 1 );
+  myEdge.resize( 1, theEdge );
   myEdgeID.resize( 1, -1 );
   myC2d.resize( 1 );
   myC3dAdaptor.resize( 1 );
@@ -244,6 +245,17 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(UVPtStructVec&     theSideNodes,
   myIsUniform.resize( 1, 1 );
   myMissingVertexNodes = myIgnoreMediumNodes = false;
   myDefaultPnt2d.SetCoord( 1e100, 1e100 );
+  if ( theMesh ) myProxyMesh.reset( new SMESH_ProxyMesh( *theMesh ));
+  if ( !theEdge.IsNull() )
+  {
+    if ( theMesh ) myEdgeID[0] = theMesh->GetMeshDS()->ShapeToIndex( theEdge );
+    if ( theFace.IsNull() )
+      BRep_Tool::Range( theEdge, myFirst[0], myLast[0] );
+    else
+      myC2d[0] = BRep_Tool::CurveOnSurface( theEdge, theFace, myFirst[0], myLast[0] );
+    if ( theEdge.Orientation() == TopAbs_REVERSED )
+      std::swap( myFirst[0], myLast[0] );
+  }
 
   myFace       = theFace;
   myPoints     = theSideNodes;
