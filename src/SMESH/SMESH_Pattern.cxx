@@ -660,7 +660,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
       const TopoDS_Vertex v = TopoDS::Vertex( vExp.Current() );
       gp_Pnt2d uv = BRep_Tool::Parameters( v, face );
       double minDist = DBL_MAX;
-      int index;
+      int index = 0;
       vector< TPoint >::const_iterator pVecIt = myPoints.begin();
       for ( iPoint = 0; pVecIt != myPoints.end(); pVecIt++, iPoint++ ) {
         double dist = uv.SquareDistance( (*pVecIt).myInitUV );

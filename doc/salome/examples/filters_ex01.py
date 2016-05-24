@@ -38,3 +38,7 @@ print "MESH: Min aspect = %s, Max aspect = %s" % ( aspects[0], aspects[1] )
 # get max value of Aspect Ratio of faces in triaGroup
 grAspects = mesh.GetMinMax( SMESH.FT_AspectRatio, triaGroup )
 print "GROUP: Max aspect = %s" % grAspects[1]
+
+# get Aspect Ratio of an element
+aspect = mesh.FunctorValue( SMESH.FT_AspectRatio, ids[0] )
+print "Aspect ratio of the face %s = %s" % ( ids[0], aspect )

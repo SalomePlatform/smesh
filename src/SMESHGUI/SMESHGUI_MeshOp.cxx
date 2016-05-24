@@ -2726,7 +2726,7 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
   }
   else
   {
-    HypothesisData* anCurrentAlgo;
+    HypothesisData* anCurrentAlgo = 0;
     bool isReqDisBound = true;
     QString anCurrentCompareType = anCompareType;
     isNone = currentHyp( aDim, Algo ) < 0;
