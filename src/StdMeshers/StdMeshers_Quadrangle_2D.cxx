@@ -3300,7 +3300,7 @@ bool StdMeshers_Quadrangle_2D::computeReduced (SMESH_Mesh &        aMesh,
 
     UVPtStruct nullUVPtStruct;
     nullUVPtStruct.node = 0;
-    nullUVPtStruct.x = nullUVPtStruct.y = nullUVPtStruct.u = nullUVPtStruct.y = 0;
+    nullUVPtStruct.x = nullUVPtStruct.y = nullUVPtStruct.u = nullUVPtStruct.v = 0;
     nullUVPtStruct.param = 0;
     
 

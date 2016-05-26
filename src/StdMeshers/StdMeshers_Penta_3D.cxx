@@ -360,7 +360,7 @@ void StdMeshers_Penta_3D::MakeNodes()
     // set XYZ on horizontal edges and get node columns of faces:
     // 2 columns for each face, between which a base node is located
     vector<const SMDS_MeshNode*>* nColumns[8];
-    double ratio[ NB_WALL_FACES ]; // base node position between columns [0.-1.]
+    double ratio[ NB_WALL_FACES ] = {0,0,0,0}; // base node position between columns [0.-1.]
     if ( createNode ) {
       for ( k = 0; k < NB_WALL_FACES ; ++k ) {
         ratio[ k ] = SetHorizEdgeXYZ (aBNXYZ, wallFaceID[ k ],

@@ -1869,7 +1869,7 @@ void Length2D::GetValues(TValues& theValues)
     }
     else {
       SMDS_ElemIteratorPtr aNodesIter = anElem->nodesIterator();
-      long aNodeId[2];
+      long aNodeId[2] = {0,0};
       gp_Pnt P[3];
 
       double aLength;

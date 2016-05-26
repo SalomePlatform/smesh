@@ -40,7 +40,7 @@ print "size", aGroup.Size()
 print "is empty", aGroup.IsEmpty()
 
 # check of presence of an entity in the group
-aGroup.Add([1,2]) # method specific to the standalone group
+aGroup.Add([1,2]) # Add() method is specific to the standalone group
 print "contains node 2", aGroup.Contains(2)
 
 # get an entity by index

@@ -2124,7 +2124,7 @@ namespace
 
     // No adjacent prisms. Select a variant with a best aspect ratio.
 
-    double badness[2] = { 0, 0 };
+    double badness[2] = { 0., 0. };
     static SMESH::Controls::NumericalFunctorPtr aspectRatio( new SMESH::Controls::AspectRatio);
     const SMDS_MeshNode** nodes = vol.GetNodes();
     for ( int variant = 0; variant < nbVariants; ++variant )
