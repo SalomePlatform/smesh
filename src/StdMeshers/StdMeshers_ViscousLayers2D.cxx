@@ -562,7 +562,7 @@ void StdMeshers_ViscousLayers2D::SetProxyMeshOfEdge( const StdMeshers_FaceSide& 
 // --------------------------------------------------------------------------------
 bool StdMeshers_ViscousLayers2D::HasProxyMesh( const TopoDS_Face& face, SMESH_Mesh& mesh )
 {
-  return VISCOUS_2D::_ProxyMeshHolder::FindProxyMeshOfFace( face, mesh );
+  return VISCOUS_2D::_ProxyMeshHolder::FindProxyMeshOfFace( face, mesh ).get();
 }
 // --------------------------------------------------------------------------------
 SMESH_ComputeErrorPtr

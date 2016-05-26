@@ -94,7 +94,7 @@
 #include <string>
 
 #ifdef _DEBUG_
-#define __myDEBUG
+//#define __myDEBUG
 //#define __NOT_INVALIDATE_BAD_SMOOTH
 #endif
 
