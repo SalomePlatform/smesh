@@ -18,7 +18,7 @@ in the \ref smeshBuilder and \ref StdMeshersBuilder Python packages.
 Class \ref smeshBuilder.smeshBuilder "smeshBuilder" provides an interface to create and handle
 meshes. It can be used to create an empty mesh or to import mesh from the data file.
 
-As soon as mesh is created, it is possible to manage it via its own
+As soon as a mesh is created, it is possible to manage it via its own
 methods, described in class \ref smeshBuilder.Mesh "Mesh" documentation.
 
 Class \ref smeshstudytools.SMeshStudyTools "SMeshStudyTools" provides several methods to manipulate mesh objects in Salome study. 
@@ -57,7 +57,7 @@ A usual workflow to generate a mesh on geometry is following:
     <pre>
       \ref Mesh.Compute "mesh.Compute"()
     </pre>
-    </li>
+  </li>
 </ol>
 
 An easiest way to start with Python scripting is to do something in
@@ -68,7 +68,8 @@ by calling \a dir() Python built-in function.
 
 All methods of the Mesh Group can be found in \ref tui_create_standalone_group sample script.
 
-An example below demonstrates usage of the Python API for 3d mesh generation. 
+An example below demonstrates usage of the Python API for 3d mesh
+generation and for retrieving information on mesh nodes and elements.
 
 \anchor example_3d_mesh
 <h2>Example of 3d mesh generation:</h2>

@@ -1,4 +1,4 @@
-# 3d mesh generation
+# 3d mesh generation and mesh exploration
 
 import salome
 salome.salome_init()
@@ -76,3 +76,20 @@ tetra.Compute()
 
 # Create a mesh group of all triangles generated on geom faces present in faces_group
 group = tetra.Group(faces_group)
+
+###
+# Explore the mesh
+###
+
+# Retrieve coordinates of nodes
+coordStr = ""
+for node in tetra.GetNodesId():
+    x,y,z = tetra.GetNodeXYZ( node )
+    coordStr += "%s (%s, %s, %s) " % ( node, x,y,z )
+    pass
+
+# Retrieve nodal connectivity of triangles
+triaStr = ""
+for tria in tetra.GetElementsByType( SMESH.FACE ):
+    nodes = tetra.GetElemNodes( tria )
+    triaStr += "%s (%s, %s, %s) " % ( tria, nodes[0], nodes[1], nodes[2] )

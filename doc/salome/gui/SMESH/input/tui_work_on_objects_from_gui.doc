@@ -4,16 +4,23 @@
 
 It is sometimes useful to work alternatively in the GUI of SALOME and in the Python Console. To fetch an object from the TUI simply type:
 
-\code
-myMesh_ref = salome.IDToObject("ID")  
-// were ID is the string looking like "0:1:2:3" that appears in the object browser in the Entry column 
-// ( If hidden show it by right clicking and checking the checkbox Entry)
+\code{.py}
+myMesh_ref = salome.IDToObject( ID )
+# were ID is a string looking like "0:1:2:3" that appears in the Object Browser in the Entry column.
+# ( If hidden, show it by right clicking and checking the checkbox Entry )
 myMesh = smesh.Mesh(myMesh_ref)
 \endcode
 or 
-\code
+\code{.py}
 myMesh_ref = salome.myStudy.FindObjectByPath("/Mesh/myMesh").GetObject() 
-// "/Mesh/myMesh" is the path to the desired object in the object browser
+#'/Mesh/myMesh' is a path to the desired object in the Object Browser
+myMesh = smesh.Mesh(myMesh_ref)
+\endcode
+or 
+\code{.py}
+# get a selected mesh
+from salome.gui import helper
+myMesh_ref = helper.getSObjectSelected()[0].GetObject() 
 myMesh = smesh.Mesh(myMesh_ref)
 \endcode
 
