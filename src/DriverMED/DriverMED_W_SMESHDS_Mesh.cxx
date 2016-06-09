@@ -317,7 +317,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     return DRS_FAIL;
   }
   try {
-    MESSAGE("Perform - myFile : "<<myFile);
+    //MESSAGE("Perform - myFile : "<<myFile);
 
     // Creating the MED mesh for corresponding SMDS structure
     //-------------------------------------------------------
@@ -430,7 +430,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     
     MED::PWrapper myMed = CrWrapper(myFile,myMedVersion);
     PMeshInfo aMeshInfo = myMed->CrMeshInfo(aMeshDimension,aSpaceDimension,aMeshName);
-    MESSAGE("Add - aMeshName : "<<aMeshName<<"; "<<aMeshInfo->GetName());
+    //MESSAGE("Add - aMeshName : "<<aMeshName<<"; "<<aMeshInfo->GetName());
     myMed->SetMeshInfo(aMeshInfo);
 
     // Storing SMDS groups and sub-meshes as med families
@@ -454,7 +454,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     if (myDoGroupOf0DElems && nb0DElements) my0DElementsDefaultFamilyId = REST_0DELEM_FAMILY;
     if (myDoGroupOfBalls && nbBalls) myBallsDefaultFamilyId = REST_BALL_FAMILY;
 
-    MESSAGE("Perform - aFamilyInfo");
+    //MESSAGE("Perform - aFamilyInfo");
     list<DriverMED_FamilyPtr> aFamilies;
     if (myAllSubMeshes) {
       aFamilies = DriverMED_Family::MakeFamilies
@@ -529,8 +529,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       aNodeInfo->SetCoordUnit( iCoord, aCoordHelperPtr->GetUnit(iCoord));
     }
 
-    //cout << " SetNodeInfo(aNodeInfo)" << endl;
-    MESSAGE("Perform - aNodeInfo->GetNbElem() = "<<aNbNodes);
+    //MESSAGE("Perform - aNodeInfo->GetNbElem() = "<<aNbNodes);
     myMed->SetNodeInfo(aNodeInfo);
     aNodeInfo.reset(); // free memory used for arrays
 

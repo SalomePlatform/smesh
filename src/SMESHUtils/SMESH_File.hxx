@@ -109,7 +109,7 @@ public:
 private:
 
   std::string _name; //!< file name
-  int         _size; //!< file size
+  long        _size; //!< file size
   std::string _error;
 #ifdef WIN32
   HANDLE      _file, _mapObj;

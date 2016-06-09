@@ -1416,7 +1416,7 @@ namespace
 #if OCC_VERSION_MAJOR < 7
       if ( !edgeIsSafe && !noSafeTShapes.insert((const Standard_Transient*) e.TShape() ).second )
 #else
-      if ( !edgeIsSafe && !noSafeTShapes.insert( _face.TShape().get() ).second )
+      if ( !edgeIsSafe && !noSafeTShapes.insert( e.TShape().get() ).second )
 #endif
         isSafe = false;
     }

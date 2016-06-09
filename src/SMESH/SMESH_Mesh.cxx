@@ -1604,7 +1604,7 @@ double SMESH_Mesh::GetComputeProgress() const
       const std::vector<SMESH_subMesh*>& smToCompute = algo->SubMeshesToCompute();
       for ( size_t i = 0; i < smToCompute.size(); ++i )
       {
-        if ( smToCompute[i]->IsEmpty() )
+        if ( smToCompute[i]->IsEmpty() || smToCompute.size() == 1 )
           algoNotDoneCost += smToCompute[i]->GetComputeCost();
         else
           algoDoneCost += smToCompute[i]->GetComputeCost();

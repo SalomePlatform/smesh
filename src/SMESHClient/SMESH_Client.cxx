@@ -815,22 +815,19 @@ SMESH_Client::SMESH_Client(CORBA::ORB_ptr theORB,
   mySMESHDSMesh(NULL),
   mySMDSMesh(NULL)
 {
-  MESSAGE("SMESH_Client::SMESH_Client");
+  if ( MYDEBUG ) MESSAGE("SMESH_Client::SMESH_Client");
   myMeshServer->Register();
 
   CORBA::Boolean anIsEmbeddedMode;
   GetSMESHGen(theORB,anIsEmbeddedMode);
   if(anIsEmbeddedMode){
-    if ( MYDEBUG )
-      MESSAGE("Info: The same process, update mesh by pointer ");
+    if ( MYDEBUG ) MESSAGE("Info: The same process, update mesh by pointer ");
     // just set client mesh pointer to server mesh pointer
     //SMESH_Mesh* aMesh = reinterpret_cast<SMESH_Mesh*>(theMesh->GetMeshPtr());
     CORBA::LongLong pointeur = theMesh->GetMeshPtr();
-    if( MYDEBUG )
-      MESSAGE("SMESH_Client::SMESH_Client pointeur "<<pointeur);
+    if( MYDEBUG ) MESSAGE("SMESH_Client::SMESH_Client pointeur "<<pointeur);
     SMESH_Mesh* aMesh = reinterpret_cast<SMESH_Mesh*> (pointeur);
-    if ( MYDEBUG )
-      MESSAGE("SMESH_Client::SMESH_Client aMesh "<<aMesh);
+    if ( MYDEBUG ) MESSAGE("SMESH_Client::SMESH_Client aMesh "<<aMesh);
     //if(aMesh->GetMeshDS()->IsEmbeddedMode()){
     if(anIsEmbeddedMode){
       mySMESHDSMesh = aMesh->GetMeshDS();

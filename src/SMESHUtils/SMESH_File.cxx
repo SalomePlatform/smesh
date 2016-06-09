@@ -75,7 +75,7 @@ SMESH_File::~SMESH_File()
 
 bool SMESH_File::open()
 {
-  int length = size();
+  long length = size();
   if ( !_map && length > 0 )
   {
 #ifdef WIN32
@@ -188,7 +188,7 @@ long SMESH_File::size()
   boost::uintmax_t size = boofs::file_size( _name, err );
   _error = err.message();
 
-  return err ? -1 : (long) size;
+  return !err ? (long) size : -1;
 }
 
 //================================================================================
