@@ -57,6 +57,7 @@ class vtkUnstructuredGrid;
 class SMESHOBJECT_EXPORT SMESH_VisualObj
 {
 public:
+  virtual ~SMESH_VisualObj() {}
   virtual bool Update( int theIsClear = true ) = 0;
   virtual bool NulData() = 0;
   virtual void UpdateFunctor( const SMESH::Controls::FunctorPtr& theFunctor ) = 0;

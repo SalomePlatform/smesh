@@ -4776,7 +4776,8 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
     }
     // fix nodes on geom faces
 #ifdef _DEBUG_
-    int nbfaces = faces.Extent(); /*avoid "unused varianbles": */ nbfaces++, nbfaces--; 
+    int nbfaces = nbSolids;
+    nbfaces = faces.Extent(); /*avoid "unused varianbles": */ nbfaces++, nbfaces--; 
 #endif
     for ( TopTools_MapIteratorOfMapOfShape fIt( faces ); fIt.More(); fIt.Next() ) {
       MSG("FIX FACE " << nbfaces-- << " #" << GetMeshDS()->ShapeToIndex(fIt.Key()));
@@ -5117,6 +5118,7 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
                      "uv2: "<<uv2.X()<<", "<<uv2.Y()<<" \t" <<
                      "uvOld: "<<oldUV.X()<<", "<<oldUV.Y()<<" \t" <<
                      "newUV: "<<newUV.X()<<", "<<newUV.Y()<<" \t");
+                uv0.SetX( uv2.X() ); // avoid warning: variable set but not used
               }
 #endif
               (*link1)->Move( move, /*sum=*/false, /*is2dFixed=*/true );
@@ -5135,7 +5137,6 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
   // -------------
 
   TIDSortedElemSet biQuadQuas, biQuadTris, triQuadHexa;
-  const SMDS_MeshElement *biQuadQua, *triQuadHex;
   const bool toFixCentralNodes = ( myMesh->NbBiQuadQuadrangles() +
                                    myMesh->NbBiQuadTriangles() +
                                    myMesh->NbTriQuadraticHexas() );
@@ -5166,7 +5167,6 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
       // collect bi-quadratic elements
       if ( toFixCentralNodes )
       {
-        biQuadQua = triQuadHex = 0;
         SMDS_ElemIteratorPtr eIt = pLink->_mediumNode->GetInverseElementIterator();
         while ( eIt->more() )
         {
@@ -5325,6 +5325,10 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
                              nCenterCoords.X(), nCenterCoords.Y(), nCenterCoords.Z());
     }
   }
+#ifdef _DEBUG_
+  // avoid warning: defined but not used operator<<()
+  SMESH_Comment() << *links.begin() << *faces.begin();
+#endif
 }
 
 //================================================================================

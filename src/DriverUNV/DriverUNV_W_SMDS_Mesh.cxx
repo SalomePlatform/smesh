@@ -44,22 +44,6 @@
 using namespace std;
 using namespace UNV;
 
-namespace{
-  typedef std::vector<size_t> TConnect;
-
-  int GetConnect(const SMDS_ElemIteratorPtr& theNodesIter, 
-                 TConnect& theConnect)
-  {
-    theConnect.clear();
-    for(; theNodesIter->more();){
-      const SMDS_MeshElement* anElem = theNodesIter->next();
-      theConnect.push_back(anElem->GetID());
-    }
-    return theConnect.size();
-  }
-  
-}
-
 Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
 {
   Kernel_Utils::Localizer loc;
@@ -93,7 +77,6 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
     {
       using namespace UNV2412;
       TDataSet aDataSet2412;
-      TConnect aConnect;
 
       // Storing SMDS Edges
       MESSAGE("Perform - myMesh->NbEdges() = "<<myMesh->NbEdges());

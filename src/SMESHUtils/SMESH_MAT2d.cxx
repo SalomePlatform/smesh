@@ -220,9 +220,9 @@ namespace
     }
   }
 #else
-  void inSegmentsToFile( vector< InSegment>& inSegments) {}
-  void dumpEdge( const TVDEdge* edge ) {}
-  void dumpCell( const TVDCell* cell ) {}
+  #define inSegmentsToFile(arg) {}
+  //void dumpEdge( const TVDEdge* edge ) {}
+  //void dumpCell( const TVDCell* cell ) {}
 #endif
 }
 // -------------------------------------------------------------------------------------

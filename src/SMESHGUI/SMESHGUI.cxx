@@ -587,7 +587,7 @@ namespace
       };
       // is typeMsg complete? (compilation failure mains that enum SMDSAbs_EntityType changed)
       const int nbTypes = sizeof( typeMsg ) / sizeof( const char* );
-      int _assert[( nbTypes == SMESH::Entity_Last ) ? 1 : -1 ]; _assert[0]=1;
+      int _assert[( nbTypes == SMESH::Entity_Last ) ? 2 : -1 ]; _assert[0]=_assert[1];
 
       QString andStr = " " + QObject::tr("SMESH_AND") + " ", comma(", ");
       for ( size_t iType = 0; iType < presentNotSupported.size(); ++iType ) {
@@ -1721,25 +1721,25 @@ namespace
   }
 
 
-  QString CheckHomogeneousSelection()
-  {
-    LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
-    SALOME_ListIO selected;
-    if ( aSel )
-      aSel->selectedObjects( selected );
+  // QString CheckHomogeneousSelection()
+  // {
+  //   LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+  //   SALOME_ListIO selected;
+  //   if ( aSel )
+  //     aSel->selectedObjects( selected );
 
-    QString RefType = CheckTypeObject(selected.First());
-    SALOME_ListIteratorOfListIO It(selected);
-    for ( ; It.More(); It.Next())
-    {
-      Handle(SALOME_InteractiveObject) IObject = It.Value();
-      QString Type = CheckTypeObject(IObject);
-      if ( Type.compare(RefType) != 0 )
-        return "Heterogeneous Selection";
-    }
+  //   QString RefType = CheckTypeObject(selected.First());
+  //   SALOME_ListIteratorOfListIO It(selected);
+  //   for ( ; It.More(); It.Next())
+  //   {
+  //     Handle(SALOME_InteractiveObject) IObject = It.Value();
+  //     QString Type = CheckTypeObject(IObject);
+  //     if ( Type.compare(RefType) != 0 )
+  //       return "Heterogeneous Selection";
+  //   }
 
-    return RefType;
-  }
+  //   return RefType;
+  // }
 
   uint randomize( uint size )
   {

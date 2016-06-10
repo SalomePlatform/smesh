@@ -135,6 +135,8 @@ public:
   virtual SMESH_Hypothesis_i* Create(PortableServer::POA_ptr thePOA,
                                      int                     theStudyId,
                                      ::SMESH_Gen*            theGenImpl) = 0;
+  virtual ~GenericHypothesisCreator_i() {}
+
   // return the name of IDL module
   virtual std::string GetModuleName() = 0;
   virtual bool IsApplicable( const TopoDS_Shape &S, bool toCheckAll ) {return true;}

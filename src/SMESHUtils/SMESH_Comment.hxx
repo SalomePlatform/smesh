@@ -68,6 +68,8 @@ public :
   operator char*() const {
     return (char*)c_str();
   }
+
+  std::ostream& Stream() { return _s; }
 };
 
 

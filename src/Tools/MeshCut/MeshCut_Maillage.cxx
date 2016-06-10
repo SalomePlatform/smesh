@@ -934,7 +934,7 @@ void Maillage::acquisitionTYPE_inputMED(TYPE_MAILLE TYPE, int nTYPE, med_idt fid
 void Maillage::outputMED(std::string fichierMED)
 {
   // int i, j, k;
-  int nTYPE, tTYPE;
+  int nTYPE;//, tTYPE;
   string line, s, stype, nomnoeud;
   //  med_err ret = 0; // Code retour
   //  int ig, jg;
@@ -1457,7 +1457,7 @@ void Maillage::outputMED(std::string fichierMED)
       if (EFFECTIFS_TYPES[tm])
         {
           nTYPE = EFFECTIFS_TYPES[tm];
-          tTYPE = Nnoeuds(tm);
+          //tTYPE = Nnoeuds(tm);
           MGE = InstanceMGE(tm);
           stype = TM2string(tm);
 

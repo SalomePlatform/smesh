@@ -100,7 +100,7 @@ bool SPADDERPluginTester_i::testkernel()
   beginService("SPADDERPluginTester_i::testplugin");
 
   Engines::SalomeLauncher_ptr salomeLauncher = KERNEL::getSalomeLauncher();
-  salomeLauncher = NULL;
+  if ( salomeLauncher ) salomeLauncher = NULL;
 
   endService("SPADDERPluginTester_i::testplugin");
   return true;

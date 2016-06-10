@@ -106,7 +106,8 @@ computations.
   either should be or should not be constructed, depending on the
   value of the previous parameter (<b>Specified Faces/Edges are</b>). 
   Faces (or edges) can be selected either in the Object Browser or in
-  the VTK Viewer.
+  the VTK Viewer. \b Add button becomes active as soon as a suitable
+  sub-shape is selected.
   \note A mesh shown in the 3D Viewer can prevent selection of faces
   and edges, just hide the mesh to avoid this. If a face, which should be
   selected, is hidden by other faces, consider creating a

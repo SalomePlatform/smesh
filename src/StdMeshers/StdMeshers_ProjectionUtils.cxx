@@ -124,6 +124,10 @@ namespace {
     const char* type[] ={"COMPOUND","COMPSOLID","SOLID","SHELL","FACE","WIRE","EDGE","VERTEX"};
     BRepTools::Write( shape, SMESH_Comment("/tmp/") << type[shape.ShapeType()] << "_"
                       << shape.TShape().operator->() << ".brep");
+    if ( !theMeshDS[0] ) {
+      show_shape( TopoDS_Shape(), "avoid warning: show_shape() defined but not used");
+      show_list( "avoid warning: show_list() defined but not used", list< TopoDS_Edge >() );
+    }
 #endif
     return false;
   }

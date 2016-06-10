@@ -561,7 +561,9 @@ StdMeshers_Prism_3D::StdMeshers_Prism_3D(int hypId, int studyId, SMESH_Gen* gen)
 //================================================================================
 
 StdMeshers_Prism_3D::~StdMeshers_Prism_3D()
-{}
+{
+  pointsToPython( std::vector<gp_XYZ>() ); // avoid warning: pointsToPython defined but not used
+}
 
 //=======================================================================
 //function : CheckHypothesis
@@ -2639,19 +2641,19 @@ namespace // utils used by StdMeshers_Prism_3D::IsApplicable()
   /*!
    * \brief Return number of faces sharing given edges
    */
-  int nbAdjacentFaces( const std::vector< EdgeWithNeighbors >&          edges,
-                       const TopTools_IndexedDataMapOfShapeListOfShape& facesOfEdge )
-  {
-    TopTools_MapOfShape adjFaces;
+  // int nbAdjacentFaces( const std::vector< EdgeWithNeighbors >&          edges,
+  //                      const TopTools_IndexedDataMapOfShapeListOfShape& facesOfEdge )
+  // {
+  //   TopTools_MapOfShape adjFaces;
 
-    for ( size_t i = 0; i < edges.size(); ++i )
-    {
-      TopTools_ListIteratorOfListOfShape faceIt( facesOfEdge.FindFromKey( edges[i]._edge ));
-      for ( ; faceIt.More(); faceIt.Next() )
-        adjFaces.Add( faceIt.Value() );
-    }
-    return adjFaces.Extent();
-  }
+  //   for ( size_t i = 0; i < edges.size(); ++i )
+  //   {
+  //     TopTools_ListIteratorOfListOfShape faceIt( facesOfEdge.FindFromKey( edges[i]._edge ));
+  //     for ( ; faceIt.More(); faceIt.Next() )
+  //       adjFaces.Add( faceIt.Value() );
+  //   }
+  //   return adjFaces.Extent();
+  // }
 }
 
 //================================================================================
@@ -3016,7 +3018,6 @@ bool StdMeshers_Prism_3D::initPrism(Prism_3D::TPrismTopo& thePrism,
   list< SMESH_subMesh* > meshedSubMesh;
   int nbFaces = 0;
   //
-  SMESH_subMesh* anyFaceSM = 0;
   SMESH_subMeshIteratorPtr smIt = mainSubMesh->getDependsOnIterator(false,true);
   while ( smIt->more() )
   {
@@ -3025,7 +3026,6 @@ bool StdMeshers_Prism_3D::initPrism(Prism_3D::TPrismTopo& thePrism,
     if      ( face.ShapeType() > TopAbs_FACE ) break;
     else if ( face.ShapeType() < TopAbs_FACE ) continue;
     nbFaces++;
-    anyFaceSM = sm;
 
     // is quadrangle FACE?
     list< TopoDS_Edge > orderedEdges;

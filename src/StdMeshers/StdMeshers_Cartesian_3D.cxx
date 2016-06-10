@@ -3056,7 +3056,7 @@ namespace
 
     // sort nodes accoring to the order of edges
     _Node*  orderNodes   [20];
-    TGeomID orderShapeIDs[20];
+    //TGeomID orderShapeIDs[20];
     size_t nbN = 0;
     TGeomID id, *pID = 0;
     for ( e = edges.begin(); e != edges.end(); ++e )
@@ -3064,14 +3064,14 @@ namespace
       if (( id = _grid->_shapes.FindIndex( SMESH_MesherHelper::IthVertex( 0, *e ))) &&
           (( pID = std::find( &nShapeIds[0], nShapeIdsEnd, id )) != nShapeIdsEnd ))
       {
-        orderShapeIDs[ nbN ] = id;
+        //orderShapeIDs[ nbN ] = id;
         orderNodes   [ nbN++ ] = nodes[ pID - &nShapeIds[0] ];
         *pID = -1;
       }
       if (( id = _grid->_shapes.FindIndex( *e )) &&
           (( pID = std::find( &nShapeIds[0], nShapeIdsEnd, id )) != nShapeIdsEnd ))
       {
-        orderShapeIDs[ nbN ] = id;
+        //orderShapeIDs[ nbN ] = id;
         orderNodes   [ nbN++ ] = nodes[ pID - &nShapeIds[0] ];
         *pID = -1;
       }

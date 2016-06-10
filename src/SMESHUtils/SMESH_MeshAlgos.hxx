@@ -58,6 +58,7 @@ struct SMESHUtils_EXPORT SMESH_NodeSearcher
   virtual int  FindNearPoint(const gp_Pnt&                        point,
                              const double                         tolerance,
                              std::vector< const SMDS_MeshNode* >& foundNodes) = 0;
+  virtual ~SMESH_NodeSearcher() {}
 };
 
 //=======================================================================

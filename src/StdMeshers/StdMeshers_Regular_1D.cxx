@@ -415,16 +415,17 @@ static void compensateError(double a1, double an,
   if ( a1 + an <= length && nPar > 1 )
   {
     bool reverse = ( U1 > Un );
-    GCPnts_AbscissaPoint Discret(C3d, reverse ? an : -an, Un);
+    double tol   = Min( Precision::Confusion(), 0.01 * an );
+    GCPnts_AbscissaPoint Discret( tol, C3d, reverse ? an : -an, Un );
     if ( !Discret.IsDone() )
       return;
     double Utgt = Discret.Parameter(); // target value of the last parameter
     list<double>::reverse_iterator itU = theParams.rbegin();
     double Ul = *itU++; // real value of the last parameter
     double dUn = Utgt - Ul; // parametric error of <an>
-    if ( Abs(dUn) <= Precision::Confusion() )
-      return;
     double dU = Abs( Ul - *itU ); // parametric length of the last but one segment
+    if ( Abs(dUn) <= 1e-3 * dU )
+      return;
     if ( adjustNeighbors2an || Abs(dUn) < 0.5 * dU ) { // last segment is a bit shorter than it should
       // move the last parameter to the edge beginning
     }
@@ -595,7 +596,8 @@ void StdMeshers_Regular_1D::redistributeNearVertices (SMESH_Mesh &          theM
       {
         if ( !isEnd1 )
           vertexLength = -vertexLength;
-        GCPnts_AbscissaPoint Discret(theC3d, vertexLength, l);
+        double tol = Min( Precision::Confusion(), 0.01 * vertexLength );
+        GCPnts_AbscissaPoint Discret( tol, theC3d, vertexLength, l );
         if ( Discret.IsDone() ) {
           if ( nPar == 0 )
             theParameters.push_back( Discret.Parameter());
@@ -705,7 +707,8 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     size_t nbParams = 0;
     for ( int i = 0, nb = segLen.size()-1; i < nb; ++i, iSeg += dSeg )
     {
-      GCPnts_AbscissaPoint Discret( theC3d, segLen[ iSeg ], param );
+      double tol = Min( Precision::Confusion(), 0.01 * segLen[ iSeg ]);
+      GCPnts_AbscissaPoint Discret( tol, theC3d, segLen[ iSeg ], param );
       if ( !Discret.IsDone() ) break;
       param = Discret.Parameter();
       theParams.push_back( param );
@@ -733,8 +736,8 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     {
       double nbseg = ceil(theLength / _value[ BEG_LENGTH_IND ]); // integer sup
       if (nbseg <= 0)
-        nbseg = 1;                        // degenerated edge
-      eltSize = theLength / nbseg;
+        nbseg = 1; // degenerated edge
+      eltSize = theLength / nbseg * ( 1. - 1e-9 );
       nbSegments = (int) nbseg;
     }
     else if ( _hypType == LOCAL_LENGTH )
@@ -802,7 +805,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
             if ( theReverse )
               scale = 1.0 / scale;
 
-            double alpha = pow(scale, 1.0 / (nbSegments - 1));
+            double  alpha = pow(scale, 1.0 / (nbSegments - 1));
             double factor = (l - f) / (1.0 - pow(alpha, nbSegments));
 
             for (int i = 1; i < nbSegments; i++) {
@@ -811,10 +814,12 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
             }
           }
           const double lenFactor = theLength/(l-f);
+          const double minSegLen = Min( theParams.front() - f, l - theParams.back() );
+          const double       tol = Min( Precision::Confusion(), 0.01 * minSegLen );
           list<double>::iterator u = theParams.begin(), uEnd = theParams.end();
           for ( ; u != uEnd; ++u )
           {
-            GCPnts_AbscissaPoint Discret( theC3d, ((*u)-f) * lenFactor, f );
+            GCPnts_AbscissaPoint Discret( tol, theC3d, ((*u)-f) * lenFactor, f );
             if ( Discret.IsDone() )
               *u = Discret.Parameter();
           }
@@ -844,9 +849,13 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
         return false;
       }
     }
-    GCPnts_UniformAbscissa Discret(theC3d, eltSize, f, l);
+
+    double tol = Min( Precision::Confusion(), 0.01 * eltSize );
+    GCPnts_UniformAbscissa Discret(theC3d, nbSegments + 1, f, l, tol );
     if ( !Discret.IsDone() )
       return error( "GCPnts_UniformAbscissa failed");
+    if ( Discret.NbPoints() < nbSegments + 1 )
+      Discret.Initialize(theC3d, nbSegments + 2, f, l, tol );
 
     int NbPoints = Min( Discret.NbPoints(), nbSegments + 1 );
     for ( int i = 2; i < NbPoints; i++ ) // skip 1st and last points
@@ -857,6 +866,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     compensateError( eltSize, eltSize, f, l, theLength, theC3d, theParams, true ); // for PAL9899
     return true;
   }
+
 
   case BEG_END_LENGTH: {
 
@@ -869,14 +879,15 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
       return error ( SMESH_Comment("Invalid segment lengths (")<<a1<<" and "<<an<<") "<<
                      "for an edge of length "<<theLength);
 
-    double U1 = theReverse ? l : f;
-    double Un = theReverse ? f : l;
-    double param = U1;
+    double      U1 = theReverse ? l : f;
+    double      Un = theReverse ? f : l;
+    double   param = U1;
     double eltSize = theReverse ? -a1 : a1;
+    double     tol = Min( Precision::Confusion(), 0.01 * Min( a1, an ));
     while ( 1 ) {
       // computes a point on a curve <theC3d> at the distance <eltSize>
       // from the point of parameter <param>.
-      GCPnts_AbscissaPoint Discret( theC3d, eltSize, param );
+      GCPnts_AbscissaPoint Discret( tol, theC3d, eltSize, param );
       if ( !Discret.IsDone() ) break;
       param = Discret.Parameter();
       if ( f < param && param < l )
@@ -903,10 +914,11 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     double q = ( an - a1 ) / ( 2 *theLength/( a1 + an ) - 1 );
     int    n = int(fabs(q) > numeric_limits<double>::min() ? ( 1+( an-a1 )/q ) : ( 1+theLength/a1 ));
 
-    double U1 = theReverse ? l : f;
-    double Un = theReverse ? f : l;
-    double param = U1;
+    double      U1 = theReverse ? l : f;
+    double      Un = theReverse ? f : l;
+    double   param = U1;
     double eltSize = a1;
+    double     tol = Min( Precision::Confusion(), 0.01 * Min( a1, an ));
     if ( theReverse ) {
       eltSize = -eltSize;
       q = -q;
@@ -914,7 +926,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     while ( n-- > 0 && eltSize * ( Un - U1 ) > 0 ) {
       // computes a point on a curve <theC3d> at the distance <eltSize>
       // from the point of parameter <param>.
-      GCPnts_AbscissaPoint Discret( theC3d, eltSize, param );
+      GCPnts_AbscissaPoint Discret( tol, theC3d, eltSize, param );
       if ( !Discret.IsDone() ) break;
       param = Discret.Parameter();
       if ( param > f && param < l )
@@ -945,7 +957,8 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     while ( true ) {
       // computes a point on a curve <theC3d> at the distance <eltSize>
       // from the point of parameter <param>.
-      GCPnts_AbscissaPoint Discret( theC3d, eltSize, param );
+      double tol = Min( Precision::Confusion(), 0.01 * eltSize );
+      GCPnts_AbscissaPoint Discret( tol, theC3d, eltSize, param );
       if ( !Discret.IsDone() ) break;
       param = Discret.Parameter();
       if ( f < param && param < l )
@@ -978,95 +991,75 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
   {
     const std::vector<double>& aPnts = _fpHyp->GetPoints();
     const std::vector<int>&   nbsegs = _fpHyp->GetNbSegments();
+
+    // sort normalized params, taking into account theReverse
     TColStd_SequenceOfReal Params;
+    double tol = 1e-7 / theLength; // GCPnts_UniformAbscissa allows u2-u1 > 1e-7
     for ( size_t i = 0; i < aPnts.size(); i++ )
     {
-      if( aPnts[i]<0.0001 || aPnts[i]>0.9999 ) continue;
-      int j=1;
+      if( aPnts[i] < tol || aPnts[i] > 1 - tol )
+        continue;
+      double u = theReverse ? ( 1 - aPnts[i] ) : aPnts[i];
+      int    j = 1;
       bool IsExist = false;
       for ( ; j <= Params.Length(); j++ ) {
-        if ( Abs( aPnts[i] - Params.Value(j) ) < 1e-4 ) {
+        if ( Abs( u - Params.Value(j) ) < tol ) {
           IsExist = true;
           break;
         }
-        if ( aPnts[i]<Params.Value(j) ) break;
+        if ( u < Params.Value(j) ) break;
       }
-      if ( !IsExist ) Params.InsertBefore( j, aPnts[i] );
+      if ( !IsExist ) Params.InsertBefore( j, u );
     }
-    double par2, par1, lp;
-    par1 = f;
-    lp   = l;
-    double sign = 1.0;
-    if ( theReverse ) {
-      par1 = l;
-      lp   = f;
-      sign = -1.0;
-    }
-    double eltSize, segmentSize = 0.;
-    double currAbscissa = 0;
-    for ( int i = 0; i < Params.Length(); i++ )
+
+    // transform normalized Params into real ones
+    std::vector< double > uVec( Params.Length() + 2 );
+    uVec[ 0 ] = theFirstU;
+    double abscissa;
+    for ( int i = 1; i <= Params.Length(); i++ )
     {
-      int nbseg = ( i > (int)nbsegs.size()-1 ) ? nbsegs[0] : nbsegs[i];
-      segmentSize = Params.Value( i+1 ) * theLength - currAbscissa;
-      currAbscissa += segmentSize;
-      GCPnts_AbscissaPoint APnt( theC3d, sign*segmentSize, par1 );
+      abscissa = Params( i ) * theLength;
+      tol      = Min( Precision::Confusion(), 0.01 * abscissa );
+      GCPnts_AbscissaPoint APnt( tol, theC3d, abscissa, theFirstU );
       if ( !APnt.IsDone() )
         return error( "GCPnts_AbscissaPoint failed");
-      par2    = APnt.Parameter();
-      eltSize = segmentSize/nbseg;
-      GCPnts_UniformAbscissa Discret( theC3d, eltSize, par1, par2 );
-      if ( theReverse )
-        Discret.Initialize( theC3d, eltSize, par2, par1 );
+      uVec[ i ] = APnt.Parameter();
+    }
+    uVec.back() = theLastU;
+
+    // divide segments
+    Params.InsertBefore( 1, 0.0 );
+    Params.Append( 1.0 );
+    double eltSize, segmentSize, par1, par2;
+    for ( size_t i = 0; i < uVec.size()-1; i++ )
+    {
+      par1 = uVec[ i   ];
+      par2 = uVec[ i+1 ];
+      int nbseg = ( i < nbsegs.size() ) ? nbsegs[i] : nbsegs[0];
+      if ( nbseg == 1 )
+      {
+        theParams.push_back( par2 );
+      }
       else
-        Discret.Initialize( theC3d, eltSize, par1, par2 );
-      if ( !Discret.IsDone() )
-        return error( "GCPnts_UniformAbscissa failed");
-      int NbPoints = Discret.NbPoints();
-      list<double> tmpParams;
-      for ( int i = 2; i < NbPoints; i++ ) {
-        double param = Discret.Parameter(i);
-        tmpParams.push_back( param );
+      {
+        segmentSize = ( Params( i+2 ) - Params( i+1 )) * theLength;
+        eltSize     = segmentSize / nbseg;
+        tol         = Min( Precision::Confusion(), 0.01 * eltSize );
+        GCPnts_UniformAbscissa Discret( theC3d, eltSize, par1, par2, tol );
+        if ( !Discret.IsDone() )
+          return error( "GCPnts_UniformAbscissa failed");
+        if ( Discret.NbPoints() < nbseg + 1 ) {
+          eltSize = segmentSize / ( nbseg + 0.5 );
+          Discret.Initialize( theC3d, eltSize, par1, par2, tol );
+        }
+        int NbPoints = Discret.NbPoints();
+        for ( int i = 2; i <= NbPoints; i++ ) {
+          double param = Discret.Parameter(i);
+          theParams.push_back( param );
+        }
       }
-      if ( theReverse ) {
-        compensateError( eltSize, eltSize, par2, par1, segmentSize, theC3d, tmpParams );
-        tmpParams.reverse();
-      }
-      else {
-        compensateError( eltSize, eltSize, par1, par2, segmentSize, theC3d, tmpParams );
-      }
-      theParams.splice( theParams.end(), tmpParams );
-      theParams.push_back( par2 );
-
-      par1 = par2;
     }
-    // add for last
-    int nbseg = ( (int)nbsegs.size() > Params.Length() ) ? nbsegs[Params.Length()] : nbsegs[0];
-    segmentSize = theLength - currAbscissa;
-    eltSize = segmentSize/nbseg;
-    GCPnts_UniformAbscissa Discret;
-    if ( theReverse )
-      Discret.Initialize( theC3d, eltSize, par1, lp );
-    else
-      Discret.Initialize( theC3d, eltSize, lp, par1 );
-    if ( !Discret.IsDone() )
-      return error( "GCPnts_UniformAbscissa failed");
-    int NbPoints = Discret.NbPoints();
-    list<double> tmpParams;
-    for ( int i = 2; i < NbPoints; i++ ) {
-      double param = Discret.Parameter(i);
-      tmpParams.push_back( param );
-    }
-    if ( theReverse ) {
-      compensateError( eltSize, eltSize, lp, par1, segmentSize, theC3d, tmpParams );
-      tmpParams.reverse();
-    }
-    else {
-      compensateError( eltSize, eltSize, par1, lp, segmentSize, theC3d, tmpParams );
-    }
-    theParams.splice( theParams.end(), tmpParams );
-
-    if ( theReverse )
-      theParams.reverse(); // NPAL18025
+    theParams.pop_back();
 
     return true;
   }

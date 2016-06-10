@@ -184,7 +184,7 @@ namespace {
   }
   //=============================================================================
   /*!
-   * \brief return PropagationMgrData found on a submesh
+   * \brief return PropagationMgrData found on a sub-mesh
    */
   PropagationMgrData* findData(SMESH_subMesh* sm)
   {
@@ -194,14 +194,14 @@ namespace {
   }
   //=============================================================================
   /*!
-   * \brief return PropagationMgrData found on theEdge submesh
+   * \brief return PropagationMgrData found on theEdge sub-mesh
    */
-  PropagationMgrData* findData(SMESH_Mesh& theMesh, const TopoDS_Shape& theEdge)
-  {
-    if ( theEdge.ShapeType() == TopAbs_EDGE )
-      return findData( theMesh.GetSubMeshContaining( theEdge ) );
-    return 0;
-  }
+  // PropagationMgrData* findData(SMESH_Mesh& theMesh, const TopoDS_Shape& theEdge)
+  // {
+  //   if ( theEdge.ShapeType() == TopAbs_EDGE )
+  //     return findData( theMesh.GetSubMeshContaining( theEdge ) );
+  //   return 0;
+  // }
   //=============================================================================
   /*!
    * \brief return existing or a new PropagationMgrData

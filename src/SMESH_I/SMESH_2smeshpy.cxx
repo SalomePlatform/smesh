@@ -903,7 +903,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
           Threshold = SMESH + types[ iGeom ];
 #ifdef _DEBUG_
         // is types complete? (compilation failure mains that enum GeometryType changed)
-        int _assert[( sizeof(types) / sizeof(const char*) == nbTypes ) ? 1 : -1 ]; _assert[0]=1;
+        int _asrt[( sizeof(types) / sizeof(const char*) == nbTypes ) ? 2 : -1 ]; _asrt[0]=_asrt[1];
 #endif
       }
       if (Type == "SMESH.FT_EntityType")
@@ -922,8 +922,8 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
         if ( -1 < iGeom && iGeom < nbTypes )
           Threshold = SMESH + types[ iGeom ];
 #ifdef _DEBUG_
-        // is types complete? (compilation failure mains that enum EntityType changed)
-        int _assert[( sizeof(types) / sizeof(const char*) == nbTypes ) ? 1 : -1 ]; _assert[0]=1;
+        // is 'types' complete? (compilation failure mains that enum EntityType changed)
+        int _asrt[( sizeof(types) / sizeof(const char*) == nbTypes ) ? 2 : -1 ]; _asrt[0]=_asrt[1];
 #endif
       }
     }

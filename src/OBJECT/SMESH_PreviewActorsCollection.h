@@ -41,7 +41,7 @@ class SMESHOBJECT_EXPORT SMESH_PreviewActorsCollection
 {
 public:
   SMESH_PreviewActorsCollection();
-  ~SMESH_PreviewActorsCollection();
+  virtual ~SMESH_PreviewActorsCollection();
 
   virtual void    AddToRender     (vtkRenderer* theRenderer);
   virtual void    RemoveFromRender(vtkRenderer* theRenderer);
