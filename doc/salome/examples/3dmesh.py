@@ -93,3 +93,12 @@ triaStr = ""
 for tria in tetra.GetElementsByType( SMESH.FACE ):
     nodes = tetra.GetElemNodes( tria )
     triaStr += "%s (%s, %s, %s) " % ( tria, nodes[0], nodes[1], nodes[2] )
+
+# Retrieve group contents
+groupStr = ""
+for group in tetra.GetGroups():
+    ids   = group.GetIDs()
+    name  = group.GetName()
+    eType = group.GetType()
+    groupStr += "'%s' %s: %s \n" % ( name, eType, ids )
+
