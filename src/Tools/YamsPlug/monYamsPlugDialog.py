@@ -27,6 +27,8 @@ from YamsPlugDialog_ui import Ui_YamsPlugDialog
 from monViewText import MonViewText
 from qtsalome import *
 
+verbose = True
+
 class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
   """
   """
@@ -47,7 +49,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     # iconfolder=os.path.dirname(os.path.abspath(__file__))
 
     self.iconfolder=os.environ["SMESH_ROOT_DIR"]+"/share/salome/resources/smesh"
-    #print "monYamsPlugDialog iconfolder",iconfolder
+    #print "MGSurfOptPlugDialog iconfolder",iconfolder
     icon = QIcon()
     icon.addFile(os.path.join(self.iconfolder,"select1.png"))
     self.PB_LoadHyp.setIcon(icon)
@@ -66,12 +68,12 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     self.PB_MeshFile.setIcon(icon)
     self.PB_MeshFile.setToolTip("source mesh from a file in disk")
 
-    #Ces parametres ne sont pas remis à rien par le clean
-    self.paramsFile= os.path.abspath(os.path.join(os.environ["HOME"],".yams.dat"))
+    #Ces parametres ne sont pas remis a rien par le clean
+    self.paramsFile= os.path.abspath(os.path.join(os.environ["HOME"],".MGSurfOpt.dat"))
     self.LE_ParamsFile.setText(self.paramsFile)
     self.LE_MeshFile.setText("")
     self.LE_MeshSmesh.setText("")
-    
+
     v1=QDoubleValidator(self)
     v1.setBottom(0.)
     #v1.setTop(1000.) #per thousand... only if relative
@@ -103,7 +105,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
   def PBHelpPressed(self):
     import SalomePyQt
     sgPyQt = SalomePyQt.SalomePyQt()
-    try :
+    try:
       mydir=os.environ["SMESH_ROOT_DIR"]
     except Exception:
       QMessageBox.warning(self, "Help", "Help unavailable $SMESH_ROOT_DIR not found")
@@ -146,7 +148,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     else:
       initialMeshObject=maStudy.FindObjectByName(name ,"SMESH")[0]
 
-    meshname = name+"_YAMS_"+str(self.num)
+    meshname = name+"_MGSO_"+str(self.num)
     smesh.SetName(outputMesh.GetMesh(), meshname)
     outputMesh.Compute() #no algorithms message for "Mesh_x" has been computed with warnings: -  global 1D algorithm is missing
 
@@ -158,7 +160,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     monStudyBuilder=maStudy.NewBuilder()
     monStudyBuilder.NewCommand()
     newStudyIter=monStudyBuilder.NewObject(HypReMeshEntry)
-    self.editor.setAttributeValue(newStudyIter, "AttributeName", "YAMS Parameters_"+str(self.num))
+    self.editor.setAttributeValue(newStudyIter, "AttributeName", "MGSurfOpt Parameters_"+str(self.num))
     self.editor.setAttributeValue(newStudyIter, "AttributeComment", self.getResumeData(separator=" ; "))
     
     SOMesh=maStudy.FindObjectByName(meshname ,"SMESH")[0]
@@ -183,7 +185,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
   def PBSavePressed(self):
     from datetime import datetime
     if not(self.PrepareLigneCommande()): return
-    text = "# YAMS hypothesis parameters\n" 
+    text = "# MGSurfOpt hypothesis parameters\n"
     text += "# Params for mesh : " +  self.LE_MeshSmesh.text() +"\n"
     text += datetime.now().strftime("# Date : %d/%m/%y %H:%M:%S\n")
     text += "# Command : "+self.commande+"\n"
@@ -202,30 +204,78 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
       return
     f.close()
 
+  def PBSaveHypPressed_risky(self):
+    """
+    save hypothesis in Object Browser outside GEOM ou MESH
+    WARNING: at root of Object Browser is not politically correct
+    """
+    import salome
+    
+    if verbose: print("save hypothesis in Object Browser")
+    
+    name = "MGSurfOpt"
+    #how ??? icon = "mesh_tree_hypo.png"
+    namei = "MGSurfOpt Parameters_%i" % self.num
+    datai = self.getResumeData(separator=" ; ")
+    
+    myStudy = salome.myStudy
+    myBuilder = myStudy.NewBuilder()
+    #myStudy.IsStudyLocked()
+    myComponent = myStudy.FindComponent(name)
+    if myComponent == None:
+      print "myComponent not found, create"
+      myComponent = myBuilder.NewComponent(name)
+    AName = myBuilder.FindOrCreateAttribute(myComponent, "AttributeName")
+    AName.SetValue(name)
+    ACmt = myBuilder.FindOrCreateAttribute(myComponent, "AttributeComment")
+    ACmt.SetValue(name)
+    
+    myObject = myBuilder.NewObject(myComponent)
+    AName = myBuilder.FindOrCreateAttribute(myObject, "AttributeName")
+    AName.SetValue(namei)
+    ACmt = myBuilder.FindOrCreateAttribute(myObject, "AttributeComment")
+    ACmt.SetValue(datai)
+
+    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser(0)
+    self.num += 1
+    if verbose: print("save %s in Object Browser done: %s\n%s" % (name, myObject.GetID(), datai))
+    return True
+
   def PBSaveHypPressed(self):
-    """save hypothesis in Object Browser"""
+    """
+    save hypothesis in Object Browser
+    bug: affichage ne marche pas si inclusion dans dans GEOM ou MESH depuis salome 730
+    """
     import salome
     import SMESH
     from salome.kernel import studyedit
     from salome.smesh import smeshBuilder
+    #[PAL issue tracker:issue1871] Les nouveaux objets ne s'affichent pas dans SMESH
+    QMessageBox.warning(self, "Save", "waiting for fix: Object Browser will not display hypothesis")
+    
+    if verbose: print("save hypothesis in Object Browser")
     smesh = smeshBuilder.New(salome.myStudy)
 
     maStudy=studyedit.getActiveStudy()
     smesh.SetCurrentStudy(maStudy)
-    
+
     self.editor = studyedit.getStudyEditor()
     moduleEntry=self.editor.findOrCreateComponent("SMESH","SMESH")
     HypReMeshEntry = self.editor.findOrCreateItem(
-        moduleEntry, name = "Plugins Hypotheses", icon="mesh_tree_hypo.png") #, comment = "HypoForRemeshing" )
-    
+        moduleEntry, name = "Plugins Hypotheses", icon="mesh_tree_hypo.png")
+    #, comment = "HypothesisForRemeshing" )
+
     monStudyBuilder=maStudy.NewBuilder()
     monStudyBuilder.NewCommand()
     newStudyIter=monStudyBuilder.NewObject(HypReMeshEntry)
-    self.editor.setAttributeValue(newStudyIter, "AttributeName", "YAMS Parameters_"+str(self.num))
-    self.editor.setAttributeValue(newStudyIter, "AttributeComment", self.getResumeData(separator=" ; "))
+    name = "MGSurfOpt Parameters_%i" % self.num
+    self.editor.setAttributeValue(newStudyIter, "AttributeName", name)
+    data = self.getResumeData(separator=" ; ")
+    self.editor.setAttributeValue(newStudyIter, "AttributeComment", data)
     
     if salome.sg.hasDesktop(): salome.sg.updateObjBrowser(0)
-    self.num+=1
+    self.num += 1
+    if verbose: print("save %s in Object Browser done:\n%s" % (name, data))
     return True
 
   def SP_toStr(self, widget):
@@ -315,7 +365,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
         if tit=="Verbosity": self.SP_Verbosity.setProperty("value", int(float(value)))
         if tit=="Memory": self.SP_Memory.setProperty("value", float(value))
       except:
-        QMessageBox.warning(self, "load YAMS Hypothesis", "Problem on '"+lig+"'")
+        QMessageBox.warning(self, "load MGSurfOpt Hypothesis", "Problem on '"+lig+"'")
 
   def PBLoadPressed(self):
     """load last hypothesis saved in tail of file"""
@@ -334,7 +384,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
 
   def PBLoadHypPressed(self):
     """load hypothesis saved in Object Browser"""
-    #QMessageBox.warning(self, "load Object Browser YAMS hypothesis", "TODO")
+    #QMessageBox.warning(self, "load Object Browser MGSurfOpt hypothesis", "TODO")
     import salome
     from salome.kernel import studyedit
     from salome.smesh.smeshstudytools import SMeshStudyTools
@@ -343,14 +393,14 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
 
     mySObject, myEntry = guihelper.getSObjectSelected()
     if CORBA.is_nil(mySObject) or mySObject==None:
-      QMessageBox.critical(self, "Hypothese", "select an Object Browser YAMS hypothesis")
+      QMessageBox.critical(self, "Hypothese", "select an Object Browser MGSurfOpt hypothesis")
       return
     
     text=mySObject.GetComment()
     
     #a verification
     if "Optimisation=" not in text:
-      QMessageBox.critical(self, "Load Hypothese", "Object Browser selection not a YAMS Hypothesis")
+      QMessageBox.critical(self, "Load Hypothese", "Object Browser selection not a MGSurfOptHypothesis")
       return
     self.loadResumeData(text, separator=" ; ")
     return
@@ -406,11 +456,11 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
 
     mySObject, myEntry = guihelper.getSObjectSelected()
     if CORBA.is_nil(mySObject) or mySObject==None:
-      #QMessageBox.critical(self, "Mesh", "select an input mesh")
-      self.LE_MeshSmesh.setText("")
-      self.MeshIn=""
-      self.LE_MeshFile.setText("")
-      self.fichierIn=""
+      QMessageBox.critical(self, "Mesh", "select an input mesh")
+      #self.LE_MeshSmesh.setText("")
+      #self.MeshIn=""
+      #self.LE_MeshFile.setText("")
+      #self.fichierIn=""
       return
     self.smeshStudyTool = SMeshStudyTools()
     try:
@@ -518,7 +568,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     self.SP_MinSize.setProperty("value", 5)
     self.SP_Verbosity.setProperty("value", 3)
     self.SP_Memory.setProperty("value", 0)
-    self.PBMeshSmeshPressed()
+    #self.PBMeshSmeshPressed() #do not that! problem if done in load surfopt hypo from object browser 
     self.TWOptions.setCurrentIndex(0) # Reset current active tab to the first tab
 
 __dialog=None
@@ -530,8 +580,8 @@ def getDialog():
   global __dialog
   if __dialog is None:
     __dialog = MonYamsPlugDialog()
-  else :
-    __dialog.clean()
+  #else :
+  #  __dialog.clean()
   return __dialog
 
 #

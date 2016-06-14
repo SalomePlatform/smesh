@@ -19,15 +19,26 @@
 #
 
 # Modules Python
-import string,types,os,sys
+import os
+import sys
+import string
+import types
 import tempfile
 import traceback
+import pprint as PP #pretty print
 
 from qtsalome import *
 
 # Import des panels
 
 from MGCleanerViewText_ui import Ui_ViewExe
+
+verbose = True
+
+force = os.getenv("FORCE_DISTENE_LICENSE_FILE")
+if force != None:
+  os.environ["DISTENE_LICENSE_FILE"] = force
+  os.environ["DLIM8VAR"] = "NOTHING"
 
 class MGCleanerMonViewText(Ui_ViewExe, QDialog):
     """
@@ -46,47 +57,49 @@ class MGCleanerMonViewText(Ui_ViewExe, QDialog):
 
         self.monExe.readyReadStandardOutput.connect( self.readFromStdOut )
         self.monExe.readyReadStandardError.connect( self.readFromStdErr )
-      
-        # Je n arrive pas a utiliser le setEnvironment du QProcess
-        # fonctionne hors Salome mais pas dans Salome ???
-        cmds=''
-        '''
-        try :
-          LICENCE_FILE=os.environ["DISTENE_LICENCE_FILE_FOR_MGCLEANER"]
-        except:
-          LICENCE_FILE=''
-        try :
-          PATH=os.environ["DISTENE_PATH_FOR_MGCLEANER"]
-        except:
-          PATH=''
-        if LICENCE_FILE != '': 
-          cmds+='source '+LICENCE_FILE+'\n'
-        else:
-          cmds+="# $DISTENE_LICENCE_FILE_FOR_MGCLEANER NOT SET\n"
-        if PATH != '': 
-          cmds+='export PATH='+PATH+':$PATH\n'
-        else:
-          cmds+="# $DISTENE_PATH_FOR_MGCLEANER NOT SET\n"
-        #cmds+='env\n'
-        cmds+='rm -f '+self.parent().fichierOut+'\n'
-        '''
-        cmds+=txt+'\n'
-        cmds+='echo END_OF_MGCleaner\n'
-        ext=''
+
+        """ for test set environment
+        env = QProcessEnvironment().systemEnvironment()
+        env.insert("HELLO", "bonjour") #Add an environment variable for debug
+        self.monExe.setProcessEnvironment(env)
+        if verbose: 
+          PP.pprint([str(i) for i in sorted(self.monExe.processEnvironment().toStringList()) if 'DISTENE' in i])
+        """
+        
+        cmds = ''
+        ext = ''
         if sys.platform == "win32":
+            cmds += 'delete %s\n' % self.parent().fichierOut
             ext = '.bat'
         else:
-            ext = '.sh'
-        nomFichier=tempfile.mktemp(suffix=ext,prefix="MGCleaner_")
-        f=open(nomFichier,'w')
-        f.write(cmds)
-        f.close()
+            cmds += '#!/bin/bash\n'
+            cmds += 'pwd\n'
+            #cmds += 'which mg-cleaner.exe\n'
+            cmds += 'echo "DISTENE_LICENSE_FILE="$DISTENE_LICENSE_FILE\n'
+            cmds += 'echo "DLIM8VAR="$DLIM8VAR\n'
+            cmds += 'rm -f %s\n' % self.parent().fichierOut
+            ext = '.bash'
 
-        maBidouille=nomFichier
-        self.monExe.start(maBidouille)
+        cmds += 'echo %s\n' % txt #to see what is compute command
+        cmds += txt+'\n'
+        cmds += 'echo "END_OF_MGCleaner"\n'
+        
+        nomFichier = os.path.splitext(self.parent().fichierOut)[0] + ext
+        with open(nomFichier, 'w') as f:
+          f.write(cmds)
+        self.make_executable(nomFichier)
+        
+        if verbose: print("INFO: MGCleaner launch script file: %s" % nomFichier)
+        
+        self.monExe.start(nomFichier)
         self.monExe.closeWriteChannel()
         self.enregistreResultatsDone=False
         self.show()
+
+    def make_executable(self, path):
+        mode = os.stat(path).st_mode
+        mode |= (mode & 0o444) >> 2    # copy R bits to X
+        os.chmod(path, mode)
 
     def saveFile(self):
         #recuperation du nom du fichier

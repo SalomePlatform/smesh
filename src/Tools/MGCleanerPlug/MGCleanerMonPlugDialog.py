@@ -27,6 +27,7 @@ from MGCleanerPlugDialog_ui import Ui_MGCleanerPlugDialog
 from MGCleanerMonViewText import MGCleanerMonViewText
 from qtsalome import *
 
+verbose = True
 
 class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
   """
@@ -41,7 +42,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     self.commande=""
     self.num=1
     self.__selectedMesh=None
-    
+
     # complex whith QResources: not used
     # The icon are supposed to be located in the $SMESH_ROOT_DIR/share/salome/resources/smesh folder,
     # other solution could be in the same folder than this python module file:
@@ -66,8 +67,8 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     self.PB_Save.setToolTip("hypothesis to file")
     self.PB_MeshFile.setIcon(icon)
     self.PB_MeshFile.setToolTip("source mesh from a file in disk")
-    
-    #Ces parametres ne sont pas remis ?? rien par le clean
+
+    #Ces parametres ne sont pas remis a rien par le clean
     self.paramsFile= os.path.abspath(os.path.join(os.environ["HOME"],".MGCleaner.dat"))
     self.LE_ParamsFile.setText(self.paramsFile)
     self.LE_MeshFile.setText("")
@@ -134,9 +135,9 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     try:
       mydir=os.environ["SMESH_ROOT_DIR"]
     except Exception:
-      QMessageBox.warning( self, "Help", "Help unavailable $SMESH_ROOT_DIR not found")
+      QMessageBox.warning(self, "Help", "Help unavailable $SMESH_ROOT_DIR not found")
       return
-    
+
     maDoc=mydir+"/share/doc/salome/gui/SMESH/MGCleaner/index.html"
     sgPyQt.helpContext(maDoc,"")
     
@@ -230,38 +231,87 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
       return
     f.close()
 
+  def PBSaveHypPressed_risky(self):
+    """
+    save hypothesis in Object Browser outside GEOM ou MESH
+    WARNING: at root of Object Browser is not politically correct
+    """
+    import salome
+    
+    if verbose: print("save hypothesis in Object Browser")
+    
+    name = "MGCleaner"
+    #how ??? icon = "mesh_tree_hypo.png"
+    namei = "MGCleaner Parameters_%i" % self.num
+    datai = self.getResumeData(separator=" ; ")
+    
+    myStudy = salome.myStudy
+    myBuilder = myStudy.NewBuilder()
+    #myStudy.IsStudyLocked()
+    myComponent = myStudy.FindComponent(name)
+    if myComponent == None:
+      print "myComponent not found, create"
+      myComponent = myBuilder.NewComponent(name)
+    AName = myBuilder.FindOrCreateAttribute(myComponent, "AttributeName")
+    AName.SetValue(name)
+    ACmt = myBuilder.FindOrCreateAttribute(myComponent, "AttributeComment")
+    ACmt.SetValue(name)
+    
+    myObject = myBuilder.NewObject(myComponent)
+    AName = myBuilder.FindOrCreateAttribute(myObject, "AttributeName")
+    AName.SetValue(namei)
+    ACmt = myBuilder.FindOrCreateAttribute(myObject, "AttributeComment")
+    ACmt.SetValue(datai)
+
+    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser(0)
+    self.num += 1
+    if verbose: print("save %s in Object Browser done: %s\n%s" % (name, myObject.GetID(), datai))
+    return True
+
   def PBSaveHypPressed(self):
-    """save hypothesis in Object Browser"""
+    """
+    save hypothesis in Object Browser
+    bug: affichage ne marche pas si inclusion dans dans GEOM ou MESH depuis salome 730
+    """
     import salome
     import SMESH
     from salome.kernel import studyedit
     from salome.smesh import smeshBuilder
+    #[PAL issue tracker:issue1871] Les nouveaux objets ne s'affichent pas dans SMESH
+    QMessageBox.warning(self, "Save", "waiting for fix: Object Browser will not display hypothesis")
+    
+    if verbose: print("save hypothesis in Object Browser")
     smesh = smeshBuilder.New(salome.myStudy)
 
     maStudy=studyedit.getActiveStudy()
     smesh.SetCurrentStudy(maStudy)
-    
+
     self.editor = studyedit.getStudyEditor()
     moduleEntry=self.editor.findOrCreateComponent("SMESH","SMESH")
     HypReMeshEntry = self.editor.findOrCreateItem(
-        moduleEntry, name = "Plugins Hypotheses", icon="mesh_tree_hypo.png") #, comment = "HypoForRemeshing" )
-    
+        moduleEntry, name = "Plugins Hypotheses", icon="mesh_tree_hypo.png")
+    #, comment = "HypothesisForRemeshing" )
+
     monStudyBuilder=maStudy.NewBuilder()
     monStudyBuilder.NewCommand()
     newStudyIter=monStudyBuilder.NewObject(HypReMeshEntry)
-    self.editor.setAttributeValue(newStudyIter, "AttributeName", "MGCleaner Parameters_"+str(self.num))
-    self.editor.setAttributeValue(newStudyIter, "AttributeComment", self.getResumeData(separator=" ; "))
-    
+    name = "MGCleaner Parameters_%i" % self.num
+    self.editor.setAttributeValue(newStudyIter, "AttributeName", name)
+    data = self.getResumeData(separator=" ; ")
+    self.editor.setAttributeValue(newStudyIter, "AttributeComment", data)
+
+    """ 
+    # example storing in notebook
+    import salome_notebook
+    notebook = salome_notebook.notebook
+    notebook.set("MGCleaner_%i" % self.num, data)
+    """
+
     if salome.sg.hasDesktop(): salome.sg.updateObjBrowser(0)
-    self.num+=1
+    self.num += 1
+    if verbose: print("save %s in Object Browser done:\n%s" % (name, data))
     return True
 
-    """
-    import salome_pluginsmanager
-    print "salome_pluginsmanager.plugins",salome_pluginsmanager.plugins
-    print "salome_pluginsmanager.current_plugins_manager",salome_pluginsmanager.current_plugins_manager
-    """
-  
   def SP_toStr(self, widget):
     """only for a QLineEdit widget"""
     #cr, pos=widget.validator().validate(res, 0) #n.b. "1,3" is acceptable !locale!
@@ -452,6 +502,10 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     mySObject, myEntry = guihelper.getSObjectSelected()
     if CORBA.is_nil(mySObject) or mySObject==None:
       QMessageBox.critical(self, "Mesh", "select an input mesh")
+      #self.LE_MeshSmesh.setText("")
+      #self.MeshIn=""
+      #self.LE_MeshFile.setText("")
+      #self.fichierIn=""
       return
     self.smeshStudyTool = SMeshStudyTools()
     try:
@@ -533,6 +587,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     if not self.CB_ComputedOverlapDistance.isChecked(): #computed default
       self.commande+=" --overlap_distance " + self.SP_toStr(self.SP_OverlapDistance)
     self.commande+=" --overlap_angle " + str(self.SP_OverlapAngle.value())
+    if verbose: print("INFO: MGCCleaner command:\n  %s" % self.commande)
     return True
 
   def clean(self):
@@ -559,7 +614,7 @@ __dialog=None
 def getDialog():
   """
   This function returns a singleton instance of the plugin dialog.
-  c est obligatoire pour faire un show sans parent...
+  It is mandatory in order to call show without a parent ...
   """
   global __dialog
   if __dialog is None:
@@ -609,3 +664,4 @@ if __name__ == "__main__":
   TEST_MGCleanerMonPlugDialog()
   #TEST_standalone()
   pass
+

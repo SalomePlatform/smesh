@@ -34,10 +34,13 @@ def YamsLct(context):
   
   #prior test to avoid unnecessary user GUI work with ending crash
   try :
-      os.environ['DISTENE_LICENCE_FILE_FOR_YAMS']
+      os.environ['DISTENE_LICENSE_FILE']
   except:
-      QMessageBox.warning(None,"Products","Distene's product Yams is not installed.\nrequired environment variable:\nDISTENE_LICENCE_FILE_FOR_YAMS='/.../dlim8.var.sh'")
+      QMessageBox.warning(None,"Products","""\
+Distene's product MeshGem SurfOpt (formerly Yams) is not installed.
+required environment variable:
+DISTENE_LICENSE_FILE='.../dlim8.var.sh'""")
       return
   import monYamsPlugDialog
-  window=monYamsPlugDialog.getDialog()
+  window = monYamsPlugDialog.getDialog()
   window.show()

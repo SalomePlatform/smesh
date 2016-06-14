@@ -34,11 +34,14 @@ def MGCleanerLct(context):
   
   #prior test to avoid unnecessary user GUI work with ending crash
   try :
-      os.environ['DISTENE_LICENCE_FILE_FOR_MGCLEANER']
+      os.environ['DISTENE_LICENSE_FILE']
   except:
-      QMessageBox.warning(None,"Products","Distene's product MeshGem Cleaner is not installed.\nrequired environment variable:\nDISTENE_LICENCE_FILE_FOR_MGCLEANER='/.../dlim8.var.sh'")
+      QMessageBox.warning(None, "Products", """\
+Distene's product MeshGem Cleaner is not installed.
+required environment variable:
+DISTENE_LICENSE_FILE='.../dlim8.var.sh'""")
       return
   import MGCleanerMonPlugDialog
-  window=MGCleanerMonPlugDialog.getDialog()
+  window = MGCleanerMonPlugDialog.getDialog()
   window.show()
 

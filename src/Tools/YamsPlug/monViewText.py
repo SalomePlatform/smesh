@@ -18,16 +18,25 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-# Modules Python
-import string,types,os, sys
-import traceback
+import os
+import sys
+import string
+import types
 import tempfile
+import traceback
+import pprint as PP #pretty print
 
 from qtsalome import *
 
 # Import des panels
-
 from ViewText_ui import Ui_ViewExe
+
+verbose = True
+
+force = os.getenv("FORCE_DISTENE_LICENSE_FILE")
+if force != None:
+  os.environ["DISTENE_LICENSE_FILE"] = force
+  os.environ["DLIM8VAR"] = "NOTHING"
 
 class MonViewText(Ui_ViewExe, QDialog):
     """
@@ -45,32 +54,39 @@ class MonViewText(Ui_ViewExe, QDialog):
         self.monExe.readyReadStandardOutput.connect( self.readFromStdOut )
         self.monExe.readyReadStandardError.connect( self.readFromStdErr )
       
-        # Je n arrive pas a utiliser le setEnvironment du QProcess
-        # fonctionne hors Salome mais pas dans Salome ???
-        cmds=''
-        #cmds+='#! /usr/bin/env python\n'
-        #cmds+='# -*- coding: utf-8 -*-\n'
-        cmds+=txt+'\n'
-        cmds+='echo "END_OF_Yams"\n'
-        if os.path.exists(self.parent().fichierOut):
-            os.remove(self.parent().fichierOut)
-
-        ext=''
+        cmds = ''
+        ext = ''
         if sys.platform == "win32":
-            ext = '.bat'
+            cmds += 'delete %s\n' % self.parent().fichierOut
         else:
-            ext = '.sh'
+            cmds += '#!/bin/bash\n'
+            cmds += 'pwd\n'
+            #cmds += 'which mg-surfopt.exe\n'
+            cmds += 'echo "DISTENE_LICENSE_FILE="$DISTENE_LICENSE_FILE\n'
+            cmds += 'echo "DLIM8VAR="$DLIM8VAR\n'
+            cmds += 'rm -f %s\n' % self.parent().fichierOut
+            ext = '.bash'
 
-        nomFichier=tempfile.mktemp(suffix=ext,prefix='Yams_')
-        f=open(nomFichier,'w')
-        f.write(cmds)
-        f.close()
-
-        maBidouille=nomFichier
-        self.monExe.start(maBidouille)
+        cmds += 'echo %s\n' % txt #to see what is compute command
+        cmds += txt+'\n'
+        cmds += 'echo "END_OF_MGSurfOpt"\n'
+        
+        nomFichier = os.path.splitext(self.parent().fichierOut)[0] + ext
+        with open(nomFichier, 'w') as f:
+          f.write(cmds)
+        self.make_executable(nomFichier)
+        
+        if verbose: print("INFO: MGSurfOpt launch script file: %s" % nomFichier)
+        
+        self.monExe.start(nomFichier)
         self.monExe.closeWriteChannel()
         self.enregistreResultatsDone=False
         self.show()
+
+    def make_executable(self, path):
+        mode = os.stat(path).st_mode
+        mode |= (mode & 0o444) >> 2    # copy R bits to X
+        os.chmod(path, mode)
 
     def saveFile(self):
         #recuperation du nom du fichier
@@ -94,7 +110,7 @@ class MonViewText(Ui_ViewExe, QDialog):
         a=self.monExe.readAllStandardOutput()
         aa=unicode(a.data(),len(a))
         self.TB_Exe.append(aa)
-        if "END_OF_Yams" in aa:
+        if "END_OF_MGSurfOpt" in aa:
           self.parent().enregistreResultat()
           self.enregistreResultatsDone=True
           #self.theClose()
