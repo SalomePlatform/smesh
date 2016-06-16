@@ -32,4 +32,5 @@ The Medial Axis is used in two ways:
   borders to find positions of nodes.</li>
 </ol>
 
+\image html quad_from_ma_ring_mesh.png "Mesh depends on defined sub-meshes: to the left - sub-meshes on both wires, to the right - a sub-mesh on internal wire only"
 */

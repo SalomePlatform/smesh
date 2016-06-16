@@ -548,8 +548,8 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::SimulateUVPtStruct(int    nbSeg,
                                                                   bool   isXConst,
                                                                   double constValue) const
 {
-  if ( myFalsePoints.empty() ) {
-
+  if ( myFalsePoints.empty() )
+  {
     if ( NbEdges() == 0 ) return myFalsePoints;
 
     vector<uvPtStruct>* points = const_cast<vector<uvPtStruct>*>( &myFalsePoints );
@@ -557,28 +557,29 @@ const vector<UVPtStruct>& StdMeshers_FaceSide::SimulateUVPtStruct(int    nbSeg,
 
     int EdgeIndex = 0;
     double prevNormPar = 0, paramSize = myNormPar[ EdgeIndex ];
-    for ( size_t i = 0 ; i < myFalsePoints.size(); ++i ) {
+    gp_Pnt2d p;
+    for ( size_t i = 0 ; i < myFalsePoints.size(); ++i )
+    {
       double normPar = double(i) / double(nbSeg);
       UVPtStruct & uvPt = (*points)[i];
       uvPt.node = 0;
       uvPt.x = uvPt.y = uvPt.param = uvPt.normParam = normPar;
       if ( isXConst ) uvPt.x = constValue;
       else            uvPt.y = constValue;
-      if ( myNormPar[ EdgeIndex ] < normPar ) {
+      if ( myNormPar[ EdgeIndex ] < normPar )
+      {
         prevNormPar = myNormPar[ EdgeIndex ];
         ++EdgeIndex;
         paramSize = myNormPar[ EdgeIndex ] - prevNormPar;
       }
       double r = ( normPar - prevNormPar )/ paramSize;
       uvPt.param = myFirst[EdgeIndex] * ( 1 - r ) + myLast[EdgeIndex] * r;
-      if ( !myC2d[ EdgeIndex ].IsNull() ) {
-        gp_Pnt2d p = myC2d[ EdgeIndex ]->Value( uvPt.param );
-        uvPt.u = p.X();
-        uvPt.v = p.Y();
-      }
-      else {
-        uvPt.u = uvPt.v = 1e+100;
-      }
+      if ( !myC2d[ EdgeIndex ].IsNull() )
+        p = myC2d[ EdgeIndex ]->Value( uvPt.param );
+      else
+        p = Value2d( normPar );
+      uvPt.u = p.X();
+      uvPt.v = p.Y();
     }
   }
   return myFalsePoints;

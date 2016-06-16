@@ -66,7 +66,7 @@ objects.
 There is also a number of more specific algorithms:
 <ul>
 <li>\subpage prism_3d_algo_page "for meshing prismatic 3D shapes with hexahedra and prisms"</li>
-<li>\subpage quad_from_ma_algo_page "for quadrangle meshing of faces with sinuous borders"</li>
+<li>\subpage quad_from_ma_algo_page "for quadrangle meshing of faces with sinuous borders and rings"</li>
 <li> <b>Polygon per Face</b> meshing algorithm - generates one mesh
   face (either a triangle, a quadrangle or a polygon) per a geometrical
   face using all nodes from the face boundary.</li>

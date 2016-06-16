@@ -609,8 +609,8 @@ bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
       int stop = 0;
       if ( quad->side[3].grid->Edge(0).IsNull() ) // left side is simulated one
       {
-        // quad divided at I but not at J, as nbvertic==nbright==2
-        stop++; // we stop at a second node
+        if ( nbright == 2 ) // quad divided at I but not at J (2D_mesh_QuadranglePreference_01/B1)
+          stop++; // we stop at a second node
       }
       else
       {
@@ -657,7 +657,8 @@ bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
       }
       // for each node of the up edge find nearest node
       // in the first row of the regular grid and link them
-      for ( ; i > stop; i--) {
+      for ( ; i > stop; i--)
+      {
         a = uv_e2[i].node;
         b = uv_e2[i - 1].node;
         gp_Pnt pb = SMESH_TNodeXYZ( b );
@@ -791,8 +792,8 @@ bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
       }
     }
   } else {
-    if (quad->nbNodeOut(3) && nbhoriz == 2) {
-//      MESSAGE("left edge is out");
+    if (quad->nbNodeOut(3) && nbhoriz == 2)
+    {
       int g = nbvertic - 1; // last processed node in the grid
       int stop = 0;
       i = quad->side[ QUAD_LEFT_SIDE ].to-1; // nbleft - 1;

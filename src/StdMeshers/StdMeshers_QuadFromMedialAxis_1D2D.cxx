@@ -160,7 +160,7 @@ StdMeshers_QuadFromMedialAxis_1D2D::StdMeshers_QuadFromMedialAxis_1D2D(int      
   _shapeType = (1 << TopAbs_FACE);
   _onlyUnaryInput          = true;  // FACE by FACE so far
   _requireDiscreteBoundary = false; // make 1D by myself
-  _supportSubmeshes        = true; // make 1D by myself
+  _supportSubmeshes        = true;  // make 1D by myself
   _neededLowerHyps[ 1 ]    = true;  // suppress warning on hiding a global 1D algo
   _neededLowerHyps[ 2 ]    = true;  // suppress warning on hiding a global 2D algo
   _compatibleHypothesis.clear();
@@ -1363,6 +1363,116 @@ namespace
     return;
   } // separateNodes()
 
+
+  //================================================================================
+  /*!
+   * \brief Find association of nodes existing on the sinuous sides of a ring
+   *
+   * TMAPar2NPoints filled here is used in setQuadSides() only if theSinuFace.IsRing()
+   * to find most distant nodes of the inner and the outer wires
+   */
+  //================================================================================
+
+  void assocNodes( SMESH_MesherHelper&            theHelper,
+                   SinuousFace&                   theSinuFace,
+                   const SMESH_MAT2d::MedialAxis& theMA,
+                   TMAPar2NPoints &               thePointsOnE )
+  {
+    list< TopoDS_Edge > ee1( theSinuFace._sinuSide [0].begin(), theSinuFace._sinuSide [0].end() );
+    list< TopoDS_Edge > ee2( theSinuFace._sinuSide [1].begin(), theSinuFace._sinuSide [1].end() );
+    StdMeshers_FaceSide sideOut( theSinuFace.Face(), ee1, theHelper.GetMesh(), true, true );
+    StdMeshers_FaceSide sideIn ( theSinuFace.Face(), ee2, theHelper.GetMesh(), true, true );
+    const UVPtStructVec& uvsOut = sideOut.GetUVPtStruct();
+    const UVPtStructVec& uvsIn  = sideIn.GetUVPtStruct();
+    // if ( uvs1.size() != uvs2.size() )
+    //   return;
+
+    const SMESH_MAT2d::Branch& branch = *theMA.getBranch(0);
+    SMESH_MAT2d::BoundaryPoint bp[2];
+    SMESH_MAT2d::BranchPoint   brp;
+    SMESHDS_Mesh*              meshDS = theHelper.GetMeshDS();
+
+    map< double, const SMDS_MeshNode* > nodeParams; // params of existing nodes
+    map< double, const SMDS_MeshNode* >::iterator u2n;
+
+    // find a node of sideOut most distant from sideIn
+
+    vector< BRepAdaptor_Curve > curvesIn( theSinuFace._sinuSide[1].size() );
+    for ( size_t iE = 0; iE < theSinuFace._sinuSide[1].size(); ++iE )
+      curvesIn[ iE ].Initialize( theSinuFace._sinuSide[1][iE] );
+
+    double maxDist = 0;
+    SMESH_MAT2d::BoundaryPoint bpIn; // closest IN point
+    const SMDS_MeshNode*        nOut = 0;
+    const size_t              nbEOut = theSinuFace._sinuSide[0].size();
+    for ( size_t iE = 0; iE < nbEOut; ++iE )
+    {
+      const TopoDS_Edge& E = theSinuFace._sinuSide[0][iE];
+
+      if ( !SMESH_Algo::GetSortedNodesOnEdge( meshDS, E, /*skipMedium=*/true, nodeParams ))
+        return;
+      for ( u2n = nodeParams.begin(); u2n != nodeParams.end(); ++u2n )
+      {
+        // point on EDGE (u2n) --> MA point (brp)
+        if ( !theMA.getBoundary().getBranchPoint( iE, u2n->first, brp ) ||
+             !branch.getBoundaryPoints( brp, bp[0], bp[1] ))
+          return;
+        gp_Pnt pOut = SMESH_TNodeXYZ( u2n->second );
+        gp_Pnt pIn  = curvesIn[ bp[1]._edgeIndex - nbEOut ].Value( bp[1]._param );
+        double dist = pOut.SquareDistance( pIn );
+        if ( dist > maxDist )
+        {
+          maxDist = dist;
+          nOut    = u2n->second;
+          bpIn    = bp[1];
+        }
+      }
+    }
+    const SMDS_MeshNode* nIn = 0;
+    if ( !SMESH_Algo::GetSortedNodesOnEdge( meshDS,
+                                            theSinuFace._sinuEdges[ bpIn._edgeIndex ],
+                                            /*skipMedium=*/true,
+                                            nodeParams ))
+      return;
+    u2n = nodeParams.lower_bound( bpIn._param );
+    if ( u2n == nodeParams.end() )
+      nIn = nodeParams.rbegin()->second;
+    else
+      nIn = u2n->second;
+    
+    // find position of distant nodes in uvsOut and uvsIn
+    size_t iDistOut, iDistIn;
+    for ( iDistOut = 0; iDistOut < uvsOut.size(); ++iDistOut )
+    {
+      if ( uvsOut[iDistOut].node == nOut )
+        break;
+    }
+    for ( iDistIn = 0; iDistIn < uvsIn.size(); ++iDistIn )
+    {
+      if ( uvsIn[iDistIn].node == nIn )
+        break;
+    }
+    if ( iDistOut == uvsOut.size() || iDistIn == uvsIn.size() )
+      return;
+
+    // store opposite nodes in thePointsOnE (param and EDGE have no sense)
+    pair< NodePoint, NodePoint > oppNodes( NodePoint( nOut, 0, 0 ), NodePoint( nIn, 0, 0));
+    thePointsOnE.insert( make_pair( uvsOut[ iDistOut ].normParam, oppNodes ));
+    int iOut = iDistOut, iIn = iDistIn;
+    int i, nbNodes = std::min( uvsOut.size(), uvsIn.size() );
+    if ( nbNodes > 5 ) nbNodes = 5;
+    for ( i = 0, ++iOut, --iIn; i < nbNodes; ++iOut, --iIn, ++i )
+    {
+      iOut = theHelper.WrapIndex( iOut, uvsOut.size() );
+      iIn  = theHelper.WrapIndex( iIn,  uvsIn.size()  );
+      oppNodes.first._node  = uvsOut[ iOut ].node;
+      oppNodes.second._node = uvsIn[ iIn ].node;
+      thePointsOnE.insert( make_pair( uvsOut[ iOut ].normParam, oppNodes ));
+    }
+
+    return;
+  } // assocNodes()
+
   //================================================================================
   /*!
    * \brief Setup sides of SinuousFace::_quad
@@ -1387,9 +1497,9 @@ namespace
 
     list< TopoDS_Edge > side[4];
     side[0].insert( side[0].end(), theFace._shortSide[0].begin(), theFace._shortSide[0].end() );
-    side[1].insert( side[1].end(), theFace._sinuSide[1].begin(),  theFace._sinuSide[1].end() );
+    side[1].insert( side[1].end(), theFace._sinuSide [1].begin(), theFace._sinuSide [1].end() );
     side[2].insert( side[2].end(), theFace._shortSide[1].begin(), theFace._shortSide[1].end() );
-    side[3].insert( side[3].end(), theFace._sinuSide[0].begin(),  theFace._sinuSide[0].end() );
+    side[3].insert( side[3].end(), theFace._sinuSide [0].begin(), theFace._sinuSide [0].end() );
 
     for ( int i = 0; i < 4; ++i )
     {
@@ -1406,6 +1516,11 @@ namespace
       if ( thePointsOnEdges.size() < 4 )
         return false;
 
+      int nbOut = theFace._quad->side[ 1 ].GetUVPtStruct().size();
+      int nbIn  = theFace._quad->side[ 3 ].GetUVPtStruct().size();
+      if ( nbOut == 0 || nbIn == 0 )
+        return false;
+
       // find most distant opposite nodes
       double maxDist = 0, dist;
       TMAPar2NPoints::const_iterator u2NPdist, u2NP = thePointsOnEdges.begin();
@@ -1416,7 +1531,7 @@ namespace
         if ( dist > maxDist )
         {
           u2NPdist = u2NP;
-          maxDist = dist;
+          maxDist  = dist;
         }
       }
       // compute distribution of radial nodes
@@ -1428,6 +1543,8 @@ namespace
                                             params );
 
       // add a radial quad side
+
+      theHelper.SetElementsOnShape( true );
       u2NP = thePointsOnEdges.begin();
       const SMDS_MeshNode* nOut = u2NP->second.first._node;
       const SMDS_MeshNode*  nIn = u2NP->second.second._node;
@@ -1457,13 +1574,10 @@ namespace
 
       theFace._quad->side[ 0 ] = StdMeshers_FaceSide::New( uvsNew );
       theFace._quad->side[ 2 ] = theFace._quad->side[ 0 ];
-
-      if ( theFace._quad->side[ 1 ].GetUVPtStruct().empty() ||
-           theFace._quad->side[ 3 ].GetUVPtStruct().empty() )
-        return false;
+      if ( nbIn != nbOut )
+        theFace._quad->side[ 2 ] = StdMeshers_FaceSide::New( uvsNew );
 
       // assure that the outer sinuous side starts at nOut
-      if ( theFace._sinuSide[0].size() > 1 )
       {
         const UVPtStructVec& uvsOut = theFace._quad->side[ 3 ].GetUVPtStruct(); // _sinuSide[0]
         size_t i; // find UVPtStruct holding nOut
@@ -1485,6 +1599,7 @@ namespace
       }
 
       // rotate the IN side if opposite nodes of IN and OUT sides don't match
+
       const SMDS_MeshNode * nIn0 = theFace._quad->side[ 1 ].First().node;
       if ( nIn0 != nIn )
       {
@@ -1571,208 +1686,223 @@ namespace
     const SMESH_MAT2d::Branch& branch = *theMA.getBranch(0);
     SMESH_MAT2d::BoundaryPoint bp[2];
 
-    vector< std::size_t > edgeIDs1, edgeIDs2; // indices in theSinuEdges
-    vector< SMESH_MAT2d::BranchPoint > divPoints;
-    if ( !allComputed )
+    TMAPar2NPoints pointsOnE;
+    // check that computed EDGEs are opposite and equally meshed
+    if ( allComputed )
+    {
+      // int nbNodes[2] = { 0, 0 };
+      // for ( int iSide = 0; iSide < 2; ++iSide ) // loop on two sinuous sides
+      //   nbNodes[ iSide ] += meshDS->MeshElements( theSinuFace._sinuSide[ iSide ])->NbNodes() - 1;
+
+      // if ( nbNodes[0] != nbNodes[1] )
+      //   return false;
+
+      if ( theSinuFace.IsRing() )
+        assocNodes( theHelper, theSinuFace, theMA, pointsOnE );
+    }
+    else
+    {
+      vector< std::size_t > edgeIDs1, edgeIDs2; // indices in theSinuEdges
+      vector< SMESH_MAT2d::BranchPoint > divPoints;
       branch.getOppositeGeomEdges( edgeIDs1, edgeIDs2, divPoints );
 
-    for ( size_t i = 0; i < edgeIDs1.size(); ++i )
-      if ( isComputed[ edgeIDs1[i]] &&
-           isComputed[ edgeIDs2[i]] )
-      {
-        int nbNodes1 = meshDS->MeshElements(edgeIDs[ edgeIDs1[i]] )->NbNodes();
-        int nbNodes2 = meshDS->MeshElements(edgeIDs[ edgeIDs2[i]] )->NbNodes();
-        if ( nbNodes1 != nbNodes2 )
-          return false;
-        if (( i-1 >= 0 ) &&
-            ( edgeIDs1[i-1] == edgeIDs1[i] ||
-              edgeIDs2[i-1] == edgeIDs2[i] ))
-          return false;
-        if (( i+1 < edgeIDs1.size() ) &&
-            ( edgeIDs1[i+1] == edgeIDs1[i] ||
-              edgeIDs2[i+1] == edgeIDs2[i] ))
-          return false;
-      }
-
-    // map (param on MA) to (parameters of nodes on a pair of theSinuEdges)
-    TMAPar2NPoints pointsOnE;
-    vector<double> maParams;
-    set<int>       projectedEdges; // treated EDGEs which 'isComputed'
-
-    // compute params of nodes on EDGEs by projecting division points from MA
-
-    for ( size_t iEdgePair = 0; iEdgePair < edgeIDs1.size(); ++iEdgePair )
-      // loop on pairs of opposite EDGEs
-    {
-      if ( projectedEdges.count( edgeIDs1[ iEdgePair ]) ||
-           projectedEdges.count( edgeIDs2[ iEdgePair ]) )
-        continue;
-
-      // --------------------------------------------------------------------------------
-      if ( isComputed[ edgeIDs1[ iEdgePair ]] !=                    // one EDGE is meshed
-           isComputed[ edgeIDs2[ iEdgePair ]])
-      {
-        // "projection" from one side to the other
-
-        size_t iEdgeComputed = edgeIDs1[iEdgePair], iSideComputed = 0;
-        if ( !isComputed[ iEdgeComputed ])
-          ++iSideComputed, iEdgeComputed = edgeIDs2[iEdgePair];
-
-        map< double, const SMDS_MeshNode* > nodeParams; // params of existing nodes
-        if ( !SMESH_Algo::GetSortedNodesOnEdge( meshDS, theSinuEdges[ iEdgeComputed ], /*skipMedium=*/true, nodeParams ))
-          return false;
-
-        projectedEdges.insert( iEdgeComputed );
-
-        SMESH_MAT2d::BoundaryPoint& bndPnt = bp[ 1-iSideComputed ];
-        SMESH_MAT2d::BranchPoint brp;
-        NodePoint npN, npB; // NodePoint's initialized by node and BoundaryPoint
-        NodePoint& np0 = iSideComputed ? npB : npN;
-        NodePoint& np1 = iSideComputed ? npN : npB;
-
-        double maParam1st, maParamLast, maParam;
-        if ( !theMA.getBoundary().getBranchPoint( iEdgeComputed, nodeParams.begin()->first, brp ))
-          return false;
-        branch.getParameter( brp, maParam1st );
-        if ( !theMA.getBoundary().getBranchPoint( iEdgeComputed, nodeParams.rbegin()->first, brp ))
-          return false;
-        branch.getParameter( brp, maParamLast );
-
-        map< double, const SMDS_MeshNode* >::iterator u2n = nodeParams.begin(), u2nEnd = nodeParams.end();
-        TMAPar2NPoints::iterator end = pointsOnE.end(), pos = end;
-        TMAPar2NPoints::iterator & hint = (maParamLast > maParam1st) ? end : pos;
-        for ( ++u2n, --u2nEnd; u2n != u2nEnd; ++u2n )
+      for ( size_t i = 0; i < edgeIDs1.size(); ++i )
+        if ( isComputed[ edgeIDs1[i]] &&
+             isComputed[ edgeIDs2[i]] )
         {
-          // point on EDGE (u2n) --> MA point (brp)
-          if ( !theMA.getBoundary().getBranchPoint( iEdgeComputed, u2n->first, brp ))
+          int nbNodes1 = meshDS->MeshElements(edgeIDs[ edgeIDs1[i]] )->NbNodes();
+          int nbNodes2 = meshDS->MeshElements(edgeIDs[ edgeIDs2[i]] )->NbNodes();
+          if ( nbNodes1 != nbNodes2 )
             return false;
-          // MA point --> points on 2 EDGEs (bp)
-          if ( !branch.getBoundaryPoints( brp, bp[0], bp[1] ) ||
-               !branch.getParameter( brp, maParam ))
+          if (( int(i)-1 >= 0 ) &&
+              ( edgeIDs1[i-1] == edgeIDs1[i] ||
+                edgeIDs2[i-1] == edgeIDs2[i] ))
             return false;
-
-          npN = NodePoint( u2n->second, u2n->first, iEdgeComputed );
-          npB = NodePoint( bndPnt );
-          pos = pointsOnE.insert( hint, make_pair( maParam, make_pair( np0, np1 )));
+          if (( i+1 < edgeIDs1.size() ) &&
+              ( edgeIDs1[i+1] == edgeIDs1[i] ||
+                edgeIDs2[i+1] == edgeIDs2[i] ))
+            return false;
         }
-      }
-      // --------------------------------------------------------------------------------
-      else if ( !isComputed[ edgeIDs1[ iEdgePair ]] &&         // none of EDGEs is meshed
-                !isComputed[ edgeIDs2[ iEdgePair ]])
-      {
-        // "projection" from MA
-        maParams.clear();
-        if ( !getParamsForEdgePair( iEdgePair, divPoints, theMAParams, maParams ))
-          return false;
 
-        for ( size_t i = 1; i < maParams.size()-1; ++i )
+      // map (param on MA) to (parameters of nodes on a pair of theSinuEdges)
+      vector<double> maParams;
+      set<int>       projectedEdges; // treated EDGEs which 'isComputed'
+
+      // compute params of nodes on EDGEs by projecting division points from MA
+
+      for ( size_t iEdgePair = 0; iEdgePair < edgeIDs1.size(); ++iEdgePair )
+        // loop on pairs of opposite EDGEs
+      {
+        if ( projectedEdges.count( edgeIDs1[ iEdgePair ]) ||
+             projectedEdges.count( edgeIDs2[ iEdgePair ]) )
+          continue;
+
+        // --------------------------------------------------------------------------------
+        if ( isComputed[ edgeIDs1[ iEdgePair ]] !=                    // one EDGE is meshed
+             isComputed[ edgeIDs2[ iEdgePair ]])
         {
-          if ( !branch.getBoundaryPoints( maParams[i], bp[0], bp[1] ))
+          // "projection" from one side to the other
+
+          size_t iEdgeComputed = edgeIDs1[iEdgePair], iSideComputed = 0;
+          if ( !isComputed[ iEdgeComputed ])
+            ++iSideComputed, iEdgeComputed = edgeIDs2[iEdgePair];
+
+          map< double, const SMDS_MeshNode* > nodeParams; // params of existing nodes
+          if ( !SMESH_Algo::GetSortedNodesOnEdge( meshDS, theSinuEdges[ iEdgeComputed ], /*skipMedium=*/true, nodeParams ))
             return false;
 
-          pointsOnE.insert( pointsOnE.end(), make_pair( maParams[i], make_pair( NodePoint(bp[0]),
-                                                                                NodePoint(bp[1]))));
-        }
-      }
-      // --------------------------------------------------------------------------------
-      else if ( isComputed[ edgeIDs1[ iEdgePair ]] &&             // equally meshed EDGES
-                isComputed[ edgeIDs2[ iEdgePair ]])
-      {
-        // add existing nodes
+          projectedEdges.insert( iEdgeComputed );
 
-        size_t iE0 = edgeIDs1[ iEdgePair ];
-        size_t iE1 = edgeIDs2[ iEdgePair ];
-        map< double, const SMDS_MeshNode* > nodeParams[2]; // params of existing nodes
-        if ( !SMESH_Algo::GetSortedNodesOnEdge( meshDS, theSinuEdges[ iE0 ],
-                                                /*skipMedium=*/false, nodeParams[0] ) ||
-             !SMESH_Algo::GetSortedNodesOnEdge( meshDS, theSinuEdges[ iE1 ],
-                                                /*skipMedium=*/false, nodeParams[1] ) ||
-             nodeParams[0].size() != nodeParams[1].size() )
-          return false;
+          SMESH_MAT2d::BoundaryPoint& bndPnt = bp[ 1-iSideComputed ];
+          SMESH_MAT2d::BranchPoint brp;
+          NodePoint npN, npB; // NodePoint's initialized by node and BoundaryPoint
+          NodePoint& np0 = iSideComputed ? npB : npN;
+          NodePoint& np1 = iSideComputed ? npN : npB;
 
-        if ( nodeParams[0].size() <= 2 )
-          continue; // nodes on VERTEXes only
-
-        bool reverse = ( theSinuEdges[0].Orientation() == theSinuEdges[1].Orientation() );
-        double maParam;
-        SMESH_MAT2d::BranchPoint brp;
-        std::pair< NodePoint, NodePoint > npPair;
-
-        map< double, const SMDS_MeshNode* >::iterator
-          u2n0F = ++nodeParams[0].begin(),
-          u2n1F = ++nodeParams[1].begin();
-        map< double, const SMDS_MeshNode* >::reverse_iterator
-          u2n1R = ++nodeParams[1].rbegin();
-        for ( ; u2n0F != nodeParams[0].end(); ++u2n0F )
-        {
-          if ( !theMA.getBoundary().getBranchPoint( iE0, u2n0F->first, brp ) ||
-               !branch.getParameter( brp, maParam ))
+          double maParam1st, maParamLast, maParam;
+          if ( !theMA.getBoundary().getBranchPoint( iEdgeComputed, nodeParams.begin()->first, brp ))
             return false;
+          branch.getParameter( brp, maParam1st );
+          if ( !theMA.getBoundary().getBranchPoint( iEdgeComputed, nodeParams.rbegin()->first, brp ))
+            return false;
+          branch.getParameter( brp, maParamLast );
 
-          npPair.first = NodePoint( u2n0F->second, u2n0F->first, iE0 );
-          if ( reverse )
+          map< double, const SMDS_MeshNode* >::iterator u2n = nodeParams.begin(), u2nEnd = nodeParams.end();
+          TMAPar2NPoints::iterator end = pointsOnE.end(), pos = end;
+          TMAPar2NPoints::iterator & hint = (maParamLast > maParam1st) ? end : pos;
+          for ( ++u2n, --u2nEnd; u2n != u2nEnd; ++u2n )
           {
-            npPair.second = NodePoint( u2n1R->second, u2n1R->first, iE1 );
-            ++u2n1R;
+            // point on EDGE (u2n) --> MA point (brp)
+            if ( !theMA.getBoundary().getBranchPoint( iEdgeComputed, u2n->first, brp ))
+              return false;
+            // MA point --> points on 2 EDGEs (bp)
+            if ( !branch.getBoundaryPoints( brp, bp[0], bp[1] ) ||
+                 !branch.getParameter( brp, maParam ))
+              return false;
+
+            npN = NodePoint( u2n->second, u2n->first, iEdgeComputed );
+            npB = NodePoint( bndPnt );
+            pos = pointsOnE.insert( hint, make_pair( maParam, make_pair( np0, np1 )));
           }
-          else
+        }
+        // --------------------------------------------------------------------------------
+        else if ( !isComputed[ edgeIDs1[ iEdgePair ]] &&         // none of EDGEs is meshed
+                  !isComputed[ edgeIDs2[ iEdgePair ]])
+        {
+          // "projection" from MA
+          maParams.clear();
+          if ( !getParamsForEdgePair( iEdgePair, divPoints, theMAParams, maParams ))
+            return false;
+
+          for ( size_t i = 1; i < maParams.size()-1; ++i )
           {
-            npPair.second = NodePoint( u2n1F->second, u2n1F->first, iE1 );
-            ++u2n1F;
+            if ( !branch.getBoundaryPoints( maParams[i], bp[0], bp[1] ))
+              return false;
+
+            pointsOnE.insert( pointsOnE.end(), make_pair( maParams[i], make_pair( NodePoint(bp[0]),
+                                                                                  NodePoint(bp[1]))));
           }
-          pointsOnE.insert( make_pair( maParam, npPair ));
+        }
+        // --------------------------------------------------------------------------------
+        else if ( isComputed[ edgeIDs1[ iEdgePair ]] &&             // equally meshed EDGES
+                  isComputed[ edgeIDs2[ iEdgePair ]])
+        {
+          // add existing nodes
+
+          size_t iE0 = edgeIDs1[ iEdgePair ];
+          size_t iE1 = edgeIDs2[ iEdgePair ];
+          map< double, const SMDS_MeshNode* > nodeParams[2]; // params of existing nodes
+          if ( !SMESH_Algo::GetSortedNodesOnEdge( meshDS, theSinuEdges[ iE0 ],
+                                                  /*skipMedium=*/false, nodeParams[0] ) ||
+               !SMESH_Algo::GetSortedNodesOnEdge( meshDS, theSinuEdges[ iE1 ],
+                                                  /*skipMedium=*/false, nodeParams[1] ) ||
+               nodeParams[0].size() != nodeParams[1].size() )
+            return false;
+
+          if ( nodeParams[0].size() <= 2 )
+            continue; // nodes on VERTEXes only
+
+          bool reverse = ( theSinuEdges[0].Orientation() == theSinuEdges[1].Orientation() );
+          double maParam;
+          SMESH_MAT2d::BranchPoint brp;
+          std::pair< NodePoint, NodePoint > npPair;
+
+          map< double, const SMDS_MeshNode* >::iterator
+            u2n0F = ++nodeParams[0].begin(),
+            u2n1F = ++nodeParams[1].begin();
+          map< double, const SMDS_MeshNode* >::reverse_iterator
+            u2n1R = ++nodeParams[1].rbegin();
+          for ( ; u2n0F != nodeParams[0].end(); ++u2n0F )
+          {
+            if ( !theMA.getBoundary().getBranchPoint( iE0, u2n0F->first, brp ) ||
+                 !branch.getParameter( brp, maParam ))
+              return false;
+
+            npPair.first = NodePoint( u2n0F->second, u2n0F->first, iE0 );
+            if ( reverse )
+            {
+              npPair.second = NodePoint( u2n1R->second, u2n1R->first, iE1 );
+              ++u2n1R;
+            }
+            else
+            {
+              npPair.second = NodePoint( u2n1F->second, u2n1F->first, iE1 );
+              ++u2n1F;
+            }
+            pointsOnE.insert( make_pair( maParam, npPair ));
+          }
+        }
+      }  // loop on pairs of opposite EDGEs
+
+      if ( !projectVertices( theHelper, theMA, divPoints, edgeIDs1, edgeIDs2,
+                             isComputed, pointsOnE, theSinuFace ))
+        return false;
+
+      separateNodes( theHelper, theMA, pointsOnE, theSinuFace, isComputed );
+
+      // create nodes
+      TMAPar2NPoints::iterator u2np = pointsOnE.begin();
+      for ( ; u2np != pointsOnE.end(); ++u2np )
+      {
+        NodePoint* np[2] = { & u2np->second.first, & u2np->second.second };
+        for ( int iSide = 0; iSide < 2; ++iSide )
+        {
+          if ( np[ iSide ]->_node ) continue;
+          size_t       iEdge = np[ iSide ]->_edgeInd;
+          double           u = np[ iSide ]->_u;
+          gp_Pnt           p = curves[ iEdge ]->Value( u );
+          np[ iSide ]->_node = meshDS->AddNode( p.X(), p.Y(), p.Z() );
+          meshDS->SetNodeOnEdge( np[ iSide ]->_node, edgeIDs[ iEdge ], u );
         }
       }
-    }  // loop on pairs of opposite EDGEs
 
-    if ( !projectVertices( theHelper, theMA, divPoints, edgeIDs1, edgeIDs2,
-                           isComputed, pointsOnE, theSinuFace ))
-      return false;
-
-    separateNodes( theHelper, theMA, pointsOnE, theSinuFace, isComputed );
-
-    // create nodes
-    TMAPar2NPoints::iterator u2np = pointsOnE.begin();
-    for ( ; u2np != pointsOnE.end(); ++u2np )
-    {
-      NodePoint* np[2] = { & u2np->second.first, & u2np->second.second };
-      for ( int iSide = 0; iSide < 2; ++iSide )
+      // create mesh segments on EDGEs
+      theHelper.SetElementsOnShape( false );
+      TopoDS_Face face = TopoDS::Face( theHelper.GetSubShape() );
+      for ( size_t i = 0; i < theSinuEdges.size(); ++i )
       {
-        if ( np[ iSide ]->_node ) continue;
-        size_t       iEdge = np[ iSide ]->_edgeInd;
-        double           u = np[ iSide ]->_u;
-        gp_Pnt           p = curves[ iEdge ]->Value( u );
-        np[ iSide ]->_node = meshDS->AddNode( p.X(), p.Y(), p.Z() );
-        meshDS->SetNodeOnEdge( np[ iSide ]->_node, edgeIDs[ iEdge ], u );
+        SMESH_subMesh* sm = mesh->GetSubMesh( theSinuEdges[i] );
+        if ( sm->GetSubMeshDS() && sm->GetSubMeshDS()->NbElements() > 0 )
+          continue;
+
+        StdMeshers_FaceSide side( face, theSinuEdges[i], mesh,
+                                  /*isFwd=*/true, /*skipMediumNodes=*/true );
+        vector<const SMDS_MeshNode*> nodes = side.GetOrderedNodes();
+        for ( size_t in = 1; in < nodes.size(); ++in )
+        {
+          const SMDS_MeshElement* seg = theHelper.AddEdge( nodes[in-1], nodes[in], 0, false );
+          meshDS->SetMeshElementOnShape( seg, edgeIDs[ i ] );
+        }
       }
-    }
 
-    // create mesh segments on EDGEs
-    theHelper.SetElementsOnShape( false );
-    TopoDS_Face face = TopoDS::Face( theHelper.GetSubShape() );
-    for ( size_t i = 0; i < theSinuEdges.size(); ++i )
-    {
-      SMESH_subMesh* sm = mesh->GetSubMesh( theSinuEdges[i] );
-      if ( sm->GetSubMeshDS() && sm->GetSubMeshDS()->NbElements() > 0 )
-        continue;
-
-      StdMeshers_FaceSide side( face, theSinuEdges[i], mesh,
-                                /*isFwd=*/true, /*skipMediumNodes=*/true );
-      vector<const SMDS_MeshNode*> nodes = side.GetOrderedNodes();
-      for ( size_t in = 1; in < nodes.size(); ++in )
+      // update sub-meshes on VERTEXes
+      for ( size_t i = 0; i < theSinuEdges.size(); ++i )
       {
-        const SMDS_MeshElement* seg = theHelper.AddEdge( nodes[in-1], nodes[in], 0, false );
-        meshDS->SetMeshElementOnShape( seg, edgeIDs[ i ] );
+        mesh->GetSubMesh( theHelper.IthVertex( 0, theSinuEdges[i] ))
+          ->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+        mesh->GetSubMesh( theHelper.IthVertex( 1, theSinuEdges[i] ))
+          ->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
       }
-    }
-
-    // update sub-meshes on VERTEXes
-    for ( size_t i = 0; i < theSinuEdges.size(); ++i )
-    {
-      mesh->GetSubMesh( theHelper.IthVertex( 0, theSinuEdges[i] ))
-        ->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
-      mesh->GetSubMesh( theHelper.IthVertex( 1, theSinuEdges[i] ))
-        ->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
     }
 
     // Setup sides of a quadrangle
@@ -1969,21 +2099,25 @@ bool StdMeshers_QuadFromMedialAxis_1D2D::computeQuads( SMESH_MesherHelper& theHe
 
   int nbNodesShort0 = theQuad->side[0].NbPoints();
   int nbNodesShort1 = theQuad->side[2].NbPoints();
+  int nbNodesSinu0  = theQuad->side[1].NbPoints();
+  int nbNodesSinu1  = theQuad->side[3].NbPoints();
 
   // compute UV of internal points
   myQuadList.push_back( theQuad );
-  if ( !StdMeshers_Quadrangle_2D::setNormalizedGrid( theQuad ))
-    return false;
+  // if ( !StdMeshers_Quadrangle_2D::setNormalizedGrid( theQuad ))
+  //   return false;
 
   // elliptic smooth of internal points to get boundary cell normal to the boundary
   bool isRing = theQuad->side[0].grid->Edge(0).IsNull();
-  if ( !isRing )
+  if ( !isRing ) {
+    if ( !StdMeshers_Quadrangle_2D::setNormalizedGrid( theQuad ))
+      return false;
     ellipticSmooth( theQuad, 1 );
-
+  }
   // create quadrangles
   bool ok;
   theHelper.SetElementsOnShape( true );
-  if ( nbNodesShort0 == nbNodesShort1 )
+  if ( nbNodesShort0 == nbNodesShort1 && nbNodesSinu0 == nbNodesSinu1 )
     ok = StdMeshers_Quadrangle_2D::computeQuadDominant( *theHelper.GetMesh(),
                                                         theQuad->face, theQuad );
   else

@@ -1504,6 +1504,12 @@ class Mesh:
             pass
         return ok
 
+    ## Return a list of error messages (SMESH.ComputeError) of the last Compute()
+    def GetComputeErrors(self, shape=0 ):
+        if shape == 0:
+            shape = self.mesh.GetShapeToMesh()
+        return self.smeshpyD.GetComputeErrors( self.mesh, shape )
+
     ## Return a name of a sub-shape by its ID
     #  @param subShapeID a unique ID of a sub-shape
     #  @return a string describing the sub-shape; possible variants:
