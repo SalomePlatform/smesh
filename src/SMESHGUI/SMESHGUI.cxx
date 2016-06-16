@@ -1653,8 +1653,8 @@ namespace
             SMESH::SMESH_IDSource_var anIDSrc = SMESH::SMESH_IDSource::_narrow( aObject );
             if ( !anIDSrc->_is_nil() ) {
               if ( SMESH_Actor *anActor = SMESH::FindActorByEntry( anIO->getEntry()) ) {
-                QString functorName = functorToString( anActor->GetFunctor() );
                 anActor->SetControlMode( aControl );
+                QString functorName = functorToString( anActor->GetFunctor() );
                 anActor->GetScalarBarActor()->SetTitle( functorName.toLatin1().constData() );
                 SMESH::RepaintCurrentView();
 #ifndef DISABLE_PLOT2DVIEWER
