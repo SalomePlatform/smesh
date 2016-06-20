@@ -37,17 +37,17 @@ Mesh module provides several ways to create the mesh:
     operations, especially \ref extrusion_page "extrusion" and \ref
     revolution_page "revolution". To create an empty mesh not based on a
     geometry, use the same dialog as to \ref constructing_meshes_page
-    "construct the mesh on geometry" but do not specify a geometry
-    or a meshing algorithm.
+    "construct the mesh on geometry" but specify neither the geometry
+    nor meshing algorithms.
   </li>
   <li>The mesh can be \subpage importing_exporting_meshes_page "imported" from
     (and exported to) the file in MED, UNV, STL, CGNS, DAT, GMF and
     SAUVE formats.
   </li>
-  <li>The 3D mesh can be generated from the 2D mesh, which was \ref
-    importing_exporting_meshes_page "imported" or manually created. To
-    setup the meshing parameters of a mesh not based on a geometry, just
-    invoke \ref editing_meshes_page "Edit mesh / sub-mesh" command on
+  <li>The 3D mesh can be generated from the 2D mesh not based on the geometry,
+    which was either \ref importing_exporting_meshes_page "imported" or created in
+    other way. To setup the meshing parameters of a mesh not based on a geometry,
+    just invoke \ref editing_meshes_page "Edit mesh / sub-mesh" command on
     your 2D mesh.
   </li>
   <li>Several meshes can be \subpage building_compounds_page "combined"

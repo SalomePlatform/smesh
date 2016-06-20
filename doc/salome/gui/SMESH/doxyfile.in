@@ -38,10 +38,10 @@ WARNINGS          = YES
 #---------------------------------------------------------------------------
 #Input related options
 #---------------------------------------------------------------------------
-INPUT             = @CMAKE_CURRENT_SOURCE_DIR@/input @CMAKE_SOURCE_DIR@/src/Tools/padder/doc/input $(GEOM_ROOT_DIR)/share/doc/salome/gui/GEOM/input
+INPUT             = @CMAKE_CURRENT_SOURCE_DIR@/input $(GEOM_ROOT_DIR)/share/doc/salome/gui/GEOM/input
 FILE_PATTERNS     = *.doc
 EXCLUDE           = 
-IMAGE_PATH        = $(GEOM_ROOT_DIR)/share/doc/salome/gui/GEOM @CMAKE_SOURCE_DIR@/src/Tools/padder/doc/images @CMAKE_CURRENT_SOURCE_DIR@/images
+IMAGE_PATH        = $(GEOM_ROOT_DIR)/share/doc/salome/gui/GEOM @CMAKE_CURRENT_SOURCE_DIR@/images
 EXAMPLE_PATH      = @CMAKE_SOURCE_DIR@/doc/salome/examples @CMAKE_SOURCE_DIR@/src/SMESH_SWIG
 
 #---------------------------------------------------------------------------

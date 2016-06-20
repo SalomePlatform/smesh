@@ -13,7 +13,7 @@ in the \ref smeshBuilder and \ref StdMeshersBuilder Python packages.
 
 \n With SALOME 7.2, the Python interface for %Mesh has been slightly modified to offer new functionality.
 \n You may have to modify your scripts generated with SALOME 6 or older versions.
-\n Please see \ref smesh_migration_page.
+\n Please see \subpage smesh_migration_page.
 
 Class \ref smeshBuilder.smeshBuilder "smeshBuilder" provides an interface to create and handle
 meshes. It can be used to create an empty mesh or to import mesh from the data file.

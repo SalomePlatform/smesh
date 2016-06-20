@@ -123,6 +123,7 @@
     <parameter name="Plug-ins/Z-cracks plugin User's Guide" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/zcracks/index.html"/>
     <parameter name="Plug-ins/MacMesh plugin" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/MacMesh/index.html"/>
     <parameter name="Plug-ins/blocFissure plugin" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/blocFissure/index.html"/>
+    <parameter name="Plug-ins/SpherePadder plugin" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/padder/index.html"/>
     <parameter name="Developer's Guide" value="%SMESH_ROOT_DIR%/share/doc/salome/tui/SMESH/index.html"/>
   </section>
   <section name="resources">

@@ -12,9 +12,8 @@
  - bottom-up, using \ref modifying_meshes_page "mesh edition"
    operations, especially \ref extrusion_page "extrusion" and \ref
    revolution_page "revolution";
- - by generation of the 3D mesh from the 2D mesh (the latter can be
-  either \ref importing_exporting_meshes_page "imported" or manually
-  created); 
+ - by generation of the 3D mesh from the 2D mesh not based on the geometry
+  (\ref importing_exporting_meshes_page "imported" for example); 
  </li>
 <li>\ref importing_exporting_meshes_page "importing and exporting meshes" 
   in various formats;</li>
@@ -44,6 +43,9 @@ section of SALOME Mesh Help.
 
 Almost all mesh module functionalities are accessible via
 \subpage smeshpy_interface_page "Mesh module Python interface".
+
+There is a set of \subpage tools_page "tools" plugged-in the module to extend
+the basic functionality listed above.
 
 \image html image7.jpg "Example of MESH module usage for engineering tasks"
 

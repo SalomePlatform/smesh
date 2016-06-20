@@ -1,0 +1,16 @@
+/*!
+
+\page tools_page Plugins
+
+The following plugins are accessible via <b> Mesh > SMESH pligins </b> menu:
+
+- <a href="padder/padder_userguide_page.html"> SpherePadder plugin </a>
+- <a href="yams/index.html"                  > MGSurfOpt plugin    </a>
+- <a href="MGCleaner/index.html"             > MGCleaner plugin    </a>
+- <a href="zcracks/index.html"               > Z-cracks plugin     </a>
+- <a href="MacMesh/index.html"               > MacMesh plugin      </a>
+- <a href="blocFissure/index.html"           > blocFissure plugin  </a>
+- <b>MeshCut plugin</b> - allows to cut a mesh constituted of linear tetrahedrons by a plane.
+- <b>Get min or max value of control</b> - a sample plugin whose sources are located in <em>${GUI_ROOT_DIR}/share/salome/plugins/gui/demo</em> directory (files <em>minmax_plugin.py, minmax_ui.py and smesh_plugins.py</em>). You can find a detailed description of how to create your own plugin in documentation: <b>Help > GUI module > User's Guide > How-To's and Best Practices > Extend SALOME gui functions using python plugins</b>.
+
+*/
