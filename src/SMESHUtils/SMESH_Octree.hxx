@@ -37,9 +37,9 @@
 /*!
  * \brief 3D tree of anything.
  * Methods to implement in a descendant are:
- * - Bnd_B3d*       buildRootBox(); // box of the whole tree
+ * - Bnd_B3d*       buildRootBox(); // box of a tree
  * - descendant*    newChild() const; // a new child instance
- * - void           buildChildrenData(); // Fill in data of the children
+ * - void           buildChildrenData(); // distribute own data among children
  */
 class SMESHUtils_EXPORT SMESH_Octree : public SMESH_Tree< Bnd_B3d, 8 >
 {
@@ -61,6 +61,9 @@ public:
 
   // Allocate a bndbox according to childIndex. childIndex is zero based
   virtual Bnd_B3d*       newChildBox(int childIndex) const;
+
+  // Change size of a box by a factor; each dimension changes independently of others
+  virtual void           enlargeByFactor( Bnd_B3d* box, double factor ) const;
 };
 
 //================================================================================

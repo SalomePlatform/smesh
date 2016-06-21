@@ -871,34 +871,15 @@ namespace SMESH{
 
     private:
 
-      struct TClassifier
-      {
-        TClassifier(const TopoDS_Shape& s, double tol) { Init(s,tol); }
-        void Init(const TopoDS_Shape& s, double tol);
-        bool IsOut(const gp_Pnt& p);
-        TopAbs_ShapeEnum ShapeType() const;
-      private:
-        bool isOutOfSolid (const gp_Pnt& p);
-        bool isOutOfBox   (const gp_Pnt& p);
-        bool isOutOfFace  (const gp_Pnt& p);
-        bool isOutOfEdge  (const gp_Pnt& p);
-        bool isOutOfVertex(const gp_Pnt& p);
-        bool isBox        (const TopoDS_Shape& s);
+      struct Classifier;
+      struct OctreeClassifier;
 
-        bool (TClassifier::* myIsOutFun)(const gp_Pnt& p);
-        BRepClass3d_SolidClassifier mySolidClfr;
-        Bnd_B3d                     myBox;
-        GeomAPI_ProjectPointOnSurf  myProjFace;
-        GeomAPI_ProjectPointOnCurve myProjEdge;
-        gp_Pnt                      myVertexXYZ;
-        TopoDS_Shape                myShape;
-        double                      myTol;
-      };
       void clearClassifiers();
       bool getNodeIsOut( const SMDS_MeshNode* n, bool& isOut );
       void setNodeIsOut( const SMDS_MeshNode* n, bool  isOut );
 
-      std::vector< TClassifier* > myClassifiers;
+      std::vector< Classifier* >  myClassifiers, myWorkClassifiers;
+      OctreeClassifier*           myOctree;
       SMDSAbs_ElementType         myType;
       TopoDS_Shape                myShape;
       double                      myToler;

@@ -98,6 +98,9 @@ protected:
   // Allocate a bndbox according to childIndex. childIndex is zero based
   virtual box_type*      newChildBox(int childIndex) const = 0;
 
+  // Change size of a box by a factor; each dimension changes independently of others
+  virtual void           enlargeByFactor( box_type* box, double factor ) const = 0;
+
   // Fill in data of the children
   virtual void           buildChildrenData() = 0;
 
@@ -205,13 +208,13 @@ void SMESH_Tree<BND_BOX,NB_CHILDREN>::buildChildren()
   myChildren = new SMESH_Tree*[NB_CHILDREN];
 
   // get the whole model size
-  double rootSize = 0;
-  {
-    SMESH_Tree* root = this;
-    while ( root->myLevel > 0 )
-      root = root->myFather;
-    rootSize = root->maxSize();
-  }
+  // double rootSize = 0;
+  // {
+  //   SMESH_Tree* root = this;
+  //   while ( root->myLevel > 0 )
+  //     root = root->myFather;
+  //   rootSize = root->maxSize();
+  // }
   for (int i = 0; i < NB_CHILDREN; i++)
   {
     // The child is of the same type than its father (For instance, a SMESH_OctreeNode)
@@ -224,7 +227,7 @@ void SMESH_Tree<BND_BOX,NB_CHILDREN>::buildChildren()
     myChildren[i]->myLimit = myLimit;
     myChildren[i]->myLevel = myLevel + 1;
     myChildren[i]->myBox = newChildBox( i );
-    myChildren[i]->myBox->Enlarge( rootSize * 1e-10 );
+    enlargeByFactor( myChildren[i]->myBox, 1. + 1e-10 );
     if ( myLimit->myMinBoxSize > 0. && myChildren[i]->maxSize() <= myLimit->myMinBoxSize )
       myChildren[i]->myIsLeaf = true;
   }

@@ -57,6 +57,9 @@ public:
 
   // Allocate a bndbox according to childIndex. childIndex is zero based
   virtual Bnd_B2d*       newChildBox(int childIndex) const;
+
+  // Change size of a box by a factor; each dimension changes independently of others
+  virtual void           enlargeByFactor( Bnd_B2d* box, double factor ) const;
 };
 
 //================================================================================

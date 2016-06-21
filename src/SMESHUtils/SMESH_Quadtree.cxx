@@ -74,3 +74,20 @@ double SMESH_Quadtree::maxSize() const
   }
   return 0.;
 }
+
+//================================================================================
+/*!
+ * \brief Change size of a box by a factor; each dimension changes independently of others
+ */
+//================================================================================
+
+void SMESH_Quadtree::enlargeByFactor( Bnd_B2d* box, double factor ) const
+{
+  if ( !box->IsVoid() )
+  {
+    gp_XY halfSize = 0.5 * ( box->CornerMax() - box->CornerMin() );
+    for ( int iDim = 1; iDim <= 2; ++iDim )
+      halfSize.SetCoord( iDim, factor * halfSize.Coord( iDim ));
+    box->SetHSize( halfSize );
+  }
+}

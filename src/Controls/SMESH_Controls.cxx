@@ -39,6 +39,7 @@
 #include <Basics_Utils.hxx>
 
 #include <BRepAdaptor_Surface.hxx>
+#include <BRepBndLib.hxx>
 #include <BRepClass_FaceClassifier.hxx>
 #include <BRep_Tool.hxx>
 #include <Geom_CylindricalSurface.hxx>
@@ -4089,11 +4090,53 @@ bool ElementsOnSurface::isOnSurface( const SMDS_MeshNode* theNode )
   ElementsOnShape
 */
 
-ElementsOnShape::ElementsOnShape()
-  : //myMesh(0),
-    myType(SMDSAbs_All),
-    myToler(Precision::Confusion()),
-    myAllNodesFlag(false)
+struct ElementsOnShape::Classifier
+{
+  Classifier(const TopoDS_Shape& s, double tol) { Init(s,tol); }
+  void Init(const TopoDS_Shape& s, double tol);
+  bool IsOut(const gp_Pnt& p)        { return myIsChecked = true, (this->*myIsOutFun)( p ); }
+  TopAbs_ShapeEnum ShapeType() const { return myShape.ShapeType(); }
+  Bnd_B3d* GetBndBox()               { return & myBox; }
+  bool& IsChecked()                  { return myIsChecked; }
+private:
+  bool isOutOfSolid (const gp_Pnt& p);
+  bool isOutOfBox   (const gp_Pnt& p);
+  bool isOutOfFace  (const gp_Pnt& p);
+  bool isOutOfEdge  (const gp_Pnt& p);
+  bool isOutOfVertex(const gp_Pnt& p);
+  bool isBox        (const TopoDS_Shape& s);
+
+  bool (Classifier::* myIsOutFun)(const gp_Pnt& p);
+  BRepClass3d_SolidClassifier mySolidClfr;
+  Bnd_B3d                     myBox;
+  GeomAPI_ProjectPointOnSurf  myProjFace;
+  GeomAPI_ProjectPointOnCurve myProjEdge;
+  gp_Pnt                      myVertexXYZ;
+  TopoDS_Shape                myShape;
+  double                      myTol;
+  bool                        myIsChecked;
+};
+
+struct ElementsOnShape::OctreeClassifier : public SMESH_Octree
+{
+  OctreeClassifier( const std::vector< ElementsOnShape::Classifier* >& classifiers );
+  void GetClassifiersAtPoint( const gp_XYZ& p,
+                              std::vector< ElementsOnShape::Classifier* >& classifiers );
+protected:
+  OctreeClassifier() {}
+  SMESH_Octree* newChild() const { return new OctreeClassifier; }
+  void          buildChildrenData();
+  Bnd_B3d*      buildRootBox();
+
+  std::vector< ElementsOnShape::Classifier* > myClassifiers;
+};
+
+
+ElementsOnShape::ElementsOnShape():
+  myOctree(0),
+  myType(SMDSAbs_All),
+  myToler(Precision::Confusion()),
+  myAllNodesFlag(false)
 {
 }
 
@@ -4167,27 +4210,31 @@ void ElementsOnShape::setNodeIsOut( const SMDS_MeshNode* n, bool  isOut )
 void ElementsOnShape::SetShape (const TopoDS_Shape&       theShape,
                                 const SMDSAbs_ElementType theType)
 {
+  bool shapeChanges = ( myShape != theShape );
   myType  = theType;
   myShape = theShape;
   if ( myShape.IsNull() ) return;
 
-  TopTools_IndexedMapOfShape shapesMap;
-  TopAbs_ShapeEnum shapeTypes[4] = { TopAbs_SOLID, TopAbs_FACE, TopAbs_EDGE, TopAbs_VERTEX };
-  TopExp_Explorer sub;
-  for ( int i = 0; i < 4; ++i )
+  if ( shapeChanges )
   {
-    if ( shapesMap.IsEmpty() )
-      for ( sub.Init( myShape, shapeTypes[i] ); sub.More(); sub.Next() )
-        shapesMap.Add( sub.Current() );
-    if ( i > 0 )
-      for ( sub.Init( myShape, shapeTypes[i], shapeTypes[i-1] ); sub.More(); sub.Next() )
-        shapesMap.Add( sub.Current() );
-  }
+    TopTools_IndexedMapOfShape shapesMap;
+    TopAbs_ShapeEnum shapeTypes[4] = { TopAbs_SOLID, TopAbs_FACE, TopAbs_EDGE, TopAbs_VERTEX };
+    TopExp_Explorer sub;
+    for ( int i = 0; i < 4; ++i )
+    {
+      if ( shapesMap.IsEmpty() )
+        for ( sub.Init( myShape, shapeTypes[i] ); sub.More(); sub.Next() )
+          shapesMap.Add( sub.Current() );
+      if ( i > 0 )
+        for ( sub.Init( myShape, shapeTypes[i], shapeTypes[i-1] ); sub.More(); sub.Next() )
+          shapesMap.Add( sub.Current() );
+    }
 
-  clearClassifiers();
-  myClassifiers.resize( shapesMap.Extent() );
-  for ( int i = 0; i < shapesMap.Extent(); ++i )
-    myClassifiers[ i ] = new TClassifier( shapesMap( i+1 ), myToler );
+    clearClassifiers();
+    myClassifiers.resize( shapesMap.Extent() );
+    for ( int i = 0; i < shapesMap.Extent(); ++i )
+      myClassifiers[ i ] = new Classifier( shapesMap( i+1 ), myToler );
+  }
 
   if ( theType == SMDSAbs_Node )
   {
@@ -4205,6 +4252,9 @@ void ElementsOnShape::clearClassifiers()
   for ( size_t i = 0; i < myClassifiers.size(); ++i )
     delete myClassifiers[ i ];
   myClassifiers.clear();
+
+  delete myOctree;
+  myOctree = 0;
 }
 
 bool ElementsOnShape::IsSatisfy (long elemId)
@@ -4219,6 +4269,11 @@ bool ElementsOnShape::IsSatisfy (long elemId)
 
   gp_XYZ centerXYZ (0, 0, 0);
 
+  if ( !myOctree && myClassifiers.size() > 5 )
+    myOctree = new OctreeClassifier( myClassifiers );
+
+  std::vector< Classifier* >& classifiers = myOctree ? myWorkClassifiers : myClassifiers;
+
   SMDS_ElemIteratorPtr aNodeItr = elem->nodesIterator();
   while (aNodeItr->more() && (isSatisfy == myAllNodesFlag))
   {
@@ -4228,8 +4283,17 @@ bool ElementsOnShape::IsSatisfy (long elemId)
     isNodeOut = true;
     if ( !getNodeIsOut( aPnt._node, isNodeOut ))
     {
-      for ( size_t i = 0; i < myClassifiers.size() && isNodeOut; ++i )
-        isNodeOut = myClassifiers[i]->IsOut( aPnt );
+      if ( myOctree )
+      {
+        myWorkClassifiers.clear();
+        myOctree->GetClassifiersAtPoint( aPnt, myWorkClassifiers );
+      }
+      for ( size_t i = 0; i < classifiers.size(); ++i )
+        classifiers[i]->IsChecked() = false;
+
+      for ( size_t i = 0; i < classifiers.size() && isNodeOut; ++i )
+        if ( !classifiers[i]->IsChecked() )
+          isNodeOut = classifiers[i]->IsOut( aPnt );
 
       setNodeIsOut( aPnt._node, isNodeOut );
     }
@@ -4243,78 +4307,90 @@ bool ElementsOnShape::IsSatisfy (long elemId)
   {
     centerXYZ /= elem->NbNodes();
     isSatisfy = false;
-    for ( size_t i = 0; i < myClassifiers.size() && !isSatisfy; ++i )
-      isSatisfy = ! myClassifiers[i]->IsOut( centerXYZ );
+    for ( size_t i = 0; i < classifiers.size() && !isSatisfy; ++i )
+      isSatisfy = ! classifiers[i]->IsOut( centerXYZ );
   }
 
   return isSatisfy;
 }
 
-TopAbs_ShapeEnum ElementsOnShape::TClassifier::ShapeType() const
-{
-  return myShape.ShapeType();
-}
-
-bool ElementsOnShape::TClassifier::IsOut(const gp_Pnt& p)
-{
-  return (this->*myIsOutFun)( p );
-}
-
-void ElementsOnShape::TClassifier::Init (const TopoDS_Shape& theShape, double theTol)
+void ElementsOnShape::Classifier::Init (const TopoDS_Shape& theShape, double theTol)
 {
   myShape = theShape;
   myTol   = theTol;
+
+  bool isShapeBox = false;
   switch ( myShape.ShapeType() )
   {
-  case TopAbs_SOLID: {
-    if ( isBox( theShape ))
+  case TopAbs_SOLID:
+  {
+    if (( isShapeBox = isBox( theShape )))
     {
-      myIsOutFun = & ElementsOnShape::TClassifier::isOutOfBox;
+      myIsOutFun = & ElementsOnShape::Classifier::isOutOfBox;
     }
     else
     {
       mySolidClfr.Load(theShape);
-      myIsOutFun = & ElementsOnShape::TClassifier::isOutOfSolid;
+      myIsOutFun = & ElementsOnShape::Classifier::isOutOfSolid;
     }
     break;
   }
-  case TopAbs_FACE:  {
+  case TopAbs_FACE:
+  {
     Standard_Real u1,u2,v1,v2;
     Handle(Geom_Surface) surf = BRep_Tool::Surface( TopoDS::Face( theShape ));
     surf->Bounds( u1,u2,v1,v2 );
     myProjFace.Init(surf, u1,u2, v1,v2, myTol );
-    myIsOutFun = & ElementsOnShape::TClassifier::isOutOfFace;
+    myIsOutFun = & ElementsOnShape::Classifier::isOutOfFace;
     break;
   }
-  case TopAbs_EDGE:  {
+  case TopAbs_EDGE:
+  {
     Standard_Real u1, u2;
-    Handle(Geom_Curve) curve = BRep_Tool::Curve( TopoDS::Edge(theShape), u1, u2);
+    Handle(Geom_Curve) curve = BRep_Tool::Curve( TopoDS::Edge( theShape ), u1, u2);
     myProjEdge.Init(curve, u1, u2);
-    myIsOutFun = & ElementsOnShape::TClassifier::isOutOfEdge;
+    myIsOutFun = & ElementsOnShape::Classifier::isOutOfEdge;
     break;
   }
-  case TopAbs_VERTEX:{
+  case TopAbs_VERTEX:
+  {
     myVertexXYZ = BRep_Tool::Pnt( TopoDS::Vertex( theShape ) );
-    myIsOutFun = & ElementsOnShape::TClassifier::isOutOfVertex;
+    myIsOutFun = & ElementsOnShape::Classifier::isOutOfVertex;
     break;
   }
   default:
-    throw SALOME_Exception("Programmer error in usage of ElementsOnShape::TClassifier");
+    throw SALOME_Exception("Programmer error in usage of ElementsOnShape::Classifier");
+  }
+
+  if ( !isShapeBox )
+  {
+    Bnd_Box box;
+    BRepBndLib::Add( myShape, box );
+    myBox.Clear();
+    myBox.Add( box.CornerMin() );
+    myBox.Add( box.CornerMax() );
+    gp_XYZ halfSize = 0.5 * ( box.CornerMax().XYZ() - box.CornerMin().XYZ() );
+    for ( int iDim = 1; iDim <= 3; ++iDim )
+    {
+      double x = halfSize.Coord( iDim );
+      halfSize.SetCoord( iDim, x + Max( myTol, 1e-2 * x ));
+    }
+    myBox.SetHSize( halfSize );
   }
 }
 
-bool ElementsOnShape::TClassifier::isOutOfSolid (const gp_Pnt& p)
+bool ElementsOnShape::Classifier::isOutOfSolid (const gp_Pnt& p)
 {
   mySolidClfr.Perform( p, myTol );
   return ( mySolidClfr.State() != TopAbs_IN && mySolidClfr.State() != TopAbs_ON );
 }
 
-bool ElementsOnShape::TClassifier::isOutOfBox (const gp_Pnt& p)
+bool ElementsOnShape::Classifier::isOutOfBox (const gp_Pnt& p)
 {
   return myBox.IsOut( p.XYZ() );
 }
 
-bool ElementsOnShape::TClassifier::isOutOfFace  (const gp_Pnt& p)
+bool ElementsOnShape::Classifier::isOutOfFace  (const gp_Pnt& p)
 {
   myProjFace.Perform( p );
   if ( myProjFace.IsDone() && myProjFace.LowerDistance() <= myTol )
@@ -4330,18 +4406,18 @@ bool ElementsOnShape::TClassifier::isOutOfFace  (const gp_Pnt& p)
   return true;
 }
 
-bool ElementsOnShape::TClassifier::isOutOfEdge  (const gp_Pnt& p)
+bool ElementsOnShape::Classifier::isOutOfEdge  (const gp_Pnt& p)
 {
   myProjEdge.Perform( p );
   return ! ( myProjEdge.NbPoints() > 0 && myProjEdge.LowerDistance() <= myTol );
 }
 
-bool ElementsOnShape::TClassifier::isOutOfVertex(const gp_Pnt& p)
+bool ElementsOnShape::Classifier::isOutOfVertex(const gp_Pnt& p)
 {
   return ( myVertexXYZ.Distance( p ) > myTol );
 }
 
-bool ElementsOnShape::TClassifier::isBox (const TopoDS_Shape& theShape)
+bool ElementsOnShape::Classifier::isBox (const TopoDS_Shape& theShape)
 {
   TopTools_IndexedMapOfShape vMap;
   TopExp::MapShapes( theShape, TopAbs_VERTEX, vMap );
@@ -4368,6 +4444,67 @@ bool ElementsOnShape::TClassifier::isBox (const TopoDS_Shape& theShape)
   return true;
 }
 
+ElementsOnShape::
+OctreeClassifier::OctreeClassifier( const std::vector< ElementsOnShape::Classifier* >& classifiers )
+  :SMESH_Octree( new SMESH_TreeLimit )
+{
+  myClassifiers = classifiers;
+  compute();
+}
+
+void ElementsOnShape::
+OctreeClassifier::GetClassifiersAtPoint( const gp_XYZ& point,
+                                         std::vector< ElementsOnShape::Classifier* >& result )
+{
+  if ( getBox()->IsOut( point ))
+    return;
+
+  if ( isLeaf() )
+  {
+    for ( size_t i = 0; i < myClassifiers.size(); ++i )
+      if ( !myClassifiers[i]->GetBndBox()->IsOut( point ))
+        result.push_back( myClassifiers[i] );
+  }
+  else
+  {
+    for (int i = 0; i < nbChildren(); i++)
+      ((OctreeClassifier*) myChildren[i])->GetClassifiersAtPoint( point, result );
+  }
+}
+
+void ElementsOnShape::OctreeClassifier::buildChildrenData()
+{
+  // distribute myClassifiers among myChildren
+  for ( size_t i = 0; i < myClassifiers.size(); ++i )
+  {
+    for (int j = 0; j < nbChildren(); j++)
+    {
+      if ( !myClassifiers[i]->GetBndBox()->IsOut( *myChildren[j]->getBox() ))
+      {
+        ((OctreeClassifier*)myChildren[j])->myClassifiers.push_back( myClassifiers[i]);
+      }
+    }
+  }
+  SMESHUtils::FreeVector( myClassifiers );
+
+  // define if a child isLeaf()
+  for (int i = 0; i < nbChildren(); i++)
+  {
+    OctreeClassifier* child = static_cast<OctreeClassifier*>( myChildren[i]);
+    child->myIsLeaf = ( child->myClassifiers.size() <= 5  );
+
+    if ( child->myClassifiers.capacity() - child->myClassifiers.size() > 100 )
+      SMESHUtils::CompactVector( child->myClassifiers );
+  }
+}
+
+Bnd_B3d* ElementsOnShape::OctreeClassifier::buildRootBox()
+{
+  Bnd_B3d* box = new Bnd_B3d;
+  for ( size_t i = 0; i < myClassifiers.size(); ++i )
+    box->Add( *myClassifiers[i]->GetBndBox() );
+  return box;
+}
 
 /*
   Class       : BelongToGeom
@@ -4432,11 +4569,12 @@ void BelongToGeom::init()
 
   //if (!myIsSubshape) // to be always ready to check an element not bound to geometry
   {
-    myElementsOnShapePtr.reset(new ElementsOnShape());
-    myElementsOnShapePtr->SetTolerance(myTolerance);
-    myElementsOnShapePtr->SetAllNodes(true); // "belong", while false means "lays on"
-    myElementsOnShapePtr->SetMesh(myMeshDS);
-    myElementsOnShapePtr->SetShape(myShape, myType);
+    if ( !myElementsOnShapePtr )
+      myElementsOnShapePtr.reset( new ElementsOnShape() );
+    myElementsOnShapePtr->SetTolerance( myTolerance );
+    myElementsOnShapePtr->SetAllNodes( true ); // "belong", while false means "lays on"
+    myElementsOnShapePtr->SetMesh( myMeshDS );
+    myElementsOnShapePtr->SetShape( myShape, myType );
   }
 }
 
@@ -4470,7 +4608,8 @@ bool BelongToGeom::IsSatisfy (long theId)
     return myElementsOnShapePtr->IsSatisfy(theId);
   }
 
-  // Case of submesh
+  // Case of sub-mesh
+
   if (myType == SMDSAbs_Node)
   {
     if( const SMDS_MeshNode* aNode = myMeshDS->FindNode( theId ) )
@@ -4605,13 +4744,14 @@ void LyingOnGeom::init()
         mySubShapesIDs.Add( subID );
     }
   }
-  else
+  // else // to be always ready to check an element not bound to geometry
   {
-    myElementsOnShapePtr.reset(new ElementsOnShape());
-    myElementsOnShapePtr->SetTolerance(myTolerance);
-    myElementsOnShapePtr->SetAllNodes(false); // lays on, while true means "belong"
-    myElementsOnShapePtr->SetMesh(myMeshDS);
-    myElementsOnShapePtr->SetShape(myShape, myType);
+    if ( !myElementsOnShapePtr )
+      myElementsOnShapePtr.reset( new ElementsOnShape() );
+    myElementsOnShapePtr->SetTolerance( myTolerance );
+    myElementsOnShapePtr->SetAllNodes( false ); // lays on, while true means "belong"
+    myElementsOnShapePtr->SetMesh( myMeshDS );
+    myElementsOnShapePtr->SetShape( myShape, myType );
   }
 }
 
