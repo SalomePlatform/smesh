@@ -355,7 +355,7 @@ void SMESHGUI_FindElemByPointOp::onElemSelected()
   if ( !myMeshIO.IsNull() )
   {
     Selection_Mode selMode =
-      myDlg->myElemTypeCombo->currentId() == int(SMESH::NODE) ? NodeSelection : CellSelection;
+      myDlg->myElemTypeCombo->currentId().toInt() == int(SMESH::NODE) ? NodeSelection : CellSelection;
     if ( selectionMode() != selMode )
       setSelectionMode( selMode );
 
@@ -440,14 +440,14 @@ void SMESHGUI_FindElemByPointOp::onFind()
         aMeshEditor->FindElementsByPoint( myDlg->myX->GetValue(),
                                           myDlg->myY->GetValue(),
                                           myDlg->myZ->GetValue(),
-                                          SMESH::ElementType( myDlg->myElemTypeCombo->currentId()));
+                                          SMESH::ElementType( myDlg->myElemTypeCombo->currentId().toInt()));
     else
       foundIds =
         aMeshEditor->FindAmongElementsByPoint( myMeshOrPart,
                                                myDlg->myX->GetValue(),
                                                myDlg->myY->GetValue(),
                                                myDlg->myZ->GetValue(),
-                                               SMESH::ElementType( myDlg->myElemTypeCombo->currentId()));
+                                               SMESH::ElementType( myDlg->myElemTypeCombo->currentId().toInt()));
     myDlg->myFoundList->clear();
     for ( int i = 0; i < (int) foundIds->length(); ++i )
       myDlg->myFoundList->addItem( QString::number( foundIds[i] ));

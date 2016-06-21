@@ -2105,7 +2105,7 @@ void SMESHGUI_PrecomputeDlg::setPreviewModes( const QList<int>& theModes )
 
 int SMESHGUI_PrecomputeDlg::getPreviewMode() const
 {
-  return myPreviewMode->currentId();
+  return myPreviewMode->currentId().toInt();
 }
 
 //================================================================================
