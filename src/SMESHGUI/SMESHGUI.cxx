@@ -195,7 +195,7 @@ namespace
 
   void SetDisplayEntity(int theCommandID);
 
-  int ActionToControl( int theID, bool theReversed = false );
+  int  ActionToControl( int theID, bool theReversed = false );
 
   void Control( int theCommandID );
 
@@ -265,14 +265,16 @@ namespace
                                                   filter,
                                                   QObject::tr( "SMESH_IMPORT_MESH" ) );
     }
-    if ( filenames.count() > 0 ) {
+    if ( filenames.count() > 0 )
+    {
       SUIT_OverrideCursor wc;
       _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
 
       QStringList errors;
       QStringList anEntryList;
       bool isEmpty = false;
-      for ( QStringList::ConstIterator it = filenames.begin(); it != filenames.end(); ++it ) {
+      for ( QStringList::ConstIterator it = filenames.begin(); it != filenames.end(); ++it )
+      {
         QString filename = *it;
         SMESH::mesh_array_var aMeshes = new SMESH::mesh_array;
         try {
@@ -365,7 +367,8 @@ namespace
                          arg( QObject::tr( "SMESH_ERR_UNKNOWN_IMPORT_ERROR" ) ) );
         }
 
-        for ( int i = 0, iEnd = aMeshes->length(); i < iEnd; i++ ) {
+        for ( int i = 0, iEnd = aMeshes->length(); i < iEnd; i++ )
+        {
           _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshes[i] );
           if ( aMeshSO ) {
             _PTR(StudyBuilder) aBuilder = aStudy->NewBuilder();
@@ -1634,11 +1637,11 @@ namespace
 
   void Control( int theCommandID )
   {
-    SMESH_Actor::eControl aControl = SMESH_Actor::eControl( ActionToControl( theCommandID ) );
+    SMESH_Actor::eControl aControl = SMESH_Actor::eControl( ActionToControl( theCommandID ));
     _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-    LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+
     SALOME_ListIO selected;
-    if ( aSel )
+    if ( LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr() )
       aSel->selectedObjects( selected );
 
     if ( !selected.IsEmpty() ) {
@@ -1646,14 +1649,24 @@ namespace
       for ( ; It.More(); It.Next())
       {
         Handle(SALOME_InteractiveObject) anIO = It.Value();
-        if(!anIO.IsNull()){
+        if ( !anIO.IsNull() ) {
           _PTR(SObject) SO = aStudy->FindObjectID( It.Value()->getEntry() );
           if ( SO ) {
             CORBA::Object_var         aObject = SMESH::SObjectToObject( SO );
             SMESH::SMESH_IDSource_var anIDSrc = SMESH::SMESH_IDSource::_narrow( aObject );
             if ( !anIDSrc->_is_nil() ) {
-              if ( SMESH_Actor *anActor = SMESH::FindActorByEntry( anIO->getEntry()) ) {
+              SMESH_Actor *anActor = SMESH::FindActorByEntry( anIO->getEntry());
+              if (( !anActor && selected.Extent() == 1 ) &&
+                  ( anActor = SMESH::CreateActor( aStudy, anIO->getEntry() )))
+              {
                 anActor->SetControlMode( aControl );
+                SMESH::DisplayActor( SMESH::GetCurrentVtkView(), anActor );
+                SMESH::UpdateView  ( SMESH::eDisplay, anIO->getEntry() );
+              }
+              if ( anActor )
+              {
+                if ( anActor->GetControlMode() != aControl )
+                  anActor->SetControlMode( aControl );
                 QString functorName = functorToString( anActor->GetFunctor() );
                 anActor->GetScalarBarActor()->SetTitle( functorName.toLatin1().constData() );
                 SMESH::RepaintCurrentView();
@@ -4148,9 +4161,9 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( SMESHOp::OpPropertiesVolume, basicPropId, -1 );
   createMenu( SMESHOp::OpUpdate,           viewId,      -1 );
 
-  connect( nodeMenu, SIGNAL( aboutToShow() ), this, SLOT( onUpdateControlActions() ) );
-  connect( edgeMenu, SIGNAL( aboutToShow() ), this, SLOT( onUpdateControlActions() ) );
-  connect( faceMenu, SIGNAL( aboutToShow() ), this, SLOT( onUpdateControlActions() ) );
+  connect( nodeMenu,   SIGNAL( aboutToShow() ), this, SLOT( onUpdateControlActions() ) );
+  connect( edgeMenu,   SIGNAL( aboutToShow() ), this, SLOT( onUpdateControlActions() ) );
+  connect( faceMenu,   SIGNAL( aboutToShow() ), this, SLOT( onUpdateControlActions() ) );
   connect( volumeMenu, SIGNAL( aboutToShow() ), this, SLOT( onUpdateControlActions() ) );
 
   // ----- create toolbars --------------
@@ -6832,23 +6845,24 @@ void SMESHGUI::onHypothesisEdit( int result )
 */
 void SMESHGUI::onUpdateControlActions()
 {
-  LightApp_SelectionMgr* aSel = SMESHGUI::selectionMgr();
   SALOME_ListIO selected;
-  if ( aSel )
+  if ( LightApp_SelectionMgr* aSel = SMESHGUI::selectionMgr() )
     aSel->selectedObjects( selected );
 
   SMESH_Actor::eControl aControl = SMESH_Actor::eNone;
   if ( selected.Extent() ) {
     if ( selected.First()->hasEntry() ) {
-      aControl = SMESH::FindActorByEntry( selected.First()->getEntry() )->GetControlMode();
-      SALOME_ListIteratorOfListIO it(selected);
-      for ( ; it.More(); it.Next() ) {
-        Handle(SALOME_InteractiveObject) anIO = it.Value();
-        if ( anIO->hasEntry() ) {
-          if ( SMESH_Actor* anActor = SMESH::FindActorByEntry( anIO->getEntry() ) ) {
-            if ( aControl != anActor->GetControlMode() ) {
-              aControl = SMESH_Actor::eNone;
-              break;
+      if ( SMESH_Actor* anActor = SMESH::FindActorByEntry( selected.First()->getEntry() )) {
+        aControl = anActor->GetControlMode();
+        SALOME_ListIteratorOfListIO it(selected);
+        for ( it.Next(); it.More(); it.Next() ) {
+          Handle(SALOME_InteractiveObject) anIO = it.Value();
+          if ( anIO->hasEntry() ) {
+            if ( SMESH_Actor* anActor = SMESH::FindActorByEntry( anIO->getEntry() ) ) {
+              if ( aControl != anActor->GetControlMode() ) {
+                aControl = SMESH_Actor::eNone;
+                break;
+              }
             }
           }
         }

@@ -2,9 +2,9 @@
 
 \page max_element_length_3d_page Element Diameter 3D
 
-\n This quality control criterion consists in calculation of the length of
-edges and diagonals combining 3D mesh elements
-(tetrahedrons, pyramids, pentahendrons, hexahedrons and polyhedrons).
+\n This quality control criterion consists in calculation of the maximal length of
+edges and diagonals of 3D mesh elements (tetrahedrons, pyramids, etc). For polyhedra
+the value is always zero. 
 
 <em>To apply the Element Diameter 3D quality criterion to your mesh:</em>
 <ol>

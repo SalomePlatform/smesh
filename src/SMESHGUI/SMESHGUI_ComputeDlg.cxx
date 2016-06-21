@@ -953,10 +953,8 @@ void SMESHGUI_BaseComputeOp::computeMesh()
         {
           SMESH::SMESH_GroupBase_var aGrp = aGroups[i];
           if ( CORBA::is_nil( aGrp ) ) continue;
-          SMESH::SMESH_Group_var         aStdGroup  = SMESH::SMESH_Group::_narrow( aGrp );
-          SMESH::SMESH_GroupOnGeom_var   aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGrp );
-          SMESH::SMESH_GroupOnFilter_var aFltGroup  = SMESH::SMESH_GroupOnFilter::_narrow( aGrp );
-          if ( !aStdGroup->_is_nil() ) continue; // don't update the standalone groups
+          SMESH::SMESH_Group_var  aStdGroup  = SMESH::SMESH_Group::_narrow( aGrp );
+          if ( !aStdGroup->_is_nil() ) continue; // don't update standalone groups
           _PTR(SObject) aGroupSO = SMESH::FindSObject( aGrp );
           if ( !aGroupSO ) continue;
           SMESH::SMESH_IDSource_var aGroupObj =

@@ -10,6 +10,9 @@ To create a mesh on geometry, it is necessary to create a mesh object by choosin
     taken into account by the chosen meshing algorithms.
 
 Then you can launch mesh generation by invoking \ref compute_anchor "Compute" command.
+The generated mesh will be automatically shown in the Viewer. You can
+switch off automatic visualization or limit mesh size until which it is
+automatically shown in \ref mesh_preferences_page (<em>Automatic update</em> entry).
 
 \note Sometimes \a hypotheses term is used to refer to both algorithms
 and hypotheses.

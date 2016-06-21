@@ -2,8 +2,9 @@
 
 \page max_element_length_2d_page Element Diameter 2D
 
-\n This quality control criterion consists in calculation of the length of
-edges and diagonals combining 2D mesh elements (triangles and quadrangles).
+\n This quality control criterion consists in calculation of the maximal length of
+edges and diagonals of 2D mesh elements (triangles and quadrangles). For polygons
+the value is always zero.
 
 <em>To apply the Element Diameter 2D quality criterion to your mesh:</em>
 <ol>
