@@ -22,8 +22,7 @@
 The convention of nodal connectivity of elements used in SALOME is
 the MED library convention. You can consult the description of
 nodal connectivity of elements in the documentation on MED library or 
-<a href="http://www.code-aster.org/outils/med/html/connectivites.html">
-  here </a>.
+\ref connectivity_page "here".
 
 <em>To add a node or an element to your mesh:</em>
 <ol>

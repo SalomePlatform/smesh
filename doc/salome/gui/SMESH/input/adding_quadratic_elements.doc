@@ -16,9 +16,8 @@ side, it is a tri-quadratic element (or HEXA27).
 
 The convention of nodal connectivity of elements used in SALOME is
 the MED library convention. You can consult the description of nodal
-connectivity of elements in the documentation on MED library or 
-<a href="http://www.code-aster.org/outils/med/html/connectivites.html">
-  here </a>.
+connectivity of elements in the documentation on MED library or
+\ref connectivity_page "here".
 
 There are several ways to create quadratic elements in your mesh:
 - manually (this way is described below);

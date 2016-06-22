@@ -72,10 +72,9 @@ Attractive meshing capabilities include:
 
 The \b structure of a SALOME mesh is described by nodes and elements based on
 these nodes. The geometry of an element is defined by the sequence of
-nodes constituting it and
-the <a href="http://www.code-aster.org/outils/med/html/connectivites.html">
-  connectivity convention </a> (adopted from MED library). Definition of
-the element basing on the elements of a lower dimension is NOT supported.
+nodes constituting it and the \ref connectivity_page "connectivity convention"
+(adopted from MED library). Definition of the element basing on the elements
+of a lower dimension is NOT supported.
 
 \anchor mesh_entities
 The mesh can include the following entities:
@@ -89,8 +88,8 @@ The mesh can include the following entities:
 <li>\b Volume &mdash; 3D mesh element representing a part of 3D
   space bound by volume facets. Nodes of a volume describing each
   facet are defined by
-  the <a href="http://www.code-aster.org/outils/med/html/connectivites.html">
-  MED connectivity convention.</a> A volume can be a tetrahedron, hexahedron,
+  the \subpage connectivity_page "connectivity convention".
+  A volume can be a tetrahedron, hexahedron,
   pentahedron, pyramid, hexagonal prism or polyhedron.</li>
 <li>\b 0D element &mdash; mesh element defined by one node.</li>
 <li>\b Ball element &mdash; discrete mesh element defined by a

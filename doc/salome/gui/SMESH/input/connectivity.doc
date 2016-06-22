@@ -1,0 +1,45 @@
+/*!
+\page connectivity_page Nodal connectivity of elements
+
+The following images show order of nodes in correctly defined elements.
+
+<table>
+  <tr><td> Edge (segment): linear and quadratic<br>
+      \image html connectivity_edge.png </td></tr>
+  <tr><td> Triangle: linear, quadratic and bi-quadratic <br>
+      \image html connectivity_tria.png </td></tr>
+  <tr><td> Quadrangle: linear, quadratic and bi-quadratic <br>
+      \image html connectivity_quad.png </td></tr>
+  <tr><td align="left"> Polygon: linear and quadratic <br>
+      \image html connectivity_polygon.png </td></tr>
+  <tr><td> Tetrahedron: linear and quadratic <br>
+      \image html connectivity_tetra.png </td></tr>
+  <tr><td> Hexahedron: linear, quadratic and tri-quadratic <br>
+      \image html connectivity_hexa.png </td></tr>
+  <tr><td> Pentahedron: linear and quadratic <br>
+      \image html connectivity_penta.png </td></tr>
+  <tr><td> Pyramid: linear and quadratic <br>
+      \image html connectivity_pyramid.png </td></tr>
+  <tr><td> Hexagonal prism <br>
+      \image html connectivity_hex_prism.png </td></tr>
+  <tr><td> Polyhedron is defined by <ul>
+      <li> a sequence of nodes defining all facets</li>
+      <li> a sequence of number of nodes per facet</li>
+      </ul>
+      \b Nodes: <br>
+      Node1_of_Facet1, Node2_of_Facet1, ..., NodeN_of_Facet1, <br>
+      Node1_of_Facet2, Node2_of_Facet2, ..., NodeN_of_Facet2, <br>
+      Node1_of_FacetM, Node2_of_FacetM, ..., NodeN_of_FacetM  <br>
+      \b Quantity of nodes per facet: <br>
+      NbNodes_in_Facet1, NbNodes_in_Facet2, ..., NbNodes_in_FacetM
+
+      For example the polyhedron shown in the image below is defined by nodes <br>
+      [ 1,2,3, 1,4,5,2, 2,5,6,3, 3,6,4,1, 4,7,9,5, 5,9,8,6, 6,8,7,4, 7,8,9 ]<br>
+      and quantities [ 3, 4, 4, 4, 4, 4, 4, 3 ]
+      \image html connectivity_polyhedron.png
+      Order of nodes of a facet must assure outward direction of its normal.
+  </td></tr>
+</table>
+
+
+*/
