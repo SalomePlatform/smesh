@@ -353,7 +353,6 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
 {
   // PAL14921. Enable catching std::bad_alloc and Standard_OutOfMemory outside
   //Unexpect aCatch(SalomeException);
-  MESSAGE("StdMeshers_Hexa_3D::Compute");
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
 
   // Shape verification

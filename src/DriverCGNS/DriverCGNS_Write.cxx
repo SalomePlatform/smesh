@@ -172,7 +172,7 @@ namespace
     {
       for ( int t = 0; t < NofValidBCTypes; ++t )
       {
-        CGNS_ENUMT( BCType_t ) type = CGNS_ENUMT( BCType_t)( t );
+        CGNS_ENUMT( BCType_t ) type = CGNS_ENUMT( BCType_t )( t );
         string typeName = cg_BCTypeName( type );
         if ( typeName == &groupName[0] + bcBeg )
         {
@@ -251,20 +251,20 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
   // --------------
 
   const int spaceDim = 3;
-  int meshDim = 1;
-  if ( myMesh->NbFaces() > 0 ) meshDim = 2;
+  int        meshDim = 1;
+  if ( myMesh->NbFaces()   > 0 ) meshDim = 2;
   if ( myMesh->NbVolumes() > 0 ) meshDim = 3;
 
   if ( myMeshName.empty() )
   {
     int nbases = 0;
-    if ( cg_nbases( _fn, &nbases) == CG_OK)
+    if ( cg_nbases( _fn, &nbases) == CG_OK )
       myMeshName = ( SMESH_Comment("Base_") << nbases+1 );
     else
       myMeshName = "Base_0";
   }
   int iBase;
-  if ( cg_base_write( _fn, myMeshName.c_str(), meshDim, spaceDim, &iBase))
+  if ( cg_base_write( _fn, myMeshName.c_str(), meshDim, spaceDim, &iBase ))
     return addMessage( cg_get_error(), /*fatal = */true );
 
   // create a Zone
@@ -330,7 +330,7 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
   // write into a section all successive elements of one geom type
   int iSec;
   vector< cgsize_t > elemData;
-  SMDS_ElemIteratorPtr elemIt = myMesh->elementsIterator();
+  SMDS_ElemIteratorPtr  elemIt = myMesh->elementsIterator();
   const SMDS_MeshElement* elem = elemIt->next();
   while ( elem )
   {

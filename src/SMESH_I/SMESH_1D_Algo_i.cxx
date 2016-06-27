@@ -24,13 +24,8 @@
 //  File   : SMESH_1D_Algo_i.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
-//  $Header$
 //
 #include "SMESH_1D_Algo_i.hxx"
-
-#include "utilities.h"
-
-using namespace std;
 
 //=============================================================================
 /*!
@@ -45,7 +40,6 @@ SMESH_1D_Algo_i::SMESH_1D_Algo_i( PortableServer::POA_ptr thePOA )
        SMESH_Hypothesis_i( thePOA ), 
        SMESH_Algo_i( thePOA )
 {
-  MESSAGE( "SMESH_1D_Algo_i::SMESH_1D_Algo_i" );
 }
 
 //=============================================================================
@@ -58,7 +52,6 @@ SMESH_1D_Algo_i::SMESH_1D_Algo_i( PortableServer::POA_ptr thePOA )
 
 SMESH_1D_Algo_i::~SMESH_1D_Algo_i()
 {
-  MESSAGE( "SMESH_1D_Algo_i::~SMESH_1D_Algo_i" );
 }
 
 //================================================================================

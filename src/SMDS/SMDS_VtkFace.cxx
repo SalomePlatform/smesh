@@ -136,11 +136,11 @@ int SMDS_VtkFace::NbEdges() const
     nbEdges = 4;
     break;
   case VTK_QUADRATIC_POLYGON:
-    nbEdges = grid->GetCell(myVtkID)->GetNumberOfPoints() / 2;
+    nbEdges = NbNodes() / 2;
     break;
   case VTK_POLYGON:
   default:
-    nbEdges = grid->GetCell(myVtkID)->GetNumberOfPoints();
+    nbEdges = NbNodes();
     break;
   }
   return nbEdges;
@@ -154,8 +154,9 @@ int SMDS_VtkFace::NbFaces() const
 int SMDS_VtkFace::NbNodes() const
 {
   vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
-  int nbPoints = grid->GetCell(myVtkID)->GetNumberOfPoints();
-  return nbPoints;
+  vtkIdType *pts, npts;
+  grid->GetCellPoints( myVtkID, npts, pts );
+  return npts;
 }
 
 /*!
@@ -217,6 +218,10 @@ bool SMDS_VtkFace::IsPoly() const
 bool SMDS_VtkFace::IsMediumNode(const SMDS_MeshNode* node) const
 {
   vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
+  vtkIdType npts = 0;
+  vtkIdType* pts = 0;
+  grid->GetCellPoints(myVtkID, npts, pts);
+
   vtkIdType aVtkType = grid->GetCellType(this->myVtkID);
   int rankFirstMedium = 0;
   switch (aVtkType)
@@ -230,15 +235,12 @@ bool SMDS_VtkFace::IsMediumNode(const SMDS_MeshNode* node) const
     rankFirstMedium = 4; // medium nodes are of rank 4,5,6,7
     break;
   case VTK_QUADRATIC_POLYGON:
-    rankFirstMedium = grid->GetCell(myVtkID)->GetNumberOfPoints() / 2;
+    rankFirstMedium = npts / 2;
     break;
   default:
     //MESSAGE("wrong element type " << aVtkType);
     return false;
   }
-  vtkIdType npts = 0;
-  vtkIdType* pts = 0;
-  grid->GetCellPoints(myVtkID, npts, pts);
   vtkIdType nodeId = node->getVtkId();
   for (int rank = 0; rank < npts; rank++)
   {
@@ -261,7 +263,7 @@ bool SMDS_VtkFace::IsMediumNode(const SMDS_MeshNode* node) const
 int SMDS_VtkFace::NbCornerNodes() const
 {
   vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
-  int       nbPoints = grid->GetCell(myVtkID)->GetNumberOfPoints();
+  int       nbPoints = NbNodes();
   vtkIdType aVtkType = grid->GetCellType(myVtkID);
   switch ( aVtkType )
   {

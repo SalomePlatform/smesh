@@ -228,10 +228,11 @@ int SMDS_VtkVolume::NbNodes() const
 {
   vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
   vtkIdType aVtkType = grid->GetCellType(this->myVtkID);
-  int nbPoints = 0;
+  vtkIdType nbPoints = 0;
   if (aVtkType != VTK_POLYHEDRON)
     {
-      nbPoints = grid->GetCell(myVtkID)->GetNumberOfPoints();
+      vtkIdType *pts;
+      grid->GetCellPoints( myVtkID, nbPoints, pts );
     }
   else
     {

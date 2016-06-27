@@ -19,13 +19,18 @@
 
 # --- options ---
 # additional include directories
+
+IF(SALOME_SMESH_USE_TBB)
+  SET(TBB_INCLUDES ${TBB_INCLUDE_DIRS})
+ENDIF(SALOME_SMESH_USE_TBB)
+
 INCLUDE_DIRECTORIES(
   ${KERNEL_INCLUDE_DIRS}
   ${CAS_INCLUDE_DIRS}
   ${VTK_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
   ${PROJECT_SOURCE_DIR}/src/SMDS
-
+  ${TBB_INCLUDES}
 )
 
 # additional preprocessor / compiler flags
@@ -34,12 +39,17 @@ ADD_DEFINITIONS(
   ${BOOST_DEFINITIONS}
 )
 
+IF(SALOME_SMESH_USE_TBB)
+  SET(TBB_LIBS ${TBB_LIBRARIES})
+ENDIF(SALOME_SMESH_USE_TBB)
+
 # libraries to link to
 SET(_link_LIBRARIES
   ${CAS_KERNEL}
   ${CAS_TKBRep}
   ${KERNEL_SALOMELocalTrace}
   SMDS
+  ${TBB_LIBS}
 )
 
 # --- headers ---

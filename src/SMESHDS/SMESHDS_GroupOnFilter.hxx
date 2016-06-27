@@ -72,6 +72,7 @@ class SMESHDS_EXPORT SMESHDS_GroupOnFilter: public SMESHDS_GroupBase
  private:
 
   void update() const;
+  bool updateParallel() const;
   void setChanged(bool changed=true);
   const SMDS_MeshElement* setNbElemToSkip( SMDS_ElemIteratorPtr& elIt );
   int getElementIds( void* ids, size_t idSize ) const;

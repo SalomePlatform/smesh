@@ -85,7 +85,6 @@ void SMESHGUI_GenericHypothesisCreator::create( SMESH::SMESH_Hypothesis_ptr init
                                                 const QString& theHypName,
                                                 QWidget* parent, QObject* obj, const QString& slot )
 {
-  MESSAGE( "Creation of hypothesis with initial params" );
   setInitParamsHypothesis( initParamsHyp );
   create( false, theHypName, parent, obj, slot );
 }
@@ -94,8 +93,6 @@ void SMESHGUI_GenericHypothesisCreator::create( bool           isAlgo,
                                                 const QString& theHypName,
                                                 QWidget* theParent, QObject* obj, const QString& slot )
 {
-  MESSAGE( "Creation of hypothesis" );
-
   myIsCreate = true;
 
   // Create hypothesis/algorithm

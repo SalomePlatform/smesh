@@ -52,7 +52,6 @@ StdMeshers_Quadrangle_2D_i::StdMeshers_Quadrangle_2D_i( PortableServer::POA_ptr 
     SMESH_Algo_i( thePOA ),
     SMESH_2D_Algo_i( thePOA )
 {
-  MESSAGE( "StdMeshers_Quadrangle_2D_i::StdMeshers_Quadrangle_2D_i" );
   myBaseImpl = new ::StdMeshers_Quadrangle_2D( theGenImpl->GetANewId(),
                                                theStudyId,
                                                theGenImpl );
@@ -69,7 +68,6 @@ StdMeshers_Quadrangle_2D_i::StdMeshers_Quadrangle_2D_i( PortableServer::POA_ptr 
 
 StdMeshers_Quadrangle_2D_i::~StdMeshers_Quadrangle_2D_i()
 {
-  MESSAGE( "StdMeshers_Quadrangle_2D_i::~StdMeshers_Quadrangle_2D_i" );
 }
 
 //=============================================================================
@@ -82,7 +80,6 @@ StdMeshers_Quadrangle_2D_i::~StdMeshers_Quadrangle_2D_i()
 
 ::StdMeshers_Quadrangle_2D* StdMeshers_Quadrangle_2D_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_Quadrangle_2D_i::GetImpl" );
   return ( ::StdMeshers_Quadrangle_2D* )myBaseImpl;
 }
 
@@ -117,7 +114,6 @@ StdMeshers_QuadFromMedialAxis_1D2D_i( PortableServer::POA_ptr thePOA,
     SMESH_Algo_i( thePOA ),
     SMESH_2D_Algo_i( thePOA )
 {
-  MESSAGE( "StdMeshers_QuadFromMedialAxis_1D2D_i::StdMeshers_QuadFromMedialAxis_1D2D_i" );
   myBaseImpl = new ::StdMeshers_QuadFromMedialAxis_1D2D( theGenImpl->GetANewId(),
                                                          theStudyId,
                                                          theGenImpl );
@@ -134,7 +130,6 @@ StdMeshers_QuadFromMedialAxis_1D2D_i( PortableServer::POA_ptr thePOA,
 
 StdMeshers_QuadFromMedialAxis_1D2D_i::~StdMeshers_QuadFromMedialAxis_1D2D_i()
 {
-  MESSAGE( "StdMeshers_QuadFromMedialAxis_1D2D_i::~StdMeshers_QuadFromMedialAxis_1D2D_i" );
 }
 
 //================================================================================

@@ -99,9 +99,10 @@ void SMDS_VtkEdge::Print(std::ostream & OS) const
 int SMDS_VtkEdge::NbNodes() const
 {
   vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
-  int nbPoints = grid->GetCell(myVtkID)->GetNumberOfPoints();
-  assert(nbPoints >= 2);
-  return nbPoints;
+  vtkIdType *pts, npts;
+  grid->GetCellPoints( myVtkID, npts, pts );
+  assert(npts >= 2);
+  return npts;
 }
 
 int SMDS_VtkEdge::NbEdges() const

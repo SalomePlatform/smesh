@@ -33,6 +33,8 @@
 
 using namespace std;
 
+//#undef WITH_TBB
+
 //=============================================================================
 /*!
  * Creates a group based on thePredicate
@@ -245,6 +247,9 @@ SMDS_ElemIteratorPtr SMESHDS_GroupOnFilter::GetElements() const
   {
     myPredicate->SetMesh( GetMesh() ); // hope myPredicate updates self here if necessary
 
+    if ( !IsUpToDate() )
+      updateParallel();
+
     elemIt = GetMesh()->elementsIterator( GetType() );
     if ( IsUpToDate() )
     {
@@ -360,17 +365,131 @@ void SMESHDS_GroupOnFilter::update() const
   if ( !IsUpToDate() )
   {
     me->setChanged();
-    SMDS_ElemIteratorPtr elIt = GetElements();
-    if ( elIt->more() ) {
-      // find out nb of elements to skip w/o check before the 1st OK element
-      const SMDS_MeshElement* e = me->setNbElemToSkip( elIt );
-      ++me->myMeshInfo[ e->GetEntityType() ];
-      while ( elIt->more() )
-        ++me->myMeshInfo[ elIt->next()->GetEntityType() ];
+    if ( !updateParallel() )
+    {
+      SMDS_ElemIteratorPtr elIt = GetElements();
+      if ( elIt->more() ) {
+        // find out nb of elements to skip w/o check before the 1st OK element
+        const SMDS_MeshElement* e = me->setNbElemToSkip( elIt );
+        ++me->myMeshInfo[ e->GetEntityType() ];
+        while ( elIt->more() )
+          ++me->myMeshInfo[ elIt->next()->GetEntityType() ];
+      }
     }
     me->setChanged( false );
   }
 }
+
+//================================================================================
+/*!
+ * \brief Updates myElements in parallel
+ */
+//================================================================================
+#ifdef WITH_TBB
+
+#include <tbb/parallel_for.h>
+#include "tbb/enumerable_thread_specific.h"
+
+// a predicate per a thread
+typedef tbb::enumerable_thread_specific<SMESH_PredicatePtr> TLocalPredicat;
+
+struct IsSatisfyParallel
+{
+  vector< char >&     myIsElemOK;
+  SMESH_PredicatePtr  myPredicate;
+  TLocalPredicat&     myLocalPredicates;
+  IsSatisfyParallel( SMESH_PredicatePtr mainPred, TLocalPredicat& locPred, vector< char >& isOk )
+    : myIsElemOK(isOk), myPredicate( mainPred ), myLocalPredicates( locPred )
+  {}
+  void operator() ( const tbb::blocked_range<size_t>& r ) const
+  {
+    SMESH_PredicatePtr& pred = myLocalPredicates.local();
+    if ( !pred )
+    {
+      if ( r.begin() == 0 )
+        pred = myPredicate;
+      else
+        pred.reset( myPredicate->clone() );
+    }
+    for ( size_t i = r.begin(); i != r.end(); ++i )
+      myIsElemOK[ i ] = char( pred->IsSatisfy( i ));
+  }
+};
+
+bool SMESHDS_GroupOnFilter::updateParallel() const
+{
+  // if ( !getenv("updateParallel"))
+  //   return false;
+  size_t nbElemsOfType = GetMesh()->GetMeshInfo().NbElements( GetType() );
+  if ( nbElemsOfType == 0 )
+    return true;
+  if ( nbElemsOfType < 1000000 )
+    return false; // no sense in parallel work
+
+  SMDS_ElemIteratorPtr elemIt = GetMesh()->elementsIterator( GetType() );
+  const int minID = elemIt->next()->GetID();
+  myPredicate->IsSatisfy( minID ); // make myPredicate fully initialized for clone()
+  SMESH_PredicatePtr clone( myPredicate->clone() );
+  if ( !clone )
+    return false;
+
+  TLocalPredicat threadPredicates;
+  threadPredicates.local() = clone;
+
+  int maxID = ( GetType() == SMDSAbs_Node ) ? GetMesh()->MaxNodeID() : GetMesh()->MaxElementID();
+  vector< char > isElemOK( 1 + maxID );
+
+  tbb::parallel_for ( tbb::blocked_range<size_t>( 0, isElemOK.size() ),
+                      IsSatisfyParallel( myPredicate, threadPredicates, isElemOK ),
+                      tbb::simple_partitioner());
+
+  SMESHDS_GroupOnFilter* me = const_cast<SMESHDS_GroupOnFilter*>( this );
+
+  int nbOkElems = 0;
+  for ( size_t i = minID; i < isElemOK.size(); ++i )
+    nbOkElems += ( isElemOK[ i ]);
+  me->myElements.resize( nbOkElems );
+
+  const SMDS_MeshElement* e;
+  size_t iElem = 0;
+  if ( GetType() == SMDSAbs_Node )
+  {
+    for ( size_t i = minID; i < isElemOK.size(); ++i )
+      if (( isElemOK[ i ] ) &&
+          ( e = GetMesh()->FindNode( i )))
+      {
+        me->myElements[ iElem++ ] = e;
+      }
+    me->myMeshInfo[ SMDSEntity_Node ] = myElements.size();
+  }
+  else
+  {
+    for ( size_t i = minID; i < isElemOK.size(); ++i )
+      if (( isElemOK[ i ] ) &&
+          ( e = GetMesh()->FindElement( i )) &&
+          ( e->GetType() == GetType() ))
+      {
+        me->myElements[ iElem++ ] = e;
+        ++me->myMeshInfo[ e->GetEntityType() ];
+      }
+  }
+  me->myElementsOK = ( iElem < nbElemsOfType );
+  if ( !myElementsOK )
+    clearVector( me->myElements ); // all elements satisfy myPredicate
+  else
+    me->myElements.resize( iElem );
+
+  me->setChanged( false );
+  return true;
+}
+#else
+
+bool SMESHDS_GroupOnFilter::updateParallel() const
+{
+  return false;
+}
+
+#endif
 
 //================================================================================
 /*!
