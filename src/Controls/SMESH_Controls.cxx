@@ -4524,7 +4524,7 @@ OctreeClassifier::OctreeClassifier( const OctreeClassifier*                     
   }
   else if ( otherTree->myChildren )
   {
-    myChildren = new SMESH_Tree*[ 8 ];
+    myChildren = new SMESH_Tree < Bnd_B3d, 8 >*[ 8 ];
     for ( int i = 0; i < nbChildren(); i++ )
       myChildren[i] =
         new OctreeClassifier( static_cast<const OctreeClassifier*>( otherTree->myChildren[i]),
