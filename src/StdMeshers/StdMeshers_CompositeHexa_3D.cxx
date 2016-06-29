@@ -28,6 +28,8 @@
 #include "SMDS_Mesh.hxx"
 #include "SMDS_MeshNode.hxx"
 #include "SMDS_SetIterator.hxx"
+#include "SMESHDS_Mesh.hxx"
+#include "SMESHDS_SubMesh.hxx"
 #include "SMESH_Block.hxx"
 #include "SMESH_Comment.hxx"
 #include "SMESH_ComputeError.hxx"

@@ -26,22 +26,21 @@
 
 #include "SMESH_MeshEditor.hxx"
 
-#include "SMDS_FaceOfNodes.hxx"
-#include "SMDS_VolumeTool.hxx"
-#include "SMDS_EdgePosition.hxx"
-#include "SMDS_FacePosition.hxx"
-#include "SMDS_SpacePosition.hxx"
-#include "SMDS_MeshGroup.hxx"
-#include "SMDS_LinearEdge.hxx"
 #include "SMDS_Downward.hxx"
+#include "SMDS_EdgePosition.hxx"
+#include "SMDS_FaceOfNodes.hxx"
+#include "SMDS_FacePosition.hxx"
+#include "SMDS_LinearEdge.hxx"
+#include "SMDS_MeshGroup.hxx"
 #include "SMDS_SetIterator.hxx"
-
+#include "SMDS_SpacePosition.hxx"
+#include "SMDS_VolumeTool.hxx"
 #include "SMESHDS_Group.hxx"
 #include "SMESHDS_Mesh.hxx"
-
 #include "SMESH_Algo.hxx"
 #include "SMESH_ControlsDef.hxx"
 #include "SMESH_Group.hxx"
+#include "SMESH_Mesh.hxx"
 #include "SMESH_MeshAlgos.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_OctreeNode.hxx"
@@ -73,6 +72,7 @@
 #include <TopTools_ListOfShape.hxx>
 #include <TopTools_SequenceOfShape.hxx>
 #include <TopoDS.hxx>
+#include <TopoDS_Edge.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Solid.hxx>
 #include <gp.hxx>
@@ -124,6 +124,18 @@ SMESH_MeshEditor::SMESH_MeshEditor( SMESH_Mesh* theMesh )
   :myMesh( theMesh ) // theMesh may be NULL
 {
 }
+
+//================================================================================
+/*!
+ * \brief Return mesh DS
+ */
+//================================================================================
+
+SMESHDS_Mesh * SMESH_MeshEditor::GetMeshDS()
+{
+  return myMesh->GetMeshDS();
+}
+
 
 //================================================================================
 /*!

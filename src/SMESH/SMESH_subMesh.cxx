@@ -27,16 +27,16 @@
 
 #include "SMESH_subMesh.hxx"
 
+#include "SMDS_SetIterator.hxx"
+#include "SMESHDS_Mesh.hxx"
 #include "SMESH_Algo.hxx"
+#include "SMESH_Comment.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_HypoFilter.hxx"
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMeshEventListener.hxx"
-#include "SMESH_Comment.hxx"
-#include "SMDS_SetIterator.hxx"
-#include "SMDSAbs_ElementType.hxx"
 
 #include <Basics_OCCTVersion.hxx>
 

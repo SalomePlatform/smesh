@@ -27,21 +27,21 @@
 //
 #include "StdMeshers_ProjectionUtils.hxx"
 
-#include "StdMeshers_ProjectionSource1D.hxx"
-#include "StdMeshers_ProjectionSource2D.hxx"
-#include "StdMeshers_ProjectionSource3D.hxx"
-
 #include "SMDS_EdgePosition.hxx"
+#include "SMESHDS_Mesh.hxx"
 #include "SMESH_Algo.hxx"
 #include "SMESH_Block.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_HypoFilter.hxx"
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_Mesh.hxx"
+#include "SMESH_MeshAlgos.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMesh.hxx"
 #include "SMESH_subMeshEventListener.hxx"
-#include "SMESH_MeshAlgos.hxx"
+#include "StdMeshers_ProjectionSource1D.hxx"
+#include "StdMeshers_ProjectionSource2D.hxx"
+#include "StdMeshers_ProjectionSource3D.hxx"
 
 #include "utilities.h"
 

@@ -26,6 +26,7 @@
 
 #include "SMESH_Gen_i.hxx"
 
+#include "SMESHDS_Mesh.hxx"
 #include "SMESH_Algo_i.hxx"
 #include "SMESH_Comment.hxx"
 #include "SMESH_Group_i.hxx"

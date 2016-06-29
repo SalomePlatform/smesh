@@ -30,8 +30,6 @@
 #include "SMESH_SMESH.hxx"
 
 #include "SMESH_MeshEditor.hxx" // needed for many meshers
-#include <SMDS_MeshNode.hxx>
-#include <SMDS_QuadraticEdge.hxx>
 
 #include <Geom_Surface.hxx>
 #include <ShapeAnalysis_Surface.hxx>
@@ -42,8 +40,11 @@
 #include <map>
 #include <vector>
 
-class GeomAPI_ProjectPointOnSurf;
 class GeomAPI_ProjectPointOnCurve;
+class GeomAPI_ProjectPointOnSurf;
+class SMDS_MeshNode;
+class SMESHDS_Hypothesis;
+class SMESH_Gen;
 class SMESH_ProxyMesh;
 
 typedef std::map<SMESH_TLink, const SMDS_MeshNode*>           TLinkNodeMap;
@@ -248,12 +249,12 @@ public:
   // constructor
   SMESH_MesherHelper(SMESH_Mesh& theMesh);
 
-  SMESH_Gen*    GetGen() const { return GetMesh()->GetGen(); }
+  SMESH_Gen*    GetGen() const;
     
   SMESH_Mesh*   GetMesh() const { return myMesh; }
     
-  SMESHDS_Mesh* GetMeshDS() const { return GetMesh()->GetMeshDS(); }
-    
+  SMESHDS_Mesh* GetMeshDS() const;
+
   /*!
    * Check submesh for given shape: if all elements on this shape are quadratic,
    * quadratic elements will be created. Also fill myTLinkNodeMap
@@ -316,6 +317,11 @@ public:
    * \brief Return the shape set by IsQuadraticSubMesh() or SetSubShape() 
    */
   const TopoDS_Shape& GetSubShape() const  { return myShape; }
+
+  /*!
+   * \brief Convert a shape to its index in the SMESHDS_Mesh
+   */
+  int ShapeToIndex( const TopoDS_Shape& S ) const;
 
   /*!
    * Creates a node (!Note ID before u=0.,v0.)
@@ -569,7 +575,7 @@ public:
     * Seam shape has two 2D alternative represenations on the face
    */
   bool IsSeamShape(const TopoDS_Shape& subShape) const
-  { return IsSeamShape( GetMeshDS()->ShapeToIndex( subShape )); }
+  { return IsSeamShape( ShapeToIndex( subShape )); }
   /*!
    * \brief Return true if an edge or a vertex encounters twice in face wire
    *  \param subShape - Id of edge or vertex
@@ -581,7 +587,7 @@ public:
    *  \param subShape - edge or vertex
    */
   bool IsRealSeam(const TopoDS_Shape& subShape) const
-  { return IsRealSeam( GetMeshDS()->ShapeToIndex( subShape)); }
+  { return IsRealSeam( ShapeToIndex( subShape )); }
   /*!
    * \brief Check if the shape set through IsQuadraticSubMesh() or SetSubShape()
    *        has a seam edge, i.e. an edge that has two parametric representations

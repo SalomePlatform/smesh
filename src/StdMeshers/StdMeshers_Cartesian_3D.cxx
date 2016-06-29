@@ -25,6 +25,7 @@
 #include "StdMeshers_Cartesian_3D.hxx"
 
 #include "SMDS_MeshNode.hxx"
+#include "SMESHDS_Mesh.hxx"
 #include "SMESH_Block.hxx"
 #include "SMESH_Comment.hxx"
 #include "SMESH_Mesh.hxx"
@@ -73,6 +74,7 @@
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopLoc_Location.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
 #include <TopTools_MapOfShape.hxx>
 #include <TopoDS.hxx>
 #include <TopoDS_Compound.hxx>

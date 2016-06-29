@@ -25,7 +25,9 @@
 //
 #include "StdMeshers_Projection_1D2D.hxx"
 
+#include "SMESHDS_Mesh.hxx"
 #include "SMESH_Gen.hxx"
+#include "SMESH_Mesh.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMesh.hxx"
 #include "SMESH_subMeshEventListener.hxx"

@@ -31,6 +31,7 @@
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_subMesh.hxx"
+#include "SMDS_ElemIterator.hxx"
 
 #include <SALOME_GenericObj_i.hh>
 #include <SALOMEconfig.h>

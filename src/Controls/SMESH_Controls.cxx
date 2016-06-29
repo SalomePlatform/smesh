@@ -3220,7 +3220,7 @@ bool RangeOfIds::SetRangeStr( const TCollection_AsciiString& theStr )
   {
     char c = aStr.Value( i );
     if ( !isdigit( c ) && c != ',' && c != '-' )
-      aStr.SetValue( i, ' ');
+      aStr.SetValue( i, ',');
   }
   aStr.RemoveAll( ' ' );
 
@@ -4097,7 +4097,8 @@ namespace {
 
 struct ElementsOnShape::Classifier
 {
-  //Classifier(const TopoDS_Shape& s, double tol) { Init(s,tol); }
+  Classifier() { mySolidClfr = 0; myFlags = 0; }
+  ~Classifier();
   void Init(const TopoDS_Shape& s, double tol, const Bnd_B3d* box = 0 );
   bool IsOut(const gp_Pnt& p)        { return SetChecked( true ), (this->*myIsOutFun)( p ); }
   TopAbs_ShapeEnum ShapeType() const { return myShape.ShapeType(); }
@@ -4108,6 +4109,7 @@ struct ElementsOnShape::Classifier
   void SetChecked( bool is ) { is ? SetFlag( theIsCheckedFlag ) : UnsetFlag( theIsCheckedFlag ); }
   void SetFlag  ( int flag ) { myFlags |= flag; }
   void UnsetFlag( int flag ) { myFlags &= ~flag; }
+
 private:
   bool isOutOfSolid (const gp_Pnt& p);
   bool isOutOfBox   (const gp_Pnt& p);
@@ -4116,15 +4118,15 @@ private:
   bool isOutOfVertex(const gp_Pnt& p);
   bool isBox        (const TopoDS_Shape& s);
 
-  bool (Classifier::*         myIsOutFun)(const gp_Pnt& p);
-  BRepClass3d_SolidClassifier mySolidClfr;
-  Bnd_B3d                     myBox;
-  GeomAPI_ProjectPointOnSurf  myProjFace;
-  GeomAPI_ProjectPointOnCurve myProjEdge;
-  gp_Pnt                      myVertexXYZ;
-  TopoDS_Shape                myShape;
-  double                      myTol;
-  int                         myFlags;
+  bool (Classifier::*          myIsOutFun)(const gp_Pnt& p);
+  BRepClass3d_SolidClassifier* mySolidClfr; // ptr because of a run-time forbidden copy-constructor
+  Bnd_B3d                      myBox;
+  GeomAPI_ProjectPointOnSurf   myProjFace;
+  GeomAPI_ProjectPointOnCurve  myProjEdge;
+  gp_Pnt                       myVertexXYZ;
+  TopoDS_Shape                 myShape;
+  double                       myTol;
+  int                          myFlags;
 };
 
 struct ElementsOnShape::OctreeClassifier : public SMESH_Octree
@@ -4364,6 +4366,7 @@ void ElementsOnShape::Classifier::Init( const TopoDS_Shape& theShape,
 {
   myShape = theShape;
   myTol   = theTol;
+  myFlags = 0;
 
   bool isShapeBox = false;
   switch ( myShape.ShapeType() )
@@ -4376,7 +4379,7 @@ void ElementsOnShape::Classifier::Init( const TopoDS_Shape& theShape,
     }
     else
     {
-      mySolidClfr.Load(theShape);
+      mySolidClfr = new BRepClass3d_SolidClassifier(theShape);
       myIsOutFun = & ElementsOnShape::Classifier::isOutOfSolid;
     }
     break;
@@ -4432,10 +4435,15 @@ void ElementsOnShape::Classifier::Init( const TopoDS_Shape& theShape,
   }
 }
 
+ElementsOnShape::Classifier::~Classifier()
+{
+  delete mySolidClfr; mySolidClfr = 0;
+}
+
 bool ElementsOnShape::Classifier::isOutOfSolid (const gp_Pnt& p)
 {
-  mySolidClfr.Perform( p, myTol );
-  return ( mySolidClfr.State() != TopAbs_IN && mySolidClfr.State() != TopAbs_ON );
+  mySolidClfr->Perform( p, myTol );
+  return ( mySolidClfr->State() != TopAbs_IN && mySolidClfr->State() != TopAbs_ON );
 }
 
 bool ElementsOnShape::Classifier::isOutOfBox (const gp_Pnt& p)
@@ -4524,7 +4532,7 @@ OctreeClassifier::OctreeClassifier( const OctreeClassifier*                     
   }
   else if ( otherTree->myChildren )
   {
-    myChildren = new SMESH_Tree < Bnd_B3d, 8 >*[ 8 ];
+    myChildren = new SMESH_Tree< Bnd_B3d, 8 > * [ 8 ];
     for ( int i = 0; i < nbChildren(); i++ )
       myChildren[i] =
         new OctreeClassifier( static_cast<const OctreeClassifier*>( otherTree->myChildren[i]),

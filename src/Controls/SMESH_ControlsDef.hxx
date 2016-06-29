@@ -25,7 +25,6 @@
 
 #include "SMESH_Controls.hxx"
 
-#include "SMDS_MeshNode.hxx"
 #include "SMESH_TypeDefs.hxx"
 
 #include <BRepClass3d_SolidClassifier.hxx>

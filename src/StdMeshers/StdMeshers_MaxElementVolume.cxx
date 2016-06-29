@@ -29,6 +29,7 @@
 #include "StdMeshers_MaxElementVolume.hxx"
 
 #include "SMDS_MeshElement.hxx"
+#include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_SubMesh.hxx"
 #include "SMESH_ControlsDef.hxx"
 #include "SMESH_Mesh.hxx"

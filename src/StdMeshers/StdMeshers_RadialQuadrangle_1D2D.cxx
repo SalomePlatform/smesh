@@ -29,6 +29,7 @@
 #include "StdMeshers_NumberOfSegments.hxx"
 
 #include "SMDS_MeshNode.hxx"
+#include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_SubMesh.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_HypoFilter.hxx"

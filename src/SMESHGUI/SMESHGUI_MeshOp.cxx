@@ -200,6 +200,8 @@ bool SMESHGUI_MeshOp::onApply()
 //================================================================================
 void SMESHGUI_MeshOp::startOperation()
 {
+  myIgnoreAlgoSelection = false;
+
   if (!myDlg)
   {
     myDlg = new SMESHGUI_MeshDlg( myToCreate, myIsMesh );
@@ -260,7 +262,6 @@ void SMESHGUI_MeshOp::startOperation()
   myDlg->setGeomPopupEnabled(false);
   selectionDone();
 
-  myIgnoreAlgoSelection = false;
   myHasConcurrentSubBefore = false;
 
   myObjectToSelect.clear();
@@ -2172,6 +2173,7 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
             SMESH::CreateHypothesis(aHypName, aHypName, true);
           aHyp.out();
         }
+        delete aCreator;
       }
       QStringList tmpList;
       _PTR(SComponent) aFather = SMESH::GetActiveStudyDocument()->FindComponent( "SMESH" );

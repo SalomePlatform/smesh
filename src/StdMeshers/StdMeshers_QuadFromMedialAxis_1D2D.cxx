@@ -25,6 +25,7 @@
 
 #include "StdMeshers_QuadFromMedialAxis_1D2D.hxx"
 
+#include "SMESHDS_Mesh.hxx"
 #include "SMESH_Block.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_MAT2d.hxx"

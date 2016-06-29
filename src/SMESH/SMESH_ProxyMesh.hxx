@@ -26,7 +26,6 @@
 
 #include "SMESH_SMESH.hxx"
 
-#include "SMDS_MeshElement.hxx"
 #include "SMESHDS_SubMesh.hxx"
 #include "SMESH_TypeDefs.hxx"
 
@@ -37,6 +36,7 @@
 #include <boost/shared_ptr.hpp>
 
 class SMDS_MeshNode;
+class SMDS_MeshElement;
 class SMESHDS_Mesh;
 class SMESH_Mesh;
 

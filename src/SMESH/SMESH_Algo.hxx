@@ -35,8 +35,6 @@
 #include "SMESH_ComputeError.hxx"
 #include "SMESH_Hypothesis.hxx"
 
-#include <TopoDS_Shape.hxx>
-#include <TopoDS_Edge.hxx>
 #include <GeomAbs_Shape.hxx>
 
 #include <string>
@@ -54,6 +52,7 @@ class SMESH_Mesh;
 class SMESH_MesherHelper;
 class SMESH_ProxyMesh;
 class SMESH_subMesh;
+class TopoDS_Edge;
 class TopoDS_Face;
 class TopoDS_Shape;
 class TopoDS_Vertex;
@@ -349,7 +348,7 @@ public:
     * \param E2 - the 2nd edge
     * \retval GeomAbs_Shape - regularity at the junction between E1 and E2
    */
-  static GeomAbs_Shape Continuity(TopoDS_Edge E1, TopoDS_Edge E2);
+  static GeomAbs_Shape Continuity(const TopoDS_Edge& E1, const TopoDS_Edge& E2);
 
   /*!
    * \brief Return true if an edge can be considered as a continuation of another

@@ -29,6 +29,7 @@
 
 #include "utilities.h"
 #include "SMESH_Gen.hxx"
+#include "SMESH_Mesh.hxx"
 
 #include <TopoDS.hxx>
 

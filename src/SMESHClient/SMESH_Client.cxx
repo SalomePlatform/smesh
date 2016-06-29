@@ -24,8 +24,10 @@
 //  Module : SMESH
 
 #include "SMESH_Client.hxx"
-#include "SMESH_Mesh.hxx"
+
+#include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_Script.hxx"
+#include "SMESH_Mesh.hxx"
 
 #include "SALOME_NamingService.hxx"
 #include "SALOME_LifeCycleCORBA.hxx"

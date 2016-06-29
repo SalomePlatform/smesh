@@ -27,13 +27,13 @@
 //
 #include "SMESH_Pattern_i.hxx"
 
-#include "GEOM_Client.hxx"
+#include "SMDS_MeshFace.hxx"
+#include "SMDS_MeshVolume.hxx"
+#include "SMESHDS_Mesh.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_Mesh_i.hxx"
 #include "SMESH_PythonDump.hxx"
-#include "SMDS_MeshFace.hxx"
-#include "SMDS_MeshVolume.hxx"
 
 #include <TopExp_Explorer.hxx>
 #include <TopoDS.hxx>

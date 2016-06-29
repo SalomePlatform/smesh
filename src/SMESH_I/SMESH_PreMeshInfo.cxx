@@ -35,6 +35,7 @@
 #include "SMDS_VertexPosition.hxx"
 #include "SMESHDS_Group.hxx"
 #include "SMESHDS_GroupOnFilter.hxx"
+#include "SMESHDS_Mesh.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Group_i.hxx"
 #include "SMESH_Mesh_i.hxx"

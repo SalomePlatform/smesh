@@ -30,9 +30,7 @@
 
 #include "SMESH_SMESH.hxx"
 
-#include "SMDS_MeshElement.hxx"
 #include "SMESH_Controls.hxx"
-#include "SMESH_Mesh.hxx"
 #include "SMESH_TypeDefs.hxx"
 #include "SMESH_ComputeError.hxx"
 
@@ -45,13 +43,22 @@
 #include <map>
 #include <set>
 
+class SMDS_MeshElement;
 class SMDS_MeshFace;
 class SMDS_MeshNode;
-class gp_Ax1;
-class gp_Vec;
-class gp_Pnt;
+class SMESHDS_Mesh;
+class SMESHDS_SubMesh;
+class SMESH_Group;
+class SMESH_Mesh;
 class SMESH_MesherHelper;
 class SMESH_NodeSearcher;
+class SMESH_subMesh;
+class TopoDS_Edge;
+class TopoDS_Shape;
+class TopoDS_Vertex;
+class gp_Ax1;
+class gp_Pnt;
+class gp_Vec;
 
 // ============================================================
 /*!
@@ -65,8 +72,8 @@ public:
 
   SMESH_MeshEditor( SMESH_Mesh* theMesh );
 
-  SMESH_Mesh   *                 GetMesh()   { return myMesh; }
-  SMESHDS_Mesh *                 GetMeshDS() { return myMesh->GetMeshDS(); }
+  SMESH_Mesh   *                 GetMesh() { return myMesh; }
+  SMESHDS_Mesh *                 GetMeshDS();
 
   const SMESH_SequenceOfElemPtr& GetLastCreatedNodes() const { return myLastCreatedNodes; }
   const SMESH_SequenceOfElemPtr& GetLastCreatedElems() const { return myLastCreatedElems; }

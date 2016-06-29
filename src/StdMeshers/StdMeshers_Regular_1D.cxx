@@ -29,6 +29,7 @@
 
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "SMESHDS_Mesh.hxx"
 #include "SMESH_Comment.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_HypoFilter.hxx"
@@ -37,8 +38,8 @@
 #include "SMESH_subMeshEventListener.hxx"
 #include "StdMeshers_Adaptive1D.hxx"
 #include "StdMeshers_Arithmetic1D.hxx"
-#include "StdMeshers_Geometric1D.hxx"
 #include "StdMeshers_AutomaticLength.hxx"
+#include "StdMeshers_Geometric1D.hxx"
 #include "StdMeshers_Deflection1D.hxx"
 #include "StdMeshers_Distribution.hxx"
 #include "StdMeshers_FixedPoints1D.hxx"

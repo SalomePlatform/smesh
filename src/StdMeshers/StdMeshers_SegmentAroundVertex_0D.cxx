@@ -28,6 +28,8 @@
 //
 #include "StdMeshers_SegmentAroundVertex_0D.hxx"
 
+#include <TopAbs_ShapeEnum.hxx>
+
 //=======================================================================
 //function : StdMeshers_SegmentAroundVertex_0D
 //purpose  : 

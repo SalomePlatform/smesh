@@ -960,9 +960,9 @@ void SMESH_Gen_i::SetOption(const char* name, const char* value)
           if ( str.at(i*2) >= '0' && str.at(i*2) <= 'f' && str.at(i*2+1) >= '0' && str.at(i*2+1) <= 'f' )
             color.push_back( strtol( str.substr( i*2, 2 ).c_str(), NULL, 16 ) );
       }
-      else { // rgb color ("255,170,0", for example)
-        char* tempValue = strdup( value );
-        char* colorValue = strtok( tempValue, "," );
+      else if ( value ) { // rgb color ("255,170,0", for example)
+        string tempValue( value );
+        char* colorValue = strtok( &tempValue[0], "," );
         while ( colorValue != NULL ) {
           int c_value = atoi( colorValue );
           if ( c_value >= 0 && c_value <= 255 )

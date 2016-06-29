@@ -26,8 +26,12 @@
 //  Module : SMESH
 //
 #include "SMESH_Hypothesis.hxx"
+
+#include "SMESHDS_Mesh.hxx"
 #include "SMESH_Gen.hxx"
+#include "SMESH_Mesh.hxx"
 #include "SMESH_subMesh.hxx"
+
 #include "utilities.h"
 
 using namespace std;
@@ -121,15 +125,15 @@ void SMESH_Hypothesis::NotifySubMeshesHypothesisModification()
   for (itm = myStudyContext->mapMesh.begin();
        itm != myStudyContext->mapMesh.end();
        itm++)
-    {
-      SMESH_Mesh* mesh = (*itm).second;
-      mesh->NotifySubMeshesHypothesisModification( this );
-    }
+  {
+    SMESH_Mesh* mesh = (*itm).second;
+    mesh->NotifySubMeshesHypothesisModification( this );
+  }
 }
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 

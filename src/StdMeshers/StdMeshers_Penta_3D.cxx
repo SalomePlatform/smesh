@@ -33,6 +33,7 @@
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_VolumeOfNodes.hxx"
 #include "SMDS_VolumeTool.hxx"
+#include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_SubMesh.hxx"
 #include "SMESH_Comment.hxx"
 #include "SMESH_Mesh.hxx"

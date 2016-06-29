@@ -24,12 +24,13 @@
 //
 #include "StdMeshers_Adaptive1D.hxx"
 
+#include "SMESHDS_Mesh.hxx"
 #include "SMESH_Gen.hxx"
+#include "SMESH_HypoFilter.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_Octree.hxx"
 #include "SMESH_subMesh.hxx"
-#include "SMESH_HypoFilter.hxx"
 
 #include <Utils_SALOME_Exception.hxx>
 

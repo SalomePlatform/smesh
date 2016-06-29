@@ -35,6 +35,7 @@
 #include "SMDS_MeshNode.hxx"
 #include "SMESHDS_Document.hxx"
 #include "SMESH_HypoFilter.hxx"
+#include "SMESH_Mesh.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMesh.hxx"
 

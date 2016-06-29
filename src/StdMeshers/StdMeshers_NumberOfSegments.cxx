@@ -28,10 +28,11 @@
 //
 #include "StdMeshers_NumberOfSegments.hxx"
 
-#include "StdMeshers_Distribution.hxx"
+#include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_SubMesh.hxx"
-#include "SMESH_Mesh.hxx"
 #include "SMESH_Comment.hxx"
+#include "SMESH_Mesh.hxx"
+#include "StdMeshers_Distribution.hxx"
 
 #include <ExprIntrp_GenExp.hxx>
 #include <Expr_Array1OfNamedUnknown.hxx>

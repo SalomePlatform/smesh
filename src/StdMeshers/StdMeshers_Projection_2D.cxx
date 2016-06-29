@@ -35,6 +35,7 @@
 #include "SMDS_EdgePosition.hxx"
 #include "SMDS_FacePosition.hxx"
 #include "SMESHDS_Hypothesis.hxx"
+#include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_SubMesh.hxx"
 #include "SMESH_Block.hxx"
 #include "SMESH_Comment.hxx"

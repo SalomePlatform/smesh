@@ -27,10 +27,10 @@
 //
 #include "SMESH_Group_i.hxx"
 
-#include "SMDSAbs_ElementType.hxx"
 #include "SMESHDS_Group.hxx"
 #include "SMESHDS_GroupOnFilter.hxx"
 #include "SMESHDS_GroupOnGeom.hxx"
+#include "SMESHDS_Mesh.hxx"
 #include "SMESH_Comment.hxx"
 #include "SMESH_Filter_i.hxx"
 #include "SMESH_Gen_i.hxx"

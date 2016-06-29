@@ -32,19 +32,22 @@
 
 #include "Utils_SALOME_Exception.hxx"
 
-#include "SMESH_Hypothesis.hxx"
-#include "SMESH_ComputeError.hxx"
 #include "SMESH_Algo.hxx"
-#include "SMESH_Mesh.hxx"
-
-#include <TopoDS_Shape.hxx>
+#include "SMESH_ComputeError.hxx"
 
 #include <map>
 #include <list>
+#include <set>
 #include <vector>
 #include <string>
 
+#include <TopoDS_Shape.hxx>
+
 class SMESHDS_Document;
+class SMESH_Algo;
+class SMESH_Mesh;
+class TopoDS_Shape;
+class SMESH_subMesh;
 
 typedef SMESH_Hypothesis::Hypothesis_Status TAlgoStateErrorName;
 
@@ -141,7 +144,7 @@ public:
   StudyContextStruct *GetStudyContext(int studyId);
 
   static int GetShapeDim(const TopAbs_ShapeEnum & aShapeType);
-  static int GetShapeDim(const TopoDS_Shape & aShape)
+  static int GetShapeDim(const TopoDS_Shape &     aShape)
   { return GetShapeDim( aShape.ShapeType() ); }
 
   SMESH_Algo* GetAlgo(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape, TopoDS_Shape* assignedTo=0);
@@ -152,12 +155,6 @@ public:
   static std::vector< std::string > GetPluginXMLPaths();
 
   int GetANewId();
-
-  // std::map < int, SMESH_Algo * >_mapAlgo;
-  // std::map < int, SMESH_0D_Algo * >_map0D_Algo;
-  // std::map < int, SMESH_1D_Algo * >_map1D_Algo;
-  // std::map < int, SMESH_2D_Algo * >_map2D_Algo;
-  // std::map < int, SMESH_3D_Algo * >_map3D_Algo;
 
 private:
 

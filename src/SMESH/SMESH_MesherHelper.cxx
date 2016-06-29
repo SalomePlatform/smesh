@@ -31,8 +31,10 @@
 #include "SMDS_FacePosition.hxx" 
 #include "SMDS_IteratorOnIterators.hxx"
 #include "SMDS_VolumeTool.hxx"
+#include "SMESHDS_Mesh.hxx"
 #include "SMESH_Block.hxx"
 #include "SMESH_HypoFilter.hxx"
+#include "SMESH_Mesh.hxx"
 #include "SMESH_MeshAlgos.hxx"
 #include "SMESH_ProxyMesh.hxx"
 #include "SMESH_subMesh.hxx"
@@ -111,6 +113,28 @@ SMESH_MesherHelper::~SMESH_MesherHelper()
     for ( ; i_proj != myEdge2Projector.end(); ++i_proj )
       delete i_proj->second;
   }
+}
+
+//================================================================================
+/*!
+ * \brief Return SMESH_Gen
+ */
+//================================================================================
+
+SMESH_Gen* SMESH_MesherHelper::GetGen() const
+{
+  return GetMesh()->GetGen();
+}
+
+//================================================================================
+/*!
+ * \brief Return mesh DS
+ */
+//================================================================================
+
+SMESHDS_Mesh* SMESH_MesherHelper::GetMeshDS() const
+{
+  return GetMesh()->GetMeshDS();
 }
 
 //=======================================================================
@@ -345,6 +369,16 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
       }
     }
   }
+}
+
+//=======================================================================
+//function : ShapeToIndex
+//purpose  : Convert a shape to its index in the SMESHDS_Mesh
+//=======================================================================
+
+int SMESH_MesherHelper::ShapeToIndex( const TopoDS_Shape& S ) const
+{
+  return GetMeshDS()->ShapeToIndex( S );
 }
 
 //=======================================================================

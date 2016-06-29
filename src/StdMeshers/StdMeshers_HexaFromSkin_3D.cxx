@@ -25,7 +25,9 @@
 
 #include "SMDS_VolumeOfNodes.hxx"
 #include "SMDS_VolumeTool.hxx"
+#include "SMESHDS_Mesh.hxx"
 #include "SMESH_Block.hxx"
+#include "SMESH_Mesh.hxx"
 #include "SMESH_MeshAlgos.hxx"
 #include "SMESH_MesherHelper.hxx"
 

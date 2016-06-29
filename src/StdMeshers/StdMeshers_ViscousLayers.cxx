@@ -30,6 +30,7 @@
 #include "SMDS_SetIterator.hxx"
 #include "SMESHDS_Group.hxx"
 #include "SMESHDS_Hypothesis.hxx"
+#include "SMESHDS_Mesh.hxx"
 #include "SMESH_Algo.hxx"
 #include "SMESH_ComputeError.hxx"
 #include "SMESH_ControlsDef.hxx"

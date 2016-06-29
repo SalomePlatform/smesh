@@ -494,10 +494,11 @@ SMESH_Algo::GetCompatibleHypoFilter(const bool ignoreAuxiliary) const
  */
 //================================================================================
 
-GeomAbs_Shape SMESH_Algo::Continuity(TopoDS_Edge E1,
-                                     TopoDS_Edge E2)
+GeomAbs_Shape SMESH_Algo::Continuity(const TopoDS_Edge& theE1,
+                                     const TopoDS_Edge& theE2)
 {
-  //E1.Orientation(TopAbs_FORWARD), E2.Orientation(TopAbs_FORWARD); // avoid pb with internal edges
+  // avoid pb with internal edges
+  TopoDS_Edge E1 = theE1, E2 = theE2;
   if (E1.Orientation() > TopAbs_REVERSED) // INTERNAL
     E1.Orientation( TopAbs_FORWARD );
   if (E2.Orientation() > TopAbs_REVERSED) // INTERNAL

@@ -26,10 +26,12 @@
 //  Module : SMESH
 //
 #include "SMESH_subMesh_i.hxx"
+
+#include "SMESHDS_SubMesh.hxx"
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_Mesh_i.hxx"
-#include "SMESH_PreMeshInfo.hxx"
 #include "SMESH_MesherHelper.hxx"
+#include "SMESH_PreMeshInfo.hxx"
 
 #include "Utils_CorbaException.hxx"
 #include "utilities.h"

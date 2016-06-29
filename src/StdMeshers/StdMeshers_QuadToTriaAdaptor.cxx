@@ -27,8 +27,10 @@
 #include "SMDS_IteratorOnIterators.hxx"
 #include "SMDS_SetIterator.hxx"
 #include "SMESHDS_GroupBase.hxx"
+#include "SMESHDS_Mesh.hxx"
 #include "SMESH_Algo.hxx"
 #include "SMESH_Group.hxx"
+#include "SMESH_Mesh.hxx"
 #include "SMESH_MeshAlgos.hxx"
 #include "SMESH_MesherHelper.hxx"
 

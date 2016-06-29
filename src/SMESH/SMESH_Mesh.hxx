@@ -30,11 +30,10 @@
 #include "SMESH_SMESH.hxx"
 
 #include "SMDSAbs_ElementType.hxx"
-#include "SMESHDS_Command.hxx"
-#include "SMESHDS_Mesh.hxx"
 #include "SMESH_ComputeError.hxx"
 #include "SMESH_Controls.hxx"
 #include "SMESH_Hypothesis.hxx"
+#include "SMDS_Iterator.hxx"
 
 #include "Utils_SALOME_Exception.hxx"
 
@@ -51,11 +50,15 @@
 #pragma warning(disable:4290) // Warning Exception ...
 #endif
 
-class SMESH_Gen;
+class SMESHDS_Command;
 class SMESHDS_Document;
+class SMESHDS_GroupBase;
+class SMESHDS_Hypothesis;
+class SMESHDS_Mesh;
+class SMESH_Gen;
 class SMESH_Group;
-class SMESH_subMesh;
 class SMESH_HypoFilter;
+class SMESH_subMesh;
 class TopoDS_Solid;
 
 typedef std::list<int> TListOfInt;

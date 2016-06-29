@@ -26,8 +26,10 @@
 //
 #include "SMESH_HypoFilter.hxx"
 
+#include "SMESHDS_Mesh.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_Hypothesis.hxx"
+#include "SMESH_Mesh.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMesh.hxx"
 

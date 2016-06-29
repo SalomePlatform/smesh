@@ -29,9 +29,7 @@
 
 #include "SMESH_SMESH.hxx"
 
-#include "SMESHDS_Mesh.hxx"
-#include "SMESHDS_SubMesh.hxx"
-#include "SMESH_Hypothesis.hxx"
+#include "SMDS_Iterator.hxx"
 #include "SMESH_ComputeError.hxx"
 #include "SMESH_Algo.hxx"
 
@@ -42,13 +40,15 @@
 #include <list>
 #include <map>
 
-class SMESH_Mesh;
-class SMESH_Hypothesis;
+class SMESHDS_Mesh;
+class SMESHDS_SubMesh;
 class SMESH_Algo;
 class SMESH_Gen;
+class SMESH_Hypothesis;
+class SMESH_Mesh;
+class SMESH_subMesh;
 class SMESH_subMeshEventListener;
 class SMESH_subMeshEventListenerData;
-class SMESH_subMesh;
 
 typedef SMESH_subMeshEventListener     EventListener;
 typedef SMESH_subMeshEventListenerData EventListenerData;

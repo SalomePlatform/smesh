@@ -24,6 +24,8 @@
 
 #include "SMDS_IteratorOnIterators.hxx"
 #include "SMDS_SetIterator.hxx"
+#include "SMESHDS_Mesh.hxx"
+#include "SMESH_Mesh.hxx"
 #include "SMESH_MesherHelper.hxx"
 
 #include <TopTools_ListIteratorOfListOfShape.hxx>
@@ -99,7 +101,7 @@ SMESH_ProxyMesh::SMESH_ProxyMesh(std::vector<SMESH_ProxyMesh::Ptr>& components):
 
 SMESH_ProxyMesh::~SMESH_ProxyMesh()
 {
-  for ( unsigned i = 0; i < _subMeshes.size(); ++i )
+  for ( size_t i = 0; i < _subMeshes.size(); ++i )
     delete _subMeshes[i];
   _subMeshes.clear();
 

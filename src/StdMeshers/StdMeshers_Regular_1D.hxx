@@ -33,6 +33,8 @@
 
 #include "SMESH_Algo.hxx"
 
+#include <TopoDS_Shape.hxx>
+
 class Adaptor3d_Curve;
 class StdMeshers_Adaptive1D;
 class StdMeshers_FixedPoints1D;
