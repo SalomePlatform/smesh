@@ -43,7 +43,7 @@
 
 #include <map>
 #include <list>
-
+#include <vector>
 
 #ifdef WIN32
 #pragma warning(disable:4251) // Warning DLL Interface ...
