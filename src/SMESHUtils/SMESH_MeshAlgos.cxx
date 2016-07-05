@@ -906,8 +906,9 @@ TopAbs_State SMESH_ElementSearcherImpl::GetPointState(const gp_Pnt& point)
       }
       else if ( ! intersection.IsParallel() && intersection.NbPoints() > 0 )
       {
+        double tol = 1e-4 * Sqrt( fNorm.Modulus() );
         gp_Pnt intersectionPoint = intersection.Point(1);
-        if ( !SMESH_MeshAlgos::IsOut( *face, intersectionPoint, tolerance ))
+        if ( !SMESH_MeshAlgos::IsOut( *face, intersectionPoint, tol ))
           u2inters.insert(make_pair( intersection.ParamOnConic(1), TInters( *face, fNorm )));
       }
     }
@@ -1133,14 +1134,11 @@ bool SMESH_MeshAlgos::IsOut( const SMDS_MeshElement* element, const gp_Pnt& poin
 
   // get ordered nodes
 
-  vector< SMESH_TNodeXYZ > xyz;
+  vector< SMESH_TNodeXYZ > xyz; xyz.reserve( element->NbNodes()+1 );
 
   SMDS_ElemIteratorPtr nodeIt = element->interlacedNodesElemIterator();
-  while ( nodeIt->more() )
-  {
-    SMESH_TNodeXYZ node = nodeIt->next();
-    xyz.push_back( node );
-  }
+  for ( int i = 0; nodeIt->more(); ++i )
+    xyz.push_back( SMESH_TNodeXYZ( nodeIt->next() ));
 
   int i, nbNodes = (int) xyz.size(); // central node of biquadratic is missing
 
@@ -1171,8 +1169,23 @@ bool SMESH_MeshAlgos::IsOut( const SMDS_MeshElement* element, const gp_Pnt& poin
 
     // check if the point lays on face plane
     gp_Vec n2p( xyz[0], point );
-    if ( fabs( n2p * faceNorm ) > tol )
-      return true; // not on face plane
+    double dot = n2p * faceNorm;
+    if ( Abs( dot ) > tol ) // not on face plane
+    {
+      bool isOut = true;
+      if ( nbNodes > 3 ) // maybe the face is not planar
+      {
+        double elemThick = 0;
+        for ( i = 1; i < nbNodes; ++i )
+        {
+          gp_Vec n2n( xyz[0], xyz[i] );
+          elemThick = Max( elemThick, Abs( n2n * faceNorm ));
+        }
+        isOut = Abs( dot ) > elemThick + tol;
+      }
+      if ( isOut )
+        return isOut;
+    }
 
     // check if point is out of face boundary:
     // define it by closest transition of a ray point->infinity through face boundary
@@ -1184,7 +1197,7 @@ bool SMESH_MeshAlgos::IsOut( const SMDS_MeshElement* element, const gp_Pnt& poin
     normSize = plnNorm.Magnitude();
     if ( normSize <= tol ) return false; // point coincides with the first node
     plnNorm /= normSize;
-    // for each node of the face, compute its signed distance to the plane
+    // for each node of the face, compute its signed distance to the cutting plane
     vector<double> dist( nbNodes + 1);
     for ( i = 0; i < nbNodes; ++i )
     {
@@ -1194,12 +1207,12 @@ bool SMESH_MeshAlgos::IsOut( const SMDS_MeshElement* element, const gp_Pnt& poin
     dist.back() = dist.front();
     // find the closest intersection
     int    iClosest = -1;
-    double rClosest = 0, distClosest = 1e100;;
+    double rClosest = 0, distClosest = 1e100;
     gp_Pnt pClosest;
     for ( i = 0; i < nbNodes; ++i )
     {
       double r;
-      if ( fabs( dist[i]) < tol )
+      if ( fabs( dist[i] ) < tol )
         r = 0.;
       else if ( fabs( dist[i+1]) < tol )
         r = 1.;
@@ -1208,17 +1221,14 @@ bool SMESH_MeshAlgos::IsOut( const SMDS_MeshElement* element, const gp_Pnt& poin
       else
         continue; // no intersection
       gp_Pnt pInt = xyz[i] * (1.-r) + xyz[i+1] * r;
-      gp_Vec p2int ( point, pInt);
-      if ( p2int * ray > -tol ) // right half-space
+      gp_Vec p2int( point, pInt);
+      double intDist = p2int.SquareMagnitude();
+      if ( intDist < distClosest )
       {
-        double intDist = p2int.SquareMagnitude();
-        if ( intDist < distClosest )
-        {
-          iClosest = i;
-          rClosest = r;
-          pClosest = pInt;
-          distClosest = intDist;
-        }
+        iClosest = i;
+        rClosest = r;
+        pClosest = pInt;
+        distClosest = intDist;
       }
     }
     if ( iClosest < 0 )
