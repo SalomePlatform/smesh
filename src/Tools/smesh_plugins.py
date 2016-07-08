@@ -42,11 +42,11 @@ except:
 
 try:
   from yamsplug_plugin import YamsLct
-  salome_pluginsmanager.AddFunction('ReMesh with MGSurfOpt ( formerly Yams )',
+  salome_pluginsmanager.AddFunction('ReMesh with MGSurfOpt',
                                     'Run Yams',
                                     YamsLct)
 except:
-  salome_pluginsmanager.logger.info('ERROR: MGSurfOpt (Yams) plug-in is unavailable')
+  salome_pluginsmanager.logger.info('ERROR: MGSurfOpt plug-in is unavailable')
   pass
 
 try:

@@ -37,7 +37,7 @@ def YamsLct(context):
       os.environ['DISTENE_LICENSE_FILE']
   except:
       QMessageBox.warning(None,"Products","""\
-Distene's product MeshGem SurfOpt (formerly Yams) is not installed.
+Distene's product MeshGem SurfOpt is not installed.
 required environment variable:
 DISTENE_LICENSE_FILE='.../dlim8.var.sh'""")
       return
