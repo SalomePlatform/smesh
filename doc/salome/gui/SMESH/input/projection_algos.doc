@@ -2,8 +2,19 @@
 
 \page projection_algos_page Projection Algorithms
 
-\n Projection algorithms allow to define the mesh of a geometrical
+\tableofcontents
+
+Projection algorithms allow to define the mesh of a geometrical
 object by the projection of another already meshed geometrical object.
+
+\note Source and target geometrical objects mush be topologically
+equal, i.e. they must have same number of sub-shapes, connected to
+corresponding counterparts.
+
+\image html topo_equality.png Topologically equal faces suitable for 2D projection.
+
+
+\section projection_1D Projection 1D
 
 <b>Projection 1D</b> algorithm allows to define the mesh of an edge
 (or group of edges)
@@ -33,6 +44,8 @@ shared by only one edge of the group. If <b>Source</b> and <b>Target</b>
 vertices are specified, the edges in the group must be connected.
 The source and target groups must contain equal number of edges
 and they must form topologically equal structures.
+
+\section projection_2D Projection 2D
 
 \n <b>Projection 2D</b> algorithm allows to define the mesh of a face
 (or group of faces) by the projection of another already meshed face
@@ -64,12 +77,16 @@ The groups of faces are suitable for this algorithm only if they
 contain an equal number of faces and form topologically equal
 structures.
 
-\n <b>Projection 1D-2D</b> algorithm differs from <b>Projection 2D</b>
-algorithm in one aspect: it generates mesh segments on edges of
-the face according to the projected 2D elements; thus it does not
-require the edges to be meshed by any other 1D algorithm; moreover it
-does not allow to mesh edges of the face using another algorithm via
-definition of sub-meshes.
+\section projection_1D2D Projection 1D-2D
+
+\n <b>Projection 1D-2D</b> algorithm differs from
+\ref projection_2D algorithm in one aspect: it generates mesh segments
+on edges of the face according to the projected 2D elements; thus it
+does not require the edges to be meshed by any other 1D algorithm;
+moreover it does not allow to mesh edges of the face using another
+algorithm via definition of sub-meshes.
+
+\section projection_3D Projection 3D
 
 \n <b>Projection 3D</b> algorithm allows to define the mesh of a shape by
 the projection of another already meshed shape.  This algorithm works

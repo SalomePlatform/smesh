@@ -2079,10 +2079,10 @@ TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * theGen,
     const TopoDS_Shape&  S = subMesh->_subShape;
     if ( S.ShapeType() != this->_subShape.ShapeType() )
       continue;
-    theSubs.push_back( subMesh );
     if ( subMesh == this )
     {
       aBuilder.Add( aCompound, S );
+      theSubs.push_back( subMesh );
     }
     else if ( subMesh->GetComputeState() == READY_TO_COMPUTE )
     {
@@ -2093,6 +2093,7 @@ TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * theGen,
         aBuilder.Add( aCompound, S );
         if ( !subMesh->SubMeshesComputed() )
           theSubComputed = false;
+        theSubs.push_back( subMesh );
       }
     }
   }

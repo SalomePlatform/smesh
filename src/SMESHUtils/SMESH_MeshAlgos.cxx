@@ -1252,6 +1252,7 @@ bool SMESH_MeshAlgos::IsOut( const SMDS_MeshElement* element, const gp_Pnt& poin
     bool covexCorner = ( edgeNorm * edgeAdjacent * (rClosest==1. ? 1. : -1.)) < 0;
     return covexCorner ? (out || out2) : (out && out2);
   }
+
   if ( element->GetType() == SMDSAbs_Edge ) // --------------------------------------------------
   {
     // point is out of edge if it is NOT ON any straight part of edge
@@ -1279,6 +1280,7 @@ bool SMESH_MeshAlgos::IsOut( const SMDS_MeshElement* element, const gp_Pnt& poin
     }
     return true;
   }
+
   // Node or 0D element -------------------------------------------------------------------------
   {
     gp_Vec n2p ( xyz[0], point );

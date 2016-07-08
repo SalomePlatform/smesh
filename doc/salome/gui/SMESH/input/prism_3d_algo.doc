@@ -49,20 +49,34 @@ The \b Local algorithms and hypotheses to be chosen at
 \ref constructing_submeshes_page "Construction of sub-meshes" are:
 <ul>
   <li> 1D and 2D algorithms and hypotheses that will be applied for
-    meshing the top and the base prism faces. These faces can be meshed
+    meshing the top and the base prism
+    \ref submesh_shape_section "faces". These faces can be meshed
     with any type of 2D elements: quadrangles, triangles, polygons or
-    their mix. It is enough to define a sub-mesh on either the top or the base
-    face. In the sample picture above, "NETGEN_1D2D" algorithm meshes
-    "bottom disk" face with triangles. (1D algorithm is not
-    assigned as "NETGEN_1D2D" does not require divided edges to create a 2D mesh.)
+    their mix. It is enough to define a sub-mesh on either the top or
+    the base face. In the sample picture above, "NETGEN_1D2D"
+    algorithm meshes "bottom disk" face with triangles. (1D algorithm
+    is not assigned as "NETGEN_1D2D" does not require divided edges to
+    create a 2D mesh.)
   </li>
-  <li> Optionally you can define a 1D sub-mesh on some vertical edges
-    of stacked prisms, which will override the global 1D hypothesis mentioned
-    above. In the <b>Prism stacks</b> picture, the
-    vertical division is not equidistant on the whole length because 
-    a "Number Of Segments" hypothesis with Scale Factor=3 is assigned to
-    the highlighted edge. 
+  <li> Optionally you can define a 1D sub-mesh on some vertical
+    \ref submesh_shape_section "edges" of stacked prisms, which will
+    override the global 1D hypothesis mentioned above. In the <b>Prism
+    stacks</b> picture, the vertical division is not equidistant on
+    the whole length because a "Number Of Segments" hypothesis with
+    Scale Factor=3 is assigned to the highlighted edge.
 </li></ul>
+
+If <em>3D extrusion</em> algorithm is assigned to a sub-mesh in a mesh
+with multiple sub-meshes, the described above approach may not work as
+expected. For example the bottom face may be meshed by other algorithm
+before <em>3D extrusion</em> have a chance to project a mesh from the
+base face. This thing can happen with vertical edges as well. All
+these can lead to either a meshing failure or to an incorrect meshing.
+
+In such a case, it's necessary to explicitly define algorithms
+that <em>3D extrusion</em> implicitly applies in a simple case:
+- assign \ref projection_1D2D algorithm to the top face and
+- assign a 1D algorithm to a group of all vertical edges.
 
 \image html image157.gif "Prism with 3D extrusion meshing. Vertical division is different on neighbor edges because several local 1D hypotheses are assigned."
 
