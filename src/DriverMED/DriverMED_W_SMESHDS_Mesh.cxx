@@ -60,7 +60,7 @@ DriverMED_W_SMESHDS_Mesh::DriverMED_W_SMESHDS_Mesh():
   myDoGroupOfVolumes (false),
   myDoGroupOf0DElems(false),
   myDoGroupOfBalls(false),
-  myAutoDimension(true),
+  myAutoDimension(false),
   myAddODOnVertices(false)
 {}
 
@@ -331,13 +331,22 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     }
 
     // Mesh dimension definition
+
+    TInt aMeshDimension = 0;
+    if ( myMesh->NbEdges() > 0 )
+      aMeshDimension = 1;
+    if ( myMesh->NbFaces() > 0 )
+      aMeshDimension = 2;
+    if ( myMesh->NbVolumes() > 0 )
+      aMeshDimension = 3;
+
     TInt aSpaceDimension = 3;
     TCoordHelperPtr aCoordHelperPtr;
     {
       bool anIsXDimension = false;
       bool anIsYDimension = false;
       bool anIsZDimension = false;
-      if ( myAutoDimension )
+      if ( myAutoDimension && aMeshDimension < 3 )
       {
         SMDS_NodeIteratorPtr aNodesIter = myMesh->nodesIterator();
         double aBounds[6];
@@ -380,7 +389,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
         anIsXDimension = (aBounds[1] - aBounds[0]) + abs(aBounds[1]) + abs(aBounds[0]) > EPS;
         anIsYDimension = (aBounds[3] - aBounds[2]) + abs(aBounds[3]) + abs(aBounds[2]) > EPS;
         anIsZDimension = (aBounds[5] - aBounds[4]) + abs(aBounds[5]) + abs(aBounds[4]) > EPS;
-        aSpaceDimension = anIsXDimension + anIsYDimension + anIsZDimension;
+        aSpaceDimension = Max( aMeshDimension, anIsXDimension + anIsYDimension + anIsZDimension );
         if ( !aSpaceDimension )
           aSpaceDimension = 3;
         // PAL16857(SMESH not conform to the MED convention):
@@ -420,13 +429,6 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
         break;
       }
     }
-    TInt aMeshDimension = 0;
-    if ( myMesh->NbEdges() > 0 )
-      aMeshDimension = 1;
-    if ( myMesh->NbFaces() > 0 )
-      aMeshDimension = 2;
-    if ( myMesh->NbVolumes() > 0 )
-      aMeshDimension = 3;
     
     MED::PWrapper myMed = CrWrapper(myFile,myMedVersion);
     PMeshInfo aMeshInfo = myMed->CrMeshInfo(aMeshDimension,aSpaceDimension,aMeshName);
