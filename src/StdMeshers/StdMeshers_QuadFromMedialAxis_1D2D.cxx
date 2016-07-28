@@ -122,7 +122,7 @@ public:
     if ( !StdMeshers_Regular_1D::computeInternalParameters( mesh, C3D, len, f, l, theParams, false))
     {
       for ( size_t i = 1; i < 15; ++i )
-        theParams.push_back( i/15 );
+        theParams.push_back( i/15. ); // ????
     }
     else
     {
@@ -1561,7 +1561,7 @@ namespace
       uvsNew.push_back( uvPt );
       for (list<double>::iterator itU = params.begin(); itU != params.end(); ++itU )
       {
-        gp_XY uv  = ( 1 - *itU ) * uvOut + *itU * uvIn;
+        gp_XY uv  = ( 1 - *itU ) * uvOut + *itU * uvIn; // applied in direction Out -> In
         gp_Pnt p  = surface->Value( uv.X(), uv.Y() );
         uvPt.node = theHelper.AddNode( p.X(), p.Y(), p.Z(), /*id=*/0, uv.X(), uv.Y() );
         uvPt.u    = uv.X();

@@ -215,10 +215,14 @@ public:
    */
   const SMDS_MeshNode* VertexNode(std::size_t i, bool* isMoved = 0) const;
 
-  /*!
+  /*
    * \brief Return edge and parameter on edge by normalized parameter
    */
   inline double Parameter(double U, TopoDS_Edge & edge) const;
+  /*
+   * \brief Return edge ID and parameter on edge by normalized parameter
+   */
+  inline double Parameter(double U, int & edgeID) const;
   /*!
    * \brief Return UV by normalized parameter
    */
@@ -351,9 +355,11 @@ inline int StdMeshers_FaceSide::EdgeIndex( double U ) const
 
 //================================================================================
 /*!
- * \brief Return edge and parameter on edge by normalized parameter
-  * \param U - the parameter
+ * \brief Return an edge and parameter on the edge by a normalized parameter
+  * \param U - normalized parameter
   * \retval double - pameter on a curve
+  * \ warning The returned parameter can be inaccurate if the edge is non-uniformly
+  *           parametrized. Use Value2d() to get a precise point on the edge
  */
 //================================================================================
 
@@ -361,6 +367,25 @@ inline double StdMeshers_FaceSide::Parameter(double U, TopoDS_Edge & edge) const
 {
   int i = EdgeIndex( U );
   edge = myEdge[ i ];
+  double prevU = i ? myNormPar[ i-1 ] : 0;
+  double r = ( U - prevU )/ ( myNormPar[ i ] - prevU );
+  return myFirst[i] * ( 1 - r ) + myLast[i] * r;
+}
+
+//================================================================================
+/*!
+ * \brief Return an edge ID and parameter on the edge by a normalized parameter
+  * \param U - normalized parameter
+  * \retval double - pameter on a curve
+  * \ warning The returned parameter can be inaccurate if the edge is non-uniformly
+  *           parametrized. Use Value2d() to get a precise point on the edge
+ */
+//================================================================================
+
+inline double StdMeshers_FaceSide::Parameter(double U, int & edgeID) const
+{
+  int i = EdgeIndex( U );
+  edgeID = myEdgeID[ i ];
   double prevU = i ? myNormPar[ i-1 ] : 0;
   double r = ( U - prevU )/ ( myNormPar[ i ] - prevU );
   return myFirst[i] * ( 1 - r ) + myLast[i] * r;

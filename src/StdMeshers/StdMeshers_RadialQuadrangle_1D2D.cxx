@@ -17,9 +17,8 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH : implementaion of SMESH idl descriptions
-// File      : StdMeshers_RadialQuadrangle_1D2D.cxx
-// Module    : SMESH
+// File  : StdMeshers_RadialQuadrangle_1D2D.cxx
+// Module: SMESH
 
 #include "StdMeshers_RadialQuadrangle_1D2D.hxx"
 
@@ -27,6 +26,7 @@
 #include "StdMeshers_LayerDistribution.hxx"
 #include "StdMeshers_Regular_1D.hxx"
 #include "StdMeshers_NumberOfSegments.hxx"
+#include "StdMeshers_FaceSide.hxx"
 
 #include "SMDS_MeshNode.hxx"
 #include "SMESHDS_Mesh.hxx"
@@ -37,16 +37,23 @@
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMesh.hxx"
 #include "SMESH_subMeshEventListener.hxx"
+#include "SMESH_Block.hxx"
 
 #include "utilities.h"
 
+#include <BRepAdaptor_CompCurve.hxx>
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepBuilderAPI_MakeEdge.hxx>
+#include <BRep_Builder.hxx>
 #include <BRep_Tool.hxx>
+#include <GCPnts_AbscissaPoint.hxx>
+#include <Geom2d_Line.hxx>
+#include <Geom2d_TrimmedCurve.hxx>
 #include <GeomAPI_ProjectPointOnSurf.hxx>
 #include <Geom_Circle.hxx>
 #include <Geom_Line.hxx>
 #include <Geom_TrimmedCurve.hxx>
+#include <ShapeFix_Edge.hxx>
 #include <TColgp_SequenceOfPnt.hxx>
 #include <TColgp_SequenceOfPnt2d.hxx>
 #include <TopExp.hxx>
@@ -66,10 +73,10 @@ using namespace std;
 //purpose  : 
 //=======================================================================
 
-StdMeshers_RadialQuadrangle_1D2D::StdMeshers_RadialQuadrangle_1D2D(int hypId,
-                                                                   int studyId,
+StdMeshers_RadialQuadrangle_1D2D::StdMeshers_RadialQuadrangle_1D2D(int        hypId,
+                                                                   int        studyId,
                                                                    SMESH_Gen* gen)
-  :SMESH_2D_Algo(hypId, studyId, gen)
+  :StdMeshers_Quadrangle_2D( hypId, studyId, gen )
 {
   _name = "RadialQuadrangle_1D2D";
   _shapeType = (1 << TopAbs_FACE);        // 1 bit per shape type
@@ -173,10 +180,12 @@ namespace
     }
   };
 
-  // ------------------------------------------------------------------------------
+  //================================================================================
   /*!
    * \brief Mark an edge as computed by StdMeshers_RadialQuadrangle_1D2D
    */
+  //================================================================================
+
   void markEdgeAsComputedByMe(const TopoDS_Edge& edge, SMESH_subMesh* faceSubMesh)
   {
     if ( SMESH_subMesh* edgeSM = faceSubMesh->GetFather()->GetSubMeshContaining( edge ))
@@ -187,132 +196,402 @@ namespace
                                        edgeSM);
     }
   }
-  // ------------------------------------------------------------------------------
-  /*!
-   * \brief Return true if a radial edge was meshed with StdMeshers_RadialQuadrangle_1D2D with
-   * the same radial distribution
-   */
-//   bool isEdgeCompatiballyMeshed(const TopoDS_Edge& edge, SMESH_subMesh* faceSubMesh)
-//   {
-//     if ( SMESH_subMesh* edgeSM = faceSubMesh->GetFather()->GetSubMeshContaining( edge ))
-//     {
-//       if ( SMESH_subMeshEventListenerData* otherFaceData =
-//            edgeSM->GetEventListenerData( TEdgeMarker::getListener() ))
-//       {
-//         // compare hypothesis aplied to two disk faces sharing radial edges
-//         SMESH_Mesh& mesh = *faceSubMesh->GetFather();
-//         SMESH_Algo* radialQuadAlgo = mesh.GetGen()->GetAlgo(mesh, faceSubMesh->GetSubShape() );
-//         SMESH_subMesh* otherFaceSubMesh = otherFaceData->mySubMeshes.front();
-//         list <const SMESHDS_Hypothesis *> hyps1 =
-//           radialQuadAlgo->GetUsedHypothesis( mesh, faceSubMesh->GetSubShape());
-//         list <const SMESHDS_Hypothesis *> hyps2 =
-//           radialQuadAlgo->GetUsedHypothesis( mesh, otherFaceSubMesh->GetSubShape());
-//         if( hyps1.empty() && hyps2.empty() )
-//           return true; // defaul hyps
-//         if ( hyps1.size() != hyps2.size() )
-//           return false;
-//         return *hyps1.front() == *hyps2.front();
-//       }
-//     }
-//     return false;
-//   }
 
   //================================================================================
   /*!
-   * \brief Return base curve of the edge and extremum parameters
+   * \brief Return sides of the face connected in the order: aCircEdge, aLinEdge1, aLinEdge2
+   *  \retval int - nb of sides
    */
   //================================================================================
 
-  Handle(Geom_Curve) getCurve(const TopoDS_Edge& edge, double* f=0, double* l=0)
+  int analyseFace(const TopoDS_Shape&     aShape,
+                  SMESH_Mesh*             aMesh,
+                  StdMeshers_FaceSidePtr& aCircSide,
+                  StdMeshers_FaceSidePtr& aLinSide1,
+                  StdMeshers_FaceSidePtr& aLinSide2)
   {
-    Handle(Geom_Curve) C;
-    if ( !edge.IsNull() )
+    const TopoDS_Face& face = TopoDS::Face( aShape );
+    aCircSide.reset(); aLinSide1.reset(); aLinSide2.reset();
+
+    list< TopoDS_Edge > edges;
+    list< int > nbEdgesInWire;
+    int nbWire = SMESH_Block::GetOrderedEdges ( face, edges, nbEdgesInWire );
+    if ( nbWire > 2 || nbEdgesInWire.front() < 1 ) return 0;
+
+    // remove degenerated EDGEs
+    list<TopoDS_Edge>::iterator edge = edges.begin();
+    while ( edge != edges.end() )
+      if ( SMESH_Algo::isDegenerated( *edge ))
+        edge = edges.erase( edge );
+      else
+        ++edge;
+    int nbEdges = edges.size();
+
+    // find VERTEXes between continues EDGEs
+    TopTools_MapOfShape contVV;
+    if ( nbEdges > 1 )
     {
-      double first = 0., last = 0.;
-      C = BRep_Tool::Curve(edge, first, last);
-      if ( !C.IsNull() )
+      TopoDS_Edge ePrev = edges.back();
+      for ( edge = edges.begin(); edge != edges.end(); ++edge )
       {
-        Handle(Geom_TrimmedCurve) tc = Handle(Geom_TrimmedCurve)::DownCast(C);
-        while( !tc.IsNull() ) {
-          C = tc->BasisCurve();
-          tc = Handle(Geom_TrimmedCurve)::DownCast(C);
-        }
-        if ( f ) *f = first;
-        if ( l ) *l = last;
+        if ( SMESH_Algo::IsContinuous( ePrev, *edge ))
+          contVV.Add( SMESH_MesherHelper::IthVertex( 0, *edge ));
+        ePrev = *edge;
       }
     }
-    return C;
+    // make edges start from a non-continues VERTEX
+    if ( 1 < contVV.Extent() && contVV.Extent() < nbEdges )
+    {
+      while ( contVV.Contains( SMESH_MesherHelper::IthVertex( 0, edges.front() )))
+        edges.splice( edges.end(), edges, edges.begin() );
+    }
+
+    // make face sides
+    TSideVector sides;
+    while ( !edges.empty() )
+    {
+      list< TopoDS_Edge > sideEdges;
+      sideEdges.splice( sideEdges.end(), edges, edges.begin() );
+      while ( !edges.empty() &&
+              contVV.Contains( SMESH_MesherHelper::IthVertex( 0, edges.front() )))
+        sideEdges.splice( sideEdges.end(), edges, edges.begin() );
+
+      StdMeshers_FaceSidePtr side;
+      if ( aMesh ) 
+        side = StdMeshers_FaceSide::New( face, sideEdges, aMesh,
+                                         /*isFwd=*/true, /*skipMedium=*/ true );
+      sides.push_back( side );
+    }
+
+    if ( !aMesh ) // call from IsApplicable()
+      return sides.size();
+
+    if ( sides.size() > 3 )
+      return sides.size();
+
+    if ( nbWire == 2 && (( sides.size() != 2 ) ||
+                         ( sides[0]->IsClosed() && sides[1]->IsClosed() ) ||
+                         ( !sides[0]->IsClosed() && !sides[1]->IsClosed() )))
+      return -1;
+
+    // detect an elliptic side
+
+    if ( sides.size() == 1 )
+    {
+      aCircSide = sides[0];
+      return sides.size();
+    }
+
+    // sort sides by deviation from a straight line
+    multimap< double, int > deviation2sideInd;
+    const double nbSamples = 7;
+    for ( size_t iS = 0; iS < sides.size(); ++iS )
+    {
+      gp_Pnt pf = BRep_Tool::Pnt( sides[iS]->FirstVertex() );
+      gp_Pnt pl = BRep_Tool::Pnt( sides[iS]->LastVertex() );
+      gp_Vec v1( pf, pl );
+      double v1Len = v1.Magnitude();
+      if ( v1Len < std::numeric_limits< double >::min() )
+      {
+        deviation2sideInd.insert( make_pair( sides[iS]->Length(), iS )); // the side seems closed
+        continue;
+      }
+      double devia = 0;
+      for ( int i = 0; i < nbSamples; ++i )
+      {
+        gp_Pnt pi( sides[iS]->Value3d(( i + 1 ) / nbSamples ));
+        gp_Vec vi( pf, pi );
+        double h = 0.5 * v1.Crossed( vi ).Magnitude() / v1Len;
+        devia = Max( devia, h );
+      }
+      deviation2sideInd.insert( make_pair( devia, iS ));
+    }
+
+    int iCirc = deviation2sideInd.rbegin()->second; 
+    aCircSide = sides[ iCirc ];
+    aLinSide1 = sides[( iCirc + 1 ) % sides.size() ];
+    if ( sides.size() > 2 )
+    {
+      aLinSide2 = sides[( iCirc + 2 ) % sides.size() ];
+      aLinSide2->Reverse(); // to be "parallel" to aLinSide1
+    }
+
+    if (( nbWire == 2 && aLinSide1 ) &&
+        ( aLinSide1->Edge(0).Orientation() == TopAbs_INTERNAL ) &&
+        ( aCircSide->IsClosed() ))
+    {
+      // assure that aCircSide starts at aLinSide1
+      TopoDS_Vertex v0 = aLinSide1->FirstVertex();
+      TopoDS_Vertex v1 = aLinSide1->LastVertex();
+      if ( ! aCircSide->FirstVertex().IsSame( v0 ) &&
+           ! aCircSide->FirstVertex().IsSame( v1 ))
+      {
+        int iE = 0;
+        for ( ; iE < aCircSide->NbEdges(); ++iE )
+          if ( aCircSide->FirstVertex(iE).IsSame( v0 ) ||
+               aCircSide->FirstVertex(iE).IsSame( v1 ))
+            break;
+        if ( iE == aCircSide->NbEdges() )
+          return -2;
+
+        edges.clear();
+        for ( int i = 0; i < aCircSide->NbEdges(); ++i, ++iE )
+          edges.push_back( aCircSide->Edge( iE % aCircSide->NbEdges() ));
+
+        aCircSide = StdMeshers_FaceSide::New( face, edges, aMesh,
+                                              /*isFwd=*/true, /*skipMedium=*/ true );
+      }
+    }
+
+    return sides.size();
   }
 
   //================================================================================
   /*!
-   * \brief Return edges of the face
-   *  \retval int - nb of edges
-   */
-  //================================================================================
-
-  int analyseFace(const TopoDS_Shape& face,
-                  TopoDS_Edge&        CircEdge,
-                  TopoDS_Edge&        LinEdge1,
-                  TopoDS_Edge&        LinEdge2)
-  {
-    CircEdge.Nullify(); LinEdge1.Nullify(); LinEdge2.Nullify();
-    int nbe = 0;
-
-    for ( TopExp_Explorer exp( face, TopAbs_EDGE ); exp.More(); exp.Next(), ++nbe )
-    {
-      const TopoDS_Edge& E = TopoDS::Edge( exp.Current() );
-      double f,l;
-      Handle(Geom_Curve) C = getCurve(E,&f,&l);
-      if ( !C.IsNull() )
-      {
-        if ( C->IsKind( STANDARD_TYPE(Geom_Circle)))
-        {
-          if ( CircEdge.IsNull() )
-            CircEdge = E;
-          else
-            return 0;
-        }
-        else if ( LinEdge1.IsNull() )
-          LinEdge1 = E;
-        else
-          LinEdge2 = E;
-      }
-    }
-    return nbe;
-  }
-  //================================================================================
-  /*!
-   * \brief Checks if the common vertex between LinEdge's lies inside the circle
+   * \brief Checks if the common vertex between LinSide's lies inside the circle
    *  and not outside
-   *  \param [in] CircEdge - 
-   *  \param [in] LinEdge1 - 
-   *  \param [in] LinEdge2 - 
    *  \return bool - false if there are 3 EDGEs and the corner is outside
    */
   //================================================================================
 
-  bool isCornerInsideCircle(const TopoDS_Edge& CircEdge,
-                            const TopoDS_Edge& LinEdge1,
-                            const TopoDS_Edge& LinEdge2)
+  bool isCornerInsideCircle(const StdMeshers_FaceSidePtr& CircSide,
+                            const StdMeshers_FaceSidePtr& LinSide1,
+                            const StdMeshers_FaceSidePtr& LinSide2)
   {
-    if ( !CircEdge.IsNull() &&
-         !LinEdge1.IsNull() &&
-         !LinEdge2.IsNull() )
-    {
-      Handle(Geom_Circle) aCirc = Handle(Geom_Circle)::DownCast( getCurve( CircEdge ));
-      TopoDS_Vertex aCommonV;
-      if ( !aCirc.IsNull() &&
-           TopExp::CommonVertex( LinEdge1, LinEdge2, aCommonV ))
-      {
-        gp_Pnt aCommonP = BRep_Tool::Pnt( aCommonV );
-        gp_Pnt  aCenter = aCirc->Location();
-        double     dist = aCenter.Distance( aCommonP );
-        return dist < 0.1 * aCirc->Radius();
-      }
-    }
+    // if ( CircSide && LinSide1 && LinSide2 )
+    // {
+    //   Handle(Geom_Circle) aCirc = Handle(Geom_Circle)::DownCast( getCurve( CircSide ));
+    //   TopoDS_Vertex aCommonV;
+    //   if ( !aCirc.IsNull() &&
+    //        TopExp::CommonVertex( LinSide1, LinSide2, aCommonV ))
+    //   {
+    //     gp_Pnt aCommonP = BRep_Tool::Pnt( aCommonV );
+    //     gp_Pnt  aCenter = aCirc->Location();
+    //     double     dist = aCenter.Distance( aCommonP );
+    //     return dist < 0.1 * aCirc->Radius();
+    //   }
+    // }
     return true;
   }
+
+  //================================================================================
+  /*!
+   * \brief Create an EDGE connecting the ellipse center with the most distant point
+   *        of the ellipse.
+   *  \param [in] circSide - the elliptic side
+  *  \param [in] face - the FACE
+  *  \param [out] circNode - a node on circSide most distant from the center
+  *  \return TopoDS_Edge - the create EDGE
+  */
+  //================================================================================
+
+  TopoDS_Edge makeEdgeToCenter( StdMeshers_FaceSidePtr& circSide,
+                                const TopoDS_Face&      face,
+                                const SMDS_MeshNode*&   circNode)
+  {
+    // find the center and a point most distant from it
+
+    double maxDist = 0, normPar;
+    gp_XY uv1, uv2;
+    for ( int i = 0; i < 32; ++i )
+    {
+      double    u = 0.5 * i / 32.;
+      gp_Pnt2d p1 = circSide->Value2d( u );
+      gp_Pnt2d p2 = circSide->Value2d( u + 0.5 );
+      double dist = p1.SquareDistance( p2 );
+      if ( dist > maxDist )
+      {
+        maxDist = dist;
+        uv1 = p1.XY();
+        uv2 = p2.XY();
+        normPar = u;
+      }
+    }
+    gp_XY center = 0.5 * ( uv1 + uv2 );
+    double   len = 0.5 * Sqrt( maxDist );
+    bool  isCirc = ( Abs( len - circSide->Value2d( 0 ).Distance( center )) < 1e-3 * len );
+
+    // find a node closest to the most distant point
+
+    size_t iDist = 0;
+    const UVPtStructVec& circNodes = circSide->GetUVPtStruct();
+    if ( !isCirc )
+    {
+      double minDist = 1e100;
+      for ( size_t i = 0; i <= circNodes.size(); ++i )
+      {
+        double dist = Abs( circNodes[i].normParam - normPar );
+        if ( dist < minDist )
+        {
+          iDist = i;
+          minDist = dist;
+        }
+      }
+    }
+    circNode = circNodes[iDist].node;
+    uv1      = circNodes[iDist].UV();
+    len      = ( uv1 - center ).Modulus();
+
+    // make the EDGE between the most distant point and the center
+
+    Handle(Geom2d_Line) line = new Geom2d_Line( uv1, gp_Dir2d( center - uv1 ) );
+    Handle(Geom2d_Curve) pcu = new Geom2d_TrimmedCurve( line, 0, len );
+
+    Handle(Geom_Surface) surface = BRep_Tool::Surface( face );
+    TopoDS_Edge edge = BRepBuilderAPI_MakeEdge( pcu, surface, 0, len );
+
+    BRep_Builder().UpdateEdge( edge, pcu, face, 1e-7 );
+    ShapeFix_Edge().FixAddCurve3d( edge );
+
+
+    // assure that circSide starts at circNode
+    if ( iDist != 0  &&  iDist != circNodes.size()-1 )
+    {
+      // create a new circSide
+      UVPtStructVec nodesNew;
+      nodesNew.reserve( circNodes.size() );
+      nodesNew.insert( nodesNew.end(), circNodes.begin() + iDist, circNodes.end() );
+      nodesNew.insert( nodesNew.end(), circNodes.begin() + 1, circNodes.begin() + iDist + 1 );
+      circSide = StdMeshers_FaceSide::New( nodesNew );
+    }
+
+    return edge;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Set nodes existing on a linSide to UVPtStructVec and create missing nodes
+   *        corresponding to layerPositions
+   */
+  //================================================================================
+
+  void makeMissingMesh( StdMeshers_FaceSidePtr& linSide,
+                        UVPtStructVec&          nodes,
+                        const vector< double >& layerPositions,
+                        SMESH_MesherHelper*     helper )
+  {
+    // tolerance to compare normParam
+    double tol = 1e100;
+    for ( size_t i = 1; i < layerPositions.size(); ++i )
+      tol = Min( tol, layerPositions[i] - layerPositions[i-1] );
+    tol *= 0.05;
+
+    // merge existing nodes with layerPositions into UVPtStructVec
+    // ------------------------------------------------------------
+
+    const UVPtStructVec& exiNodes = linSide->GetUVPtStruct();
+    nodes.clear();
+    nodes.reserve( layerPositions.size() + exiNodes.size() );
+    vector< double >::const_iterator pos = layerPositions.begin(), posEnd = layerPositions.end();
+    for ( size_t i = 0; i < exiNodes.size(); ++i )
+    {
+      switch ( exiNodes[i].node->GetPosition()->GetTypeOfPosition() )
+      {
+      case SMDS_TOP_VERTEX:
+      {
+        // allocate UVPtStruct's for non-existing nodes
+        while ( pos != posEnd && *pos < exiNodes[i].normParam - tol )
+        {
+          UVPtStruct uvPS;
+          uvPS.normParam = *pos++;
+          nodes.push_back( uvPS );
+        }
+        // save existing node on a VERTEX
+        nodes.push_back( exiNodes[i] );
+        break;
+      }
+      case SMDS_TOP_EDGE:
+      {
+        // save existing nodes on an EDGE
+        while ( i < exiNodes.size() && exiNodes[i].node->GetPosition()->GetDim() == 1 )
+        {
+          nodes.push_back( exiNodes[i++] );
+        }
+        // save existing node on a VERTEX
+        if ( i < exiNodes.size() && exiNodes[i].node->GetPosition()->GetDim() == 0 )
+        {
+          nodes.push_back( exiNodes[i] );
+        }
+        break;
+      }
+      default:;
+      }
+
+      // skip layer positions covered by saved nodes
+      while ( pos != posEnd && *pos < nodes.back().normParam + tol )
+      {
+        ++pos;
+      }
+    }
+    // allocate UVPtStruct's for the rest non-existing nodes
+    while ( pos != posEnd )
+    {
+      UVPtStruct uvPS;
+      uvPS.normParam = *pos++;
+      nodes.push_back( uvPS );
+    }
+
+    // create missing nodes
+    // ---------------------
+
+    SMESHDS_Mesh * meshDS = helper->GetMeshDS();
+    const TopoDS_Face& F  = TopoDS::Face( helper->GetSubShape() );
+    Handle(ShapeAnalysis_Surface) surface = helper->GetSurface( F );
+
+    helper->SetElementsOnShape( false ); // we create nodes on EDGEs, not on the FACE
+
+    for ( size_t i = 0; i < nodes.size(); ++i )
+    {
+      if ( nodes[ i ].node ) continue;
+
+      gp_Pnt2d uv = linSide->Value2d( nodes[i].normParam );
+      gp_Pnt  xyz = surface->Value( uv.X(), uv.Y() );
+
+      nodes[ i ].SetUV( uv.XY() );
+      nodes[ i ].node = helper->AddNode( xyz.X(), xyz.Y(), xyz.Z() );
+    }
+
+    // set nodes on VERTEXes
+    for ( int iE = 0; iE < linSide->NbEdges(); ++iE )
+    {
+      TopoDS_Vertex v = linSide->LastVertex( iE );
+      if ( SMESH_Algo::VertexNode( v, meshDS ))
+        continue;
+
+      double normPar = linSide->LastParameter( iE );
+      size_t i = 0;
+      while ( nodes[ i ].normParam < normPar )
+        ++i;
+      if (( nodes[ i ].normParam - normPar ) > ( normPar - nodes[ i-1 ].normParam ))
+        --i;
+      meshDS->SetNodeOnVertex( nodes[ i ].node, v );
+    }
+
+    // set nodes on EDGEs
+    int edgeID;
+    for ( size_t i = 0; i < nodes.size(); ++i )
+    {
+      if ( nodes[ i ].node->getshapeId() > 0 ) continue;
+
+      double u = linSide->Parameter( nodes[i].normParam, edgeID );
+      meshDS->SetNodeOnEdge( nodes[ i ].node, edgeID, u );
+    }
+
+    // create segments
+    for ( size_t i = 1; i < nodes.size(); ++i )
+    {
+      if ( meshDS->FindEdge( nodes[i].node, nodes[i-1].node )) continue;
+
+      const SMDS_MeshElement* seg = meshDS->AddEdge( nodes[i].node, nodes[i-1].node );
+
+      double normParam = 0.5 * ( nodes[i].normParam + nodes[i-1].normParam );
+      edgeID = linSide->EdgeID( linSide->EdgeIndex( normParam ));
+      meshDS->SetMeshElementOnShape( seg, edgeID );
+    }
+
+    helper->SetElementsOnShape( true );
+
+  } // end makeMissingMesh()
 
 //================================================================================
 //================================================================================
@@ -339,47 +618,80 @@ public:
   // -----------------------------------------------------------------------------
   //! Computes distribution of nodes on a straight line ending at pIn and pOut
   bool Compute( vector< double > &      positions,
-                gp_Pnt                  pIn,
-                gp_Pnt                  pOut,
-                SMESH_Mesh&             aMesh,
+                const TopoDS_Edge&      edge,
+                Adaptor3d_Curve&        curve,
+                double                  f,
+                double                  l,
+                SMESH_Mesh&             mesh,
                 const SMESH_Hypothesis* hyp1d)
   {
     if ( !hyp1d ) return error( "Invalid LayerDistribution hypothesis");
 
-    double len = pIn.Distance( pOut );
-    if ( len <= DBL_MIN ) return error("Too close points of inner and outer shells");
-
     myUsedHyps.clear();
     myUsedHyps.push_back( hyp1d );
 
-    TopoDS_Edge edge = BRepBuilderAPI_MakeEdge( pIn, pOut );
     SMESH_Hypothesis::Hypothesis_Status aStatus;
-    if ( !StdMeshers_Regular_1D::CheckHypothesis( aMesh, edge, aStatus ))
+    if ( !StdMeshers_Regular_1D::CheckHypothesis( mesh, edge, aStatus ))
       return error( "StdMeshers_Regular_1D::CheckHypothesis() failed "
                     "with LayerDistribution hypothesis");
 
-    BRepAdaptor_Curve C3D(edge);
-    double f = C3D.FirstParameter(), l = C3D.LastParameter();
+    double len = GCPnts_AbscissaPoint::Length( curve, f, l );
+
     list< double > params;
-    if ( !StdMeshers_Regular_1D::computeInternalParameters( aMesh, C3D, len, f, l, params, false ))
+    if ( !StdMeshers_Regular_1D::computeInternalParameters( mesh, curve, len, f, l, params, false ))
       return error("StdMeshers_Regular_1D failed to compute layers distribution");
 
+    params.push_front( f );
+    params.push_back ( l );
     positions.clear();
     positions.reserve( params.size() );
     for (list<double>::iterator itU = params.begin(); itU != params.end(); itU++)
-      positions.push_back( *itU / len );
+      positions.push_back(( *itU - f ) / ( l - f ));
     return true;
   }
   // -----------------------------------------------------------------------------
   //! Make mesh on an adge using assigned 1d hyp or defaut nb of segments
-  bool ComputeCircularEdge(SMESH_Mesh&         aMesh,
-                           const TopoDS_Edge& anEdge)
+  bool ComputeCircularEdge( SMESH_Mesh&                   aMesh,
+                            const StdMeshers_FaceSidePtr& aSide )
   {
-    _gen->Compute( aMesh, anEdge);
-    SMESH_subMesh *sm = aMesh.GetSubMesh(anEdge);
-    if ( sm->GetComputeState() != SMESH_subMesh::COMPUTE_OK)
+    bool ok = true;
+    for ( int i = 0; i < aSide->NbEdges(); ++i )
     {
-      // find any 1d hyp assigned (there can be a hyp w/o algo)
+      const TopoDS_Edge& edge = aSide->Edge( i );
+      _gen->Compute( aMesh, edge );
+      SMESH_subMesh *sm = aMesh.GetSubMesh( edge );
+      if ( sm->GetComputeState() != SMESH_subMesh::COMPUTE_OK)
+      {
+        // find any 1d hyp assigned (there can be a hyp w/o algo)
+        myUsedHyps = SMESH_Algo::GetUsedHypothesis( aMesh, edge, /*ignoreAux=*/true );
+        Hypothesis_Status aStatus;
+        if ( !StdMeshers_Regular_1D::CheckHypothesis( aMesh, edge, aStatus ))
+        {
+          // no valid 1d hyp assigned, use default nb of segments
+          _hypType                    = NB_SEGMENTS;
+          _ivalue[ DISTR_TYPE_IND ]   = StdMeshers_NumberOfSegments::DT_Regular;
+          _ivalue[ NB_SEGMENTS_IND  ] = _gen->GetDefaultNbSegments();
+        }
+        ok &= StdMeshers_Regular_1D::Compute( aMesh, edge );
+      }
+    }
+    return ok;
+  }
+  // -----------------------------------------------------------------------------
+  //! Make mesh on an adge using assigned 1d hyp or defaut nb of segments
+  bool EvaluateCircularEdge(SMESH_Mesh&                  aMesh,
+                            const StdMeshers_FaceSidePtr aSide,
+                            MapShapeNbElems&             aResMap)
+  {
+    bool ok = true;
+    for ( int i = 0; i < aSide->NbEdges(); ++i )
+    {
+      const TopoDS_Edge& anEdge = aSide->Edge( i );
+      _gen->Evaluate( aMesh, anEdge, aResMap );
+      if ( aResMap.count( aMesh.GetSubMesh( anEdge )))
+        continue;
+
+      // find any 1d hyp assigned
       myUsedHyps = SMESH_Algo::GetUsedHypothesis(aMesh, anEdge, /*ignoreAux=*/true);
       Hypothesis_Status aStatus;
       if ( !StdMeshers_Regular_1D::CheckHypothesis( aMesh, anEdge, aStatus ))
@@ -389,31 +701,9 @@ public:
         _ivalue[ DISTR_TYPE_IND ]   = StdMeshers_NumberOfSegments::DT_Regular;
         _ivalue[ NB_SEGMENTS_IND  ] = _gen->GetDefaultNbSegments();
       }
-      return StdMeshers_Regular_1D::Compute( aMesh, anEdge );
+      ok &= StdMeshers_Regular_1D::Evaluate( aMesh, anEdge, aResMap );
     }
-    return true;
-  }
-  // -----------------------------------------------------------------------------
-  //! Make mesh on an adge using assigned 1d hyp or defaut nb of segments
-  bool EvaluateCircularEdge(SMESH_Mesh&        aMesh,
-                            const TopoDS_Edge& anEdge,
-                            MapShapeNbElems&   aResMap)
-  {
-    _gen->Evaluate( aMesh, anEdge, aResMap );
-    if ( aResMap.count( aMesh.GetSubMesh( anEdge )))
-      return true;
-
-    // find any 1d hyp assigned
-    myUsedHyps = SMESH_Algo::GetUsedHypothesis(aMesh, anEdge, /*ignoreAux=*/true);
-    Hypothesis_Status aStatus;
-    if ( !StdMeshers_Regular_1D::CheckHypothesis( aMesh, anEdge, aStatus ))
-    {
-      // no valid 1d hyp assigned, use default nb of segments
-      _hypType                    = NB_SEGMENTS;
-      _ivalue[ DISTR_TYPE_IND ]   = StdMeshers_NumberOfSegments::DT_Regular;
-      _ivalue[ NB_SEGMENTS_IND  ] = _gen->GetDefaultNbSegments();
-    }
-    return StdMeshers_Regular_1D::Evaluate( aMesh, anEdge, aResMap );
+    return ok;
   }
 protected:
   // -----------------------------------------------------------------------------
@@ -442,14 +732,13 @@ protected:
 
 void StdMeshers_RadialQuadrangle_1D2D::SubmeshRestored(SMESH_subMesh* faceSubMesh)
 {
-  if ( !faceSubMesh->IsEmpty() )
-  {
-    TopoDS_Edge CircEdge, LinEdge1, LinEdge2;
-    analyseFace( faceSubMesh->GetSubShape(), CircEdge, LinEdge1, LinEdge2 );
-    if ( !CircEdge.IsNull() ) markEdgeAsComputedByMe( CircEdge, faceSubMesh );
-    if ( !LinEdge1.IsNull() ) markEdgeAsComputedByMe( LinEdge1, faceSubMesh );
-    if ( !LinEdge2.IsNull() ) markEdgeAsComputedByMe( LinEdge2, faceSubMesh );
-  }
+  // if ( !faceSubMesh->IsEmpty() )
+  // {
+  //   for ( TopExp_Explorer e( faceSubMesh->GetSubShape(), TopAbs_EDGE ); e.More(); e.Next() )
+  //   {
+  //     markEdgeAsComputedByMe( TopoDS::Edge( e.Current() ), faceSubMesh );
+  //   }
+  // }
 }
 
 //=======================================================================
@@ -460,559 +749,242 @@ void StdMeshers_RadialQuadrangle_1D2D::SubmeshRestored(SMESH_subMesh* faceSubMes
 bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
                                                const TopoDS_Shape& aShape)
 {
-  SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
+  SMESH_MesherHelper helper( aMesh );
+  StdMeshers_Quadrangle_2D::myHelper     = & helper;
+  StdMeshers_Quadrangle_2D::myNeedSmooth = false;
+  StdMeshers_Quadrangle_2D::myCheckOri   = false;
+  StdMeshers_Quadrangle_2D::myQuadList.clear();
 
-  myHelper = new SMESH_MesherHelper( aMesh );
-  // to delete helper at exit from Compute()
-  SMESHUtils::Deleter<SMESH_MesherHelper> helperDeleter( myHelper );
+  StdMeshers_FaceSidePtr circSide, linSide1, linSide2;
+  int nbSides = analyseFace( aShape, &aMesh, circSide, linSide1, linSide2 );
+  if( nbSides > 3 || nbSides < 1 )
+    return error("The face must be a full ellipse or a part of ellipse (i.e. the number "
+                 "of edges is less or equal to 3 and one of them is an ellipse curve)");
+
+  // get not yet computed EDGEs
+  // list< TopoDS_Edge > emptyEdges;
+  // for ( TopExp_Explorer e( aShape, TopAbs_EDGE ); e.More(); e.Next() )
+  // {
+  //   if ( aMesh.GetSubMesh( e.Current() )->IsEmpty() )
+  //     emptyEdges.push_back( TopoDS::Edge( e.Current() ));
+  // }
 
   TNodeDistributor* algo1d = TNodeDistributor::GetDistributor(aMesh);
 
-  TopoDS_Edge CircEdge, LinEdge1, LinEdge2;
-  int nbe = analyseFace( aShape, CircEdge, LinEdge1, LinEdge2 );
-  Handle(Geom_Circle) aCirc = Handle(Geom_Circle)::DownCast( getCurve( CircEdge ));
-  if( nbe > 3 || nbe < 1 || aCirc.IsNull() )
-    return error("The face must be a full circle or a part of circle (i.e. the number "
-                 "of edges is less or equal to 3 and one of them is a circle curve)");
+  if ( !algo1d->ComputeCircularEdge( aMesh, circSide ))
+    return error( algo1d->GetComputeError() );
 
-  gp_Pnt P0, P1;
-  // points for rotation
-  TColgp_SequenceOfPnt Points;
-  // angles for rotation
-  TColStd_SequenceOfReal Angles;
-  // Nodes1 and Nodes2 - nodes along radiuses
-  // CNodes - nodes on circle edge
-  vector< const SMDS_MeshNode* > Nodes1, Nodes2, CNodes;
-  SMDS_MeshNode * NC;
-  // parameters edge nodes on face
-  TColgp_SequenceOfPnt2d Pnts2d1;
-  gp_Pnt2d PC;
 
-  int faceID = meshDS->ShapeToIndex(aShape);
   TopoDS_Face F = TopoDS::Face(aShape);
   Handle(Geom_Surface) S = BRep_Tool::Surface(F);
 
+  myHelper->IsQuadraticSubMesh( aShape );
+  myHelper->SetElementsOnShape( true );
 
-  if(nbe==1)
+  vector< double > layerPositions; // [0,1]
+
+  const SMDS_MeshNode* centerNode = 0;
+  gp_Pnt2d             centerUV(0,0);
+
+  // ------------------------------------------------------------------------------------------
+  if ( nbSides == 1 ) // full ellipse
   {
-    if (!algo1d->ComputeCircularEdge( aMesh, CircEdge ))
-      return error( algo1d->GetComputeError() );
-    map< double, const SMDS_MeshNode* > theNodes;
-    if ( !GetSortedNodesOnEdge(aMesh.GetMeshDS(),CircEdge,true,theNodes))
-      return error("Circular edge is incorrectly meshed");
+    const SMDS_MeshNode* circNode;
+    TopoDS_Edge linEdge = makeEdgeToCenter( circSide, F, circNode );
 
-    myHelper->IsQuadraticSubMesh( aShape );
+    StdMeshers_FaceSidePtr tmpSide =
+      StdMeshers_FaceSide::New( F, linEdge, &aMesh, /*isFrw=*/true, /*skipMedium=*/true );
 
-    CNodes.clear();
-    map< double, const SMDS_MeshNode* >::iterator itn = theNodes.begin();
-    const SMDS_MeshNode* NF = (*itn).second;
-    CNodes.push_back( (*itn).second );
-    double fang = (*itn).first;
-    if ( itn != theNodes.end() ) {
-      itn++;
-      for(; itn != theNodes.end(); itn++ ) {
-        CNodes.push_back( (*itn).second );
-        double ang = (*itn).first - fang;
-        if( ang>M_PI ) ang = ang - 2.*M_PI;
-        if( ang<-M_PI ) ang = ang + 2.*M_PI;
-        Angles.Append( ang ); 
-      }
-    }
-    P1 = gp_Pnt( NF->X(), NF->Y(), NF->Z() );
-    P0 = aCirc->Location();
-
-    if ( !computeLayerPositions(P0,P1))
+    if ( !computeLayerPositions( tmpSide, layerPositions ))
       return false;
 
-    TopoDS_Vertex V1 = myHelper->IthVertex(0, CircEdge );
-    gp_Pnt2d p2dV = BRep_Tool::Parameters( V1, TopoDS::Face(aShape) );
+    UVPtStructVec nodes( layerPositions.size() );
+    nodes[0].node = circNode;
+    for ( size_t i = 0; i < layerPositions.size(); ++i )
+    {
+      gp_Pnt2d uv = tmpSide->Value2d( layerPositions[i] );
+      gp_Pnt  xyz = S->Value( uv.X(), uv.Y() );
 
-    NC = meshDS->AddNode(P0.X(), P0.Y(), P0.Z());
-    GeomAPI_ProjectPointOnSurf PPS(P0,S);
-    double U0,V0;
-    PPS.Parameters(1,U0,V0);
-    meshDS->SetNodeOnFace(NC, faceID, U0, V0);
-    PC = gp_Pnt2d(U0,V0);
+      nodes[ i ].SetUV( uv.XY() );
+      nodes[ i ].normParam = layerPositions[i];
+      if ( i )
+        nodes[ i ].node = myHelper->AddNode( xyz.X(), xyz.Y(), xyz.Z(), 0, uv.X(), uv.Y() );
+    }
 
-    gp_Vec aVec(P0,P1);
-    gp_Vec2d aVec2d(PC,p2dV);
-    Nodes1.resize( myLayerPositions.size()+1 );
-    Nodes2.resize( myLayerPositions.size()+1 );
+    linSide1 = StdMeshers_FaceSide::New( nodes );
+    linSide2 = StdMeshers_FaceSide::New( nodes );
+
+    centerNode = nodes.back().node;
+    centerUV   = nodes.back().UV();
+  }
+  // ------------------------------------------------------------------------------------------
+  else if ( nbSides == 2 && linSide1->Edge(0).Orientation() == TopAbs_INTERNAL )
+  {
+    // full ellipse with an internal radial side
+
+    // eliminate INTERNAL orientation
+    list< TopoDS_Edge > edges;
+    for ( int iE = 0; iE < linSide1->NbEdges(); ++iE )
+    {
+      edges.push_back( linSide1->Edge( iE ));
+      edges.back().Orientation( TopAbs_FORWARD );
+    }
+
+    // orient the internal side
+    bool isVIn0Shared = false;
+    TopoDS_Vertex vIn0 = myHelper->IthVertex( 0, edges.front() );
+    for ( int iE = 0; iE < circSide->NbEdges() && !isVIn0Shared; ++iE )
+      isVIn0Shared = vIn0.IsSame( circSide->FirstVertex( iE ));
+
+    linSide1 = StdMeshers_FaceSide::New( F, edges, &aMesh,
+                                         /*isFrw=*/isVIn0Shared, /*skipMedium=*/true );
+
+    int nbMeshedEdges;
+    if ( !computeLayerPositions( linSide1, layerPositions, &nbMeshedEdges ))
+      return false;
+
+    // merge existing nodes with new nodes at layerPositions into a UVPtStructVec
+    UVPtStructVec nodes;
+    if ( nbMeshedEdges != linSide1->NbEdges() )
+      makeMissingMesh( linSide1, nodes, layerPositions, myHelper );
+    else
+      nodes = linSide1->GetUVPtStruct();
+
+    linSide1 = StdMeshers_FaceSide::New( nodes );
+    linSide2 = StdMeshers_FaceSide::New( nodes );
+
+    centerNode = nodes.back().node;
+    centerUV   = nodes.back().UV();
+  }
+  // ------------------------------------------------------------------------------------------
+  else if ( nbSides == 2 )
+  {
+    // find positions of layers for the first half of linSide1
+    int nbMeshedEdges;
+    if ( !computeLayerPositions( linSide1, layerPositions, &nbMeshedEdges, /*useHalf=*/true ))
+      return false;
+
+    // make positions for the whole linSide1
+    for ( size_t i = 0; i < layerPositions.size(); ++i )
+    {
+      layerPositions[i] *= 0.5;
+    }
+    layerPositions.reserve( layerPositions.size() * 2 );
+    for ( int nb = layerPositions.size()-1; nb > 0; --nb )
+      layerPositions.push_back( layerPositions.back() + layerPositions[nb] - layerPositions[nb-1] );
+
+    // merge existing nodes with new nodes at layerPositions into a UVPtStructVec
+    UVPtStructVec nodes;
+    if ( nbMeshedEdges != linSide1->NbEdges() )
+      makeMissingMesh( linSide1, nodes, layerPositions, myHelper );
+    else
+      nodes = linSide1->GetUVPtStruct();
+
+    // find a central node
     size_t i = 0;
-    for ( ; i < myLayerPositions.size(); i++ ) {
-      gp_Pnt P( P0.X() + aVec.X()*myLayerPositions[i],
-                P0.Y() + aVec.Y()*myLayerPositions[i],
-                P0.Z() + aVec.Z()*myLayerPositions[i] );
-      Points.Append(P);
-      SMDS_MeshNode * node = meshDS->AddNode(P.X(), P.Y(), P.Z());
-      Nodes1[i] = node;
-      Nodes2[i] = node;
-      double U = PC.X() + aVec2d.X()*myLayerPositions[i];
-      double V = PC.Y() + aVec2d.Y()*myLayerPositions[i];
-      meshDS->SetNodeOnFace( node, faceID, U, V );
-      Pnts2d1.Append(gp_Pnt2d(U,V));
-    }
-    Nodes1[Nodes1.size()-1] = NF;
-    Nodes2[Nodes1.size()-1] = NF;
+    while ( nodes[ i ].normParam < 0.5 ) ++i;
+    if (( nodes[ i ].normParam - 0.5 ) > ( 0.5 - nodes[ i-1 ].normParam )) --i;
+
+    // distribute nodes between two linear sides
+    UVPtStructVec nodes2( nodes.rbegin(), nodes.rbegin() + nodes.size() - i );
+    nodes.resize( i + 1 );
+
+    linSide1 = StdMeshers_FaceSide::New( nodes );
+    linSide2 = StdMeshers_FaceSide::New( nodes2 );
+
+    centerNode = nodes.back().node;
+    centerUV   = nodes.back().UV();
   }
-  else if(nbe==2 && LinEdge1.Orientation() != TopAbs_INTERNAL )
+  // ------------------------------------------------------------------------------------------
+  else // nbSides == 3 
   {
-    // one curve must be a half of circle and other curve must be
-    // a segment of line
-    double fp, lp;
-    Handle(Geom_Circle) aCirc = Handle(Geom_Circle)::DownCast( getCurve( CircEdge, &fp, &lp ));
-    if( fabs(fabs(lp-fp)-M_PI) > Precision::Confusion() ) {
-      // not half of circle
-      return error(COMPERR_BAD_SHAPE);
-    }
-    Handle(Geom_Line) aLine = Handle(Geom_Line)::DownCast( getCurve( LinEdge1 ));
-    if( aLine.IsNull() ) {
-      // other curve not line
-      return error(COMPERR_BAD_SHAPE);
-    }
+    // one curve must be a part of ellipse and 2 other curves must be segments of line
 
-    if ( !algo1d->ComputeCircularEdge( aMesh, CircEdge ))
-      return error( algo1d->GetComputeError() );
-    map< double, const SMDS_MeshNode* > theNodes;
-    if ( !GetSortedNodesOnEdge(aMesh.GetMeshDS(),CircEdge,true,theNodes) )
-      return error("Circular edge is incorrectly meshed");
-
-    myHelper->IsQuadraticSubMesh( aShape );
-
-    map< double, const SMDS_MeshNode* >::iterator itn = theNodes.begin();
-    CNodes.clear();
-    CNodes.push_back( itn->second );
-    double fang = (*itn).first;
-    itn++;
-    for(; itn != theNodes.end(); itn++ ) {
-      CNodes.push_back( (*itn).second );
-      double ang = (*itn).first - fang;
-      if( ang>M_PI ) ang = ang - 2.*M_PI;
-      if( ang<-M_PI ) ang = ang + 2.*M_PI;
-      Angles.Append( ang );
-    }
-    const SMDS_MeshNode* NF = theNodes.begin()->second;
-    const SMDS_MeshNode* NL = theNodes.rbegin()->second;
-    P1 = gp_Pnt( NF->X(), NF->Y(), NF->Z() );
-    gp_Pnt P2( NL->X(), NL->Y(), NL->Z() );
-    P0 = aCirc->Location();
-
-    bool linEdgeComputed;
-    if ( !computeLayerPositions(P0,P1,LinEdge1,&linEdgeComputed))
+    int nbMeshedEdges1, nbMeshedEdges2;
+    vector< double > layerPositions2;
+    bool ok1 = computeLayerPositions( linSide1, layerPositions,  &nbMeshedEdges1 );
+    bool ok2 = computeLayerPositions( linSide2, layerPositions2, &nbMeshedEdges2 );
+    if ( !ok1 && !ok2 )
       return false;
 
-    if ( linEdgeComputed )
-    {
-      if (!GetSortedNodesOnEdge(aMesh.GetMeshDS(),LinEdge1,true,theNodes))
-        return error("Invalid mesh on a straight edge");
+    bool linSide1Computed = ( nbMeshedEdges1 == linSide1->NbEdges() );
+    bool linSide2Computed = ( nbMeshedEdges2 == linSide2->NbEdges() );
 
-      Nodes1.resize( myLayerPositions.size()+1 );
-      Nodes2.resize( myLayerPositions.size()+1 );
-      vector< const SMDS_MeshNode* > *pNodes1 = &Nodes1, *pNodes2 = &Nodes2;
-      bool nodesFromP0ToP1 = ( theNodes.rbegin()->second == NF );
-      if ( !nodesFromP0ToP1 ) std::swap( pNodes1, pNodes2 );
+    UVPtStructVec nodes;
 
-      map< double, const SMDS_MeshNode* >::reverse_iterator ritn = theNodes.rbegin();
-      itn = theNodes.begin();
-      for ( int i = Nodes1.size()-1; i > -1; ++itn, ++ritn, --i )
-      {
-        (*pNodes1)[i] = ritn->second;
-        (*pNodes2)[i] =  itn->second;
-        Points.Prepend( gpXYZ( Nodes1[i]));
-        Pnts2d1.Prepend( myHelper->GetNodeUV( F, Nodes1[i]));
-      }
-      NC = const_cast<SMDS_MeshNode*>( itn->second );
-      Points.Remove( Nodes1.size() );
-    }
-    else
+    if ( linSide1Computed && !linSide2Computed )
     {
-      gp_Vec aVec(P0,P1);
-      int edgeID = meshDS->ShapeToIndex(LinEdge1);
-      // check orientation
-      Handle(Geom_Curve) Crv = BRep_Tool::Curve(LinEdge1,fp,lp);
-      gp_Pnt Ptmp;
-      Crv->D0(fp,Ptmp);
-      bool ori = true;
-      if( P1.Distance(Ptmp) > Precision::Confusion() )
-        ori = false;
-      // get UV points for edge
-      gp_Pnt2d PF,PL;
-      BRep_Tool::UVPoints( LinEdge1, TopoDS::Face(aShape), PF, PL );
-      PC = gp_Pnt2d( (PF.X()+PL.X())/2, (PF.Y()+PL.Y())/2 );
-      gp_Vec2d V2d;
-      if(ori) V2d = gp_Vec2d(PC,PF);
-      else V2d = gp_Vec2d(PC,PL);
-      // add nodes on edge
-      double cp = (fp+lp)/2;
-      double dp2 = (lp-fp)/2;
-      NC = meshDS->AddNode(P0.X(), P0.Y(), P0.Z());
-      meshDS->SetNodeOnEdge(NC, edgeID, cp);
-      Nodes1.resize( myLayerPositions.size()+1 );
-      Nodes2.resize( myLayerPositions.size()+1 );
-      size_t i = 0;
-      for(; i<myLayerPositions.size(); i++) {
-        gp_Pnt P( P0.X() + aVec.X()*myLayerPositions[i],
-                  P0.Y() + aVec.Y()*myLayerPositions[i],
-                  P0.Z() + aVec.Z()*myLayerPositions[i] );
-        Points.Append(P);
-        SMDS_MeshNode * node = meshDS->AddNode(P.X(), P.Y(), P.Z());
-        Nodes1[i] = node;
-        double param;
-        if(ori)
-          param = fp + dp2*(1-myLayerPositions[i]);
-        else
-          param = cp + dp2*myLayerPositions[i];
-        meshDS->SetNodeOnEdge(node, edgeID, param);
-        P = gp_Pnt( P0.X() - aVec.X()*myLayerPositions[i],
-                    P0.Y() - aVec.Y()*myLayerPositions[i],
-                    P0.Z() - aVec.Z()*myLayerPositions[i] );
-        node = meshDS->AddNode(P.X(), P.Y(), P.Z());
-        Nodes2[i] = node;
-        if(!ori)
-          param = fp + dp2*(1-myLayerPositions[i]);
-        else
-          param = cp + dp2*myLayerPositions[i];
-        meshDS->SetNodeOnEdge(node, edgeID, param);
-        // parameters on face
-        gp_Pnt2d P2d( PC.X() + V2d.X()*myLayerPositions[i],
-                      PC.Y() + V2d.Y()*myLayerPositions[i] );
-        Pnts2d1.Append(P2d);
-      }
-      Nodes1[ myLayerPositions.size() ] = NF;
-      Nodes2[ myLayerPositions.size() ] = NL;
-      // create 1D elements on edge
-      vector< const SMDS_MeshNode* > tmpNodes;
-      tmpNodes.resize(2*Nodes1.size()+1);
-      for(i=0; i<Nodes2.size(); i++)
-        tmpNodes[Nodes2.size()-i-1] = Nodes2[i];
-      tmpNodes[Nodes2.size()] = NC;
-      for(i=0; i<Nodes1.size(); i++)
-        tmpNodes[Nodes2.size()+1+i] = Nodes1[i];
-      for(i=1; i<tmpNodes.size(); i++) {
-        SMDS_MeshEdge* ME = myHelper->AddEdge( tmpNodes[i-1], tmpNodes[i] );
-        if(ME) meshDS->SetMeshElementOnShape(ME, edgeID);
-      }
-      markEdgeAsComputedByMe( LinEdge1, aMesh.GetSubMesh( F ));
+      // use layer positions of linSide1 to mesh linSide2
+      makeMissingMesh( linSide2, nodes, layerPositions, myHelper );
+      linSide2 = StdMeshers_FaceSide::New( nodes );
     }
+    else if ( linSide2Computed && !linSide1Computed )
+    {
+      // use layer positions of linSide2 to mesh linSide1
+      makeMissingMesh( linSide1, nodes, layerPositions2, myHelper );
+      linSide1 = StdMeshers_FaceSide::New( nodes );
+    }
+    else if ( !linSide2Computed && !linSide1Computed )
+    {
+      // use layer positions of a longer side to mesh the shorter side
+      vector< double >& lp =
+        ( linSide1->Length() > linSide2->Length() ) ? layerPositions : layerPositions2;
+
+      makeMissingMesh( linSide1, nodes, lp, myHelper );
+      linSide1 = StdMeshers_FaceSide::New( nodes );
+      makeMissingMesh( linSide2, nodes, lp, myHelper );
+      linSide2 = StdMeshers_FaceSide::New( nodes );
+    }
+
+    const UVPtStructVec& nodes2 = linSide2->GetUVPtStruct();
+    centerNode = nodes2.back().node;
+    centerUV   = nodes2.back().UV();
   }
-  else // nbe==3 or ( nbe==2 && linEdge is INTERNAL )
-  {
-    if (nbe==2 && LinEdge1.Orientation() == TopAbs_INTERNAL )
-      LinEdge2 = LinEdge1;
 
-    // one curve must be a part of circle and other curves must be
-    // segments of line
-    double fp, lp;
-    Handle(Geom_Circle) aCirc = Handle(Geom_Circle)::DownCast( getCurve( CircEdge ));
-    Handle(Geom_Line)  aLine1 = Handle(Geom_Line  )::DownCast( getCurve( LinEdge1 ));
-    Handle(Geom_Line)  aLine2 = Handle(Geom_Line  )::DownCast( getCurve( LinEdge2 ));
-    if ( aCirc.IsNull() || aLine1.IsNull() || aLine2.IsNull() )
-      return error(COMPERR_BAD_SHAPE);
-    if ( !isCornerInsideCircle( CircEdge, LinEdge1, LinEdge2 ))
-      return error(COMPERR_BAD_SHAPE);
+  // list< TopoDS_Edge >::iterator ee = emptyEdges.begin();
+  // for ( ; ee != emptyEdges.end(); ++ee )
+  //   markEdgeAsComputedByMe( *ee, aMesh.GetSubMesh( F ));
 
-    if ( !algo1d->ComputeCircularEdge( aMesh, CircEdge ))
-      return error( algo1d->GetComputeError() );
-    map< double, const SMDS_MeshNode* > theNodes;
-    if ( !GetSortedNodesOnEdge( aMesh.GetMeshDS(), CircEdge, true, theNodes ))
-      return error("Circular edge is incorrectly meshed");
+  circSide->GetUVPtStruct(); // let sides take into account just computed nodes
+  linSide1->GetUVPtStruct();
+  linSide2->GetUVPtStruct();
 
-    myHelper->IsQuadraticSubMesh( aShape );
+  FaceQuadStruct::Ptr quad( new FaceQuadStruct );
+  quad->side.resize( 4 );
+  quad->side[0] = circSide;
+  quad->side[1] = linSide1;
+  quad->side[2] = StdMeshers_FaceSide::New( circSide.get(), centerNode, &centerUV );
+  quad->side[3] = linSide2;
 
-    const SMDS_MeshNode* NF = theNodes.begin()->second;
-    const SMDS_MeshNode* NL = theNodes.rbegin()->second;
-    CNodes.clear();
-    CNodes.push_back( NF );
-    map< double, const SMDS_MeshNode* >::iterator itn = theNodes.begin();
-    double fang = (*itn).first;
-    itn++;
-    for(; itn != theNodes.end(); itn++ ) {
-      CNodes.push_back( (*itn).second );
-      double ang = (*itn).first - fang;
-      if( ang>M_PI ) ang = ang - 2.*M_PI;
-      if( ang<-M_PI ) ang = ang + 2.*M_PI;
-      Angles.Append( ang );
-    }
-    P1 = gp_Pnt( NF->X(), NF->Y(), NF->Z() );
-    gp_Pnt P2( NL->X(), NL->Y(), NL->Z() );
-    P0 = aCirc->Location();
+  myQuadList.push_back( quad );
 
-    // make P1 belong to LinEdge1
-    TopoDS_Vertex V1 = myHelper->IthVertex( 0, LinEdge1 );
-    TopoDS_Vertex V2 = myHelper->IthVertex( 1, LinEdge1 );
-    gp_Pnt PE1 = BRep_Tool::Pnt(V1);
-    gp_Pnt PE2 = BRep_Tool::Pnt(V2);
-    if( ( P1.Distance(PE1) > Precision::Confusion() ) &&
-        ( P1.Distance(PE2) > Precision::Confusion() ) )
-      std::swap( LinEdge1, LinEdge2 );
-
-    bool linEdge1Computed, linEdge2Computed;
-    if ( !computeLayerPositions(P0,P1,LinEdge1,&linEdge1Computed))
-      return false;
-
-    Nodes1.resize( myLayerPositions.size()+1 );
-    Nodes2.resize( myLayerPositions.size()+1 );
-
-    // check that both linear edges have same hypotheses
-    if ( !computeLayerPositions(P0,P2,LinEdge2, &linEdge2Computed))
-         return false;
-    if ( Nodes1.size() != myLayerPositions.size()+1 )
-      return error("Different hypotheses apply to radial edges");
-
-    // find the central vertex
-    TopoDS_Vertex VC = V2;
-    if( ( P1.Distance(PE1) > Precision::Confusion() ) &&
-        ( P2.Distance(PE1) > Precision::Confusion() ) )
-      VC = V1;
-    int vertID = meshDS->ShapeToIndex(VC);
-
-    // LinEdge1
-    if ( linEdge1Computed )
-    {
-      if (!GetSortedNodesOnEdge(aMesh.GetMeshDS(),LinEdge1,true,theNodes))
-        return error("Invalid mesh on a straight edge");
-
-      bool nodesFromP0ToP1 = ( theNodes.rbegin()->second == NF );
-      NC = const_cast<SMDS_MeshNode*>
-        ( nodesFromP0ToP1 ? theNodes.begin()->second : theNodes.rbegin()->second );
-      size_t i = 0, ir = Nodes1.size()-1;
-      size_t * pi = nodesFromP0ToP1 ? &i : &ir;
-      itn = theNodes.begin();
-      if ( nodesFromP0ToP1 ) ++itn;
-      for ( ; i < Nodes1.size(); ++i, --ir, ++itn )
-      {
-        Nodes1[*pi] = itn->second;
-      }
-      for ( i = 0; i < Nodes1.size()-1; ++i )
-      {
-        Points.Append( gpXYZ( Nodes1[i]));
-        Pnts2d1.Append( myHelper->GetNodeUV( F, Nodes1[i]));
-      }
-    }
-    else
-    {
-      int edgeID = meshDS->ShapeToIndex(LinEdge1);
-      gp_Vec aVec(P0,P1);
-      // check orientation
-      Handle(Geom_Curve) Crv = BRep_Tool::Curve(LinEdge1,fp,lp);
-      gp_Pnt Ptmp = Crv->Value(fp);
-      bool ori = false;
-      if( P1.Distance(Ptmp) > Precision::Confusion() )
-        ori = true;
-      // get UV points for edge
-      gp_Pnt2d PF,PL;
-      BRep_Tool::UVPoints( LinEdge1, TopoDS::Face(aShape), PF, PL );
-      gp_Vec2d V2d;
-      if(ori) {
-        V2d = gp_Vec2d(PF,PL);
-        PC = PF;
-      }
-      else {
-        V2d = gp_Vec2d(PL,PF);
-        PC = PL;
-      }
-      NC = const_cast<SMDS_MeshNode*>( VertexNode( VC, meshDS ));
-      if ( !NC )
-      {
-        NC = meshDS->AddNode(P0.X(), P0.Y(), P0.Z());
-        meshDS->SetNodeOnVertex(NC, vertID);
-      }
-      double dp = lp-fp;
-      size_t i = 0;
-      for ( ; i < myLayerPositions.size(); i++ ) {
-        gp_Pnt P( P0.X() + aVec.X()*myLayerPositions[i],
-                  P0.Y() + aVec.Y()*myLayerPositions[i],
-                  P0.Z() + aVec.Z()*myLayerPositions[i] );
-        Points.Append(P);
-        SMDS_MeshNode * node = meshDS->AddNode(P.X(), P.Y(), P.Z());
-        Nodes1[i] = node;
-        double param;
-        if ( !ori )
-          param = fp + dp*(1-myLayerPositions[i]);
-        else
-          param = fp + dp*myLayerPositions[i];
-        meshDS->SetNodeOnEdge(node, edgeID, param);
-        // parameters on face
-        gp_Pnt2d P2d( PC.X() + V2d.X()*myLayerPositions[i],
-                      PC.Y() + V2d.Y()*myLayerPositions[i] );
-        Pnts2d1.Append(P2d);
-      }
-      Nodes1[ myLayerPositions.size() ] = NF;
-      // create 1D elements on edge
-      SMDS_MeshEdge* ME = myHelper->AddEdge( NC, Nodes1[0] );
-      if(ME) meshDS->SetMeshElementOnShape(ME, edgeID);
-      for ( i = 1; i < Nodes1.size(); i++ ) {
-        ME = myHelper->AddEdge( Nodes1[i-1], Nodes1[i] );
-        if(ME) meshDS->SetMeshElementOnShape(ME, edgeID);
-      }
-      if ( nbe == 2 && LinEdge1.Orientation() == TopAbs_INTERNAL )
-        Nodes2 = Nodes1;
-    }
-    markEdgeAsComputedByMe( LinEdge1, aMesh.GetSubMesh( F ));
-
-    // LinEdge2
-    if ( linEdge2Computed )
-    {
-      if (!GetSortedNodesOnEdge(aMesh.GetMeshDS(),LinEdge2,true,theNodes))
-        return error("Invalid mesh on a straight edge");
-
-      bool nodesFromP0ToP2 = ( theNodes.rbegin()->second == NL );
-      size_t i = 0, ir = Nodes1.size()-1;
-      size_t * pi = nodesFromP0ToP2 ? &i : &ir;
-      itn = theNodes.begin();
-      if ( nodesFromP0ToP2 ) ++itn;
-      for ( ; i < Nodes2.size(); ++i, --ir, ++itn )
-        Nodes2[*pi] = itn->second;
-    }
-    else
-    {
-      int edgeID = meshDS->ShapeToIndex(LinEdge2);
-      gp_Vec aVec = gp_Vec(P0,P2);
-      // check orientation
-      Handle(Geom_Curve) Crv = BRep_Tool::Curve(LinEdge2,fp,lp);
-      gp_Pnt Ptmp = Crv->Value(fp);
-      bool ori = false;
-      if( P2.Distance(Ptmp) > Precision::Confusion() )
-        ori = true;
-      // get UV points for edge
-      gp_Pnt2d PF,PL;
-      BRep_Tool::UVPoints( LinEdge2, TopoDS::Face(aShape), PF, PL );
-      gp_Vec2d V2d;
-      if(ori) {
-        V2d = gp_Vec2d(PF,PL);
-        PC = PF;
-      }
-      else {
-        V2d = gp_Vec2d(PL,PF);
-        PC = PL;
-      }
-      double dp = lp-fp;
-      for ( size_t i = 0; i < myLayerPositions.size(); i++ ) {
-        gp_Pnt P( P0.X() + aVec.X()*myLayerPositions[i],
-                  P0.Y() + aVec.Y()*myLayerPositions[i],
-                  P0.Z() + aVec.Z()*myLayerPositions[i] );
-        SMDS_MeshNode * node = meshDS->AddNode(P.X(), P.Y(), P.Z());
-        Nodes2[i] = node;
-        double param;
-        if(!ori)
-          param = fp + dp*(1-myLayerPositions[i]);
-        else
-          param = fp + dp*myLayerPositions[i];
-        meshDS->SetNodeOnEdge(node, edgeID, param);
-        // parameters on face
-        gp_Pnt2d P2d( PC.X() + V2d.X()*myLayerPositions[i],
-                      PC.Y() + V2d.Y()*myLayerPositions[i] );
-      }
-      Nodes2[ myLayerPositions.size() ] = NL;
-      // create 1D elements on edge
-      SMDS_MeshEdge* ME = myHelper->AddEdge( NC, Nodes2[0] );
-      if ( ME ) meshDS->SetMeshElementOnShape(ME, edgeID);
-      for ( size_t i = 1; i < Nodes2.size(); i++ ) {
-        ME = myHelper->AddEdge( Nodes2[i-1], Nodes2[i] );
-        if(ME) meshDS->SetMeshElementOnShape(ME, edgeID);
-      }
-    }
-    markEdgeAsComputedByMe( LinEdge2, aMesh.GetSubMesh( F ));
-  }
-  markEdgeAsComputedByMe( CircEdge, aMesh.GetSubMesh( F ));
-
-  // orientation
-  bool IsForward = ( CircEdge.Orientation()==TopAbs_FORWARD );
-  const double angleSign = ( F.Orientation() == TopAbs_REVERSED ? -1.0 : 1.0 );
-
-  // create nodes and mesh elements on face
-  // find axis of rotation
-  gp_Pnt P2 = gp_Pnt( CNodes[1]->X(), CNodes[1]->Y(), CNodes[1]->Z() );
-  gp_Vec Vec1(P0,P1);
-  gp_Vec Vec2(P0,P2);
-  gp_Vec Axis = Vec1.Crossed(Vec2);
-  // create elements
-  int i = 1;
-  //cout<<"Angles.Length() = "<<Angles.Length()<<"   Points.Length() = "<<Points.Length()<<endl;
-  //cout<<"Nodes1.size() = "<<Nodes1.size()<<"   Pnts2d1.Length() = "<<Pnts2d1.Length()<<endl;
-  for(; i<Angles.Length(); i++) {
-    vector< const SMDS_MeshNode* > tmpNodes;
-    gp_Trsf aTrsf;
-    gp_Ax1 theAxis(P0,gp_Dir(Axis));
-    aTrsf.SetRotation( theAxis, Angles.Value(i) );
-    gp_Trsf2d aTrsf2d;
-    aTrsf2d.SetRotation( PC, Angles.Value(i) * angleSign );
-    // create nodes
-    int j = 1;
-    for(; j<=Points.Length(); j++) {
-      double cx,cy,cz;
-      Points.Value(j).Coord( cx, cy, cz );
-      aTrsf.Transforms( cx, cy, cz );
-      SMDS_MeshNode* node = myHelper->AddNode( cx, cy, cz );
-      // find parameters on face
-      Pnts2d1.Value(j).Coord( cx, cy );
-      aTrsf2d.Transforms( cx, cy );
-      // set node on face
-      meshDS->SetNodeOnFace( node, faceID, cx, cy );
-      tmpNodes.push_back(node);
-    }
-    // create faces
-    tmpNodes.push_back( CNodes[i] );
-    // quad
-    for ( j = 0; j < (int)Nodes1.size() - 1; j++ ) {
-      SMDS_MeshFace* MF;
-      if(IsForward)
-        MF = myHelper->AddFace( tmpNodes[j], Nodes1[j],
-                                Nodes1[j+1], tmpNodes[j+1] );
-      else
-        MF = myHelper->AddFace( tmpNodes[j], tmpNodes[j+1],
-                                Nodes1[j+1], Nodes1[j] );
-      if(MF) meshDS->SetMeshElementOnShape(MF, faceID);
-    }
-    // tria
-    SMDS_MeshFace* MF;
-    if(IsForward)
-      MF = myHelper->AddFace( NC, Nodes1[0], tmpNodes[0] );
-    else
-      MF = myHelper->AddFace( NC, tmpNodes[0], Nodes1[0] );
-    if ( MF ) meshDS->SetMeshElementOnShape(MF, faceID);
-    for ( j = 0; j < (int) Nodes1.size(); j++ ) {
-      Nodes1[j] = tmpNodes[j];
-    }
-  }
-  // create last faces
-  // quad
-  for ( i = 0; i < (int)Nodes1.size()-1; i++ ) {
-    SMDS_MeshFace* MF;
-    if(IsForward)
-      MF = myHelper->AddFace( Nodes2[i], Nodes1[i],
-                              Nodes1[i+1], Nodes2[i+1] );
-    else
-      MF = myHelper->AddFace( Nodes2[i],  Nodes2[i+1],
-                              Nodes1[i+1], Nodes1[i] );
-    if(MF) meshDS->SetMeshElementOnShape(MF, faceID);
-  }
-  // tria
-  SMDS_MeshFace* MF;
-  if(IsForward)
-    MF = myHelper->AddFace( NC, Nodes1[0], Nodes2[0] );
+  // create quadrangles
+  bool ok;
+  if ( linSide1->NbPoints() == linSide2->NbPoints() )
+    ok = StdMeshers_Quadrangle_2D::computeQuadDominant( aMesh, F, quad );
   else
-    MF = myHelper->AddFace( NC, Nodes2[0], Nodes1[0] );
-  if(MF) meshDS->SetMeshElementOnShape(MF, faceID);
+    ok = StdMeshers_Quadrangle_2D::computeTriangles( aMesh, F, quad );
 
-  return true;
+  StdMeshers_Quadrangle_2D::myHelper = 0;
+
+  return ok;
 }
 
 //================================================================================
 /*!
- * \brief Compute positions of nodes on the radial edge
-  * \retval bool - is a success
+ * \brief Compute nodes on the radial edge
+ * \retval int - nb of segments on the linSide
  */
 //================================================================================
 
-bool StdMeshers_RadialQuadrangle_1D2D::computeLayerPositions(const gp_Pnt&      p1,
-                                                             const gp_Pnt&      p2,
-                                                             const TopoDS_Edge& linEdge,
-                                                             bool*              linEdgeComputed)
+int StdMeshers_RadialQuadrangle_1D2D::computeLayerPositions(StdMeshers_FaceSidePtr linSide,
+                                                            vector< double > &     positions,
+                                                            int*                   nbMeshedEdges,
+                                                            bool                   useHalf)
 {
   // First, try to compute positions of layers
 
-  myLayerPositions.clear();
+  positions.clear();
 
   SMESH_Mesh * mesh = myHelper->GetMesh();
 
@@ -1022,98 +994,70 @@ bool StdMeshers_RadialQuadrangle_1D2D::computeLayerPositions(const gp_Pnt&      
   if ( !hyp1D && !nbLayers )
   {
     // No own algo hypotheses assigned, so first try to find any 1D hypothesis.
-    // We need some edge
-    TopoDS_Shape edge = linEdge;
-    if ( edge.IsNull() && !myHelper->GetSubShape().IsNull())
-      for ( TopExp_Explorer e(myHelper->GetSubShape(), TopAbs_EDGE); e.More(); e.Next())
-        edge = e.Current();
-    if ( !edge.IsNull() )
-    {
-      // find a hyp usable by TNodeDistributor
-      const SMESH_HypoFilter* hypKind =
-        TNodeDistributor::GetDistributor(*mesh)->GetCompatibleHypoFilter(/*ignoreAux=*/true);
-      hyp1D = mesh->GetHypothesis( edge, *hypKind, /*fromAncestors=*/true);
-    }
+    // find a hyp usable by TNodeDistributor
+    TopoDS_Shape edge = linSide->Edge(0);
+    const SMESH_HypoFilter* hypKind =
+      TNodeDistributor::GetDistributor(*mesh)->GetCompatibleHypoFilter(/*ignoreAux=*/true);
+    hyp1D = mesh->GetHypothesis( edge, *hypKind, /*fromAncestors=*/true);
   }
   if ( hyp1D ) // try to compute with hyp1D
   {
-    if ( !TNodeDistributor::GetDistributor(*mesh)->Compute( myLayerPositions,p1,p2,*mesh,hyp1D )) {
+    BRepAdaptor_CompCurve* curve = linSide->GetCurve3d();
+    SMESHUtils::Deleter< BRepAdaptor_CompCurve > delCurve( curve );
+    double f = curve->FirstParameter();
+    double l = curve->LastParameter();
+
+    if ( useHalf )
+      l = 0.5 * ( f + l ); // first part of linSide is used
+
+    if ( !TNodeDistributor::GetDistributor(*mesh)->Compute( positions, linSide->Edge(0),
+                                                            *curve, f, l, *mesh, hyp1D ))
+    {
       if ( myDistributionHypo ) { // bad hyp assigned 
         return error( TNodeDistributor::GetDistributor(*mesh)->GetComputeError() );
       }
       else {
-        // bad hyp found, its Ok, lets try with default nb of segnents
+        // bad hyp found, its Ok, lets try with default nb of segments
       }
     }
   }
   
-  if ( myLayerPositions.empty() ) // try to use nb of layers
+  if ( positions.empty() ) // try to use nb of layers
   {
     if ( !nbLayers )
       nbLayers = _gen->GetDefaultNbSegments();
 
     if ( nbLayers )
     {
-      myLayerPositions.resize( nbLayers - 1 );
-      for ( int z = 1; z < nbLayers; ++z )
-        myLayerPositions[ z - 1 ] = double( z )/ double( nbLayers );
+      positions.resize( nbLayers + 1 );
+      for ( int z = 0; z < nbLayers; ++z )
+        positions[ z ] = double( z )/ double( nbLayers );
+      positions.back() = 1;
     }
   }
 
-  // Second, check presence of a mesh built by other algo on linEdge
-  // and mesh conformity to my hypothesis
+  // Second, check presence of a mesh built by other algo on linSide
 
-  bool meshComputed = (!linEdge.IsNull() && !mesh->GetSubMesh(linEdge)->IsEmpty() );
-  if ( linEdgeComputed ) *linEdgeComputed = meshComputed;
-
-  if ( meshComputed )
+  int nbEdgesComputed = 0;
+  for ( int i = 0; i < linSide->NbEdges(); ++i )
   {
-    vector< double > nodeParams;
-    GetNodeParamOnEdge( mesh->GetMeshDS(), linEdge, nodeParams );
+    nbEdgesComputed += ( !mesh->GetSubMesh( linSide->Edge(i))->IsEmpty() );
+  }
 
-    // nb of present nodes must be different in cases of 1 and 2 straight edges
-
-    TopoDS_Vertex VV[2];
-    TopExp::Vertices( linEdge, VV[0], VV[1]);
-    const gp_Pnt* points[] = { &p1, &p2 };
-    gp_Pnt       vPoints[] = { BRep_Tool::Pnt(VV[0]), BRep_Tool::Pnt(VV[1]) };
-    const double     tol[] = { BRep_Tool::Tolerance(VV[0]), BRep_Tool::Tolerance(VV[1]) };
-    bool pointsAreOnVertices = true;
-    for ( int iP = 0; iP < 2 && pointsAreOnVertices; ++iP )
-      pointsAreOnVertices = ( points[iP]->Distance( vPoints[0] ) < tol[0] ||
-                              points[iP]->Distance( vPoints[1] ) < tol[1] );
-
-    int nbNodes = nodeParams.size() - 2; // 2 straight edges
-    if ( !pointsAreOnVertices )
-      nbNodes = ( nodeParams.size() - 3 ) / 2; // 1 straight edge
-
-    if ( myLayerPositions.empty() )
+  if ( nbEdgesComputed == linSide->NbEdges() )
+  {
+    const UVPtStructVec& points = linSide->GetUVPtStruct();
+    if ( points.size() >= 2 )
     {
-      myLayerPositions.resize( nbNodes );
-    }
-    else if ( myDistributionHypo || myNbLayerHypo )
-    {
-      // linEdge is computed by other algo. Check if there is a meshed face
-      // using nodes on linEdge
-      bool nodesAreUsed = false;
-      TopTools_ListIteratorOfListOfShape ancestIt = mesh->GetAncestors( linEdge );
-      for ( ; ancestIt.More() && !nodesAreUsed; ancestIt.Next() )
-        if ( ancestIt.Value().ShapeType() == TopAbs_FACE )
-          nodesAreUsed = (!mesh->GetSubMesh( ancestIt.Value() )->IsEmpty());
-      if ( !nodesAreUsed ) {
-        // rebuild them
-        mesh->GetSubMesh( linEdge )->ComputeStateEngine( SMESH_subMesh::CLEAN );
-        if ( linEdgeComputed ) *linEdgeComputed = false;
-      }
-      else {
-        
-        if ((int) myLayerPositions.size() != nbNodes )
-          return error("Radial edge is meshed by other algorithm");
-      }
+      positions.resize( points.size() );
+      for ( size_t i = 0; i < points.size(); ++i )
+        positions[ i ] = points[i].normParam;
     }
   }
 
-  return !myLayerPositions.empty();
+  if ( nbMeshedEdges ) *nbMeshedEdges = nbEdgesComputed;
+
+  return positions.size();
 }
 
 
@@ -1122,9 +1066,9 @@ bool StdMeshers_RadialQuadrangle_1D2D::computeLayerPositions(const gp_Pnt&      
 //purpose  : 
 //=======================================================================
 
-bool StdMeshers_RadialQuadrangle_1D2D::Evaluate(SMESH_Mesh& aMesh,
+bool StdMeshers_RadialQuadrangle_1D2D::Evaluate(SMESH_Mesh&         aMesh,
                                                 const TopoDS_Shape& aShape,
-                                                MapShapeNbElems& aResMap)
+                                                MapShapeNbElems&    aResMap)
 {
   if( aShape.ShapeType() != TopAbs_FACE ) {
     return false;
@@ -1138,190 +1082,112 @@ bool StdMeshers_RadialQuadrangle_1D2D::Evaluate(SMESH_Mesh& aMesh,
 
   myHelper = new SMESH_MesherHelper( aMesh );
   myHelper->SetSubShape( aShape );
-  auto_ptr<SMESH_MesherHelper> helperDeleter( myHelper );
+  SMESHUtils::Deleter<SMESH_MesherHelper> helperDeleter( myHelper );
 
   TNodeDistributor* algo1d = TNodeDistributor::GetDistributor(aMesh);
 
-  TopoDS_Edge CircEdge, LinEdge1, LinEdge2;
-  int nbe = analyseFace( aShape, CircEdge, LinEdge1, LinEdge2 );
-  if( nbe>3 || nbe < 1 || CircEdge.IsNull() )
+  StdMeshers_FaceSidePtr circSide, linSide1, linSide2;
+  int nbSides = analyseFace( aShape, &aMesh, circSide, linSide1, linSide2 );
+  if( nbSides > 3 || nbSides < 1 )
     return false;
 
-  Handle(Geom_Circle) aCirc = Handle(Geom_Circle)::DownCast( getCurve( CircEdge ));
-  if( aCirc.IsNull() )
-    return error(COMPERR_BAD_SHAPE);
+  if ( algo1d->EvaluateCircularEdge( aMesh, circSide, aResMap ))
+    return false;
 
-  gp_Pnt P0 = aCirc->Location();
-  gp_Pnt P1 = aCirc->Value(0.);
-  computeLayerPositions( P0, P1, LinEdge1 );
+  vector< double > layerPositions; // [0,1]
 
-  int nb0d=0, nb2d_tria=0, nb2d_quad=0;
-  bool isQuadratic = false, ok = true;
-  if(nbe==1)
+  // ------------------------------------------------------------------------------------------
+  if ( nbSides == 1 )
   {
-    // C1 must be a circle
-    ok = algo1d->EvaluateCircularEdge( aMesh, CircEdge, aResMap );
-    if(ok) {
-      const vector<int>& aVec = aResMap[aMesh.GetSubMesh(CircEdge)];
-      isQuadratic = aVec[SMDSEntity_Quad_Edge]>aVec[SMDSEntity_Edge];
-      if(isQuadratic) {
-        // main nodes
-        nb0d = (aVec[SMDSEntity_Node]+1) * myLayerPositions.size();
-        // radial medium nodes
-        nb0d += (aVec[SMDSEntity_Node]+1) * (myLayerPositions.size()+1);
-        // other medium nodes
-        nb0d += (aVec[SMDSEntity_Node]+1) * myLayerPositions.size();
-      }
-      else {
-        nb0d = (aVec[SMDSEntity_Node]+1) * myLayerPositions.size();
-      }
-      nb2d_tria = aVec[SMDSEntity_Node] + 1;
-      nb2d_quad = nb0d;
-    }
+    const TopoDS_Face& F = TopoDS::Face( aShape );
+
+    const SMDS_MeshNode* circNode;
+    TopoDS_Edge linEdge = makeEdgeToCenter( circSide, F, circNode );
+
+    StdMeshers_FaceSidePtr tmpSide =
+      StdMeshers_FaceSide::New( F, linEdge, &aMesh, /*isFrw=*/true, /*skipMedium=*/true );
+
+    if ( !computeLayerPositions( tmpSide, layerPositions ))
+      return false;
   }
-  else if(nbe==2 && LinEdge1.Orientation() != TopAbs_INTERNAL)
+  // ------------------------------------------------------------------------------------------
+  else if ( nbSides == 2 && linSide1->Edge(0).Orientation() == TopAbs_INTERNAL )
   {
-    // one curve must be a half of circle and other curve must be
-    // a segment of line
-    double fp, lp;
-    Handle(Geom_Circle) aCirc = Handle(Geom_Circle)::DownCast( getCurve( CircEdge, &fp, &lp ));
-    if( fabs(fabs(lp-fp)-M_PI) > Precision::Confusion() ) {
-      // not half of circle
-      return error(COMPERR_BAD_SHAPE);
-    }
-    Handle(Geom_Line) aLine = Handle(Geom_Line)::DownCast( getCurve( LinEdge1 ));
-    if( aLine.IsNull() ) {
-      // other curve not line
-      return error(COMPERR_BAD_SHAPE);
-    }
-    ok = !aResMap.count( aMesh.GetSubMesh(LinEdge1) );
-    if ( !ok ) {
-      const vector<int>& aVec = aResMap[ aMesh.GetSubMesh(LinEdge1) ];
-      ok = ( aVec[SMDSEntity_Node] == (int) myLayerPositions.size() );
-    }
-    if(ok) {
-      ok = algo1d->EvaluateCircularEdge( aMesh, CircEdge, aResMap );
-    }
-    if(ok) {
-      const vector<int>& aVec = aResMap[ aMesh.GetSubMesh(CircEdge) ];
-      isQuadratic = aVec[SMDSEntity_Quad_Edge] > aVec[SMDSEntity_Edge];
-      if(isQuadratic) {
-        // main nodes
-        nb0d = aVec[SMDSEntity_Node] * myLayerPositions.size();
-        // radial medium nodes
-        nb0d += aVec[SMDSEntity_Node] * (myLayerPositions.size()+1);
-        // other medium nodes
-        nb0d += (aVec[SMDSEntity_Node]+1) * myLayerPositions.size();
-      }
-      else {
-        nb0d = aVec[SMDSEntity_Node] * myLayerPositions.size();
-      }
-      nb2d_tria = aVec[SMDSEntity_Node] + 1;
-      nb2d_quad = nb2d_tria * myLayerPositions.size();
-      // add evaluation for edges
-      vector<int> aResVec(SMDSEntity_Last,0);
-      if(isQuadratic) {
-        aResVec[SMDSEntity_Node] = 4*myLayerPositions.size() + 3;
-        aResVec[SMDSEntity_Quad_Edge] = 2*myLayerPositions.size() + 2;
-      }
-      else {
-        aResVec[SMDSEntity_Node] = 2*myLayerPositions.size() + 1;
-        aResVec[SMDSEntity_Edge] = 2*myLayerPositions.size() + 2;
-      }
-      aResMap[ aMesh.GetSubMesh(LinEdge1) ] = aResVec;
-    }
+    if ( !computeLayerPositions( linSide1, layerPositions ))
+      return false;
   }
-  else  // nbe==3 or ( nbe==2 && linEdge is INTERNAL )
+  // ------------------------------------------------------------------------------------------
+  else if ( nbSides == 2 )
   {
-    if (nbe==2 && LinEdge1.Orientation() == TopAbs_INTERNAL )
-      LinEdge2 = LinEdge1;
-
-    // one curve must be a part of circle and other curves must be
-    // segments of line
-    Handle(Geom_Line)  aLine1 = Handle(Geom_Line)::DownCast( getCurve( LinEdge1 ));
-    Handle(Geom_Line)  aLine2 = Handle(Geom_Line)::DownCast( getCurve( LinEdge2 ));
-    if( aLine1.IsNull() || aLine2.IsNull() ) {
-      // other curve not line
-      return error(COMPERR_BAD_SHAPE);
-    }
-    size_t nbLayers = myLayerPositions.size();
-    computeLayerPositions( P0, P1, LinEdge2 );
-    if ( nbLayers != myLayerPositions.size() )
-      return error("Different hypotheses apply to radial edges");
-      
-    bool ok = !aResMap.count( aMesh.GetSubMesh(LinEdge1));
-    if ( !ok ) {
-      if ( myDistributionHypo || myNbLayerHypo )
-        ok = true; // override other 1d hyps
-      else {
-        const vector<int>& aVec = aResMap[ aMesh.GetSubMesh(LinEdge1) ];
-        ok = ( aVec[SMDSEntity_Node] == (int) myLayerPositions.size() );
-      }
-    }
-    if( ok && aResMap.count( aMesh.GetSubMesh(LinEdge2) )) {
-      if ( myDistributionHypo || myNbLayerHypo )
-        ok = true; // override other 1d hyps
-      else {
-        const vector<int>& aVec = aResMap[ aMesh.GetSubMesh(LinEdge2) ];
-        ok = ( aVec[SMDSEntity_Node] == (int) myLayerPositions.size() );
-      }
-    }
-    if(ok) {
-      ok = algo1d->EvaluateCircularEdge( aMesh, CircEdge, aResMap );
-    }
-    if(ok) {
-      const vector<int>& aVec = aResMap[ aMesh.GetSubMesh(CircEdge) ];
-      isQuadratic = aVec[SMDSEntity_Quad_Edge]>aVec[SMDSEntity_Edge];
-      if(isQuadratic) {
-        // main nodes
-        nb0d = aVec[SMDSEntity_Node] * myLayerPositions.size();
-        // radial medium nodes
-        nb0d += aVec[SMDSEntity_Node] * (myLayerPositions.size()+1);
-        // other medium nodes
-        nb0d += (aVec[SMDSEntity_Node]+1) * myLayerPositions.size();
-      }
-      else {
-        nb0d = aVec[SMDSEntity_Node] * myLayerPositions.size();
-      }
-      nb2d_tria = aVec[SMDSEntity_Node] + 1;
-      nb2d_quad = nb2d_tria * myLayerPositions.size();
-      // add evaluation for edges
-      vector<int> aResVec(SMDSEntity_Last, 0);
-      if(isQuadratic) {
-        aResVec[SMDSEntity_Node] = 2*myLayerPositions.size() + 1;
-        aResVec[SMDSEntity_Quad_Edge] = myLayerPositions.size() + 1;
-      }
-      else {
-        aResVec[SMDSEntity_Node] = myLayerPositions.size();
-        aResVec[SMDSEntity_Edge] = myLayerPositions.size() + 1;
-      }
-      sm = aMesh.GetSubMesh(LinEdge1);
-      aResMap[sm] = aResVec;
-      sm = aMesh.GetSubMesh(LinEdge2);
-      aResMap[sm] = aResVec;
-    }
+    // find positions of layers for the first half of linSide1
+    if ( !computeLayerPositions( linSide1, layerPositions, 0, /*useHalf=*/true ))
+      return false;
+  }
+  // ------------------------------------------------------------------------------------------
+  else // nbSides == 3 
+  {
+    if ( !computeLayerPositions(( linSide1->Length() > linSide2->Length() ) ? linSide1 : linSide2,
+                                 layerPositions ))
+      return false;
   }
 
-  if(nb0d>0) {
-    aResVec[0] = nb0d;
-    if(isQuadratic) {
-      aResVec[SMDSEntity_Quad_Triangle] = nb2d_tria;
-      aResVec[SMDSEntity_Quad_Quadrangle] = nb2d_quad;
+  bool isQuadratic = false;
+  for ( TopExp_Explorer edge( aShape, TopAbs_EDGE ); edge.More() &&  !isQuadratic ; edge.Next() )
+  {
+    sm = aMesh.GetSubMesh( edge.Current() );
+    vector<int>& nbElems = aResMap[ sm ];
+    if ( SMDSEntity_Quad_Edge < (int) nbElems.size() )
+      isQuadratic = nbElems[ SMDSEntity_Quad_Edge ];
+  }
+
+  int nbCircSegments = 0;
+  for ( int iE = 0; iE < circSide->NbEdges(); ++iE )
+  {
+    sm = aMesh.GetSubMesh( circSide->Edge( iE ));
+    vector<int>& nbElems = aResMap[ sm ];
+    if ( SMDSEntity_Quad_Edge < (int) nbElems.size() )
+      nbCircSegments += ( nbElems[ SMDSEntity_Edge ] + nbElems[ SMDSEntity_Quad_Edge ]);
+  }
+  
+  int nbQuads = nbCircSegments * ( layerPositions.size() - 1 );
+  int nbTria  = nbCircSegments;
+  int nbNodes = ( nbCircSegments - 1 ) * ( layerPositions.size() - 2 );
+  if ( isQuadratic )
+  {
+    nbNodes += (( nbCircSegments - 1 ) * ( layerPositions.size() - 1 ) + // radial
+                ( nbCircSegments     ) * ( layerPositions.size() - 2 )); // circular
+    aResVec[SMDSEntity_Quad_Triangle  ] = nbTria;
+    aResVec[SMDSEntity_Quad_Quadrangle] = nbQuads;
+  }
+  else
+  {
+    aResVec[SMDSEntity_Triangle  ] = nbTria;
+    aResVec[SMDSEntity_Quadrangle] = nbQuads;
+  }
+  aResVec[SMDSEntity_Node] = nbNodes;
+
+  if ( linSide1 )
+  {
+    // evaluation for linSides
+    vector<int> aResVec(SMDSEntity_Last, 0);
+    if ( isQuadratic ) {
+      aResVec[SMDSEntity_Node     ] = 2 * ( layerPositions.size() - 1 ) + 1;
+      aResVec[SMDSEntity_Quad_Edge] = layerPositions.size() - 1;
     }
     else {
-      aResVec[SMDSEntity_Triangle] = nb2d_tria;
-      aResVec[SMDSEntity_Quadrangle] = nb2d_quad;
+      aResVec[SMDSEntity_Node] = layerPositions.size() - 2;
+      aResVec[SMDSEntity_Edge] = layerPositions.size() - 1;
     }
-    return true;
+    sm = aMesh.GetSubMesh( linSide1->Edge(0) );
+    aResMap[sm] = aResVec;
+    if ( linSide2 )
+    {
+      sm = aMesh.GetSubMesh( linSide2->Edge(0) );
+      aResMap[sm] = aResVec;
+    }
   }
 
-  // invalid case
-  sm = aMesh.GetSubMesh(aShape);
-  SMESH_ComputeErrorPtr& smError = sm->GetComputeError();
-  smError.reset( new SMESH_ComputeError(COMPERR_ALGO_FAILED,
-                                        "Submesh can not be evaluated",this));
-  return false;
-
+  return true;
 }
 
 //================================================================================
@@ -1335,11 +1201,10 @@ bool StdMeshers_RadialQuadrangle_1D2D::IsApplicable( const TopoDS_Shape & aShape
   int nbFoundFaces = 0;
   for (TopExp_Explorer exp( aShape, TopAbs_FACE ); exp.More(); exp.Next(), ++nbFoundFaces )
   {
-    TopoDS_Edge CircEdge, LinEdge1, LinEdge2;
-    int nbe = analyseFace( exp.Current(), CircEdge, LinEdge1, LinEdge2 );
-    Handle(Geom_Circle) aCirc = Handle(Geom_Circle)::DownCast( getCurve( CircEdge ));
-    bool ok = ( nbe <= 3 && nbe >= 1 && !aCirc.IsNull() &&
-                isCornerInsideCircle( CircEdge, LinEdge1, LinEdge2 ));
+    StdMeshers_FaceSidePtr circSide, linSide1, linSide2;
+    int nbSides = analyseFace( aShape, NULL, circSide, linSide1, linSide2 );
+    bool ok = ( 0 < nbSides && nbSides <= 3 &&
+                isCornerInsideCircle( circSide, linSide1, linSide2 ));
     if( toCheckAll  && !ok ) return false;
     if( !toCheckAll && ok  ) return true;
   }

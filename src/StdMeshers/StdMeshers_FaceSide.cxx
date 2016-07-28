@@ -195,12 +195,14 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const StdMeshers_FaceSide*  theSide,
                                          const double                theUFirst,
                                          const double                theULast)
 {
+  myEdge.resize        ( 1 );
+  myEdgeID.resize      ( 1, 0 );
   myC2d.push_back      ( theC2d );
+  myC3dAdaptor.resize  ( 1 );
   myFirst.push_back    ( theUFirst );
   myLast.push_back     ( theULast );
   myNormPar.push_back  ( 1. );
   myIsUniform.push_back( true );
-  myEdgeID.push_back   ( 0 );
   myLength       = 0;
   myProxyMesh    = theSide->myProxyMesh;
   myDefaultPnt2d = *thePnt2d1;
@@ -324,7 +326,6 @@ const std::vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXCons
     if ( NbEdges() == 0 ) return myPoints;
 
     StdMeshers_FaceSide* me = const_cast< StdMeshers_FaceSide* >( this );
-    //SMESHDS_Mesh*    meshDS = myProxyMesh->GetMeshDS();
     SMESH_MesherHelper eHelper( *myProxyMesh->GetMesh() );
     SMESH_MesherHelper fHelper( *myProxyMesh->GetMesh() );
     fHelper.SetSubShape( myFace );
@@ -429,17 +430,19 @@ const std::vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXCons
       else
       {
         node = VertexNode( iE );
-        while ( !node && iE > 0 )
-          node = VertexNode( --iE );
-        if ( !node )
-          return myPoints;
+        if ( myProxyMesh->GetMesh()->HasModificationsToDiscard() )
+          while ( !node && iE > 1 ) // check intermediate VERTEXes
+            node = VertexNode( --iE );
       }
-      if ( u2node.rbegin()->second == node &&
-           !fHelper.IsRealSeam  ( node->getshapeId() ) &&
-           !fHelper.IsDegenShape( node->getshapeId() ))
-        u2node.erase( --u2node.end() );
+      if ( node )
+      {
+        if ( u2node.rbegin()->second == node &&
+             !fHelper.IsRealSeam  ( node->getshapeId() ) &&
+             !fHelper.IsDegenShape( node->getshapeId() ))
+          u2node.erase( --u2node.end() );
 
-      u2node.insert( u2node.end(), make_pair( 1., node ));
+        u2node.insert( u2node.end(), make_pair( 1., node ));
+      }
     }
 
     if ((int) u2node.size() + nbProxyNodes != myNbPonits &&
