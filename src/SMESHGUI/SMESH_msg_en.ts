@@ -5267,6 +5267,18 @@ Please select a group and try again</translation>
         <source>USE_INPUT_ELEMS_ONLY</source>
         <translation>Use only input elements</translation>
     </message>
+    <message>
+        <source>SMESH_SCALES</source>
+        <translation>Scale Factors</translation>
+    </message>
+    <message>
+        <source>LINEAR_SCALES</source>
+        <translation>Linear Variation of Scale Factors</translation>
+    </message>
+    <message>
+        <source>BASE_POINT</source>
+        <translation>Scaling Center</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_FilterDlg</name>

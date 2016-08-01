@@ -330,6 +330,9 @@ public:
                                              const SMESH::ListOfIDSources & faces,
                                              const SMESH::DirStruct &       stepVector,
                                              CORBA::Long                    nbOfSteps,
+                                             const SMESH::double_array &    theScaleFactors,
+                                             CORBA::Boolean                 theLinearVariation,
+                                             const SMESH::double_array &    theBasePoint,
                                              CORBA::Boolean                 toMakeGroups)
     throw (SALOME::SALOME_Exception);
 

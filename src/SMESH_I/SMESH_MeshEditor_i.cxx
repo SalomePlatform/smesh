@@ -2484,6 +2484,7 @@ namespace MeshEditor_I
     bool myIsExtrusionByNormal;
 
     static int makeFlags( CORBA::Boolean MakeGroups,
+                          CORBA::Boolean LinearVariation = false,
                           CORBA::Boolean ByAverageNormal = false,
                           CORBA::Boolean UseInputElemsOnly = false,
                           CORBA::Long    Flags = 0,
@@ -2492,18 +2493,24 @@ namespace MeshEditor_I
       if ( MakeGroups       ) Flags |= ::SMESH_MeshEditor::EXTRUSION_FLAG_GROUPS;
       if ( ByAverageNormal  ) Flags |= ::SMESH_MeshEditor::EXTRUSION_FLAG_BY_AVG_NORMAL;
       if ( UseInputElemsOnly) Flags |= ::SMESH_MeshEditor::EXTRUSION_FLAG_USE_INPUT_ELEMS_ONLY;
+      if ( LinearVariation  ) Flags |= ::SMESH_MeshEditor::EXTRUSION_FLAG_SCALE_LINEAR_VARIATION;
       if ( MakeBoundary     ) Flags |= ::SMESH_MeshEditor::EXTRUSION_FLAG_BOUNDARY;
       return Flags;
     }
     // standard params
-    ExtrusionParams(const SMESH::DirStruct &  theDir,
-                    CORBA::Long               theNbOfSteps,
-                    CORBA::Boolean            theMakeGroups):
+    ExtrusionParams(const SMESH::DirStruct &    theDir,
+                    CORBA::Long                 theNbOfSteps,
+                    const SMESH::double_array & theScaleFactors,
+                    CORBA::Boolean              theLinearVariation,
+                    const SMESH::double_array & theBasePoint,
+                    CORBA::Boolean              theMakeGroups):
       ::SMESH_MeshEditor::ExtrusParam ( gp_Vec( theDir.PS.x,
                                                 theDir.PS.y,
                                                 theDir.PS.z ),
                                         theNbOfSteps,
-                                        makeFlags( theMakeGroups )),
+                                        toList( theScaleFactors ),
+                                        TBasePoint( theBasePoint ),
+                                        makeFlags( theMakeGroups, theLinearVariation )),
       myIsExtrusionByNormal( false )
     {
     }
@@ -2517,7 +2524,9 @@ namespace MeshEditor_I
                                                 theDir.PS.y,
                                                 theDir.PS.z ),
                                         theNbOfSteps,
-                                        makeFlags( theMakeGroups, false, false,
+                                        std::list<double>(),
+                                        0,
+                                        makeFlags( theMakeGroups, false, false, false,
                                                    theExtrFlags, false ),
                                         theSewTolerance ),
       myIsExtrusionByNormal( false )
@@ -2532,7 +2541,7 @@ namespace MeshEditor_I
                     CORBA::Boolean theMakeGroups ):
       ::SMESH_MeshEditor::ExtrusParam ( theStepSize, 
                                         theNbOfSteps,
-                                        makeFlags( theMakeGroups,
+                                        makeFlags( theMakeGroups, false,
                                                    theByAverageNormal, theUseInputElemsOnly ),
                                         theDim),
       myIsExtrusionByNormal( true )
@@ -2543,6 +2552,32 @@ namespace MeshEditor_I
     {
       Flags() &= ~(::SMESH_MeshEditor::EXTRUSION_FLAG_GROUPS);
     }
+
+  private:
+
+    static std::list<double> toList( const SMESH::double_array & theScaleFactors )
+    {
+      std::list<double> scales;
+      for ( CORBA::ULong i = 0; i < theScaleFactors.length(); ++i )
+        scales.push_back( theScaleFactors[i] );
+      return scales;
+    }
+
+    // structure used to convert SMESH::double_array to gp_XYZ*
+    struct TBasePoint
+    {
+      gp_XYZ *pp, p;
+      TBasePoint( const SMESH::double_array & theBasePoint )
+      {
+        pp = 0;
+        if ( theBasePoint.length() == 3 )
+        {
+          p.SetCoord( theBasePoint[0], theBasePoint[1], theBasePoint[2] );
+          pp = &p;
+        }
+      }
+      operator const gp_XYZ*() const { return pp; }
+    };
   };
 }
 
@@ -2566,13 +2601,17 @@ SMESH_MeshEditor_i::ExtrusionSweepObjects(const SMESH::ListOfIDSources & theNode
                                           const SMESH::ListOfIDSources & theFaces,
                                           const SMESH::DirStruct &       theStepVector,
                                           CORBA::Long                    theNbOfSteps,
+                                          const SMESH::double_array &    theScaleFactors,
+                                          CORBA::Boolean                 theLinearVariation,
+                                          const SMESH::double_array &    theBasePoint,
                                           CORBA::Boolean                 theToMakeGroups)
   throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
 
-  ExtrusionParams params( theStepVector, theNbOfSteps, theToMakeGroups );
+  ExtrusionParams params( theStepVector, theNbOfSteps, theScaleFactors,
+                          theLinearVariation, theBasePoint, theToMakeGroups );
 
   TIDSortedElemSet elemsNodes[2];
   for ( int i = 0, nb = theNodes.length(); i < nb; ++i ) {
@@ -2916,13 +2955,13 @@ SMESH_MeshEditor_i::ExtrusionAlongPathObjects(const SMESH::ListOfIDSources & the
                 << thePathShape        << ", "
                 << theNodeStart        << ", "
                 << theHasAngles        << ", "
-                << theAngles           << ", "
+                << TVar( theAngles )   << ", "
                 << theLinearVariation  << ", "
                 << theHasRefPoint      << ", "
                 << "SMESH.PointStruct( "
-                << ( theHasRefPoint ? theRefPoint.x : 0 ) << ", "
-                << ( theHasRefPoint ? theRefPoint.y : 0 ) << ", "
-                << ( theHasRefPoint ? theRefPoint.z : 0 ) << " ), "
+                << TVar( theHasRefPoint ? theRefPoint.x : 0 ) << ", "
+                << TVar( theHasRefPoint ? theRefPoint.y : 0 ) << ", "
+                << TVar( theHasRefPoint ? theRefPoint.z : 0 ) << " ), "
                 << theMakeGroups       << " )";
   }
   else

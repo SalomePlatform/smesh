@@ -5480,11 +5480,14 @@ SMESH_MeshEditor::RotationSweep(TIDSortedElemSet   theElemSets[2],
 //purpose  : standard construction
 //=======================================================================
 
-SMESH_MeshEditor::ExtrusParam::ExtrusParam( const gp_Vec&  theStep,
-                                            const int      theNbSteps,
-                                            const int      theFlags,
-                                            const double   theTolerance):
+SMESH_MeshEditor::ExtrusParam::ExtrusParam( const gp_Vec&            theStep,
+                                            const int                theNbSteps,
+                                            const std::list<double>& theScales,
+                                            const gp_XYZ*            theBasePoint,
+                                            const int                theFlags,
+                                            const double             theTolerance):
   myDir( theStep ),
+  myBaseP( Precision::Infinite(), 0, 0 ),
   myFlags( theFlags ),
   myTolerance( theTolerance ),
   myElemsToUse( NULL )
@@ -5493,6 +5496,37 @@ SMESH_MeshEditor::ExtrusParam::ExtrusParam( const gp_Vec&  theStep,
   const double stepSize = theStep.Magnitude();
   for (int i=1; i<=theNbSteps; i++ )
     mySteps->Append( stepSize );
+
+  int nbScales = theScales.size();
+  if ( nbScales > 0 )
+  {
+    if ( IsLinearVariation() && nbScales < theNbSteps )
+    {
+      myScales.reserve( theNbSteps );
+      std::list<double>::const_iterator scale = theScales.begin();
+      double prevScale = 1.0;
+      for ( int iSc = 1; scale != theScales.end(); ++scale, ++iSc )
+      {
+        int      iStep = int( iSc / double( nbScales ) * theNbSteps + 0.5 );
+        int    stDelta = Max( 1, iStep - myScales.size());
+        double scDelta = ( *scale - prevScale ) / stDelta;
+        for ( int iStep = 0; iStep < stDelta; ++iStep )
+        {
+          myScales.push_back( prevScale + scDelta );
+          prevScale = myScales.back();
+        }
+        prevScale = *scale;
+      }
+    }
+    else
+    {
+      myScales.assign( theScales.begin(), theScales.end() );
+    }
+  }
+  if ( theBasePoint )
+  {
+    myBaseP = *theBasePoint;
+  }
 
   if (( theFlags & EXTRUSION_FLAG_SEW ) &&
       ( theTolerance > 0 ))
@@ -5562,12 +5596,38 @@ SMESH_MeshEditor::ExtrusParam::ExtrusParam( const double theStepSize,
 //=======================================================================
 //function : ExtrusParam::SetElementsToUse
 //purpose  : stores elements to use for extrusion by normal, depending on
-//           state of EXTRUSION_FLAG_USE_INPUT_ELEMS_ONLY flag
+//           state of EXTRUSION_FLAG_USE_INPUT_ELEMS_ONLY flag;
+//           define myBaseP for scaling
 //=======================================================================
 
-void SMESH_MeshEditor::ExtrusParam::SetElementsToUse( const TIDSortedElemSet& elems )
+void SMESH_MeshEditor::ExtrusParam::SetElementsToUse( const TIDSortedElemSet& elems,
+                                                      const TIDSortedElemSet& nodes )
 {
   myElemsToUse = ToUseInpElemsOnly() ? & elems : 0;
+
+  if ( Precision::IsInfinite( myBaseP.X() )) // myBaseP not defined
+  {
+    myBaseP.SetCoord( 0.,0.,0. );
+    TIDSortedElemSet newNodes;
+
+    const TIDSortedElemSet* elemSets[] = { &elems, &nodes };
+    for ( int is2ndSet = 0; is2ndSet < 2; ++is2ndSet )
+    {
+      const TIDSortedElemSet& elements = *( elemSets[ is2ndSet ]);
+      TIDSortedElemSet::const_iterator itElem = elements.begin();
+      for ( ; itElem != elements.end(); itElem++ )
+      {
+        const SMDS_MeshElement* elem = *itElem;
+        SMDS_ElemIteratorPtr     itN = elem->nodesIterator();
+        while ( itN->more() ) {
+          const SMDS_MeshElement* node = itN->next();
+          if ( newNodes.insert( node ).second )
+            myBaseP += SMESH_TNodeXYZ( node );
+        }
+      }
+    }
+    myBaseP /= newNodes.size();
+  }
 }
 
 //=======================================================================
@@ -5636,6 +5696,41 @@ makeNodesByDir( SMESHDS_Mesh*                     mesh,
     p += myDir.XYZ() * nextStep();
     const SMDS_MeshNode * newNode = mesh->AddNode( p.X(), p.Y(), p.Z() );
     newNodes.push_back( newNode );
+  }
+
+  if ( !myScales.empty() )
+  {
+    if ( makeMediumNodes && myMediumScales.empty() )
+    {
+      myMediumScales.resize( myScales.size() );
+      double prevFactor = 1.;
+      for ( size_t i = 0; i < myScales.size(); ++i )
+      {
+        myMediumScales[i] = 0.5 * ( prevFactor + myScales[i] );
+        prevFactor = myScales[i];
+      }
+    }
+    typedef std::vector<double>::iterator ScaleIt;
+    ScaleIt scales[] = { myScales.begin(), myMediumScales.begin() };
+
+    size_t iSc = 0, nbScales = myScales.size() + myMediumScales.size();
+
+    gp_XYZ center = myBaseP;
+    std::list<const SMDS_MeshNode*>::iterator nIt = newNodes.begin();
+    size_t iN  = 0;
+    for ( beginStepIter( makeMediumNodes ); moreSteps() && ( iN < nbScales ); ++nIt, ++iN )
+    {
+      center += myDir.XYZ() * nextStep();
+
+      iSc += int( makeMediumNodes );
+      ScaleIt& scale = scales[ iSc % 2 ];
+      
+      gp_XYZ xyz = SMESH_TNodeXYZ( *nIt );
+      xyz = ( *scale * ( xyz - center )) + center;
+      mesh->MoveNode( *nIt, xyz.X(), xyz.Y(), xyz.Z() );
+
+      ++scale;
+    }
   }
   return nbNodes;
 }
@@ -5811,7 +5906,7 @@ SMESH_MeshEditor::ExtrusionSweep (TIDSortedElemSet     theElems[2],
                                   const int            theFlags,
                                   const double         theTolerance)
 {
-  ExtrusParam aParams( theStep, theNbSteps, theFlags, theTolerance );
+  ExtrusParam aParams( theStep, theNbSteps, std::list<double>(), 0, theFlags, theTolerance );
   return ExtrusionSweep( theElems, aParams, newElemsMap );
 }
 
@@ -5832,16 +5927,12 @@ SMESH_MeshEditor::ExtrusionSweep (TIDSortedElemSet     theElemSets[2],
   // source elements for each generated one
   SMESH_SequenceOfElemPtr srcElems, srcNodes;
 
-  //SMESHDS_Mesh* aMesh = GetMeshDS();
-
   setElemsFirst( theElemSets );
   const int nbSteps = theParams.NbSteps();
-  theParams.SetElementsToUse( theElemSets[0] );
+  theParams.SetElementsToUse( theElemSets[0], theElemSets[1] );
 
-  TNodeOfNodeListMap mapNewNodes;
-  //TNodeOfNodeVecMap mapNewNodes;
+  TNodeOfNodeListMap   mapNewNodes;
   TElemOfVecOfNnlmiMap mapElemNewNodes;
-  //TElemOfVecOfMapNodesMap mapElemNewNodes;
 
   const bool isQuadraticMesh = bool( myMesh->NbEdges(ORDER_QUADRATIC) +
                                      myMesh->NbFaces(ORDER_QUADRATIC) +
@@ -6656,24 +6747,23 @@ SMESH_MeshEditor::MakeExtrElements(TIDSortedElemSet                  theElemSets
 
 //=======================================================================
 //function : LinearAngleVariation
-//purpose  : auxilary for ExtrusionAlongTrack
+//purpose  : spread values over nbSteps
 //=======================================================================
-void SMESH_MeshEditor::LinearAngleVariation(const int nbSteps,
+
+void SMESH_MeshEditor::LinearAngleVariation(const int     nbSteps,
                                             list<double>& Angles)
 {
   int nbAngles = Angles.size();
-  if( nbSteps > nbAngles ) {
+  if( nbSteps > nbAngles && nbAngles > 0 )
+  {
     vector<double> theAngles(nbAngles);
-    list<double>::iterator it = Angles.begin();
-    int i = -1;
-    for(; it!=Angles.end(); it++) {
-      i++;
-      theAngles[i] = (*it);
-    }
+    theAngles.assign( Angles.begin(), Angles.end() );
+
     list<double> res;
     double rAn2St = double( nbAngles ) / double( nbSteps );
     double angPrev = 0, angle;
-    for ( int iSt = 0; iSt < nbSteps; ++iSt ) {
+    for ( int iSt = 0; iSt < nbSteps; ++iSt )
+    {
       double angCur = rAn2St * ( iSt+1 );
       double angCurFloor  = floor( angCur );
       double angPrevFloor = floor( angPrev );
@@ -6695,10 +6785,7 @@ void SMESH_MeshEditor::LinearAngleVariation(const int nbSteps,
       res.push_back(angle);
       angPrev = angCur;
     }
-    Angles.clear();
-    it = res.begin();
-    for(; it!=res.end(); it++)
-      Angles.push_back( *it );
+    Angles.swap( res );
   }
 }
 

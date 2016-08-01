@@ -3820,17 +3820,27 @@ class Mesh:
                                          NbOfSteps, Tolerance, MakeGroups, TotalAngle)
 
     ## Generates new elements by extrusion of the given elements and nodes
-    #  @param nodes - nodes to extrude: a list including ids, groups, sub-meshes or a mesh
-    #  @param edges - edges to extrude: a list including ids, groups, sub-meshes or a mesh
-    #  @param faces - faces to extrude: a list including ids, groups, sub-meshes or a mesh
+    #  @param nodes nodes to extrude: a list including ids, groups, sub-meshes or a mesh
+    #  @param edges edges to extrude: a list including ids, groups, sub-meshes or a mesh
+    #  @param faces faces to extrude: a list including ids, groups, sub-meshes or a mesh
     #  @param StepVector vector or DirStruct or 3 vector components, defining
     #         the direction and value of extrusion for one step (the total extrusion
     #         length will be NbOfSteps * ||StepVector||)
     #  @param NbOfSteps the number of steps
     #  @param MakeGroups forces the generation of new groups from existing ones
+    #  @param scaleFactors optional scale factors to apply during extrusion
+    #  @param linearVariation if @c True, scaleFactors are spread over all @a scaleFactors,
+    #         else scaleFactors[i] is applied to nodes at the i-th extrusion step
+    #  @param basePoint optional scaling center; if not provided, a gravity center of
+    #         nodes and elements being extruded is used as the scaling center.
+    #         It can be either
+    #         - a list of tree components of the point or
+    #         - a node ID or
+    #         - a GEOM point
     #  @return the list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     #  @ingroup l2_modif_extrurev
-    def ExtrusionSweepObjects(self, nodes, edges, faces, StepVector, NbOfSteps, MakeGroups=False):
+    def ExtrusionSweepObjects(self, nodes, edges, faces, StepVector, NbOfSteps, MakeGroups=False,
+                              scaleFactors=[], linearVariation=False, basePoint=[] ):
         unRegister = genObjUnRegister()
         nodes = self._getIdSourceList( nodes, SMESH.NODE, unRegister )
         edges = self._getIdSourceList( edges, SMESH.EDGE, unRegister )
@@ -3841,12 +3851,22 @@ class Mesh:
         if isinstance( StepVector, list ):
             StepVector = self.smeshpyD.MakeDirStruct(*StepVector)
 
+        if isinstance( basePoint, int):
+            xyz = self.GetNodeXYZ( basePoint )
+            if not xyz:
+                raise RuntimeError, "Invalid node ID: %s" % basePoint
+            basePoint = xyz
+        if isinstance( basePoint, geomBuilder.GEOM._objref_GEOM_Object ):
+            basePoint = self.geompyD.PointCoordinates( basePoint )
+
         NbOfSteps,Parameters,hasVars = ParseParameters(NbOfSteps)
         Parameters = StepVector.PS.parameters + var_separator + Parameters
         self.mesh.SetParameters(Parameters)
 
         return self.editor.ExtrusionSweepObjects( nodes, edges, faces,
-                                                  StepVector, NbOfSteps, MakeGroups)
+                                                  StepVector, NbOfSteps,
+                                                  scaleFactors, linearVariation, basePoint,
+                                                  MakeGroups)
 
 
     ## Generates new elements by extrusion of the elements with given ids

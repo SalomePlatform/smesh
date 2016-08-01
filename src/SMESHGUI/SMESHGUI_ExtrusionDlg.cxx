@@ -28,58 +28,59 @@
 #include "SMESHGUI_ExtrusionDlg.h"
 
 #include "SMESHGUI.h"
-#include "SMESHGUI_Utils.h"
-#include "SMESHGUI_VTKUtils.h"
+#include "SMESHGUI_FilterDlg.h"
+#include "SMESHGUI_IdValidator.h"
+#include "SMESHGUI_MeshEditPreview.h"
 #include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_SpinBox.h"
-#include "SMESHGUI_IdValidator.h"
-#include "SMESHGUI_FilterDlg.h"
-#include "SMESHGUI_MeshEditPreview.h"
-
-#include <SMESH_Actor.h>
-#include <SMESH_TypeFilter.hxx>
-#include <SMESH_LogicalFilter.hxx>
-
+#include "SMESHGUI_Utils.h"
+#include "SMESHGUI_VTKUtils.h"
+#include <GEOMBase.h>
 #include <SMDS_Mesh.hxx>
+#include <SMESH_Actor.h>
+#include <SMESH_LogicalFilter.hxx>
+#include <SMESH_TypeFilter.hxx>
 
 // SALOME GUI includes
-#include <SUIT_ResourceMgr.h>
-#include <SUIT_Desktop.h>
-#include <SUIT_MessageBox.h>
-#include <SUIT_Session.h>
-#include <SUIT_OverrideCursor.h>
-
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
-
+#include <SUIT_Desktop.h>
+#include <SUIT_MessageBox.h>
+#include <SUIT_OverrideCursor.h>
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Session.h>
 #include <SVTK_ViewModel.h>
 #include <SVTK_ViewWindow.h>
-
 #include <SalomeApp_IntSpinBox.h>
 
 // OCCT includes
-#include <TColStd_MapOfInteger.hxx>
+#include <BRep_Tool.hxx>
 #include <TColStd_IndexedMapOfInteger.hxx>
+#include <TColStd_MapOfInteger.hxx>
+#include <TopoDS_Vertex.hxx>
 #include <gp_XYZ.hxx>
 
 // Qt includes
 #include <QApplication>
 #include <QButtonGroup>
+#include <QCheckBox>
+#include <QGridLayout>
 #include <QGroupBox>
+#include <QHBoxLayout>
+#include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
+#include <QListWidget>
 #include <QPushButton>
 #include <QRadioButton>
-#include <QCheckBox>
-#include <QHBoxLayout>
+#include <QToolButton>
 #include <QVBoxLayout>
-#include <QGridLayout>
-#include <QKeyEvent>
 
 // IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Group)
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
+#include <SMESH_NumberFilter.hxx>
 
 #define SPACING 6
 #define MARGIN  11
@@ -595,7 +596,10 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   : SMESHGUI_PreviewDlg( theModule ),
     mySelectionMgr( SMESH::GetSelectionMgr( theModule ) )
 {
-  QPixmap image (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_SELECT")));
+  SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
+  QPixmap selectImage ( mgr->loadPixmap("SMESH", tr("ICON_SELECT")));
+  QPixmap addImage    ( mgr->loadPixmap("SMESH", tr("ICON_APPEND")));
+  QPixmap removeImage ( mgr->loadPixmap("SMESH", tr("ICON_REMOVE")));
 
   setModal( false );
   setAttribute( Qt::WA_DeleteOnClose, true );
@@ -638,8 +642,8 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
 
   TextLabelVector = new QLabel(tr("SMESH_VECTOR"), GroupArguments);
 
-  SelectVectorButton = new QPushButton(GroupArguments);
-  SelectVectorButton->setIcon(image);
+  SelectVectorButton = new QPushButton( GroupArguments );
+  SelectVectorButton->setIcon( selectImage );
   SelectVectorButton->setCheckable( true );
   SelectorWdg->GetButtonGroup()->addButton( SelectVectorButton );
 
@@ -671,6 +675,66 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   //Preview check box
   myPreviewCheckBox = new QCheckBox(tr("PREVIEW"), GroupArguments);
 
+  // Base point
+
+  BasePointGrp = new QGroupBox(tr("BASE_POINT"), GroupArguments);
+  BasePointGrp->setCheckable(true);
+  BasePointGrp->setChecked(false);
+  QHBoxLayout* BasePointGrpLayout = new QHBoxLayout(BasePointGrp);
+  BasePointGrpLayout->setSpacing(SPACING); BasePointGrpLayout->setMargin(MARGIN);
+
+  SelectBasePointButton = new QPushButton(BasePointGrp);
+  SelectBasePointButton->setIcon(selectImage);
+  SelectBasePointButton->setCheckable(true);
+  SelectorWdg->GetButtonGroup()->addButton( SelectBasePointButton );
+
+  QLabel* XLab  = new QLabel(tr("SMESH_X"), BasePointGrp);
+  BasePoint_XSpin = new SMESHGUI_SpinBox(BasePointGrp);
+  BasePoint_XSpin->SetValue(0.);
+  QLabel* YLab  = new QLabel(tr("SMESH_Y"), BasePointGrp);
+  BasePoint_YSpin = new SMESHGUI_SpinBox(BasePointGrp);
+  BasePoint_YSpin->SetValue(0.);
+  QLabel* ZLab  = new QLabel(tr("SMESH_Z"), BasePointGrp);
+  BasePoint_ZSpin = new SMESHGUI_SpinBox(BasePointGrp);
+  BasePoint_ZSpin->SetValue(0.);
+
+  BasePointGrpLayout->addWidget(SelectBasePointButton);
+  BasePointGrpLayout->addWidget(XLab);
+  BasePointGrpLayout->addWidget(BasePoint_XSpin, 1);
+  BasePointGrpLayout->addWidget(YLab);
+  BasePointGrpLayout->addWidget(BasePoint_YSpin, 1);
+  BasePointGrpLayout->addWidget(ZLab);
+  BasePointGrpLayout->addWidget(BasePoint_ZSpin, 1);
+
+  // Scales
+
+  ScalesGrp = new QGroupBox(tr("SMESH_SCALES"), GroupArguments);
+  QGridLayout* ScalesGrpLayout = new QGridLayout( ScalesGrp );
+  ScalesGrpLayout->setSpacing(SPACING); ScalesGrpLayout->setMargin(MARGIN);
+
+  ScalesList = new QListWidget( ScalesGrp );
+  ScalesList->setSelectionMode(QListWidget::ExtendedSelection);
+
+  AddScaleButton = new QToolButton( ScalesGrp );
+  AddScaleButton->setIcon( addImage );
+
+  RemoveScaleButton = new QToolButton( ScalesGrp );
+  RemoveScaleButton->setIcon( removeImage );
+
+  ScaleSpin = new SMESHGUI_SpinBox( ScalesGrp );
+  ScaleSpin->SetValue(2);
+
+  LinearScalesCheck = new QCheckBox(tr("LINEAR_SCALES"), ScalesGrp );
+
+  ScalesGrpLayout->addWidget(ScalesList,        0, 0, 4, 1);
+  ScalesGrpLayout->addWidget(AddScaleButton,    0, 1);
+  ScalesGrpLayout->addWidget(RemoveScaleButton, 2, 1);
+  ScalesGrpLayout->addWidget(ScaleSpin,         0, 2);
+  ScalesGrpLayout->addWidget(LinearScalesCheck, 4, 0);
+  ScalesGrpLayout->setRowMinimumHeight(1, 10);
+  ScalesGrpLayout->setRowStretch(3, 10);
+
+  // layouting
   GroupArgumentsLayout->addWidget(SelectorWdg,            0, 0, 1, 9);
   GroupArgumentsLayout->addWidget(ExtrMethod_RBut0,       1, 0, 1, 3);
   GroupArgumentsLayout->addWidget(ExtrMethod_RBut1,       1, 3, 1, 3);
@@ -696,8 +760,10 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   GroupArgumentsLayout->addWidget(SpinBox_NbSteps,        5, 3);
   GroupArgumentsLayout->addWidget(ByAverageNormalCheck,   6, 0, 1, 4);
   GroupArgumentsLayout->addWidget(UseInputElemsOnlyCheck, 6, 4, 1, 4);
-  GroupArgumentsLayout->addWidget(myPreviewCheckBox,      7, 0, 1, 8);
-  GroupArgumentsLayout->addWidget(MakeGroupsCheck,        8, 0, 1, 8);
+  GroupArgumentsLayout->addWidget(BasePointGrp,           7, 0, 1, 9);
+  GroupArgumentsLayout->addWidget(ScalesGrp,              8, 0, 1, 9);
+  GroupArgumentsLayout->addWidget(myPreviewCheckBox,      9, 0, 1, 8);
+  GroupArgumentsLayout->addWidget(MakeGroupsCheck,        10,0, 1, 8);
   GroupArgumentsLayout->addItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), 10, 0);
 
   /***************************************************************/
@@ -740,6 +806,11 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   SpinBox_NbSteps->setRange(1, 999999);
   SpinBox_VDist->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
 
+  BasePoint_XSpin->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  BasePoint_YSpin->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  BasePoint_ZSpin->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  ScaleSpin->RangeStepAndValidator      (COORD_MIN, COORD_MAX, 1.0, "length_precision");
+
   ExtrMethod_RBut0->setChecked(true);
   UseInputElemsOnlyCheck->setChecked(true);
   MakeGroupsCheck->setChecked(true);
@@ -771,7 +842,13 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   connect(SpinBox_Dy, SIGNAL(valueChanged(double)), SLOT(CheckIsEnable()));
   connect(SpinBox_Dz, SIGNAL(valueChanged(double)), SLOT(CheckIsEnable()));
 
+  connect(AddScaleButton,    SIGNAL(clicked()), this, SLOT(OnScaleAdded()));
+  connect(RemoveScaleButton, SIGNAL(clicked()), this, SLOT(OnScaleRemoved()));
+
   connect(SelectVectorButton,   SIGNAL(clicked()), this, SLOT(SetEditCurrentArgument()));
+  connect(SelectBasePointButton,SIGNAL(clicked()), this, SLOT(SetEditCurrentArgument()));
+  connect(BasePointGrp,         SIGNAL(toggled(bool)), this, SLOT(SetEditCurrentArgument()));
+  connect(BasePointGrp,         SIGNAL(toggled(bool)), SelectBasePointButton, SLOT(click()));
   connect(mySMESHGUI,           SIGNAL(SignalDeactivateActiveDialog()), SLOT(DeactivateActiveDialog()));
   connect(mySelectionMgr,       SIGNAL(currentSelectionChanged()), SLOT(toDisplaySimulation()));
   connect(SelectorWdg,          SIGNAL(selectionChanged()), this, SLOT(toDisplaySimulation()));
@@ -791,6 +868,13 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
   connect(SpinBox_NbSteps, SIGNAL(valueChanged(int)),    this, SLOT(toDisplaySimulation()));
   connect(ByAverageNormalCheck,   SIGNAL(toggled(bool)), this, SLOT(toDisplaySimulation()));
   connect(UseInputElemsOnlyCheck, SIGNAL(toggled(bool)), this, SLOT(toDisplaySimulation()));
+  connect(AddScaleButton,         SIGNAL(clicked()),     this, SLOT(toDisplaySimulation()));
+  connect(RemoveScaleButton,      SIGNAL(clicked()),     this, SLOT(toDisplaySimulation()));
+  connect(LinearScalesCheck,      SIGNAL(toggled(bool)), this, SLOT(toDisplaySimulation()));
+  connect(BasePointGrp,           SIGNAL(toggled(bool)), this, SLOT(toDisplaySimulation()));
+  connect(BasePoint_XSpin, SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(BasePoint_YSpin, SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
+  connect(BasePoint_ZSpin, SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
 
   //To Connect preview check box
   connectPreviewControl();
@@ -873,6 +957,31 @@ bool SMESHGUI_ExtrusionDlg::isValuesValid()
   }
   
   return aModule > 1.0E-38;
+}
+
+//=======================================================================
+//function : getScaleParams
+//purpose  : return 3 scaling parameters
+//=======================================================================
+
+bool SMESHGUI_ExtrusionDlg::getScaleParams( SMESH::double_array*& scales,
+                                            SMESH::double_array*& basePoint )
+{
+  scales = new SMESH::double_array;
+  scales->length( myScalesList.count() );
+  for ( int i = 0; i < myScalesList.count(); ++i )
+    (*scales)[i] = myScalesList[i];
+
+  basePoint = new SMESH::double_array;
+  if ( BasePointGrp->isChecked() )
+  {
+    basePoint->length( 3 );
+    (*basePoint)[0] = BasePoint_XSpin->GetValue();
+    (*basePoint)[1] = BasePoint_YSpin->GetValue();
+    (*basePoint)[2] = BasePoint_ZSpin->GetValue();
+  }
+
+  return ( scales->length() > 0 && LinearScalesCheck->isChecked() );
 }
 
 //=================================================================================
@@ -989,7 +1098,7 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
   {
     SMESH::DirStruct aVector;
     getExtrusionVector(aVector);
-    
+
     QStringList aParameters;
     if ( ExtrMethod_RBut0->isChecked() )
     {
@@ -1011,14 +1120,22 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
     }
 
     long aNbSteps = (long)SpinBox_NbSteps->value();
-
     aParameters << SpinBox_NbSteps->text();
+
+    SMESH::double_array_var scales = new SMESH::double_array;
+    scales->length( myScalesList.count() );
+    for (int i = 0; i < myScalesList.count(); i++)
+    {
+      scales[i] = myScalesList[i];
+      aParameters << ScalesList->item(i)->text();
+    }
 
     bool meshHadNewTypeBefore = true;
     int  maxSelType = 0;
     const bool makeGroups = ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() );
 
-    try {
+    try
+    {
       SUIT_OverrideCursor aWaitCursor;
 
       SMESH::SMESH_Mesh_var mesh = SelectorWdg->GetMesh();
@@ -1054,8 +1171,12 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
       }
       else
       {
+        SMESH::double_array_var scales, basePoint;
+        bool linVariation = getScaleParams( scales.out(), basePoint.out() );
         groups = meshEditor->ExtrusionSweepObjects( nodes, edges, faces,
-                                                    aVector, aNbSteps, makeGroups );
+                                                    aVector, aNbSteps,
+                                                    scales, linVariation, basePoint,
+                                                    makeGroups );
       }
 
     } catch (...) {
@@ -1180,13 +1301,13 @@ void SMESHGUI_ExtrusionDlg::SelectionIntoArgument()
   if (!GroupButtons->isEnabled())
     return;
 
+  SALOME_ListIO aList;
+  mySelectionMgr->selectedObjects(aList);
+  if ( aList.IsEmpty() || aList.Extent() > 1 )
+    return;
+
   if ( SelectVectorButton->isChecked() )
   {
-    SALOME_ListIO aList;
-    mySelectionMgr->selectedObjects(aList);
-    if ( aList.IsEmpty() || aList.Extent() > 1 )
-      return;
-
     Handle(SALOME_InteractiveObject) IO = aList.First();
     TColStd_IndexedMapOfInteger aMapIndex;
     mySelector->GetIndex(IO,aMapIndex);
@@ -1206,6 +1327,56 @@ void SMESHGUI_ExtrusionDlg::SelectionIntoArgument()
     SpinBox_Vx->SetValue(aNormale.X());
     SpinBox_Vy->SetValue(aNormale.Y());
     SpinBox_Vz->SetValue(aNormale.Z());
+  }
+  else if ( SelectBasePointButton->isChecked() )
+  {
+    if (!BasePointGrp->isChecked())
+      return;
+
+    // try to get shape from selection
+    Handle(SALOME_InteractiveObject) IO = aList.First();
+
+    // check if geom vertex is selected
+    GEOM::GEOM_Object_var aGeomObj = SMESH::IObjectToInterface<GEOM::GEOM_Object>(IO);
+    TopoDS_Vertex aVertex;
+    if (!aGeomObj->_is_nil()) {
+      if (aGeomObj->IsShape() && GEOMBase::GetShape(aGeomObj, aVertex) && !aVertex.IsNull()) {
+        gp_Pnt aPnt = BRep_Tool::Pnt(aVertex);
+        BasePoint_XSpin->SetValue(aPnt.X());
+        BasePoint_YSpin->SetValue(aPnt.Y());
+        BasePoint_ZSpin->SetValue(aPnt.Z());
+      }
+    }
+
+    if ( aVertex.IsNull() )
+    {
+      // check if smesh node is selected
+      SMESH::SMESH_Mesh_var aMesh = SMESH::GetMeshByIO(IO);
+      if (aMesh->_is_nil())
+        return;
+
+      QString aString;
+      int aNbUnits = SMESH::GetNameOfSelectedNodes(mySelector, IO, aString);
+      // return if more than one node is selected
+      if (aNbUnits != 1)
+        return;
+
+      SMESH_Actor* aMeshActor = SMESH::FindActorByObject(aMesh);
+      if (!aMeshActor)
+        return;
+
+      SMDS_Mesh* mesh = aMeshActor->GetObject()->GetMesh();
+      if (!mesh)
+        return;
+
+      const SMDS_MeshNode* n = mesh->FindNode(aString.toLong());
+      if (!n)
+        return;
+
+      BasePoint_XSpin->SetValue(n->X());
+      BasePoint_YSpin->SetValue(n->Y());
+      BasePoint_ZSpin->SetValue(n->Z());
+    }
   }
 
   onDisplaySimulation(true);
@@ -1228,6 +1399,21 @@ void SMESHGUI_ExtrusionDlg::SetEditCurrentArgument()
   {
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
       aViewWindow->SetSelectionMode(FaceSelection);
+  }
+  else if ( send == SelectBasePointButton )
+  {
+    SMESH::SetPointRepresentation(true);
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(NodeSelection);
+
+    SMESH_TypeFilter* aMeshOrSubMeshFilter = new SMESH_TypeFilter(SMESH::IDSOURCE);
+    SMESH_NumberFilter* aVertexFilter      = new SMESH_NumberFilter ("GEOM", TopAbs_VERTEX,
+                                                                     1, TopAbs_VERTEX);
+    QList<SUIT_SelectionFilter*> aListOfFilters;
+    aListOfFilters << aMeshOrSubMeshFilter << aVertexFilter;
+
+    mySelectionMgr->installFilter(new SMESH_LogicalFilter
+                                  (aListOfFilters, SMESH_LogicalFilter::LO_OR, true));
   }
   
   connect(mySelectionMgr, SIGNAL(currentSelectionChanged()), this, SLOT(SelectionIntoArgument()));
@@ -1316,6 +1502,12 @@ bool SMESHGUI_ExtrusionDlg::isValid()
   }
   ok = SpinBox_NbSteps->isValid( msg, true ) && ok;
 
+  if ( BasePointGrp->isChecked()) {
+    ok = BasePoint_XSpin->isValid( msg, true ) && ok;
+    ok = BasePoint_YSpin->isValid( msg, true ) && ok;
+    ok = BasePoint_ZSpin->isValid( msg, true ) && ok;
+  }
+
   if( !ok ) {
     QString str( tr( "SMESH_INCORRECT_INPUT" ) );
     if ( !msg.isEmpty() )
@@ -1369,8 +1561,12 @@ void SMESHGUI_ExtrusionDlg::onDisplaySimulation( bool toDisplayPreview )
         }
         else
         {
+          SMESH::double_array_var scales, basePoint;
+          bool linVariation = getScaleParams( scales.out(), basePoint.out() );
           groups = meshEditor->ExtrusionSweepObjects( nodes, edges, faces,
-                                                      aVector, aNbSteps, makeGroups );
+                                                      aVector, aNbSteps,
+                                                      scales, linVariation, basePoint,
+                                                      makeGroups );
         }
         SMESH::MeshPreviewStruct_var aMeshPreviewStruct = meshEditor->GetPreviewData();
         mySimulation->SetData(aMeshPreviewStruct._retn());
@@ -1410,4 +1606,39 @@ void SMESHGUI_ExtrusionDlg::getExtrusionVector(SMESH::DirStruct& aVector)
     aVector.PS.y = aNormale.Y()*aVDist;
     aVector.PS.z = aNormale.Z()*aVDist;
   }
+}
+
+//=======================================================================
+// function : OnScaleAdded()
+// purpose  : Called when user adds Scale to the list
+//=======================================================================
+void SMESHGUI_ExtrusionDlg::OnScaleAdded()
+{
+  QString msg;
+  if( !ScaleSpin->isValid( msg, true ) ) {
+    QString str( tr( "SMESH_INCORRECT_INPUT" ) );
+    if ( !msg.isEmpty() )
+      str += "\n" + msg;
+    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
+    return;
+  }
+  ScalesList->addItem(ScaleSpin->text());
+  myScalesList.append(ScaleSpin->GetValue());
+}
+
+//=======================================================================
+// function : OnScaleRemoved()
+// purpose  : Called when user removes Scale(s) from the list
+//=======================================================================
+void SMESHGUI_ExtrusionDlg::OnScaleRemoved()
+{
+  QList<QListWidgetItem*> aList = ScalesList->selectedItems();
+  QListWidgetItem* anItem;
+  int row = 0;
+  foreach(anItem, aList) {
+    row = ScalesList->row(anItem);
+    myScalesList.removeAt(row);
+    delete anItem;
+  }
+  ScalesList->setCurrentRow( row, QItemSelectionModel::Select );
 }

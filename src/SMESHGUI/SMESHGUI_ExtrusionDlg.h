@@ -41,12 +41,14 @@
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 class QButtonGroup;
-class QRadioButton;
+class QCheckBox;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
-class QCheckBox;
+class QListWidget;
 class QPushButton;
+class QRadioButton;
+class QToolButton;
 
 class SMESHGUI;
 class SMESH_Actor;
@@ -59,7 +61,7 @@ class SUIT_SelectionFilter;
 class SalomeApp_IntSpinBox;
 
 //=================================================================================
-// class    : SMESHGUI_ExtrusionDlg
+// class    : SMESHGUI_3TypesSelector
 // purpose  : A widget used to select both nodes, edges and faces for
 //            Extrusion and Revolution operations
 //=================================================================================
@@ -143,12 +145,15 @@ private:
   void                             getExtrusionVector(SMESH::DirStruct& aVector);
   void                             extrusionByNormal(SMESH::SMESH_MeshEditor_ptr meshEditor,
                                                      const bool                  makeGroups=false);
+  bool                             getScaleParams( SMESH::double_array*& scales,
+                                                   SMESH::double_array*& basePoint );
   
   bool                             isValid();
   bool                             isValuesValid();
   
   LightApp_SelectionMgr*           mySelectionMgr;        /* User shape selection */
   SVTK_Selector*                   mySelector;
+  QList<double>                    myScalesList;
 
   // widgets
   SMESHGUI_3TypesSelector*         SelectorWdg;
@@ -180,6 +185,18 @@ private:
   QCheckBox*                       UseInputElemsOnlyCheck;
   QCheckBox*                       MakeGroupsCheck;
 
+  QCheckBox*                       LinearScalesCheck;
+  QGroupBox*                       ScalesGrp;
+  QListWidget*                     ScalesList;
+  QToolButton*                     AddScaleButton;
+  QToolButton*                     RemoveScaleButton;
+  SMESHGUI_SpinBox*                ScaleSpin;
+  QGroupBox*                       BasePointGrp;
+  QPushButton*                     SelectBasePointButton;
+  SMESHGUI_SpinBox*                BasePoint_XSpin;
+  SMESHGUI_SpinBox*                BasePoint_YSpin;
+  SMESHGUI_SpinBox*                BasePoint_ZSpin;
+
   QGroupBox*                       GroupButtons;
   QPushButton*                     buttonOk;
   QPushButton*                     buttonCancel;
@@ -205,6 +222,8 @@ private slots:
   void                            ActivateThisDialog();
   void                            onOpenView();
   void                            onCloseView();
+  void                            OnScaleAdded();
+  void                            OnScaleRemoved();
 
 };
 

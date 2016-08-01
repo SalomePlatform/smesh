@@ -487,6 +487,9 @@ module SMESH
                                        in ListOfIDSources faces,
                                        in DirStruct       stepVector,
                                        in long            nbOfSteps,
+                                       in double_array    scaleFactors,
+                                       in boolean         linearVariation,
+                                       in double_array    basePoint,
                                        in boolean         toMakeGroups)
       raises (SALOME::SALOME_Exception);
 

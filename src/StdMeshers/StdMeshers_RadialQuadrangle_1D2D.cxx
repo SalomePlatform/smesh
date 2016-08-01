@@ -732,13 +732,13 @@ protected:
 
 void StdMeshers_RadialQuadrangle_1D2D::SubmeshRestored(SMESH_subMesh* faceSubMesh)
 {
-  // if ( !faceSubMesh->IsEmpty() )
-  // {
-  //   for ( TopExp_Explorer e( faceSubMesh->GetSubShape(), TopAbs_EDGE ); e.More(); e.Next() )
-  //   {
-  //     markEdgeAsComputedByMe( TopoDS::Edge( e.Current() ), faceSubMesh );
-  //   }
-  // }
+  if ( !faceSubMesh->IsEmpty() )
+  {
+    for ( TopExp_Explorer e( faceSubMesh->GetSubShape(), TopAbs_EDGE ); e.More(); e.Next() )
+    {
+      markEdgeAsComputedByMe( TopoDS::Edge( e.Current() ), faceSubMesh );
+    }
+  }
 }
 
 //=======================================================================
@@ -762,12 +762,12 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
                  "of edges is less or equal to 3 and one of them is an ellipse curve)");
 
   // get not yet computed EDGEs
-  // list< TopoDS_Edge > emptyEdges;
-  // for ( TopExp_Explorer e( aShape, TopAbs_EDGE ); e.More(); e.Next() )
-  // {
-  //   if ( aMesh.GetSubMesh( e.Current() )->IsEmpty() )
-  //     emptyEdges.push_back( TopoDS::Edge( e.Current() ));
-  // }
+  list< TopoDS_Edge > emptyEdges;
+  for ( TopExp_Explorer e( aShape, TopAbs_EDGE ); e.More(); e.Next() )
+  {
+    if ( aMesh.GetSubMesh( e.Current() )->IsEmpty() )
+      emptyEdges.push_back( TopoDS::Edge( e.Current() ));
+  }
 
   TNodeDistributor* algo1d = TNodeDistributor::GetDistributor(aMesh);
 
@@ -941,9 +941,9 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
     centerUV   = nodes2.back().UV();
   }
 
-  // list< TopoDS_Edge >::iterator ee = emptyEdges.begin();
-  // for ( ; ee != emptyEdges.end(); ++ee )
-  //   markEdgeAsComputedByMe( *ee, aMesh.GetSubMesh( F ));
+  list< TopoDS_Edge >::iterator ee = emptyEdges.begin();
+  for ( ; ee != emptyEdges.end(); ++ee )
+    markEdgeAsComputedByMe( *ee, aMesh.GetSubMesh( F ));
 
   circSide->GetUVPtStruct(); // let sides take into account just computed nodes
   linSide1->GetUVPtStruct();

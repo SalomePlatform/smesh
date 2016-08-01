@@ -128,6 +128,25 @@ The following dialog will appear:
   </ul>
 
   <li>Specify the <b>Number of steps</b>.</li>
+
+  <li>Optionally specify <b>Scale Factors</b>. Each scale factor in
+  the list is applied to nodes of a corresponding extrusion step
+  unless <b>Linear Variation of Scale Factors</b> is checked, is
+  which case the scale factors are spread over all extrusion steps.</li>
+  <ul>
+    <li><b>Scaling Center</b> can be defined either using spin boxes
+    or by picking a node in the Viewer or by picking a geometrical
+    vertex in the Object Browser.</li>
+    <li>\b Add button adds a scale factor to the list.
+      \image html add.png
+      <center><em>"Add" button</em></center>
+    </li>
+    <li>\b Remove button removes selected scale factors from the list.
+      \image html remove.png
+      <center><em>"Remove" button</em></center>
+    </li>
+  </ul>
+
   <li>If you activate <b>Generate Groups</b> check-box, the <em>result elements</em>
     created from <em>selected elements</em> contained in groups will be
     included into new groups named by pattern "<old group
