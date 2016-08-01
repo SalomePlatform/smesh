@@ -2688,7 +2688,10 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpCreateMesh:
   case SMESHOp::OpCreateSubMesh:
   case SMESHOp::OpEditMeshOrSubMesh:
+  case SMESHOp::OpEditMesh:
+  case SMESHOp::OpEditSubMesh:
   case SMESHOp::OpCompute:
+  case SMESHOp::OpComputeSubMesh:
   case SMESHOp::OpPreCompute:
   case SMESHOp::OpEvaluate:
   case SMESHOp::OpMeshOrder:
@@ -3806,9 +3809,12 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpCreateMesh,           "CREATE_MESH",             "ICON_DLG_INIT_MESH" );
   createSMESHAction( SMESHOp::OpCreateSubMesh,        "CREATE_SUBMESH",          "ICON_DLG_ADD_SUBMESH" );
   createSMESHAction( SMESHOp::OpEditMeshOrSubMesh,    "EDIT_MESHSUBMESH",        "ICON_DLG_EDIT_MESH" );
+  createSMESHAction( SMESHOp::OpEditMesh,             "EDIT_MESH",               "ICON_DLG_EDIT_MESH" );
+  createSMESHAction( SMESHOp::OpEditSubMesh,          "EDIT_SUBMESH",            "ICON_DLG_EDIT_MESH" );
   createSMESHAction( SMESHOp::OpBuildCompoundMesh,    "BUILD_COMPOUND",          "ICON_BUILD_COMPOUND" );
   createSMESHAction( SMESHOp::OpCopyMesh,             "COPY_MESH",               "ICON_COPY_MESH" );
   createSMESHAction( SMESHOp::OpCompute,              "COMPUTE",                 "ICON_COMPUTE" );
+  createSMESHAction( SMESHOp::OpComputeSubMesh,        "COMPUTE_SUBMESH",         "ICON_COMPUTE" );
   createSMESHAction( SMESHOp::OpPreCompute,           "PRECOMPUTE",              "ICON_PRECOMPUTE" );
   createSMESHAction( SMESHOp::OpEvaluate,             "EVALUATE",                "ICON_EVALUATE" );
   createSMESHAction( SMESHOp::OpMeshOrder,            "MESH_ORDER",              "ICON_MESH_ORDER");
@@ -4303,24 +4309,26 @@ void SMESHGUI::initialize( CAM_Application* app )
   QString dc = "selcount"; // VSR : instead of QtxPopupSelection::defSelCountParam()
 
   myRules.clear();
-  QString OB = "'ObjectBrowser'",
-          View = "'" + SVTK_Viewer::Type() + "'",
-          pat = "'%1'",
-          mesh    = pat.arg( SMESHGUI_Selection::typeName( SMESH::MESH ) ),
-          group   = pat.arg( SMESHGUI_Selection::typeName( SMESH::GROUP ) ),
-          hypo    = pat.arg( SMESHGUI_Selection::typeName( SMESH::HYPOTHESIS ) ),
-          algo    = pat.arg( SMESHGUI_Selection::typeName( SMESH::ALGORITHM ) ),
-          elems   = QString( "'%1' '%2' '%3' '%4' '%5' '%6'" ).
-                       arg( SMESHGUI_Selection::typeName( SMESH::SUBMESH_VERTEX ) ).
-                       arg( SMESHGUI_Selection::typeName( SMESH::SUBMESH_EDGE ) ).
-                       arg( SMESHGUI_Selection::typeName( SMESH::SUBMESH_FACE ) ).
-                       arg( SMESHGUI_Selection::typeName( SMESH::SUBMESH_SOLID ) ).
-                       arg( SMESHGUI_Selection::typeName( SMESH::SUBMESH_COMPOUND ) ).
-                       arg( SMESHGUI_Selection::typeName( SMESH::SUBMESH ) ),
-          subMesh = elems,
-          mesh_part = mesh + " " + subMesh + " " + group,
-          mesh_group = mesh + " " + group,
-          hyp_alg = hypo + " " + algo;
+  QString
+    OB      = "'ObjectBrowser'",
+    View    = "'" + SVTK_Viewer::Type() + "'",
+    pat     = "'%1'",
+    mesh    = pat.arg( SMESHGUI_Selection::typeName( SMESH::MESH ) ),
+    group   = pat.arg( SMESHGUI_Selection::typeName( SMESH::GROUP ) ),
+    hypo    = pat.arg( SMESHGUI_Selection::typeName( SMESH::HYPOTHESIS ) ),
+    algo    = pat.arg( SMESHGUI_Selection::typeName( SMESH::ALGORITHM ) ),
+    elems   = QString( "'%1' '%2' '%3' '%4' '%5' '%6'" ).
+    arg( SMESHGUI_Selection::typeName( SMESH::SUBMESH_VERTEX ) ).
+    arg( SMESHGUI_Selection::typeName( SMESH::SUBMESH_EDGE ) ).
+    arg( SMESHGUI_Selection::typeName( SMESH::SUBMESH_FACE ) ).
+    arg( SMESHGUI_Selection::typeName( SMESH::SUBMESH_SOLID ) ).
+    arg( SMESHGUI_Selection::typeName( SMESH::SUBMESH_COMPOUND ) ).
+    arg( SMESHGUI_Selection::typeName( SMESH::SUBMESH ) ),
+    subMesh      = elems,
+    mesh_part    = mesh + " " + subMesh + " " + group,
+    mesh_group   = mesh + " " + group,
+    mesh_submesh = mesh + " " + subMesh,
+    hyp_alg      = hypo + " " + algo;
 
   // popup for object browser
   QString
@@ -4339,36 +4347,36 @@ void SMESHGUI::initialize( CAM_Application* app )
     hasVolumes("({'Volume'} in elemTypes)"),
     hasFacesOrVolumes("(({'Face'} in elemTypes) || ({'Volume'} in elemTypes)) ");
 
-  createPopupItem( SMESHOp::OpFileInformation,      OB, mesh, "&& selcount=1 && isImported" );
-  createPopupItem( SMESHOp::OpCreateSubMesh,        OB, mesh, "&& hasGeomReference");
-  createPopupItem( SMESHOp::OpEditMeshOrSubMesh,    OB, mesh );
-  createPopupItem( SMESHOp::OpEditMeshOrSubMesh,    OB, subMesh, "&& hasGeomReference" );
-  createPopupItem( SMESHOp::OpEditGroup,            OB, group );
+  createPopupItem( SMESHOp::OpFileInformation,   OB, mesh, "&& selcount=1 && isImported" );
+  createPopupItem( SMESHOp::OpCreateSubMesh,     OB, mesh, "&& hasGeomReference");
+  createPopupItem( SMESHOp::OpEditMesh,          OB, mesh, "&& selcount=1" );
+  createPopupItem( SMESHOp::OpEditSubMesh,       OB, subMesh, "&& selcount=1 && hasGeomReference" );
+  createPopupItem( SMESHOp::OpEditGroup,         OB, group );
   createPopupItem( SMESHOp::OpEditGeomGroupAsGroup, OB, group, "&& groupType != 'Group'" );
 
   popupMgr()->insert( separator(), -1, 0 );
-  createPopupItem( SMESHOp::OpCompute,                OB, mesh, "&& isComputable" );
-  createPopupItem( SMESHOp::OpPreCompute,             OB, mesh, "&& isPreComputable" );
-  createPopupItem( SMESHOp::OpEvaluate,               OB, mesh, "&& isComputable" );
-  createPopupItem( SMESHOp::OpMeshOrder,              OB, mesh, "&& isComputable && hasGeomReference" );
-  createPopupItem( SMESHOp::OpUpdate,                 OB, mesh_part );
-  createPopupItem( SMESHOp::OpMeshInformation,        OB, mesh_part );
-  createPopupItem( SMESHOp::OpFindElementByPoint,     OB, mesh_group );
-  createPopupItem( SMESHOp::OpOverallMeshQuality,     OB, mesh_part );
+  createPopupItem( SMESHOp::OpCompute,           OB, mesh, "&& selcount=1 && isComputable" );
+  createPopupItem( SMESHOp::OpComputeSubMesh,    OB, subMesh, "&& selcount=1 && isComputable" );
+  createPopupItem( SMESHOp::OpPreCompute,        OB, mesh, "&& selcount=1 && isPreComputable" );
+  createPopupItem( SMESHOp::OpEvaluate,          OB, mesh, "&& selcount=1 && isComputable" );
+  createPopupItem( SMESHOp::OpMeshOrder,         OB, mesh, "&& selcount=1 && isComputable && hasGeomReference" );
+  createPopupItem( SMESHOp::OpUpdate,            OB, mesh_part );
+  createPopupItem( SMESHOp::OpMeshInformation,   OB, mesh_part );
+  createPopupItem( SMESHOp::OpFindElementByPoint,OB, mesh_group, "&& selcount=1" );
+  createPopupItem( SMESHOp::OpOverallMeshQuality,OB, mesh_part );
   popupMgr()->insert( separator(), -1, 0 );
-  createPopupItem( SMESHOp::OpCreateGroup,            OB, mesh );
-  createPopupItem( SMESHOp::OpCreateGeometryGroup,    OB, mesh, "&& hasGeomReference" );
-  createPopupItem( SMESHOp::OpConstructGroup,         OB, subMesh );
+  createPopupItem( SMESHOp::OpCreateGroup,       OB, mesh, "&& selcount=1" );
+  createPopupItem( SMESHOp::OpCreateGeometryGroup, OB, mesh, "&& selcount=1 && hasGeomReference" );
+  createPopupItem( SMESHOp::OpConstructGroup,    OB, subMesh );
   popupMgr()->insert( separator(), -1, 0 );
-  createPopupItem( SMESHOp::OpEditHypothesis,         OB, hypo, "&& isEditableHyp");
-  createPopupItem( SMESHOp::OpUnassign,               OB, hyp_alg );     // REMOVE HYPOTHESIS / ALGORITHMS
+  createPopupItem( SMESHOp::OpEditHypothesis,    OB, hypo, "&& isEditableHyp");
+  createPopupItem( SMESHOp::OpUnassign,          OB, hyp_alg );
   popupMgr()->insert( separator(), -1, 0 );
-  createPopupItem( SMESHOp::OpConvertMeshToQuadratic, OB, mesh + " " + subMesh );  // convert to quadratic
-  createPopupItem( SMESHOp::OpCreateBoundaryElements, OB, mesh + " " + group,      // create 2D mesh from 3D
-                   "&& dim>=2");
+  createPopupItem( SMESHOp::OpConvertMeshToQuadratic, OB, mesh_submesh );
+  createPopupItem( SMESHOp::OpCreateBoundaryElements, OB, mesh_group, "&& selcount=1 && dim>=2");
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( SMESHOp::OpClearMesh,              OB, mesh );
-  popupMgr()->insert( separator(), -1, 0 );
+  //popupMgr()->insert( separator(), -1, 0 );
 
   QString only_one_non_empty = QString( " && %1=1 && numberOfNodes>0" ).arg( dc );
   QString multiple_non_empty = QString( " && %1>0 && numberOfNodes>0" ).arg( dc );
@@ -5489,9 +5497,12 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
       op = new SMESHGUI_MeshOp( true, false );
     break;
     case SMESHOp::OpEditMeshOrSubMesh:
+    case SMESHOp::OpEditMesh:
+    case SMESHOp::OpEditSubMesh:
       op = new SMESHGUI_MeshOp( false );
     break;
     case SMESHOp::OpCompute:
+    case SMESHOp::OpComputeSubMesh:
       op = new SMESHGUI_ComputeOp();
     break;
     case SMESHOp::OpPreCompute:
@@ -6219,8 +6230,7 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
               if (ac->IsA("SMESH_Actor")) {
                 SMESH_Actor* aGeomAc = SMESH_Actor::SafeDownCast(ac);
                 if (aGeomAc->hasIO()) {
-                  Handle(SALOME_InteractiveObject) io =
-                    Handle(SALOME_InteractiveObject)::DownCast(aGeomAc->getIO());
+                  Handle(SALOME_InteractiveObject) io = aGeomAc->getIO();
                   if (io->hasEntry() && strcmp(io->getEntry(), entry.toLatin1().data()) == 0) {
                     isFound = true;
                     vtkActors.Bind(viewIndex, aGeomAc);

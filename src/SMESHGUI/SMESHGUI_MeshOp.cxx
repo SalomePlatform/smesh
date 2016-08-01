@@ -638,13 +638,14 @@ void SMESHGUI_MeshOp::selectionDone()
         {
           SMESH::SMESH_subMesh_var submeshVar =
             SMESH::SMESH_subMesh::_narrow( _CAST( SObject,pObj )->GetObject() );
+          myIsMesh = submeshVar->_is_nil();
+          myDlg->setTitile( myToCreate, myIsMesh );
           myDlg->setObjectShown( SMESHGUI_MeshDlg::Mesh, !submeshVar->_is_nil() );
           myDlg->setObjectShown( SMESHGUI_MeshDlg::Geom, true );
           myDlg->objectWg( SMESHGUI_MeshDlg::Mesh, SMESHGUI_MeshDlg::Btn )->hide();
           myDlg->objectWg( SMESHGUI_MeshDlg::Geom, SMESHGUI_MeshDlg::Btn )->hide();
           myDlg->updateGeometry();
           myDlg->adjustSize();
-          myIsMesh = submeshVar->_is_nil();
           readMesh();
         }
         else

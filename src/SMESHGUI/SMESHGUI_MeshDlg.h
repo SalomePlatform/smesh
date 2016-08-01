@@ -78,6 +78,7 @@ public:
   void                         setAvailableMeshType(const QStringList& );
   int                          currentMeshType();
   void                         setCurrentMeshType( const int );
+  void                         setTitile( const bool, const bool );
 
 signals:
   void                         hypoSet( const QString& );

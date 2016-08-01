@@ -16,6 +16,10 @@ Creation of a sub-mesh allows to control individually meshing of a
 certain sub-shape, thus to get a locally coarser or finer mesh, to get
 elements of different types in the same mesh, etc.
 
+A sub-mesh can be meshed individually. To achieve this, select a
+sub-mesh and either invoke <b>Compute Sub-mesh</b> vai the contextual
+menu in the Object Browser or invoke <b> Mesh > Compute </b> menu.
+
 \section submesh_shape_section How to get a sub-shape for sub-mesh construction
 
 A sub-shape to create a sub-mesh on should be retrieved from the main shape

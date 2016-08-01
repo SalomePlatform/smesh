@@ -1202,7 +1202,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::IsApplicable( const TopoDS_Shape & aShape
   for (TopExp_Explorer exp( aShape, TopAbs_FACE ); exp.More(); exp.Next(), ++nbFoundFaces )
   {
     StdMeshers_FaceSidePtr circSide, linSide1, linSide2;
-    int nbSides = analyseFace( aShape, NULL, circSide, linSide1, linSide2 );
+    int nbSides = analyseFace( exp.Current(), NULL, circSide, linSide1, linSide2 );
     bool ok = ( 0 < nbSides && nbSides <= 3 &&
                 isCornerInsideCircle( circSide, linSide1, linSide2 ));
     if( toCheckAll  && !ok ) return false;

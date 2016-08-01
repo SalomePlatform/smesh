@@ -683,6 +683,7 @@ void SMESHGUI_BaseComputeOp::startOperation()
 
   myMesh      = SMESH::SMESH_Mesh::_nil();
   myMainShape = GEOM::GEOM_Object::_nil();
+  myCurShape  = GEOM::GEOM_Object::_nil();
 
   // check selection
   LightApp_SelectionMgr *Sel = selectionMgr();
@@ -698,7 +699,23 @@ void SMESHGUI_BaseComputeOp::startOperation()
   }
 
   myIObject = selected.First();
-  myMesh = SMESH::GetMeshByIO(myIObject);
+  CORBA::Object_var anObj = SMESH::IObjectToObject( myIObject );
+
+  myMesh = SMESH::SMESH_Mesh::_narrow(anObj);
+  if ( myMesh->_is_nil() )
+  {
+    SMESH::SMESH_subMesh_var aSubMesh = SMESH::SMESH_subMesh::_narrow(anObj);
+    if ( !aSubMesh->_is_nil() )
+    {
+      myMesh      = aSubMesh->GetFather();
+      myCurShape  = aSubMesh->GetSubShape();
+    }
+  }
+  else
+  {
+    myCurShape = myMesh->GetShapeToMesh();
+  }
+
   if (myMesh->_is_nil()) {
     SUIT_MessageBox::warning(desktop(),
                              tr("SMESH_WRN_WARNING"),
@@ -706,6 +723,7 @@ void SMESHGUI_BaseComputeOp::startOperation()
     onCancel();
     return;
   }
+
   myMainShape = myMesh->GetShapeToMesh();
 
   SMESHGUI_Operation::startOperation();
@@ -882,10 +900,8 @@ void SMESHGUI_BaseComputeOp::computeMesh()
       myMesh->Clear();
     SUIT_OverrideCursor aWaitCursor;
     try {
-#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
       OCC_CATCH_SIGNALS;
-#endif
-      SMESHGUI_ComputeDlg_QThreadQDialog qthreaddialog(desktop(), gen, myMesh, myMainShape);
+      SMESHGUI_ComputeDlg_QThreadQDialog qthreaddialog(desktop(), gen, myMesh, myCurShape);
       qthreaddialog.exec();
       computeFailed = !qthreaddialog.result();
     }
@@ -893,9 +909,7 @@ void SMESHGUI_BaseComputeOp::computeMesh()
       memoryLack = true;
     }
     try {
-#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
       OCC_CATCH_SIGNALS;
-#endif
       aCompErrors = gen->GetComputeErrors( myMesh, myMainShape );
       // check if there are memory problems
       for ( CORBA::ULong i = 0; (i < aCompErrors->length()) && !memoryLack; ++i )
@@ -911,7 +925,8 @@ void SMESHGUI_BaseComputeOp::computeMesh()
 
     // NPAL16631: if ( !memoryLack )
     {
-      SMESH::ModifiedMesh( aMeshSObj,
+      _PTR(SObject) sobj = SMESH::GetActiveStudyDocument()->FindObjectID(myIObject->getEntry());
+      SMESH::ModifiedMesh( sobj,
                            !computeFailed && aHypErrors.isEmpty(),
                            myMesh->NbNodes() == 0);
       update( UF_ObjBrowser | UF_Model );
@@ -1245,8 +1260,9 @@ void SMESHGUI_BaseComputeOp::stopOperation()
 
 void SMESHGUI_BaseComputeOp::onPublishShape()
 {
-  GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
-  SALOMEDS::Study_var study = SMESHGUI::GetSMESHGen()->GetCurrentStudy();
+  GEOM::GEOM_Gen_var      geomGen = SMESH::GetGEOMGen();
+  SALOMEDS::Study_var       study = SMESHGUI::GetSMESHGen()->GetCurrentStudy();
+  GEOM::GEOM_Object_var meshShape = myMesh->GetShapeToMesh();
 
   QStringList entryList;
   QList<int> rows;
@@ -1754,14 +1770,15 @@ void SMESHGUI_PrecomputeOp::initDialog()
  */
 //================================================================================
 
-void SMESHGUI_PrecomputeOp::getAssignedAlgos(_PTR(SObject) theMesh,
+void SMESHGUI_PrecomputeOp::getAssignedAlgos(_PTR(SObject)  theMesh,
                                              QMap<int,int>& theModeMap)
 {
   if ( !theMesh ) return;
+
   _PTR(SObject)          aHypFolder;
   _PTR(GenericAttribute) anAttr;
   int aPart = SMESH::Tag_RefOnAppliedAlgorithms;
-  if ( theMesh->FindSubObject( aPart, aHypFolder ) )
+  if ( theMesh->FindSubObject( aPart, aHypFolder ))
   {
     _PTR(ChildIterator) anIter =
       SMESH::GetActiveStudyDocument()->NewChildIterator( aHypFolder );

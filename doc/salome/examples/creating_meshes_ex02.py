@@ -40,11 +40,27 @@ algo_local = mesh.Segment(EdgeX)
 algo_local.Arithmetic1D(1, 4)
 
 # define "Propagation" hypothesis that propagates algo_local and "Arithmetic1D" hypothesis
-# on all parallel edges of the box
+# from EdgeX to all parallel edges
 algo_local.Propagation()
 
 # assign a hexahedral algorithm
 mesh.Hexahedron()
 
-# compute the mesh
+
+# any sub-shape can be meshed individually --
+# compute mesh on two surfaces using different methods
+
+# get surfaces
+surfaces = geompy.SubShapeAll(box, geompy.ShapeType["FACE"])
+
+# method 1: no sub-mesh is created
+mesh.Compute( surfaces[0] )
+
+# method 2: a sub-mesh is created
+submesh = mesh.GetSubMesh( surfaces[2], "submesh 2" )
+submesh.Compute()
+
+
+
+# compute the whole mesh
 mesh.Compute()

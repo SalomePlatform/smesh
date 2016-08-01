@@ -624,10 +624,30 @@ SMESHGUI_MeshDlg::SMESHGUI_MeshDlg( const bool theToCreate, const bool theIsMesh
     objectWg( Mesh, Btn )->hide();
     objectWg( Geom, Btn )->hide();
   }
+  setTitile( theToCreate, theIsMesh );
 }
 
 SMESHGUI_MeshDlg::~SMESHGUI_MeshDlg()
 {
+}
+
+//================================================================================
+/*!
+ * \brief Set dialog title
+ */
+//================================================================================
+
+void SMESHGUI_MeshDlg::setTitile( const bool theToCreate, const bool theIsMesh )
+{
+  if ( theToCreate )
+  {
+    setWindowTitle( tr( theIsMesh ? "CREATE_MESH" : "CREATE_SUBMESH" ));
+  }
+  else
+  {
+    setWindowTitle( tr( theIsMesh ? "EDIT_MESH" : "EDIT_SUBMESH") );
+  }
+  
 }
 
 //================================================================================

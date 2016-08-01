@@ -1497,11 +1497,12 @@ class Mesh:
                 print allReasons
             pass
         if salome.sg.hasDesktop() and self.mesh.GetStudyId() >= 0:
-            smeshgui = salome.ImportComponentGUI("SMESH")
-            smeshgui.Init(self.mesh.GetStudyId())
-            smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), ok, (self.NbNodes()==0) )
-            if refresh: salome.sg.updateObjBrowser(1)
-            pass
+            if not isinstance( refresh, list): # not a call from subMesh.Compute()
+                smeshgui = salome.ImportComponentGUI("SMESH")
+                smeshgui.Init(self.mesh.GetStudyId())
+                smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), ok, (self.NbNodes()==0) )
+                if refresh: salome.sg.updateObjBrowser(1)
+
         return ok
 
     ## Return a list of error messages (SMESH.ComputeError) of the last Compute()
@@ -5001,7 +5002,7 @@ class Mesh:
     pass # end of Mesh class
 
 
-## class used to compensate change of CORBA API of SMESH_Mesh for backward compatibility
+## Class used to compensate change of CORBA API of SMESH_Mesh for backward compatibility
 #  with old dump scripts which call SMESH_Mesh directly and not via smeshBuilder.Mesh
 #
 class meshProxy(SMESH._objref_SMESH_Mesh):
@@ -5017,7 +5018,40 @@ class meshProxy(SMESH._objref_SMESH_Mesh):
     pass
 omniORB.registerObjref(SMESH._objref_SMESH_Mesh._NP_RepositoryId, meshProxy)
 
-## class used to compensate change of CORBA API of SMESH_MeshEditor for backward compatibility
+
+## Class wrapping SMESH_SubMesh in order to add Compute()
+#
+class submeshProxy(SMESH._objref_SMESH_subMesh):
+    def __init__(self):
+        SMESH._objref_SMESH_subMesh.__init__(self)
+        self.mesh = None
+    def __deepcopy__(self, memo=None):
+        new = self.__class__()
+        return new
+
+    ## Computes the sub-mesh and returns the status of the computation
+    #  @param refresh if @c True, Object browser is automatically updated (when running in GUI)
+    #  @return True or False
+    #  @ingroup l2_construct
+    def Compute(self,refresh=False):
+        if not self.mesh:
+            self.mesh = Mesh( smeshBuilder(), None, self.GetMesh())
+
+        ok = self.mesh.Compute( self.GetSubShape(),refresh=[] )
+
+        if salome.sg.hasDesktop() and self.mesh.GetStudyId() >= 0:
+            smeshgui = salome.ImportComponentGUI("SMESH")
+            smeshgui.Init(self.mesh.GetStudyId())
+            smeshgui.SetMeshIcon( salome.ObjectToID( self ), ok, (self.GetNumberOfElements()==0) )
+            if refresh: salome.sg.updateObjBrowser(1)
+            pass
+
+        return ok
+    pass
+omniORB.registerObjref(SMESH._objref_SMESH_subMesh._NP_RepositoryId, submeshProxy)
+
+
+## Class used to compensate change of CORBA API of SMESH_MeshEditor for backward compatibility
 #  with old dump scripts which call SMESH_MeshEditor directly and not via smeshBuilder.Mesh
 #
 class meshEditor(SMESH._objref_SMESH_MeshEditor):
@@ -5129,7 +5163,7 @@ class algoCreator:
         raise RuntimeError, "No class found for algo type %s" % algoType
         return None
 
-# Private class used to substitute and store variable parameters of hypotheses.
+## Private class used to substitute and store variable parameters of hypotheses.
 #
 class hypMethodWrapper:
     def __init__(self, hyp, method):
@@ -5160,7 +5194,8 @@ class hypMethodWrapper:
         return result
     pass
 
-# A helper class that call UnRegister() of SALOME.GenericObj'es stored in it
+## A helper class that call UnRegister() of SALOME.GenericObj'es stored in it
+#
 class genObjUnRegister:
 
     def __init__(self, genObj=None):
@@ -5181,6 +5216,9 @@ class genObjUnRegister:
             if genObj and hasattr( genObj, "UnRegister" ):
                 genObj.UnRegister()
 
+
+## Bind methods creating mesher plug-ins to the Mesh class
+#
 for pluginName in os.environ[ "SMESH_MeshersList" ].split( ":" ):
     #
     #print "pluginName: ", pluginName

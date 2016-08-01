@@ -257,6 +257,10 @@
         <translation>Compute</translation>
     </message>
     <message>
+        <source>MEN_COMPUTE_SUBMESH</source>
+        <translation>Compute Sub-mesh</translation>
+    </message>
+    <message>
         <source>MEN_PRECOMPUTE</source>
         <translation>Preview</translation>
     </message>
@@ -419,6 +423,14 @@
     <message>
         <source>MEN_EDIT_MESHSUBMESH</source>
         <translation>Edit Mesh/Sub-mesh</translation>
+    </message>
+    <message>
+        <source>MEN_EDIT_MESH</source>
+        <translation>Edit Mesh</translation>
+    </message>
+    <message>
+        <source>MEN_EDIT_SUBMESH</source>
+        <translation>Edit Sub-mesh</translation>
     </message>
     <message>
         <source>MEN_EXPORT</source>
@@ -2930,6 +2942,10 @@ Use Display Entity menu command to show them.
         <translation>Compute</translation>
     </message>
     <message>
+        <source>STB_COMPUTE_SUBMESH</source>
+        <translation>Compute Sub-mesh</translation>
+    </message>
+    <message>
         <source>STB_PRECOMPUTE</source>
         <translation>Preview</translation>
     </message>
@@ -3060,6 +3076,14 @@ Use Display Entity menu command to show them.
     <message>
         <source>STB_EDIT_MESHSUBMESH</source>
         <translation>Edit Mesh/Sub-mesh</translation>
+    </message>
+    <message>
+        <source>STB_EDIT_MESH</source>
+        <translation>Edit Mesh</translation>
+    </message>
+    <message>
+        <source>STB_EDIT_SUBMESH</source>
+        <translation>Edit Sub-mesh</translation>
     </message>
     <message>
         <source>STB_EXPORT_DAT</source>
@@ -3598,6 +3622,10 @@ Use Display Entity menu command to show them.
         <translation>Compute</translation>
     </message>
     <message>
+        <source>TOP_COMPUTE_SUBMESH</source>
+        <translation>Compute Sub-mesh</translation>
+    </message>
+    <message>
         <source>TOP_PRECOMPUTE</source>
         <translation>Preview</translation>
     </message>
@@ -3728,6 +3756,14 @@ Use Display Entity menu command to show them.
     <message>
         <source>TOP_EDIT_MESHSUBMESH</source>
         <translation>Edit Mesh/Sub-mesh</translation>
+    </message>
+    <message>
+        <source>TOP_EDIT_MESH</source>
+        <translation>Edit Mesh</translation>
+    </message>
+    <message>
+        <source>TOP_EDIT_SUBMESH</source>
+        <translation>Edit Sub-mesh</translation>
     </message>
     <message>
         <source>TOP_EXPORT_DAT</source>
@@ -6132,8 +6168,12 @@ Please specify them and try again</translation>
         <translation>3D</translation>
     </message>
     <message>
-        <source>EDIT_MESH_SUBMESH</source>
-        <translation>Edit mesh/sub-mesh</translation>
+        <source>EDIT_MESH</source>
+        <translation>Edit mesh</translation>
+    </message>
+    <message>
+        <source>EDIT_SUBMESH</source>
+        <translation>Edit sub-mesh</translation>
     </message>
     <message>
         <source>GEOMETRY</source>

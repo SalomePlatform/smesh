@@ -112,6 +112,7 @@ private:
 protected:
   SMESH::SMESH_Mesh_var            myMesh;
   GEOM::GEOM_Object_var            myMainShape;
+  GEOM::GEOM_Object_var            myCurShape;
   SMESH::TShapeDisplayer*          myTShapeDisplayer;
   SMESHGUI_MeshEditPreview*        myBadMeshDisplayer;
   Handle(SALOME_InteractiveObject) myIObject;

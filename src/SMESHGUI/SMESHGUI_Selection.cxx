@@ -518,11 +518,18 @@ int SMESHGUI_Selection::dim( int ind ) const
 
 bool SMESHGUI_Selection::isComputable( int ind ) const
 {
-  if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] == "Mesh" )
+  if ( ind >= 0 && ind < myTypes.count() && ( myTypes[ind] == "Mesh" ||
+                                              myTypes[ind].startsWith("Mesh " )))
   {
     QMap<int,int> modeMap;
-    _PTR(SObject) so = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
-    SMESHGUI_PrecomputeOp::getAssignedAlgos( so, modeMap );
+    _PTR(SObject) meshSO = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
+
+    _PTR(SComponent) component = meshSO->GetFatherComponent();
+    if ( meshSO->Depth() - component->Depth() > 1 ) // sub-mesh, get a mesh
+      while ( meshSO->Depth() - component->Depth() > 1 )
+        meshSO = meshSO->GetFather();
+
+    SMESHGUI_PrecomputeOp::getAssignedAlgos( meshSO, modeMap );
     return modeMap.size() > 0;
   }
   return false;

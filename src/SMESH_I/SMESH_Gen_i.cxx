@@ -1916,8 +1916,8 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
         myLocShape = SMESH_Mesh::PseudoShape();
       // call implementation compute
       ::SMESH_Mesh& myLocMesh = meshServant->GetImpl();
-      myGen.PrepareCompute( myLocMesh, myLocShape);
-      bool ok = myGen.Compute( myLocMesh, myLocShape);
+      myGen.PrepareCompute( myLocMesh, myLocShape );
+      bool ok = myGen.Compute( myLocMesh, myLocShape, myLocShape != myLocMesh.GetShapeToMesh());
       meshServant->CreateGroupServants(); // algos can create groups (issue 0020918)
       myLocMesh.GetMeshDS()->Modified();
       return ok;
