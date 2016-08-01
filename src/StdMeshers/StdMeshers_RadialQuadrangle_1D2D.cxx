@@ -582,7 +582,7 @@ namespace
     {
       if ( meshDS->FindEdge( nodes[i].node, nodes[i-1].node )) continue;
 
-      const SMDS_MeshElement* seg = meshDS->AddEdge( nodes[i].node, nodes[i-1].node );
+      const SMDS_MeshElement* seg = helper->AddEdge( nodes[i].node, nodes[i-1].node );
 
       double normParam = 0.5 * ( nodes[i].normParam + nodes[i-1].normParam );
       edgeID = linSide->EdgeID( linSide->EdgeIndex( normParam ));
