@@ -192,7 +192,13 @@ class SMESHOBJECT_EXPORT SMESH_ScalarBarActor: public vtkActor2D {
   // Get Distribution Color
   void GetDistributionColor (double rgb[3]);
   
+  // Description:
+  // Set visibility status of scalar map 
+  void SetTitleOnlyVisibility( bool );
 
+  // Description:
+  // Get visibility status of scalar map 
+  bool GetTitleOnlyVisibility();
 
  protected:
   SMESH_ScalarBarActor();
@@ -237,6 +243,7 @@ class SMESHOBJECT_EXPORT SMESH_ScalarBarActor: public vtkActor2D {
   vtkPolyDataMapper2D*   myDistributionMapper;       //Distribution mapper
   std::vector<int>       myNbValues;                 //Nb values for the range
   int                    myDistributionColoringType; //Distribution color type (monocolor or multicolor)
+  bool                   myTitleOnlyVisibility;      //Show scalar map or not
   
  private:
   SMESH_ScalarBarActor(const SMESH_ScalarBarActor&);  // Not implemented.

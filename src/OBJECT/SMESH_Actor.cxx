@@ -988,28 +988,33 @@ SetControlMode( eControl theMode, bool theCheckEntityMode )
 
     vtkUnstructuredGrid* aGrid = myControlActor->GetUnstructuredGrid();
     vtkIdType aNbCells = aGrid->GetNumberOfCells();
+    bool aShowOnlyScalarBarTitle = false;
     if(aNbCells){
       myControlMode = theMode;
       switch(myControlMode){
       case eFreeNodes:
       case eCoincidentNodes:
         myNodeExtActor->SetExtControlMode(myFunctor);
+        aShowOnlyScalarBarTitle = true;
         break;
       case eFreeEdges:
       case eFreeBorders:
       case eCoincidentElems1D:
         my1DExtActor->SetExtControlMode(myFunctor);
+        aShowOnlyScalarBarTitle = true;
         break;
       case eFreeFaces:
       case eBareBorderFace:
       case eOverConstrainedFace:
       case eCoincidentElems2D:
         my2DExtActor->SetExtControlMode(myFunctor);
+        aShowOnlyScalarBarTitle = true;
         break;
       case eBareBorderVolume:
       case eOverConstrainedVolume:
       case eCoincidentElems3D:
         my3DExtActor->SetExtControlMode(myFunctor);
+        aShowOnlyScalarBarTitle = true;
         break;
       case eLength2D:
       case eMultiConnection2D:
@@ -1020,6 +1025,7 @@ SetControlMode( eControl theMode, bool theCheckEntityMode )
         myControlActor->SetControlMode(myFunctor,myScalarBarActor,myLookupTable);
         UpdateDistribution();
       }
+      myScalarBarActor->SetTitleOnlyVisibility(aShowOnlyScalarBarTitle);
     }
 
     if(theCheckEntityMode) {
@@ -1057,6 +1063,9 @@ SetControlMode( eControl theMode, bool theCheckEntityMode )
         SetEntityMode(eVolumes);
     }
     }
+    QString aTitle = QString(myScalarBarActor->GetTitle());
+    aTitle.replace(QRegExp("(:\\s).*"),"\\1"+ QString::number(GetNumberControlEntities()));
+    myScalarBarActor->SetTitle(aTitle.toLatin1().constData());
 
   }
   else {
@@ -1081,6 +1090,34 @@ SetControlMode( eControl theMode, bool theCheckEntityMode )
   Update();
 }
 
+int
+SMESH_ActorDef::
+GetNumberControlEntities(){
+  SMESH_DeviceActor* anAct = NULL;
+  switch(myControlMode){
+    case eFreeNodes:
+    case eCoincidentNodes:
+      anAct = myNodeExtActor;
+      break;
+    case eFreeEdges:
+    case eFreeBorders:
+    case eCoincidentElems1D:
+      anAct = my1DExtActor;
+      break;
+    case eFreeFaces:
+    case eBareBorderFace:
+    case eOverConstrainedFace:
+    case eCoincidentElems2D:
+      anAct = my2DExtActor;
+      break;
+    case eBareBorderVolume:
+    case eOverConstrainedVolume:
+    case eCoincidentElems3D:
+      anAct = my3DExtActor;
+      break;
+  }
+  return (anAct) ? anAct->GetUnstructuredGrid()->GetNumberOfCells() : -1;
+}
 
 void SMESH_ActorDef::AddToRender(vtkRenderer* theRenderer){
 
@@ -1424,10 +1461,10 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation){
       case eLength2D:
       case eMultiConnection2D:
         my1DExtActor->VisibilityOn();
-      default:
-        if(myControlActor->GetUnstructuredGrid()->GetNumberOfCells())
-          myScalarBarActor->VisibilityOn();
+        break;
       }
+      if(myControlActor->GetUnstructuredGrid()->GetNumberOfCells())
+        myScalarBarActor->VisibilityOn();
     }
 
     if(myRepresentation != ePoint)

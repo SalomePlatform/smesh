@@ -64,6 +64,34 @@
         <translation>Area</translation>
     </message>
     <message>
+        <source>FREE_NODES</source>
+        <translation>Free nodes</translation>
+    </message>
+    <message>
+        <source>FREE_EDGES</source>
+        <translation>Free edges</translation>
+    </message>
+    <message>
+        <source>FREE_FACES</source>
+        <translation>Free faces</translation>
+    </message>
+    <message>
+        <source>BARE_BORDER_FACE</source>
+        <translation>Faces with bare border</translation>
+    </message>
+    <message>
+        <source>OVER_CONSTRAINED_FACE</source>
+        <translation>Over-constrained faces</translation>
+    </message>
+    <message>
+        <source>BARE_BORDER_VOLUME</source>
+        <translation>Volumes with bare border</translation>
+    </message>
+    <message>
+        <source>OVER_CONSTRAINED_VOLUME</source>
+        <translation>Over-constrained volumes</translation>
+    </message>
+    <message>
         <source>MIN_DIAG_ELEMENTS</source>
         <translation>Minimum diagonal</translation>
     </message>

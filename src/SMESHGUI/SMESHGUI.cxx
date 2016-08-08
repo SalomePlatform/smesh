@@ -1668,6 +1668,9 @@ namespace
                 if ( anActor->GetControlMode() != aControl )
                   anActor->SetControlMode( aControl );
                 QString functorName = functorToString( anActor->GetFunctor() );
+                int anEntitiesCount = anActor->GetNumberControlEntities();
+                if (anEntitiesCount >= 0)
+                  functorName = functorName + ": " + QString::number(anEntitiesCount);
                 anActor->GetScalarBarActor()->SetTitle( functorName.toLatin1().constData() );
                 SMESH::RepaintCurrentView();
 #ifndef DISABLE_PLOT2DVIEWER

@@ -115,6 +115,9 @@ SMESH_ScalarBarActor::SMESH_ScalarBarActor() {
 
   // By default monocolor
   myDistributionColoringType = SMESH_MONOCOLOR_TYPE;
+
+  // By default scalar map is shown
+  myTitleOnlyVisibility = false;
   // rnv end
 }
 
@@ -194,19 +197,20 @@ int SMESH_ScalarBarActor::RenderOverlay(vtkViewport *viewport)
     {
     renderedSomething += this->TitleActor->RenderOverlay(viewport);
     }
-  this->ScalarBarActor->RenderOverlay(viewport);
-  this->myDistributionActor->RenderOverlay(viewport);
-  if( this->TextActors == NULL)
-    {
-     vtkWarningMacro(<<"Need a mapper to render a scalar bar");
-     return renderedSomething;
-    }
+  if (!myTitleOnlyVisibility) {
+    this->ScalarBarActor->RenderOverlay(viewport);
+    this->myDistributionActor->RenderOverlay(viewport);
+    if( this->TextActors == NULL)
+      {
+       vtkWarningMacro(<<"Need a mapper to render a scalar bar");
+       return renderedSomething;
+      }
   
-  for (i=0; i<this->NumberOfLabels; i++)
-    {
-    renderedSomething += this->TextActors[i]->RenderOverlay(viewport);
-    }
-
+    for (i=0; i<this->NumberOfLabels; i++)
+      {
+      renderedSomething += this->TextActors[i]->RenderOverlay(viewport);
+      }
+  }  
   renderedSomething = (renderedSomething > 0)?(1):(0);
 
   return renderedSomething;
@@ -574,7 +578,7 @@ int SMESH_ScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
       
       // rnv begin
       // Customization of the vtkScalarBarActor to show distribution histogram.
-      if(myNbValues[i] && myDistributionColoringType == SMESH_MULTICOLOR_TYPE && GetDistributionVisibility() && distrVisibility)
+      if(myDistributionColoringType == SMESH_MULTICOLOR_TYPE && GetDistributionVisibility() && distrVisibility)
         {
           rgb = distColors->GetPointer(3*dcCount); //write into array directly
           rgb[0] = rgba[0];
@@ -919,4 +923,12 @@ void SMESH_ScalarBarActor::SetDistributionColor (double rgb[3]) {
 
 void SMESH_ScalarBarActor::GetDistributionColor (double rgb[3]) {
   myDistributionActor->GetProperty()->GetColor(rgb);
+}
+
+void SMESH_ScalarBarActor::SetTitleOnlyVisibility( bool theTitleOnlyVisibility) {
+  myTitleOnlyVisibility = theTitleOnlyVisibility;
+}
+
+bool SMESH_ScalarBarActor::GetTitleOnlyVisibility() {
+  return myTitleOnlyVisibility;
 }
