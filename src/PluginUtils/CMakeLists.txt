@@ -35,6 +35,7 @@ INCLUDE_DIRECTORIES(
 
 # additional preprocessor / compiler flags
 ADD_DEFINITIONS(
+  ${QT_DEFINITIONS}
   ${CAS_DEFINITIONS}
   ${BOOST_DEFINITIONS}
   ${OMNIORB_DEFINITIONS}
@@ -47,6 +48,8 @@ SET(_link_LIBRARIES
   ${KERNEL_SalomeLifeCycleCORBA}
   ${CAS_TKBRep}
   ${CAS_TKV3d}
+  ${QT_LIBRARIES}
+  ${QT_MT_LIBS}
   ${GUI_SalomeObject}
   ${GUI_suit}
   ${GUI_LightApp}
@@ -58,21 +61,28 @@ SET(_link_LIBRARIES
 # --- headers ---
 
 # header files / to be processed by moc
-SET(GeomSelectionTools_HEADERS
+SET(PluginUtils_HEADERS
   GeomSelectionTools.h
+  SMESH_PluginUtils.h
+  SMESH_AdvOptionsWdg.h
 )
 
 # --- sources ---
 
+# sources / moc wrappings
+QT_WRAP_MOC(_moc_SOURCES SMESH_AdvOptionsWdg.h)
+
 # sources / static
-SET(GeomSelectionTools_SOURCES
+SET(PluginUtils_SOURCES
   GeomSelectionTools.cxx
+  SMESH_AdvOptionsWdg.cxx
+  ${_moc_SOURCES}
 )
 
 # --- rules ---
 
-ADD_LIBRARY(GeomSelectionTools ${GeomSelectionTools_SOURCES})
-TARGET_LINK_LIBRARIES(GeomSelectionTools ${_link_LIBRARIES} )
-INSTALL(TARGETS GeomSelectionTools EXPORT ${PROJECT_NAME}TargetGroup DESTINATION ${SALOME_INSTALL_LIBS})
+ADD_LIBRARY(PluginUtils ${PluginUtils_SOURCES})
+TARGET_LINK_LIBRARIES(PluginUtils ${_link_LIBRARIES} )
+INSTALL(TARGETS PluginUtils EXPORT ${PROJECT_NAME}TargetGroup DESTINATION ${SALOME_INSTALL_LIBS})
 
-INSTALL(FILES ${GeomSelectionTools_HEADERS} DESTINATION ${SALOME_INSTALL_HEADERS})
+INSTALL(FILES ${PluginUtils_HEADERS} DESTINATION ${SALOME_INSTALL_HEADERS})

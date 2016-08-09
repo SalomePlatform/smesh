@@ -25,18 +25,10 @@
 #ifndef _GEOMSELECTIONTOOLS_H_
 #define _GEOMSELECTIONTOOLS_H_
 
-#ifdef WIN32
-#  ifdef GeomSelectionTools_EXPORTS
-#    define GEOMSELECTIONTOOLS_EXPORT __declspec( dllexport )
-#  else
-#    define GEOMSELECTIONTOOLS_EXPORT __declspec( dllimport )
-#  endif
-#else
-#  define GEOMSELECTIONTOOLS_EXPORT
-#endif
+#include "SMESH_PluginUtils.h"
 
-#include "SALOMEDSClient.hxx"
-#include "SALOME_InteractiveObject.hxx"
+#include <SALOMEDSClient.hxx>
+#include <SALOME_InteractiveObject.hxx>
 #include <SALOME_ListIO.hxx>
 #include <SalomeApp_Application.h>
 
@@ -54,7 +46,7 @@ class LightApp_SelectionMgr;
  *
  */
 
-class GEOMSELECTIONTOOLS_EXPORT GeomSelectionTools
+class PLUGINUTILS_EXPORT GeomSelectionTools
 {
 
 private:
@@ -84,7 +76,7 @@ public:
 
 namespace PluginUtils
 {
-  GEOMSELECTIONTOOLS_EXPORT QString PrintDoubleValue( double, int = 16 );
+  PLUGINUTILS_EXPORT QString PrintDoubleValue( double, int = 16 );
 };
 
 #endif // _GEOMSELECTIONTOOLS_H_

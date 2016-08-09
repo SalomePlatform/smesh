@@ -4352,6 +4352,10 @@ It can&apos;t be deleted </translation>
         <source>STB_SORT_CHILD_ITEMS</source>
         <translation>Sort child items</translation>
     </message>
+    <message>
+        <source>SMESH_ADVANCED</source>
+        <translation>Advanced</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_FieldSelectorWdg</name>
@@ -8072,6 +8076,25 @@ as they are of improper type:
     <message>
         <source>WRN_AT_LEAST_ONE</source>
         <translation>At least one entity type should be chosen!</translation>
+    </message>
+</context>
+<context>
+    <name>SMESH_AdvOptionsWdg</name>
+    <message>
+        <source>ADD_OPTION_BTN</source>
+        <translation>Add option</translation>
+    </message>
+    <message>
+        <source>CHOICE</source>
+        <translation>Choice</translation>
+    </message>
+    <message>
+        <source>OPTION_NAME</source>
+        <translation>Option name</translation>
+    </message>
+    <message>
+        <source>OPTION_VALUE</source>
+        <translation>Option value</translation>
     </message>
 </context>
 </TS>

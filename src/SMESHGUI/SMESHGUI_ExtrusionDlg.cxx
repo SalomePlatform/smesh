@@ -1072,6 +1072,10 @@ void SMESHGUI_ExtrusionDlg::ClickOnRadio()
     SelectorWdg->SetEnabled( false, SMESH::EDGE );
   }
 
+  BasePointGrp->setEnabled( !ExtrMethod_RBut2->isChecked() );
+  ScalesGrp   ->setEnabled( !ExtrMethod_RBut2->isChecked() );
+
+
   CheckIsEnable();
 
   onDisplaySimulation(true);

@@ -185,17 +185,18 @@ private:
   QCheckBox*                       UseInputElemsOnlyCheck;
   QCheckBox*                       MakeGroupsCheck;
 
-  QCheckBox*                       LinearScalesCheck;
-  QGroupBox*                       ScalesGrp;
-  QListWidget*                     ScalesList;
-  QToolButton*                     AddScaleButton;
-  QToolButton*                     RemoveScaleButton;
-  SMESHGUI_SpinBox*                ScaleSpin;
   QGroupBox*                       BasePointGrp;
   QPushButton*                     SelectBasePointButton;
   SMESHGUI_SpinBox*                BasePoint_XSpin;
   SMESHGUI_SpinBox*                BasePoint_YSpin;
   SMESHGUI_SpinBox*                BasePoint_ZSpin;
+
+  QGroupBox*                       ScalesGrp;
+  QListWidget*                     ScalesList;
+  QToolButton*                     AddScaleButton;
+  QToolButton*                     RemoveScaleButton;
+  SMESHGUI_SpinBox*                ScaleSpin;
+  QCheckBox*                       LinearScalesCheck;
 
   QGroupBox*                       GroupButtons;
   QPushButton*                     buttonOk;

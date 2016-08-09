@@ -300,7 +300,7 @@ ENDIF(SALOME_SMESH_ENABLE_MEFISTO)
 
 IF(SALOME_BUILD_GUI)
   LIST(APPEND _${PROJECT_NAME}_exposed_targets
-      SMESHObject SMESHFiltersSelection SMESH GeomSelectionTools StdMeshersGUI
+      SMESHObject SMESHFiltersSelection SMESH PluginUtils StdMeshersGUI
   )
 ENDIF(SALOME_BUILD_GUI)
 
