@@ -151,6 +151,9 @@
 #include <QTextStream>
 #include <QListView>
 #include <QTreeView>
+#include <QCheckBox>
+#include <QLayout>
+#include <QDialogButtonBox>
 
 // BOOST includes
 #include <boost/shared_ptr.hpp>
@@ -444,7 +447,10 @@ namespace
     const bool multiMeshSupported = ( isMED || isCGNS ); // file can hold several meshes
     if ( selected.Extent() == 0 || ( selected.Extent() > 1 && !multiMeshSupported ))
       return;
-
+    SUIT_ResourceMgr* resMgr = SUIT_Session::session()->resourceMgr();
+    bool aCheckWarn = true;
+    if ( resMgr )
+      aCheckWarn = resMgr->booleanValue( "SMESH", "show_warning", false );
     // get mesh object from selection and check duplication of their names
     bool hasDuplicatedMeshNames = false;
     QList< QPair< SMESH::SMESH_IDSource_var, QString > >           aMeshList;
@@ -460,6 +466,30 @@ namespace
                                   QObject::tr( "SMESH_WRN_WARNING" ),
                                   QObject::tr( "SMESH_BAD_MESH_SELECTION" ));
         return;
+      }
+      SMESH::SMESH_GroupBase_var aGroup   = SMESH::SMESH_GroupBase::_narrow( aMeshItem );
+      if ( aCheckWarn && !aGroup->_is_nil() ) {
+        QMessageBox msgBox(SUIT_MessageBox::Warning,QObject::tr("SMESH_WRN_WARNING"),
+                            QObject::tr("SMESH_EXPORT_ONLY_GPOUP"),QMessageBox::StandardButton::NoButton, SMESHGUI::desktop());
+        QCheckBox dontShowCheckBox(QObject::tr("SMESH_WRN_SHOW_DLG_CHECKBOX"));
+        msgBox.addButton(QMessageBox::Ok);
+        msgBox.addButton(QMessageBox::Cancel);
+        msgBox.setDefaultButton(QMessageBox::Cancel);
+        QGridLayout* lt = qobject_cast<QGridLayout*>(msgBox.layout());
+        QDialogButtonBox* btnbox = msgBox.findChild<QDialogButtonBox*>();
+        lt->addWidget(&dontShowCheckBox, lt->rowCount(), lt->columnCount()-1, lt->rowCount(), lt->columnCount());
+        lt->addWidget(btnbox, lt->rowCount(), 0, lt->rowCount(), lt->columnCount());
+        if(msgBox.exec() == QMessageBox::Ok)
+        {
+            if(dontShowCheckBox.checkState() == Qt::Checked)
+            {
+              if ( resMgr )
+                resMgr->setValue( "SMESH", "show_warning", false);
+            }
+            aCheckWarn = false;
+        }
+        else
+          return;
       }
 
       QString aMeshName = anIObject->getName();
@@ -615,7 +645,6 @@ namespace
     // Init the parameters with the default values
     bool aIsASCII_STL   = true;
     bool toCreateGroups = false;
-    SUIT_ResourceMgr* resMgr = SUIT_Session::session()->resourceMgr();
     if ( resMgr )
       toCreateGroups = resMgr->booleanValue( "SMESH", "auto_groups", false );
     bool toOverwrite  = true;
@@ -5008,6 +5037,7 @@ void SMESHGUI::createPreferences()
   int exportgroup = addPreference( tr( "PREF_GROUP_EXPORT" ), genTab );
   setPreferenceProperty( exportgroup, "columns", 2 );
   addPreference( tr( "PREF_AUTO_GROUPS" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "auto_groups" );
+  addPreference( tr( "PREF_SHOW_WARN" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "show_warning" );
   //addPreference( tr( "PREF_RENUMBER" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "renumbering" );
 
   int computeGroup = addPreference( tr( "PREF_GROUP_COMPUTE" ), genTab );
