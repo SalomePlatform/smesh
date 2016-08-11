@@ -98,6 +98,7 @@ namespace SMESHOp {
     // Controls -----------------------//--------------------------------
     OpFreeNode               = 3000,   // MENU CONTROLS - FREE NODES
     OpEqualNode              = 3001,   // MENU CONTROLS - DOUBLE NODES
+    OpNodeConnectivityNb     = 3002,   // MENU CONTROLS - NODE CONNECTIVITY NUMBER
     OpFreeEdge               = 3100,   // MENU CONTROLS - FREE EDGES
     OpFreeBorder             = 3101,   // MENU CONTROLS - FREE BORDERS
     OpLength                 = 3102,   // MENU CONTROLS - LENGTH

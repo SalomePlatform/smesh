@@ -146,7 +146,7 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
                 eMinimumAngle, eWarping, eSkew, eAspectRatio3D, eMultiConnection2D, eVolume3D,
                 eMaxElementLength2D, eMaxElementLength3D, eBareBorderFace, eBareBorderVolume,
                 eOverConstrainedFace, eOverConstrainedVolume, eCoincidentNodes,
-                eCoincidentElems1D, eCoincidentElems2D, eCoincidentElems3D };
+                eCoincidentElems1D, eCoincidentElems2D, eCoincidentElems3D, eNodeConnectivityNb };
   virtual void SetControlMode(eControl theMode) = 0;
   virtual eControl GetControlMode() = 0;
   virtual SMESH::Controls::FunctorPtr GetFunctor() = 0;

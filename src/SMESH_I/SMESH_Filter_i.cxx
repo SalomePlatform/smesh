@@ -565,6 +565,21 @@ FunctorType BallDiameter_i::GetFunctorType()
 }
 
 /*
+  Class       : NodeConnectivityNumber_i
+  Description : Functor returning diameter of a ball element
+*/
+NodeConnectivityNumber_i::NodeConnectivityNumber_i()
+{
+  myNumericalFunctorPtr.reset( new Controls::NodeConnectivityNumber() );
+  myFunctorPtr = myNumericalFunctorPtr;
+}
+
+FunctorType NodeConnectivityNumber_i::GetFunctorType()
+{
+  return SMESH::FT_NodeConnectivityNumber;
+}
+
+/*
   Class       : MultiConnection2D_i
   Description : Functor for calculating number of faces conneted to the edge
 */
@@ -2122,6 +2137,14 @@ BallDiameter_ptr FilterManager_i::CreateBallDiameter()
   return anObj._retn();
 }
 
+NodeConnectivityNumber_ptr FilterManager_i::CreateNodeConnectivityNumber()
+{
+  SMESH::NodeConnectivityNumber_i* aServant = new SMESH::NodeConnectivityNumber_i();
+  SMESH::NodeConnectivityNumber_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateNodeConnectivityNumber()";
+  return anObj._retn();
+}
+
 BelongToMeshGroup_ptr FilterManager_i::CreateBelongToMeshGroup()
 {
   SMESH::BelongToMeshGroup_i* aServant = new SMESH::BelongToMeshGroup_i();
@@ -2965,6 +2988,9 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
         break;
       case SMESH::FT_BallDiameter:
         aFunctor = aFilterMgr->CreateBallDiameter();
+        break;
+      case SMESH::FT_NodeConnectivityNumber:
+        aFunctor = aFilterMgr->CreateNodeConnectivityNumber();
         break;
 
       // Predicates
@@ -4052,6 +4078,7 @@ static const char** getFunctNames()
     "FT_MultiConnection2D",
     "FT_Length",
     "FT_Length2D",
+    "FT_NodeConnectivityNumber",
     "FT_BelongToMeshGroup",
     "FT_BelongToGeom",
     "FT_BelongToPlane",

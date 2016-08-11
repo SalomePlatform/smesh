@@ -144,6 +144,10 @@ The following criteria allow selecting mesh <b>Nodes</b>:
 <b>Double nodes</b> selects a node coincident with other nodes 
 (within a given <b>Tolerance</b>). 
 See also \ref tui_double_nodes_control "Double Nodes quality control".
+</li><li>
+<b>Connectivity number</b> selects nodes with a number of connected
+elements, which is more, less or equal to the predefined <b>Threshold
+  Value</b>. Elements of the highest dimension are countered only.
 </li>
 </ul>
 

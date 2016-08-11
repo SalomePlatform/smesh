@@ -324,6 +324,7 @@ private slots:
   void                  computeAspectRatio();
   void                  computeAspectRatio3D();
   void                  computeFreeNodesInfo();
+  void                  computeNodesNbConnInfo();
   void                  computeDoubleNodesInfo();
   void                  computeDoubleEdgesInfo();
   void                  computeDoubleFacesInfo();
@@ -345,7 +346,7 @@ private:
   QwtPlot*                  myPlot3D;
   QList<QAbstractButton*>   myButtons;
   QList<TPredicate>         myPredicates;
-  TNumFunctor               myAspectRatio, myAspectRatio3D;
+  TNumFunctor               myAspectRatio, myAspectRatio3D, myNodeConnFunctor;
 };
 
 class SMESHGUI_EXPORT SMESHGUI_MeshInfoDlg : public QDialog

@@ -68,6 +68,10 @@
         <translation>Free nodes</translation>
     </message>
     <message>
+        <source>NODE_CONNECTIVITY_NB</source>
+        <translation>Node connectivity number</translation>
+    </message>
+    <message>
         <source>FREE_EDGES</source>
         <translation>Free edges</translation>
     </message>
@@ -623,6 +627,10 @@
     <message>
         <source>MEN_FREE_NODE</source>
         <translation>Free Nodes</translation>
+    </message>
+    <message>
+        <source>MEN_NODE_CONNECTIVITY_NB</source>
+        <translation>Node connectivity number</translation>
     </message>
     <message>
         <source>MEN_FREE_FACES</source>
@@ -3191,6 +3199,10 @@ Use Display Entity menu command to show them.
         <translation>Free Nodes</translation>
     </message>
     <message>
+        <source>STB_NODE_CONNECTIVITY_NB</source>
+        <translation>Node connectivity number</translation>
+    </message>
+    <message>
         <source>STB_FREE_FACES</source>
         <translation>Free Faces</translation>
     </message>
@@ -3861,6 +3873,10 @@ Use Display Entity menu command to show them.
     <message>
         <source>TOP_FREE_NODE</source>
         <translation>Free Nodes</translation>
+    </message>
+    <message>
+        <source>TOP_NODE_CONNECTIVITY_NB</source>
+        <translation>Node connectivity number</translation>
     </message>
     <message>
         <source>TOP_FREE_FACES</source>
@@ -5663,6 +5679,10 @@ Please check input data and try again</translation>
     <message>
         <source>CONNECTED_ELEMS</source>
         <translation>Elements of a domain</translation>
+    </message>
+    <message>
+        <source>NODE_CONN_NUMBER</source>
+        <translation>Connectivity number</translation>
     </message>
     <message>
         <source>NUMBEROFNODESINELEMENT</source>
@@ -7713,6 +7733,10 @@ as they are of improper type:
     <message>
         <source>NUMBER_OF_THE_FREE_NODES</source>
         <translation>Number of the free nodes</translation>
+    </message>
+    <message>
+        <source>MAX_NODE_CONNECTIVITY</source>
+        <translation>Max. number of connected elements</translation>
     </message>
     <message>
         <source>DOUBLE_NODES_TOLERANCE</source>

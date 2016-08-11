@@ -351,6 +351,17 @@ namespace SMESH{
       virtual SMDSAbs_ElementType GetType() const;
     };
     
+    /*
+      Class       : NodeConnectivityNumber
+      Description : Functor returning number of elements connected to a node
+    */
+    class SMESHCONTROLS_EXPORT NodeConnectivityNumber: public virtual NumericalFunctor{
+    public:
+      virtual double GetValue( long theNodeId );
+      virtual double GetBadRate( double Value, int nbNodes ) const;
+      virtual SMDSAbs_ElementType GetType() const;
+    };
+
 
     /*
       PREDICATES

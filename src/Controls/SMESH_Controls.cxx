@@ -2116,6 +2116,42 @@ SMDSAbs_ElementType BallDiameter::GetType() const
   return SMDSAbs_Ball;
 }
 
+//================================================================================
+/*
+  Class       : NodeConnectivityNumber
+  Description : Functor returning number of elements connected to a node
+*/
+//================================================================================
+
+double NodeConnectivityNumber::GetValue( long theId )
+{
+  double nb = 0;
+
+  if ( const SMDS_MeshNode* node = myMesh->FindNode( theId ))
+  {
+    SMDSAbs_ElementType type;
+    if ( myMesh->NbVolumes() > 0 )
+      type = SMDSAbs_Volume;
+    else if ( myMesh->NbFaces() > 0 )
+      type = SMDSAbs_Face;
+    else if ( myMesh->NbEdges() > 0 )
+      type = SMDSAbs_Edge;
+    else
+      return 0;
+    nb = node->NbInverseElements( type );
+  }
+  return nb;
+}
+
+double NodeConnectivityNumber::GetBadRate( double Value, int /*nbNodes*/ ) const
+{
+  return Value;
+}
+
+SMDSAbs_ElementType NodeConnectivityNumber::GetType() const
+{
+  return SMDSAbs_Node;
+}
 
 /*
                             PREDICATES

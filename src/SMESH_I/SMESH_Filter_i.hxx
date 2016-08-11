@@ -311,6 +311,18 @@ namespace SMESH
     FunctorType                     GetFunctorType();
   };
   
+  /*
+    Class       : NodeConnectivityNumber_i
+    Description : Functor returning diameter of a ball element
+  */
+  class SMESH_I_EXPORT NodeConnectivityNumber_i: public virtual POA_SMESH::NodeConnectivityNumber,
+                                       public virtual NumericalFunctor_i
+  {
+  public:
+    NodeConnectivityNumber_i();
+    FunctorType                     GetFunctorType();
+  };
+  
   
   /*
     PREDICATES
@@ -1075,6 +1087,7 @@ namespace SMESH
     MaxElementLength3D_ptr    CreateMaxElementLength3D();
     Length_ptr                CreateLength();
     Length2D_ptr              CreateLength2D();
+    NodeConnectivityNumber_ptr CreateNodeConnectivityNumber();
     MultiConnection_ptr       CreateMultiConnection();
     MultiConnection2D_ptr     CreateMultiConnection2D();
     BallDiameter_ptr          CreateBallDiameter();

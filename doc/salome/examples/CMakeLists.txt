@@ -98,6 +98,7 @@ SET(GOOD_TESTS
   filters_ex37.py
   filters_ex38.py
   filters_ex39.py
+  filters_node_nb_conn.py
   filters_belong2group.py
   grouping_elements_ex01.py
   grouping_elements_ex02.py

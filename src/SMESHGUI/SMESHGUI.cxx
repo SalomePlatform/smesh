@@ -1142,6 +1142,8 @@ namespace
       type = QObject::tr( "EQUAL_FACE" );
     else if ( dynamic_cast< SMESH::Controls::CoincidentElements3D* >( f.get() ) )
       type = QObject::tr( "EQUAL_VOLUME" );
+    else if ( dynamic_cast< SMESH::Controls::NodeConnectivityNumber* >( f.get() ) )
+      type = QObject::tr( "NODE_CONNECTIVITY_NB" );
     return type;
   }
 
@@ -1636,6 +1638,7 @@ namespace
     ActionControl.Bind( 0,                                SMESH_Actor::eNone );
     ActionControl.Bind( SMESHOp::OpFreeNode,              SMESH_Actor::eFreeNodes );
     ActionControl.Bind( SMESHOp::OpEqualNode,             SMESH_Actor::eCoincidentNodes );
+    ActionControl.Bind( SMESHOp::OpNodeConnectivityNb,    SMESH_Actor::eNodeConnectivityNb );
     ActionControl.Bind( SMESHOp::OpFreeEdge,              SMESH_Actor::eFreeEdges );
     ActionControl.Bind( SMESHOp::OpFreeBorder,            SMESH_Actor::eFreeBorders );
     ActionControl.Bind( SMESHOp::OpLength,                SMESH_Actor::eLength );
@@ -3577,6 +3580,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   // CONTROLS
   case SMESHOp::OpFreeNode:
   case SMESHOp::OpEqualNode:
+  case SMESHOp::OpNodeConnectivityNb:
   case SMESHOp::OpFreeEdge:
   case SMESHOp::OpFreeBorder:
   case SMESHOp::OpLength:
@@ -3869,6 +3873,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   //update
   createSMESHAction( SMESHOp::OpFreeNode,              "FREE_NODE",               "ICON_FREE_NODE",     0, true );
   createSMESHAction( SMESHOp::OpEqualNode,             "EQUAL_NODE",              "ICON_EQUAL_NODE",    0, true );
+  createSMESHAction( SMESHOp::OpNodeConnectivityNb,    "NODE_CONNECTIVITY_NB",    "ICON_NODE_CONN_NB",    0, true );
   createSMESHAction( SMESHOp::OpFreeEdge,              "FREE_EDGE",               "ICON_FREE_EDGE",     0, true );
   createSMESHAction( SMESHOp::OpFreeBorder,            "FREE_BORDER",             "ICON_FREE_EDGE_2D",  0, true );
   createSMESHAction( SMESHOp::OpLength,                "LENGTH",                  "ICON_LENGTH",        0, true );
@@ -4002,7 +4007,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpSortChild, "SORT_CHILD_ITEMS" );
 
   QList<int> aCtrlActions;
-  aCtrlActions << SMESHOp::OpFreeNode << SMESHOp::OpEqualNode                           // node controls
+  aCtrlActions << SMESHOp::OpFreeNode << SMESHOp::OpEqualNode
+               << SMESHOp::OpNodeConnectivityNb                                         // node controls
                << SMESHOp::OpFreeEdge << SMESHOp::OpFreeBorder
                << SMESHOp::OpLength << SMESHOp::OpConnection << SMESHOp::OpEqualEdge    // edge controls
                << SMESHOp::OpFreeFace << SMESHOp::OpLength2D << SMESHOp::OpConnection2D
@@ -4099,6 +4105,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   createMenu( SMESHOp::OpFreeNode,              nodeId,   -1 );
   createMenu( SMESHOp::OpEqualNode,             nodeId,   -1 );
+  //createMenu( SMESHOp::OpNodeConnectivityNb,    nodeId,   -1 );
   createMenu( SMESHOp::OpFreeBorder,            edgeId,   -1 );
   createMenu( SMESHOp::OpLength,                edgeId,   -1 );
   createMenu( SMESHOp::OpConnection,            edgeId,   -1 );
@@ -4244,6 +4251,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   createTool( SMESHOp::OpFreeNode,  ctrl0dTb );
   createTool( SMESHOp::OpEqualNode, ctrl0dTb );
+  //createTool( SMESHOp::OpNodeConnectivityNb, ctrl0dTb );
 
   createTool( SMESHOp::OpFreeBorder, ctrl1dTb );
   createTool( SMESHOp::OpLength,     ctrl1dTb );
@@ -4585,6 +4593,10 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert ( action( SMESHOp::OpEqualNode ), aSubId, -1 );
   popupMgr()->setRule( action( SMESHOp::OpEqualNode ), aMeshInVtkHasNodes, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( SMESHOp::OpEqualNode ), "controlMode = 'eCoincidentNodes'", QtxPopupMgr::ToggleRule);
+
+  // popupMgr()->insert( action( SMESHOp::OpNodeConnectivityNb ), aSubId, -1 );
+  // popupMgr()->setRule( action( SMESHOp::OpNodeConnectivityNb ), aMeshInVtkHasNodes, QtxPopupMgr::VisibleRule );
+  // popupMgr()->setRule( action( SMESHOp::OpNodeConnectivityNb ), "controlMode = 'eNodeConnectivityNb'", QtxPopupMgr::ToggleRule );
 
   aSubId = popupMgr()->insert( tr( "MEN_EDGE_CTRL" ), anId, -1 ); // EDGE CONTROLS
 

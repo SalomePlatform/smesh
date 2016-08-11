@@ -3225,6 +3225,11 @@ SMESHGUI_CtrlInfo::SMESHGUI_CtrlInfo( QWidget* parent )
   myWidgets << aNodesFree;
   myPredicates << aFilterMgr->CreateFreeNodes();
   //
+  QLabel* aNodesNbConnLab = new QLabel( tr( "MAX_NODE_CONNECTIVITY" ), this );
+  QLabel* aNodesNbConn = createField();
+  myWidgets << aNodesNbConn;
+  myNodeConnFunctor = aFilterMgr->CreateNodeConnectivityNumber();
+  //
   QLabel* aNodesDoubleLab = new QLabel( tr( "NUMBER_OF_THE_DOUBLE_NODES" ), this );
   QLabel* aNodesDouble = createField();
   myWidgets << aNodesDouble;
@@ -3274,47 +3279,52 @@ SMESHGUI_CtrlInfo::SMESHGUI_CtrlInfo( QWidget* parent )
   aFreeNodesBtn->setIcon(aComputeIcon);
   myButtons << aFreeNodesBtn;       //0
 
+  QToolButton* aNodesNbConnBtn = new QToolButton( this );
+  aNodesNbConnBtn->setIcon(aComputeIcon);
+  myButtons << aNodesNbConnBtn;     //1
+
   QToolButton* aDoubleNodesBtn = new QToolButton( this );
   aDoubleNodesBtn->setIcon(aComputeIcon);
-  myButtons << aDoubleNodesBtn;     //1
+  myButtons << aDoubleNodesBtn;     //2
 
   QToolButton* aDoubleEdgesBtn = new QToolButton( this );
   aDoubleEdgesBtn->setIcon(aComputeIcon);
-  myButtons << aDoubleEdgesBtn;     //2
+  myButtons << aDoubleEdgesBtn;     //3
 
   QToolButton* aDoubleFacesBtn = new QToolButton( this );
   aDoubleFacesBtn->setIcon(aComputeIcon);
-  myButtons << aDoubleFacesBtn;     //3
+  myButtons << aDoubleFacesBtn;     //4
 
   QToolButton* aOverContFacesBtn = new QToolButton( this );
   aOverContFacesBtn->setIcon(aComputeIcon);
-  myButtons << aOverContFacesBtn;   //4
+  myButtons << aOverContFacesBtn;   //5
 
   QToolButton* aComputeFaceBtn = new QToolButton( this );
   aComputeFaceBtn->setIcon(aComputeIcon);
-  myButtons << aComputeFaceBtn;     //5
+  myButtons << aComputeFaceBtn;     //6
 
   QToolButton* aDoubleVolumesBtn = new QToolButton( this );
   aDoubleVolumesBtn->setIcon(aComputeIcon);
-  myButtons << aDoubleVolumesBtn;   //6
+  myButtons << aDoubleVolumesBtn;   //7
 
   QToolButton* aOverContVolumesBtn = new QToolButton( this );
   aOverContVolumesBtn->setIcon(aComputeIcon);
-  myButtons << aOverContVolumesBtn; //7
+  myButtons << aOverContVolumesBtn; //8
 
   QToolButton* aComputeVolumeBtn = new QToolButton( this );
   aComputeVolumeBtn->setIcon(aComputeIcon);
-  myButtons << aComputeVolumeBtn;   //8
+  myButtons << aComputeVolumeBtn;   //9
 
   connect( aComputeFaceBtn,   SIGNAL( clicked() ), this, SLOT( computeAspectRatio() ) );
   connect( aComputeVolumeBtn, SIGNAL( clicked() ), this, SLOT( computeAspectRatio3D() ) );
-  connect( aFreeNodesBtn, SIGNAL( clicked() ), this, SLOT( computeFreeNodesInfo() ) );
-  connect( aDoubleNodesBtn, SIGNAL( clicked() ), this, SLOT( computeDoubleNodesInfo() ) );
-  connect( aDoubleEdgesBtn, SIGNAL( clicked() ), this, SLOT( computeDoubleEdgesInfo() ) );
-  connect( aDoubleFacesBtn, SIGNAL( clicked() ), this, SLOT( computeDoubleFacesInfo() ) );
+  connect( aFreeNodesBtn,     SIGNAL( clicked() ), this, SLOT( computeFreeNodesInfo() ) );
+  connect( aNodesNbConnBtn,   SIGNAL( clicked() ), this, SLOT( computeNodesNbConnInfo() ) );
+  connect( aDoubleNodesBtn,   SIGNAL( clicked() ), this, SLOT( computeDoubleNodesInfo() ) );
+  connect( aDoubleEdgesBtn,   SIGNAL( clicked() ), this, SLOT( computeDoubleEdgesInfo() ) );
+  connect( aDoubleFacesBtn,   SIGNAL( clicked() ), this, SLOT( computeDoubleFacesInfo() ) );
   connect( aOverContFacesBtn, SIGNAL( clicked() ), this, SLOT( computeOverConstrainedFacesInfo() ) );
   connect( aDoubleVolumesBtn, SIGNAL( clicked() ), this, SLOT( computeDoubleVolumesInfo() ) );
-  connect( aOverContVolumesBtn, SIGNAL( clicked() ), this, SLOT( computeOverConstrainedVolumesInfo() ) );
+  connect( aOverContVolumesBtn,SIGNAL( clicked() ), this, SLOT( computeOverConstrainedVolumesInfo() ) );
   connect( myToleranceWidget, SIGNAL(valueChanged(double)), this, SLOT( setTolerance( double )));
 
   setFontAttributes( aNameLab );
@@ -3329,35 +3339,38 @@ SMESHGUI_CtrlInfo::SMESHGUI_CtrlInfo( QWidget* parent )
   myMainLayout->addWidget( aNodesFreeLab,      2, 0 );       //3
   myMainLayout->addWidget( aNodesFree,         2, 1 );       //4
   myMainLayout->addWidget( aFreeNodesBtn,      2, 2 );       //5
-  myMainLayout->addWidget( aNodesDoubleLab,    3, 0 );       //6
-  myMainLayout->addWidget( aNodesDouble,       3, 1 );       //7
-  myMainLayout->addWidget( aDoubleNodesBtn,    3, 2 );       //8
-  myMainLayout->addWidget( aToleranceLab,      4, 0 );       //9
-  myMainLayout->addWidget( myToleranceWidget,  4, 1 );       //10
-  myMainLayout->addWidget( anEdgesLab,         5, 0, 1, 3 ); //11
-  myMainLayout->addWidget( anEdgesDoubleLab,   6, 0 );       //12
-  myMainLayout->addWidget( anEdgesDouble,      6, 1 );       //13
-  myMainLayout->addWidget( aDoubleEdgesBtn,    6, 2 );       //14
-  myMainLayout->addWidget( aFacesLab,          7, 0, 1, 3 ); //15
-  myMainLayout->addWidget( aFacesDoubleLab,    8, 0 );       //16
-  myMainLayout->addWidget( aFacesDouble,       8, 1 );       //17
-  myMainLayout->addWidget( aDoubleFacesBtn,    8, 2 );       //18
-  myMainLayout->addWidget( aFacesOverLab,      9, 0 );       //19
-  myMainLayout->addWidget( aFacesOver,         9, 1 );       //20
-  myMainLayout->addWidget( aOverContFacesBtn,  9, 2 );       //21
-  myMainLayout->addWidget( anAspectRatioLab,   10, 0 );      //22
-  myMainLayout->addWidget( aComputeFaceBtn,    10, 2 );      //23
-  myMainLayout->addWidget( myPlot,             11, 0, 1, 3 );//24
-  myMainLayout->addWidget( aVolumesLab,        12, 0, 1, 3 );//25
-  myMainLayout->addWidget( aVolumesDoubleLab,  13, 0 );      //26
-  myMainLayout->addWidget( aVolumesDouble,     13, 1 );      //27
-  myMainLayout->addWidget( aDoubleVolumesBtn,  13, 2 );      //28
-  myMainLayout->addWidget( aVolumesOverLab,    14, 0 );      //28
-  myMainLayout->addWidget( aVolumesOver,       14, 1 );      //30
-  myMainLayout->addWidget( aOverContVolumesBtn,14, 2 );      //31
-  myMainLayout->addWidget( anAspectRatio3DLab, 15, 0 );      //32
-  myMainLayout->addWidget( aComputeVolumeBtn,  15, 2 );      //33
-  myMainLayout->addWidget( myPlot3D,           16, 0, 1, 3 );//34
+  myMainLayout->addWidget( aNodesNbConnLab,    3, 0 );       //6
+  myMainLayout->addWidget( aNodesNbConn,       3, 1 );       //7
+  myMainLayout->addWidget( aNodesNbConnBtn,    3, 2 );       //8
+  myMainLayout->addWidget( aNodesDoubleLab,    4, 0 );       //9
+  myMainLayout->addWidget( aNodesDouble,       4, 1 );       //10
+  myMainLayout->addWidget( aDoubleNodesBtn,    4, 2 );       //11
+  myMainLayout->addWidget( aToleranceLab,      5, 0 );       //12
+  myMainLayout->addWidget( myToleranceWidget,  5, 1 );       //13
+  myMainLayout->addWidget( anEdgesLab,         6, 0, 1, 3 ); //14
+  myMainLayout->addWidget( anEdgesDoubleLab,   7, 0 );       //15
+  myMainLayout->addWidget( anEdgesDouble,      7, 1 );       //16
+  myMainLayout->addWidget( aDoubleEdgesBtn,    7, 2 );       //17
+  myMainLayout->addWidget( aFacesLab,          8, 0, 1, 3 ); //18
+  myMainLayout->addWidget( aFacesDoubleLab,    9, 0 );       //19
+  myMainLayout->addWidget( aFacesDouble,       9, 1 );       //20
+  myMainLayout->addWidget( aDoubleFacesBtn,    9, 2 );       //21
+  myMainLayout->addWidget( aFacesOverLab,      10, 0 );      //22
+  myMainLayout->addWidget( aFacesOver,         10, 1 );      //23
+  myMainLayout->addWidget( aOverContFacesBtn,  10, 2 );      //24
+  myMainLayout->addWidget( anAspectRatioLab,   11, 0 );      //25
+  myMainLayout->addWidget( aComputeFaceBtn,    11, 2 );      //26
+  myMainLayout->addWidget( myPlot,             12, 0, 1, 3 );//27
+  myMainLayout->addWidget( aVolumesLab,        13, 0, 1, 3 );//28
+  myMainLayout->addWidget( aVolumesDoubleLab,  14, 0 );      //29
+  myMainLayout->addWidget( aVolumesDouble,     14, 1 );      //30
+  myMainLayout->addWidget( aDoubleVolumesBtn,  14, 2 );      //31
+  myMainLayout->addWidget( aVolumesOverLab,    15, 0 );      //32
+  myMainLayout->addWidget( aVolumesOver,       15, 1 );      //33
+  myMainLayout->addWidget( aOverContVolumesBtn,15, 2 );      //34
+  myMainLayout->addWidget( anAspectRatio3DLab, 16, 0 );      //35
+  myMainLayout->addWidget( aComputeVolumeBtn,  16, 2 );      //36
+  myMainLayout->addWidget( myPlot3D,           17, 0, 1, 3 );//37
  
   myMainLayout->setColumnStretch(  0,  0 );
   myMainLayout->setColumnStretch(  1,  5 );
@@ -3460,6 +3473,7 @@ void SMESHGUI_CtrlInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
     if ( Max( (int)nbNodes, (int)nbElems ) <= ctrlLimit ) {
       // free nodes
       computeFreeNodesInfo();
+      computeNodesNbConnInfo();
       // double nodes
       if ( Max( (int)mesh->NbNodes(), (int)mesh->NbElements() ) <= ctrlLimit )
         computeDoubleNodesInfo();
@@ -3467,10 +3481,11 @@ void SMESHGUI_CtrlInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
     else {
       myButtons[0]->setEnabled( true );
       myButtons[1]->setEnabled( true );
+      myButtons[2]->setEnabled( true );
     }
   }
   else {
-    for( int i=2; i<=10; i++)
+    for( int i=2; i<=11; i++)
       myMainLayout->itemAt(i)->widget()->setVisible( false );
   }
 
@@ -3480,7 +3495,7 @@ void SMESHGUI_CtrlInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
     if( nbElemsByType[ SMESH::EDGE ] <= ctrlLimit )
       computeDoubleEdgesInfo();
     else
-      myButtons[2]->setEnabled( true );
+      myButtons[3]->setEnabled( true );
   }
   else {
     for( int i=11; i<=14; i++)
@@ -3498,19 +3513,19 @@ void SMESHGUI_CtrlInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
       computeAspectRatio();
     }
     else {
-      myButtons[3]->setEnabled( true );
       myButtons[4]->setEnabled( true );
       myButtons[5]->setEnabled( true );
+      myButtons[6]->setEnabled( true );
     }
 #ifdef DISABLE_PLOT2DVIEWER
-    myMainLayout->setRowStretch(11,0);
-    for( int i=22; i<=24; i++)
+    myMainLayout->setRowStretch(12,0);
+    for( int i=25; i<=27; i++)
       myMainLayout->itemAt(i)->widget()->setVisible( false );
 #endif
   }
   else {
-    myMainLayout->setRowStretch(11,0);
-    for( int i=15; i<=24; i++)
+    myMainLayout->setRowStretch(12,0);
+    for( int i=18; i<=27; i++)
       myMainLayout->itemAt(i)->widget()->setVisible( false );
   }
 
@@ -3525,19 +3540,19 @@ void SMESHGUI_CtrlInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
       computeAspectRatio3D();
      }
      else {
-       myButtons[6]->setEnabled( true );
        myButtons[7]->setEnabled( true );
        myButtons[8]->setEnabled( true );
+       myButtons[9]->setEnabled( true );
      }
 #ifdef DISABLE_PLOT2DVIEWER
-    myMainLayout->setRowStretch(16,0);
-    for( int i=32; i<=34; i++)
+    myMainLayout->setRowStretch(17,0);
+    for( int i=35; i<=37; i++)
       myMainLayout->itemAt(i)->widget()->setVisible( false );
 #endif
   }
   else {
-    myMainLayout->setRowStretch(16,0);
-    for( int i=25; i<=34; i++)
+    myMainLayout->setRowStretch(17,0);
+    for( int i=28; i<=37; i++)
       myMainLayout->itemAt(i)->widget()->setVisible( false );
   }
 }
@@ -3583,38 +3598,58 @@ void SMESHGUI_CtrlInfo::computeFreeNodesInfo()
 
 void SMESHGUI_CtrlInfo::computeDoubleNodesInfo()
 {
-  computeNb( SMESH::FT_EqualNodes, 1, 2 );
+  computeNb( SMESH::FT_EqualNodes, 2, 3 );
 }
 
 void SMESHGUI_CtrlInfo::computeDoubleEdgesInfo()
 {
-  computeNb( SMESH::FT_EqualEdges, 2, 3 );
+  computeNb( SMESH::FT_EqualEdges, 3, 4 );
 }
 
 void SMESHGUI_CtrlInfo::computeDoubleFacesInfo()
 {
-  computeNb( SMESH::FT_EqualFaces, 3, 4 );
+  computeNb( SMESH::FT_EqualFaces, 4, 5 );
 }
 
 void SMESHGUI_CtrlInfo::computeOverConstrainedFacesInfo()
 {
-  computeNb( SMESH::FT_OverConstrainedFace, 4, 5 );
+  computeNb( SMESH::FT_OverConstrainedFace, 5, 6 );
 }
 
 void SMESHGUI_CtrlInfo::computeDoubleVolumesInfo()
 {
-  computeNb( SMESH::FT_EqualVolumes, 6, 6 );
+  computeNb( SMESH::FT_EqualVolumes, 7, 7 );
 }
 
 void SMESHGUI_CtrlInfo::computeOverConstrainedVolumesInfo()
 {
-  computeNb( SMESH::FT_OverConstrainedVolume, 7, 7 );
+  computeNb( SMESH::FT_OverConstrainedVolume, 8, 8 );
+}
+
+void SMESHGUI_CtrlInfo::computeNodesNbConnInfo()
+{
+  myButtons[ 1 ]->setEnabled( false );
+  myWidgets[ 2 ]->setText( "" );
+  SMESH::SMESH_Mesh_var mesh = myObject->GetMesh();
+  if ( mesh->_is_nil() ) return;
+  if ( !mesh->IsLoaded() )
+  {
+    mesh->Load();
+    this->showInfo( myObject ); // try to show all values
+    if ( !myWidgets[ 2 ]->text().isEmpty() )
+      return; // already computed
+  }
+  myNodeConnFunctor->SetMesh( mesh );
+  SMESH::Histogram_var histogram =
+    myNodeConnFunctor->GetLocalHistogram( 1, /*isLogarithmic=*/false, myObject );
+
+  myWidgets[ 2 ]->setText( QString::number( histogram[0].max ));
 }
 
 void SMESHGUI_CtrlInfo::computeAspectRatio()
 {
 #ifndef DISABLE_PLOT2DVIEWER
-  myButtons[5]->setEnabled( false );
+  myButtons[6]->setEnabled( false );
 
   if ( myObject->_is_nil() ) return;
 
@@ -3633,7 +3668,7 @@ void SMESHGUI_CtrlInfo::computeAspectRatio()
 void SMESHGUI_CtrlInfo::computeAspectRatio3D()
 {
 #ifndef DISABLE_PLOT2DVIEWER
-  myButtons[8]->setEnabled( false );
+  myButtons[9]->setEnabled( false );
 
   if ( myObject->_is_nil() ) return;
 
@@ -3654,9 +3689,9 @@ void SMESHGUI_CtrlInfo::computeAspectRatio3D()
 */
 void SMESHGUI_CtrlInfo::clearInternal()
 {
-  for( int i=0; i<=34; i++)
+  for( int i=0; i<=35; i++)
     myMainLayout->itemAt(i)->widget()->setVisible( true );
-  for( int i=0; i<=8; i++)
+  for( int i=0; i<=9; i++)
     myButtons[i]->setEnabled( false );
   myPlot->detachItems();
   myPlot3D->detachItems();
@@ -3734,7 +3769,6 @@ void SMESHGUI_CtrlInfo::saveInfo( QTextStream &out ) {
 /*!
   \brief Constructor
   \param parent parent widget
-  \param page specifies the dialog page to be shown at the start-up
 */
 SMESHGUI_CtrlInfoDlg::SMESHGUI_CtrlInfoDlg( QWidget* parent )
 : QDialog( parent )

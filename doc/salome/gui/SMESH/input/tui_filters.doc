@@ -209,6 +209,16 @@ filters mesh nodes which are coincident with other nodes (within a given toleran
 \tui_script{filters_ex17.py}
 
 
+\section filter_node_nb_conn Node connectivity number
+
+filters nodes according to a number of elements of highest dimension connected to a node:
+- element type should be \a SMESH.NODE
+- functor type should be \a SMESH.FT_NodeConnectivityNumber
+- threshold is an integer value (number of elements)
+
+\tui_script{filters_node_nb_conn.py}
+
+
 \section filter_borders_multiconnection Borders at multi-connection
 
 filters 1D mesh elements (segments) according to the specified number of

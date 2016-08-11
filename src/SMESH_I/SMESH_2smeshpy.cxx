@@ -292,6 +292,8 @@ namespace {
     //   - FT_ConnectedElements     = 39
     // v 7.6.0: FT_Undefined == 47, new items:
     //   - FT_BelongToMeshGroup     = 22
+    // v 8.1.0: FT_Undefined == 48, new items:
+    //   - FT_NodeConnectivityNumber= 22
     //
     // It's necessary to continue recording this history and to fill
     // undef2newItems (see below) accordingly.
@@ -313,6 +315,7 @@ namespace {
       undef2newItems[ 45 ].push_back( 36 );
       undef2newItems[ 46 ].push_back( 39 );
       undef2newItems[ 47 ].push_back( 22 );
+      undef2newItems[ 48 ].push_back( 22 );
 
       ASSERT( undef2newItems.rbegin()->first == SMESH::FT_Undefined );
     }
@@ -1564,7 +1567,7 @@ void _pyGen::CheckObjectIsReCreated( Handle(_pyObject)& theObj )
   const bool isHyp = theObj->IsKind( STANDARD_TYPE( _pyHypothesis ));
   Handle(_pyObject) existing;
   if( isHyp )
-    existing = Handle(_pyObject)::DownCast( FindHyp( theObj->GetID() ) );
+    existing = FindHyp( theObj->GetID() );
   else
     existing = FindObject( theObj->GetID() );
   if ( !existing.IsNull() && existing != theObj )
@@ -1622,9 +1625,10 @@ Handle(_pyObject) _pyGen::FindObject( const _pyID& theObjID )  const
       return id_obj->second;
   }
   {
-    map< _pyID, Handle(_pyMesh) >::const_iterator id_obj = myMeshes.find( theObjID );
+    _pyGen* me = const_cast< _pyGen* >( this );
+    map< _pyID, Handle(_pyMesh) >::iterator id_obj = me->myMeshes.find( theObjID );
     if ( id_obj != myMeshes.end() )
-      return Handle(_pyObject)::DownCast( id_obj->second );
+      return id_obj->second;
   }
   // {
   //   map< _pyID, Handle(_pyMeshEditor) >::const_iterator id_obj = myMeshEditors.find( theObjID );

@@ -423,6 +423,7 @@ namespace SMESH
       case FT_MultiConnection2D:     myStream<< "aMultiConnection2D";     break;
       case FT_Length:                myStream<< "aLength";                break;
       case FT_Length2D:              myStream<< "aLength2D";              break;
+      case FT_NodeConnectivityNumber:myStream<< "aNodeConnectivityNumber";break;
       case FT_BelongToMeshGroup:     myStream<< "aBelongToMeshGroup";     break;
       case FT_BelongToGeom:          myStream<< "aBelongToGeom";          break;
       case FT_BelongToPlane:         myStream<< "aBelongToPlane";         break;
@@ -448,8 +449,8 @@ namespace SMESH
       case FT_LogicalNOT:            myStream<< "aLogicalNOT";            break;
       case FT_LogicalAND:            myStream<< "aLogicalAND";            break;
       case FT_LogicalOR:             myStream<< "aLogicalOR";             break;
-      case FT_Undefined:
-      default:                       myStream<< "anUndefined";            break;
+      case FT_Undefined:             myStream<< "anUndefined";            break;
+        //default: -- commented to have a compilation warning
       }
       myStream<<theArg;
     }

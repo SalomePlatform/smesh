@@ -61,6 +61,7 @@ module SMESH
     FT_MultiConnection2D,
     FT_Length,
     FT_Length2D,
+    FT_NodeConnectivityNumber,
     FT_BelongToMeshGroup,
     FT_BelongToGeom,
     FT_BelongToPlane,
@@ -162,6 +163,7 @@ module SMESH
     Values GetValues();
   };
   interface BallDiameter    : NumericalFunctor{};
+  interface NodeConnectivityNumber : NumericalFunctor{};
   
 
   /*!
@@ -586,6 +588,7 @@ module SMESH
     MultiConnection    CreateMultiConnection();
     MultiConnection2D  CreateMultiConnection2D();
     BallDiameter       CreateBallDiameter();
+    NodeConnectivityNumber CreateNodeConnectivityNumber();
     /*!
      *  Create logical functors ( predicates )
      */

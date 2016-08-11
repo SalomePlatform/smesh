@@ -7,7 +7,7 @@ The user can obtain information about the selected mesh object
 
 To view the <b>Mesh Information</b>, select your mesh, sub-mesh or
 group in the <b>Object Browser</b> and invoke <b>Mesh Information</b>
-item from the \b Mesh menu or click <em>"Mesh Information"</em> button
+item from the \b Mesh menu or from the context menu, or click <em>"Mesh Information"</em> button
 in the toolbar. 
 
 <center>\image html image49.png
@@ -60,7 +60,7 @@ information about the selected mesh node(s) or element(s), namely:
   - Gravity center (X, Y, Z coordinates);
   - Connectivity information (connected nodes); double click in
     a line of a node reveals the information about this node;
-  - Quality controls (area, aspect ration, volume, etc.);
+  - Quality controls (area, aspect ratio, volume, etc.);
   - Position on a shape (for meshes built on a geometry);
   - Groups information (names of groups the element belongs to).
 
@@ -132,6 +132,7 @@ The <b>Quality Info</b> tab provides overall information about mesh quality cont
 - Name;
 - Nodes information:
   - Number of free nodes;
+  - Maximal number of elements connected to a node;
   - Number of double nodes;
 - Edges information:
   - Number of double edges;
@@ -160,9 +161,6 @@ via the "Mesh information" preferences (zero value means that there is no limit)
 
 The button \b "Dump" allows printing the information displayed in the
 dialog box to a .txt file.
-
-In case you get <b>Mesh Information</b> via a TUI script, the information is
-displayed in the Python Console. 
 
 See the \ref tui_viewing_mesh_infos "TUI Example".
 

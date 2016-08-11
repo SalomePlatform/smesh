@@ -964,6 +964,10 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
             functor = aFilterMgr.CreateLength()
         elif theCriterion == FT_Length2D:
             functor = aFilterMgr.CreateLength2D()
+        elif theCriterion == FT_NodeConnectivityNumber:
+            functor = aFilterMgr.CreateNodeConnectivityNumber()
+        elif theCriterion == FT_BallDiameter:
+            functor = aFilterMgr.CreateBallDiameter()
         else:
             print "Error: given parameter is not numerical functor type."
         aFilterMgr.UnRegister()

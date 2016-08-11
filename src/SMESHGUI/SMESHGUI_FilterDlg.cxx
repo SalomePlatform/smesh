@@ -1823,6 +1823,7 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
   case SMESH::FT_EqualFaces:
   case SMESH::FT_EqualVolumes: break;
 
+  case SMESH::FT_NodeConnectivityNumber:
   case SMESH::FT_MultiConnection:
   case SMESH::FT_MultiConnection2D: anIsIntCriterion = true; nbCompareSigns = 3; break;
 
@@ -2190,6 +2191,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_GroupColor         ] = tr("GROUP_COLOR");
       aCriteria[ SMESH::FT_EqualNodes         ] = tr("EQUAL_NODE");
       aCriteria[ SMESH::FT_ConnectedElements  ] = tr("CONNECTED_ELEMS");
+      aCriteria[ SMESH::FT_NodeConnectivityNumber ] = tr("NODE_CONN_NUMBER");
     }
     return aCriteria;
   }
