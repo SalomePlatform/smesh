@@ -52,6 +52,8 @@ or in later sessions with this module according to the preferences.
 - <b>Mesh export</b>
   - If you toggle <b>Automatically create groups for MED export</b> check-box,
     this operation will be carried out automatically.
+  - <b>Show warning when exporting group</b> check-box - allows defining the 
+    behavior of the warning when exporting a group.
 
 - <b>Mesh computation</b>
   - <b>Show a computation result notification</b> combo-box allows to
