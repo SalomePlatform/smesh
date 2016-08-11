@@ -1729,6 +1729,11 @@ The result file may be incorrect.
 Do you want to continue ?</translation>
     </message>
     <message>
+        <source>SMESH_EXPORT_ONLY_GPOUP</source>
+        <translation>You are going export the group without it's mesh.
+Do you want to continue ?</translation>
+    </message>
+    <message>
         <source>SMESH_EXPORT_MED_V2_1</source>
         <translation>During export mesh with name - &quot;%1&quot; to MED 2.1
 polygons and polyhedrons elements will be missed
@@ -2880,6 +2885,10 @@ Use Display Entity menu command to show them.
     <message>
         <source>SMESH_WRN_WARNING</source>
         <translation>Warning</translation>
+    </message>
+    <message>
+        <source>SMESH_WRN_SHOW_DLG_CHECKBOX</source>
+        <translation>Don't show this warning anymore.</translation>
     </message>
     <message>
         <source>SMESH_X</source>
@@ -4393,6 +4402,10 @@ Please, create VTK viewer and try again</translation>
     <message>
         <source>PREF_AUTO_GROUPS</source>
         <translation>Automatically create groups for MED export</translation>
+    </message>
+    <message>
+        <source>PREF_SHOW_WARN</source>
+        <translation>Show warning when exporting group</translation>
     </message>
     <message>
         <source>PREF_GROUP_SEGMENT_LENGTH</source>
