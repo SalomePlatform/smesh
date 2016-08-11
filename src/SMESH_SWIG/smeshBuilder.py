@@ -2264,6 +2264,8 @@ class Mesh:
     #          idSrc.UnRegister()
     #  @ingroup l1_auxiliary
     def GetIDSource(self, ids, elemType = SMESH.ALL):
+        if isinstance( ids, int ):
+            ids = [ids]
         return self.editor.MakeIDSource(ids, elemType)
 
 
@@ -2828,10 +2830,11 @@ class Mesh:
 
     ## Creates a 0D element on a node with given number.
     #  @param IDOfNode the ID of node for creation of the element.
+    #  @param DuplicateElements to add one more 0D element to a node or not
     #  @return the Id of the new 0D element
     #  @ingroup l2_modif_add
-    def Add0DElement(self, IDOfNode):
-        return self.editor.Add0DElement(IDOfNode)
+    def Add0DElement( self, IDOfNode, DuplicateElements=True ):
+        return self.editor.Add0DElement( IDOfNode, DuplicateElements )
 
     ## Create 0D elements on all nodes of the given elements except those 
     #  nodes on which a 0D element already exists.
@@ -2840,18 +2843,19 @@ class Mesh:
     #         of nodes IDs created by calling mesh.GetIDSource( nodes, SMESH.NODE )
     #  @param theGroupName optional name of a group to add 0D elements created
     #         and/or found on nodes of \a theObject.
+    #  @param DuplicateElements to add one more 0D element to a node or not
     #  @return an object (a new group or a temporary SMESH_IDSource) holding
     #          IDs of new and/or found 0D elements. IDs of 0D elements 
     #          can be retrieved from the returned object by calling GetIDs()
     #  @ingroup l2_modif_add
-    def Add0DElementsToAllNodes(self, theObject, theGroupName=""):
+    def Add0DElementsToAllNodes(self, theObject, theGroupName="", DuplicateElements=False):
         unRegister = genObjUnRegister()
         if isinstance( theObject, Mesh ):
             theObject = theObject.GetMesh()
-        if isinstance( theObject, list ):
+        elif isinstance( theObject, list ):
             theObject = self.GetIDSource( theObject, SMESH.ALL )
             unRegister.set( theObject )
-        return self.editor.Create0DElementsOnAllNodes( theObject, theGroupName )
+        return self.editor.Create0DElementsOnAllNodes( theObject, theGroupName, DuplicateElements )
 
     ## Creates a ball element on a node with given ID.
     #  @param IDOfNode the ID of node for creation of the element.

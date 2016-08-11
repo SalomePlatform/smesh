@@ -1242,6 +1242,10 @@ Please enter correct values and try again</translation>
         <translation>Add 0D Element</translation>
     </message>
     <message>
+        <source>SMESH_DUPLICATE_0D</source>
+        <translation>Allow duplicate elements</translation>
+    </message>
+    <message>
         <source>SMESH_ADD_BALL</source>
         <translation>Add Ball Element</translation>
     </message>
@@ -4387,6 +4391,14 @@ It can&apos;t be deleted </translation>
     <message>
         <source>FIELDS_TO_EXPORT</source>
         <translation>Export Fields</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_AddMeshElementDlg</name>
+    <message>
+        <source>NB_ADDED</source>
+        <translation>%1 elements have been added since 0D
+elements already present on the selected nodes.</translation>
     </message>
 </context>
 <context>

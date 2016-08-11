@@ -108,7 +108,7 @@ public:
    */
   CORBA::Long AddNode(CORBA::Double x, CORBA::Double y, CORBA::Double z)
     throw (SALOME::SALOME_Exception);
-  CORBA::Long Add0DElement(CORBA::Long IDOfNode)
+  CORBA::Long Add0DElement(CORBA::Long IDOfNode, CORBA::Boolean DuplicateElements)
     throw (SALOME::SALOME_Exception);
   CORBA::Long AddBall(CORBA::Long IDOfNodem, CORBA::Double diameter)
     throw (SALOME::SALOME_Exception);
@@ -134,11 +134,13 @@ public:
    *  \param theObject object on whose nodes 0D elements will be created.
    *  \param theGroupName optional name of a group to add 0D elements created
    *         and/or found on nodes of \a theObject.
+   *  \param theDuplicateElements to add one more 0D element to a node or not
    *  \return an object (a new group or a temporary SMESH_IDSource) holding
    *          ids of new and/or found 0D elements.
    */
   SMESH::SMESH_IDSource_ptr Create0DElementsOnAllNodes(SMESH::SMESH_IDSource_ptr theObject,
-                                                       const char*               theGroupName)
+                                                       const char*               theGroupName,
+                                                       CORBA::Boolean            theDuplicateElements)
     throw (SALOME::SALOME_Exception);
 
   /*!

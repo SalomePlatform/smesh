@@ -111,7 +111,7 @@ private:
   QLabel*                     TextLabelC1A1;
   QPushButton*                SelectButtonC1A1;
   QLineEdit*                  LineEditC1A1;
-  QCheckBox*                  Reverse;
+  QCheckBox*                  ReverseOrDulicate;
   SMESHGUI_SpinBox*           DiameterSpinBox;
   
   QString                     myHelpFileName;

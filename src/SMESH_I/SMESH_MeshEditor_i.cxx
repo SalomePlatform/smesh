@@ -903,14 +903,19 @@ CORBA::Long SMESH_MeshEditor_i::AddNode(CORBA::Double x,CORBA::Double y, CORBA::
  */
 //=============================================================================
 
-CORBA::Long SMESH_MeshEditor_i::Add0DElement(CORBA::Long IDOfNode)
+CORBA::Long SMESH_MeshEditor_i::Add0DElement(CORBA::Long    IDOfNode,
+                                             CORBA::Boolean DuplicateElements)
   throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
 
   const SMDS_MeshNode* aNode = getMeshDS()->FindNode(IDOfNode);
-  SMDS_MeshElement* elem = getMeshDS()->Add0DElement(aNode);
+  SMDS_ElemIteratorPtr it0D = aNode->GetInverseElementIterator( SMDSAbs_0DElement );
+  
+  SMDS_MeshElement* elem = 0;
+  if ( DuplicateElements || !it0D->more() )
+    elem = getMeshDS()->Add0DElement(aNode);
 
   // Update Python script
   TPythonDump() << "elem0d = " << this << ".Add0DElement( " << IDOfNode <<" )";
@@ -1243,11 +1248,11 @@ CORBA::Long SMESH_MeshEditor_i::AddPolyhedralVolumeByFaces (const SMESH::long_ar
 
 //=============================================================================
 //
-// \brief Create 0D elements on all nodes of the given object except those 
-//        nodes on which a 0D element already exists.
+// \brief Create 0D elements on all nodes of the given object.
 //  \param theObject object on whose nodes 0D elements will be created.
 //  \param theGroupName optional name of a group to add 0D elements created
 //         and/or found on nodes of \a theObject.
+//  \param DuplicateElements to add one more 0D element to a node or not.
 //  \return an object (a new group or a temporary SMESH_IDSource) holding
 //          ids of new and/or found 0D elements.
 //
@@ -1255,7 +1260,8 @@ CORBA::Long SMESH_MeshEditor_i::AddPolyhedralVolumeByFaces (const SMESH::long_ar
 
 SMESH::SMESH_IDSource_ptr
 SMESH_MeshEditor_i::Create0DElementsOnAllNodes(SMESH::SMESH_IDSource_ptr theObject,
-                                               const char*               theGroupName)
+                                               const char*               theGroupName,
+                                               CORBA::Boolean            theDuplicateElements)
   throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
@@ -1266,7 +1272,7 @@ SMESH_MeshEditor_i::Create0DElementsOnAllNodes(SMESH::SMESH_IDSource_ptr theObje
 
   TIDSortedElemSet elements, elems0D;
   if ( idSourceToSet( theObject, getMeshDS(), elements, SMDSAbs_All, /*emptyIfIsMesh=*/1))
-    getEditor().Create0DElementsOnAllNodes( elements, elems0D );
+    getEditor().Create0DElementsOnAllNodes( elements, elems0D, theDuplicateElements );
 
   SMESH::long_array_var newElems = new SMESH::long_array;
   newElems->length( elems0D.size() );

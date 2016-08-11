@@ -413,7 +413,9 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI*          theMo
   LineEditC1A1->setValidator
     (new SMESHGUI_IdValidator(this, ( myIsPoly || myNbNodes == 1 ) ? 1000 : myNbNodes));
 
-  Reverse = (myElementType == SMDSAbs_Face || myElementType == SMDSAbs_Volume ) ? new QCheckBox(tr("SMESH_REVERSE"), GroupC1) : 0;
+  ReverseOrDulicate = (myElementType == SMDSAbs_Face || myElementType == SMDSAbs_Volume ) ? new QCheckBox(tr("SMESH_REVERSE"), GroupC1) : 0;
+  if ( myElementType == SMDSAbs_0DElement )
+    ReverseOrDulicate = new QCheckBox(tr("SMESH_DUPLICATE_0D"), GroupC1);
 
   DiameterSpinBox = ( myGeomType == SMDSEntity_Ball ) ? new SMESHGUI_SpinBox(GroupC1) : 0;
   QLabel* diameterLabel = DiameterSpinBox ? new QLabel( tr("BALL_DIAMETER"),GroupC1) : 0;
@@ -421,8 +423,8 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI*          theMo
   GroupC1Layout->addWidget(TextLabelC1A1,    0, 0);
   GroupC1Layout->addWidget(SelectButtonC1A1, 0, 1);
   GroupC1Layout->addWidget(LineEditC1A1,     0, 2);
-  if ( Reverse ) {
-    GroupC1Layout->addWidget(Reverse, 1, 0, 1, 3);
+  if ( ReverseOrDulicate ) {
+    GroupC1Layout->addWidget(ReverseOrDulicate, 1, 0, 1, 3);
   }
   if ( DiameterSpinBox ) {
     GroupC1Layout->addWidget(diameterLabel,   1, 0);
@@ -524,8 +526,8 @@ void SMESHGUI_AddMeshElementDlg::Init()
   connect(mySMESHGUI,      SIGNAL(SignalActivatedViewManager()),  SLOT(onOpenView()));
   connect(mySMESHGUI,      SIGNAL(SignalCloseView()),             SLOT(onCloseView()));
 
-  if (Reverse)
-    connect(Reverse,       SIGNAL(stateChanged(int)),             SLOT(CheckBox(int)));
+  if (ReverseOrDulicate)
+    connect(ReverseOrDulicate,       SIGNAL(stateChanged(int)),             SLOT(CheckBox(int)));
 
   // set selection mode
   SMESH::SetPointRepresentation(true);
@@ -553,10 +555,10 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
     SMESH::long_array_var anArrayOfIndices = new SMESH::long_array;
     anArrayOfIndices->length(aListId.count());
     const std::vector<int>& revIndex = SMDS_MeshCell::reverseSmdsOrder( myGeomType );
-    if ( Reverse && Reverse->isChecked() && !revIndex.empty() )
+    if ( ReverseOrDulicate && ReverseOrDulicate->isChecked() && (int)revIndex.size() == aListId.count() )
       for (int i = 0; i < aListId.count(); i++)
         anArrayOfIndices[i] = aListId[ revIndex[i] ].toInt();
-    else if ( Reverse && Reverse->isChecked() && revIndex.empty() ) // polygon
+    else if ( ReverseOrDulicate && ReverseOrDulicate->isChecked() && revIndex.empty() ) // polygon
       for (int i = 0; i < aListId.count(); i++)
         anArrayOfIndices[i] = aListId[ aListId.count()-1 - i ].toInt();
     else
@@ -598,16 +600,23 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
     SMESH::long_array_var anIdList = new SMESH::long_array;
     anIdList->length( 1 );
     anIdList[0] = -1;
-    //const bool onlyNodesInMesh = ( myMesh->NbElements() == 0 );
     int nbElemsBefore = 0;
 
     switch (myElementType) {
-    case SMDSAbs_0DElement:
+    case SMDSAbs_0DElement: {
+      bool duplicateElements = ReverseOrDulicate->isChecked();
       nbElemsBefore = myMesh->Nb0DElements();
       anIdList->length( anArrayOfIndices->length() );
       for ( size_t i = 0; i < anArrayOfIndices->length(); ++i )
-        anIdList[i] = aMeshEditor->Add0DElement(anArrayOfIndices[i]);
+        anIdList[i] = aMeshEditor->Add0DElement(anArrayOfIndices[i], duplicateElements);
+
+      CORBA::ULong nbAdded = myMesh->Nb0DElements() - nbElemsBefore;
+      if ( !duplicateElements && nbAdded < anArrayOfIndices->length() )
+        SUIT_MessageBox::information(SMESHGUI::desktop(),
+                                     tr("SMESH_INFORMATION"),
+                                     tr("NB_ADDED").arg( nbAdded ));
       break;
+    }
     case SMDSAbs_Ball:
       if ( myGeomType == SMDSEntity_Ball ) {
         nbElemsBefore = myMesh->NbBalls();
@@ -672,8 +681,7 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
     mySelectionMgr->setSelectedObjects( aList, false );
 
     mySimulation->SetVisibility(false);
-    // if ( onlyNodesInMesh )
-    //   myActor->SetRepresentation( SMESH_Actor::eEdge ); // wireframe
+
     if ( nbElemsBefore == 0  )
     {
       // 1st element of the type has been added, update actor to show this entity
@@ -908,7 +916,7 @@ void SMESHGUI_AddMeshElementDlg::displaySimulation()
     for (int i = 0; i < aListId.count(); i++)
       anIds.push_back(myActor->GetObject()->GetNodeVTKId(aListId[ i ].toInt()));
 
-    if (Reverse && Reverse->isChecked())
+    if (ReverseOrDulicate && ReverseOrDulicate->isChecked())
     {
       const std::vector<int>& i = SMDS_MeshCell::reverseSmdsOrder( myGeomType );
       if ( i.empty() ) // polygon

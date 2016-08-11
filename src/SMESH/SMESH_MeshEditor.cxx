@@ -474,27 +474,22 @@ int SMESH_MeshEditor::Remove (const list< int >& theIDs,
 
 //================================================================================
 /*!
- * \brief Create 0D elements on all nodes of the given object except those
- *        nodes on which a 0D element already exists.
+ * \brief Create 0D elements on all nodes of the given object.
  *  \param elements - Elements on whose nodes to create 0D elements; if empty, 
  *                    the all mesh is treated
  *  \param all0DElems - returns all 0D elements found or created on nodes of \a elements
+ *  \param duplicateElements - to add one more 0D element to a node or not
  */
 //================================================================================
 
 void SMESH_MeshEditor::Create0DElementsOnAllNodes( const TIDSortedElemSet& elements,
-                                                   TIDSortedElemSet&       all0DElems )
+                                                   TIDSortedElemSet&       all0DElems,
+                                                   const bool              duplicateElements )
 {
   SMDS_ElemIteratorPtr elemIt;
-  vector< const SMDS_MeshElement* > allNodes;
   if ( elements.empty() )
   {
-    allNodes.reserve( GetMeshDS()->NbNodes() );
     elemIt = GetMeshDS()->elementsIterator( SMDSAbs_Node );
-    while ( elemIt->more() )
-      allNodes.push_back( elemIt->next() );
-
-    elemIt = elemSetIterator( allNodes );
   }
   else
   {
@@ -509,12 +504,13 @@ void SMESH_MeshEditor::Create0DElementsOnAllNodes( const TIDSortedElemSet& eleme
     {
       const SMDS_MeshNode* n = cast2Node( nodeIt->next() );
       SMDS_ElemIteratorPtr it0D = n->GetInverseElementIterator( SMDSAbs_0DElement );
-      if ( it0D->more() )
-        all0DElems.insert( it0D->next() );
-      else {
+      if ( duplicateElements || !it0D->more() )
+      {
         myLastCreatedElems.Append( GetMeshDS()->Add0DElement( n ));
         all0DElems.insert( myLastCreatedElems.Last() );
       }
+      while ( it0D->more() )
+        all0DElems.insert( it0D->next() );
     }
   }
 }

@@ -81,7 +81,8 @@ created:
 \image html add0delement.png
 
 In this dialog box specify nodes which will form your 0D elements by
-selecting them in the 3D viewer and click the \b Apply or
+selecting them in the 3D viewer. Activate <b>Allow duplicate
+  elements</b> to get several 0D elements on a node. Click the \b Apply or
 <b>Apply and Close</b> button. Your 0D elements will be created:
 
 \image html add_0delement.png
@@ -109,6 +110,8 @@ In this dialog
   <li><b> Set Filter </b> button allows selecting elements or nodes
     by filtering mesh elements or nodes with different criteria
     (see \ref filtering_elements "Filter usage").</li>
+  <li>Activate <b>Allow duplicate elements</b> to get several 0D
+    elements on a node. </li>
   <li> Switching on <b>Add to group</b> check-box allows specifying the
     name of the group to which all created or found (existing) 0D elements will
     be added. You can either select an existing group from a drop-down

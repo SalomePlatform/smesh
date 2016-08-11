@@ -104,6 +104,8 @@ SMESHGUI_Add0DElemsOnAllNodesDlg::SMESHGUI_Add0DElemsOnAllNodesDlg()
 
   myFilterBtn = new QPushButton( tr( "SMESH_BUT_FILTER" ), mainFrame() );
 
+  myDuplicateElemsChkBox = new QCheckBox( tr( "SMESH_DUPLICATE_0D" ), mainFrame() );
+
   // List of groups
 
   myGroupBox = new QGroupBox( tr( "SMESH_ADD_TO_GROUP" ), mainFrame() );
@@ -132,8 +134,9 @@ SMESHGUI_Add0DElemsOnAllNodesDlg::SMESHGUI_Add0DElemsOnAllNodesDlg()
   aLay->addWidget( objectWg( 0, Btn    ), 1, 1 );
   aLay->addWidget( objectWg( 0, Control), 1, 2, 1, 2 );
   aLay->addWidget( myFilterBtn,           1, 4 );
+  aLay->addWidget( myDuplicateElemsChkBox,2, 0 );
   //
-  aLay->addWidget( myGroupBox,            2, 0, 1, 5 );
+  aLay->addWidget( myGroupBox,            3, 0, 1, 5 );
 
   // Signals
 
@@ -439,7 +442,8 @@ bool SMESHGUI_Add0DElemsOnAllNodesOp::onApply()
 
     QString groupName = myDlg->myGroupListCmBox->currentText();
     SMESH::SMESH_IDSource_var newObj =
-      editor->Create0DElementsOnAllNodes( meshObject, groupName.toLatin1().data() );
+      editor->Create0DElementsOnAllNodes( meshObject, groupName.toLatin1().data(),
+                                          myDlg->myDuplicateElemsChkBox->isChecked() );
 
     int newNb0D = mesh->Nb0DElements() - prevNb0D;
     SUIT_MessageBox::information( myDlg, tr( "SMESH_INFORMATION" ),

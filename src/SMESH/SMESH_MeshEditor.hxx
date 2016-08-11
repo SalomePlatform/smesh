@@ -129,9 +129,9 @@ public:
   // Modify a compute state of sub-meshes which become empty
 
   void Create0DElementsOnAllNodes( const TIDSortedElemSet& elements,
-                                   TIDSortedElemSet&       all0DElems);
-  // Create 0D elements on all nodes of the given object except those
-  // nodes on which a 0D element already exists. \a all0DElems returns
+                                   TIDSortedElemSet&       all0DElems,
+                                   const bool              duplicateElements);
+  // Create 0D elements on all nodes of the given. \a all0DElems returns
   // all 0D elements found or created on nodes of \a elements
 
   bool InverseDiag (const SMDS_MeshElement * theTria1,

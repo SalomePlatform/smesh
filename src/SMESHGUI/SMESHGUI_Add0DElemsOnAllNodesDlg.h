@@ -31,13 +31,14 @@
 #include "SMESHGUI_Dialog.h"
 #include "SMESHGUI_IdValidator.h"
 
-class SMESHGUI_FilterDlg;
-class SMESHGUI_Add0DElemsOnAllNodesOp;
 class QButtonGroup;
-class QPushButton;
+class QCheckBox;
+class QComboBox;
 class QGroupBox;
 class QLabel;
-class QComboBox;
+class QPushButton;
+class SMESHGUI_Add0DElemsOnAllNodesOp;
+class SMESHGUI_FilterDlg;
 
 //---------------------------------------------------------------------------------
 /*!
@@ -72,6 +73,7 @@ signals:
   QGroupBox*    myGroupBox;
   QLabel*       myGroupLabel;
   QComboBox*    myGroupListCmBox;
+  QCheckBox*    myDuplicateElemsChkBox;
 
   SMESHGUI_IdValidator myIDValidator;
 };
@@ -106,7 +108,6 @@ class SMESHGUI_EXPORT SMESHGUI_Add0DElemsOnAllNodesOp : public SMESHGUI_Selectio
   SMESHGUI_Add0DElemsOnAllNodesDlg* myDlg;
   SMESHGUI_FilterDlg*               myFilterDlg;
   Handle(SALOME_InteractiveObject)  myIO;
-  //SUIT_SelectionFilter*             myObjectFilter;
 };
 
 #endif
