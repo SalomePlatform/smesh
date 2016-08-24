@@ -3,14 +3,13 @@
 
 import salome
 salome.salome_init()
-import GEOM
+
 from salome.geom import geomBuilder
 geompy = geomBuilder.New(salome.myStudy)
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 smesh =  smeshBuilder.New(salome.myStudy)
-import salome_notebook
 
 
 box = geompy.MakeBoxDXDYDZ(200, 200, 200)
@@ -20,7 +19,7 @@ mesh.Segment().AutomaticLength(0.1)
 mesh.Quadrangle()
 mesh.Compute()
 
-# find node at (0,0,0)
+# find node at (0,0,0) which is located on a geom vertex
 node000 = None
 for vId in geompy.SubShapeAllIDs( box, geompy.ShapeType["VERTEX"]):
     if node000: break
@@ -36,7 +35,7 @@ for vId in geompy.SubShapeAllIDs( box, geompy.ShapeType["VERTEX"]):
 if not node000:
     raise "node000 not found"
 
-# find node000 using the tested function 
+# find node000 using a dedicated function 
 n = mesh.FindNodeClosestTo( -1,-1,-1 )
 if not n == node000:
     raise "FindNodeClosestTo() returns " + str( n ) + " != " + str( node000 )

@@ -919,7 +919,7 @@ void SMESHGUI_AddMeshElementDlg::displaySimulation()
     if (ReverseOrDulicate && ReverseOrDulicate->isChecked())
     {
       const std::vector<int>& i = SMDS_MeshCell::reverseSmdsOrder( myGeomType );
-      if ( i.empty() ) // polygon
+      if ( i.size() != anIds.size() ) // polygon
         std::reverse( anIds.begin(), anIds.end() );
       else
         SMDS_MeshCell::applyInterlace( i, anIds );

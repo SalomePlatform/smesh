@@ -41,17 +41,20 @@ group as a whole mesh.
  If you try to export a group, the warning will be shown:
 \image html meshexportgroupwarning.png
 <ul>
-  <li><b>Don't show this warning anymore</b> check-box specifies show or
-  not the warning. If checked, the warning will not be shown anymore in 
-  the similar situation  </li>
+  <li><b>Don't show this warning anymore</b> check-box allows to
+    switch off the warning. You can re-activate the warning in 
+    \ref group_export_warning_pref "Preferences".</li>
 </ul>
 
  There are additional parameters available at export to MED and SAUV format files.
 <ul>
-  <li><b>Automatically create groups</b> check-box specifies whether to
+  <li>
+\anchor export_auto_groups
+  <b>Automatically create groups</b> check-box specifies whether to
   create groups of all mesh entities of available dimensions or
-  not. If checked, the created groups have names like "Group_On_All_Nodes",
-  "Group_On_All_Faces", etc.</li>
+  not. The created groups have names like "Group_On_All_Nodes",
+  "Group_On_All_Faces", etc. A default state of this check-box can be
+  set in \ref export_auto_groups_pref "Preferences". </li>
   <li><b>Automatically define space dimension</b> check-box specifies
   whether to define space dimension for export by mesh configuration
   or not. Usually the mesh is exported as a mesh in 3D space, just as

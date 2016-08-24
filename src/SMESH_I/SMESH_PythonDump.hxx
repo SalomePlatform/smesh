@@ -99,6 +99,7 @@ namespace SMESH
   struct SMESH_I_EXPORT TVar
   {
     std::vector< std::string > myVals;
+    bool                       myIsList;
     TVar(CORBA::Double value);
     TVar(CORBA::Long   value);
     TVar(CORBA::Short  value);

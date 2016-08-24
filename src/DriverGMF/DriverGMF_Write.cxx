@@ -34,6 +34,8 @@
 
 #include "utilities.h"
 
+using SMESHUtils::ControlPnt;
+
 extern "C"
 {
 #include "libmesh5.h"
@@ -79,29 +81,6 @@ extern "C"
   );                                         \
   }}}}
   
-
-Control_Pnt::Control_Pnt(): gp_Pnt()
-{
-  size=0;
-}
-Control_Pnt::Control_Pnt( const gp_Pnt& aPnt, 
-                          double theSize): gp_Pnt( aPnt )
-{
-  size=theSize;
-}
-Control_Pnt::Control_Pnt(double theX, 
-                         double theY, 
-                         double theZ): gp_Pnt(theX, theY, theZ)
-{
-  size=0;
-}
-Control_Pnt::Control_Pnt(double theX, 
-                         double theY, 
-                         double theZ, 
-                         double theSize): gp_Pnt(theX, theY, theZ)
-{
-  size=theSize;
-}
 
 DriverGMF_Write::DriverGMF_Write():
   Driver_SMESHDS_Mesh(), _exportRequiredGroups( true )
@@ -365,7 +344,7 @@ Driver_Mesh::Status DriverGMF_Write::Perform()
   return DRS_OK;
 }
 
-Driver_Mesh::Status DriverGMF_Write::PerformSizeMap( const std::vector<Control_Pnt>& points )
+Driver_Mesh::Status DriverGMF_Write::PerformSizeMap( const std::vector<ControlPnt>& points )
 {
 //   const int dim = 3, version = sizeof(long) == 4 ? 2 : 3;
   const int dim = 3, version = 2; // Version 3 not supported by mg-hexa
@@ -383,7 +362,7 @@ Driver_Mesh::Status DriverGMF_Write::PerformSizeMap( const std::vector<Control_P
   GmfSetKwd(solFileID, GmfSolAtVertices, pointsNumber, 1, TypTab);
   
   // Read the control points information from the vector and write it into the files
-  std::vector<Control_Pnt>::const_iterator points_it;
+  std::vector<ControlPnt>::const_iterator points_it;
   for (points_it = points.begin(); points_it != points.end(); points_it++ )
   {
     GmfSetLin( verticesFileID, GmfVertices, points_it->X(), points_it->Y(), points_it->Z(), 0 );

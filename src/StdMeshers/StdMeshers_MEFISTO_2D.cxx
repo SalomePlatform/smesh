@@ -82,7 +82,6 @@ using namespace std;
 StdMeshers_MEFISTO_2D::StdMeshers_MEFISTO_2D(int hypId, int studyId, SMESH_Gen * gen):
   SMESH_2D_Algo(hypId, studyId, gen)
 {
-  MESSAGE("StdMeshers_MEFISTO_2D::StdMeshers_MEFISTO_2D");
   _name = "MEFISTO_2D";
   _shapeType = (1 << TopAbs_FACE);
   _compatibleHypothesis.push_back("MaxElementArea");
@@ -104,7 +103,6 @@ StdMeshers_MEFISTO_2D::StdMeshers_MEFISTO_2D(int hypId, int studyId, SMESH_Gen *
 
 StdMeshers_MEFISTO_2D::~StdMeshers_MEFISTO_2D()
 {
-  MESSAGE("StdMeshers_MEFISTO_2D::~StdMeshers_MEFISTO_2D");
 }
 
 //=============================================================================
@@ -189,8 +187,6 @@ bool StdMeshers_MEFISTO_2D::CheckHypothesis
 
 bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape)
 {
-  MESSAGE("StdMeshers_MEFISTO_2D::Compute");
-
   TopoDS_Face F = TopoDS::Face(aShape.Oriented(TopAbs_FORWARD));
 
   // helper builds quadratic mesh if necessary
@@ -284,8 +280,6 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
 
     if (ierr == 0)
     {
-      MESSAGE("... End Triangulation Generated Triangle Number " << nbt);
-      MESSAGE("                                    Node Number " << nbst);
       StoreResult(nbst, uvst, nbt, nust, mefistoToDS, scalex, scaley);
       isOk = true;
     }
@@ -313,8 +307,6 @@ bool StdMeshers_MEFISTO_2D::Evaluate(SMESH_Mesh & aMesh,
                                      const TopoDS_Shape & aShape,
                                      MapShapeNbElems& aResMap)
 {
-  MESSAGE("StdMeshers_MEFISTO_2D::Evaluate");
-
   TopoDS_Face F = TopoDS::Face(aShape.Oriented(TopAbs_FORWARD));
 
   double aLen = 0.0;

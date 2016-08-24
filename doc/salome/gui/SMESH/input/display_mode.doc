@@ -2,7 +2,8 @@
 
 \page display_mode_page Display Mode
 
-\n By default your objects are represented as set in \b Preferences.
+\n By default your objects are represented as set in
+\ref mesh_preferences_page "Preferences".
 \n However, right-clicking on the mesh in the <b>Object Browser</b>,
 and selecting <b>Display Mode</b>, you can display your mesh as:
 
