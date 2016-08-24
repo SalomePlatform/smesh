@@ -368,6 +368,7 @@ void SMESHGUI_MinDistance::createPreview( double x1, double y1, double z1, doubl
   myPreview = SALOME_Actor::New();
   myPreview->PickableOff();
   myPreview->SetMapper( aMapper );
+  myPreview->SetResolveCoincidentTopology(true);
   aMapper->Delete();
   vtkProperty* aProp = vtkProperty::New();
   aProp->SetRepresentationToWireframe();
