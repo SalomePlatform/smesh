@@ -273,16 +273,17 @@ void SMESHGUI_Add0DElemsOnAllNodesOp::selectionDone()
   if (!myDlg->myGroupBox->isEnabled())         return; // inactive
 
   myIO.Nullify();
-  myDlg->setObjectText( 0, "");
   updateButtons();
 
   SALOME_ListIO aList;
   selectionMgr()->selectedObjects( aList );
-  if ( aList.Extent() == 1 )
+  if ( aList.Extent() == 1 ) {
     myIO = aList.First();
-  else
+  }
+  else {
+    myDlg->setObjectText( 0, ""); // it clears the selection
     return;
-
+  }
   QString ids;
   switch ( myDlg->getSelectionType() ) {
   case SEL_OBJECT:
