@@ -76,10 +76,6 @@
 \tui_script{modifying_meshes_ex13.py}
 
 <br>
-\section tui_renumbering_nodes_and_elements Renumbering Nodes and Elements
-\tui_script{modifying_meshes_ex14.py}
-
-<br>
 \section tui_moving_nodes Moving Nodes
 \tui_script{modifying_meshes_ex15.py}
 

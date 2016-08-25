@@ -306,6 +306,24 @@ namespace
       }
       deviation2sideInd.insert( make_pair( devia, iS ));
     }
+    double maxDevi = deviation2sideInd.rbegin()->first;
+    if ( maxDevi < 1e-7 && sides.size() == 3 )
+    {
+      // a triangle FACE; use a side with the most outstanding length as an elliptic one
+      deviation2sideInd.clear();
+      multimap< double, int > len2sideInd;
+      for ( size_t iS = 0; iS < sides.size(); ++iS )
+        len2sideInd.insert( make_pair( sides[iS]->Length(), iS ));
+
+      multimap< double, int >::iterator l2i = len2sideInd.begin();
+      double len0 = l2i->first;
+      double len1 = (++l2i)->first;
+      double len2 = (++l2i)->first;
+      if ( len1 - len0 > len2 - len1 )
+        deviation2sideInd.insert( make_pair( 0., len2sideInd.begin()->second ));
+      else
+        deviation2sideInd.insert( make_pair( 0., len2sideInd.rbegin()->second ));
+    }
 
     int iCirc = deviation2sideInd.rbegin()->second; 
     aCircSide = sides[ iCirc ];

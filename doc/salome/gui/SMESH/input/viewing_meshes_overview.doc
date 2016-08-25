@@ -36,9 +36,13 @@ viewer.</li>
 <li>\subpage display_mode_page "Display Mode" - allows to select between
 Wireframe, Shading and Nodes presentation.</li>
 <li>\subpage display_entity_page "Display Entity" - allows to display
-entities by types (Faces, Edges, Volumes etc.).</li>
+  entities by types (Faces, Edges, Volumes etc.).</li>
+\anchor quadratic_2d_mode
 <li><b>2D Quadratic</b> - allows to select between the representation
-of quadratic edges as broken <b>lines</b> or as <b>arcs</b></li>
+  of quadratic edges as broken \b lines or as \b arcs. A default
+  representation can be set in \ref quadratic_2d_mode_pref "Preferences".
+  Arc representation applies to 1D and 2D elements only.
+</li>
 <li><b>Orientation of faces</b> - shows vectors of orientation of
 faces of the selected mesh. The orientation vector is shown for each 2D mesh element 
 and for each free face of a 3D mesh element. the vector direction is calculated by 

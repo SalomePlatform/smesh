@@ -4505,7 +4505,7 @@ class Mesh:
 
     ## Finds groups of ajacent nodes within Tolerance.
     #  @param Tolerance the value of tolerance
-    #  @param SubMeshOrGroup SubMesh or Group
+    #  @param SubMeshOrGroup SubMesh, Group or Filter
     #  @param exceptNodes list of either SubMeshes, Groups or node IDs to exclude from search
     #  @param SeparateCornerAndMediumNodes if @c True, in quadratic mesh puts
     #         corner and medium nodes in separate groups thus preventing

@@ -10,15 +10,15 @@ or in later sessions with this module according to the preferences.
 \image html pref21.png
 
 - <b>Automatic Update</b>
-  - If you toggle <b>Automatic Update</b> checkbox, the model in your
-    viewer will be automatically updated when you make changes in it, depending on
+  - <b>Automatic Update</b> - if activated, the mesh in your
+    viewer will be automatically updated after it's computation, depending on
     values of additional preferences specified below.
   - <b>Size limit (elements)</b> - allows specifying the maximum
     number of elements in the resulting mesh for which the automatic updating
     of the presentation is performed. This option affects only
-    <b>Compute</b> operation. Zero value means "no limit". Default value
-    is 500 000 mesh elements.
-  - <b>Incremental limit check</b> - when this control is switched on,
+    \ref compute_anchor "Compute" operation. Zero value means "no
+    limit". Default value is 500 000 mesh elements. 
+  - <b>Incremental limit check</b> - if activated,
     the mesh size limit check is not applied to the total number of
     elements in the resulting mesh, it is applied iteratively to each entity type
     in the following order: 0D elements, edges, faces, volumes, balls.
@@ -28,32 +28,40 @@ or in later sessions with this module according to the preferences.
     this type are shown, otherwise the user is warned that some entities are not shown.
 
 - <b>Quality Controls</b>
-  - If you toggle <b>Display entity</b>, both faces and edges of an
-    object will be displayed in the viewer by default.
-  - If you toggle <b>Use precision</b> checkbox, you can display numbers in
-    <b>Quality Control</b> diagrams at the necessary level of precision.
-  - <b>Number of digits after point</b> - defines precision for
-    <b>Quality Controls</b>. By default, numbers in <b>Quality Control</b>
-    diagrams are presented as integers.
-  - <b>Double nodes tolerance</b> defines the maximal distance between two
-    mesh nodes, at which they are considered coincident by <b>Double nodes</b>
-    quality control.
+  - <b>Display entity</b> - if activated, only currently
+    \ref quality_page "controlled" entities are displayed in the
+    viewer and other entities are temporarily hidden. For example if you
+    activate \ref length_page "Length" quality control, which controls
+    the length of mesh segments, then only mesh segments are
+    displayed and faces and volumes are hidden. 
+  - <b>Use precision</b> - if activated, all quality controls
+    will be computed at precision defined by <b>Number of digits after
+    point</b> - as integers by default.
+  - <b>Double nodes tolerance</b> - defines the maximal distance between two
+    mesh nodes, at which they are considered coincident by
+    \ref double_nodes_control_page "Double nodes" quality control.
 
 - <b>Display mode</b>
   - <b>Default display mode</b> - allows to set Wireframe, Shading, Nodes or Shrink
-  presentation mode as default.
+    \ref display_mode_page "presentation mode" as default.
 
+\anchor quadratic_2d_mode_pref
 - <b>Representation of the 2D quadratic elements</b>
-  - <b>Default mode of the 2D quadratic elements</b> combo-box - allows
-    to select lines or arcs for representation of quadratic elements as default.
+  - <b>Default mode of the 2D quadratic elements</b> - allows to
+    select either \a Lines or \a Arcs as a default
+    \ref quadratic_2d_mode "representation" of 1D and 2D
+    \ref adding_quadratic_elements_page "quadratic elements".
   - <b>Maximum Angle</b> - maximum deviation angle used by the
     application to build arcs.
 
 - <b>Mesh export</b>
-  - If you toggle <b>Automatically create groups for MED export</b> check-box,
-    this operation will be carried out automatically.
-  - <b>Show warning when exporting group</b> check-box - allows defining the 
-    behavior of the warning when exporting a group.
+\anchor export_auto_groups_pref
+  - <b>Automatically create groups for MED export</b> - defines a
+    default state of a corresponding check-box in \ref export_auto_groups
+    "MED Export" dialog.
+\anchor group_export_warning_pref
+  - <b>Show warning when exporting group</b> - if activated, a warning is
+    displayed when exporting a group.
 
 - <b>Mesh computation</b>
   - <b>Show a computation result notification</b> combo-box allows to

@@ -991,7 +991,9 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
   case FIXED_POINTS_1D:
   {
     const std::vector<double>& aPnts = _fpHyp->GetPoints();
-    const std::vector<int>&   nbsegs = _fpHyp->GetNbSegments();
+    std::vector<int>          nbsegs = _fpHyp->GetNbSegments();
+    if ( theReverse )
+      std::reverse( nbsegs.begin(), nbsegs.end() );
 
     // sort normalized params, taking into account theReverse
     TColStd_SequenceOfReal Params;
@@ -1146,7 +1148,7 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
   {
     list< double > params;
     bool reversed = false;
-    if ( theMesh.GetShapeToMesh().ShapeType() >= TopAbs_WIRE ) {
+    if ( theMesh.GetShapeToMesh().ShapeType() >= TopAbs_WIRE && _revEdgesIDs.empty() ) {
       // if the shape to mesh is WIRE or EDGE
       reversed = ( EE.Orientation() == TopAbs_REVERSED );
     }

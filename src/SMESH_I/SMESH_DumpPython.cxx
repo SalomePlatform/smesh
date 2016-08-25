@@ -53,10 +53,10 @@ namespace SMESH
   size_t TPythonDump::myCounter = 0;
   const char theNotPublishedObjectName[] = "__NOT__Published__Object__";
 
-  TVar::TVar(CORBA::Double value):myVals(1) { myVals[0] = SMESH_Comment(value); }
-  TVar::TVar(CORBA::Long   value):myVals(1) { myVals[0] = SMESH_Comment(value); }
-  TVar::TVar(CORBA::Short  value):myVals(1) { myVals[0] = SMESH_Comment(value); }
-  TVar::TVar(const SMESH::double_array& value):myVals(value.length())
+  TVar::TVar(CORBA::Double value):myVals(1), myIsList(false) { myVals[0] = SMESH_Comment(value); }
+  TVar::TVar(CORBA::Long   value):myVals(1), myIsList(false) { myVals[0] = SMESH_Comment(value); }
+  TVar::TVar(CORBA::Short  value):myVals(1), myIsList(false) { myVals[0] = SMESH_Comment(value); }
+  TVar::TVar(const SMESH::double_array& value):myVals(value.length()), myIsList(true)
   {
     for ( size_t i = 0; i < value.length(); i++)
       myVals[i] = SMESH_Comment(value[i]);
@@ -93,7 +93,7 @@ namespace SMESH
   operator<<(const TVar& theVarValue)
   {
     const std::vector< int >& varIDs = SMESH_Gen_i::GetSMESHGen()->GetLastParamIndices();
-    if ( theVarValue.myVals.size() != 1 )
+    if ( theVarValue.myIsList )
     {
       myStream << "[ ";
       for ( size_t i = 1; i <= theVarValue.myVals.size(); ++i )
