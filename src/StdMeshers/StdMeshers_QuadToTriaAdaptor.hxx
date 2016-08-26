@@ -72,13 +72,14 @@ protected:
                   gp_Pnt& PC, gp_Vec& VNorm,
                   const SMDS_MeshElement** volumes=0);
 
-  void LimitHeight (gp_Pnt&                                  Papex,
+  bool LimitHeight (gp_Pnt&                                  Papex,
                     const gp_Pnt&                            PC,
                     const TColgp_Array1OfPnt&                PN,
                     const std::vector<const SMDS_MeshNode*>& FNodes,
                     SMESH_Mesh&                              aMesh,
                     const SMDS_MeshElement*                  NotCheckedFace,
-                    const bool                               UseApexRay);
+                    const bool                               UseApexRay,
+                    const TopoDS_Shape&                      Shape = TopoDS_Shape());
 
   bool Compute2ndPart(SMESH_Mesh&                                 aMesh,
                       const std::vector<const SMDS_MeshElement*>& pyramids);
