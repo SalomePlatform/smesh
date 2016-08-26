@@ -9,6 +9,10 @@ The type of each new group is defined automatically by the nature of
 the <b>Geometry</b>.
 The group names will be the same as the names of geometrical objects.
 
+\warning It's impossible to create a group of <em>0D elements</em> or <em>ball
+elements</em> with this operation. For this, it is necessary to use 
+\ref creating_groups_page "Create Group" operation. 
+
 To use this operation, select in the \b Mesh menu or in the contextual
 menu in the Object browser <b>Create Groups from Geometry</b> item.
 

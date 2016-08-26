@@ -615,7 +615,7 @@ bool StdMeshers_QuadToTriaAdaptor::LimitHeight (gp_Pnt&                         
         }
       }
     }
-    if ( height < 1e-5 * idealHeight && intFace )
+    if ( height < 1e-2 * idealHeight && intFace )
       return overlapError( aMesh, NotCheckedFace, intFace, Shape );
   }
 
@@ -1208,7 +1208,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
       if ( !intersected[isRev] ) continue;
       double pyramidH = Min( height, dist2int[isRev]/3. );
       gp_Pnt    Papex = PC.XYZ() + tmpDir.XYZ() * (isRev ? -pyramidH : pyramidH);
-      if ( pyramidH < 1e-5 * height )
+      if ( pyramidH < 1e-2 * height )
         return overlapError( aMesh, face, suspectFaces[ intFaceInd[isRev] ] );
 
       if ( !LimitHeight( Papex, PC, PN, FNodes, aMesh, face, /*UseApexRay=*/false ))
