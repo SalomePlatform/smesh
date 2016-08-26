@@ -3352,12 +3352,12 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     for ( ; It.More(); It.Next() )
     {
       Handle(SALOME_InteractiveObject) IOS = It.Value();
-      SMESH::SMESH_Mesh_var aMesh =
-        SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IOS);
+      SMESH::SMESH_Mesh_var aMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IOS);
       if ( aMesh->_is_nil()) continue;
       try {
-        SMESH::RemoveVisualObjectWithActors(IOS->getEntry(), true);
         aMesh->Clear();
+        if ( aMesh->NbNodes() == 0 ) // imported mesh is not empty
+          SMESH::RemoveVisualObjectWithActors(IOS->getEntry(), true);
         _PTR(SObject) aMeshSObj = SMESH::FindSObject(aMesh);
         SMESH::ModifiedMesh( aMeshSObj, false, true);
         // hide groups and submeshes

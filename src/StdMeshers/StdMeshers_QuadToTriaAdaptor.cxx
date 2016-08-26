@@ -33,6 +33,7 @@
 #include "SMESH_Mesh.hxx"
 #include "SMESH_MeshAlgos.hxx"
 #include "SMESH_MesherHelper.hxx"
+#include "SMESH_subMesh.hxx"
 
 #include <IntAna_IntConicQuad.hxx>
 #include <IntAna_Quadric.hxx>
@@ -41,6 +42,7 @@
 #include <TColgp_SequenceOfPnt.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopoDS.hxx>
+#include <TopoDS_Iterator.hxx>
 #include <gp_Lin.hxx>
 #include <gp_Pln.hxx>
 
@@ -257,6 +259,52 @@ namespace
       }
     }
   }
+
+  //================================================================================
+  /*!
+   * \brief Store an error about overlapping faces
+   */
+  //================================================================================
+
+  bool overlapError( SMESH_Mesh&             mesh,
+                     const SMDS_MeshElement* face1,
+                     const SMDS_MeshElement* face2,
+                     const TopoDS_Shape&     shape = TopoDS_Shape())
+  {
+    if ( !face1 || !face2 ) return false;
+
+    SMESH_Comment msg;
+    msg << "face " << face1->GetID() << " overlaps face " << face2->GetID();
+
+    SMESH_subMesh * sm = 0;
+    if ( shape.IsNull() )
+    {
+      sm = mesh.GetSubMesh( mesh.GetShapeToMesh() );
+    }
+    else if ( shape.ShapeType() >= TopAbs_SOLID )
+    {
+      sm = mesh.GetSubMesh( shape );
+    }
+    else
+    {
+      TopoDS_Iterator it ( shape );
+      if ( it.More() )
+        sm = mesh.GetSubMesh( it.Value() );
+    }
+    if ( sm )
+    {
+      SMESH_ComputeErrorPtr& err = sm->GetComputeError();
+      if ( !err || err->IsOK() )
+      {
+        err = SMESH_ComputeError::New( COMPERR_BAD_INPUT_MESH, msg, sm->GetAlgo() );
+        err->myBadElements.push_back( face1 );
+        err->myBadElements.push_back( face2 );
+      }
+    }
+    //throw SALOME_Exception( msg.c_str() );
+
+    return false; // == "algo fails"
+  }
 }
 
 //================================================================================
@@ -402,17 +450,17 @@ static gp_Pnt FindBestPoint(const gp_Pnt& P1, const gp_Pnt& P2,
                             const gp_Pnt& PC, const gp_Vec& V)
 {
   gp_Pnt Pbest = PC;
-  const double a = P1.Distance(P2);
-  const double b = P1.Distance(PC);
-  const double c = P2.Distance(PC);
-  if( a < (b+c)/2 )
+  const double a2 = P1.SquareDistance(P2);
+  const double b2 = P1.SquareDistance(PC);
+  const double c2 = P2.SquareDistance(PC);
+  if ( a2 < ( b2 + Sqrt( 4 * b2 * c2 ) + c2 ) / 4 ) // ( a < (b+c)/2 )
     return Pbest;
   else {
     // find shift along V in order a to became equal to (b+c)/2
     const double Vsize = V.Magnitude();
     if ( fabs( Vsize ) > std::numeric_limits<double>::min() )
     {
-      const double shift = sqrt( a*a + (b*b-c*c)*(b*b-c*c)/16/a/a - (b*b+c*c)/2 );
+      const double shift = sqrt( a2 + (b2-c2)*(b2-c2)/16/a2 - (b2+c2)/2 );
       Pbest.ChangeCoord() += shift * V.XYZ() / Vsize;
     }
   }
@@ -488,15 +536,15 @@ static bool HasIntersection(const gp_Pnt& P, const gp_Pnt& PC, gp_Pnt& Pint,
   }
   else {
     bool check = false;
-    if( (aContour(1).Distance(aContour(2)) > 1.e-6) &&
-        (aContour(1).Distance(aContour(3)) > 1.e-6) &&
-        (aContour(2).Distance(aContour(3)) > 1.e-6) ) {
+    if( (aContour(1).SquareDistance(aContour(2)) > 1.e-12) &&
+        (aContour(1).SquareDistance(aContour(3)) > 1.e-12) &&
+        (aContour(2).SquareDistance(aContour(3)) > 1.e-12) ) {
       check = HasIntersection3( P, PC, Pint, aContour(1), aContour(2), aContour(3) );
     }
     if(check) return true;
-    if( (aContour(1).Distance(aContour(4)) > 1.e-6) &&
-        (aContour(1).Distance(aContour(3)) > 1.e-6) &&
-        (aContour(4).Distance(aContour(3)) > 1.e-6) ) {
+    if( (aContour(1).SquareDistance(aContour(4)) > 1.e-12) &&
+        (aContour(1).SquareDistance(aContour(3)) > 1.e-12) &&
+        (aContour(4).SquareDistance(aContour(3)) > 1.e-12) ) {
       check = HasIntersection3( P, PC, Pint, aContour(1), aContour(3), aContour(4) );
     }
     if(check) return true;
@@ -513,17 +561,19 @@ static bool HasIntersection(const gp_Pnt& P, const gp_Pnt& PC, gp_Pnt& Pint,
  *  \param PN - four nodes of the quadrangle
  *  \param aMesh - mesh
  *  \param NotCheckedFace - the quadrangle face
- *  \retval double - pyramid height
+ *  \param Shape - the shape being meshed
+ *  \retval false if mesh invalidity detected
  */
 //================================================================================
 
-void StdMeshers_QuadToTriaAdaptor::LimitHeight (gp_Pnt&                             Papex,
+bool StdMeshers_QuadToTriaAdaptor::LimitHeight (gp_Pnt&                             Papex,
                                                 const gp_Pnt&                       PC,
                                                 const TColgp_Array1OfPnt&           PN,
                                                 const vector<const SMDS_MeshNode*>& FNodes,
                                                 SMESH_Mesh&                         aMesh,
                                                 const SMDS_MeshElement*             NotCheckedFace,
-                                                const bool                          UseApexRay)
+                                                const bool                          UseApexRay,
+                                                const TopoDS_Shape&                 Shape)
 {
   if ( !myElemSearcher )
     myElemSearcher = SMESH_MeshAlgos::GetElementSearcher( *aMesh.GetMeshDS() );
@@ -539,6 +589,9 @@ void StdMeshers_QuadToTriaAdaptor::LimitHeight (gp_Pnt&                         
 
   if ( UseApexRay )
   {
+    double idealHeight = height;
+    const SMDS_MeshElement* intFace = 0;
+
     // find intersection closest to PC
     Ptest = PC.XYZ() + line.Direction().XYZ() * height * 3;
 
@@ -554,10 +607,16 @@ void StdMeshers_QuadToTriaAdaptor::LimitHeight (gp_Pnt&                         
 
       if ( HasIntersection( Ptest, PC, Pint, aContour ))
       {
-        double dInt = PC.Distance( Pint );
-        height = Min( height, dInt / 3. );
+        double dInt = PC.Distance( Pint ) / 3.;
+        if ( dInt < height )
+        {
+          height = dInt;
+          intFace = face;
+        }
       }
     }
+    if ( height < 1e-5 * idealHeight && intFace )
+      return overlapError( aMesh, NotCheckedFace, intFace, Shape );
   }
 
   // Find faces intersecting triangular facets of the pyramid (issue 23212)
@@ -600,6 +659,8 @@ void StdMeshers_QuadToTriaAdaptor::LimitHeight (gp_Pnt&                         
   }
 
   Papex  = PC.XYZ() + line.Direction().XYZ() * height;
+
+  return true;
 }
 
 //================================================================================
@@ -851,7 +912,8 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh&         aMesh,
             }
             else {
               // check possible intersection with other faces
-              LimitHeight( PCbest, PC, PN, FNodes, aMesh, face, /*UseApexRay=*/true );
+              if ( !LimitHeight( PCbest, PC, PN, FNodes, aMesh, face, /*UseApexRay=*/true, aShape ))
+                return false;
             }
             // create node for PCbest
             SMDS_MeshNode* NewNode = helper.AddNode( PCbest.X(), PCbest.Y(), PCbest.Z() );
@@ -926,30 +988,29 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
   SMESHDS_GroupBase* groupDS = 0;
   SMESH_Mesh::GroupIteratorPtr groupIt = aMesh.GetGroups();
   while ( groupIt->more() )
+  {
+    groupDS = 0;
+    SMESH_Group * group = groupIt->next();
+    if ( !group ) continue;
+    groupDS = group->GetGroupDS();
+    if ( !groupDS || groupDS->IsEmpty() )
     {
       groupDS = 0;
-      SMESH_Group * group = groupIt->next();
-      if ( !group ) continue;
-      groupDS = group->GetGroupDS();
-      if ( !groupDS || groupDS->IsEmpty() )
-      {
-        groupDS = 0;
-        continue;
-      }
-      if (groupDS->GetType() != SMDSAbs_Face)
-      {
-        groupDS = 0;
-        continue;
-      }
-      std::string grpName = group->GetName();
-      if (grpName == groupName)
-      {
-        MESSAGE("group skinFaces provided");
-        break;
-      }
-      else
-        groupDS = 0;
+      continue;
     }
+    if (groupDS->GetType() != SMDSAbs_Face)
+    {
+      groupDS = 0;
+      continue;
+    }
+    std::string grpName = group->GetName();
+    if (grpName == groupName)
+    {
+      break;
+    }
+    else
+      groupDS = 0;
+  }
 
   vector<const SMDS_MeshElement*> myPyramids;
   SMESH_MesherHelper helper(aMesh);
@@ -1089,8 +1150,9 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
                          PC.XYZ() - tmpDir.XYZ() * tmp * 1.e6 };
     // check intersection for farPnt1 and farPnt2
     bool   intersected[2] = { false, false };
-    double dist       [2] = { RealLast(), RealLast() };
-    gp_Pnt intPnt[2];
+    double dist2int   [2] = { RealLast(), RealLast() };
+    gp_Pnt intPnt     [2];
+    int    intFaceInd [2] = { 0, 0 };
 
     gp_Ax1 line( PC, tmpDir );
     vector< const SMDS_MeshElement* > suspectFaces;
@@ -1107,31 +1169,33 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
       gp_Pnt intP;
       for ( int isRev = 0; isRev < 2; ++isRev )
       {
-        if( !volumes[isRev] && HasIntersection(farPnt[isRev], PC, intP, aContour) ) {
-          intersected[isRev] = true;
+        if( !volumes[isRev] && HasIntersection(farPnt[isRev], PC, intP, aContour) )
+        {
           double d = PC.Distance( intP );
-          if( d < dist[isRev] )
+          if ( d < dist2int[isRev] )
           {
-            intPnt[isRev] = intP;
-            dist  [isRev] = d;
+            intersected[isRev] = true;
+            intPnt     [isRev] = intP;
+            dist2int   [isRev] = d;
+            intFaceInd [isRev] = iF;
           }
         }
       }
     }
 
     // if the face belong to the group of skinFaces, do not build a pyramid outside
-    if (groupDS && groupDS->Contains(face))
+    if ( groupDS && groupDS->Contains(face) )
     {
       intersected[0] = false;
     }
     else if ( intersected[0] && intersected[1] ) // check if one of pyramids is in a hole
     {
-      gp_Pnt P ( PC.XYZ() + tmpDir.XYZ() * 0.5 * PC.Distance( intPnt[0] ));
+      gp_Pnt P ( PC.XYZ() + tmpDir.XYZ() * 0.5 * dist2int[0] );
       if ( searcher->GetPointState( P ) == TopAbs_OUT )
         intersected[0] = false;
       else
       {
-        P = ( PC.XYZ() - tmpDir.XYZ() * 0.5 * PC.Distance( intPnt[1] ));
+        P = ( PC.XYZ() - tmpDir.XYZ() * 0.5 * dist2int[1] );
         if ( searcher->GetPointState( P ) == TopAbs_OUT )
           intersected[1] = false;
       }
@@ -1141,11 +1205,14 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
 
     for ( int isRev = 0; isRev < 2; ++isRev )
     {
-      if( !intersected[isRev] ) continue;
-      double pyramidH = Min( height, PC.Distance(intPnt[isRev])/3.);
-      gp_Pnt Papex = PC.XYZ() + tmpDir.XYZ() * (isRev ? -pyramidH : pyramidH);
+      if ( !intersected[isRev] ) continue;
+      double pyramidH = Min( height, dist2int[isRev]/3. );
+      gp_Pnt    Papex = PC.XYZ() + tmpDir.XYZ() * (isRev ? -pyramidH : pyramidH);
+      if ( pyramidH < 1e-5 * height )
+        return overlapError( aMesh, face, suspectFaces[ intFaceInd[isRev] ] );
 
-      LimitHeight( Papex, PC, PN, FNodes, aMesh, face, /*UseApexRay=*/false );
+      if ( !LimitHeight( Papex, PC, PN, FNodes, aMesh, face, /*UseApexRay=*/false ))
+        return false;
 
       // create node for Papex
       SMDS_MeshNode* NewNode = helper.AddNode( Papex.X(), Papex.Y(), Papex.Z() );
