@@ -56,19 +56,19 @@ namespace SMESHUtils
   };
 
   // Functions to get sample point from shapes
-  void createControlPoints( const TopoDS_Shape&        theShape, 
+  SMESHUtils_EXPORT void createControlPoints( const TopoDS_Shape&        theShape, 
                             const double&              theSize, 
                             std::vector< ControlPnt >& thePoints );
 
-  void createPointsSampleFromEdge( const TopoDS_Edge&       theEdge, 
+  SMESHUtils_EXPORT void createPointsSampleFromEdge( const TopoDS_Edge&       theEdge, 
                                    const double&            theSize, 
                                    std::vector<ControlPnt>& thePoints );
 
-  void createPointsSampleFromFace( const TopoDS_Face&       theFace, 
+  SMESHUtils_EXPORT void createPointsSampleFromFace( const TopoDS_Face&       theFace, 
                                    const double&            theSize, 
                                    std::vector<ControlPnt>& thePoints );
 
-  void createPointsSampleFromSolid( const TopoDS_Solid&      theSolid, 
+  SMESHUtils_EXPORT void createPointsSampleFromSolid( const TopoDS_Solid&      theSolid, 
                                     const double&            theSize, 
                                     std::vector<ControlPnt>& thePoints );
 
