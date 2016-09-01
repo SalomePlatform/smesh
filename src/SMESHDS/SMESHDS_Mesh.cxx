@@ -1398,11 +1398,7 @@ int SMESHDS_Mesh::MaxSubMeshIndex() const
 //=======================================================================
 int SMESHDS_Mesh::ShapeToIndex(const TopoDS_Shape & S) const
 {
-  if (myShape.IsNull())
-    MESSAGE("myShape is NULL");
-
   int index = myIndexToShape.FindIndex(S);
-  
   return index;
 }
 

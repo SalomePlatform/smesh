@@ -162,6 +162,12 @@ namespace {
     {
       return _src2tgtNodes;
     }
+    void SetEventListener( SMESH_subMesh* tgtSubMesh )
+    {
+      NSProjUtils::SetEventListener( tgtSubMesh,
+                                     _sourceHypo->GetSourceFace(),
+                                     _sourceHypo->GetSourceMesh() );
+    }
   };
   //=======================================================================
   /*!
@@ -2265,28 +2271,38 @@ bool StdMeshers_Prism_3D::projectBottomToTop( const gp_Trsf &             bottom
     Handle(Geom_Surface) surface = BRep_Tool::Surface( topFace, loc );
     bool isPlanar = GeomLib_IsPlanarSurface( surface ).IsPlanar();
 
-    bool isFixed = false;
     set<const SMDS_MeshNode*> fixedNodes;
-    for ( int iAttemp = 0; !isFixed && iAttemp < 10; ++iAttemp )
+    TIDSortedElemSet faces;
+    for ( faceIt = topSMDS->GetElements(); faceIt->more(); )
+      faces.insert( faces.end(), faceIt->next() );
+
+    bool isOk = false;
+    for ( int isCentroidal = 0; isCentroidal < 2; ++isCentroidal )
     {
-      TIDSortedElemSet faces;
-      for ( faceIt = topSMDS->GetElements(); faceIt->more(); )
-        faces.insert( faces.end(), faceIt->next() );
-
       SMESH_MeshEditor::SmoothMethod algo =
-        iAttemp ? SMESH_MeshEditor::CENTROIDAL : SMESH_MeshEditor::LAPLACIAN;
+        isCentroidal ? SMESH_MeshEditor::CENTROIDAL : SMESH_MeshEditor::LAPLACIAN;
 
-      // smoothing
-      editor.Smooth( faces, fixedNodes, algo, /*nbIterations=*/ 10,
-                     /*theTgtAspectRatio=*/1.0, /*the2D=*/!isPlanar);
+      int nbAttempts = isCentroidal ? 1 : 10;
+      for ( int iAttemp = 0; iAttemp < nbAttempts; ++iAttemp )
+      {
+        TIDSortedElemSet workFaces = faces;
 
-      isFixed = !topHelper.IsDistorted2D( topSM, /*checkUV=*/true );
+        // smoothing
+        editor.Smooth( workFaces, fixedNodes, algo, /*nbIterations=*/ 10,
+                       /*theTgtAspectRatio=*/1.0, /*the2D=*/!isPlanar);
+
+        if (( isOk = !topHelper.IsDistorted2D( topSM, /*checkUV=*/true )) &&
+            ( !isCentroidal ))
+          break;
+      }
     }
-    if ( !isFixed )
+    if ( !isOk )
       return toSM( error( TCom("Projection from face #") << botSM->GetId()
                           << " to face #" << topSM->GetId()
                           << " failed: inverted elements created"));
   }
+
+  TProjction2dAlgo::instance( this )->SetEventListener( topSM );
 
   return true;
 }
@@ -2425,6 +2441,8 @@ bool StdMeshers_Prism_3D::project2dMesh(const TopoDS_Face& theSrcFace,
   }
   tgtSM->ComputeStateEngine       ( SMESH_subMesh::CHECK_COMPUTE_STATE );
   tgtSM->ComputeSubMeshStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+
+  projector2D->SetEventListener( tgtSM );
 
   return ok;
 }

@@ -975,6 +975,7 @@ namespace
       aSel->selectedObjects( selected );
 
     if ( selected.Extent() >= 1 ) {
+      SUIT_OverrideCursor wc;
       SALOME_ListIteratorOfListIO It( selected );
       for( ; It.More(); It.Next()){
         Handle(SALOME_InteractiveObject) IObject = It.Value();
@@ -1595,6 +1596,7 @@ namespace
         return;
       } // case SMESHOp::OpProperties:
       } // switch(theCommandID)
+      SUIT_OverrideCursor wc;
       SALOME_ListIteratorOfListIO It( selected );
       for( ; It.More(); It.Next()){
         Handle(SALOME_InteractiveObject) IObject = It.Value();
@@ -2599,6 +2601,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
   case SMESHOp::OpOrientationOnFaces:
     {
+      SUIT_OverrideCursor wc;
       LightApp_SelectionMgr* mgr = selectionMgr();
       SALOME_ListIO selected; mgr->selectedObjects( selected );
 

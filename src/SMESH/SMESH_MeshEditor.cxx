@@ -3994,11 +3994,11 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
       fToler2 = BRep_Tool::Tolerance( face );
       fToler2 *= fToler2 * 10.;
       isUPeriodic = surface->IsUPeriodic();
-      if ( isUPeriodic )
-        surface->UPeriod();
+      // if ( isUPeriodic )
+      //   surface->UPeriod();
       isVPeriodic = surface->IsVPeriodic();
-      if ( isVPeriodic )
-        surface->VPeriod();
+      // if ( isVPeriodic )
+      //   surface->VPeriod();
       surface->Bounds( u1, u2, v1, v2 );
       helper.SetSubShape( face );
     }
@@ -4057,9 +4057,9 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
         {
           // check if all faces around the node are on faceSubMesh
           // because a node on edge may be bound to face
-          SMDS_ElemIteratorPtr eIt = node->GetInverseElementIterator(SMDSAbs_Face);
           bool all = true;
           if ( faceSubMesh ) {
+            SMDS_ElemIteratorPtr eIt = node->GetInverseElementIterator(SMDSAbs_Face);
             while ( eIt->more() && all ) {
               const SMDS_MeshElement* e = eIt->next();
               all = faceSubMesh->Contains( e );

@@ -280,6 +280,7 @@ void SMESH_VisualObjDef::buildPrs(bool buildGrid)
     myLocalGrid = false;
     if (!GetMesh()->isCompacted())
     {
+      NulData(); // detach from the SMDS grid to allow immediate memory de-allocation in compactMesh()
       if ( MYDEBUG ) MESSAGE("*** buildPrs ==> compactMesh!");
       GetMesh()->compactMesh();
     }
@@ -570,6 +571,7 @@ vtkUnstructuredGrid* SMESH_VisualObjDef::GetUnstructuredGrid()
 {
   if ( !myLocalGrid && !GetMesh()->isCompacted() )
   {
+    NulData(); // detach from the SMDS grid to allow immediate memory de-allocation in compactMesh()
     GetMesh()->compactMesh();
     updateEntitiesFlags();
     vtkUnstructuredGrid *theGrid = GetMesh()->getGrid();
