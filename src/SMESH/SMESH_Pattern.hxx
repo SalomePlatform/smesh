@@ -71,13 +71,15 @@ class SMESH_EXPORT SMESH_Pattern {
   bool Load (SMESH_Mesh*        theMesh,
              const TopoDS_Face& theFace,
              bool               theProject = false,
-             TopoDS_Vertex      the1stVertex=TopoDS_Vertex());
+             TopoDS_Vertex      the1stVertex=TopoDS_Vertex(),
+             bool               theKeepNodes = false );
   // Create a pattern from the mesh built on <theFace>.
   // <theProject>==true makes override nodes positions
   // on <theFace> computed by mesher
 
   bool Load (SMESH_Mesh*         theMesh,
-             const TopoDS_Shell& theBlock);
+             const TopoDS_Shell& theBlock,
+             bool                theKeepNodes = false);
   // Create a pattern from the mesh built on <theBlock>
 
   bool Save (std::ostream& theFile);
@@ -215,6 +217,11 @@ class SMESH_EXPORT SMESH_Pattern {
   const std::list< std::list< int > >& GetElementPointIDs (bool applied) const
   { return myElemXYZIDs.empty() || !applied ? myElemPointIDs : myElemXYZIDs; }
   // Return nodal connectivity of the elements of the pattern
+
+  void GetInOutNodes( std::vector< const SMDS_MeshNode* > *& inNodes,
+                      std::vector< const SMDS_MeshNode* > *& outNodes )
+  { inNodes = & myInNodes; outNodes = & myOutNodes; }
+  // Return loaded and just created nodes
 
   void DumpPoints() const;
   // Debug
@@ -368,7 +375,11 @@ private:
   // nb of key-points in each of pattern boundaries
   std::list< int >                     myNbKeyPntInBoundary;
 
-  
+  // nodes corresponding to myPoints
+  bool                                 myToKeepNodes; // to keep these data
+  std::vector< const SMDS_MeshNode* >  myInNodes;     // loaded nodes
+  std::vector< const SMDS_MeshNode* >  myOutNodes;    // created nodes
+
   // to compute while applying to mesh elements, not to shapes
 
   std::vector<gp_XYZ>                  myXYZ;            // XYZ of nodes to create
@@ -377,7 +388,7 @@ private:
   std::vector<const SMDS_MeshElement*> myElements;       // refined elements
   std::vector<const SMDS_MeshNode*>    myOrderedNodes;
 
-   // elements to replace with polygon or polyhedron
+  // elements to replace with polygon or polyhedron
   std::vector<const SMDS_MeshElement*> myPolyElems;
   // definitions of new poly elements
   std::list< TElemDef >                myPolyElemXYZIDs;

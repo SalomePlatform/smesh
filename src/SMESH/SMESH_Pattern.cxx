@@ -256,7 +256,7 @@ int loadVE( const list< TopoDS_Edge > &          eList,
 //purpose  :
 //=======================================================================
 
-SMESH_Pattern::SMESH_Pattern ()
+SMESH_Pattern::SMESH_Pattern (): myToKeepNodes(false)
 {
 }
 
@@ -565,11 +565,13 @@ static bool isMeshBoundToShape(SMESHDS_Mesh *     aMeshDS,
 bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
                           const TopoDS_Face& theFace,
                           bool               theProject,
-                          TopoDS_Vertex      the1stVertex)
+                          TopoDS_Vertex      the1stVertex,
+                          bool               theKeepNodes)
 {
   MESSAGE(" ::Load(face) " );
   Clear();
   myIs2D = true;
+  myToKeepNodes = theKeepNodes;
 
   SMESHDS_Mesh * aMeshDS = theMesh->GetMeshDS();
   SMESHDS_SubMesh * fSubMesh = aMeshDS->MeshElements( theFace );
@@ -964,6 +966,19 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
     myPoints.resize( nodePointIDMap.size() + closeNodePointIDMap.size() );
 
     myIsBoundaryPointsFound = true;
+  }
+
+  if ( myToKeepNodes )
+  {
+    myInNodes.resize( nodePointIDMap.size() + closeNodePointIDMap.size() );
+
+    TNodePointIDMap::iterator nIdIt = nodePointIDMap.begin();
+    for ( ; nIdIt != nodePointIDMap.end(); nIdIt++ )
+      myInNodes[ nIdIt->second ] = smdsNode( nIdIt->first );
+
+    nIdIt = closeNodePointIDMap.begin();
+    for ( ; nIdIt != closeNodePointIDMap.end(); nIdIt++ )
+      myInNodes[ nIdIt->second ] = smdsNode( nIdIt->first );
   }
 
   // Assure that U range is proportional to V range
@@ -3181,11 +3196,13 @@ bool SMESH_Pattern::Apply (std::set<const SMDS_MeshVolume*> & theVolumes,
 //=======================================================================
 
 bool SMESH_Pattern::Load (SMESH_Mesh*         theMesh,
-                          const TopoDS_Shell& theBlock)
+                          const TopoDS_Shell& theBlock,
+                          bool                theKeepNodes)
 {
   MESSAGE(" ::Load(volume) " );
   Clear();
   myIs2D = false;
+  myToKeepNodes = theKeepNodes;
   SMESHDS_SubMesh * aSubMesh;
 
   const bool isQuadMesh = theMesh->NbVolumes( ORDER_QUADRATIC );
@@ -3219,7 +3236,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*         theMesh,
     SMDS_NodeIteratorPtr nIt = aSubMesh->GetNodes();
     if ( !nIt->more() ) continue;
 
-      // store a node and a point
+    // store a node and a point
     while ( nIt->more() ) {
       const SMDS_MeshNode* node = smdsNode( nIt->next() );
       if ( isQuadMesh && SMESH_MeshEditor::IsMedium( node, SMDSAbs_Volume ))
@@ -3296,6 +3313,14 @@ bool SMESH_Pattern::Load (SMESH_Mesh*         theMesh,
   }
 
   myIsBoundaryPointsFound = true;
+
+  if ( myToKeepNodes )
+  {
+    myInNodes.resize( nodePointIDMap.size() );
+    TNodePointIDMap::iterator nIdIt = nodePointIDMap.begin();
+    for ( ; nIdIt != nodePointIDMap.end(); nIdIt++ )
+      myInNodes[ nIdIt->second ] = smdsNode( nIdIt->first );
+  }
 
   return setErrorCode( ERR_OK );
 }
@@ -4143,6 +4168,9 @@ bool SMESH_Pattern::MakeMesh(SMESH_Mesh* theMesh,
   }
 
   aMeshDS->compactMesh();
+
+  if ( myToKeepNodes )
+    myOutNodes.swap( nodesVector );
 
 //   const map<int,SMESHDS_SubMesh*>& sm = aMeshDS->SubMeshes();
 //   map<int,SMESHDS_SubMesh*>::const_iterator i_sm = sm.begin();

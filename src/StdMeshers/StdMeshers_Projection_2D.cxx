@@ -41,14 +41,16 @@
 #include "SMESH_Comment.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh.hxx"
+#include "SMESH_MeshAlgos.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_Pattern.hxx"
 #include "SMESH_subMesh.hxx"
 #include "SMESH_subMeshEventListener.hxx"
 
-#include "utilities.h"
+#include <utilities.h>
 
 #include <BRepAdaptor_Surface.hxx>
+#include <BRepMesh_Delaun.hxx>
 #include <BRep_Tool.hxx>
 #include <Bnd_B2d.hxx>
 #include <GeomAPI_ProjectPointOnSurf.hxx>
@@ -260,7 +262,7 @@ namespace {
   //================================================================================
   /*!
    * \brief find new nodes belonging to one free border of mesh on face
-    * \param sm - submesh on edge or vertex containg nodes to choose from
+    * \param sm - submesh on edge or vertex containing nodes to choose from
     * \param face - the face bound by the submesh
     * \param u2nodes - map to fill with nodes
     * \param seamNodes - set of found nodes
@@ -1102,7 +1104,7 @@ namespace {
   {
     SMESH_subMesh* faceSM = helper.GetMesh()->GetSubMesh( helper.GetSubShape() );
 
-    if ( helper.IsDistorted2D( faceSM, /*checkUV=*/false ))
+    if ( helper.IsDistorted2D( faceSM, /*checkUV=*/true ))
     {
       SMESH_MeshEditor editor( helper.GetMesh() );
       SMESHDS_SubMesh* smDS = faceSM->GetSubMeshDS();
@@ -1145,6 +1147,239 @@ namespace {
 
       return !helper.IsDistorted2D( faceSM, /*checkUV=*/true );
     }
+    return true;
+  }
+
+  typedef list< pair< const SMDS_MeshNode*, const BRepMesh_Triangle* > > TNodeTriaList;
+
+  //================================================================================
+  /*!
+   * \brief Add in-FACE nodes surrounding a given node to a queue
+   */
+  //================================================================================
+
+  void addCloseNodes( const SMDS_MeshNode*     srcNode,
+                      const BRepMesh_Triangle* bmTria,
+                      const int                srcFaceID,
+                      TNodeTriaList &          noTriQueue )
+  {
+    // find in-FACE nodes
+    SMDS_ElemIteratorPtr elems = srcNode->GetInverseElementIterator(SMDSAbs_Face);
+    while ( elems->more() )
+    {
+      const SMDS_MeshElement* elem = elems->next();
+      if ( elem->getshapeId() == srcFaceID )
+      {
+        for ( int i = 0, nb = elem->NbNodes(); i < nb; ++i )
+        {
+          const SMDS_MeshNode* n = elem->GetNode( i );
+          if ( !n->isMarked() )
+            noTriQueue.push_back( make_pair( n, bmTria ));
+        }
+      }
+    }
+  }
+
+  //================================================================================
+  /*!
+   * \brief Find a delauney triangle containing a given 2D point and return
+   *        barycentric coordinates within the found triangle
+   */
+  //================================================================================
+
+  const BRepMesh_Triangle* findTriangle( const gp_XY&                            uv,
+                                         const BRepMesh_Triangle*                bmTria,
+                                         Handle(BRepMesh_DataStructureOfDelaun)& triaDS,
+                                         double                                  bc[3] )
+  {
+    int   nodeIDs[3];
+    gp_XY nodeUVs[3];
+    int   linkIDs[3];
+    Standard_Boolean ori[3];
+
+    while ( bmTria )
+    {
+      // check bmTria
+
+      triaDS->ElementNodes( *bmTria, nodeIDs );
+      nodeUVs[0] = triaDS->GetNode( nodeIDs[0] ).Coord();
+      nodeUVs[1] = triaDS->GetNode( nodeIDs[1] ).Coord();
+      nodeUVs[2] = triaDS->GetNode( nodeIDs[2] ).Coord();
+
+      SMESH_MeshAlgos::GetBarycentricCoords( uv,
+                                             nodeUVs[0], nodeUVs[1], nodeUVs[2],
+                                             bc[0], bc[1] );
+      if ( bc[0] >= 0 && bc[1] >= 0 && bc[0] + bc[1] <= 1 )
+      {
+        bc[2] = 1 - bc[0] - bc[1];
+        return bmTria;
+      }
+
+      // look for a neighbor triangle, which is adjacent to a link intersected
+      // by a segment( triangle center -> uv )
+
+      gp_XY gc = ( nodeUVs[0] + nodeUVs[1] + nodeUVs[2] ) / 3.;
+      gp_XY seg = uv - gc;
+
+      bmTria->Edges( linkIDs, ori );
+      int triaID = triaDS->IndexOf( *bmTria );
+      bmTria = 0;
+
+      for ( int i = 0; i < 3; ++i )
+      {
+        const BRepMesh_PairOfIndex & triIDs = triaDS->ElementsConnectedTo( linkIDs[i] );
+        if ( triIDs.Extent() < 2 )
+          continue; // no neighbor triangle
+
+        // check if a link intersects gc2uv
+        const BRepMesh_Edge & link = triaDS->GetLink( linkIDs[i] );
+        const BRepMesh_Vertex & n1 = triaDS->GetNode( link.FirstNode() );
+        const BRepMesh_Vertex & n2 = triaDS->GetNode( link.LastNode() );
+        gp_XY uv1 = n1.Coord();
+        gp_XY lin = n2.Coord() - uv1; // link direction
+
+        double crossSegLin = seg ^ lin;
+        if ( Abs( crossSegLin ) < std::numeric_limits<double>::min() )
+          continue; // parallel
+
+        double uSeg = ( uv1 - gc ) ^ lin / crossSegLin;
+        if ( 0. <= uSeg && uSeg <= 1. )
+        {
+          bmTria = & triaDS->GetElement( triIDs.Index( 1 + ( triIDs.Index(1) == triaID )));
+          break;
+        }
+      }
+    }
+    return bmTria;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Morph mesh on the target face to lie within FACE boundary w/o distortion
+   *
+   * algo:
+   * - make a CDT on the src FACE
+   * - find a triangle containing a src node and get its barycentric coordinates
+   * - move the node to a point with the same barycentric coordinates in a corresponding
+   *   tgt triangle
+   */
+  //================================================================================
+
+  bool morph( SMESH_MesherHelper&             tgtHelper,
+              const TopoDS_Face&              tgtFace,
+              const TopoDS_Face&              srcFace,
+              const TSideVector&              tgtWires,
+              const TSideVector&              srcWires,
+              const TAssocTool::TNodeNodeMap& src2tgtNodes )
+  {
+    if ( srcWires.size() != tgtWires.size() ) return false;
+
+    // count boundary points
+    int iP = 1, nbP = 0;
+    for ( size_t iW = 0; iW < srcWires.size(); ++iW )
+      nbP += srcWires[iW]->NbPoints() - 1; // 1st and last points coincide
+
+    // fill boundary points
+    BRepMesh::Array1OfVertexOfDelaun srcVert( 1, 1 + nbP ), tgtVert( 1, 1 + nbP );
+    vector< const SMDS_MeshNode* > bndSrcNodes( nbP + 1 ); bndSrcNodes[0] = 0;
+    BRepMesh_Vertex v( 0, 0, BRepMesh_Frontier );
+    for ( size_t iW = 0; iW < srcWires.size(); ++iW )
+    {
+      const UVPtStructVec& srcPnt = srcWires[iW]->GetUVPtStruct();
+      const UVPtStructVec& tgtPnt = tgtWires[iW]->GetUVPtStruct();
+      if ( srcPnt.size() != tgtPnt.size() ) return false;
+
+      for ( int i = 0, nb = srcPnt.size() - 1;  i < nb;  ++i, ++iP )
+      {
+        bndSrcNodes[ iP ]  = srcPnt[i].node;
+        srcPnt[i].node->setIsMarked( true );
+
+        v.ChangeCoord() = srcPnt[i].UV();
+        srcVert( iP )   = v;
+        v.ChangeCoord() = tgtPnt[i].UV();
+        tgtVert( iP )   = v;
+      }
+    }
+    // triangulate the srcFace in 2D
+    BRepMesh_Delaun delauney( srcVert );
+    Handle(BRepMesh_DataStructureOfDelaun) triaDS = delauney.Result();
+
+    Handle(ShapeAnalysis_Surface) tgtSurface = tgtHelper.GetSurface( tgtFace );
+    SMESHDS_Mesh* srcMesh = srcWires[0]->GetMesh()->GetMeshDS();
+    SMESHDS_Mesh* tgtMesh = tgtHelper.GetMeshDS();
+    const SMDS_MeshNode *srcNode, *tgtNode;
+    const BRepMesh_Triangle *bmTria;
+
+    // un-mark internal src nodes; later we will mark moved nodes
+    SMDS_NodeIteratorPtr nIt = srcMesh->MeshElements( srcFace )->GetNodes();
+    if ( !nIt || !nIt->more() ) return true;
+    while ( nIt->more() )
+      ( srcNode = nIt->next() )->setIsMarked( false );
+
+    // initialize a queue of nodes with starting triangles
+    const int srcFaceID = srcNode->getshapeId();
+    TNodeTriaList noTriQueue;
+    size_t iBndSrcN = 1;
+    for ( ; iBndSrcN < bndSrcNodes.size() &&  noTriQueue.empty();  ++iBndSrcN )
+    {
+      // get a triangle
+      const BRepMesh::ListOfInteger & linkIds = triaDS->LinksConnectedTo( iBndSrcN );
+      const BRepMesh_PairOfIndex &    triaIds = triaDS->ElementsConnectedTo( linkIds.First() );
+      const BRepMesh_Triangle&           tria = triaDS->GetElement( triaIds.Index(1) );
+
+      addCloseNodes( bndSrcNodes[ iBndSrcN ], &tria, srcFaceID, noTriQueue );
+    }
+
+    // Move tgt nodes
+
+    double bc[3]; // barycentric coordinates
+    int    nodeIDs[3];
+    bool   checkUV = true;
+    const SMDS_FacePosition* pos;
+
+    while ( !noTriQueue.empty() )
+    {
+      srcNode = noTriQueue.front().first;
+      bmTria  = noTriQueue.front().second;
+      noTriQueue.pop_front();
+      if ( srcNode->isMarked() )
+        continue;
+      srcNode->setIsMarked( true );
+
+      // find a delauney triangle containing the src node
+      gp_XY uv = tgtHelper.GetNodeUV( srcFace, srcNode, NULL, &checkUV );
+      bmTria = findTriangle( uv, bmTria, triaDS, bc );
+      if ( !bmTria )
+        continue;
+
+      // compute new coordinates for a corresponding tgt node
+      gp_XY uvNew( 0., 0. ), nodeUV;
+      triaDS->ElementNodes( *bmTria, nodeIDs );
+      for ( int i = 0; i < 3; ++i )
+        uvNew += bc[i] * tgtVert( nodeIDs[i]).Coord();
+      gp_Pnt xyz = tgtSurface->Value( uvNew );
+
+      // find and move tgt node
+      TAssocTool::TNodeNodeMap::const_iterator n2n = src2tgtNodes.find( srcNode );
+      if ( n2n == src2tgtNodes.end() ) continue;
+      tgtNode = n2n->second;
+      tgtMesh->MoveNode( tgtNode, xyz.X(), xyz.Y(), xyz.Z() );
+
+      if (( pos = dynamic_cast< const SMDS_FacePosition* >( tgtNode->GetPosition() )))
+        const_cast<SMDS_FacePosition*>( pos )->SetParameters( uvNew.X(), uvNew.Y() );
+
+      addCloseNodes( srcNode, bmTria, srcFaceID, noTriQueue );
+
+      // assure that all src nodes are visited
+      for ( ; iBndSrcN < bndSrcNodes.size() &&  noTriQueue.empty();  ++iBndSrcN )
+      {
+        const BRepMesh::ListOfInteger & linkIds = triaDS->LinksConnectedTo( iBndSrcN );
+        const BRepMesh_PairOfIndex &    triaIds = triaDS->ElementsConnectedTo( linkIds.First() );
+        const BRepMesh_Triangle&           tria = triaDS->GetElement( triaIds.Index(1) );
+        addCloseNodes( bndSrcNodes[ iBndSrcN ], &tria, srcFaceID, noTriQueue );
+      }
+    }
+
     return true;
   }
 
@@ -1246,23 +1481,6 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   }
   TopoDS_Face srcFace = TopoDS::Face( shape2ShapeMap( tgtFace ).Oriented(TopAbs_FORWARD));
 
-  // orient faces
-  // if ( srcMesh == tgtMesh )
-  // {
-  //   TopoDS_Shape solid =
-  //     helper.GetCommonAncestor( srcFace, tgtFace, *tgtMesh, TopAbs_SOLID );
-  //   if ( !solid.IsNull() )
-  //   {
-  //     srcFace.Orientation( helper.GetSubShapeOri( solid, srcFace ));
-  //     tgtFace.Orientation( helper.GetSubShapeOri( solid, tgtFace ));
-  //   }
-  //   else if ( helper.NbAncestors( srcFace, *tgtMesh, TopAbs_SOLID ) == 1 &&
-  //             helper.NbAncestors( tgtFace, *tgtMesh, TopAbs_SOLID ) == 1 )
-  //   {
-  //     srcFace.Orientation( helper.GetSubShapeOri( tgtMesh->GetShapeToMesh(), srcFace ));
-  //     tgtFace.Orientation( helper.GetSubShapeOri( tgtMesh->GetShapeToMesh(), tgtFace ));
-  //   }
-  // }
   // ----------------------------------------------
   // Assure that mesh on a source Face is computed
   // ----------------------------------------------
@@ -1461,7 +1679,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
 
     // Load pattern from the source face
     SMESH_Pattern mapper;
-    mapper.Load( srcMesh, srcFace, toProjectNodes, srcV1 );
+    mapper.Load( srcMesh, srcFace, toProjectNodes, srcV1, /*keepNodes=*/true );
     if ( mapper.GetErrorCode() != SMESH_Pattern::ERR_OK )
       return error(COMPERR_BAD_INPUT_MESH,"Can't load mesh pattern from the source face");
 
@@ -1484,6 +1702,15 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     mapper.MakeMesh( tgtMesh, toCreatePolygons, toCreatePolyedrs );
     if ( mapper.GetErrorCode() != SMESH_Pattern::ERR_OK )
       return error("Can't make mesh by source mesh pattern");
+
+    // fill _src2tgtNodes
+    std::vector< const SMDS_MeshNode* > *srcNodes, *tgtNodes;
+    mapper.GetInOutNodes( srcNodes, tgtNodes );
+    size_t nbN = std::min( srcNodes->size(), tgtNodes->size() );
+    for ( size_t i = 0; i < nbN; ++i )
+      if ( (*srcNodes)[i] && (*tgtNodes)[i] )
+        _src2tgtNodes.insert( make_pair( (*srcNodes)[i], (*tgtNodes)[i] ));
+
 
   } // end of projection using Pattern mapping
 
@@ -1674,9 +1901,13 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     // boundary, also bad face can be created if EDGEs already discretized
     // --> fix bad faces by smoothing
     // ----------------------------------------------------------------
-    if ( !fixDistortedFaces( helper, tgtWires ))
-      return error("Invalid mesh generated");
+    if ( helper.IsDistorted2D( tgtSubMesh, /*checkUV=*/false ))
+    {
+      morph( helper, tgtFace, srcFace, tgtWires, srcWires, _src2tgtNodes );
 
+      if ( !fixDistortedFaces( helper, tgtWires ))
+        return error("Invalid mesh generated");
+    }
   // ---------------------------
   // Check elements orientation
   // ---------------------------
