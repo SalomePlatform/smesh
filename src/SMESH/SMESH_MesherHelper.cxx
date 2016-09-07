@@ -304,6 +304,7 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
             double u2 = uv1.Coord(1);
             myPar1[0] = Min( u1, u2 );
             myPar2[0] = Max( u1, u2 );
+            myParIndex |= U_periodic;
           }
           else
           {
@@ -313,6 +314,7 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
             double v2 = uv1.Coord(2);
             myPar1[1] = Min( v1, v2 );
             myPar2[1] = Max( v1, v2 );
+            myParIndex |= V_periodic;
           }
         }
         else //if ( !isSeam )
