@@ -21,6 +21,8 @@
 # @package StdMeshersBuilder
 # Python API for the standard meshing plug-in module.
 
+LIBRARY = "libStdMeshersEngine.so"
+
 from salome.smesh.smesh_algorithm import Mesh_Algorithm
 import StdMeshers
 
@@ -961,10 +963,8 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
         shape = geom
         if not shape:
             shape = mesh.geom
-        from salome.geom import geomBuilder
-        nbSolids = len( geomBuilder.geom.SubShapeAll( shape, geomBuilder.geomBuilder.ShapeType["SOLID"] ))
-        nbShells = len( geomBuilder.geom.SubShapeAll( shape, geomBuilder.geomBuilder.ShapeType["SHELL"] ))
-        if nbSolids == 0 or nbSolids == nbShells:
+        isRadial = mesh.smeshpyD.IsApplicable("RadialPrism_3D", LIBRARY, shape, False )
+        if not isRadial:
             self.Create(mesh, geom, "Prism_3D")
             pass
         else:

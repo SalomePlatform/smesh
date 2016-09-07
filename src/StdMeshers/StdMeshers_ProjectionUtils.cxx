@@ -414,9 +414,8 @@ namespace {
                      const gp_Pnt2d&    uv,
                      const double&      tol2d )
   {
-    TopoDS_Vertex VV[2];
-    TopExp::Vertices( edge, VV[0], VV[1], true);
-    gp_Pnt2d v1UV = BRep_Tool::Parameters( VV[vIndex], face);
+    TopoDS_Vertex V = SMESH_MesherHelper::IthVertex( vIndex, edge, /*CumOri=*/true );
+    gp_Pnt2d v1UV = BRep_Tool::Parameters( V, face);
     double dist2d = v1UV.Distance( uv );
     return dist2d < tol2d;
   }
@@ -1111,8 +1110,8 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
         for ( ; eIt1 != edges1.end(); ++eIt1, ++eIt2 )
         {
           InsertAssociation( *eIt1, *eIt2, theMap );
-          VV1[0] = TopExp::FirstVertex( *eIt1, true );
-          VV2[0] = TopExp::FirstVertex( *eIt2, true );
+          VV1[0] = SMESH_MesherHelper::IthVertex( 0, *eIt1, true );
+          VV2[0] = SMESH_MesherHelper::IthVertex( 0, *eIt2, true );
           InsertAssociation( VV1[0], VV2[0], theMap );
         }
         InsertAssociation( theShape1, theShape2, theMap );

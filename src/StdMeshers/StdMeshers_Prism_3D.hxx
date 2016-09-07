@@ -186,6 +186,16 @@ class STDMESHERS_EXPORT StdMeshers_PrismAsBlock: public SMESH_Block
   }
 
   /*!
+   * \brief Return pointer to column of nodes
+    * \param node - bottom node from which the returned column goes up
+    * \retval const TNodeColumn* - the found column
+   */
+  bool HasNodeColumn(const SMDS_MeshNode* node) const
+  {
+    return myShapeIndex2ColumnMap.count( node->getshapeId() );
+  }
+
+  /*!
    * \brief Return transformations to get coordinates of nodes of each internal layer
    *        by nodes of the bottom. Layer is a set of nodes at a certain step
    *        from bottom to top.

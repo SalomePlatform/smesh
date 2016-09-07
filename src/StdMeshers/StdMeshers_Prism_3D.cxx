@@ -944,11 +944,10 @@ bool StdMeshers_Prism_3D::getWallFaces( Prism_3D::TPrismTopo & thePrism,
   std::list< int >::iterator     nbE = thePrism.myNbEdgesInWires.begin();
   std::list< int > nbQuadsPerWire;
   int iE = 0;
-  double f,l;
   while ( edge != thePrism.myBottomEdges.end() )
   {
     ++iE;
-    if ( BRep_Tool::Curve( *edge, f,l ).IsNull() )
+    if ( SMESH_Algo::isDegenerated( *edge ))
     {
       edge = thePrism.myBottomEdges.erase( edge );
       --iE;
@@ -956,12 +955,14 @@ bool StdMeshers_Prism_3D::getWallFaces( Prism_3D::TPrismTopo & thePrism,
     }
     else
     {
+      bool hasWallFace = false;
       TopTools_ListIteratorOfListOfShape faceIt( edgeToFaces.FindFromKey( *edge ));
       for ( ; faceIt.More(); faceIt.Next() )
       {
         const TopoDS_Face& face = TopoDS::Face( faceIt.Value() );
         if ( !thePrism.myBottom.IsSame( face ))
         {
+          hasWallFace = true;
           Prism_3D::TQuadList quadList( 1, quadAlgo->CheckNbEdges( *mesh, face ));
           if ( !quadList.back() )
             return toSM( error(TCom("Side face #") << shapeID( face )
@@ -980,7 +981,16 @@ bool StdMeshers_Prism_3D::getWallFaces( Prism_3D::TPrismTopo & thePrism,
           break;
         }
       }
-      ++edge;
+      if ( hasWallFace )
+      {
+        ++edge;
+      }
+      else // seam edge (IPAL53561)
+      {
+        edge = thePrism.myBottomEdges.erase( edge );
+        --iE;
+        --(*nbE);
+      }
     }
     if ( iE == *nbE )
     {
@@ -1210,7 +1220,8 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
     for ( ; bot_column != myBotToColumnMap.end(); ++bot_column )
     {
       const Prism_3D::TNode& tBotNode = bot_column->first; // bottom TNode
-      if ( tBotNode.GetPositionType() != SMDS_TOP_FACE )
+      if ( tBotNode.GetPositionType() != SMDS_TOP_FACE &&
+           myBlock.HasNodeColumn( tBotNode.myNode ))
         continue; // node is not inside the FACE
 
       // column nodes; middle part of the column are zero pointers
@@ -1314,16 +1325,17 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
     for ( int i = 0; i < nbNodes; ++i )
     {
       const SMDS_MeshNode* n = face->GetNode( i );
-      if ( n->GetPosition()->GetTypeOfPosition() == SMDS_TOP_FACE ) {
+      columns[ i ] = NULL;
+
+      if ( n->GetPosition()->GetTypeOfPosition() != SMDS_TOP_FACE )
+        columns[ i ] = myBlock.GetNodeColumn( n );
+
+      if ( !columns[ i ] )
+      {
         TNode2ColumnMap::iterator bot_column = myBotToColumnMap.find( n );
         if ( bot_column == myBotToColumnMap.end() )
-          return toSM( error(TCom("No nodes found above node ") << n->GetID() ));
-        columns[ i ] = & bot_column->second;
-      }
-      else {
-        columns[ i ] = myBlock.GetNodeColumn( n );
-        if ( !columns[ i ] )
           return toSM( error(TCom("No side nodes found above node ") << n->GetID() ));
+        columns[ i ] = & bot_column->second;
       }
     }
     // create prisms
@@ -2074,7 +2086,8 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top( const gp_Trsf & bottomToTopTrsf
   {
     const SMDS_MeshNode* botNode = bN_tN->first;
     const SMDS_MeshNode* topNode = bN_tN->second;
-    if ( botNode->GetPosition()->GetTypeOfPosition() != SMDS_TOP_FACE )
+    if ( botNode->GetPosition()->GetTypeOfPosition() != SMDS_TOP_FACE &&
+         myBlock.HasNodeColumn( botNode ))
       continue; // wall columns are contained in myBlock
     // create node column
     Prism_3D::TNode bN( botNode );
@@ -2523,13 +2536,15 @@ namespace // utils used by StdMeshers_Prism_3D::IsApplicable()
   struct EdgeWithNeighbors
   {
     TopoDS_Edge _edge;
-    int         _iL, _iR;
-    EdgeWithNeighbors(const TopoDS_Edge& E, int iE, int nbE, int shift = 0 ):
-      _edge( E ),
+    int         _iBase;   /* index in a WIRE with non-base EDGEs excluded */
+    int         _iL, _iR; /* used to connect edges in a base FACE */
+    bool        _isBase;  /* is used in a base FACE */
+    EdgeWithNeighbors(const TopoDS_Edge& E, int iE, int nbE, int shift, bool isBase ):
+      _edge( E ), _iBase( iE + shift ),
       _iL( SMESH_MesherHelper::WrapIndex( iE-1, nbE ) + shift ),
-      _iR( SMESH_MesherHelper::WrapIndex( iE+1, nbE ) + shift )
+      _iR( SMESH_MesherHelper::WrapIndex( iE+1, nbE ) + shift ),
+      _isBase( isBase )
     {
-      //_edge.Orientation( TopAbs_FORWARD ); // for operator==() to work
     }
     EdgeWithNeighbors() {}
     bool IsInternal() const { return !_edge.IsNull() && _edge.Orientation() == TopAbs_INTERNAL; }
@@ -2573,11 +2588,27 @@ namespace // utils used by StdMeshers_Prism_3D::IsApplicable()
   };
   //--------------------------------------------------------------------------------
   /*!
+   * \brief Return another faces sharing an edge
+   */
+  const TopoDS_Face & getAnotherFace( const TopoDS_Face& face,
+                                      const TopoDS_Edge& edge,
+                                      TopTools_IndexedDataMapOfShapeListOfShape& facesOfEdge)
+  {
+    TopTools_ListIteratorOfListOfShape faceIt( facesOfEdge.FindFromKey( edge ));
+    for ( ; faceIt.More(); faceIt.Next() )
+      if ( !face.IsSame( faceIt.Value() ))
+        return TopoDS::Face( faceIt.Value() );
+    return face;
+  }
+
+  //--------------------------------------------------------------------------------
+  /*!
    * \brief Return ordered edges of a face
    */
-  bool getEdges( const TopoDS_Face&            face,
-                 vector< EdgeWithNeighbors > & edges,
-                 const bool                    noHolesAllowed)
+  bool getEdges( const TopoDS_Face&                         face,
+                 vector< EdgeWithNeighbors > &              edges,
+                 TopTools_IndexedDataMapOfShapeListOfShape& facesOfEdge,
+                 const bool                                 noHolesAllowed)
   {
     TopoDS_Face f = face;
     if ( f.Orientation() != TopAbs_FORWARD &&
@@ -2589,26 +2620,40 @@ namespace // utils used by StdMeshers_Prism_3D::IsApplicable()
     if ( nbW > 1 && noHolesAllowed )
       return false;
 
-    int iE, nbTot = 0;
+    int iE, nbTot = 0, nbBase, iBase;
     list< TopoDS_Edge >::iterator   e = ee.begin();
     list< int         >::iterator nbE = nbEdgesInWires.begin();
     for ( ; nbE != nbEdgesInWires.end(); ++nbE )
       for ( iE = 0; iE < *nbE; ++e, ++iE )
-        if ( SMESH_Algo::isDegenerated( *e ))
+        if ( SMESH_Algo::isDegenerated( *e )) // degenerated EDGE is never used
         {
           e = --ee.erase( e );
           --(*nbE);
           --iE;
         }
 
+    vector<int> isBase;
     edges.clear();
     e = ee.begin();
     for ( nbE = nbEdgesInWires.begin(); nbE != nbEdgesInWires.end(); ++nbE )
     {
-      for ( iE = 0; iE < *nbE; ++e, ++iE )
-        edges.push_back( EdgeWithNeighbors( *e, iE, *nbE, nbTot ));
-      nbTot += *nbE;
+      nbBase = 0;
+      isBase.resize( *nbE );
+      list< TopoDS_Edge >::iterator eIt = e;
+      for ( iE = 0; iE < *nbE; ++eIt, ++iE )
+      {
+        isBase[ iE ] = ( getAnotherFace( face, *eIt, facesOfEdge ) != face );
+        nbBase += isBase[ iE ];
+      }
+      for ( iBase = 0, iE = 0; iE < *nbE; ++e, ++iE )
+      {
+        edges.push_back( EdgeWithNeighbors( *e, iBase, nbBase, nbTot, isBase[ iE ] ));
+        iBase += isBase[ iE ];
+      }
+      nbTot += nbBase;
     }
+    if ( nbTot == 0 )
+      return false;
 
     // IPAL53099. Set correct neighbors to INTERNAL EDGEs, which can be connected to
     // EDGEs of the outer WIRE but this fact can't be detected by their order.
@@ -2623,6 +2668,9 @@ namespace // utils used by StdMeshers_Prism_3D::IsApplicable()
         bool isConnectOk = ( vv[0].IsSame( vv[1] ));
         if ( !isConnectOk )
         {
+          edges[ iFirst ]._iL = edges[ iFirst ]._iBase; // connect to self
+          edges[ iLast  ]._iR = edges[ iLast ]._iBase;
+
           // look for an EDGE of the outer WIRE connected to vv
           TopoDS_Vertex v0, v1;
           for ( iE = 0; iE < nbEdgesInWires.front(); ++iE )
@@ -2630,9 +2678,9 @@ namespace // utils used by StdMeshers_Prism_3D::IsApplicable()
             v0 = SMESH_MesherHelper::IthVertex( 0, edges[ iE ]._edge );
             v1 = SMESH_MesherHelper::IthVertex( 1, edges[ iE ]._edge );
             if ( vv[0].IsSame( v0 ) || vv[0].IsSame( v1 ))
-              edges[ iFirst ]._iL = iE;
+              edges[ iFirst ]._iL = edges[ iE ]._iBase;
             if ( vv[1].IsSame( v0 ) || vv[1].IsSame( v1 ))
-              edges[ iLast ]._iR = iE;
+              edges[ iLast ]._iR = edges[ iE ]._iBase;
           }
         }
         iFirst += *nbE;
@@ -2640,21 +2688,7 @@ namespace // utils used by StdMeshers_Prism_3D::IsApplicable()
     }
     return edges.size();
   }
-  //--------------------------------------------------------------------------------
-  /*!
-   * \brief Return another faces sharing an edge
-   */
-  const TopoDS_Face & getAnotherFace( const TopoDS_Face& face,
-                                      const TopoDS_Edge& edge,
-                                      TopTools_IndexedDataMapOfShapeListOfShape& facesOfEdge)
-  {
-    TopTools_ListIteratorOfListOfShape faceIt( facesOfEdge.FindFromKey( edge ));
-    for ( ; faceIt.More(); faceIt.Next() )
-      if ( !face.IsSame( faceIt.Value() ))
-        return TopoDS::Face( faceIt.Value() );
-    return face;
-  }
-
+  
   //--------------------------------------------------------------------------------
   /*!
    * \brief Return number of faces sharing given edges
@@ -2694,10 +2728,10 @@ bool StdMeshers_Prism_3D::IsApplicable(const TopoDS_Shape & shape, bool toCheckA
     // check nb shells
     TopoDS_Shape shell;
     TopExp_Explorer shExp( sExp.Current(), TopAbs_SHELL );
-    if ( shExp.More() ) {
+    while ( shExp.More() ) {
       shell = shExp.Current();
       shExp.Next();
-      if ( shExp.More() )
+      if ( shExp.More() && BRep_Tool::IsClosed( shExp.Current() ))
         shell.Nullify();
     }
     if ( shell.IsNull() ) {
@@ -2706,7 +2740,7 @@ bool StdMeshers_Prism_3D::IsApplicable(const TopoDS_Shape & shape, bool toCheckA
     }
     // get all faces
     TopTools_IndexedMapOfShape allFaces;
-    TopExp::MapShapes( shell, TopAbs_FACE, allFaces );
+    TopExp::MapShapes( sExp.Current(), TopAbs_FACE, allFaces );
     if ( allFaces.Extent() < 3 ) {
       if ( toCheckAll ) return false;
       continue;
@@ -2723,7 +2757,7 @@ bool StdMeshers_Prism_3D::IsApplicable(const TopoDS_Shape & shape, bool toCheckA
       }
     }
 #ifdef _DEBUG_
-    TopTools_IndexedMapOfShape allShapes;
+    TopTools_IndexedMapOfShape allShapes; // usage: allShapes.FindIndex( s )
     TopExp::MapShapes( shape, allShapes );
 #endif
 
@@ -2750,23 +2784,32 @@ bool StdMeshers_Prism_3D::IsApplicable(const TopoDS_Shape & shape, bool toCheckA
 
       TEdgeWithNeighborsVec& botEdges = faceEdgesVec[ iF ];
       if ( botEdges.empty() )
-        if ( !getEdges( botF, botEdges, /*noHoles=*/false ))
+        if ( !getEdges( botF, botEdges, facesOfEdge, /*noHoles=*/false ))
           break;
-      if ( allFaces.Extent()-1 <= (int) botEdges.size() )
+
+      int nbBase = 0;
+      for ( size_t iS = 0; iS < botEdges.size(); ++iS )
+        nbBase += botEdges[ iS ]._isBase;
+
+      if ( allFaces.Extent()-1 <= nbBase )
         continue; // all faces are adjacent to botF - no top FACE
 
       // init data of side FACEs
       sides.clear();
-      sides.resize( botEdges.size() );
-      for ( size_t iS = 0; iS < botEdges.size(); ++iS )
+      sides.resize( nbBase );
+      size_t iS = 0;
+      for ( size_t iE = 0; iE < botEdges.size(); ++iE )
       {
-        sides[ iS ]._topEdge    = botEdges[ iS ]._edge;
+        if ( !botEdges[ iE ]._isBase )
+          continue;
+        sides[ iS ]._topEdge    = botEdges[ iE ]._edge;
         sides[ iS ]._face       = botF;
-        sides[ iS ]._leftSide   = & sides[ botEdges[ iS ]._iR ];
-        sides[ iS ]._rightSide  = & sides[ botEdges[ iS ]._iL ];
-        sides[ iS ]._isInternal = botEdges[ iS ].IsInternal();
+        sides[ iS ]._leftSide   = & sides[ botEdges[ iE ]._iR ];
+        sides[ iS ]._rightSide  = & sides[ botEdges[ iE ]._iL ];
+        sides[ iS ]._isInternal = botEdges[ iE ].IsInternal();
         sides[ iS ]._faces      = & facesOfSide[ iS ];
         sides[ iS ]._faces->Clear();
+        ++iS;
       }
 
       bool isOK = true; // ok for a current botF
@@ -2861,7 +2904,7 @@ bool StdMeshers_Prism_3D::IsApplicable(const TopoDS_Shape & shape, bool toCheckA
             int faceID  = allFaces.FindIndex( side._face );
             side._edges = & faceEdgesVec[ faceID ];
             if ( side._edges->empty() )
-              if ( !getEdges( side._face, * side._edges, /*noHoles=*/true ))
+              if ( !getEdges( side._face, * side._edges, facesOfEdge, /*noHoles=*/true ))
                 break;
             const int nbE = side._edges->size();
             if ( nbE >= 4 )
