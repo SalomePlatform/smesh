@@ -584,8 +584,10 @@ bool SMESH_Algo::IsStraight( const TopoDS_Edge & E,
  */
 //================================================================================
 
-bool SMESH_Algo::isDegenerated( const TopoDS_Edge & E )
+bool SMESH_Algo::isDegenerated( const TopoDS_Edge & E, const bool checkLength )
 {
+  if ( checkLength )
+    return EdgeLength( E ) == 0;
   double f,l;
   TopLoc_Location loc;
   Handle(Geom_Curve) C = BRep_Tool::Curve( E, loc, f,l );

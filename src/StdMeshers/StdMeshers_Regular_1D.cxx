@@ -1120,15 +1120,14 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
 
   ASSERT(!VFirst.IsNull());
   ASSERT(!VLast.IsNull());
-  const SMDS_MeshNode * idFirst = SMESH_Algo::VertexNode( VFirst, meshDS );
-  const SMDS_MeshNode * idLast = SMESH_Algo::VertexNode( VLast, meshDS );
-  if (!idFirst || !idLast)
+  const SMDS_MeshNode * nFirst = SMESH_Algo::VertexNode( VFirst, meshDS );
+  const SMDS_MeshNode *  nLast = SMESH_Algo::VertexNode( VLast,  meshDS );
+  if ( !nFirst || !nLast )
     return error( COMPERR_BAD_INPUT_MESH, "No node on vertex");
 
   // remove elements created by e.g. patern mapping (PAL21999)
   // CLEAN event is incorrectly ptopagated seemingly due to Propagation hyp
   // so TEMPORARY solution is to clean the submesh manually
-  //theMesh.GetSubMesh(theShape)->ComputeStateEngine( SMESH_subMesh::CLEAN );
   if (SMESHDS_SubMesh * subMeshDS = meshDS->MeshElements(theShape))
   {
     SMDS_ElemIteratorPtr ite = subMeshDS->GetElements();
@@ -1144,7 +1143,8 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
     }
   }
 
-  if (!Curve.IsNull())
+  double length = EdgeLength( E );
+  if ( !Curve.IsNull() && length > 0 )
   {
     list< double > params;
     bool reversed = false;
@@ -1167,7 +1167,6 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
       reversed = !reversed;
 
     BRepAdaptor_Curve C3d( E );
-    double length = EdgeLength( E );
     if ( ! computeInternalParameters( theMesh, C3d, length, f, l, params, reversed, true )) {
       return false;
     }
@@ -1176,19 +1175,10 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
     // edge extrema (indexes : 1 & NbPoints) already in SMDS (TopoDS_Vertex)
     // only internal nodes receive an edge position with param on curve
 
-    const SMDS_MeshNode * idPrev = idFirst;
+    const SMDS_MeshNode * nPrev = nFirst;
     double parPrev = f;
     double parLast = l;
 
-    /* NPAL18025
-    if (reversed) {
-      idPrev = idLast;
-      idLast = idFirst;
-      idFirst = idPrev;
-      parPrev = l;
-      parLast = f;
-    }
-    */
     for (list<double>::iterator itU = params.begin(); itU != params.end(); itU++) {
       double param = *itU;
       gp_Pnt P = Curve->Value(param);
@@ -1200,18 +1190,18 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
       if(_quadraticMesh) {
         // create medium node
         double prm = ( parPrev + param )/2;
-        gp_Pnt PM = Curve->Value(prm);
+        gp_Pnt  PM = Curve->Value(prm);
         SMDS_MeshNode * NM = meshDS->AddNode(PM.X(), PM.Y(), PM.Z());
         meshDS->SetNodeOnEdge(NM, shapeID, prm);
-        SMDS_MeshEdge * edge = meshDS->AddEdge(idPrev, node, NM);
+        SMDS_MeshEdge * edge = meshDS->AddEdge(nPrev, node, NM);
         meshDS->SetMeshElementOnShape(edge, shapeID);
       }
       else {
-        SMDS_MeshEdge * edge = meshDS->AddEdge(idPrev, node);
+        SMDS_MeshEdge * edge = meshDS->AddEdge(nPrev, node);
         meshDS->SetMeshElementOnShape(edge, shapeID);
       }
 
-      idPrev = node;
+      nPrev   = node;
       parPrev = param;
     }
     if(_quadraticMesh) {
@@ -1219,11 +1209,11 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
       gp_Pnt PM = Curve->Value(prm);
       SMDS_MeshNode * NM = meshDS->AddNode(PM.X(), PM.Y(), PM.Z());
       meshDS->SetNodeOnEdge(NM, shapeID, prm);
-      SMDS_MeshEdge * edge = meshDS->AddEdge(idPrev, idLast, NM);
+      SMDS_MeshEdge * edge = meshDS->AddEdge(nPrev, nLast, NM);
       meshDS->SetMeshElementOnShape(edge, shapeID);
     }
     else {
-      SMDS_MeshEdge* edge = meshDS->AddEdge(idPrev, idLast);
+      SMDS_MeshEdge* edge = meshDS->AddEdge(nPrev, nLast);
       meshDS->SetMeshElementOnShape(edge, shapeID);
     }
   }
@@ -1236,7 +1226,7 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
 
     gp_Pnt P = BRep_Tool::Pnt(VFirst);
 
-    const SMDS_MeshNode * idPrev = idFirst;
+    const SMDS_MeshNode * nPrev = nFirst;
     for (int i = 2; i < NbPoints; i++) {
       double param = f + (i - 1) * du;
       SMDS_MeshNode * node = meshDS->AddNode(P.X(), P.Y(), P.Z());
@@ -1245,26 +1235,26 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
         double prm = param - du/2.;
         SMDS_MeshNode * NM = meshDS->AddNode(P.X(), P.Y(), P.Z());
         meshDS->SetNodeOnEdge(NM, shapeID, prm);
-        SMDS_MeshEdge * edge = meshDS->AddEdge(idPrev, node, NM);
+        SMDS_MeshEdge * edge = meshDS->AddEdge(nPrev, node, NM);
         meshDS->SetMeshElementOnShape(edge, shapeID);
       }
       else {
-        SMDS_MeshEdge * edge = meshDS->AddEdge(idPrev, node);
+        SMDS_MeshEdge * edge = meshDS->AddEdge(nPrev, node);
         meshDS->SetMeshElementOnShape(edge, shapeID);
       }
       meshDS->SetNodeOnEdge(node, shapeID, param);
-      idPrev = node;
+      nPrev = node;
     }
     if(_quadraticMesh) {
       // create medium node
       double prm = l - du/2.;
       SMDS_MeshNode * NM = meshDS->AddNode(P.X(), P.Y(), P.Z());
       meshDS->SetNodeOnEdge(NM, shapeID, prm);
-      SMDS_MeshEdge * edge = meshDS->AddEdge(idPrev, idLast, NM);
+      SMDS_MeshEdge * edge = meshDS->AddEdge(nPrev, nLast, NM);
       meshDS->SetMeshElementOnShape(edge, shapeID);
     }
     else {
-      SMDS_MeshEdge * edge = meshDS->AddEdge(idPrev, idLast);
+      SMDS_MeshEdge * edge = meshDS->AddEdge(nPrev, nLast);
       meshDS->SetMeshElementOnShape(edge, shapeID);
     }
   }
@@ -1306,11 +1296,11 @@ bool StdMeshers_Regular_1D::Evaluate(SMESH_Mesh & theMesh,
 
   std::vector<int> aVec(SMDSEntity_Last,0);
 
-  if (!Curve.IsNull()) {
+  double length = EdgeLength( E );
+  if ( !Curve.IsNull() && length > 0 )
+  {
     list< double > params;
-
     BRepAdaptor_Curve C3d( E );
-    double length = EdgeLength( E );
     if ( ! computeInternalParameters( theMesh, C3d, length, f, l, params, false, true )) {
       SMESH_subMesh * sm = theMesh.GetSubMesh(theShape);
       aResMap.insert(std::make_pair(sm,aVec));
@@ -1328,7 +1318,7 @@ bool StdMeshers_Regular_1D::Evaluate(SMESH_Mesh & theMesh,
       aVec[SMDSEntity_Node] = params.size();
       aVec[SMDSEntity_Edge] = params.size() + 1;
     }
-    
+
   }
   else {
     // Edge is a degenerated Edge : We put n = 5 points on the edge.

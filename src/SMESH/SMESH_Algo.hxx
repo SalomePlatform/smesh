@@ -363,7 +363,7 @@ public:
   /*!
    * \brief Return true if an edge has no 3D curve
    */
-  static bool isDegenerated( const TopoDS_Edge & E );
+  static bool isDegenerated( const TopoDS_Edge & E, const bool checkLength=false );
 
   /*!
    * \brief Return the node built on a vertex
