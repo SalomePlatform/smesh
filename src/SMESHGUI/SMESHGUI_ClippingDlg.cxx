@@ -476,7 +476,7 @@ SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg( SMESHGUI* theModule, SVTK_ViewWindow
   QFont fnt = SpinSliderDistance->font(); fnt.setBold( true ); SpinSliderDistance->setFont( fnt );
   GroupParametersLayout->addWidget( SpinSliderDistance, 1, 1 );
   
-  QString aUnitRot = "\xB0";
+  QString aUnitRot = QString(QChar(0xB0));
 
   TextLabelRotation1 = new QLabel( tr("ROTATION_AROUND_X_Y2Z"), GroupParameters );
   TextLabelRotation1->setObjectName( "TextLabelRotation1" );
