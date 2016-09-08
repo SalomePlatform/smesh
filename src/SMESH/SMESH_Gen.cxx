@@ -331,7 +331,8 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
             SMESH_Hypothesis::Hypothesis_Status status;
             if ( subAlgo->CheckHypothesis( aMesh, aSubShape, status ))
               // mesh a lower smToCompute starting from vertices
-              Compute( aMesh, aSubShape, aShapeOnly, /*anUpward=*/true, aDim, aShapesId );
+              Compute( aMesh, aSubShape, true, /*anUpward=*/true, aDim, aShapesId );
+              // Compute( aMesh, aSubShape, aShapeOnly, /*anUpward=*/true, aDim, aShapesId );
           }
         }
       }
