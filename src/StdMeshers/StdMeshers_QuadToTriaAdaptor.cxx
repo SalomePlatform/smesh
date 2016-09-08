@@ -1012,6 +1012,8 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
       groupDS = 0;
   }
 
+  const bool toFindVolumes = aMesh.NbVolumes() > 0;
+
   vector<const SMDS_MeshElement*> myPyramids;
   SMESH_MesherHelper helper(aMesh);
   helper.IsQuadraticSubMesh(aMesh.GetShapeToMesh());
@@ -1023,6 +1025,9 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
   if ( !myElemSearcher )
     myElemSearcher = SMESH_MeshAlgos::GetElementSearcher( *meshDS );
   SMESH_ElementSearcher* searcher = const_cast<SMESH_ElementSearcher*>(myElemSearcher);
+  SMESHUtils::Deleter<SMESH_ElementSearcher>
+    volSearcher( SMESH_MeshAlgos::GetElementSearcher( *meshDS ));
+  vector< const SMDS_MeshElement* > suspectFaces, foundVolumes;
 
   TColgp_Array1OfPnt PN(1,5);
   TColgp_Array1OfVec VN(1,4);
@@ -1042,7 +1047,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
     if ( what == NOT_QUAD )
       continue;
     if ( volumes[0] && volumes[1] )
-      continue; // face is shared by two volumes - no space for a pyramid
+      continue; // face is shared by two volumes - no room for a pyramid
 
     if ( what == DEGEN_QUAD )
     {
@@ -1143,6 +1148,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
     }
 
     // Restrict pyramid height by intersection with other faces
+
     gp_Vec tmpDir(PC,PCbest); tmpDir.Normalize();
     double tmp = PN(1).Distance(PN(3)) + PN(2).Distance(PN(4));
     // far points: in (PC, PCbest) direction and vice-versa
@@ -1154,8 +1160,24 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
     gp_Pnt intPnt     [2];
     int    intFaceInd [2] = { 0, 0 };
 
+    if ( toFindVolumes && 0 ) // non-conformal mesh is not suitable for any mesher so far
+    {
+      // there are volumes in the mesh, in a non-conformal mesh an neighbor
+      // volume can be not found yet
+      for ( int isRev = 0; isRev < 2; ++isRev )
+      {
+        if ( volumes[isRev] ) continue;
+        gp_Pnt testPnt = PC.XYZ() + tmpDir.XYZ() * height * ( isRev ? -0.1: 0.1 );
+        foundVolumes.clear();
+        if ( volSearcher->FindElementsByPoint( testPnt, SMDSAbs_Volume, foundVolumes ))
+          volumes[isRev] = foundVolumes[0];
+      }
+      if ( volumes[0] && volumes[1] )
+        continue; // no room for a pyramid
+    }
+
     gp_Ax1 line( PC, tmpDir );
-    vector< const SMDS_MeshElement* > suspectFaces;
+    suspectFaces.clear();
     searcher->GetElementsNearLine( line, SMDSAbs_Face, suspectFaces);
 
     for ( size_t iF = 0; iF < suspectFaces.size(); ++iF )

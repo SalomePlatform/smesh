@@ -302,7 +302,7 @@ SMESH_Swig::SMESH_Swig()
     }
   };
 
-  MESSAGE("Constructeur");
+  //MESSAGE("Constructeur");
 
   if(CORBA::is_nil(anORB))
     ProcessVoidEvent(new TEvent(anORB));
@@ -402,7 +402,7 @@ SMESH_Swig::Init(int theStudyID)
     }
   };
 
-  MESSAGE("Init");
+  //MESSAGE("Init");
 
   ProcessVoidEvent(new TEvent(theStudyID,
                               myStudy,
@@ -414,7 +414,7 @@ SMESH_Swig::Init(int theStudyID)
 //===============================================================
 SMESH_Swig::~SMESH_Swig()
 {
-  MESSAGE("Destructeur");
+  //MESSAGE("Destructeur");
 }
 
 

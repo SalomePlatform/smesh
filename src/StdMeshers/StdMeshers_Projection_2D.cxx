@@ -1273,6 +1273,7 @@ namespace {
               const TAssocTool::TNodeNodeMap& src2tgtNodes )
   {
     if ( srcWires.size() != tgtWires.size() ) return false;
+    if ( srcWires.size() == 1 ) return false; // tmp
 
     // count boundary points
     int iP = 1, nbP = 0;
