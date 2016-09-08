@@ -95,7 +95,7 @@
 #include <string>
 
 #ifdef _DEBUG_
-#define __myDEBUG
+//#define __myDEBUG
 //#define __NOT_INVALIDATE_BAD_SMOOTH
 //#define __NODES_AT_POS
 #endif
@@ -3395,11 +3395,16 @@ bool _ViscousBuilder::setEdgeData(_LayerEdge&         edge,
       if ( nbOkNorms == 0 )
         return error(SMESH_Comment("Can't get normal to node ") << node->GetID(), data._index);
 
+      if ( totalNbFaces >= 3 )
+      {
+        edge._normal = getNormalByOffset( &edge, face2Norm, totalNbFaces, fromVonF );
+      }
+
       if ( edge._normal.Modulus() < 1e-3 && nbOkNorms > 1 )
       {
         // opposite normals, re-get normals at shifted positions (IPAL 52426)
         edge._normal.SetCoord( 0,0,0 );
-        for ( int iF = 0; iF < totalNbFaces; ++iF )
+        for ( int iF = 0; iF < totalNbFaces - fromVonF; ++iF )
         {
           const TopoDS_Face& F = face2Norm[iF].first;
           geomNorm = getFaceNormal( node, F, helper, normOK, /*shiftInside=*/true );
@@ -3409,11 +3414,6 @@ bool _ViscousBuilder::setEdgeData(_LayerEdge&         edge,
             face2Norm[ iF ].second = geomNorm.XYZ();
           edge._normal += face2Norm[ iF ].second;
         }
-      }
-
-      if ( totalNbFaces >= 3 )
-      {
-        edge._normal = getNormalByOffset( &edge, face2Norm, totalNbFaces, fromVonF );
       }
     }
   }
