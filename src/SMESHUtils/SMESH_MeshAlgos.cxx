@@ -987,16 +987,19 @@ TopAbs_State SMESH_ElementSearcherImpl::GetPointState(const gp_Pnt& point)
 
           // skip tangent intersections
           int nbTgt = 0;
-          const SMDS_MeshElement* prevFace = u_int1->second._face;
-          while ( ok && u_int2->second._coincides )
+          if ( u_int2 != u2inters.end() )
           {
-            if ( SMESH_MeshAlgos::GetCommonNodes(prevFace , u_int2->second._face).empty() )
-              ok = false;
-            else
+            const SMDS_MeshElement* prevFace = u_int1->second._face;
+            while ( ok && u_int2->second._coincides )
             {
-              nbTgt++;
-              u_int2++;
-              ok = ( u_int2 != u2inters.end() );
+              if ( SMESH_MeshAlgos::GetCommonNodes(prevFace , u_int2->second._face).empty() )
+                ok = false;
+              else
+              {
+                nbTgt++;
+                u_int2++;
+                ok = ( u_int2 != u2inters.end() );
+              }
             }
           }
           if ( !ok ) break;
