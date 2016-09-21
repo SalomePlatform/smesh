@@ -53,11 +53,14 @@ class MonViewText(Ui_ViewExe, QDialog):
 
         self.monExe.readyReadStandardOutput.connect( self.readFromStdOut )
         self.monExe.readyReadStandardError.connect( self.readFromStdErr )
+        self.monExe.finished.connect( self.finished )
       
         cmds = ''
         ext = ''
         if sys.platform == "win32":
-            cmds += 'delete %s\n' % self.parent().fichierOut
+            if os.path.exists(self.parent().fichierOut):
+                cmds += 'del %s\n' % self.parent().fichierOut
+            ext = '.bat'
         else:
             cmds += '#!/bin/bash\n'
             cmds += 'pwd\n'
@@ -109,11 +112,11 @@ class MonViewText(Ui_ViewExe, QDialog):
     def readFromStdOut(self) :
         a=self.monExe.readAllStandardOutput()
         aa=unicode(a.data())
-        self.TB_Exe.append(aa)
-        if "END_OF_MGSurfOpt" in aa:
-          self.parent().enregistreResultat()
-          self.enregistreResultatsDone=True
-          #self.theClose()
+        self.TB_Exe.append(aa)    
+    
+    def finished(self):
+        self.parent().enregistreResultat()
+        self.enregistreResultatsDone=True
     
     def theClose(self):
       if not self.enregistreResultatsDone:

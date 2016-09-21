@@ -479,7 +479,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     self.fichierIn=""
 
   def prepareFichier(self):
-    self.fichierIn=tempfile.mktemp(suffix=".meshb",prefix="ForSurfOpt_")
+    self.fichierIn=tempfile.mktemp(suffix=".mesh",prefix="ForSurfOpt_")
     if os.path.exists(self.fichierIn):
         os.remove(self.fichierIn)
     self.__selectedMesh.ExportGMF(self.__selectedMesh, self.fichierIn, True)
@@ -522,7 +522,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
       self.commande+= " -O G"  # This option has not been updated to the new option style yet
 
     deb=os.path.splitext(self.fichierIn)
-    self.fichierOut=deb[0] + "_output.meshb"
+    self.fichierOut=deb[0] + "_output.mesh"
     
     tolerance=self.SP_toStr(self.SP_Tolerance)
     if not self.RB_Absolute.isChecked():
