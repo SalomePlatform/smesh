@@ -29,6 +29,8 @@
 #include "SMESHGUI_HypothesesUtils.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_SpinBox.h"
+#include "SMESHGUI_VTKUtils.h"
+#include "SMESH_Actor.h"
 
 // SALOME KERNEL includes
 #include <SALOMEDSClient_Study.hxx>
@@ -42,6 +44,7 @@
 #include <SUIT_Session.h>
 #include <SalomeApp_IntSpinBox.h>
 #include <SalomeApp_Tools.h>
+#include <SVTK_ViewWindow.h>
 
 // Qt includes
 #include <QFrame>
@@ -313,6 +316,10 @@ void SMESHGUI_GenericHypothesisCreator::onDialogFinished( int result )
           aMesh = aSubMesh->GetFather();
         _PTR(SObject) meshSO = SMESH::FindSObject( aMesh );
         SMESH::ModifiedMesh( meshSO, false, aMesh->NbNodes()==0);
+	SMESH_Actor* actor = SMESH::FindActorByEntry( meshSO->GetID().c_str() );
+	if( actor ) {
+	  actor->Update();
+	}
       }
   }
   SMESHGUI::GetSMESHGUI()->updateObjBrowser( true, 0 );
@@ -324,6 +331,9 @@ void SMESHGUI_GenericHypothesisCreator::onDialogFinished( int result )
   myDlg->close();
   //delete myDlg; since WA_DeleteOnClose==true
   myDlg = 0;
+  if (SVTK_ViewWindow* vf = SMESH::GetCurrentVtkView()) {
+    vf->Repaint();
+  }
   emit finished( result );
 }
 
