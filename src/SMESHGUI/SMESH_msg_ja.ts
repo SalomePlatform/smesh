@@ -64,6 +64,38 @@
       <translation>エリア</translation>
     </message>
     <message>
+      <source>FREE_NODES</source>
+      <translation>自由節点</translation>
+    </message>
+    <message>
+      <source>NODE_CONNECTIVITY_NB</source>
+      <translation>節点接続番号</translation>
+    </message>
+    <message>
+      <source>FREE_EDGES</source>
+      <translation>フリーエッジ</translation>
+    </message>
+    <message>
+      <source>FREE_FACES</source>
+      <translation>フリー面</translation>
+    </message>
+    <message>
+      <source>BARE_BORDER_FACE</source>
+      <translation>むき出しの境界線を持つ面</translation>
+    </message>
+    <message>
+      <source>OVER_CONSTRAINED_FACE</source>
+      <translation>過拘束面</translation>
+    </message>
+    <message>
+      <source>BARE_BORDER_VOLUME</source>
+      <translation>むき出しの境界を持つボリューム</translation>
+    </message>
+    <message>
+      <source>OVER_CONSTRAINED_VOLUME</source>
+      <translation>過拘束ボリューム</translation>
+    </message>
+    <message>
       <source>MIN_DIAG_ELEMENTS</source>
       <translation>最小の対角線</translation>
     </message>
@@ -256,6 +288,10 @@
       <translation>メッシュを作成</translation>
     </message>
     <message>
+      <source>MEN_COMPUTE_SUBMESH</source>
+      <translation>サブメッシュの生成</translation>
+    </message>
+    <message>
       <source>MEN_PRECOMPUTE</source>
       <translation>プレビュー</translation>
     </message>
@@ -420,6 +456,14 @@
       <translation>メッシュ/サブメッシュを編集</translation>
     </message>
     <message>
+      <source>MEN_EDIT_MESH</source>
+      <translation>メッシュの編集</translation>
+    </message>
+    <message>
+      <source>MEN_EDIT_SUBMESH</source>
+      <translation>サブメッシュの編集</translation>
+    </message>
+    <message>
       <source>MEN_EXPORT</source>
       <translation>エクスポート...</translation>
     </message>
@@ -582,6 +626,10 @@
     <message>
       <source>MEN_FREE_NODE</source>
       <translation>フリーノード</translation>
+    </message>
+    <message>
+      <source>MEN_NODE_CONNECTIVITY_NB</source>
+      <translation>節点接続番号</translation>
     </message>
     <message>
       <source>MEN_FREE_FACES</source>
@@ -1192,6 +1240,10 @@
       <translation>D の要素を追加します。</translation>
     </message>
     <message>
+      <source>SMESH_DUPLICATE_0D</source>
+      <translation>重複要素の許容</translation>
+    </message>
+    <message>
       <source>SMESH_ADD_BALL</source>
       <translation>粒子要素を追加します。</translation>
     </message>
@@ -1676,6 +1728,10 @@
       <translation>選択範囲内の同じ名前を持つメッシュがあります。結果のファイルが正しい可能性が。続行しますか。</translation>
     </message>
     <message>
+      <source>SMESH_EXPORT_ONLY_GPOUP</source>
+      <translation>そのメッシュなしでグループのエクスポートをしようとしています。続行しますか？</translation>
+    </message>
+    <message>
       <source>SMESH_EXPORT_MED_V2_1</source>
       <translation>多角形、多面体要素は正しいエクスポート用 MED 2.1 MED 2.2 にメッシュ '%' のエクスポートの場合省略されます。MED 2.1 をエクスポートしますか。</translation>
     </message>
@@ -1858,6 +1914,10 @@
     <message>
       <source>SMESH_HYP_9</source>
       <translation>このようなディメンションの前提がジオメトリに既に割り当てられています。</translation>
+    </message>
+    <message>
+      <source>SMESH_ID_DIAGONAL</source>
+      <translation>エッジID</translation>
     </message>
     <message>
       <source>SMESH_ID_EDGES</source>
@@ -2804,6 +2864,10 @@
       <translation>警告</translation>
     </message>
     <message>
+      <source>SMESH_WRN_SHOW_DLG_CHECKBOX</source>
+      <translation>この警告をこれ以上表示してはいけません。</translation>
+    </message>
+    <message>
       <source>SMESH_X</source>
       <translation>X</translation>
     </message>
@@ -2890,6 +2954,10 @@
     <message>
       <source>STB_COMPUTE</source>
       <translation>メッシュを作成します。</translation>
+    </message>
+    <message>
+      <source>STB_COMPUTE_SUBMESH</source>
+      <translation>サブメッシュの生成</translation>
     </message>
     <message>
       <source>STB_PRECOMPUTE</source>
@@ -3024,6 +3092,14 @@
       <translation>メッシュ/サブメッシュを編集</translation>
     </message>
     <message>
+      <source>STB_EDIT_MESH</source>
+      <translation>メッシュの編集</translation>
+    </message>
+    <message>
+      <source>STB_EDIT_SUBMESH</source>
+      <translation>サブメッシュの編集</translation>
+    </message>
+    <message>
       <source>STB_EXPORT_DAT</source>
       <translation>DAT形式でエクスポート</translation>
     </message>
@@ -3090,6 +3166,10 @@
     <message>
       <source>STB_FREE_NODE</source>
       <translation>フリーノード</translation>
+    </message>
+    <message>
+      <source>STB_NODE_CONNECTIVITY_NB</source>
+      <translation>節点接続番号</translation>
     </message>
     <message>
       <source>STB_FREE_FACES</source>
@@ -3300,6 +3380,10 @@
       <translation>分布を表示します。</translation>
     </message>
     <message>
+      <source>STB_SHOW_SCALAR_BAR</source>
+      <translation>スカラバーの表示</translation>
+    </message>
+    <message>
       <source>STB_REVOLUTION</source>
       <translation>Revolution</translation>
     </message>
@@ -3334,10 +3418,6 @@
     <message>
       <source>STB_SHOW</source>
       <translation>表示</translation>
-    </message>
-    <message>
-      <source>STB_SHOW_SCALAR_BAR</source>
-      <translation>スカラバーの表示</translation>
     </message>
     <message>
       <source>STB_SHRINK</source>
@@ -3560,6 +3640,10 @@
       <translation>メッシュを作成</translation>
     </message>
     <message>
+      <source>TOP_COMPUTE_SUBMESH</source>
+      <translation>サブメッシュの生成</translation>
+    </message>
+    <message>
       <source>TOP_PRECOMPUTE</source>
       <translation>プレビュー</translation>
     </message>
@@ -3692,6 +3776,14 @@
       <translation>メッシュ/サブメッシュを編集</translation>
     </message>
     <message>
+      <source>TOP_EDIT_MESH</source>
+      <translation>メッシュの編集</translation>
+    </message>
+    <message>
+      <source>TOP_EDIT_SUBMESH</source>
+      <translation>サブメッシュの編集</translation>
+    </message>
+    <message>
       <source>TOP_EXPORT_DAT</source>
       <translation>DAT形式でエクスポート</translation>
     </message>
@@ -3750,6 +3842,10 @@
     <message>
       <source>TOP_FREE_NODE</source>
       <translation>フリーノード</translation>
+    </message>
+    <message>
+      <source>TOP_NODE_CONNECTIVITY_NB</source>
+      <translation>節点接続番号</translation>
     </message>
     <message>
       <source>TOP_FREE_FACES</source>
@@ -4243,12 +4339,23 @@
       <source>STB_SORT_CHILD_ITEMS</source>
       <translation>子アイテムを並べ替える</translation>
     </message>
+    <message>
+      <source>SMESH_ADVANCED</source>
+      <translation>高度な設定</translation>
+    </message>
   </context>
   <context>
     <name>SMESHGUI_FieldSelectorWdg</name>
     <message>
       <source>FIELDS_TO_EXPORT</source>
       <translation>場の出力</translation>
+    </message>
+  </context>
+  <context>
+    <name>SMESHGUI_AddMeshElementDlg</name>
+    <message>
+      <source>NB_ADDED</source>
+      <translation>0D要素がすでに選択した節点上に存在するため、%1 の要素が追加されました。</translation>
     </message>
   </context>
   <context>
@@ -4279,6 +4386,10 @@
     <message>
       <source>PREF_AUTO_GROUPS</source>
       <translation>MEDエクスポート時に自動的にグループ作成</translation>
+    </message>
+    <message>
+      <source>PREF_SHOW_WARN</source>
+      <translation>グループをエクスポートする際に警告を表示します。</translation>
     </message>
     <message>
       <source>PREF_GROUP_SEGMENT_LENGTH</source>
@@ -5070,8 +5181,12 @@
       <translation>検出</translation>
     </message>
     <message>
-      <source>EDIT_SELECTED_GROUP</source>
-      <translation>選択したグループを編集します。</translation>
+      <source>EDIT_SELECTED_NODE_GROUP</source>
+      <translation>選択された一致節点のグループを編集します。</translation>
+    </message>
+    <message>
+      <source>EDIT_SELECTED_ELEM_GROUP</source>
+      <translation>選択された一致要素のグループを編集します。</translation>
     </message>
     <message>
       <source>SELECT_ALL</source>
@@ -5210,6 +5325,18 @@
     <message>
       <source>USE_INPUT_ELEMS_ONLY</source>
       <translation>入力要素のみ使用</translation>
+    </message>
+    <message>
+      <source>SMESH_SCALES</source>
+      <translation>スケールファクタ</translation>
+    </message>
+    <message>
+      <source>LINEAR_SCALES</source>
+      <translation>スケールファクタの直線的変化</translation>
+    </message>
+    <message>
+      <source>BASE_POINT</source>
+      <translation>スケール中心</translation>
     </message>
   </context>
   <context>
@@ -5499,6 +5626,10 @@
     <message>
       <source>CONNECTED_ELEMS</source>
       <translation>ドメインの要素</translation>
+    </message>
+    <message>
+      <source>NODE_CONN_NUMBER</source>
+      <translation>接続番号</translation>
     </message>
     <message>
       <source>NUMBEROFNODESINELEMENT</source>
@@ -6040,8 +6171,12 @@
       <translation>3D</translation>
     </message>
     <message>
-      <source>EDIT_MESH_SUBMESH</source>
-      <translation>メッシュ/サブメッシュを編集</translation>
+      <source>EDIT_MESH</source>
+      <translation>メッシュの編集</translation>
+    </message>
+    <message>
+      <source>EDIT_SUBMESH</source>
+      <translation>サブメッシュの編集</translation>
     </message>
     <message>
       <source>GEOMETRY</source>
@@ -7512,6 +7647,10 @@
       <translation>空きノードの数</translation>
     </message>
     <message>
+      <source>MAX_NODE_CONNECTIVITY</source>
+      <translation>接続された要素の最大数</translation>
+    </message>
+    <message>
       <source>DOUBLE_NODES_TOLERANCE</source>
       <translation>重複節点の許容値</translation>
     </message>
@@ -7886,6 +8025,25 @@
     <message>
       <source>WRN_AT_LEAST_ONE</source>
       <translation>少なくとも一つのエンティティタイプは選択する必要があります！</translation>
+    </message>
+  </context>
+  <context>
+    <name>SMESH_AdvOptionsWdg</name>
+    <message>
+      <source>ADD_OPTION_BTN</source>
+      <translation>追加オプション</translation>
+    </message>
+    <message>
+      <source>CHOICE</source>
+      <translation>選択</translation>
+    </message>
+    <message>
+      <source>OPTION_NAME</source>
+      <translation>オプション名</translation>
+    </message>
+    <message>
+      <source>OPTION_VALUE</source>
+      <translation>オプション値</translation>
     </message>
   </context>
 </TS>
