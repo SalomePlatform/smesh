@@ -1085,6 +1085,10 @@
         <translation>Eclater en tétraèdres</translation>
     </message>
     <message>
+        <source>STB_OVERALL_MESH_QUALITY</source>
+        <translation>Qualité du maillage global</translation>
+    </message>    
+    <message>
         <source>STB_SPLIT_TO_TETRA</source>
         <translation>Eclater en tétraèdres</translation>
     </message>

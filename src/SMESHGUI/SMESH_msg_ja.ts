@@ -1084,6 +1084,10 @@
       <translation>四面体を爆発します。</translation>
     </message>
     <message>
+      <source>STB_OVERALL_MESH_QUALITY</source>
+      <translation>全体的なメッシュの品質</translation>
+    </message>    
+    <message>
       <source>STB_SPLIT_TO_TETRA</source>
       <translation>四面体を爆発します。</translation>
     </message>

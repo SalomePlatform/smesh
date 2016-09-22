@@ -1133,6 +1133,10 @@
         <translation>Split Volumes</translation>
     </message>
     <message>
+        <source>STB_OVERALL_MESH_QUALITY</source>
+        <translation>Overall Mesh Quality</translation>
+    </message>
+    <message>
         <source>STB_SPLIT_TO_TETRA</source>
         <translation>Split Volumes</translation>
     </message>
