@@ -75,7 +75,7 @@ algorithms are available:
 
 \image html reduce_three_to_one.png "The fastest transition pattern: 3 to 1"
 
-<b>Base vertex</b> tab allows using Quadrangle (Mapping)
+<b>Base vertex</b> tab allows using Quadrangle: Mapping
 algorithm for meshing of trilateral faces. In this case it is
 necessary to select the vertex, which will be used as the forth
 degenerated side of quadrangle.

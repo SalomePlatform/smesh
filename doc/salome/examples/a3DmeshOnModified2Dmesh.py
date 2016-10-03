@@ -10,7 +10,7 @@ geompy = geomBuilder.New(salome.myStudy)
 # The requirement is to have a surface mesh on the cube comprised of
 # triangles of exactly the same size arranged in a grid pattern.
 #
-# To fulfill this requirement we mesh the box using Quadrangle (Mapping)
+# To fulfill this requirement we mesh the box using Quadrangle: Mapping
 # meshing algorithm, split quadrangles into triangles and then generate
 # tetrahedrons.
 

@@ -10,7 +10,9 @@ shell. The meshes of the shells can consist both of triangles and
 quadrangles.
 
 The Radial Prism algorithm would fill the space between the two shells
-with meshes.
+with prisms.
+
+\image html radial_prism_mesh.png "Cut-view of a hollow sphere meshed by Radial Prism algorithm"
 
 This algorithm also needs the information concerning the number and
 distribution of mesh layers between the inner and the outer shapes.

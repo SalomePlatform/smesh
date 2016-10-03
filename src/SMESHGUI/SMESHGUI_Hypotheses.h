@@ -173,7 +173,8 @@ struct HypothesisData
 {
   HypothesisData( const QString&, const QString&, const QString&,
                   const QString&, const QString&, const QString&,
-                  const QString&, const QList<int>&, const bool,
+                  const QString&, const int, const int,
+                  const QList<int>&, const bool,
                   const QStringList&, const QStringList&,
                   const QStringList&, const QStringList&,
                   const bool=true, const bool supportSub=false );
@@ -185,11 +186,13 @@ struct HypothesisData
   QString Label;           //!< label
   QString IconId;          //!< icon identifier
   QString Context;         //!< ["GLOBAL","LOCAL","ANY"(default)]
+  int     GroupID;         //!< group ID (staring from zero)
+  int     Priority;        //!< integer, priority within the group
   QList<int> Dim;          //!< list of supported dimensions (see SMESH::Dimension enumeration)
-  bool IsAuxOrNeedHyp;     //!< TRUE if given hypothesis is auxiliary one, FALSE otherwise
-  //!<                          TRUE if given algorithm can't work w/o hypotheses
+  bool IsAuxOrNeedHyp;     //!< TRUE if given HYPOTHESIS is auxiliary one, FALSE otherwise
+  //!<                          TRUE if given ALGORITHM can't work w/o hypotheses
   bool IsNeedGeometry;     //!< TRUE if the algorithm works with shapes only, FALSE otherwise
-  bool IsSupportSubmeshes; //!< TRUE if the algo building all-dim elems supports submeshes
+  bool IsSupportSubmeshes; //!< TRUE if the algorithm building all-dim elems supports sub-meshes
 
   // for algorithm only: dependencies algo <-> algo and algo -> hypos
   QStringList BasicHypos;   //!< list of basic hypotheses

@@ -30,16 +30,16 @@ In \b MESH there are the following Basic Hypotheses:
 <li>\subpage a1d_meshing_hypo_page "1D Hypotheses" (for meshing of 
 <b>edges</b>):</li>
 <ul>
-<li>\ref number_of_segments_anchor "Number of segments"</li>
+<li>\ref number_of_segments_anchor "Number of Segments"</li>
 <li>\ref average_length_anchor "Local Length"</li>
 <li>\ref max_length_anchor "Max Size"</li>
 <li>\ref adaptive_1d_anchor "Adaptive"</li>
-<li>\ref arithmetic_1d_anchor "Arithmetic 1D"</li>
+<li>\ref arithmetic_1d_anchor "Arithmetic Progression"</li>
 <li>\ref geometric_1d_anchor "Geometric Progression"</li>
 <li>\ref start_and_end_length_anchor "Start and end length"</li>
-<li>\ref deflection_1d_anchor "Deflection 1D"</li>
+<li>\ref deflection_1d_anchor "Deflection"</li>
 <li>\ref automatic_length_anchor "Automatic Length"</li>
-<li>\ref fixed_points_1d_anchor "Fixed points 1D"</li>
+<li>\ref fixed_points_1d_anchor "Fixed points"</li>
 </ul>
 <li>\subpage a2d_meshing_hypo_page "2D Hypotheses" (for meshing of <b>faces</b>):</li>
 <ul>

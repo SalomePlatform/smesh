@@ -170,10 +170,10 @@ for more information about quadratic meshes.
 This additional hypothesis can be used together with 2D triangulation algorithms.
 It allows 2D triangulation algorithms to build quadrangular meshes.
 
-Usage of this hypothesis with "Quadrangle (Mapping)" meshing algorithm
+Usage of this hypothesis with "Quadrangle: Mapping" meshing algorithm
 is obsolete since introducing
 \ref hypo_quad_params_anchor "Quadrangle parameters" hypothesis.
-Usage of this hypothesis with "Quadrangle (Mapping)" meshing algorithm
+Usage of this hypothesis with "Quadrangle: Mapping" meshing algorithm
 corresponds to specifying "Quadrangle Preference" transition type of
 \ref hypo_quad_params_anchor "Quadrangle parameters" hypothesis.
 \note "Quadrangle Preference" transition type can be used only if the

@@ -150,7 +150,7 @@ private slots:
 
 private:
 
-  void                         addItem( const QString& txt, const int type, const int index );
+  void                         addItem( const QString& txt, const int type, const int index, const bool isGroup=false );
   int                          getCurrentIndex( const int type, const bool curByType=false) const;
 
   QMap<int, QStringList>       myAvailableHypTypes;

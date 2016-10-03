@@ -14,25 +14,25 @@ Basic 1D hypothesis specifies:
   <ul>
     <li>\ref average_length_anchor "Local Length"</li>
     <li>\ref max_length_anchor "Max Size"</li>
-    <li>\ref number_of_segments_anchor "Number of segments" with Equidistant distribution</li>
+    <li>\ref number_of_segments_anchor "Number of Segments" with Equidistant distribution</li>
     <li>\ref automatic_length_anchor "Automatic Length"</li>
 </ul></li>
 <li>Constantly increasing or decreasing length of segments:
   <ul>
-    <li>\ref arithmetic_1d_anchor "Arithmetic 1D"</li>
+    <li>\ref arithmetic_1d_anchor "Arithmetic Progression"</li>
     <li>\ref geometric_1d_anchor "Geometric Progression"</li>
     <li>\ref start_and_end_length_anchor "Start and end length"</li>
-    <li>\ref number_of_segments_anchor "Number of segments" with Scale distribution</li>
+    <li>\ref number_of_segments_anchor "Number of Segments" with Scale distribution</li>
 </ul></li>
 <li>Distribution depending on curvature:
   <ul>
     <li>\ref adaptive_1d_anchor "Adaptive"</li>
-    <li>\ref deflection_1d_anchor "Deflection 1D"</li>
+    <li>\ref deflection_1d_anchor "Deflection"</li>
 </ul></li>
 <li>Arbitrary distribution:
   <ul>
-    <li>\ref fixed_points_1d_anchor "Fixed points 1D"</li>
-    <li>\ref number_of_segments_anchor "Number of segments" with
+    <li>\ref fixed_points_1d_anchor "Fixed Points"</li>
+    <li>\ref number_of_segments_anchor "Number of Segments" with
     \ref analyticdensity_anchor "Analytic Density Distribution" or Table Density Distribution</li>
 </ul></li>
 </ul>
@@ -54,15 +54,15 @@ creation of narrow 2D elements.
 - <b>Max size</b> parameter defines the length of segments on straight edges. 
 - \b Deflection parameter gives maximal distance of a segment from a curved edge.
 
-\image html adaptive1d_sample_mesh.png "Adaptive hypothesis and Netgen 2D algorithm - the size of mesh segments reflects the size of geometrical features"
+\image html adaptive1d_sample_mesh.png "Adaptive hypothesis and NETGEN 2D algorithm - the size of mesh segments reflects the size of geometrical features"
 
 <b>See Also</b> a \ref tui_1d_adaptive "sample TUI Script" that uses Adaptive hypothesis.
 
 <br>
 \anchor arithmetic_1d_anchor
-<h2>Arithmetic 1D hypothesis</h2>
+<h2>Arithmetic Progression hypothesis</h2>
 
-<b>Arithmetic 1D</b> hypothesis allows to split edges into segments with a
+<b>Arithmetic Progression</b> hypothesis allows to split edges into segments with a
 length that changes in arithmetic progression (Lk = Lk-1 + d)
 beginning from a given starting length and up to a given end length.
 
@@ -82,10 +82,10 @@ defining <b>Reversed Edges</b> parameter.
 
 \image html a-arithmetic1d.png
 
-\image html b-ithmetic1d.png "Arithmetic 1D hypothesis - the size of mesh elements gradually increases"
+\image html b-ithmetic1d.png "Arithmetic Progression hypothesis - the size of mesh elements gradually increases"
 
 <b>See Also</b> a sample TUI Script of a 
-\ref tui_1d_arithmetic "Defining Arithmetic 1D and Geometric Progression hypothesis" operation.  
+\ref tui_1d_arithmetic "Defining Arithmetic Progression and Geometric Progression hypothesis" operation.  
 
 <br>
 \anchor geometric_1d_anchor
@@ -112,13 +112,13 @@ defining <b>Reversed Edges</b> parameter.
 \image html a-geometric1d.png
 
 <b>See Also</b> a sample TUI Script of a 
-\ref tui_1d_arithmetic "Defining Arithmetic 1D and Geometric Progression hypothesis" operation.  
+\ref tui_1d_arithmetic "Defining Arithmetic Progression and Geometric Progression hypothesis" operation.  
 
 <br>
 \anchor deflection_1d_anchor
-<h2>Deflection 1D hypothesis</h2>
+<h2>Deflection hypothesis</h2>
 
-<b>Deflection 1D</b> hypothesis can be applied for meshing curvilinear edges
+<b>Deflection</b> hypothesis can be applied for meshing curvilinear edges
 composing your geometrical object. It defines only one parameter: the
 value of deflection (or chord error).
 
@@ -130,10 +130,10 @@ two nodes should not exceed the value of deflection.
 
 \image html a-deflection1d.png
 
-\image html b-flection1d.png "Deflection 1D hypothesis - useful for meshing curvilinear edges"
+\image html b-flection1d.png "Deflection hypothesis - useful for meshing curvilinear edges"
 
 <b>See Also</b> a sample TUI Script of a 
-\ref tui_deflection_1d "Defining Deflection 1D hypothesis" operation.
+\ref tui_deflection_1d "Defining Deflection hypothesis" operation.
 
 <br>
 \anchor average_length_anchor
@@ -174,7 +174,7 @@ consists of setting the maximal allowed \b length of segments.
 <b>Use preestimated length</b> check box lets you use \b length
 automatically calculated basing on size of your geometrical object,
 namely as diagonal of bounding box divided by ten. The divider can be
-changed via "Ratio Bounding Box Diagonal / Max Size"
+changed via \ref diagonal_size_ratio_pref "Ratio Bounding Box Diagonal / Max Size"
 preference parameter.
 <b>Use preestimated length</b> check box is enabled only if the
 geometrical object has been selected before hypothesis definition.
@@ -183,11 +183,14 @@ geometrical object has been selected before hypothesis definition.
 
 <br>
 \anchor number_of_segments_anchor
-<h2>Number of segments hypothesis</h2>
+<h2>Number of Segments hypothesis</h2>
 
-<b>Number of segments</b> hypothesis can be applied for approximating
+<b>Number of Segments</b> hypothesis can be applied for approximating
 edges by a definite number of mesh segments with length depending on
-the selected type of distribution of nodes.
+the selected type of distribution of nodes. The default number of
+segments can be set via 
+\ref nb_segments_pref "Automatic Parameters / Default Number of Segments"
+preference parameter.
 
 The direction of the splitting is defined by the orientation of the
 underlying geometrical edge. <b>Reverse Edges</b> list box allows to
@@ -302,9 +305,9 @@ minimum and maximum value of this parameter.
 
 <br>
 \anchor fixed_points_1d_anchor
-<h2>Fixed points 1D hypothesis</h2>
+<h2>Fixed Points hypothesis</h2>
 
-<b>Fixed points 1D</b> hypothesis allows splitting edges through a
+<b>Fixed Points</b> hypothesis allows splitting edges through a
 set of points parametrized on the edge (from 1 to 0) and a number of
 segments for each interval limited by the points.
 
@@ -326,7 +329,7 @@ Object Browser.
 defining <b>Reversed Edges</b> parameter.
 
 
-\image html mesh_fixedpnt.png "Example of a sub-mesh on the edge built using Fixed points 1D hypothesis"
+\image html mesh_fixedpnt.png "Example of a sub-mesh on the edge built using Fixed Points hypothesis"
 
 <b>See Also</b> a sample TUI Script of a 
 \ref tui_fixed_points "Defining Fixed Points" hypothesis operation.

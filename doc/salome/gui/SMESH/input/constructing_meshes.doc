@@ -316,24 +316,24 @@ There is an example of sub-mesh order modifications taking a Mesh created on a B
 shape. The main Mesh object:
 <ul>
   <li><i>1D</i> <b>Wire discretisation</b> with <b>Number of Segments</b>=20</li>
-  <li><i>2D</i> <b>Triangle (Mefisto)</b> with Hypothesis<b>Max Element Area</b>
+  <li><i>2D</i> <b>Triangle: Mefisto</b> with Hypothesis<b>Max Element Area</b>
   </li>
 </ul>
 The first sub-mesh <b>Submesh_1</b> created on <b>Face_1</b> is:
 <ul>
   <li><i>1D</i> <b>Wire discretisation</b> with <b>Number of Segments</b>=4</li>
-  <li><i>2D</i> <b>Triangle (Mefisto)</b> with Hypothesis <b>MaxElementArea</b>=1200</li>
+  <li><i>2D</i> <b>Triangle: Mefisto</b> with Hypothesis <b>MaxElementArea</b>=1200</li>
 </ul>
 The second sub-mesh <b>Submesh_2</b> created on <b>Face_2</b> is:
 <ul>
   <li><i>1D</i> <b>Wire discretisation</b> with <b>Number of Segments</b>=8</li>
-  <li><i>2D</i> <b>Triangle (Mefisto)</b> with Hypothesis <b>MaxElementArea</b>=1200</li>
+  <li><i>2D</i> <b>Triangle: Mefisto</b> with Hypothesis <b>MaxElementArea</b>=1200</li>
 </ul>
 
 And the last sub-mesh <b>Submesh_3</b> created on <b>Face_3</b> is:
 <ul>
   <li><i>1D</i> <b>Wire discretisation</b> with <b>Number of Segments</b>=12</li>
-  <li><i>2D</i> <b>Triangle (Mefisto)</b> with Hypothesis <b>MaxElementArea</b>=1200</li>
+  <li><i>2D</i> <b>Triangle: Mefisto</b> with Hypothesis <b>MaxElementArea</b>=1200</li>
 </ul>
 
 The sub-meshes become concurrent if they share sub-shapes that can be
@@ -404,6 +404,7 @@ re-computed and the Mesh Computation information box will be shown
 with the same contents. (To fully re-compute the mesh, invoke 
 \ref clear_mesh_anchor "Clear Mesh Data" command before). 
 
+\anchor meshing_result_anchor
 If the mesh computation has been a success, the box shows information
 on the number of entities of different types in the mesh.
 
@@ -448,7 +449,7 @@ to facilitate their analysis.
 </center>
 
 \note Mesh Computation Information box does not appear if you set
-"Mesh computation/Show a computation result notification" preference 
+\ref show_comp_result_pref "Mesh computation/Show a computation result notification" preference 
 to the "Never" value. This option gives the possibility to control mesh
 computation reporting. There are the following possibilities: always
 show the information box, show only if an error occurs or never. 

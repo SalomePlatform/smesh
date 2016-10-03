@@ -1,6 +1,6 @@
 /*!
 
-\page radial_quadrangle_1D2D_algo_page Radial Quadrangle 1D2D
+\page radial_quadrangle_1D2D_algo_page Radial Quadrangle 1D-2D
 
 \n This algorithm applies to the meshing of 2D shapes under the
 following conditions: the face must be a full ellipse or a part of ellipse
@@ -21,8 +21,9 @@ end lying on the elliptic curve.
 If no own hypothesis of the algorithm is assigned, any local or global
 hypothesis is used by the algorithm to discretize edges.
 
-If no 1D hypothesis is assigned to an edge, "Default Number of
-Segments" preferences parameter is used to discretize the edge.
+If no 1D hypothesis is assigned to an edge, 
+\ref nb_segments_pref "Default Number of Segments" preferences
+parameter is used to discretize the edge.
 
 \image html hypo_radquad_dlg.png
 

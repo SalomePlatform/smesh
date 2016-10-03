@@ -49,9 +49,7 @@
 #include <string>
 
 // Qt includes
-#include <QMap>
 #include <QDir>
-//#include <QList>
 
 
 // Other includes
@@ -180,7 +178,8 @@ namespace SMESH
   void InitAvailableHypotheses()
   {
     SUIT_OverrideCursor wc;
-    if (myHypothesesMap.empty() && myAlgorithmsMap.empty()) {
+    if ( myHypothesesMap.empty() && myAlgorithmsMap.empty() )
+    {
       // Resource manager
       SUIT_ResourceMgr* resMgr = SMESHGUI::resourceMgr();
       if (!resMgr) return;
@@ -367,6 +366,90 @@ namespace SMESH
       aHypData = myAlgorithmsMap[aHypType];
     }
     return aHypData;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Return the HypothesisData holding a name of a group of hypotheses
+   *        a given hypothesis belongs to
+   */
+  //================================================================================
+
+  HypothesisData* GetGroupTitle( const HypothesisData* hyp, const bool isAlgo )
+  {
+    static std::vector< std::vector< HypothesisData > > theGroups;
+    if ( theGroups.empty() )
+    {
+      theGroups.resize(14); // 14: isAlgo * 10 + dim
+
+      QString dummyS("GROUP");
+      QList<int> dummyIL; dummyIL << 1;
+      QStringList dummySL;
+      HypothesisData group( dummyS,dummyS,dummyS,dummyS,dummyS,dummyS,dummyS,-1,-1,
+                            dummyIL, 0, dummySL,dummySL,dummySL,dummySL );
+      // no group
+      int key = 0;
+      theGroups[ key ].push_back( group );
+
+      // 1D algo
+      key = 11;
+      //        0: Basic
+      group.Label = "GROUP:" + QObject::tr( "SMESH_1D_ALGO_GROUP_BASIC" );
+      theGroups[ key ].push_back( group );
+      //        1: Advanced
+      group.Label = "GROUP:" + QObject::tr( "SMESH_1D_ALGO_GROUP_ADVANCED" );
+      theGroups[ key ].push_back( group );
+
+      // 1D hypotheses
+      key = 01;
+      //        0: Basic
+      group.Label = "GROUP:" + QObject::tr( "SMESH_1D_HYP_GROUP_BASIC" );
+      theGroups[ key ].push_back( group );
+      //        1: Progression
+      group.Label = "GROUP:" + QObject::tr( "SMESH_1D_HYP_GROUP_PROGRESSION" );
+      theGroups[ key ].push_back( group );
+      //        2: Advanced
+      group.Label = "GROUP:" + QObject::tr( "SMESH_1D_HYP_GROUP_ADVANCED" );
+      theGroups[ key ].push_back( group );
+
+      // 2D algo
+      key = 12;
+      //        0: Regular
+      group.Label = "GROUP:" + QObject::tr( "SMESH_2D_ALGO_GROUP_REGULAR" );
+      theGroups[ key ].push_back( group );
+      //        1: Free
+      group.Label = "GROUP:" + QObject::tr( "SMESH_2D_ALGO_GROUP_FREE" );
+      theGroups[ key ].push_back( group );
+      //        2: Advanced
+      group.Label = "GROUP:" + QObject::tr( "SMESH_2D_ALGO_GROUP_ADVANCED" );
+      theGroups[ key ].push_back( group );
+
+      // 3D algo
+      key = 13;
+      //        0: Regular
+      group.Label = "GROUP:" + QObject::tr( "SMESH_3D_ALGO_GROUP_REGULAR" );
+      theGroups[ key ].push_back( group );
+      //        1: Free
+      group.Label = "GROUP:" + QObject::tr( "SMESH_3D_ALGO_GROUP_FREE" );
+      theGroups[ key ].push_back( group );
+      //        2: Advanced
+      group.Label = "GROUP:" + QObject::tr( "SMESH_3D_ALGO_GROUP_ADVANCED" );
+      theGroups[ key ].push_back( group );
+    }
+
+    size_t key = 0, groupID = 0;
+    if ( hyp && !hyp->Dim.isEmpty() )
+    {
+      key     = hyp->Dim[0] + isAlgo * 10;
+      groupID = hyp->GroupID;
+    }
+
+    if ( key < theGroups.size() && !theGroups[ key ].empty() )
+    {
+      std::vector< HypothesisData > & group = theGroups[ key ];
+      return & ( groupID < group.size() ? group[ groupID ] : group.back() );
+    }
+    return & theGroups[ 0 ][ 0 ];
   }
 
   bool IsAvailableHypothesis(const HypothesisData* algoData,

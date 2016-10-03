@@ -161,7 +161,7 @@ bool StdMeshers_Quadrangle_2D::CheckHypothesis
     }
     else if (strcmp("TrianglePreference", aHyp->GetName()) == 0){
       isFirstParams = false;
-      myTrianglePreference = true; 
+      myTrianglePreference = true;
     }
     else {
       isFirstParams = false;
@@ -174,18 +174,18 @@ bool StdMeshers_Quadrangle_2D::CheckHypothesis
     if (isFirstParams) {
       if (strcmp("QuadranglePreference", aHyp->GetName()) == 0) {
         myQuadranglePreference = true;
-        myTrianglePreference = false; 
+        myTrianglePreference = false;
         myQuadType = QUAD_STANDARD;
       }
       else if (strcmp("TrianglePreference", aHyp->GetName()) == 0){
         myQuadranglePreference = false;
-        myTrianglePreference = true; 
+        myTrianglePreference = true;
         myQuadType = QUAD_STANDARD;
       }
     }
-    else {
-      const StdMeshers_QuadrangleParams* aHyp2 = 
-        (const StdMeshers_QuadrangleParams*)aHyp;
+    else if (const StdMeshers_QuadrangleParams* aHyp2 =
+             dynamic_cast<const StdMeshers_QuadrangleParams*>( aHyp ))
+    {
       myTriaVertexID = aHyp2->GetTriaVertex();
 
       if (!myQuadranglePreference && !myTrianglePreference) { // priority of hypos
@@ -206,7 +206,7 @@ bool StdMeshers_Quadrangle_2D::CheckHypothesis
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 

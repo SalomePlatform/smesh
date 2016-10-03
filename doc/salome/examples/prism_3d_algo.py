@@ -1,4 +1,4 @@
-# Usage of 3D Extrusion meshing algorithm
+# Usage of Extrusion 3D meshing algorithm
 
 import salome
 salome.salome_init()

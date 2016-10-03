@@ -8,31 +8,31 @@ This page provides example codes of \ref tui_defining_meshing_algos
 <li>Wire discretisation 1D algorithm
   <ul>
     <li>\ref tui_1d_adaptive "Adaptive 1D" hypothesis</li>
-    <li>\ref tui_1d_arithmetic "Arithmetic 1D" hypothesis</li>
+    <li>\ref tui_1d_arithmetic "Arithmetic Progression" hypothesis</li>
     <li>\ref tui_1d_arithmetic "Geometric Progression" hypothesis</li>
-    <li>\ref tui_deflection_1d "Deflection 1D and Number of Segments" hypotheses</li>
+    <li>\ref tui_deflection_1d "Deflection and Number of Segments" hypotheses</li>
     <li>\ref tui_start_and_end_length "Start and End Length" hypotheses</li>
     <li>\ref tui_average_length "Local Length"</li>
     <li>\ref tui_propagation "Propagation" additional hypothesis </li>
     <li>\ref tui_fixed_points "Fixed Points 1D" hypothesis</li>
   </ul>
 </li>
-<li>Triangle (Mefisto) 2D algorithm
+<li>Triangle: Mefisto 2D algorithm
   <ul>
     <li>\ref tui_max_element_area "Max Element Area" hypothesis </li>
     <li>\ref tui_length_from_edges "Length from Edges"
     hypothesis </li>
   </ul>
 </li>
-<li>Tetrahedron (Netgen) 3D algorithm
+<li>NETGEN 3D algorithm
   <ul>
     <li> \ref tui_max_element_volume "Max. Element Volume"hypothesis </li>
     <li> \ref tui_viscous_layers "Viscous layers"</li>
   </ul>
 </li>
 <li>\ref tui_projection "Projection Algorithms"</li>
-<li>\ref tui_radial_quadrangle "Radial Quadrangle 1D2D" algorithm</li>
-<li>Quadrangle (Mapping) 2D algorithm
+<li>\ref tui_radial_quadrangle "Radial Quadrangle 1D-2D" algorithm</li>
+<li>Quadrangle: Mapping 2D algorithm
   <ul>
     <li> \ref tui_quadrangle_parameters "Quadrangle Parameters" hypothesis </li>
   </ul>
@@ -45,7 +45,7 @@ This page provides example codes of \ref tui_defining_meshing_algos
 
 <br>
 \anchor tui_1d_arithmetic
-<h3>Arithmetic 1D and Geometric Progression</h3>
+<h3>Arithmetic Progression and Geometric Progression</h3>
 \tui_script{defining_hypotheses_ex01.py}
 
 <br>
@@ -55,7 +55,7 @@ This page provides example codes of \ref tui_defining_meshing_algos
 
 <br>
 \anchor tui_deflection_1d
-<h3>Deflection 1D and Number of Segments</h3>
+<h3>Deflection and Number of Segments</h3>
 \tui_script{defining_hypotheses_ex02.py}
 
 <br>
@@ -113,7 +113,7 @@ This page provides example codes of \ref tui_defining_meshing_algos
 \tui_script{defining_hypotheses_ex12.py}
 
 \anchor tui_radial_quadrangle
-<h2> Radial Quadrangle 1D2D example </h2>
+<h2> Radial Quadrangle 1D-2D example </h2>
 \tui_script{defining_hypotheses_ex13.py}
 
 \anchor tui_quadrangle_parameters

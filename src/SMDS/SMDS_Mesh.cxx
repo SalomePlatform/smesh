@@ -162,6 +162,17 @@ SMDS_Mesh::SMDS_Mesh():
   points->Delete();
   myGrid->BuildLinks();
   this->Modified();
+
+  // initialize static maps in SMDS_MeshCell, to be thread-safe
+  if ( myMeshId == 0 )
+  {
+    SMDS_MeshCell::toVtkType( SMDSEntity_Node );
+    SMDS_MeshCell::toVtkOrder( SMDSEntity_Node );
+    SMDS_MeshCell::reverseSmdsOrder( SMDSEntity_Node );
+    SMDS_MeshCell::interlacedSmdsOrder( SMDSEntity_Node );
+    SMDS_MeshCell::toSmdsType( VTK_VERTEX );
+    SMDS_MeshCell::fromVtkOrder( SMDSEntity_Node );
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

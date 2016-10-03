@@ -1,4 +1,4 @@
-# Arithmetic 1D and Geometric Progression
+# Arithmetic Progression and Geometric Progression
 
 import salome
 salome.salome_init()

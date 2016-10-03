@@ -30,6 +30,7 @@
 // SALOME GUI includes
 #include <SUIT_Session.h>
 #include <SUIT_ResourceMgr.h>
+#include <QtxMenu.h>
 
 // Qt includes
 #include <QComboBox>
@@ -163,19 +164,33 @@ SMESHGUI_MeshTab::~SMESHGUI_MeshTab()
  *  \param [in] txt - item text
  *  \param [in] type - HypType
  *  \param [in] index - index of item in a list of items
+ *  \param [in] isGroup - is the item a group title
  */
 //================================================================================
 
-void SMESHGUI_MeshTab::addItem( const QString& txt, const int type, const int index )
+void SMESHGUI_MeshTab::addItem( const QString& txt,
+                                const int      type,
+                                const int      index,
+                                const bool     isGroup )
 {
+  const char* prefix = "  ";
   if ( type <= AddHyp )
   {
-    myHypCombo[ type ]->addItem( txt, QVariant( index ));
-    myHypCombo[ type ]->setMaxVisibleItems( qMax( 10, myHypCombo[ type ]->count() ) );
+    if ( isGroup )
+    {
+      int idx = myHypCombo[ type ]->count();
+      myHypCombo[ type ]->addItem( txt.mid( 6 ), QVariant( index ));
+      myHypCombo[ type ]->setItemData( idx, "separator", Qt::AccessibleDescriptionRole );
+    }
+    else
+    {
+      myHypCombo[ type ]->addItem( prefix + txt, QVariant( index ));
+    }
+    //myHypCombo[ type ]->setMaxVisibleItems( qMax( 10, myHypCombo[ type ]->count() ) );
   }
   else
   {
-    QListWidgetItem* item = new QListWidgetItem( txt, myAddHypList );
+    QListWidgetItem* item = new QListWidgetItem( prefix + txt, myAddHypList );
     item->setData( Qt::UserRole, QVariant( index ));
   }
 }
@@ -222,7 +237,7 @@ void SMESHGUI_MeshTab::setAvailableHyps( const int theId, const QStringList& the
     {
       addItem( tr( "NONE"), Algo, 0 );
       for ( int i = 0, nbHyp = theHyps.count(); i < nbHyp; ++i )
-        addItem( theHyps[i], Algo, i+1 );
+        addItem( theHyps[i], Algo, i+1, theHyps[i].startsWith( "GROUP:" ));
       myHypCombo[ Algo ]->setCurrentIndex( 0 );
     }
   }
@@ -400,15 +415,25 @@ void SMESHGUI_MeshTab::onCreateHyp()
 {
   bool isMainHyp = ( sender() == myCreateHypBtn[ MainHyp ]);
 
-  QMenu aPopup( this );
+  QtxMenu aPopup( this );
   
   QStringList aHypNames = isMainHyp ? 
     myAvailableHypTypes[ MainHyp ] : myAvailableHypTypes[ AddHyp ];
 
   QList<QAction*> actions;
   for ( int i = 0, n = aHypNames.count(); i < n; i++ )
-    actions.append( aPopup.addAction( aHypNames[ i ] ) );
-
+  {
+    QAction* a = 0;
+    if ( aHypNames[ i ].startsWith( "GROUP:" ))
+    {
+      aPopup.appendGroupTitle( aHypNames[ i ].mid( 6 ));
+    }
+    else
+    {
+      a = aPopup.addAction( aHypNames[ i ] );
+    }
+    actions.append( a );
+  }
   QAction* a = aPopup.exec( QCursor::pos() );
   if ( a )
     emit createHyp( isMainHyp ? MainHyp : AddHyp, actions.indexOf( a ) );
@@ -444,7 +469,18 @@ void SMESHGUI_MeshTab::onEditHyp()
 //================================================================================
 void SMESHGUI_MeshTab::onHyp( int theIndex )
 {
-  const QObject* aSender = sender();
+  QObject* aSender = sender();
+
+  if ( QComboBox* cb = qobject_cast< QComboBox* >( aSender ))
+  {
+    // don't allow selecting a group title
+    if ( cb->itemData( theIndex, Qt::AccessibleDescriptionRole ) == "separator" )
+    {
+      cb->setCurrentIndex( theIndex+1 );
+      return;
+    }
+  }
+
   if ( aSender == myHypCombo[ Algo ] )
   {
     emit selectAlgo( theIndex - 1 ); // - 1 because there is NONE on the top

@@ -1,4 +1,4 @@
-# Deflection 1D and Number of Segments
+# Deflection and Number of Segments
 
 import salome
 salome.salome_init()

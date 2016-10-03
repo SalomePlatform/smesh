@@ -4389,6 +4389,50 @@ It can&apos;t be deleted </translation>
         <source>SMESH_ADVANCED</source>
         <translation>Advanced</translation>
     </message>
+    <message>
+        <source>SMESH_1D_ALGO_GROUP_BASIC</source>
+        <translation>Basic</translation>
+    </message>
+    <message>
+        <source>SMESH_1D_ALGO_GROUP_ADVANCED</source>
+        <translation>Advanced</translation>
+    </message>
+    <message>
+        <source>SMESH_1D_HYP_GROUP_BASIC</source>
+        <translation>Basic</translation>
+    </message>
+    <message>
+        <source>SMESH_1D_HYP_GROUP_PROGRESSION</source>
+        <translation>Progression</translation>
+    </message>
+    <message>
+        <source>SMESH_1D_HYP_GROUP_ADVANCED</source>
+        <translation>Advanced</translation>
+    </message>
+    <message>
+        <source>SMESH_2D_ALGO_GROUP_REGULAR</source>
+        <translation>Regular faces</translation>
+    </message>
+    <message>
+        <source>SMESH_2D_ALGO_GROUP_FREE</source>
+        <translation>Free faces</translation>
+    </message>
+    <message>
+        <source>SMESH_2D_ALGO_GROUP_ADVANCED</source>
+        <translation>Advanced</translation>
+    </message>
+    <message>
+        <source>SMESH_3D_ALGO_GROUP_REGULAR</source>
+        <translation>Regular volumes</translation>
+    </message>
+    <message>
+        <source>SMESH_3D_ALGO_GROUP_FREE</source>
+        <translation>Free volumes</translation>
+    </message>
+    <message>
+        <source>SMESH_3D_ALGO_GROUP_ADVANCED</source>
+        <translation>Advanced</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_FieldSelectorWdg</name>

@@ -25,6 +25,13 @@ The <b>Mesh Information</b> dialog box provides three tab pages:
   overall quality information about the selected mesh, sub-mesh or group
   object. 
 
+\anchor dump_mesh_infos
+The button \b Dump allows printing the information displayed in the
+dialog box to a .txt file. The dialog for choosing a file also allows
+to select which tab pages to dump via four check-boxes. The default state
+of the check-boxes can be changed via \ref mesh_information_pref "Mesh information"
+preferences.
+
 \anchor advanced_mesh_infos_anchor
 <h2>Base Information</h2>
 
@@ -72,10 +79,11 @@ analyze directly in the dialog box or select the node(s) or element(s) in
 the 3D viewer.
 
 \note The information about the groups, to which the node or element belongs,
- can be shown in a short or in a detailed form. By default, for performance
+can be shown in a short or in a detailed form. By default, for performance
 reasons, this information is shown in a short form (group names
-only). The detailed information on groups can be switched on via the user
-preferences, see \ref mesh_preferences_page.
+only). The detailed information on groups can be switched on via
+\ref group_detail_info_pref "Show details on groups in element information tab"
+option of \ref mesh_preferences_page.
 
 \anchor mesh_addition_info_anchor
 <h2>Additional Information</h2> 
@@ -105,6 +113,7 @@ For a sub-mesh object, the following information is shown:
 <em>"Additional Info" page, sub-mesh information</em></center>
 <br>
 
+\anchor mesh_addition_info_group_anchor
 For a group object, the following information is shown:
 - Name
 - Parent mesh
@@ -122,8 +131,8 @@ For a group object, the following information is shown:
 computed only by demand. For this, the user should press the "Compute"
 button (see picture). Also, the number of underlying nodes is
 automatically calculated if the size of the group does not exceed
-the "Automatic nodes compute limit" set via the  "Mesh information"
-preferences (zero value means no limit).
+the \ref nb_nodes_limit_pref "Automatic nodes compute limit"
+preference value (zero value means no limit).
 
 \anchor mesh_quality_info_anchor
 <h2>Quality Information</h2>
@@ -148,19 +157,22 @@ The <b>Quality Info</b> tab provides overall information about mesh quality cont
 <center>\image html ctrlinfo.png
 <em>"Quality Info" page</em></center>
 
-\note It is possible to set "Double nodes tolerance" in the dialog for a local change 
-      or via the "Quality controls" in Mesh preferences.
+\note It is possible to change <b>Double nodes tolerance</b>, which
+will be used upon consequent pressing \a Compute button. The default value
+of the tolerance can be set via the
+\ref dbl_nodes_tol_pref "Quality controls" preferences.
 
-\note For performance reasons, all quality control values for big meshes are
-computed only by demand. For this, press the "compute"
-button. Also, values are automatically computed if the number of 
-nodes / elements does not exceed the "Automatic controls compute limit" set 
-via the "Mesh information" preferences (zero value means that there is no limit).
+\note For performance reasons, all quality control values for big
+meshes are computed only by demand. For this, press the \a Compute
+button. Also, values are automatically computed if the number of nodes
+/ elements does not exceed the
+\ref auto_control_limit_pref "Automatic controls compute limit" set
+via the \ref mesh_information_pref "Mesh information" preferences
+(zero value means that there is no limit).
 
-\note The plot functionality is available only if the GUI module is built with Plot 2D Viewer (option SALOME_USE_PLOT2DVIEWER is ON when building GUI module).
-
-The button \b "Dump" allows printing the information displayed in the
-dialog box to a .txt file.
+\note The plot functionality is available only if the GUI module is
+built with Plot 2D Viewer (option SALOME_USE_PLOT2DVIEWER is ON when
+building GUI module).
 
 See the \ref tui_viewing_mesh_infos "TUI Example".
 

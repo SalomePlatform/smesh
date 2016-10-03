@@ -1,4 +1,4 @@
-# Radial Quadrangle 1D2D example
+# Radial Quadrangle 1D-2D example
 
 import salome
 salome.salome_init()

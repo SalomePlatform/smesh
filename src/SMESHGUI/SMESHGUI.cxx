@@ -5001,19 +5001,6 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( lim, "special", tr( "PREF_UPDATE_LIMIT_NOLIMIT" ) );
   addPreference( tr( "PREF_INCREMENTAL_LIMIT" ), autoUpdate, LightApp_Preferences::Bool, "SMESH", "incremental_limit" );
 
-  int qaGroup = addPreference( tr( "PREF_GROUP_QUALITY" ), genTab );
-  setPreferenceProperty( qaGroup, "columns", 2 );
-  addPreference( tr( "PREF_DISPLAY_ENTITY" ), qaGroup, LightApp_Preferences::Bool, "SMESH", "display_entity" );
-  addPreference( tr( "PREF_PRECISION_USE" ), qaGroup, LightApp_Preferences::Bool, "SMESH", "use_precision" );
-  int prec = addPreference( tr( "PREF_PRECISION_VALUE" ), qaGroup, LightApp_Preferences::IntSpin, "SMESH", "controls_precision" );
-  setPreferenceProperty( prec, "min", 0 );
-  setPreferenceProperty( prec, "max", 100 );
-  int doubleNodesTol = addPreference( tr( "PREF_EQUAL_NODES_TOL" ), qaGroup, LightApp_Preferences::DblSpin, "SMESH", "equal_nodes_tolerance" );
-  setPreferenceProperty( doubleNodesTol, "precision", 10 );
-  setPreferenceProperty( doubleNodesTol, "min", 0.0000000001 );
-  setPreferenceProperty( doubleNodesTol, "max", 1000000.0 );
-  setPreferenceProperty( doubleNodesTol, "step", 0.0000001 );
-
   int dispgroup = addPreference( tr( "PREF_DISPLAY_MODE_GROUP" ), genTab );
   setPreferenceProperty( dispgroup, "columns", 2 );
   int dispmode = addPreference( tr( "PREF_DISPLAY_MODE" ), dispgroup, LightApp_Preferences::Selector, "SMESH", "display_mode" );
@@ -5047,6 +5034,18 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( maxAngle, "min", 1 );
   setPreferenceProperty( maxAngle, "max", 90 );
 
+  int qaGroup = addPreference( tr( "PREF_GROUP_QUALITY" ), genTab );
+  setPreferenceProperty( qaGroup, "columns", 2 );
+  addPreference( tr( "PREF_DISPLAY_ENTITY" ), qaGroup, LightApp_Preferences::Bool, "SMESH", "display_entity" );
+  addPreference( tr( "PREF_PRECISION_USE" ), qaGroup, LightApp_Preferences::Bool, "SMESH", "use_precision" );
+  int prec = addPreference( tr( "PREF_PRECISION_VALUE" ), qaGroup, LightApp_Preferences::IntSpin, "SMESH", "controls_precision" );
+  setPreferenceProperty( prec, "min", 0 );
+  setPreferenceProperty( prec, "max", 100 );
+  int doubleNodesTol = addPreference( tr( "PREF_EQUAL_NODES_TOL" ), qaGroup, LightApp_Preferences::DblSpin, "SMESH", "equal_nodes_tolerance" );
+  setPreferenceProperty( doubleNodesTol, "precision", 10 );
+  setPreferenceProperty( doubleNodesTol, "min", 0.0000000001 );
+  setPreferenceProperty( doubleNodesTol, "max", 1000000.0 );
+  setPreferenceProperty( doubleNodesTol, "step", 0.0000001 );
 
 
   int exportgroup = addPreference( tr( "PREF_GROUP_EXPORT" ), genTab );

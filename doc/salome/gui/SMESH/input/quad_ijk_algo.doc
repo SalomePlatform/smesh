@@ -1,8 +1,8 @@
 /*!
 
-\page quad_ijk_algo_page Quadrangle (Mapping) meshing algorithm
+\page quad_ijk_algo_page Quadrangle: Mapping meshing algorithm
 
-<b>Quadrangle (Mapping)</b> meshing algorithm is intended for creating
+<b>Quadrangle: Mapping</b> meshing algorithm is intended for creating
 all-quadrangle and quad-dominant meshes on faces without holes and
 bound by at least three edges.
 

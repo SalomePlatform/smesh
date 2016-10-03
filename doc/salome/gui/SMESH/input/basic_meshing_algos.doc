@@ -26,9 +26,9 @@ number of mesh segments following an 1D hypothesis.
 <li>For meshing of 2D entities (<b>faces</b>):</li>
 
 <ul>
-<li><b>Triangle (Mefisto)</b> meshing algorithm - splits faces
+<li><b>Triangle: Mefisto</b> meshing algorithm - splits faces
   into triangular elements.</li>
-<li>\subpage quad_ijk_algo_page "Quadrangle (Mapping)" meshing
+<li>\subpage quad_ijk_algo_page "Quadrangle: Mapping" meshing
   algorithm - splits faces into quadrangular elements.</li>
 </ul>
 
@@ -65,19 +65,17 @@ objects.
 
 There is also a number of more specific algorithms:
 <ul>
-<li>\subpage prism_3d_algo_page "for meshing prismatic 3D shapes with hexahedra and prisms"</li>
-<li>\subpage quad_from_ma_algo_page "for quadrangle meshing of faces with sinuous borders and rings"</li>
+<li>\subpage prism_3d_algo_page "Extrusion 3D" - for meshing prismatic 3D shapes with hexahedra and prisms.</li>
+<li>\subpage quad_from_ma_algo_page "Quadrangle: Medial Axis Projection" - for quadrangle meshing of faces with sinuous borders and rings.</li>
 <li> <b>Polygon per Face</b> meshing algorithm - generates one mesh
   face (either a triangle, a quadrangle or a polygon) per a geometrical
   face using all nodes from the face boundary.</li>
-<li>\subpage projection_algos_page "for meshing by projection of another mesh"</li>
-<li>\subpage import_algos_page "for meshing by importing elements from another mesh"</li>
-<li>\subpage radial_prism_algo_page "for meshing 3D geometrical objects with cavities with hexahedra and prisms"</li>
-<li>\subpage radial_quadrangle_1D2D_algo_page "for quadrangle meshing of disks and parts of disks"</li>
-<li>\subpage use_existing_page "Use Edges to be Created Manually" and 
-  \ref use_existing_page "Use Faces to be Created Manually" algorithms can be
-  used to create a 1D or a 2D mesh in a python script.</li>
-<li>\subpage segments_around_vertex_algo_page "for defining the length of mesh segments around certain vertices"</li>
+<li>\subpage projection_algos_page "Projection algorithms" - for meshing by projection of another mesh.</li>
+<li>\subpage import_algos_page "Import algorithms" - for meshing by importing elements from another mesh.</li>
+<li>\subpage radial_prism_algo_page "Radial Prism" - for meshing 3D geometrical objects with cavities with hexahedra and prisms.</li>
+<li>\subpage radial_quadrangle_1D2D_algo_page "Radial Quadrangle 1D-2D" - for quadrangle meshing of disks and parts of disks.</li>
+<li>\subpage use_existing_page "Use Faces/Edges to be Created Manually" - to create a 1D or a 2D mesh in a python script.</li>
+<li>\subpage segments_around_vertex_algo_page "Segments around Vertex" - for defining the length of mesh segments around certain vertices.</li>
 </ul>
 
 \ref constructing_meshes_page "Constructing meshes" page describes in

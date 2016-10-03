@@ -141,11 +141,18 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
       else
         context = context.toUpper();
 
+      bool isOk;
+      QString groupIDStr = atts.value("group-id");
+      int groupID = groupIDStr.toUInt( &isOk );
+      if ( !isOk ) groupID = -1;
+      QString priorityStr = atts.value("priority");
+      int priority = priorityStr.toUInt( &isOk );
+      if ( !isOk ) priority = -1;
+
       QString aDimStr = atts.value("dim");
       aDimStr = aDimStr.remove( ' ' );
       QStringList aDimList = aDimStr.split( ',', QString::SkipEmptyParts );
       QStringList::iterator anIter;
-      bool isOk;
       QList<int> aDim;
       for ( anIter = aDimList.begin(); anIter != aDimList.end(); ++anIter )
       {
@@ -170,7 +177,7 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
       if ( !aHypAlType.contains( BAD_HYP_FLAG ) ) {
         HypothesisData* aHypData =
           new HypothesisData (aHypAlType, myPluginName, myServerLib, myClientLib,
-                              aLabel, anIcon, context, aDim, isAuxOrNeedHyp,
+                              aLabel, anIcon, context, groupID, priority, aDim, isAuxOrNeedHyp,
                               attr[ HYPOS ], attr[ OPT_HYPOS ], attr[ INPUT ], attr[ OUTPUT ],
                               isNeedGeom, isSupportSubmeshes );
 

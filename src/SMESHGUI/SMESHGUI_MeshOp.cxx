@@ -943,7 +943,6 @@ void SMESHGUI_MeshOp::availableHyps( const int       theDim,
   bool isAux  = ( theHypType >= AddHyp );
   QStringList aHypTypeNameList = SMESH::GetAvailableHypotheses( isAlgo, theDim, isAux, myIsOnGeometry, !myIsMesh );
 
-  QStringList::const_iterator anIter;
   GEOM::GEOM_Object_var aGeomVar;
   QString aCurrentGeomToSelect;
   if ( !theMeshType.isEmpty() ) {
@@ -955,23 +954,50 @@ void SMESHGUI_MeshOp::availableHyps( const int       theDim,
      myHypMapIsApplicable.clear();
   }
 
+  std::multimap< double, HypothesisData* > sortedHyps;
+  QStringList::const_iterator anIter;
   for ( anIter = aHypTypeNameList.begin(); anIter != aHypTypeNameList.end(); ++anIter )
   {
     HypothesisData* aData = SMESH::GetHypothesisData( *anIter );
     if ( ( isCompatible ( thePrevAlgoData, aData, theHypType ) &&
            isCompatible ( theNextAlgoData, aData, theHypType ) ) ||
-           ( theMeshType == "ANY" && aData->InputTypes.isEmpty())) {
-      if ( !theMeshType.isEmpty() && theDim >= SMESH::DIM_2D &&
+           ( theMeshType == "ANY" && aData->InputTypes.isEmpty()))
+    {
+      if ( ( !theMeshType.isEmpty() )  &&
+           ( theDim >= SMESH::DIM_2D ) &&
            ( ( theMeshType != "ANY" && !isCompatibleToMeshType( aData, theMeshType )) ||
-           !isCompatibleToGeometry( aData, aCurrentGeomToSelect, aGeomVar )))
+             !isCompatibleToGeometry( aData, aCurrentGeomToSelect, aGeomVar )))
         continue;
+
+      int  groupID = aData->GroupID;
+      int priority = aData->Priority;
+      if ( groupID  < 0 || groupID > 9    ) groupID  = 9;
+      if ( priority < 0 || priority > 999 ) priority = 999;
+
+      sortedHyps.insert( std::make_pair( groupID + priority * 1e-3, aData ));
+    }
+  }
+
+  if ( !sortedHyps.empty() )
+  {
+    HypothesisData* aPrevGroup = SMESH::GetGroupTitle( sortedHyps.rbegin()->second, isAlgo );
+    std::multimap< double, HypothesisData* >::iterator key_hyp = sortedHyps.begin();
+    for ( ; key_hyp != sortedHyps.end(); ++key_hyp )
+    {
+      HypothesisData*  aData = key_hyp->second;
+      HypothesisData* aGroup = SMESH::GetGroupTitle( aData, isAlgo );
+      if ( aPrevGroup != aGroup )
+      {
+        theDataList.append( aGroup );
+        theHyps.append( aGroup->Label );
+        aPrevGroup = aGroup;
+      }
       theDataList.append( aData );
       theHyps.append( aData->Label );
     }
   }
 
-  if ( !theMeshType.isEmpty() && !aCurrentGeomToSelect.isEmpty() &&
-       myLastGeomToSelect != aCurrentGeomToSelect )
+  if ( !theMeshType.isEmpty() && !aCurrentGeomToSelect.isEmpty() )
     myLastGeomToSelect = aCurrentGeomToSelect;
 }
 

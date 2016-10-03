@@ -1,8 +1,8 @@
 /*!
 
-\page prism_3d_algo_page 3D extrusion meshing algorithm
+\page prism_3d_algo_page Extrusion 3D meshing algorithm
 
-3D extrusion algorithm can be used for meshing prisms, i.e. 3D shapes
+Extrusion 3D algorithm can be used for meshing prisms, i.e. 3D shapes
 defined by two opposing faces having the same number of vertices and
 edges. These two faces should be connected by quadrangle "side" faces.
 
@@ -28,7 +28,7 @@ This picture shows four neighboring prism stacks, each comprising two prisms.
 The shown sub-mesh is used by the algorithm to mesh
 all eight prisms in the stacks.
 
-To use <em>3D extrusion</em> algorithm you need to assign algorithms
+To use <em>Extrusion 3D</em> algorithm you need to assign algorithms
 and hypotheses of lower dimensions as follows.
 (A sample picture below shows algorithms and hypotheses used to
 mesh a cylinder with prismatic volumes).
@@ -41,7 +41,7 @@ The \b Global algorithms and hypotheses to be chosen at
 <li> 1D algorithm and hypothesis that will be applied for meshing
   (logically) vertical edges of the prism (which connect the top and the
   base faces of the prism). In the sample picture above these are
-  "Regular_1D" algorithm and "Nb. Segments" hypothesis named "Vertical
+  "Regular_1D" algorithm and "Number of Segments" hypothesis named "Vertical
   Nb. Segments".</li>
 </ul>
 
@@ -66,21 +66,21 @@ The \b Local algorithms and hypotheses to be chosen at
     Scale Factor=3 is assigned to the highlighted edge.
 </li></ul>
 
-If <em>3D extrusion</em> algorithm is assigned to a sub-mesh in a mesh
+If <em>Extrusion 3D</em> algorithm is assigned to a sub-mesh in a mesh
 with multiple sub-meshes, the described above approach may not work as
 expected. For example the bottom face may be meshed by other algorithm
-before <em>3D extrusion</em> have a chance to project a mesh from the
+before <em>Extrusion 3D</em> have a chance to project a mesh from the
 base face. This thing can happen with vertical edges as well. All
 these can lead to either a meshing failure or to an incorrect meshing.
 
 In such a case, it's necessary to explicitly define algorithms
-that <em>3D extrusion</em> implicitly applies in a simple case:
+that <em>Extrusion 3D</em> implicitly applies in a simple case:
 - assign \ref projection_1D2D algorithm to the top face and
 - assign a 1D algorithm to a group of all vertical edges.
 
-\image html image157.gif "Prism with 3D extrusion meshing. Vertical division is different on neighbor edges because several local 1D hypotheses are assigned."
+\image html image157.gif "Prism with Extrusion 3D meshing. Vertical division is different on neighbor edges because several local 1D hypotheses are assigned."
 
 \sa a sample TUI Script of
-\ref tui_prism_3d_algo "Use 3D extrusion meshing algorithm".
+\ref tui_prism_3d_algo "Use Extrusion 3D meshing algorithm".
 
 */

@@ -1374,7 +1374,7 @@ const TopoDS_Shape& SMESHDS_Mesh::IndexToShape(int ShapeIndex) const
     if ( ShapeIndex > 0 )
       return myIndexToShape.FindKey(ShapeIndex);
   }
-  catch ( Standard_OutOfRange )
+  catch ( ... )
   {
   }
   static TopoDS_Shape nullShape;

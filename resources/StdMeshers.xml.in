@@ -28,11 +28,11 @@
 
 <meshers>
 
-<meshers-group name="Standard Meshers"
-               resources="StdMeshers"
+<meshers-group name      ="Standard Meshers"
+               resources ="StdMeshers"
                idl-module="StdMeshers"
                server-lib="StdMeshersEngine"
-               gui-lib="StdMeshersGUI">
+               gui-lib   ="StdMeshersGUI">
   <hypotheses>
 
     <hypothesis type     ="SegmentLengthAroundVertex"
@@ -43,46 +43,64 @@
     <hypothesis type     ="LocalLength"
                 label-id ="Local Length"
                 icon-id  ="mesh_hypo_length.png"
+                group-id ="0"
+                priority ="20"
                 dim      ="1"/>
 
     <hypothesis type     ="MaxLength"
                 label-id ="Max Size"
                 icon-id  ="mesh_hypo_length.png"
+                group-id ="2"
+                priority ="50"
                 dim      ="1"/>
 
     <hypothesis type     ="Arithmetic1D"
-                label-id ="Arithmetic 1D"
+                label-id ="Arithmetic Progression"
                 icon-id  ="mesh_hypo_length.png"
+                group-id ="1"
+                priority ="10"
                 dim      ="1"/>
 
     <hypothesis type     ="GeometricProgression"
                 label-id ="Geometric Progression"
                 icon-id  ="mesh_hypo_length.png"
+                group-id ="1"
+                priority ="20"
                 dim      ="1"/>
 
     <hypothesis type     ="FixedPoints1D"
-                label-id ="Fixed Points 1D"
+                label-id ="Fixed Points"
                 icon-id  ="mesh_hypo_length.png"
+                group-id ="2"
+                priority ="10"
                 dim      ="1"/>
 
     <hypothesis type     ="StartEndLength"
                 label-id ="Start and End Length"
                 icon-id  ="mesh_hypo_length.png"
+                group-id ="1"
+                priority ="30"
                 dim      ="1"/>
 
     <hypothesis type     ="NumberOfSegments"
-                label-id ="Nb. Segments"
+                label-id ="Number of Segments"
                 icon-id  ="mesh_hypo_segment.png"
+                group-id ="0"
+                priority ="10"
                 dim      ="1"/>
 
     <hypothesis type     ="Deflection1D"
-                label-id ="Deflection 1D"
+                label-id ="Deflection"
                 icon-id  ="mesh_hypo_length.png"
+                group-id ="2"
+                priority ="20"
                 dim      ="1"/>
 
     <hypothesis type     ="Adaptive1D"
                 label-id ="Adaptive"
                 icon-id  ="mesh_hypo_length.png"
+                group-id ="2"
+                priority ="30"
                 dim      ="1"/>
 
     <hypothesis type     ="Propagation"
@@ -102,6 +120,8 @@
     <hypothesis type     ="AutomaticLength"
                 label-id ="Automatic Length"
                 icon-id  ="mesh_hypo_length.png"
+                group-id ="2"
+                priority ="40"
                 dim      ="1"/>
 
     <hypothesis type     ="LengthFromEdges"
@@ -222,6 +242,8 @@
     <algorithm type     ="Regular_1D"
 	       label-id ="Wire Discretisation"
 	       icon-id  ="mesh_algo_regular.png"
+               group-id ="0"
+               priority ="10"
                hypos    ="Adaptive1D,LocalLength,MaxLength,Arithmetic1D,GeometricProgression,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength,FixedPoints1D"
                opt-hypos="Propagation,PropagOfDistribution,QuadraticMesh"
                input    ="VERTEX"
@@ -248,6 +270,8 @@
     <algorithm type     ="CompositeSegment_1D"
 	       label-id ="Composite Side Discretisation"
 	       icon-id  ="mesh_algo_regular.png"
+               group-id ="0"
+               priority ="20"
                hypos    ="Adaptive1D,LocalLength,MaxLength,Arithmetic1D,GeometricProgression,StartEndLength,NumberOfSegments,Deflection1D,AutomaticLength,FixedPoints1D"
                opt-hypos="Propagation,PropagOfDistribution,QuadraticMesh"
                input    ="VERTEX"
@@ -281,8 +305,10 @@
     </algorithm>
 
     <algorithm type      ="@MEFISTO2D_NAME@"
-	       label-id  ="Triangle (Mefisto)"
+	       label-id  ="Triangle: Mefisto"
 	       icon-id   ="mesh_algo_mefisto.png"
+               group-id ="1"
+               priority ="40"
                hypos     ="LengthFromEdges,MaxElementArea"
                opt-hypos ="ViscousLayers2D"
                input     ="EDGE"
@@ -297,8 +323,10 @@
     </algorithm>
 
     <algorithm type     ="Quadrangle_2D"
-               label-id ="Quadrangle (Mapping)"
+               label-id ="Quadrangle: Mapping"
                icon-id  ="mesh_algo_quad.png"
+               group-id ="0"
+               priority ="10"
                hypos    ="QuadrangleParams"
                opt-hypos="ViscousLayers2D"
                input    ="EDGE"
@@ -312,8 +340,10 @@
     </algorithm>
 
     <algorithm type     ="QuadFromMedialAxis_1D2D"
-               label-id ="Quadrangle (Medial Axis Projection)"
+               label-id ="Quadrangle: Medial Axis Projection"
                icon-id  ="mesh_algo_quad.png"
+               group-id ="0"
+               priority ="20"
                hypos    ="NumberOfLayers2D, LayerDistribution2D"
                opt-hypos="ViscousLayers2D"
                input    ="EDGE"
@@ -329,6 +359,8 @@
     <algorithm type     ="PolygonPerFace_2D"
                label-id ="Polygon per Face"
                icon-id  ="mesh_algo_polygon.png"
+               group-id ="2"
+               priority ="40"
                opt-hypos="ViscousLayers2D"
                input    ="EDGE"
                output   ="POLYGON,QUAD,TRIA"
@@ -342,6 +374,8 @@
     <algorithm type     ="Hexa_3D"
                label-id ="Hexahedron (i,j,k)"
                icon-id  ="mesh_algo_hexa.png"
+               group-id ="0"
+               priority ="10"
                input    ="QUAD"
                output   ="HEXA,PENTA"
 	       need-geom="false"
@@ -356,6 +390,8 @@
     <algorithm type    ="Projection_1D"
                label-id="Projection 1D"
                icon-id ="mesh_algo_regular.png"
+               group-id="1"
+               priority="10"
                hypos   ="ProjectionSource1D"
                output  ="EDGE"
                need-hyp="true"
@@ -369,6 +405,8 @@
     <algorithm type    ="Projection_2D"
                label-id="Projection 2D"
                icon-id ="mesh_algo_quad.png"
+               group-id="2"
+               priority="30"
                input   ="EDGE"
                hypos   ="ProjectionSource2D"
                output  ="QUAD,TRIA"
@@ -383,6 +421,8 @@
     <algorithm type    ="Projection_1D2D"
                label-id="Projection 1D-2D"
                icon-id ="mesh_algo_quad.png"
+               group-id="2"
+               priority="20"
                hypos   ="ProjectionSource2D"
                output  ="QUAD,TRIA"
                need-hyp="true"
@@ -396,6 +436,8 @@
     <algorithm type    ="Projection_3D"
                label-id="Projection 3D"
                icon-id ="mesh_algo_hexa.png"
+               group-id="2"
+               priority="20"
                hypos   ="ProjectionSource3D"
                input   ="QUAD,TRIA"
                need-hyp="true"
@@ -409,6 +451,8 @@
     <algorithm type    ="Import_1D"
                label-id="Import 1D Elements from Another Mesh"
                icon-id ="mesh_algo_regular.png"
+               group-id="1"
+               priority="20"
                hypos   ="ImportSource1D"
                output  ="EDGE"
                need-hyp="true"
@@ -422,6 +466,8 @@
     <algorithm type             ="Import_1D2D"
                label-id         ="Import 1D-2D Elements from Another Mesh"
                icon-id          ="mesh_algo_quad.png"
+               group-id         ="2"
+               priority         ="50"
                hypos            ="ImportSource2D"
                output           ="QUAD,TRIA"
                support-submeshes="false"
@@ -434,8 +480,10 @@
     </algorithm>
 
     <algorithm type    ="Prism_3D"
-               label-id="3D Extrusion"
+               label-id="Extrusion 3D"
                icon-id ="mesh_algo_hexa.png"
+               group-id="2"
+               priority="10"
                input   ="QUAD,TRIA"
                output  ="HEXA,PENTA,OCTA,POLYHEDRON"
                dim     ="3">
@@ -445,8 +493,10 @@
     </algorithm>
 
     <algorithm type    ="RadialPrism_3D"
-               label-id="Radial Prism 3D"
+               label-id="Radial Prism"
                icon-id ="mesh_algo_hexa.png"
+               group-id="2"
+               priority="30"
                hypos   ="NumberOfLayers, LayerDistribution"
                input   ="QUAD,TRIA"
                output  ="HEXA,PENTA,OCTA,POLYHEDRON"
@@ -461,6 +511,8 @@
     <algorithm type    ="UseExisting_1D"
                label-id="Use Edges to be Created Manually"
                icon-id ="mesh_algo_regular.png"
+               group-id="1"
+               priority="30"
                input   ="VERTEX"
                output  ="EDGE"
                dim     ="1">
@@ -472,6 +524,8 @@
     <algorithm type    ="UseExisting_2D"
                label-id="Use Faces to be Created Manually"
                icon-id ="mesh_algo_quad.png"
+               group-id="2"
+               priority="60"
                input   ="EDGE"
                output  ="QUAD,TRIA"
                dim     ="2">
@@ -481,8 +535,10 @@
     </algorithm>
 
     <algorithm type    ="RadialQuadrangle_1D2D"
-               label-id="Radial Quadrangle 1D2D"
+               label-id="Radial Quadrangle 1D-2D"
                icon-id ="mesh_algo_quad.png"
+               group-id="2"
+               priority="10"
                hypos   ="NumberOfLayers2D, LayerDistribution2D"
                input   ="EDGE"
                output  ="QUAD"
@@ -496,6 +552,8 @@
     <algorithm type             ="Cartesian_3D"
                label-id         ="Body Fitting"
                icon-id          ="mesh_algo_hexa.png"
+               group-id         ="0"
+               priority         ="20"
                hypos            ="CartesianParameters3D"
                support-submeshes="false"
                output           ="HEXA"

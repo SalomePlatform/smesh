@@ -79,6 +79,9 @@ namespace SMESH
   HypothesisData* GetHypothesisData( const QString& );
 
   SMESHGUI_EXPORT
+  HypothesisData* GetGroupTitle( const HypothesisData* hyp, const bool isAlgo );
+
+  SMESHGUI_EXPORT
   bool IsAvailableHypothesis( const HypothesisData*,
                               const QString&,
                               bool& );
