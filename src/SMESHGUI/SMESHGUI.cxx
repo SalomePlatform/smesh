@@ -4380,7 +4380,7 @@ void SMESHGUI::initialize( CAM_Application* app )
     isNotEmpty("numberOfNodes <> 0"),
 
     // has nodes, edges, etc in VISIBLE! actor
-    hasNodes("(numberOfNodes > 0 )"),//&& isVisible)"),
+    hasNodes("(numberOfNodes > 0 ) && hasActor"),
     hasElems("(count( elemTypes ) > 0)"),
     hasDifferentElems("(count( elemTypes ) > 1)"),
     hasBalls("({'BallElem'} in elemTypes)"),
@@ -4532,7 +4532,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( separator(), anId, -1 );
 
   popupMgr()->insert( action( SMESHOp::OpDEChoose ), anId, -1 );
-  popupMgr()->setRule( action( SMESHOp::OpDEChoose ), aClient + "&&" + aType + "&&" + isNotEmpty, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( SMESHOp::OpDEChoose ), aClient + "&& $type in {" + mesh + "} &&" + isNotEmpty, QtxPopupMgr::VisibleRule );
 
   popupMgr()->insert( separator(), anId, -1 );
 

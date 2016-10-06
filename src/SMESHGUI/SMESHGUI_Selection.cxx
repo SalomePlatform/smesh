@@ -118,6 +118,7 @@ QVariant SMESHGUI_Selection::parameter( const int ind, const QString& p ) const
   QVariant val;
   if      ( p=="client" )               val = QVariant( LightApp_Selection::parameter( p ) );
   else if ( p=="type" )                 val = QVariant( myTypes[ind] );
+  else if ( p=="hasActor" )             val = QVariant( getActor( ind ) != 0 );
   else if ( p=="elemTypes" )            val = QVariant( elemTypes( ind ) );
   else if ( p=="isAutoColor" )          val = QVariant( isAutoColor( ind ) );
   else if ( p=="numberOfNodes" )        val = QVariant( numberOfNodes( ind ) );
