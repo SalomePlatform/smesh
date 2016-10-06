@@ -28,4 +28,4 @@ print ""
 aGroup = mesh.CreateEmptyGroup(SMESH.FACE, "Element Diameter 3D > " + `mel_3d_margin`)
 aGroup.Add(anIds)
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

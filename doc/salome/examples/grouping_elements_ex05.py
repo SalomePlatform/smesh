@@ -50,4 +50,4 @@ aGroup4.Add(anIds)
 aGroup5 = mesh.UnionListOfGroups([aGroup3, aGroup4], "Any Area")
 print "Criterion: Any Area, Nb = ", len(aGroup5.GetListOfID())
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

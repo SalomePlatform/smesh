@@ -43,4 +43,4 @@ aSmeshGroup1 = quadra.GroupOnGeom(face, "SMESHGroup1")
 # create SMESH group on <aGeomGroupE> with default name
 aSmeshGroup2 = quadra.GroupOnGeom(aGeomGroupE) 
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

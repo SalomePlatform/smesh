@@ -176,7 +176,7 @@ for i in range(8):
     smesh.SetName(algo.GetSubMesh(), "SubMeshEdgeZ_"+str(i+1))
   
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)
 
 print "-------------------------- compute the mesh of the volume"
 
@@ -197,4 +197,4 @@ if ret != 0:
 else:
     print "problem when Computing the mesh"
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

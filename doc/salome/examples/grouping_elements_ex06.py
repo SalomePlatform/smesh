@@ -34,4 +34,4 @@ aGroup3 = mesh.IntersectListOfGroups([aGroup1, aGroup2], "20 < Area < 60")
 print "Criterion: 20 < Area < 60, Nb = ", len(aGroup3.GetListOfID())
 # Please note that also there is IntersectGroups() method which works with two groups only
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

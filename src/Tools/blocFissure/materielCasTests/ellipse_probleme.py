@@ -56,4 +56,4 @@ geompy.ExportBREP(ellipse1, os.path.join(gmu.pathBloc, "materielCasTests/ellipse
 
 
 if salome.sg.hasDesktop():
-  salome.sg.updateObjBrowser(1)
+  salome.sg.updateObjBrowser(True)

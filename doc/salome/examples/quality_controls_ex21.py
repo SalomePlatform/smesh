@@ -30,4 +30,4 @@ aGroup = mesh.CreateEmptyGroup(SMESH.VOLUME, "Volume < " + `volume_margin`)
 
 aGroup.Add(anIds)
 
-salome.sg.updateObjBrowser(1) 
+salome.sg.updateObjBrowser(True)

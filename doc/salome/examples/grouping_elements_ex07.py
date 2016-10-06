@@ -32,4 +32,4 @@ aGroupRes = mesh.CutGroups(aGroupMain, aGroupTool, "Area >= 60")
 print "Criterion: Area >= 60, Nb = ", len(aGroupRes.GetListOfID())
 # Please note that also there is CutListOfGroups() method which works with lists of groups of any lengths
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

@@ -127,4 +127,4 @@ smesh.SetName(Nb_Segments_1, 'Nb. Segments_1')
 cubeFin_1.ExportMED( os.path.join(gmu.pathBloc, "materielCasTests/cubeFin.med"), 0, SMESH.MED_V2_2, 1 )
 
 if salome.sg.hasDesktop():
-  salome.sg.updateObjBrowser(1)
+  salome.sg.updateObjBrowser(True)

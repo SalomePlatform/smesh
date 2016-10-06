@@ -37,4 +37,4 @@ for i in range(len(aBorders)):
   aGroupF.Add([aBorder.myElemId])
   aGroupN.Add([aBorder.myPnt1, aBorder.myPnt2])
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

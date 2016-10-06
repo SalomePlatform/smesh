@@ -123,4 +123,4 @@ if ret != 0:
 else:
     print "problem when computing the mesh"
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

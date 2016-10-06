@@ -70,4 +70,4 @@ alg3D.SetName("algo3D")
 
 box_mesh.Compute()
 
-sg.updateObjBrowser(1)
+sg.updateObjBrowser(True)

@@ -128,4 +128,4 @@ error = quad_6.ExtrusionAlongPath(ff_6 , Edge_Circle_mesh, Edge_Circle, 1,
 error = quad_7.ExtrusionAlongPath(ff_7, Edge_Circle_mesh, Edge_Circle, 1,
                                   1, [a45, -a45, a45, -a45, a45, -a45, a45, -a45], 0, refPoint)
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

@@ -134,4 +134,4 @@ hexa.Group(group_1)
 # Update object browser
 # ---------------------
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

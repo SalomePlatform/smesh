@@ -51,4 +51,4 @@ res = mesh.TriToQuad([ff[2], ff[3], ff[4], ff[5]], SMESH.FT_MinimumAngle, 60.)
 if not res: print "failed!"
 else:       print "done."
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

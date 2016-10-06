@@ -77,4 +77,4 @@ if len(faces) > 1:
     group1.Add(faces[:int(len(faces)/2)])
     group2.Add(faces[int(len(faces)/2):])
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

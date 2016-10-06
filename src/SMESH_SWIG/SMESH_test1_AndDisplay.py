@@ -111,7 +111,7 @@ smesh.SetName(hypArea2, "MaxElementArea_500")
 
 mesh.Compute()
 
-salome.sg.updateObjBrowser(1);
+salome.sg.updateObjBrowser(True)
 
 sg = salome.ImportComponentGUI('SMESH')
 if type(sg) != type(salome.salome_ComponentGUI):

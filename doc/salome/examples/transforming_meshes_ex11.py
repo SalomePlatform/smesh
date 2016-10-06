@@ -92,4 +92,4 @@ mesh.DoubleElements([ 1, 2 ])
 
 # Update object browser
 if salome.sg.hasDesktop():
-    salome.sg.updateObjBrowser(0)
+    salome.sg.updateObjBrowser(False)

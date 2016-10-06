@@ -207,7 +207,7 @@ def TEST_createBoxMesh():
 
     smesh.SetName(boxmesh.GetMesh(), 'boxmesh')
     if salome.sg.hasDesktop():
-        salome.sg.updateObjBrowser(1)
+        salome.sg.updateObjBrowser(True)
 
 #
 # Definitions:

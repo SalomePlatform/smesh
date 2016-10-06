@@ -46,4 +46,4 @@ print ""
 aGroup = mesh.GetMesh().CreateGroup(SMESH.EDGE, "Edges with length > " + `length_margin`)
 aGroup.Add(anIds)
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

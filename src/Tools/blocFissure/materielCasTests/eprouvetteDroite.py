@@ -139,4 +139,4 @@ smesh.SetName(SubMesh_1, 'SubMesh_1')
 smesh.SetName(SubMesh_2, 'SubMesh_2')
 
 if salome.sg.hasDesktop():
-  salome.sg.updateObjBrowser(1)
+  salome.sg.updateObjBrowser(True)

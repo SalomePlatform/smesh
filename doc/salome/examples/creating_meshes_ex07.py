@@ -78,4 +78,4 @@ Compound2 = smesh.Concatenate([Mesh_inf, Mesh_sup], 1, 0, 1e-05, True,
                               name='Compound_with_UniteGrps_and_GrpsOfAllElems')
 
 if salome.sg.hasDesktop():
-    salome.sg.updateObjBrowser(1)
+    salome.sg.updateObjBrowser(True)

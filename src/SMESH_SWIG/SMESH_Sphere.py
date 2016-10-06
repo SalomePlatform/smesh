@@ -118,4 +118,4 @@ my_hexa.Quadrangle()
 my_hexa.Hexahedron()
 my_hexa.Compute()
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

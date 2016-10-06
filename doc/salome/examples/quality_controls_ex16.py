@@ -29,4 +29,4 @@ aGroup = mesh.CreateEmptyGroup(SMESH.FACE, "Minimum Angle < " + `min_angle`)
 
 aGroup.Add(anIds)
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

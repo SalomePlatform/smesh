@@ -360,7 +360,7 @@ class PluginDialog(QDialog):
         meshname = 'padder_'+str(self.__jobid)
         smesh.SetName(outputMesh.GetMesh(), meshname)
         if salome.sg.hasDesktop():
-            salome.sg.updateObjBrowser(0)
+            salome.sg.updateObjBrowser(False)
 
         self.__ui.lblStatusBar.setText("Publication OK")
         self.__setGuiState(["CAN_SELECT"])

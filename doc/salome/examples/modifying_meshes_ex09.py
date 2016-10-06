@@ -34,4 +34,4 @@ f1 = MakePolygon(mesh, 0, 0,  0, 30, 13)
 f2 = MakePolygon(mesh, 0, 0, 10, 21,  9)
 f3 = MakePolygon(mesh, 0, 0, 20, 13,  6)
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

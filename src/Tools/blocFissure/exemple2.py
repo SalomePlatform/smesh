@@ -91,4 +91,4 @@ dicoParams = dict(nomCas            = 'angleCube2',
 execInstance = casStandard(dicoParams)
 
 if salome.sg.hasDesktop():
-  salome.sg.updateObjBrowser(1)
+  salome.sg.updateObjBrowser(True)

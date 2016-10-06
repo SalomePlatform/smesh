@@ -42,4 +42,4 @@ f5 = mesh.AddFace([n5, n6, n12, n11])
 # Change the orientation of the second and the fourth faces.
 mesh.Reorient([2, 4])
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

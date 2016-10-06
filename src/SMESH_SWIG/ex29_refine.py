@@ -229,4 +229,4 @@ MyMesh.ExportMED(path+str(NbCells4)+"_triangles.med", 0)
 # Update the object browser
 # -------------------------
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

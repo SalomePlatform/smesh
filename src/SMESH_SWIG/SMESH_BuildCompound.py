@@ -104,4 +104,4 @@ Compound2 = smesh.Concatenate([Mesh_inf.GetMesh(), Mesh_sup.GetMesh()], 1, 0, 1e
 smesh.SetName(Compound2, 'Compound_with_UniteGrps_and_GrpsOfAllElems')
 #end
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

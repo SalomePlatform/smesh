@@ -87,5 +87,5 @@ aIntGrp=Mesh_1.IntersectListOfGroups([aRedGroup, aGreenGroup, aBlueGroup], "IntG
 # CutListOfGroups()
 aCutGrp=Mesh_1.CutListOfGroups([aRedGroup],[aGreenGroup,aBlueGroup],"CutGrp")
 
-salome.sg.updateObjBrowser( 1 )
+salome.sg.updateObjBrowser(True)
 

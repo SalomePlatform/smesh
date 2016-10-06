@@ -29,4 +29,4 @@ dicoParams = dict(nomCas            = 'testAubry',
 execInstance = casStandard(dicoParams)
 
 if salome.sg.hasDesktop():
-  salome.sg.updateObjBrowser(1)
+  salome.sg.updateObjBrowser(True)

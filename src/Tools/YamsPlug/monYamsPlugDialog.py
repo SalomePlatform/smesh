@@ -178,7 +178,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     newLink=monStudyBuilder.NewObject(SOMesh)
     monStudyBuilder.Addreference(newLink, newStudyIter)
 
-    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser(0)
+    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser(False)
     self.num+=1
     return True
 
@@ -236,7 +236,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     ACmt = myBuilder.FindOrCreateAttribute(myObject, "AttributeComment")
     ACmt.SetValue(datai)
 
-    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser(0)
+    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser(False)
     self.num += 1
     if verbose: print("save %s in Object Browser done: %s\n%s" % (name, myObject.GetID(), datai))
     return True
@@ -273,7 +273,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     data = self.getResumeData(separator=" ; ")
     self.editor.setAttributeValue(newStudyIter, "AttributeComment", data)
     
-    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser(0)
+    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser(False)
     self.num += 1
     if verbose: print("save %s in Object Browser done:\n%s" % (name, data))
     return True

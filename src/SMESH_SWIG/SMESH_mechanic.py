@@ -188,4 +188,4 @@ print "Number of quadrangles : ", mesh.NbQuadrangles()
 print "Number of volumes     : ", mesh.NbVolumes()
 print "Number of tetrahedrons: ", mesh.NbTetras()
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

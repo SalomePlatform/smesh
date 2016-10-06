@@ -47,4 +47,4 @@ print ""
 aGroup = mesh.CreateEmptyGroup(SMESH.FACE, "Borders at multi-connection 2D = " + `nb_conn`)
 aGroup.Add(anIds)
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

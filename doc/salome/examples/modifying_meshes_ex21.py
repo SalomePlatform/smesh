@@ -32,4 +32,4 @@ print "\nSmoothing ... ",
 if not res: print "failed!"
 else:       print "done."
 
-salome.sg.updateObjBrowser(1) 
+salome.sg.updateObjBrowser(True)

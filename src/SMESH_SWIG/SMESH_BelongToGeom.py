@@ -63,4 +63,4 @@ print "anIds = ", anIds
 #anIds = CheckBelongToGeomFilterOld(smesh,mesh.GetMesh(),box,box,anElemType)
 #print "anIds = ", anIds
 
-salome.sg.updateObjBrowser(1);
+salome.sg.updateObjBrowser(True)

@@ -1505,7 +1505,7 @@ class Mesh:
                 smeshgui = salome.ImportComponentGUI("SMESH")
                 smeshgui.Init(self.mesh.GetStudyId())
                 smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), ok, (self.NbNodes()==0) )
-                if refresh: salome.sg.updateObjBrowser(1)
+                if refresh: salome.sg.updateObjBrowser(True)
 
         return ok
 
@@ -1624,7 +1624,7 @@ class Mesh:
             smeshgui = salome.ImportComponentGUI("SMESH")
             smeshgui.Init(self.mesh.GetStudyId())
             smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), False, True )
-            if refresh: salome.sg.updateObjBrowser(1)
+            if refresh: salome.sg.updateObjBrowser(True)
 
     ## Removes all nodes and elements of indicated shape
     #  @param refresh if @c True, Object browser is automatically updated (when running in GUI)
@@ -1636,7 +1636,7 @@ class Mesh:
             smeshgui = salome.ImportComponentGUI("SMESH")
             smeshgui.Init(self.mesh.GetStudyId())
             smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), False, True )
-            if refresh: salome.sg.updateObjBrowser(1)
+            if refresh: salome.sg.updateObjBrowser(True)
 
     ## Computes a tetrahedral mesh using AutomaticLength + MEFISTO + Tetrahedron
     #  @param fineness [0.0,1.0] defines mesh fineness
@@ -5051,7 +5051,7 @@ class submeshProxy(SMESH._objref_SMESH_subMesh):
             smeshgui = salome.ImportComponentGUI("SMESH")
             smeshgui.Init(self.mesh.GetStudyId())
             smeshgui.SetMeshIcon( salome.ObjectToID( self ), ok, (self.GetNumberOfElements()==0) )
-            if refresh: salome.sg.updateObjBrowser(1)
+            if refresh: salome.sg.updateObjBrowser(True)
             pass
 
         return ok

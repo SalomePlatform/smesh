@@ -75,4 +75,4 @@ smesh.SetName(Quadrangle_2D.GetAlgorithm(), 'Quadrangle_2D')
 smesh.SetName(Hexa_3D.GetAlgorithm(), 'Hexa_3D')
 
 if salome.sg.hasDesktop():
-  salome.sg.updateObjBrowser(1)
+  salome.sg.updateObjBrowser(True)

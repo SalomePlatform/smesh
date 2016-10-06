@@ -58,7 +58,7 @@ idblob = geompy.addToStudy(blob,"blob")
 edgeGroups = geompy.Propagate( blob )
 assert len( edgeGroups ) == 3
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)
 
 # -----------------------------------------------------------------------------
 
@@ -98,4 +98,4 @@ if ok:
 else:
     print "problem when Computing the mesh"
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

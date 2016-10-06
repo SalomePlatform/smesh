@@ -110,4 +110,4 @@ print hypArea2.GetMaxElementArea()
 smesh.SetName(hypArea2, "MaxElementArea_500")
 
 
-salome.sg.updateObjBrowser(1);
+salome.sg.updateObjBrowser(True)

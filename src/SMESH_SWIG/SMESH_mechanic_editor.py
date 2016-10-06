@@ -234,4 +234,4 @@ mesh.RotationSweepObject(GroupRotate, axisXYZ, angle45, 4, 1e-5)
 #9 reorientation of the submesh1
 mesh.ReorientObject(submesh1)
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

@@ -60,5 +60,5 @@ aGrp1D = Mesh_1.CreateDimGroup( [aGrp3D_1, aGrp3D_2], SMESH.EDGE, "Edges" )
 
 aGrp0D = Mesh_1.CreateDimGroup( [aGrp3D_1, aGrp3D_2], SMESH.NODE, "Nodes" )
 
-salome.sg.updateObjBrowser( 1 )
+salome.sg.updateObjBrowser(True)
 

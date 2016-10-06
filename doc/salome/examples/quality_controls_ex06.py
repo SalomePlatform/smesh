@@ -75,4 +75,4 @@ aFaceIds = Mesh_1.GetIdsFromFilter(aFilter)
 aGroup = Mesh_1.CreateEmptyGroup(SMESH.FACE, "Shared_faces")
 aGroup.Add(aFaceIds)
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

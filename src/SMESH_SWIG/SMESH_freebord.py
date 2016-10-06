@@ -75,4 +75,4 @@ print "Criterion: Free edges Nb = ", len( anIds )
 for i in range( len( anIds ) ):
   print anIds[ i ]
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

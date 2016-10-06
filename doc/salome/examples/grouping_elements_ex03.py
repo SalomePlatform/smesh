@@ -46,4 +46,4 @@ filt2.SetCriteria( [ smesh.GetCriterion( SMESH.FACE, SMESH.FT_RangeOfIds, "1-70"
 filtIDs3 = filtGroup.GetIDs()
 print "After filter modification, group on filter contains %s elemens" % filtGroup.Size()
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

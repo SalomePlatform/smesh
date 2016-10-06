@@ -90,4 +90,4 @@ mesh1.Compute()
 mesh2.Compute()
 
 # ---- update object browser
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

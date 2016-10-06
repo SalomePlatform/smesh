@@ -81,4 +81,4 @@ for iFile in range(len(aListDir)) :
         ConvertMED2UNV(aPath,aFileName)
         #break
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

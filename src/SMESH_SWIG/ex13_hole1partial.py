@@ -261,4 +261,4 @@ hexa.Compute()
 # Update object browser
 # ---------------------
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

@@ -46,4 +46,4 @@ print ""
 aGroup = mesh.GetMesh().CreateGroup(SMESH.EDGE, "Borders at multi-connections")
 aGroup.Add(anIds)
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)

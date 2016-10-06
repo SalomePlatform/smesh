@@ -31,4 +31,4 @@ GroupTri = mesh.GroupOnGeom(face, "Group of faces (extrusion)", SMESH.FACE)
 # perform extrusion of the group
 mesh.ExtrusionSweepObject(GroupTri, vector, 5)
 
-salome.sg.updateObjBrowser(1)
+salome.sg.updateObjBrowser(True)
