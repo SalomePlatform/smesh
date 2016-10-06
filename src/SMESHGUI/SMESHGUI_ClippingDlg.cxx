@@ -231,34 +231,37 @@ SMESH::OrientedPlane::~OrientedPlane()
   myPlaneSource->Delete();
 }
 
-/*!
-  Definition of class ActorItem
- */
-class ActorItem : public QListWidgetItem
+namespace
 {
-public:
-  ActorItem( SMESH_Actor* theActor, const QString& theName, QListWidget* theListWidget ) :
-    QListWidgetItem( theName, theListWidget ),
-    myActor( theActor ) {}
+  /*!
+    Definition of class ActorItem
+  */
+  class ActorItem : public QListWidgetItem
+  {
+  public:
+    ActorItem( SMESH_Actor* theActor, const QString& theName, QListWidget* theListWidget ) :
+      QListWidgetItem( theName, theListWidget ),
+      myActor( theActor ) {}
 
-  SMESH_Actor* getActor() const { return myActor; }
+    SMESH_Actor* getActor() const { return myActor; }
 
-private:
-  SMESH_Actor* myActor;
-};
+  private:
+    SMESH_Actor* myActor;
+  };
 
-/*!
-  Definition of class TSetVisibility
- */
-struct TSetVisibility {
-  // Set visibility of cutting plane
-  TSetVisibility(int theIsVisible): myIsVisible(theIsVisible){}
-  void operator()(SMESH::TPlaneData& thePlaneData){
-    bool anIsEmpty = thePlaneData.ActorList.empty();
-    thePlaneData.Plane.GetPointer()->myActor->SetVisibility(myIsVisible && !anIsEmpty);
-  }
-  int myIsVisible;
-};
+  /*!
+    Definition of class TSetVisibility
+  */
+  struct TSetVisibility {
+    // Set visibility of cutting plane
+    TSetVisibility(int theIsVisible): myIsVisible(theIsVisible){}
+    void operator()(SMESH::TPlaneData& thePlaneData){
+      bool anIsEmpty = thePlaneData.ActorList.empty();
+      thePlaneData.Plane.GetPointer()->myActor->SetVisibility(myIsVisible && !anIsEmpty);
+    }
+    int myIsVisible;
+  };
+}
 
 /*********************************************************************************
  *********************      class SMESHGUI_ClippingDlg      *********************
@@ -713,46 +716,66 @@ vtkImplicitPlaneWidget* SMESHGUI_ClippingDlg::createPreviewWidget()
   return aPlaneWgt;
 }
 
-/*!
-  Translate two angles of plane to normal
-*/
-void rotationToNormal ( double theRotation[2],
-                        int theOrientation,
-                        double theNormal[3],
-                        double theDir[2][3] )
+namespace
 {
-  static double aCoeff = M_PI/180.0;
+  /*!
+    Translate two angles of plane to normal
+  */
+  void rotationToNormal ( double theRotation[2],
+                          int theOrientation,
+                          double theNormal[3],
+                          double theDir[2][3] )
+  {
+    static double aCoeff = M_PI/180.0;
 
-  double anU[2] = { cos( aCoeff * theRotation[0] ), cos( aCoeff * theRotation[1] ) };
-  double aV[2] = { sqrt( 1.0 - anU[0]*anU[0] ), sqrt( 1.0 - anU[1] * anU[1] ) };
-  aV[0] = theRotation[0] > 0? aV[0]: -aV[0];
-  aV[1] = theRotation[1] > 0? aV[1]: -aV[1];
+    double anU[2] = { cos( aCoeff * theRotation[0] ), cos( aCoeff * theRotation[1] ) };
+    double aV[2] = { sqrt( 1.0 - anU[0]*anU[0] ), sqrt( 1.0 - anU[1] * anU[1] ) };
+    aV[0] = theRotation[0] > 0? aV[0]: -aV[0];
+    aV[1] = theRotation[1] > 0? aV[1]: -aV[1];
 
-  switch ( theOrientation ) {
-  case 0:
-  case 1:
-    theDir[0][1] = anU[0];
-    theDir[0][2] = aV[0];
-    theDir[1][0] = anU[1];
-    theDir[1][2] = aV[1];
-    break;
-  case 2:
-    theDir[0][2] = anU[0];
-    theDir[0][0] = aV[0];
-    theDir[1][1] = anU[1];
-    theDir[1][0] = aV[1];
-    break;
-  case 3:
-    theDir[0][0] = anU[0];
-    theDir[0][1] = aV[0];
-    theDir[1][2] = anU[1];
-    theDir[1][1] = aV[1];
-    break;
+    switch ( theOrientation ) {
+    case 0:
+    case 1:
+      theDir[0][1] = anU[0];
+      theDir[0][2] = aV[0];
+      theDir[1][0] = anU[1];
+      theDir[1][2] = aV[1];
+      break;
+    case 2:
+      theDir[0][2] = anU[0];
+      theDir[0][0] = aV[0];
+      theDir[1][1] = anU[1];
+      theDir[1][0] = aV[1];
+      break;
+    case 3:
+      theDir[0][0] = anU[0];
+      theDir[0][1] = aV[0];
+      theDir[1][2] = anU[1];
+      theDir[1][1] = aV[1];
+      break;
+    }
+
+    vtkMath::Cross( theDir[1], theDir[0], theNormal );
+    vtkMath::Normalize( theNormal );
+    vtkMath::Cross( theNormal, theDir[1], theDir[0] );
   }
 
-  vtkMath::Cross( theDir[1], theDir[0], theNormal );
-  vtkMath::Normalize( theNormal );
-  vtkMath::Cross( theNormal, theDir[1], theDir[0] );
+  /*!
+   * \brief Return a name of a father mesh if any
+   */
+  QString getFatherName( _PTR(SObject)& theSObj )
+  {
+    _PTR(SComponent) objComponent = theSObj->GetFatherComponent();
+    const int theMeshDepth = 1 + objComponent->Depth();
+    if ( theSObj->Depth() <= theMeshDepth )
+      return QString(); // theSObj is a mesh
+
+    _PTR(SObject) sobj = theSObj->GetFather();
+    while ( sobj && sobj->Depth() > theMeshDepth )
+      sobj = sobj->GetFather();
+
+    return sobj ? sobj->GetName().c_str() : "";
+  }
 }
 
 /*!
@@ -1084,6 +1107,10 @@ void SMESHGUI_ClippingDlg::updateActorList()
             }
           }
           QString aName = QString( aSObj->GetName().c_str() );
+          QString aFatherName = getFatherName( aSObj );
+          if ( !aFatherName.isEmpty() )
+            aName = aFatherName + " / " + aName;
+          aName += QString(" (%1)").arg( aSObj->GetID().c_str() );
           QListWidgetItem* anItem = new ActorItem( anActor, aName, ActorList );
           anItem->setCheckState( anIsChecked ? Qt::Checked : Qt::Unchecked );
           updateActorItem( anItem, true, false );
