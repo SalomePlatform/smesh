@@ -1608,7 +1608,6 @@ bool SMESH_Block::LoadMeshBlock(const SMDS_MeshVolume*        theVolume,
                                 const int                     theNode001Index,
                                 vector<const SMDS_MeshNode*>& theOrderedNodes)
 {
-  MESSAGE(" ::LoadMeshBlock()");
   init();
 
   SMDS_VolumeTool vTool;
@@ -1736,7 +1735,6 @@ bool SMESH_Block::LoadBlockShapes(const TopoDS_Shell&         theShell,
                                   const TopoDS_Vertex&        theVertex001,
                                   TopTools_IndexedMapOfOrientedShape& theShapeIDMap )
 {
-  MESSAGE(" ::LoadBlockShapes()");
   return ( FindBlockShapes( theShell, theVertex000, theVertex001, theShapeIDMap ) &&
            LoadBlockShapes( theShapeIDMap ));
 }
@@ -1752,8 +1750,6 @@ bool SMESH_Block::FindBlockShapes(const TopoDS_Shell&         theShell,
                                   const TopoDS_Vertex&        theVertex001,
                                   TopTools_IndexedMapOfOrientedShape& theShapeIDMap )
 {
-  MESSAGE(" ::FindBlockShapes()");
-
   // 8 vertices
   TopoDS_Shape V000, V100, V010, V110, V001, V101, V011, V111;
   // 12 edges

@@ -2945,9 +2945,11 @@ bool SMESH_MesherHelper::IsReversedSubMesh (const TopoDS_Face& theFace)
             double u0 = GetNodeU( TopoDS::Edge( E ), nn[0], nn[1], &ok );
             double u1 = GetNodeU( TopoDS::Edge( E ), nn[1], nn[0], &ok );
             // check that the 2 nodes are connected with a segment (IPAL53055)
+            const SMDS_MeshElement* seg;
             if ( SMESHDS_SubMesh* sm = GetMeshDS()->MeshElements( E ))
-              if ( sm->NbElements() > 0 && !GetMeshDS()->FindEdge( nn[0], nn[1] ))
-                ok = false;
+              if (( sm->NbElements() > 0 ) &&
+                  ( seg = GetMeshDS()->FindEdge( nn[0], nn[1] )))
+                ok = sm->Contains( seg );
             if ( ok )
             {
               isReversed = ( u0 > u1 );

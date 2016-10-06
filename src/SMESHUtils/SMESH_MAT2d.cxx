@@ -93,8 +93,8 @@ namespace
     list< const TVDEdge* > _edges; // MA edges in CCW order within _cell
 
     InSegment( InPoint * p0, InPoint * p1, size_t iE)
-      : _p0(p0), _p1(p1), _geomEdgeInd(iE) {}
-    InSegment() : _p0(0), _p1(0), _geomEdgeInd(0) {}
+      : _p0(p0), _p1(p1), _geomEdgeInd(iE), _cell(0) {}
+    InSegment() : _p0(0), _p1(0), _geomEdgeInd(0), _cell(0) {}
 
     const InPoint& point0() const { return *_p0; }
     const InPoint& point1() const { return *_p1; }
@@ -662,7 +662,7 @@ namespace
     // get scale to have the same 2d proportions as in 3d
     computeProportionScale( face, uvBox, scale );
 
-    // make scale to have coordinates precise enough when converted to int
+    // make 'scale' such that to have coordinates precise enough when converted to int
 
     gp_XY uvMin = uvBox.CornerMin(), uvMax = uvBox.CornerMax();
     uvMin.ChangeCoord(1) = uvMin.X() * scale[0];
@@ -672,7 +672,7 @@ namespace
     double vMax[2] = { Max( Abs( uvMin.X() ), Abs( uvMax.X() )),
                        Max( Abs( uvMin.Y() ), Abs( uvMax.Y() )) };
     int iMax = ( vMax[0] > vMax[1] ) ? 0 : 1;
-    const double precision = 1e-5;
+    const double precision = Min( 1e-5, minSegLen * 1e-2 );
     double preciScale = Min( vMax[iMax] / precision,
                              std::numeric_limits<int>::max() / vMax[iMax] );
     preciScale /= scale[iMax];
@@ -703,6 +703,8 @@ namespace
         {
           inPoints[ iP++ ] = points[i-1].getInPoint( scale );
           inSegments.push_back( InSegment( & inPoints[ iP-2 ], & inPoints[ iP-1 ], iE ));
+          if ( inPoints[ iP-2 ] == inPoints[ iP-1 ])
+            return false; // too short segment
         }
       }
     }
@@ -716,6 +718,8 @@ namespace
         {
           inPoints[ iP++ ] = points[i].getInPoint( scale );
           inSegments.push_back( InSegment( & inPoints[ iP-2 ], & inPoints[ iP-1 ], iE ));
+          if ( inPoints[ iP-2 ] == inPoints[ iP-1 ])
+            return false; // too short segment
         }
       }
     }

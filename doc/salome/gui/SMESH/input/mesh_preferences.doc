@@ -134,7 +134,15 @@ or in later sessions with this module according to the preferences.
     when a hypothesis is modified. This allows saving time by omitting
     loading data of a large mesh that is planned to be recomputed with other parameters.
 
-- <b>Input fields precision</b>
+- <b>Input fields precision</b> - allows to adjust input precision of
+  different parameters. The semantics of the precision values is
+  described in detail in <em>Using input widgets</em> chapter of GUI
+  documentation (Introduction to Salome Platform / Introduction to GUI / 
+  Using input widgets). In brief: \b positive precision value is the
+  maximum allowed number of digits after the decimal point in the
+  fixed-point format; \b nagative precision value is the maximum
+  allowed number of significant digits in mantissa in either the
+  fixed-point or scientific format.
   - <b>Length precision</b> - allows to adjust input precision of coordinates and dimensions.
   - <b>Angular precision</b> - allows to adjust input precision of angles.
   - <b>Length tolerance precision</b> - allows to adjust input precision of tolerance of coordinates and dimensions.
