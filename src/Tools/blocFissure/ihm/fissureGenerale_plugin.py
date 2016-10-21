@@ -31,60 +31,50 @@ def fissureGeneraleDlg(context):
   study = context.study
   studyId = context.studyId
   sg = context.sg
-  
+
   import os
   #import subprocess
   #import tempfile
-  from PyQt4 import QtCore
-  from PyQt4 import QtGui
-  from PyQt4.QtGui import QFileDialog
-  from PyQt4.QtGui import QMessageBox
-  from PyQt4.QtGui import QPalette
-  from PyQt4.QtGui import QColor
-  from PyQt4.QtCore import QString
+  from PyQt5 import QtCore
+  from PyQt5 import QtWidgets
+  from PyQt5 import QtGui
+  from PyQt5.QtWidgets import QFileDialog
+  from PyQt5.QtWidgets import QMessageBox
+  from PyQt5.QtGui import QPalette
+  from PyQt5.QtGui import QColor
   from fissureGenerale_ui import Ui_Dialog
-  
-  class fissureGeneraleDialog(QtGui.QDialog):
-    
+
+  class fissureGeneraleDialog(QtWidgets.QDialog):
+
     def __init__(self):
       print "__init__"
-      QtGui.QDialog.__init__(self)
+      QtWidgets.QDialog.__init__(self)
       # Set up the user interface from Designer.
       self.ui = Ui_Dialog()
       self.ui.setupUi(self)
-      
+
       self.blackPalette = self.ui.dsb_influence.palette()
       self.redPalette = QPalette()
       self.redPalette.setColor(QPalette.Text, QColor(255,0,0))
       self.NOK = False
-      
+
       self.initDefaut()
       self.initDialog(self.defaut)
       self.ui.lb_calcul.hide()
-      
+
       # Connect up the buttons.
-      self.connect(self.ui.pb_exemple, QtCore.SIGNAL("clicked()"),
-                   self.genereExemples)
-      self.connect(self.ui.pb_valPrec, QtCore.SIGNAL("clicked()"),
-                   self.readValPrec)
-      self.connect(self.ui.pb_reset, QtCore.SIGNAL("clicked()"),
-                   self.resetVal)
-      self.connect(self.ui.pb_recharger, QtCore.SIGNAL("clicked()"),
-                   self.recharger)
-      self.connect(self.ui.pb_sauver, QtCore.SIGNAL("clicked()"),
-                   self.sauver)
-      self.connect(self.ui.pb_maillage, QtCore.SIGNAL("clicked()"),
-                   self.selectMaillage)
-      self.connect(self.ui.pb_facefiss, QtCore.SIGNAL("clicked()"),
-                   self.selectFacefiss)
-      self.connect(self.ui.pb_reptrav, QtCore.SIGNAL("clicked()"),
-                   self.selectReptrav)
-      self.connect(self.ui.pb_nomres, QtCore.SIGNAL("clicked()"),
-                   self.selectNomres)
-      self.disconnect(self.ui.bb_OkCancel, QtCore.SIGNAL("accepted()"), self.accept)
-      self.connect(self.ui.bb_OkCancel, QtCore.SIGNAL("accepted()"),
-                   self.execute)
-    
+
+      self.ui.pb_exemple.clicked.connect(self.genereExemples)
+      self.ui.pb_valPrec.clicked.connect(self.readValPrec)
+      self.ui.pb_reset.clicked.connect(self.resetVal)
+      self.ui.pb_recharger.clicked.connect(self.recharger)
+      self.ui.pb_sauver.clicked.connect(self.sauver)
+      self.ui.pb_maillage.clicked.connect(self.selectMaillage)
+      self.ui.pb_facefiss.clicked.connect(self.selectFacefiss)
+      self.ui.pb_reptrav.clicked.connect(self.selectReptrav)
+      self.ui.bb_OkCancel.accepted.disconnect(self.accept)
+      self.ui.bb_OkCancel.accepted.connect(self.execute)
+
     def initDefaut(self):
       self.defaut = dict(
         nomCas            = 'angleCube',
@@ -103,7 +93,7 @@ def fissureGeneraleDlg(context):
         nomres            = 'casStandard_fissure.med',
         verbosite         = 0)
 
-      
+
     def initDialog(self, dico):
       self.ui.le_maillage.setText(dico['maillageSain'])
       self.ui.le_facefiss.setText(dico['brepFaceFissure'])
@@ -125,7 +115,7 @@ def fissureGeneraleDlg(context):
       self.ui.cb_log.setCurrentIndex(dico['verbosite'])
       incomplet = self.testval(dico)
       pass
-  
+
     def testval(self, dico):
       incomplet = False
       if not os.path.lexists(dico['maillageSain']):
@@ -180,21 +170,21 @@ def fissureGeneraleDlg(context):
         incomplet = True
       else:
         self.ui.dsb_areteFaceFissure.setPalette(self.blackPalette)
-    
+
       print "incomplet: ", incomplet
       return incomplet
-    
+
     def fileDefault(self):
       filedef = os.path.expanduser("~/.config/salome/dialogFissureGenerale.dic")
       print filedef
       return filedef
-    
+
     def writeDefault(self, dico):
       filedef = self.fileDefault()
       f = open(filedef, 'w')
       f.write(str(dico))
       f.close()
-    
+
     def genereExemples(self):
       maillageSain      = os.path.join(gmu.pathBloc, 'materielCasTests/CubeAngle.med')
       brepFaceFissure   = os.path.join(gmu.pathBloc, "materielCasTests/CubeAngleFiss.brep")
@@ -206,7 +196,7 @@ def fissureGeneraleDlg(context):
         from blocFissure.materielCasTests import genereMateriel
         self.ui.lb_calcul.hide()
         self.initDialog(self.defaut)
-      
+
     def readValPrec(self):
       filedef = self.fileDefault()
       if os.path.exists(filedef):
@@ -219,7 +209,7 @@ def fissureGeneraleDlg(context):
     def resetVal(self):
       #self.initDefaut()
       self.initDialog(self.defaut)
-      
+
     def setLogVerbosity(self, logfile):
       from blocFissure.gmu import initLog # le mode de log s'initialise une seule fois
       print "setLogVerbosity"
@@ -231,8 +221,8 @@ def fissureGeneraleDlg(context):
         initLog.setVerbose(logfile)
       elif index == 2:
         initLog.setDebug(logfile)
-      
-      
+
+
     def sauver(self):
       print "sauver"
       fileDiag = QFileDialog(self)
@@ -241,6 +231,7 @@ def fissureGeneraleDlg(context):
       fileDiag.setViewMode(QFileDialog.List)
       if fileDiag.exec_() :
         fileNames = fileDiag.selectedFiles()
+        print fileNames
         filedef = fileNames[0]
         if filedef[-4:] not in ['.dic']:
           filedef += '.dic'
@@ -248,7 +239,7 @@ def fissureGeneraleDlg(context):
         f = open(filedef, 'w')
         f.write(str(dico))
         f.close()
-        
+
     def recharger(self):
       print "recharger"
       fileDiag = QFileDialog(self)
@@ -265,7 +256,7 @@ def fissureGeneraleDlg(context):
           dico = eval(txt)
           print dico
           self.initDialog(dico)
-          
+
     def selectMaillage(self):
       fileDiag = QFileDialog(self)
       fileDiag.setFileMode(QFileDialog.ExistingFile)
@@ -276,7 +267,7 @@ def fissureGeneraleDlg(context):
         filedef = fileNames[0]
         print filedef
         self.ui.le_maillage.setText(filedef)
-         
+
     def selectFacefiss(self):
       fileDiag = QFileDialog(self)
       fileDiag.setFileMode(QFileDialog.ExistingFile)
@@ -287,7 +278,7 @@ def fissureGeneraleDlg(context):
         filedef = fileNames[0]
         print filedef
         self.ui.le_facefiss.setText(filedef)
-         
+
     def selectReptrav(self):
       fileDiag = QFileDialog(self)
       fileDiag.setFileMode(QFileDialog.Directory)
@@ -298,8 +289,8 @@ def fissureGeneraleDlg(context):
         reptrav = str(fileNames[0])
         print "reptrav ", reptrav
         self.ui.le_reptrav.setText(os.path.abspath(reptrav))
-        
-         
+
+
     def selectNomres(self):
       fileDiag = QFileDialog(self)
       fileDiag.setFileMode(QFileDialog.AnyFile)
@@ -316,7 +307,7 @@ def fissureGeneraleDlg(context):
         self.ui.le_nomres.setText(tempnom)
       else:
         self.ui.le_nomres.setText(nomres)
-         
+
     def creeDico(self):
       dico = dict(
                   maillageSain     = str(self.ui.le_maillage.text()),
@@ -336,7 +327,7 @@ def fissureGeneraleDlg(context):
                   )
       print dico
       return dico
-      
+
     def checkValues(self):
       return self.NOK
 
@@ -362,7 +353,7 @@ def fissureGeneraleDlg(context):
           print erreur.msg
           print '-'*60
           for ligne in erreur.pile:
-            print repr(ligne)        
+            print repr(ligne)
           print '-'*60
           texte = erreur.msg
 #           texte += +"<br>" +'-'*60 +"<br>"
@@ -370,19 +361,19 @@ def fissureGeneraleDlg(context):
 #             texte += repr(ligne) +"<br>"
           mbox = QMessageBox(self)
           mbox.setWindowTitle("erreur blocFissure")
-          mbox.setText(QString.fromUtf8(texte))
-          mbox.exec_()          
+          mbox.setText(str(texte))
+          mbox.exec_()
 #        except Exception as erreur:
 #          print "exception non répertoriée"
       self.NOK = NOK
       self.ui.lb_calcul.hide()
       #self.accept()
-    
-    pass 
+
+    pass
 
 # ----------------------------------------------------------------------------
-  
-  print "main"                   
+
+  print "main"
   window = fissureGeneraleDialog()
   retry = True
   while(retry):
@@ -396,4 +387,4 @@ def fissureGeneraleDlg(context):
     else:
       print "dialog rejected, exit"
   pass
-  
+
