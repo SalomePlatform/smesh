@@ -719,7 +719,7 @@ bool SMESH_MeshObj::NulData()
     points->SetNumberOfPoints(0);
     myEmptyGrid->SetPoints( points );
     points->Delete();
-    myEmptyGrid->BuildLinks();
+    //myEmptyGrid->BuildLinks();
   }
   myGrid->ShallowCopy(myEmptyGrid);
   return true;

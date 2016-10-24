@@ -395,6 +395,7 @@ private:
   SMESHGUI_AddInfo*  myAddInfo;
   SMESHGUI_CtrlInfo* myCtrlInfo;
   SMESH_Actor*       myActor;
+  Handle(SALOME_InteractiveObject) myIO;
 };
 
 class SMESHGUI_EXPORT SMESHGUI_CtrlInfoDlg : public QDialog

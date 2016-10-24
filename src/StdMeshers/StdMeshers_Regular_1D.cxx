@@ -675,7 +675,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
   if ( !_mainEdge.IsNull() && _isPropagOfDistribution )
   {
     TopoDS_Edge mainEdge = TopoDS::Edge( _mainEdge ); // should not be a reference!
-    _gen->Compute( theMesh, mainEdge, /*aShapeOnly=*/true, /*anUpward=*/true);
+    _gen->Compute( theMesh, mainEdge, SMESH_Gen::SHAPE_ONLY_UPWARD );
 
     SMESHDS_SubMesh* smDS = theMesh.GetMeshDS()->MeshElements( mainEdge );
     if ( !smDS )

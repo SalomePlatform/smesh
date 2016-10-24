@@ -316,10 +316,10 @@ void SMESHGUI_GenericHypothesisCreator::onDialogFinished( int result )
           aMesh = aSubMesh->GetFather();
         _PTR(SObject) meshSO = SMESH::FindSObject( aMesh );
         SMESH::ModifiedMesh( meshSO, false, aMesh->NbNodes()==0);
-	SMESH_Actor* actor = SMESH::FindActorByEntry( meshSO->GetID().c_str() );
-	if( actor ) {
-	  actor->Update();
-	}
+        SMESH_Actor* actor = SMESH::FindActorByEntry( meshSO->GetID().c_str() );
+        if( actor ) {
+          actor->Update();
+        }
       }
   }
   SMESHGUI::GetSMESHGUI()->updateObjBrowser( true, 0 );

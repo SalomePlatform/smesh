@@ -2952,8 +2952,9 @@ SMESH_MeshEditor_i::ExtrusionAlongPathObjects(const SMESH::ListOfIDSources & the
   }
 
   if ( !myIsPreviewMode ) {
-    aPythonDump << "(" << aGroups << ", error) = "
-                << this << ".ExtrusionAlongPathObjects( "
+    if ( aGroups->length() > 0 ) aPythonDump << "(" << aGroups << ", error) = ";
+    else                         aPythonDump << "(_noGroups, error) = ";
+    aPythonDump << this << ".ExtrusionAlongPathObjects( "
                 << theNodes            << ", "
                 << theEdges            << ", "
                 << theFaces            << ", "

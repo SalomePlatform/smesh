@@ -2919,33 +2919,40 @@ SMESHGUI_MeshInfoDlg::~SMESHGUI_MeshInfoDlg()
 */
 void SMESHGUI_MeshInfoDlg::showInfo( const Handle(SALOME_InteractiveObject)& IO )
 {
+  if ( !IO.IsNull() )
+    myIO = IO;
+
   SMESH::SMESH_IDSource_var obj = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO );
-  if ( !CORBA::is_nil( obj ) ) {
+  if ( !CORBA::is_nil( obj ) )
+  {
     myAddInfo->showInfo( obj );  // nb of nodes in a group can be computed by myAddInfo,
     myBaseInfo->showInfo( obj ); // and it will be used by myBaseInfo (IPAL52871)
-    myCtrlInfo->showInfo( obj );
+    if ( myTabWidget->currentIndex() == CtrlInfo )
+      myCtrlInfo->showInfo( obj );
 
-    myActor = SMESH::FindActorByEntry( IO->getEntry() );
-    SVTK_Selector* selector = SMESH::GetSelector();
-    QString ID;
-    int nb = 0;
-    if ( myActor && selector ) {
-      nb = myMode->checkedId() == NodeMode ? 
-        SMESH::GetNameOfSelectedElements( selector, IO, ID ) :
-        SMESH::GetNameOfSelectedNodes( selector, IO, ID );
-    }
-    myElemInfo->setSource( myActor ) ;
-    if ( nb > 0 ) {
-      myID->setText( ID.trimmed() );
-      QSet<long> ids;
-      QStringList idTxt = ID.split( " ", QString::SkipEmptyParts );
-      foreach ( ID, idTxt )
-        ids << ID.trimmed().toLong();
-      myElemInfo->showInfo( ids, myMode->checkedId() == ElemMode );
-    }
-    else {
-      myID->clear();
-      myElemInfo->clear();
+    {
+      myActor = SMESH::FindActorByEntry( IO->getEntry() );
+      SVTK_Selector* selector = SMESH::GetSelector();
+      QString ID;
+      int nb = 0;
+      if ( myActor && selector ) {
+        nb = myMode->checkedId() == NodeMode ?
+          SMESH::GetNameOfSelectedElements( selector, IO, ID ) :
+          SMESH::GetNameOfSelectedNodes( selector, IO, ID );
+      }
+      myElemInfo->setSource( myActor ) ;
+      if ( nb > 0 ) {
+        myID->setText( ID.trimmed() );
+        QSet<long> ids;
+        QStringList idTxt = ID.split( " ", QString::SkipEmptyParts );
+        foreach ( ID, idTxt )
+          ids << ID.trimmed().toLong();
+        myElemInfo->showInfo( ids, myMode->checkedId() == ElemMode );
+      }
+      else {
+        myID->clear();
+        myElemInfo->clear();
+      }
     }
   }
 }
@@ -3049,11 +3056,9 @@ void SMESHGUI_MeshInfoDlg::updateInfo()
     Handle(SALOME_InteractiveObject) IO = selected.First();
     showInfo( IO );
   }
-//   else {
-//     myBaseInfo->clear();
-//     myElemInfo->clear();
-//     myAddInfo->clear();
-//   }
+  else {
+    showInfo( myIO );
+  }
 }
 
 /*!

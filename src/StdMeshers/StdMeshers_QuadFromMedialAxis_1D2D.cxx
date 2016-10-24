@@ -383,7 +383,7 @@ namespace
         tmpMesh.ShapeToMesh( theEdges[i] );
         try {
           if ( !mesh->GetGen() ) continue; // tmp mesh
-          mesh->GetGen()->Compute( tmpMesh, theEdges[i], true, true ); // make nodes on VERTEXes
+          mesh->GetGen()->Compute( tmpMesh, theEdges[i], SMESH_Gen::SHAPE_ONLY_UPWARD ); // make nodes on VERTEXes
           if ( !algo->Compute( tmpMesh, theEdges[i] ))
             continue;
         }
@@ -868,7 +868,7 @@ namespace
     TmpMesh tmpMesh;
     tmpMesh.ShapeToMesh( branchEdge );
     try {
-      mesh->GetGen()->Compute( tmpMesh, branchEdge, true, true ); // make nodes on VERTEXes
+      mesh->GetGen()->Compute( tmpMesh, branchEdge, SMESH_Gen::SHAPE_ONLY_UPWARD ); // make nodes on VERTEXes
       if ( !algo->Compute( tmpMesh, branchEdge ))
         return false;
     }
@@ -1930,7 +1930,8 @@ namespace
     {
       if ( !theHasRadialHyp )
         // use global hyps
-        theHelper.GetGen()->Compute( *theHelper.GetMesh(), theShortEdges[i], true, true );
+        theHelper.GetGen()->Compute( *theHelper.GetMesh(), theShortEdges[i],
+                                     SMESH_Gen::SHAPE_ONLY_UPWARD );
 
       SMESH_subMesh* sm = theHelper.GetMesh()->GetSubMesh(theShortEdges[i] );
       if ( sm->IsEmpty() )

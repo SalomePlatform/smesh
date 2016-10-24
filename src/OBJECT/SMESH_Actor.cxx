@@ -26,23 +26,23 @@
 //  Module : SMESH
 
 #include "SMESH_ActorDef.h"
+
+#include "SMDS_UnstructuredGrid.hxx"
 #include "SMESH_ActorUtils.h"
+#include "SMESH_CellLabelActor.h"
+#include "SMESH_ControlsDef.hxx"
 #include "SMESH_DeviceActor.h"
 #include "SMESH_NodeLabelActor.h"
-#include "SMESH_CellLabelActor.h"
 #include "SMESH_ObjectDef.h"
-#include "SMESH_ControlsDef.hxx"
-#include "SMDS_UnstructuredGrid.hxx"
-#include "SMESH_ScalarBarActor.h"
-#include "VTKViewer_ExtractUnstructuredGrid.h"
-#include "VTKViewer_FramedTextActor.h"
-#include "SALOME_InteractiveObject.hxx"
 #include "SMESH_SVTKActor.h"
-
-#include "SUIT_Session.h"
-#include "SUIT_ResourceMgr.h"
+#include "SMESH_ScalarBarActor.h"
 
 #include <Qtx.h>
+#include <SALOME_InteractiveObject.hxx>
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Session.h>
+#include <VTKViewer_ExtractUnstructuredGrid.h>
+#include <VTKViewer_FramedTextActor.h>
 
 #ifndef DISABLE_PLOT2DVIEWER
 #include <SPlot2d_Histogram.h>
@@ -117,6 +117,9 @@ SMESH_Actor* SMESH_Actor::New(TVisualObjPtr theVisualObj,
 SMESH_ActorDef::SMESH_ActorDef()
 {
   if(MYDEBUG) MESSAGE("SMESH_ActorDef - "<<this);
+
+  SALOME_Actor::SetVisibility(false); // avoid update of pipelines
+
   myBaseActor = SMESH_DeviceActor::New();
 
   myTimeStamp = vtkTimeStamp::New();
@@ -1134,6 +1137,13 @@ int SMESH_ActorDef::GetNumberControlEntities()
 
 void SMESH_ActorDef::AddToRender(vtkRenderer* theRenderer)
 {
+  if ( !mySelector || !mySelector->IsSelectionEnabled() )
+  {
+    myBaseActor->SetUnstructuredGrid( NULL );
+    myHighlitableActor->SetUnstructuredGrid( NULL );
+    // theRenderer->AddActor(this);
+    // cout << "SMESH_ActorDef " << this << endl;
+  }
   theRenderer->AddActor(myBaseActor);
   theRenderer->AddActor(myNodeExtActor);
   theRenderer->AddActor(my1DExtActor);
@@ -1274,7 +1284,9 @@ bool SMESH_ActorDef::Init(TVisualObjPtr theVisualObj,
 
 double* SMESH_ActorDef::GetBounds()
 {
-  return myNodeActor->GetBounds();
+  if ( GetNumberOfClippingPlanes() + myPlaneCollection->GetNumberOfItems() > 0 )
+    return myNodeActor->GetBounds();
+  return myVisualObj->GetUnstructuredGrid()->GetPoints()->GetBounds();
 }
 
 
@@ -1603,97 +1615,108 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode)
   myBaseActor->myGeomFilter->SetInside(myEntityMode != myEntityState);
 
   myEntityMode = theMode;
-  VTKViewer_ExtractUnstructuredGrid* aFilter = NULL;
-  aFilter = myBaseActor->GetExtractUnstructuredGrid();
-  aFilter->ClearRegisteredCellsWithType();
-  aFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
 
+  VTKViewer_ExtractUnstructuredGrid* aFilter = myBaseActor->GetExtractUnstructuredGrid();
+  aFilter->ClearRegisteredCellsWithType();
   VTKViewer_ExtractUnstructuredGrid* aHightFilter = myHighlitableActor->GetExtractUnstructuredGrid();
   aHightFilter->ClearRegisteredCellsWithType();
-  aHightFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
 
-  if (myEntityMode & e0DElements) {
-    if (MYDEBUG) MESSAGE("0D ELEMENTS");
-    aFilter->RegisterCellsWithType(VTK_VERTEX);
-    aHightFilter->RegisterCellsWithType(VTK_VERTEX);
+  bool isPassAll =
+    (( myEntityMode & e0DElements || myVisualObj->GetNbEntities(SMDSAbs_0DElement) == 0 ) &&
+     ( myEntityMode & eBallElem   || myVisualObj->GetNbEntities(SMDSAbs_Ball)      == 0 ) &&
+     ( myEntityMode & eEdges      || myVisualObj->GetNbEntities(SMDSAbs_Edge)      == 0 ) &&
+     ( myEntityMode & eFaces      || myVisualObj->GetNbEntities(SMDSAbs_Face)      == 0 ) &&
+     ( myEntityMode & eVolumes    || myVisualObj->GetNbEntities(SMDSAbs_Volume)    == 0 ));
+  if ( isPassAll && myEntityMode )
+  {
+    aFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::ePassAll);
+    aHightFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::ePassAll);
   }
+  else
+  {
+    aFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
+    aHightFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
 
-  if (myEntityMode & eBallElem) {
-    aFilter->RegisterCellsWithType(VTK_POLY_VERTEX);
+    if (myEntityMode & e0DElements) {
+      aFilter->RegisterCellsWithType(VTK_VERTEX);
+      aHightFilter->RegisterCellsWithType(VTK_VERTEX);
+    }
+
+    if (myEntityMode & eBallElem) {
+      aFilter->RegisterCellsWithType(VTK_POLY_VERTEX);
+    }
+
+    if (myEntityMode & eEdges) {
+      aFilter->RegisterCellsWithType(VTK_LINE);
+      aFilter->RegisterCellsWithType(VTK_QUADRATIC_EDGE);
+
+      aHightFilter->RegisterCellsWithType(VTK_LINE);
+      aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_EDGE);
+    }
+
+    if (myEntityMode & eFaces) {
+      aFilter->RegisterCellsWithType(VTK_TRIANGLE);
+      aFilter->RegisterCellsWithType(VTK_QUAD);
+      aFilter->RegisterCellsWithType(VTK_POLYGON);
+      aFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
+      aFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
+      aFilter->RegisterCellsWithType(VTK_QUADRATIC_POLYGON);
+      aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUAD);
+      aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_TRIANGLE);
+
+      aHightFilter->RegisterCellsWithType(VTK_TRIANGLE);
+      aHightFilter->RegisterCellsWithType(VTK_QUAD);
+      aHightFilter->RegisterCellsWithType(VTK_POLYGON);
+      aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
+      aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
+      aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_POLYGON);
+      aHightFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUAD);
+      aHightFilter->RegisterCellsWithType(VTK_BIQUADRATIC_TRIANGLE);
+    }
+
+    if (myEntityMode & eVolumes) {
+      aFilter->RegisterCellsWithType(VTK_TETRA);
+      aFilter->RegisterCellsWithType(VTK_VOXEL);
+      aFilter->RegisterCellsWithType(VTK_HEXAHEDRON);
+      aFilter->RegisterCellsWithType(VTK_WEDGE);
+      aFilter->RegisterCellsWithType(VTK_PYRAMID);
+      aFilter->RegisterCellsWithType(VTK_HEXAGONAL_PRISM);
+      aFilter->RegisterCellsWithType(VTK_QUADRATIC_TETRA);
+      aFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
+      aFilter->RegisterCellsWithType(VTK_TRIQUADRATIC_HEXAHEDRON);
+      aFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
+      aFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
+      aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
+      aFilter->RegisterCellsWithType(VTK_POLYHEDRON);
+
+      aHightFilter->RegisterCellsWithType(VTK_TETRA);
+      aHightFilter->RegisterCellsWithType(VTK_VOXEL);
+      aHightFilter->RegisterCellsWithType(VTK_HEXAHEDRON);
+      aHightFilter->RegisterCellsWithType(VTK_WEDGE);
+      aHightFilter->RegisterCellsWithType(VTK_PYRAMID);
+      aHightFilter->RegisterCellsWithType(VTK_HEXAGONAL_PRISM);
+      aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_TETRA);
+      aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
+      aHightFilter->RegisterCellsWithType(VTK_TRIQUADRATIC_HEXAHEDRON);
+      aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
+      aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
+      aHightFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
+      aHightFilter->RegisterCellsWithType(VTK_POLYHEDRON);
+    }
   }
-
-  if (myEntityMode & eEdges) {
-    if (MYDEBUG) MESSAGE("EDGES");
-    aFilter->RegisterCellsWithType(VTK_LINE);
-    aFilter->RegisterCellsWithType(VTK_QUADRATIC_EDGE);
-
-    aHightFilter->RegisterCellsWithType(VTK_LINE);
-    aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_EDGE);
-  }
-
-  if (myEntityMode & eFaces) {
-    if (MYDEBUG) MESSAGE("FACES");
-    aFilter->RegisterCellsWithType(VTK_TRIANGLE);
-    aFilter->RegisterCellsWithType(VTK_QUAD);
-    aFilter->RegisterCellsWithType(VTK_POLYGON);
-    aFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
-    aFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
-    aFilter->RegisterCellsWithType(VTK_QUADRATIC_POLYGON);
-    aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUAD);
-    aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_TRIANGLE);
-
-    aHightFilter->RegisterCellsWithType(VTK_TRIANGLE);
-    aHightFilter->RegisterCellsWithType(VTK_QUAD);
-    aHightFilter->RegisterCellsWithType(VTK_POLYGON);
-    aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
-    aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
-    aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_POLYGON);
-    aHightFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUAD);
-    aHightFilter->RegisterCellsWithType(VTK_BIQUADRATIC_TRIANGLE);
-  }
-
-  if (myEntityMode & eVolumes) {
-    if (MYDEBUG) MESSAGE("VOLUMES");
-    aFilter->RegisterCellsWithType(VTK_TETRA);
-    aFilter->RegisterCellsWithType(VTK_VOXEL);
-    aFilter->RegisterCellsWithType(VTK_HEXAHEDRON);
-    aFilter->RegisterCellsWithType(VTK_WEDGE);
-    aFilter->RegisterCellsWithType(VTK_PYRAMID);
-    aFilter->RegisterCellsWithType(VTK_HEXAGONAL_PRISM);
-    aFilter->RegisterCellsWithType(VTK_QUADRATIC_TETRA);
-    aFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
-    aFilter->RegisterCellsWithType(VTK_TRIQUADRATIC_HEXAHEDRON);
-    aFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
-    aFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
-    aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
-    aFilter->RegisterCellsWithType(VTK_POLYHEDRON);
-
-    aHightFilter->RegisterCellsWithType(VTK_TETRA);
-    aHightFilter->RegisterCellsWithType(VTK_VOXEL);
-    aHightFilter->RegisterCellsWithType(VTK_HEXAHEDRON);
-    aHightFilter->RegisterCellsWithType(VTK_WEDGE);
-    aHightFilter->RegisterCellsWithType(VTK_PYRAMID);
-    aHightFilter->RegisterCellsWithType(VTK_HEXAGONAL_PRISM);
-    aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_TETRA);
-    aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
-    aHightFilter->RegisterCellsWithType(VTK_TRIQUADRATIC_HEXAHEDRON);
-    aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
-    aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
-    aHightFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
-    aHightFilter->RegisterCellsWithType(VTK_POLYHEDRON);
-  }
-  aFilter->Update();
+  if ( GetVisibility() )
+    aFilter->Update();
   if (MYDEBUG) MESSAGE(aFilter->GetOutput()->GetNumberOfCells());
   SetVisibility(GetVisibility(),false);
 }
 
 void SMESH_ActorDef::SetRepresentation (int theMode)
 {
-  int aNbEdges = myVisualObj->GetNbEntities(SMDSAbs_Edge);
-  int aNbFaces = myVisualObj->GetNbEntities(SMDSAbs_Face);
+  int aNbEdges   = myVisualObj->GetNbEntities(SMDSAbs_Edge);
+  int aNbFaces   = myVisualObj->GetNbEntities(SMDSAbs_Face);
   int aNbVolumes = myVisualObj->GetNbEntities(SMDSAbs_Volume);
-  int aNb0Ds       = myVisualObj->GetNbEntities(SMDSAbs_0DElement);
-  int aNbBalls       = myVisualObj->GetNbEntities(SMDSAbs_Ball);
+  int aNb0Ds     = myVisualObj->GetNbEntities(SMDSAbs_0DElement);
+  int aNbBalls   = myVisualObj->GetNbEntities(SMDSAbs_Ball);
 
   if (theMode < 0) {
     myRepresentation = eSurface;
@@ -1835,6 +1858,11 @@ void SMESH_ActorDef::UpdateHighlight()
   case SMESH_DeviceActor::eSurface:
   case SMESH_DeviceActor::eWireframe:
     {
+      // if ( !mySelector || !mySelector->IsSelectionEnabled() )
+      //   myHighlitableActor->SetUnstructuredGrid( NULL );
+      // else if ( !myHighlitableActor->myExtractUnstructuredGrid->GetInput() )
+      //   myHighlitableActor->SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
+
       if(myIsHighlighted) {
         myHighlitableActor->SetProperty(myHighlightProp);
       }else if(myIsPreselected){
@@ -1868,6 +1896,24 @@ void SMESH_ActorDef::UpdateHighlight()
   }
 }
 
+void SMESH_ActorDef::EnableSelection( bool enable )
+{
+  // selection in the Viewer enabled/disabled
+  if ( enable && ! myBaseActor->myExtractUnstructuredGrid->GetInput() )
+  {
+    myBaseActor->SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
+    myHighlitableActor->SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
+    myBaseActor->myExtractUnstructuredGrid->Update();
+    myHighlitableActor->myExtractUnstructuredGrid->Update();
+  }
+  if ( !enable && myBaseActor->myExtractUnstructuredGrid->GetInput() )
+  {
+    myBaseActor->SetUnstructuredGrid( NULL );
+    myHighlitableActor->SetUnstructuredGrid( NULL );
+    myBaseActor->myExtractUnstructuredGrid->Update();
+    myHighlitableActor->myExtractUnstructuredGrid->Update();
+  }
+}
 
 void SMESH_ActorDef::highlight(bool theHighlight)
 {
@@ -2297,6 +2343,11 @@ void SMESH_ActorDef::SetOpenGLClippingPlane()
   myHighlitableActor->SetPlaneCollection( myPlaneCollection );
   myHighlitableActor->SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
 
+  if ( !mySelector || !mySelector->IsSelectionEnabled() )
+  {
+    myBaseActor->SetUnstructuredGrid( NULL );
+    myHighlitableActor->SetUnstructuredGrid( NULL );
+  }
   my1DActor->SetPlaneCollection( myPlaneCollection );
   my1DActor->SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
 

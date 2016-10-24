@@ -69,19 +69,25 @@ public:
   SMESH_Mesh* CreateMesh(int theStudyId, bool theIsEmbeddedMode)
     throw(SALOME_Exception);
 
+  enum ComputeFlags
+  {
+    SHAPE_ONLY        = 1, // to ignore algo->OnlyUnaryInput() feature and to compute a given shape only.
+    UPWARD            = 2, // to compute from vertices up to more complex shape (internal usage)
+    COMPACT_MESH      = 4, // to compact the mesh at the end
+    SHAPE_ONLY_UPWARD = 3  // SHAPE_ONLY | UPWARD
+  };
   /*!
    * \brief Computes aMesh on aShape 
-   *  \param aShapeOnly - if true, algo->OnlyUnaryInput() feature is ignored and
-   *                      only \a aShape is computed.
-   *  \param anUpward - compute from vertices up to more complex shape (internal usage)
-   *  \param aDim - upper level dimension of the mesh computation
+   *  \param aMesh - the mesh.
+   *  \param aShape - the shape.
+   *  \param aFlags - ComputeFlags. By default compute the whole mesh and compact at the end.
+   *  \param aDim - upper level dimension of the mesh computation (for preview)
    *  \param aShapesId - list of shapes with computed mesh entities (elements or nodes)
-   *  \retval bool - true if none submesh failed to compute
+   *  \retval bool - true if none sub-mesh failed to compute
    */
   bool Compute(::SMESH_Mesh &        aMesh,
                const TopoDS_Shape &  aShape,
-               const bool            aShapeOnly=false,
-               const bool            anUpward=false,
+               const int             aFlags = COMPACT_MESH,
                const ::MeshDimension aDim=::MeshDim_3D,
                TSetOfInt*            aShapesId=0);
 

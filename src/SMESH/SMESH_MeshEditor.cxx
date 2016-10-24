@@ -11650,7 +11650,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
   }
 
   meshDS->CleanDownWardConnectivity(); // Mesh has been modified, downward connectivity is no more usable, free memory
-  grid->BuildLinks();
+  grid->DeleteLinks();
 
   CHRONOSTOP(50);
   counters::stats();

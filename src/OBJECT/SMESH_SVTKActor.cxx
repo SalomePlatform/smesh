@@ -119,11 +119,10 @@ SMESH_SVTKActor
   myBallGrid->Initialize();
   myBallGrid->Allocate();
 
-  vtkDataSet *aSourceDataSet = theMapActor->GetInput();
-  SVTK::CopyPoints( GetSource(), aSourceDataSet );
-  SVTK::CopyPoints( myBallGrid, aSourceDataSet );
-  SVTK::CopyPoints( my0DGrid,    aSourceDataSet );
-
+  vtkUnstructuredGrid * aSourceGrid = (vtkUnstructuredGrid *)theMapActor->GetInput();
+  GetSource()->SetPoints( aSourceGrid->GetPoints() );
+  myBallGrid->SetPoints( aSourceGrid->GetPoints() );
+  my0DGrid->SetPoints( aSourceGrid->GetPoints() );
 
   int aNbOfParts = theMapIndex.Extent();
 
@@ -132,7 +131,7 @@ SMESH_SVTKActor
   //Copy deamaters of the balls
   if(myVisualObj) {
     outputCD = myBallGrid->GetCellData();
-    cd = aSourceDataSet->GetCellData();
+    cd = aSourceGrid->GetCellData();
   }
   outputCD->CopyAllocate(cd,aNbOfParts,aNbOfParts/2);
   for(int ind = 1; ind <= aNbOfParts; ind++){

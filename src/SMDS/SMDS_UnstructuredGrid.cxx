@@ -53,6 +53,51 @@ void SMDS_CellLinks::ResizeForPoint(vtkIdType vtkID)
   }
 }
 
+void SMDS_CellLinks::BuildLinks(vtkDataSet *data, vtkCellArray *Connectivity, vtkUnsignedCharArray* types)
+{
+  // build links taking into account removed cells
+
+  vtkIdType numPts = data->GetNumberOfPoints();
+  vtkIdType j, cellId = 0;
+  unsigned short *linkLoc;
+  vtkIdType npts=0;
+  vtkIdType *pts=0;
+  vtkIdType loc = Connectivity->GetTraversalLocation();
+
+  // traverse data to determine number of uses of each point
+  cellId = 0;
+  for (Connectivity->InitTraversal();
+       Connectivity->GetNextCell(npts,pts); cellId++)
+  {
+    if ( types->GetValue( cellId ) != VTK_EMPTY_CELL )
+      for (j=0; j < npts; j++)
+      {
+        this->IncrementLinkCount(pts[j]);
+      }
+  }
+
+  // now allocate storage for the links
+  this->AllocateLinks(numPts);
+  this->MaxId = numPts - 1;
+
+  // fill out lists with references to cells
+  linkLoc = new unsigned short[numPts];
+  memset(linkLoc, 0, numPts*sizeof(unsigned short));
+
+  cellId = 0;
+  for (Connectivity->InitTraversal();
+       Connectivity->GetNextCell(npts,pts); cellId++)
+  {
+    if ( types->GetValue( cellId ) != VTK_EMPTY_CELL )
+      for (j=0; j < npts; j++)
+      {
+        this->InsertCellReference(pts[j], (linkLoc[pts[j]])++, cellId);
+      }
+  }
+  delete [] linkLoc;
+  Connectivity->SetTraversalLocation(loc);
+}
+
 SMDS_CellLinks::SMDS_CellLinks() :
   vtkCellLinks()
 {
@@ -149,6 +194,8 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
   //MESSAGE("------------------------- compactGrid " << newNodeSize << " " << newCellSize);//CHRONO(1);
   int alreadyCopied = 0;
 
+  this->DeleteLinks();
+
   // --- if newNodeSize, create a new compacted vtkPoints
 
   vtkPoints *newPoints = vtkPoints::New();
@@ -187,6 +234,12 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
 
   int oldCellSize = this->Types->GetNumberOfTuples();
 
+  if ( oldCellSize == newCellSize )
+  {
+    for ( int i = 0; i < oldCellSize; ++i )
+      idCellsOldToNew[i] = i;
+    return;
+  }
   vtkCellArray *newConnectivity = vtkCellArray::New();
   newConnectivity->Initialize();
   int oldCellDataSize = this->Connectivity->GetData()->GetSize();
@@ -287,7 +340,6 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
   newTypes->Delete();
   newLocations->Delete();
   newConnectivity->Delete();
-  this->BuildLinks();
 }
 
 void SMDS_UnstructuredGrid::copyNodes(vtkPoints *       newPoints,
@@ -975,15 +1027,32 @@ void SMDS_UnstructuredGrid::BuildLinks()
 {
   // Remove the old links if they are already built
   if (this->Links)
-    {
+  {
     this->Links->UnRegister(this);
-    }
+  }
 
-  this->Links = SMDS_CellLinks::New();
+  SMDS_CellLinks* links;
+  this->Links = links = SMDS_CellLinks::New();
   this->Links->Allocate(this->GetNumberOfPoints());
   this->Links->Register(this);
-  this->Links->BuildLinks(this, this->Connectivity);
+  links->BuildLinks(this, this->Connectivity,this->GetCellTypesArray() );
   this->Links->Delete();
+}
+
+void SMDS_UnstructuredGrid::DeleteLinks()
+{
+  // Remove the old links if they are already built
+  if (this->Links)
+  {
+    this->Links->UnRegister(this);
+    this->Links = NULL;
+  }
+}
+SMDS_CellLinks* SMDS_UnstructuredGrid::GetLinks()
+{
+  if ( !this->Links )
+    BuildLinks();
+  return static_cast< SMDS_CellLinks* >( this->Links );
 }
 
 /*! Create a volume (prism or hexahedron) by duplication of a face.

@@ -2145,10 +2145,13 @@ SMDS_MeshVolume* SMESHDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
 
 void SMESHDS_Mesh::compactMesh()
 {
+  if ( isCompacted() )
+    return;
+  SMDS_Mesh::compactMesh();
+
   int newNodeSize = 0;
   int nbNodes = myNodes.size();
   int nbVtkNodes = myGrid->GetNumberOfPoints();
-  //MESSAGE("nbNodes=" << nbNodes << " nbVtkNodes=" << nbVtkNodes);
   int nbNodeTemp = nbVtkNodes;
   if (nbNodes > nbVtkNodes)
     nbNodeTemp = nbNodes;
@@ -2166,13 +2169,11 @@ void SMESHDS_Mesh::compactMesh()
     }
   }
   bool areNodesModified = (newNodeSize < nbVtkNodes);
-  //MESSAGE("------------------------- compactMesh Nodes Modified: " << areNodesModified);
   areNodesModified = true;
 
   int newCellSize = 0;
   int nbCells = myCells.size();
   int nbVtkCells = myGrid->GetNumberOfCells();
-  //MESSAGE("nbCells=" << nbCells << " nbVtkCells=" << nbVtkCells);
   int nbCellTemp = nbVtkCells;
   if (nbCells > nbVtkCells)
     nbCellTemp = nbCells;
@@ -2184,9 +2185,6 @@ void SMESHDS_Mesh::compactMesh()
   {
     if (myCells[i])
     {
-      //          //idCellsOldToNew[i] = myCellIdVtkToSmds[i]; // valid vtk indexes are > = 0
-      //          int vtkid = myCells[i]->getVtkId();
-      //          idCellsOldToNew[vtkid] = i; // old vtkId --> old smdsId (not used in input)
       newCellSize++;
     }
   }
@@ -2212,7 +2210,6 @@ void SMESHDS_Mesh::compactMesh()
 
   if (areNodesModified)
   {
-    //MESSAGE("-------------- modify myNodes");
     SetOfNodes newNodes;
     newNodes.resize(newNodeSize+1,0); // 0 not used, SMDS numbers 1..n
     int newSmdsId = 0;
@@ -2223,16 +2220,13 @@ void SMESHDS_Mesh::compactMesh()
         newSmdsId++; // SMDS id start to 1
         int oldVtkId = myNodes[i]->getVtkId();
         int newVtkId = idNodesOldToNew[oldVtkId];
-        //MESSAGE("myNodes["<< i << "] vtkId " << oldVtkId << " --> " << newVtkId);
         myNodes[i]->setVtkId(newVtkId);
         myNodes[i]->setId(newSmdsId);
         newNodes[newSmdsId] = myNodes[i];
-        //MESSAGE("myNodes["<< i << "] --> newNodes[" << newSmdsId << "]");
       }
     }
     myNodes.swap(newNodes);
     this->myNodeIDFactory->emptyPool(newSmdsId); // newSmdsId = number of nodes
-    //MESSAGE("myNodes.size " << myNodes.size());
   }
 
   // --- SMDS_MeshCell, myCellIdVtkToSmds, myCellIdSmdsToVtk, myCells
@@ -2247,21 +2241,15 @@ void SMESHDS_Mesh::compactMesh()
       int newVtkId = idCellsOldToNew[oldVtkId];
       if (newVtkId > maxVtkId)
         maxVtkId = newVtkId;
-      //MESSAGE("myCells["<< oldSmdsId << "] vtkId " << oldVtkId << " --> " << newVtkId);
       myCells[oldSmdsId]->setVtkId(newVtkId);
     }
   }
-  //  MESSAGE("myCells.size()=" << myCells.size()
-  //          << " myCellIdSmdsToVtk.size()=" << myCellIdSmdsToVtk.size()
-  //          << " myCellIdVtkToSmds.size()=" << myCellIdVtkToSmds.size() );
 
   SetOfCells newCells;
-  //vector<int> newSmdsToVtk;
   vector<int> newVtkToSmds;
 
   assert(maxVtkId < newCellSize);
   newCells.resize(newCellSize+1, 0); // 0 not used, SMDS numbers 1..n
-  //newSmdsToVtk.resize(newCellSize+1, -1);
   newVtkToSmds.resize(newCellSize+1, -1);
 
   int myCellsSize = myCells.size();
@@ -2274,18 +2262,14 @@ void SMESHDS_Mesh::compactMesh()
       assert(newSmdsId <= newCellSize);
       newCells[newSmdsId] = myCells[i];
       newCells[newSmdsId]->setId(newSmdsId);
-      //MESSAGE("myCells["<< i << "] --> newCells[" << newSmdsId << "]");
       int idvtk = myCells[i]->getVtkId();
-      //newSmdsToVtk[newSmdsId] = idvtk;
       assert(idvtk < newCellSize);
       newVtkToSmds[idvtk] = newSmdsId;
     }
   }
 
   myCells.swap(newCells);
-  //myCellIdSmdsToVtk.swap(newSmdsToVtk);
   myCellIdVtkToSmds.swap(newVtkToSmds);
-  //MESSAGE("myCells.size()="<< myCells.size()<<" myCellIdVtkToSmds.size()="<<myCellIdVtkToSmds.size() );
   this->myElementIDFactory->emptyPool(newSmdsId);
 
   this->myScript->SetModified(true); // notify GUI client for buildPrs when update

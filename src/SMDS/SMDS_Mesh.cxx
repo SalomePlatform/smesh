@@ -160,7 +160,7 @@ SMDS_Mesh::SMDS_Mesh():
   points->SetNumberOfPoints(0 /*SMDS_Mesh::chunkSize*/);
   myGrid->SetPoints( points );
   points->Delete();
-  myGrid->BuildLinks();
+  //myGrid->BuildLinks();
   this->Modified();
 
   // initialize static maps in SMDS_MeshCell, to be thread-safe
@@ -2757,7 +2757,7 @@ void SMDS_Mesh::Clear()
   points->SetNumberOfPoints(0 /*SMDS_Mesh::chunkSize*/);
   myGrid->SetPoints( points );
   points->Delete();
-  myGrid->BuildLinks();
+  myGrid->DeleteLinks();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4702,7 +4702,7 @@ void SMDS_Mesh::dumpGrid(string ficdump)
     ficcon << endl;
   }
   ficcon << "-------------------------------- connectivity " <<  nbPoints << endl;
-  vtkCellLinks *links = myGrid->GetCellLinks();
+  vtkCellLinks *links = myGrid->GetLinks();
   for (int i=0; i<nbPoints; i++)
   {
     int ncells = links->GetNcells(i);
@@ -4711,8 +4711,8 @@ void SMDS_Mesh::dumpGrid(string ficdump)
     for (int j=0; j<ncells; j++)
     {
       ficcon << " " << cells[j];
-        }
-        ficcon << endl;
+    }
+    ficcon << endl;
   }
   ficcon.close();
 
@@ -4720,7 +4720,7 @@ void SMDS_Mesh::dumpGrid(string ficdump)
 
 void SMDS_Mesh::compactMesh()
 {
-  MESSAGE("SMDS_Mesh::compactMesh do nothing!");
+  this->myCompactTime = this->myModifTime;
 }
 
 int SMDS_Mesh::fromVtkToSmds(int vtkid)
@@ -4780,10 +4780,5 @@ unsigned long SMDS_Mesh::GetMTime() const
 
 bool SMDS_Mesh::isCompacted()
 {
-  if (this->myModifTime > this->myCompactTime)
-  {
-    this->myCompactTime = this->myModifTime;
-    return false;
-  }
-  return true;
+  return this->myCompactTime == this->myModifTime;
 }

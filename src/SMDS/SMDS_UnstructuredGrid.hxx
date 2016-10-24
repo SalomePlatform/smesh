@@ -54,6 +54,7 @@ class SMDS_EXPORT SMDS_CellLinks: public vtkCellLinks
 {
 public:
   void ResizeForPoint(vtkIdType vtkID);
+  void BuildLinks(vtkDataSet *data, vtkCellArray *Connectivity, vtkUnsignedCharArray* types);
   static SMDS_CellLinks* New();
 protected:
   SMDS_CellLinks();
@@ -88,15 +89,15 @@ public:
   void GetNodeIds(std::set<int>& nodeSet, int downId, unsigned char downType);
   void ModifyCellNodes(int vtkVolId, std::map<int, int> localClonedNodeIds);
   int getOrderedNodesOfFace(int vtkVolId, int& dim, std::vector<vtkIdType>& orderedNodes);
-  void BuildLinks();
   SMDS_MeshCell* extrudeVolumeFromFace(int vtkVolId, int domain1, int domain2,
                                        std::set<int>&                      originalNodes,
                                        std::map<int, std::map<int, int> >& nodeDomains,
                                        std::map<int, std::map<long,int> >& nodeQuadDomains);
-  vtkCellLinks* GetLinks()
-  {
-    return Links;
-  }
+  void BuildLinks();
+  void DeleteLinks();
+  SMDS_CellLinks* GetLinks();
+  bool HasLinks() const { return this->Links; }
+
   SMDS_Downward* getDownArray(unsigned char vtkType)
   {
     return _downArray[vtkType];

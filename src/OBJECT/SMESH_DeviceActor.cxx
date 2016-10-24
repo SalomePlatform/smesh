@@ -204,7 +204,6 @@ SMESH_DeviceActor
   SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
 }
 
-
 void
 SMESH_DeviceActor
 ::SetImplicitFunctionUsed(bool theIsImplicitFunctionUsed)
@@ -224,14 +223,14 @@ void
 SMESH_DeviceActor
 ::SetUnstructuredGrid(vtkUnstructuredGrid* theGrid)
 {
-  if(theGrid){
-    //myIsShrinkable = theGrid->GetNumberOfCells() > 10;
+  myExtractUnstructuredGrid->SetInputData(theGrid);
+
+  if ( theGrid )
+  {
     myIsShrinkable = true;
 
-    myExtractUnstructuredGrid->SetInputData(theGrid);
-
     myMergeFilter->SetGeometryConnection(myExtractUnstructuredGrid->GetOutputPort());
-    
+
     //Pass diameters of the balls
     if(myMapper->GetBallEnabled()) {
       myMergeFilter->SetScalarsConnection(myExtractUnstructuredGrid->GetOutputPort());
@@ -242,7 +241,7 @@ SMESH_DeviceActor
     int anId = 0;
     SetImplicitFunctionUsed(myIsImplicitFunctionUsed);
     myPassFilter[ anId + 1]->SetInputConnection( myPassFilter[ anId ]->GetOutputPort() );
-    
+
     anId++; // 1
     myTransformFilter->SetInputConnection( myPassFilter[ anId ]->GetOutputPort() );
 
@@ -254,7 +253,7 @@ SMESH_DeviceActor
     myGeomFilter->SetInputConnection( myPassFilter[ anId ]->GetOutputPort() );
 
     anId++; // 4
-    myPassFilter[ anId ]->SetInputConnection( myGeomFilter->GetOutputPort() ); 
+    myPassFilter[ anId ]->SetInputConnection( myGeomFilter->GetOutputPort() );
     myPassFilter[ anId + 1 ]->SetInputConnection( myPassFilter[ anId ]->GetOutputPort() );
 
     anId++; // 5
@@ -263,8 +262,8 @@ SMESH_DeviceActor
       myMapper->SetClippingPlanes( myPlaneCollection );
 
     vtkLODActor::SetMapper( myMapper );
-    Modified();
   }
+  Modified();
 }
 
 void
@@ -281,6 +280,7 @@ SMESH_DeviceActor
   return myExtractUnstructuredGrid;
 }
 
+#include "SMDS_Mesh.hxx"
 
 vtkUnstructuredGrid* 
 SMESH_DeviceActor
@@ -607,10 +607,19 @@ SMESH_DeviceActor
 
 
 
-unsigned long int 
+unsigned long int
 SMESH_DeviceActor
 ::GetMTime()
 {
+  // cout << this->myExtractUnstructuredGrid
+  //      << " " << this->Superclass::GetMTime()
+  //      << " " << myExtractGeometry->GetMTime()
+  //      << " " << myExtractUnstructuredGrid->GetMTime()
+  //      << " " << myMergeFilter->GetMTime()
+  //      << " " << myGeomFilter->GetMTime()
+  //      << " " << myTransformFilter->GetMTime()
+  //      << " " << myFaceOrientationFilter->GetMTime() << endl;
+
   unsigned long mTime = this->Superclass::GetMTime();
   mTime = max(mTime,myExtractGeometry->GetMTime());
   mTime = max(mTime,myExtractUnstructuredGrid->GetMTime());
@@ -718,7 +727,7 @@ SMESH_DeviceActor
 ::UpdateFaceOrientation()
 {
   bool aShowFaceOrientation = myIsFacesOriented;
-  aShowFaceOrientation &= GetVisibility();
+  aShowFaceOrientation &= vtkLODActor::GetVisibility(); //GetVisibility(); -- avoid calling GetUnstructuredGrid()  
   aShowFaceOrientation &= myRepresentation == eSurface;
   myFaceOrientation->SetVisibility(aShowFaceOrientation);
 }
@@ -762,8 +771,9 @@ void
 SMESH_DeviceActor
 ::SetVisibility(int theMode)
 {
-  if(!myExtractUnstructuredGrid->GetInput() || 
-     GetUnstructuredGrid()->GetNumberOfCells())
+  if(( theMode ) &&
+     ( !myExtractUnstructuredGrid->GetInput() || 
+       GetUnstructuredGrid()->GetNumberOfCells()))
   {
     vtkLODActor::SetVisibility(theMode);
   }else{
@@ -777,10 +787,12 @@ int
 SMESH_DeviceActor
 ::GetVisibility()
 {
-  if(!GetUnstructuredGrid()->GetNumberOfCells()){
+  int visibi = vtkLODActor::GetVisibility();
+  if(visibi && !GetUnstructuredGrid()->GetNumberOfCells()){
     vtkLODActor::SetVisibility(false);
+    visibi = 0;
   }
-  return vtkLODActor::GetVisibility();
+  return visibi;
 }
 
 
@@ -821,7 +833,7 @@ SMESH_DeviceActor
 {
   vtkDataSet* aDataSet = myMergeFilter->GetOutput();
   vtkIdType anID = myVisualObj->GetNodeVTKId(theObjID);
-  double* aCoord = (anID >=0) ? aDataSet->GetPoint(anID) : NULL;
+  double* aCoord = (anID >=0 && anID < aDataSet->GetNumberOfPoints()) ? aDataSet->GetPoint(anID) : NULL;
   if(MYDEBUG) MESSAGE("GetNodeCoord - theObjID = "<<theObjID<<"; anID = "<<anID);
   return aCoord;
 }

@@ -123,12 +123,15 @@ SMESH_Mesh* SMESH_Gen::CreateMesh(int theStudyId, bool theIsEmbeddedMode)
 
 bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
                         const TopoDS_Shape &  aShape,
-                        const bool            aShapeOnly /*=false*/,
-                        const bool            anUpward /*=false*/,
+                        const int             aFlags /*= COMPACT_MESH*/,
                         const ::MeshDimension aDim /*=::MeshDim_3D*/,
                         TSetOfInt*            aShapesId /*=0*/)
 {
   MEMOSTAT;
+
+  const bool   aShapeOnly = aFlags & SHAPE_ONLY;
+  const bool     anUpward = aFlags & UPWARD;
+  const bool aCompactMesh = aFlags & COMPACT_MESH;
 
   bool ret = true;
 
@@ -141,7 +144,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
   SMESH_subMeshIteratorPtr smIt;
 
   // Fix of Issue 22150. Due to !BLSURF->OnlyUnaryInput(), BLSURF computes edges
-  // that must be computed by Projection 1D-2D when Projection asks to compute
+  // that must be computed by Projection 1D-2D while the Projection asks to compute
   // one face only.
   SMESH_subMesh::compute_event computeEvent =
     aShapeOnly ? SMESH_subMesh::COMPUTE_SUBMESH : SMESH_subMesh::COMPUTE;
@@ -331,7 +334,7 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
             SMESH_Hypothesis::Hypothesis_Status status;
             if ( subAlgo->CheckHypothesis( aMesh, aSubShape, status ))
               // mesh a lower smToCompute starting from vertices
-              Compute( aMesh, aSubShape, true, /*anUpward=*/true, aDim, aShapesId );
+              Compute( aMesh, aSubShape, aFlags | SHAPE_ONLY_UPWARD, aDim, aShapesId );
               // Compute( aMesh, aSubShape, aShapeOnly, /*anUpward=*/true, aDim, aShapesId );
           }
         }
@@ -363,17 +366,17 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
     // -----------------------------------------------
     // mesh the rest sub-shapes starting from vertices
     // -----------------------------------------------
-    ret = Compute( aMesh, aShape, aShapeOnly, /*anUpward=*/true, aDim, aShapesId );
+    ret = Compute( aMesh, aShape, aFlags | UPWARD, aDim, aShapesId );
   }
 
   MEMOSTAT;
 
-  SMESHDS_Mesh *myMesh = aMesh.GetMeshDS();
-  //MESSAGE("*** compactMesh after compute");
-  myMesh->compactMesh();
+  if ( aCompactMesh )
+    aMesh.GetMeshDS()->compactMesh();
 
   // fix quadratic mesh by bending iternal links near concave boundary
-  if ( aShape.IsSame( aMesh.GetShapeToMesh() ) &&
+  if ( aCompactMesh && // a final compute
+       aShape.IsSame( aMesh.GetShapeToMesh() ) &&
        !aShapesId && // not preview
        ret ) // everything is OK
   {

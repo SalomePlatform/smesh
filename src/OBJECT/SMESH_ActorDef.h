@@ -95,6 +95,7 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual void AddToRender(vtkRenderer* theRenderer); 
   virtual void RemoveFromRender(vtkRenderer* theRenderer);
 
+  virtual void EnableSelection( bool enable );
   virtual bool hasHighlight() { return true; }  
   virtual void highlight(bool theHighlight);  
   virtual void SetPreSelected(bool thePreselect = false);
