@@ -3283,9 +3283,9 @@ void SMESH_Mesh_i::exportMEDFields( DriverMED_W_Field&        fieldWriter,
       ( !geomAssocFields || !geomAssocFields[0] ))
     return;
 
-  std::vector< double > dblVals( meshDS->MaxShapeIndex()+1 );
-  std::vector< int >    intVals( meshDS->MaxShapeIndex()+1 );
-  std::vector< int >    subIdsByDim[ 4 ];
+  std::vector< std::vector< double > > dblVals;
+  std::vector< std::vector< int > >    intVals;
+  std::vector< int >                   subIdsByDim[ 4 ];
   const double noneDblValue = 0.;
   const double noneIntValue = 0;
 
@@ -3325,6 +3325,9 @@ void SMESH_Mesh_i::exportMEDFields( DriverMED_W_Field&        fieldWriter,
     for ( size_t iC = 0; iC < comps->length(); ++iC )
       fieldWriter.SetCompName( iC, comps[ iC ].in() );
 
+    dblVals.resize( comps->length() );
+    intVals.resize( comps->length() );
+
     // find sub-shape IDs
 
     std::vector< int >& subIds = subIdsByDim[ dim ];
@@ -3350,6 +3353,17 @@ void SMESH_Mesh_i::exportMEDFields( DriverMED_W_Field&        fieldWriter,
       fieldWriter.SetDtIt( int( stamp ), int( id ));
 
       // fill dblVals or intVals
+      for ( size_t iC = 0; iC < comps->length(); ++iC )
+        if ( dataType == GEOM::FDT_Double )
+        {
+          dblVals[ iC ].clear();
+          dblVals[ iC ].resize( meshDS->MaxShapeIndex()+1, 0 );
+        }
+        else
+        {
+          intVals[ iC ].clear();
+          intVals[ iC ].resize( meshDS->MaxShapeIndex()+1, 0 );
+        }
       switch ( dataType )
       {
       case GEOM::FDT_Double:
@@ -3357,10 +3371,11 @@ void SMESH_Mesh_i::exportMEDFields( DriverMED_W_Field&        fieldWriter,
         GEOM::GEOM_DoubleFieldStep_var dblStep = GEOM::GEOM_DoubleFieldStep::_narrow( step );
         if ( dblStep->_is_nil() ) continue;
         GEOM::ListOfDouble_var vv = dblStep->GetValues();
-        if ( vv->length() != subIds.size() )
+        if ( vv->length() != subIds.size() * comps->length() )
           THROW_SALOME_CORBA_EXCEPTION( METH "BUG: wrong nb subIds", SALOME::INTERNAL_ERROR );
-        for ( size_t i = 0; i < vv->length(); ++i )
-          dblVals[ subIds[ i ]] = vv[ i ];
+        for ( size_t iS = 0, iV = 0; iS < subIds.size(); ++iS )
+          for ( size_t iC = 0; iC < comps->length(); ++iC )
+            dblVals[ iC ][ subIds[ iS ]] = vv[ iV++ ];
         break;
       }
       case GEOM::FDT_Int:
@@ -3368,10 +3383,11 @@ void SMESH_Mesh_i::exportMEDFields( DriverMED_W_Field&        fieldWriter,
         GEOM::GEOM_IntFieldStep_var intStep = GEOM::GEOM_IntFieldStep::_narrow( step );
         if ( intStep->_is_nil() ) continue;
         GEOM::ListOfLong_var vv = intStep->GetValues();
-        if ( vv->length() != subIds.size() )
+        if ( vv->length() != subIds.size() * comps->length() )
           THROW_SALOME_CORBA_EXCEPTION( METH "BUG: wrong nb subIds", SALOME::INTERNAL_ERROR );
-        for ( size_t i = 0; i < vv->length(); ++i )
-          intVals[ subIds[ i ]] = (int) vv[ i ];
+        for ( size_t iS = 0, iV = 0; iS < subIds.size(); ++iS )
+          for ( size_t iC = 0; iC < comps->length(); ++iC )
+            intVals[ iC ][ subIds[ iS ]] = (int) vv[ iV++ ];
         break;
       }
       case GEOM::FDT_Bool:
@@ -3379,10 +3395,11 @@ void SMESH_Mesh_i::exportMEDFields( DriverMED_W_Field&        fieldWriter,
         GEOM::GEOM_BoolFieldStep_var boolStep = GEOM::GEOM_BoolFieldStep::_narrow( step );
         if ( boolStep->_is_nil() ) continue;
         GEOM::short_array_var vv = boolStep->GetValues();
-        if ( vv->length() != subIds.size() )
+        if ( vv->length() != subIds.size() * comps->length() )
           THROW_SALOME_CORBA_EXCEPTION( METH "BUG: wrong nb subIds", SALOME::INTERNAL_ERROR );
-        for ( size_t i = 0; i < vv->length(); ++i )
-          intVals[ subIds[ i ]] = (int) vv[ i ];
+        for ( size_t iS = 0, iV = 0; iS < subIds.size(); ++iS )
+          for ( size_t iC = 0; iC < comps->length(); ++iC )
+            intVals[ iC ][ subIds[ iS ]] = (int) vv[ iV++ ];
         break;
       }
       default: continue;
@@ -3395,20 +3412,24 @@ void SMESH_Mesh_i::exportMEDFields( DriverMED_W_Field&        fieldWriter,
         {
           const SMDS_MeshElement* e = elemIt->next();
           const int shapeID = e->getshapeId();
-          if ( shapeID < 1 || shapeID >= (int) dblVals.size() )
-            fieldWriter.AddValue( noneDblValue );
+          if ( shapeID < 1 || shapeID >= (int) dblVals[0].size() )
+            for ( size_t iC = 0; iC < comps->length(); ++iC )
+              fieldWriter.AddValue( noneDblValue );
           else
-            fieldWriter.AddValue( dblVals[ shapeID ]);
+            for ( size_t iC = 0; iC < comps->length(); ++iC )
+              fieldWriter.AddValue( dblVals[ iC ][ shapeID ]);
         }
       else
         while ( elemIt->more() )
         {
           const SMDS_MeshElement* e = elemIt->next();
           const int shapeID = e->getshapeId();
-          if ( shapeID < 1 || shapeID >= (int) intVals.size() )
-            fieldWriter.AddValue( (double) noneIntValue );
+          if ( shapeID < 1 || shapeID >= (int) intVals[0].size() )
+            for ( size_t iC = 0; iC < comps->length(); ++iC )
+              fieldWriter.AddValue( (double) noneIntValue );
           else
-            fieldWriter.AddValue( (double) intVals[ shapeID ]);
+            for ( size_t iC = 0; iC < comps->length(); ++iC )
+              fieldWriter.AddValue( (double) intVals[ iC ][ shapeID ]);
         }
 
       // write a step
