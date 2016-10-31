@@ -50,25 +50,21 @@ class STDMESHERSGUI_EXPORT StdMeshersGUI_SubShapeSelectorWdg : public QWidget
   Q_OBJECT
 
 public:
-  StdMeshersGUI_SubShapeSelectorWdg( QWidget* parent = 0,
-                                     TopAbs_ShapeEnum aSubShType = TopAbs_EDGE );
+  StdMeshersGUI_SubShapeSelectorWdg( QWidget*         parent = 0,
+                                     TopAbs_ShapeEnum subShType = TopAbs_EDGE,
+                                     const bool       toShowList = true);
   ~StdMeshersGUI_SubShapeSelectorWdg();
 
   SMESH::long_array_var          GetListOfIDs();
   bool                           SetListOfIDs( SMESH::long_array_var );
+  const QList<int>&              GetSelectedIDs() const { return mySelectedIDs; }
 
   void                           SetGeomShapeEntry( const QString& theEntry,
                                                     const QString& theMainShapeEntry);
-  //QString                        GetGeomShapeEntry() { return myEntry; }
-
-  // void                           SetMainShapeEntry( const QString& theEntry );
   const char*                    GetMainShapeEntry();
 
   TopoDS_Shape                   GetGeomShape() { return myGeomShape; }
   TopoDS_Shape                   GetMainShape() { return myMainShape; }
-
-  // QList<int>                     GetCorrectedListOfIDs( bool fromSubshapeToMainshape,
-  //                                                       bool* isOK=0);
 
   static GEOM::GEOM_Object_var   GetGeomObjectByEntry( const QString& );
   static TopoDS_Shape            GetTopoDSByEntry( const QString& );
@@ -84,9 +80,11 @@ public:
   vtkRenderer*                   GetRenderer() { return myRenderer; }
   SMESH_PreviewActorsCollection* GetActorCollection() { return myPreviewActor; }
   void                           ClearSelected();
+  void                           ActivateSelection( bool );
 
 signals:
-  void                           selectionChanged();
+  void                           selectionChanged(); // in the list
+  void                           shapeSelected();    // globally
 
 private:
   void                           updateState();
@@ -126,7 +124,6 @@ private:
   
   QString                        myParamValue;
   bool                           myIsShown;
-  bool                           myIsNotCorrected;
 
   // for manage possible size of myListOfIDs
   int                            myMaxSize;
