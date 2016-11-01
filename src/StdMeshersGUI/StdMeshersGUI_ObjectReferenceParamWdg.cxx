@@ -55,7 +55,7 @@
 //================================================================================
 
 StdMeshersGUI_ObjectReferenceParamWdg::StdMeshersGUI_ObjectReferenceParamWdg
-( SUIT_SelectionFilter* f, QWidget* parent, bool multiSelection 
+( SUIT_SelectionFilter* f, QWidget* parent, bool multiSelection )
   : QWidget( parent ), myMultiSelection( multiSelection )
 {
   myFilter = f;
