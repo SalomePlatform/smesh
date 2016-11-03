@@ -234,6 +234,9 @@ namespace SMESH
     TPythonDump&
     operator<<(const SMESH::CoincidentFreeBorders& theCFB);
 
+    TPythonDump&
+    operator<<(const std::string& theArg);
+
     static const char* SMESHGenName() { return "smeshgen"; }
     static const char* MeshEditorName() { return "mesh_editor"; }
     static const char* NotPublishedObjectName();

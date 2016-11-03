@@ -47,10 +47,9 @@ SMDS_BallElement::SMDS_BallElement(vtkIdType nodeId, double diameter, SMDS_Mesh*
 void SMDS_BallElement::init(vtkIdType nodeId, double diameter, SMDS_Mesh* mesh)
 {
   SMDS_MeshCell::init();
-  SMDS_UnstructuredGrid* grid = mesh->getGrid();
-  myVtkID = grid->InsertNextLinkedCell( GetVtkType(), 1, &nodeId );
   myMeshId = mesh->getMeshId();
-  grid->SetBallDiameter( myVtkID, diameter );
+  myVtkID = mesh->getGrid()->InsertNextLinkedCell( GetVtkType(), 1, &nodeId );
+  mesh->getGrid()->SetBallDiameter( myVtkID, diameter );
   mesh->setMyModified();
 }
 

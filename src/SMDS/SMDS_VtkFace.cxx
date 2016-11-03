@@ -44,53 +44,37 @@ SMDS_VtkFace::~SMDS_VtkFace()
 void SMDS_VtkFace::init(const std::vector<vtkIdType>& nodeIds, SMDS_Mesh* mesh)
 {
   SMDS_MeshFace::init();
-  vtkUnstructuredGrid* grid = mesh->getGrid();
   myMeshId = mesh->getMeshId();
   vtkIdType aType = VTK_TRIANGLE;
   switch (nodeIds.size())
   {
-    case 3:
-      aType = VTK_TRIANGLE;
-      break;
-    case 4:
-      aType = VTK_QUAD;
-      break;
-    case 6:
-      aType = VTK_QUADRATIC_TRIANGLE;
-      break;
-    case 8:
-      aType = VTK_QUADRATIC_QUAD;
-      break;
-    case 9:
-      aType = VTK_BIQUADRATIC_QUAD;
-      break;
-    case 7:
-      aType = VTK_BIQUADRATIC_TRIANGLE;
-      break;
-    default:
-      aType = VTK_POLYGON;
-      break;
+    case 3:  aType = VTK_TRIANGLE;            break;
+    case 4:  aType = VTK_QUAD;                break;
+    case 6:  aType = VTK_QUADRATIC_TRIANGLE;  break;
+    case 8:  aType = VTK_QUADRATIC_QUAD;      break;
+    case 9:  aType = VTK_BIQUADRATIC_QUAD;    break;
+    case 7:  aType = VTK_BIQUADRATIC_TRIANGLE;break;
+    default: aType = VTK_POLYGON;
   }
-  myVtkID = grid->InsertNextLinkedCell(aType, nodeIds.size(), (vtkIdType*) &nodeIds[0]);
+  myVtkID = mesh->getGrid()->InsertNextLinkedCell(aType, nodeIds.size(), (vtkIdType*) &nodeIds[0]);
   mesh->setMyModified();
-  //MESSAGE("SMDS_VtkFace::init myVtkID " << myVtkID);
 }
 
 void SMDS_VtkFace::initPoly(const std::vector<vtkIdType>& nodeIds, SMDS_Mesh* mesh)
 {
   SMDS_MeshFace::init();
-  vtkUnstructuredGrid* grid = mesh->getGrid();
   myMeshId = mesh->getMeshId();
-  myVtkID = grid->InsertNextLinkedCell(VTK_POLYGON, nodeIds.size(), (vtkIdType*) &nodeIds[0]);
+  vtkIdType aType = VTK_POLYGON;
+  myVtkID = mesh->getGrid()->InsertNextLinkedCell(aType, nodeIds.size(), (vtkIdType*) &nodeIds[0]);
   mesh->setMyModified();
 }
 
 void SMDS_VtkFace::initQuadPoly(const std::vector<vtkIdType>& nodeIds, SMDS_Mesh* mesh)
 {
   SMDS_MeshFace::init();
-  vtkUnstructuredGrid* grid = mesh->getGrid();
   myMeshId = mesh->getMeshId();
-  myVtkID = grid->InsertNextLinkedCell(VTK_QUADRATIC_POLYGON, nodeIds.size(), (vtkIdType*) &nodeIds[0]);
+  vtkIdType aType = VTK_QUADRATIC_POLYGON;
+  myVtkID = mesh->getGrid()->InsertNextLinkedCell(aType, nodeIds.size(), (vtkIdType*) &nodeIds[0]);
   mesh->setMyModified();
 }
 
@@ -101,14 +85,14 @@ bool SMDS_VtkFace::ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes)
   vtkIdType* pts = 0;
   grid->GetCellPoints(myVtkID, npts, pts);
   if (nbNodes != npts)
-    {
-      MESSAGE("ChangeNodes problem: not the same number of nodes " << npts << " -> " << nbNodes);
-      return false;
-    }
+  {
+    MESSAGE("ChangeNodes problem: not the same number of nodes " << npts << " -> " << nbNodes);
+    return false;
+  }
   for (int i = 0; i < nbNodes; i++)
-    {
-      pts[i] = nodes[i]->getVtkId();
-    }
+  {
+    pts[i] = nodes[i]->getVtkId();
+  }
   SMDS_Mesh::_meshList[myMeshId]->setMyModified();
   return true;
 }

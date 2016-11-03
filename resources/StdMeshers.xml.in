@@ -45,7 +45,8 @@
      input - geometry of elements accepted by algorithm input. Used to define compatible algos of
              different dimensions. Compatible algos have equal geometries in "input" and "output".
      need-hyp - (optional) Boolean. Does the algo require a hypothesis or not. Default is "false".
-     need-geom - (optional) Boolean. Can the algo work w/o geometry or not. Default is "true".
+     need-geom - (optional) [true, fasle, never]. Can the algo work w/o geometry or not.
+             Default is "true" "never" means that the algo can't work with geometry.
      support-submeshes - (optional) Boolean. Does an multi-dimensional algo support sub-meshes.
                          Default is "false".
      

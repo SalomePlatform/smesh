@@ -70,14 +70,9 @@ public:
                    std::vector<int>& idCellsOldToNew,
                    int               newCellSize);
   virtual unsigned long GetMTime();
-  // OUV_PORTING_VTK6: seems to be useless
-  //virtual void Update();
-  //virtual void UpdateInformation();
   virtual vtkPoints *GetPoints();
 
-  //#ifdef VTK_HAVE_POLYHEDRON
   int InsertNextLinkedCell(int type, int npts, vtkIdType *pts);
-  //#endif
 
   int CellIdToDownId(int vtkCellId);
   void setCellIdToDownId(int vtkCellId, int downId);

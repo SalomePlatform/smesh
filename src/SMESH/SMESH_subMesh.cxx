@@ -1499,7 +1499,6 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
           MESSAGE("std::bad_alloc thrown inside algo->Compute()");
           if ( _computeError ) {
             _computeError->myName = COMPERR_MEMORY_PB;
-            //_computeError->myComment = exc.what();
           }
           cleanSubMesh( this );
           throw exc;
@@ -1508,7 +1507,6 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
           MESSAGE("Standard_OutOfMemory thrown inside algo->Compute()");
           if ( _computeError ) {
             _computeError->myName = COMPERR_MEMORY_PB;
-            //_computeError->myComment = exc.what();
           }
           cleanSubMesh( this );
           throw std::bad_alloc();
@@ -1549,7 +1547,7 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
           ret = false;
         // check if anything was built
         TopExp_Explorer subS(shape, _subShape.ShapeType());
-        if (ret)
+        if ( ret )
         {
           for (; ret && subS.More(); subS.Next())
             if ( !_father->GetSubMesh( subS.Current() )->IsMeshComputed() &&
@@ -1558,9 +1556,9 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
               ret = false;
         }
         // Set _computeError
-        if (!ret && !isComputeErrorSet)
+        if ( !ret && !isComputeErrorSet )
         {
-          for (subS.ReInit(); subS.More(); subS.Next())
+          for ( subS.ReInit(); subS.More(); subS.Next() )
           {
             SMESH_subMesh* sm = _father->GetSubMesh( subS.Current() );
             if ( !sm->IsMeshComputed() )
@@ -1574,7 +1572,7 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
             }
           }
         }
-        if (ret && _computeError && _computeError->myName != COMPERR_WARNING )
+        if ( ret && _computeError && _computeError->myName != COMPERR_WARNING )
         {
           _computeError.reset();
         }

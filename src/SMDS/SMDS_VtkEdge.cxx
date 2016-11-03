@@ -45,14 +45,10 @@ SMDS_VtkEdge::~SMDS_VtkEdge()
 void SMDS_VtkEdge::init(std::vector<vtkIdType>& nodeIds, SMDS_Mesh* mesh)
 {
   SMDS_MeshEdge::init();
-  vtkUnstructuredGrid* grid = mesh->getGrid();
   myMeshId = mesh->getMeshId();
-  vtkIdType aType = VTK_LINE;
-  if (nodeIds.size() == 3)
-    aType = VTK_QUADRATIC_EDGE;
-  myVtkID = grid->InsertNextLinkedCell(aType, nodeIds.size(), &nodeIds[0]);
+  vtkIdType aType = ( nodeIds.size() == 3 ) ? VTK_QUADRATIC_EDGE : VTK_LINE;
+  myVtkID = mesh->getGrid()->InsertNextLinkedCell(aType, nodeIds.size(), &nodeIds[0]);
   mesh->setMyModified();
-  //MESSAGE("SMDS_VtkEdge::init myVtkID " << myVtkID);
 }
 
 bool SMDS_VtkEdge::ChangeNodes(const SMDS_MeshNode * node1, const SMDS_MeshNode * node2)
@@ -69,14 +65,14 @@ bool SMDS_VtkEdge::ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes)
   vtkIdType* pts = 0;
   grid->GetCellPoints(myVtkID, npts, pts);
   if (nbNodes != npts)
-    {
-      MESSAGE("ChangeNodes problem: not the same number of nodes " << npts << " -> " << nbNodes);
-      return false;
-    }
+  {
+    MESSAGE("ChangeNodes problem: not the same number of nodes " << npts << " -> " << nbNodes);
+    return false;
+  }
   for (int i = 0; i < nbNodes; i++)
-    {
-      pts[i] = nodes[i]->getVtkId();
-    }
+  {
+    pts[i] = nodes[i]->getVtkId();
+  }
   SMDS_Mesh::_meshList[myMeshId]->setMyModified();
   return true;
 }
@@ -87,7 +83,6 @@ bool SMDS_VtkEdge::IsMediumNode(const SMDS_MeshNode* node) const
   vtkIdType npts = 0;
   vtkIdType* pts = 0;
   grid->GetCellPoints(myVtkID, npts, pts);
-  //MESSAGE("IsMediumNode " << npts  << " " << (node->getVtkId() == pts[npts-1]));
   return ((npts == 3) && (node->getVtkId() == pts[2]));
 }
 

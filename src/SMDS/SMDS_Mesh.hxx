@@ -73,8 +73,8 @@ public:
   static std::vector<SMDS_Mesh*> _meshList;
 
   //! actual nodes coordinates, cells definition and reverse connectivity are stored in a vtkUnstructuredGrid
-  inline SMDS_UnstructuredGrid* getGrid() {return myGrid; }
-  inline int getMeshId() {return myMeshId; }
+  inline SMDS_UnstructuredGrid* getGrid() { return myGrid; }
+  inline int getMeshId() { return myMeshId; }
 
   virtual SMDS_NodeIteratorPtr   nodesIterator     (bool idInceasingOrder=false) const;
   virtual SMDS_EdgeIteratorPtr   edgesIterator     (bool idInceasingOrder=false) const;

@@ -1192,12 +1192,9 @@ void SMESHGUI_MeshOp::initHypCreator( SMESHGUI_GenericHypothesisCreator* theCrea
   // Set shapes, of mesh and sub-mesh if any
 
   // get Entry of the Geom object
-  QString aGeomEntry = "";
-  QString aMeshEntry = "";
-  QString anObjEntry = "";
-  aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
-  aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
-  anObjEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj );
+  QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
+  QString aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
+  QString anObjEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj ); 
 
   if ( myToCreate && myIsMesh )
     aMeshEntry = aGeomEntry;
@@ -1242,6 +1239,8 @@ void SMESHGUI_MeshOp::initHypCreator( SMESHGUI_GenericHypothesisCreator* theCrea
   theCreator->setShapeEntry( aGeomEntry );
   if ( aMeshEntry != "" )
     theCreator->setMainShapeEntry( aMeshEntry );
+
+  theCreator->setNoGeomMesh( !myIsOnGeometry && myIsMesh && !myToCreate );
 }
 
 //================================================================================
@@ -1368,7 +1367,8 @@ void SMESHGUI_MeshOp::createHypothesis(const int theDim,
       aCreator->create(initParamHyp, aHypName, myDlg, this, SLOT( onHypoCreated( int ) ) );
       dialog = true;
     }
-    else {
+    else
+    {
      SMESH::SMESH_Hypothesis_var aHyp =
        SMESH::CreateHypothesis(theTypeName, aHypName, false);
      aHyp.out();

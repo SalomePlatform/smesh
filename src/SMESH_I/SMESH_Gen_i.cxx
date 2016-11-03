@@ -876,10 +876,17 @@ CORBA::Boolean SMESH_Gen_i::GetSoleSubMeshUsingHyp( SMESH::SMESH_Hypothesis_ptr 
     {
       if ( !foundMesh->_is_nil() ) // not a sole mesh
       {
-        GEOM::GEOM_Object_var s1 = mesh_i   ->GetShapeToMesh();
-        GEOM::GEOM_Object_var s2 = foundMesh->GetShapeToMesh();
-        if ( ! ( isSole = s1->IsSame( s2 )))
-          break;
+        if ( !foundMesh->HasShapeToMesh() ||
+             !mesh_i   ->HasShapeToMesh() )
+        {
+          isSole = ( foundMesh->HasShapeToMesh() == mesh_i->HasShapeToMesh() );
+        }
+        else
+        {
+          GEOM::GEOM_Object_var s1 = mesh_i   ->GetShapeToMesh();
+          GEOM::GEOM_Object_var s2 = foundMesh->GetShapeToMesh();
+          isSole = s1->IsSame( s2 );
+        }
       }
       foundMesh = SMESH::SMESH_Mesh::_narrow( obj );
     }

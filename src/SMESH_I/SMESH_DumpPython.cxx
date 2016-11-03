@@ -164,6 +164,13 @@ namespace SMESH
 
   TPythonDump&
   TPythonDump::
+  operator<<(const std::string& theArg){
+    myStream<<theArg;
+    return *this;
+  }
+
+  TPythonDump&
+  TPythonDump::
   operator<<(const SMESH::ElementType& theArg)
   {
     myStream<<"SMESH.";

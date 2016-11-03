@@ -128,10 +128,11 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
       bool isAuxOrNeedHyp = ( qName == "hypothesis" ?
                               atts.value("auxiliary") == "true" :
                               atts.value("need-hyp" ) == "true" );
-      bool isNeedGeom = true, isSupportSubmeshes = false;
+      int  isNeedGeom = 1;
+      bool isSupportSubmeshes = false;
       QString aNeedGeom = atts.value("need-geom");
       if ( !aNeedGeom.isEmpty() )
-        isNeedGeom = (aNeedGeom == "true");
+        isNeedGeom = (aNeedGeom == "true") ? 1 : (aNeedGeom == "never") ? -1 : 0;
       QString suppSub = atts.value("support-submeshes");
       if ( !suppSub.isEmpty() )
         isSupportSubmeshes = (suppSub == "true");

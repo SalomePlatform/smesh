@@ -53,33 +53,29 @@ SMDS_MeshElementIDFactory::SMDS_MeshElementIDFactory():
 
 int SMDS_MeshElementIDFactory::SetInVtkGrid(SMDS_MeshElement * elem)
 {
-   // --- retrieve nodes ID
+  // --- retrieve nodes ID
 
   SMDS_MeshCell *cell = dynamic_cast<SMDS_MeshCell*>(elem);
   assert(cell);
-  vector<vtkIdType> nodeIds;
+  vector<vtkIdType> nodeIds( elem->NbNodes() );
   SMDS_ElemIteratorPtr it = elem->nodesIterator();
-  while(it->more())
+  for( int i = 0; it->more(); ++i )
   {
-      int nodeId = (static_cast<const SMDS_MeshNode*>(it->next()))->getVtkId();
-      MESSAGE("   node in cell " << cell->getVtkId() << " : " << nodeId)
-      nodeIds.push_back(nodeId);
+    int nodeId = (static_cast<const SMDS_MeshNode*>(it->next()))->getVtkId();
+    nodeIds[i] = nodeId;
   }
 
   // --- insert cell in vtkUnstructuredGrid
 
-  vtkUnstructuredGrid * grid = myMesh->getGrid();
-  //int locType = elem->GetType();
-  int typ = VTK_VERTEX;//GetVtkCellType(locType);
-  int cellId = grid->InsertNextLinkedCell(typ, nodeIds.size(), &nodeIds[0]);
-  cell->setVtkId(cellId); 
-  //MESSAGE("SMDS_MeshElementIDFactory::SetInVtkGrid " << cellId);
+  int typ = VTK_VERTEX;
+  int cellId = myMesh->getGrid()->InsertNextLinkedCell(typ, nodeIds.size(), &nodeIds[0]);
+  cell->setVtkId(cellId);
   return cellId;
 }
 
 //=======================================================================
 //function : BindID
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 bool SMDS_MeshElementIDFactory::BindID(int ID, SMDS_MeshElement * elem)
@@ -122,17 +118,16 @@ int SMDS_MeshElementIDFactory::GetFreeID()
 void SMDS_MeshElementIDFactory::ReleaseID(int ID, int vtkId)
 {
   if (ID < 1) // TODO check case ID == O
-    {
-      MESSAGE("~~~~~~~~~~~~~~ SMDS_MeshElementIDFactory::ReleaseID ID = " << ID);
-      return;
-    }
-  //MESSAGE("~~~~~~~~~~~~~~ SMDS_MeshElementIDFactory::ReleaseID smdsId vtkId " << ID << " " << vtkId);
+  {
+    MESSAGE("~~~~~~~~~~~~~~ SMDS_MeshElementIDFactory::ReleaseID ID = " << ID);
+    return;
+  }
   if (vtkId >= 0)
-    {
-      assert(vtkId < (int)myMesh->myCellIdVtkToSmds.size());
-      myMesh->myCellIdVtkToSmds[vtkId] = -1;
-      myMesh->setMyModified();
-    }
+  {
+    assert(vtkId < (int)myMesh->myCellIdVtkToSmds.size());
+    myMesh->myCellIdVtkToSmds[vtkId] = -1;
+    myMesh->setMyModified();
+  }
   SMDS_MeshIDFactory::ReleaseID(ID);
   if (ID == myMax)
     myMax = 0;
@@ -142,7 +137,7 @@ void SMDS_MeshElementIDFactory::ReleaseID(int ID, int vtkId)
 
 //=======================================================================
 //function : updateMinMax
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMDS_MeshElementIDFactory::updateMinMax() const
@@ -150,16 +145,16 @@ void SMDS_MeshElementIDFactory::updateMinMax() const
   myMin = INT_MAX;
   myMax = 0;
   for (size_t i = 0; i < myMesh->myCells.size(); i++)
+  {
+    if (myMesh->myCells[i])
     {
-      if (myMesh->myCells[i])
-        {
-          int id = myMesh->myCells[i]->GetID();
-          if (id > myMax)
-            myMax = id;
-          if (id < myMin)
-            myMin = id;
-        }
+      int id = myMesh->myCells[i]->GetID();
+      if (id > myMax)
+        myMax = id;
+      if (id < myMin)
+        myMin = id;
     }
+  }
   if (myMin == INT_MAX)
     myMin = 0;
 }
@@ -171,12 +166,11 @@ void SMDS_MeshElementIDFactory::updateMinMax() const
 
 SMDS_ElemIteratorPtr SMDS_MeshElementIDFactory::elementsIterator() const
 {
-    return myMesh->elementsIterator(SMDSAbs_All);
+  return myMesh->elementsIterator(SMDSAbs_All);
 }
 
 void SMDS_MeshElementIDFactory::Clear()
 {
-  //myMesh->myCellIdSmdsToVtk.clear();
   myMesh->myCellIdVtkToSmds.clear();
   myMin = myMax = 0;
   SMDS_MeshIDFactory::Clear();

@@ -282,14 +282,14 @@ namespace SMESH
   QStringList GetAvailableHypotheses( const bool isAlgo,
                                       const int  theDim,
                                       const bool isAux,
-                                      const bool isNeedGeometry,
+                                      const bool hasGeometry,
                                       const bool isSubMesh)
   {
     QStringList aHypList;
 
     // Init list of available hypotheses, if needed
     InitAvailableHypotheses();
-    bool checkGeometry = ( !isNeedGeometry && isAlgo );
+    bool checkGeometry = ( isAlgo );
     const char* context = isSubMesh ? "LOCAL" : "GLOBAL";
     // fill list of hypotheses/algorithms
     THypothesisDataMap& pMap = isAlgo ? myAlgorithmsMap : myHypothesesMap;
@@ -301,7 +301,8 @@ namespace SMESH
           ( theDim < 0              || aData->Dim.contains( theDim )) &&
           ( isAlgo                  || aData->IsAuxOrNeedHyp == isAux ) &&
           ( aData->Context == "ANY" || aData->Context == context ) &&
-          ( !checkGeometry          || aData->IsNeedGeometry == isNeedGeometry ))
+          ( !checkGeometry          || (!aData->IsNeedGeometry  ||
+                                        ( aData->IsNeedGeometry > 0 ) == hasGeometry)))
       {
         aHypList.append(anIter.key());
       }
@@ -386,7 +387,7 @@ namespace SMESH
       QList<int> dummyIL; dummyIL << 1;
       QStringList dummySL;
       HypothesisData group( dummyS,dummyS,dummyS,dummyS,dummyS,dummyS,dummyS,-1,-1,
-                            dummyIL, 0, dummySL,dummySL,dummySL,dummySL );
+                            dummyIL, 0, dummySL,dummySL,dummySL,dummySL,0,0 );
       // no group
       int key = 0;
       theGroups[ key ].push_back( group );

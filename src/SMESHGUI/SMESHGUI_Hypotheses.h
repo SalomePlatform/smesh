@@ -72,6 +72,9 @@ public:
   QString                      getMainShapeEntry() const { return myMainShapeEntry; }
   void                         setMainShapeEntry( const QString& theEntry ) { myMainShapeEntry = theEntry; }
 
+  void                         setNoGeomMesh( const bool noGeom ) { myNoGeomMesh = noGeom; }
+  bool                         getNoGeomMesh() const { return myNoGeomMesh; }
+
 signals:
   void                         finished( int );
 
@@ -138,6 +141,7 @@ private:
   ListOfWidgets                myParamWidgets;
   ListOfWidgets                myParamLabels;
   bool                         myIsCreate;
+  bool                         myNoGeomMesh; //!< true for a mesh not based on geometry
   QtxDialog*                   myDlg;
   QString                      myShapeEntry;
   QString                      myMainShapeEntry;
@@ -177,7 +181,7 @@ struct HypothesisData
                   const QList<int>&, const bool,
                   const QStringList&, const QStringList&,
                   const QStringList&, const QStringList&,
-                  const bool=true, const bool supportSub=false );
+                  const int, const bool supportSub );
 
   QString TypeName;        //!< hypothesis type name
   QString PluginName;      //!< plugin name
@@ -191,7 +195,9 @@ struct HypothesisData
   QList<int> Dim;          //!< list of supported dimensions (see SMESH::Dimension enumeration)
   bool IsAuxOrNeedHyp;     //!< TRUE if given HYPOTHESIS is auxiliary one, FALSE otherwise
   //!<                          TRUE if given ALGORITHM can't work w/o hypotheses
-  bool IsNeedGeometry;     //!< TRUE if the algorithm works with shapes only, FALSE otherwise
+  int  IsNeedGeometry;     //!< 1 if the algorithm works with shapes only,
+  //!<                         -1 if the algorithm works without shapes only,
+  //!<                          0 if the algorithm works in both cases
   bool IsSupportSubmeshes; //!< TRUE if the algorithm building all-dim elems supports sub-meshes
 
   // for algorithm only: dependencies algo <-> algo and algo -> hypos
