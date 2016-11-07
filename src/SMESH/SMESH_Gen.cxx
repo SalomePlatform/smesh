@@ -371,9 +371,6 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
 
   MEMOSTAT;
 
-  if ( aCompactMesh )
-    aMesh.GetMeshDS()->compactMesh();
-
   // fix quadratic mesh by bending iternal links near concave boundary
   if ( aCompactMesh && // a final compute
        aShape.IsSame( aMesh.GetShapeToMesh() ) &&
@@ -386,6 +383,10 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
       aHelper.FixQuadraticElements( sm->GetComputeError() );
     }
   }
+
+  if ( aCompactMesh )
+    aMesh.GetMeshDS()->compactMesh();
+
   return ret;
 }
 

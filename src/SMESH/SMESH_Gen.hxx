@@ -60,7 +60,7 @@ typedef struct studyContextStruct
 
 typedef std::set<int> TSetOfInt;
 
-class SMESH_EXPORT  SMESH_Gen
+class SMESH_EXPORT SMESH_Gen
 {
 public:
   SMESH_Gen();
