@@ -126,9 +126,21 @@ int SMDS_MeshNodeIDFactory::GetMinID() const
 
 void SMDS_MeshNodeIDFactory::updateMinMax() const
 {
-  myMesh->updateNodeMinMax();
-  myMin = myMesh->MinNodeID();
-  myMax = myMesh->MaxNodeID();
+  myMin = INT_MAX;
+  myMax = 0;
+  for (size_t i = 0; i < myMesh->myNodes.size(); i++)
+  {
+    if (myMesh->myNodes[i])
+    {
+      int id = myMesh->myNodes[i]->GetID();
+      if (id > myMax)
+        myMax = id;
+      if (id < myMin)
+        myMin = id;
+    }
+  }
+  if (myMin == INT_MAX)
+    myMin = 0;
 }
 
 SMDS_ElemIteratorPtr SMDS_MeshNodeIDFactory::elementsIterator() const

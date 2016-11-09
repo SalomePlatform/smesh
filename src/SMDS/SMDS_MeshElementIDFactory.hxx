@@ -51,13 +51,12 @@ public:
   virtual void Clear();
 
 protected:
-  void updateMinMax() const;
+  virtual void updateMinMax() const;
   void updateMinMax(int id) const
   {
     if (id > myMax) myMax = id;
     if (id < myMin) myMin = id;
   }
-
 };
 
 #endif

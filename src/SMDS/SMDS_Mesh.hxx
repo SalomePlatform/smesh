@@ -739,14 +739,10 @@ public:
   typedef std::vector<SMDS_MeshNode *> SetOfNodes;
   typedef std::vector<SMDS_MeshCell *> SetOfCells;
 
-  void updateNodeMinMax();
-  void updateBoundingBox();
+  //void updateBoundingBox();
   double getMaxDim();
   int fromVtkToSmds(int vtkid);
 
-  void incrementNodesCapacity(int nbNodes);
-  void incrementCellsCapacity(int nbCells);
-  void adjustStructure();
   void dumpGrid(std::string ficdump="dumpGrid");
   static int chunkSize;
 
@@ -809,10 +805,10 @@ protected:
   int myMeshId;
 
   //! actual nodes coordinates, cells definition and reverse connectivity are stored in a vtkUnstructuredGrid
-  SMDS_UnstructuredGrid*      myGrid;
+  SMDS_UnstructuredGrid*        myGrid;
 
   //! Small objects like SMDS_MeshNode are allocated by chunks to limit memory costs of new
-  ObjectPool<SMDS_MeshNode>* myNodePool;
+  ObjectPool<SMDS_MeshNode>*    myNodePool;
 
   //! Small objects like SMDS_VtkVolume are allocated by chunks to limit memory costs of new
   ObjectPool<SMDS_VtkVolume>*   myVolumePool;
@@ -820,31 +816,26 @@ protected:
   ObjectPool<SMDS_VtkEdge>*     myEdgePool;
   ObjectPool<SMDS_BallElement>* myBallPool;
 
-  //! SMDS_MeshNodes refer to vtk nodes (vtk id = index in myNodes),store reference to this mesh, and sub-shape
-  SetOfNodes             myNodes;
-
-  //! SMDS_MeshCells refer to vtk cells (vtk id != index in myCells),store reference to this mesh, and sub-shape
-  SetOfCells             myCells;
+  //! SMDS_MeshNodes refer to vtk nodes (vtk id != index in myNodes),store reference to this mesh, and sub-shape
+  SetOfNodes                    myNodes;
+  SetOfCells                    myCells;
 
   //! a buffer to speed up elements addition by excluding some memory allocation
-  std::vector<vtkIdType> myNodeIds;
+  std::vector<vtkIdType>        myNodeIds;
 
   //! for cells only: index = ID in vtkUnstructuredGrid, value = ID for SMDS users
-  std::vector<int>       myCellIdVtkToSmds;
+  std::vector<int>              myCellIdVtkToSmds;
 
-  SMDS_Mesh *            myParent;
-  std::list<SMDS_Mesh *> myChildren;
-  SMDS_MeshNodeIDFactory *myNodeIDFactory;
-  SMDS_MeshElementIDFactory *myElementIDFactory;
-  SMDS_MeshInfo          myInfo;
+  SMDS_Mesh *                   myParent;
+  std::list<SMDS_Mesh *>        myChildren;
+  SMDS_MeshNodeIDFactory *      myNodeIDFactory;
+  SMDS_MeshElementIDFactory *   myElementIDFactory;
+  SMDS_MeshInfo                 myInfo;
 
   //! any add, remove or change of node or cell
   bool myModified;
   //! use a counter to keep track of modifications
   unsigned long myModifTime, myCompactTime;
-
-  int myNodeMin;
-  int myNodeMax;
 
   bool myHasConstructionEdges;
   bool myHasConstructionFaces;

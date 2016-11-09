@@ -94,7 +94,9 @@ void SMESHGUI_GenericHypothesisCreator::create( SMESH::SMESH_Hypothesis_ptr init
 
 void SMESHGUI_GenericHypothesisCreator::create( bool           isAlgo,
                                                 const QString& theHypName,
-                                                QWidget* theParent, QObject* obj, const QString& slot )
+                                                QWidget*       theParent,
+                                                QObject*       obj,
+                                                const QString& slot )
 {
   myIsCreate = true;
 

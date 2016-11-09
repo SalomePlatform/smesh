@@ -1272,24 +1272,34 @@ void SMESH_subMesh::DumpAlgoState(bool isMain)
 static void cleanSubMesh( SMESH_subMesh * subMesh )
 {
   if (subMesh) {
-    if (SMESHDS_SubMesh * subMeshDS = subMesh->GetSubMeshDS()) {
+    if (SMESHDS_SubMesh * subMeshDS = subMesh->GetSubMeshDS())
+    {
       SMESHDS_Mesh * meshDS = subMesh->GetFather()->GetMeshDS();
-      SMDS_ElemIteratorPtr ite = subMeshDS->GetElements();
-      while (ite->more()) {
-        const SMDS_MeshElement * elt = ite->next();
-        //MESSAGE( " RM elt: "<<elt->GetID()<<" ( "<<elt->NbNodes()<<" )" );
-        //meshDS->RemoveElement(elt);
-        meshDS->RemoveFreeElement(elt, 0);
+      int nbElems = subMeshDS->NbElements();
+      if ( nbElems > 0 )
+      {
+        // start from elem with max ID to avoid filling the pool of IDs
+        const SMDS_MeshElement * lastElem = subMeshDS->GetElement( nbElems-1 );
+        bool rev = ( lastElem->GetID() == meshDS->MaxElementID() );
+        SMDS_ElemIteratorPtr ite = subMeshDS->GetElements( rev );
+        while (ite->more()) {
+          const SMDS_MeshElement * elt = ite->next();
+          meshDS->RemoveFreeElement(elt, 0);
+        }
       }
-
-      SMDS_NodeIteratorPtr itn = subMeshDS->GetNodes();
-      while (itn->more()) {
-        const SMDS_MeshNode * node = itn->next();
-        //MESSAGE( " RM node: "<<node->GetID());
-        if ( node->NbInverseElements() == 0 )
-          meshDS->RemoveFreeNode(node, 0);
-        else // for StdMeshers_CompositeSegment_1D: node in one submesh, edge in another
-          meshDS->RemoveNode(node);
+      int nbNodes = subMeshDS->NbNodes();
+      if ( nbNodes > 0 )
+      {
+        const SMDS_MeshNode * lastNode = subMeshDS->GetNode( nbNodes-1 );
+        bool rev = ( lastNode->GetID() == meshDS->MaxNodeID() );
+        SMDS_NodeIteratorPtr itn = subMeshDS->GetNodes( rev );
+        while (itn->more()) {
+          const SMDS_MeshNode * node = itn->next();
+          if ( node->NbInverseElements() == 0 )
+            meshDS->RemoveFreeNode(node, 0);
+          else // for StdMeshers_CompositeSegment_1D: node in one submesh, edge in another
+            meshDS->RemoveNode(node);
+        }
       }
       subMeshDS->Clear();
     }

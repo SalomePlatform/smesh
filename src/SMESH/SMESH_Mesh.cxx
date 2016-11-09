@@ -1208,48 +1208,56 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
   SMESH_Algo *algo;
   const SMESH_HypoFilter* compatibleHypoKind;
   list <const SMESHDS_Hypothesis * > usedHyps;
-
-  // keep sub-meshes not to miss ones whose state can change due to notifying others
   vector< SMESH_subMesh* > smToNotify;
+  bool allMeshedEdgesNotified = true;
 
   SMESH_subMeshIteratorPtr smIt( _subMeshHolder->GetIterator() );
   while ( smIt->more() )
   {
     SMESH_subMesh* aSubMesh = smIt->next();
+    bool toNotify = false;
 
     // if aSubMesh meshing depends on hyp,
     // we call aSubMesh->AlgoStateEngine( MODIF_HYP, hyp ) that causes either
     // 1) clearing already computed aSubMesh or
     // 2) changing algo_state from MISSING_HYP to HYP_OK when parameters of hyp becomes valid,
     // other possible changes are not interesting. (IPAL0052457 - assigning hyp performance pb)
-    if ( aSubMesh->GetComputeState() != SMESH_subMesh::COMPUTE_OK &&
-         aSubMesh->GetComputeState() != SMESH_subMesh::FAILED_TO_COMPUTE &&
-         aSubMesh->GetAlgoState()    != SMESH_subMesh::MISSING_HYP &&
-         !hyp->DataDependOnParams() )
-      continue;
-
-    const TopoDS_Shape & aSubShape = aSubMesh->GetSubShape();
-
-    if (( aSubMesh->IsApplicableHypotesis( hyp )) &&
-        ( algo = aSubMesh->GetAlgo() )            &&
-        ( compatibleHypoKind = algo->GetCompatibleHypoFilter( !hyp->IsAuxiliary() )) &&
-        ( compatibleHypoKind->IsOk( hyp, aSubShape )))
+    if ( aSubMesh->GetComputeState() == SMESH_subMesh::COMPUTE_OK ||
+         aSubMesh->GetComputeState() == SMESH_subMesh::FAILED_TO_COMPUTE ||
+         aSubMesh->GetAlgoState()    == SMESH_subMesh::MISSING_HYP ||
+         hyp->DataDependOnParams() )
     {
-      // check if hyp is used by algo
-      usedHyps.clear();
-      if ( GetHypotheses( aSubMesh, *compatibleHypoKind, usedHyps, true ) &&
-           find( usedHyps.begin(), usedHyps.end(), hyp ) != usedHyps.end() )
+      const TopoDS_Shape & aSubShape = aSubMesh->GetSubShape();
+
+      if (( aSubMesh->IsApplicableHypotesis( hyp )) &&
+          ( algo = aSubMesh->GetAlgo() )            &&
+          ( compatibleHypoKind = algo->GetCompatibleHypoFilter( !hyp->IsAuxiliary() )) &&
+          ( compatibleHypoKind->IsOk( hyp, aSubShape )))
       {
-        smToNotify.push_back( aSubMesh );
+        // check if hyp is used by algo
+        usedHyps.clear();
+        toNotify = ( GetHypotheses( aSubMesh, *compatibleHypoKind, usedHyps, true ) &&
+                     std::find( usedHyps.begin(), usedHyps.end(), hyp ) != usedHyps.end() );
       }
     }
+    if ( toNotify )
+      smToNotify.push_back( aSubMesh );
+
+    if ( !aSubMesh->IsEmpty() &&
+         aSubMesh->GetSubShape().ShapeType() == TopAbs_EDGE &&
+         !toNotify )
+      allMeshedEdgesNotified = false;
   }
 
-  for ( size_t i = 0; i < smToNotify.size(); ++i )
-  {
-    smToNotify[i]->AlgoStateEngine(SMESH_subMesh::MODIF_HYP,
-                                   const_cast< SMESH_Hypothesis*>( hyp ));
-  }
+  // if all meshed EDGEs will be notified then the notification is equivalent
+  // to the whole mesh clearing
+  if ( allMeshedEdgesNotified )
+    Clear();
+  else
+    // notify in reverse order to avoid filling of the pool of IDs
+    for ( int i = smToNotify.size()-1; i >= 0; --i )
+      smToNotify[i]->AlgoStateEngine(SMESH_subMesh::MODIF_HYP,
+                                     const_cast< SMESH_Hypothesis*>( hyp ));
 
   HasModificationsToDiscard(); // to reset _isModified flag if mesh becomes empty
   GetMeshDS()->Modified();

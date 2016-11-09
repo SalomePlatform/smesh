@@ -82,13 +82,10 @@ SMDS_MeshNode::~SMDS_MeshNode()
 //purpose  :
 //=======================================================================
 
-void SMDS_MeshNode::RemoveInverseElement(const SMDS_MeshElement * parent)
+void SMDS_MeshNode::RemoveInverseElement(const SMDS_MeshElement * elem)
 {
-  //MESSAGE("RemoveInverseElement " << myID << " " << parent->GetID());
-  const SMDS_MeshCell* cell = dynamic_cast<const SMDS_MeshCell*>(parent);
-  MYASSERT(cell);
   if ( SMDS_Mesh::_meshList[myMeshId]->getGrid()->HasLinks() )
-    SMDS_Mesh::_meshList[myMeshId]->getGrid()->RemoveReferenceToCell(myVtkID, cell->getVtkId());
+    SMDS_Mesh::_meshList[myMeshId]->getGrid()->RemoveReferenceToCell(myVtkID, elem->getVtkId());
 }
 
 //=======================================================================
@@ -313,12 +310,10 @@ vtkIdType SMDS_MeshNode::GetVtkType() const
 //=======================================================================
 void SMDS_MeshNode::AddInverseElement(const SMDS_MeshElement* ME)
 {
-  const SMDS_MeshCell *cell = dynamic_cast<const SMDS_MeshCell*> (ME);
-  assert(cell);
   SMDS_UnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
   vtkCellLinks *Links = grid->GetLinks();
   Links->ResizeCellList(myVtkID, 1);
-  Links->AddCellReference(cell->getVtkId(), myVtkID);
+  Links->AddCellReference(ME->getVtkId(), myVtkID);
 }
 
 //=======================================================================

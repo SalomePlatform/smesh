@@ -361,13 +361,23 @@ public:
 //purpose  :
 //=======================================================================
 
-SMDS_ElemIteratorPtr SMESHDS_SubMesh::GetElements() const
+SMDS_ElemIteratorPtr SMESHDS_SubMesh::GetElements( bool reverse ) const
 {
   if ( IsComplexSubmesh() )
     return SMDS_ElemIteratorPtr( new MyElemIterator( mySubMeshes ));
 
-  return SMDS_ElemIteratorPtr
-    (new MySetIterator<const SMDS_MeshElement*, std::vector<const SMDS_MeshElement*> >(myElements));
+  if ( reverse )
+  {
+    typedef
+      SMDS_SetIterator< const SMDS_MeshElement*,
+                        std::vector< const SMDS_MeshElement* >::const_reverse_iterator > RIter;
+    return SMDS_ElemIteratorPtr( new RIter( myElements.rbegin(), myElements.rend() ));
+  }
+
+  typedef
+    SMDS_SetIterator< const SMDS_MeshElement*,
+                      std::vector< const SMDS_MeshElement* >::const_iterator > FIter;
+  return SMDS_ElemIteratorPtr( new FIter( myElements.begin(), myElements.end() ));
 }
 
 //=======================================================================
@@ -375,13 +385,23 @@ SMDS_ElemIteratorPtr SMESHDS_SubMesh::GetElements() const
 //purpose  :
 //=======================================================================
 
-SMDS_NodeIteratorPtr SMESHDS_SubMesh::GetNodes() const
+SMDS_NodeIteratorPtr SMESHDS_SubMesh::GetNodes( bool reverse ) const
 {
   if ( IsComplexSubmesh() )
     return SMDS_NodeIteratorPtr( new MyNodeIterator( mySubMeshes ));
 
-  return SMDS_NodeIteratorPtr
-    (new MySetIterator<const SMDS_MeshNode*, std::vector<const SMDS_MeshNode*> >(myNodes));
+  if ( reverse )
+  {
+    typedef
+      SMDS_SetIterator< const SMDS_MeshNode*,
+                        std::vector< const SMDS_MeshNode* >::const_reverse_iterator > RIter;
+    return SMDS_NodeIteratorPtr( new RIter( myNodes.rbegin(), myNodes.rend() ));
+  }
+
+  typedef
+    SMDS_SetIterator< const SMDS_MeshNode*,
+                      std::vector< const SMDS_MeshNode* >::const_iterator > FIter;
+  return SMDS_NodeIteratorPtr( new FIter( myNodes.begin(), myNodes.end() ));
 }
 
 //=======================================================================
@@ -478,7 +498,7 @@ void SMESHDS_SubMesh::RemoveAllSubmeshes()
 
 //=======================================================================
 //function : ContainsSubMesh
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 bool SMESHDS_SubMesh::ContainsSubMesh( const SMESHDS_SubMesh* theSubMesh ) const
@@ -488,7 +508,7 @@ bool SMESHDS_SubMesh::ContainsSubMesh( const SMESHDS_SubMesh* theSubMesh ) const
 
 //=======================================================================
 //function : GetSubMeshIterator
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 SMESHDS_SubMeshIteratorPtr SMESHDS_SubMesh::GetSubMeshIterator() const

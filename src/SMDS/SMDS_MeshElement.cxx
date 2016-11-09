@@ -55,13 +55,13 @@ void SMDS_MeshElement::init(int id, ShortType meshId, LongType shapeId )
 
 void SMDS_MeshElement::Print(ostream & OS) const
 {
-        OS << "dump of mesh element" << endl;
+  OS << "dump of mesh element" << endl;
 }
 
 ostream & operator <<(ostream & OS, const SMDS_MeshElement * ME)
 {
-        ME->Print(OS);
-        return OS;
+  ME->Print(OS);
+  return OS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -70,7 +70,7 @@ ostream & operator <<(ostream & OS, const SMDS_MeshElement * ME)
 ///////////////////////////////////////////////////////////////////////////////
 SMDS_ElemIteratorPtr SMDS_MeshElement::nodesIterator() const
 {
-        return elementsIterator(SMDSAbs_Node);
+  return elementsIterator(SMDSAbs_Node);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -79,7 +79,7 @@ SMDS_ElemIteratorPtr SMDS_MeshElement::nodesIterator() const
 ///////////////////////////////////////////////////////////////////////////////
 SMDS_ElemIteratorPtr SMDS_MeshElement::edgesIterator() const
 {
-        return elementsIterator(SMDSAbs_Edge);
+  return elementsIterator(SMDSAbs_Edge);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -88,7 +88,7 @@ SMDS_ElemIteratorPtr SMDS_MeshElement::edgesIterator() const
 ///////////////////////////////////////////////////////////////////////////////
 SMDS_ElemIteratorPtr SMDS_MeshElement::facesIterator() const
 {
-        return elementsIterator(SMDSAbs_Face);
+  return elementsIterator(SMDSAbs_Face);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -96,14 +96,14 @@ SMDS_ElemIteratorPtr SMDS_MeshElement::facesIterator() const
 ///////////////////////////////////////////////////////////////////////////////
 int SMDS_MeshElement::NbNodes() const
 {
-        int nbnodes=0;
-        SMDS_ElemIteratorPtr it=nodesIterator();
-        while(it->more())
-        {
-                it->next();
-                nbnodes++;
-        }
-        return nbnodes;
+  int nbnodes=0;
+  SMDS_ElemIteratorPtr it=nodesIterator();
+  while(it->more())
+  {
+    it->next();
+    nbnodes++;
+  }
+  return nbnodes;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -111,14 +111,14 @@ int SMDS_MeshElement::NbNodes() const
 ///////////////////////////////////////////////////////////////////////////////
 int SMDS_MeshElement::NbEdges() const
 {
-        int nbedges=0;
-        SMDS_ElemIteratorPtr it=edgesIterator();
-        while(it->more())
-        {
-                it->next();
-                nbedges++;
-        }
-        return nbedges;
+  int nbedges=0;
+  SMDS_ElemIteratorPtr it=edgesIterator();
+  while(it->more())
+  {
+    it->next();
+    nbedges++;
+  }
+  return nbedges;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -126,14 +126,14 @@ int SMDS_MeshElement::NbEdges() const
 ///////////////////////////////////////////////////////////////////////////////
 int SMDS_MeshElement::NbFaces() const
 {
-        int nbfaces=0;
-        SMDS_ElemIteratorPtr it=facesIterator();
-        while(it->more())
-        {
-                it->next();
-                nbfaces++;
-        }
-        return nbfaces;
+  int nbfaces=0;
+  SMDS_ElemIteratorPtr it=facesIterator();
+  while(it->more())
+  {
+    it->next();
+    nbfaces++;
+  }
+  return nbfaces;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -145,7 +145,7 @@ class SMDS_MeshElement_MyIterator:public SMDS_ElemIterator
 {
   const SMDS_MeshElement * myElement;
   bool myMore;
- public:
+public:
   SMDS_MeshElement_MyIterator(const SMDS_MeshElement * element):
     myElement(element),myMore(true) {}
 
@@ -228,28 +228,28 @@ SMDS_NodeIteratorPtr SMDS_MeshElement::nodeIterator() const
 
 bool operator<(const SMDS_MeshElement& e1, const SMDS_MeshElement& e2)
 {
-        if(e1.GetType()!=e2.GetType()) return false;
-        switch(e1.GetType())
-        {
-        case SMDSAbs_Node:
-                return static_cast<const SMDS_MeshNode &>(e1) <
-                        static_cast<const SMDS_MeshNode &>(e2);
+  if(e1.GetType()!=e2.GetType()) return false;
+  switch(e1.GetType())
+  {
+  case SMDSAbs_Node:
+    return static_cast<const SMDS_MeshNode &>(e1) <
+    static_cast<const SMDS_MeshNode &>(e2);
 
-        case SMDSAbs_Edge:
-                return static_cast<const SMDS_MeshEdge &>(e1) <
-                        static_cast<const SMDS_MeshEdge &>(e2);
+  case SMDSAbs_Edge:
+    return static_cast<const SMDS_MeshEdge &>(e1) <
+    static_cast<const SMDS_MeshEdge &>(e2);
 
-        case SMDSAbs_Face:
-                return static_cast<const SMDS_MeshFace &>(e1) <
-                        static_cast<const SMDS_MeshFace &>(e2);
+  case SMDSAbs_Face:
+    return static_cast<const SMDS_MeshFace &>(e1) <
+    static_cast<const SMDS_MeshFace &>(e2);
 
-        case SMDSAbs_Volume:
-                return static_cast<const SMDS_MeshVolume &>(e1) <
-                        static_cast<const SMDS_MeshVolume &>(e2);
+  case SMDSAbs_Volume:
+    return static_cast<const SMDS_MeshVolume &>(e1) <
+    static_cast<const SMDS_MeshVolume &>(e2);
 
-        default : MESSAGE("Internal Error");
-        }
-        return false;
+  default : MESSAGE("Internal Error");
+  }
+  return false;
 }
 
 bool SMDS_MeshElement::IsValidIndex(const int ind) const
@@ -291,11 +291,11 @@ int SMDS_MeshElement::NbCornerNodes() const
 }
 
 //================================================================================
-  /*!
-   * \brief Check if a node belongs to the element
-    * \param node - the node to check
-    * \retval int - node index within the element, -1 if not found
-   */
+/*!
+ * \brief Check if a node belongs to the element
+ * \param node - the node to check
+ * \retval int - node index within the element, -1 if not found
+ */
 //================================================================================
 
 int SMDS_MeshElement::GetNodeIndex( const SMDS_MeshNode* node ) const

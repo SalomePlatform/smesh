@@ -130,7 +130,6 @@ SMDS_Mesh::SMDS_Mesh():
   myNodeIDFactory(new SMDS_MeshNodeIDFactory()),
   myElementIDFactory(new SMDS_MeshElementIDFactory()),
   myModified(false), myModifTime(0), myCompactTime(0),
-  myNodeMin(0), myNodeMax(0),
   myHasConstructionEdges(false), myHasConstructionFaces(false),
   myHasInverseElements(true),
   xmin(0), xmax(0), ymin(0), ymax(0), zmin(0), zmax(0)
@@ -3424,7 +3423,7 @@ void SMDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elem)
  */
 bool SMDS_Mesh::Contains (const SMDS_MeshElement* elem) const
 {
-  // we should not imply on validity of *elem, so iterate on containers
+  // we should not rely on validity of *elem, so iterate on containers
   // of all types in the hope of finding <elem> somewhere there
   SMDS_NodeIteratorPtr itn = nodesIterator();
   while (itn->more())
@@ -3444,7 +3443,7 @@ bool SMDS_Mesh::Contains (const SMDS_MeshElement* elem) const
 
 int SMDS_Mesh::MaxNodeID() const
 {
-  return myNodeMax;
+  return myNodeIDFactory->GetMaxID();
 }
 
 //=======================================================================
@@ -3454,7 +3453,7 @@ int SMDS_Mesh::MaxNodeID() const
 
 int SMDS_Mesh::MinNodeID() const
 {
-  return myNodeMin;
+  return myNodeIDFactory->GetMinID();
 }
 
 //=======================================================================
@@ -4632,44 +4631,6 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
   return volvtk;
 }
 
-
-void SMDS_Mesh::updateNodeMinMax()
-{
-  myNodeMin = 0;
-  if (myNodes.size() == 0)
-  {
-    myNodeMax=0;
-    return;
-  }
-  while ( !myNodes[myNodeMin] && myNodeMin < (int)myNodes.size() )
-    myNodeMin++;
-  myNodeMax=myNodes.size()-1;
-  while (!myNodes[myNodeMax] && (myNodeMin>=0))
-    myNodeMin--;
-}
-
-void SMDS_Mesh::incrementNodesCapacity(int nbNodes)
-{
-//  int val = myCellIdSmdsToVtk.size();
-//  MESSAGE(" ------------------- resize myCellIdSmdsToVtk " << val << " --> " << val + nbNodes);
-//  myCellIdSmdsToVtk.resize(val + nbNodes, -1); // fill new elements with -1
-  int val = myNodes.size();
-  myNodes.resize(val +nbNodes, 0);
-}
-
-void SMDS_Mesh::incrementCellsCapacity(int nbCells)
-{
-  int val = myCellIdVtkToSmds.size();
-  myCellIdVtkToSmds.resize(val + nbCells, -1); // fill new elements with -1
-  val = myCells.size();
-  myNodes.resize(val +nbCells, 0);
-}
-
-void SMDS_Mesh::adjustStructure()
-{
-  myGrid->GetPoints()->GetData()->SetNumberOfTuples(myNodeIDFactory->GetMaxID());
-}
-
 void SMDS_Mesh::dumpGrid(string ficdump)
 {
   //  vtkUnstructuredGridWriter* aWriter = vtkUnstructuredGridWriter::New();
@@ -4730,28 +4691,28 @@ int SMDS_Mesh::fromVtkToSmds(int vtkid)
   throw SALOME_Exception(LOCALIZED ("vtk id out of bounds"));
 }
 
-void SMDS_Mesh::updateBoundingBox()
-{
-  xmin = 0; xmax = 0;
-  ymin = 0; ymax = 0;
-  zmin = 0; zmax = 0;
-  vtkPoints *points = myGrid->GetPoints();
-  int myNodesSize = this->myNodes.size();
-  for (int i = 0; i < myNodesSize; i++)
-    {
-      if (SMDS_MeshNode *n = myNodes[i])
-        {
-          double coords[3];
-          points->GetPoint(n->myVtkID, coords);
-          if (coords[0] < xmin) xmin = coords[0];
-          else if (coords[0] > xmax) xmax = coords[0];
-          if (coords[1] < ymin) ymin = coords[1];
-          else if (coords[1] > ymax) ymax = coords[1];
-          if (coords[2] < zmin) zmin = coords[2];
-          else if (coords[2] > zmax) zmax = coords[2];
-        }
-    }
-}
+// void SMDS_Mesh::updateBoundingBox()
+// {
+//   xmin = 0; xmax = 0;
+//   ymin = 0; ymax = 0;
+//   zmin = 0; zmax = 0;
+//   vtkPoints *points = myGrid->GetPoints();
+//   int myNodesSize = this->myNodes.size();
+//   for (int i = 0; i < myNodesSize; i++)
+//     {
+//       if (SMDS_MeshNode *n = myNodes[i])
+//         {
+//           double coords[3];
+//           points->GetPoint(n->myVtkID, coords);
+//           if (coords[0] < xmin) xmin = coords[0];
+//           else if (coords[0] > xmax) xmax = coords[0];
+//           if (coords[1] < ymin) ymin = coords[1];
+//           else if (coords[1] > ymax) ymax = coords[1];
+//           if (coords[2] < zmin) zmin = coords[2];
+//           else if (coords[2] > zmax) zmax = coords[2];
+//         }
+//     }
+// }
 
 double SMDS_Mesh::getMaxDim()
 {

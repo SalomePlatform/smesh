@@ -139,10 +139,12 @@ vtkPoints* SMDS_UnstructuredGrid::GetPoints()
 
 int SMDS_UnstructuredGrid::InsertNextLinkedCell(int type, int npts, vtkIdType *pts)
 {
-  if ( !this->Links )
-    BuildLinks();
+  if ( !this->Links ) // don't create Links until they are needed
+  {
+    return this->InsertNextCell(type, npts, pts);
+  }
 
-  if (type != VTK_POLYHEDRON)
+  if ( type != VTK_POLYHEDRON )
     return vtkUnstructuredGrid::InsertNextLinkedCell(type, npts, pts);
 
   // --- type = VTK_POLYHEDRON

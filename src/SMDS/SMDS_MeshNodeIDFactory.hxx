@@ -49,7 +49,7 @@ public:
   virtual void emptyPool(int maxId);
 
 protected:
-  void updateMinMax() const;
+  virtual void updateMinMax() const;
   void updateMinMax(int id) const
   {
     if (id > myMax)

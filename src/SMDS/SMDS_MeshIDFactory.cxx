@@ -50,8 +50,8 @@ int SMDS_MeshIDFactory::GetFreeID()
   else
   {
     set<int>::iterator i = myPoolOfID.begin();
-    newid = *i;//myPoolOfID.top();
-    myPoolOfID.erase( i );//myPoolOfID.pop();
+    newid = *i;
+    myPoolOfID.erase( i );
   }
   return newid;
 }
@@ -77,11 +77,13 @@ void SMDS_MeshIDFactory::ReleaseID(int ID, int vtkId)
         while ( i != myPoolOfID.begin() && myMaxID == *i ) {
           --myMaxID; --i;
         }
-        if ( myMaxID == *i )
+        if ( myMaxID == *i ) {
           --myMaxID; // begin of myPoolOfID reached
-        else
-          ++i;
-        myPoolOfID.erase( i, myPoolOfID.end() );
+          myPoolOfID.clear();
+        }
+        else if ( myMaxID < ID-1 ) {
+          myPoolOfID.erase( ++i, myPoolOfID.end() );
+        }
       }
     }
   }
