@@ -257,38 +257,44 @@ int SMESHDS_SubMesh::NbNodes() const
 }
 
 /*!
- * template class used for iteration on submesh elements. Interface of iterator remains
- * unchanged after redesign of SMDS to avoid modification everywhere in SMESH.
- * instances are stored in shared_ptr for automatic destruction.
- * Container is copied for iteration, because original can be modified
- * by addition of elements, for instance, and then reallocated (vector)
+ * Template class used for iteration on vector of elements which can resize
+ * during iteration. The iterator returns only elements present upon its creation.
  */
 template <class ELEM, typename TSET> class MySetIterator : public SMDS_Iterator<ELEM>
 {
 protected:
-  typename TSET::const_iterator _it, _end;
-  TSET _table;
+  int _iCur, _iEnd, _iDelta;
+  const TSET& _table;
 public:
-  MySetIterator(const TSET& table)
+  MySetIterator(const TSET& table, bool reverse): _table( table )
   {
-    _table = table;
-    _it = _table.begin();
-    _end = _table.end();
-    while ((_it != _end) && (*_it == 0))
-      _it++;
+    if ( reverse )
+    {
+      _iCur = _table.size()-1;
+      _iEnd = -1;
+      _iDelta = -1;
+    }
+    else
+    {
+      _iCur = 0;
+      _iEnd = _table.size();
+      _iDelta = 1;
+    }
+    if ( more() && !_table[ _iCur ])
+      next();
   }
 
   virtual bool more()
   {
-    while ((_it != _end) && (*_it == 0))
-      _it++;
-    return (_it != _end);
+    return ( _iEnd - _iCur ) * _iDelta > 0;
   }
 
   virtual ELEM next()
   {
-    ELEM e = *_it;
-    _it++;
+    ELEM e = more() ? _table[ _iCur ] : 0;
+    _iCur += _iDelta;
+    while ( more() && !_table[ _iCur ])
+      _iCur += _iDelta;
     return e;
   }
 };
@@ -366,18 +372,8 @@ SMDS_ElemIteratorPtr SMESHDS_SubMesh::GetElements( bool reverse ) const
   if ( IsComplexSubmesh() )
     return SMDS_ElemIteratorPtr( new MyElemIterator( mySubMeshes ));
 
-  if ( reverse )
-  {
-    typedef
-      SMDS_SetIterator< const SMDS_MeshElement*,
-                        std::vector< const SMDS_MeshElement* >::const_reverse_iterator > RIter;
-    return SMDS_ElemIteratorPtr( new RIter( myElements.rbegin(), myElements.rend() ));
-  }
-
-  typedef
-    SMDS_SetIterator< const SMDS_MeshElement*,
-                      std::vector< const SMDS_MeshElement* >::const_iterator > FIter;
-  return SMDS_ElemIteratorPtr( new FIter( myElements.begin(), myElements.end() ));
+  typedef MySetIterator< const SMDS_MeshElement*, std::vector<const SMDS_MeshElement*> > TIter;
+  return SMDS_ElemIteratorPtr( new TIter( myElements, reverse ));
 }
 
 //=======================================================================
@@ -390,18 +386,8 @@ SMDS_NodeIteratorPtr SMESHDS_SubMesh::GetNodes( bool reverse ) const
   if ( IsComplexSubmesh() )
     return SMDS_NodeIteratorPtr( new MyNodeIterator( mySubMeshes ));
 
-  if ( reverse )
-  {
-    typedef
-      SMDS_SetIterator< const SMDS_MeshNode*,
-                        std::vector< const SMDS_MeshNode* >::const_reverse_iterator > RIter;
-    return SMDS_NodeIteratorPtr( new RIter( myNodes.rbegin(), myNodes.rend() ));
-  }
-
-  typedef
-    SMDS_SetIterator< const SMDS_MeshNode*,
-                      std::vector< const SMDS_MeshNode* >::const_iterator > FIter;
-  return SMDS_NodeIteratorPtr( new FIter( myNodes.begin(), myNodes.end() ));
+  typedef MySetIterator< const SMDS_MeshNode*, std::vector<const SMDS_MeshNode*> > TIter;
+  return SMDS_NodeIteratorPtr( new TIter( myNodes, reverse ));
 }
 
 //=======================================================================
