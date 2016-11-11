@@ -66,8 +66,8 @@ public:
     virtual void         AddElement(const SMDS_MeshElement * e);
     virtual int          NbElements() const;
     virtual int          NbNodes() const;
-    virtual SMDS_ElemIteratorPtr GetElements() const;
-    virtual SMDS_NodeIteratorPtr GetNodes() const;
+    virtual SMDS_ElemIteratorPtr GetElements(bool reverse=false) const;
+    virtual SMDS_NodeIteratorPtr GetNodes(bool reverse=false) const;
     virtual void         Clear();
     virtual bool         Contains(const SMDS_MeshElement * ME) const;
 

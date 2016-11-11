@@ -533,7 +533,7 @@ int SMESH_ProxyMesh::SubMesh::NbElements() const
  */
 //================================================================================
 
-SMDS_ElemIteratorPtr SMESH_ProxyMesh::SubMesh::GetElements() const
+SMDS_ElemIteratorPtr SMESH_ProxyMesh::SubMesh::GetElements(bool reverse) const
 {
   return SMDS_ElemIteratorPtr
     ( new SMDS_ElementVectorIterator( _elements.begin(), _elements.end() ));
@@ -558,7 +558,7 @@ int SMESH_ProxyMesh::SubMesh::NbNodes() const
  */
 //================================================================================
 
-SMDS_NodeIteratorPtr SMESH_ProxyMesh::SubMesh::GetNodes() const
+SMDS_NodeIteratorPtr SMESH_ProxyMesh::SubMesh::GetNodes(bool reverse) const
 {
   if ( !_uvPtStructVec.empty() )
     return SMDS_NodeIteratorPtr ( new SMDS_SetIterator
