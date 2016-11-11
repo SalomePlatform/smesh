@@ -438,6 +438,7 @@ void SMESH_Mesh::Clear()
       sm->ComputeSubMeshStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
     }
   }
+  GetMeshDS()->Modified();
   _isModified = false;
 }
 

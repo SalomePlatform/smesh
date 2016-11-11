@@ -215,7 +215,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   myReversedVProp->SetColor( bfc.red() / 255. , bfc.green() / 255. , bfc.blue() / 255. );
 
   my2DActor = SMESH_CellLabelActor::New();
-  my2DActor->SetStoreGemetryMapping(true);
+  my2DActor->SetStoreClippingMapping(true);
   my2DActor->SetUserMatrix(aMatrix);
   my2DActor->PickableOff();
   my2DActor->SetFontProperties( aFamilyEl, aSizeEl, aBoldEl, anItalicEl, aShadowEl, anRGBEl[0], anRGBEl[1], anRGBEl[2] );
@@ -258,7 +258,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_TRIANGLE);
 
   my3DActor = SMESH_CellLabelActor::New();
-  my3DActor->SetStoreGemetryMapping(true);
+  my3DActor->SetStoreClippingMapping(true);
   my3DActor->SetUserMatrix(aMatrix);
   my3DActor->PickableOff();
   my3DActor->SetFontProperties( aFamilyEl, aSizeEl, aBoldEl, anItalicEl, aShadowEl, anRGBEl[0], anRGBEl[1], anRGBEl[2] );
@@ -324,7 +324,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   myEdgeProp->SetLineWidth(aLineWidth);
 
   my1DActor = SMESH_CellLabelActor::New();
-  my1DActor->SetStoreGemetryMapping(true);
+  my1DActor->SetStoreClippingMapping(true);
   my1DActor->SetUserMatrix(aMatrix);
   my1DActor->PickableOff();
   my1DActor->SetHighlited(true);
@@ -372,7 +372,7 @@ SMESH_ActorDef::SMESH_ActorDef()
 
   my0DActor = SMESH_CellLabelActor::New();
   my0DActor->SetUserMatrix(aMatrix);
-  my0DActor->SetStoreGemetryMapping(true);
+  my0DActor->SetStoreClippingMapping(true);
   my0DActor->PickableOff();
   my0DActor->SetFontProperties( aFamilyEl, aSizeEl, aBoldEl, anItalicEl, aShadowEl, anRGBEl[0], anRGBEl[1], anRGBEl[2] );
   my0DActor->SetVisibility(false);
@@ -391,7 +391,7 @@ SMESH_ActorDef::SMESH_ActorDef()
 
   myBallActor = SMESH_CellLabelActor::New();
   myBallActor->SetUserMatrix(aMatrix);
-  myBallActor->SetStoreGemetryMapping(true);
+  myBallActor->SetStoreClippingMapping(true);
   myBallActor->PickableOff();
   myBallActor->SetFontProperties( aFamilyEl, aSizeEl, aBoldEl, anItalicEl, aShadowEl, anRGBEl[0], anRGBEl[1], anRGBEl[2] );
   myBallActor->SetVisibility(false);
@@ -464,6 +464,8 @@ SMESH_ActorDef::SMESH_ActorDef()
   //----------------------------------------------
 
   myBaseActor->SetUserMatrix(aMatrix);
+  myBaseActor->SetStoreIDMapping(true);
+  myBaseActor->SetStoreClippingMapping(true);
   myBaseActor->SetStoreGemetryMapping(true);
   myBaseActor->GetProperty()->SetOpacity(0.0);
   myPickableActor = myBaseActor;
@@ -1141,8 +1143,6 @@ void SMESH_ActorDef::AddToRender(vtkRenderer* theRenderer)
   {
     myBaseActor->SetUnstructuredGrid( NULL );
     myHighlitableActor->SetUnstructuredGrid( NULL );
-    // theRenderer->AddActor(this);
-    // cout << "SMESH_ActorDef " << this << endl;
   }
   theRenderer->AddActor(myBaseActor);
   theRenderer->AddActor(myNodeExtActor);
@@ -1971,6 +1971,8 @@ void SMESH_ActorDef::Render(vtkRenderer *ren)
 void SMESH_ActorDef::Update()
 {
   if(MYDEBUG) MESSAGE("SMESH_ActorDef::Update");
+
+  myVisualObj->Update();
 
   if(GetControlMode() != eNone) {
     unsigned long aTime = myTimeStamp->GetMTime();

@@ -2671,52 +2671,26 @@ SMDS_Mesh::~SMDS_Mesh()
 void SMDS_Mesh::Clear()
 {
   if (myParent!=NULL)
-    {
+  {
     SMDS_ElemIteratorPtr eIt = elementsIterator();
     while ( eIt->more() )
-      {
-        const SMDS_MeshElement *elem = eIt->next();
-        myElementIDFactory->ReleaseID(elem->GetID(), elem->getVtkId());
-      }
+    {
+      const SMDS_MeshElement *elem = eIt->next();
+      myElementIDFactory->ReleaseID(elem->GetID(), elem->getVtkId());
+    }
     SMDS_NodeIteratorPtr itn = nodesIterator();
     while (itn->more())
-      {
-        const SMDS_MeshNode *node = itn->next();
-        myNodeIDFactory->ReleaseID(node->GetID(), node->getVtkId());
-      }
-    }
-  else
     {
+      const SMDS_MeshNode *node = itn->next();
+      myNodeIDFactory->ReleaseID(node->GetID(), node->getVtkId());
+    }
+  }
+  else
+  {
     myNodeIDFactory->Clear();
     myElementIDFactory->Clear();
-    }
+  }
 
-  // SMDS_ElemIteratorPtr itv = elementsIterator();
-  // while (itv->more())
-  //   {
-  //     SMDS_MeshElement* elem = (SMDS_MeshElement*)(itv->next());
-  //     SMDSAbs_ElementType aType = elem->GetType();
-  //     switch (aType)
-  //     {
-  //       case SMDSAbs_0DElement:
-  //         delete elem;
-  //         break;
-  //       case SMDSAbs_Edge:
-  //          myEdgePool->destroy(static_cast<SMDS_VtkEdge*>(elem));
-  //         break;
-  //       case SMDSAbs_Face:
-  //         myFacePool->destroy(static_cast<SMDS_VtkFace*>(elem));
-  //         break;
-  //       case SMDSAbs_Volume:
-  //         myVolumePool->destroy(static_cast<SMDS_VtkVolume*>(elem));
-  //         break;
-  //       case SMDSAbs_Ball:
-  //         myBallPool->destroy(static_cast<SMDS_BallElement*>(elem));
-  //         break;
-  //       default:
-  //         break;
-  //     }
-  //   }
   myVolumePool->clear();
   myFacePool->clear();
   myEdgePool->clear();
@@ -2727,11 +2701,11 @@ void SMDS_Mesh::Clear()
 
   SMDS_NodeIteratorPtr itn = nodesIterator();
   while (itn->more())
-    {
-      SMDS_MeshNode *node = (SMDS_MeshNode*)(itn->next());
-      node->SetPosition(SMDS_SpacePosition::originSpacePosition());
-      //myNodePool->destroy(node);
-    }
+  {
+    SMDS_MeshNode *node = (SMDS_MeshNode*)(itn->next());
+    node->SetPosition(SMDS_SpacePosition::originSpacePosition());
+    //myNodePool->destroy(node);
+  }
   myNodePool->clear();
   clearVector( myNodes );
 
@@ -2753,7 +2727,7 @@ void SMDS_Mesh::Clear()
   // rnv: to fix bug "21125: EDF 1233 SMESH: Degrardation of precision in a test case for quadratic conversion"
   // using double type for storing coordinates of nodes instead float.
   points->SetDataType(VTK_DOUBLE);
-  points->SetNumberOfPoints(0 /*SMDS_Mesh::chunkSize*/);
+  points->SetNumberOfPoints( 0 );
   myGrid->SetPoints( points );
   points->Delete();
   myGrid->DeleteLinks();
@@ -2766,7 +2740,7 @@ void SMDS_Mesh::Clear()
 ///////////////////////////////////////////////////////////////////////////////
 bool SMDS_Mesh::hasConstructionEdges()
 {
-        return myHasConstructionEdges;
+  return myHasConstructionEdges;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2778,7 +2752,7 @@ bool SMDS_Mesh::hasConstructionEdges()
 ///////////////////////////////////////////////////////////////////////////////
 bool SMDS_Mesh::hasConstructionFaces()
 {
-        return myHasConstructionFaces;
+  return myHasConstructionFaces;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2787,7 +2761,7 @@ bool SMDS_Mesh::hasConstructionFaces()
 ///////////////////////////////////////////////////////////////////////////////
 bool SMDS_Mesh::hasInverseElements()
 {
-        return myHasInverseElements;
+  return myHasInverseElements;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2796,7 +2770,7 @@ bool SMDS_Mesh::hasInverseElements()
 ///////////////////////////////////////////////////////////////////////////////
 void SMDS_Mesh::setConstructionEdges(bool b)
 {
-        myHasConstructionEdges=b;
+  myHasConstructionEdges=b;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2805,7 +2779,7 @@ void SMDS_Mesh::setConstructionEdges(bool b)
 ///////////////////////////////////////////////////////////////////////////////
 void SMDS_Mesh::setConstructionFaces(bool b)
 {
-         myHasConstructionFaces=b;
+  myHasConstructionFaces=b;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

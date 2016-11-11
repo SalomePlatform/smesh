@@ -299,7 +299,6 @@ void SMESH_Mesh_i::Clear() throw (SALOME::SALOME_Exception)
   catch(SALOME_Exception & S_ex) {
     THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
   }
-  _impl->GetMeshDS()->Modified();
 
   TPythonDump() <<  SMESH::SMESH_Mesh_var(_this()) << ".Clear()";
 }

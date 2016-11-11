@@ -2518,7 +2518,7 @@ class Mesh:
         return self.mesh.GetElementShape(id)
 
     ## Returns the list of submesh elements IDs
-    #  @param Shape a geom object(sub-shape) IOR
+    #  @param Shape a geom object(sub-shape)
     #         Shape must be the sub-shape of a ShapeToMesh()
     #  @return the list of integer values
     #  @ingroup l1_meshinfo
@@ -2530,7 +2530,7 @@ class Mesh:
         return self.mesh.GetSubMeshElementsId(ShapeID)
 
     ## Returns the list of submesh nodes IDs
-    #  @param Shape a geom object(sub-shape) IOR
+    #  @param Shape a geom object(sub-shape)
     #         Shape must be the sub-shape of a ShapeToMesh()
     #  @param all If true, gives all nodes of submesh elements, otherwise gives only submesh nodes
     #  @return the list of integer values
@@ -2543,7 +2543,7 @@ class Mesh:
         return self.mesh.GetSubMeshNodesId(ShapeID, all)
 
     ## Returns type of elements on given shape
-    #  @param Shape a geom object(sub-shape) IOR
+    #  @param Shape a geom object(sub-shape)
     #         Shape must be a sub-shape of a ShapeToMesh()
     #  @return element type
     #  @ingroup l1_meshinfo

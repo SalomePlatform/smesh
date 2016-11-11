@@ -142,7 +142,7 @@ SMESH_DeviceActor
   if(MYDEBUG) MESSAGE("~SMESH_DeviceActor - "<<this);
 
   myMapper->Delete();
-  myPlaneCollection->Delete();
+  // myPlaneCollection->Delete(); -- it is vtkSmartPointer
   myProperty->Delete();
 
   myExtractGeometry->Delete();
@@ -172,7 +172,8 @@ SMESH_DeviceActor
 ::SetStoreGemetryMapping(bool theStoreMapping)
 {
   myGeomFilter->SetStoreMapping(theStoreMapping);
-  SetStoreClippingMapping(theStoreMapping);
+  // for optimization, switch the mapping explicitly in each filter/algorithm
+  //SetStoreClippingMapping(theStoreMapping);
 }
 
 
@@ -182,7 +183,10 @@ SMESH_DeviceActor
 {
   myStoreClippingMapping = theStoreMapping;
   myExtractGeometry->SetStoreMapping(theStoreMapping && myIsImplicitFunctionUsed);
-  SetStoreIDMapping(theStoreMapping);
+  // EAP, 23315
+  // Mapping in myExtractUnstructuredGrid and myGeomFilter is ON in the pickable DeviceActor only.
+  // To show labels, the mapping is computed explicitly via myExtractUnstructuredGrid->BuildOut2InMap();
+  //SetStoreIDMapping(theStoreMapping);
 }
 
 
@@ -301,8 +305,8 @@ SMESH_DeviceActor
   if(anIsInitialized){
     vtkUnstructuredGrid* aDataSet = vtkUnstructuredGrid::New();
 
-    SetStoreIDMapping(true);
-    myExtractUnstructuredGrid->Update();
+    // SetStoreIDMapping(true);
+    // myExtractUnstructuredGrid->Update();
     vtkUnstructuredGrid* aGrid = myExtractUnstructuredGrid->GetOutput();
 
     aDataSet->ShallowCopy(aGrid);
@@ -318,7 +322,9 @@ SMESH_DeviceActor
     using namespace SMESH::Controls;
     if(NumericalFunctor* aNumericalFunctor = dynamic_cast<NumericalFunctor*>(theFunctor.get()))
     {
-      for(vtkIdType i = 0; i < aNbCells; i++){
+      myExtractUnstructuredGrid->BuildOut2InMap();
+      for(vtkIdType i = 0; i < aNbCells; i++)
+      {
         vtkIdType anId = myExtractUnstructuredGrid->GetInputId(i);
         vtkIdType anObjId = myVisualObj->GetElemObjId(anId);
         double aValue = aNumericalFunctor->GetValue(anObjId);
@@ -334,7 +340,9 @@ SMESH_DeviceActor
     }
     else if(Predicate* aPredicate = dynamic_cast<Predicate*>(theFunctor.get()))
     {
-      for(vtkIdType i = 0; i < aNbCells; i++){
+      myExtractUnstructuredGrid->BuildOut2InMap();
+      for(vtkIdType i = 0; i < aNbCells; i++)
+      {
         vtkIdType anId = myExtractUnstructuredGrid->GetInputId(i);
         vtkIdType anObjId = myVisualObj->GetElemObjId(anId);
         bool aValue = aPredicate->IsSatisfy(anObjId);

@@ -25,6 +25,8 @@
 //
 #include "SMESH_CellLabelActor.h"
 
+#include "SMESH_ExtractGeometry.h"
+
 #include <VTKViewer_TransformFilter.h>
 #include <VTKViewer_CellCenters.h>
 #include <VTKViewer_ExtractUnstructuredGrid.h>
@@ -47,8 +49,9 @@ vtkStandardNewMacro(SMESH_CellLabelActor);
 /*!
   Constructor.
 */
-SMESH_CellLabelActor::SMESH_CellLabelActor() {
-    //Definition of cells numbering pipeline
+SMESH_CellLabelActor::SMESH_CellLabelActor()
+{
+  //Definition of cells numbering pipeline
   //---------------------------------------
   myCellsNumDataSet = vtkUnstructuredGrid::New();
 
@@ -58,18 +61,18 @@ SMESH_CellLabelActor::SMESH_CellLabelActor() {
   myClsMaskPoints = vtkMaskPoints::New();
   myClsMaskPoints->SetInputConnection(myCellCenters->GetOutputPort());
   myClsMaskPoints->SetOnRatio(1);
-    
+
   myClsSelectVisiblePoints = vtkSelectVisiblePoints::New();
   myClsSelectVisiblePoints->SetInputConnection(myClsMaskPoints->GetOutputPort());
   myClsSelectVisiblePoints->SelectInvisibleOff();
   myClsSelectVisiblePoints->SetTolerance(0.1);
-    
+
   myClsLabeledDataMapper = vtkLabeledDataMapper::New();
   myClsLabeledDataMapper->SetInputConnection(myClsSelectVisiblePoints->GetOutputPort());
 
   myClsLabeledDataMapper->SetLabelFormat("%d");
   myClsLabeledDataMapper->SetLabelModeToLabelScalars();
-    
+
   myClsTextProp = vtkTextProperty::New();
   myClsTextProp->SetFontFamilyToTimes();
   myClsTextProp->SetFontSize(12);
@@ -98,7 +101,8 @@ SMESH_CellLabelActor::SMESH_CellLabelActor() {
 /*!
   Destructor.
 */
-SMESH_CellLabelActor::~SMESH_CellLabelActor() {
+SMESH_CellLabelActor::~SMESH_CellLabelActor()
+{
   //Deleting of cells numbering pipeline
   //---------------------------------------
   myCellsNumDataSet->Delete();
@@ -139,22 +143,29 @@ void SMESH_CellLabelActor::SetFontProperties( SMESH::LabelFont family, int size,
   myClsTextProp->SetColor( r, g, b ); 
 }
 
-void SMESH_CellLabelActor::SetCellsLabeled(bool theIsCellsLabeled) {
+void SMESH_CellLabelActor::SetCellsLabeled(bool theIsCellsLabeled)
+{
   myTransformFilter->Update();
   vtkUnstructuredGrid* aGrid = vtkUnstructuredGrid::SafeDownCast(myTransformFilter->GetOutput());
-  if(!aGrid)
+  if ( !aGrid )
     return;
 
   myIsCellsLabeled = theIsCellsLabeled && aGrid->GetNumberOfPoints();
-  if(myIsCellsLabeled){
+  if ( myIsCellsLabeled )
+  {
     myCellsNumDataSet->ShallowCopy(aGrid);
     vtkUnstructuredGrid *aDataSet = myCellsNumDataSet;
     int aNbElem = aDataSet->GetNumberOfCells();
     vtkIntArray *anArray = vtkIntArray::New();
     anArray->SetNumberOfValues(aNbElem);
-    for(int anId = 0; anId < aNbElem; anId++){
-      vtkIdType id = myExtractUnstructuredGrid->GetInputId(anId);
-      id = (id >=0) ? id : anId; 
+    myExtractUnstructuredGrid->BuildOut2InMap();
+    for(int anId = 0; anId < aNbElem; anId++)
+    {
+      vtkIdType id = anId;
+      if(IsImplicitFunctionUsed())
+        id = myExtractGeometry->GetElemObjId(id);
+      id = myExtractUnstructuredGrid->GetInputId(id);
+      id = (id >=0) ? id : anId;
       int aSMDSId = myVisualObj->GetElemObjId(id);
       anArray->SetValue(anId,aSMDSId);
     }
