@@ -994,6 +994,8 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     std::vector<int>          nbsegs = _fpHyp->GetNbSegments();
     if ( theReverse )
       std::reverse( nbsegs.begin(), nbsegs.end() );
+    if ( nbsegs.empty() )
+      nbsegs.push_back( 1 );
 
     // sort normalized params, taking into account theReverse
     TColStd_SequenceOfReal Params;

@@ -27,16 +27,6 @@
 #include "SMESH_Algo.hxx"
 #include "SMESH_Mesh.hxx"
 
-//#include <BRep_Tool.hxx>
-//#include <GCPnts_AbscissaPoint.hxx>
-//#include <GeomAdaptor_Curve.hxx>
-//#include <Geom_Curve.hxx>
-//#include <TopExp.hxx>
-//#include <TopLoc_Location.hxx>
-//#include <TopTools_IndexedMapOfShape.hxx>
-//#include <TopoDS.hxx>
-//#include <TopoDS_Edge.hxx>
-
 using namespace std;
 
 //=============================================================================
@@ -50,14 +40,14 @@ StdMeshers_FixedPoints1D::StdMeshers_FixedPoints1D(int hypId, int studyId,
   :SMESH_Hypothesis(hypId, studyId, gen)
 {
   _name = "FixedPoints1D";
-  _param_algo_dim = 1; 
+  _param_algo_dim = 1;
   _nbsegs.reserve( 1 );
   _nbsegs.push_back( 1 );
 }
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -72,7 +62,7 @@ StdMeshers_FixedPoints1D::~StdMeshers_FixedPoints1D()
 //=============================================================================
 
 void StdMeshers_FixedPoints1D::SetPoints(std::vector<double>& listParams)
-                              throw(SALOME_Exception)
+  throw(SALOME_Exception)
 {
   _params = listParams;
   NotifySubMeshesHypothesisModification();
@@ -85,7 +75,7 @@ void StdMeshers_FixedPoints1D::SetPoints(std::vector<double>& listParams)
 //=============================================================================
 
 void StdMeshers_FixedPoints1D::SetNbSegments(std::vector<int>& listNbSeg) 
-                              throw(SALOME_Exception)
+  throw(SALOME_Exception)
 {
   _nbsegs = listNbSeg;
   NotifySubMeshesHypothesisModification();
@@ -140,7 +130,7 @@ ostream & StdMeshers_FixedPoints1D::SaveTo(ostream & save)
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -183,28 +173,6 @@ istream & StdMeshers_FixedPoints1D::LoadFrom(istream & load)
   isOK = static_cast<bool>(load >> _objEntry);
 
   return load;
-}
-
-//=============================================================================
-/*!
- *  
- */
-//=============================================================================
-
-ostream & operator <<(ostream & save, StdMeshers_FixedPoints1D & hyp)
-{
-  return hyp.SaveTo( save );
-}
-
-//=============================================================================
-/*!
- *  
- */
-//=============================================================================
-
-istream & operator >>(istream & load, StdMeshers_FixedPoints1D & hyp)
-{
-  return hyp.LoadFrom( load );
 }
 
 //================================================================================

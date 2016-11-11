@@ -61,14 +61,12 @@ public:
 
   virtual std::ostream & SaveTo(std::ostream & save);
   virtual std::istream & LoadFrom(std::istream & load);
-  friend std::ostream& operator << (std::ostream & save, StdMeshers_FixedPoints1D & hyp);
-  friend std::istream& operator >> (std::istream & load, StdMeshers_FixedPoints1D & hyp);
 
   /*!
    * \brief Initialize start and end length by the mesh built on the geometry
-    * \param theMesh - the built mesh
-    * \param theShape - the geometry of interest
-    * \retval bool - true if parameter values have been successfully defined
+   *  \param theMesh - the built mesh
+   *  \param theShape - the geometry of interest
+   *  \retval bool - true if parameter values have been successfully defined
    */
   virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh, const TopoDS_Shape& theShape);
 
