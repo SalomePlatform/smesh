@@ -1142,7 +1142,7 @@ void SMESH_ActorDef::AddToRender(vtkRenderer* theRenderer)
   if ( !mySelector || !mySelector->IsSelectionEnabled() )
   {
     myBaseActor->SetUnstructuredGrid( NULL );
-    myHighlitableActor->SetUnstructuredGrid( NULL );
+    //myHighlitableActor->SetUnstructuredGrid( NULL );
   }
   theRenderer->AddActor(myBaseActor);
   theRenderer->AddActor(myNodeExtActor);
@@ -1858,11 +1858,6 @@ void SMESH_ActorDef::UpdateHighlight()
   case SMESH_DeviceActor::eSurface:
   case SMESH_DeviceActor::eWireframe:
     {
-      // if ( !mySelector || !mySelector->IsSelectionEnabled() )
-      //   myHighlitableActor->SetUnstructuredGrid( NULL );
-      // else if ( !myHighlitableActor->myExtractUnstructuredGrid->GetInput() )
-      //   myHighlitableActor->SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
-
       if(myIsHighlighted) {
         myHighlitableActor->SetProperty(myHighlightProp);
       }else if(myIsPreselected){
@@ -1902,16 +1897,16 @@ void SMESH_ActorDef::EnableSelection( bool enable )
   if ( enable && ! myBaseActor->myExtractUnstructuredGrid->GetInput() )
   {
     myBaseActor->SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
-    myHighlitableActor->SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
+    //myHighlitableActor->SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
     myBaseActor->myExtractUnstructuredGrid->Update();
-    myHighlitableActor->myExtractUnstructuredGrid->Update();
+    //myHighlitableActor->myExtractUnstructuredGrid->Update();
   }
   if ( !enable && myBaseActor->myExtractUnstructuredGrid->GetInput() )
   {
     myBaseActor->SetUnstructuredGrid( NULL );
-    myHighlitableActor->SetUnstructuredGrid( NULL );
+    //myHighlitableActor->SetUnstructuredGrid( NULL );
     myBaseActor->myExtractUnstructuredGrid->Update();
-    myHighlitableActor->myExtractUnstructuredGrid->Update();
+    //myHighlitableActor->myExtractUnstructuredGrid->Update();
   }
 }
 
@@ -2348,7 +2343,7 @@ void SMESH_ActorDef::SetOpenGLClippingPlane()
   if ( !mySelector || !mySelector->IsSelectionEnabled() )
   {
     myBaseActor->SetUnstructuredGrid( NULL );
-    myHighlitableActor->SetUnstructuredGrid( NULL );
+    //myHighlitableActor->SetUnstructuredGrid( NULL );
   }
   my1DActor->SetPlaneCollection( myPlaneCollection );
   my1DActor->SetUnstructuredGrid(myVisualObj->GetUnstructuredGrid());
