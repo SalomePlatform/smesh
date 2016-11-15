@@ -2324,7 +2324,7 @@ bool StdMeshers_ProjectionUtils::MakeComputed(SMESH_subMesh * sm, const int iter
 
   string algoType = algo->GetName();
   if ( algoType.substr(0, 11) != "Projection_")
-    return gen->Compute( *mesh, shape, /*shapeOnly=*/true );
+    return gen->Compute( *mesh, shape, SMESH_Gen::SHAPE_ONLY );
 
   // try to compute source mesh
 
@@ -2365,7 +2365,7 @@ bool StdMeshers_ProjectionUtils::MakeComputed(SMESH_subMesh * sm, const int iter
     srcMesh = mesh;
 
   if ( MakeComputed( srcMesh->GetSubMesh( srcShape ), iterationNb + 1 ) &&
-       gen->Compute( *mesh, shape, /*shapeOnly=*/true ))
+       gen->Compute( *mesh, shape, SMESH_Gen::SHAPE_ONLY ))
     return sm->IsMeshComputed();
 
   return false;

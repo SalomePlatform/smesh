@@ -567,6 +567,10 @@ void SMESHDS_SubMesh::compactList()
     myElements.swap(newElems);
     myUnusedIdElements = 0;
   }
+  else
+  {
+    std::vector<const SMDS_MeshElement*>( myElements ).swap( myElements );
+  }
 
   if ( myUnusedIdNodes > 0 )
   {
@@ -581,6 +585,10 @@ void SMESHDS_SubMesh::compactList()
       }
     myNodes.swap(newNodes);
     myUnusedIdNodes = 0;
+  }
+  else
+  {
+    std::vector<const SMDS_MeshNode*>( myNodes ).swap( myNodes );
   }
 }
 

@@ -960,7 +960,7 @@ void SMESH_Gen_i::SetOption(const char* name, const char* value)
     {
       vector<int> color;
       string str = value;
-      // color must be presented as a string of next form:
+      // color must be presented as a string of following form:
       if ( str.at(0) == '#' && str.length() == 7 ) { // hexadecimal color ("#ffaa00", for example)
         str = str.substr(1);
         for ( size_t i = 0; i < str.length()/2; i++ )

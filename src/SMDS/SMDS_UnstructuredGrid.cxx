@@ -189,13 +189,14 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
 
   // --- if newNodeSize, create a new compacted vtkPoints
 
-  vtkPoints *newPoints = vtkPoints::New();
-  newPoints->SetDataType(VTK_DOUBLE);
-  newPoints->SetNumberOfPoints(newNodeSize);
-  if (newNodeSize)
+  if ( newNodeSize )
   {
     // rnv: to fix bug "21125: EDF 1233 SMESH: Degradation of precision in a test case for quadratic conversion"
     // using double type for storing coordinates of nodes instead float.
+    vtkPoints *newPoints = vtkPoints::New();
+    newPoints->SetDataType(VTK_DOUBLE);
+    newPoints->SetNumberOfPoints(newNodeSize);
+
     int oldNodeSize = idNodesOldToNew.size();
 
     int i = 0;
@@ -211,21 +212,16 @@ void SMDS_UnstructuredGrid::compactGrid(std::vector<int>& idNodesOldToNew, int n
       int endBloc = i;
       copyNodes(newPoints, idNodesOldToNew, alreadyCopied, startBloc, endBloc);
     }
-    newPoints->Squeeze();
-  }
-
-  if (1/*newNodeSize*/)
-  {
     this->SetPoints(newPoints);
+    newPoints->Delete();
   }
-  newPoints->Delete();
-
+  this->Points->Squeeze();
 
   // --- create new compacted Connectivity, Locations and Types
 
   int oldCellSize = this->Types->GetNumberOfTuples();
 
-  if ( oldCellSize == newCellSize ) // no holes in elements
+  if ( !newNodeSize && oldCellSize == newCellSize ) // no holes in elements
   {
     this->Connectivity->Squeeze();
     this->Locations->Squeeze();

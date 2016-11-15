@@ -5653,20 +5653,30 @@ bool _Smoother1D::smoothComplexEdge( _SolidData&                    data,
     return false;
   }
 
+  // adjust length of extreme LE (test viscous_layers_01/B7)
+  gp_Vec vDiv0( pExtreme[0], pProj[0] );
+  gp_Vec vDiv1( pExtreme[1], pProj[1] );
+  double d0 = vDiv0.Magnitude();
+  double d1 = vDiv1.Magnitude();
+  if ( e[0]->_normal * vDiv0.XYZ() < 0 ) e[0]->_len += d0;
+  else                                   e[0]->_len -= d0;
+  if ( e[1]->_normal * vDiv1.XYZ() < 0 ) e[1]->_len += d1;
+  else                                   e[1]->_len -= d1;
+
   // compute normalized length of the offset segments located between the projections
 
   size_t iSeg = 0, nbSeg = _iSeg[1] - _iSeg[0] + 1;
   vector< double > len( nbSeg + 1 );
   len[ iSeg++ ] = 0;
-  len[ iSeg++ ] = pProj[ 0 ].Distance( _offPoints[ _iSeg[0]+1 ]._xyz );
+  len[ iSeg++ ] = pProj[ 0 ].Distance( _offPoints[ _iSeg[0]+1 ]._xyz )/* * e[0]->_lenFactor*/;
   for ( size_t i = _iSeg[0]+1; i <= _iSeg[1]; ++i, ++iSeg )
   {
     len[ iSeg ] = len[ iSeg-1 ] + _offPoints[i].Distance( _offPoints[i+1] );
   }
-  len[ nbSeg ] -= pProj[ 1 ].Distance( _offPoints[ _iSeg[1]+1 ]._xyz );
+  len[ nbSeg ] -= pProj[ 1 ].Distance( _offPoints[ _iSeg[1]+1 ]._xyz )/* * e[1]->_lenFactor*/;
 
-  double d0 = pProj[0].Distance( pExtreme[0]);
-  double d1 = pProj[1].Distance( pExtreme[1]);
+  // d0 *= e[0]->_lenFactor;
+  // d1 *= e[1]->_lenFactor;
   double fullLen = len.back() - d0 - d1;
   for ( iSeg = 0; iSeg < len.size(); ++iSeg )
     len[iSeg] = ( len[iSeg] - d0 ) / fullLen;

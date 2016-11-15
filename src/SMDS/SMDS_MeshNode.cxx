@@ -187,16 +187,16 @@ SMDS_ElemIteratorPtr SMDS_MeshNode::GetInverseElementIterator(SMDSAbs_ElementTyp
   return SMDS_ElemIteratorPtr(new SMDS_MeshNode_MyInvIterator(SMDS_Mesh::_meshList[myMeshId], l.cells, l.ncells, type));
 }
 
-// Same as GetInverseElementIterator but the create iterator only return
+// Same as GetInverseElementIterator but the created iterator only returns
 // wanted type elements.
 class SMDS_MeshNode_MyIterator:public SMDS_ElemIterator
 {
 private:
-  SMDS_Mesh* myMesh;
-  vtkIdType* myCells;
-  int  myNcells;
-  SMDSAbs_ElementType                                 myType;
-  int  iter;
+  SMDS_Mesh*                myMesh;
+  vtkIdType*                myCells;
+  int                       myNcells;
+  SMDSAbs_ElementType       myType;
+  int                       iter;
   vector<SMDS_MeshElement*> myFiltCells;
 
 public:
@@ -206,20 +206,16 @@ public:
                            SMDSAbs_ElementType type):
     myMesh(mesh), myCells(cells), myNcells(ncells), myType(type), iter(0)
   {
-    //MESSAGE("myNcells " << myNcells);
     for (; iter<ncells; iter++)
     {
       int vtkId = myCells[iter];
       int smdsId = myMesh->fromVtkToSmds(vtkId);
-      //MESSAGE("vtkId " << vtkId << " smdsId " << smdsId);
       const SMDS_MeshElement* elem = myMesh->FindElement(smdsId);
       if (elem->GetType() == type)
         myFiltCells.push_back((SMDS_MeshElement*)elem);
     }
     myNcells = myFiltCells.size();
-    //MESSAGE("myNcells " << myNcells);
     iter = 0;
-    //MESSAGE("SMDS_MeshNode_MyIterator (filter) " << ncells << " " << myNcells);
   }
 
   bool more()

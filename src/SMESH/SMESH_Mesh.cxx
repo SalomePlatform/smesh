@@ -1242,24 +1242,35 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
       }
     }
     if ( toNotify )
+    {
       smToNotify.push_back( aSubMesh );
-
-    if ( !aSubMesh->IsEmpty() &&
-         aSubMesh->GetSubShape().ShapeType() == TopAbs_EDGE &&
-         !toNotify )
-      allMeshedEdgesNotified = false;
+      if ( aSubMesh->GetAlgoState() == SMESH_subMesh::MISSING_HYP )
+        allMeshedEdgesNotified = false; //  update of algo state needed, not mesh clearing
+    }
+    else
+    {
+      if ( !aSubMesh->IsEmpty() &&
+           aSubMesh->GetSubShape().ShapeType() == TopAbs_EDGE )
+        allMeshedEdgesNotified = false;
+    }
   }
+  if ( smToNotify.empty() )
+    return;
 
   // if all meshed EDGEs will be notified then the notification is equivalent
   // to the whole mesh clearing
   if ( allMeshedEdgesNotified )
-    Clear();
+  {
+    if ( NbNodes() > 0 )
+      Clear();
+  }
   else
+  {
     // notify in reverse order to avoid filling of the pool of IDs
     for ( int i = smToNotify.size()-1; i >= 0; --i )
       smToNotify[i]->AlgoStateEngine(SMESH_subMesh::MODIF_HYP,
                                      const_cast< SMESH_Hypothesis*>( hyp ));
-
+  }
   HasModificationsToDiscard(); // to reset _isModified flag if mesh becomes empty
   GetMeshDS()->Modified();
 }
