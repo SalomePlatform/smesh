@@ -442,6 +442,7 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
   SMDS_Mesh*                   _mesh;
   SMDS_ElemIteratorPtr         _meshPartIt;
   ElementBndBoxTree*           _ebbTree;
+  int                          _ebbTreeHeight;
   SMESH_NodeSearcherImpl*      _nodeSearcher;
   SMDSAbs_ElementType          _elementType;
   double                       _tolerance;
@@ -451,7 +452,7 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
   SMESH_ElementSearcherImpl( SMDS_Mesh&           mesh,
                              double               tol=-1,
                              SMDS_ElemIteratorPtr elemIt=SMDS_ElemIteratorPtr())
-    : _mesh(&mesh),_meshPartIt(elemIt),_ebbTree(0),_nodeSearcher(0),_tolerance(tol),_outerFacesFound(false) {}
+    : _mesh(&mesh),_meshPartIt(elemIt),_ebbTree(0),_ebbTreeHeight(-1),_nodeSearcher(0),_tolerance(tol),_outerFacesFound(false) {}
   virtual ~SMESH_ElementSearcherImpl()
   {
     if ( _ebbTree )      delete _ebbTree;      _ebbTree      = 0;
@@ -478,6 +479,12 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
   bool isOuterBoundary(const SMDS_MeshElement* face) const
   {
     return _outerFaces.empty() || _outerFaces.count(face);
+  }
+  int getTreeHeight()
+  {
+    if ( _ebbTreeHeight < 0 )
+      _ebbTreeHeight = _ebbTree->getHeight();
+    return _ebbTreeHeight;
   }
 
   struct TInters //!< data of intersection of the line and the mesh face (used in GetPointState())
@@ -796,7 +803,7 @@ SMESH_ElementSearcherImpl::FindClosestTo( const gp_Pnt&       point,
       if ( _ebbTree->getBox()->IsOut( point.XYZ() ))
         radius = point.Distance( boxCenter ) - 0.5 * _ebbTree->maxSize();
       if ( radius < 0 )
-        radius = _ebbTree->maxSize() / pow( 2., _ebbTree->getHeight()) / 2;
+        radius = _ebbTree->maxSize() / pow( 2., getTreeHeight()) / 2;
       while ( suspectElems.empty() )
       {
         _ebbTree->getElementsInSphere( point.XYZ(), radius, suspectElems );

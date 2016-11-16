@@ -866,6 +866,5 @@ void
   if( nbtrianeg>0 )
     MESSAGE( "ATTENTION: "<< nbtrianeg << " TRIANGLES d'AIRE NEGATIVE" );
 
-  MESSAGE(" ");
   return;
 }
