@@ -2400,6 +2400,9 @@ double StdMeshers_Prism_3D::getSweepTolerance( const Prism_3D::TPrismTopo& thePr
 
 bool StdMeshers_Prism_3D::isSimpleBottom( const Prism_3D::TPrismTopo& thePrism )
 {
+  if ( thePrism.myBottomEdges.size() != 4 )
+    return false;
+
   // analyse angles between edges
   double nbConcaveAng = 0, nbConvexAng = 0;
   TopoDS_Face reverseBottom = TopoDS::Face( thePrism.myBottom.Reversed() ); // see initPrism()
