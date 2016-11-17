@@ -2202,7 +2202,7 @@ void SMESHDS_Mesh::compactMesh()
 
   if ( true )
   {
-    SetOfNodes newNodes(newNodeSize+1,0); // 0 not used, SMDS numbers 1..n
+    SetOfNodes newNodes(newNodeSize+1,NULL); // 0 not used, SMDS numbers 1..n
     int newSmdsId = 0;
     for (int i = 0; i < nbNodes; i++)
     {
@@ -2233,7 +2233,7 @@ void SMESHDS_Mesh::compactMesh()
     }
   }
 
-  SetOfCells      newCells(newCellSize+1, 0); // 0 not used, SMDS numbers 1..n
+  SetOfCells      newCells(newCellSize+1, NULL); // 0 not used, SMDS numbers 1..n
   vector<int> newVtkToSmds(newCellSize+1, -1);
 
   int myCellsSize = myCells.size();
