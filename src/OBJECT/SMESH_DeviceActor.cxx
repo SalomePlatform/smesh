@@ -88,7 +88,7 @@ SMESH_DeviceActor
   myIsShrunk = false;
   myIsHighlited = false;
 
-  myRepresentation = eSurface;
+  myRepresentation = SMESH_DeviceActor::EReperesent(-1);
 
   myProperty = vtkProperty::New();
   myMapper = VTKViewer_PolyDataMapper::New();
@@ -306,7 +306,7 @@ SMESH_DeviceActor
     vtkUnstructuredGrid* aDataSet = vtkUnstructuredGrid::New();
 
     // SetStoreIDMapping(true);
-    // myExtractUnstructuredGrid->Update();
+    myExtractUnstructuredGrid->Update();
     vtkUnstructuredGrid* aGrid = myExtractUnstructuredGrid->GetOutput();
 
     aDataSet->ShallowCopy(aGrid);
@@ -619,7 +619,19 @@ unsigned long int
 SMESH_DeviceActor
 ::GetMTime()
 {
-  // cout << this->myExtractUnstructuredGrid
+  // cout << "DA " << this
+  //      << " GF " << myGeomFilter;
+  // if ( this->Property )
+  //   cout << " P " << this->Property->GetMTime();
+  // if ( this->BackfaceProperty != NULL )
+  //   cout << " BP " << BackfaceProperty->GetMTime();
+  // if ( this->Texture != NULL )
+  //   cout << " T " << this->Texture->GetMTime();
+  // cout << " U " << this->GetUserTransformMatrixMTime()
+  //      << " M " << this->MTime.GetMTime() << endl;
+
+  // cout << "DA " << this
+  //      << " GF " << myGeomFilter
   //      << " " << this->Superclass::GetMTime()
   //      << " " << myExtractGeometry->GetMTime()
   //      << " " << myExtractUnstructuredGrid->GetMTime()
@@ -745,6 +757,8 @@ void
 SMESH_DeviceActor
 ::SetRepresentation(EReperesent theMode)
 {
+  if ( myRepresentation == theMode )
+    return;
   switch(theMode){
   case ePoint:
     myGeomFilter->SetInside(true);

@@ -198,7 +198,8 @@ void SMESH_CellLabelActor::RemoveFromRender(vtkRenderer* theRenderer)
   SMESH_DeviceActor::RemoveFromRender(theRenderer);
 }
 
-void SMESH_CellLabelActor::UpdateLabels() {
+void SMESH_CellLabelActor::UpdateLabels()
+{
   if(myIsCellsLabeled)
     SetCellsLabeled(myIsCellsLabeled);
 }
@@ -207,7 +208,8 @@ void SMESH_CellLabelActor::UpdateLabels() {
 void SMESH_CellLabelActor::ProcessEvents(vtkObject* vtkNotUsed(theObject),
                                          unsigned long theEvent,
                                          void* theClientData,
-                                         void* vtkNotUsed(theCallData)) {
+                                         void* vtkNotUsed(theCallData))
+{
   SMESH_CellLabelActor* self = reinterpret_cast<SMESH_CellLabelActor*>(theClientData);
   if(self)
     self->UpdateLabels();

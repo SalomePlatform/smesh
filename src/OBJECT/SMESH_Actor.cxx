@@ -323,6 +323,10 @@ SMESH_ActorDef::SMESH_ActorDef()
   myEdgeProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
   myEdgeProp->SetLineWidth(aLineWidth);
 
+  // my1DActor is used to
+  // - show numbers
+  // - show controls on all edges (eg Length)
+  // since edges are shown by myHighlitableActor
   my1DActor = SMESH_CellLabelActor::New();
   my1DActor->SetStoreClippingMapping(true);
   my1DActor->SetUserMatrix(aMatrix);
@@ -350,6 +354,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   my1DExtProp->SetLineWidth(aLineWidth + aLineWidthInc);
   my1DExtProp->SetPointSize(aElem0DSize);
 
+  // my1DExtActor is used to show filtered edges or links between nodes
   my1DExtActor = SMESH_DeviceActor::New();
   my1DExtActor->SetUserMatrix(aMatrix);
   my1DExtActor->PickableOff();
@@ -995,8 +1000,7 @@ void SMESH_ActorDef::SetControlMode( eControl theMode, bool theCheckEntityMode )
       return;
     }
 
-    vtkUnstructuredGrid* aGrid = myControlActor->GetUnstructuredGrid();
-    vtkIdType aNbCells = aGrid->GetNumberOfCells();
+    int aNbCells = myFunctor ? myVisualObj->GetNbEntities( myFunctor->GetType() ) : 0;
     bool aShowOnlyScalarBarTitle = false;
     if(aNbCells) {
       myControlMode = theMode;
@@ -1055,25 +1059,13 @@ void SMESH_ActorDef::SetControlMode( eControl theMode, bool theCheckEntityMode )
         SetEntityMode(eEdges);
       }
       else if(myControlActor == my2DActor) {
-        switch(myControlMode) {
-        case eLength2D:
-        case eFreeEdges:
-        case eFreeFaces:
-        case eMultiConnection2D:
-          if (!myIsEntityModeCache){
-            myEntityModeCache = GetEntityMode();
-            myIsEntityModeCache=true;
-          }
-          SetEntityMode(eFaces);
-          break;
-        default:
-          if (!myIsEntityModeCache){
-            myEntityModeCache = GetEntityMode();
-            myIsEntityModeCache=true;
-          }
-          SetEntityMode(eFaces);
+        if (!myIsEntityModeCache){
+          myEntityModeCache = GetEntityMode();
+          myIsEntityModeCache=true;
         }
-      }else if(myControlActor == my3DActor) {
+        SetEntityMode(eFaces);
+      }
+      else if(myControlActor == my3DActor) {
         if (!myIsEntityModeCache){
             myEntityModeCache = GetEntityMode();
             myIsEntityModeCache=true;
@@ -1487,9 +1479,15 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation)
       case eCoincidentNodes:
         myNodeExtActor->VisibilityOn();
         break;
+      case eLength:
+      case eMultiConnection:
+        my1DActor->VisibilityOn();
+        break;
       case eFreeEdges:
       case eFreeBorders:
       case eCoincidentElems1D:
+      case eLength2D:
+      case eMultiConnection2D:
         my1DExtActor->VisibilityOn();
         break;
       case eFreeFaces:
@@ -1503,39 +1501,31 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation)
       case eCoincidentElems3D:
         my3DExtActor->VisibilityOn();
         break;
-      case eLength2D:
-      case eMultiConnection2D:
-        my1DExtActor->VisibilityOn();
-        break;
       default:;
       }
-      if(myControlActor->GetUnstructuredGrid()->GetNumberOfCells())
+      if ( myFunctor && myVisualObj->GetNbEntities( myFunctor->GetType() ))
         myScalarBarActor->VisibilityOn();
     }
 
-    if(myRepresentation != ePoint)
-      myPickableActor->VisibilityOn();
-    else {
-      myNodeActor->VisibilityOn();
-    }
+    myPickableActor->VisibilityOn();
 
-    if(myEntityMode & e0DElements && GetRepresentation() != ePoint ){
-      my0DActor->VisibilityOn();
-    }
-    if(myEntityMode & eBallElem && GetRepresentation() != ePoint ){
-      myBallActor->VisibilityOn();
-    }
-
-    if(myEntityMode & eEdges && GetRepresentation() != ePoint){
-      my1DActor->VisibilityOn();
-    }
-
-    if(myEntityMode & eFaces && GetRepresentation() != ePoint){
-      my2DActor->VisibilityOn();
-    }
-
-    if(myEntityMode & eVolumes && GetRepresentation() != ePoint){
-      my3DActor->VisibilityOn();
+    if ( GetRepresentation() != ePoint )
+    {
+      if(myEntityMode & e0DElements  ){
+        my0DActor->VisibilityOn();
+      }
+      if(myEntityMode & eBallElem    ){
+        myBallActor->VisibilityOn();
+      }
+      if(myEntityMode & eEdges && GetCellsLabeled() ){ // my1DActor shows labels only
+        my1DActor->VisibilityOn();
+      }
+      if(myEntityMode & eFaces      ){
+        my2DActor->VisibilityOn();
+      }
+      if(myEntityMode & eVolumes    ){
+        my3DActor->VisibilityOn();
+      }
     }
 
     if(myNodeActor->GetPointsLabeled()){
@@ -1750,8 +1740,6 @@ void SMESH_ActorDef::SetRepresentation (int theMode)
   }
 
   myPickableActor = myBaseActor;
-  myNodeActor->SetVisibility(false);
-  myNodeExtActor->SetVisibility(false);
   vtkProperty *aProp = NULL, *aBackProp = NULL;
   vtkProperty *aPropVN = NULL, *aPropVR = NULL;
   SMESH_DeviceActor::EReperesent aReperesent = SMESH_DeviceActor::EReperesent(-1);
@@ -1759,7 +1747,6 @@ void SMESH_ActorDef::SetRepresentation (int theMode)
   switch (myRepresentation) {
   case ePoint:
     myPickableActor = myNodeActor;
-    myNodeActor->SetVisibility(true);
     aQuadraticMode = SMESH_Actor::eLines;
     aProp = aBackProp = aPropVN = aPropVR = myNodeProp;
     aReperesent = SMESH_DeviceActor::ePoint;
@@ -1777,54 +1764,50 @@ void SMESH_ActorDef::SetRepresentation (int theMode)
     break;
   }
 
-  my2DActor->SetProperty(aProp);
-  my2DActor->SetBackfaceProperty(aBackProp);
-  my2DActor->SetRepresentation(aReperesent);
+  if ( myRepresentation != ePoint )
+  {
+    my2DActor->SetProperty(aProp);
+    my2DActor->SetBackfaceProperty(aBackProp);
+    my2DActor->SetRepresentation(aReperesent);
 
-  if(aQuadraticMode == SMESH_Actor::eLines)
-    my2DActor->SetQuadraticArcMode(false);
-  else if(aQuadraticMode == SMESH_Actor::eArcs)
-    my2DActor->SetQuadraticArcMode(true);
+    if(aQuadraticMode == SMESH_Actor::eLines)
+      my2DActor->SetQuadraticArcMode(false);
+    else if(aQuadraticMode == SMESH_Actor::eArcs)
+      my2DActor->SetQuadraticArcMode(true);
 
-  my2DExtActor->SetRepresentation(aReperesent);
+    my2DExtActor->SetRepresentation(aReperesent);
 
-  my3DActor->SetProperty(aPropVN);
-  my3DActor->SetBackfaceProperty(aPropVR);
-  my3DActor->SetRepresentation(aReperesent);
+    my3DActor->SetProperty(aPropVN);
+    my3DActor->SetBackfaceProperty(aPropVR);
+    my3DActor->SetRepresentation(aReperesent);
 
+    my0DActor->SetRepresentation(aReperesent);
+    myBallActor->SetRepresentation(aReperesent);
 
-  my1DExtActor->SetVisibility(false);
-  my2DExtActor->SetVisibility(false);
-  my3DExtActor->SetVisibility(false);
+    switch ( myControlMode ) {
+    case eLength:
+    case eMultiConnection:
+      aProp = aBackProp = my1DProp;
+      if(myRepresentation != ePoint)
+        aReperesent = SMESH_DeviceActor::eInsideframe;
+      break;
+    default:;
+    }
 
-  my0DActor->SetRepresentation(aReperesent);
-  myBallActor->SetRepresentation(aReperesent);
+    if(aQuadraticMode == SMESH_Actor::eLines)
+      my1DActor->SetQuadraticArcMode(false);
+    else if(aQuadraticMode == SMESH_Actor::eArcs)
+      my1DActor->SetQuadraticArcMode(true);
 
-  switch ( myControlMode ) {
-  case eLength:
-  case eMultiConnection:
-    aProp = aBackProp = my1DProp;
-    if(myRepresentation != ePoint)
-      aReperesent = SMESH_DeviceActor::eInsideframe;
-    break;
-  default:;
+    my1DActor->SetProperty(aProp);
+    my1DActor->SetBackfaceProperty(aBackProp);
+    my1DActor->SetRepresentation(aReperesent);
+
+    my1DExtActor->SetRepresentation(aReperesent);
   }
-
-  if(aQuadraticMode == SMESH_Actor::eLines)
-    my1DActor->SetQuadraticArcMode(false);
-  else if(aQuadraticMode == SMESH_Actor::eArcs)
-    my1DActor->SetQuadraticArcMode(true);
-
-  my1DActor->SetProperty(aProp);
-  my1DActor->SetBackfaceProperty(aBackProp);
-  my1DActor->SetRepresentation(aReperesent);
-
-  my1DExtActor->SetRepresentation(aReperesent);
 
   if(myIsPointsVisible)
     myPickableActor = myNodeActor;
-  if(GetPointRepresentation())
-    myNodeActor->SetVisibility(true);
 
   SetMapper(myPickableActor->GetMapper());
 
@@ -1886,6 +1869,7 @@ void SMESH_ActorDef::UpdateHighlight()
       }
       myNodeActor->SetRepresentation(SMESH_DeviceActor::ePoint);
       myNodeActor->GetExtractUnstructuredGrid()->SetModeOfExtraction(VTKViewer_ExtractUnstructuredGrid::ePoints);
+      myNodeActor->GetProperty()->Modified();
       break;
     }
   }
