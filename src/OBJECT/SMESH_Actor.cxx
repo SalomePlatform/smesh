@@ -817,7 +817,8 @@ void SMESH_ActorDef::SetControlMode( eControl theMode, bool theCheckEntityMode )
   if( !mgr )
     return;
 
-  myControlMode = eNone;
+  //myControlMode = eNone;
+  myControlMode = theMode;
   theCheckEntityMode &= mgr->booleanValue( "SMESH", "display_entity", false );
 
   my0DActor->GetMapper()->SetScalarVisibility(false);
@@ -1003,7 +1004,7 @@ void SMESH_ActorDef::SetControlMode( eControl theMode, bool theCheckEntityMode )
     int aNbCells = myFunctor ? myVisualObj->GetNbEntities( myFunctor->GetType() ) : 0;
     bool aShowOnlyScalarBarTitle = false;
     if(aNbCells) {
-      myControlMode = theMode;
+      //myControlMode = theMode;
       switch(myControlMode){
       case eFreeNodes:
       case eCoincidentNodes:
@@ -1097,7 +1098,7 @@ void SMESH_ActorDef::SetControlMode( eControl theMode, bool theCheckEntityMode )
   if (isLogarithmic && range[0] > 1e-07 && range[1] > 1e-07)
     lookupTable->SetScale(VTK_SCALE_LOG10);
 
-  Update();
+  //Update();
 }
 
 int SMESH_ActorDef::GetNumberControlEntities()
@@ -1916,11 +1917,11 @@ void SMESH_ActorDef::SetPreSelected(bool thePreselect)
 int SMESH_ActorDef::RenderOpaqueGeometry(vtkViewport *vp)
 {
   if (myPickableActor->GetIsOpaque())
-    {
+  {
     vtkRenderer *ren = static_cast<vtkRenderer *>(vp);
     this->Render(ren);
     return 1;
-    }
+  }
   return 0;
 }
 
@@ -1928,11 +1929,11 @@ int SMESH_ActorDef::RenderOpaqueGeometry(vtkViewport *vp)
 int SMESH_ActorDef::RenderTranslucentGeometry(vtkViewport *vp)
 {
   if (!myPickableActor->GetIsOpaque())
-    {
+  {
     vtkRenderer *ren = static_cast<vtkRenderer *>(vp);
     this->Render(ren);
     return 1;
-    }
+  }
   return 0;
 }
 

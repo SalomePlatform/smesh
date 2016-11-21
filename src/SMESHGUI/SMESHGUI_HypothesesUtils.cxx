@@ -28,10 +28,13 @@
 #include "SMESHGUI_HypothesesUtils.h"
 
 #include "SMESHGUI.h"
-#include "SMESHGUI_Hypotheses.h"
-#include "SMESHGUI_XmlHandler.h"
-#include "SMESHGUI_Utils.h"
 #include "SMESHGUI_GEOMGenUtils.h"
+#include "SMESHGUI_Hypotheses.h"
+#include "SMESHGUI_Utils.h"
+#include "SMESHGUI_VTKUtils.h"
+#include "SMESHGUI_XmlHandler.h"
+
+#include "SMESH_Actor.h"
 
 // SALOME GUI includes
 #include <SUIT_Desktop.h>
@@ -701,29 +704,29 @@ namespace SMESH
       _PTR(Study) aStudy = GetActiveStudyDocument();
       _PTR(SObject) aHypObj = aStudy->FindObjectID( IObject->getEntry() );
       if( aHypObj )
+      {
+        _PTR(SObject) MorSM = SMESH::GetMeshOrSubmesh( aHypObj );
+        _PTR(SObject) aRealHypo;
+        if( aHypObj->ReferencedObject( aRealHypo ) )
         {
-          _PTR(SObject) MorSM = SMESH::GetMeshOrSubmesh( aHypObj );
-          _PTR(SObject) aRealHypo;
-          if( aHypObj->ReferencedObject( aRealHypo ) )
-            {
-              SMESH_Hypothesis_var hypo = SMESH_Hypothesis::_narrow( SObjectToObject( aRealHypo ) );
-              RemoveHypothesisOrAlgorithmOnMesh( MorSM, hypo );
-            }
-          else
-            {
-              SMESH_Hypothesis_var hypo = SMESH_Hypothesis::_narrow( SObjectToObject( aHypObj ) );
-              SObjectList meshList = GetMeshesUsingAlgoOrHypothesis( hypo );
-              for( size_t i = 0; i < meshList.size(); i++ )
-                RemoveHypothesisOrAlgorithmOnMesh( meshList[ i ], hypo );
-            }
+          SMESH_Hypothesis_var hypo = SMESH_Hypothesis::_narrow( SObjectToObject( aRealHypo ) );
+          RemoveHypothesisOrAlgorithmOnMesh( MorSM, hypo );
         }
+        else
+        {
+          SMESH_Hypothesis_var hypo = SMESH_Hypothesis::_narrow( SObjectToObject( aHypObj ) );
+          SObjectList meshList = GetMeshesUsingAlgoOrHypothesis( hypo );
+          for( size_t i = 0; i < meshList.size(); i++ )
+            RemoveHypothesisOrAlgorithmOnMesh( meshList[ i ], hypo );
+        }
+      }
     }
     catch(const SALOME::SALOME_Exception& S_ex)
-      {
-        wc.suspend();
-        SalomeApp_Tools::QtCatchCorbaException(S_ex);
-        res = SMESH::HYP_UNKNOWN_FATAL;
-      }
+    {
+      wc.suspend();
+      SalomeApp_Tools::QtCatchCorbaException(S_ex);
+      res = SMESH::HYP_UNKNOWN_FATAL;
+    }
     return res < SMESH::HYP_UNKNOWN_FATAL;
   }
 
@@ -745,25 +748,23 @@ namespace SMESH
         if (!aMesh->_is_nil()) {
           if (aMesh->HasShapeToMesh() && !aShapeObject->_is_nil()) {
             res = aMesh->RemoveHypothesis(aShapeObject, anHyp);
-            if (res < SMESH::HYP_UNKNOWN_FATAL) {
-              _PTR(SObject) meshSO = SMESH::FindSObject(aMesh);
-              if (meshSO)
-                SMESH::ModifiedMesh(meshSO, false, aMesh->NbNodes()==0);
-            }
-
           }
           else if(!aMesh->HasShapeToMesh()){
             res = aMesh->RemoveHypothesis(aShapeObject, anHyp);
-            if (res < SMESH::HYP_UNKNOWN_FATAL) {
-              _PTR(SObject) meshSO = SMESH::FindSObject(aMesh);
-              if (meshSO)
-                SMESH::ModifiedMesh(meshSO, false, aMesh->NbNodes()==0);
-            }
           }
           if (res > SMESH::HYP_OK) {
             wc.suspend();
             processHypothesisStatus(res, anHyp, false);
             wc.resume();
+          }
+          if ( _PTR(SObject) meshSO = SMESH::FindSObject(aMesh) )
+          {
+            if ( res < SMESH::HYP_UNKNOWN_FATAL )
+              SMESH::ModifiedMesh(meshSO, false, aMesh->NbNodes()==0);
+
+            if ( SMESH_Actor* actor = SMESH::FindActorByEntry( meshSO->GetID().c_str() ))
+              if( actor->GetVisibility() )
+                actor->Update();
           }
         }
       } catch(const SALOME::SALOME_Exception& S_ex) {
