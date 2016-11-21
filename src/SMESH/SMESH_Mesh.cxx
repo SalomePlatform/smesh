@@ -1258,15 +1258,14 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
     return;
 
   // if all meshed EDGEs will be notified then the notification is equivalent
-  // to the whole mesh clearing
-  if ( allMeshedEdgesNotified )
+  // to the whole mesh clearing, which is usually faster
+  if ( allMeshedEdgesNotified && NbNodes() > 0 )
   {
-    if ( NbNodes() > 0 )
-      Clear();
+    Clear();
   }
   else
   {
-    // notify in reverse order to avoid filling of the pool of IDs
+    // notify in reverse order to avoid filling the pool of IDs
     for ( int i = smToNotify.size()-1; i >= 0; --i )
       smToNotify[i]->AlgoStateEngine(SMESH_subMesh::MODIF_HYP,
                                      const_cast< SMESH_Hypothesis*>( hyp ));

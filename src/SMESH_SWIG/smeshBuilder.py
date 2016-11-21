@@ -512,20 +512,17 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
     ## Sets the current mode
     #  @ingroup l1_auxiliary
     def SetEmbeddedMode( self,theMode ):
-        #self.SetEmbeddedMode(theMode)
         SMESH._objref_SMESH_Gen.SetEmbeddedMode(self,theMode)
 
     ## Gets the current mode
     #  @ingroup l1_auxiliary
     def IsEmbeddedMode(self):
-        #return self.IsEmbeddedMode()
         return SMESH._objref_SMESH_Gen.IsEmbeddedMode(self)
 
     ## Sets the current study. Calling SetCurrentStudy( None ) allows to
     #  switch OFF automatic pubilishing in the Study of mesh objects.
     #  @ingroup l1_auxiliary
     def SetCurrentStudy( self, theStudy, geompyD = None ):
-        #self.SetCurrentStudy(theStudy)
         if not geompyD:
             from salome.geom import geomBuilder
             geompyD = geomBuilder.geom
@@ -548,7 +545,6 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
     ## Gets the current study
     #  @ingroup l1_auxiliary
     def GetCurrentStudy(self):
-        #return self.GetCurrentStudy()
         return SMESH._objref_SMESH_Gen.GetCurrentStudy(self)
 
     ## Creates a Mesh object importing data from the given UNV file
