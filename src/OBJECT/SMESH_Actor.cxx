@@ -1529,10 +1529,10 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation)
       }
     }
 
-    if(myNodeActor->GetPointsLabeled()){
+    if(myNodeActor->GetPointsLabeled()) {
+      myNodeActor->UpdateLabels();
       myNodeActor->VisibilityOn();
     }
-
     if(my0DActor)
       my0DActor->UpdateLabels();
 
