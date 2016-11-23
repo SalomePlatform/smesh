@@ -448,8 +448,11 @@ const std::vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXCons
     if ((int) u2node.size() + nbProxyNodes != myNbPonits &&
         (int) u2node.size() + nbProxyNodes != NbPoints( /*update=*/true ))
     {
-      MESSAGE("Wrong node parameters on edges, u2node.size():"
-              <<u2node.size()<<" !=  myNbPonits:"<<myNbPonits);
+      return myPoints;
+    }
+    if (( myNbPonits > 0 ) &&
+        ( u2node.begin()->first < 0 || u2node.rbegin()->first > 1 ))
+    {
       return myPoints;
     }
 

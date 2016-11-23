@@ -287,11 +287,14 @@ void StdMeshers_ProjectionSource1D_i::LoadFrom( const char* theStream )
   }
 
   myCorbaMesh = SMESH::SMESH_Mesh::_duplicate( mesh );
-  GetImpl()->SetSourceMesh       ( meshImpl );
-  GetImpl()->SetSourceEdge       ( shapes[ SRC_EDGE ] );
-  GetImpl()->SetVertexAssociation( shapes[ SRC_VERTEX ],
-                                   shapes[ TGT_VERTEX ]);
-
+  try {
+    GetImpl()->SetSourceMesh       ( meshImpl );
+    GetImpl()->SetSourceEdge       ( shapes[ SRC_EDGE ] );
+    GetImpl()->SetVertexAssociation( shapes[ SRC_VERTEX ],
+                                     shapes[ TGT_VERTEX ]);
+  }
+  catch (...) {
+  }
   myBaseImpl->LoadFrom( is );
 
   std::istringstream str( theStream );

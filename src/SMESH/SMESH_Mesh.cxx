@@ -2368,7 +2368,7 @@ bool SMESH_Mesh::SortByMeshOrder(std::vector<SMESH_subMesh*>& theListToSort) con
   vector<SMESH_subMesh*>::iterator onlyBIt = onlyOrderedList.begin();
   vector<SMESH_subMesh*>::iterator onlyEIt = onlyOrderedList.end();
 
-  // iterate on ordered submeshes and insert them in detected positions
+  // iterate on ordered sub-meshes and insert them in detected positions
   map< int, TPosInList >::iterator i_pos = sortedPos.begin();
   for ( ; onlyBIt != onlyEIt; ++onlyBIt, ++i_pos )
     *(i_pos->second) = *onlyBIt;
@@ -2386,18 +2386,27 @@ bool SMESH_Mesh::IsOrderOK( const SMESH_subMesh* smBefore,
                             const SMESH_subMesh* smAfter ) const
 {
   TListOfListOfInt::const_iterator listIdsIt = _mySubMeshOrder.begin();
-  TListOfInt::const_iterator idBef, idAft;
   for( ; listIdsIt != _mySubMeshOrder.end(); listIdsIt++)
   {
     const TListOfInt& listOfId = *listIdsIt;
-    idBef = std::find( listOfId.begin(), listOfId.end(), smBefore->GetId() );
-    if ( idBef != listOfId.end() )
-      idAft = std::find( listOfId.begin(), listOfId.end(), smAfter->GetId() );
-    if ( idAft != listOfId.end () )
-      return ( std::distance( listOfId.begin(), idBef ) <
-               std::distance( listOfId.begin(), idAft )   );
+    int iB = -1, iA = -1, i = 0;
+    for ( TListOfInt::const_iterator id = listOfId.begin(); id != listOfId.end(); ++id, ++i )
+    {
+      if ( *id == smBefore->GetId() )
+      {
+        iB = i;
+        if ( iA > -1 )
+          return iB < iA;
+      }
+      else if ( *id == smAfter->GetId() )
+      {
+        iA = i;
+        if ( iB > -1 )
+          return iB < iA;
+      }
+    }
   }
-  return true; // no order imposed to given submeshes
+  return true; // no order imposed to given sub-meshes
 } 
 
 //=============================================================================

@@ -252,7 +252,7 @@ CORBA::Boolean StdMeshers_ProjectionSource3D_i::IsDimSupported( SMESH::Dimension
 //================================================================================
 /*!
  * \brief Write parameters in a string
-  * \retval char* - resulting string
+ * \retval char* - resulting string
  */
 //================================================================================
 
@@ -273,7 +273,7 @@ char* StdMeshers_ProjectionSource3D_i::SaveTo()
 //================================================================================
 /*!
  * \brief Retrieve parameters from the string
-  * \param theStream - the input string
+ * \param theStream - the input string
  */
 //================================================================================
 
@@ -299,13 +299,16 @@ void StdMeshers_ProjectionSource3D_i::LoadFrom( const char* theStream )
 
   myCorbaMesh = SMESH::SMESH_Mesh::_duplicate( mesh );
 
-  GetImpl()->SetSourceMesh       ( meshImpl );
-  GetImpl()->SetSource3DShape    ( shapes[ SRC_SHAPE3D ] );
-  GetImpl()->SetVertexAssociation( shapes[ SRC_VERTEX1 ],
-                                   shapes[ SRC_VERTEX2 ],
-                                   shapes[ TGT_VERTEX1 ],
-                                   shapes[ TGT_VERTEX2 ]);
-
+  try {
+    GetImpl()->SetSourceMesh       ( meshImpl );
+    GetImpl()->SetSource3DShape    ( shapes[ SRC_SHAPE3D ] );
+    GetImpl()->SetVertexAssociation( shapes[ SRC_VERTEX1 ],
+                                     shapes[ SRC_VERTEX2 ],
+                                     shapes[ TGT_VERTEX1 ],
+                                     shapes[ TGT_VERTEX2 ]);
+  }
+  catch (...) {
+  }
   myBaseImpl->LoadFrom( is );
 
   std::istringstream str( theStream );

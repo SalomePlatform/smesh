@@ -2930,7 +2930,7 @@ bool SMESH_MesherHelper::IsReversedSubMesh (const TopoDS_Face& theFace)
         TopoDS_Shape s0 = GetSubShapeByNode( nn[0], GetMeshDS() );
         TopoDS_Shape s1 = GetSubShapeByNode( nn[1], GetMeshDS() );
         TopoDS_Shape  E = GetCommonAncestor( s0, s1, *myMesh, TopAbs_EDGE );
-        if ( !E.IsNull() && !s0.IsSame( s1 ))
+        if ( !E.IsNull() && !s0.IsSame( s1 ) && E.Orientation() != TopAbs_INTERNAL )
         {
           // is E seam edge?
           int nb = 0;
