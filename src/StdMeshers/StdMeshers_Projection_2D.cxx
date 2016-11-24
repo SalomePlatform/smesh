@@ -49,12 +49,14 @@
 
 #include <utilities.h>
 
+#include <BRepAdaptor_Curve.hxx>
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepMesh_Delaun.hxx>
 #include <BRep_Tool.hxx>
 #include <Bnd_B2d.hxx>
 #include <GeomAPI_ProjectPointOnSurf.hxx>
 #include <GeomLib_IsPlanarSurface.hxx>
+#include <Precision.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopTools_DataMapIteratorOfDataMapOfShapeShape.hxx>
@@ -656,6 +658,8 @@ namespace {
 
     SMESH_MesherHelper srcHelper( *srcMesh );
     srcHelper.SetSubShape( srcFace );
+    SMESH_MesherHelper edgeHelper( *tgtMesh );
+    edgeHelper.ToFixNodeParameters( true );
 
     const SMDS_MeshNode* nullNode = 0;
     TAssocTool::TNodeNodeMap::iterator srcN_tgtN;
@@ -694,10 +698,30 @@ namespace {
           }
           case SMDS_TOP_EDGE:
           {
-            const TopoDS_Shape & srcE = srcMeshDS->IndexToShape( srcNode->getshapeId() );
-            const TopoDS_Shape & tgtE = shape2ShapeMap( srcE, /*isSrc=*/true );
-            double srcU = srcHelper.GetNodeU( TopoDS::Edge( srcE ), srcNode );
-            tgtMeshDS->SetNodeOnEdge( n, TopoDS::Edge( tgtE ), srcU );
+            const TopoDS_Edge& srcE = TopoDS::Edge( srcMeshDS->IndexToShape( srcNode->getshapeId()));
+            const TopoDS_Edge& tgtE = TopoDS::Edge( shape2ShapeMap( srcE, /*isSrc=*/true ));
+            double srcU = srcHelper.GetNodeU( srcE, srcNode );
+            tgtMeshDS->SetNodeOnEdge( n, tgtE, srcU );
+            if ( !tgtFace.IsPartner( srcFace ))
+            {
+              bool isOk = true;
+              edgeHelper.SetSubShape( tgtE );
+              edgeHelper.GetNodeU( tgtE, n, 0, &isOk );
+              if ( !isOk ) // projection of n to tgtE failed (23395)
+              {
+                double sF, sL, tF, tL;
+                BRep_Tool::Range( srcE, sF, sL );
+                BRep_Tool::Range( tgtE, tF, tL );
+                double srcR = ( srcU - sF ) / ( sL - sF );
+                double tgtU  = tF + srcR * ( tL - tF );
+                tgtMeshDS->SetNodeOnEdge( n, tgtE, tgtU );
+                gp_Pnt newP = BRepAdaptor_Curve( tgtE ).Value( tgtU );
+                double dist = newP.Distance( tgtP );
+                double tol = BRep_Tool::Tolerance( tgtE );
+                if ( tol < dist && dist < 1000*tol )
+                  tgtMeshDS->MoveNode( n, newP.X(), newP.Y(), newP.Z() );
+              }
+            }
             break;
           }
           case SMDS_TOP_VERTEX:
@@ -728,12 +752,9 @@ namespace {
 
     if ( !tgtFace.IsPartner( srcFace ) )
     {
-      SMESH_MesherHelper edgeHelper( *tgtMesh );
-      edgeHelper.ToFixNodeParameters( true );
       helper.ToFixNodeParameters( true );
 
       int nbOkPos = 0;
-      bool toCheck = true;
       const double tol2d = 1e-12;
       srcN_tgtN = src2tgtNodes.begin();
       for ( ; srcN_tgtN != src2tgtNodes.end(); ++srcN_tgtN )
@@ -754,9 +775,9 @@ namespace {
         }
         case SMDS_TOP_EDGE:
         {
-          const TopoDS_Edge & tgtE = TopoDS::Edge( tgtMeshDS->IndexToShape( n->getshapeId() ));
-          edgeHelper.SetSubShape( tgtE );
-          edgeHelper.GetNodeU( tgtE, n, 0, &toCheck );
+          // const TopoDS_Edge & tgtE = TopoDS::Edge( tgtMeshDS->IndexToShape( n->getshapeId() ));
+          // edgeHelper.SetSubShape( tgtE );
+          // edgeHelper.GetNodeU( tgtE, n, 0, &toCheck );
           break;
         }
         default:;
