@@ -1940,9 +1940,9 @@ int SMESH_ActorDef::RenderTranslucentGeometry(vtkViewport *vp)
 
 void SMESH_ActorDef::Render(vtkRenderer *ren)
 {
-  unsigned long aTime = myTimeStamp->GetMTime();
-  unsigned long anObjTime = myVisualObj->GetUnstructuredGrid()->GetMTime();
-  unsigned long aClippingTime = myImplicitBoolean->GetMTime();
+  vtkMTimeType aTime = myTimeStamp->GetMTime();
+  vtkMTimeType anObjTime = myVisualObj->GetUnstructuredGrid()->GetMTime();
+  vtkMTimeType aClippingTime = myImplicitBoolean->GetMTime();
   if(anObjTime > aTime || aClippingTime > aTime)
     Update();
 }

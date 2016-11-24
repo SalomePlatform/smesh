@@ -750,7 +750,7 @@ public:
   inline void setMyModified() { this->myModified = true; }
 
   void Modified();
-  unsigned long GetMTime() const;
+  vtkMTimeType GetMTime() const;
   bool isCompacted();
 
 protected:

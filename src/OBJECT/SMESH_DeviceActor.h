@@ -75,7 +75,7 @@ class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
   virtual vtkCell* GetElemCell(int theObjID);
 
   virtual void SetTransform(VTKViewer_Transform* theTransform); 
-  virtual unsigned long int GetMTime();
+  virtual vtkMTimeType GetMTime();
 
   virtual void SetFacesOriented(bool theIsFacesOriented);
   virtual bool GetFacesOriented() { return myIsFacesOriented; }

@@ -125,9 +125,9 @@ SMDS_UnstructuredGrid::~SMDS_UnstructuredGrid()
 {
 }
 
-unsigned long SMDS_UnstructuredGrid::GetMTime()
+vtkMTimeType SMDS_UnstructuredGrid::GetMTime()
 {
-  unsigned long mtime = vtkUnstructuredGrid::GetMTime();
+  vtkMTimeType mtime = vtkUnstructuredGrid::GetMTime();
   return mtime;
 }
 
