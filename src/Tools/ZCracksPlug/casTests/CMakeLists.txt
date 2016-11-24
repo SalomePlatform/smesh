@@ -17,43 +17,16 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-ADD_SUBDIRECTORY(casTests)
-
-INCLUDE(UsePyQt)
-
 # --- scripts ---
 
 # scripts / static
 SET(plugin_SCRIPTS
   __init__.py
-  ellipse.py
-  genereCrack.py
-  images_rc.py
-  main.py
-  output.py
-  rectangle.py
-  sphere.py
-  utilityFunctions.py
-  zcracks_plugin.py
-  Zset.py
+  genereCube.py
+  launchCas.py
+  launchManuel.py
 )
-
-SET(command_SCRIPTS
-  zcracksLaunch.py
-)
-
-# --- resources ---
-
-# uic files / to be processed by pyuic
-SET(_pyuic_files
-  zcracks.ui
-)
-
-# scripts / pyuic wrappings
-PYQT_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_files})
 
 # --- rules ---
 
-SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/Zcracks)
-SALOME_INSTALL_SCRIPTS("${_pyuic_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/Zcracks)
-SALOME_INSTALL_SCRIPTS("${command_SCRIPTS}" ${SALOME_INSTALL_BINS})
+SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/Zcracks/casTests)

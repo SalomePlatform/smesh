@@ -17,9 +17,10 @@
 #
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
-# Author : Guillaume Boulant (EDF) 
+# Author : Guillaume Boulant (EDF)
 #
 import salome_pluginsmanager
+import os
 
 try:
   from spadderPlugin import runSpadderPlugin
@@ -75,15 +76,16 @@ except:
   salome_pluginsmanager.logger.info('ERROR: Meshed Pipe with a crack plug-in is unavailable')
   pass
 
-# ZCracks plugin requires the module EFICAS to be installed
-# thus it is first tested if this module is available before
-# adding the plugin to salome_pluginsmanager
+# ZCracks plugin requires the Zcracks tool
 try:
-  import eficasSalome
-  from zcracks_plugin import ZcracksLct
-  salome_pluginsmanager.AddFunction('Run Zcrack',
-                                    'Run Zcrack',
-                                    ZcracksLct)
+  zcracksHome=os.environ['ZCRACKSHOME']
+  if len(zcracksHome) > 1:
+    #print 'ZCRACKSHOME ', zcracksHome
+    from Zcracks.zcracks_plugin import ZcracksLct
+    salome_pluginsmanager.AddFunction('Run Zcrack',
+                                      'Run Zcrack',
+                                      ZcracksLct)
 except:
+  #print 'probleme zcracks'
   salome_pluginsmanager.logger.info('ERROR: Zcrack plug-in is unavailable')
   pass

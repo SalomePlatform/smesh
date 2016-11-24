@@ -18,21 +18,14 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-import SalomePyQt
-sgPyQt = SalomePyQt.SalomePyQt()
-import eficasSalome
-
-class EficasForZcracks(eficasSalome.MyEficas):
-    """
-    """
-    def __init__(self, fichier = None, version = None):
-        eficasSalome.MyEficas.__init__(self, sgPyQt.getDesktop(),
-                                       "ZCRACKS",
-                                       fichier, version = version)
-        #sgPyQt.createView(custom_appli.widgetname, self)
-
+import os
 
 def ZcracksLct(context):
-  
-  window=EficasForZcracks()
-  window.show()
+    import os,subprocess
+    command = ". ${ZCRACKSHOME}/salome_do_config.sh ; "
+    command += 'zcracksLaunch.py &'
+    if command is not "":
+      try:
+        subprocess.check_call(command, executable = '/bin/bash', shell = True, bufsize=-1)
+      except Exception, e:
+        print "Error: ",e

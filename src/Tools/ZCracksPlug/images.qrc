@@ -1,0 +1,7 @@
+<RCC>
+  <qresource prefix="newPrefix">
+    <file>images/schema_shpere.png</file>
+    <file>images/schema_ellipse.png</file>
+    <file>images/schema_rectangle.png</file>
+  </qresource>
+</RCC>
