@@ -69,7 +69,7 @@ public:
                    int               newNodeSize,
                    std::vector<int>& idCellsOldToNew,
                    int               newCellSize);
-  virtual unsigned long GetMTime();
+  virtual vtkMTimeType GetMTime();
   virtual vtkPoints *GetPoints();
 
   int InsertNextLinkedCell(int type, int npts, vtkIdType *pts);

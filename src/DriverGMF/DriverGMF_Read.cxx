@@ -299,7 +299,7 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
     for ( int i = 1; i <= nbPyr; ++i )
     {
       GmfGetLin(meshID, GmfPyramids, &iN[0], &iN[1], &iN[2], &iN[3], &iN[4], &ref);
-      if ( !myMesh->AddVolumeWithID( iN[0], iN[2], iN[1], iN[3], iN[4], pyrIDShift + i ))
+      if ( !myMesh->AddVolumeWithID( iN[3], iN[2], iN[1], iN[0], iN[4], pyrIDShift + i ))
         status = storeBadNodeIds( "GmfPyramids",i, 5, iN[0], iN[1],iN[2], iN[3], iN[4] );
     }
   }

@@ -615,7 +615,7 @@ SMESH_DeviceActor
 
 
 
-unsigned long int
+vtkMTimeType
 SMESH_DeviceActor
 ::GetMTime()
 {
@@ -640,7 +640,7 @@ SMESH_DeviceActor
   //      << " " << myTransformFilter->GetMTime()
   //      << " " << myFaceOrientationFilter->GetMTime() << endl;
 
-  unsigned long mTime = this->Superclass::GetMTime();
+  vtkMTimeType mTime = this->Superclass::GetMTime();
   mTime = max(mTime,myExtractGeometry->GetMTime());
   mTime = max(mTime,myExtractUnstructuredGrid->GetMTime());
   mTime = max(mTime,myMergeFilter->GetMTime());

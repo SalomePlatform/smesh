@@ -379,7 +379,11 @@ void StdMeshers_QuadrangleParams_i::LoadFrom( const char* theStream )
       for ( int i = 0; i < nb; ++i )
         shapes.push_back( StdMeshers_ObjRefUlils::LoadFromStream( is, & myShapeEntries[i] ));
 
-      GetImpl()->SetEnforcedNodes( shapes, points );
+      try {
+        GetImpl()->SetEnforcedNodes( shapes, points );
+      }
+      catch (...) {
+      }
     }
   }
 

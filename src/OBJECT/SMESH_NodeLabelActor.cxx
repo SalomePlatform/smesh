@@ -44,7 +44,8 @@ vtkStandardNewMacro(SMESH_NodeLabelActor);
 /*!
   Constructor.
 */
-SMESH_NodeLabelActor::SMESH_NodeLabelActor() {
+SMESH_NodeLabelActor::SMESH_NodeLabelActor()
+{
   //Definition of points numbering pipeline
   //---------------------------------------
   myPointsNumDataSet = vtkUnstructuredGrid::New();
@@ -57,12 +58,12 @@ SMESH_NodeLabelActor::SMESH_NodeLabelActor() {
   myPtsSelectVisiblePoints->SetInputConnection(myPtsMaskPoints->GetOutputPort());
   myPtsSelectVisiblePoints->SelectInvisibleOff();
   myPtsSelectVisiblePoints->SetTolerance(0.1);
-    
+
   myPtsLabeledDataMapper = vtkLabeledDataMapper::New();
   myPtsLabeledDataMapper->SetInputConnection(myPtsSelectVisiblePoints->GetOutputPort());
   myPtsLabeledDataMapper->SetLabelFormat("%d");
   myPtsLabeledDataMapper->SetLabelModeToLabelScalars();
-    
+
   myPtsTextProp = vtkTextProperty::New();
   myPtsTextProp->SetFontFamilyToTimes();
   myPtsTextProp->SetFontSize(10);
@@ -90,19 +91,20 @@ SMESH_NodeLabelActor::SMESH_NodeLabelActor() {
 /*!
   Destructor
 */
-SMESH_NodeLabelActor::~SMESH_NodeLabelActor() {
+SMESH_NodeLabelActor::~SMESH_NodeLabelActor()
+{
   //Deleting of points numbering pipeline
   //---------------------------------------
   myPointsNumDataSet->Delete();
-  
+
   // commented: porting to vtk 5.0
   //  myPtsLabeledDataMapper->RemoveAllInputs();
   myPtsLabeledDataMapper->Delete();
-  
+
   // commented: porting to vtk 5.0
   //  myPtsSelectVisiblePoints->UnRegisterAllOutputs();
   myPtsSelectVisiblePoints->Delete();
-  
+
   // commented: porting to vtk 5.0
   //  myPtsMaskPoints->UnRegisterAllOutputs();
   myPtsMaskPoints->Delete();
@@ -130,16 +132,16 @@ void SMESH_NodeLabelActor::SetFontProperties( SMESH::LabelFont family, int size,
   myPtsTextProp->SetColor( r, g, b ); 
 }
 
-void SMESH_NodeLabelActor::SetPointsLabeled(bool theIsPointsLabeled) {
+void SMESH_NodeLabelActor::SetPointsLabeled(bool theIsPointsLabeled)
+{
+  myIsPointsLabeled = theIsPointsLabeled;
+
+  myPointLabels->SetVisibility( false );
+
   myTransformFilter->Update();
   vtkDataSet* aGrid = vtkUnstructuredGrid::SafeDownCast(myTransformFilter->GetOutput());
 
-  if(!aGrid)
-    return;
-    
-  myIsPointsLabeled = theIsPointsLabeled && aGrid->GetNumberOfPoints();
-
-  if ( myIsPointsLabeled )
+  if ( myIsPointsLabeled && aGrid )
   {
     myPointsNumDataSet->ShallowCopy(aGrid);
     vtkUnstructuredGrid *aDataSet = myPointsNumDataSet;
@@ -160,10 +162,6 @@ void SMESH_NodeLabelActor::SetPointsLabeled(bool theIsPointsLabeled) {
     myPointLabels->SetVisibility( GetVisibility() );
     anArray->Delete();
   }
-  else
-  {
-    myPointLabels->SetVisibility( false );
-  } 
 }
 
 
@@ -189,7 +187,8 @@ void SMESH_NodeLabelActor::RemoveFromRender(vtkRenderer* theRenderer)
   SMESH_DeviceActor::RemoveFromRender(theRenderer);
 }
 
-void SMESH_NodeLabelActor::UpdateLabels() {
+void SMESH_NodeLabelActor::UpdateLabels()
+{
   if(myIsPointsLabeled)
     SetPointsLabeled(myIsPointsLabeled);
 }
@@ -198,8 +197,9 @@ void SMESH_NodeLabelActor::UpdateLabels() {
 void SMESH_NodeLabelActor::ProcessEvents(vtkObject* vtkNotUsed(theObject),
                                          unsigned long theEvent,
                                          void* theClientData,
-                                         void* vtkNotUsed(theCallData)) {
-  SMESH_NodeLabelActor* self = reinterpret_cast<SMESH_NodeLabelActor*>(theClientData);    
+                                         void* vtkNotUsed(theCallData))
+{
+  SMESH_NodeLabelActor* self = reinterpret_cast<SMESH_NodeLabelActor*>(theClientData);
   if(self)
     self->UpdateLabels();
 }

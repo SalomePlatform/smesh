@@ -140,18 +140,19 @@ void SMESH_CellLabelActor::SetFontProperties( SMESH::LabelFont family, int size,
   myClsTextProp->SetBold( bold );
   myClsTextProp->SetItalic( italic );
   myClsTextProp->SetShadow( shadow );
-  myClsTextProp->SetColor( r, g, b ); 
+  myClsTextProp->SetColor( r, g, b );
 }
 
 void SMESH_CellLabelActor::SetCellsLabeled(bool theIsCellsLabeled)
 {
+  myIsCellsLabeled = theIsCellsLabeled;
+
+  myCellsLabels->SetVisibility(false);
+
   myTransformFilter->Update();
   vtkUnstructuredGrid* aGrid = vtkUnstructuredGrid::SafeDownCast(myTransformFilter->GetOutput());
-  if ( !aGrid )
-    return;
 
-  myIsCellsLabeled = theIsCellsLabeled && aGrid->GetNumberOfPoints();
-  if ( myIsCellsLabeled )
+  if ( myIsCellsLabeled && aGrid )
   {
     myCellsNumDataSet->ShallowCopy(aGrid);
     vtkUnstructuredGrid *aDataSet = myCellsNumDataSet;
@@ -172,8 +173,6 @@ void SMESH_CellLabelActor::SetCellsLabeled(bool theIsCellsLabeled)
     aDataSet->GetCellData()->SetScalars(anArray);
     myCellCenters->SetInputData(aDataSet);
     myCellsLabels->SetVisibility(GetVisibility());
-  }else{
-    myCellsLabels->SetVisibility(false);
   }
 }
 

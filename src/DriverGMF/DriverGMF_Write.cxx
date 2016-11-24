@@ -204,10 +204,10 @@ Driver_Mesh::Status DriverGMF_Write::Perform()
 
   // pyramids
   BEGIN_ELEM_WRITE( SMDSEntity_Pyramid, GmfPyramids, pyra )
-    node2IdMap[ pyra->GetNode( 0 )],
+    node2IdMap[ pyra->GetNode( 3 )],
     node2IdMap[ pyra->GetNode( 2 )],
     node2IdMap[ pyra->GetNode( 1 )],
-    node2IdMap[ pyra->GetNode( 3 )],
+    node2IdMap[ pyra->GetNode( 0 )],
     node2IdMap[ pyra->GetNode( 4 )],
     END_ELEM_WRITE( pyra );
 

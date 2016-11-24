@@ -2544,8 +2544,8 @@ namespace // utils used by StdMeshers_Prism_3D::IsApplicable()
     bool        _isBase;  /* is used in a base FACE */
     EdgeWithNeighbors(const TopoDS_Edge& E, int iE, int nbE, int shift, bool isBase ):
       _edge( E ), _iBase( iE + shift ),
-      _iL( SMESH_MesherHelper::WrapIndex( iE-1, nbE ) + shift ),
-      _iR( SMESH_MesherHelper::WrapIndex( iE+1, nbE ) + shift ),
+      _iL( SMESH_MesherHelper::WrapIndex( iE-1, Max( 1, nbE )) + shift ),
+      _iR( SMESH_MesherHelper::WrapIndex( iE+1, Max( 1, nbE )) + shift ),
       _isBase( isBase )
     {
     }
@@ -2674,16 +2674,16 @@ namespace // utils used by StdMeshers_Prism_3D::IsApplicable()
           edges[ iFirst ]._iL = edges[ iFirst ]._iBase; // connect to self
           edges[ iLast  ]._iR = edges[ iLast ]._iBase;
 
-          // look for an EDGE of the outer WIRE connected to vv
+          // look for an EDGE of the outer WIREs connected to vv
           TopoDS_Vertex v0, v1;
-          for ( iE = 0; iE < nbEdgesInWires.front(); ++iE )
+          for ( iE = 0; iE < iFirst; ++iE )
           {
             v0 = SMESH_MesherHelper::IthVertex( 0, edges[ iE ]._edge );
             v1 = SMESH_MesherHelper::IthVertex( 1, edges[ iE ]._edge );
             if ( vv[0].IsSame( v0 ) || vv[0].IsSame( v1 ))
               edges[ iFirst ]._iL = edges[ iE ]._iBase;
             if ( vv[1].IsSame( v0 ) || vv[1].IsSame( v1 ))
-              edges[ iLast ]._iR = edges[ iE ]._iBase;
+              edges[ iLast  ]._iR = edges[ iE ]._iBase;
           }
         }
         iFirst += *nbE;
