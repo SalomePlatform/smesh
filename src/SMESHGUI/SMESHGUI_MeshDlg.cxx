@@ -167,7 +167,6 @@ SMESHGUI_MeshTab::~SMESHGUI_MeshTab()
  *  \param [in] isGroup - is the item a group title
  */
 //================================================================================
-
 void SMESHGUI_MeshTab::addItem( const QString& txt,
                                 const int      type,
                                 const int      index,
@@ -200,7 +199,6 @@ void SMESHGUI_MeshTab::addItem( const QString& txt,
  * \brief Returns index of hyp of a given type
  */
 //================================================================================
-
 int SMESHGUI_MeshTab::getCurrentIndex( const int type, const bool curByType ) const
 {
   if ( type <= AddHyp )
@@ -313,24 +311,6 @@ void SMESHGUI_MeshTab::addHyp( const int theId, const QString& theHyp )
 
 //================================================================================
 /*!
- * \brief Renames hypothesis
- * \param theId - identifier of hypothesis (main or additional, see HypType enumeration)
- * \param theIndex - index of hypothesis to be renamed
- * \param theNewName - new name of hypothesis to be renamed
- *
- * Renames hypothesis
- */
-//================================================================================
-// void SMESHGUI_MeshTab::renameHyp( const int theId,
-//                                   const int theIndex,
-//                                   const QString& theNewName )
-// {
-//   if ( theIndex > 0 && theIndex < myHypCombo[ theId ]->count() )
-//     myHypCombo[ theId ]->setItemText( theIndex, theNewName );
-// }
-
-//================================================================================
-/*!
  * \brief Sets current hypothesis
  * \param theId - identifier of hypothesis (main or additional, see HypType enumeration)
  * \param theIndex - index of hypothesis to be set as current
@@ -397,7 +377,6 @@ int SMESHGUI_MeshTab::currentHyp( const int theId ) const
  * range 0 <= i < this->nbAddHypTypes()
  */
 //================================================================================
-
 int SMESHGUI_MeshTab::nbAddHypTypes() const
 {
   return myAddHypList->count();
@@ -507,7 +486,6 @@ void SMESHGUI_MeshTab::onHyp( int theIndex )
  * SLOT called when myMoreAddHypBtn ("plus") clicked
  */
 //================================================================================
-
 void SMESHGUI_MeshTab::onMoreAddHyp()
 {
   int hypIndex = currentHyp( AddHyp );
@@ -532,7 +510,6 @@ void SMESHGUI_MeshTab::onMoreAddHyp()
  * SLOT called when myLessAddHypBtn ("minus") clicked
  */
 //================================================================================
-
 void SMESHGUI_MeshTab::onLessAddHyp()
 {
   if ( QListWidgetItem * item = myAddHypList->currentItem() )
@@ -672,7 +649,6 @@ SMESHGUI_MeshDlg::~SMESHGUI_MeshDlg()
  * \brief Set dialog title
  */
 //================================================================================
-
 void SMESHGUI_MeshDlg::setTitile( const bool theToCreate, const bool theIsMesh )
 {
   if ( theToCreate )
@@ -731,7 +707,6 @@ void SMESHGUI_MeshDlg::setCurrentTab( const int theId  )
   * \param int - maximum possible dimention
  */
 //================================================================================
-
 void SMESHGUI_MeshDlg::setMaxHypoDim( const int maxDim )
 {
   const int DIM = maxDim;
@@ -755,7 +730,6 @@ void SMESHGUI_MeshDlg::setMaxHypoDim( const int maxDim )
  * \brief Sets list of available Sets of Hypotheses
  */
 //================================================================================
-
 void SMESHGUI_MeshDlg::setHypoSets( const QStringList& theSets )
 {
   QMenu* aHypoSetPopup = myHypoSetButton->menu();
@@ -780,7 +754,6 @@ void SMESHGUI_MeshDlg::setHypoSets( const QStringList& theSets )
  * signal to notify operation about this event
  */
 //================================================================================
-
 void SMESHGUI_MeshDlg::onHypoSetPopup( QAction* a )
 {
   emit hypoSet( a->text() );
@@ -825,9 +798,9 @@ void SMESHGUI_MeshDlg::setGeomPopupEnabled( const bool enable )
  * \param int - tab ID
  */
 //================================================================================
-void SMESHGUI_MeshDlg::disableTab(const int theTabId) {
+void SMESHGUI_MeshDlg::disableTab(const int theTabId)
+{
   myTabWg->setTabEnabled( myTabWg->indexOf( myTabs[ theTabId ] ), false );
-  if ( theTabId == Dim3D ) myHypoSetButton->setEnabled( false );
 }
 
 //================================================================================
@@ -836,7 +809,8 @@ void SMESHGUI_MeshDlg::disableTab(const int theTabId) {
  * \param int - tab ID
  */
 //================================================================================
-void SMESHGUI_MeshDlg::enableTab(const int theTabId) {
+void SMESHGUI_MeshDlg::enableTab(const int theTabId)
+{
   myTabWg->setTabEnabled( myTabWg->indexOf( myTabs[ theTabId ] ), true );
   if ( theTabId == Dim3D ) {
     QMenu* aHypoSetPopup = myHypoSetButton->menu();
@@ -850,21 +824,37 @@ void SMESHGUI_MeshDlg::enableTab(const int theTabId) {
  * \param int - tab ID
  */
 //================================================================================
-bool SMESHGUI_MeshDlg::isTabEnabled(const int theTabId) const {
+bool SMESHGUI_MeshDlg::isTabEnabled(const int theTabId) const
+{
   return myTabWg->isTabEnabled( myTabWg->indexOf( myTabs[ theTabId ] ) );
 }
 
+//================================================================================
+/*!
+ * \brief SLOT called when a Geom selection button is clicked
+ */
+//================================================================================
 void SMESHGUI_MeshDlg::onGeomSelectionButton(bool isBtnOn)
 {
   if ( myGeomPopup && isBtnOn )
     myGeomPopup->exec( QCursor::pos() );
 }
 
+//================================================================================
+/*!
+ * \brief SLOT called when a item of Geom selection popup is choosen
+ */
+//================================================================================
 void SMESHGUI_MeshDlg::onGeomPopup( QAction* a )
 {
   emit geomSelectionByMesh( a->data().toInt() == GEOM_BY_MESH_INDEX );
 }
 
+//================================================================================
+/*!
+ * \brief Return ID of an active selection button
+ */
+//================================================================================
 int SMESHGUI_MeshDlg::getActiveObject()
 {
   for (int i = 0; i < 3; ++i )
