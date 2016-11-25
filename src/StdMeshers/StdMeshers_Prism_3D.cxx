@@ -4892,8 +4892,8 @@ bool StdMeshers_Sweeper::ComputeNodes( SMESH_MesherHelper& helper,
     }
   }
 
-  //centerIntErrorIsSmall = true;
-  //bndErrorIsSmall = true;
+  centerIntErrorIsSmall = true; // 3D_mesh_Extrusion_00/A3
+  bndErrorIsSmall = true;
   if ( !centerIntErrorIsSmall )
   {
     // Compensate the central error; continue adding projection

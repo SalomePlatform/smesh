@@ -450,7 +450,7 @@ const std::vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXCons
     {
       return myPoints;
     }
-    if (( myNbPonits > 0 ) &&
+    if (( u2node.size() > 0 ) &&
         ( u2node.begin()->first < 0 || u2node.rbegin()->first > 1 ))
     {
       return myPoints;

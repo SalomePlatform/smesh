@@ -3489,7 +3489,8 @@ void SMESHGUI_FilterDlg::UnRegisterFilters()
 //=======================================================================
 void SMESHGUI_FilterDlg::insertFilterInViewer()
 {
-  if (SVTK_Selector* aSelector = SMESH::GetSelector()) {
+  if (SVTK_Selector* aSelector = SMESH::GetSelector())
+  {
     SMESH::ElementType anEntType = (SMESH::ElementType)myTable->GetType();
 
     if (myFilter[ myTable->GetType() ]->_is_nil() ||
@@ -3499,7 +3500,8 @@ void SMESHGUI_FilterDlg::insertFilterInViewer()
     {
       SMESH::RemoveFilter(getFilterId(anEntType), aSelector);
     }
-    else {
+    else
+    {
       Handle(SMESHGUI_PredicateFilter) aFilter = new SMESHGUI_PredicateFilter();
       aFilter->SetPredicate(myFilter[ myTable->GetType() ]->GetPredicate());
       SMESH::RemoveFilter(getFilterId(anEntType), aSelector); //skl for IPAL12631
@@ -3659,7 +3661,7 @@ SMESH_Actor* SMESHGUI_FilterDlg::getActor()
 //=======================================================================
 void SMESHGUI_FilterDlg::selectInViewer (const int theType, const QList<int>& theIds)
 {
-  if (mySelectionMgr == 0 || myMesh->_is_nil())
+  if (mySelectionMgr == 0 || myMesh->_is_nil() )
     return;
 
   mySelectionMgr->clearFilters();
@@ -3667,7 +3669,8 @@ void SMESHGUI_FilterDlg::selectInViewer (const int theType, const QList<int>& th
   // Set new selection mode if necessary
   Selection_Mode aSelMode = getSelMode(theType);
   SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI );
-  if ( aViewWindow && aViewWindow->SelectionMode()!=aSelMode) {
+  if ( aViewWindow && aViewWindow->SelectionMode() != aSelMode )
+  {
     mySelectionMgr->clearSelected();
     mySelectionMgr->clearFilters();
     SMESH::SetPointRepresentation( aSelMode == NodeSelection );
@@ -3680,8 +3683,6 @@ void SMESHGUI_FilterDlg::selectInViewer (const int theType, const QList<int>& th
     return;
 
   Handle(SALOME_InteractiveObject) anIO = anActor->getIO();
-  //mySelectionMgr->clearSelected();
-  //mySelectionMgr->AddIObject(anIO, false);
   SALOME_ListIO aList;
   aList.Append(anIO);
   mySelectionMgr->setSelectedObjects(aList, false);

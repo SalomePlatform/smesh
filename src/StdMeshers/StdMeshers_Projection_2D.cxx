@@ -704,9 +704,9 @@ namespace {
             tgtMeshDS->SetNodeOnEdge( n, tgtE, srcU );
             if ( !tgtFace.IsPartner( srcFace ))
             {
-              bool isOk = true;
               edgeHelper.SetSubShape( tgtE );
-              edgeHelper.GetNodeU( tgtE, n, 0, &isOk );
+              double tol = BRep_Tool::Tolerance( tgtE );
+              bool isOk = edgeHelper.CheckNodeU( tgtE, n, srcU, 2 * tol, /*force=*/true );
               if ( !isOk ) // projection of n to tgtE failed (23395)
               {
                 double sF, sL, tF, tL;
@@ -717,7 +717,6 @@ namespace {
                 tgtMeshDS->SetNodeOnEdge( n, tgtE, tgtU );
                 gp_Pnt newP = BRepAdaptor_Curve( tgtE ).Value( tgtU );
                 double dist = newP.Distance( tgtP );
-                double tol = BRep_Tool::Tolerance( tgtE );
                 if ( tol < dist && dist < 1000*tol )
                   tgtMeshDS->MoveNode( n, newP.X(), newP.Y(), newP.Z() );
               }

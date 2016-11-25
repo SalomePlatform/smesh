@@ -992,10 +992,6 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
   {
     const std::vector<double>& aPnts = _fpHyp->GetPoints();
     std::vector<int>          nbsegs = _fpHyp->GetNbSegments();
-    if ( theReverse )
-      std::reverse( nbsegs.begin(), nbsegs.end() );
-    if ( nbsegs.empty() )
-      nbsegs.push_back( 1 );
 
     // sort normalized params, taking into account theReverse
     TColStd_SequenceOfReal Params;
@@ -1033,6 +1029,16 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
     uVec.back() = theLastU;
 
     // divide segments
+    if ( theReverse )
+    {
+      if ((int) nbsegs.size() > Params.Length() + 1 )
+        nbsegs.resize( Params.Length() + 1 );
+      std::reverse( nbsegs.begin(), nbsegs.end() );
+    }
+    if ( nbsegs.empty() )
+    {
+      nbsegs.push_back( 1 );
+    }
     Params.InsertBefore( 1, 0.0 );
     Params.Append( 1.0 );
     double eltSize, segmentSize, par1, par2;

@@ -263,7 +263,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
     # on curve from 0 to 1 (additionally it is neecessary to check
     # orientation of edges and create list of reversed edges if it is
     # needed) and sets numbers of segments between given points (default
-    # values are equals 1
+    # values are 1)
     #  @param points defines the list of parameters on curve
     #  @param nbSegs defines the list of numbers of segments
     #  @param reversedEdges is a list of edges to mesh using reversed orientation.
