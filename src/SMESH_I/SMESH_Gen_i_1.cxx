@@ -325,13 +325,16 @@ static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
     selAttr->SetSelectable( false );
   }
 
+  if ( !isNewSO )
+    aStudyBuilder->RemoveReference( SO );// remove garbage reference (23336)
+
   // add object to the use case tree
   // (to support tree representation customization and drag-n-drop)
-  if ( isNewSO )
+  if ( isNewSO || !useCaseBuilder->IsUseCaseNode( SO ))
   {
-    if ( !CORBA::is_nil( objAfter ) )
+    if ( !CORBA::is_nil( objAfter ))
       useCaseBuilder->InsertBefore( SO, objAfter );    // insert at given tag
-    else if ( !useCaseBuilder->IsUseCaseNode( SO ) )
+    else if ( !useCaseBuilder->IsUseCaseNode( SO ))
       useCaseBuilder->AppendTo( theFatherObject, SO ); // append to the end of list
   }
   return SO._retn();
