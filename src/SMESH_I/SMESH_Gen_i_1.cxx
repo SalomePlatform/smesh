@@ -265,8 +265,7 @@ static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
   SALOMEDS::SObject_wrap SO = SMESH_Gen_i::ObjectToSObject( theStudy, theIOR );
   SALOMEDS::StudyBuilder_var     aStudyBuilder = theStudy->NewBuilder();
   SALOMEDS::UseCaseBuilder_wrap useCaseBuilder = theStudy->GetUseCaseBuilder();
-  SALOMEDS::SObject_wrap objAfter;
-  bool isNewSO = false;
+  bool isNewSO = false, isInUseCaseTree = false;
   if ( SO->_is_nil() )
   {
     if ( theTag == 0 ) {
@@ -277,22 +276,11 @@ static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
     {
       SO = aStudyBuilder->NewObjectToTag( theFatherObject, theTag );
       isNewSO = true;
-
-      // define the next tag after given one in the data tree to insert SObject
-      SALOMEDS::SObject_wrap curObj;
-      if ( theFatherObject->GetLastChildTag() > theTag )
-      {
-        SALOMEDS::UseCaseIterator_wrap
-          anUseCaseIter = useCaseBuilder->GetUseCaseIterator(theFatherObject);
-        for ( ; anUseCaseIter->More(); anUseCaseIter->Next() ) {
-          curObj = anUseCaseIter->Value();
-          if ( curObj->Tag() > theTag  ) {
-            objAfter = curObj;
-            break;
-          }
-        }
-      }
     }
+  }
+  else
+  {
+    isInUseCaseTree = useCaseBuilder->IsUseCaseNode( SO );
   }
 
   SALOMEDS::GenericAttribute_wrap anAttr;
@@ -330,11 +318,25 @@ static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
 
   // add object to the use case tree
   // (to support tree representation customization and drag-n-drop)
-  if ( isNewSO || !useCaseBuilder->IsUseCaseNode( SO ))
+  if ( isNewSO || !isInUseCaseTree )
   {
+    // define the next tag after given one in the data tree to insert SObject
+    SALOMEDS::SObject_wrap curObj, objAfter;
+    if ( theFatherObject->GetLastChildTag() > theTag )
+    {
+      SALOMEDS::UseCaseIterator_wrap
+        anUseCaseIter = useCaseBuilder->GetUseCaseIterator(theFatherObject);
+      for ( ; anUseCaseIter->More(); anUseCaseIter->Next() ) {
+        curObj = anUseCaseIter->Value();
+        if ( curObj->Tag() > theTag  ) {
+          objAfter = curObj;
+          break;
+        }
+      }
+    }
     if ( !CORBA::is_nil( objAfter ))
       useCaseBuilder->InsertBefore( SO, objAfter );    // insert at given tag
-    else if ( !useCaseBuilder->IsUseCaseNode( SO ))
+    else if ( !isInUseCaseTree )
       useCaseBuilder->AppendTo( theFatherObject, SO ); // append to the end of list
   }
   return SO._retn();
