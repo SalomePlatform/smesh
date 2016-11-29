@@ -64,8 +64,40 @@
         <translation>Aire</translation>
     </message>
     <message>
+        <source>FREE_NODES</source>
+        <translation>Nœuds isolés</translation>
+    </message>
+    <message>
+        <source>NODE_CONNECTIVITY_NB</source>
+        <translation>Nombre de connectivité par nœud</translation>
+    </message>
+    <message>
+        <source>FREE_EDGES</source>
+        <translation>Arêtes libres</translation>
+    </message>
+    <message>
+        <source>FREE_FACES</source>
+        <translation>Faces libres</translation>
+    </message>
+    <message>
+        <source>BARE_BORDER_FACE</source>
+        <translation>Faces avec éléments de peau 1D manquants</translation>
+    </message>
+    <message>
+        <source>OVER_CONSTRAINED_FACE</source>
+        <translation>Faces sur-contraintes</translation>
+    </message>
+    <message>
+        <source>BARE_BORDER_VOLUME</source>
+        <translation>Volumes avec éléments de peau 2D manquants</translation>
+    </message>
+    <message>
+        <source>OVER_CONSTRAINED_VOLUME</source>
+        <translation>Volumes sur-contraints</translation>
+    </message>
+    <message>
         <source>MIN_DIAG_ELEMENTS</source>
-        <translation>Diagonal minimum</translation>
+        <translation>Diagonale minimum</translation>
     </message>
     <message>
         <source>ASPECTRATIO_3D_ELEMENTS</source>
@@ -257,6 +289,10 @@
         <translation>Calculer</translation>
     </message>
     <message>
+        <source>MEN_COMPUTE_SUBMESH</source>
+        <translation>Calculer le sous-maillage</translation>
+    </message>
+    <message>
         <source>MEN_PRECOMPUTE</source>
         <translation>Prévisualiser</translation>
     </message>
@@ -421,6 +457,14 @@
         <translation>Editer un maillage/sous-maillage</translation>
     </message>
     <message>
+        <source>MEN_EDIT_MESH</source>
+        <translation>Editer un maillage</translation>
+    </message>
+    <message>
+        <source>MEN_EDIT_SUBMESH</source>
+        <translation>Editer un sous-maillage</translation>
+    </message>
+    <message>
         <source>MEN_EXPORT</source>
         <translation>Exporter</translation>
     </message>
@@ -583,6 +627,10 @@
     <message>
         <source>MEN_FREE_NODE</source>
         <translation>Nœuds libres</translation>
+    </message>
+    <message>
+        <source>MEN_NODE_CONNECTIVITY_NB</source>
+        <translation>Nombre de connectivité par nœud</translation>
     </message>
     <message>
         <source>MEN_FREE_FACES</source>
@@ -1198,6 +1246,10 @@ Merci de les corriger, puis essayez de nouveau</translation>
         <translation>Ajouter un élément 0D</translation>
     </message>
     <message>
+        <source>SMESH_DUPLICATE_0D</source>
+        <translation>Autorise la duplication d'éléments</translation>
+    </message>
+    <message>
         <source>SMESH_ADD_BALL</source>
         <translation>Ajouter un élément particulaire</translation>
     </message>
@@ -1690,6 +1742,11 @@ Voulez-vous continuer ?</translation>
         <source>SMESH_EXPORT_MED_DUPLICATED_MESH_NAMES</source>
         <translation>Il y a des maillages avec les mêmes noms dans la sélection.
 Il est possible que le fichier résultant soit incorrect.
+Voulez-vous continuer ?</translation>
+    </message>
+    <message>
+        <source>SMESH_EXPORT_ONLY_GPOUP</source>
+        <translation>Vous allez export le groupe sans son maillage.
 Voulez-vous continuer ?</translation>
     </message>
     <message>
@@ -2847,6 +2904,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Avertissement</translation>
     </message>
     <message>
+        <source>SMESH_WRN_SHOW_DLG_CHECKBOX</source>
+        <translation>Ne plus montrer cet avertissement.</translation>
+    </message>
+    <message>
         <source>SMESH_X</source>
         <translation>X</translation>
     </message>
@@ -2933,6 +2994,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     <message>
         <source>STB_COMPUTE</source>
         <translation>Calculer</translation>
+    </message>
+    <message>
+        <source>STB_COMPUTE_SUBMESH</source>
+        <translation>Calculer le sous-maillage</translation>
     </message>
     <message>
         <source>STB_PRECOMPUTE</source>
@@ -3067,6 +3132,14 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Editer un maillage/sous-maillage</translation>
     </message>
     <message>
+        <source>STB_EDIT_MESH</source>
+        <translation>Editer un maillage</translation>
+    </message>
+    <message>
+        <source>STB_EDIT_SUBMESH</source>
+        <translation>Editer un sous-maillage</translation>
+    </message>
+    <message>
         <source>STB_EXPORT_DAT</source>
         <translation>Exporter au format DAT</translation>
     </message>
@@ -3133,6 +3206,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     <message>
         <source>STB_FREE_NODE</source>
         <translation>Nœuds libres</translation>
+    </message>
+    <message>
+        <source>STB_NODE_CONNECTIVITY_NB</source>
+        <translation>Nombre de connectivité par nœud</translation>
     </message>
     <message>
         <source>STB_FREE_FACES</source>
@@ -3603,6 +3680,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Calculer</translation>
     </message>
     <message>
+        <source>TOP_COMPUTE_SUBMESH</source>
+        <translation>Calculer le sous-maillage</translation>
+    </message>
+    <message>
         <source>TOP_PRECOMPUTE</source>
         <translation>Prévisualiser</translation>
     </message>
@@ -3735,6 +3816,14 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Editer un maillage/sous-maillage</translation>
     </message>
     <message>
+        <source>TOP_EDIT_MESH</source>
+        <translation>Editer un maillage</translation>
+    </message>
+    <message>
+        <source>TOP_EDIT_SUBMESH</source>
+        <translation>Editer un sous-maillage</translation>
+    </message>
+    <message>
         <source>TOP_EXPORT_DAT</source>
         <translation>Exporter au format DAT</translation>
     </message>
@@ -3793,6 +3882,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     <message>
         <source>TOP_FREE_NODE</source>
         <translation>Nœuds libres</translation>
+    </message>
+    <message>
+        <source>TOP_NODE_CONNECTIVITY_NB</source>
+        <translation>Nombre de connectivité par nœud</translation>
     </message>
     <message>
         <source>TOP_FREE_FACES</source>
@@ -4293,12 +4386,68 @@ Il ne peut pas être supprimé.</translation>
         <source>STB_SORT_CHILD_ITEMS</source>
         <translation>Trier les items enfants</translation>
     </message>
+    <message>
+        <source>SMESH_ADVANCED</source>
+        <translation>Avancé</translation>
+    </message>
+    <message>
+        <source>SMESH_1D_ALGO_GROUP_BASIC</source>
+        <translation>Basique</translation>
+    </message>
+    <message>
+        <source>SMESH_1D_ALGO_GROUP_ADVANCED</source>
+        <translation>Avancé</translation>
+    </message>
+    <message>
+        <source>SMESH_1D_HYP_GROUP_BASIC</source>
+        <translation>Basique</translation>
+    </message>
+    <message>
+        <source>SMESH_1D_HYP_GROUP_PROGRESSION</source>
+        <translation>Progression</translation>
+    </message>
+    <message>
+        <source>SMESH_1D_HYP_GROUP_ADVANCED</source>
+        <translation>Avancé</translation>
+    </message>
+    <message>
+        <source>SMESH_2D_ALGO_GROUP_REGULAR</source>
+        <translation>Faces régulières</translation>
+    </message>
+    <message>
+        <source>SMESH_2D_ALGO_GROUP_FREE</source>
+        <translation>Faces libres</translation>
+    </message>
+    <message>
+        <source>SMESH_2D_ALGO_GROUP_ADVANCED</source>
+        <translation>Avancé</translation>
+    </message>
+    <message>
+        <source>SMESH_3D_ALGO_GROUP_REGULAR</source>
+        <translation>Volumes réguliers</translation>
+    </message>
+    <message>
+        <source>SMESH_3D_ALGO_GROUP_FREE</source>
+        <translation>Volumes libres</translation>
+    </message>
+    <message>
+        <source>SMESH_3D_ALGO_GROUP_ADVANCED</source>
+        <translation>Avancé</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_FieldSelectorWdg</name>
     <message>
         <source>FIELDS_TO_EXPORT</source>
         <translation>Exporter les champs</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_AddMeshElementDlg</name>
+    <message>
+        <source>NB_ADDED</source>
+        <translation>%1 éléments ont été ajoutés car des éléments 0D
+étaient déjà présents sur les nœuds séléctionnés.</translation>
     </message>
 </context>
 <context>
@@ -4330,6 +4479,10 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     <message>
         <source>PREF_AUTO_GROUPS</source>
         <translation>Créer les groupes automatiquement pour l&apos;export MED</translation>
+    </message>
+    <message>
+        <source>PREF_SHOW_WARN</source>
+        <translation>Affiche un avertissement quand un groupe est exporté</translation>
     </message>
     <message>
         <source>PREF_GROUP_SEGMENT_LENGTH</source>
@@ -5272,7 +5425,19 @@ Choisissez un groupe et essayez de nouveau</translation>
     </message>
     <message>
         <source>USE_INPUT_ELEMS_ONLY</source>
-        <translation>Use only input elements</translation>
+        <translation>Utilise seulement les éléments d'entrée</translation>
+    </message>
+    <message>
+        <source>SMESH_SCALES</source>
+        <translation>Facteurs d'échelle</translation>
+    </message>
+    <message>
+        <source>LINEAR_SCALES</source>
+        <translation>Variation linéaire des facteurs d'échelle</translation>
+    </message>
+    <message>
+        <source>BASE_POINT</source>
+        <translation>Point de base</translation>
     </message>
 </context>
 <context>
@@ -5577,6 +5742,10 @@ Vérifiez la validité des informations données</translation>
     <message>
         <source>CONNECTED_ELEMS</source>
         <translation>Eléments d&apos;un domaine</translation>
+    </message>
+    <message>
+        <source>NODE_CONN_NUMBER</source>
+        <translation>Nombre de connectivité</translation>
     </message>
     <message>
         <source>NUMBEROFNODESINELEMENT</source>
@@ -6127,8 +6296,12 @@ Indiquez-les et essayez de nouveau</translation>
         <translation>3D</translation>
     </message>
     <message>
-        <source>EDIT_MESH_SUBMESH</source>
-        <translation>Editer un maillage/sous-maillage</translation>
+        <source>EDIT_MESH</source>
+        <translation>Editer un maillage</translation>
+    </message>
+    <message>
+        <source>EDIT_SUBMESH</source>
+        <translation>Editer un sous-maillage</translation>
     </message>
     <message>
         <source>GEOMETRY</source>
@@ -7625,6 +7798,10 @@ en raison de leurs types incompatibles:
         <translation>Nombre de nœuds libres</translation>
     </message>
     <message>
+        <source>MAX_NODE_CONNECTIVITY</source>
+        <translation>Nombre maximal d'élément connectés</translation>
+    </message>
+    <message>
         <source>DOUBLE_NODES_TOLERANCE</source>
         <translation>Tolérance des nœuds doubles</translation>
     </message>
@@ -7999,6 +8176,25 @@ en raison de leurs types incompatibles:
     <message>
         <source>WRN_AT_LEAST_ONE</source>
         <translation>Au moins une entité devrait être choisie!</translation>
+    </message>
+</context>
+<context>
+    <name>SMESH_AdvOptionsWdg</name>
+    <message>
+        <source>ADD_OPTION_BTN</source>
+        <translation>Ajouter une option</translation>
+    </message>
+    <message>
+        <source>CHOICE</source>
+        <translation>Choix</translation>
+    </message>
+    <message>
+        <source>OPTION_NAME</source>
+        <translation>Nom de l'option</translation>
+    </message>
+    <message>
+        <source>OPTION_VALUE</source>
+        <translation>Valeur de l'option'</translation>
     </message>
 </context>
 </TS>

@@ -1736,25 +1736,25 @@ Probably, there is not enough space on disk.</translation>
 You can cancel exporting and rename them,
 otherwise some group names in the resulting file
 will not match ones in the study.
-Do you want to continue ?</translation>
+Do you want to continue?</translation>
     </message>
     <message>
         <source>SMESH_EXPORT_MED_DUPLICATED_MESH_NAMES</source>
         <translation>There are some mesh objects with the same names in the selection.
 The result file may be incorrect.
-Do you want to continue ?</translation>
+Do you want to continue?</translation>
     </message>
     <message>
         <source>SMESH_EXPORT_ONLY_GPOUP</source>
-        <translation>You are going export the group without it's mesh.
-Do you want to continue ?</translation>
+        <translation>You are going to export the group without its mesh.
+Do you want to continue?</translation>
     </message>
     <message>
         <source>SMESH_EXPORT_MED_V2_1</source>
         <translation>During export mesh with name - &quot;%1&quot; to MED 2.1
 polygons and polyhedrons elements will be missed
 For correct export use MED 2.2
-Are you sure want to export to MED 2.1 ?</translation>
+Are you sure want to export to MED 2.1?</translation>
     </message>
     <message>
         <source>SMESH_EXPORT_MED_VERSION_COLLISION</source>
@@ -1773,7 +1773,7 @@ Overwrite the file?</translation>
         <source>EXPORT_NOT_SUPPORTED</source>
         <translation>During export mesh with name &quot;%1&quot; to %2
 %3 will be missed.
-Do you want to continue ?</translation>
+Do you want to continue?</translation>
     </message>
     <message>
         <source>SMESH_EXTRUSION</source>
