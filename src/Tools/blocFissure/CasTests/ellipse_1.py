@@ -34,7 +34,7 @@ class ellipse_1(fissureGenerique):
 #    logging.info("genereGeometrieSaine %s", self.nomCas)
 #    box = geompy.MakeBox(0, -500, 0, 400, 500, 800, "boiteSaine")
 #    return [box]
-    
+
   # ---------------------------------------------------------------------------
   def genereMaillageSain(self, geometriesSaines, meshParams):
     logging.info("genereMaillageSain %s", self.nomCas)
@@ -65,7 +65,7 @@ class ellipse_1(fissureGenerique):
 
     shellFiss = geompy.ImportFile(os.path.join(gmu.pathBloc, "materielCasTests/ellipse1.brep"), "BREP")
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
-    geompy.UnionIDs(fondFiss, [4])
+    geompy.UnionIDs(fondFiss, [3])
     geompy.addToStudy( shellFiss, 'shellFiss' )
     geompy.addToStudyInFather( shellFiss, fondFiss, 'fondFiss' )
 

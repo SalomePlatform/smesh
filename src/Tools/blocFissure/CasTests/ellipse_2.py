@@ -37,7 +37,7 @@ class ellipse_2(ellipse_1):
 
     shellFiss = geompy.ImportFile(os.path.join(gmu.pathBloc, "materielCasTests/ellipse1_pb.brep"), "BREP")
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
-    geompy.UnionIDs(fondFiss, [4])
+    geompy.UnionIDs(fondFiss, [3])
     geompy.addToStudy( shellFiss, 'shellFiss' )
     geompy.addToStudyInFather( shellFiss, fondFiss, 'fondFiss' )
 
