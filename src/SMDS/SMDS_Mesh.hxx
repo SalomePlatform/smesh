@@ -705,6 +705,7 @@ public:
   const SMDS_MeshInfo& GetMeshInfo() const { return myInfo; }
 
   virtual int NbNodes() const;
+  virtual int NbElements() const;
   virtual int Nb0DElements() const;
   virtual int NbBalls() const;
   virtual int NbEdges() const;

@@ -2571,6 +2571,13 @@ int SMDS_Mesh::NbNodes() const
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+/// Return the number of elements
+///////////////////////////////////////////////////////////////////////////////
+int SMDS_Mesh::NbElements() const
+{
+  return myInfo.NbElements();
+}
+///////////////////////////////////////////////////////////////////////////////
 /// Return the number of 0D elements
 ///////////////////////////////////////////////////////////////////////////////
 int SMDS_Mesh::Nb0DElements() const
@@ -3322,14 +3329,14 @@ void SMDS_Mesh::RemoveElement(const SMDS_MeshElement *        elem,
 void SMDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elem)
 {
   int elemId = elem->GetID();
-  int vtkId = elem->getVtkId();
+  int  vtkId = elem->getVtkId();
   SMDSAbs_ElementType aType = elem->GetType();
-  SMDS_MeshElement* todest = (SMDS_MeshElement*)(elem);
-  if (aType == SMDSAbs_Node) {
+  SMDS_MeshElement*  todest = (SMDS_MeshElement*)(elem);
+  if ( aType == SMDSAbs_Node )
+  {
     // only free node can be removed by this method
     const SMDS_MeshNode* n = static_cast<SMDS_MeshNode*>(todest);
-    SMDS_ElemIteratorPtr itFe = n->GetInverseElementIterator();
-    if (!itFe->more()) { // free node
+    if ( n->NbInverseElements() == 0 ) { // free node
       myNodes[elemId] = 0;
       myInfo.myNbNodes--;
       ((SMDS_MeshNode*) n)->SetPosition(SMDS_SpacePosition::originSpacePosition());
@@ -3337,7 +3344,9 @@ void SMDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elem)
       myNodePool->destroy(static_cast<SMDS_MeshNode*>(todest));
       myNodeIDFactory->ReleaseID(elemId, vtkId);
     }
-  } else {
+  }
+  else
+  {
     if (hasConstructionEdges() || hasConstructionFaces())
       // this methods is only for meshes without descendants
       return;

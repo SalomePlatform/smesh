@@ -9,8 +9,7 @@ from salome.smesh import smeshBuilder
 smesh =  smeshBuilder.New(salome.myStudy)
 
 # create mesh
-face = geompy.MakeFaceHW(100, 100, 1)
-geompy.addToStudy( face, "quadrangle" )
+face = geompy.MakeFaceHW(100, 100, 1, theName="quadrangle")
 mesh = smesh.Mesh(face)
 mesh.Segment().NumberOfSegments(10)
 mesh.Triangle().MaxElementArea(25)

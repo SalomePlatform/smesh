@@ -203,9 +203,9 @@ QWidget* SMESHGUI_ReorientFacesDlg::createMainFrame (QWidget* theParent)
   myDY->SetValue(0);
   myDZ->SetValue(0);
 
-  myDX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
-  myDY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
-  myDZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
+  myDX->RangeStepAndValidator(COORD_MIN, COORD_MAX, 1.0, "length_precision");
+  myDY->RangeStepAndValidator(COORD_MIN, COORD_MAX, 1.0, "length_precision");
+  myDZ->RangeStepAndValidator(COORD_MIN, COORD_MAX, 1.0, "length_precision");
 
   width = Max( aFaceBut->fontMetrics().width( tr("SMESH_X")),
                aFaceBut->fontMetrics().width( tr("SMESH_DX")));

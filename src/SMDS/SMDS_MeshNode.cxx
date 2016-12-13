@@ -143,22 +143,29 @@ public:
   SMDS_MeshNode_MyInvIterator(SMDS_Mesh *mesh, vtkIdType* cells, int ncells, SMDSAbs_ElementType type) :
     myMesh(mesh), myCells(cells), myNcells(ncells), myType(type), iter(0)
   {
-    cellList.reserve( ncells );
-    if (type == SMDSAbs_All)
-      cellList.assign( cells, cells + ncells );
-    else
-      for (int i = 0; i < ncells; i++)
+    if ( ncells )
+    {
+      cellList.reserve( ncells );
+      if (type == SMDSAbs_All)
       {
-        int vtkId = cells[i];
-        int smdsId = myMesh->fromVtkToSmds(vtkId);
-        const SMDS_MeshElement* elem = myMesh->FindElement(smdsId);
-        if (elem->GetType() == type)
-        {
-          cellList.push_back(vtkId);
-        }
+        cellList.assign( cells, cells + ncells );
       }
-    myCells = cellList.empty() ? 0 : &cellList[0];
-    myNcells = cellList.size();
+      else
+      {
+        for (int i = 0; i < ncells; i++)
+        {
+          int vtkId = cells[i];
+          int smdsId = myMesh->fromVtkToSmds(vtkId);
+          const SMDS_MeshElement* elem = myMesh->FindElement(smdsId);
+          if (elem->GetType() == type)
+          {
+            cellList.push_back(vtkId);
+          }
+        }
+        myCells = cellList.empty() ? 0 : &cellList[0];
+        myNcells = cellList.size();
+      }
+    }
   }
 
   bool more()
@@ -183,64 +190,23 @@ public:
 
 SMDS_ElemIteratorPtr SMDS_MeshNode::GetInverseElementIterator(SMDSAbs_ElementType type) const
 {
-  vtkCellLinks::Link l = SMDS_Mesh::_meshList[myMeshId]->getGrid()->GetLinks()->GetLink(myVtkID);
-  return SMDS_ElemIteratorPtr(new SMDS_MeshNode_MyInvIterator(SMDS_Mesh::_meshList[myMeshId], l.cells, l.ncells, type));
-}
-
-// Same as GetInverseElementIterator but the created iterator only returns
-// wanted type elements.
-class SMDS_MeshNode_MyIterator:public SMDS_ElemIterator
-{
-private:
-  SMDS_Mesh*                myMesh;
-  vtkIdType*                myCells;
-  int                       myNcells;
-  SMDSAbs_ElementType       myType;
-  int                       iter;
-  vector<SMDS_MeshElement*> myFiltCells;
-
-public:
-  SMDS_MeshNode_MyIterator(SMDS_Mesh *mesh,
-                           vtkIdType* cells,
-                           int ncells,
-                           SMDSAbs_ElementType type):
-    myMesh(mesh), myCells(cells), myNcells(ncells), myType(type), iter(0)
+  if ( SMDS_Mesh::_meshList[myMeshId]->NbElements() > 0 ) // avoid building links
   {
-    for (; iter<ncells; iter++)
-    {
-      int vtkId = myCells[iter];
-      int smdsId = myMesh->fromVtkToSmds(vtkId);
-      const SMDS_MeshElement* elem = myMesh->FindElement(smdsId);
-      if (elem->GetType() == type)
-        myFiltCells.push_back((SMDS_MeshElement*)elem);
-    }
-    myNcells = myFiltCells.size();
-    iter = 0;
+    vtkCellLinks::Link& l = SMDS_Mesh::_meshList[myMeshId]->getGrid()->GetLinks()->GetLink(myVtkID);
+    return SMDS_ElemIteratorPtr(new SMDS_MeshNode_MyInvIterator(SMDS_Mesh::_meshList[myMeshId], l.cells, l.ncells, type));
   }
-
-  bool more()
-  {
-    return (iter< myNcells);
-  }
-
-  const SMDS_MeshElement* next()
-  {
-    const SMDS_MeshElement* elem = myFiltCells[iter];
-    iter++;
-    return elem;
-  }
-};
-
-SMDS_ElemIteratorPtr SMDS_MeshNode::
-elementsIterator(SMDSAbs_ElementType type) const
-{
-  if(type==SMDSAbs_Node)
-    return SMDS_MeshElement::elementsIterator(SMDSAbs_Node);
   else
   {
-    vtkCellLinks::Link l = SMDS_Mesh::_meshList[myMeshId]->getGrid()->GetLinks()->GetLink(myVtkID);
-    return SMDS_ElemIteratorPtr(new SMDS_MeshNode_MyIterator(SMDS_Mesh::_meshList[myMeshId], l.cells, l.ncells, type));
+    return SMDS_ElemIteratorPtr(new SMDS_MeshNode_MyInvIterator(SMDS_Mesh::_meshList[myMeshId], 0, 0, type));
   }
+}
+
+SMDS_ElemIteratorPtr SMDS_MeshNode::elementsIterator(SMDSAbs_ElementType type) const
+{
+  if ( type == SMDSAbs_Node )
+    return SMDS_MeshElement::elementsIterator( SMDSAbs_Node );
+  else
+    return GetInverseElementIterator( type );
 }
 
 int SMDS_MeshNode::NbNodes() const
@@ -275,12 +241,14 @@ double SMDS_MeshNode::Z() const
 /*!
  * \brief thread safe getting coords
  */
+//================================================================================
+
 void SMDS_MeshNode::GetXYZ(double xyz[3]) const
 {
   return SMDS_Mesh::_meshList[myMeshId]->getGrid()->GetPoint(myVtkID,xyz);
 }
 
-//* resize the vtkPoints structure every SMDS_Mesh::chunkSize points
+//================================================================================
 void SMDS_MeshNode::setXYZ(double x, double y, double z)
 {
   SMDS_Mesh *mesh = SMDS_Mesh::_meshList[myMeshId];
@@ -321,12 +289,6 @@ void SMDS_MeshNode::ClearInverseElements()
   SMDS_Mesh::_meshList[myMeshId]->getGrid()->ResizeCellList(myVtkID, 0);
 }
 
-bool SMDS_MeshNode::emptyInverseElements()
-{
-  vtkCellLinks::Link l = SMDS_Mesh::_meshList[myMeshId]->getGrid()->GetLinks()->GetLink(myVtkID);
-  return (l.ncells == 0);
-}
-
 //================================================================================
 /*!
  * \brief Count inverse elements of given type
@@ -335,35 +297,20 @@ bool SMDS_MeshNode::emptyInverseElements()
 
 int SMDS_MeshNode::NbInverseElements(SMDSAbs_ElementType type) const
 {
-  vtkCellLinks::Link l = SMDS_Mesh::_meshList[myMeshId]->getGrid()->GetLinks()->GetLink(myVtkID);
-
-  if ( type == SMDSAbs_All )
-    return l.ncells;
-
   int nb = 0;
-  SMDS_Mesh *mesh = SMDS_Mesh::_meshList[myMeshId];
-  for (int i=0; i<l.ncells; i++)
+  if ( SMDS_Mesh::_meshList[myMeshId]->NbElements() > 0 ) // avoid building links
   {
-    const SMDS_MeshElement* elem = mesh->FindElement(mesh->fromVtkToSmds(l.cells[i]));
-    if (elem->GetType() == type)
-      nb++;
+    vtkCellLinks::Link& l = SMDS_Mesh::_meshList[myMeshId]->getGrid()->GetLinks()->GetLink(myVtkID);
+
+    if ( type == SMDSAbs_All )
+      return l.ncells;
+
+    SMDS_Mesh *mesh = SMDS_Mesh::_meshList[myMeshId];
+    for ( int i = 0; i < l.ncells; i++ )
+    {
+      const SMDS_MeshElement* elem = mesh->FindElement( mesh->fromVtkToSmds( l.cells[i] ));
+      nb += ( elem->GetType() == type );
+    }
   }
   return nb;
 }
-
-///////////////////////////////////////////////////////////////////////////////
-/// To be used with STL set
-///////////////////////////////////////////////////////////////////////////////
-bool operator<(const SMDS_MeshNode& e1, const SMDS_MeshNode& e2)
-{
-  return e1.getVtkId()<e2.getVtkId();
-  /*if(e1.myX<e2.myX) return true;
-    else if(e1.myX==e2.myX)
-    {
-    if(e1.myY<e2.myY) return true;
-    else if(e1.myY==e2.myY) return (e1.myZ<e2.myZ);
-    else return false;
-    }
-    else return false;*/
-}
-

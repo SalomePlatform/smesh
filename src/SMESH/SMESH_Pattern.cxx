@@ -794,7 +794,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
           double u = epos->GetUParameter();
           paramNodeMap.insert( make_pair( u, node ));
         }
-        if ((int) paramNodeMap.size() != eSubMesh->NbNodes() ) {
+        if ((int) paramNodeMap.size() != eSubMesh->NbNodes() - nbMeduimNodes ) {
           // wrong U on edge, project
           Extrema_ExtPC proj;
           BRepAdaptor_Curve aCurve( edge );

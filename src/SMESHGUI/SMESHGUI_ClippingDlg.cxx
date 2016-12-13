@@ -1086,6 +1086,8 @@ void SMESHGUI_ClippingDlg::updateActorList()
   std::for_each( myPlanes.begin(),myPlanes.end(), TSetVisibility( PreviewCheckBox->isChecked() ) );
   aPlaneData.Plane.GetPointer()->myActor->SetVisibility( false );
 
+  std::map< std::string, QListWidgetItem* > itemMap; // used to sort items by entry
+
   VTK::ActorCollectionCopy aCopy( myViewWindow->getRenderer()->GetActors() );
   vtkActorCollection* anAllActors = aCopy.GetActors();
   anAllActors->InitTraversal();
@@ -1111,13 +1113,20 @@ void SMESHGUI_ClippingDlg::updateActorList()
           if ( !aFatherName.isEmpty() )
             aName = aFatherName + " / " + aName;
           aName += QString(" (%1)").arg( aSObj->GetID().c_str() );
-          QListWidgetItem* anItem = new ActorItem( anActor, aName, ActorList );
+          QListWidgetItem* anItem = new ActorItem( anActor, aName, 0 );
           anItem->setCheckState( anIsChecked ? Qt::Checked : Qt::Unchecked );
-          updateActorItem( anItem, true, false );
+          itemMap.insert( std::make_pair( aSObj->GetID(), anItem ));
         }
       }
     }
   }
+  std::map< std::string, QListWidgetItem* >::iterator s2i = itemMap.begin();
+  for ( ; s2i != itemMap.end(); ++s2i )
+  {
+    QListWidgetItem* anItem = s2i->second;
+    ActorList->addItem( anItem );
+  }
+  updateActorItem( 0, true, false );
 }
 
 /*!
@@ -1258,16 +1267,19 @@ void SMESHGUI_ClippingDlg::ClickOnNew()
     SMESH::OrientedPlane* aPlane = SMESH::OrientedPlane::New(myViewWindow);
     SMESH::TPlane aTPlane(aPlane);
     aPlane->PlaneMode = CurrentMode;
-    SMESH::TActorList anActorList;
+    SMESH::TActorList anActorList, aVisibleActorList;
     VTK::ActorCollectionCopy aCopy( myViewWindow->getRenderer()->GetActors() );
     vtkActorCollection* anAllActors = aCopy.GetActors();
     anAllActors->InitTraversal();
     while( vtkActor* aVTKActor = anAllActors->GetNextActor() )
       if( SMESH_Actor* anActor = SMESH_Actor::SafeDownCast( aVTKActor ) )
+      {
         anActorList.push_back( anActor );
-
-    SMESH::TPlaneData aPlaneData(aTPlane, anActorList);
-
+        if ( anActor->GetVisibility() )
+          aVisibleActorList.push_back( anActor );
+      }
+    SMESH::TPlaneData aPlaneData(aTPlane,
+                                 aVisibleActorList.empty() ? anActorList : aVisibleActorList);
     myPlanes.push_back(aPlaneData);
 
 

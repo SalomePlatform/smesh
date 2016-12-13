@@ -72,6 +72,10 @@
 using namespace std;
 
 #define RETURN_BAD_RESULT(msg) { MESSAGE(")-: Error: " << msg); return false; }
+#ifdef _DEBUG_
+// enable printing algo + projection shapes while meshing
+//#define PRINT_WHO_COMPUTE_WHAT
+#endif
 
 namespace TAssocTool = StdMeshers_ProjectionUtils;
 //typedef StdMeshers_ProjectionUtils TAssocTool;
@@ -436,7 +440,11 @@ namespace {
     if (( err && !err->IsOK() ) ||
         ( srcWires.empty() ))
       return err;
-
+#ifdef PRINT_WHO_COMPUTE_WHAT
+    cout << "Projection_2D" <<  " F "
+         << tgtMesh->GetMeshDS()->ShapeToIndex( tgtFace ) << " <- "
+         << srcMesh->GetMeshDS()->ShapeToIndex( srcFace ) << endl;
+#endif
     SMESH_MesherHelper srcHelper( *srcMesh );
     srcHelper.SetSubShape( srcFace );
 
@@ -492,6 +500,11 @@ namespace {
 
       for ( int iE = 0; iE < srcWire->NbEdges(); ++iE )
       {
+#ifdef PRINT_WHO_COMPUTE_WHAT
+        if ( tgtMesh->GetSubMesh( tgtWire->Edge(iE) )->IsEmpty() )
+          cout << "Projection_2D" <<  " E "
+               << tgtWire->EdgeID(iE) << " <- " << srcWire->EdgeID(iE) << endl;
+#endif
         if ( srcMesh->GetSubMesh( srcWire->Edge(iE) )->IsEmpty() ||
              tgtMesh->GetSubMesh( tgtWire->Edge(iE) )->IsEmpty() )
         {

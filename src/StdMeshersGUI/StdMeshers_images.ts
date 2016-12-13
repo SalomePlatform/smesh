@@ -136,6 +136,10 @@
             <translation>mesh_tree_algo_projection_2d.png</translation>
         </message>
         <message>
+            <source>ICON_SMESH_TREE_ALGO_Projection_1D2D</source>
+            <translation>mesh_tree_algo_projection_2d.png</translation>
+        </message>
+        <message>
             <source>ICON_SMESH_TREE_ALGO_Projection_3D</source>
             <translation>mesh_tree_hypo_projection_3d.png</translation>
         </message>
@@ -249,6 +253,10 @@
         </message>
         <message>
             <source>ICON_SMESH_TREE_HYPO_QuadranglePreference</source>
+            <translation>mesh_tree_algo_quad.png</translation>
+        </message>
+        <message>
+            <source>ICON_SMESH_TREE_HYPO_QuadrangleParams</source>
             <translation>mesh_tree_algo_quad.png</translation>
         </message>
         <message>

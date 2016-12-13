@@ -69,7 +69,6 @@ protected:
   void AddInverseElement(const SMDS_MeshElement * ME);
   void RemoveInverseElement(const SMDS_MeshElement * parent);
   void ClearInverseElements();
-  bool emptyInverseElements();
 
   SMDS_ElemIteratorPtr
   elementsIterator(SMDSAbs_ElementType type) const;

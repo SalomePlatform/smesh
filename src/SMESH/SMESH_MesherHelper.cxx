@@ -4635,7 +4635,7 @@ namespace { // Structures used by FixQuadraticElements()
       SMDS_ElemIteratorPtr faceIter( new TIterOnIter( faceIterVec ));
 
       // a seacher to check if a volume is close to a concave face
-      std::auto_ptr< SMESH_ElementSearcher > faceSearcher
+      SMESHUtils::Deleter< SMESH_ElementSearcher > faceSearcher
         ( SMESH_MeshAlgos::GetElementSearcher( *theHelper.GetMeshDS(), faceIter ));
 
       // classifier
@@ -4737,7 +4737,7 @@ namespace { // Structures used by FixQuadraticElements()
                     gp_Pnt pMedium = SMESH_TNodeXYZ( linkIt->second );
                     double hMedium = faceNorm * gp_Vec( pOnFace0, pMedium ).XYZ();
                     double hVol    = faceNorm * gp_Vec( pOnFace0, pInSolid ).XYZ();
-                    isDistorted = ( Abs( hMedium ) > Abs( hVol * 0.5 ));
+                    isDistorted = ( Abs( hMedium ) > Abs( hVol * 0.75 ));
                   }
                 }
               }

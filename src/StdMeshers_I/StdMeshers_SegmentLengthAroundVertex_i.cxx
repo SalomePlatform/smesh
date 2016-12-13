@@ -50,7 +50,6 @@ StdMeshers_SegmentLengthAroundVertex_i::StdMeshers_SegmentLengthAroundVertex_i
   : SALOME::GenericObj_i( thePOA ), 
     SMESH_Hypothesis_i( thePOA )
 {
-  MESSAGE( "StdMeshers_SegmentLengthAroundVertex_i::StdMeshers_SegmentLengthAroundVertex_i" );
   myBaseImpl = new ::StdMeshers_SegmentLengthAroundVertex( theGenImpl->GetANewId(),
                                                            theStudyId,
                                                            theGenImpl );
@@ -66,7 +65,6 @@ StdMeshers_SegmentLengthAroundVertex_i::StdMeshers_SegmentLengthAroundVertex_i
 
 StdMeshers_SegmentLengthAroundVertex_i::~StdMeshers_SegmentLengthAroundVertex_i()
 {
-  MESSAGE( "StdMeshers_SegmentLengthAroundVertex_i::~StdMeshers_SegmentLengthAroundVertex_i" );
 }
 
 //=============================================================================
@@ -80,7 +78,6 @@ StdMeshers_SegmentLengthAroundVertex_i::~StdMeshers_SegmentLengthAroundVertex_i(
 void StdMeshers_SegmentLengthAroundVertex_i::SetLength( CORBA::Double theLength )
      throw ( SALOME::SALOME_Exception )
 {
-  MESSAGE( "StdMeshers_SegmentLengthAroundVertex_i::SetLength" );
   ASSERT( myBaseImpl );
   try {
     this->GetImpl()->SetLength( theLength );
@@ -103,7 +100,6 @@ void StdMeshers_SegmentLengthAroundVertex_i::SetLength( CORBA::Double theLength 
 
 CORBA::Double StdMeshers_SegmentLengthAroundVertex_i::GetLength()
 {
-  MESSAGE( "StdMeshers_SegmentLengthAroundVertex_i::GetLength" );
   ASSERT( myBaseImpl );
   return this->GetImpl()->GetLength();
 }
@@ -118,7 +114,6 @@ CORBA::Double StdMeshers_SegmentLengthAroundVertex_i::GetLength()
 
 ::StdMeshers_SegmentLengthAroundVertex* StdMeshers_SegmentLengthAroundVertex_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_SegmentLengthAroundVertex_i::GetImpl" );
   return ( ::StdMeshers_SegmentLengthAroundVertex* )myBaseImpl;
 }
 

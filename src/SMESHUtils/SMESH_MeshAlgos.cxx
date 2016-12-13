@@ -1163,8 +1163,8 @@ bool SMESH_MeshAlgos::IsOut( const SMDS_MeshElement* element, const gp_Pnt& poin
       gp_Vec edge2( xyz[i+1], xyz[(i+2)%nbNodes] );
       faceNorm += edge1 ^ edge2;
     }
-    double normSize = faceNorm.Magnitude();
-    if ( normSize <= tol )
+    double fNormSize = faceNorm.Magnitude();
+    if ( fNormSize <= tol )
     {
       // degenerated face: point is out if it is out of all face edges
       for ( i = 0; i < nbNodes; ++i )
@@ -1175,7 +1175,7 @@ bool SMESH_MeshAlgos::IsOut( const SMDS_MeshElement* element, const gp_Pnt& poin
       }
       return true;
     }
-    faceNorm /= normSize;
+    faceNorm /= fNormSize;
 
     // check if the point lays on face plane
     gp_Vec n2p( xyz[0], point );
@@ -1204,9 +1204,10 @@ bool SMESH_MeshAlgos::IsOut( const SMDS_MeshElement* element, const gp_Pnt& poin
     // to find intersections of the ray with the boundary.
     gp_Vec ray = n2p;
     gp_Vec plnNorm = ray ^ faceNorm;
-    normSize = plnNorm.Magnitude();
-    if ( normSize <= tol ) return false; // point coincides with the first node
-    plnNorm /= normSize;
+    double n2pSize = plnNorm.Magnitude();
+    if ( n2pSize <= tol ) return false; // point coincides with the first node
+    if ( n2pSize * n2pSize > fNormSize * 100 ) return true; // point is very far
+    plnNorm /= n2pSize;
     // for each node of the face, compute its signed distance to the cutting plane
     vector<double> dist( nbNodes + 1);
     for ( i = 0; i < nbNodes; ++i )
@@ -1252,7 +1253,7 @@ bool SMESH_MeshAlgos::IsOut( const SMDS_MeshElement* element, const gp_Pnt& poin
     if ( rClosest > 0. && rClosest < 1. ) // not node intersection
       return out;
 
-    // ray pass through a face node; analyze transition through an adjacent edge
+    // the ray passes through a face node; analyze transition through an adjacent edge
     gp_Pnt p1 = xyz[ (rClosest == 0.) ? ((iClosest+nbNodes-1) % nbNodes) : (iClosest+1) ];
     gp_Pnt p2 = xyz[ (rClosest == 0.) ? iClosest : ((iClosest+2) % nbNodes) ];
     gp_Vec edgeAdjacent( p1, p2 );

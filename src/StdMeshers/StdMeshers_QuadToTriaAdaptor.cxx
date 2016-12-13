@@ -485,9 +485,6 @@ static bool HasIntersection3(const gp_Pnt& P, const gp_Pnt& PC, gp_Pnt& Pint,
   gp_XYZ vert1 = P2.XYZ();
   gp_XYZ vert2 = P3.XYZ();
 
-  /* calculate distance from vert0 to ray origin */
-  gp_XYZ  tvec = orig - vert0;
-
   gp_XYZ edge1 = vert1 - vert0;
   gp_XYZ edge2 = vert2 - vert0;
 
@@ -497,8 +494,12 @@ static bool HasIntersection3(const gp_Pnt& P, const gp_Pnt& PC, gp_Pnt& Pint,
   /* if determinant is near zero, ray lies in plane of triangle */
   double det = edge1 * pvec;
 
-  if (det > -EPSILON && det < EPSILON)
+  const double ANGL_EPSILON = 1e-12;
+  if ( det > -ANGL_EPSILON && det < ANGL_EPSILON )
     return false;
+
+  /* calculate distance from vert0 to ray origin */
+  gp_XYZ  tvec = orig - vert0;
 
   /* calculate U parameter and test bounds */
   double u = ( tvec * pvec ) / det;

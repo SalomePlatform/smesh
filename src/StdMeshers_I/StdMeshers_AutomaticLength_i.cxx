@@ -52,7 +52,6 @@ StdMeshers_AutomaticLength_i::StdMeshers_AutomaticLength_i( PortableServer::POA_
      : SALOME::GenericObj_i( thePOA ), 
        SMESH_Hypothesis_i( thePOA )
 {
-  MESSAGE( "StdMeshers_AutomaticLength_i::StdMeshers_AutomaticLength_i" );
   myBaseImpl = new ::StdMeshers_AutomaticLength( theGenImpl->GetANewId(),
                                                  theStudyId,
                                                  theGenImpl );
@@ -68,7 +67,6 @@ StdMeshers_AutomaticLength_i::StdMeshers_AutomaticLength_i( PortableServer::POA_
 
 StdMeshers_AutomaticLength_i::~StdMeshers_AutomaticLength_i()
 {
-  MESSAGE( "StdMeshers_AutomaticLength_i::~StdMeshers_AutomaticLength_i" );
 }
 
 //=============================================================================

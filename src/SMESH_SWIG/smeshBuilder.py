@@ -3606,6 +3606,7 @@ class Mesh:
     #         1 - the medium node lies at the middle of the line segments connecting two nodes of a mesh element
     #  @param theSubMesh a group or a sub-mesh to convert; WARNING: in this case the mesh can become not conformal
     #  @param theToBiQuad If True, converts the mesh to bi-quadratic
+    #  @return SMESH.ComputeError which can hold a warning
     #  @ingroup l2_modif_tofromqu
     def ConvertToQuadratic(self, theForce3d=False, theSubMesh=None, theToBiQuad=False):
         if isinstance( theSubMesh, Mesh ):
@@ -3620,6 +3621,7 @@ class Mesh:
         error = self.editor.GetLastError()
         if error and error.comment:
             print error.comment
+        return error
             
     ## Converts the mesh from quadratic to ordinary,
     #  deletes old quadratic elements, \n replacing
