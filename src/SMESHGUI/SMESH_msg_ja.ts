@@ -1133,8 +1133,8 @@
     </message>
     <message>
       <source>STB_OVERALL_MESH_QUALITY</source>
-      <translation>全体的なメッシュの品質</translation>
-    </message>    
+      <translation>全体的なメッシュ品質</translation>
+    </message>
     <message>
       <source>STB_SPLIT_TO_TETRA</source>
       <translation>四面体を爆発します。</translation>
@@ -4342,6 +4342,50 @@
     <message>
       <source>SMESH_ADVANCED</source>
       <translation>高度な設定</translation>
+    </message>
+    <message>
+      <source>SMESH_1D_ALGO_GROUP_BASIC</source>
+      <translation>ベーシック</translation>
+    </message>
+    <message>
+      <source>SMESH_1D_ALGO_GROUP_ADVANCED</source>
+      <translation>アドバンス</translation>
+    </message>
+    <message>
+      <source>SMESH_1D_HYP_GROUP_BASIC</source>
+      <translation>ベーシック</translation>
+    </message>
+    <message>
+      <source>SMESH_1D_HYP_GROUP_PROGRESSION</source>
+      <translation>発展的</translation>
+    </message>
+    <message>
+      <source>SMESH_1D_HYP_GROUP_ADVANCED</source>
+      <translation>アドバンス</translation>
+    </message>
+    <message>
+      <source>SMESH_2D_ALGO_GROUP_REGULAR</source>
+      <translation>標準面</translation>
+    </message>
+    <message>
+      <source>SMESH_2D_ALGO_GROUP_FREE</source>
+      <translation>自由面</translation>
+    </message>
+    <message>
+      <source>SMESH_2D_ALGO_GROUP_ADVANCED</source>
+      <translation>アドバンス</translation>
+    </message>
+    <message>
+      <source>SMESH_3D_ALGO_GROUP_REGULAR</source>
+      <translation>標準ボリューム</translation>
+    </message>
+    <message>
+      <source>SMESH_3D_ALGO_GROUP_FREE</source>
+      <translation>自由ボリューム</translation>
+    </message>
+    <message>
+      <source>SMESH_3D_ALGO_GROUP_ADVANCED</source>
+      <translation>アドバンス</translation>
     </message>
   </context>
   <context>
