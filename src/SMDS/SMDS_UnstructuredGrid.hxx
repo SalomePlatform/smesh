@@ -45,6 +45,14 @@
 // allow very huge polyhedrons in tests
 #define NBMAXNODESINCELL 5000
 
+// Keep compatibility with paraview 5.0.1 on Linux
+#ifndef WIN32
+  #ifndef VTK_HAS_MTIME_TYPE
+  #define VTK_HAS_MTIME_TYPE
+  typedef unsigned long int vtkMTimeType;
+  #endif
+#endif
+
 class SMDS_Downward;
 class SMDS_Mesh;
 class SMDS_MeshCell;
