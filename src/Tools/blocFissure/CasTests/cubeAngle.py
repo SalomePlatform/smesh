@@ -57,7 +57,7 @@ class cubeAngle(fissureGenerique):
 
     shellFiss = geompy.ImportFile(os.path.join(gmu.pathBloc, "materielCasTests/CubeAngleFiss.brep"), "BREP")
     fondFiss = geompy.CreateGroup(shellFiss, geompy.ShapeType["EDGE"])
-    geompy.UnionIDs(fondFiss, [4])
+    geompy.UnionIDs(fondFiss, [3])
     geompy.addToStudy( shellFiss, 'shellFiss' )
     geompy.addToStudyInFather( shellFiss, fondFiss, 'fondFiss' )
 

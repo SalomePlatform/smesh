@@ -15,16 +15,16 @@ def identifieEdgesPeau(edgesFissExtPipe,verticesPipePeau, facePeau, facesPeauSor
   identification précise des edges et disques des faces de peau selon index extremité fissure
   """
   logging.info('start')
-  
+
   facesPipePeau = [None for i in range(len(edgesFissExtPipe))]
   endsEdgeFond = [None for i in range(len(edgesFissExtPipe))]
   edgeRadFacePipePeau = [None for i in range(len(edgesFissExtPipe))]
-  
+
   edgesListees = []
   edgesCircPeau = []
   verticesCircPeau = []
   if len(verticesPipePeau) > 0: # --- au moins une extrémité du pipe sur cette face de peau
-    
+
     for face in facesPeauSorted[:-1]: # la ou les faces débouchantes, pas la grande face de peau
       logging.debug("examen face debouchante circulaire")
       for i,efep in enumerate(edgesFissExtPipe):
@@ -52,11 +52,11 @@ def identifieEdgesPeau(edgesFissExtPipe,verticesPipePeau, facePeau, facesPeauSor
           pass
         pass
       pass
-    
+
     # --- edges circulaires de la face de peau et points de jonction de la face externe de fissure
     logging.debug("facesPipePeau: %s", facesPipePeau)
     edgesCircPeau = [None for i in range(len(facesPipePeau))]
-    verticesCircPeau = [None for i in range(len(facesPipePeau))]        
+    verticesCircPeau = [None for i in range(len(facesPipePeau))]
     for i,fcirc in enumerate(facesPipePeau):
       edges = geompy.GetSharedShapesMulti([facePeau, fcirc], geompy.ShapeType["EDGE"])
       grpEdgesCirc = geompy.CreateGroup(facePeau, geompy.ShapeType["EDGE"])
@@ -96,8 +96,26 @@ def identifieEdgesPeau(edgesFissExtPipe,verticesPipePeau, facePeau, facesPeauSor
   geompy.UnionList(groupEdgesBordPeau, edgesBords)
   bordsVifs = None
   if aretesVivesC is not None:
-    logging.debug("identification des bords vifs par GetInPlace (old)")
+    logging.debug("identification des bords vifs par GetInPlace")
     bordsVifs = geompy.GetInPlace(facePeau, aretesVivesC)
+    if bordsVifs is None:
+      logging.debug("pas d'identification des bords vifs par GetInPlace: test par distance")
+      edvifs = []
+      arvives = geompy.ExtractShapes(aretesVivesC, geompy.ShapeType["EDGE"], False)
+      edgs = geompy.ExtractShapes(facePeau, geompy.ShapeType["EDGE"], False)
+      for ed in edgs:
+        vxs = geompy.ExtractShapes(ed, geompy.ShapeType["VERTEX"], False)
+        for ar in arvives:
+          d = geompy.MinDistance(vxs[0], ar)
+          d += geompy.MinDistance(vxs[1], ar)
+          logging.debug("test distance bord face peau - arete vive: %s",d)
+          if d < 0.001:
+            edvifs.append(ed)
+            break
+      if len(edvifs) >0:
+        bordsVifs = geompy.CreateGroup(facePeau,geompy.ShapeType["EDGE"])
+        for ed in edvifs:
+          geompy.AddObject(bordsVifs, geompy.GetSubShapeID(facePeau, ed))
   if bordsVifs is not None:
     geomPublishInFather(initLog.debug, facePeau, bordsVifs, "bordsVifs")
     groupEdgesBordPeau = geompy.CutGroups(groupEdgesBordPeau, bordsVifs)
@@ -114,9 +132,9 @@ def identifieEdgesPeau(edgesFissExtPipe,verticesPipePeau, facePeau, facesPeauSor
       aretesVivesCoupees += edv
   logging.debug("aretesVivesCoupees %s",aretesVivesCoupees)
   geomPublishInFather(initLog.debug, facePeau, groupEdgesBordPeau , "EdgesBords")
-    
+
   # ---  edges de la face de peau partagées avec la face de fissure
-  
+
   edgesPeau = geompy.ExtractShapes(facePeau, geompy.ShapeType["EDGE"], False)
   edges = substractSubShapes(facePeau, edgesPeau, edgesListees)
   edgesFissurePeau = []
@@ -136,7 +154,7 @@ def identifieEdgesPeau(edgesFissExtPipe,verticesPipePeau, facePeau, facesPeauSor
       edgesFissurePeau.append(edge)
       name = "edgeFissurePeau%d"%i
       geomPublishInFather(initLog.debug, facePeau,  edge, name)
-      
+
   return (endsEdgeFond, facesPipePeau, edgeRadFacePipePeau,
           edgesCircPeau, verticesCircPeau, groupEdgesBordPeau,
           bordsVifs, edgesFissurePeau, aretesVivesCoupees)

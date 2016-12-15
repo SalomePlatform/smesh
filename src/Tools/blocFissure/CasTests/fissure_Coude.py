@@ -140,10 +140,11 @@ class fissure_Coude(fissureGenerique):
 
     # --- peau tube exterieur (PEAUEXT)
 
-    cercle1 = geompy.MakeCircle(centre, OZ, de/2.)
-    extru1 = geompy.MakePrismVecH(cercle1, OZ, l_tube_p1)
-    revol1 = geompy.MakeRevolution(cercle1, axe, angleCoude*math.pi/180.0)
-    rot1 = geompy.MakeRotation(cercle1, axe, angleCoude*math.pi/180.0)
+    Disk_3 = geompy.MakeDiskPntVecR(centre, OZ, de/2. +epais)
+    couronne1 = geompy.MakeCut(Disk_3, Disk_1)
+    extru1 = geompy.MakePrismVecH(couronne1, OZ, l_tube_p1)
+    revol1 = geompy.MakeRevolution(couronne1, axe, angleCoude*math.pi/180.0)
+    rot1 = geompy.MakeRotation(couronne1, axe, angleCoude*math.pi/180.0)
     extru2 = geompy.MakePrismVecH(rot1, Rotation_2, -l_tube_p2)
     externe = geompy.MakeFuse(extru1, revol1)
     externe = geompy.MakeFuse(extru2, externe)
@@ -294,7 +295,7 @@ class fissure_Coude(fissureGenerique):
 
     azimut = -azimut # axe inverse / ASCOUF
     axe = geompy.MakeTranslation(OY, -r_cintr, 0, -l_tube_p1)
-    
+
     if not lgInfluence:
       lgInfluence = profondeur
 

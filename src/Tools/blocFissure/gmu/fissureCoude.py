@@ -178,10 +178,10 @@ class fissureCoude(fissureGenerique):
 
     # --- peau tube exterieur (PEAUEXT)
 
-    cercle1 = geompy.MakeCircle(centre, OZ, de/2.)
-    extru1 = geompy.MakePrismVecH(cercle1, OZ, l_tube_p1)
-    revol1 = geompy.MakeRevolution(cercle1, axe, angleCoude*math.pi/180.0)
-    rot1 = geompy.MakeRotation(cercle1, axe, angleCoude*math.pi/180.0)
+    Disk_3 = geompy.MakeDiskPntVecR(centre, OZ, de/2. +epais)
+    extru1 = geompy.MakePrismVecH(Disk_3, OZ, l_tube_p1)
+    revol1 = geompy.MakeRevolution(Disk_3, axe, angleCoude*math.pi/180.0)
+    rot1 = geompy.MakeRotation(Disk_3, axe, angleCoude*math.pi/180.0)
     extru2 = geompy.MakePrismVecH(rot1, Rotation_2, -l_tube_p2)
     externe = geompy.MakeFuse(extru1, revol1)
     externe = geompy.MakeFuse(extru2, externe)
@@ -338,13 +338,13 @@ class fissureCoude(fissureGenerique):
     self.elliptique  = False
     if shapeFissureParams.has_key('elliptique'):
       self.elliptique = shapeFissureParams['elliptique']
-      
+
 
 
     azimut = -azimut # axe inverse / ASCOUF
     axe = geompy.MakeTranslation(OY, -r_cintr, 0, -l_tube_p1)
     geomPublish(initLog.debug, axe,"axe")
-    
+
     if not lgInfluence:
       lgInfluence = profondeur
 
@@ -377,7 +377,7 @@ class fissureCoude(fissureGenerique):
       lgfond = longueur -2*profondeur
       angle = lgfond/(2*raybor)
       pb = geompy.MakeVertex(raybor, 0, 0)
-      pi = geompy.MakeVertex(rayint, 0, 0)      
+      pi = geompy.MakeVertex(rayint, 0, 0)
       pbl = geompy.MakeRotation(pb, OZ, angle)
       pbr = geompy.MakeRotation(pb, OZ, -angle)
       geomPublish(initLog.debug, pbl,"pbl")
@@ -395,7 +395,7 @@ class fissureCoude(fissureGenerique):
         pt = geompy.MakeRotation(pil, axl, angi)
         points.append(pt)
       for i in range(nbp):
-        angi = angle -2.0*i*angle/nbp      
+        angi = angle -2.0*i*angle/nbp
         pt = geompy.MakeRotation(pi, OZ, angi)
         points.append(pt)
       for i in range(nbp+1):
@@ -407,30 +407,30 @@ class fissureCoude(fissureGenerique):
         pt = geompy.MakeTranslation(pt, 0, 0, -l_tube_p1)
         pt = geompy.MakeRotation(pt, axe, alpha*math.pi/180.)
         points[i] = pt
-      wire0 = geompy.MakeInterpol(points[0:nbp+1])     
-      wire1 = geompy.MakeInterpol(points[nbp:2*nbp+1])     
-      wire2 = geompy.MakeInterpol(points[2*nbp:3*nbp+1])     
+      wire0 = geompy.MakeInterpol(points[0:nbp+1])
+      wire1 = geompy.MakeInterpol(points[nbp:2*nbp+1])
+      wire2 = geompy.MakeInterpol(points[2*nbp:3*nbp+1])
       #wiretube = geompy.MakeInterpol(points)
       wiretube=geompy.MakeWire([wire0,wire1,wire2])
       geomPublish(initLog.debug, wiretube,"wiretube")
-      
+
       pe = geompy.MakeVertex(rayext, 0, 0)
       pe = geompy.MakeRotation(pe, OZ, azimut*math.pi/180.)
       pe = geompy.MakeTranslation(pe, 0, 0, -l_tube_p1)
       pe = geompy.MakeRotation(pe, axe, alpha*math.pi/180.)
-     
+
       arce = geompy.MakeArc(points[0], pe, points[-1])
       geomPublish(initLog.debug, arce,"arce")
-      
+
       facefiss = geompy.MakeFaceWires([arce, wiretube], 1)
       geomPublish(initLog.debug,  facefiss, 'facefissPlace' )
-      
+
       pc = geompy.MakeVertex((raybor + rayint)/2.0, 0, 0)
       centre = geompy.MakeRotation(pc, OZ, azimut*math.pi/180.)
       centre = geompy.MakeTranslation(centre, 0, 0, -l_tube_p1)
       centre = geompy.MakeRotation(centre, axe, alpha*math.pi/180.)
       geomPublish(initLog.debug,  centre, 'centrefissPlace' )
-      
+
       wiretube = geompy.GetInPlace(facefiss, wiretube)
       geomPublish(initLog.debug, wiretube, 'wiretubePlace' )
       try:
@@ -449,7 +449,7 @@ class fissureCoude(fissureGenerique):
       else:
         raybor = de/2. - epais
         dp = +1.0
-      prof = dp * profondeur     
+      prof = dp * profondeur
       lgfond = longueur -2*profondeur
       cosaz = math.cos(azimut*math.pi/180.)
       sinaz = math.sin(azimut*math.pi/180.)
@@ -477,9 +477,9 @@ class fissureCoude(fissureGenerique):
       for i in range(nbp+2):
         x = math.sin(i*math.pi/(nbp+1)) # fonction de répartition des points : distance relative
         x2 = x*x
-        totx += x2        
+        totx += x2
         xs.append(totx)
-        logging.debug("x2: %s, totx: %s", x2, totx)     
+        logging.debug("x2: %s, totx: %s", x2, totx)
       for i in range(nbp+1):
         #posi = nbp -i             # répartition équidistante des points sur la courbe
         posi = nbp*(1 -xs[i]/totx) # points plus resserrés aux extrémités de la courbe
@@ -501,11 +501,11 @@ class fissureCoude(fissureGenerique):
         x = math.sin(i*math.pi/nbp)
         #x = 1.0 # répartition équidistante des points sur la courbe
         x2 = x*x # points plus resserrés aux extrémités de la courbe
-        totx += x2        
+        totx += x2
         xs.append(totx)
-        logging.debug("x2: %s, totx: %s", x2, totx)     
+        logging.debug("x2: %s, totx: %s", x2, totx)
       for i in range(nbp):
-        angi = alfrd -angle +2.0*angle*xs[i]/totx      
+        angi = alfrd -angle +2.0*angle*xs[i]/totx
         pt = geompy.MakeRotation(pi, axe, angi)
         points.append(pt)
       curves.append(geompy.MakeInterpol(points))
@@ -521,9 +521,9 @@ class fissureCoude(fissureGenerique):
       for i in range(nbp+2):
         x = math.sin(i*math.pi/(nbp+1))
         x2 = x*x
-        totx += x2        
+        totx += x2
         xs.append(totx)
-        logging.debug("x2: %s, totx: %s", x2, totx)     
+        logging.debug("x2: %s, totx: %s", x2, totx)
       for i in range(nbp+1):
         #posi = nbp -i        # répartition équidistante des points sur la courbe
         posi = nbp*xs[i]/totx # points plus resserrés aux extrémités de la courbe
@@ -536,7 +536,7 @@ class fissureCoude(fissureGenerique):
 #      for i, pt in enumerate(points):
 #        name = "point%d"%i
 #        geomPublishInFather(initLog.debug,curves[-1], pt, name)
-      
+
       wiretube = geompy.MakeWire(curves)
       geomPublish(initLog.debug, wiretube,"wiretube")
       try:
@@ -545,26 +545,26 @@ class fissureCoude(fissureGenerique):
       except:
         logging.debug("erreur MakeEdgeWire sur fond de fissure, on fait sans")
         edgetube = None
-      
+
       pts = []
       pts.append(point0)
       dpr = prof*math.cos(5.0*math.pi/8.0)
       pe = geompy.MakeTranslation(pb, dpr*cosaz, dpr*sinaz, 0., "pe")
       for i in range(nbp):
-        angi = alfrd -angle +2.0*i*angle/nbp      
+        angi = alfrd -angle +2.0*i*angle/nbp
         pt = geompy.MakeRotation(pe, axe, angi)
         pts.append(pt)
       pts.append(point1)
       arce = geompy.MakeInterpol(pts)
       geomPublish(initLog.debug, arce,"arce")
-      
+
       facefiss = geompy.MakeFaceWires([arce, wiretube], 0)
       geomPublish(initLog.debug,  facefiss, 'facefissPlace' )
-      
+
       pc = geompy.MakeTranslation(pb, 0.5*prof*cosaz, 0.5*prof*sinaz, 0.)
       centre = geompy.MakeRotation(pc, axe, alfrd)
       geomPublish(initLog.debug,  centre, 'centrefissPlace' )
-      
+
       edges = geompy.ExtractShapes(facefiss, geompy.ShapeType["EDGE"], True)
       edgesTriees, minl, maxl = sortEdges(edges)
       edges = edgesTriees[:-1] # la plus grande correspond à arce, on l'elimine
@@ -581,7 +581,7 @@ class fissureCoude(fissureGenerique):
       else:
         raybor = de/2. - epais
         dp = +1.0
-      prof = dp * profondeur     
+      prof = dp * profondeur
       cosaz = math.cos(azimut*math.pi/180.)
       sinaz = math.sin(azimut*math.pi/180.)
       alfrd = alpha*math.pi/180.
@@ -602,7 +602,7 @@ class fissureCoude(fissureGenerique):
       cox = geompy.VectorCoordinates(ax1)
       coy = geompy.VectorCoordinates(ay1)
       localLCS = geompy.MakeMarker(coo[0], coo[1], coo[2], cox[0], cox[1], cox[2], coy[0], coy[1], coy[2], "localLCS")
-      
+
       pco = geompy.MakeVertex(0, 0, -profondeur, "pco")
       pao = geompy.MakeRotation(pco, OY, 0.6*math.pi, "pao")
       pbo = geompy.MakeRotation(pco, OY, -0.6*math.pi, "pbo")
@@ -620,7 +620,7 @@ class fissureCoude(fissureGenerique):
       edgesTriees, minl, maxl = sortEdges(edges)
       edgetube = edgesTriees[-1] # la plus grande correspond à arci
       wiretube = edgetube
-      
+
       pc = geompy.MakeTranslation(pb, 0.5*prof*cosaz, 0.5*prof*sinaz, 0.)
       centre = geompy.MakeRotation(pc, axe, alfrd)
       geomPublish(initLog.debug,  centre, 'centrefissPlace' )
