@@ -112,7 +112,7 @@ class SMESH_EXPORT SMESH_subMesh
   };
   enum compute_event
   {
-    MODIF_ALGO_STATE, COMPUTE, COMPUTE_SUBMESH, COMPUTE_CANCELED,
+    MODIF_ALGO_STATE, COMPUTE, COMPUTE_SUBMESH, COMPUTE_NOGEOM, COMPUTE_CANCELED,
     CLEAN, SUBMESH_COMPUTED, SUBMESH_RESTORED, SUBMESH_LOADED,
     MESH_ENTITY_REMOVED, CHECK_COMPUTE_STATE
   };
@@ -241,8 +241,7 @@ public:
   static bool IsApplicableHypotesis(const SMESH_Hypothesis* theHypothesis,
                                     const TopAbs_ShapeEnum  theShapeType);
 
-  bool IsApplicableHypotesis(const SMESH_Hypothesis* theHypothesis) const
-  { return IsApplicableHypotesis( theHypothesis, _subShape.ShapeType() ); }
+  bool IsApplicableHypotesis(const SMESH_Hypothesis* theHypothesis) const;
   // return true if theHypothesis can be used to mesh me:
   // its shape type is checked
   

@@ -322,7 +322,7 @@ static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
   {
     // define the next tag after given one in the data tree to insert SObject
     SALOMEDS::SObject_wrap curObj, objAfter;
-    if ( theFatherObject->GetLastChildTag() > theTag )
+    if ( theFatherObject->GetLastChildTag() > theTag && theTag > 0 )
     {
       SALOMEDS::UseCaseIterator_wrap
         anUseCaseIter = useCaseBuilder->GetUseCaseIterator(theFatherObject);

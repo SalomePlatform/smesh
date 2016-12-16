@@ -709,15 +709,14 @@ void SMESHGUI_MeshOp::selectionDone()
       }
     }
     else { // no geometry defined
-      myDlg->enableTab( SMESH::DIM_3D );
-      QStringList hypList;
-      availableHyps( SMESH::DIM_3D, Algo, hypList,
-                     myAvailableHypData[SMESH::DIM_3D][Algo]);
 
-      SMESHGUI_MeshTab* aTab = myDlg->tab( SMESH::DIM_3D );
-      aTab->setAvailableHyps( Algo, hypList );
-      for (int i = SMESH::DIM_0D;i < SMESH::DIM_3D; ++i) {
-        myDlg->disableTab(i);
+      QStringList hypList;
+      for ( int dim = SMESH::DIM_0D; dim <= SMESH::DIM_3D; dim++ )
+      {
+        availableHyps( dim, Algo, hypList, myAvailableHypData[dim][Algo]);
+        myDlg->tab( dim )->setAvailableHyps( Algo, hypList );
+        if ( hypList.empty() ) myDlg->disableTab( dim );
+        else                   myDlg->enableTab( dim );
       }
       myMaxShapeDim = -1;
       //Hide labels and fields (Mesh and Geometry)
@@ -1505,7 +1504,8 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
   if ( myIgnoreAlgoSelection )
     return;
 
-  int aDim = theDim < 0 ? getTabDim( sender(), myDlg ): theDim;
+  int curDim = getTabDim( sender(), myDlg );
+  int aDim = theDim < 0 ? curDim : theDim;
   if (aDim == -1)
     return;
 
@@ -1587,7 +1587,7 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
       myDlg->tab( dim )->setAvailableHyps( Algo, anAvailable );
       noCompatible = anAvailable.isEmpty();
       algoIndex = myAvailableHypData[dim][Algo].indexOf( curAlgo );
-      if ( !isSubmesh && algoIndex < 0 && soleCompatible && !forward && dim != SMESH::DIM_0D) {
+      if ( !isSubmesh && algoIndex < 0 && soleCompatible && !forward && dim == curDim ) {
         // select the sole compatible algo
         algoIndex = 0;
       }
@@ -1682,7 +1682,8 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
         hypIndex = this->find( curHyp, myExistingHyps[ dim ][ type ]);
       else
         hypIndex = -1;
-      if ( !isSubmesh && myToCreate && hypIndex < 0 && anExisting.count() == 1 ) {
+      if ( !isSubmesh && myToCreate && hypIndex < 0 && anExisting.count() == 1 && dim == curDim )
+      {
         // none is yet selected => select the sole existing if it is not optional
         CORBA::String_var hypTypeName = myExistingHyps[ dim ][ type ].first().first->GetName();
         bool isOptional = true;
@@ -2184,7 +2185,7 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
       {
         // Call hypothesis creation server method (without GUI)
         SMESH::SMESH_Hypothesis_var aHyp =
-          SMESH::CreateHypothesis(aHypName, aHypName, true);
+          SMESH::CreateHypothesis(aHypName, aHypData->Label, true);
         aHyp.out();
       }
       else
@@ -2197,7 +2198,7 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
           aCreator->create( true, aHypName, myDlg, 0, QString::null );
         else {
           SMESH::SMESH_Hypothesis_var aHyp =
-            SMESH::CreateHypothesis(aHypName, aHypName, true);
+            SMESH::CreateHypothesis(aHypName, aHypData->Label, true);
           aHyp.out();
         }
         delete aCreator;
@@ -2260,7 +2261,7 @@ void SMESHGUI_MeshOp::readMesh()
 
   // Get hypotheses and algorithms assigned to the mesh/sub-mesh
   QStringList anExisting;
-  const int lastDim = ( myIsOnGeometry ) ? SMESH::DIM_0D : SMESH::DIM_3D;
+  const int lastDim = ( myIsOnGeometry ) ? SMESH::DIM_0D : SMESH::DIM_2D;
   bool algoFound = false;
   for ( int dim = SMESH::DIM_3D; dim >= lastDim; --dim )
   {
@@ -2407,7 +2408,7 @@ bool SMESHGUI_MeshOp::editMeshOrSubMesh( QString& theMess )
   // Set new name
   QString aName = myDlg->objectText( SMESHGUI_MeshDlg::Obj );
   SMESH::SetName( pObj, aName );
-  int aDim = ( myIsOnGeometry ) ? SMESH::DIM_0D : SMESH::DIM_3D;
+  int aDim = ( myIsOnGeometry ) ? SMESH::DIM_0D : SMESH::DIM_2D;
 
   // First, remove old algos in order to avoid messages on algorithm hiding
   for ( int dim = aDim; dim <= SMESH::DIM_3D; dim++ )
@@ -2743,8 +2744,9 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
     }
     if ( !myIsOnGeometry )
       for ( int i = SMESH::DIM_0D; i <= SMESH::DIM_3D; i++ ) {
-        if ( i < SMESH::DIM_3D ) myDlg->disableTab( i );
-        else                     myDlg->enableTab( i );
+        bool disable = myAvailableHypData[i][Algo].isEmpty();
+        if ( disable ) myDlg->disableTab( i );
+        else           myDlg->enableTab( i );
       }
     else
       for ( int i = SMESH::DIM_0D; i <= SMESH::DIM_3D; i++ ) {

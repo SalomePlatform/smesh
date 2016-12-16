@@ -95,7 +95,7 @@
 #include <string>
 
 #ifdef _DEBUG_
-//#define __myDEBUG
+#define __myDEBUG
 //#define __NOT_INVALIDATE_BAD_SMOOTH
 //#define __NODES_AT_POS
 #endif
@@ -7546,7 +7546,7 @@ bool _LayerEdge::SegTriaInter( const gp_Ax1& lastSegment,
   const gp_Dir& dir  = lastSegment.Direction();
 
   /* calculate distance from vert0 to ray origin */
-  gp_XYZ tvec = orig.XYZ() - vert0;
+  //gp_XYZ tvec = orig.XYZ() - vert0;
 
   //if ( tvec * dir > EPSILON )
     // intersected face is at back side of the temporary face this _LayerEdge belongs to
@@ -7564,6 +7564,9 @@ bool _LayerEdge::SegTriaInter( const gp_Ax1& lastSegment,
   const double ANGL_EPSILON = 1e-12;
   if ( det > -ANGL_EPSILON && det < ANGL_EPSILON )
     return false;
+
+  /* calculate distance from vert0 to ray origin */
+  gp_XYZ tvec = orig.XYZ() - vert0;
 
   /* calculate U parameter and test bounds */
   double u = ( tvec * pvec ) / det;

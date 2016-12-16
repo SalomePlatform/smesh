@@ -63,6 +63,11 @@
 
 using namespace std;
 
+#ifdef _DEBUG_
+// enable printing algo + shape id + hypo used while meshing
+//#define PRINT_WHO_COMPUTE_WHAT
+#endif
+
 //=============================================================================
 /*!
  * \brief Allocate some memory at construction and release it at destruction.
@@ -510,7 +515,20 @@ bool SMESH_subMesh::CanAddHypothesis(const SMESH_Hypothesis* theHypothesis) cons
 
 //=======================================================================
 //function : IsApplicableHypotesis
-//purpose  :
+//purpose  : check if this sub-mesh can be computed using a hypothesis
+//=======================================================================
+
+bool SMESH_subMesh::IsApplicableHypotesis(const SMESH_Hypothesis* theHypothesis) const
+{
+  if ( !_father->HasShapeToMesh() && _subShape.ShapeType() == TopAbs_SOLID )
+    return true; // true for the PseudoShape
+
+  return IsApplicableHypotesis( theHypothesis, _subShape.ShapeType() );
+}
+
+//=======================================================================
+//function : IsApplicableHypotesis
+//purpose  : compare shape type and hypothesis type
 //=======================================================================
 
 bool SMESH_subMesh::IsApplicableHypotesis(const SMESH_Hypothesis* theHypothesis,
@@ -1436,6 +1454,31 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
           _computeState = READY_TO_COMPUTE;
       }
       break;
+
+    case COMPUTE_NOGEOM:  // no geometry; can be several algos
+      if ( !_father->HasShapeToMesh() )
+      {
+        algo = GetAlgo(); // current algo
+        if ( algo )
+        {
+          // apply algos in the order of increasing dimension
+          std::list< const SMESHDS_Hypothesis * > algos = _father->GetHypothesisList( _subShape );
+          for ( int t = SMESHDS_Hypothesis::ALGO_1D; t <= SMESHDS_Hypothesis::ALGO_3D; ++t )
+          {
+            std::list<const SMESHDS_Hypothesis *>::iterator al = algos.begin();
+            for ( ; al != algos.end(); ++al )
+              if ( (*al)->GetType() == t )
+              {
+                _algo = (SMESH_Algo*) *al;
+                _computeState = READY_TO_COMPUTE;
+                if ( !ComputeStateEngine( COMPUTE ))
+                  break;
+              }
+          }
+          _algo = algo; // restore
+        }
+        break;
+      }
     case COMPUTE:
     case COMPUTE_SUBMESH:
       {
@@ -1575,6 +1618,23 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
                    !algo->isDegenerated( TopoDS::Edge( subS.Current() ))))
               ret = false;
         }
+#ifdef PRINT_WHO_COMPUTE_WHAT
+        for (subS.ReInit(); subS.More(); subS.Next())
+        {
+          const std::list <const SMESHDS_Hypothesis *> & hyps =
+            _algo->GetUsedHypothesis( *_father, _subShape );
+          SMESH_Comment hypStr;
+          if ( !hyps.empty() )
+          {
+            hypStr << hyps.front()->GetName() << " ";
+            ((SMESHDS_Hypothesis*)hyps.front())->SaveTo( hypStr.Stream() );
+            hypStr << " ";
+          }
+          cout << _algo->GetName()
+               << " " << _father->GetSubMesh( subS.Current() )->GetId()
+               << " " << hypStr << endl;
+        }
+#endif
         // Set _computeError
         if ( !ret && !isComputeErrorSet )
         {
@@ -2157,8 +2217,6 @@ const SMESH_Hypothesis* SMESH_subMesh::getSimilarAttached(const TopoDS_Shape&   
 SMESH_Hypothesis::Hypothesis_Status
   SMESH_subMesh::CheckConcurentHypothesis (const int theHypType)
 {
-  MESSAGE ("SMESH_subMesh::CheckConcurentHypothesis");
-
   // is there local hypothesis on me?
   if ( getSimilarAttached( _subShape, 0, theHypType ) )
     return SMESH_Hypothesis::HYP_OK;

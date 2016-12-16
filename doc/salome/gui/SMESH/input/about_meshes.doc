@@ -3,8 +3,7 @@
 \page about_meshes_page About meshes
 
 \n \b MESH represents a discrete approximation of a subset of the
-three-dimensional space by \ref mesh_entities "elementary geometrical
-elements".
+three-dimensional space by \ref mesh_entities "elementary geometrical elements".
 
 A SALOME study can contain multiple meshes, but they do not
 implicitly compose one super-mesh, and finally each of them

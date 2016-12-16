@@ -148,6 +148,8 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
   // one face only.
   SMESH_subMesh::compute_event computeEvent =
     aShapeOnly ? SMESH_subMesh::COMPUTE_SUBMESH : SMESH_subMesh::COMPUTE;
+  if ( !aMesh.HasShapeToMesh() )
+    computeEvent = SMESH_subMesh::COMPUTE_NOGEOM; // if several algos and no geometry
 
   if ( anUpward ) // is called from the below code in this method
   {
@@ -1058,7 +1060,8 @@ SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_subMesh * aSubMesh,
   SMESH_Mesh&          aMesh  = *aSubMesh->GetFather();
 
   SMESH_HypoFilter filter( SMESH_HypoFilter::IsAlgo() );
-  filter.And( filter.IsApplicableTo( aShape ));
+  if ( aMesh.HasShapeToMesh() )
+    filter.And( filter.IsApplicableTo( aShape ));
 
   typedef SMESH_Algo::Features AlgoData;
 
