@@ -54,6 +54,7 @@
 #include <SUIT_Session.h>
 #include <SVTK_ViewModel.h>
 #include <SVTK_ViewWindow.h>
+#include <SVTK_Renderer.h>
 #include <SalomeApp_Application.h>
 
 // SALOME KERNEL includes
@@ -95,6 +96,7 @@
 
 // VTK includes
 #include <vtkProperty.h>
+#include <vtkRenderer.h>
 
 // STL includes
 #include <vector>
@@ -1008,6 +1010,11 @@ void SMESHGUI_BaseComputeOp::computeMesh()
               Handle(SALOME_InteractiveObject) anIO = new SALOME_InteractiveObject
                 ( (*anIter).second->GetID().c_str(), "SMESH", (*anIter).second->GetName().c_str() );
               SMESH::Update(anIO, toDisplay);
+	      if( SVTK_ViewWindow* vtkWnd = SMESH::GetVtkViewWindow(SMESH::GetActiveWindow() ) ) {
+		if( vtkWnd->getRenderer() ){
+		  vtkWnd->getRenderer()->ResetCameraClippingRange();
+		}
+	      }
 
               if ( limitExceeded && !aMesh->_is_nil() )
               {
