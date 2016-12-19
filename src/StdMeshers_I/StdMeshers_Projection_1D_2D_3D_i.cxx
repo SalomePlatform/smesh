@@ -47,7 +47,6 @@ StdMeshers_Projection_3D_i::StdMeshers_Projection_3D_i( PortableServer::POA_ptr 
        SMESH_Algo_i( thePOA ),
        SMESH_3D_Algo_i( thePOA )
 {
-  MESSAGE( "StdMeshers_Projection_3D_i::StdMeshers_Projection_3D_i" );
   myBaseImpl = new ::StdMeshers_Projection_3D( theGenImpl->GetANewId(),
                                     theStudyId,
                                     theGenImpl );
@@ -56,13 +55,11 @@ StdMeshers_Projection_3D_i::StdMeshers_Projection_3D_i( PortableServer::POA_ptr 
 
 StdMeshers_Projection_3D_i::~StdMeshers_Projection_3D_i()
 {
-  MESSAGE( "StdMeshers_Projection_3D_i::~StdMeshers_Projection_3D_i" );
 }
 //-----------------------------------------------------------------------------
 
 ::StdMeshers_Projection_3D* StdMeshers_Projection_3D_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_Projection_3D_i::GetImpl" );
   return ( ::StdMeshers_Projection_3D* )myBaseImpl;
 }
 
@@ -92,7 +89,6 @@ StdMeshers_Projection_2D_i::StdMeshers_Projection_2D_i( PortableServer::POA_ptr 
        SMESH_Algo_i( thePOA ),
        SMESH_2D_Algo_i( thePOA )
 {
-  MESSAGE( "StdMeshers_Projection_2D_i::StdMeshers_Projection_2D_i" );
   myBaseImpl = new ::StdMeshers_Projection_2D( theGenImpl->GetANewId(),
                                     theStudyId,
                                     theGenImpl );
@@ -101,13 +97,11 @@ StdMeshers_Projection_2D_i::StdMeshers_Projection_2D_i( PortableServer::POA_ptr 
 
 StdMeshers_Projection_2D_i::~StdMeshers_Projection_2D_i()
 {
-  MESSAGE( "StdMeshers_Projection_2D_i::~StdMeshers_Projection_2D_i" );
 }
 //-----------------------------------------------------------------------------
 
 ::StdMeshers_Projection_2D* StdMeshers_Projection_2D_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_Projection_2D_i::GetImpl" );
   return ( ::StdMeshers_Projection_2D* )myBaseImpl;
 }
 
@@ -126,7 +120,6 @@ StdMeshers_Projection_1D2D_i::StdMeshers_Projection_1D2D_i( PortableServer::POA_
        SMESH_Algo_i( thePOA ),
        SMESH_2D_Algo_i( thePOA )
 {
-  MESSAGE( "StdMeshers_Projection_1D2D_i::StdMeshers_Projection_1D2D_i" );
   myBaseImpl = new ::StdMeshers_Projection_1D2D( theGenImpl->GetANewId(),
                                                  theStudyId,
                                                  theGenImpl );
@@ -135,13 +128,11 @@ StdMeshers_Projection_1D2D_i::StdMeshers_Projection_1D2D_i( PortableServer::POA_
 
 StdMeshers_Projection_1D2D_i::~StdMeshers_Projection_1D2D_i()
 {
-  MESSAGE( "StdMeshers_Projection_1D2D_i::~StdMeshers_Projection_1D2D_i" );
 }
 //-----------------------------------------------------------------------------
 
 ::StdMeshers_Projection_1D2D* StdMeshers_Projection_1D2D_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_Projection_1D2D_i::GetImpl" );
   return ( ::StdMeshers_Projection_1D2D* )myBaseImpl;
 }
 
@@ -160,7 +151,6 @@ StdMeshers_Projection_1D_i::StdMeshers_Projection_1D_i( PortableServer::POA_ptr 
        SMESH_Algo_i( thePOA ),
        SMESH_1D_Algo_i( thePOA )
 {
-  MESSAGE( "StdMeshers_Projection_1D_i::StdMeshers_Projection_1D_i" );
   myBaseImpl = new ::StdMeshers_Projection_1D( theGenImpl->GetANewId(),
                                     theStudyId,
                                     theGenImpl );
@@ -169,12 +159,10 @@ StdMeshers_Projection_1D_i::StdMeshers_Projection_1D_i( PortableServer::POA_ptr 
 
 StdMeshers_Projection_1D_i::~StdMeshers_Projection_1D_i()
 {
-  MESSAGE( "StdMeshers_Projection_1D_i::~StdMeshers_Projection_1D_i" );
 }
 //-----------------------------------------------------------------------------
 
 ::StdMeshers_Projection_1D* StdMeshers_Projection_1D_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_Projection_1D_i::GetImpl" );
   return ( ::StdMeshers_Projection_1D* )myBaseImpl;
 }

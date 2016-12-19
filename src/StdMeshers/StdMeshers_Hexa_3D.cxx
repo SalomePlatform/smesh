@@ -73,7 +73,6 @@ static bool EvaluatePentahedralMesh(SMESH_Mesh &, const TopoDS_Shape &,
 StdMeshers_Hexa_3D::StdMeshers_Hexa_3D(int hypId, int studyId, SMESH_Gen * gen)
   :SMESH_3D_Algo(hypId, studyId, gen)
 {
-  MESSAGE("StdMeshers_Hexa_3D::StdMeshers_Hexa_3D");
   _name = "Hexa_3D";
   _shapeType = (1 << TopAbs_SHELL) | (1 << TopAbs_SOLID);       // 1 bit /shape type
   _requireShape = false;
@@ -88,7 +87,6 @@ StdMeshers_Hexa_3D::StdMeshers_Hexa_3D(int hypId, int studyId, SMESH_Gen * gen)
 
 StdMeshers_Hexa_3D::~StdMeshers_Hexa_3D()
 {
-  MESSAGE("StdMeshers_Hexa_3D::~StdMeshers_Hexa_3D");
 }
 
 //=============================================================================

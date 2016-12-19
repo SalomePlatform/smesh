@@ -50,7 +50,6 @@ StdMeshers_Hexa_3D_i::StdMeshers_Hexa_3D_i( PortableServer::POA_ptr thePOA,
     SMESH_Algo_i( thePOA ),
     SMESH_3D_Algo_i( thePOA )
 {
-  MESSAGE( "StdMeshers_Hexa_3D_i::StdMeshers_Hexa_3D_i" );
   myBaseImpl = new ::StdMeshers_Hexa_3D( theGenImpl->GetANewId(),
                                          theStudyId,
                                          theGenImpl );
@@ -66,7 +65,6 @@ StdMeshers_Hexa_3D_i::StdMeshers_Hexa_3D_i( PortableServer::POA_ptr thePOA,
 
 StdMeshers_Hexa_3D_i::~StdMeshers_Hexa_3D_i()
 {
-  MESSAGE( "StdMeshers_Hexa_3D_i::~StdMeshers_Hexa_3D_i" );
 }
 
 //=============================================================================
@@ -79,7 +77,6 @@ StdMeshers_Hexa_3D_i::~StdMeshers_Hexa_3D_i()
 
 ::StdMeshers_Hexa_3D* StdMeshers_Hexa_3D_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_Hexa_3D_i::GetImpl" );
   return ( ::StdMeshers_Hexa_3D* )myBaseImpl;
 }
 

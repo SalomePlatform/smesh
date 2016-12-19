@@ -52,7 +52,6 @@ StdMeshers_ProjectionSource2D_i::StdMeshers_ProjectionSource2D_i
   ::SMESH_Gen*            theGenImpl ) : SALOME::GenericObj_i( thePOA ), 
                                          SMESH_Hypothesis_i( thePOA )
 {
-  MESSAGE( "StdMeshers_ProjectionSource2D_i::StdMeshers_ProjectionSource2D_i" );
   myBaseImpl = new ::StdMeshers_ProjectionSource2D( theGenImpl->GetANewId(),
                                                     theStudyId,
                                                     theGenImpl );
@@ -68,7 +67,6 @@ StdMeshers_ProjectionSource2D_i::StdMeshers_ProjectionSource2D_i
 
 StdMeshers_ProjectionSource2D_i::~StdMeshers_ProjectionSource2D_i()
 {
-  MESSAGE( "StdMeshers_ProjectionSource2D_i::~StdMeshers_ProjectionSource2D_i" );
 }
 
 //=============================================================================

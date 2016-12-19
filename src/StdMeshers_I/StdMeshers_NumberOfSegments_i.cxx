@@ -51,7 +51,6 @@ StdMeshers_NumberOfSegments_i::StdMeshers_NumberOfSegments_i( PortableServer::PO
      : SALOME::GenericObj_i( thePOA ), 
        SMESH_Hypothesis_i( thePOA )
 {
-  MESSAGE( "StdMeshers_NumberOfSegments_i::StdMeshers_NumberOfSegments_i" );
   myBaseImpl = new ::StdMeshers_NumberOfSegments( theGenImpl->GetANewId(),
                                              theStudyId,
                                              theGenImpl );
@@ -67,7 +66,6 @@ StdMeshers_NumberOfSegments_i::StdMeshers_NumberOfSegments_i( PortableServer::PO
 
 StdMeshers_NumberOfSegments_i::~StdMeshers_NumberOfSegments_i()
 {
-  MESSAGE( "StdMeshers_NumberOfSegments_i::~StdMeshers_NumberOfSegments_i" );
 }
 
 //=============================================================================
@@ -247,7 +245,6 @@ char* StdMeshers_NumberOfSegments_i::GetObjectEntry()
 
 SMESH::long_array* StdMeshers_NumberOfSegments_i::GetReversedEdges()
 {
-  MESSAGE( "StdMeshers_NumberOfSegments_i::GetReversedEdges" );
   ASSERT( myBaseImpl );
   SMESH::long_array_var anArray = new SMESH::long_array;
   std::vector<int> ids = this->GetImpl()->GetReversedEdges();

@@ -94,7 +94,6 @@ StdMeshers_Quadrangle_2D::StdMeshers_Quadrangle_2D (int hypId, int studyId,
     myQuadType(QUAD_STANDARD),
     myHelper( NULL )
 {
-  MESSAGE("StdMeshers_Quadrangle_2D::StdMeshers_Quadrangle_2D");
   _name = "Quadrangle_2D";
   _shapeType = (1 << TopAbs_FACE);
   _compatibleHypothesis.push_back("QuadrangleParams");
@@ -111,7 +110,6 @@ StdMeshers_Quadrangle_2D::StdMeshers_Quadrangle_2D (int hypId, int studyId,
 
 StdMeshers_Quadrangle_2D::~StdMeshers_Quadrangle_2D()
 {
-  MESSAGE("StdMeshers_Quadrangle_2D::~StdMeshers_Quadrangle_2D");
 }
 
 //=============================================================================

@@ -67,7 +67,8 @@ void SMDS_MeshNode::init(int id, int meshId, int shapeId, double x, double y, do
   SMDS_UnstructuredGrid * grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
   vtkPoints *points = grid->GetPoints();
   points->InsertPoint(myVtkID, x, y, z);
-  grid->GetLinks()->ResizeForPoint( myVtkID );
+  if ( grid->HasLinks() )
+    grid->GetLinks()->ResizeForPoint( myVtkID );
 }
 
 SMDS_MeshNode::~SMDS_MeshNode()
@@ -162,9 +163,9 @@ public:
             cellList.push_back(vtkId);
           }
         }
-        myCells = cellList.empty() ? 0 : &cellList[0];
-        myNcells = cellList.size();
       }
+      myCells = cellList.empty() ? 0 : &cellList[0];
+      myNcells = cellList.size();
     }
   }
 
@@ -275,9 +276,12 @@ vtkIdType SMDS_MeshNode::GetVtkType() const
 void SMDS_MeshNode::AddInverseElement(const SMDS_MeshElement* ME)
 {
   SMDS_UnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
-  vtkCellLinks *Links = grid->GetLinks();
-  Links->ResizeCellList(myVtkID, 1);
-  Links->AddCellReference(ME->getVtkId(), myVtkID);
+  if ( grid->HasLinks() )
+  {
+    vtkCellLinks *Links = grid->GetLinks();
+    Links->ResizeCellList(myVtkID, 1);
+    Links->AddCellReference(ME->getVtkId(), myVtkID);
+  }
 }
 
 //=======================================================================
