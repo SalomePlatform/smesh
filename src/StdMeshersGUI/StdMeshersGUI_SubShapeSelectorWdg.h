@@ -52,7 +52,8 @@ class STDMESHERSGUI_EXPORT StdMeshersGUI_SubShapeSelectorWdg : public QWidget
 public:
   StdMeshersGUI_SubShapeSelectorWdg( QWidget*         parent = 0,
                                      TopAbs_ShapeEnum subShType = TopAbs_EDGE,
-                                     const bool       toShowList = true);
+                                     const bool       toShowList = true,
+                                     const bool       toShowActivateBtn = false);
   ~StdMeshersGUI_SubShapeSelectorWdg();
 
   SMESH::long_array_var          GetListOfIDs();
@@ -80,6 +81,8 @@ public:
   vtkRenderer*                   GetRenderer() { return myRenderer; }
   SMESH_PreviewActorsCollection* GetActorCollection() { return myPreviewActor; }
   void                           ClearSelected();
+
+public slots:
   void                           ActivateSelection( bool );
 
 signals:
@@ -114,6 +117,7 @@ private:
   vtkRenderer*                   myRenderer;
   
   QListWidget*                   myListWidget;
+  QPushButton*                   myActivateButton;
   QPushButton*                   myAddButton;
   QPushButton*                   myRemoveButton;
   QLabel*                        myInfoLabel;

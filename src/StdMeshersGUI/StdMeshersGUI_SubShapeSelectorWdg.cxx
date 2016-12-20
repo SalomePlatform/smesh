@@ -37,6 +37,7 @@
 #include <SALOME_ListIO.hxx>
 #include <SUIT_OverrideCursor.h>
 #include <SUIT_ResourceMgr.h>
+#include <SUIT_Session.h>
 #include <SVTK_Selector.h>
 #include <SVTK_ViewModel.h>
 #include <SVTK_ViewWindow.h>
@@ -72,30 +73,36 @@
 StdMeshersGUI_SubShapeSelectorWdg
 ::StdMeshersGUI_SubShapeSelectorWdg( QWidget *        parent,
                                      TopAbs_ShapeEnum subShType,
-                                     const bool       toShowList ):
+                                     const bool       toShowList,
+                                     const bool       toShowActivateBtn ):
   QWidget( parent ),
   myMaxSize( -1 ),
   myPreviewActor( 0 )
 {
   QPixmap image0( SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap( "SMESH", tr( "ICON_SELECT" ) ) );
 
-  QGridLayout* edgesLayout = new QGridLayout( this );
-  edgesLayout->setMargin( MARGIN );
-  edgesLayout->setSpacing( SPACING );
+  QGridLayout* layout = new QGridLayout( this );
+  layout->setMargin( MARGIN );
+  layout->setSpacing( SPACING );
 
   if ( toShowList )
   {
-    myListWidget   = new QListWidget( this );
-    myAddButton    = new QPushButton( tr( "SMESH_BUT_ADD" ),    this );
-    myRemoveButton = new QPushButton( tr( "SMESH_BUT_REMOVE" ), this );
+    QPixmap iconSelect (SUIT_Session::session()->resourceMgr()->loadPixmap("SMESH", tr("ICON_SELECT")));
+    myListWidget     = new QListWidget( this );
+    myActivateButton = new QPushButton( iconSelect, "", this );
+    myAddButton      = new QPushButton( tr( "SMESH_BUT_ADD" ),    this );
+    myRemoveButton   = new QPushButton( tr( "SMESH_BUT_REMOVE" ), this );
     myListWidget->setSelectionMode( QListWidget::ExtendedSelection );
     myListWidget->setMinimumWidth(300);
+    myListWidget->setWrapping(true);
+    myActivateButton->setCheckable( true );
   }
   else
   {
-    myListWidget   = 0;
-    myAddButton    = 0;
-    myRemoveButton = 0;
+    myListWidget     = 0;
+    myActivateButton = 0;
+    myAddButton      = 0;
+    myRemoveButton   = 0;
   }
   myInfoLabel    = new QLabel( this );
   myPrevButton   = new QPushButton( "<<", this );
@@ -103,21 +110,27 @@ StdMeshersGUI_SubShapeSelectorWdg
 
   if ( myListWidget )
   {
-    edgesLayout->addWidget(myListWidget,   0, 0, 3, 3);
-    edgesLayout->addWidget(myAddButton,    0, 3);
-    edgesLayout->addWidget(myRemoveButton, 1, 3);
-    edgesLayout->addWidget(myInfoLabel,    3, 0, 1, 3);
-    edgesLayout->addWidget(myPrevButton,   4, 0);
-    edgesLayout->addWidget(myNextButton,   4, 2);
+    int row = 0;
+    layout->addWidget(myListWidget,   row, 0, 3+toShowActivateBtn, 3);
+    if ( toShowActivateBtn )
+      layout->addWidget( myActivateButton, row++, 3 );
+    else
+      myActivateButton->hide();
+    layout->addWidget(myAddButton,      row, 3);
+    layout->addWidget(myRemoveButton, ++row, 3);
+    ++row;
+    layout->addWidget(myInfoLabel,    ++row, 0, 1, 3);
+    layout->addWidget(myPrevButton,   ++row, 0);
+    layout->addWidget(myNextButton,     row, 2);
 
-    edgesLayout->setRowStretch(2, 5);
-    edgesLayout->setColumnStretch(1, 5);
+    layout->setRowStretch(row-2, 5);
+    layout->setColumnStretch(1, 5);
   }
   else // show only Prev and Next buttons
   {
-    edgesLayout->addWidget(myInfoLabel,    0, 0, 1, 2);
-    edgesLayout->addWidget(myPrevButton,   1, 0);
-    edgesLayout->addWidget(myNextButton,   1, 1);
+    layout->addWidget(myInfoLabel,    0, 0, 1, 2);
+    layout->addWidget(myPrevButton,   1, 0);
+    layout->addWidget(myNextButton,   1, 1);
   }
   //myInfoLabel->setMinimumWidth(300);
   //myInfoLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
@@ -187,6 +200,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::init()
     myRemoveButton->setEnabled( false );
 
     connect( myListWidget,   SIGNAL(itemSelectionChanged()),    this, SLOT(onListSelectionChanged()));
+    connect( myActivateButton, SIGNAL( toggled(bool) ), SLOT( ActivateSelection(bool)));
     connect( myAddButton,    SIGNAL(clicked()), SLOT(onAdd()));
     connect( myRemoveButton, SIGNAL(clicked()), SLOT(onRemove()));
   }
@@ -248,6 +262,15 @@ void StdMeshersGUI_SubShapeSelectorWdg::ShowPreview( bool visible)
 
 void StdMeshersGUI_SubShapeSelectorWdg::ActivateSelection( bool toActivate )
 {
+  // adjust state of myActivateButton
+  if ( myActivateButton &&
+       myActivateButton != sender() &&
+       myActivateButton->isChecked() != toActivate )
+  {
+    myActivateButton->toggle();
+    return;
+  }
+
   if ( !mySelectionMgr ) return;
 
   if ( toActivate )
@@ -258,6 +281,9 @@ void StdMeshersGUI_SubShapeSelectorWdg::ActivateSelection( bool toActivate )
   {
     disconnect(mySelectionMgr, 0, this, 0 );
   }
+
+  if ( sender() == myActivateButton )
+    ShowPreview( toActivate );
 }
 
 //================================================================================
