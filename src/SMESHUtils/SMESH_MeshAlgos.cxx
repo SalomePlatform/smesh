@@ -441,8 +441,8 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
 {
   SMDS_Mesh*                   _mesh;
   SMDS_ElemIteratorPtr         _meshPartIt;
-  ElementBndBoxTree*           _ebbTree;
-  int                          _ebbTreeHeight;
+  ElementBndBoxTree*           _ebbTree      [SMDSAbs_NbElementTypes];
+  int                          _ebbTreeHeight[SMDSAbs_NbElementTypes];
   SMESH_NodeSearcherImpl*      _nodeSearcher;
   SMDSAbs_ElementType          _elementType;
   double                       _tolerance;
@@ -452,10 +452,20 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
   SMESH_ElementSearcherImpl( SMDS_Mesh&           mesh,
                              double               tol=-1,
                              SMDS_ElemIteratorPtr elemIt=SMDS_ElemIteratorPtr())
-    : _mesh(&mesh),_meshPartIt(elemIt),_ebbTree(0),_ebbTreeHeight(-1),_nodeSearcher(0),_tolerance(tol),_outerFacesFound(false) {}
+    : _mesh(&mesh),_meshPartIt(elemIt),_nodeSearcher(0),_tolerance(tol),_outerFacesFound(false)
+  {
+    for ( int i = 0; i < SMDSAbs_NbElementTypes; ++i )
+    {
+      _ebbTree[i] = NULL;
+      _ebbTreeHeight[i] = -1;
+    }
+  }
   virtual ~SMESH_ElementSearcherImpl()
   {
-    if ( _ebbTree )      delete _ebbTree;      _ebbTree      = 0;
+    for ( int i = 0; i < SMDSAbs_NbElementTypes; ++i )
+    {
+      delete _ebbTree[i]; _ebbTree[i] = NULL;
+    }
     if ( _nodeSearcher ) delete _nodeSearcher; _nodeSearcher = 0;
   }
   virtual int FindElementsByPoint(const gp_Pnt&                      point,
@@ -482,9 +492,9 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
   }
   int getTreeHeight()
   {
-    if ( _ebbTreeHeight < 0 )
-      _ebbTreeHeight = _ebbTree->getHeight();
-    return _ebbTreeHeight;
+    if ( _ebbTreeHeight[ _elementType ] < 0 )
+      _ebbTreeHeight[ _elementType ] = _ebbTree[ _elementType ]->getHeight();
+    return _ebbTreeHeight[ _elementType ];
   }
 
   struct TInters //!< data of intersection of the line and the mesh face (used in GetPointState())
@@ -528,9 +538,9 @@ double SMESH_ElementSearcherImpl::getTolerance()
       double boxSize = _nodeSearcher->getTree()->maxSize();
       _tolerance = 1e-8 * boxSize/* / meshInfo.NbNodes()*/;
     }
-    else if ( _ebbTree && meshInfo.NbElements() > 0 )
+    else if ( _ebbTree[_elementType] && meshInfo.NbElements() > 0 )
     {
-      double boxSize = _ebbTree->maxSize();
+      double boxSize = _ebbTree[_elementType]->maxSize();
       _tolerance = 1e-8 * boxSize/* / meshInfo.NbElements()*/;
     }
     if ( _tolerance == 0 )
@@ -551,10 +561,9 @@ double SMESH_ElementSearcherImpl::getTolerance()
       }
       else
       {
-        SMDS_ElemIteratorPtr elemIt =
-            _mesh->elementsIterator( SMDSAbs_ElementType( complexType ));
+        SMDS_ElemIteratorPtr  elemIt = _mesh->elementsIterator( SMDSAbs_ElementType( complexType ));
         const SMDS_MeshElement* elem = elemIt->next();
-        SMDS_ElemIteratorPtr nodeIt = elem->nodesIterator();
+        SMDS_ElemIteratorPtr  nodeIt = elem->nodesIterator();
         SMESH_TNodeXYZ n1( nodeIt->next() );
         elemSize = 0;
         while ( nodeIt->more() )
@@ -723,6 +732,7 @@ FindElementsByPoint(const gp_Pnt&                      point,
                     vector< const SMDS_MeshElement* >& foundElements)
 {
   foundElements.clear();
+  _elementType = type;
 
   double tolerance = getTolerance();
 
@@ -756,13 +766,12 @@ FindElementsByPoint(const gp_Pnt&                      point,
   // =================================================================================
   else // elements more complex than 0D
   {
-    if ( !_ebbTree || _elementType != type )
+    if ( !_ebbTree[type] )
     {
-      if ( _ebbTree ) delete _ebbTree;
-      _ebbTree = new ElementBndBoxTree( *_mesh, _elementType = type, _meshPartIt, tolerance );
+      _ebbTree[_elementType] = new ElementBndBoxTree( *_mesh, type, _meshPartIt, tolerance );
     }
     TIDSortedElemSet suspectElems;
-    _ebbTree->getElementsNearPoint( point, suspectElems );
+    _ebbTree[ type ]->getElementsNearPoint( point, suspectElems );
     TIDSortedElemSet::iterator elem = suspectElems.begin();
     for ( ; elem != suspectElems.end(); ++elem )
       if ( !SMESH_MeshAlgos::IsOut( *elem, point, tolerance ))
@@ -784,29 +793,29 @@ SMESH_ElementSearcherImpl::FindClosestTo( const gp_Pnt&       point,
                                           SMDSAbs_ElementType type )
 {
   const SMDS_MeshElement* closestElem = 0;
+  _elementType = type;
 
   if ( type == SMDSAbs_Face || type == SMDSAbs_Volume )
   {
-    if ( !_ebbTree || _elementType != type )
-    {
-      if ( _ebbTree ) delete _ebbTree;
-      _ebbTree = new ElementBndBoxTree( *_mesh, _elementType = type, _meshPartIt );
-    }
-    TIDSortedElemSet suspectElems;
-    _ebbTree->getElementsNearPoint( point, suspectElems );
+    ElementBndBoxTree*& ebbTree = _ebbTree[ type ];
+    if ( !ebbTree )
+      ebbTree = new ElementBndBoxTree( *_mesh, type, _meshPartIt );
 
-    if ( suspectElems.empty() && _ebbTree->maxSize() > 0 )
+    TIDSortedElemSet suspectElems;
+    ebbTree->getElementsNearPoint( point, suspectElems );
+
+    if ( suspectElems.empty() && ebbTree->maxSize() > 0 )
     {
-      gp_Pnt boxCenter = 0.5 * ( _ebbTree->getBox()->CornerMin() +
-                                 _ebbTree->getBox()->CornerMax() );
+      gp_Pnt boxCenter = 0.5 * ( ebbTree->getBox()->CornerMin() +
+                                 ebbTree->getBox()->CornerMax() );
       double radius = -1;
-      if ( _ebbTree->getBox()->IsOut( point.XYZ() ))
-        radius = point.Distance( boxCenter ) - 0.5 * _ebbTree->maxSize();
+      if ( ebbTree->getBox()->IsOut( point.XYZ() ))
+        radius = point.Distance( boxCenter ) - 0.5 * ebbTree->maxSize();
       if ( radius < 0 )
-        radius = _ebbTree->maxSize() / pow( 2., getTreeHeight()) / 2;
+        radius = ebbTree->maxSize() / pow( 2., getTreeHeight()) / 2;
       while ( suspectElems.empty() )
       {
-        _ebbTree->getElementsInSphere( point.XYZ(), radius, suspectElems );
+        ebbTree->getElementsInSphere( point.XYZ(), radius, suspectElems );
         radius *= 1.1;
       }
     }
@@ -870,11 +879,13 @@ SMESH_ElementSearcherImpl::FindClosestTo( const gp_Pnt&       point,
 TopAbs_State SMESH_ElementSearcherImpl::GetPointState(const gp_Pnt& point)
 {
   double tolerance = getTolerance();
-  if ( !_ebbTree || _elementType != SMDSAbs_Face )
-  {
-    if ( _ebbTree ) delete _ebbTree;
-    _ebbTree = new ElementBndBoxTree( *_mesh, _elementType = SMDSAbs_Face, _meshPartIt );
-  }
+
+  _elementType = SMDSAbs_Face;
+
+  ElementBndBoxTree*& ebbTree = _ebbTree[ SMDSAbs_Face ];
+  if ( !ebbTree )
+    ebbTree = new ElementBndBoxTree( *_mesh, _elementType, _meshPartIt );
+
   // Algo: analyse transition of a line starting at the point through mesh boundary;
   // try three lines parallel to axis of the coordinate system and perform rough
   // analysis. If solution is not clear perform thorough analysis.
@@ -890,7 +901,7 @@ TopAbs_State SMESH_ElementSearcherImpl::GetPointState(const gp_Pnt& point)
     gp_Lin line    ( lineAxis );
 
     TIDSortedElemSet suspectFaces; // faces possibly intersecting the line
-    _ebbTree->getElementsNearLine( lineAxis, suspectFaces );
+    ebbTree->getElementsNearLine( lineAxis, suspectFaces );
 
     // Intersect faces with the line
 
@@ -1098,13 +1109,13 @@ void SMESH_ElementSearcherImpl::GetElementsNearLine( const gp_Ax1&              
                                                      SMDSAbs_ElementType                type,
                                                      vector< const SMDS_MeshElement* >& foundElems)
 {
-  if ( !_ebbTree || _elementType != type )
-  {
-    if ( _ebbTree ) delete _ebbTree;
-    _ebbTree = new ElementBndBoxTree( *_mesh, _elementType = type, _meshPartIt );
-  }
+  _elementType = type;
+  ElementBndBoxTree*& ebbTree = _ebbTree[ type ];
+  if ( !ebbTree )
+    ebbTree = new ElementBndBoxTree( *_mesh, _elementType, _meshPartIt );
+
   TIDSortedElemSet suspectFaces; // elements possibly intersecting the line
-  _ebbTree->getElementsNearLine( line, suspectFaces );
+  ebbTree->getElementsNearLine( line, suspectFaces );
   foundElems.assign( suspectFaces.begin(), suspectFaces.end());
 }
 
@@ -1119,13 +1130,13 @@ void SMESH_ElementSearcherImpl::GetElementsInSphere( const gp_XYZ&              
                                                      SMDSAbs_ElementType                type,
                                                      vector< const SMDS_MeshElement* >& foundElems)
 {
-  if ( !_ebbTree || _elementType != type )
-  {
-    if ( _ebbTree ) delete _ebbTree;
-    _ebbTree = new ElementBndBoxTree( *_mesh, _elementType = type, _meshPartIt );
-  }
+  _elementType = type;
+  ElementBndBoxTree*& ebbTree = _ebbTree[ type ];
+  if ( !ebbTree )
+    ebbTree = new ElementBndBoxTree( *_mesh, _elementType, _meshPartIt );
+
   TIDSortedElemSet suspectFaces; // elements possibly intersecting the line
-  _ebbTree->getElementsInSphere( center, radius, suspectFaces );
+  ebbTree->getElementsInSphere( center, radius, suspectFaces );
   foundElems.assign( suspectFaces.begin(), suspectFaces.end() );
 }
 

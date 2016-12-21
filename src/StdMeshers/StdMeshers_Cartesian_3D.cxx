@@ -3167,7 +3167,7 @@ namespace
         const F_IntersectPoint* firstIntPnt = 0;
         if ( link._nodes[0]->Node() ) // 1st node is a hexa corner
         {
-          curIntPnt._paramOnLine = coords[ ijk[ iDir ]] - coords[0];
+          curIntPnt._paramOnLine = coords[ ijk[ iDir ]] - coords[0] + _grid->_tol;
           const GridLine& line = _grid->_lines[ iDir ][ lineIndex[ iL ]];
           multiset< F_IntersectPoint >::const_iterator ip =
             line._intPoints.upper_bound( curIntPnt );
