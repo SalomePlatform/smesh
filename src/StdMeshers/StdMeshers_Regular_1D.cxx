@@ -294,6 +294,10 @@ bool StdMeshers_Regular_1D::CheckHypothesis( SMESH_Mesh&         aMesh,
     _hypType = MAX_LENGTH;
     aStatus = SMESH_Hypothesis::HYP_OK;
   }
+  else if ( !_mainEdge.IsNull() && _hypType == DISTRIB_PROPAGATION ) // !!! before "Adaptive1D"
+  {
+    aStatus = SMESH_Hypothesis::HYP_OK;
+  }
   else if ( hypName == "Adaptive1D" )
   {
     _adaptiveHyp = dynamic_cast < const StdMeshers_Adaptive1D* >(theHyp);
@@ -672,7 +676,7 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
 
   // Propagation Of Distribution
   //
-  if ( !_mainEdge.IsNull() && _isPropagOfDistribution )
+  if ( !_mainEdge.IsNull() && _hypType == DISTRIB_PROPAGATION )
   {
     TopoDS_Edge mainEdge = TopoDS::Edge( _mainEdge ); // should not be a reference!
     _gen->Compute( theMesh, mainEdge, SMESH_Gen::SHAPE_ONLY_UPWARD );
@@ -1164,7 +1168,7 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
       // take into account reversing the edge the hypothesis is propagated from
       // (_mainEdge.Orientation() marks mutual orientation of EDGEs in propagation chain)
       reversed = ( _mainEdge.Orientation() == TopAbs_REVERSED );
-      if ( !_isPropagOfDistribution ) {
+      if ( _hypType != DISTRIB_PROPAGATION ) {
         int mainID = meshDS->ShapeToIndex(_mainEdge);
         if ( std::find( _revEdgesIDs.begin(), _revEdgesIDs.end(), mainID) != _revEdgesIDs.end())
           reversed = !reversed;
@@ -1370,10 +1374,13 @@ StdMeshers_Regular_1D::GetUsedHypothesis(SMESH_Mesh &         aMesh,
   if (nbHyp == 0 && aShape.ShapeType() == TopAbs_EDGE)
   {
     // Check, if propagated from some other edge
+    bool isPropagOfDistribution = false;
     _mainEdge = StdMeshers_Propagation::GetPropagationSource( aMesh, aShape,
-                                                              _isPropagOfDistribution );
+                                                              isPropagOfDistribution );
     if ( !_mainEdge.IsNull() )
     {
+      if ( isPropagOfDistribution )
+        _hypType = DISTRIB_PROPAGATION;
       // Propagation of 1D hypothesis from <aMainEdge> on this edge;
       // get non-auxiliary assigned to _mainEdge
       nbHyp = aMesh.GetHypotheses( _mainEdge, *compatibleFilter, _usedHypList, true );
