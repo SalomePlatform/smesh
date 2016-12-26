@@ -1744,11 +1744,13 @@ bool _ViscousBuilder2D::shrink()
         }
       } // loop on FACEs sharing E
 
+    // Check if L is an already shrinked seam
+    if ( adjFace.IsNull() && _helper.IsRealSeam( edgeID ))
+      if ( L._wire->Edge( L._edgeInd ).Orientation() == TopAbs_FORWARD )
+        continue;
     // Commented as a case with a seam EDGE (issue 0052461) is hard to support
     // because SMESH_ProxyMesh can't hold different sub-meshes for two
     // 2D representations of the seam. But such a case is not a real practice one.
-    // Check if L is an already shrinked seam
-    // if ( adjFace.IsNull() && _helper.IsRealSeam( edgeID ))
     // {
     //   for ( int iL2 = iL1-1; iL2 > -1; --iL2 )
     //   {
@@ -2437,6 +2439,19 @@ bool _ViscousBuilder2D::refine()
     }
     nodeDataVec.front().param = L._wire->FirstU( L._edgeInd );
     nodeDataVec.back() .param = L._wire->LastU ( L._edgeInd );
+
+    if (( nodeDataVec[0].node == nodeDataVec.back().node ) &&
+        ( _helper.GetPeriodicIndex() == 1 || _helper.GetPeriodicIndex() == 2 )) // closed EDGE
+    {
+      const int iCoord = _helper.GetPeriodicIndex();
+      gp_XY uv = nodeDataVec[0].UV();
+      uv.SetCoord( iCoord, L._lEdges[0]._uvOut.Coord( iCoord ));
+      nodeDataVec[0].SetUV( uv );
+
+      uv = nodeDataVec.back().UV();
+      uv.SetCoord( iCoord, L._lEdges.back()._uvOut.Coord( iCoord ));
+      nodeDataVec.back().SetUV( uv );
+    }
 
     _ProxyMeshOfFace::_EdgeSubMesh* edgeSM
       = getProxyMesh()->GetEdgeSubMesh( L._wire->EdgeID( L._edgeInd ));

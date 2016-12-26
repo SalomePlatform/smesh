@@ -469,25 +469,39 @@ const std::vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXCons
       if ( proxySubMesh[ iE ] ) // copy data from a proxy sub-mesh
       {
         const UVPtStructVec& edgeUVPtStruct = proxySubMesh[iE]->GetUVPtStructVec();
-        std::copy( edgeUVPtStruct.begin(), edgeUVPtStruct.end(), & points[iPt] );
+        UVPtStruct* pointsPtr = & points[iPt];
+        std::copy( edgeUVPtStruct.begin(), edgeUVPtStruct.end(), pointsPtr );
         // check orientation
         double du1 = edgeUVPtStruct.back().param - edgeUVPtStruct[0].param;
         double du2 = myLast[iE] - myFirst[iE];
         if ( du1 * du2 < 0 )
         {
-          std::reverse( & points[iPt], & points[iPt + edgeUVPtStruct.size()]);
+          std::reverse( pointsPtr, pointsPtr + edgeUVPtStruct.size());
           for ( size_t i = 0; i < edgeUVPtStruct.size(); ++i )
-            points[iPt+i].normParam = 1. - points[iPt+i].normParam;
+            pointsPtr[i].normParam = 1. - pointsPtr[i].normParam;
         }
         // update normalized params
         if ( myEdge.size() > 1 ) {
-          for ( size_t i = 0; i < edgeUVPtStruct.size(); ++i, ++iPt )
+          for ( size_t i = 0; i < edgeUVPtStruct.size(); ++i )
           {
-            UVPtStruct & uvPt = points[iPt];
+            UVPtStruct & uvPt = pointsPtr[i];
             uvPt.normParam    = prevNormPar + uvPt.normParam * paramSize;
             uvPt.x = uvPt.y   = uvPt.normParam;
           }
-          --iPt; // to point to the 1st VERTEX of the next EDGE
+          iPt += edgeUVPtStruct.size() - 1; // to point to the 1st VERTEX of the next EDGE
+        }
+        // update UV on a seam EDGE
+        if ( fHelper.IsRealSeam( myEdgeID[ iE ]))
+        {
+          // check if points lye on the EDGE
+          const UVPtStruct& pm = edgeUVPtStruct[ edgeUVPtStruct.size()/2 ];
+          gp_Pnt         pNode = SMESH_TNodeXYZ( pm.node );
+          gp_Pnt         pCurv = myC3dAdaptor[ iE ].Value( pm.param );
+          double           tol = BRep_Tool::Tolerance( myEdge[ iE ]) * 10;
+          bool   isPointOnEdge = ( pNode.SquareDistance( pCurv ) < tol * tol );
+          if ( isPointOnEdge )
+            for ( size_t i = 0; i < edgeUVPtStruct.size(); ++i )
+              pointsPtr[i].SetUV( myC2d[ iE ]->Value( pointsPtr[i].param ).XY() );
         }
       }
       else
@@ -495,7 +509,7 @@ const std::vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXCons
         for ( ; u_node != u2node.end(); ++u_node, ++iPt )
         {
           if ( myNormPar[ iE ]-eps < u_node->first )
-            break; // u_node is at VERTEX of the next EDGE 
+            break; // u_node is at VERTEX of the next EDGE
 
           UVPtStruct & uvPt = points[iPt];
           uvPt.node       = u_node->second;

@@ -288,6 +288,8 @@ class Mesh_Algorithm:
             raise TypeError, "ViscousLayers are supported by 3D algorithms only"
         if not "ViscousLayers" in self.GetCompatibleHypothesis():
             raise TypeError, "ViscousLayers are not supported by %s"%self.algo.GetName()
+        if faces and isinstance( faces, geomBuilder.GEOM._objref_GEOM_Object ):
+            faces = [ faces ]
         if faces and isinstance( faces[0], geomBuilder.GEOM._objref_GEOM_Object ):
             faceIDs = []
             for shape in faces:
@@ -324,6 +326,8 @@ class Mesh_Algorithm:
             raise TypeError, "ViscousLayers2D are supported by 2D algorithms only"
         if not "ViscousLayers2D" in self.GetCompatibleHypothesis():
             raise TypeError, "ViscousLayers2D are not supported by %s"%self.algo.GetName()
+        if edges and not isinstance( edges, list ) and not isinstance( edges, tuple ):
+            edges = [edges]
         if edges and isinstance( edges[0], geomBuilder.GEOM._objref_GEOM_Object ):
             edgeIDs = []
             for shape in edges:
