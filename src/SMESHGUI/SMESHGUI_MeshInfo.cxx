@@ -1956,70 +1956,85 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
         QTreeWidgetItem* cntrItem = createItem( elemItem, Bold );
         cntrItem->setText( 0, SMESHGUI_ElemInfo::tr( "CONTROLS" ) );
         //Length
-        if( e->GetType()==SMDSAbs_Edge){         
+        if( e->GetType()==SMDSAbs_Edge){
           afunctor.reset( new SMESH::Controls::Length() );
           afunctor->SetMesh( actor()->GetObject()->GetMesh() );
           afunctor->SetPrecision( cprecision );
           QTreeWidgetItem* lenItem = createItem( cntrItem, Bold );
           lenItem->setText( 0, tr( "LENGTH_EDGES" ) );
-          lenItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );         
+          lenItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );
         }
         if( e->GetType() == SMDSAbs_Face ) {
-          //Area         
-          afunctor.reset( new SMESH::Controls::Area() );        
+          //Area
+          afunctor.reset( new SMESH::Controls::Area() );
           afunctor->SetMesh( actor()->GetObject()->GetMesh() );
           afunctor->SetPrecision( cprecision );
           QTreeWidgetItem* areaItem = createItem( cntrItem, Bold );
           areaItem->setText( 0, tr( "AREA_ELEMENTS" ) );
-          areaItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue(id) ) );         
+          areaItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue(id) ) );
           //Taper
-          afunctor.reset( new SMESH::Controls::Taper() );
-          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
-          afunctor->SetPrecision( cprecision );
-          QTreeWidgetItem* taperlItem = createItem( cntrItem, Bold );
-          taperlItem->setText( 0, tr( "TAPER_ELEMENTS" ) );
-          taperlItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );    
+          if ( e->NbNodes() == 4 ) // see SMESH_Controls.cxx
+          {
+            afunctor.reset( new SMESH::Controls::Taper() );
+            afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+            afunctor->SetPrecision( cprecision );
+            QTreeWidgetItem* taperlItem = createItem( cntrItem, Bold );
+            taperlItem->setText( 0, tr( "TAPER_ELEMENTS" ) );
+            taperlItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );
+            //Wraping angle
+            afunctor.reset( new SMESH::Controls::Warping() );
+            afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+            afunctor->SetPrecision( cprecision );
+            QTreeWidgetItem* warpItem = createItem( cntrItem, Bold );
+            warpItem->setText( 0, tr( "WARP_ELEMENTS" ));
+            warpItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );
+          }
           //AspectRatio2D
-          afunctor.reset( new SMESH::Controls::AspectRatio() );
-          afunctor->SetMesh( actor()->GetObject()->GetMesh() );  
-          QTreeWidgetItem* ratlItem = createItem( cntrItem, Bold );
-          ratlItem->setText( 0, tr( "ASPECTRATIO_ELEMENTS" ));
-          ratlItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );      
+          if ( !e->IsPoly() )
+          {
+            afunctor.reset( new SMESH::Controls::AspectRatio() );
+            afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+            QTreeWidgetItem* ratlItem = createItem( cntrItem, Bold );
+            ratlItem->setText( 0, tr( "ASPECTRATIO_ELEMENTS" ));
+            ratlItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );
+          }
           //Minimum angle
           afunctor.reset( new SMESH::Controls::MinimumAngle() );
           afunctor->SetMesh( actor()->GetObject()->GetMesh() );
           afunctor->SetPrecision( cprecision );
           QTreeWidgetItem* minanglItem = createItem( cntrItem, Bold );
           minanglItem->setText( 0, tr( "MINIMUMANGLE_ELEMENTS" ) );
-          minanglItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );    
-          //Wraping angle       
-          afunctor.reset( new SMESH::Controls::Warping() );
-          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
-          afunctor->SetPrecision( cprecision );
-          QTreeWidgetItem* warpItem = createItem( cntrItem, Bold );
-          warpItem->setText( 0, tr( "WARP_ELEMENTS" ));
-          warpItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );        
-          //Skew          
-          afunctor.reset( new SMESH::Controls::Skew() );
-          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
-          afunctor->SetPrecision( cprecision );
-          QTreeWidgetItem* skewItem = createItem( cntrItem, Bold );
-          skewItem->setText( 0, tr( "SKEW_ELEMENTS" ) );
-          skewItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );       
-          //ElemDiam2D    
-          afunctor.reset( new SMESH::Controls::MaxElementLength2D() );
-          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
-          QTreeWidgetItem* diamItem = createItem( cntrItem, Bold );
-          diamItem->setText( 0, tr( "MAX_ELEMENT_LENGTH_2D" ));
-          diamItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );       
+          minanglItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );
+          //Skew
+          if ( e->NbNodes() == 3 || e->NbNodes() == 4 )
+          {
+            afunctor.reset( new SMESH::Controls::Skew() );
+            afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+            afunctor->SetPrecision( cprecision );
+            QTreeWidgetItem* skewItem = createItem( cntrItem, Bold );
+            skewItem->setText( 0, tr( "SKEW_ELEMENTS" ) );
+            skewItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );
+          }
+          //ElemDiam2D
+          if ( !e->IsPoly() )
+          {
+            afunctor.reset( new SMESH::Controls::MaxElementLength2D() );
+            afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+            QTreeWidgetItem* diamItem = createItem( cntrItem, Bold );
+            diamItem->setText( 0, tr( "MAX_ELEMENT_LENGTH_2D" ));
+            diamItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );
+          }
         }
         if( e->GetType() == SMDSAbs_Volume ) {
-          //AspectRatio3D
-          afunctor.reset( new SMESH::Controls::AspectRatio3D() );
-          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
-          QTreeWidgetItem* ratlItem3 = createItem( cntrItem, Bold );
-          ratlItem3->setText( 0, tr( "ASPECTRATIO_3D_ELEMENTS" ) );
-          ratlItem3->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );      
+          if ( !e->IsPoly() )
+          {
+            //AspectRatio3D
+            afunctor.reset( new SMESH::Controls::AspectRatio3D() );
+            afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+            QTreeWidgetItem* ratlItem3 = createItem( cntrItem, Bold );
+            ratlItem3->setText( 0, tr( "ASPECTRATIO_3D_ELEMENTS" ) );
+            ratlItem3->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );
+          }
           //Volume
           afunctor.reset( new SMESH::Controls::Volume() );
           afunctor->SetMesh( actor()->GetObject()->GetMesh() );
@@ -2031,7 +2046,7 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
           afunctor->SetMesh( actor()->GetObject()->GetMesh() );
           QTreeWidgetItem* diam3Item = createItem( cntrItem, Bold );
           diam3Item->setText( 0, tr( "MAX_ELEMENT_LENGTH_3D" ) );
-          diam3Item->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );     
+          diam3Item->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id ) ) );
         }
 
         // gravity center

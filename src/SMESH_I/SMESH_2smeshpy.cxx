@@ -2048,7 +2048,7 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
         {
           addCmd = *cmd;
           cmd    = addHypCmds.erase( cmd );
-          if ( !theGen->IsToKeepAllCommands() && CanClear() ) {
+          if ( !theGen->IsToKeepAllCommands() /*&& CanClear()*/ ) {
             addCmd->Clear();
             theCommand->Clear();
           }
@@ -3474,28 +3474,31 @@ bool _pySegmentLengthAroundVertexHyp::Addition2Creation( const Handle(_pyCommand
 
     _pyID vertex = theCmd->GetArg( 1 );
 
-    // the problem here is that segment algo will not be found
+    // the problem here is that segment algo can be not found
     // by pyHypothesis::Addition2Creation() for <vertex>, so we try to find
     // geometry where segment algorithm is assigned
-    Handle(_pyHypothesis) algo;
     _pyID geom = vertex;
+    Handle(_pyHypothesis) algo = theGen->FindAlgo( geom, theMeshID, this );
     while ( algo.IsNull() && !geom.IsEmpty()) {
       // try to find geom as a father of <vertex>
       geom = FatherID( geom );
       algo = theGen->FindAlgo( geom, theMeshID, this );
     }
-    if ( algo.IsNull() )
+    if ( algo.IsNull() || geom.IsEmpty() )
       return false; // also possible to find geom as brother of veretex...
+
     // set geom instead of vertex
     theCmd->SetArg( 1, geom );
 
-    // set vertex as a second arg
-    if ( myCurCrMethod->myArgs.size() < 1) setCreationArg( 1, "1" ); // :(
-    setCreationArg( 2, vertex );
-
     // mesh.AddHypothesis(vertex, SegmentLengthAroundVertex) -->
-    // theMeshID.LengthNearVertex( length, vertex )
-    return _pyHypothesis::Addition2Creation( theCmd, theMeshID );
+    // SegmentLengthAroundVertex = Regular_1D.LengthNearVertex( length )
+    if ( _pyHypothesis::Addition2Creation( theCmd, theMeshID ))
+    {
+      // set vertex as a second arg
+      theCmd->SetArg( 2, vertex );
+
+      return true;
+    }
   }
   return false;
 }

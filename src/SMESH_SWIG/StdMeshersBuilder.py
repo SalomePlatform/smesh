@@ -381,6 +381,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
             pass
         # 0D algorithm
         if self.geom is None:
+            self.geom = store_geom
             raise RuntimeError, "Attemp to create SegmentAroundVertex_0D algoritm on None shape"
         from salome.smesh.smeshBuilder import AssureGeomPublished, GetName, TreatHypoStatus
         AssureGeomPublished( self.mesh, self.geom )

@@ -165,7 +165,6 @@
                 label-id ="Quadratic Mesh"
                 icon-id  ="mesh_algo_quad.png"
                 dim      ="1"
-                context  ="GLOBAL"
                 auxiliary="true"/>                
 
     <hypothesis type     ="MaxElementArea"
