@@ -6389,7 +6389,7 @@ Spécifiez-le et essayez de nouveau</translation>
     </message>
     <message>
         <source>MT_TETRAHEDRAL</source>
-        <translation>Tetrahèdre</translation>
+        <translation>Tetraèdre</translation>
     </message>
     <message>
         <source>MT_TRIANGULAR</source>
