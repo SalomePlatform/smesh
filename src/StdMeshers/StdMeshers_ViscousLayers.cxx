@@ -439,6 +439,7 @@ namespace VISCOUS_3D
                   SMOOTHED_C1     = 0x0000800, // is on _eosC1
                   DISTORTED       = 0x0001000, // was bad before smoothing
                   RISKY_SWOL      = 0x0002000, // SWOL is parallel to a source FACE
+                  SHRUNK          = 0x0004000, // target node reached a tgt position while shrink()
                   UNUSED_FLAG     = 0x0100000
     };
     bool Is   ( int flag ) const { return _flags & flag; }
@@ -1861,27 +1862,27 @@ SMESH_ComputeErrorPtr _ViscousBuilder::Compute(SMESH_Mesh&         theMesh,
   for ( size_t i = 0; i < _sdVec.size(); ++i )
   {
     size_t iSD = 0;
-    for ( iSD = 0; iSD < _sdVec.size(); ++iSD )
+    for ( iSD = 0; iSD < _sdVec.size(); ++iSD ) // find next SOLID to compute
       if ( _sdVec[iSD]._before.IsEmpty() &&
            _sdVec[iSD]._n2eMap.empty() )
         break;
 
-    if ( ! makeLayer(_sdVec[iSD]) )
+    if ( ! makeLayer(_sdVec[iSD]) )   // create _LayerEdge's
       return _error;
 
     if ( _sdVec[iSD]._n2eMap.size() == 0 )
       continue;
     
-    if ( ! inflate(_sdVec[iSD]) )
+    if ( ! inflate(_sdVec[iSD]) )     // increase length of _LayerEdge's
       return _error;
 
-    if ( ! refine(_sdVec[iSD]) )
+    if ( ! refine(_sdVec[iSD]) )      // create nodes and prisms
       return _error;
 
-    if ( !shrink(_sdVec[iSD]) )
+    if ( ! shrink(_sdVec[iSD]) )      // shrink 2D mesh on FACEs w/o layer
       return _error;
 
-    addBoundaryElements(_sdVec[iSD]);
+    addBoundaryElements(_sdVec[iSD]); // create quadrangles on prism bare sides
 
     const TopoDS_Shape& solid = _sdVec[iSD]._solid;
     for ( iSD = 0; iSD < _sdVec.size(); ++iSD )
@@ -9687,26 +9688,40 @@ bool _ViscousBuilder::shrink(_SolidData& theData)
   for ( size_t i = 0 ; i < _sdVec.size(); ++i )
   {
     _SolidData& data = _sdVec[i];
-    TopTools_MapOfShape FFMap;
     map< TGeomID, TopoDS_Shape >::iterator s2s = data._shrinkShape2Shape.begin();
     for (; s2s != data._shrinkShape2Shape.end(); ++s2s )
       if ( s2s->second.ShapeType() == TopAbs_FACE && !_shrinkedFaces.Contains( s2s->second ))
       {
         f2sdMap[ getMeshDS()->ShapeToIndex( s2s->second )].push_back( &data );
 
-        if ( &data == &theData && FFMap.Add( (*s2s).second ))
-          // Put mesh faces on the shrinked FACE to the proxy sub-mesh to avoid
-          // usage of mesh faces made in addBoundaryElements() by the 3D algo or
-          // by StdMeshers_QuadToTriaAdaptor
-          if ( SMESHDS_SubMesh* smDS = getMeshDS()->MeshElements( s2s->second ))
+        // Put mesh faces on the shrinked FACE to the proxy sub-mesh to avoid
+        // usage of mesh faces made in addBoundaryElements() by the 3D algo or
+        // by StdMeshers_QuadToTriaAdaptor
+        if ( SMESHDS_SubMesh* smDS = getMeshDS()->MeshElements( s2s->second ))
+        {
+          SMESH_ProxyMesh::SubMesh* proxySub =
+            data._proxyMesh->getFaceSubM( TopoDS::Face( s2s->second ), /*create=*/true);
+          if ( proxySub->NbElements() == 0 )
           {
-            SMESH_ProxyMesh::SubMesh* proxySub =
-              data._proxyMesh->getFaceSubM( TopoDS::Face( s2s->second ), /*create=*/true);
             SMDS_ElemIteratorPtr fIt = smDS->GetElements();
             while ( fIt->more() )
-              proxySub->AddElement( fIt->next() );
-            // as a result 3D algo will use elements from proxySub and not from smDS
+            {
+              const SMDS_MeshElement* f = fIt->next();
+              // as a result 3D algo will use elements from proxySub and not from smDS
+              proxySub->AddElement( f );
+              f->setIsMarked( true );
+
+              // Mark nodes on the FACE to discriminate them from nodes
+              // added by addBoundaryElements(); marked nodes are to be smoothed while shrink()
+              for ( int iN = 0, nbN = f->NbNodes(); iN < nbN; ++iN )
+              {
+                const SMDS_MeshNode* n = f->GetNode( iN );
+                if ( n->GetPosition()->GetDim() == 2 )
+                  n->setIsMarked( true );
+              }
+            }
           }
+        }
       }
   }
 
@@ -9744,15 +9759,14 @@ bool _ViscousBuilder::shrink(_SolidData& theData)
     // Prepare data for shrinking
     // ===========================
 
-    // Collect nodes to smooth, as src nodes are not yet replaced by tgt ones
-    // and hence all nodes on a FACE connected to 2d elements are to be smoothed
+    // Collect nodes to smooth, they are marked at the beginning of this method
     vector < const SMDS_MeshNode* > smoothNodes;
     {
       SMDS_NodeIteratorPtr nIt = smDS->GetNodes();
       while ( nIt->more() )
       {
         const SMDS_MeshNode* n = nIt->next();
-        if ( n->NbInverseElements( SMDSAbs_Face ) > 0 )
+        if ( n->isMarked() )
           smoothNodes.push_back( n );
       }
     }
@@ -9817,7 +9831,7 @@ bool _ViscousBuilder::shrink(_SolidData& theData)
         while ( fIt->more() )
         {
           const SMDS_MeshElement* f = fIt->next();
-          if ( !smDS->Contains( f ))
+          if ( !smDS->Contains( f ) || !f->isMarked() )
             continue;
           SMDS_NodeIteratorPtr nIt = f->nodeIterator();
           for ( int iN = 0; nIt->more(); ++iN )
@@ -9875,6 +9889,10 @@ bool _ViscousBuilder::shrink(_SolidData& theData)
         {
           _LayerEdge& edge = * eos._edges[i];
           _Simplex::GetSimplices( /*tgtNode=*/edge._nodes.back(), edge._simplices, ignoreShapes );
+
+          // additionally mark tgt node; only marked nodes will be used in SetNewLength2d()
+          // not-marked nodes are those added by refine()
+          edge._nodes.back()->setIsMarked( true );
         }
       }
     }
@@ -10011,6 +10029,8 @@ bool _ViscousBuilder::shrink(_SolidData& theData)
 
     if ( !errMsg.empty() ) // Try to re-compute the shrink FACE
     {
+      debugMsg( "Re-compute FACE " << f2sd->first << " because " << errMsg );
+
       // remove faces
       SMESHDS_SubMesh* psm = data._proxyMesh->getFaceSubM( F );
       {
@@ -10238,6 +10258,7 @@ bool _ViscousBuilder::prepareEdgeToShrink( _LayerEdge&            edge,
     if ( tgtNode->GetPosition()->GetDim() != 2 ) // not inflated edge
     {
       edge._pos.clear();
+      edge.Set( _LayerEdge::SHRUNK );
       return srcNode == tgtNode;
     }
     gp_XY srcUV ( edge._pos[0].X(), edge._pos[0].Y() );          //helper.GetNodeUV( F, srcNode );
@@ -10248,7 +10269,7 @@ bool _ViscousBuilder::prepareEdgeToShrink( _LayerEdge&            edge,
     edge._normal.SetCoord( uvDir.X(),uvDir.Y(), 0 );
     edge._len = uvLen;
 
-    edge._pos.resize(1);
+    //edge._pos.resize(1);
     edge._pos[0].SetCoord( tgtUV.X(), tgtUV.Y(), 0 );
 
     // set UV of source node to target node
@@ -10261,6 +10282,7 @@ bool _ViscousBuilder::prepareEdgeToShrink( _LayerEdge&            edge,
     if ( tgtNode->GetPosition()->GetDim() != 1 ) // not inflated edge
     {
       edge._pos.clear();
+      edge.Set( _LayerEdge::SHRUNK );
       return srcNode == tgtNode;
     }
     const TopoDS_Edge&    E = TopoDS::Edge( eos._sWOL );
@@ -10284,14 +10306,15 @@ bool _ViscousBuilder::prepareEdgeToShrink( _LayerEdge&            edge,
     double uTgt = helper.GetNodeU( E, tgtNode, srcNode );
     double u2   = helper.GetNodeU( E, n2, srcNode );
 
-    edge._pos.clear();
+    //edge._pos.clear();
 
     if ( fabs( uSrc-uTgt ) < 0.99 * fabs( uSrc-u2 ))
     {
       // tgtNode is located so that it does not make faces with wrong orientation
+      edge.Set( _LayerEdge::SHRUNK );
       return true;
     }
-    edge._pos.resize(1);
+    //edge._pos.resize(1);
     edge._pos[0].SetCoord( U_TGT, uTgt );
     edge._pos[0].SetCoord( U_SRC, uSrc );
     edge._pos[0].SetCoord( LEN_TGT, fabs( uSrc-uTgt ));
@@ -10512,7 +10535,7 @@ bool _LayerEdge::SetNewLength2d( Handle(Geom_Surface)& surface,
                                  _EdgesOnShape&        eos,
                                  SMESH_MesherHelper&   helper )
 {
-  if ( _pos.empty() )
+  if ( Is( SHRUNK ))
     return false; // already at the target position
 
   SMDS_MeshNode* tgtNode = const_cast< SMDS_MeshNode*& >( _nodes.back() );
@@ -10529,6 +10552,10 @@ bool _LayerEdge::SetNewLength2d( Handle(Geom_Surface)& surface,
     double stepSize = 1e100;
     for ( size_t i = 0; i < _simplices.size(); ++i )
     {
+      if ( !_simplices[i]._nPrev->isMarked() ||
+           !_simplices[i]._nNext->isMarked() )
+        continue; // simplex of quadrangle created by addBoundaryElements()
+
       // find intersection of 2 lines: curUV-tgtUV and that connecting simplex nodes
       gp_XY uvN1 = helper.GetNodeUV( F, _simplices[i]._nPrev );
       gp_XY uvN2 = helper.GetNodeUV( F, _simplices[i]._nNext );
@@ -10544,7 +10571,8 @@ bool _LayerEdge::SetNewLength2d( Handle(Geom_Surface)& surface,
     if ( uvLen <= stepSize )
     {
       newUV = tgtUV;
-      _pos.clear();
+      Set( SHRUNK );
+      //_pos.clear();
     }
     else if ( stepSize > 0 )
     {
@@ -10577,7 +10605,8 @@ bool _LayerEdge::SetNewLength2d( Handle(Geom_Surface)& surface,
     double newU = _pos[0].Coord( U_TGT );
     if ( lenTgt < 0.99 * fabs( uSrc-u2 )) // n2 got out of src-tgt range
     {
-      _pos.clear();
+      Set( _LayerEdge::SHRUNK );
+      //_pos.clear();
     }
     else
     {
@@ -10882,8 +10911,8 @@ void _Shrinker1D::Compute(bool set3D, SMESH_MesherHelper& helper)
   if ( !e ) e = _edges[1];
   if ( !e ) return;
 
-  _done =  (( !_edges[0] || _edges[0]->_pos.empty() ) &&
-            ( !_edges[1] || _edges[1]->_pos.empty() ));
+  _done =  (( !_edges[0] || _edges[0]->Is( _LayerEdge::SHRUNK )) &&
+            ( !_edges[1] || _edges[1]->Is( _LayerEdge::SHRUNK )));
 
   double f,l;
   if ( set3D || _done )
@@ -10900,6 +10929,7 @@ void _Shrinker1D::Compute(bool set3D, SMESH_MesherHelper& helper)
     for ( size_t i = 0; i < _nodes.size(); ++i )
     {
       if ( !_nodes[i] ) continue;
+      if ( _initU[i] < f || l < _initU[i] ) continue;
       double len = totLen * _normPar[i];
       GCPnts_AbscissaPoint discret( aCurve, len, f );
       if ( !discret.IsDone() )
@@ -10922,6 +10952,7 @@ void _Shrinker1D::Compute(bool set3D, SMESH_MesherHelper& helper)
     for ( size_t i = 0; i < _nodes.size(); ++i )
     {
       if ( !_nodes[i] ) continue;
+      if ( _initU[i] < f || l < _initU[i] ) continue;
       double u = f * ( 1-_normPar[i] ) + l * _normPar[i];
       SMDS_EdgePosition* pos = static_cast<SMDS_EdgePosition*>( _nodes[i]->GetPosition() );
       pos->SetUParameter( u );
@@ -10964,11 +10995,12 @@ void _Shrinker1D::SwapSrcTgtNodes( SMESHDS_Mesh* mesh )
     if ( !eSubMesh ) return;
     const SMDS_MeshNode* srcNode = _edges[i]->_nodes[0];
     const SMDS_MeshNode* tgtNode = _edges[i]->_nodes.back();
+    const SMDS_MeshNode* scdNode = _edges[i]->_nodes[1];
     SMDS_ElemIteratorPtr eIt = srcNode->GetInverseElementIterator(SMDSAbs_Edge);
     while ( eIt->more() )
     {
       const SMDS_MeshElement* e = eIt->next();
-      if ( !eSubMesh->Contains( e ))
+      if ( !eSubMesh->Contains( e ) || e->GetNodeIndex( scdNode ) >= 0 )
           continue;
       SMDS_ElemIteratorPtr nIt = e->nodesIterator();
       for ( int iN = 0; iN < e->NbNodes(); ++iN )
