@@ -10070,7 +10070,8 @@ bool _ViscousBuilder::shrink(_SolidData& theData)
         {
           _LayerEdge*       edge = subEOS[iS]->_edges[i];
           SMDS_MeshNode* tgtNode = const_cast< SMDS_MeshNode*& >( edge->_nodes.back() );
-          if ( edge->_pos.empty() ) continue;
+          if ( edge->_pos.empty() ||
+               edge->Is( _LayerEdge::SHRUNK )) continue;
           if ( subEOS[iS]->SWOLType() == TopAbs_FACE )
           {
             SMDS_FacePosition* pos = static_cast<SMDS_FacePosition*>( tgtNode->GetPosition() );
@@ -10876,9 +10877,18 @@ void _Shrinker1D::AddEdge( const _LayerEdge*   e,
     while ( nIt->more() )
     {
       const SMDS_MeshNode* node = nIt->next();
+
+      // skip refinement nodes
       if ( node->NbInverseElements(SMDSAbs_Edge) == 0 ||
            node == tgtNode0 || node == tgtNode1 )
-        continue; // refinement nodes
+        continue;
+      bool hasMarkedFace = false;
+      SMDS_ElemIteratorPtr fIt = node->GetInverseElementIterator(SMDSAbs_Face);
+      while ( fIt->more() && !hasMarkedFace )
+        hasMarkedFace = fIt->next()->isMarked();
+      if ( !hasMarkedFace )
+        continue;
+
       _nodes.push_back( node );
       _initU.push_back( helper.GetNodeU( _geomEdge, node ));
       double len = GCPnts_AbscissaPoint::Length(aCurve, f, _initU.back());
@@ -10929,7 +10939,6 @@ void _Shrinker1D::Compute(bool set3D, SMESH_MesherHelper& helper)
     for ( size_t i = 0; i < _nodes.size(); ++i )
     {
       if ( !_nodes[i] ) continue;
-      if ( _initU[i] < f || l < _initU[i] ) continue;
       double len = totLen * _normPar[i];
       GCPnts_AbscissaPoint discret( aCurve, len, f );
       if ( !discret.IsDone() )
@@ -10952,7 +10961,6 @@ void _Shrinker1D::Compute(bool set3D, SMESH_MesherHelper& helper)
     for ( size_t i = 0; i < _nodes.size(); ++i )
     {
       if ( !_nodes[i] ) continue;
-      if ( _initU[i] < f || l < _initU[i] ) continue;
       double u = f * ( 1-_normPar[i] ) + l * _normPar[i];
       SMDS_EdgePosition* pos = static_cast<SMDS_EdgePosition*>( _nodes[i]->GetPosition() );
       pos->SetUParameter( u );
