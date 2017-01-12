@@ -265,7 +265,7 @@
         </message>
         <message>
             <source>ICON_SMESH_TREE_HYPO_QuadraticMesh</source>
-            <translation>mesh_tree_hypo_length.png</translation>
+            <translation>mesh_tree_hypo_quadratic.png</translation>
         </message>
         <message>
             <source>ICON_SMESH_TREE_HYPO_SegmentLengthAroundVertex</source>

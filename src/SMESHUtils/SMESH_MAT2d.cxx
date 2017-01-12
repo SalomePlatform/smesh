@@ -340,7 +340,7 @@ namespace
       return ( _inSeg->getGeomEdge( _edge->twin()->cell() ) != theNoEdgeID );
     }
 
-    // check a next segment in CW order
+    // check a next segment in CCW order
     bool isSameBranch( const BndSeg& seg2 )
     {
       if ( !_edge || !seg2._edge )
@@ -1011,6 +1011,8 @@ namespace
     int branchID = 1; // we code orientation as branchID sign
     branchEdges.resize( branchID );
 
+    vector< std::pair< int, const TVDVertex* > > branchesToCheckEnd;
+
     for ( size_t iE = 0; iE < bndSegsPerEdge.size(); ++iE )
     {
       vector< BndSeg >& bndSegs = bndSegsPerEdge[ iE ];
@@ -1039,7 +1041,13 @@ namespace
         {
           branchEdges.resize(( branchID = branchEdges.size()) + 1 );
           if ( bndSegs[i]._edge && bndSegs[i]._prev )
+          {
             endType.insert( make_pair( bndSegs[i]._edge->vertex1(), SMESH_MAT2d::BE_BRANCH_POINT ));
+            if ( bndSegs[i]._prev->_branchID < 0 )
+              // 0023404: a branch-point is inside a branch
+              branchesToCheckEnd.push_back( make_pair( bndSegs[i]._prev->branchID(),
+                                                       bndSegs[i]._edge->vertex1() ));
+          }
         }
         else if ( bndSegs[i]._prev->_branchID )
         {
@@ -1063,6 +1071,37 @@ namespace
       }
     }
 
+    if ( !ignoreCorners && !branchesToCheckEnd.empty() )
+    {
+      // split branches having branch-point inside
+      // (a branch-point was not detected since another branch is joined at the opposite side)
+      for ( size_t i = 0; i < branchesToCheckEnd.size(); ++i )
+      {
+        vector<const TVDEdge*> & branch = branchEdges[ branchesToCheckEnd[i].first ];
+        const TVDVertex*    branchPoint = branchesToCheckEnd[i].second;
+        if ( branch.front()->vertex1() == branchPoint ||
+             branch.back ()->vertex0() == branchPoint )
+          continue; // OK - branchPoint is at a branch end
+
+        // find a MA edge where another branch begins
+        size_t iE;
+        for ( iE = 0; iE < branch.size(); ++iE )
+          if ( branch[iE]->vertex1() == branchPoint )
+            break;
+        if ( iE < branch.size() )
+        {
+          // split the branch
+          branchEdges.resize(( branchID = branchEdges.size()) + 1 );
+          vector<const TVDEdge*> & branch2 = branchEdges[ branchID ];
+          branch2.assign( branch.begin()+iE, branch.end() );
+          branch.resize( iE );
+          for ( iE = 0; iE < branch2.size(); ++iE )
+            if ( BndSeg* bs = BndSeg::getBndSegOfEdge( branch2[iE], bndSegsPerEdge ))
+              bs->setBranch( branchID, bndSegsPerEdge );
+        }
+      }
+    }
+
     // join the 1st and the last branch edges if it is the same branch
     // if ( bndSegs.back().branchID() != bndSegs.front().branchID() &&
     //      bndSegs.back().isSameBranch( bndSegs.front() ))
@@ -1073,9 +1112,13 @@ namespace
     //   br2.clear();
     // }
 
-    // remove branches ending at BE_ON_VERTEX
+    // remove branches ending at BE_ON_VERTEX and BE_END
 
     vector<bool> isBranchRemoved( branchEdges.size(), false );
+
+    std::set< SMESH_MAT2d::BranchEndType > endTypeToRm;
+    endTypeToRm.insert( SMESH_MAT2d::BE_ON_VERTEX );
+    endTypeToRm.insert( SMESH_MAT2d::BE_END );
 
     if ( ignoreCorners && branchEdges.size() > 2 && !branchEdges[2].empty() )
     {
@@ -1088,10 +1131,10 @@ namespace
         const TVDVertex* v0 = branchEdges[iB][0]->vertex1();
         const TVDVertex* v1 = branchEdges[iB].back()->vertex0();
         v2et = endType.find( v0 );
-        if ( v2et != endType.end() && v2et->second == SMESH_MAT2d::BE_ON_VERTEX )
+        if ( v2et != endType.end() && endTypeToRm.count( v2et->second ))
           isBranchRemoved[ iB ] = true;
         v2et = endType.find( v1 );
-        if ( v2et != endType.end() && v2et->second == SMESH_MAT2d::BE_ON_VERTEX )
+        if ( v2et != endType.end() && endTypeToRm.count( v2et->second ))
           isBranchRemoved[ iB ] = true;
       }
       // try to join not removed branches into one

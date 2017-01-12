@@ -1072,7 +1072,7 @@ namespace
       if ( ! ( theDivPoints[0]._iEdge     == 0 &&
                theDivPoints[0]._edgeParam == 0. )) // recursive call
       {
-        SMESH_MAT2d::BranchPoint brp( &branch, 0, 0 );
+        SMESH_MAT2d::BranchPoint brp( &branch, 0, 0. );
         vector< SMESH_MAT2d::BranchPoint > divPoint( 1, brp );
         vector< std::size_t > edgeIDs1(2), edgeIDs2(2);
         edgeIDs1[0] = theEdgeIDs1.back();
@@ -1084,9 +1084,10 @@ namespace
       }
     }
 
-    // project theDivPoints
+    // project theDivPoints and keep projections to merge
 
     TMAPar2NPoints::iterator u2NP;
+    vector< TMAPar2NPoints::iterator > projToMerge;
     for ( size_t i = 0; i < theDivPoints.size(); ++i )
     {
       if ( !branch.getParameter( theDivPoints[i], uMA ))
@@ -1129,9 +1130,18 @@ namespace
       if ( isVertex[0] && isVertex[1] )
         continue;
 
-      bool isOppComputed = theIsEdgeComputed[ np[ iNode ]._edgeInd ];
-      if ( !isOppComputed )
-        continue;
+      // bool isOppComputed = theIsEdgeComputed[ np[ iNode ]._edgeInd ];
+      // if ( isOppComputed )
+        projToMerge.push_back( u2NP );
+    }
+
+    // merge projections
+
+    for ( size_t i = 0; i < projToMerge.size(); ++i )
+    {
+      u2NP = projToMerge[i];
+      const size_t iVert = get( u2NP->second, 0 )._node ? 0 : 1; // side with a VERTEX
+      const size_t iNode = 1 - iVert;                            // opposite (meshed?) side
 
       // a VERTEX is projected on a meshed EDGE; there are two options:
       // 1) a projected point is joined with a closet node if a strip between this and neighbor
@@ -1145,10 +1155,6 @@ namespace
       bool isShortPrev[2], isShortNext[2], isPrevCloser[2];
       TMAPar2NPoints::iterator u2NPPrev = u2NP, u2NPNext = u2NP;
       --u2NPPrev; ++u2NPNext;
-      // bool hasPrev = ( u2NP     != thePointsOnE.begin() );
-      // bool hasNext = ( u2NPNext != thePointsOnE.end() );
-      // if ( !hasPrev ) u2NPPrev = u2NP0;
-      // if ( !hasNext ) u2NPNext = u2NP1;
       for ( int iS = 0; iS < 2; ++iS ) // side with Vertex and side with Nodes
       {
         NodePoint np     = get( u2NP->second,     iS );
@@ -1161,11 +1167,9 @@ namespace
         double  distNext = p.Distance( pNext );
         double         r = distPrev / ( distPrev + distNext );
         isShortPrev [iS] = ( r < rShort );
-        isShortNext [iS] = (( 1 - r ) > ( 1 - rShort ));
-        isPrevCloser[iS] = (( r < 0.5 ) && ( u2NPPrev->first > 0 ));
+        isShortNext [iS] = (( 1 - r ) < rShort );
+        isPrevCloser[iS] = (( r < 0.5 ) && ( theSinuFace.IsRing() || u2NPPrev->first > 0 ));
       }
-      // if ( !hasPrev ) isShortPrev[0] = isShortPrev[1] = false;
-      // if ( !hasNext ) isShortNext[0] = isShortNext[1] = false;
 
       TMAPar2NPoints::iterator u2NPClose;
 
@@ -1174,17 +1178,18 @@ namespace
       {
         u2NPClose = isPrevCloser[0] ? u2NPPrev : u2NPNext;
         NodePoint& npProj  = get( u2NP->second,      iNode ); // NP of VERTEX projection
+        NodePoint& npVert  = get( u2NP->second,      iVert ); // NP of VERTEX
         NodePoint npCloseN = get( u2NPClose->second, iNode ); // NP close to npProj
-        NodePoint npCloseV = get( u2NPClose->second, iVert ); // NP close to VERTEX
-        if ( !npCloseV._node )
+        NodePoint npCloseV = get( u2NPClose->second, iVert ); // NP close to npVert
+        if ( !npCloseV._node || npCloseV._node == npVert._node )
         {
           npProj = npCloseN;
-          thePointsOnE.erase( isPrevCloser[0] ? u2NPPrev : u2NPNext );
+          thePointsOnE.erase( u2NPClose );
           continue;
         }
         else
         {
-          // can't remove the neighbor projection as it is also from VERTEX, -> option 1)
+          // can't remove the neighbor projection as it is also from VERTEX -> option 1)
         }
       }
       // else: option 1) - wide enough -> "duplicate" existing node

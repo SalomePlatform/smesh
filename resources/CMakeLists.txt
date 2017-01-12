@@ -192,6 +192,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_tree_hypo_source_3d_shape.png
   mesh_tree_hypo_projection_3d.png
   mesh_tree_hypo_projection_2d.png
+  mesh_tree_hypo_quadratic.png
   mesh_build_compound.png
   copy_mesh.png
   mesh_node_to_point.png
