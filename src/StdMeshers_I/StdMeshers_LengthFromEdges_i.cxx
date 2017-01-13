@@ -49,7 +49,6 @@ StdMeshers_LengthFromEdges_i::StdMeshers_LengthFromEdges_i( PortableServer::POA_
      : SALOME::GenericObj_i( thePOA ), 
        SMESH_Hypothesis_i( thePOA )
 {
-  MESSAGE( "StdMeshers_LengthFromEdges_i::StdMeshers_LengthFromEdges_i" );
   myBaseImpl = new ::StdMeshers_LengthFromEdges( theGenImpl->GetANewId(),
                                             theStudyId,
                                             theGenImpl );
@@ -65,7 +64,6 @@ StdMeshers_LengthFromEdges_i::StdMeshers_LengthFromEdges_i( PortableServer::POA_
 
 StdMeshers_LengthFromEdges_i::~StdMeshers_LengthFromEdges_i()
 {
-  MESSAGE( "StdMeshers_LengthFromEdges_i::~StdMeshers_LengthFromEdges_i" );
 }
 
 //=============================================================================
@@ -79,7 +77,6 @@ StdMeshers_LengthFromEdges_i::~StdMeshers_LengthFromEdges_i()
 void StdMeshers_LengthFromEdges_i::SetMode( CORBA::Long theMode )
   throw (SALOME::SALOME_Exception)
 {
-  MESSAGE( "StdMeshers_LengthFromEdges_i::SetMode" );
   ASSERT( myBaseImpl );
   try {
     this->GetImpl()->SetMode( theMode );
@@ -100,7 +97,6 @@ void StdMeshers_LengthFromEdges_i::SetMode( CORBA::Long theMode )
 
 CORBA::Long StdMeshers_LengthFromEdges_i::GetMode()
 {
-  MESSAGE( "StdMeshers_LengthFromEdges_i::GetMode" );
   ASSERT( myBaseImpl );
   return this->GetImpl()->GetMode();
 }
@@ -126,7 +122,6 @@ CORBA::Boolean StdMeshers_LengthFromEdges_i::HasParameters()
 
 ::StdMeshers_LengthFromEdges* StdMeshers_LengthFromEdges_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_LengthFromEdges_i::GetImpl" );
   return ( ::StdMeshers_LengthFromEdges* )myBaseImpl;
 }
 

@@ -421,7 +421,6 @@ SMESH_Swig::~SMESH_Swig()
 //===============================================================
 const char* SMESH_Swig::AddNewMesh(const char* theIOR)
 {
-  MESSAGE("AddNewMesh");
 
   // VSR: added temporarily - to be removed - objects are published automatically by engine
   SALOMEDS::SObject_var aSObject = myStudy->FindObjectIOR(theIOR);
@@ -456,8 +455,6 @@ const char* SMESH_Swig::AddNewMesh(const char* theIOR)
 //===============================================================
 const char* SMESH_Swig::AddNewHypothesis(const char* theIOR)
 {
-  MESSAGE("AddNewHypothesis");
-
   SALOMEDS::SObject_var aSObject = ::AddHypothesis(theIOR,
                                                    mySComponentMesh,
                                                    myStudyBuilder);
@@ -471,8 +468,6 @@ const char* SMESH_Swig::AddNewHypothesis(const char* theIOR)
 //===============================================================
 const char* SMESH_Swig::AddNewAlgorithms(const char* theIOR)
 {
-  MESSAGE("AddNewAlgorithms");
-
   SALOMEDS::SObject_var aSObject = ::AddAlgorithms(theIOR,
                                                    mySComponentMesh,
                                                    myStudyBuilder);

@@ -49,7 +49,6 @@ StdMeshers_FixedPoints1D_i::StdMeshers_FixedPoints1D_i( PortableServer::POA_ptr 
      : SALOME::GenericObj_i( thePOA ), 
        SMESH_Hypothesis_i( thePOA )
 {
-  MESSAGE( "StdMeshers_FixedPoints1D_i::StdMeshers_FixedPoints1D_i" );
   myBaseImpl = new ::StdMeshers_FixedPoints1D(theGenImpl->GetANewId(),
                                               theStudyId,
                                               theGenImpl);
@@ -65,7 +64,6 @@ StdMeshers_FixedPoints1D_i::StdMeshers_FixedPoints1D_i( PortableServer::POA_ptr 
 
 StdMeshers_FixedPoints1D_i::~StdMeshers_FixedPoints1D_i()
 {
-  MESSAGE( "StdMeshers_FixedPoints1D_i::~StdMeshers_FixedPoints1D_i" );
 }
 
 //=============================================================================
@@ -77,7 +75,6 @@ StdMeshers_FixedPoints1D_i::~StdMeshers_FixedPoints1D_i()
 void StdMeshers_FixedPoints1D_i::SetNbSegments(const SMESH::long_array& listNbSeg) 
      throw ( SALOME::SALOME_Exception )
 {
-  MESSAGE( "StdMeshers_FixedPoints1D_i::SetNbSegments" );
   ASSERT( myBaseImpl );
   try {
     std::vector<int> nbsegs( listNbSeg.length() );
@@ -104,7 +101,6 @@ void StdMeshers_FixedPoints1D_i::SetNbSegments(const SMESH::long_array& listNbSe
 void StdMeshers_FixedPoints1D_i::SetPoints(const SMESH::double_array& listParams) 
      throw ( SALOME::SALOME_Exception )
 {
-  MESSAGE( "StdMeshers_FixedPoints1D_i::SetPoints" );
   ASSERT( myBaseImpl );
   try {
     std::vector<double> params( listParams.length() );
@@ -132,7 +128,6 @@ void StdMeshers_FixedPoints1D_i::SetPoints(const SMESH::double_array& listParams
 
 SMESH::double_array* StdMeshers_FixedPoints1D_i::GetPoints()
 {
-  MESSAGE( "StdMeshers_FixedPoints1D_i::GetPoints" );
   ASSERT( myBaseImpl );
   SMESH::double_array_var anArray = new SMESH::double_array;
   std::vector<double> params = this->GetImpl()->GetPoints();
@@ -153,7 +148,6 @@ SMESH::double_array* StdMeshers_FixedPoints1D_i::GetPoints()
 
 SMESH::long_array* StdMeshers_FixedPoints1D_i::GetNbSegments()
 {
-  MESSAGE( "StdMeshers_FixedPoints1D_i::GetNbSegments" );
   ASSERT( myBaseImpl );
   SMESH::long_array_var anArray = new SMESH::long_array;
   std::vector<int> nbsegs = this->GetImpl()->GetNbSegments();
@@ -224,7 +218,6 @@ void StdMeshers_FixedPoints1D_i::SetObjectEntry( const char* theEntry )
 
 char* StdMeshers_FixedPoints1D_i::GetObjectEntry()
 {
-  MESSAGE( "StdMeshers_FixedPoints1D_i::SetObjectEntry" );
   ASSERT( myBaseImpl );
   const char* entry;
   try {
@@ -247,7 +240,6 @@ char* StdMeshers_FixedPoints1D_i::GetObjectEntry()
 
 SMESH::long_array* StdMeshers_FixedPoints1D_i::GetReversedEdges()
 {
-  MESSAGE( "StdMeshers_FixedPoints1D_i::GetReversedEdges" );
   ASSERT( myBaseImpl );
   SMESH::long_array_var anArray = new SMESH::long_array;
   std::vector<int> ids = this->GetImpl()->GetReversedEdges();
@@ -268,7 +260,6 @@ SMESH::long_array* StdMeshers_FixedPoints1D_i::GetReversedEdges()
 
 ::StdMeshers_FixedPoints1D* StdMeshers_FixedPoints1D_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_FixedPoints1D_i::GetImpl" );
   return ( ::StdMeshers_FixedPoints1D* )myBaseImpl;
 }
 

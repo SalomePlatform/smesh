@@ -586,7 +586,6 @@ bool SMESH_Gen::Evaluate(SMESH_Mesh &          aMesh,
     ret = Evaluate( aMesh, aShape, aResMap, /*anUpward=*/true, aShapesId );
   }
 
-  MESSAGE( "VSR - SMESH_Gen::Evaluate() finished, OK = " << ret);
   return ret;
 }
 

@@ -51,7 +51,6 @@ StdMeshers_SegmentAroundVertex_0D_i::StdMeshers_SegmentAroundVertex_0D_i
        SMESH_Algo_i( thePOA ),
        SMESH_0D_Algo_i( thePOA )
 {
-  MESSAGE( "StdMeshers_SegmentAroundVertex_0D_i::StdMeshers_SegmentAroundVertex_0D_i" );
   myBaseImpl = new ::StdMeshers_SegmentAroundVertex_0D( theGenImpl->GetANewId(),
                                                         theStudyId,
                                                         theGenImpl );
@@ -60,12 +59,10 @@ StdMeshers_SegmentAroundVertex_0D_i::StdMeshers_SegmentAroundVertex_0D_i
 
 StdMeshers_SegmentAroundVertex_0D_i::~StdMeshers_SegmentAroundVertex_0D_i()
 {
-  MESSAGE( "StdMeshers_SegmentAroundVertex_0D_i::~StdMeshers_SegmentAroundVertex_0D_i" );
 }
 //-----------------------------------------------------------------------------
 
 ::StdMeshers_SegmentAroundVertex_0D* StdMeshers_SegmentAroundVertex_0D_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_SegmentAroundVertex_0D_i::GetImpl" );
   return ( ::StdMeshers_SegmentAroundVertex_0D* )myBaseImpl;
 }

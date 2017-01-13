@@ -52,7 +52,6 @@ StdMeshers_MaxElementVolume_i::StdMeshers_MaxElementVolume_i( PortableServer::PO
      : SALOME::GenericObj_i( thePOA ), 
        SMESH_Hypothesis_i( thePOA )
 {
-  MESSAGE( "StdMeshers_MaxElementVolume_i::StdMeshers_MaxElementVolume_i" );
   myBaseImpl = new ::StdMeshers_MaxElementVolume( theGenImpl->GetANewId(),
                                              theStudyId,
                                              theGenImpl );
@@ -68,7 +67,6 @@ StdMeshers_MaxElementVolume_i::StdMeshers_MaxElementVolume_i( PortableServer::PO
 
 StdMeshers_MaxElementVolume_i::~StdMeshers_MaxElementVolume_i()
 {
-  MESSAGE( "StdMeshers_MaxElementVolume_i::~StdMeshers_MaxElementVolume_i()" );
 }
 
 //=============================================================================
@@ -82,7 +80,6 @@ StdMeshers_MaxElementVolume_i::~StdMeshers_MaxElementVolume_i()
 void StdMeshers_MaxElementVolume_i::SetMaxElementVolume( CORBA::Double theVolume )
      throw ( SALOME::SALOME_Exception )
 {
-  MESSAGE( "StdMeshers_MaxElementVolume_i::SetMaxElementVolume" );
   ASSERT( myBaseImpl );
   try {
     this->GetImpl()->SetMaxVolume( theVolume );
@@ -106,7 +103,6 @@ void StdMeshers_MaxElementVolume_i::SetMaxElementVolume( CORBA::Double theVolume
 
 CORBA::Double StdMeshers_MaxElementVolume_i::GetMaxElementVolume()
 {
-  MESSAGE( "StdMeshers_MaxElementVolume_i::GetMaxElementVolume" );
   ASSERT( myBaseImpl );
   return this->GetImpl()->GetMaxVolume();
 }
@@ -121,7 +117,6 @@ CORBA::Double StdMeshers_MaxElementVolume_i::GetMaxElementVolume()
 
 ::StdMeshers_MaxElementVolume* StdMeshers_MaxElementVolume_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_MaxElementVolume_i::GetImpl" );
   return ( ::StdMeshers_MaxElementVolume* )myBaseImpl;
 }
 

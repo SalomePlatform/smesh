@@ -59,7 +59,6 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
       TDataSet aDataSet2411;
       // Storing SMDS nodes to the UNV file
       //-----------------------------------
-      MESSAGE("Perform - myMesh->NbNodes() = "<<myMesh->NbNodes());
       SMDS_NodeIteratorPtr aNodesIter = myMesh->nodesIterator();
       TRecord aRec;
       while ( aNodesIter->more() )
@@ -71,7 +70,6 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
         aRec.coord[2] = aNode->Z();
         aDataSet2411.push_back( aRec );
       }
-      MESSAGE("Perform - aDataSet2411.size() = "<<aDataSet2411.size());
       UNV2411::Write(out_stream,aDataSet2411);
     }
     {
@@ -79,7 +77,6 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
       TDataSet aDataSet2412;
 
       // Storing SMDS Edges
-      MESSAGE("Perform - myMesh->NbEdges() = "<<myMesh->NbEdges());
       if(myMesh->NbEdges()){
         SMDS_EdgeIteratorPtr anIter = myMesh->edgesIterator();
         while( anIter->more() )
@@ -102,10 +99,8 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
           }
           aDataSet2412.push_back(aRec);
         }
-        MESSAGE("Perform - aDataSet2412.size() = "<<aDataSet2412.size());
       }
 
-      MESSAGE("Perform - myMesh->NbFaces() = "<<myMesh->NbFaces());
       if ( myMesh->NbFaces() )
       {
         SMDS_FaceIteratorPtr anIter = myMesh->facesIterator();
@@ -134,10 +129,8 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
           }
           aDataSet2412.push_back(aRec);
         }
-        MESSAGE("Perform - aDataSet2412.size() = "<<aDataSet2412.size());
       }
 
-      MESSAGE("Perform - myMesh->NbVolumes() = "<<myMesh->NbVolumes());
       if ( myMesh->NbVolumes() )
       {
         SMDS_VolumeIteratorPtr anIter = myMesh->volumesIterator();
@@ -174,7 +167,6 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
             aDataSet2412.push_back(aRec);
           }
         }
-        MESSAGE("Perform - aDataSet2412.size() = "<<aDataSet2412.size());
       }
       UNV2412::Write(out_stream,aDataSet2412);
     }

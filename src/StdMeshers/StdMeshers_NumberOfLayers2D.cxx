@@ -55,6 +55,5 @@ StdMeshers_NumberOfLayers2D::StdMeshers_NumberOfLayers2D(int hypId,
 
 StdMeshers_NumberOfLayers2D::~StdMeshers_NumberOfLayers2D()
 {
-  MESSAGE( "StdMeshers_NumberOfLayers2D::~StdMeshers_NumberOfLayers2D" );
 }
 

@@ -41,7 +41,6 @@ StdMeshers_LayerDistribution2D_i::StdMeshers_LayerDistribution2D_i
 :SMESH_Hypothesis_i( thePOA ),
  StdMeshers_LayerDistribution_i(thePOA,theStudyId,theGenImpl)
 {
-  MESSAGE( "StdMeshers_LayerDistribution2D_i::StdMeshers_LayerDistribution2D_i" );
   myBaseImpl = new ::StdMeshers_LayerDistribution2D(theGenImpl->GetANewId(),
                                                     theStudyId,
                                                     theGenImpl);
@@ -57,7 +56,6 @@ StdMeshers_LayerDistribution2D_i::StdMeshers_LayerDistribution2D_i
 
 StdMeshers_LayerDistribution2D_i::~StdMeshers_LayerDistribution2D_i()
 {
-  MESSAGE("StdMeshers_LayerDistribution2D_i::~StdMeshers_LayerDistribution2D_i");
 }
 
 //=============================================================================

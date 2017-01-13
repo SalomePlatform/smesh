@@ -59,7 +59,6 @@ StdMeshers_LayerDistribution::StdMeshers_LayerDistribution(int hypId, int studyI
 
 StdMeshers_LayerDistribution::~StdMeshers_LayerDistribution()
 {
-  MESSAGE( "StdMeshers_LayerDistribution::~StdMeshers_LayerDistribution" );
 }
 
 //=============================================================================

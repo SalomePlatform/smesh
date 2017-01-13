@@ -5117,7 +5117,6 @@ CORBA::Boolean SMESH_MeshEditor_i::ChangeElemNodes(CORBA::Long ide,
   TPythonDump() << "isDone = " << this << ".ChangeElemNodes( "
                 << ide << ", " << newIDs << " )";
 
-  MESSAGE("ChangeElementNodes");
   bool res = getMeshDS()->ChangeElementNodes( elem, & aNodes[0], nbn1+1 );
 
   declareMeshModified( /*isReComputeSafe=*/ !res );
@@ -6280,7 +6279,6 @@ SMESH_MeshEditor_i::AffectedElemGroupsInRegion( const SMESH::ListOfGroups& theEl
   throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
-  MESSAGE("AffectedElemGroupsInRegion");
   SMESH::ListOfGroups_var aListOfGroups = new SMESH::ListOfGroups();
   bool isEdgeGroup = false;
   bool isFaceGroup = false;
@@ -6309,7 +6307,6 @@ SMESH_MeshEditor_i::AffectedElemGroupsInRegion( const SMESH::ListOfGroups& theEl
   if (aResult)
   {
     int lg = anAffected.size();
-    MESSAGE("lg="<< lg);
     SMESH::long_array_var volumeIds = new SMESH::long_array;
     volumeIds->length(lg);
     SMESH::long_array_var faceIds = new SMESH::long_array;

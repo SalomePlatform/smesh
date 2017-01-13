@@ -52,7 +52,6 @@ StdMeshers_ViscousLayers2D_i::StdMeshers_ViscousLayers2D_i( PortableServer::POA_
   : SALOME::GenericObj_i( thePOA ),
     SMESH_Hypothesis_i( thePOA )
 {
-  MESSAGE( "StdMeshers_ViscousLayers2D_i::StdMeshers_ViscousLayers2D_i" );
   myBaseImpl = new ::StdMeshers_ViscousLayers2D( theGenImpl->GetANewId(),
                                                  theStudyId,
                                                  theGenImpl );
@@ -68,7 +67,6 @@ StdMeshers_ViscousLayers2D_i::StdMeshers_ViscousLayers2D_i( PortableServer::POA_
 
 StdMeshers_ViscousLayers2D_i::~StdMeshers_ViscousLayers2D_i()
 {
-  MESSAGE( "StdMeshers_ViscousLayers2D_i::~StdMeshers_ViscousLayers2D_i" );
 }
 
 //================================================================================
@@ -234,7 +232,6 @@ throw ( SALOME::SALOME_Exception )
 
 ::StdMeshers_ViscousLayers2D* StdMeshers_ViscousLayers2D_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_ViscousLayers2D_i::GetImpl" );
   return ( ::StdMeshers_ViscousLayers2D* )myBaseImpl;
 }
 

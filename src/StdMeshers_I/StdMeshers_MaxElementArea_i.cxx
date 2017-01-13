@@ -52,7 +52,6 @@ StdMeshers_MaxElementArea_i::StdMeshers_MaxElementArea_i( PortableServer::POA_pt
      : SALOME::GenericObj_i( thePOA ), 
        SMESH_Hypothesis_i( thePOA ) 
 {
-  MESSAGE( "StdMeshers_MaxElementArea_i::StdMeshers_MaxElementArea_i" );
   myBaseImpl = new ::StdMeshers_MaxElementArea( theGenImpl->GetANewId(),
                                            theStudyId,
                                            theGenImpl );
@@ -68,7 +67,6 @@ StdMeshers_MaxElementArea_i::StdMeshers_MaxElementArea_i( PortableServer::POA_pt
 
 StdMeshers_MaxElementArea_i::~StdMeshers_MaxElementArea_i()
 {
-  MESSAGE( "StdMeshers_MaxElementArea_i::~StdMeshers_MaxElementArea_i" );
 }
 
 //=============================================================================
@@ -82,7 +80,6 @@ StdMeshers_MaxElementArea_i::~StdMeshers_MaxElementArea_i()
 void StdMeshers_MaxElementArea_i::SetMaxElementArea( CORBA::Double theArea )
      throw ( SALOME::SALOME_Exception )
 {
-  MESSAGE( "StdMeshers_MaxElementArea_i::SetMaxElementArea" );
   ASSERT( myBaseImpl );
   try {
     this->GetImpl()->SetMaxArea( theArea );
@@ -106,7 +103,6 @@ void StdMeshers_MaxElementArea_i::SetMaxElementArea( CORBA::Double theArea )
 
 CORBA::Double StdMeshers_MaxElementArea_i::GetMaxElementArea()
 {
-  MESSAGE( "StdMeshers_MaxElementArea_i::GetMaxElementArea" );
   ASSERT( myBaseImpl );
   return this->GetImpl()->GetMaxArea();
 }
@@ -121,7 +117,6 @@ CORBA::Double StdMeshers_MaxElementArea_i::GetMaxElementArea()
 
 ::StdMeshers_MaxElementArea* StdMeshers_MaxElementArea_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_MaxElementArea_i::GetImpl" );
   return ( ::StdMeshers_MaxElementArea* )myBaseImpl;
 }
 

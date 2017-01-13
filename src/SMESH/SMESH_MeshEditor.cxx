@@ -4342,18 +4342,18 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
         }
       }
       if ( maxRatio <= theTgtAspectRatio ) {
-        MESSAGE("-- quality achived --");
+        //MESSAGE("-- quality achived --");
         break;
       }
       if (it+1 == theNbIterations) {
-        MESSAGE("-- Iteration limit exceeded --");
+        //MESSAGE("-- Iteration limit exceeded --");
       }
     } // smoothing iterations
 
-    MESSAGE(" Face id: " << *fId <<
-            " Nb iterstions: " << it <<
-            " Displacement: " << maxDisplacement <<
-            " Aspect Ratio " << maxRatio);
+    // MESSAGE(" Face id: " << *fId <<
+    //         " Nb iterstions: " << it <<
+    //         " Displacement: " << maxDisplacement <<
+    //         " Aspect Ratio " << maxRatio);
 
     // ---------------------------------------
     // new nodes positions are computed,
@@ -11075,9 +11075,9 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
                                                      bool                                 createJointElems,
                                                      bool                                 onAllBoundaries)
 {
-  MESSAGE("----------------------------------------------");
-  MESSAGE("SMESH_MeshEditor::doubleNodesOnGroupBoundaries");
-  MESSAGE("----------------------------------------------");
+  // MESSAGE("----------------------------------------------");
+  // MESSAGE("SMESH_MeshEditor::doubleNodesOnGroupBoundaries");
+  // MESSAGE("----------------------------------------------");
 
   SMESHDS_Mesh *meshDS = this->myMesh->GetMeshDS();
   meshDS->BuildDownWardConnectivity(true);
@@ -11100,7 +11100,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
   std::set<int> emptySet;
   emptyMap.clear();
 
-  MESSAGE(".. Number of domains :"<<theElems.size());
+  //MESSAGE(".. Number of domains :"<<theElems.size());
 
   TIDSortedElemSet theRestDomElems;
   const int iRestDom  = -1;
@@ -11140,7 +11140,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
     //     and corresponding volume of this domain, for each shared face.
     //     a volume has a face shared by 2 domains if it has a neighbor which is not in his domain.
 
-    MESSAGE("... Neighbors of domain #" << idom);
+    //MESSAGE("... Neighbors of domain #" << idom);
     const TIDSortedElemSet& domain = theElems[idom];
     TIDSortedElemSet::const_iterator elemItr = domain.begin();
     for (; elemItr != domain.end(); ++elemItr)
@@ -11251,7 +11251,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
   std::map<int, std::vector<int> > mutipleNodes; // nodes multi domains with domain order
   std::map<int, std::vector<int> > mutipleNodesToFace; // nodes multi domains with domain order to transform in Face (junction between 3 or more 2D domains)
 
-  MESSAGE(".. Duplication of the nodes");
+  //MESSAGE(".. Duplication of the nodes");
   for (int idomain = idom0; idomain < nbDomains; idomain++)
   {
     itface = faceDomains.begin();
@@ -11312,7 +11312,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
     }
   }
 
-  MESSAGE(".. Creation of elements");
+  //MESSAGE(".. Creation of elements");
   for (int idomain = idom0; idomain < nbDomains; idomain++)
   {
     itface = faceDomains.begin();
@@ -11443,7 +11443,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
   std::map<int, std::map<long,int> > nodeQuadDomains;
   std::map<std::string, SMESH_Group*> mapOfJunctionGroups;
 
-  MESSAGE(".. Creation of elements: simple junction");
+  //MESSAGE(".. Creation of elements: simple junction");
   if (createJointElems)
   {
     int idg;
@@ -11494,7 +11494,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
   //     iterate on mutipleNodesToFace
   //     iterate on edgesMultiDomains
 
-  MESSAGE(".. Creation of elements: multiple junction");
+  //MESSAGE(".. Creation of elements: multiple junction");
   if (createJointElems)
   {
     // --- iterate on mutipleNodesToFace
@@ -11567,7 +11567,7 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
   faceOrEdgeDom.clear();
   feDom.clear();
 
-  MESSAGE(".. Modification of elements");
+  //MESSAGE(".. Modification of elements");
   for (int idomain = idom0; idomain < nbDomains; idomain++)
   {
     std::map<int, std::map<int, int> >::const_iterator itnod = nodeDomains.begin();
@@ -11669,9 +11669,9 @@ bool SMESH_MeshEditor::DoubleNodesOnGroupBoundaries( const std::vector<TIDSorted
  */
 bool SMESH_MeshEditor::CreateFlatElementsOnFacesGroups(const std::vector<TIDSortedElemSet>& theElems)
 {
-  MESSAGE("-------------------------------------------------");
-  MESSAGE("SMESH_MeshEditor::CreateFlatElementsOnFacesGroups");
-  MESSAGE("-------------------------------------------------");
+  // MESSAGE("-------------------------------------------------");
+  // MESSAGE("SMESH_MeshEditor::CreateFlatElementsOnFacesGroups");
+  // MESSAGE("-------------------------------------------------");
 
   SMESHDS_Mesh *meshDS = this->myMesh->GetMeshDS();
 
@@ -11833,9 +11833,9 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
                                       std::vector<double>&            nodesCoords,
                                       std::vector<std::vector<int> >& listOfListOfNodes)
 {
-  MESSAGE("--------------------------------");
-  MESSAGE("SMESH_MeshEditor::CreateHoleSkin");
-  MESSAGE("--------------------------------");
+  // MESSAGE("--------------------------------");
+  // MESSAGE("SMESH_MeshEditor::CreateHoleSkin");
+  // MESSAGE("--------------------------------");
 
   // --- zone of volumes to remove is given :
   //     1 either by a geom shape (one or more vertices) and a radius,
@@ -11937,7 +11937,7 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
 
   if (isNodeGroup) // --- a group of nodes is provided : find all the volumes using one or more of this nodes
   {
-    MESSAGE("group of nodes provided");
+    //MESSAGE("group of nodes provided");
     SMDS_ElemIteratorPtr elemIt = groupDS->GetElements();
     while ( elemIt->more() )
     {
@@ -11959,7 +11959,7 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
   }
   else if (isNodeCoords)
   {
-    MESSAGE("list of nodes coordinates provided");
+    //MESSAGE("list of nodes coordinates provided");
     size_t i = 0;
     int k = 0;
     while ( i < nodesCoords.size()-2 )
@@ -11969,13 +11969,13 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
       double z = nodesCoords[i++];
       gp_Pnt p = gp_Pnt(x, y ,z);
       gpnts.push_back(p);
-      MESSAGE("TopoDS_Vertex " << k << " " << p.X() << " " << p.Y() << " " << p.Z());
+      //MESSAGE("TopoDS_Vertex " << k << " " << p.X() << " " << p.Y() << " " << p.Z());
       k++;
     }
   }
   else // --- no group, no coordinates : use the vertices of the geom shape provided, and radius
   {
-    MESSAGE("no group of nodes provided, using vertices from geom shape, and radius");
+    //MESSAGE("no group of nodes provided, using vertices from geom shape, and radius");
     TopTools_IndexedMapOfShape vertexMap;
     TopExp::MapShapes( theShape, TopAbs_VERTEX, vertexMap );
     gp_Pnt p = gp_Pnt(0,0,0);
@@ -11987,20 +11987,17 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
       const TopoDS_Vertex& vertex = TopoDS::Vertex( vertexMap( i ));
       p = BRep_Tool::Pnt(vertex);
       gpnts.push_back(p);
-      MESSAGE("TopoDS_Vertex " << i << " " << p.X() << " " << p.Y() << " " << p.Z());
+      //MESSAGE("TopoDS_Vertex " << i << " " << p.X() << " " << p.Y() << " " << p.Z());
     }
   }
 
   if (gpnts.size() > 0)
   {
-    int nodeId = 0;
     const SMDS_MeshNode* startNode = theNodeSearcher->FindClosestTo(gpnts[0]);
-    if (startNode)
-      nodeId = startNode->GetID();
-    MESSAGE("nodeId " << nodeId);
+    //MESSAGE("startNode->nodeId " << nodeId);
 
     double radius2 = radius*radius;
-    MESSAGE("radius2 " << radius2);
+    //MESSAGE("radius2 " << radius2);
 
     // --- volumes on start node
 
@@ -12029,7 +12026,7 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
     {
       std::set<int>::iterator it = setOfVolToCheck.begin();
       int vtkId = *it;
-      MESSAGE("volume to check,  vtkId " << vtkId << " smdsId " << meshDS->fromVtkToSmds(vtkId));
+      //MESSAGE("volume to check,  vtkId " << vtkId << " smdsId " << meshDS->fromVtkToSmds(vtkId));
       bool volInside = false;
       vtkIdType npts = 0;
       vtkIdType* pts = 0;
@@ -12040,7 +12037,7 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
         if (mapOfNodeDistance2.count(pts[i]))
         {
           distance2 = mapOfNodeDistance2[pts[i]];
-          MESSAGE("point " << pts[i] << " distance2 " << distance2);
+          //MESSAGE("point " << pts[i] << " distance2 " << distance2);
         }
         else
         {
@@ -12058,7 +12055,7 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
             }
           }
           mapOfNodeDistance2[pts[i]] = distance2;
-          MESSAGE("  point "  << pts[i]  << " distance2 " << distance2 << " coords " << coords[0] << " " << coords[1] << " " <<  coords[2]);
+          //MESSAGE("  point "  << pts[i]  << " distance2 " << distance2 << " coords " << coords[0] << " " << coords[1] << " " <<  coords[2]);
         }
         if (distance2 < radius2)
         {
@@ -12070,7 +12067,7 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
       if (volInside)
       {
         setOfInsideVol.insert(vtkId);
-        MESSAGE("  volume inside,  vtkId " << vtkId << " smdsId " << meshDS->fromVtkToSmds(vtkId));
+        //MESSAGE("  volume inside,  vtkId " << vtkId << " smdsId " << meshDS->fromVtkToSmds(vtkId));
         int neighborsVtkIds[NBMAXNEIGHBORS];
         int downIds[NBMAXNEIGHBORS];
         unsigned char downTypes[NBMAXNEIGHBORS];
@@ -12082,7 +12079,7 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
       else
       {
         setOfOutsideVol.insert(vtkId);
-        MESSAGE("  volume outside, vtkId " << vtkId << " smdsId " << meshDS->fromVtkToSmds(vtkId));
+        //MESSAGE("  volume outside, vtkId " << vtkId << " smdsId " << meshDS->fromVtkToSmds(vtkId));
       }
       setOfVolToCheck.erase(vtkId);
     }
@@ -12095,7 +12092,7 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
   std::set<int> setOfVolToReCheck;
   while (addedInside)
   {
-    MESSAGE(" --------------------------- re check");
+    //MESSAGE(" --------------------------- re check");
     addedInside = false;
     std::set<int>::iterator itv = setOfInsideVol.begin();
     for (; itv != setOfInsideVol.end(); ++itv)
@@ -12117,7 +12114,7 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
       int vtkId = *it;
       if (grid->GetCellType(vtkId) == VTK_HEXAHEDRON)
       {
-        MESSAGE("volume to recheck,  vtkId " << vtkId << " smdsId " << meshDS->fromVtkToSmds(vtkId));
+        //MESSAGE("volume to recheck,  vtkId " << vtkId << " smdsId " << meshDS->fromVtkToSmds(vtkId));
         int countInside = 0;
         int neighborsVtkIds[NBMAXNEIGHBORS];
         int downIds[NBMAXNEIGHBORS];
@@ -12126,10 +12123,10 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
         for (int n = 0; n < nbNeighbors; n++)
           if (setOfInsideVol.count(neighborsVtkIds[n]))
             countInside++;
-        MESSAGE("countInside " << countInside);
+        //MESSAGE("countInside " << countInside);
         if (countInside > 1)
         {
-          MESSAGE("  volume inside,  vtkId " << vtkId << " smdsId " << meshDS->fromVtkToSmds(vtkId));
+          //MESSAGE("  volume inside,  vtkId " << vtkId << " smdsId " << meshDS->fromVtkToSmds(vtkId));
           setOfInsideVol.insert(vtkId);
           sgrp->Add(meshDS->fromVtkToSmds(vtkId));
           addedInside = true;
@@ -12226,7 +12223,7 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
   for (; itShape != shapeIdToVtkIdSet.end(); ++itShape)
   {
     int shapeId = itShape->first;
-    MESSAGE(" --- Shape ID --- "<< shapeId);
+    //MESSAGE(" --- Shape ID --- "<< shapeId);
     shapeIdToEdges[shapeId] = emptyEdges;
 
     std::vector<int> nodesEdges;
@@ -12235,7 +12232,7 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
     for (; its != itShape->second.end(); ++its)
     {
       int vtkId = *its;
-      MESSAGE("     " << vtkId);
+      //MESSAGE("     " << vtkId);
       int neighborsVtkIds[NBMAXNEIGHBORS];
       int downIds[NBMAXNEIGHBORS];
       unsigned char downTypes[NBMAXNEIGHBORS];
@@ -12256,7 +12253,7 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
             int nbNodes = grid->getDownArray(downTypes[n])->getNodes(downIds[n],vtkNodeId);
             nodesEdges.push_back(vtkNodeId[0]);
             nodesEdges.push_back(vtkNodeId[nbNodes-1]);
-            MESSAGE("       --- nodes " << vtkNodeId[0]+1 << " " << vtkNodeId[nbNodes-1]+1);
+            //MESSAGE("       --- nodes " << vtkNodeId[0]+1 << " " << vtkNodeId[nbNodes-1]+1);
           }
         }
       }
@@ -12266,9 +12263,9 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
     order.clear();
     if (nodesEdges.size() > 0)
     {
-      order.push_back(nodesEdges[0]); MESSAGE("       --- back " << order.back()+1); // SMDS id = VTK id + 1;
+      order.push_back(nodesEdges[0]); //MESSAGE("       --- back " << order.back()+1); // SMDS id = VTK id + 1;
       nodesEdges[0] = -1;
-      order.push_back(nodesEdges[1]); MESSAGE("       --- back " << order.back()+1);
+      order.push_back(nodesEdges[1]); //MESSAGE("       --- back " << order.back()+1);
       nodesEdges[1] = -1; // do not reuse this edge
       bool found = true;
       while (found)
@@ -12287,7 +12284,7 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
               found = false;
             else
             {
-              order.push_back(nodesEdges[i-1]); MESSAGE("       --- back " << order.back()+1);
+              order.push_back(nodesEdges[i-1]); //MESSAGE("       --- back " << order.back()+1);
               nodesEdges[i-1] = -1;
             }
           else // even ==> use the next one
@@ -12295,7 +12292,7 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
               found = false;
             else
             {
-              order.push_back(nodesEdges[i+1]); MESSAGE("       --- back " << order.back()+1);
+              order.push_back(nodesEdges[i+1]); //MESSAGE("       --- back " << order.back()+1);
               nodesEdges[i+1] = -1;
             }
         }
@@ -12317,7 +12314,7 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
             found = false;
           else
           {
-            order.push_front(nodesEdges[i-1]); MESSAGE("       --- front " << order.front()+1);
+            order.push_front(nodesEdges[i-1]); //MESSAGE("       --- front " << order.front()+1);
             nodesEdges[i-1] = -1;
           }
         else // even ==> use the next one
@@ -12325,7 +12322,7 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
             found = false;
           else
           {
-            order.push_front(nodesEdges[i+1]); MESSAGE("       --- front " << order.front()+1);
+            order.push_front(nodesEdges[i+1]); //MESSAGE("       --- front " << order.front()+1);
             nodesEdges[i+1] = -1;
           }
       }
@@ -12338,7 +12335,7 @@ void SMESH_MeshEditor::CreateHoleSkin(double                          radius,
     for (; itl != order.end(); itl++)
     {
       nodes.push_back((*itl) + 1); // SMDS id = VTK id + 1;
-      MESSAGE("              ordered node " << nodes[nodes.size()-1]);
+      //MESSAGE("              ordered node " << nodes[nodes.size()-1]);
     }
     listOfListOfNodes.push_back(nodes);
   }

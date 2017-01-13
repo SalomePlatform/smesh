@@ -56,7 +56,6 @@ StdMeshers_Adaptive1D_i::StdMeshers_Adaptive1D_i( PortableServer::POA_ptr thePOA
 
 StdMeshers_Adaptive1D_i::~StdMeshers_Adaptive1D_i()
 {
-  MESSAGE( "StdMeshers_Adaptive1D_i::~StdMeshers_Adaptive1D_i" );
 }
 
 //=======================================================================

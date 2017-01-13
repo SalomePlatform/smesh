@@ -51,7 +51,6 @@ StdMeshers_MEFISTO_2D_i::StdMeshers_MEFISTO_2D_i( PortableServer::POA_ptr thePOA
        SMESH_Algo_i( thePOA ),
        SMESH_2D_Algo_i( thePOA )
 {
-  MESSAGE( "StdMeshers_MEFISTO_2D_i::StdMeshers_MEFISTO_2D_i" );
   myBaseImpl = new ::StdMeshers_MEFISTO_2D( theGenImpl->GetANewId(),
                                        theStudyId,
                                        theGenImpl );
@@ -67,7 +66,6 @@ StdMeshers_MEFISTO_2D_i::StdMeshers_MEFISTO_2D_i( PortableServer::POA_ptr thePOA
 
 StdMeshers_MEFISTO_2D_i::~StdMeshers_MEFISTO_2D_i()
 {
-  MESSAGE( "StdMeshers_MEFISTO_2D_i::~StdMeshers_MEFISTO_2D_i" );
 }
 
 //=============================================================================
@@ -80,7 +78,6 @@ StdMeshers_MEFISTO_2D_i::~StdMeshers_MEFISTO_2D_i()
 
 ::StdMeshers_MEFISTO_2D* StdMeshers_MEFISTO_2D_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_MEFISTO_2D_i::GetImpl" );
   return ( ::StdMeshers_MEFISTO_2D* )myBaseImpl;
 }
 

@@ -51,7 +51,6 @@ StdMeshers_Arithmetic1D_i::StdMeshers_Arithmetic1D_i( PortableServer::POA_ptr th
      : SALOME::GenericObj_i( thePOA ), 
        SMESH_Hypothesis_i( thePOA )
 {
-  MESSAGE( "StdMeshers_Arithmetic1D_i::StdMeshers_Arithmetic1D_i" );
   myBaseImpl = new ::StdMeshers_Arithmetic1D( theGenImpl->GetANewId(),
                                              theStudyId,
                                              theGenImpl );
@@ -67,7 +66,6 @@ StdMeshers_Arithmetic1D_i::StdMeshers_Arithmetic1D_i( PortableServer::POA_ptr th
 
 StdMeshers_Arithmetic1D_i::~StdMeshers_Arithmetic1D_i()
 {
-  MESSAGE( "StdMeshers_Arithmetic1D_i::~StdMeshers_Arithmetic1D_i" );
 }
 
 //=============================================================================
@@ -82,7 +80,6 @@ void StdMeshers_Arithmetic1D_i::SetLength(CORBA::Double theLength,
                                           CORBA::Boolean theIsStart )
      throw ( SALOME::SALOME_Exception )
 {
-  MESSAGE( "StdMeshers_StartEndLength_i::SetLength" );
   ASSERT( myBaseImpl );
   try {
     this->GetImpl()->SetLength( theLength, theIsStart );
@@ -132,7 +129,6 @@ void StdMeshers_Arithmetic1D_i::SetEndLength( CORBA::Double length)
 
 CORBA::Double StdMeshers_Arithmetic1D_i::GetLength( CORBA::Boolean theIsStart)
 {
-  MESSAGE( "StdMeshers_Arithmetic1D_i::GetLength" );
   ASSERT( myBaseImpl );
   return this->GetImpl()->GetLength( theIsStart );
 }
@@ -197,7 +193,6 @@ void StdMeshers_Arithmetic1D_i::SetObjectEntry( const char* theEntry )
 
 char* StdMeshers_Arithmetic1D_i::GetObjectEntry()
 {
-  MESSAGE( "StdMeshers_Arithmetic1D_i::SetObjectEntry" );
   ASSERT( myBaseImpl );
   const char* entry;
   try {
@@ -220,7 +215,6 @@ char* StdMeshers_Arithmetic1D_i::GetObjectEntry()
 
 SMESH::long_array* StdMeshers_Arithmetic1D_i::GetReversedEdges()
 {
-  MESSAGE( "StdMeshers_StartEndLength_i::GetReversedEdges" );
   ASSERT( myBaseImpl );
   SMESH::long_array_var anArray = new SMESH::long_array;
   std::vector<int> ids = this->GetImpl()->GetReversedEdges();
@@ -241,7 +235,6 @@ SMESH::long_array* StdMeshers_Arithmetic1D_i::GetReversedEdges()
 
 ::StdMeshers_Arithmetic1D* StdMeshers_Arithmetic1D_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_Arithmetic1D_i::GetImpl" );
   return ( ::StdMeshers_Arithmetic1D* )myBaseImpl;
 }
 

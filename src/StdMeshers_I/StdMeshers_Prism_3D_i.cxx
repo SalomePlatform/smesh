@@ -48,7 +48,6 @@ StdMeshers_Prism_3D_i::StdMeshers_Prism_3D_i( PortableServer::POA_ptr thePOA,
     SMESH_Algo_i( thePOA ),
     SMESH_3D_Algo_i( thePOA )
 {
-  MESSAGE( "StdMeshers_Prism_3D_i::StdMeshers_Prism_3D_i" );
   myBaseImpl = new ::StdMeshers_Prism_3D( theGenImpl->GetANewId(),
                                           theStudyId,
                                           theGenImpl );
@@ -57,13 +56,11 @@ StdMeshers_Prism_3D_i::StdMeshers_Prism_3D_i( PortableServer::POA_ptr thePOA,
 
 StdMeshers_Prism_3D_i::~StdMeshers_Prism_3D_i()
 {
-  MESSAGE( "StdMeshers_Prism_3D_i::~StdMeshers_Prism_3D_i" );
 }
 //-----------------------------------------------------------------------------
 
 ::StdMeshers_Prism_3D* StdMeshers_Prism_3D_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_Prism_3D_i::GetImpl" );
   return ( ::StdMeshers_Prism_3D* )myBaseImpl;
 }
 //-----------------------------------------------------------------------------
@@ -89,7 +86,6 @@ StdMeshers_RadialPrism_3D_i::StdMeshers_RadialPrism_3D_i( PortableServer::POA_pt
     SMESH_Algo_i( thePOA ),
     SMESH_3D_Algo_i( thePOA )
 {
-  MESSAGE( "StdMeshers_RadialPrism_3D_i::StdMeshers_RadialPrism_3D_i" );
   myBaseImpl = new ::StdMeshers_RadialPrism_3D( theGenImpl->GetANewId(),
                                                 theStudyId,
                                                 theGenImpl );
@@ -98,13 +94,11 @@ StdMeshers_RadialPrism_3D_i::StdMeshers_RadialPrism_3D_i( PortableServer::POA_pt
 
 StdMeshers_RadialPrism_3D_i::~StdMeshers_RadialPrism_3D_i()
 {
-  MESSAGE( "StdMeshers_RadialPrism_3D_i::~StdMeshers_RadialPrism_3D_i" );
 }
 //-----------------------------------------------------------------------------
 
 ::StdMeshers_RadialPrism_3D* StdMeshers_RadialPrism_3D_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_RadialPrism_3D_i::GetImpl" );
   return ( ::StdMeshers_RadialPrism_3D* )myBaseImpl;
 }
 //-----------------------------------------------------------------------------

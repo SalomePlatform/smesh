@@ -52,7 +52,6 @@ StdMeshers_LocalLength_i::StdMeshers_LocalLength_i( PortableServer::POA_ptr theP
      : SALOME::GenericObj_i( thePOA ),
        SMESH_Hypothesis_i( thePOA )
 {
-  MESSAGE( "StdMeshers_LocalLength_i::StdMeshers_LocalLength_i" );
   myBaseImpl = new ::StdMeshers_LocalLength( theGenImpl->GetANewId(),
                                              theStudyId,
                                              theGenImpl );
@@ -68,7 +67,6 @@ StdMeshers_LocalLength_i::StdMeshers_LocalLength_i( PortableServer::POA_ptr theP
 
 StdMeshers_LocalLength_i::~StdMeshers_LocalLength_i()
 {
-  MESSAGE( "StdMeshers_LocalLength_i::~StdMeshers_LocalLength_i" );
 }
 
 //=============================================================================
@@ -81,7 +79,6 @@ StdMeshers_LocalLength_i::~StdMeshers_LocalLength_i()
 void StdMeshers_LocalLength_i::SetLength( CORBA::Double theLength )
      throw ( SALOME::SALOME_Exception )
 {
-  MESSAGE( "StdMeshers_LocalLength_i::SetLength" );
   ASSERT( myBaseImpl );
   try {
     this->GetImpl()->SetLength( theLength );
@@ -105,7 +102,6 @@ void StdMeshers_LocalLength_i::SetLength( CORBA::Double theLength )
 void StdMeshers_LocalLength_i::SetPrecision( CORBA::Double thePrecision )
      throw ( SALOME::SALOME_Exception )
 {
-  MESSAGE( "StdMeshers_LocalLength_i::SetPrecision" );
   ASSERT( myBaseImpl );
   try {
     this->GetImpl()->SetPrecision( thePrecision );
@@ -128,7 +124,6 @@ void StdMeshers_LocalLength_i::SetPrecision( CORBA::Double thePrecision )
 //=============================================================================
 CORBA::Double StdMeshers_LocalLength_i::GetLength()
 {
-  MESSAGE( "StdMeshers_LocalLength_i::GetLength" );
   ASSERT( myBaseImpl );
   return this->GetImpl()->GetLength();
 }
@@ -142,7 +137,6 @@ CORBA::Double StdMeshers_LocalLength_i::GetLength()
 //=============================================================================
 CORBA::Double StdMeshers_LocalLength_i::GetPrecision()
 {
-  MESSAGE( "StdMeshers_LocalLength_i::GetPrecision" );
   ASSERT( myBaseImpl );
   return this->GetImpl()->GetPrecision();
 }
@@ -156,7 +150,6 @@ CORBA::Double StdMeshers_LocalLength_i::GetPrecision()
 //=============================================================================
 ::StdMeshers_LocalLength* StdMeshers_LocalLength_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_LocalLength_i::GetImpl" );
   return ( ::StdMeshers_LocalLength* )myBaseImpl;
 }
 

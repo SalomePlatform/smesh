@@ -80,7 +80,6 @@ int SMDS_MeshElementIDFactory::SetInVtkGrid(SMDS_MeshElement * elem)
 
 bool SMDS_MeshElementIDFactory::BindID(int ID, SMDS_MeshElement * elem)
 {
-  MESSAGE("SMDS_MeshElementIDFactory::BindID " << ID);
   SetInVtkGrid(elem);
   return myMesh->registerElement(ID, elem);
 }

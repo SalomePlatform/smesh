@@ -62,13 +62,12 @@ StdMeshers_ProjectionSource3D::StdMeshers_ProjectionSource3D(int hypId, int stud
 
 StdMeshers_ProjectionSource3D::~StdMeshers_ProjectionSource3D()
 {
-  MESSAGE( "StdMeshers_ProjectionSource3D::~StdMeshers_ProjectionSource3D" );
 }
 
 //=============================================================================
-  /*!
-   * Sets a source <face> to take a mesh pattern from
-   */
+/*!
+ * Sets a source shape to take a mesh pattern from
+ */
 //=============================================================================
 
 void StdMeshers_ProjectionSource3D::SetSource3DShape(const TopoDS_Shape& Shape)

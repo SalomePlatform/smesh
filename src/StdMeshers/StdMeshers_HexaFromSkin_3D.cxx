@@ -1025,13 +1025,11 @@ namespace
 StdMeshers_HexaFromSkin_3D::StdMeshers_HexaFromSkin_3D(int hypId, int studyId, SMESH_Gen* gen)
   :SMESH_3D_Algo(hypId, studyId, gen)
 {
-  MESSAGE("StdMeshers_HexaFromSkin_3D::StdMeshers_HexaFromSkin_3D");
   _name = "HexaFromSkin_3D";
 }
 
 StdMeshers_HexaFromSkin_3D::~StdMeshers_HexaFromSkin_3D()
 {
-  MESSAGE("StdMeshers_HexaFromSkin_3D::~StdMeshers_HexaFromSkin_3D");
 }
 
 //================================================================================

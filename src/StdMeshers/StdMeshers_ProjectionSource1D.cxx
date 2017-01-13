@@ -63,13 +63,12 @@ StdMeshers_ProjectionSource1D::StdMeshers_ProjectionSource1D(int hypId, int stud
 
 StdMeshers_ProjectionSource1D::~StdMeshers_ProjectionSource1D()
 {
-  MESSAGE( "StdMeshers_ProjectionSource1D::~StdMeshers_ProjectionSource1D" );
 }
 
 //=============================================================================
-  /*!
-   * Sets source <edge> to take a mesh pattern from
-   */
+/*!
+ * Sets source <edge> to take a mesh pattern from
+ */
 //=============================================================================
 
 void StdMeshers_ProjectionSource1D::SetSourceEdge(const TopoDS_Shape& edge)

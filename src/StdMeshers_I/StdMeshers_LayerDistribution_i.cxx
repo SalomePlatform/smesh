@@ -50,7 +50,6 @@ StdMeshers_LayerDistribution_i::StdMeshers_LayerDistribution_i( PortableServer::
   : SALOME::GenericObj_i( thePOA ),
     SMESH_Hypothesis_i( thePOA )
 {
-  MESSAGE( "StdMeshers_LayerDistribution_i::StdMeshers_LayerDistribution_i" );
   myBaseImpl = new ::StdMeshers_LayerDistribution( theGenImpl->GetANewId(),
                                                    theStudyId,
                                                    theGenImpl );
@@ -66,7 +65,6 @@ StdMeshers_LayerDistribution_i::StdMeshers_LayerDistribution_i( PortableServer::
 
 StdMeshers_LayerDistribution_i::~StdMeshers_LayerDistribution_i()
 {
-  MESSAGE( "StdMeshers_LayerDistribution_i::~StdMeshers_LayerDistribution_i" );
   if ( !myHyp->_is_nil() )
     myHyp->UnRegister();
 }

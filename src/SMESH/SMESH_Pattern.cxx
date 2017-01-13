@@ -267,8 +267,6 @@ SMESH_Pattern::SMESH_Pattern (): myToKeepNodes(false)
 
 bool SMESH_Pattern::Load (const char* theFileContents)
 {
-  MESSAGE("Load( file ) ");
-
   Kernel_Utils::Localizer loc;
   
   // file structure:
@@ -413,8 +411,6 @@ bool SMESH_Pattern::Load (const char* theFileContents)
 
 bool SMESH_Pattern::Save (ostream& theFile)
 {
-  MESSAGE(" ::Save(file) " );
-  
   Kernel_Utils::Localizer loc;
     
   if ( !IsLoaded() ) {
@@ -568,7 +564,6 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
                           TopoDS_Vertex      the1stVertex,
                           bool               theKeepNodes)
 {
-  MESSAGE(" ::Load(face) " );
   Clear();
   myIs2D = true;
   myToKeepNodes = theKeepNodes;
@@ -616,7 +611,6 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
 
   if ( needProject )
   {
-    MESSAGE("Project the submesh");
     // ---------------------------------------------------------------
     // The case where the submesh is projected to theFace
     // ---------------------------------------------------------------
@@ -1104,10 +1098,10 @@ static bool intersectIsolines(const gp_XY& uv11, const gp_XY& uv12, const double
 
 //   resUV /= 2.;
 //     }
-  if ( isDeformed ) {
-    MESSAGE("intersectIsolines(), d1 = " << d1 << ", d2 = " << d2 << ", delta = " << delta <<
-            ", " << (loc1 - loc2).SquareModulus() << " > " << delta * delta);
-  }
+  // if ( isDeformed ) {
+  //   MESSAGE("intersectIsolines(), d1 = " << d1 << ", d2 = " << d2 << ", delta = " << delta <<
+  //           ", " << (loc1 - loc2).SquareModulus() << " > " << delta * delta);
+  // }
   return true;
 }
 
@@ -1902,7 +1896,7 @@ bool SMESH_Pattern::
   list < TIsoNode* > internNodes;
   bool needIteration = true;
   if ( startNodes.empty() ) {
-    MESSAGE( " Starting UV by compUVByIsoIntersection()");
+    //MESSAGE( " Starting UV by compUVByIsoIntersection()");
     needIteration = false;
     map < double, TIsoLine >& isos = isoMap[ 0 ];
     map < double, TIsoLine >::iterator isoIt = isos.begin();
@@ -2122,7 +2116,7 @@ bool SMESH_Pattern::
 #endif
   } while ( maxMove > 1e-8 && nbIter++ < maxNbIter );
 
-  MESSAGE( "compUVByElasticIsolines(): Nb iterations " << nbIter << " dist: " << sqrt( maxMove ));
+  //MESSAGE( "compUVByElasticIsolines(): Nb iterations " << nbIter << " dist: " << sqrt( maxMove ));
 
   if ( nbIter >= maxNbIter && sqrt(maxMove) > minUvSize * 0.05 ) {
     MESSAGE( "compUVByElasticIsolines() failed: "<<sqrt(maxMove)<<">"<<minUvSize * 0.05);
@@ -2407,7 +2401,6 @@ bool SMESH_Pattern::Apply (const TopoDS_Face&   theFace,
                            const TopoDS_Vertex& theVertexOnKeyPoint1,
                            const bool           theReverse)
 {
-  MESSAGE(" ::Apply(face) " );
   TopoDS_Face face  = theReverse ? TopoDS::Face( theFace.Reversed() ) : theFace;
   if ( !setShapeToMesh( face ))
     return false;
@@ -3090,8 +3083,6 @@ bool SMESH_Pattern::Apply (std::set<const SMDS_MeshVolume*> & theVolumes,
                            const int                          theNode000Index,
                            const int                          theNode001Index)
 {
-  MESSAGE(" ::Apply(set<MeshVolumes>) " );
-
   if ( !IsLoaded() ) {
     MESSAGE( "Pattern not loaded" );
     return setErrorCode( ERR_APPL_NOT_LOADED );
@@ -3199,7 +3190,6 @@ bool SMESH_Pattern::Load (SMESH_Mesh*         theMesh,
                           const TopoDS_Shell& theBlock,
                           bool                theKeepNodes)
 {
-  MESSAGE(" ::Load(volume) " );
   Clear();
   myIs2D = false;
   myToKeepNodes = theKeepNodes;
@@ -3363,8 +3353,6 @@ bool SMESH_Pattern::Apply (const TopoDS_Shell&  theBlock,
                            const TopoDS_Vertex& theVertex000,
                            const TopoDS_Vertex& theVertex001)
 {
-  MESSAGE(" ::Apply(volume) " );
-
   if (!findBoundaryPoints()     || // bind ID to points
       !setShapeToMesh( theBlock )) // check theBlock is a suitable shape
     return false;
@@ -3424,8 +3412,6 @@ bool SMESH_Pattern::Apply (const SMDS_MeshVolume* theVolume,
                            const int              theNode000Index,
                            const int              theNode001Index)
 {
-  //MESSAGE(" ::Apply(MeshVolume) " );
-
   if (!findBoundaryPoints()) // bind ID to points
     return false;
 
@@ -4016,7 +4002,6 @@ bool SMESH_Pattern::MakeMesh(SMESH_Mesh* theMesh,
                              const bool  toCreatePolygons,
                              const bool  toCreatePolyedrs)
 {
-  MESSAGE(" ::MakeMesh() " );
   if ( !myIsComputed )
     return setErrorCode( ERR_MAKEM_NOT_COMPUTED );
 
@@ -4551,8 +4536,6 @@ void SMESH_Pattern::arrangeBoundaries (list< list< TPoint* > >& boundaryList)
 bool SMESH_Pattern::findBoundaryPoints()
 {
   if ( myIsBoundaryPointsFound ) return true;
-
-  MESSAGE(" findBoundaryPoints() ");
 
   myNbKeyPntInBoundary.clear();
 

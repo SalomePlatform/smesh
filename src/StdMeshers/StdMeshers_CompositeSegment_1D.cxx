@@ -247,7 +247,6 @@ StdMeshers_CompositeSegment_1D::StdMeshers_CompositeSegment_1D(int         hypId
                                                                SMESH_Gen * gen)
   :StdMeshers_Regular_1D(hypId, studyId, gen)
 {
-  MESSAGE("StdMeshers_CompositeSegment_1D::StdMeshers_CompositeSegment_1D");
   _name = AlgoName();
 }
 

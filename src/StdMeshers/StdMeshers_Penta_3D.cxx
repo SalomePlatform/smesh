@@ -96,8 +96,6 @@ StdMeshers_Penta_3D::~StdMeshers_Penta_3D()
 bool StdMeshers_Penta_3D::Compute(SMESH_Mesh& aMesh, 
                                   const TopoDS_Shape& aShape)
 {
-  MESSAGE("StdMeshers_Penta_3D::Compute()");
-  //
   bool bOK=false;
   //
   myShape=aShape;
@@ -426,7 +424,7 @@ void StdMeshers_Penta_3D::MakeNodes()
       //   suporting shape ID
       ShapeSupportID(bIsUpperLayer, aBNSSID, aSSID);
       if (!myErrorStatus->IsOK()) {
-        MESSAGE("StdMeshers_Penta_3D::MakeNodes() ");
+        MESSAGE("StdMeshers_Penta_3D::MakeNodes() pb");
         return;
       }
       //
@@ -473,7 +471,7 @@ void StdMeshers_Penta_3D::MakeNodes()
         }
       }
       if (!myErrorStatus->IsOK()) {
-        MESSAGE("StdMeshers_Penta_3D::MakeNodes() ");
+        MESSAGE("StdMeshers_Penta_3D::MakeNodes() err");
         return;
       }
       //
@@ -685,7 +683,7 @@ void StdMeshers_Penta_3D::MakeVolumeMesh()
       aID0 = pNode->GetID();
       aJ[k] = GetIndexOnLayer(aID0);
       if (!myErrorStatus->IsOK()) {
-        MESSAGE("StdMeshers_Penta_3D::MakeVolumeMesh");
+        MESSAGE("StdMeshers_Penta_3D::MakeVolumeMesh pb");
         return;
       }
     }
@@ -820,7 +818,7 @@ void StdMeshers_Penta_3D::MakeMeshOnFxy1()
       aID0 = pNode->GetID();
       aJ = GetIndexOnLayer(aID0);
       if (!myErrorStatus->IsOK()) {
-        MESSAGE("StdMeshers_Penta_3D::MakeMeshOnFxy1() ");
+        MESSAGE("StdMeshers_Penta_3D::MakeMeshOnFxy1() pb");
         return;
       }
       //
@@ -1224,7 +1222,7 @@ void StdMeshers_Penta_3D::MakeBlock()
   // 1.1 Base vertex V000
   iNbE = aME.Extent();
   if (iNbE!= NB_WALL_FACES ){
-    MESSAGE("StdMeshers_Penta_3D::MakeBlock() ");
+    MESSAGE("StdMeshers_Penta_3D::MakeBlock() err");
     myErrorStatus->myName=7; // too few edges are in base face aFTr
     myErrorStatus->myComment=SMESH_Comment("Not a quadrilateral face #")
       <<pMesh->GetMeshDS()->ShapeToIndex( aFTr )<<": "<<iNbE<<" edges" ;
@@ -1241,7 +1239,7 @@ void StdMeshers_Penta_3D::MakeBlock()
   }
   iNbEV=aMEV.Extent();
   if (iNbEV!=3){
-    MESSAGE("StdMeshers_Penta_3D::MakeBlock() ");
+    MESSAGE("StdMeshers_Penta_3D::MakeBlock() err");
     myErrorStatus->myName=7; // too few edges meet in base vertex 
     myErrorStatus->myComment=SMESH_Comment("3 edges must share vertex #")
       <<pMesh->GetMeshDS()->ShapeToIndex( aV000 )<<" but there are "<<iNbEV<<" edges";
@@ -1268,7 +1266,7 @@ void StdMeshers_Penta_3D::MakeBlock()
   }
   //
   if (!bFound) {
-    MESSAGE("StdMeshers_Penta_3D::MakeBlock() ");
+    MESSAGE("StdMeshers_Penta_3D::MakeBlock() err");
     myErrorStatus->myName=8; // can not find reper V001
     myErrorStatus->myComment=SMESH_Comment("Can't find opposite vertex for vertex #")
       <<pMesh->GetMeshDS()->ShapeToIndex( aV000 );
@@ -1863,8 +1861,6 @@ bool StdMeshers_Penta_3D::Evaluate(SMESH_Mesh& aMesh,
                                    const TopoDS_Shape& aShape,
                                    MapShapeNbElems& aResMap)
 {
-  MESSAGE("StdMeshers_Penta_3D::Evaluate()");
-
   // find face contains only triangles
   vector < SMESH_subMesh * >meshFaces;
   TopTools_SequenceOfShape aFaces;

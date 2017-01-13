@@ -50,7 +50,6 @@ StdMeshers_QuadrangleParams_i::StdMeshers_QuadrangleParams_i
      : SALOME::GenericObj_i( thePOA ), 
        SMESH_Hypothesis_i( thePOA )
 {
-  MESSAGE( "StdMeshers_QuadrangleParams_i::StdMeshers_QuadrangleParams_i" );
   myBaseImpl = new ::StdMeshers_QuadrangleParams(theGenImpl->GetANewId(),
                                                  theStudyId,
                                                  theGenImpl);
@@ -66,7 +65,6 @@ StdMeshers_QuadrangleParams_i::StdMeshers_QuadrangleParams_i
 
 StdMeshers_QuadrangleParams_i::~StdMeshers_QuadrangleParams_i()
 {
-  MESSAGE( "StdMeshers_QuadrangleParams_i::~StdMeshers_QuadrangleParams_i" );
 }
 
 //=============================================================================
@@ -79,7 +77,6 @@ StdMeshers_QuadrangleParams_i::~StdMeshers_QuadrangleParams_i()
 
 void StdMeshers_QuadrangleParams_i::SetTriaVertex(CORBA::Long vertID)
 {
-  MESSAGE( "StdMeshers_QuadrangleParams_i::SetTriaVertex" );
   ASSERT( myBaseImpl );
   try {
     this->GetImpl()->SetTriaVertex( vertID );
@@ -102,7 +99,6 @@ void StdMeshers_QuadrangleParams_i::SetTriaVertex(CORBA::Long vertID)
 
 CORBA::Long StdMeshers_QuadrangleParams_i::GetTriaVertex()
 {
-  MESSAGE( "StdMeshers_QuadrangleParams_i::GetTriaVertex" );
   ASSERT( myBaseImpl );
   return this->GetImpl()->GetTriaVertex();
 }
@@ -117,7 +113,6 @@ CORBA::Long StdMeshers_QuadrangleParams_i::GetTriaVertex()
 
 void StdMeshers_QuadrangleParams_i::SetObjectEntry( const char* entry )
 {
-  MESSAGE( "StdMeshers_QuadrangleParams_i::SetObjectEntry" );
   ASSERT( myBaseImpl );
 
   try {
@@ -141,7 +136,6 @@ void StdMeshers_QuadrangleParams_i::SetObjectEntry( const char* entry )
 
 char* StdMeshers_QuadrangleParams_i::GetObjectEntry()
 {
-  MESSAGE( "StdMeshers_QuadrangleParams_i::SetObjectEntry" );
   ASSERT( myBaseImpl );
   const char* entry;
   try {
@@ -162,7 +156,6 @@ char* StdMeshers_QuadrangleParams_i::GetObjectEntry()
 //=============================================================================
 void StdMeshers_QuadrangleParams_i::SetQuadType(StdMeshers::QuadType type)
 {
-  MESSAGE("StdMeshers_QuadrangleParams_i::SetQuadType");
   ASSERT(myBaseImpl);
 
   if (int(type) >= int(StdMeshers::QUAD_NB_TYPES)) {
@@ -204,7 +197,6 @@ void StdMeshers_QuadrangleParams_i::SetQuadType(StdMeshers::QuadType type)
 //=============================================================================
 StdMeshers::QuadType StdMeshers_QuadrangleParams_i::GetQuadType()
 {
-  MESSAGE("StdMeshers_QuadrangleParams_i::GetQuadType");
   ASSERT(myBaseImpl);
   return StdMeshers::QuadType(int(this->GetImpl()->GetQuadType()));
 }
@@ -313,7 +305,6 @@ SMESH::string_array* StdMeshers_QuadrangleParams_i::GetEnfVertices()
 
 ::StdMeshers_QuadrangleParams* StdMeshers_QuadrangleParams_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_QuadrangleParams_i::GetImpl" );
   return ( ::StdMeshers_QuadrangleParams* )myBaseImpl;
 }
 

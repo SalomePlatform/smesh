@@ -80,7 +80,6 @@ SMESH_subMesh_i::SMESH_subMesh_i( PortableServer::POA_ptr thePOA,
 
 SMESH_subMesh_i::~SMESH_subMesh_i()
 {
-  MESSAGE("SMESH_subMesh_i::~SMESH_subMesh_i");
   if ( _preMeshInfo ) delete _preMeshInfo;
   _preMeshInfo = NULL;
 }

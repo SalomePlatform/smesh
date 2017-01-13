@@ -216,7 +216,7 @@ namespace {
       NbSeg += ( Lrat2 - Lratio ) / ( Lrat2 - Lrat1 )  * ( NbSegMax - NbSegMin );
 
     double S0 = Lmin / (int) NbSeg;
-    MESSAGE( "S0 = " << S0 << ", Lmin = " << Lmin << ", Nbseg = " << (int) NbSeg);
+    //MESSAGE( "S0 = " << S0 << ", Lmin = " << Lmin << ", Nbseg = " << (int) NbSeg);
 
     // Compute segments length for all edges
 

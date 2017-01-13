@@ -56,7 +56,6 @@ StdMeshers_ImportSource1D_i::StdMeshers_ImportSource1D_i( PortableServer::POA_pt
   : SALOME::GenericObj_i( thePOA ), 
     SMESH_Hypothesis_i( thePOA )
 {
-  MESSAGE( "StdMeshers_ImportSource1D_i::StdMeshers_ImportSource1D_i" );
   myBaseImpl = new ::StdMeshers_ImportSource1D( theGenImpl->GetANewId(),
                                                 theStudyId,
                                                 theGenImpl );
@@ -73,7 +72,6 @@ StdMeshers_ImportSource1D_i::StdMeshers_ImportSource1D_i( PortableServer::POA_pt
 
 StdMeshers_ImportSource1D_i::~StdMeshers_ImportSource1D_i()
 {
-  MESSAGE( "StdMeshers_ImportSource1D_i::~StdMeshers_ImportSource1D_i" );
 }
 
 //=============================================================================
@@ -84,7 +82,6 @@ StdMeshers_ImportSource1D_i::~StdMeshers_ImportSource1D_i()
 
 void StdMeshers_ImportSource1D_i::SetSourceEdges(const SMESH::ListOfGroups& groups)
 {
-  MESSAGE( "StdMeshers_ImportSource1D_i::SetSourceEdges" );
   ASSERT( myBaseImpl );
   try
   {
@@ -129,7 +126,6 @@ void StdMeshers_ImportSource1D_i::SetSourceEdges(const SMESH::ListOfGroups& grou
 
 SMESH::string_array*  StdMeshers_ImportSource1D_i::GetSourceEdges()
 {
-  MESSAGE( "StdMeshers_ImportSource1D_i::GetImportSource" );
   SMESH::string_array_var res = new SMESH::string_array( _groupEntries );
   return res._retn();
 }
@@ -261,7 +257,6 @@ void StdMeshers_ImportSource1D_i::UpdateAsMeshesRestored()
 
 ::StdMeshers_ImportSource1D* StdMeshers_ImportSource1D_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_ImportSource1D_i::GetImpl" );
   return ( ::StdMeshers_ImportSource1D* )myBaseImpl;
 }
 

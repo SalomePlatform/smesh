@@ -47,7 +47,6 @@ StdMeshers_NotConformAllowed_i::StdMeshers_NotConformAllowed_i
      : SALOME::GenericObj_i( thePOA ), 
        SMESH_Hypothesis_i( thePOA )
 {
-  MESSAGE("StdMeshers_NotConformAllowed_i::StdMeshers_NotConformAllowed_i");
   myBaseImpl = new ::StdMeshers_NotConformAllowed(genImpl->GetANewId(),
                                                   studyId,
                                                   genImpl);

@@ -60,7 +60,7 @@ SMESH_Hypothesis_i::SMESH_Hypothesis_i( PortableServer::POA_ptr thePOA )
 
 SMESH_Hypothesis_i::~SMESH_Hypothesis_i()
 {
-  MESSAGE( "SMESH_Hypothesis_i::~SMESH_Hypothesis_i" );
+  //MESSAGE( "SMESH_Hypothesis_i::~SMESH_Hypothesis_i" );
   if ( myBaseImpl )
     delete myBaseImpl;
 };

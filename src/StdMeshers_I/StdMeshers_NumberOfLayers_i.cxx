@@ -51,7 +51,6 @@ StdMeshers_NumberOfLayers_i::StdMeshers_NumberOfLayers_i( PortableServer::POA_pt
   : SALOME::GenericObj_i( thePOA ), 
     SMESH_Hypothesis_i( thePOA )
 {
-  MESSAGE( "StdMeshers_NumberOfLayers_i::StdMeshers_NumberOfLayers_i" );
   myBaseImpl = new ::StdMeshers_NumberOfLayers( theGenImpl->GetANewId(),
                                                  theStudyId,
                                                  theGenImpl );
@@ -67,7 +66,6 @@ StdMeshers_NumberOfLayers_i::StdMeshers_NumberOfLayers_i( PortableServer::POA_pt
 
 StdMeshers_NumberOfLayers_i::~StdMeshers_NumberOfLayers_i()
 {
-  MESSAGE( "StdMeshers_NumberOfLayers_i::~StdMeshers_NumberOfLayers_i" );
 }
 
 //=============================================================================

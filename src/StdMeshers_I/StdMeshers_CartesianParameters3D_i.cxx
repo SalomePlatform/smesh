@@ -64,7 +64,6 @@ StdMeshers_CartesianParameters3D_i( PortableServer::POA_ptr thePOA,
   : SALOME::GenericObj_i( thePOA ), 
     SMESH_Hypothesis_i( thePOA )
 {
-  MESSAGE( "StdMeshers_CartesianParameters3D_i::StdMeshers_CartesianParameters3D_i" );
   myBaseImpl = new ::StdMeshers_CartesianParameters3D( theGenImpl->GetANewId(),
                                                        theStudyId,
                                                        theGenImpl );
@@ -80,7 +79,6 @@ StdMeshers_CartesianParameters3D_i( PortableServer::POA_ptr thePOA,
 
 StdMeshers_CartesianParameters3D_i::~StdMeshers_CartesianParameters3D_i()
 {
-  MESSAGE( "StdMeshers_CartesianParameters3D_i::~StdMeshers_CartesianParameters3D_i" );
 }
 
 //=============================================================================
@@ -419,7 +417,6 @@ StdMeshers_CartesianParameters3D_i::ComputeCoordinates(CORBA::Double            
 
 ::StdMeshers_CartesianParameters3D* StdMeshers_CartesianParameters3D_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_CartesianParameters3D_i::GetImpl" );
   return ( ::StdMeshers_CartesianParameters3D* )myBaseImpl;
 }
 

@@ -61,7 +61,6 @@ StdMeshers_NumberOfLayers::StdMeshers_NumberOfLayers(int hypId, int studyId,
 
 StdMeshers_NumberOfLayers::~StdMeshers_NumberOfLayers()
 {
-  MESSAGE( "StdMeshers_NumberOfLayers::~StdMeshers_NumberOfLayers" );
 }
 
 //=============================================================================

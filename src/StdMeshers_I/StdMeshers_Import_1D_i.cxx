@@ -50,7 +50,6 @@ StdMeshers_Import_1D_i::StdMeshers_Import_1D_i( PortableServer::POA_ptr thePOA,
     SMESH_Algo_i( thePOA ),
     SMESH_1D_Algo_i( thePOA )
 {
-  MESSAGE( "StdMeshers_Import_1D_i::StdMeshers_Import_1D_i" );
   myBaseImpl = new ::StdMeshers_Import_1D( theGenImpl->GetANewId(),
                                            theStudyId,
                                            theGenImpl );
@@ -66,7 +65,6 @@ StdMeshers_Import_1D_i::StdMeshers_Import_1D_i( PortableServer::POA_ptr thePOA,
 
 StdMeshers_Import_1D_i::~StdMeshers_Import_1D_i()
 {
-  MESSAGE( "StdMeshers_Import_1D_i::~StdMeshers_Import_1D_i" );
 }
 
 //=============================================================================
@@ -79,7 +77,6 @@ StdMeshers_Import_1D_i::~StdMeshers_Import_1D_i()
 
 ::StdMeshers_Import_1D* StdMeshers_Import_1D_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_Import_1D_i::GetImpl" );
   return ( ::StdMeshers_Import_1D* )myBaseImpl;
 }
 

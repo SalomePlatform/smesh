@@ -63,7 +63,6 @@ using namespace std;
 StdMeshers_Import_1D::StdMeshers_Import_1D(int hypId, int studyId, SMESH_Gen * gen)
   :SMESH_1D_Algo(hypId, studyId, gen), _sourceHyp(0)
 {
-  MESSAGE("StdMeshers_Import_1D::StdMeshers_Import_1D");
   _name = "Import_1D";
   _shapeType = (1 << TopAbs_EDGE);
 

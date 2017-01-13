@@ -52,7 +52,6 @@ StdMeshers_StartEndLength_i::StdMeshers_StartEndLength_i( PortableServer::POA_pt
      : SALOME::GenericObj_i( thePOA ), 
        SMESH_Hypothesis_i( thePOA )
 {
-  MESSAGE( "StdMeshers_StartEndLength_i::StdMeshers_StartEndLength_i" );
   myBaseImpl = new ::StdMeshers_StartEndLength( theGenImpl->GetANewId(),
                                                theStudyId,
                                                theGenImpl );
@@ -68,7 +67,6 @@ StdMeshers_StartEndLength_i::StdMeshers_StartEndLength_i( PortableServer::POA_pt
 
 StdMeshers_StartEndLength_i::~StdMeshers_StartEndLength_i()
 {
-  MESSAGE( "StdMeshers_StartEndLength_i::~StdMeshers_StartEndLength_i" );
 }
 
 //=============================================================================
@@ -83,7 +81,6 @@ void StdMeshers_StartEndLength_i::SetLength(CORBA::Double theLength,
                                             CORBA::Boolean theIsStart )
      throw ( SALOME::SALOME_Exception )
 {
-  MESSAGE( "StdMeshers_StartEndLength_i::SetLength" );
   ASSERT( myBaseImpl );
   try {
     this->GetImpl()->SetLength( theLength, theIsStart );
@@ -133,7 +130,6 @@ void StdMeshers_StartEndLength_i::SetEndLength( CORBA::Double length)
 
 CORBA::Double StdMeshers_StartEndLength_i::GetLength( CORBA::Boolean theIsStart)
 {
-  MESSAGE( "StdMeshers_StartEndLength_i::GetLength" );
   ASSERT( myBaseImpl );
   return this->GetImpl()->GetLength( theIsStart );
 }
@@ -239,7 +235,6 @@ SMESH::long_array* StdMeshers_StartEndLength_i::GetReversedEdges()
 
 ::StdMeshers_StartEndLength* StdMeshers_StartEndLength_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_StartEndLength_i::GetImpl" );
   return ( ::StdMeshers_StartEndLength* )myBaseImpl;
 }
 

@@ -52,7 +52,6 @@ StdMeshers_Deflection1D_i::StdMeshers_Deflection1D_i( PortableServer::POA_ptr th
      : SALOME::GenericObj_i( thePOA ), 
        SMESH_Hypothesis_i( thePOA )
 {
-  MESSAGE( "StdMeshers_Deflection1D_i::StdMeshers_Deflection1D_i" );
   myBaseImpl = new ::StdMeshers_Deflection1D( theGenImpl->GetANewId(),
                                         theStudyId,
                                         theGenImpl );
@@ -68,7 +67,6 @@ StdMeshers_Deflection1D_i::StdMeshers_Deflection1D_i( PortableServer::POA_ptr th
 
 StdMeshers_Deflection1D_i::~StdMeshers_Deflection1D_i()
 {
-  MESSAGE( "StdMeshers_Deflection1D_i::~StdMeshers_Deflection1D_i" );
 }
 
 //=============================================================================
@@ -82,7 +80,6 @@ StdMeshers_Deflection1D_i::~StdMeshers_Deflection1D_i()
 void StdMeshers_Deflection1D_i::SetDeflection( CORBA::Double theValue )
      throw ( SALOME::SALOME_Exception )
 {
-  MESSAGE( "StdMeshers_Deflection1D_i::SetDeflection" );
   ASSERT( myBaseImpl );
   try {
     this->GetImpl()->SetDeflection( theValue );
@@ -106,7 +103,6 @@ void StdMeshers_Deflection1D_i::SetDeflection( CORBA::Double theValue )
 
 CORBA::Double StdMeshers_Deflection1D_i::GetDeflection()
 {
-  MESSAGE( "StdMeshers_Deflection1D_i::GetDeflection" );
   ASSERT( myBaseImpl );
   return this->GetImpl()->GetDeflection();
 }
@@ -121,7 +117,6 @@ CORBA::Double StdMeshers_Deflection1D_i::GetDeflection()
 
 ::StdMeshers_Deflection1D* StdMeshers_Deflection1D_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_Deflection1D_i::GetImpl" );
   return ( ::StdMeshers_Deflection1D* )myBaseImpl;
 }
 

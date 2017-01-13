@@ -742,8 +742,8 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
         int nbE = FindFaceAssociation( face1, VV1, face2, VV2, edges1, edges2, isVCloseness );
         if ( !nbE ) RETURN_BAD_RESULT("FindFaceAssociation() failed");
         InsertAssociation( face1, face2, theMap ); // assoc faces
-        MESSAGE("Assoc FACE " << theMesh1->GetMeshDS()->ShapeToIndex( face1 )<<
-                " to "        << theMesh2->GetMeshDS()->ShapeToIndex( face2 ));
+        // MESSAGE("Assoc FACE " << theMesh1->GetMeshDS()->ShapeToIndex( face1 )<<
+        //         " to "        << theMesh2->GetMeshDS()->ShapeToIndex( face2 ));
         if ( nbE == 2 && (edge1.IsSame( edges1.front())) != (edge2.IsSame( edges2.front())))
         {
           reverseEdges( edges2, nbE );
@@ -954,14 +954,14 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
             v2e[0].UnBind( V[0] );
             v2e[1].UnBind( V[1] );
             InsertAssociation( e0, e1, theMap );
-            MESSAGE("Assoc edge " << theMesh1->GetMeshDS()->ShapeToIndex( e0 )<<
-                    " to "        << theMesh2->GetMeshDS()->ShapeToIndex( e1 ));
+            // MESSAGE("Assoc edge " << theMesh1->GetMeshDS()->ShapeToIndex( e0 )<<
+            //         " to "        << theMesh2->GetMeshDS()->ShapeToIndex( e1 ));
             V[0] = GetNextVertex( e0, V[0] );
             V[1] = GetNextVertex( e1, V[1] );
             if ( !V[0].IsNull() ) {
               InsertAssociation( V[0], V[1], theMap );
-              MESSAGE("Assoc vertex " << theMesh1->GetMeshDS()->ShapeToIndex( V[0] )<<
-                      " to "          << theMesh2->GetMeshDS()->ShapeToIndex( V[1] ));
+              // MESSAGE("Assoc vertex " << theMesh1->GetMeshDS()->ShapeToIndex( V[0] )<<
+              //         " to "          << theMesh2->GetMeshDS()->ShapeToIndex( V[1] ));
             }
           }
           else if ( nbE0 == 2 )
@@ -988,12 +988,12 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
             InsertAssociation( e0b, e1b, theMap );
             InsertAssociation( e0n, e1n, theMap );
             InsertAssociation( v0n, v1n, theMap );
-            MESSAGE("Assoc edge " << theMesh1->GetMeshDS()->ShapeToIndex( e0b )<<
-                    " to "        << theMesh2->GetMeshDS()->ShapeToIndex( e1b ));
-            MESSAGE("Assoc edge " << theMesh1->GetMeshDS()->ShapeToIndex( e0n )<<
-                    " to "        << theMesh2->GetMeshDS()->ShapeToIndex( e1n ));
-            MESSAGE("Assoc vertex " << theMesh1->GetMeshDS()->ShapeToIndex( v0n )<<
-                    " to "          << theMesh2->GetMeshDS()->ShapeToIndex( v1n ));
+            // MESSAGE("Assoc edge " << theMesh1->GetMeshDS()->ShapeToIndex( e0b )<<
+            //         " to "        << theMesh2->GetMeshDS()->ShapeToIndex( e1b ));
+            // MESSAGE("Assoc edge " << theMesh1->GetMeshDS()->ShapeToIndex( e0n )<<
+            //         " to "        << theMesh2->GetMeshDS()->ShapeToIndex( e1n ));
+            // MESSAGE("Assoc vertex " << theMesh1->GetMeshDS()->ShapeToIndex( v0n )<<
+            //         " to "          << theMesh2->GetMeshDS()->ShapeToIndex( v1n ));
             v2e[0].UnBind( V[0] );
             v2e[1].UnBind( V[1] );
             V[0] = v0n;
@@ -1342,10 +1342,10 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
 
   InsertAssociation( VV1[ 0 ], VV2[ 0 ], theMap );
   InsertAssociation( VV1[ 1 ], VV2[ 1 ], theMap );
-  MESSAGE("Initial assoc VERT " << theMesh1->GetMeshDS()->ShapeToIndex( VV1[ 0 ] )<<
-          " to "                << theMesh2->GetMeshDS()->ShapeToIndex( VV2[ 0 ] )<<
-          "\nand         VERT " << theMesh1->GetMeshDS()->ShapeToIndex( VV1[ 1 ] )<<
-          " to "                << theMesh2->GetMeshDS()->ShapeToIndex( VV2[ 1 ] ));
+  // MESSAGE("Initial assoc VERT " << theMesh1->GetMeshDS()->ShapeToIndex( VV1[ 0 ] )<<
+  //         " to "                << theMesh2->GetMeshDS()->ShapeToIndex( VV2[ 0 ] )<<
+  //         "\nand         VERT " << theMesh1->GetMeshDS()->ShapeToIndex( VV1[ 1 ] )<<
+  //         " to "                << theMesh2->GetMeshDS()->ShapeToIndex( VV2[ 1 ] ));
   if ( theShape1.ShapeType() == TopAbs_EDGE ) {
     InsertAssociation( theShape1, theShape2, theMap );
     return true;

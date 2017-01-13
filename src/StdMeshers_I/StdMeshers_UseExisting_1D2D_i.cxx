@@ -45,7 +45,6 @@ StdMeshers_UseExisting_1D_i::StdMeshers_UseExisting_1D_i
        SMESH_Algo_i( thePOA ),
        SMESH_1D_Algo_i( thePOA )
 {
-  MESSAGE( "StdMeshers_UseExisting_1D_i::StdMeshers_UseExisting_1D_i" );
   myBaseImpl = new ::StdMeshers_UseExisting_1D( theGenImpl->GetANewId(),
                                                 theStudyId,
                                                 theGenImpl );
@@ -54,13 +53,11 @@ StdMeshers_UseExisting_1D_i::StdMeshers_UseExisting_1D_i
 
 StdMeshers_UseExisting_1D_i::~StdMeshers_UseExisting_1D_i()
 {
-  MESSAGE( "StdMeshers_UseExisting_1D_i::~StdMeshers_UseExisting_1D_i" );
 }
 //-----------------------------------------------------------------------------
 
 ::StdMeshers_UseExisting_1D* StdMeshers_UseExisting_1D_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_UseExisting_1D_i::GetImpl" );
   return ( ::StdMeshers_UseExisting_1D* )myBaseImpl;
 }
 
@@ -80,7 +77,6 @@ StdMeshers_UseExisting_2D_i::StdMeshers_UseExisting_2D_i
        SMESH_Algo_i( thePOA ),
        SMESH_2D_Algo_i( thePOA )
 {
-  MESSAGE( "StdMeshers_UseExisting_2D_i::StdMeshers_UseExisting_2D_i" );
   myBaseImpl = new ::StdMeshers_UseExisting_2D( theGenImpl->GetANewId(),
                                                 theStudyId,
                                                 theGenImpl );
@@ -89,12 +85,10 @@ StdMeshers_UseExisting_2D_i::StdMeshers_UseExisting_2D_i
 
 StdMeshers_UseExisting_2D_i::~StdMeshers_UseExisting_2D_i()
 {
-  MESSAGE( "StdMeshers_UseExisting_2D_i::~StdMeshers_UseExisting_2D_i" );
 }
 //-----------------------------------------------------------------------------
 
 ::StdMeshers_UseExisting_2D* StdMeshers_UseExisting_2D_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_UseExisting_2D_i::GetImpl" );
   return ( ::StdMeshers_UseExisting_2D* )myBaseImpl;
 }

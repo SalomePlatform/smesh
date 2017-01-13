@@ -47,7 +47,6 @@ Driver_Mesh::Status DriverDAT_R_SMDS_Mesh::Perform()
   int NoeudsMaille[20];
   int NoeudMaille;
   
-  MESSAGE("in DriverDAT_R_SMDS_Mesh::Read()");
   /****************************************************************************
    *                      OUVERTURE DU FICHIER EN LECTURE                      *
    ****************************************************************************/

@@ -55,5 +55,4 @@ StdMeshers_LayerDistribution2D::StdMeshers_LayerDistribution2D(int hypId,
 
 StdMeshers_LayerDistribution2D::~StdMeshers_LayerDistribution2D()
 {
-  MESSAGE( "StdMeshers_LayerDistribution2D::~StdMeshers_LayerDistribution2D" );
 }

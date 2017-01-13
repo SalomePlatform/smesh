@@ -44,7 +44,6 @@ StdMeshers_Import_1D2D_i::StdMeshers_Import_1D2D_i (PortableServer::POA_ptr theP
     SMESH_Algo_i( thePOA ),
     SMESH_2D_Algo_i( thePOA )
 {
-  MESSAGE( "StdMeshers_Import_1D2D_i::StdMeshers_Import_1D2D_i" );
   myBaseImpl = new ::StdMeshers_Import_1D2D(theGenImpl->GetANewId(),
                                             theStudyId,
                                             theGenImpl );
@@ -54,14 +53,12 @@ StdMeshers_Import_1D2D_i::StdMeshers_Import_1D2D_i (PortableServer::POA_ptr theP
 
 StdMeshers_Import_1D2D_i::~StdMeshers_Import_1D2D_i()
 {
-  MESSAGE( "StdMeshers_Import_1D2D_i::~StdMeshers_Import_1D2D_i" );
 }
 
 //-----------------------------------------------------------------------------
 
 ::StdMeshers_Import_1D2D* StdMeshers_Import_1D2D_i::GetImpl()
 {
-  MESSAGE( "StdMeshers_Import_1D2D_i::GetImpl" );
   return ( ::StdMeshers_Import_1D2D* )myBaseImpl;
 }
 

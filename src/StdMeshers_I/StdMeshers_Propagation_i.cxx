@@ -45,7 +45,6 @@ StdMeshers_Propagation_i::StdMeshers_Propagation_i (PortableServer::POA_ptr theP
   : SALOME::GenericObj_i( thePOA ),
     SMESH_Hypothesis_i( thePOA )
 {
-  MESSAGE( "StdMeshers_Propagation_i::StdMeshers_Propagation_i" );
   myBaseImpl = new ::StdMeshers_Propagation(theGenImpl->GetANewId(),
                                             theStudyId,
                                             theGenImpl);

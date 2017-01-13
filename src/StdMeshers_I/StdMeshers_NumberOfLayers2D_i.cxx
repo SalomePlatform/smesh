@@ -41,7 +41,6 @@ StdMeshers_NumberOfLayers2D_i::StdMeshers_NumberOfLayers2D_i
  :SMESH_Hypothesis_i( thePOA ),
   StdMeshers_NumberOfLayers_i(thePOA,theStudyId,theGenImpl)
 {
-  MESSAGE("StdMeshers_NumberOfLayers2D_i::StdMeshers_NumberOfLayers2D_i");
   myBaseImpl = new ::StdMeshers_NumberOfLayers2D(theGenImpl->GetANewId(),
                                                  theStudyId,
                                                  theGenImpl);
@@ -57,7 +56,6 @@ StdMeshers_NumberOfLayers2D_i::StdMeshers_NumberOfLayers2D_i
 
 StdMeshers_NumberOfLayers2D_i::~StdMeshers_NumberOfLayers2D_i()
 {
-  MESSAGE( "StdMeshers_NumberOfLayers2D_i::~StdMeshers_NumberOfLayers2D_i" );
 }
 
 //=============================================================================

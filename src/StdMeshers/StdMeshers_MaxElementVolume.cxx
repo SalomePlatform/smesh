@@ -64,7 +64,6 @@ StdMeshers_MaxElementVolume::StdMeshers_MaxElementVolume(int hypId, int studyId,
 
 StdMeshers_MaxElementVolume::~StdMeshers_MaxElementVolume()
 {
-  MESSAGE("StdMeshers_MaxElementVolume::~StdMeshers_MaxElementVolume");
 }
 
 //=============================================================================
