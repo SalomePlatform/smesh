@@ -102,7 +102,7 @@
 #include <vector>
 #include <set>
 
-#ifndef WIN32
+#if !defined WIN32 && !defined __APPLE__
 #include <sys/sysinfo.h>
 #endif
 
@@ -786,7 +786,7 @@ SMESHGUI_ComputeDlg_QThreadQDialog(QWidget             * parent,
   QLabel * nbElemsName = new QLabel(tr("SMESH_MESHINFO_ELEMENTS"), this );
   nbNodesLabel = new QLabel("0", this );
   nbElemsLabel = new QLabel("0", this );
-#ifndef WIN32
+#if !defined WIN32 && !defined __APPLE__
   QLabel * freeRAMName = new QLabel(tr("SMESH_FREERAM"), this );
   freeRAMLabel = new QLabel("", this );
 #endif
@@ -802,7 +802,7 @@ SMESHGUI_ComputeDlg_QThreadQDialog(QWidget             * parent,
   layout->addWidget(nbNodesLabel, row++, 1);
   layout->addWidget(nbElemsName,  row,   0);
   layout->addWidget(nbElemsLabel, row++, 1);
-#ifndef WIN32
+#if !defined WIN32 && !defined __APPLE__
   layout->addWidget(freeRAMName,  row,   0);
   layout->addWidget(freeRAMLabel, row++, 1);
 #endif
@@ -842,7 +842,7 @@ void SMESHGUI_ComputeDlg_QThreadQDialog::timerEvent(QTimerEvent *event)
   {
     nbNodesLabel->setText( QString("%1").arg( qthread.getMesh()->NbNodes() ));
     nbElemsLabel->setText( QString("%1").arg( qthread.getMesh()->NbElements() ));
-#ifndef WIN32
+#if !defined WIN32 && !defined __APPLE__
     struct sysinfo si;
     const int err = sysinfo( &si );
     if ( err )

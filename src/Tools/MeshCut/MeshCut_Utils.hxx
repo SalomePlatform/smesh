@@ -57,7 +57,7 @@ namespace MESHCUT
 
     int copieFichier(std::string source, std::string cible);
     med_geometry_type InstanceMGE(TYPE_MAILLE TYPE);
-    int chrono();
+    int salome_chrono();
     TYPE_MAILLE typeMaille(std::string type);
     std::string MGE2string(med_geometry_type MGE);
     std::string TM2string(TYPE_MAILLE MGE);

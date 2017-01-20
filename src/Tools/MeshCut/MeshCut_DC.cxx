@@ -180,10 +180,10 @@ int main(int argc, char *argv[])
   //int NG[4]; // Num. globaux des sommets
 
   // Acquisition maillage initial
-  //cout << chrono() << " - Acquisition du maillage initial" << endl;
+  //cout << salome_chrono() << " - Acquisition du maillage initial" << endl;
   MAILLAGE1 = new Maillage((string) "TEMP");
   MAILLAGE1->inputMED(ficMEDin);
-  cout << chrono() << " - End of mesh read" << endl;
+  cout << salome_chrono() << " - End of mesh read" << endl;
   indexNouveauxNoeuds = MAILLAGE1->nombreNoeudsMaillage;
 
   // Le maillage ne contient aucun TETRA4 : on rend le maillage initial sans modification
@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
       cout << "WARNING: mesh does not contain tetra4 elements, it will not be modified" << endl;
       MAILLAGE1->ID = str_id_maillagenew;
       MAILLAGE1->outputMED(ficMEDout);
-      cout << chrono() << " - Finished!" << endl << endl;
+      cout << salome_chrono() << " - Finished!" << endl << endl;
       exit(0);
     }
   // A partir de cet instant le maillage contient forcément des TETRA4
@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
   DNP = (float*) malloc(sizeof(float) * MAILLAGE1->nombreNoeudsMaillage);
   for (int k = 0; k < MAILLAGE1->nombreNoeudsMaillage; k++)
     DNP[k] = distanceNoeudPlan(k + 1);
-  cout << chrono() << " - End of computation of distances between nodes and plane" << endl;
+  cout << salome_chrono() << " - End of computation of distances between nodes and plane" << endl;
 
   // Longueur d'arête moyenne des T4 intersectant le plan de coupe
   float LONGUEURS = 0.0;
@@ -246,7 +246,7 @@ int main(int argc, char *argv[])
           << endl;
       MAILLAGE1->ID = str_id_maillagenew;
       MAILLAGE1->outputMED(ficMEDout);
-      cout << chrono() << " - Finished!" << endl << endl;
+      cout << salome_chrono() << " - Finished!" << endl << endl;
       exit(0);
     }
   // A partir de cet instant le maillage contient forcément des TETRA4 intersectant le plan de coupe
@@ -256,7 +256,7 @@ int main(int argc, char *argv[])
   epsilon = tolerance * longueurMoyenne;
 
   int nT4coupe = cptLONGUEURS / 6;
-  cout << chrono() << " - End of computation of mean length of tetra4 edges near the cut plane" << endl;
+  cout << salome_chrono() << " - End of computation of mean length of tetra4 edges near the cut plane" << endl;
 
   cout << "Number of tetra4 to be cut = " << nT4coupe << endl;
   cout << "Mean length = " << longueurMoyenne << endl;
@@ -274,7 +274,7 @@ int main(int argc, char *argv[])
       else
         POSN[k] = 0;
     }
-  cout << chrono() << " - End of nodes qualification above or below the cut plane" << endl;
+  cout << salome_chrono() << " - End of nodes qualification above or below the cut plane" << endl;
   cout << "Start of iteration on tetra4" << endl;
 
   for (int it4 = 0; it4 < MAILLAGE1->EFFECTIFS_TYPES[TETRA4]; it4++)
@@ -993,7 +993,7 @@ int main(int argc, char *argv[])
         ERREUR("Case not taken into account");
 
     }
-  cout << chrono() << " - End of iteration on tetra4" << endl;
+  cout << salome_chrono() << " - End of iteration on tetra4" << endl;
 
   // cout << "indexNouveauxNoeuds = " << indexNouveauxNoeuds << endl;
   newXX.resize(indexNouveauxNoeuds - MAILLAGE1->nombreNoeudsMaillage);
@@ -1011,7 +1011,7 @@ int main(int argc, char *argv[])
   //                          2. Constitution du maillage final
   // =========================================================================================
 
-  cout << chrono() << " - Constitution of final mesh" << endl;
+  cout << salome_chrono() << " - Constitution of final mesh" << endl;
 
   MAILLAGE2 = new Maillage(str_id_maillagenew);
   MAILLAGE2->dimensionMaillage = MAILLAGE1->dimensionMaillage;
@@ -1114,10 +1114,10 @@ int main(int argc, char *argv[])
 
   MAILLAGE2->eliminationMailles(TETRA4, cutTetras);
 
-  cout << chrono() << " - MED file writing" << endl;
+  cout << salome_chrono() << " - MED file writing" << endl;
 
   MAILLAGE2->outputMED(ficMEDout);
-  cout << chrono() << " - Finished!" << endl << endl;
+  cout << salome_chrono() << " - Finished!" << endl << endl;
 
   return 0;
 

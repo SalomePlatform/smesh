@@ -54,6 +54,7 @@
  #include <process.h>
 #else
  #include <dlfcn.h>
+ #include <libgen.h> // for basename function
 #endif
 
 #ifdef WIN32
@@ -382,8 +383,10 @@ GenericHypothesisCreator_i* SMESH_Gen_i::getHypothesisCreator(const char* theHyp
         !strcmp( theLibName+libNameLen-3, ".so" ))
     {
       //the old format
-#ifdef WIN32
+#if defined(WIN32)
       aPlatformLibName = std::string( theLibName+3, libNameLen-6 ) + ".dll";
+#elif defined(__APPLE__)
+      aPlatformLibName = std::string( theLibName, libNameLen-3 ) + ".dylib";
 #else
       aPlatformLibName = theLibName;
 #endif
@@ -391,11 +394,13 @@ GenericHypothesisCreator_i* SMESH_Gen_i::getHypothesisCreator(const char* theHyp
     else
     {
       //try to use new format
-#ifdef WIN32
+#if defined(WIN32)
       aPlatformLibName = theLibName;
       aPlatformLibName += ".dll";
+#elif defined(__APPLE__)
+      aPlatformLibName = std::string( "lib" ) + std::string( theLibName ) + ".dylib";
 #else
-      aPlatformLibName = "lib" + std::string( theLibName ) + ".so";
+      aPlatformLibName = std::string( "lib" ) + std::string( theLibName ) + ".so";
 #endif
     }
   }
@@ -1169,7 +1174,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMEDorSAUV( const char* theFileNa
   _splitpath( theFileNameForPython, NULL, NULL, bname, NULL );
   string aFileName = bname;
 #else
-  string aFileName = basename( theFileNameForPython );
+  string aFileName = basename( const_cast<char *>(theFileNameForPython) );
 #endif
   // Retrieve mesh names from the file
   DriverMED_R_SMESHDS_Mesh myReader;
@@ -1318,7 +1323,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromSTL( const char* theFileName 
   _splitpath( theFileName, NULL, NULL, bname, NULL );
   string aFileName = bname;
 #else
-  string aFileName = basename( theFileName );
+  string aFileName = basename( const_cast<char *>(theFileName) );
 #endif
   // publish mesh in the study
   if ( CanPublishInStudy( aMesh ) ) {
@@ -1447,7 +1452,7 @@ SMESH_Gen_i::CreateMeshesFromGMF( const char*             theFileName,
   _splitpath( theFileName, NULL, NULL, bname, NULL );
   string aFileName = bname;
 #else
-  string aFileName = basename( theFileName );
+  string aFileName = basename( const_cast<char *>(theFileName) );
 #endif
   // publish mesh in the study
   if ( CanPublishInStudy( aMesh ) ) {

@@ -91,11 +91,12 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
        */
       if( !myClientLib.isEmpty() )
       {
-#ifdef WIN32
+#if defined(WIN32)
         //myServerLib += ".dll";
         myClientLib += ".dll";
+#elif defined(__APPLE__)
+        myClientLib = "lib" + myClientLib + ".dylib";
 #else
-        //myServerLib = "lib" + myServerLib + ".so";
         myClientLib = "lib" + myClientLib + ".so";
 #endif
       }

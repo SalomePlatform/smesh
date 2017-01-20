@@ -129,6 +129,7 @@ MeshJobManager_i::~MeshJobManager_i() {
 #include <direct.h>    // to get _mkdir
 #else
 #include <unistd.h>    // to get basename
+#include <libgen.h>    // to get basename - as per posix
 #include <sys/stat.h>  // to get mkdir
 #include <sys/types.h> // to get mkdir options
 #endif
@@ -242,7 +243,7 @@ const char* MeshJobManager_i::_writeScriptFile(const char * dataFileName, const 
         _splitpath( dataFileName, NULL, NULL, fname, NULL );
         const char* bname = &fname[0];
 #else
-        const char* bname = basename(dataFileName);
+        const char* bname = basename(const_cast<char *>(dataFileName));
 #endif
 
 

@@ -589,7 +589,7 @@ med_geometry_type MESHCUT::InstanceMGE(TYPE_MAILLE TYPE)
   return typeBanaliseMED;
 }
 
-int MESHCUT::chrono()
+int MESHCUT::salome_chrono()
 {
   return clock() / CLOCKS_PER_SEC;
 }

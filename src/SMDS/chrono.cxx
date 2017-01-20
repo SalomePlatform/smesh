@@ -59,20 +59,20 @@ void counters::stats()
       }
 }
 
-chrono::chrono(int i) :
+salome_chrono::salome_chrono(int i) :
   _run(true), _ctr(i)
 {
   //MESSAGE("chrono::chrono " << _ctr << " " << _run);
   _start = clock();
 }
 
-chrono::~chrono()
+salome_chrono::~salome_chrono()
 {
   if (_run)
     stop();
 }
 
-void chrono::stop()
+void salome_chrono::stop()
 {
   //MESSAGE("chrono::stop " << _ctr << " " << _run);
   if (_run)

@@ -4568,7 +4568,11 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
         std::swap( itNN[0],    itNN[1] );
         std::swap( prevNod[0], prevNod[1] );
         std::swap( nextNod[0], nextNod[1] );
+#if defined(__APPLE__)
+        std::swap( isSingleNode[0], isSingleNode[1] );
+#else
         isSingleNode.swap( isSingleNode[0], isSingleNode[1] );
+#endif
         if ( nbSame > 0 )
           sames[0] = 1 - sames[0];
         iNotSameNode = 1 - iNotSameNode;

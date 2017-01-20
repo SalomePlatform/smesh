@@ -56,7 +56,7 @@
 #include <iterator>
 using namespace std;
 
-#ifndef WIN32
+#if !defined WIN32 && !defined __APPLE__
 #include <sys/sysinfo.h>
 #endif
 
@@ -77,7 +77,7 @@ int SMDS_Mesh::chunkSize = 1024;
 
 int SMDS_Mesh::CheckMemory(const bool doNotRaise) throw (std::bad_alloc)
 {
-#ifndef WIN32
+#if !defined WIN32 && !defined __APPLE__
   struct sysinfo si;
   int err = sysinfo( &si );
   if ( err )
@@ -2819,7 +2819,7 @@ namespace {
     IdSortedIterator(const SMDS_MeshElementIDFactory& fact,
                      const SMDSAbs_ElementType        type, // SMDSAbs_All NOT allowed!!! 
                      const int                        totalNb)
-      :myIDFact( fact ),
+      :myIDFact( const_cast<SMDS_MeshElementIDFactory&>(fact) ),
        myID(1), myMaxID( myIDFact.GetMaxID() ),myNbFound(0), myTotalNb( totalNb ),
        myType( type ),
        myElem(0)
