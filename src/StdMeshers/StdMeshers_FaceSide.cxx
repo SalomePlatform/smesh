@@ -329,7 +329,7 @@ const std::vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXCons
     SMESH_MesherHelper eHelper( *myProxyMesh->GetMesh() );
     SMESH_MesherHelper fHelper( *myProxyMesh->GetMesh() );
     fHelper.SetSubShape( myFace );
-    bool paramOK;
+    bool paramOK = true;
     double eps = 1e-100;
 
     // sort nodes of all edges by putting them into a map

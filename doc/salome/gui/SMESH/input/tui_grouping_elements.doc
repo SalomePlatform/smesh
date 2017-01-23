@@ -24,17 +24,11 @@
 
 \image html editing_groups1.png
 
-\image html editing_groups2.png
-
 <br>
 \section tui_union_of_groups Union of groups
 \tui_script{grouping_elements_ex05.py}
 
 \image html union_groups1.png
-
-\image html union_groups2.png
-
-\image html union_groups3.png
 
 <br>
 \section tui_intersection_of_groups Intersection of groups
@@ -42,29 +36,17 @@
 
 \image html intersect_groups1.png
 
-\image html intersect_groups2.png
-
-\image html intersect_groups3.png
-
 <br>
 \section tui_cut_of_groups Cut of groups
 \tui_script{grouping_elements_ex07.py}
 
 \image html cut_groups1.png
 
-\image html cut_groups2.png
-
-\image html cut_groups3.png
-
 <br>
-\section tui_create_dim_group Creating groups of entities from existing groups of superior dimensions
+\section tui_create_dim_group Creating groups of entities basing on nodes of other groups
 \tui_script{grouping_elements_ex08.py}
 
 \image html dimgroup_tui1.png
-<center>Source groups of faces</center>
-
-\image html dimgroup_tui2.png
-<center>Result groups of edges and nodes</center>
 
 
 

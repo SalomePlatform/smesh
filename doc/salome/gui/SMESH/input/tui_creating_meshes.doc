@@ -24,7 +24,7 @@
 \tui_script{a3DmeshOnModified2Dmesh.py}
 
 <br>
-\section tui_editing_mesh Editing a mesh
+\section tui_editing_mesh Editing a mesh (i.e. changing hypotheses)
 \tui_script{creating_meshes_ex04.py}
 
 <br>

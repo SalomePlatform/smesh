@@ -41,7 +41,8 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
 
   char *file2Read = (char *)myFile.c_str();
   FILE* aFileId = fopen(file2Read, "w+");
-  if ( !aFileId ) {
+  if ( !aFileId )
+  {
     fprintf(stderr, ">> ERREUR : ouverture du fichier %s \n", file2Read);
     return DRS_FAIL;
   }
@@ -71,20 +72,23 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
    ****************************************************************************/
 
   SMDS_NodeIteratorPtr itNodes=myMesh->nodesIterator();
-  while(itNodes->more()){               
+  while(itNodes->more())
+  {
     const SMDS_MeshNode * node = itNodes->next();
     fprintf(aFileId, "%d %.14e %.14e %.14e\n", node->GetID(), node->X(), node->Y(), node->Z());
   }
-        
+
   /****************************************************************************
    *                       ECRITURE DES ELEMENTS                                *
    ****************************************************************************/
   /* Ecriture des connectivites, noms, numeros des mailles */
-  
+
   SMDS_EdgeIteratorPtr itEdges=myMesh->edgesIterator();
-  while(itEdges->more()){
+  while(itEdges->more())
+  {
     const SMDS_MeshElement * elem = itEdges->next();
-    switch (elem->NbNodes()) {
+    switch (elem->NbNodes())
+    {
     case 2:
       fprintf(aFileId, "%d %d ", elem->GetID(), 102);
       break;
@@ -93,33 +97,51 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
       break;
     }
     SMDS_ElemIteratorPtr it=elem->nodesIterator();
-    while(it->more()) 
+    while(it->more())
       fprintf(aFileId, "%d ", it->next()->GetID());
     fprintf(aFileId, "\n");
   }
-  
+
   SMDS_FaceIteratorPtr itFaces=myMesh->facesIterator();
-  while(itFaces->more()){
+  while(itFaces->more())
+  {
     const SMDS_MeshElement * elem = itFaces->next();
     if ( elem->IsPoly() )
       fprintf(aFileId, "%d %d ", elem->GetID(), 400+elem->NbNodes());
     else
       fprintf(aFileId, "%d %d ", elem->GetID(), 200+elem->NbNodes());
     SMDS_ElemIteratorPtr it=elem->nodesIterator();
-    while(it->more()) 
+    while(it->more())
       fprintf(aFileId, "%d ", it->next()->GetID());
     fprintf(aFileId, "\n");
   }
 
   SMDS_VolumeIteratorPtr itVolumes=myMesh->volumesIterator();
-  while(itVolumes->more()){
+  const SMDS_VtkVolume* v;
+  while(itVolumes->more())
+  {
     const SMDS_MeshElement * elem = itVolumes->next();
     if ( elem->IsPoly() )
+    {
       fprintf(aFileId, "%d %d ", elem->GetID(), 500+elem->NbNodes());
+
+      if (( v = dynamic_cast< const SMDS_VtkVolume*>( elem )))
+      {
+        std::vector<int> quant = v->GetQuantities();
+        if ( !quant.empty() )
+        {
+          fprintf(aFileId, "%d %d ", quant.size(), quant[0]);
+          for ( size_t i = 1; i < quant.size(); ++i )
+            fprintf(aFileId, "%d ", quant[i]);
+        }
+      }
+    }
     else
+    {
       fprintf(aFileId, "%d %d ", elem->GetID(), 300+elem->NbNodes());
+    }
     SMDS_ElemIteratorPtr it=elem->nodesIterator();
-    while(it->more()) 
+    while(it->more())
       fprintf(aFileId, "%d ", it->next()->GetID());
 
     fprintf(aFileId, "\n");
