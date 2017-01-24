@@ -1,7 +1,7 @@
 # Creating groups of entities basing on nodes of other groups
 
 import SMESH_mechanic
-import SMESH
+import SMESH, SALOMEDS
 
 smesh  = SMESH_mechanic.smesh
 mesh   = SMESH_mechanic.mesh
