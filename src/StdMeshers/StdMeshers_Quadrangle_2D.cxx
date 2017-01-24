@@ -4523,7 +4523,7 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
       // move corners to make sides equal by length
       int nbEqualV  = equVerts.size();
       int nbExcessV = nbEqualV - ( 1 + nbC[0] + nbC[1] );
-      if ( nbExcessV > 0 ) // there is nbExcessV vertices that can become corners
+      if ( nbExcessV > 0 ) // there are nbExcessV vertices that can become corners
       {
         // calculate normalized length of each "side" enclosed between neighbor equVerts
         vector< double > accuLength;
@@ -4584,6 +4584,7 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
           if ( iBestEV > iS-1 + nbExcessV )
             iBestEV = iS-1 + nbExcessV;
           theVertices[ iCorner ] = helper.IthVertex( 0, edgeVec[ evVec[ iBestEV ]]);
+          cornerInd  [ iCorner ] = evVec[ iBestEV ];
           refinedCorners.insert( evVec[ iBestEV ]);
           iCorner = helper.WrapIndex( iCorner + 1, cornerInd.size() );
         }

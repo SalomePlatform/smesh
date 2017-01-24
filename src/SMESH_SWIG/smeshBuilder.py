@@ -1787,27 +1787,29 @@ class Mesh:
             pass
         pass
 
-    ## Export the mesh in a file in MED format and chooses the \a version of MED format
+    ## Export the mesh in a file in MED format
     ## allowing to overwrite the file if it exists or add the exported data to its contents
     #  @param f is the file name
     #  @param auto_groups boolean parameter for creating/not creating
     #  the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
-    #  the typical use is auto_groups=false.
-    #  @param version MED format version(MED_V2_1 or MED_V2_2)
+    #  the typical use is auto_groups=False.
+    #  @param version MED format version (MED_V2_1 or MED_V2_2,
+    #                 the latter meaning any current version). The parameter is
+    #                 obsolete since MED_V2_1 is no longer supported.
     #  @param overwrite boolean parameter for overwriting/not overwriting the file
     #  @param meshPart a part of mesh (group, sub-mesh) to export instead of the mesh
-    #  @param autoDimension: if @c True (default), a space dimension of a MED mesh can be either
+    #  @param autoDimension if @c True (default), a space dimension of a MED mesh can be either
     #         - 1D if all mesh nodes lie on OX coordinate axis, or
     #         - 2D if all mesh nodes lie on XOY coordinate plane, or
-    #         - 3D in the rest cases.
+    #         - 3D in the rest cases.<br>
     #         If @a autoDimension is @c False, the space dimension is always 3.
-    #  @param fields : list of GEOM fields defined on the shape to mesh.
-    #  @param geomAssocFields : each character of this string means a need to export a 
+    #  @param fields list of GEOM fields defined on the shape to mesh.
+    #  @param geomAssocFields each character of this string means a need to export a 
     #         corresponding field; correspondence between fields and characters is following:
-    #         - 'v' stands for _vertices_ field;
-    #         - 'e' stands for _edges_ field;
-    #         - 'f' stands for _faces_ field;
-    #         - 's' stands for _solids_ field.
+    #         - 'v' stands for "_vertices _" field;
+    #         - 'e' stands for "_edges _" field;
+    #         - 'f' stands for "_faces _" field;
+    #         - 's' stands for "_solids _" field.
     #  @ingroup l2_impexp
     def ExportMED(self, f, auto_groups=0, version=MED_V2_2,
                   overwrite=1, meshPart=None, autoDimension=True, fields=[], geomAssocFields=''):
@@ -1906,22 +1908,23 @@ class Mesh:
             meshPart = self.mesh
         self.mesh.ExportGMF(meshPart, f, True)
 
-    ## Deprecated, used only for compatibility! Please, use ExportToMEDX() method instead.
-    #  Export the mesh in a file in MED format and chooses the \a version of MED format
-    ## allowing to overwrite the file if it exists or add the exported data to its contents
+    ## Deprecated, used only for compatibility! Please, use ExportMED() method instead.
+    #  Export the mesh in a file in MED format
+    #  allowing to overwrite the file if it exists or add the exported data to its contents
     #  @param f the file name
-    #  @param version values are SMESH.MED_V2_1, SMESH.MED_V2_2
+    #  @param version MED format version (MED_V2_1 or MED_V2_2,
+    #                 the latter meaning any current version). The parameter is
+    #                 obsolete since MED_V2_1 is no longer supported.
     #  @param opt boolean parameter for creating/not creating
     #         the groups Group_On_All_Nodes, Group_On_All_Faces, ...
     #  @param overwrite boolean parameter for overwriting/not overwriting the file
-    #  @param autoDimension: if @c True (default), a space dimension of a MED mesh can be either
+    #  @param autoDimension if @c True (default), a space dimension of a MED mesh can be either
     #         - 1D if all mesh nodes lie on OX coordinate axis, or
     #         - 2D if all mesh nodes lie on XOY coordinate plane, or
-    #         - 3D in the rest cases.
-    #
+    #         - 3D in the rest cases.<br>
     #         If @a autoDimension is @c False, the space dimension is always 3.
     #  @ingroup l2_impexp
-    def ExportToMED(self, f, version, opt=0, overwrite=1, autoDimension=True):
+    def ExportToMED(self, f, version=MED_V2_2, opt=0, overwrite=1, autoDimension=True):
         self.mesh.ExportToMEDX(f, opt, version, overwrite, autoDimension)
 
     # Operations with groups:

@@ -1263,7 +1263,7 @@ void _ViscousBuilder2D::adjustCommonEdge( _PolyLine& LL, _PolyLine& LR )
           if ( isR )
             LR._lEdges.erase( LR._lEdges.begin()+1, eIt );
           else
-            LL._lEdges.erase( eIt, --LL._lEdges.end() );
+            LL._lEdges.erase( eIt+1, --LL._lEdges.end() );
           // eIt = isR ? L._lEdges.begin()+1 : L._lEdges.end()-2;
           // for ( size_t i = 1; i < iLE; ++i, eIt += dIt )
           //   eIt->_isBlocked = true;
