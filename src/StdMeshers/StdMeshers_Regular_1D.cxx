@@ -50,8 +50,8 @@
 #include "StdMeshers_SegmentLengthAroundVertex.hxx"
 #include "StdMeshers_StartEndLength.hxx"
 
-#include "Utils_SALOME_Exception.hxx"
-#include "utilities.h"
+#include <Utils_SALOME_Exception.hxx>
+#include <utilities.h>
 
 #include <BRepAdaptor_Curve.hxx>
 #include <BRep_Tool.hxx>
@@ -122,10 +122,11 @@ bool StdMeshers_Regular_1D::CheckHypothesis( SMESH_Mesh&         aMesh,
                                              const TopoDS_Shape& aShape,
                                              Hypothesis_Status&  aStatus )
 {
-  _hypType = NONE;
-  _quadraticMesh = false;
+  _hypType        = NONE;
+  _quadraticMesh  = false;
   _onlyUnaryInput = true;
 
+  // check propagation in a redefined GetUsedHypothesis()
   const list <const SMESHDS_Hypothesis * > & hyps =
     GetUsedHypothesis(aMesh, aShape, /*ignoreAuxiliaryHyps=*/false);
 
@@ -156,13 +157,17 @@ bool StdMeshers_Regular_1D::CheckHypothesis( SMESH_Mesh&         aMesh,
 
   string hypName = theHyp->GetName();
 
-  if ( hypName == "LocalLength" )
+  if ( !_mainEdge.IsNull() && _hypType == DISTRIB_PROPAGATION )
+  {
+    aStatus = SMESH_Hypothesis::HYP_OK;
+  }
+  else if ( hypName == "LocalLength" )
   {
     const StdMeshers_LocalLength * hyp =
       dynamic_cast <const StdMeshers_LocalLength * >(theHyp);
     ASSERT(hyp);
     _value[ BEG_LENGTH_IND ] = hyp->GetLength();
-    _value[ PRECISION_IND ] = hyp->GetPrecision();
+    _value[ PRECISION_IND  ] = hyp->GetPrecision();
     ASSERT( _value[ BEG_LENGTH_IND ] > 0 );
     _hypType = LOCAL_LENGTH;
     aStatus = SMESH_Hypothesis::HYP_OK;
@@ -294,10 +299,6 @@ bool StdMeshers_Regular_1D::CheckHypothesis( SMESH_Mesh&         aMesh,
     _hypType = MAX_LENGTH;
     aStatus = SMESH_Hypothesis::HYP_OK;
   }
-  else if ( !_mainEdge.IsNull() && _hypType == DISTRIB_PROPAGATION ) // !!! before "Adaptive1D"
-  {
-    aStatus = SMESH_Hypothesis::HYP_OK;
-  }
   else if ( hypName == "Adaptive1D" )
   {
     _adaptiveHyp = dynamic_cast < const StdMeshers_Adaptive1D* >(theHyp);
@@ -390,6 +391,7 @@ static bool computeParamByFunc(Adaptor3d_Curve& C3d,
   }
   if ( theReverse )
     theParams.reverse();
+
   return true;
 }
 
@@ -397,15 +399,15 @@ static bool computeParamByFunc(Adaptor3d_Curve& C3d,
 //================================================================================
 /*!
  * \brief adjust internal node parameters so that the last segment length == an
-  * \param a1 - the first segment length
-  * \param an - the last segment length
-  * \param U1 - the first edge parameter
-  * \param Un - the last edge parameter
-  * \param length - the edge length
-  * \param C3d - the edge curve
-  * \param theParams - internal node parameters to adjust
-  * \param adjustNeighbors2an - to adjust length of segments next to the last one
-  *  and not to remove parameters
+ *  \param a1 - the first segment length
+ *  \param an - the last segment length
+ *  \param U1 - the first edge parameter
+ *  \param Un - the last edge parameter
+ *  \param length - the edge length
+ *  \param C3d - the edge curve
+ *  \param theParams - internal node parameters to adjust
+ *  \param adjustNeighbors2an - to adjust length of segments next to the last one
+ *   and not to remove parameters
  */
 //================================================================================
 
@@ -1280,9 +1282,9 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
  */
 //=============================================================================
 
-bool StdMeshers_Regular_1D::Evaluate(SMESH_Mesh & theMesh,
+bool StdMeshers_Regular_1D::Evaluate(SMESH_Mesh &         theMesh,
                                      const TopoDS_Shape & theShape,
-                                     MapShapeNbElems& aResMap)
+                                     MapShapeNbElems&     theResMap)
 {
   if ( _hypType == NONE )
     return false;
@@ -1290,7 +1292,7 @@ bool StdMeshers_Regular_1D::Evaluate(SMESH_Mesh & theMesh,
   if ( _hypType == ADAPTIVE )
   {
     _adaptiveHyp->GetAlgo()->InitComputeError();
-    _adaptiveHyp->GetAlgo()->Evaluate( theMesh, theShape, aResMap );
+    _adaptiveHyp->GetAlgo()->Evaluate( theMesh, theShape, theResMap );
     return error( _adaptiveHyp->GetAlgo()->GetComputeError() );
   }
 
@@ -1315,7 +1317,7 @@ bool StdMeshers_Regular_1D::Evaluate(SMESH_Mesh & theMesh,
     BRepAdaptor_Curve C3d( E );
     if ( ! computeInternalParameters( theMesh, C3d, length, f, l, params, false, true )) {
       SMESH_subMesh * sm = theMesh.GetSubMesh(theShape);
-      aResMap.insert(std::make_pair(sm,aVec));
+      theResMap.insert(std::make_pair(sm,aVec));
       SMESH_ComputeErrorPtr& smError = sm->GetComputeError();
       smError.reset( new SMESH_ComputeError(COMPERR_ALGO_FAILED,"Submesh can not be evaluated",this));
       return false;
@@ -1323,7 +1325,7 @@ bool StdMeshers_Regular_1D::Evaluate(SMESH_Mesh & theMesh,
     redistributeNearVertices( theMesh, C3d, length, params, VFirst, VLast );
 
     if(_quadraticMesh) {
-      aVec[SMDSEntity_Node] = 2*params.size() + 1;
+      aVec[SMDSEntity_Node     ] = 2*params.size() + 1;
       aVec[SMDSEntity_Quad_Edge] = params.size() + 1;
     }
     else {
@@ -1335,7 +1337,7 @@ bool StdMeshers_Regular_1D::Evaluate(SMESH_Mesh & theMesh,
   else {
     // Edge is a degenerated Edge : We put n = 5 points on the edge.
     if ( _quadraticMesh ) {
-      aVec[SMDSEntity_Node] = 11;
+      aVec[SMDSEntity_Node     ] = 11;
       aVec[SMDSEntity_Quad_Edge] = 6;
     }
     else {
@@ -1344,8 +1346,8 @@ bool StdMeshers_Regular_1D::Evaluate(SMESH_Mesh & theMesh,
     }
   }
 
-  SMESH_subMesh * sm = theMesh.GetSubMesh(theShape);
-  aResMap.insert(std::make_pair(sm,aVec));
+  SMESH_subMesh * sm = theMesh.GetSubMesh( theShape );
+  theResMap.insert( std::make_pair( sm, aVec ));
 
   return true;
 }
