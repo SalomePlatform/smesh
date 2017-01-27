@@ -380,7 +380,8 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
   StdMeshers_Quadrangle_2D quadAlgo( _gen->GetANewId(), GetStudyId(), _gen);
   for ( int i = 0; i < 6; ++i )
   {
-    if ( !( quad[i] = FaceQuadStructPtr( quadAlgo.CheckNbEdges( aMesh, FF( i+1 )))))
+    if ( !( quad[i] = FaceQuadStructPtr( quadAlgo.CheckNbEdges( aMesh, FF( i+1 ),
+                                                                /*considerMesh=*/true))))
       return error( quadAlgo.GetComputeError() );
     if ( quad[i]->side.size() != 4 )
       return error( COMPERR_BAD_SHAPE, "Not a quadrangular box side" );

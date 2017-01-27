@@ -440,13 +440,15 @@ bool SMESH_Algo::GetSortedNodesOnEdge(const SMESHDS_Mesh*                   theM
   TopExp::Vertices(theEdge, v1, v2);
   const SMDS_MeshNode* n1 = VertexNode( v1, eSubMesh, 0 );
   const SMDS_MeshNode* n2 = VertexNode( v2, eSubMesh, 0 );
+  const SMDS_MeshNode* nEnd[2] = { nbNodes ? theNodes.begin()->second  : 0,
+                                   nbNodes ? theNodes.rbegin()->second : 0 };
   Standard_Real f, l;
   BRep_Tool::Range(theEdge, f, l);
   if ( v1.Orientation() != TopAbs_FORWARD )
     std::swap( f, l );
-  if ( n1 && ++nbNodes )
+  if ( n1 && n1 != nEnd[0] && n1 != nEnd[1] && ++nbNodes )
     theNodes.insert( make_pair( f, n1 ));
-  if ( n2 && ++nbNodes )
+  if ( n2 && n2 != nEnd[0] && n2 != nEnd[1] && ++nbNodes )
     theNodes.insert( make_pair( l, n2 ));
 
   return (int)theNodes.size() == nbNodes;

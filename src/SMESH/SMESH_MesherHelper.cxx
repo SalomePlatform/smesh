@@ -2568,6 +2568,7 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap &            theParam2
     }
 
     // get nodes on theBaseEdge sorted by param on edge and initialize theParam2ColumnMap with them
+    const SMDS_MeshNode* prevEndNodes[2] = { 0, 0 };
     edge = theBaseSide.begin();
     for ( int iE = 0; edge != theBaseSide.end(); ++edge, ++iE )
     {
@@ -2635,11 +2636,16 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap &            theParam2
       const double prevPar = theParam2ColumnMap.empty() ? 0 : theParam2ColumnMap.rbegin()->first;
       for ( u_n = sortedBaseNN.begin(); u_n != sortedBaseNN.end(); u_n++ )
       {
+        if ( u_n->second == prevEndNodes[0] ||
+             u_n->second == prevEndNodes[1] )
+          continue;
         double par = prevPar + coeff * ( u_n->first - f );
         TParam2ColumnMap::iterator u2nn =
           theParam2ColumnMap.insert( theParam2ColumnMap.end(), make_pair( par, TNodeColumn()));
         u2nn->second.push_back( u_n->second );
       }
+      prevEndNodes[0] = sortedBaseNN.begin()->second;
+      prevEndNodes[1] = sortedBaseNN.rbegin()->second;
     }
     if ( theParam2ColumnMap.size() < 2 )
       return false;
