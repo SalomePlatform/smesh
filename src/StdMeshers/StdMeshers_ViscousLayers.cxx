@@ -2120,7 +2120,7 @@ bool _ViscousBuilder::findFacesWithLayers(const bool onlyWith)
     }
   }
 
-  // Find faces to shrink mesh on (solution 2 in issue 0020832);
+  // Find FACEs to shrink mesh on (solution 2 in issue 0020832): fill in _shrinkShape2Shape
   TopTools_IndexedMapOfShape shapes;
   std::string structAlgoName = "Hexa_3D";
   for ( size_t i = 0; i < _sdVec.size(); ++i )
@@ -2130,16 +2130,16 @@ bool _ViscousBuilder::findFacesWithLayers(const bool onlyWith)
     for ( int iE = 1; iE <= shapes.Extent(); ++iE )
     {
       const TopoDS_Shape& edge = shapes(iE);
-      // find 2 faces sharing an edge
+      // find 2 FACEs sharing an EDGE
       TopoDS_Shape FF[2];
-      PShapeIteratorPtr fIt = helper.GetAncestors(edge, *_mesh, TopAbs_FACE);
+      PShapeIteratorPtr fIt = helper.GetAncestors(edge, *_mesh, TopAbs_FACE, &_sdVec[i]._solid);
       while ( fIt->more())
       {
         const TopoDS_Shape* f = fIt->next();
-        if ( helper.IsSubShape( *f, _sdVec[i]._solid))
-          FF[ int( !FF[0].IsNull()) ] = *f;
+        FF[ int( !FF[0].IsNull()) ] = *f;
       }
       if( FF[1].IsNull() ) continue; // seam edge can be shared by 1 FACE only
+
       // check presence of layers on them
       int ignore[2];
       for ( int j = 0; j < 2; ++j )
@@ -2147,110 +2147,15 @@ bool _ViscousBuilder::findFacesWithLayers(const bool onlyWith)
       if ( ignore[0] == ignore[1] )
         continue; // nothing interesting
       TopoDS_Shape fWOL = FF[ ignore[0] ? 0 : 1 ];
-      // check presence of layers on fWOL within an adjacent SOLID
-      bool collision = false;
-      PShapeIteratorPtr sIt = helper.GetAncestors( fWOL, *_mesh, TopAbs_SOLID );
-      while ( const TopoDS_Shape* solid = sIt->next() )
-        if ( !solid->IsSame( _sdVec[i]._solid ))
-        {
-          int iSolid = _solids.FindIndex( *solid );
-          int  iFace = getMeshDS()->ShapeToIndex( fWOL );
-          if ( iSolid > 0 && !_sdVec[ iSolid-1 ]._ignoreFaceIds.count( iFace ))
-          {
-            // check if solid's mesh is unstructured and then try to set it
-            // to be computed after the i-th solid
-            SMESH_Algo*  algo = _mesh->GetSubMesh( *solid )->GetAlgo();
-            bool isStructured = ( algo->GetName() == structAlgoName );
-            if ( isStructured || !setBefore( _sdVec[ i ], _sdVec[ iSolid-1 ] ))
-              collision = true; // don't shrink fWOL
-            break;
-          }
-        }
-      // add edge to maps
+
+      // add EDGE to maps
       if ( !fWOL.IsNull())
       {
         TGeomID edgeInd = getMeshDS()->ShapeToIndex( edge );
         _sdVec[i]._shrinkShape2Shape.insert( make_pair( edgeInd, fWOL ));
-        if ( collision )
-        {
-          // _shrinkShape2Shape will be used to temporary inflate _LayerEdge's based
-          // on the edge but shrink won't be performed
-          _sdVec[i]._noShrinkShapes.insert( edgeInd );
-          for ( TopoDS_Iterator vIt( edge ); vIt.More(); vIt.Next() )
-            _sdVec[i]._noShrinkShapes.insert( getMeshDS()->ShapeToIndex( vIt.Value() ));
-        }
       }
     }
   }
-  // Exclude from _shrinkShape2Shape FACE's that can't be shrinked since
-  // the algo of the SOLID sharing the FACE does not support it
-  set< string > notSupportAlgos; notSupportAlgos.insert( structAlgoName );
-  for ( size_t i = 0; i < _sdVec.size(); ++i )
-  {
-    map< TGeomID, TopoDS_Shape >::iterator e2f = _sdVec[i]._shrinkShape2Shape.begin();
-    for ( ; e2f != _sdVec[i]._shrinkShape2Shape.end(); ++e2f )
-    {
-      const TopoDS_Shape& fWOL = e2f->second;
-      const TGeomID     edgeID = e2f->first;
-      bool notShrinkFace = false;
-      PShapeIteratorPtr soIt = helper.GetAncestors(fWOL, *_mesh, TopAbs_SOLID);
-      while ( soIt->more() )
-      {
-        const TopoDS_Shape* solid = soIt->next();
-        if ( _sdVec[i]._solid.IsSame( *solid )) continue;
-        SMESH_Algo* algo = _mesh->GetSubMesh( *solid )->GetAlgo();
-        if ( !algo || !notSupportAlgos.count( algo->GetName() )) continue;
-        notShrinkFace = true;
-        size_t iSolid = 0;
-        for ( ; iSolid < _sdVec.size(); ++iSolid )
-        {
-          if ( _sdVec[iSolid]._solid.IsSame( *solid ) ) {
-            if ( _sdVec[iSolid]._shrinkShape2Shape.count( edgeID ))
-              notShrinkFace = false;
-            break;
-          }
-        }
-        if ( notShrinkFace )
-        {
-          _sdVec[i]._noShrinkShapes.insert( edgeID );
-
-          // add VERTEXes of the edge in _noShrinkShapes
-          TopoDS_Shape edge = getMeshDS()->IndexToShape( edgeID );
-          for ( TopoDS_Iterator vIt( edge ); vIt.More(); vIt.Next() )
-            _sdVec[i]._noShrinkShapes.insert( getMeshDS()->ShapeToIndex( vIt.Value() ));
-
-          // check if there is a collision with to-shrink-from EDGEs in iSolid
-          if ( iSolid == _sdVec.size() )
-            continue; // no VL in the solid
-          shapes.Clear();
-          TopExp::MapShapes( fWOL, TopAbs_EDGE, shapes);
-          for ( int iE = 1; iE <= shapes.Extent(); ++iE )
-          {
-            const TopoDS_Edge& E = TopoDS::Edge( shapes( iE ));
-            const TGeomID    eID = getMeshDS()->ShapeToIndex( E );
-            if ( eID == edgeID ||
-                 !_sdVec[iSolid]._shrinkShape2Shape.count( eID ) ||
-                 _sdVec[i]._noShrinkShapes.count( eID ))
-              continue;
-            for ( int is1st = 0; is1st < 2; ++is1st )
-            {
-              TopoDS_Vertex V = helper.IthVertex( is1st, E );
-              if ( _sdVec[i]._noShrinkShapes.count( getMeshDS()->ShapeToIndex( V ) ))
-              {
-                // _sdVec[i]._noShrinkShapes.insert( eID );
-                // V = helper.IthVertex( !is1st, E );
-                // _sdVec[i]._noShrinkShapes.insert( getMeshDS()->ShapeToIndex( V ));
-                //iE = 0; // re-start the loop on EDGEs of fWOL
-                return error("No way to make a conformal mesh with "
-                             "the given set of faces with layers", _sdVec[i]._index);
-              }
-            }
-          }
-        }
-
-      } // while ( soIt->more() )
-    } // loop on _sdVec[i]._shrinkShape2Shape
-  } // loop on _sdVec to fill in _SolidData::_noShrinkShapes
 
   // Find the SHAPE along which to inflate _LayerEdge based on VERTEX
 
@@ -2264,18 +2169,14 @@ bool _ViscousBuilder::findFacesWithLayers(const bool onlyWith)
       // find faces WOL sharing the vertex
       vector< TopoDS_Shape > facesWOL;
       size_t totalNbFaces = 0;
-      PShapeIteratorPtr fIt = helper.GetAncestors(vertex, *_mesh, TopAbs_FACE);
+      PShapeIteratorPtr fIt = helper.GetAncestors(vertex, *_mesh, TopAbs_FACE, &_sdVec[i]._solid );
       while ( fIt->more())
       {
         const TopoDS_Shape* f = fIt->next();
-        if ( helper.IsSubShape( *f, _sdVec[i]._solid ) )
-        {
-          totalNbFaces++;
-          const int fID = getMeshDS()->ShapeToIndex( *f );
-          if ( _sdVec[i]._ignoreFaceIds.count ( fID ) /*&&
-               !_sdVec[i]._noShrinkShapes.count( fID )*/)
-            facesWOL.push_back( *f );
-        }
+        totalNbFaces++;
+        const int fID = getMeshDS()->ShapeToIndex( *f );
+        if ( _sdVec[i]._ignoreFaceIds.count ( fID ) /*&& !_sdVec[i]._noShrinkShapes.count( fID )*/)
+          facesWOL.push_back( *f );
       }
       if ( facesWOL.size() == totalNbFaces || facesWOL.empty() )
         continue; // no layers at this vertex or no WOL
@@ -2325,7 +2226,130 @@ bool _ViscousBuilder::findFacesWithLayers(const bool onlyWith)
     }
   }
 
-  // add FACEs of other SOLIDs to _ignoreFaceIds
+  // Add to _noShrinkShapes sub-shapes of FACE's that can't be shrinked since
+  // the algo of the SOLID sharing the FACE does not support it or for other reasons
+  set< string > notSupportAlgos; notSupportAlgos.insert( structAlgoName );
+  for ( size_t i = 0; i < _sdVec.size(); ++i )
+  {
+    map< TGeomID, TopoDS_Shape >::iterator e2f = _sdVec[i]._shrinkShape2Shape.begin();
+    for ( ; e2f != _sdVec[i]._shrinkShape2Shape.end(); ++e2f )
+    {
+      const TopoDS_Shape& fWOL = e2f->second;
+      const TGeomID     edgeID = e2f->first;
+      TGeomID           faceID = getMeshDS()->ShapeToIndex( fWOL );
+      TopoDS_Shape        edge = getMeshDS()->IndexToShape( edgeID );
+      if ( edge.ShapeType() != TopAbs_EDGE )
+        continue; // shrink shape is VERTEX
+
+      TopoDS_Shape solid;
+      PShapeIteratorPtr soIt = helper.GetAncestors(fWOL, *_mesh, TopAbs_SOLID);
+      while ( soIt->more() && solid.IsNull() )
+      {
+        const TopoDS_Shape* so = soIt->next();
+        if ( !so->IsSame( _sdVec[i]._solid ))
+          solid = *so;
+      }
+      if ( solid.IsNull() )
+        continue;
+
+      bool noShrinkE = false;
+      SMESH_Algo*  algo = _mesh->GetSubMesh( solid )->GetAlgo();
+      bool isStructured = ( algo && algo->GetName() == structAlgoName );
+      size_t     iSolid = _solids.FindIndex( solid ) - 1;
+      if ( iSolid < _sdVec.size() && _sdVec[ iSolid ]._ignoreFaceIds.count( faceID ))
+      {
+        // the adjacent SOLID has NO layers on fWOL;
+        // shrink allowed if
+        // - there are layers on the EDGE in the adjacent SOLID
+        // - there are NO layers in the adjacent SOLID && algo is unstructured and computed later
+        bool hasWLAdj = (_sdVec[iSolid]._shrinkShape2Shape.count( edgeID ));
+        bool shrinkAllowed = (( hasWLAdj ) ||
+                              ( !isStructured && setBefore( _sdVec[ i ], _sdVec[ iSolid ] )));
+        noShrinkE = !shrinkAllowed;
+      }
+      else if ( iSolid < _sdVec.size() )
+      {
+        // the adjacent SOLID has layers on fWOL;
+        // check if SOLID's mesh is unstructured and then try to set it
+        // to be computed after the i-th solid
+        if ( isStructured || !setBefore( _sdVec[ i ], _sdVec[ iSolid ] ))
+          noShrinkE = true; // don't shrink fWOL
+      }
+      else
+      {
+        // the adjacent SOLID has NO layers at all
+        noShrinkE = isStructured;
+      }
+
+      if ( noShrinkE )
+      {
+        _sdVec[i]._noShrinkShapes.insert( edgeID );
+
+        // check if there is a collision with to-shrink-from EDGEs in iSolid
+        // if ( iSolid < _sdVec.size() )
+        // {
+        //   shapes.Clear();
+        //   TopExp::MapShapes( fWOL, TopAbs_EDGE, shapes);
+        //   for ( int iE = 1; iE <= shapes.Extent(); ++iE )
+        //   {
+        //     const TopoDS_Edge& E = TopoDS::Edge( shapes( iE ));
+        //     const TGeomID    eID = getMeshDS()->ShapeToIndex( E );
+        //     if ( eID == edgeID ||
+        //          !_sdVec[iSolid]._shrinkShape2Shape.count( eID ) ||
+        //          _sdVec[i]._noShrinkShapes.count( eID ))
+        //       continue;
+        //     for ( int is1st = 0; is1st < 2; ++is1st )
+        //     {
+        //       TopoDS_Vertex V = helper.IthVertex( is1st, E );
+        //       if ( _sdVec[i]._noShrinkShapes.count( getMeshDS()->ShapeToIndex( V ) ))
+        //       {
+        //         return error("No way to make a conformal mesh with "
+        //                      "the given set of faces with layers", _sdVec[i]._index);
+        //       }
+        //     }
+        //   }
+        // }
+      }
+
+      // add VERTEXes of the edge in _noShrinkShapes, which is necessary if
+      // _shrinkShape2Shape is different in the adjacent SOLID
+      for ( TopoDS_Iterator vIt( edge ); vIt.More(); vIt.Next() )
+      {
+        TGeomID vID = getMeshDS()->ShapeToIndex( vIt.Value() );
+        bool noShrinkV = false;
+
+        if ( iSolid < _sdVec.size() )
+        {
+          if ( _sdVec[ iSolid ]._ignoreFaceIds.count( faceID ))
+          {
+            map< TGeomID, TopoDS_Shape >::iterator i2S, i2SAdj;
+            i2S    = _sdVec[i     ]._shrinkShape2Shape.find( vID );
+            i2SAdj = _sdVec[iSolid]._shrinkShape2Shape.find( vID );
+            if ( i2SAdj == _sdVec[iSolid]._shrinkShape2Shape.end() )
+              noShrinkV = ( i2S->second.ShapeType() == TopAbs_EDGE || isStructured );
+            else
+              noShrinkV = ( ! i2S->second.IsSame( i2SAdj->second ));
+          }
+          else
+          {
+            noShrinkV = noShrinkE;
+          }
+        }
+        else
+        {
+          // the adjacent SOLID has NO layers at all
+          noShrinkV = ( isStructured ||
+                        _sdVec[i]._shrinkShape2Shape[ vID ].ShapeType() == TopAbs_EDGE );
+        }
+        if ( noShrinkV )
+          _sdVec[i]._noShrinkShapes.insert( vID );
+      }
+
+    } // loop on _sdVec[i]._shrinkShape2Shape
+  } // loop on _sdVec to fill in _SolidData::_noShrinkShapes
+
+
+    // add FACEs of other SOLIDs to _ignoreFaceIds
   for ( size_t i = 0; i < _sdVec.size(); ++i )
   {
     shapes.Clear();
@@ -6657,11 +6681,9 @@ bool _ViscousBuilder::updateNormals( _SolidData&         data,
         else // edge inflates along a FACE
         {
           TopoDS_Shape V = helper.GetSubShapeByNode( edge->_nodes[0], getMeshDS() );
-          PShapeIteratorPtr eIt = helper.GetAncestors( V, *_mesh, TopAbs_EDGE );
+          PShapeIteratorPtr eIt = helper.GetAncestors( V, *_mesh, TopAbs_EDGE, &eos->_sWOL );
           while ( const TopoDS_Shape* E = eIt->next() )
           {
-            if ( !helper.IsSubShape( *E, /*FACE=*/eos->_sWOL ))
-              continue;
             gp_Vec edgeDir = getEdgeDir( TopoDS::Edge( *E ), TopoDS::Vertex( V ));
             double   angle = edgeDir.Angle( newEdge._normal ); // [0,PI]
             if ( angle < M_PI / 2 )
@@ -9527,7 +9549,6 @@ bool _ViscousBuilder::refine(_SolidData& data)
   set< vector<const SMDS_MeshNode*>* >    nnSet;
   set< int >                       degenEdgeInd;
   vector<const SMDS_MeshElement*>     degenVols;
-  vector<int>                       isRiskySWOL;
 
   TopExp_Explorer exp( data._solid, TopAbs_FACE );
   for ( ; exp.More(); exp.Next() )
@@ -9545,7 +9566,6 @@ bool _ViscousBuilder::refine(_SolidData& data)
       nnVec.resize( nbNodes );
       nnSet.clear();
       degenEdgeInd.clear();
-      isRiskySWOL.resize( nbNodes );
       size_t maxZ = 0, minZ = std::numeric_limits<size_t>::max();
       SMDS_NodeIteratorPtr nIt = face->nodeIterator();
       for ( int iN = 0; iN < nbNodes; ++iN )
@@ -9556,7 +9576,6 @@ bool _ViscousBuilder::refine(_SolidData& data)
         nnVec[ i ] = & edge->_nodes;
         maxZ = std::max( maxZ, nnVec[ i ]->size() );
         minZ = std::min( minZ, nnVec[ i ]->size() );
-        //isRiskySWOL[ i ] = edge->Is( _LayerEdge::RISKY_SWOL );
 
         if ( helper.HasDegeneratedEdges() )
           nnSet.insert( nnVec[ i ]);
@@ -9665,7 +9684,7 @@ bool _ViscousBuilder::refine(_SolidData& data)
     if ( !err || err->IsOK() )
     {
       err.reset( new SMESH_ComputeError( COMPERR_WARNING,
-                                         "Degenerated volumes created" ));
+                                         "Bad quality volumes created" ));
       err->myBadElements.insert( err->myBadElements.end(),
                                  degenVols.begin(),degenVols.end() );
     }
@@ -11103,17 +11122,12 @@ bool _ViscousBuilder::addBoundaryElements(_SolidData& data)
         if ( helper.IsReversedSubMesh( TopoDS::Face(F) ))
           reverse = !reverse;
       }
-      else
+      else if ( !data._ignoreFaceIds.count( e2f->first ))
       {
         // find FACE with layers sharing E
-        PShapeIteratorPtr fIt = helper.GetAncestors( E, *_mesh, TopAbs_FACE );
-        while ( fIt->more() && F.IsNull() )
-        {
-          const TopoDS_Shape* pF = fIt->next();
-          if ( helper.IsSubShape( *pF, data._solid) &&
-               !data._ignoreFaceIds.count( e2f->first ))
-            F = *pF;
-        }
+        PShapeIteratorPtr fIt = helper.GetAncestors( E, *_mesh, TopAbs_FACE, &data._solid );
+        if ( fIt->more() )
+          F = *( fIt->next() );
       }
       // Find the sub-mesh to add new faces
       SMESHDS_SubMesh* sm = 0;

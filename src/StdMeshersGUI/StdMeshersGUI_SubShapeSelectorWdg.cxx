@@ -387,6 +387,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::selectionIntoArgument()
     myAddButton->setEnabled(( myListWidget->count() < myMaxSize || myMaxSize == -1 ) &&
                             ( mySelectedIDs.size() > 0                             ) &&
                             ( mySelectedIDs.size() <= myMaxSize || myMaxSize == -1 ) );
+    myRemoveButton->setEnabled( mySelectedIDs.size() > 0 );
 
     //Connect Selected Ids in viewer and dialog's Ids list
     bool signalsBlocked = myListWidget->blockSignals( true );

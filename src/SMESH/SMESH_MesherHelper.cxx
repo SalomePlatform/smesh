@@ -3402,11 +3402,16 @@ namespace {
     TopTools_ListIteratorOfListOfShape _ancIter;
     TopAbs_ShapeEnum                   _type;
     TopTools_MapOfShape                _encountered;
-    TAncestorsIterator( const TopTools_ListOfShape& ancestors, TopAbs_ShapeEnum type)
+    TopTools_IndexedMapOfShape         _allowed;
+    TAncestorsIterator( const TopTools_ListOfShape& ancestors,
+                        TopAbs_ShapeEnum            type,
+                        const TopoDS_Shape*         container/* = 0*/)
       : _ancIter( ancestors ), _type( type )
     {
+      if ( container && !container->IsNull() )
+        TopExp::MapShapes( *container, type, _allowed);
       if ( _ancIter.More() ) {
-        if ( _ancIter.Value().ShapeType() != _type ) next();
+        if ( !isCurrentAllowed() ) next();
         else _encountered.Add( _ancIter.Value() );
       }
     }
@@ -3419,9 +3424,14 @@ namespace {
       const TopoDS_Shape* s = _ancIter.More() ? & _ancIter.Value() : 0;
       if ( _ancIter.More() )
         for ( _ancIter.Next();  _ancIter.More(); _ancIter.Next())
-          if ( _ancIter.Value().ShapeType() == _type && _encountered.Add( _ancIter.Value() ))
+          if ( isCurrentAllowed() && _encountered.Add( _ancIter.Value() ))
             break;
       return s;
+    }
+    bool isCurrentAllowed()
+    {
+      return (( _ancIter.Value().ShapeType() == _type ) &&
+              ( _allowed.IsEmpty() || _allowed.Contains( _ancIter.Value() )));
     }
   };
 
@@ -3429,15 +3439,17 @@ namespace {
 
 //=======================================================================
 /*!
- * \brief Return iterator on ancestors of the given type
+ * \brief Return iterator on ancestors of the given type, included into a container shape
  */
 //=======================================================================
 
 PShapeIteratorPtr SMESH_MesherHelper::GetAncestors(const TopoDS_Shape& shape,
                                                    const SMESH_Mesh&   mesh,
-                                                   TopAbs_ShapeEnum    ancestorType)
+                                                   TopAbs_ShapeEnum    ancestorType,
+                                                   const TopoDS_Shape* container)
 {
-  return PShapeIteratorPtr( new TAncestorsIterator( mesh.GetAncestors(shape), ancestorType));
+  return PShapeIteratorPtr
+    ( new TAncestorsIterator( mesh.GetAncestors(shape), ancestorType, container));
 }
 
 //=======================================================================

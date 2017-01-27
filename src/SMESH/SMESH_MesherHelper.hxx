@@ -201,11 +201,12 @@ class SMESH_EXPORT SMESH_MesherHelper
                          const SMESH_Mesh&   mesh,
                          TopAbs_ShapeEnum    ancestorType=TopAbs_SHAPE);
   /*!
-   * \brief Return iterator on ancestors of the given type
+   * \brief Return iterator on ancestors of the given type, included into a container shape
    */
   static PShapeIteratorPtr GetAncestors(const TopoDS_Shape& shape,
                                         const SMESH_Mesh&   mesh,
-                                        TopAbs_ShapeEnum    ancestorType);
+                                        TopAbs_ShapeEnum    ancestorType,
+                                        const TopoDS_Shape* container = 0);
   /*!
    * \brief Find a common ancestor, of the given type, of two shapes
    */
