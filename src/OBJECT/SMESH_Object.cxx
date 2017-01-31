@@ -32,6 +32,8 @@
 #include "SMDS_Mesh.hxx"
 #include "SMDS_MeshCell.hxx"
 #include "SMDS_PolyhedralVolumeOfNodes.hxx"
+#include "SMESHDS_Mesh.hxx"
+#include "SMESHDS_Script.hxx"
 #include "SMESH_Actor.h"
 #include "SMESH_ControlsDef.hxx"
 
@@ -54,7 +56,7 @@
 #include <stdexcept>
 #include <set>
 
-#include "utilities.h"
+#include <utilities.h>
 
 using namespace std;
 
@@ -283,6 +285,8 @@ void SMESH_VisualObjDef::buildPrs(bool buildGrid)
       NulData(); // detach from the SMDS grid to allow immediate memory de-allocation in compactMesh()
       if ( MYDEBUG ) MESSAGE("*** buildPrs ==> compactMesh!");
       GetMesh()->compactMesh();
+      if ( SMESHDS_Mesh* m = dynamic_cast<SMESHDS_Mesh*>( GetMesh() )) // IPAL53915
+        m->GetScript()->SetModified(false); // drop IsModified set in compactMesh()
     }
     vtkUnstructuredGrid *theGrid = GetMesh()->getGrid();
     updateEntitiesFlags();

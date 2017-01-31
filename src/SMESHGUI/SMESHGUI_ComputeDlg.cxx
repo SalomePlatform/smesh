@@ -1010,11 +1010,10 @@ void SMESHGUI_BaseComputeOp::computeMesh()
               Handle(SALOME_InteractiveObject) anIO = new SALOME_InteractiveObject
                 ( (*anIter).second->GetID().c_str(), "SMESH", (*anIter).second->GetName().c_str() );
               SMESH::Update(anIO, toDisplay);
-	      if( SVTK_ViewWindow* vtkWnd = SMESH::GetVtkViewWindow(SMESH::GetActiveWindow() ) ) {
-		if( vtkWnd->getRenderer() ){
-		  vtkWnd->getRenderer()->ResetCameraClippingRange();
-		}
-	      }
+
+              if ( SVTK_ViewWindow* vtkWnd = SMESH::GetVtkViewWindow(SMESH::GetActiveWindow() ))
+                if ( vtkWnd->getRenderer() )
+                  vtkWnd->getRenderer()->ResetCameraClippingRange();
 
               if ( limitExceeded && !aMesh->_is_nil() )
               {

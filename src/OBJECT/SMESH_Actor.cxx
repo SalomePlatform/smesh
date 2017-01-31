@@ -1559,7 +1559,7 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation)
 
 void SMESH_ActorDef::SetEntityMode(unsigned int theMode)
 {
-  myEntityState = eAllEntity;
+  myEntityState = eAllEntity; // entities present in my object
 
   if(!myVisualObj->GetNbEntities(SMDSAbs_0DElement)) {
     myEntityState &= ~e0DElements;
@@ -1605,7 +1605,7 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode)
 
   myBaseActor->myGeomFilter->SetInside(myEntityMode != myEntityState);
 
-  myEntityMode = theMode;
+  myEntityMode = theMode; // entities to show
 
   VTKViewer_ExtractUnstructuredGrid* aFilter = myBaseActor->GetExtractUnstructuredGrid();
   aFilter->ClearRegisteredCellsWithType();
@@ -1983,9 +1983,9 @@ void SMESH_ActorDef::Update()
     SetFacesOriented(myIsFacesOriented);
   }
 
-  if(myVisualObj->GetEntitiesFlag()) {
-    myEntityMode |= myVisualObj->GetEntitiesState();
-  }
+  // if(myVisualObj->GetEntitiesFlag()) { IPAL53915
+  //   myEntityMode |= myVisualObj->GetEntitiesState();
+  // }
 
   SetEntityMode(GetEntityMode());
   SetVisibility(GetVisibility());
