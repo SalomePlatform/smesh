@@ -126,6 +126,7 @@ SMESH_ActorDef::SMESH_ActorDef()
 
   myIsPointsVisible = false;
   myIsEntityModeCache = false;
+  myRepresentationCache = 0;
 
   myHighlightActor = SMESH_SVTKActor::New();
   myHighlightActor->Delete(); // vtkSmartPointer!
@@ -1470,8 +1471,8 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation)
 
   myScalarBarActor->VisibilityOff();
 
-  if(GetVisibility()){
-    if(theIsUpdateRepersentation)
+  if ( GetVisibility() ) {
+    if ( theIsUpdateRepersentation )
       SetRepresentation(GetRepresentation());
 
     if(myControlMode != eNone) {
@@ -1559,30 +1560,30 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation)
 
 void SMESH_ActorDef::SetEntityMode(unsigned int theMode)
 {
-  myEntityState = eAllEntity; // entities present in my object
+  unsigned int anObjectEntities = eAllEntity; // entities present in my object
 
   if(!myVisualObj->GetNbEntities(SMDSAbs_0DElement)) {
-    myEntityState &= ~e0DElements;
+    anObjectEntities &= ~e0DElements;
     theMode &= ~e0DElements;
   }
 
   if(!myVisualObj->GetNbEntities(SMDSAbs_Ball)) {
-    myEntityState &= ~eBallElem;
+    anObjectEntities &= ~eBallElem;
     theMode &= ~eBallElem;
   }
 
   if(!myVisualObj->GetNbEntities(SMDSAbs_Edge)) {
-    myEntityState &= ~eEdges;
+    anObjectEntities &= ~eEdges;
     theMode &= ~eEdges;
   }
 
   if(!myVisualObj->GetNbEntities(SMDSAbs_Face)) {
-    myEntityState &= ~eFaces;
+    anObjectEntities &= ~eFaces;
     theMode &= ~eFaces;
   }
 
   if(!myVisualObj->GetNbEntities(SMDSAbs_Volume)) {
-    myEntityState &= ~eVolumes;
+    anObjectEntities &= ~eVolumes;
     theMode &= ~eVolumes;
   }
 
@@ -1603,102 +1604,109 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode)
       theMode |= eVolumes;
   }
 
-  myBaseActor->myGeomFilter->SetInside(myEntityMode != myEntityState);
+  myBaseActor->myGeomFilter->SetInside(myEntityMode != anObjectEntities);
 
-  myEntityMode = theMode; // entities to show
-
-  VTKViewer_ExtractUnstructuredGrid* aFilter = myBaseActor->GetExtractUnstructuredGrid();
-  aFilter->ClearRegisteredCellsWithType();
-  VTKViewer_ExtractUnstructuredGrid* aHightFilter = myHighlitableActor->GetExtractUnstructuredGrid();
-  aHightFilter->ClearRegisteredCellsWithType();
-
-  bool isPassAll =
-    (( myEntityMode & e0DElements || myVisualObj->GetNbEntities(SMDSAbs_0DElement) == 0 ) &&
-     ( myEntityMode & eBallElem   || myVisualObj->GetNbEntities(SMDSAbs_Ball)      == 0 ) &&
-     ( myEntityMode & eEdges      || myVisualObj->GetNbEntities(SMDSAbs_Edge)      == 0 ) &&
-     ( myEntityMode & eFaces      || myVisualObj->GetNbEntities(SMDSAbs_Face)      == 0 ) &&
-     ( myEntityMode & eVolumes    || myVisualObj->GetNbEntities(SMDSAbs_Volume)    == 0 ));
-  if ( isPassAll && myEntityMode )
+  if ( anObjectEntities == 0 && myRepresentation != ePoint ) // no elements, show nodes
   {
-    aFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::ePassAll);
-    aHightFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::ePassAll);
+    myRepresentationCache = GetRepresentation();
+    SetRepresentation( ePoint );
   }
-  else
+
+  if ( myEntityMode != theMode )
   {
-    aFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
-    aHightFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
+    myEntityMode = theMode; // entities to show
 
-    if (myEntityMode & e0DElements) {
-      aFilter->RegisterCellsWithType(VTK_VERTEX);
-      aHightFilter->RegisterCellsWithType(VTK_VERTEX);
+    // Set cell types to extract
+
+    VTKViewer_ExtractUnstructuredGrid*    aFilter = myBaseActor->GetExtractUnstructuredGrid();
+    VTKViewer_ExtractUnstructuredGrid* aHltFilter = myHighlitableActor->GetExtractUnstructuredGrid();
+    aFilter->ClearRegisteredCellsWithType();
+    aHltFilter->ClearRegisteredCellsWithType();
+
+    bool isPassAll = ( myEntityMode == anObjectEntities && myEntityMode );
+    if ( isPassAll )
+    {
+      aFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::ePassAll);
+      aHltFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::ePassAll);
     }
+    else
+    {
+      aFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
+      aHltFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
 
-    if (myEntityMode & eBallElem) {
-      aFilter->RegisterCellsWithType(VTK_POLY_VERTEX);
+      if (myEntityMode & e0DElements) {
+        aFilter->RegisterCellsWithType(VTK_VERTEX);
+        aHltFilter->RegisterCellsWithType(VTK_VERTEX);
+      }
+
+      if (myEntityMode & eBallElem) {
+        aFilter->RegisterCellsWithType(VTK_POLY_VERTEX);
+      }
+
+      if (myEntityMode & eEdges) {
+        aFilter->RegisterCellsWithType(VTK_LINE);
+        aFilter->RegisterCellsWithType(VTK_QUADRATIC_EDGE);
+
+        aHltFilter->RegisterCellsWithType(VTK_LINE);
+        aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_EDGE);
+      }
+
+      if (myEntityMode & eFaces) {
+        aFilter->RegisterCellsWithType(VTK_TRIANGLE);
+        aFilter->RegisterCellsWithType(VTK_QUAD);
+        aFilter->RegisterCellsWithType(VTK_POLYGON);
+        aFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
+        aFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
+        aFilter->RegisterCellsWithType(VTK_QUADRATIC_POLYGON);
+        aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUAD);
+        aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_TRIANGLE);
+
+        aHltFilter->RegisterCellsWithType(VTK_TRIANGLE);
+        aHltFilter->RegisterCellsWithType(VTK_QUAD);
+        aHltFilter->RegisterCellsWithType(VTK_POLYGON);
+        aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
+        aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
+        aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_POLYGON);
+        aHltFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUAD);
+        aHltFilter->RegisterCellsWithType(VTK_BIQUADRATIC_TRIANGLE);
+      }
+
+      if (myEntityMode & eVolumes) {
+        aFilter->RegisterCellsWithType(VTK_TETRA);
+        aFilter->RegisterCellsWithType(VTK_VOXEL);
+        aFilter->RegisterCellsWithType(VTK_HEXAHEDRON);
+        aFilter->RegisterCellsWithType(VTK_WEDGE);
+        aFilter->RegisterCellsWithType(VTK_PYRAMID);
+        aFilter->RegisterCellsWithType(VTK_HEXAGONAL_PRISM);
+        aFilter->RegisterCellsWithType(VTK_QUADRATIC_TETRA);
+        aFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
+        aFilter->RegisterCellsWithType(VTK_TRIQUADRATIC_HEXAHEDRON);
+        aFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
+        aFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
+        aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
+        aFilter->RegisterCellsWithType(VTK_POLYHEDRON);
+
+        aHltFilter->RegisterCellsWithType(VTK_TETRA);
+        aHltFilter->RegisterCellsWithType(VTK_VOXEL);
+        aHltFilter->RegisterCellsWithType(VTK_HEXAHEDRON);
+        aHltFilter->RegisterCellsWithType(VTK_WEDGE);
+        aHltFilter->RegisterCellsWithType(VTK_PYRAMID);
+        aHltFilter->RegisterCellsWithType(VTK_HEXAGONAL_PRISM);
+        aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_TETRA);
+        aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
+        aHltFilter->RegisterCellsWithType(VTK_TRIQUADRATIC_HEXAHEDRON);
+        aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
+        aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
+        aHltFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
+        aHltFilter->RegisterCellsWithType(VTK_POLYHEDRON);
+      }
     }
-
-    if (myEntityMode & eEdges) {
-      aFilter->RegisterCellsWithType(VTK_LINE);
-      aFilter->RegisterCellsWithType(VTK_QUADRATIC_EDGE);
-
-      aHightFilter->RegisterCellsWithType(VTK_LINE);
-      aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_EDGE);
-    }
-
-    if (myEntityMode & eFaces) {
-      aFilter->RegisterCellsWithType(VTK_TRIANGLE);
-      aFilter->RegisterCellsWithType(VTK_QUAD);
-      aFilter->RegisterCellsWithType(VTK_POLYGON);
-      aFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
-      aFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
-      aFilter->RegisterCellsWithType(VTK_QUADRATIC_POLYGON);
-      aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUAD);
-      aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_TRIANGLE);
-
-      aHightFilter->RegisterCellsWithType(VTK_TRIANGLE);
-      aHightFilter->RegisterCellsWithType(VTK_QUAD);
-      aHightFilter->RegisterCellsWithType(VTK_POLYGON);
-      aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
-      aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
-      aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_POLYGON);
-      aHightFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUAD);
-      aHightFilter->RegisterCellsWithType(VTK_BIQUADRATIC_TRIANGLE);
-    }
-
-    if (myEntityMode & eVolumes) {
-      aFilter->RegisterCellsWithType(VTK_TETRA);
-      aFilter->RegisterCellsWithType(VTK_VOXEL);
-      aFilter->RegisterCellsWithType(VTK_HEXAHEDRON);
-      aFilter->RegisterCellsWithType(VTK_WEDGE);
-      aFilter->RegisterCellsWithType(VTK_PYRAMID);
-      aFilter->RegisterCellsWithType(VTK_HEXAGONAL_PRISM);
-      aFilter->RegisterCellsWithType(VTK_QUADRATIC_TETRA);
-      aFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
-      aFilter->RegisterCellsWithType(VTK_TRIQUADRATIC_HEXAHEDRON);
-      aFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
-      aFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
-      aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
-      aFilter->RegisterCellsWithType(VTK_POLYHEDRON);
-
-      aHightFilter->RegisterCellsWithType(VTK_TETRA);
-      aHightFilter->RegisterCellsWithType(VTK_VOXEL);
-      aHightFilter->RegisterCellsWithType(VTK_HEXAHEDRON);
-      aHightFilter->RegisterCellsWithType(VTK_WEDGE);
-      aHightFilter->RegisterCellsWithType(VTK_PYRAMID);
-      aHightFilter->RegisterCellsWithType(VTK_HEXAGONAL_PRISM);
-      aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_TETRA);
-      aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
-      aHightFilter->RegisterCellsWithType(VTK_TRIQUADRATIC_HEXAHEDRON);
-      aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
-      aHightFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
-      aHightFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
-      aHightFilter->RegisterCellsWithType(VTK_POLYHEDRON);
-    }
+    if ( GetVisibility() )
+      aFilter->Update();
+    if (MYDEBUG) MESSAGE(aFilter->GetOutput()->GetNumberOfCells());
   }
-  if ( GetVisibility() )
-    aFilter->Update();
-  if (MYDEBUG) MESSAGE(aFilter->GetOutput()->GetNumberOfCells());
-  SetVisibility(GetVisibility(),false);
+
+  SetVisibility( GetVisibility(), myRepresentationCache != 0 );
 }
 
 void SMESH_ActorDef::SetRepresentation (int theMode)
@@ -1708,6 +1716,15 @@ void SMESH_ActorDef::SetRepresentation (int theMode)
   int aNbVolumes = myVisualObj->GetNbEntities(SMDSAbs_Volume);
   int aNb0Ds     = myVisualObj->GetNbEntities(SMDSAbs_0DElement);
   int aNbBalls   = myVisualObj->GetNbEntities(SMDSAbs_Ball);
+
+  if ( myRepresentationCache && aNbEdges + aNbFaces + aNbVolumes + aNb0Ds + aNbBalls )
+  {
+    theMode = myRepresentationCache;
+    if ( theMode == eSurface && aNbFaces + aNbVolumes == 0 )
+      theMode = eEdge;
+    else
+      myRepresentationCache = 0;
+  }
 
   if (theMode < 0) {
     myRepresentation = eSurface;
@@ -1789,7 +1806,7 @@ void SMESH_ActorDef::SetRepresentation (int theMode)
     case eLength:
     case eMultiConnection:
       aProp = aBackProp = my1DProp;
-      if(myRepresentation != ePoint)
+      if ( myRepresentation != ePoint )
         aReperesent = SMESH_DeviceActor::eInsideframe;
       break;
     default:;

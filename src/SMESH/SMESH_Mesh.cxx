@@ -714,6 +714,7 @@ SMESH_Mesh::AddHypothesis(const TopoDS_Shape & aSubShape,
     }
   }
   HasModificationsToDiscard(); // to reset _isModified flag if a mesh becomes empty
+  GetMeshDS()->Modified();
 
   if(MYDEBUG) subMesh->DumpAlgoState(true);
   if(MYDEBUG) SCRUTE(ret);
@@ -784,6 +785,7 @@ SMESH_Mesh::RemoveHypothesis(const TopoDS_Shape & aSubShape,
   }
 
   HasModificationsToDiscard(); // to reset _isModified flag if mesh become empty
+  GetMeshDS()->Modified();
 
   if(MYDEBUG) subMesh->DumpAlgoState(true);
   if(MYDEBUG) SCRUTE(ret);

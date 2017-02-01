@@ -4493,7 +4493,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->setRule( action( SMESHOp::OpDMShading ), "displayMode = 'eSurface'", QtxPopupMgr::ToggleRule );
 
   popupMgr()->insert( action( SMESHOp::OpDMNodes ), anId, -1 );
-  popupMgr()->setRule( action( SMESHOp::OpDMNodes ), aMeshInVTK + "&&" + hasNodes, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( SMESHOp::OpDMNodes ), aMeshInVTK + "&&" + hasNodes + "&&" + hasElems, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( SMESHOp::OpDMNodes ), "displayMode = 'ePoint'", QtxPopupMgr::ToggleRule );
 
   popupMgr()->insert( separator(), anId, -1 );
@@ -4532,7 +4532,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( separator(), anId, -1 );
 
   popupMgr()->insert( action( SMESHOp::OpDEChoose ), anId, -1 );
-  popupMgr()->setRule( action( SMESHOp::OpDEChoose ), aClient + "&& $type in {" + mesh + "} &&" + isNotEmpty, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( SMESHOp::OpDEChoose ), aClient + "&& $type in {" + mesh + "} &&" + hasDifferentElems, QtxPopupMgr::VisibleRule );
 
   popupMgr()->insert( separator(), anId, -1 );
 

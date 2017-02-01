@@ -295,8 +295,8 @@ class SMESH_ActorDef : public SMESH_Actor
   SMESH_DeviceActor* my0DExtActor;
 
   unsigned int myEntityMode;
-  unsigned int myEntityState;
   unsigned int myEntityModeCache;
+  int  myRepresentationCache;
   bool myIsEntityModeCache;
   bool myIsPointsVisible;
 
