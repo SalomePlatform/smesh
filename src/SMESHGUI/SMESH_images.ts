@@ -40,6 +40,10 @@
             <translation>mesh_compute.png</translation>
         </message>
         <message>
+            <source>ICON_OVL_MESH_QUALITY</source>
+            <translation>mesh_quality.png</translation>
+        </message>
+        <message>
             <source>ICON_EVALUATE</source>
             <translation>mesh_evaluate.png</translation>
         </message>

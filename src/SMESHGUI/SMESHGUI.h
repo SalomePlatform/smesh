@@ -115,6 +115,7 @@ public :
 
   void                            ResetState();
   void                            SetState( int );
+  int                             GetState() const { return myState; }
   bool                            DefineDlgPosition( QWidget*, int&, int& );
   void                            switchToOperation( int );
 

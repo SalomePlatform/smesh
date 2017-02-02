@@ -3853,7 +3853,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpBuildCompoundMesh,    "BUILD_COMPOUND",          "ICON_BUILD_COMPOUND" );
   createSMESHAction( SMESHOp::OpCopyMesh,             "COPY_MESH",               "ICON_COPY_MESH" );
   createSMESHAction( SMESHOp::OpCompute,              "COMPUTE",                 "ICON_COMPUTE" );
-  createSMESHAction( SMESHOp::OpComputeSubMesh,        "COMPUTE_SUBMESH",         "ICON_COMPUTE" );
+  createSMESHAction( SMESHOp::OpComputeSubMesh,       "COMPUTE_SUBMESH",         "ICON_COMPUTE" );
   createSMESHAction( SMESHOp::OpPreCompute,           "PRECOMPUTE",              "ICON_PRECOMPUTE" );
   createSMESHAction( SMESHOp::OpEvaluate,             "EVALUATE",                "ICON_EVALUATE" );
   createSMESHAction( SMESHOp::OpMeshOrder,            "MESH_ORDER",              "ICON_MESH_ORDER");
@@ -3866,8 +3866,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpIntersectGroups,      "INT_GROUP",               "ICON_INTERSECT" );
   createSMESHAction( SMESHOp::OpCutGroups,            "CUT_GROUP",               "ICON_CUT" );
   createSMESHAction( SMESHOp::OpGroupUnderlyingElem,  "UNDERLYING_ELEMS",        "ICON_UNDERLYING_ELEMS" );
-  createSMESHAction( SMESHOp::OpAddElemGroupPopup,    "ADD" );
-  createSMESHAction( SMESHOp::OpRemoveElemGroupPopup, "REMOVE" );
+  createSMESHAction( SMESHOp::OpAddElemGroupPopup,    "ADD_TO_GROUP" );
+  createSMESHAction( SMESHOp::OpRemoveElemGroupPopup, "REMOVE_FROM_GROUP" );
   createSMESHAction( SMESHOp::OpDeleteGroup,          "DEL_GROUP",               "ICON_DEL_GROUP" );
   createSMESHAction( SMESHOp::OpMeshInformation ,     "ADV_INFO",                "ICON_ADV_INFO" );
   //createSMESHAction( SMESHOp::OpStdInfo, "STD_INFO",        "ICON_STD_INFO" );
@@ -3901,7 +3901,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpBareBorderVolume,      "BARE_BORDER_VOLUME",      "ICON_BARE_BORDER_VOLUME",      0, true );
   createSMESHAction( SMESHOp::OpOverConstrainedVolume, "OVER_CONSTRAINED_VOLUME", "ICON_OVER_CONSTRAINED_VOLUME", 0, true );
   createSMESHAction( SMESHOp::OpEqualVolume,           "EQUAL_VOLUME",            "ICON_EQUAL_VOLUME",  0, true );
-  createSMESHAction( SMESHOp::OpOverallMeshQuality,    "OVERALL_MESH_QUALITY" );
+  createSMESHAction( SMESHOp::OpOverallMeshQuality,    "OVERALL_MESH_QUALITY",    "ICON_OVL_MESH_QUALITY" );
 
   createSMESHAction( SMESHOp::OpNode,                   "NODE",            "ICON_DLG_NODE" );
   createSMESHAction( SMESHOp::OpElem0D,                 "ELEM0D",          "ICON_DLG_ELEM0D" );
@@ -4441,8 +4441,8 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   // popup for viewer
   createPopupItem( SMESHOp::OpEditGroup,            View, group );
-  createPopupItem( SMESHOp::OpAddElemGroupPopup,    View, elems );
-  createPopupItem( SMESHOp::OpRemoveElemGroupPopup, View, elems );
+  createPopupItem( SMESHOp::OpAddElemGroupPopup,    View, elems, "&& guiState = 800" );
+  createPopupItem( SMESHOp::OpRemoveElemGroupPopup, View, elems, "&& guiState = 800" );
 
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( SMESHOp::OpUpdate,             View, mesh_part );

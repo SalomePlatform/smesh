@@ -176,6 +176,10 @@
             <translation>mesh_tree_hypo_length.png</translation>
         </message>
         <message>
+            <source>ICON_SMESH_TREE_HYPO_CartesianParameters3D</source>
+            <translation>mesh_tree_hypo_cartesian.png</translation>
+        </message>
+        <message>
             <source>ICON_SMESH_TREE_HYPO_Geometric1D</source>
             <translation>mesh_tree_hypo_length.png</translation>
         </message>

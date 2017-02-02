@@ -444,7 +444,6 @@ void SMESHGUI_GroupDlg::initDialog( bool create)
 
   /* Init selection */
   mySMESHGUI->SetActiveDialogBox(this);
-  mySMESHGUI->SetState(800);
 
   SalomeApp_Study* aStudy = dynamic_cast<SalomeApp_Study*>( mySMESHGUI->application()->activeStudy() );
   mySelectionMode = grpNoSelection;
@@ -1609,6 +1608,8 @@ void SMESHGUI_GroupDlg::onSelectAll()
   mySortBtn->setEnabled    ( !noElemsModif );
   mySelectBox->setEnabled  ( !noElemsModif );
   myAllowElemsModif->setEnabled( !mySelectAll->isChecked() );
+  if ( noElemsModif ) mySMESHGUI->ResetState();
+  else                mySMESHGUI->SetState(800);
 
   int selMode     = mySelectionMode;
   mySelectionMode = grpNoSelection;
@@ -2332,9 +2333,9 @@ void SMESHGUI_GroupDlg::enterEvent (QEvent*)
     setEnabled(true);
     mySelectionMode = grpNoSelection;
     setSelectionMode(myTypeId);
-    //mySMESHGUI->SetActiveDialogBox((QDialog*)this);
     mySMESHGUI->SetActiveDialogBox(this);
-    mySMESHGUI->SetState(800);
+    if ( mySelectBox->isEnabled() ) mySMESHGUI->SetState(800);
+    else                            mySMESHGUI->ResetState();
   }
 }
 

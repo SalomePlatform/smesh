@@ -646,7 +646,7 @@ SMESH_Hypothesis::Hypothesis_Status
       filter.Or( SMESH_HypoFilter::HasType( algo->GetType()+1 ));
       filter.Or( SMESH_HypoFilter::HasType( algo->GetType()+2 ));
       if ( SMESH_Algo * curAlgo = (SMESH_Algo*)_father->GetHypothesis( this, filter, true ))
-        if ( !curAlgo->NeedDiscreteBoundary() )
+        if ( !curAlgo->NeedDiscreteBoundary() && curAlgo != anHyp )
           algoRequiringCleaning = curAlgo;
     }
   }

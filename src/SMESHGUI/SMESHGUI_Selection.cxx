@@ -28,11 +28,12 @@
 // SMESH includes
 #include "SMESHGUI_Selection.h"
 
-#include "SMESHGUI_Utils.h"
-#include "SMESHGUI_VTKUtils.h"
-#include "SMESHGUI_GEOMGenUtils.h"
+#include "SMESHGUI.h"
 #include "SMESHGUI_ComputeDlg.h"
 #include "SMESHGUI_ConvToQuadOp.h"
+#include "SMESHGUI_GEOMGenUtils.h"
+#include "SMESHGUI_Utils.h"
+#include "SMESHGUI_VTKUtils.h"
 
 #include <SMESH_Type.h>
 #include <SMESH_Actor.h>
@@ -142,6 +143,7 @@ QVariant SMESHGUI_Selection::parameter( const int ind, const QString& p ) const
   else if ( p=="hasChildren")           val = QVariant( hasChildren( ind ) );
   else if ( p=="nbChildren")            val = QVariant( nbChildren( ind ) );
   else if ( p=="isContainer")           val = QVariant( isContainer( ind ) );
+  else if ( p=="guiState")              val = QVariant( guiState() );
 
   if ( val.isValid() )
     return val;
@@ -773,6 +775,16 @@ bool SMESHGUI_Selection::isImported( const int ind ) const
     }
   }
   return res;
+}
+
+//=======================================================================
+//function : guiState
+//purpose  : 
+//=======================================================================
+
+int SMESHGUI_Selection::guiState()
+{
+  return SMESHGUI::GetSMESHGUI() ? SMESHGUI::GetSMESHGUI()->GetState() : -1;
 }
 
 //=======================================================================

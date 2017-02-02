@@ -109,6 +109,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_tree_hypo.png
   mesh_tree_hypo_segment.png
   mesh_tree_hypo_volume.png
+  mesh_tree_hypo_cartesian.png
   mesh_tree_mesh.png
   mesh_tree_importedmesh.png
   mesh_tree_mesh_warn.png
@@ -224,6 +225,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_extmeth_node_offset.png
   mesh_extmeth_surf_offset_smooth.png
   mesh_extmeth_face_offset.png
+  mesh_quality.png
 )
 
 INSTALL(FILES ${SMESH_RESOURCES_FILES} DESTINATION ${SALOME_SMESH_INSTALL_RES_DATA})

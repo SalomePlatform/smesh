@@ -577,6 +577,8 @@ vtkUnstructuredGrid* SMESH_VisualObjDef::GetUnstructuredGrid()
   {
     NulData(); // detach from the SMDS grid to allow immediate memory de-allocation in compactMesh()
     GetMesh()->compactMesh();
+    if ( SMESHDS_Mesh* m = dynamic_cast<SMESHDS_Mesh*>( GetMesh() )) // IPAL53915
+      m->GetScript()->SetModified(false); // drop IsModified set in compactMesh()
     updateEntitiesFlags();
     vtkUnstructuredGrid *theGrid = GetMesh()->getGrid();
     myGrid->ShallowCopy(theGrid);

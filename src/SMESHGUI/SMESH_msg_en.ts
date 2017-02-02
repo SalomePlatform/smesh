@@ -385,6 +385,22 @@
         <translation>Delete Groups with Contents</translation>
     </message>
     <message>
+        <source>MEN_ADD_TO_GROUP</source>
+        <translation>Add to Group</translation>
+    </message>
+    <message>
+        <source>MEN_REMOVE_FROM_GROUP</source>
+        <translation>Remove from Group</translation>
+    </message>
+    <message>
+        <source>STB_ADD_TO_GROUP</source>
+        <translation>Add selected elements to group</translation>
+    </message>
+    <message>
+        <source>STB_REMOVE_FROM_GROUP</source>
+        <translation>Remove selected elements from group</translation>
+    </message>
+    <message>
         <source>MEN_FACE_ORIENTATION</source>
         <translation>Orientation of Faces</translation>
     </message>

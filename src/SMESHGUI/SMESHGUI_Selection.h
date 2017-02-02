@@ -87,7 +87,8 @@ public:
 
   static int              type( const QString&, _PTR(Study) );
   static QString          typeName( const int );
-
+  static  int             guiState();
+  
   bool                    isImported( const int ) const;
 
 private:
