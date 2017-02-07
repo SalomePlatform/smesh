@@ -44,6 +44,7 @@ class QListWidget;
 class QMenu;
 class QTabWidget;
 class QToolButton;
+class QtxToolButton;
 
 /*!
  * \brief Dialog for mech creation or editing
@@ -155,14 +156,13 @@ private:
 
   QMap<int, QStringList>       myAvailableHypTypes;
 
-  QMap<int, QComboBox*>        myHypCombo;
+  QMap<int, QtxToolButton*>    myHypCombo;
   QMap<int, QToolButton*>      myCreateHypBtn;
   QMap<int, QToolButton*>      myEditHypBtn;
 
   QToolButton*                 myMoreAddHypBtn;
   QToolButton*                 myLessAddHypBtn;
   QListWidget*                 myAddHypList; // 2-nd, etc. additional hyps
-
 };
 
 #endif // SMESHGUI_MESHDLG_H

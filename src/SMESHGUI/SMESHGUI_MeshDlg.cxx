@@ -31,6 +31,7 @@
 #include <SUIT_Session.h>
 #include <SUIT_ResourceMgr.h>
 #include <QtxMenu.h>
+#include <QtxToolButton.h>
 
 // Qt includes
 #include <QComboBox>
@@ -74,11 +75,11 @@ SMESHGUI_MeshTab::SMESHGUI_MeshTab( QWidget* theParent )
   
   // Algorifm
   QLabel* anAlgoLbl = new QLabel( tr( "ALGORITHM" ), this );
-  myHypCombo[ Algo ] = new QComboBox( this );
+  myHypCombo[ Algo ] = new QtxToolButton( this );
   
   // Hypothesis
   QLabel* aHypLbl = new QLabel( tr( "HYPOTHESIS" ), this );
-  myHypCombo[ MainHyp ] = new QComboBox( this );
+  myHypCombo[ MainHyp ] = new QtxToolButton( this );
   myHypCombo[ MainHyp ]->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed );
   myCreateHypBtn[ MainHyp ] = new QToolButton( this );
   myCreateHypBtn[ MainHyp ]->setIcon( aCreateIcon );
@@ -91,7 +92,7 @@ SMESHGUI_MeshTab::SMESHGUI_MeshTab( QWidget* theParent )
 
   // Add. hypothesis
   QLabel* anAddHypLbl = new QLabel( tr( "ADD_HYPOTHESIS" ), this );
-  myHypCombo[ AddHyp ] = new QComboBox( this );
+  myHypCombo[ AddHyp ] = new QtxToolButton( this );
   myHypCombo[ AddHyp ]->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Fixed );
   myCreateHypBtn[ AddHyp ] = new QToolButton( this );
   myCreateHypBtn[ AddHyp ]->setIcon( aCreateIcon );
@@ -126,6 +127,7 @@ SMESHGUI_MeshTab::SMESHGUI_MeshTab( QWidget* theParent )
   aLay->addWidget( myMoreAddHypBtn, 4, 2 );
   aLay->addWidget( myEditHypBtn[ MoreAddHyp ], 4, 3 );
   aLay->addWidget( myLessAddHypBtn, 5, 2 );
+
   aLay->addItem( new QSpacerItem( 0, 0, QSizePolicy::Fixed, QSizePolicy::Expanding ), 6, 0 );
 
   // Connect signals and slots
@@ -172,24 +174,21 @@ void SMESHGUI_MeshTab::addItem( const QString& txt,
                                 const int      index,
                                 const bool     isGroup )
 {
-  const char* prefix = "  ";
   if ( type <= AddHyp )
   {
     if ( isGroup )
     {
-      int idx = myHypCombo[ type ]->count();
-      myHypCombo[ type ]->addItem( txt.mid( 6 ), QVariant( index ));
-      myHypCombo[ type ]->setItemData( idx, "separator", Qt::AccessibleDescriptionRole );
+      myHypCombo[ type ]->addSeparator( txt.mid( 6 ) );
     }
     else
     {
-      myHypCombo[ type ]->addItem( prefix + txt, QVariant( index ));
+      myHypCombo[ type ]->addItem( txt, QVariant( index ));
     }
     //myHypCombo[ type ]->setMaxVisibleItems( qMax( 10, myHypCombo[ type ]->count() ) );
   }
   else
   {
-    QListWidgetItem* item = new QListWidgetItem( prefix + txt, myAddHypList );
+    QListWidgetItem* item = new QListWidgetItem( txt, myAddHypList );
     item->setData( Qt::UserRole, QVariant( index ));
   }
 }
@@ -405,7 +404,7 @@ void SMESHGUI_MeshTab::onCreateHyp()
     QAction* a = 0;
     if ( aHypNames[ i ].startsWith( "GROUP:" ))
     {
-      aPopup.appendGroupTitle( aHypNames[ i ].mid( 6 ));
+      aPopup.addGroup( aHypNames[ i ].mid( 6 ));
     }
     else
     {
