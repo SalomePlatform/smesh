@@ -120,7 +120,8 @@ QVariant SMESHGUI_Selection::parameter( const int ind, const QString& p ) const
   if      ( p=="client" )               val = QVariant( LightApp_Selection::parameter( p ) );
   else if ( p=="type" )                 val = QVariant( myTypes[ind] );
   else if ( p=="hasActor" )             val = QVariant( getActor( ind ) != 0 );
-  else if ( p=="elemTypes" )            val = QVariant( elemTypes( ind ) );
+  else if ( p=="elemTypes" )            val = QVariant( elemTypes( ind, false ) );
+  else if ( p=="objElemTypes" )         val = QVariant( elemTypes( ind, true ) );
   else if ( p=="isAutoColor" )          val = QVariant( isAutoColor( ind ) );
   else if ( p=="numberOfNodes" )        val = QVariant( numberOfNodes( ind ) );
   else if ( p=="dim" )                  val = QVariant( dim( ind ) );
@@ -168,7 +169,7 @@ QVariant SMESHGUI_Selection::parameter( const QString& p ) const
 
 //=======================================================================
 //function : getVtkOwner
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 SMESH_Actor* SMESHGUI_Selection::getActor( int ind ) const
@@ -184,18 +185,42 @@ SMESH_Actor* SMESHGUI_Selection::getActor( int ind ) const
 //purpose  : may return {'Elem0d' 'Edge' 'Face' 'Volume' 'BallElem'} at most
 //=======================================================================
 
-QList<QVariant> SMESHGUI_Selection::elemTypes( int ind ) const
+QList<QVariant> SMESHGUI_Selection::elemTypes( int ind, bool fromObj ) const
 {
   QList<QVariant> types;
   SMESH_Actor* actor = getActor( ind );
   if ( actor ) {
     TVisualObjPtr object = actor->GetObject();
     if ( object ) {
-      if ( object->GetNbEntities( SMDSAbs_0DElement )) types.append( "Elem0d" );
-      if ( object->GetNbEntities( SMDSAbs_Ball ))      types.append( "BallElem" );
       if ( object->GetNbEntities( SMDSAbs_Edge ))      types.append( "Edge" );
       if ( object->GetNbEntities( SMDSAbs_Face ))      types.append( "Face" );
       if ( object->GetNbEntities( SMDSAbs_Volume ))    types.append( "Volume" );
+      if ( object->GetNbEntities( SMDSAbs_0DElement )) types.append( "Elem0d" );
+      if ( object->GetNbEntities( SMDSAbs_Ball ))      types.append( "BallElem" );
+    }
+  }
+  else if ( fromObj )
+  {
+    if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
+    {
+      _PTR(SObject) sobj = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
+      CORBA::Object_var obj = SMESH::SObjectToObject( sobj, SMESH::GetActiveStudyDocument() );
+      SMESH::SMESH_IDSource_var idSrc = SMESH::SMESH_IDSource::_narrow( obj );
+      if ( !CORBA::is_nil( idSrc ) )
+      {
+        SMESH::array_of_ElementType_var typeVar = idSrc->GetTypes();
+        for ( CORBA::ULong i = 0; i < typeVar->length(); ++i )
+          switch ( typeVar[i] ) {
+          case SMESH::EDGE:   types.append( "Edge" );     break;
+          case SMESH::FACE:   types.append( "Face" );     break;
+          case SMESH::VOLUME: types.append( "Volume" );   break;
+          case SMESH::ELEM0D: types.append( "Elem0d" );   break;
+          case SMESH::BALL:   types.append( "BallElem" ); break;
+          case SMESH::ALL:
+          case SMESH::NODE:
+          case SMESH::NB_ELEMENT_TYPES: break;
+          }
+      }
     }
   }
   return types;
@@ -439,13 +464,10 @@ bool SMESHGUI_Selection::isAutoColor( int ind ) const
   if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
   {
     _PTR(SObject) sobj = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
-    CORBA::Object_var obj = SMESH::SObjectToObject( sobj, SMESH::GetActiveStudyDocument() );
-
-    if ( !CORBA::is_nil( obj ) ) {
-      SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( obj );
-      if ( !CORBA::is_nil( mesh ) )
-        return mesh->GetAutoColor();
-    }
+    CORBA::Object_var      obj = SMESH::SObjectToObject( sobj, SMESH::GetActiveStudyDocument() );
+    SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( obj );
+    if ( !CORBA::is_nil( mesh ) )
+      return mesh->GetAutoColor();
   }
   return false;
 }

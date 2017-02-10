@@ -1469,7 +1469,7 @@ class Mesh:
                     errText = "code %s" % -err.code
                 if errText: errText += ". "
                 errText += err.comment
-                if allReasons != "":allReasons += "\n"
+                if allReasons: allReasons += "\n"
                 if ok:
                     allReasons += '-  "%s"%s - %s' %(err.algoName, shapeText, errText)
                 else:
@@ -1507,7 +1507,7 @@ class Mesh:
                     reason = ("For unknown reason. "
                               "Developer, revise Mesh.Compute() implementation in smeshBuilder.py!")
                     pass
-                if allReasons != "":allReasons += "\n"
+                if allReasons: allReasons += "\n"
                 allReasons += "-  " + reason
                 pass
             if not ok or allReasons != "":

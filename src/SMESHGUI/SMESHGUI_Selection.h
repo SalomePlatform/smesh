@@ -71,8 +71,8 @@ public:
   virtual int             nbChildren( int ) const;
   virtual bool            isContainer( int ) const;
 
-  // parameters got from actor return nothing if an actor is not visible
-  virtual QList<QVariant> elemTypes( int ) const;
+  // parameters got from actor, return nothing if an actor is not visible
+  virtual QList<QVariant> elemTypes( int, bool ) const; // == objElemTypes w/o actor
   virtual QList<QVariant> labeledTypes( int ) const;
   virtual QString         displayMode( int ) const;
   virtual QString         shrinkMode( int ) const;

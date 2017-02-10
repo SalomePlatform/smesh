@@ -55,6 +55,14 @@ public:
   void SetPointsData( SMDS_Mesh* theMesh, const TColStd_MapOfInteger & theNodesIdMap );
   void SetElemsData ( const std::vector<int> &  theElemsIdMap,
                       const std::list<gp_XYZ> & theGrCentersXYZ );
+  template< class INT_ITER, class XYZ_ITER >
+  void SetElemsData ( INT_ITER theElemsBegin, INT_ITER theElemsEnd,
+                      XYZ_ITER theGrCentersBegin, XYZ_ITER theGrCentersEnd )
+  {
+    std::vector<int> elemsIds( theElemsBegin, theElemsEnd );
+    std::list<gp_XYZ> gcXYZ( theGrCentersBegin, theGrCentersEnd );
+    SetElemsData( elemsIds, gcXYZ );
+  }
   void SetPointsLabeled( bool theIsPointsLabeled, bool theIsActorVisible = true );
 
   void AddToRender     ( vtkRenderer* theRenderer );

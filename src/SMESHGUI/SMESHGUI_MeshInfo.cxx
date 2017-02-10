@@ -33,6 +33,7 @@
 #include "SMESHDS_Mesh.hxx"
 #include "SMESHGUI.h"
 #include "SMESHGUI_FilterUtils.h"
+#include "SMESHGUI_IdPreview.h"
 #include "SMESHGUI_IdValidator.h"
 #include "SMESHGUI_SpinBox.h"
 #include "SMESHGUI_Utils.h"
@@ -2826,7 +2827,7 @@ void SMESHGUI_AddInfo::saveInfo( QTextStream &out )
   \param page specifies the dialog page to be shown at the start-up
 */
 SMESHGUI_MeshInfoDlg::SMESHGUI_MeshInfoDlg( QWidget* parent, int page )
-: QDialog( parent ), myActor( 0 )
+  : QDialog( parent ), myActor( 0 )
 {
   setModal( false );
   setAttribute( Qt::WA_DeleteOnClose, true );
@@ -2835,13 +2836,13 @@ SMESHGUI_MeshInfoDlg::SMESHGUI_MeshInfoDlg( QWidget* parent, int page )
 
   myTabWidget = new QTabWidget( this );
 
-  // base info 
+  // base info
 
   myBaseInfo = new SMESHGUI_MeshInfo( myTabWidget );
   myTabWidget->addTab( myBaseInfo, tr( "BASE_INFO" ) );
 
   // elem info 
-  
+
   QWidget* w = new QWidget( myTabWidget );
 
   myMode = new QButtonGroup( this );
@@ -2850,11 +2851,13 @@ SMESHGUI_MeshInfoDlg::SMESHGUI_MeshInfoDlg( QWidget* parent, int page )
   myMode->button( NodeMode )->setChecked( true );
   myID = new QLineEdit( w );
   myID->setValidator( new SMESHGUI_IdValidator( this ) );
+  myIDPreviewCheck = new QCheckBox( tr( "SHOW_IDS" ), w );
+  myIDPreview = new SMESHGUI_IdPreview( SMESH::GetViewWindow( SMESHGUI::GetSMESHGUI() ));
 
   int mode = SMESHGUI::resourceMgr()->integerValue( "SMESH", "mesh_elem_info", 1 );
   mode = qMin( 1, qMax( 0, mode ) );
-  
-  if ( mode == 0 ) 
+
+  if ( mode == 0 )
     myElemInfo = new SMESHGUI_SimpleElemInfo( w );
   else
     myElemInfo = new SMESHGUI_TreeElemInfo( w );
@@ -2864,9 +2867,10 @@ SMESHGUI_MeshInfoDlg::SMESHGUI_MeshInfoDlg( QWidget* parent, int page )
   elemLayout->setSpacing( SPACING );
   elemLayout->addWidget( myMode->button( NodeMode ), 0, 0 );
   elemLayout->addWidget( myMode->button( ElemMode ), 0, 1 );
-  elemLayout->addWidget( myID, 0, 2 );
-  elemLayout->addWidget( myElemInfo, 1, 0, 1, 3 );
-  
+  elemLayout->addWidget( myID,                       0, 2 );
+  elemLayout->addWidget( myIDPreviewCheck,           1, 0, 1, 2 );
+  elemLayout->addWidget( myElemInfo,                 2, 0, 1, 3 );
+
   myTabWidget->addTab( w, tr( "ELEM_INFO" ) );
 
   // additional info
@@ -2905,18 +2909,19 @@ SMESHGUI_MeshInfoDlg::SMESHGUI_MeshInfoDlg( QWidget* parent, int page )
   l->addWidget( myTabWidget );
   l->addLayout( btnLayout );
 
-  myTabWidget->setCurrentIndex( qMax( (int)BaseInfo, qMin( (int)ElemInfo, page ) ) );
+  myTabWidget->setCurrentIndex( qMax( (int)BaseInfo, qMin( (int)ElemInfo, page )));
 
-  connect( okBtn,       SIGNAL( clicked() ),              this, SLOT( reject() ) );
-  connect( dumpBtn,     SIGNAL( clicked() ),              this, SLOT( dump() ) );
-  connect( helpBtn,     SIGNAL( clicked() ),              this, SLOT( help() ) );
-  connect( myTabWidget, SIGNAL( currentChanged( int  ) ), this, SLOT( updateSelection() ) );
-  connect( myMode,      SIGNAL( buttonClicked( int  ) ),  this, SLOT( modeChanged() ) );
-  connect( myID,        SIGNAL( textChanged( QString ) ), this, SLOT( idChanged() ) );
-  connect( SMESHGUI::GetSMESHGUI(),  SIGNAL( SignalDeactivateActiveDialog() ), this, SLOT( deactivate() ) );
-  connect( SMESHGUI::GetSMESHGUI(),  SIGNAL( SignalCloseAllDialogs() ),        this, SLOT( reject() ) );
-  connect( myElemInfo,  SIGNAL( itemInfo( int ) ),     this, SLOT( showItemInfo( int ) ) );
-  connect( myElemInfo,  SIGNAL( itemInfo( QString ) ), this, SLOT( showItemInfo( QString ) ) );
+  connect( okBtn,       SIGNAL( clicked() ),              this, SLOT( reject() ));
+  connect( dumpBtn,     SIGNAL( clicked() ),              this, SLOT( dump() ));
+  connect( helpBtn,     SIGNAL( clicked() ),              this, SLOT( help() ));
+  connect( myTabWidget, SIGNAL( currentChanged( int  ) ), this, SLOT( updateSelection() ));
+  connect( myMode,      SIGNAL( buttonClicked( int  ) ),  this, SLOT( modeChanged() ));
+  connect( myID,        SIGNAL( textChanged( QString ) ), this, SLOT( idChanged() ));
+  connect( myIDPreviewCheck,         SIGNAL( toggled(bool) ), this, SLOT( idPreviewChange(bool) ));
+  connect( SMESHGUI::GetSMESHGUI(),  SIGNAL( SignalDeactivateActiveDialog() ), this, SLOT( deactivate() ));
+  connect( SMESHGUI::GetSMESHGUI(),  SIGNAL( SignalCloseAllDialogs() ),        this, SLOT( reject() ));
+  connect( myElemInfo,  SIGNAL( itemInfo( int ) ),     this, SLOT( showItemInfo( int )));
+  connect( myElemInfo,  SIGNAL( itemInfo( QString ) ), this, SLOT( showItemInfo( QString )));
 
   updateSelection();
 }
@@ -2926,6 +2931,7 @@ SMESHGUI_MeshInfoDlg::SMESHGUI_MeshInfoDlg( QWidget* parent, int page )
 */
 SMESHGUI_MeshInfoDlg::~SMESHGUI_MeshInfoDlg()
 {
+  delete myIDPreview;
 }
 
 /*!
@@ -2983,6 +2989,7 @@ void SMESHGUI_MeshInfoDlg::reject()
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow() )
     aViewWindow->SetSelectionMode( ActorSelection );
   QDialog::reject();
+  myIDPreview->SetPointsLabeled(false);
 }
 
 /*!
@@ -3016,7 +3023,9 @@ void SMESHGUI_MeshInfoDlg::updateSelection()
   disconnect( selMgr, 0, this, 0 );
   selMgr->clearFilters();
 
-  if ( myTabWidget->currentIndex() == BaseInfo || myTabWidget->currentIndex() == AddInfo || myTabWidget->currentIndex() == CtrlInfo ) {
+  if ( myTabWidget->currentIndex() == BaseInfo ||
+       myTabWidget->currentIndex() == AddInfo ||
+       myTabWidget->currentIndex() == CtrlInfo ) {
     SMESH::SetPointRepresentation( false );
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow() )
       aViewWindow->SetSelectionMode( ActorSelection );
@@ -3106,33 +3115,63 @@ void SMESHGUI_MeshInfoDlg::modeChanged()
 }
 
 /*!
-  \brief Caled when users prints mesh element ID in the corresponding field.
+  \brief Called when users prints mesh element ID in the corresponding field.
 */
 void SMESHGUI_MeshInfoDlg::idChanged()
 {
+  myIDPreview->SetPointsLabeled( false );
+
   SVTK_Selector* selector = SMESH::GetSelector();
   if ( myActor && selector ) {
     Handle(SALOME_InteractiveObject) IO = myActor->getIO();
     TColStd_MapOfInteger ID;
-    QSet<long> ids;
+    QSet<long>           ids;
+    std::vector<int>     idVec;
+    std::list< gp_XYZ >  aGrCentersXYZ;
     QStringList idTxt = myID->text().split( " ", QString::SkipEmptyParts );
     foreach ( QString tid, idTxt ) {
       long id = tid.trimmed().toLong();
-      const SMDS_MeshElement* e = myMode->checkedId() == ElemMode ? 
+      const SMDS_MeshElement* e = myMode->checkedId() == ElemMode ?
         myActor->GetObject()->GetMesh()->FindElement( id ) :
         myActor->GetObject()->GetMesh()->FindNode( id );
       if ( e ) {
         ID.Add( id );
         ids << id;
+        if ( myMode->checkedId() == ElemMode )
+        {
+          idVec.push_back( id );
+          aGrCentersXYZ.push_back( myElemInfo->getGravityCenter( e ));
+        }
       }
     }
     selector->AddOrRemoveIndex( IO, ID, false );
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow() ) {
+
+      if ( myMode->checkedId() == NodeMode )
+        myIDPreview->SetPointsData( myActor->GetObject()->GetMesh(), ID );
+      else
+        myIDPreview->SetElemsData( idVec, aGrCentersXYZ );
+
+      bool showIDs = ( !ID.IsEmpty() &&
+                       myIDPreviewCheck->isChecked() &&
+                       myTabWidget->currentIndex() == ElemInfo );
+      myIDPreview->SetPointsLabeled( showIDs, myActor->GetVisibility() );
+
       aViewWindow->highlight( IO, true, true );
       aViewWindow->Repaint();
     }
     myElemInfo->showInfo( ids, myMode->checkedId() == ElemMode );
   }
+}
+
+/*!
+ * \brief Show IDs clicked
+ */
+void SMESHGUI_MeshInfoDlg::idPreviewChange( bool isOn )
+{
+  myIDPreview->SetPointsLabeled( isOn && !myID->text().simplified().isEmpty() );
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow() )
+    aViewWindow->Repaint();
 }
 
 void SMESHGUI_MeshInfoDlg::showItemInfo( int id )

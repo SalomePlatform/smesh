@@ -459,6 +459,7 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
       _ebbTree[i] = NULL;
       _ebbTreeHeight[i] = -1;
     }
+    _elementType = SMDSAbs_All;
   }
   virtual ~SMESH_ElementSearcherImpl()
   {
@@ -878,9 +879,9 @@ SMESH_ElementSearcherImpl::FindClosestTo( const gp_Pnt&       point,
 
 TopAbs_State SMESH_ElementSearcherImpl::GetPointState(const gp_Pnt& point)
 {
-  double tolerance = getTolerance();
-
   _elementType = SMDSAbs_Face;
+
+  double tolerance = getTolerance();
 
   ElementBndBoxTree*& ebbTree = _ebbTree[ SMDSAbs_Face ];
   if ( !ebbTree )

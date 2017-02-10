@@ -97,6 +97,7 @@ SMESHGUI_DisplayEntitiesDlg::SMESHGUI_DisplayEntitiesDlg( QWidget* parent )
   hl->addWidget( nb0DElemsLab, 0, 1 );
   my0DElemsTB->setEnabled( nbElements );
   nb0DElemsLab->setEnabled( nbElements );
+  myNbTypes += ( nbElements > 0 );
 
   // Edges
   nbElements = myActor ? myActor->GetObject()->GetNbEntities( SMDSAbs_Edge ) : aMesh->NbEdges();
@@ -112,6 +113,7 @@ SMESHGUI_DisplayEntitiesDlg::SMESHGUI_DisplayEntitiesDlg( QWidget* parent )
   hl->addWidget( nbEdgesLab, 1, 1 );
   myEdgesTB->setEnabled( nbElements );
   nbEdgesLab->setEnabled( nbElements );
+  myNbTypes += ( nbElements > 0 );
 
   // Faces
   nbElements = myActor ? myActor->GetObject()->GetNbEntities( SMDSAbs_Face ) : aMesh->NbFaces();
@@ -127,6 +129,7 @@ SMESHGUI_DisplayEntitiesDlg::SMESHGUI_DisplayEntitiesDlg( QWidget* parent )
   hl->addWidget( nbFacesLab, 2, 1 );
   myFacesTB->setEnabled( nbElements );
   nbFacesLab->setEnabled( nbElements );
+  myNbTypes += ( nbElements > 0 );
 
   // Volumes
   nbElements = myActor ? myActor->GetObject()->GetNbEntities( SMDSAbs_Volume ) : aMesh->NbVolumes();
@@ -142,6 +145,7 @@ SMESHGUI_DisplayEntitiesDlg::SMESHGUI_DisplayEntitiesDlg( QWidget* parent )
   hl->addWidget( nbVolumesLab, 3, 1 );
   myVolumesTB->setEnabled( nbElements );
   nbVolumesLab->setEnabled( nbElements );
+  myNbTypes += ( nbElements > 0 );
 
   // Balls
   nbElements = myActor ? myActor->GetObject()->GetNbEntities( SMDSAbs_Ball ) : aMesh->NbBalls();
@@ -157,6 +161,7 @@ SMESHGUI_DisplayEntitiesDlg::SMESHGUI_DisplayEntitiesDlg( QWidget* parent )
   hl->addWidget( nbBallsLab, 4, 1 );
   myBallsTB->setEnabled( nbElements );
   nbBallsLab->setEnabled( nbElements );
+  myNbTypes += ( nbElements > 0 );
 
   QVBoxLayout* aDlgLay = new QVBoxLayout( mainFrame() );
   aDlgLay->setMargin( 0 );
@@ -165,8 +170,10 @@ SMESHGUI_DisplayEntitiesDlg::SMESHGUI_DisplayEntitiesDlg( QWidget* parent )
   
   button( OK )->setText( tr( "SMESH_BUT_OK" ) );
 
-  connect( this, SIGNAL( dlgHelp() ), this, SLOT( onHelp() ) );
-  connect( this, SIGNAL( dlgOk() ),   this, SLOT( onOk() ) );
+  connect( this, SIGNAL( dlgHelp() ), this, SLOT( onHelp() ));
+  connect( this, SIGNAL( dlgOk() ),   this, SLOT( onOk() ));
+
+  updateButtons();
 }
 
 /*
@@ -192,14 +199,6 @@ void SMESHGUI_DisplayEntitiesDlg::InverseEntityMode(unsigned int& theOutputMode,
 void SMESHGUI_DisplayEntitiesDlg::onChangeEntityMode( bool isChecked )
 {
   QCheckBox* aSender = (QCheckBox*)sender();
-  if ( myNbCheckedButtons == 1 && !isChecked ) {
-    SUIT_MessageBox::warning(this, tr("SMESH_WRN_WARNING"),
-                             tr("WRN_AT_LEAST_ONE"));
-    disconnect( aSender, SIGNAL(toggled(bool)), this, SLOT(onChangeEntityMode(bool)) );
-    aSender->setChecked( true );
-    connect( aSender, SIGNAL(toggled(bool)), this, SLOT(onChangeEntityMode(bool)) );
-    return;
-  }
   if ( my0DElemsTB == aSender )
     InverseEntityMode( myEntityMode, SMESH_Actor::e0DElements );
   else if ( myEdgesTB == aSender )
@@ -210,9 +209,9 @@ void SMESHGUI_DisplayEntitiesDlg::onChangeEntityMode( bool isChecked )
     InverseEntityMode( myEntityMode, SMESH_Actor::eVolumes );
   else if ( myBallsTB == aSender )
     InverseEntityMode( myEntityMode, SMESH_Actor::eBallElem );
-  
+
   isChecked ? myNbCheckedButtons++ : myNbCheckedButtons--;
-  
+  updateButtons();
 }
 
 /*!
@@ -247,4 +246,12 @@ void SMESHGUI_DisplayEntitiesDlg::onOk()
     SMESHGUI::selectionMgr()->setSelected( aList, false );
     SMESH::UpdateView( wnd, SMESH::eDisplay, entry );
   }
+}
+
+/*!
+ * \brief Enable/disable OK button depending on nb of selected entities
+ */
+void SMESHGUI_DisplayEntitiesDlg::updateButtons()
+{
+  setButtonEnabled( myNbCheckedButtons > 0 || myNbTypes == 0, OK );
 }

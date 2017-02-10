@@ -40,6 +40,7 @@ public:
 private:
   void InverseEntityMode( unsigned int& theOutputMode,
                           unsigned int theMode );
+  void updateButtons();
 
 private slots:
   void              onOk();
@@ -51,6 +52,7 @@ private:
   unsigned int myEntityMode;
   SMESH_Actor *myActor;
   int myNbCheckedButtons;
+  int myNbTypes;
   QCheckBox* my0DElemsTB;
   QCheckBox* myEdgesTB;
   QCheckBox* myFacesTB;

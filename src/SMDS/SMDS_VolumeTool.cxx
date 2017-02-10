@@ -425,11 +425,13 @@ struct SMDS_VolumeTool::SaveFacet
   SaveFacet( SMDS_VolumeTool::Facet& facet ): myToRestore( facet )
   {
     mySaved = facet;
+    mySaved.myNodes.swap( facet.myNodes );
   }
   ~SaveFacet()
   {
     if ( myToRestore.myIndex != mySaved.myIndex )
       myToRestore = mySaved;
+    myToRestore.myNodes.swap( mySaved.myNodes );
   }
 };
 

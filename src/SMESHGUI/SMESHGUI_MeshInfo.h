@@ -52,17 +52,19 @@
 
 class QAbstractButton;
 class QButtonGroup;
+class QCheckBox;
 class QContextMenuEvent;
+class QGridLayout;
 class QLabel;
 class QLineEdit;
 class QPushButton;
 class QTabWidget;
 class QTextBrowser;
-class QGridLayout;
-class SMESH_Actor;
-class SMDS_MeshNode;
 class SMDS_MeshElement;
+class SMDS_MeshNode;
+class SMESHGUI_IdPreview;
 class SMESHGUI_SpinBox;
+class SMESH_Actor;
 
 class ExtraWidget;
 
@@ -157,6 +159,8 @@ public:
   void         clear();
   virtual void saveInfo( QTextStream &out ) = 0;
 
+  gp_XYZ       getGravityCenter( const SMDS_MeshElement* e ) { return gravityCenter(e); }
+
 protected:
   struct XYZ
   {
@@ -168,6 +172,7 @@ protected:
     double x() const  { return myX; }
     double y() const  { return myY; }
     double z() const  { return myZ; }
+    operator gp_XYZ() const { return gp_XYZ( myX, myY, myZ ); }
   };
   typedef QMap< int, QList<int> > Connectivity;
 
@@ -382,19 +387,22 @@ private slots:
   void deactivate();
   void modeChanged();
   void idChanged();
+  void idPreviewChange(bool);
   void showItemInfo( int );
   void showItemInfo( const QString& );
   void dump();
 
 private:
-  QTabWidget*        myTabWidget;
-  SMESHGUI_MeshInfo* myBaseInfo;
-  QButtonGroup*      myMode;
-  QLineEdit*         myID;
-  SMESHGUI_ElemInfo* myElemInfo;   
-  SMESHGUI_AddInfo*  myAddInfo;
-  SMESHGUI_CtrlInfo* myCtrlInfo;
-  SMESH_Actor*       myActor;
+  QTabWidget*                      myTabWidget;
+  SMESHGUI_MeshInfo*               myBaseInfo;
+  QButtonGroup*                    myMode;
+  QLineEdit*                       myID;
+  QCheckBox*                       myIDPreviewCheck;
+  SMESHGUI_IdPreview*              myIDPreview;
+  SMESHGUI_ElemInfo*               myElemInfo;   
+  SMESHGUI_AddInfo*                myAddInfo;
+  SMESHGUI_CtrlInfo*               myCtrlInfo;
+  SMESH_Actor*                     myActor;
   Handle(SALOME_InteractiveObject) myIO;
 };
 

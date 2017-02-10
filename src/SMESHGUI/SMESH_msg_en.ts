@@ -7423,6 +7423,10 @@ as they are of improper type:
         <translation>Element</translation>
     </message>
     <message>
+        <source>SHOW_IDS</source>
+        <translation>Show IDs</translation>
+    </message>
+    <message>
         <source>BUT_DUMP_MESH</source>
         <translation>&amp;Dump</translation>
     </message>

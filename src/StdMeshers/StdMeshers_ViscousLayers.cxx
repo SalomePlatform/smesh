@@ -445,6 +445,7 @@ namespace VISCOUS_3D
     bool Is   ( int flag ) const { return _flags & flag; }
     void Set  ( int flag ) { _flags |= flag; }
     void Unset( int flag ) { _flags &= ~flag; }
+    std::string DumpFlags() const; // debug
 
     void SetNewLength( double len, _EdgesOnShape& eos, SMESH_MesherHelper& helper );
     bool SetNewLength2d( Handle(Geom_Surface)& surface,
@@ -9199,8 +9200,46 @@ void _LayerEdge::SmoothPos( const vector< double >& segLen, const double tol )
 
 //================================================================================
 /*!
- * \brief Create layers of prisms
+ * \brief Print flags
  */
+//================================================================================
+
+std::string _LayerEdge::DumpFlags() const
+{
+  SMESH_Comment dump;
+  for ( int flag = 1; flag < 0x1000000; flag *= 2 )
+    if ( _flags & flag )
+    {
+      EFlags f = (EFlags) flag;
+      switch ( f ) {
+      case TO_SMOOTH:       dump << "TO_SMOOTH";       break;
+      case MOVED:           dump << "MOVED";           break;
+      case SMOOTHED:        dump << "SMOOTHED";        break;
+      case DIFFICULT:       dump << "DIFFICULT";       break;
+      case ON_CONCAVE_FACE: dump << "ON_CONCAVE_FACE"; break;
+      case BLOCKED:         dump << "BLOCKED";         break;
+      case INTERSECTED:     dump << "INTERSECTED";     break;
+      case NORMAL_UPDATED:  dump << "NORMAL_UPDATED";  break;
+      case MARKED:          dump << "MARKED";          break;
+      case MULTI_NORMAL:    dump << "MULTI_NORMAL";    break;
+      case NEAR_BOUNDARY:   dump << "NEAR_BOUNDARY";   break;
+      case SMOOTHED_C1:     dump << "SMOOTHED_C1";     break;
+      case DISTORTED:       dump << "DISTORTED";       break;
+      case RISKY_SWOL:      dump << "RISKY_SWOL";      break;
+      case SHRUNK:          dump << "SHRUNK";          break;
+      case UNUSED_FLAG:     dump << "UNUSED_FLAG";     break;
+      }
+      dump << " ";
+    }
+  cout << dump << endl;
+  return dump;
+}
+
+//================================================================================
+/*!
+  case brief:
+  default:
+*/
 //================================================================================
 
 bool _ViscousBuilder::refine(_SolidData& data)

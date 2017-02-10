@@ -4383,6 +4383,7 @@ void SMESHGUI::initialize( CAM_Application* app )
     hasNodes("(numberOfNodes > 0 ) && hasActor"),
     hasElems("(count( elemTypes ) > 0)"),
     hasDifferentElems("(count( elemTypes ) > 1)"),
+    hasDifferentObjElems("(count( objElemTypes ) > 1)"),
     hasBalls("({'BallElem'} in elemTypes)"),
     hasElems0d("({'Elem0d'} in elemTypes)"),
     hasEdges("({'Edge'} in elemTypes)"),
@@ -4532,7 +4533,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( separator(), anId, -1 );
 
   popupMgr()->insert( action( SMESHOp::OpDEChoose ), anId, -1 );
-  popupMgr()->setRule( action( SMESHOp::OpDEChoose ), aClient + "&& $type in {" + mesh + "} &&" + hasDifferentElems, QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( SMESHOp::OpDEChoose ), aClient + "&& $type in {" + mesh + "} &&" + hasDifferentObjElems, QtxPopupMgr::VisibleRule );
 
   popupMgr()->insert( separator(), anId, -1 );
 
