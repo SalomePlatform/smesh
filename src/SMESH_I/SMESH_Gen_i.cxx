@@ -1217,11 +1217,11 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMEDorSAUV( const char* theFileNa
         // - as names of meshes are stored in MED file, we use them for data publishing
         // - as mesh name is not stored in UNV file, we use file name as name of mesh when publishing data
         aSO = PublishMesh( myCurrentStudy, mesh.in(), ( theFileName == theFileNameForPython ) ? (*it).c_str() : aFileName.c_str() );
+
+      // Python Dump
       if ( !aSO->_is_nil() ) {
-        // Python Dump
         aPythonDump << aSO;
       } else {
-        // Python Dump
         aPythonDump << "mesh_" << i;
       }
 

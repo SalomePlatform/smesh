@@ -1386,6 +1386,8 @@ bool SMESH_Mesh::HasDuplicatedGroupNamesMED()
      *         - 2D if all mesh nodes lie on XOY coordinate plane, or
      *         - 3D in the rest cases.
      *         If \a theAutoDimension is \c false, the space dimension is always 3.
+ *  \param [in] theAddODOnVertices - to create 0D elements on all vertices
+ *  \param [in] theAllElemsToGroup - to make every element to belong to any group (PAL23413)
  *  \return int - mesh index in the file
  */
 //================================================================================
@@ -1396,7 +1398,8 @@ void SMESH_Mesh::ExportMED(const char *        file,
                            int                 theVersion,
                            const SMESHDS_Mesh* meshPart,
                            bool                theAutoDimension,
-                           bool                theAddODOnVertices)
+                           bool                theAddODOnVertices,
+                           bool                theAllElemsToGroup)
   throw(SALOME_Exception)
 {
   SMESH_TRY;
@@ -1419,6 +1422,8 @@ void SMESH_Mesh::ExportMED(const char *        file,
     myWriter.AddGroupOfFaces();
     myWriter.AddGroupOfVolumes();
   }
+  if ( theAllElemsToGroup )
+    myWriter.AddAllToGroup();
 
   // Pass groups to writer. Provide unique group names.
   //set<string> aGroupNames; // Corrected for Mantis issue 0020028
@@ -1474,7 +1479,9 @@ void SMESH_Mesh::ExportSAUV(const char *file,
   cmd += "from medutilities import my_remove ; my_remove(r'" + medfilename + "')";
   cmd += "\"";
   system(cmd.c_str());
-  ExportMED(medfilename.c_str(), theMeshName, theAutoGroups, 1);
+  ExportMED(medfilename.c_str(), theMeshName, theAutoGroups, /*theVersion=*/1,
+            /*meshPart=*/NULL, /*theAutoDimension=*/false, /*theAddODOnVertices=*/false,
+            /*theAllElemsToGroup=*/true ); // theAllElemsToGroup is for PAL0023413
 #ifdef WIN32
   cmd = "%PYTHONBIN% ";
 #else

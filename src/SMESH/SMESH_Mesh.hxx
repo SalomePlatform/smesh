@@ -253,7 +253,8 @@ class SMESH_EXPORT SMESH_Mesh
                  int                 theVersion = 0,
                  const SMESHDS_Mesh* theMeshPart = 0,
                  bool                theAutoDimension = false,
-                 bool                theAddODOnVertices = false)
+                 bool                theAddODOnVertices = false,
+                 bool                theAllElemsToGroup = false)
     throw(SALOME_Exception);
 
   void ExportDAT(const char *        file,

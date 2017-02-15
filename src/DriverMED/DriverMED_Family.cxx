@@ -152,7 +152,8 @@ DriverMED_Family
                const bool doGroupOfFaces,
                const bool doGroupOfVolumes,
                const bool doGroupOf0DElems,
-               const bool doGroupOfBalls)
+               const bool doGroupOfBalls,
+               const bool doAllInGroups)
 {
   DriverMED_FamilyPtrList aFamilies;
 
@@ -330,9 +331,37 @@ DriverMED_Family
   }
 
   DriverMED_FamilyPtr aNullFam (new DriverMED_Family);
-  aNullFam->SetId(0);
+  aNullFam->SetId( 0 );
   aNullFam->myType = SMDSAbs_All;
   aFamilies.push_back(aNullFam);
+
+  if ( doAllInGroups )
+  {
+    if ( !doGroupOfEdges )
+    {
+      DriverMED_FamilyPtr aNigEdgeFam (new DriverMED_Family);
+      aNigEdgeFam->SetId( NIG_EDGES_FAMILY );
+      aNigEdgeFam->myType = SMDSAbs_Edge;
+      aNigEdgeFam->myGroupNames.insert( NIG_GROUP_PREFIX "_EDGES" );
+      aFamilies.push_back(aNigEdgeFam);
+    }
+    if ( !doGroupOfFaces )
+    {
+      DriverMED_FamilyPtr aNigFaceFam (new DriverMED_Family);
+      aNigFaceFam->SetId( NIG_FACES_FAMILY );
+      aNigFaceFam->myType = SMDSAbs_Face;
+      aNigFaceFam->myGroupNames.insert( NIG_GROUP_PREFIX "_FACES" );
+      aFamilies.push_back(aNigFaceFam);
+    }
+    if ( !doGroupOfVolumes )
+    {
+      DriverMED_FamilyPtr aNigVolFam (new DriverMED_Family);
+      aNigVolFam->SetId( NIG_VOLS_FAMILY );
+      aNigVolFam->myType = SMDSAbs_Volume;
+      aNigVolFam->myGroupNames.insert( NIG_GROUP_PREFIX "_VOLS" );
+      aFamilies.push_back(aNigVolFam);
+    }
+  }
 
   return aFamilies;
 }
@@ -342,7 +371,7 @@ DriverMED_Family
  *  Create TFamilyInfo for this family
  */
 //=============================================================================
-MED::PFamilyInfo 
+MED::PFamilyInfo
 DriverMED_Family::GetFamilyInfo(const MED::PWrapper& theWrapper, 
                                 const MED::PMeshInfo& theMeshInfo) const
 {
@@ -445,9 +474,8 @@ void DriverMED_Family::Init (SMESHDS_GroupBase* theGroup)
  */
 //=============================================================================
 DriverMED_FamilyPtrList 
-DriverMED_Family
-::SplitByType (SMESHDS_SubMesh* theSubMesh,
-               const int        theId)
+DriverMED_Family::SplitByType (SMESHDS_SubMesh* theSubMesh,
+                               const int        theId)
 {
   DriverMED_FamilyPtrList aFamilies;
   DriverMED_FamilyPtr aNodesFamily   (new DriverMED_Family);

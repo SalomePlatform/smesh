@@ -61,7 +61,8 @@ DriverMED_W_SMESHDS_Mesh::DriverMED_W_SMESHDS_Mesh():
   myDoGroupOf0DElems(false),
   myDoGroupOfBalls(false),
   myAutoDimension(false),
-  myAddODOnVertices(false)
+  myAddODOnVertices(false),
+  myDoAllInGroups(false)
 {}
 
 void DriverMED_W_SMESHDS_Mesh::SetFile(const std::string& theFileName, 
@@ -128,6 +129,32 @@ void DriverMED_W_SMESHDS_Mesh::AddGroupOfVolumes()
 {
   myDoGroupOfVolumes = true;
 }
+
+void DriverMED_W_SMESHDS_Mesh::AddGroupOf0DElems()
+{
+  myDoGroupOf0DElems = true;
+}
+
+void DriverMED_W_SMESHDS_Mesh::AddGroupOfBalls()
+{
+  myDoGroupOfBalls = true;
+}
+
+//================================================================================
+/*!
+ * \brief Set up a flag to add all elements not belonging to any group to
+ *        some auxiliary group. This is needed for SMESH -> SAUVE -> SMESH conversion,
+ *        which since PAL0023285 reads only SAUVE elements belonging to any group,
+ *        and hence can lose some elements. That auxiliary group is ignored while
+ *        reading a MED file.
+ */
+//================================================================================
+
+void DriverMED_W_SMESHDS_Mesh::AddAllToGroup()
+{
+  myDoAllInGroups = true;
+}
+
 
 namespace
 {
@@ -429,7 +456,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
         break;
       }
     }
-    
+
     MED::PWrapper myMed = CrWrapper(myFile,myMedVersion);
     PMeshInfo aMeshInfo = myMed->CrMeshInfo(aMeshDimension,aSpaceDimension,aMeshName);
     //MESSAGE("Add - aMeshName : "<<aMeshName<<"; "<<aMeshInfo->GetName());
@@ -449,12 +476,20 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
     int nbEdges      = myMesh->NbEdges();
     int nbFaces      = myMesh->NbFaces();
     int nbVolumes    = myMesh->NbVolumes();
-    if (myDoGroupOfNodes && nbNodes) myNodesDefaultFamilyId = REST_NODES_FAMILY;
-    if (myDoGroupOfEdges && nbEdges) myEdgesDefaultFamilyId = REST_EDGES_FAMILY;
-    if (myDoGroupOfFaces && nbFaces) myFacesDefaultFamilyId = REST_FACES_FAMILY;
-    if (myDoGroupOfVolumes && nbVolumes) myVolumesDefaultFamilyId = REST_VOLUMES_FAMILY;
-    if (myDoGroupOf0DElems && nb0DElements) my0DElementsDefaultFamilyId = REST_0DELEM_FAMILY;
-    if (myDoGroupOfBalls && nbBalls) myBallsDefaultFamilyId = REST_BALL_FAMILY;
+    if (myDoGroupOfNodes)   myNodesDefaultFamilyId      = REST_NODES_FAMILY;
+    if (myDoGroupOfEdges)   myEdgesDefaultFamilyId      = REST_EDGES_FAMILY;
+    if (myDoGroupOfFaces)   myFacesDefaultFamilyId      = REST_FACES_FAMILY;
+    if (myDoGroupOfVolumes) myVolumesDefaultFamilyId    = REST_VOLUMES_FAMILY;
+    if (myDoGroupOf0DElems) my0DElementsDefaultFamilyId = REST_0DELEM_FAMILY;
+    if (myDoGroupOfBalls)   myBallsDefaultFamilyId      = REST_BALL_FAMILY;
+    if (myDoAllInGroups )
+    {
+      if (!myDoGroupOfEdges)   myEdgesDefaultFamilyId      = NIG_EDGES_FAMILY   ;
+      if (!myDoGroupOfFaces)   myFacesDefaultFamilyId      = NIG_FACES_FAMILY   ;
+      if (!myDoGroupOfVolumes) myVolumesDefaultFamilyId    = NIG_VOLS_FAMILY    ;
+      if (!myDoGroupOf0DElems) my0DElementsDefaultFamilyId = NIG_0DELEM_FAMILY  ;
+      if (!myDoGroupOfBalls)   myBallsDefaultFamilyId      = NIG_BALL_FAMILY    ;
+    }
 
     //MESSAGE("Perform - aFamilyInfo");
     list<DriverMED_FamilyPtr> aFamilies;
@@ -466,7 +501,8 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
          myDoGroupOfFaces   && nbFaces,
          myDoGroupOfVolumes && nbVolumes,
          myDoGroupOf0DElems && nb0DElements,
-         myDoGroupOfBalls   && nbBalls);
+         myDoGroupOfBalls   && nbBalls,
+         myDoAllInGroups);
     }
     else {
       aFamilies = DriverMED_Family::MakeFamilies
@@ -476,7 +512,8 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
          myDoGroupOfFaces   && nbFaces,
          myDoGroupOfVolumes && nbVolumes,
          myDoGroupOf0DElems && nb0DElements,
-         myDoGroupOfBalls   && nbBalls);
+         myDoGroupOfBalls   && nbBalls,
+         myDoAllInGroups);
     }
     list<DriverMED_FamilyPtr>::iterator aFamsIter;
     for (aFamsIter = aFamilies.begin(); aFamsIter != aFamilies.end(); aFamsIter++)

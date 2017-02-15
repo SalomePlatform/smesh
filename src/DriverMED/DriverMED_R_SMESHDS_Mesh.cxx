@@ -155,7 +155,8 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
               aFamily->SetGroupAttributVal(anAttrVal);
             }
             if(MYDEBUG) MESSAGE(aGroupName);
-            aFamily->AddGroupName(aGroupName);
+            if ( strncmp( aGroupName.c_str(), NIG_GROUP_PREFIX, strlen(NIG_GROUP_PREFIX) ) != 0 )
+              aFamily->AddGroupName(aGroupName);
           }
           aFamily->SetId( aFamId );
           myFamilies[aFamId] = aFamily;

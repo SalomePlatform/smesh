@@ -686,6 +686,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
       _AString indent = aCommand->GetIndentation();
       _AString tryStr = indent + "try:";
       _AString newCmd = indent + tab + ( aCommand->GetString().ToCString() + indent.Length() );
+      _AString pasCmd = indent + tab + "pass"; // to keep valid if newCmd is erased
       _AString excStr = indent + "except:";
       _AString msgStr = indent + "\tprint '"; msgStr += method + "() failed. Invalid file name?'";
 
@@ -693,6 +694,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
       aCommand->Clear();
       aCommand->GetString() = newCmd;
       aCommand->SetOrderNb( ++myNbCommands );
+      myCommands.push_back( new _pyCommand( pasCmd, ++myNbCommands ));
       myCommands.push_back( new _pyCommand( excStr, ++myNbCommands ));
       myCommands.push_back( new _pyCommand( msgStr, ++myNbCommands ));
     }
