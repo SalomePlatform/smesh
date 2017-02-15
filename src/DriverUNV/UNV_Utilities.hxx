@@ -20,8 +20,8 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-#ifndef MED_Utilities_HeaderFile
-#define MED_Utilities_HeaderFile
+#ifndef UNV_Utilities_HeaderFile
+#define UNV_Utilities_HeaderFile
 
 #include "SMESH_DriverUNV.hxx"
 
