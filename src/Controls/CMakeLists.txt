@@ -20,7 +20,7 @@
 # --- options ---
 # additional include directories
 INCLUDE_DIRECTORIES(
-  ${CAS_INCLUDE_DIRS}
+  ${OpenCASCADE_INCLUDE_DIR}
   ${VTK_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
   ${KERNEL_INCLUDE_DIRS}
@@ -31,19 +31,16 @@ INCLUDE_DIRECTORIES(
 
 # additional preprocessor / compiler flags
 ADD_DEFINITIONS(
-  ${CAS_DEFINITIONS}
+  ${OpenCASCADE_DEFINITIONS}
   ${BOOST_DEFINITIONS}
 )
 
 # libraries to link to
 SET(_link_LIBRARIES
   ${VTK_LIBRARIES}
-  ${CAS_TKernel}
-  ${CAS_TKBRep}
-  ${CAS_TKG3d}
-  ${CAS_TKTopAlgo}
-  ${CAS_TKGeomBase}
-  ${CAS_TKGeomAlgo}
+  ${OpenCASCADE_FoundationClasses_LIBRARIES}
+  ${OpenCASCADE_ModelingData_LIBRARIES}
+  ${OpenCASCADE_ModelingAlgorithms_LIBRARIES}
   SMDS
   SMESHDS
   SMESHUtils

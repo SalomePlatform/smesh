@@ -21,7 +21,7 @@
 # additional include directories
 INCLUDE_DIRECTORIES(
   ${OMNIORB_INCLUDE_DIR}
-  ${CAS_INCLUDE_DIRS}
+  ${OpenCASCADE_INCLUDE_DIR}
   ${HDF5_INCLUDE_DIRS}
   ${VTK_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
@@ -45,7 +45,7 @@ INCLUDE_DIRECTORIES(
 # additional preprocessor / compiler flags
 ADD_DEFINITIONS(
   ${OMNIORB_DEFINITIONS}
-  ${CAS_DEFINITIONS}
+  ${OpenCASCADE_DEFINITIONS}
   ${BOOST_DEFINITIONS}
 )
 
@@ -70,11 +70,10 @@ SET(_link_LIBRARIES
   ${KERNEL_SalomeGenericObj}
   ${KERNEL_SalomeIDLKERNEL}
   ${KERNEL_SALOMELocalTrace}
-  ${CAS_TKCDF}
-  ${CAS_TKBO}
-  ${CAS_TKShHealing}
+  ${OpenCASCADE_ApplicationFramework_LIBRARIES}
+  ${OpenCASCADE_ModelingAlgorithms_LIBRARIES}
   ${GEOM_GEOMClient}
-  ${GEOM_SalomeIDLGEOM}  
+  ${GEOM_SalomeIDLGEOM}
   SalomeIDLSMESH
   SMESHimpl
   SMDS

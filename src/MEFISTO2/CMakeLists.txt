@@ -21,20 +21,19 @@
 # additional include directories
 INCLUDE_DIRECTORIES(
   ${KERNEL_INCLUDE_DIRS}
-  ${CAS_INCLUDE_DIRS}
+  ${OpenCASCADE_INCLUDE_DIR}
   ${HDF5_INCLUDE_DIRS}
   ${PLATFORM_INCLUDES}
 )
 
 # additional preprocessor / compiler flags
 ADD_DEFINITIONS(
-  ${CAS_DEFINITIONS}
+  ${OpenCASCADE_DEFINITIONS}
 )
 
 # libraries to link to
 SET(_link_LIBRARIES
-  ${CAS_TKernel}
-  ${CAS_TKMath}
+  ${OpenCASCADE_FoundationClasses_LIBRARIES}
   ${KERNEL_SALOMELocalTrace}
 )
 
