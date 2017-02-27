@@ -5117,11 +5117,11 @@ Sélectionner des éléments et essayer encore</translation>
     </message>
     <message>
         <source>RADIOBTN_1</source>
-        <translation>Convertir en éléments quadratiques</translation>
+        <translation>Convertir en éléments linéaires</translation>
     </message>
     <message>
         <source>RADIOBTN_2</source>
-        <translation>Convertir à partir d&apos;éléments quadratiques</translation>
+        <translation>Convertir en éléments quadratiques</translation>
     </message>
     <message>
         <source>RADIOBTN_3</source>
