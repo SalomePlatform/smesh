@@ -3233,7 +3233,7 @@ void SMDS_Mesh::RemoveElement(const SMDS_MeshElement *        elem,
           if (const SMDS_VtkEdge* vtkElem = dynamic_cast<const SMDS_VtkEdge*>(*it))
             myEdgePool->destroy((SMDS_VtkEdge*) vtkElem);
           else {
-            ((SMDS_MeshElement*) *it)->init( -1, -1, -1 ); // avoid reuse
+            ((SMDS_MeshElement*) *it)->init( 0, -1, -1 ); // avoid reuse
             delete (*it);
           }
           break;
@@ -3248,7 +3248,7 @@ void SMDS_Mesh::RemoveElement(const SMDS_MeshElement *        elem,
           if (const SMDS_VtkFace* vtkElem = dynamic_cast<const SMDS_VtkFace*>(*it))
             myFacePool->destroy((SMDS_VtkFace*) vtkElem);
           else {
-            ((SMDS_MeshElement*) *it)->init( -1, -1, -1 ); // avoid reuse
+            ((SMDS_MeshElement*) *it)->init( 0, -1, -1 ); // avoid reuse
             delete (*it);
           }
           break;
@@ -3263,7 +3263,7 @@ void SMDS_Mesh::RemoveElement(const SMDS_MeshElement *        elem,
           if (const SMDS_VtkVolume* vtkElem = dynamic_cast<const SMDS_VtkVolume*>(*it))
             myVolumePool->destroy((SMDS_VtkVolume*) vtkElem);
           else {
-            ((SMDS_MeshElement*) *it)->init( -1, -1, -1 ); // avoid reuse
+            ((SMDS_MeshElement*) *it)->init( 0, -1, -1 ); // avoid reuse
             delete (*it);
           }
           break;
@@ -3278,7 +3278,7 @@ void SMDS_Mesh::RemoveElement(const SMDS_MeshElement *        elem,
           if (const SMDS_BallElement* vtkElem = dynamic_cast<const SMDS_BallElement*>(*it))
             myBallPool->destroy(const_cast<SMDS_BallElement*>( vtkElem ));
           else {
-            ((SMDS_MeshElement*) *it)->init( -1, -1, -1 ); // avoid reuse
+            ((SMDS_MeshElement*) *it)->init( 0, -1, -1 ); // avoid reuse
             delete (*it);
           }
           break;
@@ -3340,7 +3340,7 @@ void SMDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elem)
       myNodes[elemId] = 0;
       myInfo.myNbNodes--;
       ((SMDS_MeshNode*) n)->SetPosition(SMDS_SpacePosition::originSpacePosition());
-      ((SMDS_MeshNode*) n)->SMDS_MeshElement::init( -1, -1, -1 ); // avoid reuse
+      ((SMDS_MeshNode*) n)->SMDS_MeshElement::init( 0, -1, -1 ); // avoid reuse
       myNodePool->destroy(static_cast<SMDS_MeshNode*>(todest));
       myNodeIDFactory->ReleaseID(elemId, vtkId);
     }
@@ -3396,7 +3396,7 @@ void SMDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elem)
     // --- to do: keep vtkid in a list of reusable cells
 
     if ( elem )
-      ((SMDS_MeshElement*) elem)->init( -1, -1, -1 ); // avoid reuse
+      ((SMDS_MeshElement*) elem)->init( 0, -1, -1 ); // avoid reuse
   }
 }
 

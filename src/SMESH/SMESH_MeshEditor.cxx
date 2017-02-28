@@ -7345,7 +7345,8 @@ int SMESH_MeshEditor::SimplifyFace (const vector<const SMDS_MeshNode *>& faceNod
 //           in all elements.
 //=======================================================================
 
-void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes)
+void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes,
+                                   const bool           theAvoidMakingHoles)
 {
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();

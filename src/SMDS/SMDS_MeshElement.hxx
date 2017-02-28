@@ -57,7 +57,7 @@ class SMDS_Mesh;
 // ============================================================
 
 
-class SMDS_EXPORT SMDS_MeshElement:public SMDS_MeshObject
+class SMDS_EXPORT SMDS_MeshElement : public SMDS_MeshObject
 {
 public:
 

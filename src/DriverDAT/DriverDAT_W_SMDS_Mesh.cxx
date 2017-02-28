@@ -130,7 +130,7 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
         std::vector<int> quant = v->GetQuantities();
         if ( !quant.empty() )
         {
-          fprintf(aFileId, "%d %d ", quant.size(), quant[0]);
+          fprintf(aFileId, "%d %d ", (int)quant.size(), quant[0]);
           for ( size_t i = 1; i < quant.size(); ++i )
             fprintf(aFileId, "%d ", quant[i]);
         }

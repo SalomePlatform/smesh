@@ -471,7 +471,8 @@ public:
   // Return list of group of nodes close to each other within theTolerance.
   // Search among theNodes or in the whole mesh if theNodes is empty.
 
-  void MergeNodes (TListOfListOfNodes & theNodeGroups);
+  void MergeNodes (TListOfListOfNodes & theNodeGroups,
+                   const bool           theAvoidMakingHoles = false);
   // In each group, the cdr of nodes are substituted by the first one
   // in all elements.
 
