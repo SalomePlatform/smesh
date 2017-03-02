@@ -3986,7 +3986,7 @@ void StdMeshers_Quadrangle_2D::smooth (FaceQuadStruct::Ptr quad)
         }
       }
 
-  // define refernce orientation in 2D
+  // define reference orientation in 2D
   TNo2SmooNoMap::iterator n2sn = smooNoMap.begin();
   for ( ; n2sn != smooNoMap.end(); ++n2sn )
     if ( !n2sn->second._triangles.empty() )

@@ -2724,7 +2724,7 @@ bool _pyHypothesis::IsWrappable(const _pyID& theMesh) const
  * \brief Convert the command adding a hypothesis to mesh into a smesh command
   * \param theCmd - The command like mesh.AddHypothesis( geom, hypo )
   * \param theAlgo - The algo that can create this hypo
-  * \retval bool - false if the command cant be converted
+  * \retval bool - false if the command can't be converted
  */
 //================================================================================
 
@@ -3465,7 +3465,7 @@ void _pyNumberOfSegmentsHyp::Flush()
  * into regular1D.LengthNearVertex( length, vertex )
   * \param theCmd - The command like mesh.AddHypothesis( vertex, SegmentLengthAroundVertex )
   * \param theMesh - The mesh needing this hypo
-  * \retval bool - false if the command cant be converted
+  * \retval bool - false if the command can't be converted
  */
 //================================================================================
 
@@ -3523,7 +3523,7 @@ _pyAlgorithm::_pyAlgorithm(const Handle(_pyCommand)& theCreationCmd)
  * \brief Convert the command adding an algorithm to mesh
   * \param theCmd - The command like mesh.AddHypothesis( geom, algo )
   * \param theMesh - The mesh needing this algo
-  * \retval bool - false if the command cant be converted
+  * \retval bool - false if the command can't be converted
  */
 //================================================================================
 

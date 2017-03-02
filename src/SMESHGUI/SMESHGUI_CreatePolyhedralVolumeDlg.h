@@ -79,7 +79,7 @@ private:
     
   bool                     isValid();
   
-  int                      checkEditLine( bool = true ); /*! Checking for indices, return 1 if all ok, esle -1*/
+  int                      checkEditLine( bool = true ); /*! Checking for indices, return 1 if all ok, else -1*/
     
   SMESHGUI*                mySMESHGUI;                   /* Current SMESHGUI object */
   LightApp_SelectionMgr*   mySelectionMgr;               /* User shape selection */

@@ -334,7 +334,7 @@ void SMESH_OctreeNode::FindCoincidentNodes ( TIDSortedNodeSet*                  
 
     if ( !ListOfCoincidentNodes.empty() )
     {
-      // We build a list {n1 + his neigbours} and add this list in theGroupsOfNodes
+      // We build a list {n1 + his neighbors} and add this list in theGroupsOfNodes
       if ( idLess( n1, ListOfCoincidentNodes.front() )) ListOfCoincidentNodes.push_front( n1 );
       else                                              ListOfCoincidentNodes.push_back ( n1 );
       ListOfCoincidentNodes.sort( idLess );

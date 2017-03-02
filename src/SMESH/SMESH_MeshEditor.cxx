@@ -8240,7 +8240,7 @@ SMESH_MeshEditor::SewFreeBorder (const SMDS_MeshNode* theBordFirstNode,
     // -------------------------------------------------------------------------
 
     // 1. Since sewing may break if there are volumes to split on the side 2,
-    //    we wont move nodes but just compute new coordinates for them
+    //    we won't move nodes but just compute new coordinates for them
     typedef map<const SMDS_MeshNode*, gp_XYZ> TNodeXYZMap;
     TNodeXYZMap nBordXYZ;
     list< const SMDS_MeshNode* >& bordNodes = nSide[ 0 ];
@@ -8404,7 +8404,7 @@ SMESH_MeshEditor::SewFreeBorder (const SMDS_MeshNode* theBordFirstNode,
       } // loop on inverse elements of prevSideNode
 
       if ( !sideNode ) {
-        MESSAGE(" Cant find path by links of the Side 2 ");
+        MESSAGE(" Can't find path by links of the Side 2 ");
         return SEW_BAD_SIDE_NODES;
       }
       sideNodes.push_back( sideNode );

@@ -17,7 +17,7 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-# examples that cant be used for testing because they use external mesher plug-ins
+# examples that can't be used for testing because they use external mesher plug-ins
 SET(BAD_TESTS
   3dmesh.py
   a3DmeshOnModified2Dmesh.py

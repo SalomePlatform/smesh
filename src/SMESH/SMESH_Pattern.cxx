@@ -1194,7 +1194,7 @@ bool SMESH_Pattern::compUVByIsoIntersection (const list< list< TPoint* > >& theB
   }
   if ( !intersectIsolines( uv1[0], uv2[0], ratio[0],
                           uv1[1], uv2[1], ratio[1], theUV, theIsDeformed )) {
-    MESSAGE(" Cant intersect isolines for a point "<<theInitUV.X()<<", "<<theInitUV.Y());
+    MESSAGE(" Can't intersect isolines for a point "<<theInitUV.X()<<", "<<theInitUV.Y());
     return setErrorCode( ERR_APPLF_BAD_TOPOLOGY );
   }
 
@@ -1464,7 +1464,7 @@ static bool checkQuads (const TIsoNode* node,
         return false;
       }
       else {
-        //MESSAGE(" Cant improve UV, uv: "<<uv.X()<<" "<<uv.Y());
+        //MESSAGE(" Can't improve UV, uv: "<<uv.X()<<" "<<uv.Y());
       }
     }
     if ( !oldIsIn && nbOldFix ) {
@@ -1479,7 +1479,7 @@ static bool checkQuads (const TIsoNode* node,
         return false;
       }
       else {
-        //MESSAGE(" Cant fix UV, uv: "<<uv.X()<<" "<<uv.Y());
+        //MESSAGE(" Can't fix UV, uv: "<<uv.X()<<" "<<uv.Y());
       }
     }
     if ( newIsIn && oldIsIn )
@@ -2297,7 +2297,7 @@ bool SMESH_Pattern::sortSameSizeWires (TListOfEdgesList &                theWire
       list< TPoint* > & ePoints = getShapePoints( eID++ );
       TPoint* p = ePoints.front();
       if ( !compUVByIsoIntersection( theEdgesPointsList, p->myInitUV, p->myUV, aBool )) {
-        MESSAGE("cant sortSameSizeWires()");
+        MESSAGE("can't sortSameSizeWires()");
         return false;
       }
       gcVec[iW] += p->myUV;
@@ -2482,7 +2482,7 @@ bool SMESH_Pattern::Apply (const TopoDS_Face&   theFace,
         for (  pIt++; pIt != ePoints.end(); pIt++ ) {
           TPoint* p = (*pIt);
           if ( !compUVByIsoIntersection( edgesPointsList, p->myInitUV, p->myUV, aBool )) {
-            MESSAGE("cant Apply(face)");
+            MESSAGE("can't Apply(face)");
             return false;
           }
           // keep the computed UV to compare against by setFirstEdge()
@@ -2601,7 +2601,7 @@ bool SMESH_Pattern::Apply (const TopoDS_Face&   theFace,
   for ( pIt = fPoints.begin(); !isDeformed && pIt != fPoints.end(); pIt++ )
     if ( !compUVByIsoIntersection( edgesPointsList, (*pIt)->myInitUV,
                                   (*pIt)->myUV, isDeformed )) {
-      MESSAGE("cant Apply(face)");
+      MESSAGE("can't Apply(face)");
       return false;
     }
   // try to use a complex algo if it is a difficult case
@@ -2610,7 +2610,7 @@ bool SMESH_Pattern::Apply (const TopoDS_Face&   theFace,
     for ( ; pIt != fPoints.end(); pIt++ ) // continue with the simple algo
       if ( !compUVByIsoIntersection( edgesPointsList, (*pIt)->myInitUV,
                                     (*pIt)->myUV, isDeformed )) {
-        MESSAGE("cant Apply(face)");
+        MESSAGE("can't Apply(face)");
         return false;
       }
   }
@@ -2750,7 +2750,7 @@ bool SMESH_Pattern::Apply (const SMDS_MeshFace* theFace,
   for ( pIt = fPoints.begin(); !isDeformed && pIt != fPoints.end(); pIt++ )
     if ( !compUVByIsoIntersection( edgesPointsList, (*pIt)->myInitUV,
                                   (*pIt)->myUV, isDeformed )) {
-      MESSAGE("cant Apply(face)");
+      MESSAGE("can't Apply(face)");
       return false;
     }
   // try to use a complex algo if it is a difficult case
@@ -2759,7 +2759,7 @@ bool SMESH_Pattern::Apply (const SMDS_MeshFace* theFace,
     for ( ; pIt != fPoints.end(); pIt++ ) // continue with the simple algo
       if ( !compUVByIsoIntersection( edgesPointsList, (*pIt)->myInitUV,
                                     (*pIt)->myUV, isDeformed )) {
-        MESSAGE("cant Apply(face)");
+        MESSAGE("can't Apply(face)");
         return false;
       }
   }
@@ -2903,7 +2903,7 @@ bool SMESH_Pattern::Apply (SMESH_Mesh*          theMesh,
   for ( pIt = fPoints.begin(); !isDeformed && pIt != fPoints.end(); pIt++ )
     if ( !compUVByIsoIntersection( edgesPointsList, (*pIt)->myInitUV,
                                   (*pIt)->myUV, isDeformed )) {
-      MESSAGE("cant Apply(face)");
+      MESSAGE("can't Apply(face)");
       return false;
     }
   // try to use a complex algo if it is a difficult case
@@ -2912,7 +2912,7 @@ bool SMESH_Pattern::Apply (SMESH_Mesh*          theMesh,
     for ( ; pIt != fPoints.end(); pIt++ ) // continue with the simple algo
       if ( !compUVByIsoIntersection( edgesPointsList, (*pIt)->myInitUV,
                                     (*pIt)->myUV, isDeformed )) {
-        MESSAGE("cant Apply(face)");
+        MESSAGE("can't Apply(face)");
         return false;
       }
   }

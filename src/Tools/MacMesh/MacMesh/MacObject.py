@@ -281,7 +281,7 @@ class MacObject:
         def PrincipleBoxes (self):
                 """
                 This function returns all possible combination rectangular shape objects that can contain at least 3 of the principle vertices
-                constituting the MacObject. This is indispensible for the Non-ortho types and shall return a number of 24 possible combinations
+                constituting the MacObject. This is indispensable for the Non-ortho types and shall return a number of 24 possible combinations
                 """
                 from itertools import combinations
                 Boxes = []

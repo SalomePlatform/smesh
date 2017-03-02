@@ -187,7 +187,7 @@ class SMESH_EXPORT SMESH_MesherHelper
    * \brief Count nb of sub-shapes
     * \param shape - the shape
     * \param type - the type of sub-shapes to count
-    * \param ignoreSame - if true, use map not to count same shapes, esle use explorer
+    * \param ignoreSame - if true, use map not to count same shapes, else use explorer
     * \retval int - the calculated number
    */
   static int Count(const TopoDS_Shape&    shape,

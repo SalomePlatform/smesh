@@ -144,7 +144,7 @@ module SMESH
       ERR_LOADF_CANT_PROJECT, // impossible to project nodes
       // Load(volume)
       ERR_LOADV_BAD_SHAPE, // volume is not a brick of 6 faces
-      ERR_LOADV_COMPUTE_PARAMS, // cant compute point parameters
+      ERR_LOADV_COMPUTE_PARAMS, // can't compute point parameters
       // Apply(shape)
       ERR_APPL_NOT_LOADED, // pattern was not loaded
       ERR_APPL_BAD_DIMENTION, // wrong shape dimension

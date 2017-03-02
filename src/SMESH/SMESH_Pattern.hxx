@@ -178,7 +178,7 @@ class SMESH_EXPORT SMESH_Pattern {
     ERR_LOADF_CANT_PROJECT, // impossible to project nodes
     // Load(volume)
     ERR_LOADV_BAD_SHAPE, // volume is not a brick of 6 faces
-    ERR_LOADV_COMPUTE_PARAMS, // cant compute point parameters
+    ERR_LOADV_COMPUTE_PARAMS, // can't compute point parameters
     // Apply(shape)
     ERR_APPL_NOT_COMPUTED, // mapping failed
     ERR_APPL_NOT_LOADED, // pattern was not loaded
@@ -260,8 +260,8 @@ private:
   std::list< TPoint* > & getShapePoints(const TopoDS_Shape& theShape);
   // Return list of points located on theShape.
   // A list of edge-points include vertex-points (for 2D pattern only).
-  // A list of face-points doesnt include edge-points.
-  // A list of volume-points doesnt include face-points.
+  // A list of face-points doesn't include edge-points.
+  // A list of volume-points doesn't include face-points.
 
   std::list< TPoint* > & getShapePoints(const int theShapeID);
   // Return list of points located on the shape
