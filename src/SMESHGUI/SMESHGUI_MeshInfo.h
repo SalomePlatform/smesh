@@ -242,9 +242,11 @@ protected:
 
 private slots:
   void             itemDoubleClicked( QTreeWidgetItem*, int );
+  void             saveExpanded( QTreeWidgetItem* );
   
 private:
   QTreeWidgetItem* createItem( QTreeWidgetItem* = 0, int = 0 );
+  QString          expandedResource( QTreeWidgetItem* );
   
 private:
   QTreeWidget*     myInfo;

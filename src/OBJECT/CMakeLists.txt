@@ -20,7 +20,6 @@
 # --- options ---
 # additional include directories
 INCLUDE_DIRECTORIES(
-  ${QT_INCLUDES}
   ${KERNEL_INCLUDE_DIRS}
   ${GUI_INCLUDE_DIRS}
   ${MEDFILE_INCLUDE_DIRS}

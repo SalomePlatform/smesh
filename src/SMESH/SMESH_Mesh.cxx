@@ -1421,6 +1421,8 @@ void SMESH_Mesh::ExportMED(const char *        file,
     myWriter.AddGroupOfEdges();
     myWriter.AddGroupOfFaces();
     myWriter.AddGroupOfVolumes();
+    myWriter.AddGroupOf0DElems();
+    myWriter.AddGroupOfBalls();
   }
   if ( theAllElemsToGroup )
     myWriter.AddAllToGroup();

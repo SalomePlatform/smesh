@@ -847,8 +847,8 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
       }
       // Associate shells
       //
-      int nbFaces1 = SMESH_MesherHelper:: Count( shell1, TopAbs_FACE, 0 );
-      int nbFaces2 = SMESH_MesherHelper:: Count( shell2, TopAbs_FACE, 0 );
+      int nbFaces1 = SMESH_MesherHelper::Count( shell1, TopAbs_FACE, 0 );
+      int nbFaces2 = SMESH_MesherHelper::Count( shell2, TopAbs_FACE, 0 );
       if ( nbFaces1 != nbFaces2 )
         RETURN_BAD_RESULT("Different nb of faces found for shells");
       if ( nbFaces1 > 0 ) {

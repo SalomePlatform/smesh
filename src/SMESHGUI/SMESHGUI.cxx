@@ -467,10 +467,14 @@ namespace
                                   QObject::tr( "SMESH_BAD_MESH_SELECTION" ));
         return;
       }
-      SMESH::SMESH_GroupBase_var aGroup   = SMESH::SMESH_GroupBase::_narrow( aMeshItem );
-      if ( aCheckWarn && !aGroup->_is_nil() ) {
-        QMessageBox msgBox(SUIT_MessageBox::Warning,QObject::tr("SMESH_WRN_WARNING"),
-                            QObject::tr("SMESH_EXPORT_ONLY_GPOUP"),QMessageBox::StandardButton::NoButton, SMESHGUI::desktop());
+      SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow( aMeshItem );
+      if ( aCheckWarn && !aGroup->_is_nil() )
+      {
+        QMessageBox msgBox(SUIT_MessageBox::Warning,
+                           QObject::tr("SMESH_WRN_WARNING"),
+                           QObject::tr("SMESH_EXPORT_ONLY_GPOUP"),
+                           QMessageBox::StandardButton::NoButton,
+                           SMESHGUI::desktop());
         QCheckBox dontShowCheckBox(QObject::tr("SMESH_WRN_SHOW_DLG_CHECKBOX"));
         msgBox.addButton(QMessageBox::Ok);
         msgBox.addButton(QMessageBox::Cancel);
@@ -481,12 +485,12 @@ namespace
         lt->addWidget(btnbox, lt->rowCount(), 0, lt->rowCount(), lt->columnCount());
         if(msgBox.exec() == QMessageBox::Ok)
         {
-            if(dontShowCheckBox.checkState() == Qt::Checked)
-            {
-              if ( resMgr )
-                resMgr->setValue( "SMESH", "show_warning", false);
-            }
-            aCheckWarn = false;
+          if(dontShowCheckBox.checkState() == Qt::Checked)
+          {
+            if ( resMgr )
+              resMgr->setValue( "SMESH", "show_warning", false);
+          }
+          aCheckWarn = false;
         }
         else
           return;
