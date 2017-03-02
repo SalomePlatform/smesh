@@ -374,6 +374,9 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
                                                 aRec.node_labels[6],
                                                 aRec.node_labels[4],
                                                 aRec.node_labels[2],
+
+                                                aRec.node_labels[12],
+
                                                 aRec.node_labels[7],
                                                 aRec.node_labels[5],
                                                 aRec.node_labels[3],
@@ -383,7 +386,6 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
                                                 aRec.node_labels[11],
                                                 aRec.node_labels[10],
                                                 aRec.node_labels[9],
-                                                aRec.node_labels[12],
                                                 aRec.label);
             break;
 
