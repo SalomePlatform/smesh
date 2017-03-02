@@ -126,7 +126,7 @@ namespace {
      * \brief Restore nodes on internal vertices of a complex side
      * \param event - algo_event or compute_event itself (of SMESH_subMesh)
      * \param eventType - ALGO_EVENT or COMPUTE_EVENT (of SMESH_subMesh)
-     * \param subMesh - the submesh where the event occures
+     * \param subMesh - the submesh where the event occurs
      * \param data - listener data stored in the subMesh
      * \param hyp - hypothesis, if eventType is algo_event
      */
@@ -374,7 +374,7 @@ bool StdMeshers_CompositeSegment_1D::Compute(SMESH_Mesh &         aMesh,
   if ( side->NbEdges() < 2 )
     return StdMeshers_Regular_1D::Compute( aMesh, aShape );
 
-  // update segment lenght computed by StdMeshers_AutomaticLength
+  // update segment length computed by StdMeshers_AutomaticLength
   const list <const SMESHDS_Hypothesis * > & hyps = GetUsedHypothesis(aMesh, aShape);
   if ( !hyps.empty() ) {
     StdMeshers_AutomaticLength * autoLenHyp = const_cast<StdMeshers_AutomaticLength *>

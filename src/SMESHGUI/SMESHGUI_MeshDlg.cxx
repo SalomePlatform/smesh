@@ -703,7 +703,7 @@ void SMESHGUI_MeshDlg::setCurrentTab( const int theId  )
 //================================================================================
 /*!
  * \brief Enable/disable tabs
-  * \param int - maximum possible dimention
+  * \param int - maximum possible dimension
  */
 //================================================================================
 void SMESHGUI_MeshDlg::setMaxHypoDim( const int maxDim )
@@ -841,7 +841,7 @@ void SMESHGUI_MeshDlg::onGeomSelectionButton(bool isBtnOn)
 
 //================================================================================
 /*!
- * \brief SLOT called when a item of Geom selection popup is choosen
+ * \brief SLOT called when a item of Geom selection popup is chosen
  */
 //================================================================================
 void SMESHGUI_MeshDlg::onGeomPopup( QAction* a )

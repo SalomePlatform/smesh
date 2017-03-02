@@ -689,7 +689,7 @@ void SMESH_ElementSearcherImpl::findOuterBoundary(const SMDS_MeshElement* outerF
           outerFace2 = angle2Face.begin()->second;
       }
     }
-    // store the found outer face and add its links to continue seaching from
+    // store the found outer face and add its links to continue searching from
     if ( outerFace2 )
     {
       _outerFaces.insert( outerFace2 );

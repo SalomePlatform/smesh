@@ -872,7 +872,7 @@ bool StdMeshers_Prism_3D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& theSh
 
 
     // TODO. there are other ways to find out the source FACE:
-    // propagation, topological similarity, ect.
+    // propagation, topological similarity, etc...
 
     // simply try to mesh all not meshed SOLIDs
     if ( meshedFaces.empty() )
@@ -1603,7 +1603,7 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
       if ( ! fSM->IsMeshComputed() )
       {
         // Top EDGEs must be projections from the bottom ones
-        // to compute stuctured quad mesh on wall FACEs
+        // to compute structured quad mesh on wall FACEs
         // ---------------------------------------------------
         const TopoDS_Edge& botE = (*quad)->side[ QUAD_BOTTOM_SIDE ].grid->Edge(0);
         const TopoDS_Edge& topE = (*quad)->side[ QUAD_TOP_SIDE    ].grid->Edge(0);

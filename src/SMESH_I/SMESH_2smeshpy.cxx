@@ -452,7 +452,7 @@ namespace {
  *  \param theRemovedObjIDs - entries of objects whose created commands were removed
  *  \param theHistoricalDump - true means to keep all commands, false means
  *         to exclude commands relating to objects removed from study
- *  \retval TCollection_AsciiString - Convertion result
+ *  \retval TCollection_AsciiString - Conversion result
  */
 //================================================================================
 
@@ -1336,7 +1336,7 @@ Handle(_pyHypothesis) _pyGen::FindHyp( const _pyID& theHypID )
  * \brief Find algorithm able to create a hypothesis
   * \param theGeom - The shape ID the algorithm was created on
   * \param theMesh - The mesh ID that created the algorithm
-  * \param theHypothesis - The hypothesis the algorithm sould be able to create
+  * \param theHypothesis - The hypothesis the algorithm should be able to create
   * \retval Handle(_pyHypothesis) - The found algo
  */
 //================================================================================
@@ -2161,7 +2161,7 @@ void _pyMesh::Flush()
     for ( ; m != fatherMeshes.end(); ++m )
       addFatherMesh( *m );
     // if ( removedGeom )
-    //     SetRemovedFromStudy(); // as reffered geometry not in study
+    //     SetRemovedFromStudy(); // as referred geometry not in study
   }
   if ( myGeomNotInStudy )
     return;
@@ -2849,7 +2849,7 @@ void _pyHypothesis::Flush()
 
 //================================================================================
 /*!
- * \brief clear creation, arg and unkown commands
+ * \brief clear creation, arg and unknown commands
  */
 //================================================================================
 
@@ -3383,7 +3383,7 @@ void _pyLayerDistributionHypo::Flush()
  * \brief additionally to Addition2Creation, clears SetDistrType() command
   * \param theCmd - AddHypothesis() command
   * \param theMesh - mesh to which a hypothesis is added
-  * \retval bool - convertion result
+  * \retval bool - conversion result
  */
 //================================================================================
 

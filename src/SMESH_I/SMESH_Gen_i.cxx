@@ -421,7 +421,7 @@ GenericHypothesisCreator_i* SMESH_Gen_i::getHypothesisCreator(const char* theHyp
       LibHandle libHandle = LoadLib( aPlatformLibName.c_str() );
       if (!libHandle)
       {
-        // report any error, if occured
+        // report any error, if occurred
 #ifndef WIN32
         const char* anError = dlerror();
         throw(SALOME_Exception(anError));
@@ -3142,7 +3142,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
               if( libname_len > 4 )
                 libname.resize( libname_len - 4 );
 #else
-              // PAL17753 (Regresion: missing hypothesis in restored study)
+              // PAL17753 (Regression: missing hypothesis in restored study)
               // "lib" also should be removed from the beginning
               //if( libname_len > 3 )
                 //libname.resize( libname_len - 3 );
@@ -3211,7 +3211,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
               if( libname_len > 4 )
                 libname.resize( libname_len - 4 );
 #else
-              // PAL17753 (Regresion: missing hypothesis in restored study)
+              // PAL17753 (Regression: missing hypothesis in restored study)
               // "lib" also should be removed from the beginning
               //if( libname_len > 3 )
                 //libname.resize( libname_len - 3 );

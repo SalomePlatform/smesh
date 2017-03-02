@@ -711,7 +711,7 @@ public:
 
  private:
 
-  // Forbiden copy constructor
+  // forbidden copy constructor
   SMESH_MesherHelper (const SMESH_MesherHelper& theOther);
 
   // key of a map of bi-quadratic face to it's central node

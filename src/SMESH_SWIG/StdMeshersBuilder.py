@@ -382,7 +382,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         # 0D algorithm
         if self.geom is None:
             self.geom = store_geom
-            raise RuntimeError, "Attemp to create SegmentAroundVertex_0D algoritm on None shape"
+            raise RuntimeError, "Attempt to create SegmentAroundVertex_0D algorithm on None shape"
         from salome.smesh.smeshBuilder import AssureGeomPublished, GetName, TreatHypoStatus
         AssureGeomPublished( self.mesh, self.geom )
         name = GetName(self.geom)
@@ -1470,7 +1470,7 @@ class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
     #    several functions, they must be accompanied by relative coordinates of
     #    points dividing the whole shape into ranges where the functions apply; points
     #    coodrinates should vary within (0.0, 1.0) range. Parameter \a t of the spacing
-    #    function f(t) varies from 0.0 to 1.0 witin a shape range. 
+    #    function f(t) varies from 0.0 to 1.0 within a shape range. 
     #    Examples:
     #    - "10.5" - defines a grid with a constant spacing
     #    - [["1", "1+10*t", "11"] [0.1, 0.6]] - defines different spacing in 3 ranges.
@@ -1566,7 +1566,7 @@ class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
     pass # end of StdMeshersBuilder_Cartesian_3D class
 
 ## Defines a stub 1D algorithm, which enables "manual" creation of nodes and
-#  segments usable by 2D algoritms
+#  segments usable by 2D algorithms
 #
 #  It is created by calling smeshBuilder.Mesh.UseExistingSegments(geom=0)
 #
@@ -1594,7 +1594,7 @@ class StdMeshersBuilder_UseExisting_1D(Mesh_Algorithm):
     pass # end of StdMeshersBuilder_UseExisting_1D class
 
 ## Defines a stub 2D algorithm, which enables "manual" creation of nodes and
-#  faces usable by 3D algoritms
+#  faces usable by 3D algorithms
 #
 #  It is created by calling smeshBuilder.Mesh.UseExistingFaces(geom=0)
 #

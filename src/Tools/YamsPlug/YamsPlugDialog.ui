@@ -703,7 +703,7 @@ the edge common to the faces is a ridge.</string>
         <property name="toolTip">
          <string>This parameter allows the user to prescribe a maximal size hmax
 for the mesh elements i.e., the lengths of the edges with respect to the specified
- size map. The corresponding values are either relative or absolute depending on the choosen parameter.
+ size map. The corresponding values are either relative or absolute depending on the chosen parameter.
 The default values are automatically set based on the surface geometry (curvature dependent) and its
 bounding box size.
 Please note that, as it is not strictly possible to obey the given or computed size map, the actual maximal
@@ -748,7 +748,7 @@ the lengths of the edges with respect to the specified size map.</string>
         <property name="toolTip">
          <string>This parameter allows the user to prescribe a maximal size hmax
 for the mesh elements i.e., the lengths of the edges with respect to the specified
- size map. The corresponding values are either relative or absolute depending on the choosen parameter.
+ size map. The corresponding values are either relative or absolute depending on the chosen parameter.
 The default values are automatically set based on the surface geometry (curvature dependent) and its
 bounding box size.
 Please note that, as it is not strictly possible to obey the given or computed size map, the actual maximal

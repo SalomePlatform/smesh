@@ -42,7 +42,7 @@ is replaced by:
 \code
 MEFISTO_2D_1 = Mesh_1.Triangle(algo=smeshBuilder.MEFISTO,geom=Face_1)
 \endcode
-\n StdMeshers algoritms concerned are <em>REGULAR, PYTHON, COMPOSITE, MEFISTO, Hexa, QUADRANGLE, RADIAL_QUAD</em>.
+\n StdMeshers algorithms concerned are <em>REGULAR, PYTHON, COMPOSITE, MEFISTO, Hexa, QUADRANGLE, RADIAL_QUAD</em>.
 \n SMESH Plugins provide such algorithms as: <em> NETGEN, NETGEN_FULL, FULL_NETGEN, NETGEN_1D2D3D, NETGEN_1D2D, NETGEN_2D, NETGEN_3D</em>.
 \n If you use DISTENE plugins, you also have <em>BLSURF, GHS3D, GHS3DPRL, Hexotic</em>.
 

@@ -1168,7 +1168,7 @@ int SMESH_Gen::GetShapeDim(const TopAbs_ShapeEnum & aShapeType)
 
 //=============================================================================
 /*!
- * Genarate a new id unique withing this Gen
+ * Genarate a new id unique within this Gen
  */
 //=============================================================================
 

@@ -231,7 +231,7 @@ SMESH_3D_Algo::SMESH_3D_Algo(int hypId, int studyId, SMESH_Gen* gen)
 
 //=============================================================================
 /*!
- * Usually an algoritm has nothing to save
+ * Usually an algorithm has nothing to save
  */
 //=============================================================================
 
@@ -751,7 +751,7 @@ SMESH_Algo::EMeshError SMESH_Algo::GetMeshError(SMESH_subMesh* subMesh)
     if ( !fIt->more() )
       return MEr_EMPTY;
 
-    // We check that olny links on EDGEs encouter once, the rest links, twice
+    // We check that only links on EDGEs encouter once, the rest links, twice
     set< SMESH_TLink > links;
     while ( fIt->more() )
     {

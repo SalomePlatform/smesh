@@ -2187,7 +2187,7 @@ bool _ViscousBuilder2D::refine()
     vector< double > segLen( L._lEdges.size() );
     segLen[0] = 0.0;
 
-    // check if length modification is usefull: look for _LayerEdge's
+    // check if length modification is useful: look for _LayerEdge's
     // with length limited due to collisions
     bool lenLimited = false;
     for ( size_t iLE = 1; ( iLE < L._lEdges.size()-1 && !lenLimited ); ++iLE )

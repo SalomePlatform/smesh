@@ -105,7 +105,7 @@ class _pyCommand: public Standard_Transient
   TColStd_SequenceOfAsciiString   myArgs;               //!< found arguments
   TColStd_SequenceOfAsciiString   myResults;            //!< found results
   TColStd_SequenceOfInteger       myBegPos;             //!< where myRes, myObj, ... begin
-  std::list< Handle(_pyCommand) > myDependentCmds; //!< commands that sould follow me in the script
+  std::list< Handle(_pyCommand) > myDependentCmds; //!< commands that should follow me in the script
 
   enum { UNKNOWN=-1, EMPTY=0, RESULT_IND, OBJECT_IND, METHOD_IND, ARG1_IND };
   int  GetBegPos( int thePartIndex ) const;

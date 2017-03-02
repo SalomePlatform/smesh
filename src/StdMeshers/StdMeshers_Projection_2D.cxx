@@ -553,7 +553,7 @@ namespace {
 
   //================================================================================
   /*!
-   * \brief Preform projection in case if tgtFace.IsPartner( srcFace ) and in case
+   * \brief Perform projection in case if tgtFace.IsPartner( srcFace ) and in case
    * if projection by 3D transformation is possible
    */
   //================================================================================
@@ -803,7 +803,7 @@ namespace {
 
   //================================================================================
   /*!
-   * \brief Preform projection in case if the faces are similar in 2D space
+   * \brief Perform projection in case if the faces are similar in 2D space
    */
   //================================================================================
 
@@ -973,7 +973,7 @@ namespace {
 
   //================================================================================
   /*!
-   * \brief Preform projection in case of quadrilateral faces
+   * \brief Perform projection in case of quadrilateral faces
    */
   //================================================================================
 
@@ -1070,7 +1070,7 @@ namespace {
     //       }
     //       else 
     //       {
-    //         // find XY of src node withing the quadrilateral srcFace
+    //         // find XY of src node within the quadrilateral srcFace
     //         if ( !block.ComputeParameters( SMESH_TNodeXYZ( srcNode ),
     //                                        tgtNodeOrXY.second, srcFaceBID ))
     //           return false;

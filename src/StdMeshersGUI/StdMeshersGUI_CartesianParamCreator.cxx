@@ -980,7 +980,7 @@ QFrame* StdMeshersGUI_CartesianParamCreator::buildFrame()
 
 //================================================================================
 /*!
- * \brief Tranfer parameters from hypothesis to widgets
+ * \brief Transfer parameters from hypothesis to widgets
  */
 //================================================================================
 
@@ -1068,7 +1068,7 @@ void StdMeshersGUI_CartesianParamCreator::retrieveParams() const
 
 //================================================================================
 /*!
- * \brief Tranfer parameters from widgets to hypothesis
+ * \brief Transfer parameters from widgets to hypothesis
  */
 //================================================================================
 

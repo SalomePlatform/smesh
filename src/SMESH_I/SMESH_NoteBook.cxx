@@ -231,7 +231,7 @@ SMESH_NoteBook::~SMESH_NoteBook()
 /*!
  * \brief Replace parameters of the functions on the Salome NoteBook Variables
  * \param theString - Input string
- * \retval TCollection_AsciiString - Convertion result
+ * \retval TCollection_AsciiString - Conversion result
  */
 //================================================================================
 void SMESH_NoteBook::ReplaceVariables()

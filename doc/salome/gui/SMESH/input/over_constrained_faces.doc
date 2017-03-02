@@ -3,7 +3,7 @@
 \page over_constrained_faces_page Over-constrained faces
 
 \n This mesh quality control highlights faces sharing only one border
-with other faces. In other words, the faces having all thier nodes on
+with other faces. In other words, the faces having all their nodes on
 the free border of the 2D mesh are highlighted.
 
 \note The highlighted faces are actually over-constrained only if, at

@@ -71,7 +71,7 @@ namespace
   /*!
    * \brief Structure used to temporary remove EventProparatorToEdges from faceSubMesh
    *  in order to prevent propagation of CLEAN event from FACE to EDGEs during 
-   *  StdMeshers_Projection_1D2D::Compute(). The CLEAN event is emmited by Pattern mapper
+   *  StdMeshers_Projection_1D2D::Compute(). The CLEAN event is emitted by Pattern mapper
    *  and causes removal of faces generated on adjacent FACEs.
    */
   struct UnsetterOfEventProparatorToEdges

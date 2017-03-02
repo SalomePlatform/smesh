@@ -43,7 +43,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     self.num=1
     self.__selectedMesh=None
 
-    # complex whith QResources: not used
+    # complex with QResources: not used
     # The icon are supposed to be located in the $SMESH_ROOT_DIR/share/salome/resources/smesh folder,
     # other solution could be in the same folder than this python module file:
     # iconfolder=os.path.dirname(os.path.abspath(__file__))

@@ -134,7 +134,7 @@ namespace {
     //  +-----+------+  +-----+------+ 
     //  |            |  |            |
     //  |            |  |            |
-    // result sould be 2 in both cases
+    // result should be 2 in both cases
     //
     int aResult0 = 0, aResult1 = 0;
      // last node, it is a medium one in a quadratic edge
@@ -2650,7 +2650,7 @@ bool FreeFaces::IsSatisfy( long theId )
   for ( ; volItr != volEnd; ++volItr )
     if ( (*volItr).second >= nbNode )
        nbVol++;
-  // face is not free if number of volumes constructed on thier nodes more than one
+  // face is not free if number of volumes constructed on their nodes more than one
   return (nbVol < 2);
 }
 
@@ -2698,7 +2698,7 @@ SMDSAbs_ElementType LinearOrQuadratic::GetType() const
 //================================================================================
 /*
   Class       : GroupColor
-  Description : Functor for check color of group to whic mesh element belongs to
+  Description : Functor for check color of group to which mesh element belongs to
 */
 //================================================================================
 

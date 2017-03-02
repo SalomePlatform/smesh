@@ -274,7 +274,7 @@ bool SMESH_Pattern::Load (const char* theFileContents)
   // ! This is a comment
   // NB_POINTS               ! 1 integer - the number of points in the pattern.
   //   X1 Y1 [Z1]            ! 2 or 3 reals - nodes coordinates within 2D or 3D domain:
-  //   X2 Y2 [Z2]            ! the pattern dimention is defined by the number of coordinates
+  //   X2 Y2 [Z2]            ! the pattern dimension is defined by the number of coordinates
   //   ...
   // [ ID1 ID2 ... IDn ]     ! Indices of key-points for a 2D pattern (only).
   // ! elements description goes after all
@@ -297,7 +297,7 @@ bool SMESH_Pattern::Load (const char* theFileContents)
 
   //   X1 Y1 [Z1]            ! 2 or 3 reals - nodes coordinates within 2D or 3D domain:
 
-  // read the first point coordinates to define pattern dimention
+  // read the first point coordinates to define pattern dimension
   int dim = readLine( fields, lineBeg, clearFields );
   if ( dim == 2 )
     myIs2D = true;
@@ -2465,7 +2465,7 @@ bool SMESH_Pattern::Apply (const TopoDS_Face&   theFace,
   if ( nbWires > 1 )
   {
     // compute UV of inner edge-points using the method for in-face points
-    // and devide eList into a list of separate wires
+    // and divide eList into a list of separate wires
     bool aBool;
     list< list< TopoDS_Edge > > wireList;
     list<TopoDS_Edge>::iterator eIt = elIt;
@@ -4778,7 +4778,7 @@ bool SMESH_Pattern::setShapeToMesh(const TopoDS_Shape& theShape)
   TopAbs_ShapeEnum aType = theShape.ShapeType();
   bool dimOk = ( myIs2D ? aType == TopAbs_FACE : aType == TopAbs_SHELL );
   if ( !dimOk ) {
-    MESSAGE( "Pattern dimention mismatch" );
+    MESSAGE( "Pattern dimension mismatch" );
     return setErrorCode( ERR_APPL_BAD_DIMENTION );
   }
 

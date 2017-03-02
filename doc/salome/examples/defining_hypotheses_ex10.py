@@ -52,7 +52,7 @@ src_mesh.Triangle(f1) # triangular sub-mesh
 src_mesh.Compute()
 
 
-# Mesh the box using projection algoritms
+# Mesh the box using projection algorithms
 
 # Define the same global 1D and 2D hypotheses
 tgt_mesh = smesh.Mesh(box, "Target mesh")

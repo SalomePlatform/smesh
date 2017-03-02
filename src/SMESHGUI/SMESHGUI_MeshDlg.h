@@ -136,11 +136,11 @@ public:
 
 signals:  
   void                         createHyp( const int, const int );
-  //!< Emited when "Create hypothesis" button clicked
+  //!< Emitted when "Create hypothesis" button clicked
   void                         editHyp( const int, const int );
-  //!< Emited when "Edit hypothesis" button clicked
+  //!< Emitted when "Edit hypothesis" button clicked
   void                         selectAlgo( const int );
-  //!< Emited when an algorithm is selected
+  //!< Emitted when an algorithm is selected
   
 private slots:  
   void                         onCreateHyp();  

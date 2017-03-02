@@ -1960,7 +1960,7 @@ Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>SMESH_HYP_9</source>
-        <translation>Such dimention hypothesis is already assigned to the shape</translation>
+        <translation>Such dimension hypothesis is already assigned to the shape</translation>
     </message>
     <message>
         <source>SMESH_ID_DIAGONAL</source>

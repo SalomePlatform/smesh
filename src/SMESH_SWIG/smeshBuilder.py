@@ -1630,7 +1630,7 @@ class Mesh:
     def GetMeshOrder(self):
         return self.mesh.GetMeshOrder()
 
-    ## Set order in which concurrent sub-meshes sould be meshed
+    ## Set order in which concurrent sub-meshes should be meshed
     #  @param submeshes list of lists of sub-meshes
     #  @ingroup l2_construct
     def SetMeshOrder(self, submeshes):

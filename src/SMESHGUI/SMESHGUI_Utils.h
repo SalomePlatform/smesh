@@ -185,7 +185,7 @@ SMESHGUI_EXPORT
   typedef SALOME::GenericObj_wrap<SMESH_IDSource> IDSource_wrap;
 
   /*!
-   * \brief Class usefull to convert a string returned from a CORBA call
+   * \brief Class useful to convert a string returned from a CORBA call
    *        to other string types w/o memory leak.
    *
    *        Usage (of instantiations): QString s = toQStr( objVar->GetName() );

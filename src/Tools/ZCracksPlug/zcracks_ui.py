@@ -116,7 +116,7 @@ class Ui_Zui(object):
         self.txtSaneName.setObjectName(_fromUtf8("txtSaneName"))
         self.gridLayout.addWidget(self.txtSaneName, 1, 0, 1, 1)
         self.valSaneName = QtGui.QLineEdit(self.gridLayoutWidget)
-        self.valSaneName.setToolTip(_fromUtf8("file adress (ex: /home/A123456/cuve.med)"))
+        self.valSaneName.setToolTip(_fromUtf8("file address (ex: /home/A123456/cuve.med)"))
         self.valSaneName.setAutoFillBackground(True)
         self.valSaneName.setInputMask(_fromUtf8(""))
         self.valSaneName.setText(_fromUtf8(""))
@@ -591,7 +591,7 @@ class Ui_Zui(object):
 
     def retranslateUi(self, Zui):
         Zui.setWindowTitle(_translate("Zui", "Zcracks interface - version dev", None))
-        self.btReset.setToolTip(_translate("Zui", "Clear all paramters", None))
+        self.btReset.setToolTip(_translate("Zui", "Clear all parameters", None))
         self.btReset.setText(_translate("Zui", "Reset", None))
         self.btSave.setToolTip(_translate("Zui", "Save parameters in a file", None))
         self.btSave.setText(_translate("Zui", "Save", None))
@@ -605,7 +605,7 @@ class Ui_Zui(object):
         self.btApplyClose.setText(_translate("Zui", "Apply and close", None))
         self.txtCrackedName.setToolTip(_translate("Zui", "Name of the resulting cracked mesh", None))
         self.txtCrackedName.setText(_translate("Zui", "Cracked name", None))
-        self.valCrackedName.setToolTip(_translate("Zui", "file adress (ex: /home/A123456/cracked.med)", None))
+        self.valCrackedName.setToolTip(_translate("Zui", "file address (ex: /home/A123456/cracked.med)", None))
         self.txtSaneName.setToolTip(_translate("Zui", "Name of the sane mesh", None))
         self.txtSaneName.setText(_translate("Zui", "Sane mesh", None))
         self.btLoadCracked.setText(_translate("Zui", "...", None))

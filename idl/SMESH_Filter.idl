@@ -645,7 +645,7 @@ module SMESH
     Filter            CreateFilter();
 
     /*!
-    *  Load filter library. If libary does not exist it is created
+    *  Load filter library. If library does not exist it is created
     */
     FilterLibrary     LoadLibrary( in string aFileName );
 

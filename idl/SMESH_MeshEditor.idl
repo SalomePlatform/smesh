@@ -93,7 +93,7 @@ module SMESH
     void ClearLastCreated() raises (SALOME::SALOME_Exception);
 
     /*!
-     * \brief Returns description of an error/warning occured during the last operation
+     * \brief Returns description of an error/warning occurred during the last operation
      */
     ComputeError GetLastError() raises (SALOME::SALOME_Exception);
 

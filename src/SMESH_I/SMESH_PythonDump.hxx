@@ -62,7 +62,7 @@ public:
    * \param theRemovedObjIDs - entries of objects whose created commands were removed
    * \param theHistoricalDump - true means to keep all commands, false means
    *        to exclude commands relating to objects removed from study
-   * \retval TCollection_AsciiString - Convertion result
+   * \retval TCollection_AsciiString - Conversion result
    */
   static void
   ConvertScript(std::list< TCollection_AsciiString >&     theScriptLines,

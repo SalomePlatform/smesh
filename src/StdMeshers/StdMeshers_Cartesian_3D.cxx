@@ -3056,7 +3056,7 @@ namespace
     else if ( eMidOut != edges.end() )
       edges.splice( edges.end(), edges, edges.begin(), eMidOut );
 
-    // sort nodes accoring to the order of edges
+    // sort nodes according to the order of edges
     _Node*  orderNodes   [20];
     //TGeomID orderShapeIDs[20];
     size_t nbN = 0;

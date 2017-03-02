@@ -5488,7 +5488,7 @@ void SMESHGUI::update( const int flags )
 /*!
  * \brief Set default selection mode
 *
-* SLOT called when operation commited. Sets default selection mode
+* SLOT called when operation committed. Sets default selection mode
 */
 //================================================================================
 void SMESHGUI::onOperationCommited( SUIT_Operation* )
@@ -5810,7 +5810,7 @@ void SMESHGUI::storeVisualParameters (int savePoint)
                 Handle(SALOME_InteractiveObject) io = aSmeshActor->getIO();
                 if (io->hasEntry())
                 {
-                  // entry is "encoded" = it does NOT contain component adress,
+                  // entry is "encoded" = it does NOT contain component address,
                   // since it is a subject to change on next component loading
                   std::string entry = ip->encodeEntry(io->getEntry(), componentName);
 
@@ -6211,7 +6211,7 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
 
   for (std::vector<std::string>::iterator entIt = entries.begin(); entIt != entries.end(); ++entIt)
   {
-    // entry is a normal entry - it should be "decoded" (setting base adress of component)
+    // entry is a normal entry - it should be "decoded" (setting base address of component)
     QString entry (ip->decodeEntry(*entIt).c_str());
 
     // Check that the entry corresponds to a real object in the Study

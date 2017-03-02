@@ -184,7 +184,7 @@ namespace MeshEditor_I {
 
   //=============================================================================
   /*!
-   * \brief Deleter of theNodeSearcher at any compute event occured
+   * \brief Deleter of theNodeSearcher at any compute event occurred
    */
   //=============================================================================
 
@@ -467,9 +467,9 @@ void SMESH_MeshEditor_i::initData(bool deleteSearchers)
 //================================================================================
 /*!
  * \brief Increment mesh modif time and optionally record that the performed
- *        modification may influence futher mesh re-compute.
+ *        modification may influence further mesh re-compute.
  *  \param [in] isReComputeSafe - true if the modification does not influence
- *              futher mesh re-compute
+ *              further mesh re-compute
  */
 //================================================================================
 
@@ -501,7 +501,7 @@ void SMESH_MeshEditor_i::declareMeshModified( bool isReComputeSafe )
  * \brief Initialize and return myPreviewMesh
  *  \param previewElements - type of elements to show in preview
  *
- *  WARNING: call it once par a method!
+ *  WARNING: call it once per method!
  */
 //================================================================================
 
@@ -669,7 +669,7 @@ void SMESH_MeshEditor_i::ClearLastCreated() throw (SALOME::SALOME_Exception)
 
 //=======================================================================
 /*
- * Returns description of an error/warning occured during the last operation
+ * Returns description of an error/warning occurred during the last operation
  * WARNING: ComputeError.code >= 100 and no corresponding enum in IDL API
  */
 //=======================================================================
@@ -6655,7 +6655,7 @@ SMESH_MeshEditor_i::MakeBoundaryMesh(SMESH::SMESH_IDSource_ptr idSource,
   else
     pyDump << mesh_var << ", ";
   if ( group_var->_is_nil() )
-    pyDump << "_NoneGroup = "; // assignment to None is forbiden
+    pyDump << "_NoneGroup = "; // assignment to None is forbidden
   else
     pyDump << group_var << " = ";
   pyDump << this << ".MakeBoundaryMesh( "
@@ -6719,7 +6719,7 @@ CORBA::Long SMESH_MeshEditor_i::MakeBoundaryElements(SMESH::Bnd_Dimension dim,
     else
       groupsOfThisMesh[ nbGroups++ ] = groups[i];
     if ( SMESH::DownCast<SMESH_Mesh_i*>( groups[i] ))
-      THROW_SALOME_CORBA_EXCEPTION("expect a group but recieve a mesh", SALOME::BAD_PARAM);
+      THROW_SALOME_CORBA_EXCEPTION("expected a group but received a mesh", SALOME::BAD_PARAM);
   }
   groupsOfThisMesh->length( nbGroups );
   groupsOfOtherMesh->length( nbGroupsOfOtherMesh );
@@ -6813,7 +6813,7 @@ CORBA::Long SMESH_MeshEditor_i::MakeBoundaryElements(SMESH::Bnd_Dimension dim,
   else
     pyDump << mesh_var << ", ";
   if ( group_var->_is_nil() )
-    pyDump << "_NoneGroup = "; // assignment to None is forbiden
+    pyDump << "_NoneGroup = "; // assignment to None is forbidden
   else
     pyDump << group_var << " = ";
   pyDump << this << ".MakeBoundaryElements( "

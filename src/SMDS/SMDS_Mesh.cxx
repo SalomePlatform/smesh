@@ -383,7 +383,7 @@ SMDS_MeshEdge* SMDS_Mesh::AddEdgeWithID(const SMDS_MeshNode * n1,
   if ( !n1 || !n2 ) return 0;
   SMDS_MeshEdge * edge = 0;
 
-  // --- retreive nodes ID
+  // --- retrieve nodes ID
   vector<vtkIdType> nodeIds;
   nodeIds.clear();
   nodeIds.push_back(n1->getVtkId());

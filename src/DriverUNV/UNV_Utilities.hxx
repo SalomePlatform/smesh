@@ -48,7 +48,7 @@ namespace UNV{
   };
 
   /**
-   * @returns \p false when error occured, \p true otherwise.
+   * @returns \p false when error occurred, \p true otherwise.
    * Adjusts the \p in_stream to the beginning of the
    * dataset \p ds_name.
    */
@@ -95,7 +95,7 @@ namespace UNV{
   {
     /* find "D" in string, start looking at
      * 6th element, to improve speed.
-     * We dont expect a "D" earlier
+     * We don't expect a "D" earlier
      */
     const size_t position = number.find("D",6);
     if ( position != std::string::npos )

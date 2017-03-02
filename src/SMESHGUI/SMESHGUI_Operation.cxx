@@ -267,7 +267,7 @@ bool SMESHGUI_Operation::isStudyLocked( const bool theMess ) const
 *
 * Virtual method redefined from base class verifies whether given operator is valid for
 * this one (i.e. can be started "above" this operator). In current implementation method
-* retuns false if theOtherOp operation is not intended for deleting objects or mesh
+* returns false if theOtherOp operation is not intended for deleting objects or mesh
 * elements.
 */
 bool SMESHGUI_Operation::isValid( SUIT_Operation* theOtherOp ) const

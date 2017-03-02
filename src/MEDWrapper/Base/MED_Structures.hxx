@@ -283,15 +283,15 @@ namespace MED
     virtual TModeSwitchInfo 
   {
     EEntiteMaillage myEntity; //!< Defines the MED Entity where the mesh cells belongs to
-    //! Let known what MED ENTITY the cells belong to
+    //! Find out what MED ENTITY the cells belong to
     EEntiteMaillage GetEntity() const { return myEntity;}
 
     EGeometrieElement myGeom; //!< Defines the MED Geometric type of the instance
-    //! Let known what MED geometrical type the cells belong to
+    //! Find out what MED geometrical type the cells belong to
     EGeometrieElement GetGeom() const { return myGeom;}
 
     EConnectivite myConnMode; //!< Defines connectivity mode
-    //! Let known in what connectivity the cells are writen
+    //! Find out in what connectivity the cells are written
     EConnectivite GetConnMode() const { return myConnMode;}
 
     virtual TInt GetConnDim() const = 0; //!< Gives step in the connectivity sequence
@@ -311,17 +311,17 @@ namespace MED
   {
     //! Defines the MED Entity where the polygons belongs to
     EEntiteMaillage myEntity; // MED_FACE|MED_MAILLE
-    //! Let known what MED ENTITY the MED Polygons belong to
+    //! Find out what MED ENTITY the MED Polygons belong to
     EEntiteMaillage GetEntity() const { return myEntity;}
 
     //! Defines the MED Geometric type of the instance
     EGeometrieElement myGeom; // ePOLYGONE
-    //! Let known what MED geometrical type the MED Polygons belong to
+    //! Find out what MED geometrical type the MED Polygons belong to
     EGeometrieElement GetGeom() const { return ePOLYGONE;}
 
     //! Defines connectivity mode
     EConnectivite myConnMode; // eNOD|eDESC(eDESC not used)
-    //! Let known in what connectivity the cells are writen
+    //! Find out in what connectivity the cells are written
     EConnectivite GetConnMode() const { return myConnMode;}
 
     PElemNum myConn; //!< Table de connectivities
@@ -359,17 +359,17 @@ namespace MED
   {
     //! Defines the MED Entity where the polyedres belongs to
     EEntiteMaillage myEntity; // MED_FACE|MED_MAILLE
-    //! Let known what MED ENTITY the MED Polyedres belong to
+    //! Find out what MED ENTITY the MED Polyedres belong to
     EEntiteMaillage GetEntity() const { return myEntity;}
 
     //! Defines the MED Geometric type of the instance
     EGeometrieElement myGeom; // ePOLYEDRE
-    //! Let known what MED geometrical type the MED Polyedres belong to
+    //! Find out what MED geometrical type the MED Polyedres belong to
     EGeometrieElement GetGeom() const { return ePOLYEDRE;}
 
     //! Defines connectivity mode
     EConnectivite myConnMode; // eNOD|eDESC(eDESC not used)
-    //! Let known in what connectivity the cells are writen
+    //! Find out in what connectivity the cells are written
     EConnectivite GetConnMode() const { return myConnMode;}
 
     PElemNum myConn; //!< Table de connectivities
@@ -392,24 +392,24 @@ namespace MED
   struct MEDWRAPPER_EXPORT TFieldInfo: 
     virtual TNameInfo
   {
-    PMeshInfo myMeshInfo; //!< A reference to correspondig MED Mesh
+    PMeshInfo myMeshInfo; //!< A reference to corresponding MED Mesh
     //! Get a reference to corresponding MED Mesh
     const PMeshInfo& GetMeshInfo() const { return myMeshInfo;}
 
-    ETypeChamp myType; //!< Defines type of the MED Field
-    //! Let known what type of the MED FIELD is used
+    ETypeChamp myType; //!< Defines type of MED Field
+    //! Find out what type of MED FIELD is used
     ETypeChamp GetType() const { return myType;}
 
     TInt myNbComp; //!< Defines number of components stored in the field
-    //! Get number of components for the MED FIELD
+    //! Get number of components for MED FIELD
     TInt GetNbComp() const { return myNbComp;}
 
     EBooleen myIsLocal; //!< Defines if the MED Field is local
-    //! Let known is the MED FIELD is local or not
+    //! Find out if MED FIELD is local or not
     EBooleen GetIsLocal() const { return myIsLocal;}
 
-    TInt myNbRef; //!< Defines number of refereces of the field
-    //! Let known number of references for the MED FIELD
+    TInt myNbRef; //!< Defines number of references of the field
+    //! Find out number of references for the MED FIELD
     TInt GetNbRef() const { return myNbRef;}
 
     TString myCompNames; //!< Contains names for each of MED Field components
@@ -458,7 +458,7 @@ namespace MED
 
     //! Defines, which geometrical type the MED Gauss entity belongs to
     EGeometrieElement myGeom; 
-    //! Let known what MED geometrical type the MED GAUSS entity belong to
+    //! Find out what MED geometrical type the MED GAUSS entity belong to
     EGeometrieElement GetGeom() const { return myGeom;}
 
     //! Contains coordinates for the refereced nodes
@@ -505,7 +505,7 @@ namespace MED
 
     //! Defines the MED Entity where the MED TimeStamp belongs to
     EEntiteMaillage myEntity;
-    //! Let known to what MED Entity the MED TimeStamp belong to
+    //! Find out to what MED Entity the MED TimeStamp belong to
     EEntiteMaillage GetEntity() const { return myEntity;}
 
     //! Keeps map of number of cells per geometric type where the MED TimeStamp belongs to
@@ -547,7 +547,7 @@ namespace MED
     typedef boost::tuple<TKey,TInt> TInfo;
 
     EModeProfil myMode; //!< Keeps mode for the MED Profile
-    //! Let known what mode of MED Profile is used
+    //! Find out what mode of MED Profile is used
     EModeProfil GetMode() const { return myMode;}
     //! Set mode for the MED Profile
     void SetMode(EModeProfil theMode) { myMode = theMode;}
@@ -558,10 +558,10 @@ namespace MED
     //! Set number of mesh elelemts by its order number
     void SetElemNum(TInt theId, TInt theVal);
 
-    //! Let known is the MED Profile defined
+    //! Find out if the MED Profile defined
     bool IsPresent() const { return GetName() != "";}
 
-    //! Let known size of the MED Profile
+    //! Find out size of the MED Profile
     TInt GetSize() const { return (TInt)myElemNum->size();}
   };
 

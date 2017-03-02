@@ -824,7 +824,7 @@ void StdMeshers_MEFISTO_2D::StoreResult(Z nbst, R2 * uvst, Z nbt, Z * nust,
     bool isDegen = ( _helper->HasDegeneratedEdges() &&
                      ( nn[0] == nn[1] || nn[1] == nn[2] || nn[2] == nn[0] ));
 
-    // It was an attemp to fix a problem of a zero area face whose all nodes
+    // It was an attempt to fix a problem of a zero area face whose all nodes
     // are on one staight EDGE. But omitting this face makes a hole in the mesh :(
     // if ( !isDegen && allNodesAreOld )
     //   isDegen = isDegenTria( nn );

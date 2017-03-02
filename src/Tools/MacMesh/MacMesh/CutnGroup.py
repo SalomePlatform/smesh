@@ -36,7 +36,7 @@ def Go(GeoObj, CutPlnLst, OutLvlLst, PrefixLst, Publish):
 		Example 2: [(0,0,0,1,0,0),(50,0,0,0,1,0)]: in addition to the first plane cut, cut through a plane passing by (50,0,0) and normal to the y axis.
 		Note that the plane size us determined automatically from the size of the geometry in question (using a very big trim size = 100 x length of geometry!)
 	  - OutLvlLst is a list containing integers that represent the inner sectioning level with respect to the original geometry type
-		A value of 1 means that the section will provide elements of one level lower than the original type. For exemple a solid sectioned at level 1 will produce faces. A Face sectioned at level 1 will produce edges.
+		A value of 1 means that the section will provide elements of one level lower than the original type. For example a solid sectioned at level 1 will produce faces. A Face sectioned at level 1 will produce edges.
 		A value of 2 means that a deeper sectioning will be applied. A solid sectioned with level 2 will give faces and edges. A face will give edges and vertices. An edge will give only vertices
 		The number of elements in this list should be (this is verified in the code) equal to the number of elements in the plane cut list. This is logical.
 		Example 1: [1]
@@ -98,7 +98,7 @@ def GoTrim(GeoObj, CutPlnLst, OutLvlLst, PrefixLst, Publish):
 		Example 1: [(0,0,0,1,0,0,5)]: cut along a plane passing through the origin and normal to the x-axis with a trim size of 5
 		Example 2: [(0,0,0,1,0,0,5),(50,0,0,0,1,0,10)]: in addition to the first plane cut, cut through a plane passing by (50,0,0) and normal to the y axis with a trim size of 10
 	  - OutLvlLst is a list containing integers that represent the inner sectioning level with respect to the original geometry type
-		A value of 1 means that the section will provide elements of one level lower than the original type. For exemple a solid sectioned at level 1 will produce faces. A Face sectioned at level 1 will produce edges.
+		A value of 1 means that the section will provide elements of one level lower than the original type. For example a solid sectioned at level 1 will produce faces. A Face sectioned at level 1 will produce edges.
 		A value of 2 means that a deeper sectioning will be applied. A solid sectioned with level 2 will give faces and edges. A face will give edges and vertices. An edge will give only vertices
 		The number of elements in this list should be (this is verified in the code) equal to the number of elements in the plane cut list. This is logical.
 		Example 1: [1]

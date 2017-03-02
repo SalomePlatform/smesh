@@ -182,7 +182,7 @@ class SMESH_EXPORT SMESH_Pattern {
     // Apply(shape)
     ERR_APPL_NOT_COMPUTED, // mapping failed
     ERR_APPL_NOT_LOADED, // pattern was not loaded
-    ERR_APPL_BAD_DIMENTION, // wrong shape dimention
+    ERR_APPL_BAD_DIMENTION, // wrong shape dimension
     ERR_APPL_BAD_NB_VERTICES, // keypoints - vertices mismatch
     // Apply(face)
     ERR_APPLF_BAD_TOPOLOGY, // bad pattern topology
@@ -241,7 +241,7 @@ private:
   // private methods
 
   struct TPoint {
-    gp_XYZ myInitXYZ; // loaded postion
+    gp_XYZ myInitXYZ; // loaded position
     gp_XY  myInitUV;
     double myInitU; // [0,1]
     gp_Pnt myXYZ; // position to compute

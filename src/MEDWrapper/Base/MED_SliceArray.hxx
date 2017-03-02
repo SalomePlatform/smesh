@@ -22,7 +22,7 @@
 #ifndef MED_SliceArray_HeaderFile
 #define MED_SliceArray_HeaderFile
 
-#ifdef WIN32 // for correctly compiling "valarray" in modules, which are includes this file
+#ifdef WIN32 // for correctly compiling "valarray" in modules, which includes this file
   #undef max
   #undef min
 #endif
@@ -37,17 +37,17 @@
 namespace MED
 {
   //---------------------------------------------------------------
-  //! This class intends to provide an uniform way to handle multy-dimention data (const version)
+  //! This class intends to provide a uniform way to handle multidimensional data (const version)
   /*! 
-    It just contains pointer to real sequence and implement proper calcultion of its indexes.
-    This class deal with constant pointer to the sources data and provide const method to
-    read the them (data).
+    It just contains a pointer to real sequence and implement proper calculation of its indexes.
+    This class deals with constant pointer to the sources data and provides const method to
+    read them (data).
    */
   template<class TValueType> 
   class TCSlice
   {
-    const TValueType* myCValuePtr; //!< Reference to source multy-dimension data
-    size_t mySourceSize; //!< Size of the source multy-dimension data
+    const TValueType* myCValuePtr; //!< Reference to source multidimensional data
+    size_t mySourceSize; //!< Size of the source multidimensional data
     std::slice mySlice; //!< Defines algorithm of index calculation
 
   protected:
@@ -63,7 +63,7 @@ namespace MED
       throw std::out_of_range("TCSlice::check_id");
     }
 
-    //! Calculate internal index to get proper element from the source multy-dimension data
+    //! Calculate internal index to get proper element from the source multidimensional data
     size_t
     calculate_id(size_t theId) const
     {
@@ -134,7 +134,7 @@ namespace MED
   
 
   //---------------------------------------------------------------
-  //! This class extend TCSlice functionality for non-constant case
+  //! This class extends TCSlice functionality for non-constant case
   template<class TValueType> 
   class TSlice: public TCSlice<TValueType>
   {

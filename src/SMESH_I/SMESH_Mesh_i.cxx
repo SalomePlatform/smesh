@@ -1125,7 +1125,7 @@ void SMESH_Mesh_i::RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup 
         if ( n->NbInverseElements() == 0 )
           _impl->GetMeshDS()->RemoveFreeNode( n, /*sm=*/0 );
 
-  TPythonDump pyDump; // Supress dump from RemoveGroup()
+  TPythonDump pyDump; // Suppress dump from RemoveGroup()
 
   // Update Python script (theGroup must be alive for this)
   pyDump << SMESH::SMESH_Mesh_var(_this())
@@ -2943,7 +2943,7 @@ void SMESH_Mesh_i::PrepareForWriting (const char* file, bool overwrite)
     if ( !aFile.openForWriting() ) {
       msg << "You cannot create the file "
           << aFile.getName()
-          << ". Check the directory existance and access rights";
+          << ". Check the directory existence and access rights";
     }
     aFile.remove();
   }

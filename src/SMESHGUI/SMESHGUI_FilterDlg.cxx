@@ -1546,7 +1546,7 @@ void SMESHGUI_FilterTable::onRemoveBtn()
 
 //=======================================================================
 // name    : SMESHGUI_FilterTable::updateAdditionalWidget
-// Purpose : Enable/Disable widget with additonal parameters
+// Purpose : Enable/Disable widget with additional parameters
 //=======================================================================
 void SMESHGUI_FilterTable::updateAdditionalWidget()
 {
@@ -2116,7 +2116,7 @@ QTableWidgetItem* SMESHGUI_FilterTable::getCriterionItem (const int theType) con
 
 //=======================================================================
 // name    : SMESHGUI_FilterTable::getCompareItem
-// Purpose : Get combo table item for operation of comparision
+// Purpose : Get combo table item for operation of comparison
 //=======================================================================
 QTableWidgetItem* SMESHGUI_FilterTable::getCompareItem () const
 {

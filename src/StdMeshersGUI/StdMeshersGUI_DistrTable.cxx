@@ -331,7 +331,7 @@ StdMeshersGUI_DistrTableFrame::Table::
 argMinimum( int r ) const
 {
   // for the first row the minimum value is always 0.0
-  // for the other rows the minumum value is the above row's value
+  // for the other rows the minimum value is the above row's value
   double val = 0.0;
   if ( r > 0 && r < rowCount() )
     val = value( r-1, ArgColumn );
@@ -343,7 +343,7 @@ StdMeshersGUI_DistrTableFrame::Table::
 argMaximum( int r ) const
 {
   // for the last row the maximum value is always 1.0
-  // for the other rows the maxumum value is the below row's value
+  // for the other rows the maximum value is the below row's value
   double val = 1.0;
   if ( r >= 0 && r < rowCount()-1 ) {
     val = value( r+1, ArgColumn );

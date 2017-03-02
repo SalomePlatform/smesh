@@ -244,7 +244,7 @@ SMESHGUI_CreatePatternDlg::~SMESHGUI_CreatePatternDlg()
 
 //=======================================================================
 // function : onProject()
-// purpose  : SLOT. Called when state of "Project nodes on ther face"
+// purpose  : SLOT. Called when state of "Project nodes on other face"
 //            checkbox is changed
 //=======================================================================
 void SMESHGUI_CreatePatternDlg::onProject( bool )
@@ -636,7 +636,7 @@ void SMESHGUI_CreatePatternDlg::onDeactivate()
 //=======================================================================
 void SMESHGUI_CreatePatternDlg::enterEvent( QEvent* )
 {
-  // there is a stange problem that enterEvent() comes after onSave()
+  // there is a strange problem that enterEvent() comes after onSave()
   if ( isVisible () ) {
     mySMESHGUI->EmitSignalDeactivateDialog();
     setEnabled( true );

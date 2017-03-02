@@ -409,7 +409,7 @@ namespace VISCOUS_3D
 
     gp_XYZ              _normal;    // to boundary of solid
     vector<gp_XYZ>      _pos;       // points computed during inflation
-    double              _len;       // length achived with the last inflation step
+    double              _len;       // length achieved with the last inflation step
     double              _maxLen;    // maximal possible length
     double              _cosin;     // of angle (_normal ^ surface)
     double              _minAngle;  // of _simplices
@@ -2949,7 +2949,7 @@ bool _ViscousBuilder::findShapesToSmooth( _SolidData& data )
   //const double tgtThick = /*Min( 0.5 * data._geomSize, */data._maxThickness;
 
   // Find shapes needing smoothing; such a shape has _LayerEdge._normal on it's
-  // boundry inclined to the shape at a sharp angle
+  // boundary inclined to the shape at a sharp angle
 
   //list< TGeomID > shapesToSmooth;
   TopTools_MapOfShape edgesOfSmooFaces;
@@ -8511,7 +8511,7 @@ gp_XYZ _LayerEdge::smoothNefPolygon()
 {
   gp_XYZ newPos(0,0,0);
 
-  // get a plane to seach a solution on
+  // get a plane to search a solution on
 
   vector< gp_XYZ > vecs( _simplices.size() + 1 );
   size_t i;
@@ -8702,7 +8702,7 @@ gp_XYZ _LayerEdge::smoothNefPolygon()
 { ////////////////////////////////// NEW
   gp_XYZ newPos(0,0,0);
 
-  // get a plane to seach a solution on
+  // get a plane to search a solution on
 
   size_t i;
   gp_XYZ center(0,0,0);

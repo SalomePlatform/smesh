@@ -69,7 +69,7 @@ public:
 
   SMDS_Mesh();
   
-  //! to retreive this SMDS_Mesh instance from its elements (index stored in SMDS_Elements)
+  //! to retrieve this SMDS_Mesh instance from its elements (index stored in SMDS_Elements)
   static std::vector<SMDS_Mesh*> _meshList;
 
   //! actual nodes coordinates, cells definition and reverse connectivity are stored in a vtkUnstructuredGrid

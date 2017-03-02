@@ -137,7 +137,7 @@ class PluginDialog(QDialog):
             # items in the object browser:
             self.__inputDialog.setWindowFlags(
                 self.__inputDialog.windowFlags() | Qt.WindowStaysOnTopHint)
-            # The signal inputValidated emited from inputDialog is
+            # The signal inputValidated emitted from inputDialog is
             # connected to the slot function onProcessInput:
     	    self.__inputDialog.inputValidated.connect( self.onProcessInput )
             

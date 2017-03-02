@@ -65,7 +65,7 @@ public:
    *  \param spaceFunctions - functions defining spacing values at given point on axis
    *  \param internalPoints - points dividing a grid into parts along each direction
    *
-   * Parameter t of spaceFunction f(t) is a position [0,1] withing bounding box of
+   * Parameter t of spaceFunction f(t) is a position [0,1] within bounding box of
    * the shape to mesh
    */
   void SetGridSpacing(std::vector<std::string>& spaceFunctions,

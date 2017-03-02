@@ -1302,7 +1302,7 @@ vtkUnstructuredGrid* SMESHGUI_MeshPatternDlg::getGrid()
     for (int i = 0, n = elemPoints->length(); i < n; i++)
       aCellsSize += elemPoints[ i ].length();
 
-    // Create unstructured grid and other  usefull arrays
+    // Create unstructured grid and other useful arrays
     vtkUnstructuredGrid* aGrid = vtkUnstructuredGrid::New();
 
     vtkCellArray* aConnectivity = vtkCellArray::New();

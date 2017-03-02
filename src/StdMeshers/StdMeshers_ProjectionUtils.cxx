@@ -1589,7 +1589,7 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face&    face1,
           std::advance( edge2End, *nbE2 );
           if ( *nbE1 == *nbE2 && iW2 >= iW1 )
           {
-            // rotate edge2 untill coincidence with edge1 in 2D
+            // rotate edge2 until coincides with edge1 in 2D
             int i = *nbE2;
             bool sameUV = false;
             while ( !( sameUV = sameVertexUV( *edge2Beg, face2, 0, v0f1UV, vTolUV )) && --i > 0 )
@@ -1638,7 +1638,7 @@ int StdMeshers_ProjectionUtils::FindFaceAssociation(const TopoDS_Face&    face1,
               break;
             }
           }
-          // prepare to the next wire loop
+          // prepare for the next wire loop
           edge2Beg = edge2End;
         }
         edge1Beg = edge1End;
@@ -2387,7 +2387,7 @@ std::string StdMeshers_ProjectionUtils::SourceNotComputedError( SMESH_subMesh * 
   if ( !sm || sm->GetAlgoState() != SMESH_subMesh::NO_ALGO )
     return usualMessage; // algo is OK, anything else is KO.
 
-  // Try to find a type of all-dimentional algorithm that would compute the
+  // Try to find a type of all-dimensional algorithm that would compute the
   // given sub-mesh if it could be launched before projection
   const TopoDS_Shape shape = sm->GetSubShape();
   const int       shapeDim = SMESH_Gen::GetShapeDim( shape );
@@ -2568,7 +2568,7 @@ namespace StdMeshers_ProjectionUtils
 
   //================================================================================
   /*!
-   * \brief Computes transformation beween two sets of 2D points using
+   * \brief Computes transformation between two sets of 2D points using
    *        a least square approximation
    *
    * See "Surface Mesh Projection For Hexahedral Mesh Generation By Sweeping"
@@ -2651,7 +2651,7 @@ namespace StdMeshers_ProjectionUtils
 
   //================================================================================
   /*!
-   * \brief Computes transformation beween two sets of 3D points using
+   * \brief Computes transformation between two sets of 3D points using
    *        a least square approximation
    *
    * See "Surface Mesh Projection For Hexahedral Mesh Generation By Sweeping"

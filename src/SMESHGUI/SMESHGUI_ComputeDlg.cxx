@@ -1772,7 +1772,7 @@ void SMESHGUI_PrecomputeOp::initDialog()
 
 //================================================================================
 /*!
- * \brief detect asigned mesh algorithms
+ * \brief detect assigned mesh algorithms
  */
 //================================================================================
 

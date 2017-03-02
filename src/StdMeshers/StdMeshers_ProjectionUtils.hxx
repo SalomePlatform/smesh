@@ -92,7 +92,7 @@ namespace StdMeshers_ProjectionUtils
 
 
   /*!
-   * \brief Finds transformation beween two sets of 2D points using
+   * \brief Finds transformation between two sets of 2D points using
    *        a least square approximation
    */
   class TrsfFinder2D
@@ -112,7 +112,7 @@ namespace StdMeshers_ProjectionUtils
     bool IsIdentity() const { return ( _trsf.Form() == gp_Identity ); }
   };
   /*!
-   * \brief Finds transformation beween two sets of 3D points using
+   * \brief Finds transformation between two sets of 3D points using
    *        a least square approximation
    */
   class TrsfFinder3D

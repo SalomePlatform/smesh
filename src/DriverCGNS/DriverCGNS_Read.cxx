@@ -766,7 +766,7 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
     }
 
     // Read connectivity between zones. Nodes of the zone interface will be
-    // replaced withing the zones read later
+    // replaced within the zones read later
     string err = zone.ReadZonesConnection( _fn, cgnsBase, zonesByName, myMesh );
     if ( !err.empty() )
       addMessage( err );

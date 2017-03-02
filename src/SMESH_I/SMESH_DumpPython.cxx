@@ -1035,7 +1035,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
         lines.push_back( theSavedTrace.SubString( from, to - 1 ));
       from = to + 1;
     }
-    // For the convertion of IDL API calls -> smeshBuilder.py API, "smesh" standing for SMESH_Gen
+    // For the conversion of IDL API calls -> smeshBuilder.py API, "smesh" standing for SMESH_Gen
     // was replaces with "smeshgen" (==TPythonDump::SMESHGenName()).
     // Change "smesh" -> "smeshgen" in the trace saved before passage to smeshBuilder.py API
     bool isNewVersion =

@@ -1429,7 +1429,7 @@ FunctorType LinearOrQuadratic_i::GetFunctorType()
 
 /*
   Class       : GroupColor_i
-  Description : Functor for check color of group to whic mesh element belongs to
+  Description : Functor for check color of group to which mesh element belongs to
 */
 GroupColor_i::GroupColor_i()
 {

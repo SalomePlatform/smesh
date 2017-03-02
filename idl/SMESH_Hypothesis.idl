@@ -91,7 +91,7 @@ module SMESH
     /*!
      * Return true if a hypothesis has parameters.
      *
-     * This method is intended for GUI to know if "Edit" menu item sould be available
+     * This method is intended for GUI to know if "Edit" menu item should be available
      */
     boolean HasParameters();
   };

@@ -57,7 +57,7 @@ if test -z $QWTHOME; then
               QWTHOME=$d
               AC_MSG_RESULT(lib${extension}.so detected in $d/lib)
               libqwt_name=${extension}
-              dnl  break, libqwt-qt4.so is choosen before libqwt.so since it is surely the Qt4 version.
+              dnl  break, libqwt-qt4.so is chosen before libqwt.so since it is surely the Qt4 version.
               break
            fi
         done

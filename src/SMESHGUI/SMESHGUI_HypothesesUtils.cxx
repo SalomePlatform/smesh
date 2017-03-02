@@ -519,7 +519,7 @@ namespace SMESH
         if(MYDEBUG) MESSAGE("Loading client meshers plugin library ...");
         LibHandle libHandle = LoadLib( aClientLibName.toLatin1().data() );
         if (!libHandle) {
-          // report any error, if occured
+          // report any error, if occurred
           {
 #ifdef WIN32
             const char* anError = "Can't load client meshers plugin library";

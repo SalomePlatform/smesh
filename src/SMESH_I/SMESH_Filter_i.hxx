@@ -704,7 +704,7 @@ namespace SMESH
   
   /*
     Class       : GroupColor_i
-    Description : Functor for check color of group to whic mesh element belongs to
+    Description : Functor for check color of group to which mesh element belongs to
   */
   class SMESH_I_EXPORT GroupColor_i: public virtual POA_SMESH::GroupColor,
                                      public virtual Predicate_i

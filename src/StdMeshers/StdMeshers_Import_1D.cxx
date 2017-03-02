@@ -289,7 +289,7 @@ namespace // INTERNAL STUFF
   //--------------------------------------------------------------------------------
   /*!
    * \brief Remove imported mesh and/or groups if needed
-   *  \param sm - submesh loosing Import algo
+   *  \param sm - submesh losing Import algo
    *  \param data - data holding imported groups
    */
   void _Listener::removeSubmesh( SMESH_subMesh* sm, _ListenerData* data )
@@ -311,7 +311,7 @@ namespace // INTERNAL STUFF
   //--------------------------------------------------------------------------------
   /*!
    * \brief Clear _ImportData::_n2n.
-   *        _n2n is usefull within one mesh.Compute() only
+   *        _n2n is useful within one mesh.Compute() only
    */
   void _Listener::clearN2N( SMESH_Mesh* tgtMesh )
   {

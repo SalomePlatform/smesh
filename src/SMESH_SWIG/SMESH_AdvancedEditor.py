@@ -35,7 +35,7 @@ import math
 
 def GetNewNodes(mesh,Elems,OldNodes):
     """
-    Auxilary function, which return list of nodes from
+    Auxiliary function, which return list of nodes from
     given Elems avoided nodes from OldNodes
     """
     newnodes = []

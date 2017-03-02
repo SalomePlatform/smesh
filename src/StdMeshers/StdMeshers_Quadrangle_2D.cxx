@@ -491,7 +491,7 @@ bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
   int nbright = (int) uv_e1.size();
   int nbleft  = (int) uv_e3.size();
 
-  if (quad->nbNodeOut(0) && nbvertic == 2) // this should not occure
+  if (quad->nbNodeOut(0) && nbvertic == 2) // this should not occur
   {
     // Down edge is out
     // 
@@ -721,7 +721,7 @@ bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
   }
 
   // right or left boundary quadrangles
-  if (quad->nbNodeOut( QUAD_RIGHT_SIDE ) && nbhoriz == 2) // this should not occure
+  if (quad->nbNodeOut( QUAD_RIGHT_SIDE ) && nbhoriz == 2) // this should not occur
   {
     int g = 0; // last processed node in the grid
     int stop = nbright - 1;
@@ -737,7 +737,7 @@ bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
       // find node c in the grid, nearest to the b
       c = 0;
       int near = g;
-      if (i == stop - 1) { // up bondary reached
+      if (i == stop - 1) { // up boundary reached
         c = quad->uv_grid[nbhoriz*(jup + 1) - 2].node;
         near = jup;
       } else {
@@ -837,7 +837,7 @@ bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
 
         // find node c in the grid, nearest to the b
         int near = g;
-        if (i == stop + 1) { // down bondary reached
+        if (i == stop + 1) { // down boundary reached
           c = quad->uv_grid[nbhoriz*jlow + 1].node;
           near = jlow;
         }
@@ -1574,7 +1574,7 @@ bool StdMeshers_Quadrangle_2D::setNormalizedGrid (FaceQuadStruct::Ptr quad)
 
 //=======================================================================
 //function : ShiftQuad
-//purpose  : auxilary function for computeQuadPref
+//purpose  : auxiliary function for computeQuadPref
 //=======================================================================
 
 void StdMeshers_Quadrangle_2D::shiftQuad(FaceQuadStruct::Ptr& quad, const int num )
@@ -1658,7 +1658,7 @@ void FaceQuadStruct::shift( size_t nb, bool ori, bool keepGrid )
 
 //=======================================================================
 //function : calcUV
-//purpose  : auxilary function for computeQuadPref
+//purpose  : auxiliary function for computeQuadPref
 //=======================================================================
 
 static gp_UV calcUV(double x0, double x1, double y0, double y1,
@@ -1681,7 +1681,7 @@ static gp_UV calcUV(double x0, double x1, double y0, double y1,
 
 //=======================================================================
 //function : calcUV2
-//purpose  : auxilary function for computeQuadPref
+//purpose  : auxiliary function for computeQuadPref
 //=======================================================================
 
 static gp_UV calcUV2(double x, double y,
@@ -2158,7 +2158,7 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
   }
 
   int nnn = Min(nr,nl);
-  // auxilary sequence of XY for creation nodes
+  // auxiliary sequence of XY for creation nodes
   // in the bottom part of central domain
   // Length of UVL and UVR must be == nbv-nnn
   TColgp_SequenceOfXY UVL, UVR, UVT;
@@ -2516,7 +2516,7 @@ bool StdMeshers_Quadrangle_2D::evaluateQuadPref(SMESH_Mesh &        aMesh,
                                                 MapShapeNbElems&    aResMap,
                                                 bool                IsQuadratic)
 {
-  // Auxilary key in order to keep old variant
+  // Auxiliary key in order to keep old variant
   // of meshing after implementation new variant
   // for bug 0016220 from Mantis.
   bool OldVersion = false;
@@ -3025,7 +3025,7 @@ bool StdMeshers_Quadrangle_2D::computeReduced (SMESH_Mesh &        aMesh,
     gp_XY a3 (uv_et.front().u, uv_et.front().v);
 
     int nnn = Min(nr,nl);
-    // auxilary sequence of XY for creation of nodes
+    // auxiliary sequence of XY for creation of nodes
     // in the bottom part of central domain
     // it's length must be == nbv-nnn-1
     TColgp_SequenceOfXY UVL;

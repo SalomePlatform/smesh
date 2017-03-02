@@ -220,7 +220,7 @@ const char * MeshJobManager_i::_writeDataFile(std::vector<MESHJOB::MeshJobParame
 }
 
 /*!
- * This function creates a shell script that runs padder whith the
+ * This function creates a shell script that runs padder with the
  * specified data file, and returns the path of the created script
  * file. The config id is used to retrieve the path to the binary file
  * and other required files.
@@ -408,7 +408,7 @@ CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobParameterList & m
     }
   }
 
-  // Then, we have to specify the existance of an output filename. The
+  // Then, we have to specify the existence of an output filename. The
   // path is supposed to be a path on the remote resource, i.e. where
   // the job is executed.
   jobParameters->out_files.length(1);
@@ -462,14 +462,14 @@ CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobParameterList & m
   // account not only the data that could be loaded by the batch
   // process but also the linked dynamic library.
   //
-  // A possible problem, for exemple in the case where you use the ssh
+  // A possible problem, for example in the case where you use the ssh
   // emulation of a batch system, is to get an error message as below
   // when libBatch try to run the ssh command:
   //
   // ## /usr/bin/ssh: error while loading shared libraries: libcrypto.so.0.9.8: failed
   // ## to map segment from shared object: Cannot allocate memory
   //
-  // In this exemple, the mem_mb was set to 1MB, value that is not
+  // In this example, the mem_mb was set to 1MB, value that is not
   // sufficient to load the dynamic libraries linked to the ssh
   // executable (libcrypto.so in the error message).
   //

@@ -114,7 +114,7 @@ public:
    * 
    * An auxiliary hypothesis is optional, i.e. an algorithm
    * can work without it and another hypothesis of the same
-   * dimention can be assigned to the shape
+   * dimension can be assigned to the shape
    */
   virtual bool IsAuxiliary() const
   { return GetType() == PARAM_ALGO && _param_algo_dim < 0; }

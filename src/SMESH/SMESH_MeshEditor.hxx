@@ -541,7 +541,7 @@ public:
   // additional nodes are inserted on a link provided that no
   // volume elements share the splitted link.
   // The side 2 is a free border if theSide2IsFreeBorder == true.
-  // Sewing is peformed between the given first, second and last
+  // Sewing is performed between the given first, second and last
   // nodes on the sides.
   // theBorderFirstNode is merged with theSide2FirstNode.
   // if (!theSide2IsFreeBorder) then theSide2SecondNode gives
@@ -813,7 +813,7 @@ private:
   // Nodes and elements created during last operation
   SMESH_SequenceOfElemPtr myLastCreatedNodes, myLastCreatedElems;
 
-  // Description of error/warning occured during last operation
+  // Description of error/warning occurred during last operation
   SMESH_ComputeErrorPtr   myError;
 };
 

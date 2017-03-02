@@ -100,7 +100,7 @@
 2003-12-09 14:13  Nadir Bouhamou <nadir.bouhamou@cea.fr>
 
 	* src/SMESH/Makefile.in: Correcting a problem araising when
-	  building the SMESH module whithout Netgen.
+	  building the SMESH module without Netgen.
 
 2003-12-09 10:00  Nadir Bouhamou <nadir.bouhamou@cea.fr>
 

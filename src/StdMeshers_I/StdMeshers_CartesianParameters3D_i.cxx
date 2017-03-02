@@ -167,8 +167,8 @@ CORBA::Double StdMeshers_CartesianParameters3D_i::GetSizeThreshold()
 //\brief Set grid spacing along the three axes
 // \param spaceFunctions - functions defining spacing values at given point on axis
 // \param internalPoints - points dividing a grid into parts along each direction
-// Parameter t of spaceFunction f(t) is a position [0,1] withing bounding box of
-// the shape to mesh or withing an interval defined by internal points
+// Parameter t of spaceFunction f(t) is a position [0,1] within bounding box of
+// the shape to mesh or within an interval defined by internal points
 //=======================================================================
 
 void StdMeshers_CartesianParameters3D_i::SetGridSpacing(const SMESH::string_array& spaceFunctions,

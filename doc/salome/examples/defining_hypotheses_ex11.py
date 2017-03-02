@@ -34,7 +34,7 @@ src_mesh.Segment().NumberOfSegments(15)
 src_mesh.Triangle()
 src_mesh.Compute()
 
-# Mesh the target mesh using the algoritm Projection1D2D
+# Mesh the target mesh using the algorithm Projection1D2D
 tgt_mesh = smesh.Mesh(Face_2, "Target mesh")
 tgt_mesh.Projection1D2D().SourceFace(Face_1,src_mesh)
 tgt_mesh.Compute()

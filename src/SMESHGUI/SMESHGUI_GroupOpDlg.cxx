@@ -258,7 +258,7 @@ bool SMESHGUI_GroupOpDlg::isValid( const QList<SMESH::SMESH_GroupBase_var>& theL
   {
     SMESH::SMESH_GroupBase_var aGrp = *anIter;
     if ( CORBA::is_nil( aGrp ) )
-      continue; // nonsence
+      continue; // nonsense
 
     SMESH::SMESH_Mesh_var aMesh = aGrp->GetMesh();
     if ( CORBA::is_nil( aMesh ) )

@@ -73,8 +73,8 @@ class STDMESHERS_I_EXPORT StdMeshers_CartesianParameters3D_i:
    *  \param internalPoints - points dividing a grid into parts along each direction
    *  \param axis - index of an axis counterd from zero, i.e. 0==X, 1==Y, 2==Z
    *
-   * Parameter t of spaceFunction f(t) is a position [0,1] withing bounding box of
-   * the shape to mesh or withing an interval defined by internal points
+   * Parameter t of spaceFunction f(t) is a position [0,1] within bounding box of
+   * the shape to mesh or within an interval defined by internal points
    */
   void SetGridSpacing(const SMESH::string_array& spaceFunctions,
                       const SMESH::double_array& internalPoints,

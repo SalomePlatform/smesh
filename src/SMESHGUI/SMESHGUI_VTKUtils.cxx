@@ -372,7 +372,7 @@ namespace SMESH
       if ( freeMB > 0 && usedMB * 5 > freeMB ) {
         bool continu = false;
         if ( usedMB * 3 > freeMB )
-          // even dont try to show
+          // don't even try to show
           SUIT_MessageBox::warning(SMESHGUI::desktop(), QObject::tr("SMESH_WRN_WARNING"),
                                    QObject::tr("SMESH_NO_MESH_VISUALIZATION"));
         else

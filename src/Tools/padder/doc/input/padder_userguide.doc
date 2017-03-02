@@ -181,7 +181,7 @@ remote  = nepal
 defaultres = local
 
 # The following sections defines the available configurations.
-# The name of the section can be choosen arbitrary. But the value of
+# The name of the section can be chosen arbitrarily. But the value of
 # the resname key MUST be the name of a SALOME resource defined in the
 # catalog of resources (CatalogResources.xml).
 

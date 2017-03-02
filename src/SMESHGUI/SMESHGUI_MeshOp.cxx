@@ -271,7 +271,7 @@ void SMESHGUI_MeshOp::startOperation()
 /*!
  * \brief Selects a recently created mesh or sub-mesh if necessary
  *
- * Virtual method redefined from base class called when operation is commited
+ * Virtual method redefined from base class called when operation is committed
  * selects a recently created mesh or sub-mesh if necessary. Allows to perform
  * selection when the custom selection filters are removed.
  */
@@ -1244,10 +1244,10 @@ void SMESHGUI_MeshOp::initHypCreator( SMESHGUI_GenericHypothesisCreator* theCrea
 
 //================================================================================
 /*!
- * \Brief Returns tab dimention
+ * \Brief Returns tab dimension
   * \param tab - the tab in the dlg
   * \param dlg - my dialogue
-  * \retval int - dimention
+  * \retval int - dimension
  */
 //================================================================================
 static int getTabDim (const QObject* tab, SMESHGUI_MeshDlg* dlg )
@@ -2385,7 +2385,7 @@ int SMESHGUI_MeshOp::find( const SMESH::SMESH_Hypothesis_var& theHyp,
 /*!
  * \brief Edits mesh or sub-mesh
   * \param theMess - Output parameter intended for returning error message
-  * \retval bool  - TRUE if mesh is edited succesfully, FALSE otherwise
+  * \retval bool  - TRUE if mesh is edited successfully, FALSE otherwise
  *
  * Assigns new name hypotheses and algoriths to the mesh or sub-mesh
  */
@@ -2555,7 +2555,7 @@ bool SMESHGUI_MeshOp::checkSubMeshConcurrency(SMESH::SMESH_Mesh_ptr    mesh,
  *
  * method redefined from base class verifies whether given operator is valid for
  * this one (i.e. can be started "above" this operator). In current implementation method
- * retuns false if theOtherOp operation is not intended for deleting objects or mesh
+ * returns false if theOtherOp operation is not intended for deleting objects or mesh
  * elements.
  */
 //================================================================================

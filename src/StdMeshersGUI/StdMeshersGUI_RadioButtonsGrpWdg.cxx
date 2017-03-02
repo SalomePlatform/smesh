@@ -45,7 +45,7 @@ StdMeshersGUI_RadioButtonsGrpWdg::StdMeshersGUI_RadioButtonsGrpWdg( const QStrin
 
 //================================================================================
 /*!
- * \brief Creates a given nubmer of button labels with given labels (QString's)
+ * \brief Creates a given number of button labels with given labels (QString's)
  */
 //================================================================================
 

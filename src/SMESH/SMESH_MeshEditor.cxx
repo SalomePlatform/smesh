@@ -1168,7 +1168,7 @@ bool SMESH_MeshEditor::Reorient (const SMDS_MeshElement * theElem)
  * \brief Reorient faces.
  * \param theFaces - the faces to reorient. If empty the whole mesh is meant
  * \param theDirection - desired direction of normal of \a theFace
- * \param theFace - one of \a theFaces that sould be oriented according to
+ * \param theFace - one of \a theFaces that should be oriented according to
  *        \a theDirection and whose orientation defines orientation of other faces
  * \return number of reoriented faces.
  */
@@ -2398,7 +2398,7 @@ void SMESH_MeshEditor::SplitVolumes (const TFacetOfElem & theElems,
         }
         else
         {
-          // among possible triangles create ones discribed by split method
+          // among possible triangles create ones described by split method
           const int* nInd = volTool.GetFaceNodesIndices( iF );
           int nbVariants = ( nbNodes == 4 ? 2 : nbNodes );
           int iCom = 0; // common node of triangle faces to split into
@@ -2524,7 +2524,7 @@ void SMESH_MeshEditor::GetHexaFacetsToSplit( TIDSortedElemSet& theHexas,
 
   // Fill theFacets starting from facetID of startHex
 
-  // facets used for seach of volumes adjacent to already treated ones
+  // facets used for searching of volumes adjacent to already treated ones
   typedef pair< TFacetOfElem::iterator, int > TElemFacets;
   typedef map< TVolumeFaceKey, TElemFacets  > TFacetMap;
   TFacetMap facetsToCheck;
@@ -4342,7 +4342,7 @@ void SMESH_MeshEditor::Smooth (TIDSortedElemSet &          theElems,
         }
       }
       if ( maxRatio <= theTgtAspectRatio ) {
-        //MESSAGE("-- quality achived --");
+        //MESSAGE("-- quality achieved --");
         break;
       }
       if (it+1 == theNbIterations) {
@@ -6482,7 +6482,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet     theElements[2],
 
 //=======================================================================
 //function : MakeEdgePathPoints
-//purpose  : auxilary for ExtrusionAlongTrack
+//purpose  : auxiliary for ExtrusionAlongTrack
 //=======================================================================
 SMESH_MeshEditor::Extrusion_Error
 SMESH_MeshEditor::MakeEdgePathPoints(std::list<double>&                aPrms,
@@ -6537,7 +6537,7 @@ SMESH_MeshEditor::MakeEdgePathPoints(std::list<double>&                aPrms,
 
 //=======================================================================
 //function : MakeExtrElements
-//purpose  : auxilary for ExtrusionAlongTrack
+//purpose  : auxiliary for ExtrusionAlongTrack
 //=======================================================================
 SMESH_MeshEditor::Extrusion_Error
 SMESH_MeshEditor::MakeExtrElements(TIDSortedElemSet                  theElemSets[2],
@@ -9202,7 +9202,7 @@ int SMESH_MeshEditor::convertElemToQuadratic(SMESHDS_SubMesh *   theSm,
     // remove a linear element
     GetMeshDS()->RemoveFreeElement(elem, theSm, /*fromGroups=*/false);
 
-    // remove central nodes of biquadratic elements (biquad->quad convertion)
+    // remove central nodes of biquadratic elements (biquad->quad conversion)
     if ( hasCentralNodes )
       for ( size_t i = nbNodes * 2; i < nodes.size(); ++i )
         if ( nodes[i]->NbInverseElements() == 0 )
@@ -9850,7 +9850,7 @@ SMESH_MeshEditor::SewSideElements (TIDSortedElemSet&    theSide1,
   //    face does not exist
 
   SMESHDS_Mesh* aMesh = GetMeshDS();
-  // TODO algoritm not OK with vtkUnstructuredGrid: 2 meshes can't share nodes
+  // TODO algorithm not OK with vtkUnstructuredGrid: 2 meshes can't share nodes
   //SMDS_Mesh aTmpFacesMesh; // try to use the same mesh
   TIDSortedElemSet             faceSet1, faceSet2;
   set<const SMDS_MeshElement*> volSet1,  volSet2;

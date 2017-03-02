@@ -41,7 +41,7 @@ to the specified group or to create the group anew using
 <b>Add to group</b> box, that allows choosing an existing group for
 the created node or element or giving the name to a new group. By
 default, the <b>Add to group</b> check box is switched off. If the user
-swiches this check box on, the combo box listing all currently
+switches this check box on, the combo box listing all currently
 existing groups of the corresponding type becomes available. By
 default, no group is selected. In this case, when the user presses
 <b>Apply</b> or <b>Apply & Close</b> button, the warning message box

@@ -1889,7 +1889,7 @@ const SMDS_MeshNode* SMESH_MesherHelper::getMediumNodeOnComposedWire(const SMDS_
 
   if ( !bestEdge.IsNull() )
   {
-    // move n12 to position of a successfull projection
+    // move n12 to position of a successful projection
     //double tol = BRep_Tool::Tolerance(edges[ iOkEdge ]);
     if ( !force3d /*&& distMiddleProj > 2*tol*/ )
     {
@@ -3185,7 +3185,7 @@ double SMESH_MesherHelper::getFaceMaxTol( const TopoDS_Shape& face ) const
  *        of the FACE normal
  *  \return double - the angle (between -Pi and Pi), negative if the angle is concave,
  *                   1e100 in case of failure
- *  \waring Care about order of the EDGEs and their orientation to be as they are
+ *  \warning Care about order of the EDGEs and their orientation to be as they are
  *          within the FACE! Don't pass degenerated EDGEs neither!
  */
 //================================================================================
@@ -3733,7 +3733,7 @@ namespace { // Structures used by FixQuadraticElements()
    * \brief Make up a chain of links
    *  \param iSide - link to add first
    *  \param chain - chain to fill in
-   *  \param pos   - postion of medium nodes the links should have
+   *  \param pos   - position of medium nodes the links should have
    *  \param error - out, specifies what is wrong
    *  \retval bool - false if valid chain can't be built; "valid" means that links
    *                 of the chain belongs to rectangles bounding hexahedrons
@@ -3747,7 +3747,7 @@ namespace { // Structures used by FixQuadraticElements()
     if ( _sideIsAdded[ iSide ]) // already in chain
       return true;
 
-    if ( _sides.size() != 4 ) { // triangle - visit all my continous faces
+    if ( _sides.size() != 4 ) { // triangle - visit all my continuous faces
       MSGBEG( *this );
       TLinkSet links;
       list< const QFace* > faces( 1, this );
@@ -3793,7 +3793,7 @@ namespace { // Structures used by FixQuadraticElements()
     if ( link->MediumPos() >= pos ) {
       int nbLinkFaces = link->_faces.size();
       if ( nbLinkFaces == 4 || (/*nbLinkFaces < 4 && */link->OnBoundary())) {
-        // hexahedral mesh or boundary quadrangles - goto a continous face
+        // hexahedral mesh or boundary quadrangles - goto a continuous face
         if ( const QFace* f = link->GetContinuesFace( this ))
           if ( f->_sides.size() == 4 )
             return f->GetLinkChain( *chLink, chain, pos, error );
@@ -3921,7 +3921,7 @@ namespace { // Structures used by FixQuadraticElements()
    * \brief Move medium node of theLink according to its distance from boundary
    *  \param theLink - link to fix
    *  \param theRefVec - movement of boundary
-   *  \param theLinks - all adjacent links of continous triangles
+   *  \param theLinks - all adjacent links of continuous triangles
    *  \param theFaceHelper - helper is not used so far
    *  \param thePrevLen - distance from the boundary
    *  \param theStep - number of steps till movement propagation limit
@@ -4652,7 +4652,7 @@ namespace { // Structures used by FixQuadraticElements()
         < const SMDS_MeshElement*, vector< SMDS_ElemIteratorPtr > > TIterOnIter;
       SMDS_ElemIteratorPtr faceIter( new TIterOnIter( faceIterVec ));
 
-      // a seacher to check if a volume is close to a concave face
+      // search to check if a volume is close to a concave face
       SMESHUtils::Deleter< SMESH_ElementSearcher > faceSearcher
         ( SMESH_MeshAlgos::GetElementSearcher( *theHelper.GetMeshDS(), faceIter ));
 

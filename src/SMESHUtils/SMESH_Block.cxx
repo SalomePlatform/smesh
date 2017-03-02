@@ -1029,7 +1029,7 @@ bool SMESH_Block::findUVByHalfDivision( const gp_Pnt&             thePoint,
       dy *= 1.2;
       xSol = 0.5 * (xMax + xMin) ;
       ySol = 0.5 * (yMax + yMin) ;
-      if ( xMin == 0. && yMin == 0. && xMax == 1. && yMax == 1. ) // avoid infinit loop
+      if ( xMin == 0. && yMin == 0. && xMax == 1. && yMax == 1. ) // avoid infinite loop
       {
 #ifdef _DEBUG_REFINE_
         cout << "SMESH_Block::refineParametersOnFace(): tface.IsUVInQuad() fails" << endl;
@@ -1114,7 +1114,7 @@ bool SMESH_Block::findUVByHalfDivision( const gp_Pnt&             thePoint,
     if ( saveBetterSolution( sol, theParams, thePoint.SquareDistance( tface.Point( sol ))))
     {
 #ifdef _DEBUG_REFINE_
-      cout << "SMESH_Block::refineParametersOnFace(): dividing suceeded" << endl;
+      cout << "SMESH_Block::refineParametersOnFace(): dividing succeeded" << endl;
       cout << " nbGetUV = " << nbGetUV << endl;
 #endif
         return true;

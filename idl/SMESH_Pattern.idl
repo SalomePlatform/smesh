@@ -147,7 +147,7 @@ module SMESH
       ERR_LOADV_COMPUTE_PARAMS, // cant compute point parameters
       // Apply(shape)
       ERR_APPL_NOT_LOADED, // pattern was not loaded
-      ERR_APPL_BAD_DIMENTION, // wrong shape dimention
+      ERR_APPL_BAD_DIMENTION, // wrong shape dimension
       ERR_APPL_BAD_NB_VERTICES, // keypoints - vertices mismatch
       // Apply(face)
       ERR_APPLF_BAD_TOPOLOGY, // bad pattern topology

@@ -263,7 +263,7 @@ module SMESH
   };
 
   /*!
-   * Auxilary flags for advanced extrusion.
+   * Auxiliary flags for advanced extrusion.
    * BOUNDARY: create or not boundary for result of extrusion
    * SEW:      try to use existing nodes or create new nodes in any case
    */
@@ -349,7 +349,7 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
-     * Get geom shape to mesh. A result sould not be nil. Use HasShapeToMesh()
+     * Get geom shape to mesh. A result should not be nil. Use HasShapeToMesh()
      * to know if a returned shape 
      */
     GEOM::GEOM_Object GetShapeToMesh()
@@ -389,7 +389,7 @@ module SMESH
      * Get the subMesh object associated to a Sub-shape. The subMesh object
      * gives access to nodes and elements IDs.
      * SubMesh will be used instead of Sub-shape in a next idl version to
-     * adress a specific subMesh...
+     * address a specific subMesh...
      */
     SMESH_subMesh GetSubMesh(in GEOM::GEOM_Object aSubObject, in string name)
       raises (SALOME::SALOME_Exception);

@@ -83,7 +83,7 @@ public:
    */
   void ClearLastCreated() throw (SALOME::SALOME_Exception);
   /*!
-   * \brief Returns description of an error/warning occured during the last operation
+   * \brief Returns description of an error/warning occurred during the last operation
    */
   SMESH::ComputeError* GetLastError() throw (SALOME::SALOME_Exception);
 
