@@ -266,25 +266,25 @@ class PluginDialog(QDialog):
         # We first have to create the list of parameters for the
         # initialize function. For that, we have to create the files
         # from the mesh objects:
-        meshJobParameterList=[]
+        meshJobFileList=[]
         concreteIndex=0
         for inputData in self.__listInputData:
             # For each input data, we have to create a
-            # MeshJobParameter and add it to the list.
+            # MeshJobFile and add it to the list.
             filename  = self.__exportMesh(inputData.meshName, inputData.meshObject)
             if inputData.meshType == InputData.MESHTYPES.CONCRETE:
                 filetype = MESHJOB.MED_CONCRETE
             else:
                 filetype = MESHJOB.MED_STEELBAR
 
-            parameter = MESHJOB.MeshJobParameter(
+            parameter = MESHJOB.MeshJobFile(
                 file_name  = filename,
                 file_type  = filetype,
                 group_name = inputData.groupName)
-            meshJobParameterList.append(parameter)
+            meshJobFileList.append(parameter)
 
         jobManager = self.__getJobManager()
-        self.__jobid = jobManager.initialize(meshJobParameterList, self.__configId)
+        self.__jobid = jobManager.initialize(meshJobFileList, self.__configId)
         if self.__jobid < 0:
             self.__log("ERR: the job can't be initialized")
             self.__log("ERR: %s"%jobManager.getLastErrorMessage())

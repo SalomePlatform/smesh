@@ -167,8 +167,8 @@ static std::string REMOTE_WORKDIR("/tmp/spadder.remote.workdir."+USER);
  * <steelBarMeshFile_N>   <steelBarGroupName_N>
  * <outputMedFile>
  */
-const char * MeshJobManager_i::_writeDataFile(std::vector<MESHJOB::MeshJobParameter> listConcreteMesh,
-                                              std::vector<MESHJOB::MeshJobParameter> listSteelBarMesh) {
+const char * MeshJobManager_i::_writeDataFile(std::vector<MESHJOB::MeshJobFile> listConcreteMesh,
+                                              std::vector<MESHJOB::MeshJobFile> listSteelBarMesh) {
 #ifdef WIN32
   _mkdir(LOCAL_INPUTDIR.c_str());
 #else
@@ -281,17 +281,17 @@ bool MeshJobManager_i::configure(const char *configId,
 long MeshJobManager_i::JOBID_UNDEFINED = -1;
 
 /*! Initialize a smesh computation job and return the job identifier */
-CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobParameterList & meshJobParameterList,
+CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobFileList & meshJobFileList,
                                          const char * configId)
 {
   beginService("MeshJobManager_i::initialize");
   //
   // We first analyse the CORBA sequence to store data in C++ vectors
   //
-  std::vector<MESHJOB::MeshJobParameter> listConcreteMesh;
-  std::vector<MESHJOB::MeshJobParameter> listSteelBarMesh;
-  for(CORBA::ULong i=0; i<meshJobParameterList.length(); i++) {
-    MESHJOB::MeshJobParameter currentMesh = meshJobParameterList[i];
+  std::vector<MESHJOB::MeshJobFile> listConcreteMesh;
+  std::vector<MESHJOB::MeshJobFile> listSteelBarMesh;
+  for(CORBA::ULong i=0; i<meshJobFileList.length(); i++) {
+    MESHJOB::MeshJobFile currentMesh = meshJobFileList[i];
     switch ( currentMesh.file_type ) {
     case MESHJOB::MED_CONCRETE:
       listConcreteMesh.push_back(currentMesh);

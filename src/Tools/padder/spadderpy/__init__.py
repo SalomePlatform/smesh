@@ -53,38 +53,38 @@ def getTestPadderDataDir():
     return datadir
 
 import MESHJOB # to get the enum constant values
-from MESHJOB import MeshJobParameter, MeshJobParameterList
+from MESHJOB import MeshJobFile, MeshJobFileList
 
 DEFAULT_CONCRETE_FILENAME=os.path.join(getTestDataDir(),'concrete.med')
 DEFAULT_STEELBAR_LISTFILENAME=[
     os.path.join(getTestDataDir(),'ferraill.med')
     ]
 
-def getMeshJobParameterList(concrete_filename=DEFAULT_CONCRETE_FILENAME,
+def getMeshJobFileList(concrete_filename=DEFAULT_CONCRETE_FILENAME,
                             steelbar_listfilename=DEFAULT_STEELBAR_LISTFILENAME):
     '''
     This helper function creates a complete set of parameters (a
-    MeshJobParameterList) for a simple test case, i.e. a case with a
+    MeshJobFileList) for a simple test case, i.e. a case with a
     concrete filename and a single steelbar filename.
     '''
-    # Note that a CORBA sequence (MeshJobParameterList) is mapped on a
+    # Note that a CORBA sequence (MeshJobFileList) is mapped on a
     # simple list in python
-    meshJobParameterList = []
+    meshJobFileList = []
     # We can add some parameters
-    param = MeshJobParameter(
+    param = MeshJobFile(
         file_name  = concrete_filename,
         file_type  = MESHJOB.MED_CONCRETE,
         group_name = "concrete")
-    meshJobParameterList.append(param)
+    meshJobFileList.append(param)
 
     for steelbar_filename in steelbar_listfilename:
-        param = MeshJobParameter(
+        param = MeshJobFile(
             file_name  = steelbar_filename,
             file_type  = MESHJOB.MED_STEELBAR,
             group_name = "steelbar")
-        meshJobParameterList.append(param)
+        meshJobFileList.append(param)
 
-    return meshJobParameterList
+    return meshJobFileList
 
 
 def getSpadderCatalogFilename():

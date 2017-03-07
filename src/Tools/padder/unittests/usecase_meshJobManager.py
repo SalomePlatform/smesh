@@ -87,66 +87,66 @@ def test00_parameters():
     file_concrete=os.path.join(spadder.getTestDataDir(),"concrete.med")
     file_steelbar=os.path.join(spadder.getTestDataDir(),"ferraill.med")
 
-    meshJobParameterList = []
-    param = MESHJOB.MeshJobParameter(file_name=file_concrete,
+    meshJobFileList = []
+    param = MESHJOB.MeshJobFile(file_name=file_concrete,
                                      file_type=MESHJOB.MED_CONCRETE,
                                      group_name="concrete")
-    meshJobParameterList.append(param)
+    meshJobFileList.append(param)
 
-    param = MESHJOB.MeshJobParameter(file_name=file_steelbar,
+    param = MESHJOB.MeshJobFile(file_name=file_steelbar,
                                      file_type=MESHJOB.MED_STEELBAR,
                                      group_name="steelbar")
-    meshJobParameterList.append(param)
-    return meshJobParameterList
+    meshJobFileList.append(param)
+    return meshJobFileList
 
 def test01_parameters():
     """One concrete mesh and two steelbar meshes"""
     datadir = os.path.join(PADDERTESTDIR,"test01")
-    meshJobParameterList = []
+    meshJobFileList = []
 
     medfile = os.path.join(datadir,"concrete.med")
-    param = MESHJOB.MeshJobParameter(file_name=medfile,
+    param = MESHJOB.MeshJobFile(file_name=medfile,
                                      file_type=MESHJOB.MED_CONCRETE,
                                      group_name="concrete")
-    meshJobParameterList.append(param)
+    meshJobFileList.append(param)
     
     medfile = os.path.join(datadir,"ferraill.med")
-    param = MESHJOB.MeshJobParameter(file_name=medfile,
+    param = MESHJOB.MeshJobFile(file_name=medfile,
                                      file_type=MESHJOB.MED_STEELBAR,
                                      group_name="ferraill")
-    meshJobParameterList.append(param)
+    meshJobFileList.append(param)
 
     medfile = os.path.join(datadir,"ferrtran.med")
-    param = MESHJOB.MeshJobParameter(file_name=medfile,
+    param = MESHJOB.MeshJobFile(file_name=medfile,
                                      file_type=MESHJOB.MED_STEELBAR,
                                      group_name="ferrtran")
-    meshJobParameterList.append(param)
+    meshJobFileList.append(param)
     
-    return meshJobParameterList
+    return meshJobFileList
 
 def test02_parameters():
     """One steelbar mesh only, without a concrete mesh"""
     datadir = os.path.join(PADDERTESTDIR,"test02")
-    meshJobParameterList = []
+    meshJobFileList = []
 
     medfile = os.path.join(datadir,"cadreef.med")
-    param = MESHJOB.MeshJobParameter(file_name=medfile,
+    param = MESHJOB.MeshJobFile(file_name=medfile,
                                      file_type=MESHJOB.MED_STEELBAR,
                                      group_name="cadre")
-    meshJobParameterList.append(param)
-    return meshJobParameterList
+    meshJobFileList.append(param)
+    return meshJobFileList
 
 def test03_parameters():
     """One concrete mesh only, without a steelbar mesh"""
     datadir = os.path.join(PADDERTESTDIR,"test03")
-    meshJobParameterList = []
+    meshJobFileList = []
 
     medfile = os.path.join(datadir,"concrete.med")
-    param = MESHJOB.MeshJobParameter(file_name=medfile,
+    param = MESHJOB.MeshJobFile(file_name=medfile,
                                      file_type=MESHJOB.MED_CONCRETE,
                                      group_name="concrete")
-    meshJobParameterList.append(param)
-    return meshJobParameterList
+    meshJobFileList.append(param)
+    return meshJobFileList
 
 #
 # =======================================================================
@@ -155,15 +155,15 @@ def test03_parameters():
 #
 
 # Choose here the use case
-#meshJobParameterList = test00_parameters()
-#meshJobParameterList = test01_parameters()
-#meshJobParameterList = test02_parameters()
-meshJobParameterList = test03_parameters()
+#meshJobFileList = test00_parameters()
+#meshJobFileList = test01_parameters()
+#meshJobFileList = test02_parameters()
+meshJobFileList = test03_parameters()
 
 #
 # Prepare, start and follow-up the job
 #
-jobid = component.initialize(meshJobParameterList, configId)
+jobid = component.initialize(meshJobFileList, configId)
 if jobid<0:
     msg = component.getLastErrorMessage()
     print "ERR: %s"%msg

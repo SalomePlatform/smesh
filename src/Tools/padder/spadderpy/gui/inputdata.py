@@ -25,10 +25,10 @@ from salome.kernel.datamodeler import DataModeler, TypeString, TypeInteger
 
 # __MEM__: Note that this module does not depend on the SPADDER
 # component on purpose (we could have use a derived structure of
-# SPADDER_ORB.MeshJobParameter). This choice is made to ease the test
+# SPADDER_ORB.MeshJobFile). This choice is made to ease the test
 # and development of the gui part of the plugin. If this data
 # structure becomes too important, we could make another arrangement
-# and use directly a SPADDER_ORB.MeshJobParameter.
+# and use directly a SPADDER_ORB.MeshJobFile.
 
 class InputData(DataModeler):
     MESHTYPES=Enumerate([

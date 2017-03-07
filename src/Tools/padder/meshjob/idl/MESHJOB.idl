@@ -62,7 +62,7 @@ module MESHJOB
   enum FileType {MED_CONCRETE, MED_STEELBAR};
 
   // This defines a single parameter for the job initialization (a med file)
-  struct MeshJobParameter
+  struct MeshJobFile
   {
     string file_name;
     FileType file_type;
@@ -70,7 +70,7 @@ module MESHJOB
   };
   
   // This defines a set of parameters for the job initialization
-  typedef sequence<MESHJOB::MeshJobParameter> MeshJobParameterList;
+  typedef sequence<MESHJOB::MeshJobFile> MeshJobFileList;
 
   // This defines the result data of a job 
   struct MeshJobResults
@@ -97,7 +97,7 @@ module MESHJOB
       raises (SALOME::SALOME_Exception);
 
     /*! Initialize a smesh computation job and return the job identifier */
-    long    initialize(in MESHJOB::MeshJobParameterList meshJobParameterList, in string configId)
+    long    initialize(in MESHJOB::MeshJobFileList meshJobFileList, in string configId)
       raises (SALOME::SALOME_Exception);
 
     /*! Submit the job execution and return true if submission is OK */
