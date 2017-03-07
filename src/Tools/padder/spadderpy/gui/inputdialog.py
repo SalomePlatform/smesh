@@ -41,7 +41,7 @@ GROUPNAME_MAXLENGTH=8
 class InputDialog(GenericDialog):
 
     TBL_HEADER_LABEL=["Input Mesh", "Output group name"]
-    
+
     inputValidated = pyqtSignal()
 
     def __init__(self, parent=None, name="InputDialog", modal=0):
@@ -97,7 +97,7 @@ class InputDialog(GenericDialog):
         icon.addFile(os.path.join(iconfolder,"steelbar.png"))
         self.__ui.cmbMeshType.setItemIcon(meshTypeIndex, icon)
         self.MESHTYPE_ICONS[meshTypeIndex] = icon
-        
+
         # The click on btnSmeshObject (signal clicked() emitted by the
         # button btnSmeshObject) is connected to the slot
         # onSelectSmeshObject, etc ...
@@ -113,7 +113,10 @@ class InputDialog(GenericDialog):
         self.__ui.tblListInput.horizontalHeader().setStretchLastSection(True)
         # Note that the type is not display explicitly in the Qt table
         # because it is specified using an icon on the text of the
-        # name item. 
+        # name item.
+
+        # Setup default values for numerical parameters
+        self.__ui.txtParamNbIter.setValue(3)
 
         # Note that PADDER does not support group name longer than 8
         # characters. We apply then this limit in the gui field.
@@ -230,7 +233,7 @@ class InputDialog(GenericDialog):
         # new one
         if self.__dictInputData.has_key(meshName):
             self.__delInputFromMap(meshName)
-        
+
         inputData = InputData()
         inputData.meshName   = meshName
         inputData.meshObject = meshObject
@@ -247,7 +250,7 @@ class InputDialog(GenericDialog):
         print "meshType = ",inputData.meshType
         print "nb concrete mesh ",self.__nbConcreteMesh
         print "nb steelbar mesh ",self.__nbSteelbarMesh
-            
+
 
     def onDeleteInput(self):
         """
@@ -267,7 +270,7 @@ class InputDialog(GenericDialog):
     def __delInputFromMap(self, meshName):
         """
         This function removes the specified entry from the internal
-        map (for data management purpose) 
+        map (for data management purpose)
         """
         inputData = self.__dictInputData.pop(meshName)
         if inputData.meshType == InputData.MESHTYPES.CONCRETE:
@@ -292,7 +295,7 @@ class InputDialog(GenericDialog):
             meshObject = inputData.meshObject
             meshType   = inputData.meshType
             groupName  = inputData.groupName
-            
+
             self.__addInputInGui(meshName, meshObject, meshType, groupName)
             self.__addInputInMap(meshName, meshObject, meshType, groupName)
 
@@ -307,7 +310,7 @@ class InputDialog(GenericDialog):
         # Note that the values() function returns a copy of the list
         # of values.
         return self.__dictInputData.values()
-        
+
     def checkData(self):
         """
         This function checks if the data are valid, from the dialog
@@ -315,7 +318,7 @@ class InputDialog(GenericDialog):
         """
         if self.__nbConcreteMesh == 0 and self.__nbSteelbarMesh == 0:
             self.checkDataMessage = "You must define at least one mesh (CONCRETE or STEELBAR)"
-            return False        
+            return False
         if self.__nbConcreteMesh > 1:
             self.checkDataMessage  = "You define multiple CONCRETE meshes."
             self.checkDataMessage += "You should verify first that your version of PADDER support this configuration."
@@ -325,6 +328,7 @@ class InputDialog(GenericDialog):
 
         return True
 
+    #def setParameters(self,
 
 # ==============================================================================
 # Basic use case
@@ -357,9 +361,9 @@ def TEST_InputDialog_setData():
     inputData.groupName  = "myGroup"
     listInputData = []
     listInputData.append(inputData)
-    
+
     dlg.setData2(listInputData)
-    
+
     dlg.displayAndWait()
     if dlg.wasOk():
         print "OK has been pressed"

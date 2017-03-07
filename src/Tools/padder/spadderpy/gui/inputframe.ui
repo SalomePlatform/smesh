@@ -1,195 +1,235 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>InputFrame</class>
- <widget class="QDialog" name="InputFrame" >
-  <property name="geometry" >
+ <widget class="QDialog" name="InputFrame">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>509</width>
-    <height>307</height>
+    <width>759</width>
+    <height>656</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Input parameters</string>
   </property>
-  <layout class="QHBoxLayout" >
-   <property name="margin" >
-    <number>9</number>
-   </property>
-   <property name="spacing" >
-    <number>6</number>
-   </property>
+  <layout class="QHBoxLayout" name="horizontalLayout_3">
    <item>
-    <layout class="QVBoxLayout" >
-     <property name="margin" >
-      <number>0</number>
-     </property>
-     <property name="spacing" >
-      <number>6</number>
-     </property>
+    <layout class="QVBoxLayout" name="verticalLayout_5">
      <item>
-      <widget class="QLabel" name="lblSmeshObject" >
-       <property name="text" >
-        <string>Input MESH / Output group name / Type :</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" >
-       <property name="margin" >
-        <number>0</number>
-       </property>
-       <property name="spacing" >
-        <number>6</number>
-       </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <layout class="QVBoxLayout" >
-         <property name="margin" >
-          <number>0</number>
-         </property>
-         <property name="spacing" >
-          <number>6</number>
-         </property>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
-          <layout class="QHBoxLayout" >
-           <property name="margin" >
-            <number>0</number>
+          <widget class="QLabel" name="lblSmeshObject">
+           <property name="text">
+            <string>Input MESH / Output group name / Type :</string>
            </property>
-           <property name="spacing" >
+          </widget>
+         </item>
+         <item>
+          <layout class="QVBoxLayout">
+           <property name="spacing">
             <number>6</number>
            </property>
+           <property name="margin">
+            <number>0</number>
+           </property>
            <item>
-            <layout class="QHBoxLayout" >
-             <property name="margin" >
-              <number>0</number>
-             </property>
-             <property name="spacing" >
+            <layout class="QHBoxLayout">
+             <property name="spacing">
               <number>6</number>
              </property>
+             <property name="margin">
+              <number>0</number>
+             </property>
              <item>
-              <widget class="QPushButton" name="btnSmeshObject" >
-               <property name="sizePolicy" >
-                <sizepolicy>
-                 <hsizetype>0</hsizetype>
-                 <vsizetype>0</vsizetype>
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
+              <layout class="QHBoxLayout">
+               <property name="spacing">
+                <number>6</number>
                </property>
-               <property name="maximumSize" >
-                <size>
-                 <width>31</width>
-                 <height>16777215</height>
-                </size>
+               <property name="margin">
+                <number>0</number>
                </property>
-               <property name="text" >
-                <string/>
-               </property>
-               <property name="icon" >
-                <iconset>select.png</iconset>
+               <item>
+                <widget class="QPushButton" name="btnSmeshObject">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>31</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset>
+                   <normaloff>select.png</normaloff>select.png</iconset>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="txtSmeshObject">
+                 <property name="toolTip">
+                  <string comment="Select the input mesh in the object browser"/>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="Line" name="line">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="txtSmeshObject" >
-               <property name="toolTip" >
-                <string comment="Select the input mesh in the object browser" />
+              <widget class="QLineEdit" name="txtGroupName">
+               <property name="toolTip">
+                <string comment="Specify the name of the associated group in the output mesh"/>
                </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="Line" name="line_2">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="cmbMeshType">
+               <property name="toolTip">
+                <string comment="Select the type of the mesh"/>
+               </property>
+               <item>
+                <property name="text">
+                 <string>Béton</string>
+                </property>
+                <property name="icon">
+                 <iconset>
+                  <normaloff>concrete.png</normaloff>concrete.png</iconset>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Acier</string>
+                </property>
+                <property name="icon">
+                 <iconset>
+                  <normaloff>steelbar.png</normaloff>steelbar.png</iconset>
+                </property>
+               </item>
               </widget>
              </item>
             </layout>
            </item>
            <item>
-            <widget class="Line" name="line" >
-             <property name="orientation" >
-              <enum>Qt::Vertical</enum>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="txtGroupName" >
-             <property name="toolTip" >
-              <string comment="Specify the name of the associated group in the output mesh" />
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="Line" name="line_2" >
-             <property name="orientation" >
-              <enum>Qt::Vertical</enum>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="cmbMeshType" >
-             <property name="toolTip" >
-              <string comment="Select the type of the mesh" />
-             </property>
-             <item>
-              <property name="text" >
-               <string>Béton</string>
-              </property>
-              <property name="icon" >
-               <iconset>concrete.png</iconset>
-              </property>
-             </item>
-             <item>
-              <property name="text" >
-               <string>Acier</string>
-              </property>
-              <property name="icon" >
-               <iconset>steelbar.png</iconset>
-              </property>
-             </item>
-            </widget>
+            <widget class="QTableView" name="tblListInput"/>
            </item>
           </layout>
-         </item>
-         <item>
-          <widget class="QTableView" name="tblListInput" />
          </item>
         </layout>
        </item>
        <item>
-        <layout class="QVBoxLayout" >
-         <property name="margin" >
-          <number>0</number>
-         </property>
-         <property name="spacing" >
+        <layout class="QVBoxLayout">
+         <property name="spacing">
           <number>6</number>
          </property>
+         <property name="margin">
+          <number>0</number>
+         </property>
          <item>
-          <widget class="QPushButton" name="btnAddInput" >
-           <property name="text" >
+          <widget class="QPushButton" name="btnAddInput">
+           <property name="text">
             <string/>
            </property>
-           <property name="icon" >
-            <iconset>addinput.png</iconset>
+           <property name="icon">
+            <iconset>
+             <normaloff>addinput.png</normaloff>addinput.png</iconset>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="btnDeleteInput" >
-           <property name="text" >
+          <widget class="QPushButton" name="btnDeleteInput">
+           <property name="text">
             <string/>
            </property>
-           <property name="icon" >
-            <iconset>deleteinput.png</iconset>
+           <property name="icon">
+            <iconset>
+             <normaloff>deleteinput.png</normaloff>deleteinput.png</iconset>
            </property>
           </widget>
          </item>
          <item>
           <spacer>
-           <property name="orientation" >
+           <property name="orientation">
             <enum>Qt::Vertical</enum>
            </property>
-           <property name="sizeHint" >
+           <property name="sizeHint" stdset="0">
             <size>
              <width>20</width>
              <height>40</height>
             </size>
            </property>
           </spacer>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="Line" name="line_3">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <widget class="QLabel" name="lblNumericalParameters">
+         <property name="text">
+          <string>Paramètres numériques:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout">
+           <item>
+            <widget class="QLabel" name="lblParamNbIter">
+             <property name="text">
+              <string>Nb. Itérations</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="lblParamRminRmax">
+             <property name="text">
+              <string>Rmin / Rmax</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_2">
+           <item>
+            <widget class="QSpinBox" name="txtParamNbIter"/>
+           </item>
+           <item>
+            <widget class="QDoubleSpinBox" name="txtParamRminRmax"/>
+           </item>
+          </layout>
          </item>
         </layout>
        </item>
