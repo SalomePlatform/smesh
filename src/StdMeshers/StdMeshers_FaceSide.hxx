@@ -43,13 +43,14 @@
 #include <list>
 #include <boost/shared_ptr.hpp>
 
-class SMDS_MeshNode;
-class SMESH_Mesh;
 class Adaptor2d_Curve2d;
 class Adaptor3d_Curve;
 class BRepAdaptor_CompCurve;
-struct SMESH_ComputeError;
+class SMDS_MeshNode;
+class SMESH_Mesh;
+class SMESH_MesherHelper;
 class StdMeshers_FaceSide;
+struct SMESH_ComputeError;
 
 typedef boost::shared_ptr< SMESH_ComputeError >  TError;
 typedef boost::shared_ptr< StdMeshers_FaceSide > StdMeshers_FaceSidePtr;
@@ -65,6 +66,9 @@ typedef std::vector< StdMeshers_FaceSidePtr >    TSideVector;
 class STDMESHERS_EXPORT StdMeshers_FaceSide
 {
 public:
+
+  enum { ALL_EDGES = -1, LAST_EDGE = -1 }; //!< constants
+
   /*!
    * \brief Wrap one edge
    */
@@ -73,6 +77,7 @@ public:
                       SMESH_Mesh*          theMesh,
                       const bool           theIsForward,
                       const bool           theIgnoreMediumNodes,
+                      SMESH_MesherHelper*  theFaceHelper = NULL,
                       SMESH_ProxyMesh::Ptr theProxyMesh = SMESH_ProxyMesh::Ptr());
   /*!
    * \brief Wrap several edges. Edges must be properly ordered and oriented.
@@ -82,6 +87,7 @@ public:
                       SMESH_Mesh*             theMesh,
                       const bool              theIsForward,
                       const bool              theIgnoreMediumNodes,
+                      SMESH_MesherHelper*     theFaceHelper = NULL,
                       SMESH_ProxyMesh::Ptr    theProxyMesh = SMESH_ProxyMesh::Ptr());
   /*!
    * \brief Simulate a side from a vertex using data from other FaceSide
@@ -89,10 +95,10 @@ public:
   StdMeshers_FaceSide(const StdMeshers_FaceSide*  theSide,
                       const SMDS_MeshNode*        theNode,
                       const gp_Pnt2d*             thePnt2d1,
-                      const gp_Pnt2d*             thePnt2d2=NULL,
-                      const Handle(Geom2d_Curve)& theC2d=NULL,
-                      const double                theUFirst=0.,
-                      const double                theULast=1.);
+                      const gp_Pnt2d*             thePnt2d2 = NULL,
+                      const Handle(Geom2d_Curve)& theC2d = NULL,
+                      const double                theUFirst = 0.,
+                      const double                theULast = 1.);
   /*!
    * \brief Create a side from an UVPtStructVec
    */
@@ -101,32 +107,36 @@ public:
                       const TopoDS_Edge& theEdge = TopoDS_Edge(),
                       SMESH_Mesh*        theMesh = 0);
 
+  ~StdMeshers_FaceSide();
+
   // static "consrtuctors"
   static StdMeshers_FaceSidePtr New(const TopoDS_Face&   Face,
                                     const TopoDS_Edge&   Edge,
                                     SMESH_Mesh*          Mesh,
                                     const bool           IsForward,
                                     const bool           IgnoreMediumNodes,
+                                    SMESH_MesherHelper*  FaceHelper = NULL,
                                     SMESH_ProxyMesh::Ptr ProxyMesh = SMESH_ProxyMesh::Ptr())
   { return StdMeshers_FaceSidePtr
-      ( new StdMeshers_FaceSide( Face,Edge,Mesh,IsForward,IgnoreMediumNodes,ProxyMesh ));
+      ( new StdMeshers_FaceSide( Face,Edge,Mesh,IsForward,IgnoreMediumNodes,FaceHelper,ProxyMesh ));
   }
   static StdMeshers_FaceSidePtr New (const TopoDS_Face&      Face,
                                      std::list<TopoDS_Edge>& Edges,
                                      SMESH_Mesh*             Mesh,
                                      const bool              IsForward,
                                      const bool              IgnoreMediumNodes,
+                                     SMESH_MesherHelper*     FaceHelper = NULL,
                                      SMESH_ProxyMesh::Ptr    ProxyMesh = SMESH_ProxyMesh::Ptr())
   { return StdMeshers_FaceSidePtr
-      ( new StdMeshers_FaceSide( Face,Edges,Mesh,IsForward,IgnoreMediumNodes,ProxyMesh ));
+      ( new StdMeshers_FaceSide( Face,Edges,Mesh,IsForward,IgnoreMediumNodes,FaceHelper,ProxyMesh ));
   }
   static StdMeshers_FaceSidePtr New (const StdMeshers_FaceSide*  Side,
                                      const SMDS_MeshNode*        Node,
                                      const gp_Pnt2d*             Pnt2d1,
-                                     const gp_Pnt2d*             Pnt2d2=NULL,
-                                     const Handle(Geom2d_Curve)& C2d=NULL,
-                                     const double                UFirst=0.,
-                                     const double                ULast=1.)
+                                     const gp_Pnt2d*             Pnt2d2 = NULL,
+                                     const Handle(Geom2d_Curve)& C2d = NULL,
+                                     const double                UFirst = 0.,
+                                     const double                ULast = 1.)
   { return StdMeshers_FaceSidePtr
       ( new StdMeshers_FaceSide( Side,Node,Pnt2d1,Pnt2d2,C2d,UFirst,ULast ));
   }
@@ -143,8 +153,9 @@ public:
                                   SMESH_Mesh &         theMesh,
                                   const bool           theIgnoreMediumNodes,
                                   TError &             theError,
+                                  SMESH_MesherHelper*  theFaceHelper = NULL,
                                   SMESH_ProxyMesh::Ptr theProxyMesh = SMESH_ProxyMesh::Ptr(),
-                                  const bool           theCheckVertexNodes=true);
+                                  const bool           theCheckVertexNodes = true);
   /*!
    * \brief Change orientation of side geometry
    */
@@ -183,7 +194,7 @@ public:
     * Missing nodes are allowed only on internal vertices.
     * For a closed side, the 1st point repeats at end
    */
-  const UVPtStructVec& GetUVPtStruct(bool isXConst =0, double constValue =0) const;
+  const UVPtStructVec& GetUVPtStruct( bool isXConst = 0, double constValue = 0 ) const;
   /*!
    * \brief Simulates detailed data on nodes
     * \param isXConst - true if normalized parameter X is constant
@@ -194,10 +205,10 @@ public:
                                           double constValue = 0) const;
   /*!
    * \brief Return nodes in the order they encounter while walking along
-   *  the while side or a specified EDGE.
-    * For a closed side, the 1st point repeats at end
+   *  the while side or a specified EDGE. For a closed side, the 1st point repeats at end.
+   *  \param iE - index of the EDGE. Default is "all EDGEs".
    */
-  std::vector<const SMDS_MeshNode*> GetOrderedNodes(int iE=-1) const;
+  std::vector<const SMDS_MeshNode*> GetOrderedNodes( int iE = ALL_EDGES ) const;
 
   /*!
    * \brief Return nodes of the i-th EDGE.
@@ -262,7 +273,7 @@ public:
   /*!
    * \brief Return last vertex of the i-th edge (count starts from zero)
    */
-  TopoDS_Vertex LastVertex(int i=-1) const;
+  TopoDS_Vertex LastVertex(int i = LAST_EDGE) const;
   /*!
    * \brief Return \c true if the chain of EDGEs is closed
    */
@@ -276,8 +287,6 @@ public:
    */
   inline int EdgeIndex( double U ) const;
 
-  //virtual gp_Pnt Value(double U) const;
-  
   void dump(const char* msg=0) const;
   
   /*!
@@ -314,6 +323,10 @@ public:
    * \brief Return orientation of i-th wrapped edge (count starts from zero)
    */
   inline bool IsReversed(int i) const;
+  /*!
+   * \brief Return a helper initialized with the FACE
+   */
+  SMESH_MesherHelper* FaceHelper() const;
 
 protected:
 
@@ -335,6 +348,7 @@ protected:
   SMESH_ProxyMesh::Ptr              myProxyMesh;
   bool                              myMissingVertexNodes, myIgnoreMediumNodes;
   gp_Pnt2d                          myDefaultPnt2d;
+  SMESH_MesherHelper*               myHelper;
 };
 
 

@@ -585,7 +585,7 @@ StdMeshers_ViscousLayers2D::CheckHypothesis(SMESH_Mesh&                         
       VISCOUS_2D::_ViscousBuilder2D builder( theMesh, face, hyps, hypShapes );
       builder._faceSideVec =
         StdMeshers_FaceSide::GetFaceWires( face, theMesh, true, error,
-                                           SMESH_ProxyMesh::Ptr(),
+                                           NULL, SMESH_ProxyMesh::Ptr(),
                                            /*theCheckVertexNodes=*/false);
       if ( error->IsOK() && !builder.findEdgesWithLayers())
       {
@@ -686,7 +686,7 @@ bool _ViscousBuilder2D::error(const string& text )
 
 SMESH_ProxyMesh::Ptr _ViscousBuilder2D::Compute()
 {
-  _faceSideVec = StdMeshers_FaceSide::GetFaceWires( _face, *_mesh, true, _error);
+  _faceSideVec = StdMeshers_FaceSide::GetFaceWires( _face, *_mesh, true, _error, &_helper );
 
   if ( !_error->IsOK() )
     return _proxyMesh;

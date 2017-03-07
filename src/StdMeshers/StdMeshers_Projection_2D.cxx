@@ -426,6 +426,7 @@ namespace {
                   const TopoDS_Face&                 srcFace,
                   SMESH_Mesh *                       tgtMesh,
                   SMESH_Mesh *                       srcMesh,
+                  SMESH_MesherHelper*                tgtHelper,
                   const TAssocTool::TShapeShapeMap&  shape2ShapeMap,
                   TSideVector&                       srcWires,
                   TSideVector&                       tgtWires,
@@ -436,7 +437,7 @@ namespace {
 
     // get ordered src EDGEs
     TError err;
-    srcWires = StdMeshers_FaceSide::GetFaceWires( srcFace, *srcMesh,/*skipMediumNodes=*/0, err);
+    srcWires = StdMeshers_FaceSide::GetFaceWires( srcFace, *srcMesh,/*skipMediumNodes=*/0, err );
     if (( err && !err->IsOK() ) ||
         ( srcWires.empty() ))
       return err;
@@ -445,8 +446,6 @@ namespace {
          << tgtMesh->GetMeshDS()->ShapeToIndex( tgtFace ) << " <- "
          << srcMesh->GetMeshDS()->ShapeToIndex( srcFace ) << endl;
 #endif
-    SMESH_MesherHelper srcHelper( *srcMesh );
-    srcHelper.SetSubShape( srcFace );
 
     // make corresponding sequence of tgt EDGEs
     tgtWires.resize( srcWires.size() );
@@ -493,7 +492,8 @@ namespace {
 
       tgtWires[ iW ].reset( new StdMeshers_FaceSide( tgtFace, tgtEdges, tgtMesh,
                                                      /*theIsForward = */ true,
-                                                     /*theIgnoreMediumNodes = */false));
+                                                     /*theIgnoreMediumNodes = */false,
+                                                     tgtHelper ));
       StdMeshers_FaceSidePtr tgtWire = tgtWires[ iW ];
 
       // Fill map of src to tgt nodes with nodes on edges
@@ -517,9 +517,11 @@ namespace {
         else
         {
           const bool skipMedium = true, isFwd = true;
-          StdMeshers_FaceSide srcEdge( srcFace, srcWire->Edge(iE), srcMesh, isFwd, skipMedium);
-          StdMeshers_FaceSide tgtEdge( tgtFace, tgtWire->Edge(iE), tgtMesh, isFwd, skipMedium);
-          
+          StdMeshers_FaceSide srcEdge( srcFace, srcWire->Edge(iE),
+                                       srcMesh, isFwd, skipMedium, srcWires[0]->FaceHelper() );
+          StdMeshers_FaceSide tgtEdge( tgtFace, tgtWire->Edge(iE),
+                                       tgtMesh, isFwd, skipMedium, tgtHelper);
+
           vector< const SMDS_MeshNode* > srcNodes = srcEdge.GetOrderedNodes();
           vector< const SMDS_MeshNode* > tgtNodes = tgtEdge.GetOrderedNodes();
 
@@ -566,11 +568,11 @@ namespace {
                       TAssocTool::TNodeNodeMap&          src2tgtNodes,
                       const bool                         is1DComputed)
   {
-    SMESH_Mesh *    tgtMesh = tgtWires[0]->GetMesh();
-    SMESH_Mesh *    srcMesh = srcWires[0]->GetMesh();
-    SMESHDS_Mesh* tgtMeshDS = tgtMesh->GetMeshDS();
-    SMESHDS_Mesh* srcMeshDS = srcMesh->GetMeshDS();
-    SMESH_MesherHelper helper( *tgtMesh );
+    SMESH_Mesh *       tgtMesh = tgtWires[0]->GetMesh();
+    SMESH_Mesh *       srcMesh = srcWires[0]->GetMesh();
+    SMESHDS_Mesh*    tgtMeshDS = tgtMesh->GetMeshDS();
+    SMESHDS_Mesh*    srcMeshDS = srcMesh->GetMeshDS();
+    SMESH_MesherHelper* helper = tgtWires[0]->FaceHelper();
 
     const double tol = 1.e-7 * srcMeshDS->getMaxDim();
 
@@ -647,7 +649,7 @@ namespace {
                          0.123 * ( srcSurf.FirstVParameter() + srcSurf.LastVParameter() ));
         gp_Pnt tgtTrsfP = trsf.Transform( srcP );
         TopLoc_Location loc;
-        GeomAPI_ProjectPointOnSurf& proj = helper.GetProjector( tgtFace, loc, 0.1*tol );
+        GeomAPI_ProjectPointOnSurf& proj = helper->GetProjector( tgtFace, loc, 0.1*tol );
         if ( !loc.IsIdentity() )
           tgtTrsfP.Transform( loc.Transformation().Inverted() );
         proj.Perform( tgtTrsfP );
@@ -662,16 +664,14 @@ namespace {
     // Make new faces
 
     // prepare the helper to adding quadratic elements if necessary
-    //helper.SetSubShape( tgtFace );
-    helper.IsQuadraticSubMesh( tgtFace );
+    helper->IsQuadraticSubMesh( tgtFace );
 
     SMESHDS_SubMesh* srcSubDS = srcMeshDS->MeshElements( srcFace );
     if ( !is1DComputed && srcSubDS->NbElements() )
-      helper.SetIsQuadratic( srcSubDS->GetElements()->next()->IsQuadratic() );
+      helper->SetIsQuadratic( srcSubDS->GetElements()->next()->IsQuadratic() );
 
-    SMESH_MesherHelper srcHelper( *srcMesh );
-    srcHelper.SetSubShape( srcFace );
-    SMESH_MesherHelper edgeHelper( *tgtMesh );
+    SMESH_MesherHelper* srcHelper = srcWires[0]->FaceHelper();
+    SMESH_MesherHelper  edgeHelper( *tgtMesh );
     edgeHelper.ToFixNodeParameters( true );
 
     const SMDS_MeshNode* nullNode = 0;
@@ -690,7 +690,7 @@ namespace {
       const SMDS_MeshElement* elem = elemIt->next();
       const int nbN = elem->NbCornerNodes(); 
       tgtNodes.resize( nbN );
-      helper.SetElementsOnShape( false );
+      helper->SetElementsOnShape( false );
       for ( int i = 0; i < nbN; ++i ) // loop on nodes of the source element
       {
         const SMDS_MeshNode* srcNode = elem->GetNode(i);
@@ -699,21 +699,21 @@ namespace {
         {
           // create a new node
           gp_Pnt tgtP = trsf.Transform( SMESH_TNodeXYZ( srcNode ));
-          SMDS_MeshNode* n = helper.AddNode( tgtP.X(), tgtP.Y(), tgtP.Z() );
+          SMDS_MeshNode* n = helper->AddNode( tgtP.X(), tgtP.Y(), tgtP.Z() );
           srcN_tgtN->second = n;
           switch ( srcNode->GetPosition()->GetTypeOfPosition() )
           {
           case SMDS_TOP_FACE:
           {
-            gp_Pnt2d srcUV = srcHelper.GetNodeUV( srcFace, srcNode );
-            tgtMeshDS->SetNodeOnFace( n, helper.GetSubShapeID(), srcUV.X(), srcUV.Y() );
+            gp_Pnt2d srcUV = srcHelper->GetNodeUV( srcFace, srcNode );
+            tgtMeshDS->SetNodeOnFace( n, helper->GetSubShapeID(), srcUV.X(), srcUV.Y() );
             break;
           }
           case SMDS_TOP_EDGE:
           {
             const TopoDS_Edge& srcE = TopoDS::Edge( srcMeshDS->IndexToShape( srcNode->getshapeId()));
             const TopoDS_Edge& tgtE = TopoDS::Edge( shape2ShapeMap( srcE, /*isSrc=*/true ));
-            double srcU = srcHelper.GetNodeU( srcE, srcNode );
+            double srcU = srcHelper->GetNodeU( srcE, srcNode );
             tgtMeshDS->SetNodeOnEdge( n, tgtE, srcU );
             if ( !tgtFace.IsPartner( srcFace ))
             {
@@ -749,14 +749,14 @@ namespace {
         tgtNodes[i] = srcN_tgtN->second;
       }
       // create a new face
-      helper.SetElementsOnShape( true );
+      helper->SetElementsOnShape( true );
       switch ( nbN )
       {
-      case 3: helper.AddFace(tgtNodes[0], tgtNodes[tri1], tgtNodes[tri2]); break;
-      case 4: helper.AddFace(tgtNodes[0], tgtNodes[quad1], tgtNodes[2], tgtNodes[quad3]); break;
+      case 3: helper->AddFace(tgtNodes[0], tgtNodes[tri1], tgtNodes[tri2]); break;
+      case 4: helper->AddFace(tgtNodes[0], tgtNodes[quad1], tgtNodes[2], tgtNodes[quad3]); break;
       default:
         if ( isReverse ) std::reverse( tgtNodes.begin(), tgtNodes.end() );
-        helper.AddPolygonalFace( tgtNodes );
+        helper->AddPolygonalFace( tgtNodes );
       }
     }
 
@@ -764,7 +764,7 @@ namespace {
 
     if ( !tgtFace.IsPartner( srcFace ) )
     {
-      helper.ToFixNodeParameters( true );
+      helper->ToFixNodeParameters( true );
 
       int nbOkPos = 0;
       const double tol2d = 1e-12;
@@ -777,8 +777,8 @@ namespace {
         case SMDS_TOP_FACE:
         {
           if ( nbOkPos > 10 ) break;
-          gp_XY uv = helper.GetNodeUV( tgtFace, n ), uvBis = uv;
-          if (( helper.CheckNodeUV( tgtFace, n, uv, tol )) &&
+          gp_XY uv = helper->GetNodeUV( tgtFace, n ), uvBis = uv;
+          if (( helper->CheckNodeUV( tgtFace, n, uv, tol )) &&
               (( uv - uvBis ).SquareModulus() < tol2d ))
             ++nbOkPos;
           else
@@ -898,18 +898,16 @@ namespace {
 
     SMESHDS_SubMesh* srcSubDS = srcMesh->GetMeshDS()->MeshElements( srcFace );
 
-    SMESH_MesherHelper helper( *tgtMesh );
-    helper.SetSubShape( tgtFace );
+    SMESH_MesherHelper* helper = tgtWires[0]->FaceHelper();
     if ( is1DComputed )
-      helper.IsQuadraticSubMesh( tgtFace );
+      helper->IsQuadraticSubMesh( tgtFace );
     else
-      helper.SetIsQuadratic( srcSubDS->GetElements()->next()->IsQuadratic() );
-    helper.SetElementsOnShape( true );
+      helper->SetIsQuadratic( srcSubDS->GetElements()->next()->IsQuadratic() );
+    helper->SetElementsOnShape( true );
     Handle(Geom_Surface) tgtSurface = BRep_Tool::Surface( tgtFace );
     SMESHDS_Mesh* tgtMeshDS = tgtMesh->GetMeshDS();
 
-    SMESH_MesherHelper srcHelper( *srcMesh );
-    srcHelper.SetSubShape( srcFace );
+    SMESH_MesherHelper* srcHelper = srcWires[0]->FaceHelper();
 
     const SMDS_MeshNode* nullNode = 0;
     TAssocTool::TNodeNodeMap::iterator srcN_tgtN;
@@ -920,7 +918,7 @@ namespace {
     while ( elemIt->more() ) // loop on all mesh faces on srcFace
     {
       const SMDS_MeshElement* elem = elemIt->next();
-      const int nbN = elem->NbCornerNodes(); 
+      const int nbN = elem->NbCornerNodes();
       tgtNodes.resize( nbN );
       for ( int i = 0; i < nbN; ++i ) // loop on nodes of the source element
       {
@@ -929,27 +927,27 @@ namespace {
         if ( srcN_tgtN->second == nullNode )
         {
           // create a new node
-          gp_Pnt2d srcUV = srcHelper.GetNodeUV( srcFace, srcNode,
-                                                elem->GetNode( helper.WrapIndex(i+1,nbN)), &uvOK);
+          gp_Pnt2d srcUV = srcHelper->GetNodeUV( srcFace, srcNode,
+                                                 elem->GetNode( helper->WrapIndex(i+1,nbN)), &uvOK);
           gp_Pnt2d   tgtUV = trsf.Transform( srcUV );
           gp_Pnt      tgtP = tgtSurface->Value( tgtUV.X(), tgtUV.Y() );
           SMDS_MeshNode* n = tgtMeshDS->AddNode( tgtP.X(), tgtP.Y(), tgtP.Z() );
           switch ( srcNode->GetPosition()->GetTypeOfPosition() )
           {
           case SMDS_TOP_FACE: {
-            tgtMeshDS->SetNodeOnFace( n, helper.GetSubShapeID(), tgtUV.X(), tgtUV.Y() );
+            tgtMeshDS->SetNodeOnFace( n, helper->GetSubShapeID(), tgtUV.X(), tgtUV.Y() );
             break;
           }
           case SMDS_TOP_EDGE: {
-            TopoDS_Shape srcEdge = srcHelper.GetSubShapeByNode( srcNode, srcHelper.GetMeshDS() );
+            TopoDS_Shape srcEdge = srcHelper->GetSubShapeByNode( srcNode, srcHelper->GetMeshDS() );
             TopoDS_Edge  tgtEdge = TopoDS::Edge( shape2ShapeMap( srcEdge, /*isSrc=*/true ));
             double U = Precision::Infinite();
-            helper.CheckNodeU( tgtEdge, n, U, Precision::PConfusion());
+            helper->CheckNodeU( tgtEdge, n, U, Precision::PConfusion());
             tgtMeshDS->SetNodeOnEdge( n, TopoDS::Edge( tgtEdge ), U );
             break;
           }
           case SMDS_TOP_VERTEX: {
-            TopoDS_Shape srcV = srcHelper.GetSubShapeByNode( srcNode, srcHelper.GetMeshDS() );
+            TopoDS_Shape srcV = srcHelper->GetSubShapeByNode( srcNode, srcHelper->GetMeshDS() );
             TopoDS_Shape tgtV = shape2ShapeMap( srcV, /*isSrc=*/true );
             tgtMeshDS->SetNodeOnVertex( n, TopoDS::Vertex( tgtV ));
             break;
@@ -963,8 +961,8 @@ namespace {
       // create a new face (with reversed orientation)
       switch ( nbN )
       {
-      case 3: helper.AddFace(tgtNodes[0], tgtNodes[2], tgtNodes[1]); break;
-      case 4: helper.AddFace(tgtNodes[0], tgtNodes[3], tgtNodes[2], tgtNodes[1]); break;
+      case 3: helper->AddFace(tgtNodes[0], tgtNodes[2], tgtNodes[1]); break;
+      case 4: helper->AddFace(tgtNodes[0], tgtNodes[3], tgtNodes[2], tgtNodes[1]); break;
       }
     }  // loop on all mesh faces on srcFace
 
@@ -1082,8 +1080,7 @@ namespace {
 
     // // as all XY are computed, create tgt nodes and faces
 
-    // SMESH_MesherHelper helper( *tgtMesh );
-    // helper.SetSubShape( tgtFace );
+    // SMESH_MesherHelper helper = *tgtWires[0]->FaceHelper();
     // if ( is1DComputed )
     //   helper.IsQuadraticSubMesh( tgtFace );
     // else
@@ -1091,8 +1088,7 @@ namespace {
     // helper.SetElementsOnShape( true );
     // Handle(Geom_Surface) tgtSurface = BRep_Tool::Surface( tgtFace );
 
-    // SMESH_MesherHelper srcHelper( *srcMesh );
-    // srcHelper.SetSubShape( srcFace );
+    // SMESH_MesherHelper srcHelper = *srcWires[0]->FaceHelper();
 
     // vector< const SMDS_MeshNode* > tgtNodes;
     // gp_XY uv;
@@ -1541,7 +1537,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   // get ordered src and tgt EDGEs
   TSideVector srcWires, tgtWires;
   bool is1DComputed = false; // if any tgt EDGE is meshed
-  TError err = getWires( tgtFace, srcFace, tgtMesh, srcMesh,
+  TError err = getWires( tgtFace, srcFace, tgtMesh, srcMesh, &helper,
                          shape2ShapeMap, srcWires, tgtWires, _src2tgtNodes, is1DComputed );
   if ( err && !err->IsOK() )
     return error( err );
@@ -1935,7 +1931,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
     // boundary, also bad face can be created if EDGEs already discretized
     // --> fix bad faces by smoothing
     // ----------------------------------------------------------------
-    if ( helper.IsDistorted2D( tgtSubMesh, /*checkUV=*/false ))
+    if ( helper.IsDistorted2D( tgtSubMesh, /*checkUV=*/false, &helper ))
     {
       morph( helper, tgtFace, srcFace, tgtWires, srcWires, _src2tgtNodes );
 

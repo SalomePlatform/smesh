@@ -208,7 +208,8 @@ namespace
                   SMESH_Mesh*             aMesh,
                   StdMeshers_FaceSidePtr& aCircSide,
                   StdMeshers_FaceSidePtr& aLinSide1,
-                  StdMeshers_FaceSidePtr& aLinSide2)
+                  StdMeshers_FaceSidePtr& aLinSide2,
+                  SMESH_MesherHelper*     helper)
   {
     const TopoDS_Face& face = TopoDS::Face( aShape );
     aCircSide.reset(); aLinSide1.reset(); aLinSide2.reset();
@@ -259,7 +260,7 @@ namespace
       StdMeshers_FaceSidePtr side;
       if ( aMesh ) 
         side = StdMeshers_FaceSide::New( face, sideEdges, aMesh,
-                                         /*isFwd=*/true, /*skipMedium=*/ true );
+                                         /*isFwd=*/true, /*skipMedium=*/ true, helper );
       sides.push_back( side );
     }
 
@@ -357,7 +358,7 @@ namespace
           edges.push_back( aCircSide->Edge( iE % aCircSide->NbEdges() ));
 
         aCircSide = StdMeshers_FaceSide::New( face, edges, aMesh,
-                                              /*isFwd=*/true, /*skipMedium=*/ true );
+                                              /*isFwd=*/true, /*skipMedium=*/ true, helper );
       }
     }
 
@@ -773,8 +774,11 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
   StdMeshers_Quadrangle_2D::myCheckOri   = false;
   StdMeshers_Quadrangle_2D::myQuadList.clear();
 
+  myHelper->SetSubShape( aShape );
+  myHelper->SetElementsOnShape( true );
+
   StdMeshers_FaceSidePtr circSide, linSide1, linSide2;
-  int nbSides = analyseFace( aShape, &aMesh, circSide, linSide1, linSide2 );
+  int nbSides = analyseFace( aShape, &aMesh, circSide, linSide1, linSide2, myHelper );
   if( nbSides > 3 || nbSides < 1 )
     return error("The face must be a full ellipse or a part of ellipse (i.e. the number "
                  "of edges is less or equal to 3 and one of them is an ellipse curve)");
@@ -797,7 +801,6 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
   Handle(Geom_Surface) S = BRep_Tool::Surface(F);
 
   myHelper->IsQuadraticSubMesh( aShape );
-  myHelper->SetElementsOnShape( true );
 
   vector< double > layerPositions; // [0,1]
 
@@ -811,7 +814,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
     TopoDS_Edge linEdge = makeEdgeToCenter( circSide, F, circNode );
 
     StdMeshers_FaceSidePtr tmpSide =
-      StdMeshers_FaceSide::New( F, linEdge, &aMesh, /*isFrw=*/true, /*skipMedium=*/true );
+      StdMeshers_FaceSide::New( F, linEdge, &aMesh, /*isFrw=*/true, /*skipMedium=*/true, myHelper );
 
     if ( !computeLayerPositions( tmpSide, layerPositions ))
       return false;
@@ -855,7 +858,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
       isVIn0Shared = vIn0.IsSame( circSide->FirstVertex( iE ));
 
     linSide1 = StdMeshers_FaceSide::New( F, edges, &aMesh,
-                                         /*isFrw=*/isVIn0Shared, /*skipMedium=*/true );
+                                         /*isFrw=*/isVIn0Shared, /*skipMedium=*/true, myHelper );
 
     int nbMeshedEdges;
     if ( !computeLayerPositions( linSide1, layerPositions, &nbMeshedEdges ))
@@ -1105,7 +1108,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Evaluate(SMESH_Mesh&         aMesh,
   TNodeDistributor* algo1d = TNodeDistributor::GetDistributor(aMesh);
 
   StdMeshers_FaceSidePtr circSide, linSide1, linSide2;
-  int nbSides = analyseFace( aShape, &aMesh, circSide, linSide1, linSide2 );
+  int nbSides = analyseFace( aShape, &aMesh, circSide, linSide1, linSide2, myHelper );
   if( nbSides > 3 || nbSides < 1 )
     return false;
 
@@ -1123,7 +1126,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Evaluate(SMESH_Mesh&         aMesh,
     TopoDS_Edge linEdge = makeEdgeToCenter( circSide, F, circNode );
 
     StdMeshers_FaceSidePtr tmpSide =
-      StdMeshers_FaceSide::New( F, linEdge, &aMesh, /*isFrw=*/true, /*skipMedium=*/true );
+      StdMeshers_FaceSide::New( F, linEdge, &aMesh, /*isFrw=*/true, /*skipMedium=*/true, myHelper );
 
     if ( !computeLayerPositions( tmpSide, layerPositions ))
       return false;
@@ -1220,7 +1223,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::IsApplicable( const TopoDS_Shape & aShape
   for (TopExp_Explorer exp( aShape, TopAbs_FACE ); exp.More(); exp.Next(), ++nbFoundFaces )
   {
     StdMeshers_FaceSidePtr circSide, linSide1, linSide2;
-    int nbSides = analyseFace( exp.Current(), NULL, circSide, linSide1, linSide2 );
+    int nbSides = analyseFace( exp.Current(), NULL, circSide, linSide1, linSide2, NULL );
     bool ok = ( 0 < nbSides && nbSides <= 3 &&
                 isCornerInsideCircle( circSide, linSide1, linSide2 ));
     if( toCheckAll  && !ok ) return false;

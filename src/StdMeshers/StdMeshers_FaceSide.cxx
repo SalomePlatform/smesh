@@ -63,7 +63,7 @@ using namespace std;
  * \brief Constructor of a side of one edge
   * \param theFace - the face
   * \param theEdge - the edge
- */
+  */
 //================================================================================
 
 StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face&   theFace,
@@ -71,11 +71,15 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face&   theFace,
                                          SMESH_Mesh*          theMesh,
                                          const bool           theIsForward,
                                          const bool           theIgnoreMediumNodes,
+                                         SMESH_MesherHelper*  theFaceHelper,
                                          SMESH_ProxyMesh::Ptr theProxyMesh)
 {
   std::list<TopoDS_Edge> edges(1,theEdge);
-  *this = StdMeshers_FaceSide( theFace, edges, theMesh, theIsForward,
-                               theIgnoreMediumNodes, theProxyMesh );
+  StdMeshers_FaceSide tmp( theFace, edges, theMesh, theIsForward,
+                           theIgnoreMediumNodes, theFaceHelper, theProxyMesh );
+  *this = tmp;
+
+  tmp.myHelper = NULL;
 }
 
 //================================================================================
@@ -89,6 +93,7 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face&      theFace,
                                          SMESH_Mesh*             theMesh,
                                          const bool              theIsForward,
                                          const bool              theIgnoreMediumNodes,
+                                         SMESH_MesherHelper*     theFaceHelper,
                                          SMESH_ProxyMesh::Ptr    theProxyMesh)
 {
   int nbEdges = theEdges.size();
@@ -108,7 +113,13 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face&      theFace,
   myMissingVertexNodes = false;
   myIgnoreMediumNodes  = theIgnoreMediumNodes;
   myDefaultPnt2d       = gp_Pnt2d( 1e+100, 1e+100 );
+  myHelper             = NULL;
   if ( !myProxyMesh ) myProxyMesh.reset( new SMESH_ProxyMesh( *theMesh ));
+  if ( theFaceHelper && theFaceHelper->GetSubShape() == myFace )
+  {
+    myHelper           = new SMESH_MesherHelper( * myProxyMesh->GetMesh() );
+    myHelper->CopySubShapeInfo( *theFaceHelper );
+  }
   if ( nbEdges == 0 ) return;
 
   SMESHDS_Mesh* meshDS = myProxyMesh->GetMeshDS();
@@ -203,6 +214,7 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const StdMeshers_FaceSide*  theSide,
   myLast.push_back     ( theULast );
   myNormPar.push_back  ( 1. );
   myIsUniform.push_back( true );
+  myHelper       = NULL;
   myLength       = 0;
   myProxyMesh    = theSide->myProxyMesh;
   myDefaultPnt2d = *thePnt2d1;
@@ -260,6 +272,7 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(UVPtStructVec&     theSideNodes,
   }
 
   myFace       = theFace;
+  myHelper     = NULL;
   myPoints     = theSideNodes;
   myNbPonits   = myPoints.size();
   myNbSegments = myNbPonits + 1;
@@ -313,6 +326,17 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(UVPtStructVec&     theSideNodes,
 }
 
 //================================================================================
+/*!
+ * \brief Destructor
+ */
+//================================================================================
+
+StdMeshers_FaceSide::~StdMeshers_FaceSide()
+{
+  delete myHelper; myHelper = NULL;
+}
+
+//================================================================================
 /*
  * Return info on nodes on the side
  */
@@ -326,11 +350,11 @@ const std::vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXCons
     if ( NbEdges() == 0 ) return myPoints;
 
     StdMeshers_FaceSide* me = const_cast< StdMeshers_FaceSide* >( this );
-    SMESH_MesherHelper eHelper( *myProxyMesh->GetMesh() );
-    SMESH_MesherHelper fHelper( *myProxyMesh->GetMesh() );
-    fHelper.SetSubShape( myFace );
     bool paramOK = true;
     double eps = 1e-100;
+
+    SMESH_MesherHelper  eHelper( *myProxyMesh->GetMesh() );
+    SMESH_MesherHelper& fHelper = *FaceHelper();
 
     // sort nodes of all edges by putting them into a map
 
@@ -618,9 +642,8 @@ std::vector<const SMDS_MeshNode*> StdMeshers_FaceSide::GetOrderedNodes(int theEd
     if ( NbEdges() == 0 ) return resultNodes;
 
     //SMESHDS_Mesh* meshDS = myProxyMesh->GetMeshDS();
-    SMESH_MesherHelper eHelper( *myProxyMesh->GetMesh() );
-    SMESH_MesherHelper fHelper( *myProxyMesh->GetMesh() );
-    fHelper.SetSubShape( myFace );
+    SMESH_MesherHelper  eHelper( *myProxyMesh->GetMesh() );
+    SMESH_MesherHelper& fHelper = * FaceHelper();
     bool paramOK = true;
 
     // Sort nodes of all edges putting them into a map
@@ -1014,8 +1037,7 @@ int StdMeshers_FaceSide::NbPoints(const bool update) const
       }
     }
 
-    SMESH_MesherHelper helper( *myProxyMesh->GetMesh() );
-    helper.SetSubShape( myFace );
+    SMESH_MesherHelper* helper = FaceHelper();
 
     std::set< const SMDS_MeshNode* > vNodes;
     const int nbV = NbEdges() + !IsClosed();
@@ -1023,8 +1045,8 @@ int StdMeshers_FaceSide::NbPoints(const bool update) const
       if ( const SMDS_MeshNode* n = VertexNode( i ))
       {
         if ( !vNodes.insert( n ).second &&
-             ( helper.IsRealSeam  ( n->getshapeId() ) ||
-               helper.IsDegenShape( n->getshapeId() )))
+             ( helper->IsRealSeam  ( n->getshapeId() ) ||
+               helper->IsDegenShape( n->getshapeId() )))
           me->myNbPonits++;
       }
       else
@@ -1241,9 +1263,14 @@ TSideVector StdMeshers_FaceSide::GetFaceWires(const TopoDS_Face&   theFace,
                                               SMESH_Mesh &         theMesh,
                                               const bool           theIgnoreMediumNodes,
                                               TError &             theError,
+                                              SMESH_MesherHelper*  theFaceHelper,
                                               SMESH_ProxyMesh::Ptr theProxyMesh,
                                               const bool           theCheckVertexNodes)
 {
+  SMESH_MesherHelper helper( theMesh );
+  if ( theFaceHelper && theFaceHelper->GetSubShape() == theFace )
+    helper.CopySubShapeInfo( *theFaceHelper );
+
   list< TopoDS_Edge > edges, internalEdges;
   list< int > nbEdgesInWires;
   int nbWires = SMESH_Block::GetOrderedEdges (theFace, edges, nbEdgesInWires);
@@ -1287,7 +1314,7 @@ TSideVector StdMeshers_FaceSide::GetFaceWires(const TopoDS_Face&   theFace,
 
     StdMeshers_FaceSide* wire = new StdMeshers_FaceSide( theFace, wireEdges, &theMesh,
                                                          /*isForward=*/true, theIgnoreMediumNodes,
-                                                         theProxyMesh );
+                                                         &helper, theProxyMesh );
     wires[ iW ] = StdMeshers_FaceSidePtr( wire );
     from = to;
   }
@@ -1295,7 +1322,7 @@ TSideVector StdMeshers_FaceSide::GetFaceWires(const TopoDS_Face&   theFace,
   {
     StdMeshers_FaceSide* wire = new StdMeshers_FaceSide( theFace, internalEdges.back(), &theMesh,
                                                          /*isForward=*/true, theIgnoreMediumNodes,
-                                                         theProxyMesh );
+                                                         &helper, theProxyMesh );
     wires.push_back( StdMeshers_FaceSidePtr( wire ));
     internalEdges.pop_back();
   }
@@ -1350,4 +1377,21 @@ TopoDS_Vertex StdMeshers_FaceSide::LastVertex(int i) const
 bool StdMeshers_FaceSide::IsClosed() const
 {
   return myEdge.empty() ? false : FirstVertex().IsSame( LastVertex() );
+}
+
+//================================================================================
+/*!
+ * \brief Return a helper initialized with the FACE
+ */
+//================================================================================
+
+SMESH_MesherHelper* StdMeshers_FaceSide::FaceHelper() const
+{
+  StdMeshers_FaceSide* me = const_cast< StdMeshers_FaceSide* >( this );
+  if ( !myHelper && myProxyMesh )
+  {
+    me->myHelper = new SMESH_MesherHelper( *myProxyMesh->GetMesh() );
+    me->myHelper->SetSubShape( myFace );
+  }
+  return me->myHelper;
 }

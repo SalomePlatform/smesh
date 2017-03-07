@@ -3258,9 +3258,11 @@ bool StdMeshers_Prism_3D::initPrism(Prism_3D::TPrismTopo& thePrism,
                     "Non-quadrilateral faces are not opposite"));
 
     // check that the found top and bottom FACEs are opposite
+    TopTools_IndexedMapOfShape topEdgesMap( thePrism.myBottomEdges.size() );
+    TopExp::MapShapes( thePrism.myTop, topEdgesMap );
     list< TopoDS_Edge >::iterator edge = thePrism.myBottomEdges.begin();
     for ( ; edge != thePrism.myBottomEdges.end(); ++edge )
-      if ( myHelper->IsSubShape( *edge, thePrism.myTop ))
+      if ( topEdgesMap.Contains( *edge ))
         return toSM( error
                      (notQuadGeomSubMesh.empty() ? COMPERR_BAD_INPUT_MESH : COMPERR_BAD_SHAPE,
                       "Non-quadrilateral faces are not opposite"));

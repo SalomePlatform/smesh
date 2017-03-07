@@ -139,9 +139,9 @@ SMESHDS_Mesh* SMESH_MesherHelper::GetMeshDS() const
 
 //=======================================================================
 //function : IsQuadraticSubMesh
-//purpose  : Check submesh for given shape: if all elements on this shape 
+//purpose  : Check sub-meshes of a given shape: if all elements on sub-shapes
 //           are quadratic, quadratic elements will be created.
-//           Also fill myTLinkNodeMap
+//           Fill myTLinkNodeMap
 //=======================================================================
 
 bool SMESH_MesherHelper::IsQuadraticSubMesh(const TopoDS_Shape& aSh)
@@ -149,7 +149,6 @@ bool SMESH_MesherHelper::IsQuadraticSubMesh(const TopoDS_Shape& aSh)
   SMESHDS_Mesh* meshDS = GetMeshDS();
   // we can create quadratic elements only if all elements
   // created on sub-shapes of given shape are quadratic
-  // also we have to fill myTLinkNodeMap
   myCreateQuadratic = true;
   mySeamShapeIds.clear();
   myDegenShapeIds.clear();
@@ -161,9 +160,6 @@ bool SMESH_MesherHelper::IsQuadraticSubMesh(const TopoDS_Shape& aSh)
       subType = ( subIt.Value().ShapeType()==TopAbs_FACE ) ? TopAbs_EDGE : TopAbs_FACE;
   }
   SMDSAbs_ElementType elemType( subType==TopAbs_FACE ? SMDSAbs_Face : SMDSAbs_Edge );
-
-
-  //int nbOldLinks = myTLinkNodeMap.size();
 
   if ( !myMesh->HasShapeToMesh() )
   {
@@ -371,6 +367,27 @@ void SMESH_MesherHelper::SetSubShape(const TopoDS_Shape& aSh)
       }
     }
   }
+}
+
+//=======================================================================
+/*!
+ * \brief Copy shape information from another helper. Used to improve performance
+ *        since SetSubShape() can be time consuming if there are many edges
+ */
+//=======================================================================
+
+void SMESH_MesherHelper::CopySubShapeInfo(const SMESH_MesherHelper& other)
+{
+  this->myShape         = other.myShape;
+  this->myShapeID       = other.myShapeID;
+  this->myDegenShapeIds = other.myDegenShapeIds;
+  this->mySeamShapeIds  = other.mySeamShapeIds;
+  this->myPar1[0]       = other.myPar1[0];
+  this->myPar1[1]       = other.myPar1[1];
+  this->myPar2[0]       = other.myPar2[0];
+  this->myPar2[1]       = other.myPar2[1];
+  this->myParIndex      = other.myParIndex;
+  this->myFace2Surface  = other.myFace2Surface;
 }
 
 //=======================================================================
@@ -2825,8 +2842,9 @@ bool SMESH_MesherHelper::IsStructured( SMESH_subMesh* faceSM )
 //purpose  : Return true if 2D mesh on FACE is ditorted
 //=======================================================================
 
-bool SMESH_MesherHelper::IsDistorted2D( SMESH_subMesh* faceSM,
-                                        bool           checkUV)
+bool SMESH_MesherHelper::IsDistorted2D( SMESH_subMesh*      faceSM,
+                                        bool                checkUV,
+                                        SMESH_MesherHelper* faceHelper)
 {
   if ( !faceSM || faceSM->GetSubShape().ShapeType() != TopAbs_FACE )
     return false;
@@ -2834,12 +2852,26 @@ bool SMESH_MesherHelper::IsDistorted2D( SMESH_subMesh* faceSM,
   bool haveBadFaces = false;
 
   SMESH_MesherHelper helper( *faceSM->GetFather() );
+  if ( faceHelper )
+    helper.CopySubShapeInfo( *faceHelper );
   helper.SetSubShape( faceSM->GetSubShape() );
 
   const TopoDS_Face&  F = TopoDS::Face( faceSM->GetSubShape() );
   SMESHDS_SubMesh* smDS = helper.GetMeshDS()->MeshElements( F );
   if ( !smDS || smDS->NbElements() == 0 ) return false;
 
+  bool subIdsValid = true; // shape ID of nodes is OK
+  if ( helper.HasSeam() )
+  {
+    // check if nodes are bound to seam edges
+    SMESH_subMeshIteratorPtr smIt = faceSM->getDependsOnIterator(/*includeSelf=*/false);
+    while ( smIt->more() && subIdsValid )
+    {
+      SMESH_subMesh* sm = smIt->next();
+      if ( helper.IsSeamShape( sm->GetId() ) && sm->IsEmpty() )
+        subIdsValid = false;
+    }
+  }
   SMDS_ElemIteratorPtr faceIt = smDS->GetElements();
   double prevArea = 0;
   vector< const SMDS_MeshNode* > nodes;
@@ -2864,12 +2896,20 @@ bool SMESH_MesherHelper::IsDistorted2D( SMESH_subMesh* faceSM,
       if ( isOnDegen )
         continue;
     }
-    // prepare to getting UVs
+    // prepare for getting UVs
     const SMDS_MeshNode* inFaceNode = 0;
     if ( helper.HasSeam() ) {
       for ( size_t i = 0; ( i < nodes.size() && !inFaceNode ); ++i )
         if ( !helper.IsSeamShape( nodes[ i ]->getshapeId() ))
+        {
           inFaceNode = nodes[ i ];
+          if ( !subIdsValid )
+          {
+            gp_XY uv = helper.GetNodeUV( F, inFaceNode );
+            if ( helper.IsOnSeam( uv ))
+              inFaceNode = NULL;
+          }
+        }
       if ( !inFaceNode )
         continue;
     }
@@ -2877,6 +2917,14 @@ bool SMESH_MesherHelper::IsDistorted2D( SMESH_subMesh* faceSM,
     uv.resize( nodes.size() );
     for ( size_t i = 0; i < nodes.size(); ++i )
       uv[ i ] = helper.GetNodeUV( F, nodes[ i ], inFaceNode, toCheckUV );
+
+    if ( !subIdsValid ) // fix uv on seam
+    {
+      gp_XY uvInFace = helper.GetNodeUV( F, inFaceNode );
+      for ( size_t i = 0; i < uv.size(); ++i )
+        if ( helper.IsOnSeam( uv[i] ))
+          uv[i] = helper.getUVOnSeam( uv[i], uvInFace ).XY();
+    }
 
     // compare orientation of triangles
     double faceArea = 0;
@@ -3087,7 +3135,7 @@ TopAbs_Orientation SMESH_MesherHelper::GetSubShapeOri(const TopoDS_Shape& shape,
 
 //=======================================================================
 //function : IsSubShape
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 bool SMESH_MesherHelper::IsSubShape( const TopoDS_Shape& shape,
@@ -3393,6 +3441,25 @@ double SMESH_MesherHelper::GetOtherParam(const double param) const
 {
   int i = myParIndex & U_periodic ? 0 : 1;
   return fabs(param-myPar1[i]) < fabs(param-myPar2[i]) ? myPar2[i] : myPar1[i];
+}
+
+//=======================================================================
+//function : IsOnSeam
+//purpose  : Check if UV is on seam. Return 0 if not, 1 for U seam, 2 for V seam
+//=======================================================================
+
+int SMESH_MesherHelper::IsOnSeam(const gp_XY& uv) const
+{
+  for ( int i = U_periodic; i <= V_periodic ; ++i )
+    if ( myParIndex & i )
+    {
+      double p   = uv.Coord( i );
+      double tol = ( myPar2[i-1] - myPar1[i-1] ) / 100.;
+      if ( Abs( p - myPar1[i-1] ) < tol ||
+           Abs( p - myPar2[i-1] ) < tol )
+        return i;
+    }
+  return 0;
 }
 
 namespace {

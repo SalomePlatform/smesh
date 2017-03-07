@@ -160,8 +160,8 @@ bool StdMeshers_Projection_1D2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape
   }
   TopoDS_Face F = TopoDS::Face( theShape );
   TError err;
-  TSideVector wires = StdMeshers_FaceSide::GetFaceWires( F, theMesh,
-                                                         /*ignoreMediumNodes=*/false, err);
+  TSideVector wires = StdMeshers_FaceSide::GetFaceWires( F, theMesh, /*ignoreMediumNodes=*/false,
+                                                         err, &helper);
   if ( err && !err->IsOK() )
     return error( err );
 

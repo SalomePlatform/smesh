@@ -122,7 +122,9 @@ class SMESH_EXPORT SMESH_MesherHelper
   /*!
    * \brief Return true if 2D mesh on FACE is distored
    */
-  static bool IsDistorted2D( SMESH_subMesh* faceSM, bool checkUV=false );
+  static bool IsDistorted2D( SMESH_subMesh*      faceSM,
+                             bool                checkUV = false,
+                             SMESH_MesherHelper* faceHelper = NULL);
 
   /*!
    * \brief Returns true if given node is medium
@@ -318,6 +320,12 @@ public:
    * \brief Return the shape set by IsQuadraticSubMesh() or SetSubShape() 
    */
   const TopoDS_Shape& GetSubShape() const  { return myShape; }
+  /*!
+   * \brief Copy shape information from another helper to improve performance
+   *        since SetSubShape() can be time consuming if there are many edges
+   */
+  void CopySubShapeInfo(const SMESH_MesherHelper& other);
+
 
   /*!
    * \brief Convert a shape to its index in the SMESHDS_Mesh
@@ -611,6 +619,10 @@ public:
    * \brief Return an alternative parameter for a node on seam
    */
   double GetOtherParam(const double param) const;
+  /*!
+   * \brief Check if UV is on seam. Return 0 if not, 1 for U seam, 2 for V seam
+   */
+  int IsOnSeam(const gp_XY& uv) const;
 
   /*!
    * \brief Return existing or create new medium nodes between given ones
@@ -693,6 +705,7 @@ public:
 
   static void WriteShape(const TopoDS_Shape& s);
 
+
  protected:
 
   /*!
@@ -708,6 +721,7 @@ public:
                                                    bool                 force3d);
 
   double getFaceMaxTol( const TopoDS_Shape& face ) const;
+
 
  private:
 

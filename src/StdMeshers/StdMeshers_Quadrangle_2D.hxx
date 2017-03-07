@@ -155,7 +155,8 @@ class STDMESHERS_EXPORT StdMeshers_Quadrangle_2D: public SMESH_2D_Algo
 
   FaceQuadStruct::Ptr CheckNbEdges(SMESH_Mesh&         aMesh,
                                    const TopoDS_Shape& aShape,
-                                   const bool          considerMesh=false);
+                                   const bool          considerMesh = false,
+                                   SMESH_MesherHelper* aFaceHelper = 0);
 
   static bool IsApplicable(const TopoDS_Shape & aShape, bool toCheckAll);
 

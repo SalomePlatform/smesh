@@ -87,10 +87,10 @@ bool StdMeshers_PolygonPerFace_2D::Compute(SMESH_Mesh&         theMesh,
   if ( !proxyMesh )
     return false;
 
-  TError erorr;
+  TError err;
   TSideVector wires = StdMeshers_FaceSide::GetFaceWires(face, theMesh,
                                                         /*skipMediumNodes=*/_quadraticMesh,
-                                                        erorr, proxyMesh,
+                                                        err, &helper, proxyMesh,
                                                         /*checkVertexNodes=*/false);
   if ( wires.size() != 1 )
     return error( COMPERR_BAD_SHAPE, SMESH_Comment("One wire required, not ") << wires.size() );

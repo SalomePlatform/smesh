@@ -230,7 +230,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
   myNeedSmooth = false;
   myCheckOri   = false;
 
-  FaceQuadStruct::Ptr quad = CheckNbEdges( aMesh, F, /*considerMesh=*/true );
+  FaceQuadStruct::Ptr quad = CheckNbEdges( aMesh, F, /*considerMesh=*/true, myHelper );
   if (!quad)
     return false;
   myQuadList.clear();
@@ -1052,7 +1052,8 @@ static bool twoEdgesMeatAtVertex(const TopoDS_Edge& e1,
 
 FaceQuadStruct::Ptr StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         aMesh,
                                                            const TopoDS_Shape & aShape,
-                                                           const bool           considerMesh)
+                                                           const bool           considerMesh,
+                                                           SMESH_MesherHelper*  aFaceHelper)
 {
   if ( !myQuadList.empty() && myQuadList.front()->face.IsSame( aShape ))
     return myQuadList.front();
@@ -1071,6 +1072,7 @@ FaceQuadStruct::Ptr StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         
   }
 
   // find corner vertices of the quad
+  myHelper = ( aFaceHelper && aFaceHelper->GetSubShape() == aShape ) ? aFaceHelper : NULL;
   vector<TopoDS_Vertex> corners;
   int nbDegenEdges, nbSides = getCorners( F, aMesh, edges, corners, nbDegenEdges, considerMesh );
   if ( nbSides == 0 )
@@ -1096,7 +1098,7 @@ FaceQuadStruct::Ptr StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         
           sideEdges.push_back( *edgeIt++ );
       if ( !sideEdges.empty() )
         quad->side.push_back( StdMeshers_FaceSide::New(F, sideEdges, &aMesh, iSide < QUAD_TOP_SIDE,
-                                                       ignoreMediumNodes, myProxyMesh));
+                                                       ignoreMediumNodes, myHelper, myProxyMesh));
       else
         --iSide;
     }
@@ -1150,7 +1152,7 @@ FaceQuadStruct::Ptr StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         
       {
         quad->side.push_back
           ( StdMeshers_FaceSide::New( F, sideEdges, &aMesh, iSide < QUAD_TOP_SIDE,
-                                      ignoreMediumNodes, myProxyMesh ));
+                                      ignoreMediumNodes, myHelper, myProxyMesh ));
         ++iSide;
       }
       if ( quad->side.size() == 4 )
@@ -4110,7 +4112,7 @@ bool StdMeshers_Quadrangle_2D::check()
   {
     TError err;
     TSideVector wireVec =
-      StdMeshers_FaceSide::GetFaceWires( geomFace, *myHelper->GetMesh(), true, err );
+      StdMeshers_FaceSide::GetFaceWires( geomFace, *myHelper->GetMesh(), true, err, myHelper );
     StdMeshers_FaceSidePtr wire = wireVec[0];
 
     // find a right angle VERTEX
@@ -4251,7 +4253,10 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
   theNbDegenEdges = 0;
 
   SMESH_MesherHelper helper( theMesh );
-  StdMeshers_FaceSide faceSide( theFace, theWire, &theMesh, /*isFwd=*/true, /*skipMedium=*/true);
+  if ( myHelper )
+    helper.CopySubShapeInfo( *myHelper );
+  StdMeshers_FaceSide faceSide( theFace, theWire, &theMesh,
+                                /*isFwd=*/true, /*skipMedium=*/true, &helper );
 
   // sort theVertices by angle
   multimap<double, TopoDS_Vertex> vertexByAngle;

@@ -203,7 +203,7 @@ bool StdMeshers_MEFISTO_2D::Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aSh
   // get all edges of a face
   TError problem;
   TWireVector wires =
-    StdMeshers_FaceSide::GetFaceWires( F, aMesh, skipMediumNodes, problem, proxyMesh );
+    StdMeshers_FaceSide::GetFaceWires( F, aMesh, skipMediumNodes, problem, _helper, proxyMesh );
   int nbWires = wires.size();
   if ( problem && !problem->IsOK() ) return error( problem );
   if ( nbWires == 0 ) return error( "Problem in StdMeshers_FaceSide::GetFaceWires()");

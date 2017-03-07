@@ -1384,10 +1384,13 @@ namespace
                    const SMESH_MAT2d::MedialAxis& theMA,
                    TMAPar2NPoints &               thePointsOnE )
   {
+    SMESH_Mesh*     mesh = theHelper.GetMesh();
+    SMESHDS_Mesh* meshDS = theHelper.GetMeshDS();
+
     list< TopoDS_Edge > ee1( theSinuFace._sinuSide [0].begin(), theSinuFace._sinuSide [0].end() );
     list< TopoDS_Edge > ee2( theSinuFace._sinuSide [1].begin(), theSinuFace._sinuSide [1].end() );
-    StdMeshers_FaceSide sideOut( theSinuFace.Face(), ee1, theHelper.GetMesh(), true, true );
-    StdMeshers_FaceSide sideIn ( theSinuFace.Face(), ee2, theHelper.GetMesh(), true, true );
+    StdMeshers_FaceSide sideOut( theSinuFace.Face(), ee1, mesh, true, true, &theHelper );
+    StdMeshers_FaceSide sideIn ( theSinuFace.Face(), ee2, mesh, true, true, &theHelper );
     const UVPtStructVec& uvsOut = sideOut.GetUVPtStruct();
     const UVPtStructVec& uvsIn  = sideIn.GetUVPtStruct();
     // if ( uvs1.size() != uvs2.size() )
@@ -1396,7 +1399,6 @@ namespace
     const SMESH_MAT2d::Branch& branch = *theMA.getBranch(0);
     SMESH_MAT2d::BoundaryPoint bp[2];
     SMESH_MAT2d::BranchPoint   brp;
-    SMESHDS_Mesh*              meshDS = theHelper.GetMeshDS();
 
     map< double, const SMDS_MeshNode* > nodeParams; // params of existing nodes
     map< double, const SMDS_MeshNode* >::iterator u2n;
@@ -1510,7 +1512,8 @@ namespace
     for ( int i = 0; i < 4; ++i )
     {
       theFace._quad->side[i] = StdMeshers_FaceSide::New( face, side[i], mesh, i < QUAD_TOP_SIDE,
-                                                         /*skipMediumNodes=*/true, proxyMesh );
+                                                         /*skipMediumNodes=*/true,
+                                                         &theHelper, proxyMesh );
     }
 
     if ( theFace.IsRing() )
@@ -1892,7 +1895,7 @@ namespace
           continue;
 
         StdMeshers_FaceSide side( face, theSinuEdges[i], mesh,
-                                  /*isFwd=*/true, /*skipMediumNodes=*/true );
+                                  /*isFwd=*/true, /*skipMediumNodes=*/true, &theHelper );
         vector<const SMDS_MeshNode*> nodes = side.GetOrderedNodes();
         for ( size_t in = 1; in < nodes.size(); ++in )
         {
