@@ -168,7 +168,8 @@ static std::string REMOTE_WORKDIR("/tmp/spadder.remote.workdir."+USER);
  * <outputMedFile>
  */
 const char * MeshJobManager_i::_writeDataFile(std::vector<MESHJOB::MeshJobFile> listConcreteMesh,
-                                              std::vector<MESHJOB::MeshJobFile> listSteelBarMesh) {
+                                              std::vector<MESHJOB::MeshJobFile> listSteelBarMesh,
+                                              const MESHJOB::MeshJobParameterList & meshJobParameterList) {
 #ifdef WIN32
   _mkdir(LOCAL_INPUTDIR.c_str());
 #else
@@ -212,9 +213,17 @@ const char * MeshJobManager_i::_writeDataFile(std::vector<MESHJOB::MeshJobFile> 
     dataFile << line.c_str() << std::endl;
   }
   
-  // Finally, we conclude with the name of the output file
+  // We conclude the list of files with the name of the output file
   line = OUTPUTFILE;
   dataFile << line.c_str() << std::endl;
+
+  // We put the numerical parameters at the end of the data file
+  for(CORBA::ULong i=0; i<meshJobParameterList.length(); i++) {
+    MESHJOB::MeshJobParameter param = meshJobParameterList[i];
+    line = std::string(param.name) + " " + std::string(param.value);
+    dataFile << line.c_str() << std::endl;
+  }
+
   dataFile.close();
   return dataFilename->c_str();  
 }
@@ -282,6 +291,7 @@ long MeshJobManager_i::JOBID_UNDEFINED = -1;
 
 /*! Initialize a smesh computation job and return the job identifier */
 CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobFileList & meshJobFileList,
+                                         const MESHJOB::MeshJobParameterList & meshJobParameterList,
                                          const char * configId)
 {
   beginService("MeshJobManager_i::initialize");
@@ -340,7 +350,7 @@ CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobFileList & meshJo
   // data is a text file containing the list of file names and group
   // names.
   //
-  const char * dataFilename = this->_writeDataFile(listConcreteMesh, listSteelBarMesh);
+  const char * dataFilename = this->_writeDataFile(listConcreteMesh, listSteelBarMesh, meshJobParameterList);
   LOG("dataFilename = " << dataFilename);
   const char * scriptFilename = this->_writeScriptFile(dataFilename, configId);
   LOG("scriptFilename = " << scriptFilename);

@@ -160,10 +160,16 @@ def test03_parameters():
 #meshJobFileList = test02_parameters()
 meshJobFileList = test03_parameters()
 
+meshJobParameterList = []
+param = MESHJOB.MeshJobParameter(name="RminRmax",value="1.5")
+meshJobParameterList.append(param)
+param = MESHJOB.MeshJobParameter(name="NbIteration",value="3")
+meshJobParameterList.append(param)
+
 #
 # Prepare, start and follow-up the job
 #
-jobid = component.initialize(meshJobFileList, configId)
+jobid = component.initialize(meshJobFileList, meshJobParameterList, configId)
 if jobid<0:
     msg = component.getLastErrorMessage()
     print "ERR: %s"%msg

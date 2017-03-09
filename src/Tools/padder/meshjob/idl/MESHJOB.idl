@@ -72,6 +72,16 @@ module MESHJOB
   // This defines a set of parameters for the job initialization
   typedef sequence<MESHJOB::MeshJobFile> MeshJobFileList;
 
+  // This defines a single parameter for the job initialization
+  struct MeshJobParameter
+  {
+    string name;
+    string value;
+  };
+  
+  // This defines a set of parameters for the job initialization
+  typedef sequence<MESHJOB::MeshJobParameter> MeshJobParameterList;
+
   // This defines the result data of a job 
   struct MeshJobResults
   {
@@ -97,7 +107,9 @@ module MESHJOB
       raises (SALOME::SALOME_Exception);
 
     /*! Initialize a smesh computation job and return the job identifier */
-    long    initialize(in MESHJOB::MeshJobFileList meshJobFileList, in string configId)
+    long    initialize(in MESHJOB::MeshJobFileList meshJobFileList,
+                       in MESHJOB::MeshJobParameterList MeshJobParameterList,
+                       in string configId)
       raises (SALOME::SALOME_Exception);
 
     /*! Submit the job execution and return true if submission is OK */

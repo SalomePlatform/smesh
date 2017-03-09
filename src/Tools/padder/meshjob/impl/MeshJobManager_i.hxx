@@ -56,6 +56,7 @@ public:
   bool           configure  (const char *configId,
                              const MESHJOB::ConfigParameter & configParameter);
   CORBA::Long    initialize (const MESHJOB::MeshJobFileList & meshJobFileList,
+                             const MESHJOB::MeshJobParameterList & meshJobParameterList,
                              const char *configId);
   bool           start      (CORBA::Long jobId);
   char*          getState   (CORBA::Long jobId);
@@ -84,7 +85,8 @@ private:
   std::map<long, MESHJOB::MeshJobPaths*> _jobPathsMap;
 
   const char* _writeDataFile   (std::vector<MESHJOB::MeshJobFile> listConcreteMesh,
-                                std::vector<MESHJOB::MeshJobFile> listSteelBarMesh);
+                                std::vector<MESHJOB::MeshJobFile> listSteelBarMesh,
+                                const MESHJOB::MeshJobParameterList & meshJobParameterList);
   const char* _writeScriptFile (const char * dataFileName, const char * configId);
 
   std::vector<std::string> * _getResourceNames();
