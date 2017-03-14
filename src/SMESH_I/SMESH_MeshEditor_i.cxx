@@ -4159,7 +4159,8 @@ FindCoincidentNodesOnPartBut(SMESH::SMESH_IDSource_ptr      theObject,
 //=======================================================================
 
 void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfNodes,
-                                     const SMESH::ListOfIDSources&     NodesToKeep)
+                                     const SMESH::ListOfIDSources&     NodesToKeep,
+                                     CORBA::Boolean                    AvoidMakingHoles)
   throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
@@ -4203,7 +4204,7 @@ void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfN
     aTPythonDump << aNodeGroup;
   }
 
-  getEditor().MergeNodes( aListOfListOfNodes );
+  getEditor().MergeNodes( aListOfListOfNodes, AvoidMakingHoles );
 
   aTPythonDump << "], " << NodesToKeep << ")";
 

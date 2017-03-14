@@ -5323,6 +5323,10 @@ Please select a group and try again</translation>
         <translation>No merge of corner and medium nodes of quadratic cells</translation>
     </message>
     <message>
+        <source>AVOID_MAKING_HOLES</source>
+        <translation>Avoid making holes</translation>
+    </message>
+    <message>
         <source>KEEP_NODES</source>
         <translation>Nodes to keep during the merge</translation>
     </message>

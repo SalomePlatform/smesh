@@ -471,8 +471,9 @@ SMDS_VolumeTool::~SMDS_VolumeTool()
 //purpose  : Set volume to iterate on
 //=======================================================================
 
-bool SMDS_VolumeTool::Set (const SMDS_MeshElement* theVolume,
-                           const bool              ignoreCentralNodes)
+bool SMDS_VolumeTool::Set (const SMDS_MeshElement*                  theVolume,
+                           const bool                               ignoreCentralNodes,
+                           const std::vector<const SMDS_MeshNode*>* otherNodes)
 {
   // reset fields
   myVolume = 0;
@@ -510,11 +511,22 @@ bool SMDS_VolumeTool::Set (const SMDS_MeshElement* theVolume,
   }
 
   // set nodes
-  int iNode = 0;
   myVolumeNodes.resize( myVolume->NbNodes() );
-  SMDS_ElemIteratorPtr nodeIt = myVolume->nodesIterator();
-  while ( nodeIt->more() )
-    myVolumeNodes[ iNode++ ] = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
+  if ( otherNodes )
+  {
+    if ( otherNodes->size() != myVolumeNodes.size() )
+      return ( myVolume = 0 );
+    for ( size_t i = 0; i < otherNodes->size(); ++i )
+      if ( ! ( myVolumeNodes[i] = (*otherNodes)[0] ))
+        return ( myVolume = 0 );
+  }
+  else
+  {
+    int iNode = 0;
+    SMDS_ElemIteratorPtr nodeIt = myVolume->nodesIterator();
+    while ( nodeIt->more() )
+      myVolumeNodes[ iNode++ ] = static_cast<const SMDS_MeshNode*>( nodeIt->next() );
+  }
 
   // check validity
   if ( !setFace(0) )

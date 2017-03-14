@@ -35,16 +35,18 @@ class MESHDRIVERSTL_EXPORT DriverSTL_R_SMDS_Mesh: public Driver_SMDS_Mesh
   DriverSTL_R_SMDS_Mesh();
   virtual Status Perform();
   void           SetIsCreateFaces( const bool theIsCreate = true );
+  std::string    GetName() const { return myName; }
   
  private:
   // PRIVATE METHODS
-  Status           readAscii (SMESH_File& file) const;
-  Status           readBinary(SMESH_File& file) const;
-  
+  Status         readAscii (SMESH_File& file) const;
+  Status         readBinary(SMESH_File& file) const;
+
  private:
   // PRIVATE FIELDS
-  bool myIsCreateFaces;
-  bool myIsAscii;
+  bool        myIsCreateFaces;
+  bool        myIsAscii;
+  std::string myName;
 };
 
 #endif

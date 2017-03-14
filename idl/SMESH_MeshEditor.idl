@@ -689,7 +689,8 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     void MergeNodes (in array_of_long_array    GroupsOfNodes,
-                     in SMESH::ListOfIDSources NodesToKeep)
+                     in SMESH::ListOfIDSources NodesToKeep,
+                     in boolean                AvoidMakingHoles)
       raises (SALOME::SALOME_Exception);
 
     /*!

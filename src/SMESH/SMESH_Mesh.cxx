@@ -559,7 +559,7 @@ int SMESH_Mesh::MEDToMesh(const char* theFileName, const char* theMeshName)
 //purpose  : 
 //=======================================================================
 
-int SMESH_Mesh::STLToMesh(const char* theFileName)
+std::string SMESH_Mesh::STLToMesh(const char* theFileName)
 {
   if(_isShapeToMesh)
     throw SALOME_Exception(LOCALIZED("a shape to mesh has already been defined"));
@@ -571,7 +571,7 @@ int SMESH_Mesh::STLToMesh(const char* theFileName)
   myReader.SetMeshId(-1);
   myReader.Perform();
 
-  return 1;
+  return myReader.GetName();
 }
 
 //================================================================================
@@ -1560,6 +1560,7 @@ void SMESH_Mesh::ExportUNV(const char *        file,
 
 void SMESH_Mesh::ExportSTL(const char *        file,
                            const bool          isascii,
+                           const char *        name,
                            const SMESHDS_Mesh* meshPart) throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
@@ -1568,6 +1569,7 @@ void SMESH_Mesh::ExportSTL(const char *        file,
   myWriter.SetIsAscii( isascii );
   myWriter.SetMesh( meshPart ? (SMESHDS_Mesh*) meshPart : _myMeshDS);
   myWriter.SetMeshId(_id);
+  if ( name ) myWriter.SetName( name );
   myWriter.Perform();
 }
 

@@ -130,6 +130,7 @@ private:
   QWidget*                  NodeSpecWidget;
   SMESHGUI_SpinBox*         SpinBoxTolerance;
   QCheckBox*                SeparateCornersAndMedium;
+  QCheckBox*                AvoidMakingHoles;
 
   QGroupBox*                GroupCoincident;
   //QWidget*                  GroupCoincidentWidget;

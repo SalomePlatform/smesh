@@ -6095,7 +6095,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet     theElements[2],
       aPrms.push_back( aT );
     }
     //Extrusion_Error err =
-    MakeEdgePathPoints(aPrms, aTrackEdge, (aN1==theN1), fullList);
+    makeEdgePathPoints(aPrms, aTrackEdge, (aN1==theN1), fullList);
   } else if( aS.ShapeType() == TopAbs_WIRE ) {
     list< SMESH_subMesh* > LSM;
     TopTools_SequenceOfShape Edges;
@@ -6140,7 +6140,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet     theElements[2],
         }
         list<SMESH_MeshEditor_PathPoint> LPP;
         //Extrusion_Error err =
-        MakeEdgePathPoints(aPrms, aTrackEdge,(aN1->GetID()==startNid), LPP);
+        makeEdgePathPoints(aPrms, aTrackEdge,(aN1->GetID()==startNid), LPP);
         LLPPs.push_back(LPP);
         UsedNums.Add(k);
         // update startN for search following egde
@@ -6183,7 +6183,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet     theElements[2],
     return EXTR_BAD_PATH_SHAPE;
   }
 
-  return MakeExtrElements(theElements, fullList, theHasAngles, theAngles, theLinearVariation,
+  return makeExtrElements(theElements, fullList, theHasAngles, theAngles, theLinearVariation,
                           theHasRefPoint, theRefPoint, theMakeGroups);
 }
 
@@ -6322,7 +6322,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet     theElements[2],
       TopoDS_Edge e = BRepBuilderAPI_MakeEdge( p1, p2 );
       list<SMESH_MeshEditor_PathPoint> LPP;
       aPrms.clear();
-      MakeEdgePathPoints(aPrms, e, (aNodesList[i-1]->GetID()==startNid), LPP);
+      makeEdgePathPoints(aPrms, e, (aNodesList[i-1]->GetID()==startNid), LPP);
       LLPPs.push_back(LPP);
       if ( aNodesList[i-1]->GetID() == startNid ) startNid = aNodesList[i  ]->GetID();
       else                                        startNid = aNodesList[i-1]->GetID();
@@ -6380,7 +6380,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet     theElements[2],
       aPrms.push_back( aT );
     }
     //Extrusion_Error err =
-    MakeEdgePathPoints(aPrms, aTrackEdge, (aN1==theN1), fullList);
+    makeEdgePathPoints(aPrms, aTrackEdge, (aN1==theN1), fullList);
   }
   else if( aS.ShapeType() == TopAbs_WIRE ) {
     list< SMESH_subMesh* > LSM;
@@ -6439,7 +6439,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet     theElements[2],
         }
         list<SMESH_MeshEditor_PathPoint> LPP;
         //Extrusion_Error err =
-        MakeEdgePathPoints(aPrms, aTrackEdge, aN1isOK, LPP);
+        makeEdgePathPoints(aPrms, aTrackEdge, aN1isOK, LPP);
         LLPPs.push_back(LPP);
         UsedNums.Add(k);
         // update startN for search following egde
@@ -6475,17 +6475,17 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet     theElements[2],
     return EXTR_BAD_PATH_SHAPE;
   }
 
-  return MakeExtrElements(theElements, fullList, theHasAngles, theAngles, theLinearVariation,
+  return makeExtrElements(theElements, fullList, theHasAngles, theAngles, theLinearVariation,
                           theHasRefPoint, theRefPoint, theMakeGroups);
 }
 
 
 //=======================================================================
-//function : MakeEdgePathPoints
+//function : makeEdgePathPoints
 //purpose  : auxiliary for ExtrusionAlongTrack
 //=======================================================================
 SMESH_MeshEditor::Extrusion_Error
-SMESH_MeshEditor::MakeEdgePathPoints(std::list<double>&                aPrms,
+SMESH_MeshEditor::makeEdgePathPoints(std::list<double>&                aPrms,
                                      const TopoDS_Edge&                aTrackEdge,
                                      bool                              FirstIsStart,
                                      list<SMESH_MeshEditor_PathPoint>& LPP)
@@ -6536,11 +6536,11 @@ SMESH_MeshEditor::MakeEdgePathPoints(std::list<double>&                aPrms,
 
 
 //=======================================================================
-//function : MakeExtrElements
+//function : makeExtrElements
 //purpose  : auxiliary for ExtrusionAlongTrack
 //=======================================================================
 SMESH_MeshEditor::Extrusion_Error
-SMESH_MeshEditor::MakeExtrElements(TIDSortedElemSet                  theElemSets[2],
+SMESH_MeshEditor::makeExtrElements(TIDSortedElemSet                  theElemSets[2],
                                    list<SMESH_MeshEditor_PathPoint>& fullList,
                                    const bool                        theHasAngles,
                                    list<double>&                     theAngles,
@@ -6553,7 +6553,7 @@ SMESH_MeshEditor::MakeExtrElements(TIDSortedElemSet                  theElemSets
 
   // Angles
   if( theHasAngles && !theAngles.empty() && theLinearVariation )
-    LinearAngleVariation(aNbTP-1, theAngles);
+    linearAngleVariation(aNbTP-1, theAngles);
 
   // fill vector of path points with angles
   vector<SMESH_MeshEditor_PathPoint> aPPs;
@@ -6746,11 +6746,11 @@ SMESH_MeshEditor::MakeExtrElements(TIDSortedElemSet                  theElemSets
 
 
 //=======================================================================
-//function : LinearAngleVariation
+//function : linearAngleVariation
 //purpose  : spread values over nbSteps
 //=======================================================================
 
-void SMESH_MeshEditor::LinearAngleVariation(const int     nbSteps,
+void SMESH_MeshEditor::linearAngleVariation(const int     nbSteps,
                                             list<double>& Angles)
 {
   int nbAngles = Angles.size();
@@ -7258,7 +7258,7 @@ void SMESH_MeshEditor::FindCoincidentNodes (TIDSortedNodeSet &   theNodes,
       }
     else
       while ( nIt->more() )
-        theNodes.insert( theNodes.end(),nIt->next() );
+        theNodes.insert( theNodes.end(), nIt->next() );
   }
   else if ( theSeparateCornersAndMedium ) // separate corners from medium nodes
   {
@@ -7351,11 +7351,12 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes,
   myLastCreatedElems.Clear();
   myLastCreatedNodes.Clear();
 
-  SMESHDS_Mesh* aMesh = GetMeshDS();
+  SMESHDS_Mesh* mesh = GetMeshDS();
 
   TNodeNodeMap nodeNodeMap; // node to replace - new node
   set<const SMDS_MeshElement*> elems; // all elements with changed nodes
   list< int > rmElemIds, rmNodeIds;
+  vector< ElemFeatures > newElemDefs;
 
   // Fill nodeNodeMap and elems
 
@@ -7369,17 +7370,6 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes,
     {
       const SMDS_MeshNode* nToRemove = *nIt;
       nodeNodeMap.insert( make_pair( nToRemove, nToKeep ));
-      if ( nToRemove != nToKeep )
-      {
-        rmNodeIds.push_back( nToRemove->GetID() );
-        AddToSameGroups( nToKeep, nToRemove, aMesh );
-        // set _alwaysComputed to a sub-mesh of VERTEX to enable mesh computing
-        // after MergeNodes() w/o creating node in place of merged ones.
-        const SMDS_PositionPtr& pos = nToRemove->GetPosition();
-        if ( pos && pos->GetTypeOfPosition() == SMDS_TOP_VERTEX )
-          if ( SMESH_subMesh* sm = myMesh->GetSubMeshContaining( nToRemove->getshapeId() ))
-            sm->SetIsAlwaysComputed( true );
-      }
       SMDS_ElemIteratorPtr invElemIt = nToRemove->GetInverseElementIterator();
       while ( invElemIt->more() ) {
         const SMDS_MeshElement* elem = invElemIt->next();
@@ -7387,469 +7377,548 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes,
       }
     }
   }
-  // Change element nodes or remove an element
 
-  set<const SMDS_MeshNode*> nodeSet;
-  vector< const SMDS_MeshNode*> curNodes, uniqueNodes;
-  vector<int> iRepl;
-  ElemFeatures elemType;
+  // Apply recursive replacements (BUG 0020185)
+  TNodeNodeMap::iterator nnIt = nodeNodeMap.begin();
+  for ( ; nnIt != nodeNodeMap.end(); ++nnIt )
+  {
+    const SMDS_MeshNode* nToKeep = nnIt->second;
+    TNodeNodeMap::iterator nnIt_i = nodeNodeMap.find( nToKeep );
+    while ( nnIt_i != nodeNodeMap.end() && nnIt_i->second != nnIt->second )
+      nToKeep = nnIt_i->second;
+    nnIt->second = nToKeep;
+  }
+
+  if ( theAvoidMakingHoles )
+  {
+    // find elements whose topology changes
+
+    vector<const SMDS_MeshElement*> pbElems;
+    set<const SMDS_MeshElement*>::iterator eIt = elems.begin();
+    for ( ; eIt != elems.end(); ++eIt )
+    {
+      const SMDS_MeshElement* elem = *eIt;
+      SMDS_ElemIteratorPtr     itN = elem->nodesIterator();
+      while ( itN->more() )
+      {
+        const SMDS_MeshNode* n = static_cast<const SMDS_MeshNode*>( itN->next() );
+        TNodeNodeMap::iterator nnIt = nodeNodeMap.find( n );
+        if ( nnIt != nodeNodeMap.end() && elem->GetNodeIndex( nnIt->second ) >= 0 )
+        {
+          // several nodes of elem stick
+          pbElems.push_back( elem );
+          break;
+        }
+      }
+    }
+    // exclude from merge nodes causing spoiling element
+    for ( size_t iLoop = 0; iLoop < pbElems.size(); ++iLoop ) // avoid infinite cycle
+    {
+      bool nodesExcluded = false;
+      for ( size_t i = 0; i < pbElems.size(); ++i )
+      {
+        size_t prevNbMergeNodes = nodeNodeMap.size();
+        if ( !applyMerge( pbElems[i], newElemDefs, nodeNodeMap, /*noHoles=*/true ) &&
+             prevNbMergeNodes < nodeNodeMap.size() )
+          nodesExcluded = true;
+      }
+      if ( !nodesExcluded )
+        break;
+    }
+  }
+
+  for ( nnIt = nodeNodeMap.begin(); nnIt != nodeNodeMap.end(); ++nnIt )
+  {
+    const SMDS_MeshNode* nToRemove = nnIt->first;
+    const SMDS_MeshNode* nToKeep   = nnIt->second;
+    if ( nToRemove != nToKeep )
+    {
+      rmNodeIds.push_back( nToRemove->GetID() );
+      AddToSameGroups( nToKeep, nToRemove, mesh );
+      // set _alwaysComputed to a sub-mesh of VERTEX to enable further mesh computing
+      // w/o creating node in place of merged ones.
+      const SMDS_PositionPtr& pos = nToRemove->GetPosition();
+      if ( pos && pos->GetTypeOfPosition() == SMDS_TOP_VERTEX )
+        if ( SMESH_subMesh* sm = myMesh->GetSubMeshContaining( nToRemove->getshapeId() ))
+          sm->SetIsAlwaysComputed( true );
+    }
+  }
+
+  // Change element nodes or remove an element
 
   set<const SMDS_MeshElement*>::iterator eIt = elems.begin();
   for ( ; eIt != elems.end(); eIt++ )
   {
     const SMDS_MeshElement* elem = *eIt;
-    const           int  nbNodes = elem->NbNodes();
-    const           int aShapeId = FindShape( elem );
-    SMDSAbs_EntityType    entity = elem->GetEntityType();
+    SMESHDS_SubMesh*          sm = mesh->MeshElements( elem->getshapeId() );
 
-    nodeSet.clear();
-    curNodes.resize( nbNodes );
-    uniqueNodes.resize( nbNodes );
-    iRepl.resize( nbNodes );
-    int iUnique = 0, iCur = 0, nbRepl = 0;
+    bool keepElem = applyMerge( elem, newElemDefs, nodeNodeMap, /*noHoles=*/false );
+    if ( !keepElem )
+      rmElemIds.push_back( elem->GetID() );
 
-    // get new seq of nodes
-    SMDS_ElemIteratorPtr itN = elem->nodesIterator();
-    while ( itN->more() )
+    for ( size_t i = 0; i < newElemDefs.size(); ++i )
     {
-      const SMDS_MeshNode* n = static_cast<const SMDS_MeshNode*>( itN->next() );
-
-      TNodeNodeMap::iterator nnIt = nodeNodeMap.find( n );
-      if ( nnIt != nodeNodeMap.end() ) { // n sticks
-        n = (*nnIt).second;
-        { ////////// BUG 0020185: begin
-          bool stopRecur = false;
-          set<const SMDS_MeshNode*> nodesRecur;
-          nodesRecur.insert(n);
-          while (!stopRecur) {
-            TNodeNodeMap::iterator nnIt_i = nodeNodeMap.find( n );
-            if ( nnIt_i != nodeNodeMap.end() ) { // n sticks
-              n = (*nnIt_i).second;
-              if (!nodesRecur.insert(n).second) {
-                // error: recursive dependency
-                stopRecur = true;
-              }
-            }
-            else
-              stopRecur = true;
-          }
-        } ////////// BUG 0020185: end
-      }
-      curNodes[ iCur ] = n;
-      bool isUnique = nodeSet.insert( n ).second;
-      if ( isUnique )
-        uniqueNodes[ iUnique++ ] = n;
-      else
-        iRepl[ nbRepl++ ] = iCur;
-      iCur++;
-    }
-
-    // Analyse element topology after replacement
-
-    bool isOk = true;
-    int nbUniqueNodes = nodeSet.size();
-    if ( nbNodes != nbUniqueNodes ) // some nodes stick
-    {
-      if ( elem->IsPoly() ) // Polygons and Polyhedral volumes
+      if ( i > 0 || !mesh->ChangeElementNodes( elem, &
+                                               newElemDefs[i].myNodes[0],
+                                               newElemDefs[i].myNodes.size() ))
       {
-        if ( elem->GetType() == SMDSAbs_Face ) // Polygon
+        if ( i == 0 )
         {
-          elemType.Init( elem );
-          const bool isQuad = elemType.myIsQuad;
-          if ( isQuad )
-            SMDS_MeshCell::applyInterlace // interlace medium and corner nodes
-              ( SMDS_MeshCell::interlacedSmdsOrder( SMDSEntity_Quad_Polygon, nbNodes ), curNodes );
-
-          // a polygon can divide into several elements
-          vector<const SMDS_MeshNode *> polygons_nodes;
-          vector<int> quantities;
-          int nbNew = SimplifyFace( curNodes, polygons_nodes, quantities );
-          if (nbNew > 0)
-          {
-            vector<const SMDS_MeshNode *> face_nodes;
-            int inode = 0;
-            for (int iface = 0; iface < nbNew; iface++)
-            {
-              int nbNewNodes = quantities[iface];
-              face_nodes.assign( polygons_nodes.begin() + inode,
-                                 polygons_nodes.begin() + inode + nbNewNodes );
-              inode += nbNewNodes;
-              if ( isQuad ) // check if a result elem is a valid quadratic polygon
-              {
-                bool isValid = ( nbNewNodes % 2 == 0 );
-                for ( int i = 0; i < nbNewNodes && isValid; ++i )
-                  isValid = ( elem->IsMediumNode( face_nodes[i]) == bool( i % 2 ));
-                elemType.SetQuad( isValid );
-                if ( isValid ) // put medium nodes after corners
-                  SMDS_MeshCell::applyInterlaceRev
-                    ( SMDS_MeshCell::interlacedSmdsOrder( SMDSEntity_Quad_Polygon,
-                                                          nbNewNodes ), face_nodes );
-              }
-              elemType.SetPoly(( nbNewNodes / ( elemType.myIsQuad + 1 ) > 4 ));
-
-              SMDS_MeshElement* newElem = AddElement( face_nodes, elemType.SetID(-1));
-              if ( aShapeId )
-                aMesh->SetMeshElementOnShape(newElem, aShapeId);
-            }
-          }
-          rmElemIds.push_back(elem->GetID());
-
-        } // Polygon
-
-        else if ( elem->GetType() == SMDSAbs_Volume ) // Polyhedral volume
+          newElemDefs[i].SetID( elem->GetID() );
+          mesh->RemoveFreeElement(elem, sm, /*fromGroups=*/false);
+          if ( !keepElem ) rmElemIds.pop_back();
+        }
+        else
         {
-          if ( nbUniqueNodes < 4 ) {
-            rmElemIds.push_back(elem->GetID());
-          }
-          else {
-            // each face has to be analyzed in order to check volume validity
-            const SMDS_VtkVolume* aPolyedre = dynamic_cast<const SMDS_VtkVolume*>( elem );
-            if ( aPolyedre )
-            {
-              int nbFaces = aPolyedre->NbFaces();
-
-              vector<const SMDS_MeshNode *> poly_nodes;
-              vector<int>                   quantities;
-              vector<const SMDS_MeshNode *> faceNodes;
-
-              for (int iface = 1; iface <= nbFaces; iface++)
-              {
-                int nbFaceNodes = aPolyedre->NbFaceNodes(iface);
-                faceNodes.resize( nbFaceNodes );
-                for (int inode = 1; inode <= nbFaceNodes; inode++)
-                {
-                  const SMDS_MeshNode * faceNode = aPolyedre->GetFaceNode(iface, inode);
-                  TNodeNodeMap::iterator nnIt = nodeNodeMap.find(faceNode);
-                  if ( nnIt != nodeNodeMap.end() ) // faceNode sticks
-                    faceNode = (*nnIt).second;
-                  faceNodes[inode - 1] = faceNode;
-                }
-                SimplifyFace(faceNodes, poly_nodes, quantities);
-              }
-
-              if ( quantities.size() > 3 ) {
-                // TODO: remove coincident faces
-              }
-
-              if ( quantities.size() > 3 )
-              {
-                const SMDS_MeshElement* newElem =
-                  aMesh->AddPolyhedralVolume( poly_nodes, quantities );
-                myLastCreatedElems.Append( newElem );
-                if ( aShapeId && newElem )
-                  aMesh->SetMeshElementOnShape( newElem, aShapeId );
-                rmElemIds.push_back( elem->GetID() );
-              }
-            }
-            else {
-              rmElemIds.push_back( elem->GetID() );
-            }
-          }
+          newElemDefs[i].SetID( -1 );
         }
-        else {
-        }
-
-        continue;
-      } // poly element
-
-      // Regular elements
-      // TODO not all the possible cases are solved. Find something more generic?
-      switch ( entity ) {
-      case SMDSEntity_Edge: //////// EDGE
-      case SMDSEntity_Triangle: //// TRIANGLE
-      case SMDSEntity_Quad_Triangle:
-      case SMDSEntity_Tetra:
-      case SMDSEntity_Quad_Tetra: // TETRAHEDRON
-      {
-        isOk = false;
-        break;
-      }
-      case SMDSEntity_Quad_Edge:
-      {
-        isOk = false; // to linear EDGE ???????
-        break;
-      }
-      case SMDSEntity_Quadrangle: //////////////////////////////////// QUADRANGLE
-      {
-        if ( nbUniqueNodes < 3 )
-          isOk = false;
-        else if ( nbRepl == 1 && curNodes[ iRepl[0]] == curNodes[( iRepl[0]+2 )%4 ])
-          isOk = false; // opposite nodes stick
-        break;
-      }
-      case SMDSEntity_Quad_Quadrangle: // Quadratic QUADRANGLE
-      {
-        //   1    5    2
-        //    +---+---+
-        //    |       |
-        //   4+       +6
-        //    |       |
-        //    +---+---+
-        //   0    7    3
-        if (( nbUniqueNodes == 6 && nbRepl == 2 ) &&
-            (( iRepl[0] == 1 && iRepl[1] == 4 && curNodes[1] == curNodes[0] ) ||
-             ( iRepl[0] == 2 && iRepl[1] == 5 && curNodes[2] == curNodes[1] ) ||
-             ( iRepl[0] == 3 && iRepl[1] == 6 && curNodes[3] == curNodes[2] ) ||
-             ( iRepl[0] == 3 && iRepl[1] == 7 && curNodes[3] == curNodes[0] )))
-        {
-          isOk = true;
-        }
-        break;
-      }
-      case SMDSEntity_BiQuad_Quadrangle: // Bi-Quadratic QUADRANGLE
-      {
-        //   1    5    2
-        //    +---+---+
-        //    |       |
-        //   4+  8+   +6
-        //    |       |
-        //    +---+---+
-        //   0    7    3
-        if (( nbUniqueNodes == 7 && nbRepl == 2 && iRepl[1] != 8 ) &&
-            (( iRepl[0] == 1 && iRepl[1] == 4 && curNodes[1] == curNodes[0] ) ||
-             ( iRepl[0] == 2 && iRepl[1] == 5 && curNodes[2] == curNodes[1] ) ||
-             ( iRepl[0] == 3 && iRepl[1] == 6 && curNodes[3] == curNodes[2] ) ||
-             ( iRepl[0] == 3 && iRepl[1] == 7 && curNodes[3] == curNodes[0] )))
-        {
-          isOk = true;
-        }
-        break;
-      }
-      case SMDSEntity_Penta: ///////////////////////////////////// PENTAHEDRON
-      {
-        isOk = false;
-        if ( nbUniqueNodes == 4 ) {
-          // ---------------------------------> tetrahedron
-          if ( curNodes[3] == curNodes[4] &&
-               curNodes[3] == curNodes[5] ) {
-            // top nodes stick
-            isOk = true;
-          }
-          else if ( curNodes[0] == curNodes[1] &&
-                    curNodes[0] == curNodes[2] ) {
-            // bottom nodes stick: set a top before
-            uniqueNodes[ 3 ] = uniqueNodes [ 0 ];
-            uniqueNodes[ 0 ] = curNodes [ 5 ];
-            uniqueNodes[ 1 ] = curNodes [ 4 ];
-            uniqueNodes[ 2 ] = curNodes [ 3 ];
-            isOk = true;
-          }
-          else if (( curNodes[0] == curNodes[3] ) +
-                   ( curNodes[1] == curNodes[4] ) +
-                   ( curNodes[2] == curNodes[5] ) == 2 ) {
-            // a lateral face turns into a line
-            isOk = true;
-          }
-        }
-        else if ( nbUniqueNodes == 5 ) {
-          // PENTAHEDRON --------------------> pyramid
-          if ( curNodes[0] == curNodes[3] )
-          {
-            uniqueNodes[ 0 ] = curNodes[ 1 ];
-            uniqueNodes[ 1 ] = curNodes[ 4 ];
-            uniqueNodes[ 2 ] = curNodes[ 5 ];
-            uniqueNodes[ 3 ] = curNodes[ 2 ];
-            uniqueNodes[ 4 ] = curNodes[ 0 ];
-            isOk = true;
-          }
-          if ( curNodes[1] == curNodes[4] )
-          {
-            uniqueNodes[ 0 ] = curNodes[ 0 ];
-            uniqueNodes[ 1 ] = curNodes[ 2 ];
-            uniqueNodes[ 2 ] = curNodes[ 5 ];
-            uniqueNodes[ 3 ] = curNodes[ 3 ];
-            uniqueNodes[ 4 ] = curNodes[ 1 ];
-            isOk = true;
-          }
-          if ( curNodes[2] == curNodes[5] )
-          {
-            uniqueNodes[ 0 ] = curNodes[ 0 ];
-            uniqueNodes[ 1 ] = curNodes[ 3 ];
-            uniqueNodes[ 2 ] = curNodes[ 4 ];
-            uniqueNodes[ 3 ] = curNodes[ 1 ];
-            uniqueNodes[ 4 ] = curNodes[ 2 ];
-            isOk = true;
-          }
-        }
-        break;
-      }
-      case SMDSEntity_Hexa:
-      {
-        //////////////////////////////////// HEXAHEDRON
-        isOk = false;
-        SMDS_VolumeTool hexa (elem);
-        hexa.SetExternalNormal();
-        if ( nbUniqueNodes == 4 && nbRepl == 4 ) {
-          //////////////////////// HEX ---> tetrahedron
-          for ( int iFace = 0; iFace < 6; iFace++ ) {
-            const int *ind = hexa.GetFaceNodesIndices( iFace ); // indices of face nodes
-            if (curNodes[ind[ 0 ]] == curNodes[ind[ 1 ]] &&
-                curNodes[ind[ 0 ]] == curNodes[ind[ 2 ]] &&
-                curNodes[ind[ 0 ]] == curNodes[ind[ 3 ]] ) {
-              // one face turns into a point ...
-              int  pickInd = ind[ 0 ];
-              int iOppFace = hexa.GetOppFaceIndex( iFace );
-              ind = hexa.GetFaceNodesIndices( iOppFace );
-              int nbStick = 0;
-              uniqueNodes.clear();
-              for ( iCur = 0; iCur < 4 && nbStick < 2; iCur++ ) {
-                if ( curNodes[ind[ iCur ]] == curNodes[ind[ iCur + 1 ]] )
-                  nbStick++;
-                else
-                  uniqueNodes.push_back( curNodes[ind[ iCur ]]);
-              }
-              if ( nbStick == 1 ) {
-                // ... and the opposite one - into a triangle.
-                // set a top node
-                uniqueNodes.push_back( curNodes[ pickInd ]);
-                isOk = true;
-              }
-              break;
-            }
-          }
-        }
-        else if ( nbUniqueNodes == 6 && nbRepl == 2 ) {
-          //////////////////////// HEX ---> prism
-          int nbTria = 0, iTria[3];
-          const int *ind; // indices of face nodes
-          // look for triangular faces
-          for ( int iFace = 0; iFace < 6 && nbTria < 3; iFace++ ) {
-            ind = hexa.GetFaceNodesIndices( iFace );
-            TIDSortedNodeSet faceNodes;
-            for ( iCur = 0; iCur < 4; iCur++ )
-              faceNodes.insert( curNodes[ind[iCur]] );
-            if ( faceNodes.size() == 3 )
-              iTria[ nbTria++ ] = iFace;
-          }
-          // check if triangles are opposite
-          if ( nbTria == 2 && iTria[0] == hexa.GetOppFaceIndex( iTria[1] ))
-          {
-            // set nodes of the bottom triangle
-            ind = hexa.GetFaceNodesIndices( iTria[ 0 ]);
-            vector<int> indB;
-            for ( iCur = 0; iCur < 4; iCur++ )
-              if ( ind[iCur] != iRepl[0] && ind[iCur] != iRepl[1])
-                indB.push_back( ind[iCur] );
-            if ( !hexa.IsForward() )
-              std::swap( indB[0], indB[2] );
-            for ( iCur = 0; iCur < 3; iCur++ )
-              uniqueNodes[ iCur ] = curNodes[indB[iCur]];
-            // set nodes of the top triangle
-            const int *indT = hexa.GetFaceNodesIndices( iTria[ 1 ]);
-            for ( iCur = 0; iCur < 3; ++iCur )
-              for ( int j = 0; j < 4; ++j )
-                if ( hexa.IsLinked( indB[ iCur ], indT[ j ] ))
-                {
-                  uniqueNodes[ iCur + 3 ] = curNodes[ indT[ j ]];
-                  break;
-                }
-            isOk = true;
-            break;
-          }
-        }
-        else if (nbUniqueNodes == 5 && nbRepl == 3 ) {
-          //////////////////// HEXAHEDRON ---> pyramid
-          for ( int iFace = 0; iFace < 6; iFace++ ) {
-            const int *ind = hexa.GetFaceNodesIndices( iFace ); // indices of face nodes
-            if (curNodes[ind[ 0 ]] == curNodes[ind[ 1 ]] &&
-                curNodes[ind[ 0 ]] == curNodes[ind[ 2 ]] &&
-                curNodes[ind[ 0 ]] == curNodes[ind[ 3 ]] ) {
-              // one face turns into a point ...
-              int iOppFace = hexa.GetOppFaceIndex( iFace );
-              ind = hexa.GetFaceNodesIndices( iOppFace );
-              uniqueNodes.clear();
-              for ( iCur = 0; iCur < 4; iCur++ ) {
-                if ( curNodes[ind[ iCur ]] == curNodes[ind[ iCur + 1 ]] )
-                  break;
-                else
-                  uniqueNodes.push_back( curNodes[ind[ iCur ]]);
-              }
-              if ( uniqueNodes.size() == 4 ) {
-                // ... and the opposite one is a quadrangle
-                // set a top node
-                const int* indTop = hexa.GetFaceNodesIndices( iFace );
-                uniqueNodes.push_back( curNodes[indTop[ 0 ]]);
-                isOk = true;
-              }
-              break;
-            }
-          }
-        }
-
-        if ( !isOk && nbUniqueNodes > 4 ) {
-          ////////////////// HEXAHEDRON ---> polyhedron
-          hexa.SetExternalNormal();
-          vector<const SMDS_MeshNode *> poly_nodes; poly_nodes.reserve( 6 * 4 );
-          vector<int>                   quantities; quantities.reserve( 6 );
-          for ( int iFace = 0; iFace < 6; iFace++ )
-          {
-            const int *ind = hexa.GetFaceNodesIndices( iFace ); // indices of face nodes
-            if ( curNodes[ind[0]] == curNodes[ind[2]] ||
-                 curNodes[ind[1]] == curNodes[ind[3]] )
-            {
-              quantities.clear();
-              break; // opposite nodes stick
-            }
-            nodeSet.clear();
-            for ( iCur = 0; iCur < 4; iCur++ )
-            {
-              if ( nodeSet.insert( curNodes[ind[ iCur ]] ).second )
-                poly_nodes.push_back( curNodes[ind[ iCur ]]);
-            }
-            if ( nodeSet.size() < 3 )
-              poly_nodes.resize( poly_nodes.size() - nodeSet.size() );
-            else
-              quantities.push_back( nodeSet.size() );
-          }
-          if ( quantities.size() >= 4 )
-          {
-            const SMDS_MeshElement* newElem = aMesh->AddPolyhedralVolume( poly_nodes, quantities );
-            myLastCreatedElems.Append( newElem );
-            if ( aShapeId && newElem )
-              aMesh->SetMeshElementOnShape( newElem, aShapeId );
-            rmElemIds.push_back( elem->GetID() );
-          }
-        }
-        break;
-      } // case HEXAHEDRON
-
-      default:
-        isOk = false;
-      } // switch ( nbNodes )
-
-    } // if ( nbNodes != nbUniqueNodes ) // some nodes stick
-
-    if ( isOk ) // a non-poly elem remains valid after sticking nodes
-    {
-      if ( nbNodes != nbUniqueNodes ||
-           !aMesh->ChangeElementNodes( elem, & curNodes[0], nbNodes ))
-      {
-        elemType.Init( elem ).SetID( elem->GetID() );
-
-        SMESHDS_SubMesh * sm = aShapeId > 0 ? aMesh->MeshElements(aShapeId) : 0;
-        aMesh->RemoveFreeElement(elem, sm, /*fromGroups=*/false);
-
-        uniqueNodes.resize(nbUniqueNodes);
-        SMDS_MeshElement* newElem = this->AddElement( uniqueNodes, elemType );
+        SMDS_MeshElement* newElem = this->AddElement( newElemDefs[i].myNodes, newElemDefs[i] );
         if ( sm && newElem )
           sm->AddElement( newElem );
         if ( elem != newElem )
-          ReplaceElemInGroups( elem, newElem, aMesh );
+          ReplaceElemInGroups( elem, newElem, mesh );
       }
     }
-    else {
-      // Remove invalid regular element or invalid polygon
-      rmElemIds.push_back( elem->GetID() );
-    }
-
-  } // loop on elements
+  }
 
   // Remove bad elements, then equal nodes (order important)
-
   Remove( rmElemIds, false );
   Remove( rmNodeIds, true );
 
   return;
+}
+
+//=======================================================================
+//function : applyMerge
+//purpose  : Compute new connectivity of an element after merging nodes
+//  \param [in] elems - the element
+//  \param [out] newElemDefs - definition(s) of result element(s)
+//  \param [inout] nodeNodeMap - nodes to merge
+//  \param [in] avoidMakingHoles - if true and and the element becomes invalid
+//              after merging (but not degenerated), removes nodes causing
+//              the invalidity from \a nodeNodeMap.
+//  \return bool - true if the element should be removed
+//=======================================================================
+
+bool SMESH_MeshEditor::applyMerge( const SMDS_MeshElement* elem,
+                                   vector< ElemFeatures >& newElemDefs,
+                                   TNodeNodeMap&           nodeNodeMap,
+                                   const bool              avoidMakingHoles )
+{
+  bool toRemove = false; // to remove elem
+  int nbResElems = 1;    // nb new elements
+
+  newElemDefs.resize(nbResElems);
+  newElemDefs[0].Init( elem );
+  newElemDefs[0].myNodes.clear();
+
+  set<const SMDS_MeshNode*> nodeSet;
+  vector< const SMDS_MeshNode*>   curNodes;
+  vector< const SMDS_MeshNode*> & uniqueNodes = newElemDefs[0].myNodes;
+  vector<int> iRepl;
+
+  const        int  nbNodes = elem->NbNodes();
+  SMDSAbs_EntityType entity = elem->GetEntityType();
+
+  curNodes.resize( nbNodes );
+  uniqueNodes.resize( nbNodes );
+  iRepl.resize( nbNodes );
+  int iUnique = 0, iCur = 0, nbRepl = 0;
+
+  // Get new seq of nodes
+
+  SMDS_ElemIteratorPtr itN = elem->nodesIterator();
+  while ( itN->more() )
+  {
+    const SMDS_MeshNode* n = static_cast<const SMDS_MeshNode*>( itN->next() );
+
+    TNodeNodeMap::iterator nnIt = nodeNodeMap.find( n );
+    if ( nnIt != nodeNodeMap.end() ) {
+      n = (*nnIt).second;
+    }
+    curNodes[ iCur ] = n;
+    bool isUnique = nodeSet.insert( n ).second;
+    if ( isUnique )
+      uniqueNodes[ iUnique++ ] = n;
+    else
+      iRepl[ nbRepl++ ] = iCur;
+    iCur++;
+  }
+
+  // Analyse element topology after replacement
+
+  int nbUniqueNodes = nodeSet.size();
+  if ( nbNodes != nbUniqueNodes ) // some nodes stick
+  {
+    toRemove = true;
+    nbResElems = 0;
+
+    switch ( entity )
+    {
+    case SMDSEntity_Polygon:
+    case SMDSEntity_Quad_Polygon: // Polygon
+    {
+      ElemFeatures* elemType = & newElemDefs[0];
+      const bool isQuad = elemType->myIsQuad;
+      if ( isQuad )
+        SMDS_MeshCell::applyInterlace // interlace medium and corner nodes
+          ( SMDS_MeshCell::interlacedSmdsOrder( SMDSEntity_Quad_Polygon, nbNodes ), curNodes );
+
+      // a polygon can divide into several elements
+      vector<const SMDS_MeshNode *> polygons_nodes;
+      vector<int> quantities;
+      nbResElems = SimplifyFace( curNodes, polygons_nodes, quantities );
+      newElemDefs.resize( nbResElems );
+      for ( int inode = 0, iface = 0; iface < nbResElems; iface++ )
+      {
+        ElemFeatures* elemType = & newElemDefs[iface];
+        if ( iface ) elemType->Init( elem );
+
+        vector<const SMDS_MeshNode *>& face_nodes = elemType->myNodes;
+        int nbNewNodes = quantities[iface];
+        face_nodes.assign( polygons_nodes.begin() + inode,
+                           polygons_nodes.begin() + inode + nbNewNodes );
+        inode += nbNewNodes;
+        if ( isQuad ) // check if a result elem is a valid quadratic polygon
+        {
+          bool isValid = ( nbNewNodes % 2 == 0 );
+          for ( int i = 0; i < nbNewNodes && isValid; ++i )
+            isValid = ( elem->IsMediumNode( face_nodes[i]) == bool( i % 2 ));
+          elemType->SetQuad( isValid );
+          if ( isValid ) // put medium nodes after corners
+            SMDS_MeshCell::applyInterlaceRev
+              ( SMDS_MeshCell::interlacedSmdsOrder( SMDSEntity_Quad_Polygon,
+                                                    nbNewNodes ), face_nodes );
+        }
+        elemType->SetPoly(( nbNewNodes / ( elemType->myIsQuad + 1 ) > 4 ));
+      }
+      nbUniqueNodes = newElemDefs[0].myNodes.size();
+      break;
+    } // Polygon
+
+    case SMDSEntity_Polyhedra: // Polyhedral volume
+    {
+      if ( nbUniqueNodes >= 4 )
+      {
+        // each face has to be analyzed in order to check volume validity
+        if ( const SMDS_VtkVolume* aPolyedre = dynamic_cast<const SMDS_VtkVolume*>( elem ))
+        {
+          int nbFaces = aPolyedre->NbFaces();
+
+          vector<const SMDS_MeshNode *>& poly_nodes = newElemDefs[0].myNodes;
+          vector<int>                  & quantities = newElemDefs[0].myPolyhedQuantities;
+          vector<const SMDS_MeshNode *>  faceNodes;
+          poly_nodes.clear();
+          quantities.clear();
+
+          for (int iface = 1; iface <= nbFaces; iface++)
+          {
+            int nbFaceNodes = aPolyedre->NbFaceNodes(iface);
+            faceNodes.resize( nbFaceNodes );
+            for (int inode = 1; inode <= nbFaceNodes; inode++)
+            {
+              const SMDS_MeshNode * faceNode = aPolyedre->GetFaceNode(iface, inode);
+              TNodeNodeMap::iterator nnIt = nodeNodeMap.find(faceNode);
+              if ( nnIt != nodeNodeMap.end() ) // faceNode sticks
+                faceNode = (*nnIt).second;
+              faceNodes[inode - 1] = faceNode;
+            }
+            SimplifyFace(faceNodes, poly_nodes, quantities);
+          }
+
+          if ( quantities.size() > 3 )
+          {
+            // TODO: remove coincident faces
+            nbResElems = 1;
+            nbUniqueNodes = newElemDefs[0].myNodes.size();
+          }
+        }
+      }
+    }
+    break;
+
+    // Regular elements
+    // TODO not all the possible cases are solved. Find something more generic?
+    case SMDSEntity_Edge: //////// EDGE
+    case SMDSEntity_Triangle: //// TRIANGLE
+    case SMDSEntity_Quad_Triangle:
+    case SMDSEntity_Tetra:
+    case SMDSEntity_Quad_Tetra: // TETRAHEDRON
+    {
+      break;
+    }
+    case SMDSEntity_Quad_Edge:
+    {
+      break;
+    }
+    case SMDSEntity_Quadrangle: //////////////////////////////////// QUADRANGLE
+    {
+      if ( nbUniqueNodes < 3 )
+        toRemove = true;
+      else if ( nbRepl == 1 && curNodes[ iRepl[0]] == curNodes[( iRepl[0]+2 )%4 ])
+        toRemove = true; // opposite nodes stick
+      else
+        toRemove = false;
+      break;
+    }
+    case SMDSEntity_Quad_Quadrangle: // Quadratic QUADRANGLE
+    {
+      //   1    5    2
+      //    +---+---+
+      //    |       |
+      //   4+       +6
+      //    |       |
+      //    +---+---+
+      //   0    7    3
+      if (( nbUniqueNodes == 6 && nbRepl == 2 ) &&
+          (( iRepl[0] == 1 && iRepl[1] == 4 && curNodes[1] == curNodes[0] ) ||
+           ( iRepl[0] == 2 && iRepl[1] == 5 && curNodes[2] == curNodes[1] ) ||
+           ( iRepl[0] == 3 && iRepl[1] == 6 && curNodes[3] == curNodes[2] ) ||
+           ( iRepl[0] == 3 && iRepl[1] == 7 && curNodes[3] == curNodes[0] )))
+      {
+        toRemove = false;
+      }
+      break;
+    }
+    case SMDSEntity_BiQuad_Quadrangle: // Bi-Quadratic QUADRANGLE
+    {
+      //   1    5    2
+      //    +---+---+
+      //    |       |
+      //   4+  8+   +6
+      //    |       |
+      //    +---+---+
+      //   0    7    3
+      if (( nbUniqueNodes == 7 && nbRepl == 2 && iRepl[1] != 8 ) &&
+          (( iRepl[0] == 1 && iRepl[1] == 4 && curNodes[1] == curNodes[0] ) ||
+           ( iRepl[0] == 2 && iRepl[1] == 5 && curNodes[2] == curNodes[1] ) ||
+           ( iRepl[0] == 3 && iRepl[1] == 6 && curNodes[3] == curNodes[2] ) ||
+           ( iRepl[0] == 3 && iRepl[1] == 7 && curNodes[3] == curNodes[0] )))
+      {
+        toRemove = false;
+      }
+      break;
+    }
+    case SMDSEntity_Penta: ///////////////////////////////////// PENTAHEDRON
+    {
+      if ( nbUniqueNodes == 4 ) {
+        // ---------------------------------> tetrahedron
+        if ( curNodes[3] == curNodes[4] &&
+             curNodes[3] == curNodes[5] ) {
+          // top nodes stick
+          toRemove = false;
+        }
+        else if ( curNodes[0] == curNodes[1] &&
+                  curNodes[0] == curNodes[2] ) {
+          // bottom nodes stick: set a top before
+          uniqueNodes[ 3 ] = uniqueNodes [ 0 ];
+          uniqueNodes[ 0 ] = curNodes [ 5 ];
+          uniqueNodes[ 1 ] = curNodes [ 4 ];
+          uniqueNodes[ 2 ] = curNodes [ 3 ];
+          toRemove = false;
+        }
+        else if (( curNodes[0] == curNodes[3] ) +
+                 ( curNodes[1] == curNodes[4] ) +
+                 ( curNodes[2] == curNodes[5] ) == 2 ) {
+          // a lateral face turns into a line
+          toRemove = false;
+        }
+      }
+      else if ( nbUniqueNodes == 5 ) {
+        // PENTAHEDRON --------------------> pyramid
+        if ( curNodes[0] == curNodes[3] )
+        {
+          uniqueNodes[ 0 ] = curNodes[ 1 ];
+          uniqueNodes[ 1 ] = curNodes[ 4 ];
+          uniqueNodes[ 2 ] = curNodes[ 5 ];
+          uniqueNodes[ 3 ] = curNodes[ 2 ];
+          uniqueNodes[ 4 ] = curNodes[ 0 ];
+          toRemove = false;
+        }
+        if ( curNodes[1] == curNodes[4] )
+        {
+          uniqueNodes[ 0 ] = curNodes[ 0 ];
+          uniqueNodes[ 1 ] = curNodes[ 2 ];
+          uniqueNodes[ 2 ] = curNodes[ 5 ];
+          uniqueNodes[ 3 ] = curNodes[ 3 ];
+          uniqueNodes[ 4 ] = curNodes[ 1 ];
+          toRemove = false;
+        }
+        if ( curNodes[2] == curNodes[5] )
+        {
+          uniqueNodes[ 0 ] = curNodes[ 0 ];
+          uniqueNodes[ 1 ] = curNodes[ 3 ];
+          uniqueNodes[ 2 ] = curNodes[ 4 ];
+          uniqueNodes[ 3 ] = curNodes[ 1 ];
+          uniqueNodes[ 4 ] = curNodes[ 2 ];
+          toRemove = false;
+        }
+      }
+      break;
+    }
+    case SMDSEntity_Hexa:
+    {
+      //////////////////////////////////// HEXAHEDRON
+      SMDS_VolumeTool hexa (elem);
+      hexa.SetExternalNormal();
+      if ( nbUniqueNodes == 4 && nbRepl == 4 ) {
+        //////////////////////// HEX ---> tetrahedron
+        for ( int iFace = 0; iFace < 6; iFace++ ) {
+          const int *ind = hexa.GetFaceNodesIndices( iFace ); // indices of face nodes
+          if (curNodes[ind[ 0 ]] == curNodes[ind[ 1 ]] &&
+              curNodes[ind[ 0 ]] == curNodes[ind[ 2 ]] &&
+              curNodes[ind[ 0 ]] == curNodes[ind[ 3 ]] ) {
+            // one face turns into a point ...
+            int  pickInd = ind[ 0 ];
+            int iOppFace = hexa.GetOppFaceIndex( iFace );
+            ind = hexa.GetFaceNodesIndices( iOppFace );
+            int nbStick = 0;
+            uniqueNodes.clear();
+            for ( iCur = 0; iCur < 4 && nbStick < 2; iCur++ ) {
+              if ( curNodes[ind[ iCur ]] == curNodes[ind[ iCur + 1 ]] )
+                nbStick++;
+              else
+                uniqueNodes.push_back( curNodes[ind[ iCur ]]);
+            }
+            if ( nbStick == 1 ) {
+              // ... and the opposite one - into a triangle.
+              // set a top node
+              uniqueNodes.push_back( curNodes[ pickInd ]);
+              toRemove = false;
+            }
+            break;
+          }
+        }
+      }
+      else if ( nbUniqueNodes == 6 && nbRepl == 2 ) {
+        //////////////////////// HEX ---> prism
+        int nbTria = 0, iTria[3];
+        const int *ind; // indices of face nodes
+        // look for triangular faces
+        for ( int iFace = 0; iFace < 6 && nbTria < 3; iFace++ ) {
+          ind = hexa.GetFaceNodesIndices( iFace );
+          TIDSortedNodeSet faceNodes;
+          for ( iCur = 0; iCur < 4; iCur++ )
+            faceNodes.insert( curNodes[ind[iCur]] );
+          if ( faceNodes.size() == 3 )
+            iTria[ nbTria++ ] = iFace;
+        }
+        // check if triangles are opposite
+        if ( nbTria == 2 && iTria[0] == hexa.GetOppFaceIndex( iTria[1] ))
+        {
+          // set nodes of the bottom triangle
+          ind = hexa.GetFaceNodesIndices( iTria[ 0 ]);
+          vector<int> indB;
+          for ( iCur = 0; iCur < 4; iCur++ )
+            if ( ind[iCur] != iRepl[0] && ind[iCur] != iRepl[1])
+              indB.push_back( ind[iCur] );
+          if ( !hexa.IsForward() )
+            std::swap( indB[0], indB[2] );
+          for ( iCur = 0; iCur < 3; iCur++ )
+            uniqueNodes[ iCur ] = curNodes[indB[iCur]];
+          // set nodes of the top triangle
+          const int *indT = hexa.GetFaceNodesIndices( iTria[ 1 ]);
+          for ( iCur = 0; iCur < 3; ++iCur )
+            for ( int j = 0; j < 4; ++j )
+              if ( hexa.IsLinked( indB[ iCur ], indT[ j ] ))
+              {
+                uniqueNodes[ iCur + 3 ] = curNodes[ indT[ j ]];
+                break;
+              }
+          toRemove = false;
+          break;
+        }
+      }
+      else if (nbUniqueNodes == 5 && nbRepl == 3 ) {
+        //////////////////// HEXAHEDRON ---> pyramid
+        for ( int iFace = 0; iFace < 6; iFace++ ) {
+          const int *ind = hexa.GetFaceNodesIndices( iFace ); // indices of face nodes
+          if (curNodes[ind[ 0 ]] == curNodes[ind[ 1 ]] &&
+              curNodes[ind[ 0 ]] == curNodes[ind[ 2 ]] &&
+              curNodes[ind[ 0 ]] == curNodes[ind[ 3 ]] ) {
+            // one face turns into a point ...
+            int iOppFace = hexa.GetOppFaceIndex( iFace );
+            ind = hexa.GetFaceNodesIndices( iOppFace );
+            uniqueNodes.clear();
+            for ( iCur = 0; iCur < 4; iCur++ ) {
+              if ( curNodes[ind[ iCur ]] == curNodes[ind[ iCur + 1 ]] )
+                break;
+              else
+                uniqueNodes.push_back( curNodes[ind[ iCur ]]);
+            }
+            if ( uniqueNodes.size() == 4 ) {
+              // ... and the opposite one is a quadrangle
+              // set a top node
+              const int* indTop = hexa.GetFaceNodesIndices( iFace );
+              uniqueNodes.push_back( curNodes[indTop[ 0 ]]);
+              toRemove = false;
+            }
+            break;
+          }
+        }
+      }
+
+      if ( toRemove && nbUniqueNodes > 4 ) {
+        ////////////////// HEXAHEDRON ---> polyhedron
+        hexa.SetExternalNormal();
+        vector<const SMDS_MeshNode *>& poly_nodes = newElemDefs[0].myNodes;
+        vector<int>                  & quantities = newElemDefs[0].myPolyhedQuantities;
+        poly_nodes.reserve( 6 * 4 ); poly_nodes.clear();
+        quantities.reserve( 6 );     quantities.clear();
+        for ( int iFace = 0; iFace < 6; iFace++ )
+        {
+          const int *ind = hexa.GetFaceNodesIndices( iFace ); // indices of face nodes
+          if ( curNodes[ind[0]] == curNodes[ind[2]] ||
+               curNodes[ind[1]] == curNodes[ind[3]] )
+          {
+            quantities.clear();
+            break; // opposite nodes stick
+          }
+          nodeSet.clear();
+          for ( iCur = 0; iCur < 4; iCur++ )
+          {
+            if ( nodeSet.insert( curNodes[ind[ iCur ]] ).second )
+              poly_nodes.push_back( curNodes[ind[ iCur ]]);
+          }
+          if ( nodeSet.size() < 3 )
+            poly_nodes.resize( poly_nodes.size() - nodeSet.size() );
+          else
+            quantities.push_back( nodeSet.size() );
+        }
+        if ( quantities.size() >= 4 )
+        {
+          nbResElems = 1;
+          nbUniqueNodes = poly_nodes.size();
+          newElemDefs[0].SetPoly(true);
+        }
+      }
+      break;
+    } // case HEXAHEDRON
+
+    default:
+      toRemove = true;
+
+    } // switch ( entity )
+
+    if ( toRemove && nbResElems == 0 && avoidMakingHoles )
+    {
+      // erase from nodeNodeMap nodes whose merge spoils elem
+      vector< const SMDS_MeshNode* > noMergeNodes;
+      SMESH_MeshAlgos::DeMerge( elem, curNodes, noMergeNodes );
+      for ( size_t i = 0; i < noMergeNodes.size(); ++i )
+        nodeNodeMap.erase( noMergeNodes[i] );
+    }
+    
+  } // if ( nbNodes != nbUniqueNodes ) // some nodes stick
+
+  uniqueNodes.resize( nbUniqueNodes );
+
+  if ( !toRemove && nbResElems == 0 )
+    nbResElems = 1;
+
+  newElemDefs.resize( nbResElems );
+
+  return !toRemove;
 }
 
 

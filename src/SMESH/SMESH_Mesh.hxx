@@ -121,7 +121,7 @@ class SMESH_EXPORT SMESH_Mesh
 
   int MEDToMesh(const char* theFileName, const char* theMeshName);
   
-  int STLToMesh(const char* theFileName);
+  std::string STLToMesh(const char* theFileName);
 
   int CGNSToMesh(const char* theFileName, const int theMeshIndex, std::string& theMeshName);
   
@@ -263,6 +263,7 @@ class SMESH_EXPORT SMESH_Mesh
                  const SMESHDS_Mesh* meshPart = 0) throw(SALOME_Exception);
   void ExportSTL(const char *        file,
                  const bool          isascii,
+                 const char *        name = 0,
                  const SMESHDS_Mesh* meshPart = 0) throw(SALOME_Exception);
   void ExportCGNS(const char *        file,
                   const SMESHDS_Mesh* mesh,

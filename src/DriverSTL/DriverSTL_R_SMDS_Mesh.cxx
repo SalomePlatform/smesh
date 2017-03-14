@@ -69,7 +69,7 @@ namespace
   };
   typedef NCollection_DataMap<gp_Pnt,SMDS_MeshNode*,Hasher> TDataMapOfPntNodePtr;
 
-  const int HEADER_SIZE           = 84;
+  const int HEADER_SIZE           = 84; // 80 chars + int
   const int SIZEOF_STL_FACET      = 50;
   const int ASCII_LINES_PER_FACET = 7;
   const int SIZE_OF_FLOAT         = 4;
@@ -150,11 +150,12 @@ Driver_Mesh::Status DriverSTL_R_SMDS_Mesh::Perform()
 static Standard_Real readFloat(SMESH_File& theFile)
 {
   union {
-    Standard_Boolean i;
-    Standard_ShortReal f;
+    int   i;
+    float f;
   } u;
 
   const char* c = theFile;
+  u.i  = 0;
   u.i  =  c[0] & 0xFF;
   u.i |= (c[1] & 0xFF) << 0x08;
   u.i |= (c[2] & 0xFF) << 0x10;
@@ -205,30 +206,48 @@ static SMDS_MeshNode* readNode(SMESH_File& theFile,
 
 //=======================================================================
 //function : readAscii
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 Driver_Mesh::Status DriverSTL_R_SMDS_Mesh::readAscii(SMESH_File& theFile) const
 {
   Status aResult = DRS_OK;
 
+  // get a solid name
+  if ( strncmp( "solid ", theFile, strlen("solid ")) == 0 ) // not empty
+  {
+    const char * header = theFile;
+    std::string& name = const_cast<std::string&>( myName );
+    for ( header += strlen("solid "); !iscntrl( *header ); ++header )
+      name.push_back( *header );
+
+    std::string::iterator i = name.begin();
+    while ( i != name.end() && isspace( *i )) ++i;
+    name.erase( name.begin(), i );
+
+    size_t n = name.size();
+    while ( n > 0 && isspace( name[ n - 1 ] )) --n;
+    name.resize( n );
+  }
+
   // get the file size
   long filesize = theFile.size();
   theFile.close();
 
-  // Open the file 
+  // Open the file
   FILE* file = fopen( myFile.c_str(),"r");
 
   // count the number of lines
   Standard_Integer nbLines = 0;
-  for (long ipos = 0; ipos < filesize; ++ipos) {
+  for (long ipos = 0; ipos < filesize; ++ipos)
+  {
     if (getc(file) == '\n')
       nbLines++;
   }
 
   // go back to the beginning of the file
   rewind(file);
-  
+
   Standard_Integer nbTri = (nbLines / ASCII_LINES_PER_FACET);
 
   TDataMapOfPntNodePtr uniqnodes;
@@ -236,8 +255,8 @@ Driver_Mesh::Status DriverSTL_R_SMDS_Mesh::readAscii(SMESH_File& theFile) const
   while (getc(file) != '\n');
 
   // main reading
-  for (Standard_Integer iTri = 0; iTri < nbTri; ++iTri) {
-
+  for (Standard_Integer iTri = 0; iTri < nbTri; ++iTri)
+  {
     // skipping the facet normal
     Standard_ShortReal normal[3];
     fscanf(file,"%*s %*s %f %f %f\n",&normal[0],&normal[1],&normal[2]);
@@ -278,7 +297,7 @@ Driver_Mesh::Status DriverSTL_R_SMDS_Mesh::readBinary(SMESH_File& file) const
 
   long filesize = file.size();
 
-  if ( (filesize - HEADER_SIZE) % SIZEOF_STL_FACET !=0 
+  if ( (filesize - HEADER_SIZE) % SIZEOF_STL_FACET != 0 
       // Commented to allow reading small files (ex: 1 face)
       /*|| (filesize < STL_MIN_FILE_SIZE)*/) {
     Standard_NoMoreObject::Raise("DriverSTL_R_SMDS_MESH::readBinary (wrong file size)");
@@ -287,6 +306,19 @@ Driver_Mesh::Status DriverSTL_R_SMDS_Mesh::readBinary(SMESH_File& file) const
   // don't trust the number of triangles which is coded in the file
   // sometimes it is wrong, and with this technique we don't need to swap endians for integer
   Standard_Integer nbTri = ((filesize - HEADER_SIZE) / SIZEOF_STL_FACET);
+
+  // get a solid name
+  if ( strncmp( "name: ", file, strlen("name: ")) == 0 ) // name present
+  {
+    const char * header = file;
+    std::string&   name = const_cast<std::string&>( myName );
+    header += strlen("name: ");
+    name.assign( header, HEADER_SIZE - strlen("name: ") - 4);
+
+    size_t n = name.size();
+    while ( n > 0 && isspace( name[ n - 1 ] )) --n;
+    name.resize( n );
+  }
 
   // skip the header
   file += HEADER_SIZE;

@@ -206,6 +206,16 @@ namespace SMESH_MeshAlgos
                                  CoincidentFreeBorders & foundFreeBordes);
   
 
-} // SMESH_MeshAlgos
+  /*!
+   * \brief Find nodes whose merge makes the element invalid
+   *
+   * (Implemented in SMESH_DeMerge.cxx)
+   */
+  SMESHUtils_EXPORT
+  void DeMerge(const SMDS_MeshElement*              elem,
+               std::vector< const SMDS_MeshNode* >& newNodes,
+               std::vector< const SMDS_MeshNode* >& noMergeNodes);
+
+} // namespace SMESH_MeshAlgos
 
 #endif
