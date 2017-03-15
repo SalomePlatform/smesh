@@ -4206,7 +4206,7 @@ void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfN
 
   getEditor().MergeNodes( aListOfListOfNodes, AvoidMakingHoles );
 
-  aTPythonDump << "], " << NodesToKeep << ")";
+  aTPythonDump << "], " << NodesToKeep << ", " << AvoidMakingHoles << ")";
 
   declareMeshModified( /*isReComputeSafe=*/false );
 

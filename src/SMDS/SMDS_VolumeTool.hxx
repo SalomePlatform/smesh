@@ -63,7 +63,7 @@ class SMDS_EXPORT SMDS_VolumeTool
 
   bool Set( const SMDS_MeshElement*                  theVolume,
             const bool                               ignoreCentralNodes = true,
-            const std::vector<const SMDS_MeshNode*>* nodes = NULL);
+            const std::vector<const SMDS_MeshNode*>* nodes = 0);
   // Set volume.
   // Return false if theVolume is not of type SMDSAbs_Volume.
   // ignoreCentralNodes makes skip nodes at face centers when returning

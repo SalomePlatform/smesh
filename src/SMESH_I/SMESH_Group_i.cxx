@@ -480,7 +480,6 @@ SMESH::long_array* SMESH_GroupBase_i::GetListOfID()
     if ( 0 < aSize && aSize < 100 ) // for comfortable testing ;)
       std::sort( &aRes[0], &aRes[0]+aSize );
   }
-  MESSAGE("get list of IDs of a vague group");
   return aRes._retn();
 }
 
@@ -673,7 +672,6 @@ void SMESH_GroupBase_i::SetColorNumber(CORBA::Long color)
     aGroupDS->SetColorGroup(color);
     TPythonDump()<<SMESH::SMESH_GroupBase_var(_this())<<".SetColorNumber( "<<color<<" )";
   }
-  MESSAGE("set color number of a group");
   return ;
 }
 
