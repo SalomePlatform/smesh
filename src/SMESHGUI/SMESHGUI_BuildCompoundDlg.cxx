@@ -135,7 +135,7 @@ SMESHGUI_BuildCompoundDlg::SMESHGUI_BuildCompoundDlg( SMESHGUI* theModule )
   CheckBoxMerge = new QCheckBox(tr("MERGE_NODES_AND_ELEMENTS"), GroupArgs);
 
   TextLabelTol = new QLabel(tr("SMESH_TOLERANCE"), GroupArgs);
-  TextLabelTol->setAlignment(Qt::AlignCenter);
+  //TextLabelTol->setAlignment(Qt::AlignCenter);
   SpinBoxTol = new SMESHGUI_SpinBox(GroupArgs);
   SpinBoxTol->RangeStepAndValidator(0.0, COORD_MAX, 0.00001, "len_tol_precision" );
 
@@ -146,8 +146,8 @@ SMESHGUI_BuildCompoundDlg::SMESHGUI_BuildCompoundDlg( SMESHGUI* theModule )
   GroupArgsLayout->addWidget(ComboBoxUnion,   1, 3);
   GroupArgsLayout->addWidget(CheckBoxCommon,  2, 0, 1, 4);
   GroupArgsLayout->addWidget(CheckBoxMerge,   3, 0, 1, 4);
-  GroupArgsLayout->addWidget(TextLabelTol,    4, 0, 1, 2);
-  GroupArgsLayout->addWidget(SpinBoxTol,      4, 2, 1, 2);
+  GroupArgsLayout->addWidget(TextLabelTol,    4, 0);
+  GroupArgsLayout->addWidget(SpinBoxTol,      4, 1, 1, 3);
 
   /***************************************************************/
   GroupButtons = new QGroupBox(this);
@@ -289,6 +289,8 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
   if (!isValid())
     return false;
 
+  SUIT_OverrideCursor aWaitCursor;
+
   SMESH::SMESH_Mesh_var aMesh;
 
   if (!myMesh->_is_nil())
@@ -298,7 +300,6 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
 
     QStringList anEntryList;
     try {
-      SUIT_OverrideCursor aWaitCursor;
 
       aMesh = myMeshArray[0]->GetMesh();
       aMesh->SetParameters( aParameters.join(":").toLatin1().constData() );

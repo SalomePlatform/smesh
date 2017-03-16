@@ -4605,9 +4605,9 @@ void SMESHGUI::initialize( CAM_Application* app )
   // Controls
   //-------------------------------------------------
   QString
-    aMeshInVtkHasNodes = aMeshInVTK + "&&" + hasNodes,
-    aMeshInVtkHasEdges = aMeshInVTK + "&&" + hasEdges,
-    aMeshInVtkHasFaces = aMeshInVTK + "&&" + hasFaces,
+    aMeshInVtkHasNodes   = aMeshInVTK + "&&" + hasNodes,
+    aMeshInVtkHasEdges   = aMeshInVTK + "&&" + hasEdges,
+    aMeshInVtkHasFaces   = aMeshInVTK + "&&" + hasFaces,
     aMeshInVtkHasVolumes = aMeshInVTK + "&&" + hasVolumes;
 
   anId = popupMgr()->insert( tr( "MEN_CTRL" ), -1, -1 );
