@@ -3,7 +3,7 @@
 
 import numpy, subprocess, sys
 from os import remove, getpid, path, environ
-from output import message
+from .output import message
 
 def calcCoordVectors(normalIN, directionIN):
   V3TEMP=numpy.cross(normalIN,directionIN)
@@ -260,8 +260,8 @@ def extendElsets(meshFile, outFile=None):
   while ifChanged :
     ifChanged=False
     for elemId in elemList[0]:
-      minColor=sys.maxint
-      maxColor=-sys.maxint
+      minColor=sys.maxsize
+      maxColor=-sys.maxsize
       for elemNodeId in mesh.GetElemNodes(elemId) :
         nodeColor=colorList[elemNodeId-1]
         if nodeColor<minColor : minColor=nodeColor
@@ -326,7 +326,7 @@ def cleanGroups(mesh):
 
 def getMaxAspectRatio(tmpdir):
   logFile=path.join(tmpdir,'MESHING_OUTPUT')
-  print logFile
+  print(logFile)
   if not path.isfile(logFile): return(-1)
 
   import re

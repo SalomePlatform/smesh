@@ -23,6 +23,6 @@ def Message (code) :
                       2 : lambda x: "Fatal: Incorrect input \n",
                       3 : lambda x: "Fatal: Overlapping objects detected \n",
                       4 : lambda x: "Fatal: Incompatible object type with neighbouring objects" }[code](str(code))
-    print MessageString
+    print(MessageString)
     #if code > 1 : sys.exit()
     return 1

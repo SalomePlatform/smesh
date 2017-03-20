@@ -51,7 +51,7 @@ def Go(GeoObj, CutPlnLst, OutLvlLst, PrefixLst, Publish):
 
     NumCuts = CheckInput(CutPlnLst, OutLvlLst, PrefixLst, 1)
     OrigType = FindStandType(GeoObj,0)
-    InvDictionary = dict((v,k) for k, v in geompy.ShapeType.iteritems())    # Give geometry type name as a function of standard type numbering, ex: 4=FACE, 6=EDGE, 7=VERTEX
+    InvDictionary = dict((v,k) for k, v in geompy.ShapeType.items())    # Give geometry type name as a function of standard type numbering, ex: 4=FACE, 6=EDGE, 7=VERTEX
     TrimSize = geompy.BasicProperties(GeoObj)[0]*100
     CutPlane = [] ; Sections = [] ; Parts = []
 
@@ -75,7 +75,7 @@ def Go(GeoObj, CutPlnLst, OutLvlLst, PrefixLst, Publish):
                     Sections.append(dummyObj)
                     if Publish:geompy.addToStudyInFather(OutFather, dummyObj, PrefixLst[i]+"_"+InvDictionary[j][0:2])
                 else :
-                    print "Warning: For the section no.", i, ", No intersection of type " + InvDictionary[j] + " was found. Hence, no corresponding groups were created"
+                    print("Warning: For the section no.", i, ", No intersection of type " + InvDictionary[j] + " was found. Hence, no corresponding groups were created")
 
         SubShapesID = geompy.SubShapeAllIDs(OutFather,OrigType+1)               # Saving also the groups corresponding to the sectioned item of the same type: ex. A solid into n sub-solids due to the sections
         for i in range(0,len(SubShapesID)):
@@ -113,7 +113,7 @@ def GoTrim(GeoObj, CutPlnLst, OutLvlLst, PrefixLst, Publish):
 
     NumCuts = CheckInput(CutPlnLst, OutLvlLst, PrefixLst, 0)
     OrigType = FindStandType(GeoObj,0)
-    InvDictionary = dict((v,k) for k, v in geompy.ShapeType.iteritems())    # Give geometry type name as a function of standard type numbering, ex: 4=FACE, 6=EDGE, 7=VERTEX
+    InvDictionary = dict((v,k) for k, v in geompy.ShapeType.items())    # Give geometry type name as a function of standard type numbering, ex: 4=FACE, 6=EDGE, 7=VERTEX
     CutPlane = [] ; Sections = [] ; Parts = []
     if NumCuts:
         for i in range(0, NumCuts):             # Loop over the cutting planes to create them one by one
@@ -135,7 +135,7 @@ def GoTrim(GeoObj, CutPlnLst, OutLvlLst, PrefixLst, Publish):
                     Sections.append(dummyObj)
                     if Publish: geompy.addToStudyInFather(OutFather, dummyObj, PrefixLst[i]+"_"+InvDictionary[j][0:2])
                 else :
-                    print "Warning: For the section no.", i, ", No intersection of type " + InvDictionary[j] + " was found. Hence, no corresponding groups were created"
+                    print("Warning: For the section no.", i, ", No intersection of type " + InvDictionary[j] + " was found. Hence, no corresponding groups were created")
 
         SubShapesID = geompy.SubShapeAllIDs(OutFather,OrigType+1)               # Saving also the groups corresponding to the sectioned item of the same type: ex. A solid into n sub-solids due to the sections
         for i in range(0,len(SubShapesID)):

@@ -2,11 +2,11 @@
 
 import logging
 
-from geomsmesh import geompy
-from geomsmesh import geomPublish
-from geomsmesh import geomPublishInFather
-import initLog
-from projettePointSurCourbe import projettePointSurCourbe
+from .geomsmesh import geompy
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+from . import initLog
+from .projettePointSurCourbe import projettePointSurCourbe
 
 def creePointsPipePeau(listEdges, idFacesDebouchantes, idFillingFromBout,
                        ptEdgeFond, ptFisExtPi, edCircPeau, gptsdisks, idisklim, nbsegRad):

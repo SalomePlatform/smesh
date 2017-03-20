@@ -19,4 +19,4 @@ mesh.Compute()
 # get all faces with free edges
 filter = smesh.GetFilter(SMESH.FACE, SMESH.FT_FreeEdges)
 ids = mesh.GetIdsFromFilter(filter)
-print "Number of faces with free edges:", len(ids)
+print("Number of faces with free edges:", len(ids))

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from geomsmesh import geompy
+from .geomsmesh import geompy
 
 # -----------------------------------------------------------------------------
 # --- teste si l'opération de partition a produit une modification
@@ -24,7 +24,7 @@ def checkDecoupePartition(shapes, part):
     info = geompy.ShapeInfo(shape)
     logging.debug("shape info %s", info)
     for k in ['VERTEX', 'EDGE', 'FACE', 'SOLID']:
-      if k in orig.keys():
+      if k in list(orig.keys()):
         orig[k] += info[k]
       else:
         orig[k] = info[k]

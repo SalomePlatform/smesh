@@ -24,8 +24,8 @@
 
 
 
-import sys, math, commands
-CWD = commands.getoutput('pwd')
+import sys, math, subprocess
+CWD = subprocess.getoutput('pwd')
 sys.path.append(CWD)
 
 from MacObject import *

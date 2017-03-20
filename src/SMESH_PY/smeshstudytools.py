@@ -155,7 +155,7 @@ class SMeshStudyTools:
             self.smeshGui = salome.ImportComponentGUI("SMESH")
 
         if not helper.SalomeGUI.hasDesktop():
-            print "displayMeshObject: no desktop available"
+            print("displayMeshObject: no desktop available")
             return
         self.smeshGui.CreateAndDisplayActor(entry)
 

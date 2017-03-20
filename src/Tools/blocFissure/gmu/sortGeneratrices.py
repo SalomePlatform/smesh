@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from geomsmesh import geompy
-from geomsmesh import geomPublish
-from geomsmesh import geomPublishInFather
-import initLog
+from .geomsmesh import geompy
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+from . import initLog
 
 # -----------------------------------------------------------------------------
 # --- tri par longueur des 3 generatrices

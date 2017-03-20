@@ -22,7 +22,7 @@
 #
 
 import sys, os
-import ConfigParser
+import configparser
 from MESHJOB import ConfigParameter
 from salome.kernel.uiexception import AdminException, UiException
 
@@ -42,7 +42,7 @@ class ConfigReader:
         self.__configFilename = None
         try:
             smeshpath=os.environ["SMESH_ROOT_DIR"]
-        except KeyError, ex:
+        except KeyError as ex:
             raise AdminException("You should define the variable SMESH_ROOT_DIR")
 
         pluginspath = os.path.join(smeshpath,CONFIG_RELPATH)
@@ -53,11 +53,11 @@ class ConfigReader:
             msg = "The configuration file %s can't be found in the SMESH plugins path %s"
             raise AdminException(msg%(CONFIG_FILENAME,pluginspath))
 
-        print "The configuration file is : %s"%self.__configFilename
-        self.__configparser = ConfigParser.RawConfigParser()
+        print("The configuration file is : %s"%self.__configFilename)
+        self.__configparser = configparser.RawConfigParser()
         try:
             self.__configparser.read(self.__configFilename)
-        except ConfigParser.ParsingError, ex:
+        except configparser.ParsingError as ex:
             raise AdminException(ex.message)
 
     def getLocalConfig(self):
@@ -87,10 +87,10 @@ class ConfigReader:
         return defaultType
 
 def printConfig(config):
-    print "PADDER CONFIGURATION:"
-    print "\tconfig.resname = %s"%config.resname
-    print "\tconfig.binpath = %s"%config.binpath
-    print "\tconfig.envpath = %s"%config.envpath
+    print("PADDER CONFIGURATION:")
+    print("\tconfig.resname = %s"%config.resname)
+    print("\tconfig.binpath = %s"%config.binpath)
+    print("\tconfig.envpath = %s"%config.envpath)
     
 def getPadderTestDir(config):
     """
@@ -112,10 +112,10 @@ def TEST_getDefaultConfig():
     try:
         configReader = ConfigReader()
         defaultConfig = configReader.getDefaultConfig()
-        print defaultConfig.resname
-        print defaultConfig.binpath
-        print defaultConfig.envpath
-    except Exception, ex:
+        print(defaultConfig.resname)
+        print(defaultConfig.binpath)
+        print(defaultConfig.envpath)
+    except Exception as ex:
         sys.stderr.write('ERROR: %s\n' % str(ex))
         return False
     
@@ -127,8 +127,8 @@ def TEST_getDefaultConfig_withError():
     try:
         configReader = ConfigReader()
         defaultConfig = configReader.getDefaultConfig()
-    except UiException, err:
-        print 'ERROR: %s' % str(err)
+    except UiException as err:
+        print('ERROR: %s' % str(err))
         return True
     
     return False

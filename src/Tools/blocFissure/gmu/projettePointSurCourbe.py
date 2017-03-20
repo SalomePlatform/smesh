@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from geomsmesh import geompy
+from .geomsmesh import geompy
 import logging
 import math
 

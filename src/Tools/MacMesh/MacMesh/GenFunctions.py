@@ -35,7 +35,7 @@ smesh = smeshBuilder.New( Config.theStudy )
 ##########################################################################################################
 
 def Box11 (MacObject):
-    if Config.debug : print "Generating regular box"
+    if Config.debug : print("Generating regular box")
 
     dummy1 = geompy.MakeScaleAlongAxes( ElemBox11 (), None , MacObject.GeoPar[1][0], MacObject.GeoPar[1][1], 1)
     RectFace = geompy.MakeTranslation(dummy1, MacObject.GeoPar[0][0], MacObject.GeoPar[0][1], 0)
@@ -64,7 +64,7 @@ def Box11 (MacObject):
 ##########################################################################################################
 
 def Box42 (MacObject):
-    if Config.debug : print "Generating box 4-2 reducer"
+    if Config.debug : print("Generating box 4-2 reducer")
 
     Z_Axis = geompy.MakeVectorDXDYDZ(0., 0., 1.)
     RotAngle = {'SN' : lambda : 0,
@@ -105,7 +105,7 @@ def Box42 (MacObject):
 ##########################################################################################################
 
 def BoxAng32 (MacObject):
-    if Config.debug : print "Generating sharp angle"
+    if Config.debug : print("Generating sharp angle")
     Z_Axis = geompy.MakeVectorDXDYDZ(0., 0., 1.)
     RotAngle = {'NE' : lambda : 0,
                 'NW' : lambda : math.pi/2,
@@ -142,7 +142,7 @@ def BoxAng32 (MacObject):
     return MacObject
 ##########################################################################################################
 def CompBox (MacObject):
-    if Config.debug : print "Generating composite box"
+    if Config.debug : print("Generating composite box")
 
     dummy1 = geompy.MakeScaleAlongAxes( ElemBox11 (), None , MacObject.GeoPar[1][0], MacObject.GeoPar[1][1], 1)
     RectFace = geompy.MakeTranslation(dummy1, MacObject.GeoPar[0][0], MacObject.GeoPar[0][1], 0)
@@ -184,7 +184,7 @@ def CompBox (MacObject):
 ##########################################################################################################
 
 def CompBoxF (MacObject):
-    if Config.debug : print "Generating composite box"
+    if Config.debug : print("Generating composite box")
 
     dummy1 = geompy.MakeScaleAlongAxes( ElemBox11 (), None , MacObject.GeoPar[1][0], MacObject.GeoPar[1][1], 1)
     RectFace = geompy.MakeTranslation(dummy1, MacObject.GeoPar[0][0], MacObject.GeoPar[0][1], 0)
@@ -225,7 +225,7 @@ def CompBoxF (MacObject):
 ##########################################################################################################
 
 def NonOrtho (MacObject):
-    if Config.debug : print "Generating Non-orthogonal quadrangle"
+    if Config.debug : print("Generating Non-orthogonal quadrangle")
 
     RectFace = Quadrangler (MacObject.PtCoor)
 
@@ -260,7 +260,7 @@ def NonOrtho (MacObject):
 ##########################################################################################################
 
 def QuartCyl (MacObject):
-    if Config.debug : print "Generating quarter cylinder"
+    if Config.debug : print("Generating quarter cylinder")
     Z_Axis = geompy.MakeVectorDXDYDZ(0., 0., 1.)
     RotAngle = {'NE' : lambda : 0,
                 'NW' : lambda : math.pi/2,
@@ -486,7 +486,7 @@ def ReduceRatio (dx, dy):
                 if not (Output==[0,0]) : break
 
         if Output == [0,0] :
-            print "We are having some trouble while interpreting the following ratio: ",ratio, "\nWe will try a recursive method which may in some cases take some time..."
+            print("We are having some trouble while interpreting the following ratio: ",ratio, "\nWe will try a recursive method which may in some cases take some time...")
             if dy > dx :
                 A = ReduceRatio (dx, dy-dx)
                 return ([A[0],A[1]+A[0]])
@@ -814,7 +814,7 @@ def IndexMultiOcc (Array,Element) :
     """
     Output = []
     try : Array.index(Element)
-    except ValueError : print "No more occurrences"
+    except ValueError : print("No more occurrences")
     else : Output.append(Array.index(Element))
 
     if not(Output == []) and len(Array) > 1 :
@@ -852,7 +852,7 @@ def SortPoints(Points):
     Crit = [(abs(Point[0]-Xmin)+0.1*(Xmax-Xmin))*(abs(Point[1]-Ymin)+0.1*(Ymax-Ymin)) for Point in Points]
     #print "Input Points      : ", Points
     #print "Sorting Criterion : ", Crit
-    Order = SortList (range(NbPts), Crit)
+    Order = SortList (list(range(NbPts)), Crit)
     #print "Sorted Results    : ", Order
     Output = []
     Output.append(Points[Order[0]])
@@ -863,7 +863,7 @@ def SortPoints(Points):
     V = [[Point1[0]-Point0[0],Point1[1]-Point0[1]] for Point1 in Points]
     Cosines = [-(vec[0]-1E-10)/(math.sqrt(DotProd(vec,vec)+1e-25)) for vec in V]
     #print "Cosines criterion :", Cosines
-    Order = SortList(range(NbPts),Cosines)
+    Order = SortList(list(range(NbPts)),Cosines)
     #print "Ordered points:", Order
     for PtIndex in Order[:-1]: Output.append(Points[PtIndex])
 

@@ -37,7 +37,7 @@ class TableEditor(QDialog):
          self.view.pressed.connect(self.donneLigne)
 
      def donneLigne(self):
-         print "jjjjjjjjjjjjjjjj"
+         print("jjjjjjjjjjjjjjjj")
 
      def setTitle(self):
          fields=self.table.getFields()

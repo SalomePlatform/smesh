@@ -116,8 +116,8 @@ def main(plugin_name, dummymeshhelp = True, output_file = "smeshBuilder.py"):
             f.close()
             pass
         pass
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         pass
     pass
     

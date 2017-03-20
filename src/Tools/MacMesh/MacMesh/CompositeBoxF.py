@@ -20,8 +20,8 @@
 
 # INTRODUCTION HERE
 
-import sys, math, copy, commands
-CWD = commands.getoutput('pwd')
+import sys, math, copy, subprocess
+CWD = subprocess.getoutput('pwd')
 sys.path.append(CWD)
 
 from MacObject import *
@@ -42,7 +42,7 @@ def CompositeBoxF (Pt1 , Pt2 , Pt3 , Pt4 , **args ) :
     BoundaryLengths = [IntLen(dummy.DirBoundaries(i)) for i in range(4) ]
     # Calculate global mesh element size on each direction
     GlobalDelta = [1.*BoundaryLengths[i]/ExistingSegments[i] for i in range(4) ]
-    print "GlobalDelta :",GlobalDelta
+    print("GlobalDelta :",GlobalDelta)
     # Sort the connection list for the full Box
     [(X0,Y0),(DX,DY)] = dummy.GeoPar
     ObjIDLists = SortObjLists(Config.Connections[-1],X0 , Y0 , DX , DY )
@@ -73,10 +73,10 @@ def CompositeBoxF (Pt1 , Pt2 , Pt3 , Pt4 , **args ) :
                 ToLook2 = [1,0,3,2][index]
                 RealSegments = Config.ListObj[ObjID].DirectionalMeshParams[ToLook2]*IntLen(CommonSide)/IntLen(Config.ListObj[ObjID].DirBoundaries(ToLook1))
                 LocalDelta = 1.*IntLen(CommonSide)/RealSegments
-                print "Direction:", ["West","East","South","North"][ToLook2]
-                print "IntLen(CommonSide):",IntLen(CommonSide)
-                print "RealSegments:",RealSegments
-                print "LocalDelta:",LocalDelta
+                print("Direction:", ["West","East","South","North"][ToLook2])
+                print("IntLen(CommonSide):",IntLen(CommonSide))
+                print("RealSegments:",RealSegments)
+                print("LocalDelta:",LocalDelta)
                 if flag and Config.Count < Config.Criterion:
                     if index ==0 :
                         if abs(CommonSide[0] - Ymin)<1e-7 : SouthGR = GroupNames[0]
@@ -124,7 +124,7 @@ def CompositeBoxF (Pt1 , Pt2 , Pt3 , Pt4 , **args ) :
                 if Config.Count >= Config.Criterion :
                     break
     if flag == 0 and Config.Count < Config.Criterion:
-        print "Creating NonOrtho object with the points:", Pt1,Pt2,Pt3,Pt4
+        print("Creating NonOrtho object with the points:", Pt1,Pt2,Pt3,Pt4)
         MacObject('NonOrtho',[Pt1,Pt2,Pt3,Pt4] ,['auto'], groups = GroupNames)
 
         Config.Count += 1
@@ -135,7 +135,7 @@ def CompositeBoxF (Pt1 , Pt2 , Pt3 , Pt4 , **args ) :
 def FindCommonSide (Int1, Int2) :
     if max(Int1[0],Int2[0])<min(Int1[1],Int2[1]): return [max(Int1[0],Int2[0]), min(Int1[1],Int2[1])]
     else :
-        print "Can not find interval intersection, returning [0,0]..."
+        print("Can not find interval intersection, returning [0,0]...")
         return [0,0]
 
 def IntLen (Interval) :
@@ -211,7 +211,7 @@ def IndexMultiOcc (Array,Element) :
     """
     Output = []
     try : Array.index(Element)
-    except ValueError : print "No more occurrences"
+    except ValueError : print("No more occurrences")
     else : Output.append(Array.index(Element))
 
     if not(Output == []) and len(Array) > 1 :

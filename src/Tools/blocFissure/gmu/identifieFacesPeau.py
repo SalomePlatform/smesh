@@ -2,13 +2,13 @@
 
 import logging
 
-from geomsmesh import geompy
-from geomsmesh import geomPublish
-from geomsmesh import geomPublishInFather
-import initLog
+from .geomsmesh import geompy
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+from . import initLog
 
-from sortFaces import sortFaces
-from extractionOrientee import extractionOrientee
+from .sortFaces import sortFaces
+from .extractionOrientee import extractionOrientee
 
 def identifieFacesPeau(ifil, verticesPipePeau, facesOnside, wireFondFiss,
                        verticesEdgesFondIn, pipexts, cercles,

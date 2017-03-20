@@ -26,7 +26,7 @@
 #  Module : SMESH
 #
 import salome
-import SMESH_mechanic
+from . import SMESH_mechanic
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
@@ -40,7 +40,7 @@ aGroup = mesh.MakeGroup("Area > 100", SMESH.FACE, SMESH.FT_Area, SMESH.FT_MoreTh
 
 # print result
 anIds = aGroup.GetIDs()
-print "Criterion: Area > 100 Nb = ", len( anIds )
+print("Criterion: Area > 100 Nb = ", len( anIds ))
 #for i in range( len( anIds ) ):
   #print anIds[ i ]
 
@@ -52,7 +52,7 @@ aGroup = mesh.MakeGroup("Taper > 3e-15", SMESH.FACE, SMESH.FT_Taper, SMESH.FT_Mo
 
 # print result
 anIds = aGroup.GetIDs()
-print "Criterion: Taper > 3e-15 Nb = ", len( anIds )
+print("Criterion: Taper > 3e-15 Nb = ", len( anIds ))
 #for i in range( len( anIds ) ):
   #print anIds[ i ]
 
@@ -64,7 +64,7 @@ aGroup = mesh.MakeGroup("Aspect Ratio > 1.3", SMESH.FACE, SMESH.FT_AspectRatio, 
 
 # print result
 anIds = aGroup.GetIDs()
-print "Criterion: Aspect Ratio > 1.3 Nb = ", len( anIds )
+print("Criterion: Aspect Ratio > 1.3 Nb = ", len( anIds ))
 #for i in range( len( anIds ) ):
   #print anIds[ i ]
 
@@ -76,7 +76,7 @@ aGroup = mesh.MakeGroup("Minimum Angle < 30", SMESH.FACE, SMESH.FT_MinimumAngle,
 
 # print result
 anIds = aGroup.GetIDs()
-print "Criterion: Minimum Angle < 30 Nb = ", len( anIds )
+print("Criterion: Minimum Angle < 30 Nb = ", len( anIds ))
 #for i in range( len( anIds ) ):
   #print anIds[ i ]
 
@@ -88,7 +88,7 @@ aGroup = mesh.MakeGroup("Warp > 2e-13", SMESH.FACE, SMESH.FT_Warping, SMESH.FT_M
 
 # print result
 anIds = aGroup.GetIDs()
-print "Criterion: Warp > 2e-13 Nb = ", len( anIds )
+print("Criterion: Warp > 2e-13 Nb = ", len( anIds ))
 #for i in range( len( anIds ) ):
   #print anIds[ i ]
 
@@ -100,7 +100,7 @@ aGroup = mesh.MakeGroup("Skew > 18", SMESH.FACE, SMESH.FT_Skew, SMESH.FT_MoreTha
 
 # print result
 anIds = aGroup.GetIDs()
-print "Criterion: Skew > 18 Nb = ", len( anIds )
+print("Criterion: Skew > 18 Nb = ", len( anIds ))
 #for i in range( len( anIds ) ):
   #print anIds[ i ]
 
@@ -112,7 +112,7 @@ aGroup = mesh.MakeGroup("Length > 10", SMESH.FACE, SMESH.FT_Length, SMESH.FT_Mor
 
 # print result
 anIds = aGroup.GetIDs()
-print "Criterion: Length > 10 Nb = ", len( anIds )
+print("Criterion: Length > 10 Nb = ", len( anIds ))
 #for i in range( len( anIds ) ):
   #print anIds[ i ]
 
@@ -124,7 +124,7 @@ aGroup = mesh.MakeGroup("Borders at multi-connections = 2", SMESH.EDGE, SMESH.FT
 
 # print result
 anIds = aGroup.GetIDs()
-print "Criterion: Borders at multi-connections = 2 Nb = ", len( anIds )
+print("Criterion: Borders at multi-connections = 2 Nb = ", len( anIds ))
 #for i in range( len( anIds ) ):
   #print anIds[ i ]
 
@@ -136,7 +136,7 @@ aGroup = mesh.MakeGroup("Element Diameter 2D > 10", SMESH.FACE, SMESH.FT_MaxElem
 
 # print result
 anIds = aGroup.GetIDs()
-print "Criterion: Element Diameter 2D > 10 Nb = ", len( anIds )
+print("Criterion: Element Diameter 2D > 10 Nb = ", len( anIds ))
 #for i in range( len( anIds ) ):
   #print anIds[ i ]
 

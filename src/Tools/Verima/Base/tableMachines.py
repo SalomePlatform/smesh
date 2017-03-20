@@ -1,5 +1,5 @@
 from qtsalome import QSqlQuery
-from tableDeBase import TableDeBase
+from .tableDeBase import TableDeBase
 import os
 
 class TableMachines (TableDeBase):
@@ -10,7 +10,7 @@ class TableMachines (TableDeBase):
 
     def createSqlTable(self):
         query=QSqlQuery()
-        print "creation de TableMachine : ", query.exec_("create table Machines(  nomMachine varchar(10) primary key, os varchar(10));")
+        print("creation de TableMachine : ", query.exec_("create table Machines(  nomMachine varchar(10) primary key, os varchar(10));"))
 
     def creeMachine(self):
         nomMachine=os.uname()[1]
@@ -23,7 +23,7 @@ class TableMachines (TableDeBase):
         texteQuery ="select nomMachine from Machines where nomMachine ='" + machine +"' ;"
         query.exec_(texteQuery)
         nb=0
-        while(query.next()):
+        while(next(query)):
             nb=nb+1
             nom=str(query.value(0).toString())
         if nb != 1 : return 0,  ""

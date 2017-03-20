@@ -202,7 +202,7 @@ MyMesh.ExportMED(path+"110_triangles_2.med", 0)
 SplitTrianglesIn4(MyMesh)
 
 NbCells2 = NbCells1*4
-print("Mesh with "+str(NbCells2)+" cells computed.")
+print(("Mesh with "+str(NbCells2)+" cells computed."))
 
 MyMesh.ExportMED(path+str(NbCells2)+"_triangles.med", 0)
 
@@ -212,7 +212,7 @@ MyMesh.ExportMED(path+str(NbCells2)+"_triangles.med", 0)
 SplitTrianglesIn4(MyMesh)
 
 NbCells3 = NbCells2*4
-print("Mesh with "+str(NbCells3)+" cells computed.")
+print(("Mesh with "+str(NbCells3)+" cells computed."))
 
 MyMesh.ExportMED(path+str(NbCells3)+"_triangles.med",0)
 
@@ -222,7 +222,7 @@ MyMesh.ExportMED(path+str(NbCells3)+"_triangles.med",0)
 SplitTrianglesIn4(MyMesh)
 
 NbCells4 = NbCells3*4
-print("Mesh with "+str(NbCells4)+" cells computed.")
+print(("Mesh with "+str(NbCells4)+" cells computed."))
 
 MyMesh.ExportMED(path+str(NbCells4)+"_triangles.med", 0)
 

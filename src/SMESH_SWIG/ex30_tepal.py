@@ -87,9 +87,9 @@ status = m.Compute()
 # ----------
 
 if os.access(results+".xml", os.F_OK):
-    print "Ok: tepal"
+    print("Ok: tepal")
 else:
-    print "KO: tepal"
+    print("KO: tepal")
 
 # Update object browser
 # ---------------------

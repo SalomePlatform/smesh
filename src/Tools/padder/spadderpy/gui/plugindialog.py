@@ -23,8 +23,8 @@
 from qtsalome import QDialog, QIcon, Qt
 
 from plugindialog_ui import Ui_PluginDialog
-from inputdialog import InputDialog
-from inputdata import InputData
+from .inputdialog import InputDialog
+from .inputdata import InputData
 # __GBO__: uncomment this line and comment the previous one to use the
 # demo input dialog instead of the real one.
 #from demoinputdialog import InputDialog
@@ -178,7 +178,7 @@ class PluginDialog(QDialog):
         servant. Note that the component is loaded on first demand,
         and then the reference is recycled.
         """
-        if self.__dict__.has_key("__jobManager") and self.__jobManager is not None:
+        if "__jobManager" in self.__dict__ and self.__jobManager is not None:
             return self.__jobManager
 
         # WARN: we first have to update the SALOME components catalog

@@ -1,5 +1,5 @@
 from qtsalome import QSqlQuery
-from tableDeBase import TableDeBase
+from .tableDeBase import TableDeBase
 
 class TableVersions (TableDeBase):
     def __init__(self):
@@ -12,7 +12,7 @@ class TableVersions (TableDeBase):
         query=QSqlQuery()
         texteQuery ="create table Versions(id integer primary key autoincrement, nomVersion varchar(10),"
         texteQuery+="commentaire varchar(30));"
-        print "Creation de TableVersions : " , query.exec_(texteQuery)
+        print("Creation de TableVersions : " , query.exec_(texteQuery))
 
 
     def remplit(self):
@@ -33,7 +33,7 @@ class TableVersions (TableDeBase):
             texteQuery ="select id, nomVersion from Versions where nomVersion ='" + version +"' ;"
         query.exec_(texteQuery)
         nb=0
-        while(query.next()):
+        while(next(query)):
             nb=nb+1
             id=query.value(0).toInt()[0]
             nom=query.value(1).toString()

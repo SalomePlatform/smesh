@@ -735,4 +735,4 @@ class Ui_Zui(object):
         self.valIterations.setToolTip(_translate("Zui", "integer (ex: 2)", None))
         self.valIterations.setText(_translate("Zui", "2", None))
 
-import images_rc
+from . import images_rc

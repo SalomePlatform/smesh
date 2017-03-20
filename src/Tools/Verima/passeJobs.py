@@ -3,8 +3,8 @@
 
 import sys
 import os
-from Base.dataBase import Base
-from Base.versions import Chercheversion
+from .Base.dataBase import Base
+from .Base.versions import Chercheversion
 
 
 if __name__ == "__main__":
@@ -17,11 +17,11 @@ if __name__ == "__main__":
     p.add_option('-f',dest='force',default=True,help='force la passage des jobs meme si l execution a deja eu lieu sur cette machine pour cette version de salome')
     options, args = p.parse_args()
     if len(args) == 0  and options.all== False:
-        print "Enter -a ou un numero de job"
-        print 2
+        print("Enter -a ou un numero de job")
+        print(2)
         exit()
     if options.salomePath==None :
-        print  "chemin du runAppli obligatoire"
+        print("chemin du runAppli obligatoire")
         exit()
     if options.version==None :
         options.version=Chercheversion(options.salomePath)

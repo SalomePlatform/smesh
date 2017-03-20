@@ -107,7 +107,7 @@ SRVMesh = PublishGroups()
 
 RealLocalMeshing = Bloc[0][0].GeoPar[1][0]/Bloc[0][0].DirectionalMeshParams[0]
 ExtrusionAngle = 2. * math.asin(RealLocalMeshing/(2*R))*180./math.pi
-print "\nThe mesh will be revolved with an angle of :",ExtrusionAngle
+print("\nThe mesh will be revolved with an angle of :",ExtrusionAngle)
 
 RevolveMesh(SRVMesh, Center=[R+0.01,0,0], Direction=[0,1,0], AngleDeg=ExtrusionAngle, Scale=0.001)
 

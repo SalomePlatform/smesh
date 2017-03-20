@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from geomsmesh import geompy
-from geomsmesh import geomPublish
-from geomsmesh import geomPublishInFather
-import initLog
+from .geomsmesh import geompy
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+from . import initLog
 import GEOM
 import math
 import numpy as np
@@ -29,7 +29,7 @@ def quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss):
   logging.info("start")
 
   isVecteurDefaut = False
-  if shapeFissureParams.has_key('vecteurDefaut'):
+  if 'vecteurDefaut' in shapeFissureParams:
     isVecteurDefaut = True
     vecteurDefaut = shapeFissureParams['vecteurDefaut']
 
@@ -156,7 +156,7 @@ def quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss):
     h = e/(np.sqrt(f*g))                   # cosinus
     ruptureX = h < cosmin                  # True si angle > reference
     logging.debug("matrice de rupture X: \n%s",ruptureX)
-    rupX = filter(lambda x: np.prod(ruptureX[:,x]), range(len(nodeline)-2))
+    rupX = [x for x in range(len(nodeline)-2) if np.prod(ruptureX[:,x])]
     logging.debug("colonnes de rupture: %s",rupX)
     # recherche d'angles supérieurs a un seuil sur une colonne : angle entre deux vecteurs successifs
     vecy = mat[ 1:, :, :] - mat[:-1, :, :] # vecteurs selon direction "y"
@@ -168,7 +168,7 @@ def quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss):
     h = e/(np.sqrt(f*g))                   # cosinus
     ruptureY = h < cosmin                  # True si angle > reference
     logging.debug("matrice de rupture Y: \n%s",ruptureY)
-    rupY = filter(lambda x: np.prod(ruptureY[x, :]), range(len(nodelines)-2))
+    rupY = [x for x in range(len(nodelines)-2) if np.prod(ruptureY[x, :])]
     logging.debug("lignes de rupture: %s",rupY)
     if (len(rupX)*len(rupY)) > 0:
       logging.critical("""Cas non traité: présence d'angles vifs dans 2 directions, 
@@ -273,13 +273,13 @@ def quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss):
         pointIn_y = 0.0
         pointIn_z = 0.0
         pointExplicite = False
-        if shapeFissureParams.has_key('pointIn_x'):
+        if 'pointIn_x' in shapeFissureParams:
           pointExplicite = True
           pointIn_x = shapeFissureParams['pointIn_x']
-        if shapeFissureParams.has_key('pointIn_y'):
+        if 'pointIn_y' in shapeFissureParams:
           pointExplicite = True
           pointIn_y = shapeFissureParams['pointIn_y']
-        if shapeFissureParams.has_key('pointIn_z'):
+        if 'pointIn_z' in shapeFissureParams:
           pointExplicite = True
           pointIn_z = shapeFissureParams['pointIn_z']
         if pointExplicite:
@@ -287,7 +287,7 @@ def quadranglesToShapeNoCorner(meshQuad, shapeFissureParams, centreFondFiss):
           logging.debug("orientation filling par point intérieur %s", (pointIn_x, pointIn_y, pointIn_z))
           vecteurDefaut = geompy.MakeVector(cdg, vertex)
         
-      if shapeFissureParams.has_key('convexe'):
+      if 'convexe' in shapeFissureParams:
         isConvexe = shapeFissureParams['convexe']
         logging.debug("orientation filling par indication de convexité %s", isConvexe)
         cdg = geompy.MakeCDG(filling)

@@ -28,8 +28,8 @@ GroupSmooth = mesh.GroupOnGeom(face, "Group of faces (smooth)", SMESH.FACE)
 
 # boolean SmoothObject(Object, IDsOfFixedNodes, MaxNbOfIterations, MaxAspectRatio, Method)
 res = mesh.SmoothObject(GroupSmooth, [], 20, 2., smesh.CENTROIDAL_SMOOTH)
-print "\nSmoothing ... ",
-if not res: print "failed!"
-else:       print "done."
+print("\nSmoothing ... ", end=' ')
+if not res: print("failed!")
+else:       print("done.")
 
 salome.sg.updateObjBrowser(True)

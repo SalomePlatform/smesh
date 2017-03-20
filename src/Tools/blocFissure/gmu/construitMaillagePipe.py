@@ -2,8 +2,8 @@
 
 import logging
 
-from geomsmesh import geompy
-from geomsmesh import smesh
+from .geomsmesh import geompy
+from .geomsmesh import smesh
 import SMESH
 
 def construitMaillagePipe(gptsdisks, idisklim, nbsegCercle, nbsegRad):

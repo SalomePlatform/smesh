@@ -118,7 +118,7 @@ for i in range(0,nbzsteps):
             pass
         pass
     if len(nfaces)!=nbf:
-        print "len(nfaces)!=nbf"
+        print("len(nfaces)!=nbf")
         break
     newfaces.append(nfaces)
     # update faces for before next step of extrusion

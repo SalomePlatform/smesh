@@ -249,12 +249,12 @@ def fissureCoudeDlg(context):
       else:
         self.ui.sb_nbSecteur.setPalette(self.blackPalette)
         
-      print "incomplet: ", incomplet
+      print("incomplet: ", incomplet)
       return incomplet
     
     def fileDefault(self):
       filedef = os.path.expanduser("~/.config/salome/dialogFissureCoude.dic")
-      print filedef
+      print(filedef)
       return filedef
     
     def writeDefault(self, dico):
@@ -269,7 +269,7 @@ def fissureCoudeDlg(context):
         f = open(filedef, 'r')
         txt = f.read()
         dico = eval(txt)
-        print dico
+        print(dico)
         self.initDialog(dico)
 
     def resetVal(self):
@@ -277,7 +277,7 @@ def fissureCoudeDlg(context):
       self.initDialog(self.defaut)
       
     def sauver(self):
-      print "sauver"
+      print("sauver")
       fileDiag = QFileDialog(self)
       fileDiag.setFileMode(QFileDialog.AnyFile)
       fileDiag.setNameFilter("Parametres *.dic (*.dic)")
@@ -291,7 +291,7 @@ def fissureCoudeDlg(context):
         f.close()
         
     def recharger(self):
-      print "recharger"
+      print("recharger")
       fileDiag = QFileDialog(self)
       fileDiag.setFileMode(QFileDialog.ExistingFile)
       fileDiag.setNameFilter("Parametres *.dic (*.dic)")
@@ -299,12 +299,12 @@ def fissureCoudeDlg(context):
       if fileDiag.exec_() :
         fileNames = fileDiag.selectedFiles()
         filedef = fileNames[0]
-        print filedef
+        print(filedef)
         if os.path.exists(filedef):
           f = open(filedef, 'r')
           txt = f.read()
           dico = eval(txt)
-          print dico
+          print(dico)
           self.initDialog(dico)
          
     def creeDico(self):
@@ -338,7 +338,7 @@ def fissureCoudeDlg(context):
         aretesFaceFissure = self.ui.dsb_aretesFaceFissure.value(),
         influence         = self.ui.dsb_influence.value(),
         )
-      print dico
+      print(dico)
       return dico
       
     def checkValues(self):
@@ -356,26 +356,26 @@ def fissureCoudeDlg(context):
       NOK = self.testval(dico)
       if not(NOK):
         dico['lenSegPipe'] = (dico['longueur'] + math.pi*dico['profondeur'])/dico['nbTranches']
-        print 'lenSegPipe', dico['lenSegPipe']
+        print('lenSegPipe', dico['lenSegPipe'])
         areteMinAngle = (dico['rCintr'] -dico['dext']/2.0)*(dico['angle']*math.pi/180.0)/dico['nbAxeCoude']
-        print'areteMinAngle', areteMinAngle
+        print('areteMinAngle', areteMinAngle)
         areteMinCirco = dico['dext']*math.pi/(2*dico['nbCirconf'])
-        print'areteMinCirco', areteMinCirco
+        print('areteMinCirco', areteMinCirco)
         areteMinEpais = dico['epais']/dico['nbEpaisseur']
-        print'areteMinEpais', areteMinEpais
+        print('areteMinEpais', areteMinEpais)
         if dico['influence'] == 0:
           dico['influence'] = max(areteMinAngle, areteMinCirco, areteMinEpais)
-          print 'influence', dico['influence']
+          print('influence', dico['influence'])
         if dico['aretesFaceFissure'] == 0:
           dico['aretesFaceFissure'] = (areteMinAngle + areteMinCirco)/2.0
-          print 'aretesFaceFissure', dico['aretesFaceFissure']
+          print('aretesFaceFissure', dico['aretesFaceFissure'])
         if dico['rbPosiAngul'] == False:
           rmoy = (dico['dext'] - dico['epais'])/2.0
           eta = 1
           if dico['rbFissExt'] == False:
             eta = -1
           dico['posiAngul'] = (180.0/math.pi)*dico['absCurv']/(dico['rCintr']+(rmoy+eta*dico['epais']/2.0)*math.cos(math.pi*dico['azimut']/180.))
-          print 'posiAngul' , dico['posiAngul']
+          print('posiAngul' , dico['posiAngul'])
         
         self.writeDefault(dico)
         self.ui.lb_calcul.show()
@@ -398,9 +398,9 @@ def fissureCoudeDlg(context):
     result = window.result()
     if result:
       # dialog accepted
-      print "dialog accepted, check"
+      print("dialog accepted, check")
       retry = window.checkValues()
     else:
-      print "dialog rejected, exit"
+      print("dialog rejected, exit")
   pass
   

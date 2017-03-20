@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from geomsmesh import geompy
-from geomsmesh import geomPublish
-from geomsmesh import geomPublishInFather
-import initLog
-from extractionOrientee import extractionOrientee
-from getSubshapeIds import getSubshapeIds
+from .geomsmesh import geompy
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+from . import initLog
+from .extractionOrientee import extractionOrientee
+from .getSubshapeIds import getSubshapeIds
 
 # -----------------------------------------------------------------------------
 # --- TORE

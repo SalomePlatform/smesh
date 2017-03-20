@@ -9,4 +9,4 @@ mesh.RemoveElements( mesh.GetElementsByType(VOLUME)[0:5] )
 # get all volumes with bare borders
 filter = smesh.GetFilter(SMESH.VOLUME, SMESH.FT_BareBorderVolume)
 ids = mesh.GetIdsFromFilter(filter)
-print "Volumes with bare borders:", ids
+print("Volumes with bare borders:", ids)

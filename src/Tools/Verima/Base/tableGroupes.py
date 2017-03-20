@@ -1,5 +1,5 @@
 from qtsalome import QSqlQuery
-from tableDeBase import TableDeBase
+from .tableDeBase import TableDeBase
 
 class TableGroupes (TableDeBase):
       def __init__(self):
@@ -18,7 +18,7 @@ class TableGroupes (TableDeBase):
           texteQuery+="foreign key (idVersion) references Versions(id)," 
           texteQuery+="primary key (nomGroupe,idMaillage,idVersion,Entite));"
 
-          print "Creation de TableGroupes : ", query.exec_(texteQuery)
+          print("Creation de TableGroupes : ", query.exec_(texteQuery))
 
 
       def getVal(self,nomGroupe,idMaillage,idVersion,typeMaille):
@@ -29,10 +29,10 @@ class TableGroupes (TableDeBase):
           texteQuery +=' and idVersion = ' + str(idVersion)
           texteQuery +=' and Entite ="'  + str(typeMaille)   + '";' 
           query.exec_(texteQuery)
-          while (query.next()) :
+          while (next(query)) :
               val=query.value(0).toInt()[0]
-          while (query.next()) :
-              print "plusieurs enregistrements dans groupe pour ", nomGroupe," ",str(idMaillage)," ",str(idVersion),"\n"
+          while (next(query)) :
+              print("plusieurs enregistrements dans groupe pour ", nomGroupe," ",str(idMaillage)," ",str(idVersion),"\n")
           return val
 
 
@@ -41,6 +41,6 @@ class TableGroupes (TableDeBase):
             texteQuery ="select distinct Entite from Groupes;"
             query.exec_(texteQuery)
             maListe=[]
-            while (query.next()) :
+            while (next(query)) :
                 maListe.append(str(query.value(0).toString()))
             return maListe

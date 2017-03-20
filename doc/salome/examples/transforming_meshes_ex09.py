@@ -45,6 +45,6 @@ CreatePolyedrs = False
 res = mesh.SewFreeBorders(FirstNodeID1, SecondNodeID1, LastNodeID1,
                           FirstNodeID2, SecondNodeID2, LastNodeID2,
                           CreatePolygons, CreatePolyedrs )
-print res
-print "nb polygons:", mesh.NbPolygons()
+print(res)
+print("nb polygons:", mesh.NbPolygons())
 

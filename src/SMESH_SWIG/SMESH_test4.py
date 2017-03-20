@@ -71,7 +71,7 @@ mesh.Compute()
 
 faces = submesh.GetElementsByType(SMESH.FACE)
 if len(faces) > 1:
-    print len(faces), len(faces)/2
+    print(len(faces), len(faces)/2)
     group1 = mesh.CreateEmptyGroup(SMESH.FACE,"Group of faces")
     group2 = mesh.CreateEmptyGroup(SMESH.FACE,"Another group of faces")
     group1.Add(faces[:int(len(faces)/2)])

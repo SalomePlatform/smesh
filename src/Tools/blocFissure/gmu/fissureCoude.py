@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from geomsmesh import geompy, smesh
-from geomsmesh import geomPublish
-from geomsmesh import geomPublishInFather
-import initLog
+from .geomsmesh import geompy, smesh
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+from . import initLog
 
 import math
 import GEOM
@@ -14,13 +14,13 @@ import SMESH
 #import NETGENPlugin
 import logging
 
-from fissureGenerique import fissureGenerique
+from .fissureGenerique import fissureGenerique
 
-from triedreBase import triedreBase
-from genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
-from creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
-from construitFissureGenerale import construitFissureGenerale
-from sortEdges import sortEdges
+from .triedreBase import triedreBase
+from .genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
+from .creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
+from .construitFissureGenerale import construitFissureGenerale
+from .sortEdges import sortEdges
 
 O, OX, OY, OZ = triedreBase()
 
@@ -336,7 +336,7 @@ class fissureCoude(fissureGenerique):
     externe     = shapeFissureParams['externe']
     lgInfluence = shapeFissureParams['lgInfluence']
     self.elliptique  = False
-    if shapeFissureParams.has_key('elliptique'):
+    if 'elliptique' in shapeFissureParams:
       self.elliptique = shapeFissureParams['elliptique']
 
 

@@ -2,9 +2,9 @@
 
 import logging
 
-from geomsmesh import geompy
-from findWireIntermediateVertices import findWireIntermediateVertices
-from projettePointSurCourbe import projettePointSurCourbe
+from .geomsmesh import geompy
+from .findWireIntermediateVertices import findWireIntermediateVertices
+from .projettePointSurCourbe import projettePointSurCourbe
 
 def ajustePointsEdgePipeFissure(edgesPipeFissureExterneC, wirePipeFissureExterne, gptsdisks, idisklim):
   """

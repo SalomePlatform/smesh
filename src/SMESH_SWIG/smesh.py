@@ -44,7 +44,7 @@ try:
     engineSmesh = salome.lcc.FindOrLoadComponent( "FactoryServer", "SMESH" )
     smesh = smeshBuilder.New(salome.myStudy, engineSmesh)
 except:
-    print "exception in smesh.py: instance creation failed"
+    print("exception in smesh.py: instance creation failed")
     smesh = None
     pass
 
@@ -58,9 +58,9 @@ for pluginName in os.environ[ "SMESH_MeshersList" ].split( ":" ):
     pluginBuilderName = pluginName + "Builder"
     try:
         exec( "from salome.%s.%s import *" % (pluginName, pluginBuilderName))
-    except Exception, e:
+    except Exception as e:
         from salome_utils import verbose
-        if verbose(): print "Exception while loading %s: %s" % ( pluginBuilderName, e )
+        if verbose(): print("Exception while loading %s: %s" % ( pluginBuilderName, e ))
         continue
     exec( "from salome.%s import %s" % (pluginName, pluginBuilderName))
     plugin = eval( pluginBuilderName )
@@ -87,7 +87,7 @@ if smesh:
     del k
     pass
 
-print """
+print("""
 ===============================================================================
 WARNING:
 Usage of smesh.py is deprecated in SALOME V7.2!
@@ -119,4 +119,4 @@ The smesh.py module works correctly only in the first created study.
 It does not work in the second, third, etc studies!
 
 ===============================================================================
-"""
+""")

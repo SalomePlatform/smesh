@@ -11,4 +11,4 @@ grp.SetColor(c)
 # get number of the edges not belonging to the group with the given color
 filter = smesh.GetFilter(SMESH.EDGE, SMESH.FT_GroupColor, c, SMESH.FT_LogicalNOT)
 ids = mesh.GetIdsFromFilter(filter)
-print "Number of edges not beloging to the group with color (0.1, 0.5, 1.0):", len(ids)
+print("Number of edges not beloging to the group with color (0.1, 0.5, 1.0):", len(ids))

@@ -98,15 +98,15 @@ Id_mechanic = geompy.addToStudy( mechanic, "mechanic" )
 
 # ---- Analysis of the geometry
 
-print "Analysis of the geometry mechanic :"
+print("Analysis of the geometry mechanic :")
 
 subShellList = geompy.SubShapeAll(mechanic,geompy.ShapeType["SHELL"])
 subFaceList  = geompy.SubShapeAll(mechanic,geompy.ShapeType["FACE"])
 subEdgeList  = geompy.SubShapeAll(mechanic,geompy.ShapeType["EDGE"])
 
-print "number of Shells in mechanic : ",len(subShellList)
-print "number of Faces in mechanic : ",len(subFaceList)
-print "number of Edges in mechanic : ",len(subEdgeList)
+print("number of Shells in mechanic : ",len(subShellList))
+print("number of Faces in mechanic : ",len(subFaceList))
+print("number of Edges in mechanic : ",len(subEdgeList))
 
 ### ---------------------------- SMESH --------------------------------------
 
@@ -114,15 +114,15 @@ shape_mesh = salome.IDToObject( Id_mechanic  )
 
 mesh = smesh.Mesh(shape_mesh, "Mesh_mechanic_tetra")
 
-print "-------------------------- add hypothesis to main mechanic"
+print("-------------------------- add hypothesis to main mechanic")
 
 numberOfSegment = 10
 
 algo1 = mesh.Segment()
 hypNbSeg = algo1.NumberOfSegments(numberOfSegment)
-print hypNbSeg.GetName()
-print hypNbSeg.GetId()
-print hypNbSeg.GetNumberOfSegments()
+print(hypNbSeg.GetName())
+print(hypNbSeg.GetId())
+print(hypNbSeg.GetNumberOfSegments())
 smesh.SetName(hypNbSeg, "NumberOfSegments_" + str(numberOfSegment))
 
 
@@ -130,9 +130,9 @@ maxElementArea = 20
 
 algo2 = mesh.Triangle(smeshBuilder.MEFISTO)
 hypArea = algo2.MaxElementArea(maxElementArea)
-print hypArea.GetName()
-print hypArea.GetId()
-print hypArea.GetMaxElementArea()
+print(hypArea.GetName())
+print(hypArea.GetId())
+print(hypArea.GetMaxElementArea())
 smesh.SetName(hypArea, "MaxElementArea_" + str(maxElementArea))
 
 
@@ -140,22 +140,22 @@ maxElementVolume = 20
 
 algo3 = mesh.Tetrahedron(smeshBuilder.NETGEN)
 hypVolume = algo3.MaxElementVolume(maxElementVolume)
-print hypVolume.GetName()
-print hypVolume.GetId()
-print hypVolume.GetMaxElementVolume()
+print(hypVolume.GetName())
+print(hypVolume.GetId())
+print(hypVolume.GetMaxElementVolume())
 smesh.SetName(hypVolume, "maxElementVolume_" + str(maxElementVolume))
 
 
-print "-------------------------- compute the mesh of the mechanic piece"
+print("-------------------------- compute the mesh of the mechanic piece")
 mesh.Compute()
 
-print "Information about the Mesh_mechanic_tetra:"
-print "Number of nodes       : ", mesh.NbNodes()
-print "Number of edges       : ", mesh.NbEdges()
-print "Number of faces       : ", mesh.NbFaces()
-print "Number of triangles   : ", mesh.NbTriangles()
-print "Number of quadrangles: ", mesh.NbQuadrangles()
-print "Number of volumes     : ", mesh.NbVolumes()
-print "Number of tetrahedrons: ", mesh.NbTetras()
+print("Information about the Mesh_mechanic_tetra:")
+print("Number of nodes       : ", mesh.NbNodes())
+print("Number of edges       : ", mesh.NbEdges())
+print("Number of faces       : ", mesh.NbFaces())
+print("Number of triangles   : ", mesh.NbTriangles())
+print("Number of quadrangles: ", mesh.NbQuadrangles())
+print("Number of volumes     : ", mesh.NbVolumes())
+print("Number of tetrahedrons: ", mesh.NbTetras())
 
 salome.sg.updateObjBrowser(True)

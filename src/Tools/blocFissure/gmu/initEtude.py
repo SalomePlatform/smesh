@@ -7,4 +7,4 @@ def initEtude():
   """
   creation nouvelle etude salome
   """
-  import geomsmesh
+  from . import geomsmesh

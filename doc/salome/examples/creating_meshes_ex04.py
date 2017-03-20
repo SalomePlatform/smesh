@@ -12,11 +12,11 @@ smesh =  smeshBuilder.New(salome.myStudy)
 
 def PrintMeshInfo(theMesh):
     aMesh = theMesh.GetMesh()
-    print "Information about mesh:"
-    print "Number of nodes       : ", aMesh.NbNodes()
-    print "Number of edges       : ", aMesh.NbEdges()
-    print "Number of faces       : ", aMesh.NbFaces()
-    print "Number of volumes     : ", aMesh.NbVolumes()
+    print("Information about mesh:")
+    print("Number of nodes       : ", aMesh.NbNodes())
+    print("Number of edges       : ", aMesh.NbEdges())
+    print("Number of faces       : ", aMesh.NbFaces())
+    print("Number of volumes     : ", aMesh.NbVolumes())
     pass
 
 # create a box

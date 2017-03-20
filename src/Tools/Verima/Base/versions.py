@@ -17,5 +17,5 @@ def Chercheversion(salomePath):
 
 
 if __name__ == "__main__":
-      print Chercheversion("/local00/home/A96028/Appli")
+      print(Chercheversion("/local00/home/A96028/Appli"))
 

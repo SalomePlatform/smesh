@@ -3,7 +3,7 @@
 
 import sys
 import os
-from dataBase import Base
+from .dataBase import Base
 
 
 
@@ -15,12 +15,12 @@ if __name__ == "__main__":
     p.add_option('-d',dest='database',default="myMesh.db",help='nom de la database')
     options, args = p.parse_args()
     if len(args) != 1 :
-        print "entrer SVP le nom de la directory ou sont rangees les fichiers a charger"
+        print("entrer SVP le nom de la directory ou sont rangees les fichiers a charger")
         exit()
     folder=args[0]
 
     if not(os.path.isdir(folder)):
-        print folder , " n existe pas"
+        print(folder , " n existe pas")
         exit()
 
     maBase=Base(options.database)

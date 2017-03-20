@@ -21,8 +21,8 @@ import GEOM
 from salome.geom import geomBuilder
 import math
 import SALOMEDS
-import utilityFunctions as uF
-from output import message
+from . import utilityFunctions as uF
+from .output import message
 
 #import GEOM_Gen.ild
 #rectangle.generate(data_longueur,data_largeur,data_centre,data_normale,data_direction,data_angle,data_rayon,rayon_entaille,extension,outFile)
@@ -219,7 +219,7 @@ def generate(data_longueur,data_largeur,data_centre,
     Maillage.ExportMED( outFile, 0, SMESH.MED_V2_2, 1, None ,1)
     smesh.SetName(Maillage.GetMesh(), 'MAILLAGE_FISSURE')
   except:
-    print 'ExportToMEDX() failed. Invalid file name?'
+    print('ExportToMEDX() failed. Invalid file name?')
 
 
   if salome.sg.hasDesktop():

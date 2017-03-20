@@ -26,15 +26,15 @@ def compte_all(texte, subString):
         start = trouve + len(subString)
 
 def FormateTexte(texte,dico):
-    for clef in dico.keys():
+    for clef in list(dico.keys()):
         texteARemplacer="%"+str(clef)+"%"
         remplacement=dico[clef]
         if texte.find(texteARemplacer) < 0 :
-           print "impossible de remplacer ",texteARemplacer, "Pas d'occurence"
-           print remplacement
+           print("impossible de remplacer ",texteARemplacer, "Pas d'occurence")
+           print(remplacement)
            continue
         if compte_all(texte,texteARemplacer) != 1 :
-           print "impossible de remplacer ",texteARemplacer, "trop d'occurences"
+           print("impossible de remplacer ",texteARemplacer, "trop d'occurences")
            continue
         remplacement=str(remplacement)
         texte=texte.replace(texteARemplacer,remplacement)

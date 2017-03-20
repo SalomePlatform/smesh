@@ -25,8 +25,8 @@
 # This functions can take a groups input containing the group names of 4 sides in addition to the internal circular boundary
 # in the following order : [South,North,West,East,Internal].
 
-import sys, math, commands
-CWD = commands.getoutput('pwd')
+import sys, math, subprocess
+CWD = subprocess.getoutput('pwd')
 sys.path.append(CWD)
 
 
@@ -39,11 +39,11 @@ def Cylinder (X0 , Y0 , D , DX , DY , LocalMeshing , **args) :
 
     # K is the pitch ratio
     K = float(D)/(DLocal-D)
-    print "A local pitch ratio of K =", K ," will be used.  "
+    print("A local pitch ratio of K =", K ," will be used.  ")
     NumCuts =  2*GenFunctions.QuarCylParam(K)
     InternalMeshing = int(math.ceil(math.pi*D/(4*NumCuts*LocalMeshing)))
     if InternalMeshing == 0 : InternalMeshing = 1           # This sets a minimum meshing condition in order to avoid an error. The user is notified of the value considered for the local meshing
-    print "Possible Local meshing is :", math.pi*D/(4*NumCuts*InternalMeshing), "\nThis value is returned by this function for your convenience.\n"
+    print("Possible Local meshing is :", math.pi*D/(4*NumCuts*InternalMeshing), "\nThis value is returned by this function for your convenience.\n")
     if args.__contains__('groups') :
         GroupNames = args['groups']
     else : GroupNames = [None, None, None, None, None]

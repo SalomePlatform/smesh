@@ -3,8 +3,8 @@
 
 import sys,os
 import salome
-from getStats import getGroupesRef
-from Type_Maille import dicoDimENtite
+from .getStats import getGroupesRef
+from .Type_Maille import dicoDimENtite
 
 def getCritere(dim,NomMesh,acritere,theStudy):
   import SMESH

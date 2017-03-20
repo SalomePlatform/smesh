@@ -28,22 +28,22 @@ critaria = [ \
     ]
 filt = smesh.GetFilterFromCriteria( critaria )
 filtGroup = mesh.GroupOnFilter( SMESH.FACE, "group on filter", filt )
-print "Group on filter contains %s elemens" % filtGroup.Size()
+print("Group on filter contains %s elemens" % filtGroup.Size())
 
 # group on filter is updated if the mesh is modified
 hyp1D.SetStartLength( 2.5 )
 hyp1D.SetEndLength( 2.5 )
 mesh.Compute()
-print "After mesh change, group on filter contains %s elemens" % filtGroup.Size()
+print("After mesh change, group on filter contains %s elemens" % filtGroup.Size())
 
 # set a new filter defining the group
 filt2 = smesh.GetFilter( SMESH.FACE, SMESH.FT_RangeOfIds, "1-50" )
 filtGroup.SetFilter( filt2 )
-print "With a new filter, group on filter contains %s elemens" % filtGroup.Size()
+print("With a new filter, group on filter contains %s elemens" % filtGroup.Size())
 
 # group is updated at modification of the filter
 filt2.SetCriteria( [ smesh.GetCriterion( SMESH.FACE, SMESH.FT_RangeOfIds, "1-70" )])
 filtIDs3 = filtGroup.GetIDs()
-print "After filter modification, group on filter contains %s elemens" % filtGroup.Size()
+print("After filter modification, group on filter contains %s elemens" % filtGroup.Size())
 
 salome.sg.updateObjBrowser(True)

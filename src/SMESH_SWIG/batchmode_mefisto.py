@@ -26,7 +26,7 @@ import re
 
 import batchmode_salome
 import batchmode_geompy
-import batchmode_smesh
+from . import batchmode_smesh
 from salome.StdMeshers import StdMeshersBuilder
 
 smesh = batchmode_smesh.smesh
@@ -35,15 +35,15 @@ smesh.SetCurrentStudy(batchmode_salome.myStudy)
 def CreateMesh (theFileName, area, len = None, nbseg = None):
     
     if not(os.path.isfile(theFileName)) or re.search("\.brep$", theFileName) is None :
-        print "Incorrect file name !"
+        print("Incorrect file name !")
         return
 
     if (len is None) and (nbseg is None):
-        print "Define length or number of segments !"
+        print("Define length or number of segments !")
         return
 
     if (len is not None) and (nbseg is not None):
-        print "Only one Hypothesis (from length and number of segments) can be defined !"
+        print("Only one Hypothesis (from length and number of segments) can be defined !")
         return
 
     
@@ -53,75 +53,75 @@ def CreateMesh (theFileName, area, len = None, nbseg = None):
 
 
     # ---- SMESH
-    print "-------------------------- create mesh"
+    print("-------------------------- create mesh")
     mesh = smesh.Mesh(shape_mesh)
       
-    print "-------------------------- create Hypothesis"
+    print("-------------------------- create Hypothesis")
     if (len is not None):
-        print "-------------------------- LocalLength"
+        print("-------------------------- LocalLength")
         algoReg = mesh.Segment()
         hypLength1 = algoReg.LocalLength(len)
-        print "Hypothesis type : ", hypLength1.GetName()
-        print "Hypothesis ID   : ", hypLength1.GetId()
-        print "Hypothesis Value: ", hypLength1.GetLength()
+        print("Hypothesis type : ", hypLength1.GetName())
+        print("Hypothesis ID   : ", hypLength1.GetId())
+        print("Hypothesis Value: ", hypLength1.GetLength())
     
     if (nbseg is not None):   
-        print "-------------------------- NumberOfSegments"
+        print("-------------------------- NumberOfSegments")
         algoReg = mesh.Segment()
         hypNbSeg1 = algoReg.NumberOfSegments(nbseg)
-        print "Hypothesis type : ", hypNbSeg1.GetName()
-        print "Hypothesis ID   : ", hypNbSeg1.GetId()
-        print "Hypothesis Value: ", hypNbSeg1.GetNumberOfSegments()
+        print("Hypothesis type : ", hypNbSeg1.GetName())
+        print("Hypothesis ID   : ", hypNbSeg1.GetId())
+        print("Hypothesis Value: ", hypNbSeg1.GetNumberOfSegments())
 
     if (area == "LengthFromEdges"):
-        print "-------------------------- LengthFromEdges"
+        print("-------------------------- LengthFromEdges")
         algoMef = mesh.Triangle()
         hypLengthFromEdges = algoMef.LengthFromEdges(1)
-        print "Hypothesis type     : ", hypLengthFromEdges.GetName()
-        print "Hypothesis ID       : ", hypLengthFromEdges.GetId()
-        print "LengthFromEdges Mode: ", hypLengthFromEdges.GetMode()
+        print("Hypothesis type     : ", hypLengthFromEdges.GetName())
+        print("Hypothesis ID       : ", hypLengthFromEdges.GetId())
+        print("LengthFromEdges Mode: ", hypLengthFromEdges.GetMode())
        
     else:
-        print "-------------------------- MaxElementArea"
+        print("-------------------------- MaxElementArea")
         algoMef = mesh.Triangle()
         hypArea1 = algoMef.MaxElementArea(area)
-        print "Hypothesis type : ", hypArea1.GetName()
-        print "Hypothesis ID   : ", hypArea1.GetId()
-        print "Hypothesis Value: ", hypArea1.GetMaxElementArea()
+        print("Hypothesis type : ", hypArea1.GetName())
+        print("Hypothesis ID   : ", hypArea1.GetId())
+        print("Hypothesis Value: ", hypArea1.GetMaxElementArea())
               
     
-    print "-------------------------- Regular_1D"
+    print("-------------------------- Regular_1D")
     listHyp = algoReg.GetCompatibleHypothesis()
     for hyp in listHyp:
-        print hyp
+        print(hyp)
     
-    print "Algo name: ", algoReg.GetName()
-    print "Algo ID  : ", algoReg.GetId()
+    print("Algo name: ", algoReg.GetName())
+    print("Algo ID  : ", algoReg.GetId())
    
-    print "-------------------------- MEFISTO_2D"
+    print("-------------------------- MEFISTO_2D")
     listHyp = algoMef.GetCompatibleHypothesis()
     for hyp in listHyp:
-        print hyp
+        print(hyp)
         
-    print "Algo name: ", algoMef.GetName()
-    print "Algo ID  : ", algoMef.GetId()
+    print("Algo name: ", algoMef.GetName())
+    print("Algo ID  : ", algoMef.GetId())
 
 
     # ---- add hypothesis to shape
 
-    print "-------------------------- compute mesh"
+    print("-------------------------- compute mesh")
     ret = mesh.Compute()
-    print  "Compute Mesh .... ", 
-    print ret
+    print("Compute Mesh .... ", end=' ') 
+    print(ret)
     log = mesh.GetLog(0); # no erase trace
     #for linelog in log:
     #    print linelog
 
-    print "------------ INFORMATION ABOUT MESH ------------"
+    print("------------ INFORMATION ABOUT MESH ------------")
     
-    print "Number of nodes    : ", mesh.NbNodes()
-    print "Number of edges    : ", mesh.NbEdges()
-    print "Number of faces    : ", mesh.NbFaces()
-    print "Number of triangles: ", mesh.NbTriangles()
+    print("Number of nodes    : ", mesh.NbNodes())
+    print("Number of edges    : ", mesh.NbEdges())
+    print("Number of faces    : ", mesh.NbFaces())
+    print("Number of triangles: ", mesh.NbTriangles())
 
     return mesh

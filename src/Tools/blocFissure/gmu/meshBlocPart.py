@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from geomsmesh import geompy
-from geomsmesh import smesh
+from .geomsmesh import geompy
+from .geomsmesh import smesh
 from salome.smesh import smeshBuilder
 import SMESH
 from salome.StdMeshers import StdMeshersBuilder
-from putName import putName
+from .putName import putName
 
 # -----------------------------------------------------------------------------
 # --- maillage du bloc partitionne

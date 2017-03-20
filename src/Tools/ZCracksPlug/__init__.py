@@ -1,6 +1,6 @@
 import sys, os, shutil, pickle, tempfile
-import main, genereCrack, Zset
-import utilityFunctions as uF
+from . import main, genereCrack, Zset
+from . import utilityFunctions as uF
 
 #commande="/bin/bash -c ""source $HOME/zebulon/Z8.6.6_NEW/do_config_bash"""
 #os.system(commande)
@@ -20,16 +20,16 @@ def IHM():
 
 def SCRIPT(dataFile=None, data=None, dim=3, names=None):
   if dim!=3 and dim!=2:
-    print 'ERROR'
+    print('ERROR')
     return(False)
 
   if dataFile==None and data==None:
-    print 'One of dataFile or data is mandatory'
+    print('One of dataFile or data is mandatory')
     return(False)
 
   if data==None: data=pickle.load(open(dataFile,'r'))
 
-  print data
+  print(data)
 
   tmpdir=tempfile.mkdtemp()
   uF.removeFromSessionPath('LD_LIBRARY_PATH', 'Meshgems-2111')
@@ -47,7 +47,7 @@ def SCRIPT(dataFile=None, data=None, dim=3, names=None):
   for f in [crackMed, crackedMed, saneGeo, crackGeo, crackedGeo]:
     if os.path.isfile(f): os.remove(f)
 
-  print crackMed
+  print(crackMed)
   genereCrack.main(data, crackMed)
   goOn=os.path.isfile(crackMed)
 

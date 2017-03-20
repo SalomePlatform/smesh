@@ -1,7 +1,7 @@
 
 import os, tempfile, shutil
-import utilityFunctions as uF
-from output import message
+from . import utilityFunctions as uF
+from .output import message
 
 def medToGeo(medFile, geoFile, tmpdir, opt=[], verbose=0):
   medLoc=os.path.dirname(medFile)
@@ -114,18 +114,18 @@ def insertCrack(data, names, tmpdir='./zcracks_temp', verbose=0):
   maxS=data['maxSize'][0]
   extrL=data['extractLength'][0]
 
-  grad = data['gradation'][0] if 'gradation' in data.keys() else 1.3
-  quad = data['quad'] if 'quad' in data.keys() else False
-  cas2D = data['is2D'] if 'is2D' in data.keys() else False
-  refine = data['refine'] if 'refine' in data.keys() else False
-  nbLay = data['layers'][0] if 'layers' in data.keys() else 5
-  nbIter = data['iterations'][0] if 'iterations' in data.keys() else 2
+  grad = data['gradation'][0] if 'gradation' in list(data.keys()) else 1.3
+  quad = data['quad'] if 'quad' in list(data.keys()) else False
+  cas2D = data['is2D'] if 'is2D' in list(data.keys()) else False
+  refine = data['refine'] if 'refine' in list(data.keys()) else False
+  nbLay = data['layers'][0] if 'layers' in list(data.keys()) else 5
+  nbIter = data['iterations'][0] if 'iterations' in list(data.keys()) else 2
 
-  Gvol = data['grVol'] if 'grVol' in data.keys() else ''
-  Gfac = data['grFace'] if 'grFace' in data.keys() else ''
-  Gedg = data['grEdge'] if 'grEdge' in data.keys() else ''
-  Gnod = data['grNodes'] if 'grNodes' in data.keys() else ''
-  surfOpt = data['surfopt'] if 'surfopt' in data.keys() else ''
+  Gvol = data['grVol'] if 'grVol' in list(data.keys()) else ''
+  Gfac = data['grFace'] if 'grFace' in list(data.keys()) else ''
+  Gedg = data['grEdge'] if 'grEdge' in list(data.keys()) else ''
+  Gnod = data['grNodes'] if 'grNodes' in list(data.keys()) else ''
+  surfOpt = data['surfopt'] if 'surfopt' in list(data.keys()) else ''
 
 
   if not os.path.isdir(tmpdir): os.mkdir(tmpdir)

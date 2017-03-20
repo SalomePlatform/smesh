@@ -38,15 +38,15 @@ if not node000:
 # find node000 using a dedicated function 
 n = mesh.FindNodeClosestTo( -1,-1,-1 )
 if not n == node000:
-    raise "FindNodeClosestTo() returns " + str( n ) + " != " + str( node000 )
+    raise Exception("FindNodeClosestTo() returns " + str( n ) + " != " + str( node000 ))
 
 # move node000 to a new location
 x,y,z = -10, -10, -10
 n = mesh.MoveNode( n,x,y,z )
 if not n:
-    raise "MoveNode() returns " + n
+    raise Exception("MoveNode() returns " + n)
 
 # check the coordinates of the node000
 xyz = mesh.GetNodeXYZ( node000 )
 if not ( xyz[0] == x and xyz[1] == y and xyz[2] == z) :
-    raise "Wrong coordinates: " + str( xyz ) + " != " + str( [x,y,z] )
+    raise Exception("Wrong coordinates: " + str( xyz ) + " != " + str( [x,y,z] ))

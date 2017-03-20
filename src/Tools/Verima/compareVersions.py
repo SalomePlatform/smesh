@@ -3,8 +3,8 @@
 
 import sys
 import os
-from Base.dataBase import Base
-from Base.versions import  Chercheversion
+from .Base.dataBase import Base
+from .Base.versions import  Chercheversion
 
 
 if __name__ == "__main__":

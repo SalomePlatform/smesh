@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from geomsmesh import smesh
+from .geomsmesh import smesh
 import SMESH
-from geomsmesh import geompy
+from .geomsmesh import geompy
 
 # -----------------------------------------------------------------------------
 # --- maillage complet et fissure

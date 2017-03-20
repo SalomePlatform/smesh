@@ -20,8 +20,8 @@
 
 # INTRODUCTION HERE
 
-import sys, math, copy, commands
-CWD = commands.getoutput('pwd')
+import sys, math, copy, subprocess
+CWD = subprocess.getoutput('pwd')
 sys.path.append(CWD)
 
 from MacObject import *
@@ -42,13 +42,13 @@ def CompositeBox (X0 , Y0 , DX , DY , **args ) :
     ObjIDLists = SortObjLists(Config.Connections[-1],X0 , Y0 , DX , DY )
     RemoveLastObj()
 
-    print "ObjIDLists: ", ObjIDLists
+    print("ObjIDLists: ", ObjIDLists)
 
     RealSegments = []
     Direction = []
     flag = 0
     if not(args.__contains__('recursive')) : Config.Count = 0
-    print "Config.Count : ", Config.Count
+    print("Config.Count : ", Config.Count)
     Config.Criterion = GetCriterion(ObjIDLists)
     for index, ObjList in enumerate(ObjIDLists) :
         if not (ObjList[0] == -1 or Config.Count >= Config.Criterion):
@@ -163,7 +163,7 @@ def IndexMultiOcc (Array,Element) :
     """
     Output = []
     try : Array.index(Element)
-    except ValueError : print "No more occurrences"
+    except ValueError : print("No more occurrences")
     else : Output.append(Array.index(Element))
 
     if not(Output == []) and len(Array) > 1 :

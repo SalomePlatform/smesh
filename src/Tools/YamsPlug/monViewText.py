@@ -79,7 +79,7 @@ class MonViewText(Ui_ViewExe, QDialog):
             f.write(cmds)
         self.make_executable(nomFichier)
 
-        if verbose: print("INFO: MGSurfOpt launch script file: %s" % nomFichier)
+        if verbose: print(("INFO: MGSurfOpt launch script file: %s" % nomFichier))
 
         self.monExe.start(nomFichier)
         self.monExe.closeWriteChannel()
@@ -96,22 +96,22 @@ class MonViewText(Ui_ViewExe, QDialog):
         savedir=os.environ['HOME']
         fn = QFileDialog.getSaveFileName(None,"Save File",savedir)
         if fn.isNull() : return
-        ulfile = os.path.abspath(unicode(fn))
+        ulfile = os.path.abspath(str(fn))
         try:
             f = open(fn, 'wb')
             f.write(str(self.TB_Exe.toPlainText()))
             f.close()
-        except IOError, why:
+        except IOError as why:
             QMessageBox.critical(self, 'Save File',
-                 'The file <b>%1</b> could not be saved.<br>Reason: %2'%(unicode(fn), str(why)))
+                 'The file <b>%1</b> could not be saved.<br>Reason: %2'%(str(fn), str(why)))
 
     def readFromStdErr(self):
         a=self.monExe.readAllStandardError()
-        self.TB_Exe.append(unicode(a.data().encode()))
+        self.TB_Exe.append(str(a.data().encode()))
 
     def readFromStdOut(self) :
         a=self.monExe.readAllStandardOutput()
-        aa=unicode(a.data())
+        aa=str(a.data())
         self.TB_Exe.append(aa)
 
     def finished(self):

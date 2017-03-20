@@ -21,7 +21,7 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-from SMESH_test1 import *
+from .SMESH_test1 import *
 
 ## Old style
 def CheckBelongToGeomFilterOld(theMeshGen, theMesh, theShape, theSubShape, theElemType):
@@ -54,11 +54,11 @@ def CheckBelongToGeomFilter(theMesh, theShape, theSubShape, theElemType):
     
 
 anElemType = SMESH.FACE;
-print "anElemType =", anElemType
+print("anElemType =", anElemType)
 #anIds = CheckBelongToGeomFilter(mesh,box,subShapeList[1],anElemType)
 anIds = CheckBelongToGeomFilter(mesh,box,box,anElemType)
-print "Number of ids = ", len(anIds)
-print "anIds = ", anIds
+print("Number of ids = ", len(anIds))
+print("anIds = ", anIds)
 ## Check old version
 #anIds = CheckBelongToGeomFilterOld(smesh,mesh.GetMesh(),box,box,anElemType)
 #print "anIds = ", anIds

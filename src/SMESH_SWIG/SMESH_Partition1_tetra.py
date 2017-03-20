@@ -83,15 +83,15 @@ Compound1 = geompy.MakeCompound([colis_cc_multi, barier])
 SubShape_theShape = geompy.SubShapeAll(Compound1,geompy.ShapeType["SOLID"])
 alveole = geompy.MakePartition(SubShape_theShape)
 
-print "Analysis of the geometry to mesh (right after the Partition) :"
+print("Analysis of the geometry to mesh (right after the Partition) :")
 
 subShellList = geompy.SubShapeAll(alveole, geompy.ShapeType["SHELL"])
 subFaceList  = geompy.SubShapeAll(alveole, geompy.ShapeType["FACE"])
 subEdgeList  = geompy.SubShapeAll(alveole, geompy.ShapeType["EDGE"])
 
-print "number of Shells in alveole : ", len(subShellList)
-print "number of Faces  in alveole : ", len(subFaceList)
-print "number of Edges  in alveole : ", len(subEdgeList)
+print("number of Shells in alveole : ", len(subShellList))
+print("number of Faces  in alveole : ", len(subFaceList))
+print("number of Edges  in alveole : ", len(subEdgeList))
 
 subshapes = geompy.SubShapeAll(alveole, geompy.ShapeType["SHAPE"])
 
@@ -113,18 +113,18 @@ alveole = geompy.MakeCompound( [ comp, subshapes[8] ])
 
 idalveole = geompy.addToStudy(alveole, "alveole")
 
-print "Analysis of the geometry to mesh (right after the MakeCompound) :"
+print("Analysis of the geometry to mesh (right after the MakeCompound) :")
 
 subShellList = geompy.SubShapeAll(alveole, geompy.ShapeType["SHELL"])
 subFaceList  = geompy.SubShapeAll(alveole, geompy.ShapeType["FACE"])
 subEdgeList  = geompy.SubShapeAll(alveole, geompy.ShapeType["EDGE"])
 
-print "number of Shells in alveole : ", len(subShellList)
-print "number of Faces  in alveole : ", len(subFaceList)
-print "number of Edges  in alveole : ", len(subEdgeList)
+print("number of Shells in alveole : ", len(subShellList))
+print("number of Faces  in alveole : ", len(subFaceList))
+print("number of Edges  in alveole : ", len(subEdgeList))
 
 status = geompy.CheckShape(alveole)
-print " check status ", status
+print(" check status ", status)
 
 
 # ---- init a Mesh with the alveole
@@ -132,56 +132,56 @@ shape_mesh = salome.IDToObject( idalveole )
 
 mesh = smesh.Mesh(shape_mesh, "MeshAlveole")
 
-print "-------------------------- create Hypothesis (In this case global hypothesis are used)"
+print("-------------------------- create Hypothesis (In this case global hypothesis are used)")
 
-print "-------------------------- NumberOfSegments"
+print("-------------------------- NumberOfSegments")
 
 numberOfSegments = 10
 
 regular1D = mesh.Segment()
 hypNbSeg = regular1D.NumberOfSegments(numberOfSegments)
-print hypNbSeg.GetName()
-print hypNbSeg.GetId()
-print hypNbSeg.GetNumberOfSegments()
+print(hypNbSeg.GetName())
+print(hypNbSeg.GetId())
+print(hypNbSeg.GetNumberOfSegments())
 smesh.SetName(hypNbSeg, "NumberOfSegments_" + str(numberOfSegments))
 
-print "-------------------------- MaxElementArea"
+print("-------------------------- MaxElementArea")
 
 maxElementArea = 0.1
 
 mefisto2D = mesh.Triangle()
 hypArea = mefisto2D.MaxElementArea(maxElementArea)
-print hypArea.GetName()
-print hypArea.GetId()
-print hypArea.GetMaxElementArea()
+print(hypArea.GetName())
+print(hypArea.GetId())
+print(hypArea.GetMaxElementArea())
 smesh.SetName(hypArea, "MaxElementArea_" + str(maxElementArea))
 
-print "-------------------------- MaxElementVolume"
+print("-------------------------- MaxElementVolume")
 
 maxElementVolume = 0.5
 
 netgen3D = mesh.Tetrahedron(smeshBuilder.NETGEN)
 hypVolume = netgen3D.MaxElementVolume(maxElementVolume)
-print hypVolume.GetName()
-print hypVolume.GetId()
-print hypVolume.GetMaxElementVolume()
+print(hypVolume.GetName())
+print(hypVolume.GetId())
+print(hypVolume.GetMaxElementVolume())
 smesh.SetName(hypVolume, "MaxElementVolume_" + str(maxElementVolume))
 
-print "-------------------------- compute the mesh of alveole "
+print("-------------------------- compute the mesh of alveole ")
 ret = mesh.Compute()
 
 if ret != 0:
     log=mesh.GetLog(0) # no erase trace
     for linelog in log:
-        print linelog
-    print "Information about the Mesh_mechanic:"
-    print "Number of nodes       : ", mesh.NbNodes()
-    print "Number of edges       : ", mesh.NbEdges()
-    print "Number of faces       : ", mesh.NbFaces()
-    print "Number of triangles   : ", mesh.NbTriangles()
-    print "Number of volumes     : ", mesh.NbVolumes()
-    print "Number of tetrahedrons: ", mesh.NbTetras()
+        print(linelog)
+    print("Information about the Mesh_mechanic:")
+    print("Number of nodes       : ", mesh.NbNodes())
+    print("Number of edges       : ", mesh.NbEdges())
+    print("Number of faces       : ", mesh.NbFaces())
+    print("Number of triangles   : ", mesh.NbTriangles())
+    print("Number of volumes     : ", mesh.NbVolumes())
+    print("Number of tetrahedrons: ", mesh.NbTetras())
 else:
-    print "problem when computing the mesh"
+    print("problem when computing the mesh")
 
 salome.sg.updateObjBrowser(True)

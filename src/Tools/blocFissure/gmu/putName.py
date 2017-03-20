@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from geomsmesh import smesh
+from .geomsmesh import smesh
 
 # -----------------------------------------------------------------------------
 # --- nommage des objets mesh (algorithme, hypothèse, subMesh)

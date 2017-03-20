@@ -12,4 +12,4 @@ for face in SubFaceL[: len(SubFaceL)/2]:
 # get triangles with 7 nodes
 filter_tri = smesh.GetFilter(SMESH.FACE, SMESH.FT_EntityType,'=', SMESH.Entity_BiQuad_Triangle )
 ids_tri = mesh.GetIdsFromFilter(filter_tri)
-print "Number of bi-quadratic triangles:", len(ids_tri)
+print("Number of bi-quadratic triangles:", len(ids_tri))

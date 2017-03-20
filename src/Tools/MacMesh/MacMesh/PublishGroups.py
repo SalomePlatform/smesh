@@ -34,7 +34,7 @@ def PublishGroups ():
     aFilterManager = smesh.CreateFilterManager()
 
     # Building geometric and mesh compounds and  groups ##############################################
-    if Config.debug : print "Searching for geometric groups and publishing final compound"
+    if Config.debug : print("Searching for geometric groups and publishing final compound")
 
     TempGEOList = []
     TempMESHList = []
@@ -83,7 +83,7 @@ def IndexMultiOcc (Array,Element) :
     """
     Output = []
     try : Array.index(Element)
-    except ValueError : print "No more occurrences"
+    except ValueError : print("No more occurrences")
     else : Output.append(Array.index(Element))
 
     if not(Output == [-1]) and len(Array) > 1 :
@@ -111,18 +111,18 @@ def RevolveMesh(MainMesh,**args):
     ################################################################################
     if 'Center' in args : CenterCoor = [float(Coor) for Coor in args['Center']]
     else :
-        print "\nThe coordinates of the center of revolution were not given\nThe origin is used by default."
+        print("\nThe coordinates of the center of revolution were not given\nThe origin is used by default.")
         CenterCoor = [0.,0.,0.]
 
     if 'Direction' in args : Direction = [float(Dir) for Dir in args['Direction']]
     else :
-        print "\nThe axis vector of revolution was not given\nThe x-axis is used by default."
+        print("\nThe axis vector of revolution was not given\nThe x-axis is used by default.")
         Direction = [1.,0.,0.]
 
     if 'AngleDeg' in args : Angle = float(args['AngleDeg'])*math.pi/180.
     elif 'AngleRad' in args : Angle = float(args['AngleRad'])
     else :
-        print "\nThe revolution angle was not given\nAn angle of 10 degrees is used by default."
+        print("\nThe revolution angle was not given\nAn angle of 10 degrees is used by default.")
         Angle = 10.*math.pi/180.
 
     if 'Scale' in args : Scale = float(args['Scale'])
@@ -185,12 +185,12 @@ def ExtrudeMesh(MainMesh,**args):
     ################################################################################
     if 'Distance' in args : Distance = float(args['Distance'])
     else :
-        print "\nThe extrusion distance was not given\nA default value of 1 is used."
+        print("\nThe extrusion distance was not given\nA default value of 1 is used.")
         Distance = 1.
 
     if 'Direction' in args : Direction = NormalizeVector([float(Dir) for Dir in args['Direction']],Distance)
     else :
-        print "\nThe extrusion vector of revolution was not given\nThe z-axis is used by default."
+        print("\nThe extrusion vector of revolution was not given\nThe z-axis is used by default.")
         Direction = NormalizeVector([0.,0.,1.],Distance)
 
     if 'Scale' in args : Scale = float(args['Scale'])

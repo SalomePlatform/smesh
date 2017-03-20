@@ -1,5 +1,5 @@
 from qtsalome import QSqlQuery
-from tableDeBase import TableDeBase
+from .tableDeBase import TableDeBase
 
 class TableGroupeTailles (TableDeBase):
       def __init__(self):
@@ -21,7 +21,7 @@ class TableGroupeTailles (TableDeBase):
           texteQuery+="foreign key (Groupe) references GroupesRef(nomGroupe),"
           texteQuery+="primary key (idMaillage,idVersion,Groupe));"
 
-          print "Creation de TableGroupeTailles : " , query.exec_(texteQuery)
+          print("Creation de TableGroupeTailles : " , query.exec_(texteQuery))
 
       def getVal(self,idMaillage, idVersion, Groupe,  Entite):
           query=QSqlQuery()
@@ -31,9 +31,9 @@ class TableGroupeTailles (TableDeBase):
           query.exec_(texteQuery)
           nb=0
           val=0                          # Valeur si l enregistrement n existe pas
-          while (query.next()) :
+          while (next(query)) :
               val=query.value(0).toFloat()[0]
               nb=nb+1
-          if nb > 1 : print "Double valeur de Reference dans la table des tailles"
+          if nb > 1 : print("Double valeur de Reference dans la table des tailles")
           return val
 

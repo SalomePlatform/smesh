@@ -32,7 +32,7 @@ class MacObject:
         determines meshing parameters if necessary and finally launches the generation process.
         """
         import Config,GenFunctions
-        if Config.debug : print "Initializing object No. " + str(len(Config.ListObj)+1)
+        if Config.debug : print("Initializing object No. " + str(len(Config.ListObj)+1))
 
         if 'publish' in args :
             if args['publish']==0 : Config.publish = 0
@@ -46,7 +46,7 @@ class MacObject:
         else : self.GroupNames = [None, None, None, None]
 
         if ObjectType == 'NonOrtho':
-            if not(len(GeoParameters)==4): print "Error: trying to construct a non-ortho object but the 4 constitutive vertices are not given!"
+            if not(len(GeoParameters)==4): print("Error: trying to construct a non-ortho object but the 4 constitutive vertices are not given!")
             else :
                 Xmin = min([GeoParameters[i][0] for i in range(4)])
                 Xmax = max([GeoParameters[i][0] for i in range(4)])
@@ -187,7 +187,7 @@ class MacObject:
 
         if self.MeshPar[0] < 0 :
             Alarms.Message(4)
-            if self.MeshPar[0] == -1 : print ("Problem encountered with object(s) no. "+str(ObjectsInvolved))
+            if self.MeshPar[0] == -1 : print(("Problem encountered with object(s) no. "+str(ObjectsInvolved)))
             elif self.MeshPar[0] == -2 : print ("This object has no neighbours !!!")
 
     def Boundaries (self):
@@ -286,7 +286,7 @@ class MacObject:
         from itertools import combinations
         Boxes = []
         if self.Type == 'NonOrtho':
-            for combi in combinations(range(4),3):
+            for combi in combinations(list(range(4)),3):
                 Xmin = min([self.PtCoor[i][0] for i in combi])
                 Xmax = max([self.PtCoor[i][0] for i in combi])
                 Ymin = min([self.PtCoor[i][1] for i in combi])

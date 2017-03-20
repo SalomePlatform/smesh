@@ -172,14 +172,14 @@ meshJobParameterList.append(param)
 jobid = component.initialize(meshJobFileList, meshJobParameterList, configId)
 if jobid<0:
     msg = component.getLastErrorMessage()
-    print "ERR: %s"%msg
+    print("ERR: %s"%msg)
     sys.exit(1)
     
 created = False
 nbiter  = 0
 while not created:
     state = component.getState(jobid)
-    print "MeshJobManager ["+str(nbiter)+"] : state = "+str(state)
+    print("MeshJobManager ["+str(nbiter)+"] : state = "+str(state))
     if state == "CREATED":
         created = True
     time.sleep(0.5)
@@ -196,10 +196,10 @@ while not created:
 ok=component.start(jobid)
 if not ok:
     msg = component.getLastErrorMessage()
-    print "ERR: %s"%msg
+    print("ERR: %s"%msg)
     sys.exit(1)
 
-print "job started: %s"%ok
+print("job started: %s"%ok)
 
 #
 # This part illustrates how you can follow the execution of the job.
@@ -212,20 +212,20 @@ ended  = False
 nbiter = 0
 while not ended:
     state = component.getState(jobid)
-    print "MeshJobManager ["+str(nbiter)+"] : state = "+str(state)
+    print("MeshJobManager ["+str(nbiter)+"] : state = "+str(state))
     if state not in run_states:
         ended=True
     time.sleep(0.5)
     nbiter+=1
         
 if state not in end_states:
-    print "ERR: jobid = "+str(jobid)+" ended abnormally with state="+str(state)
+    print("ERR: jobid = "+str(jobid)+" ended abnormally with state="+str(state))
     msg = component.getLastErrorMessage()
-    print "ERR: %s"%msg    
+    print("ERR: %s"%msg)    
 else:
-    print "OK:  jobid = "+str(jobid)+" ended with state="+str(state)
+    print("OK:  jobid = "+str(jobid)+" ended with state="+str(state))
     meshJobResults = component.finalize(jobid)
-    print meshJobResults
+    print(meshJobResults)
     if meshJobResults.status is not True:
-        print "ERR: the results are not OK: %s"%component.getLastErrorMessage()
-        print "ERR: see log files in %s"%meshJobResults.results_dirname
+        print("ERR: the results are not OK: %s"%component.getLastErrorMessage())
+        print("ERR: see log files in %s"%meshJobResults.results_dirname)

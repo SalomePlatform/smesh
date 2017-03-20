@@ -38,26 +38,26 @@ from salome.StdMeshers import StdMeshersBuilder
 
 
 # ---- define a box
-print "Define box"
+print("Define box")
 box = geompy.MakeBox(0., 0., 0., 100., 200., 300.)
 idbox = geompy.addToStudy(box, "box")
 
 # ---- add faces of box to study
-print "Add faces to study"
+print("Add faces to study")
 idface = []
 subShapeList = geompy.SubShapeAll(box, geompy.ShapeType["FACE"])
 for f in subShapeList:
   name = geompy.SubShapeName(f, box)
-  print name
+  print(name)
   idface.append( geompy.addToStudyInFather(box, f, name) )
 
 # ---- add edges of box to study
-print "Add edges to study"
+print("Add edges to study")
 idedge = []
 subShapeList = geompy.SubShapeAll(box, geompy.ShapeType["EDGE"])
 for f in subShapeList:
   name = geompy.SubShapeName(f, box)
-  print name
+  print(name)
   idedge.append( geompy.addToStudyInFather(box, f, name) )
 
 salome.sg.updateObjBrowser(True)
@@ -73,7 +73,7 @@ box = salome.IDToObject(idbox)
 names = [ "MeshBoxReg", "MeshBoxScale", "MeshBoxTable", "MeshBoxExpr" ]
 
 
-print "-------------------------- Create ", names[0], " mesh"
+print("-------------------------- Create ", names[0], " mesh")
 mesh = smesh.Mesh(box, names[0])
 algo = mesh.Segment()
 hyp = algo.NumberOfSegments(7)
@@ -82,7 +82,7 @@ smesh.SetName(hyp, "NumberOfSegmentsReg")
 algo = mesh.Triangle()
 algo.MaxElementArea(2500)
 
-print "-------------------------- Create ", names[1], " mesh"
+print("-------------------------- Create ", names[1], " mesh")
 mesh = smesh.Mesh(box, names[1])
 algo = mesh.Segment()
 hyp = algo.NumberOfSegments(7)
@@ -92,7 +92,7 @@ smesh.SetName(hyp, "NumberOfSegmentsScale")
 algo = mesh.Triangle()
 algo.MaxElementArea(2500)
 
-print "-------------------------- Create ", names[2], " mesh"
+print("-------------------------- Create ", names[2], " mesh")
 mesh = smesh.Mesh(box,names[2])
 algo = mesh.Segment()
 hyp = algo.NumberOfSegments(7)
@@ -103,7 +103,7 @@ smesh.SetName(hyp, "NumberOfSegmentsTable")
 algo = mesh.Triangle()
 algo.MaxElementArea(2500)
 
-print "-------------------------- Create ", names[3], " mesh"
+print("-------------------------- Create ", names[3], " mesh")
 mesh = smesh.Mesh(box, names[3])
 algo = mesh.Segment()
 hyp = algo.NumberOfSegments(10)

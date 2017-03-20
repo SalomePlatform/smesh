@@ -6,7 +6,7 @@ pathRacine=os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__
 if os.path.dirname(pathRacine) not in sys.path :
    sys.path.insert(0,pathRacine)
 
-from dataBase import Base
+from .dataBase import Base
 
 if __name__ == "__main__":
       from optparse import OptionParser

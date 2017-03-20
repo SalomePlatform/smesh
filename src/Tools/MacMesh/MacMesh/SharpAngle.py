@@ -27,8 +27,8 @@
 #               |   NW             NE    |  oo
 #          _____|                        |_____
 
-import sys, math, commands
-CWD = commands.getoutput('pwd')
+import sys, math, subprocess
+CWD = subprocess.getoutput('pwd')
 sys.path.append(CWD)
 
 from MacObject import *
@@ -42,7 +42,7 @@ def SharpAngleOut (X0 , Y0 , DX , DY , DLocal, LocalMeshing , CornerOrientation 
     InternalMeshing = int(math.ceil(BoxSide/(3*LocalMeshing)))
     InternalMeshing = InternalMeshing+InternalMeshing%2     # An even number is needed, otherwise the objects would not be compatible once created
     if InternalMeshing == 0 : InternalMeshing = 2           # This sets a minimum meshing condition in order to avoid an error. The user is notified of the value considered for the local meshing
-    print "Possible Local meshing is :", BoxSide/(3*InternalMeshing), "\nThis value is returned by this function for your convenience"
+    print("Possible Local meshing is :", BoxSide/(3*InternalMeshing), "\nThis value is returned by this function for your convenience")
 
     DirPar =     {'NE' : lambda : ['NE', 'NW', 'SE', 'EW', 'NW', 'SN', 'SN', 'NE', 'WE', 'WE', 'SE', 'NS'],
                   'NW' : lambda : ['NW', 'NE', 'SW', 'WE', 'NE', 'SN', 'SN', 'NW', 'EW', 'EW', 'SW', 'NS'],
@@ -153,7 +153,7 @@ def SharpAngleIn (X0 , Y0 , DX , DY , DLocal, LocalMeshing , CornerOrientation ,
     InternalMeshing = int(math.ceil(BoxSide/(3*LocalMeshing)))
     InternalMeshing = InternalMeshing+InternalMeshing%2     # An even number is needed, otherwise the objects would not be compatible once created
     if InternalMeshing == 0 : InternalMeshing = 2           # This sets a minimum meshing condition in order to avoid an error. The user is notified of the value considered for the local meshing
-    print "Possible Local meshing is :", BoxSide/(3*InternalMeshing), "\nThis value is returned by this function for your convenience..."
+    print("Possible Local meshing is :", BoxSide/(3*InternalMeshing), "\nThis value is returned by this function for your convenience...")
 
     DirPar =     {'NE' : lambda : ['NE', 'SN', 'NE', 'WE'],
                   'NW' : lambda : ['NW', 'SN', 'NW', 'EW'],

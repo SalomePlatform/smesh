@@ -18,4 +18,4 @@ mesh.Compute()
 # get all free borders
 filter = smesh.GetFilter(SMESH.EDGE, SMESH.FT_FreeBorders)
 ids = mesh.GetIdsFromFilter(filter)
-print "Number of edges on free borders:", len(ids)
+print("Number of edges on free borders:", len(ids))

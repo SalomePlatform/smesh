@@ -38,7 +38,7 @@ smesh.SetCurrentStudy(myStudy)
 myStudyBuilder = myStudy.NewBuilder()
 
 if myStudyBuilder is None:
-    raise RuntimeError, " Null myStudyBuilder"
+    raise RuntimeError(" Null myStudyBuilder")
 
 father = myStudy.FindComponent("SMESH")
 if father is None:

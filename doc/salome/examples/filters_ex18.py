@@ -22,4 +22,4 @@ mesh.MergeNodes( mesh.FindCoincidentNodes( 1e-5 ))
 # get mesh edges with number of connected elements (faces and volumes) == 3
 filter = smesh.GetFilter(SMESH.EDGE, SMESH.FT_MultiConnection, 3)
 ids = mesh.GetIdsFromFilter(filter)
-print "Number of border edges with 3 faces connected:", len(ids)
+print("Number of border edges with 3 faces connected:", len(ids))

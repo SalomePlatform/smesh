@@ -45,15 +45,15 @@ SubMesh_3 = MEFISTO_2D_3.GetSubMesh()
 # check exisiting sub-mesh priority order
 [ [ SubMesh_1, SubMesh_3, SubMesh_2 ] ] = Mesh_1.GetMeshOrder()
 isDone = Mesh_1.Compute()
-print "Nb elements at initial order of sub-meshes:", Mesh_1.NbElements()
+print("Nb elements at initial order of sub-meshes:", Mesh_1.NbElements())
 
 # set new sub-mesh order
 isDone = Mesh_1.SetMeshOrder( [ [ SubMesh_1, SubMesh_2, SubMesh_3 ] ])
 # compute mesh
 isDone = Mesh_1.Compute()
-print "Nb elements at new order of sub-meshes:", Mesh_1.NbElements()
+print("Nb elements at new order of sub-meshes:", Mesh_1.NbElements())
 
 # compute with other sub-mesh order
 isDone = Mesh_1.SetMeshOrder( [ [ SubMesh_2, SubMesh_1, SubMesh_3 ] ])
 isDone = Mesh_1.Compute()
-print "Nb elements at another order of sub-meshes:", Mesh_1.NbElements()
+print("Nb elements at another order of sub-meshes:", Mesh_1.NbElements())

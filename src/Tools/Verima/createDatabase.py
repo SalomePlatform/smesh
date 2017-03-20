@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import sys
-from Base.dataBase import Base
+from .Base.dataBase import Base
 
 def creeDatabase(fichier):
       maBase=Base(fichier)

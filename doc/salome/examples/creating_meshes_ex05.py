@@ -47,12 +47,12 @@ import MEDLoader, os
 # on XOY plane, and autoDimension=True by default
 mesh2D.ExportMED( medFile )
 medMesh = MEDLoader.MEDLoader.ReadUMeshFromFile(medFile,mesh2D.GetName(),0)
-print "autoDimension==True, exported mesh is in %sD"%medMesh.getSpaceDimension()
+print("autoDimension==True, exported mesh is in %sD"%medMesh.getSpaceDimension())
 
 # exported mesh is in 3D space, same as in Mesh module,
 # thanks to autoDimension=False
 mesh2D.ExportMED( medFile, autoDimension=False )
 medMesh = MEDLoader.MEDLoader.ReadUMeshFromFile(medFile,mesh2D.GetName(),0)
-print "autoDimension==False, exported mesh is in %sD"%medMesh.getSpaceDimension()
+print("autoDimension==False, exported mesh is in %sD"%medMesh.getSpaceDimension())
 
 os.remove( medFile )

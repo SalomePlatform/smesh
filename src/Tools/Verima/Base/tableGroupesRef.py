@@ -1,5 +1,5 @@
 from qtsalome import QSqlQuery
-from tableDeBase import TableDeBase
+from .tableDeBase import TableDeBase
 
 class TableGroupesRef (TableDeBase):
     def __init__(self):
@@ -12,14 +12,14 @@ class TableGroupesRef (TableDeBase):
         texteQuery ="create table GroupesRef(nomGroupe varchar(40), idMaillage int,"
         texteQuery+="foreign key (idMaillage) references Maillages(idMaillage),"
         texteQuery+="primary key (nomGroupe,idMaillage));"
-        print "Creation de TableGroupesRef : " , query.exec_(texteQuery)
+        print("Creation de TableGroupesRef : " , query.exec_(texteQuery))
 
     def getVals(self,idMaillage):
         query=QSqlQuery()
         texteQuery ='select NomGroupe from GroupesRef where idMaillage='+str(idMaillage) +";"
         listeGroupes=[]
         query.exec_(texteQuery)
-        while (query.next()) :
+        while (next(query)) :
             listeGroupes.append(str(query.value(0).toString()))
         return listeGroupes
 

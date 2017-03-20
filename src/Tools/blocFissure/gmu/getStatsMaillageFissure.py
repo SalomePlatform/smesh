@@ -13,7 +13,7 @@ def getStatsMaillageFissure(maillage, referencesMaillageFissure, maillageFissure
   logging.debug('start')
 
   nomRep = '.'
-  if maillageFissureParams.has_key('nomRep'):
+  if 'nomRep' in maillageFissureParams:
     nomRep = maillageFissureParams['nomRep']
   
   nomFicFissure     = maillageFissureParams['nomFicFissure']
@@ -25,7 +25,7 @@ def getStatsMaillageFissure(maillage, referencesMaillageFissure, maillageFissure
   if maillage is not None:
     mesures = maillage.GetMeshInfo()
     d= {}
-    for key, value in mesures.iteritems():
+    for key, value in mesures.items():
       logging.debug( "key: %s value: %s", key, value)
       d[str(key)] = value
     logging.debug("dico mesures %s", d)      

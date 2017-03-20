@@ -22,23 +22,23 @@ mesh = smesh.Mesh( sphere )
 cartAlgo = mesh.BodyFitted()
 
 # define a cartesian grid using Coordinates
-coords = range(-100,100,10)
+coords = list(range(-100,100,10))
 cartHyp = cartAlgo.SetGrid( coords,coords,coords, 1000000)
 
 # compute the mesh
 mesh.Compute()
-print "nb hexahedra",mesh.NbHexas()
-print "nb tetrahedra",mesh.NbTetras()
-print "nb polyhedra",mesh.NbPolyhedrons()
-print
+print("nb hexahedra",mesh.NbHexas())
+print("nb tetrahedra",mesh.NbTetras())
+print("nb polyhedra",mesh.NbPolyhedrons())
+print()
 
 # define the grid by setting constant spacing
 cartHyp = cartAlgo.SetGrid( "10","10","10", 1000000)
 
 mesh.Compute()
-print "nb hexahedra",mesh.NbHexas()
-print "nb tetrahedra",mesh.NbTetras()
-print "nb polyhedra",mesh.NbPolyhedrons()
+print("nb hexahedra",mesh.NbHexas())
+print("nb tetrahedra",mesh.NbTetras())
+print("nb polyhedra",mesh.NbPolyhedrons())
 
 
 # define the grid by setting different spacing in 2 sub-ranges of geometry
@@ -46,10 +46,10 @@ spaceFuns = ["5","10+10*t"]
 cartAlgo.SetGrid( [spaceFuns, [0.5]], [spaceFuns, [0.5]], [spaceFuns, [0.25]], 10 )
 
 mesh.Compute()
-print "nb hexahedra",mesh.NbHexas()
-print "nb tetrahedra",mesh.NbTetras()
-print "nb polyhedra",mesh.NbPolyhedrons()
-print
+print("nb hexahedra",mesh.NbHexas())
+print("nb tetrahedra",mesh.NbTetras())
+print("nb polyhedra",mesh.NbPolyhedrons())
+print()
 
 # Example of customization of dirtections of the grid axes
 
@@ -67,23 +67,23 @@ mesh = smesh.Mesh( box, "custom axes")
 algo = mesh.BodyFitted()
 algo.SetGrid( spc, spc, spc, 10000 )
 mesh.Compute()
-print "Default axes"
-print "   nb hex:",mesh.NbHexas()
+print("Default axes")
+print("   nb hex:",mesh.NbHexas())
 
 # set axes using edges of the box
 algo.SetAxesDirs( xDir, [-0.1,1,0], zDir )
 mesh.Compute()
-print "Manual axes"
-print "   nb hex:",mesh.NbHexas()
+print("Manual axes")
+print("   nb hex:",mesh.NbHexas())
 
 # set optimal orthogonal axes
 algo.SetOptimalAxesDirs( isOrthogonal=True )
 mesh.Compute()
-print "Optimal orthogonal axes"
-print "   nb hex:",mesh.NbHexas()
+print("Optimal orthogonal axes")
+print("   nb hex:",mesh.NbHexas())
 
 # set optimal non-orthogonal axes
 algo.SetOptimalAxesDirs( isOrthogonal=False )
 mesh.Compute()
-print "Optimal non-orthogonal axes"
-print "   nb hex:",mesh.NbHexas()
+print("Optimal non-orthogonal axes")
+print("   nb hex:",mesh.NbHexas())

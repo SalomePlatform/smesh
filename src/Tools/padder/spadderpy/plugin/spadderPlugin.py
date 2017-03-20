@@ -25,7 +25,7 @@ def runSpadderPlugin(context):
     from salome.kernel.uiexception import UiException
     try:
         dialog=plugindialog.getDialog()
-    except UiException, err:
+    except UiException as err:
         from qtsalome import QMessageBox
         QMessageBox.critical(None,"An error occurs during PADDER configuration",
                              err.getUIMessage())

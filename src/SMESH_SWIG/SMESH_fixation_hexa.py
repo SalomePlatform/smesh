@@ -26,7 +26,7 @@
 # Hypothesis and algorithms for the mesh generation are global
 #
 import salome
-import SMESH_fixation
+from . import SMESH_fixation
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
@@ -37,17 +37,17 @@ idcomp = SMESH_fixation.idcomp
 geompy = SMESH_fixation.geompy
 salome = SMESH_fixation.salome
 
-print "Analysis of the geometry to be meshed :"
+print("Analysis of the geometry to be meshed :")
 subShellList = geompy.SubShapeAll(compshell, geompy.ShapeType["SHELL"])
 subFaceList  = geompy.SubShapeAll(compshell, geompy.ShapeType["FACE"])
 subEdgeList  = geompy.SubShapeAll(compshell, geompy.ShapeType["EDGE"])
 
-print "number of Shells in compshell : ", len(subShellList)
-print "number of Faces  in compshell : ", len(subFaceList)
-print "number of Edges  in compshell : ", len(subEdgeList)
+print("number of Shells in compshell : ", len(subShellList))
+print("number of Faces  in compshell : ", len(subFaceList))
+print("number of Edges  in compshell : ", len(subEdgeList))
 
 status = geompy.CheckShape(compshell)
-print " check status ", status
+print(" check status ", status)
 
 ### ---------------------------- SMESH --------------------------------------
 smesh.SetCurrentStudy(salome.myStudy)
@@ -60,43 +60,43 @@ mesh = smesh.Mesh(shape_mesh, "MeshCompShell")
 
 # ---- set Hypothesis and Algorithm
 
-print "-------------------------- NumberOfSegments"
+print("-------------------------- NumberOfSegments")
 
 numberOfSegments = 5
 
 regular1D = mesh.Segment()
 regular1D.SetName("Wire Discretisation")
 hypNbSeg = regular1D.NumberOfSegments(numberOfSegments)
-print hypNbSeg.GetName()
-print hypNbSeg.GetId()
-print hypNbSeg.GetNumberOfSegments()
+print(hypNbSeg.GetName())
+print(hypNbSeg.GetId())
+print(hypNbSeg.GetNumberOfSegments())
 smesh.SetName(hypNbSeg, "NumberOfSegments_" + str(numberOfSegments))
 
-print "-------------------------- Quadrangle_2D"
+print("-------------------------- Quadrangle_2D")
 
 quad2D = mesh.Quadrangle()
 quad2D.SetName("Quadrangle_2D")
 
-print "-------------------------- Hexa_3D"
+print("-------------------------- Hexa_3D")
 
 hexa3D = mesh.Hexahedron()
 hexa3D.SetName("Hexa_3D")
 
-print "-------------------------- compute compshell"
+print("-------------------------- compute compshell")
 ret = mesh.Compute()
-print ret
+print(ret)
 if ret != 0:
     log = mesh.GetLog(0) # no erase trace
     for linelog in log:
-        print linelog
-    print "Information about the MeshcompShel:"
-    print "Number of nodes       : ", mesh.NbNodes()
-    print "Number of edges       : ", mesh.NbEdges()
-    print "Number of faces       : ", mesh.NbFaces()
-    print "Number of quadrangles : ", mesh.NbQuadrangles()
-    print "Number of volumes     : ", mesh.NbVolumes()
-    print "Number of hexahedrons : ", mesh.NbHexas()
+        print(linelog)
+    print("Information about the MeshcompShel:")
+    print("Number of nodes       : ", mesh.NbNodes())
+    print("Number of edges       : ", mesh.NbEdges())
+    print("Number of faces       : ", mesh.NbFaces())
+    print("Number of quadrangles : ", mesh.NbQuadrangles())
+    print("Number of volumes     : ", mesh.NbVolumes())
+    print("Number of hexahedrons : ", mesh.NbHexas())
 else:
-    print "problem when Computing the mesh"
+    print("problem when Computing the mesh")
 
 salome.sg.updateObjBrowser(True)

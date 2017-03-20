@@ -22,8 +22,8 @@ import GEOM
 from salome.geom import geomBuilder
 import math
 import SALOMEDS
-import utilityFunctions as uF
-from output import message
+from . import utilityFunctions as uF
+from .output import message
 
 #ellipse.generate(data_demi_grand_axe, data_centre, data_normale,data_direction, data_demi_petit_axe, data_angle, rayon_entaille,extension, outFile)
 #if True:
@@ -192,7 +192,7 @@ def generate(data_demi_grand_axe, data_centre, data_normale,
     Maillage.ExportMED( outFile, 0, SMESH.MED_V2_2, 1, None ,1)
     smesh.SetName(Maillage.GetMesh(), 'MAILLAGE_FISSURE')
   except:
-    print 'ExportToMEDX() failed. Invalid file name?'
+    print('ExportToMEDX() failed. Invalid file name?')
 
 
   ## Set names of Mesh objects
