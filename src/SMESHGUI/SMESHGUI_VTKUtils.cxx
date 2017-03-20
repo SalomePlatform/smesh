@@ -762,6 +762,7 @@ namespace SMESH
                 if ((anActor = CreateActor(aDocument,theEntry,true))) {
                   bool needFitAll = noSmeshActors(theWnd); // fit for the first object only
                   DisplayActor(theWnd,anActor);
+                  anActor->SetVisibility(true);
                   aStudy->setVisibilityState(theEntry, Qtx::ShownState);
                   // FitAll(); - PAL16770(Display of a group performs an automatic fit all)
                   if (needFitAll) FitAll();

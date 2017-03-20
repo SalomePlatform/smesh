@@ -45,6 +45,7 @@ class MESHDRIVERSTL_EXPORT DriverSTL_W_SMDS_Mesh: public Driver_SMDS_Mesh
   ~DriverSTL_W_SMDS_Mesh();
   virtual Status Perform();
   void    SetIsAscii( const bool theIsAscii = false );
+  void    SetName( const std::string name ) { myName = name; }
 
  private:
   // PRIVATE METHODS
@@ -56,7 +57,8 @@ class MESHDRIVERSTL_EXPORT DriverSTL_W_SMDS_Mesh: public Driver_SMDS_Mesh
 
  private:
   // PRIVATE FIELDS
-  bool myIsAscii;
+  bool        myIsAscii;
+  std::string myName;
   int                                  myNbVolumeTrias;
   std::vector<const SMDS_MeshElement*> myVolumeFacets; // tmp faces
 };

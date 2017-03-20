@@ -496,7 +496,13 @@ int SMESH_Mesh_i::ImportSTLFile( const char* theFileName )
   SMESH_TRY;
 
   // Read mesh with name = <theMeshName> into SMESH_Mesh
-  _impl->STLToMesh( theFileName );
+  std::string name = _impl->STLToMesh( theFileName );
+  if ( !name.empty() )
+  {
+    SALOMEDS::Study_var     study = _gen_i->GetCurrentStudy();
+    SALOMEDS::SObject_wrap meshSO = _gen_i->ObjectToSObject( study, _this() );
+    _gen_i->SetName( meshSO, name.c_str() );
+  }
 
   SMESH_CATCH( SMESH::throwCorbaException );
 
@@ -3144,9 +3150,15 @@ void SMESH_Mesh_i::ExportSTL (const char *file, const bool isascii)
   TPythonDump() << SMESH::SMESH_Mesh_var(_this())
                 << ".ExportSTL( r'" << file << "', " << isascii << " )";
 
+  CORBA::String_var name;
+  SALOMEDS::Study_var study = _gen_i->GetCurrentStudy();
+  SALOMEDS::SObject_wrap so = _gen_i->ObjectToSObject( study, _this() );
+  if ( !so->_is_nil() )
+    name = so->GetName();
+
   // Perform Export
-  PrepareForWriting(file);
-  _impl->ExportSTL(file, isascii);
+  PrepareForWriting( file );
+  _impl->ExportSTL( file, isascii, name.in() );
 }
 
 //================================================================================
@@ -3595,8 +3607,14 @@ void SMESH_Mesh_i::ExportPartToSTL(::SMESH::SMESH_IDSource_ptr meshPart,
 
   PrepareForWriting(file);
 
+  CORBA::String_var name;
+  SALOMEDS::Study_var study = _gen_i->GetCurrentStudy();
+  SALOMEDS::SObject_wrap so = _gen_i->ObjectToSObject( study, meshPart );
+  if ( !so->_is_nil() )
+    name = so->GetName();
+
   SMESH_MeshPartDS partDS( meshPart );
-  _impl->ExportSTL(file, isascii, &partDS);
+  _impl->ExportSTL( file, isascii, name.in(), &partDS );
 
   TPythonDump() << SMESH::SMESH_Mesh_var(_this()) << ".ExportPartToSTL( "
                 << meshPart<< ", r'" << file << "', " << isascii << ")";

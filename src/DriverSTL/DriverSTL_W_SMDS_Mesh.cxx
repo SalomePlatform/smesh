@@ -176,7 +176,7 @@ static void writeFloat( const Standard_ShortReal& theVal, SMESH_File& ofile)
 {
   union {
     Standard_ShortReal f;
-    char c[4]; 
+    char c[4];
   } u;
 
   u.f = theVal;
@@ -485,7 +485,8 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::writeAscii() const
   SMESH_File aFile( myFile, /*openForReading=*/false );
   aFile.openForWriting();
 
-  std::string buf("solid\n");
+  std::string buf("solid ");
+  buf += myName + "\n";
   aFile.writeRaw( buf.c_str(), buf.size() );
 
   char sval[128];
@@ -520,7 +521,8 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::writeAscii() const
                       " endfacet\n", 21 );
     }
   }
-  aFile.writeRaw ("endsolid\n" , 9 );
+  buf = "endsolid " + myName + "\n";
+  aFile.writeRaw( buf.c_str(), buf.size() );
 
   return aResult;
 }
@@ -554,6 +556,11 @@ Driver_Mesh::Status DriverSTL_W_SMDS_Mesh::writeBinary() const
     }
   }
   std::string sval( LABEL_SIZE, ' ' );
+  if ( !myName.empty() )
+  {
+    sval = "name: " + myName;
+    sval.resize( LABEL_SIZE, ' ' );
+  }
   aFile.write( sval.c_str(), LABEL_SIZE );
 
   // write number of triangles

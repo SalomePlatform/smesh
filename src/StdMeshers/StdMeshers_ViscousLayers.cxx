@@ -1865,15 +1865,19 @@ SMESH_ComputeErrorPtr _ViscousBuilder::Compute(SMESH_Mesh&         theMesh,
     size_t iSD = 0;
     for ( iSD = 0; iSD < _sdVec.size(); ++iSD ) // find next SOLID to compute
       if ( _sdVec[iSD]._before.IsEmpty() &&
+           !_sdVec[iSD]._solid.IsNull() &&
            _sdVec[iSD]._n2eMap.empty() )
         break;
 
     if ( ! makeLayer(_sdVec[iSD]) )   // create _LayerEdge's
       return _error;
 
-    if ( _sdVec[iSD]._n2eMap.size() == 0 )
+    if ( _sdVec[iSD]._n2eMap.size() == 0 ) // no layers in a SOLID
+    {
+      _sdVec[iSD]._solid.Nullify();
       continue;
-    
+    }
+
     if ( ! inflate(_sdVec[iSD]) )     // increase length of _LayerEdge's
       return _error;
 
@@ -9049,7 +9053,7 @@ void _LayerEdge::Block( _SolidData& data )
       minDist   = Min( pSrc.SquareDistance( pTgtN ), minDist );
       minDist   = Min( pTgt.SquareDistance( pSrcN ), minDist );
       double newMaxLen = edge->_maxLen + 0.5 * Sqrt( minDist );
-      if ( edge->_nodes[0]->getshapeId() == neibor->_nodes[0]->getshapeId() )
+      //if ( edge->_nodes[0]->getshapeId() == neibor->_nodes[0]->getshapeId() ) viscous_layers_00/A3
       {
         newMaxLen *= edge->_lenFactor / neibor->_lenFactor;
       }

@@ -215,29 +215,34 @@ namespace
     QStringList filter;
     std::string myExtension;
 
-    if ( theCommandID == SMESHOp::OpImportMED ) {
+    if ( theCommandID == SMESHOp::OpImportMED ||
+         theCommandID == SMESHOp::OpPopupImportMED ) {
       filter.append( QObject::tr( "MED_FILES_FILTER" ) + " (*.*med)" );
       filter.append( QObject::tr( "ALL_FILES_FILTER" ) + " (*)" );
     }
-    else if ( theCommandID == SMESHOp::OpImportUNV ) {
+    else if ( theCommandID == SMESHOp::OpImportUNV ||
+              theCommandID == SMESHOp::OpPopupImportUNV ) {
       filter.append( QObject::tr( "IDEAS_FILES_FILTER" ) + " (*.unv)" );
     }
-    else if ( theCommandID == SMESHOp::OpImportDAT ) {
+    else if ( theCommandID == SMESHOp::OpImportDAT ||
+              theCommandID == SMESHOp::OpPopupImportDAT ) {
       filter.append( QObject::tr( "DAT_FILES_FILTER" ) + " (*.dat)" );
     }
-    else if ( theCommandID == SMESHOp::OpImportSTL ) {
+    else if ( theCommandID == SMESHOp::OpImportSTL ||
+              theCommandID == SMESHOp::OpPopupImportSTL ) {
       filter.append( QObject::tr( "STL_FILES_FILTER" ) + " (*.stl)" );
     }
-  #ifdef WITH_CGNS
-    else if ( theCommandID == SMESHOp::OpImportCGNS ) {
+    else if ( theCommandID == SMESHOp::OpImportCGNS ||
+              theCommandID == SMESHOp::OpPopupImportCGNS ) {
       filter.append( QObject::tr( "CGNS_FILES_FILTER" ) + " (*.cgns)" );
     }
-  #endif
-    else if ( theCommandID == SMESHOp::OpImportSAUV ) {
+    else if ( theCommandID == SMESHOp::OpImportSAUV ||
+              theCommandID == SMESHOp::OpPopupImportSAUV ) {
       filter.append( QObject::tr( "SAUV files (*.sauv*)" ) );
       filter.append( QObject::tr( "All files (*)" ) );
     }
-    else if ( theCommandID == SMESHOp::OpImportGMF ) {
+    else if ( theCommandID == SMESHOp::OpImportGMF ||
+              theCommandID == SMESHOp::OpPopupImportGMF ) {
       filter.append( QObject::tr( "GMF_ASCII_FILES_FILTER" ) + " (*.mesh)"  );
       filter.append( QObject::tr( "GMF_BINARY_FILES_FILTER") + " (*.meshb)" );
     }
@@ -283,6 +288,7 @@ namespace
         try {
           switch ( theCommandID ) {
           case SMESHOp::OpImportDAT:
+          case SMESHOp::OpPopupImportDAT:
             {
               // DAT format (currently unsupported)
               errors.append( QString( "%1 :\n\t%2" ).arg( filename ).
@@ -290,6 +296,7 @@ namespace
               break;
             }
           case SMESHOp::OpImportUNV:
+          case SMESHOp::OpPopupImportUNV:
             {
               // UNV format
               aMeshes->length( 1 );
@@ -300,6 +307,7 @@ namespace
               break;
             }
           case SMESHOp::OpImportMED:
+          case SMESHOp::OpPopupImportMED:
             {
               // MED format
               SMESH::DriverMED_ReadStatus res;
@@ -311,6 +319,7 @@ namespace
               break;
             }
           case SMESHOp::OpImportSTL:
+          case SMESHOp::OpPopupImportSTL:
             {
               // STL format
               aMeshes->length( 1 );
@@ -321,8 +330,8 @@ namespace
               }
               break;
             }
-        #ifdef WITH_CGNS
           case SMESHOp::OpImportCGNS:
+          case SMESHOp::OpPopupImportCGNS:
             {
               // CGNS format
               SMESH::DriverMED_ReadStatus res;
@@ -333,8 +342,8 @@ namespace
               }
               break;
             }
-        #endif
           case SMESHOp::OpImportSAUV:
+          case SMESHOp::OpPopupImportSAUV:
             {
               // SAUV format
               SMESH::DriverMED_ReadStatus res;
@@ -346,6 +355,7 @@ namespace
               break;
             }
           case SMESHOp::OpImportGMF:
+          case SMESHOp::OpPopupImportGMF:
             {
               // GMF format
               SMESH::ComputeError_var res;
@@ -433,12 +443,8 @@ namespace
                          theCommandID == SMESHOp::OpPopupExportUNV );
     const bool isSTL = ( theCommandID == SMESHOp::OpExportSTL ||
                          theCommandID == SMESHOp::OpPopupExportSTL );
-#ifdef WITH_CGNS
     const bool isCGNS= ( theCommandID == SMESHOp::OpExportCGNS ||
                          theCommandID == SMESHOp::OpPopupExportCGNS );
-#else
-    const bool isCGNS= false;
-#endif
     const bool isSAUV= ( theCommandID == SMESHOp::OpExportSAUV ||
                          theCommandID == SMESHOp::OpPopupExportSAUV );
     const bool isGMF = ( theCommandID == SMESHOp::OpExportGMF ||
@@ -2451,11 +2457,16 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpImportUNV:
   case SMESHOp::OpImportMED:
   case SMESHOp::OpImportSTL:
-#ifdef WITH_CGNS
   case SMESHOp::OpImportCGNS:
-#endif
   case SMESHOp::OpImportSAUV:
   case SMESHOp::OpImportGMF:
+  case SMESHOp::OpPopupImportDAT:
+  case SMESHOp::OpPopupImportUNV:
+  case SMESHOp::OpPopupImportMED:
+  case SMESHOp::OpPopupImportSTL:
+  case SMESHOp::OpPopupImportCGNS:
+  case SMESHOp::OpPopupImportSAUV:
+  case SMESHOp::OpPopupImportGMF:
     {
       if(checkLock(aStudy)) break;
       ::ImportMeshesFromFile(GetSMESHGen(),theCommandID);
@@ -2484,18 +2495,14 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpExportMED:
   case SMESHOp::OpExportUNV:
   case SMESHOp::OpExportSTL:
-#ifdef WITH_CGNS
   case SMESHOp::OpExportCGNS:
-#endif
   case SMESHOp::OpExportSAUV:
   case SMESHOp::OpExportGMF:
   case SMESHOp::OpPopupExportDAT:
   case SMESHOp::OpPopupExportMED:
   case SMESHOp::OpPopupExportUNV:
   case SMESHOp::OpPopupExportSTL:
-#ifdef WITH_CGNS
   case SMESHOp::OpPopupExportCGNS:
-#endif
   case SMESHOp::OpPopupExportSAUV:
   case SMESHOp::OpPopupExportGMF:
     {
@@ -2671,9 +2678,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       extractContainers( sel_objects, to_process );
 
       try {
-#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
         OCC_CATCH_SIGNALS;
-#endif
         if (vtkwnd) {
           SALOME_ListIteratorOfListIO It( to_process );
           for ( ; It.More(); It.Next())
@@ -3821,13 +3826,21 @@ void SMESHGUI::initialize( CAM_Application* app )
   //createSMESHAction(  SMESHOp::OpImportDAT, "IMPORT_DAT", "", (Qt::CTRL+Qt::Key_B) );
   createSMESHAction( SMESHOp::OpImportUNV, "IMPORT_UNV", "", (Qt::CTRL+Qt::Key_I) );
   createSMESHAction( SMESHOp::OpImportMED, "IMPORT_MED", "", (Qt::CTRL+Qt::Key_M) );
-  //createSMESHAction(  114, "NUM" );
   createSMESHAction( SMESHOp::OpImportSTL, "IMPORT_STL"  );
 #ifdef WITH_CGNS
   createSMESHAction( SMESHOp::OpImportCGNS, "IMPORT_CGNS" );
 #endif
   createSMESHAction( SMESHOp::OpImportSAUV, "IMPORT_SAUV" );
   createSMESHAction( SMESHOp::OpImportGMF,  "IMPORT_GMF"  );
+  createSMESHAction( SMESHOp::OpPopupImportUNV, "IMPORT_UNV");
+  createSMESHAction( SMESHOp::OpPopupImportMED, "IMPORT_MED");
+  createSMESHAction( SMESHOp::OpPopupImportSTL, "IMPORT_STL"  );
+#ifdef WITH_CGNS
+  createSMESHAction( SMESHOp::OpPopupImportCGNS, "IMPORT_CGNS" );
+#endif
+  createSMESHAction( SMESHOp::OpPopupImportSAUV, "IMPORT_SAUV" );
+  createSMESHAction( SMESHOp::OpPopupImportGMF,  "IMPORT_GMF"  );
+
   createSMESHAction( SMESHOp::OpExportDAT,  "DAT" );
   createSMESHAction( SMESHOp::OpExportMED,  "MED" );
   createSMESHAction( SMESHOp::OpExportUNV,  "UNV" );
@@ -4364,6 +4377,7 @@ void SMESHGUI::initialize( CAM_Application* app )
     group   = pat.arg( SMESHGUI_Selection::typeName( SMESH::GROUP ) ),
     hypo    = pat.arg( SMESHGUI_Selection::typeName( SMESH::HYPOTHESIS ) ),
     algo    = pat.arg( SMESHGUI_Selection::typeName( SMESH::ALGORITHM ) ),
+    smesh   = pat.arg( SMESHGUI_Selection::typeName( SMESH::COMPONENT ) ),
     elems   = QString( "'%1' '%2' '%3' '%4' '%5' '%6'" ).
     arg( SMESHGUI_Selection::typeName( SMESH::SUBMESH_VERTEX ) ).
     arg( SMESHGUI_Selection::typeName( SMESH::SUBMESH_EDGE ) ).
@@ -4442,6 +4456,17 @@ void SMESHGUI::initialize( CAM_Application* app )
   createPopupItem( SMESHOp::OpPopupExportDAT,  OB, mesh_group, only_one_non_empty, anId );
   createPopupItem( SMESHOp::OpDelete,          OB, mesh_part + " " + hyp_alg );
   createPopupItem( SMESHOp::OpDeleteGroup,     OB, group );
+
+  anId = popupMgr()->insert( tr( "MEN_IMPORT" ), -1, -1 );        // IMPORT submenu
+  createPopupItem( SMESHOp::OpPopupImportMED,  OB, smesh, "", anId );
+  createPopupItem( SMESHOp::OpPopupImportUNV,  OB, smesh, "", anId );
+  createPopupItem( SMESHOp::OpPopupImportSTL,  OB, smesh, "", anId );
+#ifdef WITH_CGNS
+  createPopupItem( SMESHOp::OpPopupImportCGNS, OB, smesh, "", anId );
+#endif
+  createPopupItem( SMESHOp::OpPopupImportSAUV, OB, smesh, "", anId );
+  createPopupItem( SMESHOp::OpPopupImportGMF,  OB, smesh, "", anId );
+  createPopupItem( SMESHOp::OpPopupImportDAT,  OB, smesh, "", anId );
   popupMgr()->insert( separator(), -1, 0 );
 
   // popup for viewer
@@ -4580,9 +4605,9 @@ void SMESHGUI::initialize( CAM_Application* app )
   // Controls
   //-------------------------------------------------
   QString
-    aMeshInVtkHasNodes = aMeshInVTK + "&&" + hasNodes,
-    aMeshInVtkHasEdges = aMeshInVTK + "&&" + hasEdges,
-    aMeshInVtkHasFaces = aMeshInVTK + "&&" + hasFaces,
+    aMeshInVtkHasNodes   = aMeshInVTK + "&&" + hasNodes,
+    aMeshInVtkHasEdges   = aMeshInVTK + "&&" + hasEdges,
+    aMeshInVtkHasFaces   = aMeshInVTK + "&&" + hasFaces,
     aMeshInVtkHasVolumes = aMeshInVTK + "&&" + hasVolumes;
 
   anId = popupMgr()->insert( tr( "MEN_CTRL" ), -1, -1 );

@@ -83,11 +83,12 @@ public:
   // --------------------------------------------------------------------------------
   struct ElemFeatures //!< Features of element to create
   {
-    SMDSAbs_ElementType myType;
-    bool                myIsPoly, myIsQuad;
-    int                 myID;
-    double              myBallDiameter;
-    std::vector<int>    myPolyhedQuantities;
+    SMDSAbs_ElementType               myType;
+    bool                              myIsPoly, myIsQuad;
+    int                               myID;
+    double                            myBallDiameter;
+    std::vector<int>                  myPolyhedQuantities;
+    std::vector<const SMDS_MeshNode*> myNodes; // not managed by ElemFeatures
 
     SMESH_EXPORT ElemFeatures( SMDSAbs_ElementType type=SMDSAbs_All, bool isPoly=false, bool isQuad=false )
       :myType( type ), myIsPoly(isPoly), myIsQuad(isQuad), myID(-1), myBallDiameter(0) {}
@@ -751,6 +752,20 @@ public:
                     SMESH_SequenceOfElemPtr&                   srcElements);
 
   /*!
+   * \brief Computes new connectivity of an element after merging nodes
+   *  \param [in] elems - the element
+   *  \param [out] newElemDefs - definition(s) of result element(s)
+   *  \param [inout] nodeNodeMap - nodes to merge
+   *  \param [in] avoidMakingHoles - if true and and the element becomes invalid
+   *             after merging (but not degenerated), removes nodes causing
+   *             the invalidity from \a nodeNodeMap.
+   *  \return bool - true if the element should be removed
+   */
+  bool applyMerge( const SMDS_MeshElement*      elems,
+                   std::vector< ElemFeatures >& newElemDefs,
+                   TNodeNodeMap&                nodeNodeMap,
+                   const bool                   avoidMakingHoles );
+  /*!
    * \brief Create 1D and 2D elements around swept elements
    * \param mapNewNodes - source nodes and ones generated from them
    * \param newElemsMap - source elements and ones generated from them
@@ -782,11 +797,11 @@ public:
     double        Angle       ()const               { return myAngle; }
     double        Parameter   ()const               { return myPrm; }
   };
-  Extrusion_Error MakeEdgePathPoints(std::list<double>&                     aPrms,
+  Extrusion_Error makeEdgePathPoints(std::list<double>&                     aPrms,
                                      const TopoDS_Edge&                     aTrackEdge,
                                      bool                                   aFirstIsStart,
                                      std::list<SMESH_MeshEditor_PathPoint>& aLPP);
-  Extrusion_Error MakeExtrElements(TIDSortedElemSet                       theElements[2],
+  Extrusion_Error makeExtrElements(TIDSortedElemSet                       theElements[2],
                                    std::list<SMESH_MeshEditor_PathPoint>& theFullList,
                                    const bool                             theHasAngles,
                                    std::list<double>&                     theAngles,
@@ -794,7 +809,7 @@ public:
                                    const bool                             theHasRefPoint,
                                    const gp_Pnt&                          theRefPoint,
                                    const bool                             theMakeGroups);
-  static void LinearAngleVariation(const int          NbSteps,
+  static void linearAngleVariation(const int          NbSteps,
                                    std::list<double>& theAngles);
 
   bool doubleNodes( SMESHDS_Mesh*           theMeshDS,

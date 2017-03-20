@@ -83,7 +83,8 @@ SET(SMESHUtils_SOURCES
   SMESH_MAT2d.cxx
   SMESH_FreeBorders.cxx
   SMESH_ControlPnt.cxx
-)
+  SMESH_DeMerge.cxx
+  )
 
 # --- rules ---
 

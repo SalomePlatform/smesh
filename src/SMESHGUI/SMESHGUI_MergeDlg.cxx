@@ -191,6 +191,9 @@ SMESHGUI_MergeDlg::SMESHGUI_MergeDlg (SMESHGUI* theModule, int theAction)
     SeparateCornersAndMedium = new QCheckBox(tr("SEPARATE_CORNERS_AND_MEDIUM"), NodeSpecWidget );
     SeparateCornersAndMedium->setEnabled( false );
 
+    AvoidMakingHoles = new QCheckBox(tr("AVOID_MAKING_HOLES"), NodeSpecWidget );
+    AvoidMakingHoles->setChecked( false );
+
     QGridLayout* NodeSpecLayout = new QGridLayout(NodeSpecWidget);
     NodeSpecLayout->setSpacing(SPACING);
     NodeSpecLayout->setMargin(0);
@@ -198,6 +201,7 @@ SMESHGUI_MergeDlg::SMESHGUI_MergeDlg (SMESHGUI* theModule, int theAction)
     NodeSpecLayout->addWidget(TextLabelTolerance,       0, 0 );
     NodeSpecLayout->addWidget(SpinBoxTolerance,         0, 1 );
     NodeSpecLayout->addWidget(SeparateCornersAndMedium, 1, 0, 1, 2 );
+    NodeSpecLayout->addWidget(AvoidMakingHoles,         2, 0, 1, 2 );
 
     /***************************************************************/
     // Exclude groups
@@ -585,12 +589,12 @@ bool SMESHGUI_MergeDlg::ClickOnApply()
     }
 
     if( myAction == MERGE_NODES )
-      aMeshEditor->MergeNodes (aGroupsOfElements.inout(), nodesToKeep);
+      aMeshEditor->MergeNodes( aGroupsOfElements.inout(), nodesToKeep, AvoidMakingHoles->isChecked() );
     else
-      aMeshEditor->MergeElements (aGroupsOfElements.inout());
+      aMeshEditor->MergeElements( aGroupsOfElements.inout() );
 
     if ( myTypeId == TYPE_AUTO ) {
-      if (myAction == MERGE_NODES )
+      if ( myAction == MERGE_NODES )
         SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_INFORMATION"),
                                      tr("SMESH_MERGED_NODES").arg(QString::number(ListCoincident->count()).toLatin1().data()));
       else

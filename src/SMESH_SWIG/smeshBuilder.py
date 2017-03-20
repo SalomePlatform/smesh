@@ -4561,10 +4561,12 @@ class Mesh(metaclass=MeshMeta):
     #  @param NodesToKeep nodes to keep in the mesh: a list of groups, sub-meshes or node IDs.
     #         If @a NodesToKeep does not include a node to keep for some group to merge,
     #         then the first node in the group is kept.
+    #  @param AvoidMakingHoles prevent merging nodes which cause removal of elements becoming
+    #         invalid
     #  @ingroup l2_modif_trsf
-    def MergeNodes (self, GroupsOfNodes, NodesToKeep=[]):
+    def MergeNodes (self, GroupsOfNodes, NodesToKeep=[], AvoidMakingHoles=False):
         # NodesToKeep are converted to SMESH_IDSource in meshEditor.MergeNodes()
-        self.editor.MergeNodes(GroupsOfNodes,NodesToKeep)
+        self.editor.MergeNodes( GroupsOfNodes, NodesToKeep, AvoidMakingHoles )
 
     ## Find the elements built on the same nodes.
     #  @param MeshOrSubMeshOrGroup Mesh or SubMesh, or Group of elements for searching
@@ -5120,17 +5122,18 @@ class meshEditor(SMESH._objref_SMESH_MeshEditor):
     def FindCoincidentNodesOnPart(self,*args): # a 3d arg added (SeparateCornerAndMediumNodes)
         if len( args ) == 2: args += False,
         return SMESH._objref_SMESH_MeshEditor.FindCoincidentNodesOnPart( self, *args )
-    def MergeNodes(self,*args): # a 2nd arg added (NodesToKeep)
+    def MergeNodes(self,*args): # 2 args added (NodesToKeep,AvoidMakingHoles)
         if len( args ) == 1:
-            return SMESH._objref_SMESH_MeshEditor.MergeNodes( self, args[0], [] )
+            return SMESH._objref_SMESH_MeshEditor.MergeNodes( self, args[0], [], False )
         NodesToKeep = args[1]
+        AvoidMakingHoles = args[2] if len( args ) == 3 else False
         unRegister  = genObjUnRegister()
         if NodesToKeep:
             if isinstance( NodesToKeep, list ) and isinstance( NodesToKeep[0], int ):
                 NodesToKeep = self.MakeIDSource( NodesToKeep, SMESH.NODE )
             if not isinstance( NodesToKeep, list ):
                 NodesToKeep = [ NodesToKeep ]
-        return SMESH._objref_SMESH_MeshEditor.MergeNodes( self, args[0], NodesToKeep )
+        return SMESH._objref_SMESH_MeshEditor.MergeNodes( self, args[0], NodesToKeep, AvoidMakingHoles )
     pass
 omniORB.registerObjref(SMESH._objref_SMESH_MeshEditor._NP_RepositoryId, meshEditor)
 

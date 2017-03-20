@@ -495,7 +495,8 @@ public:
                                     CORBA::Boolean                 SeparateCornersAndMedium)
     throw (SALOME::SALOME_Exception);
   void MergeNodes (const SMESH::array_of_long_array& GroupsOfNodes,
-                   const SMESH::ListOfIDSources&     NodesToKeep )
+                   const SMESH::ListOfIDSources&     NodesToKeep,
+                   CORBA::Boolean                    AvoidMakingHoles )
     throw (SALOME::SALOME_Exception);
   void FindEqualElements(SMESH::SMESH_IDSource_ptr      Object,
                          SMESH::array_of_long_array_out GroupsOfElementsID)

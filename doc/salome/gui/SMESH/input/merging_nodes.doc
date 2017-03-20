@@ -26,6 +26,9 @@ merging.</li>
     cells</b> check-box prevents merging medium nodes of quadratic
     elements with corner nodes. This check-box is enabled provided
     that the selected mesh includes quadratic elements.</li>
+<li>Activation of <b>Avoid making holes</b> check-box prevents merging
+    nodes that make elements invalid (but not degenerated) and hence
+    removed. Thus, no holes in place of removed elements appear. </li>
 <li><b>Exclude groups from detection</b> group allows to ignore the
   nodes which belong to the specified mesh groups. This control is
   active provided that the mesh includes groups.</li>

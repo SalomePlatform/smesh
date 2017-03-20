@@ -32,37 +32,36 @@ namespace SMESHOp {
     OpShowScalarBar          = 1022,   // SHOW SCALAR BAR
     OpSaveDistribution       = 1030,   // SAVE DISTRIBUTION
     OpShowDistribution       = 1031,   // SHOW DISTRIBUTION
-#ifndef DISABLE_PLOT2DVIEWER
     OpPlotDistribution       = 1032,   // PLOT DISTRIBUTION
-#endif
     OpFileInformation        = 1040,   // POPUP MENU - FILE INFORMATION
     // Import -------------------------//--------------------------------
     OpImportDAT              = 1100,   // MENU FILE - IMPORT - DAT FILE
     OpImportUNV              = 1101,   // MENU FILE - IMPORT - UNV FILE
     OpImportMED              = 1102,   // MENU FILE - IMPORT - MED FILE
     OpImportSTL              = 1103,   // MENU FILE - IMPORT - STL FILE
-#ifdef WITH_CGNS
     OpImportCGNS             = 1104,   // MENU FILE - IMPORT - CGNS FILE
-#endif
     OpImportSAUV             = 1105,   // MENU FILE - IMPORT - SAUV FILE
     OpImportGMF              = 1106,   // MENU FILE - IMPORT - GMF FILE
+    OpPopupImportDAT         = 1120,   // POPUP MENU - IMPORT - DAT FILE
+    OpPopupImportUNV         = 1121,   // POPUP MENU - IMPORT - UNV FILE
+    OpPopupImportMED         = 1122,   // POPUP MENU - IMPORT - MED FILE
+    OpPopupImportSTL         = 1123,   // POPUP MENU - IMPORT - STL FILE
+    OpPopupImportCGNS        = 1124,   // POPUP MENU - IMPORT - CGNS FILE
+    OpPopupImportSAUV        = 1125,   // POPUP MENU - IMPORT - SAUV FILE
+    OpPopupImportGMF         = 1126,   // POPUP MENU - IMPORT - GMF FILE
     // Export -------------------------//--------------------------------
     OpExportDAT              = 1200,   // MENU FILE  - EXPORT - DAT FILE
     OpExportMED              = 1201,   // MENU FILE  - EXPORT - MED FILE
     OpExportUNV              = 1202,   // MENU FILE  - EXPORT - UNV FILE
     OpExportSTL              = 1203,   // MENU FILE  - EXPORT - STL FILE
-#ifdef WITH_CGNS
     OpExportCGNS             = 1204,   // MENU FILE  - EXPORT - CGNS FILE
-#endif
     OpExportSAUV             = 1205,   // MENU FILE  - EXPORT - SAUV FILE
     OpExportGMF              = 1206,   // MENU FILE  - EXPORT - GMF FILE
     OpPopupExportDAT         = 1210,   // POPUP MENU - EXPORT - DAT FILE
     OpPopupExportMED         = 1211,   // POPUP MENU - EXPORT - MED FILE
     OpPopupExportUNV         = 1212,   // POPUP MENU - EXPORT - UNV FILE
     OpPopupExportSTL         = 1213,   // POPUP MENU - EXPORT - STL FILE
-#ifdef WITH_CGNS
     OpPopupExportCGNS        = 1214,   // POPUP MENU - EXPORT - CGNS FILE
-#endif
     OpPopupExportSAUV        = 1215,   // POPUP MENU - EXPORT - SAUV FILE
     OpPopupExportGMF         = 1216,   // POPUP MENU - EXPORT - GMF FILE
     // Mesh ---------------------------//--------------------------------
