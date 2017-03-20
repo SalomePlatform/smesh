@@ -314,7 +314,7 @@ created = False
 ## This class allows to create, load or manipulate meshes.
 #  It has a set of methods to create, load or copy meshes, to combine several meshes, etc.
 #  It also has methods to get infos and measure meshes.
-class smeshBuilder(object, SMESH._objref_SMESH_Gen):
+class smeshBuilder(SMESH._objref_SMESH_Gen):
 
     # MirrorType enumeration
     POINT = SMESH_MeshEditor.POINT
@@ -333,7 +333,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
     # Methods of splitting a hexahedron into tetrahedra
     Hex_5Tet, Hex_6Tet, Hex_24Tet, Hex_2Prisms, Hex_4Prisms = 1, 2, 3, 1, 2
 
-    def __new__(cls):
+    def __new__(cls, *args):
         global engine
         global smeshInst
         global doLcc
@@ -370,12 +370,12 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         #print "====2 ", smeshInst
         return smeshInst
 
-    def __init__(self):
+    def __init__(self, *args):
         global created
         #print "--------------- smeshbuilder __init__ ---", created
         if not created:
             created = True
-            SMESH._objref_SMESH_Gen.__init__(self)
+            SMESH._objref_SMESH_Gen.__init__(self, *args)
 
     ## Dump component to the Python script
     #  This method overrides IDL function to allow default values for the parameters.

@@ -41,7 +41,7 @@ module SMESH
   /*!
    * SMESH_Group: base interface of group object
    */
-  interface SMESH_GroupBase : SALOME::GenericObj, SMESH_IDSource
+  interface SMESH_GroupBase : SMESH_IDSource
   {
     /*!
      * Sets group name
