@@ -86,7 +86,7 @@ class PluginDialog(QDialog):
         self.__ui.btnClear.setIcon(icon)
 
         # Then, we can connect the slot to there associated button event
-	self.__ui.btnInput.clicked.connect( self.onInput )
+        self.__ui.btnInput.clicked.connect( self.onInput )
         self.__ui.btnCompute.clicked.connect( self.onCompute )
         self.__ui.btnRefresh.clicked.connect( self.onRefresh )
         self.__ui.btnPublish.clicked.connect( self.onPublish )
@@ -95,7 +95,7 @@ class PluginDialog(QDialog):
         self.clear()
 
         self.setupJobManager()
-        
+
 
     def setupJobManager(self):
         '''
@@ -105,8 +105,8 @@ class PluginDialog(QDialog):
         the initialize step, by specifing the name of the resource to
         be used.
         '''
-        # We first 
-        
+        # We first
+
         configReader = ConfigReader()
         config = configReader.getLocalConfig()
         configId = config.resname
@@ -139,8 +139,8 @@ class PluginDialog(QDialog):
                 self.__inputDialog.windowFlags() | Qt.WindowStaysOnTopHint)
             # The signal inputValidated emitted from inputDialog is
             # connected to the slot function onProcessInput:
-    	    self.__inputDialog.inputValidated.connect( self.onProcessInput )
-            
+            self.__inputDialog.inputValidated.connect( self.onProcessInput )
+
         else:
             self.__ui.frameInput.setVisible(True)
             self.__ui.btnInput.setVisible(False)
@@ -150,13 +150,13 @@ class PluginDialog(QDialog):
 
     def getInputFrame(self):
         return self.__ui.frameInput
-        
+
     def __setGuiState(self,states=["CAN_SELECT"]):
         if "CAN_SELECT" in states:
             self.__ui.btnInput.setEnabled(True)
         else:
             self.__ui.btnInput.setEnabled(False)
-            
+
         if "CAN_COMPUTE" in states:
             self.__ui.btnCompute.setEnabled(True)
         else:
@@ -200,7 +200,7 @@ class PluginDialog(QDialog):
     def __log(self, message):
         """
         This function prints the specified message in the log area
-        """ 
+        """
         self.__ui.txtLog.append(message)
 
     def __exportMesh(self, meshName, meshObject):
@@ -256,12 +256,12 @@ class PluginDialog(QDialog):
         self.__ui.lblStatusBar.setText("Input data OK")
         self.__log("INF: Press \"Compute\" to start the job")
         self.__setGuiState(["CAN_SELECT", "CAN_COMPUTE"])
-        
+
     def onCompute(self):
         '''
         This function is the slot connected to the Compute button. It
         initializes a mesh computation job and start it using the
-        SALOME launcher.  
+        SALOME launcher.
         '''
         # We first have to create the list of parameters for the
         # initialize function. For that, we have to create the files
@@ -290,7 +290,7 @@ class PluginDialog(QDialog):
             self.__log("ERR: %s"%jobManager.getLastErrorMessage())
             return
         self.__log("INF: the job has been initialized with jobid = "+str(self.__jobid))
-        
+
         startOk = jobManager.start(self.__jobid)
         if not startOk:
             self.__log("ERR: the job with jobid = "+str(self.__jobid)+" can't be started")
@@ -326,7 +326,7 @@ class PluginDialog(QDialog):
         This function is the slot connected on the Publish button. It
         requests the mesh job manager to download the results data
         from the computation resource host and load the med file in
-        the SALOME study. 
+        the SALOME study.
         """
         jobManager = self.__getJobManager()
         state = jobManager.getState(self.__jobid)
@@ -372,13 +372,13 @@ class PluginDialog(QDialog):
         one is running.
         """
         self.clear()
-        
+
 
 
 __dialog=None
 def getDialog():
     """
-    This function returns a singleton instance of the plugin dialog. 
+    This function returns a singleton instance of the plugin dialog.
     """
     global __dialog
     if __dialog is None:
@@ -401,6 +401,3 @@ def TEST_PluginDialog():
 
 if __name__ == "__main__":
     TEST_PluginDialog()
-
-        
-

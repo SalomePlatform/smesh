@@ -374,8 +374,8 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         global created
         #print "--------------- smeshbuilder __init__ ---", created
         if not created:
-          created = True
-          SMESH._objref_SMESH_Gen.__init__(self)
+            created = True
+            SMESH._objref_SMESH_Gen.__init__(self)
 
     ## Dump component to the Python script
     #  This method overrides IDL function to allow default values for the parameters.
@@ -653,7 +653,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
     def GetSubShapesId( self, theMainObject, theListOfSubObjects ):
         return SMESH._objref_SMESH_Gen.GetSubShapesId(self,theMainObject, theListOfSubObjects)
 
-    ## Create a pattern mapper. 
+    ## Create a pattern mapper.
     #  @return an instance of SMESH_Pattern
     #
     #  <a href="../tui_modifying_meshes_page.html#tui_pattern_mapping">Example of Patterns usage</a>
@@ -835,7 +835,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
                     raise TypeError, "The Threshold should be an integer or SMESH.EntityType."
                 pass
             pass
-        
+
         elif CritType == FT_GroupColor:
             # Check the Threshold
             try:
@@ -1195,7 +1195,7 @@ def New( study, instance=None):
     global doLcc
     engine = instance
     if engine is None:
-      doLcc = True
+        doLcc = True
     smeshInst = smeshBuilder()
     assert isinstance(smeshInst,smeshBuilder), "Smesh engine class is %s but should be smeshBuilder.smeshBuilder. Import salome.smesh.smeshBuilder before creating the instance."%smeshInst.__class__
     smeshInst.init_smesh(study)
@@ -1280,7 +1280,7 @@ class Mesh:
             #self.mesh.UnRegister()
             pass
         pass
-        
+
     ## Initialize the Mesh object from an instance of SMESH_Mesh interface
     #  @param theMesh a SMESH_Mesh object
     #  @ingroup l2_construct
@@ -1641,7 +1641,7 @@ class Mesh:
     #  @ingroup l2_construct
     def Clear(self, refresh=False):
         self.mesh.Clear()
-        if ( salome.sg.hasDesktop() and 
+        if ( salome.sg.hasDesktop() and
              salome.myStudyManager.GetStudyByID( self.mesh.GetStudyId() ) ):
             smeshgui = salome.ImportComponentGUI("SMESH")
             smeshgui.Init(self.mesh.GetStudyId())
@@ -1804,7 +1804,7 @@ class Mesh:
     #         - 3D in the rest cases.<br>
     #         If @a autoDimension is @c False, the space dimension is always 3.
     #  @param fields list of GEOM fields defined on the shape to mesh.
-    #  @param geomAssocFields each character of this string means a need to export a 
+    #  @param geomAssocFields each character of this string means a need to export a
     #         corresponding field; correspondence between fields and characters is following:
     #         - 'v' stands for "_vertices _" field;
     #         - 'e' stands for "_edges _" field;
@@ -1931,7 +1931,7 @@ class Mesh:
     # ----------------------
 
     ## Create an empty mesh group
-    #  @param elementType the type of elements in the group; either of 
+    #  @param elementType the type of elements in the group; either of
     #         (SMESH.NODE, SMESH.EDGE, SMESH.FACE, SMESH.VOLUME)
     #  @param name the name of the mesh group
     #  @return SMESH_Group
@@ -1955,7 +1955,7 @@ class Mesh:
     #  the name is the same as the geometrical group name
     #  @param grp  a geometrical group, a vertex, an edge, a face or a solid
     #  @param name the name of the mesh group
-    #  @param typ  the type of elements in the group; either of 
+    #  @param typ  the type of elements in the group; either of
     #         (SMESH.NODE, SMESH.EDGE, SMESH.FACE, SMESH.VOLUME). If not set, it is
     #         automatically detected by the type of the geometry
     #  @return SMESH_GroupOnGeom
@@ -1992,7 +1992,7 @@ class Mesh:
     ## Create a mesh group with given \a name based on the \a filter which
     ## is a special type of group dynamically updating it's contents during
     ## mesh modification
-    #  @param typ  the type of elements in the group; either of 
+    #  @param typ  the type of elements in the group; either of
     #         (SMESH.NODE, SMESH.EDGE, SMESH.FACE, SMESH.VOLUME).
     #  @param name the name of the mesh group
     #  @param filter the filter defining group contents
@@ -2003,7 +2003,7 @@ class Mesh:
 
     ## Create a mesh group by the given ids of elements
     #  @param groupName the name of the mesh group
-    #  @param elementType the type of elements in the group; either of 
+    #  @param elementType the type of elements in the group; either of
     #         (SMESH.NODE, SMESH.EDGE, SMESH.FACE, SMESH.VOLUME).
     #  @param elemIDs either the list of ids, group, sub-mesh, or filter
     #  @return SMESH_Group
@@ -2086,7 +2086,7 @@ class Mesh:
 
     ## Get the list of groups existing in the mesh in the order
     #  of creation (starting from the oldest one)
-    #  @param elemType type of elements the groups contain; either of 
+    #  @param elemType type of elements the groups contain; either of
     #         (SMESH.ALL, SMESH.NODE, SMESH.EDGE, SMESH.FACE, SMESH.VOLUME);
     #         by default groups of elements of all types are returned
     #  @return a sequence of SMESH_GroupBase
@@ -2121,7 +2121,7 @@ class Mesh:
 
     ## Find groups by name and type
     #  @param name name of the group of interest
-    #  @param elemType type of elements the groups contain; either of 
+    #  @param elemType type of elements the groups contain; either of
     #         (SMESH.ALL, SMESH.NODE, SMESH.EDGE, SMESH.FACE, SMESH.VOLUME);
     #         by default one group of any type of elements is returned
     #         if elemType == SMESH.ALL then all groups of any type are returned
@@ -2133,7 +2133,7 @@ class Mesh:
             if group.GetName() == name:
                 if elemType is None:
                     return [group]
-                if ( elemType == SMESH.ALL or 
+                if ( elemType == SMESH.ALL or
                      group.GetType() == elemType ):
                     groups.append( group )
         return groups
@@ -2152,7 +2152,7 @@ class Mesh:
     #  @return an instance of SMESH_Group
     #  @ingroup l2_grps_operon
     def UnionListOfGroups(self, groups, name):
-      return self.mesh.UnionListOfGroups(groups, name)
+        return self.mesh.UnionListOfGroups(groups, name)
 
     ## Prodice an intersection of two groups.
     #  A new group is created. All mesh elements that are common
@@ -2168,7 +2168,7 @@ class Mesh:
     #  @return an instance of SMESH_Group
     #  @ingroup l2_grps_operon
     def IntersectListOfGroups(self, groups, name):
-      return self.mesh.IntersectListOfGroups(groups, name)
+        return self.mesh.IntersectListOfGroups(groups, name)
 
     ## Produce a cut of two groups.
     #  A new group is created. All mesh elements that are present in
@@ -2189,7 +2189,7 @@ class Mesh:
     ##
     #  Create a standalone group of entities basing on nodes of other groups.
     #  \param groups - list of reference groups, sub-meshes or filters, of any type.
-    #  \param elemType - a type of elements to include to the new group; either of 
+    #  \param elemType - a type of elements to include to the new group; either of
     #         (SMESH.NODE, SMESH.EDGE, SMESH.FACE, SMESH.VOLUME).
     #  \param name - a name of the new group.
     #  \param nbCommonNodes - a criterion of inclusion of an element to the new group
@@ -2866,7 +2866,7 @@ class Mesh:
     def Add0DElement( self, IDOfNode, DuplicateElements=True ):
         return self.editor.Add0DElement( IDOfNode, DuplicateElements )
 
-    ## Create 0D elements on all nodes of the given elements except those 
+    ## Create 0D elements on all nodes of the given elements except those
     #  nodes on which a 0D element already exists.
     #  @param theObject an object on whose nodes 0D elements will be created.
     #         It can be mesh, sub-mesh, group, list of element IDs or a holder
@@ -2875,7 +2875,7 @@ class Mesh:
     #         and/or found on nodes of \a theObject.
     #  @param DuplicateElements to add one more 0D element to a node or not
     #  @return an object (a new group or a temporary SMESH_IDSource) holding
-    #          IDs of new and/or found 0D elements. IDs of 0D elements 
+    #          IDs of new and/or found 0D elements. IDs of 0D elements
     #          can be retrieved from the returned object by calling GetIDs()
     #  @ingroup l2_modif_add
     def Add0DElementsToAllNodes(self, theObject, theGroupName="", DuplicateElements=False):
@@ -3088,7 +3088,7 @@ class Mesh:
     #  @param x  the X coordinate of a point
     #  @param y  the Y coordinate of a point
     #  @param z  the Z coordinate of a point
-    #  @param elementType type of elements to find; either of 
+    #  @param elementType type of elements to find; either of
     #         (SMESH.NODE, SMESH.EDGE, SMESH.FACE, SMESH.VOLUME); SMESH.ALL type
     #         means elements of any type excluding nodes, discrete and 0D elements.
     #  @param meshPart a part of mesh (group, sub-mesh) to search within
@@ -3657,7 +3657,7 @@ class Mesh:
         if error and error.comment:
             print error.comment
         return error
-            
+
     ## Convert the mesh from quadratic to ordinary,
     #  deletes old quadratic elements, \n replacing
     #  them with ordinary mesh elements with the same id.
@@ -3708,13 +3708,13 @@ class Mesh:
         return mesh, group
 
     ##
-    # @brief Create missing boundary elements around either the whole mesh or 
+    # @brief Create missing boundary elements around either the whole mesh or
     #    groups of elements
     #  @param dimension - defines type of boundary elements to create, either of
     #                     { SMESH.BND_2DFROM3D, SMESH.BND_1DFROM3D, SMESH.BND_1DFROM2D }
     #  @param groupName - a name of group to store all boundary elements in,
     #    "" means not to create the group
-    #  @param meshName - a name of a new mesh, which is a copy of the initial 
+    #  @param meshName - a name of a new mesh, which is a copy of the initial
     #    mesh + created boundary elements; "" means not to create the new mesh
     #  @param toCopyAll - if true, the whole initial mesh will be copied into
     #    the new mesh else only boundary elements will be copied into the new mesh
@@ -4406,9 +4406,9 @@ class Mesh:
         if ( isinstance( thePoint, list )):
             thePoint = PointStruct( thePoint[0], thePoint[1], thePoint[2] )
         if ( isinstance( theScaleFact, float )):
-             theScaleFact = [theScaleFact]
+            theScaleFact = [theScaleFact]
         if ( isinstance( theScaleFact, int )):
-             theScaleFact = [ float(theScaleFact)]
+            theScaleFact = [ float(theScaleFact)]
 
         self.mesh.SetParameters(thePoint.parameters)
 
@@ -4434,9 +4434,9 @@ class Mesh:
         if ( isinstance( thePoint, list )):
             thePoint = PointStruct( thePoint[0], thePoint[1], thePoint[2] )
         if ( isinstance( theScaleFact, float )):
-             theScaleFact = [theScaleFact]
+            theScaleFact = [theScaleFact]
         if ( isinstance( theScaleFact, int )):
-             theScaleFact = [ float(theScaleFact)]
+            theScaleFact = [ float(theScaleFact)]
 
         self.mesh.SetParameters(thePoint.parameters)
         mesh = self.editor.ScaleMakeMesh(theObject, thePoint, theScaleFact,
@@ -4602,7 +4602,7 @@ class Mesh:
     #  @ingroup l2_modif_trsf
     def FindCoincidentFreeBorders (self, tolerance=0.):
         return self.editor.FindCoincidentFreeBorders( tolerance )
-        
+
     ## Sew FreeBorder's of each group
     #  @param freeBorders either a SMESH.CoincidentFreeBorders structure or a list of lists
     #         where each enclosed list contains node IDs of a group of coincident free
@@ -4711,7 +4711,7 @@ class Mesh:
     def ClearLastCreated(self):
         self.editor.ClearLastCreated()
 
-    ## Create duplicates of given elements, i.e. create new elements based on the 
+    ## Create duplicates of given elements, i.e. create new elements based on the
     #  same nodes as the given ones.
     #  @param theElements - container of elements to duplicate. It can be a Mesh,
     #         sub-mesh, group, filter or a list of element IDs. If \a theElements is
@@ -4719,7 +4719,7 @@ class Mesh:
     #  @param theGroupName - a name of group to contain the generated elements.
     #                    If a group with such a name already exists, the new elements
     #                    are added to the existng group, else a new group is created.
-    #                    If \a theGroupName is empty, new elements are not added 
+    #                    If \a theGroupName is empty, new elements are not added
     #                    in any group.
     # @return a group where the new elements are added. None if theGroupName == "".
     #  @ingroup l2_modif_duplicat
@@ -4892,11 +4892,11 @@ class Mesh:
     #  @return TRUE if operation has been completed successfully, FALSE otherwise
     #  @ingroup l2_modif_duplicat
     def DoubleNodesOnGroupBoundaries(self, theDomains, createJointElems, onAllBoundaries=False ):
-       return self.editor.DoubleNodesOnGroupBoundaries( theDomains, createJointElems, onAllBoundaries )
+        return self.editor.DoubleNodesOnGroupBoundaries( theDomains, createJointElems, onAllBoundaries )
 
     ## Double nodes on some external faces and create flat elements.
     #  Flat elements are mainly used by some types of mechanic calculations.
-    #  
+    #
     #  Each group of the list must be constituted of faces.
     #  Triangles are transformed in prisms, and quadrangles in hexahedrons.
     #  @param theGroupsOfFaces - list of groups of faces
@@ -4904,7 +4904,7 @@ class Mesh:
     #  @ingroup l2_modif_duplicat
     def CreateFlatElementsOnFacesGroups(self, theGroupsOfFaces ):
         return self.editor.CreateFlatElementsOnFacesGroups( theGroupsOfFaces )
-    
+
     ## identify all the elements around a geom shape, get the faces delimiting the hole
     #
     def CreateHoleSkin(self, radius, theShape, groupName, theNodesCoords):
@@ -5276,8 +5276,8 @@ for pluginName in os.environ[ "SMESH_MeshersList" ].split( ":" ):
     try:
         exec( "from salome.%s.%s import *" % (pluginName, pluginBuilderName))
     except Exception, e:
-	from salome_utils import verbose
-	if verbose(): print "Exception while loading %s: %s" % ( pluginBuilderName, e )
+        from salome_utils import verbose
+        if verbose(): print "Exception while loading %s: %s" % ( pluginBuilderName, e )
         continue
     exec( "from salome.%s import %s" % (pluginName, pluginBuilderName))
     plugin = eval( pluginBuilderName )

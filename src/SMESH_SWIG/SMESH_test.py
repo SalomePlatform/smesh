@@ -132,17 +132,17 @@ for a in log:
     elif comType == 2:
         for i in range(a.number):
             ind = a.indexes[ii]
-	    print ind
+            print ind
             ii = ii+1
-	    print ii
+            print ii
             i1 = a.indexes[ii]
             ii = ii+1
             i2 = a.indexes[ii]
-	    print i2
+            print i2
             ii = ii+1
-	    print "ii", ii
+            print "ii", ii
             i3 = a.indexes[ii]
-	    print i3
+            print i3
             #ii = ii+1
             ii = ii+1
             print "AddTriangle %i - %i %i %i" % (ind, i1, i2, i3)

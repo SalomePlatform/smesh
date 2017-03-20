@@ -82,8 +82,8 @@ del pluginName
 # export the methods of smeshBuilder
 if smesh:
     for k in dir( smesh ):
-	if k[0] == '_': continue
-	globals()[k] = getattr( smesh, k )
+        if k[0] == '_': continue
+        globals()[k] = getattr( smesh, k )
     del k
     pass
 
@@ -95,7 +95,7 @@ smesh.py will be removed in a future version!
 TODO:
 The following changes in your scripts are required to avoid this message:
 
-replace 
+replace
 -------
 
 import smesh, SMESH
@@ -110,7 +110,7 @@ smesh = smeshBuilder.New(salome.myStudy)
 
 you also need to modify some lines where smeshBuilder is used instead of smesh
 
-algo=smesh.xxxx  ==> algo=smeshBuilder.xxxx 
+algo=smesh.xxxx  ==> algo=smeshBuilder.xxxx
 
 See also SMESH User's Guide for more details
 

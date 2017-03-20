@@ -60,14 +60,14 @@ def set_env(args):
                 if plugin in plugin_list: continue
 
                 # add paths of plugin
-		plugin_list.append(plugin)
+                plugin_list.append(plugin)
                 if not os.environ.has_key("SALOME_"+plugin+"Resources"):
                     resource_path = os.path.join(plugin_root,"share",salome_subdir,"resources",plugin.lower())
                     os.environ["SALOME_"+plugin+"Resources"] = resource_path
                     resource_path_list.append( resource_path )
                     add_path(os.path.join(plugin_root,get_lib_dir(),python_version, "site-packages",salome_subdir), "PYTHONPATH")
                     add_path(os.path.join(plugin_root,get_lib_dir(),salome_subdir), "PYTHONPATH")
-                    
+
                     if sys.platform == "win32":
                         add_path(os.path.join(plugin_root,get_lib_dir(),salome_subdir), "PATH")
                         add_path(os.path.join(plugin_root,"bin",salome_subdir), "PYTHONPATH")
@@ -80,4 +80,3 @@ def set_env(args):
                 break
     os.environ["SMESH_MeshersList"] = ":".join(plugin_list)
     os.environ["SalomeAppConfig"] = os.environ["SalomeAppConfig"] + psep + psep.join(resource_path_list)
-
