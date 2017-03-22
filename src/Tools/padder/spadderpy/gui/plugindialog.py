@@ -23,7 +23,8 @@
 from qtsalome import QDialog, QIcon, Qt
 
 from plugindialog_ui import Ui_PluginDialog
-from inputdialog import InputDialog
+from inputdialog import InputDialog, INPUTDATA_KEY_FILES, INPUTDATA_KEY_PARAM
+from inputdialog import PARAM_KEY_NBITER, PARAM_KEY_RMINRMAX
 from inputdata import InputData
 # __GBO__: uncomment this line and comment the previous one to use the
 # demo input dialog instead of the real one.
@@ -95,7 +96,7 @@ class PluginDialog(QDialog):
         self.clear()
 
         self.setupJobManager()
-        
+
 
     def setupJobManager(self):
         '''
@@ -105,8 +106,8 @@ class PluginDialog(QDialog):
         the initialize step, by specifing the name of the resource to
         be used.
         '''
-        # We first 
-        
+        # We first
+
         configReader = ConfigReader()
         config = configReader.getLocalConfig()
         configId = config.resname
@@ -140,7 +141,7 @@ class PluginDialog(QDialog):
             # The signal inputValidated emitted from inputDialog is
             # connected to the slot function onProcessInput:
     	    self.__inputDialog.inputValidated.connect( self.onProcessInput )
-            
+
         else:
             self.__ui.frameInput.setVisible(True)
             self.__ui.btnInput.setVisible(False)
@@ -150,13 +151,13 @@ class PluginDialog(QDialog):
 
     def getInputFrame(self):
         return self.__ui.frameInput
-        
+
     def __setGuiState(self,states=["CAN_SELECT"]):
         if "CAN_SELECT" in states:
             self.__ui.btnInput.setEnabled(True)
         else:
             self.__ui.btnInput.setEnabled(False)
-            
+
         if "CAN_COMPUTE" in states:
             self.__ui.btnCompute.setEnabled(True)
         else:
@@ -200,7 +201,7 @@ class PluginDialog(QDialog):
     def __log(self, message):
         """
         This function prints the specified message in the log area
-        """ 
+        """
         self.__ui.txtLog.append(message)
 
     def __exportMesh(self, meshName, meshObject):
@@ -218,6 +219,7 @@ class PluginDialog(QDialog):
         This function clears the log area and the states of the buttons
         """
         self.__listInputData = []
+        self.__dictInputParameters = {}
         self.__ui.txtLog.clear()
         self.__setGuiState(["CAN_SELECT"])
         self.__isRunning = False
@@ -241,7 +243,10 @@ class PluginDialog(QDialog):
         windows to process the validation event (see the slot
         onProcessInput which is connected to this event).
         '''
-        self.__inputDialog.setData(self.__listInputData)
+        dictInputData = {}
+        dictInputData[INPUTDATA_KEY_FILES] = self.__listInputData
+        dictInputData[INPUTDATA_KEY_PARAM] = self.__dictInputParameters
+        self.__inputDialog.setData(dictInputData)
         self.__inputDialog.open()
 
     def onProcessInput(self):
@@ -252,16 +257,19 @@ class PluginDialog(QDialog):
         """
         # The processing simply consists in requesting the input data
         # from the dialog window.
-        self.__listInputData = self.__inputDialog.getData()
+        dictInputData = self.__inputDialog.getData()
+        self.__listInputData = dictInputData[INPUTDATA_KEY_FILES]
+        self.__dictInputParameters = dictInputData[INPUTDATA_KEY_PARAM]
+
         self.__ui.lblStatusBar.setText("Input data OK")
         self.__log("INF: Press \"Compute\" to start the job")
         self.__setGuiState(["CAN_SELECT", "CAN_COMPUTE"])
-        
+
     def onCompute(self):
         '''
         This function is the slot connected to the Compute button. It
         initializes a mesh computation job and start it using the
-        SALOME launcher.  
+        SALOME launcher.
         '''
         # We first have to create the list of parameters for the
         # initialize function. For that, we have to create the files
@@ -283,14 +291,22 @@ class PluginDialog(QDialog):
                 group_name = inputData.groupName)
             meshJobFileList.append(parameter)
 
+        # And to create a list of the additional parameters.
+        # WARN: the CORBA interface requires string values.
+        meshJobParameterList=[]
+        for inputParameterKey in self.__dictInputParameters.keys():
+            value = self.__dictInputParameters[inputParameterKey]
+            parameter = MESHJOB.MeshJobParameter(name=inputParameterKey,value=str(value))
+            meshJobParameterList.append(parameter)
+
         jobManager = self.__getJobManager()
-        self.__jobid = jobManager.initialize(meshJobFileList, self.__configId)
+        self.__jobid = jobManager.initialize(meshJobFileList, meshJobParameterList, self.__configId)
         if self.__jobid < 0:
             self.__log("ERR: the job can't be initialized")
             self.__log("ERR: %s"%jobManager.getLastErrorMessage())
             return
         self.__log("INF: the job has been initialized with jobid = "+str(self.__jobid))
-        
+
         startOk = jobManager.start(self.__jobid)
         if not startOk:
             self.__log("ERR: the job with jobid = "+str(self.__jobid)+" can't be started")
@@ -326,7 +342,7 @@ class PluginDialog(QDialog):
         This function is the slot connected on the Publish button. It
         requests the mesh job manager to download the results data
         from the computation resource host and load the med file in
-        the SALOME study. 
+        the SALOME study.
         """
         jobManager = self.__getJobManager()
         state = jobManager.getState(self.__jobid)
@@ -372,13 +388,13 @@ class PluginDialog(QDialog):
         one is running.
         """
         self.clear()
-        
+
 
 
 __dialog=None
 def getDialog():
     """
-    This function returns a singleton instance of the plugin dialog. 
+    This function returns a singleton instance of the plugin dialog.
     """
     global __dialog
     if __dialog is None:
@@ -402,5 +418,5 @@ def TEST_PluginDialog():
 if __name__ == "__main__":
     TEST_PluginDialog()
 
-        
+
 
