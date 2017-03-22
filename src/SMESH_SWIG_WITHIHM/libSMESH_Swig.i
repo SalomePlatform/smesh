@@ -68,6 +68,37 @@ enum
     Ball
   };
 
+typedef struct
+{
+  double r, g, b;
+  int delta;
+} surfaceColorStruct;
+
+typedef struct
+{
+  double r, g, b;
+  int delta;
+} volumeColorStruct;
+
+typedef struct
+{
+  double r, g, b;
+} edgeColorStruct;
+
+typedef struct
+{
+  double r, g, b;
+} nodeColorStruct;
+
+struct actorAspect
+{
+  surfaceColorStruct surfaceColor;
+  volumeColorStruct volumeColor;
+  edgeColorStruct edgeColor;
+  nodeColorStruct nodeColor;
+  double opacity;
+};
+
 class SMESH_Swig
 {
  public:
@@ -96,6 +127,9 @@ class SMESH_Swig
 
   void CreateAndDisplayActor( const char* Mesh_Entry );
   void EraseActor( const char* Mesh_Entry, const bool allViewers = false );
+
+  actorAspect GetActorAspect(const char* Mesh_Entry, int viewId = 0 );
+  void SetActorAspect( const actorAspect& actorPres, const char* Mesh_Entry, int viewId = 0 );
 
   // --------------------- for the test purposes -----------------------
   int  getSelectionMode();

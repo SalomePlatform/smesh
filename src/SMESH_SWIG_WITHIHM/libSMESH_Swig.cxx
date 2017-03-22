@@ -610,6 +610,149 @@ const char* SMESH_Swig::AddSubMeshOnShape(const char* theMeshEntry,
   return "";
 }
 
+/*!
+  \brief Gets window with specified identifier
+  \internal
+  \param id window identifier
+  \return pointer on the window
+*/
+
+SUIT_ViewWindow* getWnd( const int id )
+{
+  SUIT_ViewWindow* resWnd = 0;
+  SUIT_Session* aSession          = SUIT_Session::session();
+  SUIT_Application* anApplication = aSession->activeApplication();
+  SalomeApp_Application* app    = dynamic_cast<SalomeApp_Application*>(anApplication);
+  if ( app ) {
+    ViewManagerList vmlist = app->viewManagers();
+    foreach( SUIT_ViewManager* vm, vmlist ) {
+      QVector<SUIT_ViewWindow*> vwlist = vm->getViews();
+      foreach ( SUIT_ViewWindow* vw, vwlist ) {
+        if ( id == vw->getId() ) {
+          resWnd = vw;
+          break;
+        }
+      }
+    }
+  }
+  return resWnd;
+}
+
+
+actorAspect SMESH_Swig::GetActorAspect( const char* Mesh_Entry, int viewId )
+{
+  class TGetActorAspect: public SALOME_Event
+  {
+  public:
+    typedef actorAspect TResult;
+    TResult myResult;
+    const char* _entry;
+    int _wid;
+    TGetActorAspect( const char* Mesh_Entry, int viewId )
+    {
+      _entry = Mesh_Entry;
+      _wid = viewId;
+    }
+    virtual void Execute()
+    {
+      SMESH_Actor* anActor;
+      if (_wid)
+        {
+          SUIT_ViewWindow* w = getWnd(_wid);
+          anActor = SMESH::FindActorByEntry( w, _entry );
+        }
+      else
+        anActor = SMESH::FindActorByEntry( _entry );
+      if ( !anActor )
+        {
+          MESSAGE("GetActorAspect: no actor corresponding to: " << _entry);
+          return;
+        }
+      anActor->GetSufaceColor(myResult.surfaceColor.r,
+                              myResult.surfaceColor.g,
+                              myResult.surfaceColor.b,
+                              myResult.surfaceColor.delta);
+      anActor->GetVolumeColor(myResult.volumeColor.r,
+                              myResult.volumeColor.g,
+                              myResult.volumeColor.b,
+                              myResult.volumeColor.delta);
+      anActor->GetEdgeColor(myResult.edgeColor.r,
+                            myResult.edgeColor.g,
+                            myResult.edgeColor.b);
+      anActor->GetNodeColor(myResult.nodeColor.r,
+                            myResult.nodeColor.g,
+                            myResult.nodeColor.b);
+      myResult.opacity= anActor->GetOpacity();
+      MESSAGE("opacity: " << myResult.opacity);
+    }
+  };
+
+  return ProcessEvent(new TGetActorAspect( Mesh_Entry, viewId));
+}
+
+void SMESH_Swig::SetActorAspect( const actorAspect& actorPres, const char* Mesh_Entry, int viewId )
+{
+  class TSetActorAspect: public SALOME_Event
+  {
+  public:
+    const char* _entry;
+    actorAspect _actorPres;
+    int _wid;
+    TSetActorAspect(const actorAspect& actorPres, const char* Mesh_Entry, int viewId )
+    {
+      _entry = Mesh_Entry;
+      _actorPres = actorPres;
+      _wid = viewId;
+    }
+    virtual void Execute()
+    {
+      SMESH_Actor* anActor;
+      if (_wid)
+        {
+          SUIT_ViewWindow* w = getWnd(_wid);
+          anActor = SMESH::FindActorByEntry( w, _entry );
+        }
+      else
+        anActor = SMESH::FindActorByEntry( _entry );
+      if ( !anActor )
+        {
+          MESSAGE("SetActorAspect: no actor corresponding to: " << _entry);
+          return;
+        }
+      anActor->SetSufaceColor(_actorPres.surfaceColor.r,
+                              _actorPres.surfaceColor.g,
+                              _actorPres.surfaceColor.b,
+                              _actorPres.surfaceColor.delta);
+      anActor->SetVolumeColor(_actorPres.volumeColor.r,
+                              _actorPres.volumeColor.g,
+                              _actorPres.volumeColor.b,
+                              _actorPres.volumeColor.delta);
+      anActor->SetEdgeColor(_actorPres.edgeColor.r,
+                            _actorPres.edgeColor.g,
+                            _actorPres.edgeColor.b);
+      anActor->SetNodeColor(_actorPres.nodeColor.r,
+                            _actorPres.nodeColor.g,
+                            _actorPres.nodeColor.b);
+      anActor->SetOpacity(_actorPres.opacity);
+      if (_wid)
+        {
+          SUIT_ViewWindow* w = getWnd(_wid);
+          w->repaint();
+        }
+      else
+        {
+          SUIT_Session* aSession          = SUIT_Session::session();
+          SUIT_Application* anApplication = aSession->activeApplication();
+          SalomeApp_Application* anApp    = dynamic_cast<SalomeApp_Application*>(anApplication);
+          SUIT_ViewManager* vman          = anApp->getViewManager(VTKViewer_Viewer::Type(),true);
+          vman->getActiveView()->repaint();
+        }
+    }
+  };
+
+  ProcessVoidEvent(new TSetActorAspect(actorPres, Mesh_Entry, viewId));
+}
+
 void SMESH_Swig::CreateAndDisplayActor( const char* Mesh_Entry )
 {
   //  SMESH_Actor* Mesh = smeshGUI->ReadScript(aM);
