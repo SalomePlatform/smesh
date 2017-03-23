@@ -67,4 +67,4 @@ def generate(data_rayon,data_centre,outFile):
 
 
   if salome.sg.hasDesktop():
-    salome.sg.updateObjBrowser(1)
+    salome.sg.updateObjBrowser(True)

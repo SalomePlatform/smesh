@@ -112,7 +112,7 @@ def cube3D(L, N, outFile):
   Maillage_1.ExportMED( outFile, 0, SMESH.MED_V2_2, 1, None ,1)
 
   #if salome.sg.hasDesktop():
-    #salome.sg.updateObjBrowser(1)
+    #salome.sg.updateObjBrowser(True)
 
 
 
@@ -194,4 +194,4 @@ def cube2D(L, N, outFile):
   Maillage_1.ExportMED( outFile, 0, SMESH.MED_V2_2, 1, None ,1)
 
   #if salome.sg.hasDesktop():
-    #salome.sg.updateObjBrowser(1)
+    #salome.sg.updateObjBrowser(True)

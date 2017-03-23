@@ -199,4 +199,4 @@ def generate(data_demi_grand_axe, data_centre, data_normale,
 
 
   if salome.sg.hasDesktop():
-    salome.sg.updateObjBrowser(1)
+    salome.sg.updateObjBrowser(True)

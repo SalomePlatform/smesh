@@ -223,4 +223,4 @@ def generate(data_longueur,data_largeur,data_centre,
 
 
   if salome.sg.hasDesktop():
-    salome.sg.updateObjBrowser(1)
+    salome.sg.updateObjBrowser(True)
