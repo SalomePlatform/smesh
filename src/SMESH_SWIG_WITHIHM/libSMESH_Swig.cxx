@@ -638,22 +638,19 @@ SUIT_ViewWindow* getWnd( const int id )
   return resWnd;
 }
 
-
-actorAspect SMESH_Swig::GetActorAspect( const char* Mesh_Entry, int viewId )
+class TGetActorAspect: public SALOME_Event
 {
-  class TGetActorAspect: public SALOME_Event
+public:
+  typedef actorAspect TResult;
+  TResult myResult;
+  const char* _entry;
+  int _wid;
+  TGetActorAspect( const char* Mesh_Entry, int viewId )
   {
-  public:
-    typedef actorAspect TResult;
-    TResult myResult;
-    const char* _entry;
-    int _wid;
-    TGetActorAspect( const char* Mesh_Entry, int viewId )
-    {
-      _entry = Mesh_Entry;
-      _wid = viewId;
-    }
-    virtual void Execute()
+    _entry = Mesh_Entry;
+    _wid = viewId;
+  }
+  virtual void Execute()
     {
       SMESH_Actor* anActor;
       if (_wid)
@@ -685,8 +682,10 @@ actorAspect SMESH_Swig::GetActorAspect( const char* Mesh_Entry, int viewId )
       myResult.opacity= anActor->GetOpacity();
       MESSAGE("opacity: " << myResult.opacity);
     }
-  };
+};
 
+actorAspect SMESH_Swig::GetActorAspect( const char* Mesh_Entry, int viewId )
+{
   return ProcessEvent(new TGetActorAspect( Mesh_Entry, viewId));
 }
 
