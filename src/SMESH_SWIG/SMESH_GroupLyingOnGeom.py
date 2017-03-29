@@ -37,7 +37,7 @@ def BuildGroupLyingOn(theMesh, theElemType, theName, theShape):
     aGroup.Add(anIds)
 
 #Example
-from .SMESH_test1 import *
+from SMESH_test1 import *
 
 mesh.Compute()
 

@@ -26,7 +26,7 @@ import re
 
 import batchmode_salome
 import batchmode_geompy
-from . import batchmode_smesh
+import batchmode_smesh
 from salome.StdMeshers import StdMeshersBuilder
 
 smesh = batchmode_smesh.smesh

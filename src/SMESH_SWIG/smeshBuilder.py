@@ -90,7 +90,7 @@ from   salome.smesh.smesh_algorithm import Mesh_Algorithm
 import SALOME
 import SALOMEDS
 import os
-import collections
+import inspect
 
 ## Private class used to workaround a problem that sometimes isinstance(m, Mesh) returns False
 #
@@ -124,7 +124,7 @@ def ParseParameters(*args):
     Parameters = ""
     hasVariables = False
     varModifFun=None
-    if args and isinstance( args[-1], collections.Callable):
+    if args and callable(args[-1]):
         args, varModifFun = args[:-1], args[-1]
     for parameter in args:
 
@@ -989,7 +989,7 @@ class smeshBuilder(SMESH._objref_SMESH_Gen):
             if not meth_name.startswith("Get") and \
                not meth_name in dir ( SMESH._objref_SMESH_Hypothesis ):
                 method = getattr ( hyp.__class__, meth_name )
-                if isinstance(method, collections.Callable):
+                if callable(method):
                     setattr( hyp, meth_name, hypMethodWrapper( hyp, method ))
 
         return hyp
@@ -5179,8 +5179,8 @@ class algoCreator:
 
     # Store a python class of algorithm
     def add(self, algoClass):
-        if type( algoClass ).__name__ == 'classobj' and \
-           hasattr( algoClass, "algoType"):
+        if inspect.isclass(algoClass) and \
+           hasattr(algoClass, "algoType"):
             self.algoTypeToClass[ algoClass.algoType ] = algoClass
             if not self.defaultAlgoType and \
                hasattr( algoClass, "isDefault") and algoClass.isDefault:
@@ -5286,7 +5286,7 @@ for pluginName in os.environ[ "SMESH_MeshersList" ].split( ":" ):
         if k[0] == '_': continue
         algo = getattr( plugin, k )
         #print "             algo:", str(algo)
-        if type( algo ).__name__ == 'classobj' and hasattr( algo, "meshMethod" ):
+        if inspect.isclass(algo) and hasattr(algo, "meshMethod"):
             #print "                     meshMethod:" , str(algo.meshMethod)
             if not hasattr( Mesh, algo.meshMethod ):
                 setattr( Mesh, algo.meshMethod, algoCreator() )

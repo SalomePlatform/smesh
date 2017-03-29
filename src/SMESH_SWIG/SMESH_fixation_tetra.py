@@ -26,7 +26,7 @@
 # Hypothesis and algorithms for the mesh generation are global
 #
 import salome
-from . import SMESH_fixation
+import SMESH_fixation
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder

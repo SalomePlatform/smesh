@@ -238,7 +238,7 @@ def SharpAngleIn (X0 , Y0 , DX , DY , DLocal, LocalMeshing , CornerOrientation ,
     return Obj
 
 def GroupArray(indices, GroupNames) :
-    if type(indices) is int :
+    if isinstance(indices, int) :
         indices = [indices]
         GroupNames = [GroupNames]
     Output = [None,None,None,None]

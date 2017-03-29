@@ -17,11 +17,11 @@ def calcCoordVectors(normalIN, directionIN):
 
 def testStrictRange(x, inf=0.0, sup=False):
   test=False
-  c1=(type(x)==list)
+  c1=(isinstance(x, list))
   if c1:
     c2=(len(x)==1)
     if c2:
-      c3=(type(x[0])==type(inf))
+      c3=(isinstance(x[0], type(inf)))
       if c3:
         c4=(x[0]>inf)
         c5=True
@@ -33,24 +33,24 @@ def testStrictRange(x, inf=0.0, sup=False):
 
 def test3dVector(x):
   test=False
-  c1=(type(x)==list)
+  c1=(isinstance(x, list))
   if c1:
     c2=(len(x)==3)
     if c2:
-      c3=(type(x[0])==float)
-      c4=(type(x[1])==float)
-      c5=(type(x[2])==float)
+      c3=(isinstance(x[0], float))
+      c4=(isinstance(x[1], float))
+      c5=(isinstance(x[2], float))
       if c3 and c4 and c5:
         test=True
   return(test)
 
 def testRange(x, inf=0.0, sup=False):
   test=False
-  c1=(type(x)==list)
+  c1=(isinstance(x, list))
   if c1:
     c2=(len(x)==1)
     if c2:
-      c3=(type(x[0])==type(inf))
+      c3=(isinstance(x[0], type(inf)))
       if c3:
         c4=(x[0]>=inf)
         c5=True
@@ -427,8 +427,8 @@ def getMaxAspectRatio(tmpdir):
 
 
 def removeFromSessionPath(envVar, patern):
-  if type(patern) is not list: patern=[patern]
-  if type(envVar) is not list: envVar=[envVar]
+  if not isinstance(patern, list): patern=[patern]
+  if not isinstance(envVar, list): envVar=[envVar]
 
   for env in envVar:
     path=environ[env]

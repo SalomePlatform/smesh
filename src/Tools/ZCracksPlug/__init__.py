@@ -1,6 +1,6 @@
 import sys, os, shutil, pickle, tempfile
-from . import main, genereCrack, Zset
-from . import utilityFunctions as uF
+from Zcracks import main, genereCrack, Zset
+from Zcracks import utilityFunctions as uF
 
 #commande="/bin/bash -c ""source $HOME/zebulon/Z8.6.6_NEW/do_config_bash"""
 #os.system(commande)

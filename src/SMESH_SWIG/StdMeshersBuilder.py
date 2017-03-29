@@ -369,7 +369,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
     def LengthNearVertex(self, length, vertex=0, UseExisting=0):
         import types
         store_geom = self.geom
-        if type(vertex) is int:
+        if isinstance(vertex, int):
             if vertex == 0 or vertex == 1:
                 from salome.geom import geomBuilder
                 vertex = self.mesh.geompyD.ExtractShapes(self.geom, geomBuilder.geomBuilder.ShapeType["VERTEX"],True)[vertex]

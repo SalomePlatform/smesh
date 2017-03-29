@@ -28,7 +28,6 @@ SET(plugin_SCRIPTS
   __init__.py
   ellipse.py
   genereCrack.py
-  images_rc.py
   main.py
   output.py
   rectangle.py
@@ -49,11 +48,18 @@ SET(_pyuic_files
   zcracks.ui
 )
 
+# qrc files / to be processed by pyrcc
+SET(_pyqrcc_files
+  images.qrc
+)
+
 # scripts / pyuic wrappings
-PYQT_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_files})
+PYQT_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_files} OPTIONS "--import-from=Zcracks" "--resource-suffix=_qrc")
+PYQT_WRAP_QRC(_pyqrc_SCRIPTS ${_pyqrcc_files})
 
 # --- rules ---
 
 SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/Zcracks)
 SALOME_INSTALL_SCRIPTS("${_pyuic_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/Zcracks)
+SALOME_INSTALL_SCRIPTS("${_pyqrc_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/Zcracks)
 SALOME_INSTALL_SCRIPTS("${command_SCRIPTS}" ${SALOME_INSTALL_BINS})

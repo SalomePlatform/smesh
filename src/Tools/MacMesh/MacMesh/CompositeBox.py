@@ -174,8 +174,7 @@ def IndexMultiOcc (Array,Element) :
 
 def SortList (ValList, CritList):
     Output = []
-    SortedCritList = copy.copy(CritList)
-    SortedCritList.sort()
+    SortedCritList = sorted(copy.copy(CritList))
     for i in range(0,len(ValList)):
         index = CritList.index(SortedCritList[i])
         Output.append(ValList[index])

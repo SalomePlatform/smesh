@@ -33,7 +33,7 @@ for vId in geompy.SubShapeAllIDs( box, geompy.ShapeType["VERTEX"]):
     pass
 
 if not node000:
-    raise "node000 not found"
+    raise Exception("node000 not found")
 
 # find node000 using a dedicated function 
 n = mesh.FindNodeClosestTo( -1,-1,-1 )

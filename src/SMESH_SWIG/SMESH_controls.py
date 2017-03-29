@@ -26,7 +26,7 @@
 #  Module : SMESH
 #
 import salome
-from . import SMESH_mechanic
+import SMESH_mechanic
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder

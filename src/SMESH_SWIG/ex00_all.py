@@ -25,22 +25,22 @@
 # Load all examples
 # -----------------
 #
-from . import ex01_cube2build
-from . import ex02_cube2primitive
-from . import ex03_cube2partition
-from . import ex04_cube5tetraHexa
-from . import ex05_hole1build
-from . import ex06_hole1boolean
-from . import ex07_hole1partition
-from . import ex08_hole2build
-from . import ex09_grid4build
-from . import ex10_grid4geometry
-from . import ex11_grid3partition
-from . import ex12_grid17partition
-from . import ex13_hole1partial
-from . import ex14_cyl1holed
-from . import ex15_cyl2geometry
-from . import ex16_cyl2complementary
-from . import ex17_dome1
-from . import ex18_dome2
-from . import ex19_sphereINcube
+import ex01_cube2build
+import ex02_cube2primitive
+import ex03_cube2partition
+import ex04_cube5tetraHexa
+import ex05_hole1build
+import ex06_hole1boolean
+import ex07_hole1partition
+import ex08_hole2build
+import ex09_grid4build
+import ex10_grid4geometry
+import ex11_grid3partition
+import ex12_grid17partition
+import ex13_hole1partial
+import ex14_cyl1holed
+import ex15_cyl2geometry
+import ex16_cyl2complementary
+import ex17_dome1
+import ex18_dome2
+import ex19_sphereINcube

@@ -31,7 +31,7 @@
 # class.
 # 
 # This script is intended for internal usage - only
-# for generatation of the extra developer documentation for
+# for generation of the extra developer documentation for
 # the meshing plug-in(s).
 # 
 # Usage:
@@ -46,6 +46,7 @@
 #
 ################################################################################
 
+import inspect
 import sys
 
 def main(plugin_name, dummymeshhelp = True, output_file = "smeshBuilder.py"):
@@ -59,7 +60,7 @@ def main(plugin_name, dummymeshhelp = True, output_file = "smeshBuilder.py"):
         for attr in dir( mod ):
             if attr.startswith( '_' ): continue
             algo = getattr( mod, attr )
-            if type( algo ).__name__ == 'classobj' and hasattr( algo, "meshMethod" ):
+            if inspect.isclass(algo) and hasattr(algo, "meshMethod"):
                 method = getattr( algo, "meshMethod" )
                 if method not in methods: methods[ method ] = []
                 methods[ method ].append( algo )

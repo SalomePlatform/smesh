@@ -26,7 +26,7 @@
 # The new Netgen algorithm is used that discretizes baoundaries itself
 #
 import salome
-from . import SMESH_fixation
+import SMESH_fixation
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder

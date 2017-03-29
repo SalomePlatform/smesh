@@ -74,10 +74,10 @@ def launchZcrack(minS, maxS,
   zfile.write('   convert_surface("%s");\n' %crackN.replace('.geo',''))
   zfile.write('   cracked_name="%s";\n' %crackedN.replace('.geo',''))
 
-  if Gfac!='': zfile.write('   faset_names="%s";\n' %(Gfac[0] if type(Gfac)==list else Gfac))
-  if Gnod!='': zfile.write('   nset_names="%s";\n' %(Gnod[0] if type(Gnod)==list else Gnod))
-  if Gvol!='': zfile.write('   elset_names="%s";\n' %(Gvol[0] if type(Gvol)==list else Gvol))
-  if Gedg!='': zfile.write('   liset_names="%s";\n' %(Gedg[0] if type(Gedg)==list else Gedg))
+  if Gfac!='': zfile.write('   faset_names="%s";\n' %(Gfac[0] if isinstance(Gfac, list) else Gfac))
+  if Gnod!='': zfile.write('   nset_names="%s";\n' %(Gnod[0] if isinstance(Gnod, list) else Gnod))
+  if Gvol!='': zfile.write('   elset_names="%s";\n' %(Gvol[0] if isinstance(Gvol, list) else Gvol))
+  if Gedg!='': zfile.write('   liset_names="%s";\n' %(Gedg[0] if isinstance(Gedg, list) else Gedg))
   if surfOpt!='':
     zfile.write('   yams_options="%s";\n' %surfOpt)
 

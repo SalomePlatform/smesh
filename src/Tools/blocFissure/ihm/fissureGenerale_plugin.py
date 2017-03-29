@@ -42,7 +42,7 @@ def fissureGeneraleDlg(context):
   from PyQt5.QtWidgets import QMessageBox
   from PyQt5.QtGui import QPalette
   from PyQt5.QtGui import QColor
-  from fissureGenerale_ui import Ui_Dialog
+  from blocFissure.ihm.fissureGenerale_ui import Ui_Dialog
 
   class fissureGeneraleDialog(QtWidgets.QDialog):
 
@@ -181,9 +181,8 @@ def fissureGeneraleDlg(context):
 
     def writeDefault(self, dico):
       filedef = self.fileDefault()
-      f = open(filedef, 'w')
-      f.write(str(dico))
-      f.close()
+      with open(filedef, 'w') as f:
+          f.write(str(dico))
 
     def genereExemples(self):
       maillageSain      = os.path.join(gmu.pathBloc, 'materielCasTests/CubeAngle.med')
@@ -200,8 +199,8 @@ def fissureGeneraleDlg(context):
     def readValPrec(self):
       filedef = self.fileDefault()
       if os.path.exists(filedef):
-        f = open(filedef, 'r')
-        txt = f.read()
+        with open(filedef, 'r') as f:
+            txt = f.read()
         dico = eval(txt)
         print(dico)
         self.initDialog(dico)
@@ -236,9 +235,8 @@ def fissureGeneraleDlg(context):
         if filedef[-4:] not in ['.dic']:
           filedef += '.dic'
         dico = self.creeDico()
-        f = open(filedef, 'w')
-        f.write(str(dico))
-        f.close()
+        with open(filedef, 'w') as f:
+          f.write(str(dico))
 
     def recharger(self):
       print("recharger")
@@ -251,8 +249,8 @@ def fissureGeneraleDlg(context):
         filedef = fileNames[0]
         print(filedef)
         if os.path.exists(filedef):
-          f = open(filedef, 'r')
-          txt = f.read()
+          with open(filedef, 'r') as f:
+            txt = f.read()
           dico = eval(txt)
           print(dico)
           self.initDialog(dico)

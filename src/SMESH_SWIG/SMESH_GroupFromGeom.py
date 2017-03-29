@@ -24,7 +24,7 @@
 #  File   : SMESH_GroupFromGeom.py
 #  Module : SMESH
 #
-from .SMESH_test1 import *
+from SMESH_test1 import *
 
 # Compute the mesh created in SMESH_test1
 

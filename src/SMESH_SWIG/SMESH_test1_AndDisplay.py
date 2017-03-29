@@ -114,5 +114,5 @@ mesh.Compute()
 salome.sg.updateObjBrowser(True)
 
 sg = salome.ImportComponentGUI('SMESH')
-if type(sg) != type(salome.salome_ComponentGUI):
+if not isinstance(sg, type(salome.salome_ComponentGUI)):
     sg.CreateAndDisplayActor('0:1:2:3')

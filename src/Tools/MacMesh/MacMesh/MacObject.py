@@ -209,7 +209,7 @@ class MacObject:
         """
         PtCoor = self.PtCoor
         PtCoor.append(self.PtCoor[0])
-        if type(Direction) is str :
+        if isinstance(Direction, str) :
             Dir = { 'South'  : lambda : 0,
                     'North'  : lambda : 1,
                     'West'   : lambda : 2,
@@ -226,7 +226,7 @@ class MacObject:
         The interest in using this method is for non-orthogonal objects where the sides can be
         deviated from the orthogonal basis vectors
         """
-        if type(Direction) is str :
+        if isinstance(Direction, str) :
             Dir = { 'South'  : lambda : 0,
                     'North'  : lambda : 1,
                     'West'   : lambda : 2,
@@ -243,7 +243,7 @@ class MacObject:
         from salome.geom import geomBuilder
         geompy = geomBuilder.New( Config.theStudy )
 
-        if type(Criterion) is str :
+        if isinstance(Criterion, str) :
             Crit = {'South'  : lambda : 0,
                     'North'  : lambda : 1,
                     'West'   : lambda : 2,

@@ -825,8 +825,7 @@ def IndexMultiOcc (Array,Element) :
 
 def SortList (ValList, CritList):
     Output = []
-    SortedCritList = copy.copy(CritList)
-    SortedCritList.sort()
+    SortedCritList = sorted(copy.copy(CritList))
     for i in range(0,len(ValList)):
         if i > 0 :
             if not(SortedCritList[i]==SortedCritList[i-1]):

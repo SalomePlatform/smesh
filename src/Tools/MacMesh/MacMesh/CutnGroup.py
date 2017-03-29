@@ -51,7 +51,7 @@ def Go(GeoObj, CutPlnLst, OutLvlLst, PrefixLst, Publish):
 
     NumCuts = CheckInput(CutPlnLst, OutLvlLst, PrefixLst, 1)
     OrigType = FindStandType(GeoObj,0)
-    InvDictionary = dict((v,k) for k, v in geompy.ShapeType.items())    # Give geometry type name as a function of standard type numbering, ex: 4=FACE, 6=EDGE, 7=VERTEX
+    InvDictionary = {v: k for k, v in geompy.ShapeType.items()}  # Give geometry type name as a function of standard type numbering, ex: 4=FACE, 6=EDGE, 7=VERTEX
     TrimSize = geompy.BasicProperties(GeoObj)[0]*100
     CutPlane = [] ; Sections = [] ; Parts = []
 
@@ -113,7 +113,7 @@ def GoTrim(GeoObj, CutPlnLst, OutLvlLst, PrefixLst, Publish):
 
     NumCuts = CheckInput(CutPlnLst, OutLvlLst, PrefixLst, 0)
     OrigType = FindStandType(GeoObj,0)
-    InvDictionary = dict((v,k) for k, v in geompy.ShapeType.items())    # Give geometry type name as a function of standard type numbering, ex: 4=FACE, 6=EDGE, 7=VERTEX
+    InvDictionary = {v: k for k, v in geompy.ShapeType.items()}  # Give geometry type name as a function of standard type numbering, ex: 4=FACE, 6=EDGE, 7=VERTEX
     CutPlane = [] ; Sections = [] ; Parts = []
     if NumCuts:
         for i in range(0, NumCuts):             # Loop over the cutting planes to create them one by one

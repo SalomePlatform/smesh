@@ -29,7 +29,7 @@
 #  Project                  : PAL/SALOME
 #============================================================================== 
 #
-from .SMESH_test1 import *
+from SMESH_test1 import *
 
 
 # Compute the mesh created in SMESH_test1

@@ -29,6 +29,7 @@
  \brief Module smesh
 """
 
+import inspect
 import salome
 from salome import *
 
@@ -49,7 +50,7 @@ except:
     pass
 
 # load plugins and add dynamically generated methods to Mesh class,
-# the same for for global variables declared by plug-ins
+# the same for global variables declared by plug-ins
 from salome.smesh.smeshBuilder import *
 from salome.smesh.smeshBuilder import Mesh, algoCreator
 for pluginName in os.environ[ "SMESH_MeshersList" ].split( ":" ):
@@ -69,7 +70,7 @@ for pluginName in os.environ[ "SMESH_MeshersList" ].split( ":" ):
     for k in dir( plugin ):
         if k[0] == '_': continue
         algo = getattr( plugin, k )
-        if type( algo ).__name__ == 'classobj' and hasattr( algo, "meshMethod" ):
+        if inspect.isclass(algo) and hasattr(algo, "meshMethod"):
             if not hasattr( Mesh, algo.meshMethod ):
                 setattr( Mesh, algo.meshMethod, algoCreator() )
                 pass

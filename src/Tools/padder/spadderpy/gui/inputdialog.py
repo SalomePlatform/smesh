@@ -32,8 +32,8 @@ from omniORB import CORBA
 
 from qtsalome import QIcon, QStandardItemModel, QStandardItem, QMessageBox, pyqtSignal
 
-from inputframe_ui import Ui_InputFrame
-from .inputdata import InputData
+from salome.smesh.spadder.gui.inputframe_ui import Ui_InputFrame
+from salome.smesh.spadder.gui.inputdata import InputData
 
 DEBUG_MODE=True
 GROUPNAME_MAXLENGTH=8

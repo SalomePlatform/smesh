@@ -22,9 +22,9 @@
 
 from qtsalome import QDialog, QIcon, Qt
 
-from plugindialog_ui import Ui_PluginDialog
-from .inputdialog import InputDialog
-from .inputdata import InputData
+from salome.smesh.spadder.gui.plugindialog_ui import Ui_PluginDialog
+from salome.smesh.spadder.gui.inputdialog import InputDialog
+from salome.smesh.spadder.gui.inputdata import InputData
 # __GBO__: uncomment this line and comment the previous one to use the
 # demo input dialog instead of the real one.
 #from demoinputdialog import InputDialog

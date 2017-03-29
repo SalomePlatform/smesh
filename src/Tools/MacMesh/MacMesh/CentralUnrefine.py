@@ -178,7 +178,7 @@ def RemoveLastObj() :
     Config.Connections = Config.Connections[:-1]
 
 def GroupArray(indices, GroupNames) :
-    if type(indices) is int :
+    if isinstance(indices, int) :
         indices = [indices]
         GroupNames = [GroupNames]
     Output = [None,None,None,None]

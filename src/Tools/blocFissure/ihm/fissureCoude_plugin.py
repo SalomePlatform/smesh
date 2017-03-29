@@ -22,9 +22,12 @@
 # if you already have plugins defined in a salome_plugins.py file, add this file at the end.
 # if not, copy this file as ${HOME}/Plugins/smesh_plugins.py or ${APPLI}/Plugins/smesh_plugins.py
 
-import sys, traceback
 import math
+import sys
+import traceback
+
 from blocFissure import gmu
+
 
 def fissureCoudeDlg(context):
   # get context study, studyId, salomeGui
@@ -36,7 +39,7 @@ def fissureCoudeDlg(context):
   #import subprocess
   #import tempfile
   from qtsalome import QFileDialog, QMessageBox, QPalette, QColor, QDialog
-  from fissureCoude_ui import Ui_Dialog
+  from blocFissure.ihm.fissureCoude_ui import Ui_Dialog
   
   class fissureCoudeDialog(QDialog):
     
@@ -259,15 +262,14 @@ def fissureCoudeDlg(context):
     
     def writeDefault(self, dico):
       filedef = self.fileDefault()
-      f = open(filedef, 'w')
-      f.write(str(dico))
-      f.close()
+      with open(filedef, 'w') as f:
+          f.write(str(dico))
     
     def readValPrec(self):
       filedef = self.fileDefault()
       if os.path.exists(filedef):
-        f = open(filedef, 'r')
-        txt = f.read()
+        with open(filedef, 'r') as f:
+            txt = f.read()
         dico = eval(txt)
         print(dico)
         self.initDialog(dico)
@@ -286,9 +288,8 @@ def fissureCoudeDlg(context):
         fileNames = fileDiag.selectedFiles()
         filedef = fileNames[0]
         dico = self.creeDico()
-        f = open(filedef, 'w')
-        f.write(str(dico))
-        f.close()
+        with open(filedef, 'w') as f:
+            f.write(str(dico))
         
     def recharger(self):
       print("recharger")
@@ -301,8 +302,8 @@ def fissureCoudeDlg(context):
         filedef = fileNames[0]
         print(filedef)
         if os.path.exists(filedef):
-          f = open(filedef, 'r')
-          txt = f.read()
+          with open(filedef, 'r') as f:
+              txt = f.read()
           dico = eval(txt)
           print(dico)
           self.initDialog(dico)

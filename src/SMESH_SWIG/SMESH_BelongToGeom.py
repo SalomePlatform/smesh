@@ -21,7 +21,7 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-from .SMESH_test1 import *
+from SMESH_test1 import *
 
 ## Old style
 def CheckBelongToGeomFilterOld(theMeshGen, theMesh, theShape, theSubShape, theElemType):

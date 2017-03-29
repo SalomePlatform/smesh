@@ -27,7 +27,7 @@ if len(meshgemsdir) > 0:
   uF.removeFromSessionPath('LD_LIBRARY_PATH', meshgems)
 
 def LAUNCH(listCas=[]):
-  if type(listCas)!=list: listCas=[listCas]
+  if not isinstance(listCas, list): listCas=[listCas]
 
   N=20
   L=1.
