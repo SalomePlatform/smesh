@@ -1223,8 +1223,8 @@ class Mesh(metaclass=MeshMeta):
     #  @param name Study name of the mesh
     #  @ingroup l2_construct
     def __init__(self, smeshpyD, geompyD, obj=0, name=0):
-        self.smeshpyD=smeshpyD
-        self.geompyD=geompyD
+        self.smeshpyD = smeshpyD
+        self.geompyD = geompyD
         if obj is None:
             obj = 0
         objHasName = False
@@ -5048,8 +5048,8 @@ class Mesh(metaclass=MeshMeta):
 #  with old dump scripts which call SMESH_Mesh directly and not via smeshBuilder.Mesh
 #
 class meshProxy(SMESH._objref_SMESH_Mesh):
-    def __init__(self):
-        SMESH._objref_SMESH_Mesh.__init__(self)
+    def __init__(self, *args):
+        SMESH._objref_SMESH_Mesh.__init__(self, *args)
     def __deepcopy__(self, memo=None):
         new = self.__class__()
         return new
@@ -5064,8 +5064,8 @@ omniORB.registerObjref(SMESH._objref_SMESH_Mesh._NP_RepositoryId, meshProxy)
 ## Private class wrapping SMESH.SMESH_SubMesh in order to add Compute()
 #
 class submeshProxy(SMESH._objref_SMESH_subMesh):
-    def __init__(self):
-        SMESH._objref_SMESH_subMesh.__init__(self)
+    def __init__(self, *args):
+        SMESH._objref_SMESH_subMesh.__init__(self, *args)
         self.mesh = None
     def __deepcopy__(self, memo=None):
         new = self.__class__()
@@ -5101,8 +5101,8 @@ omniORB.registerObjref(SMESH._objref_SMESH_subMesh._NP_RepositoryId, submeshProx
 #  smeshBuilder.Mesh
 #
 class meshEditor(SMESH._objref_SMESH_MeshEditor):
-    def __init__(self):
-        SMESH._objref_SMESH_MeshEditor.__init__(self)
+    def __init__(self, *args):
+        SMESH._objref_SMESH_MeshEditor.__init__(self, *args)
         self.mesh = None
     def __getattr__(self, name ): # method called if an attribute not found
         if not self.mesh:         # look for name() method in Mesh class

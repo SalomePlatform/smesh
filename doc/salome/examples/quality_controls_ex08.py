@@ -25,7 +25,7 @@ mesh.AutomaticHexahedralization();
 
 # remove half of mesh faces from the smallest face
 faceFaces = mesh.GetSubMeshElementsId(face)
-faceToRemove = faceFaces[: len(faceFaces)/2]
+faceToRemove = faceFaces[: len(faceFaces) // 2]
 mesh.RemoveElements( faceToRemove )
 
 # make a group of volumes missing the removed faces
