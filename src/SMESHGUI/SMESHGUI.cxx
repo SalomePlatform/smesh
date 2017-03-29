@@ -4020,8 +4020,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpPropertiesArea,   "MEASURE_AREA",     "ICON_MEASURE_AREA" );
   createSMESHAction( SMESHOp::OpPropertiesVolume, "MEASURE_VOLUME",   "ICON_MEASURE_VOLUME" );
 
-  createSMESHAction( SMESHOp::OpHide,     "HIDE" );
-  createSMESHAction( SMESHOp::OpShow,     "SHOW" );
+  createSMESHAction( SMESHOp::OpHide,     "HIDE", "ICON_HIDE" );
+  createSMESHAction( SMESHOp::OpShow,     "SHOW", "ICON_SHOW" );
   createSMESHAction( SMESHOp::OpShowOnly, "DISPLAY_ONLY" );
 
   createSMESHAction( SMESHOp::OpSortChild, "SORT_CHILD_ITEMS" );

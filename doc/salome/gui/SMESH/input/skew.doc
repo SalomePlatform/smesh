@@ -3,8 +3,8 @@
 \page skew_page Skew
 
 \n \b Skew mesh quality criterion reflects the angle between the lines
-that join opposite sides of a quadrangle element or the greatesr angle
-between three medians in triangle elements. This mesh quality
+that join opposite sides of a quadrangle element or the greatest angle
+between a median and a midline in a triangle element. This mesh quality
 criterion can be applied to elements composed of 4 and 3 nodes
 (quadrangles and triangles).
 

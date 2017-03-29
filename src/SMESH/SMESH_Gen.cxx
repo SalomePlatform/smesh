@@ -73,6 +73,19 @@ SMESH_Gen::SMESH_Gen()
   //vtkDebugLeaks::SetExitError(0);
 }
 
+namespace
+{
+  // a structure used to nullify SMESH_Gen field of SMESH_Hypothesis,
+  // which is needed for SMESH_Hypothesis not deleted before ~SMESH_Gen()
+  struct _Hyp : public SMESH_Hypothesis
+  {
+    void NullifyGen()
+    {
+      _gen = 0;
+    }
+  };
+}
+
 //=============================================================================
 /*!
  * Destructor
@@ -84,9 +97,16 @@ SMESH_Gen::~SMESH_Gen()
   std::map < int, StudyContextStruct * >::iterator i_sc = _mapStudyContext.begin();
   for ( ; i_sc != _mapStudyContext.end(); ++i_sc )
   {
-    delete i_sc->second->myDocument;
-    delete i_sc->second;
-  }  
+    StudyContextStruct* context = i_sc->second;
+    std::map < int, SMESH_Hypothesis * >::iterator i_hyp = context->mapHypothesis.begin();
+    for ( ; i_hyp != context->mapHypothesis.end(); ++i_hyp )
+    {
+      if ( _Hyp* h = static_cast< _Hyp*>( i_hyp->second ))
+        h->NullifyGen();
+    }
+    delete context->myDocument;
+    delete context;
+  }
 }
 
 //=============================================================================

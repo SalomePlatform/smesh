@@ -226,6 +226,8 @@ SET(SMESH_RESOURCES_FILES
   mesh_extmeth_surf_offset_smooth.png
   mesh_extmeth_face_offset.png
   mesh_quality.png
+  mesh_show.png
+  mesh_hide.png
 )
 
 INSTALL(FILES ${SMESH_RESOURCES_FILES} DESTINATION ${SALOME_SMESH_INSTALL_RES_DATA})

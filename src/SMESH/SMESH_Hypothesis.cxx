@@ -25,20 +25,18 @@
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
 //
-#include "SMESH_Hypothesis.hxx"
+
+#include "SMESH_Gen.hxx"
 
 #include "SMESHDS_Mesh.hxx"
-#include "SMESH_Gen.hxx"
+#include "SMESH_Hypothesis.hxx"
 #include "SMESH_Mesh.hxx"
-#include "SMESH_subMesh.hxx"
-
-#include "utilities.h"
 
 using namespace std;
 
 //=============================================================================
 /*!
- * 
+ *
  */
 //=============================================================================
 
@@ -63,8 +61,11 @@ SMESH_Hypothesis::SMESH_Hypothesis(int hypId,
 
 SMESH_Hypothesis::~SMESH_Hypothesis()
 {
-  StudyContextStruct* myStudyContext = _gen->GetStudyContext(_studyId);
-  myStudyContext->mapHypothesis[_hypId] = 0;
+  if ( _gen )
+  {
+    StudyContextStruct* myStudyContext = _gen->GetStudyContext(_studyId);
+    myStudyContext->mapHypothesis[_hypId] = 0;
+  }
 }
 
 //=============================================================================
@@ -77,20 +78,20 @@ int SMESH_Hypothesis::GetDim() const
 {
   int dim = 0;
   switch (_type)
-    {
-    case ALGO_1D: dim = 1; break;
-    case ALGO_2D: dim = 2; break;
-    case ALGO_3D: dim = 3; break;
-    case ALGO_0D: dim = 0; break;
-    case PARAM_ALGO:
-      dim = ( _param_algo_dim < 0 ) ? -_param_algo_dim : _param_algo_dim; break;
-    }
+  {
+  case ALGO_1D: dim = 1; break;
+  case ALGO_2D: dim = 2; break;
+  case ALGO_3D: dim = 3; break;
+  case ALGO_0D: dim = 0; break;
+  case PARAM_ALGO:
+    dim = ( _param_algo_dim < 0 ) ? -_param_algo_dim : _param_algo_dim; break;
+  }
   return dim;
 }
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 

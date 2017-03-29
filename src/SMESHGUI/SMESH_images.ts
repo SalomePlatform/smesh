@@ -631,5 +631,13 @@
             <source>ICON_MEASURE_BND_BOX</source>
             <translation>mesh_bounding_box.png</translation>
         </message>
+        <message>
+            <source>ICON_SHOW</source>
+            <translation>mesh_show.png</translation>
+        </message>
+        <message>
+            <source>ICON_HIDE</source>
+            <translation>mesh_hide.png</translation>
+        </message>
     </context>
 </TS>
