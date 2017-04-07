@@ -111,7 +111,7 @@
                </property>
                <item>
                 <property name="text">
-                 <string>Béton</string>
+                 <string>Beton</string>
                 </property>
                 <property name="icon">
                  <iconset>
@@ -213,9 +213,9 @@
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="lblParamRminRmax">
+            <widget class="QLabel" name="lblParamRmaxRmin">
              <property name="text">
-              <string>Rmin / Rmax</string>
+              <string>Rmax / Rmin</string>
              </property>
             </widget>
            </item>
@@ -227,7 +227,7 @@
             <widget class="QSpinBox" name="txtParamNbIter"/>
            </item>
            <item>
-            <widget class="QDoubleSpinBox" name="txtParamRminRmax"/>
+            <widget class="QDoubleSpinBox" name="txtParamRmaxRmin"/>
            </item>
           </layout>
          </item>

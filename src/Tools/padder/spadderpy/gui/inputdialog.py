@@ -42,9 +42,9 @@ INPUTDATA_KEY_FILES="meshfiles"
 INPUTDATA_KEY_PARAM="parameters"
 
 PARAM_KEY_NBITER   = "NbIteration"
-PARAM_KEY_RMINRMAX = "RminRmax"
-PARAM_NBITER_DEFAULT_VALUE = 3
-PARAM_RMINRMAX_DEFAULT_VALUE = 1.5
+PARAM_KEY_RMAXRMIN = "RmaxRmin"
+PARAM_NBITER_DEFAULT_VALUE = 10
+PARAM_RMAXRMIN_DEFAULT_VALUE = 3
 
 class InputDialog(GenericDialog):
 
@@ -125,7 +125,7 @@ class InputDialog(GenericDialog):
 
         # Setup default values for numerical parameters
         self.__ui.txtParamNbIter.setValue(PARAM_NBITER_DEFAULT_VALUE)
-        self.__ui.txtParamRminRmax.setValue(PARAM_RMINRMAX_DEFAULT_VALUE)
+        self.__ui.txtParamRmaxRmin.setValue(PARAM_RMAXRMIN_DEFAULT_VALUE)
 
         # Note that PADDER does not support group name longer than 8
         # characters. We apply then this limit in the gui field.
@@ -317,8 +317,8 @@ class InputDialog(GenericDialog):
 	        dictInputParameters = dictInputData[INPUTDATA_KEY_PARAM]
             if dictInputParameters.has_key(PARAM_KEY_NBITER):
                 self.__ui.txtParamNbIter.setValue(dictInputParameters[PARAM_KEY_NBITER])
-            if dictInputParameters.has_key(PARAM_KEY_RMINRMAX):
-                self.__ui.txtParamRminRmax.setValue(dictInputParameters[PARAM_KEY_RMINRMAX])
+            if dictInputParameters.has_key(PARAM_KEY_RMAXRMIN):
+                self.__ui.txtParamRminRmax.setValue(dictInputParameters[PARAM_KEY_RMAXRMIN])
 
     def getData(self):
         """
@@ -334,7 +334,7 @@ class InputDialog(GenericDialog):
         # Get the list of additionnal parameters
         dictInputParameters = {}
         dictInputParameters[PARAM_KEY_NBITER] = self.__ui.txtParamNbIter.value()
-        dictInputParameters[PARAM_KEY_RMINRMAX] = self.__ui.txtParamRminRmax.value()
+        dictInputParameters[PARAM_KEY_RMAXRMIN] = self.__ui.txtParamRmaxRmin.value()
         dictInputData[INPUTDATA_KEY_PARAM] = dictInputParameters
         return dictInputData
 
