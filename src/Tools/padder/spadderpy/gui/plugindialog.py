@@ -24,7 +24,7 @@ from qtsalome import QDialog, QIcon, Qt
 
 from plugindialog_ui import Ui_PluginDialog
 from inputdialog import InputDialog, INPUTDATA_KEY_FILES, INPUTDATA_KEY_PARAM
-from inputdialog import PARAM_KEY_NBITER, PARAM_KEY_RMINRMAX
+from inputdialog import PARAM_KEY_NBITER, PARAM_KEY_RMAXRMIN
 from inputdata import InputData
 # __GBO__: uncomment this line and comment the previous one to use the
 # demo input dialog instead of the real one.
