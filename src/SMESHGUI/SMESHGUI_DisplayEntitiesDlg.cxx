@@ -97,7 +97,7 @@ SMESHGUI_DisplayEntitiesDlg::SMESHGUI_DisplayEntitiesDlg( QWidget* parent )
   hl->addWidget( nb0DElemsLab, 0, 1 );
   my0DElemsTB->setEnabled( nbElements );
   nb0DElemsLab->setEnabled( nbElements );
-  myNbTypes += ( nbElements > 0 );
+  myNbTypes = ( nbElements > 0 );
 
   // Edges
   nbElements = myActor ? myActor->GetObject()->GetNbEntities( SMDSAbs_Edge ) : aMesh->NbEdges();

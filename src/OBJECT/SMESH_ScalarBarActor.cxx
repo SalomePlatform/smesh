@@ -28,16 +28,16 @@
 
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
+#include <vtkLookupTable.h>
 #include <vtkObjectFactory.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper2D.h>
+#include <vtkProperty2D.h>
 #include <vtkScalarsToColors.h>
 #include <vtkTextMapper.h>
 #include <vtkTextProperty.h>
 #include <vtkViewport.h>
 #include <vtkWindow.h>
-#include <vtkLookupTable.h>
-#include <vtkProperty2D.h>
 
 #define SHRINK_COEF 0.08;
 
@@ -51,13 +51,14 @@ vtkCxxSetObjectMacro(SMESH_ScalarBarActor,TitleTextProperty,vtkTextProperty);
 // Instantiate object with 64 maximum colors; 5 labels; %%-#6.3g label
 // format, no title, and vertical orientation. The initial scalar bar
 // size is (0.05 x 0.8) of the viewport size.
-SMESH_ScalarBarActor::SMESH_ScalarBarActor() {
+SMESH_ScalarBarActor::SMESH_ScalarBarActor()
+{
   this->LookupTable = NULL;
   this->Position2Coordinate->SetValue(0.17, 0.8);
-  
+
   this->PositionCoordinate->SetCoordinateSystemToNormalizedViewport();
   this->PositionCoordinate->SetValue(0.82,0.1);
-  
+
   this->MaximumNumberOfColors = 64;
   this->NumberOfLabels = 5;
   this->NumberOfLabelsBuilt = 0;
@@ -74,7 +75,7 @@ SMESH_ScalarBarActor::SMESH_ScalarBarActor() {
   this->TitleTextProperty = vtkTextProperty::New();
   this->TitleTextProperty->ShallowCopy(this->LabelTextProperty);
 
-  this->LabelFormat = new char[8]; 
+  this->LabelFormat = new char[8];
   sprintf(this->LabelFormat,"%s","%-#6.3g");
 
   this->TitleMapper = vtkTextMapper::New();
@@ -82,7 +83,7 @@ SMESH_ScalarBarActor::SMESH_ScalarBarActor() {
   this->TitleActor->SetMapper(this->TitleMapper);
   this->TitleActor->GetPositionCoordinate()->
     SetReferenceCoordinate(this->PositionCoordinate);
-  
+
   this->TextMappers = NULL;
   this->TextActors = NULL;
 
@@ -104,7 +105,7 @@ SMESH_ScalarBarActor::SMESH_ScalarBarActor() {
   myDistribution = vtkPolyData::New();
   myDistributionMapper = vtkPolyDataMapper2D::New();
   myDistributionMapper->SetInputData(this->myDistribution);
-  
+
   myDistributionActor = vtkActor2D::New();
   myDistributionActor->SetMapper(this->myDistributionMapper);
   myDistributionActor->GetPositionCoordinate()->
@@ -129,12 +130,12 @@ void SMESH_ScalarBarActor::ReleaseGraphicsResources(vtkWindow *win)
 {
   this->TitleActor->ReleaseGraphicsResources(win);
   if (this->TextMappers != NULL )
-    {
+  {
     for (int i=0; i < this->NumberOfLabelsBuilt; i++)
-      {
+    {
       this->TextActors[i]->ReleaseGraphicsResources(win);
-      }
     }
+  }
   this->ScalarBarActor->ReleaseGraphicsResources(win);
   // rnv begin
   // Customization of the vtkScalarBarActor to show distribution histogram.
@@ -143,41 +144,42 @@ void SMESH_ScalarBarActor::ReleaseGraphicsResources(vtkWindow *win)
 
 
 /*--------------------------------------------------------------------------*/
-SMESH_ScalarBarActor::~SMESH_ScalarBarActor() {
-  if (this->LabelFormat) 
-    {
+SMESH_ScalarBarActor::~SMESH_ScalarBarActor()
+{
+  if (this->LabelFormat)
+  {
     delete [] this->LabelFormat;
     this->LabelFormat = NULL;
-    }
+  }
 
   this->TitleMapper->Delete();
   this->TitleActor->Delete();
 
   if (this->TextMappers != NULL )
-    {
+  {
     for (int i=0; i < this->NumberOfLabelsBuilt; i++)
-      {
+    {
       this->TextMappers[i]->Delete();
       this->TextActors[i]->Delete();
-      }
+    }
     delete [] this->TextMappers;
     delete [] this->TextActors;
-    }
+  }
 
   this->ScalarBar->Delete();
   this->ScalarBarMapper->Delete();
   this->ScalarBarActor->Delete();
 
   if (this->Title)
-    {
+  {
     delete [] this->Title;
     this->Title = NULL;
-    }
-  
+  }
+
   this->SetLookupTable(NULL);
   this->SetLabelTextProperty(NULL);
   this->SetTitleTextProperty(NULL);
-  
+
   // rnv begin
   // Customization of the vtkScalarBarActor to show distribution histogram:
   myDistribution->Delete();
@@ -191,26 +193,26 @@ int SMESH_ScalarBarActor::RenderOverlay(vtkViewport *viewport)
 {
   int renderedSomething = 0;
   int i;
-  
+
   // Everything is built, just have to render
   if (this->Title != NULL)
-    {
+  {
     renderedSomething += this->TitleActor->RenderOverlay(viewport);
-    }
-  if (!myTitleOnlyVisibility) {
+  }
+  if ( !myTitleOnlyVisibility ) {
     this->ScalarBarActor->RenderOverlay(viewport);
     this->myDistributionActor->RenderOverlay(viewport);
-    if( this->TextActors == NULL)
-      {
-       vtkWarningMacro(<<"Need a mapper to render a scalar bar");
-       return renderedSomething;
-      }
-  
-    for (i=0; i<this->NumberOfLabels; i++)
-      {
+    if ( this->TextActors == NULL )
+    {
+      vtkWarningMacro(<<"Need a mapper to render a scalar bar");
+      return renderedSomething;
+    }
+
+    for ( i=0; i<this->NumberOfLabels; i++ )
+    {
       renderedSomething += this->TextActors[i]->RenderOverlay(viewport);
-      }
-  }  
+    }
+  }
   renderedSomething = (renderedSomething > 0)?(1):(0);
 
   return renderedSomething;
@@ -223,75 +225,75 @@ int SMESH_ScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
   int renderedSomething = 0;
   int i;
   int size[2];
-  
+
   if (!this->LookupTable)
-    {
+  {
     vtkWarningMacro(<<"Need a mapper to render a scalar bar");
     return 0;
-    }
+  }
 
   if (!this->TitleTextProperty)
-    {
+  {
     vtkErrorMacro(<<"Need title text property to render a scalar bar");
     return 0;
-    }
+  }
 
   if (!this->LabelTextProperty)
-    {
+  {
     vtkErrorMacro(<<"Need label text property to render a scalar bar");
     return 0;
-    }
+  }
 
   // Check to see whether we have to rebuild everything
   int positionsHaveChanged = 0;
-  if (viewport->GetMTime() > this->BuildTime || 
-      (viewport->GetVTKWindow() && 
+  if (viewport->GetMTime() > this->BuildTime ||
+      (viewport->GetVTKWindow() &&
        viewport->GetVTKWindow()->GetMTime() > this->BuildTime))
-    {
+  {
     // if the viewport has changed we may - or may not need
     // to rebuild, it depends on if the projected coords chage
     int *barOrigin;
     barOrigin = this->PositionCoordinate->GetComputedViewportValue(viewport);
-    size[0] = 
+    size[0] =
       this->Position2Coordinate->GetComputedViewportValue(viewport)[0] -
       barOrigin[0];
-    size[1] = 
+    size[1] =
       this->Position2Coordinate->GetComputedViewportValue(viewport)[1] -
       barOrigin[1];
-    if (this->LastSize[0] != size[0] || 
+    if (this->LastSize[0] != size[0] ||
         this->LastSize[1] != size[1] ||
-        this->LastOrigin[0] != barOrigin[0] || 
+        this->LastOrigin[0] != barOrigin[0] ||
         this->LastOrigin[1] != barOrigin[1])
-      {
-      positionsHaveChanged = 1;
-      }
-    }
-  
-  // Check to see whether we have to rebuild everything
-  if (positionsHaveChanged ||
-      this->GetMTime() > this->BuildTime || 
-      this->LookupTable->GetMTime() > this->BuildTime ||
-      this->LabelTextProperty->GetMTime() > this->BuildTime ||
-      this->TitleTextProperty->GetMTime() > this->BuildTime)
     {
+      positionsHaveChanged = 1;
+    }
+  }
+
+  // Check to see whether we have to rebuild everything
+  if ( positionsHaveChanged ||
+       this->GetMTime() > this->BuildTime ||
+       this->LookupTable->GetMTime() > this->BuildTime ||
+       this->LabelTextProperty->GetMTime() > this->BuildTime ||
+       this->TitleTextProperty->GetMTime() > this->BuildTime)
+  {
     vtkDebugMacro(<<"Rebuilding subobjects");
 
     // Delete previously constructed objects
     //
-    if (this->TextMappers != NULL )
+    if ( this->TextMappers != NULL )
+    {
+      for ( i = 0; i < this->NumberOfLabelsBuilt; i++ )
       {
-      for (i=0; i < this->NumberOfLabelsBuilt; i++)
-        {
         this->TextMappers[i]->Delete();
         this->TextActors[i]->Delete();
-        }
+      }
       delete [] this->TextMappers;
       delete [] this->TextActors;
-      }
+    }
 
     // Build scalar bar object; determine its type
     //
-    // is this a vtkLookupTable or a subclass of vtkLookupTable 
+    // is this a vtkLookupTable or a subclass of vtkLookupTable
     // with its scale set to log
     // NOTE: it's possible we could to without the 'lut' variable
     // later in the code, but if the vtkLookupTableSafeDownCast operation
@@ -300,13 +302,13 @@ int SMESH_ScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
     vtkLookupTable *LUT = vtkLookupTable::SafeDownCast( this->LookupTable );
     int isLogTable = 0;
     if ( LUT )
-      {
+    {
       if ( LUT->GetScale() == VTK_SCALE_LOG10 )
-        {
-        isLogTable = 1; 
-        }
+      {
+        isLogTable = 1;
       }
-    
+    }
+
     // we hard code how many steps to display
     vtkScalarsToColors *lut = this->LookupTable;
     int numColors = this->MaximumNumberOfColors;
@@ -332,7 +334,8 @@ int SMESH_ScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
     if(!distrVisibility)
       vtkDebugMacro(<<" Distribution invisible, because numColors == this->myNbValues.size()");
 
-    if ( distrVisibility && GetDistributionVisibility() ) {
+    if ( distrVisibility && GetDistributionVisibility() )
+    {
       for ( i = 0 ; i < (int)myNbValues.size(); i++ ) {
         if ( myNbValues[i] ) {
           numPositiveVal++;
@@ -349,16 +352,21 @@ int SMESH_ScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
       this->myDistribution->SetPolys(distrPolys);
       distrPts->Delete();
       distrPolys->Delete();
-      if ( myDistributionColoringType == SMESH_MULTICOLOR_TYPE ) {
+      if ( myDistributionColoringType == SMESH_MULTICOLOR_TYPE )
+      {
         distColors = vtkUnsignedCharArray::New();
         distColors->SetNumberOfComponents(3);
         distColors->SetNumberOfTuples(numPositiveVal);
         this->myDistribution->GetCellData()->SetScalars(distColors);
         distColors->Delete();
-      } else if( myDistributionColoringType == SMESH_MONOCOLOR_TYPE ){
+      }
+      else if( myDistributionColoringType == SMESH_MONOCOLOR_TYPE )
+      {
         this->myDistribution->GetCellData()->SetScalars(NULL);
       }
-    } else {
+    }
+    else
+    {
       myDistribution->Reset();
     }
     // rnv end
@@ -373,22 +381,22 @@ int SMESH_ScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
     // get the viewport size in display coordinates
     int *barOrigin, barWidth, barHeight, distrHeight;
     barOrigin = this->PositionCoordinate->GetComputedViewportValue(viewport);
-    size[0] = 
+    size[0] =
       this->Position2Coordinate->GetComputedViewportValue(viewport)[0] -
       barOrigin[0];
-    size[1] = 
+    size[1] =
       this->Position2Coordinate->GetComputedViewportValue(viewport)[1] -
       barOrigin[1];
     this->LastOrigin[0] = barOrigin[0];
     this->LastOrigin[1] = barOrigin[1];
     this->LastSize[0] = size[0];
     this->LastSize[1] = size[1];
-    
+
     // Update all the composing objects
     this->TitleActor->SetProperty(this->GetProperty());
     this->TitleMapper->SetInput(this->Title);
     if (this->TitleTextProperty->GetMTime() > this->BuildTime)
-      {
+    {
       // Shallow copy here so that the size of the title prop is not affected
       // by the automatic adjustment of its text mapper's size (i.e. its
       // mapper's text property is identical except for the font size
@@ -397,17 +405,17 @@ int SMESH_ScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
       // the title and label text prop to be the same.
       this->TitleMapper->GetTextProperty()->ShallowCopy(this->TitleTextProperty);
       this->TitleMapper->GetTextProperty()->SetJustificationToCentered();
-      }
-    
+    }
+
     // find the best size for the title font
     int titleSize[2];
     this->SizeTitle(titleSize, size, viewport);
-    
+
     // find the best size for the ticks
     int labelSize[2];
     this->AllocateAndSizeLabels(labelSize, size, viewport,range);
     this->NumberOfLabelsBuilt = this->NumberOfLabels;
-    
+
     // generate points
     double x[3]; x[2] = 0.0;
     double delta, itemH, shrink;
@@ -426,7 +434,7 @@ int SMESH_ScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
 
       barHeight = (int)(0.86*size[1]);
       delta=(double)barHeight/numColors;
-      
+
       for ( i=0; i<numPts/2; i++ ) {
         x[0] = distrHeight+delimeter/2.0;
         x[1] = i*delta;
@@ -435,22 +443,22 @@ int SMESH_ScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
         pts->SetPoint(2*i+1,x);
       }
 
-      if(GetDistributionVisibility() && distrVisibility) {
-        // Distribution points 
+      if ( GetDistributionVisibility() && distrVisibility ) {
+        // Distribution points
         shrink = delta*SHRINK_COEF;
         vtkIdType distPtsId=0;
         vtkIdType distPtsIds[4];
-        for(i=0; i<numColors; i++) {
-          if(myNbValues[i]) {
+        for ( i = 0; i < numColors; i++ ) {
+          if ( myNbValues[i] ) {
             itemH = distrHeight*((double)myNbValues[i]/maxValue);
-            
-            if(distrHeight == itemH) 
+
+            if(distrHeight == itemH)
               itemH = itemH - delimeter/2;
 
             x[1] = i*delta+shrink;
 
             // first point of polygon (quadrangle)
-            x[0] = 0; 
+            x[0] = 0;
             distPtsIds[0] = distPtsId;
             distrPts->SetPoint(distPtsId++,x);
 
@@ -462,7 +470,7 @@ int SMESH_ScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
             x[1] = i*delta+delta-shrink;
 
             // third point of polygon (quadrangle)
-            x[0] = 0; 
+            x[0] = 0;
             distPtsIds[3] = distPtsId;
             distrPts->SetPoint(distPtsId++,x);
 
@@ -475,19 +483,19 @@ int SMESH_ScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
             distrPolys->InsertNextCell(4,distPtsIds);
           }
         }
-      }    
+      }
     }
     // rnv end
     else {
       barWidth = size[0];
-      
+
       // rnv begin
       // Customization of the vtkScalarBarActor to show distribution histogram.
       double coef1, delimeter=0.0;
-      if(GetDistributionVisibility() && distrVisibility) {
+      if ( GetDistributionVisibility() && distrVisibility ) {
         coef1=0.62;
         distrHeight = (int)((coef1/2)*size[1]);
-        //delimeter between distribution diagram and scalar bar 
+        //delimeter between distribution diagram and scalar bar
         delimeter=0.02*size[1];
       }
       else {
@@ -495,64 +503,64 @@ int SMESH_ScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
         barHeight = (int)(coef1*size[1]);
         distrHeight = 0;
       }
-      
+
       barHeight = (int)(coef1*size[1]);
-      
+
       delta=(double)barWidth/numColors;
-      for (i=0; i<numPts/2; i++) {
+      for ( i = 0; i < numPts/2; i++ ) {
         x[0] = i*delta;
         x[1] = barHeight;
-        pts->SetPoint(2*i,x);                        
+        pts->SetPoint(2*i,x);
         x[1] = distrHeight + delimeter;
         pts->SetPoint(2*i+1,x);
       }
-      
-      if(GetDistributionVisibility() && distrVisibility) {
-        // Distribution points 
+
+      if ( GetDistributionVisibility() && distrVisibility ) {
+        // Distribution points
         shrink = delta*SHRINK_COEF;
         vtkIdType distPtsId=0;
         vtkIdType distPtsIds[4];
-        for(i=0; i<numColors; i++) {
+        for ( i = 0; i < numColors; i++ ) {
           if(myNbValues[i]) {
             itemH = distrHeight*((double)myNbValues[i]/maxValue);
-            
+
             // first point of polygon (quadrangle)
-            x[0] = i*delta+shrink; 
+            x[0] = i*delta+shrink;
             x[1] = 0;
             distPtsIds[0] = distPtsId;
             distrPts->SetPoint(distPtsId++,x);
-            
+
             // second point of polygon (quadrangle)
-            x[0] = i*delta+shrink; 
+            x[0] = i*delta+shrink;
             x[1] = itemH;
             distPtsIds[3] = distPtsId;
             distrPts->SetPoint(distPtsId++,x);
-            
+
             // third point of polygon (quadrangle)
-            x[0] = i*delta+delta-shrink; 
+            x[0] = i*delta+delta-shrink;
             x[1] = 0;
             distPtsIds[1] = distPtsId;
             distrPts->SetPoint(distPtsId++,x);
-            
+
             // fourth point of polygon (quadrangle)
-            x[0] = i*delta+delta-shrink; 
+            x[0] = i*delta+delta-shrink;
             x[1] = itemH;
             distPtsIds[2] = distPtsId;
             distrPts->SetPoint(distPtsId++,x);
-            
+
             // Add polygon into poly data
             distrPolys->InsertNextCell(4,distPtsIds);
           }
-        } 
+        }
       }
       // rnv end
     }
-    
+
     //polygons & cell colors
     unsigned char *rgba, *rgb;
     vtkIdType ptIds[4], dcCount=0;
-    for (i=0; i<numColors; i++)
-      {
+    for ( i = 0; i < numColors; i++ )
+    {
       ptIds[0] = 2*i;
       ptIds[1] = ptIds[0] + 1;
       ptIds[2] = ptIds[1] + 2;
@@ -560,93 +568,95 @@ int SMESH_ScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
       polys->InsertNextCell(4,ptIds);
 
       if ( isLogTable )
-        {
-        double rgbval = log10(range[0]) + 
+      {
+        double rgbval = log10(range[0]) +
           i*(log10(range[1])-log10(range[0]))/(numColors -1);
         rgba = lut->MapValue(pow(10.0,rgbval));
-        }
+      }
       else
-        {
+      {
         rgba = lut->MapValue(range[0] + (range[1] - range[0])*
                              ((double)i /(numColors-1.0)));
-        }
+      }
 
       rgb = colors->GetPointer(3*i); //write into array directly
       rgb[0] = rgba[0];
       rgb[1] = rgba[1];
       rgb[2] = rgba[2];
-      
+
       // rnv begin
       // Customization of the vtkScalarBarActor to show distribution histogram.
-      if(myDistributionColoringType == SMESH_MULTICOLOR_TYPE && GetDistributionVisibility() && distrVisibility)
-        {
-          rgb = distColors->GetPointer(3*dcCount); //write into array directly
-          rgb[0] = rgba[0];
-          rgb[1] = rgba[1];
-          rgb[2] = rgba[2];
-          dcCount++;
-        }
+      if ( myDistributionColoringType == SMESH_MULTICOLOR_TYPE &&
+           GetDistributionVisibility() &&
+           distrVisibility )
+      {
+        rgb = distColors->GetPointer(3*dcCount); //write into array directly
+        rgb[0] = rgba[0];
+        rgb[1] = rgba[1];
+        rgb[2] = rgba[2];
+        dcCount++;
       }
+    }
 
     // Now position everything properly
     //
     double val;
-    if (this->Orientation == VTK_ORIENT_VERTICAL)
-      {
+    if ( this->Orientation == VTK_ORIENT_VERTICAL )
+    {
       int sizeTextData[2];
-      
+
       // center the title
       this->TitleActor->SetPosition(size[0]/2, 0.9*size[1]);
-      
-      for (i=0; i < this->NumberOfLabels; i++)
+
+      for ( i = 0; i < this->NumberOfLabels; i++ )
+      {
+        if ( this->NumberOfLabels > 1 )
         {
-        if (this->NumberOfLabels > 1)
-          {
           val = (double)i/(this->NumberOfLabels-1) *barHeight;
-          }
-        else 
-          {
+        }
+        else
+        {
           val = 0.5*barHeight;
-          }
+        }
         this->TextMappers[i]->GetSize(viewport,sizeTextData);
         this->TextMappers[i]->GetTextProperty()->SetJustificationToLeft();
         this->TextActors[i]->SetPosition(barWidth+3,
                                          val - sizeTextData[1]/2);
-        }
       }
+    }
     else
-      {
-      this->TitleActor->SetPosition(size[0]/2, 
+    {
+      this->TitleActor->SetPosition(size[0]/2,
                                     barHeight + labelSize[1] + 0.1*size[1]);
-      for (i=0; i < this->NumberOfLabels; i++)
-        {
+      for ( i = 0; i < this->NumberOfLabels; i++ )
+      {
         this->TextMappers[i]->GetTextProperty()->SetJustificationToCentered();
         if (this->NumberOfLabels > 1)
-          {
+        {
           val = (double)i/(this->NumberOfLabels-1) * barWidth;
-          }
-        else
-          {
-          val = 0.5*barWidth;
-          }
-        this->TextActors[i]->SetPosition(val, barHeight + 0.05*size[1]);
         }
+        else
+        {
+          val = 0.5*barWidth;
+        }
+        this->TextActors[i]->SetPosition(val, barHeight + 0.05*size[1]);
       }
+    }
 
     this->BuildTime.Modified();
-    }
+  }
 
   // Everything is built, just have to render
-  if (this->Title != NULL)
-    {
+  if ( this->Title != NULL )
+  {
     renderedSomething += this->TitleActor->RenderOpaqueGeometry(viewport);
-    }
+  }
   this->ScalarBarActor->RenderOpaqueGeometry(viewport);
   this->myDistributionActor->RenderOpaqueGeometry(viewport);
-  for (i=0; i<this->NumberOfLabels; i++)
-    {
+  for ( i = 0; i < this->NumberOfLabels; i++ )
+  {
     renderedSomething += this->TextActors[i]->RenderOpaqueGeometry(viewport);
-    }
+  }
 
   renderedSomething = (renderedSomething > 0)?(1):(0);
 
@@ -659,50 +669,50 @@ void SMESH_ScalarBarActor::PrintSelf(ostream& os, vtkIndent indent)
   this->Superclass::PrintSelf(os,indent);
 
   if ( this->LookupTable )
-    {
+  {
     os << indent << "Lookup Table:\n";
     this->LookupTable->PrintSelf(os,indent.GetNextIndent());
-    }
+  }
   else
-    {
+  {
     os << indent << "Lookup Table: (none)\n";
-    }
+  }
 
   if (this->TitleTextProperty)
-    {
+  {
     os << indent << "Title Text Property:\n";
     this->TitleTextProperty->PrintSelf(os,indent.GetNextIndent());
-    }
+  }
   else
-    {
+  {
     os << indent << "Title Text Property: (none)\n";
-    }
+  }
 
   if (this->LabelTextProperty)
-    {
+  {
     os << indent << "Label Text Property:\n";
     this->LabelTextProperty->PrintSelf(os,indent.GetNextIndent());
-    }
+  }
   else
-    {
+  {
     os << indent << "Label Text Property: (none)\n";
-    }
+  }
 
   os << indent << "Title: " << (this->Title ? this->Title : "(none)") << "\n";
-  os << indent << "Maximum Number Of Colors: " 
+  os << indent << "Maximum Number Of Colors: "
      << this->MaximumNumberOfColors << "\n";
   os << indent << "Number Of Labels: " << this->NumberOfLabels << "\n";
   os << indent << "Number Of Labels Built: " << this->NumberOfLabelsBuilt << "\n";
 
   os << indent << "Orientation: ";
   if ( this->Orientation == VTK_ORIENT_HORIZONTAL )
-    {
+  {
     os << "Horizontal\n";
-    }
+  }
   else
-    {
+  {
     os << "Vertical\n";
-    }
+  }
 
   os << indent << "Label Format: " << this->LabelFormat << "\n";
 }
@@ -712,7 +722,7 @@ void SMESH_ScalarBarActor::ShallowCopy(vtkProp *prop)
 {
   SMESH_ScalarBarActor *a = SMESH_ScalarBarActor::SafeDownCast(prop);
   if ( a != NULL )
-    {
+  {
     this->SetPosition2(a->GetPosition2());
     this->SetLookupTable(a->GetLookupTable());
     this->SetMaximumNumberOfColors(a->GetMaximumNumberOfColors());
@@ -721,25 +731,25 @@ void SMESH_ScalarBarActor::ShallowCopy(vtkProp *prop)
     this->SetTitleTextProperty(a->GetTitleTextProperty());
     this->SetLabelFormat(a->GetLabelFormat());
     this->SetTitle(a->GetTitle());
-    this->GetPositionCoordinate()->SetCoordinateSystem(
-      a->GetPositionCoordinate()->GetCoordinateSystem());    
-    this->GetPositionCoordinate()->SetValue(
-      a->GetPositionCoordinate()->GetValue());
-    this->GetPosition2Coordinate()->SetCoordinateSystem(
-      a->GetPosition2Coordinate()->GetCoordinateSystem());    
-    this->GetPosition2Coordinate()->SetValue(
-      a->GetPosition2Coordinate()->GetValue());
-    }
+    this->GetPositionCoordinate()->SetCoordinateSystem
+      (a->GetPositionCoordinate()->GetCoordinateSystem());
+    this->GetPositionCoordinate()->SetValue
+      (a->GetPositionCoordinate()->GetValue());
+    this->GetPosition2Coordinate()->SetCoordinateSystem
+      (a->GetPosition2Coordinate()->GetCoordinateSystem());
+    this->GetPosition2Coordinate()->SetValue
+      (a->GetPosition2Coordinate()->GetValue());
+  }
 
   // Now do superclass
   this->vtkActor2D::ShallowCopy(prop);
 }
 
 //----------------------------------------------------------------------------
-void SMESH_ScalarBarActor::AllocateAndSizeLabels(int *labelSize, 
-                                              int *size,
-                                              vtkViewport *viewport,
-                                              double *range)
+void SMESH_ScalarBarActor::AllocateAndSizeLabels(int         *labelSize,
+                                                 int         *size,
+                                                 vtkViewport *viewport,
+                                                 double      *range)
 {
   labelSize[0] = labelSize[1] = 0;
 
@@ -750,55 +760,55 @@ void SMESH_ScalarBarActor::AllocateAndSizeLabels(int *labelSize,
 
   double val;
   int i;
-  
+
   // TODO: this should be optimized, maybe by keeping a list of
   // allocated mappers, in order to avoid creation/destruction of
   // their underlying text properties (i.e. each time a mapper is
   // created, text properties are created and shallow-assigned a font size
   // which value might be "far" from the target font size).
 
-  // is this a vtkLookupTable or a subclass of vtkLookupTable 
+  // is this a vtkLookupTable or a subclass of vtkLookupTable
   // with its scale set to log
   vtkLookupTable *LUT = vtkLookupTable::SafeDownCast( this->LookupTable );
   int isLogTable = 0;
   if ( LUT )
-    {
+  {
     if ( LUT->GetScale() == VTK_SCALE_LOG10 )
-      {
-      isLogTable = 1; 
-      }
-    }
-
-  for (i=0; i < this->NumberOfLabels; i++)
     {
+      isLogTable = 1;
+    }
+  }
+
+  for ( i = 0; i < this->NumberOfLabels; i++ )
+  {
     this->TextMappers[i] = vtkTextMapper::New();
 
     if ( isLogTable )
-      {
+    {
       double lval;
-      if (this->NumberOfLabels > 1)
-        {
+      if ( this->NumberOfLabels > 1 )
+      {
         lval = log10(range[0]) + (double)i/(this->NumberOfLabels-1) *
           (log10(range[1])-log10(range[0]));
-        }
-      else
-        {
-        lval = log10(range[0]) + 0.5*(log10(range[1])-log10(range[0]));
-        }
-      val = pow(10.0,lval);
       }
-    else
+      else
       {
-      if (this->NumberOfLabels > 1)
-        {
-        val = range[0] + 
-          (double)i/(this->NumberOfLabels-1) * (range[1]-range[0]);
-        }
-      else
-        {
-        val = range[0] + 0.5*(range[1]-range[0]);
-        }
+        lval = log10(range[0]) + 0.5*(log10(range[1])-log10(range[0]));
       }
+      val = pow(10.0,lval);
+    }
+    else
+    {
+      if ( this->NumberOfLabels > 1 )
+      {
+        val = range[0] +
+          (double)i/(this->NumberOfLabels-1) * (range[1]-range[0]);
+      }
+      else
+      {
+        val = range[0] + 0.5*(range[1]-range[0]);
+      }
+    }
 
     sprintf(string, this->LabelFormat, val);
     this->TextMappers[i]->SetInput(string);
@@ -809,64 +819,63 @@ void SMESH_ScalarBarActor::AllocateAndSizeLabels(int *labelSize,
     // which will be modified later). This allows text actors to
     // share the same text property, and in that case specifically allows
     // the title and label text prop to be the same.
-    this->TextMappers[i]->GetTextProperty()->ShallowCopy(
-      this->LabelTextProperty);
+    this->TextMappers[i]->GetTextProperty()->ShallowCopy(this->LabelTextProperty);
 
     this->TextActors[i] = vtkActor2D::New();
     this->TextActors[i]->SetMapper(this->TextMappers[i]);
     this->TextActors[i]->SetProperty(this->GetProperty());
     this->TextActors[i]->GetPositionCoordinate()->
       SetReferenceCoordinate(this->PositionCoordinate);
-    }
+  }
 
-  if (this->NumberOfLabels)
-    {
+  if ( this->NumberOfLabels )
+  {
     int targetWidth, targetHeight;
     // rnv begin
     // Customization of the vtkScalarBarActor to show distribution histogram.
     bool distrVisibility = ( this->MaximumNumberOfColors == (int) this->myNbValues.size() );
     double coef;
-    if( GetDistributionVisibility() && distrVisibility )
-      if(this->Orientation == VTK_ORIENT_VERTICAL)
+    if ( GetDistributionVisibility() && distrVisibility )
+      if ( this->Orientation == VTK_ORIENT_VERTICAL )
         coef = 0.4;
-      else 
+      else
         coef = 0.18;
-    else 
-      if(this->Orientation == VTK_ORIENT_VERTICAL)
+    else
+      if (this->Orientation == VTK_ORIENT_VERTICAL )
         coef = 0.6;
-      else 
+      else
         coef=0.25;
 
 
     if ( this->Orientation == VTK_ORIENT_VERTICAL )
-      {
+    {
       targetWidth = (int)(coef*size[0]);
       targetHeight = (int)(0.86*size[1]/this->NumberOfLabels);
-      }
+    }
     else
-      {
+    {
       targetWidth = (int)(size[0]*0.8/this->NumberOfLabels);
       targetHeight = (int)(coef*size[1]);
-      }
-    // rnv end
-    
-    vtkTextMapper::SetMultipleConstrainedFontSize(viewport, 
-                                                  targetWidth, 
-                                                  targetHeight,
-                                                  this->TextMappers,
-                                                  this->NumberOfLabels,
-                                                  labelSize);
     }
+    // rnv end
+
+    vtkTextMapper::SetMultipleConstrainedFontSize( viewport,
+                                                   targetWidth,
+                                                   targetHeight,
+                                                   this->TextMappers,
+                                                   this->NumberOfLabels,
+                                                   labelSize );
+  }
 }
 
 //----------------------------------------------------------------------------
-void SMESH_ScalarBarActor::SizeTitle(int *titleSize,
-                                     int *size,
+void SMESH_ScalarBarActor::SizeTitle(int         *titleSize,
+                                     int         *size,
                                      vtkViewport *viewport)
 {
   titleSize[0] = titleSize[1] = 0;
 
-  if (this->Title == NULL || !strlen(this->Title))
+  if ( this->Title == NULL || !strlen(this->Title) )
   {
     return;
   }
@@ -899,36 +908,43 @@ void SMESH_ScalarBarActor::SizeTitle(int *titleSize,
 
 
 /*--------------------------------------------------------------------------*/
-void SMESH_ScalarBarActor::SetDistributionVisibility(int flag) {
-  myDistributionActor->SetVisibility(flag);
+void SMESH_ScalarBarActor::SetDistributionVisibility( int flag )
+{
+  myDistributionActor->SetVisibility( flag );
   Modified();
 }
 
 
 /*--------------------------------------------------------------------------*/
-int SMESH_ScalarBarActor::GetDistributionVisibility() {
+int SMESH_ScalarBarActor::GetDistributionVisibility()
+{
   return myDistributionActor->GetVisibility();
 }
 
 
-void SMESH_ScalarBarActor::SetDistribution(std::vector<int> theNbValues) {
+void SMESH_ScalarBarActor::SetDistribution( const std::vector<int>& theNbValues )
+{
   myNbValues = theNbValues;
-} 
+}
 
 
-void SMESH_ScalarBarActor::SetDistributionColor (double rgb[3]) {
+void SMESH_ScalarBarActor::SetDistributionColor( double rgb[3] )
+{
   myDistributionActor->GetProperty()->SetColor(rgb);
   Modified();
 }
 
-void SMESH_ScalarBarActor::GetDistributionColor (double rgb[3]) {
+void SMESH_ScalarBarActor::GetDistributionColor( double rgb[3] )
+{
   myDistributionActor->GetProperty()->GetColor(rgb);
 }
 
-void SMESH_ScalarBarActor::SetTitleOnlyVisibility( bool theTitleOnlyVisibility) {
+void SMESH_ScalarBarActor::SetTitleOnlyVisibility( bool theTitleOnlyVisibility )
+{
   myTitleOnlyVisibility = theTitleOnlyVisibility;
 }
 
-bool SMESH_ScalarBarActor::GetTitleOnlyVisibility() {
+bool SMESH_ScalarBarActor::GetTitleOnlyVisibility()
+{
   return myTitleOnlyVisibility;
 }

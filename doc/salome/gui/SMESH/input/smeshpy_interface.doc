@@ -2,10 +2,10 @@
 
 \page smeshpy_interface_page Python interface
 
-Python API for SALOME %Mesh module defines several classes that can
+Python API of SALOME %Mesh module defines several classes that can
 be used for easy mesh creation and edition.
 
-Documentation for SALOME %Mesh module Python API is available in two forms:
+Documentation of SALOME %Mesh module Python API is available in two forms:
 - <a href="smeshpy_doc/modules.html">Structured documentation</a>, where all methods and
 classes are grouped by their functionality.
 - <a href="smeshpy_doc/namespaces.html">Linear documentation</a> grouped only by classes, declared

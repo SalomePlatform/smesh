@@ -174,7 +174,7 @@ class SMESHOBJECT_EXPORT SMESH_ScalarBarActor: public vtkActor2D {
   virtual int GetDistributionVisibility();
   // Description:
   // Set distribution
-  virtual void SetDistribution(std::vector<int> theNbValues);
+  virtual void SetDistribution(const std::vector<int>& theNbValues);
   
   // Description: 
   // Set distribution coloring type (SMESH_MONOCOLOR_TYPE or SMESH_MULTICOLOR_TYPE)

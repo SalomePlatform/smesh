@@ -30,11 +30,14 @@
 
 #include "SMESH_StdMeshers.hxx"
 
+#include "StdMeshers_FaceSide.hxx"
 #include "SMDS_MeshElement.hxx"
 
+#include <BRepMesh_DataStructureOfDelaun.hxx>
+#include <ShapeAnalysis_Surface.hxx>
 #include <TopTools_DataMapOfShapeShape.hxx>
-#include <TopTools_IndexedMapOfShape.hxx>
 #include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Vertex.hxx>
@@ -134,6 +137,33 @@ namespace StdMeshers_ProjectionUtils
     bool IsIdentity() const { return ( _trsf.Form() == gp_Identity ); }
 
     bool Invert();
+  };
+
+  /*!
+   * \brief Morph mesh on the target FACE to lie within FACE boundary w/o distortion
+   */
+  class Morph
+  {
+    std::vector< const SMDS_MeshNode* >    _bndSrcNodes;
+    Handle(BRepMesh_DataStructureOfDelaun) _triaDS;
+    SMESH_subMesh*                         _srcSubMesh;
+    bool                                   _moveAll;
+    gp_XY                                  _scale;
+  public:
+
+    Morph(const TSideVector& srcWires);
+
+    bool Perform(SMESH_MesherHelper&           tgtHelper,
+                 const TSideVector&            tgtWires,
+                 Handle(ShapeAnalysis_Surface) tgtSurface,
+                 const TNodeNodeMap&           src2tgtNodes,
+                 const bool                    moveAll);
+
+    // return source boundary nodes. 0-th node is zero
+    const std::vector< const SMDS_MeshNode* >& GetBndNodes() const { return _bndSrcNodes; }
+
+    // return UV of the i-th source boundary node
+    gp_XY GetBndUV(const int iNode) const;
   };
 
   /*!
