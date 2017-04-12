@@ -976,6 +976,11 @@ module SMESH
     long FindElementByNodes(in long_array nodes);
 
     /*!
+     * Return elements including all given nodes.
+     */
+    long_array GetElementsByNodes(in long_array nodes, in ElementType elem_type);
+
+    /*!
      * Returns true if given element is polygon
      */
     boolean IsPoly(in long id);

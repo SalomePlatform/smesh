@@ -19,7 +19,7 @@ and hypotheses.
 
 Mesh generation on the geometry is performed in the bottom-up
 flow: nodes on vertices are created first, then edges are divided into
-segments using nodes on vertices; the node of segments are then
+segments using nodes on vertices; the nodes of segments are then
 used to mesh faces; then the nodes of faces are used to mesh
 solids. This automatically assures the conformity of the mesh.
 

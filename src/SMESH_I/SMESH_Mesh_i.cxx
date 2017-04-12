@@ -4771,6 +4771,35 @@ CORBA::Long SMESH_Mesh_i::FindElementByNodes(const SMESH::long_array& nodes)
   return elemID;
 }
 
+//================================================================================
+/*!
+ * \brief Return elements including all given nodes.
+ */
+//================================================================================
+
+SMESH::long_array* SMESH_Mesh_i::GetElementsByNodes(const SMESH::long_array& nodes,
+                                                    SMESH::ElementType       elemType)
+{
+  if ( _preMeshInfo )
+    _preMeshInfo->FullLoadFromFile();
+
+  SMESH::long_array_var result = new SMESH::long_array();
+
+  if ( SMESHDS_Mesh* mesh = _impl->GetMeshDS() )
+  {
+    vector< const SMDS_MeshNode * > nn( nodes.length() );
+    for ( CORBA::ULong i = 0; i < nodes.length(); ++i )
+      nn[i] = mesh->FindNode( nodes[i] );
+
+    std::vector<const SMDS_MeshElement *> elems;
+    mesh->GetElementsByNodes( nn, elems, (SMDSAbs_ElementType) elemType );
+    result->length( elems.size() );
+    for ( size_t i = 0; i < elems.size(); ++i )
+      result[i] = elems[i]->GetID();
+  }
+  return result._retn();
+}
+
 //=============================================================================
 /*!
  * Returns true if given element is polygon

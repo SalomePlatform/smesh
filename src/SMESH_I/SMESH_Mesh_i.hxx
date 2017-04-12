@@ -536,8 +536,8 @@ public:
    * Returns true if given node is medium node
    * in one of quadratic elements
    */
-  CORBA::Boolean IsMediumNodeOfAnyElem(CORBA::Long idn,
-                                       SMESH::ElementType theElemType);
+  CORBA::Boolean IsMediumNodeOfAnyElem(CORBA::Long        idn,
+                                       SMESH::ElementType elemType);
 
   /*!
    * Returns number of edges for given element
@@ -562,6 +562,12 @@ public:
    * Returns an element based on all given nodes.
    */
   CORBA::Long FindElementByNodes(const SMESH::long_array& nodes);
+
+  /*!
+   * Return elements including all given nodes.
+   */
+  SMESH::long_array* GetElementsByNodes(const SMESH::long_array& nodes,
+                                        SMESH::ElementType       elemType);
 
   /*!
    * Returns true if given element is polygon

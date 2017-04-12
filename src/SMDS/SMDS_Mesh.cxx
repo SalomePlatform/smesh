@@ -2458,6 +2458,49 @@ const SMDS_MeshElement* SMDS_Mesh::FindElement (const vector<const SMDS_MeshNode
   return NULL;
 }
 
+//================================================================================
+/*!
+ * \brief Return elements including all given nodes
+ *  \param [in] nodes - nodes to find elements around
+ *  \param [out] foundElems - the found elements
+ *  \param [in] type - type of elements to find
+ *  \return int - a number of found elements
+ */
+//================================================================================
+
+int SMDS_Mesh::GetElementsByNodes(const std::vector<const SMDS_MeshNode *>& nodes,
+                                  std::vector<const SMDS_MeshElement *>&    foundElems,
+                                  const SMDSAbs_ElementType                 type)
+{
+  // chose a node with minimal number of inverse elements
+  const SMDS_MeshNode* n0 = nodes[0];
+  int minNbInverse = n0 ? n0->NbInverseElements( type ) : 1000;
+  for ( size_t i = 1; i < nodes.size(); ++i )
+    if ( nodes[i] && nodes[i]->NbInverseElements( type ) < minNbInverse )
+    {
+      n0 = nodes[i];
+      minNbInverse = n0->NbInverseElements( type );
+    }
+
+  foundElems.clear();
+  if ( n0 )
+  {
+    foundElems.reserve( minNbInverse );
+    SMDS_ElemIteratorPtr eIt = n0->GetInverseElementIterator( type );
+    while ( eIt->more() )
+    {
+      const SMDS_MeshElement* e = eIt->next();
+      bool includeAll = true;
+      for ( size_t i = 0; i < nodes.size() &&  includeAll; ++i )
+        if ( nodes[i] != n0 && e->GetNodeIndex( nodes[i] ) < 0 )
+          includeAll = false;
+      if ( includeAll )
+        foundElems.push_back( e );
+    }
+  }
+  return foundElems.size();
+}
+
 //=======================================================================
 //function : DumpNodes
 //purpose  :

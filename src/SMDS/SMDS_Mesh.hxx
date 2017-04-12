@@ -689,6 +689,9 @@ public:
   static const SMDS_MeshElement* FindElement(const std::vector<const SMDS_MeshNode *>& nodes,
                                              const SMDSAbs_ElementType                 type=SMDSAbs_All,
                                              const bool                                noMedium=true);
+  static int GetElementsByNodes(const std::vector<const SMDS_MeshNode *>& nodes,
+                                std::vector<const SMDS_MeshElement *>&    foundElems,
+                                const SMDSAbs_ElementType                 type=SMDSAbs_All);
 
   /*!
    * \brief Raise an exception if free memory (ram+swap) too low
