@@ -2560,7 +2560,7 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::ListOfIDSources& theMeshesArray,
         const char* typeNames[] = { "All","Nodes","Edges","Faces","Volumes","0DElems","Balls" };
         { // check of typeNames: compilation failure mains that NB_ELEMENT_TYPES changed:
           const int nbNames = sizeof(typeNames) / sizeof(const char*);
-          int _assert[( nbNames == SMESH::NB_ELEMENT_TYPES ) ? 2 : -1 ]; _assert[0]=_assert[1];
+          int _assert[( nbNames == SMESH::NB_ELEMENT_TYPES ) ? 2 : -1 ]; _assert[0]=_assert[1]=0;
         }
         string groupName = "Gr";
         SALOMEDS::SObject_wrap aMeshSObj = ObjectToSObject( myCurrentStudy, theMeshesArray[i] );

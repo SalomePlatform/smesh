@@ -630,7 +630,7 @@ namespace
       };
       // is typeMsg complete? (compilation failure mains that enum SMDSAbs_EntityType changed)
       const int nbTypes = sizeof( typeMsg ) / sizeof( const char* );
-      int _assert[( nbTypes == SMESH::Entity_Last ) ? 2 : -1 ]; _assert[0]=_assert[1];
+      int _assert[( nbTypes == SMESH::Entity_Last ) ? 2 : -1 ]; _assert[0]=_assert[1]=0;
 
       QString andStr = " " + QObject::tr("SMESH_AND") + " ", comma(", ");
       for ( size_t iType = 0; iType < presentNotSupported.size(); ++iType ) {

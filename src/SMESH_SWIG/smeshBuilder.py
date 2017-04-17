@@ -2687,8 +2687,13 @@ class Mesh:
 
     ## Return an element based on all given nodes.
     #  @ingroup l1_meshinfo
-    def FindElementByNodes(self,nodes):
+    def FindElementByNodes(self, nodes):
         return self.mesh.FindElementByNodes(nodes)
+
+    ## Return elements including all given nodes.
+    #  @ingroup l1_meshinfo
+    def GetElementsByNodes(self, nodes, elemType=SMESH.ALL):
+        return self.mesh.GetElementsByNodes( nodes, elemType )
 
     ## Return true if the given element is a polygon
     #  @ingroup l1_meshinfo

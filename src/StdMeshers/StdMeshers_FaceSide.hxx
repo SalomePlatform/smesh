@@ -82,13 +82,13 @@ public:
   /*!
    * \brief Wrap several edges. Edges must be properly ordered and oriented.
    */
-  StdMeshers_FaceSide(const TopoDS_Face&      theFace,
-                      std::list<TopoDS_Edge>& theEdges,
-                      SMESH_Mesh*             theMesh,
-                      const bool              theIsForward,
-                      const bool              theIgnoreMediumNodes,
-                      SMESH_MesherHelper*     theFaceHelper = NULL,
-                      SMESH_ProxyMesh::Ptr    theProxyMesh = SMESH_ProxyMesh::Ptr());
+  StdMeshers_FaceSide(const TopoDS_Face&            theFace,
+                      const std::list<TopoDS_Edge>& theEdges,
+                      SMESH_Mesh*                   theMesh,
+                      const bool                    theIsForward,
+                      const bool                    theIgnoreMediumNodes,
+                      SMESH_MesherHelper*           theFaceHelper = NULL,
+                      SMESH_ProxyMesh::Ptr          theProxyMesh = SMESH_ProxyMesh::Ptr());
   /*!
    * \brief Simulate a side from a vertex using data from other FaceSide
    */
@@ -120,13 +120,13 @@ public:
   { return StdMeshers_FaceSidePtr
       ( new StdMeshers_FaceSide( Face,Edge,Mesh,IsForward,IgnoreMediumNodes,FaceHelper,ProxyMesh ));
   }
-  static StdMeshers_FaceSidePtr New (const TopoDS_Face&      Face,
-                                     std::list<TopoDS_Edge>& Edges,
-                                     SMESH_Mesh*             Mesh,
-                                     const bool              IsForward,
-                                     const bool              IgnoreMediumNodes,
-                                     SMESH_MesherHelper*     FaceHelper = NULL,
-                                     SMESH_ProxyMesh::Ptr    ProxyMesh = SMESH_ProxyMesh::Ptr())
+  static StdMeshers_FaceSidePtr New (const TopoDS_Face&            Face,
+                                     const std::list<TopoDS_Edge>& Edges,
+                                     SMESH_Mesh*                   Mesh,
+                                     const bool                    IsForward,
+                                     const bool                    IgnoreMediumNodes,
+                                     SMESH_MesherHelper*           FaceHelper = NULL,
+                                     SMESH_ProxyMesh::Ptr          ProxyMesh = SMESH_ProxyMesh::Ptr())
   { return StdMeshers_FaceSidePtr
       ( new StdMeshers_FaceSide( Face,Edges,Mesh,IsForward,IgnoreMediumNodes,FaceHelper,ProxyMesh ));
   }
@@ -141,9 +141,11 @@ public:
       ( new StdMeshers_FaceSide( Side,Node,Pnt2d1,Pnt2d2,C2d,UFirst,ULast ));
   }
   static StdMeshers_FaceSidePtr New (UVPtStructVec&     theSideNodes,
-                                     const TopoDS_Face& theFace = TopoDS_Face())
+                                     const TopoDS_Face& theFace = TopoDS_Face(),
+                                     const TopoDS_Edge& theEdge = TopoDS_Edge(),
+                                     SMESH_Mesh*        theMesh = 0)
   {
-    return StdMeshers_FaceSidePtr( new StdMeshers_FaceSide( theSideNodes, theFace ));
+    return StdMeshers_FaceSidePtr( new StdMeshers_FaceSide( theSideNodes, theFace, theEdge, theMesh ));
   }
 
   /*!

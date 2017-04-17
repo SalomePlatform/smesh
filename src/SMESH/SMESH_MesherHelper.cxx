@@ -2669,7 +2669,7 @@ bool SMESH_MesherHelper::LoadNodeColumns(TParam2ColumnMap &            theParam2
   }
 
   // nb rows of nodes
-  size_t prevNbRows     = theParam2ColumnMap.begin()->second.size(); // current, at least 1 here
+  size_t prevNbRows   = theParam2ColumnMap.begin()->second.size(); // current, at least 1 here
   size_t expectNbRows = faceSubMesh->NbElements() / ( theParam2ColumnMap.size()-1 ); // to be added
 
   // fill theParam2ColumnMap column by column by passing from nodes on

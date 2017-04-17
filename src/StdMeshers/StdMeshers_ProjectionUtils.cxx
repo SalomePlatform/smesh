@@ -2796,12 +2796,10 @@ namespace StdMeshers_ProjectionUtils
    */
   //================================================================================
 
-  typedef list< pair< const SMDS_MeshNode*, const BRepMesh_Triangle* > > TNodeTriaList;
-
-  void addCloseNodes( const SMDS_MeshNode*     srcNode,
-                      const BRepMesh_Triangle* bmTria,
-                      const int                srcFaceID,
-                      TNodeTriaList &          noTriQueue )
+  void Morph::AddCloseNodes( const SMDS_MeshNode*     srcNode,
+                             const BRepMesh_Triangle* bmTria,
+                             const int                srcFaceID,
+                             TNodeTriaList &          noTriQueue )
   {
     // find in-FACE nodes
     SMDS_ElemIteratorPtr elems = srcNode->GetInverseElementIterator(SMDSAbs_Face);
@@ -2813,7 +2811,7 @@ namespace StdMeshers_ProjectionUtils
         for ( int i = 0, nb = elem->NbNodes(); i < nb; ++i )
         {
           const SMDS_MeshNode* n = elem->GetNode( i );
-          if ( !n->isMarked() )
+          if ( !n->isMarked() /*&& n->getshapeId() == srcFaceID*/ )
             noTriQueue.push_back( make_pair( n, bmTria ));
         }
       }
@@ -2827,10 +2825,10 @@ namespace StdMeshers_ProjectionUtils
    */
   //================================================================================
 
-  const BRepMesh_Triangle* findTriangle( const gp_XY&                            uv,
-                                         const BRepMesh_Triangle*                bmTria,
-                                         Handle(BRepMesh_DataStructureOfDelaun)& triaDS,
-                                         double                                  bc[3] )
+  const BRepMesh_Triangle* Morph::FindTriangle( const gp_XY&             uv,
+                                                const BRepMesh_Triangle* bmTria,
+                                                double                   bc[3],
+                                                int                      triaNodes[3] )
   {
     int   nodeIDs[3];
     gp_XY nodeUVs[3];
@@ -2841,10 +2839,10 @@ namespace StdMeshers_ProjectionUtils
     {
       // check bmTria
 
-      triaDS->ElementNodes( *bmTria, nodeIDs );
-      nodeUVs[0] = triaDS->GetNode( nodeIDs[0] ).Coord();
-      nodeUVs[1] = triaDS->GetNode( nodeIDs[1] ).Coord();
-      nodeUVs[2] = triaDS->GetNode( nodeIDs[2] ).Coord();
+      _triaDS->ElementNodes( *bmTria, nodeIDs );
+      nodeUVs[0] = _triaDS->GetNode( nodeIDs[0] ).Coord();
+      nodeUVs[1] = _triaDS->GetNode( nodeIDs[1] ).Coord();
+      nodeUVs[2] = _triaDS->GetNode( nodeIDs[2] ).Coord();
 
       SMESH_MeshAlgos::GetBarycentricCoords( uv,
                                              nodeUVs[0], nodeUVs[1], nodeUVs[2],
@@ -2852,6 +2850,9 @@ namespace StdMeshers_ProjectionUtils
       if ( bc[0] >= 0 && bc[1] >= 0 && bc[0] + bc[1] <= 1 )
       {
         bc[2] = 1 - bc[0] - bc[1];
+        triaNodes[0] = nodeIDs[0];
+        triaNodes[1] = nodeIDs[1];
+        triaNodes[2] = nodeIDs[2];
         return bmTria;
       }
 
@@ -2862,19 +2863,19 @@ namespace StdMeshers_ProjectionUtils
       gp_XY seg = uv - gc;
 
       bmTria->Edges( linkIDs, ori );
-      int triaID = triaDS->IndexOf( *bmTria );
+      int triaID = _triaDS->IndexOf( *bmTria );
       bmTria = 0;
 
       for ( int i = 0; i < 3; ++i )
       {
-        const BRepMesh_PairOfIndex & triIDs = triaDS->ElementsConnectedTo( linkIDs[i] );
+        const BRepMesh_PairOfIndex & triIDs = _triaDS->ElementsConnectedTo( linkIDs[i] );
         if ( triIDs.Extent() < 2 )
           continue; // no neighbor triangle
 
         // check if a link intersects gc2uv
-        const BRepMesh_Edge & link = triaDS->GetLink( linkIDs[i] );
-        const BRepMesh_Vertex & n1 = triaDS->GetNode( link.FirstNode() );
-        const BRepMesh_Vertex & n2 = triaDS->GetNode( link.LastNode() );
+        const BRepMesh_Edge & link = _triaDS->GetLink( linkIDs[i] );
+        const BRepMesh_Vertex & n1 = _triaDS->GetNode( link.FirstNode() );
+        const BRepMesh_Vertex & n2 = _triaDS->GetNode( link.LastNode() );
         gp_XY uv1 = n1.Coord();
         gp_XY lin = n2.Coord() - uv1; // link direction
 
@@ -2885,12 +2886,28 @@ namespace StdMeshers_ProjectionUtils
         double uSeg = ( uv1 - gc ) ^ lin / crossSegLin;
         if ( 0. <= uSeg && uSeg <= 1. )
         {
-          bmTria = & triaDS->GetElement( triIDs.Index( 1 + ( triIDs.Index(1) == triaID )));
+          bmTria = & _triaDS->GetElement( triIDs.Index( 1 + ( triIDs.Index(1) == triaID )));
           break;
         }
       }
     }
     return bmTria;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Return a triangle sharing a given boundary node
+   *  \param [in] iBndNode - index of the boundary node
+   *  \return const BRepMesh_Triangle* - a found triangle
+   */
+  //================================================================================
+
+  const BRepMesh_Triangle* Morph::GetTriangleNear( int iBndNode )
+  {
+    const BRepMesh::ListOfInteger & linkIds = _triaDS->LinksConnectedTo( iBndNode );
+    const BRepMesh_PairOfIndex &    triaIds = _triaDS->ElementsConnectedTo( linkIds.First() );
+    const BRepMesh_Triangle&           tria = _triaDS->GetElement( triaIds.Index(1) );
+    return &tria;
   }
 
   //================================================================================
@@ -2997,19 +3014,6 @@ namespace StdMeshers_ProjectionUtils
     const SMDS_MeshNode *srcNode, *tgtNode;
     const BRepMesh_Triangle *bmTria;
 
-    // initialize a queue of nodes with starting triangles
-    TNodeTriaList noTriQueue;
-    size_t iBndSrcN = 1;
-    for ( ; iBndSrcN < _bndSrcNodes.size() &&  noTriQueue.empty();  ++iBndSrcN )
-    {
-      // get a triangle
-      const BRepMesh::ListOfInteger & linkIds = _triaDS->LinksConnectedTo( iBndSrcN );
-      const BRepMesh_PairOfIndex &    triaIds = _triaDS->ElementsConnectedTo( linkIds.First() );
-      const BRepMesh_Triangle&           tria = _triaDS->GetElement( triaIds.Index(1) );
-
-      addCloseNodes( _bndSrcNodes[ iBndSrcN ], &tria, srcFaceID, noTriQueue );
-    }
-
     // un-mark internal src nodes; later we will mark moved nodes
     int nbSrcNodes = 0;
     SMDS_NodeIteratorPtr nIt = _srcSubMesh->GetSubMeshDS()->GetNodes();
@@ -3033,6 +3037,10 @@ namespace StdMeshers_ProjectionUtils
     bool   checkUV = true;
     const SMDS_FacePosition* pos;
 
+    // a queue of nodes with starting triangles
+    TNodeTriaList noTriQueue;
+    size_t iBndSrcN = 1;
+
     while ( nbSrcNodes > 0 )
     {
       while ( !noTriQueue.empty() )
@@ -3048,16 +3056,16 @@ namespace StdMeshers_ProjectionUtils
         // find a delauney triangle containing the src node
         gp_XY uv = tgtHelper.GetNodeUV( srcFace, srcNode, NULL, &checkUV );
         uv *= _scale;
-        bmTria = findTriangle( uv, bmTria, _triaDS, bc );
+        bmTria = FindTriangle( uv, bmTria, bc, nodeIDs );
         if ( !bmTria )
           continue;
 
         // compute new coordinates for a corresponding tgt node
         gp_XY uvNew( 0., 0. ), nodeUV;
-        _triaDS->ElementNodes( *bmTria, nodeIDs );
         for ( int i = 0; i < 3; ++i )
           uvNew += bc[i] * tgtVert( nodeIDs[i]).Coord();
-        uvNew.SetCoord( uvNew.X() / _scale.X(), uvNew.Y() / _scale.Y() );
+        uvNew.SetCoord( uvNew.X() / _scale.X(),
+                        uvNew.Y() / _scale.Y() );
         gp_Pnt xyz = tgtSurface->Value( uvNew );
 
         // find and move tgt node
@@ -3069,7 +3077,7 @@ namespace StdMeshers_ProjectionUtils
         if (( pos = dynamic_cast< const SMDS_FacePosition* >( tgtNode->GetPosition() )))
           const_cast<SMDS_FacePosition*>( pos )->SetParameters( uvNew.X(), uvNew.Y() );
 
-        addCloseNodes( srcNode, bmTria, srcFaceID, noTriQueue );
+        AddCloseNodes( srcNode, bmTria, srcFaceID, noTriQueue );
       }
 
       if ( nbSrcNodes > 0 )
@@ -3077,10 +3085,8 @@ namespace StdMeshers_ProjectionUtils
         // assure that all src nodes are visited
         for ( ; iBndSrcN < _bndSrcNodes.size() &&  noTriQueue.empty();  ++iBndSrcN )
         {
-          const BRepMesh::ListOfInteger & linkIds = _triaDS->LinksConnectedTo( iBndSrcN );
-          const BRepMesh_PairOfIndex &    triaIds = _triaDS->ElementsConnectedTo( linkIds.First() );
-          const BRepMesh_Triangle&           tria = _triaDS->GetElement( triaIds.Index(1) );
-          addCloseNodes( _bndSrcNodes[ iBndSrcN ], &tria, srcFaceID, noTriQueue );
+          const BRepMesh_Triangle* tria = GetTriangleNear( iBndSrcN );
+          AddCloseNodes( _bndSrcNodes[ iBndSrcN ], tria, srcFaceID, noTriQueue );
         }
         if ( noTriQueue.empty() )
         {
@@ -3099,8 +3105,8 @@ namespace StdMeshers_ProjectionUtils
 
   } // Morph::Perform
 
-gp_XY Morph::GetBndUV(const int iNode) const
-{
+  gp_XY Morph::GetBndUV(const int iNode) const
+  {
     return _triaDS->GetNode( iNode ).Coord();
   }
 

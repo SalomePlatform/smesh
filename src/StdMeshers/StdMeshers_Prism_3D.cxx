@@ -51,6 +51,7 @@
 #include <Geom2d_Line.hxx>
 #include <GeomLib_IsPlanarSurface.hxx>
 #include <Geom_Curve.hxx>
+#include <TColStd_DataMapOfIntegerInteger.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
@@ -1173,7 +1174,7 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
 
   // Projections on the top and bottom faces are taken from nodes existing
   // on these faces; find correspondence between bottom and top nodes
-  myUseBlock = false;
+  myUseBlock = false; // is set to true if projection is done using "block approach"
   myBotToColumnMap.clear();
   if ( !assocOrProjBottom2Top( bottomToTopTrsf, thePrism ) ) // it also fills myBotToColumnMap
     return false;
@@ -1181,38 +1182,60 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
 
   // Create nodes inside the block
 
-  // use transformation (issue 0020680, IPAL0052499)
-  StdMeshers_Sweeper sweeper;
-  double tol;
-  bool allowHighBndError;
-
   if ( !myUseBlock )
   {
+    // use transformation (issue 0020680, IPAL0052499) or a "straight line" approach
+    StdMeshers_Sweeper sweeper;
+
     // load boundary nodes into sweeper
     bool dummy;
+    const SMDS_MeshNode* prevN0 = 0, *prevN1 = 0;
     list< TopoDS_Edge >::const_iterator edge = thePrism.myBottomEdges.begin();
     for ( ; edge != thePrism.myBottomEdges.end(); ++edge )
     {
       int edgeID = meshDS->ShapeToIndex( *edge );
       TParam2ColumnMap* u2col = const_cast<TParam2ColumnMap*>
         ( myBlock.GetParam2ColumnMap( edgeID, dummy ));
-      TParam2ColumnMap::iterator u2colIt = u2col->begin();
-      for ( ; u2colIt != u2col->end(); ++u2colIt )
+
+      TParam2ColumnMap::iterator u2colIt = u2col->begin(), u2colEnd = u2col->end();
+      const SMDS_MeshNode* n0 = u2colIt->second[0];
+      const SMDS_MeshNode* n1 = u2col->rbegin()->second[0];
+      if ( n0 == prevN0 || n0 == prevN1 ) ++u2colIt;
+      if ( n1 == prevN0 || n1 == prevN1 ) --u2colEnd;
+      prevN0 = n0; prevN1 = n1;
+
+      for ( ; u2colIt != u2colEnd; ++u2colIt )
         sweeper.myBndColumns.push_back( & u2colIt->second );
     }
-    // load node columns inside the bottom face
+    // load node columns inside the bottom FACE
     TNode2ColumnMap::iterator bot_column = myBotToColumnMap.begin();
+    sweeper.myIntColumns.reserve( myBotToColumnMap.size() );
     for ( ; bot_column != myBotToColumnMap.end(); ++bot_column )
       sweeper.myIntColumns.push_back( & bot_column->second );
 
-    tol = getSweepTolerance( thePrism );
-    allowHighBndError = !isSimpleBottom( thePrism );
+    myHelper->SetElementsOnShape( true );
+
+    // If all "vertical" EDGEs are straight, then all nodes of an internal node column
+    // are located on a line connecting the top node and the bottom node.
+    bool isStrightColunm = allVerticalEdgesStraight( thePrism );
+    if ( !isStrightColunm )
+    {
+      double tol = getSweepTolerance( thePrism );
+      bool allowHighBndError = !isSimpleBottom( thePrism );
+      myUseBlock = !sweeper.ComputeNodes( *myHelper, tol, allowHighBndError );
+    }
+    else if ( sweeper.CheckSameZ() )
+    {
+      myUseBlock = !sweeper.ComputeNodesOnStraightSameZ( *myHelper );
+    }
+    else
+    {
+      myUseBlock = !sweeper.ComputeNodesOnStraight( *myHelper, thePrism.myBottom, thePrism.myTop );
+    }
+    myHelper->SetElementsOnShape( false );
   }
 
-  if ( !myUseBlock && sweeper.ComputeNodes( *myHelper, tol, allowHighBndError ))
-  {
-  }
-  else // use block approach
+  if ( myUseBlock ) // use block approach
   {
     // loop on nodes inside the bottom face
     Prism_3D::TNode prevBNode;
@@ -2400,7 +2423,7 @@ double StdMeshers_Prism_3D::getSweepTolerance( const Prism_3D::TPrismTopo& thePr
 
 bool StdMeshers_Prism_3D::isSimpleBottom( const Prism_3D::TPrismTopo& thePrism )
 {
-  if ( thePrism.myBottomEdges.size() != 4 )
+  if ( thePrism.myNbEdgesInWires.front() != 4 )
     return false;
 
   // analyse angles between edges
@@ -2428,6 +2451,43 @@ bool StdMeshers_Prism_3D::isSimpleBottom( const Prism_3D::TPrismTopo& thePrism )
     if ( angle > 85 * M_PI/180 )
       if ( ++nbConvexAng > 4 )
         return false;
+  }
+  return true;
+}
+
+//=======================================================================
+//function : allVerticalEdgesStraight
+//purpose  : Defines if all "vertical" EDGEs are straight
+//=======================================================================
+
+bool StdMeshers_Prism_3D::allVerticalEdgesStraight( const Prism_3D::TPrismTopo& thePrism )
+{
+  for ( size_t i = 0; i < thePrism.myWallQuads.size(); ++i )
+  {
+    const Prism_3D::TQuadList& quads = thePrism.myWallQuads[i];
+    Prism_3D::TQuadList::const_iterator quadIt = quads.begin();
+    TopoDS_Edge prevQuadEdge;
+    for ( ; quadIt != quads.end(); ++quadIt )
+    {
+      StdMeshers_FaceSidePtr rightSide = (*quadIt)->side[ QUAD_RIGHT_SIDE ];
+
+      if ( !prevQuadEdge.IsNull() &&
+           !SMESH_Algo::IsContinuous( rightSide->Edge( 0 ), prevQuadEdge ))
+        return false;
+
+      for ( int iE = 0; iE < rightSide->NbEdges(); ++iE )
+      {
+        const TopoDS_Edge & rightE = rightSide->Edge( iE );
+        if ( !SMESH_Algo::IsStraight( rightE, /*degenResult=*/true ))
+          return false;
+
+        if ( iE > 0 &&
+             !SMESH_Algo::IsContinuous( rightSide->Edge( iE-1 ), rightE ))
+          return false;
+
+        prevQuadEdge = rightE;
+      }
+    }
   }
   return true;
 }
@@ -4732,7 +4792,7 @@ void StdMeshers_Sweeper::applyBoundaryError(const vector< gp_XYZ >& bndPoints,
 
 //================================================================================
 /*!
- * \brief Creates internal nodes of the prism
+ * \brief Create internal nodes of the prism
  */
 //================================================================================
 
@@ -5011,4 +5071,258 @@ bool StdMeshers_Sweeper::ComputeNodes( SMESH_MesherHelper& helper,
   }
 
   return true;
+}
+
+//================================================================================
+/*!
+ * \brief Check if all nodes of each layers have same logical Z
+ */
+//================================================================================
+
+bool StdMeshers_Sweeper::CheckSameZ()
+{
+  myZColumns.resize( myBndColumns.size() );
+  fillZColumn( myZColumns[0], *myBndColumns[0] );
+
+  bool sameZ = true;
+  const double tol = 0.1 * 1./ myBndColumns[0]->size();
+
+  // check columns based on VERTEXes
+
+  vector< int > vertexIndex;
+  vertexIndex.push_back( 0 );
+  for ( size_t iC = 1; iC < myBndColumns.size() &&  sameZ; ++iC )
+  {
+    if ( myBndColumns[iC]->front()->GetPosition()->GetDim() > 0 )
+      continue; // not on VERTEX
+
+    vertexIndex.push_back( iC );
+    fillZColumn( myZColumns[iC], *myBndColumns[iC] );
+
+    for ( size_t iZ = 0; iZ < myZColumns[0].size() &&  sameZ; ++iZ )
+      sameZ = ( Abs( myZColumns[0][iZ] - myZColumns[iC][iZ]) < tol );
+  }
+
+  // check columns based on EDGEs, one per EDGE
+
+  for ( size_t i = 1; i < vertexIndex.size() &&  sameZ; ++i )
+  {
+    if ( vertexIndex[i] - vertexIndex[i-1] < 2 )
+      continue;
+
+    int iC = ( vertexIndex[i] + vertexIndex[i-1] ) / 2;
+    fillZColumn( myZColumns[iC], *myBndColumns[iC] );
+
+    for ( size_t iZ = 0; iZ < myZColumns[0].size() &&  sameZ; ++iZ )
+      sameZ = ( Abs( myZColumns[0][iZ] - myZColumns[iC][iZ]) < tol );
+  }
+
+  if ( sameZ )
+  {
+    myZColumns.resize(1);
+  }
+  else
+  {
+    for ( size_t iC = 1; iC < myBndColumns.size(); ++iC )
+      fillZColumn( myZColumns[iC], *myBndColumns[iC] );
+  }
+
+  return sameZ;
+}
+
+//================================================================================
+/*!
+ * \brief Create internal nodes of the prism all located on straight lines with
+ *        the same distribution along the lines.
+ */
+//================================================================================
+
+bool StdMeshers_Sweeper::ComputeNodesOnStraightSameZ( SMESH_MesherHelper& helper )
+{
+  TZColumn& z = myZColumns[0];
+
+  for ( size_t i = 0; i < myIntColumns.size(); ++i )
+  {
+    TNodeColumn& nodes = *myIntColumns[i];
+    SMESH_NodeXYZ n0( nodes[0] ), n1( nodes.back() );
+
+    for ( size_t iZ = 0; iZ < z.size(); ++iZ )
+    {
+      gp_XYZ p = n0 * ( 1 - z[iZ] ) + n1 * z[iZ];
+      nodes[ iZ+1 ] = helper.AddNode( p.X(), p.Y(), p.Z() );
+    }
+  }
+
+  return true;
+}
+
+//================================================================================
+/*!
+ * \brief Create internal nodes of the prism all located on straight lines with
+ *        different distributions along the lines.
+ */
+//================================================================================
+
+bool StdMeshers_Sweeper::ComputeNodesOnStraight( SMESH_MesherHelper& helper,
+                                                 const TopoDS_Face&  botFace,
+                                                 const TopoDS_Face&  topFace )
+{
+  // get data to create a Morph
+  UVPtStructVec botUV( myBndColumns.size() + 1 );
+  UVPtStructVec topUV( myBndColumns.size() + 1 );
+  for ( size_t i = 0; i < myBndColumns.size(); ++i )
+  {
+    TNodeColumn& nodes = *myBndColumns[i];
+    botUV[i].node = nodes[0];
+    botUV[i].SetUV( helper.GetNodeUV( botFace, nodes[0] ));
+    topUV[i].node = nodes.back();
+    topUV[i].SetUV( helper.GetNodeUV( topFace, nodes.back() ));
+    botUV[i].node->setIsMarked( true );
+  }
+  botUV.back() = botUV[0];
+  topUV.back() = topUV[0];
+
+  TopoDS_Edge dummyE;
+  TSideVector botWires( 1, StdMeshers_FaceSide::New( botUV, botFace, dummyE, helper.GetMesh() ));
+  TSideVector topWires( 1, StdMeshers_FaceSide::New( topUV, topFace, dummyE, helper.GetMesh() ));
+
+  // use Morph to make delauney mesh on the FACEs. Locating of a node within a
+  // delauney triangle will be used to get a weighted Z.
+  NSProjUtils::Morph botDelauney( botWires );
+  NSProjUtils::Morph topDelauney( topWires );
+
+  if ( helper.GetIsQuadratic() )
+  {
+    // mark all medium nodes of faces on botFace to avoid their treating
+    SMESHDS_SubMesh* smDS = helper.GetMeshDS()->MeshElements( botFace );
+    SMDS_ElemIteratorPtr eIt = smDS->GetElements();
+    while ( eIt->more() )
+    {
+      const SMDS_MeshElement* e = eIt->next();
+      for ( int i = e->NbCornerNodes(), nb = e->NbNodes(); i < nb; ++i )
+        e->GetNode( i )->setIsMarked( true );
+    }
+  }
+
+  // map to get a node column by a bottom node
+  TColStd_DataMapOfIntegerInteger iNode2iCol( myIntColumns.size() );
+
+  // un-mark nodes to treat (internal bottom nodes); later we will mark treated nodes
+  for ( size_t i = 0; i < myIntColumns.size(); ++i )
+  {
+    const SMDS_MeshNode* botNode = myIntColumns[i]->front();
+    botNode->setIsMarked( false );
+    iNode2iCol.Bind( botNode->GetID(), i );
+  }
+
+  const int botFaceID = helper.GetMesh()->GetSubMesh( botFace )->GetId();
+  const SMDS_MeshNode     *botNode, *topNode;
+  const BRepMesh_Triangle *botTria, *topTria;
+  double botBC[3], topBC[3]; // barycentric coordinates
+  int    botTriaNodes[3], topTriaNodes[3];
+  bool   checkUV = true;
+
+  // a queue of bottom nodes with starting delauney triangles
+  NSProjUtils::Morph::TNodeTriaList botNoTriQueue;
+
+  size_t iBndN = 1; // index of a bottom boundary node
+  int nbNodesToProcess = myIntColumns.size();
+  while ( nbNodesToProcess > 0 )
+  {
+    while ( !botNoTriQueue.empty() ) // treat all nodes in the queue
+    {
+      botNode = botNoTriQueue.front().first;
+      botTria = botNoTriQueue.front().second;
+      botNoTriQueue.pop_front();
+      if ( botNode->isMarked() )
+        continue;
+      --nbNodesToProcess;
+      botNode->setIsMarked( true );
+
+      TNodeColumn* column = myIntColumns[ iNode2iCol( botNode->GetID() )];
+
+      // find a delauney triangle containing the botNode
+      gp_XY botUV = helper.GetNodeUV( botFace, botNode, NULL, &checkUV );
+      botUV  *= botDelauney.GetScale();
+      botTria = botDelauney.FindTriangle( botUV, botTria, botBC, botTriaNodes );
+      if ( !botTria )
+        return false;
+
+      // find a delauney triangle containing the topNode
+      topNode = column->back();
+      gp_XY topUV = helper.GetNodeUV( topFace, topNode, NULL, &checkUV );
+      topUV *= topDelauney.GetScale();
+      // get a starting triangle basing on that top and bot boundary nodes have same index
+      topTria = topDelauney.GetTriangleNear( botTriaNodes[0] );
+      topTria = topDelauney.FindTriangle( topUV, topTria, topBC, topTriaNodes );
+      if ( !topTria )
+        return false;
+
+      // create nodes along a line
+      SMESH_NodeXYZ botP( botNode ), topP( topNode);
+      for ( size_t iZ = 0; iZ < myZColumns[0].size(); ++iZ )
+      {
+        // use barycentric coordinates as weight of Z of boundary columns
+        double botZ = 0, topZ = 0;
+        for ( int i = 0; i < 3; ++i )
+        {
+          botZ += botBC[i] * myZColumns[ botTriaNodes[i]-1 ][ iZ ];
+          topZ += topBC[i] * myZColumns[ topTriaNodes[i]-1 ][ iZ ];
+        }
+        double rZ = double( iZ + 1 ) / ( myZColumns[0].size() + 1 );
+        double z = botZ * ( 1 - rZ ) + topZ * rZ;
+        gp_XYZ p = botP * ( 1 - z  ) + topP * z;
+        (*column)[ iZ+1 ] = helper.AddNode( p.X(), p.Y(), p.Z() );
+      }
+
+      // add neighbor nodes to the queue
+      botDelauney.AddCloseNodes( botNode, botTria, botFaceID, botNoTriQueue );
+    }
+
+    if ( nbNodesToProcess > 0 ) // fill the queue
+    {
+      // assure that all bot nodes are visited
+      for ( ; iBndN-1 < myBndColumns.size() &&  botNoTriQueue.empty();  ++iBndN )
+      {
+        botTria = botDelauney.GetTriangleNear( iBndN );
+        const SMDS_MeshNode*  bndNode = botDelauney.GetBndNodes()[ iBndN ];
+        botDelauney.AddCloseNodes( bndNode, botTria, botFaceID, botNoTriQueue );
+      }
+      if ( botNoTriQueue.empty() )
+      {
+        for ( size_t i = 0; i < myIntColumns.size(); ++i )
+        {
+          botNode = myIntColumns[i]->front();
+          if ( !botNode->isMarked() )
+            botNoTriQueue.push_back( make_pair( botNode, botTria ));
+        }
+      }
+    }
+  }
+
+  return true;
+}
+
+//================================================================================
+/*!
+ * \brief Compute Z of nodes of a straight column
+ */
+//================================================================================
+
+void StdMeshers_Sweeper::fillZColumn( TZColumn&    zColumn,
+                                      TNodeColumn& nodes )
+{
+  if ( zColumn.size() == nodes.size() - 2 )
+    return;
+
+  gp_Pnt p0 = SMESH_NodeXYZ( nodes[0] );
+  gp_Vec line( p0, SMESH_NodeXYZ( nodes.back() ));
+  double len2 = line.SquareMagnitude();
+
+  zColumn.resize( nodes.size() - 2 );
+  for ( size_t i = 0; i < zColumn.size(); ++i )
+  {
+    gp_Vec vec( p0, SMESH_NodeXYZ( nodes[ i+1] ));
+    zColumn[i] = ( line * vec ) / len2; // param [0,1] on the line
+  }
 }

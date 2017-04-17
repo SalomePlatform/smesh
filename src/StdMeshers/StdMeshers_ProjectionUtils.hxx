@@ -159,11 +159,34 @@ namespace StdMeshers_ProjectionUtils
                  const TNodeNodeMap&           src2tgtNodes,
                  const bool                    moveAll);
 
-    // return source boundary nodes. 0-th node is zero
+    // find a triangle containing an UV starting from a given triangle;
+    // return barycentric coordinates of the UV in the found triangle
+    const BRepMesh_Triangle* FindTriangle( const gp_XY&             uv,
+                                           const BRepMesh_Triangle* bmTria,
+                                           double                   bc[3],
+                                           int                      triaNodes[3]);
+
+    // return any delauney triangle neighboring a given boundary node
+    const BRepMesh_Triangle* GetTriangleNear( int iBndNode );
+
+    // return source boundary nodes. 0-th node is NULL so that indices of
+    // boundary nodes correspond to indices used by Delauney mesh
     const std::vector< const SMDS_MeshNode* >& GetBndNodes() const { return _bndSrcNodes; }
 
     // return UV of the i-th source boundary node
     gp_XY GetBndUV(const int iNode) const;
+
+    // return scale factor to convert real UV to/from UV used for Delauney meshing:
+    // delauney_UV = real_UV * scale
+    const gp_XY& GetScale() const { return _scale; }
+
+    typedef std::list< std::pair< const SMDS_MeshNode*, const BRepMesh_Triangle* > > TNodeTriaList;
+
+    // add non-marked nodes surrounding a given one to a list
+    static void AddCloseNodes( const SMDS_MeshNode*     node,
+                               const BRepMesh_Triangle* bmTria,
+                               const int                faceID,
+                               TNodeTriaList &          noTriQueue );
   };
 
   /*!

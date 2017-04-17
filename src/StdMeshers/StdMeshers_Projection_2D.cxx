@@ -1133,7 +1133,7 @@ namespace {
   {
     SMESH_subMesh* faceSM = helper.GetMesh()->GetSubMesh( helper.GetSubShape() );
 
-    if ( helper.IsDistorted2D( faceSM, /*checkUV=*/true ))
+    //if ( helper.IsDistorted2D( faceSM, /*checkUV=*/true ))
     {
       SMESH_MeshEditor editor( helper.GetMesh() );
       SMESHDS_SubMesh* smDS = faceSM->GetSubMeshDS();

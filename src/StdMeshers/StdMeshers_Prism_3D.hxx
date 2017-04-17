@@ -29,15 +29,12 @@
 
 #include "SMESH_StdMeshers.hxx"
 
-#include "SMDS_MeshNode.hxx"
-#include "SMDS_TypeOfPosition.hxx"
 #include "SMESHDS_Mesh.hxx"
-#include "SMESH_Algo.hxx"
 #include "SMESH_Block.hxx"
-#include "SMESH_Comment.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_TypeDefs.hxx"
+#include "SMESH_Comment.hxx"
 #include "SMESH_subMesh.hxx"
 
 #include <Adaptor2d_Curve2d.hxx>
@@ -421,9 +418,20 @@ struct StdMeshers_Sweeper
   std::vector< TNodeColumn* > myBndColumns; // boundary nodes
   std::vector< TNodeColumn* > myIntColumns; // internal nodes
 
+  typedef std::vector< double > TZColumn;
+  std::vector< TZColumn > myZColumns; // Z distribution of boundary nodes
+
   bool ComputeNodes( SMESH_MesherHelper& helper,
                      const double        tol,
                      const bool          allowHighBndError );
+
+  bool CheckSameZ();
+
+  bool ComputeNodesOnStraightSameZ( SMESH_MesherHelper& helper );
+
+  bool ComputeNodesOnStraight( SMESH_MesherHelper& helper,
+                               const TopoDS_Face&  bottom,
+                               const TopoDS_Face&  top);
 
 private:
 
@@ -446,6 +454,9 @@ private:
                                  const double                 r,
                                  std::vector< gp_XYZ >&       toIntPoints,
                                  std::vector< double >&       int2BndDist);
+
+  static void fillZColumn( TZColumn&    zColumn,
+                           TNodeColumn& nodes );
 };
 
 // ===============================================
@@ -544,6 +555,11 @@ public:
    * \brief Defines if it's safe to use the block approach
    */
   bool isSimpleBottom( const Prism_3D::TPrismTopo& thePrism );
+
+  /*!
+   * \brief Defines if all "vertical" EDGEs are straight
+   */
+  bool allVerticalEdgesStraight( const Prism_3D::TPrismTopo& thePrism );
 
   /*!
    * \brief Project mesh faces from a source FACE of one prism to
