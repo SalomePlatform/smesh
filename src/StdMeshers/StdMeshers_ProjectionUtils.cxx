@@ -1100,6 +1100,11 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
         // take care of proper association of propagated edges
         bool same1 = edge1.IsSame( edges1.front() );
         bool same2 = edge2.IsSame( edges2.front() );
+        if ( !same1 && !same2 )
+        {
+          same1 = ( edges1.back().Orientation() == edge1.Orientation() );
+          same2 = ( edges2.back().Orientation() == edge2.Orientation() );
+        }
         if ( same1 != same2 )
         {
           reverseEdges(edges2, nbE);

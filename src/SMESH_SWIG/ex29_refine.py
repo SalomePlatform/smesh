@@ -36,8 +36,11 @@ import os
 # Values
 # ------
 
+tmpDir = os.getenv('SALOME_TMP_DIR', '/tmp')
+print "Output directory:", tmpDir
+
 # Path for ".med" files
-path = "/tmp/ex29_%s_" % os.getenv('USER','unknown')
+path = os.path.join( tmpDir, "ex29_%s_" % os.getenv('USER','unknown'))
 
 # Name of the shape and the mesh
 name = "Carre"

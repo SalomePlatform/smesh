@@ -77,22 +77,24 @@
 
 namespace {
 
-const int SPACING      = 6;
-const int MARGIN       = 9;
-const int MAXITEMS     = 10;
-const int GROUPS_ID    = 100;
-const int SUBMESHES_ID = 200;
-const int SPACING_INFO = 2;
+  const int SPACING      = 6;
+  const int MARGIN       = 9;
+  const int MAXITEMS     = 10;
+  const int GROUPS_ID    = 100;
+  const int SUBMESHES_ID = 200;
+  const int SPACING_INFO = 2;
 
-enum InfoRole {
-  TypeRole = Qt::UserRole + 10,
-  IdRole,
-};
+  const char* id_preview_resource = "id_preview_resource";
 
-enum InfoType {
-  NodeConnectivity = 100,
-  ElemConnectivity,
-};
+  enum InfoRole {
+    TypeRole = Qt::UserRole + 10,
+    IdRole,
+  };
+
+  enum InfoType {
+    NodeConnectivity = 100,
+    ElemConnectivity,
+  };
 } // namesapce
 
 /*!
@@ -2942,6 +2944,8 @@ SMESHGUI_MeshInfoDlg::SMESHGUI_MeshInfoDlg( QWidget* parent, int page )
   connect( myElemInfo,  SIGNAL( itemInfo( int )),     this, SLOT( showItemInfo( int )));
   connect( myElemInfo,  SIGNAL( itemInfo( QString )), this, SLOT( showItemInfo( QString )));
 
+  myIDPreviewCheck->setChecked( SMESHGUI::resourceMgr()->booleanValue( "SMESH", id_preview_resource, false ));
+
   updateSelection();
 }
 
@@ -3189,6 +3193,7 @@ void SMESHGUI_MeshInfoDlg::idChanged()
 void SMESHGUI_MeshInfoDlg::idPreviewChange( bool isOn )
 {
   myIDPreview->SetPointsLabeled( isOn && !myID->text().simplified().isEmpty() );
+  SMESHGUI::resourceMgr()->setValue("SMESH", id_preview_resource, isOn );
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow() )
     aViewWindow->Repaint();
 }

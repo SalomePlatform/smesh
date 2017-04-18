@@ -1380,11 +1380,12 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
       TopoDS_Edge srcE1 = srcEdges.front(), tgtE1 = tgtEdges.front();
       TopoDS_Shape srcE1bis = shape2ShapeMap( tgtE1 );
       reverse = ( ! srcE1.IsSame( srcE1bis ));
-      if ( reverse &&
-           //_sourceHypo->HasVertexAssociation() &&
+      if ( ( reverse || srcE1.Orientation() != srcE1bis.Orientation() ) &&
            nbEdgesInWires.front() > 2 &&
            helper.IsRealSeam( tgtEdges.front() ))
       {
+        if ( srcE1.Orientation() != srcE1bis.Orientation() )
+          reverse = true;
         // projection to a face with seam EDGE; pb is that GetOrderedEdges()
         // always puts a seam EDGE first (if possible) and as a result
         // we can't use only theReverse flag to correctly associate source
