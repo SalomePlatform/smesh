@@ -38,6 +38,14 @@ from salome.smesh.spadder.gui.inputdata import InputData
 DEBUG_MODE=True
 GROUPNAME_MAXLENGTH=8
 
+INPUTDATA_KEY_FILES="meshfiles"
+INPUTDATA_KEY_PARAM="parameters"
+
+PARAM_KEY_NBITER   = "NbIteration"
+PARAM_KEY_RMAXRMIN = "RmaxRmin"
+PARAM_NBITER_DEFAULT_VALUE = 10
+PARAM_RMAXRMIN_DEFAULT_VALUE = 3
+
 class InputDialog(GenericDialog):
 
     TBL_HEADER_LABEL=["Input Mesh", "Output group name"]
@@ -116,7 +124,8 @@ class InputDialog(GenericDialog):
         # name item.
 
         # Setup default values for numerical parameters
-        self.__ui.txtParamNbIter.setValue(3)
+        self.__ui.txtParamNbIter.setValue(PARAM_NBITER_DEFAULT_VALUE)
+        self.__ui.txtParamRmaxRmin.setValue(PARAM_RMAXRMIN_DEFAULT_VALUE)
 
         # Note that PADDER does not support group name longer than 8
         # characters. We apply then this limit in the gui field.
@@ -138,7 +147,7 @@ class InputDialog(GenericDialog):
             self.__ui.txtSmeshObject.setEnabled(False)
             self.__ui.btnAddInput.setEnabled(False)
         self.__selectedMesh = None
-        self.__dictInputData = {}
+        self.__dictInputFiles = {}
         self.__nbConcreteMesh = 0
         self.__nbSteelbarMesh = 0
 
@@ -231,7 +240,7 @@ class InputDialog(GenericDialog):
         """
         # if the entry already exists, we remove it to replace by a
         # new one
-        if meshName in self.__dictInputData:
+        if meshName in self.__dictInputFiles:
             self.__delInputFromMap(meshName)
 
         inputData = InputData()
@@ -240,7 +249,7 @@ class InputDialog(GenericDialog):
         inputData.meshType   = meshType
         inputData.groupName  = groupName
         # The key of the map is the mesh name
-        self.__dictInputData[meshName] = inputData
+        self.__dictInputFiles[meshName] = inputData
         if inputData.meshType == InputData.MESHTYPES.CONCRETE:
             self.__nbConcreteMesh += 1
         else:
@@ -272,7 +281,7 @@ class InputDialog(GenericDialog):
         This function removes the specified entry from the internal
         map (for data management purpose)
         """
-        inputData = self.__dictInputData.pop(meshName)
+        inputData = self.__dictInputFiles.pop(meshName)
         if inputData.meshType == InputData.MESHTYPES.CONCRETE:
             self.__nbConcreteMesh -= 1
         else:
@@ -283,33 +292,51 @@ class InputDialog(GenericDialog):
         print("nb steelbar mesh ",self.__nbSteelbarMesh)
 
 
-    def setData(self, listInputData=[]):
+    def setData(self, dictInputData={}):
         """
         This function fills the dialog widgets with values provided by
         the specified data list.
         """
         self.clear()
-        for inputData in listInputData:
+        if INPUTDATA_KEY_FILES in dictInputData:
+            listInputData = dictInputData["meshfiles"]
+            for inputData in listInputData:
 
-            meshName   = inputData.meshName
-            meshObject = inputData.meshObject
-            meshType   = inputData.meshType
-            groupName  = inputData.groupName
+                meshName = inputData.meshName
+                meshObject = inputData.meshObject
+                meshType = inputData.meshType
+                groupName = inputData.groupName
 
-            self.__addInputInGui(meshName, meshObject, meshType, groupName)
-            self.__addInputInMap(meshName, meshObject, meshType, groupName)
+                self.__addInputInGui(meshName, meshObject, meshType, groupName)
+                self.__addInputInMap(meshName, meshObject, meshType, groupName)
 
-            if not DEBUG_MODE:
-                self.onSelectSmeshObject()
+                if not DEBUG_MODE:
+                    self.onSelectSmeshObject()
+
+        if INPUTDATA_KEY_PARAM in dictInputData:
+            dictInputParameters = dictInputData[INPUTDATA_KEY_PARAM]
+            if PARAM_KEY_NBITER in dictInputParameters:
+                self.__ui.txtParamNbIter.setValue(dictInputParameters[PARAM_KEY_NBITER])
+            if PARAM_KEY_RMAXRMIN in dictInputParameters:
+                self.__ui.txtParamRminRmax.setValue(dictInputParameters[PARAM_KEY_RMAXRMIN])
 
     def getData(self):
         """
         This function returns a list of InputData that corresponds to
         the data in the dialog widgets of the current dialog.
         """
+        # Get the list of mesh files
         # Note that the values() function returns a copy of the list
         # of values.
-        return list(self.__dictInputData.values())
+        dictInputData={}
+        dictInputData[INPUTDATA_KEY_FILES] = self.__dictInputFiles.values()
+
+        # Get the list of additionnal parameters
+        dictInputParameters = {}
+        dictInputParameters[PARAM_KEY_NBITER] = self.__ui.txtParamNbIter.value()
+        dictInputParameters[PARAM_KEY_RMAXRMIN] = self.__ui.txtParamRmaxRmin.value()
+        dictInputData[INPUTDATA_KEY_PARAM] = dictInputParameters
+        return dictInputData
 
     def checkData(self):
         """
@@ -328,7 +355,6 @@ class InputDialog(GenericDialog):
 
         return True
 
-    #def setParameters(self,
 
 # ==============================================================================
 # Basic use case

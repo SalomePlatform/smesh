@@ -18,13 +18,13 @@ import string
 
 #tmpdir = "/local00/home/B27118/projets/Zcracks/Zcracks/casTests/tmpdir"
 #if not os.path.isdir(tmpdir): os.mkdir(tmpdir)
-tmpdir=tempfile.mktemp(prefix='tmpZcracks')
+tmpdir=tempfile.mkdtemp(prefix='tmpZcracks')
 print("tmpdir=", tmpdir)
 
-meshgemsdir=os.environ('MESHGEMSHOME')
-if len(meshgemsdir) > 0:
-  meshgems=string.split(meshgemsdir,os.sep)[-1]
-  uF.removeFromSessionPath('LD_LIBRARY_PATH', meshgems)
+#meshgemsdir=os.environ('MESHGEMSHOME')
+#if len(meshgemsdir) > 0:
+  #meshgems=string.split(meshgemsdir,os.sep)[-1]
+  #uF.removeFromSessionPath('LD_LIBRARY_PATH', meshgems)
 
 def LAUNCH(listCas=[]):
   if not isinstance(listCas, list): listCas=[listCas]
@@ -194,7 +194,7 @@ def LAUNCH(listCas=[]):
 
   OK=[]
   NOOK=[]
-  for s in list(synthese.keys()):
+  for s in synthese:
     if synthese[s]:
       OK.append(s)
     else:

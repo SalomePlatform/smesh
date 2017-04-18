@@ -83,7 +83,7 @@ PADDERTESTDIR = getPadderTestDir(defaultConfig)
 # padder.cfg).
 #
 def test00_parameters():
-    """Test using a concrete mesh and a single steelbar mesh""" 
+    """Test using a concrete mesh and a single steelbar mesh"""
     file_concrete=os.path.join(spadder.getTestDataDir(),"concrete.med")
     file_steelbar=os.path.join(spadder.getTestDataDir(),"ferraill.med")
 
@@ -109,7 +109,7 @@ def test01_parameters():
                                      file_type=MESHJOB.MED_CONCRETE,
                                      group_name="concrete")
     meshJobFileList.append(param)
-    
+
     medfile = os.path.join(datadir,"ferraill.med")
     param = MESHJOB.MeshJobFile(file_name=medfile,
                                      file_type=MESHJOB.MED_STEELBAR,
@@ -121,7 +121,7 @@ def test01_parameters():
                                      file_type=MESHJOB.MED_STEELBAR,
                                      group_name="ferrtran")
     meshJobFileList.append(param)
-    
+
     return meshJobFileList
 
 def test02_parameters():
@@ -161,7 +161,7 @@ def test03_parameters():
 meshJobFileList = test03_parameters()
 
 meshJobParameterList = []
-param = MESHJOB.MeshJobParameter(name="RminRmax",value="1.5")
+param = MESHJOB.MeshJobParameter(name="RmaxRmin",value="1.5")
 meshJobParameterList.append(param)
 param = MESHJOB.MeshJobParameter(name="NbIteration",value="3")
 meshJobParameterList.append(param)
@@ -174,7 +174,7 @@ if jobid<0:
     msg = component.getLastErrorMessage()
     print("ERR: %s"%msg)
     sys.exit(1)
-    
+
 created = False
 nbiter  = 0
 while not created:
@@ -217,11 +217,11 @@ while not ended:
         ended=True
     time.sleep(0.5)
     nbiter+=1
-        
+
 if state not in end_states:
     print("ERR: jobid = "+str(jobid)+" ended abnormally with state="+str(state))
     msg = component.getLastErrorMessage()
-    print("ERR: %s"%msg)    
+    print("ERR: %s"%msg)
 else:
     print("OK:  jobid = "+str(jobid)+" ended with state="+str(state))
     meshJobResults = component.finalize(jobid)

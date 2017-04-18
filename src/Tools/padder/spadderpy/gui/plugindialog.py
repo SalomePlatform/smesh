@@ -23,7 +23,8 @@
 from qtsalome import QDialog, QIcon, Qt
 
 from salome.smesh.spadder.gui.plugindialog_ui import Ui_PluginDialog
-from salome.smesh.spadder.gui.inputdialog import InputDialog
+from salome.smesh.spadder.gui.inputdialog import InputDialog, INPUTDATA_KEY_FILES, INPUTDATA_KEY_PARAM
+from salome.smesh.spadder.gui.inputdialog import PARAM_KEY_NBITER, PARAM_KEY_RMAXRMIN
 from salome.smesh.spadder.gui.inputdata import InputData
 # __GBO__: uncomment this line and comment the previous one to use the
 # demo input dialog instead of the real one.
@@ -218,6 +219,7 @@ class PluginDialog(QDialog):
         This function clears the log area and the states of the buttons
         """
         self.__listInputData = []
+        self.__dictInputParameters = {}
         self.__ui.txtLog.clear()
         self.__setGuiState(["CAN_SELECT"])
         self.__isRunning = False
@@ -241,7 +243,10 @@ class PluginDialog(QDialog):
         windows to process the validation event (see the slot
         onProcessInput which is connected to this event).
         '''
-        self.__inputDialog.setData(self.__listInputData)
+        dictInputData = {}
+        dictInputData[INPUTDATA_KEY_FILES] = self.__listInputData
+        dictInputData[INPUTDATA_KEY_PARAM] = self.__dictInputParameters
+        self.__inputDialog.setData(dictInputData)
         self.__inputDialog.open()
 
     def onProcessInput(self):
@@ -252,7 +257,10 @@ class PluginDialog(QDialog):
         """
         # The processing simply consists in requesting the input data
         # from the dialog window.
-        self.__listInputData = self.__inputDialog.getData()
+        dictInputData = self.__inputDialog.getData()
+        self.__listInputData = dictInputData[INPUTDATA_KEY_FILES]
+        self.__dictInputParameters = dictInputData[INPUTDATA_KEY_PARAM]
+
         self.__ui.lblStatusBar.setText("Input data OK")
         self.__log("INF: Press \"Compute\" to start the job")
         self.__setGuiState(["CAN_SELECT", "CAN_COMPUTE"])
@@ -283,8 +291,16 @@ class PluginDialog(QDialog):
                 group_name = inputData.groupName)
             meshJobFileList.append(parameter)
 
+        # And to create a list of the additional parameters.
+        # WARN: the CORBA interface requires string values.
+        meshJobParameterList=[]
+        for inputParameterKey in self.__dictInputParameters:
+            value = self.__dictInputParameters[inputParameterKey]
+            parameter = MESHJOB.MeshJobParameter(name=inputParameterKey,value=str(value))
+            meshJobParameterList.append(parameter)
+
         jobManager = self.__getJobManager()
-        self.__jobid = jobManager.initialize(meshJobFileList, self.__configId)
+        self.__jobid = jobManager.initialize(meshJobFileList, meshJobParameterList, self.__configId)
         if self.__jobid < 0:
             self.__log("ERR: the job can't be initialized")
             self.__log("ERR: %s"%jobManager.getLastErrorMessage())

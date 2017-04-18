@@ -22,13 +22,23 @@
 #ifndef _SPADDER_PLUGINTESTER_HXX_
 #define _SPADDER_PLUGINTESTER_HXX_
 
+#ifdef WIN32
+ #if defined SPADDERPLUGINTESTERENGINE_EXPORTS || defined SPADDERPluginTesterEngine_EXPORTS
+  #define SPADDERPLUGINTESTERENGINE_EXPORT __declspec( dllexport )
+ #else
+  #define SPADDERPLUGINTESTERENGINE_EXPORT __declspec( dllimport )
+ #endif
+#else
+ #define SPADDERPLUGINTESTERENGINE_EXPORT
+#endif
+
 // include the stubs generating from SPADDERPluginTest.idl
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SPADDERPluginTest)
 #include <SALOME_Component.hh>
 #include "SALOME_Component_i.hxx"
 
-class SPADDERPluginTester_i:
+class SPADDERPLUGINTESTERENGINE_EXPORT SPADDERPluginTester_i:
   public virtual POA_SPADDERPluginTest::SPADDERPluginTester,
   public Engines_Component_i
 {

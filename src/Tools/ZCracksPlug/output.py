@@ -22,9 +22,9 @@ class output():
       pass
     f = open(self.tmpFile,'w')
     f.write('\n      ------------------------------\n')
-    f.write('     |   BIENVENU DANS L\'INTERFACE  |\n')
+    f.write('     |  BIENVENUE DANS L\'INTERFACE  |\n')
     f.write('     |      ZCRACKS DE SALOME       |\n')
-    f.write('     |        VERSION ALPHA         |\n')
+    f.write('     |        VERSION BETA          |\n')
     f.write('       ------------------------------\n\n')
     f.close()
 

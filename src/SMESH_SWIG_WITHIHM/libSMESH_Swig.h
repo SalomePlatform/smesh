@@ -58,6 +58,37 @@ enum
     Ball       = BallSelection
   };
 
+typedef struct
+{
+  double r, g, b;
+  int delta;
+} surfaceColorStruct;
+
+typedef struct
+{
+  double r, g, b;
+  int delta;
+} volumeColorStruct;
+
+typedef struct
+{
+  double r, g, b;
+} edgeColorStruct;
+
+typedef struct
+{
+  double r, g, b;
+} nodeColorStruct;
+
+struct actorAspect
+{
+  surfaceColorStruct surfaceColor;
+  volumeColorStruct volumeColor;
+  edgeColorStruct edgeColor;
+  nodeColorStruct nodeColor;
+  double opacity;
+};
+
 class SMESH_SWIG_EXPORT SMESH_Swig
 {
 public:
@@ -93,6 +124,9 @@ public:
     * \param isComputed - is mesh computed or not
    */
   void                       SetMeshIcon( const char*, const bool, const bool );
+
+  actorAspect                GetActorAspect(const char* Mesh_Entry, int viewId = 0 );
+  void                       SetActorAspect( const actorAspect& actorPres, const char* Mesh_Entry, int viewId = 0  );
 
   // --------------------- for the test purposes -----------------------
   int  getSelectionMode();

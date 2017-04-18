@@ -1,13 +1,9 @@
 import sys, pickle, tempfile, shutil
 from os import path, getpid, environ, remove, system
 
-try:
-  from PyQt5.QtCore import *
-  from PyQt5.QtGui import *
-  from PyQt5.QtWidgets import *
-except:
-  from PyQt4.QtCore import *
-  from PyQt4.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
 from . import utilityFunctions as uF
 from . import genereCrack, Zset, output, zcracks_ui
@@ -20,8 +16,6 @@ from .zcracks_ui import Ui_Zui
 #    FONCTIONS ANNEXES
 #  ---------------------
 
-
-uF.removeFromSessionPath('LD_LIBRARY_PATH', 'Meshgems-2111')
 
 def stringToFloat(string, typ=float):
   if str(string).replace(' ','')=='':
@@ -78,25 +72,6 @@ class ShipHolderApplication(QGroupBox):
 
     self.verbose=1
 
-    #self.connect(self.ui.CBQuad, SIGNAL("toggled(bool)"),self.pressQuad)
-    #self.connect(self.ui.btReset, SIGNAL("clicked()"),self.pressReset)
-    #self.connect(self.ui.btCancel, SIGNAL("clicked()"),self.pressCancel)
-    #self.connect(self.ui.btApply, SIGNAL("clicked()"),self.pressApply)
-    #self.connect(self.ui.btApplyClose, SIGNAL("clicked()"),self.pressApplyClose)
-    #self.connect(self.ui.btLoad, SIGNAL("clicked()"),self.pressCharger)
-    #self.connect(self.ui.btSave, SIGNAL("clicked()"),self.pressSauver)
-    #self.connect(self.ui.btLoadCracked, SIGNAL("clicked()"),self.pressLoadCracked)
-    #self.connect(self.ui.btLoadSane, SIGNAL("clicked()"),self.pressLoadSane)
-
-    #self.connect(self.ui.btGrVol, SIGNAL("clicked()"),self.pressLoadGroupVOL)
-    #self.connect(self.ui.btGrFace, SIGNAL("clicked()"),self.pressLoadGroupFACE)
-    #self.connect(self.ui.btGrEdge, SIGNAL("clicked()"),self.pressLoadGroupEDGE)
-    #self.connect(self.ui.btGrNode, SIGNAL("clicked()"),self.pressLoadGroupNODE)
-    #self.connect(self.ui.btGrAll, SIGNAL("clicked()"),self.pressLoadGroupALL)
-    #self.connect(self.ui.btVisu, SIGNAL("clicked()"),self.pressVisu)
-
-    #self.connect(self.ui.CBAdvanced, SIGNAL("toggled(bool)"),self.pressAdvanced)
-
     self.ui.CBQuad.toggled.connect(self.pressQuad)
     self.ui.btReset.clicked.connect(self.pressReset)
     self.ui.btCancel.clicked.connect(self.pressCancel)
@@ -144,9 +119,9 @@ class ShipHolderApplication(QGroupBox):
   def pressQuad(self):
     if self.ui.CBQuad.isChecked():
       self.ui.CBBarsoum.setEnabled(True)
-      self.ui.valGradation.setText(QString('2.3'))
+      self.ui.valGradation.setText('2.3')
     else:
-      self.ui.valGradation.setText(QString('1.3'))
+      self.ui.valGradation.setText('1.3')
       self.ui.CBBarsoum.setChecked(False)
       self.ui.CBBarsoum.setEnabled(False)
 
@@ -162,10 +137,10 @@ class ShipHolderApplication(QGroupBox):
       tab=onglet.findChildren(QTableWidget)[0]
       for irow in range(tab.rowCount()):
         if tab.item(irow,0) != None:
-          tab.item(irow,0).setText(QString(''))
-    self.ui.valGradation.setText(QString('1.3'))
-    self.ui.valLayers.setText(QString('5'))
-    self.ui.valIterations.setText(QString('2'))
+          tab.item(irow,0).setText('')
+    self.ui.valGradation.setText('1.3')
+    self.ui.valLayers.setText('6')
+    self.ui.valIterations.setText('2')
     self.ui.CBIs2D.setChecked(False)
     self.ui.CBRefine.setChecked(False)
 
@@ -257,7 +232,7 @@ class ShipHolderApplication(QGroupBox):
       fileNames = fileDiag.selectedFiles()
       filedef = fileNames[0]
       filedef = addExtension(str(filedef), 'med')
-      self.ui.valCrackedName.setText(QString(filedef))
+      self.ui.valCrackedName.setText(filedef)
 
 
   def pressLoadSane(self):
@@ -268,7 +243,7 @@ class ShipHolderApplication(QGroupBox):
     if fileDiag.exec_() :
       fileNames = fileDiag.selectedFiles()
       filedef = fileNames[0]
-      self.ui.valSaneName.setText(QString(filedef))
+      self.ui.valSaneName.setText(filedef)
 
 
   def pressCharger(self):
@@ -287,23 +262,15 @@ class ShipHolderApplication(QGroupBox):
 
       for cont, obj in enumerate(self.lineEditObjects):
         if self.lineEditTypes[cont] in [float, int]:
-          obj.setText(QString(self.data['TXT'+self.lineEditNames[cont]]))
+          obj.setText(self.data['TXT'+self.lineEditNames[cont]])
         else:
-          obj.setText(QString(self.data[self.lineEditNames[cont]]))
+          obj.setText(self.data[self.lineEditNames[cont]])
 
       self.ui.CBQuad.setChecked(True if 'quad' in list(self.data.keys()) and self.data['quad'] else False)
       self.ui.CBBarsoum.setChecked(True if 'barsoum' in list(self.data.keys()) and self.data['barsoum'] else False)
       self.ui.CBIs2D.setChecked(True if 'is2D' in list(self.data.keys()) and self.data['is2D'] else False)
       self.ui.CBRefine.setChecked(True if 'refine' in list(self.data.keys()) and self.data['refine'] else False)
 
-
-
-
-
-      #if self.data['quad']: self.ui.CBQuad.setChecked(True)
-      #if self.data['barsoum']: self.ui.CBBarsoum.setChecked(True)
-      #if self.data['is2D']: self.ui.CBIs2D.setChecked(True)
-      #if self.data['refine']: self.ui.CBRefine.setChecked(True)
       self.setTableParameters()
 
 
@@ -451,7 +418,7 @@ class ShipHolderApplication(QGroupBox):
         if tab.item(irow,0) == None:
           item = QTableWidgetItem()
           tab.setItem(irow, 0, item)
-        tab.item(irow,0).setText(QString(self.data['TXTcrack'][str(self.ui.tabWidget.tabText(iongl))][str(label)]))
+        tab.item(irow,0).setText(self.data['TXTcrack'][str(self.ui.tabWidget.tabText(iongl))][str(label)])
       if str(self.ui.tabWidget.tabText(iongl)) == self.data['TXTcrack']['actif']:
         self.ui.tabWidget.setCurrentWidget(onglet)
 
@@ -475,19 +442,19 @@ class ShipHolderApplication(QGroupBox):
 
       for group in objetSain.GetGroups():
         if (self.GroupToLoad in ['VOL','ALL']) and (group.GetType()==SMESH.VOLUME):
-          groupsVOL+=group.GetName().replace(' ','')+" "
+          groupsVOL+=self.cleanGroupName(group)
           nGr+=1
 
         if (self.GroupToLoad in ['FACE','ALL']) and (group.GetType()==SMESH.FACE):
-          groupsFAC+=group.GetName().replace(' ','')+" "
+          groupsFAC+=self.cleanGroupName(group)
           nGr+=1
 
         if (self.GroupToLoad in ['EDGE','ALL']) and (group.GetType()==SMESH.EDGE):
-          groupsEDG+=group.GetName().replace(' ','')+" "
+          groupsEDG+=self.cleanGroupName(group)
           nGr+=1
 
         if (self.GroupToLoad in ['NODE','ALL']) and (group.GetType()==SMESH.NODE):
-          groupsNOD+=group.GetName().replace(' ','')+" "
+          groupsNOD+=self.cleanGroupName(group)
           nGr+=1
 
       if groupsVOL!='':  self.ui.valGrVol.setText(groupsVOL)
@@ -503,6 +470,24 @@ class ShipHolderApplication(QGroupBox):
         remove(f)
       except:
         pass
+        
+  def cleanGroupName(self, group):
+    name=group.GetName()
+    while name.endswith(' '): name=name[:-1]
+    if ' ' in name: 
+      message('A','%s group has a space in its name --> ignored' %name)
+      return('')
+    else:
+      return(name+" ")
+      
+  def checkNamesSpaces(self, names):
+    if type(names) is str: names=[names]
+    ok=True
+    for n in names:
+      if ' ' in n:
+        message('E','%s has a space in its name, please remove it' %n, goOn=True)
+        ok=False
+    return(ok)
 
 
 #  ---------------------------------

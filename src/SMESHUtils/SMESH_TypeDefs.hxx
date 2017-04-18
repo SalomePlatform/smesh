@@ -169,6 +169,7 @@ struct SMESH_TNodeXYZ : public gp_XYZ
   double SquareDistance(const SMDS_MeshNode* n) const { return (SMESH_TNodeXYZ( n )-*this).SquareModulus(); }
   bool operator==(const SMESH_TNodeXYZ& other) const { return _node == other._node; }
 };
+typedef SMESH_TNodeXYZ SMESH_NodeXYZ;
 
 //--------------------------------------------------
 /*!

@@ -146,11 +146,12 @@ bool SPADDERPluginTester_i::testsmesh(CORBA::Long studyId)
 //
 extern "C"
 {
-  PortableServer::ObjectId * SPADDERPluginTesterEngine_factory( CORBA::ORB_ptr orb,
-                                                                PortableServer::POA_ptr poa,
-                                                                PortableServer::ObjectId * contId,
-                                                                const char *instanceName,
-                                                                const char *interfaceName)
+  SPADDERPLUGINTESTERENGINE_EXPORT PortableServer::ObjectId * 
+  SPADDERPluginTesterEngine_factory( CORBA::ORB_ptr orb,
+                                     PortableServer::POA_ptr poa,
+                                     PortableServer::ObjectId * contId,
+                                     const char *instanceName,
+                                     const char *interfaceName)
   {
     MESSAGE("PortableServer::ObjectId * SPADDERPluginTesterEngine_factory()");
     SPADDERPluginTester_i * myEngine = new SPADDERPluginTester_i(orb, poa, contId, instanceName, interfaceName);

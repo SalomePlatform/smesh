@@ -178,7 +178,13 @@ def extendElsets(meshFile, outFile=None):
   smesh = smeshBuilder.New(theStudy)
 
   ([mesh], status) = smesh.CreateMeshesFromMED(meshFile)
-
+  
+  if mesh.NbVolumes()>0: 
+    case2D=False
+    mesh.Reorient2DBy3D( [ mesh ], mesh, 1 )
+  else:
+    case2D=True
+    
   mesh=cleanGroups(mesh)
 
   # Node color status
@@ -339,91 +345,6 @@ def getMaxAspectRatio(tmpdir):
   return(float(maxAR))
 
 
-#def extendElsets(meshFile):
-  #if not path.isfile(meshFile):
-    #message('E','Mesh med file is not valid')
-    #return(-1)
-
-  #import SMESH, salome
-  ##salome.salome_init()
-  #theStudy = salome.myStudy
-  #from salome.smesh import smeshBuilder
-  #smesh = smeshBuilder.New(theStudy)
-
-  #([mesh], status) = smesh.CreateMeshesFromMED(meshFile)
-
-  ## Node color status
-  #nodeList=mesh.GetNodesId()
-  #colorList=[0]*len(nodeList)
-
-  ## Init using SIDE0 SIDE1
-  #for group in mesh.GetGroups():
-    #if group.GetType()==SMESH.FACE :
-      #color=0
-      #if group.GetName()[0:4]=='SIDE0' :
-        #color=1
-      #elif group.GetName()[0:4]=='SIDE1' :
-        #color=2
-      #else : continue
-      ## Get faces
-      #faces=group.GetIDs()
-      ## Set faces nodes to given color
-      #for face_id in faces :
-        #for face_node_id in mesh.GetElemNodes(face_id) :
-          #colorList[face_node_id-1]=color
-
-  ## Propagates color using elem connectivity
-  ## Always propagates max color
-  #volElemList=mesh.GetElementsByType(SMESH.VOLUME)
-  #ifChanged=True
-  #while ifChanged :
-    #ifChanged=False
-    #minColor=100
-    #maxColor=0
-    #for elemId in volElemList:
-      #for elemNodeId in mesh.GetElemNodes(elemId) :
-        #nodeColor=colorList[elemNodeId-1]
-        #if nodeColor<minColor : minColor=nodeColor
-        #if nodeColor>maxColor : maxColor=nodeColor
-      #if minColor!=maxColor :
-        #ifChanged = True
-        #for elemNodeId in mesh.GetElemNodes(elemId) :
-          #colorList[elemNodeId-1]=maxColor
-
-  #velem0 = []
-  #velem1 = []
-  #for elemId in volElemList:
-    #elemNodesId=mesh.GetElemNodes(elemId)
-    #elemColor=colorList[elemNodesId[0]-1]
-    #if(elemColor==1) : velem0.append(elemId)
-    #if(elemColor==2) : velem1.append(elemId)
-
-  #mesh.MakeGroupByIds('SIDE_co',SMESH.VOLUME,velem0)
-  #mesh.MakeGroupByIds('SIDE_ext',SMESH.VOLUME,velem1)
-
-  #surfElemList=mesh.GetElementsByType(SMESH.FACE)
-  #selem0 = []
-  #selem1 = []
-  #nbelem0=0
-  #nbelem1=0
-
-  #for elemId in surfElemList:
-    #elemNodesId=mesh.GetElemNodes(elemId)
-    #elemColor=colorList[elemNodesId[0]-1]
-    #if(elemColor==1) : selem0.append(elemId)
-    #if(elemColor==2) : selem1.append(elemId)
-
-  #mesh.MakeGroupByIds('SIDE_co',SMESH.FACE,selem0)
-  #mesh.MakeGroupByIds('SIDE_ext',SMESH.FACE,selem1)
-
-  #maxAR=0.
-  #for elem in volElemList:
-    #maxAR=max(mesh.GetAspectRatio(elem),maxAR)
-  #for elem in surfElemList:
-    #maxAR=max(mesh.GetAspectRatio(elem),maxAR)
-
-  #mesh.ExportMED(meshFile, 0, SMESH.MED_V2_2, 1, None ,1)
-  #return(maxAR)
 
 
 def removeFromSessionPath(envVar, patern):
