@@ -58,9 +58,13 @@ public:
    */
   virtual void SubmeshRestored(SMESH_subMesh* subMesh);
   
+  virtual bool IsApplicableToShape(const TopoDS_Shape & shape, bool toCheckAll) const
+  {
+    return IsApplicable( shape, toCheckAll );
+  }
   static bool IsApplicable(const TopoDS_Shape & aShape, bool toCheckAll);
 
-protected:
+ protected:
 
   int computeLayerPositions(StdMeshers_FaceSidePtr linSide,
                             std::vector< double >& positions,

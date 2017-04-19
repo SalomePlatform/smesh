@@ -103,11 +103,13 @@ namespace Prism_3D
     TopoDS_Face              myBottom;
     TopoDS_Face              myTop;
     std::list< TopoDS_Edge > myBottomEdges;
-    std::vector< TQuadList>  myWallQuads; // wall sides can be vertically composite
+    std::vector< TQuadList>  myWallQuads;      // wall sides can be vertically composite
     std::vector< int >       myRightQuadIndex; // index of right neighbour wall quad
     std::list< int >         myNbEdgesInWires;
 
     bool                     myNotQuadOnTop;
+
+    size_t NbWires() const { return myNbEdgesInWires.size(); }
 
     void Clear();
     void SetUpsideDown();
@@ -497,6 +499,10 @@ public:
                          SMESH_MesherHelper*               helper);
 
   static bool IsApplicable(const TopoDS_Shape & aShape, bool toCheckAll);
+  virtual bool IsApplicableToShape(const TopoDS_Shape & shape, bool toCheckAll) const
+  {
+    return IsApplicable( shape, toCheckAll );
+  }
 
  private:
 
@@ -520,10 +526,21 @@ public:
   bool compute(const Prism_3D::TPrismTopo& thePrism);
 
   /*!
+   * \brief Compute the base face of a prism
+   */
+  bool computeBase(const Prism_3D::TPrismTopo& thePrism);
+
+  /*!
    * \brief Compute 2D mesh on walls FACEs of a prism
    */
   bool computeWalls(const Prism_3D::TPrismTopo& thePrism);
 
+  /*!
+   * \brief Create artificial wall quads for vertical projection between the outer and inner walls
+   */
+  void makeQuadsForOutInProjection( const Prism_3D::TPrismTopo&      thePrism,
+                                    std::multimap< int, int >&       wgt2quad,
+                                    std::map< int, FaceQuadStruct >& iW2oiQuads);
   /*!
    * \brief Returns a source EDGE of propagation to a given EDGE
    */
@@ -594,6 +611,7 @@ private:
 
   StdMeshers_PrismAsBlock myBlock;
   SMESH_MesherHelper*     myHelper;
+  SMESH_subMesh*          myPrevBottomSM;
 
   std::vector<gp_XYZ>     myShapeXYZ; // point on each sub-shape of the block
 

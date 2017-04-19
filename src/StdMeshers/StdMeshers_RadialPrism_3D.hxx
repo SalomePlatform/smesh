@@ -55,6 +55,10 @@ public:
   virtual bool Evaluate(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape,
                         MapShapeNbElems& aResMap);
 
+  virtual bool IsApplicableToShape(const TopoDS_Shape & shape, bool toCheckAll) const
+  {
+    return IsApplicable( shape, toCheckAll );
+  }
   static bool IsApplicable(const TopoDS_Shape & aShape, bool toCheckAll);
 
 protected:

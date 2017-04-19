@@ -853,6 +853,16 @@ bool SMESH_Algo::Compute(SMESH_Mesh & /*aMesh*/, SMESH_MesherHelper* /*aHelper*/
 }
 
 //=======================================================================
+//function : IsApplicableToShape
+//purpose  : Return true if the algorithm can mesh a given shape
+//=======================================================================
+
+bool SMESH_Algo::IsApplicableToShape(const TopoDS_Shape & shape, bool toCheckAll) const
+{
+  return true;
+}
+
+//=======================================================================
 //function : CancelCompute
 //purpose  : Sets _computeCanceled to true. It's usage depends on
 //  *        implementation of a particular mesher.

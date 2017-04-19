@@ -166,6 +166,15 @@ class SMESH_EXPORT SMESH_Algo : public SMESH_Hypothesis
   virtual bool Compute(SMESH_Mesh & aMesh, SMESH_MesherHelper* aHelper);
 
   /*!
+   * \brief Return true if the algorithm can mesh a given shape
+   *  \param [in] aShape - shape to check
+   *  \param [in] toCheckAll - if true, this check returns OK if all shapes are OK,
+   *              else, returns OK if at least one shape is OK
+   *  \retval bool - \c true by default
+   */
+  virtual bool IsApplicableToShape(const TopoDS_Shape & shape, bool toCheckAll) const;
+
+  /*!
    * \brief Sets _computeCanceled to true. It's usage depends on
    *        implementation of a particular mesher.
    */

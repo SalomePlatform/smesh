@@ -57,6 +57,10 @@ public:
    */
   virtual void SetEventListener(SMESH_subMesh* whenSetToSubMesh);
   
+  virtual bool IsApplicableToShape(const TopoDS_Shape & shape, bool toCheckAll) const
+  {
+    return IsApplicable( shape, toCheckAll );
+  }
   static bool IsApplicable(const TopoDS_Shape & aShape, bool toCheckAll);
 
  protected:

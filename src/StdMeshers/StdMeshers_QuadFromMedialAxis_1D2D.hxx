@@ -53,6 +53,10 @@ class STDMESHERS_EXPORT StdMeshers_QuadFromMedialAxis_1D2D: public StdMeshers_Qu
 
   virtual void SetEventListener(SMESH_subMesh* subMesh);
 
+  virtual bool IsApplicableToShape(const TopoDS_Shape & shape, bool toCheckAll) const
+  {
+    return IsApplicable( shape, toCheckAll );
+  }
   static bool IsApplicable(const TopoDS_Shape & aShape, bool toCheckAll);
 
   class Algo1D;
