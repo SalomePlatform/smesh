@@ -318,7 +318,7 @@ class InputDialog(GenericDialog):
             if dictInputParameters.has_key(PARAM_KEY_NBITER):
                 self.__ui.txtParamNbIter.setValue(dictInputParameters[PARAM_KEY_NBITER])
             if dictInputParameters.has_key(PARAM_KEY_RMAXRMIN):
-                self.__ui.txtParamRminRmax.setValue(dictInputParameters[PARAM_KEY_RMAXRMIN])
+                self.__ui.txtParamRmaxRmin.setValue(dictInputParameters[PARAM_KEY_RMAXRMIN])
 
     def getData(self):
         """
