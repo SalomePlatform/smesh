@@ -5182,10 +5182,11 @@ omniORB.registerObjref(SMESH._objref_SMESH_Pattern._NP_RepositoryId, Pattern)
 ## Private class used to bind methods creating algorithms to the class Mesh
 #
 class algoCreator:
-    def __init__(self):
+    def __init__(self, method):
         self.mesh = None
         self.defaultAlgoType = ""
         self.algoTypeToClass = {}
+        self.method = method
 
     # Store a python class of algorithm
     def add(self, algoClass):
@@ -5199,25 +5200,48 @@ class algoCreator:
 
     # Create a copy of self and assign mesh to the copy
     def copy(self, mesh):
-        other = algoCreator()
+        other = algoCreator( self.method )
         other.defaultAlgoType = self.defaultAlgoType
-        other.algoTypeToClass  = self.algoTypeToClass
+        other.algoTypeToClass = self.algoTypeToClass
         other.mesh = mesh
         return other
 
     # Create an instance of algorithm
     def __call__(self,algo="",geom=0,*args):
-        algoType = self.defaultAlgoType
-        for arg in args + (algo,geom):
-            if isinstance( arg, geomBuilder.GEOM._objref_GEOM_Object ):
-                geom = arg
-            if isinstance( arg, str ) and arg:
+        algoType = ""
+        shape = 0
+        if isinstance( algo, str ):
+            algoType = algo
+        elif ( isinstance( algo, geomBuilder.GEOM._objref_GEOM_Object ) and \
+               not isinstance( geom, geomBuilder.GEOM._objref_GEOM_Object )):
+            shape = algo
+        elif algo:
+            args += (algo,)
+
+        if isinstance( geom, geomBuilder.GEOM._objref_GEOM_Object ):
+            shape = geom
+        elif not algoType and isinstance( geom, str ):
+            algoType = geom
+        elif geom:
+            args += (geom,)
+        for arg in args:
+            if isinstance( arg, geomBuilder.GEOM._objref_GEOM_Object ) and not shape:
+                shape = arg
+            elif isinstance( arg, str ) and not algoType:
                 algoType = arg
+            else:
+                import traceback, sys
+                msg = "Warning. Unexpected argument in mesh.%s() --->  %s" % ( self.method, arg )
+                sys.stderr.write( msg + '\n' )
+                tb = traceback.extract_stack(None,2)
+                traceback.print_list( [tb[0]] )
+        if not algoType:
+            algoType = self.defaultAlgoType
         if not algoType and self.algoTypeToClass:
             algoType = self.algoTypeToClass.keys()[0]
         if self.algoTypeToClass.has_key( algoType ):
             #print "Create algo",algoType
-            return self.algoTypeToClass[ algoType ]( self.mesh, geom )
+            return self.algoTypeToClass[ algoType ]( self.mesh, shape )
         raise RuntimeError, "No class found for algo type %s" % algoType
         return None
 
@@ -5299,7 +5323,7 @@ for pluginName in os.environ[ "SMESH_MeshersList" ].split( ":" ):
         if type( algo ).__name__ == 'classobj' and hasattr( algo, "meshMethod" ):
             #print "                     meshMethod:" , str(algo.meshMethod)
             if not hasattr( Mesh, algo.meshMethod ):
-                setattr( Mesh, algo.meshMethod, algoCreator() )
+                setattr( Mesh, algo.meshMethod, algoCreator( algo.meshMethod ))
                 pass
             getattr( Mesh, algo.meshMethod ).add( algo )
             pass

@@ -478,6 +478,26 @@ namespace {
     return !allBndEdges.empty();
   }
 
+  /*!
+   * \brief Convertor used in Delaunay constructor
+   */
+  struct SideVector2UVPtStructVec
+  {
+    std::vector< const UVPtStructVec* > _uvVecs;
+
+    SideVector2UVPtStructVec( const TSideVector& wires )
+    {
+      _uvVecs.resize( wires.size() );
+      for ( size_t i = 0; i < wires.size(); ++i )
+        _uvVecs[ i ] = & wires[i]->GetUVPtStruct();
+    }
+
+    operator const std::vector< const UVPtStructVec* > & () const
+    {
+      return _uvVecs;
+    }
+  };
+
 } // namespace
 
 //=======================================================================
@@ -2797,183 +2817,15 @@ namespace StdMeshers_ProjectionUtils
 
   //================================================================================
   /*!
-   * \brief Add in-FACE nodes surrounding a given node to a queue
-   */
-  //================================================================================
-
-  void Morph::AddCloseNodes( const SMDS_MeshNode*     srcNode,
-                             const BRepMesh_Triangle* bmTria,
-                             const int                srcFaceID,
-                             TNodeTriaList &          noTriQueue )
-  {
-    // find in-FACE nodes
-    SMDS_ElemIteratorPtr elems = srcNode->GetInverseElementIterator(SMDSAbs_Face);
-    while ( elems->more() )
-    {
-      const SMDS_MeshElement* elem = elems->next();
-      if ( elem->getshapeId() == srcFaceID )
-      {
-        for ( int i = 0, nb = elem->NbNodes(); i < nb; ++i )
-        {
-          const SMDS_MeshNode* n = elem->GetNode( i );
-          if ( !n->isMarked() /*&& n->getshapeId() == srcFaceID*/ )
-            noTriQueue.push_back( make_pair( n, bmTria ));
-        }
-      }
-    }
-  }
-
-  //================================================================================
-  /*!
-   * \brief Find a delauney triangle containing a given 2D point and return
-   *        barycentric coordinates within the found triangle
-   */
-  //================================================================================
-
-  const BRepMesh_Triangle* Morph::FindTriangle( const gp_XY&             uv,
-                                                const BRepMesh_Triangle* bmTria,
-                                                double                   bc[3],
-                                                int                      triaNodes[3] )
-  {
-    int   nodeIDs[3];
-    gp_XY nodeUVs[3];
-    int   linkIDs[3];
-    Standard_Boolean ori[3];
-
-    while ( bmTria )
-    {
-      // check bmTria
-
-      _triaDS->ElementNodes( *bmTria, nodeIDs );
-      nodeUVs[0] = _triaDS->GetNode( nodeIDs[0] ).Coord();
-      nodeUVs[1] = _triaDS->GetNode( nodeIDs[1] ).Coord();
-      nodeUVs[2] = _triaDS->GetNode( nodeIDs[2] ).Coord();
-
-      SMESH_MeshAlgos::GetBarycentricCoords( uv,
-                                             nodeUVs[0], nodeUVs[1], nodeUVs[2],
-                                             bc[0], bc[1] );
-      if ( bc[0] >= 0 && bc[1] >= 0 && bc[0] + bc[1] <= 1 )
-      {
-        bc[2] = 1 - bc[0] - bc[1];
-        triaNodes[0] = nodeIDs[0];
-        triaNodes[1] = nodeIDs[1];
-        triaNodes[2] = nodeIDs[2];
-        return bmTria;
-      }
-
-      // look for a neighbor triangle, which is adjacent to a link intersected
-      // by a segment( triangle center -> uv )
-
-      gp_XY gc = ( nodeUVs[0] + nodeUVs[1] + nodeUVs[2] ) / 3.;
-      gp_XY seg = uv - gc;
-
-      bmTria->Edges( linkIDs, ori );
-      int triaID = _triaDS->IndexOf( *bmTria );
-      bmTria = 0;
-
-      for ( int i = 0; i < 3; ++i )
-      {
-        const BRepMesh_PairOfIndex & triIDs = _triaDS->ElementsConnectedTo( linkIDs[i] );
-        if ( triIDs.Extent() < 2 )
-          continue; // no neighbor triangle
-
-        // check if a link intersects gc2uv
-        const BRepMesh_Edge & link = _triaDS->GetLink( linkIDs[i] );
-        const BRepMesh_Vertex & n1 = _triaDS->GetNode( link.FirstNode() );
-        const BRepMesh_Vertex & n2 = _triaDS->GetNode( link.LastNode() );
-        gp_XY uv1 = n1.Coord();
-        gp_XY lin = n2.Coord() - uv1; // link direction
-
-        double crossSegLin = seg ^ lin;
-        if ( Abs( crossSegLin ) < std::numeric_limits<double>::min() )
-          continue; // parallel
-
-        double uSeg = ( uv1 - gc ) ^ lin / crossSegLin;
-        if ( 0. <= uSeg && uSeg <= 1. )
-        {
-          bmTria = & _triaDS->GetElement( triIDs.Index( 1 + ( triIDs.Index(1) == triaID )));
-          break;
-        }
-      }
-    }
-    return bmTria;
-  }
-
-  //================================================================================
-  /*!
-   * \brief Return a triangle sharing a given boundary node
-   *  \param [in] iBndNode - index of the boundary node
-   *  \return const BRepMesh_Triangle* - a found triangle
-   */
-  //================================================================================
-
-  const BRepMesh_Triangle* Morph::GetTriangleNear( int iBndNode )
-  {
-    const BRepMesh::ListOfInteger & linkIds = _triaDS->LinksConnectedTo( iBndNode );
-    const BRepMesh_PairOfIndex &    triaIds = _triaDS->ElementsConnectedTo( linkIds.First() );
-    const BRepMesh_Triangle&           tria = _triaDS->GetElement( triaIds.Index(1) );
-    return &tria;
-  }
-
-  //================================================================================
-  /*!
    * \brief triangulate the srcFace in 2D
    *  \param [in] srcWires - boundary of the src FACE
    */
   //================================================================================
 
-  Morph::Morph(const TSideVector& srcWires)
+  Morph::Morph(const TSideVector& srcWires):
+    _delaunay( srcWires, /*checkUV=*/true )
   {
     _srcSubMesh = srcWires[0]->GetMesh()->GetSubMesh( srcWires[0]->Face() );
-
-    // compute _scale
-    {
-      BRepAdaptor_Surface surf( srcWires[0]->Face() );
-      const int nbDiv = 100;
-      const double uRange = surf.LastUParameter() - surf.FirstUParameter();
-      const double vRange = surf.LastVParameter() - surf.FirstVParameter();
-      const double dU = uRange / nbDiv;
-      const double dV = vRange / nbDiv;
-      double u = surf.FirstUParameter(), v = surf.FirstVParameter();
-      gp_Pnt p0U = surf.Value( u, v ), p0V = p0U;
-      double lenU = 0, lenV = 0;
-      for ( ; u < surf.LastUParameter(); u += dU, v += dV )
-      {
-        gp_Pnt p1U = surf.Value( u, surf.FirstVParameter() );
-        lenU += p1U.Distance( p0U );
-        p0U = p1U;
-        gp_Pnt p1V = surf.Value( surf.FirstUParameter(), v );
-        lenV += p1V.Distance( p0V );
-        p0V = p1V;
-      }
-      _scale.SetCoord( lenU / uRange, lenV / vRange );
-    }
-
-    // count boundary points
-    int iP = 1, nbP = 0;
-    for ( size_t iW = 0; iW < srcWires.size(); ++iW )
-      nbP += srcWires[iW]->NbPoints() - 1; // 1st and last points coincide
-
-    _bndSrcNodes.resize( nbP + 1 ); _bndSrcNodes[0] = 0;
-
-    // fill boundary points
-    BRepMesh::Array1OfVertexOfDelaun srcVert( 1, 1 + nbP );
-    BRepMesh_Vertex v( 0, 0, BRepMesh_Frontier );
-    for ( size_t iW = 0; iW < srcWires.size(); ++iW )
-    {
-      const UVPtStructVec& srcPnt = srcWires[iW]->GetUVPtStruct();
-      for ( int i = 0, nb = srcPnt.size() - 1;  i < nb;  ++i, ++iP )
-      {
-        _bndSrcNodes[ iP ]  = srcPnt[i].node;
-        srcPnt[i].node->setIsMarked( true );
-
-        v.ChangeCoord() = srcPnt[i].UV().Multiplied( _scale );
-        srcVert( iP )   = v;
-      }
-    }
-    // triangulate the srcFace in 2D
-    BRepMesh_Delaun delauney( srcVert );
-    _triaDS = delauney.Result();
   }
 
   //================================================================================
@@ -2994,32 +2846,27 @@ namespace StdMeshers_ProjectionUtils
                       const TNodeNodeMap&           src2tgtNodes,
                       const bool                    moveAll)
   {
-    // get tgt boundary points corresponding to _bndSrcNodes
+    // get tgt boundary points corresponding to src boundary nodes
     size_t nbP = 0;
     for ( size_t iW = 0; iW < tgtWires.size(); ++iW )
       nbP += tgtWires[iW]->NbPoints() - 1; // 1st and last points coincide
-    if ( nbP != _bndSrcNodes.size() - 1 )
+    if ( nbP != _delaunay.GetBndNodes().size() )
       return false;
 
-    BRepMesh::Array1OfVertexOfDelaun tgtVert( 1, 1 + nbP );
-    BRepMesh_Vertex v( 0, 0, BRepMesh_Frontier );
-    for ( size_t iW = 0, iP = 1; iW < tgtWires.size(); ++iW )
+    std::vector< gp_XY > tgtUV( nbP );
+    for ( size_t iW = 0, iP = 0; iW < tgtWires.size(); ++iW )
     {
       const UVPtStructVec& tgtPnt = tgtWires[iW]->GetUVPtStruct();
       for ( int i = 0, nb = tgtPnt.size() - 1;  i < nb;  ++i, ++iP )
       {
-        v.ChangeCoord() = tgtPnt[i].UV().Multiplied( _scale );
-        tgtVert( iP )   = v;
+        tgtUV[ iP ] = tgtPnt[i].UV();
       }
     }
 
-    const TopoDS_Face& srcFace = TopoDS::Face( _srcSubMesh->GetSubShape() );
-    const int        srcFaceID = _srcSubMesh->GetId();
     SMESHDS_Mesh* tgtMesh = tgtHelper.GetMeshDS();
     const SMDS_MeshNode *srcNode, *tgtNode;
-    const BRepMesh_Triangle *bmTria;
 
-    // un-mark internal src nodes; later we will mark moved nodes
+    // un-mark internal src nodes in order iterate them using _delaunay
     int nbSrcNodes = 0;
     SMDS_NodeIteratorPtr nIt = _srcSubMesh->GetSubMeshDS()->GetNodes();
     if ( !nIt || !nIt->more() ) return true;
@@ -3038,82 +2885,75 @@ namespace StdMeshers_ProjectionUtils
     // Move tgt nodes
 
     double bc[3]; // barycentric coordinates
-    int    nodeIDs[3];
-    bool   checkUV = true;
+    int    nodeIDs[3]; // nodes of a delaunay triangle
     const SMDS_FacePosition* pos;
 
-    // a queue of nodes with starting triangles
-    TNodeTriaList noTriQueue;
-    size_t iBndSrcN = 1;
+    _delaunay.InitTraversal( nbSrcNodes );
 
-    while ( nbSrcNodes > 0 )
+    while (( srcNode = _delaunay.NextNode( bc, nodeIDs )))
     {
-      while ( !noTriQueue.empty() )
-      {
-        srcNode = noTriQueue.front().first;
-        bmTria  = noTriQueue.front().second;
-        noTriQueue.pop_front();
-        if ( srcNode->isMarked() )
-          continue;
-        --nbSrcNodes;
-        srcNode->setIsMarked( true );
+      // compute new coordinates for a corresponding tgt node
+      gp_XY uvNew( 0., 0. ), nodeUV;
+      for ( int i = 0; i < 3; ++i )
+        uvNew += bc[i] * tgtUV[ nodeIDs[i]];
+      gp_Pnt xyz = tgtSurface->Value( uvNew );
 
-        // find a delauney triangle containing the src node
-        gp_XY uv = tgtHelper.GetNodeUV( srcFace, srcNode, NULL, &checkUV );
-        uv *= _scale;
-        bmTria = FindTriangle( uv, bmTria, bc, nodeIDs );
-        if ( !bmTria )
-          continue;
+      // find and move tgt node
+      TNodeNodeMap::const_iterator n2n = src2tgtNodes.find( srcNode );
+      if ( n2n == src2tgtNodes.end() ) continue;
+      tgtNode = n2n->second;
+      tgtMesh->MoveNode( tgtNode, xyz.X(), xyz.Y(), xyz.Z() );
 
-        // compute new coordinates for a corresponding tgt node
-        gp_XY uvNew( 0., 0. ), nodeUV;
-        for ( int i = 0; i < 3; ++i )
-          uvNew += bc[i] * tgtVert( nodeIDs[i]).Coord();
-        uvNew.SetCoord( uvNew.X() / _scale.X(),
-                        uvNew.Y() / _scale.Y() );
-        gp_Pnt xyz = tgtSurface->Value( uvNew );
+      if (( pos = dynamic_cast< const SMDS_FacePosition* >( tgtNode->GetPosition() )))
+        const_cast<SMDS_FacePosition*>( pos )->SetParameters( uvNew.X(), uvNew.Y() );
 
-        // find and move tgt node
-        TNodeNodeMap::const_iterator n2n = src2tgtNodes.find( srcNode );
-        if ( n2n == src2tgtNodes.end() ) continue;
-        tgtNode = n2n->second;
-        tgtMesh->MoveNode( tgtNode, xyz.X(), xyz.Y(), xyz.Z() );
-
-        if (( pos = dynamic_cast< const SMDS_FacePosition* >( tgtNode->GetPosition() )))
-          const_cast<SMDS_FacePosition*>( pos )->SetParameters( uvNew.X(), uvNew.Y() );
-
-        AddCloseNodes( srcNode, bmTria, srcFaceID, noTriQueue );
-      }
-
-      if ( nbSrcNodes > 0 )
-      {
-        // assure that all src nodes are visited
-        for ( ; iBndSrcN < _bndSrcNodes.size() &&  noTriQueue.empty();  ++iBndSrcN )
-        {
-          const BRepMesh_Triangle* tria = GetTriangleNear( iBndSrcN );
-          AddCloseNodes( _bndSrcNodes[ iBndSrcN ], tria, srcFaceID, noTriQueue );
-        }
-        if ( noTriQueue.empty() )
-        {
-          SMDS_NodeIteratorPtr nIt = _srcSubMesh->GetSubMeshDS()->GetNodes();
-          while ( nIt->more() )
-          {
-            srcNode = nIt->next();
-            if ( !srcNode->isMarked() )
-              noTriQueue.push_back( make_pair( srcNode, bmTria ));
-          }
-        }
-      }
+      --nbSrcNodes;
     }
 
-    return true;
+    return nbSrcNodes == 0;
 
   } // Morph::Perform
 
-  gp_XY Morph::GetBndUV(const int iNode) const
+  //=======================================================================
+  //function : Delaunay
+  //purpose  : construct from face sides
+  //=======================================================================
+
+  Delaunay::Delaunay( const TSideVector& wires, bool checkUV ):
+    SMESH_Delaunay( SideVector2UVPtStructVec( wires ),
+                    TopoDS::Face( wires[0]->FaceHelper()->GetSubShape() ),
+                    wires[0]->FaceHelper()->GetSubShapeID() )
   {
-    return _triaDS->GetNode( iNode ).Coord();
+    _wire = wires[0]; // keep a wire to assure _helper to keep alive
+    _helper = _wire->FaceHelper();
+    _checkUVPtr = checkUV ? & _checkUV : 0;
   }
 
+  //=======================================================================
+  //function : Delaunay
+  //purpose  : construct from UVPtStructVec's
+  //=======================================================================
+
+  Delaunay::Delaunay( const std::vector< const UVPtStructVec* > & boundaryNodes,
+                      SMESH_MesherHelper&                         faceHelper,
+                      bool                                        checkUV):
+    SMESH_Delaunay( boundaryNodes,
+                    TopoDS::Face( faceHelper.GetSubShape() ),
+                    faceHelper.GetSubShapeID() )
+  {
+    _helper = & faceHelper;
+    _checkUVPtr = checkUV ? & _checkUV : 0;
+  }
+
+  //=======================================================================
+  //function : getNodeUV
+  //purpose  : 
+  //=======================================================================
+
+  gp_XY Delaunay::getNodeUV( const TopoDS_Face& face, const SMDS_MeshNode* node ) const
+  {
+    return _helper->GetNodeUV( face, node, 0, _checkUVPtr );
+  }
+  
 
 } // namespace StdMeshers_ProjectionUtils

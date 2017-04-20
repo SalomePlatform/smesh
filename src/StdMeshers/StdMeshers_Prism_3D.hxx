@@ -31,16 +31,18 @@
 
 #include "SMESHDS_Mesh.hxx"
 #include "SMESH_Block.hxx"
+#include "SMESH_Comment.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_TypeDefs.hxx"
-#include "SMESH_Comment.hxx"
 #include "SMESH_subMesh.hxx"
+#include "StdMeshers_ProjectionUtils.hxx"
 
 #include <Adaptor2d_Curve2d.hxx>
 #include <Adaptor3d_Curve.hxx>
 #include <Adaptor3d_Surface.hxx>
 #include <BRepAdaptor_Surface.hxx>
+#include <TColStd_DataMapOfIntegerInteger.hxx>
 #include <TopTools_IndexedMapOfOrientedShape.hxx>
 #include <TopoDS_Face.hxx>
 #include <gp_Trsf.hxx>
@@ -52,10 +54,6 @@ namespace Prism_3D
 {
   struct TNode;
   struct TPrismTopo;
-}
-namespace StdMeshers_ProjectionUtils
-{
-  class TrsfFinder3D;
 }
 class SMESHDS_SubMesh;
 class TopoDS_Edge;
@@ -417,23 +415,29 @@ private:
  */
 struct StdMeshers_Sweeper
 {
-  std::vector< TNodeColumn* > myBndColumns; // boundary nodes
-  std::vector< TNodeColumn* > myIntColumns; // internal nodes
+  SMESH_MesherHelper*                     myHelper;
+  TopoDS_Face                             myBotFace;
+  TopoDS_Face                             myTopFace;
+
+  std::vector< TNodeColumn* >             myBndColumns; // boundary nodes
+  std::vector< TNodeColumn* >             myIntColumns; // internal nodes
 
   typedef std::vector< double > TZColumn;
-  std::vector< TZColumn > myZColumns; // Z distribution of boundary nodes
+  std::vector< TZColumn >                 myZColumns; // Z distribution of boundary nodes
 
-  bool ComputeNodes( SMESH_MesherHelper& helper,
-                     const double        tol,
-                     const bool          allowHighBndError );
+  StdMeshers_ProjectionUtils::DelaunayPtr myTopDelaunay;
+  StdMeshers_ProjectionUtils::DelaunayPtr myBotDelaunay;
+  TColStd_DataMapOfIntegerInteger         myNodeID2ColID;
+
+
+  bool ComputeNodesByTrsf( const double tol,
+                           const bool   allowHighBndError );
 
   bool CheckSameZ();
 
-  bool ComputeNodesOnStraightSameZ( SMESH_MesherHelper& helper );
+  bool ComputeNodesOnStraightSameZ();
 
-  bool ComputeNodesOnStraight( SMESH_MesherHelper& helper,
-                               const TopoDS_Face&  bottom,
-                               const TopoDS_Face&  top);
+  bool ComputeNodesOnStraight();
 
 private:
 
@@ -459,6 +463,8 @@ private:
 
   static void fillZColumn( TZColumn&    zColumn,
                            TNodeColumn& nodes );
+
+  void prepareTopBotDelaunay();
 };
 
 // ===============================================

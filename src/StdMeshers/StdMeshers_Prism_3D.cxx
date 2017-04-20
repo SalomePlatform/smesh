@@ -52,7 +52,6 @@
 #include <GeomLib_IsPlanarSurface.hxx>
 #include <Geom_Curve.hxx>
 #include <Standard_ErrorHandler.hxx>
-#include <TColStd_DataMapOfIntegerInteger.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
@@ -1177,6 +1176,9 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
   {
     // use transformation (issue 0020680, IPAL0052499) or a "straight line" approach
     StdMeshers_Sweeper sweeper;
+    sweeper.myHelper  = myHelper;
+    sweeper.myBotFace = thePrism.myBottom;
+    sweeper.myTopFace = thePrism.myTop;
 
     // load boundary nodes into sweeper
     bool dummy;
@@ -1213,15 +1215,15 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
     {
       double tol = getSweepTolerance( thePrism );
       bool allowHighBndError = !isSimpleBottom( thePrism );
-      myUseBlock = !sweeper.ComputeNodes( *myHelper, tol, allowHighBndError );
+      myUseBlock = !sweeper.ComputeNodesByTrsf( tol, allowHighBndError );
     }
     else if ( sweeper.CheckSameZ() )
     {
-      myUseBlock = !sweeper.ComputeNodesOnStraightSameZ( *myHelper );
+      myUseBlock = !sweeper.ComputeNodesOnStraightSameZ();
     }
     else
     {
-      myUseBlock = !sweeper.ComputeNodesOnStraight( *myHelper, thePrism.myBottom, thePrism.myTop );
+      myUseBlock = !sweeper.ComputeNodesOnStraight();
     }
     myHelper->SetElementsOnShape( false );
   }
@@ -4956,13 +4958,13 @@ void StdMeshers_Sweeper::applyBoundaryError(const vector< gp_XYZ >& bndPoints,
 
 //================================================================================
 /*!
- * \brief Create internal nodes of the prism
+ * \brief Create internal nodes of the prism by computing an affine transformation
+ *        from layer to layer
  */
 //================================================================================
 
-bool StdMeshers_Sweeper::ComputeNodes( SMESH_MesherHelper& helper,
-                                       const double        tol,
-                                       const bool          allowHighBndError)
+bool StdMeshers_Sweeper::ComputeNodesByTrsf( const double tol,
+                                             const bool   allowHighBndError)
 {
   const size_t zSize = myBndColumns[0]->size();
   const size_t zSrc = 0, zTgt = zSize-1;
@@ -5229,7 +5231,7 @@ bool StdMeshers_Sweeper::ComputeNodes( SMESH_MesherHelper& helper,
     for ( size_t z = zSrc + 1; z < zTgt; ++z ) // vertical loop on layers
     {
       const gp_XYZ & xyz = intPntsOfLayer[ z ][ iP ];
-      if ( !( nodeCol[ z ] = helper.AddNode( xyz.X(), xyz.Y(), xyz.Z() )))
+      if ( !( nodeCol[ z ] = myHelper->AddNode( xyz.X(), xyz.Y(), xyz.Z() )))
         return false;
     }
   }
@@ -5301,7 +5303,7 @@ bool StdMeshers_Sweeper::CheckSameZ()
  */
 //================================================================================
 
-bool StdMeshers_Sweeper::ComputeNodesOnStraightSameZ( SMESH_MesherHelper& helper )
+bool StdMeshers_Sweeper::ComputeNodesOnStraightSameZ()
 {
   TZColumn& z = myZColumns[0];
 
@@ -5313,7 +5315,7 @@ bool StdMeshers_Sweeper::ComputeNodesOnStraightSameZ( SMESH_MesherHelper& helper
     for ( size_t iZ = 0; iZ < z.size(); ++iZ )
     {
       gp_XYZ p = n0 * ( 1 - z[iZ] ) + n1 * z[iZ];
-      nodes[ iZ+1 ] = helper.AddNode( p.X(), p.Y(), p.Z() );
+      nodes[ iZ+1 ] = myHelper->AddNode( p.X(), p.Y(), p.Z() );
     }
   }
 
@@ -5327,144 +5329,51 @@ bool StdMeshers_Sweeper::ComputeNodesOnStraightSameZ( SMESH_MesherHelper& helper
  */
 //================================================================================
 
-bool StdMeshers_Sweeper::ComputeNodesOnStraight( SMESH_MesherHelper& helper,
-                                                 const TopoDS_Face&  botFace,
-                                                 const TopoDS_Face&  topFace )
+bool StdMeshers_Sweeper::ComputeNodesOnStraight()
 {
-  // get data to create a Morph
-  UVPtStructVec botUV( myBndColumns.size() + 1 );
-  UVPtStructVec topUV( myBndColumns.size() + 1 );
-  for ( size_t i = 0; i < myBndColumns.size(); ++i )
-  {
-    TNodeColumn& nodes = *myBndColumns[i];
-    botUV[i].node = nodes[0];
-    botUV[i].SetUV( helper.GetNodeUV( botFace, nodes[0] ));
-    topUV[i].node = nodes.back();
-    topUV[i].SetUV( helper.GetNodeUV( topFace, nodes.back() ));
-    botUV[i].node->setIsMarked( true );
-  }
-  botUV.back() = botUV[0];
-  topUV.back() = topUV[0];
+  prepareTopBotDelaunay();
 
-  TopoDS_Edge dummyE;
-  TSideVector botWires( 1, StdMeshers_FaceSide::New( botUV, botFace, dummyE, helper.GetMesh() ));
-  TSideVector topWires( 1, StdMeshers_FaceSide::New( topUV, topFace, dummyE, helper.GetMesh() ));
-
-  // use Morph to make delauney mesh on the FACEs. Locating of a node within a
-  // delauney triangle will be used to get a weighted Z.
-  NSProjUtils::Morph botDelauney( botWires );
-  NSProjUtils::Morph topDelauney( topWires );
-
-  if ( helper.GetIsQuadratic() )
-  {
-    // mark all medium nodes of faces on botFace to avoid their treating
-    SMESHDS_SubMesh* smDS = helper.GetMeshDS()->MeshElements( botFace );
-    SMDS_ElemIteratorPtr eIt = smDS->GetElements();
-    while ( eIt->more() )
-    {
-      const SMDS_MeshElement* e = eIt->next();
-      for ( int i = e->NbCornerNodes(), nb = e->NbNodes(); i < nb; ++i )
-        e->GetNode( i )->setIsMarked( true );
-    }
-  }
-
-  // map to get a node column by a bottom node
-  TColStd_DataMapOfIntegerInteger iNode2iCol( myIntColumns.size() );
-
-  // un-mark nodes to treat (internal bottom nodes); later we will mark treated nodes
-  for ( size_t i = 0; i < myIntColumns.size(); ++i )
-  {
-    const SMDS_MeshNode* botNode = myIntColumns[i]->front();
-    botNode->setIsMarked( false );
-    iNode2iCol.Bind( botNode->GetID(), i );
-  }
-
-  const int botFaceID = helper.GetMesh()->GetSubMesh( botFace )->GetId();
   const SMDS_MeshNode     *botNode, *topNode;
-  const BRepMesh_Triangle *botTria, *topTria;
+  const BRepMesh_Triangle *topTria;
   double botBC[3], topBC[3]; // barycentric coordinates
   int    botTriaNodes[3], topTriaNodes[3];
   bool   checkUV = true;
 
-  // a queue of bottom nodes with starting delauney triangles
-  NSProjUtils::Morph::TNodeTriaList botNoTriQueue;
+  int nbInternalNodes = myIntColumns.size();
+  myBotDelaunay->InitTraversal( nbInternalNodes );
 
-  size_t iBndN = 1; // index of a bottom boundary node
-  int nbNodesToProcess = myIntColumns.size();
-  while ( nbNodesToProcess > 0 )
+  while (( botNode = myBotDelaunay->NextNode( botBC, botTriaNodes )))
   {
-    while ( !botNoTriQueue.empty() ) // treat all nodes in the queue
+    TNodeColumn* column = myIntColumns[ myNodeID2ColID( botNode->GetID() )];
+
+    // find a Delaunay triangle containing the topNode
+    topNode = column->back();
+    gp_XY topUV = myHelper->GetNodeUV( myTopFace, topNode, NULL, &checkUV );
+    // get a starting triangle basing on that top and bot boundary nodes have same index
+    topTria = myTopDelaunay->GetTriangleNear( botTriaNodes[0] );
+    topTria = myTopDelaunay->FindTriangle( topUV, topTria, topBC, topTriaNodes );
+    if ( !topTria )
+      return false;
+
+    // create nodes along a line
+    SMESH_NodeXYZ botP( botNode ), topP( topNode);
+    for ( size_t iZ = 0; iZ < myZColumns[0].size(); ++iZ )
     {
-      botNode = botNoTriQueue.front().first;
-      botTria = botNoTriQueue.front().second;
-      botNoTriQueue.pop_front();
-      if ( botNode->isMarked() )
-        continue;
-      --nbNodesToProcess;
-      botNode->setIsMarked( true );
-
-      TNodeColumn* column = myIntColumns[ iNode2iCol( botNode->GetID() )];
-
-      // find a delauney triangle containing the botNode
-      gp_XY botUV = helper.GetNodeUV( botFace, botNode, NULL, &checkUV );
-      botUV  *= botDelauney.GetScale();
-      botTria = botDelauney.FindTriangle( botUV, botTria, botBC, botTriaNodes );
-      if ( !botTria )
-        return false;
-
-      // find a delauney triangle containing the topNode
-      topNode = column->back();
-      gp_XY topUV = helper.GetNodeUV( topFace, topNode, NULL, &checkUV );
-      topUV *= topDelauney.GetScale();
-      // get a starting triangle basing on that top and bot boundary nodes have same index
-      topTria = topDelauney.GetTriangleNear( botTriaNodes[0] );
-      topTria = topDelauney.FindTriangle( topUV, topTria, topBC, topTriaNodes );
-      if ( !topTria )
-        return false;
-
-      // create nodes along a line
-      SMESH_NodeXYZ botP( botNode ), topP( topNode);
-      for ( size_t iZ = 0; iZ < myZColumns[0].size(); ++iZ )
+      // use barycentric coordinates as weight of Z of boundary columns
+      double botZ = 0, topZ = 0;
+      for ( int i = 0; i < 3; ++i )
       {
-        // use barycentric coordinates as weight of Z of boundary columns
-        double botZ = 0, topZ = 0;
-        for ( int i = 0; i < 3; ++i )
-        {
-          botZ += botBC[i] * myZColumns[ botTriaNodes[i]-1 ][ iZ ];
-          topZ += topBC[i] * myZColumns[ topTriaNodes[i]-1 ][ iZ ];
-        }
-        double rZ = double( iZ + 1 ) / ( myZColumns[0].size() + 1 );
-        double z = botZ * ( 1 - rZ ) + topZ * rZ;
-        gp_XYZ p = botP * ( 1 - z  ) + topP * z;
-        (*column)[ iZ+1 ] = helper.AddNode( p.X(), p.Y(), p.Z() );
+        botZ += botBC[i] * myZColumns[ botTriaNodes[i] ][ iZ ];
+        topZ += topBC[i] * myZColumns[ topTriaNodes[i] ][ iZ ];
       }
-
-      // add neighbor nodes to the queue
-      botDelauney.AddCloseNodes( botNode, botTria, botFaceID, botNoTriQueue );
-    }
-
-    if ( nbNodesToProcess > 0 ) // fill the queue
-    {
-      // assure that all bot nodes are visited
-      for ( ; iBndN-1 < myBndColumns.size() &&  botNoTriQueue.empty();  ++iBndN )
-      {
-        botTria = botDelauney.GetTriangleNear( iBndN );
-        const SMDS_MeshNode*  bndNode = botDelauney.GetBndNodes()[ iBndN ];
-        botDelauney.AddCloseNodes( bndNode, botTria, botFaceID, botNoTriQueue );
-      }
-      if ( botNoTriQueue.empty() )
-      {
-        for ( size_t i = 0; i < myIntColumns.size(); ++i )
-        {
-          botNode = myIntColumns[i]->front();
-          if ( !botNode->isMarked() )
-            botNoTriQueue.push_back( make_pair( botNode, botTria ));
-        }
-      }
+      double rZ = double( iZ + 1 ) / ( myZColumns[0].size() + 1 );
+      double z = botZ * ( 1 - rZ ) + topZ * rZ;
+      gp_XYZ p = botP * ( 1 - z  ) + topP * z;
+      (*column)[ iZ+1 ] = myHelper->AddNode( p.X(), p.Y(), p.Z() );
     }
   }
 
-  return true;
+  return myBotDelaunay->NbVisitedNodes() == nbInternalNodes;
 }
 
 //================================================================================
@@ -5488,5 +5397,60 @@ void StdMeshers_Sweeper::fillZColumn( TZColumn&    zColumn,
   {
     gp_Vec vec( p0, SMESH_NodeXYZ( nodes[ i+1] ));
     zColumn[i] = ( line * vec ) / len2; // param [0,1] on the line
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Initialize *Delaunay members
+ */
+//================================================================================
+
+void StdMeshers_Sweeper::prepareTopBotDelaunay()
+{
+  UVPtStructVec botUV( myBndColumns.size() );
+  UVPtStructVec topUV( myBndColumns.size() );
+  for ( size_t i = 0; i < myBndColumns.size(); ++i )
+  {
+    TNodeColumn& nodes = *myBndColumns[i];
+    botUV[i].node = nodes[0];
+    botUV[i].SetUV( myHelper->GetNodeUV( myBotFace, nodes[0] ));
+    topUV[i].node = nodes.back();
+    topUV[i].SetUV( myHelper->GetNodeUV( myTopFace, nodes.back() ));
+    botUV[i].node->setIsMarked( true );
+  }
+  TopoDS_Edge dummyE;
+  SMESH_Mesh* mesh = myHelper->GetMesh();
+  TSideVector botWires( 1, StdMeshers_FaceSide::New( botUV, myBotFace, dummyE, mesh ));
+  TSideVector topWires( 1, StdMeshers_FaceSide::New( topUV, myTopFace, dummyE, mesh ));
+
+  // Delaunay mesh on the FACEs.
+  bool checkUV = false;
+  myBotDelaunay.reset( new NSProjUtils::Delaunay( botWires, checkUV ));
+  myTopDelaunay.reset( new NSProjUtils::Delaunay( topWires, checkUV ));
+
+  if ( myHelper->GetIsQuadratic() )
+  {
+    // mark all medium nodes of faces on botFace to avoid their treating
+    SMESHDS_SubMesh* smDS = myHelper->GetMeshDS()->MeshElements( myBotFace );
+    SMDS_ElemIteratorPtr eIt = smDS->GetElements();
+    while ( eIt->more() )
+    {
+      const SMDS_MeshElement* e = eIt->next();
+      for ( int i = e->NbCornerNodes(), nb = e->NbNodes(); i < nb; ++i )
+        e->GetNode( i )->setIsMarked( true );
+    }
+  }
+
+  // map to get a node column by a bottom node
+  myNodeID2ColID.Clear(/*doReleaseMemory=*/false);
+  myNodeID2ColID.ReSize( myIntColumns.size() );
+
+  // un-mark nodes to treat (internal bottom nodes) to be returned by myBotDelaunay
+  for ( size_t i = 0; i < myIntColumns.size(); ++i )
+  {
+    const SMDS_MeshNode* botNode = myIntColumns[i]->front();
+    botNode->setIsMarked( false );
+    myNodeID2ColID.Bind( botNode->GetID(), i );
   }
 }

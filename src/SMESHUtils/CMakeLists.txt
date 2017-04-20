@@ -67,6 +67,7 @@ SET(SMESHUtils_HEADERS
   SMESH_MeshAlgos.hxx
   SMESH_MAT2d.hxx
   SMESH_ControlPnt.hxx
+  SMESH_Delaunay.hxx
 )
 
 # --- sources ---
@@ -84,6 +85,7 @@ SET(SMESHUtils_SOURCES
   SMESH_FreeBorders.cxx
   SMESH_ControlPnt.cxx
   SMESH_DeMerge.cxx
+  SMESH_Delaunay.cxx
   )
 
 # --- rules ---

@@ -30,10 +30,10 @@
 
 #include "SMESH_StdMeshers.hxx"
 
-#include "StdMeshers_FaceSide.hxx"
 #include "SMDS_MeshElement.hxx"
+#include "SMESH_Delaunay.hxx"
+#include "StdMeshers_FaceSide.hxx"
 
-#include <BRepMesh_DataStructureOfDelaun.hxx>
 #include <ShapeAnalysis_Surface.hxx>
 #include <TopTools_DataMapOfShapeShape.hxx>
 #include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
@@ -54,6 +54,7 @@ class SMESH_Mesh;
 class SMESH_subMesh;
 class TopoDS_Shape;
 
+//-----------------------------------------------------------------------------------------
 /*!
  * \brief Struct used instead of a sole TopTools_DataMapOfShapeShape to avoid
  *        problems with bidirectional bindings
@@ -94,6 +95,7 @@ namespace StdMeshers_ProjectionUtils
                    TIDCompare>                                 TNodeNodeMap;
 
 
+  //-----------------------------------------------------------------------------------------
   /*!
    * \brief Finds transformation between two sets of 2D points using
    *        a least square approximation
@@ -114,6 +116,7 @@ namespace StdMeshers_ProjectionUtils
 
     bool IsIdentity() const { return ( _trsf.Form() == gp_Identity ); }
   };
+  //-----------------------------------------------------------------------------------------
   /*!
    * \brief Finds transformation between two sets of 3D points using
    *        a least square approximation
@@ -139,16 +142,44 @@ namespace StdMeshers_ProjectionUtils
     bool Invert();
   };
 
+  //-----------------------------------------------------------------------------------------
+  /*!
+   * \brief Create a Delaunay triangulation of nodes on a face boundary
+   *        and provide exploration of nodes shared by elements lying on
+   *        the face. For a returned node, also return a Delaunay triangle
+   *        the node lies in and its Barycentric Coordinates within the triangle.
+   *        Only non-marked nodes are visited.
+   *
+   * The main methods are defined in ../SMESHUtils/SMESH_Delaunay.hxx
+   */
+  class Delaunay : public SMESH_Delaunay
+  {
+  public:
+
+    Delaunay( const TSideVector& wires, bool checkUV = false );
+
+    Delaunay( const std::vector< const UVPtStructVec* > & boundaryNodes,
+              SMESH_MesherHelper&                         faceHelper,
+              bool                                        checkUV = false);
+
+  protected:
+    virtual gp_XY getNodeUV( const TopoDS_Face& face, const SMDS_MeshNode* node ) const;
+
+  private:
+    SMESH_MesherHelper*    _helper;
+    StdMeshers_FaceSidePtr _wire;
+    bool                  *_checkUVPtr, _checkUV;
+  };
+  typedef boost::shared_ptr< Delaunay > DelaunayPtr;
+
+  //-----------------------------------------------------------------------------------------
   /*!
    * \brief Morph mesh on the target FACE to lie within FACE boundary w/o distortion
    */
   class Morph
   {
-    std::vector< const SMDS_MeshNode* >    _bndSrcNodes;
-    Handle(BRepMesh_DataStructureOfDelaun) _triaDS;
-    SMESH_subMesh*                         _srcSubMesh;
-    bool                                   _moveAll;
-    gp_XY                                  _scale;
+    Delaunay       _delaunay;
+    SMESH_subMesh* _srcSubMesh;
   public:
 
     Morph(const TSideVector& srcWires);
@@ -158,37 +189,9 @@ namespace StdMeshers_ProjectionUtils
                  Handle(ShapeAnalysis_Surface) tgtSurface,
                  const TNodeNodeMap&           src2tgtNodes,
                  const bool                    moveAll);
-
-    // find a triangle containing an UV starting from a given triangle;
-    // return barycentric coordinates of the UV in the found triangle
-    const BRepMesh_Triangle* FindTriangle( const gp_XY&             uv,
-                                           const BRepMesh_Triangle* bmTria,
-                                           double                   bc[3],
-                                           int                      triaNodes[3]);
-
-    // return any delauney triangle neighboring a given boundary node
-    const BRepMesh_Triangle* GetTriangleNear( int iBndNode );
-
-    // return source boundary nodes. 0-th node is NULL so that indices of
-    // boundary nodes correspond to indices used by Delauney mesh
-    const std::vector< const SMDS_MeshNode* >& GetBndNodes() const { return _bndSrcNodes; }
-
-    // return UV of the i-th source boundary node
-    gp_XY GetBndUV(const int iNode) const;
-
-    // return scale factor to convert real UV to/from UV used for Delauney meshing:
-    // delauney_UV = real_UV * scale
-    const gp_XY& GetScale() const { return _scale; }
-
-    typedef std::list< std::pair< const SMDS_MeshNode*, const BRepMesh_Triangle* > > TNodeTriaList;
-
-    // add non-marked nodes surrounding a given one to a list
-    static void AddCloseNodes( const SMDS_MeshNode*     node,
-                               const BRepMesh_Triangle* bmTria,
-                               const int                faceID,
-                               TNodeTriaList &          noTriQueue );
   };
 
+  //-----------------------------------------------------------------------------------------
   /*!
    * \brief Looks for association of all sub-shapes of two shapes
    * \param theShape1 - shape 1
