@@ -277,6 +277,10 @@ static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
       SO = aStudyBuilder->NewObjectToTag( theFatherObject, theTag );
       isNewSO = true;
     }
+    else
+    {
+      isInUseCaseTree = useCaseBuilder->IsUseCaseNode( SO );
+    }
   }
   else
   {
