@@ -588,7 +588,8 @@ int SMESH_ScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
       // Customization of the vtkScalarBarActor to show distribution histogram.
       if ( myDistributionColoringType == SMESH_MULTICOLOR_TYPE &&
            GetDistributionVisibility() &&
-           distrVisibility )
+           distrVisibility &&
+           myNbValues[i] > 0 )
       {
         rgb = distColors->GetPointer(3*dcCount); //write into array directly
         rgb[0] = rgba[0];
