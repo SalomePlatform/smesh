@@ -415,20 +415,13 @@ private:
  */
 struct StdMeshers_Sweeper
 {
-  SMESH_MesherHelper*                     myHelper;
-  TopoDS_Face                             myBotFace;
-  TopoDS_Face                             myTopFace;
-
-  std::vector< TNodeColumn* >             myBndColumns; // boundary nodes
-  std::vector< TNodeColumn* >             myIntColumns; // internal nodes
-
-  typedef std::vector< double > TZColumn;
-  std::vector< TZColumn >                 myZColumns; // Z distribution of boundary nodes
-
-  StdMeshers_ProjectionUtils::DelaunayPtr myTopDelaunay;
-  StdMeshers_ProjectionUtils::DelaunayPtr myBotDelaunay;
-  TColStd_DataMapOfIntegerInteger         myNodeID2ColID;
-
+  // input data
+  SMESH_MesherHelper*         myHelper;
+  TopoDS_Face                 myBotFace;
+  TopoDS_Face                 myTopFace;
+  std::vector< TNodeColumn* > myBndColumns; // boundary nodes
+  // output data
+  std::vector< TNodeColumn* > myIntColumns; // internal nodes
 
   bool ComputeNodesByTrsf( const double tol,
                            const bool   allowHighBndError );
@@ -447,24 +440,36 @@ private:
   gp_XYZ intPoint( int iP, int z ) const
   { return SMESH_TNodeXYZ( (*myIntColumns[ iP ])[ z ]); }
 
-  static bool projectIntPoints(const std::vector< gp_XYZ >& fromBndPoints,
-                               const std::vector< gp_XYZ >& toBndPoints,
-                               const std::vector< gp_XYZ >& fromIntPoints,
-                               std::vector< gp_XYZ >&       toIntPoints,
-                               StdMeshers_ProjectionUtils::TrsfFinder3D& trsf,
-                               std::vector< gp_XYZ > *      bndError);
+  bool projectIntPoints(const std::vector< gp_XYZ >& fromBndPoints,
+                        const std::vector< gp_XYZ >& toBndPoints,
+                        const std::vector< gp_XYZ >& fromIntPoints,
+                        std::vector< gp_XYZ >&       toIntPoints,
+                        const double                 r,
+                        StdMeshers_ProjectionUtils::TrsfFinder3D& trsf,
+                        std::vector< gp_XYZ > *      bndError);
 
-  static void applyBoundaryError(const std::vector< gp_XYZ >& bndPoints,
-                                 const std::vector< gp_XYZ >& bndError1,
-                                 const std::vector< gp_XYZ >& bndError2,
-                                 const double                 r,
-                                 std::vector< gp_XYZ >&       toIntPoints,
-                                 std::vector< double >&       int2BndDist);
-
+  typedef std::vector< double > TZColumn;
   static void fillZColumn( TZColumn&    zColumn,
                            TNodeColumn& nodes );
 
   void prepareTopBotDelaunay();
+  void findDelaunayTriangles();
+
+  std::vector< TZColumn >                 myZColumns; // Z distribution of boundary nodes
+
+  StdMeshers_ProjectionUtils::DelaunayPtr myTopDelaunay;
+  StdMeshers_ProjectionUtils::DelaunayPtr myBotDelaunay;
+  TColStd_DataMapOfIntegerInteger         myNodeID2ColID;
+
+  // top and bottom Delaulay triangles including an internal column
+  struct TopBotTriangles
+  {
+    double myBotBC[3], myTopBC[3]; // barycentric coordinates of a node within a triangle
+    int    myBotTriaNodes[3], myTopTriaNodes[3]; // indices of boundary columns
+    TopBotTriangles();
+    void SetTopByBottom();
+  };
+  std::vector< TopBotTriangles> myTopBotTriangles;
 };
 
 // ===============================================

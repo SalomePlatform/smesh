@@ -166,6 +166,14 @@ StdMeshers_FaceSide::StdMeshers_FaceSide(const TopoDS_Face&            theFace,
         myC3dAdaptor[i].Load( C3d, 0, 0.5 * BRep_Tool::Tolerance( V ));
       }
     }
+    else if ( myEdgeLength[i] > DBL_MIN )
+    {
+      Handle(Geom_Curve) C3d = BRep_Tool::Curve(myEdge[i],myFirst[i], myLast[i] );
+      myC3dAdaptor[i].Load( C3d, myFirst[i], myLast[i] );
+      if ( myEdge[i].Orientation() == TopAbs_REVERSED )
+        std::swap( myFirst[i], myLast[i] );
+    }
+
     // reverse a proxy sub-mesh
     if ( !theIsForward )
       reverseProxySubmesh( myEdge[i] );

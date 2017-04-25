@@ -1182,7 +1182,7 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
 
     // load boundary nodes into sweeper
     bool dummy;
-    const SMDS_MeshNode* prevN0 = 0, *prevN1 = 0;
+    std::set< const SMDS_MeshNode* > usedEndNodes;
     list< TopoDS_Edge >::const_iterator edge = thePrism.myBottomEdges.begin();
     for ( ; edge != thePrism.myBottomEdges.end(); ++edge )
     {
@@ -1193,9 +1193,8 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
       TParam2ColumnMap::iterator u2colIt = u2col->begin(), u2colEnd = u2col->end();
       const SMDS_MeshNode* n0 = u2colIt->second[0];
       const SMDS_MeshNode* n1 = u2col->rbegin()->second[0];
-      if ( n0 == prevN0 || n0 == prevN1 ) ++u2colIt;
-      if ( n1 == prevN0 || n1 == prevN1 ) --u2colEnd;
-      prevN0 = n0; prevN1 = n1;
+      if ( !usedEndNodes.insert ( n0 ).second ) ++u2colIt;
+      if ( !usedEndNodes.insert ( n1 ).second ) --u2colEnd;
 
       for ( ; u2colIt != u2colEnd; ++u2colIt )
         sweeper.myBndColumns.push_back( & u2colIt->second );
@@ -1627,7 +1626,7 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
           TopoDS_Vertex      v = myHelper->IthVertex( is2ndV, E );
           mesh->GetSubMesh( v )->ComputeStateEngine( SMESH_subMesh::COMPUTE );
           const SMDS_MeshNode* n = SMESH_Algo::VertexNode( v, meshDS );
-          newNodes[ is2ndV ? 0 : newNodes.size()-1 ] = (SMDS_MeshNode*) n;
+          newNodes[ is2ndV ? newNodes.size()-1 : 0 ] = (SMDS_MeshNode*) n;
         }
 
         // compute nodes on target EDGEs
@@ -3590,10 +3589,10 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
       if ( !myHelper->LoadNodeColumns( faceColumns, (*quad)->face, quadBot, meshDS ))
         return error(COMPERR_BAD_INPUT_MESH, TCom("Can't find regular quadrangle mesh ")
                      << "on a side face #" << MeshDS()->ShapeToIndex( (*quad)->face ));
-
-      if ( !faceColumns.empty() && (int)faceColumns.begin()->second.size() != VerticalSize() )
-        return error(COMPERR_BAD_INPUT_MESH, "Different 'vertical' discretization");
     }
+    if ( !faceColumns.empty() && (int)faceColumns.begin()->second.size() != VerticalSize() )
+      return error(COMPERR_BAD_INPUT_MESH, "Different 'vertical' discretization");
+
     // edge columns
     int id = MeshDS()->ShapeToIndex( *edgeIt );
     bool isForward = true; // meaningless for intenal wires
@@ -4893,6 +4892,7 @@ bool StdMeshers_Sweeper::projectIntPoints(const vector< gp_XYZ >&    fromBndPoin
                                           const vector< gp_XYZ >&    toBndPoints,
                                           const vector< gp_XYZ >&    fromIntPoints,
                                           vector< gp_XYZ >&          toIntPoints,
+                                          const double               r,
                                           NSProjUtils::TrsfFinder3D& trsf,
                                           vector< gp_XYZ > *         bndError)
 {
@@ -4917,43 +4917,23 @@ bool StdMeshers_Sweeper::projectIntPoints(const vector< gp_XYZ >&    fromBndPoin
       (*bndError)[ iP ]  = toBndPoints[ iP ] - fromTrsf;
     }
   }
-  return true;
-}
 
-//================================================================================
-/*!
- * \brief Add boundary error to ineternal points
- */
-//================================================================================
-
-void StdMeshers_Sweeper::applyBoundaryError(const vector< gp_XYZ >& bndPoints,
-                                            const vector< gp_XYZ >& bndError1,
-                                            const vector< gp_XYZ >& bndError2,
-                                            const double            r,
-                                            vector< gp_XYZ >&       intPoints,
-                                            vector< double >&       int2BndDist)
-{
-  // fix each internal point
-  const double eps = 1e-100;
-  for ( size_t iP = 0; iP < intPoints.size(); ++iP )
+  // apply boundary error
+  if ( bndError && toIntPoints.size() == myTopBotTriangles.size() )
   {
-    gp_XYZ & intPnt = intPoints[ iP ];
-
-    // compute distance from intPnt to each boundary node
-    double int2BndDistSum = 0;
-    for ( size_t iBnd = 0; iBnd < bndPoints.size(); ++iBnd )
+    for ( size_t iP = 0; iP < toIntPoints.size(); ++iP )
     {
-      int2BndDist[ iBnd ] = 1 / (( intPnt - bndPoints[ iBnd ]).SquareModulus() + eps );
-      int2BndDistSum += int2BndDist[ iBnd ];
-    }
-
-    // apply bndError
-    for ( size_t iBnd = 0; iBnd < bndPoints.size(); ++iBnd )
-    {
-      intPnt += bndError1[ iBnd ] * ( 1 - r ) * int2BndDist[ iBnd ] / int2BndDistSum;
-      intPnt += bndError2[ iBnd ] * r         * int2BndDist[ iBnd ] / int2BndDistSum;
+      const TopBotTriangles& tbTrias = myTopBotTriangles[ iP ];
+      for ( int i = 0; i < 3; ++i ) // boundary errors at 3 triangle nodes
+      {
+        toIntPoints[ iP ] +=
+          ( (*bndError)[ tbTrias.myBotTriaNodes[i] ] * tbTrias.myBotBC[i] * ( 1 - r ) +
+            (*bndError)[ tbTrias.myTopTriaNodes[i] ] * tbTrias.myTopBC[i] * ( r     ));
+      }
     }
   }
+
+  return true;
 }
 
 //================================================================================
@@ -4979,6 +4959,10 @@ bool StdMeshers_Sweeper::ComputeNodesByTrsf( const double tol,
     intPntsOfLayer[ zSrc ][ iP ] = intPoint( iP, zSrc );
     intPntsOfLayer[ zTgt ][ iP ] = intPoint( iP, zTgt );
   }
+
+  // for each internal column find boundary nodes whose error to use for correction
+  prepareTopBotDelaunay();
+  findDelaunayTriangles();
 
   // compute coordinates of internal nodes by projecting (transfroming) src and tgt
   // nodes towards the central layer
@@ -5006,10 +4990,12 @@ bool StdMeshers_Sweeper::ComputeNodesByTrsf( const double tol,
     }
     if (! projectIntPoints( fromSrcBndPnts, toSrcBndPnts,
                             intPntsOfLayer[ zS-1 ], intPntsOfLayer[ zS ],
+                            zS / ( zSize - 1.),
                             trsfOfLayer   [ zS-1 ], & bndError[ zS-1 ]))
       return false;
     if (! projectIntPoints( fromTgtBndPnts, toTgtBndPnts,
                             intPntsOfLayer[ zT+1 ], intPntsOfLayer[ zT ],
+                            zT / ( zSize - 1.),
                             trsfOfLayer   [ zT+1 ], & bndError[ zT+1 ]))
       return false;
 
@@ -5048,10 +5034,12 @@ bool StdMeshers_Sweeper::ComputeNodesByTrsf( const double tol,
   }
   if (! projectIntPoints( fromSrcBndPnts, toSrcBndPnts,
                           intPntsOfLayer[ zS-1 ], centerSrcIntPnts,
+                          zS / ( zSize - 1.),
                           trsfOfLayer   [ zS-1 ], & bndError[ zS-1 ]))
     return false;
   if (! projectIntPoints( fromTgtBndPnts, toTgtBndPnts,
                           intPntsOfLayer[ zT+1 ], centerTgtIntPnts,
+                          zT / ( zSize - 1.),
                           trsfOfLayer   [ zT+1 ], & bndError[ zT+1 ]))
     return false;
 
@@ -5070,24 +5058,7 @@ bool StdMeshers_Sweeper::ComputeNodesByTrsf( const double tol,
         (intPntsOfLayer[ zS-1 ][ iP ] - centerTgtIntPnts[ iP ]).SquareModulus() < tol*tol;
   }
 
-  // Evaluate an error of boundary points
-
-  bool bndErrorIsSmall = true;
-  for ( size_t iP = 0; ( iP < myBndColumns.size() && bndErrorIsSmall ); ++iP )
-  {
-    double sumError = 0;
-    for ( size_t z = 1; z < zS; ++z ) // loop on layers
-      sumError += ( bndError[ z-1     ][ iP ].Modulus() +
-                    bndError[ zSize-z ][ iP ].Modulus() );
-
-    bndErrorIsSmall = ( sumError < tol );
-  }
-
-  if ( !bndErrorIsSmall && !allowHighBndError )
-    return false;
-
   // compute final points on the central layer
-  std::vector< double > int2BndDist( myBndColumns.size() ); // work array of applyBoundaryError()
   double r = zS / ( zSize - 1.);
   if ( zS == zT )
   {
@@ -5095,11 +5066,6 @@ bool StdMeshers_Sweeper::ComputeNodesByTrsf( const double tol,
     {
       intPntsOfLayer[ zS ][ iP ] =
         ( 1 - r ) * centerSrcIntPnts[ iP ] + r * centerTgtIntPnts[ iP ];
-    }
-    if ( !bndErrorIsSmall )
-    {
-      applyBoundaryError( toSrcBndPnts, bndError[ zS-1 ], bndError[ zS+1 ], r,
-                          intPntsOfLayer[ zS ], int2BndDist );
     }
   }
   else
@@ -5111,17 +5077,9 @@ bool StdMeshers_Sweeper::ComputeNodesByTrsf( const double tol,
       intPntsOfLayer[ zT ][ iP ] =
         r * intPntsOfLayer[ zT ][ iP ] + ( 1 - r ) * centerTgtIntPnts[ iP ];
     }
-    if ( !bndErrorIsSmall )
-    {
-      applyBoundaryError( toSrcBndPnts, bndError[ zS-1 ], bndError[ zS+1 ], r,
-                          intPntsOfLayer[ zS ], int2BndDist );
-      applyBoundaryError( toTgtBndPnts, bndError[ zT+1 ], bndError[ zT-1 ], r,
-                          intPntsOfLayer[ zT ], int2BndDist );
-    }
   }
 
-  centerIntErrorIsSmall = true; // 3D_mesh_Extrusion_00/A3
-  bndErrorIsSmall = true;
+  //centerIntErrorIsSmall = true; // 3D_mesh_Extrusion_00/A3
   if ( !centerIntErrorIsSmall )
   {
     // Compensate the central error; continue adding projection
@@ -5153,9 +5111,11 @@ bool StdMeshers_Sweeper::ComputeNodesByTrsf( const double tol,
       }
       projectIntPoints( fromSrcBndPnts, toSrcBndPnts,
                         fromSrcIntPnts, toSrcIntPnts,
+                        zS / ( zSize - 1.),
                         trsfOfLayer[ zS+1 ], & srcBndError );
       projectIntPoints( fromTgtBndPnts, toTgtBndPnts,
                         fromTgtIntPnts, toTgtIntPnts,
+                        zT / ( zSize - 1.),
                         trsfOfLayer[ zT-1 ], & tgtBndError );
 
       // if ( zS == zTgt - 1 )
@@ -5186,15 +5146,6 @@ bool StdMeshers_Sweeper::ComputeNodesByTrsf( const double tol,
         zTIntPnts[ iP ] = r * zTIntPnts[ iP ]  +  ( 1 - r ) * toTgtIntPnts[ iP ];
       }
 
-      // compensate bnd error
-      if ( !bndErrorIsSmall )
-      {
-        applyBoundaryError( toSrcBndPnts, srcBndError, bndError[ zS+1 ], r,
-                            intPntsOfLayer[ zS ], int2BndDist );
-        applyBoundaryError( toTgtBndPnts, tgtBndError, bndError[ zT-1 ], r,
-                            intPntsOfLayer[ zT ], int2BndDist );
-      }
-
       fromSrcBndPnts.swap( toSrcBndPnts );
       fromSrcIntPnts.swap( toSrcIntPnts );
       fromTgtBndPnts.swap( toTgtBndPnts );
@@ -5202,27 +5153,8 @@ bool StdMeshers_Sweeper::ComputeNodesByTrsf( const double tol,
     }
   }  // if ( !centerIntErrorIsSmall )
 
-  else if ( !bndErrorIsSmall )
-  {
-    zS = zSrc + 1;
-    zT = zTgt - 1;
-    for ( ; zS < zT; ++zS, --zT ) // vertical loop on layers
-    {
-      for ( size_t iP = 0; iP < myBndColumns.size(); ++iP )
-      {
-        toSrcBndPnts[ iP ] = bndPoint( iP, zS );
-        toTgtBndPnts[ iP ] = bndPoint( iP, zT );
-      }
-      // compensate bnd error
-      applyBoundaryError( toSrcBndPnts, bndError[ zS-1 ], bndError[ zS-1 ], 0.5,
-                          intPntsOfLayer[ zS ], int2BndDist );
-      applyBoundaryError( toTgtBndPnts, bndError[ zT+1 ], bndError[ zT+1 ], 0.5,
-                          intPntsOfLayer[ zT ], int2BndDist );
-    }
-  }
 
-  // cout << "centerIntErrorIsSmall = " << centerIntErrorIsSmall<< endl;
-  // cout << "bndErrorIsSmall = " << bndErrorIsSmall<< endl;
+  //cout << "centerIntErrorIsSmall = " << centerIntErrorIsSmall<< endl;
 
   // Create nodes
   for ( size_t iP = 0; iP < myIntColumns.size(); ++iP )
@@ -5452,5 +5384,80 @@ void StdMeshers_Sweeper::prepareTopBotDelaunay()
     const SMDS_MeshNode* botNode = myIntColumns[i]->front();
     botNode->setIsMarked( false );
     myNodeID2ColID.Bind( botNode->GetID(), i );
+  }
+}
+
+//================================================================================
+/*!
+ * \brief For each internal node column, find Delaunay triangles including it
+ *        and Barycentric Coordinates withing the triangles. Fill in myTopBotTriangles
+ */
+//================================================================================
+
+void StdMeshers_Sweeper::findDelaunayTriangles()
+{
+  const SMDS_MeshNode     *botNode, *topNode;
+  const BRepMesh_Triangle *topTria;
+  TopBotTriangles          tbTrias;
+  bool  checkUV = true;
+
+  int nbInternalNodes = myIntColumns.size();
+  myTopBotTriangles.resize( nbInternalNodes );
+
+  myBotDelaunay->InitTraversal( nbInternalNodes );
+
+  while (( botNode = myBotDelaunay->NextNode( tbTrias.myBotBC, tbTrias.myBotTriaNodes )))
+  {
+    int colID = myNodeID2ColID( botNode->GetID() );
+    TNodeColumn* column = myIntColumns[ colID ];
+
+    // find a Delaunay triangle containing the topNode
+    topNode = column->back();
+    gp_XY topUV = myHelper->GetNodeUV( myTopFace, topNode, NULL, &checkUV );
+    // get a starting triangle basing on that top and bot boundary nodes have same index
+    topTria = myTopDelaunay->GetTriangleNear( tbTrias.myBotTriaNodes[0] );
+    topTria = myTopDelaunay->FindTriangle( topUV, topTria,
+                                           tbTrias.myTopBC, tbTrias.myTopTriaNodes );
+    if ( !topTria )
+      tbTrias.SetTopByBottom();
+
+    myTopBotTriangles[ colID ] = tbTrias;
+  }
+
+#ifdef _DEBUG_
+  if ( myBotDelaunay->NbVisitedNodes() < nbInternalNodes )
+    throw SALOME_Exception(LOCALIZED("Not all internal nodes found by Delaunay"));
+#endif
+
+  myBotDelaunay.reset();
+  myTopDelaunay.reset();
+  myNodeID2ColID.Clear();
+}
+
+//================================================================================
+/*!
+ * \brief Initialize fields
+ */
+//================================================================================
+
+StdMeshers_Sweeper::TopBotTriangles::TopBotTriangles()
+{
+  myBotBC[0] = myBotBC[1] = myBotBC[2] = myTopBC[0] = myTopBC[1] = myTopBC[2] = 0.;
+  myBotTriaNodes[0] = myBotTriaNodes[1] = myBotTriaNodes[2] = 0;
+  myTopTriaNodes[0] = myTopTriaNodes[1] = myTopTriaNodes[2] = 0;
+}
+
+//================================================================================
+/*!
+ * \brief Set top data equal to bottom data
+ */
+//================================================================================
+
+void StdMeshers_Sweeper::TopBotTriangles::SetTopByBottom()
+{
+  for ( int i = 0; i < 3; ++i )
+  {
+    myTopBC[i]        = myBotBC[i];
+    myTopTriaNodes[i] = myBotTriaNodes[0];
   }
 }

@@ -6,6 +6,8 @@ Extrusion 3D algorithm can be used for meshing prisms, i.e. 3D shapes
 defined by two opposing faces having the same number of vertices and
 edges. These two faces should be connected by quadrangle "side" faces.
 
+\image html prism_mesh.png "Clipping view of a mesh of a prism with non-planar base and top faces"
+
 The prism is allowed to have sides composed of several faces. (A prism
 side is a row of faces (or one face) connecting the corresponding edges of
 the top and base faces). However, a prism 

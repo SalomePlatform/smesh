@@ -24,6 +24,9 @@
 // Author    : Edward AGAPOV (eap)
 
 #include "SMESH_Delaunay.hxx"
+
+#include "SMESH_Comment.hxx"
+#include "SMESH_File.hxx"
 #include "SMESH_MeshAlgos.hxx"
 
 #include <BRepAdaptor_Surface.hxx>
@@ -233,7 +236,8 @@ const BRepMesh_Triangle* SMESH_Delaunay::FindTriangle( const gp_XY&             
       if ( 0. <= uSeg && uSeg <= 1. )
       {
         tria = & _triaDS->GetElement( triIDs.Index( 1 + ( triIDs.Index(1) == triaID )));
-        break;
+        if ( tria->Movability() != BRepMesh_Deleted )
+          break;
       }
     }
   }
@@ -250,10 +254,38 @@ const BRepMesh_Triangle* SMESH_Delaunay::FindTriangle( const gp_XY&             
 
 const BRepMesh_Triangle* SMESH_Delaunay::GetTriangleNear( int iBndNode )
 {
+  int nodeIDs[3];
+  int nbNbNodes = _bndNodes.size();
   const BRepMesh::ListOfInteger & linkIds = _triaDS->LinksConnectedTo( iBndNode + 1 );
-  const BRepMesh_PairOfIndex &    triaIds = _triaDS->ElementsConnectedTo( linkIds.First() );
-  const BRepMesh_Triangle&           tria = _triaDS->GetElement( triaIds.Index(1) );
-  return &tria;
+  BRepMesh::ListOfInteger::const_iterator iLink = linkIds.cbegin();
+  for ( ; iLink != linkIds.cend(); ++iLink )
+  {
+    const BRepMesh_PairOfIndex & triaIds = _triaDS->ElementsConnectedTo( *iLink );
+    {
+      const BRepMesh_Triangle& tria = _triaDS->GetElement( triaIds.Index(1) );
+      if ( tria.Movability() != BRepMesh_Deleted )
+      {
+        _triaDS->ElementNodes( tria, nodeIDs );
+        if ( nodeIDs[0]-1 < nbNbNodes &&
+             nodeIDs[1]-1 < nbNbNodes &&
+             nodeIDs[2]-1 < nbNbNodes )
+          return &tria;
+      }
+    }
+    if ( triaIds.Extent() > 1 )
+    {
+      const BRepMesh_Triangle& tria = _triaDS->GetElement( triaIds.Index(2) );
+      if ( tria.Movability() != BRepMesh_Deleted )
+      {
+        _triaDS->ElementNodes( tria, nodeIDs );
+        if ( nodeIDs[0]-1 < nbNbNodes &&
+             nodeIDs[1]-1 < nbNbNodes &&
+             nodeIDs[2]-1 < nbNbNodes )
+          return &tria;
+      }
+    }
+  }
+  return 0;
 }
 
 //================================================================================
@@ -293,4 +325,44 @@ void SMESH_Delaunay::addCloseNodes( const SMDS_MeshNode*     node,
       }
     }
   }
+}
+
+//================================================================================
+/*!
+ * \brief Write a python script that creates an equal mesh in Mesh module
+ */
+//================================================================================
+
+void SMESH_Delaunay::ToPython() const
+{
+  SMESH_Comment text;
+  text << "import salome, SMESH\n";
+  text << "salome.salome_init()\n";
+  text << "from salome.smesh import smeshBuilder\n";
+  text << "smesh = smeshBuilder.New(salome.myStudy)\n";
+  text << "mesh=smesh.Mesh()\n";
+  const char* endl = "\n";
+
+  for ( int i = 0; i < _triaDS->NbNodes(); ++i )
+  {
+    const BRepMesh_Vertex& v = _triaDS->GetNode( i+1 );
+    text << "mesh.AddNode( " << v.Coord().X() << ", " << v.Coord().Y() << ", 0 )" << endl;
+  }
+
+  int nodeIDs[3];
+  for ( int i = 0; i < _triaDS->NbElements(); ++i )
+  {
+    const BRepMesh_Triangle& t = _triaDS->GetElement( i+1 );
+    if ( t.Movability() == BRepMesh_Deleted )
+      continue;
+    _triaDS->ElementNodes( t, nodeIDs );
+    text << "mesh.AddFace([ " << nodeIDs[0] << ", " << nodeIDs[1] << ", " << nodeIDs[2] << " ])" << endl;
+  }
+
+  const char* fileName = "/tmp/Delaunay.py";
+  SMESH_File file( fileName, false );
+  file.remove();
+  file.openForWriting();
+  file.write( text.c_str(), text.size() );
+  cout << "execfile( '" << fileName << "')" << endl;
 }

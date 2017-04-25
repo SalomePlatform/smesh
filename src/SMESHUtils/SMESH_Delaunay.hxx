@@ -83,6 +83,9 @@ class SMESHUtils_EXPORT SMESH_Delaunay
   // delauney_UV = real_UV * scale
   const gp_XY& GetScale() const { return _scale; }
 
+  void ToPython() const;
+
+  Handle(BRepMesh_DataStructureOfDelaun) GetDS() { return _triaDS; }
 
  protected:
 

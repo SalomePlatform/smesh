@@ -602,8 +602,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
 
   Extrema_GenExtPS projector;
   GeomAdaptor_Surface aSurface( BRep_Tool::Surface( face ));
-  if ( theProject || needProject )
-    projector.Initialize( aSurface, 20,20, 1e-5,1e-5 );
+  projector.Initialize( aSurface, 20,20, 1e-5,1e-5 );
 
   int iPoint = 0;
   TNodePointIDMap nodePointIDMap;
@@ -690,7 +689,27 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
 
     myPoints.resize( nbNodes );
 
+    // care of INTERNAL VERTEXes
+    TopExp_Explorer vExp( face, TopAbs_VERTEX, TopAbs_EDGE );
+    for ( ; vExp.More(); vExp.Next() )
+    {
+      const SMDS_MeshNode* node =
+        SMESH_Algo::VertexNode( TopoDS::Vertex( vExp.Current()), aMeshDS );
+      if ( !node || node->NbInverseElements( SMDSAbs_Face ) == 0 )
+        continue;
+      myPoints.resize( ++nbNodes );
+      list< TPoint* > & fPoints = getShapePoints( face );
+      nodePointIDMap.insert( make_pair( node, iPoint ));
+      TPoint* p = &myPoints[ iPoint++ ];
+      fPoints.push_back( p );
+      gp_XY uv = helper.GetNodeUV( face, node );
+      p->myInitUV.SetCoord( uv.X(), uv.Y() );
+      p->myInitXYZ.SetCoord( p->myInitUV.X(), p->myInitUV.Y(), 0 );
+    }
+
     // Load U of points on edges
+
+    Bnd_Box2d edgesUVBox;
 
     list<int>::iterator nbEinW = myNbKeyPntInBoundary.begin();
     int iE = 0;
@@ -762,6 +781,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
           else
             keyPoint->myInitUV = C2d->Value( isForward ? f : l ).XY();
           keyPoint->myInitXYZ.SetCoord (keyPoint->myInitUV.X(), keyPoint->myInitUV.Y(), 0);
+          edgesUVBox.Add( gp_Pnt2d( keyPoint->myInitUV ));
         }
       }
       if ( !vPoint->empty() )
@@ -841,6 +861,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
             p->myInitUV = C2d->Value( u ).XY();
           }
           p->myInitXYZ.SetCoord( p->myInitUV.X(), p->myInitUV.Y(), 0 );
+          edgesUVBox.Add( gp_Pnt2d( p->myInitUV ));
           unIt++; unRIt++;
           iPoint++;
         }
@@ -866,6 +887,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
           else
             keyPoint->myInitUV = C2d->Value( isForward ? l : f ).XY();
           keyPoint->myInitXYZ.SetCoord( keyPoint->myInitUV.X(), keyPoint->myInitUV.Y(), 0 );
+          edgesUVBox.Add( gp_Pnt2d( keyPoint->myInitUV ));
         }
       }
       if ( !vPoint->empty() )
@@ -906,7 +928,7 @@ bool SMESH_Pattern::Load (SMESH_Mesh*        theMesh,
         nodePointIDMap.insert( make_pair( node, iPoint ));
         TPoint* p = &myPoints[ iPoint++ ];
         fPoints.push_back( p );
-        if ( theProject )
+        if ( theProject || edgesUVBox.IsOut( p->myInitUV ) )
           p->myInitUV = project( node, projector );
         else {
           const SMDS_FacePosition* pos =
