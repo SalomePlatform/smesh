@@ -7458,8 +7458,8 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes,
 
     for ( size_t i = 0; i < newElemDefs.size(); ++i )
     {
-      if ( i > 0 || !mesh->ChangeElementNodes( elem, &
-                                               newElemDefs[i].myNodes[0],
+      if ( i > 0 || !mesh->ChangeElementNodes( elem,
+                                               & newElemDefs[i].myNodes[0],
                                                newElemDefs[i].myNodes.size() ))
       {
         if ( i == 0 )
@@ -7552,6 +7552,30 @@ bool SMESH_MeshEditor::applyMerge( const SMDS_MeshElement* elem,
   {
     toRemove = true;
     nbResElems = 0;
+
+    if ( elem->IsQuadratic() && newElemDefs[0].myType == SMDSAbs_Face && nbNodes > 6 )
+    {
+      // if corner nodes stick, remove medium nodes between them from uniqueNodes
+      int nbCorners = nbNodes / 2;
+      for ( int iCur = 0; iCur < nbCorners; ++iCur )
+      {
+        int iPrev = ( iCur + 1 ) % nbCorners;
+        if ( curNodes[ iCur ] == curNodes[ iPrev ] ) // corners stick
+        {
+          int iMedium = iCur + nbCorners;
+          vector< const SMDS_MeshNode* >::iterator i =
+            std::find( uniqueNodes.begin() + nbCorners - nbRepl,
+                       uniqueNodes.end(),
+                       curNodes[ iMedium ]);
+          if ( i != uniqueNodes.end() )
+          {
+            --nbUniqueNodes;
+            for ( ; i+1 != uniqueNodes.end(); ++i )
+              *i = *(i+1);
+          }
+        }
+      }
+    }
 
     switch ( entity )
     {
@@ -7670,11 +7694,9 @@ bool SMESH_MeshEditor::applyMerge( const SMDS_MeshElement* elem,
       //    |       |
       //    +---+---+
       //   0    7    3
-      if (( nbUniqueNodes == 6 && nbRepl == 2 ) &&
-          (( iRepl[0] == 1 && iRepl[1] == 4 && curNodes[1] == curNodes[0] ) ||
-           ( iRepl[0] == 2 && iRepl[1] == 5 && curNodes[2] == curNodes[1] ) ||
-           ( iRepl[0] == 3 && iRepl[1] == 6 && curNodes[3] == curNodes[2] ) ||
-           ( iRepl[0] == 3 && iRepl[1] == 7 && curNodes[3] == curNodes[0] )))
+      if ( nbUniqueNodes == 6 &&
+           iRepl[0] < 4       &&
+           ( nbRepl == 1 || iRepl[1] >= 4 ))
       {
         toRemove = false;
       }
