@@ -219,31 +219,31 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo, mesh):
         pass
     reason = ""
     if hasattr( status, "__getitem__" ):
-        status,reason = status[0],status[1]
-    if status == HYP_UNKNOWN_FATAL :
+        status, reason = status[0]._v, status[1]
+    if status == HYP_UNKNOWN_FATAL._v:
         reason = "for unknown reason"
-    elif status == HYP_INCOMPATIBLE :
+    elif status == HYP_INCOMPATIBLE._v:
         reason = "this hypothesis mismatches the algorithm"
-    elif status == HYP_NOTCONFORM :
+    elif status == HYP_NOTCONFORM._v:
         reason = "a non-conform mesh would be built"
-    elif status == HYP_ALREADY_EXIST :
+    elif status == HYP_ALREADY_EXIST._v:
         if isAlgo: return # it does not influence anything
         reason = hypType + " of the same dimension is already assigned to this shape"
-    elif status == HYP_BAD_DIM :
+    elif status == HYP_BAD_DIM._v:
         reason = hypType + " mismatches the shape"
-    elif status == HYP_CONCURENT :
+    elif status == HYP_CONCURENT._v:
         reason = "there are concurrent hypotheses on sub-shapes"
-    elif status == HYP_BAD_SUBSHAPE :
+    elif status == HYP_BAD_SUBSHAPE._v:
         reason = "the shape is neither the main one, nor its sub-shape, nor a valid group"
-    elif status == HYP_BAD_GEOMETRY:
+    elif status == HYP_BAD_GEOMETRY._v:
         reason = "the algorithm is not applicable to this geometry"
-    elif status == HYP_HIDDEN_ALGO:
+    elif status == HYP_HIDDEN_ALGO._v:
         reason = "it is hidden by an algorithm of an upper dimension, which generates elements of all dimensions"
-    elif status == HYP_HIDING_ALGO:
+    elif status == HYP_HIDING_ALGO._v:
         reason = "it hides algorithms of lower dimensions by generating elements of all dimensions"
-    elif status == HYP_NEED_SHAPE:
+    elif status == HYP_NEED_SHAPE._v:
         reason = "algorithm can't work without shape"
-    elif status == HYP_INCOMPAT_HYPS:
+    elif status == HYP_INCOMPAT_HYPS._v:
         pass
     else:
         return
@@ -254,7 +254,7 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo, mesh):
             meshName = GetName( mesh )
             if meshName and meshName != NO_NAME:
                 where = '"%s" shape in "%s" mesh ' % ( geomName, meshName )
-    if status < HYP_UNKNOWN_FATAL and where:
+    if status < HYP_UNKNOWN_FATAL._v and where:
         print('"%s" was assigned to %s but %s' %( hypName, where, reason ))
     elif where:
         print('"%s" was not assigned to %s : %s' %( hypName, where, reason ))
@@ -1484,18 +1484,18 @@ class Mesh(metaclass=MeshMeta):
                 name = err.algoName
                 if len(name) == 0:
                     reason = '%s %sD algorithm is missing' % (glob, dim)
-                elif err.state == HYP_MISSING:
+                elif err.state._v == HYP_MISSING._v:
                     reason = ('%s %sD algorithm "%s" misses %sD hypothesis'
                               % (glob, dim, name, dim))
-                elif err.state == HYP_NOTCONFORM:
+                elif err.state._v == HYP_NOTCONFORM._v:
                     reason = 'Global "Not Conform mesh allowed" hypothesis is missing'
-                elif err.state == HYP_BAD_PARAMETER:
+                elif err.state._v == HYP_BAD_PARAMETER._v:
                     reason = ('Hypothesis of %s %sD algorithm "%s" has a bad parameter value'
                               % ( glob, dim, name ))
-                elif err.state == HYP_BAD_GEOMETRY:
+                elif err.state._v == HYP_BAD_GEOMETRY._v:
                     reason = ('%s %sD algorithm "%s" is assigned to mismatching'
                               'geometry' % ( glob, dim, name ))
-                elif err.state == HYP_HIDDEN_ALGO:
+                elif err.state._v == HYP_HIDDEN_ALGO._v:
                     reason = ('%s %sD algorithm "%s" is ignored due to presence of a %s '
                               'algorithm of upper dimension generating %sD mesh'
                               % ( glob, dim, name, glob, dim ))
@@ -1719,7 +1719,7 @@ class Mesh(metaclass=MeshMeta):
             AssureGeomPublished( self, geom, "shape for %s" % hyp.GetName())
             status = self.mesh.AddHypothesis(geom, hyp)
         else:
-            status = HYP_BAD_GEOMETRY,""
+            status = HYP_BAD_GEOMETRY, ""
         hyp_name = GetName( hyp )
         geom_name = ""
         if geom:
