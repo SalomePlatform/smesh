@@ -6,7 +6,7 @@ from SMESH_mechanic import *
 # make the mesh quadratic
 mesh.ConvertToQuadratic()
 # make some elements bi-quadratic
-for face in SubFaceL[: len(SubFaceL)/2]:
+for face in SubFaceL[: len(SubFaceL) // 2]:
     mesh.ConvertToQuadratic( theSubMesh=mesh.Group( face ), theToBiQuad=True )
 
 # get triangles with 7 nodes
