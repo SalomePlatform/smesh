@@ -92,6 +92,80 @@ import SALOMEDS
 import os
 import inspect
 
+# In case the omniORBpy EnumItem class does not fully support Python 3
+# (for instance in version 4.2.1-2), the comparison ordering methods must be
+# defined
+#
+try:
+    SMESH.Entity_Triangle < SMESH.Entity_Quadrangle
+except TypeError:
+    def enumitem_eq(self, other):
+        try:
+            if isinstance(other, omniORB.EnumItem):
+                if other._parent_id == self._parent_id:
+                    return self._v == other._v
+                else:
+                    return self._parent_id == other._parent_id
+            else:
+                return id(self) == id(other)
+        except:
+            return id(self) == id(other)
+
+    def enumitem_lt(self, other):
+        try:
+            if isinstance(other, omniORB.EnumItem):
+                if other._parent_id == self._parent_id:
+                    return self._v < other._v
+                else:
+                    return self._parent_id < other._parent_id
+            else:
+                return id(self) < id(other)
+        except:
+            return id(self) < id(other)
+
+    def enumitem_le(self, other):
+        try:
+            if isinstance(other, omniORB.EnumItem):
+                if other._parent_id == self._parent_id:
+                    return self._v <= other._v
+                else:
+                    return self._parent_id <= other._parent_id
+            else:
+                return id(self) <= id(other)
+        except:
+            return id(self) <= id(other)
+
+    def enumitem_gt(self, other):
+        try:
+            if isinstance(other, omniORB.EnumItem):
+                if other._parent_id == self._parent_id:
+                    return self._v > other._v
+                else:
+                    return self._parent_id > other._parent_id
+            else:
+                return id(self) > id(other)
+        except:
+            return id(self) > id(other)
+
+    def enumitem_ge(self, other):
+        try:
+            if isinstance(other, omniORB.EnumItem):
+                if other._parent_id == self._parent_id:
+                    return self._v >= other._v
+                else:
+                    return self._parent_id >= other._parent_id
+            else:
+                return id(self) >= id(other)
+        except:
+            return id(self) >= id(other)
+
+    omniORB.EnumItem.__eq__ = enumitem_eq
+    omniORB.EnumItem.__lt__ = enumitem_lt
+    omniORB.EnumItem.__le__ = enumitem_le
+    omniORB.EnumItem.__gt__ = enumitem_gt
+    omniORB.EnumItem.__ge__ = enumitem_ge
+
+
 ## Private class used to workaround a problem that sometimes isinstance(m, Mesh) returns False
 #
 class MeshMeta(type):
@@ -219,31 +293,31 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo, mesh):
         pass
     reason = ""
     if hasattr( status, "__getitem__" ):
-        status, reason = status[0]._v, status[1]
-    if status == HYP_UNKNOWN_FATAL._v:
+        status, reason = status[0], status[1]
+    if status == HYP_UNKNOWN_FATAL:
         reason = "for unknown reason"
-    elif status == HYP_INCOMPATIBLE._v:
+    elif status == HYP_INCOMPATIBLE:
         reason = "this hypothesis mismatches the algorithm"
-    elif status == HYP_NOTCONFORM._v:
+    elif status == HYP_NOTCONFORM:
         reason = "a non-conform mesh would be built"
-    elif status == HYP_ALREADY_EXIST._v:
+    elif status == HYP_ALREADY_EXIST:
         if isAlgo: return # it does not influence anything
         reason = hypType + " of the same dimension is already assigned to this shape"
-    elif status == HYP_BAD_DIM._v:
+    elif status == HYP_BAD_DIM:
         reason = hypType + " mismatches the shape"
-    elif status == HYP_CONCURENT._v:
+    elif status == HYP_CONCURENT:
         reason = "there are concurrent hypotheses on sub-shapes"
-    elif status == HYP_BAD_SUBSHAPE._v:
+    elif status == HYP_BAD_SUBSHAPE:
         reason = "the shape is neither the main one, nor its sub-shape, nor a valid group"
-    elif status == HYP_BAD_GEOMETRY._v:
+    elif status == HYP_BAD_GEOMETRY:
         reason = "the algorithm is not applicable to this geometry"
-    elif status == HYP_HIDDEN_ALGO._v:
+    elif status == HYP_HIDDEN_ALGO:
         reason = "it is hidden by an algorithm of an upper dimension, which generates elements of all dimensions"
-    elif status == HYP_HIDING_ALGO._v:
+    elif status == HYP_HIDING_ALGO:
         reason = "it hides algorithms of lower dimensions by generating elements of all dimensions"
-    elif status == HYP_NEED_SHAPE._v:
+    elif status == HYP_NEED_SHAPE:
         reason = "algorithm can't work without shape"
-    elif status == HYP_INCOMPAT_HYPS._v:
+    elif status == HYP_INCOMPAT_HYPS:
         pass
     else:
         return
@@ -254,7 +328,7 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo, mesh):
             meshName = GetName( mesh )
             if meshName and meshName != NO_NAME:
                 where = '"%s" shape in "%s" mesh ' % ( geomName, meshName )
-    if status < HYP_UNKNOWN_FATAL._v and where:
+    if status < HYP_UNKNOWN_FATAL and where:
         print('"%s" was assigned to %s but %s' %( hypName, where, reason ))
     elif where:
         print('"%s" was not assigned to %s : %s' %( hypName, where, reason ))
@@ -1003,7 +1077,7 @@ class smeshBuilder(SMESH._objref_SMESH_Gen):
         d = {}
         if hasattr(obj, "GetMeshInfo"):
             values = obj.GetMeshInfo()
-            for i in range(SMESH.Entity_Last._v):
+            for i in range(self.EnumToLong(SMESH.Entity_Last)):
                 if i < len(values): d[SMESH.EntityType._item(i)]=values[i]
             pass
         return d
@@ -1259,7 +1333,7 @@ class Mesh(metaclass=MeshMeta):
             self.geom = self.mesh.GetShapeToMesh()
 
         self.editor   = self.mesh.GetMeshEditor()
-        self.functors = [None] * SMESH.FT_Undefined._v
+        self.functors = [None] * self.smeshpyD.EnumToLong(SMESH.FT_Undefined)
 
         # set self to algoCreator's
         for attrName in dir(self):
@@ -1484,18 +1558,18 @@ class Mesh(metaclass=MeshMeta):
                 name = err.algoName
                 if len(name) == 0:
                     reason = '%s %sD algorithm is missing' % (glob, dim)
-                elif err.state._v == HYP_MISSING._v:
+                elif err.state == HYP_MISSING:
                     reason = ('%s %sD algorithm "%s" misses %sD hypothesis'
                               % (glob, dim, name, dim))
-                elif err.state._v == HYP_NOTCONFORM._v:
+                elif err.state == HYP_NOTCONFORM:
                     reason = 'Global "Not Conform mesh allowed" hypothesis is missing'
-                elif err.state._v == HYP_BAD_PARAMETER._v:
+                elif err.state == HYP_BAD_PARAMETER:
                     reason = ('Hypothesis of %s %sD algorithm "%s" has a bad parameter value'
                               % ( glob, dim, name ))
-                elif err.state._v == HYP_BAD_GEOMETRY._v:
+                elif err.state == HYP_BAD_GEOMETRY:
                     reason = ('%s %sD algorithm "%s" is assigned to mismatching'
                               'geometry' % ( glob, dim, name ))
-                elif err.state._v == HYP_HIDDEN_ALGO._v:
+                elif err.state == HYP_HIDDEN_ALGO:
                     reason = ('%s %sD algorithm "%s" is ignored due to presence of a %s '
                               'algorithm of upper dimension generating %sD mesh'
                               % ( glob, dim, name, glob, dim ))
@@ -4908,11 +4982,11 @@ class Mesh(metaclass=MeshMeta):
         return self.editor.CreateHoleSkin( radius, theShape, groupName, theNodesCoords )
 
     def _getFunctor(self, funcType ):
-        fn = self.functors[ funcType._v ]
+        fn = self.functors[ self.smeshpyD.EnumToLong(funcType) ]
         if not fn:
             fn = self.smeshpyD.GetFunctor(funcType)
             fn.SetMesh(self.mesh)
-            self.functors[ funcType._v ] = fn
+            self.functors[ self.smeshpyD.EnumToLong(funcType) ] = fn
         return fn
 
     ## Return value of a functor for a given element
