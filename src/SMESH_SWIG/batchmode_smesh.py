@@ -145,7 +145,7 @@ def AddNewAlgorithms(IOR):
 
     res, AlgorithmsRoot = mySComponentMesh.FindSubObject (Tag_AlgorithmsRoot)
     if  AlgorithmsRoot is None or res == 0:
-        AlgorithmsRoot = myStudyBuilde.NewObjectToTag (mySComponentMesh, Tag_AlgorithmsRoot)
+        AlgorithmsRoot = myStudyBuilder.NewObjectToTag (mySComponentMesh, Tag_AlgorithmsRoot)
         aName = myStudyBuilder.FindOrCreateAttribute(AlgorithmsRoot, "AttributeName")
         aName.SetValue("Algorithms")
         aSelAttr = myStudyBuilder.FindOrCreateAttribute(AlgorithmsRoot, "AttributeSelectable")
@@ -156,7 +156,7 @@ def AddNewAlgorithms(IOR):
   # Add New Algorithms
     newHypo = myStudyBuilder.NewObject(AlgorithmsRoot)
     aPixmap = myStudyBuilder.FindOrCreateAttribute(newHypo, "AttributePixMap")
-    aPixmap = anAttr._narrow(SALOMEDS.AttributePixMap)
+    aPixmap = aPixmap._narrow(SALOMEDS.AttributePixMap)
     H = orb.string_to_object(IOR)
     aType = H.GetName();    #QString in fact
     aPixmap.SetPixMap( "mesh_tree_algo.png_" + aType )

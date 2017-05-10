@@ -76,7 +76,6 @@ algo3d.SetMEDName(results)
 algo3d.SetNbPart(4)
 algo3d.SetBackground(False)
 algo3d.SetKeepFiles(False)
-algo3d.SetToMeshHoles(True)
 
 # Launch meshers
 # --------------
