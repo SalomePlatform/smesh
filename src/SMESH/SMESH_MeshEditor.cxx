@@ -7482,8 +7482,8 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes,
   }
 
   // Remove bad elements, then equal nodes (order important)
-  Remove( rmElemIds, false );
-  Remove( rmNodeIds, true );
+  Remove( rmElemIds, /*isNodes=*/false );
+  Remove( rmNodeIds, /*isNodes=*/true );
 
   return;
 }
@@ -7553,14 +7553,14 @@ bool SMESH_MeshEditor::applyMerge( const SMDS_MeshElement* elem,
     toRemove = true;
     nbResElems = 0;
 
-    if ( elem->IsQuadratic() && newElemDefs[0].myType == SMDSAbs_Face && nbNodes > 6 )
+    if ( newElemDefs[0].myIsQuad && newElemDefs[0].myType == SMDSAbs_Face && nbNodes > 6 )
     {
       // if corner nodes stick, remove medium nodes between them from uniqueNodes
       int nbCorners = nbNodes / 2;
       for ( int iCur = 0; iCur < nbCorners; ++iCur )
       {
-        int iPrev = ( iCur + 1 ) % nbCorners;
-        if ( curNodes[ iCur ] == curNodes[ iPrev ] ) // corners stick
+        int iNext = ( iCur + 1 ) % nbCorners;
+        if ( curNodes[ iCur ] == curNodes[ iNext ] ) // corners stick
         {
           int iMedium = iCur + nbCorners;
           vector< const SMDS_MeshNode* >::iterator i =
@@ -7711,11 +7711,9 @@ bool SMESH_MeshEditor::applyMerge( const SMDS_MeshElement* elem,
       //    |       |
       //    +---+---+
       //   0    7    3
-      if (( nbUniqueNodes == 7 && nbRepl == 2 && iRepl[1] != 8 ) &&
-          (( iRepl[0] == 1 && iRepl[1] == 4 && curNodes[1] == curNodes[0] ) ||
-           ( iRepl[0] == 2 && iRepl[1] == 5 && curNodes[2] == curNodes[1] ) ||
-           ( iRepl[0] == 3 && iRepl[1] == 6 && curNodes[3] == curNodes[2] ) ||
-           ( iRepl[0] == 3 && iRepl[1] == 7 && curNodes[3] == curNodes[0] )))
+      if ( nbUniqueNodes == 7 &&
+           iRepl[0] < 4       &&
+           ( nbRepl == 1 || iRepl[1] != 8 ))
       {
         toRemove = false;
       }

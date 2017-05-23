@@ -4962,7 +4962,8 @@ bool StdMeshers_Sweeper::ComputeNodesByTrsf( const double tol,
 
   // for each internal column find boundary nodes whose error to use for correction
   prepareTopBotDelaunay();
-  findDelaunayTriangles();
+  if ( !findDelaunayTriangles())
+    return false;
 
   // compute coordinates of internal nodes by projecting (transfroming) src and tgt
   // nodes towards the central layer
@@ -5390,11 +5391,11 @@ void StdMeshers_Sweeper::prepareTopBotDelaunay()
 //================================================================================
 /*!
  * \brief For each internal node column, find Delaunay triangles including it
- *        and Barycentric Coordinates withing the triangles. Fill in myTopBotTriangles
+ *        and Barycentric Coordinates within the triangles. Fill in myTopBotTriangles
  */
 //================================================================================
 
-void StdMeshers_Sweeper::findDelaunayTriangles()
+bool StdMeshers_Sweeper::findDelaunayTriangles()
 {
   const SMDS_MeshNode     *botNode, *topNode;
   const BRepMesh_Triangle *topTria;
@@ -5424,14 +5425,14 @@ void StdMeshers_Sweeper::findDelaunayTriangles()
     myTopBotTriangles[ colID ] = tbTrias;
   }
 
-#ifdef _DEBUG_
   if ( myBotDelaunay->NbVisitedNodes() < nbInternalNodes )
-    throw SALOME_Exception(LOCALIZED("Not all internal nodes found by Delaunay"));
-#endif
+    return false;
 
   myBotDelaunay.reset();
   myTopDelaunay.reset();
   myNodeID2ColID.Clear();
+
+  return true;
 }
 
 //================================================================================

@@ -453,7 +453,7 @@ private:
                            TNodeColumn& nodes );
 
   void prepareTopBotDelaunay();
-  void findDelaunayTriangles();
+  bool findDelaunayTriangles();
 
   std::vector< TZColumn >                 myZColumns; // Z distribution of boundary nodes
 

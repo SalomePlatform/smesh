@@ -553,28 +553,35 @@ bool SMESH_Algo::IsStraight( const TopoDS_Edge & E,
   case GeomAbs_Hyperbola:
   case GeomAbs_Parabola:
     return false;
-  // case GeomAbs_BezierCurve:
-  // case GeomAbs_BSplineCurve:
-  // case GeomAbs_OtherCurve:
+    // case GeomAbs_BezierCurve:
+    // case GeomAbs_BSplineCurve:
+    // case GeomAbs_OtherCurve:
   default:;
   }
-  const double   f = curve.FirstParameter();
-  const double   l = curve.LastParameter();
-  const gp_Pnt  pf = curve.Value( f );
-  const gp_Pnt  pl = curve.Value( l );
-  const gp_Vec v1( pf, pl );
-  const double v1Len = v1.Magnitude();
-  if ( v1Len < std::numeric_limits< double >::min() )
+
+  // evaluate how far from a straight line connecting the curve ends
+  // stand internal points of the curve
+  double  f = curve.FirstParameter();
+  double  l = curve.LastParameter();
+  gp_Pnt pf = curve.Value( f );
+  gp_Pnt pl = curve.Value( l );
+  gp_Vec lineVec( pf, pl );
+  double lineLen2 = lineVec.SquareMagnitude();
+  if ( lineLen2 < std::numeric_limits< double >::min() )
     return false; // E seems closed
-  const double tol = Min( 10 * curve.Tolerance(), v1Len * 1e-2 );
+
+  double edgeTol = 10 * curve.Tolerance();
+  double lenTol2 = lineLen2 * 1e-4; 
+  double tol2 = Min( edgeTol * edgeTol, lenTol2 );
+
   const double nbSamples = 7;
   for ( int i = 0; i < nbSamples; ++i )
   {
-    const double  r = ( i + 1 ) / nbSamples;
-    const gp_Pnt pi = curve.Value( f * r + l * ( 1 - r ));
-    const gp_Vec vi( pf, pi );
-    const double  h = 0.5 * v1.Crossed( vi ).Magnitude() / v1Len;
-    if ( h > tol )
+    double  r = ( i + 1 ) / nbSamples;
+    gp_Pnt pi = curve.Value( f * r + l * ( 1 - r ));
+    gp_Vec vi( pf, pi );
+    double h2 = lineVec.Crossed( vi ).SquareMagnitude() / lineLen2;
+    if ( h2 > tol2 )
       return false;
   }
   return true;

@@ -1251,7 +1251,7 @@ gp_Pnt StdMeshers_FaceSide::Value3d(double U) const
   // check parametrization of curve
   if( !myIsUniform[i] )
   {
-    double aLen3dU = r * myEdgeLength[i] * ( myFirst[i]>myLast[i] ? -1. : 1.);
+    double aLen3dU = r * myEdgeLength[i] * ( myFirst[i] > myLast[i] ? -1. : 1. );
     GCPnts_AbscissaPoint AbPnt
       ( const_cast<GeomAdaptor_Curve&>( myC3dAdaptor[i]), aLen3dU, myFirst[i] );
     if( AbPnt.IsDone() ) {
