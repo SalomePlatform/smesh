@@ -1,5 +1,5 @@
 from qtsalome import QSqlQuery
-from .tableDeBase import TableDeBase
+from Base.tableDeBase import TableDeBase
 
 class TablePerfs (TableDeBase):
       def __init__(self):
@@ -24,9 +24,9 @@ class TablePerfs (TableDeBase):
           texteQuery +=" and Machine ='"  + Machine + "';" 
           query.exec_(texteQuery)
           cpu=None
-          while (next(query)) :
+          while (query.next()) :
               cpu=query.value(0).toInt()[0]
-          while (next(query)) :
+          while (query.next()) :
               print("plusieurs enregistrements dans perf pour ",str(idMaillage)," ",str(idVersion)," ",Machine)
           if cpu==None :
               print("pas d enregistrement dans perf pour ",str(idMaillage)," ",str(idVersion)," ",Machine)

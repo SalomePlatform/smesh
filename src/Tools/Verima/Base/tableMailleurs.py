@@ -1,5 +1,5 @@
 from qtsalome import QSqlQuery
-from .tableDeBase import TableDeBase
+from Base.tableDeBase import TableDeBase
 
 class TableMailleurs (TableDeBase):
     def __init__(self):
@@ -17,7 +17,7 @@ class TableMailleurs (TableDeBase):
         maQuery=QSqlQuery()
         maQuery.exec_(texteQuery)
         nb=0
-        while(next(maQuery)): nb=nb+1
+        while(maQuery.next()): nb=nb+1
         return nb
 
     def remplit(self):
@@ -43,7 +43,7 @@ class TableMailleurs (TableDeBase):
         texteQuery="select * from  Mailleurs;"
         maQuery=QSqlQuery()
         maQuery.exec_(texteQuery)
-        while(next(maQuery)):
+        while(maQuery.next()):
             l1.append( maQuery.value(0).toInt()[0])
             l2.append( maQuery.value(1).toString())
         return l1,l2
@@ -52,6 +52,6 @@ class TableMailleurs (TableDeBase):
         texteQuery="select  nomMailleur from  Mailleurs where id = " + str(mailleurId) + " ;"
         maQuery=QSqlQuery()
         maQuery.exec_(texteQuery)
-        while(next(maQuery)):
+        while(maQuery.next()):
             mailleurName=maQuery.value(0).toString()
         return mailleurName

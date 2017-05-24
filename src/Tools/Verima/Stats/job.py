@@ -18,7 +18,7 @@ class Job:
       
   def execute(self):
       home=os.environ['HOME']
-      commande=os.path.abspath(os.path.join(home,self.salomePath,"runAppli"))
+      commande=os.path.abspath(os.path.join(home,self.salomePath,"salome"))
       script= os.path.abspath(os.path.join(os.path.abspath(__file__),'../..',self.script)) 
 
       debut=time.time()

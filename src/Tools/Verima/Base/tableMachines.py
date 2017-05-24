@@ -1,6 +1,6 @@
-from qtsalome import QSqlQuery
-from .tableDeBase import TableDeBase
 import os
+from qtsalome import QSqlQuery
+from Base.tableDeBase import TableDeBase
 
 class TableMachines (TableDeBase):
     def __init__(self):
@@ -23,7 +23,7 @@ class TableMachines (TableDeBase):
         texteQuery ="select nomMachine from Machines where nomMachine ='" + machine +"' ;"
         query.exec_(texteQuery)
         nb=0
-        while(next(query)):
+        while(query.next()):
             nb=nb+1
             nom=str(query.value(0).toString())
         if nb != 1 : return 0,  ""

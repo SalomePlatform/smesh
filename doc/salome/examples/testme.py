@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright (C) 2007-2016  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
@@ -17,7 +18,6 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-#!/usr/bin/env python
 
 import unittest, sys, os
 

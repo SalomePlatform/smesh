@@ -1,5 +1,5 @@
 from qtsalome import QSqlQuery
-from .tableDeBase import TableDeBase
+from Base.tableDeBase import TableDeBase
 
 class TableVersions (TableDeBase):
     def __init__(self):
@@ -33,7 +33,7 @@ class TableVersions (TableDeBase):
             texteQuery ="select id, nomVersion from Versions where nomVersion ='" + version +"' ;"
         query.exec_(texteQuery)
         nb=0
-        while(next(query)):
+        while(query.next()):
             nb=nb+1
             id=query.value(0).toInt()[0]
             nom=query.value(1).toString()

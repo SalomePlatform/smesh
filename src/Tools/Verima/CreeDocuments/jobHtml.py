@@ -1,19 +1,18 @@
-#!/usr/bin/env python
-# -*- coding: iso-8859-1 -*-
+#!/usr/bin/env python3
 
 import string
 import os
 
-dir=os.path.dirname(os.path.abspath(__file__))
-FichierEntete=os.path.join(dir,'templatesHtml/entete.html')
-FichierMaillageEntete=os.path.join(dir,'templatesHtml/maillageEntete.html')
-FichierJob=os.path.join(dir,'templatesHtml/job.html')
-FichierTableau=os.path.join(dir,'templatesHtml/tableau.html')
-FichierLigne=os.path.join(dir,'templatesHtml/ligne.html')
-FichierFinTableau=os.path.join(dir,'templatesHtml/tableauFin.html')
-FichierSansGroupe=os.path.join(dir,'templatesHtml/sansGroupe.html')
-FichierGroupeRatio=os.path.join(dir,'templatesHtml/groupeRatio.html')
-FichierGroupeTaille=os.path.join(dir,'templatesHtml/groupeTaille.html')
+adir=os.path.dirname(os.path.abspath(__file__))
+FichierEntete=os.path.join(adir,'templatesHtml/entete.html')
+FichierMaillageEntete=os.path.join(adir,'templatesHtml/maillageEntete.html')
+FichierJob=os.path.join(adir,'templatesHtml/job.html')
+FichierTableau=os.path.join(adir,'templatesHtml/tableau.html')
+FichierLigne=os.path.join(adir,'templatesHtml/ligne.html')
+FichierFinTableau=os.path.join(adir,'templatesHtml/tableauFin.html')
+FichierSansGroupe=os.path.join(adir,'templatesHtml/sansGroupe.html')
+FichierGroupeRatio=os.path.join(adir,'templatesHtml/groupeRatio.html')
+FichierGroupeTaille=os.path.join(adir,'templatesHtml/groupeTaille.html')
 
 
 def compte_all(texte, subString):
@@ -26,7 +25,7 @@ def compte_all(texte, subString):
         start = trouve + len(subString)
 
 def FormateTexte(texte,dico):
-    for clef in list(dico.keys()):
+    for clef in dico:
         texteARemplacer="%"+str(clef)+"%"
         remplacement=dico[clef]
         if texte.find(texteARemplacer) < 0 :
@@ -47,33 +46,33 @@ def FormateLigne(texte,nb):
     return texte
 
 def CreeEntete(dico):
-    texteIni=open(FichierEntete).read()
+    texteIni=open(FichierEntete, 'r', encoding='utf8').read()
     texteRetour=FormateTexte(texteIni,dico)
     return texteRetour
 
 def CreeMaillage(dico):
-    texteIni=open(FichierMaillageEntete).read()
+    texteIni=open(FichierMaillageEntete, 'r', encoding='utf8').read()
     texteRetour=FormateTexte(texteIni,dico)
     return texteRetour
 
 def CreeJob(dico):
-    texte=open(FichierJob).read()
+    texte=open(FichierJob, 'r', encoding='utf8').read()
     texteRetour=FormateTexte(texte,dico)
     return texteRetour
 
 def CreeGroupeTaille(dico):
-    texte=open(FichierGroupeTaille).read()
+    texte=open(FichierGroupeTaille, 'r', encoding='utf8').read()
     texteRetour=FormateTexte(texte,dico)
     return texteRetour
 
 def CreeGroupeRatio(dico):
-    texte=open(FichierGroupeRatio).read()
+    texte=open(FichierGroupeRatio, 'r', encoding='utf8').read()
     texteRetour=FormateTexte(texte,dico)
     return texteRetour
 
 
 def CreeMailleOuGroupe(dico,nb):
-    texteIni=open(FichierTableau).read()
+    texteIni=open(FichierTableau, 'r', encoding='utf8').read()
     texteLigneIni=open(FichierLigne).read()
     for i in range (2,nb+1) :
         texteLigne=FormateLigne(texteLigneIni,i)
@@ -81,16 +80,15 @@ def CreeMailleOuGroupe(dico,nb):
 
     texteRetour=FormateTexte(texteIni,dico)
 
-    finTexte=open(FichierFinTableau).read()
+    finTexte=open(FichierFinTableau, 'r', encoding='utf8').read()
     texteFinal=texteRetour+finTexte
 
     return texteFinal
 
 
 def EcritFichier(texte,filename):
-    fp=open(filename,'w')
-    fp.write(texte)
-    fp.close()
+    with open(filename,'w',encoding='utf8') as fp:
+        fp.write(texte)
     
 
 class Document:

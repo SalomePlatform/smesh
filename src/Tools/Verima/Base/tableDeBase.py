@@ -45,7 +45,7 @@ class TableDeBase :
         maQuery=QSqlQuery()
         maQuery.exec_(texteQuery)
         nb=0
-        while(next(maQuery)): nb=nb+1
+        while(maQuery.next()): nb=nb+1
         return nb
 
 
@@ -70,7 +70,7 @@ class TableDeBase :
         maQuery=QSqlQuery()
         maQuery.exec_(texteQuery)
         asauver=0
-        while(next(maQuery)):
+        while(maQuery.next()):
             asauver=1
             for i in range(len(self.FieldStringList)):
                 texteSauve+=str(maQuery.value(i).toString())+";"

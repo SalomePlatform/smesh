@@ -1,22 +1,20 @@
-# -*- coding: utf-8 -*-
-
 import os
 import datetime
 import sys
 
-from qtsalome import QSqlQuery
-from .tableMaillages  import TableMaillages
-from .tableMailleurs  import TableMailleurs
-from .tableMachines   import TableMachines
-from .tableVersions   import TableVersions
-from .tableGroupesRef import TableGroupesRef
-from .tableGroupes    import TableGroupes
-from .tableMailles    import TableMailles
-from .tableTailles    import TableTailles
-from .tableRatios     import TableRatios
-from .tableGroupeRatios     import TableGroupeRatios
-from .tableGroupeTailles    import TableGroupeTailles
-from .tablePerfs      import TablePerfs
+from qtsalome import QSqlQuery, QSqlDatabase
+from Base.tableMaillages  import TableMaillages
+from Base.tableMailleurs  import TableMailleurs
+from Base.tableMachines   import TableMachines
+from Base.tableVersions   import TableVersions
+from Base.tableGroupesRef import TableGroupesRef
+from Base.tableGroupes    import TableGroupes
+from Base.tableMailles    import TableMailles
+from Base.tableTailles    import TableTailles
+from Base.tableRatios     import TableRatios
+from Base.tableGroupeRatios     import TableGroupeRatios
+from Base.tableGroupeTailles    import TableGroupeTailles
+from Base.tablePerfs      import TablePerfs
 from Stats.job       import Job
 from CreeDocuments.jobHtml       import Document
 

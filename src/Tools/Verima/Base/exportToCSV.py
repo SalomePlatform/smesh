@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys,os
 
@@ -9,14 +9,14 @@ if os.path.dirname(pathRacine) not in sys.path :
 from .dataBase import Base
 
 if __name__ == "__main__":
-      from optparse import OptionParser
-      p=OptionParser()
-      p.add_option('-p',dest='partiel',action="store_true", default=False,help='export de machine, groupe, ratio Maille et Perf uniquement')
-      p.add_option('-d',dest='database',default="../myMesh.db",help='nom de la database')
-      options, args = p.parse_args()
+      from argparse import ArgumentParser
+      p=ArgumentParser()
+      p.add_argument('-p',dest='partiel',action="store_true", default=False,help='export de machine, groupe, ratio Maille et Perf uniquement')
+      p.add_argument('-d',dest='database',default="../myMesh.db",help='nom de la database')
+      args = p.parse_args()
 
-      maBase=Base(options.database)
+      maBase=Base(args.database)
       maBase.initialise()
-      maBase.exportToCSV(options.partiel)
+      maBase.exportToCSV(args.partiel)
       maBase.close()
 

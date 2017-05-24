@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys,os
 rep=os.path.dirname(os.path.abspath(__file__))
@@ -6,19 +6,19 @@ installDir=os.path.join(rep,'..')
 sys.path.insert(0,installDir)
 
 from qtsalome import QApplication
-from Gui.maFenetreChoix_ui import MaFenetreChoix
+from Gui.maFenetreChoix import MaFenetreChoix
 from Base.dataBase import Base
 
 
 
 if __name__ == "__main__":
-      from optparse import OptionParser
-      p=OptionParser()
-      p.add_option('-d',dest='database',default="myMesh.db",help='nom de la database')
-      options, args = p.parse_args()
+      from argparse import ArgumentParser
+      p=ArgumentParser()
+      p.add_argument('-d',dest='database',default="myMesh.db",help='nom de la database')
+      args = p.parse_args()
 
       app = QApplication(sys.argv)
-      maBase=Base(options.database)
+      maBase=Base(args.database)
       maBase.initialise()
       window = MaFenetreChoix(maBase)
       window.show()

@@ -1,5 +1,5 @@
 from qtsalome import QSqlQuery
-from .tableDeBase import TableDeBase
+from Base.tableDeBase import TableDeBase
 
 class TableMailles (TableDeBase):
       def __init__(self):
@@ -28,7 +28,7 @@ class TableMailles (TableDeBase):
             query.exec_(texteQuery)
             nb=0
             val=0                          # Valeur si l enregistrement n existe pas
-            while (next(query)) :
+            while (query.next()) :
                val=query.value(0).toInt()[0]
                nb=nb+1
             if nb > 1 : print("Double valeur de Reference dans la table des mailles")
@@ -40,6 +40,6 @@ class TableMailles (TableDeBase):
             texteQuery ="select distinct Entite from Mailles;"
             query.exec_(texteQuery)
             maListe=[]
-            while (next(query)) :
+            while (query.next()) :
                 maListe.append(str(query.value(0).toString()))
             return maListe

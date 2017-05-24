@@ -1,5 +1,5 @@
-from desFenetreChoix_ui import Ui_Choix
 from qtsalome import *
+from .desFenetreChoix import Ui_Choix
 from .monEditor import TableEditor
 
 # Import des panels

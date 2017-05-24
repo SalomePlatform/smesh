@@ -17,7 +17,7 @@ class TableEditor(QDialog):
          quitButton=QPushButton("Quit")
          buttonBox=QDialogButtonBox(Qt.Vertical)
          buttonBox.addButton(quitButton, QDialogButtonBox.RejectRole);
-         quitButton.clicked.connect(self.close())
+         quitButton.clicked.connect(self.close)
 
          mainLayout = QHBoxLayout(self)
          mainLayout.addWidget(self.view)
@@ -31,7 +31,7 @@ class TableEditor(QDialog):
          self.view.adjustSize()
          self.adjustSize()
          self.view.pressed[QModelIndex].connect(self.donneLigne)
-         self.view.itemPressed[QTableWidgetItem].conect(self.donneLigne)
+         self.view.itemPressed[QTableWidgetItem].connect(self.donneLigne)
          self.view.clicked[QModelIndex].connect(self.donneLigne)
          self.view.clicked.connect(self.donneLigne)
          self.view.pressed.connect(self.donneLigne)

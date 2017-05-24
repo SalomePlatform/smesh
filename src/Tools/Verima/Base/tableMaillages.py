@@ -1,5 +1,5 @@
 from qtsalome import QSqlQuery
-from .tableDeBase import TableDeBase
+from Base.tableDeBase import TableDeBase
 
 class TableMaillages (TableDeBase):
     def __init__(self):
@@ -21,9 +21,9 @@ class TableMaillages (TableDeBase):
         valeur=None
         texteQuery ='select '+ nomChamp + ' from Maillages  where id=' + str(idMaillage) + ";"
         query.exec_(texteQuery)
-        while (next(query)) :
+        while (query.next()) :
             valeur=query.value(0).toInt()[0]
-        while (next(query)) :
+        while (query.next()) :
             print("plusieurs enregistrements dans Maillages pour ",str(idMaillage))
             exit()
         return valeur
@@ -33,7 +33,7 @@ class TableMaillages (TableDeBase):
         maQuery=QSqlQuery()
         maQuery.exec_(texteQuery)
         nb=0
-        while(next(maQuery)): nb=nb+1
+        while(maQuery.next()): nb=nb+1
         return nb
 
     def remplit(self):
@@ -48,7 +48,7 @@ class TableMaillages (TableDeBase):
         texteQuery="select id, nomScript,medResultat from Maillages;"
         maQuery.exec_(texteQuery)
         listeMaillages=[]
-        while(next(maQuery)):
+        while(maQuery.next()):
             listeMaillages.append((maQuery.value(0).toInt()[0], maQuery.value(1).toString(), maQuery.value(2).toString()))
         return listeMaillages
 
@@ -59,7 +59,7 @@ class TableMaillages (TableDeBase):
             texteQuery="select id, nomScript,medResultat from Maillages where id = " + str(idM) +';'
             maQuery.exec_(texteQuery)
             maSize=0
-            while(next(maQuery)):
+            while(maQuery.next()):
                 maSize+=1
                 newListeMaillages.append((maQuery.value(0).toInt()[0], maQuery.value(1).toString(), maQuery.value(2).toString()))
             if maSize != 1 :
@@ -70,7 +70,7 @@ class TableMaillages (TableDeBase):
         texteQuery="select id,nomMaillage,seuilCPU,seuilRatio,seuilTaille,seuilNbMaille from  Maillages where id = "+ str(idMaillage) +"  ;"
         maQuery=QSqlQuery()
         maQuery.exec_(texteQuery)
-        while(next(maQuery)):
+        while(maQuery.next()):
             l1 = maQuery.value(0).toInt()[0]
             l2 = maQuery.value(1).toString()
             l3 = maQuery.value(2).toInt()[0]
@@ -84,7 +84,7 @@ class TableMaillages (TableDeBase):
         texteQuery="select id,nomMaillage from  Maillages order by id;"
         maQuery=QSqlQuery()
         maQuery.exec_(texteQuery)
-        while(next(maQuery)):
+        while(maQuery.next()):
             maillagesIdListe.append( maQuery.value(0).toInt()[0])
             maillagesNomListe.append( maQuery.value(1).toString())
         return maillagesIdListe, maillagesNomListe
@@ -95,6 +95,6 @@ class TableMaillages (TableDeBase):
         print(texteQuery)
         print(maQuery.exec_(texteQuery))
         maQuery.exec_(texteQuery)
-        while(next(maQuery)):
+        while(maQuery.next()):
             idMailleur = maQuery.value(0).toInt()[0]
         return idMailleur

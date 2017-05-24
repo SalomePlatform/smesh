@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from qtsalome import *
 from .Gui.myMain_ui import Ui_Gestion
