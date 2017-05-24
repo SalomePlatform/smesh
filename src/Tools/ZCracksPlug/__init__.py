@@ -4,12 +4,6 @@ from Zcracks import utilityFunctions as uF
 
 os.environ['QT_QPA_PLATFORM_PLUGIN_PATH']=os.path.join(os.environ['QTDIR'],'plugins','platforms')
 
-if 'MESHGEMSHOME' in os.environ:
-  meshgemsdir=os.environ['MESHGEMSHOME']
-  if len(meshgemsdir) > 0:
-    meshgems=meshgemsdir.split(os.sep)[-1]
-    uF.removeFromSessionPath('LD_LIBRARY_PATH', meshgems)
-
 #commande="/bin/bash -c ""source $HOME/zebulon/Z8.6.6_NEW/do_config_bash"""
 #os.system(commande)
 
