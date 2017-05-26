@@ -375,6 +375,10 @@ def FirstVertexOnCurve(mesh, edge):
     else:
         return vv[1]
 
+## Return a long value from enumeration
+def EnumToLong(theItem):
+    return theItem._v
+
 # end of l1_auxiliary
 ## @}
 
@@ -490,11 +494,6 @@ class smeshBuilder(SMESH._objref_SMESH_Gen):
         if isinstance(obj,str):
             obj,name = name,obj
         return Mesh(self,self.geompyD,obj,name)
-
-    ## Return a long value from enumeration
-    #  @ingroup l1_auxiliary
-    def EnumToLong(self,theItem):
-        return theItem._v
 
     ## Return a string representation of the color.
     #  To be used with filters.
@@ -749,13 +748,13 @@ class smeshBuilder(SMESH._objref_SMESH_Gen):
     #  @return SMESH.Filter.Criterion
     #  @ingroup l1_controls
     def GetEmptyCriterion(self):
-        Type = self.EnumToLong(FT_Undefined)
-        Compare = self.EnumToLong(FT_Undefined)
+        Type = EnumToLong(FT_Undefined)
+        Compare = EnumToLong(FT_Undefined)
         Threshold = 0
         ThresholdStr = ""
         ThresholdID = ""
-        UnaryOp = self.EnumToLong(FT_Undefined)
-        BinaryOp = self.EnumToLong(FT_Undefined)
+        UnaryOp = EnumToLong(FT_Undefined)
+        BinaryOp = EnumToLong(FT_Undefined)
         Tolerance = 1e-07
         TypeOfElement = ALL
         Precision = -1 ##@1e-07
@@ -790,21 +789,21 @@ class smeshBuilder(SMESH._objref_SMESH_Gen):
             raise TypeError("CritType should be of SMESH.FunctorType")
         aCriterion               = self.GetEmptyCriterion()
         aCriterion.TypeOfElement = elementType
-        aCriterion.Type          = self.EnumToLong(CritType)
+        aCriterion.Type          = EnumToLong(CritType)
         aCriterion.Tolerance     = Tolerance
 
         aThreshold = Threshold
 
         if Compare in [FT_LessThan, FT_MoreThan, FT_EqualTo]:
-            aCriterion.Compare = self.EnumToLong(Compare)
+            aCriterion.Compare = EnumToLong(Compare)
         elif Compare == "=" or Compare == "==":
-            aCriterion.Compare = self.EnumToLong(FT_EqualTo)
+            aCriterion.Compare = EnumToLong(FT_EqualTo)
         elif Compare == "<":
-            aCriterion.Compare = self.EnumToLong(FT_LessThan)
+            aCriterion.Compare = EnumToLong(FT_LessThan)
         elif Compare == ">":
-            aCriterion.Compare = self.EnumToLong(FT_MoreThan)
+            aCriterion.Compare = EnumToLong(FT_MoreThan)
         elif Compare != FT_Undefined:
-            aCriterion.Compare = self.EnumToLong(FT_EqualTo)
+            aCriterion.Compare = EnumToLong(FT_EqualTo)
             aThreshold = Compare
 
         if CritType in [FT_BelongToGeom,     FT_BelongToPlane, FT_BelongToGenSurface,
@@ -886,7 +885,7 @@ class smeshBuilder(SMESH._objref_SMESH_Gen):
         elif CritType == FT_ElemGeomType:
             # Check the Threshold
             try:
-                aCriterion.Threshold = self.EnumToLong(aThreshold)
+                aCriterion.Threshold = EnumToLong(aThreshold)
                 assert( aThreshold in SMESH.GeometryType._items )
             except:
                 if isinstance(aThreshold, int):
@@ -898,7 +897,7 @@ class smeshBuilder(SMESH._objref_SMESH_Gen):
         elif CritType == FT_EntityType:
             # Check the Threshold
             try:
-                aCriterion.Threshold = self.EnumToLong(aThreshold)
+                aCriterion.Threshold = EnumToLong(aThreshold)
                 assert( aThreshold in SMESH.EntityType._items )
             except:
                 if isinstance(aThreshold, int):
@@ -922,7 +921,7 @@ class smeshBuilder(SMESH._objref_SMESH_Gen):
                           FT_EqualNodes,FT_EqualEdges,FT_EqualFaces,FT_EqualVolumes ]:
             # At this point the Threshold is unnecessary
             if aThreshold ==  FT_LogicalNOT:
-                aCriterion.UnaryOp = self.EnumToLong(FT_LogicalNOT)
+                aCriterion.UnaryOp = EnumToLong(FT_LogicalNOT)
             elif aThreshold in [FT_LogicalAND, FT_LogicalOR]:
                 aCriterion.BinaryOp = aThreshold
         else:
@@ -935,16 +934,16 @@ class smeshBuilder(SMESH._objref_SMESH_Gen):
                 return None
 
         if Threshold ==  FT_LogicalNOT or UnaryOp ==  FT_LogicalNOT:
-            aCriterion.UnaryOp = self.EnumToLong(FT_LogicalNOT)
+            aCriterion.UnaryOp = EnumToLong(FT_LogicalNOT)
 
         if Threshold in [FT_LogicalAND, FT_LogicalOR]:
-            aCriterion.BinaryOp = self.EnumToLong(Threshold)
+            aCriterion.BinaryOp = EnumToLong(Threshold)
 
         if UnaryOp in [FT_LogicalAND, FT_LogicalOR]:
-            aCriterion.BinaryOp = self.EnumToLong(UnaryOp)
+            aCriterion.BinaryOp = EnumToLong(UnaryOp)
 
         if BinaryOp in [FT_LogicalAND, FT_LogicalOR]:
-            aCriterion.BinaryOp = self.EnumToLong(BinaryOp)
+            aCriterion.BinaryOp = EnumToLong(BinaryOp)
 
         return aCriterion
 
@@ -991,8 +990,8 @@ class smeshBuilder(SMESH._objref_SMESH_Gen):
     #  @ingroup l1_controls
     def GetFilterFromCriteria(self,criteria, binOp=SMESH.FT_LogicalAND):
         for i in range( len( criteria ) - 1 ):
-            if criteria[i].BinaryOp == self.EnumToLong( SMESH.FT_Undefined ):
-                criteria[i].BinaryOp = self.EnumToLong( binOp )
+            if criteria[i].BinaryOp == EnumToLong( SMESH.FT_Undefined ):
+                criteria[i].BinaryOp = EnumToLong( binOp )
         aFilterMgr = self.CreateFilterManager()
         aFilter = aFilterMgr.CreateFilter()
         aFilter.SetCriteria(criteria)
@@ -1077,7 +1076,7 @@ class smeshBuilder(SMESH._objref_SMESH_Gen):
         d = {}
         if hasattr(obj, "GetMeshInfo"):
             values = obj.GetMeshInfo()
-            for i in range(self.EnumToLong(SMESH.Entity_Last)):
+            for i in range(EnumToLong(SMESH.Entity_Last)):
                 if i < len(values): d[SMESH.EntityType._item(i)]=values[i]
             pass
         return d
@@ -1333,7 +1332,7 @@ class Mesh(metaclass=MeshMeta):
             self.geom = self.mesh.GetShapeToMesh()
 
         self.editor   = self.mesh.GetMeshEditor()
-        self.functors = [None] * self.smeshpyD.EnumToLong(SMESH.FT_Undefined)
+        self.functors = [None] * EnumToLong(SMESH.FT_Undefined)
 
         # set self to algoCreator's
         for attrName in dir(self):
@@ -1672,7 +1671,7 @@ class Mesh(metaclass=MeshMeta):
         groups = []
         for algoName, shapes in list(algo2shapes.items()):
             while shapes:
-                groupType = self.smeshpyD.EnumToLong( shapes[0].GetShapeType() )
+                groupType = EnumToLong( shapes[0].GetShapeType() )
                 otherTypeShapes = []
                 sameTypeShapes  = []
                 group = self.geompyD.CreateGroup( self.geom, groupType )
@@ -4982,11 +4981,11 @@ class Mesh(metaclass=MeshMeta):
         return self.editor.CreateHoleSkin( radius, theShape, groupName, theNodesCoords )
 
     def _getFunctor(self, funcType ):
-        fn = self.functors[ self.smeshpyD.EnumToLong(funcType) ]
+        fn = self.functors[ EnumToLong(funcType) ]
         if not fn:
             fn = self.smeshpyD.GetFunctor(funcType)
             fn.SetMesh(self.mesh)
-            self.functors[ self.smeshpyD.EnumToLong(funcType) ] = fn
+            self.functors[ EnumToLong(funcType) ] = fn
         return fn
 
     ## Return value of a functor for a given element
