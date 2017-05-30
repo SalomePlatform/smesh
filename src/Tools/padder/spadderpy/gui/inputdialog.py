@@ -93,7 +93,7 @@ class InputDialog(GenericDialog):
         # indexation.
         self.MESHTYPE_ICONS = {}
         meshTypeIndex = InputData.MESHTYPES.CONCRETE
-        self.__ui.cmbMeshType.setItemText(meshTypeIndex, "B?ton")
+        self.__ui.cmbMeshType.setItemText(meshTypeIndex, "Béton")
         icon = QIcon()
         icon.addFile(os.path.join(iconfolder,"concrete.png"))
         self.__ui.cmbMeshType.setItemIcon(meshTypeIndex, icon)
