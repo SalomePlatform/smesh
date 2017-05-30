@@ -2,15 +2,14 @@ import sys, os, shutil, pickle, tempfile
 import main, genereCrack, Zset
 import utilityFunctions as uF
 
+os.environ['QT_QPA_PLATFORM_PLUGIN_PATH']=os.path.join(os.environ['QTDIR'],'plugins','platforms')
+
 #commande="/bin/bash -c ""source $HOME/zebulon/Z8.6.6_NEW/do_config_bash"""
 #os.system(commande)
 
 def IHM():
 
-  try:
-    from PyQt5.QtWidgets import QApplication
-  except:
-    from PyQt4.QtGui import QApplication
+  from PyQt5.QtWidgets import QApplication
 
   app = QApplication(sys.argv)
   myapp = main.ShipHolderApplication()
@@ -31,8 +30,7 @@ def SCRIPT(dataFile=None, data=None, dim=3, names=None):
 
   print data
 
-  tmpdir=tempfile.mkdtemp()
-  uF.removeFromSessionPath('LD_LIBRARY_PATH', 'Meshgems-2111')
+  tmpdir=tempfile.mkdtemp(prefix='tmpZcracks')
 
   if names==None: names={'saneGeoName':'salome_sane', 'crackGeoName':'salome_crack', 'crackedGeoName':'salome_cracked'}
 
