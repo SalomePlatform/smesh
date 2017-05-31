@@ -58,7 +58,7 @@ using SMESH::TVar;
 static void addErrorCode(const char* thePyCommand)
 {
   TPythonDump() << "if (isDone != 1):";
-  TPythonDump() << "\tprint '" << thePyCommand << " :', pattern.GetErrorCode()";
+  TPythonDump() << "\tprint('" << thePyCommand << " :', pattern.GetErrorCode())";
 }
 
 //=============================================================================
