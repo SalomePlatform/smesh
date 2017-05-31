@@ -193,21 +193,22 @@ const BRepMesh_Triangle* SMESH_Delaunay::FindTriangle( const gp_XY&             
     nodeUVs[1] = _triaDS->GetNode( nodeIDs[1] ).Coord();
     nodeUVs[2] = _triaDS->GetNode( nodeIDs[2] ).Coord();
 
-    if ( _triaDS->GetNode( nodeIDs[0] ).Movability() == BRepMesh_Frontier &&
-         _triaDS->GetNode( nodeIDs[1] ).Movability() == BRepMesh_Frontier &&
-         _triaDS->GetNode( nodeIDs[2] ).Movability() == BRepMesh_Frontier )
+    SMESH_MeshAlgos::GetBarycentricCoords( uv,
+                                           nodeUVs[0], nodeUVs[1], nodeUVs[2],
+                                           bc[0], bc[1] );
+    if ( bc[0] >= 0 && bc[1] >= 0 && bc[0] + bc[1] <= 1 )
     {
-      SMESH_MeshAlgos::GetBarycentricCoords( uv,
-                                             nodeUVs[0], nodeUVs[1], nodeUVs[2],
-                                             bc[0], bc[1] );
-      if ( bc[0] >= 0 && bc[1] >= 0 && bc[0] + bc[1] <= 1 )
+      if ( _triaDS->GetNode( nodeIDs[0] ).Movability() != BRepMesh_Frontier ||
+           _triaDS->GetNode( nodeIDs[1] ).Movability() != BRepMesh_Frontier ||
+           _triaDS->GetNode( nodeIDs[2] ).Movability() != BRepMesh_Frontier )
       {
-        bc[2] = 1 - bc[0] - bc[1];
-        triaNodes[0] = nodeIDs[0] - 1;
-        triaNodes[1] = nodeIDs[1] - 1;
-        triaNodes[2] = nodeIDs[2] - 1;
-        return tria;
+        return 0;
       }
+      bc[2] = 1 - bc[0] - bc[1];
+      triaNodes[0] = nodeIDs[0] - 1;
+      triaNodes[1] = nodeIDs[1] - 1;
+      triaNodes[2] = nodeIDs[2] - 1;
+      return tria;
     }
 
     // look for a neighbor triangle, which is adjacent to a link intersected

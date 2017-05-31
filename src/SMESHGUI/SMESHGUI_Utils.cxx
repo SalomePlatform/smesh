@@ -280,7 +280,7 @@ namespace SMESH
   void ModifiedMesh (_PTR(SObject) theSObject, bool theIsNotModif, bool isEmptyMesh)
   {
     _PTR(Study) aStudy = GetActiveStudyDocument();
-    if (aStudy->GetProperties()->IsLocked())
+    if ( !aStudy || aStudy->GetProperties()->IsLocked() )
       return;
 
     _PTR(StudyBuilder) aBuilder = aStudy->NewBuilder();

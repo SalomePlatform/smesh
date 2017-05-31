@@ -1200,8 +1200,8 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
         sweeper.myBndColumns.push_back( & u2colIt->second );
     }
     // load node columns inside the bottom FACE
-    TNode2ColumnMap::iterator bot_column = myBotToColumnMap.begin();
     sweeper.myIntColumns.reserve( myBotToColumnMap.size() );
+    TNode2ColumnMap::iterator bot_column = myBotToColumnMap.begin();
     for ( ; bot_column != myBotToColumnMap.end(); ++bot_column )
       sweeper.myIntColumns.push_back( & bot_column->second );
 
@@ -1241,6 +1241,14 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
 
       // column nodes; middle part of the column are zero pointers
       TNodeColumn& column = bot_column->second;
+
+      // check if a column is already computed using non-block approach
+      size_t i;
+      for ( i = 0; i < column.size(); ++i )
+        if ( !column[ i ])
+          break;
+      if ( i == column.size() )
+        continue; // all nodes created
 
       gp_XYZ botParams, topParams;
       if ( !tBotNode.HasParams() )
@@ -2282,7 +2290,7 @@ bool StdMeshers_Prism_3D::assocOrProjBottom2Top( const gp_Trsf & bottomToTopTrsf
     TNode2ColumnMap::iterator bN_col =
       myBotToColumnMap.insert( make_pair ( bN, TNodeColumn() )).first;
     TNodeColumn & column = bN_col->second;
-    column.resize( zSize );
+    column.resize( zSize, 0 );
     column.front() = botNode;
     column.back()  = topNode;
   }
@@ -4962,8 +4970,7 @@ bool StdMeshers_Sweeper::ComputeNodesByTrsf( const double tol,
 
   // for each internal column find boundary nodes whose error to use for correction
   prepareTopBotDelaunay();
-  if ( !findDelaunayTriangles())
-    return false;
+  bool isErrorCorrectable = findDelaunayTriangles();
 
   // compute coordinates of internal nodes by projecting (transfroming) src and tgt
   // nodes towards the central layer
@@ -5019,6 +5026,22 @@ bool StdMeshers_Sweeper::ComputeNodesByTrsf( const double tol,
 
     fromTgtBndPnts.swap( toTgtBndPnts );
     fromSrcBndPnts.swap( toSrcBndPnts );
+  }
+
+  // Evaluate an error of boundary points
+
+  if ( !isErrorCorrectable && !allowHighBndError )
+  {
+    for ( size_t iP = 0; iP < myBndColumns.size(); ++iP )
+    {
+      double sumError = 0;
+      for ( size_t z = 1; z < zS; ++z ) // loop on layers
+        sumError += ( bndError[ z-1     ][ iP ].Modulus() +
+                      bndError[ zSize-z ][ iP ].Modulus() );
+
+      if ( sumError > tol )
+        return false;
+    }
   }
 
   // Compute two projections of internal points to the central layer
@@ -5080,7 +5103,6 @@ bool StdMeshers_Sweeper::ComputeNodesByTrsf( const double tol,
     }
   }
 
-  //centerIntErrorIsSmall = true; // 3D_mesh_Extrusion_00/A3
   if ( !centerIntErrorIsSmall )
   {
     // Compensate the central error; continue adding projection
@@ -5289,7 +5311,7 @@ bool StdMeshers_Sweeper::ComputeNodesOnStraight()
       return false;
 
     // create nodes along a line
-    SMESH_NodeXYZ botP( botNode ), topP( topNode);
+    SMESH_NodeXYZ botP( botNode ), topP( topNode );
     for ( size_t iZ = 0; iZ < myZColumns[0].size(); ++iZ )
     {
       // use barycentric coordinates as weight of Z of boundary columns
@@ -5426,7 +5448,10 @@ bool StdMeshers_Sweeper::findDelaunayTriangles()
   }
 
   if ( myBotDelaunay->NbVisitedNodes() < nbInternalNodes )
+  {
+    myTopBotTriangles.clear();
     return false;
+  }
 
   myBotDelaunay.reset();
   myTopDelaunay.reset();
