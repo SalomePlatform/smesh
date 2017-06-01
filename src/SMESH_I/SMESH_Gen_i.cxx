@@ -1283,7 +1283,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromSAUV( const char* theFileName,
 #ifdef WIN32
   cmd = "%PYTHONBIN% ";
 #else
-  cmd = "python ";
+  cmd = "python3 ";
 #endif
   cmd += "-c \"";
   cmd += "from medutilities import convert ; convert(r'" + sauvfilename + "', 'GIBI', 'MED', 1, r'" + medfilename + "')";
@@ -1293,7 +1293,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromSAUV( const char* theFileName,
 #ifdef WIN32
   cmd = "%PYTHONBIN% ";
 #else
-  cmd = "python ";
+  cmd = "python3 ";
 #endif
   cmd += "-c \"";
   cmd += "from medutilities import my_remove ; my_remove(r'" + medfilename + "')";

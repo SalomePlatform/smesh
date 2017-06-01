@@ -5124,7 +5124,7 @@ class meshProxy(SMESH._objref_SMESH_Mesh):
     def __init__(self, *args):
         SMESH._objref_SMESH_Mesh.__init__(self, *args)
     def __deepcopy__(self, memo=None):
-        new = self.__class__()
+        new = self.__class__(self)
         return new
     def CreateDimGroup(self,*args): # 2 args added: nbCommonNodes, underlyingOnly
         if len( args ) == 3:
@@ -5141,7 +5141,7 @@ class submeshProxy(SMESH._objref_SMESH_subMesh):
         SMESH._objref_SMESH_subMesh.__init__(self, *args)
         self.mesh = None
     def __deepcopy__(self, memo=None):
-        new = self.__class__()
+        new = self.__class__(self)
         return new
 
     ## Compute the sub-mesh and return the status of the computation
@@ -5187,7 +5187,7 @@ class meshEditor(SMESH._objref_SMESH_MeshEditor):
         print("meshEditor: attribute '%s' NOT FOUND" % name)
         return None
     def __deepcopy__(self, memo=None):
-        new = self.__class__()
+        new = self.__class__(self)
         return new
     def FindCoincidentNodes(self,*args): # a 2nd arg added (SeparateCornerAndMediumNodes)
         if len( args ) == 1: args += False,

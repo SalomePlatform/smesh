@@ -1475,7 +1475,7 @@ void SMESH_Mesh::ExportSAUV(const char *file,
 #ifdef WIN32
   cmd = "%PYTHONBIN% ";
 #else
-  cmd = "python ";
+  cmd = "python3 ";
 #endif
   cmd += "-c \"";
   cmd += "from medutilities import my_remove ; my_remove(r'" + medfilename + "')";
@@ -1487,7 +1487,7 @@ void SMESH_Mesh::ExportSAUV(const char *file,
 #ifdef WIN32
   cmd = "%PYTHONBIN% ";
 #else
-  cmd = "python ";
+  cmd = "python3 ";
 #endif
   cmd += "-c \"";
   cmd += "from medutilities import convert ; convert(r'" + medfilename + "', 'MED', 'GIBI', 1, r'" + file + "')";
@@ -1496,7 +1496,7 @@ void SMESH_Mesh::ExportSAUV(const char *file,
 #ifdef WIN32
   cmd = "%PYTHONBIN% ";
 #else
-  cmd = "python ";
+  cmd = "python3 ";
 #endif
   cmd += "-c \"";
   cmd += "from medutilities import my_remove ; my_remove(r'" + medfilename + "')";
