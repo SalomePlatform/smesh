@@ -77,4 +77,4 @@ aGroup.Remove( [2,3,4] )
 
 
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

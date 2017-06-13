@@ -50,9 +50,8 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_Deflection1D::StdMeshers_Deflection1D(int         hypId,
-                                                 int         studyId,
                                                  SMESH_Gen * gen)
-     :SMESH_Hypothesis(hypId, studyId, gen)
+     :SMESH_Hypothesis(hypId, gen)
 {
   _value = 1.;
   _name = "Deflection1D";

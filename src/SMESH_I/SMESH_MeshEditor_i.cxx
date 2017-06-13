@@ -110,7 +110,7 @@ namespace MeshEditor_I {
     SMDSAbs_ElementType myPreviewType; // type to show
     //!< Constructor
     TPreviewMesh(SMDSAbs_ElementType previewElements = SMDSAbs_All) {
-      _isShapeToMesh = (_id =_studyId = 0);
+      _isShapeToMesh = (_id = 0);
       _myMeshDS  = new SMESHDS_Mesh( _id, true );
       myPreviewType = previewElements;
     }
@@ -5269,8 +5269,7 @@ SMESH::SMESH_Mesh_ptr SMESH_MeshEditor_i::makeMesh(const char* theMeshName)
 {
   SMESH_Gen_i*              gen = SMESH_Gen_i::GetSMESHGen();
   SMESH::SMESH_Mesh_var    mesh = gen->CreateEmptyMesh();
-  SALOMEDS::Study_var     study = gen->GetCurrentStudy();
-  SALOMEDS::SObject_wrap meshSO = gen->ObjectToSObject( study, mesh );
+  SALOMEDS::SObject_wrap meshSO = gen->ObjectToSObject( mesh );
   gen->SetName( meshSO, theMeshName, "Mesh" );
   gen->SetPixMap( meshSO, "ICON_SMESH_TREE_MESH_IMPORTED");
 

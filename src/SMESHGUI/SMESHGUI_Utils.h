@@ -80,10 +80,6 @@ SMESHGUI_EXPORT
 SMESHGUI_EXPORT
   SUIT_ResourceMgr*
   GetResourceMgr( const SalomeApp_Module* );
-  
-SMESHGUI_EXPORT
-  _PTR(Study)
-  GetCStudy( const SalomeApp_Study* );
 
 SMESHGUI_EXPORT
   CORBA::Object_var DataOwnerToObject( const LightApp_DataOwnerPtr& );
@@ -104,7 +100,7 @@ SMESHGUI_EXPORT
   SUIT_ViewWindow* GetActiveWindow();
 
 SMESHGUI_EXPORT
-  _PTR(Study) GetActiveStudyDocument();
+  _PTR(Study) getStudy();
 
 SMESHGUI_EXPORT
   _PTR(SObject) FindSObject( CORBA::Object_ptr );
@@ -116,10 +112,6 @@ SMESHGUI_EXPORT
   void SetValue( _PTR(SObject), const QString& );
   void setFileType( _PTR(SObject), const QString& );
   void setFileName( _PTR(SObject), const QString& );
-
-SMESHGUI_EXPORT
-  CORBA::Object_var SObjectToObject( _PTR(SObject),
-                                     _PTR(Study) );
 
 SMESHGUI_EXPORT
   CORBA::Object_var SObjectToObject( _PTR(SObject) );

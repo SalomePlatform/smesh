@@ -59,8 +59,7 @@ class SMESH_I_EXPORT SMESH_Mesh_i:
   SMESH_Mesh_i(const SMESH_Mesh_i&);
 public:
   SMESH_Mesh_i( PortableServer::POA_ptr thePOA,
-                SMESH_Gen_i*            myGen_i,
-                CORBA::Long             studyId );
+                SMESH_Gen_i*            myGen_i );
 
   virtual ~SMESH_Mesh_i();
 
@@ -184,8 +183,6 @@ public:
   void ClearLog() throw (SALOME::SALOME_Exception);
 
   CORBA::Long GetId() throw (SALOME::SALOME_Exception);
-
-  CORBA::Long GetStudyId() throw (SALOME::SALOME_Exception);
 
   // --- C++ interface
 
@@ -703,7 +700,6 @@ private:
   ::SMESH_Mesh* _impl;        // :: force no namespace here
   SMESH_Gen_i*  _gen_i;
   int           _id;          // id given by creator (unique within the creator instance)
-  int           _studyId;
   std::map<int, SMESH::SMESH_subMesh_ptr>    _mapSubMeshIor;
   std::map<int, SMESH::SMESH_GroupBase_ptr>  _mapGroups;
   std::map<int, SMESH::SMESH_Hypothesis_ptr> _mapHypo;

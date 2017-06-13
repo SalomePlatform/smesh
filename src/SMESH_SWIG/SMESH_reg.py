@@ -28,11 +28,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 from salome.StdMeshers import StdMeshersBuilder
 
@@ -60,12 +60,12 @@ for f in subShapeList:
   print name
   idedge.append( geompy.addToStudyInFather(box, f, name) )
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()
 
 # ---- launch SMESH
 smeshgui = salome.ImportComponentGUI("SMESH")
-smeshgui.Init(salome.myStudyId)
-smesh.SetCurrentStudy(salome.myStudy)
+smeshgui.Init()
+smesh.UpdateStudy()
 
 # ---- Creating meshes
 
@@ -115,5 +115,5 @@ algo = mesh.Triangle()
 algo.MaxElementArea(2500)
 
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()
 

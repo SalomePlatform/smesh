@@ -70,6 +70,7 @@ SET(_link_LIBRARIES
   ${KERNEL_SalomeGenericObj}
   ${KERNEL_SalomeIDLKERNEL}
   ${KERNEL_SALOMELocalTrace}
+  ${KERNEL_SalomeKernelHelpers}
   ${CAS_TKCDF}
   ${CAS_TKBO}
   ${CAS_TKShHealing}

@@ -39,7 +39,7 @@ class StdMeshers_ImportSource1D;
 class STDMESHERS_EXPORT StdMeshers_Import_1D: public SMESH_1D_Algo
 {
 public:
-  StdMeshers_Import_1D(int hypId, int studyId, SMESH_Gen* gen);
+  StdMeshers_Import_1D(int hypId, SMESH_Gen* gen);
 
   virtual bool CheckHypothesis(SMESH_Mesh& aMesh,
                                const TopoDS_Shape& aShape,

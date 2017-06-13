@@ -50,7 +50,6 @@ class STDMESHERS_I_EXPORT StdMeshers_AutomaticLength_i:
 public:
   // Constructor
   StdMeshers_AutomaticLength_i( PortableServer::POA_ptr thePOA,
-                                int                     theStudyId,
                                 ::SMESH_Gen*            theGenImpl );
   // Destructor
   virtual ~StdMeshers_AutomaticLength_i();

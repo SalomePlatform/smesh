@@ -41,7 +41,6 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_Prism_3D_i::StdMeshers_Prism_3D_i( PortableServer::POA_ptr thePOA,
-                                              int                     theStudyId,
                                               ::SMESH_Gen*            theGenImpl )
   : SALOME::GenericObj_i( thePOA ),
     SMESH_Hypothesis_i( thePOA ),
@@ -49,7 +48,6 @@ StdMeshers_Prism_3D_i::StdMeshers_Prism_3D_i( PortableServer::POA_ptr thePOA,
     SMESH_3D_Algo_i( thePOA )
 {
   myBaseImpl = new ::StdMeshers_Prism_3D( theGenImpl->GetANewId(),
-                                          theStudyId,
                                           theGenImpl );
 }
 //-----------------------------------------------------------------------------
@@ -79,7 +77,6 @@ CORBA::Boolean StdMeshers_Prism_3D_i::IsApplicable( const TopoDS_Shape &S,
 //=============================================================================
 
 StdMeshers_RadialPrism_3D_i::StdMeshers_RadialPrism_3D_i( PortableServer::POA_ptr thePOA,
-                                                          int                     theStudyId,
                                                           ::SMESH_Gen*            theGenImpl )
   : SALOME::GenericObj_i( thePOA ),
     SMESH_Hypothesis_i( thePOA ),
@@ -87,7 +84,6 @@ StdMeshers_RadialPrism_3D_i::StdMeshers_RadialPrism_3D_i( PortableServer::POA_pt
     SMESH_3D_Algo_i( thePOA )
 {
   myBaseImpl = new ::StdMeshers_RadialPrism_3D( theGenImpl->GetANewId(),
-                                                theStudyId,
                                                 theGenImpl );
 }
 //-----------------------------------------------------------------------------

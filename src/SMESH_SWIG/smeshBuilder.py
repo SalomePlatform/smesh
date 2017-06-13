@@ -189,13 +189,8 @@ def GetName(obj):
         except:
             ior = None
         if ior:
-            # CORBA object
-            studies = salome.myStudyManager.GetOpenStudies()
-            for sname in studies:
-                s = salome.myStudyManager.GetStudyByName(sname)
-                if not s: continue
-                sobj = s.FindObjectIOR(ior)
-                if not sobj: continue
+            sobj = salome.myStudy.FindObjectIOR(ior)
+            if sobj:
                 return sobj.GetName()
             if hasattr(obj, "GetName"):
                 # unknown CORBA object, having GetName() method
@@ -266,12 +261,7 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo, mesh):
 def AssureGeomPublished(mesh, geom, name=''):
     if not isinstance( geom, geomBuilder.GEOM._objref_GEOM_Object ):
         return
-    if not geom.GetStudyEntry() and \
-           mesh.smeshpyD.GetCurrentStudy():
-        ## set the study
-        studyID = mesh.smeshpyD.GetCurrentStudy()._get_StudyId()
-        if studyID != mesh.geompyD.myStudyId:
-            mesh.geompyD.init_geom( mesh.smeshpyD.GetCurrentStudy())
+    if not geom.GetStudyEntry():
         ## get a name
         if not name and geom.GetShapeType() != geomBuilder.GEOM.COMPOUND:
             # for all groups SubShapeName() return "Compound_-1"
@@ -380,8 +370,8 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
     ## Dump component to the Python script
     #  This method overrides IDL function to allow default values for the parameters.
     #  @ingroup l1_auxiliary
-    def DumpPython(self, theStudy, theIsPublished=True, theIsMultiFile=True):
-        return SMESH._objref_SMESH_Gen.DumpPython(self, theStudy, theIsPublished, theIsMultiFile)
+    def DumpPython(self, theIsPublished=True, theIsMultiFile=True):
+        return SMESH._objref_SMESH_Gen.DumpPython(self, theIsPublished, theIsMultiFile)
 
     ## Set mode of DumpPython(), \a historical or \a snapshot.
     #  In the \a historical mode, the Python Dump script includes all commands
@@ -394,14 +384,14 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         else:            val = "false"
         SMESH._objref_SMESH_Gen.SetOption(self, "historical_python_dump", val)
 
-    ## Set the current study and Geometry component
+    ## Set Geometry component
     #  @ingroup l1_auxiliary
-    def init_smesh(self,theStudy,geompyD = None):
+    def init_smesh(self,isPublished = True,geompyD = None):
         #print "init_smesh"
-        self.SetCurrentStudy(theStudy,geompyD)
-        if theStudy:
+        self.UpdateStudy(geompyD)
+        if isPublished:
             global notebook
-            notebook.myStudy = theStudy
+            notebook.myStudy = salome.myStudy
 
     ## Create a mesh. This can be either an empty mesh, possibly having an underlying geometry,
     #  or a mesh wrapping a CORBA mesh given as a parameter.
@@ -523,34 +513,32 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
     #  @ingroup l1_auxiliary
     def IsEmbeddedMode(self):
         return SMESH._objref_SMESH_Gen.IsEmbeddedMode(self)
-
-    ## Set the current study. Calling SetCurrentStudy( None ) allows to
-    #  switch OFF automatic pubilishing in the Study of mesh objects.
+    
+    ## Update the current study. Calling UpdateStudy() allows to 
+    #  update meshes at switching GEOM->SMESH
     #  @ingroup l1_auxiliary
-    def SetCurrentStudy( self, theStudy, geompyD = None ):
+    def UpdateStudy( self, geompyD = None  ):
+        #self.UpdateStudy()
         if not geompyD:
             from salome.geom import geomBuilder
             geompyD = geomBuilder.geom
             pass
         self.geompyD=geompyD
         self.SetGeomEngine(geompyD)
-        SMESH._objref_SMESH_Gen.SetCurrentStudy(self,theStudy)
-        global notebook
-        if theStudy:
-            notebook = salome_notebook.NoteBook( theStudy )
-        else:
-            notebook = salome_notebook.NoteBook( salome_notebook.PseudoStudyForNoteBook() )
-        if theStudy:
-            sb = theStudy.NewBuilder()
-            sc = theStudy.FindComponent("SMESH")
-            if sc: sb.LoadWith(sc, self)
-            pass
+        SMESH._objref_SMESH_Gen.UpdateStudy(self)
+        sb = salome.myStudy.NewBuilder()
+        sc = salome.myStudy.FindComponent("SMESH")
+        if sc: sb.LoadWith(sc, self)
         pass
-
-    ## Get the current study
+        
+    ## Sets enable publishing in the study. Calling SetEnablePublish( false ) allows to
+    #  switch OFF publishing in the Study of mesh objects.
     #  @ingroup l1_auxiliary
-    def GetCurrentStudy(self):
-        return SMESH._objref_SMESH_Gen.GetCurrentStudy(self)
+    def SetEnablePublish( self, theIsEnablePublish ):
+        #self.SetEnablePublish(theIsEnablePublish)
+        SMESH._objref_SMESH_Gen.SetEnablePublish(self,theIsEnablePublish)
+        global notebook
+        notebook = salome_notebook.NoteBook( theIsEnablePublish )
 
     ## Create a Mesh object importing data from the given UNV file
     #  @return an instance of Mesh class
@@ -760,7 +748,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
                     raise ValueError, "Group type mismatches Element type"
                 aCriterion.ThresholdStr = aThreshold.GetName()
                 aCriterion.ThresholdID  = salome.orb.object_to_string( aThreshold )
-                study = self.GetCurrentStudy()
+                study = salome.myStudy
                 if study:
                     so = study.FindObjectIOR( aCriterion.ThresholdID )
                     if so:
@@ -1167,13 +1155,13 @@ omniORB.registerObjref(SMESH._objref_SMESH_Gen._NP_RepositoryId, smeshBuilder)
 #    import salome
 #    salome.salome_init()
 #    from salome.smesh import smeshBuilder
-#    smesh = smeshBuilder.New(salome.myStudy)
+#    smesh = smeshBuilder.New()
 #  \endcode
-#  @param  study     SALOME study, generally obtained by salome.myStudy.
+#  @param  isPublished If False, the notebool will not be used.
 #  @param  instance  CORBA proxy of SMESH Engine. If None, the default Engine is used.
 #  @return smeshBuilder instance
 
-def New( study, instance=None):
+def New( isPublished = True, instance=None):
     """
     Create a new smeshBuilder instance.The smeshBuilder class provides the Python
     interface to create or load meshes.
@@ -1182,10 +1170,10 @@ def New( study, instance=None):
         import salome
         salome.salome_init()
         from salome.smesh import smeshBuilder
-        smesh = smeshBuilder.New(salome.myStudy)
+        smesh = smeshBuilder.New()
 
     Parameters:
-        study     SALOME study, generally obtained by salome.myStudy.
+        isPublished If False, the notebool will not be used.
         instance  CORBA proxy of SMESH Engine. If None, the default Engine is used.
     Returns:
         smeshBuilder instance
@@ -1198,7 +1186,7 @@ def New( study, instance=None):
       doLcc = True
     smeshInst = smeshBuilder()
     assert isinstance(smeshInst,smeshBuilder), "Smesh engine class is %s but should be smeshBuilder.smeshBuilder. Import salome.smesh.smeshBuilder before creating the instance."%smeshInst.__class__
-    smeshInst.init_smesh(study)
+    smeshInst.init_smesh(isPublished)
     return smeshInst
 
 
@@ -1237,12 +1225,9 @@ class Mesh:
                 self.geom = obj
                 objHasName = True
                 # publish geom of mesh (issue 0021122)
-                if not self.geom.GetStudyEntry() and smeshpyD.GetCurrentStudy():
+                if not self.geom.GetStudyEntry():
                     objHasName = False
-                    studyID = smeshpyD.GetCurrentStudy()._get_StudyId()
-                    if studyID != geompyD.myStudyId:
-                        geompyD.init_geom( smeshpyD.GetCurrentStudy())
-                        pass
+                    geompyD.init_geom()
                     if name:
                         geo_name = name + " shape"
                     else:
@@ -1519,12 +1504,12 @@ class Mesh:
                 print msg
                 print allReasons
             pass
-        if salome.sg.hasDesktop() and self.mesh.GetStudyId() >= 0:
+        if salome.sg.hasDesktop():
             if not isinstance( refresh, list): # not a call from subMesh.Compute()
                 smeshgui = salome.ImportComponentGUI("SMESH")
-                smeshgui.Init(self.mesh.GetStudyId())
+                smeshgui.Init()
                 smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), ok, (self.NbNodes()==0) )
-                if refresh: salome.sg.updateObjBrowser(True)
+                if refresh: salome.sg.updateObjBrowser()
 
         return ok
 
@@ -1549,11 +1534,9 @@ class Mesh:
         try:
             shapeText = ""
             mainIOR  = salome.orb.object_to_string( self.GetShape() )
-            for sname in salome.myStudyManager.GetOpenStudies():
-                s = salome.myStudyManager.GetStudyByName(sname)
-                if not s: continue
-                mainSO = s.FindObjectIOR(mainIOR)
-                if not mainSO: continue
+            s = salome.myStudy
+            mainSO = s.FindObjectIOR(mainIOR)
+            if mainSO:
                 if subShapeID == 1:
                     shapeText = '"%s"' % mainSO.GetName()
                 subIt = s.NewChildIterator(mainSO)
@@ -1570,7 +1553,6 @@ class Mesh:
                         continue
                     if ids == subShapeID:
                         shapeText = '"%s"' % subSO.GetName()
-                        break
             if not shapeText:
                 shape = self.geompyD.GetSubShape( self.GetShape(), [subShapeID])
                 if shape:
@@ -1641,12 +1623,11 @@ class Mesh:
     #  @ingroup l2_construct
     def Clear(self, refresh=False):
         self.mesh.Clear()
-        if ( salome.sg.hasDesktop() and 
-             salome.myStudyManager.GetStudyByID( self.mesh.GetStudyId() ) ):
+        if ( salome.sg.hasDesktop() ):
             smeshgui = salome.ImportComponentGUI("SMESH")
-            smeshgui.Init(self.mesh.GetStudyId())
+            smeshgui.Init()
             smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), False, True )
-            if refresh: salome.sg.updateObjBrowser(True)
+            if refresh: salome.sg.updateObjBrowser()
 
     ## Remove all nodes and elements of indicated shape
     #  @param refresh if @c True, Object browser is automatically updated (when running in GUI)
@@ -1656,9 +1637,9 @@ class Mesh:
         self.mesh.ClearSubMesh(geomId)
         if salome.sg.hasDesktop():
             smeshgui = salome.ImportComponentGUI("SMESH")
-            smeshgui.Init(self.mesh.GetStudyId())
+            smeshgui.Init()
             smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), False, True )
-            if refresh: salome.sg.updateObjBrowser(True)
+            if refresh: salome.sg.updateObjBrowser()
 
     ## Compute a tetrahedral mesh using AutomaticLength + MEFISTO + Tetrahedron
     #  @param fineness [0.0,1.0] defines mesh fineness
@@ -2258,12 +2239,6 @@ class Mesh:
     #  @ingroup l1_auxiliary
     def GetId(self):
         return self.mesh.GetId()
-
-    ## Get the study Id
-    #  @return integer value, which is the study Id of the mesh
-    #  @ingroup l1_auxiliary
-    def GetStudyId(self):
-        return self.mesh.GetStudyId()
 
     ## Check the group names for duplications.
     #  Consider the maximum group name length stored in MED file.
@@ -5094,11 +5069,11 @@ class submeshProxy(SMESH._objref_SMESH_subMesh):
 
         ok = self.mesh.Compute( self.GetSubShape(),refresh=[] )
 
-        if salome.sg.hasDesktop() and self.mesh.GetStudyId() >= 0:
+        if salome.sg.hasDesktop():
             smeshgui = salome.ImportComponentGUI("SMESH")
-            smeshgui.Init(self.mesh.GetStudyId())
+            smeshgui.Init()
             smeshgui.SetMeshIcon( salome.ObjectToID( self ), ok, (self.GetNumberOfElements()==0) )
-            if refresh: salome.sg.updateObjBrowser(True)
+            if refresh: salome.sg.updateObjBrowser()
             pass
 
         return ok

@@ -27,10 +27,10 @@ import CutnGroup
 import CompositeBox
 
 from salome.geom import geomBuilder
-geompy = geomBuilder.New( Config.theStudy )
+geompy = geomBuilder.New()
 
 from salome.smesh import smeshBuilder
-smesh = smeshBuilder.New( Config.theStudy )
+smesh = smeshBuilder.New()
 
 ##########################################################################################################
 

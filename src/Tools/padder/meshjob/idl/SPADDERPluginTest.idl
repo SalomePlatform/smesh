@@ -40,7 +40,7 @@ module SPADDERPluginTest {
   {
     void demo(in double a,in double b,out double c) raises (SALOME::SALOME_Exception);
     boolean testkernel() raises (SALOME::SALOME_Exception);
-    boolean testsmesh(in long studyId) raises (SALOME::SALOME_Exception);
+    boolean testsmesh() raises (SALOME::SALOME_Exception);
   };
 };
 

@@ -31,11 +31,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 from salome.StdMeshers import StdMeshersBuilder
 
@@ -127,7 +127,7 @@ name      = geompy.SubShapeName( sub_face4, mechanic )
 Id_SubFace4 = geompy.addToStudyInFather( mechanic, sub_face4, name )
 
 # ---------------------------- SMESH --------------------------------------
-smesh.SetCurrentStudy(salome.myStudy)
+smesh.UpdateStudy()
 
 # -- Init --
 shape_mesh = salome.IDToObject( Id_mechanic )
@@ -188,4 +188,4 @@ print "Number of quadrangles : ", mesh.NbQuadrangles()
 print "Number of volumes     : ", mesh.NbVolumes()
 print "Number of tetrahedrons: ", mesh.NbTetras()
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

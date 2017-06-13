@@ -63,10 +63,9 @@ class vtkActor;
 namespace SMESH
 {
   //----------------------------------------------------------------------------
-  typedef std::pair<int,std::string> TKeyOfVisualObj;
   
 SMESHGUI_EXPORT
-  TVisualObjPtr GetVisualObj( int, const char*, bool nulData =false );
+  TVisualObjPtr GetVisualObj( const char*, bool nulData =false );
 SMESHGUI_EXPORT
   void OnVisuException(); // PAL16631
 
@@ -103,13 +102,13 @@ SMESHGUI_EXPORT
 
   //----------------------------------------------------------------------------
 SMESHGUI_EXPORT  
-  SMESH_Actor* CreateActor( _PTR(Study), const char*, int = false );
+  SMESH_Actor* CreateActor( const char*, int = false );
 SMESHGUI_EXPORT
   void DisplayActor( SUIT_ViewWindow*, SMESH_Actor* );
 SMESHGUI_EXPORT
   void RemoveActor( SUIT_ViewWindow*, SMESH_Actor* );
 SMESHGUI_EXPORT
-  void RemoveVisuData( int );
+  void RemoveVisuData();
 
   //----------------------------------------------------------------------------
   enum EDisplaing { eDisplayAll, eDisplay, eDisplayOnly, eErase, eEraseAll };

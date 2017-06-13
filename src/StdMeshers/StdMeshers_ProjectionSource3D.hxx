@@ -49,7 +49,7 @@ class STDMESHERS_EXPORT StdMeshers_ProjectionSource3D:  public SMESH_Hypothesis
 {
 public:
   // Constructor
-  StdMeshers_ProjectionSource3D( int hypId, int studyId, SMESH_Gen * gen );
+  StdMeshers_ProjectionSource3D( int hypId, SMESH_Gen * gen );
   // Destructor
   virtual ~StdMeshers_ProjectionSource3D();
 

@@ -65,8 +65,8 @@ using namespace std;
 //purpose  : 
 //=======================================================================
 
-StdMeshers_Projection_3D::StdMeshers_Projection_3D(int hypId, int studyId, SMESH_Gen* gen)
-  :SMESH_3D_Algo(hypId, studyId, gen)
+StdMeshers_Projection_3D::StdMeshers_Projection_3D(int hypId, SMESH_Gen* gen)
+  :SMESH_3D_Algo(hypId, gen)
 {
   _name = "Projection_3D";
   _shapeType = (1 << TopAbs_SHELL) | (1 << TopAbs_SOLID);  // 1 bit per shape type

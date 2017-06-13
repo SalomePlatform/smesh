@@ -5,11 +5,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 import salome_notebook
 
 
@@ -42,4 +42,4 @@ f5 = mesh.AddFace([n5, n6, n12, n11])
 # Change the orientation of the second and the fourth faces.
 mesh.Reorient([2, 4])
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

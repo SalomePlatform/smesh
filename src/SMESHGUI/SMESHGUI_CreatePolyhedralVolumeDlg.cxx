@@ -448,7 +448,7 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::ClickOnApply()
   if( !isValid() )
     return;
 
-  if ( myNbOkElements>0 && !mySMESHGUI->isActiveStudyLocked())
+  if ( myNbOkElements>0 && !SMESHGUI::isStudyLocked())
     {
       if(checkEditLine(false) == -1) {return;}
       busy = true;

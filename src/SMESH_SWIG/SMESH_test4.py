@@ -25,11 +25,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 
 # ---- GEOM
@@ -47,7 +47,7 @@ face = salome.IDToObject(idface)
 
 # ---- SMESH
 
-smesh.SetCurrentStudy(salome.myStudy)
+smesh.UpdateStudy()
 mesh = smesh.Mesh(box, "Meshbox")
 
 # Set 1D algorithm/hypotheses to mesh
@@ -77,4 +77,4 @@ if len(faces) > 1:
     group1.Add(faces[:int(len(faces)/2)])
     group2.Add(faces[int(len(faces)/2):])
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

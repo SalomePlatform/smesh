@@ -638,7 +638,7 @@ void SMESHGUI_ReorientFacesOp::onTextChange( const QString& theText )
 
 bool SMESHGUI_ReorientFacesOp::onApply()
 {
-  if( isStudyLocked() )
+  if( SMESHGUI::isStudyLocked() )
     return false;
 
   QString msg;
@@ -728,7 +728,7 @@ bool SMESHGUI_ReorientFacesOp::isValid( QString& msg )
 {
   // check object
   QString objectEntry = myDlg->selectedObject( EObject );
-  _PTR(SObject) pSObject = studyDS()->FindObjectID( objectEntry.toLatin1().data() );
+  _PTR(SObject) pSObject = SMESH::getStudy()->FindObjectID( objectEntry.toLatin1().data() );
   myObject = SMESH::SMESH_IDSource::_narrow( _CAST( SObject,pSObject )->GetObject() );
   if ( myObject->_is_nil() )
   {
@@ -749,7 +749,7 @@ bool SMESHGUI_ReorientFacesOp::isValid( QString& msg )
   if ( myDlg->myConstructorGrp->checkedId() == CONSTRUCTOR_VOLUME )
   {
     objectEntry = myDlg->selectedObject( EVolumes );
-    _PTR(SObject) pSObject = studyDS()->FindObjectID( objectEntry.toLatin1().data() );
+    _PTR(SObject) pSObject = SMESH::getStudy()->FindObjectID( objectEntry.toLatin1().data() );
     myVolumeObj = SMESH::SObjectToInterface< SMESH::SMESH_IDSource>( pSObject );
     if ( myVolumeObj->_is_nil() )
     {

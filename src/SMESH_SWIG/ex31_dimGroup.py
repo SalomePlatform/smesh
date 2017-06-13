@@ -22,18 +22,18 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 import math
 
 global Box_1
 Box_1 = geompy.MakeBoxDXDYDZ(200, 200, 200)
 geompy.addToStudy( Box_1, "Box_1" )
 
-smesh.SetCurrentStudy(salome.myStudy)
+smesh.UpdateStudy()
 from salome.StdMeshers import StdMeshersBuilder
 Mesh_1 = smesh.Mesh(Box_1)
 Regular_1D = Mesh_1.Segment()
@@ -60,5 +60,5 @@ aGrp1D = Mesh_1.CreateDimGroup( [aGrp3D_1, aGrp3D_2], SMESH.EDGE, "Edges" )
 
 aGrp0D = Mesh_1.CreateDimGroup( [aGrp3D_1, aGrp3D_2], SMESH.NODE, "Nodes" )
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()
 

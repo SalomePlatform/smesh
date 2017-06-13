@@ -686,7 +686,7 @@ bool SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
   if( !isValid() )
     return false;
 
-  if ( mySMESHGUI->isActiveStudyLocked() || myBusy || !IsValid() )
+  if ( SMESHGUI::isStudyLocked() || myBusy || !IsValid() )
     return false;
 
   BusyLocker lock( myBusy );

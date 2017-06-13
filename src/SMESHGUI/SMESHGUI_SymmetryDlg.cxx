@@ -474,7 +474,7 @@ void SMESHGUI_SymmetryDlg::ConstructorsClicked (int constructorId)
 //=================================================================================
 bool SMESHGUI_SymmetryDlg::ClickOnApply()
 {
-  if (mySMESHGUI->isActiveStudyLocked())
+  if (SMESHGUI::isStudyLocked())
     return false;
 
   if( !isValid() )

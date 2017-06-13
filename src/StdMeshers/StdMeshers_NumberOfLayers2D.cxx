@@ -36,9 +36,8 @@
 //=============================================================================
 
 StdMeshers_NumberOfLayers2D::StdMeshers_NumberOfLayers2D(int hypId,
-                                                         int studyId,
                                                          SMESH_Gen * gen)
-  : StdMeshers_NumberOfLayers(hypId, studyId, gen)
+  : StdMeshers_NumberOfLayers(hypId, gen)
 {
   _name = "NumberOfLayers2D"; // used by RadialQuadrangle_1D2D
   _param_algo_dim = 2; // 2D

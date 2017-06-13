@@ -152,7 +152,7 @@ void StdMeshersGUI_LayerDistributionParamWdg::onHypTypePopup( QAction* a )
   SMESH::SMESH_Gen_var gen = mySMESHGUI->GetSMESHGen();
 
   // avoid publishing a new 1D hyp
-  gen->SetCurrentStudy( SALOMEDS::Study::_nil() );
+  gen->SetEnablePublish( false );
 
   // create a hyp
   HypothesisData* aHypData = 0;
@@ -174,7 +174,7 @@ void StdMeshersGUI_LayerDistributionParamWdg::onHypTypePopup( QAction* a )
   }
 
   // restore current study
-  mySMESHGUI->GetSMESHGen();
+  gen->SetEnablePublish( true );
 
   onEdit();
 }

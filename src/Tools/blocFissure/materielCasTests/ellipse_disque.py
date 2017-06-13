@@ -4,10 +4,8 @@ import sys
 import salome
 
 salome.salome_init()
-theStudy = salome.myStudy
 
 import salome_notebook
-notebook = salome_notebook.NoteBook(theStudy)
 
 import os
 from blocFissure import gmu
@@ -22,7 +20,7 @@ import math
 import SALOMEDS
 
 
-geompy = geomBuilder.New(theStudy)
+geompy = geomBuilder.New()
 
 O = geompy.MakeVertex(0, 0, 0)
 OX = geompy.MakeVectorDXDYDZ(1, 0, 0)
@@ -50,4 +48,4 @@ geompy.addToStudy( Ellipse_disque, 'Ellipse_disque' )
 
 
 if salome.sg.hasDesktop():
-  salome.sg.updateObjBrowser(True)
+  salome.sg.updateObjBrowser()

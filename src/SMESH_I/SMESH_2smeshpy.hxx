@@ -255,7 +255,6 @@ public:
   _pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
          Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
          std::set< TCollection_AsciiString >&      theRemovedObjIDs,
-         SALOMEDS::Study_ptr&                      theStudy,
          const bool                                theToKeepAllCommands);
   Handle(_pyCommand) AddCommand( const _AString& theCommand );
   void ExchangeCommands( Handle(_pyCommand) theCmd1, Handle(_pyCommand) theCmd2 );
@@ -326,7 +325,6 @@ private:
   Handle(_pyCommand)                        myLastCommand;
   int                                       myNbFilters;
   bool                                      myToKeepAllCommands;
-  SALOMEDS::Study_var                       myStudy;
   int                                       myGeomIDNb, myGeomIDIndex;
   std::map< _AString, ExportedMeshData >    myFile2ExportedMesh;
   Handle( _pyHypothesisReader )             myHypReader;

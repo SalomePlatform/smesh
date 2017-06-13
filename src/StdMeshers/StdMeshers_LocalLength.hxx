@@ -37,7 +37,7 @@
 class STDMESHERS_EXPORT StdMeshers_LocalLength: public SMESH_Hypothesis
 {
  public:
-  StdMeshers_LocalLength(int hypId, int studyId, SMESH_Gen * gen);
+  StdMeshers_LocalLength(int hypId, SMESH_Gen * gen);
   virtual ~ StdMeshers_LocalLength();
 
   void SetLength(double length) throw(SALOME_Exception);

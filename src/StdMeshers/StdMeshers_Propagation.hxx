@@ -46,7 +46,7 @@ class SMESH_HypoFilter;
 class STDMESHERS_EXPORT StdMeshers_Propagation : public SMESH_Hypothesis
 {
  public:
-  StdMeshers_Propagation(int hypId, int studyId, SMESH_Gen * gen);
+  StdMeshers_Propagation(int hypId, SMESH_Gen * gen);
   virtual ~ StdMeshers_Propagation();
 
   virtual std::ostream & SaveTo(std::ostream & save);
@@ -105,7 +105,7 @@ class STDMESHERS_EXPORT StdMeshers_Propagation : public SMESH_Hypothesis
 class STDMESHERS_EXPORT StdMeshers_PropagOfDistribution: public StdMeshers_Propagation
 {
  public:
-  StdMeshers_PropagOfDistribution(int hypId, int studyId, SMESH_Gen * gen);
+  StdMeshers_PropagOfDistribution(int hypId, SMESH_Gen * gen);
 
   static std::string GetName();
 };

@@ -400,7 +400,7 @@ void SMESHGUI_RotationDlg::Init (bool ResetControls)
 //=================================================================================
 bool SMESHGUI_RotationDlg::ClickOnApply()
 {
-  if (mySMESHGUI->isActiveStudyLocked())
+  if (SMESHGUI::isStudyLocked())
     return false;
 
   if( !isValid() )

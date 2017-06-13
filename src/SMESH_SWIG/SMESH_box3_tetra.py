@@ -29,11 +29,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 # ---- define 3 boxes box1, box2 and box3
 
@@ -148,4 +148,4 @@ if ret != 0:
 else:
     print "probleme when computing the mesh"
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

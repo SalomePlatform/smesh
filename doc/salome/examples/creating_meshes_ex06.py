@@ -8,11 +8,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 import math
 
@@ -84,7 +84,7 @@ geompy.DifferenceList(group_1, [group_1_box])
 # Mesh the blocks with hexahedral
 # -------------------------------
 
-smesh.SetCurrentStudy(salome.myStudy)
+smesh.UpdateStudy()
 
 def discretize(x, y, z,  nbSeg, shape=blocks):
     vert = geompy.MakeVertex( x, y, z )

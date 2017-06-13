@@ -51,7 +51,7 @@ class STDMESHERS_EXPORT StdMeshers_LayerDistribution:  public SMESH_Hypothesis
 {
 public:
   // Constructor
-  StdMeshers_LayerDistribution( int hypId, int studyId, SMESH_Gen * gen );
+  StdMeshers_LayerDistribution( int hypId, SMESH_Gen * gen );
   // Destructor
   virtual ~StdMeshers_LayerDistribution();
 

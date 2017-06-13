@@ -3216,12 +3216,6 @@ void SMESHGUI_MeshInfoDlg::showItemInfo( const QString& theStr )
 
 void SMESHGUI_MeshInfoDlg::dump()
 {
-  SUIT_Application* app = SUIT_Session::session()->activeApplication();
-  if ( !app ) return;
-  SalomeApp_Study* appStudy = dynamic_cast<SalomeApp_Study *>( app->activeStudy() );
-  if ( !appStudy ) return;
-  _PTR( Study ) aStudy = appStudy->studyDS();
-
   QStringList aFilters;
   aFilters.append( tr( "TEXT_FILES" ));
 
@@ -3973,12 +3967,6 @@ void SMESHGUI_CtrlInfoDlg::deactivate()
  */
 void SMESHGUI_CtrlInfoDlg::dump()
 {
-  SUIT_Application* app = SUIT_Session::session()->activeApplication();
-  if ( !app ) return;
-  SalomeApp_Study* appStudy = dynamic_cast<SalomeApp_Study *>( app->activeStudy() );
-  if ( !appStudy ) return;
-  _PTR( Study ) aStudy = appStudy->studyDS();
-
   QStringList aFilters;
   aFilters.append( tr( "TEXT_FILES" ));
 

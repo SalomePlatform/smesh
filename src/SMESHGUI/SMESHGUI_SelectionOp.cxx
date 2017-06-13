@@ -295,36 +295,28 @@ SVTK_Selector* SMESHGUI_SelectionOp::selector() const
 //=======================================================================
 int SMESHGUI_SelectionOp::typeById( const QString& str, const EntityType objtype ) const
 {
-  SalomeApp_Study* _study = dynamic_cast<SalomeApp_Study*>( study() );
-  if( !_study )
-    return -1;
-
-  _PTR( Study ) st = _study->studyDS();
+  _PTR(Study) aStudy = SMESH::getStudy();
 
   int res = -1;
   if( objtype == Object )
   {
-    SalomeApp_Study* _study = dynamic_cast<SalomeApp_Study*>( study() );
-    if( _study )
+    int t = SMESHGUI_Selection::type( str );
+    if( t<0 )
     {
-      int t = SMESHGUI_Selection::type( str, _study->studyDS() );
-      if( t<0 )
+      //try to get GEOM type
+      _PTR( SObject ) sobj = aStudy->FindObjectID( str.toLatin1().data() );
+      if( sobj )
       {
-        //try to get GEOM type
-        _PTR( SObject ) sobj = st->FindObjectID( str.toLatin1().data() );
-        if( sobj )
-        {
-          GEOM::GEOM_Object_var obj = GEOM::GEOM_Object::_narrow(
-            dynamic_cast<SALOMEDS_SObject*>( sobj.get() )->GetObject() );
-          if( !CORBA::is_nil( obj ) )
-            // as decoding of type id is not realized in LightApp_Dialog,
-            //make all GEOM objects have same type id
-            res = SMESHGUI_Dialog::prefix( "GEOM" );// + obj->GetType();
-        }
+        GEOM::GEOM_Object_var obj = GEOM::GEOM_Object::_narrow(
+          dynamic_cast<SALOMEDS_SObject*>( sobj.get() )->GetObject() );
+        if( !CORBA::is_nil( obj ) )
+          // as decoding of type id is not realized in LightApp_Dialog,
+          //make all GEOM objects have same type id
+          res = SMESHGUI_Dialog::prefix( "GEOM" );// + obj->GetType();
       }
-      else
-        res = SMESHGUI_Dialog::prefix( "SMESH" ) + t;
     }
+    else
+      res = SMESHGUI_Dialog::prefix( "SMESH" ) + t;
   }
   else
   {
@@ -335,7 +327,7 @@ int SMESHGUI_SelectionOp::typeById( const QString& str, const EntityType objtype
     int id = _id.toInt( &ok );
     if( ok )
     {
-      _PTR( SObject ) sobj = st->FindObjectID( entry.toLatin1().data() );
+      _PTR( SObject ) sobj = aStudy->FindObjectID( entry.toLatin1().data() );
       SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( 
         dynamic_cast<SALOMEDS_SObject*>( sobj.get() )->GetObject() );
       SMESH::SMESH_subMesh_var submesh = SMESH::SMESH_subMesh::_narrow( 
@@ -422,13 +414,9 @@ void SMESHGUI_SelectionOp::selected( QStringList& names,
       QString id = anIt.Value()->getEntry();
       ids.append( id );
       types.append( typeById( id, Object ) );
-      SalomeApp_Study* _study = dynamic_cast<SalomeApp_Study*>( study() );
-      if( _study )
-      {
-        _PTR(SObject) obj = _study->studyDS()->FindObjectID( anIt.Value()->getEntry() );
-        if( obj )
-          names.append( QString( obj->GetName().c_str() ).trimmed() );
-      }
+      _PTR(SObject) obj = SMESH::getStudy()->FindObjectID( anIt.Value()->getEntry() );
+      if( obj )
+        names.append( QString( obj->GetName().c_str() ).trimmed() );
     }
   }
 }

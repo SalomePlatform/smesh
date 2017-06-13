@@ -29,11 +29,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 # ---- define a box
 
@@ -63,7 +63,7 @@ ide = geompy.addToStudyInFather(face, edge, name)
 
 # ---- SMESH
 
-smesh.SetCurrentStudy(salome.myStudy)
+smesh.UpdateStudy()
 box = salome.IDToObject(idb)
 mesh = smesh.Mesh(box, "Meshbox")
 
@@ -147,4 +147,4 @@ for a in log:
             ii = ii+1
             print "AddTriangle %i - %i %i %i" % (ind, i1, i2, i3)
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

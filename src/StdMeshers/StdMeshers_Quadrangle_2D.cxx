@@ -82,9 +82,9 @@ typedef SMESH_Comment TComm;
  */
 //=============================================================================
 
-StdMeshers_Quadrangle_2D::StdMeshers_Quadrangle_2D (int hypId, int studyId,
+StdMeshers_Quadrangle_2D::StdMeshers_Quadrangle_2D (int hypId,
                                                     SMESH_Gen* gen)
-  : SMESH_2D_Algo(hypId, studyId, gen),
+  : SMESH_2D_Algo(hypId, gen),
     myQuadranglePreference(false),
     myTrianglePreference(false),
     myTriaVertexID(-1),

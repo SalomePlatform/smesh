@@ -38,7 +38,7 @@ class StdMeshers_ProjectionSource1D;
 class STDMESHERS_EXPORT StdMeshers_Projection_1D: public SMESH_1D_Algo
 {
 public:
-  StdMeshers_Projection_1D(int hypId, int studyId, SMESH_Gen* gen);
+  StdMeshers_Projection_1D(int hypId, SMESH_Gen* gen);
   virtual ~StdMeshers_Projection_1D();
 
   virtual bool CheckHypothesis(SMESH_Mesh&                          aMesh,

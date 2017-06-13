@@ -65,6 +65,8 @@ using namespace std;
 
 SMESH_Gen::SMESH_Gen()
 {
+  _studyContext = new StudyContextStruct;
+  _studyContext->myDocument = new SMESHDS_Document();
   _localId = 0;
   _hypId   = 0;
   _segmentation = _nbSegments = 10;
@@ -94,19 +96,14 @@ namespace
 
 SMESH_Gen::~SMESH_Gen()
 {
-  std::map < int, StudyContextStruct * >::iterator i_sc = _mapStudyContext.begin();
-  for ( ; i_sc != _mapStudyContext.end(); ++i_sc )
-  {
-    StudyContextStruct* context = i_sc->second;
-    std::map < int, SMESH_Hypothesis * >::iterator i_hyp = context->mapHypothesis.begin();
-    for ( ; i_hyp != context->mapHypothesis.end(); ++i_hyp )
+    std::map < int, SMESH_Hypothesis * >::iterator i_hyp = _studyContext->mapHypothesis.begin();
+    for ( ; i_hyp != _studyContext->mapHypothesis.end(); ++i_hyp )
     {
       if ( _Hyp* h = static_cast< _Hyp*>( i_hyp->second ))
         h->NullifyGen();
     }
-    delete context->myDocument;
-    delete context;
-  }
+  delete _studyContext->myDocument;
+  delete _studyContext;
 }
 
 //=============================================================================
@@ -116,21 +113,17 @@ SMESH_Gen::~SMESH_Gen()
  */
 //=============================================================================
 
-SMESH_Mesh* SMESH_Gen::CreateMesh(int theStudyId, bool theIsEmbeddedMode)
+SMESH_Mesh* SMESH_Gen::CreateMesh(bool theIsEmbeddedMode)
   throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
 
-  // Get studyContext, create it if it does'nt exist, with a SMESHDS_Document
-  StudyContextStruct *aStudyContext = GetStudyContext(theStudyId);
-
   // create a new SMESH_mesh object
   SMESH_Mesh *aMesh = new SMESH_Mesh(_localId++,
-                                     theStudyId,
                                      this,
                                      theIsEmbeddedMode,
-                                     aStudyContext->myDocument);
-  aStudyContext->mapMesh[_localId-1] = aMesh;
+                                     _studyContext->myDocument);
+  _studyContext->mapMesh[_localId-1] = aMesh;
 
   return aMesh;
 }
@@ -1149,17 +1142,9 @@ SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_subMesh * aSubMesh,
  */
 //=============================================================================
 
-StudyContextStruct *SMESH_Gen::GetStudyContext(int studyId)
+StudyContextStruct *SMESH_Gen::GetStudyContext()
 {
-  // Get studyContext, create it if it does'nt exist, with a SMESHDS_Document
-
-  if (_mapStudyContext.find(studyId) == _mapStudyContext.end())
-  {
-    _mapStudyContext[studyId] = new StudyContextStruct;
-    _mapStudyContext[studyId]->myDocument = new SMESHDS_Document(studyId);
-  }
-  StudyContextStruct *myStudyContext = _mapStudyContext[studyId];
-  return myStudyContext;
+  return _studyContext;
 }
 
 //================================================================================

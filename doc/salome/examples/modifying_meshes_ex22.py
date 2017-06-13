@@ -5,11 +5,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 import SMESH_mechanic
 
@@ -31,4 +31,4 @@ GroupTri = mesh.GroupOnGeom(face, "Group of faces (extrusion)", SMESH.FACE)
 # perform extrusion of the group
 mesh.ExtrusionSweepObject(GroupTri, vector, 5)
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

@@ -35,6 +35,7 @@
 #include <Utils_ORB_INIT.hxx>
 #include <Utils_SINGLETON.hxx>
 #include <SALOMEDSClient_ClientFactory.hxx>
+#include <SALOME_KernelServices.hxx>
 
 #include <utilities.h>
 
@@ -202,14 +203,13 @@ namespace
   void
   SetDomain(const char*                       theMeshOrSubMeshEntry,
             const char*                       theDomainEntry,
-            const SALOMEDS::Study_var&        theStudy,
             const SALOMEDS::StudyBuilder_var& theStudyBuilder,
             long                              theRefOnAppliedDomainTag,
             const QString&                    theAppliedDomainMEN,
             const QString&                    theAppliedDomainICON)
   {
-    SALOMEDS::SObject_var aMeshOrSubMeshSO = theStudy->FindObjectID(theMeshOrSubMeshEntry);
-    SALOMEDS::SObject_var    aHypothesisSO = theStudy->FindObjectID(theDomainEntry);
+    SALOMEDS::SObject_var aMeshOrSubMeshSO = KERNEL::getStudyServant()->FindObjectID(theMeshOrSubMeshEntry);
+    SALOMEDS::SObject_var    aHypothesisSO = KERNEL::getStudyServant()->FindObjectID(theDomainEntry);
 
     if(!aMeshOrSubMeshSO->_is_nil() && !aHypothesisSO->_is_nil()){
       //Find or Create Applied Hypothesis root
@@ -245,12 +245,10 @@ namespace
   void
   SetHypothesis(const char*                       theMeshOrSubMeshEntry,
                 const char*                       theDomainEntry,
-                const SALOMEDS::Study_var&        theStudy,
                 const SALOMEDS::StudyBuilder_var& theStudyBuilder)
   {
     SetDomain(theMeshOrSubMeshEntry,
               theDomainEntry,
-              theStudy,
               theStudyBuilder,
               SMESH::Tag_RefOnAppliedHypothesis,
               QObject::tr("SMESH_MEN_APPLIED_HYPOTHESIS"),
@@ -262,12 +260,10 @@ namespace
   void
   SetAlgorithms(const char*                       theMeshOrSubMeshEntry,
                 const char*                       theDomainEntry,
-                const SALOMEDS::Study_var&        theStudy,
                 const SALOMEDS::StudyBuilder_var& theStudyBuilder)
   {
     SetDomain(theMeshOrSubMeshEntry,
               theDomainEntry,
-              theStudy,
               theStudyBuilder,
               SMESH::Tag_RefOnAppliedAlgorithms,
               QObject::tr("SMESH_MEN_APPLIED_ALGORIHTMS"),
@@ -313,21 +309,15 @@ SMESH_Swig::SMESH_Swig()
 
 //===============================================================
 void
-SMESH_Swig::Init(int theStudyID)
+SMESH_Swig::Init()
 {
   class TEvent: public SALOME_Event
   {
-    int                         myStudyID;
-    SALOMEDS::Study_var&        myStudy;
     SALOMEDS::StudyBuilder_var& myStudyBuilder;
     SALOMEDS::SComponent_var&   mySComponentMesh;
   public:
-    TEvent(int                         theStudyID,
-           SALOMEDS::Study_var&        theStudy,
-           SALOMEDS::StudyBuilder_var& theStudyBuilder,
+    TEvent(SALOMEDS::StudyBuilder_var& theStudyBuilder,
            SALOMEDS::SComponent_var&   theSComponentMesh):
-      myStudyID       (theStudyID),
-      myStudy         (theStudy),
       myStudyBuilder  (theStudyBuilder),
       mySComponentMesh(theSComponentMesh)
     {}
@@ -345,26 +335,22 @@ SMESH_Swig::Init(int theStudyID)
       SUIT_Application* anApplication = aSession->activeApplication();
       SalomeApp_Application* anApp    = dynamic_cast<SalomeApp_Application*>(anApplication);
 
-      SALOME_NamingService* aNamingService = anApp->namingService();
-      CORBA::Object_var anObject           = aNamingService->Resolve("/myStudyManager");
-      SALOMEDS::StudyManager_var aStudyMgr = SALOMEDS::StudyManager::_narrow(anObject);
-      myStudy = aStudyMgr->GetStudyByID(myStudyID);
+      SALOMEDS::Study_var aStudy = KERNEL::getStudyServant();
 
       SMESH::SMESH_Gen_var aSMESHGen = SMESHGUI::GetSMESHGen();
-      aSMESHGen->SetCurrentStudy( myStudy.in() );
 
-      myStudyBuilder = myStudy->NewBuilder();
+      myStudyBuilder = aStudy->NewBuilder();
 
       SALOMEDS::GenericAttribute_var anAttr;
       SALOMEDS::AttributeName_var    aName;
       SALOMEDS::AttributePixMap_var  aPixmap;
 
-      SALOMEDS::SComponent_var aSComponent = myStudy->FindComponent("SMESH");
+      SALOMEDS::SComponent_var aSComponent = aStudy->FindComponent("SMESH");
       if ( aSComponent->_is_nil() )
       {
-        bool aLocked = myStudy->GetProperties()->IsLocked();
+        bool aLocked = aStudy->GetProperties()->IsLocked();
         if (aLocked)
-          myStudy->GetProperties()->SetLocked(false);
+          aStudy->GetProperties()->SetLocked(false);
 
         SMESHGUI* aSMESHGUI = SMESHGUI::GetSMESHGUI();
         //SRN: BugID IPAL9186, load a SMESH gui if it hasn't been loaded
@@ -387,13 +373,13 @@ SMESH_Swig::Init(int theStudyID)
         aPixmap->SetPixMap( "ICON_OBJBROWSER_SMESH" );
         aPixmap->UnRegister();
 
-        SALOMEDS::UseCaseBuilder_var useCaseBuilder = myStudy->GetUseCaseBuilder();
+        SALOMEDS::UseCaseBuilder_var useCaseBuilder = KERNEL::getStudyServant()->GetUseCaseBuilder();
         useCaseBuilder->SetRootCurrent();
         useCaseBuilder->Append( aSComponent.in() );
   
         myStudyBuilder->DefineComponentInstance(aSComponent,aSMESHGen);
         if (aLocked)
-          myStudy->GetProperties()->SetLocked(true);
+          KERNEL::getStudyServant()->GetProperties()->SetLocked(true);
       }
 
       mySComponentMesh = SALOMEDS::SComponent::_narrow(aSComponent);
@@ -404,9 +390,7 @@ SMESH_Swig::Init(int theStudyID)
 
   //MESSAGE("Init");
 
-  ProcessVoidEvent(new TEvent(theStudyID,
-                              myStudy,
-                              myStudyBuilder,
+  ProcessVoidEvent(new TEvent(myStudyBuilder,
                               mySComponentMesh));
 }
 
@@ -423,7 +407,7 @@ const char* SMESH_Swig::AddNewMesh(const char* theIOR)
 {
 
   // VSR: added temporarily - to be removed - objects are published automatically by engine
-  SALOMEDS::SObject_var aSObject = myStudy->FindObjectIOR(theIOR);
+  SALOMEDS::SObject_var aSObject = KERNEL::getStudyServant()->FindObjectIOR(theIOR);
   if (aSObject->_is_nil())
   {
     //Find or Create Hypothesis root
@@ -482,8 +466,8 @@ const char* SMESH_Swig::AddNewAlgorithms(const char* theIOR)
 void SMESH_Swig::SetShape(const char* theShapeEntry,
                           const char* theMeshEntry)
 {
-  SALOMEDS::SObject_var aGeomShapeSO = myStudy->FindObjectID( theShapeEntry );
-  SALOMEDS::SObject_var      aMeshSO = myStudy->FindObjectID( theMeshEntry );
+  SALOMEDS::SObject_var aGeomShapeSO = KERNEL::getStudyServant()->FindObjectID( theShapeEntry );
+  SALOMEDS::SObject_var      aMeshSO = KERNEL::getStudyServant()->FindObjectID( theMeshEntry );
 
   if(!aMeshSO->_is_nil() && !aGeomShapeSO->_is_nil()){
     SALOMEDS::SObject_var aSObject = myStudyBuilder->NewObjectToTag(aMeshSO, SMESH::Tag_RefOnShape);
@@ -501,7 +485,6 @@ void SMESH_Swig::SetHypothesis(const char* theMeshOrSubMeshEntry,
 {
   ::SetHypothesis(theMeshOrSubMeshEntry,
                   theDomainEntry,
-                  myStudy,
                   myStudyBuilder);
 }
 
@@ -512,7 +495,6 @@ void SMESH_Swig::SetAlgorithms(const char* theMeshOrSubMeshEntry,
 {
   ::SetAlgorithms(theMeshOrSubMeshEntry,
                   theDomainEntry,
-                  myStudy,
                   myStudyBuilder);
 }
 
@@ -521,7 +503,7 @@ void SMESH_Swig::SetAlgorithms(const char* theMeshOrSubMeshEntry,
 void
 SMESH_Swig::UnSetHypothesis(const char* theDomainEntry)
 {
-  SALOMEDS::SObject_var aDomainSO = myStudy->FindObjectID(theDomainEntry);
+  SALOMEDS::SObject_var aDomainSO = KERNEL::getStudyServant()->FindObjectID(theDomainEntry);
   if(!aDomainSO->_is_nil())
     myStudyBuilder->RemoveObject(aDomainSO);
 }
@@ -530,7 +512,7 @@ const char* SMESH_Swig::AddSubMesh(const char* theMeshEntry,
                                    const char* theSubMeshIOR,
                                    int theShapeType)
 {
-  SALOMEDS::SObject_var aMeshSO = myStudy->FindObjectID(theMeshEntry);
+  SALOMEDS::SObject_var aMeshSO = KERNEL::getStudyServant()->FindObjectID(theMeshEntry);
   if(!aMeshSO->_is_nil()) {
     long aShapeTag;
     QString aSubMeshName;
@@ -593,11 +575,11 @@ const char* SMESH_Swig::AddSubMeshOnShape(const char* theMeshEntry,
                                           const char* theSubMeshIOR,
                                           int         ShapeType)
 {
-  SALOMEDS::SObject_var aGeomShapeSO = myStudy->FindObjectID(theGeomShapeEntry);
+  SALOMEDS::SObject_var aGeomShapeSO = KERNEL::getStudyServant()->FindObjectID(theGeomShapeEntry);
   if(!aGeomShapeSO->_is_nil())
   {
     const char *       aSubMeshEntry = AddSubMesh(theMeshEntry,theSubMeshIOR,ShapeType);
-    SALOMEDS::SObject_var aSubMeshSO = myStudy->FindObjectID(aSubMeshEntry);
+    SALOMEDS::SObject_var aSubMeshSO = KERNEL::getStudyServant()->FindObjectID(aSubMeshEntry);
     if ( !aSubMeshSO->_is_nil()) {
       SetShape( theGeomShapeEntry, aSubMeshEntry );
       CORBA::String_var aString = aSubMeshSO->GetID();
@@ -818,7 +800,7 @@ void SMESH_Swig::EraseActor( const char* Mesh_Entry, const bool allViewers )
 void SMESH_Swig::SetName(const char* theEntry,
                          const char* theName)
 {
-  SALOMEDS::SObject_var aSObject = myStudy->FindObjectID(theEntry);
+  SALOMEDS::SObject_var aSObject = KERNEL::getStudyServant()->FindObjectID(theEntry);
   SALOMEDS::GenericAttribute_var anAttr;
   SALOMEDS::AttributeName_var aName;
   if(!aSObject->_is_nil()){
@@ -844,15 +826,12 @@ void SMESH_Swig::SetMeshIcon(const char* theMeshEntry,
 {
   class TEvent: public SALOME_Event
   {
-    SALOMEDS::Study_var myStudy;
     std::string         myMeshEntry;
     bool                myIsComputed, myIsEmpty;
   public:
-    TEvent(const SALOMEDS::Study_var& theStudy,
-           const std::string&         theMeshEntry,
+    TEvent(const std::string&         theMeshEntry,
            const bool                 theIsComputed,
            const bool                 isEmpty):
-      myStudy     (theStudy),
       myMeshEntry (theMeshEntry),
       myIsComputed(theIsComputed),
       myIsEmpty   (isEmpty)
@@ -862,15 +841,14 @@ void SMESH_Swig::SetMeshIcon(const char* theMeshEntry,
     void
     Execute()
     {
-      SALOMEDS::SObject_ptr aMeshSO = myStudy->FindObjectID(myMeshEntry.c_str());
+      SALOMEDS::SObject_ptr aMeshSO = KERNEL::getStudyServant()->FindObjectID(myMeshEntry.c_str());
       if(_PTR(SObject) aMesh = ClientFactory::SObject(aMeshSO))
         SMESH::ModifiedMesh(aMesh,myIsComputed,myIsEmpty);
       // aMeshSO->UnRegister();  ~aMesh() already called UnRegister()!
     }
   };
 
-  ProcessVoidEvent(new TEvent(myStudy,
-                              theMeshEntry,
+  ProcessVoidEvent(new TEvent(theMeshEntry,
                               theIsComputed,
                               isEmpty));
 }

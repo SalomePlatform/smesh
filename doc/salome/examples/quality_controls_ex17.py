@@ -29,4 +29,4 @@ aGroup = mesh.CreateEmptyGroup(SMESH.FACE, "Warp > " + `wa_margin`)
 
 aGroup.Add(anIds)
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

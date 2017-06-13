@@ -41,15 +41,13 @@ using namespace std;
 //=============================================================================
 
 SMESH_Hypothesis::SMESH_Hypothesis(int hypId,
-                                   int studyId,
                                    SMESH_Gen* gen) : SMESHDS_Hypothesis(hypId)
 {
   _gen            = gen;
-  _studyId        = studyId;
   _type           = PARAM_ALGO;
   _shapeType      = 0;  // to be set by algo with TopAbs_Enum
   _param_algo_dim = -1; // to be set by algo parameter
-  StudyContextStruct* myStudyContext = gen->GetStudyContext(_studyId);
+  StudyContextStruct* myStudyContext = gen->GetStudyContext();
   myStudyContext->mapHypothesis[hypId] = this;
 }
 
@@ -63,7 +61,7 @@ SMESH_Hypothesis::~SMESH_Hypothesis()
 {
   if ( _gen )
   {
-    StudyContextStruct* myStudyContext = _gen->GetStudyContext(_studyId);
+    StudyContextStruct* myStudyContext = _gen->GetStudyContext();
     myStudyContext->mapHypothesis[_hypId] = 0;
   }
 }
@@ -106,22 +104,11 @@ int SMESH_Hypothesis::GetShapeType() const
  */
 //=============================================================================
 
-int SMESH_Hypothesis::GetStudyId() const
-{
-  return _studyId;
-}
-
-//=============================================================================
-/*!
- * 
- */
-//=============================================================================
-
 void SMESH_Hypothesis::NotifySubMeshesHypothesisModification()
 {
   // for all meshes in study
 
-  StudyContextStruct* myStudyContext = _gen->GetStudyContext(_studyId);
+  StudyContextStruct* myStudyContext = _gen->GetStudyContext();
   map<int, SMESH_Mesh*>::iterator itm;
   for (itm = myStudyContext->mapMesh.begin();
        itm != myStudyContext->mapMesh.end();
@@ -161,7 +148,7 @@ void SMESH_Hypothesis::SetLibName(const char* theLibName)
 
 SMESH_Mesh* SMESH_Hypothesis::GetMeshByPersistentID(int id)
 {
-  StudyContextStruct* myStudyContext = _gen->GetStudyContext(_studyId);
+  StudyContextStruct* myStudyContext = _gen->GetStudyContext();
   map<int, SMESH_Mesh*>::iterator itm = myStudyContext->mapMesh.begin();
   for ( ; itm != myStudyContext->mapMesh.end(); itm++)
   {

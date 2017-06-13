@@ -423,10 +423,10 @@ bool StdMeshersGUI_StdHypothesisCreator::checkParams( QString& msg ) const
       GEOM::GEOM_Object_var face = w->GetObject< GEOM::GEOM_Object >();
 
       GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
-      _PTR(Study)         aStudy = SMESH::GetActiveStudyDocument();
+      _PTR(Study)         aStudy = SMESH::getStudy();
       GEOM::GEOM_IShapesOperations_wrap shapeOp;
       if ( !geomGen->_is_nil() && aStudy )
-        shapeOp = geomGen->GetIShapesOperations( aStudy->StudyId() );
+        shapeOp = geomGen->GetIShapesOperations();
       if ( !shapeOp->_is_nil() )
       {
         GEOM::ListOfLong_var vertices =

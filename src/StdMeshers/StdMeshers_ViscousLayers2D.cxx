@@ -501,8 +501,8 @@ namespace VISCOUS_2D
 //================================================================================
 // StdMeshers_ViscousLayers hypothesis
 //
-StdMeshers_ViscousLayers2D::StdMeshers_ViscousLayers2D(int hypId, int studyId, SMESH_Gen* gen)
-  :StdMeshers_ViscousLayers(hypId, studyId, gen)
+StdMeshers_ViscousLayers2D::StdMeshers_ViscousLayers2D(int hypId, SMESH_Gen* gen)
+  :StdMeshers_ViscousLayers(hypId, gen)
 {
   _name = StdMeshers_ViscousLayers2D::GetHypType();
   _param_algo_dim = -2; // auxiliary hyp used by 2D algos
@@ -600,7 +600,7 @@ StdMeshers_ViscousLayers2D::CheckHypothesis(SMESH_Mesh&                         
 // --------------------------------------------------------------------------------
 void StdMeshers_ViscousLayers2D::RestoreListeners() const
 {
-  StudyContextStruct* sc = _gen->GetStudyContext( _studyId );
+  StudyContextStruct* sc = _gen->GetStudyContext();
   std::map < int, SMESH_Mesh * >::iterator i_smesh = sc->mapMesh.begin();
   for ( ; i_smesh != sc->mapMesh.end(); ++i_smesh )
   {

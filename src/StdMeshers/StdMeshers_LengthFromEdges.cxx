@@ -38,8 +38,8 @@ using namespace std;
  */
 //=============================================================================
 
-StdMeshers_LengthFromEdges::StdMeshers_LengthFromEdges(int hypId, int studyId, SMESH_Gen* gen)
-  : SMESH_Hypothesis(hypId, studyId, gen)
+StdMeshers_LengthFromEdges::StdMeshers_LengthFromEdges(int hypId, SMESH_Gen* gen)
+  : SMESH_Hypothesis(hypId, gen)
 {
   _mode =1;
   _name = "LengthFromEdges";

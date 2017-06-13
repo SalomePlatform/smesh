@@ -5,11 +5,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 import salome_notebook
 
 
@@ -46,4 +46,4 @@ filt2.SetCriteria( [ smesh.GetCriterion( SMESH.FACE, SMESH.FT_RangeOfIds, "1-70"
 filtIDs3 = filtGroup.GetIDs()
 print "After filter modification, group on filter contains %s elemens" % filtGroup.Size()
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

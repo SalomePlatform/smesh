@@ -49,7 +49,7 @@ class STDMESHERS_EXPORT StdMeshers_CartesianParameters3D:  public SMESH_Hypothes
 {
 public:
   // Constructor
-  StdMeshers_CartesianParameters3D( int hypId, int studyId, SMESH_Gen * gen );
+  StdMeshers_CartesianParameters3D( int hypId, SMESH_Gen * gen );
 
   /*!
    * Sets coordinates of node positions along an axis (countered from 0)

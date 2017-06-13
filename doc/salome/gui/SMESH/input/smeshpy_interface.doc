@@ -28,7 +28,7 @@ A usual workflow to generate a mesh on geometry is following:
   <li>Create an instance of \ref smeshBuilder.smeshBuilder "smeshBuilder":
     <pre>
       from salome.smesh import smeshBuilder
-      smesh = smeshBuilder.New( salome.myStudy )
+      smesh = smeshBuilder.New()
     </pre></li>
   <li>Create a \ref smeshBuilder.Mesh "mesh" object:
     <pre>

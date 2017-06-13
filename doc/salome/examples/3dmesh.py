@@ -3,11 +3,11 @@
 import salome
 salome.salome_init()
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 ###
 # Geometry: an assembly of a box, a cylinder and a truncated cone

@@ -49,9 +49,8 @@ using namespace std;
 //=======================================================================
 
 StdMeshers_PolygonPerFace_2D::StdMeshers_PolygonPerFace_2D(int        hypId,
-                                                           int        studyId,
                                                            SMESH_Gen* gen)
-  :SMESH_2D_Algo(hypId, studyId, gen)
+  :SMESH_2D_Algo(hypId, gen)
 {
   _name = "PolygonPerFace_2D";
 }

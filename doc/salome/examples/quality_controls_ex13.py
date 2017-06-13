@@ -28,4 +28,4 @@ print ""
 aGroup = mesh.CreateEmptyGroup(SMESH.FACE, "Area > " + `area_margin`)
 aGroup.Add(anIds)
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

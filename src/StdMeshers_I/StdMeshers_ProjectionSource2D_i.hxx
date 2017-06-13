@@ -52,7 +52,6 @@ class StdMeshers_ProjectionSource2D_i:
 public:
   // Constructor
   StdMeshers_ProjectionSource2D_i( PortableServer::POA_ptr thePOA,
-                                   int                     theStudyId,
                                    ::SMESH_Gen*            theGenImpl );
   // Destructor
   virtual ~StdMeshers_ProjectionSource2D_i();

@@ -495,7 +495,7 @@ void SMESHGUI_FindElemByPointOp::onSelectionDone()
     if (aList.Extent() == 1 && aList.First()->hasEntry())
     {
       Handle(SALOME_InteractiveObject) anIO = aList.First();
-      _PTR(SObject) pObj = studyDS()->FindObjectID(anIO->getEntry());
+      _PTR(SObject) pObj = SMESH::getStudy()->FindObjectID(anIO->getEntry());
       CORBA::Object_var anObj = SMESH::IObjectToObject( anIO );
       newMeshEntry = anIO->getEntry();
       SMESH::SMESH_IDSource_var aMeshOrPart = SMESH::SMESH_IDSource::_narrow(anObj);

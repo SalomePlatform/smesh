@@ -106,7 +106,6 @@ class SMESH_Mesh::SubMeshHolder : public SMESHDS_TSubMeshHolder< SMESH_subMesh >
 //=============================================================================
 
 SMESH_Mesh::SMESH_Mesh(int               theLocalId, 
-                       int               theStudyId, 
                        SMESH_Gen*        theGen,
                        bool              theIsEmbeddedMode,
                        SMESHDS_Document* theDocument):
@@ -114,7 +113,6 @@ SMESH_Mesh::SMESH_Mesh(int               theLocalId,
 {
   if(MYDEBUG) MESSAGE("SMESH_Mesh::SMESH_Mesh(int localId)");
   _id            = theLocalId;
-  _studyId       = theStudyId;
   _gen           = theGen;
   _myDocument    = theDocument;
   _myMeshDS      = theDocument->NewMesh(theIsEmbeddedMode,theLocalId);
@@ -135,7 +133,6 @@ SMESH_Mesh::SMESH_Mesh(int               theLocalId,
 
 SMESH_Mesh::SMESH_Mesh():
   _id(-1),
-  _studyId(-1),
   _groupId( 0 ),
   _nbSubShapes( 0 ),
   _isShapeToMesh( false ),
@@ -208,7 +205,7 @@ SMESH_Mesh::~SMESH_Mesh()
   // remove self from studyContext
   if ( _gen )
   {
-    StudyContextStruct * studyContext = _gen->GetStudyContext( _studyId );
+    StudyContextStruct * studyContext = _gen->GetStudyContext();
     studyContext->mapMesh.erase( _id );
   }
   if ( _myDocument )
@@ -248,7 +245,7 @@ SMESH_Mesh* SMESH_Mesh::FindMesh( int meshId ) const
   if ( _id == meshId )
     return (SMESH_Mesh*) this;
 
-  if ( StudyContextStruct *aStudyContext = _gen->GetStudyContext( _studyId ))
+  if ( StudyContextStruct *aStudyContext = _gen->GetStudyContext())
   {
     std::map < int, SMESH_Mesh * >::iterator i_m = aStudyContext->mapMesh.find( meshId );
     if ( i_m != aStudyContext->mapMesh.end() )
@@ -734,7 +731,7 @@ SMESH_Mesh::RemoveHypothesis(const TopoDS_Shape & aSubShape,
   Unexpect aCatch(SalomeException);
   if(MYDEBUG) MESSAGE("SMESH_Mesh::RemoveHypothesis");
 
-  StudyContextStruct *sc = _gen->GetStudyContext(_studyId);
+  StudyContextStruct *sc = _gen->GetStudyContext();
   if (sc->mapHypothesis.find(anHypId) == sc->mapHypothesis.end())
     throw SALOME_Exception(LOCALIZED("hypothesis does not exist"));
 
@@ -995,7 +992,7 @@ int SMESH_Mesh::GetHypotheses(const SMESH_subMesh *               aSubMesh,
 
 SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const int anHypId) const
 {
-  StudyContextStruct *sc = _gen->GetStudyContext(_studyId);
+  StudyContextStruct *sc = _gen->GetStudyContext();
   if (sc->mapHypothesis.find(anHypId) == sc->mapHypothesis.end())
     return NULL;
 

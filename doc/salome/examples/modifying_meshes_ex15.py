@@ -5,11 +5,11 @@ import salome
 salome.salome_init()
 
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 
 box = geompy.MakeBoxDXDYDZ(200, 200, 200)

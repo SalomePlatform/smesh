@@ -36,9 +36,8 @@
 //=============================================================================
 
 StdMeshers_LayerDistribution2D::StdMeshers_LayerDistribution2D(int hypId,
-                                                               int studyId,
                                                                SMESH_Gen * gen)
-  : StdMeshers_LayerDistribution(hypId, studyId, gen)
+  : StdMeshers_LayerDistribution(hypId, gen)
 {
   _name = "LayerDistribution2D"; // used by RadialQuadrangle_1D2D
   _param_algo_dim = 2; // 2D

@@ -63,6 +63,7 @@ SET(_link_LIBRARIES
   ${QWT_LIBRARY}
   SalomeIDLSMESH
   SMESHFiltersSelection
+  SMESHEngine
   SMESH
   SMESHObject
 )

@@ -74,4 +74,4 @@ mesh.Compute()
 print "aGroupOnShell size =", aGroupOnShell.Size()
 print "aGroupOnShell ids :", aGroupOnShell.GetListOfID()
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

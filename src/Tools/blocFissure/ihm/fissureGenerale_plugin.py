@@ -27,9 +27,8 @@ import math
 from blocFissure import gmu
 
 def fissureGeneraleDlg(context):
-  # get context study, studyId, salomeGui
+  # get context study, salomeGui
   study = context.study
-  studyId = context.studyId
   sg = context.sg
 
   import os

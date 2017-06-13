@@ -49,7 +49,6 @@ class STDMESHERS_I_EXPORT StdMeshers_StartEndLength_i:
 public:
   // Constructor
   StdMeshers_StartEndLength_i(PortableServer::POA_ptr thePOA,
-                              int                     theStudyId,
                               ::SMESH_Gen*            theGenImpl );
   // Destructor
   virtual ~StdMeshers_StartEndLength_i();

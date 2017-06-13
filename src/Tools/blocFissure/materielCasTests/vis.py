@@ -4,7 +4,6 @@ import sys
 import salome
 
 salome.salome_init()
-theStudy = salome.myStudy
 
 import salome_notebook
 notebook = salome_notebook.notebook
@@ -22,7 +21,7 @@ import math
 import SALOMEDS
 
 
-geompy = geomBuilder.New(theStudy)
+geompy = geomBuilder.New()
 O = geompy.MakeVertex(0, 0, 0)
 OX = geompy.MakeVectorDXDYDZ(1, 0, 0)
 OY = geompy.MakeVectorDXDYDZ(0, 1, 0)
@@ -167,7 +166,7 @@ geompy.addToStudyInFather( Fissure, fondFiss, 'fondFiss' )
 import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
-smesh = smeshBuilder.New(theStudy)
+smesh = smeshBuilder.New()
 coupe_vis_1 = smesh.Mesh(coupe_vis)
 Regular_1D = coupe_vis_1.Segment()
 Nb_Segments_1 = Regular_1D.NumberOfSegments(10)
@@ -245,4 +244,4 @@ smesh.SetName(tige_haute_2, 'tige_haute')
 
 
 if salome.sg.hasDesktop():
-  salome.sg.updateObjBrowser(True)
+  salome.sg.updateObjBrowser()

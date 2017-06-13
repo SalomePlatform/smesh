@@ -43,9 +43,9 @@ using namespace std;
  */
 //=============================================================================
 
-StdMeshers_ProjectionSource3D::StdMeshers_ProjectionSource3D(int hypId, int studyId,
+StdMeshers_ProjectionSource3D::StdMeshers_ProjectionSource3D(int hypId,
                                                              SMESH_Gen * gen)
-  : SMESH_Hypothesis(hypId, studyId, gen)
+  : SMESH_Hypothesis(hypId, gen)
 {
   _name = "ProjectionSource3D"; // used by Projection_3D
   _param_algo_dim = 3; // 3D

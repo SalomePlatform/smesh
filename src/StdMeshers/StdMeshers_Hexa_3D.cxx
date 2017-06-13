@@ -70,8 +70,8 @@ static bool EvaluatePentahedralMesh(SMESH_Mesh &, const TopoDS_Shape &,
  */
 //=============================================================================
 
-StdMeshers_Hexa_3D::StdMeshers_Hexa_3D(int hypId, int studyId, SMESH_Gen * gen)
-  :SMESH_3D_Algo(hypId, studyId, gen)
+StdMeshers_Hexa_3D::StdMeshers_Hexa_3D(int hypId, SMESH_Gen * gen)
+  :SMESH_3D_Algo(hypId, gen)
 {
   _name = "Hexa_3D";
   _shapeType = (1 << TopAbs_SHELL) | (1 << TopAbs_SOLID);       // 1 bit /shape type
@@ -367,7 +367,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
   TopExp::MapShapes( aShape, TopAbs_FACE, FF);
   if ( FF.Extent() != 6)
   {
-    static StdMeshers_CompositeHexa_3D compositeHexa(_gen->GetANewId(), 0, _gen);
+    static StdMeshers_CompositeHexa_3D compositeHexa(_gen->GetANewId(), _gen);
     if ( !compositeHexa.Compute( aMesh, aShape ))
       return error( compositeHexa.GetComputeError() );
     return true;
@@ -377,7 +377,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
   // ---------------------
   
   FaceQuadStructPtr quad[ 6 ];
-  StdMeshers_Quadrangle_2D quadAlgo( _gen->GetANewId(), GetStudyId(), _gen);
+  StdMeshers_Quadrangle_2D quadAlgo( _gen->GetANewId(), _gen);
   for ( int i = 0; i < 6; ++i )
   {
     if ( !( quad[i] = FaceQuadStructPtr( quadAlgo.CheckNbEdges( aMesh, FF( i+1 ),
@@ -699,7 +699,7 @@ bool StdMeshers_Hexa_3D::Evaluate(SMESH_Mesh & aMesh,
   }
   if (meshFaces.size() != 6) {
     //return error(COMPERR_BAD_SHAPE, TComm(meshFaces.size())<<" instead of 6 faces in a block");
-    static StdMeshers_CompositeHexa_3D compositeHexa(-10, 0, aMesh.GetGen());
+    static StdMeshers_CompositeHexa_3D compositeHexa(-10, aMesh.GetGen());
     return compositeHexa.Evaluate(aMesh, aShape, aResMap);
   }
   
@@ -809,7 +809,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh & aMesh, SMESH_MesherHelper* aHelper
   static StdMeshers_HexaFromSkin_3D * algo = 0;
   if ( !algo ) {
     SMESH_Gen* gen = aMesh.GetGen();
-    algo = new StdMeshers_HexaFromSkin_3D( gen->GetANewId(), 0, gen );
+    algo = new StdMeshers_HexaFromSkin_3D( gen->GetANewId(), gen );
   }
   algo->InitComputeError();
   algo->Compute( aMesh, aHelper );
@@ -877,7 +877,7 @@ SMESH_ComputeErrorPtr ComputePentahedralMesh(SMESH_Mesh &          aMesh,
     static StdMeshers_Prism_3D * aPrism3D = 0;
     if ( !aPrism3D ) {
       SMESH_Gen* gen = aMesh.GetGen();
-      aPrism3D = new StdMeshers_Prism_3D( gen->GetANewId(), 0, gen );
+      aPrism3D = new StdMeshers_Prism_3D( gen->GetANewId(), gen );
     }
     SMESH_Hypothesis::Hypothesis_Status aStatus;
     if ( aPrism3D->CheckHypothesis( aMesh, aShape, aStatus ) ) {
@@ -908,7 +908,7 @@ bool EvaluatePentahedralMesh(SMESH_Mesh & aMesh,
     static StdMeshers_Prism_3D * aPrism3D = 0;
     if ( !aPrism3D ) {
       SMESH_Gen* gen = aMesh.GetGen();
-      aPrism3D = new StdMeshers_Prism_3D( gen->GetANewId(), 0, gen );
+      aPrism3D = new StdMeshers_Prism_3D( gen->GetANewId(), gen );
     }
     SMESH_Hypothesis::Hypothesis_Status aStatus;
     if ( aPrism3D->CheckHypothesis( aMesh, aShape, aStatus ) ) {

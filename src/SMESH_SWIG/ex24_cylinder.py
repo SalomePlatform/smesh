@@ -26,11 +26,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 geo = geompy
 
@@ -103,7 +103,7 @@ geompy.DifferenceList(group_1, [group_1_box])
 # Mesh the blocks with hexahedral
 # -------------------------------
 
-smesh.SetCurrentStudy(salome.myStudy)
+smesh.UpdateStudy()
 
 def discretize(x, y, z,  n, s=blocks):
     p = geompy.MakeVertex(x, y, z)
@@ -134,4 +134,4 @@ hexa.Group(group_1)
 # Update object browser
 # ---------------------
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

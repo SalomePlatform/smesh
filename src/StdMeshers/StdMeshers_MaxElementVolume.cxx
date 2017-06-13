@@ -48,8 +48,8 @@ using namespace std;
  */
 //=============================================================================
 
-StdMeshers_MaxElementVolume::StdMeshers_MaxElementVolume(int hypId, int studyId, SMESH_Gen* gen)
-  : SMESH_Hypothesis(hypId, studyId, gen)
+StdMeshers_MaxElementVolume::StdMeshers_MaxElementVolume(int hypId, SMESH_Gen* gen)
+  : SMESH_Hypothesis(hypId, gen)
 {
   _maxVolume = 1.;
   _name = "MaxElementVolume";

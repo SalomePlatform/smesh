@@ -598,11 +598,6 @@ module SMESH
     long GetId();
 
     /*!
-     * Get the study Id
-     */
-    long GetStudyId();
-
-    /*!
      * Obtain instance of SMESH_MeshEditor
      */
     SMESH_MeshEditor GetMeshEditor()

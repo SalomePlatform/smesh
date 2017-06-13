@@ -40,9 +40,9 @@ using namespace std;
  */
 //=============================================================================
 
-StdMeshers_LayerDistribution::StdMeshers_LayerDistribution(int hypId, int studyId,
+StdMeshers_LayerDistribution::StdMeshers_LayerDistribution(int hypId,
                                                            SMESH_Gen * gen)
-  : SMESH_Hypothesis(hypId, studyId, gen)
+  : SMESH_Hypothesis(hypId, gen)
 {
   _name = "LayerDistribution"; // used by RadialPrism_3D
   _param_algo_dim = 3; // 3D

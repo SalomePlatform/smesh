@@ -154,8 +154,9 @@ public:
   // Get CORBA object corresponding to the SALOMEDS::SObject
   static CORBA::Object_var SObjectToObject( SALOMEDS::SObject_ptr theSObject );
   // Get the SALOMEDS::SObject corresponding to a CORBA object
-  static SALOMEDS::SObject_ptr ObjectToSObject(SALOMEDS::Study_ptr theStudy,
-                                               CORBA::Object_ptr   theObject);
+  static SALOMEDS::SObject_ptr ObjectToSObject(CORBA::Object_ptr theObject);
+  // Get the SALOMEDS::Study from naming service
+  static SALOMEDS::Study_ptr getStudyServant();
   // Get GEOM Object correspoding to TopoDS_Shape
   GEOM::GEOM_Object_ptr ShapeToGeomObject (const TopoDS_Shape& theShape );
   // Get TopoDS_Shape correspoding to GEOM_Object
@@ -182,15 +183,19 @@ public:
   //GEOM::GEOM_Gen_ptr SetGeomEngine( const char* containerLoc );
   void SetGeomEngine( GEOM::GEOM_Gen_ptr geomcompo );
 
-  // Set current study
+  // Set embedded mode
   void SetEmbeddedMode( CORBA::Boolean theMode );
-  // Get current study
+  // Check embedded mode
   CORBA::Boolean IsEmbeddedMode();
 
-  // Set current study
-  void SetCurrentStudy( SALOMEDS::Study_ptr theStudy );
-  // Get current study
-  SALOMEDS::Study_ptr GetCurrentStudy();
+  // Set enable publishing in the study
+  void SetEnablePublish( CORBA::Boolean theIsEnablePublish );
+
+  // Check enable publishing
+  CORBA::Boolean IsEnablePublish();
+
+  // Update study
+  void UpdateStudy();
 
   // Create hypothesis/algorothm of given type
   SMESH::SMESH_Hypothesis_ptr CreateHypothesis (const char* theHypType,
@@ -437,8 +442,7 @@ public:
   // Returns true if object can be published in the study
   bool CanPublishInStudy( CORBA::Object_ptr theIOR );
   // Publish object in the study
-  SALOMEDS::SObject_ptr PublishInStudy( SALOMEDS::Study_ptr   theStudy,
-                                        SALOMEDS::SObject_ptr theSObject,
+  SALOMEDS::SObject_ptr PublishInStudy( SALOMEDS::SObject_ptr theSObject,
                                         CORBA::Object_ptr     theObject,
                                         const char*           theName )
     throw ( SALOME::SALOME_Exception );
@@ -467,19 +471,17 @@ public:
   // Dump python
   // ============
 
-  virtual Engines::TMPFile* DumpPython(CORBA::Object_ptr theStudy,
-                                       CORBA::Boolean isPublished,
+  virtual Engines::TMPFile* DumpPython(CORBA::Boolean isPublished,
                                        CORBA::Boolean isMultiFile,
                                        CORBA::Boolean& isValidScript);
 
-  void AddToPythonScript (int theStudyID, const TCollection_AsciiString& theString);
+  void AddToPythonScript (const TCollection_AsciiString& theString);
 
-  void RemoveLastFromPythonScript (int theStudyID);
+  void RemoveLastFromPythonScript();
 
-  void SavePython (SALOMEDS::Study_ptr theStudy);
+  void SavePython();
 
-  TCollection_AsciiString DumpPython_impl (SALOMEDS::Study_ptr theStudy,
-                                           Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
+  TCollection_AsciiString DumpPython_impl (Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
                                            Resource_DataMapOfAsciiStringAsciiString& theNames,
                                            bool isPublished,
                                            bool isMultiFile,
@@ -487,9 +489,9 @@ public:
                                            bool& aValidScript,
                                            TCollection_AsciiString& theSavedTrace);
 
-  TCollection_AsciiString GetNewPythonLines (int theStudyID);
+  TCollection_AsciiString GetNewPythonLines();
 
-  void CleanPythonTrace (int theStudyID);
+  void CleanPythonTrace();
 
   // *****************************************
   // Internal methods
@@ -519,33 +521,26 @@ public:
   static long GetBallElementsGroupsTag();
 
   // publishing methods
-  SALOMEDS::SComponent_ptr PublishComponent(SALOMEDS::Study_ptr theStudy);
-  SALOMEDS::SObject_ptr PublishMesh (SALOMEDS::Study_ptr   theStudy,
-                                     SMESH::SMESH_Mesh_ptr theMesh,
+  SALOMEDS::SComponent_ptr PublishComponent();
+  SALOMEDS::SObject_ptr PublishMesh (SMESH::SMESH_Mesh_ptr theMesh,
                                      const char*           theName = 0);
-  SALOMEDS::SObject_ptr PublishHypothesis (SALOMEDS::Study_ptr         theStudy,
-                                           SMESH::SMESH_Hypothesis_ptr theHyp,
+  SALOMEDS::SObject_ptr PublishHypothesis (SMESH::SMESH_Hypothesis_ptr theHyp,
                                            const char*                 theName = 0);
-  SALOMEDS::SObject_ptr PublishSubMesh (SALOMEDS::Study_ptr      theStudy,
-                                        SMESH::SMESH_Mesh_ptr    theMesh,
+  SALOMEDS::SObject_ptr PublishSubMesh (SMESH::SMESH_Mesh_ptr    theMesh,
                                         SMESH::SMESH_subMesh_ptr theSubMesh,
                                         GEOM::GEOM_Object_ptr    theShapeObject,
                                         const char*              theName = 0);
-  SALOMEDS::SObject_ptr PublishGroup (SALOMEDS::Study_ptr    theStudy,
-                                      SMESH::SMESH_Mesh_ptr  theMesh,
+  SALOMEDS::SObject_ptr PublishGroup (SMESH::SMESH_Mesh_ptr  theMesh,
                                       SMESH::SMESH_GroupBase_ptr theGroup,
                                       GEOM::GEOM_Object_ptr  theShapeObject,
                                       const char*            theName = 0);
-  bool AddHypothesisToShape(SALOMEDS::Study_ptr         theStudy,
-                            SMESH::SMESH_Mesh_ptr       theMesh,
+  bool AddHypothesisToShape(SMESH::SMESH_Mesh_ptr       theMesh,
                             GEOM::GEOM_Object_ptr       theShapeObject,
                             SMESH::SMESH_Hypothesis_ptr theHyp);
-  bool RemoveHypothesisFromShape(SALOMEDS::Study_ptr         theStudy,
-                                 SMESH::SMESH_Mesh_ptr       theMesh,
+  bool RemoveHypothesisFromShape(SMESH::SMESH_Mesh_ptr       theMesh,
                                  GEOM::GEOM_Object_ptr       theShapeObject,
                                  SMESH::SMESH_Hypothesis_ptr theHyp);
-  SALOMEDS::SObject_ptr GetMeshOrSubmeshByShape (SALOMEDS::Study_ptr   theStudy,
-                                                 SMESH::SMESH_Mesh_ptr theMesh,
+  SALOMEDS::SObject_ptr GetMeshOrSubmeshByShape (SMESH::SMESH_Mesh_ptr theMesh,
                                                  GEOM::GEOM_Object_ptr theShape);
   static void SetName(SALOMEDS::SObject_ptr theSObject,
                       const char*           theName,
@@ -555,7 +550,7 @@ public:
                         const char*           thePixMap);
 
   //  Get study context
-  StudyContext* GetCurrentStudyContext();
+  StudyContext* GetStudyContext();
 
   // Register an object in a StudyContext; return object id
   int RegisterObject(CORBA::Object_ptr theObject);
@@ -567,16 +562,13 @@ public:
   template<class TInterface>
   typename TInterface::_var_type GetObjectByOldId( const int oldID )
   {
-    if ( StudyContext* myStudyContext = GetCurrentStudyContext() ) {
+    if ( myStudyContext ) {
       std::string ior = myStudyContext->getIORbyOldId( oldID );
       if ( !ior.empty() )
         return TInterface::_narrow(GetORB()->string_to_object( ior.c_str() ));
     }
     return TInterface::_nil();
   }
-
-  // Get current study ID
-  int GetCurrentStudyID();
 
   /*!
    * \brief Find SObject for an algo
@@ -653,9 +645,6 @@ private:
                                                 const char* theCommandNameForPython,
                                                 const char* theFileNameForPython);
 
-  void setCurrentStudy( SALOMEDS::Study_ptr theStudy,
-                        bool                theStudyIsBeingClosed=false);
-
   std::vector<long> _GetInside(SMESH::SMESH_IDSource_ptr meshPart,
                                SMESH::ElementType     theElemType,
                                TopoDS_Shape& aShape,
@@ -673,11 +662,11 @@ private:
   // hypotheses managing
   std::map<std::string, GenericHypothesisCreator_i*> myHypCreatorMap;
 
-  std::map<int, StudyContext*>   myStudyContextMap;  // Map of study context objects
+  StudyContext*                  myStudyContext;  // study context
 
   GEOM_Client*                   myShapeReader;      // Shape reader
-  SALOMEDS::Study_var            myCurrentStudy;     // Current study
   CORBA::Boolean                 myIsEmbeddedMode;   // Current mode
+  CORBA::Boolean                 myIsEnablePublish;  // Enable publishing
 
   // Default color of groups
   std::string myDefaultGroupColor;
@@ -686,11 +675,11 @@ private:
   bool myToForgetMeshDataOnHypModif;
 
   // Dump Python: trace of API methods calls
-  std::map < int, Handle(TColStd_HSequenceOfAsciiString) > myPythonScripts;
-  bool                                                     myIsHistoricalPythonDump;
-  std::vector< int >                                       myLastParamIndex;
-  std::vector< std::string >                               myLastParameters;
-  std::string                                              myLastObj;
+  Handle(TColStd_HSequenceOfAsciiString) myPythonScript;
+  bool                                   myIsHistoricalPythonDump;
+  std::vector< int >                     myLastParamIndex;
+  std::vector< std::string >             myLastParameters;
+  std::string                            myLastObj;
 };
 
 

@@ -66,7 +66,7 @@ public:
   SMESH_Gen();
   ~SMESH_Gen();
 
-  SMESH_Mesh* CreateMesh(int theStudyId, bool theIsEmbeddedMode)
+  SMESH_Mesh* CreateMesh(bool theIsEmbeddedMode)
     throw(SALOME_Exception);
 
   enum ComputeFlags
@@ -147,7 +147,7 @@ public:
   // if Compute() would fail because of some algo bad state
   // theErrors list contains problems description
 
-  StudyContextStruct *GetStudyContext(int studyId);
+  StudyContextStruct *GetStudyContext();
 
   static int GetShapeDim(const TopAbs_ShapeEnum & aShapeType);
   static int GetShapeDim(const TopoDS_Shape &     aShape)
@@ -165,7 +165,7 @@ public:
 private:
 
   int _localId;                         // unique Id of created objects, within SMESH_Gen entity
-  std::map < int, StudyContextStruct * >_mapStudyContext;
+  StudyContextStruct* _studyContext;
 
   // hypotheses managing
   int _hypId;

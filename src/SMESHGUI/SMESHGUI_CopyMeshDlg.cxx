@@ -303,7 +303,7 @@ void SMESHGUI_CopyMeshDlg::Init (bool ResetControls)
 
 bool SMESHGUI_CopyMeshDlg::ClickOnApply()
 {
-  if (mySMESHGUI->isActiveStudyLocked())
+  if (SMESHGUI::isStudyLocked())
     return false;
 
   if( !isValid() )

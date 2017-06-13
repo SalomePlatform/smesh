@@ -22,9 +22,8 @@
 # if not, copy this file as ${HOME}/Plugins/smesh_plugins.py or ${APPLI}/Plugins/smesh_plugins.py
 
 def MGCleanerLct(context):
-  # get context study, studyId, salomeGui
+  # get context study, salomeGui
   study = context.study
-  studyId = context.studyId
   sg = context.sg
   
   import os

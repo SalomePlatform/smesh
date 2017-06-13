@@ -4,10 +4,8 @@ import sys
 import salome
 
 salome.salome_init()
-theStudy = salome.myStudy
 
 import salome_notebook
-notebook = salome_notebook.NoteBook(theStudy)
 
 import os
 from blocFissure import gmu
@@ -22,7 +20,7 @@ import math
 import SALOMEDS
 
 
-geompy = geomBuilder.New(theStudy)
+geompy = geomBuilder.New()
 
 O = geompy.MakeVertex(0, 0, 0)
 OX = geompy.MakeVectorDXDYDZ(1, 0, 0)
@@ -55,7 +53,7 @@ geompy.addToStudy( Common_1, 'Common_1' )
 import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
-smesh = smeshBuilder.New(theStudy)
+smesh = smeshBuilder.New()
 from salome.StdMeshers import StdMeshersBuilder
 Mesh_1 = smesh.Mesh(Box_1)
 Regular_1D = Mesh_1.Segment()
@@ -75,4 +73,4 @@ smesh.SetName(Quadrangle_2D.GetAlgorithm(), 'Quadrangle_2D')
 smesh.SetName(Hexa_3D.GetAlgorithm(), 'Hexa_3D')
 
 if salome.sg.hasDesktop():
-  salome.sg.updateObjBrowser(True)
+  salome.sg.updateObjBrowser()

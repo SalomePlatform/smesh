@@ -38,7 +38,7 @@ from salome.kernel.uiexception import AdminException
 from omniORB import CORBA
 import SMESH
 from salome.smesh import smeshBuilder
-smesh = smeshBuilder.New(salome.myStudy)
+smesh = smeshBuilder.New()
 import MESHJOB
 
 gui_states = ["CAN_SELECT", "CAN_COMPUTE", "CAN_REFRESH", "CAN_PUBLISH"]
@@ -368,7 +368,7 @@ class PluginDialog(QDialog):
         medfilename = os.path.join(meshJobResults.results_dirname,
                                    meshJobResults.outputmesh_filename)
 
-        smesh.SetCurrentStudy(studyedit.getActiveStudy())
+        smesh.UpdateStudy()
         ([outputMesh], status) = smesh.CreateMeshesFromMED(medfilename)
 
         # By convention, the name of the output mesh in the study is
@@ -376,7 +376,7 @@ class PluginDialog(QDialog):
         meshname = 'padder_'+str(self.__jobid)
         smesh.SetName(outputMesh.GetMesh(), meshname)
         if salome.sg.hasDesktop():
-            salome.sg.updateObjBrowser(False)
+            salome.sg.updateObjBrowser()
 
         self.__ui.lblStatusBar.setText("Publication OK")
         self.__setGuiState(["CAN_SELECT"])

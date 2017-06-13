@@ -302,8 +302,7 @@ void SMESHGUI_Make2DFrom3DOp::selectionDone()
       bool isMesh = true;
       for ( int i = 0; i < ids.count() && isMesh; ++i )
       {
-        _PTR(SObject) sobj =
-          SMESHGUI::activeStudy()->studyDS()->FindObjectID( ids[i].toLatin1().constData() );
+        _PTR(SObject) sobj = SMESH::getStudy()->FindObjectID( ids[i].toLatin1().constData() );
         mySrcMesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( sobj );  
         //isMesh = !mySrcMesh->_is_nil(); // EAP - it's sometimes necessary to copy to a new mesh
       }
@@ -356,7 +355,7 @@ bool SMESHGUI_Make2DFrom3DOp::isValid( QString& msg ) const
     for ( int i = 0; i < entries.count(); ++i )
     {
       SMESH::SMESH_GroupBase_var grp;
-      if ( _PTR(SObject) sobj = SMESHGUI::activeStudy()->studyDS()->FindObjectID( entries[i].toLatin1().constData() ))
+      if ( _PTR(SObject) sobj = SMESH::getStudy()->FindObjectID( entries[i].toLatin1().constData() ))
         grp = SMESH::SObjectToInterface<SMESH::SMESH_GroupBase>( sobj );
       if ( grp->_is_nil() ) {
         msg = tr( "SMESH_NOT_ONLY_GROUPS" );
@@ -370,7 +369,7 @@ bool SMESHGUI_Make2DFrom3DOp::isValid( QString& msg ) const
   for ( int i = 0; i < entries.count(); ++i )
   {
     SMESH::SMESH_IDSource_var idSource;
-    if ( _PTR(SObject) sobj = SMESHGUI::activeStudy()->studyDS()->FindObjectID( entries[i].toLatin1().constData() ))
+    if ( _PTR(SObject) sobj = SMESH::getStudy()->FindObjectID( entries[i].toLatin1().constData() ))
       idSource = SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( sobj );
     if ( !idSource->_is_nil() ) {
       SMESH::array_of_ElementType_var types = idSource->GetTypes();
@@ -428,8 +427,7 @@ bool SMESHGUI_Make2DFrom3DOp::compute2DMesh( QStringList& theEntryList )
       groups->length( entries.count() );
       for ( int i = 0; i < entries.count(); ++i )
       {
-        _PTR(SObject) sobj =
-          SMESHGUI::activeStudy()->studyDS()->FindObjectID( entries[i].toLatin1().constData() );
+        _PTR(SObject) sobj = SMESH::getStudy()->FindObjectID( entries[i].toLatin1().constData() );
         SMESH::SMESH_IDSource_var grp = SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( sobj );  
         SMESH::array_of_ElementType_var types = grp->GetTypes();
         if ( types->length() < 1 || types[0] != goodType )
@@ -482,7 +480,7 @@ bool SMESHGUI_Make2DFrom3DOp::compute2DMesh( QStringList& theEntryList )
 
 bool SMESHGUI_Make2DFrom3DOp::onApply()
 {
-  if ( isStudyLocked() )
+  if ( SMESHGUI::isStudyLocked() )
     return false;
 
   QString msg;

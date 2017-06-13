@@ -52,6 +52,7 @@ ADD_DEFINITIONS(
 SET(_link_LIBRARIES
   ${KERNEL_SalomeGenericObj}
   ${KERNEL_SALOMELocalTrace}
+  ${KERNEL_SalomeKernelHelpers}
   ${GUI_CAM}
   ${GUI_suit}
   ${GUI_qtx}

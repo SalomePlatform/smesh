@@ -35,7 +35,7 @@
 class STDMESHERS_EXPORT StdMeshers_Deflection1D:public SMESH_Hypothesis
 {
  public:
-  StdMeshers_Deflection1D(int hypId, int studyId, SMESH_Gen * gen);
+  StdMeshers_Deflection1D(int hypId, SMESH_Gen * gen);
   virtual ~ StdMeshers_Deflection1D();
 
   void SetDeflection(double value) throw(SALOME_Exception);

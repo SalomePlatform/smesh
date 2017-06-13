@@ -241,7 +241,7 @@ class MacObject:
                 import GenFunctions, Config
 
                 from salome.geom import geomBuilder
-                geompy = geomBuilder.New( Config.theStudy )
+                geompy = geomBuilder.New()
                 
                 if type(Criterion) is str :
                         Crit = {'South'  : lambda : 0,

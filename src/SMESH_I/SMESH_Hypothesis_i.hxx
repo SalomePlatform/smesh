@@ -133,7 +133,6 @@ class SMESH_I_EXPORT GenericHypothesisCreator_i
 public:
   // Create a hypothesis
   virtual SMESH_Hypothesis_i* Create(PortableServer::POA_ptr thePOA,
-                                     int                     theStudyId,
                                      ::SMESH_Gen*            theGenImpl) = 0;
   virtual ~GenericHypothesisCreator_i() {}
 
@@ -153,10 +152,9 @@ template <class T> class HypothesisCreator_i: public GenericHypothesisCreator_i
 {
 public:
   virtual SMESH_Hypothesis_i* Create (PortableServer::POA_ptr thePOA,
-                                      int                     theStudyId,
                                       ::SMESH_Gen*            theGenImpl)
   {
-    return new T (thePOA, theStudyId, theGenImpl);
+    return new T (thePOA, theGenImpl);
   };
 };
 

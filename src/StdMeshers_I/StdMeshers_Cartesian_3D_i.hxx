@@ -45,7 +45,6 @@ class STDMESHERS_I_EXPORT StdMeshers_Cartesian_3D_i:
 public:
   // Constructor
   StdMeshers_Cartesian_3D_i( PortableServer::POA_ptr thePOA,
-                             int                     theStudyId,
                              ::SMESH_Gen*            theGenImpl );
 
   // Destructor

@@ -21,8 +21,6 @@ def creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure,
   #TODO: a compléter
   """
   logging.info('start')
-  
-  #smesh.SetCurrentStudy(salome.myStudy)
 
   geometrieSaine      = geometriesSaines[0]
   maillageSain        = maillagesSains[0]

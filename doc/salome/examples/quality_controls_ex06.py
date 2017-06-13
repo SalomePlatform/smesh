@@ -5,11 +5,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 ####### GEOM part ########
 
@@ -75,4 +75,4 @@ aFaceIds = Mesh_1.GetIdsFromFilter(aFilter)
 aGroup = Mesh_1.CreateEmptyGroup(SMESH.FACE, "Shared_faces")
 aGroup.Add(aFaceIds)
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

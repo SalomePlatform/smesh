@@ -105,7 +105,7 @@ class SMESH_Swig
   SMESH_Swig();
   ~SMESH_Swig();
 
-  void Init(int studyID);
+  void Init();
 
   const char* AddNewMesh(const char* IOR);
   const char* AddNewHypothesis(const char* IOR);

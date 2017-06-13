@@ -36,11 +36,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 import math
 
@@ -131,7 +131,7 @@ for i in range(8):
     idEdgeZ.append(geompy.addToStudyInFather(vol,edgeZ[i],"EdgeZ"+str(i+1)))
 
 ### ---------------------------- SMESH --------------------------------------
-smesh.SetCurrentStudy(salome.myStudy)
+smesh.UpdateStudy()
 
 # ---- init a Mesh with the volume
 
@@ -176,7 +176,7 @@ for i in range(8):
     smesh.SetName(algo.GetSubMesh(), "SubMeshEdgeZ_"+str(i+1))
   
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()
 
 print "-------------------------- compute the mesh of the volume"
 
@@ -197,4 +197,4 @@ if ret != 0:
 else:
     print "problem when Computing the mesh"
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

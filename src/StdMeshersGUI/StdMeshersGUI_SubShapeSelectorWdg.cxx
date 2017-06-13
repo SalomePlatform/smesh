@@ -578,16 +578,12 @@ void StdMeshersGUI_SubShapeSelectorWdg::updateState()
 GEOM::GEOM_Object_var StdMeshersGUI_SubShapeSelectorWdg::GetGeomObjectByEntry( const QString& theEntry )
 {
   GEOM::GEOM_Object_var aGeomObj;
-  SALOMEDS::Study_var aStudy = SMESHGUI::GetSMESHGen()->GetCurrentStudy();
-  if ( !aStudy->_is_nil() )
+  SALOMEDS::SObject_var aSObj = SMESH_Gen_i::getStudyServant()->FindObjectID( theEntry.toLatin1().data() );
+  if (!aSObj->_is_nil() )
   {
-    SALOMEDS::SObject_var aSObj = aStudy->FindObjectID( theEntry.toLatin1().data() );
-    if (!aSObj->_is_nil() )
-    {
-      CORBA::Object_var obj = aSObj->GetObject();
-      aGeomObj = GEOM::GEOM_Object::_narrow(obj);
-      aSObj->UnRegister();
-    }
+    CORBA::Object_var obj = aSObj->GetObject();
+    aGeomObj = GEOM::GEOM_Object::_narrow(obj);
+    aSObj->UnRegister();
   }
   return aGeomObj._retn();
 }

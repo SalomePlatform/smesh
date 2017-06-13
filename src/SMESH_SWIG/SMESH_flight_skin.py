@@ -29,11 +29,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 
 # ---------------------------- GEOM --------------------------------------
@@ -62,7 +62,7 @@ print "number of Edges  in flight : ", len(subEdgeList)
 
 
 ### ---------------------------- SMESH --------------------------------------
-smesh.SetCurrentStudy(salome.myStudy)
+smesh.UpdateStudy()
 
 # ---- init a Mesh with the shell
 shape_mesh = salome.IDToObject( idShape )
@@ -107,4 +107,4 @@ if ret != 0:
 else:
     print "probleme when computing the mesh"
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

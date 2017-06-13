@@ -42,8 +42,8 @@
  */
 //=============================================================================
 
-StdMeshers_Geometric1D::StdMeshers_Geometric1D(int hypId, int studyId, SMESH_Gen * gen)
-  :StdMeshers_Reversible1D(hypId, studyId, gen)
+StdMeshers_Geometric1D::StdMeshers_Geometric1D(int hypId, SMESH_Gen * gen)
+  :StdMeshers_Reversible1D(hypId, gen)
 {
   _begLength = 1.;
   _ratio = 1.;

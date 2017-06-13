@@ -49,7 +49,7 @@ class TopoDS_TShape;
 class STDMESHERS_EXPORT StdMeshers_AutomaticLength:public SMESH_Hypothesis
 {
 public:
-  StdMeshers_AutomaticLength(int hypId, int studyId, SMESH_Gen * gen);
+  StdMeshers_AutomaticLength(int hypId, SMESH_Gen * gen);
   virtual ~ StdMeshers_AutomaticLength();
 
   /*!

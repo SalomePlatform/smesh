@@ -379,9 +379,7 @@ namespace SMESH
     _PTR(SObject) so = SMESH::FindSObject(aMainShape);
     if ( subShapeID == 1 || !so )
       return so;
-    _PTR(ChildIterator) it;
-    if (_PTR(Study) study = SMESH::GetActiveStudyDocument())
-      it =  study->NewChildIterator(so);
+    _PTR(ChildIterator) it = SMESH::getStudy()->NewChildIterator(so);
     _PTR(SObject) subSO;
     if ( it ) {
       for ( it->InitEx(true); !subSO && it->More(); it->Next() ) {
@@ -927,7 +925,7 @@ void SMESHGUI_BaseComputeOp::computeMesh()
 
     // NPAL16631: if ( !memoryLack )
     {
-      _PTR(SObject) sobj = SMESH::GetActiveStudyDocument()->FindObjectID(myIObject->getEntry());
+      _PTR(SObject) sobj = SMESH::getStudy()->FindObjectID(myIObject->getEntry());
       SMESH::ModifiedMesh( sobj,
                            !computeFailed && aHypErrors.isEmpty(),
                            myMesh->NbNodes() == 0);
@@ -998,8 +996,7 @@ void SMESHGUI_BaseComputeOp::computeMesh()
               {
                 toDisplay = true;
                 SMESH_Actor *anActor = SMESH::FindActorByObject( aMesh );
-                if ( !anActor ) anActor = SMESH::CreateActor( (*anIter).second->GetStudy(),
-                                                              (*anIter).second->GetID().c_str(),
+                if ( !anActor ) anActor = SMESH::CreateActor( (*anIter).second->GetID().c_str(),
                                                               /*clearLog =*/ true );
                 if ( anActor ) // actor is not created for an empty mesh
                 {
@@ -1267,7 +1264,6 @@ void SMESHGUI_BaseComputeOp::stopOperation()
 void SMESHGUI_BaseComputeOp::onPublishShape()
 {
   GEOM::GEOM_Gen_var      geomGen = SMESH::GetGEOMGen();
-  SALOMEDS::Study_var       study = SMESHGUI::GetSMESHGen()->GetCurrentStudy();
   GEOM::GEOM_Object_var meshShape = myMesh->GetShapeToMesh();
 
   QStringList entryList;
@@ -1283,7 +1279,7 @@ void SMESHGUI_BaseComputeOp::onPublishShape()
       if ( !SMESH::getSubShapeSO( 1, myMainShape )) // the main shape not published
       {
         QString name = GEOMBase::GetDefaultName( SMESH::shapeTypeName( myMainShape, "MAIN_SHAPE" ));
-        SALOMEDS::SObject_wrap so = geomGen->AddInStudy( study, myMainShape,
+        SALOMEDS::SObject_wrap so = geomGen->AddInStudy( myMainShape,
                                                          name.toLatin1().data(),
                                                          GEOM::GEOM_Object::_nil());
         // look for myMainShape in the table
@@ -1302,7 +1298,7 @@ void SMESHGUI_BaseComputeOp::onPublishShape()
         if ( curSub == 1 ) continue;
       }
       QString name = GEOMBase::GetDefaultName( SMESH::shapeTypeName( shape, "ERROR_SHAPE" ));
-      SALOMEDS::SObject_wrap so = geomGen->AddInStudy( study, shape,
+      SALOMEDS::SObject_wrap so = geomGen->AddInStudy( shape,
                                                        name.toLatin1().data(), myMainShape);
       if ( !so->_is_nil() ) {
         CORBA::String_var name  = so->GetName();
@@ -1743,7 +1739,7 @@ void SMESHGUI_PrecomputeOp::initDialog()
   QList<int> modes;
 
   QMap<int, int> modeMap;
-  _PTR(SObject)  pMesh = studyDS()->FindObjectID( myIObject->getEntry() );
+  _PTR(SObject)  pMesh = SMESH::getStudy()->FindObjectID( myIObject->getEntry() );
   getAssignedAlgos( pMesh, modeMap );
   if ( modeMap.contains( SMESH::DIM_3D ) )
   {
@@ -1786,8 +1782,7 @@ void SMESHGUI_PrecomputeOp::getAssignedAlgos(_PTR(SObject)  theMesh,
   int aPart = SMESH::Tag_RefOnAppliedAlgorithms;
   if ( theMesh->FindSubObject( aPart, aHypFolder ))
   {
-    _PTR(ChildIterator) anIter =
-      SMESH::GetActiveStudyDocument()->NewChildIterator( aHypFolder );
+    _PTR(ChildIterator) anIter = SMESH::getStudy()->NewChildIterator( aHypFolder );
     for ( ; anIter->More(); anIter->Next() )
     {
       _PTR(SObject) anObj = anIter->Value();
@@ -1830,8 +1825,7 @@ void SMESHGUI_PrecomputeOp::getAssignedAlgos(_PTR(SObject)  theMesh,
     if ( !theMesh->FindSubObject( aPart, aHypFolder ))
       continue;
 
-    _PTR(ChildIterator) anIter =
-      SMESH::GetActiveStudyDocument()->NewChildIterator( aHypFolder );
+    _PTR(ChildIterator) anIter = SMESH::getStudy()->NewChildIterator( aHypFolder );
     for ( anIter->InitEx(true); anIter->More(); anIter->Next() )
     {
       _PTR(SObject) anObj = anIter->Value();

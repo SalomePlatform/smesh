@@ -5,11 +5,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 # create a compound of two glued boxes
 box1 = geompy.MakeBox(0., 0., 0., 20., 20., 15.)
@@ -47,4 +47,4 @@ print ""
 aGroup = mesh.CreateEmptyGroup(SMESH.FACE, "Borders at multi-connection 2D = " + `nb_conn`)
 aGroup.Add(anIds)
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

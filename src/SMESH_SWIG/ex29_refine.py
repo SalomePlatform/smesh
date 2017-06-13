@@ -25,11 +25,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 import os
 
@@ -232,4 +232,4 @@ MyMesh.ExportMED(path+str(NbCells4)+"_triangles.med", 0)
 # Update the object browser
 # -------------------------
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

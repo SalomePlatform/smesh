@@ -28,4 +28,4 @@ print ""
 aGroup = mesh.CreateEmptyGroup(SMESH.FACE, "Aspect Ratio > " + `ar_margin`)
 aGroup.Add(anIds)
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

@@ -4,7 +4,6 @@ import sys
 import salome
 
 salome.salome_init()
-theStudy = salome.myStudy
 
 import salome_notebook
 notebook = salome_notebook.notebook
@@ -23,7 +22,7 @@ import math
 import SALOMEDS
 
 
-geompy = geomBuilder.New(theStudy)
+geompy = geomBuilder.New()
 
 O = geompy.MakeVertex(0, 0, 0)
 OX = geompy.MakeVectorDXDYDZ(1, 0, 0)
@@ -56,7 +55,7 @@ geompy.addToStudyInFather( Disque, Compound_4, 'Compound_4' )
 import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
-smesh = smeshBuilder.New(theStudy)
+smesh = smeshBuilder.New()
 from salome.StdMeshers import StdMeshersBuilder
 Disque_1 = smesh.Mesh(Disque)
 Regular_1D = Disque_1.Segment()
@@ -86,4 +85,4 @@ smesh.SetName(SubMesh_1, 'SubMesh_1')
 smesh.SetName(SubMesh_2, 'SubMesh_2')
 
 if salome.sg.hasDesktop():
-  salome.sg.updateObjBrowser(True)
+  salome.sg.updateObjBrowser()

@@ -69,10 +69,9 @@ public:
   static bool IsStatusFatal(Hypothesis_Status theStatus)
   { return theStatus >= HYP_UNKNOWN_FATAL; }
 
-  SMESH_Hypothesis(int hypId, int studyId, SMESH_Gen* gen);
+  SMESH_Hypothesis(int hypId, SMESH_Gen* gen);
   virtual ~SMESH_Hypothesis();
   virtual int GetDim() const;
-  int         GetStudyId() const;
   SMESH_Gen*  GetGen() const { return (SMESH_Gen*) _gen; }
   virtual int GetShapeType() const;
   virtual const char* GetLibName() const;
@@ -126,7 +125,6 @@ public:
 
 protected:
   SMESH_Gen* _gen;
-  int        _studyId;
   int        _shapeType;
   int        _param_algo_dim; // to be set at descendant hypothesis constructor
 

@@ -24,7 +24,7 @@
 import math, Config
 
 from salome.geom import geomBuilder
-geompy = geomBuilder.New( Config.theStudy )
+geompy = geomBuilder.New()
 
 def Go(GeoObj, CutPlnLst, OutLvlLst, PrefixLst, Publish):
 

@@ -48,9 +48,8 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_StartEndLength::StdMeshers_StartEndLength(int         hypId,
-                                                     int         studyId,
                                                      SMESH_Gen * gen)
-     :SMESH_Hypothesis(hypId, studyId, gen)
+     :SMESH_Hypothesis(hypId, gen)
 {
   _begLength = 1.;
   _endLength = 10.;

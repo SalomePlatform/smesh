@@ -48,7 +48,6 @@ class StdMeshers_Prism_3D_i:
 public:
   // Constructor
   StdMeshers_Prism_3D_i( PortableServer::POA_ptr thePOA,
-                         int                     theStudyId,
                          ::SMESH_Gen*            theGenImpl );
 
   // Destructor
@@ -71,7 +70,6 @@ class StdMeshers_RadialPrism_3D_i:
 public:
   // Constructor
   StdMeshers_RadialPrism_3D_i( PortableServer::POA_ptr thePOA,
-                               int                     theStudyId,
                                ::SMESH_Gen*            theGenImpl );
 
   // Destructor

@@ -41,7 +41,7 @@
 class STDMESHERS_EXPORT StdMeshers_QuadranglePreference:public SMESH_Hypothesis
 {
  public:
-  StdMeshers_QuadranglePreference(int hypId, int studyId, SMESH_Gen * gen);
+  StdMeshers_QuadranglePreference(int hypId, SMESH_Gen * gen);
   virtual ~ StdMeshers_QuadranglePreference();
   
   virtual std::ostream & SaveTo(std::ostream & save);

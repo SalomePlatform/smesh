@@ -28,11 +28,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 # ---- define a box
 
@@ -63,4 +63,4 @@ name = geompy.SubShapeName(edge, face)
 print name
 idedge = geompy.addToStudyInFather(face, edge, name)
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

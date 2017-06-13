@@ -6,11 +6,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 # 1. Create points
 points = [[0, 0], [50, 30], [50, 110], [0, 150], [-80, 150], [-130, 70], [-130, -20]]
@@ -128,4 +128,4 @@ error = quad_6.ExtrusionAlongPath(ff_6 , Edge_Circle_mesh, Edge_Circle, 1,
 error = quad_7.ExtrusionAlongPath(ff_7, Edge_Circle_mesh, Edge_Circle, 1,
                                   1, [a45, -a45, a45, -a45, a45, -a45, a45, -a45], 0, refPoint)
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

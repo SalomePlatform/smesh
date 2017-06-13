@@ -22,7 +22,7 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 filename="/home/gboulant/development/projets/salome/SPADDER/spadder/resources/padderexe/REF_spheres.dat.xyz"
 file=open(filename,'rb')

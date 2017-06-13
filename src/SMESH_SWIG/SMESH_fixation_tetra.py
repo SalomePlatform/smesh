@@ -30,7 +30,7 @@ import SMESH_fixation
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 compshell = SMESH_fixation.compshell
 idcomp = SMESH_fixation.idcomp
@@ -50,7 +50,7 @@ status = geompy.CheckShape(compshell)
 print " check status ", status
 
 ### ---------------------------- SMESH --------------------------------------
-smesh.SetCurrentStudy(salome.myStudy)
+smesh.UpdateStudy()
 
 # ---- init a Mesh with the compshell
 
@@ -123,4 +123,4 @@ if ret != 0:
 else:
     print "problem when computing the mesh"
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

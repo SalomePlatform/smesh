@@ -395,7 +395,7 @@ void SMESHGUI_DuplicateNodesDlg::onConstructorsClicked (int constructorId)
 */
 bool SMESHGUI_DuplicateNodesDlg::onApply()
 {
-  if ( mySMESHGUI->isActiveStudyLocked() || !isValid() )
+  if ( SMESHGUI::isStudyLocked() || !isValid() )
     return false;
 
   BusyLocker lock( myBusy );

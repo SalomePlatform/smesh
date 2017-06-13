@@ -178,7 +178,7 @@ class InputDialog(GenericDialog):
             self.__selectedMesh = None
             return
 
-        self.smeshStudyTool.updateStudy(studyedit.getActiveStudyId())
+        self.smeshStudyTool.updateStudy()
         self.__selectedMesh = self.smeshStudyTool.getMeshObjectFromSObject(mySObject)
         if CORBA.is_nil(self.__selectedMesh):
             self.__ui.txtSmeshObject.setText("The selected object is not a mesh")

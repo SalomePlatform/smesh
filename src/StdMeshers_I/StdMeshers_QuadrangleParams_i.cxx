@@ -45,13 +45,11 @@ using namespace std;
 
 StdMeshers_QuadrangleParams_i::StdMeshers_QuadrangleParams_i
                                           (PortableServer::POA_ptr thePOA,
-                                           int                     theStudyId,
                                            ::SMESH_Gen*            theGenImpl )
      : SALOME::GenericObj_i( thePOA ), 
        SMESH_Hypothesis_i( thePOA )
 {
   myBaseImpl = new ::StdMeshers_QuadrangleParams(theGenImpl->GetANewId(),
-                                                 theStudyId,
                                                  theGenImpl);
 }
 

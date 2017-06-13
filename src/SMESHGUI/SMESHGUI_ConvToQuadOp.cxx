@@ -129,7 +129,7 @@ void SMESHGUI_ConvToQuadOp::selectionDone()
   try
   {
     QString anObjEntry = myDlg->selectedObject( 0 );
-    _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
+    _PTR(SObject) pObj = SMESH::getStudy()->FindObjectID( anObjEntry.toLatin1().data() );
     if ( !pObj ) return;
 
     SMESH::SMESH_IDSource_var idSource = 
@@ -204,7 +204,7 @@ bool SMESHGUI_ConvToQuadOp::onApply()
   QString aMess;
 
   QString anObjEntry = myDlg->selectedObject( 0 );
-  _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
+  _PTR(SObject) pObj = SMESH::getStudy()->FindObjectID( anObjEntry.toLatin1().data() );
   if ( !pObj )
   {
     dlg()->show();
@@ -382,7 +382,7 @@ SMESHGUI_ConvToQuadOp::DestinationMesh( const SMESH::SMESH_IDSource_var& idSourc
 void SMESHGUI_ConvToQuadOp::ConnectRadioButtons( int id )
 {
   QString anObjEntry = myDlg->selectedObject( 0 );
-  _PTR(SObject) pObj = studyDS()->FindObjectID( anObjEntry.toLatin1().data() );
+  _PTR(SObject) pObj = SMESH::getStudy()->FindObjectID( anObjEntry.toLatin1().data() );
   if ( !pObj ) return;
 
   SMESH::SMESH_IDSource_var idSource = 

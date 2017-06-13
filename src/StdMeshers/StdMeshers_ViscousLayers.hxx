@@ -38,7 +38,7 @@
 class STDMESHERS_EXPORT StdMeshers_ViscousLayers : public SMESH_Hypothesis
 {
 public:
-  StdMeshers_ViscousLayers(int hypId, int studyId, SMESH_Gen* gen);
+  StdMeshers_ViscousLayers(int hypId, SMESH_Gen* gen);
 
   // Set boundary shapes (faces in 3D, edges in 2D) either to exclude from
   // treatment or to make the Viscous Layers on

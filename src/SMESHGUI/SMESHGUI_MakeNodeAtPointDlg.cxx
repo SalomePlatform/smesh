@@ -493,7 +493,7 @@ void SMESHGUI_MakeNodeAtPointOp::stopOperation()
 
 bool SMESHGUI_MakeNodeAtPointOp::onApply()
 {
-  if( isStudyLocked() )
+  if( SMESHGUI::isStudyLocked() )
     return false;
 
   if ( !myMeshActor ) {

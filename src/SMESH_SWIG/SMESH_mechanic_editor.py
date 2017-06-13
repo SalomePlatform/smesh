@@ -31,11 +31,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 # ---------------------------- GEOM --------------------------------------
 
@@ -234,4 +234,4 @@ mesh.RotationSweepObject(GroupRotate, axisXYZ, angle45, 4, 1e-5)
 #9 reorientation of the submesh1
 mesh.ReorientObject(submesh1)
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

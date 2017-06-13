@@ -43,7 +43,7 @@
 class STDMESHERS_EXPORT StdMeshers_QuadraticMesh:public SMESH_Hypothesis
 {
  public:
-  StdMeshers_QuadraticMesh(int hypId, int studyId, SMESH_Gen * gen);
+  StdMeshers_QuadraticMesh(int hypId, SMESH_Gen * gen);
   virtual ~ StdMeshers_QuadraticMesh();
   
   virtual std::ostream & SaveTo(std::ostream & save);

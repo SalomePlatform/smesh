@@ -37,7 +37,7 @@
 class STDMESHERS_EXPORT StdMeshers_QuadFromMedialAxis_1D2D: public StdMeshers_Quadrangle_2D
 {
  public:
-  StdMeshers_QuadFromMedialAxis_1D2D(int hypId, int studyId, SMESH_Gen* gen);
+  StdMeshers_QuadFromMedialAxis_1D2D(int hypId, SMESH_Gen* gen);
   virtual ~StdMeshers_QuadFromMedialAxis_1D2D();
 
   virtual bool CheckHypothesis(SMESH_Mesh&         aMesh,

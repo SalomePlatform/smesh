@@ -223,7 +223,7 @@ void SMESHGUI_RemoveElementsDlg::Init()
 //=================================================================================
 void SMESHGUI_RemoveElementsDlg::ClickOnApply()
 {
-  if (mySMESHGUI->isActiveStudyLocked())
+  if (SMESHGUI::isStudyLocked())
     return;
 
   if (myNbOkElements)

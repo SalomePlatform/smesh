@@ -150,9 +150,8 @@ void SMESH_GroupBase_i::SetName( const char* theName )
 
   // Update group name in a study
   SMESH_Gen_i*              aGen = myMeshServant->GetGen();
-  SALOMEDS::Study_var      aStudy = aGen->GetCurrentStudy();
   SMESH::SMESH_GroupBase_var aGrp = _this();
-  SALOMEDS::SObject_var      anSO = aGen->ObjectToSObject( aStudy, aGrp );
+  SALOMEDS::SObject_var      anSO = aGen->ObjectToSObject( aGrp );
   if ( !anSO->_is_nil() )
   {
     aGen->SetName( anSO, theName );

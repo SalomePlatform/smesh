@@ -69,7 +69,6 @@ public:
                 Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
                 Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
                 std::set< TCollection_AsciiString >&      theRemovedObjIDs,
-                SALOMEDS::Study_ptr&                      theStudy,
                 const bool                                theHistoricalDump);
 
   /*!

@@ -654,6 +654,6 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   logging.info("fichier maillage fissure %s", fichierMaillageFissure)
 
   if salome.sg.hasDesktop():
-    salome.sg.updateObjBrowser(True)
+    salome.sg.updateObjBrowser()
 
   return  maillageComplet

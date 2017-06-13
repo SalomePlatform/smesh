@@ -118,16 +118,15 @@ bool SPADDERPluginTester_i::testkernel()
  * This test checks the constructor of the basic classes of the SMESH
  * plugin for PADDER.
  */
-bool SPADDERPluginTester_i::testsmesh(CORBA::Long studyId)
+bool SPADDERPluginTester_i::testsmesh()
 {
   beginService("SPADDERPluginTester_i::testsmesh");
 
   // Resolve the SMESH engine and the SALOME study
   // _WARN_ The SMESH engine should have been loaded first
   SMESH_Gen_i* smeshGen_i = SMESH_Gen_i::GetSMESHGen();
-  CORBA::Object_var anObject = smeshGen_i->GetNS()->Resolve("/myStudyManager");
-  SALOMEDS::StudyManager_var aStudyMgr = SALOMEDS::StudyManager::_narrow(anObject);
-  SALOMEDS::Study_var myStudy = aStudyMgr->GetStudyByID(studyId);
+  CORBA::Object_var anObject = smeshGen_i->GetNS()->Resolve("/Study");
+  SALOMEDS::Study_var aStudy = SALOMEDS::Study::_narrow(anObject);
 
   //
   // _MEM_ CAUTION: SMESH_Gen define a data structure for local usage

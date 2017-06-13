@@ -33,8 +33,8 @@
  */
 //=============================================================================
 
-StdMeshers_Reversible1D::StdMeshers_Reversible1D(int hypId, int studyId, SMESH_Gen * gen)
-  :SMESH_Hypothesis(hypId, studyId, gen)
+StdMeshers_Reversible1D::StdMeshers_Reversible1D(int hypId, SMESH_Gen * gen)
+  :SMESH_Hypothesis(hypId, gen)
 {
   _param_algo_dim = 1; 
 }

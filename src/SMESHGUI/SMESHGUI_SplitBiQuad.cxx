@@ -202,7 +202,7 @@ bool SMESHGUI_SplitBiQuadOp::onApply()
   int nbObj = 0;
   for ( int i = 0; i < entries.count() ; ++i )
   {
-    _PTR(SObject) pObj = studyDS()->FindObjectID( entries[i].toLatin1().data() );
+    _PTR(SObject) pObj = SMESH::getStudy()->FindObjectID( entries[i].toLatin1().data() );
     SMESH::SMESH_IDSource_var obj = SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( pObj );
     if( !CORBA::is_nil( obj ))
     {

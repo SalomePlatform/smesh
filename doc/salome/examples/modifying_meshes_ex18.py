@@ -5,11 +5,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 import salome_notebook
 
 
@@ -51,4 +51,4 @@ res = mesh.TriToQuad([ff[2], ff[3], ff[4], ff[5]], SMESH.FT_MinimumAngle, 60.)
 if not res: print "failed!"
 else:       print "done."
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

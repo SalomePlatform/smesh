@@ -42,9 +42,9 @@ using namespace std;
  */
 //=============================================================================
 
-StdMeshers_NumberOfLayers::StdMeshers_NumberOfLayers(int hypId, int studyId,
+StdMeshers_NumberOfLayers::StdMeshers_NumberOfLayers(int hypId,
                                                      SMESH_Gen * gen)
-  : SMESH_Hypothesis(hypId, studyId, gen)
+  : SMESH_Hypothesis(hypId, gen)
 {
   _name = "NumberOfLayers"; // used by RadialPrism_3D
   _param_algo_dim = 3; // 3D

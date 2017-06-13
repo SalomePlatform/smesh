@@ -35,4 +35,4 @@ log = mesh.GetLog(0); # no erase trace
 for linelog in log:
     print linelog
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

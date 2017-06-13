@@ -1022,8 +1022,8 @@ namespace
 //purpose  : 
 //=======================================================================
 
-StdMeshers_HexaFromSkin_3D::StdMeshers_HexaFromSkin_3D(int hypId, int studyId, SMESH_Gen* gen)
-  :SMESH_3D_Algo(hypId, studyId, gen)
+StdMeshers_HexaFromSkin_3D::StdMeshers_HexaFromSkin_3D(int hypId, SMESH_Gen* gen)
+  :SMESH_3D_Algo(hypId, gen)
 {
   _name = "HexaFromSkin_3D";
 }

@@ -22,7 +22,7 @@ import math
 import SALOMEDS
 
 
-geompy = geomBuilder.New(theStudy)
+geompy = geomBuilder.New()
 
 O = geompy.MakeVertex(0, 0, 0)
 OX = geompy.MakeVectorDXDYDZ(1, 0, 0)
@@ -125,7 +125,7 @@ geompy.addToStudy( FissInCylindre2, 'FissInCylindre2' )
 import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
-smesh = smeshBuilder.New(theStudy)
+smesh = smeshBuilder.New()
 from salome.StdMeshers import StdMeshersBuilder
 smeshObj_1 = smesh.CreateHypothesis('NumberOfSegments')
 smeshObj_1.SetNumberOfSegments( 5 )
@@ -164,4 +164,4 @@ smesh.SetName(SubMesh_1, 'SubMesh_1')
 smesh.SetName(SubMesh_2, 'SubMesh_2')
 
 if salome.sg.hasDesktop():
-  salome.sg.updateObjBrowser(True)
+  salome.sg.updateObjBrowser()

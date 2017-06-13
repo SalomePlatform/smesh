@@ -45,13 +45,11 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_LayerDistribution_i::StdMeshers_LayerDistribution_i( PortableServer::POA_ptr thePOA,
-                                                                int                     theStudyId,
                                                                 ::SMESH_Gen*            theGenImpl )
   : SALOME::GenericObj_i( thePOA ),
     SMESH_Hypothesis_i( thePOA )
 {
   myBaseImpl = new ::StdMeshers_LayerDistribution( theGenImpl->GetANewId(),
-                                                   theStudyId,
                                                    theGenImpl );
 }
 
@@ -90,11 +88,10 @@ void StdMeshers_LayerDistribution_i::SetLayerDistribution(SMESH::SMESH_Hypothesi
     // Remove SO of 1D hypothesis if it was published
     if (SMESH_Gen_i* gen = SMESH_Gen_i::GetSMESHGen())
     {
-      SALOMEDS::Study_var study = gen->GetCurrentStudy();
-      SALOMEDS::SObject_var  SO = gen->ObjectToSObject( study, hyp1D );
+      SALOMEDS::SObject_var  SO = gen->ObjectToSObject( hyp1D );
       if ( ! SO->_is_nil() )
       {
-        SALOMEDS::StudyBuilder_var builder = study->NewBuilder();
+        SALOMEDS::StudyBuilder_var builder = SMESH_Gen_i::getStudyServant()->NewBuilder();
         builder->RemoveObjectWithChildren( SO );
         SO->UnRegister();
       }
@@ -198,8 +195,7 @@ void StdMeshers_LayerDistribution_i::LoadFrom( const char* theStream )
        is >> libName )
   {
     SMESH_Gen_i* gen = SMESH_Gen_i::GetSMESHGen();
-    SALOMEDS::Study_var curStudy = gen->GetCurrentStudy();
-    gen->SetCurrentStudy( SALOMEDS::Study::_nil() ); // prevent hypo publishing
+    gen->SetEnablePublish( false ); // prevent hypo publishing
 
     try {
       SMESH::SMESH_Hypothesis_var hyp1D =
@@ -221,7 +217,7 @@ void StdMeshers_LayerDistribution_i::LoadFrom( const char* theStream )
     }
     catch (...) {
     }
-    gen->SetCurrentStudy( curStudy );  // enable hypo publishing
+    gen->SetEnablePublish( true );  // enable hypo publishing
   }
 }
 

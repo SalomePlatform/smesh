@@ -31,11 +31,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 ## create a bottom box
 Box_inf = geompy.MakeBox(0., 0., 0., 200., 200., 50.)
@@ -104,4 +104,4 @@ Compound2 = smesh.Concatenate([Mesh_inf.GetMesh(), Mesh_sup.GetMesh()], 1, 0, 1e
 smesh.SetName(Compound2, 'Compound_with_UniteGrps_and_GrpsOfAllElems')
 #end
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

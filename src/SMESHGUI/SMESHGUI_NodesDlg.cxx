@@ -102,9 +102,7 @@ namespace SMESH
       SMESH::SMESH_MeshEditor_var aMeshEditor = theMesh->GetMeshEditor();
       theMesh->SetParameters( theParameters.join(":").toLatin1().constData() );
       aNodeId = aMeshEditor->AddNode( x, y, z );
-      _PTR(Study) aStudy = GetActiveStudyDocument();
-      CORBA::Long anId = aStudy->StudyId();
-      if (TVisualObjPtr aVisualObj = SMESH::GetVisualObj( anId, aSobj->GetID().c_str() ) ) {
+      if (TVisualObjPtr aVisualObj = SMESH::GetVisualObj( aSobj->GetID().c_str() ) ) {
         aVisualObj->Update( true );
       }
     } 
@@ -423,7 +421,7 @@ void SMESHGUI_NodesDlg::ClickOnOk()
 //=================================================================================
 bool SMESHGUI_NodesDlg::ClickOnApply()
 {
-  if ( mySMESHGUI->isActiveStudyLocked() )
+  if ( SMESHGUI::isStudyLocked() )
     return false;
 
   if ( myMesh->_is_nil() ) {

@@ -29,11 +29,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 from math import sqrt
 
@@ -43,7 +43,7 @@ from math import sqrt
 barier_height = 7.0
 barier_radius = 5.6 / 2 # Rayon de la bariere
 colis_radius = 1.0 / 2  # Rayon du colis
-colis_step = 2.0        # Distance s‰parant deux colis
+colis_step = 2.0        # Distance sï¿½parant deux colis
 cc_width = 0.11         # Epaisseur du complement de colisage
 
 # --
@@ -184,4 +184,4 @@ if ret != 0:
 else:
     print "problem when computing the mesh"
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

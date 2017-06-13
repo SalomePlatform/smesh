@@ -42,9 +42,9 @@ using namespace std;
  *
  */
 //=============================================================================
-StdMeshers_QuadrangleParams::StdMeshers_QuadrangleParams(int hypId, int studyId,
+StdMeshers_QuadrangleParams::StdMeshers_QuadrangleParams(int hypId,
                                                          SMESH_Gen * gen)
-  : SMESH_Hypothesis(hypId, studyId, gen)
+  : SMESH_Hypothesis(hypId, gen)
 {
   _name = "QuadrangleParams";
   _param_algo_dim = 2;

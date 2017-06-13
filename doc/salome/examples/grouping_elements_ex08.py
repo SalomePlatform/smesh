@@ -30,4 +30,4 @@ aGrp = mesh.CreateDimGroup( [aSrcGroup1, aSrcGroup2], SMESH.EDGE, "Edges" )
 # Create group of nodes using source groups of faces
 aGrp = mesh.CreateDimGroup( [aSrcGroup1, aSrcGroup2], SMESH.NODE, "Nodes" )
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

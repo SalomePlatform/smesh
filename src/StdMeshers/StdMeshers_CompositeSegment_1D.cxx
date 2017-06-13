@@ -243,9 +243,8 @@ namespace {
 //=============================================================================
 
 StdMeshers_CompositeSegment_1D::StdMeshers_CompositeSegment_1D(int         hypId,
-                                                               int         studyId,
                                                                SMESH_Gen * gen)
-  :StdMeshers_Regular_1D(hypId, studyId, gen)
+  :StdMeshers_Regular_1D(hypId, gen)
 {
   _name = AlgoName();
 }

@@ -113,11 +113,10 @@ class QuadrangleParamsCreator : public StdHypothesisCreator_i<StdMeshers_Quadran
 {
 public:
   virtual SMESH_Hypothesis_i* Create (PortableServer::POA_ptr thePOA,
-                                      int                     theStudyId,
                                       ::SMESH_Gen*            theGenImpl)
   {
     StdMeshers_QuadrangleParams_i* h =
-      new StdMeshers_QuadrangleParams_i( thePOA, theStudyId, theGenImpl);
+      new StdMeshers_QuadrangleParams_i( thePOA, theGenImpl);
     h->SetQuadType( TYPE );
     return h;
   }

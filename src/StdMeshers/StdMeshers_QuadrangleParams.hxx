@@ -44,7 +44,7 @@ enum StdMeshers_QuadType
 class STDMESHERS_EXPORT StdMeshers_QuadrangleParams: public SMESH_Hypothesis
 {
 public:
-  StdMeshers_QuadrangleParams(int hypId, int studyId, SMESH_Gen* gen);
+  StdMeshers_QuadrangleParams(int hypId, SMESH_Gen* gen);
   virtual ~StdMeshers_QuadrangleParams();
 
   void SetTriaVertex (int id);

@@ -20,13 +20,13 @@ salome.salome_init()
 \n the old mode (from dump):
 \code
 import smesh, SMESH, SALOMEDS
-smesh.SetCurrentStudy(salome.myStudy)
+smesh.UpdateStudy()
 \endcode
 \n the new mode:
 \code
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 \endcode
 
 

@@ -28,7 +28,7 @@ sm_gui = libSMESH_Swig.SMESH_Swig()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 import GEOM
 

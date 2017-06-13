@@ -34,8 +34,8 @@
 //=======================================================================
 
 StdMeshers_UseExisting_1D::StdMeshers_UseExisting_1D
-                                   (int hypId, int studyId, SMESH_Gen* gen)
-  :SMESH_1D_Algo(hypId, studyId, gen)
+                                   (int hypId, SMESH_Gen* gen)
+  :SMESH_1D_Algo(hypId, gen)
 {
   _name = "UseExisting_1D";
   _shapeType = (1 << TopAbs_EDGE); // 1 bit per shape type
@@ -89,8 +89,8 @@ bool StdMeshers_UseExisting_1D::Evaluate(SMESH_Mesh&,
 //=======================================================================
 
 StdMeshers_UseExisting_2D::StdMeshers_UseExisting_2D
-                                   (int hypId, int studyId, SMESH_Gen* gen)
-  :SMESH_2D_Algo(hypId, studyId, gen)
+                                   (int hypId, SMESH_Gen* gen)
+  :SMESH_2D_Algo(hypId, gen)
 {
   _name = "UseExisting_2D";
   _shapeType = (1 << TopAbs_FACE); // 1 bit per shape type

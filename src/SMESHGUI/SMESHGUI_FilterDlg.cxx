@@ -1369,8 +1369,7 @@ void SMESHGUI_FilterTable::SetCriterion (const int                       theRow,
   {
     if ( strlen( theCriterion.ThresholdID ) > 0 ) // shape ID -> name
     {
-      _PTR(SObject) sobj =
-        SMESH::GetActiveStudyDocument()->FindObjectID( theCriterion.ThresholdID.in() );
+      _PTR(SObject) sobj = SMESH::getStudy()->FindObjectID( theCriterion.ThresholdID.in() );
       if ( !sobj )
         aTable->item( theRow, 2 )->setText( QString( theCriterion.ThresholdID ) );
       else
@@ -3195,8 +3194,7 @@ bool SMESHGUI_FilterDlg::isValid() const
       QString aName;
       myTable->GetThreshold(i, aName);
 
-      std::vector<_PTR(SObject)> aList =
-        SMESH::GetActiveStudyDocument()->FindObjectByName(aName.toLatin1().constData(), "GEOM");
+      std::vector<_PTR(SObject)> aList = SMESH::getStudy()->FindObjectByName(aName.toLatin1().constData(), "GEOM");
       if (aList.size() == 0) {
         SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
                                      tr("BAD_SHAPE_NAME").arg(aName));

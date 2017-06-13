@@ -5,7 +5,7 @@ import salome
 salome.salome_init()
 
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 import math
 
@@ -60,4 +60,4 @@ mesh.AddPolyhedralVolume([dd[0], dd[1], dd[2], dd[3], dd[4],  # top
                          [5,5,5,5,5,5,5,5,5,5,5,5])
 
 if salome.sg.hasDesktop():
-    salome.sg.updateObjBrowser(True)
+    salome.sg.updateObjBrowser()

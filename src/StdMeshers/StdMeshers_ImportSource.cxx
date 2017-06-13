@@ -49,9 +49,8 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_ImportSource1D::StdMeshers_ImportSource1D(int         hypId,
-                                                     int         studyId,
                                                      SMESH_Gen * gen)
-  :SMESH_Hypothesis(hypId, studyId, gen),
+  :SMESH_Hypothesis(hypId, gen),
    _toCopyMesh(false),
    _toCopyGroups(false)
 {
@@ -66,9 +65,8 @@ StdMeshers_ImportSource1D::StdMeshers_ImportSource1D(int         hypId,
 //=============================================================================
 
 StdMeshers_ImportSource2D::StdMeshers_ImportSource2D(int         hypId,
-                                                     int         studyId,
                                                      SMESH_Gen * gen)
-  :StdMeshers_ImportSource1D(hypId, studyId, gen)
+  :StdMeshers_ImportSource1D(hypId, gen)
 {
   _name = "ImportSource2D";
   _param_algo_dim = 2; // is used by StdMeshers_Import_2D;
@@ -206,7 +204,7 @@ const std::vector<SMESH_Group*>&  StdMeshers_ImportSource1D::GetGroups(bool load
 {
   // filter off deleted groups
   vector<SMESH_Group*> okGroups = getValidGroups( _groups,
-                                                  _gen->GetStudyContext(_studyId),
+                                                  _gen->GetStudyContext(),
                                                   loaded);
   if ( okGroups.size() != _groups.size() )
     ((StdMeshers_ImportSource1D*)this)->_groups = okGroups;
@@ -247,7 +245,7 @@ std::vector<SMESH_Mesh*> StdMeshers_ImportSource1D::GetSourceMeshes() const
   vector<SMESH_Mesh*> meshes;
   if ( !meshIDs.empty() )
   {
-    StudyContextStruct* studyContext = _gen->GetStudyContext(_studyId);
+    StudyContextStruct* studyContext = _gen->GetStudyContext();
     for ( set<int>::iterator id = meshIDs.begin(); id != meshIDs.end(); ++id )
     {
       map<int, SMESH_Mesh*>::iterator itm = studyContext->mapMesh.begin();
@@ -400,7 +398,7 @@ void StdMeshers_ImportSource1D::RestoreGroups(const std::vector<SMESH_Group*>& g
     int key1 = _resultGroupsStorage[i++];
     int key2 = _resultGroupsStorage[i++];
     pair<int, int> resMapKey( key1, key2 );
-    SMESH_Mesh* mesh = getTgtMeshByKey( resMapKey, _gen->GetStudyContext(_studyId));
+    SMESH_Mesh* mesh = getTgtMeshByKey( resMapKey, _gen->GetStudyContext());
     // restore mesh ids at least
     _resultGroups.insert( make_pair (resMapKey,vector<SMESH_Group*>() )); 
 
@@ -463,7 +461,7 @@ StdMeshers_ImportSource1D::GetResultGroups(const SMESHDS_Mesh& srcMesh,
   if ( key2groups == _resultGroups.end() )
     return 0;
   vector<SMESH_Group*> vec = getValidGroups((*key2groups).second,
-                                            _gen->GetStudyContext(_studyId) );
+                                            _gen->GetStudyContext() );
   if ( vec.size() != key2groups->second.size())
     key2groups->second = vec;
 

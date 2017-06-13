@@ -47,6 +47,6 @@ c.testkernel()
 print "Test of usage of SMESH engine from the test component"
 import SMESH
 salome.lcc.FindOrLoadComponent("FactoryServer","SMESH")
-c.testsmesh(salome.myStudyId)
+c.testsmesh()
 
 print "Test completed : OK"

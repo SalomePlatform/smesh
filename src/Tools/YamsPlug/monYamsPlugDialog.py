@@ -130,13 +130,13 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     import SMESH
     from salome.kernel import studyedit
     from salome.smesh import smeshBuilder
-    smesh = smeshBuilder.New(salome.myStudy)
+    smesh = smeshBuilder.New()
     
     if not os.path.isfile(self.fichierOut):
       QMessageBox.warning(self, "Compute", "Result file "+self.fichierOut+" not found")
 
-    maStudy=studyedit.getActiveStudy()
-    smesh.SetCurrentStudy(maStudy)
+    maStudy=salome.myStudy
+    smesh.UpdateStudy()
     (outputMesh, status) = smesh.CreateMeshesFromGMF(self.fichierOut)
     name=str(self.LE_MeshSmesh.text())
     initialMeshFile=None
@@ -178,7 +178,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     newLink=monStudyBuilder.NewObject(SOMesh)
     monStudyBuilder.Addreference(newLink, newStudyIter)
 
-    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser(False)
+    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser()
     self.num+=1
     return True
 
@@ -236,7 +236,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     ACmt = myBuilder.FindOrCreateAttribute(myObject, "AttributeComment")
     ACmt.SetValue(datai)
 
-    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser(False)
+    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser()
     self.num += 1
     if verbose: print("save %s in Object Browser done: %s\n%s" % (name, myObject.GetID(), datai))
     return True
@@ -254,10 +254,10 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     QMessageBox.warning(self, "Save", "waiting for fix: Object Browser will not display hypothesis")
     
     if verbose: print("save hypothesis in Object Browser")
-    smesh = smeshBuilder.New(salome.myStudy)
+    smesh = smeshBuilder.New()
 
-    maStudy=studyedit.getActiveStudy()
-    smesh.SetCurrentStudy(maStudy)
+    maStudy=salome.myStudy
+    smesh.UpdateStudy()
 
     self.editor = studyedit.getStudyEditor()
     moduleEntry=self.editor.findOrCreateComponent("SMESH","SMESH")
@@ -273,7 +273,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     data = self.getResumeData(separator=" ; ")
     self.editor.setAttributeValue(newStudyIter, "AttributeComment", data)
     
-    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser(False)
+    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser()
     self.num += 1
     if verbose: print("save %s in Object Browser done:\n%s" % (name, data))
     return True
@@ -452,7 +452,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     from salome.smesh.smeshstudytools import SMeshStudyTools
     from salome.gui import helper as guihelper
     from salome.smesh import smeshBuilder
-    smesh = smeshBuilder.New(salome.myStudy)
+    smesh = smeshBuilder.New()
 
     mySObject, myEntry = guihelper.getSObjectSelected()
     if CORBA.is_nil(mySObject) or mySObject==None:

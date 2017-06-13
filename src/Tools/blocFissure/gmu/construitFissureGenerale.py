@@ -333,7 +333,7 @@ def construitFissureGenerale(maillagesSains,
   logging.info("fichier maillage fissure %s", fichierMaillageFissure)
 
   if salome.sg.hasDesktop():
-    salome.sg.updateObjBrowser(True)
+    salome.sg.updateObjBrowser()
 
   logging.info("maillage fissure fini")
   

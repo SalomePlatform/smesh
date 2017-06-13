@@ -50,8 +50,7 @@ class STDMESHERS_I_EXPORT StdMeshers_MEFISTO_2D_i:
 public:
   // Constructor
   StdMeshers_MEFISTO_2D_i( PortableServer::POA_ptr thePOA,
-                      int                     theStudyId,
-                      ::SMESH_Gen*            theGenImpl );
+                           ::SMESH_Gen*            theGenImpl );
 
   // Destructor
   virtual ~StdMeshers_MEFISTO_2D_i();

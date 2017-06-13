@@ -280,7 +280,7 @@ bool SMESHGUI_MeshOrderMgr::SetMeshOrder( const  ListListId& theListListIds )
   if (theListListIds.isEmpty() || myMesh->_is_nil())
     return false;
 
-  _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+  _PTR(Study) aStudy = SMESH::getStudy();
   _PTR(SObject) aMeshSObj = SMESH::FindSObject(myMesh);
   if ( !aStudy || !aMeshSObj )
     return false;

@@ -52,4 +52,4 @@ aGroup4.SetColor( SALOMEDS.Color(1.,0.,0.));
 aGroup5 = mesh.UnionListOfGroups([aGroup3, aGroup4], "Any Area")
 print "Criterion: Any Area, Nb = ", len(aGroup5.GetListOfID())
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

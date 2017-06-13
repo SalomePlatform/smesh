@@ -38,7 +38,7 @@
 class STDMESHERS_EXPORT StdMeshers_Reversible1D : public SMESH_Hypothesis
 {
 public:
-  StdMeshers_Reversible1D(int hypId, int studyId, SMESH_Gen* gen);
+  StdMeshers_Reversible1D(int hypId, SMESH_Gen* gen);
 
   void SetReversedEdges( const std::vector<int>& ids);
 

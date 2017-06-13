@@ -310,8 +310,7 @@ void SMESHGUI_Add0DElemsOnAllNodesOp::selectionDone()
     _PTR(SObject) group0DRoot;
     if ( meshSO && meshSO->FindSubObject( SMESH::Tag_0DElementsGroups, group0DRoot ))
     {
-      _PTR(Study)              aStudy = SMESH::GetActiveStudyDocument();
-      _PTR(ChildIterator) group0DIter = aStudy->NewChildIterator( group0DRoot );
+      _PTR(ChildIterator) group0DIter = SMESH::getStudy()->NewChildIterator( group0DRoot );
       for ( ; group0DIter->More(); group0DIter->Next() )
       {
         _PTR(SObject) groupSO = group0DIter->Value();

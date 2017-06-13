@@ -475,7 +475,7 @@ void SMESHGUI_TranslationDlg::ConstructorsClicked (int constructorId)
 //=================================================================================
 bool SMESHGUI_TranslationDlg::ClickOnApply()
 {
-  if (mySMESHGUI->isActiveStudyLocked())
+  if (SMESHGUI::isStudyLocked())
     return false;
 
   if( !isValid() )

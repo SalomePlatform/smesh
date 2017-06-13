@@ -35,7 +35,7 @@ class StdMeshers_FaceSide;
 class STDMESHERS_EXPORT StdMeshers_ViscousLayers2D : public StdMeshers_ViscousLayers
 {
 public:
-  StdMeshers_ViscousLayers2D(int hypId, int studyId, SMESH_Gen* gen);
+  StdMeshers_ViscousLayers2D(int hypId, SMESH_Gen* gen);
   /*!
    * \brief Computes temporary 2D mesh to be used by 2D algorithm.
    *        Return SMESH_ProxyMesh for the given FACE, or NULL in case of error

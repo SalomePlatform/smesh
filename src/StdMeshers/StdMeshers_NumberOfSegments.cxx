@@ -66,9 +66,8 @@ const double PRECISION = 1e-7;
 //=============================================================================
 
 StdMeshers_NumberOfSegments::StdMeshers_NumberOfSegments(int         hypId,
-                                                         int         studyId,
                                                          SMESH_Gen * gen)
-  : SMESH_Hypothesis(hypId, studyId, gen),
+  : SMESH_Hypothesis(hypId, gen),
     _numberOfSegments(15),//issue 19923
     _distrType(DT_Regular),
     _scaleFactor(1.),
