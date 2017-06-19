@@ -24,7 +24,7 @@ SALOME_GENERATE_TESTS_ENVIRONMENT(tests_env)
 FOREACH(test ${GOOD_TESTS})
   GET_FILENAME_COMPONENT(testname ${test} NAME_WE)
   ADD_TEST(NAME ${testname}
-           COMMAND ${PYTHON_EXECUTABLE} -B ${CMAKE_SOURCE_DIR}/doc/salome/examples/testme.py ${CMAKE_CURRENT_SOURCE_DIR}/${test}.py)
+           COMMAND ${PYTHON_EXECUTABLE} -B ${CMAKE_SOURCE_DIR}/doc/salome/examples/testme.py ${CMAKE_CURRENT_SOURCE_DIR}/${test})
   SET_TESTS_PROPERTIES(${testname} PROPERTIES ENVIRONMENT "${tests_env}")
 ENDFOREACH()
 
