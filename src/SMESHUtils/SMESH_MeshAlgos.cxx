@@ -228,15 +228,15 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
                       SMDSAbs_ElementType  elemType,
                       SMDS_ElemIteratorPtr theElemIt = SMDS_ElemIteratorPtr(),
                       double               tolerance = NodeRadius );
-    void getElementsNearPoint( const gp_Pnt& point, TIDSortedElemSet& foundElems );
-    void getElementsNearLine ( const gp_Ax1& line, TIDSortedElemSet& foundElems);
-    void getElementsInSphere ( const gp_XYZ& center,
-                               const double  radius, TIDSortedElemSet& foundElems);
-    size_t getSize() { return std::max( _size, _elements.size() ); }
-    virtual ~ElementBndBoxTree();
+    void prepare(); // !!!call it before calling the following methods!!!
+    void getElementsNearPoint( const gp_Pnt& point, vector<const SMDS_MeshElement*>& foundElems );
+    void getElementsNearLine ( const gp_Ax1& line,  vector<const SMDS_MeshElement*>& foundElems);
+    void getElementsInSphere ( const gp_XYZ&                    center,
+                               const double                     radius,
+                               vector<const SMDS_MeshElement*>& foundElems);
 
   protected:
-    ElementBndBoxTree():_size(0) {}
+    ElementBndBoxTree() {}
     SMESH_Octree* newChild() const { return new ElementBndBoxTree; }
     void          buildChildrenData();
     Bnd_B3d*      buildRootBox();
@@ -245,11 +245,25 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
     struct ElementBox : public Bnd_B3d
     {
       const SMDS_MeshElement* _element;
-      int                     _refCount; // an ElementBox can be included in several tree branches
-      ElementBox(const SMDS_MeshElement* elem, double tolerance);
+      bool                    _isMarked;
+      void init(const SMDS_MeshElement* elem, double tolerance);
     };
     vector< ElementBox* > _elements;
-    size_t                _size;
+
+    typedef ObjectPool< ElementBox > TElementBoxPool;
+
+    //!< allocator of ElementBox's and SMESH_TreeLimit
+    struct LimitAndPool : public SMESH_TreeLimit
+    {
+      TElementBoxPool            _elBoPool;
+      std::vector< ElementBox* > _markedElems;
+      LimitAndPool():SMESH_TreeLimit( MaxLevel, /*minSize=*/0. ) {}
+    };
+    LimitAndPool* getLimitAndPool() const
+    {
+      SMESH_TreeLimit* limitAndPool = const_cast< SMESH_TreeLimit* >( myLimit );
+      return static_cast< LimitAndPool* >( limitAndPool );
+    }
   };
 
   //================================================================================
@@ -258,30 +272,25 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
    */
   //================================================================================
 
-  ElementBndBoxTree::ElementBndBoxTree(const SMDS_Mesh& mesh, SMDSAbs_ElementType elemType, SMDS_ElemIteratorPtr theElemIt, double tolerance)
-    :SMESH_Octree( new SMESH_TreeLimit( MaxLevel, /*minSize=*/0. ))
+  ElementBndBoxTree::ElementBndBoxTree(const SMDS_Mesh&     mesh,
+                                       SMDSAbs_ElementType  elemType,
+                                       SMDS_ElemIteratorPtr theElemIt,
+                                       double               tolerance)
+    :SMESH_Octree( new LimitAndPool() )
   {
     int nbElems = mesh.GetMeshInfo().NbElements( elemType );
     _elements.reserve( nbElems );
 
+    TElementBoxPool& elBoPool = getLimitAndPool()->_elBoPool;
+
     SMDS_ElemIteratorPtr elemIt = theElemIt ? theElemIt : mesh.elementsIterator( elemType );
     while ( elemIt->more() )
-      _elements.push_back( new ElementBox( elemIt->next(),tolerance  ));
-
+    {
+      ElementBox* eb = elBoPool.getNew();
+      eb->init( elemIt->next(), tolerance );
+      _elements.push_back( eb );
+    }
     compute();
-  }
-
-  //================================================================================
-  /*!
-   * \brief Destructor
-   */
-  //================================================================================
-
-  ElementBndBoxTree::~ElementBndBoxTree()
-  {
-    for ( size_t i = 0; i < _elements.size(); ++i )
-      if ( --_elements[i]->_refCount <= 0 )
-        delete _elements[i];
   }
 
   //================================================================================
@@ -311,14 +320,10 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
       for (int j = 0; j < 8; j++)
       {
         if ( !_elements[i]->IsOut( *myChildren[j]->getBox() ))
-        {
-          _elements[i]->_refCount++;
           ((ElementBndBoxTree*)myChildren[j])->_elements.push_back( _elements[i]);
-        }
       }
-      _elements[i]->_refCount--;
     }
-    _size = _elements.size();
+    //_size = _elements.size();
     SMESHUtils::FreeVector( _elements ); // = _elements.clear() + free memory
 
     for (int j = 0; j < 8; j++)
@@ -327,9 +332,22 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
       if ((int) child->_elements.size() <= MaxNbElemsInLeaf )
         child->myIsLeaf = true;
 
-      if ( child->_elements.capacity() - child->_elements.size() > 1000 )
+      if ( child->isLeaf() && child->_elements.capacity() > child->_elements.size() )
         SMESHUtils::CompactVector( child->_elements );
     }
+  }
+
+  //================================================================================
+  /*!
+   * \brief Un-mark all elements
+   */
+  //================================================================================
+
+  void ElementBndBoxTree::prepare()
+  {
+    // TElementBoxPool& elBoPool = getElementBoxPool();
+    // for ( size_t i = 0; i < elBoPool.nbElements(); ++i )
+    //   const_cast< ElementBox* >( elBoPool[ i ])->_isMarked = false;
   }
 
   //================================================================================
@@ -338,22 +356,37 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
    */
   //================================================================================
 
-  void ElementBndBoxTree::getElementsNearPoint( const gp_Pnt&     point,
-                                                TIDSortedElemSet& foundElems)
+  void ElementBndBoxTree::getElementsNearPoint( const gp_Pnt&                    point,
+                                                vector<const SMDS_MeshElement*>& foundElems)
   {
     if ( getBox()->IsOut( point.XYZ() ))
       return;
 
     if ( isLeaf() )
     {
+      LimitAndPool* pool = getLimitAndPool();
+
       for ( size_t i = 0; i < _elements.size(); ++i )
-        if ( !_elements[i]->IsOut( point.XYZ() ))
-          foundElems.insert( _elements[i]->_element );
+        if ( !_elements[i]->IsOut( point.XYZ() ) &&
+             !_elements[i]->_isMarked )
+        {
+          foundElems.push_back( _elements[i]->_element );
+          _elements[i]->_isMarked = true;
+          pool->_markedElems.push_back( _elements[i] );
+        }
     }
     else
     {
       for (int i = 0; i < 8; i++)
         ((ElementBndBoxTree*) myChildren[i])->getElementsNearPoint( point, foundElems );
+
+      if ( level() == 0 )
+      {
+        LimitAndPool* pool = getLimitAndPool();
+        for ( size_t i = 0; i < pool->_markedElems.size(); ++i )
+          pool->_markedElems[i]->_isMarked = false;
+        pool->_markedElems.clear();
+      }
     }
   }
 
@@ -363,22 +396,37 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
    */
   //================================================================================
 
-  void ElementBndBoxTree::getElementsNearLine( const gp_Ax1&     line,
-                                               TIDSortedElemSet& foundElems)
+  void ElementBndBoxTree::getElementsNearLine( const gp_Ax1&                    line,
+                                               vector<const SMDS_MeshElement*>& foundElems)
   {
     if ( getBox()->IsOut( line ))
       return;
 
     if ( isLeaf() )
     {
+      LimitAndPool* pool = getLimitAndPool();
+
       for ( size_t i = 0; i < _elements.size(); ++i )
-        if ( !_elements[i]->IsOut( line ))
-          foundElems.insert( _elements[i]->_element );
+        if ( !_elements[i]->IsOut( line ) &&
+             !_elements[i]->_isMarked )
+        {
+          foundElems.push_back( _elements[i]->_element );
+          _elements[i]->_isMarked = true;
+          pool->_markedElems.push_back( _elements[i] );
+        }
     }
     else
     {
       for (int i = 0; i < 8; i++)
         ((ElementBndBoxTree*) myChildren[i])->getElementsNearLine( line, foundElems );
+
+      if ( level() == 0 )
+      {
+        LimitAndPool* pool = getLimitAndPool();
+        for ( size_t i = 0; i < pool->_markedElems.size(); ++i )
+          pool->_markedElems[i]->_isMarked = false;
+        pool->_markedElems.clear();
+      }
     }
   }
 
@@ -388,23 +436,38 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
    */
   //================================================================================
 
-  void ElementBndBoxTree::getElementsInSphere ( const gp_XYZ&     center,
-                                                const double      radius,
-                                                TIDSortedElemSet& foundElems)
+  void ElementBndBoxTree::getElementsInSphere ( const gp_XYZ&                    center,
+                                                const double                     radius,
+                                                vector<const SMDS_MeshElement*>& foundElems)
   {
     if ( getBox()->IsOut( center, radius ))
       return;
 
     if ( isLeaf() )
     {
+      LimitAndPool* pool = getLimitAndPool();
+
       for ( size_t i = 0; i < _elements.size(); ++i )
-        if ( !_elements[i]->IsOut( center, radius ))
-          foundElems.insert( _elements[i]->_element );
+        if ( !_elements[i]->IsOut( center, radius ) &&
+             !_elements[i]->_isMarked )
+        {
+          foundElems.push_back( _elements[i]->_element );
+          _elements[i]->_isMarked = true;
+          pool->_markedElems.push_back( _elements[i] );
+        }
     }
     else
     {
       for (int i = 0; i < 8; i++)
         ((ElementBndBoxTree*) myChildren[i])->getElementsInSphere( center, radius, foundElems );
+
+      if ( level() == 0 )
+      {
+        LimitAndPool* pool = getLimitAndPool();
+        for ( size_t i = 0; i < pool->_markedElems.size(); ++i )
+          pool->_markedElems[i]->_isMarked = false;
+        pool->_markedElems.clear();
+      }
     }
   }
 
@@ -414,13 +477,13 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
    */
   //================================================================================
 
-  ElementBndBoxTree::ElementBox::ElementBox(const SMDS_MeshElement* elem, double tolerance)
+  void ElementBndBoxTree::ElementBox::init(const SMDS_MeshElement* elem, double tolerance)
   {
     _element  = elem;
-    _refCount = 1;
+    _isMarked = false;
     SMDS_ElemIteratorPtr nIt = elem->nodesIterator();
     while ( nIt->more() )
-      Add( SMESH_TNodeXYZ( nIt->next() ));
+      Add( SMESH_NodeXYZ( nIt->next() ));
     Enlarge( tolerance );
   }
 
@@ -771,9 +834,13 @@ FindElementsByPoint(const gp_Pnt&                      point,
     {
       _ebbTree[_elementType] = new ElementBndBoxTree( *_mesh, type, _meshPartIt, tolerance );
     }
-    TIDSortedElemSet suspectElems;
+    else
+    {
+      _ebbTree[ type ]->prepare();
+    }
+    vector< const SMDS_MeshElement* > suspectElems;
     _ebbTree[ type ]->getElementsNearPoint( point, suspectElems );
-    TIDSortedElemSet::iterator elem = suspectElems.begin();
+    vector< const SMDS_MeshElement* >::iterator elem = suspectElems.begin();
     for ( ; elem != suspectElems.end(); ++elem )
       if ( !SMESH_MeshAlgos::IsOut( *elem, point, tolerance ))
         foundElements.push_back( *elem );
@@ -801,8 +868,10 @@ SMESH_ElementSearcherImpl::FindClosestTo( const gp_Pnt&       point,
     ElementBndBoxTree*& ebbTree = _ebbTree[ type ];
     if ( !ebbTree )
       ebbTree = new ElementBndBoxTree( *_mesh, type, _meshPartIt );
+    else
+      ebbTree->prepare();
 
-    TIDSortedElemSet suspectElems;
+    vector<const SMDS_MeshElement*> suspectElems;
     ebbTree->getElementsNearPoint( point, suspectElems );
 
     if ( suspectElems.empty() && ebbTree->maxSize() > 0 )
@@ -816,13 +885,14 @@ SMESH_ElementSearcherImpl::FindClosestTo( const gp_Pnt&       point,
         radius = ebbTree->maxSize() / pow( 2., getTreeHeight()) / 2;
       while ( suspectElems.empty() )
       {
+        ebbTree->prepare();
         ebbTree->getElementsInSphere( point.XYZ(), radius, suspectElems );
         radius *= 1.1;
       }
     }
     double minDist = std::numeric_limits<double>::max();
     multimap< double, const SMDS_MeshElement* > dist2face;
-    TIDSortedElemSet::iterator elem = suspectElems.begin();
+    vector<const SMDS_MeshElement*>::iterator elem = suspectElems.begin();
     for ( ; elem != suspectElems.end(); ++elem )
     {
       double dist = SMESH_MeshAlgos::GetDistance( *elem, point );
@@ -886,6 +956,8 @@ TopAbs_State SMESH_ElementSearcherImpl::GetPointState(const gp_Pnt& point)
   ElementBndBoxTree*& ebbTree = _ebbTree[ SMDSAbs_Face ];
   if ( !ebbTree )
     ebbTree = new ElementBndBoxTree( *_mesh, _elementType, _meshPartIt );
+  else
+    ebbTree->prepare();
 
   // Algo: analyse transition of a line starting at the point through mesh boundary;
   // try three lines parallel to axis of the coordinate system and perform rough
@@ -901,13 +973,14 @@ TopAbs_State SMESH_ElementSearcherImpl::GetPointState(const gp_Pnt& point)
     gp_Ax1 lineAxis( point, axisDir[axis]);
     gp_Lin line    ( lineAxis );
 
-    TIDSortedElemSet suspectFaces; // faces possibly intersecting the line
+    vector<const SMDS_MeshElement*> suspectFaces; // faces possibly intersecting the line
+    if ( axis > 0 ) ebbTree->prepare();
     ebbTree->getElementsNearLine( lineAxis, suspectFaces );
 
     // Intersect faces with the line
 
     map< double, TInters > & u2inters = paramOnLine2TInters[ axis ];
-    TIDSortedElemSet::iterator face = suspectFaces.begin();
+    vector<const SMDS_MeshElement*>::iterator face = suspectFaces.begin();
     for ( ; face != suspectFaces.end(); ++face )
     {
       // get face plane
@@ -1114,10 +1187,10 @@ void SMESH_ElementSearcherImpl::GetElementsNearLine( const gp_Ax1&              
   ElementBndBoxTree*& ebbTree = _ebbTree[ type ];
   if ( !ebbTree )
     ebbTree = new ElementBndBoxTree( *_mesh, _elementType, _meshPartIt );
+  else
+    ebbTree->prepare();
 
-  TIDSortedElemSet suspectFaces; // elements possibly intersecting the line
-  ebbTree->getElementsNearLine( line, suspectFaces );
-  foundElems.assign( suspectFaces.begin(), suspectFaces.end());
+  ebbTree->getElementsNearLine( line, foundElems );
 }
 
 //=======================================================================
@@ -1135,10 +1208,10 @@ void SMESH_ElementSearcherImpl::GetElementsInSphere( const gp_XYZ&              
   ElementBndBoxTree*& ebbTree = _ebbTree[ type ];
   if ( !ebbTree )
     ebbTree = new ElementBndBoxTree( *_mesh, _elementType, _meshPartIt );
+  else
+    ebbTree->prepare();
 
-  TIDSortedElemSet suspectFaces; // elements possibly intersecting the line
-  ebbTree->getElementsInSphere( center, radius, suspectFaces );
-  foundElems.assign( suspectFaces.begin(), suspectFaces.end() );
+  ebbTree->getElementsInSphere( center, radius, foundElems );
 }
 
 //=======================================================================

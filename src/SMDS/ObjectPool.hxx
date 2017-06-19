@@ -21,8 +21,9 @@
 #define _OBJECTPOOL_HXX_
 
 #include <vector>
-//#include <stack>
 #include <iostream>
+
+#include "SMDS_Iterator.hxx"
 
 namespace
 {
@@ -33,18 +34,22 @@ namespace
   }
 }
 
+template<class X> class ObjectPoolIterator;
+
 template<class X> class ObjectPool
 {
 
 private:
-  std::vector<X*> _chunkList;
+  std::vector<X*>   _chunkList;
   std::vector<bool> _freeList;
-  int _nextFree;
-  int _maxAvail;
-  int _chunkSize;
-  int _maxOccupied;
-  int _nbHoles;
-  int _lastDelChunk;
+  int               _nextFree;    // either the 1st hole or last added
+  int               _maxAvail;    // nb allocated elements
+  int               _chunkSize;
+  int               _maxOccupied; // max used ID
+  int               _nbHoles;
+  int               _lastDelChunk;
+
+  friend class ObjectPoolIterator<X>;
 
   int getNextFree()
   {
@@ -76,16 +81,16 @@ private:
   }
 
 public:
-  ObjectPool(int nblk)
+  ObjectPool(int nblk = 1024)
   {
-    _chunkSize = nblk;
-    _nextFree = 0;
-    _maxAvail = 0;
-    _maxOccupied = 0;
-    _nbHoles = 0;
+    _chunkSize    = nblk;
+    _nextFree     = 0;
+    _maxAvail     = 0;
+    _maxOccupied  = -1;
+    _nbHoles      = 0;
+    _lastDelChunk = 0;
     _chunkList.clear();
     _freeList.clear();
-    _lastDelChunk = 0;
   }
 
   virtual ~ObjectPool()
@@ -105,16 +110,16 @@ public:
         _freeList.insert(_freeList.end(), _chunkSize, true);
         _maxAvail += _chunkSize;
         _freeList[_nextFree] = false;
-        obj = newChunk; // &newChunk[0];
+        obj = newChunk;
       }
     else
       {
         int chunkId = _nextFree / _chunkSize;
         int rank = _nextFree - chunkId * _chunkSize;
         _freeList[_nextFree] = false;
-        obj = _chunkList[chunkId] + rank; // &_chunkList[chunkId][rank];
+        obj = _chunkList[chunkId] + rank;
       }
-    if (_nextFree < _maxOccupied)
+    if (_nextFree <= _maxOccupied)
       {
         _nbHoles-=1;
       }
@@ -122,7 +127,6 @@ public:
       {
         _maxOccupied = _nextFree;
       }
-    //obj->init();
     return obj;
   }
 
@@ -148,10 +152,10 @@ public:
     if (toFree < _nextFree)
       _nextFree = toFree;
     if (toFree < _maxOccupied)
-      _nbHoles += 1;
+      ++_nbHoles;
+    else
+      --_maxOccupied;
     _lastDelChunk = i;
-    //obj->clean();
-    //checkDelete(i); compactage non fait
   }
 
   void clear()
@@ -167,6 +171,37 @@ public:
     clearVector( _freeList );
   }
 
+  // nb allocated elements
+  size_t size() const
+  {
+    return _freeList.size();
+  }
+
+  // nb used elements
+  size_t nbElements() const
+  {
+    return _maxOccupied + 1 - _nbHoles;
+  }
+
+  // return an element w/o any check
+  const X* operator[]( size_t i ) const // i < size()
+  {
+    int chunkId = i / _chunkSize;
+    int    rank = i - chunkId * _chunkSize;
+    return _chunkList[ chunkId ] + rank;
+  }
+
+  // return only being used element
+  const X* at( size_t i ) const // i < size()
+  {
+    if ( i >= size() || _freeList[ i ] )
+      return 0;
+
+    int chunkId = i / _chunkSize;
+    int    rank = i - chunkId * _chunkSize;
+    return _chunkList[ chunkId ] + rank;
+  }
+
   //  void destroy(int toFree)
   //  {
   //    // no control 0<= toFree < _freeList.size()
@@ -175,6 +210,43 @@ public:
   //      _nextFree = toFree;
   //  }
 
+};
+
+template<class X> class ObjectPoolIterator : public SMDS_Iterator<const X*>
+{
+  const ObjectPool<X>& _pool;
+  int                  _i, _nbFound;
+public:
+
+  ObjectPoolIterator( const ObjectPool<X>& pool ) : _pool( pool ), _i( 0 ), _nbFound( 0 )
+  {
+    if ( more() && _pool._freeList[ _i ] == true )
+    {
+      next();
+      --_nbFound;
+    }
+  }
+
+  virtual bool more()
+  {
+    return ( _i <= _pool._maxOccupied && _nbFound < (int)_pool.nbElements() );
+  }
+
+  virtual const X* next()
+  {
+    const X* x = 0;
+    if ( more() )
+    {
+      x = _pool[ _i ];
+
+      ++_nbFound;
+
+      for ( ++_i; _i <= _pool._maxOccupied; ++_i )
+        if ( _pool._freeList[ _i ] == false )
+          break;
+    }
+    return x;
+  }
 };
 
 #endif
