@@ -77,7 +77,8 @@ SMESHGUI_GroupOnShapeDlg::SMESHGUI_GroupOnShapeDlg()
 
   // Elem geom
 
-  QGroupBox* elemsGrp = new QGroupBox( tr( "SMESH_ELEMENTS" ), mainFrame() );
+  QGroupBox* elemsGrp = new QGroupBox( tr( "ELEMENTS" ), mainFrame() );
+  elemsGrp->setToolTip( tr("ELEMENTS_TOOLTIP") );
   QLabel* label = new QLabel( tr( "SMESH_GEOM" ), elemsGrp );
   myElemGeomBtn = new QPushButton( elemsGrp );
   myElemGeomBtn->setCheckable(true);
