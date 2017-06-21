@@ -4908,7 +4908,8 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
       _LayerEdge*      edge = eos._edges[i];
       if ( edge->_nodes.size() < 2 ) continue;
       SMESH_TNodeXYZ tgtXYZ = edge->_nodes.back();
-      gp_XYZ        prevXYZ = edge->PrevCheckPos( &eos );
+      SMESH_TNodeXYZ prevXYZ = edge->_nodes[0];
+      //gp_XYZ        prevXYZ = edge->PrevCheckPos( &eos );
       //const gp_XYZ& prevXYZ = edge->PrevPos();
       for ( size_t j = 0; j < edge->_simplices.size(); ++j )
         if ( !edge->_simplices[j].IsForward( &prevXYZ, &tgtXYZ, vol ))
@@ -5916,8 +5917,9 @@ bool _Smoother1D::smoothComplexEdge( _SolidData&                    data,
   // project tgt nodes of extreme _LayerEdge's to the offset segments
   // -----------------------------------------------------------------
 
-  if ( e[0]->Is( _LayerEdge::NORMAL_UPDATED )) _iSeg[0] = 0;
-  if ( e[1]->Is( _LayerEdge::NORMAL_UPDATED )) _iSeg[1] = _offPoints.size()-2;
+  const int updatedOrBlocked = _LayerEdge::NORMAL_UPDATED | _LayerEdge::BLOCKED;
+  if ( e[0]->Is( updatedOrBlocked )) _iSeg[0] = 0;
+  if ( e[1]->Is( updatedOrBlocked )) _iSeg[1] = _offPoints.size()-2;
 
   gp_Pnt pExtreme[2], pProj[2];
   for ( int is2nd = 0; is2nd < 2; ++is2nd )
@@ -5973,10 +5975,14 @@ bool _Smoother1D::smoothComplexEdge( _SolidData&                    data,
   gp_Vec vDiv1( pExtreme[1], pProj[1] );
   double d0 = vDiv0.Magnitude();
   double d1 = vDiv1.Magnitude();
-  if ( e[0]->_normal * vDiv0.XYZ() < 0 ) e[0]->_len += d0;
-  else                                   e[0]->_len -= d0;
-  if ( e[1]->_normal * vDiv1.XYZ() < 0 ) e[1]->_len += d1;
-  else                                   e[1]->_len -= d1;
+  if ( e[0]->Is( _LayerEdge::BLOCKED )) {
+    if ( e[0]->_normal * vDiv0.XYZ() < 0 ) e[0]->_len += d0;
+    else                                   e[0]->_len -= d0;
+  }
+  if ( e[1]->Is( _LayerEdge::BLOCKED )) {
+    if ( e[1]->_normal * vDiv1.XYZ() < 0 ) e[1]->_len += d1;
+    else                                   e[1]->_len -= d1;
+  }
 
   // ---------------------------------------------------------------------------------
   // compute normalized length of the offset segments located between the projections
