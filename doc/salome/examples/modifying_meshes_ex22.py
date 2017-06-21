@@ -1,34 +1,90 @@
 # Extrusion
 
 
-import salome
+import salome, math
 salome.salome_init()
-import GEOM
 from salome.geom import geomBuilder
 geompy = geomBuilder.New(salome.myStudy)
 
-import SMESH, SALOMEDS
+import SMESH
 from salome.smesh import smeshBuilder
 smesh =  smeshBuilder.New(salome.myStudy)
 
-import SMESH_mechanic
+# create an empty mesh
+mesh = smesh.Mesh() 
 
-#smesh = SMESH_mechanic.smesh
-mesh = SMESH_mechanic.mesh 
+# add a node
+mesh.AddNode( 0.,0.,0. )
 
-# select the top face
-faces = geompy.SubShapeAllSorted(SMESH_mechanic.shape_mesh, geompy.ShapeType["FACE"])
-face = faces[7]
-geompy.addToStudyInFather(SMESH_mechanic.shape_mesh, face, "face circular top")
+# extrude a node into a line of 10 segments along the X axis
+ids = mesh.GetNodesId()
+stepVector = [1.,0.,0.]
+nbSteps = 10
+mesh.ExtrusionSweep( ids, stepVector, nbSteps, IsNodes=True )
 
-# create a vector for extrusion
-point = SMESH.PointStruct(0., 0., 5.)
-vector = SMESH.DirStruct(point)
+# create some groups
+lastNode      = mesh.GetNodesId()[-1]
+lastNodeGroup = mesh.MakeGroupByIds( "node %s"% lastNode, SMESH.NODE, [lastNode])
+lineGroup     = mesh.MakeGroupByIds( "line", SMESH.EDGE, mesh.GetElementsId() )
 
-# create a group to be extruded
-GroupTri = mesh.GroupOnGeom(face, "Group of faces (extrusion)", SMESH.FACE)
+# rotate the segments around the first node to get a mesh of a disk quarter
+axisZ  = [0.,0.,0., 0.,0.,1.]
+groups = mesh.RotationSweepObject( lineGroup, axisZ, math.pi/2., 10, 1e-3, MakeGroups=True, TotalAngle=True )
 
-# perform extrusion of the group
-mesh.ExtrusionSweepObject(GroupTri, vector, 5)
+# extrude all faces into volumes
+obj        = mesh
+stepVector = [0.,0.,-1.]
+nbSteps    = 5
+groups = mesh.ExtrusionSweepObject2D( obj, stepVector, nbSteps, MakeGroups=True )
+
+# remove all segments created by the last command
+for g in groups:
+    if g.GetType() == SMESH.EDGE:
+        mesh.RemoveGroupWithContents( g )
+
+# extrude all segments into faces along Z
+obj = mesh
+stepVector = [0.,0.,1.]
+mesh.ExtrusionSweepObject1D( obj, stepVector, nbSteps )
+
+# extrude a group
+lineExtruded = None
+for g in mesh.GetGroups( SMESH.FACE ):
+    if g.GetName() == "line_extruded":
+        lineExtruded = g
+        break
+obj        = lineExtruded
+stepVector = [0,-5.,0.]
+nbSteps    = 1
+mesh.ExtrusionSweepObject( obj, stepVector, nbSteps )
+
+# extrude all nodes and triangle faces of the disk quarter, applying a scale factor
+diskGroup = None
+for g in mesh.GetGroups( SMESH.FACE ):
+    if g.GetName() == "line_rotated":
+        diskGroup = g
+        break
+crit = [ smesh.GetCriterion( SMESH.FACE, SMESH.FT_ElemGeomType,'=',SMESH.Geom_TRIANGLE ),
+         smesh.GetCriterion( SMESH.FACE, SMESH.FT_BelongToMeshGroup,'=', diskGroup )]
+trianglesFilter = smesh.GetFilterFromCriteria( crit )
+
+nodes      = [ diskGroup ]
+edges      = []
+faces      = [ trianglesFilter ]
+stepVector = [0,0,1]
+nbSteps    = 10
+mesh.ExtrusionSweepObjects( nodes, edges, faces, stepVector, nbSteps, scaleFactors=[0.5], linearVariation=True )
+
+# extrude a cylindrical group of faces by normal
+cylGroup = None
+for g in mesh.GetGroups( SMESH.FACE ):
+    if g.GetName().startswith("node "):
+        cylGroup = g
+        break
+
+elements = cylGroup
+stepSize = 5.
+nbSteps  = 2
+mesh.ExtrusionByNormal( elements, stepSize, nbSteps )
 
 salome.sg.updateObjBrowser(True)

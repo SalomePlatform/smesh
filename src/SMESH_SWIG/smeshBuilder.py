@@ -3887,6 +3887,7 @@ class Mesh:
     #         - a GEOM point
     #  @return the list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     #  @ingroup l2_modif_extrurev
+    #  @ref tui_extrusion example
     def ExtrusionSweepObjects(self, nodes, edges, faces, StepVector, NbOfSteps, MakeGroups=False,
                               scaleFactors=[], linearVariation=False, basePoint=[] ):
         unRegister = genObjUnRegister()
@@ -3927,6 +3928,7 @@ class Mesh:
     #  @param IsNodes is True if elements with given ids are nodes
     #  @return the list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     #  @ingroup l2_modif_extrurev
+    #  @ref tui_extrusion example
     def ExtrusionSweep(self, IDsOfElements, StepVector, NbOfSteps, MakeGroups=False, IsNodes = False):
         n,e,f = [],[],[]
         if IsNodes: n = IDsOfElements
@@ -3953,6 +3955,7 @@ class Mesh:
     #  @return the list of created groups (SMESH_GroupBase) if \a MakeGroups=True,
     #          empty list otherwise.
     #  @ingroup l2_modif_extrurev
+    #  @ref tui_extrusion example
     def ExtrusionByNormal(self, Elements, StepSize, NbOfSteps,
                           ByAverageNormal=False, UseInputElemsOnly=True, MakeGroups=False, Dim = 2):
         unRegister = genObjUnRegister()
@@ -3982,6 +3985,7 @@ class Mesh:
     #  @param IsNodes is True if elements to extrude are nodes
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     #  @ingroup l2_modif_extrurev
+    #  @ref tui_extrusion example
     def ExtrusionSweepObject(self, theObject, StepVector, NbOfSteps, MakeGroups=False, IsNodes=False):
         n,e,f = [],[],[]
         if IsNodes: n    = theObject
@@ -3998,6 +4002,7 @@ class Mesh:
     #  @param MakeGroups to generate new groups from existing ones
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     #  @ingroup l2_modif_extrurev
+    #  @ref tui_extrusion example
     def ExtrusionSweepObject1D(self, theObject, StepVector, NbOfSteps, MakeGroups=False):
         return self.ExtrusionSweepObjects([],theObject,[], StepVector, NbOfSteps, MakeGroups)
 
@@ -4011,6 +4016,7 @@ class Mesh:
     #  @param MakeGroups forces the generation of new groups from existing ones
     #  @return list of created groups (SMESH_GroupBase) if MakeGroups=True, empty list otherwise
     #  @ingroup l2_modif_extrurev
+    #  @ref tui_extrusion example
     def ExtrusionSweepObject2D(self, theObject, StepVector, NbOfSteps, MakeGroups=False):
         return self.ExtrusionSweepObjects([],[],theObject, StepVector, NbOfSteps, MakeGroups)
 
@@ -4055,6 +4061,7 @@ class Mesh:
     #  @param MakeGroups forces the generation of new groups from existing ones
     #  @return list of created groups (SMESH_GroupBase) and SMESH::Extrusion_Error
     #  @ingroup l2_modif_extrurev
+    #  @ref tui_extrusion_along_path example
     def ExtrusionAlongPathObjects(self, Nodes, Edges, Faces, PathMesh, PathShape=None,
                                   NodeStart=1, HasAngles=False, Angles=[], LinearVariation=False,
                                   HasRefPoint=False, RefPoint=[0,0,0], MakeGroups=False):
@@ -4098,6 +4105,7 @@ class Mesh:
     #  @return list of created groups (SMESH_GroupBase) and SMESH::Extrusion_Error if MakeGroups=True,
     #          only SMESH::Extrusion_Error otherwise
     #  @ingroup l2_modif_extrurev
+    #  @ref tui_extrusion_along_path example
     def ExtrusionAlongPathX(self, Base, Path, NodeStart,
                             HasAngles=False, Angles=[], LinearVariation=False,
                             HasRefPoint=False, RefPoint=[0,0,0], MakeGroups=False,
@@ -4130,6 +4138,7 @@ class Mesh:
     #  @return list of created groups (SMESH_GroupBase) and SMESH::Extrusion_Error if MakeGroups=True,
     #          only SMESH::Extrusion_Error otherwise
     #  @ingroup l2_modif_extrurev
+    #  @ref tui_extrusion_along_path example
     def ExtrusionAlongPath(self, IDsOfElements, PathMesh, PathShape, NodeStart,
                            HasAngles=False, Angles=[], HasRefPoint=False, RefPoint=[],
                            MakeGroups=False, LinearVariation=False):
@@ -4160,6 +4169,7 @@ class Mesh:
     #  @return list of created groups (SMESH_GroupBase) and SMESH::Extrusion_Error if MakeGroups=True,
     #          only SMESH::Extrusion_Error otherwise
     #  @ingroup l2_modif_extrurev
+    #  @ref tui_extrusion_along_path example
     def ExtrusionAlongPathObject(self, theObject, PathMesh, PathShape, NodeStart,
                                  HasAngles=False, Angles=[], HasRefPoint=False, RefPoint=[],
                                  MakeGroups=False, LinearVariation=False):
@@ -4189,6 +4199,7 @@ class Mesh:
     #  @return list of created groups (SMESH_GroupBase) and SMESH::Extrusion_Error if MakeGroups=True,
     #          only SMESH::Extrusion_Error otherwise
     #  @ingroup l2_modif_extrurev
+    #  @ref tui_extrusion_along_path example
     def ExtrusionAlongPathObject1D(self, theObject, PathMesh, PathShape, NodeStart,
                                    HasAngles=False, Angles=[], HasRefPoint=False, RefPoint=[],
                                    MakeGroups=False, LinearVariation=False):
@@ -4218,6 +4229,7 @@ class Mesh:
     #  @return list of created groups (SMESH_GroupBase) and SMESH::Extrusion_Error if MakeGroups=True,
     #          only SMESH::Extrusion_Error otherwise
     #  @ingroup l2_modif_extrurev
+    #  @ref tui_extrusion_along_path example
     def ExtrusionAlongPathObject2D(self, theObject, PathMesh, PathShape, NodeStart,
                                    HasAngles=False, Angles=[], HasRefPoint=False, RefPoint=[],
                                    MakeGroups=False, LinearVariation=False):
