@@ -34,19 +34,19 @@ from salome.smesh import spadder
 spadder.loadSpadderCatalog()
 
 # Basic test
-print "Basic tests"
+print("Basic tests")
 c=salome.lcc.FindOrLoadComponent("FactoryServer","SPADDERPluginTester")
 z=c.demo(2.,3.)
 
 # Test of usage of KERNEL services from the test component
-print "Test of usage of KERNEL services from the test component"
+print("Test of usage of KERNEL services from the test component")
 c.testkernel()
 
 # Test of usage of SMESH engine from the test component
 # WARN: the SMESH engine must be loaded first
-print "Test of usage of SMESH engine from the test component"
+print("Test of usage of SMESH engine from the test component")
 import SMESH
 salome.lcc.FindOrLoadComponent("FactoryServer","SMESH")
 c.testsmesh()
 
-print "Test completed : OK"
+print("Test completed : OK")

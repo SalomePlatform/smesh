@@ -31,14 +31,14 @@ aFilter = smesh.GetFilter(SMESH.EDGE, SMESH.FT_FreeBorders)
 anIds = mesh.GetIdsFromFilter(aFilter)
 
 # print the result
-print "Criterion: Free borders Nb = ", len(anIds)
+print("Criterion: Free borders Nb = ", len(anIds))
 j = 1
 for i in range(len(anIds)):
-  if j > 20: j = 1; print ""
-  print anIds[i],
+  if j > 20: j = 1; print("")
+  print(anIds[i], end=' ')
   j = j + 1
   pass
-print ""
+print("")
 
 # create a group
 aGroup = mesh.GetMesh().CreateGroup(SMESH.EDGE, "Free borders")

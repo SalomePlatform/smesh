@@ -54,27 +54,27 @@ trias.ExtrusionAlongPath([], circlemesh, circle,
                          1, 0, [], 0, SMESH.PointStruct(0, 0, 0))
 
 # merge nodes
-print "Number of nodes before MergeNodes:", 
+print("Number of nodes before MergeNodes:", end=' ') 
 trias.NbNodes()
 tolerance = 0.001
 array_of_nodes_groups = trias.FindCoincidentNodes(tolerance)
 
 trias.MergeNodes(array_of_nodes_groups)
 
-print "Number of nodes after MergeNodes:", trias.NbNodes()
-print ""
-print "Number of elements before MergeEqualElements:"
-print "Edges      : ", trias.NbEdges()
-print "Triangles  : ", trias.NbTriangles()
-print "Quadrangles: ", trias.NbQuadrangles()
-print "Volumes    : ", trias.NbVolumes()
+print("Number of nodes after MergeNodes:", trias.NbNodes())
+print("")
+print("Number of elements before MergeEqualElements:")
+print("Edges      : ", trias.NbEdges())
+print("Triangles  : ", trias.NbTriangles())
+print("Quadrangles: ", trias.NbQuadrangles())
+print("Volumes    : ", trias.NbVolumes())
 
 # merge elements
 trias.MergeEqualElements()
-print "Number of elements after MergeEqualElements:"
-print "Edges      : ", trias.NbEdges()
-print "Triangles  : ", trias.NbTriangles()
-print "Quadrangles: ", trias.NbQuadrangles()
-print "Volumes    : ", trias.NbVolumes()
+print("Number of elements after MergeEqualElements:")
+print("Edges      : ", trias.NbEdges())
+print("Triangles  : ", trias.NbTriangles())
+print("Quadrangles: ", trias.NbQuadrangles())
+print("Volumes    : ", trias.NbVolumes())
 
 salome.sg.updateObjBrowser()

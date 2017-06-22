@@ -71,8 +71,8 @@ aGroup = mesh.MakeGroupByCriterion("Free edges", aCriterion)
 anIds = aGroup.GetIDs()
 
 # print result
-print "Criterion: Free edges Nb = ", len( anIds )
+print("Criterion: Free edges Nb = ", len( anIds ))
 for i in range( len( anIds ) ):
-  print anIds[ i ]
+  print(anIds[ i ])
 
 salome.sg.updateObjBrowser()

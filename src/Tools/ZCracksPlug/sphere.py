@@ -21,8 +21,8 @@ import GEOM
 from salome.geom import geomBuilder
 import math
 import SALOMEDS
-import utilityFunctions as uF
-from output import message
+from . import utilityFunctions as uF
+from .output import message
 
 #import GEOM_Gen.ild
 
@@ -60,11 +60,11 @@ def generate(data_rayon,data_centre,outFile):
     Maillage.ExportMED( outFile, 0, SMESH.MED_V2_2, 1, None ,1)
     smesh.SetName(Maillage.GetMesh(), 'MAILLAGE_FISSURE')
   except:
-    print 'ExportToMEDX() failed. Invalid file name?'
+    print('ExportToMEDX() failed. Invalid file name?')
 
 
   ## Set names of Mesh objects
 
 
   if salome.sg.hasDesktop():
-    salome.sg.updateObjBrowser(1)
+    salome.sg.updateObjBrowser(True)

@@ -29,51 +29,51 @@ group_2d = mesh.Group(face)
 
 # compute basic properties
 
-print "Get basic properties: approach 1 (via measurements tool) ----"
+print("Get basic properties: approach 1 (via measurements tool) ----")
 
 measure = smesh.CreateMeasurements()
 
-print "* for mesh:"
-print "  length:", measure.Length(mesh.mesh)
-print "  area:",   measure.Area(mesh.mesh)
-print "  volume:", measure.Volume(mesh.mesh)
+print("* for mesh:")
+print("  length:", measure.Length(mesh.mesh))
+print("  area:",   measure.Area(mesh.mesh))
+print("  volume:", measure.Volume(mesh.mesh))
 
-print "* for group (2d):"
-print "  length:", measure.Length(group_2d)
-print "  area:",   measure.Area(group_2d)
-print "  volume:", measure.Volume(group_2d)
+print("* for group (2d):")
+print("  length:", measure.Length(group_2d))
+print("  area:",   measure.Area(group_2d))
+print("  volume:", measure.Volume(group_2d))
 
-print "* for submesh (2d):"
-print "  length:", measure.Length(submesh_2d_face.GetSubMesh())
-print "  area:",   measure.Area(submesh_2d_face.GetSubMesh())
-print "  volume:", measure.Volume(submesh_2d_face.GetSubMesh())
+print("* for submesh (2d):")
+print("  length:", measure.Length(submesh_2d_face.GetSubMesh()))
+print("  area:",   measure.Area(submesh_2d_face.GetSubMesh()))
+print("  volume:", measure.Volume(submesh_2d_face.GetSubMesh()))
 
 measure.UnRegister()
 
-print "Get basic properties: approach 2 (via smeshBuilder) ----"
+print("Get basic properties: approach 2 (via smeshBuilder) ----")
 
-print "* for mesh:"
-print "  length:", smesh.GetLength(mesh)
-print "  area:",   smesh.GetArea(mesh)
-print "  volume:", smesh.GetVolume(mesh)
+print("* for mesh:")
+print("  length:", smesh.GetLength(mesh))
+print("  area:",   smesh.GetArea(mesh))
+print("  volume:", smesh.GetVolume(mesh))
 
-print "* for group (2d):"
-print "  length:", smesh.GetLength(group_2d)
-print "  area:",   smesh.GetArea(group_2d)
-print "  volume:", smesh.GetVolume(group_2d)
+print("* for group (2d):")
+print("  length:", smesh.GetLength(group_2d))
+print("  area:",   smesh.GetArea(group_2d))
+print("  volume:", smesh.GetVolume(group_2d))
 
-print "* for submesh (2d):"
-print "  length:", smesh.GetLength(submesh_2d_face)
-print "  area:",   smesh.GetArea(submesh_2d_face)
-print "  volume:", smesh.GetVolume(submesh_2d_face)
+print("* for submesh (2d):")
+print("  length:", smesh.GetLength(submesh_2d_face))
+print("  area:",   smesh.GetArea(submesh_2d_face))
+print("  volume:", smesh.GetVolume(submesh_2d_face))
 
-print "Get basic properties: approach 3 (via smeshBuilder.Mesh) ----"
+print("Get basic properties: approach 3 (via smeshBuilder.Mesh) ----")
 
-print "* for mesh:"
-print "  length:", mesh.GetLength()
-print "  area:",   mesh.GetArea()
-print "  volume:", mesh.GetVolume()
+print("* for mesh:")
+print("  length:", mesh.GetLength())
+print("  area:",   mesh.GetArea())
+print("  volume:", mesh.GetVolume())
 
-print "* for group (2d): unsupported"
+print("* for group (2d): unsupported")
 
-print "* for submesh (2d): unsupported"
+print("* for submesh (2d): unsupported")

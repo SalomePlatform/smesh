@@ -36,18 +36,18 @@ faces1 = mesh.CreateEmptyGroup( SMESH.FACE, 'faces1' )
 faces1.Add( [ 144, 151, 158 ] )
 
 # Duplicate nodes
-print "\nMesh before the first nodes duplication:"
-print "Nodes       : ", mesh.NbNodes()
-print "Edges       : ", mesh.NbEdges()
-print "Quadrangles : ", mesh.NbQuadrangles()
+print("\nMesh before the first nodes duplication:")
+print("Nodes       : ", mesh.NbNodes())
+print("Edges       : ", mesh.NbEdges())
+print("Quadrangles : ", mesh.NbQuadrangles())
 
 groupOfCreatedNodes = mesh.DoubleNodeGroup(nodes1, faces1, theMakeGroup=True)
-print "New nodes:", groupOfCreatedNodes.GetIDs()
+print("New nodes:", groupOfCreatedNodes.GetIDs())
 
-print "\nMesh after the first nodes duplication:"
-print "Nodes       : ", mesh.NbNodes()
-print "Edges       : ", mesh.NbEdges()
-print "Quadrangles : ", mesh.NbQuadrangles()
+print("\nMesh after the first nodes duplication:")
+print("Nodes       : ", mesh.NbNodes())
+print("Edges       : ", mesh.NbEdges())
+print("Quadrangles : ", mesh.NbQuadrangles())
 
 # Duplicate nodes and border elements
 
@@ -64,18 +64,18 @@ faces2 = mesh.CreateEmptyGroup( SMESH.FACE, 'faces2' )
 faces2.Add( [ 141, 148, 155 ] )
 
 # Duplicate nodes
-print "\nMesh before the second nodes duplication:"
-print "Nodes       : ", mesh.NbNodes()
-print "Edges       : ", mesh.NbEdges()
-print "Quadrangles : ", mesh.NbQuadrangles()
+print("\nMesh before the second nodes duplication:")
+print("Nodes       : ", mesh.NbNodes())
+print("Edges       : ", mesh.NbEdges())
+print("Quadrangles : ", mesh.NbQuadrangles())
 
 groupOfNewEdges = mesh.DoubleNodeElemGroup( edges, nodes2, faces2, theMakeGroup=True )
-print "New edges:", groupOfNewEdges.GetIDs()
+print("New edges:", groupOfNewEdges.GetIDs())
 
-print "\nMesh after the second nodes duplication:"
-print "Nodes       : ", mesh.NbNodes()
-print "Edges       : ", mesh.NbEdges()
-print "Quadrangles : ", mesh.NbQuadrangles()
+print("\nMesh after the second nodes duplication:")
+print("Nodes       : ", mesh.NbNodes())
+print("Edges       : ", mesh.NbEdges())
+print("Quadrangles : ", mesh.NbQuadrangles())
 
 
 # Duplicate elements only

@@ -35,8 +35,8 @@ verbose = True
 
 force = os.getenv("FORCE_DISTENE_LICENSE_FILE")
 if force != None:
-  os.environ["DISTENE_LICENSE_FILE"] = force
-  os.environ["DLIM8VAR"] = "NOTHING"
+    os.environ["DISTENE_LICENSE_FILE"] = force
+    os.environ["DLIM8VAR"] = "NOTHING"
 
 class MonViewText(Ui_ViewExe, QDialog):
     """
@@ -54,7 +54,7 @@ class MonViewText(Ui_ViewExe, QDialog):
         self.monExe.readyReadStandardOutput.connect( self.readFromStdOut )
         self.monExe.readyReadStandardError.connect( self.readFromStdErr )
         self.monExe.finished.connect( self.finished )
-      
+
         cmds = ''
         ext = ''
         if sys.platform == "win32":
@@ -73,14 +73,14 @@ class MonViewText(Ui_ViewExe, QDialog):
         cmds += 'echo %s\n' % txt #to see what is compute command
         cmds += txt+'\n'
         cmds += 'echo "END_OF_MGSurfOpt"\n'
-        
+
         nomFichier = os.path.splitext(self.parent().fichierOut)[0] + ext
         with open(nomFichier, 'w') as f:
-          f.write(cmds)
+            f.write(cmds)
         self.make_executable(nomFichier)
-        
-        if verbose: print("INFO: MGSurfOpt launch script file: %s" % nomFichier)
-        
+
+        if verbose: print(("INFO: MGSurfOpt launch script file: %s" % nomFichier))
+
         self.monExe.start(nomFichier)
         self.monExe.closeWriteChannel()
         self.enregistreResultatsDone=False
@@ -96,30 +96,30 @@ class MonViewText(Ui_ViewExe, QDialog):
         savedir=os.environ['HOME']
         fn = QFileDialog.getSaveFileName(None,"Save File",savedir)
         if fn.isNull() : return
-        ulfile = os.path.abspath(unicode(fn))
+        ulfile = os.path.abspath(str(fn))
         try:
-           f = open(fn, 'wb')
-           f.write(str(self.TB_Exe.toPlainText()))
-           f.close()
-        except IOError, why:
-           QMessageBox.critical(self, 'Save File',
-        	'The file <b>%1</b> could not be saved.<br>Reason: %2'%(unicode(fn), str(why)))
+            f = open(fn, 'wb')
+            f.write(str(self.TB_Exe.toPlainText()))
+            f.close()
+        except IOError as why:
+            QMessageBox.critical(self, 'Save File',
+                 'The file <b>%1</b> could not be saved.<br>Reason: %2'%(str(fn), str(why)))
 
     def readFromStdErr(self):
         a=self.monExe.readAllStandardError()
-        self.TB_Exe.append(unicode(a.data().encode()))
+        self.TB_Exe.append(str(a.data().encode()))
 
     def readFromStdOut(self) :
         a=self.monExe.readAllStandardOutput()
-        aa=unicode(a.data())
-        self.TB_Exe.append(aa)    
-    
+        aa=str(a.data())
+        self.TB_Exe.append(aa)
+
     def finished(self):
         self.parent().enregistreResultat()
         self.enregistreResultatsDone=True
-    
+
     def theClose(self):
-      if not self.enregistreResultatsDone:
-        self.parent().enregistreResultat()
-        self.enregistreResultatsDone=True
-      self.close()
+        if not self.enregistreResultatsDone:
+            self.parent().enregistreResultat()
+            self.enregistreResultatsDone=True
+        self.close()

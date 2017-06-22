@@ -39,7 +39,7 @@ SET(_pyuic_files
 )
 
 # scripts / pyuic wrappings
-PYQT_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_files})
+PYQT_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_files} OPTIONS "--import-from=blocFissure" "--resource-suffix=_qrc")
 
 # --- rules ---
 

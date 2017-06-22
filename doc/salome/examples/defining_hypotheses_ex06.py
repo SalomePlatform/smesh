@@ -32,6 +32,6 @@ algo3D.MaxElementVolume(200.)
 # compute the mesh
 ret = tetra.Compute()
 if ret == 0:
-    print "problem when computing the mesh"
+    print("problem when computing the mesh")
 else:
-    print "Computation succeeded"
+    print("Computation succeeded")

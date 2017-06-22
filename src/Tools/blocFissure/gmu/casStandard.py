@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import os
-from geomsmesh import geompy, smesh
-from geomsmesh import geomPublish
-from geomsmesh import geomPublishInFather
-import initLog
+from .geomsmesh import geompy, smesh
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+from . import initLog
 
 import math
 import GEOM
@@ -15,13 +15,13 @@ import SMESH
 #import NETGENPlugin
 import logging
 
-from fissureGenerique import fissureGenerique
+from .fissureGenerique import fissureGenerique
 
-from initEtude import initEtude
-from triedreBase import triedreBase
-from genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
-from creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
-from construitFissureGenerale import construitFissureGenerale
+from .initEtude import initEtude
+from .triedreBase import triedreBase
+from .genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
+from .creeZoneDefautDansObjetSain import creeZoneDefautDansObjetSain
+from .construitFissureGenerale import construitFissureGenerale
 
 O, OX, OY, OZ = triedreBase()
 
@@ -39,13 +39,13 @@ class casStandard(fissureGenerique):
     initEtude()
     self.references = references
     self.dicoParams = dicoParams
-    if self.dicoParams.has_key('nomCas'):
+    if 'nomCas' in self.dicoParams:
       self.nomCas = self.dicoParams['nomCas']
-    elif self.dicoParams.has_key('nomres'):
+    elif 'nomres' in self.dicoParams:
       self.nomCas = os.path.splitext(os.path.split(self.dicoParams['nomres'])[1])[0]
     else:
       self.nomCas = 'casStandard'
-    if self.dicoParams.has_key('reptrav'):
+    if 'reptrav' in self.dicoParams:
       self.reptrav = self.dicoParams['reptrav']
     else:
       self.reptrav = '.'  
@@ -54,15 +54,15 @@ class casStandard(fissureGenerique):
       self.nomCas = self.nomProbleme +"_%d"%(self.numeroCas)
     else:
       self.nomProbleme = self.nomCas
-    if self.dicoParams.has_key('lenSegPipe'):
+    if 'lenSegPipe' in self.dicoParams:
       self.lenSegPipe = self.dicoParams['lenSegPipe']
     else:
       self.lenSegPipe =self.dicoParams['rayonPipe']
-    if self.dicoParams.has_key('step'):
+    if 'step' in self.dicoParams:
       step = self.dicoParams['step']
     else:
       step = -1 # exécuter toutes les étapes
-    if not self.dicoParams.has_key('aretesVives'):
+    if 'aretesVives' not in self.dicoParams:
       self.dicoParams['aretesVives'] = 0
     if self.numeroCas == 0: # valeur par défaut : exécution immédiate, sinon execution différée dans le cas d'une liste de problèmes
       self.executeProbleme(step)
@@ -86,7 +86,7 @@ class casStandard(fissureGenerique):
     pointIn_x   : optionnel : coordonnée x d'un point dans le solide sain (pour orienter la face - idem avec y,z)
     """
     logging.info("setParamShapeFissure %s", self.nomCas)
-    if self.dicoParams.has_key('pointInterieur'):
+    if 'pointInterieur' in self.dicoParams:
       self.shapeFissureParams = dict(lgInfluence = self.dicoParams['lgInfluence'],
                                      rayonPipe   = self.dicoParams['rayonPipe'],
                                      lenSegPipe  = self.lenSegPipe,

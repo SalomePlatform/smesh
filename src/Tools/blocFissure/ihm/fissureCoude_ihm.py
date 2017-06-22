@@ -55,7 +55,7 @@ class fissureCoude_ihm(fissureCoude):
     pointIn_x   : optionnel coordonnées x d'un point dans le solide, pas trop loin du centre du fond de fissure (idem y,z)
     externe     : True : fissure face externe, False : fissure face interne
     """
-    print "setParamShapeFissure", self.nomCas
+    print("setParamShapeFissure", self.nomCas)
     self.shapeFissureParams = dict(profondeur  = self.dico['profondeur'],
                                    rayonPipe   = self.dico['rayonTore'],
                                    lenSegPipe  = self.dico['lenSegPipe'],

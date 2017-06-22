@@ -9,4 +9,4 @@ geompy.addToStudy(surface_1, "surface_1")
 # get all nodes which lie on the surface \a surface_1
 filter = smesh.GetFilter(SMESH.NODE, SMESH.FT_BelongToGenSurface, surface_1)
 ids = mesh.GetIdsFromFilter(filter)
-print "Number of nodes which lie on the surface surface_1:", len(ids)
+print("Number of nodes which lie on the surface surface_1:", len(ids))

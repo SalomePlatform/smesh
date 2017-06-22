@@ -2,7 +2,7 @@
 
 import logging
 #logging.info('start')
-import initLog
+from . import initLog
 
 import salome
 salome.salome_init()

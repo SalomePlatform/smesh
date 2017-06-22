@@ -2,11 +2,11 @@
 
 import logging
 
-from geomsmesh import geompy
-from geomsmesh import smesh
+from .geomsmesh import geompy
+from .geomsmesh import smesh
 import SMESH
 
-from putName import putName
+from .putName import putName
   
 def mailleAretesEtJonction(internalBoundary, aretesVivesCoupees, lgAretesVives):
   """

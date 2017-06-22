@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-import initLog
+from . import initLog
 
 # --- calcul path blocFissure
 

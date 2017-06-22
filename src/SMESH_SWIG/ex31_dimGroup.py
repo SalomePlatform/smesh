@@ -45,12 +45,12 @@ isDone = Mesh_1.Compute()
 
 ### CreateDimGroup()
 
-aListOf3d_1=range(721,821)
+aListOf3d_1=list(range(721,821))
 
 aGrp3D_1=Mesh_1.GetMesh().CreateGroup( SMESH.VOLUME, "Src 3D 1" )
 aGrp3D_1.Add( aListOf3d_1 )
 
-aListOf3d_2=range(821, 921)
+aListOf3d_2=list(range(821, 921))
 aGrp3D_2=Mesh_1.GetMesh().CreateGroup( SMESH.VOLUME, "Src 3D 2" )
 aGrp3D_2.Add( aListOf3d_2 )
 

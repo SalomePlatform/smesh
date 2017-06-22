@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from fissure_Coude  import fissure_Coude
+from .fissure_Coude  import fissure_Coude
 
 class fissure_Coude_4(fissure_Coude):
   """
@@ -46,7 +46,7 @@ class fissure_Coude_4(fissure_Coude):
     orientation : 0° : longitudinale, 90° : circonférentielle, autre : uniquement fissures elliptiques
     externe     : True : fissure face externe, False : fissure face interne
     """
-    print "setParamShapeFissure", self.nomCas
+    print("setParamShapeFissure", self.nomCas)
     self.shapeFissureParams = dict(nomRep        = '.',
                                    nomFicSain    = self.nomCas,
                                    nomFicFissure = 'fissure_' + self.nomCas,

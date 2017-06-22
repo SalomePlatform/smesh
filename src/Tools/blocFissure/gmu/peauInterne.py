@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from geomsmesh import smesh
+from .geomsmesh import smesh
 import SMESH
 import traceback
-from fissError import fissError
+from .fissError import fissError
 
-from listOfExtraFunctions import lookForCorner
-from fusionMaillageAttributionDefaut import fusionMaillageDefaut
+from .listOfExtraFunctions import lookForCorner
+from .fusionMaillageAttributionDefaut import fusionMaillageDefaut
 
 # -----------------------------------------------------------------------------
 # --- peau interne du defaut dans le maillage sain
@@ -46,7 +46,7 @@ def peauInterne(fichierMaillage, shapeDefaut, nomZones):
   # --- Le groupe ZoneDefaut ne doit contenir que des Hexaèdres"
   
   info=maillageSain.GetMeshInfo(zoneDefaut)
-  keys = info.keys(); keys.sort()
+  keys = list(info.keys()); keys.sort()
   nbelem=0
   nbhexa=0
   for i in keys:

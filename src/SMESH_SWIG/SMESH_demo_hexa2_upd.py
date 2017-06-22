@@ -103,14 +103,14 @@ tol3d = 1.e-3
 vol = geompy.MakeGlueFaces(volComp,tol3d)
 idVol = geompy.addToStudy(vol,"volume")
 
-print "Analysis of the final volume:"
+print("Analysis of the final volume:")
 subShellList = geompy.SubShapeAllSorted(vol,ShapeTypeShell)
 subFaceList = geompy.SubShapeAllSorted(vol,ShapeTypeFace)
 subEdgeList = geompy.SubShapeAllSorted(vol,ShapeTypeEdge)
 
-print "number of Shells in the volume : ",len(subShellList)
-print "number of Faces in the volume : ",len(subFaceList)
-print "number of Edges in the volume : ",len(subEdgeList)
+print("number of Shells in the volume : ",len(subShellList))
+print("number of Faces in the volume : ",len(subFaceList))
+print("number of Edges in the volume : ",len(subEdgeList))
 
 idSubEdge = []
 for k in range(len(subEdgeList)):
@@ -139,36 +139,36 @@ mesh = smesh.Mesh(vol, "meshVolume")
 
 # ---- set Hypothesis and Algorithm to main shape
 
-print "-------------------------- NumberOfSegments the global one"
+print("-------------------------- NumberOfSegments the global one")
 
 numberOfSegments = 10
 
 regular1D = mesh.Segment()
 regular1D.SetName("Wire Discretisation")
 hypNbSeg = regular1D.NumberOfSegments(numberOfSegments)
-print hypNbSeg.GetName()
-print hypNbSeg.GetId()
-print hypNbSeg.GetNumberOfSegments()
+print(hypNbSeg.GetName())
+print(hypNbSeg.GetId())
+print(hypNbSeg.GetNumberOfSegments())
 smesh.SetName(hypNbSeg, "NumberOfSegments")
 
 
-print "-------------------------- Quadrangle_2D"
+print("-------------------------- Quadrangle_2D")
 
 quad2D=mesh.Quadrangle()
 quad2D.SetName("Quadrangle_2D")
 
-print "-------------------------- Hexa_3D"
+print("-------------------------- Hexa_3D")
 
 hexa3D=mesh.Hexahedron()
 hexa3D.SetName("Hexa_3D")
 
 
-print "-------------------------- NumberOfSegments in the Z direction"
+print("-------------------------- NumberOfSegments in the Z direction")
 
 numberOfSegmentsZ = 40
 
 for i in range(8):
-    print "-------------------------- add hypothesis to edge in the Z directions", (i+1)
+    print("-------------------------- add hypothesis to edge in the Z directions", (i+1))
 
     algo = mesh.Segment(edgeZ[i])
     hyp = algo.NumberOfSegments(numberOfSegmentsZ)
@@ -178,23 +178,23 @@ for i in range(8):
 
 salome.sg.updateObjBrowser()
 
-print "-------------------------- compute the mesh of the volume"
+print("-------------------------- compute the mesh of the volume")
 
 ret=mesh.Compute()
 
-print ret
+print(ret)
 if ret != 0:
 ##    log=mesh.GetLog(0) # no erase trace
 ##    for linelog in log:
 ##        print linelog
-    print "Information about the MeshBox :"
-    print "Number of nodes       : ", mesh.NbNodes()
-    print "Number of edges       : ", mesh.NbEdges()
-    print "Number of faces       : ", mesh.NbFaces()
-    print "Number of triangles   : ", mesh.NbTriangles()
-    print "Number of volumes     : ", mesh.NbVolumes()
-    print "Number of tetrahedrons: ", mesh.NbTetras()
+    print("Information about the MeshBox :")
+    print("Number of nodes       : ", mesh.NbNodes())
+    print("Number of edges       : ", mesh.NbEdges())
+    print("Number of faces       : ", mesh.NbFaces())
+    print("Number of triangles   : ", mesh.NbTriangles())
+    print("Number of volumes     : ", mesh.NbVolumes())
+    print("Number of tetrahedrons: ", mesh.NbTetras())
 else:
-    print "problem when Computing the mesh"
+    print("problem when Computing the mesh")
 
 salome.sg.updateObjBrowser()

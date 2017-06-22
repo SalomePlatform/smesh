@@ -2,14 +2,14 @@
 
 import math
 import logging
-from geomsmesh import geompy
-from geomsmesh import geomPublish
-from geomsmesh import geomPublishInFather
-import initLog
-from findWireEndVertices import findWireEndVertices
-from prolongeWire import prolongeWire
+from .geomsmesh import geompy
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+from . import initLog
+from .findWireEndVertices import findWireEndVertices
+from .prolongeWire import prolongeWire
 import traceback
-from fissError import fissError
+from .fissError import fissError
 
 def partitionneFissureParPipe(shapesFissure, elementsDefaut, rayonPipe):
   """

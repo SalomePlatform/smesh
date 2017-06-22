@@ -15,17 +15,17 @@ aFilter = smesh.GetFilter(SMESH.FACE, SMESH.FT_MinimumAngle, SMESH.FT_LessThan, 
 anIds = mesh.GetIdsFromFilter(aFilter) 
 
 # print the result
-print "Criterion: Minimum Angle < ", min_angle, " Nb = ", len(anIds)
+print("Criterion: Minimum Angle < ", min_angle, " Nb = ", len(anIds))
 j = 1
 for i in range(len(anIds)):
-  if j > 20: j = 1; print ""
-  print anIds[i],
+  if j > 20: j = 1; print("")
+  print(anIds[i], end=' ')
   j = j + 1
   pass
-print ""
+print("")
 
 # create a group
-aGroup = mesh.CreateEmptyGroup(SMESH.FACE, "Minimum Angle < " + `min_angle`)
+aGroup = mesh.CreateEmptyGroup(SMESH.FACE, "Minimum Angle < " + repr(min_angle))
 
 aGroup.Add(anIds)
 

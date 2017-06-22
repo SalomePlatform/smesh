@@ -1273,7 +1273,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromSAUV( const char* theFileName,
 #ifdef WIN32
   cmd = "%PYTHONBIN% ";
 #else
-  cmd = "python ";
+  cmd = "python3 ";
 #endif
   cmd += "-c \"";
   cmd += "from medutilities import convert ; convert(r'" + sauvfilename + "', 'GIBI', 'MED', 1, r'" + medfilename + "')";
@@ -1283,7 +1283,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromSAUV( const char* theFileName,
 #ifdef WIN32
   cmd = "%PYTHONBIN% ";
 #else
-  cmd = "python ";
+  cmd = "python3 ";
 #endif
   cmd += "-c \"";
   cmd += "from medutilities import my_remove ; my_remove(r'" + medfilename + "')";
@@ -3018,7 +3018,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 
   TCollection_AsciiString aStudyName( "" );
   if ( isMultiFile )
-    aStudyName = ( (char*)SALOMEDS_Tool::GetNameFromPath( aStudy->URL() ).c_str() );
+    aStudyName = ( (char*)SALOMEDS_Tool::GetNameFromPath( Kernel_Utils::encode(aStudy->URL()) ).c_str() );
 
   // Set names of temporary files
   TCollection_AsciiString filename =
@@ -4016,8 +4016,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                                                                          isMultiFile );
   TCollection_AsciiString aStudyName( "" );
   if ( isMultiFile ) {
-    CORBA::String_var url = aStudy->URL();
-    aStudyName = (char*)SALOMEDS_Tool::GetNameFromPath( url.in() ).c_str();
+    CORBA::WString_var url = aStudy->URL();
+    aStudyName = (char*)SALOMEDS_Tool::GetNameFromPath( Kernel_Utils::encode(url.in()) ).c_str();
   }
   // Set names of temporary files
   TCollection_AsciiString filename = tmpDir + aStudyName + "_SMESH.hdf";

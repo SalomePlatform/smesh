@@ -27,12 +27,12 @@ aGroupF = mesh.CreateEmptyGroup(SMESH.FACE, "Faces with free edges")
 aGroupN = mesh.CreateEmptyGroup(SMESH.NODE, "Nodes on free edges")
 
 # fill groups with elements, corresponding to the criterion
-print ""
-print "Criterion: Free edges Nb = ", len(aBorders)
+print("")
+print("Criterion: Free edges Nb = ", len(aBorders))
 for i in range(len(aBorders)):
   aBorder = aBorders[i]
-  print "Face # ", aBorder.myElemId, " : Edge between nodes (",
-  print aBorder.myPnt1, ", ", aBorder.myPnt2, ")"
+  print("Face # ", aBorder.myElemId, " : Edge between nodes (", end=' ')
+  print(aBorder.myPnt1, ", ", aBorder.myPnt2, ")")
 
   aGroupF.Add([aBorder.myElemId])
   aGroupN.Add([aBorder.myPnt1, aBorder.myPnt2])

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from geomsmesh import smesh
+from .geomsmesh import smesh
 from salome.smesh import smeshBuilder
 
 # -----------------------------------------------------------------------------

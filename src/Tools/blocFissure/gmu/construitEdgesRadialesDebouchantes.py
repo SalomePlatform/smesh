@@ -2,12 +2,12 @@
 
 import logging
 
-from geomsmesh import geompy
-from geomsmesh import geomPublish
-from geomsmesh import geomPublishInFather
-import initLog
+from .geomsmesh import geompy
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+from . import initLog
 import GEOM
-from sortEdges import sortEdges
+from .sortEdges import sortEdges
 
 def construitEdgesRadialesDebouchantes(idisklim, idiskout, gptsdisks, raydisks,
                                        facesPipePeau, edgeRadFacePipePeau, nbsegCercle):

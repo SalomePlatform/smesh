@@ -1,22 +1,20 @@
-# -*- coding: utf-8 -*-
-
 import os
 import datetime
 import sys
 
-from qtsalome import QSqlQuery
-from tableMaillages  import TableMaillages
-from tableMailleurs  import TableMailleurs
-from tableMachines   import TableMachines
-from tableVersions   import TableVersions
-from tableGroupesRef import TableGroupesRef
-from tableGroupes    import TableGroupes
-from tableMailles    import TableMailles
-from tableTailles    import TableTailles
-from tableRatios     import TableRatios
-from tableGroupeRatios     import TableGroupeRatios
-from tableGroupeTailles    import TableGroupeTailles
-from tablePerfs      import TablePerfs
+from qtsalome import QSqlQuery, QSqlDatabase
+from Base.tableMaillages  import TableMaillages
+from Base.tableMailleurs  import TableMailleurs
+from Base.tableMachines   import TableMachines
+from Base.tableVersions   import TableVersions
+from Base.tableGroupesRef import TableGroupesRef
+from Base.tableGroupes    import TableGroupes
+from Base.tableMailles    import TableMailles
+from Base.tableTailles    import TableTailles
+from Base.tableRatios     import TableRatios
+from Base.tableGroupeRatios     import TableGroupeRatios
+from Base.tableGroupeTailles    import TableGroupeTailles
+from Base.tablePerfs      import TablePerfs
 from Stats.job       import Job
 from CreeDocuments.jobHtml       import Document
 
@@ -29,9 +27,9 @@ class Base:
        self.db.setUserName("");
        self.db.setPassword("")
        if not self.db.open():
-         print(self.db.lastError().text())
+         print((self.db.lastError().text()))
        else:
-         print "dataBase Open"
+         print("dataBase Open")
        self.file=file
         
   def create(self):
@@ -135,28 +133,28 @@ class Base:
       bOk,versionId,versionName = self.maTableVersions.chercheVersion(version)
       if bOk==False:
          self.maTableVersions.creeVersion(version)
-         print "nouvelle Version enregistree dans la base"
+         print("nouvelle Version enregistree dans la base")
          bOk,versionId,versionName = self.maTableVersions.chercheVersion(version)
          if bOk==False:
-            print "Impossible de creer la version"
+            print("Impossible de creer la version")
             return
 
       bOk,nomMachine = self.maTableMachines.chercheMachine()
       if bOk==False:
          self.maTableMachines.creeMachine()
-         print "enregistrement de la machine dans la table des machines"
+         print("enregistrement de la machine dans la table des machines")
          bOk,nomMachine = self.maTableMachines.chercheMachine()
          if bOk==False:
-            print "Impossible de creer la version"
+            print("Impossible de creer la version")
             return
 
 
       for params in paramMaillage:
         
-         print "___________________________________________"
-         print ""
-         print " Job : ", params[1]
-         print " Version de salome : ", versionName 
+         print("___________________________________________")
+         print("")
+         print(" Job : ", params[1])
+         print(" Version de salome : ", versionName) 
 
 
          idJob=params[0]
@@ -166,8 +164,8 @@ class Base:
          if mesGroupesRef != [] :
            writeFile(fichierGroupesRef,",".join(mesGroupesRef))
          monjob=Job(params,salomePath,versionId,mesGroupesRef)
-         print ""
-         print "  Debut d execution"
+         print("")
+         print("  Debut d execution")
          monjob.execute()
       
          # remplit Perfs
@@ -217,14 +215,14 @@ class Base:
 
   
   def compare(self,version,ListeVersionRefString,fichier):    
-      print "_________________________________________________________________"
-      print "Generation du rapport de comparaison" 
-      print version
+      print("_________________________________________________________________")
+      print("Generation du rapport de comparaison") 
+      print(version)
       bOk,versionId,versionName = self.maTableVersions.chercheVersion(version)
       if bOk==False :
-         print "version ", version , " inconnue dans la base"
+         print("version ", version , " inconnue dans la base")
          exit()
-      print "Version a comparer : ", versionName
+      print("Version a comparer : ", versionName)
       versionCompName=versionName
       versionCompId=versionId
 
@@ -234,7 +232,7 @@ class Base:
       for id in ListeVersionRef:
           bOk,versionId,versionName = self.maTableVersions.chercheVersion(id)
           if bOk==False :
-             print "version ", id , " inconnue dans la base"
+             print("version ", id , " inconnue dans la base")
              exit()
           listeVersionRefId.append(versionId)
           listeVersionRefName.append(versionName)
@@ -245,7 +243,7 @@ class Base:
 
       maillagesIdListe, maillagesNameListe=self.maTableMaillages.getTous()
       if len(maillagesIdListe) != len (listeVersionRefId):
-         print "Pas assez de version de reference"
+         print("Pas assez de version de reference")
          exit()
       
       allEntitySurMaille=self.maTableMailles.getAllEntity()
@@ -253,7 +251,7 @@ class Base:
 
       # Boucle sur les maillages
       for idMaillage in maillagesIdListe :
-          print idMaillage
+          print(idMaillage)
           versionRefId=listeVersionRefId[idMaillage - 1]
           versionRefName=listeVersionRefName[idMaillage - 1]
           mailleurId=self.maTableMaillages.getMailleurId(idMaillage)

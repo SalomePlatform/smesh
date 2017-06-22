@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from geomsmesh import geompy
+from .geomsmesh import geompy
 
 # -----------------------------------------------------------------------------
 # --- tri par volume de solides

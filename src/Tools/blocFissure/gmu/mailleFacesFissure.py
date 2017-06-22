@@ -2,12 +2,12 @@
 
 import logging
 
-from geomsmesh import geompy
-from geomsmesh import smesh
+from .geomsmesh import geompy
+from .geomsmesh import smesh
 from salome.smesh import smeshBuilder
 import SMESH
 
-from putName import putName
+from .putName import putName
   
 def mailleFacesFissure(faceFissureExterne, edgesPipeFissureExterneC, edgesPeauFissureExterneC,
                         meshPipeGroups, areteFaceFissure, rayonPipe, nbsegRad):

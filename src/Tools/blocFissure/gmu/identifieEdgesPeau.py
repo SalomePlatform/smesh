@@ -2,12 +2,12 @@
 
 import logging
 
-from geomsmesh import geompy
-from geomsmesh import geomPublish
-from geomsmesh import geomPublishInFather
-import initLog
+from .geomsmesh import geompy
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+from . import initLog
 
-from substractSubShapes import substractSubShapes
+from .substractSubShapes import substractSubShapes
 
 def identifieEdgesPeau(edgesFissExtPipe,verticesPipePeau, facePeau, facesPeauSorted,
                        edgesPeauFondIn, fillingFaceExterne, aretesVivesC, aretesVivesCoupees):

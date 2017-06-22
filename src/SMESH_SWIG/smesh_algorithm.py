@@ -183,7 +183,7 @@ class Mesh_Algorithm:
     ## Private method.
     def Create(self, mesh, geom, hypo, so="libStdMeshersEngine.so"):
         if geom is None and mesh.mesh.HasShapeToMesh():
-            raise RuntimeError, "Attempt to create " + hypo + " algorithm on None shape"
+            raise RuntimeError("Attempt to create " + hypo + " algorithm on None shape")
         algo = self.FindAlgorithm(hypo, mesh.smeshpyD)
         if algo is None:
             algo = mesh.smeshpyD.CreateHypothesis(hypo, so)
@@ -195,7 +195,7 @@ class Mesh_Algorithm:
     def Assign(self, algo, mesh, geom):
         from salome.smesh.smeshBuilder import AssureGeomPublished, TreatHypoStatus, GetName
         if geom is None and mesh.mesh.HasShapeToMesh():
-            raise RuntimeError, "Attempt to create " + algo + " algorithm on None shape"
+            raise RuntimeError("Attempt to create " + algo + " algorithm on None shape")
         self.mesh = mesh
         if not geom or geom.IsSame( mesh.geom ):
             self.geom = mesh.geom
@@ -208,7 +208,7 @@ class Mesh_Algorithm:
         return
 
     def CompareHyp (self, hyp, args):
-        print "CompareHyp is not implemented for ", self.__class__.__name__, ":", hyp.GetName()
+        print("CompareHyp is not implemented for ", self.__class__.__name__, ":", hyp.GetName())
         return False
 
     def CompareEqualHyp (self, hyp, args):
@@ -285,9 +285,9 @@ class Mesh_Algorithm:
     def ViscousLayers(self, thickness, numberOfLayers, stretchFactor,
                       faces=[], isFacesToIgnore=True, extrMethod=StdMeshers.SURF_OFFSET_SMOOTH ):
         if not isinstance(self.algo, SMESH._objref_SMESH_3D_Algo):
-            raise TypeError, "ViscousLayers are supported by 3D algorithms only"
+            raise TypeError("ViscousLayers are supported by 3D algorithms only")
         if not "ViscousLayers" in self.GetCompatibleHypothesis():
-            raise TypeError, "ViscousLayers are not supported by %s"%self.algo.GetName()
+            raise TypeError("ViscousLayers are not supported by %s"%self.algo.GetName())
         if faces and isinstance( faces, geomBuilder.GEOM._objref_GEOM_Object ):
             faces = [ faces ]
         if faces and isinstance( faces[0], geomBuilder.GEOM._objref_GEOM_Object ):
@@ -323,9 +323,9 @@ class Mesh_Algorithm:
     def ViscousLayers2D(self, thickness, numberOfLayers, stretchFactor,
                         edges=[], isEdgesToIgnore=True ):
         if not isinstance(self.algo, SMESH._objref_SMESH_2D_Algo):
-            raise TypeError, "ViscousLayers2D are supported by 2D algorithms only"
+            raise TypeError("ViscousLayers2D are supported by 2D algorithms only")
         if not "ViscousLayers2D" in self.GetCompatibleHypothesis():
-            raise TypeError, "ViscousLayers2D are not supported by %s"%self.algo.GetName()
+            raise TypeError("ViscousLayers2D are not supported by %s"%self.algo.GetName())
         if edges and not isinstance( edges, list ) and not isinstance( edges, tuple ):
             edges = [edges]
         if edges and isinstance( edges[0], geomBuilder.GEOM._objref_GEOM_Object ):
@@ -356,29 +356,29 @@ class Mesh_Algorithm:
             if isinstance( i, int ):
                 s = geompy.SubShapes(self.mesh.geom, [i])[0]
                 if s.GetShapeType() != geomBuilder.GEOM.EDGE:
-                    raise TypeError, "Not EDGE index given"
+                    raise TypeError("Not EDGE index given")
                 resList.append( i )
             elif isinstance( i, geomBuilder.GEOM._objref_GEOM_Object ):
                 if i.GetShapeType() != geomBuilder.GEOM.EDGE:
-                    raise TypeError, "Not an EDGE given"
+                    raise TypeError("Not an EDGE given")
                 resList.append( geompy.GetSubShapeID(self.mesh.geom, i ))
             elif len( i ) > 1:
                 e = i[0]
                 v = i[1]
                 if not isinstance( e, geomBuilder.GEOM._objref_GEOM_Object ) or \
                    not isinstance( v, geomBuilder.GEOM._objref_GEOM_Object ):
-                    raise TypeError, "A list item must be a tuple (edge, 1st_vertex_of_edge)"
+                    raise TypeError("A list item must be a tuple (edge, 1st_vertex_of_edge)")
                 if v.GetShapeType() == geomBuilder.GEOM.EDGE and \
                    e.GetShapeType() == geomBuilder.GEOM.VERTEX:
                     v,e = e,v
                 if e.GetShapeType() != geomBuilder.GEOM.EDGE or \
                    v.GetShapeType() != geomBuilder.GEOM.VERTEX:
-                    raise TypeError, "A list item must be a tuple (edge, 1st_vertex_of_edge)"
+                    raise TypeError("A list item must be a tuple (edge, 1st_vertex_of_edge)")
                 vFirst = FirstVertexOnCurve( self.mesh, e )
                 tol    = geompy.Tolerance( vFirst )[-1]
                 if geompy.MinDistance( v, vFirst ) > 1.5*tol:
                     resList.append( geompy.GetSubShapeID(self.mesh.geom, e ))
             else:
-                raise TypeError, "Item must be either an edge or tuple (edge, 1st_vertex_of_edge)"
+                raise TypeError("Item must be either an edge or tuple (edge, 1st_vertex_of_edge)")
         return resList
 

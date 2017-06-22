@@ -369,7 +369,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
     def LengthNearVertex(self, length, vertex=0, UseExisting=0):
         import types
         store_geom = self.geom
-        if type(vertex) is types.IntType:
+        if isinstance(vertex, int):
             if vertex == 0 or vertex == 1:
                 from salome.geom import geomBuilder
                 vertex = self.mesh.geompyD.ExtractShapes(self.geom, geomBuilder.geomBuilder.ShapeType["VERTEX"],True)[vertex]
@@ -382,7 +382,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         # 0D algorithm
         if self.geom is None:
             self.geom = store_geom
-            raise RuntimeError, "Attempt to create SegmentAroundVertex_0D algorithm on None shape"
+            raise RuntimeError("Attempt to create SegmentAroundVertex_0D algorithm on None shape")
         from salome.smesh.smeshBuilder import AssureGeomPublished, GetName, TreatHypoStatus
         AssureGeomPublished( self.mesh, self.geom )
         name = GetName(self.geom)
@@ -979,7 +979,7 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
     ## Return 3D hypothesis holding the 1D one
     def Get3DHypothesis(self):
         if self.algoType != "RadialPrism_3D":
-            print "Prism_3D algorith doesn't support any hyposesis"
+            print("Prism_3D algorith doesn't support any hyposesis")
             return None
         return self.distribHyp
 
@@ -987,7 +987,7 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
     #  hypothesis. Returns the created hypothesis
     def OwnHypothesis(self, hypType, args=[], so="libStdMeshersEngine.so"):
         if self.algoType != "RadialPrism_3D":
-            print "Prism_3D algorith doesn't support any hyposesis"
+            print("Prism_3D algorith doesn't support any hyposesis")
             return None
         if not self.nbLayers is None:
             self.mesh.GetMesh().RemoveHypothesis( self.geom, self.nbLayers )
@@ -1007,7 +1007,7 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
     #                     the same parameters, else (default) - creates a new one
     def NumberOfLayers(self, n, UseExisting=0):
         if self.algoType != "RadialPrism_3D":
-            print "Prism_3D algorith doesn't support any hyposesis"
+            print("Prism_3D algorith doesn't support any hyposesis")
             return None
         self.mesh.RemoveHypothesis( self.distribHyp, self.geom )
         from salome.smesh.smeshBuilder import IsEqual
@@ -1023,7 +1023,7 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
     #  @param p the precision of rounding
     def LocalLength(self, l, p=1e-07):
         if self.algoType != "RadialPrism_3D":
-            print "Prism_3D algorith doesn't support any hyposesis"
+            print("Prism_3D algorith doesn't support any hyposesis")
             return None
         hyp = self.OwnHypothesis("LocalLength", [l,p])
         hyp.SetLength(l)
@@ -1036,7 +1036,7 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
     #  @param s the scale factor (optional)
     def NumberOfSegments(self, n, s=[]):
         if self.algoType != "RadialPrism_3D":
-            print "Prism_3D algorith doesn't support any hyposesis"
+            print("Prism_3D algorith doesn't support any hyposesis")
             return None
         if not s:
             hyp = self.OwnHypothesis("NumberOfSegments", [n])
@@ -1053,7 +1053,7 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
     #  @param end    the length of the last  segment
     def Arithmetic1D(self, start, end ):
         if self.algoType != "RadialPrism_3D":
-            print "Prism_3D algorith doesn't support any hyposesis"
+            print("Prism_3D algorith doesn't support any hyposesis")
             return None
         hyp = self.OwnHypothesis("Arithmetic1D", [start, end])
         hyp.SetLength(start, 1)
@@ -1067,7 +1067,7 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
     #  @param ratio  the common ratio of the geometric progression
     def GeometricProgression(self, start, ratio ):
         if self.algoType != "RadialPrism_3D":
-            print "Prism_3D algorith doesn't support any hyposesis"
+            print("Prism_3D algorith doesn't support any hyposesis")
             return None
         hyp = self.OwnHypothesis("GeometricProgression", [start, ratio])
         hyp.SetStartLength( start )
@@ -1080,7 +1080,7 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
     #  @param end   for the length of the last  segment
     def StartEndLength(self, start, end):
         if self.algoType != "RadialPrism_3D":
-            print "Prism_3D algorith doesn't support any hyposesis"
+            print("Prism_3D algorith doesn't support any hyposesis")
             return None
         hyp = self.OwnHypothesis("StartEndLength", [start, end])
         hyp.SetLength(start, 1)
@@ -1092,7 +1092,7 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
     #  @param fineness defines the quality of the mesh within the range [0-1]
     def AutomaticLength(self, fineness=0):
         if self.algoType != "RadialPrism_3D":
-            print "Prism_3D algorith doesn't support any hyposesis"
+            print("Prism_3D algorith doesn't support any hyposesis")
             return None
         hyp = self.OwnHypothesis("AutomaticLength")
         hyp.SetFineness( fineness )
@@ -1487,7 +1487,7 @@ class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
             self.mesh.AddHypothesis( self.hyp, self.geom )
 
         for axis, gridDef in enumerate( [xGridDef, yGridDef, zGridDef] ):
-            if not gridDef: raise ValueError, "Empty grid definition"
+            if not gridDef: raise ValueError("Empty grid definition")
             if isinstance( gridDef, str ):
                 self.hyp.SetGridSpacing( [gridDef], [], axis )
             elif isinstance( gridDef[0], str ):

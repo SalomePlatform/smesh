@@ -1,5 +1,5 @@
 from qtsalome import QSqlQuery
-from tableDeBase import TableDeBase
+from Base.tableDeBase import TableDeBase
 
 class TableRatios (TableDeBase):
       def __init__(self):
@@ -20,7 +20,7 @@ class TableRatios (TableDeBase):
           texteQuery+="foreign key (idVersion) references Versions(id)," 
           texteQuery+="primary key (idMaillage,idVersion));"
 
-          print "Creation de TableRatios : " , query.exec_(texteQuery)
+          print("Creation de TableRatios : " , query.exec_(texteQuery))
 
       def getVal(self,idMaillage, idVersion,  Entite):
           query=QSqlQuery()
@@ -32,6 +32,6 @@ class TableRatios (TableDeBase):
           while (query.next()) :
               val=query.value(0).toFloat()[0]
               nb=nb+1
-          if nb > 1 : print "Double valeur de Reference dans la table des mailles"
+          if nb > 1 : print("Double valeur de Reference dans la table des mailles")
           return val
 

@@ -478,7 +478,7 @@ module SMESH
   /*!
   *  Filter
   */
-  interface Filter: SALOME::GenericObj, SMESH_IDSource
+  interface Filter: SMESH_IDSource
   {
     /*!
     * Structure containing information about one criterion

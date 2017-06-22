@@ -4,7 +4,7 @@ def writeFile( fn, txt = None):
 
    if txt == None : return
    if fn  == None : return
-   fn = unicode(fn)
+   fn = str(fn)
    try:
       f = open(fn, 'wb')
       f.write(txt)

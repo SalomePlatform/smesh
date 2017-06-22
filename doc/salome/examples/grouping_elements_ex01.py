@@ -28,37 +28,37 @@ aGroup = mesh.CreateEmptyGroup(SMESH.NODE, "aGroup")
 
 # set/get group name
 aGroup.SetName( "new name" )
-print "name", aGroup.GetName()
+print("name", aGroup.GetName())
 
 # get group type (type of entities in the group, SMESH.NODE in our case)
-print "type", aGroup.GetType()
+print("type", aGroup.GetType())
 
 # get number of entities (nodes in our case) in the group
-print "size", aGroup.Size()
+print("size", aGroup.Size())
 
 # check of emptiness
-print "is empty", aGroup.IsEmpty()
+print("is empty", aGroup.IsEmpty())
 
 # check of presence of an entity in the group
 aGroup.Add([1,2]) # Add() method is specific to the standalone group
-print "contains node 2", aGroup.Contains(2)
+print("contains node 2", aGroup.Contains(2))
 
 # get an entity by index
-print "1st node", aGroup.GetID(1)
+print("1st node", aGroup.GetID(1))
 
 # get all entities
-print "all", aGroup.GetIDs()
+print("all", aGroup.GetIDs())
 
 # get number of nodes (actual for groups of elements)
-print "nb nodes", aGroup.GetNumberOfNodes()
+print("nb nodes", aGroup.GetNumberOfNodes())
 
 # get underlying nodes (actual for groups of elements)
-print "nodes", aGroup.GetNodeIDs()
+print("nodes", aGroup.GetNodeIDs())
 
 # set/get color
 import SALOMEDS
 aGroup.SetColor( SALOMEDS.Color(1.,1.,0.));
-print "color", aGroup.GetColor()
+print("color", aGroup.GetColor())
 
 # ----------------------------------------------------------------------------
 # methods specific to the standalone group and not present in GroupOnGeometry

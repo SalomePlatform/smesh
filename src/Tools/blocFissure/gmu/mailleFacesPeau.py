@@ -2,15 +2,15 @@
 
 import logging
 
-from geomsmesh import geompy
-from geomsmesh import geomPublish
-from geomsmesh import geomPublishInFather
-import initLog
-from geomsmesh import smesh
+from .geomsmesh import geompy
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+from . import initLog
+from .geomsmesh import smesh
 from salome.smesh import smeshBuilder
 import SMESH
 
-from putName import putName
+from .putName import putName
 
 def mailleFacesPeau(partitionsPeauFissFond, idFillingFromBout, facesDefaut,
                     facesPeaux, edCircPeau, ptCircPeau, gpedgeBord, gpedgeVifs, edFissPeau,

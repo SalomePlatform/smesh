@@ -41,12 +41,12 @@ def fissureGeneraleDlg(context):
   from PyQt5.QtWidgets import QMessageBox
   from PyQt5.QtGui import QPalette
   from PyQt5.QtGui import QColor
-  from fissureGenerale_ui import Ui_Dialog
+  from blocFissure.ihm.fissureGenerale_ui import Ui_Dialog
 
   class fissureGeneraleDialog(QtWidgets.QDialog):
 
     def __init__(self):
-      print "__init__"
+      print("__init__")
       QtWidgets.QDialog.__init__(self)
       # Set up the user interface from Designer.
       self.ui = Ui_Dialog()
@@ -105,7 +105,7 @@ def fissureGeneraleDlg(context):
       self.ui.sb_couronnes.setValue(dico['nbSegRad'])
       self.ui.sb_secteurs.setValue(dico['nbSegCercle'])
       self.ui.dsb_areteFaceFissure.setValue(dico['areteFaceFissure'])
-      if dico.has_key('aretesVives'):
+      if 'aretesVives' in dico:
         self.ui.dsb_aretesVives.setValue(dico['aretesVives'])
       else:
         self.ui.dsb_aretesVives.setValue(0)
@@ -132,12 +132,12 @@ def fissureGeneraleDlg(context):
         l = dico['edgeFissIds']
         for i in l:
           if not isinstance(i, int):
-            print"not isinstance(i, int)"
+            print("not isinstance(i, int)")
             incomplet = True
             edgeFissIdsOK=False
             break
       except:
-        print "except eval"
+        print("except eval")
         incomplet = True
         edgeFissIdsOK=False
       if edgeFissIdsOK:
@@ -170,19 +170,18 @@ def fissureGeneraleDlg(context):
       else:
         self.ui.dsb_areteFaceFissure.setPalette(self.blackPalette)
 
-      print "incomplet: ", incomplet
+      print("incomplet: ", incomplet)
       return incomplet
 
     def fileDefault(self):
       filedef = os.path.expanduser("~/.config/salome/dialogFissureGenerale.dic")
-      print filedef
+      print(filedef)
       return filedef
 
     def writeDefault(self, dico):
       filedef = self.fileDefault()
-      f = open(filedef, 'w')
-      f.write(str(dico))
-      f.close()
+      with open(filedef, 'w') as f:
+          f.write(str(dico))
 
     def genereExemples(self):
       maillageSain      = os.path.join(gmu.pathBloc, 'materielCasTests/CubeAngle.med')
@@ -199,10 +198,10 @@ def fissureGeneraleDlg(context):
     def readValPrec(self):
       filedef = self.fileDefault()
       if os.path.exists(filedef):
-        f = open(filedef, 'r')
-        txt = f.read()
+        with open(filedef, 'r') as f:
+            txt = f.read()
         dico = eval(txt)
-        print dico
+        print(dico)
         self.initDialog(dico)
 
     def resetVal(self):
@@ -211,9 +210,9 @@ def fissureGeneraleDlg(context):
 
     def setLogVerbosity(self, logfile):
       from blocFissure.gmu import initLog # le mode de log s'initialise une seule fois
-      print "setLogVerbosity"
+      print("setLogVerbosity")
       index = self.ui.cb_log.currentIndex()
-      print index
+      print(index)
       if index == 0:
         initLog.setRelease(logfile)
       elif index == 1:
@@ -223,24 +222,23 @@ def fissureGeneraleDlg(context):
 
 
     def sauver(self):
-      print "sauver"
+      print("sauver")
       fileDiag = QFileDialog(self)
       fileDiag.setFileMode(QFileDialog.AnyFile)
       fileDiag.setNameFilter("Parametres *.dic (*.dic)")
       fileDiag.setViewMode(QFileDialog.List)
       if fileDiag.exec_() :
         fileNames = fileDiag.selectedFiles()
-        print fileNames
+        print(fileNames)
         filedef = fileNames[0]
         if filedef[-4:] not in ['.dic']:
           filedef += '.dic'
         dico = self.creeDico()
-        f = open(filedef, 'w')
-        f.write(str(dico))
-        f.close()
+        with open(filedef, 'w') as f:
+          f.write(str(dico))
 
     def recharger(self):
-      print "recharger"
+      print("recharger")
       fileDiag = QFileDialog(self)
       fileDiag.setFileMode(QFileDialog.ExistingFile)
       fileDiag.setNameFilter("Parametres *.dic (*.dic)")
@@ -248,12 +246,12 @@ def fissureGeneraleDlg(context):
       if fileDiag.exec_() :
         fileNames = fileDiag.selectedFiles()
         filedef = fileNames[0]
-        print filedef
+        print(filedef)
         if os.path.exists(filedef):
-          f = open(filedef, 'r')
-          txt = f.read()
+          with open(filedef, 'r') as f:
+            txt = f.read()
           dico = eval(txt)
-          print dico
+          print(dico)
           self.initDialog(dico)
 
     def selectMaillage(self):
@@ -264,7 +262,7 @@ def fissureGeneraleDlg(context):
       if fileDiag.exec_() :
         fileNames = fileDiag.selectedFiles()
         filedef = fileNames[0]
-        print filedef
+        print(filedef)
         self.ui.le_maillage.setText(filedef)
 
     def selectFacefiss(self):
@@ -275,7 +273,7 @@ def fissureGeneraleDlg(context):
       if fileDiag.exec_() :
         fileNames = fileDiag.selectedFiles()
         filedef = fileNames[0]
-        print filedef
+        print(filedef)
         self.ui.le_facefiss.setText(filedef)
 
     def selectReptrav(self):
@@ -286,7 +284,7 @@ def fissureGeneraleDlg(context):
       if fileDiag.exec_() :
         fileNames = fileDiag.selectedFiles()
         reptrav = str(fileNames[0])
-        print "reptrav ", reptrav
+        print("reptrav ", reptrav)
         self.ui.le_reptrav.setText(os.path.abspath(reptrav))
 
 
@@ -302,7 +300,7 @@ def fissureGeneraleDlg(context):
       if fileDiag.exec_() :
         fileNames = fileDiag.selectedFiles()
         tempnom = os.path.split(str(fileNames[0]))[1]
-        print "nomres ", tempnom
+        print("nomres ", tempnom)
         self.ui.le_nomres.setText(tempnom)
       else:
         self.ui.le_nomres.setText(nomres)
@@ -324,14 +322,14 @@ def fissureGeneraleDlg(context):
                   nomres           = str(self.ui.le_nomres.text()),
                   verbosite        = self.ui.cb_log.currentIndex()
                   )
-      print dico
+      print(dico)
       return dico
 
     def checkValues(self):
       return self.NOK
 
     def execute(self):
-      print "execute"
+      print("execute")
       dico = self.creeDico()
       NOK = self.testval(dico)
       if not(NOK):
@@ -346,14 +344,14 @@ def fissureGeneraleDlg(context):
         try:
           execInstance = casStandard(dico)
         except fissError as erreur:
-          print '-'*60
-          print type(erreur)
-          print '-'*60
-          print erreur.msg
-          print '-'*60
+          print('-'*60)
+          print(type(erreur))
+          print('-'*60)
+          print(erreur.msg)
+          print('-'*60)
           for ligne in erreur.pile:
-            print repr(ligne)
-          print '-'*60
+            print(repr(ligne))
+          print('-'*60)
           texte = erreur.msg
 #           texte += +"<br>" +'-'*60 +"<br>"
 #           for ligne in erreur.pile:
@@ -372,7 +370,7 @@ def fissureGeneraleDlg(context):
 
 # ----------------------------------------------------------------------------
 
-  print "main"
+  print("main")
   window = fissureGeneraleDialog()
   retry = True
   while(retry):
@@ -381,9 +379,9 @@ def fissureGeneraleDlg(context):
     result = window.result()
     if result:
       # dialog accepted
-      print "dialog accepted, check"
+      print("dialog accepted, check")
       retry = window.checkValues()
     else:
-      print "dialog rejected, exit"
+      print("dialog rejected, exit")
   pass
 

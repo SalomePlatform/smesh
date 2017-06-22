@@ -46,9 +46,9 @@ ff[4] = mesh.AddFace([bb[2], bb[3], tt[3]])
 ff[5] = mesh.AddFace([bb[2], tt[3], tt[2]]) 
 
 # delete the diagonal bb[1] - tt[2]
-print "\nUnite two triangles ... ",
+print("\nUnite two triangles ... ", end=' ')
 res = mesh.DeleteDiag(bb[1], tt[2])
-if not res: print "failed!"
-else:       print "done."
+if not res: print("failed!")
+else:       print("done.")
 
 salome.sg.updateObjBrowser()

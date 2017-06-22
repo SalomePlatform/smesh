@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from geomsmesh import geompy
+from .geomsmesh import geompy
 
 # -----------------------------------------------------------------------------
 # --- calcul de la position d'une shape par rapport à une face (dessus, dessous, sur la surface même)

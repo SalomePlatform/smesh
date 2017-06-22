@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from geomsmesh import geompy
+from .geomsmesh import geompy
 
 # -----------------------------------------------------------------------------
 # --- prolongation des segments extremité des polylines, pour la découpe

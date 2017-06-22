@@ -21,10 +21,10 @@ class Ref:
       seuil=self.maBase.maTableMaillages.getVal(self.idMaillage,"seuilCPU")
       seuilHaut=cpuAvant*(100+seuil)/100.
       if NbSec > seuilHaut  :
-         print "Probleme consommation CPU : "
-         print "         cpu reference : ", cpuAvant
-         print "         seuil         : ", seuil
-         print "         CPU           : ", NbSec
+         print("Probleme consommation CPU : ")
+         print("         cpu reference : ", cpuAvant)
+         print("         seuil         : ", seuil)
+         print("         CPU           : ", NbSec)
          return True
       return False
       
@@ -37,10 +37,10 @@ class Ref:
           seuilHaut=valAvant*(100+seuil)/100.
           seuilBas=valAvant*(100-seuil)/100.
           if (valTrouvee < seuilBas) or (valTrouvee > seuilHaut) :
-             print "Probleme sur le nombre de Mailles de type : ", nomColonne
-             print "         nb reference : ", valAvant
-             print "         seuil        : ", seuil
-             print "         nb           : ", valTrouvee
+             print("Probleme sur le nombre de Mailles de type : ", nomColonne)
+             print("         nb reference : ", valAvant)
+             print("         seuil        : ", seuil)
+             print("         nb           : ", valTrouvee)
              return True
           i=i+1
       return False
@@ -54,10 +54,10 @@ class Ref:
           seuilHaut=valAvant*(100+seuil)/100.
           seuilBas=valAvant*(100-seuil)/100.
           if (valTrouvee < seuilBas) or (valTrouvee > seuilHaut) :
-             print "Probleme sur le nombre de Mailles de type : ", nomColonne
-             print "         nb reference : ", valAvant
-             print "         seuil        : ", seuil
-             print "         nb           : ", valTrouvee
+             print("Probleme sur le nombre de Mailles de type : ", nomColonne)
+             print("         nb reference : ", valAvant)
+             print("         seuil        : ", seuil)
+             print("         nb           : ", valTrouvee)
              return True
           i=i+1
       return False
@@ -75,10 +75,10 @@ class Ref:
           seuilHaut=valAvant*(100+seuil)/100.
           seuilBas=valAvant*(100-seuil)/100.
           if (valTrouvee < seuilBas) or (valTrouvee > seuilHaut) :
-             print "Probleme sur le nombre de Mailles de type : ", nomColonne
-             print "         nb reference : ", valAvant
-             print "         seuil        : ", seuil
-             print "         nb           : ", valTrouvee
+             print("Probleme sur le nombre de Mailles de type : ", nomColonne)
+             print("         nb reference : ", valAvant)
+             print("         seuil        : ", seuil)
+             print("         nb           : ", valTrouvee)
              return True
       return False
 
@@ -94,10 +94,10 @@ class Ref:
           seuilHaut=valAvant*(100+seuil)/100
           seuilBas=valAvant*(100-seuil)/100
           if (valTrouvee < seuilBas) or (valTrouvee > seuilHaut) :
-             print "Probleme sur le nombre de Mailles de type : ", nomColonne, "pour le groupe ", nomGroupe
-             print "         nb reference : ", valAvant
-             print "         seuil        : ", seuil
-             print "         nb           : ", valTrouvee
+             print("Probleme sur le nombre de Mailles de type : ", nomColonne, "pour le groupe ", nomGroupe)
+             print("         nb reference : ", valAvant)
+             print("         seuil        : ", seuil)
+             print("         nb           : ", valTrouvee)
              return True
       return False
 

@@ -1,10 +1,9 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 import sys,os
 import salome
-from getStats import getGroupesRef
-from Type_Maille import dicoDimENtite
+from .getStats import getGroupesRef
+from .Type_Maille import dicoDimENtite
 
 def getCritere(dim,NomMesh,acritere):
   import SMESH

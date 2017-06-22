@@ -3,8 +3,8 @@
 import logging
 import math
 
-from geomsmesh import geompy
-from geomsmesh import smesh
+from .geomsmesh import geompy
+from .geomsmesh import smesh
   
 def calculePointsAxiauxPipe(edgesFondFiss, edgesIdByOrientation, facesDefaut, 
                             centreFondFiss, wireFondFiss, wirePipeFiss,

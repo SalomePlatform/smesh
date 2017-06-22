@@ -6,16 +6,16 @@ Created on Tue Jun 24 09:14:13 2014
 """
 
 import logging
-from geomsmesh import geompy
-from geomsmesh import smesh
-from geomsmesh import geomPublish
-from geomsmesh import geomPublishInFather
-import initLog
+from .geomsmesh import geompy
+from .geomsmesh import smesh
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+from . import initLog
 import GEOM
 import SMESH
 
-from listOfExtraFunctions import createNewMeshesFromCorner
-from listOfExtraFunctions import createLinesFromMesh
+from .listOfExtraFunctions import createNewMeshesFromCorner
+from .listOfExtraFunctions import createLinesFromMesh
 
 # -----------------------------------------------------------------------------
 # --- groupe de quadrangles de face transformé en face géométrique par filling

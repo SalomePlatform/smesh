@@ -223,7 +223,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     #myStudy.IsStudyLocked()
     myComponent = myStudy.FindComponent(name)
     if myComponent == None:
-      print "myComponent not found, create"
+      print("myComponent not found, create")
       myComponent = myBuilder.NewComponent(name)
     AName = myBuilder.FindOrCreateAttribute(myComponent, "AttributeName")
     AName.SetValue(name)
@@ -238,7 +238,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
 
     if salome.sg.hasDesktop(): salome.sg.updateObjBrowser()
     self.num += 1
-    if verbose: print("save %s in Object Browser done: %s\n%s" % (name, myObject.GetID(), datai))
+    if verbose: print(("save %s in Object Browser done: %s\n%s" % (name, myObject.GetID(), datai)))
     return True
 
   def PBSaveHypPressed(self):
@@ -275,7 +275,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     
     if salome.sg.hasDesktop(): salome.sg.updateObjBrowser()
     self.num += 1
-    if verbose: print("save %s in Object Browser done:\n%s" % (name, data))
+    if verbose: print(("save %s in Object Browser done:\n%s" % (name, data)))
     return True
 
   def SP_toStr(self, widget):
@@ -413,7 +413,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     if fd.exec_():
       infile = fd.selectedFiles()[0]
       self.LE_MeshFile.setText(infile)
-      self.fichierIn=unicode(infile).encode("latin-1")
+      self.fichierIn=str(infile).encode("latin-1")
       self.MeshIn=""
       self.LE_MeshSmesh.setText("")
 
@@ -422,7 +422,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     if fd.exec_():
       infile = fd.selectedFiles()[0]
       self.LE_ParamsFile.setText(infile)
-      self.paramsFile=unicode(infile).encode("latin-1")
+      self.paramsFile=str(infile).encode("latin-1")
 
   def meshFileNameChanged(self):
     self.fichierIn=str(self.LE_MeshFile.text())
@@ -504,7 +504,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
       except:
         pass
       
-    style = unicode(self.style).encode("latin-1")
+    style = str(self.style).encode("latin-1")
     # Translation of old Yams options to new MG-SurfOpt options
     if   style == "0" :
       self.commande+= " --optimisation only"
@@ -543,7 +543,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     self.commande+=" --in "  + self.fichierIn
     self.commande+=" --out " + self.fichierOut
     
-    print self.commande
+    print(self.commande)
     return True
 
   def clean(self):

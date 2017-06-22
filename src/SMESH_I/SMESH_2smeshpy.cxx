@@ -185,7 +185,7 @@ namespace {
     _AString comment;
 
     _pyID obj = cmd->GetObject();
-    if ( obj.Search( "print " ) == 1 )
+    if ( obj.Search( "print(" ) == 1 )
       return; // print statement
 
     if ( !obj.IsEmpty() && obj.Value( obj.Length() ) == ')' )
@@ -683,7 +683,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
       _AString newCmd = indent + tab + ( aCommand->GetString().ToCString() + indent.Length() );
       _AString pasCmd = indent + tab + "pass"; // to keep valid if newCmd is erased
       _AString excStr = indent + "except:";
-      _AString msgStr = indent + "\tprint '"; msgStr += method + "() failed. Invalid file name?'";
+      _AString msgStr = indent + "\tprint('"; msgStr += method + "() failed. Invalid file name?')";
 
       myCommands.insert( --myCommands.end(), new _pyCommand( tryStr, myNbCommands ));
       aCommand->Clear();

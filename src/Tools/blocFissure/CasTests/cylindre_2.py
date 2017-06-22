@@ -10,7 +10,7 @@ import SALOMEDS
 import SMESH
 import logging
 
-from cylindre import cylindre
+from .cylindre import cylindre
 
 from blocFissure.gmu.triedreBase import triedreBase
 from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut

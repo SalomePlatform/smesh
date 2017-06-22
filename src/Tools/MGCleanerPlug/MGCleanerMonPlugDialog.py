@@ -249,7 +249,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     #myStudy.IsStudyLocked()
     myComponent = myStudy.FindComponent(name)
     if myComponent == None:
-      print "myComponent not found, create"
+      print("myComponent not found, create")
       myComponent = myBuilder.NewComponent(name)
     AName = myBuilder.FindOrCreateAttribute(myComponent, "AttributeName")
     AName.SetValue(name)
@@ -264,7 +264,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
 
     if salome.sg.hasDesktop(): salome.sg.updateObjBrowser()
     self.num += 1
-    if verbose: print("save %s in Object Browser done: %s\n%s" % (name, myObject.GetID(), datai))
+    if verbose: print(("save %s in Object Browser done: %s\n%s" % (name, myObject.GetID(), datai)))
     return True
 
   def PBSaveHypPressed(self):
@@ -307,7 +307,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
 
     if salome.sg.hasDesktop(): salome.sg.updateObjBrowser()
     self.num += 1
-    if verbose: print("save %s in Object Browser done:\n%s" % (name, data))
+    if verbose: print(("save %s in Object Browser done:\n%s" % (name, data)))
     return True
 
   def SP_toStr(self, widget):
@@ -454,7 +454,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     if fd.exec_():
       infile = fd.selectedFiles()[0]
       self.LE_MeshFile.setText(infile)
-      self.fichierIn=unicode(infile).encode("latin-1")
+      self.fichierIn=str(infile).encode("latin-1")
       self.MeshIn=""
       self.LE_MeshSmesh.setText("")
 
@@ -463,7 +463,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     if fd.exec_():
       infile = fd.selectedFiles()[0]
       self.LE_ParamsFile.setText(infile)
-      self.paramsFile=unicode(infile).encode("latin-1")
+      self.paramsFile=str(infile).encode("latin-1")
 
   def meshFileNameChanged(self):
     self.fichierIn=str(self.LE_MeshFile.text())
@@ -585,7 +585,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     if not self.CB_ComputedOverlapDistance.isChecked(): #computed default
       self.commande+=" --overlap_distance " + self.SP_toStr(self.SP_OverlapDistance)
     self.commande+=" --overlap_angle " + str(self.SP_OverlapAngle.value())
-    if verbose: print("INFO: MGCCleaner command:\n  %s" % self.commande)
+    if verbose: print(("INFO: MGCCleaner command:\n  %s" % self.commande))
     return True
 
   def clean(self):

@@ -37,22 +37,22 @@ idcomp = SMESH_fixation.idcomp
 geompy = SMESH_fixation.geompy
 salome = SMESH_fixation.salome
 
-print "Analysis of the geometry to be meshed :"
+print("Analysis of the geometry to be meshed :")
 subShellList = geompy.SubShapeAll(compshell, geompy.ShapeType["SHELL"])
 subFaceList  = geompy.SubShapeAll(compshell, geompy.ShapeType["FACE"])
 subEdgeList  = geompy.SubShapeAll(compshell, geompy.ShapeType["EDGE"])
 
-print "number of Shells in compshell : ", len(subShellList)
-print "number of Faces  in compshell : ", len(subFaceList)
-print "number of Edges  in compshell : ", len(subEdgeList)
+print("number of Shells in compshell : ", len(subShellList))
+print("number of Faces  in compshell : ", len(subFaceList))
+print("number of Edges  in compshell : ", len(subEdgeList))
 
 status = geompy.CheckShape(compshell)
-print " check status ", status
+print(" check status ", status)
 
 ### ---------------------------- SMESH --------------------------------------
 smesh.UpdateStudy()
 
-print "-------------------------- create Mesh, algorithm, hypothesis"
+print("-------------------------- create Mesh, algorithm, hypothesis")
 
 mesh = smesh.Mesh(compshell, "MeshcompShel");
 netgen = mesh.Tetrahedron(smeshBuilder.FULL_NETGEN)
@@ -61,19 +61,19 @@ netgen.SetMaxSize( 50 )
 netgen.SetFineness( smeshBuilder.Fine )
 #netgen.SetOptimize( 1 )
 
-print "-------------------------- compute mesh"
+print("-------------------------- compute mesh")
 ret = mesh.Compute()
-print ret
+print(ret)
 if ret != 0:
-    print "Information about the MeshcompShel:"
-    print "Number of nodes        : ", mesh.GetMesh().NbNodes()
-    print "Number of edges        : ", mesh.GetMesh().NbEdges()
-    print "Number of faces        : ", mesh.GetMesh().NbFaces()
-    print "Number of triangles    : ", mesh.GetMesh().NbTriangles()
-    print "Number of volumes      : ", mesh.GetMesh().NbVolumes()
-    print "Number of tetrahedrons : ", mesh.GetMesh().NbTetras()
+    print("Information about the MeshcompShel:")
+    print("Number of nodes        : ", mesh.GetMesh().NbNodes())
+    print("Number of edges        : ", mesh.GetMesh().NbEdges())
+    print("Number of faces        : ", mesh.GetMesh().NbFaces())
+    print("Number of triangles    : ", mesh.GetMesh().NbTriangles())
+    print("Number of volumes      : ", mesh.GetMesh().NbVolumes())
+    print("Number of tetrahedrons : ", mesh.GetMesh().NbTetras())
     
 else:
-    print "problem when computing the mesh"
+    print("problem when computing the mesh")
 
 salome.sg.updateObjBrowser()

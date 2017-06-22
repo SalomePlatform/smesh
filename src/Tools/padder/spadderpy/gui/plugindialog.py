@@ -22,10 +22,10 @@
 
 from qtsalome import QDialog, QIcon, Qt
 
-from plugindialog_ui import Ui_PluginDialog
-from inputdialog import InputDialog, INPUTDATA_KEY_FILES, INPUTDATA_KEY_PARAM
-from inputdialog import PARAM_KEY_NBITER, PARAM_KEY_RMAXRMIN
-from inputdata import InputData
+from salome.smesh.spadder.gui.plugindialog_ui import Ui_PluginDialog
+from salome.smesh.spadder.gui.inputdialog import InputDialog, INPUTDATA_KEY_FILES, INPUTDATA_KEY_PARAM
+from salome.smesh.spadder.gui.inputdialog import PARAM_KEY_NBITER, PARAM_KEY_RMAXRMIN
+from salome.smesh.spadder.gui.inputdata import InputData
 # __GBO__: uncomment this line and comment the previous one to use the
 # demo input dialog instead of the real one.
 #from demoinputdialog import InputDialog
@@ -87,7 +87,7 @@ class PluginDialog(QDialog):
         self.__ui.btnClear.setIcon(icon)
 
         # Then, we can connect the slot to there associated button event
-	self.__ui.btnInput.clicked.connect( self.onInput )
+        self.__ui.btnInput.clicked.connect( self.onInput )
         self.__ui.btnCompute.clicked.connect( self.onCompute )
         self.__ui.btnRefresh.clicked.connect( self.onRefresh )
         self.__ui.btnPublish.clicked.connect( self.onPublish )
@@ -140,7 +140,7 @@ class PluginDialog(QDialog):
                 self.__inputDialog.windowFlags() | Qt.WindowStaysOnTopHint)
             # The signal inputValidated emitted from inputDialog is
             # connected to the slot function onProcessInput:
-    	    self.__inputDialog.inputValidated.connect( self.onProcessInput )
+            self.__inputDialog.inputValidated.connect( self.onProcessInput )
 
         else:
             self.__ui.frameInput.setVisible(True)
@@ -179,7 +179,7 @@ class PluginDialog(QDialog):
         servant. Note that the component is loaded on first demand,
         and then the reference is recycled.
         """
-        if self.__dict__.has_key("__jobManager") and self.__jobManager is not None:
+        if "__jobManager" in self.__dict__ and self.__jobManager is not None:
             return self.__jobManager
 
         # WARN: we first have to update the SALOME components catalog
@@ -294,7 +294,7 @@ class PluginDialog(QDialog):
         # And to create a list of the additional parameters.
         # WARN: the CORBA interface requires string values.
         meshJobParameterList=[]
-        for inputParameterKey in self.__dictInputParameters.keys():
+        for inputParameterKey in self.__dictInputParameters:
             value = self.__dictInputParameters[inputParameterKey]
             parameter = MESHJOB.MeshJobParameter(name=inputParameterKey,value=str(value))
             meshJobParameterList.append(parameter)
@@ -417,6 +417,3 @@ def TEST_PluginDialog():
 
 if __name__ == "__main__":
     TEST_PluginDialog()
-
-
-

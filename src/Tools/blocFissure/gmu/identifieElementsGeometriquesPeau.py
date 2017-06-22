@@ -2,11 +2,11 @@
 
 import logging
 
-from identifieElementsFissure import identifieElementsFissure
-from identifieElementsDebouchants import identifieElementsDebouchants
-from trouveEdgesFissPeau import trouveEdgesFissPeau
-from identifieFacesPeau import identifieFacesPeau
-from identifieEdgesPeau import identifieEdgesPeau
+from .identifieElementsFissure import identifieElementsFissure
+from .identifieElementsDebouchants import identifieElementsDebouchants
+from .trouveEdgesFissPeau import trouveEdgesFissPeau
+from .identifieFacesPeau import identifieFacesPeau
+from .identifieEdgesPeau import identifieEdgesPeau
 
 def identifieElementsGeometriquesPeau(ifil, partitionPeauFissFond, edgesPipeFiss,
                                       edgesFondFiss, wireFondFiss, aretesVivesC,

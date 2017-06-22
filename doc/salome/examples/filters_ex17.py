@@ -20,4 +20,4 @@ mesh.TranslateObject( mesh, [10,0,0], Copy=True )
 # create  a filter to find nodes equal within tolerance of 1e-5
 filter = smesh.GetFilter(SMESH.NODE, SMESH.FT_EqualNodes, Tolerance=1e-5)
 # get equal nodes
-print "Number of equal nodes:", len( mesh.GetIdsFromFilter( filter ))
+print("Number of equal nodes:", len( mesh.GetIdsFromFilter( filter )))

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from geomsmesh import geompy
+from .geomsmesh import geompy
 
 # -----------------------------------------------------------------------------
 # --- substract a list of subShapes from another
@@ -17,7 +17,7 @@ def substractSubShapes(obj, subs, toRemove):
     idToremove[geompy.GetSubShapeID(obj, s)] = s
   for s in subs:
     idsub = geompy.GetSubShapeID(obj, s)
-    if idsub not in idToremove.keys():
+    if idsub not in list(idToremove.keys()):
       subList.append(s)
   logging.debug("subList=%s", subList)
   return subList

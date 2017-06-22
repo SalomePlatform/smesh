@@ -34,17 +34,17 @@ aFilter = smesh.GetFilter(SMESH.FACE, SMESH.FT_MultiConnection2D, SMESH.FT_Equal
 anIds = mesh.GetIdsFromFilter(aFilter) 
 
 # print the result
-print "Criterion: Borders at multi-connection 2D = ", nb_conn, " Nb = ", len(anIds)
+print("Criterion: Borders at multi-connection 2D = ", nb_conn, " Nb = ", len(anIds))
 j = 1
 for i in range(len(anIds)):
-  if j > 20: j = 1; print ""
-  print anIds[i],
+  if j > 20: j = 1; print("")
+  print(anIds[i], end=' ')
   j = j + 1
   pass
-print ""
+print("")
 
 # create a group
-aGroup = mesh.CreateEmptyGroup(SMESH.FACE, "Borders at multi-connection 2D = " + `nb_conn`)
+aGroup = mesh.CreateEmptyGroup(SMESH.FACE, "Borders at multi-connection 2D = " + repr(nb_conn))
 aGroup.Add(anIds)
 
 salome.sg.updateObjBrowser()

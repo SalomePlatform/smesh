@@ -33,17 +33,17 @@ aFilter = smesh.GetFilter(SMESH.EDGE, SMESH.FT_Length, SMESH.FT_MoreThan, length
 anIds = mesh.GetIdsFromFilter(aFilter) 
 
 # print the result
-print "Criterion: Edges length > ", length_margin, " Nb = ", len(anIds)
+print("Criterion: Edges length > ", length_margin, " Nb = ", len(anIds))
 j = 1
 for i in range(len(anIds)):
-  if j > 20: j = 1; print ""
-  print anIds[i],
+  if j > 20: j = 1; print("")
+  print(anIds[i], end=' ')
   j = j + 1
   pass
-print ""
+print("")
 
 # create a group
-aGroup = mesh.GetMesh().CreateGroup(SMESH.EDGE, "Edges with length > " + `length_margin`)
+aGroup = mesh.GetMesh().CreateGroup(SMESH.EDGE, "Edges with length > " + repr(length_margin))
 aGroup.Add(anIds)
 
 salome.sg.updateObjBrowser()

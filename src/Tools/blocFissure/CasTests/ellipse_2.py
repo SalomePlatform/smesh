@@ -13,7 +13,7 @@ import SMESH
 #import NETGENPlugin
 import logging
 
-from ellipse_1 import ellipse_1
+from .ellipse_1 import ellipse_1
 
 from blocFissure.gmu.triedreBase import triedreBase
 from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut

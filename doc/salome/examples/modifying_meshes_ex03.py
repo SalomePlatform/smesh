@@ -48,5 +48,5 @@ res = mesh.Add0DElementsToAllNodes( mesh.GetElementsId() )
 mesh.RemoveElements( mesh.GetElementsByType( SMESH.ELEM0D ))
 
 # create 0D elements on some nodes
-nodes = range(1,10)
+nodes = list(range(1,10))
 res = mesh.Add0DElementsToAllNodes( mesh.GetIDSource( nodes, SMESH.NODE ))

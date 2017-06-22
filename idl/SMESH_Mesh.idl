@@ -340,7 +340,7 @@ module SMESH
   typedef sequence<SMESH_subMesh>     submesh_array;
   typedef sequence<submesh_array>     submesh_array_array;
 
-  interface SMESH_Mesh : SALOME::GenericObj, SMESH_IDSource
+  interface SMESH_Mesh : SMESH_IDSource
   {
     /*!
      * Return true if there is a geometry to be meshed
@@ -1017,7 +1017,7 @@ module SMESH
     string_array GetLastParameters();
   };
 
-  interface SMESH_subMesh : SALOME::GenericObj, SMESH_IDSource
+  interface SMESH_subMesh : SMESH_IDSource
   {
     /*!
      *

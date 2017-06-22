@@ -29,6 +29,7 @@
  \brief Module smesh
 """
 
+import inspect
 import salome
 from salome import *
 
@@ -44,12 +45,12 @@ try:
     engineSmesh = salome.lcc.FindOrLoadComponent( "FactoryServer", "SMESH" )
     smesh = smeshBuilder.New(True,engineSmesh)
 except:
-    print "exception in smesh.py: instance creation failed"
+    print("exception in smesh.py: instance creation failed")
     smesh = None
     pass
 
 # load plugins and add dynamically generated methods to Mesh class,
-# the same for for global variables declared by plug-ins
+# the same for global variables declared by plug-ins
 from salome.smesh.smeshBuilder import *
 from salome.smesh.smeshBuilder import Mesh, algoCreator
 for pluginName in os.environ[ "SMESH_MeshersList" ].split( ":" ):
@@ -58,9 +59,9 @@ for pluginName in os.environ[ "SMESH_MeshersList" ].split( ":" ):
     pluginBuilderName = pluginName + "Builder"
     try:
         exec( "from salome.%s.%s import *" % (pluginName, pluginBuilderName))
-    except Exception, e:
+    except Exception as e:
         from salome_utils import verbose
-        if verbose(): print "Exception while loading %s: %s" % ( pluginBuilderName, e )
+        if verbose(): print("Exception while loading %s: %s" % ( pluginBuilderName, e ))
         continue
     exec( "from salome.%s import %s" % (pluginName, pluginBuilderName))
     plugin = eval( pluginBuilderName )
@@ -69,7 +70,7 @@ for pluginName in os.environ[ "SMESH_MeshersList" ].split( ":" ):
     for k in dir( plugin ):
         if k[0] == '_': continue
         algo = getattr( plugin, k )
-        if type( algo ).__name__ == 'classobj' and hasattr( algo, "meshMethod" ):
+        if inspect.isclass(algo) and hasattr(algo, "meshMethod"):
             if not hasattr( Mesh, algo.meshMethod ):
                 setattr( Mesh, algo.meshMethod, algoCreator() )
                 pass
@@ -82,12 +83,12 @@ del pluginName
 # export the methods of smeshBuilder
 if smesh:
     for k in dir( smesh ):
-	if k[0] == '_': continue
-	globals()[k] = getattr( smesh, k )
+        if k[0] == '_': continue
+        globals()[k] = getattr( smesh, k )
     del k
     pass
 
-print """
+print("""
 ===============================================================================
 WARNING:
 Usage of smesh.py is deprecated in SALOME V7.2!
@@ -95,7 +96,7 @@ smesh.py will be removed in a future version!
 TODO:
 The following changes in your scripts are required to avoid this message:
 
-replace 
+replace
 -------
 
 import smesh, SMESH
@@ -109,7 +110,7 @@ smesh = smeshBuilder.New()
 
 you also need to modify some lines where smeshBuilder is used instead of smesh
 
-algo=smesh.xxxx  ==> algo=smeshBuilder.xxxx 
+algo=smesh.xxxx  ==> algo=smeshBuilder.xxxx
 
 See also SMESH User's Guide for more details
 
@@ -118,4 +119,4 @@ The smesh.py module works correctly only in the first created study.
 It does not work in the second, third, etc studies!
 
 ===============================================================================
-"""
+""")

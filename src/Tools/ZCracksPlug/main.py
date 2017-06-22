@@ -5,11 +5,11 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-import utilityFunctions as uF
-import genereCrack, Zset, output, zcracks_ui
+from . import utilityFunctions as uF
+from . import genereCrack, Zset, output, zcracks_ui
 
-from output import message, init
-from zcracks_ui import Ui_Zui
+from .output import message, init
+from .zcracks_ui import Ui_Zui
 
 
 #  ---------------------
@@ -21,7 +21,7 @@ def stringToFloat(string, typ=float):
   if str(string).replace(' ','')=='':
     out=[]
   else:
-    out=map(typ, str(string).split())
+    out=list(map(typ, str(string).split()))
   return(out)
 
 def addExtension(string, extension):
@@ -266,10 +266,10 @@ class ShipHolderApplication(QGroupBox):
         else:
           obj.setText(self.data[self.lineEditNames[cont]])
 
-      self.ui.CBQuad.setChecked(True if 'quad' in self.data.keys() and self.data['quad'] else False)
-      self.ui.CBBarsoum.setChecked(True if 'barsoum' in self.data.keys() and self.data['barsoum'] else False)
-      self.ui.CBIs2D.setChecked(True if 'is2D' in self.data.keys() and self.data['is2D'] else False)
-      self.ui.CBRefine.setChecked(True if 'refine' in self.data.keys() and self.data['refine'] else False)
+      self.ui.CBQuad.setChecked(True if 'quad' in list(self.data.keys()) and self.data['quad'] else False)
+      self.ui.CBBarsoum.setChecked(True if 'barsoum' in list(self.data.keys()) and self.data['barsoum'] else False)
+      self.ui.CBIs2D.setChecked(True if 'is2D' in list(self.data.keys()) and self.data['is2D'] else False)
+      self.ui.CBRefine.setChecked(True if 'refine' in list(self.data.keys()) and self.data['refine'] else False)
 
       self.setTableParameters()
 
@@ -337,10 +337,10 @@ class ShipHolderApplication(QGroupBox):
       if not test2:
         message('A','No mesh file to visualize')
       else:
-        print medit+' %s' %meshFile2
+        print(medit+' %s' %meshFile2)
         system(medit+' %s' %meshFile2)
     else:
-      print medit+' %s' %meshFile1
+      print(medit+' %s' %meshFile1)
       system(medit+' %s' %meshFile1)
     return()
 

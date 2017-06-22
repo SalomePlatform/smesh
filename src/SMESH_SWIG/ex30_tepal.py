@@ -76,7 +76,6 @@ algo3d.SetMEDName(results)
 algo3d.SetNbPart(4)
 algo3d.SetBackground(False)
 algo3d.SetKeepFiles(False)
-algo3d.SetToMeshHoles(True)
 
 # Launch meshers
 # --------------
@@ -87,9 +86,9 @@ status = m.Compute()
 # ----------
 
 if os.access(results+".xml", os.F_OK):
-    print "Ok: tepal"
+    print("Ok: tepal")
 else:
-    print "KO: tepal"
+    print("KO: tepal")
 
 # Update object browser
 # ---------------------

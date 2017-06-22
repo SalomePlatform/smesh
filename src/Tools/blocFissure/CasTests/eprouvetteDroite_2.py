@@ -13,7 +13,7 @@ import SMESH
 #import NETGENPlugin
 import logging
 
-from eprouvetteDroite import eprouvetteDroite
+from .eprouvetteDroite import eprouvetteDroite
 
 from blocFissure.gmu.triedreBase import triedreBase
 from blocFissure.gmu.genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut

@@ -1,7 +1,7 @@
 
 from Zcracks import genereCrack, Zset
 from Zcracks import utilityFunctions as uF
-import genereCube
+from . import genereCube
 
 from math import sqrt
 
@@ -19,7 +19,7 @@ import string
 #tmpdir = "/local00/home/B27118/projets/Zcracks/Zcracks/casTests/tmpdir"
 #if not os.path.isdir(tmpdir): os.mkdir(tmpdir)
 tmpdir=tempfile.mkdtemp(prefix='tmpZcracks')
-print "tmpdir=", tmpdir
+print("tmpdir=", tmpdir)
 
 #meshgemsdir=os.environ('MESHGEMSHOME')
 #if len(meshgemsdir) > 0:
@@ -27,7 +27,7 @@ print "tmpdir=", tmpdir
   #uF.removeFromSessionPath('LD_LIBRARY_PATH', meshgems)
 
 def LAUNCH(listCas=[]):
-  if type(listCas)!=list: listCas=[listCas]
+  if not isinstance(listCas, list): listCas=[listCas]
 
   N=20
   L=1.
@@ -194,18 +194,18 @@ def LAUNCH(listCas=[]):
 
   OK=[]
   NOOK=[]
-  for s in synthese.keys():
+  for s in synthese:
     if synthese[s]:
       OK.append(s)
     else:
       NOOK.append(s)
 
-  print 'OK:'
-  print OK
-  print ' '
-  print 'NOOK:'
-  print NOOK
-  print ' '
+  print('OK:')
+  print(OK)
+  print(' ')
+  print('NOOK:')
+  print(NOOK)
+  print(' ')
 
   return(synthese)
 

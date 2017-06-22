@@ -67,45 +67,45 @@ smesh.UpdateStudy()
 box = salome.IDToObject(idb)
 mesh = smesh.Mesh(box, "Meshbox")
 
-print "-------------------------- add hypothesis to box"
+print("-------------------------- add hypothesis to box")
 
 algo_1 = mesh.Segment(box)
 hyp = algo_1.LocalLength(100)
-print hyp.GetName()
-print hyp.GetId()
-print hyp.GetLength()
+print(hyp.GetName())
+print(hyp.GetId())
+print(hyp.GetLength())
 
 algo_2 = mesh.Triangle(smeshBuilder.MEFISTO, box)
 hyp = algo_2.MaxElementArea(5000)
-print hyp.GetName()
-print hyp.GetId()
-print hyp.GetMaxElementArea()
+print(hyp.GetName())
+print(hyp.GetId())
+print(hyp.GetMaxElementArea())
 
 smesh.SetName(algo_2.GetSubMesh(), "SubMeshBox")
 
 
-print "-------------------------- add hypothesis to edge"
+print("-------------------------- add hypothesis to edge")
 
 edge = salome.IDToObject(ide)
 
 algo_3 = mesh.Segment(edge)
 hyp = algo_3.LocalLength(100)
-print hyp.GetName()
-print hyp.GetId()
-print hyp.GetLength()
+print(hyp.GetName())
+print(hyp.GetId())
+print(hyp.GetLength())
 
 smesh.SetName(algo_3.GetSubMesh(), "SubMeshEdge")
 
 
-print "-------------------------- compute face"
+print("-------------------------- compute face")
 
 face = salome.IDToObject(idf)
 
 ret = mesh.Compute(face)
-print ret
+print(ret)
 log = mesh.GetLog(0) # 0 - GetLog without ClearLog after, else if 1 - ClearLog after
 for a in log:
-    print "-------"
+    print("-------")
     ii = 0
     ir = 0
     comType = a.commandType
@@ -119,7 +119,7 @@ for a in log:
             ir = ir+1
             r3 = a.coords[ir]
             ir = ir+1
-            print "AddNode %i - %g %g %g" % (ind, r1, r2, r3)
+            print("AddNode %i - %g %g %g" % (ind, r1, r2, r3))
     elif comType == 1:
         for i in range(a.number):
             ind = a.indexes[ii]
@@ -128,23 +128,23 @@ for a in log:
             ii = ii+1
             i2 = a.indexes[ii]
             ii = ii+1
-            print "AddEdge %i - %i %i" % (ind, i1, i2)
+            print("AddEdge %i - %i %i" % (ind, i1, i2))
     elif comType == 2:
         for i in range(a.number):
             ind = a.indexes[ii]
-	    print ind
+            print(ind)
             ii = ii+1
-	    print ii
+            print(ii)
             i1 = a.indexes[ii]
             ii = ii+1
             i2 = a.indexes[ii]
-	    print i2
+            print(i2)
             ii = ii+1
-	    print "ii", ii
+            print("ii", ii)
             i3 = a.indexes[ii]
-	    print i3
+            print(i3)
             #ii = ii+1
             ii = ii+1
-            print "AddTriangle %i - %i %i %i" % (ind, i1, i2, i3)
+            print("AddTriangle %i - %i %i %i" % (ind, i1, i2, i3))
 
 salome.sg.updateObjBrowser()

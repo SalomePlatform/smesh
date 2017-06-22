@@ -3,15 +3,15 @@
 import logging
 import math
 
-from geomsmesh import geompy
-from geomsmesh import geomPublish
-from geomsmesh import geomPublishInFather
-import initLog
+from .geomsmesh import geompy
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+from . import initLog
 import traceback
-from fissError import fissError
+from .fissError import fissError
 
-from produitMixte import produitMixte
-from whichSide import whichSide
+from .produitMixte import produitMixte
+from .whichSide import whichSide
   
 def identifieElementsDebouchants(ifil, facesDefaut, partitionPeauFissFond,
                                 edgesFondIn, edgesFondFiss, wireFondFiss,

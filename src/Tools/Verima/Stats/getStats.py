@@ -30,7 +30,7 @@ def getStatsMaillage(maillage,fichierMed):
     for i in range(len(mesures)):
       txt += str(SMESH.EntityType._item(i))+ " " +str(mesures[SMESH.EntityType._item(i)]) + "\n"
 
-    from utiles import writeFile
+    from .utiles import writeFile
     writeFile(fichier,txt)
 
 
@@ -41,7 +41,7 @@ def getStatsGroupes(maillage,fichierMedResult):
   fichierGroupe=fichierMedResult.replace('.med','_groupesRef.res')
   lGroups=getGroupesRef(fichierGroupe)
   if len(lGroups)==0: 
-    print "pas de Groupe de Reference "
+    print("pas de Groupe de Reference ")
     try :
       os.remove(fichierGroupe)
       return
@@ -62,7 +62,7 @@ def getStatsStatSurGroupes(maillage,groupe,fichierStatGroupe):
   import SMESH
   for i in range(len(mesures)):
       txt += str(SMESH.EntityType._item(i))+ " " +str(mesures[SMESH.EntityType._item(i)]) + "\n"
-  from utiles import writeFile
+  from .utiles import writeFile
   writeFile(fichierStatGroupe,txt)
 
 
