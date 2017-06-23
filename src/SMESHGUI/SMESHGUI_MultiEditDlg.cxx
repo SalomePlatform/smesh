@@ -974,18 +974,18 @@ void SMESHGUI_MultiEditDlg::setSelectionMode()
   }
 
   if (entityType()) {
-    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-      aViewWindow->SetSelectionMode(VolumeSelection);
     SMESH::SetFilter(new SMESHGUI_VolumesFilter());
-  } else {
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
-      aViewWindow->SetSelectionMode(FaceSelection);
+      aViewWindow->SetSelectionMode(VolumeSelection); // here myActor set to a filter
+  } else {
     if (myFilterType == SMESH::TriaFilter)
       SMESH::SetFilter(new SMESHGUI_TriangleFilter());
     else if (myFilterType == SMESH::QuadFilter)
       SMESH::SetFilter(new SMESHGUI_QuadrangleFilter());
     else
       SMESH::SetFilter(new SMESHGUI_FacesFilter());
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
+      aViewWindow->SetSelectionMode(FaceSelection); // here myActor set to a filter
   }
 }
 
