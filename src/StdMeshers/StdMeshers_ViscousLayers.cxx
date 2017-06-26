@@ -500,6 +500,7 @@ namespace VISCOUS_3D
     gp_Ax1 LastSegment(double& segLen, _EdgesOnShape& eos) const;
     gp_XY  LastUV( const TopoDS_Face& F, _EdgesOnShape& eos, int which=-1 ) const;
     bool   IsOnEdge() const { return _2neibors; }
+    bool   IsOnFace() const { return ( _nodes[0]->GetPosition()->GetDim() == 2 ); }
     gp_XYZ Copy( _LayerEdge& other, _EdgesOnShape& eos, SMESH_MesherHelper& helper );
     void   SetCosin( double cosin );
     void   SetNormal( const gp_XYZ& n ) { _normal = n; }
@@ -4908,8 +4909,8 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
       _LayerEdge*      edge = eos._edges[i];
       if ( edge->_nodes.size() < 2 ) continue;
       SMESH_TNodeXYZ tgtXYZ = edge->_nodes.back();
-      SMESH_TNodeXYZ prevXYZ = edge->_nodes[0];
-      //gp_XYZ        prevXYZ = edge->PrevCheckPos( &eos );
+      //SMESH_TNodeXYZ prevXYZ = edge->_nodes[0];
+      gp_XYZ        prevXYZ = edge->PrevCheckPos( &eos );
       //const gp_XYZ& prevXYZ = edge->PrevPos();
       for ( size_t j = 0; j < edge->_simplices.size(); ++j )
         if ( !edge->_simplices[j].IsForward( &prevXYZ, &tgtXYZ, vol ))
@@ -7020,9 +7021,10 @@ bool _ViscousBuilder::updateNormals( _SolidData&         data,
     for ( e2neIt = edge2newEdge.begin(); e2neIt != edge2newEdge.end(); ++e2neIt )
     {
       _LayerEdge*    edge = e2neIt->first;
-      if ( edge->Is( _LayerEdge::BLOCKED )) continue;
       _LayerEdge& newEdge = e2neIt->second;
       _EdgesOnShape*  eos = data.GetShapeEdges( edge );
+      if ( edge->Is( _LayerEdge::BLOCKED && newEdge._maxLen > edge->_len ))
+        continue;
 
       // Check if a new _normal is OK:
       newEdge._normal.Normalize();
@@ -7929,7 +7931,7 @@ bool _LayerEdge::FindIntersection( SMESH_ElementSearcher&   searcher,
 
 gp_XYZ _LayerEdge::PrevCheckPos( _EdgesOnShape* eos ) const
 {
-  size_t i = Is( NORMAL_UPDATED ) ? _pos.size()-2 : 0;
+  size_t i = Is( NORMAL_UPDATED ) && IsOnFace() ? _pos.size()-2 : 0;
 
   if ( !eos || eos->_sWOL.IsNull() )
     return _pos[ i ];
@@ -9489,7 +9491,7 @@ void _LayerEdge::Block( _SolidData& data )
         {
           _EdgesOnShape* eos = data.GetShapeEdges( neibor );
           while ( neibor->_len > neibor->_maxLen &&
-                  neibor->NbSteps() > 1 )
+                  neibor->NbSteps() > 0 )
             neibor->InvalidateStep( neibor->NbSteps(), *eos, /*restoreLength=*/true );
           neibor->SetNewLength( neibor->_maxLen, *eos, data.GetHelper() );
           //neibor->Block( data );
@@ -9541,7 +9543,10 @@ void _LayerEdge::InvalidateStep( size_t curStep, const _EdgesOnShape& eos, bool 
 
     if ( restoreLength )
     {
-      _len -= ( nXYZ.XYZ() - curXYZ ).Modulus() / _lenFactor;
+      if ( NbSteps() == 0 )
+        _len = 0.;
+      else
+        _len -= ( nXYZ.XYZ() - curXYZ ).Modulus() / _lenFactor;
     }
   }
 }
