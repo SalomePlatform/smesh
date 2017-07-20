@@ -163,7 +163,7 @@ bool SMDS_MeshGroup::Remove(const SMDS_MeshElement * theElem)
 
 bool SMDS_MeshGroup::Contains(const SMDS_MeshElement * theElem) const
 {
-        return myElements.find(theElem)!=myElements.end();
+  return myElements.find(theElem) != myElements.end();
 }
 
 //=======================================================================

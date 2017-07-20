@@ -473,8 +473,9 @@ SMESH::long_array* SMESH_GroupBase_i::GetListOfID()
   {
     int aSize = aGroupDS->Extent();
     aRes->length(aSize);
-    for (int i = 0; i < aSize; i++)
-      aRes[i] = aGroupDS->GetID(i+1);
+    SMDS_ElemIteratorPtr it = aGroupDS->GetElements();
+    for (int i = 0; it->more(); i++)
+      aRes[i] = it->next()->GetID();
 
     if ( 0 < aSize && aSize < 100 ) // for comfortable testing ;)
       std::sort( &aRes[0], &aRes[0]+aSize );

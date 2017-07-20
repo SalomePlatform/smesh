@@ -6996,6 +6996,14 @@ It is impossible to read point coordinates from file</translation>
         <source>SMESH_CREATE_GROUP_FROM_GEOM</source>
         <translation>Create Groups from Geometry</translation>
     </message>
+    <message>
+        <source>ELEMENTS</source>
+        <translation>Elements</translation>
+    </message>
+    <message>
+        <source>ELEMENTS_TOOLTIP</source>
+        <translation>No 0D elements</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_MeshOrderDlg</name>

@@ -103,11 +103,12 @@ INPUT             = tmp2/smeshBuilder.py \
                     tmp2/smesh_algorithm.py \
                     tmp2/StdMeshersBuilder.py \
                     tmp2/smeshstudytools.py \
-                    tmp1/smeshBuilder.py
-FILE_PATTERNS     = 
+                    tmp1/smeshBuilder.py \
+                    @CMAKE_CURRENT_SOURCE_DIR@/input
+FILE_PATTERNS     = tui_*.doc
 IMAGE_PATH        = @CMAKE_CURRENT_SOURCE_DIR@/images
 RECURSIVE         = NO
-EXAMPLE_PATH      = @CMAKE_SOURCE_DIR@/src/SMESH_SWIG
+EXAMPLE_PATH      = @CMAKE_SOURCE_DIR@/src/SMESH_SWIG @CMAKE_SOURCE_DIR@/doc/salome/examples
 
 #---------------------------------------------------------------------------
 #HTML related options
@@ -165,3 +166,8 @@ DOT_CLEANUP            = YES
 #---------------------------------------------------------------------------
 GENERATE_TAGFILE  = smeshpy_doc.tag
 SEARCHENGINE           = YES
+
+#---------------------------------------------------------------------------
+#Custom commands
+#---------------------------------------------------------------------------
+ALIASES += tui_script{1}="\include \1 <a href=\"../../examples/SMESH/\1\">Download this script</a>"
