@@ -902,6 +902,8 @@ namespace SMESH{
       bool    GetAllNodes() const { return myAllNodesFlag; }
       void    SetShape (const TopoDS_Shape& theShape,
                         const SMDSAbs_ElementType theType);
+      bool    IsSatisfy (const SMDS_MeshElement* elem);
+      bool    IsSatisfy (const SMDS_MeshNode* node, TopoDS_Shape* okShape=0);
 
     private:
 

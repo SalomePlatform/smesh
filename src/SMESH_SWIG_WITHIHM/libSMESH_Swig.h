@@ -45,8 +45,9 @@
 
 #include <SVTK_Selection.h>
 
-enum
+typedef enum
   {
+    Undefined  = -1,
     Node       = NodeSelection,
     Cell       = CellSelection,
     EdgeOfCell = EdgeOfCellSelection,
@@ -56,7 +57,7 @@ enum
     Actor      = ActorSelection,
     Elem0D     = Elem0DSelection,
     Ball       = BallSelection
-  };
+  } SelectionMode;
 
 typedef struct
 {
@@ -128,8 +129,11 @@ public:
   actorAspect                GetActorAspect(const char* Mesh_Entry, int viewId = 0 );
   void                       SetActorAspect( const actorAspect& actorPres, const char* Mesh_Entry, int viewId = 0  );
 
+  void setSelectionMode( SelectionMode selectionMode );
+  std::vector<int> getSelected( const char* Mesh_Entry );
+
   // --------------------- for the test purposes -----------------------
-  int  getSelectionMode();
+  SelectionMode getSelectionMode();
   void select( const char *id, std::vector<int> ids, bool append = false );
   void select( const char *id, int id1, bool append = false );
 

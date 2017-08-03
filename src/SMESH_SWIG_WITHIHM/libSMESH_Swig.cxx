@@ -50,6 +50,7 @@
 #include <SalomeApp_Application.h>
 #include <LightApp_SelectionMgr.h>
 #include <SVTK_RenderWindowInteractor.h>
+#include <VTKViewer_Algorithm.h>
 
 // OCCT includes
 #include <TopAbs.hxx>
@@ -62,6 +63,10 @@
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Gen)
 #include CORBA_SERVER_HEADER(SMESH_Hypothesis)
+
+// VTK includes
+#include <vtkActorCollection.h>
+#include <vtkRenderer.h>
 
 static CORBA::ORB_var anORB;
 
@@ -870,17 +875,18 @@ public:
   {}
   virtual void Execute()
   {
-    SMESHGUI* aSMESHGUI = SMESHGUI::GetSMESHGUI();
-    if( !aSMESHGUI ) 
-      return;
     
-    LightApp_SelectionMgr* selMgr = SMESH::GetSelectionMgr( aSMESHGUI );
+    LightApp_SelectionMgr* selMgr = 0;
+    SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
+    if( anApp )
+      selMgr = dynamic_cast<LightApp_SelectionMgr*>( anApp->selectionMgr() );
+
     if( !selMgr )
       return;
     
     selMgr->clearFilters();
 
-    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( aSMESHGUI );
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow();
     if(!aViewWindow)
       return;
 
@@ -938,26 +944,106 @@ void SMESH_Swig::select( const char* id, int id1, bool append ) {
 class TGetSelectionModeEvent : public SALOME_Event
 {
 public:
-  typedef int TResult;
+  typedef SelectionMode TResult;
   TResult myResult;
-  TGetSelectionModeEvent() : myResult( -1 ) {}
+  TGetSelectionModeEvent() : myResult( Undefined ) {}
   virtual void Execute()
   {
-    SMESHGUI* aSMESHGUI = SMESHGUI::GetSMESHGUI();
-    if( !aSMESHGUI ) 
-      return;
-
-    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( aSMESHGUI );
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( );
     if(!aViewWindow)
       return;
     
-    myResult = aViewWindow->SelectionMode();
+    myResult = (SelectionMode) aViewWindow->SelectionMode();
   }
 };
 
 /*!
   \brief Get selection mode of the active VTK View window.
 */
-int SMESH_Swig::getSelectionMode() {
+SelectionMode SMESH_Swig::getSelectionMode() {
   return ProcessEvent( new TGetSelectionModeEvent() );
+}
+
+
+/*!
+ * Event to set selection mode
+*/
+class TSetSelectionModeEvent : public SALOME_Event
+{
+  SelectionMode mySelectionMode;
+
+public:
+
+  TSetSelectionModeEvent(const SelectionMode selectionMode) :
+    mySelectionMode(selectionMode) 
+  {}
+
+  virtual void Execute()
+  {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow();
+    if(!aViewWindow)
+      return;
+
+    Selection_Mode prevMode = aViewWindow->SelectionMode();
+    bool changePointRepresentation = ( prevMode == NodeSelection && mySelectionMode != Node ) ||
+      (prevMode != NodeSelection && mySelectionMode == Node);
+      
+    if( changePointRepresentation ) {
+      vtkRenderer *aRenderer = aViewWindow->getRenderer();
+      VTK::ActorCollectionCopy aCopy(aRenderer->GetActors());
+      vtkActorCollection *aCollection = aCopy.GetActors();
+      aCollection->InitTraversal();
+      while(vtkActor *anAct = aCollection->GetNextActor()){
+	if(SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)){
+	  if(anActor->GetVisibility()){
+	    anActor->SetPointRepresentation(mySelectionMode == Node);
+	  }
+	}
+      }
+    }
+    aViewWindow->SetSelectionMode(mySelectionMode);
+  }
+};
+
+void SMESH_Swig::setSelectionMode(SelectionMode selectionMode){
+  ProcessVoidEvent( new TSetSelectionModeEvent( selectionMode ) ); 
+}
+
+class TGetSelectedEvent : public SALOME_Event
+{
+public:
+  typedef std::vector<int> TResult;
+  TResult myResult;
+  const char* myId;
+  
+  TGetSelectedEvent( const char* id) : 
+    myResult( std::vector<int>() ),
+    myId(id)
+  {}
+  
+  virtual void Execute()
+  {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow();
+    if( !aViewWindow )
+      return;
+
+    SVTK_Selector* aSelector  = aViewWindow->GetSelector();    
+    if( !aSelector )
+      return;
+
+    SMESH_Actor* anActor = SMESH::FindActorByEntry( myId );
+    
+    if ( !anActor || !anActor->hasIO() )
+      return;
+
+    TColStd_IndexedMapOfInteger aMapIndex;
+    aSelector->GetIndex(anActor->getIO(),aMapIndex);
+
+    for( int i = 1; i <= aMapIndex.Extent(); i++ )
+      myResult.push_back( aMapIndex( i ) );
+  }
+};
+
+std::vector<int> SMESH_Swig::getSelected( const char* Mesh_Entry ) {
+  return ProcessEvent( new TGetSelectedEvent(Mesh_Entry) );
 }

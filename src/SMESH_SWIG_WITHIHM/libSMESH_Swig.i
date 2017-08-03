@@ -55,9 +55,10 @@ namespace std {
 
 
 /* Selection mode enumeration (corresponds to constants from the SALOME_Selection.h) */
-enum
+enum SelectionMode
   {
-    Node,
+    Undefined = -1,
+    Node = 0,
     Cell,
     EdgeOfCell,
     Edge,
@@ -131,8 +132,11 @@ class SMESH_Swig
   actorAspect GetActorAspect(const char* Mesh_Entry, int viewId = 0 );
   void SetActorAspect( const actorAspect& actorPres, const char* Mesh_Entry, int viewId = 0 );
 
+  void setSelectionMode( SelectionMode selectionMode);
+  std::vector<int> getSelected( const char* Mesh_Entry );
+
   // --------------------- for the test purposes -----------------------
-  int  getSelectionMode();
+  SelectionMode  getSelectionMode();
   void select( const char *id, std::vector<int> ids, bool append = false );
   void select( const char *id, int id1, bool append = false );
 

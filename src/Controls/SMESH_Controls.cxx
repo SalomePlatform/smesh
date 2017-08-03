@@ -4287,6 +4287,7 @@ void ElementsOnShape::SetShape (const TopoDS_Shape&       theShape,
 
   if ( shapeChanges )
   {
+    // find most complex shapes
     TopTools_IndexedMapOfShape shapesMap;
     TopAbs_ShapeEnum shapeTypes[4] = { TopAbs_SOLID, TopAbs_FACE, TopAbs_EDGE, TopAbs_VERTEX };
     TopExp_Explorer sub;
@@ -4329,10 +4330,18 @@ void ElementsOnShape::clearClassifiers()
 
 bool ElementsOnShape::IsSatisfy( long elemId )
 {
-  const SMDS_Mesh*        mesh = myMeshModifTracer.GetMesh();
-  const SMDS_MeshElement* elem =
-    ( myType == SMDSAbs_Node ? mesh->FindNode( elemId ) : mesh->FindElement( elemId ));
-  if ( !elem || myClassifiers.empty() )
+  if ( myClassifiers.empty() )
+    return false;
+
+  const SMDS_Mesh* mesh = myMeshModifTracer.GetMesh();
+  if ( myType == SMDSAbs_Node )
+    return IsSatisfy( mesh->FindNode( elemId ));
+  return IsSatisfy( mesh->FindElement( elemId ));
+}
+
+bool ElementsOnShape::IsSatisfy (const SMDS_MeshElement* elem)
+{
+  if ( !elem )
     return false;
 
   bool isSatisfy = myAllNodesFlag, isNodeOut;
@@ -4394,6 +4403,60 @@ bool ElementsOnShape::IsSatisfy( long elemId )
   }
 
   return isSatisfy;
+}
+
+bool ElementsOnShape::IsSatisfy (const SMDS_MeshNode* node,
+                                 TopoDS_Shape*        okShape)
+{
+  if ( !node )
+    return false;
+
+  if ( !myOctree && myClassifiers.size() > 5 )
+  {
+    myWorkClassifiers.resize( myClassifiers.size() );
+    for ( size_t i = 0; i < myClassifiers.size(); ++i )
+      myWorkClassifiers[ i ] = & myClassifiers[ i ];
+    myOctree = new OctreeClassifier( myWorkClassifiers );
+  }
+
+  bool isNodeOut = true;
+
+  if ( okShape || !getNodeIsOut( node, isNodeOut ))
+  {
+    SMESH_NodeXYZ aPnt = node;
+    if ( myOctree )
+    {
+      myWorkClassifiers.clear();
+      myOctree->GetClassifiersAtPoint( aPnt, myWorkClassifiers );
+
+      for ( size_t i = 0; i < myWorkClassifiers.size(); ++i )
+        myWorkClassifiers[i]->SetChecked( false );
+
+      for ( size_t i = 0; i < myWorkClassifiers.size(); ++i )
+        if ( !myWorkClassifiers[i]->IsChecked() &&
+             !myWorkClassifiers[i]->IsOut( aPnt ))
+        {
+          isNodeOut = false;
+          if ( okShape )
+            *okShape = myWorkClassifiers[i]->Shape();
+          break;
+        }
+    }
+    else
+    {
+      for ( size_t i = 0; i < myClassifiers.size(); ++i )
+        if ( !myClassifiers[i].IsOut( aPnt ))
+        {
+          isNodeOut = false;
+          if ( okShape )
+            *okShape = myWorkClassifiers[i]->Shape();
+          break;
+        }
+    }
+    setNodeIsOut( node, isNodeOut );
+  }
+
+  return !isNodeOut;
 }
 
 void ElementsOnShape::Classifier::Init( const TopoDS_Shape& theShape,
