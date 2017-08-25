@@ -40,6 +40,10 @@
         <translation>CGNS files</translation>
     </message>
     <message>
+        <source>CGNS_EXPORT_ELEMS_BY_TYPE</source>
+        <translation>Group elements by type</translation>
+    </message>
+    <message>
         <source>GMF_ASCII_FILES_FILTER</source>
         <translation>GMF ASCII files</translation>
     </message>

@@ -43,13 +43,13 @@ class SMESHGUI_EXPORT SMESHGUI_FieldSelectorWdg : public QGroupBox
  public:
   SMESHGUI_FieldSelectorWdg( QWidget* = 0 );
 
-  bool GetAllFeilds(const QList< QPair< SMESH::SMESH_IDSource_var, QString > >& meshes,
+  bool GetAllFields(const QList< QPair< SMESH::SMESH_IDSource_var, QString > >& meshes,
                     QList< QPair< GEOM::ListOfFields_var,          QString > >& fields);
 
-  bool GetSelectedFeilds();
+  bool GetSelectedFields();
 
  private slots:
-  
+
   void onItemCheck(QTreeWidgetItem * item, int column);
 
  private:

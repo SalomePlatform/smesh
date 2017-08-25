@@ -267,7 +267,8 @@ class SMESH_EXPORT SMESH_Mesh
                  const SMESHDS_Mesh* meshPart = 0) throw(SALOME_Exception);
   void ExportCGNS(const char *        file,
                   const SMESHDS_Mesh* mesh,
-                  const char *        meshName = 0);
+                  const char *        meshName = 0,
+                  const bool          groupElemsByType = false);
   void ExportGMF(const char *        file,
                  const SMESHDS_Mesh* mesh,
                  bool                withRequiredGroups = true );

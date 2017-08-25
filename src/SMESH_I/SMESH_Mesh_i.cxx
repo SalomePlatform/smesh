@@ -3628,7 +3628,8 @@ void SMESH_Mesh_i::ExportPartToSTL(::SMESH::SMESH_IDSource_ptr meshPart,
 
 void SMESH_Mesh_i::ExportCGNS(::SMESH::SMESH_IDSource_ptr meshPart,
                               const char*                 file,
-                              CORBA::Boolean              overwrite)
+                              CORBA::Boolean              overwrite,
+                              CORBA::Boolean              groupElemsByType)
   throw (SALOME::SALOME_Exception)
 {
 #ifdef WITH_CGNS
@@ -3646,8 +3647,12 @@ void SMESH_Mesh_i::ExportCGNS(::SMESH::SMESH_IDSource_ptr meshPart,
     CORBA::String_var name = so->GetName();
     meshName = name.in();
   }
+  SMESH_TRY;
+
   SMESH_MeshPartDS partDS( meshPart );
-  _impl->ExportCGNS(file, &partDS, meshName.c_str() );
+  _impl->ExportCGNS(file, &partDS, meshName.c_str(), groupElemsByType );
+
+  SMESH_CATCH( SMESH::throwCorbaException );
 
   TPythonDump() << SMESH::SMESH_Mesh_var(_this()) << ".ExportCGNS( "
                 << meshPart<< ", r'" << file << "', " << overwrite << ")";

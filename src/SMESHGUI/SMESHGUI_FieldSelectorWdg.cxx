@@ -86,7 +86,7 @@ SMESHGUI_FieldSelectorWdg::SMESHGUI_FieldSelectorWdg( QWidget* p )
  * \brief Retrieves all fields defined on geometry of given meshes
  */
 bool SMESHGUI_FieldSelectorWdg::
-GetAllFeilds(const QList< QPair< SMESH::SMESH_IDSource_var, QString > >& meshes,
+GetAllFields(const QList< QPair< SMESH::SMESH_IDSource_var, QString > >& meshes,
              QList< QPair< GEOM::ListOfFields_var, QString > >&          fields)
 {
   myFields = & fields;
@@ -166,7 +166,7 @@ GetAllFeilds(const QList< QPair< SMESH::SMESH_IDSource_var, QString > >& meshes,
 /*!
  * \brief Filter off not selected fields from myFields
  */
-bool SMESHGUI_FieldSelectorWdg::GetSelectedFeilds()
+bool SMESHGUI_FieldSelectorWdg::GetSelectedFields()
 {
   int nbSelected = 0;
   if ( myTree->isEnabled() )

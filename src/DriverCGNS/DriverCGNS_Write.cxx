@@ -25,6 +25,7 @@
 
 #include "DriverCGNS_Write.hxx"
 
+#include "SMDS_IteratorOnIterators.hxx"
 #include "SMDS_MeshNode.hxx"
 #include "SMDS_VolumeTool.hxx"
 #include "SMESHDS_GroupBase.hxx"
@@ -330,7 +331,24 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
   // write into a section all successive elements of one geom type
   int iSec;
   vector< cgsize_t > elemData;
-  SMDS_ElemIteratorPtr  elemIt = myMesh->elementsIterator();
+  SMDS_ElemIteratorPtr elemIt = myMesh->elementsIterator();
+  vector< SMDS_ElemIteratorPtr > elemItVec;
+  if ( _elementsByType )
+  {
+    // create an iterator returning all elements by type
+    for ( int type = SMDSEntity_Node + 1; type < SMDSEntity_Last; ++type )
+    {
+      if ( type == SMDSEntity_Ball )
+        continue; // not supported
+      elemIt = myMesh->elementEntityIterator( SMDSAbs_EntityType( type ));
+      if ( elemIt->more() )
+        elemItVec.push_back( elemIt );
+    }
+    typedef SMDS_IteratorOnIterators< const SMDS_MeshElement*,
+                                      vector< SMDS_ElemIteratorPtr > > TVecIterator;
+    elemIt.reset( new TVecIterator( elemItVec ));
+  }
+
   const SMDS_MeshElement* elem = elemIt->next();
   while ( elem )
   {
@@ -397,6 +415,15 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
         elem = elemIt->more() ? elemIt->next() : 0;
       continue;
     }
+    else // skip NOT SUPPORTED elements
+    {
+      while ( elemIt->more() )
+      {
+        elem = elemIt->next();
+        if ( elem->GetEntityType() != elemType )
+          break;
+      }
+    }
 
     SMESH_Comment sectionName( cg_ElementTypeName( cgType ));
     sectionName << " " << startID << " - " << cgID-1;
@@ -405,6 +432,7 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
                           cgID-1, /*nbndry=*/0, &elemData[0], &iSec) != CG_OK )
       return addMessage( cg_get_error(), /*fatal = */true );
   }
+
   // Write polyhedral volumes
   // -------------------------
 
@@ -531,6 +559,9 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
     CGNS_ENUMT( GridLocation_t ) location = CGNS_ENUMV( Vertex );
     if ( group->GetType() != SMDSAbs_Node )
     {
+#if CGNS_VERSION > 3130
+      location = CGNS_ENUMV( CellCenter );
+#else
       switch ( meshDim ) {
       case 3:
         switch ( group->GetType() ) {
@@ -551,6 +582,7 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
         location = CGNS_ENUMV( EdgeCenter ); break; // ???
         break;
       }
+#endif
     }
 
     // try to extract type of boundary condition from the group name
@@ -568,6 +600,8 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
       const SMDS_MeshElement* elem = elemIt->next();
       pnts.push_back( cgnsID( elem, elem2cgIDByEntity[ elem->GetEntityType() ]));
     }
+    if ( pnts.size() == 0 )
+      continue; // can't store empty group
     int iBC;
     if ( cg_boco_write( _fn, iBase, iZone, name.c_str(), bcType,
                         CGNS_ENUMV( PointList ), pnts.size(), &pnts[0], &iBC) != CG_OK )
@@ -589,7 +623,7 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
  */
 //================================================================================
 
-DriverCGNS_Write::DriverCGNS_Write(): _fn(0)
+DriverCGNS_Write::DriverCGNS_Write(): _fn(0), _elementsByType( false )
 {
 }
 

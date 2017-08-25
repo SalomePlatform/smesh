@@ -1537,6 +1537,7 @@ void SMESH_Mesh::ExportUNV(const char *        file,
   myWriter.SetMeshId(_id);
   //  myWriter.SetGroups(_mapGroup);
 
+  // pass group names to SMESHDS
   if ( !meshPart )
   {
     for ( map<int, SMESH_Group*>::iterator it = _mapGroup.begin(); it != _mapGroup.end(); it++ ) {
@@ -1581,17 +1582,37 @@ void SMESH_Mesh::ExportSTL(const char *        file,
 
 void SMESH_Mesh::ExportCGNS(const char *        file,
                             const SMESHDS_Mesh* meshDS,
-                            const char *        meshName)
+                            const char *        meshName,
+                            const bool          groupElemsByType)
 {
   int res = Driver_Mesh::DRS_FAIL;
+
+  // pass group names to SMESHDS
+  for ( map<int, SMESH_Group*>::iterator it = _mapGroup.begin(); it != _mapGroup.end(); it++ ) {
+    SMESH_Group*       group   = it->second;
+    SMESHDS_GroupBase* groupDS = group->GetGroupDS();
+    if ( groupDS ) {
+      string groupName = group->GetName();
+      groupDS->SetStoreName( groupName.c_str() );
+    }
+  }
 #ifdef WITH_CGNS
+
   DriverCGNS_Write myWriter;
   myWriter.SetFile( file );
   myWriter.SetMesh( const_cast<SMESHDS_Mesh*>( meshDS ));
   myWriter.SetMeshName( SMESH_Comment("Mesh_") << meshDS->GetPersistentId());
   if ( meshName && meshName[0] )
     myWriter.SetMeshName( meshName );
+  myWriter.SetElementsByType( groupElemsByType );
   res = myWriter.Perform();
+  if ( res != Driver_Mesh::DRS_OK )
+  {
+    SMESH_ComputeErrorPtr err = myWriter.GetError();
+    if ( err && !err->IsOK() && !err->myComment.empty() )
+      throw SALOME_Exception(("Export failed: " + err->myComment ).c_str() );
+  }
+
 #endif
   if ( res != Driver_Mesh::DRS_OK )
     throw SALOME_Exception("Export failed");

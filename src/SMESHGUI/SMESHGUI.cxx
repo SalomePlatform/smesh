@@ -684,7 +684,14 @@ namespace
     }
     else if ( isCGNS )// Export to CGNS
     {
-      SUIT_FileDlg* fd = new SUIT_FileDlg( SMESHGUI::desktop(), false, true, true );
+      const char* theByTypeResource = "cgns_group_elems_by_type";
+      toCreateGroups = SMESHGUI::resourceMgr()->booleanValue( "SMESH", theByTypeResource, false );
+
+      QStringList checkBoxes;
+      checkBoxes << QObject::tr("CGNS_EXPORT_ELEMS_BY_TYPE");
+
+      SalomeApp_CheckFileDlg* fd =
+        new SalomeApp_CheckFileDlg ( SMESHGUI::desktop(), false, checkBoxes, true, true );
       fd->setWindowTitle( aTitle );
       fd->setNameFilter( QObject::tr( "CGNS_FILES_FILTER" ) + " (*.cgns)" );
       if ( !anInitialPath.isEmpty() )
@@ -692,10 +699,13 @@ namespace
       fd->selectFile(aMeshName);
       SMESHGUI_FileValidator* fv = new SMESHGUI_FileValidator( fd );
       fd->setValidator( fv );
+      fd->SetChecked( toCreateGroups, 0 );
 
       if ( fd->exec() )
         aFilename = fd->selectedFile();
-      toOverwrite = fv->isOverwrite();
+      toOverwrite    = fv->isOverwrite();
+      toCreateGroups = fd->IsChecked(0);
+      SMESHGUI::resourceMgr()->setValue("SMESH", theByTypeResource, toCreateGroups );
 
       delete fd;
     }
@@ -754,7 +764,7 @@ namespace
 
       SMESHGUI_FieldSelectorWdg* fieldSelWdg = new SMESHGUI_FieldSelectorWdg();
       QList< QWidget* > wdgList;
-      if ( fieldSelWdg->GetAllFeilds( aMeshList, aFieldList ))
+      if ( fieldSelWdg->GetAllFields( aMeshList, aFieldList ))
         wdgList.append( fieldSelWdg );
 
       SalomeApp_CheckFileDlg* fd =
@@ -858,7 +868,7 @@ namespace
       }
       toCreateGroups = fd->IsChecked(0);
       toFindOutDim   = fd->IsChecked(1);
-      fieldSelWdg->GetSelectedFeilds();
+      fieldSelWdg->GetSelectedFields();
       if ( !fieldSelWdg->parent() )
         delete fieldSelWdg;
       delete fd;
@@ -948,7 +958,8 @@ namespace
             SMESH::SMESH_Mesh_var        aMeshItem = aMeshOrGroup->GetMesh();
             aMeshItem->ExportCGNS( aMeshOrGroup,
                                    aFilename.toUtf8().data(),
-                                   toOverwrite && aMeshIndex == 0 );
+                                   toOverwrite && aMeshIndex == 0,
+                                   toCreateGroups );
           }
         }
         else if ( isGMF )

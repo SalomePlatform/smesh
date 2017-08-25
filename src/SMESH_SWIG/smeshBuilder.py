@@ -1879,8 +1879,11 @@ class Mesh:
     #  @param f is the file name
     #  @param overwrite boolean parameter for overwriting/not overwriting the file
     #  @param meshPart a part of mesh (group, sub-mesh) to export instead of the mesh
+    #  @param groupElemsByType if true all elements of same entity type are exported at ones,
+    #         else elements are exported in order of their IDs which can cause creation
+    #         of multiple cgns sections
     #  @ingroup l2_impexp
-    def ExportCGNS(self, f, overwrite=1, meshPart=None):
+    def ExportCGNS(self, f, overwrite=1, meshPart=None, groupElemsByType=False):
         unRegister = genObjUnRegister()
         if isinstance( meshPart, list ):
             meshPart = self.GetIDSource( meshPart, SMESH.ALL )
@@ -1889,7 +1892,7 @@ class Mesh:
             meshPart = meshPart.mesh
         elif not meshPart:
             meshPart = self.mesh
-        self.mesh.ExportCGNS(meshPart, f, overwrite)
+        self.mesh.ExportCGNS(meshPart, f, overwrite, groupElemsByType)
 
     ## Export the mesh in a file in GMF format.
     #  GMF files must have .mesh extension for the ASCII format and .meshb for
@@ -2010,6 +2013,8 @@ class Mesh:
     #  @ingroup l2_grps_create
     def MakeGroupByIds(self, groupName, elementType, elemIDs):
         group = self.mesh.CreateGroup(elementType, groupName)
+        if isinstance( elemIDs, Mesh ):
+            elemIDs = elemIDs.GetMesh()
         if hasattr( elemIDs, "GetIDs" ):
             if hasattr( elemIDs, "SetMesh" ):
                 elemIDs.SetMesh( self.GetMesh() )
