@@ -559,30 +559,26 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
     CGNS_ENUMT( GridLocation_t ) location = CGNS_ENUMV( Vertex );
     if ( group->GetType() != SMDSAbs_Node )
     {
-#if CGNS_VERSION > 3130
-      location = CGNS_ENUMV( CellCenter );
-#else
       switch ( meshDim ) {
       case 3:
         switch ( group->GetType() ) {
-        case SMDSAbs_Volume: location = CGNS_ENUMV( FaceCenter ); break; // !!!
-        case SMDSAbs_Face:   location = CGNS_ENUMV( FaceCenter ); break; // OK
-        case SMDSAbs_Edge:   location = CGNS_ENUMV( EdgeCenter ); break; // OK
+        case SMDSAbs_Volume: location = CGNS_ENUMV( CellCenter ); break;
+        case SMDSAbs_Face:   location = CGNS_ENUMV( FaceCenter ); break;
+        case SMDSAbs_Edge:   location = CGNS_ENUMV( EdgeCenter ); break;
         default:;
         }
         break;
       case 2:
         switch ( group->GetType() ) {
-        case SMDSAbs_Face: location = CGNS_ENUMV( FaceCenter ); break; // ???
-        case SMDSAbs_Edge: location = CGNS_ENUMV( EdgeCenter ); break; // OK
+        case SMDSAbs_Face: location = CGNS_ENUMV( CellCenter ); break;
+        case SMDSAbs_Edge: location = CGNS_ENUMV( EdgeCenter ); break;
         default:;
         }
         break;
       case 1:
-        location = CGNS_ENUMV( EdgeCenter ); break; // ???
+        location = CGNS_ENUMV( CellCenter ); break;
         break;
       }
-#endif
     }
 
     // try to extract type of boundary condition from the group name
