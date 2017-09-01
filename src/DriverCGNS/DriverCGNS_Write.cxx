@@ -588,9 +588,16 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
     // try to extract type of boundary condition from the group name
     string name = group->GetStoreName();
     CGNS_ENUMT( BCType_t ) bcType = getBCType( name );
-    while ( !groupNames.insert( name ).second )
-      name = (SMESH_Comment( "Group_") << groupNames.size());
-
+    if ( !groupNames.insert( name ).second ) // assure name uniqueness
+    {
+      int index = 1;
+      string newName;
+      do {
+        newName = SMESH_Comment( name ) << "_" << index++;
+      }
+      while ( !groupNames.insert( newName ).second );
+      name = newName;
+    }
     // write IDs of elements
     vector< cgsize_t > pnts;
     pnts.reserve( group->Extent() );
