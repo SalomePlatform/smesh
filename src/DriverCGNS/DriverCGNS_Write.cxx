@@ -562,7 +562,11 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
       switch ( meshDim ) {
       case 3:
         switch ( group->GetType() ) {
+#if CGNS_VERSION > 3130
         case SMDSAbs_Volume: location = CGNS_ENUMV( CellCenter ); break;
+#else
+        case SMDSAbs_Volume: location = CGNS_ENUMV( FaceCenter ); break;
+#endif
         case SMDSAbs_Face:   location = CGNS_ENUMV( FaceCenter ); break;
         case SMDSAbs_Edge:   location = CGNS_ENUMV( EdgeCenter ); break;
         default:;
@@ -570,13 +574,21 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
         break;
       case 2:
         switch ( group->GetType() ) {
+#if CGNS_VERSION > 3130
         case SMDSAbs_Face: location = CGNS_ENUMV( CellCenter ); break;
+#else
+        case SMDSAbs_Face: location = CGNS_ENUMV( FaceCenter ); break;
+#endif
         case SMDSAbs_Edge: location = CGNS_ENUMV( EdgeCenter ); break;
         default:;
         }
         break;
       case 1:
+#if CGNS_VERSION > 3130
         location = CGNS_ENUMV( CellCenter ); break;
+#else
+        location = CGNS_ENUMV( EdgeCenter ); break;
+#endif
         break;
       }
     }
