@@ -3108,17 +3108,14 @@ SMESH_MeshEditor_i::mirror(TIDSortedElemSet &                  theElements,
   ::SMESH_MeshEditor::PGroupIDs groupIds =
       getEditor().Transform (*workElements, aTrsf, theCopy, theMakeGroups, theTargetMesh);
 
-  if ( theCopy && !myIsPreviewMode)
+  if ( !myIsPreviewMode )
   {
     if ( theTargetMesh )
-    {
       theTargetMesh->GetMeshDS()->Modified();
-    }
     else
-    {
       declareMeshModified( /*isReComputeSafe=*/false );
-    }
   }
+
   return theMakeGroups ? getGroups(groupIds.get()) : 0;
 
   SMESH_CATCH( SMESH::throwCorbaException );
@@ -3375,16 +3372,12 @@ SMESH_MeshEditor_i::translate(TIDSortedElemSet        & theElements,
   ::SMESH_MeshEditor::PGroupIDs groupIds =
       getEditor().Transform (*workElements, aTrsf, theCopy, theMakeGroups, theTargetMesh);
 
-  if ( theCopy && !myIsPreviewMode )
+  if ( !myIsPreviewMode )
   {
     if ( theTargetMesh )
-    {
       theTargetMesh->GetMeshDS()->Modified();
-    }
     else
-    {
       declareMeshModified( /*isReComputeSafe=*/false );
-    }
   }
 
   return theMakeGroups ? getGroups(groupIds.get()) : 0;
@@ -3632,7 +3625,7 @@ SMESH_MeshEditor_i::rotate(TIDSortedElemSet &        theElements,
   ::SMESH_MeshEditor::PGroupIDs groupIds =
       getEditor().Transform (*workElements, aTrsf, theCopy, theMakeGroups, theTargetMesh);
 
-  if ( theCopy && !myIsPreviewMode)
+  if ( !myIsPreviewMode)
   {
     if ( theTargetMesh ) theTargetMesh->GetMeshDS()->Modified();
     else                 declareMeshModified( /*isReComputeSafe=*/false );
@@ -3932,7 +3925,7 @@ SMESH_MeshEditor_i::scale(SMESH::SMESH_IDSource_ptr  theObject,
   ::SMESH_MeshEditor::PGroupIDs groupIds =
       getEditor().Transform (*workElements, aTrsf, theCopy, theMakeGroups, theTargetMesh);
 
-  if ( theCopy && !myIsPreviewMode )
+  if ( !myIsPreviewMode )
   {
     if ( theTargetMesh ) theTargetMesh->GetMeshDS()->Modified();
     else                 declareMeshModified( /*isReComputeSafe=*/false );
