@@ -380,6 +380,9 @@ SMESHGUI_AddQuadraticElementDlg::SMESHGUI_AddQuadraticElementDlg( SMESHGUI* theM
   case SMDSEntity_Quad_Penta:
     anElementName = QString("QUADRATIC_PENTAHEDRON");
     break;
+  case SMDSEntity_BiQuad_Penta:
+    anElementName = QString("BIQUADRATIC_PENTAHEDRON");
+    break;
   case SMDSEntity_Quad_Hexa:
     anElementName = QString("QUADRATIC_HEXAHEDRON");
     break;
@@ -587,6 +590,12 @@ void SMESHGUI_AddQuadraticElementDlg::Init()
     myNbCorners = 6;
     myHelpFileName = "adding_quadratic_elements_page.html#?"; //Adding_pentahedrons
     break;
+  case SMDSEntity_BiQuad_Penta:
+    aNumRows = 9;
+    myNbCorners = 6;
+    myNbMidFaceNodes = 3;
+    myHelpFileName = "adding_quadratic_elements_page.html#?"; //Adding_pentahedrons
+    break;
   case SMDSEntity_Quad_Hexa:
     aNumRows = 12;
     myNbCorners = 8;
@@ -707,6 +716,7 @@ bool SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
   case SMDSEntity_Quad_Tetra:
   case SMDSEntity_Quad_Pyramid:
   case SMDSEntity_Quad_Penta:
+  case SMDSEntity_BiQuad_Penta:
   case SMDSEntity_Quad_Hexa:
   case SMDSEntity_TriQuad_Hexa:
     for ( int row = 0; row < myNbCorners; row++ )
@@ -790,6 +800,7 @@ bool SMESHGUI_AddQuadraticElementDlg::ClickOnApply()
   case SMDSEntity_Quad_Tetra:
   case SMDSEntity_Quad_Pyramid:
   case SMDSEntity_Quad_Penta:
+  case SMDSEntity_BiQuad_Penta:
   case SMDSEntity_Quad_Hexa:
   case SMDSEntity_TriQuad_Hexa:
     anElementType = SMESH::VOLUME;
@@ -1068,6 +1079,7 @@ void SMESHGUI_AddQuadraticElementDlg::SelectionIntoArgument()
     case SMDSEntity_Quad_Tetra:
     case SMDSEntity_Quad_Pyramid:
     case SMDSEntity_Quad_Penta:
+    case SMDSEntity_BiQuad_Penta:
     case SMDSEntity_Quad_Hexa:
     case SMDSEntity_TriQuad_Hexa:
       anElementType = SMESH::VOLUME; break;
@@ -1402,6 +1414,7 @@ void SMESHGUI_AddQuadraticElementDlg::UpdateTable( bool theConersValidity )
       aLastColIds  = LastPyramidIds;
       break;
     case SMDSEntity_Quad_Penta:
+    case SMDSEntity_BiQuad_Penta:
       aFirstColIds = FirstPentahedronIds;
       aLastColIds  = LastPentahedronIds;
       break;

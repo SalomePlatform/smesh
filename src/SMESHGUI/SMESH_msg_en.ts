@@ -893,6 +893,10 @@
         <translation>Quadratic Pentahedron</translation>
     </message>
     <message>
+        <source>MEN_BIQUADRATIC_PENTAHEDRON</source>
+        <translation>BiQuadratic Pentahedron</translation>
+    </message>
+    <message>
         <source>MEN_QUADRATIC_PYRAMID</source>
         <translation>Quadratic Pyramid</translation>
     </message>
@@ -1369,6 +1373,10 @@ Please enter correct values and try again</translation>
     <message>
         <source>SMESH_ADD_QUADRATIC_PENTAHEDRON_TITLE</source>
         <translation>Add Quadratic Pentahedron</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_BIQUADRATIC_PENTAHEDRON_TITLE</source>
+        <translation>Add BiQuadratic Pentahedron</translation>
     </message>
     <message>
         <source>SMESH_ADD_QUADRATIC_PYRAMID_TITLE</source>
@@ -2531,8 +2539,16 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Quadratic Pentahedron</translation>
     </message>
     <message>
+        <source>SMESH_BIQUADRATIC_PENTAHEDRON</source>
+        <translation>BiQuadratic Pentahedron</translation>
+    </message>
+    <message>
         <source>SMESH_QUADRATIC_PENTAHEDRONS</source>
         <translation>Quadratic Pentahedrons</translation>
+    </message>
+    <message>
+        <source>SMESH_BIQUADRATIC_PENTAHEDRONS</source>
+        <translation>BiQuadratic Pentahedrons</translation>
     </message>
     <message>
         <source>SMESH_QUADRATIC_PYRAMID</source>
@@ -3387,6 +3403,10 @@ Use Display Entity menu command to show them.
         <translation>Quadratic Pentahedron</translation>
     </message>
     <message>
+        <source>STB_BIQUADRATIC_PENTAHEDRON</source>
+        <translation>BiQuadratic Pentahedron</translation>
+    </message>
+    <message>
         <source>STB_QUADRATIC_PYRAMID</source>
         <translation>Quadratic Pyramid</translation>
     </message>
@@ -4061,6 +4081,10 @@ Use Display Entity menu command to show them.
     <message>
         <source>TOP_QUADRATIC_PENTAHEDRON</source>
         <translation>Quadratic Pentahedron</translation>
+    </message>
+    <message>
+        <source>TOP_BIQUADRATIC_PENTAHEDRON</source>
+        <translation>BiQuadratic Pentahedron</translation>
     </message>
     <message>
         <source>TOP_QUADRATIC_PYRAMID</source>
@@ -4898,6 +4922,10 @@ Please, create VTK viewer and try again</translation>
     <message>
         <source>SMESH_ADD_QUADRATIC_PENTAHEDRON</source>
         <translation>Add Quadratic Pentahedron</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_BIQUADRATIC_PENTAHEDRON</source>
+        <translation>Add BiQuadratic Pentahedron</translation>
     </message>
     <message>
         <source>SMESH_ADD_QUADRATIC_PYRAMID</source>

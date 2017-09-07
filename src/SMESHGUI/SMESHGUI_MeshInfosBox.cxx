@@ -70,7 +70,7 @@ SMESHGUI_MeshInfosBox::SMESHGUI_MeshInfosBox(const bool full, QWidget* theParent
   myNbHexa(0), myNbLinHexa(0), myNbQuadHexa(0), myNbBiQuadHexa(0),
   myNbTetra(0),myNbLinTetra(0),myNbQuadTetra(0),
   myNbPyra(0), myNbLinPyra(0), myNbQuadPyra(0),
-  myNbPrism(0),myNbLinPrism(0), myNbQuadPrism(0),
+  myNbPrism(0),myNbLinPrism(0), myNbQuadPrism(0), myNbBiQuadPrism(0),
   myNbVolum(0), myNbLinVolum(0), myNbQuadVolum(0), myNbBiQuadVolum(0),
   myNbHexaPrism(0),
   myNbPolyh(0)
@@ -309,6 +309,9 @@ SMESHGUI_MeshInfosBox::SMESHGUI_MeshInfosBox(const bool full, QWidget* theParent
     myNbQuadPrism = new QLabel( this );
     l->addWidget( myNbQuadPrism, row, 3 );
     // --
+    myNbBiQuadPrism = new QLabel( this );
+    l->addWidget( myNbBiQuadPrism, row, 4 );
+    // --
     row++;                       // increment row count
     // ... hexa prisms
     lab = new QLabel(COLONIZE(tr("SMESH_MESHINFO_HEXAPRISM")), this );
@@ -460,6 +463,7 @@ void SMESHGUI_MeshInfosBox::SetMeshInfo(const SMESH::long_array& theInfo)
                                                theInfo[SMDSEntity_TriQuad_Hexa] +
                                                theInfo[SMDSEntity_Penta] +
                                                theInfo[SMDSEntity_Quad_Penta] +
+                                               theInfo[SMDSEntity_BiQuad_Penta] +
                                                theInfo[SMDSEntity_Hexagonal_Prism] +
                                                theInfo[SMDSEntity_Polyhedra] ));
   myNbLinVolum   ->setText( QString("%1").arg( theInfo[SMDSEntity_Tetra] +
@@ -471,7 +475,8 @@ void SMESHGUI_MeshInfosBox::SetMeshInfo(const SMESH::long_array& theInfo)
                                                theInfo[SMDSEntity_Quad_Pyramid] +
                                                theInfo[SMDSEntity_Quad_Hexa] +
                                                theInfo[SMDSEntity_Quad_Penta] ));
-  myNbBiQuadVolum->setText( QString("%1").arg( theInfo[SMDSEntity_TriQuad_Hexa] ));
+  myNbBiQuadVolum->setText( QString("%1").arg( theInfo[SMDSEntity_TriQuad_Hexa] +
+                                               theInfo[SMDSEntity_BiQuad_Penta] ));
 
   if ( myFull )
   {
@@ -514,9 +519,11 @@ void SMESHGUI_MeshInfosBox::SetMeshInfo(const SMESH::long_array& theInfo)
     myNbQuadPyra ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Pyramid] ));
     // prisms
     myNbPrism    ->setText( QString("%1").arg( theInfo[SMDSEntity_Penta] +
-                                               theInfo[SMDSEntity_Quad_Penta] ));
-    myNbLinPrism ->setText( QString("%1").arg( theInfo[SMDSEntity_Penta] ));
-    myNbQuadPrism->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Penta] ));
+                                               theInfo[SMDSEntity_Quad_Penta] +
+											   theInfo[SMDSEntity_BiQuad_Penta] ));
+    myNbLinPrism   ->setText( QString("%1").arg( theInfo[SMDSEntity_Penta] ));
+    myNbQuadPrism  ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Penta] ));
+    myNbBiQuadPrism->setText( QString("%1").arg( theInfo[SMDSEntity_BiQuad_Penta] ));
     // octahedra
     myNbHexaPrism->setText( QString("%1").arg( theInfo[ SMDSEntity_Hexagonal_Prism ]));
     // polyedres

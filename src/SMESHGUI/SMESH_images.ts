@@ -212,6 +212,10 @@
             <translation>mesh_quad_pentahedron.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_BIQUADRATIC_PENTAHEDRON</source>
+            <translation>mesh_quad_pentahedron.png</translation>
+        </message>
+        <message>
             <source>ICON_DLG_QUADRATIC_PYRAMID</source>
             <translation>mesh_quad_pyramid.png</translation>
         </message>

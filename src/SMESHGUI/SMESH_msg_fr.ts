@@ -873,6 +873,10 @@
         <translation>Pentaèdre quadratique</translation>
     </message>
     <message>
+        <source>MEN_BIQUADRATIC_PENTAHEDRON</source>
+        <translation>Pentaèdre biquadratique</translation>
+    </message>
+    <message>
         <source>MEN_QUADRATIC_PYRAMID</source>
         <translation>Pyramide quadratique</translation>
     </message>
@@ -1349,6 +1353,10 @@ Merci de les corriger, puis essayez de nouveau</translation>
     <message>
         <source>SMESH_ADD_QUADRATIC_PENTAHEDRON_TITLE</source>
         <translation>Ajouter un pentaèdre quadratique</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_BIQUADRATIC_PENTAHEDRON_TITLE</source>
+        <translation>Ajouter un pentaèdre biquadratique</translation>
     </message>
     <message>
         <source>SMESH_ADD_QUADRATIC_PYRAMID_TITLE</source>
@@ -2511,8 +2519,16 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>Pentaèdre quadratique</translation>
     </message>
     <message>
+        <source>SMESH_BIQUADRATIC_PENTAHEDRON</source>
+        <translation>Pentaèdre biquadratique</translation>
+    </message>
+    <message>
         <source>SMESH_QUADRATIC_PENTAHEDRONS</source>
         <translation>Pentaèdres quadratiques</translation>
+    </message>
+    <message>
+        <source>SMESH_BIQUADRATIC_PENTAHEDRONS</source>
+        <translation>Pentaèdres biquadratiques</translation>
     </message>
     <message>
         <source>SMESH_QUADRATIC_PYRAMID</source>
@@ -3368,6 +3384,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Pentaèdre quadratique</translation>
     </message>
     <message>
+        <source>STB_BIQUADRATIC_PENTAHEDRON</source>
+        <translation>Pentaèdre biquadratique</translation>
+    </message>
+    <message>
         <source>STB_QUADRATIC_PYRAMID</source>
         <translation>Pyramide quadratique</translation>
     </message>
@@ -4042,6 +4062,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     <message>
         <source>TOP_QUADRATIC_PENTAHEDRON</source>
         <translation>Pentaèdre quadratique</translation>
+    </message>
+    <message>
+        <source>TOP_BIQUADRATIC_PENTAHEDRON</source>
+        <translation>Pentaèdre biquadratique</translation>
     </message>
     <message>
         <source>TOP_QUADRATIC_PYRAMID</source>
@@ -4879,6 +4903,10 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     <message>
         <source>SMESH_ADD_QUADRATIC_PENTAHEDRON</source>
         <translation>Ajouter un pentaèdre quadratique</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_BIQUADRATIC_PENTAHEDRON</source>
+        <translation>Ajouter un pentaèdre biquadratique</translation>
     </message>
     <message>
         <source>SMESH_ADD_QUADRATIC_PYRAMID</source>

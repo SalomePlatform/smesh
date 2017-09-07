@@ -83,6 +83,12 @@ class SMESHDS_EXPORT SMESHDS_Command
                        int n12, int n23, int n31,
                        int n45, int n56, int n64,
                        int n14, int n25, int n36);
+        void AddVolume(int NewVolID, int n1, int n2, int n3,
+                       int n4, int n5, int n6,
+                       int n12, int n23, int n31,
+                       int n45, int n56, int n64,
+                       int n14, int n25, int n36,
+                       int n1245, int n2356, int n1346);
         void AddVolume(int NewVolID, int n1, int n2, int n3, int n4,
                        int n5,  int n6,  int n7,  int n8,
                        int n12, int n23, int n34, int n41,

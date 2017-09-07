@@ -234,6 +234,7 @@ namespace SMESH
     case Entity_TriQuad_Hexa:      myStream<<"Entity_TriQuad_Hexa";      break;
     case Entity_Penta:             myStream<<"Entity_Penta";             break;
     case Entity_Quad_Penta:        myStream<<"Entity_Quad_Penta";        break;
+    case Entity_BiQuad_Penta:      myStream<<"Entity_BiQuad_Penta";      break;
     case Entity_Hexagonal_Prism:   myStream<<"Entity_Hexagonal_Prism";   break;
     case Entity_Polyhedra:         myStream<<"Entity_Polyhedra";         break;
     case Entity_Quad_Polyhedra:    myStream<<"Entity_Quad_Polyhedra";    break;

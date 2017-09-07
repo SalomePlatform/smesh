@@ -297,6 +297,8 @@ class SMESH_EXPORT SMESH_Mesh
   int NbTriQuadraticHexas() const throw(SALOME_Exception);
   int NbPyramids(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
   int NbPrisms(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
+  int NbQuadPrisms() const throw(SALOME_Exception);
+  int NbBiQuadPrisms() const throw(SALOME_Exception);
   int NbHexagonalPrisms() const throw(SALOME_Exception);
   int NbPolyhedrons() const throw(SALOME_Exception);
   

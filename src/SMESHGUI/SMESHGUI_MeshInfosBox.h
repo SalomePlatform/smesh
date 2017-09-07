@@ -84,6 +84,7 @@ private:
   QLabel* myNbPrism;
   QLabel* myNbLinPrism;
   QLabel* myNbQuadPrism;
+  QLabel* myNbBiQuadPrism;
   QLabel* myNbVolum;
   QLabel* myNbLinVolum;
   QLabel* myNbQuadVolum;

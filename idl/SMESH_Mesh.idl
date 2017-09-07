@@ -191,6 +191,7 @@ module SMESH
     Entity_TriQuad_Hexa,
     Entity_Penta,
     Entity_Quad_Penta,
+    Entity_BiQuad_Penta,
     Entity_Hexagonal_Prism,
     Entity_Polyhedra,
     Entity_Quad_Polyhedra,

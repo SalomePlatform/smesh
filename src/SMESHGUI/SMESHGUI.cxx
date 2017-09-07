@@ -603,6 +603,7 @@ namespace
       notSupportedElemTypes.push_back( SMESH::Entity_Quad_Polygon );
       notSupportedElemTypes.push_back( SMESH::Entity_Quad_Pyramid );
       notSupportedElemTypes.push_back( SMESH::Entity_Quad_Penta );
+      notSupportedElemTypes.push_back( SMESH::Entity_BiQuad_Penta );
       notSupportedElemTypes.push_back( SMESH::Entity_Hexagonal_Prism );
       notSupportedElemTypes.push_back( SMESH::Entity_Polyhedra );
       notSupportedElemTypes.push_back( SMESH::Entity_Quad_Polyhedra );
@@ -626,6 +627,7 @@ namespace
         "SMESH_TETRAHEDRA","SMESH_QUADRATIC_TETRAHEDRONS","SMESH_PYRAMIDS",
         "SMESH_QUADRATIC_PYRAMIDS","SMESH_HEXAHEDRA","SMESH_QUADRATIC_HEXAHEDRONS",
         "SMESH_TRIQUADRATIC_HEXAHEDRONS","SMESH_PENTAHEDRA","SMESH_QUADRATIC_PENTAHEDRONS",
+		"SMESH_BIQUADRATIC_PENTAHEDRONS",
         "SMESH_OCTAHEDRA","SMESH_POLYEDRONS","SMESH_QUADRATIC_POLYEDRONS","SMESH_BALLS"
       };
       // is typeMsg complete? (compilation failure mains that enum SMDSAbs_EntityType changed)
@@ -2124,7 +2126,7 @@ bool SMESHGUI::automaticUpdate( SMESH::SMESH_IDSource_ptr theMesh,
   long nbVolumes = info[SMDSEntity_Tetra]   + info[SMDSEntity_Quad_Tetra] + 
                    info[SMDSEntity_Hexa]    + info[SMDSEntity_Quad_Hexa] + info[SMDSEntity_TriQuad_Hexa] + 
                    info[SMDSEntity_Pyramid] + info[SMDSEntity_Quad_Pyramid] + 
-                   info[SMDSEntity_Penta]   + info[SMDSEntity_Quad_Penta] + 
+                   info[SMDSEntity_Penta]   + info[SMDSEntity_Quad_Penta] + info[SMDSEntity_BiQuad_Penta] +
                    info[SMDSEntity_Polyhedra] + 
                    info[SMDSEntity_Hexagonal_Prism];
   long nbBalls   = info[SMDSEntity_Ball];
@@ -3304,6 +3306,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpQuadraticTetrahedron:
   case SMESHOp::OpQuadraticPyramid:
   case SMESHOp::OpQuadraticPentahedron:
+  case SMESHOp::OpBiQuadraticPentahedron:
   case SMESHOp::OpQuadraticHexahedron:
   case SMESHOp::OpTriQuadraticHexahedron:
     {
@@ -3322,6 +3325,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         case SMESHOp::OpQuadraticTetrahedron:   type = SMDSEntity_Quad_Tetra; break;
         case SMESHOp::OpQuadraticPyramid:       type = SMDSEntity_Quad_Pyramid; break;
         case SMESHOp::OpQuadraticPentahedron:   type = SMDSEntity_Quad_Penta; break;
+        case SMESHOp::OpBiQuadraticPentahedron: type = SMDSEntity_BiQuad_Penta; break;
         case SMESHOp::OpQuadraticHexahedron:    type = SMDSEntity_Quad_Hexa; break;
         case SMESHOp::OpTriQuadraticHexahedron: type = SMDSEntity_TriQuad_Hexa; break;
         default: break;
@@ -3954,6 +3958,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpQuadraticTetrahedron,   "QUADRATIC_TETRAHEDRON",   "ICON_DLG_QUADRATIC_TETRAHEDRON" );
   createSMESHAction( SMESHOp::OpQuadraticPyramid,       "QUADRATIC_PYRAMID",       "ICON_DLG_QUADRATIC_PYRAMID" );
   createSMESHAction( SMESHOp::OpQuadraticPentahedron,   "QUADRATIC_PENTAHEDRON",   "ICON_DLG_QUADRATIC_PENTAHEDRON" );
+  createSMESHAction( SMESHOp::OpBiQuadraticPentahedron, "BIQUADRATIC_PENTAHEDRON", "ICON_DLG_BIQUADRATIC_PENTAHEDRON" );
   createSMESHAction( SMESHOp::OpQuadraticHexahedron,    "QUADRATIC_HEXAHEDRON",    "ICON_DLG_QUADRATIC_HEXAHEDRON" );
   createSMESHAction( SMESHOp::OpTriQuadraticHexahedron, "TRIQUADRATIC_HEXAHEDRON", "ICON_DLG_TRIQUADRATIC_HEXAHEDRON" );
 
@@ -4190,6 +4195,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( SMESHOp::OpQuadraticTetrahedron,   addId, -1 );
   createMenu( SMESHOp::OpQuadraticPyramid,       addId, -1 );
   createMenu( SMESHOp::OpQuadraticPentahedron,   addId, -1 );
+  createMenu( SMESHOp::OpBiQuadraticPentahedron, addId, -1 );
   createMenu( SMESHOp::OpQuadraticHexahedron,    addId, -1 );
   createMenu( SMESHOp::OpTriQuadraticHexahedron, addId, -1 );
 
@@ -4335,6 +4341,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( SMESHOp::OpQuadraticTetrahedron,   addNonElemTb );
   createTool( SMESHOp::OpQuadraticPyramid,       addNonElemTb );
   createTool( SMESHOp::OpQuadraticPentahedron,   addNonElemTb );
+  createTool( SMESHOp::OpBiQuadraticPentahedron, addNonElemTb );
   createTool( SMESHOp::OpQuadraticHexahedron,    addNonElemTb );
   createTool( SMESHOp::OpTriQuadraticHexahedron, addNonElemTb );
 

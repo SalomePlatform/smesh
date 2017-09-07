@@ -616,7 +616,8 @@ double MaxElementLength3D::GetValue( long theElementId )
       aVal = Max(aVal,Max(L7,L8));
       break;
     }
-    case SMDSEntity_Quad_Penta: { // quadratic pentas
+    case SMDSEntity_Quad_Penta:
+    case SMDSEntity_BiQuad_Penta: { // quadratic pentas
       double L1 = getDistance(P( 1 ),P( 7 )) + getDistance(P( 7 ),P( 2 ));
       double L2 = getDistance(P( 2 ),P( 8 )) + getDistance(P( 8 ),P( 3 ));
       double L3 = getDistance(P( 3 ),P( 9 )) + getDistance(P( 9 ),P( 1 ));
@@ -1619,7 +1620,7 @@ double Length2D::GetValue( long theElementId )
       }
       break;
     case SMDSEntity_Pyramid:
-      if (len == 5){ // piramids
+      if (len == 5){ // pyramid
         double L1 = getDistance(P( 1 ),P( 2 ));
         double L2 = getDistance(P( 2 ),P( 3 ));
         double L3 = getDistance(P( 3 ),P( 4 ));
@@ -1634,7 +1635,7 @@ double Length2D::GetValue( long theElementId )
       }
       break;
     case SMDSEntity_Penta:
-      if (len == 6) { // pentaidres
+      if (len == 6) { // pentahedron
         double L1 = getDistance(P( 1 ),P( 2 ));
         double L2 = getDistance(P( 2 ),P( 3 ));
         double L3 = getDistance(P( 3 ),P( 1 ));
@@ -1670,7 +1671,7 @@ double Length2D::GetValue( long theElementId )
       }
       break;
     case SMDSEntity_Quad_Tetra:
-      if (len == 10){ // quadratic tetraidrs
+      if (len == 10){ // quadratic tetrahedron
         double L1 = getDistance(P( 1 ),P( 5 )) + getDistance(P( 5 ),P( 2 ));
         double L2 = getDistance(P( 2 ),P( 6 )) + getDistance(P( 6 ),P( 3 ));
         double L3 = getDistance(P( 3 ),P( 7 )) + getDistance(P( 7 ),P( 1 ));
@@ -1681,7 +1682,7 @@ double Length2D::GetValue( long theElementId )
       }
       break;
     case SMDSEntity_Quad_Pyramid:
-      if (len == 13){ // quadratic piramids
+      if (len == 13){ // quadratic pyramid
         double L1 = getDistance(P( 1 ),P( 6 )) + getDistance(P( 6 ),P( 2 ));
         double L2 = getDistance(P( 2 ),P( 7 )) + getDistance(P( 7 ),P( 3 ));
         double L3 = getDistance(P( 3 ),P( 8 )) + getDistance(P( 8 ),P( 4 ));
@@ -1695,7 +1696,8 @@ double Length2D::GetValue( long theElementId )
       }
       break;
     case SMDSEntity_Quad_Penta:
-      if (len == 15){ // quadratic pentaidres
+    case SMDSEntity_BiQuad_Penta:
+      if (len >= 15){ // quadratic pentahedron
         double L1 = getDistance(P( 1 ),P( 7 )) + getDistance(P( 7 ),P( 2 ));
         double L2 = getDistance(P( 2 ),P( 8 )) + getDistance(P( 8 ),P( 3 ));
         double L3 = getDistance(P( 3 ),P( 9 )) + getDistance(P( 9 ),P( 1 ));
@@ -1711,7 +1713,7 @@ double Length2D::GetValue( long theElementId )
       break;
     case SMDSEntity_Quad_Hexa:
     case SMDSEntity_TriQuad_Hexa:
-      if (len >= 20) { // quadratic hexaider
+      if (len >= 20) { // quadratic hexahedron
         double L1 = getDistance(P( 1 ),P( 9 )) + getDistance(P( 9 ),P( 2 ));
         double L2 = getDistance(P( 2 ),P( 10 )) + getDistance(P( 10 ),P( 3 ));
         double L3 = getDistance(P( 3 ),P( 11 )) + getDistance(P( 11 ),P( 4 ));

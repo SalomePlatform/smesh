@@ -64,6 +64,8 @@ public:
   inline int NbPrisms  (SMDSAbs_ElementOrder order = ORDER_ANY) const;
   inline int NbHexPrisms(SMDSAbs_ElementOrder order = ORDER_ANY) const;
   int NbTriQuadHexas() const { return myNbTriQuadHexas; }
+  int NbQuadPrisms() const { return myNbQuadPrisms; }
+  int NbBiQuadPrisms() const { return myNbBiQuadPrisms; }
   int NbPolyhedrons() const { return myNbPolyhedrons; }
 
 protected:
@@ -94,7 +96,7 @@ private:
   int myNbTetras  , myNbQuadTetras  ;
   int myNbHexas   , myNbQuadHexas,    myNbTriQuadHexas;
   int myNbPyramids, myNbQuadPyramids;
-  int myNbPrisms  , myNbQuadPrisms  ;
+  int myNbPrisms  , myNbQuadPrisms,   myNbBiQuadPrisms;
   int myNbHexPrism;
   int myNbPolyhedrons;
 
@@ -113,7 +115,7 @@ inline SMDS_MeshInfo::SMDS_MeshInfo():
   myNbTetras     (0), myNbQuadTetras  (0),
   myNbHexas      (0), myNbQuadHexas   (0), myNbTriQuadHexas(0),
   myNbPyramids   (0), myNbQuadPyramids(0),
-  myNbPrisms     (0), myNbQuadPrisms  (0),
+  myNbPrisms     (0), myNbQuadPrisms  (0), myNbBiQuadPrisms(0),
   myNbHexPrism   (0),
   myNbPolyhedrons(0)
 {
@@ -297,7 +299,7 @@ SMDS_MeshInfo::NbElements(SMDSAbs_ElementType type) const
     break;
   case SMDSAbs_Volume:
     nb = ( myNbTetras+     myNbPyramids+     myNbPrisms+     myNbHexas+     myNbHexPrism+
-           myNbQuadTetras+ myNbQuadPyramids+ myNbQuadPrisms+ myNbQuadHexas+ myNbTriQuadHexas+
+           myNbQuadTetras+ myNbQuadPyramids+ myNbQuadPrisms+ myNbBiQuadPrisms + myNbQuadHexas+ myNbTriQuadHexas+
            myNbPolyhedrons );
     break;
   case SMDSAbs_Face:
@@ -345,6 +347,7 @@ SMDS_MeshInfo::NbEntities(SMDSAbs_EntityType type) const
   case SMDSEntity_TriQuad_Hexa:     return myNbTriQuadHexas;
   case SMDSEntity_Penta:            return myNbPrisms;
   case SMDSEntity_Quad_Penta:       return myNbQuadPrisms;
+  case SMDSEntity_BiQuad_Penta:     return myNbBiQuadPrisms;
   case SMDSEntity_Hexagonal_Prism:  return myNbHexPrism;
   case SMDSEntity_Polyhedra:        return myNbPolyhedrons;
   case SMDSEntity_0D:               return myNb0DElements;
@@ -414,6 +417,7 @@ SMDS_MeshInfo::setNb(const SMDSAbs_EntityType geomType, const int nb)
   case SMDSEntity_Quad_Edge:        myNbQuadEdges         = nb; break;
   case SMDSEntity_Quad_Hexa:        myNbQuadHexas         = nb; break;
   case SMDSEntity_Quad_Penta:       myNbQuadPrisms        = nb; break;
+  case SMDSEntity_BiQuad_Penta:     myNbBiQuadPrisms      = nb; break;
   case SMDSEntity_Quad_Pyramid:     myNbQuadPyramids      = nb; break;
   case SMDSEntity_Quad_Quadrangle:  myNbQuadQuadrangles   = nb; break;
   case SMDSEntity_Quad_Tetra:       myNbQuadTetras        = nb; break;

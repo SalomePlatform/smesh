@@ -1890,6 +1890,19 @@ int SMESH_Mesh::NbPrisms(SMDSAbs_ElementOrder order) const throw(SALOME_Exceptio
   return _myMeshDS->GetMeshInfo().NbPrisms(order);
 }
 
+int SMESH_Mesh::NbQuadPrisms() const throw (SALOME_Exception)
+{
+  Unexpect aCatch(SalomeException);
+  return _myMeshDS->GetMeshInfo().NbQuadPrisms();
+}
+
+int SMESH_Mesh::NbBiQuadPrisms() const throw (SALOME_Exception)
+{
+  Unexpect aCatch(SalomeException);
+  return _myMeshDS->GetMeshInfo().NbBiQuadPrisms();
+}
+
+
 //================================================================================
 /*!
  * \brief  Return number of hexagonal prisms in the mesh

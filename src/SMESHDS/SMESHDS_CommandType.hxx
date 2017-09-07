@@ -58,6 +58,7 @@ enum SMESHDS_CommandType {
   SMESHDS_Add0DElement,
   SMESHDS_AddBiQuadTriangle,
   SMESHDS_AddBiQuadQuadrangle,
+  SMESHDS_AddBiQuadPentahedron,
   SMESHDS_AddTriQuadHexa,
   SMESHDS_AddHexagonalPrism,
   SMESHDS_AddBall

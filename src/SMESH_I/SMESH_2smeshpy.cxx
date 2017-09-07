@@ -922,7 +922,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
           "Entity_Polygon", "Entity_Quad_Polygon", "Entity_Tetra", "Entity_Quad_Tetra",
           "Entity_Pyramid", "Entity_Quad_Pyramid",
           "Entity_Hexa", "Entity_Quad_Hexa", "Entity_TriQuad_Hexa",
-          "Entity_Penta", "Entity_Quad_Penta", "Entity_Hexagonal_Prism",
+          "Entity_Penta", "Entity_Quad_Penta", "Entity_BiQuad_Penta", "Entity_Hexagonal_Prism",
           "Entity_Polyhedra", "Entity_Quad_Polyhedra", "Entity_Ball" };
         if ( -1 < iGeom && iGeom < nbTypes )
           Threshold = SMESH + types[ iGeom ];

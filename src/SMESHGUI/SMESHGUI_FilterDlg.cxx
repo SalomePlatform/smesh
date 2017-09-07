@@ -1753,6 +1753,7 @@ static QList<int> entityTypes( const int theType )
     typeIds.append( SMDSEntity_TriQuad_Hexa );
     typeIds.append( SMDSEntity_Penta );
     typeIds.append( SMDSEntity_Quad_Penta );
+    typeIds.append( SMDSEntity_BiQuad_Penta );
     typeIds.append( SMDSEntity_Hexagonal_Prism );
     typeIds.append( SMDSEntity_Polyhedra );
     //typeIds.append( SMDSEntity_Quad_Polyhedra );

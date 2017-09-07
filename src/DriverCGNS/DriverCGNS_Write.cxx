@@ -131,6 +131,11 @@ namespace
         cgTypes   [SMDSEntity_Quad_Penta] = CGNS_ENUMV( PENTA_15 );
       }
       {
+        static int ids[] = { 0,2,1,3,5,4,8,7,6,9,11,10,14,13,12,15,16,17 }; // TODO: check CGNS ORDER
+        interlaces[SMDSEntity_BiQuad_Penta] = ids;
+        cgTypes   [SMDSEntity_BiQuad_Penta] = CGNS_ENUMV( PENTA_18 );
+      }
+      {
         static int ids[] = { 0,3,2,1,4,7,6,5 };
         interlaces[SMDSEntity_Hexa] = ids;
         cgTypes   [SMDSEntity_Hexa] = CGNS_ENUMV( HEXA_8 );

@@ -115,6 +115,7 @@ SMDS_VtkCellIteratorToUNV::SMDS_VtkCellIteratorToUNV(SMDS_Mesh* mesh, int vtkCel
     break;
   }
   case SMDSEntity_Quad_Penta:
+  case SMDSEntity_BiQuad_Penta: //TODO: check
   {
     static int id[] = { 0, 8, 2, 7, 1, 6, 12, 14, 13, 3, 11, 5, 10, 4, 9 };
     ids = id;

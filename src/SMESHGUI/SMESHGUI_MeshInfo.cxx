@@ -386,6 +386,8 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   a3DPriLin->setObjectName("nbLinearPrism");
   QLabel*  a3DPriQuad   = createField();
   a3DPriQuad->setObjectName("nbQuadraticPrism");
+  QLabel*  a3DPriBiQuad   = createField();
+  a3DPriBiQuad->setObjectName("nbBiQuadraticPrism");
   QLabel*  a3DHexPriLab   = new QLabel( tr( "HEX_PRISMS_LAB" ), this );
   QLabel*  a3DHexPriTotal = createField();
   a3DHexPriTotal->setObjectName("nbHexagonalPrism");
@@ -397,7 +399,7 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   myWidgets[ index++ ] << a3DTetLab << a3DTetTotal << a3DTetLin << a3DTetQuad;
   myWidgets[ index++ ] << a3DHexLab << a3DHexTotal << a3DHexLin << a3DHexQuad << a3DHexBiQuad;
   myWidgets[ index++ ] << a3DPyrLab << a3DPyrTotal << a3DPyrLin << a3DPyrQuad;
-  myWidgets[ index++ ] << a3DPriLab << a3DPriTotal << a3DPriLin << a3DPriQuad;
+  myWidgets[ index++ ] << a3DPriLab << a3DPriTotal << a3DPriLin << a3DPriQuad << a3DPriBiQuad;
   myWidgets[ index++ ] << a3DHexPriLab << a3DHexPriTotal;
   myWidgets[ index++ ] << a3DPolLab << a3DPolTotal;
 
@@ -491,6 +493,7 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   l->addWidget( a3DPriTotal,  24, 1 );
   l->addWidget( a3DPriLin,    24, 2 );
   l->addWidget( a3DPriQuad,   24, 3 );
+  l->addWidget( a3DPriBiQuad, 24, 4 );
   l->addWidget( a3DHexPriLab,   25, 0 );
   l->addWidget( a3DHexPriTotal, 25, 1 );
   l->addWidget( a3DPolLab,    26, 0 );
@@ -581,10 +584,10 @@ void SMESHGUI_MeshInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
     long nbTetrahedrons  = info[SMDSEntity_Tetra]   + info[SMDSEntity_Quad_Tetra];
     long nbHexahedrons   = info[SMDSEntity_Hexa]    + info[SMDSEntity_Quad_Hexa] + info[SMDSEntity_TriQuad_Hexa];
     long nbPyramids      = info[SMDSEntity_Pyramid] + info[SMDSEntity_Quad_Pyramid];
-    long nbPrisms        = info[SMDSEntity_Penta]   + info[SMDSEntity_Quad_Penta];
+    long nbPrisms        = info[SMDSEntity_Penta]   + info[SMDSEntity_Quad_Penta] + info[SMDSEntity_BiQuad_Penta];
     long nb3DLinear      = info[SMDSEntity_Tetra]   + info[SMDSEntity_Hexa] + info[SMDSEntity_Pyramid] + info[SMDSEntity_Penta] + info[SMDSEntity_Polyhedra] + info[SMDSEntity_Hexagonal_Prism];
     long nb3DQuadratic   = info[SMDSEntity_Quad_Tetra] + info[SMDSEntity_Quad_Hexa] + info[SMDSEntity_Quad_Pyramid] + info[SMDSEntity_Quad_Penta];
-    long nb3DBiQuadratic = info[SMDSEntity_TriQuad_Hexa];
+    long nb3DBiQuadratic = info[SMDSEntity_TriQuad_Hexa] + info[SMDSEntity_BiQuad_Penta];
     long nb3DTotal       = nb3DLinear + nb3DQuadratic + nb3DBiQuadratic;
     myWidgets[i3D][iTotal]                  ->setProperty( "text", QString::number( nb3DTotal ));
     myWidgets[i3D][iLinear]                 ->setProperty( "text", QString::number( nb3DLinear ));
@@ -603,6 +606,7 @@ void SMESHGUI_MeshInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
     myWidgets[i3DPrisms][iTotal]            ->setProperty( "text", QString::number( nbPrisms ));
     myWidgets[i3DPrisms][iLinear]           ->setProperty( "text", QString::number( info[SMDSEntity_Penta] ));
     myWidgets[i3DPrisms][iQuadratic]        ->setProperty( "text", QString::number( info[SMDSEntity_Quad_Penta] ));
+    myWidgets[i3DPrisms][iBiQuadratic]      ->setProperty( "text", QString::number( info[SMDSEntity_BiQuad_Penta] ));
     myWidgets[i3DHexaPrisms][iTotal]        ->setProperty( "text", QString::number( info[SMDSEntity_Hexagonal_Prism] ));
     myWidgets[i3DPolyhedrons][iTotal]       ->setProperty( "text", QString::number( info[SMDSEntity_Polyhedra] ));
     long nbElemTotal       = info[SMDSEntity_0D] + info[SMDSEntity_Ball] + nbEdges + nb2DTotal + nb3DTotal;
@@ -1374,6 +1378,7 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
           gtype = SMESHGUI_ElemInfo::tr( "HEXAHEDRON" ); break;
         case SMDSEntity_Penta:
         case SMDSEntity_Quad_Penta:
+        case SMDSEntity_BiQuad_Penta:
           gtype = SMESHGUI_ElemInfo::tr( "PRISM" ); break;
         case SMDSEntity_Hexagonal_Prism:
           gtype = SMESHGUI_ElemInfo::tr( "HEX_PRISM" ); break;
@@ -1896,6 +1901,7 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
           gtype = SMESHGUI_ElemInfo::tr( "HEXAHEDRON" ); break;
         case SMDSEntity_Penta:
         case SMDSEntity_Quad_Penta:
+        case SMDSEntity_BiQuad_Penta:
           gtype = SMESHGUI_ElemInfo::tr( "PRISM" ); break;
         case SMDSEntity_Hexagonal_Prism:
           gtype = SMESHGUI_ElemInfo::tr( "HEX_PRISM" ); break;

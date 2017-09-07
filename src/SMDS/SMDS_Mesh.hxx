@@ -454,6 +454,53 @@ public:
                                      const SMDS_MeshNode * n25,
                                      const SMDS_MeshNode * n36);
 
+  // 2d order Pentahedron with 18 nodes
+  virtual SMDS_MeshVolume* AddVolumeWithID(int n1, int n2, int n3,
+                                           int n4, int n5, int n6,
+                                           int n12,int n23,int n31,
+                                           int n45,int n56,int n64,
+                                           int n14,int n25,int n36,
+                                           int n1245, int n2356, int n1346,
+                                           int ID);
+  virtual SMDS_MeshVolume* AddVolumeWithID(const SMDS_MeshNode * n1,
+                                           const SMDS_MeshNode * n2,
+                                           const SMDS_MeshNode * n3,
+                                           const SMDS_MeshNode * n4,
+                                           const SMDS_MeshNode * n5,
+                                           const SMDS_MeshNode * n6,
+                                           const SMDS_MeshNode * n12,
+                                           const SMDS_MeshNode * n23,
+                                           const SMDS_MeshNode * n31,
+                                           const SMDS_MeshNode * n45,
+                                           const SMDS_MeshNode * n56,
+                                           const SMDS_MeshNode * n64,
+                                           const SMDS_MeshNode * n14,
+                                           const SMDS_MeshNode * n25,
+                                           const SMDS_MeshNode * n36,
+                                           const SMDS_MeshNode * n1245,
+                                           const SMDS_MeshNode * n2356,
+                                           const SMDS_MeshNode * n1346,
+                                           int ID);
+  virtual SMDS_MeshVolume* AddVolume(const SMDS_MeshNode * n1,
+                                     const SMDS_MeshNode * n2,
+                                     const SMDS_MeshNode * n3,
+                                     const SMDS_MeshNode * n4,
+                                     const SMDS_MeshNode * n5,
+                                     const SMDS_MeshNode * n6,
+                                     const SMDS_MeshNode * n12,
+                                     const SMDS_MeshNode * n23,
+                                     const SMDS_MeshNode * n31,
+                                     const SMDS_MeshNode * n45,
+                                     const SMDS_MeshNode * n56,
+                                     const SMDS_MeshNode * n64,
+                                     const SMDS_MeshNode * n14,
+                                     const SMDS_MeshNode * n25,
+                                     const SMDS_MeshNode * n36,
+                                     const SMDS_MeshNode * n1245,
+                                     const SMDS_MeshNode * n2356,
+                                     const SMDS_MeshNode * n1346);
+
+
   // 2d oreder Hexahedrons with 20 nodes
   virtual SMDS_MeshVolume* AddVolumeWithID(int n1, int n2, int n3, int n4,
                                            int n5, int n6, int n7, int n8,

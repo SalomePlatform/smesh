@@ -550,6 +550,27 @@ void SMESHDS_Script::AddVolume(int NewVolID, int n1, int n2, int n3, int n4,
 //function : AddVolume
 //purpose  : 
 //=======================================================================
+void SMESHDS_Script::AddVolume(int NewVolID, int n1, int n2, int n3, int n4,
+                                int n5,int n6, int n12, int n23, int n31,
+                                int n45, int n56, int n64,
+                                int n14, int n25, int n36,
+                                int n1245, int n2356, int n1346)
+{
+  if(myIsEmbeddedMode){
+    myIsModified = true;
+    return;
+  }
+  getCommand(SMESHDS_AddBiQuadPentahedron)->AddVolume(NewVolID, n1,n2,n3,n4,n5,n6,
+                                                    n12, n23, n31,
+                                                    n45, n56, n64,
+                                                    n14, n25, n36,
+                                                    n1245, n2356, n1346);
+}
+
+//=======================================================================
+//function : AddVolume
+//purpose  :
+//=======================================================================
 void SMESHDS_Script::AddVolume(int NewVolID, int n1, int n2, int n3,
                                int n4, int n5, int n6, int n7, int n8,
                                int n12, int n23, int n34, int n41,

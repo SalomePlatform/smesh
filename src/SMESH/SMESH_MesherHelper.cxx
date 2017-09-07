@@ -2179,13 +2179,30 @@ SMDS_MeshVolume* SMESH_MesherHelper::AddVolume(const SMDS_MeshNode* n1,
     const SMDS_MeshNode* n14 = GetMediumNode( n1, n4, force3d, TopAbs_SOLID );
     const SMDS_MeshNode* n25 = GetMediumNode( n2, n5, force3d, TopAbs_SOLID );
     const SMDS_MeshNode* n36 = GetMediumNode( n3, n6, force3d, TopAbs_SOLID );
+    if ( myCreateBiQuadratic )
+    {
+      const SMDS_MeshNode* n1245 = GetCentralNode( n1,n2,n4,n5,n12,n25,n45,n14,force3d );
+      const SMDS_MeshNode* n1346 = GetCentralNode( n1,n3,n4,n6,n31,n36,n64,n14,force3d );
+      const SMDS_MeshNode* n2356 = GetCentralNode( n2,n3,n6,n5,n23,n36,n56,n25,force3d );
 
-    if(id)
-      elem = meshDS->AddVolumeWithID(n1, n2, n3, n4, n5, n6,
-                                     n12, n23, n31, n45, n56, n64, n14, n25, n36, id);
+      if(id)
+        elem = meshDS->AddVolumeWithID(n1, n2, n3, n4, n5, n6,
+                                       n12, n23, n31, n45, n56, n64, n14, n25, n36,
+                                       n1245, n2356, n1346, id);
+      else
+        elem = meshDS->AddVolume(n1, n2, n3, n4, n5, n6,
+                                 n12, n23, n31, n45, n56, n64, n14, n25, n36,
+                                 n1245, n2356, n1346);
+    }
     else
-      elem = meshDS->AddVolume(n1, n2, n3, n4, n5, n6,
-                               n12, n23, n31, n45, n56, n64, n14, n25, n36);
+      {
+        if(id)
+          elem = meshDS->AddVolumeWithID(n1, n2, n3, n4, n5, n6,
+                                         n12, n23, n31, n45, n56, n64, n14, n25, n36, id);
+        else
+          elem = meshDS->AddVolume(n1, n2, n3, n4, n5, n6,
+                                   n12, n23, n31, n45, n56, n64, n14, n25, n36);
+      }
   }
   if ( mySetElemOnShape && myShapeID > 0 )
     meshDS->SetMeshElementOnShape( elem, myShapeID );
@@ -4866,6 +4883,7 @@ namespace { // Structures used by FixQuadraticElements()
 void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
                                               bool                   volumeOnly)
 {
+  MESSAGE("FixQuadraticElements " << volumeOnly);
   // setenv NO_FixQuadraticElements to know if FixQuadraticElements() is guilty of bad conversion
   if ( getenv("NO_FixQuadraticElements") )
     return;
@@ -4893,6 +4911,7 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
       }
       else { // fix nodes in the solid and its faces
 #ifdef _DEBUG_
+        MESSAGE("FIX SOLID " << nbSolids-- << " #" << GetMeshDS()->ShapeToIndex(s.Current()));
         MSG("FIX SOLID " << nbSolids-- << " #" << GetMeshDS()->ShapeToIndex(s.Current()));
 #endif
         SMESH_MesherHelper h(*myMesh);
@@ -4907,6 +4926,7 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
     nbfaces = faces.Extent(); /*avoid "unused varianbles": */ nbfaces++, nbfaces--; 
 #endif
     for ( TopTools_MapIteratorOfMapOfShape fIt( faces ); fIt.More(); fIt.Next() ) {
+      MESSAGE("FIX FACE " << nbfaces-- << " #" << GetMeshDS()->ShapeToIndex(fIt.Key()));
       MSG("FIX FACE " << nbfaces-- << " #" << GetMeshDS()->ShapeToIndex(fIt.Key()));
       SMESH_MesherHelper h(*myMesh);
       h.SetSubShape( fIt.Key() );
@@ -5263,10 +5283,11 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
   // 4. Move nodes
   // -------------
 
-  TIDSortedElemSet biQuadQuas, biQuadTris, triQuadHexa;
+  TIDSortedElemSet biQuadQuas, biQuadTris, triQuadHexa, biQuadPenta;
   const bool toFixCentralNodes = ( myMesh->NbBiQuadQuadrangles() +
                                    myMesh->NbBiQuadTriangles() +
-                                   myMesh->NbTriQuadraticHexas() );
+                                   myMesh->NbTriQuadraticHexas() +
+                                   myMesh->NbBiQuadPrisms());
   double distXYZ[4];
   faceHlp.ToFixNodeParameters( true );
 
@@ -5302,6 +5323,7 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
           case SMDSEntity_BiQuad_Quadrangle: biQuadQuas.insert( e ); break;
           case SMDSEntity_BiQuad_Triangle:   biQuadTris.insert( e ); break;
           case SMDSEntity_TriQuad_Hexa:      triQuadHexa.insert( e ); break;
+          case SMDSEntity_BiQuad_Penta:      biQuadPenta.insert( e ); break;
           default:;
           }
         }
@@ -5450,6 +5472,16 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
       SMESH_Block::ShellPoint( nCenterParams, pointsOnShapes, nCenterCoords );
       GetMeshDS()->MoveNode( hexNodes[26],
                              nCenterCoords.X(), nCenterCoords.Y(), nCenterCoords.Z());
+    }
+  }
+  // treat tri-quadratic hexahedra
+  {
+    SMDS_VolumeTool volExp;
+    TIDSortedElemSet::iterator pentIt = biQuadPenta.begin();
+    for ( ; pentIt != biQuadPenta.end(); ++pentIt )
+    {
+      MESSAGE("---");
+      volExp.Set( *pentIt, /*ignoreCentralNodes=*/false );
     }
   }
 #ifdef _DEBUG_
