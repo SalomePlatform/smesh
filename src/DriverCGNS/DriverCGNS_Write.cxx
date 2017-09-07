@@ -623,7 +623,7 @@ Driver_Mesh::Status DriverCGNS_Write::Perform()
       return addMessage( cg_get_error(), /*fatal = */true);
 
     // write BC location
-    if ( location != CGNS_ENUMV( Vertex ))
+    if ( location != CGNS_ENUMV( Vertex ) || meshDim == 1 )
     {
       if ( cg_boco_gridlocation_write( _fn, iBase, iZone, iBC, location) != CG_OK )
         return addMessage( cg_get_error(), /*fatal = */false);
