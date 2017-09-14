@@ -61,6 +61,7 @@ int SMDS_Downward::getCellDimension(unsigned char cellType)
       _cellDimension[VTK_TRIQUADRATIC_HEXAHEDRON] = 3;
       _cellDimension[VTK_WEDGE] = 3;
       _cellDimension[VTK_QUADRATIC_WEDGE] = 3;
+      _cellDimension[VTK_BIQUADRATIC_QUADRATIC_WEDGE] = 3;
       _cellDimension[VTK_PYRAMID] = 3;
       _cellDimension[VTK_QUADRATIC_PYRAMID] = 3;
       _cellDimension[VTK_HEXAGONAL_PRISM] = 3;

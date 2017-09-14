@@ -4883,7 +4883,7 @@ namespace { // Structures used by FixQuadraticElements()
 void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
                                               bool                   volumeOnly)
 {
-  MESSAGE("FixQuadraticElements " << volumeOnly);
+  //MESSAGE("FixQuadraticElements " << volumeOnly);
   // setenv NO_FixQuadraticElements to know if FixQuadraticElements() is guilty of bad conversion
   if ( getenv("NO_FixQuadraticElements") )
     return;
@@ -4911,7 +4911,6 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
       }
       else { // fix nodes in the solid and its faces
 #ifdef _DEBUG_
-        MESSAGE("FIX SOLID " << nbSolids-- << " #" << GetMeshDS()->ShapeToIndex(s.Current()));
         MSG("FIX SOLID " << nbSolids-- << " #" << GetMeshDS()->ShapeToIndex(s.Current()));
 #endif
         SMESH_MesherHelper h(*myMesh);

@@ -27,7 +27,7 @@
 #ifdef WIN32
 #pragma warning(disable:4250)
 #endif
-
+#include <utilities.h>
 namespace MED
 {
   //---------------------------------------------------------------

@@ -153,6 +153,7 @@ vtkIdType getCellType( const SMDSAbs_ElementType theType,
     else if ( theNbNodes == 20 )  return VTK_QUADRATIC_HEXAHEDRON;
     else if ( theNbNodes == 27 )  return VTK_TRIQUADRATIC_HEXAHEDRON;
     else if ( theNbNodes == 15  ) return VTK_QUADRATIC_WEDGE;
+    else if ( theNbNodes == 18  ) return VTK_BIQUADRATIC_QUADRATIC_WEDGE;
     else if ( theNbNodes == 13  ) return VTK_QUADRATIC_PYRAMID;//VTK_CONVEX_POINT_SET;
     else return VTK_EMPTY_CELL;
 

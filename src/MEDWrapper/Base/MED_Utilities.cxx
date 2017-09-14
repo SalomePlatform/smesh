@@ -93,6 +93,7 @@ bool InitEntity2GeomSet()
   aGeomMAILLESet.insert(eTETRA10);
   aGeomMAILLESet.insert(ePYRA13);
   aGeomMAILLESet.insert(ePENTA15);
+  aGeomMAILLESet.insert(ePENTA18);
   aGeomMAILLESet.insert(eHEXA20);
   aGeomMAILLESet.insert(eHEXA27);
   aGeomMAILLESet.insert(ePOLYEDRE);

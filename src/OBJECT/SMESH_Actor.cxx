@@ -279,6 +279,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
   aFilter->RegisterCellsWithType(VTK_TRIQUADRATIC_HEXAHEDRON);
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
+  aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUADRATIC_WEDGE);
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
   aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
   aFilter->RegisterCellsWithType(VTK_POLYHEDRON);
@@ -310,6 +311,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
   aFilter->RegisterCellsWithType(VTK_TRIQUADRATIC_HEXAHEDRON);
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
+  aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUADRATIC_WEDGE);
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
   aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
   aFilter->RegisterCellsWithType(VTK_POLYHEDRON);
@@ -1683,6 +1685,7 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode)
         aFilter->RegisterCellsWithType(VTK_TRIQUADRATIC_HEXAHEDRON);
         aFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
         aFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
+        aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUADRATIC_WEDGE);
         aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
         aFilter->RegisterCellsWithType(VTK_POLYHEDRON);
 
@@ -1696,6 +1699,7 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode)
         aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
         aHltFilter->RegisterCellsWithType(VTK_TRIQUADRATIC_HEXAHEDRON);
         aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
+        aHltFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUADRATIC_WEDGE);
         aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
         aHltFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
         aHltFilter->RegisterCellsWithType(VTK_POLYHEDRON);

@@ -29,6 +29,7 @@
 #include "SMESH_SMDS.hxx"
 
 #include "SMDS_MeshElement.hxx"
+#include<utilities.h>
 
 class SMDS_EXPORT SMDS_MeshInfo
 {
@@ -144,26 +145,30 @@ inline SMDS_MeshInfo::SMDS_MeshInfo():
   // 15  *
   // 16        *
   // 17        *
-  // 18     *
-  // 19     *
+  // 18  *
+  // 19
   // 20  *   
-  // 21     *
-  // 22     *
-  // 23     *
-  // 24     *
-  // 25
-  // 26
+  // 21
+  // 22
+  // 23
+  // 24
+  // 25     *
+  // 26     *
   // 27  *
+  // 28     *
+  // 29     *
+  // 30     *
+  // 31     *
   //
   // So to have a unique index for each type basing on nb of nodes, we use a shift:
   myShift.resize(SMDSAbs_NbElementTypes, 0);
 
-  myShift[ SMDSAbs_Face      ] = +15;// 3->18, 4->19, etc.
+  myShift[ SMDSAbs_Face      ] = +22;// 3->25, 4->26, etc.
   myShift[ SMDSAbs_Edge      ] = +14;// 2->16, 3->17
   myShift[ SMDSAbs_0DElement ] = +2; // 1->3
   myShift[ SMDSAbs_Ball      ] = +1; // 1->2
 
-  myNb.resize( index( SMDSAbs_Volume,27 ) + 1, NULL);
+  myNb.resize( index( SMDSAbs_Face,9 ) + 1, NULL);
 
   myNb[ index( SMDSAbs_Node,1 )] = & myNbNodes;
   myNb[ index( SMDSAbs_0DElement,1 )] = & myNb0DElements;
@@ -187,6 +192,7 @@ inline SMDS_MeshInfo::SMDS_MeshInfo():
   myNb[ index( SMDSAbs_Volume, 12)] = & myNbHexPrism;
   myNb[ index( SMDSAbs_Volume, 13)] = & myNbQuadPyramids;
   myNb[ index( SMDSAbs_Volume, 15)] = & myNbQuadPrisms;  
+  myNb[ index( SMDSAbs_Volume, 18)] = & myNbBiQuadPrisms;
   myNb[ index( SMDSAbs_Volume, 20)] = & myNbQuadHexas;   
   myNb[ index( SMDSAbs_Volume, 27)] = & myNbTriQuadHexas;   
 }
@@ -282,7 +288,7 @@ SMDS_MeshInfo::NbPyramids(SMDSAbs_ElementOrder order) const
 
 inline int  // NbPrisms
 SMDS_MeshInfo::NbPrisms  (SMDSAbs_ElementOrder order) const
-{ return order == ORDER_ANY ? myNbPrisms+myNbQuadPrisms : order == ORDER_LINEAR ? myNbPrisms : myNbQuadPrisms; }
+{ return order == ORDER_ANY ? myNbPrisms+myNbQuadPrisms+myNbBiQuadPrisms: order == ORDER_LINEAR ? myNbPrisms : myNbQuadPrisms+myNbBiQuadPrisms; }
 
 inline int  // NbHexPrisms
 SMDS_MeshInfo::NbHexPrisms  (SMDSAbs_ElementOrder order) const
@@ -386,7 +392,8 @@ SMDS_MeshInfo::NbElementsOfGeom(SMDSAbs_GeometryType geom) const
                                          myNbQuadHexas +
                                          myNbTriQuadHexas);
   case SMDSGeom_PENTA:           return (myNbPrisms +
-                                         myNbQuadPrisms);
+                                         myNbQuadPrisms +
+                                         myNbBiQuadPrisms);
   case SMDSGeom_HEXAGONAL_PRISM: return myNbHexPrism;
   case SMDSGeom_POLYHEDRA:       return myNbPolyhedrons;
     // Discrete:

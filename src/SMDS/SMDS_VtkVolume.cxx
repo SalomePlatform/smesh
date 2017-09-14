@@ -170,6 +170,7 @@ int SMDS_VtkVolume::NbFaces() const
     case VTK_WEDGE:
     case VTK_QUADRATIC_PYRAMID:
     case VTK_QUADRATIC_WEDGE:
+    case VTK_BIQUADRATIC_QUADRATIC_WEDGE:
       nbFaces = 5;
       break;
     case VTK_HEXAHEDRON:
@@ -240,6 +241,7 @@ int SMDS_VtkVolume::NbEdges() const
       break;
     case VTK_WEDGE:
     case VTK_QUADRATIC_WEDGE:
+    case VTK_BIQUADRATIC_QUADRATIC_WEDGE:
       nbEdges = 9;
       break;
     case VTK_HEXAHEDRON:
@@ -468,6 +470,7 @@ bool SMDS_VtkVolume::IsQuadratic() const
     case VTK_QUADRATIC_TETRA:
     case VTK_QUADRATIC_PYRAMID:
     case VTK_QUADRATIC_WEDGE:
+    case VTK_BIQUADRATIC_QUADRATIC_WEDGE:
     case VTK_QUADRATIC_HEXAHEDRON:
     case VTK_TRIQUADRATIC_HEXAHEDRON:
       return true;
@@ -498,6 +501,7 @@ bool SMDS_VtkVolume::IsMediumNode(const SMDS_MeshNode* node) const
       rankFirstMedium = 5; // medium nodes are of rank 5 to 12
       break;
     case VTK_QUADRATIC_WEDGE:
+    case VTK_BIQUADRATIC_QUADRATIC_WEDGE:
       rankFirstMedium = 6; // medium nodes are of rank 6 to 14
       break;
     case VTK_QUADRATIC_HEXAHEDRON:
@@ -533,11 +537,12 @@ int SMDS_VtkVolume::NbCornerNodes() const
   vtkIdType aVtkType = grid->GetCellType(myVtkID);
   switch (aVtkType)
   {
-  case VTK_QUADRATIC_TETRA:         return 4;
-  case VTK_QUADRATIC_PYRAMID:       return 5;
-  case VTK_QUADRATIC_WEDGE:         return 6;
+  case VTK_QUADRATIC_TETRA:             return 4;
+  case VTK_QUADRATIC_PYRAMID:           return 5;
+  case VTK_QUADRATIC_WEDGE:
+  case VTK_BIQUADRATIC_QUADRATIC_WEDGE: return 6;
   case VTK_QUADRATIC_HEXAHEDRON:
-  case VTK_TRIQUADRATIC_HEXAHEDRON: return 8;
+  case VTK_TRIQUADRATIC_HEXAHEDRON:     return 8;
   default:;
   }
   return NbNodes();
@@ -612,6 +617,7 @@ SMDSAbs_GeometryType SMDS_VtkVolume::GetGeomType() const
       break;
     case VTK_WEDGE:
     case VTK_QUADRATIC_WEDGE:
+    case VTK_BIQUADRATIC_QUADRATIC_WEDGE:
       aType = SMDSGeom_PENTA;
       break;
     case VTK_HEXAHEDRON:

@@ -703,7 +703,11 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
                                              SMDSAbs_Volume));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              ePENTA15,
-                                             nbElemInfo.NbPrisms( ORDER_QUADRATIC ),
+                                             nbElemInfo.NbQuadPrisms(),
+                                             SMDSAbs_Volume));
+    aTElemTypeDatas.push_back( TElemTypeData(anEntity,
+                                             ePENTA18,
+                                             nbElemInfo.NbBiQuadPrisms(),
                                              SMDSAbs_Volume));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              eHEXA8,
@@ -943,7 +947,6 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       {
         // Treat standard types
         // ---------------------
-
         // allocate data arrays
         PCellInfo aCellInfo = myMed->CrCellInfo( aMeshInfo,
                                                  aElemTypeData->_entity,
@@ -955,7 +958,6 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
         // build map of family numbers for this type
         if ( !isElemFamMapBuilt[ aElemTypeData->_smdsType ])
         {
-          //cout << " fillElemFamilyMap()" << endl;
           fillElemFamilyMap( anElemFamMap, aFamilies, aElemTypeData->_smdsType );
           isElemFamMapBuilt[ aElemTypeData->_smdsType ] = true;
         }
@@ -993,10 +995,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
         // store data in a file
         myMed->SetCellInfo(aCellInfo);
       }
-
     } // loop on geom types
-
-
   }
   catch(const std::exception& exc) {
     INFOS("The following exception was caught:\n\t"<<exc.what());

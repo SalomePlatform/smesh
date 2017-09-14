@@ -1556,8 +1556,14 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeFromVtkIdsWithID(const std::vector<vtkIdTyp
     case VTK_QUADRATIC_WEDGE:
       myInfo.myNbQuadPrisms++;
       break;
+    case VTK_BIQUADRATIC_QUADRATIC_WEDGE:
+      myInfo.myNbBiQuadPrisms++;
+      break;
     case VTK_QUADRATIC_HEXAHEDRON:
       myInfo.myNbQuadHexas++;
+      break;
+    case VTK_TRIQUADRATIC_HEXAHEDRON:
+      myInfo.myNbTriQuadHexas++;
       break;
 //#ifdef VTK_HAVE_POLYHEDRON
     case VTK_POLYHEDRON:
@@ -4357,6 +4363,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolume(const SMDS_MeshNode * n1,
                                       const SMDS_MeshNode * n2356,
                                       const SMDS_MeshNode * n1346)
 {
+  //MESSAGE("AddVolume penta18");
   int ID = myElementIDFactory->GetFreeID();
   SMDS_MeshVolume * v =
     SMDS_Mesh::AddVolumeWithID(n1, n2, n3, n4, n5, n6, n12, n23, n31,
@@ -4376,6 +4383,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(int n1, int n2, int n3,
                                             int n14,int n25,int n36,
                                             int n1245, int n2356, int n1346, int ID)
 {
+  //MESSAGE("AddVolumeWithID penta18 " << ID);
   return SMDS_Mesh::AddVolumeWithID
     ((SMDS_MeshNode*) myNodeIDFactory->MeshElement(n1) ,
      (SMDS_MeshNode*) myNodeIDFactory->MeshElement(n2) ,
@@ -4422,6 +4430,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
                                             const SMDS_MeshNode * n1346,
                                             int ID)
 {
+  //MESSAGE("AddVolumeWithID penta18 "<< ID);
   if (!n1 || !n2 || !n3 || !n4 || !n5 || !n6 || !n12 || !n23 ||
       !n31 || !n45 || !n56 || !n64 || !n14 || !n25 || !n36 || !n1245 || !n2356 || !n1346)
     return 0;
@@ -4430,7 +4439,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
     return 0;
   }
   // --- retrieve nodes ID
-  myNodeIds.resize(15);
+  myNodeIds.resize(18);
   myNodeIds[0] = n1->getVtkId();
   myNodeIds[1] = n2->getVtkId();
   myNodeIds[2] = n3->getVtkId();

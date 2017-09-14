@@ -6057,18 +6057,22 @@ Please enter correct value and try again</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_21</source>
-        <translation>OCTA12</translation>
+        <translation>PENTA18</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_22</source>
-        <translation>POLYEDRE</translation>
+        <translation>OCTA12</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_23</source>
-        <translation>QPOLYEDRE</translation>
+        <translation>POLYEDRE</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_24</source>
+        <translation>QPOLYEDRE</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_25</source>
         <translation>BALL</translation>
     </message>
     <message>

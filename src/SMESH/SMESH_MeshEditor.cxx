@@ -9230,7 +9230,7 @@ int SMESH_MeshEditor::convertElemToQuadratic(SMESHDS_SubMesh *   theSm,
                                              SMESH_MesherHelper& theHelper,
                                              const bool          theForce3d)
 {
-  MESSAGE("convertElemToQuadratic");
+  //MESSAGE("convertElemToQuadratic");
   int nbElem = 0;
   if( !theSm ) return nbElem;
 
@@ -9338,7 +9338,6 @@ int SMESH_MeshEditor::convertElemToQuadratic(SMESHDS_SubMesh *   theSm,
         case SMDSEntity_Penta:
         case SMDSEntity_Quad_Penta:
         case SMDSEntity_BiQuad_Penta:
-          MESSAGE("--- " << aGeomType);
           NewElem = theHelper.AddVolume(nodes[0], nodes[1], nodes[2], nodes[3], nodes[4], nodes[5], id, theForce3d);
           break;
         case SMDSEntity_Hexa:
@@ -9369,7 +9368,7 @@ int SMESH_MeshEditor::convertElemToQuadratic(SMESHDS_SubMesh *   theSm,
 
 void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d, const bool theToBiQuad)
 {
-  MESSAGE("ConvertToQuadratic "<< theForce3d << " " << theToBiQuad);
+  //MESSAGE("ConvertToQuadratic "<< theForce3d << " " << theToBiQuad);
   SMESHDS_Mesh* meshDS = GetMeshDS();
 
   SMESH_MesherHelper aHelper(*myMesh);
@@ -9538,7 +9537,6 @@ void SMESH_MeshEditor::ConvertToQuadratic(const bool theForce3d, const bool theT
       case SMDSEntity_Penta:
       case SMDSEntity_Quad_Penta:
       case SMDSEntity_BiQuad_Penta:
-        MESSAGE("--- " << type);
         NewVolume = aHelper.AddVolume(nodes[0], nodes[1], nodes[2],
                                       nodes[3], nodes[4], nodes[5], id, theForce3d);
         for ( size_t i = 15; i < nodes.size(); ++i ) // rm central nodes
