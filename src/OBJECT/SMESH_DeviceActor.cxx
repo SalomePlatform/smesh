@@ -37,6 +37,7 @@
 #include <VTKViewer_Transform.h>
 #include <VTKViewer_TransformFilter.h>
 #include <VTKViewer_ExtractUnstructuredGrid.h>
+#include <VTKViewer_Actor.h>
 
 // VTK Includes
 #include <vtkObjectFactory.h>
@@ -94,8 +95,8 @@ SMESH_DeviceActor
   myMapper = VTKViewer_PolyDataMapper::New();
   myPlaneCollection = vtkPlaneCollection::New();
 
-  vtkMapper::GetResolveCoincidentTopologyPolygonOffsetParameters(myPolygonOffsetFactor,
-                                                                 myPolygonOffsetUnits);
+  VTKViewer_Actor::GetDefaultPolygonOffsetParameters(myPolygonOffsetFactor,
+                                                     myPolygonOffsetUnits);
 
   myMapper->UseLookupTableScalarRangeOn();
   myMapper->SetColorModeToMapScalars();
