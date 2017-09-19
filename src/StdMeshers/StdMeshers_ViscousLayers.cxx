@@ -501,6 +501,7 @@ namespace VISCOUS_3D
     gp_XY  LastUV( const TopoDS_Face& F, _EdgesOnShape& eos, int which=-1 ) const;
     bool   IsOnEdge() const { return _2neibors; }
     bool   IsOnFace() const { return ( _nodes[0]->GetPosition()->GetDim() == 2 ); }
+    int    BaseShapeDim() const { return _nodes[0]->GetPosition()->GetDim(); }
     gp_XYZ Copy( _LayerEdge& other, _EdgesOnShape& eos, SMESH_MesherHelper& helper );
     void   SetCosin( double cosin );
     void   SetNormal( const gp_XYZ& n ) { _normal = n; }
@@ -9673,10 +9674,23 @@ void _LayerEdge::SmoothPos( const vector< double >& segLen, const double tol )
   int iSmoothed = GetSmoothedPos( tol );
   if ( !iSmoothed ) return;
 
-  //if ( 1 || Is( DISTORTED ))
+  gp_XYZ normal = _normal;
+  if ( Is( NORMAL_UPDATED ))
   {
-    gp_XYZ normal = _normal;
-    if ( Is( NORMAL_UPDATED ))
+    double minDot = 1;
+    for ( size_t i = 0; i < _neibors.size(); ++i )
+    {
+      if ( _neibors[i]->IsOnFace() )
+      {
+        double dot = _normal * _neibors[i]->_normal;
+        if ( dot < minDot )
+        {
+          normal = _neibors[i]->_normal;
+          minDot = dot;
+        }
+      }
+    }
+    if ( minDot == 1. )
       for ( size_t i = 1; i < _pos.size(); ++i )
       {
         normal = _pos[i] - _pos[0];
@@ -9687,42 +9701,29 @@ void _LayerEdge::SmoothPos( const vector< double >& segLen, const double tol )
           break;
         }
       }
-    const double r = 0.2;
-    for ( int iter = 0; iter < 50; ++iter )
-    {
-      double minDot = 1;
-      for ( size_t i = Max( 1, iSmoothed-1-iter ); i < _pos.size()-1; ++i )
-      {
-        gp_XYZ midPos = 0.5 * ( _pos[i-1] + _pos[i+1] );
-        gp_XYZ newPos = ( 1-r ) * midPos + r * _pos[i];
-        _pos[i] = newPos;
-        double midLen = 0.5 * ( segLen[i-1] + segLen[i+1] );
-        double newLen = ( 1-r ) * midLen + r * segLen[i];
-        const_cast< double& >( segLen[i] ) = newLen;
-        // check angle between normal and (_pos[i+1], _pos[i] )
-        gp_XYZ posDir = _pos[i+1] - _pos[i];
-        double size   = posDir.SquareModulus();
-        if ( size > RealSmall() )
-          minDot = Min( minDot, ( normal * posDir ) * ( normal * posDir ) / size );
-      }
-      if ( minDot > 0.5 * 0.5 )
-        break;
-    }
   }
-  // else
-  // {
-  //   for ( size_t i = 1; i < _pos.size()-1; ++i )
-  //   {
-  //     if ((int) i < iSmoothed  &&  ( segLen[i] / segLen.back() < 0.5 ))
-  //       continue;
-
-  //     double     wgt = segLen[i] / segLen.back();
-  //     gp_XYZ normPos = _pos[0] + _normal * wgt * _len;
-  //     gp_XYZ tgtPos  = ( 1 - wgt ) * _pos[0] +  wgt * _pos.back();
-  //     gp_XYZ newPos  = ( 1 - wgt ) * normPos +  wgt * tgtPos;
-  //     _pos[i] = newPos;
-  //   }
-  // }
+  const double r = 0.2;
+  for ( int iter = 0; iter < 50; ++iter )
+  {
+    double minDot = 1;
+    for ( size_t i = Max( 1, iSmoothed-1-iter ); i < _pos.size()-1; ++i )
+    {
+      gp_XYZ midPos = 0.5 * ( _pos[i-1] + _pos[i+1] );
+      gp_XYZ newPos = ( 1-r ) * midPos + r * _pos[i];
+      _pos[i] = newPos;
+      double midLen = 0.5 * ( segLen[i-1] + segLen[i+1] );
+      double newLen = ( 1-r ) * midLen + r * segLen[i];
+      const_cast< double& >( segLen[i] ) = newLen;
+      // check angle between normal and (_pos[i+1], _pos[i] )
+      gp_XYZ posDir = _pos[i+1] - _pos[i];
+      double size   = posDir.SquareModulus();
+      if ( size > RealSmall() )
+        minDot = Min( minDot, ( normal * posDir ) * ( normal * posDir ) / size );
+    }
+    if ( minDot > 0.5 * 0.5 )
+      break;
+  }
+  return;
 }
 
 //================================================================================
