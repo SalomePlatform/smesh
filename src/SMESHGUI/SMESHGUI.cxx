@@ -143,6 +143,7 @@
 #include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
 #include CORBA_CLIENT_HEADER(SMESH_MeshEditor)
 #include CORBA_CLIENT_HEADER(SMESH_Measurements)
+#include CORBA_CLIENT_HEADER(SMESH_Mesh)
 
 // Qt includes
 // #define       INCLUDE_MENUITEM_DEF // VSR commented ????????
@@ -653,7 +654,7 @@ namespace
     // Get parameters of export operation
 
     QString            aFilename;
-    SMESH::MED_VERSION aFormat = SMESH::MED_V2_2;
+    SMESH::MED_VERSION aFormat = SMESH::MED_LATEST;
     // Init the parameters with the default values
     bool aIsASCII_STL   = true;
     bool toCreateGroups = false;
@@ -741,11 +742,17 @@ namespace
     else if ( isMED || isSAUV ) // Export to MED or SAUV
     {
       QMap<QString, SMESH::MED_VERSION> aFilterMap;
-      //QString v21 (aMesh->GetVersionString(SMESH::MED_V2_1, 2));
       if ( isMED ) {
         QString v22 (aMesh->GetVersionString(SMESH::MED_V2_2, 2));
-        //aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( v21 ) + " (*.med)", SMESH::MED_V2_1 );
         aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( v22 ) + " (*.med)", SMESH::MED_V2_2 );
+        int minor = v22.split(".").last().toInt();
+        int vv= int(SMESH::MED_MINOR_0); // add all minor from 0 to current
+        for (int ii=0; ii<minor; ii++)
+          {
+            QString vs = aMesh->GetVersionString(SMESH::MED_VERSION(vv), 2);
+            aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( vs ) + " (*.med)",  SMESH::MED_VERSION(vv));
+            vv = vv +1;
+          }
       }
       else { // isSAUV
         aFilterMap.insert("All files (*)", SMESH::MED_V2_1 );
@@ -826,7 +833,7 @@ namespace
             }
           if( !toOverwrite ) {
             // can't append to an existing using other format
-            SMESH::MED_VERSION aVersion = SMESH::MED_V2_1;
+            SMESH::MED_VERSION aVersion = aFormat; //SMESH::MED_V2_1;
             bool isVersionOk = SMESHGUI::GetSMESHGen()->GetMEDVersion( aFilename.toUtf8().constData(), aVersion );
             if( !isVersionOk || aVersion != aFormat ) {
               int aRet = SUIT_MessageBox::warning(SMESHGUI::desktop(),

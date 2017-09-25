@@ -495,6 +495,17 @@ namespace SMESH
     switch (theVersion) {
     case SMESH::MED_V2_1: myStream << "SMESH.MED_V2_1"; break;
     case SMESH::MED_V2_2: myStream << "SMESH.MED_V2_2"; break;
+    case SMESH::MED_LATEST: myStream << "SMESH.MED_LATEST"; break;
+    case SMESH::MED_MINOR_0: myStream << "SMESH.MED_MINOR_0"; break;
+    case SMESH::MED_MINOR_1: myStream << "SMESH.MED_MINOR_1"; break;
+    case SMESH::MED_MINOR_2: myStream << "SMESH.MED_MINOR_2"; break;
+    case SMESH::MED_MINOR_3: myStream << "SMESH.MED_MINOR_3"; break;
+    case SMESH::MED_MINOR_4: myStream << "SMESH.MED_MINOR_4"; break;
+    case SMESH::MED_MINOR_5: myStream << "SMESH.MED_MINOR_5"; break;
+    case SMESH::MED_MINOR_6: myStream << "SMESH.MED_MINOR_6"; break;
+    case SMESH::MED_MINOR_7: myStream << "SMESH.MED_MINOR_7"; break;
+    case SMESH::MED_MINOR_8: myStream << "SMESH.MED_MINOR_8"; break;
+    case SMESH::MED_MINOR_9: myStream << "SMESH.MED_MINOR_9"; break;
     default: myStream << theVersion;
     }
     return *this;

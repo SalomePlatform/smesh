@@ -238,11 +238,28 @@ module SMESH
 
   /*!
    * Enumeration for ExportToMED*()
+   * MED_V2_1 and MED_V2_2 are here for compatibility and mean respectively obsolete and MED_LATEST.
+   * MED_MINOR_0 to MED_MINOR_9 are use to specify the minor version used by MEDfichier
+   * to write MED files (major version cannot be changed).
+   * This allows backward compatibility from a newer version of SALOME to an older one:
+   * for instance, a MESH produced in SALOME 8.4 (med 3.3) can be written in med 3.2 format
+   * to be read in SALOME 8.3.
    */
   enum MED_VERSION
   {
     MED_V2_1,
-    MED_V2_2
+    MED_V2_2,
+    MED_LATEST,
+    MED_MINOR_0,
+    MED_MINOR_1,
+    MED_MINOR_2,
+    MED_MINOR_3,
+    MED_MINOR_4,
+    MED_MINOR_5,
+    MED_MINOR_6,
+    MED_MINOR_7,
+    MED_MINOR_8,
+    MED_MINOR_9
   };
 
   /*! 
@@ -686,8 +703,8 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
-     * Export Mesh to MED_V2_1 MED format
-     * Works, just the same as ExportToMEDX with MED_VERSION parameter equal to MED_V2_1
+     * Export Mesh to MED_LATEST MED format
+     * Works, just the same as ExportToMEDX with MED_VERSION parameter equal to MED_LATEST
      * and overwrite parameter equal to true
      * The method is kept in order to support old functionality
      */

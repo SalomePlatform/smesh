@@ -1402,6 +1402,7 @@ void SMESH_Mesh::ExportMED(const char *        file,
                            bool                theAllElemsToGroup)
   throw(SALOME_Exception)
 {
+  //MESSAGE("MED_VERSION:"<< theVersion);
   SMESH_TRY;
 
   DriverMED_W_SMESHDS_Mesh myWriter;
