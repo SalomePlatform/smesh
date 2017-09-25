@@ -64,7 +64,6 @@
 #include <Utils_CorbaException.hxx>
 #include <SALOMEDS_wrap.hxx>
 #include <SALOME_GenericObj_i.hh>
-#include <Basics_OCCTVersion.hxx>
 
 #include <BRepAdaptor_Surface.hxx>
 #include <BRep_Tool.hxx>
@@ -76,15 +75,8 @@
 #include <gp_Ax2.hxx>
 #include <gp_Vec.hxx>
 
-#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
-#define NO_CAS_CATCH
-#endif
-
 #include <Standard_Failure.hxx>
-
-#ifdef NO_CAS_CATCH
 #include <Standard_ErrorHandler.hxx>
-#endif
 
 #include <sstream>
 #include <limits>
@@ -3890,7 +3882,6 @@ SMESH_MeshEditor_i::scale(SMESH::SMESH_IDSource_ptr  theObject,
   };
   gp_Trsf aTrsf;
 
-#if OCC_VERSION_LARGE > 0x06070100
   // fight against orthogonalization
   // aTrsf.SetValues( S[0], 0,    0,    thePoint.x * (1-S[0]),
   //                  0,    S[1], 0,    thePoint.y * (1-S[1]),
@@ -3902,13 +3893,6 @@ SMESH_MeshEditor_i::scale(SMESH::SMESH_IDSource_ptr  theObject,
                 thePoint.y * (1-S[1]),
                 thePoint.z * (1-S[2]));
   M.SetDiagonal( S[0], S[1], S[2] );
-
-#else
-  double tol = std::numeric_limits<double>::max();
-  aTrsf.SetValues( S[0], 0,    0,    thePoint.x * (1-S[0]),
-                   0,    S[1], 0,    thePoint.y * (1-S[1]),
-                   0,    0,    S[2], thePoint.z * (1-S[2]),   tol, tol);
-#endif
 
   TIDSortedElemSet  copyElements;
   TIDSortedElemSet* workElements = &elements;

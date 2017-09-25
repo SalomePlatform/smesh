@@ -42,15 +42,8 @@
 #include <TopExp.hxx>
 #include <TopTools_IndexedMapOfShape.hxx>
 
-#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
-#define NO_CAS_CATCH
-#endif
-
 #include <Standard_Failure.hxx>
-
-#ifdef NO_CAS_CATCH
 #include <Standard_ErrorHandler.hxx>
-#endif
 
 #include <Basics_Utils.hxx>
 
@@ -238,9 +231,7 @@ void StdMeshers_NumberOfSegments::SetTableFunction(const vector<double>& table)
     if( _convMode==0 )
     {
       try {
-#ifdef NO_CAS_CATCH
         OCC_CATCH_SIGNALS;
-#endif
         val = pow( 10.0, val );
       }
       catch(Standard_Failure) {
@@ -335,9 +326,7 @@ bool process( const TCollection_AsciiString& str, int convMode,
   bool parsed_ok = true;
   Handle( ExprIntrp_GenExp ) myExpr;
   try {
-#ifdef NO_CAS_CATCH
     OCC_CATCH_SIGNALS;
-#endif
     myExpr = ExprIntrp_GenExp::Create();
     myExpr->Process( str.ToCString() );
   } catch(Standard_Failure) {

@@ -37,15 +37,8 @@
 #include <Expr_NamedUnknown.hxx>
 #include <Expr_GeneralExpression.hxx>
 
-#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
-#define NO_CAS_CATCH
-#endif
-
 #include <Standard_Failure.hxx>
-
-#ifdef NO_CAS_CATCH
 #include <Standard_ErrorHandler.hxx>
-#endif
 
 #ifdef WIN32
 # include <algorithm>
@@ -356,9 +349,7 @@ void StdMeshersGUI_DistrPreview::update()
   x = y = 0;
 
   try {   
-#ifdef NO_CAS_CATCH
     OCC_CATCH_SIGNALS;
-#endif
     replot();
   } catch(Standard_Failure) {
     Handle(Standard_Failure) aFail = Standard_Failure::Caught();
@@ -404,9 +395,7 @@ bool StdMeshersGUI_DistrPreview::init( const QString& str )
   Kernel_Utils::Localizer loc;
   bool parsed_ok = true;
   try {
-#ifdef NO_CAS_CATCH
     OCC_CATCH_SIGNALS;
-#endif
     myExpr = ExprIntrp_GenExp::Create();
     myExpr->Process( ( Standard_CString ) str.toLatin1().data() );
   } catch(Standard_Failure) {
@@ -446,9 +435,7 @@ double StdMeshersGUI_DistrPreview::calc( bool& ok )
 
   ok = true;
   try {   
-#ifdef NO_CAS_CATCH
     OCC_CATCH_SIGNALS;
-#endif
     res = myExpr->Expression()->Evaluate( myVars, myValues );
   } catch(Standard_Failure) {
     Handle(Standard_Failure) aFail = Standard_Failure::Caught();
@@ -472,9 +459,7 @@ bool StdMeshersGUI_DistrPreview::convert( double& v ) const
   case EXPONENT:
     {
       try { 
-#ifdef NO_CAS_CATCH
         OCC_CATCH_SIGNALS;
-#endif
         // in StdMeshers_NumberOfSegments.cc
         // const double PRECISION = 1e-7;
         //

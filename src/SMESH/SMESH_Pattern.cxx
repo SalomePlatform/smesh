@@ -75,8 +75,6 @@
 #include <gp_XY.hxx>
 #include <gp_XYZ.hxx>
 
-#include <Basics_OCCTVersion.hxx>
-
 #include <Basics_Utils.hxx>
 #include "utilities.h"
 

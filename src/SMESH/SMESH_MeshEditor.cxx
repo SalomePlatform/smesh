@@ -46,8 +46,6 @@
 #include "SMESH_OctreeNode.hxx"
 #include "SMESH_subMesh.hxx"
 
-#include <Basics_OCCTVersion.hxx>
-
 #include "utilities.h"
 #include "chrono.hxx"
 

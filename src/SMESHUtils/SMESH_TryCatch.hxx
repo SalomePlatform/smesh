@@ -33,7 +33,6 @@
 #include <Utils_SALOME_Exception.hxx>
 #include <Standard_Failure.hxx>
 #include <Standard_ErrorHandler.hxx>
-#include <Basics_OCCTVersion.hxx>
 #include <utilities.h>
 
 // IMPORTANT: include this file _after_ OCC ones, else OCC_CATCH_SIGNALS can be undefined!

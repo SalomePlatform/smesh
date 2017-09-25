@@ -50,22 +50,22 @@
 #include <unistd.h>
 #endif
 
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyObject          ,Standard_Transient);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyCommand         ,Standard_Transient);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyHypothesisReader,Standard_Transient);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyGen             ,_pyObject);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyMesh            ,_pyObject);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pySubMesh         ,_pyObject);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyMeshEditor      ,_pyObject);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyHypothesis      ,_pyObject);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pySelfEraser      ,_pyObject);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyGroup           ,_pyObject);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyFilter          ,_pyObject);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyAlgorithm       ,_pyHypothesis);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyComplexParamHypo,_pyHypothesis);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyNumberOfSegmentsHyp,_pyHypothesis);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyLayerDistributionHypo,_pyHypothesis);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pySegmentLengthAroundVertexHyp,_pyHypothesis);
+IMPLEMENT_STANDARD_RTTIEXT(_pyObject          ,Standard_Transient);
+IMPLEMENT_STANDARD_RTTIEXT(_pyCommand         ,Standard_Transient);
+IMPLEMENT_STANDARD_RTTIEXT(_pyHypothesisReader,Standard_Transient);
+IMPLEMENT_STANDARD_RTTIEXT(_pyGen             ,_pyObject);
+IMPLEMENT_STANDARD_RTTIEXT(_pyMesh            ,_pyObject);
+IMPLEMENT_STANDARD_RTTIEXT(_pySubMesh         ,_pyObject);
+IMPLEMENT_STANDARD_RTTIEXT(_pyMeshEditor      ,_pyObject);
+IMPLEMENT_STANDARD_RTTIEXT(_pyHypothesis      ,_pyObject);
+IMPLEMENT_STANDARD_RTTIEXT(_pySelfEraser      ,_pyObject);
+IMPLEMENT_STANDARD_RTTIEXT(_pyGroup           ,_pyObject);
+IMPLEMENT_STANDARD_RTTIEXT(_pyFilter          ,_pyObject);
+IMPLEMENT_STANDARD_RTTIEXT(_pyAlgorithm       ,_pyHypothesis);
+IMPLEMENT_STANDARD_RTTIEXT(_pyComplexParamHypo,_pyHypothesis);
+IMPLEMENT_STANDARD_RTTIEXT(_pyNumberOfSegmentsHyp,_pyHypothesis);
+IMPLEMENT_STANDARD_RTTIEXT(_pyLayerDistributionHypo,_pyHypothesis);
+IMPLEMENT_STANDARD_RTTIEXT(_pySegmentLengthAroundVertexHyp,_pyHypothesis);
 
 using namespace std;
 using SMESH::TPythonDump;

@@ -38,8 +38,6 @@
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMeshEventListener.hxx"
 
-#include <Basics_OCCTVersion.hxx>
-
 #include "utilities.h"
 #include "OpUtil.hxx"
 #include "Basics_Utils.hxx"

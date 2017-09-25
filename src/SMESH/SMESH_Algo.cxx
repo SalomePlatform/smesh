@@ -42,8 +42,6 @@
 #include "SMESH_TypeDefs.hxx"
 #include "SMESH_subMesh.hxx"
 
-#include <Basics_OCCTVersion.hxx>
-
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepLProp.hxx>
 #include <BRep_Tool.hxx>

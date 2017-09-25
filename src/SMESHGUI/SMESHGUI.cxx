@@ -2646,9 +2646,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if(checkLock(aStudy)) break;
       SUIT_OverrideCursor wc;
       try {
-#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
         OCC_CATCH_SIGNALS;
-#endif
         SMESH::UpdateView();
       }
       catch (std::bad_alloc) { // PAL16774 (Crash after display of many groups)
