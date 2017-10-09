@@ -371,7 +371,7 @@ CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobFileList & meshJo
   // Specification of the working spaces:
   //
   // - local_directory: can be used to specify where to find the input
-  //   files on the local resource. It's optionnal if you specify the
+  //   files on the local resource. It's optional if you specify the
   //   absolute path name of input files.
   //
   // - result_directory: must be used to specify where to download the

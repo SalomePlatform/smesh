@@ -90,7 +90,7 @@ MARK_AS_ADVANCED(SALOME_BUILD_GUI SALOME_SMESH_USE_CGNS SALOME_SMESH_USE_TBB)
 # Prerequisites
 # =============
 # Find "big" prerequisites first - they reference themselves many others
-#   -> this can help finding the smaller prerequisites and detect conficts.
+#   -> this can help finding the smaller prerequisites and detect conflicts.
 # In our case KERNEL has already loaded many prereq:
 
 ##

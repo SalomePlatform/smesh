@@ -5144,7 +5144,7 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
   {
 #ifdef __myDEBUG
     SMDS_MeshElement::iterator nIt = closestFace->begin_nodes();
-    cout << "Shortest distance: _LayerEdge nodes: tgt " << le->_nodes.back()->GetID()
+    cout << "#Shortest distance: _LayerEdge nodes: tgt " << le->_nodes.back()->GetID()
          << " src " << le->_nodes[0]->GetID()<< ", intersection with face ("
          << (*nIt++)->GetID()<<" "<< (*nIt++)->GetID()<<" "<< (*nIt++)->GetID()
          << ") distance = " << distToIntersection<< endl;

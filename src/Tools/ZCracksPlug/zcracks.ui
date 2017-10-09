@@ -567,7 +567,7 @@
      <item row="2" column="0">
       <widget class="QLabel" name="txtExtractLength">
        <property name="toolTip">
-        <string>Extraction length (optionnal)</string>
+        <string>Extraction length (optional)</string>
        </property>
        <property name="text">
         <string>Extraction length</string>

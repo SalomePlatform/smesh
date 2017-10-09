@@ -1232,7 +1232,7 @@ void SMESHGUI_BaseComputeOp::showComputeResult( const bool theMemoryLack,
       currentCellChanged(); // to update buttons
     }
   }
-  // show dialog and wait, becase Compute can be invoked from Preview operation
+  // show dialog and wait, because Compute can be invoked from Preview operation
   //aCompDlg->exec(); // this way it becomes modal - impossible to rotate model in the Viewer
   aCompDlg->show();
 }
@@ -2397,7 +2397,7 @@ void SMESHGUI_BaseComputeOp::showEvaluateResult(const SMESH::long_array& theRes,
       currentCellChanged(); // to update buttons
     }
   }
-  // show dialog and wait, becase Compute can be invoked from Preview operation
+  // show dialog and wait, because Compute can be invoked from Preview operation
   //aCompDlg->exec(); // this way it becomes modal - impossible to rotate model in the Viewer
   aCompDlg->show();
 }

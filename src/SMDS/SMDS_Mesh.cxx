@@ -1696,10 +1696,10 @@ const SMDS_MeshNode * SMDS_Mesh::FindNodeVtk(int vtkId) const
   return (const SMDS_MeshNode *)myNodes[vtkId+1];
 }
 
-///////////////////////////////////////////////////////////////////////////////
-///Create a triangle and add it to the current mesh. This method do not bind an
-///ID to the create triangle.
-///////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+///Create a triangle and add it to the current mesh. This method does not bind
+///an ID to the create triangle.
+//////////////////////////////////////////////////////////////////////////////
 SMDS_MeshFace * SMDS_Mesh::createTriangle(const SMDS_MeshNode * node1,
                                           const SMDS_MeshNode * node2,
                                           const SMDS_MeshNode * node3,
@@ -1746,10 +1746,10 @@ SMDS_MeshFace * SMDS_Mesh::createTriangle(const SMDS_MeshNode * node1,
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////
-///Create a quadrangle and add it to the current mesh. This methode do not bind
-///a ID to the create triangle.
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+///Create a quadrangle and add it to the current mesh. This method does not bind
+///an ID to the create triangle.
+////////////////////////////////////////////////////////////////////////////////
 SMDS_MeshFace * SMDS_Mesh::createQuadrangle(const SMDS_MeshNode * node1,
                                             const SMDS_MeshNode * node2,
                                             const SMDS_MeshNode * node3,
