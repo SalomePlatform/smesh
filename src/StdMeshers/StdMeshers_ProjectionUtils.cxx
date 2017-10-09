@@ -701,7 +701,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
           RETURN_BAD_RESULT("edge2 does not belong to theShape2");
       }
       //
-      // Look for 2 corresponing faces:
+      // Look for 2 corresponding faces:
       //
       TopoDS_Shape F1, F2;
 

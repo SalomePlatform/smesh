@@ -98,7 +98,7 @@ it can be :
   - relative : the maximal chordal deviation - epsilon max - is set to *s x the parameter* where *s* is the size 
     of the bounding box longest diagonal. 
     By default, the parameter is set to 0.001 and the maximum deviation is then set to 0.001 x s,  
-    which is equivalent to say that, for a bouding box of 1 meter, the maximal deviation is 1 mm.
+    which is equivalent to say that, for a bounding box of 1 meter, the maximal deviation is 1 mm.
   - absolute : the maximal chordal deviation is the parameter itself. eg if the parameter equals 2, the maximal chordal deviation will be 2 (mm if the point coordonates are given in mm).
 
 Following that criterion:

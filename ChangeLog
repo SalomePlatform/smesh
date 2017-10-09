@@ -37,7 +37,7 @@
 
 2004-01-05 16:14  Jerome Robert <jerome.robert@eads.net>
 
-	* adm_local/unix/config_files/check_Netgen.m4: Fix a mispelled
+	* adm_local/unix/config_files/check_Netgen.m4: Fix a misspelled
 	  environment variable for idl python
 
 2004-01-05 14:28  tag V1_3_1
@@ -59,7 +59,7 @@
 2004-01-05 09:05  Jerome Robert <jerome.robert@eads.net>
 
 	* src/: SMDS/SMDS_Mesh.cxx, SMESHDS/SMESHDS_Document.cxx: [Bug
-	  SMESH4830] bug in instal with gcc 2.95. Bug fixed.  Note: SGI say
+	  SMESH4830] bug in install with gcc 2.95. Bug fixed.  Note: SGI say
 	  that <algorithm> is requiered to use set_intersection (see
 	  http://www.sgi.com/tech/stl/set_intersection.html).
 
@@ -73,7 +73,7 @@
 2003-12-15 13:15  Nadir Bouhamou <nadir.bouhamou@cea.fr>
 
 	* src/SMESHDS/SMESHDS_Script.cxx: correct a small bug found by the
-	  EDF developpement team (PN and AT) : AddVolume in the case of a
+	  EDF development team (PN and AT) : AddVolume in the case of a
 	  Tetrahedron.
 
 2003-12-11 09:51  Jerome Robert <jerome.robert@eads.net>
@@ -1194,7 +1194,7 @@
 
 	* idl/Makefile.in, adm_local/unix/make_commence.in,
 	  adm_local/unix/make_omniorb.in, build_configure,
-	  configure.in.base: NRI : Update IDL Dependancies.
+	  configure.in.base: NRI : Update IDL Dependencies.
 
 2003-05-28 07:20  Nicolas Rejneri <nicolas.rejneri@opencascade.com>
 
