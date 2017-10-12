@@ -63,16 +63,20 @@
 #endif
 
 #ifdef WIN32
-#define LibHandle HMODULE
-#define LoadLib( name ) LoadLibrary( name )
-#define GetProc GetProcAddress
-#define UnLoadLib( handle ) FreeLibrary( handle );
-#else
-#define LibHandle void*
-#define LoadLib( name ) dlopen( name, RTLD_LAZY | RTLD_GLOBAL )
-#define GetProc dlsym
-#define UnLoadLib( handle ) dlclose( handle );
-#endif
+ #define LibHandle HMODULE
+ #define LoadLib( name ) LoadLibrary( name )
+ #define GetProc GetProcAddress
+ #define UnLoadLib( handle ) FreeLibrary( handle );
+#else // WIN32
+ #define LibHandle void*
+ #ifdef DYNLOAD_LOCAL
+  #define LoadLib( name ) dlopen( name, RTLD_LAZY | RTLD_LOCAL )
+ #else // DYNLOAD_LOCAL
+  #define LoadLib( name ) dlopen( name, RTLD_LAZY | RTLD_GLOBAL )
+ #endif // DYNLOAD_LOCAL
+ #define GetProc dlsym
+ #define UnLoadLib( handle ) dlclose( handle );
+#endif // WIN32
 
 #ifdef _DEBUG_
 static int MYDEBUG = 0;

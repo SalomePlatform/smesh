@@ -62,12 +62,16 @@
  #define LoadLib( name ) LoadLibrary( name )
  #define GetProc GetProcAddress
  #define UnLoadLib( handle ) FreeLibrary( handle );
-#else
+#else // WIN32
  #define LibHandle void*
- #define LoadLib( name ) dlopen( name, RTLD_LAZY | RTLD_GLOBAL )
+ #ifdef DYNLOAD_LOCAL
+  #define LoadLib( name ) dlopen( name, RTLD_LAZY | RTLD_LOCAL )
+ #else // DYNLOAD_LOCAL
+  #define LoadLib( name ) dlopen( name, RTLD_LAZY | RTLD_GLOBAL )
+ #endif // DYNLOAD_LOCAL
  #define GetProc dlsym
  #define UnLoadLib( handle ) dlclose( handle );
-#endif
+#endif // WIN32
 
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_version.h"
