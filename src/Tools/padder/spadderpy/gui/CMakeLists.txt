@@ -22,7 +22,7 @@ INCLUDE(UsePyQt)
 # --- scripts ---
 
 # scripts / static
-SET(py_SCRIPTS
+SET(_py_SCRIPTS
   __init__.py
   plugindialog.py
   inputdialog.py
@@ -32,7 +32,7 @@ SET(py_SCRIPTS
 # --- resources ---
 
 # uic files / to be processed by pyuic
-SET(spadderpy_DATA
+SET(_spadderpy_DATA
   parameters.png
   input.png
   select.png
@@ -46,15 +46,20 @@ SET(spadderpy_DATA
   steelbar.png
 )
 
-SET(_pyuic_files
+SET(_pyuic_FILES
   plugindialog.ui
   inputframe.ui
 )
 
 # scripts / pyuic wrappings
-PYQT_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_files})
+PYQT_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_FILES} TARGET_NAME _target_name_pyuic)
 
 # --- rules ---
-SALOME_INSTALL_SCRIPTS("${_pyuic_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/salome/smesh/spadder/gui)
-SALOME_INSTALL_SCRIPTS("${py_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/salome/smesh/spadder/gui)
-INSTALL(FILES ${spadderpy_DATA} DESTINATION ${SALOME_INSTALL_PYTHON}/salome/smesh/spadder/gui)
+SALOME_INSTALL_SCRIPTS("${_pyuic_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/salome/smesh/spadder/gui TARGET_NAME _target_name_pyuic_py)
+# add dependency of compiled py files on uic files in order
+# to avoid races problems when compiling in parallel
+ADD_DEPENDENCIES(${_target_name_pyuic_py} ${_target_name_pyuic})
+
+SALOME_INSTALL_SCRIPTS("${_py_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/salome/smesh/spadder/gui)
+
+INSTALL(FILES ${_spadderpy_DATA} DESTINATION ${SALOME_INSTALL_PYTHON}/salome/smesh/spadder/gui)
