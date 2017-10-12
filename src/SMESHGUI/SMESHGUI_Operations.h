@@ -116,6 +116,7 @@ namespace SMESHOp {
     OpSkew                   = 3210,   // MENU CONTROLS - SKEW
     OpMaxElementLength2D     = 3211,   // MENU CONTROLS - ELEMENT DIAMETER 2D
     OpEqualFace              = 3212,   // MENU CONTROLS - DOUBLE FACES
+    OpDeflection2D           = 3213,   // MENU CONTROLS - DEFLECTION 2D
     OpAspectRatio3D          = 3300,   // MENU CONTROLS - ASPECT RATIO 3D
     OpVolume                 = 3301,   // MENU CONTROLS - VOLUME
     OpMaxElementLength3D     = 3302,   // MENU CONTROLS - ELEMENT DIAMETER 3D

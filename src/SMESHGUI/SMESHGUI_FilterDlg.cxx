@@ -1572,6 +1572,7 @@ void SMESHGUI_FilterTable::updateAdditionalWidget()
                  aCriterion == SMESH::FT_MaxElementLength3D ||
                  aCriterion == SMESH::FT_Length             ||
                  aCriterion == SMESH::FT_Length2D           ||
+                 aCriterion == SMESH::FT_Deflection2D       ||
                  aCriterion == SMESH::FT_BallDiameter );
 
   bool toEnable = (( isDbl && ((ComboItem*)aTable->item(aRow, 1))->value() == SMESH::FT_EqualTo) ||
@@ -1618,6 +1619,7 @@ const char* SMESHGUI_FilterTable::getPrecision( const int aType )
     retval = "len_tol_precision"; break;
   case SMESH::FT_Length:
   case SMESH::FT_Length2D:
+  case SMESH::FT_Deflection2D:
   case SMESH::FT_MaxElementLength2D:
   case SMESH::FT_MaxElementLength3D:
   case SMESH::FT_BallDiameter:
@@ -1793,13 +1795,13 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
   }
 
   // find out a type of item required by a new criterion and other table features
-  int aCriterionType       = GetCriterionType(row);
+  int  aCriterionType      = GetCriterionType(row);
   bool anIsDoubleCriterion = false;
   bool anIsIntCriterion    = false;
   bool anIsComboCriterion  = false;
   // other features:
   QList<int> comboIDs; // values to show in a combo item
-  int nbCompareSigns = 0; // possible values are 0,1,3
+  int  nbCompareSigns      = 0; // possible values are 0,1,3
   bool isThresholdEditable = false; // actual for "simple" item types
   switch ( aCriterionType )
   {
@@ -1812,8 +1814,7 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
   case SMESH::FT_Area:
   case SMESH::FT_Volume3D:
   case SMESH::FT_MaxElementLength2D:
-  case SMESH::FT_MaxElementLength3D:
-    anIsDoubleCriterion = true; break;
+  case SMESH::FT_MaxElementLength3D: anIsDoubleCriterion = true; break;
 
   case SMESH::FT_FreeBorders:
   case SMESH::FT_FreeEdges:
@@ -1829,7 +1830,8 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
   case SMESH::FT_MultiConnection2D: anIsIntCriterion = true; nbCompareSigns = 3; break;
 
   case SMESH::FT_Length:
-  case SMESH::FT_Length2D: anIsDoubleCriterion = true; break;
+  case SMESH::FT_Length2D:
+  case SMESH::FT_Deflection2D: anIsDoubleCriterion = true; break;
 
   case SMESH::FT_BelongToMeshGroup: break;
 
@@ -2241,6 +2243,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_BelongToGenSurface ] = tr("BELONG_TO_GENSURFACE");
       aCriteria[ SMESH::FT_LyingOnGeom        ] = tr("LYING_ON_GEOM");
       aCriteria[ SMESH::FT_Length2D           ] = tr("LENGTH2D");
+      aCriteria[ SMESH::FT_Deflection2D       ] = tr("DEFLECTION2D");
       aCriteria[ SMESH::FT_MultiConnection2D  ] = tr("MULTI2D_BORDERS");
       aCriteria[ SMESH::FT_FreeFaces          ] = tr("FREE_FACES");
       aCriteria[ SMESH::FT_BareBorderFace     ] = tr("BARE_BORDER_FACE");

@@ -37,6 +37,9 @@
 \section tui_length_2d Length 2D
 \tui_script{quality_controls_ex11.py}
 
+\section tui_deflection_2d Deflection 2D
+\tui_script{quality_controls_defl.py}
+
 \section tui_borders_at_multiconnection_2d Borders at Multiconnection 2D
 \tui_script{quality_controls_ex12.py}
 

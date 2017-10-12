@@ -966,6 +966,8 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
             functor = aFilterMgr.CreateLength()
         elif theCriterion == FT_Length2D:
             functor = aFilterMgr.CreateLength2D()
+        elif theCriterion == FT_Deflection2D:
+            functor = aFilterMgr.CreateDeflection2D()
         elif theCriterion == FT_NodeConnectivityNumber:
             functor = aFilterMgr.CreateNodeConnectivityNumber()
         elif theCriterion == FT_BallDiameter:
@@ -3117,6 +3119,16 @@ class Mesh:
     def GetPointState(self, x, y, z):
         return self.editor.GetPointState(x, y, z)
 
+    ## Check if a 2D mesh is manifold
+    #  @ingroup l1_controls
+    def IsManifold(self):
+        return self.editor.IsManifold()
+
+    ## Check if orientation of 2D elements is coherent
+    #  @ingroup l1_controls
+    def IsCoherentOrientation2D(self):
+        return self.editor.IsCoherentOrientation2D()
+
     ## Find the node closest to a point and moves it to a point location
     #  @param x  the X coordinate of a point
     #  @param y  the Y coordinate of a point
@@ -4619,6 +4631,24 @@ class Mesh:
     def MergeEqualElements(self):
         self.editor.MergeEqualElements()
 
+    ## Returns all or only closed free borders
+    #  @return list of SMESH.FreeBorder's
+    #  @ingroup l2_modif_trsf
+    def FindFreeBorders(self, ClosedOnly=True):
+        return self.editor.FindFreeBorders( ClosedOnly )
+
+    ## Fill with 2D elements a hole defined by a SMESH.FreeBorder.
+    #  @param FreeBorder either a SMESH.FreeBorder or a list on node IDs. These nodes
+    #         must describe all sequential nodes of the hole border. The first and the last
+    #         nodes must be the same. Use FindFreeBorders() to get nodes of holes.
+    #  @ingroup l2_modif_trsf
+    def FillHole(self, holeNodes):
+        if holeNodes and isinstance( holeNodes, list ) and isinstance( holeNodes[0], int ):
+            holeNodes = SMESH.FreeBorder(nodeIDs=holeNodes)
+        if not isinstance( holeNodes, SMESH.FreeBorder ):
+            raise TypeError, "holeNodes must be either SMESH.FreeBorder or list of integer and not %s" % holeNodes
+        self.editor.FillHole( holeNodes )
+
     ## Return groups of FreeBorder's coincident within the given tolerance.
     #  @param tolerance the tolerance. If the tolerance <= 0.0 then one tenth of an average
     #         size of elements adjacent to free borders being compared is used.
@@ -4934,7 +4964,14 @@ class Mesh:
     def CreateHoleSkin(self, radius, theShape, groupName, theNodesCoords):
         return self.editor.CreateHoleSkin( radius, theShape, groupName, theNodesCoords )
 
-    def _getFunctor(self, funcType ):
+    ## Return a cached numerical functor by its type.
+    #  @param theCriterion functor type - an item of SMESH.FunctorType enumeration.
+    #          Type SMESH.FunctorType._items in the Python Console to see all items.
+    #          Note that not all items correspond to numerical functors.
+    #  @return SMESH_NumericalFunctor. The functor is already initialized
+    #          with a mesh
+    #  @ingroup l1_measurements
+    def GetFunctor(self, funcType ):
         fn = self.functors[ funcType._v ]
         if not fn:
             fn = self.smeshpyD.GetFunctor(funcType)
@@ -4950,7 +4987,7 @@ class Mesh:
     #  @return the functor value or zero in case of invalid arguments
     #  @ingroup l1_measurements
     def FunctorValue(self, funcType, elemId, isElem=True):
-        fn = self._getFunctor( funcType )
+        fn = self.GetFunctor( funcType )
         if fn.GetElementType() == self.GetElementType(elemId, isElem):
             val = fn.GetValue(elemId)
         else:
@@ -5056,7 +5093,7 @@ class Mesh:
             unRegister.set( meshPart )
         if isinstance( meshPart, Mesh ):
             meshPart = meshPart.mesh
-        fun = self._getFunctor( funType )
+        fun = self.GetFunctor( funType )
         if fun:
             if meshPart:
                 if hasattr( meshPart, "SetMesh" ):

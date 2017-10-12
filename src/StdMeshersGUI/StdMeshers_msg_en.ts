@@ -136,7 +136,7 @@ this one for this mesh/sub-mesh.</translation>
     </message>
     <message>
         <source>SMESH_DISTR_EXPR</source>
-        <translation>Distribution with analitic density</translation>
+        <translation>Distribution with analytic density</translation>
     </message>
     <message>
         <source>SMESH_DISTR_REGULAR</source>

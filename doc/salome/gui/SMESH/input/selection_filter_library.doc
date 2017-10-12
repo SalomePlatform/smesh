@@ -2,6 +2,10 @@
 
 \page selection_filter_library_page Selection filter library
 
+\tableofcontents
+
+\section selection_filter_library Filter library
+
 \n Selection filter library allows creating and storing in files
 the filters that can be later reused for operations on meshes. You can
 access it from the Main Menu via <b>Tools / Selection filter library</b>.
@@ -18,8 +22,7 @@ the current study. You can \b Add or \b Delete filters.
 \n In <b>Filter name</b> box you can specify the name for your
 filter. By default it is prefixed with the corresponding entity type.
 
-\anchor filtering_elements
-<h2>Filter Dialog</h2>
+\section filtering_elements Filter Dialog
 
 When we use filters during group creation or another operation (by 
 clicking <b>Set Filter</b> button in the corresponding dialog), the
@@ -63,6 +66,8 @@ in the Library.
 <b>Note:</b> If the button <b>Apply and Close</b> is disabled, there
 is no selected mesh in the Object Browser and the filter can not be
 created. You have to select the mesh and the button will be enabled.
+
+\section filtering_criteria Filtering Criteria
 
 Some criteria are applicable to all <b>Entity types</b>:
 <ul><li>
@@ -230,6 +235,10 @@ by ID in <b>Threshold Value</b> field, if the angle between the
 normal to the neighboring face and the normal to the selected face is less then the
 angular tolerance (defined in degrees). Selection continues among all neighbor faces of already 
 selected ones.<br>
+</li><li>
+<b>Deflection 2D</b> selects 2D mesh elements having distance between their gravity
+centers and underlying surfaces, which is more, less or equal (within a given <b>Tolerance</b>) to the predefined <b>Threshold Value</b>. See also a
+\ref deflection_2d_page "Deflection 2D quality control".
 </li><li>
 <b>Element Diameter 2D</b> selects triangles and quadrangles composed of the edges and
 diagonals with a value of length, which is more, less or equal

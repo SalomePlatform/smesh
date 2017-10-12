@@ -348,6 +348,10 @@
             <translation>mesh_length_2d.png</translation>
         </message>
         <message>
+            <source>ICON_DEFLECTION_2D</source>
+            <translation>mesh_deflection.png</translation>
+        </message>
+        <message>
             <source>ICON_MAP</source>
             <translation>mesh_pattern.png</translation>
         </message>

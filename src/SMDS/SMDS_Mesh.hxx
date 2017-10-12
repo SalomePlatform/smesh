@@ -701,7 +701,7 @@ public:
                                 int idnode4, int idnode5, int idnode6) const;
   const SMDS_MeshFace *FindFace(int idnode1, int idnode2, int idnode3, int idnode4,
                                 int idnode5, int idnode6, int idnode7, int idnode8) const;
-  const SMDS_MeshElement *FindElement(int IDelem) const;
+  virtual const SMDS_MeshElement * FindElement(int IDelem) const;
   static const SMDS_Mesh0DElement* Find0DElement(const SMDS_MeshNode * n);
   static const SMDS_BallElement* FindBall(const SMDS_MeshNode * n);
   static const SMDS_MeshEdge* FindEdge(const SMDS_MeshNode * n1,

@@ -27,7 +27,6 @@
 
 #include "SMESH_TypeDefs.hxx"
 
-#include <BRepClass3d_SolidClassifier.hxx>
 #include <Bnd_B3d.hxx>
 #include <GeomAPI_ProjectPointOnCurve.hxx>
 #include <GeomAPI_ProjectPointOnSurf.hxx>
@@ -55,6 +54,8 @@ class SMESHDS_SubMesh;
 class SMESHDS_GroupBase;
 
 class gp_Pnt;
+class BRepClass3d_SolidClassifier;
+class ShapeAnalysis_Surface;
 
 namespace SMESH{
   namespace Controls{
@@ -293,7 +294,7 @@ namespace SMESH{
     */
     class SMESHCONTROLS_EXPORT Length2D: public virtual NumericalFunctor{
     public:
-      virtual double GetValue( long theElementId );
+      virtual double GetValue( const TSequenceOfXYZ& thePoints );
       virtual double GetBadRate( double Value, int nbNodes ) const;
       virtual SMDSAbs_ElementType GetType() const;
       struct Value{
@@ -306,6 +307,21 @@ namespace SMESH{
       void GetValues(TValues& theValues);
     };
     typedef boost::shared_ptr<Length2D> Length2DPtr;
+
+    /*
+      Class       : Deflection2D
+      Description : Functor for calculating distance between a face and geometry
+    */
+    class SMESHCONTROLS_EXPORT Deflection2D: public virtual NumericalFunctor{
+    public:
+      virtual void   SetMesh( const SMDS_Mesh* theMesh );
+      virtual double GetValue( const TSequenceOfXYZ& thePoints );
+      virtual double GetBadRate( double Value, int nbNodes ) const;
+      virtual SMDSAbs_ElementType GetType() const;
+    private:
+      Handle(ShapeAnalysis_Surface) mySurface;
+      int                           myShapeIndex;
+    };
 
     /*
       Class       : MultiConnection

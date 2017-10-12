@@ -364,6 +364,7 @@ QString SMESHGUI_Selection::controlMode( int ind ) const
     switch( actor->GetControlMode() ) {
     case SMESH_Actor::eLength:                mode = "eLength";                break;
     case SMESH_Actor::eLength2D:              mode = "eLength2D";              break;
+    case SMESH_Actor::eDeflection2D:          mode = "eDeflection2D";          break;
     case SMESH_Actor::eFreeEdges:             mode = "eFreeEdges";             break;
     case SMESH_Actor::eFreeNodes:             mode = "eFreeNodes";             break;
     case SMESH_Actor::eFreeBorders:           mode = "eFreeBorders";           break;
@@ -411,6 +412,11 @@ QString SMESHGUI_Selection::controlMode() const
   return "eNone";
 }
 
+//=======================================================================
+//function : isNumFunctor
+//purpose  : return true if a given actor is shown using a numeric functor
+//=======================================================================
+
 bool SMESHGUI_Selection::isNumFunctor( int ind ) const
 {
   bool result = false;
@@ -419,6 +425,7 @@ bool SMESHGUI_Selection::isNumFunctor( int ind ) const
     switch( actor->GetControlMode() ) {
     case SMESH_Actor::eLength:
     case SMESH_Actor::eLength2D:
+    case SMESH_Actor::eDeflection2D:
     case SMESH_Actor::eMultiConnection:
     case SMESH_Actor::eMultiConnection2D:
     case SMESH_Actor::eArea:
@@ -442,7 +449,7 @@ bool SMESHGUI_Selection::isNumFunctor( int ind ) const
 
 //=======================================================================
 //function : facesOrientationMode
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 QString SMESHGUI_Selection::facesOrientationMode( int ind ) const

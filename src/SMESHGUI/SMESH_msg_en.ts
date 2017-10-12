@@ -104,6 +104,10 @@
         <translation>Minimum diagonal</translation>
     </message>
     <message>
+        <source>MIN_ELEM_EDGE</source>
+        <translation>Minimum Edge Length</translation>
+    </message>
+    <message>
         <source>ASPECTRATIO_3D_ELEMENTS</source>
         <translation>Aspect Ratio 3D</translation>
     </message>
@@ -225,6 +229,10 @@
         <translation>Length 2D</translation>
     </message>
     <message>
+        <source>DEFLECTION2D_FACES</source>
+        <translation>Deflection 2D</translation>
+    </message>
+    <message>
         <source>LENGTH_EDGES</source>
         <translation>Length</translation>
     </message>
@@ -239,6 +247,10 @@
     <message>
         <source>MAX_ELEMENT_LENGTH_3D</source>
         <translation>Element Diameter 3D</translation>
+    </message>
+    <message>
+        <source>DEFLECTION_2D</source>
+        <translation>Deflection 2D</translation>
     </message>
     <message>
         <source>MEN_ADD</source>
@@ -691,6 +703,10 @@
     <message>
         <source>MEN_LENGTH_2D</source>
         <translation>Length 2D</translation>
+    </message>
+    <message>
+        <source>MEN_DEFLECTION_2D</source>
+        <translation>Deflection 2D</translation>
     </message>
     <message>
         <source>MEN_MAP</source>
@@ -3279,6 +3295,10 @@ Use Display Entity menu command to show them.
         <translation>Length 2D</translation>
     </message>
     <message>
+        <source>STB_DEFLECTION_2D</source>
+        <translation>Deflection 2D</translation>
+    </message>
+    <message>
         <source>STB_MAP</source>
         <translation>Pattern mapping</translation>
     </message>
@@ -3957,6 +3977,10 @@ Use Display Entity menu command to show them.
     <message>
         <source>TOP_LENGTH_2D</source>
         <translation>Length 2D</translation>
+    </message>
+    <message>
+        <source>TOP_DEFLECTION_2D</source>
+        <translation>Deflection 2D</translation>
     </message>
     <message>
         <source>TOP_MAP</source>
@@ -5868,6 +5892,10 @@ Please enter correct value and try again</translation>
     <message>
         <source>LENGTH2D</source>
         <translation>Length 2D</translation>
+    </message>
+    <message>
+        <source>DEFLECTION2D</source>
+        <translation>Deflection 2D</translation>
     </message>
     <message>
         <source>LESS_THAN</source>

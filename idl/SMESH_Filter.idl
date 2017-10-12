@@ -61,6 +61,7 @@ module SMESH
     FT_MultiConnection2D,
     FT_Length,
     FT_Length2D,
+    FT_Deflection2D,
     FT_NodeConnectivityNumber,
     FT_BelongToMeshGroup,
     FT_BelongToGeom,
@@ -150,6 +151,7 @@ module SMESH
     typedef sequence<Value> Values;
     Values GetValues();
   };
+  interface Deflection2D      : NumericalFunctor{};
   interface MultiConnection   : NumericalFunctor{};
   interface MultiConnection2D : NumericalFunctor
   {
@@ -585,6 +587,7 @@ module SMESH
     MaxElementLength3D CreateMaxElementLength3D();
     Length             CreateLength();
     Length2D           CreateLength2D();
+    Deflection2D       CreateDeflection2D();
     MultiConnection    CreateMultiConnection();
     MultiConnection2D  CreateMultiConnection2D();
     BallDiameter       CreateBallDiameter();

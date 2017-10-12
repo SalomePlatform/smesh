@@ -156,6 +156,7 @@ SET(GOOD_TESTS
   quality_controls_ex17.py
   quality_controls_ex18.py
   quality_controls_ex19.py
+  quality_controls_defl.py
   transforming_meshes_ex01.py
   transforming_meshes_ex02.py
   transforming_meshes_ex03.py

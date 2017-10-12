@@ -844,11 +844,9 @@ void SMESH_ActorDef::SetControlMode( eControl theMode, bool theCheckEntityMode )
       break;
     }
     case eLength2D:
-    {
       myFunctor.reset(new SMESH::Controls::Length2D());
       myControlActor = my2DActor;
       break;
-    }
     case eFreeBorders:
       myFunctor.reset(new SMESH::Controls::FreeBorders());
       myControlActor = my1DActor;
@@ -956,6 +954,14 @@ void SMESH_ActorDef::SetControlMode( eControl theMode, bool theCheckEntityMode )
       aControl->SetPrecision( myControlsPrecision );
       myFunctor.reset( aControl );
       myControlActor = my3DActor;
+      break;
+    }
+    case eDeflection2D:
+    {
+      SMESH::Controls::Deflection2D* aControl = new SMESH::Controls::Deflection2D();
+      aControl->SetPrecision( myControlsPrecision );
+      myFunctor.reset( aControl );
+      myControlActor = my2DActor;
       break;
     }
     case eBareBorderVolume:

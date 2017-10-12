@@ -966,11 +966,13 @@ SMESHGUI_ElemInfo::~SMESHGUI_ElemInfo()
   \brief Set mesh data source (actor)
   \param actor mesh object actor
 */
-void SMESHGUI_ElemInfo::setSource( SMESH_Actor* actor )
+void SMESHGUI_ElemInfo::setSource( SMESH_Actor* actor, SMESH::SMESH_IDSource_var obj )
 {
   if ( myActor != actor ) {
     myActor = actor;
     myIsElement = -1;
+    SMESH::SMESH_Mesh_var mesh = obj->GetMesh();
+    myMeshHasShape = ( !mesh->_is_nil() && mesh->HasShapeToMesh() );
     clear();
   }
 }
@@ -1479,7 +1481,12 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
           //ElemDiam2D   
           afunctor.reset( new SMESH::Controls::MaxElementLength2D() );
           afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+          afunctor->SetPrecision( cprecision );
           myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "MAX_ELEMENT_LENGTH_2D" )).arg( afunctor->GetValue( id )) );
+          //min edge length
+          afunctor.reset( new SMESH::Controls::Length2D() );
+          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+          myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "MIN_ELEM_EDGE" )).arg( afunctor->GetValue( id )) );
         }
         if( e->GetType() == SMDSAbs_Volume ) {
           //AspectRatio3D
@@ -2026,6 +2033,15 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
             skewItem->setText( 0, tr( "SKEW_ELEMENTS" ));
             skewItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id )) );
           }
+          //Deflection
+          if ( hasShapeToMesh() )
+          {
+            afunctor.reset( new SMESH::Controls::Deflection2D() );
+            afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+            QTreeWidgetItem* deflItem = createItem( cntrItem, Bold );
+            deflItem->setText( 0, tr( "DEFLECTION_2D" ));
+            deflItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id )) );
+          }
           //ElemDiam2D
           if ( !e->IsPoly() )
           {
@@ -2059,6 +2075,13 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
           diam3Item->setText( 0, tr( "MAX_ELEMENT_LENGTH_3D" ));
           diam3Item->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id )) );
         }
+
+        //min edge length
+        afunctor.reset( new SMESH::Controls::Length2D() );
+        afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+        QTreeWidgetItem* minEdgeItem = createItem( cntrItem, Bold );
+        minEdgeItem->setText( 0, tr( "MIN_ELEM_EDGE" ));
+        minEdgeItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id )) );
 
         // gravity center
         XYZ gc = gravityCenter( e );
@@ -2990,7 +3013,7 @@ void SMESHGUI_MeshInfoDlg::showInfo( const Handle(SALOME_InteractiveObject)& IO 
           SMESH::GetNameOfSelectedElements( selector, IO, ID ) :
           SMESH::GetNameOfSelectedNodes( selector, IO, ID );
       }
-      myElemInfo->setSource( myActor ) ;
+      myElemInfo->setSource( myActor, obj ) ;
       if ( nb > 0 ) {
         myID->setText( ID.trimmed() );
         QSet<long> ids;

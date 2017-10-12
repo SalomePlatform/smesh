@@ -627,7 +627,7 @@ namespace
         "SMESH_TETRAHEDRA","SMESH_QUADRATIC_TETRAHEDRONS","SMESH_PYRAMIDS",
         "SMESH_QUADRATIC_PYRAMIDS","SMESH_HEXAHEDRA","SMESH_QUADRATIC_HEXAHEDRONS",
         "SMESH_TRIQUADRATIC_HEXAHEDRONS","SMESH_PENTAHEDRA","SMESH_QUADRATIC_PENTAHEDRONS",
-		"SMESH_BIQUADRATIC_PENTAHEDRONS",
+        "SMESH_BIQUADRATIC_PENTAHEDRONS",
         "SMESH_OCTAHEDRA","SMESH_POLYEDRONS","SMESH_QUADRATIC_POLYEDRONS","SMESH_BALLS"
       };
       // is typeMsg complete? (compilation failure mains that enum SMDSAbs_EntityType changed)
@@ -1138,6 +1138,8 @@ namespace
       type = QObject::tr( "LENGTH_EDGES" );
     else if ( dynamic_cast< SMESH::Controls::Length2D* >( f.get() ) )
       type = QObject::tr( "LENGTH2D_EDGES" );
+    else if ( dynamic_cast< SMESH::Controls::Deflection2D* >( f.get() ) )
+      type = QObject::tr( "DEFLECTION2D_FACES" );
     else if ( dynamic_cast< SMESH::Controls::MultiConnection* >( f.get() ) )
       type = QObject::tr( "MULTI_BORDERS" );
     else if ( dynamic_cast< SMESH::Controls::MultiConnection2D* >( f.get() ) )
@@ -1673,6 +1675,7 @@ namespace
     ActionControl.Bind( SMESHOp::OpBareBorderFace,        SMESH_Actor::eBareBorderFace );
     ActionControl.Bind( SMESHOp::OpOverConstrainedFace,   SMESH_Actor::eOverConstrainedFace );
     ActionControl.Bind( SMESHOp::OpLength2D,              SMESH_Actor::eLength2D );
+    ActionControl.Bind( SMESHOp::OpDeflection2D,          SMESH_Actor::eDeflection2D );
     ActionControl.Bind( SMESHOp::OpConnection2D,          SMESH_Actor::eMultiConnection2D );
     ActionControl.Bind( SMESHOp::OpArea,                  SMESH_Actor::eArea );
     ActionControl.Bind( SMESHOp::OpTaper,                 SMESH_Actor::eTaper );
@@ -3617,6 +3620,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpBareBorderFace:
   case SMESHOp::OpOverConstrainedFace:
   case SMESHOp::OpLength2D:
+  case SMESHOp::OpDeflection2D:
   case SMESHOp::OpConnection2D:
   case SMESHOp::OpArea:
   case SMESHOp::OpTaper:
@@ -3918,6 +3922,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpBareBorderFace,        "BARE_BORDER_FACE",        "ICON_BARE_BORDER_FACE",        0, true );
   createSMESHAction( SMESHOp::OpOverConstrainedFace,   "OVER_CONSTRAINED_FACE",   "ICON_OVER_CONSTRAINED_FACE",   0, true );
   createSMESHAction( SMESHOp::OpLength2D,              "LENGTH_2D",               "ICON_LENGTH_2D",     0, true );
+  createSMESHAction( SMESHOp::OpDeflection2D,          "DEFLECTION_2D",           "ICON_DEFLECTION_2D", 0, true );
   createSMESHAction( SMESHOp::OpConnection2D,          "CONNECTION_2D",           "ICON_CONNECTION_2D", 0, true );
   createSMESHAction( SMESHOp::OpArea,                  "AREA",                    "ICON_AREA",          0, true );
   createSMESHAction( SMESHOp::OpTaper,                 "TAPER",                   "ICON_TAPER",         0, true );
@@ -4047,6 +4052,7 @@ void SMESHGUI::initialize( CAM_Application* app )
                << SMESHOp::OpNodeConnectivityNb                                         // node controls
                << SMESHOp::OpFreeEdge << SMESHOp::OpFreeBorder
                << SMESHOp::OpLength << SMESHOp::OpConnection << SMESHOp::OpEqualEdge    // edge controls
+               << SMESHOp::OpDeflection2D
                << SMESHOp::OpFreeFace << SMESHOp::OpLength2D << SMESHOp::OpConnection2D
                << SMESHOp::OpArea << SMESHOp::OpTaper << SMESHOp::OpAspectRatio
                << SMESHOp::OpMinimumAngle << SMESHOp::OpWarpingAngle << SMESHOp::OpSkew
@@ -4160,6 +4166,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( SMESHOp::OpSkew,                  faceId,   -1 );
   createMenu( SMESHOp::OpMaxElementLength2D,    faceId,   -1 );
   createMenu( SMESHOp::OpEqualFace,             faceId,   -1 );
+  createMenu( SMESHOp::OpDeflection2D,          faceId,   -1 );
   createMenu( SMESHOp::OpAspectRatio3D,         volumeId, -1 );
   createMenu( SMESHOp::OpVolume,                volumeId, -1 );
   createMenu( SMESHOp::OpMaxElementLength3D,    volumeId, -1 );
@@ -4309,6 +4316,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( SMESHOp::OpSkew,                ctrl2dTb );
   createTool( SMESHOp::OpMaxElementLength2D,  ctrl2dTb );
   createTool( SMESHOp::OpEqualFace,           ctrl2dTb );
+  createTool( SMESHOp::OpDeflection2D,        ctrl2dTb );
 
   createTool( SMESHOp::OpAspectRatio3D,         ctrl3dTb );
   createTool( SMESHOp::OpVolume,                ctrl3dTb );
@@ -4720,9 +4728,14 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert ( action( SMESHOp::OpOverConstrainedFace ), aSubId, -1 );
   popupMgr()->setRule( action( SMESHOp::OpOverConstrainedFace ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( SMESHOp::OpOverConstrainedFace ), "controlMode = 'eOverConstrainedFace'", QtxPopupMgr::ToggleRule );
+
   popupMgr()->insert ( action( SMESHOp::OpEqualFace ), aSubId, -1 );
   popupMgr()->setRule( action( SMESHOp::OpEqualFace ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( SMESHOp::OpEqualFace ), "controlMode = 'eCoincidentElems2D'", QtxPopupMgr::ToggleRule );
+
+  popupMgr()->insert ( action( SMESHOp::OpDeflection2D ), aSubId, -1 );
+  popupMgr()->setRule( action( SMESHOp::OpDeflection2D ), aMeshInVtkHasFaces + " && hasGeomReference", QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( SMESHOp::OpDeflection2D ), "controlMode = 'eDeflection2D'", QtxPopupMgr::ToggleRule );
 
   aSubId = popupMgr()->insert( tr( "MEN_VOLUME_CTRL" ), anId, -1 ); // VOLUME CONTROLS
 

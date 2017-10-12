@@ -535,6 +535,21 @@ SMESH::Length2D::Values* Length2D_i::GetValues()
 }
 
 /*
+  Class       : Deflection2D_i
+  Description : Functor for calculating distance between a face and geometry
+*/
+Deflection2D_i::Deflection2D_i()
+{
+  myNumericalFunctorPtr.reset( new Controls::Deflection2D() );
+  myFunctorPtr = myNumericalFunctorPtr;
+}
+
+FunctorType Deflection2D_i::GetFunctorType()
+{
+  return SMESH::FT_Deflection2D;
+}
+
+/*
   Class       : MultiConnection_i
   Description : Functor for calculating number of faces conneted to the edge
 */
@@ -2113,6 +2128,14 @@ Length2D_ptr FilterManager_i::CreateLength2D()
   return anObj._retn();
 }
 
+Deflection2D_ptr FilterManager_i::CreateDeflection2D()
+{
+  SMESH::Deflection2D_i* aServant = new SMESH::Deflection2D_i();
+  SMESH::Deflection2D_var   anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateLength2D()";
+  return anObj._retn();
+}
+
 MultiConnection_ptr FilterManager_i::CreateMultiConnection()
 {
   SMESH::MultiConnection_i* aServant = new SMESH::MultiConnection_i();
@@ -2956,6 +2979,9 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
       case SMESH::FT_Length2D:
         aFunctor = aFilterMgr->CreateLength2D();
         break;
+      case SMESH::FT_Deflection2D:
+        aFunctor = aFilterMgr->CreateDeflection2D();
+        break;
       case SMESH::FT_AspectRatio:
         aFunctor = aFilterMgr->CreateAspectRatio();
         break;
@@ -3451,9 +3477,10 @@ static inline LDOMString toString( CORBA::Long theType )
     case FT_EqualFaces            : return "Equal faces";
     case FT_EqualVolumes          : return "Equal volumes";
     case FT_MultiConnection       : return "Borders at multi-connections";
-    case FT_MultiConnection2D     :return "Borders at multi-connections 2D";
+    case FT_MultiConnection2D     : return "Borders at multi-connections 2D";
     case FT_Length                : return "Length";
     case FT_Length2D              : return "Length 2D";
+    case FT_Deflection2D          : return "Deflection 2D";
     case FT_LessThan              : return "Less than";
     case FT_MoreThan              : return "More than";
     case FT_EqualTo               : return "Equal to";
@@ -3502,6 +3529,7 @@ static inline SMESH::FunctorType toFunctorType( const LDOMString& theStr )
   //  else if ( theStr.equals( "Borders at multi-connections 2D" ) ) return FT_MultiConnection2D;
   else if ( theStr.equals( "Length"                       ) ) return FT_Length;
   //  else if ( theStr.equals( "Length2D"                     ) ) return FT_Length2D;
+  else if ( theStr.equals( "Deflection"                   ) ) return FT_Deflection2D;
   else if ( theStr.equals( "Range of IDs"                 ) ) return FT_RangeOfIds;
   else if ( theStr.equals( "Bad Oriented Volume"          ) ) return FT_BadOrientedVolume;
   else if ( theStr.equals( "Volumes with bare border"     ) ) return FT_BareBorderVolume;
@@ -4078,6 +4106,7 @@ static const char** getFunctNames()
     "FT_MultiConnection2D",
     "FT_Length",
     "FT_Length2D",
+    "FT_Deflection2D",
     "FT_NodeConnectivityNumber",
     "FT_BelongToMeshGroup",
     "FT_BelongToGeom",
@@ -4094,7 +4123,7 @@ static const char** getFunctNames()
     "FT_LinearOrQuadratic",
     "FT_GroupColor",
     "FT_ElemGeomType",
-    "FT_EntityType", 
+    "FT_EntityType",
     "FT_CoplanarFaces",
     "FT_BallDiameter",
     "FT_ConnectedElements",
