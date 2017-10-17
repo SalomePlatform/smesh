@@ -131,8 +131,11 @@ namespace
       if ( myID < 0 )
       {
         myID = id;
-        if ( myNext )
-          myNext->SetID( id + 1 );
+
+        for ( BEdge* be = myNext; be && be->myID < 0; be = be->myNext )
+        {
+          be->myID = ++id;
+        }
       }
     }
     //================================================================================
@@ -821,3 +824,136 @@ void SMESH_MeshAlgos::FindCoincidentFreeBorders(SMDS_Mesh&              mesh,
 
 } // SMESH_MeshAlgos::FindCoincidentFreeBorders()
 
+//================================================================================
+/*
+ * Returns all TFreeBorder's. Optionally check if the mesh is manifold
+ * and if faces are correctly oriented.
+ */
+//================================================================================
+
+void SMESH_MeshAlgos::FindFreeBorders(SMDS_Mesh&       theMesh,
+                                      TFreeBorderVec & theFoundFreeBordes,
+                                      const bool       theClosedOnly,
+                                      bool*            theIsManifold,
+                                      bool*            theIsGoodOri)
+{
+  bool isManifold = true;
+
+  // find free links
+  typedef NCollection_DataMap<SMESH_TLink, const SMDS_MeshElement*, SMESH_TLink > TLink2FaceMap;
+  TLink2FaceMap linkMap;
+  int nbSharedLinks = 0;
+  SMDS_FaceIteratorPtr faceIt = theMesh.facesIterator();
+  while ( faceIt->more() )
+  {
+    const SMDS_MeshElement* face = faceIt->next();
+    if ( !face ) continue;
+
+    const SMDS_MeshNode*     n0 = face->GetNode( face->NbNodes() - 1 );
+    SMDS_NodeIteratorPtr nodeIt = face->interlacedNodesIterator();
+    while ( nodeIt->more() )
+    {
+      const SMDS_MeshNode* n1 = nodeIt->next();
+      SMESH_TLink link( n0, n1 );
+      if ( const SMDS_MeshElement** faceInMap = linkMap.ChangeSeek( link ))
+      {
+        if ( *faceInMap )
+        {
+          if ( theIsGoodOri && *theIsGoodOri && !IsRightOrder( *faceInMap, n1, n0 ))
+            *theIsGoodOri = false;
+        }
+        else
+        {
+          isManifold = false;
+        }
+        nbSharedLinks += bool( *faceInMap );
+        *faceInMap = 0;
+      }
+      else
+      {
+        linkMap.Bind( link, face );
+      }
+      n0 = n1;
+    }
+  }
+  if ( theIsManifold )
+    *theIsManifold = isManifold;
+
+  if ( linkMap.Extent() == nbSharedLinks )
+    return;
+
+  // form free borders
+  std::set   < BNode > bNodes;
+  std::vector< BEdge > bEdges( linkMap.Extent() - nbSharedLinks );
+
+  TLink2FaceMap::Iterator linkIt( linkMap );
+  for ( int iEdge = 0; linkIt.More(); linkIt.Next() )
+  {
+    if ( !linkIt.Value() ) continue;
+    const SMESH_TLink & link = linkIt.Key();
+    std::set< BNode >::iterator n1 = bNodes.insert( BNode( link.node1() )).first;
+    std::set< BNode >::iterator n2 = bNodes.insert( BNode( link.node2() )).first;
+    bEdges[ iEdge ].Set( &*n1, &*n2, linkIt.Value(), iEdge+1 );
+    n1->AddLinked( & bEdges[ iEdge ] );
+    n2->AddLinked( & bEdges[ iEdge ] );
+    ++iEdge;
+  }
+  linkMap.Clear();
+
+  // assign IDs to borders
+  std::vector< BEdge* > borders; // 1st of connected (via myPrev and myNext) edges
+  std::set< BNode >::iterator bn = bNodes.begin();
+  for ( ; bn != bNodes.end(); ++bn )
+  {
+    for ( size_t i = 0; i < bn->myLinkedEdges.size(); ++i )
+    {
+      if ( bn->myLinkedEdges[i]->myBorderID < 0 )
+      {
+        BEdge* be = bn->myLinkedEdges[i];
+        int borderID = borders.size();
+        borders.push_back( be );
+        for ( ; be && be->myBorderID < 0; be = be->myNext )
+        {
+          be->myBorderID = borderID;
+          be->Orient();
+        }
+        bool isClosed = ( be == bn->myLinkedEdges[i] );
+        if ( !isClosed && theClosedOnly )
+        {
+          borders.pop_back();
+          continue;
+        }
+        be = bn->myLinkedEdges[i]->myPrev;
+        for ( ; be && be->myBorderID < 0; be = be->myPrev )
+        {
+          be->myBorderID = borderID;
+          be->Orient();
+        }
+        if ( !isClosed )
+          while ( borders.back()->myPrev )
+            borders.back() = borders.back()->myPrev;
+      }
+    }
+  }
+  theFoundFreeBordes.resize( borders.size() );
+  for ( size_t i = 0; i < borders.size(); ++i )
+  {
+    TFreeBorder & bordNodes = theFoundFreeBordes[ i ];
+    BEdge*               be = borders[i];
+
+    size_t cnt = 1;
+    for ( be = be->myNext; be && be != borders[i]; be = be->myNext )
+      ++cnt;
+    bordNodes.resize( cnt + 1 );
+
+    BEdge* beLast;
+    for ( be = borders[i], cnt = 0;
+          be && cnt < bordNodes.size()-1;
+          be = be->myNext, ++cnt )
+    {
+      bordNodes[ cnt ] = be->myBNode1->Node();
+      beLast = be;
+    }
+    bordNodes.back() = beLast->myBNode2->Node();
+  }
+}

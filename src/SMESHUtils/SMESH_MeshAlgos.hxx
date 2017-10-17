@@ -100,6 +100,15 @@ struct SMESHUtils_EXPORT SMESH_ElementSearcher
    * \brief Find out if the given point is out of closed 2D mesh.
    */
   virtual TopAbs_State GetPointState(const gp_Pnt& point) = 0;
+
+  /*!
+   * \brief Return a projection of a given point to a 2D mesh.
+   *        Optionally return the closest face
+   */
+  virtual gp_XYZ Project(const gp_Pnt&            point,
+                         SMDSAbs_ElementType      type,
+                         const SMDS_MeshElement** closestFace= 0) = 0;
+
   virtual ~SMESH_ElementSearcher();
 };
 
@@ -112,16 +121,16 @@ namespace SMESH_MeshAlgos
   bool IsOut( const SMDS_MeshElement* element, const gp_Pnt& point, double tol );
 
   SMESHUtils_EXPORT
-  double GetDistance( const SMDS_MeshElement* elem, const gp_Pnt& point );
+  double GetDistance( const SMDS_MeshElement* elem, const gp_Pnt& point, gp_XYZ* closestPnt = 0 );
 
   SMESHUtils_EXPORT
-  double GetDistance( const SMDS_MeshEdge* edge, const gp_Pnt& point );
+  double GetDistance( const SMDS_MeshEdge* edge, const gp_Pnt& point, gp_XYZ* closestPnt = 0 );
 
   SMESHUtils_EXPORT
-  double GetDistance( const SMDS_MeshFace* face, const gp_Pnt& point );
+  double GetDistance( const SMDS_MeshFace* face, const gp_Pnt& point, gp_XYZ* closestPnt = 0 );
 
   SMESHUtils_EXPORT
-  double GetDistance( const SMDS_MeshVolume* volume, const gp_Pnt& point );
+  double GetDistance( const SMDS_MeshVolume* volume, const gp_Pnt& point, gp_XYZ* closestPnt = 0 );
 
   SMESHUtils_EXPORT
   void GetBarycentricCoords( const gp_XY& point,
@@ -153,6 +162,14 @@ namespace SMESH_MeshAlgos
   SMESHUtils_EXPORT
   std::vector< const SMDS_MeshNode*> GetCommonNodes(const SMDS_MeshElement* e1,
                                                     const SMDS_MeshElement* e2);
+  /*!
+   * \brief Return true if node1 encounters first in the face and node2, after.
+   *        The nodes are supposed to be neighbor nodes in the face.
+   */
+  SMESHUtils_EXPORT
+  bool IsRightOrder( const SMDS_MeshElement* face,
+                     const SMDS_MeshNode*    node0,
+                     const SMDS_MeshNode*    node1 );
 
   /*!
    * \brief Return SMESH_NodeSearcher. The caller is responsible for deleteing it
@@ -204,7 +221,28 @@ namespace SMESH_MeshAlgos
   void FindCoincidentFreeBorders(SMDS_Mesh&              mesh,
                                  double                  tolerance,
                                  CoincidentFreeBorders & foundFreeBordes);
-  
+  /*!
+   * Returns all or only closed TFreeBorder's.
+   * Optionally check if the mesh is manifold and if faces are correctly oriented.
+   *
+   * (Implemented in ./SMESH_FreeBorders.cxx)
+   */
+  SMESHUtils_EXPORT
+  void FindFreeBorders(SMDS_Mesh&       mesh,
+                       TFreeBorderVec & foundFreeBordes,
+                       const bool       closedOnly,
+                       bool*            isManifold = 0,
+                       bool*            isGoodOri = 0);
+  /*!
+   * Fill a hole defined by a TFreeBorder with 2D elements.
+   *
+   * (Implemented in ./SMESH_FillHole.cxx)
+   */
+  SMESHUtils_EXPORT
+  void FillHole(const TFreeBorder &                   freeBorder,
+                SMDS_Mesh&                            mesh,
+                std::vector<const SMDS_MeshElement*>& newFaces);
+
 
   /*!
    * \brief Find nodes whose merge makes the element invalid

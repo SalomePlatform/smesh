@@ -751,7 +751,31 @@ module SMESH
      * Return point state in a closed 2D mesh in terms of TopAbs_State enumeration.
      * TopAbs_UNKNOWN state means that either mesh is wrong or the analysis fails.
      */
-    short GetPointState(in double x, in double y, in double z) 
+    short GetPointState(in double x, in double y, in double z)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Check if a 2D mesh is manifold
+     */
+    boolean IsManifold()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Check if orientation of 2D elements is coherent
+     */
+    boolean IsCoherentOrientation2D()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Returns all or only closed FreeBorder's.
+     */
+    ListOfFreeBorders FindFreeBorders(in boolean closedOnly)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Fill with 2D elements a hole defined by a FreeBorder.
+     */
+    void FillHole(in FreeBorder hole)
       raises (SALOME::SALOME_Exception);
 
     /*!

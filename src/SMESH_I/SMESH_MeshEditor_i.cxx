@@ -4006,7 +4006,7 @@ SMESH_MeshEditor_i::ScaleMakeMesh(SMESH::SMESH_IDSource_ptr  theObject,
     // and then "GetGroups" using SMESH_Mesh::GetGroups()
 
     TPythonDump pydump; // to prevent dump at mesh creation
-    mesh = makeMesh( theMeshName );
+    mesh   = makeMesh( theMeshName );
     mesh_i = SMESH::DownCast<SMESH_Mesh_i*>( mesh );
 
     if ( mesh_i )
@@ -4591,6 +4591,151 @@ CORBA::Short SMESH_MeshEditor_i::GetPointState(CORBA::Double x,
 
   SMESH_CATCH( SMESH::throwCorbaException );
   return 0;
+}
+
+//=======================================================================
+//function : IsManifold
+//purpose  : Check if a 2D mesh is manifold
+//=======================================================================
+
+CORBA::Boolean SMESH_MeshEditor_i::IsManifold()
+  throw (SALOME::SALOME_Exception)
+{
+  bool isManifold = true;
+
+  SMESH_TRY;
+  SMESH_MeshAlgos::TFreeBorderVec foundFreeBordes;
+  SMESH_MeshAlgos::FindFreeBorders( *getMeshDS(),
+                                    foundFreeBordes,
+                                    /*closedOnly=*/true,
+                                    &isManifold );
+  SMESH_CATCH( SMESH::throwCorbaException );
+
+  return isManifold;
+}
+
+//=======================================================================
+//function : IsCoherentOrientation2D
+//purpose  : Check if orientation of 2D elements is coherent
+//=======================================================================
+
+CORBA::Boolean SMESH_MeshEditor_i::IsCoherentOrientation2D()
+  throw (SALOME::SALOME_Exception)
+{
+  bool isGoodOri = true;
+
+  SMESH_TRY;
+  SMESH_MeshAlgos::TFreeBorderVec foundFreeBordes;
+  SMESH_MeshAlgos::FindFreeBorders( *getMeshDS(),
+                                    foundFreeBordes,
+                                    /*closedOnly=*/true,
+                                    /*isManifold=*/0,
+                                    &isGoodOri);
+  SMESH_CATCH( SMESH::throwCorbaException );
+
+  return isGoodOri;
+}
+
+//=======================================================================
+//function : FindFreeBorders
+//purpose  : Returns all or only closed FreeBorder's.
+//=======================================================================
+
+SMESH::ListOfFreeBorders* SMESH_MeshEditor_i::FindFreeBorders(CORBA::Boolean closedOnly)
+  throw (SALOME::SALOME_Exception)
+{
+  SMESH::ListOfFreeBorders_var resBorders = new SMESH::ListOfFreeBorders;
+  SMESH_TRY;
+
+  SMESH_MeshAlgos::TFreeBorderVec foundFreeBordes;
+  SMESH_MeshAlgos::FindFreeBorders( *getMeshDS(), foundFreeBordes, closedOnly );
+
+  resBorders->length( foundFreeBordes.size() );
+  for ( size_t i = 0; i < foundFreeBordes.size(); ++i )
+  {
+    const SMESH_MeshAlgos::TFreeBorder& bordNodes = foundFreeBordes[i];
+    SMESH::FreeBorder&                    bordOut = resBorders[i];
+    bordOut.nodeIDs.length( bordNodes.size() );
+    for ( size_t iN = 0; iN < bordNodes.size(); ++iN )
+      bordOut.nodeIDs[ iN ] = bordNodes[ iN ]->GetID();
+  }
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+
+  return resBorders._retn();
+}
+
+//=======================================================================
+//function : FillHole
+//purpose  : Fill with 2D elements a hole defined by a FreeBorder.
+//=======================================================================
+
+void SMESH_MeshEditor_i::FillHole(const SMESH::FreeBorder& theHole)
+  throw (SALOME::SALOME_Exception)
+{
+  initData();
+
+  if ( theHole.nodeIDs.length() < 4 )
+    THROW_SALOME_CORBA_EXCEPTION("A hole should be bound by at least 3 nodes", SALOME::BAD_PARAM);
+  if ( theHole.nodeIDs[0] != theHole.nodeIDs[ theHole.nodeIDs.length()-1 ] )
+    THROW_SALOME_CORBA_EXCEPTION("Not closed hole boundary. "
+                                 "First and last nodes must be same", SALOME::BAD_PARAM);
+
+  SMESH_MeshAlgos::TFreeBorder bordNodes;
+  bordNodes.resize( theHole.nodeIDs.length() );
+  for ( size_t iN = 0; iN < theHole.nodeIDs.length(); ++iN )
+  {
+    bordNodes[ iN ] = getMeshDS()->FindNode( theHole.nodeIDs[ iN ]);
+    if ( !bordNodes[ iN ] )
+      THROW_SALOME_CORBA_EXCEPTION(SMESH_Comment("Node #") << theHole.nodeIDs[ iN ]
+                                   << " does not exist", SALOME::BAD_PARAM);
+  }
+
+  SMESH_TRY;
+
+  MeshEditor_I::TPreviewMesh* previewMesh = 0;
+  SMDS_Mesh* meshDS = getMeshDS();
+  if ( myIsPreviewMode )
+  {
+    // copy faces sharing nodes of theHole
+    TIDSortedElemSet holeFaces;
+    previewMesh = getPreviewMesh( SMDSAbs_Face );
+    for ( size_t i = 0; i < bordNodes.size(); ++i )
+    {
+      SMDS_ElemIteratorPtr fIt = bordNodes[i]->GetInverseElementIterator( SMDSAbs_Face );
+      while ( fIt->more() )
+      {
+        const SMDS_MeshElement* face = fIt->next();
+        if ( holeFaces.insert( face ).second )
+          previewMesh->Copy( face );
+      }
+      bordNodes[i] = previewMesh->GetMeshDS()->FindNode( bordNodes[i]->GetID() );
+      ASSERT( bordNodes[i] );
+    }
+    meshDS = previewMesh->GetMeshDS();
+  }
+
+  std::vector<const SMDS_MeshElement*> newFaces;
+  SMESH_MeshAlgos::FillHole( bordNodes, *meshDS, newFaces );
+
+  if ( myIsPreviewMode )
+  {
+    previewMesh->Clear();
+    for ( size_t i = 0; i < newFaces.size(); ++i )
+      previewMesh->Copy( newFaces[i] );
+  }
+  else
+  {
+    getEditor().ClearLastCreated();
+    SMESH_SequenceOfElemPtr& aSeq =
+      const_cast<SMESH_SequenceOfElemPtr&>( getEditor().GetLastCreatedElems() );
+    for ( size_t i = 0; i < newFaces.size(); ++i )
+      aSeq.Append( newFaces[i] );
+
+    TPythonDump() << this << ".FillHole( SMESH.FreeBorder(" << theHole.nodeIDs << " ))";
+  }
+
+  SMESH_CATCH( SMESH::throwCorbaException );
 }
 
 //=======================================================================

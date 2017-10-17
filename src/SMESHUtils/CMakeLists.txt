@@ -47,7 +47,7 @@ SET(_link_LIBRARIES
   ${CAS_TKMesh}
   ${Boost_LIBRARIES}
   SMDS
-)
+  )
 
 # --- headers ---
 
@@ -68,7 +68,7 @@ SET(SMESHUtils_HEADERS
   SMESH_MAT2d.hxx
   SMESH_ControlPnt.hxx
   SMESH_Delaunay.hxx
-)
+  )
 
 # --- sources ---
 
@@ -86,6 +86,7 @@ SET(SMESHUtils_SOURCES
   SMESH_ControlPnt.cxx
   SMESH_DeMerge.cxx
   SMESH_Delaunay.cxx
+  SMESH_FillHole.cxx
   )
 
 # --- rules ---

@@ -35,6 +35,8 @@
 #include "SMDS_VolumeTool.hxx"
 #include "SMESH_OctreeNode.hxx"
 
+#include <Utils_SALOME_Exception.hxx>
+
 #include <GC_MakeSegment.hxx>
 #include <GeomAPI_ExtremaCurveCurve.hxx>
 #include <Geom_Line.hxx>
@@ -228,12 +230,12 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
                       SMDSAbs_ElementType  elemType,
                       SMDS_ElemIteratorPtr theElemIt = SMDS_ElemIteratorPtr(),
                       double               tolerance = NodeRadius );
-    void prepare(); // !!!call it before calling the following methods!!!
     void getElementsNearPoint( const gp_Pnt& point, vector<const SMDS_MeshElement*>& foundElems );
     void getElementsNearLine ( const gp_Ax1& line,  vector<const SMDS_MeshElement*>& foundElems);
     void getElementsInSphere ( const gp_XYZ&                    center,
                                const double                     radius,
                                vector<const SMDS_MeshElement*>& foundElems);
+    ElementBndBoxTree* getLeafAtPoint( const gp_XYZ& point );
 
   protected:
     ElementBndBoxTree() {}
@@ -335,19 +337,6 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
       if ( child->isLeaf() && child->_elements.capacity() > child->_elements.size() )
         SMESHUtils::CompactVector( child->_elements );
     }
-  }
-
-  //================================================================================
-  /*!
-   * \brief Un-mark all elements
-   */
-  //================================================================================
-
-  void ElementBndBoxTree::prepare()
-  {
-    // TElementBoxPool& elBoPool = getElementBoxPool();
-    // for ( size_t i = 0; i < elBoPool.nbElements(); ++i )
-    //   const_cast< ElementBox* >( elBoPool[ i ])->_isMarked = false;
   }
 
   //================================================================================
@@ -473,6 +462,30 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
 
   //================================================================================
   /*!
+   * \brief Return a leaf including a point
+   */
+  //================================================================================
+
+  ElementBndBoxTree* ElementBndBoxTree::getLeafAtPoint( const gp_XYZ& point )
+  {
+    if ( getBox()->IsOut( point ))
+      return 0;
+
+    if ( isLeaf() )
+    {
+      return this;
+    }
+    else
+    {
+      for (int i = 0; i < 8; i++)
+        if ( ElementBndBoxTree* l = ((ElementBndBoxTree*) myChildren[i])->getLeafAtPoint( point ))
+          return l;
+    }
+    return 0;
+  }
+
+  //================================================================================
+  /*!
    * \brief Construct the element box
    */
   //================================================================================
@@ -539,13 +552,16 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
   virtual const SMDS_MeshElement* FindClosestTo( const gp_Pnt&       point,
                                                  SMDSAbs_ElementType type );
 
-  void GetElementsNearLine( const gp_Ax1&                      line,
-                            SMDSAbs_ElementType                type,
-                            vector< const SMDS_MeshElement* >& foundElems);
-  void GetElementsInSphere( const gp_XYZ&                      center,
-                            const double                       radius,
-                            SMDSAbs_ElementType                type,
-                            vector< const SMDS_MeshElement* >& foundElems);
+  virtual void GetElementsNearLine( const gp_Ax1&                      line,
+                                    SMDSAbs_ElementType                type,
+                                    vector< const SMDS_MeshElement* >& foundElems);
+  virtual void GetElementsInSphere( const gp_XYZ&                      center,
+                                    const double                       radius,
+                                    SMDSAbs_ElementType                type,
+                                    vector< const SMDS_MeshElement* >& foundElems);
+  virtual gp_XYZ Project(const gp_Pnt&            point,
+                         SMDSAbs_ElementType      type,
+                         const SMDS_MeshElement** closestElem);
   double getTolerance();
   bool getIntersParamOnLine(const gp_Lin& line, const SMDS_MeshElement* face,
                             const double tolerance, double & param);
@@ -834,10 +850,6 @@ FindElementsByPoint(const gp_Pnt&                      point,
     {
       _ebbTree[_elementType] = new ElementBndBoxTree( *_mesh, type, _meshPartIt, tolerance );
     }
-    else
-    {
-      _ebbTree[ type ]->prepare();
-    }
     vector< const SMDS_MeshElement* > suspectElems;
     _ebbTree[ type ]->getElementsNearPoint( point, suspectElems );
     vector< const SMDS_MeshElement* >::iterator elem = suspectElems.begin();
@@ -863,13 +875,13 @@ SMESH_ElementSearcherImpl::FindClosestTo( const gp_Pnt&       point,
   const SMDS_MeshElement* closestElem = 0;
   _elementType = type;
 
-  if ( type == SMDSAbs_Face || type == SMDSAbs_Volume )
+  if ( type == SMDSAbs_Face ||
+       type == SMDSAbs_Volume ||
+       type == SMDSAbs_Edge )
   {
     ElementBndBoxTree*& ebbTree = _ebbTree[ type ];
     if ( !ebbTree )
       ebbTree = new ElementBndBoxTree( *_mesh, type, _meshPartIt );
-    else
-      ebbTree->prepare();
 
     vector<const SMDS_MeshElement*> suspectElems;
     ebbTree->getElementsNearPoint( point, suspectElems );
@@ -885,7 +897,6 @@ SMESH_ElementSearcherImpl::FindClosestTo( const gp_Pnt&       point,
         radius = ebbTree->maxSize() / pow( 2., getTreeHeight()) / 2;
       while ( suspectElems.empty() )
       {
-        ebbTree->prepare();
         ebbTree->getElementsInSphere( point.XYZ(), radius, suspectElems );
         radius *= 1.1;
       }
@@ -956,8 +967,6 @@ TopAbs_State SMESH_ElementSearcherImpl::GetPointState(const gp_Pnt& point)
   ElementBndBoxTree*& ebbTree = _ebbTree[ SMDSAbs_Face ];
   if ( !ebbTree )
     ebbTree = new ElementBndBoxTree( *_mesh, _elementType, _meshPartIt );
-  else
-    ebbTree->prepare();
 
   // Algo: analyse transition of a line starting at the point through mesh boundary;
   // try three lines parallel to axis of the coordinate system and perform rough
@@ -974,7 +983,6 @@ TopAbs_State SMESH_ElementSearcherImpl::GetPointState(const gp_Pnt& point)
     gp_Lin line    ( lineAxis );
 
     vector<const SMDS_MeshElement*> suspectFaces; // faces possibly intersecting the line
-    if ( axis > 0 ) ebbTree->prepare();
     ebbTree->getElementsNearLine( lineAxis, suspectFaces );
 
     // Intersect faces with the line
@@ -1187,8 +1195,6 @@ void SMESH_ElementSearcherImpl::GetElementsNearLine( const gp_Ax1&              
   ElementBndBoxTree*& ebbTree = _ebbTree[ type ];
   if ( !ebbTree )
     ebbTree = new ElementBndBoxTree( *_mesh, _elementType, _meshPartIt );
-  else
-    ebbTree->prepare();
 
   ebbTree->getElementsNearLine( line, foundElems );
 }
@@ -1208,10 +1214,57 @@ void SMESH_ElementSearcherImpl::GetElementsInSphere( const gp_XYZ&              
   ElementBndBoxTree*& ebbTree = _ebbTree[ type ];
   if ( !ebbTree )
     ebbTree = new ElementBndBoxTree( *_mesh, _elementType, _meshPartIt );
-  else
-    ebbTree->prepare();
 
   ebbTree->getElementsInSphere( center, radius, foundElems );
+}
+
+//=======================================================================
+/*
+ * \brief Return a projection of a given point to a mesh.
+ *        Optionally return the closest element
+ */
+//=======================================================================
+
+gp_XYZ SMESH_ElementSearcherImpl::Project(const gp_Pnt&            point,
+                                          SMDSAbs_ElementType      type,
+                                          const SMDS_MeshElement** closestElem)
+{
+  _elementType = type;
+  if ( _mesh->GetMeshInfo().NbElements( _elementType ) == 0 )
+    throw SALOME_Exception( LOCALIZED( "No elements of given type in the mesh" ));
+
+  ElementBndBoxTree*& ebbTree = _ebbTree[ _elementType ];
+  if ( !ebbTree )
+    ebbTree = new ElementBndBoxTree( *_mesh, _elementType );
+
+  gp_XYZ p = point.XYZ();
+  ElementBndBoxTree* ebbLeaf = ebbTree->getLeafAtPoint( p );
+  const Bnd_B3d* box = ebbLeaf->getBox();
+  double radius = ( box->CornerMax() - box->CornerMin() ).Modulus();
+
+  vector< const SMDS_MeshElement* > elems;
+  ebbTree->getElementsInSphere( p, radius, elems );
+  while ( elems.empty() )
+  {
+    radius *= 1.5;
+    ebbTree->getElementsInSphere( p, radius, elems );
+  }
+  gp_XYZ proj, bestProj;
+  const SMDS_MeshElement* elem = 0;
+  double minDist = 2 * radius;
+  for ( size_t i = 0; i < elems.size(); ++i )
+  {
+    double d = SMESH_MeshAlgos::GetDistance( elems[i], p, &proj );
+    if ( d < minDist )
+    {
+      bestProj = proj;
+      elem = elems[i];
+      minDist = d;
+    }
+  }
+  if ( closestElem ) *closestElem = elem;
+
+  return bestProj;
 }
 
 //=======================================================================
@@ -1461,17 +1514,19 @@ namespace
 //=======================================================================
 
 double SMESH_MeshAlgos::GetDistance( const SMDS_MeshElement* elem,
-                                     const gp_Pnt&           point )
+                                     const gp_Pnt&           point,
+                                     gp_XYZ*                 closestPnt )
 {
   switch ( elem->GetType() )
   {
   case SMDSAbs_Volume:
-    return GetDistance( dynamic_cast<const SMDS_MeshVolume*>( elem ), point);
+    return GetDistance( dynamic_cast<const SMDS_MeshVolume*>( elem ), point, closestPnt );
   case SMDSAbs_Face:
-    return GetDistance( dynamic_cast<const SMDS_MeshFace*>( elem ), point);
+    return GetDistance( dynamic_cast<const SMDS_MeshFace*>( elem ), point, closestPnt );
   case SMDSAbs_Edge:
-    return GetDistance( dynamic_cast<const SMDS_MeshEdge*>( elem ), point);
+    return GetDistance( dynamic_cast<const SMDS_MeshEdge*>( elem ), point, closestPnt );
   case SMDSAbs_Node:
+    if ( closestPnt ) *closestPnt = SMESH_TNodeXYZ( elem );
     return point.Distance( SMESH_TNodeXYZ( elem ));
   default:;
   }
@@ -1487,9 +1542,10 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshElement* elem,
 //=======================================================================
 
 double SMESH_MeshAlgos::GetDistance( const SMDS_MeshFace* face,
-                                     const gp_Pnt&        point )
+                                     const gp_Pnt&        point,
+                                     gp_XYZ*              closestPnt )
 {
-  double badDistance = -1;
+  const double badDistance = -1;
   if ( !face ) return badDistance;
 
   // coordinates of nodes (medium nodes, if any, ignored)
@@ -1533,7 +1589,7 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshFace* face,
   trsf.Transforms( tmpPnt );
   gp_XY point2D( tmpPnt.X(), tmpPnt.Z() );
 
-  // loop on segments of the face to analyze point position ralative to the face
+  // loop on edges of the face to analyze point position ralative to the face
   set< PointPos > pntPosSet;
   for ( size_t i = 1; i < xy.size(); ++i )
   {
@@ -1543,31 +1599,40 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshFace* face,
 
   // compute distance
   PointPos pos = *pntPosSet.begin();
-  // cout << "Face " << face->GetID() << " DIST: ";
   switch ( pos._name )
   {
-  case POS_LEFT: {
-    // point is most close to a segment
-    gp_Vec p0p1( point, xyz[ pos._index ] );
-    gp_Vec p1p2( xyz[ pos._index ], xyz[ pos._index+1 ]); // segment vector
-    p1p2.Normalize();
-    double projDist = p0p1 * p1p2; // distance projected to the segment
-    gp_Vec projVec = p1p2 * projDist;
-    gp_Vec distVec = p0p1 - projVec;
-    // cout << distVec.Magnitude()  << ", SEG " << face->GetNode(pos._index)->GetID()
-    //      << " - " << face->GetNodeWrap(pos._index+1)->GetID() << endl;
-    return distVec.Magnitude();
+  case POS_LEFT:
+  {
+    // point is most close to an edge
+    gp_Vec edge( xyz[ pos._index ], xyz[ pos._index+1 ]);
+    gp_Vec n1p ( xyz[ pos._index ], point  );
+    double u = ( edge * n1p ) / edge.SquareMagnitude(); // param [0,1] on the edge
+    // projection of the point on the edge
+    gp_XYZ proj = ( 1. - u ) * xyz[ pos._index ] + u * xyz[ pos._index+1 ];
+    if ( closestPnt ) *closestPnt = proj;
+    return point.Distance( proj );
   }
-  case POS_RIGHT: {
+  case POS_RIGHT:
+  {
     // point is inside the face
-    double distToFacePlane = tmpPnt.Y();
-    // cout << distToFacePlane << ", INSIDE " << endl;
-    return Abs( distToFacePlane );
+    double distToFacePlane = Abs( tmpPnt.Y() );
+    if ( closestPnt )
+    {
+      if ( distToFacePlane < std::numeric_limits<double>::min() ) {
+        *closestPnt = point.XYZ();
+      }
+      else {
+        tmpPnt.SetY( 0 );
+        trsf.Inverted().Transforms( tmpPnt );
+        *closestPnt = tmpPnt;
+      }
+    }
+    return distToFacePlane;
   }
-  case POS_VERTEX: {
+  case POS_VERTEX:
+  {
     // point is most close to a node
     gp_Vec distVec( point, xyz[ pos._index ]);
-    // cout << distVec.Magnitude()  << " VERTEX " << face->GetNode(pos._index)->GetID() << endl;
     return distVec.Magnitude();
   }
   default:;
@@ -1581,7 +1646,9 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshFace* face,
  */
 //=======================================================================
 
-double SMESH_MeshAlgos::GetDistance( const SMDS_MeshEdge* seg, const gp_Pnt& point )
+double SMESH_MeshAlgos::GetDistance( const SMDS_MeshEdge* seg,
+                                     const gp_Pnt&        point,
+                                     gp_XYZ*              closestPnt )
 {
   double dist = Precision::Infinite();
   if ( !seg ) return dist;
@@ -1597,16 +1664,25 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshEdge* seg, const gp_Pnt& poi
   {
     gp_Vec edge( xyz[i-1], xyz[i] );
     gp_Vec n1p ( xyz[i-1], point  );
-    double u = ( edge * n1p ) / edge.SquareMagnitude(); // param [0,1] on the edge
+    double d, u = ( edge * n1p ) / edge.SquareMagnitude(); // param [0,1] on the edge
     if ( u <= 0. ) {
-      dist = Min( dist, n1p.SquareMagnitude() );
+      if (( d = n1p.SquareMagnitude() ) < dist ) {
+        dist = d;
+        if ( closestPnt ) *closestPnt = xyz[i-1];
+      }
     }
     else if ( u >= 1. ) {
-      dist = Min( dist, point.SquareDistance( xyz[i] ));
+      if (( d = point.SquareDistance( xyz[i] )) < dist ) {
+        dist = d;
+        if ( closestPnt ) *closestPnt = xyz[i];
+      }
     }
     else {
-      gp_XYZ proj = ( 1. - u ) * xyz[i-1] + u * xyz[i]; // projection of the point on the edge
-      dist = Min( dist, point.SquareDistance( proj ));
+      gp_XYZ proj = xyz[i-1] + u * edge.XYZ(); // projection of the point on the edge
+      if (( d = point.SquareDistance( proj )) < dist ) {
+        dist = d;
+        if ( closestPnt ) *closestPnt = proj;
+      }
     }
   }
   return Sqrt( dist );
@@ -1620,7 +1696,9 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshEdge* seg, const gp_Pnt& poi
  */
 //=======================================================================
 
-double SMESH_MeshAlgos::GetDistance( const SMDS_MeshVolume* volume, const gp_Pnt& point )
+double SMESH_MeshAlgos::GetDistance( const SMDS_MeshVolume* volume,
+                                     const gp_Pnt&          point,
+                                     gp_XYZ*                closestPnt )
 {
   SMDS_VolumeTool vTool( volume );
   vTool.SetExternalNormal();
@@ -1628,6 +1706,8 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshVolume* volume, const gp_Pnt
 
   double n[3], bc[3];
   double minDist = 1e100, dist;
+  gp_XYZ closeP = point.XYZ();
+  bool isOut = false;
   for ( int iF = 0; iF < vTool.NbFaces(); ++iF )
   {
     // skip a facet with normal not "looking at" the point
@@ -1644,23 +1724,34 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshVolume* volume, const gp_Pnt
     case 3:
     {
       SMDS_FaceOfNodes tmpFace( nodes[0], nodes[ 1*iQ ], nodes[ 2*iQ ] );
-      dist = GetDistance( &tmpFace, point );
+      dist = GetDistance( &tmpFace, point, closestPnt );
       break;
     }
     case 4:
     {
       SMDS_FaceOfNodes tmpFace( nodes[0], nodes[ 1*iQ ], nodes[ 2*iQ ], nodes[ 3*iQ ]);
-      dist = GetDistance( &tmpFace, point );
+      dist = GetDistance( &tmpFace, point, closestPnt );
       break;
     }
     default:
       vector<const SMDS_MeshNode *> nvec( nodes, nodes + vTool.NbFaceNodes( iF ));
       SMDS_PolygonalFaceOfNodes tmpFace( nvec );
-      dist = GetDistance( &tmpFace, point );
+      dist = GetDistance( &tmpFace, point, closestPnt );
     }
-    minDist = Min( minDist, dist );
+    if ( dist < minDist )
+    {
+      minDist = dist;
+      isOut = true;
+      if ( closestPnt ) closeP = *closestPnt;
+    }
   }
-  return minDist;
+  if ( isOut )
+  {
+    if ( closestPnt ) *closestPnt = closeP;
+    return minDist;
+  }
+
+  return 0; // point is inside the volume
 }
 
 //================================================================================
@@ -1803,6 +1894,34 @@ vector< const SMDS_MeshNode*> SMESH_MeshAlgos::GetCommonNodes(const SMDS_MeshEle
     if ( e2->GetNodeIndex( e1->GetNode( i )) >= 0 )
       common.push_back( e1->GetNode( i ));
   return common;
+}
+//================================================================================
+/*!
+ * \brief Return true if node1 encounters first in the face and node2, after
+ */
+//================================================================================
+
+bool SMESH_MeshAlgos::IsRightOrder( const SMDS_MeshElement* face,
+                                    const SMDS_MeshNode*    node0,
+                                    const SMDS_MeshNode*    node1 )
+{
+  int i0 = face->GetNodeIndex( node0 );
+  int i1 = face->GetNodeIndex( node1 );
+  if ( face->IsQuadratic() )
+  {
+    if ( face->IsMediumNode( node0 ))
+    {
+      i0 -= ( face->NbNodes()/2 - 1 );
+      i1 *= 2;
+    }
+    else
+    {
+      i1 -= ( face->NbNodes()/2 - 1 );
+      i0 *= 2;
+    }
+  }
+  int diff = i1 - i0;
+  return ( diff == 1 ) || ( diff == -face->NbNodes()+1 );
 }
 
 //=======================================================================
