@@ -5366,7 +5366,7 @@ class algoCreator:
         if not algoType:
             algoType = self.defaultAlgoType
         if not algoType and self.algoTypeToClass:
-            algoType = list(self.algoTypeToClass.keys())[0]
+            algoType = sorted( self.algoTypeToClass.keys() )[0]
         if algoType in self.algoTypeToClass:
             #print "Create algo",algoType
 
