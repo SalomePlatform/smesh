@@ -5292,7 +5292,7 @@ class algoCreator:
         if not algoType:
             algoType = self.defaultAlgoType
         if not algoType and self.algoTypeToClass:
-            algoType = self.algoTypeToClass.keys()[0]
+            algoType = sorted( self.algoTypeToClass.keys() )[0]
         if self.algoTypeToClass.has_key( algoType ):
             #print "Create algo",algoType
             return self.algoTypeToClass[ algoType ]( self.mesh, shape )
