@@ -77,7 +77,7 @@ OPTION(SALOME_BUILD_DOC "Generate SALOME SMESH documentation" ON)
 OPTION(SALOME_BUILD_GUI            "Enable GUI" ON)
 OPTION(SALOME_SMESH_USE_CGNS       "Enable import/export to CGNS format" OFF)
 OPTION(SALOME_SMESH_USE_TBB        "Enable parallel computation" OFF)
-OPTION(SALOME_SMESH_DYNLOAD_LOCAL  "Load plug-ins' symbols locally (Linux only)" OFF)
+OPTION(SALOME_SMESH_DYNLOAD_LOCAL  "Load plug-ins' symbols locally (Linux only)" ON)
 
 IF(SALOME_SMESH_DYNLOAD_LOCAL)
   ADD_DEFINITIONS(-DDYNLOAD_LOCAL)
