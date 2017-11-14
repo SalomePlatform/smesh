@@ -93,6 +93,7 @@
 #include <sstream>
 
 #include <boost/tuple/tuple.hpp>
+#include <boost/container/flat_set.hpp>
 
 #include <Standard_Failure.hxx>
 #include <Standard_ErrorHandler.hxx>
@@ -4567,11 +4568,7 @@ void SMESH_MeshEditor::sweepElement(const SMDS_MeshElement*               elem,
         std::swap( itNN[0],    itNN[1] );
         std::swap( prevNod[0], prevNod[1] );
         std::swap( nextNod[0], nextNod[1] );
-#if defined(__APPLE__)
         std::swap( isSingleNode[0], isSingleNode[1] );
-#else
-        isSingleNode.swap( isSingleNode[0], isSingleNode[1] );
-#endif
         if ( nbSame > 0 )
           sames[0] = 1 - sames[0];
         iNotSameNode = 1 - iNotSameNode;
@@ -10596,6 +10593,559 @@ SMESH_MeshEditor::FindMatchingNodes(set<const SMDS_MeshElement*>& theSide1,
   return SEW_OK;
 }
 
+namespace // automatically find theAffectedElems for DoubleNodes()
+{
+  bool isOut( const SMDS_MeshNode* n, const gp_XYZ& norm, const SMDS_MeshElement* elem );
+
+  //--------------------------------------------------------------------------------
+  // Nodes shared by adjacent FissureBorder's.
+  // 1 node  if FissureBorder separates faces
+  // 2 nodes if FissureBorder separates volumes
+  struct SubBorder
+  {
+    const SMDS_MeshNode* _nodes[2];
+    int                  _nbNodes;
+
+    SubBorder( const SMDS_MeshNode* n1, const SMDS_MeshNode* n2 = 0 )
+    {
+      _nodes[0] = n1;
+      _nodes[1] = n2;
+      _nbNodes = bool( n1 ) + bool( n2 );
+      if ( _nbNodes == 2 && n1 > n2 )
+        std::swap( _nodes[0], _nodes[1] );
+    }
+    bool operator<( const SubBorder& other ) const
+    {
+      for ( int i = 0; i < _nbNodes; ++i )
+      {
+        if ( _nodes[i] < other._nodes[i] ) return true;
+        if ( _nodes[i] > other._nodes[i] ) return false;
+      }
+      return false;
+    }
+  };
+
+  //--------------------------------------------------------------------------------
+  // Map a SubBorder to all FissureBorder it bounds
+  struct FissureBorder;
+  typedef std::map< SubBorder, std::vector< FissureBorder* > > TBorderLinks;
+  typedef TBorderLinks::iterator                               TMappedSub;
+
+  //--------------------------------------------------------------------------------
+  /*!
+   * \brief Element border (volume facet or face edge) at a fissure
+   */
+  struct FissureBorder
+  {
+    std::vector< const SMDS_MeshNode* > _nodes;    // border nodes
+    const SMDS_MeshElement*             _elems[2]; // volume or face adjacent to fissure
+
+    std::vector< TMappedSub           > _mappedSubs;  // Sub() in TBorderLinks map
+    std::vector< const SMDS_MeshNode* > _sortedNodes; // to compare FissureBorder's
+
+    FissureBorder( FissureBorder && from ) // move constructor
+    {
+      std::swap( _nodes,       from._nodes );
+      std::swap( _sortedNodes, from._sortedNodes );
+      _elems[0] = from._elems[0];
+      _elems[1] = from._elems[1];
+    }
+
+    FissureBorder( const SMDS_MeshElement*                  elemToDuplicate,
+                   std::vector< const SMDS_MeshElement* > & adjElems)
+      : _nodes( elemToDuplicate->NbCornerNodes() )
+    {
+      for ( size_t i = 0; i < _nodes.size(); ++i )
+        _nodes[i] = elemToDuplicate->GetNode( i );
+
+      SMDSAbs_ElementType type = SMDSAbs_ElementType( elemToDuplicate->GetType() + 1 );
+      findAdjacent( type, adjElems );
+    }
+
+    FissureBorder( const SMDS_MeshNode**                    nodes,
+                   const size_t                             nbNodes,
+                   const SMDSAbs_ElementType                adjElemsType,
+                   std::vector< const SMDS_MeshElement* > & adjElems)
+      : _nodes( nodes, nodes + nbNodes )
+    {
+      findAdjacent( adjElemsType, adjElems );
+    }
+
+    void findAdjacent( const SMDSAbs_ElementType                adjElemsType,
+                       std::vector< const SMDS_MeshElement* > & adjElems)
+    {
+      _elems[0] = _elems[1] = 0;
+      adjElems.clear();
+      if ( SMDS_Mesh::GetElementsByNodes( _nodes, adjElems, adjElemsType ))
+        for ( size_t i = 0; i < adjElems.size() && i < 2; ++i )
+          _elems[i] = adjElems[i];
+    }
+
+    bool operator<( const FissureBorder& other ) const
+    {
+      return GetSortedNodes() < other.GetSortedNodes();
+    }
+
+    const std::vector< const SMDS_MeshNode* >& GetSortedNodes() const
+    {
+      if ( _sortedNodes.empty() && !_nodes.empty() )
+      {
+        FissureBorder* me = const_cast<FissureBorder*>( this );
+        me->_sortedNodes = me->_nodes;
+        std::sort( me->_sortedNodes.begin(), me->_sortedNodes.end() );
+      }
+      return _sortedNodes;
+    }
+
+    size_t NbSub() const
+    {
+      return _nodes.size();
+    }
+
+    SubBorder Sub(size_t i) const
+    {
+      return SubBorder( _nodes[i], NbSub() > 2 ? _nodes[ (i+1)%NbSub() ] : 0 );
+    }
+
+    void AddSelfTo( TBorderLinks& borderLinks )
+    {
+      _mappedSubs.resize( NbSub() );
+      for ( size_t i = 0; i < NbSub(); ++i )
+      {
+        TBorderLinks::iterator s2b =
+          borderLinks.insert( std::make_pair( Sub(i), TBorderLinks::mapped_type() )).first;
+        s2b->second.push_back( this );
+        _mappedSubs[ i ] = s2b;
+      }
+    }
+
+    void Clear()
+    {
+      _nodes.clear();
+    }
+
+    const SMDS_MeshElement* GetMarkedElem() const
+    {
+      if ( _nodes.empty() ) return 0; // cleared
+      if ( _elems[0] && _elems[0]->isMarked() ) return _elems[0];
+      if ( _elems[1] && _elems[1]->isMarked() ) return _elems[1];
+      return 0;
+    }
+
+    gp_XYZ GetNorm() const // normal to the border
+    {
+      gp_XYZ norm;
+      if ( _nodes.size() == 2 )
+      {
+        gp_XYZ avgNorm( 0,0,0 ); // sum of normals of adjacent faces
+        if ( SMESH_MeshAlgos::FaceNormal( _elems[0], norm ))
+          avgNorm += norm;
+        if ( SMESH_MeshAlgos::FaceNormal( _elems[1], norm ))
+          avgNorm += norm;
+
+        gp_XYZ bordDir( SMESH_NodeXYZ( _nodes[0] ) - SMESH_NodeXYZ( _nodes[1] ));
+        norm = bordDir ^ avgNorm;
+      }
+      else
+      {
+        SMESH_NodeXYZ p0( _nodes[0] );
+        SMESH_NodeXYZ p1( _nodes[1] );
+        SMESH_NodeXYZ p2( _nodes[2] );
+        norm = ( p0 - p1 ) ^ ( p2 - p1 );
+      }
+      if ( isOut( _nodes[0], norm, GetMarkedElem() ))
+        norm.Reverse();
+
+      return norm;
+    }
+
+    void ChooseSide() // mark an _elem located at positive side of fissure
+    {
+      _elems[0]->setIsMarked( true );
+      gp_XYZ norm = GetNorm();
+      double maxX = norm.Coord(1);
+      if ( Abs( maxX ) < Abs( norm.Coord(2)) ) maxX = norm.Coord(2);
+      if ( Abs( maxX ) < Abs( norm.Coord(3)) ) maxX = norm.Coord(3);
+      if ( maxX < 0 )
+      {
+        _elems[0]->setIsMarked( false );
+        _elems[1]->setIsMarked( true );
+      }
+    }
+
+  }; // struct FissureBorder
+
+  //--------------------------------------------------------------------------------
+  /*!
+   * \brief Classifier of elements at fissure edge
+   */
+  class FissureNormal
+  {
+    std::vector< gp_XYZ > _normals;
+    bool                  _bothIn;
+
+  public:
+    void Add( const SMDS_MeshNode* n, const FissureBorder& bord )
+    {
+      _bothIn = false;
+      _normals.reserve(2);
+      _normals.push_back( bord.GetNorm() );
+      if ( _normals.size() == 2 )
+        _bothIn = !isOut( n, _normals[0], bord.GetMarkedElem() );
+    }
+
+    bool IsIn( const SMDS_MeshNode* n, const SMDS_MeshElement* elem ) const
+    {
+      bool isIn = false;
+      switch ( _normals.size() ) {
+      case 1:
+      {
+        isIn = !isOut( n, _normals[0], elem );
+        break;
+      }
+      case 2:
+      {
+        bool in1 = !isOut( n, _normals[0], elem );
+        bool in2 = !isOut( n, _normals[1], elem );
+        isIn = _bothIn ? ( in1 && in2 ) : ( in1 || in2 );
+      }
+      }
+      return isIn;
+    }
+  };
+
+  //================================================================================
+  /*!
+   * \brief Classify an element by a plane passing through a node
+   */
+  //================================================================================
+
+  bool isOut( const SMDS_MeshNode* n, const gp_XYZ& norm, const SMDS_MeshElement* elem )
+  {
+    SMESH_NodeXYZ p = n;
+    double sumDot = 0;
+    for ( int i = 0, nb = elem->NbCornerNodes(); i < nb; ++i )
+    {
+      SMESH_NodeXYZ pi = elem->GetNode( i );
+      sumDot += norm * ( pi - p );
+    }
+    return sumDot < -1e-100;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Find FissureBorder's by nodes to duplicate
+   */
+  //================================================================================
+
+  void findFissureBorders( const TIDSortedElemSet&        theNodes,
+                           std::vector< FissureBorder > & theFissureBorders )
+  {
+    TIDSortedElemSet::const_iterator nIt = theNodes.begin();
+    const SMDS_MeshNode* n = dynamic_cast< const SMDS_MeshNode*>( *nIt );
+    if ( !n ) return;
+    SMDSAbs_ElementType elemType = SMDSAbs_Volume;
+    if ( n->NbInverseElements( elemType ) == 0 )
+    {
+      elemType = SMDSAbs_Face;
+      if ( n->NbInverseElements( elemType ) == 0 )
+        return;
+    }
+    // unmark elements touching the fissure
+    for ( ; nIt != theNodes.end(); ++nIt )
+      SMESH_MeshAlgos::MarkElems( cast2Node(*nIt)->GetInverseElementIterator(), false );
+
+    // loop on elements touching the fissure to get their borders belonging to the fissure
+    std::set< FissureBorder >              fissureBorders;
+    std::vector< const SMDS_MeshElement* > adjElems;
+    std::vector< const SMDS_MeshNode* >    nodes;
+    SMDS_VolumeTool volTool;
+    for ( nIt = theNodes.begin(); nIt != theNodes.end(); ++nIt )
+    {
+      SMDS_ElemIteratorPtr invIt = cast2Node(*nIt)->GetInverseElementIterator( elemType );
+      while ( invIt->more() )
+      {
+        const SMDS_MeshElement* eInv = invIt->next();
+        if ( eInv->isMarked() ) continue;
+        eInv->setIsMarked( true );
+
+        if ( elemType == SMDSAbs_Volume )
+        {
+          volTool.Set( eInv );
+          int iQuad = eInv->IsQuadratic() ? 2 : 1;
+          for ( int iF = 0, nbF = volTool.NbFaces(); iF < nbF; ++iF )
+          {
+            const SMDS_MeshNode** nn = volTool.GetFaceNodes( iF );
+            int                  nbN = volTool.NbFaceNodes( iF ) / iQuad;
+            nodes.clear();
+            bool allOnFissure = true;
+            for ( int iN = 0; iN < nbN  && allOnFissure; iN += iQuad )
+              if (( allOnFissure = theNodes.count( nn[ iN ])))
+                nodes.push_back( nn[ iN ]);
+            if ( allOnFissure )
+              fissureBorders.insert( std::move( FissureBorder( &nodes[0], nodes.size(),
+                                                               elemType, adjElems )));
+          }
+        }
+        else // elemType == SMDSAbs_Face
+        {
+          const SMDS_MeshNode* nn[2] = { eInv->GetNode( eInv->NbCornerNodes()-1 ), 0 };
+          bool            onFissure0 = theNodes.count( nn[0] ), onFissure1;
+          for ( int iN = 0, nbN = eInv->NbCornerNodes(); iN < nbN; ++iN )
+          {
+            nn[1]      = eInv->GetNode( iN );
+            onFissure1 = theNodes.count( nn[1] );
+            if ( onFissure0 && onFissure1 )
+              fissureBorders.insert( std::move( FissureBorder( nn, 2, elemType, adjElems )));
+            nn[0]      = nn[1];
+            onFissure0 = onFissure1;
+          }
+        }
+      }
+    }
+
+    theFissureBorders.reserve( theFissureBorders.size() + fissureBorders.size());
+    std::set< FissureBorder >::iterator bord = fissureBorders.begin();
+    for ( ; bord != fissureBorders.end(); ++bord )
+    {
+      theFissureBorders.push_back( std::move( const_cast<FissureBorder&>( *bord ) ));
+    }
+    return;
+  } // findFissureBorders()
+
+  //================================================================================
+  /*!
+   * \brief Find elements on one side of a fissure defined by elements or nodes to duplicate
+   *  \param [in] theElemsOrNodes - elements or nodes to duplicate
+   *  \param [in] theNodesNot - nodes not to duplicate
+   *  \param [out] theAffectedElems - the found elements
+   */
+  //================================================================================
+
+  void findAffectedElems( const TIDSortedElemSet& theElemsOrNodes,
+                          TIDSortedElemSet&       theAffectedElems)
+  {
+    if ( theElemsOrNodes.empty() ) return;
+
+    // find FissureBorder's
+
+    std::vector< FissureBorder >           fissure;
+    std::vector< const SMDS_MeshElement* > elemsByFacet;
+
+    TIDSortedElemSet::const_iterator elIt = theElemsOrNodes.begin();
+    if ( (*elIt)->GetType() == SMDSAbs_Node )
+    {
+      findFissureBorders( theElemsOrNodes, fissure );
+    }
+    else
+    {
+      fissure.reserve( theElemsOrNodes.size() );
+      for ( ; elIt != theElemsOrNodes.end(); ++elIt )
+        fissure.push_back( std::move( FissureBorder( *elIt, elemsByFacet )));
+    }
+    if ( fissure.empty() )
+      return;
+
+    // fill borderLinks
+
+    TBorderLinks borderLinks;
+
+    for ( size_t i = 0; i < fissure.size(); ++i )
+    {
+      fissure[i].AddSelfTo( borderLinks );
+    }
+
+    // get theAffectedElems
+
+    // unmark elements having nodes on the fissure, theAffectedElems elements will be marked
+    for ( size_t i = 0; i < fissure.size(); ++i )
+      for ( size_t j = 0; j < fissure[i]._nodes.size(); ++j )
+      {
+        SMESH_MeshAlgos::MarkElemNodes( fissure[i]._nodes[j]->GetInverseElementIterator(),
+                                        false, /*markElem=*/true );
+      }
+
+    std::vector<const SMDS_MeshNode *>                 facetNodes;
+    std::map< const SMDS_MeshNode*, FissureNormal >    fissEdgeNodes2Norm;
+    boost::container::flat_set< const SMDS_MeshNode* > fissureNodes;
+
+    // choose a side of fissure
+    fissure[0].ChooseSide();
+    theAffectedElems.insert( fissure[0].GetMarkedElem() );
+
+    size_t nbCheckedBorders = 0;
+    while ( nbCheckedBorders < fissure.size() )
+    {
+      // find a FissureBorder to treat
+      FissureBorder* bord = 0;
+      for ( size_t i = 0; i < fissure.size()  && !bord; ++i )
+        if ( fissure[i].GetMarkedElem() )
+          bord = & fissure[i];
+      for ( size_t i = 0; i < fissure.size()  && !bord; ++i )
+        if ( fissure[i].NbSub() > 0 && fissure[i]._elems[0] )
+        {
+          bord = & fissure[i];
+          bord->ChooseSide();
+          theAffectedElems.insert( bord->GetMarkedElem() );
+        }
+      if ( !bord ) return;
+      ++nbCheckedBorders;
+
+      // treat FissureBorder's linked to bord
+      fissureNodes.clear();
+      fissureNodes.insert( bord->_nodes.begin(), bord->_nodes.end() );
+      for ( size_t i = 0; i < bord->NbSub(); ++i )
+      {
+        TBorderLinks::iterator l2b = bord->_mappedSubs[ i ];
+        if ( l2b == borderLinks.end() || l2b->second.empty() ) continue;
+        std::vector< FissureBorder* >& linkedBorders = l2b->second;
+        const SubBorder&                          sb = l2b->first;
+        const SMDS_MeshElement*             bordElem = bord->GetMarkedElem();
+
+        if ( linkedBorders.size() == 1 ) // fissure edge reached, fill fissEdgeNodes2Norm
+        {
+          for ( int j = 0; j < sb._nbNodes; ++j )
+            fissEdgeNodes2Norm[ sb._nodes[j] ].Add( sb._nodes[j], *bord );
+          continue;
+        }
+
+        // add to theAffectedElems elems sharing nodes of a SubBorder and a node of bordElem
+        // until an elem adjacent to a neighbour FissureBorder is found
+        facetNodes.clear();
+        facetNodes.insert( facetNodes.end(), sb._nodes, sb._nodes + sb._nbNodes );
+        facetNodes.resize( sb._nbNodes + 1 );
+
+        while ( bordElem )
+        {
+          // check if bordElem is adjacent to a neighbour FissureBorder
+          for ( size_t j = 0; j < linkedBorders.size(); ++j )
+          {
+            FissureBorder* bord2 = linkedBorders[j];
+            if ( bord2 == bord ) continue;
+            if ( bordElem == bord2->_elems[0] || bordElem == bord2->_elems[1] )
+              bordElem = 0;
+            else
+              fissureNodes.insert( bord2->_nodes.begin(), bord2->_nodes.end() );
+          }
+          if ( !bordElem )
+            break;
+
+          // find the next bordElem
+          const SMDS_MeshElement* nextBordElem = 0;
+          for ( int iN = 0, nbN = bordElem->NbCornerNodes(); iN < nbN  && !nextBordElem; ++iN )
+          {
+            const SMDS_MeshNode* n = bordElem->GetNode( iN );
+            if ( fissureNodes.count( n )) continue;
+
+            facetNodes[ sb._nbNodes ] = n;
+            elemsByFacet.clear();
+            if ( SMDS_Mesh::GetElementsByNodes( facetNodes, elemsByFacet ) > 1 )
+            {
+              for ( size_t iE = 0; iE < elemsByFacet.size(); ++iE )
+                if ( elemsByFacet[ iE ] != bordElem &&
+                     !elemsByFacet[ iE ]->isMarked() )
+                {
+                  theAffectedElems.insert( elemsByFacet[ iE ]);
+                  elemsByFacet[ iE ]->setIsMarked( true );
+                  if ( elemsByFacet[ iE ]->GetType() == bordElem->GetType() )
+                    nextBordElem = elemsByFacet[ iE ];
+                }
+            }
+          }
+          bordElem = nextBordElem;
+
+        } // while ( bordElem )
+
+        linkedBorders.clear(); // not to treat this link any more
+
+      } // loop on SubBorder's of a FissureBorder
+
+      bord->Clear();
+
+    } // loop on FissureBorder's
+
+
+    // add elements sharing only one node of the fissure, except those sharing fissure edge nodes
+
+    // mark nodes of theAffectedElems
+    SMESH_MeshAlgos::MarkElemNodes( theAffectedElems.begin(), theAffectedElems.end(), true );
+
+    // unmark nodes of the fissure
+    elIt = theElemsOrNodes.begin();
+    if ( (*elIt)->GetType() == SMDSAbs_Node )
+      SMESH_MeshAlgos::MarkElems( elIt, theElemsOrNodes.end(), false );
+    else
+      SMESH_MeshAlgos::MarkElemNodes( elIt, theElemsOrNodes.end(), false );
+
+    std::vector< gp_XYZ > normVec;
+
+    // loop on nodes of the fissure, add elements having marked nodes
+    for ( elIt = theElemsOrNodes.begin(); elIt != theElemsOrNodes.end(); ++elIt )
+    {
+      const SMDS_MeshElement* e = (*elIt);
+      if ( e->GetType() != SMDSAbs_Node )
+        e->setIsMarked( true ); // avoid adding a fissure element
+
+      for ( int iN = 0, nbN = e->NbCornerNodes(); iN < nbN; ++iN )
+      {
+        const SMDS_MeshNode* n = e->GetNode( iN );
+        if ( fissEdgeNodes2Norm.count( n ))
+          continue;
+
+        SMDS_ElemIteratorPtr invIt = n->GetInverseElementIterator();
+        while ( invIt->more() )
+        {
+          const SMDS_MeshElement* eInv = invIt->next();
+          if ( eInv->isMarked() ) continue;
+          eInv->setIsMarked( true );
+
+          SMDS_ElemIteratorPtr nIt = eInv->nodesIterator();
+          while( nIt->more() )
+            if ( nIt->next()->isMarked())
+            {
+              theAffectedElems.insert( eInv );
+              SMESH_MeshAlgos::MarkElems( eInv->nodesIterator(), true );
+              n->setIsMarked( false );
+              break;
+            }
+        }
+      }
+    }
+
+    // add elements on the fissure edge
+    std::map< const SMDS_MeshNode*, FissureNormal >::iterator n2N;
+    for ( n2N = fissEdgeNodes2Norm.begin(); n2N != fissEdgeNodes2Norm.end(); ++n2N )
+    {
+      const SMDS_MeshNode* edgeNode = n2N->first;
+      const FissureNormal & normals = n2N->second;
+
+      SMDS_ElemIteratorPtr invIt = edgeNode->GetInverseElementIterator();
+      while ( invIt->more() )
+      {
+        const SMDS_MeshElement* eInv = invIt->next();
+        if ( eInv->isMarked() ) continue;
+        eInv->setIsMarked( true );
+
+        // classify eInv using normals
+        bool toAdd = normals.IsIn( edgeNode, eInv );
+        if ( toAdd ) // check if all nodes lie on the fissure edge
+        {
+          bool notOnEdge = false;
+          for ( int iN = 0, nbN = eInv->NbCornerNodes(); iN < nbN  && !notOnEdge; ++iN )
+            notOnEdge = !fissEdgeNodes2Norm.count( eInv->GetNode( iN ));
+          toAdd = notOnEdge;
+        }
+        if ( toAdd )
+        {
+          theAffectedElems.insert( eInv );
+        }
+      }
+    }
+
+    return;
+  } // findAffectedElems()
+} // namespace
+
 //================================================================================
 /*!
  * \brief Create elements equal (on same nodes) to given ones
@@ -10613,7 +11163,6 @@ void SMESH_MeshEditor::DoubleElements( const TIDSortedElemSet& theElements )
 
   SMDSAbs_ElementType type = SMDSAbs_All;
   SMDS_ElemIteratorPtr elemIt;
-  vector< const SMDS_MeshElement* > allElems;
   if ( theElements.empty() )
   {
     if ( mesh->NbNodes() == 0 )
@@ -10629,12 +11178,7 @@ void SMESH_MeshEditor::DoubleElements( const TIDSortedElemSet& theElements )
         type = types[i];
         break;
       }
-    // put all elements in the vector <allElems>
-    allElems.reserve( mesh->GetMeshInfo().NbElements( type ));
     elemIt = mesh->elementsIterator( type );
-    while ( elemIt->more() )
-      allElems.push_back( elemIt->next());
-    elemIt = elemSetIterator( allElems );
   }
   else
   {
@@ -10676,8 +11220,7 @@ bool SMESH_MeshEditor::DoubleNodes( const TIDSortedElemSet& theElems,
                                     const TIDSortedElemSet& theNodesNot,
                                     const TIDSortedElemSet& theAffectedElems )
 {
-  myLastCreatedElems.Clear();
-  myLastCreatedNodes.Clear();
+  ClearLastCreated();
 
   if ( theElems.size() == 0 )
     return false;
@@ -10722,8 +11265,8 @@ bool SMESH_MeshEditor::doubleNodes(SMESHDS_Mesh*           theMeshDS,
   for ( ;  elemItr != theElems.end(); ++elemItr )
   {
     const SMDS_MeshElement* anElem = *elemItr;
-    if (!anElem)
-      continue;
+    // if (!anElem)
+    //   continue;
 
     // duplicate nodes to duplicate element
     bool isDuplicate = false;
@@ -10777,8 +11320,7 @@ bool SMESH_MeshEditor::doubleNodes(SMESHDS_Mesh*           theMeshDS,
 bool SMESH_MeshEditor::DoubleNodes( const std::list< int >& theListOfNodes,
                                     const std::list< int >& theListOfModifiedElems )
 {
-  myLastCreatedElems.Clear();
-  myLastCreatedNodes.Clear();
+  ClearLastCreated();
 
   if ( theListOfNodes.size() == 0 )
     return false;
@@ -10794,8 +11336,7 @@ bool SMESH_MeshEditor::DoubleNodes( const std::list< int >& theListOfNodes,
   std::list< int >::const_iterator aNodeIter;
   for ( aNodeIter = theListOfNodes.begin(); aNodeIter != theListOfNodes.end(); ++aNodeIter )
   {
-    int aCurr = *aNodeIter;
-    SMDS_MeshNode* aNode = (SMDS_MeshNode*)aMeshDS->FindNode( aCurr );
+    const SMDS_MeshNode* aNode = aMeshDS->FindNode( *aNodeIter );
     if ( !aNode )
       continue;
 
@@ -10810,49 +11351,28 @@ bool SMESH_MeshEditor::DoubleNodes( const std::list< int >& theListOfNodes,
     }
   }
 
-  // Create map of new nodes for modified elements
+  // Change nodes of elements
 
-  std::map< SMDS_MeshElement*, vector<const SMDS_MeshNode*> > anElemToNodes;
+  std::vector<const SMDS_MeshNode*> aNodeArr;
 
   std::list< int >::const_iterator anElemIter;
-  for ( anElemIter = theListOfModifiedElems.begin();
-        anElemIter != theListOfModifiedElems.end(); ++anElemIter )
+  for ( anElemIter =  theListOfModifiedElems.begin();
+        anElemIter != theListOfModifiedElems.end();
+        anElemIter++ )
   {
-    int aCurr = *anElemIter;
-    SMDS_MeshElement* anElem = (SMDS_MeshElement*)aMeshDS->FindElement( aCurr );
+    const SMDS_MeshElement* anElem = aMeshDS->FindElement( *anElemIter );
     if ( !anElem )
       continue;
 
-    vector<const SMDS_MeshNode*> aNodeArr( anElem->NbNodes() );
-
-    SMDS_ElemIteratorPtr anIter = anElem->nodesIterator();
-    int ind = 0;
-    while ( anIter->more() )
+    aNodeArr.assign( anElem->begin_nodes(), anElem->end_nodes() );
+    for( size_t i = 0; i < aNodeArr.size(); ++i )
     {
-      SMDS_MeshNode* aCurrNode = (SMDS_MeshNode*)anIter->next();
-      if ( aCurr && anOldNodeToNewNode.find( aCurrNode ) != anOldNodeToNewNode.end() )
-      {
-        const SMDS_MeshNode* aNewNode = anOldNodeToNewNode[ aCurrNode ];
-        aNodeArr[ ind++ ] = aNewNode;
-      }
-      else
-        aNodeArr[ ind++ ] = aCurrNode;
+      std::map< const SMDS_MeshNode*, const SMDS_MeshNode* >::iterator n2n =
+        anOldNodeToNewNode.find( aNodeArr[ i ]);
+      if ( n2n != anOldNodeToNewNode.end() )
+        aNodeArr[ i ] = n2n->second;
     }
-    anElemToNodes[ anElem ] = aNodeArr;
-  }
-
-  // Change nodes of elements
-
-  std::map< SMDS_MeshElement*, vector<const SMDS_MeshNode*> >::iterator
-    anElemToNodesIter = anElemToNodes.begin();
-  for ( ; anElemToNodesIter != anElemToNodes.end(); ++anElemToNodesIter )
-  {
-    const SMDS_MeshElement* anElem = anElemToNodesIter->first;
-    vector<const SMDS_MeshNode*> aNodeArr = anElemToNodesIter->second;
-    if ( anElem )
-    {
-      aMeshDS->ChangeElementNodes( anElem, &aNodeArr[ 0 ], anElem->NbNodes() );
-    }
+    aMeshDS->ChangeElementNodes( anElem, &aNodeArr[ 0 ], aNodeArr.size() );
   }
 
   return true;
@@ -10874,8 +11394,8 @@ namespace {
   {
     gp_XYZ centerXYZ (0, 0, 0);
     SMDS_ElemIteratorPtr aNodeItr = theElem->nodesIterator();
-    while (aNodeItr->more())
-      centerXYZ += SMESH_TNodeXYZ(cast2Node( aNodeItr->next()));
+    while ( aNodeItr->more() )
+      centerXYZ += SMESH_NodeXYZ( aNodeItr->next() );
 
     gp_Pnt aPnt = centerXYZ / theElem->NbNodes();
     theClassifier.Perform(aPnt, theTol);
@@ -10930,9 +11450,9 @@ namespace {
          (select elements with a gravity center on the side given by faces normals).
          This mode (null shape) is faster, but works only when theElems are faces, with coherents orientations.
          The replicated nodes should be associated to affected elements.
-  \return groups of affected elements
+  \return true
   \sa DoubleNodeElemGroupsInRegion()
- */
+*/
 //================================================================================
 
 bool SMESH_MeshEditor::AffectedElemGroupsInRegion( const TIDSortedElemSet& theElems,
@@ -10942,94 +11462,7 @@ bool SMESH_MeshEditor::AffectedElemGroupsInRegion( const TIDSortedElemSet& theEl
 {
   if ( theShape.IsNull() )
   {
-    std::set<const SMDS_MeshNode*> alreadyCheckedNodes;
-    std::set<const SMDS_MeshElement*> alreadyCheckedElems;
-    std::set<const SMDS_MeshElement*> edgesToCheck;
-    alreadyCheckedNodes.clear();
-    alreadyCheckedElems.clear();
-    edgesToCheck.clear();
-
-    // --- iterates on elements to be replicated and get elements by back references from their nodes
-
-    TIDSortedElemSet::const_iterator elemItr = theElems.begin();
-    for ( ;  elemItr != theElems.end(); ++elemItr )
-    {
-      SMDS_MeshElement* anElem = (SMDS_MeshElement*)*elemItr;
-      if (!anElem || (anElem->GetType() != SMDSAbs_Face))
-        continue;
-      gp_XYZ normal;
-      SMESH_MeshAlgos::FaceNormal( anElem, normal, /*normalized=*/true );
-      std::set<const SMDS_MeshNode*> nodesElem;
-      nodesElem.clear();
-      SMDS_ElemIteratorPtr nodeItr = anElem->nodesIterator();
-      while ( nodeItr->more() )
-      {
-        const SMDS_MeshNode* aNode = cast2Node(nodeItr->next());
-        nodesElem.insert(aNode);
-      }
-      std::set<const SMDS_MeshNode*>::iterator nodit = nodesElem.begin();
-      for (; nodit != nodesElem.end(); nodit++)
-      {
-        const SMDS_MeshNode* aNode = *nodit;
-        if ( !aNode || theNodesNot.find(aNode) != theNodesNot.end() )
-          continue;
-        if (alreadyCheckedNodes.find(aNode) != alreadyCheckedNodes.end())
-          continue;
-        alreadyCheckedNodes.insert(aNode);
-        SMDS_ElemIteratorPtr backElemItr = aNode->GetInverseElementIterator();
-        while ( backElemItr->more() )
-        {
-          const SMDS_MeshElement* curElem = backElemItr->next();
-          if (alreadyCheckedElems.find(curElem) != alreadyCheckedElems.end())
-            continue;
-          if (theElems.find(curElem) != theElems.end())
-            continue;
-          alreadyCheckedElems.insert(curElem);
-          double x=0, y=0, z=0;
-          int nb = 0;
-          SMDS_ElemIteratorPtr nodeItr2 = curElem->nodesIterator();
-          while ( nodeItr2->more() )
-          {
-            const SMDS_MeshNode* anotherNode = cast2Node(nodeItr2->next());
-            x += anotherNode->X();
-            y += anotherNode->Y();
-            z += anotherNode->Z();
-            nb++;
-          }
-          gp_XYZ p;
-          p.SetCoord( x/nb -aNode->X(),
-                      y/nb -aNode->Y(),
-                      z/nb -aNode->Z() );
-          if (normal*p > 0)
-          {
-            theAffectedElems.insert( curElem );
-          }
-          else if (curElem->GetType() == SMDSAbs_Edge)
-            edgesToCheck.insert(curElem);
-        }
-      }
-    }
-    // --- add also edges lying on the set of faces (all nodes in alreadyCheckedNodes)
-    std::set<const SMDS_MeshElement*>::iterator eit = edgesToCheck.begin();
-    for( ; eit != edgesToCheck.end(); eit++)
-    {
-      bool onside = true;
-      const SMDS_MeshElement* anEdge = *eit;
-      SMDS_ElemIteratorPtr nodeItr = anEdge->nodesIterator();
-      while ( nodeItr->more() )
-      {
-        const SMDS_MeshNode* aNode = cast2Node(nodeItr->next());
-        if (alreadyCheckedNodes.find(aNode) == alreadyCheckedNodes.end())
-        {
-          onside = false;
-          break;
-        }
-      }
-      if (onside)
-      {
-        theAffectedElems.insert(anEdge);
-      }
-    }
+    findAffectedElems( theElems, theAffectedElems );
   }
   else
   {
@@ -11050,9 +11483,7 @@ bool SMESH_MeshEditor::AffectedElemGroupsInRegion( const TIDSortedElemSet& theEl
     TIDSortedElemSet::const_iterator elemItr = theElems.begin();
     for ( ;  elemItr != theElems.end(); ++elemItr )
     {
-      SMDS_MeshElement* anElem = (SMDS_MeshElement*)*elemItr;
-      if (!anElem)
-        continue;
+      SMDS_MeshElement*     anElem = (SMDS_MeshElement*)*elemItr;
       SMDS_ElemIteratorPtr nodeItr = anElem->nodesIterator();
       while ( nodeItr->more() )
       {
@@ -11064,9 +11495,9 @@ bool SMESH_MeshEditor::AffectedElemGroupsInRegion( const TIDSortedElemSet& theEl
         {
           const SMDS_MeshElement* curElem = backElemItr->next();
           if ( curElem && theElems.find(curElem) == theElems.end() &&
-              ( bsc3d.get() ?
-                isInside( curElem, *bsc3d, aTol ) :
-                isInside( curElem, *aFaceClassifier, aTol )))
+               ( bsc3d.get() ?
+                 isInside( curElem, *bsc3d, aTol ) :
+                 isInside( curElem, *aFaceClassifier, aTol )))
             theAffectedElems.insert( curElem );
         }
       }

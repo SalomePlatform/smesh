@@ -80,8 +80,8 @@ private slots:
 
   void                    onEditCurrentArgument();
   void                    onSelectionChanged();
-
   void                    onDeactivate();
+  void                    onGenerate();
 
   void                    updateButtons();
 
@@ -97,6 +97,7 @@ private:
   QPushButton*            mySelectButton1;
   QPushButton*            mySelectButton2;
   QPushButton*            mySelectButton3;
+  QPushButton*            myGenerateButton3;
   QLineEdit*              myLineEdit1;
   QLineEdit*              myLineEdit2;
   QLineEdit*              myLineEdit3;

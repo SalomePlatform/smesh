@@ -155,6 +155,54 @@ namespace SMESH_MeshAlgos
                                                     const SMDS_MeshElement* e2);
 
   /*!
+   * \brief Mark elements given by SMDS_Iterator
+   */
+  template< class ElemIter >
+  void MarkElems( ElemIter it, const bool isMarked )
+  {
+    while ( it->more() ) it->next()->setIsMarked( isMarked );
+  }
+  /*!
+   * \brief Mark elements given by std iterators
+   */
+  template< class ElemIter >
+  void MarkElems( ElemIter it, ElemIter end, const bool isMarked )
+  {
+    for ( ; it != end; ++it ) (*it)->setIsMarked( isMarked );
+  }
+  /*!
+   * \brief Mark nodes of elements given by SMDS_Iterator
+   */
+  template< class ElemIter >
+  void MarkElemNodes( ElemIter it, const bool isMarked, const bool markElem = false )
+  {
+    if ( markElem )
+      while ( it->more() ) {
+        const SMDS_MeshElement* e = it->next();
+        e->setIsMarked( isMarked );
+        MarkElems( e->nodesIterator(), isMarked );
+      }
+    else
+      while ( it->more() )
+        MarkElems( it->next()->nodesIterator(), isMarked );
+  }
+  /*!
+   * \brief Mark elements given by std iterators
+   */
+  template< class ElemIter >
+  void MarkElemNodes( ElemIter it, ElemIter end, const bool isMarked, const bool markElem = false )
+  {
+    if ( markElem )
+      for ( ; it != end; ++it ) {
+        (*it)->setIsMarked( isMarked );
+        MarkElems( (*it)->nodesIterator(), isMarked );
+      }
+    else
+      for ( ; it != end; ++it )
+        MarkElems( (*it)->nodesIterator(), isMarked );
+  }
+
+  /*!
    * \brief Return SMESH_NodeSearcher. The caller is responsible for deleteing it
    */
   SMESHUtils_EXPORT

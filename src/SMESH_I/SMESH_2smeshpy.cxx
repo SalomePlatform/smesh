@@ -740,15 +740,16 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
     else if ( method == "MakeBoundaryElements")
       meshID = aCommand->GetResultValue(2);
 
-    if ( method.Search("MakeGroups") != -1  ||
-         method == "ExtrusionAlongPathX"    ||
-         method == "ExtrusionAlongPathObjX" ||
-         method == "DoubleNodeGroupNew"     ||
-         method == "DoubleNodeGroupsNew"    ||
-         method == "DoubleNodeElemGroupNew" ||
-         method == "DoubleNodeElemGroupsNew"||
-         method == "DoubleNodeElemGroup2New"||
-         method == "DoubleNodeElemGroups2New"
+    if ( method.Search("MakeGroups") != -1      ||
+         method == "ExtrusionAlongPathX"        ||
+         method == "ExtrusionAlongPathObjX"     ||
+         method == "DoubleNodeGroupNew"         ||
+         method == "DoubleNodeGroupsNew"        ||
+         method == "DoubleNodeElemGroupNew"     ||
+         method == "DoubleNodeElemGroupsNew"    ||
+         method == "DoubleNodeElemGroup2New"    ||
+         method == "DoubleNodeElemGroups2New"   ||
+         method == "AffectedElemGroupsInRegion"
          )
       groups = aCommand->GetResultValue();
     else if ( method == "MakeBoundaryMesh" )
@@ -2436,7 +2437,7 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       "Scale","ScaleMakeMesh","RotateMakeMesh","RotateObjectMakeMesh","MakeBoundaryMesh",
       "MakeBoundaryElements", "SplitVolumesIntoTetra","SplitHexahedraIntoPrisms",
       "DoubleElements","DoubleNodes","DoubleNode","DoubleNodeGroup","DoubleNodeGroups",
-      "DoubleNodeElem","DoubleNodeElemInRegion","DoubleNodeElemGroup",
+      "DoubleNodeElem","DoubleNodeElemInRegion","DoubleNodeElemGroup","AffectedElemGroupsInRegion",
       "DoubleNodeElemGroupInRegion","DoubleNodeElemGroups","DoubleNodeElemGroupsInRegion",
       "DoubleNodesOnGroupBoundaries","CreateFlatElementsOnFacesGroups","CreateHoleSkin"
       ,"" }; // <- mark of the end

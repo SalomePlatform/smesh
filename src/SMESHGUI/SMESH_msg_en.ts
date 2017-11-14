@@ -7212,6 +7212,10 @@ It is impossible to read point coordinates from file</translation>
         <source>ON_ALL_BOUNDARIES</source>
         <translation>On all boundaries</translation>
     </message>
+    <message>
+        <source>GENERATE_GROUPS</source>
+        <translation>Generate</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_Make2DFrom3DDlg</name>
