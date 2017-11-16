@@ -352,7 +352,6 @@ void StdMeshersGUI_DistrPreview::update()
     OCC_CATCH_SIGNALS;
     replot();
   } catch(Standard_Failure) {
-    Handle(Standard_Failure) aFail = Standard_Failure::Caught();
   }
 }
 
@@ -399,7 +398,6 @@ bool StdMeshersGUI_DistrPreview::init( const QString& str )
     myExpr = ExprIntrp_GenExp::Create();
     myExpr->Process( ( Standard_CString ) str.toLatin1().data() );
   } catch(Standard_Failure) {
-    Handle(Standard_Failure) aFail = Standard_Failure::Caught();
     parsed_ok = false;
   }
 
@@ -438,7 +436,6 @@ double StdMeshersGUI_DistrPreview::calc( bool& ok )
     OCC_CATCH_SIGNALS;
     res = myExpr->Expression()->Evaluate( myVars, myValues );
   } catch(Standard_Failure) {
-    Handle(Standard_Failure) aFail = Standard_Failure::Caught();
     ok = false;
     res = 0.0;
   }
@@ -466,7 +463,6 @@ bool StdMeshersGUI_DistrPreview::convert( double& v ) const
         if(v < -7) v = -7.0;
         v = pow( 10.0, v );
       } catch(Standard_Failure) {
-        Handle(Standard_Failure) aFail = Standard_Failure::Caught();
         v = 0.0;
         ok = false;
       }
