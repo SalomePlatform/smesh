@@ -4593,7 +4593,7 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
           {
             d = Abs( idealLen - accuLength[ iEV ]);
 
-            // take into account presence of a coresponding halfDivider
+            // take into account presence of a corresponding halfDivider
             const double cornerWgt = 0.5  / nbSides;
             const double vertexWgt = 0.25 / nbSides;
             TGeoIndex hd = halfDivider[ evVec[ iEV ]];

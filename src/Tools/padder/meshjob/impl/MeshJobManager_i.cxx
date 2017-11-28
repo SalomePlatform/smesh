@@ -429,7 +429,7 @@ CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobFileList & meshJo
   //jobParameters->maximum_duration = CORBA::string_dup("01:00");
   jobParameters->queue = CORBA::string_dup("");
 
-  // Setting resource and additionnal properties (if needed)
+  // Setting resource and additional properties (if needed)
   // The resource parameters can be initiated from scratch, for
   // example by specifying the values in hard coding:
   // >>>
@@ -451,7 +451,7 @@ CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobFileList & meshJo
     resourceDefinition = _resourcesManager->GetResourceDefinition(resourceName);
   }
   catch (const CORBA::SystemException& ex) {
-    _lastErrorMessage = std::string("We can not access to the ressource ") + std::string(resourceName);
+    _lastErrorMessage = std::string("We can not access the resource ") + std::string(resourceName);
     _lastErrorMessage+= std::string("(check the file CatalogResource.xml)");
     LOG(_lastErrorMessage);
     return JOBID_UNDEFINED;
@@ -462,7 +462,7 @@ CORBA::Long MeshJobManager_i::initialize(const MESHJOB::MeshJobFileList & meshJo
   // Then, the values can be used to initiate the resource parameters
   // of the job:
   jobParameters->resource_required.name     = CORBA::string_dup(resourceDefinition->name.in());
-  // CAUTION: the additionnal two following parameters MUST be
+  // CAUTION: the additional two following parameters MUST be
   // specified explicitly, because they are not provided by the
   // resource definition:
   jobParameters->resource_required.mem_mb   = resourceDefinition->mem_mb;
@@ -682,7 +682,7 @@ std::vector<std::string> * MeshJobManager_i::_getResourceNames() {
   // SALOME application.
   // In the code instructions, you just have to choose a resource
   // configuration by its name and then define the ResourceParameters
-  // that specify additionnal properties for a specific job submission
+  // that specify additional properties for a specific job submission
   // (use the attribute resource_required of the JobParameters).
 
   return resourceNames;

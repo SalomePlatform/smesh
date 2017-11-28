@@ -551,7 +551,7 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
-     * Remove an hypothesis previouly added with AddHypothesis.
+     * Remove an hypothesis previously added with AddHypothesis.
      */
     Hypothesis_Status RemoveHypothesis(in GEOM::GEOM_Object aSubObject,
                                        in SMESH_Hypothesis anHyp)
@@ -734,7 +734,7 @@ module SMESH
     double GetComputeProgress();
 
     /*!
-     * Get informations about mesh contents
+     * Get information about mesh contents
      */
     long NbNodes()
       raises (SALOME::SALOME_Exception);

@@ -3461,6 +3461,24 @@ double SMESH_MesherHelper::GetOtherParam(const double param) const
 }
 
 //=======================================================================
+//function : NbRealSeam
+//purpose  : Return a number of real seam edges in the shape set through
+//           IsQuadraticSubMesh() or SetSubShape(). A real seam edge encounters twice in a wire
+//=======================================================================
+
+size_t SMESH_MesherHelper::NbRealSeam() const
+{
+  size_t nb = 0;
+
+  std::set< int >::const_iterator id = mySeamShapeIds.begin();
+  for ( ; id != mySeamShapeIds.end(); ++id )
+    if ( *id < 0 ) ++nb;
+    else break;
+
+  return nb;
+}
+
+//=======================================================================
 //function : IsOnSeam
 //purpose  : Check if UV is on seam. Return 0 if not, 1 for U seam, 2 for V seam
 //=======================================================================
@@ -5126,7 +5144,7 @@ void SMESH_MesherHelper::FixQuadraticElements(SMESH_ComputeErrorPtr& compError,
             MSG("Internal chain - ignore");
             continue;
           }
-          // mesure chain length and compute link position along the chain
+          // measure chain length and compute link position along the chain
           double chainLen = 0;
           vector< double > linkPos;
           TChain savedChain; // backup

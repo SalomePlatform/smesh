@@ -191,7 +191,7 @@ namespace {
       theTShapeToLengthMap.insert( make_pair( getTShape( edge ), L ));
     }
 
-    // Compute S0 - minimal segement length, is computed by the shortest EDGE
+    // Compute S0 - minimal segment length, is computed by the shortest EDGE
 
     /* image attached to PAL10237
 

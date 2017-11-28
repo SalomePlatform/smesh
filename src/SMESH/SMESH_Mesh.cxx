@@ -2188,7 +2188,7 @@ ostream& SMESH_Mesh::Dump(ostream& save)
         save << clause << ".3) Faces in detail: " << endl;
         map <int,int>::iterator itF;
         for (itF = myFaceMap.begin(); itF != myFaceMap.end(); itF++)
-          save << "--> nb nodes: " << itF->first << " - nb elemens:\t" << itF->second << endl;
+          save << "--> nb nodes: " << itF->first << " - nb elements:\t" << itF->second << endl;
       }
     }
     save << ++clause << ") Total number of " << orderStr << " volumes:\t" << NbVolumes(order) << endl;
@@ -2213,7 +2213,7 @@ ostream& SMESH_Mesh::Dump(ostream& save)
         save << clause << ".5) Volumes in detail: " << endl;
         map <int,int>::iterator itV;
         for (itV = myVolumesMap.begin(); itV != myVolumesMap.end(); itV++)
-          save << "--> nb nodes: " << itV->first << " - nb elemens:\t" << itV->second << endl;
+          save << "--> nb nodes: " << itV->first << " - nb elements:\t" << itV->second << endl;
       }
     }
     save << endl;

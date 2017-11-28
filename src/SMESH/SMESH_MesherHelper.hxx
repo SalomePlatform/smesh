@@ -52,7 +52,7 @@ typedef std::map<SMESH_TLink, const SMDS_MeshNode*>::iterator ItTLinkNode;
 
 typedef SMDS_Iterator<const TopoDS_Shape*>  PShapeIterator;
 typedef boost::shared_ptr< PShapeIterator > PShapeIteratorPtr;
-  
+
 typedef std::vector<const SMDS_MeshNode* > TNodeColumn;
 typedef std::map< double, TNodeColumn >    TParam2ColumnMap;
 
@@ -561,9 +561,15 @@ public:
   /*!
    * \brief Check if the shape set through IsQuadraticSubMesh() or SetSubShape()
    *        has a degenerated edges
-    * \retval bool - true if it has
+   *  \retval bool - true if there are degenerated edges
    */
   bool HasDegeneratedEdges() const { return !myDegenShapeIds.empty(); }
+  /*!
+   * \brief Return a number of degenerated edges in the shape set through
+   *        IsQuadraticSubMesh() or SetSubShape()
+   *  \retval size_t - nb edges
+   */
+  size_t NbDegeneratedEdges() const { return myDegenShapeIds.size(); }
 
   /*!
    * \brief Check if shape is a seam edge or it's vertex
@@ -610,6 +616,12 @@ public:
    *  \retval bool - true if it has
    */
   bool HasRealSeam() const { return HasSeam() && ( *mySeamShapeIds.begin() < 0 ); }
+  /*!
+   * \brief Return a number of real seam edges in the shape set through
+   *        IsQuadraticSubMesh() or SetSubShape(). A real seam edge encounters twice in a wire
+   *  \retval size_t - nb of real seams
+   */
+  size_t NbRealSeam() const;
   /*!
    * \brief Return index of periodic parametric direction of a closed face
    *  \retval int - 1 for U, 2 for V direction

@@ -3812,7 +3812,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                 // "Face V positions" - V parameter of node on face
 
                 // Find out nb of nodes on edges and faces
-                // Collect corresponing sub-meshes
+                // Collect corresponding sub-meshes
                 int nbEdgeNodes = 0, nbFaceNodes = 0;
                 list<SMESHDS_SubMesh*> aEdgeSM, aFaceSM;
                 // loop on SMESHDS_SubMesh'es

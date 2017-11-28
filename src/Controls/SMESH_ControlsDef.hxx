@@ -53,9 +53,10 @@ class SMESHDS_Mesh;
 class SMESHDS_SubMesh;
 class SMESHDS_GroupBase;
 
-class gp_Pnt;
 class BRepClass3d_SolidClassifier;
 class ShapeAnalysis_Surface;
+class gp_Pln;
+class gp_Pnt;
 
 namespace SMESH{
   namespace Controls{
@@ -321,6 +322,7 @@ namespace SMESH{
     private:
       Handle(ShapeAnalysis_Surface) mySurface;
       int                           myShapeIndex;
+      boost::shared_ptr<gp_Pln>     myPlane;
     };
 
     /*

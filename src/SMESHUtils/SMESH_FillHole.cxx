@@ -66,6 +66,7 @@ namespace
     double                  myDirCoef; // 1. or -1, to make myDir oriented as myNodes in myFace
     double                  myLength;  // between nodes
     double                  myAngleWithPrev; // between myDir and -myPrev->myDir
+    double                  myMinMaxRatio; // of a possible triangle sides
     TAngleMap::iterator     myAngleMapPos;
     double                  myOverlapAngle;  // angle delta due to overlapping
     const SMDS_MeshNode*    myNode1Shift;    // nodes created to avoid overlapping of faces
@@ -87,11 +88,13 @@ namespace
                             std::vector<const SMDS_MeshElement*>& newFaces,
                             const bool                            isReverse );
     gp_XYZ GetInFaceDir() const { return myFaceNorm ^ myDir * myDirCoef; }
+    double ShapeFactor()  const { return 0.5 * ( 1. - myMinMaxRatio ); }
     void   InsertSelf(TAngleMap& edgesByAngle, bool isReverseFaces, bool reBind, bool useOverlap )
     {
       if ( reBind ) edgesByAngle.erase( myAngleMapPos );
       double key = (( isReverseFaces ? 2 * M_PI - myAngleWithPrev : myAngleWithPrev )
-                    + myOverlapAngle * useOverlap );
+                    + myOverlapAngle * useOverlap
+                    + ShapeFactor() );
       myAngleMapPos = edgesByAngle.insert( std::make_pair( key, this ));
     }
 
@@ -163,7 +166,6 @@ namespace
       myFaceNorm *= -1;
       myDirCoef  *= -1;
     }
-
   }
 
   //================================================================================
@@ -174,21 +176,28 @@ namespace
 
   void BEdge::ComputeAngle( bool theReverseAngle )
   {
-    myAngleWithPrev = ACos( myDir.Dot( myPrev->myDir.Reversed() ));
+    double dot = myDir.Dot( myPrev->myDir.Reversed() );
+    if      ( dot >=  1 ) myAngleWithPrev = 0;
+    else if ( dot <= -1 ) myAngleWithPrev = M_PI;
+    else                  myAngleWithPrev = acos( dot );
 
     bool isObtuse;
-    gp_XYZ inNewFaceDir = myDir - myPrev->myDir;
-    double         dot1 = myDir.Dot( myPrev->myFaceNorm );
-    double         dot2 = myPrev->myDir.Dot( myFaceNorm );
-    bool     isOverlap1 = ( inNewFaceDir * myPrev->GetInFaceDir() > 0 );
-    bool     isOverlap2 = ( inNewFaceDir * GetInFaceDir()         > 0 );
+    gp_XYZ inFaceDirNew = myDir - myPrev->myDir;
+    gp_XYZ   inFaceDir1 = myPrev->GetInFaceDir();
+    gp_XYZ   inFaceDir2 = this->GetInFaceDir();
+    double         dot1 = inFaceDirNew * inFaceDir1;
+    double         dot2 = inFaceDirNew * inFaceDir2;
+    bool     isOverlap1 = ( dot1 > 0 );
+    bool     isOverlap2 = ( dot2 > 0 );
     if ( !myPrev->myFace )
       isObtuse = isOverlap1;
     else if  ( !myFace )
       isObtuse = isOverlap2;
     else
     {
-      isObtuse = ( dot1 > 0 || dot2 < 0 ); // suppose face normals point outside the border
+      double dt1 = myDir.Dot( myPrev->myFaceNorm );
+      double dt2 = myPrev->myDir.Dot( myFaceNorm );
+      isObtuse = ( dt1 > 0 || dt2 < 0 ); // suppose face normals point outside the border
       if ( theReverseAngle )
         isObtuse = !isObtuse;
     }
@@ -207,14 +216,21 @@ namespace
       // check if myFace and a triangle built on this and prev edges overlap
       if ( isOverlap1 )
       {
-        double cos2 = dot1 * dot1 / myPrev->myFaceNorm.SquareModulus();
-        myOverlapAngle += 0.5 * M_PI * ( 1 - cos2 );
+        double cos2 = dot1 * dot1 / inFaceDirNew.SquareModulus() / inFaceDir1.SquareModulus();
+        myOverlapAngle += 1. * M_PI * cos2;
       }
       if ( isOverlap2 )
       {
-        double cos2 = dot2 * dot2 / myFaceNorm.SquareModulus();
-        myOverlapAngle += 0.5 * M_PI * ( 1 - cos2 );
+        double cos2 = dot2 * dot2 / inFaceDirNew.SquareModulus() / inFaceDir2.SquareModulus();
+        myOverlapAngle += 1. * M_PI * cos2;
       }
+    }
+
+    {
+      double len3 = SMESH_NodeXYZ( myPrev->myNode1 ).Distance( myNode2 );
+      double minLen = Min( myLength, Min( myPrev->myLength, len3 ));
+      double maxLen = Max( myLength, Max( myPrev->myLength, len3 ));
+      myMinMaxRatio = minLen / maxLen;
     }
   }
 
@@ -445,11 +461,12 @@ void SMESH_MeshAlgos::FillHole(const SMESH_MeshAlgos::TFreeBorder &  theFreeBord
   while ( edgesByAngle.size() > 2 )
   {
     TAngleMap::iterator a2e = edgesByAngle.begin();
-    if ( useOverlap && a2e->first > M_PI - angTol ) // all new triangles need shift
+    edge = a2e->second;
+    if ( useOverlap &&
+         a2e->first - edge->ShapeFactor() > M_PI - angTol ) // all new triangles need shift
     {
-      // re-sort the edges
+      // re-sort the edges w/o overlap consideration
       useOverlap = false;
-      edge    = a2e->second;
       nbEdges = edgesByAngle.size();
       edgesByAngle.clear();
       for ( size_t i = 0; i < nbEdges; ++i, edge = edge->myNext )

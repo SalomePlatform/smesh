@@ -2303,10 +2303,10 @@ class Mesh:
         return self.editor.MakeIDSource(ids, elemType)
 
 
-    # Get informations about mesh contents:
+    # Get information about mesh contents:
     # ------------------------------------
 
-    ## Get the mesh stattistic
+    ## Get the mesh statistic
     #  @return dictionary type element - count of elements
     #  @ingroup l1_meshinfo
     def GetMeshInfo(self, obj = None):
@@ -4924,12 +4924,12 @@ class Mesh:
 
     ## Identify the elements that will be affected by node duplication (actual duplication is not performed.
     #  This method is the first step of DoubleNodeElemGroupsInRegion.
-    #  @param theElems - list of groups of elements (edges or faces) to be replicated
+    #  @param theElems - list of groups of nodes or elements (edges or faces) to be replicated
     #  @param theNodesNot - list of groups of nodes not to replicated
     #  @param theShape - shape to detect affected elements (element which geometric center
     #         located on or inside shape).
     #         The replicated nodes should be associated to affected elements.
-    #  @return groups of affected elements
+    #  @return groups of affected elements in order: volumes, faces, edges
     #  @ingroup l2_modif_duplicat
     def AffectedElemGroupsInRegion(self, theElems, theNodesNot, theShape):
         return self.editor.AffectedElemGroupsInRegion(theElems, theNodesNot, theShape)

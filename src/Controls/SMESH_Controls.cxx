@@ -45,6 +45,7 @@
 #include <BRepClass3d_SolidClassifier.hxx>
 #include <BRepClass_FaceClassifier.hxx>
 #include <BRep_Tool.hxx>
+#include <GeomLib_IsPlanarSurface.hxx>
 #include <Geom_CylindricalSurface.hxx>
 #include <Geom_Plane.hxx>
 #include <Geom_Surface.hxx>
@@ -96,6 +97,15 @@ namespace {
 
     return v1.Magnitude() < gp::Resolution() ||
       v2.Magnitude() < gp::Resolution() ? 0 : v1.Angle( v2 );
+  }
+
+  inline double getCos2( const gp_XYZ& P1, const gp_XYZ& P2, const gp_XYZ& P3 )
+  {
+    gp_Vec v1( P1 - P2 ), v2( P3 - P2 );
+    double dot = v1 * v2, len1 = v1.SquareMagnitude(), len2 = v2.SquareMagnitude();
+
+    return ( len1 < gp::Resolution() || len2 < gp::Resolution() ? -1 :
+             dot * dot / len1 / len2 );
   }
 
   inline double getArea( const gp_XYZ& P1, const gp_XYZ& P2, const gp_XYZ& P3 )
@@ -713,21 +723,25 @@ SMDSAbs_ElementType MaxElementLength3D::GetType() const
 
 double MinimumAngle::GetValue( const TSequenceOfXYZ& P )
 {
-  double aMin;
-
-  if (P.size() <3)
+  if ( P.size() < 3 )
     return 0.;
 
-  aMin = getAngle(P( P.size() ), P( 1 ), P( 2 ));
-  aMin = Min(aMin,getAngle(P( P.size()-1 ), P( P.size() ), P( 1 )));
+  double aMaxCos2;
+
+  aMaxCos2 = getCos2( P( P.size() ), P( 1 ), P( 2 ));
+  aMaxCos2 = Max( aMaxCos2, getCos2( P( P.size()-1 ), P( P.size() ), P( 1 )));
 
   for ( size_t i = 2; i < P.size(); i++ )
   {
-    double A0 = getAngle( P( i-1 ), P( i ), P( i+1 ) );
-    aMin = Min(aMin,A0);
+    double A0 = getCos2( P( i-1 ), P( i ), P( i+1 ) );
+    aMaxCos2 = Max( aMaxCos2, A0 );
   }
+  if ( aMaxCos2 <= 0 )
+    return 0; // all nodes coincide
 
-  return aMin * 180.0 / M_PI;
+  double cos = sqrt( aMaxCos2 );
+  if ( cos >=  1 ) return 0;
+  return acos( cos ) * 180.0 / M_PI;
 }
 
 double MinimumAngle::GetBadRate( double Value, int nbNodes ) const
@@ -786,58 +800,51 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
 
   if ( nbNodes == 3 ) {
     // Compute lengths of the sides
-    std::vector< double > aLen (nbNodes);
-    for ( int i = 0; i < nbNodes - 1; i++ )
-      aLen[ i ] = getDistance( P( i + 1 ), P( i + 2 ) );
-    aLen[ nbNodes - 1 ] = getDistance( P( 1 ), P( nbNodes ) );
+    double aLen1 = getDistance( P( 1 ), P( 2 ));
+    double aLen2 = getDistance( P( 2 ), P( 3 ));
+    double aLen3 = getDistance( P( 3 ), P( 1 ));
     // Q = alfa * h * p / S, where
     //
     // alfa = sqrt( 3 ) / 6
     // h - length of the longest edge
     // p - half perimeter
     // S - triangle surface
-    const double alfa = sqrt( 3. ) / 6.;
-    double maxLen = Max( aLen[ 0 ], Max( aLen[ 1 ], aLen[ 2 ] ) );
-    double half_perimeter = ( aLen[0] + aLen[1] + aLen[2] ) / 2.;
-    double anArea = getArea( P( 1 ), P( 2 ), P( 3 ) );
+    const double     alfa = sqrt( 3. ) / 6.;
+    double         maxLen = Max( aLen1, Max( aLen2, aLen3 ));
+    double half_perimeter = ( aLen1 + aLen2 + aLen3 ) / 2.;
+    double         anArea = getArea( P( 1 ), P( 2 ), P( 3 ));
     if ( anArea <= theEps  )
       return theInf;
     return alfa * maxLen * half_perimeter / anArea;
   }
   else if ( nbNodes == 6 ) { // quadratic triangles
     // Compute lengths of the sides
-    std::vector< double > aLen (3);
-    aLen[0] = getDistance( P(1), P(3) );
-    aLen[1] = getDistance( P(3), P(5) );
-    aLen[2] = getDistance( P(5), P(1) );
-    // Q = alfa * h * p / S, where
-    //
-    // alfa = sqrt( 3 ) / 6
-    // h - length of the longest edge
-    // p - half perimeter
-    // S - triangle surface
-    const double alfa = sqrt( 3. ) / 6.;
-    double maxLen = Max( aLen[ 0 ], Max( aLen[ 1 ], aLen[ 2 ] ) );
-    double half_perimeter = ( aLen[0] + aLen[1] + aLen[2] ) / 2.;
-    double anArea = getArea( P(1), P(3), P(5) );
+    double aLen1 = getDistance( P( 1 ), P( 3 ));
+    double aLen2 = getDistance( P( 3 ), P( 5 ));
+    double aLen3 = getDistance( P( 5 ), P( 1 ));
+    // algo same as for the linear triangle
+    const double     alfa = sqrt( 3. ) / 6.;
+    double         maxLen = Max( aLen1, Max( aLen2, aLen3 ));
+    double half_perimeter = ( aLen1 + aLen2 + aLen3 ) / 2.;
+    double         anArea = getArea( P( 1 ), P( 3 ), P( 5 ));
     if ( anArea <= theEps )
       return theInf;
     return alfa * maxLen * half_perimeter / anArea;
   }
   else if( nbNodes == 4 ) { // quadrangle
     // Compute lengths of the sides
-    std::vector< double > aLen (4);
+    double aLen[4];
     aLen[0] = getDistance( P(1), P(2) );
     aLen[1] = getDistance( P(2), P(3) );
     aLen[2] = getDistance( P(3), P(4) );
     aLen[3] = getDistance( P(4), P(1) );
     // Compute lengths of the diagonals
-    std::vector< double > aDia (2);
+    double aDia[2];
     aDia[0] = getDistance( P(1), P(3) );
     aDia[1] = getDistance( P(2), P(4) );
     // Compute areas of all triangles which can be built
     // taking three nodes of the quadrangle
-    std::vector< double > anArea (4);
+    double anArea[4];
     anArea[0] = getArea( P(1), P(2), P(3) );
     anArea[1] = getArea( P(1), P(2), P(4) );
     anArea[2] = getArea( P(1), P(3), P(4) );
@@ -853,35 +860,35 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
     // Si - areas of the triangles
     const double alpha = sqrt( 1 / 32. );
     double L = Max( aLen[ 0 ],
-                 Max( aLen[ 1 ],
-                   Max( aLen[ 2 ],
-                     Max( aLen[ 3 ],
-                       Max( aDia[ 0 ], aDia[ 1 ] ) ) ) ) );
+                    Max( aLen[ 1 ],
+                         Max( aLen[ 2 ],
+                              Max( aLen[ 3 ],
+                                   Max( aDia[ 0 ], aDia[ 1 ] ) ) ) ) );
     double C1 = sqrt( ( aLen[0] * aLen[0] +
                         aLen[1] * aLen[1] +
                         aLen[2] * aLen[2] +
                         aLen[3] * aLen[3] ) / 4. );
     double C2 = Min( anArea[ 0 ],
-                  Min( anArea[ 1 ],
-                    Min( anArea[ 2 ], anArea[ 3 ] ) ) );
+                     Min( anArea[ 1 ],
+                          Min( anArea[ 2 ], anArea[ 3 ] ) ) );
     if ( C2 <= theEps )
       return theInf;
     return alpha * L * C1 / C2;
   }
   else if( nbNodes == 8 || nbNodes == 9 ) { // nbNodes==8 - quadratic quadrangle
     // Compute lengths of the sides
-    std::vector< double > aLen (4);
+    double aLen[4];
     aLen[0] = getDistance( P(1), P(3) );
     aLen[1] = getDistance( P(3), P(5) );
     aLen[2] = getDistance( P(5), P(7) );
     aLen[3] = getDistance( P(7), P(1) );
     // Compute lengths of the diagonals
-    std::vector< double > aDia (2);
+    double aDia[2];
     aDia[0] = getDistance( P(1), P(5) );
     aDia[1] = getDistance( P(3), P(7) );
     // Compute areas of all triangles which can be built
     // taking three nodes of the quadrangle
-    std::vector< double > anArea (4);
+    double anArea[4];
     anArea[0] = getArea( P(1), P(3), P(5) );
     anArea[1] = getArea( P(1), P(3), P(7) );
     anArea[2] = getArea( P(1), P(5), P(7) );
@@ -1922,6 +1929,12 @@ double Deflection2D::GetValue( const TSequenceOfXYZ& P )
       if ( !S.IsNull() && S.ShapeType() == TopAbs_FACE )
       {
         mySurface = new ShapeAnalysis_Surface( BRep_Tool::Surface( TopoDS::Face( S )));
+
+        GeomLib_IsPlanarSurface isPlaneCheck( mySurface->Surface() );
+        if ( isPlaneCheck.IsPlanar() )
+          myPlane.reset( new gp_Pln( isPlaneCheck.Plan() ));
+        else
+          myPlane.reset();
       }
     }
     // project gravity center to the surface
@@ -1947,12 +1960,22 @@ double Deflection2D::GetValue( const TSequenceOfXYZ& P )
 
       double maxLen = MaxElementLength2D().GetValue( P );
       double    tol = 1e-3 * maxLen;
-      if ( uv.X() != 0 && uv.Y() != 0 ) // faster way
-        mySurface->NextValueOfUV( uv, gc, tol, 0.5 * maxLen );
+      double dist;
+      if ( myPlane )
+      {
+        dist = myPlane->Distance( gc );
+        if ( dist < tol )
+          dist = 0;
+      }
       else
-        mySurface->ValueOfUV( gc, tol );
-
-      return Round( mySurface->Gap() );
+      {
+        if ( uv.X() != 0 && uv.Y() != 0 ) // faster way
+          mySurface->NextValueOfUV( uv, gc, tol, 0.5 * maxLen );
+        else
+          mySurface->ValueOfUV( gc, tol );
+        dist = mySurface->Gap();
+      }
+      return Round( dist );
     }
   }
   return 0;
@@ -1962,6 +1985,7 @@ void Deflection2D::SetMesh( const SMDS_Mesh* theMesh )
 {
   NumericalFunctor::SetMesh( dynamic_cast<const SMESHDS_Mesh* >( theMesh ));
   myShapeIndex = -100;
+  myPlane.reset();
 }
 
 SMDSAbs_ElementType Deflection2D::GetType() const

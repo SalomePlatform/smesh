@@ -91,7 +91,7 @@ namespace SMESHOp {
     OpRemoveElemGroupPopup   = 2082,   // POPUP MENU - REMOVE ELEMENTS FROM GROUP
     OpMeshInformation        = 2100,   // MENU MESH  - MESH INFORMATION
     OpWhatIs                 = 2101,   // MENU MESH  - MESH ELEMENT INFORMATION
-    OpStdInfo                = 2102,   // MENU MESH  - MESH STANDART INFORMATION
+    OpStdInfo                = 2102,   // MENU MESH  - MESH STANDARD INFORMATION
     OpFindElementByPoint     = 2103,   // MENU MESH  - FIND ELEMENT BY POINT
     OpUpdate                 = 2200,   // POPUP MENU - UPDATE
     // Controls -----------------------//--------------------------------

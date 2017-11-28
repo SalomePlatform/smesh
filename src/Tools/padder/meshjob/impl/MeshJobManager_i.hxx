@@ -73,7 +73,7 @@ private:
   Engines::ResourcesManager_var _resourcesManager;
   
   // This maps the config identifier to the config parameters. A
-  // config is a resource with additionnal data specifying the
+  // config is a resource with additional data specifying the
   // location of the binary program to be executed by the task
   std::map<std::string, MESHJOB::ConfigParameter> _configMap;
 

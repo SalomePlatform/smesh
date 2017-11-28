@@ -149,7 +149,6 @@ struct SMESH_OrientedLink: public SMESH_TLink
 struct SMESH_TNodeXYZ : public gp_XYZ
 {
   const SMDS_MeshNode* _node;
-  double               _xyz[3];
   SMESH_TNodeXYZ( const SMDS_MeshElement* e=0):gp_XYZ(0,0,0),_node(0)
   {
     Set(e);
@@ -159,15 +158,14 @@ struct SMESH_TNodeXYZ : public gp_XYZ
     if (e) {
       assert( e->GetType() == SMDSAbs_Node );
       _node = static_cast<const SMDS_MeshNode*>(e);
-      _node->GetXYZ(_xyz); // - thread safe getting coords
-      SetCoord( _xyz[0], _xyz[1], _xyz[2] );
+      _node->GetXYZ( ChangeData() ); // - thread safe getting coords
       return true;
     }
     return false;
   }
   double Distance(const SMDS_MeshNode* n)       const { return (SMESH_TNodeXYZ( n )-*this).Modulus(); }
   double SquareDistance(const SMDS_MeshNode* n) const { return (SMESH_TNodeXYZ( n )-*this).SquareModulus(); }
-  bool operator==(const SMESH_TNodeXYZ& other) const { return _node == other._node; }
+  bool operator==(const SMESH_TNodeXYZ& other)  const { return _node == other._node; }
 };
 typedef SMESH_TNodeXYZ SMESH_NodeXYZ;
 

@@ -72,7 +72,7 @@ using SMESH::TPythonDump;
 
 /*!
  * \brief Container of commands into which the initial script is split.
- *        It also contains data coresponding to SMESH_Gen contents
+ *        It also contains data corresponding to SMESH_Gen contents
  */
 static Handle(_pyGen) theGen;
 
