@@ -36,11 +36,16 @@
 #include <list>
 #include <map>
 
+#include <NCollection_DataMap.hxx>
+#include <TCollection_AsciiString.hxx>
+
 class SMESHDS_Mesh;
 class SMESHDS_Group;
 class SMESHDS_SubMesh;
 
-typedef std::pair< std::string, SMDSAbs_ElementType > TNameAndType;
+typedef std::vector< DriverMED_FamilyPtr >                         TFamilyVec;
+typedef std::pair< std::string, SMDSAbs_ElementType >              TNameAndType;
+typedef NCollection_DataMap< TCollection_AsciiString, TFamilyVec > TName2Falilies;
 
 class MESHDRIVERMED_EXPORT DriverMED_R_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
 {
@@ -56,9 +61,9 @@ class MESHDRIVERMED_EXPORT DriverMED_R_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
   void SetMeshName(std::string theMeshName);
 
  private:
-  std::string myMeshName;
+  std::string                        myMeshName;
   std::map<int, DriverMED_FamilyPtr> myFamilies;
-
+  TName2Falilies                     myGroups2FamiliesMap;
 };
 
 #endif

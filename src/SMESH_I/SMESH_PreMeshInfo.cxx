@@ -287,10 +287,12 @@ namespace
  */
 //================================================================================
 
-void SMESH_PreMeshInfo::hdf2meshInfo( const std::string& name,
-                                      HDFgroup*          hdfGroup)
+void SMESH_PreMeshInfo::hdf2meshInfo( const std::string&              name,
+                                      HDFgroup*                       hdfGroup,
+                                      const TColStd_MapOfAsciiString& allHdfNames)
 {
-  if ( hdfGroup->ExistInternalObject( name.c_str()) )
+  //if ( hdfGroup->ExistInternalObject( name.c_str()) ) PAL23514
+  if ( allHdfNames.Contains( name.c_str() ))
   {
     HDFdataset* dataset = new HDFdataset( name.c_str(), hdfGroup );
     dataset->OpenOnDisk();
@@ -419,7 +421,17 @@ bool SMESH_PreMeshInfo::readPreInfoFromHDF()
     HDFgroup* infoHdfGroup = new HDFgroup( hdfGroupName, aFile );
     infoHdfGroup->OpenOnDisk();
 
-    _mesh->changePreMeshInfo()->hdf2meshInfo( "Mesh", infoHdfGroup );
+    // PAL23514: get all names from the HDFgroup to avoid iteration on its contents
+    // within aGroup->ExistInternalObject( name )
+    TColStd_MapOfAsciiString mapOfNames;
+    {
+      std::vector< std::string > subNames;
+      infoHdfGroup->GetAllObjects( subNames );
+      for ( size_t iN = 0; iN < subNames.size(); ++iN )
+        mapOfNames.Add( subNames[ iN ].c_str() );
+    }
+
+    _mesh->changePreMeshInfo()->hdf2meshInfo( "Mesh", infoHdfGroup, mapOfNames );
 
     // read SMESH_PreMeshInfo of groups
     map<int, SMESH::SMESH_GroupBase_ptr>::const_iterator i2group = _mesh->_mapGroups.begin();
@@ -432,7 +444,7 @@ bool SMESH_PreMeshInfo::readPreInfoFromHDF()
         if ( SMESHDS_GroupBase* group = group_i->GetGroupDS() )
         {
           const std::string name = group->GetStoreName();
-          group_i->changePreMeshInfo()->hdf2meshInfo( name, infoHdfGroup );
+          group_i->changePreMeshInfo()->hdf2meshInfo( name, infoHdfGroup, mapOfNames );
         }
       }
     }
@@ -444,7 +456,9 @@ bool SMESH_PreMeshInfo::readPreInfoFromHDF()
       if ( SMESH_subMesh_i* sm = SMESH::DownCast<SMESH_subMesh_i*>( id2sm->second ))
       {
         sm->changePreMeshInfo() = newInstance();
-        sm->changePreMeshInfo()->hdf2meshInfo( SMESH_Comment( sm->GetId()), infoHdfGroup );
+        sm->changePreMeshInfo()->hdf2meshInfo( SMESH_Comment( sm->GetId()),
+                                               infoHdfGroup,
+                                               mapOfNames );
       }
     }
   }
