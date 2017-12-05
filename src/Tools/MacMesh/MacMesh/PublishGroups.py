@@ -97,7 +97,7 @@ def Publish (ObjToPublish):
         
 def RevolveMesh(MainMesh,**args):
         """
-        This function premits to revolute and scale a 2D mesh while transforming the edge
+        This function permits to revolute and scale a 2D mesh while transforming the edge
         groups into face groups. Moreover, the function automatically creates the face groups 
         corresponding to the symmetry lower and upper faces
         Facultatif arguments are : 
@@ -171,7 +171,7 @@ def RevolveMesh(MainMesh,**args):
                 
 def ExtrudeMesh(MainMesh,**args):
         """
-        This function premits to extrude and scale a 2D mesh while transforming the edge
+        This function permits to extrude and scale a 2D mesh while transforming the edge
         groups into face groups. Moreover, the function automatically creates the face groups 
         corresponding to the symmetry lower and upper faces
         Facultatif arguments are : 

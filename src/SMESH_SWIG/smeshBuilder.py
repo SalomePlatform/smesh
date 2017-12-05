@@ -3249,7 +3249,7 @@ class Mesh:
     #          Type SMESH.FunctorType._items in the Python Console to see all items.
     #          Note that not all items correspond to numerical functors.
     #  @param MaxAngle      is the maximum angle between element normals at which the fusion
-    #          is still performed; theMaxAngle is mesured in radians.
+    #          is still performed; theMaxAngle is measured in radians.
     #          Also it could be a name of variable which defines angle in degrees.
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_unitetri
@@ -3268,7 +3268,7 @@ class Mesh:
     #          Type SMESH.FunctorType._items in the Python Console to see all items.
     #          Note that not all items correspond to numerical functors.
     #  @param MaxAngle   a max angle between element normals at which the fusion
-    #          is still performed; theMaxAngle is mesured in radians.
+    #          is still performed; theMaxAngle is measured in radians.
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_unitetri
     def TriToQuadObject (self, theObject, theCriterion, MaxAngle):

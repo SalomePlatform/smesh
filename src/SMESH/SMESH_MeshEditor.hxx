@@ -173,7 +173,7 @@ public:
    * \param theElems     - The triangles to be fused.
    * \param theCriterion - Is used to choose a neighbour to fuse with.
    * \param theMaxAngle  - Is a max angle between element normals at which fusion
-   *                       is still performed; theMaxAngle is mesured in radians.
+   *                       is still performed; theMaxAngle is measured in radians.
    * \return bool - Success or not.
    */
   bool TriToQuad (TIDSortedElemSet &                   theElems,
@@ -181,7 +181,7 @@ public:
                   const double                         theMaxAngle);
   /*!
    * \brief Split quadrangles into triangles.
-   * \param theElems     - The faces to be splitted.
+   * \param theElems     - The faces to be split.
    * \param theCriterion - Is used to choose a diagonal for splitting.
    * \return bool - Success or not.
    */
@@ -189,7 +189,7 @@ public:
                   SMESH::Controls::NumericalFunctorPtr theCriterion);
   /*!
    * \brief Split quadrangles into triangles.
-   * \param theElems  - The faces to be splitted.
+   * \param theElems  - The faces to be split.
    * \param the13Diag - Is used to choose a diagonal for splitting.
    * \return bool - Success or not.
    */

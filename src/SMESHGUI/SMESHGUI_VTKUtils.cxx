@@ -362,7 +362,7 @@ namespace SMESH
     }
 
     if ( objModified ) {
-      // PAL16631. Mesurements showed that to show aVisualObj in SHADING(default) mode,
+      // PAL16631. Measurements showed that to show aVisualObj in SHADING(default) mode,
       // ~5 times more memory is used than it occupies.
       // Warn the user if there is less free memory than 30 sizes of a grid
       // TODO: estimate memory usage in other modes and take current mode into account
@@ -396,7 +396,7 @@ namespace SMESH
 
 
   /*! Return active view window, if it instantiates SVTK_ViewWindow class,
-   *  overwise find or create corresponding view window, make it active and return it.
+   *  otherwise find or create corresponding view window, make it active and return it.
    *  \note Active VVTK_ViewWindow can be returned, because it inherits SVTK_ViewWindow.
    */
   SVTK_ViewWindow* GetViewWindow (const SalomeApp_Module* theModule,

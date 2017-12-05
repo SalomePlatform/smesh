@@ -2148,7 +2148,7 @@ Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>SMESH_MESHINFO_ALL_TYPES</source>
-        <translation>Heterogenous</translation>
+        <translation>Heterogeneous</translation>
     </message>
     <message>
         <source>SMESH_MESHINFO_EDGES</source>

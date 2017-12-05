@@ -798,7 +798,7 @@ void SMESHGUI_FilterTable::Table::setEditable (bool isEditable,
 
 //=======================================================================
 // name    : SMESHGUI_FilterTable::Table::isEditable
-// Purpose : Verify wheter cell is editable
+// Purpose : Verify whether cell is editable
 //=======================================================================
 bool SMESHGUI_FilterTable::Table::isEditable (int row, int col) const
 {

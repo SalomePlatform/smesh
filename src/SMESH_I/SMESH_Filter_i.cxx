@@ -3489,7 +3489,7 @@ static inline LDOMString toString( CORBA::Long theType )
     case FT_LogicalOR             : return "Or";
     case FT_GroupColor            : return "Color of Group";
     case FT_LinearOrQuadratic     : return "Linear or Quadratic";
-    case FT_ElemGeomType          : return "Element geomtry type";
+    case FT_ElemGeomType          : return "Element geometry type";
     case FT_EntityType            : return "Entity type";
     case FT_Undefined             : return "";
     default                       : return "";
@@ -3544,7 +3544,7 @@ static inline SMESH::FunctorType toFunctorType( const LDOMString& theStr )
   else if ( theStr.equals( "Or"                           ) ) return FT_LogicalOR;
   else if ( theStr.equals( "Color of Group"               ) ) return FT_GroupColor;
   else if ( theStr.equals( "Linear or Quadratic"          ) ) return FT_LinearOrQuadratic;
-  else if ( theStr.equals( "Element geomtry type"         ) ) return FT_ElemGeomType;
+  else if ( theStr.equals( "Element geometry type"        ) ) return FT_ElemGeomType;
   else if ( theStr.equals( "Entity type"                  ) ) return FT_EntityType;
   else if ( theStr.equals( ""                             ) ) return FT_Undefined;
   else  return FT_Undefined;

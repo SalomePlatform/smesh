@@ -181,7 +181,7 @@ namespace MED
   typedef TIntVector TElemNum;
   typedef SharedPtr<TElemNum> PElemNum;
   
-  //! Define a parent class for all MED entities that describes mesh entites such as nodes and cells.
+  //! Define a parent class for all MED entities that describes mesh entities such as nodes and cells.
   struct MEDWRAPPER_EXPORT TElemInfo: virtual TBase
   {
     PMeshInfo myMeshInfo; //!< A reference to correspondig MED Mesh
@@ -191,7 +191,7 @@ namespace MED
     TInt myNbElem; //<! Number of corresponding mesh entities
     TInt GetNbElem() const { return myNbElem;} //! Get number of mesh elements
     
-    //! Defines sequence MED Family indexes for corresponding mesh entites
+    //! Defines sequence MED Family indexes for corresponding mesh entities
     PElemNum myFamNum; 
     //! Get number of a MED FAMILY by order number of the mesh element
     TInt GetFamNum(TInt theId) const;
@@ -218,7 +218,7 @@ namespace MED
 
     //! Defines if the mesh elements are named
     EBooleen myIsElemNames;
-    //! Let know if the mesh elements havew names
+    //! Let know if the mesh elements have names
     EBooleen IsElemNames() const { return myIsElemNames;}
 
     //! Contains sequence of the names for the mesh elements
@@ -1047,7 +1047,7 @@ namespace MED
     void SetGrilleStructure(TInt theAxis,TInt theNb);
     
     /*!
-     *Defines sequence MED Family indexes for corresponding mesh entites
+     *Defines sequence MED Family indexes for corresponding mesh entities
      */
     TElemNum myFamNum; 
     //! Get number of a MED FAMILY by order number of the mesh element
@@ -1056,7 +1056,7 @@ namespace MED
     void SetFamNum(TInt theId, TInt theVal);
     
     /*!
-     *Defines sequence MED Family indexes for sub entites
+     *Defines sequence MED Family indexes for sub entities
      */
     TElemNum myFamSubNum; 
     //! Get number of a MED FAMILY by order number of sub element
