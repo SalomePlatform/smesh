@@ -1,0 +1,200 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 6ac789b6770b4001ba9a2d569e8cd5f1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:5
+msgid "Revolution"
+msgstr ""
+
+# ab9940fdedc243edb2b4ee309e9f969e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:7
+msgid ""
+"Revolution is used to build mesh elements of plus one dimension than the "
+"input ones.  Boundary elements around generated mesh of plus one "
+"dimension are additionally created. All created elements can be "
+"automatically grouped. Revolution can be used to create a "
+":ref:`extrusion_struct`. See :ref:`extrusion_page` page for general "
+"information on Revolution, which can be viewed as extrusion along a "
+"circular path."
+msgstr ""
+
+# 104b920b73084454b555a42d29aecf2a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:15
+msgid "**To apply revolution:**"
+msgstr ""
+
+# 59caed10ca8144f0aace21eefbde3bfa
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:17
+msgid ""
+"From the **Modification** menu choose the **Revolution** item or click  "
+"**\"Revolution\"** button in the toolbar."
+msgstr ""
+
+# 9fef083959254db9821bee5bfb06f9d0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:25
+msgid "The following dialog will appear:"
+msgstr ""
+
+# 0c0fb5d5710c4ca096f75d7097c313a5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:31
+msgid "In this dialog:"
+msgstr ""
+
+# 5a8da583e6fa46b4893d5ce61ecdef22
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:33
+msgid ""
+"Use *Selection* button to specify what you are going to select at a given"
+" moment, **Nodes**, **Edges** or **Faces**."
+msgstr ""
+
+# ef79794a371e474b8ccc2d3e4dbf83fd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:44
+msgid ""
+"Specify **Nodes**, **Edges** and **Faces**, which will be revolved, by "
+"one of following means:"
+msgstr ""
+
+# 6d264df6a869443fa232e69226a8bad5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:42
+msgid "**Select the whole mesh, sub-mesh or group** activating this check-box."
+msgstr ""
+
+# 56588b162f7d4805b892c2ee8a3e5b26
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:43
+msgid ""
+"Choose mesh elements with the mouse in the 3D Viewer. It is possible to "
+"select a whole area with a mouse frame."
+msgstr ""
+
+# 96d1ec2172234d0cb6badd1c6622f44a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:44
+msgid ""
+"Input the element IDs directly in **Node IDs**, **Edge IDs** and **Face "
+"IDs** fields. The selected elements will be highlighted in the viewer, if"
+" the mesh is shown there."
+msgstr ""
+
+# 5c797feb032349d2ad83aee9b2b34fdb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:45
+msgid ""
+"Apply Filters. **Set filter** button allows to apply a filter to the "
+"selection of elements. See more about filters in the "
+":ref:`filtering_elements` page."
+msgstr ""
+
+# c9998bdb16c24a22b7572f7ab936bc00
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:50
+msgid "Specify the **Axis** of revolution:"
+msgstr ""
+
+# 93c18e08e2104004b1edc0088a8dd4f9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:47
+msgid ""
+"Specify the coordinates of the start **Point** of the axis of revolution;"
+" either directly or by picking a node in the Viewer (selection of nodes "
+"is activated as you click the *Selection* button)."
+msgstr ""
+
+# 2e0fdecb971b474aa133dc4d5d09ef64
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:50
+msgid "Specify the **Vector** of the axis in either of three ways:"
+msgstr ""
+
+# 8e407adfd68b4ca1b7741cf23c64ba80
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:49
+msgid "directly adjust vector components;"
+msgstr ""
+
+# 9eabcb1646d4482db9ae710be3c1b36e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:50
+msgid ""
+"click *Selection* button, choose **From Origin to selected Point** in the"
+" opened menu and pick a node in the Viewer;"
+msgstr ""
+
+# 178a26fc0011439bb9898807d2f8a1d6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:51
+msgid ""
+"click *Selection* button, chose **Normal to selected Face** in the opened"
+" menu and pick a mesh face in the Viewer."
+msgstr ""
+
+# ba1537f0e50149cd8522ec63a94428cc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:69
+msgid ""
+"Specify the **Angle** of revolution and the **Number of steps** of "
+"revolution,"
+msgstr ""
+
+# 70e4ba78bbbd404cad2a51bf425db034
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:53
+msgid ""
+"**Angle by Step** - the elements are revolved by the specified angle at "
+"each step (i.e. for Angle=30 and Number of Steps=3, the elements will be "
+"extruded by 30 degrees twice for a total of 30*3=90)"
+msgstr ""
+
+# a1b9aadc072e48b0bc80d0b6534097cb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:61
+msgid ""
+"**Total Angle** - the elements are revolved by the specified angle only "
+"once and the number of steps defines the number of iterations (i.e. for "
+"Angle=30 and Number of Steps=3, the elements will be revolved by 30/3=10 "
+"degrees twice for a total of 30)."
+msgstr ""
+
+# 9c2d8f6996d14050af5f0132ca066fd5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:71
+msgid ""
+"Specify the **Tolerance**, which is used to detect nodes lying on the "
+"axis of revolution."
+msgstr ""
+
+# 1e0b5219aa40468ea7d1c932fe70bbfe
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:72
+msgid "Activate  **Preview** check-box to see the result mesh in the viewer."
+msgstr ""
+
+# b3486204cbf44474acc0252faf8e3b14
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:73
+msgid ""
+"If you activate **Generate Groups** check-box, the **result elements** "
+"created from **selected elements** contained in groups will be included "
+"into new groups named by pattern \"<old group name>_rotated\" and \"<old "
+"group name>_top\". For example if a selected quadrangle is included in "
+"*g_Faces* group (see figures below) then result hexahedra will be "
+"included in *g_Faces_rotated* group and a quadrangle created at the "
+"\"top\" of revolved mesh will be included in *g_Faces_top* group."
+msgstr ""
+
+# 8ec480305a2747b2b2c5a516354d672a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:82
+msgid "This check-box is active only if there are some groups in the mesh."
+msgstr ""
+
+# 0e2f1e95c686473e94392283cfbe39e6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:84
+msgid "Click **Apply** or **Apply and Close** button to confirm the operation."
+msgstr ""
+
+# 06b0f7f7794a487eb6b4c6219186ea1c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/revolution.rst:86
+msgid "**See Also** a sample TUI Script of a :ref:`tui_revolution` operation."
+msgstr ""
+

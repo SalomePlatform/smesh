@@ -1,0 +1,93 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 29f257717b9f47dd83a5976ef374f548
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/editing_groups.rst:5
+msgid "Editing groups"
+msgstr ""
+
+# 97180320e8364896bd43f26e15cbb37f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/editing_groups.rst:7
+msgid "**To edit an existing group of elements:**"
+msgstr ""
+
+# 3b1c90cdecf443b49812a63ca8afa82b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/editing_groups.rst:9
+msgid ""
+"Select your group in the Object Browser and in the **Mesh** menu click "
+"the **Edit Group** item or **\"Edit Group\"** button in the toolbar."
+msgstr ""
+
+# 861e0c9d6f2b4949b3ef72d0a9d9b9a1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/editing_groups.rst:19
+msgid ""
+"The following dialog box will appear (if the selected group is "
+"**standalone**, else this dialog looks different):"
+msgstr ""
+
+# 7206da41ad034d9ba2c06616de676708
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/editing_groups.rst:24
+msgid ""
+"In this dialog box you can modify the name and the color of your group "
+"despite of its type. You can add or remove the elements composing a "
+"**standalone group**. You can change criteria of the filter of a **group "
+"on filter**. For more information see "
+":ref:`creating_groups_page`:\"Creating Groups\" page."
+msgstr ""
+
+# f736ea983fd144839115f9c87eff47cc
+# fd5aff08297941ffa9da1f0ec85ac9ba
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/editing_groups.rst:26
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/editing_groups.rst:47
+msgid ""
+"Click the **Apply** or **Apply and Close** button to confirm modification"
+" of the group."
+msgstr ""
+
+# fa8ff303c85f4974b5e851f92c96f11b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/editing_groups.rst:32
+msgid "Convert to stanalone group"
+msgstr ""
+
+# 3524bfde667244ec84cf1438818e7057
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/editing_groups.rst:34
+msgid ""
+"**To convert an existing group on geometry or a group on filer into a "
+"standalone group and modify its contents:**"
+msgstr ""
+
+# a51bcc3c5c0e4eda9f50971919f8946f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/editing_groups.rst:36
+msgid ""
+"Select your group on geometry or on filter in the Object Browser and in "
+"the **Mesh** menu click the **Edit Group as Standalone** item."
+msgstr ""
+
+# 7d35ca78670d49d8baddaa74a1251aaf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/editing_groups.rst:45
+msgid ""
+"The selected group will be converted into a standalone group and its "
+"contents can be modified."
+msgstr ""
+
+# 513bce03244d4bc887a30a2d14ec7f5a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/editing_groups.rst:49
+msgid "**See also:** A sample TUI Script of an :ref:`tui_edit_group` operation."
+msgstr ""
+

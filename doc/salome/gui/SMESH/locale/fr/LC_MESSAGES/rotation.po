@@ -1,0 +1,160 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 3eb9d57562994caaa94e9953e98e2bc1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/rotation.rst:5
+msgid "Rotation"
+msgstr ""
+
+# bc73581315ba4779a00ea3c885277127
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/rotation.rst:7
+msgid "This operation allows to rotate in space the mesh or some of its elements."
+msgstr ""
+
+# cfb02e83b2c043ff971b9dd3d43d20c9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/rotation.rst:9
+msgid "**To rotate the mesh:**"
+msgstr ""
+
+# f1722428e06e47c894e2278d3825abb0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/rotation.rst:11
+msgid ""
+"From the **Modification** menu choose **Transformation** -> **Rotation** "
+"item  or click **\"Rotation\"** button in the toolbar."
+msgstr ""
+
+# d7c9eeadb119438197cb8816f237bc92
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/rotation.rst:19
+msgid "The following dialog will appear:"
+msgstr ""
+
+# f3b8e39357ed41c5ab97d573ec21ff42
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/rotation.rst:24
+msgid "In this dialog:"
+msgstr ""
+
+# b7be9cd5867144ffabf77890d50ecf35
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/rotation.rst:26
+msgid "specify the IDs of the elements which will be rotated:"
+msgstr ""
+
+# 36838092b54a4d068cb1b8a1c464aab7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/rotation.rst:28
+msgid "**Select the whole mesh, submesh or group** activating this checkbox; or"
+msgstr ""
+
+# 0e62984febc34a5c982f6616e6119121
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/rotation.rst:29
+msgid ""
+"choose mesh elements with the mouse in the 3D Viewer. It is possible to "
+"select a whole area with a mouse frame; or"
+msgstr ""
+
+# 907470a5dc324ec3aef4e0d59411f38d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/rotation.rst:30
+msgid ""
+"input the element IDs directly in **ID Elements** field. The selected "
+"elements will be highlighted in the viewer; or"
+msgstr ""
+
+# e5b7a86186084d4383e3a53b9cebcf7f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/rotation.rst:31
+msgid ""
+"apply Filters. **Set filter** button allows to apply a filter to the "
+"selection of elements. See more about filters in the "
+":ref:`selection_filter_library_page` page."
+msgstr ""
+
+# f849780da2d54925a39b1b368f513ce8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/rotation.rst:35
+msgid "specify the axis of rotation:"
+msgstr ""
+
+# 38585ef1d6f44a35b54bf789f04920b4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/rotation.rst:34
+msgid "specify the cooordinates of the start **Point** of the vector of rotation;"
+msgstr ""
+
+# 3b3dbcebc8b94e34bf9736dcd7153339
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/rotation.rst:35
+msgid ""
+"specify the **Vector** of rotation through the coordinates of its end "
+"point with respect to the coordinates of the start point;"
+msgstr ""
+
+# b33fb11b21144354ac42f28cdcbf892f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/rotation.rst:37
+msgid "specify the **Angle** of rotation"
+msgstr ""
+
+# 9e55761562b143799baa51c67436291a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/rotation.rst:39
+msgid "specify the conditions of rotation:"
+msgstr ""
+
+# 6fac6e8141cb416da498e891f9e80c3b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/rotation.rst:41
+msgid ""
+"activate **Move elements** radio button to create  the source mesh (or "
+"elements) at the new location and erase it from the previous location;"
+msgstr ""
+
+# 1956319341624ef899aa47cb565dde65
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/rotation.rst:42
+msgid ""
+"activate **Copy elements** radio button to create the source mesh (or "
+"elements) at the new location, but leave it at the previous location, the"
+" source mesh will be considered one and single mesh with the result of "
+"the rotation;"
+msgstr ""
+
+# d531bcb2281544fb9cf8b7182fe2ef78
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/rotation.rst:43
+msgid ""
+"activate **Create as new mesh** radio button to leave the source mesh (or"
+" elements) at its previous location and create a new mesh at the new "
+"location, the new mesh appears in the Object Browser with the default "
+"name MeshName_rotated (it is possible to change this name in the adjacent"
+" box);"
+msgstr ""
+
+# bfc597d8f46f4bc89628ab4474e05108
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/rotation.rst:44
+msgid ""
+"activate **Copy groups** checkbox to copy the groups of elements of the "
+"source mesh to the newly created mesh."
+msgstr ""
+
+# 6dba19eadb894b8f99a9e4605a37974c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/rotation.rst:46
+msgid ""
+"activate **Preview** checkbox to show the result of transformation in the"
+" viewer"
+msgstr ""
+
+# 407bbc2d9e554da29cb8cfa5fe4d0d96
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/rotation.rst:47
+msgid "click **Apply** or **Apply and Close** button to confirm the operation."
+msgstr ""
+
+# 0dea9b0910534ea2ab63434488817657
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/rotation.rst:62
+msgid "**See Also** a sample TUI Script of a :ref:`tui_rotation` operation."
+msgstr ""
+

@@ -307,68 +307,68 @@ SMESHGUI_AddMeshElementDlg::SMESHGUI_AddMeshElementDlg( SMESHGUI*          theMo
     myNbNodes = 1;
     myElementType = SMDSAbs_0DElement;
     elemName = "ELEM0D";
-    myHelpFileName = "adding_nodes_and_elements_page.html#adding_0delems_anchor";
+    myHelpFileName = "adding_nodes_and_elements.html#adding-0delems-anchor";
     break;
   case SMDSEntity_Ball:
     myNbNodes = 1;
     myElementType = SMDSAbs_Ball;
     elemName = "BALL";
-    myHelpFileName = "adding_nodes_and_elements_page.html#adding_ball_anchor";
+    myHelpFileName = "adding_nodes_and_elements.html#adding-balls-anchor";
     break;
   case SMDSEntity_Edge:
     myNbNodes = 2;
     myElementType = SMDSAbs_Edge;
     elemName = "EDGE";
-    myHelpFileName = "adding_nodes_and_elements_page.html#adding_edges_anchor";
+    myHelpFileName = "adding_nodes_and_elements.html#adding-edges-anchor";
     break;
   case SMDSEntity_Triangle:
     myNbNodes = 3;
     elemName = "TRIANGLE";
     myElementType = SMDSAbs_Face;
-    myHelpFileName = "adding_nodes_and_elements_page.html#adding_triangles_anchor";
+    myHelpFileName = "adding_nodes_and_elements.html#adding-triangles-anchor";
     break;
   case SMDSEntity_Quadrangle:
     myNbNodes = 4;
     myElementType = SMDSAbs_Face;
     elemName = "QUADRANGLE";
-    myHelpFileName = "adding_nodes_and_elements_page.html#adding_quadrangles_anchor";
+    myHelpFileName = "adding_nodes_and_elements.html#adding-quadrangles-anchor";
     break;
   case SMDSEntity_Polygon:
     myNbNodes = 0;
     myElementType = SMDSAbs_Face;
     elemName = "POLYGON";
     myIsPoly = true;
-    myHelpFileName = "adding_nodes_and_elements_page.html#adding_polygons_anchor";
+    myHelpFileName = "adding_nodes_and_elements.html#adding-polygons-anchor";
     break;
   case SMDSEntity_Tetra:
     myNbNodes = 4;
     elemName = "TETRAS";
-    myHelpFileName = "adding_nodes_and_elements_page.html#adding_tetrahedrons_anchor";
+    myHelpFileName = "adding_nodes_and_elements.html#adding-tetrahedrons-anchor";
     break;
   case SMDSEntity_Pyramid:
     myNbNodes = 5;
     elemName = "PYRAMID";
-    myHelpFileName = "adding_nodes_and_elements_page.html#adding_pyramids_anchor";
+    myHelpFileName = "adding_nodes_and_elements.html#adding-pyramids-anchor";
     break;
   case SMDSEntity_Hexa:
     myNbNodes = 8;
     elemName = "HEXAS";
-    myHelpFileName = "adding_nodes_and_elements_page.html#adding_hexahedrons_anchor";
+    myHelpFileName = "adding_nodes_and_elements.html#adding-hexahedrons-anchor";
     break;
   case SMDSEntity_Penta:
     myNbNodes = 6;
     elemName = "PENTA";
-    myHelpFileName = "adding_nodes_and_elements_page.html#adding_pentahedrons_anchor";
+    myHelpFileName = "adding_nodes_and_elements.html#adding-pentahedrons-anchor";
     break;
   case SMDSEntity_Hexagonal_Prism:
     myNbNodes = 12;
     elemName = "OCTA";
-    myHelpFileName = "adding_nodes_and_elements_page.html#adding_octahedrons_anchor";
+    myHelpFileName = "adding_nodes_and_elements.html#adding-octahedrons-anchor";
     break;
   default:
     myNbNodes = 2;
     elemName = "EDGE";
-    myHelpFileName = "adding_nodes_and_elements_page.html#adding_edges_anchor";
+    myHelpFileName = "adding_nodes_and_elements.html#adding-edges-anchor";
   }
 
   QString iconName      = tr(QString("ICON_DLG_%1").arg(elemName).toLatin1().data());

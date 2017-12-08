@@ -105,7 +105,7 @@ SMESHGUI_CreatePatternDlg::SMESHGUI_CreatePatternDlg( SMESHGUI*   theModule,
 
   aDlgLay->setStretchFactor( aMainFrame, 1 );
 
-  myHelpFileName = "pattern_mapping_page.html";
+  myHelpFileName = "pattern_mapping.html";
 
   Init( theType );
 }

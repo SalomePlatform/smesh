@@ -192,7 +192,7 @@ void SMESHGUI_GroupDlg::initDialog( bool create)
   QPixmap image0( SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap( "SMESH", tr( "ICON_SELECT" ) ) );
 
   setWindowTitle( create ? tr( "SMESH_CREATE_GROUP_TITLE" ) : tr( "SMESH_EDIT_GROUP_TITLE" ) );
-  myHelpFileName = create ? "creating_groups_page.html" : "editing_groups_page.html";
+  myHelpFileName = create ? "creating_groups.html" : "editing_groups.html";
 
   setSizeGripEnabled( true);
 

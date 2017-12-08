@@ -1,0 +1,355 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# c83938bf26c24f74be1043ebf14552d8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:5
+msgid "Pattern mapping"
+msgstr ""
+
+# 8a5e89284905421995a2dfa8ab8b636f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:8
+msgid "About patterns"
+msgstr ""
+
+# 3550a3c3a90d4388bdc4d9a0e4db5435
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:10
+msgid ""
+"The pattern describes a mesh to generate: positions of nodes within a "
+"geometrical domain and nodal connectivity of elements. A pattern also "
+"specifies the so-called key-points, i.e. the nodes that will be located "
+"at geometrical vertices. The pattern description is stored in "
+"\\<pattern_name\\>.smp file."
+msgstr ""
+
+# 4009fa606e1c4c5b822b21dff8638900
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:16
+msgid "The smp file contains 4 sections:"
+msgstr ""
+
+# ff829ae0fb1b425f9cbc0ce1072a1e18
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:18
+msgid "The first line indicates the total number of pattern nodes (N)."
+msgstr ""
+
+# aeaaf04620194050a73e3d8250d3c138
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:19
+msgid ""
+"The next N lines describe nodes coordinates. Each line contains 2 node "
+"coordinates for a 2D pattern or 3 node coordinates for a 3D pattern. "
+"Note, that node coordinates of a 3D pattern can be defined only by "
+"relative values in range [0;1]."
+msgstr ""
+
+# fe96e67b421d4104beb3804802893513
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:20
+msgid ""
+"The key-points line contains the indices of the nodes to be mapped on "
+"geometrical vertices (for a 2D pattern only). Index n refers to the node "
+"described on the n-th line of section 2. The index of the first node is "
+"zero. For a 3D pattern the key points are not specified."
+msgstr ""
+
+# 929bbb6294a1412f8bf8a2da1370656c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:21
+msgid ""
+"The remaining lines describe nodal connectivity of elements, one line for"
+" each element. Each line holds indices of nodes forming an element. Index"
+" n refers to the node described on the n-th line of section 2. The first "
+"node index is zero. There must be 3 or 4 indices on each line for a 2D "
+"pattern (only liner 2d elements are allowed) and 4, 5, 6 or 8 indices for"
+" a 3D pattern (only linear 3d elements are allowed)."
+msgstr ""
+
+# 8d99602f52b64ed0b964677bbc0298dc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:23
+msgid ""
+"A 2D pattern must contain at least one element and at least one key-"
+"point. All key-points must lie on boundaries."
+msgstr ""
+
+# 2d2b937722444868af3eecb314c6ffb2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:25
+msgid "A 3D pattern must contain at least one element."
+msgstr ""
+
+# 9fcf969a83554a03ac70a6c524e0b891
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:27
+msgid "An example of a simple 2D pattern smp file: ::"
+msgstr ""
+
+# e5d838bf9c4749f28f49887d4fc67251
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:53
+msgid "The image below provides a preview of the above pattern:"
+msgstr ""
+
+# 969369d4f4064f74b5dc08f623b51c2a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:86
+msgid "Application of pattern mapping"
+msgstr ""
+
+# 13b96cae026945919cf0928e43d3a874
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:88
+msgid "**To apply pattern mapping to a geometrical object or mesh elements:**"
+msgstr ""
+
+# 2226092c305a4eb5b6e41c7a3e6f5364
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:90
+msgid ""
+"From the **Modification** menu choose the **Pattern Mapping** item or "
+"click **\"Pattern mapping\"** button in the toolbar."
+msgstr ""
+
+# a66db0a308a7471ebfe82759dfabc1b2
+# c5f77be0bb7945e4b192e923b3ff90de
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:99
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:156
+msgid "The following dialog box will appear:"
+msgstr ""
+
+# 3833efecb3e34cfeb6abf4fcd97f6259
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:101
+msgid "For a **2D pattern**"
+msgstr ""
+
+# 327bfc771bd5449694eed60d94a3ab2b
+# 3a2a189ac97545edb3db1141f22eb91a
+# bb339f32b064419a8e6a36706724d88f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:107
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:132
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:161
+msgid "In this dialog you should specify:"
+msgstr ""
+
+# f3386e602bcc430199fd6750086acfda
+# 00d0e63ddd69486c8a050016482cb58c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:109
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:134
+msgid ""
+"**Pattern**, which can be loaded from .smp pattern file previously "
+"created manually or generated automatically from an existing mesh or sub-"
+"mesh."
+msgstr ""
+
+# d273cb2447914ebf8a2e7a45f89dc8c7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:110
+msgid ""
+"**Face** with the number of vertices equal to the number of key-points in"
+" the pattern; the number of key-points on internal boundaries of the "
+"pattern must also be equal to the number of vertices on internal "
+"boundaries of the face;"
+msgstr ""
+
+# 9f35137dce154a16a95f2f049d5b906b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:111
+msgid "**Vertex** to which the first key-point should be mapped;"
+msgstr ""
+
+# ae8e1ab88d1d4e61b531267dfd113382
+# e743a5b4079947159adfb93032f4e82e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:114
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:139
+msgid ""
+"Alternatively, it is possible to select **Refine selected mesh elements**"
+" check-box and apply the pattern to"
+msgstr ""
+
+# b3e08b4388a049599b91cf902f892ce9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:116
+msgid "**Mesh Face** instead of a geometric Face"
+msgstr ""
+
+# a8e8314bc7cc4f16a36f549f4e86269f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:117
+msgid "and select **Node** instead of vertex."
+msgstr ""
+
+# f22bda8580604a1e935ba3dc6e2fd8d1
+# ae2fdff186ac4cae9048e55b25f781e1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:120
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:144
+msgid "Additionally it is possible to:"
+msgstr ""
+
+# 570ae6cfabd3444d9ef4e6a5551fe8ad
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:122
+msgid ""
+"**Reverse the order of key-points**. By default, the vertices of a face "
+"are ordered counterclockwise."
+msgstr ""
+
+# 8fcd7c5b92f848259c2e2bf00700a498
+# fcd34acf310642af88b94d08ad830de1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:123
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:146
+msgid "Enable to **Create polygons near boundary**"
+msgstr ""
+
+# 85e13224561c48a596162c654b5a0ff1
+# 8833494d15ec41c19fd516ea914c9a6c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:124
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:147
+msgid "and **Create polyhedrons near boundary**"
+msgstr ""
+
+# ab6bcc13f4324048a57537f0f6746707
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:127
+msgid "For a **3D pattern**"
+msgstr ""
+
+# 160ac2d750994567915eb090f16f67bb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:135
+msgid "A 3D block (Solid) object."
+msgstr ""
+
+# 3087f731ee27452fba7f533a95d5402d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:136
+msgid "Two vertices that specify the order of nodes in the resulting mesh."
+msgstr ""
+
+# ab6ec47757184294ba600a3b5423dbe8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:141
+msgid "One or several **Mesh volumes** instead of a geometric 3D object"
+msgstr ""
+
+# b63f393d8fc94c34997745086bb0aae0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:142
+msgid "and select two **Nodes** instead of vertices."
+msgstr ""
+
+# 93ac12e1c9fe447da2eeb1cc9d1ac7a5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:152
+msgid "Automatic Pattern Generation"
+msgstr ""
+
+# cd73e34977b247d8b807653626c727d0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:154
+msgid ""
+"To generate a pattern automatically from an existing mesh or sub-mesh, "
+"click **New** button."
+msgstr ""
+
+# ba136583468742a4a003239056493edd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:164
+msgid ""
+"**Mesh or Sub-mesh**, which is a meshed geometrical face (for a 2D "
+"pattern) or a meshed solid block (for a 3D pattern). Mesh nodes lying on "
+"the face vertices become key-points of the pattern."
+msgstr ""
+
+# 3bc616cb8d0e4c2bb081863c545bcb59
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:165
+msgid "A custom **Pattern Name**"
+msgstr ""
+
+# 05b4e73b55284d6fa4149d4bce33c4bc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:166
+msgid ""
+"Additionally, for a 2D pattern you may choose to **Project nodes on the "
+"face** to get node coordinates instead of using \"positions on face\" "
+"generated by the mesher (if there is any). The faces having a seam edge "
+"cannot be used for automatic pattern creation."
+msgstr ""
+
+# 5aa226ad57004fe883eb82ea6f121854
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:169
+msgid "When a pattern is created from an existing mesh, two cases are possible:"
+msgstr ""
+
+# 08018221e5e74d6fa964e3a1a86f3c55
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:171
+msgid ""
+"A sub-mesh on a face/solid is selected. The pattern is created from the "
+"2d/3d elements bound to the face/solid by the mesher. For a 2D pattern, "
+"the node coordinates are either \"positions on face\" computed by the "
+"mesher, or coordinates got by node projection on a geometrical surface, "
+"according to the user choice. For a 3D pattern, the node coordinates "
+"correspond to the nodes computed by the mesher."
+msgstr ""
+
+# 713cef75be124b7e867053d26fb54ca4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:172
+msgid ""
+"A mesh, where the main shape is a face/solid, is selected. The pattern is"
+" created from all 2d/3d elements in a mesh. In addition, if all mesh "
+"elements of a 2D pattern are built by the mesher, the user can select how"
+" to get node coordinates, otherwise all nodes are projected on a face "
+"surface."
+msgstr ""
+
+# c7724306e7b24801be95bf03e1b97916
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:176
+msgid "Mapping algorithm"
+msgstr ""
+
+# 589adef6a42f4539a64abcdb531fc54a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:178
+msgid "The mapping algorithm for a 2D case is as follows:"
+msgstr ""
+
+# b2c261010c374a469817645f0ff7db76
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:180
+msgid ""
+"The key-points are set counterclockwise in the order corresponding to "
+"their location on the pattern boundary. The first key-point is preserved."
+msgstr ""
+
+# dd71560977c54212a3888b9130bdabe5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:181
+msgid ""
+"The geometrical vertices corresponding to the key-points are found on "
+"face boundary. Here, \"Reverse order of key-points\" flag is set."
+msgstr ""
+
+# 9a9ccb3ee6154f5da4056cbcafd8db97
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:186
+msgid ""
+"The boundary nodes of the pattern are mapped onto the edges of the face: "
+"a node located between two key-points on the pattern boundary is mapped "
+"on the geometrical edge limited by the corresponding geometrical "
+"vertices. The node position on the edge depends on its distance from the "
+"key-points."
+msgstr ""
+
+# d440ef0d237a48368183cd94c02ec404
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:191
+msgid ""
+"The coordinates of a non-boundary node in the parametric space of the "
+"face are defined in the following way. In the parametric space of the "
+"pattern, the  node lies at the intersection of two iso-lines. Both of "
+"them intersect the pattern boundary at two points at least. If the mapped"
+" positions of boundary nodes are known, it is possible to find, where the"
+" points at the intersection of iso-lines and boundaries are mapped. Then "
+"it is possible to find the direction of mapped iso-line section and, "
+"finally, the positions of two nodes on two mapped isolines. The eventual "
+"mapped position of the node is found as an average of the positions on "
+"mapped iso-lines."
+msgstr ""
+
+# e10562bb4b5c4b8085517de679144722
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:196
+msgid "The 3D algorithm is similar."
+msgstr ""
+
+# f6d719e6414d40dfa409606b1f05e1f1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/pattern_mapping.rst:198
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_pattern_mapping` "
+"operation."
+msgstr ""
+

@@ -1,0 +1,436 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 7d81cefb54f44eccabd8805a64feaa52
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:5
+msgid "Mesh Information"
+msgstr ""
+
+# 89889e72c9494bc9bab03d542b54668d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:7
+msgid ""
+"The user can obtain information about the selected mesh object (mesh, "
+"sub-mesh or group) using **Mesh Information** dialog box."
+msgstr ""
+
+# ff1da796963248c6b9138f85926677c7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:9
+msgid ""
+"To view the **Mesh Information**, select your mesh, sub-mesh or group in "
+"the **Object Browser** and invoke **Mesh Information** item from the "
+"**Mesh** menu or from the context menu, or click **\"Mesh Information\"**"
+" button in the toolbar."
+msgstr ""
+
+# d3ce5678ec72425ab844167351ba1a35
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:17
+msgid "The **Mesh Information** dialog box provides three tab pages:"
+msgstr ""
+
+# 4c2a7d70e1174e1bbcb9c90c391dd3a8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:19
+msgid ""
+":ref:`advanced_mesh_infos_anchor` - to show base and quantitative "
+"information about the selected mesh object."
+msgstr ""
+
+# a8ff1a77f1b5478581b8215a4dc6b2ba
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:20
+msgid ""
+":ref:`mesh_element_info_anchor` - to show detailed information about the "
+"selected mesh nodes or elements."
+msgstr ""
+
+# cd9b845363d44e9fae8876cd3d670173
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:21
+msgid ""
+":ref:`mesh_addition_info_anchor` - to show additional information "
+"available for the selected mesh, sub-mesh or group object."
+msgstr ""
+
+# 7f7d5011ce48497f88dfc0e839c2e965
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:22
+msgid ""
+":ref:`mesh_quality_info_anchor` - to show overall quality information "
+"about the selected mesh, sub-mesh or group object."
+msgstr ""
+
+# 1e4e551877a5439d8f08ed509126a198
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:27
+msgid "Dump Mesh Infos"
+msgstr ""
+
+# 5fb38a9c54b24ebca3cc605d9aff7232
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:29
+msgid ""
+"The button **Dump** allows printing the information displayed in the "
+"dialog box to a .txt file. The dialog for choosing a file also allows to "
+"select which tab pages to dump via four check-boxes. The default state of"
+" the check-boxes can be changed via :ref:`mesh_information_pref` "
+"preferences."
+msgstr ""
+
+# c1c44a7afe60443b8efacb99b20d59f2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:34
+msgid "Base Information"
+msgstr ""
+
+# eff63d29c1cf4713a8ffd71cc3fabb41
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:36
+msgid ""
+"The **Base Info** tab page of the dialog box provides general information"
+" on the selected object - mesh, sub-mesh or mesh group: name, type, total"
+" number of nodes and elements separately for each type: 0D elements, "
+"edges, faces, volumes, balls."
+msgstr ""
+
+# b1c4af2d0db64aa88fa72e5684a82c56
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:47
+msgid "Mesh Element Information"
+msgstr ""
+
+# f0b643284c0f4b45891e9c5fa9aa004f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:49
+msgid ""
+"The **Element Info** tab page of the dialog box gives detailed "
+"information about the selected mesh node(s) or element(s), namely:"
+msgstr ""
+
+# 5b960ae15bcd42db9ff97b7a344bbf1c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:63
+msgid "For a node:"
+msgstr ""
+
+# 94bed98445e74cfca9dd6ff743401364
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:52
+msgid "Node ID;"
+msgstr ""
+
+# 5415384b459d4fa7afcee1758b0922e4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:53
+msgid "Coordinates (X, Y, Z);"
+msgstr ""
+
+# 1b08c9f6f3944697bc525dd4215a3f2c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:54
+msgid ""
+"Connectivity information (connected elements); double click in this line "
+"reveals information about these elements;"
+msgstr ""
+
+# 0f627abab9b744728eb4ad5bb8c58b9d
+# 9d9a93666d544376abb1cad2805a36ee
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:55
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:71
+msgid "Position on a shape (for meshes built on a geometry);"
+msgstr ""
+
+# 8597b257b7854a6f9f4f0ee8406f1a57
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:56
+msgid "Groups information (names of groups the node belongs to)."
+msgstr ""
+
+# dd2bb96aa28d4ee9b0ecdc9324126484
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:78
+msgid "For an element:"
+msgstr ""
+
+# 9d20e03209e242aba37bd93975152f26
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:66
+msgid "Element ID;"
+msgstr ""
+
+# e43c243e3eb3444c9baf282b618c7b83
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:67
+msgid "Type (triangle, quadrangle, etc.);"
+msgstr ""
+
+# d4914e3826f248578a726208013df6b4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:68
+msgid "Gravity center (X, Y, Z coordinates);"
+msgstr ""
+
+# 6949234f920a486cb906d114eaf7cbe5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:69
+msgid ""
+"Connectivity information (connected nodes); double click in a line of a "
+"node reveals the information about this node;"
+msgstr ""
+
+# d01ae8daf8f6432392513fb4d5500c11
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:70
+msgid "Quality controls (area, aspect ratio, volume, etc.);"
+msgstr ""
+
+# 9cca653ec3a6480a8cce35f662566c21
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:72
+msgid "Groups information (names of groups the element belongs to)."
+msgstr ""
+
+# dd33bf5a33a5462fa39bf74dc8d3d546
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:80
+msgid ""
+"The user can either input the ID of a node or element he wants to analyze"
+" directly in the dialog box or select the node(s) or element(s) in the 3D"
+" viewer. If **Show IDs** is activated, IDs of selected nodes or elements "
+"are displayed in the 3D viewer."
+msgstr ""
+
+# cb077e2a6ceb4ebe8802bc582d157afa
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:84
+msgid ""
+"The information about the groups, to which the node or element belongs, "
+"can be shown in a short or in a detailed form. By default, for "
+"performance rasons, this information is shown in a short form (group "
+"names only). The detailed information on groups can be switched on via "
+":ref:`group_detail_info_pref` option of :ref:`mesh_preferences_page`."
+msgstr ""
+
+# 923342b3ad7e41fab497b255dc88ae9a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:89
+msgid "Additional Information"
+msgstr ""
+
+# 34666d2627364d1b8ff0349498ad6e57
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:91
+msgid ""
+"The **Additional Info** tab page of the dialog box provides an additional"
+" information on the selected object: mesh, sub-mesh or group."
+msgstr ""
+
+# 49f856bfc49c47d1b5de64631e7fe99e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:93
+msgid "For a mesh object, the following information is shown:"
+msgstr ""
+
+# 72d5242b71b249c18ccb7c9d408c8a81
+# 1e3737d61dc9484ab536f8ab9965688f
+# 253b54618e784dcf88395abdb8604b2c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:95
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:111
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:129
+msgid "Name"
+msgstr ""
+
+# bcd90f5cf56f4a579276960c64730cbe
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:96
+msgid "Type: based on geomerty, imported, standalone"
+msgstr ""
+
+# 6d9220fc431d4f4588e1afe817726d26
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:97
+msgid "Shape (if mesh is based on geometry)"
+msgstr ""
+
+# 634b1cb624254513af618f9651367165
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:98
+msgid "File (if mesh is imported from the file)"
+msgstr ""
+
+# 8fcef07cbd8e4c8e959110e25468684f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:99
+msgid "Groups"
+msgstr ""
+
+# 9dcc32d82d3f44ad93eea1172ee7fb40
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:100
+msgid "Sub-meshes"
+msgstr ""
+
+# 298123d371c84c8a9d3ec9b471d7bff7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:109
+msgid "For a sub-mesh object, the following information is shown:"
+msgstr ""
+
+# 1a263fbe0d5745e4bc68112252fbdbdb
+# 06eb31f75ff14b43a3b49ce8a677bbee
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:112
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:130
+msgid "Parent mesh"
+msgstr ""
+
+# 73bd15df7e464f2ead8317d2cf2f8a56
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:113
+msgid "Shape"
+msgstr ""
+
+# ee1c32811a5049a3962557099124d789
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:125
+msgid "Additional info for Group"
+msgstr ""
+
+# 7753f2da8b704cf9b333ba51a9b40072
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:127
+msgid "For a group object, the following information is shown:"
+msgstr ""
+
+# d5e8c5de0daa4e9fb8c20dec46f70746
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:131
+msgid "Type: standalone, group on geometry, group on filter"
+msgstr ""
+
+# 96565ccb377740d895ab72f79ac15d87
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:132
+msgid "Entity type: node, edge, face, volume"
+msgstr ""
+
+# 9419ea2f0d5a4b32bb4717b4b10a6a9c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:133
+msgid "Size"
+msgstr ""
+
+# 4080fb1e1e0b4825816dbbe625f6c169
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:134
+msgid "Color"
+msgstr ""
+
+# 12b372eddf8149c0898bf18d651d7b07
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:135
+msgid "Number of underlying nodes (for non-nodal groups)"
+msgstr ""
+
+# e3558e0ab22d4028884b8c596684ecae
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:145
+msgid ""
+"For the performance reasons, the number of underlying nodes is computed "
+"only by demand. For this, the user should press the \"Compute\" button "
+"(see picture). Also, the number of underlying nodes is automatically "
+"calculated if the size of the group does not exceed the "
+":ref:`nb_nodes_limit_pref` preference value (zero value means no limit)."
+msgstr ""
+
+# 81192f0c71c2410782e931f954c62c3f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:150
+msgid "Quality Information"
+msgstr ""
+
+# a282f45cc58848c083e6fbd45260f34a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:152
+msgid ""
+"The **Quality Info** tab provides overall information about mesh quality "
+"controls  on the selected object - mesh, sub-mesh or mesh group:"
+msgstr ""
+
+# 29935d09cde24625aba1b0b9c81982b3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:154
+msgid "Name;"
+msgstr ""
+
+# c72c541d0e6f4bf5a502ae2d8b2acd53
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:157
+msgid "Nodes information:"
+msgstr ""
+
+# a8ca55f1558d4ed3be30a014467f1b1e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:156
+msgid "Number of free nodes;"
+msgstr ""
+
+# 61b9d1bf812448fd88d3dc10eb10bed3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:157
+msgid "Maximal number of elements connected to a node;"
+msgstr ""
+
+# 3442981518a4477baa330bbd7114d368
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:158
+msgid "Number of double nodes;"
+msgstr ""
+
+# 860bb75731654f308b0cff31d797a392
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:159
+msgid "Edges information:"
+msgstr ""
+
+# 18711f162ef241b19597cc663953188f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:160
+msgid "Number of double edges;"
+msgstr ""
+
+# d93fad97bf7149879d0f97abc3a4c762
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:163
+msgid "Faces information:"
+msgstr ""
+
+# 675e5690562d4bed8785e768ce37af80
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:162
+msgid "Number of double faces;"
+msgstr ""
+
+# 848b64f01b644b1b80df295406bb5324
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:163
+msgid "Number of over-constrained faces;"
+msgstr ""
+
+# 09cb4878ffdd4c928bb97ddee5520f53
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:164
+msgid "Aspect Ratio histogram;"
+msgstr ""
+
+# a6de74e7efeb4f7c89136c5f342d0014
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:168
+msgid "Volume information:"
+msgstr ""
+
+# 41046f4beb214cce946a7f7cf6b3ee69
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:166
+msgid "Number of double volumes;"
+msgstr ""
+
+# 9d0915c8f6a74c3fb94863f1864492e9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:167
+msgid "Number of over-constrained volumes;"
+msgstr ""
+
+# f26e5055bb3d4fc7acc4a31088a47548
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:168
+msgid "Aspect Ratio 3D histogram."
+msgstr ""
+
+# 54b7bdc3b32740b0b0bd4383e05f6401
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:177
+msgid ""
+"It is possible to change **Double nodes tolerance**, which will be used "
+"upon consequent pressing *Compute* button. The default value of the "
+"tolerance can be set via the :ref:`dbl_nodes_tol_pref` preferences."
+msgstr ""
+
+# e726dde442ef4e099274cf3a8c4901e6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:180
+msgid ""
+"For performance reasons, all quality control values for big meshes are "
+"computed only by demand. For this, press the *Compute* button. Also, "
+"values are automatically computed if the number of nodes / elements does "
+"not exceed the :ref:`auto_control_limit_pref` set via the "
+":ref:`mesh_information_pref` preferences (zero value means that there is "
+"no limit)."
+msgstr ""
+
+# 9dfb329bf1f740798ff18de7dab8728e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:183
+msgid ""
+"The plot functionality is available only if the GUI module is built with "
+"Plot 2D Viewer (option SALOME_USE_PLOT2DVIEWER is ON when building GUI "
+"module)."
+msgstr ""
+
+# 84fc0f1732a04cec94d12b8c0e36d41e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_infos.rst:185
+msgid "See the :ref:`tui_viewing_mesh_infos`."
+msgstr ""
+

@@ -1,0 +1,196 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 3c64b29aedd340f9a4c8a9d78aa0f748
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:5
+msgid "Boolean operations on groups"
+msgstr ""
+
+# f50fb2f27b1f4af4a4faacb8d02b5544
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:7
+msgid ""
+"In MESH you can perform some Boolean operations on groups, which belong "
+"to one and the same mesh."
+msgstr ""
+
+# 97f7ab96b0304eccbced874f127391d2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:9
+msgid ":ref:`union_anchor`"
+msgstr ""
+
+# a932b7ac781d40d0a5edb2c7df941737
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:10
+msgid ":ref:`intersection_anchor`"
+msgstr ""
+
+# a13e1bae8b714ddc98cd380b550379d1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:11
+msgid ":ref:`cut_anchor`"
+msgstr ""
+
+# 00b67383c6404267952838b0f80e8b42
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:19
+msgid "Union of groups"
+msgstr ""
+
+# a52b1ab225b34f25a71659332c4da5d1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:21
+msgid ""
+"This operation allows to create a new group in such a way that all mesh "
+"elements that are present in the initial groups will be added to the new "
+"one."
+msgstr ""
+
+# 60200864f53047deb846f4787ffe9e2d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:25
+msgid "**To union groups:**"
+msgstr ""
+
+# 79500d1f6301426bbd36582a768b6a4a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:27
+msgid ""
+"In the **Mesh** menu select the **Union Groups** item. The following "
+"dialog box will appear:"
+msgstr ""
+
+# 1fca07005fb24ffd9028c7f192a3fc07
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:32
+msgid ""
+"In this dialog box you should specify the name of the resulting group and"
+" set of groups which will be united."
+msgstr ""
+
+# ddca19009642466bb8d275f0ac369bac
+# ec798971cec54ab08d347741b3caaed4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:34
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:81
+msgid "For example, we have two groups Group1 and Group2."
+msgstr ""
+
+# c360882c3c704fe89dfc555ed6126cdb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:36
+msgid "The result of their **Union** will be Group12:"
+msgstr ""
+
+# e1ddabadb62a4b78a561b88682d45a9f
+# 09a76bcc37364e9d9abd993db5e647c9
+# fbc7d6720ee243639f61dce988a0cbe9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:56
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:103
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:149
+msgid ""
+"Click the **Apply** or **Apply and Close** button to confirm creation of "
+"the group."
+msgstr ""
+
+# 759d086d5318424b8888a2d800212d80
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:59
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_union_of_groups` "
+"operation."
+msgstr ""
+
+# 3917c96854dd4c49a91c7db5f8ebf6ca
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:66
+msgid "Intersection of groups"
+msgstr ""
+
+# c80b258632c84841840f4a316b526287
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:68
+msgid ""
+"This operation allows to create a new group in such a way that all mesh "
+"elements that are present in all initial groups together are added to the"
+" new one."
+msgstr ""
+
+# 79a6317ac7be460c90d3dd02129ce6e4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:72
+msgid "**To intersect groups:**"
+msgstr ""
+
+# 310f0effcfd94de1b16574d971d7501b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:74
+msgid ""
+"In the **Mesh** menu select the **Intersect Groups** item. The following "
+"dialog box will appear:"
+msgstr ""
+
+# a67d12fd3dbf495596b81b85ca9a9411
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:79
+msgid ""
+"In this dialog box you should specify the name of the resulting group and"
+" set of groups which will be intersected."
+msgstr ""
+
+# 83b1d3fb99a64493b25546c6b451cd71
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:83
+msgid "The result of their **Intersection** will be Group12a:"
+msgstr ""
+
+# bf8e4ce41e284392a026fc8aac537630
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:106
+msgid ""
+"**See Also** a sample TUI Script of an :ref:`tui_intersection_of_groups` "
+"operation."
+msgstr ""
+
+# 168729d4492b41f1a2eeb714b66e945f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:113
+msgid "Cut of groups"
+msgstr ""
+
+# 8df8d15c9cba4785ad039fe6971f1106
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:115
+msgid ""
+"This operation allows to create a new group in such a way that all mesh "
+"elements that are present in the main groups but are absent in the tool "
+"groups are added to the new one."
+msgstr ""
+
+# b77c4cdfb3fa4a43930a82ae5ec9af26
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:119
+msgid "**To cut groups:**"
+msgstr ""
+
+# 9ec410a81f794af8b0e54b97fa27f35a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:121
+msgid ""
+"In the **Mesh** menu select the **Cut Groups** item. The following dialog"
+" box will appear:"
+msgstr ""
+
+# 5c2b88f6382e45e3a960e5617beb146d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:126
+msgid ""
+"In this dialog box you should specify the name of the resulting group and"
+" groups which will be cut."
+msgstr ""
+
+# c7109abb6f4d4929993eaaf8637c2b94
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:128
+msgid ""
+"For example, we have two groups Group1 and Group2. The result of their "
+"**Cut** will be Group12b:"
+msgstr ""
+
+# f96cb4ad1b484af299485dd291e98a6c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_operations_on_groups.rst:152
+msgid "**See Also** a sample TUI Script of a :ref:`tui_cut_of_groups` operation."
+msgstr ""
+

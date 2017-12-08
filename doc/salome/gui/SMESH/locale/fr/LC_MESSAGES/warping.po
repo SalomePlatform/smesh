@@ -1,0 +1,84 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 7336840f1de848839bb89abfd5044c58
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/warping.rst:5
+msgid "Warping"
+msgstr ""
+
+# 2b1e730a5eed435082c616cfb92d2172
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/warping.rst:10
+msgid ""
+"**Warping** indicates that a face is not planar and is applied only to 2D"
+" elements with 4 nodes. This quality control criterion is based on a "
+"projection plane created by:"
+msgstr ""
+
+# f638d6044b5c498f8800f89640fd8cfe
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/warping.rst:14
+msgid "bisecting the four element edges,"
+msgstr ""
+
+# 15c2ff7a765d4459aded3ffd6cddd735
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/warping.rst:15
+msgid ""
+"creating a point on the plane at the vector average of the corners, where"
+" the x-axis extends from the point to the bisector on edge 2."
+msgstr ""
+
+# e628a39d26eb4be1b03bd8136bfe5e01
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/warping.rst:17
+msgid ""
+"The plane normal is in the direction of the cross product of the x-axis "
+"and the vector from the origin to the bisector of edge 3. Every corner of"
+" the quad will then be a distance *h* from the plane. The length of each "
+"half edge is measured and the shortest length is assigned *l*. The warp "
+"angle is the arcsine of the ratio of the projection height *h* to the "
+"half edge length *l*."
+msgstr ""
+
+# bba359515cd74635a97441380386a30c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/warping.rst:24
+msgid "**To apply the Warping quality criterion to your mesh:**"
+msgstr ""
+
+# 97ad951c40ad4b3698c539ad51522ee4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/warping.rst:26
+msgid "Display your mesh in the viewer."
+msgstr ""
+
+# 1b2805c25e224aed8c110b9b37b5f6f8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/warping.rst:28
+msgid ""
+"Choose **Controls > Face Controls > Warping Angle** or click **\"Warping "
+"angle\"** button of the toolbar."
+msgstr ""
+
+# 57c13746701e495da2fa2e17be8c850b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/warping.rst:36
+msgid ""
+"Your mesh will be displayed in the viewer with its elements colored "
+"according to the applied mesh quality control criterion:"
+msgstr ""
+
+# e6e8740c285548c6a8aedc9af2c97139
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/warping.rst:42
+msgid "**See Also** a sample TUI Script of a :ref:`tui_warping` operation."
+msgstr ""
+

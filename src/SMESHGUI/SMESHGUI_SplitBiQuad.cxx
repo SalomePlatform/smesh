@@ -125,7 +125,7 @@ void SMESHGUI_SplitBiQuadOp::startOperation()
   {
     myDlg = new SMESHGUI_SplitBiQuadDlg();
   }
-  myHelpFileName = "split_biquad_to_linear_page.html";
+  myHelpFileName = "split_biquad_to_linear.html";
 
   SMESHGUI_SelectionOp::startOperation();
 

@@ -1,0 +1,251 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 5bc7dc5777f24bb9b187bd099ff28cd0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:5
+msgid "Removing nodes and elements"
+msgstr ""
+
+# 72d9643c2e1843739eba26c4b9ffd548
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:7
+msgid "In MESH you can remove nodes and all types of cells of your mesh."
+msgstr ""
+
+# 6c120c5024824b06b409cb2d9707307d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:9
+msgid ":ref:`removing_nodes_anchor`"
+msgstr ""
+
+# b94a14aa44e34edcbbcfdf5798f373f9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:10
+msgid ":ref:`removing_orphan_nodes_anchor`"
+msgstr ""
+
+# 54fa4702bf9f4320bd97cf7eb53f7070
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:11
+msgid ":ref:`removing_elements_anchor`"
+msgstr ""
+
+# 38d728956d7c4ac2b19f303e2c52bd85
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:12
+msgid ":ref:`clear_mesh_anchor`"
+msgstr ""
+
+# 016116887ef14c6e9174da9c59d47a76
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:19
+msgid "Removing nodes"
+msgstr ""
+
+# 57ad24bd52ea469fa85af40dd5dfd1b1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:21
+msgid "**To remove a node:**"
+msgstr ""
+
+# c7eb84e300ef41fe93752ba59e373e69
+# 79f4873f63d5416e9f6571f2ef5034b7
+# ce977e7f17f346db9c0c09e27b72229f
+# 7a282dec068b4c6a821624de51ddcbff
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:23
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:59
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:84
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:125
+msgid "Select your mesh in the Object Browser or in the 3D viewer."
+msgstr ""
+
+# 7678c235cd8547c89d951b970d8ace6c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:24
+msgid ""
+"From the **Modification** menu choose **Remove** and from the associated "
+"submenu select the **Nodes**, or just click **\"Remove nodes\"** button "
+"in the toolbar."
+msgstr ""
+
+# 0267cfd3bcae4e9f84eb3f2f2b5ae258
+# 1b82a2273df744148619d94afe8a5a47
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:32
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:93
+msgid "The following dialog box will appear:"
+msgstr ""
+
+# b427bef390e1489a98cef5eb02163c31
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:38
+msgid "In this dialog box you can specify one or several nodes:"
+msgstr ""
+
+# 81e5d18bf8ef436fa514d40d8551ccad
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:40
+msgid ""
+"choose mesh nodes with the mouse in the 3D Viewer. It is possible to "
+"select a whole area with a mouse frame; or"
+msgstr ""
+
+# e64a50ee07e74706a3d62080bbcb7b67
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:41
+msgid ""
+"input the node IDs directly in **ID Elements** field. The selected nodes "
+"will be highlighted in the viewer; or"
+msgstr ""
+
+# 9c5970a21b3d41a5a269d8dd6a875a45
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:42
+msgid ""
+"apply Filters. **Set filter** button allows to apply a filter to the "
+"selection of nodes. See more about filters in the "
+":ref:`selection_filter_library_page` page."
+msgstr ""
+
+# 0890d7d353644c938fc72636f7030e88
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:47
+msgid ""
+"Be careful while removing nodes because if you remove a definite node of "
+"your mesh all adjacent elements will be also deleted."
+msgstr ""
+
+# 54ad34c6a9ed434a9d2588f1db54f328
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:53
+msgid "Removing orphan nodes"
+msgstr ""
+
+# 1253e8f9c7324245a87dd8c4bb5aa3ea
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:55
+msgid "There is a quick way to remove all orphan (free) nodes."
+msgstr ""
+
+# dfbd7c24f58043e79102e027e312886e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:57
+msgid "**To remove orphan nodes:**"
+msgstr ""
+
+# de76854beb0349e0985c0ce382afff76
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:60
+msgid ""
+"From the **Modification** menu choose **Remove** and from the associated "
+"submenu select **Orphan Nodes**, or just click **\"Remove orphan "
+"nodes\"** button in the toolbar."
+msgstr ""
+
+# 2c3104701da94d61a3dbd9a6110a66c0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:68
+msgid "The following Warning message box will appear:"
+msgstr ""
+
+# b501f2a03e2c4f658a77e33b479d6193
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:74
+msgid "Confirm nodes removal by pressing \"Yes\" button."
+msgstr ""
+
+# 249781e7a71d461bbc538489102a3514
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:80
+msgid "Removing elements"
+msgstr ""
+
+# 7fb72900c9d0489db8399914fd06e937
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:82
+msgid "**To remove an element:**"
+msgstr ""
+
+# f6e9315ba99644708f439b8c3b31ee1b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:85
+msgid ""
+"From the **Modification** menu choose **Remove** and from the associated "
+"submenu select the **Elements**, or just click **\"Remove elements\"** "
+"button in the toolbar."
+msgstr ""
+
+# 860f4cfb7782422a9ddb136cdd942de3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:98
+msgid "In this dialog box you can specify one or several elements"
+msgstr ""
+
+# 672b8cdbf4d04abab64e4fa301db0bb6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:100
+msgid ""
+"choose mesh elements with the mouse in the 3D Viewer. It is possible to "
+"select a whole area with a mouse frame; or"
+msgstr ""
+
+# 654a3e3f58ca4b62ad9365d5878c82d5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:101
+msgid ""
+"input the element IDs directly in **ID Elements** field. The selected "
+"elements will be highlighted in the viewer; or"
+msgstr ""
+
+# 09bca0568e934c38946363aa0cfb32a8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:102
+msgid ""
+"apply Filters. **Set filter** button allows to apply a filter to the "
+"selection of elements. See more about filters in the "
+":ref:`selection_filter_library_page` page."
+msgstr ""
+
+# 395b19a0baa942079082c4e0f3dbba79
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:103
+msgid ""
+"Click **Apply** or **Apply and Close** to confirm deletion of the "
+"specified elements."
+msgstr ""
+
+# 8066994c98c549d39f8ef5b6df3b95c0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:121
+msgid "Clearing Mesh Data"
+msgstr ""
+
+# f8e71f16cdfd4e188166f38518e3809e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:123
+msgid "**To remove all nodes and all types of cells in your mesh at once:**"
+msgstr ""
+
+# d3362805418f4ffab732f86853506068
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:126
+msgid ""
+"From the Modification menu choose Remove and from the associated submenu "
+"select the Clear Mesh Data, or just click **\"Clear Mesh Data\"** button "
+"in the toolbar. You can also right-click on the mesh in the Object "
+"Browser and select Clear Mesh Data in the pop-up menu."
+msgstr ""
+
+# 5015bce04d8e4ba6bc30dfe750dedb66
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:136
+msgid "This command works in a different way in different situations:"
+msgstr ""
+
+# 63492c65ecb944a4b580d28c4a501fb6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:136
+msgid ""
+"if the mesh is computed on a geometry, then \"Clear Mesh Data\" removes "
+"all elements and nodes."
+msgstr ""
+
+# 638a8b45bb4b4ae994f61a0718ee6a87
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:137
+msgid ""
+"if the mesh is not based on a geometry (imported, compound, created from "
+"scratch etc.), then \"Clear Mesh Data\" removes only the elements and "
+"nodes computed by algorithms. If no such elements or nodes have been "
+"created, can remove nothing."
+msgstr ""
+
+# 6e8673cbfc2647b7994ac8448464c3d6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/removing_nodes_and_elements.rst:139
+msgid ""
+"**See Also** a sample TUI Script of a "
+":ref:`tui_removing_nodes_and_elements` operation."
+msgstr ""
+

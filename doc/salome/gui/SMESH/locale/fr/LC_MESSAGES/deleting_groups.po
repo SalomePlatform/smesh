@@ -1,0 +1,50 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# da0c8f0c6eea4ca89f85a0088293b1c2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/deleting_groups.rst:5
+msgid "Deleting groups with content"
+msgstr ""
+
+# 595cfb5f81104bceb787165f399b5e92
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/deleting_groups.rst:7
+msgid ""
+"To delete groups and their content, in the menu select **Modification -> "
+"Remove -> Delete groups with Contents** and select one or several groups "
+"you wish to delete in the 3D viewer or in the Object Browser."
+msgstr ""
+
+# 27e4c20df5cb437195a61c1305ebbf32
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/deleting_groups.rst:9
+msgid ""
+"The selected groups will be listed in **Delete groups with contents** "
+"menu. Then click **Apply and Close** button to remove the selected groups"
+" and close the menu or **Apply** button to remove them and proceed with "
+"the selection."
+msgstr ""
+
+# 660539b2cd4e442fb90d67f16e42cb49
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/deleting_groups.rst:16
+msgid ""
+"Please, note that this operation removes groups **with their elements**. "
+"To delete a group and leave its elements intact, right-click on the group"
+" in the Object Browser and select **Delete** in the pop-up menu or select"
+" the group and choose **Edit -> Delete** in the main menu."
+msgstr ""
+

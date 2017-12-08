@@ -220,7 +220,7 @@ void SMESHGUI_DisplayEntitiesDlg::onChangeEntityMode( bool isChecked )
 void SMESHGUI_DisplayEntitiesDlg::onHelp()
 {
   LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
-  app->onHelpContextModule( "SMESH", "display_entity_page.html" );
+  app->onHelpContextModule( "SMESH", "display_entity.html" );
 }
 
 /*!

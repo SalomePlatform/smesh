@@ -1,0 +1,88 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 1ffc38982adf47fcade31b8e5e698da0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_through_point.rst:5
+msgid "Moving nodes"
+msgstr ""
+
+# a52fe3efbbf5414fb82bac9d49344fe7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_through_point.rst:7
+msgid ""
+"In mesh you can define a node at a certain point either * by movement of "
+"the node closest to the point or * by movement of a selected node to the "
+"point."
+msgstr ""
+
+# 9b2db2d4c63c43d684267300f72cccb8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_through_point.rst:11
+msgid "**To displace a node:**"
+msgstr ""
+
+# f2bbc2696ae54993aa4d87bef3570106
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_through_point.rst:13
+msgid ""
+"From the **Modification** menu choose the **Move node** item or click "
+"**\"Move Node\"** button in the toolbar."
+msgstr ""
+
+# e388044d0bb6426d9b919415688b6bed
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_through_point.rst:21
+msgid "The following dialog will appear:"
+msgstr ""
+
+# cc660e1218ff408091d02886affe3b76
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_through_point.rst:38
+msgid ""
+"Specify the way of node selection: manually (the first radio button) or "
+"automatically (the second radio button)."
+msgstr ""
+
+# 220607f94c2446048817a084caad5621
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_through_point.rst:39
+msgid ""
+"If the manual method is selected, select a node to move (X, Y, Z fields "
+"show the original coordinates of the node) or type the node ID."
+msgstr ""
+
+# e5409113789b411f8764353f9e31ed70
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_through_point.rst:40
+msgid ""
+"Enter the coordinates of the destination point. You can click **Update "
+"Destination** button to set the coordinates of the destination point "
+"equal to the coordinates of the node to move."
+msgstr ""
+
+# 43d89a1d7ac94e65a87b159f7b846ece
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_through_point.rst:41
+msgid "Activate **Preview** check-box to show the result of move in the viewer."
+msgstr ""
+
+# 1d61a59cc3074d3c8517729005d4c586
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_through_point.rst:42
+msgid ""
+"Click the **Apply** or **Apply and Close** button to confirm the "
+"operation."
+msgstr ""
+
+# 93d94c236da04a568845b1ed95848ee9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_through_point.rst:56
+msgid "**See Also** a sample TUI Script of a :ref:`tui_moving_nodes` operation."
+msgstr ""
+

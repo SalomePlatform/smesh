@@ -1,0 +1,130 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 4d342a1a88494139abfd4eee43cd2342
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_elements.rst:5
+msgid "Merging Elements"
+msgstr ""
+
+# cb13ca6428bb483ba5e92301548d7898
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_elements.rst:7
+msgid ""
+"This functionality allows to merge coincident elements of a mesh. Two "
+"elements are considered coincident if they are based on the same set of "
+"nodes."
+msgstr ""
+
+# 21ca56be96e745baaa45970e787e1623
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_elements.rst:15
+msgid ""
+"To merge elements choose in the main menu **Modification** -> "
+"**Transformation** -> **Merge elements** item. The following dialog box "
+"shall appear:"
+msgstr ""
+
+# e0df42b78b6e4d75a945f60e3cbb99bf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_elements.rst:20
+msgid "In this dialog:"
+msgstr ""
+
+# 0c5f4a7c5f854892ae22b6deae36ec6d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_elements.rst:22
+msgid "Name is the name of the mesh object whose elements will be merged."
+msgstr ""
+
+# 029510ba8a04488a8d964493ba6c91a4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_elements.rst:56
+msgid ""
+"**Automatic** or **Manual** Mode allows choosing how the elements are "
+"processed. In the **Automatic** Mode all elements created on the same "
+"nodes will be merged. In **Manual** mode you can adjust groups of "
+"coincident elements detected by the program."
+msgstr ""
+
+# e7f34bed11b54bee84d4698b250acf5f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_elements.rst:24
+msgid "If the **Manual** Mode is selected, additional controls are available:"
+msgstr ""
+
+# 78e2e2a85f554ce2bcb53a70fe6a5695
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_elements.rst:30
+msgid ""
+"**Detect** button generates the list of coincident elements found in the "
+"selected object."
+msgstr ""
+
+# 372b8fa63cf8418e943c01a1dda35d5e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_elements.rst:31
+msgid ""
+"**Coincident elements** is a list of groups of elements for merging. "
+"After the operation all elements of each group will be united into one "
+"element. The first element of a group is kept and the others are removed."
+msgstr ""
+
+# d5ea870ea665439284d4a4307bce646f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_elements.rst:32
+msgid "**Remove** button deletes the selected group from the list."
+msgstr ""
+
+# 5601dbe1cc144ef7a4f045a552635c9f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_elements.rst:33
+msgid ""
+"**Add** button adds to the list a group of elements selected in the "
+"viewer with pressed \"Shift\" key."
+msgstr ""
+
+# fe8d239588e84806bc36e51099174e8c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_elements.rst:34
+msgid "**Select all** check-box selects all groups."
+msgstr ""
+
+# 9845355362054dfaab8861e408fae237
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_elements.rst:35
+msgid ""
+"**Show double elements IDs** check-box shows/hides identifiers of "
+"elements of the selected groups in the 3D viewer."
+msgstr ""
+
+# c85c581433994456a264035acbd45287
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_elements.rst:36
+msgid ""
+"**Edit selected group of coincident elements** list allows editing the "
+"selected group:"
+msgstr ""
+
+# d09a69d7214340dd8dabfb42d5bd6fc5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_elements.rst:58
+msgid "To confirm your choice click **Apply** or **Apply and Close** button."
+msgstr ""
+
+# 56640a257385465b929f11a82b5e4fa7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_elements.rst:61
+msgid ""
+"In this picture you see a triangle which coincides with one of the "
+"elements of the mesh. After we apply **Merge Elements** functionality, "
+"the triangle will be completely merged with the mesh."
+msgstr ""
+
+# 2f7267831b3b45ed8c2356fb8940555d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_elements.rst:66
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_merging_elements` "
+"operation."
+msgstr ""
+

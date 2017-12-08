@@ -1,0 +1,41 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 08b2b54fd0774b3696f319f6ceca5da3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/max_element_volume_hypo.rst:5
+msgid "Max Element Volume hypothesis"
+msgstr ""
+
+# 0457ac97e64c486ba51dca3fef86ef8a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/max_element_volume_hypo.rst:7
+msgid ""
+"**Max Element Volume** hypothesis is applied for meshing of 3D objects "
+"composing your geometrical object. Definition of this hypothesis consists"
+" of setting the **maximum volume** of 3D meshing elements (depending on "
+"the chosen meshing algorithm it can be **hexahedrons** or "
+"**tetrahedrons**), which will compose the mesh of these 3D objects."
+msgstr ""
+
+# 9d33c4d96b7c4e14a7a446a2cc78d0c2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/max_element_volume_hypo.rst:12
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_max_element_volume` "
+"operation."
+msgstr ""
+

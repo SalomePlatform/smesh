@@ -1,0 +1,69 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 963e7da94a48431d9383310f5d9ea57a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/point_marker.rst:5
+msgid "Point Marker"
+msgstr ""
+
+# 10cc3fcf74624111a0478fc8b51ab83d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/point_marker.rst:7
+msgid ""
+"You can change the representation of points in the 3D viewer either by "
+"selecting one of the predefined shapes or by loading a custom texture "
+"from an external file."
+msgstr ""
+
+# 203e3a9b996846788a38cad64719931d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/point_marker.rst:11
+msgid "Standard point markers"
+msgstr ""
+
+# a18ec3d475b94b0780689f91c460df62
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/point_marker.rst:13
+msgid ""
+"The Mesh module provides a set of predefined point marker shapes which "
+"can be used to display points in the 3D viewer. Each standard point "
+"marker has two attributes: type (defines shape form) and scale factor "
+"(defines shape size)."
+msgstr ""
+
+# 13ebf72623394864a00b4e6fa3197834
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/point_marker.rst:28
+msgid "Custom point markers"
+msgstr ""
+
+# e899af8d220045a48bd59af333ba576e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/point_marker.rst:30
+msgid ""
+"It is also possible to load a point marker shape from an external file. "
+"This file should provide a description of the point texture as a set of "
+"lines; each line is represented as a sequence of \"0\" and \"1\" symbols,"
+" where \"1\" symbol means an opaque pixel and \"0\" symbol means a "
+"transparent pixel. The width of the texture corresponds to the length of "
+"the longest line in the file, expanded to the nearest byte-aligned value."
+" The height of the texture is equal to the number of non-empty lines in "
+"the file. Note that missing symbols are replaced by \"0\"."
+msgstr ""
+
+# ceac257a415b40cdba2e44cb9637115a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/point_marker.rst:39
+msgid "Here is a texture file sample: ::"
+msgstr ""
+

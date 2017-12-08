@@ -659,7 +659,7 @@ SMESHGUI_BaseComputeOp::SMESHGUI_BaseComputeOp()
   myBadMeshDisplayer = 0;
 
   //myHelpFileName = "/files/about_meshes.htm"; // V3
-  myHelpFileName = "about_meshes_page.html"; // V4
+  myHelpFileName = "about_meshes.html"; // V4
 }
 
 SMESH::SMESH_Mesh_ptr SMESHGUI_BaseComputeOp::getMesh()
@@ -1533,7 +1533,7 @@ QTableWidget* SMESHGUI_BaseComputeOp::table()
 SMESHGUI_ComputeOp::SMESHGUI_ComputeOp()
  : SMESHGUI_BaseComputeOp()
 {
-  myHelpFileName = "constructing_meshes_page.html#compute_anchor";
+  myHelpFileName = "constructing_meshes.html#compute-anchor";
 }
 
 
@@ -1643,7 +1643,7 @@ LightApp_Dialog* SMESHGUI_PrecomputeOp::dlg() const
 
 void SMESHGUI_PrecomputeOp::startOperation()
 {
-  myHelpFileName = "constructing_meshes_page.html#preview_anchor"; // other anchor onCompute()
+  myHelpFileName = "constructing_meshes.html#preview-anchor"; // other anchor onCompute()
 
   if ( !myDlg )
   {
@@ -1882,7 +1882,7 @@ void SMESHGUI_PrecomputeOp::onCompute()
     myOrderMgr->SetMeshOrder();
   myMapShapeId.clear();
   myActiveDlg = computeDlg();
-  myHelpFileName = "constructing_meshes_page.html#compute_anchor";
+  myHelpFileName = "constructing_meshes.html#compute-anchor";
   computeMesh();
 }
 
@@ -2148,7 +2148,7 @@ SMESHGUI_MeshOrderBox* SMESHGUI_PrecomputeDlg::getMeshOrderBox() const
 SMESHGUI_EvaluateOp::SMESHGUI_EvaluateOp()
  : SMESHGUI_BaseComputeOp()
 {
-  myHelpFileName = "constructing_meshes_page.html#evaluate_anchor";
+  myHelpFileName = "constructing_meshes.html#evaluate-anchor";
 }
 
 

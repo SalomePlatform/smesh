@@ -1,0 +1,517 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 1c1fce2364eb4d10a0b9ef75f005a204
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:5
+msgid "Selection filter library"
+msgstr ""
+
+# 8bdbe1ebe74b443e9f379fcd3769a610
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:7
+msgid ""
+"Selection filter library allows creating and storing in files the filters"
+" that can be later reused for operations on meshes. You can access it "
+"from the Main Menu via **Tools / Selection filter library**. It is also "
+"possible to save/load a filter by invoking the filter library from "
+":ref:`filtering_elements` launched from any mesh operation."
+msgstr ""
+
+# 0e734e3b76c941b8ab1cdc3cd2278263
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:16
+msgid ""
+"**Library file name** shows the path and the file name where your filters"
+" will be stored. By clicking the **Browse** button you can load an "
+"existing filter library."
+msgstr ""
+
+# 3e3d1001ef1e4596b81c61efe31f259d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:20
+msgid ""
+"**Names of filters** lists the filters created or uploaded for the "
+"current study. You can **Add** or **Delete** filters."
+msgstr ""
+
+# 1d12f5c73eb145f58cf4d80c15b808fe
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:23
+msgid ""
+"In **Filter name** box you can specify the name for your filter. By "
+"default it is prefixed with the corresponding entity type."
+msgstr ""
+
+# 8b3e05ba20e54cf9ae42610cb3b64bb9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:29
+msgid "Filter Dialog"
+msgstr ""
+
+# f8535670e6fc4c5893d9a7a134c6235a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:31
+msgid ""
+"When we use filters during group creation or another operation (by "
+"clicking **Set Filter** button in the corresponding dialog), the dialog "
+"for setting filters looks as shown below."
+msgstr ""
+
+# c8cad5728ed64f47a139515c0aac843c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:38
+msgid ""
+"The **Add** button creates a new criterion at the end of the list of "
+"criteria. The **Insert** button creates a new criterion before the "
+"selected criterion. The **Remove** button deletes the selected criterion."
+" The **Clear** button deletes all criteria."
+msgstr ""
+
+# c7be8ffe336742d8893887bd7ed12199
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:43
+msgid ""
+"If there is a choice of **Entity type** in the dialog, only criteria of "
+"currently selected type are used to create or change a filter, and "
+"criteria of hidden types (if were specified) are ignored."
+msgstr ""
+
+# 5df645a139e14ef0a5ab935cc2822f4e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:47
+msgid ""
+"Each **Entity type** has its specific list of criteria, however all "
+"filters have common syntax. The **Threshold Value** should be specified "
+"for most criteria. For numerical criteria it is necessary to indicate if "
+"the found elements should be **More**, **Less** or **Equal** to this "
+"**Value**. You can also reverse the sense of a criterion using **Unary** "
+"operator *Not* and you should specify logical relations between criteria "
+"using **Binary** operators *Or* and *And*."
+msgstr ""
+
+# 8550bb068c514fa4b58594b758559fb4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:55
+msgid ""
+"Some criteria have the additional parameter of **Tolerance**. Switching "
+"on **Insert filter in viewer** check-box limits selection of elements in "
+"the Viewer to the current filter."
+msgstr ""
+
+# 9acf2cc77b6245ce931c1ed13dff672d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:59
+msgid ""
+"In the **Source** field you choose if the filter will be applied to the "
+"whole **Mesh**, the **Initial Selection** or the **Current Dialog**. If "
+"**Mesh** is chosen, the elements satisfying the filter will be selected "
+"in the 3D Viewer. If **Initial Selection** is chosen, the filter will be "
+"applied to the selected elements and the elements rejected by the filter "
+"will be deselected. If **Current Dialog** is chosen, the filter will be "
+"applied to the list of elements in the current dialog and the elements "
+"rejected by the filter will be removed from the list."
+msgstr ""
+
+# e1610c78c0ed4b2794086eb144acd6a3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:69
+msgid ""
+"**Copy from...** button gives you a possibility to load an existing "
+"filter from **Selection filter library** and **Add to...** button gives "
+"you a possibility to save your current filter in the Library."
+msgstr ""
+
+# 490fe36e117e4c8886f86f11483197ad
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:74
+msgid ""
+"If the button **Apply and Close** is disabled, there is no selected mesh "
+"in the Object Browser and the filter can not be created. You have to "
+"select the mesh and the button will be enabled."
+msgstr ""
+
+# 80cfefe334de4e478d2ee70d122f722c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:76
+msgid "Some criteria are applicable to all **Entity types**:"
+msgstr ""
+
+# eac45a6080c545e09c8b0ab33992aad6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:78
+msgid ""
+"**Belong to Geom** selects entities whose all nodes lie on the shape "
+"defined by **Threshold Value**. If the threshold shape is a sub-shape of "
+"the main shape of the mesh, the filtering algorithm works faster because "
+"node-to-shape association is used instead of measuring distance between "
+"nodes and the shape, and **Tolerance** is not used. If the threshold "
+"shape is any other shape, the algorithm works slower because distance "
+"between nodes and the shape is measured and is compared with "
+"**Tolerance**. The latter approach (distance measurement) is also used if"
+" an element is not associated to any shape."
+msgstr ""
+
+# f67124ffdff24567bf5b03fdb1444f8b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:79
+msgid ""
+"**Lying on Geom** selects entities whose at least one node lies on the "
+"shape defined by the **Threshold Value**. If the threshold shape is a "
+"sub-shape of the main shape of the mesh, the filtering algorithm works "
+"faster because node-to-shape association is used instead of measuring "
+"distance between nodes and the shape, and **Tolerance** is not used. If "
+"the threshold shape is any other shape, the algorithm works slower "
+"because distance between nodes and the shape is measured and is compared "
+"with **Tolerance**. The latter approach (distance measurement) is also "
+"used if an element is not associated to any shape."
+msgstr ""
+
+# 34e0eb39ce7649eba97c55fc8f783642
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:80
+msgid ""
+"**Belong to Mesh Group** selects entities included into the mesh group "
+"defined by the **Threshold Value**."
+msgstr ""
+
+# 1b2d26b182b3419abb3716a5a0fe4f59
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:81
+msgid ""
+"**Range of IDs** allows selection of entities with the specified IDs. "
+"**Threshold Value** can be, for example: \"1,2,3,50-60,63,67,70-78\""
+msgstr ""
+
+# e70b62585c804d82b8264c362e698a17
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:82
+msgid ""
+"**Color of Group** allows selection of entities belonging to the Group "
+"with the color defined by the **Threshold Value**."
+msgstr ""
+
+# 6a95643f6bac4e24b3b429add57f7105
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:86
+msgid ""
+"**Elements of a domain** allows selection of entities belonging to one "
+"domain of a mesh. The domain is mesh part not connected to other parts. "
+"**Threshold Value** locating any element of the domain can be either"
+msgstr ""
+
+# 38ca148d1a304511b5076a28fc54c9d6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:84
+msgid "node ID (that you can pick in the Viewer) or"
+msgstr ""
+
+# 9d0c424b3fa74c0a84b5fa14e67f1c20
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:85
+msgid ""
+"geometrical vertex (that you can pick either in the Viewer or in the "
+"Object Browser) or"
+msgstr ""
+
+# 8608ebd9c96e46c69ef2b8df43773378
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:86
+msgid "3 coordinates of a point (that you can enter in TUI mode only)."
+msgstr ""
+
+# ffea7f37121c4268b43ad9de9c20f421
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:88
+msgid ""
+"Some criteria are applicable to entities of dimension more than zero, "
+"i.e. to **Edges**, **Faces** and **Volumes**:"
+msgstr ""
+
+# 6aaffed45ef64e24b05096a94cc3afdc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:90
+msgid ""
+"**Linear** allows selection of Linear or Quadratic elements (if Unary is "
+"set to \"Not\")"
+msgstr ""
+
+# 8ec1110320cb485eae13c1a6c0d6c0f6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:91
+msgid ""
+"**Geometry type** allows selection of elements by their geometric type "
+"defined by the **Threshold Value**. The list of available geometric types"
+" depends on the current entity type."
+msgstr ""
+
+# 90b622d6c35944278f201fba7b79613f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:92
+msgid ""
+"**Entity type** allows selection of elements by their type defined as a "
+"combination of geometry type and the number of nodes."
+msgstr ""
+
+# 5c03d3620bf545c38cd2d0b7d079147c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:94
+msgid ""
+"The following criteria are applicable to Entities of **all** types except"
+" for *Volumes*:"
+msgstr ""
+
+# 829402e4a6284e6ab74ad292a98c4aab
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:96
+msgid ""
+"**Belong to Plane** selects entities whose all nodes belong to a "
+"specified plane within a given **Tolerance**."
+msgstr ""
+
+# 9a39d5991dd540e9a3402abcb53a1db0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:97
+msgid ""
+"**Belong to Cylinder** selects entities whose all nodes belong to a "
+"specified cylinder within a given **Tolerance**."
+msgstr ""
+
+# 5d4d7fbecf60482d8193729fd7f8c521
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:98
+msgid ""
+"**Belong to Surface** selects entities whose all nodes belong to a "
+"specified arbitrary surface within a given **Tolerance**."
+msgstr ""
+
+# 6336c1a5033e4f089d2c13133098a8e9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:100
+msgid "The following criteria allow selecting mesh **Nodes**:"
+msgstr ""
+
+# 837b8b1702c54744b16871a48fa37416
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:102
+msgid "**Free nodes** selects nodes not belonging to any mesh element."
+msgstr ""
+
+# cd6b965ce6ae41a08b73d5dd60bcec1f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:103
+msgid ""
+"**Double nodes** selects a node coincident with other nodes (within a "
+"given **Tolerance**). See also :ref:`tui_double_nodes_control`."
+msgstr ""
+
+# 6dea00644fa34febac6e86d56513001a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:104
+msgid ""
+"**Connectivity number** selects nodes with a number of connected "
+"elements, which is more, less or equal to the predefined **Threshold "
+"Value**. Elements of the highest dimension are countered only."
+msgstr ""
+
+# 4f3328b1ea8e4c808b3a2f00fc8566d8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:106
+msgid "The following criteria allow selecting mesh **Edges**:"
+msgstr ""
+
+# 70450e00d5ac49d2b4e3944fdf08dd77
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:108
+msgid ""
+"**Free Borders** selects free 1D mesh elements, i.e. edges belonging to "
+"one element (face or volume) only. See also a :ref:`free_borders_page`."
+msgstr ""
+
+# 0589aa44cbfc4646b09f1118227b42d5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:109
+msgid ""
+"**Double edges** selects 1D mesh elements basing on the same set of "
+"nodes. See also :ref:`filter_double_elements` ."
+msgstr ""
+
+# d8d8b9d1e788415ea6abdab073967ff3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:110
+msgid ""
+"**Borders at Multi-Connections** selects edges belonging to several "
+"faces. The number of faces should be more, less or equal (within a given "
+"**Tolerance**) to the predefined **Threshold Value**. See also a "
+":ref:`borders_at_multi_connection_page`."
+msgstr ""
+
+# c56be1de25a24c178460e748f230c825
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:111
+msgid ""
+"**Length** selects edges with a value of length, which is more, less or "
+"equal (within a given **Tolerance**) to the predefined **Threshold "
+"Value**. See also a :ref:`length_page` ."
+msgstr ""
+
+# 460916cdcb2f4597b398daf937a0bddb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:113
+msgid "The following criteria allow selecting mesh **Faces**:"
+msgstr ""
+
+# 36bcbcf2e34b4819b3e97c9c12c631cd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:115
+msgid ""
+"**Aspect ratio** selects 2D mesh elements with an aspect ratio (see also "
+"an :ref:`aspect_ratio_page`), which is more, less or equal (within a "
+"given **Tolerance**) to the predefined **Threshold Value**."
+msgstr ""
+
+# 31f11a8d74564ae293786fb388dd11f0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:116
+msgid ""
+"**Warping** selects quadrangles with warping angle (see also a "
+":ref:`warping_page`), which is more, less or equal (within a given "
+"**Tolerance**) to the predefined **Threshold Value**."
+msgstr ""
+
+# 59f4575a06874c57af5eab922fb54487
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:117
+msgid ""
+"**Minimum angle** selects triangles and quadrangles with minimum angle "
+"(see also a :ref:`minimum_angle_page`), which is more, less or equal "
+"(within a given **Tolerance**) to the predefined **Threshold Value**."
+msgstr ""
+
+# 18d26e933cea4cc683cfc077b606146c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:118
+msgid ""
+"**Taper** selects quadrangles cells with taper value (see also a "
+":ref:`taper_page`), which is more, less or equal (within a given "
+"**Tolerance**) to the predefined **Threshold Value**."
+msgstr ""
+
+# 30abd621800c45d0831eb72eb648274a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:119
+msgid ""
+"**Skew** selects triangles and quadrangles with skew value (see also a "
+":ref:`skew_page`), which is more, less or equal (within a given "
+"**Tolerance**) to the predefined **Threshold Value**."
+msgstr ""
+
+# 053853c3eb7849f9b26d5f711c8e11f2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:120
+msgid ""
+"**Area** selects triangles and quadrangles with a value of area (see also"
+" an :ref:`area_page`), which is more, less or equal (within a given "
+"**Tolerance**) to the predefined **Threshold Value**."
+msgstr ""
+
+# 02534930c9c74ffaa5819494e3a64911
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:121
+msgid ""
+"**Free edges** selects 2D mesh elements having at least one edge, which "
+"is not shared with other faces. See also a :ref:`free_edges_page`."
+msgstr ""
+
+# 9cf5e8a3b05f483dbbcb0789374f8c71
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:122
+msgid ""
+"**Free faces** selects 2D mesh elements, which belong to less than two "
+"volumes."
+msgstr ""
+
+# b9f5cfe961a6466c8d56e56395e197db
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:123
+msgid ""
+"**Double faces** selects 2D mesh elements basing on the same set of "
+"nodes. See also :ref:`filter_double_elements`."
+msgstr ""
+
+# 677dfbddc4364500b20b32752b20d483
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:124
+msgid ""
+"**Faces with bare border** selects 2D mesh elements having a free border "
+"without an edge on it. See also :ref:`bare_border_faces_page`."
+msgstr ""
+
+# 5b75d13db4a74770a725f1cd09c8b42e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:125
+msgid ""
+"**Over-constrained faces** selects 2D mesh elements having only one "
+"border shared with other 2D elements. See also "
+":ref:`over_constrained_faces_page`."
+msgstr ""
+
+# 8a8c1a6a9e444441bfbc48773d261806
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:126
+msgid ""
+"**Borders at Multi-Connections 2D** selects cells consisting of edges "
+"belonging to several elements of mesh. The number of mesh elements should"
+" be more, less or equal (within a given **Tolerance**) to the predefined "
+"**Threshold Value**. See also a "
+":ref:`borders_at_multi_connection_2d_page`."
+msgstr ""
+
+# a84ed7f236924d9dbb8438ffecafeba5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:127
+msgid ""
+"**Length 2D** selects triangles and quadrangles combining of the edges "
+"with a value of length, which is more, less or equal (within a given "
+"**Tolerance**) to the predefined **Threshold Value**. See also a "
+":ref:`length_2d_page`."
+msgstr ""
+
+# 54627dbe712540b3b3a85bc9eee7a24b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:128
+msgid ""
+"**Coplanar faces** selects mesh faces neighboring the one selected by ID "
+"in **Threshold Value** field, if the angle between the normal to the "
+"neighboring face and the normal to the selected face is less then the "
+"angular tolerance (defined in degrees). Selection continues among all "
+"neighbor faces of already selected ones."
+msgstr ""
+
+# df8bbc089d434f3eb71da4c6f0649904
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:129
+msgid ""
+"**Element Diameter 2D** selects triangles and quadrangles composed of the"
+" edges and diagonals with a value of length, which is more, less or equal"
+" (within a given **Tolerance**) to the predefined **Threshold Value**. "
+"See also a :ref:`max_element_length_2d_page`."
+msgstr ""
+
+# 6d7236a630c142ea9f0d30873c5f3b61
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:131
+msgid "The following criteria allow selecting mesh **Volumes**:"
+msgstr ""
+
+# c6462d3a7074480a99546e2823b5e310
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:133
+msgid ""
+"**Aspect ratio 3D** selects 3D mesh elements with an aspect ratio (see "
+"also an :ref:`aspect_ratio_3d_page`), which is more, less or equal "
+"(within a given **Tolerance**) to the predefined **Threshold Value**."
+msgstr ""
+
+# 1664adf90bb841bc9d0d712f5a2bd4f9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:134
+msgid ""
+"**Volume** selects 3D mesh elements with a value of volume (see also a "
+":ref:`volume_page`), which is more, less or equal (within a given "
+"**Tolerance**) to the predefined **Threshold Value**."
+msgstr ""
+
+# 4b238fb593444b72b69e50a0b009ac67
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:135
+msgid ""
+"**Element Diameter 3D** selects 3D mesh elements composed of the edges "
+"and diagonals with a value of length, which is more, less or equal "
+"(within a given **Tolerance**) to the predefined **Threshold Value**. See"
+" also a :ref:`max_element_length_3d_page`."
+msgstr ""
+
+# 2826aa3f994a45db95cf817efd5e85c5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:136
+msgid ""
+"**Double volumes** selects 3D mesh elements basing on the same set of "
+"nodes. See also :ref:`filter_double_elements`."
+msgstr ""
+
+# 6921b6529e1240858542b679f0db83b0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:137
+msgid ""
+"**Bad oriented volume** selects mesh volumes, which are incorrectly "
+"oriented from the point of view of MED convention."
+msgstr ""
+
+# 0d6876d7b2304932a550c4dfabca7b71
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:138
+msgid ""
+"**Over-constrained volumes** selects mesh volumes having only one facet "
+"shared with other volumes. See also :ref:`over_constrained_volumes_page`."
+msgstr ""
+
+# 5a3b01dc76d3443381382446e3ab2d7d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/selection_filter_library.rst:139
+msgid ""
+"**Volumes with bare border** selects 3D mesh elements having a free "
+"border without a face on it. See also :ref:`bare_border_volumes_page`."
+msgstr ""
+

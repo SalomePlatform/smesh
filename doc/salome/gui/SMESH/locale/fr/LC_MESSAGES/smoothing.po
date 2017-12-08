@@ -1,0 +1,171 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# cf863739826947af9d5afcf8234f8dbd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smoothing.rst:5
+msgid "Smoothing"
+msgstr ""
+
+# bb7cd702e13844ddb03cec82ab9c100b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smoothing.rst:7
+msgid ""
+"Smoothing is used to improve quality of 2D mesh by adjusting the "
+"locations of element corners (nodes)."
+msgstr ""
+
+# 13dc0622011041e4bab05ff7a8f83628
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smoothing.rst:10
+msgid ""
+"Depending on the chosen method and mesh geometry the smoothing can "
+"actually decrease the quality of elements and even make some elements "
+"inverted."
+msgstr ""
+
+# 16a2487a3bc4496aa0ab9a6ece3c9708
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smoothing.rst:12
+msgid "**To apply smoothing to the elements of your mesh:**"
+msgstr ""
+
+# 483fb050748343299fb6302f03c32beb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smoothing.rst:14
+msgid ""
+"In the **Modification** menu select the **Smoothing** item or click "
+"**\"Smoothing\"** button in the toolbar."
+msgstr ""
+
+# 9f5239cae0c745a687cc6a9df2535e9f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smoothing.rst:22
+msgid "The following dialog will appear:"
+msgstr ""
+
+# 71738abf09644a5c82cd7d8bc4157584
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smoothing.rst:27
+msgid "In this dialog:"
+msgstr ""
+
+# fd285577c524466ab2a0d6c4ec048d7b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smoothing.rst:33
+msgid "specify the IDs of the elements which will be smoothed:"
+msgstr ""
+
+# 2a839824672a4e628e2494ffdf22edf0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smoothing.rst:30
+msgid ""
+"**Select the whole mesh, sub-mesh or group** activating this   check-box;"
+" or"
+msgstr ""
+
+# f0bde8cde7414d89bc826ed96165beca
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smoothing.rst:31
+msgid ""
+"choose mesh elements with the mouse in the 3D Viewer. It is possible to "
+"select a whole area with a mouse frame; or"
+msgstr ""
+
+# e143ff5810be4cf996333aebbfb61219
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smoothing.rst:32
+msgid ""
+"input the element IDs directly in **ID Elements** field. The selected "
+"elements will be highlighted in the viewer; or"
+msgstr ""
+
+# d8b74c25572e46c0b1a245bb3282e830
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smoothing.rst:33
+msgid ""
+"apply Filters. **Set filters** button allows to apply a filter to the "
+"selection of elements. See more about filters in the "
+":ref:`filtering_elements` page."
+msgstr ""
+
+# 03072e4c5f31457d9b4709773d6a4f4d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smoothing.rst:35
+msgid ""
+"define the **Fixed nodes ids** that should remain at their location "
+"during smoothing. If a mesh is built on a shape, the nodes built on its "
+"geometric edges are always fixed. If the smoothing is applied to a part "
+"of the mesh (a set of element), the nodes on boundary of the element set "
+"are also fixed. It is possible to additionally fix any other nodes. The "
+"fixed nodes can be selected manually or by filters, just as the smoothed "
+"elements."
+msgstr ""
+
+# 8fcee8a4a93a42dfbcf0369b67d8daa6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smoothing.rst:45
+msgid "choose the **Smoothing Method:**"
+msgstr ""
+
+# c8c7f9549e154d41a136e05719fd44a1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smoothing.rst:37
+msgid ""
+"**Laplacian** smoothing pulls a node toward the center of surrounding "
+"nodes directly connected to that node along an element edge."
+msgstr ""
+
+# b65c9f617819483cb2778248de268827
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smoothing.rst:38
+msgid ""
+"**Centroidal** smoothing pulls a node toward the element-area-weighted "
+"centroid of the surrounding elements."
+msgstr ""
+
+# afdcfbb427914c1c8807f923b9da1d6d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smoothing.rst:40
+msgid ""
+"Laplacian method will produce the mesh with the least element edge "
+"length. It is also the fastest method. Centroidal smoothing produces a "
+"mesh with more uniform element sizes."
+msgstr ""
+
+# d8ab06f77d1b4e7898f1b48f5db2fb62
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smoothing.rst:47
+msgid ""
+"specify the **Iteration limit**. Both smoothing methods iterate through a"
+" number of steps to produce the resulting smoothed mesh. At each new step"
+" the smoothing is reevaluated with the updated nodal locations. This "
+"process continues till the limit of iterations has been exceeded, or till"
+" the aspect ratio of all element is less than or equal to the specified "
+"one."
+msgstr ""
+
+# ba154a3b732d4f2ebcb01a4656048055
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smoothing.rst:48
+msgid ""
+"specify the  **Max. aspect ratio** - the target mesh quality at which the"
+" smoothing algorithm should stop the iterations."
+msgstr ""
+
+# db68d7b538f14d0a89465f7d3506878c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smoothing.rst:49
+msgid ""
+"activate **in parametric space** check-box if it is necessary to improve "
+"the shape of faces in the parametric space of geometrical surfaces on "
+"which they are generated, else the shape of faces in the 3D space is "
+"improved that is suitable for **planar meshes only**."
+msgstr ""
+
+# 298db87c9f3143c4b46ed74e3792b3f6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smoothing.rst:51
+msgid "Click **Apply** or **Apply and Close** button to confirm the operation."
+msgstr ""
+
+# df70b0e55764480c960f71872ec503dd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smoothing.rst:66
+msgid "**See Also** a sample TUI Script of a :ref:`tui_smoothing` operation."
+msgstr ""
+

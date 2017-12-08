@@ -1457,11 +1457,11 @@ void SMESHGUI_MeasureDlg::help()
 {
   QString aHelpFile;
   if ( myTabWidget->currentIndex() == MinDistance ) {
-    aHelpFile = "measurements_page.html#min_distance_anchor";
+    aHelpFile = "measurements.html#min-distance-anchor";
   } else if ( myTabWidget->currentIndex() == BoundingBox ) {
-    aHelpFile = "measurements_page.html#bounding_box_anchor";
+    aHelpFile = "measurements.html#bounding-box-anchor";
   } else {
-    aHelpFile = "measurements_page.html#basic_properties_anchor";
+    aHelpFile = "measurements.html#basic-properties-anchor";
   }
 
   SMESH::ShowHelpFile( aHelpFile );

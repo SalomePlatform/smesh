@@ -261,7 +261,7 @@ SMESHGUI_RevolutionDlg::SMESHGUI_RevolutionDlg( SMESHGUI* theModule )
 
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
 
-  myHelpFileName = "revolution_page.html";
+  myHelpFileName = "revolution.html";
 
   Init();
 

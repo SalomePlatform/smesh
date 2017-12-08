@@ -1,0 +1,216 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 766444ec7ead4382bf9a9624b129e90c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:5
+msgid "Modifying meshes"
+msgstr ""
+
+# b99424d3a44043c289ea11b4c5b4d71d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:7
+msgid ""
+"Salome provides a vast specter of mesh modification and transformation "
+"operations, giving the possibility to:"
+msgstr ""
+
+# 27b4caab85ab4022b129e2ce9e794246
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:9
+msgid ""
+":ref:`adding_nodes_and_elements_page` mesh elements from nodes to "
+"polyhedrons at an arbitrary place in the mesh."
+msgstr ""
+
+# 908e3ed5a71c4ae59dce473a7a0107ef
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:10
+msgid ""
+":ref:`adding_quadratic_elements_page` mesh elements from quadratic "
+"segments to quadratic hexahedrons at an arbitrary place in the mesh."
+msgstr ""
+
+# b343ea63a1f2423aabb45a296d82569b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:11
+msgid ""
+":ref:`removing_nodes_and_elements_page` any existin\" mesh elements and "
+"nodes."
+msgstr ""
+
+# d2890a80488d44a3b4bd107dbde60fd4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:12
+msgid ""
+":ref:`translation_page` in the indicated direction the mesh or some of "
+"its elements."
+msgstr ""
+
+# a99da6a135bf4032baf8b18f813237d1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:13
+msgid ""
+":ref:`rotation_page` by the indicated axis and angle the mesh or some of "
+"its elements."
+msgstr ""
+
+# b8a081a280be48a2b51ef68ee3df88d7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:14
+msgid ":ref:`scale_page` the mesh or some of its elements."
+msgstr ""
+
+# b559388bd7d947cf8e7575002ad2f316
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:15
+msgid ""
+":ref:`symmetry_page` the mesh through a point, a vector or a plane of "
+"symmetry."
+msgstr ""
+
+# a2573fe7b4cd4282b21f0ba208d19109
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:16
+msgid ""
+":ref:`double_nodes_page`. Duplication of nodes can be useful to emulate a"
+" crack in the model."
+msgstr ""
+
+# 8a13df333f3442479415aefa0bcb6d9c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:17
+msgid ""
+"Unite meshes by :ref:`sewing_meshes_page` free borders, border to side or"
+" side elements."
+msgstr ""
+
+# 19f0c2af911c4967974bee39cc3cab16
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:18
+msgid ":ref:`merging_nodes_page`, coincident within the indicated tolerance."
+msgstr ""
+
+# 15e001da164c49089b3ef370f7dd4c13
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:19
+msgid ":ref:`merging_elements_page` based on the same nodes."
+msgstr ""
+
+# a8f8b84148e142adb9c83a0f217b6622
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:20
+msgid ""
+":ref:`mesh_through_point_page` to an arbitrary location with consequent "
+"transformation of all adjacent elements."
+msgstr ""
+
+# ca7ee1d4df254c4bbd77cadcfa91d8b2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:21
+msgid ":ref:`diagonal_inversion_of_elements_page` between neighboring triangles."
+msgstr ""
+
+# 9cebbde1db824710b713cc4d69e85b1f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:22
+msgid ":ref:`uniting_two_triangles_page`."
+msgstr ""
+
+# 137a90a9bb2f4814a5b7cf6b24779cf4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:23
+msgid ":ref:`uniting_set_of_triangles_page`."
+msgstr ""
+
+# db6f2ee5a1a04f7daffa3b6aa71d3bac
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:24
+msgid ":ref:`changing_orientation_of_elements_page` of the selected elements."
+msgstr ""
+
+# 80f3f3ab13eb43febe9c059190c95bbf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:25
+msgid ":ref:`reorient_faces_page` by several means."
+msgstr ""
+
+# aed703cfc9ff45a7b270e7076f1c60db
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:26
+msgid ":ref:`cutting_quadrangles_page` into two triangles."
+msgstr ""
+
+# f349265200824d7e8e3584c4af8f698d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:27
+msgid ":ref:`split_to_tetra_page` volumic elements into tetrahedra or prisms."
+msgstr ""
+
+# 7799482f6ae34a23b5da41d5da7b6609
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:28
+msgid ""
+":ref:`split_biquad_to_linear_page` elements into linear ones without "
+"creation of additional nodes."
+msgstr ""
+
+# 82bae0fef4244cc4b142353235b5396b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:29
+msgid ""
+":ref:`smoothing_page` elements, reducung distortions in them by adjusting"
+" the locations of nodes."
+msgstr ""
+
+# e7247ed2cd3749e98530ebc18b727a6f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:30
+msgid ""
+"Create an :ref:`extrusion_page` along a vector or by normal to a "
+"discretized surface."
+msgstr ""
+
+# 60b895357efe4a218b2e541b17b66fa2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:31
+msgid "Create an :ref:`extrusion_along_path_page`."
+msgstr ""
+
+# 5f2876a7d88c4811ade4f18f430af9d5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:32
+msgid ""
+"Create elements by :ref:`revolution_page` of the selected nodes and "
+"elements."
+msgstr ""
+
+# 918249030bc648e88c6c8630a11f1524
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:33
+msgid "Apply :ref:`pattern_mapping_page`."
+msgstr ""
+
+# ced0d6b7e4864f8dac1921be77245e8b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:34
+msgid ":ref:`convert_to_from_quadratic_mesh_page`, or vice versa."
+msgstr ""
+
+# 35a85820daf940c0a5397a64a5c2c0f7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:35
+msgid ":ref:`make_2dmesh_from_3d_page`."
+msgstr ""
+
+# 5fd1fc86df7a4a178e56e5d9291d64a0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:36
+msgid ":ref:`generate_flat_elements_page`."
+msgstr ""
+
+# c6750c45022d4ad0b3ebca52813ec41f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:37
+msgid ":ref:`cut_mesh_by_plane_page`."
+msgstr ""
+
+# f4f3aad385cc4ca6bf93008ef0b474a9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:41
+msgid ""
+"It is possible to :ref:`edit_anchor` of a lower dimension before "
+"generation of the mesh of a higher dimension."
+msgstr ""
+
+# 3fb1488f7c8d4cc7a7c33a989b0d0568
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modifying_meshes.rst:45
+msgid ""
+"It is possible to use the variables defined in the SALOME **NoteBook** to"
+" specify the numerical parameters used for modification of any object."
+msgstr ""
+

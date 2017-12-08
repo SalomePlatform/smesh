@@ -238,7 +238,7 @@ void SMESHGUI_Make2DFrom3DOp::startOperation()
   if( !myDlg )
     myDlg = new SMESHGUI_Make2DFrom3DDlg( desktop() );
 
-  myHelpFileName = "make_2dmesh_from_3d_page.html";
+  myHelpFileName = "make_2dmesh_from_3d.html";
 
   SMESHGUI_SelectionOp::startOperation();
 

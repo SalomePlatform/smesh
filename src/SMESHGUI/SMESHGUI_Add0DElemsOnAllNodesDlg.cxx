@@ -222,7 +222,7 @@ SMESHGUI_Add0DElemsOnAllNodesOp::SMESHGUI_Add0DElemsOnAllNodesOp()
    myDlg( new SMESHGUI_Add0DElemsOnAllNodesDlg ),
    myFilterDlg( 0 )
 {
-  myHelpFileName = "adding_nodes_and_elements_page.html#adding_0delems_on_all_nodes_anchor";
+  myHelpFileName = "adding_nodes_and_elements.html#adding-0delems-on-all-nodes-anchor";
 
   connect( myDlg,              SIGNAL( selTypeChanged(int) ), SLOT( onSelTypeChange(int)));
   connect( myDlg->myFilterBtn, SIGNAL( clicked()),            SLOT( onSetFilter() ));

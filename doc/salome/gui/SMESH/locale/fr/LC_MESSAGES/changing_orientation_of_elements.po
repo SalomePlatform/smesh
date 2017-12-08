@@ -1,0 +1,96 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# fe2d10c3ec6b438db0264d47280f4894
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/changing_orientation_of_elements.rst:5
+msgid "Changing orientation of elements"
+msgstr ""
+
+# 4d5617c88bcf43cb8667c686d3bb0649
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/changing_orientation_of_elements.rst:7
+msgid "Orientation of an element is changed by changing the order of its nodes."
+msgstr ""
+
+# 5bd693b83b37438b8a853857526df8a6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/changing_orientation_of_elements.rst:9
+msgid "**To change orientation of elements:**"
+msgstr ""
+
+# 0989cbc9c32b4632b859c1a2b284426f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/changing_orientation_of_elements.rst:11
+msgid ""
+"Select a mesh (and display it in the 3D Viewer if you are going to pick "
+"elements by mouse)."
+msgstr ""
+
+# f516165c8bcb42fcaee35e3aa6f2b5bc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/changing_orientation_of_elements.rst:12
+msgid ""
+"In the **Modification** menu select the **Orientation** item or click "
+"**Orientation** button in the toolbar."
+msgstr ""
+
+# 1e49fcdcf3444562aa6a13fa03a496c5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/changing_orientation_of_elements.rst:20
+msgid "The following dialog box will appear:"
+msgstr ""
+
+# 03b85e641f264b93ba8db4173acaf1bd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/changing_orientation_of_elements.rst:25
+msgid "Select type of elements to reorient: **Face** or **Volume**."
+msgstr ""
+
+# e65a101a42394045b9c9e79e71df9187
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/changing_orientation_of_elements.rst:26
+msgid ""
+"**The main list** shall contain the elements which will be reoriented. "
+"You can click on an element in the 3D viewer and it will be highlighted. "
+"After that click the **Add** button and the ID of this element will be "
+"added to the list. To remove a selected element or elements from the list"
+" click the **Remove** button. The **Sort** button allows to sort the list"
+" of elements IDs. The **Set filter** button allows to apply a definite "
+":ref:`filtering_elements` \"filter\" to the selection of elements."
+msgstr ""
+
+# d715ca1c7caa411ca50d180fa6c0ab80
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/changing_orientation_of_elements.rst:27
+msgid ""
+"**Apply to all** radio button allows to modify the orientation of all "
+"elements of the selected mesh."
+msgstr ""
+
+# 7d9a89decc7f41699a18cfe7d0d75f13
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/changing_orientation_of_elements.rst:28
+msgid ""
+"*Select from** set of fields allows to choose a sub-mesh or an existing "
+"group whose elements can be added to the list."
+msgstr ""
+
+# c96eeaddc54c4a48b260b5f7e265fa3a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/changing_orientation_of_elements.rst:30
+msgid ""
+"Click the **Apply** or **Apply and Close** button to confirm the "
+"operation."
+msgstr ""
+
+# 5fcf6f8346c946a49e70a860cd81931f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/changing_orientation_of_elements.rst:32
+msgid "**See Also** a sample TUI Script of a :ref:`tui_orientation` operation."
+msgstr ""
+

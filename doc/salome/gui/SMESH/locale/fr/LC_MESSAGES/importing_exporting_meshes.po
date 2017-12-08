@@ -1,0 +1,146 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 35714d67b5be489cb11ba9ff9345f570
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/importing_exporting_meshes.rst:6
+msgid "Importing and exporting meshes"
+msgstr ""
+
+# f62b0a75ed2b42e0a839deed88db6c75
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/importing_exporting_meshes.rst:8
+msgid ""
+"In MESH there is a functionality allowing import/export of meshes from/to"
+" **MED**, **UNV** (I-DEAS 10), **DAT** (simple ascii format), **STL**, "
+"**GMF** (internal format of DISTENE products, namely MG-CADSurf, MG-Tetra"
+" and MG-Hexa algorithms) and **CGNS** format files. You can also export a"
+" group as a whole mesh."
+msgstr ""
+
+# ff7a3149aefa4099a3db3a805c993434
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/importing_exporting_meshes.rst:10
+msgid "**To import a mesh:**"
+msgstr ""
+
+# f3055de8329a49c79a396b1e166c5cee
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/importing_exporting_meshes.rst:12
+msgid ""
+"From the **File** menu choose the **Import** item, from its sub-menu "
+"select the corresponding format (MED, UNV, STL, GMF and CGNS) of the file"
+" containing your mesh."
+msgstr ""
+
+# 9465b08bc9e94b5d8e10cbf9ab684fb5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/importing_exporting_meshes.rst:13
+msgid ""
+"In the standard **Search File** dialog box find the file for import. It "
+"is possible to select multiple files to be imported all at once."
+msgstr ""
+
+# 799d071d6cde41179a6532a68f7dee2d
+# b9228a967592466bb7980eeace4010ca
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/importing_exporting_meshes.rst:14
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/importing_exporting_meshes.rst:24
+msgid "Click the **OK** button."
+msgstr ""
+
+# 0210e8579daa406cacf59960fc2c4fa7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/importing_exporting_meshes.rst:19
+msgid "**To export a mesh or a group:**"
+msgstr ""
+
+# e276963d75cd49fb93b2e9c6801b13d4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/importing_exporting_meshes.rst:21
+msgid "Select the object you wish to export."
+msgstr ""
+
+# 322c037300b54a30951303d98339ed50
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/importing_exporting_meshes.rst:22
+msgid ""
+"From the **File** menu choose the **Export** item, from its sub-menu "
+"select the format (MED, UNV, DAT, STL, GMF and CGNS) of the file which "
+"will contain your exported mesh."
+msgstr ""
+
+# bdf58ac99b8b4145b3e50307c0a5ff10
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/importing_exporting_meshes.rst:23
+msgid ""
+"In the standard **Search File** select a location for the exported file "
+"and enter its name."
+msgstr ""
+
+# 74a3fbc92aff45169859966b91e6b514
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/importing_exporting_meshes.rst:29
+msgid "If you try to export a group, the warning will be shown:"
+msgstr ""
+
+# 05edbd49b0854025ad97e15ad771d66f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/importing_exporting_meshes.rst:34
+msgid ""
+"**Don't show this warning anymore** check-box allows to switch off the "
+"warning. You can re-activate the warning in "
+":ref:`group_export_warning_pref`."
+msgstr ""
+
+# fee92e4eeceb43e3af929fd29deaf3c8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/importing_exporting_meshes.rst:36
+msgid ""
+"There are additional parameters available at export to MED and SAUV "
+"format files."
+msgstr ""
+
+# 6cd0b8de3c734386afe00b2849cae3b6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/importing_exporting_meshes.rst:41
+msgid "Auto Groups"
+msgstr ""
+
+# 343b2853b0ec4ef89cfc8c04f7e0361c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/importing_exporting_meshes.rst:43
+msgid ""
+"**Automatically create groups** check-box specifies whether to create "
+"groups of all mesh entities of available dimensions or not. The created "
+"groups have names like \"Group_On_All_Nodes\", \"Group_On_All_Faces\", "
+"etc. A default state of this check-box can be set in "
+":ref:`export_auto_groups_pref`."
+msgstr ""
+
+# 6befc5c462c14a5aa26387ad27a18b90
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/importing_exporting_meshes.rst:46
+msgid ""
+"**Automatically define space dimension** check-box specifies whether to "
+"define space dimension for export by mesh configuration or not. Usually "
+"the mesh is exported as a mesh in 3D space, just as it is in Mesh module."
+" The mesh can be exported as a mesh of a lower dimension in the following"
+" cases, provided that this check-box is checked:"
+msgstr ""
+
+# b985c52d03974cf096693ae06b59d265
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/importing_exporting_meshes.rst:45
+msgid "**1D**: if all mesh nodes lie on OX coordinate axis."
+msgstr ""
+
+# 683ece3abaee480187790486f255c7bb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/importing_exporting_meshes.rst:46
+msgid "**2D**: if all mesh nodes lie in XOY coordinate plane."
+msgstr ""
+
+# fa935c1bda3b4e76b8b6ea623fa4dfb7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/importing_exporting_meshes.rst:48
+msgid "**See Also** a sample TUI Script of an :ref:`tui_export_mesh` operation."
+msgstr ""
+

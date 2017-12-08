@@ -669,5 +669,5 @@ void SMESHGUI_PropertiesDlg::showControls( int elements, bool nodes )
 void SMESHGUI_PropertiesDlg::onHelp()
 {
   LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
-  app->onHelpContextModule( "SMESH", "colors_size_page.html" );
+  app->onHelpContextModule( "SMESH", "colors_size.html" );
 }

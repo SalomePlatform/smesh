@@ -1,0 +1,180 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# cdc452a2e6774e6d861087c1cd0d6a49
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cutting_quadrangles.rst:5
+msgid "Cutting quadrangles"
+msgstr ""
+
+# 178f194a32ca460e8a97d7e24265fcce
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cutting_quadrangles.rst:7
+msgid ""
+"This operation allows cutting one or several quadrangle elements into two"
+" or four triangles."
+msgstr ""
+
+# b88b0d55219447ed957e38cfd39270e9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cutting_quadrangles.rst:9
+msgid "**To cut quadrangles:**"
+msgstr ""
+
+# 2eaf8d747bd246489f0973f678ca80a1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cutting_quadrangles.rst:11
+msgid ""
+"Select a mesh (and display it in the 3D Viewer if you are going to pick "
+"elements by mouse)."
+msgstr ""
+
+# 55601316ccca4fa0a3fb8843327d8a0a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cutting_quadrangles.rst:12
+msgid ""
+"In the **Modification** menu select the **Cutting of quadrangles** item "
+"or click **\"Cutting of quadrangles\"** button in the toolbar."
+msgstr ""
+
+# c6fc4bd52a504140b22929570d95373d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cutting_quadrangles.rst:20
+msgid "The following dialog box will appear:"
+msgstr ""
+
+# a88495585e7d47c182be1ac590640969
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cutting_quadrangles.rst:29
+msgid ""
+"The main list contains the list of quadrangles selected for cutting. You "
+"can click on a quadrangle in the 3D viewer and it will be highlighted "
+"(lock Shift keyboard button to select several quadrangles):"
+msgstr ""
+
+# 1ab5287e6411489491330eeb2f0fb76f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cutting_quadrangles.rst:27
+msgid ""
+"Click **Add** button and the ID of this quadrangle will be added to the "
+"list."
+msgstr ""
+
+# 270eb065dd33474ba7ec99058b3f6ed4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cutting_quadrangles.rst:28
+msgid ""
+"To remove a selected element or elements from the list click **Remove** "
+"button."
+msgstr ""
+
+# 90cf7268f2f641cb8b950fbb8be22d89
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cutting_quadrangles.rst:29
+msgid "**Sort list** button allows sorting the list of IDs."
+msgstr ""
+
+# 0824ac72ed0e4b97890bd28a222d33f0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cutting_quadrangles.rst:30
+msgid ""
+"**Filter** button allows applying a definite :ref:`filtering_elements` "
+"\"filter\" to the selection of quadrangles."
+msgstr ""
+
+# d970753f7b3c4074922954dc9ff13824
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cutting_quadrangles.rst:31
+msgid ""
+"**Apply to all** check box allows cutting all quadrangles of the selected"
+" mesh."
+msgstr ""
+
+# b136f4c18bea4b68a2cfc0130fbec157
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cutting_quadrangles.rst:32
+msgid ""
+"**Preview** provides a preview of cutting in the viewer. It is disabled "
+"for **Cut into 4 triangles** as this cutting way implies no ambiguity."
+msgstr ""
+
+# d84debdc304c476b962913c0a43c09eb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cutting_quadrangles.rst:39
+msgid "**Criterion** defines the way of cutting:"
+msgstr ""
+
+# 393ad3ff52cd47e9b824f9b058385174
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cutting_quadrangles.rst:34
+msgid ""
+"**Cut into 4 triangles** allows cutting a quadrangle into four triangles "
+"by inserting a new node at the center of the quadrangle. The other "
+"options allow cutting a quadrangle into two triangles by connecting the "
+"nodes of a diagonal."
+msgstr ""
+
+# 6531eb4390d34c4da2bf582a77a09dfa
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cutting_quadrangles.rst:35
+msgid ""
+"**Use diagonal 1-3** and **Use diagonal 2-4** allow specifying the "
+"opposite corners, which will be connected to form two new triangles."
+msgstr ""
+
+# eac79819eb4246b9a6862f68a0bf7ad9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cutting_quadrangles.rst:39
+msgid ""
+"**Use numeric functor** allows selecting in the field below a quality "
+"metric, which will be optimized when choosing a diagonal for cutting a "
+"quadrangle:"
+msgstr ""
+
+# 50994bc4fa624c1da5a9636faa3e6d61
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cutting_quadrangles.rst:37
+msgid "**Minimum diagonal** cuts by the shortest diagonal."
+msgstr ""
+
+# c370f34b03f1463cad2ca1d7083bcee9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cutting_quadrangles.rst:38
+msgid ""
+"**Aspect Ratio** cuts by the diagonal splitting the quadrangle into "
+"triangles with :ref:`aspect_ratio_page` \"Aspect Ratio\" closer to 1"
+msgstr ""
+
+# aa75cda04e014f508d4ad3e4c80798dd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cutting_quadrangles.rst:39
+msgid ""
+"**Minimum Angle** cuts by the diagonal splitting the quadrangle into "
+"triangles with :ref:`minimum_angle_page` \"Minimum Angle\" closer to 60 "
+"degrees."
+msgstr ""
+
+# 5da246103a434893bca74a0278ebcf63
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cutting_quadrangles.rst:40
+msgid ""
+"**Skew** cuts by the diagonal splitting the quadrangle into triangles "
+"with :ref:`skew_page` \"Skew\" closer to 0.0 degrees."
+msgstr ""
+
+# d01638fc455f49359ec17165a915cbf8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cutting_quadrangles.rst:41
+msgid ""
+"**Select from** allows choosing a sub-mesh or an existing group, whose "
+"quadrangle elements then can be added to the main list."
+msgstr ""
+
+# a0527c237dab4bb7b19297594cd2ee50
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cutting_quadrangles.rst:43
+msgid ""
+"Click the **Apply** or **Apply and Close** button to confirm the "
+"operation."
+msgstr ""
+
+# c97b46bf744d4d75868f54274d5b8b41
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cutting_quadrangles.rst:59
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_cutting_quadrangles` "
+"operation."
+msgstr ""
+

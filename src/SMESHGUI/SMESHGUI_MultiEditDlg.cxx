@@ -1093,7 +1093,7 @@ SMESHGUI_ChangeOrientationDlg
   SMESHGUI_MultiEditDlg(theModule, SMESH::FaceFilter, true)
 {
   setWindowTitle(tr("CAPTION"));
-  myHelpFileName = "changing_orientation_of_elements_page.html";
+  myHelpFileName = "changing_orientation_of_elements.html";
 }
 
 SMESHGUI_ChangeOrientationDlg::~SMESHGUI_ChangeOrientationDlg()
@@ -1161,7 +1161,7 @@ SMESHGUI_UnionOfTrianglesDlg
   myPreviewCheckBox->setChecked(false);
   onDisplaySimulation(false);
 
-  myHelpFileName = "uniting_set_of_triangles_page.html";
+  myHelpFileName = "uniting_set_of_triangles.html";
 }
 
 SMESHGUI_UnionOfTrianglesDlg::~SMESHGUI_UnionOfTrianglesDlg()
@@ -1289,7 +1289,7 @@ SMESHGUI_CuttingOfQuadsDlg
   connect(myComboBoxFunctor, SIGNAL(activated(int)),       this, SLOT(onPreviewChk()));
   connect(this,              SIGNAL(ListContensChanged()), this, SLOT(onPreviewChk()));
 
-  myHelpFileName = "cutting_quadrangles_page.html";
+  myHelpFileName = "cutting_quadrangles.html";
 }
 
 SMESHGUI_CuttingOfQuadsDlg::~SMESHGUI_CuttingOfQuadsDlg()
@@ -1551,7 +1551,7 @@ SMESHGUI_SplitVolumesDlg::SMESHGUI_SplitVolumesDlg(SMESHGUI* theModule)
   : SMESHGUI_MultiEditDlg(theModule, SMESH::VolumeFilter, /*the3d2d=*/true, /*doInit=*/false)
 {
   setWindowTitle(tr("CAPTION"));
-  myHelpFileName = "split_to_tetra_page.html";
+  myHelpFileName = "split_to_tetra.html";
   myEntityType = 1;
   myCellSize = -1.;
 

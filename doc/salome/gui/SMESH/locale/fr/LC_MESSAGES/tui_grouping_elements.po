@@ -1,0 +1,149 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 7c8275db95614345840fe6b8724d25de
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_grouping_elements.rst:5
+msgid "Grouping Elements"
+msgstr ""
+
+# d007caedd364451e8c1f7495b62650f0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_grouping_elements.rst:0
+msgid "`Table of contents`"
+msgstr ""
+
+# c685a29a29eb44f98ef7d19dc0978ed8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_grouping_elements.rst:13
+msgid "Create a Standalone Group"
+msgstr ""
+
+# 33643a4602be45a1b707c60e35d04085
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_grouping_elements.rst:17
+msgid "``grouping_elements_ex01.py``"
+msgstr ""
+
+# efd94909a03d4ac6b67f376a2f97364d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_grouping_elements.rst:23
+msgid ":download:`../../../examples/grouping_elements_ex01.py`"
+msgstr ""
+
+# ce9f619fdeb348ebb932e1acf3b8ecb5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_grouping_elements.rst:32
+msgid "Create a Group on Geometry"
+msgstr ""
+
+# b4933694da724b6dbe8aac06260b5d91
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_grouping_elements.rst:36
+msgid "``grouping_elements_ex02.py``"
+msgstr ""
+
+# 7107a498cdc044f697c2309d05d7b626
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_grouping_elements.rst:42
+msgid ":download:`../../../examples/grouping_elements_ex02.py`"
+msgstr ""
+
+# a21f0e2bcf474b89b4d1d81660be451e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_grouping_elements.rst:47
+msgid "Create a Group on Filter"
+msgstr ""
+
+# 94708eb1603c4290a41abcbc4c65e23a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_grouping_elements.rst:51
+msgid "``grouping_elements_ex03.py``"
+msgstr ""
+
+# c055a286339c42f9abeff58eb1627edb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_grouping_elements.rst:57
+msgid ":download:`../../../examples/grouping_elements_ex03.py`"
+msgstr ""
+
+# 017ddf308a744a8a80ecadb90fc9afeb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_grouping_elements.rst:62
+msgid "Edit a Group"
+msgstr ""
+
+# 44b5e88de4f94adfb04e72de0af0961d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_grouping_elements.rst:66
+msgid "``grouping_elements_ex04.py``"
+msgstr ""
+
+# 6c7b0f9d495843e7ace6be6ceafb4b7e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_grouping_elements.rst:72
+msgid ":download:`../../../examples/grouping_elements_ex04.py`"
+msgstr ""
+
+# 259559a09b5d4a7aa5341005d1bb4030
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_grouping_elements.rst:81
+msgid "Union of groups"
+msgstr ""
+
+# 9d2a4762350a46d8ae13943b51245742
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_grouping_elements.rst:85
+msgid "``grouping_elements_ex05.py``"
+msgstr ""
+
+# 7f4f67b3c7534e9c955ebcdf671b473a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_grouping_elements.rst:91
+msgid ":download:`../../../examples/grouping_elements_ex05.py`"
+msgstr ""
+
+# 3ed79769097448299091c040b08e0c33
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_grouping_elements.rst:100
+msgid "Intersection of groups"
+msgstr ""
+
+# bea440376ec44c5ca7d569e70131360b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_grouping_elements.rst:104
+msgid "``grouping_elements_ex06.py``"
+msgstr ""
+
+# 35894b83067447ddac86733da1388d99
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_grouping_elements.rst:110
+msgid ":download:`../../../examples/grouping_elements_ex06.py`"
+msgstr ""
+
+# a148c83e4a70413c879340f761e8ab50
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_grouping_elements.rst:119
+msgid "Cut of groups"
+msgstr ""
+
+# 8dfec4cdb7474b089635f725049d40fc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_grouping_elements.rst:123
+msgid "``grouping_elements_ex07.py``"
+msgstr ""
+
+# 301f2d0fdf92422dae26c42c7a0cbc6f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_grouping_elements.rst:129
+msgid ":download:`../../../examples/grouping_elements_ex07.py`"
+msgstr ""
+
+# cbeebd8ad9d644a890f18c93d68ece31
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_grouping_elements.rst:138
+msgid "Creating groups of entities basing on nodes of other groups"
+msgstr ""
+
+# 95318b6177c74648acbd055014e45b1e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_grouping_elements.rst:142
+msgid "``grouping_elements_ex08.py``"
+msgstr ""
+
+# 98ca427d8a374b269637ae39951272d8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_grouping_elements.rst:148
+msgid ":download:`../../../examples/grouping_elements_ex08.py`"
+msgstr ""
+

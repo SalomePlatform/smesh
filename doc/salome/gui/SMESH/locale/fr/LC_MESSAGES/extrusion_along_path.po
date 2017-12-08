@@ -1,0 +1,250 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 588d53aa2c134a96bf8bc6f57f04dbfc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:5
+msgid "Extrusion along Path"
+msgstr ""
+
+# 4aeec93989e04f0b8a5cd47900688c45
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:7
+msgid ""
+"In principle, **Extrusion along Path** works in the same way as "
+":ref:`extrusion_page`, the main difference is that we define not a "
+"vector, but a path of extrusion which must be an 1D mesh or 1D sub-mesh. "
+"To get an idea of how this algorithm works, examine several examples, "
+"starting from the most simple case of extrusion along a straight edge. In"
+" the examples the sample mesh will be extruded along different paths and "
+"with different parameters. This 2D mesh has two quadrangle faces and "
+"seven edges. Look at the picture, where white digits are the node numbers"
+" and green are the element numbers:"
+msgstr ""
+
+# 432bc14cb72f4d5eb8d0da786d0326f8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:16
+msgid "Extrusion along a straight edge"
+msgstr ""
+
+# 61ae00ddc63e4843a2b47f96ac7b23b5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:17
+msgid "(not using base point or angles)"
+msgstr ""
+
+# 3da83113d7064ebc94c32998cdfe1fd4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:31
+msgid "Node #1 of path mesh has been selected as Start node."
+msgstr ""
+
+# dbeb00b92d90425eb0d14084c6f2fa49
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:34
+msgid "Extrusion along a curvilinear edge"
+msgstr ""
+
+# 09c57ebbbd7d4cea88a63192af3991bb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:35
+msgid "(with and without angles)"
+msgstr ""
+
+# acf8f5192c864441883b3ecb898363cd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:49
+msgid "Node #1 of path mesh has been selected as **Start node**."
+msgstr ""
+
+# 3ec6691bd161445593511faff96e9bb4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:58
+msgid "Extrusion of a 2D face along a mesh built on a wire"
+msgstr ""
+
+# 4e26b95dea014ad79ce8a6b7e00ca07b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:60
+msgid ""
+"In this example the path mesh has been built on a wire containing 3 "
+"edges. Node 1 is a start node. Linear angle variation by 180 degrees has "
+"also been applied."
+msgstr ""
+
+# beba5dd38ec446dbba901980a6d730b2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:75
+msgid "Extrusion of 2d elements along a closed path"
+msgstr ""
+
+# 542a40ad28784840813301cd37adfb95
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:89
+msgid ""
+"Note, that no sewing has been done, so, there are six coincident nodes "
+"and two coincident faces in the resulting mesh."
+msgstr ""
+
+# ae6ed7ef04af4adf8c16d7c73551dd17
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:98
+msgid "**To use Extrusion along Path:**"
+msgstr ""
+
+# 972d0d7b8e2d4757a2bbb9204041a949
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:100
+msgid ""
+"From the **Modification** menu choose the **Extrusion along a path** item"
+" or click **\"Extrusion along a path\"** button in the toolbar."
+msgstr ""
+
+# 73d0abac14d740f3ad742d87e6f41e5c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:108
+msgid "The following dialog will appear:"
+msgstr ""
+
+# 76894b1abc2d4beda37f23172ad80977
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:113
+msgid "In this dialog:"
+msgstr ""
+
+# c0873410c52f4d3fa8c537276e27d53a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:115
+msgid ""
+"Use *Selection* button to specify what you are going to select at a given"
+" moment, **Nodes**, **Edges** or **Faces**."
+msgstr ""
+
+# 6778b72713654449bfc388a7513d6919
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:123
+msgid ""
+"Specify **Nodes**, **Edges** and **Faces**, which will be extruded, by "
+"one of following means:"
+msgstr ""
+
+# 32617b683fb443608c76c82457e647e6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:125
+msgid "**Select the whole mesh, sub-mesh or group** activating this check-box."
+msgstr ""
+
+# eb8f59b7bdfb4f6fb93d7060290737b0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:126
+msgid ""
+"Choose mesh elements with the mouse in the 3D Viewer. It is possible to "
+"select a whole area with a mouse frame."
+msgstr ""
+
+# d6b66337ef8d49bf902de528b4b63f5d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:127
+msgid ""
+"Input the element IDs directly in **Node IDs**, **Edge IDs** and **Face "
+"IDs** fields. The selected elements will be highlighted in the viewer, if"
+" the mesh is shown there."
+msgstr ""
+
+# fdd735e466c94dc58e0ba134a190976d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:128
+msgid ""
+"Apply Filters. **Set filter** button allows to apply a filter to the "
+"selection of elements. See more about filters in the "
+":ref:`filtering_elements` page."
+msgstr ""
+
+# bf5ac45174b54265a04afd558fa641ce
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:130
+msgid ""
+"Define the **Path** along which the elements will be extruded.Path "
+"definition consists of several elements:"
+msgstr ""
+
+# 1e63128e7c254a54be66ec3a0780fcc7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:132
+msgid ""
+"**Mesh or sub-mesh** - 1D mesh or sub-mesh, along which proceeds the "
+"extrusion."
+msgstr ""
+
+# c126f4fd09a942ca93778a4201572569
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:133
+msgid ""
+"**Start node** - the start node of the Path. It is used to define the "
+"direction of extrusion."
+msgstr ""
+
+# c81a11bc397d41aaa19c546989e03c5c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:136
+msgid ""
+"If you activate **Generate Groups** check-box, the **result elements** "
+"created from **selected elements** contained in groups will be included "
+"into new groups named by pattern \"<old group name>_extruded\" and \"<old"
+" group name>_top\". For example if a  selected quadrangle is included in "
+"*g_Faces* group (see figures below) then result hexahedra will be "
+"included in *g_Faces_extruded* group and a quadrangle created at the "
+"\"top\" of extruded mesh will be included in *g_Faces_top group*."
+msgstr ""
+
+# 3f041a51d0094365a3f3d036df4f2edb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:144
+msgid "This check-box is active only if there are some groups in the mesh."
+msgstr ""
+
+# d770e6d7fbd3438b99983300c7578f2a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:149
+msgid "There are two optional parameters, which can be very useful:"
+msgstr ""
+
+# 854e4054a12f473785e0d111bd04bb38
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:151
+msgid ""
+"If the path of extrusion is curvilinear, at each iteration the extruded "
+"elements are rotated to keep its initial angularity to the curve. By "
+"default, the **Base Point** around which the elements are rotated is the "
+"mass center of the elements (note that it can differ from the gravity "
+"center computed by *Geometry* module for the  underlying shape), however,"
+" you can specify any point as the **Base Point** and the elements will be"
+" rotated with respect to this point. Note that only the displacement of "
+"the **Base Point** exactly equals to the path, and all other extruded "
+"elements simply keep their position relatively to the **Base Point** at "
+"each iteration."
+msgstr ""
+
+# 8cda2b8fd95e4e55894e0c5ba64189d7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:153
+msgid ""
+"The elements can also be rotated around the path to get the resulting "
+"mesh in a helical fashion. You can set the values of angles at the right,"
+" add them to the list of angles at the left by pressing the **\"Add\"** "
+"button and remove them from the list by pressing the **\"Remove\"** "
+"button."
+msgstr ""
+
+# 73808985fda548e8b32349d633ce9c61
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:167
+msgid ""
+"**Linear variation of the angles** option allows defining the angle of "
+"gradual rotation for the whole path. At each step the elements will be "
+"rotated by *( angle / nb. of steps )*."
+msgstr ""
+
+# 13433694aaea4fd0ba18f3b9d35d08c3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:171
+msgid ""
+"Click **Apply** or **Apply and Close**  button to confirm the operation. "
+"Mesh edges will be extruded into faces, faces into volumes. The external "
+"surface of the resulting 3d mesh (if faces have been extruded) is covered"
+" with faces, and corners with edges. If the path is closed, the resulting"
+" mesh can contain duplicated nodes and faces, because no sewing is done."
+msgstr ""
+
+# 8c7e5234ca904017953ca8e334796d25
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion_along_path.rst:174
+msgid ""
+"**See Also** a sample TUI Script of an :ref:`tui_extrusion_along_path` "
+"operation."
+msgstr ""
+

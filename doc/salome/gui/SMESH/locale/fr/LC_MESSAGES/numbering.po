@@ -1,0 +1,79 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 7d95f1ef3f0043dc91d5d1fcd1bc2944
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/numbering.rst:5
+msgid "Numbering"
+msgstr ""
+
+# 55030336e52e4a75b6de75c17d34234a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/numbering.rst:8
+msgid "Displaying node numbers"
+msgstr ""
+
+# 41a96e3d00214dc1a02d8738d1614d86
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/numbering.rst:10
+msgid ""
+"In MESH you can display the ID numbers of all nodes of your mesh in the "
+"viewer."
+msgstr ""
+
+# 14db4614a8be43f2930a7a8076b8c79c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/numbering.rst:12
+msgid "**To display ID numbers of nodes:**"
+msgstr ""
+
+# 44fad65bf5834169aac7bc005875f768
+# c832343967d146d386a35f0c8d810f36
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/numbering.rst:14
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/numbering.rst:31
+msgid "Display your mesh in the viewer"
+msgstr ""
+
+# 4e95ad9e84984429a8efda3ac16bcd06
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/numbering.rst:15
+msgid ""
+"Right-click on the mesh in the 3D viewer and from the associated pop-up "
+"menu choose **Numbering > Display Nodes #**."
+msgstr ""
+
+# fea8ed3d37404dfe891fca4f6f4e0100
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/numbering.rst:25
+msgid "Displaying element numbers"
+msgstr ""
+
+# d8cbb7e23d5445bda5eb5162a8295072
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/numbering.rst:27
+msgid ""
+"In MESH you can display the ID numbers of all meshing elements composing "
+"your mesh in the viewer."
+msgstr ""
+
+# f4e486d693f2479dad2992508f50dd17
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/numbering.rst:29
+msgid "**To display ID numbers of elements:**"
+msgstr ""
+
+# 09f8d1e8761b4eb48e2ca099c2fd4d9d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/numbering.rst:32
+msgid ""
+"Right-click on the mesh in the 3D viewer and from the associated pop-up "
+"menu choose **Numbering > Display Elements #**."
+msgstr ""
+

@@ -331,7 +331,7 @@ SMESHGUI_NodesDlg::SMESHGUI_NodesDlg( SMESHGUI* theModule ):
   SMESHGUI_NodesDlgLayout->addWidget( GroupGroups );
   SMESHGUI_NodesDlgLayout->addWidget( GroupButtons );
 
-  myHelpFileName = "adding_nodes_and_elements_page.html#adding_nodes_anchor";
+  myHelpFileName = "adding_nodes_and_elements.html#adding-nodes-anchor";
 
   /* Initialisation and display */
   Init();

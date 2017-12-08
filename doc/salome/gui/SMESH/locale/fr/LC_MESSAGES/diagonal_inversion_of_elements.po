@@ -1,0 +1,68 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 42e4731d2e82498f9916eabbcf5abd95
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/diagonal_inversion_of_elements.rst:5
+msgid "Diagonal inversion of two triangles"
+msgstr ""
+
+# e15d94f75cb844fbb2a7347756e1314d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/diagonal_inversion_of_elements.rst:7
+msgid ""
+"In MESH you can inverse the diagonal (edge) of a pseudo-quadrangle formed"
+" by two neighboring triangles with one common edge."
+msgstr ""
+
+# e18a7165cf184b9e8478fe7b594bf5d7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/diagonal_inversion_of_elements.rst:10
+msgid "**To inverse the diagonal:**"
+msgstr ""
+
+# cce53a91498d44728049c3ab70921683
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/diagonal_inversion_of_elements.rst:12
+msgid ""
+"From the **Modification** menu choose the **Diagonal inversion** item or "
+"click **\"Diagonal Inversion\"** button in the toolbar."
+msgstr ""
+
+# fe71e652c0b6416295153408a1a1e23a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/diagonal_inversion_of_elements.rst:20
+msgid "The following dialog box shall appear:"
+msgstr ""
+
+# bc40291f856d4747b0ee3434ee0c5c42
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/diagonal_inversion_of_elements.rst:25
+msgid ""
+"Enter IDs of nodes forming the required edge in the **Edge** field (the "
+"node IDs must be separated by dashes) or select this edge in the 3D "
+"viewer."
+msgstr ""
+
+# ec9528ded57a4754a7255d0a51517eb8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/diagonal_inversion_of_elements.rst:26
+msgid "Click the **Apply** or **Apply and Close** button."
+msgstr ""
+
+# dc1e251576e44f75b478608957b4ceab
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/diagonal_inversion_of_elements.rst:40
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_diagonal_inversion` "
+"operation."
+msgstr ""
+

@@ -1,0 +1,102 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 1f1188e97555415db825c3d926377f34
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/quad_ijk_algo.rst:5
+msgid "Quadrangle: Mapping meshing algorithm"
+msgstr ""
+
+# dadf07f382854ed18ab98565c378b217
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/quad_ijk_algo.rst:7
+msgid ""
+"**Quadrangle: Mapping** meshing algorithm is intended for creating all-"
+"quadrangle and quad-dominant meshes on faces without holes and bound by "
+"at least three edges."
+msgstr ""
+
+# 15dcc95a5ec04d22b9df0a08cae3e856
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/quad_ijk_algo.rst:11
+msgid ""
+"The algorithm can create mesh on any face but its quality and validity "
+"depend on two factors:"
+msgstr ""
+
+# 0cb07bafd0464d0782e45485439cfd88
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/quad_ijk_algo.rst:14
+msgid "face shape (number of edges and boundary concavity);"
+msgstr ""
+
+# 545423d279ee462082dffc1f7b9abf0e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/quad_ijk_algo.rst:15
+msgid "discretization of edges."
+msgstr ""
+
+# ecfd4360393e48beb0dd40dd718617b3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/quad_ijk_algo.rst:23
+msgid ""
+"The algorithm uses **Transfinite Interpolation** technique in the "
+"parametric space of a face to locate nodes inside the face."
+msgstr ""
+
+# df0aff26c2db42468cf183bfd89de561
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/quad_ijk_algo.rst:26
+msgid ""
+"The algorithm treats any face as quadrangle. If a face is bound by more "
+"than four edges, four most sharp vertices are considered as corners of "
+"the quadrangle and all edges between these vertices are treated as "
+"quadrangle sides. In the case of three edges, the vertex specified by the"
+" user is considered as a fourth degenerated side of the quadrangle."
+msgstr ""
+
+# 2f0bd59f2f544705aefe466f31315edc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/quad_ijk_algo.rst:39
+msgid ""
+"To get an all-quadrangle mesh you have to carefully define 1D hypotheses "
+"on edges of a face. To get a **structured** mesh you have to provide "
+"equal number of segments on opposite sides of the quadrangle. If this "
+"condition is not respected, the algorithm by default (without a "
+"hypothesis) creates a **quad-dominant** mesh with triangles located near "
+"the side with the maximal number of segments. However, you can get an "
+"**all-quadrangle** mesh in this case by using "
+":ref:`hypo_quad_params_anchor` hypothesis to specify how to make "
+"transition mesh between opposite sides with different number of segments,"
+" provided that certain conditions are respected. In any case the total "
+"number of segments must be even. To use *Reduced* transition method, "
+"there must be an equal number of segments on one pair of opposite sides."
+msgstr ""
+
+# 1d4970aee4684396862a47d46a66b360
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/quad_ijk_algo.rst:52
+msgid "The following hypotheses help to create quadrangle meshes."
+msgstr ""
+
+# 78034d06a148414dad332e76304f6a2b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/quad_ijk_algo.rst:54
+msgid ""
+":ref:`propagation_anchor` additional 1D hypotheses help to get an equal "
+"number of segments on the opposite sides of a quadrilateral face."
+msgstr ""
+
+# 99c0a64c5fd44ab1b9d3b6d6b85e256a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/quad_ijk_algo.rst:55
+msgid ""
+":ref:`a1d_algos_anchor` algorithm is useful to discretize several C1 "
+"continuous edges as one quadrangle side."
+msgstr ""
+

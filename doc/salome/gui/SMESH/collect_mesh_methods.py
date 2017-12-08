@@ -45,10 +45,9 @@
 # variables are set properly; otherwise the script will fail.
 #
 ################################################################################
-
 import sys
 
-def main(plugin_name, dummymeshhelp = True, output_file = "smeshBuilder.py"):
+def main(plugin_name, dummymeshhelp = True, output_file = "smeshBuilder.py", format = "doxygen"):
     plugin_module_name  = plugin_name + "Builder"
     plugin_module       = "salome.%s.%s" % (plugin_name, plugin_module_name)
     try:
@@ -68,29 +67,59 @@ def main(plugin_name, dummymeshhelp = True, output_file = "smeshBuilder.py"):
         if methods:
             output = []
             if dummymeshhelp:
-                output.append( "## @package smeshBuilder" )
-                output.append( "#  Documentation of the methods dynamically added by the " + plugin_name + " meshing plug-in to the Mesh class." )
-                output.append( "" )
+        	if format == "doxygen":
+                    output.append( "## @package smeshBuilder" )
+                    output.append( "#  Documentation of the methods dynamically added by the " + plugin_name + " meshing plug-in to the Mesh class." )
+                    output.append( "" )
+                elif format == "sphinx":
+                    output.append( '"""' )
+                    output.append( 'Documentation of the methods dynamically added by the ' + plugin_name + ' meshing plug-in to the Mesh class.' )
+                    output.append( '"""' )
+                    output.append( '' )
                 pass
-            output.append( "## This class allows defining and managing a mesh." )
-            output.append( "#" )
+            if format == "doxygen":
+                output.append( "## This class allows defining and managing a mesh." )
+                output.append( "#" )
+            elif format == "sphinx":
+                output.append( "class Mesh:" )
+                output.append( '    """' )
+                output.append( '    This class allows defining and managing a mesh.' )
+                output.append( '    ' )
             if dummymeshhelp:
                 # Add dummy Mesh help
                 # This is supposed to be done when generating documentation for meshing plug-ins
-                output.append( "#  @note The documentation below does not provide complete description of class @b %Mesh" )
-                output.append( "#  from @b smeshBuilder package. This documentation provides only information about" )
-                output.append( "#  the methods dynamically added to the %Mesh class by the " + plugin_name + " plugin" )
-                output.append( "#  For more details on the %Mesh class, please refer to the SALOME %Mesh module" )
-                output.append( "#  documentation." )
+                if format == "doxygen":
+            	    output.append( "#  @note The documentation below does not provide complete description of class @b %Mesh" )
+                    output.append( "#  from @b smeshBuilder package. This documentation provides only information about" )
+                    output.append( "#  the methods dynamically added to the %Mesh class by the " + plugin_name + " plugin" )
+                    output.append( "#  For more details on the %Mesh class, please refer to the SALOME %Mesh module" )
+                    output.append( "#  documentation." )
+                elif format == "sphinx":
+                    output.append( '    The documentation below does not provide complete description of class @b %Mesh' )
+                    output.append( '    from @b smeshBuilder package. This documentation provides only information about' )
+                    output.append( '    the methods dynamically added to the %Mesh class by the " + plugin_name + " plugin' )
+                    output.append( '    For more details on the %Mesh class, please refer to the SALOME %Mesh module' )
+                    output.append( '    documentation.' )
+                    output.append( '    """' )
+                    output.append( '    ' )
                 pass
             else:
                 # Extend documentation for Mesh class with information about dynamically added methods.
                 # This is supposed to be done only when building documentation for SMESH module
-                output.append( "#  @note Some methods are dynamically added to the @b %Mesh class in runtime by meshing " )
-                output.append( "#  plug-in modules. If you fail to find help on some methods in the documentation of SMESH module, " )
-                output.append( "#  try to look into the documentation for the meshing plug-ins." )
+                if format ==  "doxygen":
+                    output.append( "#  @note Some methods are dynamically added to the @b %Mesh class in runtime by meshing " )
+	            output.append( "#  plug-in modules. If you fail to find help on some methods in the documentation of SMESH module, " )
+    	            output.append( "#  try to look into the documentation for the meshing plug-ins." )
+    	        elif format == "sphinx":
+                    output.append( "    Note:")
+                    output.append( "        Some methods are dynamically added to the @b %Mesh class in runtime by meshing " )
+	            output.append( "        plug-in modules. If you fail to find help on some methods in the documentation of SMESH module, " )
+    	            output.append( "        try to look into the documentation for the meshing plug-ins." )
+                    output.append( '    """' )
+                    output.append( '    ' )
                 pass
-            output.append( "class Mesh:" )
+            if format == "doxygen":
+                output.append( "class Mesh:" )
             for method in methods:
                 docHelper = ""
                 for algo in methods[ method ]:
@@ -98,18 +127,38 @@ def main(plugin_name, dummymeshhelp = True, output_file = "smeshBuilder.py"):
                     if docHelper: break
                     pass
                 if not docHelper: docHelper = "Creates new algorithm."
-                output.append( " ## %s" % docHelper )
-                output.append( " #" )
-                output.append( " #  This method is dynamically added to %Mesh class by the meshing plug-in(s). " )
-                output.append( " #" )
-                output.append( " #  If the optional @a geom_shape parameter is not set, this algorithm is global (applied to whole mesh)." )
-                output.append( " #  Otherwise, this algorithm defines a submesh based on @a geom_shape subshape." )
-                output.append( " #  @param algo_type type of algorithm to be created; allowed values are specified by classes implemented by plug-in (see below)" )
-                output.append( " #  @param geom_shape if defined, the subshape to be meshed (GEOM_Object)" )
-                output.append( " #  @return An instance of Mesh_Algorithm sub-class according to the specified @a algo_type, see " )
-                output.append( " #  %s" % ", ".join( [ "%s.%s" % ( plugin_module_name, algo.__name__ ) for algo in methods[ method ] ] ) )
-                output.append( " def %s(algo_type, geom_shape=0):" % method )
-                output.append( "   pass" )
+                if format == "doxygen":
+                    output.append( " ## %s" % docHelper )
+                    output.append( " #" )
+                    output.append( " #  This method is dynamically added to %Mesh class by the meshing plug-in(s). " )
+                    output.append( " #" )
+                    output.append( " #  If the optional @a geom_shape parameter is not set, this algorithm is global (applied to whole mesh)." )
+                    output.append( " #  Otherwise, this algorithm defines a submesh based on @a geom_shape subshape." )
+                    output.append( " #  @param algo_type type of algorithm to be created; allowed values are specified by classes implemented by plug-in (see below)" )
+                    output.append( " #  @param geom_shape if defined, the subshape to be meshed (GEOM_Object)" )
+                    output.append( " #  @return An instance of Mesh_Algorithm sub-class according to the specified @a algo_type, see " )
+                    output.append( " #  %s" % ", ".join( [ "%s.%s" % ( plugin_module_name, algo.__name__ ) for algo in methods[ method ] ] ) )
+                    output.append( " def %s(algo_type, geom_shape=0):" % method )
+                    output.append( "   pass" )
+                elif format == "sphinx":
+                    output.append( '    def %s(algo_type, geom_shape=0):' % method )
+                    output.append( '        """' )
+                    output.append( '        %s' % docHelper )
+                    output.append( '        ' )
+                    output.append( '        This method is dynamically added to **Mesh** class by the meshing plug-in(s). ' )
+                    output.append( '        ' )
+                    output.append( '        If the optional *geom_shape* parameter is not set, this algorithm is global (applied to whole mesh).' )
+                    output.append( '        Otherwise, this algorithm defines a submesh based on *geom_shape* subshape.' )
+                    output.append( '        ' )
+                    output.append( '        Parameters:' )
+                    output.append( '            algo_type: type of algorithm to be created; allowed values are specified by classes implemented by plug-in (see below)' )
+                    output.append( '            geom_shape (GEOM_Object): if defined, the subshape to be meshed' )
+                    output.append( '        ' )
+                    output.append( '        Returns:')
+                    output.append( '            An instance of Mesh_Algorithm sub-class according to the specified *algo_type*, see ' )
+                    output.append( '            %s' % ", ".join( [ ":class:`~%s.%s`" % ( plugin_module_name, algo.__name__ ) for algo in methods[ method ] ] ) )
+                    output.append( '        """' )
+                    output.append( '        pass' )
                 pass
             f = open(output_file, "w")
             for line in output: f.write( line + "\n" )
@@ -134,8 +183,14 @@ if __name__ == "__main__":
     parser.add_option("-d", "--dummy-mesh-help", dest="dummymeshhelp",
                       action="store_true", default=False,
                       help=h)
+    h = "Format of the documentation strings in the output file. Possible values are: "
+    h+= "'doxygen' - documentation strings are generated in the doxygen format, before a method defenition."
+    h+= "'sphinx' - documentation strings are generated in the sphinx format, after a method defenition."
+    parser.add_option("-f", "--format", dest="format",
+                      action="store", default="doxygen", help=h)
+
     (options, args) = parser.parse_args()
 
     if len( args ) < 1: sys.exit("Plugin name is not specified")
-    main( args[0], options.dummymeshhelp, options.output )
+    main( args[0], options.dummymeshhelp, options.output, options.format )
     pass

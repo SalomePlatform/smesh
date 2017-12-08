@@ -162,7 +162,7 @@ SMESHGUI_RemoveNodesDlg
   SMESHGUI_RemoveNodesDlgLayout->addWidget(GroupC1);
   SMESHGUI_RemoveNodesDlgLayout->addWidget(GroupButtons);
 
-  myHelpFileName = "removing_nodes_and_elements_page.html#removing_nodes_anchor";
+  myHelpFileName = "removing_nodes_and_elements.html#removing-nodes-anchor";
 
   Init(); /* Initialisations */
 }

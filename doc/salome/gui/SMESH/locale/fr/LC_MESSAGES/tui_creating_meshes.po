@@ -1,0 +1,179 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# ac7a0717f8d244518fa5fdabb38d07a5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:5
+msgid "Creating Meshes"
+msgstr ""
+
+# bb16f582ea84425180580fe14a31dc7e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:0
+msgid "`Table of contents`"
+msgstr ""
+
+# a6fa7546f4304831afd82d7d973db5ee
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:10
+msgid ""
+"First of all see :ref:`example_3d_mesh` which is an example of good "
+"python script style for Mesh module."
+msgstr ""
+
+# 10eb5418949b42d09800a5c5e5a60fea
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:16
+msgid "Construction of a mesh"
+msgstr ""
+
+# 3f8be4bf1559421eb86a9ba1c944f985
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:21
+msgid "``creating_meshes_ex01.py``"
+msgstr ""
+
+# c92155e4983449c891131ed76749a221
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:27
+msgid ":download:`../../../examples/creating_meshes_ex01.py`"
+msgstr ""
+
+# 0b8281da12364d20bd26c2ff83899a71
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:32
+msgid "Construction of a sub-mesh"
+msgstr ""
+
+# 908b408a0c6d408f9cbebfbdad49d29c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:36
+msgid "``creating_meshes_ex02.py``"
+msgstr ""
+
+# 71d9105b47334a78a9a0db0fb8e468d1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:42
+msgid ":download:`../../../examples/creating_meshes_ex02.py`"
+msgstr ""
+
+# 374235b8f4c349c0a0f884e508cff43b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:47
+msgid "Change priority of sub-meshes in mesh"
+msgstr ""
+
+# 899cddf7981f4888bf1929dc3d285162
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:51
+msgid "``creating_meshes_ex03.py``"
+msgstr ""
+
+# 2fbbf9873faa407093dd86037f815dda
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:57
+msgid ":download:`../../../examples/creating_meshes_ex03.py`"
+msgstr ""
+
+# ac6d03ebb48e4fb69088a0271120f6bb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:62
+msgid "Intermediate edition while meshing"
+msgstr ""
+
+# 480c7f03907e45608baf3c8e69f43cee
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:66
+msgid "``a3DmeshOnModified2Dmesh.py``"
+msgstr ""
+
+# 5cc05800014640b28dd743f6e7453555
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:72
+msgid ":download:`../../../examples/a3DmeshOnModified2Dmesh.py`"
+msgstr ""
+
+# e8ad1f4ee33c4d479cb915a35b3c3db7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:77
+msgid "Editing a mesh (i.e. changing hypotheses)"
+msgstr ""
+
+# 0c9b1c653fbe47c8b09369d8538b5d39
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:81
+msgid "``creating_meshes_ex04.py``"
+msgstr ""
+
+# 61662db532d5409ca59109471d35c39b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:87
+msgid ":download:`../../../examples/creating_meshes_ex04.py`"
+msgstr ""
+
+# 039432eb7ae9487d8963efc909074762
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:92
+msgid "Export of a Mesh"
+msgstr ""
+
+# 74bc2143ea7a4a4fb94f0a1467012412
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:96
+msgid "``creating_meshes_ex05.py``"
+msgstr ""
+
+# c22c9248148a406aa90e16b4494dcdf3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:102
+msgid ":download:`../../../examples/creating_meshes_ex05.py`"
+msgstr ""
+
+# fed234c83c27471b9051943f5378ca7e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:107
+msgid "How to mesh a cylinder with hexahedrons?"
+msgstr ""
+
+# 8d943c45953b4d419189795e070d3273
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:109
+msgid ""
+"Here you can see an example of python script, creating a hexahedral mesh "
+"on a cylinder. A picture below the source code of the script demonstrates"
+" the resulting mesh."
+msgstr ""
+
+# 2c383dd4995a48fdaf36d733606a42bc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:115
+msgid "``creating_meshes_ex06.py``"
+msgstr ""
+
+# 234f1450fee5488e965a8d6af376ff9f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:121
+msgid ":download:`../../../examples/creating_meshes_ex06.py`"
+msgstr ""
+
+# 72c01e65c6b84985a2f7548177ef0311
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:130
+msgid "Building a compound of meshes"
+msgstr ""
+
+# 3ff8a1b66bb64251836650a5b055e884
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:134
+msgid "``creating_meshes_ex07.py``"
+msgstr ""
+
+# a3219b112b1e4381acb12a727c6bce58
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:140
+msgid ":download:`../../../examples/creating_meshes_ex07.py`"
+msgstr ""
+
+# 4178a3e999b946abacb53ffa58e450c9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:145
+msgid "Mesh Copying"
+msgstr ""
+
+# 3d65fb2f3e2740c8b97c371fd2a6e051
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:149
+msgid "``creating_meshes_ex08.py``"
+msgstr ""
+
+# d7f57c79ef0f45ae9325384ff3226f49
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_creating_meshes.rst:155
+msgid ":download:`../../../examples/creating_meshes_ex08.py`"
+msgstr ""
+

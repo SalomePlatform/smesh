@@ -289,7 +289,7 @@ SMESHGUI_SymmetryDlg::SMESHGUI_SymmetryDlg( SMESHGUI* theModule )
   myMeshOrSubMeshOrGroupFilter =
     new SMESH_LogicalFilter (aListOfFilters, SMESH_LogicalFilter::LO_OR);
 
-  myHelpFileName = "symmetry_page.html";
+  myHelpFileName = "symmetry.html";
 
   Init();
 

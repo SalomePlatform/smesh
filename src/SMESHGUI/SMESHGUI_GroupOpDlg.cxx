@@ -596,7 +596,7 @@ SMESHGUI_UnionGroupsDlg::SMESHGUI_UnionGroupsDlg( SMESHGUI* theModule )
 : SMESHGUI_GroupOpDlg( theModule )
 {
   setWindowTitle(tr("UNION_OF_GROUPS"));
-  setHelpFileName( "using_operations_on_groups_page.html#union_anchor" );
+  setHelpFileName( "using_operations_on_groups.html#union-anchor" );
 
   QGroupBox* anArgGrp = getArgGrp();
   myListWg = new QListWidget( anArgGrp );
@@ -705,7 +705,7 @@ SMESHGUI_IntersectGroupsDlg::SMESHGUI_IntersectGroupsDlg( SMESHGUI* theModule )
 : SMESHGUI_GroupOpDlg( theModule )
 {
   setWindowTitle(tr("INTERSECTION_OF_GROUPS"));
-  setHelpFileName( "using_operations_on_groups_page.html#intersection_anchor" );
+  setHelpFileName( "using_operations_on_groups.html#intersection-anchor" );
 
   QGroupBox* anArgGrp = getArgGrp();
   myListWg = new QListWidget( anArgGrp );
@@ -814,7 +814,7 @@ SMESHGUI_CutGroupsDlg::SMESHGUI_CutGroupsDlg( SMESHGUI* theModule )
 : SMESHGUI_GroupOpDlg( theModule )
 {
   setWindowTitle(tr("CUT_OF_GROUPS"));
-  setHelpFileName( "using_operations_on_groups_page.html#cut_anchor" );
+  setHelpFileName( "using_operations_on_groups.html#cut-anchor" );
 
   QGroupBox* anArgGrp = getArgGrp();
 
@@ -996,7 +996,7 @@ SMESHGUI_DimGroupDlg::SMESHGUI_DimGroupDlg( SMESHGUI* theModule )
   : SMESHGUI_GroupOpDlg( theModule )
 {
   setWindowTitle( tr( "CREATE_GROUP_OF_UNDERLYING_ELEMS" ) );
-  setHelpFileName( "group_of_underlying_elements_page.html" );
+  setHelpFileName( "group_of_underlying_elements.html" );
 
   QGroupBox* anArgGrp = getArgGrp();
 

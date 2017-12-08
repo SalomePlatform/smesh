@@ -1,0 +1,1577 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 6ca951476443456f8f3880c62a0a3c8c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:5
+msgid "Filters usage"
+msgstr ""
+
+# b497f51ac2e744ada5e94e44ea032ab8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:0
+msgid "`Table of contents`"
+msgstr ""
+
+# 5b11e27703fe49299f1424246527c350
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:10
+msgid ""
+"Filters allow picking only the mesh elements satisfying to a specific "
+"condition or a set of conditions. Filters can be used to create or edit "
+"mesh groups, remove elements from the mesh, control mesh quality by "
+"different parameters, etc."
+msgstr ""
+
+# e0bc747ec8da48b498263ccbc83aea2c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:15
+msgid ""
+"Several filtering criteria can be combined together by using logical "
+"operators *AND* and *OR*. In addition, a filtering criterion can be "
+"reverted using logical operator *NOT*."
+msgstr ""
+
+# 252f6d38a089402f8870fb587d649fe4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:19
+msgid ""
+"Mesh filters can use the functionality of mesh quality controls to filter"
+" mesh nodes / elements by a specific characteristic (Area, Length, etc)."
+msgstr ""
+
+# 4bab7008da41451aa32b5e9c0fedda93
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:22
+msgid ""
+"This page provides a short description of the existing mesh filters, "
+"describes required parameters and gives simple examples of usage in "
+"Python scripts."
+msgstr ""
+
+# 9549e327926346be95fd0a0740aeb814
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:26
+msgid "**See also:** :ref:`tui_quality_controls_page`"
+msgstr ""
+
+# e3200c2af4e64ea79cb73645409035f6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:31
+msgid "Aspect ratio"
+msgstr ""
+
+# 7933273bcee34279b9f5c23f545455a4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:33
+msgid "filters 2D mesh elements (faces) according to the aspect ratio value:"
+msgstr ""
+
+# 7bdea22213bd49979ac671a12bc01fc6
+# 315c940ad9d44d51a586fe19e5783e5f
+# 282c2320af254ed68bfcaa04f54771e7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:35
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:517
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:541
+msgid "element type should be *SMESH.FACE*"
+msgstr ""
+
+# a91ead07432b4570a3b88ea82b3ccd83
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:36
+msgid "functor type should be *SMESH.FT_AspectRatio*"
+msgstr ""
+
+# 57bf0db5058247b8a8eedccb86171c4a
+# 11e43f1100c84460bd311554d4a95b16
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:37
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:60
+msgid "threshold is floating point value (aspect ratio)"
+msgstr ""
+
+# f571f009ac874dcf9ff3976f641fc0cd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:41
+msgid "``filters_ex01.py``"
+msgstr ""
+
+# 50cae771732940f3a948cae60b00caa4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:47
+msgid ":download:`../../../examples/filters_ex01.py`"
+msgstr ""
+
+# 89c85d23e6544b14aa115155b2230539
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:49
+msgid "**See also:** :ref:`tui_aspect_ratio`"
+msgstr ""
+
+# b613da0f68ea497bb460a190c334bc3b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:54
+msgid "Aspect ratio 3D"
+msgstr ""
+
+# a0fd9e8c8f6c45899712fcb3c99ce8f4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:56
+msgid "filters 3D mesh elements (volumes) according to the aspect ratio value:"
+msgstr ""
+
+# 7157bf5105b84a76982cddd8a2c0a4ab
+# b8f362a3c24e4761a2cf9999d83ea9f3
+# 31b4fe2b41704fd5bc5a385067db9e78
+# 9d87b96ae99e4b51980739aed794db4d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:58
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:196
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:589
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:612
+msgid "element type is *SMESH.VOLUME*"
+msgstr ""
+
+# 0c73594aeb55424d95b8ad4945bd4f09
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:59
+msgid "functor type is *SMESH.FT_AspectRatio3D*"
+msgstr ""
+
+# 522e2237e63b48399da257368c2c1728
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:64
+msgid "``filters_ex02.py``"
+msgstr ""
+
+# 0dbfae0c9a3e4107a32e15caa90218c0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:70
+msgid ":download:`../../../examples/filters_ex02.py`"
+msgstr ""
+
+# 93d6b45e533b49b7b25920014913d357
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:72
+msgid "**See also:** :ref:`tui_aspect_ratio_3d`"
+msgstr ""
+
+# ad8dae4703b04b6d9b54cb4174fe1ea0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:77
+msgid "Warping angle"
+msgstr ""
+
+# 487244067e0e4fbdb26701af49d9c47f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:79
+msgid "filters 2D mesh elements (faces) according to the warping angle value:"
+msgstr ""
+
+# ea3fae8352804a6c9dff4256c1b5c3d5
+# 5f7d1caffb734812b2489f8b0f9874a7
+# 3ff9306930c94205899b68c81cb68a33
+# 01f71c0f788f4737a10d59b1b155122b
+# f526cf45f23f4b23ab4fcf1785c719e0
+# 57a8ff64de584ce684970c5b2e110550
+# e0348a80ef09411fa943281c43c43d58
+# c670276d09b04b02a8f346e861c982ac
+# a7d2a29605fe4488bafd3e18fed928f0
+# df800954efdf45c2962686f8d62f38ef
+# 7925fed78391415a8fb3e536fc284d25
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:81
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:104
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:127
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:150
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:173
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:244
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:290
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:313
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:336
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:358
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:470
+msgid "element type is *SMESH.FACE*"
+msgstr ""
+
+# 35766a5cfda04256a609ed3b3c818bef
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:82
+msgid "functor type is *SMESH.FT_Warping*"
+msgstr ""
+
+# 0d1fd590ed0840c9b23f6fa7839d773b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:83
+msgid "threshold is floating point value (warping angle)"
+msgstr ""
+
+# 004ca3b2bbf24d60ae62b81c7f56ab2a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:87
+msgid "``filters_ex03.py``"
+msgstr ""
+
+# 98c70343810f4ffda5ac63a4adadabb0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:93
+msgid ":download:`../../../examples/filters_ex03.py`"
+msgstr ""
+
+# 096ee5252671498a957276fda40ab6df
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:95
+msgid "**See also:** :ref:`tui_warping`"
+msgstr ""
+
+# 6bb026f1fa054c4fb01951646c854ad4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:100
+msgid "Minimum angle"
+msgstr ""
+
+# 12caf452968a41058b0a85334dca77c0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:102
+msgid "filters 2D mesh elements (faces) according to the minimum angle value:"
+msgstr ""
+
+# 720cf4ef2ef64adfa76d7af6cc574455
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:105
+msgid "functor type is *SMESH.FT_MinimumAngle*"
+msgstr ""
+
+# f4c4e75ef6cc4748a3e967bf82ffe65b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:106
+msgid "threshold is floating point value (minimum angle)"
+msgstr ""
+
+# c419c4f2e6db46c28322c514d3ffdecc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:110
+msgid "``filters_ex04.py``"
+msgstr ""
+
+# d8683a622c644acbbe1ac0779a234e72
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:116
+msgid ":download:`../../../examples/filters_ex04.py`"
+msgstr ""
+
+# 79a773fc6c344aeca7633a1f11f7716e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:118
+msgid "**See also:** :ref:`tui_minimum_angle`"
+msgstr ""
+
+# 01e6e22f05ed417e8158d9f3ab0cc84a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:123
+msgid "Taper"
+msgstr ""
+
+# 55b300370c5d463db3e8bd3a4f412723
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:125
+msgid "filters 2D mesh elements (faces) according to the taper value:"
+msgstr ""
+
+# 2710fe0fb6c3489e93a69fa9d157176e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:128
+msgid "functor type is *SMESH.FT_Taper*"
+msgstr ""
+
+# ecc2c01f7dc84c1297ebb52d520cd00d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:129
+msgid "threshold is floating point value (taper)"
+msgstr ""
+
+# fda49acd55914c17993e58c4b6c86d60
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:133
+msgid "``filters_ex05.py``"
+msgstr ""
+
+# c52b74a578934750acacfeac670e83d7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:139
+msgid ":download:`../../../examples/filters_ex05.py`"
+msgstr ""
+
+# e8d1a6468c374732ba982b3039bc7aa7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:141
+msgid "**See also:** :ref:`tui_taper`"
+msgstr ""
+
+# e99e7aade16a49ee90a394ffc8ecc11d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:146
+msgid "Skew"
+msgstr ""
+
+# 362bfcb5a4574d0da125316db6306b45
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:148
+msgid "filters 2D mesh elements (faces) according to the skew value:"
+msgstr ""
+
+# d7669106a6c548629952804e7902dc47
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:151
+msgid "functor type is *SMESH.FT_Skew*"
+msgstr ""
+
+# 1ad14dace2c24e1fa614a6f0ab98f33a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:152
+msgid "threshold is floating point value (skew)"
+msgstr ""
+
+# 5a2f0b7c68364a7399af945295cfd5ee
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:156
+msgid "``filters_ex06.py``"
+msgstr ""
+
+# f6507f1b8ffe4d07b8efc9f3aff79283
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:162
+msgid ":download:`../../../examples/filters_ex06.py`"
+msgstr ""
+
+# e3f2245ebcc443bc9b6d9326cb311850
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:164
+msgid "**See also:** :ref:`tui_skew`"
+msgstr ""
+
+# 2a35872abb8f42229f207c2f0dac79b9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:169
+msgid "Area"
+msgstr ""
+
+# fab468da32da4d078bbf686165f82fc2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:171
+msgid "filters 2D mesh elements (faces) according to the area value:"
+msgstr ""
+
+# 2c48b772ad4440f38e8e6a54af90e6d7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:174
+msgid "functor type is *SMESH.FT_Area*"
+msgstr ""
+
+# bcb070ddf7ed430288115a64f9997b8b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:175
+msgid "threshold is floating point value (area)"
+msgstr ""
+
+# e5a829774bc0473aa6157465224e97d8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:179
+msgid "``filters_ex07.py``"
+msgstr ""
+
+# 5e7b469c380f4b129cd61caacc510eaf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:185
+msgid ":download:`../../../examples/filters_ex07.py`"
+msgstr ""
+
+# 71d104b1a39f4541aac4a1f19afaad04
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:187
+msgid "**See also:** :ref:`tui_area`"
+msgstr ""
+
+# cade3174d4af4661a13f4034c642437a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:192
+msgid "Volume"
+msgstr ""
+
+# d3d522fdc8e74ec7815ad2af86cbfccd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:194
+msgid "filters 3D mesh elements (volumes) according to the volume value:"
+msgstr ""
+
+# f0e481836c9345318bbf2d09ad29778b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:197
+msgid "functor type is *SMESH.FT_Volume3D*"
+msgstr ""
+
+# 8fc470a5a2d04d49b98b004fef8a6f85
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:198
+msgid "threshold is floating point value (volume)"
+msgstr ""
+
+# a4cb688e843e46bea2e5092bbcbd39d7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:202
+msgid "``filters_ex08.py``"
+msgstr ""
+
+# c90d29137bcf4f38b87894b7a44692ed
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:208
+msgid ":download:`../../../examples/filters_ex08.py`"
+msgstr ""
+
+# a9f5d2a508574991a8fd2b506998e84a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:210
+msgid "**See also:** :ref:`tui_volume`"
+msgstr ""
+
+# 5e8dc7ece6ff41df86277f56a80a82dc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:215
+msgid "Free borders"
+msgstr ""
+
+# 80900b5870aa4feba0c22b82fff23d4a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:217
+msgid "filters 1D mesh elements (edges) which represent free borders of a mesh:"
+msgstr ""
+
+# c3b1a9b2652e416b8cb61e1485715f47
+# 6babd52bda944e25a8e911bf597caa2b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:219
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:446
+msgid "element type is *SMESH.EDGE*"
+msgstr ""
+
+# 6c7f9d52b7b848da9f6a5eaf5c43ef83
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:220
+msgid "functor type is *SMESH.FT_FreeBorders*"
+msgstr ""
+
+# b678157785b5496692aa2c3757dc41f9
+# 3e857b3cfa0f4ba4a93135d75c8e35ab
+# 0058ac055ebf4477828a3ac73037138d
+# d6588539972d48c6a80d7533b78578fc
+# 1adda2caff484444983aae369225952e
+# f20fabd0064a4978a871320e2b1d52fe
+# 9d17cff2bf2d4b68b714bb7e95b3ea37
+# 685e6790bb1143d1b3b9d241c632d554
+# f5741f2df7984f2090b050d30258c8d9
+# 1bdb459f82f943b1b7749308a8d84203
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:221
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:246
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:269
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:292
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:315
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:360
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:383
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:404
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:591
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:614
+msgid "threshold value is not required"
+msgstr ""
+
+# 5faf43e863384018bfe5c63414e66d1e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:223
+msgid "\\tui_script{filters_ex09.py} .. _filters_ex09.py:"
+msgstr ""
+
+# 169a801dbe544ac2bb5b4ade4efc45a8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:226
+msgid "``filters_ex09.py``"
+msgstr ""
+
+# 341442284c1e4e3f885f0d56b018d203
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:232
+msgid ":download:`../../../examples/filters_ex09.py`"
+msgstr ""
+
+# bb207a082f9c4ee2a85f364ae2c2c94a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:234
+msgid "**See also:** :ref:`tui_free_borders`"
+msgstr ""
+
+# c9acd5a0711146928be8dbd50d27d356
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:239
+msgid "Free edges"
+msgstr ""
+
+# e5319ce3c769424f9ab0b76e513bf5c2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:241
+msgid ""
+"filters 2D mesh elements (faces) having edges (i.e. links between nodes, "
+"not mesh segments) belonging to one face of mesh only:"
+msgstr ""
+
+# 59bbe7f428b8421e821854d837b11a4c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:245
+msgid "functor type is *SMESH.FT_FreeEdges*"
+msgstr ""
+
+# a541e40fb6ed4488b22dde5479931636
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:250
+msgid "``filters_ex10.py``"
+msgstr ""
+
+# 5fd5f86ef549410783987f8653f9808a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:256
+msgid ":download:`../../../examples/filters_ex10.py`"
+msgstr ""
+
+# 855a63570fdf4a54bbfd34b5adcb2b9f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:258
+msgid "**See also:** :ref:`tui_free_edges`"
+msgstr ""
+
+# c131072177fe4d0fbccc2584c215bbef
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:263
+msgid "Free nodes"
+msgstr ""
+
+# 0bdfce2a625649c39519a5fd49c01534
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:265
+msgid "filters free nodes:"
+msgstr ""
+
+# 3fe1ac2505b544e5992cd65ca6646583
+# 6ab61788929f46b5a1de4bc89a95b44c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:267
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:402
+msgid "element type is *SMESH.NODE*"
+msgstr ""
+
+# b34ecab8f7644b4abd6d5eb7aa534c7f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:268
+msgid "functor type is *SMESH.FT_FreeNodes*"
+msgstr ""
+
+# 5b7d110fa8b24ed2a6056410478ce858
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:273
+msgid "``filters_ex11.py``"
+msgstr ""
+
+# 4952268902a24518afedf3147172ce08
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:279
+msgid ":download:`../../../examples/filters_ex11.py`"
+msgstr ""
+
+# c59182067b7a4790aa895a136e15204b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:281
+msgid "**See also:** :ref:`tui_free_nodes`"
+msgstr ""
+
+# 10a92eee1b7e46bcb170df72bdcfd9f2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:286
+msgid "Free faces"
+msgstr ""
+
+# 2b728a8bac9e400fb898d7c8a27061bb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:288
+msgid "filters free faces:"
+msgstr ""
+
+# 67792cd6993e4907875ec9c487cba25d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:291
+msgid "functor type is *SMESH.FT_FreeFaces*"
+msgstr ""
+
+# 411788888f004991b473749b0ca5cefd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:296
+msgid "``filters_ex12.py``"
+msgstr ""
+
+# ee38dc421e7a4f098a2ee60bb23006b6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:302
+msgid ":download:`../../../examples/filters_ex12.py`"
+msgstr ""
+
+# a613dc31c6f449329ef91aa9105c1ccd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:304
+msgid "**See also:** :ref:`tui_free_faces`"
+msgstr ""
+
+# bd5a36a737724c19a29608b4676dbba8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:309
+msgid "Bare border faces"
+msgstr ""
+
+# b606eb169958417b8a42f85b9a6a1e28
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:311
+msgid "filters faces with bare borders:"
+msgstr ""
+
+# fdeee8621d674199a64c4cb5348a6f6a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:314
+msgid "functor type is *SMESH.FT_BareBorderFace*"
+msgstr ""
+
+# f71bbd8f5e78403ab26c094d60854b78
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:319
+msgid "``filters_ex13.py``"
+msgstr ""
+
+# 820f6be3459942f6ba02c2953174bf76
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:325
+msgid ":download:`../../../examples/filters_ex13.py`"
+msgstr ""
+
+# 16f12ffb34184224a1cbda67b40889c5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:327
+msgid "**See also:** :ref:`tui_bare_border_faces`"
+msgstr ""
+
+# aff2d16224c44cf092eb5a0cc601f920
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:332
+msgid "Coplanar faces"
+msgstr ""
+
+# d66a44e8bd354eb08c5a88ed12235d8e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:334
+msgid "filters coplanar faces:"
+msgstr ""
+
+# c27a8102cfda432d8d5ba0ec76f6eb33
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:337
+msgid "functor type is *SMESH.FT_CoplanarFaces*"
+msgstr ""
+
+# c70b12b4fee1485c8e6bd6791518f812
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:338
+msgid "threshold value is the face ID"
+msgstr ""
+
+# f4e64b57175044db8d1e9790fa296f48
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:339
+msgid "tolerance is in degrees"
+msgstr ""
+
+# 16972c51c17945dabb52860e2940ba29
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:343
+msgid "``filters_ex14.py``"
+msgstr ""
+
+# 56c23335552040db813464be02abc955
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:349
+msgid ":download:`../../../examples/filters_ex14.py`"
+msgstr ""
+
+# e6309d3e844a417c84e9f9fc2301e8c8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:354
+msgid "Over-constrained faces"
+msgstr ""
+
+# 1d50fd1a57cf4affb4a6126f6d70e97b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:356
+msgid "filters over-constrained faces:"
+msgstr ""
+
+# e95f92d730ae434ca39fa56652c53391
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:359
+msgid "functor type is *SMESH.FT_OverConstrainedFace*"
+msgstr ""
+
+# fbb88252d0f8448c86ba7292f91697fb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:364
+msgid "``filters_ex15.py``"
+msgstr ""
+
+# 9a79e54fe9a84efbae8d530043f5184e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:370
+msgid ":download:`../../../examples/filters_ex15.py`"
+msgstr ""
+
+# c430a7aef2474eedb4eac84e9289d461
+# 337ef1b2f716414f95c90c39cef03851
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:372
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:626
+msgid "**See also:** :ref:`tui_over_constrained_faces`"
+msgstr ""
+
+# 4c762816a7a64922827935e7645df238
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:377
+msgid "Double edges, Double faces, Double volumes"
+msgstr ""
+
+# 9f7e6b32dc904feeabe998c2d7277164
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:379
+msgid "filters mesh elements basing on the same set of nodes:"
+msgstr ""
+
+# 03dff5d9d02d4cc38ec4d46cc1732feb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:381
+msgid "element type is either *SMESH.EGDE*, *SMESH.FACE* or *SMESH.VOLUME*"
+msgstr ""
+
+# 51855d36e073427fba5f6ed59b5c0a48
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:382
+msgid ""
+"functor type is either *SMESH.FT_EqualEdges*, *SMESH.FT_EqualFaces* or "
+"*SMESH.FT_EqualVolumes*,"
+msgstr ""
+
+# 422403336e844500aeef72243b7bebd2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:387
+msgid "``filters_ex16.py``"
+msgstr ""
+
+# 14d268a0bf094221aeb85ada8de2dd73
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:393
+msgid ":download:`../../../examples/filters_ex16.py`"
+msgstr ""
+
+# 9be1962ed6184f24ac4d806fdf5cb8f3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:398
+msgid "Double nodes"
+msgstr ""
+
+# 9a9f6e25952c4722b3d3a8400c39a645
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:400
+msgid ""
+"filters mesh nodes which are coincident with other nodes (within a given "
+"tolerance):"
+msgstr ""
+
+# 0f73daf6ad974068b5a74c6b7ad5305f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:403
+msgid "functor type is *SMESH.FT_EqualNodes*"
+msgstr ""
+
+# 4ce59ef3270642dd9629c006d9c40c5a
+# 9c2b4ad2ec414dbbbe70cab52eb1313a
+# 014e3785e30f4b8e92c97075610de2d8
+# e4173d7352364008ac081a669f97ef14
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:405
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:709
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:732
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:755
+msgid "default tolerance is 1.0e-7"
+msgstr ""
+
+# 3f69e761164f4f8fb7d60c60d67d7d9c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:409
+msgid "``filters_ex17.py``"
+msgstr ""
+
+# 46c6789c91e949dd95431fc46ee67be6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:415
+msgid ":download:`../../../examples/filters_ex17.py`"
+msgstr ""
+
+# 54ec3d0384df4c2a98ddaf6bc07f3e3f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:420
+msgid "Node connectivity number"
+msgstr ""
+
+# 2b9c0d5edf854e72bdce648332c61ee6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:422
+msgid ""
+"filters nodes according to a number of elements of highest dimension "
+"connected to a node:"
+msgstr ""
+
+# b78de618c06e421a877db6b0f7007abf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:424
+msgid "element type should be *SMESH.NODE*"
+msgstr ""
+
+# 7104cd9c3c394b8195f90a41b4bc2804
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:425
+msgid "functor type should be *SMESH.FT_NodeConnectivityNumber*"
+msgstr ""
+
+# d1060b82fcdb4c43984b72ec1d765e41
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:426
+msgid "threshold is an integer value (number of elements)"
+msgstr ""
+
+# 5951063693494de88bf6be07130c5441
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:430
+msgid "``filters_node_nb_conn.py``"
+msgstr ""
+
+# 3080014f52ca4527818190584a929a00
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:436
+msgid ":download:`../../../examples/filters_node_nb_conn.py`"
+msgstr ""
+
+# dda1534b256f4c658a2eb2450c8a2fcc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:441
+msgid "Borders at multi-connection"
+msgstr ""
+
+# a5fa530a80534ee99245cd1484dce07e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:443
+msgid ""
+"filters 1D mesh elements (segments) according to the specified number of "
+"connections (faces and volumes on whose border the segment lies):"
+msgstr ""
+
+# 49a03ad028f54839b50abede8d970f34
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:447
+msgid "functor type is *SMESH.FT_MultiConnection*"
+msgstr ""
+
+# 5ec7e5eb0091420b92fdf13465e68b6c
+# 0a96e2ef8ef141b6adc2e267269eafae
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:448
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:472
+msgid "threshold is integer value (number of connections)"
+msgstr ""
+
+# 5733597ff1fe473eb40ce3ff7e301354
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:452
+msgid "``filters_ex18.py``"
+msgstr ""
+
+# a9f6687ddaaa475a947061b2e6922d5b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:458
+msgid ":download:`../../../examples/filters_ex18.py`"
+msgstr ""
+
+# a4e855cfcaf24964aaeb1888d5ab57c5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:460
+msgid "**See also:** :ref:`tui_borders_at_multiconnection`"
+msgstr ""
+
+# ca4388f462be424a9fa5738438a8dfb6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:465
+msgid "Borders at multi-connection 2D"
+msgstr ""
+
+# 385ca0044ae44f67bb24d0c3c294c653
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:467
+msgid ""
+"filters 2D mesh elements (faces) with the specified maximal number of "
+"faces connected to a border (link between nodes, not mesh segment):"
+msgstr ""
+
+# 605e2bb7c60341e3831e08ce9d00a288
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:471
+msgid "functor type is *SMESH.FT_MultiConnection2D*"
+msgstr ""
+
+# 1e8e880339b94eac818b655278bee946
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:476
+msgid "``filters_ex19.py``"
+msgstr ""
+
+# d355d82b74a3407e9a1b870177eb0232
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:482
+msgid ":download:`../../../examples/filters_ex19.py`"
+msgstr ""
+
+# 0d635a7069f94a5489fbfec8828788ae
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:484
+msgid "**See also:** :ref:`tui_borders_at_multiconnection_2d`"
+msgstr ""
+
+# 550261fe1fff44f78036162b87eca99e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:489
+msgid "Length"
+msgstr ""
+
+# ee52caa616fe4c8a92328758a6dac90e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:491
+msgid "filters 1D mesh elements (edges) according to the edge length value:"
+msgstr ""
+
+# 989ae7f833e64913950a07ffce7a599c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:493
+msgid "element type should be *SMESH.EDGE*"
+msgstr ""
+
+# fbf7ad28719e402da1a8858aec480ffa
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:494
+msgid "functor type should be *SMESH.FT_Length*"
+msgstr ""
+
+# 5b1059d4691141c39a84aebb8f64c712
+# 6905f10af6e445bebef179769d7bd0e7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:495
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:543
+msgid "threshold is floating point value (length)"
+msgstr ""
+
+# 78e69795f69c4918ae37ba9438e4d581
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:499
+msgid "``filters_ex20.py``"
+msgstr ""
+
+# b1f5b9a6f59345bb9b65918b13dbf30f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:505
+msgid ":download:`../../../examples/filters_ex20.py`"
+msgstr ""
+
+# e49b59c96cbb493ba58613dab973137a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:507
+msgid "**See also:** :ref:`tui_length_1d`"
+msgstr ""
+
+# f055a144f07b412c8b1067b4cc86f095
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:512
+msgid "Length 2D"
+msgstr ""
+
+# c7666b79d18a427682a0f88fc50697fc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:514
+msgid ""
+"filters 2D mesh elements (faces) according to the maximum length of its "
+"edges (links between nodes):"
+msgstr ""
+
+# 9f6adc99edc5432098314557e142316c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:518
+msgid "functor type should be *SMESH.FT_Length2D*"
+msgstr ""
+
+# 5b6dfc0091a74cebbe66cb90bc14107c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:519
+msgid "threshold is floating point value (edge length)"
+msgstr ""
+
+# a7c4c530ebf844729a747786a918a469
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:523
+msgid "``filters_ex21.py``"
+msgstr ""
+
+# ed21709b073447aea73549c6b5e4ba52
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:529
+msgid ":download:`../../../examples/filters_ex21.py`"
+msgstr ""
+
+# a2e2655568de44af95deb658aa4e0020
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:531
+msgid "**See also:** :ref:`tui_length_2d`"
+msgstr ""
+
+# 7437e2569f1e4cc6a2aae12cceb7dde2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:536
+msgid "Element Diameter 2D"
+msgstr ""
+
+# 31bf394724b04028ba2aa2373fb4a497
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:538
+msgid ""
+"filters 2D mesh elements (faces) according to the maximum length of its "
+"edges and diagonals:"
+msgstr ""
+
+# 724391cb86d64f8b91ee6033f41271bd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:542
+msgid "functor type should be *SMESH.FT_MaxElementLength2D*"
+msgstr ""
+
+# d098a1e0cd784fffb785c4e89624e73f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:547
+msgid "``filters_ex22.py``"
+msgstr ""
+
+# f3fb04e667a145ffa27c4fa83c05e33a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:553
+msgid ":download:`../../../examples/filters_ex22.py`"
+msgstr ""
+
+# cc55efd54037451e9e93c117da20c134
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:555
+msgid "**See also:** :ref:`tui_max_element_length_2d`"
+msgstr ""
+
+# cc9136e7d65b4ca9b0bc04885b9c48d5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:560
+msgid "Element Diameter 3D"
+msgstr ""
+
+# 94101ffc6fda4d118986fa576c249e5a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:562
+msgid ""
+"filters 3D mesh elements (volumes) according to the maximum length of its"
+" edges and diagonals:"
+msgstr ""
+
+# 552586f6bd904272b24c888a47f75fe7
+# 1dbdd411375944168b321d06258363a4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:565
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:797
+msgid "element type should be *SMESH.VOLUME*"
+msgstr ""
+
+# fdda00bd406e45ba8c957adfe59aa584
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:566
+msgid "functor type should be *SMESH.FT_MaxElementLength3D*"
+msgstr ""
+
+# 8f503039f5d94e688fabbc1cab2a2fd5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:567
+msgid "threshold is floating point value (edge/diagonal length)"
+msgstr ""
+
+# e26cb32f84404ebba50404235dfcfc6f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:571
+msgid "``filters_ex23.py``"
+msgstr ""
+
+# b83daba736664a6ba10c6a60c85290f1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:577
+msgid ":download:`../../../examples/filters_ex23.py`"
+msgstr ""
+
+# cbe17c247adf473d838f06dfcacd5099
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:579
+msgid "**See also:** :ref:`tui_max_element_length_3d`"
+msgstr ""
+
+# 97fc03d800884cab911512fb355e844c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:584
+msgid "Bare border volumes"
+msgstr ""
+
+# ce40e24105914ebe844a3878981e73b3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:586
+msgid ""
+"filters 3D mesh elements with bare borders, i.e. having a facet not "
+"shared with other volumes and without a face on it:"
+msgstr ""
+
+# fcb10c03ffb54596a5d76535c59f4202
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:590
+msgid "functor type is *SMESH.FT_BareBorderVolume*"
+msgstr ""
+
+# 9d2614cf04c747009ab065d3b7c69f31
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:595
+msgid "``filters_ex24.py``"
+msgstr ""
+
+# 775702868e504cd99d3e13550722d54f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:601
+msgid ":download:`../../../examples/filters_ex24.py`"
+msgstr ""
+
+# b3355d3c2aef4db78b6409e9531d9fbe
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:603
+msgid "**See also:** :ref:`tui_bare_border_volumes`"
+msgstr ""
+
+# d691f1abd0ca4c0eb16b217f6f77161a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:608
+msgid "Over-constrained volumes"
+msgstr ""
+
+# 28008f4ef2a94786ac06c4b1cb843d0b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:610
+msgid ""
+"filters over-constrained volumes, whose all nodes are on the mesh "
+"boundary:"
+msgstr ""
+
+# e43a3fdb876c4135ae79a3f2009aed0e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:613
+msgid "functor type is *SMESH.FT_OverConstrainedVolume*"
+msgstr ""
+
+# 90b875ac91454fdc9cbff4ccb4329f2d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:618
+msgid "``filters_ex25.py``"
+msgstr ""
+
+# 840c6c1a0eea44d88ed766016df2cfcb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:624
+msgid ":download:`../../../examples/filters_ex25.py`"
+msgstr ""
+
+# b49dbd8ec8764bc2a459735efa405e95
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:631
+msgid "Belong to Mesh Group"
+msgstr ""
+
+# 62e957b684c54214b232a947a4d3b240
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:633
+msgid ""
+"filters mesh entities (nodes or elements) included in a mesh group "
+"defined by threshold value:"
+msgstr ""
+
+# 5e2969a704914b97be7521835f9bfd53
+# 05e74d27e2154ec095b4eb8230cfa7d7
+# 8df46f4bc3294bf7b5fa6220ca737281
+# 9fa4accfe4f046499b5bb57cacd18624
+# 674b6ddf9d37471b825202d5e5297f86
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:636
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:658
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:681
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:775
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:840
+msgid "element type can be any, from *SMESH.NODE* to *SMESH.BALL*"
+msgstr ""
+
+# d50d8ecc6d2340c9bc7611e3384e69dc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:637
+msgid "functor type should be *SMESH.FT_BelongToMeshGroup*"
+msgstr ""
+
+# c77da6ebd3f74281b61d71383798e03c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:638
+msgid "threshold is mesh group object"
+msgstr ""
+
+# 681f97f7da9b4a9995e56c3e8df52622
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:642
+msgid "``filters_belong2group.py``"
+msgstr ""
+
+# 7a8de9bd18d24a2d95a429e0ee16b0a7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:648
+msgid ":download:`../../../examples/filters_belong2group.py`"
+msgstr ""
+
+# b6d57148f42940eda7259884042e820b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:653
+msgid "Belong to Geom"
+msgstr ""
+
+# dcff919a75a34a61a991fec26d73e191
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:655
+msgid ""
+"filters mesh entities (nodes or elements) which all nodes lie on the "
+"shape defined by threshold value:"
+msgstr ""
+
+# 6936949065a14fa59ebd082a704b8ddf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:659
+msgid "functor type should be *SMESH.FT_BelongToGeom*"
+msgstr ""
+
+# 425504babbae4ef1a87cd43390ab1911
+# 75b2f2e1075b4ca2b8f12c44948c7229
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:660
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:683
+msgid "threshold is geometrical object"
+msgstr ""
+
+# 3e5c35430f5a420580677ef5bb0fec6c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:661
+msgid ""
+"tolerance is a distance between a node and the geometrical object; it is "
+"used if an node is not associated to any geometry."
+msgstr ""
+
+# af4a62bc6bb944ad95818d6e7a580c69
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:665
+msgid "``filters_ex26.py``"
+msgstr ""
+
+# a7c2743b9d394107b485708f1a8e8f53
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:671
+msgid ":download:`../../../examples/filters_ex26.py`"
+msgstr ""
+
+# d1e3a37b037e48e09e9a5c95aed8b10d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:676
+msgid "Lying on Geom"
+msgstr ""
+
+# 42c56ae8e347449793280f9628e388db
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:678
+msgid ""
+"filters mesh entities (nodes or elements) at least one node of which lies"
+" on the shape defined by threshold value:"
+msgstr ""
+
+# 3405af1cedcf4f2eb0beead57d373a9d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:682
+msgid "functor type should be *SMESH.FT_LyingOnGeom*"
+msgstr ""
+
+# d7aa1223d52a49ffad2cea535fee5432
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:684
+msgid "tolerance is a distance between a node and the geometrical object;"
+msgstr ""
+
+# 5573b9622d1f403a9cc5a1f622aa66bc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:686
+msgid "it is used if an node is not associated to any geometry."
+msgstr ""
+
+# aebe7d59b7f24931ab8bc542276af606
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:690
+msgid "``filters_ex27.py``"
+msgstr ""
+
+# 0ed67cd816d44f81920f933879fffa4b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:696
+msgid ":download:`../../../examples/filters_ex27.py`"
+msgstr ""
+
+# 96669f8b61e8427ba147bddb9dbf0c1e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:701
+msgid "Belong to Plane"
+msgstr ""
+
+# b1f11adac265445da564b97d9a12e637
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:703
+msgid ""
+"filters mesh entities (nodes or elements) which all nodes belong to the "
+"plane defined by threshold value with the given tolerance:"
+msgstr ""
+
+# fabc3ac38127432f9b32d6da2514eff4
+# 3e4dc8f600bd414f90b3ec3bdf0e006a
+# 288d476ed0fa4275a28cfb3c0048a116
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:706
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:729
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:752
+msgid "element type can be any except *SMESH.VOLUME*"
+msgstr ""
+
+# beddd56fa51d443f8598332c6a798f61
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:707
+msgid "functor type should be *SMESH.FT_BelongToPlane*"
+msgstr ""
+
+# 7c33c3cb8ce8458e8d8dcc7406d5224c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:708
+msgid "threshold is geometrical object (plane)"
+msgstr ""
+
+# 1a779a6d926249da91ddba758563cdfe
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:713
+msgid "``filters_ex28.py``"
+msgstr ""
+
+# 474063b5e9f64506ab7164ec35bdd591
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:719
+msgid ":download:`../../../examples/filters_ex28.py`"
+msgstr ""
+
+# 6e1fecbd1a3645e29a1ea342cc3e66da
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:724
+msgid "Belong to Cylinder"
+msgstr ""
+
+# f0b8bebbc11b47aba1911c6dec58e8fc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:726
+msgid ""
+"filters mesh entities (nodes or elements) which all nodes belong to the "
+"cylindrical face defined by threshold value with the given tolerance:"
+msgstr ""
+
+# e59bbbe974ab407da4746987550f092b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:730
+msgid "functor type should be *SMESH.FT_BelongToCylinder*"
+msgstr ""
+
+# 521885d6a25a49fbba26e2b3cd276bea
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:731
+msgid "threshold is geometrical object (cylindrical face)"
+msgstr ""
+
+# 7169b31929204c8d86171c5fc1e70790
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:736
+msgid "``filters_ex29.py``"
+msgstr ""
+
+# 79555c5a71184badbab65a080d78769d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:742
+msgid ":download:`../../../examples/filters_ex29.py`"
+msgstr ""
+
+# 443cfe1a044f4543beb1c9f691b2f8d2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:747
+msgid "Belong to Surface"
+msgstr ""
+
+# 89767428ece3443a882e6cdd310440d4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:749
+msgid ""
+"filters mesh entities (nodes or elements) which all nodes belong to the "
+"arbitrary surface defined by threshold value with the given tolerance:"
+msgstr ""
+
+# 51ac7306ca4e40a583f93e213b9d53e7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:753
+msgid "functor type should be *SMESH.FT_BelongToGenSurface*"
+msgstr ""
+
+# f47254b619d741ebb1268f6d3bc76479
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:754
+msgid "threshold is geometrical object (arbitrary surface)"
+msgstr ""
+
+# 6cc05deaab714e5597256bd4b8d575ba
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:759
+msgid "``filters_ex30.py``"
+msgstr ""
+
+# 755f6f5145794b1b9b3fbf0707841202
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:765
+msgid ":download:`../../../examples/filters_ex30.py`"
+msgstr ""
+
+# 480b58ba69224cacb3ea43c351b2cbe8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:770
+msgid "Range of IDs"
+msgstr ""
+
+# edc9065fcc7747fbbf4770e7a24e0150
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:772
+msgid ""
+"filters mesh entities elements (nodes or elements) according to the "
+"specified identifiers range:"
+msgstr ""
+
+# c5326641da7c4bc989742815cd547c94
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:776
+msgid "functor type is *SMESH.FT_RangeOfIds*"
+msgstr ""
+
+# f38032029e0f4f5c8e878e1a717c712f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:777
+msgid ""
+"threshold is string listing required IDs and/or ranges of IDs, "
+"e.g.\"1,2,3,50-60,63,67,70-78\""
+msgstr ""
+
+# 648a550fba2d4f1b91544b6a10d129ad
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:781
+msgid "``filters_ex31.py``"
+msgstr ""
+
+# 5e865f6eea324433bd5ebb53aafe730a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:787
+msgid ":download:`../../../examples/filters_ex31.py`"
+msgstr ""
+
+# 629cd6d520ae4225be5a7656fb2e8e1c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:792
+msgid "Badly oriented volume"
+msgstr ""
+
+# 997d280d774c4f288595ab35ff4bac2d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:794
+msgid ""
+"filters 3D mesh elements (volumes), which are incorrectly oriented from "
+"the point of view of MED convention."
+msgstr ""
+
+# c6bd895bb88e4785ba8890ea4316884f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:798
+msgid "functor type is *SMESH.FT_BadOrientedVolume*"
+msgstr ""
+
+# 9093e5ba871a4b038cd1b1eff0b57367
+# de3b40264c3e4a24a0c2d5ea6d10576f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:799
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:820
+msgid "threshold is not required"
+msgstr ""
+
+# 7f090527951447c4b24547316452536b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:803
+msgid "``filters_ex32.py``"
+msgstr ""
+
+# 433cbf6bf097466f87da3706c761e002
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:809
+msgid ":download:`../../../examples/filters_ex32.py`"
+msgstr ""
+
+# 9c303932cfc04a3c8c0fdbf4465b7601
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:814
+msgid "Linear / quadratic"
+msgstr ""
+
+# 89dd525d28a14d629237d1b4b6be0500
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:816
+msgid "filters linear / quadratic mesh elements:"
+msgstr ""
+
+# 457e1ff1b5194af5b54d8def4d8e90e3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:818
+msgid "element type should be either *SMESH.EDGE*, *SMESH.FACE* or *SMESH.VOLUME*"
+msgstr ""
+
+# 6be06de695854193b299384f8e43a791
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:819
+msgid "functor type is *SMESH.FT_LinearOrQuadratic*"
+msgstr ""
+
+# 2c99fbd29b6d46aba55e0ad1312bb07e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:821
+msgid ""
+"if unary operator is set to SMESH.FT_LogicalNOT, the quadratic elements "
+"are selected, otherwise (by default) linear elements are selected"
+msgstr ""
+
+# dc627b9fa49c46d6a3620f426974ee18
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:825
+msgid "``filters_ex33.py``"
+msgstr ""
+
+# a67844d1abcd405b8585d15bc521ea85
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:831
+msgid ":download:`../../../examples/filters_ex33.py`"
+msgstr ""
+
+# bdffe57af7904d328b2149232e5dfd62
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:836
+msgid "Group color"
+msgstr ""
+
+# 38af276c6e714f55a1c27e72e90cd0f2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:838
+msgid ""
+"filters mesh entities, belonging to the group with the color defined by "
+"the threshold value."
+msgstr ""
+
+# 201d8bca7f004e57861e36d1edb41ced
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:841
+msgid "functor type is *SMESH.FT_GroupColor*"
+msgstr ""
+
+# 09bbe898a14e49fc9c75a34d93fcf3d7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:842
+msgid "threshold should be of SALOMEDS.Color type"
+msgstr ""
+
+# a6a0157dd48547db9a4ba61fb4a60254
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:846
+msgid "``filters_ex34.py``"
+msgstr ""
+
+# db3daeb12eeb490b99162cf67ea3d46f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:852
+msgid ":download:`../../../examples/filters_ex34.py`"
+msgstr ""
+
+# bfafa2ababc7495ab073caad36f52be7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:857
+msgid "Geometry type"
+msgstr ""
+
+# 3ed3adca96584f8cada6b1918ab063cb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:859
+msgid ""
+"filters mesh elements by the geometric type defined with the threshold "
+"value. The list of available geometric types depends on the element "
+"entity type."
+msgstr ""
+
+# a030232f559b4c739d14fab8c2d16bdc
+# 9d452c1d0b284f4081addf9f8026d897
+# 60870960f67b44b3a77fab3c58ab1e7b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:863
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:884
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:926
+msgid ""
+"element type can be any, e.g.: *SMESH.EDGE*, *SMESH.FACE*, "
+"*SMESH.VOLUME*, etc."
+msgstr ""
+
+# 89deb95aee72404b8403b79cdcf685f4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:864
+msgid "functor type should be *SMESH.FT_ElemGeomType*"
+msgstr ""
+
+# ae918bc9c07e459a88d77aef0d22b4f0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:865
+msgid ""
+"threshold is either of smesh.GeometryType values. Type "
+"*SMESH.GeometryType._items* in the Python Console to see all geometric "
+"types."
+msgstr ""
+
+# 4ff74a1e1b76464ebf6b20a8d9f26f45
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:869
+msgid "``filters_ex35.py``"
+msgstr ""
+
+# 1967c745730342e3bf48d70306f463fc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:875
+msgid ":download:`../../../examples/filters_ex35.py`"
+msgstr ""
+
+# 0eff6fa25f514cd8bbc6cbe1cf521c2e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:880
+msgid "Entity type"
+msgstr ""
+
+# ee373c0f383a4b809834d66fcaf2921b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:882
+msgid "filters mesh elements by the geometric type and number of nodes."
+msgstr ""
+
+# 963014e799e24f9fa30774202c1aa673
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:885
+msgid "functor type should be *SMESH.FT_EntityType*"
+msgstr ""
+
+# 0c19e26af5cc4b90afad5df964910125
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:886
+msgid ""
+"threshold is either of SMESH.EntityType values. Type "
+"*SMESH.EntityType._items* in the Python Console to see all entity types."
+msgstr ""
+
+# eb186ee8b0f2409ba4772249733b5364
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:890
+msgid "``filters_ex37.py``"
+msgstr ""
+
+# 19611ceebb8e46ceaa47aa0f2b21b44a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:896
+msgid ":download:`../../../examples/filters_ex37.py`"
+msgstr ""
+
+# 3208daefb114459d8a5a07b1e9e0b859
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:901
+msgid "Ball diameter"
+msgstr ""
+
+# f5fb287ff3a64f87bb9406c63a06923e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:903
+msgid "filters ball elements by diameter."
+msgstr ""
+
+# e46e09625f1c42f8932ca036c240d66a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:905
+msgid "element type should be *SMESH.BALL*"
+msgstr ""
+
+# 15653ec5de0d416387873f9406719593
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:906
+msgid "functor type should be *SMESH.FT_BallDiameter*"
+msgstr ""
+
+# 12bfc4b762bc429b92329056c102b932
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:907
+msgid "threshold is floating point value (ball diameter)"
+msgstr ""
+
+# c7d7ea6882164c28906e136939b14a3b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:911
+msgid "``filters_ex38.py``"
+msgstr ""
+
+# d6ce1938df5f4e13bbafa462547a2c2e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:917
+msgid ":download:`../../../examples/filters_ex38.py`"
+msgstr ""
+
+# fafdd97f37aa465086eac657054ceaa8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:922
+msgid "Elements of a domain"
+msgstr ""
+
+# 015db492db7a4573b3e67144cfffc42a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:924
+msgid "filters elements of a specified domain."
+msgstr ""
+
+# 91f93e9c0f524a38ac0d3187a8ca9606
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:927
+msgid "functor type should be *SMESH.FT_ConnectedElements*"
+msgstr ""
+
+# 245661334ae347e8b9055bce39e73f50
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:928
+msgid ""
+"threshold is either (1) node ID or (2)  geometrical vertex or (3) 3 "
+"coordinates of a point."
+msgstr ""
+
+# 6b1dc952084e499ab1118e00e68ee60e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:932
+msgid "``filters_ex39.py``"
+msgstr ""
+
+# 7857771c11de4843ba948ae370481e99
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:938
+msgid ":download:`../../../examples/filters_ex39.py`"
+msgstr ""
+
+# 4a247beda8fd45ac9adabf51f4ccc758
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:943
+msgid "How to combine several criteria into a filter?"
+msgstr ""
+
+# 20f523c9f1364fd493710745665b2485
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:945
+msgid "Several criteria can be combined into a filter."
+msgstr ""
+
+# 5cdcea56db2142c48da8d9f4ebd38432
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:947
+msgid "Example :"
+msgstr ""
+
+# 24fdd74430244cf999d12e78aa34bd2d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:951
+msgid "``filters_ex36.py``"
+msgstr ""
+
+# bdc03be37f0f4109bf502c473f4961ad
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_filters.rst:957
+msgid ":download:`../../../examples/filters_ex36.py`"
+msgstr ""
+

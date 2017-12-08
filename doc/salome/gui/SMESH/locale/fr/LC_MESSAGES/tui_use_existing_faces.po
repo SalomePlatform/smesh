@@ -1,0 +1,47 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 951c6da30ad24b41a53bd5090cddd9e4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_use_existing_faces.rst:5
+msgid "Usage of \"Use Faces to be Created Manually\" algorithm"
+msgstr ""
+
+# 536bc28ccf7f4fe786270b527629af3a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_use_existing_faces.rst:7
+msgid ""
+"This sample demonstrates how to use **Use Faces to be Created Manually** "
+"algorithm, which is actually just a stub allowing to use your own 2D "
+"algorithm implemented in Python."
+msgstr ""
+
+# 2537c7e3239b4e27b40a16eeab20f448
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_use_existing_faces.rst:13
+msgid "``use_existing_faces.py``"
+msgstr ""
+
+# e89473b2cd0d482fba928f49c9c70c6b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_use_existing_faces.rst:19
+msgid ":download:`../../../examples/use_existing_faces.py`"
+msgstr ""
+
+# 41d2468e00404babb8fc1036478c0796
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_use_existing_faces.rst:21
+msgid "Resulting mesh:"
+msgstr ""
+

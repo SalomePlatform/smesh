@@ -129,7 +129,7 @@ SMESHGUI_MeshPatternDlg::SMESHGUI_MeshPatternDlg( SMESHGUI* theModule )
 
   mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
 
-  myHelpFileName = "pattern_mapping_page.html";
+  myHelpFileName = "pattern_mapping.html";
 
   Init();
 }

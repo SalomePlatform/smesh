@@ -1,0 +1,194 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# c8be38d4fe804083ad6a598447666cc6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/basic_meshing_algos.rst:5
+msgid "Basic meshing algorithms"
+msgstr ""
+
+# 9824be8dcf4840d797bdba9ae3cecf81
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/basic_meshing_algos.rst:7
+msgid ""
+"The MESH module contains a set of meshing algorithms, which are used for "
+"meshing entities (1D, 2D, 3D sub-shapes) composing geometrical objects."
+msgstr ""
+
+# 3b6a763ea0364cdfb1c0ef68894b2ec3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/basic_meshing_algos.rst:9
+msgid ""
+"An algorithm represents either an implementation of a certain meshing "
+"technique or an interface to the whole meshing program generating "
+"elements of several dimensions."
+msgstr ""
+
+# 532ed39715344cf7acd0f68ea17ea3a7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/basic_meshing_algos.rst:14
+msgid "1D Entities"
+msgstr ""
+
+# ae97621ae9b94b4b9fab931327e98d37
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/basic_meshing_algos.rst:16
+msgid "For meshing of 1D entities (**edges**):"
+msgstr ""
+
+# 5d251d33c5a04aa9b83ecbb742f418a2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/basic_meshing_algos.rst:17
+msgid ""
+"**Wire Discretization** meshing algorithm - splits an edge into a number "
+"of mesh segments following an 1D hypothesis."
+msgstr ""
+
+# e56a55bba65b476d9fb29dad45021df5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/basic_meshing_algos.rst:18
+msgid ""
+"**Composite Side Discretization** algorithm - allows to apply a 1D "
+"hypothesis to a whole side of a geometrical face even if it is composed "
+"of several edges provided that they form C1 curve in all faces of the "
+"main shape."
+msgstr ""
+
+# d3e7fb14c1f54dcf84b9d7743ddf08c6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/basic_meshing_algos.rst:19
+msgid "For meshing of 2D entities (**faces**):"
+msgstr ""
+
+# 96ff3177522e4abbac57c5166724c7db
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/basic_meshing_algos.rst:22
+msgid ""
+"**Triangle: Mefisto** meshing algorithm - splits faces into triangular "
+"elements."
+msgstr ""
+
+# b8b884f144944a44bf4e6b6eebb78a3e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/basic_meshing_algos.rst:23
+msgid ""
+":ref:`quad_ijk_algo_page` meshing algorithm - splits faces into "
+"quadrangular elements."
+msgstr ""
+
+# a13ad16fe701490fbbb2b492842b74ce
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/basic_meshing_algos.rst:37
+msgid "For meshing of 3D entities (**solid objects**):"
+msgstr ""
+
+# 54752b6339e643ab9796cdba834e8c1c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/basic_meshing_algos.rst:46
+msgid ""
+"**Hexahedron (i,j,k)** meshing algorithm - solids are split into "
+"hexahedral elements thus forming a structured 3D mesh. The algorithm "
+"requires that 2D mesh generated on a solid could be considered as a mesh "
+"of a box, i.e. there should be eight nodes shared by three quadrangles "
+"and the rest nodes should be shared by four quadrangles."
+msgstr ""
+
+# f6c22808144446399e41ec254795651e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/basic_meshing_algos.rst:60
+msgid ""
+":ref:`cartesian_algo_page` meshing algorithm - solids are split into "
+"hexahedral elements forming a Cartesian grid; polyhedra and other types "
+"of elements are generated where the geometrical boundary intersects "
+"Cartesian cells."
+msgstr ""
+
+# c0f194ee2591455e82931c862e55b74b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/basic_meshing_algos.rst:62
+msgid ""
+"Some 3D meshing algorithms, such as Hexahedron(i,j,k) also can generate "
+"3D meshes from 2D meshes, working without geometrical objects."
+msgstr ""
+
+# f9af97e91aee474fa52053b426338c65
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/basic_meshing_algos.rst:66
+msgid "There is also a number of more specific algorithms:"
+msgstr ""
+
+# ad32f133509846b887e8976e5f34897d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/basic_meshing_algos.rst:68
+msgid ""
+":ref:`prism_3d_algo_page` - for meshing prismatic 3D shapes with "
+"hexahedra and prisms."
+msgstr ""
+
+# f2548c6c528c4d198d067572c9d0e1a0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/basic_meshing_algos.rst:69
+msgid ""
+":ref:`quad_from_ma_algo_page` - for quadrangle meshing of faces with "
+"sinuous borders and rings."
+msgstr ""
+
+# 69fc8fe1213d400199cbfbfe768c3209
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/basic_meshing_algos.rst:70
+msgid ""
+"**Polygon per Face** meshing algorithm - generates one mesh face (either "
+"a triangle, a quadrangle or a polygon) per a geometrical face using all "
+"nodes from the face boundary."
+msgstr ""
+
+# 772e98a27e5143a1b8c2c49e9b2abd33
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/basic_meshing_algos.rst:71
+msgid ":ref:`projection_algos_page` - for meshing by projection of another mesh."
+msgstr ""
+
+# 9400074a01ad41f8b32156cc5a6cb0c8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/basic_meshing_algos.rst:72
+msgid ""
+":ref:`import_algos_page` - for meshing by importing elements from another"
+" mesh."
+msgstr ""
+
+# 1de827d6a65a46ccaacec4e084a8dfe6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/basic_meshing_algos.rst:73
+msgid ""
+":ref:`radial_prism_algo_page` - for meshing 3D geometrical objects with "
+"cavities with hexahedra and prisms."
+msgstr ""
+
+# 45b998fde8e7426098f4e7ecb3bbd4f5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/basic_meshing_algos.rst:74
+msgid ""
+":ref:`radial_quadrangle_1D2D_algo_page` - for quadrangle meshing of disks"
+" and parts of disks."
+msgstr ""
+
+# 46d628420f5249d38884a79134a14dc4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/basic_meshing_algos.rst:75
+msgid ":ref:`use_existing_page` - to create a 1D or a 2D mesh in a python script."
+msgstr ""
+
+# 8772a29a46164088a85f1a3e7f6de471
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/basic_meshing_algos.rst:76
+msgid ""
+":ref:`segments_around_vertex_algo_page` - for defining the length of mesh"
+" segments around certain vertices."
+msgstr ""
+
+# c72125844d894b53b9b111de5675d6c7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/basic_meshing_algos.rst:79
+msgid ""
+":ref:`constructing_meshes_page` page describes in detail how to apply "
+"meshing algorithms."
+msgstr ""
+
+# dd2e5049652f42cfbca7837a60b05d0b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/basic_meshing_algos.rst:81
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_defining_meshing_algos` "
+"operation."
+msgstr ""
+

@@ -1,0 +1,60 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 95b4af8ed0b2420ba49b9edfe08eba0b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/length_2d.rst:5
+msgid "Length 2D"
+msgstr ""
+
+# 7f6f65cbea6749148c469fe81c9ff0ee
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/length_2d.rst:7
+msgid ""
+"This quality control criterion consists of calculation of length of the "
+"links between corner nodes of mesh faces."
+msgstr ""
+
+# 4e76fceae6094126b072a470a4805ad8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/length_2d.rst:9
+msgid "**To apply the Length 2D quality criterion to your mesh:**"
+msgstr ""
+
+# 1e7e63a037cd428fbc91417e209aa19c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/length_2d.rst:11
+msgid "Display your mesh in the viewer."
+msgstr ""
+
+# 94070e60503e47b785da82b2e1090cb3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/length_2d.rst:12
+msgid ""
+"Choose **Controls > Face Controls > Length 2D** or click **\"Length "
+"2D\"** button in the toolbar."
+msgstr ""
+
+# 036a92ddf9bb460597dffcb929388121
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/length_2d.rst:20
+msgid ""
+"Your mesh will be displayed in the viewer with links colored according to"
+" the applied mesh quality control criterion:"
+msgstr ""
+
+# e35eabd4b75e4ff1ae503171382a3e5d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/length_2d.rst:26
+msgid "**See Also** a sample TUI Script of a :ref:`tui_length_2d` operation."
+msgstr ""
+

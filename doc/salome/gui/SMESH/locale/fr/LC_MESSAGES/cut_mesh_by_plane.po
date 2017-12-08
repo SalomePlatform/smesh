@@ -1,0 +1,96 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# af5945204b1f448badc4da3616d663d3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cut_mesh_by_plane.rst:5
+msgid "Cut a tetrahedron mesh by a plane"
+msgstr ""
+
+# c7b3a5e99521490bada8067eeffdd439
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cut_mesh_by_plane.rst:7
+msgid ""
+"MeshCut works only with MED files and produces MED files, and is a "
+"standalone program. It can be used either directly from a command shell "
+"outside SALOME, or with a GUI interface in SMESH, provided in a python "
+"plugin that needs to be installed in your SALOME application."
+msgstr ""
+
+# 110ba66df0334b55932c69d60d8e056e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cut_mesh_by_plane.rst:9
+msgid ""
+"MeshCut allows to cut a mesh constituted of linear tetrahedrons by a "
+"plane. The tetrahedrons intersected by the plane are cut and replaced by "
+"elements of various types, (tetrahedron, pyramid, pentahedron)."
+msgstr ""
+
+# 76c56acbd34642e6a35c0336374bf1da
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cut_mesh_by_plane.rst:16
+msgid "Using MeshCut as a standalone program, outside SALOME"
+msgstr ""
+
+# e860a7c125d745bfac69448ca40db92e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cut_mesh_by_plane.rst:18
+msgid "MeshCut is a standalone program, reading and producing med files."
+msgstr ""
+
+# 95562602aa944727beb91b6c691118b6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cut_mesh_by_plane.rst:20
+msgid "Syntax::"
+msgstr ""
+
+# 323593bb8b9b41ac8e4c58e415639fcd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cut_mesh_by_plane.rst:24
+msgid "where::"
+msgstr ""
+
+# e8c88d96d6f04485bc837c8fb1cf79e8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cut_mesh_by_plane.rst:40
+msgid "Using MeshCut inside SALOME"
+msgstr ""
+
+# adefbc138ffb43c6b0b3b465af6001b5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cut_mesh_by_plane.rst:42
+msgid ""
+"When the MeshCut plugin is installed, it can be found in the Mesh menu, "
+"sub-menu SMESH_plugins. If the plugin is not installed, the file "
+"meshcut_plugin.py is in SMESH installation in  subdirectory "
+"*bin/salome/meshcut_plugin.py*."
+msgstr ""
+
+# 66e0dbab5f0d4123ab9b08d80341b5bb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cut_mesh_by_plane.rst:46
+msgid ""
+"If there are already plugins defined in a smesh_plugins.py file, this "
+"file should be added at the end. If not, copied as "
+"*${HOME}/Plugins/smesh_plugins.py* or *${APPLI}/Plugins/smesh_plugins.py*"
+" or in *${PLUGINPATH}* directory."
+msgstr ""
+
+# 80ecf33219494f3b839e3b71fd7e0615
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cut_mesh_by_plane.rst:49
+msgid ""
+"From the Mesh menu, sub-menu SMESH_plugins, choose **\"MeshCut\"** item "
+"The following dialog box will appear:"
+msgstr ""
+
+# d6d1a2389773477c9145c6ad8f4a3577
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cut_mesh_by_plane.rst:58
+msgid "See above for the meaning of the parameters."
+msgstr ""
+

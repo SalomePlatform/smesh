@@ -1,0 +1,792 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 86666e2cbeb4408eb608046a56bae1e4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:5
+msgid "Mesh preferences"
+msgstr ""
+
+# 1080a16d80af4f6698fcb587a5fb5edc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:7
+msgid ""
+"In the Mesh module you can set mesh preferences, which can be used right "
+"now or in later sessions with this module according to the preferences."
+msgstr ""
+
+# 0beca22f58e243ceb993d751a1a8944f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:10
+msgid "General Preferences"
+msgstr ""
+
+# b9d4edb0921f4a61a58226e0d1a62e62
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:18
+msgid "Automatic Update"
+msgstr ""
+
+# 2995e42634114a558ecf5246edc4cc3b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:20
+msgid "**Automatic Update**"
+msgstr ""
+
+# fba4cac0c7c947fb8146017a961bce44
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:22
+msgid ""
+"**Automatic Update** - if activated, the mesh in your viewer will be "
+"automatically updated after it's computation, depending on values of "
+"additional preferences specified below."
+msgstr ""
+
+# 708bc74a30ca48e4ada06ca8cc8ba142
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:23
+msgid ""
+"**Size limit (elements)** - allows specifying the maximum number of "
+"elements in the resulting mesh for which the automatic updating of the "
+"presentation is performed. This option affects only :ref:`compute_anchor`"
+" operation. Zero value means \"no limit\". Default value is 500 000 mesh "
+"elements."
+msgstr ""
+
+# 1480b086d8e2407d906f5478dd1bc3c5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:24
+msgid ""
+"**Incremental limit check** - if activated, the mesh size limit check is "
+"not applied to the total number of elements in the resulting mesh, it is "
+"applied iteratively to each entity type in the following order: 0D "
+"elements, edges, faces, volumes, balls. At each step the number of "
+"entities of a certain type is added to the total number of elements "
+"computed at the previous step - if the resulting number of elements does "
+"not exceed the size limit, the entities of this type are shown, otherwise"
+" the user is warned that some entities are not shown."
+msgstr ""
+
+# aff351500d1544bd97d70f959eaa383c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:29
+msgid "Display mode"
+msgstr ""
+
+# cb809edafa364c38b8433aee1e6bc506
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:32
+msgid "**Display mode**"
+msgstr ""
+
+# 8782e3f4895442dbb2ab8cb838c2ccca
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:32
+msgid ""
+"**Default display mode** - allows to set Wireframe, Shading, Nodes or "
+"Shrink :ref:`display_mode_page` as default."
+msgstr ""
+
+# 9c42d83b94c442a09353a74341f831b9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:37
+msgid "Quadratic 2D preferences"
+msgstr ""
+
+# 318d91232eab4675954fbf1c3c974649
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:41
+msgid "**Representation of the 2D quadratic elements**"
+msgstr ""
+
+# 4c5aa0543e0342e38e350eb599c73ffb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:40
+msgid ""
+"**Default mode of the 2D quadratic elements** - allows to select either "
+"*Lines* or *Arcs* as a default :ref:`quadratic_2d_mode` of 1D and 2D "
+":ref:`adding_quadratic_elements_page`."
+msgstr ""
+
+# 56b3c10d5a8243108db4b2c7ab50746b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:41
+msgid ""
+"**Maximum Angle** - maximum deviation angle used by the application to "
+"build arcs."
+msgstr ""
+
+# 82228d4240b24ab68f24d51af55a793b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:45
+msgid "**Quality Controls**"
+msgstr ""
+
+# db8abc18e3534199a5d1b7637945461b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:44
+msgid ""
+"**Display entity** - if activated, only currently :ref:`quality_page` "
+"entities are displayed in the viewer and other entities are temporarily "
+"hidden. For example if you activate :ref:`length_page` quality control, "
+"which controls the length of mesh segments, then only mesh segments are "
+"displayed and faces and volumes are hidden."
+msgstr ""
+
+# c7b8e4c2e550496c8dac1f4caaf238a5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:45
+msgid ""
+"**Use precision** - if activated, all quality controls will be computed "
+"at precision defined by **Number of digits after point** - as integers by"
+" default."
+msgstr ""
+
+# 825d67a587814e6ea3c73c46eea7ed63
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:50
+msgid "Double nodes tolerance"
+msgstr ""
+
+# c70001dcf1f642d38c6af2a7d997f4c1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:52
+msgid ""
+"**Double nodes tolerance** - defines the maximal distance between two "
+"mesh nodes, at which they are considered coincident by "
+":ref:`double_nodes_control_page` quality control. This value is also used"
+" in :ref:`mesh_quality_info_anchor` tab page of :ref:`mesh_infos_page` "
+"dialog."
+msgstr ""
+
+# 4c4a17a5d4464095bcfe63781192d2f6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:54
+msgid "**Mesh export**"
+msgstr ""
+
+# 5fad6433ed53451b800b0c057c951690
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:59
+msgid "Automatically create groups for MED export"
+msgstr ""
+
+# c00091fc9baa4238a97022d3bcc6c18d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:61
+msgid ""
+"**Automatically create groups for MED export** - defines a default state "
+"of a corresponding check-box in :ref:`export_auto_groups` dialog."
+msgstr ""
+
+# ae723b72a0064cd28894c59ab665457f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:66
+msgid "Show warning when exporting group"
+msgstr ""
+
+# 42789c858cf34959972e15e8ad73f74f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:68
+msgid ""
+"**Show warning when exporting group** - if activated, a warning is "
+"displayed when exporting a group."
+msgstr ""
+
+# 0e2314ebbb334c68b12b9424c20cad0c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:73
+msgid "Mesh computation"
+msgstr ""
+
+# 7660c985d55f4181a7dd4279285eca77
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:79
+msgid "**Mesh computation**"
+msgstr ""
+
+# 9db0838c8be64ab2adc3e575f76db3e7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:79
+msgid ""
+"**Show a computation result notification** - allows to select the "
+"notification mode about a :ref:`compute_anchor` result. There are 3 "
+"possible modes:"
+msgstr ""
+
+# cb70e77f347542c99f23f77235d63a7a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:77
+msgid "**Never** - not to show the :ref:`meshing_result_anchor` at all;"
+msgstr ""
+
+# 94b3a98b34a443a89dccea360d3fa397
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:78
+msgid ""
+"**Errors only** - the result dialog will be shown if there were some "
+"errors during a mesh computation;"
+msgstr ""
+
+# 867b39f49b4144a989ec2d53243880b6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:79
+msgid ""
+"**Always** - show the result dialog after each mesh computation. This is "
+"a default mode."
+msgstr ""
+
+# 40ae40b44bbc4809b2941b3a54c6de85
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:84
+msgid "Mesh information"
+msgstr ""
+
+# 8d70173df44042f48eaf242561e71f77
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:86
+msgid "**Mesh information**"
+msgstr ""
+
+# ddcdcb25a8b24745ad2f53287c0e7a2c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:90
+msgid ""
+"**Mesh element information** - allows changing the way "
+":ref:`mesh_element_info_anchor` is shown:"
+msgstr ""
+
+# a21c91e8ff0749a69a614b8a40094dfc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:89
+msgid "**Simple** - as a plain text"
+msgstr ""
+
+# 013890ff591d4fd5865a19533973a33e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:90
+msgid "**Tree** - in a tree-like form"
+msgstr ""
+
+# 7c139ca861ca4049842f3c636bfb3431
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:95
+msgid "Automatic nodes compute limit"
+msgstr ""
+
+# 73e888098e1f45dc90e2341559fc519e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:97
+msgid ""
+"**Automatic nodes compute limit** - allows defining the size limit for "
+"the :ref:`mesh_addition_info_group_anchor` for which the number of "
+"underlying nodes is calculated automatically. If the group size exceeds "
+"the value set in the preferences, the user will have to press \\em "
+"Compute button explicitly. Zero value means \"no limit\". By default the "
+"value is set to 100 000 mesh elements."
+msgstr ""
+
+# 55c0542ffcca4b22845f0dd00e60c78e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:102
+msgid "Automatic controls compute limit"
+msgstr ""
+
+# 02bd6a9486f640c1a5fcf04248e8c6a3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:104
+msgid ""
+"**Automatic controls compute limit** - allows defining a maximal number "
+"of mesh elements for which the quality controls in the "
+":ref:`mesh_quality_info_anchor` tab page are calculated automatically. If"
+" the number of mesh elements exceeds the value set in the preferences, it"
+" is necessary to press **Compute** button explicitly to calculate a "
+"quality measure. Zero value means \"no limit\". By default the value is "
+"set to 3 000 mesh elements."
+msgstr ""
+
+# 4ad8373601e4438cb7c1b466a6cf0bce
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:109
+msgid "Detailed info for groups"
+msgstr ""
+
+# 929ce657c75a430d9d2062a1fb848115
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:111
+msgid ""
+"**Show details on groups in element information tab** - when this option "
+"is switched off (default), only the names of groups, to which the node or"
+" element belongs, are shown in the :ref:`mesh_element_info_anchor` tab of"
+" \"Mesh Information\" dialog box. If this option is switched on, the "
+"detailed information on groups is shown."
+msgstr ""
+
+# 5534e2107e3740178ba5377cc16f9c58
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:112
+msgid ""
+"**Dump base information** - allows dumping base mesh information to the "
+"file, see :ref:`dump_mesh_infos`."
+msgstr ""
+
+# fa4b7f6a853540eb8a9e7becaec5e016
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:113
+msgid ""
+"**Dump element information** - allows dumping element information to the "
+"file, see :ref:`dump_mesh_infos`."
+msgstr ""
+
+# 4e9ca690ccb54fd19ec634e2313d24f1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:114
+msgid ""
+"**Dump additional information** - allows dumping additional mesh "
+"information to the file, see :ref:`dump_mesh_infos`."
+msgstr ""
+
+# 87a71ab143a44b168da433268838ea1d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:115
+msgid ""
+"**Dump controls information** - allows dumping quality mesh information "
+"to the file, see :ref:`dump_mesh_infos`."
+msgstr ""
+
+# ade975dfa7e242f99d48dcc46b238234
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:117
+msgid "**Automatic Parameters**"
+msgstr ""
+
+# b5aa47a535b84964835dc569d29580a3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:122
+msgid "Ratio Bounding Box Diagonal"
+msgstr ""
+
+# 7b436c68a4264dc3af6e68c7a2b3ace8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:124
+msgid ""
+"**Ratio Bounding Box Diagonal / Max Size** - defines the ratio between "
+"the bounding box of the meshed object and the Max Size of segments. It is"
+" used as a default value of :ref:`a1d_meshing_hypo_page` defining length "
+"of segments, especially by :ref:`max_length_anchor` hypothesis."
+msgstr ""
+
+# 3e2cd3f669414850ba68c3b68b8c7060
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:129
+msgid "Default Number of Segments"
+msgstr ""
+
+# d92bd97cf1394bef94493ef5a53459c7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:131
+msgid ""
+"**Default Number of Segments** - defines the default number of segments "
+"in :ref:`number_of_segments_anchor` hypothesis."
+msgstr ""
+
+# 40606083e2c74dc2a0057ea0531e70b2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:133
+msgid "**Mesh loading**"
+msgstr ""
+
+# 45553581d5f94aba9984043324a7a671
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:135
+msgid ""
+"**No mesh loading from study file at hypothesis modification** - if "
+"activated, the mesh data will not be loaded from the study file when a "
+"hypothesis is modified. This allows saving time by omitting loading data "
+"of a large mesh that is planned to be recomputed with other parameters."
+msgstr ""
+
+# aebbff71e88c47f6bf7544d54cb08225
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:137
+msgid ""
+"**Input fields precision** - allows to adjust input precision of "
+"different parameters. The semantics of the precision values is described "
+"in detail in **Using input widgets** chapter of GUI documentation "
+"(Introduction to Salome Platform / Introduction to GUI / Using input "
+"widgets). In brief: **positive** precision value is the maximum allowed "
+"number of digits after the decimal point in the fixed-point format; "
+"**negative** precision value is the maximum allowed number of significant"
+" digits in mantissa in either the fixed-point or scientific format."
+msgstr ""
+
+# 14aab516533d41d4a050872afd2d7129
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:139
+msgid ""
+"**Length precision** - allows to adjust input precision of coordinates "
+"and dimensions."
+msgstr ""
+
+# d5405bdf6e5d4627b8d964d6d5db2eba
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:140
+msgid "**Angular precision** - allows to adjust input precision of angles."
+msgstr ""
+
+# da60439d8a894f129cd270e031753a32
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:141
+msgid ""
+"**Length tolerance precision** - allows to adjust input precision of "
+"tolerance of coordinates and dimensions."
+msgstr ""
+
+# aac59c84886147de8d919059baef91f3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:142
+msgid ""
+"**Parametric precision** - allows to adjust input precision of parametric"
+" values."
+msgstr ""
+
+# 79555e19934a49abb6b1930101562e5a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:143
+msgid ""
+"**Area precision** - allows to adjust input precision of mesh element "
+"area."
+msgstr ""
+
+# dad33cd69f6e4ef88426e1acc4832395
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:144
+msgid ""
+"**Volume precision** - allows to adjust input precision of mesh element "
+"volume."
+msgstr ""
+
+# 5c78cd7db6cb401baffbf93527d8064d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:147
+msgid "**Preview**"
+msgstr ""
+
+# 8997363a1c8a4603baf5a97a12552ae7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:147
+msgid ""
+"**Sub-shapes preview chunk size** - allows to limit the number of "
+"previewed sub-shapes shown in the hypotheses creation dialog boxes, for "
+"example \"Reverse Edges\" parameter of :ref:`number_of_segments_anchor` "
+"hypothesis."
+msgstr ""
+
+# 00aa69a7e22d438da665287e8b618f32
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:152
+msgid "**Python Dump**"
+msgstr ""
+
+# 584a9e84ca8647beadbce1de3ebd1061
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:150
+msgid ""
+"**Historical python dump** - allows switching between *Historical* and "
+"*Snapshot* dump mode:"
+msgstr ""
+
+# e1f2a1c1f1fb4b66b71e7537f91396f3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:151
+msgid ""
+"In *Historical* mode, Python Dump script includes all commands performed "
+"by SMESH engine."
+msgstr ""
+
+# a95234780277478ea6f39395723b2274
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:152
+msgid ""
+"In *Snapshot* mode, the commands relating to objects removed from the "
+"Study as well as the commands not influencing the current state of meshes"
+" are excluded from the script."
+msgstr ""
+
+# e6208c776c314ae4bf5c7eac60b8fa14
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:157
+msgid "Mesh Preferences"
+msgstr ""
+
+# e29f953dd0ba4dc58ada2a9a6cc9dba1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:159
+msgid ""
+"**Mesh** tab page contains parameters defining the way the mesh is "
+"displayed in the 3D Viewer."
+msgstr ""
+
+# 6ecf85af43074d048a114c9ba06dc688
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:167
+msgid ""
+"**Nodes** - allows to define default parameters for nodes, which will be "
+"applied for a newly created mesh only. Existing meshes can be customized "
+"using :ref:`colors_size_page` available from the context menu of a mesh."
+msgstr ""
+
+# 8ccf649b8dc047868f28f3c3f0a9fd8b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:165
+msgid ""
+"**Color** -  allows to select the color of nodes. Click on the downward "
+"arrow near the colored line to access to the **Select Color** dialog box."
+msgstr ""
+
+# 62bc2f26045b48bc8a871b94c4594b91
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:166
+msgid "**Type of marker** - allows to define the shape of nodes."
+msgstr ""
+
+# b9edba04c49941fa9f94800bbbf57555
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:167
+msgid "**Scale of marker** - allows to define the size of nodes."
+msgstr ""
+
+# e3763e6d2df14a87a0ca9ed3390988d1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:184
+msgid ""
+"**Elements** - allows to define default parameters for different "
+"elements, which will be applied to a newly created mesh only. Existing "
+"meshes can be customized using :ref:`colors_size_page` available from the"
+" context menu of a mesh."
+msgstr ""
+
+# d4ced05a884144578beee7b41b229ac3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:170
+msgid ""
+"**Surface color**  - allows to select the surface color of 2D elements "
+"(seen in Shading mode). Click on the downward arrow near the colored line"
+" to access to the **Select Color** dialog box."
+msgstr ""
+
+# 4eb13db66ad340ef81e58ca2006dc05c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:171
+msgid ""
+"**Back surface color** - allows to select the back surface color of 2D "
+"elements. This is useful to differ 2d elements with reversed orientation."
+" Use the slider to select the color generated basing on the **Surface "
+"color** by changing its brightness and saturation."
+msgstr ""
+
+# 4ecb31a377fe40e884507dbb19654b59
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:172
+msgid ""
+"**Volume color** - allows to select the surface color of 3D elements "
+"(seen in Shading mode)."
+msgstr ""
+
+# 59054eccfc91434aaab74f4a4b673676
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:173
+msgid ""
+"**Reversed volume color** - allows to select the surface color of "
+"reversed 3D elements. Use the slider to select the color generated basing"
+" on the **Volume color** by changing its brightness and saturation."
+msgstr ""
+
+# 0eadab3ea42642a9ac2817e7ec68c13d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:174
+msgid "**0D element color** - allows to choose color of 0D mesh elements."
+msgstr ""
+
+# 12d2ced353384e17af983bbec65ec603
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:175
+msgid "**Ball color** - allows to choose color of discrete mesh elements (balls)."
+msgstr ""
+
+# 94058859794c4f1296afd0b57c603c7a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:176
+msgid "**Outline color** - allows to select the color of element borders."
+msgstr ""
+
+# 8d9ea519244d4eee81d556ae26af1a92
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:177
+msgid ""
+"**Wireframe color** - allows to select the color of borders of elements "
+"in the wireframe mode."
+msgstr ""
+
+# f0f6be573148448fb96233cfdbd68662
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:178
+msgid ""
+"**Preview color** - allows to select the preview color of the elements, "
+"which is used while :ref:`adding_nodes_and_elements_page`."
+msgstr ""
+
+# 128aa6ccf3974c04b0b1134b910f8714
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:179
+msgid "**Size of 0D elements** - specifies default size of 0D elements."
+msgstr ""
+
+# 9fae69316c3d4c2cb0866c29a81431c2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:180
+msgid ""
+"**Size of ball elements** - specifies default size of discrete elements "
+"(balls)."
+msgstr ""
+
+# bd02ccc8220b4310aef9dea39e221c3d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:181
+msgid ""
+"**Scale factor of ball elements** - specifies default scale factor of "
+"discrete elements (balls) allowing to adjust their size in the Viewer."
+msgstr ""
+
+# 1fe534c8fe2f48478a08a1e23f47d422
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:182
+msgid "**Line width** - allows to define the width of 1D elements (segments)."
+msgstr ""
+
+# d7ed3f0888834f70ac90d0c9a1746c7f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:183
+msgid ""
+"**Outline width** - allows to define the width of borders of 2D and 3D "
+"elements (shown in the Shading mode)."
+msgstr ""
+
+# f4445e8d16274349b65ffe42160b0b3d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:184
+msgid ""
+"**Shrink coef.** - allows to define relative size of a shrunk element "
+"compared a non-shrunk element in percents in the shrink mode."
+msgstr ""
+
+# ba8af4c61186416783c75abdddc55376
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:188
+msgid "**Groups**"
+msgstr ""
+
+# 2c3d1d895bce4fe4b0b9c64eef9b92e0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:187
+msgid ""
+"**Names color** - specifies color of group names to be used in the 3D "
+"viewer."
+msgstr ""
+
+# 3e367d8eb83041889295781fb9fb8b6b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:188
+msgid ""
+"**Default color** - specifies the default group color, which is used to "
+"create a new mesh group (see :ref:`creating_groups_page`)."
+msgstr ""
+
+# 9f28d514b76740b49b11f67f2abdd6e5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:192
+msgid "**Numbering** allows to define properties of numbering functionality:"
+msgstr ""
+
+# 13d5c7e6d97c4d6ca9ba3c3b47933c08
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:191
+msgid ""
+"**Nodes** - specifies text properties of nodes numbering (font family, "
+"size, attributes, color)."
+msgstr ""
+
+# fbb6f98ae4674d69a98679b3c0bf077f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:192
+msgid "**Elements** - same for elements."
+msgstr ""
+
+# 3b2821cfde164510b8f21340ab99d08d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:197
+msgid ""
+"**Orientation of Faces** - allows to define default properties of "
+"orientation vectors. These preferences will be applied to the newly "
+"created meshes only; properties of existing meshes can be customized "
+"using :ref:`colors_size_page` available from the context menu of a mesh."
+msgstr ""
+
+# b2873f76b99346cfbf7a9efa3725af30
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:195
+msgid "**Color** - allows to define the color of orientation vectors;"
+msgstr ""
+
+# b61f06ec5d92434fa51281eb9079901e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:196
+msgid "**Scale** - allows to define the size of orientation vectors;"
+msgstr ""
+
+# 0fe597ecf6414d71a73f4a2e081a534d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:197
+msgid "**3D Vector** - allows to choose between 2D planar and 3D vectors."
+msgstr ""
+
+# b8dd01b3567d42b4853155edd5b19938
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:200
+msgid "Selection Preferences"
+msgstr ""
+
+# 377d4d6db9bb4ecd909888cf3523a985
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:207
+msgid ""
+"**Selection** - performed with mouse-indexing (preselection) and left-"
+"clicking on an object, whose appearance changes as defined in the "
+"**Preferences**."
+msgstr ""
+
+# 37571072b8d84447ae82974380147c6a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:206
+msgid ""
+"**Object color** - allows to select the color of mesh (edges and borders "
+"of meshes) of the selected entity. Click on the colored line to access to"
+" the **Select Color** dialog box."
+msgstr ""
+
+# 014792f5a1bf478abe88ffa8a1d96fc6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:207
+msgid ""
+"**Element color** - allows to select the color of surface of selected "
+"elements (seen in Shading mode). Click on the colored line to access to "
+"the **Select Color** dialog box."
+msgstr ""
+
+# 875ecdc81187472c97afabdb3c0e1d99
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:210
+msgid ""
+"**Preselection** - performed with mouse-indexing on an object, whose "
+"appearance changes as defined in the **Preferences**."
+msgstr ""
+
+# 27f032e718204b42b067f9fc493ff400
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:210
+msgid ""
+"**Highlight color** - allows to select the color of mesh (edges and "
+"borders of meshes) of the entity. Click on the colored line to access to "
+"the **Select Color** dialog box."
+msgstr ""
+
+# e89697cf348d4119a626cb206ae809bd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:212
+msgid ""
+"**Precision** - in this menu you can set the value of precision used for "
+"**Nodes**, **Elements** and **Objects**."
+msgstr ""
+
+# b4e87347f0b5498a94add401c03f54d5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:215
+msgid "Scalar Bar Preferences"
+msgstr ""
+
+# 7fe95cdce3254c25b6066673b910d3c5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:221
+msgid ""
+"The following settings are default and will be applied to a newly created"
+" mesh only. Existing meshes can be customized using local "
+":ref:`scalar_bar_dlg` available from the context menu of a mesh."
+msgstr ""
+
+# 08f246d4c49f4f67b6c1a92ed2a56b13
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:223
+msgid ""
+"**Font** - in this menu you can set type, face and color of the font of "
+"**Title** and **Labels**."
+msgstr ""
+
+# b7bf0da17d79446c98c3a5cae06670fa
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:225
+msgid ""
+"**Colors & Labels** - in this menu you can set the **number of colors** "
+"and the **number of labels** in use."
+msgstr ""
+
+# c425048b5ce148fd95e42f0b11ea5602
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:227
+msgid ""
+"**Orientation** - here you can choose between vertical and horizontal "
+"orientation of the **Scalar Bar**."
+msgstr ""
+
+# 54a8c11082074ffc84fd6480d3189cf3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:231
+msgid ""
+"**Origin & Size Vertical & Horizontal** - allows to define placement "
+"(**X** and **Y**) and lookout (**Width** and **Height**) of Scalar Bars."
+msgstr ""
+
+# 64390fb45cd844b2a17a9a19ee25c59b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:230
+msgid "**X** - abscissa of the point of origin (from the left side)."
+msgstr ""
+
+# ccd005065b8c4940b3945cac2d4645d8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:231
+msgid "**Y** - ordinate of the origin of the bar (from the bottom)."
+msgstr ""
+
+# 7bbe2195abfa475692d47d40581f2903
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:236
+msgid ""
+"**Distribution** in this menu you can Show/Hide distribution histogram of"
+" the values of the **Scalar Bar** and specify the **Coloring Type** of "
+"the histogram:"
+msgstr ""
+
+# 89b1d9cc918d4094bfc53d242697b1da
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:234
+msgid "**Multicolor** - the histogram is colored as **Scalar Bar**."
+msgstr ""
+
+# 5776b1b6f872431f9c3095827c9e6a69
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/mesh_preferences.rst:235
+msgid ""
+"**Monocolor** - the histogram is colored as selected with **Distribution "
+"color** selector."
+msgstr ""
+

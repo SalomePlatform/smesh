@@ -1,0 +1,404 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 0427a840a4e84ac6989aa0c77bfac249
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:5
+msgid "Sewing meshes"
+msgstr ""
+
+# 0f75e9f4e2e04aa59f00d0f88b0e2b0c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:7
+msgid ""
+"In SMESH you can sew elements of a mesh. The current functionality allows"
+" you to sew:"
+msgstr ""
+
+# 30937e9e896c4b1e8da93505b12fa892
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:10
+msgid ":ref:`free_borders_anchor`"
+msgstr ""
+
+# 1f1df6e111004472b003cda7e0c6b098
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:11
+msgid ":ref:`conform_free_borders_anchor`"
+msgstr ""
+
+# a0fdf0c2c0e04ab39246e05fcc02fe08
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:12
+msgid ":ref:`border_to_side_anchor`"
+msgstr ""
+
+# 17caeaf9ef344600b0a4863ddc79e48d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:13
+msgid ":ref:`side_elements_anchor`"
+msgstr ""
+
+# 2d547b0934db4141b1f612bcb80ae199
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:22
+msgid "**To sew elements of a mesh:**"
+msgstr ""
+
+# 832116b60d01498d9dd437868ce6c5eb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:24
+msgid ""
+"From the **Modification** menu choose the **Transformation** item and "
+"from its sub-menu select the **Sewing** item."
+msgstr ""
+
+# 177708ac72a04962849b6692eac54cee
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:25
+msgid ""
+"Check in the dialog box one of the radio buttons corresponding to the "
+"type of sewing operation you would like to perform."
+msgstr ""
+
+# efe3e16943ef4edab8968180a97c6545
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:26
+msgid "Fill the other fields available in the dialog box."
+msgstr ""
+
+# a9f39065e73a4da885acd38d5507cf04
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:27
+msgid ""
+"Click the **Apply** or **Apply and Close** button to perform the "
+"operation of sewing."
+msgstr ""
+
+# 67fbff5164924d018bdc8c6aa5dca3b3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:34
+msgid "Sew free borders"
+msgstr ""
+
+# 45ffaa1d166d4a73b2e434da1dae0ab7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:36
+msgid "This functionality allows you to unite free borders of a 2D mesh."
+msgstr ""
+
+# a195379eb25b4b3c8def98cd965baeb5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:38
+msgid ""
+"There are two working modes: *Automatic* and *Manual*. In the "
+"**Automatic** mode, the program finds free borders coincident within the "
+"specified tolerance and sews them. Optionally it is possible to visually "
+"check and correct if necessary the found free borders before sewing. In "
+"the **Manual** mode you are to define borders to sew by picking three "
+"nodes of each of two borders."
+msgstr ""
+
+# cff4e716051842d29c7f4a08565327c7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:52
+msgid "To use **Automatic** sewing:"
+msgstr ""
+
+# 72336fb7e3fe4501ab80d5b5492733f3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:54
+msgid ""
+"Specify the mesh you want to sew by selecting it or any its part (group "
+"or sub-mesh) in the Object Browser or in the VTK Viewer."
+msgstr ""
+
+# 63c77719c09f4067b17893670f50e041
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:55
+msgid ""
+"Specify the **Tolerance**, within which free borders are considered "
+"coincident. At the default zero **Tolerance**, the tolerance used by he "
+"search algorithm is defined as one tenth of an average size of elements "
+"adjacent to compared free borders."
+msgstr ""
+
+# 4714fc6d3faa4c79ab36852cc0e4c74d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:56
+msgid ""
+"To visually check the coincident free borders found by the algorithm, "
+"switch off **Auto Sewing** check-box. The controls to adjust groups of "
+"coincident free borders will become available in the dialog."
+msgstr ""
+
+# acef3f7f661b4aecbaea899908fb9107
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:64
+msgid ""
+"**Detect** button launches the algorithm of search of coincident free "
+"borders."
+msgstr ""
+
+# 92e4f57d17cd4fdbb82b24f0fc95f45f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:65
+msgid ""
+"The found groups of **Coincident Free Borders** are shown in the list, "
+"one group per line. Each group has its own color, which is used to "
+"display the group borders in the VTK Viewer. A free border within a group"
+" is designated by the IDs of its first, second and last nodes within "
+"parenthesis. All borders present in the list will be sewn upon **Apply**."
+msgstr ""
+
+# eee96bafee2b41a1904366607c979078
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:66
+msgid "**Remove** button removes the selected groups from the list."
+msgstr ""
+
+# 4257c6d79e974570949891f524d38740
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:67
+msgid "**Select All** check-box selects all groups in the list."
+msgstr ""
+
+# 3208c772c2074645abc64177f162090d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:68
+msgid ""
+"When a group is selected, its borders appear in **Edit Selected Group** "
+"list that allows you to change this group."
+msgstr ""
+
+# 61981c0624434b3bbd85dd6b1d20f5e9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:83
+msgid ""
+"Selection of a border in the list allows changing its first and last "
+"nodes whose IDs appear in two fields below the list. *Arrow* buttons near"
+" each field move the corresponding end node by the number of nodes "
+"defined by **Step** field."
+msgstr ""
+
+# 84ef8d30fdb94cfa82a17768d40a7393
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:92
+msgid ""
+"For sewing free borders manually you should switch the **Mode** to "
+"**Manual** and define three points on each border: the first, the second "
+"and the last node:"
+msgstr ""
+
+# c9034feb9b2b4e3884a179194bafa9c7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:97
+msgid "the first node specifies beginning of the border;"
+msgstr ""
+
+# 17de1ef3b50c4d6c95babb7c8d3253fc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:98
+msgid ""
+"the second node specifies the part of the border which should be "
+"considered (as far as the free border usually forms a closed contour);"
+msgstr ""
+
+# bee01760bbfb4aefb6d885d0d4f081dc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:99
+msgid "the last node specifies the end of the border."
+msgstr ""
+
+# 5a0dc92cf1634f1b9f84f559096a1849
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:102
+msgid "You can select these nodes in the 3D viewer or define by its id."
+msgstr ""
+
+# caae9a4a6e6045d8b183bb97dd65b87e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:104
+msgid ""
+"The first and the second nodes should belong to the same link of a face. "
+"The second and the last nodes of a border can be the same. The first and "
+"the last nodes of two borders can be the same. The corresponding end "
+"nodes of two borders will be merged. Intermediate nodes of two borders "
+"will be either merged or inserted into faces of the opposite border."
+msgstr ""
+
+# 52a9e8df81dc45eb9570dd91eed42e10
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:111
+msgid ""
+"In practice the borders to sew often coincide and in this case it is "
+"difficult to specify the first and the last nodes of a border since they "
+"coincide with the first and the last nodes of the other border. To cope "
+"with this, :ref:`merging_nodes_page` coincident nodes into one "
+"beforehand. Two figures below illustrate this approach."
+msgstr ""
+
+# c7647d646eed4682a8d0f9e0359b66bd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:130
+msgid "The sewing algorithm is as follows:"
+msgstr ""
+
+# 7a7c60ebb975485ea6dda92c2f609a80
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:132
+msgid ""
+"The parameter (U) of each node within a border is computed. So that the "
+"first node has U=0.0, the last node has U=1.0, for the rest nodes 0.0 < U"
+" < 1.0;"
+msgstr ""
+
+# 50334149dbdb4c8aa8068989c6f0dbcb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:133
+msgid ""
+"Compare node parameters of the two borders. If two nodes of the opposite "
+"borders have close parameters, they are merged, i.e. a node of the first "
+"border is replaced in all elements by a node of the second border. If a "
+"node has no node with a close parameter in the opposite border, it is "
+"inserted into an edge of element of the opposite border, an element is "
+"split. Two nodes are considered close enough to merge, if difference of "
+"their parameters is less than one fifth of minimum length of adjacent "
+"face edges on the borders."
+msgstr ""
+
+# ad507053a5a5403ba9e0f023d5da133e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:142
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_sew_free_borders` "
+"operation."
+msgstr ""
+
+# 14435c9e9b574a8981617b79df0aea8a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:149
+msgid "Sew conform free borders"
+msgstr ""
+
+# b017b8bbb53f488db8fa09627d9904fd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:151
+msgid "This functionality can be used to unite two free borders of a 2D mesh."
+msgstr ""
+
+# 6a8a83cff00b4bc4a66562dfa130bfd0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:156
+msgid ""
+"The borders of meshes for sewing are defined as for \"Sew free borders\" "
+"except that the second free border is not limited and can be defined by "
+"the first and the second nodes only. The first nodes of two borders can "
+"be the same."
+msgstr ""
+
+# 927f9477f808490da86c1422ecfacf6e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:161
+msgid ""
+"The algorithm is following: counting nodes starting at the first ones, "
+"the n-th node of the first border is merged with the n-th node of the "
+"other border, until the end of either of borders. Nodes of the first "
+"border are replaced in all elements with corresponding nodes of the "
+"second border."
+msgstr ""
+
+# 1516ecc4950e4a9fb8b27ebe590122ec
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:168
+msgid ""
+"For sewing conform free borders you should define three points on the "
+"first border and two points on the second one. User can select these "
+"nodes in 3D viewer or define node by its id."
+msgstr ""
+
+# 041ce8ee41c14f9d927db512030afd36
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:176
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_sew_conform_free_borders`"
+" operation."
+msgstr ""
+
+# 65b0a0c74caa42e19e189c09d9afb252
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:183
+msgid "Sew border to side"
+msgstr ""
+
+# 88c3b5fd40ae42bbafa9b4d6644475a9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:185
+msgid "\"Sew border to side\" is intended to sew a free border to a mesh surface."
+msgstr ""
+
+# 37bb36c6f5e6447d88c3a40690d07c7f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:189
+msgid ""
+"The free border is defined as for \"Sewing of free borders\". The place "
+"where to sew the border is defined by two nodes, between which the border"
+" faces are placed, so that the first border node is merged with the first"
+" node on the side and the last node of the border is merged with the "
+"second specified node on the side."
+msgstr ""
+
+# 1b976c0dfd734579bb69d1f821541ce6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:194
+msgid "The algorithm is following."
+msgstr ""
+
+# d39a717ae6844ad7b25f5692ed57d70a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:196
+msgid ""
+"Find a sequence of linked nodes on the side such that the found links to "
+"be most co-directed with the links of the free border."
+msgstr ""
+
+# 66e7c6cefa3644a49ac9c1b787350287
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:197
+msgid "Sew two sequences of nodes using algorithm of \"Sewing of free berders\"."
+msgstr ""
+
+# 037508d4a2c2439d8488e9de3fe2f4da
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:200
+msgid ""
+"For sewing border to side you should define three points on the border "
+"and two points on the side. User can select these nodes in 3D viewer or "
+"define node by its id."
+msgstr ""
+
+# 60dcf19069f04f83bbf22733a3551e62
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:208
+msgid ""
+"**See Also** a sample TUI Script of a "
+":ref:`tui_sew_meshes_border_to_side` operation."
+msgstr ""
+
+# 8aa15075cb4e4698b3516044d6ba4ff1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:215
+msgid "Sew side elements"
+msgstr ""
+
+# dc6cdaaf8c3f43dcae25ade86910ab6a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:217
+msgid "This operation is intended to unite two mesh surfaces."
+msgstr ""
+
+# 73e1de6f7d8f401082281d1d07977628
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:222
+msgid ""
+"Surfaces may be defined by either 2d or 3d elements. The number of given "
+"elements of the sides must be the same. The sets of given elements must "
+"be topologically equal, i.e. each node of one element set must have a "
+"corresponding node in the other element set and corresponding nodes must "
+"be equally linked. If there are 3d elements in a set, only their free "
+"faces must obey to that rule."
+msgstr ""
+
+# 8be258d690594afe9e90428561b47cc1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:229
+msgid ""
+"Two corresponding nodes on each side must be specified. They must belong "
+"to one element and must be located on an element set boundary."
+msgstr ""
+
+# beffb26461c94fb29e06f062d9097797
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:231
+msgid ""
+"Sewing algorithm finds and merges the corresponding nodes starting from "
+"the specified ones."
+msgstr ""
+
+# 8d34e43f12604a0fae6e679f88de6c06
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:246
+msgid ""
+"For sewing side elements you should define elements for sewing and two "
+"nodes for merging on the each side. User can select these elements and "
+"nodes in 3D viewer or define them by its id."
+msgstr ""
+
+# 36d86c0d971448d58e132b91e11b4ab3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/sewing_meshes.rst:250
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_sew_side_elements` "
+"operation."
+msgstr ""
+

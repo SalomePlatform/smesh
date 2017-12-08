@@ -1,0 +1,341 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 5147fa31ae3b483b8c1072e1e45c0684
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:5
+msgid "Duplicate Nodes or/and Elements"
+msgstr ""
+
+# bee16d2e37f34b0e9a398478b5ef8f3a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:7
+msgid ""
+"This operation allows duplicating mesh nodes or/and elements, which can "
+"be useful to emulate a crack in the model."
+msgstr ""
+
+# 012ca3a95eae461490b79abd136c6321
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:9
+msgid ""
+"Duplication consists in creation of mesh elements \"equal\" to existing "
+"ones."
+msgstr ""
+
+# 14b9d90e49ff464e9daddf7d5d95d55a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:11
+msgid "**To duplicate nodes or/and elements:**"
+msgstr ""
+
+# f3d3df00d1bb4492a58c77e0b45dc6f6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:13
+msgid ""
+"From the **Modification** menu choose **Transformation** -> **Duplicate "
+"Nodes or/and Elements** item or click **\"Duplicate Nodes or/and "
+"Elements\"** button in the toolbar."
+msgstr ""
+
+# b4ac34ca4ecf4579b08656c175d92774
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:21
+msgid ""
+"Check in the dialog box one of four radio buttons corresponding to the "
+"type of duplication operation you would like to perform."
+msgstr ""
+
+# 75b05a186ab14690b26409eaf534b482
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:22
+msgid ""
+"Fill the other fields available in the dialog box (depending on the "
+"chosen operation mode)."
+msgstr ""
+
+# 596eb28b911347c2a0926dff4afdccbe
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:23
+msgid ""
+"Click the **Apply** or **Apply and Close** button to perform the "
+"operation of duplication."
+msgstr ""
+
+# ffc1a8b8bf904409b6a014fdbd9bd9cb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:25
+msgid "\"Duplicate Nodes or/and Elements\" dialog has four working modes:"
+msgstr ""
+
+# 9bf50c98e6724294a8470c6c1543e464
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:27
+msgid ":ref:`mode_without_elem_anchor`"
+msgstr ""
+
+# 2a5a2df31afa4348be54537af6de0bff
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:28
+msgid ":ref:`mode_with_elem_anchor`"
+msgstr ""
+
+# e8263574ea36477aa7623c1955f44c89
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:29
+msgid ":ref:`mode_elem_only_anchor`"
+msgstr ""
+
+# f0791cde0a6241538036a1d6ebc102b3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:30
+msgid ":ref:`mode_group_boundary_anchor`"
+msgstr ""
+
+# 0551dca570624dc282f98101b99f422b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:37
+msgid "Duplicate nodes only"
+msgstr ""
+
+# 31ef20c3e6a34becbc14fb5049de5fda
+# 404278b79a2d4ac98f2ab3ba7bc24ba6
+# bb33b0bd56ce44bba3940061ccd07195
+# 753f34b88d864324aba9b816fc7b8412
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:43
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:75
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:118
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:136
+msgid "Parameters to be defined in this mode:"
+msgstr ""
+
+# cd8779af6bf54feabab3a81101c69a0b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:45
+msgid ""
+"**Group of nodes to duplicate** (**mandatory**): these nodes will be "
+"duplicated."
+msgstr ""
+
+# 2d4f75955d584bbfb4d867f2c9faa5b8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:46
+msgid ""
+"**Group of elements to replace nodes with new ones** (**optional**): the "
+"new nodes will replace the duplicated nodes within these elements."
+msgstr ""
+
+# 7ced7111b7af4ec3a9b624c8b4e3f9bb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:47
+msgid ""
+"**Construct group with newly created nodes** option (**checked by "
+"default**): if checked - the group with newly created nodes will be "
+"built."
+msgstr ""
+
+# 2792968de8484dd8a4d0f2cf0a5b5c9e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:49
+msgid ""
+"A schema below illustrates how the crack is emulated using the node "
+"duplication."
+msgstr ""
+
+# a5bf3d65e56b4d7f97788208e8dbc4e3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:61
+msgid ""
+"This schema shows a virtual crack in a 2D mesh created using this "
+"duplication mode:"
+msgstr ""
+
+# e6fc75f21ea6496198aa0b1e50a1f4cb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:59
+msgid "Black balls are **duplicated nodes**."
+msgstr ""
+
+# be004054e8874136bd29e6bad7160377
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:60
+msgid "Red balls are **new nodes**."
+msgstr ""
+
+# 1e6e9fd72cdb48cfbaa0987a2c5bb368
+# fc37f5c61c0e4c538566eb9323b68f1b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:61
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:99
+msgid "**Elements to replace nodes with new ones** are marked with green."
+msgstr ""
+
+# c38eb7cc23634448b1e7241575aea13b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:64
+msgid "Note that in the reality **duplicated nodes** coincide with **new nodes**."
+msgstr ""
+
+# 8601d651b0a64824b4f18c9378dbac33
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:70
+msgid "Duplicate nodes and border elements"
+msgstr ""
+
+# 83f41673be9c483998dd3136d1aa49b5
+# afb0565acf6e4c9f8b7df68e9a8726bb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:77
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:120
+msgid ""
+"**Group of elements to duplicate** (**mandatory**): these elements will "
+"be duplicated."
+msgstr ""
+
+# 0f9fb6bccd4e40e48897f8bff8b0fe59
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:78
+msgid ""
+"**Group of nodes not to duplicate** (**optional**): group of nodes at "
+"crack bottom which will not be duplicated."
+msgstr ""
+
+# 2a23e9b269054e63b9e14ca20067d4b9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:79
+msgid ""
+"**Group of elements to replace nodes with new ones** (**mandatory**): the"
+" new nodes will replace the nodes to duplicate within these elements."
+msgstr ""
+
+# 2e757ab99da4412cb9cf995c67938315
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:80
+msgid ""
+"**Construct group with newly created elements** option (**checked by "
+"default**): if checked - the group of newly created elements will be "
+"built."
+msgstr ""
+
+# 763d583bb74f42c0bcae4009e8b52386
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:81
+msgid ""
+"**Construct group with newly created nodes** option (**checked by "
+"default**): if checked - the group of newly created nodes will be built."
+msgstr ""
+
+# e97711ca7147448aacec7cb4cd6301c2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:84
+msgid ""
+"A schema below explains the crack emulation using the node duplication "
+"with border elements."
+msgstr ""
+
+# 07af94bbfb21422ca71f32b1349818f8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:92
+msgid ""
+"This schema shows a virtual crack in a 2D mesh created using this "
+"duplication mode. In this schema:"
+msgstr ""
+
+# 1830fc51702740339fc80233ee94fc63
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:94
+msgid "Black segments are **duplicated elements** (edges in 2D case)."
+msgstr ""
+
+# 441c4fa9022c4218b4fc87e40609c774
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:95
+msgid ""
+"Black balls (except for the lowest one) are duplicated nodes of "
+"**duplicated elements**."
+msgstr ""
+
+# 2bf9789260e1414bb7433c8e9ac53dbd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:96
+msgid "The lowest black ball is the **non-duplicated node**."
+msgstr ""
+
+# 1d1ce816d3bc4ddda2db246ddb4eab51
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:97
+msgid "Red balls are **newly created nodes**."
+msgstr ""
+
+# 50e8b24787c64773a93a0b28d3c8c679
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:98
+msgid "Red segments are **created elements** (edges)."
+msgstr ""
+
+# f32adbca95d34f38857ea4bba74da954
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:101
+msgid ""
+"Note that in the reality **nodes to duplicate** coincide with **new "
+"nodes**."
+msgstr ""
+
+# a36f630e3c774df5b1c653deef9263c7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:103
+msgid ""
+"In a 3D case, where **elements to duplicate** are faces, the edges "
+"located at the \"crack\" (if any) are cloned automatically."
+msgstr ""
+
+# fea519884d6f4cee99e7bb95a6a8339d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:110
+msgid "Duplicate elements only"
+msgstr ""
+
+# 703a787a2cb64a18a00ae013af7d2156
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:112
+msgid ""
+"This mode duplicates the given elements, i.e. creates new elements with "
+"the same nodes as the given elements."
+msgstr ""
+
+# 302ef6771b8647b995203c19fcf9251a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:121
+msgid ""
+"**Construct group with newly created elements** option (**checked by "
+"default**): if checked - the group of newly created elements will be "
+"built. The name of the created group starts from \"DoubleElements\"."
+msgstr ""
+
+# 178dd2990df74d3e88c6e21e26c629e2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:127
+msgid "Duplicate nodes on group boundaries"
+msgstr ""
+
+# db5d6ad28c224676ab8a8b812415a84a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:129
+msgid ""
+"This mode duplicates nodes located on boundaries between given groups of "
+"volumes."
+msgstr ""
+
+# abda119ffd214b52a8b0f82eddee5a35
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:138
+msgid ""
+"**Groups (faces or volumes)** (**mandatory**): list of mesh groups. These"
+" groups should be disjoint, i.e. should not have shared elements."
+msgstr ""
+
+# 04fb78bad6e14785881728cbadbd501f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:139
+msgid ""
+"If **Create joint elements** option is activated, flat elements are "
+"created on the duplicated nodes: a triangular facet shared by two volumes"
+" of two groups generates a flat prism, a quadrangular facet generates a "
+"flat hexahedron. Correspondingly 2D joint elements (null area faces) are "
+"generated where edges are shared by two faces. The created flat volumes "
+"(or faces) are stored in groups. These groups are named according to the "
+"position of the group in the list of groups: group \"j_n_p\" is a group "
+"of flat elements that are built between the group \\#n and the group \\#p"
+" in the group list. All flat elements are gathered into the group named "
+"\"joints3D\" (correspondingly \"joints2D\"). The flat elements of "
+"multiple junctions between the simple junction are stored in a group "
+"named \"jointsMultiples\"."
+msgstr ""
+
+# 9062bb490b184743b1d0695078653fb9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:140
+msgid ""
+"If **On all boundaries** option is activated, the volumes (or faces), "
+"which are not included into **Groups** input, are considered as another "
+"group and thus the nodes on the boundary between **Groups** and the "
+"remaining mesh are also duplicated."
+msgstr ""
+
+# 3ef21a415a784b9f84eceef20ff9221c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_page.rst:143
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_duplicate_nodes` "
+"operation."
+msgstr ""
+

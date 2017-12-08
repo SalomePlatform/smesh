@@ -1,0 +1,140 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 9256cdd25833423fb9b94c5a521e371c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/use_existing_algos.rst:5
+msgid "Import Elements from Another Mesh Algorithms"
+msgstr ""
+
+# b62cc448e48e488c9f614f558da02dd9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/use_existing_algos.rst:7
+msgid ""
+"**Import Elements from Another Mesh** algorithms allow to define the mesh"
+" of a geometrical object by importing suitably located mesh elements from"
+" another mesh. The mesh elements to import from the other mesh should be "
+"contained in groups. If several groups are used to mesh the same "
+"geometry, validity of nodal connectivity of result mesh must be assured "
+"by connectivity of the source mesh; no geometrical checks are performed "
+"to merge different nodes at same locations."
+msgstr ""
+
+# f7645fc4bea24180b90d6cbb03fb814f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/use_existing_algos.rst:16
+msgid ""
+"The source elements must totally cover the meshed geometry. The source "
+"elements lying partially over the geometry will not be used."
+msgstr ""
+
+# e622165086af4b8ba48b7a0dde755f4e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/use_existing_algos.rst:19
+msgid ""
+"These algorithms can be used to mesh a very complex geometry part by "
+"part, by storing meshes of parts in files and then fusing them together "
+"using these algorithms."
+msgstr ""
+
+# a156c398751b42b9814c87b3f9445ebf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/use_existing_algos.rst:24
+msgid ""
+"**Import 1D Elements from Another Mesh** algorithm allows to define the "
+"mesh of a geometrical edge (or group of edges) by importing mesh edges "
+"contained in a group (or groups) from another mesh."
+msgstr ""
+
+# c7834efef670431bbf92f4eaf9a15904
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/use_existing_algos.rst:28
+msgid ""
+"To apply this algorithm select the edge to be meshed (indicated in the "
+"field **Geometry** of **Create mesh** dialog box), **Import 1D Elements "
+"from Another Mesh** in the list of 1D algorithms and click the **\"Add "
+"Hypothesis\"** button. The following dialog box will appear:"
+msgstr ""
+
+# 7354dcaf5146486895b6841595b4c80c
+# 341cf4e0e75141898ae652b38faf121a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/use_existing_algos.rst:37
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/use_existing_algos.rst:53
+msgid "In this dialog box you can define"
+msgstr ""
+
+# cdab0f64ef27485db96a543b3c67547e
+# 20b666eb31aa426f90c95d45776c3afb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/use_existing_algos.rst:39
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/use_existing_algos.rst:55
+msgid "The **Name** of the algorithm."
+msgstr ""
+
+# 615d8cf66218471a8868fbe1a949912b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/use_existing_algos.rst:40
+msgid "The **Groups of Edges** to import 1D elements from."
+msgstr ""
+
+# 62b46b2d47b14f1db122657a9b4e4e8d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/use_existing_algos.rst:41
+msgid ""
+"**To copy mesh** checkbox allows to import not only the edges of the "
+"selected **Groups of Edges**, but the whole source mesh. In this case "
+"**To copy groups** checkbox allows to create the same groups as in the "
+"imported source mesh."
+msgstr ""
+
+# 0e44000afb5f46f9a60851e12e7d75ca
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/use_existing_algos.rst:44
+msgid ""
+"**Import 1D-2D Elements from Another Mesh** algorithm allows to define "
+"the mesh of a geometrical face (or group of faces) by importing mesh "
+"faces contained in a group (or groups) from another (or this) mesh. 1D "
+"elements on the boundary of the geometrical face (if not yet present) are"
+" also created by the algorithm in conformity with the created 2D "
+"elements."
+msgstr ""
+
+# 734d46eb23684f30830e906650b59021
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/use_existing_algos.rst:46
+msgid ""
+"To apply this algorithm select the geometrical face to be meshed "
+"(indicated in the field **Geometry** of **Create mesh** dialog box), "
+"**Import 1D-2D Elements from Another Mesh** in the list of 2D algorithms "
+"and click the **\"Add Hypothesis\"** button."
+msgstr ""
+
+# 917c2f04ada84399b9596a4fcc837a6f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/use_existing_algos.rst:48
+msgid "The following dialog box will appear:"
+msgstr ""
+
+# 2e682626bbaf491cbd85c2068ca0cf28
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/use_existing_algos.rst:56
+msgid "The **Groups of Faces** to import 2D elements from."
+msgstr ""
+
+# 70466a59647642678446f260180f595a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/use_existing_algos.rst:57
+msgid ""
+"**To copy mesh** checkbox allows to import not only the faces of the "
+"selected **Groups of Faces**, but the whole source mesh. In this case "
+"**To copy groups** checkbox allows to create the same groups as in the "
+"imported source mesh."
+msgstr ""
+
+# 405cfbf9b2154272a1a334322432d98c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/use_existing_algos.rst:60
+msgid "**See Also** a sample TUI Script of a :ref:`tui_import`."
+msgstr ""
+

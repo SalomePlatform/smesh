@@ -1,0 +1,44 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# e744aed8ef694ea99b7130e99217c15d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/free_borders.rst:5
+msgid "Free borders"
+msgstr ""
+
+# 2f1cd2b0475b478096f3af6e60704e7f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/free_borders.rst:7
+msgid ""
+"This mesh quality control highlights 1D elements (segments) belonging to "
+"one element (face or volume) only."
+msgstr ""
+
+# 8548d598dbbd4a05812f4d4c733374bf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/free_borders.rst:12
+msgid ""
+"In this picture the free borders are displayed in red. (Faces are "
+"explicitly shown via **Display Entity** menu as all elements but segments"
+" are hidden upon this control activation)."
+msgstr ""
+
+# fa891d3c4c794a4f94e45d3169e528ed
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/free_borders.rst:14
+msgid "**See Also** a sample TUI Script of a :ref:`tui_free_borders` operation."
+msgstr ""
+

@@ -1,0 +1,43 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 00de523f05fb4028973b57a1043944ae
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/free_nodes.rst:5
+msgid "Free nodes"
+msgstr ""
+
+# 02fa9d9f90b14ce6acd7da029ef05cbc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/free_nodes.rst:7
+msgid ""
+"This mesh quality control highlights the nodes which are not connected to"
+" any  mesh element."
+msgstr ""
+
+# 1e3a78f5ddba4dd8959674d7be0dfb25
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/free_nodes.rst:12
+msgid ""
+"In this picture some nodes are not connected to any mesh element after "
+"deleting some elements and adding several isolated nodes."
+msgstr ""
+
+# 1c239db808994ddca40b15e4acefaa4b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/free_nodes.rst:14
+msgid "**See also:** A sample TUI Script of a :ref:`tui_free_nodes` operation."
+msgstr ""
+

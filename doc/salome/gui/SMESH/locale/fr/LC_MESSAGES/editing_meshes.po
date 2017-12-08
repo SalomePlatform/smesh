@@ -1,0 +1,60 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# e9c884fc93424691a36a5b5a08908d42
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/editing_meshes.rst:5
+msgid "Editing Meshes"
+msgstr ""
+
+# 4108e447b8d44bf29f56a5724ab4c803
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/editing_meshes.rst:7
+msgid ""
+"After you have created a mesh or sub-mesh with definite applied meshing "
+"algorithms and hypotheses you can edit your mesh by **assigning** other "
+"algorithms and/or hypotheses or **unassigning** the applied hypotheses "
+"and algorithms. The editing proceeds in the same way as "
+":ref:`create_mesh_anchor`:\"Mesh Creation\"."
+msgstr ""
+
+# d86646f92966449492afab0cc02d1f84
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/editing_meshes.rst:14
+msgid ""
+"You can also change values for the current hypothesis by clicking the "
+"**\"Edit Hypothesis\"** button."
+msgstr ""
+
+# dc3c4db7324c4e3499d941a4dc820715
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/editing_meshes.rst:23
+msgid ""
+"Mesh entities generated before using changed hypotheses are automatically"
+" removed."
+msgstr ""
+
+# 6beaa93e8a474a9a8e5ff92a0036705a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/editing_meshes.rst:25
+msgid ""
+"See how the mesh constructed on a geometrical object changes if we apply "
+"different meshing parameters to it."
+msgstr ""
+
+# 15b4f649638048f0b81ba2cb2a899822
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/editing_meshes.rst:41
+msgid "**See Also** a sample TUI Script of an :ref:`tui_editing_mesh` operation."
+msgstr ""
+

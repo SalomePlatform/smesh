@@ -74,7 +74,7 @@ StdMeshersGUI_QuadrangleParamCreator::StdMeshersGUI_QuadrangleParamCreator(const
 
 QString  StdMeshersGUI_QuadrangleParamCreator::helpPage() const
 {
-  return "a2d_meshing_hypo_page.html#hypo_quad_params_anchor";
+  return "2d_meshing_hypo.html#hypo-quad-params-anchor";
 }
 
 //=======================================================================

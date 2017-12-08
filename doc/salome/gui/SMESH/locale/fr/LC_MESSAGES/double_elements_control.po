@@ -1,0 +1,43 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 29180c98e4a743249d7d78b1aeed590c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_elements_control.rst:5
+msgid "Double edge, Double faces and Double volumes"
+msgstr ""
+
+# 59d063c920a0439eabdc80c5a6e09d83
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_elements_control.rst:7
+msgid ""
+"These mesh quality controls highlight the mesh elements basing on the "
+"same set of nodes."
+msgstr ""
+
+# d28bb6f9dec048b98ecdf91fa9f056b1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_elements_control.rst:12
+msgid ""
+"In this picture some faces are coincident after copying all elements with"
+" translation with subsequent Merge of nodes."
+msgstr ""
+
+# 941183a3377e44e98a9fd65acdba5e32
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_elements_control.rst:14
+msgid "*A sample TUI Script of a* :ref:`filter_double_elements`:."
+msgstr ""
+

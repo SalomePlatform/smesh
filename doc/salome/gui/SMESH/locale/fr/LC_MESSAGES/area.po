@@ -1,0 +1,58 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# db55cbb79de0435090214d3b033d4c3b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/area.rst:6
+msgid "Area"
+msgstr ""
+
+# 8dccc331fadb42f28684db2bd0ba2125
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/area.rst:8
+msgid ""
+"**Area** mesh quality control is based on the algorithm of area "
+"calculation of mesh faces."
+msgstr ""
+
+# b62f3cc3e4d144a39abf63f3ef1c393e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/area.rst:11
+msgid "**To apply the Area quality control to your mesh:**"
+msgstr ""
+
+# 1d4a7fa016a74a89971d5200f8ef9b56
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/area.rst:13
+msgid "Display your mesh in the viewer."
+msgstr ""
+
+# 705801c6cdba479cbfb4546c4e13583b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/area.rst:14
+msgid "Choose **Controls > Face Controls > Area** or click  **\"Area\"** button."
+msgstr ""
+
+# f2936084fdc448ffb9d0af1b4325c570
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/area.rst:22
+msgid ""
+"Your mesh will be displayed in the viewer with its faces colored "
+"according to the applied mesh quality control criterion:"
+msgstr ""
+
+# 34b6e9d9faff413da4a5b4ed05bcb750
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/area.rst:29
+msgid "**See Also** a sample TUI Script of an :ref:`tui_area` operation."
+msgstr ""
+

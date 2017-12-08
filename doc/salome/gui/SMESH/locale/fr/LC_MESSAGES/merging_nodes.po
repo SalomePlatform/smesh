@@ -1,0 +1,200 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 033566c4a91542a2bf913af827ba2fdf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:5
+msgid "Merging nodes"
+msgstr ""
+
+# 60bc4d8f71ac4807b7b0e8abc8c1bbfd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:7
+msgid ""
+"This functionality allows user to detect groups of coincident nodes with "
+"specified tolerance; each group of the coincident nodes can be then "
+"converted to the single node."
+msgstr ""
+
+# abf1019f274748b79cee33454902e06b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:15
+msgid "**To merge nodes of your mesh:**"
+msgstr ""
+
+# b9c33077e980439594561dcb5a89092f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:17
+msgid ""
+"Choose **Modification** -> **Transformation** -> **Merge nodes** menu "
+"item. The following dialog box shall appear:"
+msgstr ""
+
+# b5f31aaf0fd24a05b4ba5f14f4983d25
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:22
+msgid "**Name** is the name of the mesh whose nodes will be merged."
+msgstr ""
+
+# 068d08e8fbc441e0abe0f09e3bfaa863
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:23
+msgid ""
+"**Automatic** or **Manual** mode allows choosing how the nodes are "
+"processed. In **Manual** mode you can adjust groups of coincident nodes "
+"detected by the program and/or select any nodes to be merged."
+msgstr ""
+
+# d301ba18189443b286c7ca56a419a0f7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:24
+msgid "**Tolerance** is a maximum distance between nodes sufficient for merging."
+msgstr ""
+
+# 94d17edfe1b145e0a02c53cfa81ad4a1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:25
+msgid ""
+"Activation of **No merge of corner and medium nodes of quadratic cells** "
+"check-box prevents merging medium nodes of quadratic elements with corner"
+" nodes. This check-box is enabled provided that the selected mesh "
+"includes quadratic elements."
+msgstr ""
+
+# c0158f38e00543259da3f6c7075f1526
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:26
+msgid ""
+"Activation of **Avoid making holes** check-box prevents merging nodes "
+"that make elements invalid (but not degenerated) and hence removed. Thus,"
+" no holes in place of removed elements appear."
+msgstr ""
+
+# 1149123f535e4635ab06c10cc8f34826
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:27
+msgid ""
+"**Exclude groups from detection** group allows to ignore the nodes which "
+"belong to the specified mesh groups. This control is active provided that"
+" the mesh includes groups."
+msgstr ""
+
+# ca3d828d0b26461dade69760a26f5515
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:28
+msgid ""
+"**Nodes to keep during the merge** group allows to specify nodes to keep "
+"in the mesh. (By default a node being the first in a group of coincident "
+"nodes is kept.) It is possible to either select nodes in the Viewer or "
+"select groups of any element type whose nodes will be kept."
+msgstr ""
+
+# 7f0358cfb8084b21978e14a6f1696f32
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:30
+msgid "*Selection* button activates selection of nodes to keep."
+msgstr ""
+
+# a2776b8b7f3a4cf38f931d404e447523
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:31
+msgid "**Nodes** button activates selection of nodes in the Viewer."
+msgstr ""
+
+# 93619e16b7be492189784bc929141601
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:32
+msgid ""
+"**Groups and sub-meshes** button activates selection of groups and sub-"
+"meshes."
+msgstr ""
+
+# 93e33bcfae1d46e39eba7c2eb9ceaa87
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:33
+msgid "**Add** button adds selected nodes or groups to the list."
+msgstr ""
+
+# 04aa746a15af43eabc7946b31105c2f4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:34
+msgid ""
+"Nodes or groups selected in the list can be removed using **Remove** "
+"button."
+msgstr ""
+
+# b2323b67d3304401b4619872da0af4ee
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:36
+msgid "**Automatic mode:**"
+msgstr ""
+
+# 438ef8a64eea4ab9b57982ab34522546
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:38
+msgid ""
+"In the **Automatic** Mode all nodes within the indicated tolerance will "
+"be merged. The nodes which belong to the groups specified in **Exclude "
+"groups from detection** will NOT be taken into account."
+msgstr ""
+
+# 113aa0679afe4c629bc55f1aaff30250
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:40
+msgid ""
+"The **Manual** mode gives you full control of what the operation will do."
+" In this mode additional controls are available:"
+msgstr ""
+
+# 74faf350ab90407ca867c8994ce95b37
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:42
+msgid ""
+"**Detect** button generates the list of coincident nodes for the given "
+"**Tolerance**."
+msgstr ""
+
+# 77344d7fdd4349258d0907932fab9cf4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:43
+msgid ""
+"**Coincident nodes** is a list of groups of nodes for merging. Upon "
+"**Apply** all nodes of each group will be united into one node. The first"
+" node of a group is kept and the others are removed. By default the first"
+" node has a lowest ID within the group."
+msgstr ""
+
+# c3993ce0ebf34ae2a3d8be122e80d412
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:45
+msgid "**Remove** button deletes the selected group from the list."
+msgstr ""
+
+# 4215b623a9bc4448b59f0e2c06b522a4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:46
+msgid "**Add** button adds to the list a group of nodes selected in the viewer."
+msgstr ""
+
+# b43143e8ac2f4696a4aa7ef2d4dadae8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:47
+msgid "**Select all** check-box selects all groups."
+msgstr ""
+
+# 9944a0f029844d2e97324b9e128e94b8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:48
+msgid ""
+"**Show double nodes IDs** check-box shows/hides identifiers of nodes of "
+"selected groups in the 3D viewer."
+msgstr ""
+
+# c2b3b7f1a2254beaa1125d16b862c301
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:54
+msgid ""
+"**Edit selected group of coincident nodes** list allows editing the "
+"selected group:"
+msgstr ""
+
+# 6d897aa5954b4aa49b4b5a64b5ac813f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:74
+msgid "To confirm your choice click **Apply** or **Apply and Close** button."
+msgstr ""
+
+# 00c92d262c8c442694dc4c48cdb9153b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/merging_nodes.rst:89
+msgid "**See Also** a sample TUI Script of a :ref:`tui_merging_nodes` operation."
+msgstr ""
+

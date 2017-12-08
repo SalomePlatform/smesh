@@ -1,0 +1,108 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# d1b42be93bda4c598dc059e9c97d1738
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_notebook_smesh_page.rst:5
+msgid "Using SALOME NoteBook"
+msgstr ""
+
+# 7c57ab017ac74ff496bcfdc011b95330
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_notebook_smesh_page.rst:7
+msgid ""
+"**SALOME NoteBook** allows defining variables to be used for creation and"
+" modification of objects."
+msgstr ""
+
+# 7b838238936644fd9b00305a1c19acca
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_notebook_smesh_page.rst:22
+msgid "The following limitations on the use of variables still exist:"
+msgstr ""
+
+# ca33bdf6af554545a419c6a12db08048
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_notebook_smesh_page.rst:24
+msgid ""
+":ref:`radial_prism_algo_page` hypothesis - parametrical values are "
+"correctly applied, but they are not restored after \"Update study\" "
+"operation."
+msgstr ""
+
+# cf92e0e4ac844ac2bf2b581b94a28f48
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_notebook_smesh_page.rst:25
+msgid ""
+":ref:`a1d_meshing_hypo_page` hypothesis, Distribution with Table Density "
+"and Distribution with Analytic Density - parametrical values are not "
+"applicable."
+msgstr ""
+
+# 8e23f202b73c4dbbbd9535fd1a9263fa
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_notebook_smesh_page.rst:26
+msgid ""
+":ref:`translation_page` dialog box, default mode (translation by two "
+"points) - parametrical values are correctly applied, but they are not "
+"restored after \"Update study\" operation."
+msgstr ""
+
+# e84280726e0149aab30e3a2705203e12
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_notebook_smesh_page.rst:27
+msgid ""
+":ref:`merging_nodes_page` dialog box - parametrical value (tolerance of "
+"coincident nodes detection) is correctly applied, but it is not restored "
+"after \"Update study\" operation."
+msgstr ""
+
+# ba5deecaf83c41b99bfadd30e03f3f30
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_notebook_smesh_page.rst:28
+msgid ""
+":ref:`revolution_page` dialog box - it is impossible to use the angle of "
+"revolution as \"total angle\" if it is defined as variable."
+msgstr ""
+
+# d108675600ea43928a7d2dbecaaf9edc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_notebook_smesh_page.rst:29
+msgid ""
+":ref:`extrusion_along_path_page` dialog box - it is impossible to use "
+"\"Linear variation of the angles\" mode if at least one of those angles "
+"is defined as variable."
+msgstr ""
+
+# 1e2fcf17f43b4aedb6b836d82e796ac9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_notebook_smesh_page.rst:30
+msgid ""
+":ref:`pattern_mapping_page` dialog box - parametrical values (indices of "
+"nodes) are correctly applied, but they are not restored after \"Update "
+"study\" operation."
+msgstr ""
+
+# 24c36e2739cd433f863159d254d84480
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_notebook_smesh_page.rst:31
+msgid ":ref:`clipping_page` dialog box."
+msgstr ""
+
+# f81d6249e89243e38067caf0ff72c715
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_notebook_smesh_page.rst:32
+msgid "**Properties** dialog box."
+msgstr ""
+
+# 8006786080b645a9a6dce82f7c55c761
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/using_notebook_smesh_page.rst:35
+msgid ""
+"Our **TUI Scripts** provide you with useful examples of "
+":ref:`tui_notebook_smesh` ."
+msgstr ""
+

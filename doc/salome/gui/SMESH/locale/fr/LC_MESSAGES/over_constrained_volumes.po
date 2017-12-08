@@ -1,0 +1,47 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 1c76f867b1bd4081b8b10575d65b85d4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/over_constrained_volumes.rst:5
+msgid "Over-constrained volumes"
+msgstr ""
+
+# 1ceac26032bb4804bf5dc6931e08b4f6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/over_constrained_volumes.rst:7
+msgid ""
+"This mesh quality control highlights volumes sharing only one border with"
+" other volumes. In other words, the volumes having all their nodes on the"
+" external border of the mesh are highlighted."
+msgstr ""
+
+# c0c65d21a1cb48cca3707891a34f48e5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/over_constrained_volumes.rst:11
+msgid ""
+"The highlighted volumes are actually over-constrained only if, at the "
+"computation time, the boundary conditions on the borders where the nodes "
+"are located are all Dirichlet boundary conditions."
+msgstr ""
+
+# ae9f662b35ed4e059827aae378ff704a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/over_constrained_volumes.rst:19
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_over_constrained_volumes`"
+" filter."
+msgstr ""
+

@@ -1,0 +1,429 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# aada02ed87e9482991a105a7096b13b9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:5
+msgid "Modifying Meshes"
+msgstr ""
+
+# 4fca5d359462431bbfb1a297c6f1c015
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:0
+msgid "`Table of contents`"
+msgstr ""
+
+# 3882fd88f2be46d2bf046435d1ab6116
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:13
+msgid "Adding Nodes and Elements"
+msgstr ""
+
+# 2912e95b7a304f02ac3e3a0f6b492e1f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:18
+msgid "Add Node"
+msgstr ""
+
+# e937ad8c1eee48b89418d8c87e754c40
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:22
+msgid "``modifying_meshes_ex01.py``"
+msgstr ""
+
+# 93520ad0813442f18bdf9a0b3def23f5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:28
+msgid ":download:`../../../examples/modifying_meshes_ex01.py`"
+msgstr ""
+
+# e015d501736443c787c8448daa4b1cf4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:33
+msgid "Add 0D Element"
+msgstr ""
+
+# 07f05da961cb4e3aa357c1125efd0dfa
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:37
+msgid "``modifying_meshes_ex02.py``"
+msgstr ""
+
+# 8cd7162f281041e998a16ba15b6a2afd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:43
+msgid ":download:`../../../examples/modifying_meshes_ex02.py`"
+msgstr ""
+
+# 9ae5e80e36414b81bb414c6e3dbc0401
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:48
+msgid "Add 0D Element on Element Nodes"
+msgstr ""
+
+# 4ce9e69888e54ea6bc3d8123892df4bf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:52
+msgid "``modifying_meshes_ex03.py``"
+msgstr ""
+
+# 1fc33b2f5afe4ef39a3e0386470702c7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:58
+msgid ":download:`../../../examples/modifying_meshes_ex03.py`"
+msgstr ""
+
+# 1b9d3c3a725b450e9ca4646848ed26e1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:63
+msgid "Add Edge"
+msgstr ""
+
+# ecdca588cdd84ff8aa87f45abec12590
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:67
+msgid "``modifying_meshes_ex04.py``"
+msgstr ""
+
+# 97c1b92363944e539c1d9b466977e5bd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:73
+msgid ":download:`../../../examples/modifying_meshes_ex04.py`"
+msgstr ""
+
+# af3bdd72bc624e11aaf32fbb7e915f29
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:78
+msgid "Add Triangle"
+msgstr ""
+
+# 3863dc59cd09494b904f960891c29256
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:82
+msgid "``modifying_meshes_ex05.py``"
+msgstr ""
+
+# 52380a726927405b899c634d3ee0c922
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:88
+msgid ":download:`../../../examples/modifying_meshes_ex05.py`"
+msgstr ""
+
+# ad7815a0144e444b9f1ffead0f73a605
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:93
+msgid "Add Quadrangle"
+msgstr ""
+
+# 1033fb8fc9a74063b718f6bb688d67bd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:97
+msgid "``modifying_meshes_ex06.py``"
+msgstr ""
+
+# 1c0f1e73f76640a89cf49c530537d010
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:103
+msgid ":download:`../../../examples/modifying_meshes_ex06.py`"
+msgstr ""
+
+# 0685aeaebe4c481c91a0b527c967396e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:108
+msgid "Add Tetrahedron"
+msgstr ""
+
+# 941189d082ff4a3f8e4b8ebb23f0d2f3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:112
+msgid "``modifying_meshes_ex07.py``"
+msgstr ""
+
+# dfa8e48ee2fc4165aa775033e6b052ea
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:118
+msgid ":download:`../../../examples/modifying_meshes_ex07.py`"
+msgstr ""
+
+# 5a5f7874626d427ea5a7fb55e797fa66
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:123
+msgid "Add Hexahedron"
+msgstr ""
+
+# b651ec6bdb5246e0aaf99bc1acb35d9f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:127
+msgid "``modifying_meshes_ex08.py``"
+msgstr ""
+
+# 418525e42ce74f7094b73b1413abfdae
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:133
+msgid ":download:`../../../examples/modifying_meshes_ex08.py`"
+msgstr ""
+
+# bae866607b304e0fbb9907ca192aa2ee
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:138
+msgid "Add Polygon"
+msgstr ""
+
+# ecf9edb8d0994d9cbe4d186a66912cbc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:142
+msgid "``modifying_meshes_ex09.py``"
+msgstr ""
+
+# 52080c13dd784dabb391ab937ca983a9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:148
+msgid ":download:`../../../examples/modifying_meshes_ex09.py`"
+msgstr ""
+
+# 07055770fb864145b907da2b4909b703
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:153
+msgid "Add Polyhedron"
+msgstr ""
+
+# b1442132c7dc4cbd9f868b181428dcaa
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:157
+msgid "``modifying_meshes_ex10.py``"
+msgstr ""
+
+# ed0593751615424989125f0586ac3936
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:163
+msgid ":download:`../../../examples/modifying_meshes_ex10.py`"
+msgstr ""
+
+# 9b285274402b48658860b32294e8dac5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:168
+msgid "Removing Nodes and Elements"
+msgstr ""
+
+# b436e294d1214a44ac54a0fab50212bf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:173
+msgid "Removing Nodes"
+msgstr ""
+
+# 2f66f5eef3344132ba6c582bc1192a7e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:177
+msgid "``modifying_meshes_ex11.py``"
+msgstr ""
+
+# 32c27c776f6741d79e21444ad7e7f223
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:183
+msgid ":download:`../../../examples/modifying_meshes_ex11.py`"
+msgstr ""
+
+# af6993ae032c44f2956ef6b1b7219fa1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:188
+msgid "Removing Elements"
+msgstr ""
+
+# 6e2bc2d438014d5c91bf0650d0b93f62
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:192
+msgid "``modifying_meshes_ex12.py``"
+msgstr ""
+
+# dbcc049e4aba43d7943cd5d4e59f68b1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:198
+msgid ":download:`../../../examples/modifying_meshes_ex12.py`"
+msgstr ""
+
+# 8c6510d0103043a3b6d6c5009c58c140
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:203
+msgid "Removing Orphan Nodes"
+msgstr ""
+
+# a62084880a3d4d99a920c5c7d64c35d0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:207
+msgid "``modifying_meshes_ex13.py``"
+msgstr ""
+
+# 65829ed7318d44e5b213e4476cb88975
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:213
+msgid ":download:`../../../examples/modifying_meshes_ex13.py`"
+msgstr ""
+
+# 072e7fda68214ff6a9e82bb46d9e7b54
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:218
+msgid "Moving Nodes"
+msgstr ""
+
+# 6241da425fc341a6972bc52709c9f17d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:222
+msgid "``modifying_meshes_ex15.py``"
+msgstr ""
+
+# 761b5555313b4de6b6658a24bd1c5943
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:228
+msgid ":download:`../../../examples/modifying_meshes_ex15.py`"
+msgstr ""
+
+# eae98f1d881f47ad856d133c7fcf647d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:233
+msgid "Diagonal Inversion"
+msgstr ""
+
+# 17f8656a2043438498d5faa309d9db3f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:237
+msgid "``modifying_meshes_ex16.py``"
+msgstr ""
+
+# 93dd916eca644dfa818c988ce6a3ba6a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:243
+msgid ":download:`../../../examples/modifying_meshes_ex16.py`"
+msgstr ""
+
+# f29b26e5fc1e4f5ab64a01d46874bcca
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:248
+msgid "Uniting two Triangles"
+msgstr ""
+
+# ee685e2cbc4c45adabf0313c94ab265d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:252
+msgid "``modifying_meshes_ex17.py``"
+msgstr ""
+
+# 760efa3959614773944130605e38d103
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:258
+msgid ":download:`../../../examples/modifying_meshes_ex17.py`"
+msgstr ""
+
+# 0e8309d52aa24136bc511e7c8cbae48a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:263
+msgid "Uniting a Set of Triangles"
+msgstr ""
+
+# 09b737cbe2c0409983ecb054dbe346b0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:267
+msgid "``modifying_meshes_ex18.py``"
+msgstr ""
+
+# dffc67da027e422ea2d6731b538e248f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:273
+msgid ":download:`../../../examples/modifying_meshes_ex18.py`"
+msgstr ""
+
+# 0a3c94c6a162420aaae25531382282aa
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:278
+msgid "Orientation"
+msgstr ""
+
+# b1c35bc3190c43c3ab90cc1c1d71526b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:282
+msgid "``modifying_meshes_ex19.py``"
+msgstr ""
+
+# d03db5ed6b0346eaba85dc3df49eeb2a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:288
+msgid ":download:`../../../examples/modifying_meshes_ex19.py`"
+msgstr ""
+
+# 6d1a49f7262a485295850a85e54992e9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:293
+msgid "Cutting Quadrangles"
+msgstr ""
+
+# c838a6074c60435a8113adb2e75db894
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:297
+msgid "``modifying_meshes_ex20.py``"
+msgstr ""
+
+# d0de4068046e44848a15fbf4eea6deb9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:303
+msgid ":download:`../../../examples/modifying_meshes_ex20.py`"
+msgstr ""
+
+# ad37ede65d2f46a8b22efc9d19e6b347
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:308
+msgid "Smoothing"
+msgstr ""
+
+# d705f65980314385901c4316f258235e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:312
+msgid "``modifying_meshes_ex21.py``"
+msgstr ""
+
+# 8c8d9acaabed4ddb892a839ea88c6e42
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:318
+msgid ":download:`../../../examples/modifying_meshes_ex21.py`"
+msgstr ""
+
+# 4cb97b8e8f2a44558385dbbce875e7c4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:323
+msgid "Extrusion"
+msgstr ""
+
+# df3a417c2dce420abdd0669fbb74ce9f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:327
+msgid "``modifying_meshes_ex22.py``"
+msgstr ""
+
+# 23e499ee8ac64a2283c6b7e195610dac
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:333
+msgid ":download:`../../../examples/modifying_meshes_ex22.py`"
+msgstr ""
+
+# 37b48cd5b20a4e3a9e23fd93831e395c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:338
+msgid "Extrusion along a Path"
+msgstr ""
+
+# e15b81f2dc884607b96325a960a0a814
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:342
+msgid "``modifying_meshes_ex23.py``"
+msgstr ""
+
+# 59666ee96fec4ddd866a6f9608742380
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:348
+msgid ":download:`../../../examples/modifying_meshes_ex23.py`"
+msgstr ""
+
+# 4d4ccc2f066246a7a5aeb153f5cdae2c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:353
+msgid "Revolution"
+msgstr ""
+
+# 8b7cde33b28d413c9572c095b91f4adc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:357
+msgid "``modifying_meshes_ex24.py``"
+msgstr ""
+
+# ad888657b3eb4279b21d70ae77361803
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:363
+msgid ":download:`../../../examples/modifying_meshes_ex24.py`"
+msgstr ""
+
+# be6c231c208445c4b20afdd211012acd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:368
+msgid "Pattern Mapping"
+msgstr ""
+
+# 952a2de3d76145639d9519752e453883
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:372
+msgid "``modifying_meshes_ex25.py``"
+msgstr ""
+
+# 325e04d139ca400dbdcc2860a1624425
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:378
+msgid ":download:`../../../examples/modifying_meshes_ex25.py`"
+msgstr ""
+
+# ee3a18d7cd0d4e168fb38e013f8e7d9b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:383
+msgid "Convert mesh to/from quadratic"
+msgstr ""
+
+# ccf9ab173a504d459c9a4bf914326489
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:387
+msgid "``modifying_meshes_ex26.py``"
+msgstr ""
+
+# fcb2a25c83fe400cbd804504e046b28a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:393
+msgid ":download:`../../../examples/modifying_meshes_ex26.py`"
+msgstr ""
+
+# 2345c457190f43888ddecd3a2b12558a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:398
+msgid "Split bi-quadratic into linear"
+msgstr ""
+
+# ede71e5407594b6197cb58e6b1c92ed4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:402
+msgid "``split_biquad.py``"
+msgstr ""
+
+# 57fa3126ba154d68acfd6079690d5e3d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_modifying_meshes.rst:408
+msgid ":download:`../../../examples/split_biquad.py`"
+msgstr ""
+

@@ -1,0 +1,72 @@
+(function() {
+  'use strict';
+
+  // Parses versions in URL segments like:
+
+  var all_languages = {
+      'en': 'English',
+      'fr': 'French',
+  };
+
+  function build_language_select(current_language) {
+    var buf = ['<select>'];
+
+    $.each(all_languages, function(language, title) {
+      if (language == current_language)
+        buf.push('<option value="' + language + '" selected="selected">' +
+                 all_languages[current_language] + '</option>');
+      else
+        buf.push('<option value="' + language + '">' + title + '</option>');
+    });
+    buf.push('</select>');
+    return buf.join('');
+  }
+
+  function on_language_switch() {
+    var selected_language = $(this).children('option:selected').attr('value') + '/';
+    var url = window.location.href;
+
+    var current_language = language_segment_from_url(url);
+    var current_suffix = "";
+    if (current_language != "") {
+      current_suffix = "_";
+    } else {
+	current_language = "/";
+    }
+
+    var selected_suffix = "_";
+    if (selected_language == 'en/') { // Special 'default' case for english.
+      selected_language = '';
+      selected_suffix = "/";
+    }
+
+    var new_url = url.replace('/gui/SMESH' + current_suffix + current_language,
+                              '/gui/SMESH' + selected_suffix + selected_language);
+    if (new_url != url) {
+      window.location.href = new_url;
+    }
+  }
+
+  // Returns the path segment of the language as a string, like 'fr/'
+  // or '' if not found.
+  function language_segment_from_url(url) {
+    var language_regexp = '\/gui/SMESH_([a-z]{2}(?:-[a-z]{2})?/)';
+    var match = url.match(language_regexp);
+    if (match !== null)
+        return match[1];
+    return '';
+  }
+
+  $(document).ready(function() {
+    if(@BUILD_LANGUAGE_SWITCHER@) {
+	var release = DOCUMENTATION_OPTIONS.VERSION;
+	var language_segment = language_segment_from_url(window.location.href);
+	var current_language = language_segment.replace(/\/+$/g, '') || 'English';
+
+	var language_select = build_language_select(current_language);
+
+	$('.language_switcher_placeholder').html(language_select);
+	$('.language_switcher_placeholder select').bind('change', on_language_switch);
+    }
+  });
+})();

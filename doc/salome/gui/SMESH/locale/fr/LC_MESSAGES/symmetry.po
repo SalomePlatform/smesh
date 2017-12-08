@@ -1,0 +1,194 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 4495625b73cb4025b5a466244ef3545c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:5
+msgid "Symmetry"
+msgstr ""
+
+# 4324e7ba74fe4f4e9a31f68950b412ef
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:7
+msgid ""
+"This geometrical operation allows to perform a symmetrical copy of your "
+"mesh or some of its elements."
+msgstr ""
+
+# 38426ec597c644cdb149162d515565e7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:9
+msgid "**To create a symmetrical copy:**"
+msgstr ""
+
+# 90098b12a4484472b188b7c4b5d80f61
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:11
+msgid ""
+"From the **Modification** menu choose **Transformation** -> **Symmetry** "
+"item  or click **\"Symmetry\"** button in the toolbar."
+msgstr ""
+
+# c2192cf2b3104e51b1ec178cfcc33eca
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:19
+msgid "One of the following dialogs will appear:"
+msgstr ""
+
+# 6b97037715704d8b96de0d25714c7bd5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:21
+msgid "It is possible to mirror a mesh or some of its elements through:"
+msgstr ""
+
+# 16cbf169672d463aa4aff02bf6840d6a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:43
+msgid "In the dialog:"
+msgstr ""
+
+# 89f61de1a46d49e08683ce60e41adf14
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:45
+msgid "specify the elements for the symmetry operation:"
+msgstr ""
+
+# 84857591a5f14ff3b49d88767e9f3f70
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:47
+msgid "**Select the whole mesh, submesh or group** activating this checkbox; or"
+msgstr ""
+
+# 7350982923864549b09f2d934160d037
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:48
+msgid ""
+"choose mesh elements with the mouse in the 3D Viewer. It is possible to "
+"select a whole area with a mouse frame; or"
+msgstr ""
+
+# fc3c522656574fdc938cd8560bc79b70
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:49
+msgid ""
+"input the element IDs directly in **ID Elements** field. The selected "
+"elements will be highlighted in the viewer; or"
+msgstr ""
+
+# 450994fc16c540168b6510532d3ade39
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:50
+msgid ""
+"apply Filters. **Set Filter** button allows to apply a "
+":ref:`filtering_elements` to the selection of elements."
+msgstr ""
+
+# f12b0236f21043c497f5f21ab103c4b8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:52
+msgid "depending on the nature of the mirror object:"
+msgstr ""
+
+# de42fe2fb04e4075b107992b4110df63
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:54
+msgid ""
+"if the mesh is mirrored through a point, specify the coordinates of the "
+"point, either directly or by picking a mesh node;"
+msgstr ""
+
+# 5215fb214ebd4fafb07b7c895edb6779
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:55
+msgid "if the mesh is mirrored through an axis:"
+msgstr ""
+
+# ca48af00155246339b411be28ecc179c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:57
+msgid ""
+"specify the coordinates of the start **Point** of the axis, either "
+"directly or by picking a mesh node;"
+msgstr ""
+
+# e36dc9065bda496aa51f61690433ebf6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:58
+msgid ""
+"specify the components of axis **Vector**, either directly or by picking "
+"a mesh node, in which case **Vector** is defined as a shift between the "
+"**Point** and the node;"
+msgstr ""
+
+# 222bbbf63b054017a6c41f559a50091e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:60
+msgid "if the mesh is mirrored through a plane:"
+msgstr ""
+
+# 18c4e2831a664228a6cc1cfbb08b828a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:62
+msgid ""
+"specify the cooordinates of the **Point** lying on the plane, either "
+"directly or by picking a mesh node;"
+msgstr ""
+
+# 9c1030fb3b694be2990ff40dc9342549
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:63
+msgid ""
+"specify the components of plane **Normal**, either directly or by picking"
+" a mesh node, in which case **Normal** is defined as a shift between the "
+"**Point** and the node."
+msgstr ""
+
+# fa13c8ac163b43b8b635749c980776a7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:65
+msgid "specify the conditions of symmetry operation:"
+msgstr ""
+
+# 22cb4b2735b14e3586b6f6e9e7fd3eff
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:67
+msgid ""
+"activate **Move elements** radio button to change the location of the "
+"selected elements within the current mesh;"
+msgstr ""
+
+# 3ab6e1c74a3f4f4e95f87d21771484d7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:68
+msgid ""
+"activate **Copy elements** radio button to duplicate the selected "
+"elements at the new location within the current mesh;"
+msgstr ""
+
+# a591b9e839b84c9b9135eead5e85c774
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:69
+msgid ""
+"activate **Create as new mesh** radio button to create a new element in a"
+" new mesh; the new mesh appears in the Object Browser with the default "
+"name *MeshName_mirrored* (it is possible to change this name in the "
+"adjacent box);"
+msgstr ""
+
+# 5b254aa14c8f4a2381180807178f35e1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:70
+msgid ""
+"activate **Copy groups** check-box to put new mesh entities into new "
+"groups if source entities belong to some groups. New groups are named by "
+"pattern \"<old group name>_mirrored\"."
+msgstr ""
+
+# b1eefa9952644c5fa320845ea76897c1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:72
+msgid ""
+"activate **Preview** check-box to show the result of transformation in "
+"the viewer;"
+msgstr ""
+
+# 0fd36d39dee749ae8096f328ed19a2c4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:73
+msgid "click **Apply** or **Apply and Close** button to confirm the operation."
+msgstr ""
+
+# 9aa5cbd5e7e14b8c80772fb57302e4b0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/symmetry.rst:76
+msgid "**See Also** a sample TUI Script of a :ref:`tui_symmetry` operation."
+msgstr ""
+

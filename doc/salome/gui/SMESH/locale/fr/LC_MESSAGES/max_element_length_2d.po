@@ -1,0 +1,63 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 18d5fec451fc4bec8e3bef94502ddf15
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/max_element_length_2d.rst:5
+msgid "Element Diameter 2D"
+msgstr ""
+
+# 8a1bb7fc885d4639a1851fdb7f3954ae
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/max_element_length_2d.rst:7
+msgid ""
+"This quality control criterion consists in calculation of the maximal "
+"length of edges and diagonals of 2D mesh elements (triangles and "
+"quadrangles). For polygons the value is always zero."
+msgstr ""
+
+# 598c6758c6794caead22d02d1d22e930
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/max_element_length_2d.rst:9
+msgid "**To apply the Element Diameter 2D quality criterion to your mesh:**"
+msgstr ""
+
+# 8871ae25af5a4df8b72f0afe00a04b67
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/max_element_length_2d.rst:11
+msgid "Display your mesh in the viewer."
+msgstr ""
+
+# 1d9cea8722f341ba88c488744b22592d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/max_element_length_2d.rst:12
+msgid ""
+"Choose **Controls > Face Controls > Element Diameter 2D** or click "
+"**\"Element Diameter 2D\"** button in the toolbar."
+msgstr ""
+
+# 6f9b96ffef0d4c879310362f2c00ed4c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/max_element_length_2d.rst:20
+msgid ""
+"Your mesh will be displayed in the viewer with its elements colored "
+"according to the applied mesh quality control criterion:"
+msgstr ""
+
+# 11b56c89c3e4454cb19ceaf0973bf052
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/max_element_length_2d.rst:25
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_max_element_length_2d` "
+"operation."
+msgstr ""
+

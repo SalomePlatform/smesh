@@ -218,11 +218,11 @@ void SMESHGUI_MeshOp::startOperation()
     connect( myDlg, SIGNAL( geomSelectionByMesh( bool )), SLOT( onGeomSelectionByMesh( bool )));
     connect( myDlg, SIGNAL( selectMeshType( const int, const int ) ), SLOT( onAlgoSetByMeshType( const int, const int)));
     if ( myToCreate ) {
-      if ( myIsMesh ) myHelpFileName = "constructing_meshes_page.html";
-      else            myHelpFileName = "constructing_submeshes_page.html";
+      if ( myIsMesh ) myHelpFileName = "constructing_meshes.html";
+      else            myHelpFileName = "constructing_submeshes.html";
     }
     else {
-      myHelpFileName = "editing_meshes_page.html";
+      myHelpFileName = "editing_meshes.html";
     }
   }
   SMESHGUI_SelectionOp::startOperation();

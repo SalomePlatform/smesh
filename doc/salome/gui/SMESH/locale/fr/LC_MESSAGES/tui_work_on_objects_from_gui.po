@@ -1,0 +1,53 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 38a63190759e43b981ee92c725262d0a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_work_on_objects_from_gui.rst:6
+msgid "How to work with objects from the GUI ?"
+msgstr ""
+
+# fbf19b7daf9f41af9041147012cfec6b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_work_on_objects_from_gui.rst:8
+msgid ""
+"It is sometimes useful to work alternatively in the GUI of SALOME and in "
+"the Python Console. To fetch an object from the TUI simply type:"
+msgstr ""
+
+# 0f16302c8b0c4dc1916eb8f8088a68bf
+# 2d00179ccdd3445eac328efd38e46dc9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_work_on_objects_from_gui.rst:18
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_work_on_objects_from_gui.rst:27
+msgid "or"
+msgstr ""
+
+# 6b1b647955a643d9875eeb5893adcc13
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_work_on_objects_from_gui.rst:37
+msgid "All the methods documented in these pages can then be used on myMesh"
+msgstr ""
+
+# 50f1a166cef847658f83228c303bd927
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_work_on_objects_from_gui.rst:39
+msgid ""
+"The first statement only gives you access to a reference to the object "
+"created via the GUI. But the methods available on this reference are not "
+"exactly the same as those documented in these help pages. This Python API"
+" is meant to be used on smesh.Mesh instances. That's why you'll have to "
+"create such an instance with the second statement."
+msgstr ""
+

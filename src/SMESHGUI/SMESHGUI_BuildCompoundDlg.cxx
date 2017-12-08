@@ -179,7 +179,7 @@ SMESHGUI_BuildCompoundDlg::SMESHGUI_BuildCompoundDlg( SMESHGUI* theModule )
   aTopLayout->addWidget(GroupArgs);
   aTopLayout->addWidget(GroupButtons);
 
-  myHelpFileName = "building_compounds_page.html";
+  myHelpFileName = "building_compounds.html";
 
   Init(); // Initialisations
 }

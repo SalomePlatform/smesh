@@ -583,53 +583,53 @@ QString SMESHGUI_GenericHypothesisCreator::helpPage() const
   QString aHypType = hypType();
   QString aHelpFileName = "";
   if ( aHypType == "LocalLength" )
-    aHelpFileName = "a1d_meshing_hypo_page.html#average_length_anchor";
+    aHelpFileName = "1d_meshing_hypo.html#average-length-anchor";
   else if ( aHypType == "MaxLength" )
-    aHelpFileName = "a1d_meshing_hypo_page.html#max_length_anchor";
+    aHelpFileName = "1d_meshing_hypo.html#max-length-anchor";
   else if ( aHypType == "Arithmetic1D")
-    aHelpFileName = "a1d_meshing_hypo_page.html#arithmetic_1d_anchor";
+    aHelpFileName = "1d_meshing_hypo.html#arithmetic-1d-anchor";
   else if ( aHypType == "GeometricProgression")
-    aHelpFileName = "a1d_meshing_hypo_page.html#geometric_1d_anchor";
+    aHelpFileName = "1d_meshing_hypo.html#geometric-1d-anchor";
   else if ( aHypType == "FixedPoints1D")
-    aHelpFileName = "a1d_meshing_hypo_page.html#fixed_points_1d_anchor";
+    aHelpFileName = "1d_meshing_hypo.html#fixed-points-1d-anchor";
   else if ( aHypType == "MaxElementArea")
-    aHelpFileName = "a2d_meshing_hypo_page.html#max_element_area_anchor";
+    aHelpFileName = "2d_meshing_hypo.html#max-element-area-anchor";
   else if ( aHypType == "MaxElementVolume")
-    aHelpFileName = "max_element_volume_hypo_page.html";
+    aHelpFileName = "max_element_volume_hypo.html";
   else if ( aHypType == "StartEndLength")
-    aHelpFileName = "a1d_meshing_hypo_page.html#start_and_end_length_anchor";
+    aHelpFileName = "1d_meshing_hypo.html#start-and-end-length-anchor";
   else if ( aHypType == "Deflection1D")
-    aHelpFileName = "a1d_meshing_hypo_page.html#deflection_1d_anchor";
+    aHelpFileName = "1d_meshing_hypo.html#deflection-1d-anchor";
   else if ( aHypType == "Adaptive1D")
-    aHelpFileName = "a1d_meshing_hypo_page.html#adaptive_1d_anchor";
+    aHelpFileName = "1d_meshing_hypo.html#adaptive-1d-anchor";
   else if ( aHypType == "AutomaticLength")
-    aHelpFileName = "a1d_meshing_hypo_page.html#automatic_length_anchor";
+    aHelpFileName = "1d_meshing_hypo.html#automatic-length-anchor";
   else if ( aHypType == "NumberOfSegments")
-    aHelpFileName = "a1d_meshing_hypo_page.html#number_of_segments_anchor";
+    aHelpFileName = "1d_meshing_hypo.html#number-of-segments-anchor";
   else if ( aHypType == "ProjectionSource1D")
-    aHelpFileName = "projection_algos_page.html";
+    aHelpFileName = "projection_algos.html";
   else if ( aHypType == "ProjectionSource2D")
-    aHelpFileName = "projection_algos_page.html";
+    aHelpFileName = "projection_algos.html";
   else if ( aHypType == "ProjectionSource3D")
-    aHelpFileName = "projection_algos_page.html";
+    aHelpFileName = "projection_algos.html";
   else if ( aHypType == "NumberOfLayers")
-    aHelpFileName = "radial_prism_algo_page.html";
+    aHelpFileName = "radial_prism_algo.html";
   else if ( aHypType == "NumberOfLayers2D")
-    aHelpFileName = "radial_quadrangle_1D2D_algo_page.html";
+    aHelpFileName = "radial_quadrangle_1D2D_algo.html";
   else if ( aHypType == "LayerDistribution")
-    aHelpFileName = "radial_prism_algo_page.html";
+    aHelpFileName = "radial_prism_algo.html";
   else if ( aHypType == "LayerDistribution2D")
-    aHelpFileName = "radial_quadrangle_1D2D_algo_page.html";
+    aHelpFileName = "radial_quadrangle_1D2D_algo.html";
   else if ( aHypType == "SegmentLengthAroundVertex")
-    aHelpFileName = "segments_around_vertex_algo_page.html";
+    aHelpFileName = "segments_around_vertex_algo.html";
   else if ( aHypType == "QuadrangleParams")
-    aHelpFileName = "a2d_meshing_hypo_page.html#hypo_quad_params_anchor";
+    aHelpFileName = "2d_meshing_hypo.html#hypo-quad-params-anchor";
   else if ( aHypType == "ViscousLayers")
-    aHelpFileName = "additional_hypo_page.html#viscous_layers_anchor";
+    aHelpFileName = "additional_hypo.html#viscous-layers-anchor";
   else if ( aHypType == "ViscousLayers2D")
-    aHelpFileName = "additional_hypo_page.html#viscous_layers_anchor";
+    aHelpFileName = "additional_hypo.html#viscous-layers-anchor";
   else if ( aHypType == "ImportSource1D" || aHypType == "ImportSource2D")
-    aHelpFileName = "import_algos_page.html";
+    aHelpFileName = "use_existing_algos.html";
   return aHelpFileName;
 }
 

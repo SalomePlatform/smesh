@@ -1,0 +1,172 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 8b450be120c04c63852ba74f04c81751
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:5
+msgid "Modifing Mesh Python scripts from SALOME 6 and before"
+msgstr ""
+
+# c191d4032e124bbcad3e1a27bb60da68
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:7
+msgid ""
+"In SALOME 7.2, the Python interface for Mesh has been slightly modified "
+"to offer new functionality:"
+msgstr ""
+
+# c6559f70691240a5aef7174d5e327ef4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:10
+msgid ""
+"Scripts generated for SALOME 6 and older versions must be adapted to work"
+" in SALOME 7.2 with full functionality."
+msgstr ""
+
+# 4d881c45770f40a09a91865a699977ae
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:12
+msgid ""
+"The compatibility mode allows old scripts to work in almost all cases, "
+"but with a warning."
+msgstr ""
+
+# d41e76f89f924e589dbc84de5ec3ddad
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:14
+msgid "See also :ref:`geompy_migration_page`"
+msgstr ""
+
+# 1efe6e67e0ec430eadb0271f23842008
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:16
+msgid "**Salome initialisation must always be done as shown below**"
+msgstr ""
+
+# 9c348713eaca4318bb1e2c2c225ab5d9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:18
+msgid "*salome_init()* can be invoked safely several times): ::"
+msgstr ""
+
+# d2d92cf52cb44cff8a02b8bf756b2955
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:24
+msgid "**smesh initialisation is modified.** the old mode (from dump): ::"
+msgstr ""
+
+# 6b5cd21311fa4798a3bf0f3d1a1f80f7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:31
+msgid "the new mode: ::"
+msgstr ""
+
+# 24b8a6c845ff4041b8f11283866191a8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:39
+msgid "**Of course,** from smesh import ***is no more possible.**"
+msgstr ""
+
+# 9b9222f01b9249849ac872974d58b652
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:41
+msgid "You have to explicitely write **smesh.some_method()**."
+msgstr ""
+
+# a7240003d98a46ae8ebf825bf077fd1c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:43
+msgid ""
+"**All algorithms have been transferred from the namespace **smesh** to "
+"the namespace **smeshBuilder**.**"
+msgstr ""
+
+# eec70a6104e74f0bb2f58d8b85be9b84
+# 17ef07996c744b0192b5e5ac93cb7df6
+# f8384e1dcbed4defbb18f5e607248983
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:45
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:72
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:100
+msgid "For instance: ::"
+msgstr ""
+
+# 1af4f091cd9045efba22b4b0858e269c
+# 04a637b826654124b013ac82d2507d5e
+# 4f13be19ae8a4447b7480725e6fb0502
+# 6720b8ab6d1e4a22a22784d6c1d87752
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:50
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:79
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:93
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:109
+msgid "is replaced by: ::"
+msgstr ""
+
+# 2186520416684b1f810a3bbcba6e641b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:55
+msgid ""
+"StdMeshers algorithms concerned are **REGULAR, PYTHON, COMPOSITE, "
+"MEFISTO, Hexa, QUADRANGLE, RADIAL_QUAD**."
+msgstr ""
+
+# ca97ecd8ffc74d798b1c512b44fb6b95
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:57
+msgid ""
+"SMESH Plugins provide such algorithms as: **NETGEN, NETGEN_FULL, "
+"FULL_NETGEN, NETGEN_1D2D3D, NETGEN_1D2D, NETGEN_2D, NETGEN_3D**."
+msgstr ""
+
+# 7d46f8f2323149b1868d0aa2c1e9a9db
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:59
+msgid ""
+"If you use DISTENE plugins, you also have **BLSURF, GHS3D, GHS3DPRL, "
+"Hexotic**."
+msgstr ""
+
+# 7bc97e73995041d68de5ade0778367a5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:61
+msgid ""
+"**Some variables were available in both namespaces **smesh** and "
+"**SMESH**."
+msgstr ""
+
+# e7f851707d834a95809cff62b1460dfb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:63
+msgid "Now they are available only in namespace **SMESH****."
+msgstr ""
+
+# 3711be03d0e14332b0fed16e6c91a35e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:65
+msgid ""
+"The dump function used only the namespace **SMESH**, so, if your script "
+"was built with the help of the dump function, it should be already OK in "
+"this respect."
+msgstr ""
+
+# 946aaace91cb49c58880a4716992f2bb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:70
+msgid "The most used variables concerned are:"
+msgstr ""
+
+# c8c14de4af5e49a2a06570f1d6887a46
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:69
+msgid "**NODE, EDGE, FACE, VOLUME, ALL.** **FT_xxx, geom_xxx, ADD_xxx...**"
+msgstr ""
+
+# a4b07f8af4e54fc4b398dfac4f308a0b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:87
+msgid ""
+"**The namespace **smesh.smesh** does not exist any more, use **smesh** "
+"instead.** For instance: ::"
+msgstr ""
+
+# f954da1e12334a6996f1ea8471dc8332
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smesh_migration.rst:98
+msgid ""
+"**If you need to import a %SMESH Plugin explicitely, keep in mind that  "
+"they are now located in separate namespaces.**"
+msgstr ""
+

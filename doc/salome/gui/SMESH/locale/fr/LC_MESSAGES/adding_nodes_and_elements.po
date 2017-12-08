@@ -1,0 +1,394 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 9011f6c867d54bab9004db957896dda8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:5
+msgid "Adding nodes and elements"
+msgstr ""
+
+# adfa44bc891e4ffe8e8043724eca539d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:7
+msgid "In MESH you can add to your mesh different elements such as:"
+msgstr ""
+
+# 642ddc8d028c4b1993cdccb23b1dd463
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:9
+msgid ":ref:`adding_nodes_anchor`"
+msgstr ""
+
+# 42da9857dda24c10a50ba14b1e492231
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:10
+msgid ":ref:`adding_0delems_anchor`"
+msgstr ""
+
+# efaeb514592241879792f25c253e797d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:11
+msgid ":ref:`adding_0delems_on_all_nodes_anchor`"
+msgstr ""
+
+# 97fef81c05d94c38a7eda819953100cf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:12
+msgid ":ref:`adding_balls_anchor`"
+msgstr ""
+
+# c0c6e29dca2b42099fd41451fc1caefd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:13
+msgid ":ref:`adding_edges_anchor`"
+msgstr ""
+
+# 38d32b86aa904d218b25825b33583ed6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:14
+msgid ":ref:`adding_triangles_anchor`"
+msgstr ""
+
+# 86f67a57ad1a40348aed6ff1044b29c8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:15
+msgid ":ref:`adding_quadrangles_anchor`"
+msgstr ""
+
+# 704e5d5a38174b35a93f10be72a0015d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:16
+msgid ":ref:`adding_polygons_anchor`"
+msgstr ""
+
+# 895cea43a2e8413ba004f60066187e1d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:17
+msgid ":ref:`adding_tetrahedrons_anchor`"
+msgstr ""
+
+# a44527882f3d49568a9c62ea73b75593
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:18
+msgid ":ref:`adding_hexahedrons_anchor`"
+msgstr ""
+
+# 2a22f5f9b84b4674b56bfd4b32f70360
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:19
+msgid ":ref:`adding_octahedrons_anchor`"
+msgstr ""
+
+# f4a79505995b4f6d96bff5cc5dea08a2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:20
+msgid ":ref:`adding_polyhedrons_anchor`"
+msgstr ""
+
+# 184027c7452945c39b3574a990e9a1af
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:23
+msgid ""
+"The convention of nodal connectivity of elements used in SALOME is the "
+"MED library convention. You can consult the description of nodal "
+"connectivity of elements in the documentation on MED library or "
+":ref:`connectivity_page`."
+msgstr ""
+
+# e99b10cc630d4ac3a21fc651c070a254
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:25
+msgid "**To add a node or an element to your mesh:**"
+msgstr ""
+
+# eb3d5c2d642d42ef9512a155e752f678
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:27
+msgid "Select your mesh in the Object Browser or in the 3D viewer."
+msgstr ""
+
+# 246ede0e2eca4b7bb2834e2777a35748
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:28
+msgid ""
+"From the **Modification** menu choose the **Add** item, the following "
+"associated sub-menu will appear:"
+msgstr ""
+
+# 4fc6d38cf50c428289475de65b222e1b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:33
+msgid ""
+"From this sub-menu select the type of element which you would like to add"
+" to your mesh."
+msgstr ""
+
+# 7508561f45bd4fc4bd38623d019e493e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:36
+msgid ""
+"All dialogs for new node or element adding to the mesh provide the "
+"possibility to automatically add a node or element to the specified group"
+" or to create it anew using **Add to group** box, that allows choosing an"
+" existing group for the created node or element or giving the name to a "
+"new group. By default, the **Add to group** check box is switched off. If"
+" the user switches this check box on, the combo box listing all currently"
+" existing groups of the corresponding type becomes available. By default,"
+" no group is selected. In this case, when the user presses **Apply** or "
+"**Apply & Close** button, the warning message box informs the user about "
+"the necessity to input new group name. The combo box lists groups of all "
+"the :ref:`grouping_elements_page`: both :ref:`standalone_group`, "
+":ref:`group_on_filter`, and :ref:`group_on_geom`. If the user chooses a "
+"group on geometry or on filter, he is warned and proposed to convert this"
+" group to standalone."
+msgstr ""
+
+# d82e77a7d51f4ef68fd1790112f5a877
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:42
+msgid ""
+"If the user rejects conversion operation, it is cancelled and a new "
+"node/element is not created!"
+msgstr ""
+
+# 56c1ce8fc400423c9560387c0547461a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:45
+msgid ""
+"**See Also** sample TUI Scripts of :ref:`tui_adding_nodes_and_elements` "
+"operations."
+msgstr ""
+
+# c94d9176d6d340568ce11f03af31828e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:50
+msgid "Adding nodes"
+msgstr ""
+
+# 39207b695ed74e9e8a4aadc52be65796
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:55
+msgid ""
+"In this dialog box set coordinates for your node in the **Coordinates** "
+"set of fields and click the **Apply** or **Apply and Close** button. Your"
+" node will be created:"
+msgstr ""
+
+# a457e82a39134103bd12041f43769061
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:64
+msgid "Adding 0D elements"
+msgstr ""
+
+# 1f49fadf1f5b4509a38683508be50f8c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:69
+msgid ""
+"In this dialog box specify nodes which will form your 0D elements by "
+"selecting them in the 3D viewer. Activate **Allow duplicate elements** to"
+" get several 0D elements on a node. Click the **Apply** or **Apply and "
+"Close** button. Your 0D elements will be created:"
+msgstr ""
+
+# 74f45e68dcde4c71844de9cf840a91e8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:79
+msgid "Making 0D elements on Element Nodes"
+msgstr ""
+
+# 5fe00d89f3ca4b118a6cde9e352bf619
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:81
+msgid ""
+"There is another way to create 0D elements. It is possible to create 0D "
+"elements on all nodes of the selected mesh, sub-mesh, or a group of "
+"elements or nodes."
+msgstr ""
+
+# bdde90f70f2d42359ae59e4a8e50d5a3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:86
+msgid "In this dialog"
+msgstr ""
+
+# 0b37680a44ba45aab10b560e6264c1e9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:88
+msgid ""
+"The radio-buttons allow choosing the type of object to create 0D elements"
+" on."
+msgstr ""
+
+# 98c02e71f24043049d821560dd2fa098
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:90
+msgid ""
+"**Mesh, sub-mesh, group** - this button allows selecting a mesh, a sub-"
+"mesh or a group to create 0D elements on the nodes of its elements. The "
+"name of the selected object is shown in the dialog."
+msgstr ""
+
+# 08eff5fd4c084bdf9f5993747ad57fb5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:91
+msgid ""
+"**Elements** - this button allows selecting elements in the VTK viewer or"
+" typing their IDs in the dialog."
+msgstr ""
+
+# e98b5fd256a54798baf8596b478295e2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:92
+msgid ""
+"**Nodes** - this button allows selecting nodes to create 0D elements on "
+"in the VTK viewer or typing their IDs in the dialog."
+msgstr ""
+
+# d8cbfc19bfc046e8a884bbcd39812eab
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:94
+msgid ""
+"**Set Filter** button allows selecting elements or nodes by filtering "
+"mesh elements or nodes with different criteria (see "
+":ref:`filtering_elements`)."
+msgstr ""
+
+# d6406fb702cf41e2b7d6fed2e25ce073
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:95
+msgid ""
+"Activate **Allow duplicate elements** to get several 0D elements on a "
+"node."
+msgstr ""
+
+# 0621972e7e39474c972dd2dcaf8cf3fc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:96
+msgid ""
+"Switching on **Add to group** check-box allows specifying the name of the"
+" group to which all created or found (existing) 0D elements will be "
+"added. You can either select an existing group from a drop-down list, or "
+"enter the name of the group to be created. If a selected existing "
+":ref:`grouping_elements_page` is not Standalone (Group On Geometry or "
+"Group On Filter) it will be converted to Standalone."
+msgstr ""
+
+# c93588d10bf8420b9ad16a2adc708750
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:98
+msgid "If **Add to group** is activated it has to be filled in."
+msgstr ""
+
+# bf9fba0f12844b20b3d18c133a0dcbf6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:106
+msgid "Adding ball elements"
+msgstr ""
+
+# 9eb74b7254d74e119ff0f90ad502635a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:111
+msgid ""
+"In this dialog box specify the nodes, which will form your ball elements,"
+" either by selecting them in the 3D viewer or by manually entering their "
+"IDs, specify the ball diameter and click the **Apply** or **Apply and "
+"Close** button."
+msgstr ""
+
+# a59b9c61819c45e786d432cb6a7b7c70
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:120
+msgid "Adding edges"
+msgstr ""
+
+# 25aef23b2cde4322b51a2dd73884391f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:125
+msgid ""
+"In this dialog box specify the nodes which will form your edge by "
+"selecting them in the 3D viewer with pressed Shift button and click the "
+"**Apply** or **Apply and Close** button. Your edge will be created:"
+msgstr ""
+
+# 29ba16103c444403aa381c6affc205f8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:134
+msgid "Adding triangles"
+msgstr ""
+
+# 2d5864296dc542aa8eccd57747e06f7c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:139
+msgid ""
+"In this dialog box specify the nodes which will form your triangle by "
+"selecting them in the 3D viewer with pressed Shift button and click the "
+"**Apply** or **Apply and Close** button. Your triangle will be created:"
+msgstr ""
+
+# 49fc0b3113ca4b71a249e5c94c2ca8e9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:148
+msgid "Adding quadrangles"
+msgstr ""
+
+# f1972b70655047b4b5ae718478b18b9e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:153
+msgid ""
+"In this dialog box specify the nodes which will form your quadrangle by "
+"selecting them in the 3D viewer with pressed Shift button and click the "
+"**Apply** or **Apply and Close** button. Your quadrangle will be created:"
+msgstr ""
+
+# aa9108d8c0f64e1abc0828f7e626f6ac
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:162
+msgid "Adding polygons"
+msgstr ""
+
+# c12a68103f8c4a4b8b2ab67c3defb0e1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:167
+msgid ""
+"In this dialog box specify the nodes which will form your polygon by "
+"selecting them in the 3D viewer with pressed Shift button and click the "
+"**Apply** or **Apply and Close** button."
+msgstr ""
+
+# e44cd567fda84be59db2caca77c12cb0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:176
+msgid "Adding tetrahedrons"
+msgstr ""
+
+# e2ff62697945475e973fca7863afa8c0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:181
+msgid ""
+"In this dialog box specify the nodes which will form your tetrahedron by "
+"selecting them in the 3D viewer with pressed Shift button and click the "
+"**Apply** or **Apply and Close** button. Your tetrahedron will be "
+"created:"
+msgstr ""
+
+# c1f8e7a2fb2542a39e83a71074f1ae33
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:190
+msgid "Adding hexahedrons"
+msgstr ""
+
+# aeea0dcca6014b878c5255f559e6ac97
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:195
+msgid ""
+"In this dialog box specify the nodes which will form your hexahedron by "
+"selecting them in the 3D viewer with pressed Shift button and click the "
+"**Apply** or **Apply and Close** button. Your hexahedron will be created:"
+msgstr ""
+
+# e7808586e846431089bc097d01c8cc05
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:204
+msgid "Adding hexagonal prism"
+msgstr ""
+
+# fd2284a74c4f438bb2be5863215bd473
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:206
+msgid ""
+"In the Add Hexagonal Prism dialog box specify the nodes which will form "
+"your hexagonal prism by selecting them in the 3D viewer with pressed "
+"Shift button and click the **Apply** or **Apply and Close** button. Your "
+"hexagonal prism will be created:"
+msgstr ""
+
+# a78a49d876004836ab2caf1771528327
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:215
+msgid "Adding polyhedrons"
+msgstr ""
+
+# 2dc6829556a34116a0411a28ff01fe2f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:220
+msgid "There are two different ways to add polyhedral volumes."
+msgstr ""
+
+# c213d91459524e18903370c3a2fa50d5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_nodes_and_elements.rst:222
+msgid ""
+"If you select **Node** as **Elements Type** you will specify the nodes "
+"which will form the faces of your polyhedron by selecting the nodes in "
+"the 3D viewer with pressed Shift button and clicking the  **Add** button "
+"to add the face in the list of Faces by Nodes, which will form your "
+"polyhedron. Note, that it could be very useful to toggle Polyhedron "
+"Preview checkbox to see the results of your selection. The second way is "
+"somewhat simpler, however, there are cases when it does not provide you "
+"with the necessary level of precision. If you select **Face** as "
+"**Elements Type**, you will be able to select the faces which will form "
+"your polyhedron in the 3D viewer with pressed Shift button. If you've "
+"managed to obtain the necessary result, click the **Apply** or **Apply "
+"and Close** button. Your polyhedron will be created:"
+msgstr ""
+

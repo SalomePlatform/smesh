@@ -240,7 +240,7 @@ SMESHGUI_FindElemByPointOp::SMESHGUI_FindElemByPointOp()
   mySimulation = 0;
   mySMESHGUI = 0;
   myDlg = new SMESHGUI_FindElemByPointDlg;
-  myHelpFileName = "find_element_by_point_page.html";
+  myHelpFileName = "find_element_by_point.html";
 
   QList<SUIT_SelectionFilter*> filters;
   filters.append( new SMESH_TypeFilter( SMESH::MESH ) );

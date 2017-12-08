@@ -1,0 +1,185 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# c054b7a14c9042f8baa4816281a43d06
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/grouping_elements.rst:5
+msgid "Grouping elements"
+msgstr ""
+
+# 1783fde7b458439598ddf51139a28a13
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/grouping_elements.rst:7
+msgid ""
+"In Mesh module it is possible to create groups of mesh entities: nodes, "
+"edges, faces, volumes, 0D elements or balls. One group contains elements "
+"of only one type. Groups, unlike sub-meshes, are exported along with mesh"
+" entities into the files of following formats: MED, UNV, and CGNS. The "
+"group has a color attribute which is used for visualization only and is "
+"not exported."
+msgstr ""
+
+# 1886e7e9a93946fb9e44e3830cc6cc43
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/grouping_elements.rst:9
+msgid "There are three types of groups different by their internal organization:"
+msgstr ""
+
+# 8a37933afc084fbc8c2bcafbbda74046
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/grouping_elements.rst:12
+msgid ""
+"**Standalone group** is a static set of mesh entities. Its contents can "
+"be explicitly controlled by the user. Upon removal of the entities "
+"included into the group, e.g. due to modification of  meshing parameter, "
+"the group becomes empty and its content can be restored only manually. "
+"Hence it is reasonable to create standalone groups when the mesh "
+"generation is finished and mesh quality is verified."
+msgstr ""
+
+# dc50a15a6ae94ca19fefca74f810b38b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/grouping_elements.rst:12
+msgid ""
+"Creation and edition of large standalone groups in "
+":ref:`creating_groups_page` dialog using manual edition is problematic "
+"due to poor performance of the dialog."
+msgstr ""
+
+# f59ed29ed1034010af2b9d983b45b1ed
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/grouping_elements.rst:14
+msgid ""
+"**Group on geometry** is associated to a sub-shape or a group of sub-"
+"shapes of the main shape and includes mesh entities generated on these "
+"geometrical entities. The association to a geometry is established at "
+"group construction and cannot be changed. The group contents are always "
+"updated automatically, hence the group can be created even before mesh "
+"elements generation."
+msgstr ""
+
+# 436b9beb403f412c839cd9a89387c2b5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/grouping_elements.rst:15
+msgid ""
+"**Group on filter** encapsulates a :ref:`filters_page`, which is used to "
+"select mesh entities composing the group from the whole mesh. Criteria of"
+" the filter can be changed at any time. The group contents are always "
+"updated automatically, hence the group can be created even before mesh "
+"elements generation."
+msgstr ""
+
+# 2be721ade5a44ee8bd7699bd9a575ea3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/grouping_elements.rst:17
+msgid ""
+"The group on geometry and group on filter can be converted to a "
+"standalone group."
+msgstr ""
+
+# f54c459f93f5487dae0f85a72b5cbec1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/grouping_elements.rst:25
+msgid "The following ways of group creation are possible:"
+msgstr ""
+
+# c8177f2484ed4978adc64ac213c52cc5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/grouping_elements.rst:29
+msgid ":ref:`creating_groups_page` dialog allows creation of a group of any type:"
+msgstr ""
+
+# af3bd9c89f79492986f94cfadef74c57
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/grouping_elements.rst:28
+msgid ""
+":ref:`standalone_group`, :ref:`group_on_geom` and :ref:`group_on_filter` "
+"using dedicated tabs."
+msgstr ""
+
+# ea80b2d5ab544b319053510bcc9db387
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/grouping_elements.rst:31
+msgid ""
+":ref:`create_groups_from_geometry_page` dialog allows creation of several"
+" groups on geometry at once."
+msgstr ""
+
+# e1679917bf7442ef9961ada8446ae345
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/grouping_elements.rst:32
+msgid ""
+"Standalone groups of all nodes and elements of the chosen sub-mesh (type "
+"of elements depends on dimension of sub-mesh geometry) can be created "
+"using **Mesh -> Construct Group** menu item (available from the context "
+"menu as well)."
+msgstr ""
+
+# fdefd2688724460c9bc0225a193654e8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/grouping_elements.rst:33
+msgid ""
+"Standalone groups of any element type can be created basing on nodes of "
+"other groups - using :ref:`group_of_underlying_elements_page` dialog."
+msgstr ""
+
+# 5c01af8b22004819bf427db0d75ed41f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/grouping_elements.rst:34
+msgid ""
+"Standalone groups can be created by applying "
+":ref:`using_operations_on_groups_page` to other groups."
+msgstr ""
+
+# 02613856191a4626b7d68300684bd947
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/grouping_elements.rst:35
+msgid ""
+"Creation of standalone groups is an option of many "
+":ref:`modifying_meshes_page` operations."
+msgstr ""
+
+# 360436afa0e74f84b35a359b6204ed41
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/grouping_elements.rst:37
+msgid "The created groups can be later:"
+msgstr ""
+
+# 7d2bb01ba5f24c36971cadd38569fdc1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/grouping_elements.rst:39
+msgid ":ref:`editing_groups_page`"
+msgstr ""
+
+# 13739bd0dfd949e8874c483bfcd38ec6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/grouping_elements.rst:40
+msgid ""
+":ref:`deleting_groups_page`, either as an object or together with "
+"contained elements."
+msgstr ""
+
+# b729c98c1cbc40b890e982742ee7f96f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/grouping_elements.rst:41
+msgid ""
+"The group on geometry and group on filter can be "
+":ref:`convert_to_standalone` group."
+msgstr ""
+
+# 6944ca9fd13942869ba1e32184ba5829
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/grouping_elements.rst:42
+msgid ":ref:`importing_exporting_meshes_page` into a file as a whole mesh."
+msgstr ""
+
+# aeec28fb28344beaac90d9e5916c0aaf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/grouping_elements.rst:44
+msgid ""
+"In the Object Browser, if an item contains more than one child group, it "
+"is possible to sort the groups by name in ascending order using **Sort "
+"children** context menu item."
+msgstr ""
+
+# 453af779ec47485d9204318e5810a6ca
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/grouping_elements.rst:52
+msgid ""
+"An important tool, providing filters for creation of standalone groups "
+"and groups on filter is :ref:`selection_filter_library_page`."
+msgstr ""
+

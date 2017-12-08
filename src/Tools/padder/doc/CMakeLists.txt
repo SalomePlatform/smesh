@@ -18,10 +18,9 @@
 #
 
 SALOME_CONFIGURE_FILE(doxyfile.in doxyfile)
+SALOME_CONFIGURE_FILE(static/header.html.in ${CMAKE_CURRENT_BINARY_DIR}/static/header.html)
 
 ADD_CUSTOM_TARGET(usr_padder_docs ${DOXYGEN_EXECUTABLE})
-
-#ADD_DEPENDENCIES(usr_padder_docs html_docs)
 
 INSTALL(CODE "EXECUTE_PROCESS(COMMAND \"${CMAKE_COMMAND}\" --build ${PROJECT_BINARY_DIR} --target usr_padder_docs)")
 INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/padder DESTINATION ${SALOME_INSTALL_DOC}/gui/SMESH)

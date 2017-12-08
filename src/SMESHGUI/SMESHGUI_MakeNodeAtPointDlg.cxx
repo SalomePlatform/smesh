@@ -355,7 +355,7 @@ SMESHGUI_MakeNodeAtPointOp::SMESHGUI_MakeNodeAtPointOp()
   mySMESHGUI = 0;
   myDlg = new SMESHGUI_MakeNodeAtPointDlg;
   myFilter = 0;
-  myHelpFileName = "mesh_through_point_page.html";
+  myHelpFileName = "mesh_through_point.html";
 
   myNoPreview = false;
   myUpdateDestination = false;

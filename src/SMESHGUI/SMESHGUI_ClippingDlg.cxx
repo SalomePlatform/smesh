@@ -552,7 +552,7 @@ SMESHGUI_ClippingDlg::SMESHGUI_ClippingDlg( SMESHGUI* theModule, SVTK_ViewWindow
 
   myIsSelectPlane = false;
 
-  myHelpFileName = "clipping_page.html";
+  myHelpFileName = "clipping.html";
 
   // signals and slots connections :
   connect( ComboBoxPlanes, SIGNAL( activated( int ) ), this, SLOT( onSelectPlane( int ) ) );

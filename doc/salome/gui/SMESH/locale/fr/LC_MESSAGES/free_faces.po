@@ -1,0 +1,44 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 37b63c6f8c2947a98e5027ee26e62a36
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/free_faces.rst:5
+msgid "Free faces"
+msgstr ""
+
+# b2eed9e5bb4742d09ea37734a74b1e54
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/free_faces.rst:7
+msgid ""
+"This mesh quality control highlights the faces connected to less than two"
+" mesh volume elements. The free faces are shown with a color different "
+"from the color of shared faces."
+msgstr ""
+
+# f2ddd55c17c24a6c8d3987369b20200f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/free_faces.rst:12
+msgid ""
+"In this picture some volume mesh elements have been removed, as a result "
+"some faces became connected only to one volume. i.e. became free."
+msgstr ""
+
+# f88c4d87e5aa48c989ca51b9d1541761
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/free_faces.rst:14
+msgid "**See also:** A sample TUI Script of a :ref:`tui_free_faces` operation."
+msgstr ""
+

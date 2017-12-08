@@ -546,67 +546,67 @@ void SMESHGUI_AddQuadraticElementDlg::Init()
   case SMDSEntity_Quad_Edge:
     aNumRows = 1;
     myNbCorners = 2;
-    myHelpFileName = "adding_quadratic_elements_page.html#?"; //Adding_edges
+    myHelpFileName = "adding_quadratic_elements.html#?"; //Adding_edges
     break;
   case SMDSEntity_Quad_Triangle:
     aNumRows = 3;
     myNbCorners = 3;
-    myHelpFileName = "adding_quadratic_elements_page.html#?"; //Adding_triangles
+    myHelpFileName = "adding_quadratic_elements.html#?"; //Adding_triangles
     break;
   case SMDSEntity_BiQuad_Triangle:
     aNumRows = 3;
     myNbCorners = 3;
     myNbCenterNodes = 1;
-    myHelpFileName = "adding_quadratic_elements_page.html#?"; //Adding_triangles
+    myHelpFileName = "adding_quadratic_elements.html#?"; //Adding_triangles
     break;
   case SMDSEntity_Quad_Quadrangle:
     aNumRows = 4;
     myNbCorners = 4;
-    myHelpFileName = "adding_quadratic_elements_page.html#?"; //Adding_quadrangles
+    myHelpFileName = "adding_quadratic_elements.html#?"; //Adding_quadrangles
     break;
   case SMDSEntity_BiQuad_Quadrangle:
     aNumRows = 4;
     myNbCorners = 4;
     myNbCenterNodes = 1;
-    myHelpFileName = "adding_quadratic_elements_page.html#?"; //Adding_quadrangles
+    myHelpFileName = "adding_quadratic_elements.html#?"; //Adding_quadrangles
     break;
   case SMDSEntity_Quad_Polygon:
     aNumRows = 5;
     myNbCorners = 0; // no limit
-    myHelpFileName = "adding_quadratic_elements_page.html#?"; //Adding_polygons
+    myHelpFileName = "adding_quadratic_elements.html#?"; //Adding_polygons
     break;
   case SMDSEntity_Quad_Tetra:
     aNumRows = 6;
     myNbCorners = 4;
-    myHelpFileName = "adding_quadratic_elements_page.html#?"; //Adding_tetrahedrons
+    myHelpFileName = "adding_quadratic_elements.html#?"; //Adding_tetrahedrons
     break;
   case SMDSEntity_Quad_Pyramid:
     aNumRows = 8;
     myNbCorners = 5;
-    myHelpFileName = "adding_quadratic_elements_page.html#?"; //Adding_pyramids
+    myHelpFileName = "adding_quadratic_elements.html#?"; //Adding_pyramids
     break;
   case SMDSEntity_Quad_Penta:
     aNumRows = 9;
     myNbCorners = 6;
-    myHelpFileName = "adding_quadratic_elements_page.html#?"; //Adding_pentahedrons
+    myHelpFileName = "adding_quadratic_elements.html#?"; //Adding_pentahedrons
     break;
   case SMDSEntity_BiQuad_Penta:
     aNumRows = 9;
     myNbCorners = 6;
     myNbMidFaceNodes = 3;
-    myHelpFileName = "adding_quadratic_elements_page.html#?"; //Adding_pentahedrons
+    myHelpFileName = "adding_quadratic_elements.html#?"; //Adding_pentahedrons
     break;
   case SMDSEntity_Quad_Hexa:
     aNumRows = 12;
     myNbCorners = 8;
-    myHelpFileName = "adding_quadratic_elements_page.html#?"; //Adding_hexahedrons
+    myHelpFileName = "adding_quadratic_elements.html#?"; //Adding_hexahedrons
     break;
   case SMDSEntity_TriQuad_Hexa:
     aNumRows = 12;
     myNbCorners = 8;
     myNbMidFaceNodes = 6;
     myNbCenterNodes = 1;
-    myHelpFileName = "adding_quadratic_elements_page.html#?"; //Adding_hexahedrons
+    myHelpFileName = "adding_quadratic_elements.html#?"; //Adding_hexahedrons
     break;
   default:;
   }

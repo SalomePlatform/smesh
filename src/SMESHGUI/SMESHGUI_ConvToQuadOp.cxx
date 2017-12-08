@@ -101,7 +101,7 @@ void SMESHGUI_ConvToQuadOp::startOperation()
   }
   connect( myDlg, SIGNAL( onClicked( int ) ), SLOT( ConnectRadioButtons( int ) ) );
 
-  myHelpFileName = "convert_to_from_quadratic_mesh_page.html";
+  myHelpFileName = "convert_to_from_quadratic_mesh.html";
 
   SMESHGUI_SelectionOp::startOperation();
 

@@ -1,0 +1,328 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 21ce6bac6a5e4379b28207f6350faf63
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:5
+msgid "Additional Hypotheses"
+msgstr ""
+
+# 3d823676662c4274bc0f890092158f98
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:7
+msgid ""
+"**Additional Hypotheses** can be applied as a supplement to the main "
+"hypotheses, introducing additional concepts to mesh creation."
+msgstr ""
+
+# 94acb0a8af534cd99b6d58f0a65a790c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:9
+msgid ""
+"An **Additional Hypothesis** can be defined in the same way as any main "
+"hypothesis in :ref:`create_mesh_anchor` or "
+":ref:`constructing_submeshes_page` dialog."
+msgstr ""
+
+# 44e1be27062e407297c7265310de5d86
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:11
+msgid "The following additional hypothesis are available:"
+msgstr ""
+
+# c2db6c2d772f4134a5e44cb1263a55de
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:13
+msgid ""
+":ref:`propagation_anchor` and :ref:`propagofdistribution_anchor` "
+"hypotheses are useful for creation of quadrangle and hexahedral meshes."
+msgstr ""
+
+# 916c32073e0e421cb0a385e1e9753f18
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:14
+msgid ""
+":ref:`viscous_layers_anchor`  and :ref:`viscous_layers_anchor` hypotheses"
+" allow creation of layers of highly stretched elements near mesh "
+"boundary, which is beneficial for high quality viscous computations."
+msgstr ""
+
+# 446a5b5e1eb0400aad0ff8c27a1d5082
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:15
+msgid ""
+":ref:`quadratic_mesh_anchor` hypothesis allows generation of second order"
+" meshes."
+msgstr ""
+
+# 8bb9e27c47b04d17873cd417f594aed4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:16
+msgid ":ref:`quadrangle_preference_anchor` enables generation of quadrangles."
+msgstr ""
+
+# 43d294e9c96a4aed95bb7e4e883fa806
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:23
+msgid "Propagation of 1D Hypothesis on opposite edges"
+msgstr ""
+
+# f85ded7f8a7b49048b92c0d124b4c639
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:25
+msgid ""
+"**Propagation of 1D Hypothesis on opposite edges** allows to mesh "
+"opposite sides of a quadrangle face and other adjacent quadrangles, using"
+" the same hypothesis assigned to only one edge. Thus you define a sub-"
+"mesh on the edge where you define 1D meshing parameters and the "
+"**Propagation hypothesis**. These local meshing parameters will be "
+"propagated via opposite sides of quadrangles to the whole geometry, and "
+"this propagation stops at an edge with other local meshing parameters."
+msgstr ""
+
+# 23d299b63f6b4df6afbe6482290ee731
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:34
+msgid ""
+"This hypothesis can be taken into account by :ref:`a1d_algos_anchor` and "
+":ref:`a1d_algos_anchor` \"Composite Side Discretization\" algorithms."
+msgstr ""
+
+# cda8f267f0674c1baedcd8432963c055
+# d1492bfb0b8046e79f66894a009d9b94
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:38
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:56
+msgid "**See Also** a sample TUI Script of a :ref:`tui_propagation` operation"
+msgstr ""
+
+# 8d25f661ff654a748453a7d263c1288e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:43
+msgid "Propagation of Node Distribution on Opposite Edges"
+msgstr ""
+
+# 17c2e5e1af4744d294aa217c8c803a69
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:45
+msgid ""
+"**Propagation of Node Distribution on Opposite Edges** allows to "
+"propagate distribution of nodes onto an opposite edge. If a local "
+"hypothesis and propagation are defined on an edge of a quadrangular face,"
+" the opposite edge will have the same number of nodes and the same "
+"relations between segment lengths, unless another hypothesis has been "
+"locally defined on the opposite edge."
+msgstr ""
+
+# 7bf90153c74e4e27b17402993b37102f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:52
+msgid ""
+"This hypothesis can be taken into account by :ref:`a1d_algos_anchor` "
+"\"Wire Discretization\" and :ref:`a1d_algos_anchor` \"Composite Side "
+"Discretization\" algorithms."
+msgstr ""
+
+# 74ad0ac67c314f3c98e36c1711006ed8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:61
+msgid "Viscous Layers and Viscous Layers 2D"
+msgstr ""
+
+# 28818a66c56e4793ba1162c70ac8157b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:63
+msgid ""
+"**Viscous Layers** and **Viscous Layers 2D** additional hypotheses can be"
+" used by several 3D algorithms, for example Hexahedron(i,j,k), or 2D "
+"algorithms, for example Triangle (MEFISTO), correspondingly. These "
+"hypotheses allow creation of layers of highly stretched elements, prisms "
+"in 3D and quadrilaterals in 2D, near mesh boundary, which is beneficial "
+"for high quality viscous computations."
+msgstr ""
+
+# e572f10f9e014eee840fb93955ac6416
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:78
+msgid "**Name** - allows to define the name of the hypothesis."
+msgstr ""
+
+# cb75b8d96754423686b8366fe91e1e08
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:79
+msgid "**Total thickness** - gives the total thickness of element layers."
+msgstr ""
+
+# 63b46ebf10c641d0a5eba40f01dcd543
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:80
+msgid "**Number of layers** - defines the number of element layers."
+msgstr ""
+
+# 413a63f3f74d426ebbd9adbc4c1285eb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:81
+msgid ""
+"**Stretch factor** - defines the growth factor of element height from the"
+" mesh boundary inwards."
+msgstr ""
+
+# 9c8388a59cfa4958b4ed94d0508d7dfe
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:82
+msgid ""
+"**Extrusion method** (available in 3D only) - defines how positions of "
+"nodes are found during prism construction and how the creation of "
+"distorted and intersecting prisms is prevented."
+msgstr ""
+
+# f2f0f76bdd0a4f8381d6543afdb09a40
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:83
+msgid ""
+"**Surface offset + smooth** method extrudes nodes along the normal to the"
+" underlying geometrical surface. Smoothing of the internal surface of "
+"element layers is possible to avoid creation of invalid prisms."
+msgstr ""
+
+# 7c1cc6e7049a427490c6eb5fa0fb2340
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:84
+msgid ""
+"**Face offset** method extrudes nodes along the average normal of "
+"surrounding mesh faces to the intersection with a neighbor mesh face "
+"translated along its own normal by the thickness of layers. The thickness"
+" of layers can be limited to avoid creation of invalid prisms."
+msgstr ""
+
+# 0d52d4c1fff14dfda30416ee5a859000
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:85
+msgid ""
+"**Node offset** method extrudes nodes along the average normal of "
+"surrounding mesh faces by the thickness of layers. The thickness of "
+"layers can be limited to avoid creation of invalid prisms."
+msgstr ""
+
+# 3616587b04724a0da5435e3314c307f8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:93
+msgid ""
+"**Specified Faces/Edges are** - defines how the shapes specified by the "
+"next parameter are used."
+msgstr ""
+
+# f7015e9be22748e5b704b316b2ddfe87
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:94
+msgid ""
+"**Faces/Edges with/without layers** - defines geometrical faces or edges "
+"on which element layers either should be or should not be constructed, "
+"depending on the value of the previous parameter (**Specified Faces/Edges"
+" are**). Faces (or edges) can be selected either in the Object Browser or"
+" in the VTK Viewer. **Add** button becomes active as soon as a suitable "
+"sub-shape is selected."
+msgstr ""
+
+# 62efa77cc84f4ccfb38199c66c478fd7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:97
+msgid ""
+"A mesh shown in the 3D Viewer can prevent selection of faces and edges, "
+"just hide the mesh to avoid this. If a face, which should be selected, is"
+" hidden by other faces, consider creating a group of faces to be selected"
+" in the Geometry module. To avoid a long wait when a geometry with many "
+"faces (or edges) is displayed, the number of faces (edges) shown at a "
+"time is limited by the value of \"Sub-shapes preview chunk size\" "
+"preference (in Preferences/Mesh/General tab)."
+msgstr ""
+
+# 6373f8512fdd40abbce91d720c507b03
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:108
+msgid "If faces/edges without layers are specified, the element layers are"
+msgstr ""
+
+# 125dc9db375d4d91af01f31dc5b50bde
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:101
+msgid ""
+"not constructed on geometrical faces shared by several solids in 3D case "
+"and edges shared by several faces in 2D case. In other words, in this "
+"mode the element layers can be constructed on boundary faces and edges "
+"only, and are not constructed on internal faces and edges. There is an "
+"exception to this rule: if a hypothesis is assigned to a sub-mesh, the "
+"element layers can be constructed on boundary faces/edges of the shape of"
+" this sub-mesh, at same time possibly being internal faces/edges within "
+"the whole model."
+msgstr ""
+
+# 5ae310c718e9423c84c247965921c94e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:126
+msgid "If you use **several** hypotheses to define viscous layers on faces of"
+msgstr ""
+
+# 5eb0df6c10ab48f1b467d005508bfdbf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:117
+msgid ""
+"one solid, keep in mind the following. Each hypothesis defines a set of "
+"faces with viscous layers (even if you specify faces without layers). The"
+" sets of faces with viscous layers defined by several hypotheses should "
+"not intersect, else the module won't add an hypothesis that is "
+"incompatible with another one. Also you can't define different number of "
+"layers on adjacent faces of a solid. This logic is also valid for the 2D "
+"hypothesis."
+msgstr ""
+
+# 3754387d6a2b4dd1a575ff9c9dcd5a2c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:134
+msgid "**See also** a sample TUI script of a :ref:`tui_viscous_layers`."
+msgstr ""
+
+# bc47f9539cea4ba79712b94280f1e632
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:140
+msgid "Quadratic Mesh"
+msgstr ""
+
+# ba83c2c703aa43d583daf55bb192aeb7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:142
+msgid ""
+"Quadratic Mesh hypothesis allows to build a quadratic mesh (in which "
+"links between element nodes are not straight but curved lines due to "
+"presence of an additional mid-side node)."
+msgstr ""
+
+# d689d0d6a0dc4a91b87aab30b4c319db
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:146
+msgid ""
+"This 1D hypothesis can be taken into account by :ref:`a1d_algos_anchor` "
+"\"Wire Discretization\" and :ref:`a1d_algos_anchor` \"Composite Side "
+"Discretization\" algorithms. To create a quadratic mes assign this "
+"hypothesis at :ref:`constructing_meshes_page`."
+msgstr ""
+
+# d89df66697c9408db023f0301d6ccafd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:151
+msgid ""
+"See :ref:`adding_quadratic_elements_page` for more information about "
+"quadratic meshes."
+msgstr ""
+
+# 049d52c574fb4e049d4da534026aa905
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:157
+msgid "Quadrangle Preference"
+msgstr ""
+
+# 5bc9e3bdc1424a998a9cf23908454242
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:159
+msgid ""
+"This additional hypothesis can be used together with 2D triangulation "
+"algorithms. It allows 2D triangulation algorithms to build quadrangular "
+"meshes."
+msgstr ""
+
+# dacde0cdc252433ea47143272e826d0a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:162
+msgid ""
+"Usage of this hypothesis with \"Quadrangle: Mapping\" meshing algorithm "
+"is obsolete since introducing :ref:`hypo_quad_params_anchor` \"Quadrangle"
+" parameters\" hypothesis. Usage of this hypothesis with \"Quadrangle: "
+"Mapping\" meshing algorithm corresponds to specifying \"Quadrangle "
+"Preference\" transition type of :ref:`hypo_quad_params_anchor` "
+"\"Quadrangle parameters\" hypothesis."
+msgstr ""
+
+# 578441c1b67846f6a25815a070b31d28
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/additional_hypo.rst:166
+msgid ""
+"\"Quadrangle Preference\" transition type can be used only if the total "
+"quantity of segments on all sides of the face is even (divisible by 2), "
+"else \"Standard\" transition type is used."
+msgstr ""
+

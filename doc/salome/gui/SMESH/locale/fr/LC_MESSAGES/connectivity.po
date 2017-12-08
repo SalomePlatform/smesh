@@ -1,0 +1,117 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-03-30 11:57+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 544556706e884932836455c9bf692b72
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/connectivity.rst:5
+msgid "Nodal connectivity of elements"
+msgstr ""
+
+# dc5442a27c934a238e10c75791d0cdc2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/connectivity.rst:7
+msgid "The following images show order of nodes in correctly defined elements."
+msgstr ""
+
+# f1759ea9888d42ebad2675a17a089a4e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/connectivity.rst:11
+msgid "Edge (segment): linear and quadratic"
+msgstr ""
+
+# 9d98eb840a9e4d36b2191cc13a42daa1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/connectivity.rst:15
+msgid "Triangle: linear, quadratic and bi-quadratic"
+msgstr ""
+
+# 800aafe01e504ac4a445ed1daac9d5b4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/connectivity.rst:19
+msgid "Quadrangle: linear, quadratic and bi-quadratic"
+msgstr ""
+
+# e6fc703e57404d77ab85798ac02894be
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/connectivity.rst:23
+msgid "Polygon: linear and quadratic"
+msgstr ""
+
+# 81e9425d74ae48d6a3ebc41b6cd7ffc4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/connectivity.rst:27
+msgid "Tetrahedron: linear and quadratic"
+msgstr ""
+
+# b9a391223bd140ea93750191c3571353
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/connectivity.rst:31
+msgid "Hexahedron: linear, quadratic and tri-quadratic"
+msgstr ""
+
+# 52e941ab57c84d189bbfe581b827deb6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/connectivity.rst:35
+msgid "Pentahedron: linear and quadratic"
+msgstr ""
+
+# dee6d00802fd40d3aff3809035f795d1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/connectivity.rst:39
+msgid "Pyramid: linear and quadratic"
+msgstr ""
+
+# d68ca0fe106744ccbf4558512d170341
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/connectivity.rst:43
+msgid "Hexagonal prism"
+msgstr ""
+
+# 8cfa36e50a2f4d2c9a5a7c127610ff66
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/connectivity.rst:64
+msgid "Polyhedron is defined by"
+msgstr ""
+
+# 2f02aa9e96ec42c4a8d6bd7807c29b45
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/connectivity.rst:47
+msgid "a sequence of nodes defining all facets"
+msgstr ""
+
+# 8217a88659df44468bd5a3704f8d0593
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/connectivity.rst:48
+msgid "a sequence of number of nodes per facet"
+msgstr ""
+
+# 4fc8f1edb7ef425bb5ffe7aa3a421d7d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/connectivity.rst:50
+msgid ""
+"**Nodes**: Node1_of_Facet1, Node2_of_Facet1, ..., NodeN_of_Facet1, "
+"Node1_of_Facet2, Node2_of_Facet2, ..., NodeN_of_Facet2, Node1_of_FacetM, "
+"Node2_of_FacetM, ..., NodeN_of_FacetM"
+msgstr ""
+
+# e8077aac24b74221871679bd284551d2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/connectivity.rst:55
+msgid ""
+"**Quantity** of nodes per facet: NbNodes_in_Facet1, NbNodes_in_Facet2, "
+"..., NbNodes_in_FacetM"
+msgstr ""
+
+# 0710dc23cbe244a7bc6e9d9c13477ef9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/connectivity.rst:58
+msgid ""
+"For example the polyhedron shown in the image below is defined by nodes ["
+" 1,2,3, 1,4,5,2, 2,5,6,3, 3,6,4,1, 4,7,9,5, 5,9,8,6, 6,8,7,4, 7,8,9 ] and"
+" quantities [ 3, 4, 4, 4, 4, 4, 4, 3 ]"
+msgstr ""
+
+# d98803aeeded42439f1e54fe5a83db64
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/connectivity.rst:65
+msgid "Order of nodes of a facet must assure outward direction of its normal."
+msgstr ""
+

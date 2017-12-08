@@ -1,0 +1,258 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# e09a6a3b97b64b3cb872ab20d9d9432d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:5
+msgid "2D Meshing Hypotheses"
+msgstr ""
+
+# 3c189747271e4baab0a6a8be1ebfe617
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:7
+msgid ":ref:`max_element_area_anchor`"
+msgstr ""
+
+# 626c5252da5d428fa87f21870252b8ec
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:8
+msgid ":ref:`length_from_edges_anchor`"
+msgstr ""
+
+# 0a330d38fd7a439ebca34824f94ce24a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:9
+msgid ":ref:`hypo_quad_params_anchor`"
+msgstr ""
+
+# e4c3135156f04dc8a7ab755cce1c926e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:14
+msgid "Max Element Area"
+msgstr ""
+
+# bce203b092324a5cae81a8d3cecd0775
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:16
+msgid ""
+"**Max Element Area** hypothesis is applied for meshing of faces composing"
+" your geometrical object. Definition of this hypothesis consists of "
+"setting the **maximum area** of mesh faces, which will compose the mesh "
+"of these faces."
+msgstr ""
+
+# 23f4d39a6f8e41a9afcb638757c9de85
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:29
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_max_element_area` "
+"hypothesis operation."
+msgstr ""
+
+# bc9dd7bbc2d84918ae8ed0c766421231
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:34
+msgid "Length from Edges"
+msgstr ""
+
+# 7e64f4443d73462497945de78b7d41b7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:36
+msgid ""
+"**Length from edges** hypothesis defines the maximum linear size of mesh "
+"faces as an average length of mesh edges approximating the meshed face "
+"boundary."
+msgstr ""
+
+# 1b22303db2b146a891123ae5a612fda8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:38
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_length_from_edges` "
+"hypothesis operation."
+msgstr ""
+
+# 27cb49c4b74e42a794fe9cdaf10ba349
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:43
+msgid "Quadrangle parameters"
+msgstr ""
+
+# 726853c1c3f444bb853c961e3766525c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:51
+msgid "**Quadrangle parameters** is a hypothesis for :ref:`quad_ijk_algo_page`."
+msgstr ""
+
+# a22ddb3e0ac443f5b199e4efd2ba09e8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:53
+msgid ""
+"**Transition** tab is used to define the algorithm of transition between "
+"opposite sides of the face with a different number of segments on them. "
+"The following types of transition algorithms are available:"
+msgstr ""
+
+# 1c874aacddc04fb283fa3a4baeea4a78
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:55
+msgid ""
+"**Standard** is the default case, when both triangles and quadrangles are"
+" possible in the transition area along the finer meshed sides."
+msgstr ""
+
+# 65541b3950864c14a539742e2cf126af
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:56
+msgid ""
+"**Triangle preference** forces building only triangles in the transition "
+"area along the finer meshed sides."
+msgstr ""
+
+# a5b18b9dbb824e7092954715a0d8bc8e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:59
+msgid ""
+"This type corresponds to **Triangle Preference** additional hypothesis, "
+"which is obsolete now."
+msgstr ""
+
+# cbdd1ae9654e473094535be74f398e2d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:61
+msgid ""
+"**Quadrangle preference** forces building only quadrangles in the "
+"transition area along the finer meshed sides. This hypothesis has a "
+"restriction: the total quantity of segments on all four face sides must "
+"be even (divisible by 2)."
+msgstr ""
+
+# 1d2c0415ad6448de9ca8cc4888852887
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:64
+msgid ""
+"This type corresponds to **Quadrangle Preference** additional hypothesis,"
+" which is obsolete now."
+msgstr ""
+
+# 86fed1d6a87d4261a98f062232709402
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:66
+msgid ""
+"**Quadrangle preference (reversed)** works in the same way and with the "
+"same restriction as **Quadrangle preference**, but the transition area is"
+" located along the coarser meshed sides."
+msgstr ""
+
+# f34e676eda8046a189ea5cd908adc1c1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:67
+msgid ""
+"**Reduced** type forces building only quadrangles and the transition "
+"between the sides is made gradually, layer by layer. This type has a "
+"limitation on the number of segments: one pair of opposite sides must "
+"have the same number of segments, the other pair must have an even total "
+"number of segments. In addition, the number of rows between sides with "
+"different discretization should be enough for the transition. Following "
+"the fastest transition pattern, three segments become one (see the image "
+"below), hence the least number of face rows needed to reduce from Nmax "
+"segments to Nmin segments is log<sub>3</sub>( Nmax / Nmin ). The number "
+"of face rows is equal to the number of segments on each of equally "
+"discretized sides."
+msgstr ""
+
+# ba8a0131a1ce4d6a8c769c79ca9ccca3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:75
+msgid ""
+"**Base vertex** tab allows using Quadrangle: Mapping algorithm for "
+"meshing of trilateral faces. In this case it is necessary to select the "
+"vertex, which will be used as the forth degenerated side of quadrangle."
+msgstr ""
+
+# ae5ff703b7b241049a1424f8be84add7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:95
+msgid ""
+"This parameter can be also used to mesh a segment of a circular face. "
+"Please, consider that there is a limitation on the selection of the "
+"vertex for the faces built with the angle > 180 degrees (see the "
+"picture)."
+msgstr ""
+
+# 36c47565de424a39bff9f2d3b1b0f2b5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:103
+msgid ""
+"In this case, selection of a wrong vertex for the **Base vertex** "
+"parameter will generate a wrong mesh. The picture below shows the good "
+"(left) and the bad (right) results of meshing."
+msgstr ""
+
+# a9b6a86af1fa41bf984f3466076bf2b3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:117
+msgid ""
+"**Enforced nodes** tab allows defining points, where the algorithm should"
+" create nodes. There are two ways to define positions of the enforced "
+"nodes."
+msgstr ""
+
+# cefb6744782b466f9c8320db9d4399cb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:119
+msgid ""
+"**Vertices** group allows to set up shapes whose vertices will  define "
+"positions of the enforced nodes. Only vertices successfully projected to "
+"the meshed face and located close enough to the meshed face will be used "
+"to create the enforced nodes."
+msgstr ""
+
+# 524446d9898844208f44b2963b1fc521
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:120
+msgid ""
+"**Points** group allows to explicitly define coordinates of points used "
+"to create the enforced nodes. Only points successfully projected to the "
+"meshed face and located close enough to the meshed face will be used to "
+"create the enforced nodes."
+msgstr ""
+
+# 4f40e9dbcb9345d7864be5c424006f41
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:123
+msgid "**Enforced nodes** cannot be created at **Reduced** transition type."
+msgstr ""
+
+# f06dce07c1944aeeb641ca1dbc820e5b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:126
+msgid "Let us see how the algorithm works:"
+msgstr ""
+
+# c803bbb4162541b293d406dd2b4830c4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:126
+msgid ""
+"Initially positions of nodes are computed without taking into account the"
+" enforced vertex (yellow point)."
+msgstr ""
+
+# 1ae3092675794e7f8784c2e7aecd9726
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:134
+msgid ""
+"Then the node closest to the enforced vertex is detected. Extreme nodes "
+"of the row and column of the detected node are used to create virtual "
+"edges (yellow lines) ending at the enforced vertex."
+msgstr ""
+
+# 53ca82d63dca4b5f8c582ef147410fff
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:141
+msgid ""
+"Consequently, the meshed face is divided by the virtual edges into four "
+"quadrilateral sub-domains each of which is meshed as usually: the nodes "
+"of the row and column of the detected node are moved to the virtual edges"
+" and the quadrilateral elements are constructed."
+msgstr ""
+
+# 2824cf7b8268406f896ffa7b16377973
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:150
+msgid ""
+"If there are several enforced vertices, the algorithm is applied "
+"recursively to the formed sub-domains."
+msgstr ""
+
+# 5a699f46aaf34d3e83d8349558155473
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/2d_meshing_hypo.rst:152
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_quadrangle_parameters` "
+"hypothesis."
+msgstr ""
+

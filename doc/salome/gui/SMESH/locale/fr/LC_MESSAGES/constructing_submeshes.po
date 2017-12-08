@@ -1,0 +1,321 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 8dcecf5dd1c545e19147f8ccf3f4be58
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:5
+msgid "Constructing sub-meshes"
+msgstr ""
+
+# 6a506f87e68e48e5b7ea7b80010086de
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:0
+msgid "`Table of contents`"
+msgstr ""
+
+# 9092a8b32515476abde848cfc0ceb439
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:9
+msgid ""
+"By purpose, the sub-mesh is an object used to assign to a sub-shape "
+"different meshing parameters than those assigned to the main shape."
+msgstr ""
+
+# 0ee4acaa2bee42f6b8b3d7c4e68487ae
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:12
+msgid ""
+"Structurally, the sub-mesh is a mesh on a certain sub-shape, or a group "
+"of sub-shapes, possibly generated using different meshing algorithms "
+"and/or hypotheses than those used to generate the mesh on other sub-"
+"shapes."
+msgstr ""
+
+# a1ef92f87bf14e65ad3cedce5de22b00
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:17
+msgid ""
+"Creation of a sub-mesh allows to control individually meshing of a "
+"certain sub-shape, thus to get a locally coarser or finer mesh, to get "
+"elements of different types in the same mesh, etc."
+msgstr ""
+
+# 07a309342d234494bbb4235098782816
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:21
+msgid ""
+"A sub-mesh can be meshed individually. To achieve this, select a sub-mesh"
+" and either invoke **Compute Sub-mesh** vai the contextual menu in the "
+"Object Browser or invoke **Mesh > Compute** menu."
+msgstr ""
+
+# 9a43a2135eb3491b9c31fb6428d18d3c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:28
+msgid "How to get a sub-shape for sub-mesh construction"
+msgstr ""
+
+# 0bb30079b4c746d88498b51858622f24
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:30
+msgid ""
+"A sub-shape to create a sub-mesh on should be retrieved from the main "
+"shape in one of the following ways:"
+msgstr ""
+
+# 645bdeb400054a1c99a3604a20aa3369
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:33
+msgid "In Geometry module, via **New Entity > Explode** menu."
+msgstr ""
+
+# 7d3c9eca847f4aa395c002896d23ecac
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:34
+msgid ""
+"In Geometry module, by creation of a group (**New Entity > Group > Create"
+" Group** menu)."
+msgstr ""
+
+# 36f54e17062a477e867fc45a66074e7c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:35
+msgid ""
+"In Mesh module, by :ref:`subshape_by_mesh_elem` generated on a sub-shape "
+"of interest. This way is accessible if the mesh is already computed."
+msgstr ""
+
+# 94e83c99a6674985a9ed2f1f03d049d2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:36
+msgid ""
+"In Mesh module, by clicking **Publish Sub-shape** button in a dialog "
+"showing :ref:`meshing_failed_anchor`."
+msgstr ""
+
+# c2d5116a1495474b9fdc0d2830a70eb3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:42
+msgid "How hypotheses are selected among sub-meshes"
+msgstr ""
+
+# 208be946d3af4a4f8e7e1c9240b4511f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:44
+msgid ""
+"Internally, definition of meshing parameters to apply for discretization "
+"of a certain sub-shape, for example an edge of a compound of solids, "
+"starts from searching an algorithm, 1D as for the edge. The following "
+"sub-shapes are sequentially checked for presence of a sub-mesh where 1D "
+"algorithm is assigned:"
+msgstr ""
+
+# 554476f1034c4aacaac1b482fb64d3e3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:50
+msgid "the **edge** itself"
+msgstr ""
+
+# 944fe41bd1e941f78f84a485934e6265
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:51
+msgid "**groups of edges** containing the edge, if any"
+msgstr ""
+
+# 5c0913b3a7b442fb97490e9c84dcf059
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:52
+msgid "**wires** sharing the edge"
+msgstr ""
+
+# 22e406cc95824e26a54daaa69a53505c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:53
+msgid "**faces** sharing the edge"
+msgstr ""
+
+# b9fe4d05bde64b9ca29e2565c61f3c36
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:54
+msgid "**groups of faces** sharing the edge, if any"
+msgstr ""
+
+# 5bb54ee1fa174e20b062d17f0400b768
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:55
+msgid "**shells** sharing the edge"
+msgstr ""
+
+# dcaf3739ff2143a3a49f1f9ac3ff224e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:56
+msgid "**solids** sharing the edge"
+msgstr ""
+
+# 2c5e33f52d2048e48a3094420a361549
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:57
+msgid "**groups of solids** sharing the edge, if any"
+msgstr ""
+
+# a1e363cbd33244ad9f4d437db94f4967
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:58
+msgid "the **main shape**"
+msgstr ""
+
+# 4568223193074961bfbb99aca46ddc10
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:60
+msgid ""
+"(This sequence of sub-shapes defines the priority of sub-meshes. Thus "
+"more local, i.e. assigned to sub-shape of lower dimension, algorithms and"
+" hypotheses have higher priority during the search of hypotheses to "
+"apply.)"
+msgstr ""
+
+# e182833e02e642b6bc49abad0a6599da
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:65
+msgid ""
+"As soon as a 1D algorithm is found, the search stops and the same "
+"sequence of sub-shapes is checked to find the main and additional 1D "
+"hypotheses, which can be taken into account by the found 1D algorithm."
+msgstr ""
+
+# 7e0073bce488402484927894319d9062
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:69
+msgid ""
+"The multi-dimensional algorithms have a higher priority than uni-"
+"dimensional ones if they are assigned to sub-meshes of the same priority."
+msgstr ""
+
+# 9d39131c3a75497180864dce936d15ed
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:73
+msgid ""
+"If meshing parameters are defined on sub-meshes of the same priority, for"
+" example, different 1D hypotheses are assigned to two faces sharing an "
+"edge, the hypothesis assigned to a sub-shape with a lower ID will be used"
+" for meshing. You can :ref:`submesh_order_anchor` mutual priority of such"
+" concurrent sub-meshes."
+msgstr ""
+
+# a9fb3d57bf8240b1b5dba59ebbb5ff5d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:82
+msgid "How to construct a sub-mesh"
+msgstr ""
+
+# 44a1e0017c194945a7bd8fce1b79e2fb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:84
+msgid ""
+"Construction of a sub-mesh consists of: * Selecting a mesh which will "
+"encapsulate the sub-mesh * Selecting a sub-shape for meshing * Applying "
+"one or several :ref:`about_hypo_page` and :ref:`basic_meshing_algos_page`"
+" which will be used for discretization of this sub-shape."
+msgstr ""
+
+# 26bf66798e54426bba0c67e54f10cd9e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:90
+msgid ""
+"**To construct a sub-mesh:** From the **Mesh** menu select **Create Sub-"
+"mesh** or click **\"Create Sum-mesh\"** button in the toolbar."
+msgstr ""
+
+# e7dae80a8baa40a49d8435722a2520f4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:99
+msgid "The following dialog box will appear:"
+msgstr ""
+
+# fe95d391d8f0472f95acb32614b037e0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:104
+msgid ""
+"It allows to define the **Name**, the parent **Mesh** and the "
+"**Geometry** (e.g. a face if the parent mesh has been built on box) of "
+"the sub-mesh. You can define meshing algorithms and hypotheses in the "
+"same way as in :ref:`constructing_meshes_page` dialog."
+msgstr ""
+
+# 47d9633bad064ecb8b5553aa565161b9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:106
+msgid ""
+"Later you can change the applied hypotheses or their parameters in "
+":ref:`editing_meshes_page` dialog. Mesh entities generated using changed "
+"hypotheses are automatically removed."
+msgstr ""
+
+# 935c4b2c834d4d98b3a2d2217f866043
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:111
+msgid "Subshape by mesh element"
+msgstr ""
+
+# 77f7de1583334f138b5f0b110ae7d51a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:113
+msgid ""
+"If the parent mesh is already computed, then you can define the "
+"**Geometry** by picking mesh elements computed on a sub-shape of interest"
+" in the 3D Viewer, i.e. you do not have to extract this sub-shape in "
+"Geometry module beforehand. To start element selection, press *Selection*"
+" button to the right of **Geometry** label. If this button is already "
+"down, then click it to release and then click it again. The following "
+"pop-up menu allowing to choose a way of geometry definition will appear."
+msgstr ""
+
+# 4c0c21e696c847999c8d837184fe4b4f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:118
+msgid ""
+"**Direct geometry selection** enables selecting the sub-shape in the "
+"Objec Browser. **Find geometry by mesh element selection** activates the "
+"following dialog."
+msgstr ""
+
+# bf06f2f5f21e459eb03cdbe983f5a4a7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:124
+msgid ""
+"In this dialog, **Element Type** defines a kind of element to pick in the"
+" Viewer. Instead of picking an element in the Viewer, you can type its ID"
+" in **Element ID** field. **Geometry name** field allows defining a name "
+"of the sub-shape, with which the sub-shape will appear in the Object "
+"Browser (if not yet there)."
+msgstr ""
+
+# 2b4738b5522c4e0c82797291770e76f2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:130
+msgid "Sub-mesh in the Object Browser"
+msgstr ""
+
+# 2ab4cc4af2cd419988c9bdb513d5bbc7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:132
+msgid ""
+"In the Object Browser the structure of the new sub-mesh will be displayed"
+" as follows:"
+msgstr ""
+
+# 84f4608ace094812a010ebc1e84b5d82
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:142
+msgid "It contains:"
+msgstr ""
+
+# 7d9cbfdf8cba4abfb1778fc5df746ff7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:138
+msgid "a sub-mesh name (*SubMeshFace1*)"
+msgstr ""
+
+# 92749880d92b40f188c986380776ff14
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:139
+msgid ""
+"a reference to the geometrical object on the basis of which the sub-mesh "
+"has been constructed (**Cylindrical Face_1**);"
+msgstr ""
+
+# b5aaa4b4a5f44ff985247f6517eb58b1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:140
+msgid ""
+"**Applied hypotheses** folder containing references to hypotheses "
+"assigned to the sub-mesh;"
+msgstr ""
+
+# c0e5a092c190496da996f8482ad11733
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:141
+msgid ""
+"**Applied algorithms** folder containing references to algorithms "
+"assigned to the sub-mesh."
+msgstr ""
+
+# fefc6a0043d24f1a9fcc14b8e8e031b7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_submeshes.rst:144
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_construction_submesh` "
+"operation."
+msgstr ""
+

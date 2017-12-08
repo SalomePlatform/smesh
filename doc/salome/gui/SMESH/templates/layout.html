@@ -1,0 +1,30 @@
+{% extends "!layout.html" %}
+
+{% block rootrellink %}
+  <span class="language_switcher_placeholder">{{ language or 'English' }}</span>
+  {{ super() }}
+{% endblock %}
+
+{% block extrahead %}
+<script type="text/javascript" src="{{ pathto('_static/switchers.js', 1) }}"></script>
+{{ super() }}
+{% endblock %}
+
+{%- block sidebarlogo %}
+{{ super() }}
+{%-
+include "searchbox.html"
+%}
+<p/>
+{%- endblock %}
+{%- block sidebarsearch %}
+{%- endblock %}
+
+{%- block footer %}
+ <div class="footer">
+         &copy; Copyright 2007-2017, CEA/DEN, EDF R&amp;D, OPEN CASCADE
+         <br>
+         &copy; Copyright 2003-2007, OPEN CASCADE, EADS/CCR, LIP6, CEA/DEN, CEDRAT, EDF R&amp;D, LEG, PRINCIPIA R&amp;D, BUREAU VERITAS.
+ </div>
+ {{ super() }}
+{%- endblock %}

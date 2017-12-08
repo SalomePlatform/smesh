@@ -1,0 +1,101 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 1156d5c7cd8b4ce1a3df82e82a707119
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scalar_bar.rst:5
+msgid "Scalar Bar properties"
+msgstr ""
+
+# 4611908037724a82beac0a0b227692bb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scalar_bar.rst:7
+msgid "In this dialog you can specify the properties of the scalar bar"
+msgstr ""
+
+# 27e42760cf0343ab852c0448815e1e95
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scalar_bar.rst:13
+msgid ""
+"**Scalar Range** - in this menu you can specify **Min value** and **Max "
+"value** of the **Scalar Bar**, and turn on/off **Logarithmic** scaling of"
+" the scalar bar."
+msgstr ""
+
+# b5dabecd5af340298fae16f653e29ec6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scalar_bar.rst:16
+msgid ""
+"**Logarithmic scale** is not applicable in case of negative and zero "
+"values in the range. In such cases it is disabled."
+msgstr ""
+
+# f8bbd34463744e8a939fae79d70564eb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scalar_bar.rst:18
+msgid ""
+"**Font** - in this menu you can set type, face and color for the font of "
+"**Title** and **Labels** of the **Scalar Bar**"
+msgstr ""
+
+# 664c9633f415405e805f78afe06b4c9d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scalar_bar.rst:20
+msgid ""
+"**Colors & Labels** - in this menu you can set the **number of colors** "
+"and the **number of labels** of the **Scalar Bar**"
+msgstr ""
+
+# ed868968ad2e488f90dbbbb34d38edcb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scalar_bar.rst:22
+msgid ""
+"**Orientation** - allows choosing between vertical and horizontal "
+"orientation of the **Scalar Bar**."
+msgstr ""
+
+# 39360fa91ca54a70a9d489574fa1d4ed
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scalar_bar.rst:25
+msgid ""
+"**Origin & Size Vertical & Horizontal** - allows defining the location "
+"(**X** and **Y**) and size (**Width** and **Height**) of **Scalar Bar**"
+msgstr ""
+
+# 79463d1d8df54ec0b4b64d7c5b54e0cc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scalar_bar.rst:25
+msgid "**X**: abscissa of the origin (from the left side)"
+msgstr ""
+
+# 3dc2795dc89f47639ec6050cdc0a8da8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scalar_bar.rst:26
+msgid "**Y**: ordinate of the origin (from the bottom)"
+msgstr ""
+
+# 03322a6dfedc42c09a9a078cd601e76b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scalar_bar.rst:33
+msgid ""
+"**Distribution** - in this menu you can Show/Hide distribution histogram "
+"of the values of the **Scalar Bar** and specify histogram properties"
+msgstr ""
+
+# c10bd60eabd54a5f9d58bf7d23c80ffd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scalar_bar.rst:28
+msgid "**Multicolor** the histogram is colored as **Scalar Bar**"
+msgstr ""
+
+# adcd8b4b90834ef1b259f5723ae5588a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scalar_bar.rst:29
+msgid ""
+"**Monocolor** the histogram is colored as selected with **Distribution "
+"color** selector"
+msgstr ""
+

@@ -289,7 +289,7 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
 
   myPathMeshFilter = new SMESH_TypeFilter(SMESH::MESHorSUBMESH);
 
-  myHelpFileName = "extrusion_along_path_page.html";
+  myHelpFileName = "extrusion_along_path.html";
 
   Init();
 

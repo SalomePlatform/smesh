@@ -1,0 +1,174 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 5ced8a22e99446e1929425f34c14a8bd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_to_tetra.rst:5
+msgid "Splitting volumes"
+msgstr ""
+
+# 161468ab01824a379f8f38c80bbcbfe8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_to_tetra.rst:7
+msgid ""
+"This operation allows to split either any volumic elements into "
+"tetrahedra or hexahedra into prisms. 2D mesh is modified accordingly."
+msgstr ""
+
+# 3be3b131b4254a848b106c3cf7a8fe0b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_to_tetra.rst:10
+msgid "**To split volumes:**"
+msgstr ""
+
+# 9518d0279e39403996b11d7fb0592fa0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_to_tetra.rst:12
+msgid "Select a mesh, a sub-mesh or a group."
+msgstr ""
+
+# 9a5a4b2dc7a54d8d8c02b9a77773857e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_to_tetra.rst:13
+msgid ""
+"In the **Modification** menu select the **Split Volumes** item or click "
+"**\"Split Volumes\"** button in the toolbar."
+msgstr ""
+
+# fa9648623934432f8d6d7672ef4e1d12
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_to_tetra.rst:21
+msgid "The following dialog box will appear:"
+msgstr ""
+
+# 532312c11d1d483e9ce1eaac09b67f24
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_to_tetra.rst:27
+msgid "First it is possible to select the type of operation:"
+msgstr ""
+
+# 8a298844755549faaebcafd5b4bfa0a6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_to_tetra.rst:29
+msgid ""
+"If **Tetrahedron** button is checked, the operation will split volumes of"
+" any type into tetrahedra."
+msgstr ""
+
+# 188be37713044e6a916bff37d0175f52
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_to_tetra.rst:30
+msgid ""
+"If **Prism** button is checked, the operation will split hexahedra into "
+"prisms."
+msgstr ""
+
+# 3983a3aca6ed42d0a26e14b1eb9cd2ee
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_to_tetra.rst:32
+msgid ""
+"The main list contains the list of volumes to split. You can click on a "
+"volume in the 3D viewer and it will be highlighted (lock Shiftkeyboard "
+"button to select several volumes). Click **Add** button and the ID of "
+"this volume will be added to the list. To remove the selected element or "
+"elements from the list click **Remove** button. **Sort list** button "
+"allows to sort the list of IDs. **Filter** button allows applying a "
+"filter to the selection of volumes."
+msgstr ""
+
+# 4e01a89b8a3f450b93f926f6a978920c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_to_tetra.rst:32
+msgid ""
+"**Note:** If you split not all adjacent non-tetrahedral volumes, your "
+"mesh becomes non-conform."
+msgstr ""
+
+# c38851c3c8f040b79ca92f7ead84fdbc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_to_tetra.rst:34
+msgid ""
+"**Apply to all** radio button allows splitting all volumes of the "
+"currently selected mesh."
+msgstr ""
+
+# 237dc4f1a004445090614c601e1dd507
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_to_tetra.rst:35
+msgid ""
+"If **Tetrahedron** element type is selected, **Split hexahedron** group "
+"allows specifying the number of tetrahedra  a hexahedron will be split "
+"into. If the chosen method does not allow to get a conform mesh, a "
+"generic solution is applied: an additional node is created at the gravity"
+" center of a hexahedron, serving an apex of tetrahedra, all quadrangle "
+"sides of the hexahedron are split into two triangles each serving a base "
+"of a new tetrahedron."
+msgstr ""
+
+# 35acacf4c9914c8a9e33abbb4a310ed7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_to_tetra.rst:37
+msgid ""
+"If **Prism** element type is selected, the **Split hexahedron** group "
+"looks as follows:"
+msgstr ""
+
+# 2f1f7ea0b6ca43bc8ab8498ca5be93d9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_to_tetra.rst:42
+msgid ""
+"**Into 2 (or 4) prisms** allows to specify the number of prisms a "
+"hexahedron will be split into."
+msgstr ""
+
+# f97d3214db0b40e098fa20434d79a41f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_to_tetra.rst:43
+msgid ""
+"**Facet to split** group allows to specify the side (facet) of the "
+"hexahedron, which is split into triangles.  This facet is defined by a "
+"point and a direction. The algorithm finds a hexahedron closest to the "
+"specified point and splits a facet whose normal is closest to the "
+"specified direction. Then the splitting is propagated from that "
+"hexahedron to all adjacent hexahedra. The point and the direction by "
+"which the first split hexahedron is found can be specified:"
+msgstr ""
+
+# 2b05df53bb2f41c7b4feabdfdc3834b4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_to_tetra.rst:45
+msgid ""
+"by input of coordinates in **Hexa location** and **Facet normal** fields,"
+" or"
+msgstr ""
+
+# e7b249c8747f4ff88bd4cc7ccc471e19
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_to_tetra.rst:46
+msgid ""
+"by clicking **Selection** button and selecting in the viewer the element "
+"whose barycenter will be used as the start point and whose direction will"
+" be used as a normal to facet to split into triangles. Switch this button"
+" off to return to selection of volumes to split."
+msgstr ""
+
+# c716df95dcc34b5bb724cfcff649cf15
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_to_tetra.rst:49
+msgid ""
+"If **All domains** option is off, the operation stops when all hehexedra "
+"adjacent to the start hexahedron are split into prisms. Else the "
+"operation tries to continue splitting starting from  another hexahedron "
+"closest to the **Hexa location**."
+msgstr ""
+
+# 0c9bafdf99364a47b9d613fb3614babc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_to_tetra.rst:51
+msgid ""
+"**Select from** set of fields allows choosing a sub-mesh or an existing "
+"group whose elements will be added to the list as you click **Add** "
+"button."
+msgstr ""
+
+# 35a61cc562064cf08d1071a0936d2e5f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_to_tetra.rst:54
+msgid "Click **Apply** or **Apply and Close** button to confirm the operation."
+msgstr ""
+

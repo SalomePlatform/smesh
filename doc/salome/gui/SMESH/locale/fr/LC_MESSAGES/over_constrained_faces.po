@@ -1,0 +1,47 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 7fdfea347e1d4091902dadb3d3a0c400
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/over_constrained_faces.rst:5
+msgid "Over-constrained faces"
+msgstr ""
+
+# 6709c7e9a6414872af4c0b7160eea96c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/over_constrained_faces.rst:7
+msgid ""
+"This mesh quality control highlights faces sharing only one border with "
+"other faces. In other words, the faces having all their nodes on the free"
+" border of the 2D mesh are highlighted."
+msgstr ""
+
+# 13eece5073274b6eb53dedc1b6afb106
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/over_constrained_faces.rst:12
+msgid ""
+"The highlighted faces are actually over-constrained only if, at the "
+"computation time, the boundary conditions on the borders where the nodes "
+"are located are all Dirichlet boundary conditions."
+msgstr ""
+
+# 5da724c689594f42a4628042beacd200
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/over_constrained_faces.rst:20
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_over_constrained_faces` "
+"filter."
+msgstr ""
+

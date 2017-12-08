@@ -1,0 +1,113 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-03-30 11:57+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 0bdabc52b48a44c1b7833e2c080c8fc7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/introduction.rst:3
+msgid "Introduction to Mesh module"
+msgstr ""
+
+# 1eab875349524c43807a6e067ef1001d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/introduction.rst:8
+msgid "**Mesh** module of SALOME is destined for:"
+msgstr ""
+
+# f2265307afc24e5dab8b9d21393d91e7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/introduction.rst:13
+msgid ":ref:`creating meshes <about_meshes_page>` in different ways:"
+msgstr ""
+
+# 76a6036c50fc422a9be2ffa57b5b5424
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/introduction.rst:11
+msgid ""
+"by meshing geometrical models previously created or imported by the "
+"Geometry component;"
+msgstr ""
+
+# e65b12af95174deaa457c0d7ab33b729
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/introduction.rst:12
+msgid ""
+"bottom-up, using :ref:`modifying_meshes_page`, especially "
+":ref:`extrusion_page` and :ref:`revolution_page`;"
+msgstr ""
+
+# 0a6123fd41e24e07a907de9e5e3b3557
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/introduction.rst:13
+msgid ""
+"by generation of the 3D mesh from the 2D mesh not based on the geometry "
+"(:ref:`importing_exporting_meshes_page` for example);"
+msgstr ""
+
+# 11f6d462475e49488c6c7f9947d4206f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/introduction.rst:15
+msgid ":ref:`importing_exporting_meshes_page` in various formats;"
+msgstr ""
+
+# 5a0fdbb470b04bf99fe49aa780f18fd4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/introduction.rst:16
+msgid ":ref:`modifying_meshes_page` with a vast array of dedicated operations;"
+msgstr ""
+
+# 50b4f8f5a5244ef39ec17255f10c665f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/introduction.rst:17
+msgid ":ref:`grouping_elements_page` of mesh elements;"
+msgstr ""
+
+# 4ec2919033934d18a852857bd8148fbb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/introduction.rst:18
+msgid ""
+"filtering mesh entities (nodes or elements) using :ref:`filters_page` "
+"functionality for :ref:`grouping_elements_page` and applying "
+":ref:`modifying_meshes_page`;"
+msgstr ""
+
+# 03efffcd260f40e185a2884eaf563a3b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/introduction.rst:19
+msgid ""
+":ref:`viewing_meshes_overview_page` in the VTK viewer and "
+":ref:`mesh_infos_page` on mesh and its sub-objects;"
+msgstr ""
+
+# e5718414f14243cdadbaa06b45ec5acc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/introduction.rst:20
+msgid ""
+"applying to meshes :ref:`quality_page`, allowing to highlight important "
+"elements;"
+msgstr ""
+
+# 8b99877b0d4549d1abb078f50f6f33cd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/introduction.rst:21
+msgid "taking various :ref:`measurements_page` of the mesh objects."
+msgstr ""
+
+# 73b3d1abfbf549b394bcb42bff5bd696
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/introduction.rst:24
+msgid ""
+"It is possible to use the variables predefined in "
+":ref:`using_notebook_mesh_page` to set parameters of operations. Mesh "
+"module preferences are described in the :ref:`mesh_preferences_page` "
+"section of SALOME Mesh Help. Almost all mesh module functionalities are "
+"accessible via :ref:`smeshpy_interface_page`. There is a set of "
+":ref:`tools_page` plugged-in the module to extend the basic functionality"
+" listed above."
+msgstr ""
+
+# d2c36cd2c8c443edab9f9e5683075b8b
+#~ msgid ":ref:`about_meshes_page` in different ways:"
+#~ msgstr ""
+

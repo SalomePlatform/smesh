@@ -1,0 +1,58 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# ffa0e140c2b94def8c2047d74ba0c16b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/skew.rst:5
+msgid "Skew"
+msgstr ""
+
+# 3d3fc82f66704e108328aaa7bf6d7126
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/skew.rst:7
+msgid ""
+"**Skew** mesh quality criterion reflects the angle between the lines that"
+" join opposite sides of a quadrangle element or the greatest angle "
+"between a median and a midline in a triangle element. This mesh quality "
+"criterion can be applied to elements composed of 4 and 3 nodes "
+"(quadrangles and triangles)."
+msgstr ""
+
+# 923ee2b37e8043919ea75c89979c3cc8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/skew.rst:20
+msgid "Display your mesh in the viewer."
+msgstr ""
+
+# 4334f64e54eb4a76bfa280c22114cbda
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/skew.rst:21
+msgid ""
+"Choose **Controls > Face Controls > Skew** or click **\"Skew\"** button "
+"of the toolbar."
+msgstr ""
+
+# ae0207e03e3f49ecaf5329395c50d8eb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/skew.rst:30
+msgid ""
+"Your mesh will be displayed in the viewer with its elements colored "
+"according to the applied mesh quality control criterion:"
+msgstr ""
+
+# 6bf94f1243344010a4fdade2e8ab5fe0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/skew.rst:36
+msgid "**See Also** a sample TUI Script of a :ref:`tui_skew` operation."
+msgstr ""
+

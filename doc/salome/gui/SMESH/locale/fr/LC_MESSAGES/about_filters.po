@@ -1,0 +1,75 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 4c761ceb3e2b4589b9322427cd60a721
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_filters.rst:5
+msgid "About filters"
+msgstr ""
+
+# 6b9203e61ded4843bca733e95c9506bf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_filters.rst:7
+msgid ""
+"**Filters** allow picking only the mesh elements satisfying to a specific"
+" condition or a set of conditions. Filters can be used to create or edit "
+"mesh groups, remove elements from the mesh, control mesh quality by "
+"different parameters, etc."
+msgstr ""
+
+# 2f2442981da04ae390067a60888985b6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_filters.rst:9
+msgid ""
+"Several criteria can be combined together by using logical operators "
+"*AND* and *OR*. In addition, a filter criterion can be reverted using "
+"logical operator *NOT*."
+msgstr ""
+
+# b4f41bb37d9b46ada354aec2684e8658
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_filters.rst:11
+msgid ""
+"Some filtering criteria use the functionality of "
+":ref:`quality_page`:\"mesh quality controls\" to filter mesh nodes / "
+"elements by specific characteristic (Area, Length, etc)."
+msgstr ""
+
+# 62a6a4834fcd4a23889013edf25b754f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_filters.rst:13
+msgid "The functinality of mesh filters is available in both GUI and TUI modes:"
+msgstr ""
+
+# f5f025a85355430caf590bf217ce80e1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_filters.rst:15
+msgid ""
+"In GUI, filters are available in some dialog boxes via \"Set Filters\" "
+"button, clicking on which opens the dialog box allowing to specify the "
+"list of filter criteria to be applied to the current selection. See "
+":ref:`selection_filter_library_page` page to learn more about selection "
+"filters and their usage in GUI."
+msgstr ""
+
+# 06ad9d5a34d14a1d906a06c5cdfa2dc7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_filters.rst:17
+msgid ""
+"In Python scripts, filters can be used to choose only some mesh entities "
+"(nodes or elements) for the operations, which require the list of "
+"entities as input parameter (create/modify group, remove nodes/elements, "
+"etc) and for the operations, which accept objects (groups, sub-meshes) as"
+" input parameter. The page :ref:`tui_filters_page` provides examples of "
+"the filters usage in Python scripts."
+msgstr ""
+

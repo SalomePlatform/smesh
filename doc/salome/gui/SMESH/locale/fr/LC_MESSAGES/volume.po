@@ -1,0 +1,60 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 57f538dc718c4981baddee8d1fb421c0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/volume.rst:5
+msgid "Volume"
+msgstr ""
+
+# 2bc915cd665048fe82b3c2be923c4e8c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/volume.rst:7
+msgid ""
+"**Volume** mesh quality criterion reflects the volume of meshes of a 3D "
+"object."
+msgstr ""
+
+# 6e8fba6a124a4dde9388c78009158e51
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/volume.rst:10
+msgid "**To apply the Volume quality criterion to your mesh:**"
+msgstr ""
+
+# c7307510f76a42cb93a8806a67e3fe2e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/volume.rst:12
+msgid "Display your mesh in the viewer."
+msgstr ""
+
+# 6ba3f8b7613f421ea7ae919acea450fe
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/volume.rst:13
+msgid ""
+"Choose **Controls > Volume Controls > Volume** or click **\"Volume\"** "
+"button in the toolbar."
+msgstr ""
+
+# 3048375053e34eaab6e3aa5468e4edd2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/volume.rst:21
+msgid ""
+"Your mesh will be displayed in the viewer with its elements colored "
+"according to the applied mesh quality control criterion:"
+msgstr ""
+
+# 4813b79376244712b5a529d6d01e56ea
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/volume.rst:27
+msgid "**See Also** a sample TUI Script of a :ref:`tui_volume` operation."
+msgstr ""
+

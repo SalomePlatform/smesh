@@ -1,0 +1,305 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 7b54f64d1af4421d998f1fc6b018c4bf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:5
+msgid "Creating groups"
+msgstr ""
+
+# 1a2bbb3796fe4d36a772b0c1923ab67e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:7
+msgid ""
+"In MESH you can create a :ref:`grouping_elements_page` of elements of a "
+"certain type. The main way to create a group, is to select in the "
+"**Mesh** menu **Create Group** item (also available in the context menu "
+"of the mesh). To create a group you should define the following:"
+msgstr ""
+
+# 9906a31c304346f0b167da2af922969a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:11
+msgid ""
+"**Mesh** - the mesh whose elements will form your group. You can select "
+"your mesh in the Objet Browser or in the 3D viewer."
+msgstr ""
+
+# 0643fcb5542c451190449bdcce19c077
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:17
+msgid ""
+"**Elements Type** - set of radio buttons allows to select the type of "
+"elements which will form your group:"
+msgstr ""
+
+# b669022b14074985840f2ec7a5f1b490
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:13
+msgid "**Nodes**"
+msgstr ""
+
+# 104815f6fcd6414cb630858f4aeb9155
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:14
+msgid "**0D Element**"
+msgstr ""
+
+# 16f9f2ac46844060b018663a48b0f49a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:15
+msgid "**Ball**"
+msgstr ""
+
+# d772a17c8bb7406b827b0d9986fd7760
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:16
+msgid "**Edges**"
+msgstr ""
+
+# a97b302e3d624ceb942cf29c101131a9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:17
+msgid "**Faces**"
+msgstr ""
+
+# 9e041daf0b254f09bead8e8505ccef71
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:18
+msgid "**Volumes**"
+msgstr ""
+
+# 82fcee6546ea49dea69dbd66206fd1ff
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:19
+msgid "**Name** field allows to enter the name of your new group."
+msgstr ""
+
+# 009935b2e04e48be983cb6ee60d2ebf6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:20
+msgid ""
+"**Color** - allows to assign to the group a certain color. The chosen "
+"color is used to display the elements of the group. Activation of **Auto "
+"Color** item in mesh context menu switches on a random choice of a color "
+"for a new group."
+msgstr ""
+
+# 29f02f4147ad4112a5b0f9cf1725c2d3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:22
+msgid ""
+"Mesh module distinguishes between the three Group types: **Standalone "
+"Group**, **Group on Geometry** and **Group on Filter**."
+msgstr ""
+
+# aa77de8a33a44e7c8a05f8be00a8848d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:29
+msgid "\"Standalone Group\""
+msgstr ""
+
+# d28e986c4d66428ab7b6b1bbd28be910
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:31
+msgid ""
+"**Standalone Group** contains a list of mesh elements, which you can "
+"define in the following ways:"
+msgstr ""
+
+# e2a1743ffc8049499f82e8c5a3b866f4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:34
+msgid ""
+"By adding all entities of the chosen type existing in the mesh. For this,"
+" turn on the **Select All** check-box. In this mode all controls, which "
+"allow selecting the entities, are disabled."
+msgstr ""
+
+# 0839d03f970444c09025c467b4eb225f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:35
+msgid ""
+"By choosing entities manually with the mouse in the 3D Viewer. For this, "
+"turn on the **Enable manual edition** check box. You can click on an "
+"element in the 3D viewer and it will be highlighted. After that click the"
+" **Add** button and the ID of this element will be added to the list. The"
+" **Set filter** button allows to define the filter for selection of the "
+"elements for your group. See more about filters on the "
+":ref:`selection_filter_library_page` \"Selection filter library\" page."
+msgstr ""
+
+# 0070179b410344168305ec4f8297e9c9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:36
+msgid ""
+"By adding entities from either a sub-mesh or another group. For this, "
+"turn on the **Enable manual edition** check box. **Select from** fields "
+"group allows to select a sub-mesh or a group of the appropriate type and "
+"to **Add** their elements to the group."
+msgstr ""
+
+# a57d5e61ea084870a8bfce92c9c4c736
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:38
+msgid "In the **manual edition** mode you can"
+msgstr ""
+
+# c9d0e77cb7f343aebac268ab97ef13aa
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:40
+msgid "click the **Remove** button to remove the selected items from the list."
+msgstr ""
+
+# 306bfea381614c17bb72e986779f6041
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:41
+msgid "click the **Sort List** button to sort the list of IDs of mesh elements."
+msgstr ""
+
+# e1dba82ca6c248abb9294aac985e0d31
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:46
+msgid ""
+"For example, to create a new group containing all faces of an existing "
+"group and some other faces selected in the viewer:"
+msgstr ""
+
+# ad44ce3ae9b84418b4e492c929ad93ff
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:48
+msgid "Select the **Face** type of entities and input the name of the new group."
+msgstr ""
+
+# be572ffdc7934e85b5ebff340ff36f1a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:49
+msgid "Check the **Group** checkbox in **Select From** group."
+msgstr ""
+
+# 1e06ee64a1754bdd90d04beda8118a1a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:50
+msgid "Select the existing group of faces in the object browser or in the viewer."
+msgstr ""
+
+# 406b703bb7bd47d1b54e34c831d6cf51
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:51
+msgid ""
+"Click **Add** in **Content** group. **Id Elements** list will be filled "
+"with IDs of faces belonging to the selected group."
+msgstr ""
+
+# e8d5b9afe2b04a98b8e72e7773e65984
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:52
+msgid "Select other faces in the viewer."
+msgstr ""
+
+# 3b66eb0e9b284d11a31073d912ce7ea2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:53
+msgid "Click **Add** in **Content** group."
+msgstr ""
+
+# 9752692fb73f49a38a4d093aa566faba
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:54
+msgid "Click **Apply** button to create the new group."
+msgstr ""
+
+# fc9eec6d13f54a1d8dd9fe679a653732
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:57
+msgid ""
+"Please note that the new group does not have references to the source "
+"group. It contains only the list of face IDs. So if the source group is "
+"changed, the new one is not updated accordingly."
+msgstr ""
+
+# 692f98b5a544406397a569cd43d229dc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:65
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_create_standalone_group` "
+"operation."
+msgstr ""
+
+# 8f305bfbc5da4c4cbba5c2276c8b7b4b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:71
+msgid "\"Group on Geometry\""
+msgstr ""
+
+# d74e73205f87477a86be174722b0d464
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:73
+msgid ""
+"To create a group on geometry check **Group on geometry** in the "
+"**Group** **type** field. The group on geometry contains the elements of "
+"a certain type generated on the selected geometrical object. Group "
+"contents are dynamically updated if the mesh is modified. The group on "
+"geometry can be created only if the mesh is based on geometry."
+msgstr ""
+
+# c35bbf66e64749249b5648e96dac7b24
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:75
+msgid "To define a group, click the *Selection* button and choose"
+msgstr ""
+
+# 2637b093a3244394b8189c3922db7f61
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:77
+msgid ""
+"**Direct geometry selection** to select a shape in the Object Browser or "
+"in the Viewer;"
+msgstr ""
+
+# f12f05a2338b4868865af8499e4a9b81
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:78
+msgid ""
+"**Find geometry by mesh element selection** to activate a dialog which "
+"retrieves a shape by the selected element generated on this shape."
+msgstr ""
+
+# 6b3d4cd3c648491cbfd535924cdc3411
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:81
+msgid ""
+"that this choice is available only if the mesh elements are already "
+"generated."
+msgstr ""
+
+# fb65f6162e60441483b784741d0a41cf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:86
+msgid ""
+"After confirmation of the operation a new group of mesh elements will be "
+"created."
+msgstr ""
+
+# 0c16c230c7ce4c2793eb08c312636d8d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:91
+msgid ""
+"In this picture the cells which belong to a certain geometrical face are "
+"selected in green."
+msgstr ""
+
+# a308beb890254bf6badae10ed3fdc309
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:93
+msgid ""
+"**See Also** a sample TUI Script of a  "
+":ref:`tui_create_group_on_geometry` operation."
+msgstr ""
+
+# d5212a8c6d9144abbdd01cedbe1547ee
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:99
+msgid "\"Group on Filter\""
+msgstr ""
+
+# 9d7c3b6e6af44b62b16e265da59bb6fc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:101
+msgid ""
+"To create a group on filter check **Group on filter** in the **Group "
+"type** field. The group on filter contains the elements of a certain type"
+" satisfying the defined filter. Group contents are dynamically updated if"
+" the mesh is modified."
+msgstr ""
+
+# dc10544f89244542a1654346a5f10ded
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:105
+msgid ""
+"To define a group, click the **Set filter** button and define criteria of"
+" the filter in the opened dialog. After the operation is confirmed, a new"
+" group of mesh elements will be created. See more about filters on the "
+":ref:`selection_filter_library_page` page."
+msgstr ""
+
+# 36b896624b0843ddacee7d59392b13d2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/creating_groups.rst:110
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_create_group_on_filter` "
+"operation."
+msgstr ""
+

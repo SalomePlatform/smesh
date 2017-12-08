@@ -1,0 +1,60 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 1e9adeaeeb69425190fd407c57902106
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/taper.rst:5
+msgid "Taper"
+msgstr ""
+
+# acc7190b275949bdaf6613e0746e8768
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/taper.rst:7
+msgid ""
+"**Taper** mesh quality criterion represents the ratio of the areas of two"
+" triangles separated by a diagonal within a quadrilateral face."
+msgstr ""
+
+# 93b0ace8bda64797befdae8e2cdd5db3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/taper.rst:15
+msgid "**To apply the Taper quality criterion to your mesh:**"
+msgstr ""
+
+# a35ceea825514a66b121967bc551392d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/taper.rst:18
+msgid "Display your mesh in the viewer."
+msgstr ""
+
+# e6cd91a111394cf7b566db11dda7bdd4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/taper.rst:20
+msgid ""
+"Choose **Controls > Face Controls > Taper** or click **\"Taper\"** button"
+" in the toolbar."
+msgstr ""
+
+# 2677c0963ced4dde8c75b0f45a239179
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/taper.rst:28
+msgid ""
+"Your mesh will be displayed in the viewer with its elements colored "
+"according to the applied mesh quality control criterion:"
+msgstr ""
+
+# 2fadca0282f24f0a8b28aa8f8a523ec7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/taper.rst:33
+msgid "**See Also** a sample TUI Script of a :ref:`tui_taper` operation."
+msgstr ""
+

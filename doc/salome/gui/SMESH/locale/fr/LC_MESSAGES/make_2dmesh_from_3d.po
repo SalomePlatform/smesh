@@ -1,0 +1,144 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 45e7bb44985d4a939a0893b7c72f64b5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/make_2dmesh_from_3d.rst:5
+msgid "Generate boundary elements"
+msgstr ""
+
+# 81dcd600380c4cedae1ad528c8312cd2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/make_2dmesh_from_3d.rst:7
+msgid ""
+"This functionality allows to generate mesh elements on the borders of "
+"elements of a higher dimension, for example, to create 2D elements around"
+" a block of 3D elements as in the following figure."
+msgstr ""
+
+# 230845ffba19429e8bb03f2f2727e88b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/make_2dmesh_from_3d.rst:16
+msgid "**To generate border elements:**"
+msgstr ""
+
+# 4a243378956441699e4dae772e14a9b1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/make_2dmesh_from_3d.rst:18
+msgid "Select a mesh or group in the Object Browser or in the 3D Viewer"
+msgstr ""
+
+# 4523e944e6a64901b5b06fe3e4ec2515
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/make_2dmesh_from_3d.rst:19
+msgid ""
+"From the Modification menu choose \"Create boundary elements\" item, or "
+"click \"Create boundary elements\" button in the toolbar"
+msgstr ""
+
+# 63f9d61107064b78a617115009fb8ba5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/make_2dmesh_from_3d.rst:28
+msgid "The following dialog box will appear:"
+msgstr ""
+
+# 4d42e6e23f114646ae9e4dcfa643f2b1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/make_2dmesh_from_3d.rst:37
+msgid ""
+"Check in the dialog box one of two radio buttons corresponding to the "
+"type of operation you would like to perform."
+msgstr ""
+
+# 3a27e67ac6214278aa7298a993e72c0c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/make_2dmesh_from_3d.rst:38
+msgid "Fill the other fields available in the dialog box."
+msgstr ""
+
+# 44af91b085e04bfb8cee97be95a2bac7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/make_2dmesh_from_3d.rst:39
+msgid ""
+"Click the **Apply** or **Apply and Close** button to perform the "
+"operation."
+msgstr ""
+
+# e2f22c2cf1bc4bdaaa28c4ab85e405ca
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/make_2dmesh_from_3d.rst:41
+msgid ""
+"\"Create boundary elements\" dialog allows creation of boundary elements "
+"of two types."
+msgstr ""
+
+# bd438ed627bf43f0b4be802727f6603a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/make_2dmesh_from_3d.rst:43
+msgid ""
+"**2D from 3D** creates missing mesh faces on free facets of volume "
+"elements"
+msgstr ""
+
+# 3834e909e5ff4d6a8445aa188ea3d079
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/make_2dmesh_from_3d.rst:44
+msgid "**1D from 2D** creates missing mesh edges on free edges of mesh faces"
+msgstr ""
+
+# 0679ee21fde8464b88060eed26eb23f9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/make_2dmesh_from_3d.rst:46
+msgid ""
+"Here a **free facet** means a facet shared by only one volume, a **free "
+"edge** means an edge shared by only one mesh face."
+msgstr ""
+
+# ab132c23ffad42e28e68bcf5b353d166
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/make_2dmesh_from_3d.rst:49
+msgid "In this dialog:"
+msgstr ""
+
+# 325ea2589ed24f91afdc9bc4d123e3ad
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/make_2dmesh_from_3d.rst:51
+msgid "specify the **Target** mesh, where the boundary elements will be created."
+msgstr ""
+
+# 58e483eeffa74cd3bb20054d19589c2e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/make_2dmesh_from_3d.rst:53
+msgid "**This mesh** adds elements in the selected mesh."
+msgstr ""
+
+# 4cd1d5e6c9fd45ccb6110cff9dcf48f5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/make_2dmesh_from_3d.rst:54
+msgid ""
+"**New mesh** adds elements to a new mesh. The new mesh appears in the "
+"Object Browser with the name that you can change in the adjacent box."
+msgstr ""
+
+# 99093f54748c4b05afda91533baf132a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/make_2dmesh_from_3d.rst:56
+msgid ""
+"activate **Copy source mesh** checkbox to copy all elements of the "
+"selected mesh to the new mesh, else the new mesh will contain only "
+"boundary elements (old and created by this operation)."
+msgstr ""
+
+# 4e85dfc4233e4db080fdde756adf6aec
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/make_2dmesh_from_3d.rst:57
+msgid ""
+"activate **Create group** checkbox to create a group to which all the "
+"boundary elements (old and new) are added. The new group appears in the "
+"Object Browser with the name that you can change in the adjacent box."
+msgstr ""
+
+# 649910b8deaf4b1684654f55e91496fb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/make_2dmesh_from_3d.rst:59
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_make_2dmesh_from_3d` "
+"operation."
+msgstr ""
+

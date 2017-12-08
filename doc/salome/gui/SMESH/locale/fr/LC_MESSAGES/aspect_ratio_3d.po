@@ -1,0 +1,77 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 61434f0743c3404cb4e01a3bf84d57cd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/aspect_ratio_3d.rst:5
+msgid "Aspect ratio 3D"
+msgstr ""
+
+# 156046dbe964465684b29538f5cf82f5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/aspect_ratio_3d.rst:7
+msgid ""
+"The **Aspect Ratio 3D** mesh quality criterion calculates the same "
+"parameter as the :ref:`aspect_ratio_page` criterion, but it is applied to"
+" 3D mesh elements: tetrahedrons, pentahedrons, hexahedrons, etc."
+msgstr ""
+
+# d676a6ab44454cdf921790e40a0e16e7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/aspect_ratio_3d.rst:9
+msgid ""
+"The **Aspect Ratio** of a **tetrahedron** 3D element defined by vertices "
+"{a,b,c,d } is calculated by the formula:"
+msgstr ""
+
+# 40ba4ecb72e3463abe86fdda2a486407
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/aspect_ratio_3d.rst:14
+msgid ""
+"Other element types like polyhedron, pentahedron and hexahedron use the "
+"following formula:"
+msgstr ""
+
+# adbb816c867c40f58ab1c290659b30e2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/aspect_ratio_3d.rst:19
+msgid "**To apply the Aspect Ratio 3D quality criterion to your mesh:**"
+msgstr ""
+
+# c1a14197106745bb92f4ea507ecdb17c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/aspect_ratio_3d.rst:21
+msgid "Display your mesh in the viewer."
+msgstr ""
+
+# bb851272ea6d4a09bcc1ae1f275d14ee
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/aspect_ratio_3d.rst:22
+msgid ""
+"Choose **Controls > Volume Controls > Aspect Ratio 3D** or click "
+"**\"Aspect Ratio 3D\"** button of the toolbar."
+msgstr ""
+
+# 6daa4e9e21f5441ebd17641159f25dc1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/aspect_ratio_3d.rst:31
+msgid ""
+"Your mesh will be displayed in the viewer with its elements colored "
+"according to the applied mesh quality control criterion:"
+msgstr ""
+
+# 9d800e4d5fb04279952a7960f5c06ce5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/aspect_ratio_3d.rst:37
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_aspect_ratio_3d` "
+"operation."
+msgstr ""
+

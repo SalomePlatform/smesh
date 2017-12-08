@@ -1,0 +1,220 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# fc4d677b1c234a72b7e97451677ac8e3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:5
+msgid "Projection Algorithms"
+msgstr ""
+
+# d55142e76e1a47fea92de81fe9bed3d9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:0
+msgid "`Table of contents`"
+msgstr ""
+
+# cfa42355ba754e59aab936e85b474397
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:9
+msgid ""
+"Projection algorithms allow to define the mesh of a geometrical object by"
+" the projection of another already meshed geometrical object."
+msgstr ""
+
+# 374f2a20d98141a2a59f36b59b41defb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:13
+msgid ""
+"Source and target geometrical objects mush be topologically equal, i.e. "
+"they must have same number of sub-shapes, connected to corresponding "
+"counterparts."
+msgstr ""
+
+# d983865fc5a3497191fe16a3840ed44e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:25
+msgid "Projection 1D"
+msgstr ""
+
+# 0f52c911e7b04ab5b8f8190c5ebabdca
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:27
+msgid ""
+"**Projection 1D** algorithm allows to define the mesh of an edge (or "
+"group of edges) by the projection of another already meshed edge (or "
+"group of edges)."
+msgstr ""
+
+# 77d34de361694c3fbc2a08934d6dbf6c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:30
+msgid ""
+"To apply this algorithm select the edge to be meshed (indicated in the "
+"field **Geometry** of **Create mesh** dialog box), **Projection1D** in "
+"the list of 1D algorithms and click the **\"Add Hypothesis\"** button. "
+"The following dialog box will appear:"
+msgstr ""
+
+# 1050b73647ab4a068240b00b53a16e6b
+# ff3a3f91ceba41c4878ea2269f4e603b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:39
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:72
+msgid "In this dialog you can define"
+msgstr ""
+
+# 88fc0a02fd614150a1c8a42ebd1657d2
+# 939901da1425440cb61fccb741ae2d0f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:41
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:74
+msgid "the **Name** of the algorithm,"
+msgstr ""
+
+# bf02e08c729244fbac7ce0f14296fbed
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:42
+msgid "the already meshed **Source Edge** and"
+msgstr ""
+
+# e3b6c7a5b7474f9789d0c62aff066ddf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:43
+msgid ""
+"the **Source Mesh** (It can be omitted only when projecting a sub-mesh on"
+" another one of the same Mesh)."
+msgstr ""
+
+# 6e32fb2a4af54f8582770d9d82d6317b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:44
+msgid ""
+"It could also be necessary to define the orientation of edges,  which is "
+"done by indicating the **Source Vertex** being the first point of the "
+"**Source Edge **and the **Target Vertex** being the first point of the "
+"edge being meshed."
+msgstr ""
+
+# c8e46baa569e4fffac0fa4394f58c333
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:47
+msgid ""
+"For a group of edges, **Source** and **Target** vertices should be shared"
+" by only one edge of the group. If **Source** and **Target** vertices are"
+" specified, the edges in the group must be connected. The source and "
+"target groups must contain equal number of edges and they must form "
+"topologically equal structures."
+msgstr ""
+
+# 622a00ba8f4d447a91e77ef24176f5f2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:56
+msgid "Projection 2D"
+msgstr ""
+
+# f605d32ab7c8408380a00d5e24819df4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:59
+msgid ""
+"**Projection 2D** algorithm allows to define the mesh of a face (or group"
+" of faces) by the projection of another already meshed face (or group of "
+"faces). This algorithm works only if all edges of the target face have "
+"been discretized into the same number of segments as corresponding edges "
+"of the source face."
+msgstr ""
+
+# 7749ef98485b4e888475caa3e0b5f039
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:65
+msgid ""
+"To apply this algorithm select the face to be meshed (indicated in the "
+"field **Geometry** of **Create mesh** dialog box), **Projection 2D** in "
+"the list of 2D algorithms and click the **\"Add Hypothesis\"** button. "
+"The following dialog box will appear:"
+msgstr ""
+
+# e595e34f95eb4107a297b4194571b45f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:75
+msgid "the already meshed **Source Face** and"
+msgstr ""
+
+# cee42924eb494f4f8bba1b8d361d4e0c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:76
+msgid ""
+"the **Source Mesh** (It can be omitted only when projecting a submesh on "
+"another one of the same Mesh)."
+msgstr ""
+
+# 592531ecb23d420991fa14c5b6e3ce1e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:77
+msgid ""
+"It could also be necessary to define the orientation of mesh on the face,"
+" which is done by indicating two **Source Vertices**, which belong to the"
+" same edge of the **Source Face**, and two **Target Vertices**, which "
+"belong to the same edge of the face being meshed."
+msgstr ""
+
+# 40281f2e1c644a2daf59590833252903
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:80
+msgid ""
+"The groups of faces are suitable for this algorithm only if they contain "
+"an equal number of faces and form topologically equal structures."
+msgstr ""
+
+# eb51034c0f7548ebbd6794f8781377fb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:87
+msgid "Projection 1D-2D"
+msgstr ""
+
+# 270173b13abd41daa4da8aa451695821
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:89
+msgid ""
+"**Projection 1D-2D** algorithm differs from :ref:`projection_2D` "
+"algorithm in one aspect: it generates mesh segments on edges of the face "
+"according to the projected 2D elements; thus it does not require the "
+"edges to be meshed by any other 1D algorithm; moreover it does not allow "
+"to mesh edges of the face using another algorithm via definition of sub-"
+"meshes."
+msgstr ""
+
+# 18d2ad31445f443c8292a8a3f1cf2b57
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:100
+msgid "Projection 3D"
+msgstr ""
+
+# bc8aac3fdc3c49b0bbd892361a56a049
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:102
+msgid ""
+"**Projection 3D** algorithm allows to define the mesh of a shape by the "
+"projection of another already meshed shape.  This algorithm works only if"
+" all faces and edges of the target shape have been meshed as 1D-2D "
+"Projections of the faces and edges of the source shape. Another "
+"limitation is that this algorithm currently works only on boxes."
+msgstr ""
+
+# a87c8f7ba61147e487a8da138be2c8ae
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:108
+msgid ""
+"To apply this algorithm select the solid to be meshed (indicated in the "
+"field **Geometry** of **Create mesh** dialog box), **Projection 3D** in "
+"the list of 3D algorithms and click the  button. The following dialog box"
+" will appear:"
+msgstr ""
+
+# 8e914dde7b6a4ebfb52d07991cfe52ab
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:116
+msgid ""
+"In this menu you can define the **Name** of the algorithm, the already "
+"meshed source **3D shape** and the **Mesh** (It can be omitted only when "
+"projecting a submesh on another one from the same global Mesh). It could "
+"also be necessary to define the orientation of mesh on the shape, which "
+"is done by indicating two **Source Vertices**, which belong to the same "
+"edge of the source **3D Shape**, and two **Target Vertices**, which "
+"belong to the same edge of the source **3D Shape**."
+msgstr ""
+
+# 1b6d95a37c65466a872b4c90a5fb9b3d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/projection_algos.rst:124
+msgid "**See Also** a sample TUI Script of a :ref:`tui_projection`."
+msgstr ""
+

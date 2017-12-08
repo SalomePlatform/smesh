@@ -819,7 +819,7 @@ SMESHGUI_ExtrusionDlg::SMESHGUI_ExtrusionDlg (SMESHGUI* theModule)
 
   mySMESHGUI->SetActiveDialogBox(this);
 
-  myHelpFileName = "extrusion_page.html";
+  myHelpFileName = "extrusion.html";
 
   Init();
 

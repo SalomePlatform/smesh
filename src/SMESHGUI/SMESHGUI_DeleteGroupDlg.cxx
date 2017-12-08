@@ -90,7 +90,7 @@ SMESHGUI_DeleteGroupDlg::SMESHGUI_DeleteGroupDlg (SMESHGUI* theModule):
   aDlgLay->addWidget(aMainFrame);
   aDlgLay->addWidget(aBtnFrame);
 
-  myHelpFileName = "deleting_groups_page.html";
+  myHelpFileName = "deleting_groups.html";
 
   Init();
 }

@@ -1,0 +1,53 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# cde549b2f48246d5bd491c75e3963e56
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/radial_prism_algo.rst:5
+msgid "Radial Prism"
+msgstr ""
+
+# fbd0194a244f4859ab3d4dee4ad8a5fe
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/radial_prism_algo.rst:7
+msgid ""
+"This algorithm applies to the meshing of a hollow 3D shape, i.e. such "
+"shape should be composed of two meshed shells: an outer shell and an "
+"internal shell without intersection with the outer shell. One of the "
+"shells should be a 2D Projection of the other shell. The meshes of the "
+"shells can consist both of triangles and quadrangles."
+msgstr ""
+
+# cbcb0680641c42c5b044cdcccd917c14
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/radial_prism_algo.rst:14
+msgid ""
+"The Radial Prism algorithm would fill the space between the two shells "
+"with prisms."
+msgstr ""
+
+# 78f5dae2c9004b208036a4c2f6092d08
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/radial_prism_algo.rst:23
+msgid ""
+"This algorithm also needs the information concerning the number and "
+"distribution of mesh layers between the inner and the outer shapes."
+msgstr ""
+
+# 68409354b4ad4343b9bceb87b30ae966
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/radial_prism_algo.rst:29
+msgid "Distribution of layers can be set with any of 1D Hypotheses."
+msgstr ""
+

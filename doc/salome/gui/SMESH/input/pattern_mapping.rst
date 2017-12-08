@@ -1,0 +1,200 @@
+.. _pattern_mapping_page:
+
+***************
+Pattern mapping
+***************
+
+About patterns
+##############
+
+The pattern describes a mesh to generate: positions of nodes within a
+geometrical domain and nodal connectivity of elements. A
+pattern also specifies the so-called key-points, i.e. the nodes that will be
+located at geometrical vertices. The pattern description is stored in
+\<pattern_name\>.smp file.
+
+The smp file contains 4 sections:
+
+	#. The first line indicates the total number of pattern nodes (N).
+	#. The next N lines describe nodes coordinates. Each line contains 2 node coordinates for a 2D pattern or 3 node coordinates for a 3D pattern. Note, that node coordinates of a 3D pattern can be defined only by relative values in range [0;1].
+	#. The key-points line contains the indices of the nodes to be mapped on geometrical vertices (for a 2D pattern only). Index n refers to the node described on the n-th line of section 2. The index of the first node is zero. For a 3D pattern the key points are not specified.
+	#. The remaining lines describe nodal connectivity of elements, one line for each element. Each line holds indices of nodes forming an element. Index n refers to the node described on the n-th line of section 2. The first node index is zero. There must be 3 or 4 indices on each line for a 2D pattern (only liner 2d elements are allowed) and 4, 5, 6 or 8 indices for a 3D pattern (only linear 3d elements are allowed).
+
+A 2D pattern must contain at least one element and at least one key-point. All key-points must lie on boundaries.
+
+A 3D pattern must contain at least one element.
+
+An example of a simple 2D pattern smp file:
+::
+
+	!!! SALOME 2D mesh pattern file
+	!!!
+	!!! Nb of points:
+	9
+	        200     0       !- 0
+	        100     0       !- 1
+	          0     0       !- 2
+	          0  -100       !- 3
+	          0  -200       !- 4
+	        100  -200       !- 5
+	        200  -200       !- 6
+	        200  -100       !- 7
+	        100  -100       !- 8
+	!!! Indices of 4 key-points
+	 2 0 4 6
+	!!! Indices of points of 6 elements
+	 0 1 8
+	 8 5 6 7
+	 2 3 8
+	 8 3 4 5
+	 8 7 0
+	 8 1 2
+
+The image below provides a preview of the above pattern:
+
+.. image:: ../images/pattern2d.png
+	:align: center
+
+.. centered::
+	An example of a simple 3D pattern smp file:
+      
+::
+
+	!!! SALOME 3D mesh pattern file
+	!!!
+	!!! Nb of points:
+	9
+	        0        0        0   !- 0
+	        1        0        0   !- 1
+	        0        1        0   !- 2
+	        1        1        0   !- 3
+	        0        0        1   !- 4
+	        1        0        1   !- 5
+	        0        1        1   !- 6
+	        1        1        1   !- 7
+	      0.5      0.5      0.5   !- 8
+	!!! Indices of points of 6 elements:
+	 0 1 5 4 8
+	 7 5 1 3 8
+	 3 2 6 7 8
+	 2 0 4 6 8
+	 0 2 3 1 8
+	 4 5 7 6 8
+
+
+Application of pattern mapping
+##############################
+
+**To apply pattern mapping to a geometrical object or mesh elements:**
+
+From the **Modification** menu choose the **Pattern Mapping** item or click 
+**"Pattern mapping"** button in the toolbar.
+
+.. image:: ../images/image98.png
+	:align: center
+
+.. centered::
+	**"Pattern mapping" button**
+
+The following dialog box will appear:
+
+For a **2D pattern**
+   
+
+.. image:: ../images/patternmapping1.png
+	:align: center
+
+In this dialog you should specify:
+
+* **Pattern**, which can be loaded from .smp pattern file previously created manually or generated automatically from an existing mesh or sub-mesh.
+* **Face** with the number of vertices equal to the number of key-points in the pattern; the number of key-points on internal boundaries of the pattern must also be equal to the number of vertices on internal boundaries of the face;
+* **Vertex** to which the first key-point should be mapped;
+
+
+Alternatively, it is possible to select **Refine selected mesh elements** check-box and apply the pattern to 
+
+* **Mesh Face** instead of a geometric Face
+* and select **Node** instead of vertex.
+
+
+Additionally it is possible to: 
+
+* **Reverse the order of key-points**. By default, the vertices of a face are ordered counterclockwise.
+* Enable to **Create polygons near boundary** 
+* and **Create polyhedrons near boundary**
+
+          
+For a **3D pattern**
+
+.. image:: ../images/patternmapping2.png
+	:align: center
+
+In this dialog you should specify:
+
+* **Pattern**, which can be loaded from .smp pattern file previously created manually or generated automatically from an existing mesh or sub-mesh.
+* A 3D block (Solid) object.
+* Two vertices that specify the order of nodes in the resulting mesh.
+
+
+Alternatively, it is possible to select **Refine selected mesh elements** check-box and apply the pattern to
+
+* One or several **Mesh volumes** instead of a geometric 3D object
+* and select two **Nodes** instead of vertices. 
+
+Additionally it is possible to:
+
+* Enable to **Create polygons near boundary** 
+* and **Create polyhedrons near boundary**
+
+
+
+Automatic Pattern Generation
+****************************
+
+To generate a pattern automatically from an existing mesh or sub-mesh, click **New** button.
+
+The following dialog box will appear:
+
+.. image:: ../images/a-patterntype1.png
+	:align: center
+
+In this dialog you should specify:
+
+
+* **Mesh or Sub-mesh**, which is a meshed geometrical face (for a 2D pattern) or a meshed solid block (for a 3D pattern). Mesh nodes lying on the face vertices become key-points of the pattern. 
+* A custom **Pattern Name** 
+* Additionally, for a 2D pattern you may choose to **Project nodes on the face** to get node coordinates instead of using "positions on face" generated by the mesher (if there is any). The faces having a seam edge cannot be used for automatic pattern creation.
+
+
+When a pattern is created from an existing mesh, two cases are possible:
+
+* A sub-mesh on a face/solid is selected. The pattern is created from the 2d/3d elements bound to the face/solid by the mesher. For a 2D pattern, the node coordinates are either "positions on face" computed by the mesher, or coordinates got by node projection on a geometrical surface, according to the user choice. For a 3D pattern, the node coordinates correspond to the nodes computed by the mesher.
+* A mesh, where the main shape is a face/solid, is selected. The pattern is created from all 2d/3d elements in a mesh. In addition, if all mesh elements of a 2D pattern are built by the mesher, the user can select how to get node coordinates, otherwise all nodes are projected on a face surface.
+
+
+Mapping algorithm
+#################
+
+The mapping algorithm for a 2D case is as follows:
+
+* The key-points are set counterclockwise in the order corresponding to their location on the pattern boundary. The first key-point is preserved.
+* The geometrical vertices corresponding to the key-points are found on face boundary. Here, "Reverse order of key-points" flag is set. 
+
+.. image:: ../images/image95.gif
+	:align: center
+
+* The boundary nodes of the pattern are mapped onto the edges of the face: a node located between two key-points on the pattern boundary is mapped on the geometrical edge limited by the corresponding geometrical vertices. The node position on the edge depends on its distance from the key-points. 
+
+.. image:: ../images/image96.gif
+	:align: center
+
+* The coordinates of a non-boundary node in the parametric space of the face are defined in the following way. In the parametric space of the pattern, the  node lies at the intersection of two iso-lines. Both of them intersect the pattern boundary at two points at least. If the mapped positions of boundary nodes are known, it is possible to find, where the points at the intersection of iso-lines and boundaries are mapped. Then it is possible to find the direction of mapped iso-line section and, finally, the positions of two nodes on two mapped isolines. The eventual mapped position of the node is found as an average of the positions on mapped iso-lines. 
+
+.. image:: ../images/image97.gif
+	:align: center
+
+The 3D algorithm is similar.
+
+**See Also** a sample TUI Script of a :ref:`tui_pattern_mapping` operation.
+
+

@@ -153,7 +153,7 @@ void SMESHGUI_FilterLibraryDlg::construct (const QList<int>& theTypes,
 
   aDlgLay->setStretchFactor(myMainFrame, 1);
 
-  myHelpFileName = "selection_filter_library_page.html";
+  myHelpFileName = "selection_filter_library.html";
   
   Init(myTypes, myMode);
 }

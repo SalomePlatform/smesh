@@ -1,0 +1,39 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 4e9993722e1649209e71f7d58df0c727
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_notebook_smesh.rst:6
+msgid "Using SALOME NoteBook"
+msgstr ""
+
+# 3ef41e73f8bb4aa8acc925fdf9579609
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_notebook_smesh.rst:11
+msgid "Notebook Smesh"
+msgstr ""
+
+# b30507833c0642d5a57fcfd094ffd345
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_notebook_smesh.rst:15
+msgid "``notebook_smesh.py``"
+msgstr ""
+
+# 19ab428fafa443aa83e77dd359b6c74a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_notebook_smesh.rst:21
+msgid ":download:`../../../examples/notebook_smesh.py`"
+msgstr ""
+

@@ -117,15 +117,14 @@
     <parameter name="vol_precision"                value="-6"  />
   </section>
   <section name="smesh_help" >
-    <parameter name="sub_menu"          value="%1 module"/>
-    <parameter name="User's Guide"      value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/index.html"/>
-    <parameter name="Plug-ins/MGSurfOpt plugin User's Guide" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/yams/index.html"/>
-    <parameter name="Plug-ins/MGCleaner plugin User's Guide" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/MGCleaner/index.html"/>
-    <parameter name="Plug-ins/Z-cracks plugin User's Guide" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/zcracks/index.html"/>
-    <parameter name="Plug-ins/MacMesh plugin" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/MacMesh/index.html"/>
-    <parameter name="Plug-ins/blocFissure plugin" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/blocFissure/index.html"/>
-    <parameter name="Plug-ins/SpherePadder plugin" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/padder/index.html"/>
-    <parameter name="Developer's Guide" value="%SMESH_ROOT_DIR%/share/doc/salome/tui/SMESH/index.html"/>
+    <parameter name="User's Guide/Mesh module/User's Guide"      value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/index.html"/>
+    <parameter name="Developer's Guide/Mesh module/Developer's Guide" value="%SMESH_ROOT_DIR%/share/doc/salome/tui/SMESH/index.html"/>
+    <parameter name="User's Guide/Mesh module/Plug-ins/MGSurfOpt plugin" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/yams/index.html"/>
+    <parameter name="User's Guide/Mesh module/Plug-ins/MGCleaner plugin" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/MGCleaner/index.html"/>
+    <parameter name="User's Guide/Mesh module/Plug-ins/Z-cracks plugin" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/zcracks/index.html"/>
+    <parameter name="User's Guide/Mesh module/Plug-ins/MacMesh plugin" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/MacMesh/index.html"/>
+    <parameter name="User's Guide/Mesh module/Plug-ins/blocFissure plugin" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/blocFissure/index.html"/>
+    <parameter name="User's Guide/Mesh module/Plug-ins/SpherePadder plugin" value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/padder/index.html"/>
   </section>
   <section name="resources">
     <!-- Module resources -->

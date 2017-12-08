@@ -1,0 +1,359 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 79e35e7183f44391bd0127332a78edfe
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:5
+msgid "Quality Controls"
+msgstr ""
+
+# 4ce27f26de8842b5882924b1323f02f0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:0
+msgid "`Table of contents`"
+msgstr ""
+
+# 13768e85664a4fbc9881a3b17ed9ca05
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:13
+msgid "Free Borders"
+msgstr ""
+
+# 784ab797573c410fafb9fac67dc78051
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:17
+msgid "``quality_controls_ex01.py``"
+msgstr ""
+
+# fe45863436994e299ea06bcbfe306d6a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:23
+msgid ":download:`../../../examples/quality_controls_ex01.py`"
+msgstr ""
+
+# 3697f0194b364c83b756020ca6fb1804
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:29
+msgid "Borders at Multiconnection"
+msgstr ""
+
+# 92041fa12d294bd595c2c941ffad513f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:33
+msgid "``quality_controls_ex02.py``"
+msgstr ""
+
+# 1e7eaf4082714e01a1aeaa620a0fe01a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:39
+msgid ":download:`../../../examples/quality_controls_ex02.py`"
+msgstr ""
+
+# 8f3f90612ac645d39883bd1eb3fb30c7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:45
+msgid "Length 1D"
+msgstr ""
+
+# ecf20a9ecb9c4fcda965d671b55228fc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:49
+msgid "``quality_controls_ex03.py``"
+msgstr ""
+
+# 6bc7e3d4d48b45b5b436431a5bec19cc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:55
+msgid ":download:`../../../examples/quality_controls_ex03.py`"
+msgstr ""
+
+# d9f495d0a4464f11a9d256e46d45077d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:60
+msgid "Free Edges"
+msgstr ""
+
+# e5accfde373a4e2da11426532b5856a7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:64
+msgid "``quality_controls_ex04.py``"
+msgstr ""
+
+# ab630a0aa6fb404d87ed3bc702d050fd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:70
+msgid ":download:`../../../examples/quality_controls_ex04.py`"
+msgstr ""
+
+# 33edc58357a54da4b3d21406a4741ec6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:75
+msgid "Free Nodes"
+msgstr ""
+
+# 5ac5533032ef41f3974884acac5237c8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:79
+msgid "``quality_controls_ex05.py``"
+msgstr ""
+
+# b41c2828c4d24907a9f5a295b98b6f38
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:85
+msgid ":download:`../../../examples/quality_controls_ex05.py`"
+msgstr ""
+
+# c613dab5d0094c8a83696ffcc0be8137
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:90
+msgid "Free Faces"
+msgstr ""
+
+# 9c4dc5aebc9d4a5c83c0f0c4b2e1ed71
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:94
+msgid "``quality_controls_ex06.py``"
+msgstr ""
+
+# ba6f37b8eb7c41498d9e8271516a59e2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:100
+msgid ":download:`../../../examples/quality_controls_ex06.py`"
+msgstr ""
+
+# cf887f0dfa12482699950d6b3bb5b489
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:105
+msgid "Bare border faces"
+msgstr ""
+
+# e9b4af9d5633486483b4581effe13ae1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:109
+msgid "``quality_controls_ex07.py``"
+msgstr ""
+
+# 421b24a8d0314244819cf31b2ba0df93
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:115
+msgid ":download:`../../../examples/quality_controls_ex07.py`"
+msgstr ""
+
+# e186909d87774c88b5fa8b58f4757531
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:120
+msgid "Bare border volumes"
+msgstr ""
+
+# 346b907637574b70850ba0187a54856a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:124
+msgid "``quality_controls_ex08.py``"
+msgstr ""
+
+# ca2ca668a94b4fdf84534f6f73a8e482
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:130
+msgid ":download:`../../../examples/quality_controls_ex08.py`"
+msgstr ""
+
+# a389f8939d7349ae8a414b546001eacc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:135
+msgid "Over-constrained faces"
+msgstr ""
+
+# b2272c5024894b84815d4244be43d178
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:139
+msgid "``quality_controls_ex09.py``"
+msgstr ""
+
+# f6711314bc0047cdbcb22ae22a025745
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:145
+msgid ":download:`../../../examples/quality_controls_ex09.py`"
+msgstr ""
+
+# 0d87bea8ab484e5fbb9d4b46165d14f3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:150
+msgid "Over-constrained volumes"
+msgstr ""
+
+# f9ee64a6c6804e86b31cc06dba160ea4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:154
+msgid "``quality_controls_ex10.py``"
+msgstr ""
+
+# cab30492fe664ee791dbe30414b25a15
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:160
+msgid ":download:`../../../examples/quality_controls_ex10.py`"
+msgstr ""
+
+# 5b75b5252edd4fbbbb236c8580b3b1de
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:165
+msgid "Length 2D"
+msgstr ""
+
+# 21bab48b6c384b9991ddc1a4a8b355c5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:169
+msgid "``quality_controls_ex11.py``"
+msgstr ""
+
+# f5021d6d120c49fc99f62e989a2b3599
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:175
+msgid ":download:`../../../examples/quality_controls_ex11.py`"
+msgstr ""
+
+# 431b0039fcb4463ea06170622fbe46b8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:181
+msgid "Borders at Multiconnection 2D"
+msgstr ""
+
+# 579da091c4ab45e7a67f51737e6a6a22
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:185
+msgid "``quality_controls_ex12.py``"
+msgstr ""
+
+# 773748f0ac774c37b85791ebaa103976
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:191
+msgid ":download:`../../../examples/quality_controls_ex12.py`"
+msgstr ""
+
+# 0ceaa76eff2d4ac18c5883cddfc2b476
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:196
+msgid "Area"
+msgstr ""
+
+# ba82af02297e417fa93d810f93e87b16
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:200
+msgid "``quality_controls_ex13.py``"
+msgstr ""
+
+# ac09692057fb491191406ddcc11916d5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:206
+msgid ":download:`../../../examples/quality_controls_ex13.py`"
+msgstr ""
+
+# ba175a6522794c8281355cc289b803c4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:211
+msgid "Taper"
+msgstr ""
+
+# 8c9c6c79352b477184b6ccd7adf3f847
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:215
+msgid "``quality_controls_ex14.py``"
+msgstr ""
+
+# 57171e329029469088e8aa018c3cfa24
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:221
+msgid ":download:`../../../examples/quality_controls_ex14.py`"
+msgstr ""
+
+# c09aa0dda0f541d89a8da4725768169e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:226
+msgid "Aspect Ratio"
+msgstr ""
+
+# f207685150274592aec124e1bad1dc57
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:230
+msgid "``quality_controls_ex15.py``"
+msgstr ""
+
+# a718df3177fe4c939748b5b72acf45fa
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:236
+msgid ":download:`../../../examples/quality_controls_ex15.py`"
+msgstr ""
+
+# 43f52454c1d44983aaf12519eb39b8e8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:241
+msgid "Minimum Angle"
+msgstr ""
+
+# 5b4eb968388c4158bcccd8aca32ac97b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:245
+msgid "``quality_controls_ex16.py``"
+msgstr ""
+
+# d155445c01c4476a8d6bf73c3017ac1e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:251
+msgid ":download:`../../../examples/quality_controls_ex16.py`"
+msgstr ""
+
+# f9fe7e4ee15645e9b6073ae8816dcce2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:256
+msgid "Warping"
+msgstr ""
+
+# 4f1675ddc859489e965531d752285526
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:260
+msgid "``quality_controls_ex17.py``"
+msgstr ""
+
+# edd793ad3f21412b8f77253b4b980e06
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:266
+msgid ":download:`../../../examples/quality_controls_ex17.py`"
+msgstr ""
+
+# 3a5139d6a0bf49b29d10f100cd96ae64
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:271
+msgid "Skew"
+msgstr ""
+
+# 62a3783633ba46da9f519209bb3c2705
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:275
+msgid "``quality_controls_ex18.py``"
+msgstr ""
+
+# f9544382e94c42cab5eeb4c9d549506c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:281
+msgid ":download:`../../../examples/quality_controls_ex18.py`"
+msgstr ""
+
+# a308653df1364d25838e9030a5f35f83
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:286
+msgid "Element Diameter 2D"
+msgstr ""
+
+# 75ca6180045b40b3bff2bcbdf3617331
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:290
+msgid "``quality_controls_ex19.py``"
+msgstr ""
+
+# e16559cbcea74e92b25fdc069a30b633
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:296
+msgid ":download:`../../../examples/quality_controls_ex19.py`"
+msgstr ""
+
+# 8b48cb86d5e34dde9a2d4414626e19b3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:301
+msgid "Aspect Ratio 3D"
+msgstr ""
+
+# e073edd069be4a5bbfd6267667a2d965
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:305
+msgid "``quality_controls_ex20.py``"
+msgstr ""
+
+# 426b4f7acc9b4d7798cb831383ed3595
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:311
+msgid ":download:`../../../examples/quality_controls_ex20.py`"
+msgstr ""
+
+# 0db14d711d0a47f788c3d16f49396926
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:316
+msgid "Volume"
+msgstr ""
+
+# 7ede37ac5a404c8080b9491960ce259d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:320
+msgid "``quality_controls_ex21.py``"
+msgstr ""
+
+# 6a96fbb599dd453f9eba8ff1be16ce24
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:326
+msgid ":download:`../../../examples/quality_controls_ex21.py`"
+msgstr ""
+
+# b41bc7c1334841aea8f91d8456a372f7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:331
+msgid "Element Diameter 3D"
+msgstr ""
+
+# 292ed9f29bba49018744a8a9e87493c9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:335
+msgid "``quality_controls_ex22.py``"
+msgstr ""
+
+# 599768d716b2417ab5a7e0410353aa8b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_quality_controls.rst:341
+msgid ":download:`../../../examples/quality_controls_ex22.py`"
+msgstr ""
+

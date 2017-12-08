@@ -295,7 +295,7 @@ SMESHGUI_TranslationDlg::SMESHGUI_TranslationDlg( SMESHGUI* theModule ) :
   myMeshOrSubMeshOrGroupFilter =
     new SMESH_LogicalFilter(aListOfFilters, SMESH_LogicalFilter::LO_OR);
 
-  myHelpFileName = "translation_page.html";
+  myHelpFileName = "translation.html";
 
   Init();
 

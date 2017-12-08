@@ -1,0 +1,565 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 004b45a20a744ffea4d3343da07f3dd2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:5
+msgid "1D Meshing Hypotheses"
+msgstr ""
+
+# 86fad262db614ff5b687e6d4575e44b7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:9
+msgid "Basic 1D hypothesis specifies:"
+msgstr ""
+
+# 0cffe55995b14ac2ae702078456fcf8d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:8
+msgid "how a :ref:`a1d_algos_anchor` should divide the edge;"
+msgstr ""
+
+# de1aea28d554437e962353fc3e399251
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:9
+msgid ""
+"how a :ref:`a1d_algos_anchor` should divide the group of C1-continuous "
+"edges."
+msgstr ""
+
+# 4101a67e6d984fdc8894696ae57ad18b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:31
+msgid "1D hypotheses can be categorized by type of nodes distribution as follows:"
+msgstr ""
+
+# dfe0bcbd0def470bab5fd53d3558f173
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:16
+msgid "Uniform distribution:"
+msgstr ""
+
+# b5ef1e537944499bb726f2709de38209
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:13
+msgid ":ref:`average_length_anchor`"
+msgstr ""
+
+# fdc4d53d08c748b4996b24b381922024
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:14
+msgid ":ref:`max_length_anchor`"
+msgstr ""
+
+# 646945b8efff4573b136d27f782b24e8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:15
+msgid ":ref:`number_of_segments_anchor` with Equidistant distribution"
+msgstr ""
+
+# 1f2e9941069d468a9007789f5610564b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:16
+msgid ":ref:`automatic_length_anchor`"
+msgstr ""
+
+# b2bcc6a61c5646569499bd49437ba22b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:22
+msgid "Constantly increasing or decreasing length of segments:"
+msgstr ""
+
+# 24a07317698d4f7ca649e76eddab2caa
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:19
+msgid ":ref:`arithmetic_1d_anchor`"
+msgstr ""
+
+# f1618d2b2b364cabbf62bfda961a8299
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:20
+msgid ":ref:`geometric_1d_anchor`"
+msgstr ""
+
+# 086be4a5bbaa4ee0b1d6f8c63843fbb7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:21
+msgid ":ref:`start_and_end_length_anchor`"
+msgstr ""
+
+# 09c9820b8a2a4a4d94c980cd3133eab3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:22
+msgid ":ref:`number_of_segments_anchor` with Scale distribution"
+msgstr ""
+
+# ee781ed9a4fd46d08293c6a556068f51
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:26
+msgid "Distribution depending on curvature:"
+msgstr ""
+
+# 6f8fb1c713e24e0c9ab60a883453232d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:25
+msgid ":ref:`adaptive_1d_anchor`"
+msgstr ""
+
+# 71739427858f4114ba7556cb23ae3517
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:26
+msgid ":ref:`deflection_1d_anchor`"
+msgstr ""
+
+# c624c4d51045437da0ac9b8e5f4737ed
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:31
+msgid "Arbitrary distribution:"
+msgstr ""
+
+# 21a4015c89ab48d79f1839cb441b70da
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:29
+msgid ":ref:`fixed_points_1d_anchor`"
+msgstr ""
+
+# edb342ebdafc493badb3df1ffd43d68f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:30
+msgid ""
+":ref:`number_of_segments_anchor` \"Number of Segments\" with "
+":ref:`analyticdensity_anchor` or Table Density Distribution"
+msgstr ""
+
+# f1c27584812f4bf4ba9b7bfc11aa5699
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:36
+msgid "Adaptive hypothesis"
+msgstr ""
+
+# 5f9d7dbbbaae4e858e7ed744834f2133
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:38
+msgid ""
+"**Adaptive** hypothesis allows to split edges into segments with a length"
+" that depends on the curvature of edges and faces and is limited by "
+"**Min. Size** and **Max Size**. The length of a segment also depends on "
+"the lengths of adjacent segments (that can't differ more than twice) and "
+"on the  distance to close geometrical entities (edges and faces) to avoid"
+" creation of narrow 2D elements."
+msgstr ""
+
+# 77a9dd0ad94b42239280ee8477c645ad
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:43
+msgid "**Min size** parameter limits the minimal segment size."
+msgstr ""
+
+# c65d0ae59eb4430c9cb9dc840c24f008
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:44
+msgid "**Max size** parameter defines the length of segments on straight edges."
+msgstr ""
+
+# c8f35ffc68954c699986f225ad24680d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:45
+msgid ""
+"**Deflection** parameter gives maximal distance of a segment from a "
+"curved edge."
+msgstr ""
+
+# 8074ca7c6943489eb587faca286e1fa8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:53
+msgid "**See Also** a :ref:`tui_1d_adaptive` that uses Adaptive hypothesis."
+msgstr ""
+
+# 6933bfa76bf240d48ac1e86ed2fc3a79
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:58
+msgid "Arithmetic Progression hypothesis"
+msgstr ""
+
+# 67b28a7ed2f44ff59afc61045ed1b8e1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:60
+msgid ""
+"**Arithmetic Progression** hypothesis allows to split edges into segments"
+" with a length that changes in arithmetic progression (Lk = Lk-1 + d) "
+"beginning from a given starting length and up to a given end length."
+msgstr ""
+
+# d091f0929168432b8599be4e633b3636
+# d7c3e8d76efb4b6f89ecc243430aca0f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:62
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:87
+msgid ""
+"The splitting direction is defined by the orientation of the underlying "
+"geometrical edge. **Reverse Edges** list box allows specifying the edges,"
+" for which the splitting should be made in the direction opposite to "
+"their orientation. This list box is usable only if a geometry object is "
+"selected for meshing. In this case it is possible to select edges to be "
+"reversed either directly picking them in the 3D viewer or by selecting "
+"the edges or groups of edges in the Object Browser. Use **Add** button to"
+" add the selected edges to the list."
+msgstr ""
+
+# b60f2b5edee442ff949282b80a9fe815
+# 5ccffba12a6e4b69ac3fc32709e4abf0
+# 6ad5f607d8c2493eb22c219025b1b163
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:65
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:170
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:227
+msgid ""
+":ref:`reversed_edges_helper_anchor` group assists you in defining "
+"**Reversed Edges** parameter."
+msgstr ""
+
+# 6c4e88f8eecf4733bccec96fd0a6147f
+# 4af587f46e6a4d1fbfe07aed5478fe41
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:78
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:96
+msgid "**See Also** a sample TUI Script of a :ref:`tui_1d_arithmetic` operation."
+msgstr ""
+
+# 4cf2061318094f2584bfb1dfcb2faea1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:83
+msgid "Geometric Progression hypothesis"
+msgstr ""
+
+# 8c6e5a2ca49440e9b7fb5fc16a9b9c9f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:85
+msgid ""
+"**Geometric Progression** hypothesis allows splitting edges into segments"
+" with a length that changes in geometric progression (Lk = Lk-1 * d) "
+"starting from a given **Start Length** and with a given **Common Ratio**."
+msgstr ""
+
+# b147c2168aef4864ad9445d3e81f545a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:90
+msgid ""
+":ref:'reversed_edges_helper_anchor' group assists you in defining "
+"**Reversed Edges** parameter."
+msgstr ""
+
+# ab382baae6a6429c8cfab692687e8be8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:101
+msgid "Deflection hypothesis"
+msgstr ""
+
+# b0fb0c4995874073a9baf66368b4d2d9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:103
+msgid ""
+"**Deflection** hypothesis can be applied for meshing curvilinear edges "
+"composing your geometrical object. It defines only one parameter: the "
+"value of deflection (or chord error)."
+msgstr ""
+
+# 19762b93397c4b29a546c596f90ce809
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:105
+msgid ""
+"A geometrical edge is divided into segments of length depending on edge "
+"curvature. The more curved the edge, the shorter the segment. Nodes on "
+"the edge are placed so that the maximum distance between the edge and a "
+"segment approximating a part of edge between two nodes should not exceed "
+"the value of deflection."
+msgstr ""
+
+# f5e2e15def0c420494fd4a6444cf3f05
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:116
+msgid "**See Also** a sample TUI Script of a :ref:`tui_deflection_1d` operation."
+msgstr ""
+
+# c100ce15e826460c8c6708e5d2e5d260
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:121
+msgid "Local Length hypothesis"
+msgstr ""
+
+# fa23f8b4ed594f6ba03c764fe24001a1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:123
+msgid ""
+"**Local Length** hypothesis can be applied for meshing of edges composing"
+" your geometrical object. Definition of this hypothesis consists of "
+"setting the **length** of segments, which will approximate these edges, "
+"and the **precision** of rounding."
+msgstr ""
+
+# 53b1305cc3f04666a7a6ef6edce60db5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:125
+msgid ""
+"The **precision** parameter is used to round a *number of segments*, "
+"calculated by dividing the *edge length* by the specified **length** of "
+"segment, to the higher integer if the *remainder* exceeds the "
+"**precision** and to the lower integer otherwise. Use value 0.5 to "
+"provide rounding to the nearest integer, 1.0 for the lower integer, 0.0 "
+"for the higher integer. Default value is 1e-07."
+msgstr ""
+
+# 72fc0a4076ea4a93b08374e05df59567
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:128
+msgid ""
+"For example: if *edge length* is 10.0 and the segment **length** is 3.0 "
+"then their division gives 10./3. = 3.33(3) and the *remainder* is "
+"0.33(3). If **precision** is less than 0.33(3) then the edge is divided "
+"into 3 segments. If **precision** is more than 0.33(3) then the edge is "
+"divided into 4 segments."
+msgstr ""
+
+# 1c4881233eab426eae3cad02798e9e6b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:146
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_average_length` "
+"hypothesis operation."
+msgstr ""
+
+# 195635da2ded4460afce43748b85a522
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:152
+msgid "Max Size"
+msgstr ""
+
+# 51e210538ae64364a24aaa64fe065bf0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:154
+msgid ""
+"**Max Size** hypothesis allows splitting geometrical edges into segments "
+"not longer than the given length. Definition of this hypothesis consists "
+"of setting the maximal allowed **length** of segments. **Use preestimated"
+" length** check box lets you use **length** automatically calculated "
+"basing on size of your geometrical object, namely as diagonal of bounding"
+" box divided by ten. The divider can be changed via "
+":ref:`diagonal_size_ratio_pref` preference parameter. **Use preestimated "
+"length** check box is enabled only if the geometrical object has been "
+"selected before hypothesis definition."
+msgstr ""
+
+# 3ec80bcd3e5d4e389b415192cecd9ded
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:164
+msgid "Number of Segments hypothesis"
+msgstr ""
+
+# 2f5a82b3f0df4f09b9fb863e794011ff
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:166
+msgid ""
+"**Number of Segments** hypothesis can be applied for approximating edges "
+"by a definite number of mesh segments with length depending on the "
+"selected type of distribution of nodes. The default number of segments "
+"can be set via :ref:`nb_segments_pref` preference parameter."
+msgstr ""
+
+# b4ceedb976fd4cb3ba01bb43d5605dd0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:168
+msgid ""
+"The direction of the splitting is defined by the orientation of the "
+"underlying geometrical edge. **Reverse Edges** list box allows to specify"
+" the edges for which the splitting should be made in the direction "
+"opposing to their orientation. This list box is enabled only if the "
+"geometry object is selected for the meshing. In this case it is possible "
+"to select edges to be reversed either by directly picking them in the 3D "
+"viewer or by selecting the edges or groups of edges in the Object "
+"Browser."
+msgstr ""
+
+# 49a79b130d134cbb8474ca4038c17e5a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:172
+msgid ""
+"You can set the type of node distribution for this hypothesis in the "
+"**Hypothesis Construction** dialog bog :"
+msgstr ""
+
+# 606ec954acf545b1985044f64396c155
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:177
+msgid ""
+"**Equidistant Distribution** - all segments will have the same length, "
+"you define only the **Number of Segments**."
+msgstr ""
+
+# fbed83f6f7ad4bfa96532ccd7d96a0bb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:179
+msgid ""
+"**Scale Distribution** - length of segments gradually changes depending "
+"on the **Scale Factor**, which is a ratio of the first segment length to "
+"the last segment length."
+msgstr ""
+
+# f9f0925545cc4dc4a60a2bc2c14e5fbd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:181
+msgid ""
+"Length of segments changes in geometric progression with the common ratio"
+" (A) depending on the **Scale Factor** (S) and **Number of Segments** (N)"
+" as follows: <code> A = S**(1/(N-1))</code>. For an edge of length L, "
+"length of the first segment is"
+msgstr ""
+
+# cb4fd106e14148f9b1067acd152de378
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:192
+msgid ""
+"**Distribution with Analytic Density** - you input the formula, which "
+"will rule the change of length of segments and the module shows in the "
+"plot the density function curve in red and the nodedistribution as blue "
+"crosses."
+msgstr ""
+
+# 2981a618040c455b8a33bc91b0ed133d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:201
+msgid "Analytic Density"
+msgstr ""
+
+# c2415e1dfe4a404f9c7f32e83e5ce0d3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:203
+msgid ""
+"The node distribution is computed so that to have the density function "
+"integral on the range between two nodes equal for all segments."
+msgstr ""
+
+# b3be5eda49174bedbde04c3261e7c07e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:208
+msgid ""
+"**Distribution with Table Density** - you input a number of pairs **t - "
+"F(t)**, where **t** ranges from 0 to 1, and the module computes the "
+"formula, which will rule the change of length of segments and shows in "
+"the plot the density function curve in red and the node distribution as "
+"blue crosses. The node distribution is computed in the same way as for "
+":ref:`analyticdensity_anchor`. You can select the **Conversion mode** "
+"from **Exponent** and **Cut negative**."
+msgstr ""
+
+# 2c691371aa3e421bbd47bc5a1f61e756
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:214
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_deflection_1d` hypothesis"
+" operation."
+msgstr ""
+
+# 8fba9bba46a2466081ef68543e3aaa65
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:221
+msgid "Start and End Length hypothesis"
+msgstr ""
+
+# 6923eaee87c74f3a9068e15baa112ce4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:223
+msgid ""
+"**Start and End Length** hypothesis allows to divide a geometrical edge "
+"into segments so that the first and the last segments have a specified "
+"length. The length of medium segments changes with automatically chosen "
+"geometric progression."
+msgstr ""
+
+# b9b5660f27ec4fbd8c2af3c653be6250
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:225
+msgid ""
+"The direction of the splitting is defined by the orientation of the "
+"underlying geometrical edge. **Reverse Edges** list box allows to specify"
+" the edges, for which the splitting should be made in the direction "
+"opposing to their orientation. This list box is enabled only if the "
+"geometry object is selected for the meshing. In this case it is possible "
+"to select edges to be reversed either by directly picking them in the 3D "
+"viewer or by selecting the edges or groups of edges in the Object "
+"Browser."
+msgstr ""
+
+# f8cd39ac36d54c518c08b6cc74cea1c3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:239
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_start_and_end_length` "
+"hypothesis operation."
+msgstr ""
+
+# 4c846b04b34b49fcb87cbfa89cfa7e0a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:245
+msgid "Automatic Length"
+msgstr ""
+
+# 52fc64e5fd41412dbb1945c98092ebb2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:247
+msgid ""
+"The dialog box prompts you to define the quality of the future mesh by "
+"only one parameter, which is **Fineness**, ranging from 0 (coarse mesh, "
+"low number of segments) to 1 (extremely fine mesh, great number of "
+"segments)."
+msgstr ""
+
+# 4c413256d67e4a98aafa8e8b9c98e56b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:252
+msgid ""
+"Compare one and the same object (sphere) meshed with minimum and maximum "
+"value of this parameter."
+msgstr ""
+
+# 85443717ca1240b1becda59b7316192d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:269
+msgid "Fixed Points hypothesis"
+msgstr ""
+
+# ba6121ee533e44fc908101a79a72b5c2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:271
+msgid ""
+"**Fixed Points** hypothesis allows splitting edges through a set of "
+"points parametrized on the edge (from 1 to 0) and a number of segments "
+"for each interval limited by the points."
+msgstr ""
+
+# 11d4d0cdcf96464492c236b7131824b3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:276
+msgid ""
+"It is possible to check in **Same Nb. Segments for all intervals** option"
+" and to define one value for all intervals."
+msgstr ""
+
+# 32729bb178134117bd5426aa77af8b12
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:278
+msgid ""
+"The splitting direction is defined by the orientation of the underlying "
+"geometrical edge. **Reverse Edges** list box allows to specify the edges "
+"for which the splitting should be made in the direction opposite to their"
+" orientation. This list box is enabled only if the geometrical object is "
+"selected for meshing. In this case it is possible to select the edges to "
+"be reversed either directly picking them in the 3D viewer or selecting "
+"the edges or groups of edges in the Object Browser."
+msgstr ""
+
+# b16d91c1530f4b638bd208ddff660d04
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:280
+msgid ""
+":ref:`reversed_edges_helper_anchor`  group assists in defining **Reversed"
+" Edges** parameter."
+msgstr ""
+
+# f5f9b331c9a64c788d3c37e2743a3587
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:289
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_fixed_points` hypothesis "
+"operation."
+msgstr ""
+
+# 9e5041ec60644fc7a926ce0f6ba229ad
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:295
+msgid "Reversed Edges Helper"
+msgstr ""
+
+# 7ae7f217195445b399770e626dfe9857
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:300
+msgid ""
+"**Helper** group assists in defining **Reversed Edges** parameter of the "
+"hypotheses depending on edge direction."
+msgstr ""
+
+# 3b468927664d456ab32566aaf29301d9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:302
+msgid ""
+"**Show whole geometry** check-box allows seeing the whole geometrical "
+"model in the 3D Viewer, which can help to understand the location of a "
+"set of edges within the model."
+msgstr ""
+
+# 93f2b49b20724274a478612609fc7b1e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:304
+msgid ""
+"**Propagation chains** group allows defining **Reversed Edges** for "
+"splitting opposite edges of quadrilateral faces in a logically uniform "
+"direction. When this group is activated, the list is filled with "
+"propagation chains found within the shape on which a hypothesis is "
+"assigned. When a chain is selected in the list its edges are shown in the"
+" Viewer with arrows, which enables choosing a common direction for all "
+"chain edges. **Reverse** button inverts the common direction of chain "
+"edges. **Add** button is active if some edges of a chain have a different"
+" direction, so you can click **Add** button to add them to **Reversed "
+"Edges** list."
+msgstr ""
+
+# 97e86e78b2844d0691ff69afce408f49
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/1d_meshing_hypo.rst:313
+msgid ""
+"Alternatively, uniform direction of edges of one propagation chain can be"
+" achieved by :ref:`constructing_submeshes_page` on one edge of the chain "
+"and assigning a :ref:`propagation_anchor` additional hypothesis. "
+"Orientation of this edge (and hence of all the rest edges of the chain) "
+"can be controlled by using **Reversed Edges** field."
+msgstr ""
+

@@ -46,9 +46,9 @@ EXAMPLE_PATH      = @PROJECT_SOURCE_DIR@/src/SMESH_SWIG
 #---------------------------------------------------------------------------
 GENERATE_HTML     = YES
 HTML_OUTPUT       = .
-HTML_HEADER       = @PROJECT_BINARY_DIR@/doc/salome/gui/SMESH/static/header.html
-HTML_FOOTER       = @PROJECT_SOURCE_DIR@/doc/salome/gui/SMESH/static/footer.html
-HTML_STYLESHEET   = @PROJECT_SOURCE_DIR@/doc/salome/gui/SMESH/static/doxygen.css
+HTML_HEADER       = @CMAKE_CURRENT_BINARY_DIR@/static/header.html
+HTML_FOOTER       = @CMAKE_CURRENT_SOURCE_DIR@/static/footer.html
+HTML_STYLESHEET   = @CMAKE_CURRENT_SOURCE_DIR@/static/doxygen.css
 TOC_EXPAND        = YES
 DISABLE_INDEX     = NO
 GENERATE_TREEVIEW = YES

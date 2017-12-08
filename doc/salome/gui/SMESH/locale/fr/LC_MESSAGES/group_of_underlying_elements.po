@@ -1,0 +1,112 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# d607987c56ae4ed888b4297c350d3cc6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/group_of_underlying_elements.rst:5
+msgid "Group Based on Nodes of Other Groups"
+msgstr ""
+
+# a92ce49dadd64b8f8eebc759bfed0b4c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/group_of_underlying_elements.rst:8
+msgid ""
+"To create a standalone group of entities basing on nodes of existing "
+"reference groups, in the **Mesh** menu select **Group of underlying "
+"entities**."
+msgstr ""
+
+# 8e6c856a77a6408e98ef8a22b42366ce
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/group_of_underlying_elements.rst:10
+msgid "The following dialog box will appear:"
+msgstr ""
+
+# 6fdd3d27da334237a0819be8ce25c2f5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/group_of_underlying_elements.rst:15
+msgid "In this dialog box specify"
+msgstr ""
+
+# 050d2fa8e0464b7a9bf49dddf09dd567
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/group_of_underlying_elements.rst:17
+msgid "the resulting **Group name**,"
+msgstr ""
+
+# cbc2c083b9254ae882b884f29cbb6fd4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/group_of_underlying_elements.rst:18
+msgid "the **Elements Type** of entities of the resulting group,"
+msgstr ""
+
+# e736defec9594c3aaf6fd65946e9b99b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/group_of_underlying_elements.rst:23
+msgid ""
+"the criterion of inclusion of a mesh entity to the result group, which is"
+" **Number of common nodes** of the entity and the reference groups:"
+msgstr ""
+
+# 4cb2886461674203b41470240952239a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/group_of_underlying_elements.rst:20
+msgid "**All** - include if all nodes are common;"
+msgstr ""
+
+# a948a443916841f5b9524653fc818827
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/group_of_underlying_elements.rst:21
+msgid ""
+"**Main** - include if all corner nodes are common (meaningful for a "
+"quadratic mesh)"
+msgstr ""
+
+# 8fabb8b4593e459ca24be8d29bd23d0a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/group_of_underlying_elements.rst:22
+msgid "**At least one** - include if one or more nodes are common"
+msgstr ""
+
+# 0801c9881b4d47ddb06da1e1eb374992
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/group_of_underlying_elements.rst:23
+msgid "**Majority** - include if half or more nodes are common"
+msgstr ""
+
+# 459841bfa1294ebf8e57a1577481e8e7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/group_of_underlying_elements.rst:25
+msgid "select reference groups,"
+msgstr ""
+
+# ac28c573d20143b4a10943d3569086d6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/group_of_underlying_elements.rst:26
+msgid ""
+"If **Include underlying entities only** option is activated an entity can"
+" be included if it is based on nodes of one element of a reference group."
+msgstr ""
+
+# f7212700b64f4017b7d411a4e862d964
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/group_of_underlying_elements.rst:29
+msgid "In the figure below, there are two reference Volume groups:"
+msgstr ""
+
+# 235e2411c07745e88d01d050fec69080
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/group_of_underlying_elements.rst:37
+msgid ""
+"In this case the following results for Faces, Edges and Nodes are "
+"obtained:"
+msgstr ""
+
+# 72befc0b56d94ee881b69420b3f361b1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/group_of_underlying_elements.rst:57
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_create_dim_group` "
+"operation."
+msgstr ""
+

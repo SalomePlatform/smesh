@@ -1,0 +1,226 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# e7c7f397cdb442788b36234ecaed36b4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:5
+msgid "Viewing meshes"
+msgstr ""
+
+# 5f14544f8bb44215afc7cb6f42776be1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:7
+msgid ""
+"By default a just :ref:`compute_anchor` mesh will be automatically "
+"displayed in the **VTK 3D Viewer**. (You can switch off "
+":ref:`automatic_update_pref` preference parameter to prevent this.) Click"
+" **Display only** to hide all other objects at the same time."
+msgstr ""
+
+# e95a2faec0314177b13db4bcab3f6fe3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:13
+msgid ""
+"**VTK 3D Viewer** is described in detail in the documentation on **GUI "
+"module**."
+msgstr ""
+
+# fff07c0bb4284d2eaad08e009593310f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:15
+msgid ""
+"Use the following :ref:`mesh_preferences_page` to adjust how the mesh is "
+"displayed by default:"
+msgstr ""
+
+# 0e213d2e130042c4b92200c06267346d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:18
+msgid ":ref:`automatic_update_pref`"
+msgstr ""
+
+# 0bf29579e79a46328055da15ee273959
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:19
+msgid ":ref:`display_mode_pref`"
+msgstr ""
+
+# facc77f7e1e14c09942ca891bca1384b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:20
+msgid ":ref:`quadratic_2d_mode_pref`"
+msgstr ""
+
+# d1ad0b78f4944527824fd60862d10e00
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:21
+msgid "All parameters of :ref:`mesh_tab_preferences` Preferences dialog."
+msgstr ""
+
+# 1237883ac6e54d53a547928795463b49
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:23
+msgid ""
+"After the mesh has appeared in the Viewer, you can select it with left "
+"mouse click and  get information about it, change its presentation "
+"parameters and access to other useful options by right-clicking on the "
+"selected mesh."
+msgstr ""
+
+# 14c6a193f554414ebd2638642e4ff504
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:32
+msgid "**Rename** - allows to rename the object in the Object browser."
+msgstr ""
+
+# 13ebbe480dcb4b4ea5e16fe031657d92
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:33
+msgid "**Hide all** - allows to hide all objects in the viewer."
+msgstr ""
+
+# 519780a62b6d49389742500dfab6143e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:34
+msgid ""
+"**Update** - refreshes the presentation of your mesh in the Object "
+"Browser, applying all recent changes."
+msgstr ""
+
+# 5caead58cb3143509df4049037609bd9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:35
+msgid ":ref:`mesh_infos_page` -  provides information about the mesh."
+msgstr ""
+
+# 421fa002af414f40a7a8d2519563f734
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:36
+msgid ""
+":ref:`find_element_by_point_page` - allows to find all mesh elements, to "
+"which belongs a point with the given coordinates."
+msgstr ""
+
+# aafb55a6a8e343e18109cc71a79d0786
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:37
+msgid ""
+"**Auto Color** - switch on / off auto-assigning colors for the groups. If"
+" switched on, a default color of a new group in "
+":ref:`creating_groups_page` dialog is chosen randomly."
+msgstr ""
+
+# 054e966cbb504ec1858f0687e9b67f2f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:38
+msgid ""
+":ref`:`numbering_page` - allows to display the ID numbers of all meshing "
+"elements or nodes composing your mesh in the viewer."
+msgstr ""
+
+# e14312ec063d4773952123a9b4b3fc1e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:39
+msgid ""
+":ref:`display_mode_page` - allows to select between Wireframe, Shading "
+"and Nodes presentation."
+msgstr ""
+
+# ed4f7f74007c4d9db01e98c8097d0939
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:40
+msgid ""
+":ref:`display_entity_page` - allows to display entities by types (Faces, "
+"Edges, Volumes etc.)."
+msgstr ""
+
+# 99b9dcc92dcb43ed911a77c3ea1df36f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:45
+msgid "Quadratic 2D"
+msgstr ""
+
+# cb976db163fb44aea0b89fcf211d1487
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:47
+msgid ""
+"**2D Quadratic** - allows to select between the representation of "
+"quadratic edges as broken **lines** or as **arcs**. A default "
+"representation can be set in :ref:`quadratic_2d_mode_pref`. Arc "
+"representation applies to 1D and 2D elements only."
+msgstr ""
+
+# 3c1dd7b5911c4874b0e8a7e479425439
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:48
+msgid ""
+"**Orientation of faces** - shows vectors of orientation of faces of the "
+"selected mesh. The orientation vector is shown for each 2D mesh element "
+"and for each free facet of a 3D mesh element. The vector direction is "
+"calculated by the first three nodes of the face produced by vectors n1-n2"
+" and n1-n3."
+msgstr ""
+
+# 6d6af7afac6542048d0c655f84303764
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:49
+msgid ""
+":ref:`colors_size_page` - allows to define several visual properties, "
+"including color of elements, shrink size, ..."
+msgstr ""
+
+# 5089d61f57bf403a946be3592a4ad831
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:50
+msgid ""
+":ref:`transparency_page` - allows to change the transparency of mesh "
+"elements."
+msgstr ""
+
+# 3175b5d13d394940a12af858fe3dd9db
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:51
+msgid ""
+":ref:`quality_page` - graphically presents various information about the "
+"mesh."
+msgstr ""
+
+# 990f093d5a0243c492b2a3c91593d3cb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:52
+msgid "**Hide** - allows to hide the selected mesh from the viewer."
+msgstr ""
+
+# c638a54c583f4a1f97d1977841fdc04b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:53
+msgid ""
+"**Show Only** - allows to display only the selected mesh, hiding all "
+"others from the viewer."
+msgstr ""
+
+# 378028db9d4c4652b324b6c310370de2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:54
+msgid ""
+":ref:`clipping_page` - allows to create cross-sections of the displayed "
+"objects."
+msgstr ""
+
+# 75070b04c6a14b1f97ec58ebffd04bd5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:55
+msgid ""
+"**Dump view** - exports an object from the viewer in bmp, png or jpeg "
+"image format."
+msgstr ""
+
+# a60f3cf4bcf84fecb6d8f91134e48cd6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:56
+msgid ""
+"**Change background** - allows to redefine the background color. By "
+"default it is black."
+msgstr ""
+
+# 000b4de0267840d894e6a2d05565a989
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:57
+msgid ""
+"**View Operations** - allows to show/hide the  visualization toolbar in "
+"the Viewer window."
+msgstr ""
+
+# 11c21e53710b45a081a9e40626ea9a14
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/viewing_meshes_overview.rst:58
+msgid ""
+"**Recording Operations** - allows to show/hide the recording toolbar in "
+"the Viewer window."
+msgstr ""
+

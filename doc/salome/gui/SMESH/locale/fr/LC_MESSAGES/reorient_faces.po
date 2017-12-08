@@ -1,0 +1,164 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 0bdea21e0d144d2ead6f84abbbed4c46
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/reorient_faces.rst:6
+msgid "Orient faces"
+msgstr ""
+
+# 9859e23d791e4e9eac9c94018b8c6e71
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/reorient_faces.rst:8
+msgid ""
+"This operation allows fixing the orientation of a set of faces in the "
+"following ways:"
+msgstr ""
+
+# 90ed66a8fd9c4803966fa046e987a0dd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/reorient_faces.rst:11
+msgid ""
+"The required orientation of a set of neighboring faces can be defined by "
+"a vector giving the direction of a normal to a certain face. Since the "
+"direction of face normals in the set can be even opposite, it is "
+"necessary to specify a *control* face, the normal to which will be "
+"compared with the vector. This face can be either:"
+msgstr ""
+
+# 110f3e31151e451ab47b718dcd8a1187
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/reorient_faces.rst:11
+msgid "found by proximity to a given point, or"
+msgstr ""
+
+# c5177627b34a4943a52e8c155942d641
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/reorient_faces.rst:12
+msgid "specified explicitly."
+msgstr ""
+
+# b9467622883843bfbe5d5430a2111a4e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/reorient_faces.rst:13
+msgid ""
+"Alternatively, the faces can be oriented relatively to the adjacent "
+"volumes."
+msgstr ""
+
+# 09763a05394b4d2e969fb4fa4f268d5e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/reorient_faces.rst:15
+msgid "The orientation of a face is changed by reverting the order of its nodes."
+msgstr ""
+
+# 396f84a7a6b14a028f326e3073506a45
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/reorient_faces.rst:17
+msgid "**To set orientation of faces:**"
+msgstr ""
+
+# 37aad076460d4729afd3fbba7c52cdf6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/reorient_faces.rst:19
+msgid ""
+"In the **Modification** menu select **Reorient faces** item or click "
+"**Reorient faces** button in the toolbar."
+msgstr ""
+
+# 3c75a02cea294006b8261737abda28f2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/reorient_faces.rst:29
+msgid "In the \"Reorient faces\" dialog box"
+msgstr ""
+
+# 49d9250fdcbf47f19b76f7fd85250ff1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/reorient_faces.rst:30
+msgid ""
+"Select the **Object** (mesh, sub-mesh or group) containing faces to "
+"reorient, in the Object Browser or in the 3D Viewer."
+msgstr ""
+
+# 30cddddfd28a46469db3a832e59a35f3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/reorient_faces.rst:31
+msgid "To reorient by direction of the face normal:"
+msgstr ""
+
+# 188bd9f881a24557bf2791572b5d5b22
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/reorient_faces.rst:33
+msgid ""
+"Specify the coordinates of the **Point** by which the control face will "
+"be found. You can specify the **Point** by picking a node in the 3D "
+"Viewer or selecting a vertex in the Object Browser."
+msgstr ""
+
+# 868aa922269446629ea346b7273b0324
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/reorient_faces.rst:34
+msgid ""
+"Set up the **Direction** vector to be compared with the normal of the "
+"control face. There are following options:"
+msgstr ""
+
+# c84d68c428f74ee7acd733c114a11824
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/reorient_faces.rst:36
+msgid "adjust vector components directly;"
+msgstr ""
+
+# cc9edfb98e5744dba3f2dc4c05d87934
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/reorient_faces.rst:37
+msgid ""
+"select a vertex in the Object Browser or a node in the 3D Viewer; their "
+"coordinates will define vector components;"
+msgstr ""
+
+# bf70425a377f4818954be246e9851872
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/reorient_faces.rst:38
+msgid ""
+"pick two nodes (holding Shift button), the **Direction** vector will go "
+"from the first to the second node."
+msgstr ""
+
+# 6be73a1744414a939e04e424053bd71a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/reorient_faces.rst:46
+msgid ""
+"In the second mode it is possible to pick the **Face** by mouse in the 3D"
+" Viewer or directly input the **Face** ID in the corresponding field."
+msgstr ""
+
+# e03af85346da481bae91f969e3a516b6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/reorient_faces.rst:55
+msgid "In the third mode, the faces can be reoriented according to volumes:"
+msgstr ""
+
+# bc81a8fd80a94482a3eaabb3a3d842bc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/reorient_faces.rst:57
+msgid ""
+"Select an object (mesh, sub-mesh or group) containing reference "
+"**Volumes**, in the Object Browser or in the 3D Viewer."
+msgstr ""
+
+# 8cdac663c228432a958c3cbcdc24af81
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/reorient_faces.rst:58
+msgid ""
+"Specify whether face normals should point outside or inside the reference"
+" volumes using **Face normal outside volume** check-box."
+msgstr ""
+
+# 8f80a1f281634632900bb376721a726f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/reorient_faces.rst:66
+msgid ""
+"Click the **Apply** or **Apply and Close** button to confirm the "
+"operation."
+msgstr ""
+
+# aacdcc31b3454a4892adc33edff88c2d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/reorient_faces.rst:68
+msgid "**See Also** a sample TUI Script of a :ref:`tui_reorient_faces` operation."
+msgstr ""
+

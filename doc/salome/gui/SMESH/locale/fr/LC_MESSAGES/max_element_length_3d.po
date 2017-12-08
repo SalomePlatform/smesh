@@ -1,0 +1,63 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 12508cdad0f0423fafaf17bc9c8f378a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/max_element_length_3d.rst:5
+msgid "Element Diameter 3D"
+msgstr ""
+
+# 76def95f4aca4cc98b3288305dc01fbc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/max_element_length_3d.rst:7
+msgid ""
+"This quality control criterion consists in calculation of the maximal "
+"length of edges and diagonals of 3D mesh elements (tetrahedrons, "
+"pyramids, etc). For polyhedra the value is always zero."
+msgstr ""
+
+# 568b7a64cb374f168fa585b5771ec419
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/max_element_length_3d.rst:9
+msgid "**To apply the Element Diameter 3D quality criterion to your mesh:**"
+msgstr ""
+
+# 6dfd01f191d84de7afd67327d52827ff
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/max_element_length_3d.rst:11
+msgid "Display your mesh in the viewer."
+msgstr ""
+
+# e9f0faa61067408b99223bdc6864b806
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/max_element_length_3d.rst:12
+msgid ""
+"Choose **Controls > Volume Controls > Element Diameter 3D** or click "
+"**\"Element Diameter 3D\"** button in the toolbar."
+msgstr ""
+
+# 41baa3271ea844e0bd78095589febfa4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/max_element_length_3d.rst:20
+msgid ""
+"Your mesh will be displayed in the viewer with its elements colored "
+"according to the applied mesh quality control criterion:"
+msgstr ""
+
+# 42b48187fab0442dba02a4ab5a8ac103
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/max_element_length_3d.rst:26
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_max_element_length_3d` "
+"operation."
+msgstr ""
+

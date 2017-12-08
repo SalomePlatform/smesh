@@ -331,7 +331,7 @@ SMESHGUI_ReorientFacesOp::SMESHGUI_ReorientFacesOp()
   :SMESHGUI_SelectionOp( ActorSelection )
 {
   //myVectorPreview = 0;
-  myHelpFileName = "reorient_faces_page.html";
+  myHelpFileName = "reorient_faces.html";
 
   myDlg = new SMESHGUI_ReorientFacesDlg;
   myDlg->constructorChange( CONSTRUCTOR_POINT );

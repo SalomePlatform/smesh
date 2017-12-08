@@ -1,0 +1,141 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 97ca37c48b6a46eab1311e4da92675b5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_quadratic_elements.rst:6
+msgid "Adding Quadratic Elements"
+msgstr ""
+
+# 2733f51dd3e24e8e96f1728a9b943693
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_quadratic_elements.rst:8
+msgid "MESH module allows you to work with **Quadratic Elements**."
+msgstr ""
+
+# 04076a14890047139f3da74e87925b8d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_quadratic_elements.rst:10
+msgid ""
+"Quadratic elements are defined by the same corner nodes as the "
+"corresponding linear ones, but in addition they have *midside* nodes "
+"located between the corner nodes on element sides."
+msgstr ""
+
+# 2f08f27e14214b69afbb69d7c6ebc4ae
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_quadratic_elements.rst:12
+msgid ""
+"If a quadratic 2D element has an additional node at the element center, "
+"it is a bi-quadratic element (both TRIA7 and QUAD9 elements are "
+"supported). If a quadratic hexahedral element has 7 additional nodes: at "
+"the element center and at the center of each side, it is a tri-quadratic "
+"element (or HEXA27)."
+msgstr ""
+
+# 6b918686e0f34395848c30004d066fe6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_quadratic_elements.rst:14
+msgid ""
+"The convention of nodal connectivity of elements used in SALOME is the "
+"MED library convention. You can consult the description of nodal "
+"connectivity of elements in the documentation on MED library or "
+":ref:`connectivity_page`."
+msgstr ""
+
+# c0ee8ff909f64400967daa896e9644f7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_quadratic_elements.rst:16
+msgid "There are several ways to create quadratic elements in your mesh:"
+msgstr ""
+
+# 1c5f10266ac54e3c9e762d63fa3684c6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_quadratic_elements.rst:18
+msgid "manually (this way is described below);"
+msgstr ""
+
+# 2afc5e742de948ca8ded56cca6b1fe6b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_quadratic_elements.rst:19
+msgid ""
+"use :ref:`quadratic_mesh_anchor` hypothesis to generate a quadratic mesh "
+"on your geometry;"
+msgstr ""
+
+# ed047a38d6794df880b1c03db2b8cde4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_quadratic_elements.rst:20
+msgid ""
+"convert an existing linear mesh to a quadratic one (see "
+":ref:`convert_to_from_quadratic_mesh_page`)."
+msgstr ""
+
+# 08ae2bbebab44a6381ea132a604ced63
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_quadratic_elements.rst:22
+msgid "**To add a quadratic element to your mesh:**"
+msgstr ""
+
+# de31cde3181045cd8041bb1b0c7666e3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_quadratic_elements.rst:24
+msgid "Select your mesh in the Object Browser or in the 3D viewer."
+msgstr ""
+
+# 5198fe6693f64e97b13bce6b42b2fac4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_quadratic_elements.rst:26
+msgid ""
+"From the **Modification** menu choose the **Add** item and select one of "
+"the following:"
+msgstr ""
+
+# 0057e276f3fc4a95b2d276d3fce8c91d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_quadratic_elements.rst:32
+msgid ""
+"All dialogs for adding quadratic element to the mesh provide the "
+"possibility to automatically add an element to the specified group or to "
+"create the group anew using **Add to group** box, that allows choosing an"
+" existing group for the created node or element or giving the name to a "
+"new group. By default, the **Add to group** check box is switched off. If"
+" the user switches this check box on, the combo box listing all currently"
+" existing groups of the corresponding type becomes available. By default,"
+" no group is selected. In this case, when the user presses **Apply** or "
+"**Apply & Close** button, the warning message box informs the user about "
+"the necessity to input a new group name. The combo box lists groups of "
+"all the :ref:`grouping_elements_page` both :ref:`standalone_group`, "
+":ref:`group_on_filter`, and :ref:`group_on_geom`. If the user chooses a "
+"group on geometry or on filter, he is warned and proposed to convert this"
+" group to standalone. If the user rejects conversion operation, it is "
+"cancelled and a new quadratic element is not created."
+msgstr ""
+
+# 1fd7382a5f4847499e07416870d8c573
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_quadratic_elements.rst:40
+msgid ""
+"To create any **Quadratic Element** specify the nodes which will form "
+"your element by selecting them in the 3D viewer with pressed Shift button"
+" and click *Selection* button to the right of **Corner Nodes** label. "
+"Their numbers will appear in the dialog box as **Corner Nodes** "
+"(alternatively you can just input numbers in this field without "
+"selection; note that to use this way the mesh should be selected before "
+"invoking this operation). The edges formed by the corner nodes will "
+"appear in the table. To define the middle nodes for each edge, double-"
+"click on the respective field and input the number of the node (or pick "
+"the node in the viewer). For bi-quadratic and tri-quadratic elements, "
+"your also need to specify central nodes. As soon as all needed nodes are "
+"specified, a preview of a new quadratic element will be displayed in the "
+"3D viewer. Then you will be able to click **Apply** or **Apply and "
+"Close** button to add the element to the mesh."
+msgstr ""
+
+# 7e82eacc03904667b815fbeae8cda8fb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/adding_quadratic_elements.rst:45
+msgid "**Reverse** button reverses the element."
+msgstr ""
+

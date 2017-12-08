@@ -1,0 +1,54 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# e75a6ef91ac6493c8cb144a6efc9b307
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_viewing_meshes.rst:6
+msgid "Viewing Meshes"
+msgstr ""
+
+# 7c73b9aefc6e4c3bb0e04ee48fb5d8dc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_viewing_meshes.rst:11
+msgid "Viewing Mesh Infos"
+msgstr ""
+
+# 1d849688136b4c2e869975603178269e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_viewing_meshes.rst:16
+msgid "``viewing_meshes_ex01.py``"
+msgstr ""
+
+# b66d51960c8a44418ae0a7c91f579d72
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_viewing_meshes.rst:22
+msgid ":download:`../../../examples/viewing_meshes_ex01.py`"
+msgstr ""
+
+# 425948694a794e66a8915f61cbbf3a8a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_viewing_meshes.rst:28
+msgid "Find Element by Point"
+msgstr ""
+
+# 59a17b434af14d5380f3a2424e53b03f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_viewing_meshes.rst:32
+msgid "``viewing_meshes_ex02.py``"
+msgstr ""
+
+# 3b8461917abd45b68fb272c988b4eaff
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_viewing_meshes.rst:38
+msgid ":download:`../../../examples/viewing_meshes_ex02.py`"
+msgstr ""
+

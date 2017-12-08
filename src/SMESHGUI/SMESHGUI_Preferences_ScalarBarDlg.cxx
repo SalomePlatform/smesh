@@ -448,7 +448,7 @@ SMESHGUI_Preferences_ScalarBarDlg::SMESHGUI_Preferences_ScalarBarDlg( SMESHGUI* 
   connect( mySelectionMgr,      SIGNAL( currentSelectionChanged() ), this, SLOT( onSelectionChanged() ) );
   connect( mySMESHGUI,          SIGNAL( SignalCloseAllDialogs() ),   this, SLOT( reject() ) );
 
-  myHelpFileName = "scalar_bar_dlg.html";
+  myHelpFileName = "scalar_bar.html";
 }
 
 //=================================================================================================

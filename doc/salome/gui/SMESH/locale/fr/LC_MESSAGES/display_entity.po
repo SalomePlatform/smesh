@@ -1,0 +1,51 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 135c20ba93794e7b807ec22eb6e52268
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/display_entity.rst:5
+msgid "Display Entity"
+msgstr ""
+
+# 8a6a82fcf8b74d7e9c01b3d73a4b7a90
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/display_entity.rst:7
+msgid ""
+"In this submenu you can choose to display only volumes, faces or edges or"
+" combine them."
+msgstr ""
+
+# 933a18f4dc8b4213a03dc29e45618189
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/display_entity.rst:27
+msgid "If the mesh contains a lot of elements, select **Choose...** item,"
+msgstr ""
+
+# 7f1150a0a698424ba4a5891da9ca54cd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/display_entity.rst:35
+msgid ""
+"and **Display Entity** dialog box will provide a way to display only some"
+" entities at the first display instead of displaying all entities, which "
+"can take a long time."
+msgstr ""
+
+# c6ba829de91b4525bf7e30e4acc36e2d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/display_entity.rst:43
+msgid ""
+"This menu item is available from the context menu in both Object browser "
+"and 3D viewer."
+msgstr ""
+

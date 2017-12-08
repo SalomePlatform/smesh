@@ -1,0 +1,67 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 5ff0bcfebb72410a8732dc46e1e34e6f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/quad_from_ma_algo.rst:5
+msgid "Medial Axis Projection Quadrangle meshing algorithm"
+msgstr ""
+
+# b63656f8703a4217af551d3ed9d1bc4a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/quad_from_ma_algo.rst:7
+msgid ""
+"Medial Axis Projection algorithm can be used for meshing faces with "
+"sinuous borders and a channel-like shape, for which it can be difficult "
+"to define 1D hypotheses such that to obtain a good shape of resulting "
+"quadrangles. The algorithm can be also applied to faces with ring "
+"topology, which can be viewed as a closed 'channel'. In the latter case "
+"radial discretization of a ring can be specified by using **Number of "
+"Layers** or **Distribution of Layers** hypothesis."
+msgstr ""
+
+# 54d7dbc1a0924e2b99df8f005e06c131
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/quad_from_ma_algo.rst:22
+msgid ""
+"The algorithm provides proper shape of quadrangles by constructing Medial"
+" Axis between sinuous borders of the face and using it to discretize the "
+"borders. (Shape of quadrangles can be not perfect at locations where "
+"opposite sides of a 'channel' are far from being parallel.)"
+msgstr ""
+
+# 01adeb096fec4346af71b4c1d954e111
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/quad_from_ma_algo.rst:33
+msgid "The Medial Axis is used in two ways:"
+msgstr ""
+
+# ba840a59868c4f29a0ef420de7678f08
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/quad_from_ma_algo.rst:35
+msgid ""
+"If there is a sub-mesh on a sinuous border, then the nodes of this border"
+" are mapped to the opposite border via the Medial Axis."
+msgstr ""
+
+# 237fafa93b8b424595b99dc70e23c04d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/quad_from_ma_algo.rst:36
+msgid ""
+"If there are no sub-meshes on sinuous borders, then the part of the "
+"Medial Axis that can be mapped to both borders is discretized using a 1D "
+"hypothesis assigned to the face or its ancestor shapes, and the division "
+"points are mapped from the Medial Axis to both borders to find positions "
+"of nodes."
+msgstr ""
+

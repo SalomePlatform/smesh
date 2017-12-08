@@ -1,0 +1,43 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# d2f8fc9fd0cb4b8f97fac18b5b18c7f0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/borders_at_multi_connection.rst:5
+msgid "Borders at multi-connection"
+msgstr ""
+
+# f889610316e140149cb805bebd9de283
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/borders_at_multi_connection.rst:7
+msgid ""
+"This mesh quality control highlights segments according to the number of "
+"elements, faces and volumes, to which the segment belongs."
+msgstr ""
+
+# 76988886f4ab4173a8ac4f5800c0c9b9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/borders_at_multi_connection.rst:12
+msgid "In this picture the borders at multi-connection are displayed in blue."
+msgstr ""
+
+# 8d4a16bc2dc2420fa668c7b177723575
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/borders_at_multi_connection.rst:14
+msgid ""
+"**See Also** a sample TUI Script of a "
+":ref:`tui_borders_at_multiconnection` operation."
+msgstr ""
+

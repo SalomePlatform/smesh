@@ -1,0 +1,61 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 8c9833a8c4b34b6686d275f35ce51cb8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/minimum_angle.rst:5
+msgid "Minimum angle"
+msgstr ""
+
+# e2969f989b9d425da09b6e9415958e2d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/minimum_angle.rst:7
+msgid ""
+"**Minimum angle** mesh quality criterion consists of calculation of the "
+"minimum value of angle between two adjacent sides of a 2D meshing element"
+" (triangle or quadrangle)."
+msgstr ""
+
+# 3bc1eb4dd5ae4d6bbd8573ff0fcfa5fa
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/minimum_angle.rst:9
+msgid "**To apply the Minimum angle quality criterion to your mesh:**"
+msgstr ""
+
+# 52f131a28705437fa82b4ef6268be568
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/minimum_angle.rst:11
+msgid "Display your mesh in the viewer."
+msgstr ""
+
+# 503b3b09b790497bacc2a83d60f5fc06
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/minimum_angle.rst:12
+msgid ""
+"Choose **Controls > Face Controls > Minimum angle** or click **\"Minimum "
+"Angle\"** button."
+msgstr ""
+
+# 69fc068d689f4ad9b58d3ddffd5cd835
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/minimum_angle.rst:20
+msgid ""
+"Your mesh will be displayed in the viewer with its elements colored "
+"according to the applied mesh quality control criterion:"
+msgstr ""
+
+# 1b79a35974814c9bba550884b6f6e2c2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/minimum_angle.rst:25
+msgid "**See Also** a sample TUI Script of a :ref:`tui_minimum_angle` operation."
+msgstr ""
+

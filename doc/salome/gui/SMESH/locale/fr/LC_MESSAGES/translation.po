@@ -1,0 +1,164 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 75143c8f4ac24570b02ae570d98ebd8b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/translation.rst:5
+msgid "Translation"
+msgstr ""
+
+# 93c59c012b8b4dbdb7476e2bdb1a779c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/translation.rst:7
+msgid ""
+"This geometrical operation allows to translate in space your mesh or some"
+" of its elements."
+msgstr ""
+
+# 06a73bd5a2034b8cb1083af72bad5396
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/translation.rst:10
+msgid "**To translate a mesh:**"
+msgstr ""
+
+# 0f9894f7613c48f8a356e21b4b772af9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/translation.rst:13
+msgid ""
+"From the **Modification** menu choose **Transformation** -> "
+"**Translation** item  or click **\"Translation\"** button in the toolbar."
+msgstr ""
+
+# b49ca4f6f8e349fa9400daf310f25a91
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/translation.rst:20
+msgid "One of the following dialogs will appear:"
+msgstr ""
+
+# 0d622382a5c244b79da86c37666a6bf1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/translation.rst:22
+msgid "It is possible to define the vector of thanslation:"
+msgstr ""
+
+# 7d2a29725e014f1bbd35da276cf2a0a3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/translation.rst:40
+msgid "In the dialog:"
+msgstr ""
+
+# fc5fe749adf2467abb7947060196777a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/translation.rst:42
+msgid "specify the IDs of the translated elements:"
+msgstr ""
+
+# c3444551d6f94cef954e14b46145a9bb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/translation.rst:44
+msgid "**Select the whole mesh, submesh or group** activating this checkbox; or"
+msgstr ""
+
+# d4d02adeac94491490a871185d70d5c7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/translation.rst:45
+msgid ""
+"choose mesh elements with the mouse in the 3D Viewer. It is possible to "
+"select a whole area with a mouse frame; or"
+msgstr ""
+
+# 953b8e912c08437691eff171d251eb09
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/translation.rst:46
+msgid ""
+"input the element IDs directly in **ID Elements** field. The selected "
+"elements will be highlighted in the viewer; or"
+msgstr ""
+
+# 9456f6f145994a4bb8ae5a4a20c80315
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/translation.rst:47
+msgid ""
+"apply Filters. **Set filter** button allows to apply a filter to the "
+"selection of elements. See more about filters in the "
+":ref:`selection_filter_library_page` page."
+msgstr ""
+
+# 8dd408c797fa4ce4b919ecfa336780f4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/translation.rst:49
+msgid "specify the vector of translation:"
+msgstr ""
+
+# 9e4ae19820a649ce9fb3cb41fdd7121d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/translation.rst:51
+msgid ""
+"specify the cooordinates of the start and end **Points** of the vector of"
+" translation; or"
+msgstr ""
+
+# 46e58c1328164c1b81199b513dbfdbe2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/translation.rst:52
+msgid ""
+"specify the end point of the **Vector** of rotation starting at the "
+"origin of coordinates."
+msgstr ""
+
+# 6b3b130a76d945a49e5fa53d4b66f3be
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/translation.rst:54
+msgid "specify the conditions of translation:"
+msgstr ""
+
+# cbed019014ff4141897955812061d1aa
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/translation.rst:56
+msgid ""
+"activate **Move elements** radio button to create  the source mesh (or "
+"elements) at the new location and erase it from the previous location;"
+msgstr ""
+
+# ecef7d6a928e4a8ca1b1547adfdecfa1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/translation.rst:57
+msgid ""
+"activate **Copy elements** radio button to create the source mesh (or "
+"elements) at the new location, but leave it at the previous location, the"
+" source mesh will be considered one and single mesh with the result of "
+"the rotation;"
+msgstr ""
+
+# d1597b6481b742289939aefe62ed456e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/translation.rst:58
+msgid ""
+"activate **Create as new mesh** radio button to leave the source mesh (or"
+" elements) at its previous location and create a new mesh at the new "
+"location, the new mesh appears in the Object Browser with the default "
+"name MeshName_rotated (it is possible to change this name in the adjacent"
+" box);"
+msgstr ""
+
+# c00a18b1722c4bc795fd8937fcb76b0c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/translation.rst:59
+msgid ""
+"activate **Copy groups** checkbox to copy the groups of elements of the "
+"source mesh to the newly created mesh."
+msgstr ""
+
+# 12be0e834c254830b6c24235bdeb8a5c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/translation.rst:61
+msgid ""
+"activate **Preview** checkbox to show the result of transformation in the"
+" viewer"
+msgstr ""
+
+# 24a911c5c6bd43339186c416b5c14a66
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/translation.rst:62
+msgid "click **Apply** or **Apply and Close** button to confirm the operation."
+msgstr ""
+
+# 6059d279ae784f7e82d2450c6f3ece6e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/translation.rst:64
+msgid "**See Also** a sample TUI Script of a :ref:`tui_translation` operation."
+msgstr ""
+

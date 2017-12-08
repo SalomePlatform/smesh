@@ -17,9 +17,9 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-##
-# @package StdMeshersBuilder
-# Python API for the standard meshing plug-in module.
+"""
+Python API for the standard meshing plug-in module.
+"""
 
 LIBRARY = "libStdMeshersEngine.so"
 
@@ -30,24 +30,50 @@ import StdMeshers
 # Mesh algo type identifiers
 #----------------------------
 
-## Algorithm type: Regular 1D algorithm, see StdMeshersBuilder_Segment
 REGULAR     = "Regular_1D"
-## Algorithm type: Python 1D algorithm, see StdMeshersBuilder_Segment_Python
+"""
+Algorithm type: Regular 1D algorithm, see :class:`~StdMeshersBuilder.StdMeshersBuilder_Segment`
+"""
+
 PYTHON      = "Python_1D"
-## Algorithm type: Composite segment 1D algorithm, see StdMeshersBuilder_CompositeSegment
+"""
+Algorithm type: Python 1D algorithm, see :class:`~StdMeshersBuilder.StdMeshersBuilder_Segment_Python`
+"""
+
 COMPOSITE   = "CompositeSegment_1D"
-## Algorithm type: Triangle MEFISTO 2D algorithm, see StdMeshersBuilder_Triangle_MEFISTO
+"""
+
+Algorithm type: Composite segment 1D algorithm, see :class:`~StdMeshersBuilder.StdMeshersBuilder_CompositeSegment`
+"""
 MEFISTO     = "MEFISTO_2D"
-## Algorithm type: Hexahedron 3D (i-j-k) algorithm, see StdMeshersBuilder_Hexahedron
+"""
+Algorithm type: Triangle MEFISTO 2D algorithm, see :class:`~StdMeshersBuilder.StdMeshersBuilder_Triangle_MEFISTO`
+"""
+
 Hexa        = "Hexa_3D"
-## Algorithm type: Quadrangle 2D algorithm, see StdMeshersBuilder_Quadrangle
+"""
+Algorithm type: Hexahedron 3D (i-j-k) algorithm, see :class:`~StdMeshersBuilder.StdMeshersBuilder_Hexahedron`
+"""
+
 QUADRANGLE  = "Quadrangle_2D"
-## Algorithm type: Radial Quadrangle 1D-2D algorithm, see StdMeshersBuilder_RadialQuadrangle1D2D
+"""
+Algorithm type: Quadrangle 2D algorithm, see :class:`~StdMeshersBuilder.StdMeshersBuilder_Quadrangle`
+"""
+
 RADIAL_QUAD = "RadialQuadrangle_1D2D"
-## Algorithm type: Quadrangle (Medial Axis Projection) 1D-2D algorithm, see StdMeshersBuilder_QuadMA_1D2D
+"""
+Algorithm type: Radial Quadrangle 1D-2D algorithm, see :class:`~StdMeshersBuilder.StdMeshersBuilder_RadialQuadrangle1D2D`
+"""
+
 QUAD_MA_PROJ = "QuadFromMedialAxis_1D2D"
-## Algorithm type: Polygon Per Face 2D algorithm, see StdMeshersBuilder_PolygonPerFace
+"""
+Algorithm type: Quadrangle (Medial Axis Projection) 1D-2D algorithm, see :class:`~StdMeshersBuilder.StdMeshersBuilder_QuadMA_1D2D`
+"""
+
 POLYGON     = "PolygonPerFace_2D"
+"""
+Algorithm type: Polygon Per Face 2D algorithm, see :class:`~StdMeshersBuilder.StdMeshersBuilder_PolygonPerFace`
+"""
 
 # import items of enums
 for e in StdMeshers.QuadType._items: exec('%s = StdMeshers.%s'%(e,e))
@@ -57,52 +83,69 @@ for e in StdMeshers.VLExtrusionMethod._items: exec('%s = StdMeshers.%s'%(e,e))
 # Algorithms
 #----------------------
 
-## Defines segment 1D algorithm for edges discretization.
-#
-#  It can be created by calling smeshBuilder.Mesh.Segment(geom=0)
-#
-#  @ingroup l3_algos_basic
 class StdMeshersBuilder_Segment(Mesh_Algorithm):
-
-    ## name of the dynamic method in smeshBuilder.Mesh class
-    #  @internal
+    """
+    Defines segment 1D algorithm for edges discretization.
+    
+    It can be created by calling smeshBuilder.Mesh.Segment(geom=0)
+    """
+    
+    
     meshMethod = "Segment"
-    ## type of algorithm used with helper function in smeshBuilder.Mesh class
-    #  @internal
-    algoType   = REGULAR
-    ## flag pointing whether this algorithm should be used by default in dynamic method
-    #  of smeshBuilder.Mesh class
-    #  @internal
-    isDefault  = True
-    ## doc string of the method
-    #  @internal
-    docHelper  = "Creates segment 1D algorithm for edges"
+    """
+    name of the dynamic method in smeshBuilder.Mesh class
+    """
 
-    ## Private constructor.
-    #  @param mesh parent mesh object algorithm is assigned to
-    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
-    #              if it is @c 0 (default), the algorithm is assigned to the main shape
+    algoType   = REGULAR
+    """
+    type of algorithm used with helper function in smeshBuilder.Mesh class
+    """
+
+    isDefault  = True
+    """
+    flag pointing whether this algorithm should be used by default in dynamic method
+    of smeshBuilder.Mesh class    
+    """
+
+    docHelper  = "Creates segment 1D algorithm for edges"
+    """
+    doc string of the method
+    """
+
     def __init__(self, mesh, geom=0):
+        """
+        Private constructor.
+        Parameters:
+            mesh: parent mesh object algorithm is assigned to
+            geom: geometry (shape/sub-shape) algorithm is assigned to;
+                if it is :code:`0` (default), the algorithm is assigned to the main shape
+        """
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, self.algoType)
         pass
 
-    ## Defines "LocalLength" hypothesis to cut an edge in several segments with the same length
-    #  @param l for the length of segments that cut an edge
-    #  @param UseExisting if ==true - searches for an  existing hypothesis created with
-    #                    the same parameters, else (default) - creates a new one
-    #  @param p precision, used for calculation of the number of segments.
-    #           The precision should be a positive, meaningful value within the range [0,1].
-    #           In general, the number of segments is calculated with the formula:
-    #           nb = ceil((edge_length / l) - p)
-    #           Function ceil rounds its argument to the higher integer.
-    #           So, p=0 means rounding of (edge_length / l) to the higher integer,
-    #               p=0.5 means rounding of (edge_length / l) to the nearest integer,
-    #               p=1 means rounding of (edge_length / l) to the lower integer.
-    #           Default value is 1e-07.
-    #  @return an instance of StdMeshers_LocalLength hypothesis
-    #  @ingroup l3_hypos_1dhyps
     def LocalLength(self, l, UseExisting=0, p=1e-07):
+        """
+        Defines "LocalLength" hypothesis to cut an edge in several segments with the same length
+        
+        Parameters:
+            l : for the length of segments that cut an edge
+            UseExisting : if == true - searches for an  existing hypothesis created with
+                the same parameters, else (default) - creates a new one
+            p : precision, used for calculation of the number of segments.
+                The precision should be a positive, meaningful value within the range [0,1].
+                In general, the number of segments is calculated with the formula:
+                nb = ceil((edge_length / l) - p)
+                Function ceil rounds its argument to the higher integer.
+                So, p=0 means rounding of (edge_length / l) to the higher integer,
+                p=0.5 means rounding of (edge_length / l) to the nearest integer,
+                p=1 means rounding of (edge_length / l) to the lower integer.
+                Default value is 1e-07.
+                
+        Returns: 
+            an instance of StdMeshers_LocalLength hypothesis
+        """
+
         from salome.smesh.smeshBuilder import IsEqual
         comFun=lambda hyp, args: IsEqual(hyp.GetLength(), args[0]) and IsEqual(hyp.GetPrecision(), args[1])
         hyp = self.Hypothesis("LocalLength", [l,p], UseExisting=UseExisting, CompareMethod=comFun)
@@ -110,14 +153,21 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         hyp.SetPrecision(p)
         return hyp
 
-    ## Defines "MaxSize" hypothesis to cut an edge into segments not longer than given value
-    #  @param length is optional maximal allowed length of segment, if it is omitted
-    #                the preestimated length is used that depends on geometry size
-    #  @param UseExisting if ==true - searches for an existing hypothesis created with
-    #                     the same parameters, else (default) - creates a new one
-    #  @return an instance of StdMeshers_MaxLength hypothesis
-    #  @ingroup l3_hypos_1dhyps
     def MaxSize(self, length=0.0, UseExisting=0):
+        """
+        Defines "MaxSize" hypothesis to cut an edge into segments not longer than given value
+
+        Parameters:
+            length : is optional maximal allowed length of segment, if it is omitted
+                the preestimated length is used that depends on geometry size
+            UseExisting : if ==true - searches for an existing hypothesis created with
+                the same parameters, else (default) - creates a new one
+        
+        Returns:
+            an instance of StdMeshers_MaxLength hypothesis
+        """
+    
+
         hyp = self.Hypothesis("MaxLength", [length], UseExisting=UseExisting)
         if length > 0.0:
             # set given length
@@ -136,16 +186,23 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         hyp.SetUsePreestimatedLength( length == 0.0 )
         return hyp
 
-    ## Defines "NumberOfSegments" hypothesis to cut an edge in a fixed number of segments
-    #  @param n for the number of segments that cut an edge
-    #  @param s for the scale factor (optional)
-    #  @param reversedEdges is a list of edges to mesh using reversed orientation.
-    #                       A list item can also be a tuple (edge, 1st_vertex_of_edge)
-    #  @param UseExisting if ==true - searches for an existing hypothesis created with
-    #                     the same parameters, else (default) - create a new one
-    #  @return an instance of StdMeshers_NumberOfSegments hypothesis
-    #  @ingroup l3_hypos_1dhyps
     def NumberOfSegments(self, n, s=[], reversedEdges=[], UseExisting=0):
+        """
+	Defines "NumberOfSegments" hypothesis to cut an edge in a fixed number of segments
+
+        Parameters:
+            n: for the number of segments that cut an edge
+            s: for the scale factor (optional)
+            reversedEdges: is a list of edges to mesh using reversed orientation.
+		    A list item can also be a tuple (edge, 1st_vertex_of_edge)
+            UseExisting: if ==true - searches for an existing hypothesis created with
+		    the same parameters, else (default) - create a new one
+    
+        Returns: 
+    	    an instance of StdMeshers_NumberOfSegments hypothesis
+        """
+    
+	
         if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
             reversedEdges, UseExisting = [], reversedEdges
         entry = self.MainShapeEntry()
@@ -164,10 +221,11 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         hyp.SetObjectEntry( entry )
         return hyp
 
-    ## Private method
-    #  
-    #  Checks if the given "NumberOfSegments" hypothesis has the same parameters as the given arguments
     def _compareNumberOfSegments(self, hyp, args):
+        """
+    	Private method
+	Checks if the given "NumberOfSegments" hypothesis has the same parameters as the given arguments
+        """
         if hyp.GetNumberOfSegments() == args[0]:
             if len(args) == 3:
                 if hyp.GetReversedEdges() == args[1]:
@@ -182,18 +240,24 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
                                 return True
         return False
 
-    ## Defines "Adaptive" hypothesis to cut an edge into segments keeping segment size
-    #  within the given range and considering (1) deflection of segments from the edge
-    #  and (2) distance from segments to closest edges and faces to have segment length
-    #  not longer than two times shortest distances to edges and faces.
-    #  @param minSize defines the minimal allowed segment length
-    #  @param maxSize defines the maximal allowed segment length
-    #  @param deflection defines the maximal allowed distance from a segment to an edge
-    #  @param UseExisting if ==true - searches for an existing hypothesis created with
-    #                     the same parameters, else (default) - creates a new one
-    #  @return an instance of StdMeshers_Adaptive1D hypothesis
-    #  @ingroup l3_hypos_1dhyps
     def Adaptive(self, minSize, maxSize, deflection, UseExisting=False):
+        """
+        Defines "Adaptive" hypothesis to cut an edge into segments keeping segment size
+        within the given range and considering (1) deflection of segments from the edge
+        and (2) distance from segments to closest edges and faces to have segment length
+        not longer than two times shortest distances to edges and faces.
+
+        Parameters:
+            minSize: defines the minimal allowed segment length
+            maxSize: defines the maximal allowed segment length
+            deflection: defines the maximal allowed distance from a segment to an edge
+            UseExisting: if ==true - searches for an existing hypothesis created with
+                the same parameters, else (default) - creates a new one
+
+        Returns:
+            an instance of StdMeshers_Adaptive1D hypothesis
+        """
+	
         from salome.smesh.smeshBuilder import IsEqual
         compFun = lambda hyp, args: ( IsEqual(hyp.GetMinSize(), args[0]) and \
                                       IsEqual(hyp.GetMaxSize(), args[1]) and \
@@ -205,17 +269,23 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         hyp.SetDeflection(deflection)
         return hyp
 
-    ## Defines "Arithmetic1D" hypothesis to cut an edge in several segments with a length
-    #  that changes in arithmetic progression
-    #  @param start defines the length of the first segment
-    #  @param end   defines the length of the last  segment
-    #  @param reversedEdges is a list of edges to mesh using reversed orientation.
-    #                       A list item can also be a tuple (edge, 1st_vertex_of_edge)
-    #  @param UseExisting if ==true - searches for an existing hypothesis created with
-    #                     the same parameters, else (default) - creates a new one
-    #  @return an instance of StdMeshers_Arithmetic1D hypothesis
-    #  @ingroup l3_hypos_1dhyps
     def Arithmetic1D(self, start, end, reversedEdges=[], UseExisting=0):
+	"""
+	Defines "Arithmetic1D" hypothesis to cut an edge in several segments with a length
+		that changes in arithmetic progression
+
+	Parameters:
+	    start: defines the length of the first segment
+	    end:   defines the length of the last  segment
+	    reversedEdges: is a list of edges to mesh using reversed orientation.
+		A list item can also be a tuple (edge, 1st_vertex_of_edge)
+	    UseExisting: if ==true - searches for an existing hypothesis created with
+		the same parameters, else (default) - creates a new one
+
+	Returns:
+		an instance of StdMeshers_Arithmetic1D hypothesis
+	"""
+        
         if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
             reversedEdges, UseExisting = [], reversedEdges
         reversedEdgeInd = self.ReversedEdgeIndices(reversedEdges)
@@ -233,17 +303,23 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         hyp.SetObjectEntry( entry )
         return hyp
 
-    ## Defines "GeometricProgression" hypothesis to cut an edge in several
-    #  segments with a length that changes in Geometric progression
-    #  @param start defines the length of the first segment
-    #  @param ratio defines the common ratio of the geometric progression
-    #  @param reversedEdges is a list of edges to mesh using reversed orientation.
-    #                       A list item can also be a tuple (edge, 1st_vertex_of_edge)
-    #  @param UseExisting if ==true - searches for an existing hypothesis created with
-    #                     the same parameters, else (default) - creates a new one
-    #  @return an instance of StdMeshers_Geometric1D hypothesis
-    #  @ingroup l3_hypos_1dhyps
     def GeometricProgression(self, start, ratio, reversedEdges=[], UseExisting=0):
+	"""
+	    Defines "GeometricProgression" hypothesis to cut an edge in several
+		segments with a length that changes in Geometric progression
+
+	    Parameters:
+		start: defines the length of the first segment
+		ratio: defines the common ratio of the geometric progression
+		reversedEdges: is a list of edges to mesh using reversed orientation.
+		    A list item can also be a tuple (edge, 1st_vertex_of_edge)
+		UseExisting: if ==true - searches for an existing hypothesis created with
+		    the same parameters, else (default) - creates a new one
+
+	    Returns:
+		an instance of StdMeshers_Geometric1D hypothesis
+	"""
+        
         reversedEdgeInd = self.ReversedEdgeIndices(reversedEdges)
         entry = self.MainShapeEntry()
         from salome.smesh.smeshBuilder import IsEqual
@@ -259,20 +335,26 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         hyp.SetObjectEntry( entry )
         return hyp
 
-    ## Defines "FixedPoints1D" hypothesis to cut an edge using parameter
-    # on curve from 0 to 1 (additionally it is neecessary to check
-    # orientation of edges and create list of reversed edges if it is
-    # needed) and sets numbers of segments between given points (default
-    # values are 1)
-    #  @param points defines the list of parameters on curve
-    #  @param nbSegs defines the list of numbers of segments
-    #  @param reversedEdges is a list of edges to mesh using reversed orientation.
-    #                       A list item can also be a tuple (edge, 1st_vertex_of_edge)
-    #  @param UseExisting if ==true - searches for an existing hypothesis created with
-    #                     the same parameters, else (default) - creates a new one
-    #  @return an instance of StdMeshers_FixedPoints1D hypothesis
-    #  @ingroup l3_hypos_1dhyps
     def FixedPoints1D(self, points, nbSegs=[1], reversedEdges=[], UseExisting=0):
+        """
+	Defines "FixedPoints1D" hypothesis to cut an edge using parameter
+		on curve from 0 to 1 (additionally it is neecessary to check
+		orientation of edges and create list of reversed edges if it is
+		needed) and sets numbers of segments between given points (default
+		values are 1)
+
+	Parameters:
+	    points: defines the list of parameters on curve
+	    nbSegs: defines the list of numbers of segments
+	    reversedEdges: is a list of edges to mesh using reversed orientation.
+		A list item can also be a tuple (edge, 1st_vertex_of_edge)
+	    UseExisting: if ==true - searches for an existing hypothesis created with
+		the same parameters, else (default) - creates a new one
+
+	Returns:
+		an instance of StdMeshers_FixedPoints1D hypothesis
+	"""
+        
         if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
             reversedEdges, UseExisting = [], reversedEdges
         reversedEdgeInd = self.ReversedEdgeIndices(reversedEdges)
@@ -289,16 +371,22 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         hyp.SetObjectEntry(entry)
         return hyp
 
-    ## Defines "StartEndLength" hypothesis to cut an edge in several segments with increasing geometric length
-    #  @param start defines the length of the first segment
-    #  @param end   defines the length of the last  segment
-    #  @param reversedEdges is a list of edges to mesh using reversed orientation.
-    #                       A list item can also be a tuple (edge, 1st_vertex_of_edge)
-    #  @param UseExisting if ==true - searches for an existing hypothesis created with
-    #                     the same parameters, else (default) - creates a new one
-    #  @return an instance of StdMeshers_StartEndLength hypothesis
-    #  @ingroup l3_hypos_1dhyps
     def StartEndLength(self, start, end, reversedEdges=[], UseExisting=0):
+        """
+        Defines "StartEndLength" hypothesis to cut an edge in several segments with increasing geometric length
+
+        Parameters:
+            start: defines the length of the first segment
+            end:   defines the length of the last  segment
+            reversedEdges: is a list of edges to mesh using reversed orientation.
+                A list item can also be a tuple (edge, 1st_vertex_of_edge)
+            UseExisting: if ==true - searches for an existing hypothesis created with
+                the same parameters, else (default) - creates a new one
+
+        Returns:
+            an instance of StdMeshers_StartEndLength hypothesis
+        """
+	
         if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
             reversedEdges, UseExisting = [], reversedEdges
         reversedEdgeInd = self.ReversedEdgeIndices(reversedEdges)
@@ -316,41 +404,53 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         hyp.SetObjectEntry( entry )
         return hyp
 
-    ## Defines "Deflection1D" hypothesis
-    #  @param d for the deflection
-    #  @param UseExisting if ==true - searches for an existing hypothesis created with
-    #                     the same parameters, else (default) - create a new one
-    #  @ingroup l3_hypos_1dhyps
     def Deflection1D(self, d, UseExisting=0):
+	"""
+	Defines "Deflection1D" hypothesis
+
+	Parameters:
+            d: for the deflection
+            UseExisting: if ==true - searches for an existing hypothesis created with
+                the same parameters, else (default) - create a new one
+	"""
+        
         from salome.smesh.smeshBuilder import IsEqual
         compFun = lambda hyp, args: IsEqual(hyp.GetDeflection(), args[0])
         hyp = self.Hypothesis("Deflection1D", [d], UseExisting=UseExisting, CompareMethod=compFun)
         hyp.SetDeflection(d)
         return hyp
 
-    ## Defines "Propagation" hypothesis that propagates 1D hypotheses
-    #  from an edge where this hypothesis is assigned to
-    #  on all other edges that are at the opposite side in case of quadrangular faces
-    #  This hypothesis should be assigned to an edge to propagate a hypothesis from.
-    #  @ingroup l3_hypos_additi
     def Propagation(self):
+	"""
+	Defines "Propagation" hypothesis that propagates 1D hypotheses
+		from an edge where this hypothesis is assigned to
+		on all other edges that are at the opposite side in case of quadrangular faces
+		This hypothesis should be assigned to an edge to propagate a hypothesis from.
+	"""
+        
         return self.Hypothesis("Propagation", UseExisting=1, CompareMethod=self.CompareEqualHyp)
 
-    ## Defines "Propagation of Node Distribution" hypothesis that propagates
-    #  distribution of nodes from an edge where this hypothesis is assigned to,
-    #  to opposite edges of quadrangular faces, so that number of segments on all these
-    #  edges will be the same, as well as relations between segment lengths. 
-    #  @ingroup l3_hypos_additi
     def PropagationOfDistribution(self):
+	"""
+	Defines "Propagation of Node Distribution" hypothesis that propagates
+		distribution of nodes from an edge where this hypothesis is assigned to,
+		to opposite edges of quadrangular faces, so that number of segments on all these
+		edges will be the same, as well as relations between segment lengths. 
+	"""
+        
         return self.Hypothesis("PropagOfDistribution", UseExisting=1,
                                CompareMethod=self.CompareEqualHyp)
 
-    ## Defines "AutomaticLength" hypothesis
-    #  @param fineness for the fineness [0-1]
-    #  @param UseExisting if ==true - searches for an existing hypothesis created with the
-    #                     same parameters, else (default) - create a new one
-    #  @ingroup l3_hypos_1dhyps
     def AutomaticLength(self, fineness=0, UseExisting=0):
+	"""
+	Defines "AutomaticLength" hypothesis
+
+	Parameters:
+	    fineness: for the fineness [0-1]
+	    UseExisting: if ==true - searches for an existing hypothesis created with the
+		same parameters, else (default) - create a new one
+	"""
+        
         from salome.smesh.smeshBuilder import IsEqual
         compFun = lambda hyp, args: IsEqual(hyp.GetFineness(), args[0])
         hyp = self.Hypothesis("AutomaticLength",[fineness],UseExisting=UseExisting,
@@ -358,15 +458,19 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         hyp.SetFineness( fineness )
         return hyp
 
-    ## Defines "SegmentLengthAroundVertex" hypothesis
-    #  @param length for the segment length
-    #  @param vertex for the length localization: the vertex index [0,1] | vertex object.
-    #         Any other integer value means that the hypothesis will be set on the
-    #         whole 1D shape, where Mesh_Segment algorithm is assigned.
-    #  @param UseExisting if ==true - searches for an  existing hypothesis created with
-    #                   the same parameters, else (default) - creates a new one
-    #  @ingroup l3_algos_segmarv
     def LengthNearVertex(self, length, vertex=0, UseExisting=0):
+	"""
+	Defines "SegmentLengthAroundVertex" hypothesis
+
+	Parameters:
+	    length: for the segment length
+	    vertex: for the length localization: the vertex index [0,1] | vertex object.
+		Any other integer value means that the hypothesis will be set on the
+		whole 1D shape, where Mesh_Segment algorithm is assigned.
+	    UseExisting: if ==true - searches for an  existing hypothesis created with
+		the same parameters, else (default) - creates a new one
+	"""
+        
         import types
         store_geom = self.geom
         if type(vertex) is types.IntType:
@@ -402,84 +506,108 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         hyp.SetLength( length )
         return hyp
 
-    ## Defines "QuadraticMesh" hypothesis, forcing construction of quadratic edges.
-    #  If the 2D mesher sees that all boundary edges are quadratic,
-    #  it generates quadratic faces, else it generates linear faces using
-    #  medium nodes as if they are vertices.
-    #  The 3D mesher generates quadratic volumes only if all boundary faces
-    #  are quadratic, else it fails.
-    #
-    #  @ingroup l3_hypos_additi
     def QuadraticMesh(self):
+	"""
+	Defines "QuadraticMesh" hypothesis, forcing construction of quadratic edges.
+	If the 2D mesher sees that all boundary edges are quadratic,
+	it generates quadratic faces, else it generates linear faces using
+	medium nodes as if they are vertices.
+	The 3D mesher generates quadratic volumes only if all boundary faces
+	are quadratic, else it fails.
+	"""
+	
         hyp = self.Hypothesis("QuadraticMesh", UseExisting=1, CompareMethod=self.CompareEqualHyp)
         return hyp
 
     pass # end of StdMeshersBuilder_Segment class
 
-## Segment 1D algorithm for discretization of a set of adjacent edges as one edge.
-#
-#  It is created by calling smeshBuilder.Mesh.Segment(smeshBuilder.COMPOSITE,geom=0)
-#
-#  @ingroup l3_algos_basic
 class StdMeshersBuilder_CompositeSegment(StdMeshersBuilder_Segment):
+    """
+    Segment 1D algorithm for discretization of a set of adjacent edges as one edge.
 
-    ## name of the dynamic method in smeshBuilder.Mesh class
-    #  @internal
+    It is created by calling smeshBuilder.Mesh.Segment(smeshBuilder.COMPOSITE,geom=0)
+    """
+    
+
     meshMethod = "Segment"
-    ## type of algorithm used with helper function in smeshBuilder.Mesh class
-    #  @internal
-    algoType   = COMPOSITE
-    ## flag pointing whether this algorithm should be used by default in dynamic method
-    #  of smeshBuilder.Mesh class
-    #  @internal
-    isDefault  = False
-    ## doc string of the method
-    #  @internal
-    docHelper  = "Creates segment 1D algorithm for edges"
+    """
+    name of the dynamic method in smeshBuilder.Mesh class
+    """
 
-    ## Private constructor.
-    #  @param mesh parent mesh object algorithm is assigned to
-    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
-    #              if it is @c 0 (default), the algorithm is assigned to the main shape
+    algoType   = COMPOSITE
+    """
+    type of algorithm used with helper function in smeshBuilder.Mesh class
+    """
+
+    isDefault  = False
+    """
+    flag pointing whether this algorithm should be used by default in dynamic method
+        of smeshBuilder.Mesh class
+    """
+
+    docHelper  = "Creates segment 1D algorithm for edges"
+    """
+    doc string of the method
+    """
+
     def __init__(self, mesh, geom=0):
+        """
+        Private constructor.
+
+        Parameters:
+            mesh: parent mesh object algorithm is assigned to
+            geom: geometry (shape/sub-shape) algorithm is assigned to;
+                if it is :code:`0` (default), the algorithm is assigned to the main shape
+        """
         self.Create(mesh, geom, self.algoType)
         pass
 
     pass # end of StdMeshersBuilder_CompositeSegment class
 
-## Defines a segment 1D algorithm for discretization of edges with Python function
-#
-#  It is created by calling smeshBuilder.Mesh.Segment(smeshBuilder.PYTHON,geom=0)
-#
-#  @ingroup l3_algos_basic
 class StdMeshersBuilder_Segment_Python(Mesh_Algorithm):
+    """
+    Defines a segment 1D algorithm for discretization of edges with Python function
+	It is created by calling smeshBuilder.Mesh.Segment(smeshBuilder.PYTHON,geom=0)
+    """
+    
 
-    ## name of the dynamic method in smeshBuilder.Mesh class
-    #  @internal
     meshMethod = "Segment"
-    ## type of algorithm used with helper function in smeshBuilder.Mesh class
-    #  @internal
+    """
+    name of the dynamic method in smeshBuilder.Mesh class
+    """
     algoType   = PYTHON
-    ## doc string of the method
-    #  @internal
+    """
+    type of algorithm used with helper function in smeshBuilder.Mesh class
+    """
     docHelper  = "Creates segment 1D algorithm for edges"
+    """
+    doc string of the method
+    """
 
-    ## Private constructor.
-    #  @param mesh parent mesh object algorithm is assigned to
-    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
-    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
+        """
+        Private constructor.
+
+        Parameters:
+            mesh: parent mesh object algorithm is assigned to
+            geom: geometry (shape/sub-shape) algorithm is assigned to;
+                if it is :code:`0` (default), the algorithm is assigned to the main shape
+        """
         import Python1dPlugin
         self.Create(mesh, geom, self.algoType, "libPython1dEngine.so")
         pass
 
-    ## Defines "PythonSplit1D" hypothesis
-    #  @param n for the number of segments that cut an edge
-    #  @param func for the python function that calculates the length of all segments
-    #  @param UseExisting if ==true - searches for the existing hypothesis created with
-    #                     the same parameters, else (default) - creates a new one
-    #  @ingroup l3_hypos_1dhyps
     def PythonSplit1D(self, n, func, UseExisting=0):
+        """
+        Defines "PythonSplit1D" hypothesis
+
+        Parameters:
+            n: for the number of segments that cut an edge
+            func: for the python function that calculates the length of all segments
+            UseExisting: if ==true - searches for the existing hypothesis created with
+                the same parameters, else (default) - creates a new one
+        """
+        
         compFun = lambda hyp, args: False
         hyp = self.Hypothesis("PythonSplit1D", [n], "libPython1dEngine.so",
                               UseExisting=UseExisting, CompareMethod=compFun)
@@ -489,43 +617,54 @@ class StdMeshersBuilder_Segment_Python(Mesh_Algorithm):
 
     pass # end of StdMeshersBuilder_Segment_Python class
 
-## Triangle MEFISTO 2D algorithm
-#
-#  It is created by calling smeshBuilder.Mesh.Triangle(smeshBuilder.MEFISTO,geom=0)
-#
-#  @ingroup l3_algos_basic
 class StdMeshersBuilder_Triangle_MEFISTO(Mesh_Algorithm):
+    """
+    Triangle MEFISTO 2D algorithm
+    It is created by calling smeshBuilder.Mesh.Triangle(smeshBuilder.MEFISTO,geom=0)
+    """
+    
 
-    ## name of the dynamic method in smeshBuilder.Mesh class
-    #  @internal
     meshMethod = "Triangle"
-    ## type of algorithm used with helper function in smeshBuilder.Mesh class
-    #  @internal
+    """
+    name of the dynamic method in smeshBuilder.Mesh class
+    """
     algoType   = MEFISTO
-    ## flag pointing whether this algorithm should be used by default in dynamic method
-    #  of smeshBuilder.Mesh class
-    #  @internal
+    """
+    type of algorithm used with helper function in smeshBuilder.Mesh class
+    """
     isDefault  = True
-    ## doc string of the method
-    #  @internal
+    """
+    flag pointing whether this algorithm should be used by default in dynamic method
+        of smeshBuilder.Mesh class
+    """
     docHelper  = "Creates triangle 2D algorithm for faces"
+    """
+    doc string of the method
+    """
 
-    ## Private constructor.
-    #  @param mesh parent mesh object algorithm is assigned to
-    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
-    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
+        """
+        Private constructor.
+
+        Parameters:
+            mesh: parent mesh object algorithm is assigned to
+            geom: geometry (shape/sub-shape) algorithm is assigned to;
+                if it is :code:`0` (default), the algorithm is assigned to the main shape
+        """
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, self.algoType)
         pass
 
-    ## Defines "MaxElementArea" hypothesis basing on the definition of the maximum area of each triangle
-    #  @param area for the maximum area of each triangle
-    #  @param UseExisting if ==true - searches for an  existing hypothesis created with the
-    #                     same parameters, else (default) - creates a new one
-    #
-    #  @ingroup l3_hypos_2dhyps
     def MaxElementArea(self, area, UseExisting=0):
+        """
+        Defines "MaxElementArea" hypothesis basing on the definition of the maximum area of each triangle
+
+        Parameters:
+            area: for the maximum area of each triangle
+            UseExisting: if ==true - searches for an  existing hypothesis created with the
+                same parameters, else (default) - creates a new one
+        """
+        
         from salome.smesh.smeshBuilder import IsEqual
         comparator = lambda hyp, args: IsEqual(hyp.GetMaxElementArea(), args[0])
         hyp = self.Hypothesis("MaxElementArea", [area], UseExisting=UseExisting,
@@ -533,85 +672,101 @@ class StdMeshersBuilder_Triangle_MEFISTO(Mesh_Algorithm):
         hyp.SetMaxElementArea(area)
         return hyp
 
-    ## Defines "LengthFromEdges" hypothesis to build triangles
-    #  based on the length of the edges taken from the wire
-    #
-    #  @ingroup l3_hypos_2dhyps
     def LengthFromEdges(self):
+        """
+        Defines "LengthFromEdges" hypothesis to build triangles
+            based on the length of the edges taken from the wire
+        """
+        
         hyp = self.Hypothesis("LengthFromEdges", UseExisting=1, CompareMethod=self.CompareEqualHyp)
         return hyp
 
     pass # end of StdMeshersBuilder_Triangle_MEFISTO class
 
-## Defines a quadrangle 2D algorithm
-# 
-#  It is created by calling smeshBuilder.Mesh.Quadrangle(geom=0)
-#
-#  @ingroup l3_algos_basic
 class StdMeshersBuilder_Quadrangle(Mesh_Algorithm):
+    """
+    Defines a quadrangle 2D algorithm
+    It is created by calling smeshBuilder.Mesh.Quadrangle(geom=0)
+    """
+    
 
-    ## name of the dynamic method in smeshBuilder.Mesh class
-    #  @internal
     meshMethod = "Quadrangle"
-    ## type of algorithm used with helper function in smeshBuilder.Mesh class
-    #  @internal
+    """
+    name of the dynamic method in smeshBuilder.Mesh class
+    """
     algoType   = QUADRANGLE
-    ## flag pointing whether this algorithm should be used by default in dynamic method
-    #  of smeshBuilder.Mesh class
-    #  @internal
+    """
+    type of algorithm used with helper function in smeshBuilder.Mesh class
+    """
     isDefault  = True
-    ## doc string of the method
-    #  @internal
+    """
+    flag pointing whether this algorithm should be used by default in dynamic method
+        of smeshBuilder.Mesh class
+    """
     docHelper  = "Creates quadrangle 2D algorithm for faces"
-    ## hypothesis associated with algorithm
-    #  @internal
+    """
+    doc string of the method
+    """
     params     = 0
+    """
+    hypothesis associated with algorithm
+    """
 
-    ## Private constructor.
-    #  @param mesh parent mesh object algorithm is assigned to
-    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
-    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
+        """
+        Private constructor.
+
+        Parameters:
+            mesh: parent mesh object algorithm is assigned to
+            geom: geometry (shape/sub-shape) algorithm is assigned to;
+                if it is :code:`0` (default), the algorithm is assigned to the main shape
+        """
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, self.algoType)
         pass
 
-    ## Defines "QuadrangleParameters" hypothesis
-    #  @param quadType defines the algorithm of transition between differently descretized
-    #                  sides of a geometrical face:
-    #  - QUAD_STANDARD - both triangles and quadrangles are possible in the transition
-    #                    area along the finer meshed sides.
-    #  - QUAD_TRIANGLE_PREF - only triangles are built in the transition area along the
-    #                    finer meshed sides.
-    #  - QUAD_QUADRANGLE_PREF - only quadrangles are built in the transition area along
-    #                    the finer meshed sides, iff the total quantity of segments on
-    #                    all four sides of the face is even (divisible by 2).
-    #  - QUAD_QUADRANGLE_PREF_REVERSED - same as QUAD_QUADRANGLE_PREF but the transition
-    #                    area is located along the coarser meshed sides.
-    #  - QUAD_REDUCED - only quadrangles are built and the transition between the sides
-    #                    is made gradually, layer by layer. This type has a limitation on
-    #                    the number of segments: one pair of opposite sides must have the
-    #                    same number of segments, the other pair must have an even difference
-    #                    between the numbers of segments on the sides.
-    #  @param triangleVertex: vertex of a trilateral geometrical face, around which triangles
-    #                    will be created while other elements will be quadrangles.
-    #                    Vertex can be either a GEOM_Object or a vertex ID within the
-    #                    shape to mesh
-    #  @param enfVertices: list of shapes defining positions where nodes (enforced nodes)
-    #                    must be created by the mesher. Shapes can be of any type,
-    #                    vertices of given shapes define positions of enforced nodes.
-    #                    Only vertices successfully projected to the face are used.
-    #  @param enfPoints: list of points giving positions of enforced nodes.
-    #                    Point can be defined either as SMESH.PointStruct's
-    #                    ([SMESH.PointStruct(x1,y1,z1), SMESH.PointStruct(x2,y2,z2),...])
-    #                    or triples of values ([[x1,y1,z1], [x2,y2,z2], ...]).
-    #                    In the case if the defined QuadrangleParameters() refer to a sole face,
-    #                    all given points must lie on this face, else the mesher fails.
-    #  @param UseExisting: if \c True - searches for the existing hypothesis created with
-    #                    the same parameters, else (default) - creates a new one
-    #  @ingroup l3_hypos_quad
     def QuadrangleParameters(self, quadType=StdMeshers.QUAD_STANDARD, triangleVertex=0,
                              enfVertices=[],enfPoints=[],UseExisting=0):
+        """
+        Defines "QuadrangleParameters" hypothesis
+            quadType defines the algorithm of transition between differently descretized
+            sides of a geometrical face:
+
+            - QUAD_STANDARD - both triangles and quadrangles are possible in the transition
+                area along the finer meshed sides.
+            - QUAD_TRIANGLE_PREF - only triangles are built in the transition area along the
+                finer meshed sides.
+            - QUAD_QUADRANGLE_PREF - only quadrangles are built in the transition area along
+                the finer meshed sides, iff the total quantity of segments on
+                all four sides of the face is even (divisible by 2).
+            - QUAD_QUADRANGLE_PREF_REVERSED - same as QUAD_QUADRANGLE_PREF but the transition
+                area is located along the coarser meshed sides.
+            - QUAD_REDUCED - only quadrangles are built and the transition between the sides
+                is made gradually, layer by layer. This type has a limitation on
+                the number of segments: one pair of opposite sides must have the
+                same number of segments, the other pair must have an even difference
+                between the numbers of segments on the sides.
+
+        Parameters:
+            triangleVertex: vertex of a trilateral geometrical face, around which triangles
+                will be created while other elements will be quadrangles.
+                Vertex can be either a GEOM_Object or a vertex ID within the
+                shape to mesh
+            enfVertices: list of shapes defining positions where nodes (enforced nodes)
+                must be created by the mesher. Shapes can be of any type,
+                vertices of given shapes define positions of enforced nodes.
+                Only vertices successfully projected to the face are used.
+            enfPoints: list of points giving positions of enforced nodes.
+                Point can be defined either as SMESH.PointStruct's
+                ([SMESH.PointStruct(x1,y1,z1), SMESH.PointStruct(x2,y2,z2),...])
+                or triples of values ([[x1,y1,z1], [x2,y2,z2], ...]).
+                In the case if the defined QuadrangleParameters() refer to a sole face,
+                all given points must lie on this face, else the mesher fails.
+            UseExisting: if *True* - searches for the existing hypothesis created with
+                the same parameters, else (default) - creates a new one
+        """
+        
+
         import GEOM, SMESH
         vertexID = triangleVertex
         if isinstance( triangleVertex, GEOM._objref_GEOM_Object ):
@@ -646,123 +801,157 @@ class StdMeshersBuilder_Quadrangle(Mesh_Algorithm):
         self.params.SetEnforcedNodes( enfVertices, pStructs )
         return self.params
 
-    ## Defines "QuadrangleParams" hypothesis with a type of quadrangulation that only
-    #   quadrangles are built in the transition area along the finer meshed sides,
-    #   iff the total quantity of segments on all four sides of the face is even.
-    #  @param reversed if True, transition area is located along the coarser meshed sides.
-    #  @param UseExisting: if ==true - searches for the existing hypothesis created with
-    #                  the same parameters, else (default) - creates a new one
-    #  @ingroup l3_hypos_quad
     def QuadranglePreference(self, reversed=False, UseExisting=0):
+        """
+        Defines "QuadrangleParams" hypothesis with a type of quadrangulation that only
+            quadrangles are built in the transition area along the finer meshed sides,
+            if the total quantity of segments on all four sides of the face is even.
+
+	Parameters:
+            reversed: if True, transition area is located along the coarser meshed sides.
+        UseExisting: if ==true - searches for the existing hypothesis created with
+            the same parameters, else (default) - creates a new one
+        """
+	
         if reversed:
             return self.QuadrangleParameters(QUAD_QUADRANGLE_PREF_REVERSED,UseExisting=UseExisting)
         return self.QuadrangleParameters(QUAD_QUADRANGLE_PREF,UseExisting=UseExisting)
 
-    ## Defines "QuadrangleParams" hypothesis with a type of quadrangulation that only
-    #   triangles are built in the transition area along the finer meshed sides.
-    #  @param UseExisting: if ==true - searches for the existing hypothesis created with
-    #                  the same parameters, else (default) - creates a new one
-    #  @ingroup l3_hypos_quad
     def TrianglePreference(self, UseExisting=0):
+        """
+        Defines "QuadrangleParams" hypothesis with a type of quadrangulation that only
+            triangles are built in the transition area along the finer meshed sides.
+
+        Parameters:
+            UseExisting: if ==true - searches for the existing hypothesis created with
+                the same parameters, else (default) - creates a new one
+        """
+    
         return self.QuadrangleParameters(QUAD_TRIANGLE_PREF,UseExisting=UseExisting)
 
-    ## Defines "QuadrangleParams" hypothesis with a type of quadrangulation that only
-    #   quadrangles are built and the transition between the sides is made gradually,
-    #   layer by layer. This type has a limitation on the number of segments: one pair
-    #   of opposite sides must have the same number of segments, the other pair must
-    #   have an even difference between the numbers of segments on the sides.
-    #  @param UseExisting: if ==true - searches for the existing hypothesis created with
-    #                  the same parameters, else (default) - creates a new one
-    #  @ingroup l3_hypos_quad
     def Reduced(self, UseExisting=0):
+        """
+        Defines "QuadrangleParams" hypothesis with a type of quadrangulation that only
+            quadrangles are built and the transition between the sides is made gradually,
+            layer by layer. This type has a limitation on the number of segments: one pair
+            of opposite sides must have the same number of segments, the other pair must
+            have an even difference between the numbers of segments on the sides.
+
+        Parameters:
+            UseExisting: if ==true - searches for the existing hypothesis created with
+                the same parameters, else (default) - creates a new one
+        """
+        
         return self.QuadrangleParameters(QUAD_REDUCED,UseExisting=UseExisting)
 
-    ## Defines "QuadrangleParams" hypothesis with QUAD_STANDARD type of quadrangulation
-    #  @param vertex: vertex of a trilateral geometrical face, around which triangles
-    #                 will be created while other elements will be quadrangles.
-    #                 Vertex can be either a GEOM_Object or a vertex ID within the
-    #                 shape to mesh
-    #  @param UseExisting: if ==true - searches for the existing hypothesis created with
-    #                   the same parameters, else (default) - creates a new one
-    #  @ingroup l3_hypos_quad
     def TriangleVertex(self, vertex, UseExisting=0):
+        """
+        Defines "QuadrangleParams" hypothesis with QUAD_STANDARD type of quadrangulation
+
+        Parameters:
+            vertex: vertex of a trilateral geometrical face, around which triangles
+                will be created while other elements will be quadrangles.
+                Vertex can be either a GEOM_Object or a vertex ID within the
+                shape to mesh
+             UseExisting: if ==true - searches for the existing hypothesis created with
+                the same parameters, else (default) - creates a new one
+        """
+        
         return self.QuadrangleParameters(QUAD_STANDARD,vertex,UseExisting)
 
     pass # end of StdMeshersBuilder_Quadrangle class
 
-## Defines a hexahedron 3D algorithm
-# 
-#  It is created by calling smeshBuilder.Mesh.Hexahedron(geom=0)
-#
-#  @ingroup l3_algos_basic
 class StdMeshersBuilder_Hexahedron(Mesh_Algorithm):
+    """
+    Defines a hexahedron 3D algorithm
+    It is created by calling smeshBuilder.Mesh.Hexahedron(geom=0)
+    """
+    
 
-    ## name of the dynamic method in smeshBuilder.Mesh class
-    #  @internal
     meshMethod = "Hexahedron"
-    ## type of algorithm used with helper function in smeshBuilder.Mesh class
-    #  @internal
+    """
+    name of the dynamic method in smeshBuilder.Mesh class
+    """
     algoType   = Hexa
-    ## flag pointing whether this algorithm should be used by default in dynamic method
-    #  of smeshBuilder.Mesh class
-    #  @internal
+    """
+    type of algorithm used with helper function in smeshBuilder.Mesh class
+    """
     isDefault  = True
-    ## doc string of the method
-    #  @internal
+    """
+    flag pointing whether this algorithm should be used by default in dynamic method
+        of smeshBuilder.Mesh class
+    """
     docHelper  = "Creates hexahedron 3D algorithm for volumes"
+    """
+    doc string of the method
+    """
 
-    ## Private constructor.
-    #  @param mesh parent mesh object algorithm is assigned to
-    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
-    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
+        """
+        Private constructor.
+
+        Parameters:
+            mesh: parent mesh object algorithm is assigned to
+            geom: geometry (shape/sub-shape) algorithm is assigned to;
+                if it is :code:`0` (default), the algorithm is assigned to the main shape
+        """
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, Hexa)
         pass
 
     pass # end of StdMeshersBuilder_Hexahedron class
 
-## Defines a projection 1D algorithm
-#  
-#  It is created by calling smeshBuilder.Mesh.Projection1D(geom=0)
-#
-#  @ingroup l3_algos_proj
 class StdMeshersBuilder_Projection1D(Mesh_Algorithm):
+    """
+    Defines a projection 1D algorithm
+    It is created by calling smeshBuilder.Mesh.Projection1D(geom=0)
+    """
+    
 
-    ## name of the dynamic method in smeshBuilder.Mesh class
-    #  @internal
     meshMethod = "Projection1D"
-    ## type of algorithm used with helper function in smeshBuilder.Mesh class
-    #  @internal
+    """
+    name of the dynamic method in smeshBuilder.Mesh class
+    """
     algoType   = "Projection_1D"
-    ## flag pointing whether this algorithm should be used by default in dynamic method
-    #  of smeshBuilder.Mesh class
-    #  @internal
+    """
+    type of algorithm used with helper function in smeshBuilder.Mesh class
+    """
     isDefault  = True
-    ## doc string of the method
-    #  @internal
+    """
+    flag pointing whether this algorithm should be used by default in dynamic method
+        of smeshBuilder.Mesh class
+    """
     docHelper  = "Creates projection 1D algorithm for edges"
-
-    ## Private constructor.
-    #  @param mesh parent mesh object algorithm is assigned to
-    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
-    #              if it is @c 0 (default), the algorithm is assigned to the main shape
+    """
+    doc string of the method
+    """
     def __init__(self, mesh, geom=0):
+        """
+        Private constructor.
+
+        Parameters:
+            mesh: parent mesh object algorithm is assigned to
+            geom: geometry (shape/sub-shape) algorithm is assigned to;
+                if it is :code:`0` (default), the algorithm is assigned to the main shape
+        """
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, self.algoType)
         pass
 
-    ## Defines "Source Edge" hypothesis, specifying a meshed edge, from where
-    #  a mesh pattern is taken, and, optionally, the association of vertices
-    #  between the source edge and a target edge (to which a hypothesis is assigned)
-    #  @param edge from which nodes distribution is taken
-    #  @param mesh from which nodes distribution is taken (optional)
-    #  @param srcV a vertex of \a edge to associate with \a tgtV (optional)
-    #  @param tgtV a vertex of \a the edge to which the algorithm is assigned,
-    #  to associate with \a srcV (optional)
-    #  @param UseExisting if ==true - searches for the existing hypothesis created with
-    #                     the same parameters, else (default) - creates a new one
     def SourceEdge(self, edge, mesh=None, srcV=None, tgtV=None, UseExisting=0):
+        """
+        Defines "Source Edge" hypothesis, specifying a meshed edge, from where
+            a mesh pattern is taken, and, optionally, the association of vertices
+            between the source edge and a target edge (to which a hypothesis is assigned)
+
+        Parameters:
+            edge: from which nodes distribution is taken
+            mesh: from which nodes distribution is taken (optional)
+            srcV: a vertex of *edge* to associate with *tgtV* (optional)
+            tgtV: a vertex of *the edge* to which the algorithm is assigned, to associate with *srcV* (optional)
+            UseExisting: if ==true - searches for the existing hypothesis created with
+                the same parameters, else (default) - creates a new one
+        """
         from salome.smesh.smeshBuilder import AssureGeomPublished, Mesh
         AssureGeomPublished( self.mesh, edge )
         AssureGeomPublished( self.mesh, srcV )
@@ -780,53 +969,65 @@ class StdMeshersBuilder_Projection1D(Mesh_Algorithm):
 
     pass # end of StdMeshersBuilder_Projection1D class
 
-## Defines a projection 2D algorithm
-#  
-#  It is created by calling smeshBuilder.Mesh.Projection2D(geom=0)
-#
-#  @ingroup l3_algos_proj
 class StdMeshersBuilder_Projection2D(Mesh_Algorithm):
+    """
+    Defines a projection 2D algorithm
+    It is created by calling smeshBuilder.Mesh.Projection2D(geom=0)
+    """
+    
 
-    ## name of the dynamic method in smeshBuilder.Mesh class
-    #  @internal
     meshMethod = "Projection2D"
-    ## type of algorithm used with helper function in smeshBuilder.Mesh class
-    #  @internal
+    """
+    name of the dynamic method in smeshBuilder.Mesh class
+    """
     algoType   = "Projection_2D"
-    ## flag pointing whether this algorithm should be used by default in dynamic method
-    #  of smeshBuilder.Mesh class
-    #  @internal
+    """
+    type of algorithm used with helper function in smeshBuilder.Mesh class
+    """
     isDefault  = True
-    ## doc string of the method
-    #  @internal
+    """
+    flag pointing whether this algorithm should be used by default in dynamic method
+        of smeshBuilder.Mesh class
+    """
     docHelper  = "Creates projection 2D algorithm for faces"
+    """
+    doc string of the method
+    """
 
-    ## Private constructor.
-    #  @param mesh parent mesh object algorithm is assigned to
-    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
-    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
+        """
+        Private constructor.
+
+        Parameters:
+            mesh: parent mesh object algorithm is assigned to
+            geom: geometry (shape/sub-shape) algorithm is assigned to;
+            if it is :code:`0` (default), the algorithm is assigned to the main shape
+        """
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, self.algoType)
         pass
 
-    ## Defines "Source Face" hypothesis, specifying a meshed face, from where
-    #  a mesh pattern is taken, and, optionally, the association of vertices
-    #  between the source face and the target face (to which a hypothesis is assigned)
-    #  @param face from which the mesh pattern is taken
-    #  @param mesh from which the mesh pattern is taken (optional)
-    #  @param srcV1 a vertex of \a face to associate with \a tgtV1 (optional)
-    #  @param tgtV1 a vertex of \a the face to which the algorithm is assigned,
-    #               to associate with \a srcV1 (optional)
-    #  @param srcV2 a vertex of \a face to associate with \a tgtV1 (optional)
-    #  @param tgtV2 a vertex of \a the face to which the algorithm is assigned,
-    #               to associate with \a srcV2 (optional)
-    #  @param UseExisting if ==true - forces the search for the existing hypothesis created with
-    #                     the same parameters, else (default) - forces the creation a new one
-    #
-    #  Note: all association vertices must belong to one edge of a face
+
     def SourceFace(self, face, mesh=None, srcV1=None, tgtV1=None,
                    srcV2=None, tgtV2=None, UseExisting=0):
+        """
+        Defines "Source Face" hypothesis, specifying a meshed face, from where
+            a mesh pattern is taken, and, optionally, the association of vertices
+            between the source face and the target face (to which a hypothesis is assigned)
+
+        Parameters:
+            face: from which the mesh pattern is taken
+            mesh: from which the mesh pattern is taken (optional)
+            srcV1: a vertex of *face* to associate with *tgtV1* (optional)
+            tgtV1: a vertex of *the face* to which the algorithm is assigned, to associate with *srcV1* (optional)
+            srcV2: a vertex of *face* to associate with *tgtV1* (optional)
+            tgtV2: a vertex of *the face* to which the algorithm is assigned, to associate with *srcV2* (optional)
+            UseExisting: if ==true - forces the search for the existing hypothesis created with
+                he same parameters, else (default) - forces the creation a new one
+
+        Note: 
+            all association vertices must belong to one edge of a face
+        """
         from salome.smesh.smeshBuilder import Mesh
         if isinstance(mesh, Mesh):
             mesh = mesh.GetMesh()
@@ -845,76 +1046,93 @@ class StdMeshersBuilder_Projection2D(Mesh_Algorithm):
 
     pass # end of StdMeshersBuilder_Projection2D class
 
-## Defines a projection 1D-2D algorithm
-#  
-#  It is created by calling smeshBuilder.Mesh.Projection1D2D(geom=0)
-#
-#  @ingroup l3_algos_proj
 class StdMeshersBuilder_Projection1D2D(StdMeshersBuilder_Projection2D):
+    """
+    Defines a projection 1D-2D algorithm
+    It is created by calling smeshBuilder.Mesh.Projection1D2D(geom=0)
+    """
+    
 
-    ## name of the dynamic method in smeshBuilder.Mesh class
-    #  @internal
     meshMethod = "Projection1D2D"
-    ## type of algorithm used with helper function in smeshBuilder.Mesh class
-    #  @internal
+    """
+    name of the dynamic method in smeshBuilder.Mesh class
+    """
     algoType   = "Projection_1D2D"
-    ## doc string of the method
-    #  @internal
+    """
+    type of algorithm used with helper function in smeshBuilder.Mesh class
+    """
     docHelper  = "Creates projection 1D-2D algorithm for faces"
+    """
+    doc string of the method
+    """
 
-    ## Private constructor.
-    #  @param mesh parent mesh object algorithm is assigned to
-    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
-    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
+        """
+        Private constructor.
+
+        Parameters:
+            mesh: parent mesh object algorithm is assigned to
+            geom: geometry (shape/sub-shape) algorithm is assigned to;
+                if it is :code:`0` (default), the algorithm is assigned to the main shape
+        """
         StdMeshersBuilder_Projection2D.__init__(self, mesh, geom)
         pass
 
     pass # end of StdMeshersBuilder_Projection1D2D class
 
-## Defines a projection 3D algorithm
-# 
-#  It is created by calling smeshBuilder.Mesh.Projection3D(geom=0)
-#
-#  @ingroup l3_algos_proj
 class StdMeshersBuilder_Projection3D(Mesh_Algorithm):
+    """
+    Defines a projection 3D algorithm
+    It is created by calling smeshBuilder.Mesh.Projection3D(geom=0)
+    """
+    
 
-    ## name of the dynamic method in smeshBuilder.Mesh class
-    #  @internal
     meshMethod = "Projection3D"
-    ## type of algorithm used with helper function in smeshBuilder.Mesh class
-    #  @internal
+    """
+    name of the dynamic method in smeshBuilder.Mesh class
+    """
     algoType   = "Projection_3D"
-    ## doc string of the method
-    #  @internal
+    """
+    type of algorithm used with helper function in smeshBuilder.Mesh class
+    """
     docHelper  = "Creates projection 3D algorithm for volumes"
+    """
+    doc string of the method
+    """
 
-    ## Private constructor.
-    #  @param mesh parent mesh object algorithm is assigned to
-    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
-    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
+        """
+        Private constructor.
+
+        Parameters:
+            mesh: parent mesh object algorithm is assigned to
+            geom" geometry (shape/sub-shape) algorithm is assigned to;
+                if it is :code:`0` (default), the algorithm is assigned to the main shape
+        """
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, self.algoType)
         pass
 
-    ## Defines the "Source Shape 3D" hypothesis, specifying a meshed solid, from where
-    #  the mesh pattern is taken, and, optionally, the  association of vertices
-    #  between the source and the target solid  (to which a hipothesis is assigned)
-    #  @param solid from where the mesh pattern is taken
-    #  @param mesh from where the mesh pattern is taken (optional)
-    #  @param srcV1 a vertex of \a solid to associate with \a tgtV1 (optional)
-    #  @param tgtV1 a vertex of \a the solid where the algorithm is assigned,
-    #  to associate with \a srcV1 (optional)
-    #  @param srcV2 a vertex of \a solid to associate with \a tgtV1 (optional)
-    #  @param tgtV2 a vertex of \a the solid to which the algorithm is assigned,
-    #  to associate with \a srcV2 (optional)
-    #  @param UseExisting - if ==true - searches for the existing hypothesis created with
-    #                     the same parameters, else (default) - creates a new one
-    #
-    #  Note: association vertices must belong to one edge of a solid
     def SourceShape3D(self, solid, mesh=0, srcV1=0, tgtV1=0,
                       srcV2=0, tgtV2=0, UseExisting=0):
+        """
+        Defines the "Source Shape 3D" hypothesis, specifying a meshed solid, from where
+            the mesh pattern is taken, and, optionally, the  association of vertices
+            between the source and the target solid  (to which a hipothesis is assigned)
+
+        Parameters:
+            solid: from where the mesh pattern is taken
+            mesh: from where the mesh pattern is taken (optional)
+            srcV1: a vertex of *solid* to associate with *tgtV1* (optional)
+            tgtV1: a vertex of *the solid* where the algorithm is assigned, to associate with *srcV1* (optional)
+            srcV2: a vertex of *solid* to associate with *tgtV1* (optional)
+            tgtV2: a vertex of *the solid* to which the algorithm is assigned,to associate with *srcV2* (optional)
+            UseExisting: if ==true - searches for the existing hypothesis created with
+                    the same parameters, else (default) - creates a new one
+
+        Note: 
+            association vertices must belong to one edge of a solid
+        """
         for geom in [ solid, srcV1, tgtV1, srcV2, tgtV2 ]:
             from salome.smesh.smeshBuilder import AssureGeomPublished
             AssureGeomPublished( self.mesh, geom )
@@ -936,33 +1154,40 @@ class StdMeshersBuilder_Projection3D(Mesh_Algorithm):
 
     pass # end of StdMeshersBuilder_Projection3D class
 
-## Defines a Prism 3D algorithm, which is either "Extrusion 3D" or "Radial Prism"
-#  depending on geometry
-# 
-#  It is created by calling smeshBuilder.Mesh.Prism(geom=0)
-#
-#  @ingroup l3_algos_3dextr
 class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
+    """
+    Defines a Prism 3D algorithm, which is either "Extrusion 3D" or "Radial Prism" depending on geometry
+    It is created by calling smeshBuilder.Mesh.Prism(geom=0)
+    """
+    
 
-    ## name of the dynamic method in smeshBuilder.Mesh class
-    #  @internal
     meshMethod = "Prism"
-    ## type of algorithm used with helper function in smeshBuilder.Mesh class
-    #  @internal
+    """
+    name of the dynamic method in smeshBuilder.Mesh class
+    """
     algoType   = "Prism_3D"
-    ## doc string of the method
-    #  @internal
+    """
+    type of algorithm used with helper function in smeshBuilder.Mesh class
+    """
     docHelper  = "Creates prism 3D algorithm for volumes"
-    ## flag pointing whether this algorithm should be used by default in dynamic method
-    #  of smeshBuilder.Mesh class
-    #  @internal
+    """
+    doc string of the method
+    """
     isDefault  = True
+    """
+    flag pointing whether this algorithm should be used by default in dynamic method
+        of smeshBuilder.Mesh class
+    """
 
-    ## Private constructor.
-    #  @param mesh parent mesh object algorithm is assigned to
-    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
-    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
+        """
+        Private constructor.
+
+        Parameters:
+            mesh: parent mesh object algorithm is assigned to
+            geom: geometry (shape/sub-shape) algorithm is assigned to;
+                if it is :code:`0` (default), the algorithm is assigned to the main shape
+        """
         Mesh_Algorithm.__init__(self)
         
         shape = geom
@@ -980,16 +1205,24 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
             pass
         pass
 
-    ## Return 3D hypothesis holding the 1D one
     def Get3DHypothesis(self):
+        """
+        Returns: 
+            3D hypothesis holding the 1D one
+        """
         if self.algoType != "RadialPrism_3D":
             print "Prism_3D algorithm doesn't support any hypothesis"
             return None
         return self.distribHyp
 
-    ## Private method creating a 1D hypothesis and storing it in the LayerDistribution
-    #  hypothesis. Returns the created hypothesis
     def OwnHypothesis(self, hypType, args=[], so="libStdMeshersEngine.so"):
+        """
+        Private method creating a 1D hypothesis and storing it in the LayerDistribution
+            hypothesis. 
+
+        Returns:
+            the created hypothesis
+        """
         if self.algoType != "RadialPrism_3D":
             print "Prism_3D algorithm doesn't support any hypothesis"
             return None
@@ -1005,12 +1238,16 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
         self.distribHyp.SetLayerDistribution( hyp )
         return hyp
 
-    ## Defines "NumberOfLayers" hypothesis, specifying the number of layers of
-    #  prisms to build between the inner and outer shells
-    #  @param n number of layers
-    #  @param UseExisting if ==true - searches for the existing hypothesis created with
-    #                     the same parameters, else (default) - creates a new one
     def NumberOfLayers(self, n, UseExisting=0):
+        """
+        Defines "NumberOfLayers" hypothesis, specifying the number of layers of
+            prisms to build between the inner and outer shells
+
+        Parameters:
+            n: number of layers
+            UseExisting: if ==true - searches for the existing hypothesis created with
+                the same parameters, else (default) - creates a new one
+        """
         if self.algoType != "RadialPrism_3D":
             print "Prism_3D algorithm doesn't support any hypothesis"
             return None
@@ -1022,11 +1259,15 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
         self.nbLayers.SetNumberOfLayers( n )
         return self.nbLayers
 
-    ## Defines "LocalLength" hypothesis, specifying the segment length
-    #  to build between the inner and the outer shells
-    #  @param l the length of segments
-    #  @param p the precision of rounding
     def LocalLength(self, l, p=1e-07):
+        """
+        Defines "LocalLength" hypothesis, specifying the segment length
+            to build between the inner and the outer shells
+
+        Parameters:
+            l: the length of segments
+            p: the precision of rounding
+        """
         if self.algoType != "RadialPrism_3D":
             print "Prism_3D algorithm doesn't support any hypothesis"
             return None
@@ -1035,11 +1276,15 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
         hyp.SetPrecision(p)
         return hyp
 
-    ## Defines "NumberOfSegments" hypothesis, specifying the number of layers of
-    #  prisms to build between the inner and the outer shells.
-    #  @param n the number of layers
-    #  @param s the scale factor (optional)
     def NumberOfSegments(self, n, s=[]):
+        """
+        Defines "NumberOfSegments" hypothesis, specifying the number of layers of
+            prisms to build between the inner and the outer shells.
+
+        Parameters:
+            n: the number of layers
+            s: the scale factor (optional)
+        """
         if self.algoType != "RadialPrism_3D":
             print "Prism_3D algorithm doesn't support any hypothesis"
             return None
@@ -1051,12 +1296,16 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
         hyp.SetNumberOfSegments(n)
         return hyp
 
-    ## Defines "Arithmetic1D" hypothesis, specifying the distribution of segments
-    #  to build between the inner and the outer shells with a length that changes
-    #  in arithmetic progression
-    #  @param start  the length of the first segment
-    #  @param end    the length of the last  segment
     def Arithmetic1D(self, start, end ):
+        """
+        Defines "Arithmetic1D" hypothesis, specifying the distribution of segments
+            to build between the inner and the outer shells with a length that changes
+            in arithmetic progression
+
+        Parameters:
+            start:  the length of the first segment
+            end:    the length of the last  segment
+        """
         if self.algoType != "RadialPrism_3D":
             print "Prism_3D algorithm doesn't support any hypothesis"
             return None
@@ -1065,12 +1314,16 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
         hyp.SetLength(end  , 0)
         return hyp
 
-    ## Defines "GeometricProgression" hypothesis, specifying the distribution of segments
-    #  to build between the inner and the outer shells with a length that changes
-    #  in Geometric progression
-    #  @param start  the length of the first segment
-    #  @param ratio  the common ratio of the geometric progression
     def GeometricProgression(self, start, ratio ):
+        """
+        Defines "GeometricProgression" hypothesis, specifying the distribution of segments
+            to build between the inner and the outer shells with a length that changes
+            in Geometric progression
+
+        Parameters:
+            start:  the length of the first segment
+            ratio:  the common ratio of the geometric progression
+        """
         if self.algoType != "RadialPrism_3D":
             print "Prism_3D algorithm doesn't support any hypothesis"
             return None
@@ -1079,11 +1332,15 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
         hyp.SetCommonRatio( ratio )
         return hyp
 
-    ## Defines "StartEndLength" hypothesis, specifying distribution of segments
-    #  to build between the inner and the outer shells as geometric length increasing
-    #  @param start for the length of the first segment
-    #  @param end   for the length of the last  segment
     def StartEndLength(self, start, end):
+        """
+        Defines "StartEndLength" hypothesis, specifying distribution of segments
+            to build between the inner and the outer shells as geometric length increasing
+
+        Parameters:
+            start: for the length of the first segment
+        end:   for the length of the last  segment
+        """
         if self.algoType != "RadialPrism_3D":
             print "Prism_3D algorithm doesn't support any hypothesis"
             return None
@@ -1092,10 +1349,14 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
         hyp.SetLength(end  , 0)
         return hyp
 
-    ## Defines "AutomaticLength" hypothesis, specifying the number of segments
-    #  to build between the inner and outer shells
-    #  @param fineness defines the quality of the mesh within the range [0-1]
     def AutomaticLength(self, fineness=0):
+        """
+        Defines "AutomaticLength" hypothesis, specifying the number of segments
+            to build between the inner and outer shells
+
+        Parameters:
+            fineness: defines the quality of the mesh within the range [0-1]
+        """
         if self.algoType != "RadialPrism_3D":
             print "Prism_3D algorithm doesn't support any hypothesis"
             return None
@@ -1105,28 +1366,35 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
 
     pass # end of StdMeshersBuilder_Prism3D class
 
-## Defines Radial Prism 3D algorithm
-# 
-#  It is created by calling smeshBuilder.Mesh.Prism(geom=0)
-#
-#  @ingroup l3_algos_3dextr
 class StdMeshersBuilder_RadialPrism3D(StdMeshersBuilder_Prism3D):
+    """
+    Defines Radial Prism 3D algorithm
+    It is created by calling smeshBuilder.Mesh.Prism(geom=0)
+    """
+    
 
-    ## name of the dynamic method in smeshBuilder.Mesh class
-    #  @internal
     meshMethod = "Prism"
-    ## type of algorithm used with helper function in smeshBuilder.Mesh class
-    #  @internal
+    """
+    name of the dynamic method in smeshBuilder.Mesh class
+    """
     algoType   = "RadialPrism_3D"
-    ## doc string of the method
-    #  @internal
+    """
+    type of algorithm used with helper function in smeshBuilder.Mesh class
+    """
     docHelper  = "Creates Raial Prism 3D algorithm for volumes"
+    """
+    doc string of the method
+    """
 
-    ## Private constructor.
-    #  @param mesh parent mesh object algorithm is assigned to
-    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
-    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
+        """
+        Private constructor.
+
+        Parameters:
+            mesh: parent mesh object algorithm is assigned to
+            geom: geometry (shape/sub-shape) algorithm is assigned to;
+            if it is :code:`0` (default), the algorithm is assigned to the main shape
+        """
         Mesh_Algorithm.__init__(self)
         
         shape = geom
@@ -1137,9 +1405,10 @@ class StdMeshersBuilder_RadialPrism3D(StdMeshersBuilder_Prism3D):
         self.nbLayers = None
         return
 
-## Base class for algorithms supporting radial distribution hypotheses
-# 
 class StdMeshersBuilder_RadialAlgorithm(Mesh_Algorithm):
+    """
+    Base class for algorithms supporting radial distribution hypotheses
+    """ 
 
     def __init__(self):
         Mesh_Algorithm.__init__(self)
@@ -1148,15 +1417,23 @@ class StdMeshersBuilder_RadialAlgorithm(Mesh_Algorithm):
         self.nbLayers = None
         pass
 
-    ## Return 2D hypothesis holding the 1D one
     def Get2DHypothesis(self):
+        """
+        Returns:
+            2D hypothesis holding the 1D one
+        """
         if not self.distribHyp:
             self.distribHyp = self.Hypothesis("LayerDistribution2D", UseExisting=0)
         return self.distribHyp
 
-    ## Private method creating a 1D hypothesis and storing it in the LayerDistribution
-    #  hypothesis. Returns the created hypothesis
     def OwnHypothesis(self, hypType, args=[], so="libStdMeshersEngine.so"):
+        """
+        Private method creating a 1D hypothesis and storing it in the LayerDistribution
+            hypothesis. 
+
+        Returns: 
+            the created hypothesis
+        """
         if self.nbLayers:
             self.mesh.GetMesh().RemoveHypothesis( self.geom, self.nbLayers )
         if self.distribHyp is None:
@@ -1170,11 +1447,15 @@ class StdMeshersBuilder_RadialAlgorithm(Mesh_Algorithm):
         self.distribHyp.SetLayerDistribution( hyp )
         return hyp
 
-    ## Defines "NumberOfLayers" hypothesis, specifying the number of layers
-    #  @param n number of layers
-    #  @param UseExisting if ==true - searches for the existing hypothesis created with
-    #                     the same parameters, else (default) - creates a new one
     def NumberOfLayers(self, n, UseExisting=0):
+        """
+        Defines "NumberOfLayers" hypothesis, specifying the number of layers
+
+        Parameters:
+            n: number of layers
+            UseExisting: if ==true - searches for the existing hypothesis created with
+                the same parameters, else (default) - creates a new one
+        """
         if self.distribHyp:
             self.mesh.GetMesh().RemoveHypothesis( self.geom, self.distribHyp )
         from salome.smesh.smeshBuilder import IsEqual
@@ -1184,19 +1465,27 @@ class StdMeshersBuilder_RadialAlgorithm(Mesh_Algorithm):
         self.nbLayers.SetNumberOfLayers( n )
         return self.nbLayers
 
-    ## Defines "LocalLength" hypothesis, specifying the segment length
-    #  @param l the length of segments
-    #  @param p the precision of rounding
     def LocalLength(self, l, p=1e-07):
+        """
+        Defines "LocalLength" hypothesis, specifying the segment length
+
+        Parameters:
+            l: the length of segments
+            p: the precision of rounding
+        """
         hyp = self.OwnHypothesis("LocalLength", [l,p])
         hyp.SetLength(l)
         hyp.SetPrecision(p)
         return hyp
 
-    ## Defines "NumberOfSegments" hypothesis, specifying the number of layers
-    #  @param n the number of layers
-    #  @param s the scale factor (optional)
     def NumberOfSegments(self, n, s=[]):
+        """
+        Defines "NumberOfSegments" hypothesis, specifying the number of layers
+
+        Parameters:
+            n: the number of layers
+            s: the scale factor (optional)
+        """
         if s == []:
             hyp = self.OwnHypothesis("NumberOfSegments", [n])
         else:
@@ -1206,67 +1495,89 @@ class StdMeshersBuilder_RadialAlgorithm(Mesh_Algorithm):
         hyp.SetNumberOfSegments(n)
         return hyp
 
-    ## Defines "Arithmetic1D" hypothesis, specifying the distribution of segments
-    #  with a length that changes in arithmetic progression
-    #  @param start  the length of the first segment
-    #  @param end    the length of the last  segment
     def Arithmetic1D(self, start, end ):
+        """
+        Defines "Arithmetic1D" hypothesis, specifying the distribution of segments
+            with a length that changes in arithmetic progression
+
+        Parameters:
+            start:  the length of the first segment
+            end:    the length of the last  segment
+        """
         hyp = self.OwnHypothesis("Arithmetic1D", [start, end])
         hyp.SetLength(start, 1)
         hyp.SetLength(end  , 0)
         return hyp
 
-    ## Defines "GeometricProgression" hypothesis, specifying the distribution of segments
-    #  with a length that changes in Geometric progression
-    #  @param start  the length of the first segment
-    #  @param ratio  the common ratio of the geometric progression
     def GeometricProgression(self, start, ratio ):
+        """
+        Defines "GeometricProgression" hypothesis, specifying the distribution of segments
+            with a length that changes in Geometric progression
+
+        Parameters:
+            start:  the length of the first segment
+            ratio:  the common ratio of the geometric progression
+        """
         hyp = self.OwnHypothesis("GeometricProgression", [start, ratio])
         hyp.SetStartLength( start )
         hyp.SetCommonRatio( ratio )
         return hyp
 
-    ## Defines "StartEndLength" hypothesis, specifying distribution of segments
-    #  as geometric length increasing
-    #  @param start for the length of the first segment
-    #  @param end   for the length of the last  segment
     def StartEndLength(self, start, end):
+        """
+        Defines "StartEndLength" hypothesis, specifying distribution of segments
+            as geometric length increasing
+
+        Parameters:
+            start: for the length of the first segment
+            end:   for the length of the last  segment
+        """
         hyp = self.OwnHypothesis("StartEndLength", [start, end])
         hyp.SetLength(start, 1)
         hyp.SetLength(end  , 0)
         return hyp
 
-    ## Defines "AutomaticLength" hypothesis, specifying the number of segments
-    #  @param fineness defines the quality of the mesh within the range [0-1]
     def AutomaticLength(self, fineness=0):
+        """
+        Defines "AutomaticLength" hypothesis, specifying the number of segments
+
+        Parameters:
+            fineness: defines the quality of the mesh within the range [0-1]
+        """
         hyp = self.OwnHypothesis("AutomaticLength")
         hyp.SetFineness( fineness )
         return hyp
 
     pass # end of StdMeshersBuilder_RadialQuadrangle1D2D class
 
-## Defines a Radial Quadrangle 1D-2D algorithm
-# 
-#  It is created by calling smeshBuilder.Mesh.Quadrangle(smeshBuilder.RADIAL_QUAD,geom=0)
-#
-#  @ingroup l2_algos_radialq
 class StdMeshersBuilder_RadialQuadrangle1D2D(StdMeshersBuilder_RadialAlgorithm):
+    """
+    Defines a Radial Quadrangle 1D-2D algorithm 
+    It is created by calling smeshBuilder.Mesh.Quadrangle(smeshBuilder.RADIAL_QUAD,geom=0)
+    """
 
-    ## name of the dynamic method in smeshBuilder.Mesh class
-    #  @internal
     meshMethod = "Quadrangle"
-    ## type of algorithm used with helper function in smeshBuilder.Mesh class
-    #  @internal
+    """
+    name of the dynamic method in smeshBuilder.Mesh class
+    """
     algoType   = RADIAL_QUAD
-    ## doc string of the method
-    #  @internal
+    """
+    type of algorithm used with helper function in smeshBuilder.Mesh class
+    """
     docHelper  = "Creates quadrangle 1D-2D algorithm for faces having a shape of disk or a disk segment"
+    """
+    doc string of the method
+    """
 
-    ## Private constructor.
-    #  @param mesh parent mesh object algorithm is assigned to
-    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
-    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
+        """
+        Private constructor.
+
+        Parameters:
+            mesh: parent mesh object algorithm is assigned to
+            geom: geometry (shape/sub-shape) algorithm is assigned to;
+                if it is :code:`0` (default), the algorithm is assigned to the main shape
+        """
         StdMeshersBuilder_RadialAlgorithm.__init__(self)
         self.Create(mesh, geom, self.algoType)
 
@@ -1275,103 +1586,127 @@ class StdMeshersBuilder_RadialQuadrangle1D2D(StdMeshersBuilder_RadialAlgorithm):
         pass
 
 
-## Defines a Quadrangle (Medial Axis Projection) 1D-2D algorithm
-# 
-#  It is created by calling smeshBuilder.Mesh.Quadrangle(smeshBuilder.QUAD_MA_PROJ,geom=0)
-#
-#  @ingroup l2_algos_quad_ma
 class StdMeshersBuilder_QuadMA_1D2D(StdMeshersBuilder_RadialAlgorithm):
+    """
+    Defines a Quadrangle (Medial Axis Projection) 1D-2D algorithm 
+    It is created by calling smeshBuilder.Mesh.Quadrangle(smeshBuilder.QUAD_MA_PROJ,geom=0)
+    """
 
-    ## name of the dynamic method in smeshBuilder.Mesh class
-    #  @internal
     meshMethod = "Quadrangle"
-    ## type of algorithm used with helper function in smeshBuilder.Mesh class
-    #  @internal
+    """
+    name of the dynamic method in smeshBuilder.Mesh class
+    """
     algoType   = QUAD_MA_PROJ
-    ## doc string of the method
-    #  @internal
+    """
+    type of algorithm used with helper function in smeshBuilder.Mesh class
+    """
     docHelper  = "Creates quadrangle 1D-2D algorithm for faces"
+    """
+    doc string of the method
+    """
 
-    ## Private constructor.
-    #  @param mesh parent mesh object algorithm is assigned to
-    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
-    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
+        """
+        Private constructor.
+
+        Parameters:
+            mesh: parent mesh object algorithm is assigned to
+            geom: geometry (shape/sub-shape) algorithm is assigned to;
+                if it is :code:`0` (default), the algorithm is assigned to the main shape
+        """
         StdMeshersBuilder_RadialAlgorithm.__init__(self)
         self.Create(mesh, geom, self.algoType)
         pass
 
     pass
 
-## Defines a Polygon Per Face 2D algorithm
-# 
-#  It is created by calling smeshBuilder.Mesh.Polygon(geom=0)
-#
-#  @ingroup l2_algos_quad_ma
 class StdMeshersBuilder_PolygonPerFace(Mesh_Algorithm):
+    """ Defines a Polygon Per Face 2D algorithm 
+        It is created by calling smeshBuilder.Mesh.Polygon(geom=0)
+    """
 
-    ## name of the dynamic method in smeshBuilder.Mesh class
-    #  @internal
     meshMethod = "Polygon"
-    ## type of algorithm used with helper function in smeshBuilder.Mesh class
-    #  @internal
+    """
+    name of the dynamic method in smeshBuilder.Mesh class
+    """
     algoType   = POLYGON
-    ## flag pointing whether this algorithm should be used by default in dynamic method
-    #  of smeshBuilder.Mesh class
-    #  @internal
+    """
+    type of algorithm used with helper function in smeshBuilder.Mesh class
+    """
     isDefault  = True
-    ## doc string of the method
-    #  @internal
+    """
+    flag pointing whether this algorithm should be used by default in dynamic method
+        of smeshBuilder.Mesh class
+    """
     docHelper  = "Creates polygon 2D algorithm for faces"
+    """
+    doc string of the method
+    """
 
-    ## Private constructor.
-    #  @param mesh parent mesh object algorithm is assigned to
-    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
-    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
+        """
+        Private constructor.
+
+        Parameters:
+            mesh: parent mesh object algorithm is assigned to
+            geom: geometry (shape/sub-shape) algorithm is assigned to;
+                if it is :code:`0` (default), the algorithm is assigned to the main shape
+        """
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, self.algoType)
         pass
 
     pass
 
-## Defines a Use Existing Elements 1D algorithm
-#
-#  It is created by calling smeshBuilder.Mesh.UseExisting1DElements(geom=0)
-#
-#  @ingroup l3_algos_basic
 class StdMeshersBuilder_UseExistingElements_1D(Mesh_Algorithm):
+    """ Defines a Use Existing Elements 1D algorithm
 
-    ## name of the dynamic method in smeshBuilder.Mesh class
-    #  @internal
+    It is created by calling smeshBuilder.Mesh.UseExisting1DElements(geom=0)
+    """
+    
+
     meshMethod = "UseExisting1DElements"
-    ## type of algorithm used with helper function in smeshBuilder.Mesh class
-    #  @internal
+    """
+    name of the dynamic method in smeshBuilder.Mesh class
+    """
     algoType   = "Import_1D"
-    ## flag pointing whether this algorithm should be used by default in dynamic method
-    #  of smeshBuilder.Mesh class
-    #  @internal
+    """
+    type of algorithm used with helper function in smeshBuilder.Mesh class
+    """
     isDefault  = True
-    ## doc string of the method
-    #  @internal
+    """
+    flag pointing whether this algorithm should be used by default in dynamic method
+        of smeshBuilder.Mesh class
+    """
     docHelper  = "Creates 1D algorithm for edges with reusing of existing mesh elements"
+    """
+    doc string of the method
+    """
 
-    ## Private constructor.
-    #  @param mesh parent mesh object algorithm is assigned to
-    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
-    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
+        """
+        Private constructor.
+
+        Parameters:
+            mesh: parent mesh object algorithm is assigned to
+            geom: geometry (shape/sub-shape) algorithm is assigned to;
+                if it is :code:`0` (default), the algorithm is assigned to the main shape
+        """
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, self.algoType)
         pass
 
-    ## Defines "Source edges" hypothesis, specifying groups of edges to import
-    #  @param groups list of groups of edges
-    #  @param toCopyMesh if True, the whole mesh \a groups belong to is imported
-    #  @param toCopyGroups if True, all groups of the mesh \a groups belong to are imported
-    #  @param UseExisting if ==true - searches for the existing hypothesis created with
-    #                     the same parameters, else (default) - creates a new one
     def SourceEdges(self, groups, toCopyMesh=False, toCopyGroups=False, UseExisting=False):
+        """
+        Defines "Source edges" hypothesis, specifying groups of edges to import
+
+        Parameters:
+            groups: list of groups of edges
+            toCopyMesh: if True, the whole mesh *groups* belong to is imported
+            toCopyGroups: if True, all groups of the mesh *groups* belong to are imported
+            UseExisting: if ==true - searches for the existing hypothesis created with
+                the same parameters, else (default) - creates a new one
+        """
         for group in groups:
             from salome.smesh.smeshBuilder import AssureGeomPublished
             AssureGeomPublished( self.mesh, group )
@@ -1385,43 +1720,55 @@ class StdMeshersBuilder_UseExistingElements_1D(Mesh_Algorithm):
 
     pass # end of StdMeshersBuilder_UseExistingElements_1D class
 
-## Defines a Use Existing Elements 1D-2D algorithm
-#
-#  It is created by calling smeshBuilder.Mesh.UseExisting2DElements(geom=0)
-#
-#  @ingroup l3_algos_basic
 class StdMeshersBuilder_UseExistingElements_1D2D(Mesh_Algorithm):
+    """ Defines a Use Existing Elements 1D-2D algorithm
 
-    ## name of the dynamic method in smeshBuilder.Mesh class
-    #  @internal
+    It is created by calling smeshBuilder.Mesh.UseExisting2DElements(geom=0)
+    """
+    
+
     meshMethod = "UseExisting2DElements"
-    ## type of algorithm used with helper function in smeshBuilder.Mesh class
-    #  @internal
+    """
+    name of the dynamic method in smeshBuilder.Mesh class
+    """
     algoType   = "Import_1D2D"
-    ## flag pointing whether this algorithm should be used by default in dynamic method
-    #  of smeshBuilder.Mesh class
-    #  @internal
+    """
+    type of algorithm used with helper function in smeshBuilder.Mesh class
+    """
     isDefault  = True
-    ## doc string of the method
-    #  @internal
+    """
+    flag pointing whether this algorithm should be used by default in dynamic method
+        of smeshBuilder.Mesh class
+    """
     docHelper  = "Creates 1D-2D algorithm for faces with reusing of existing mesh elements"
+    """
+    doc string of the method
+    """
 
-    ## Private constructor.
-    #  @param mesh parent mesh object algorithm is assigned to
-    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
-    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
+        """
+        Private constructor.
+
+        Parameters:
+            mesh: parent mesh object algorithm is assigned to
+            geom: geometry (shape/sub-shape) algorithm is assigned to;
+                if it is :code:`0` (default), the algorithm is assigned to the main shape
+        """
         Mesh_Algorithm.__init__(self)
         self.Create(mesh, geom, self.algoType)
         pass
 
-    ## Defines "Source faces" hypothesis, specifying groups of faces to import
-    #  @param groups list of groups of faces
-    #  @param toCopyMesh if True, the whole mesh \a groups belong to is imported
-    #  @param toCopyGroups if True, all groups of the mesh \a groups belong to are imported
-    #  @param UseExisting if ==true - searches for the existing hypothesis created with
-    #                     the same parameters, else (default) - creates a new one
     def SourceFaces(self, groups, toCopyMesh=False, toCopyGroups=False, UseExisting=False):
+        """
+        Defines "Source faces" hypothesis, specifying groups of faces to import
+
+        Parameters:
+            groups: list of groups of faces
+            toCopyMesh: if True, the whole mesh *groups* belong to is imported
+            toCopyGroups: if True, all groups of the mesh *groups* belong to are imported
+            UseExisting: if ==true - searches for the existing hypothesis created with
+                the same parameters, else (default) - creates a new one
+        """
         import SMESH
         compFun = lambda hyp, args: ( hyp.GetSourceFaces() == args[0] and \
                                       hyp.GetCopySourceMesh() == args[1], args[2] )
@@ -1436,54 +1783,70 @@ class StdMeshersBuilder_UseExistingElements_1D2D(Mesh_Algorithm):
 
     pass # end of StdMeshersBuilder_UseExistingElements_1D2D class
 
-## Defines a Body Fitting 3D algorithm
-#
-#  It is created by calling smeshBuilder.Mesh.BodyFitted(geom=0)
-#
-#  @ingroup l3_algos_basic
 class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
+    """ Defines a Body Fitting 3D algorithm
 
-    ## name of the dynamic method in smeshBuilder.Mesh class
-    #  @internal
+    It is created by calling smeshBuilder.Mesh.BodyFitted(geom=0)
+    """
+    
+
     meshMethod = "BodyFitted"
-    ## type of algorithm used with helper function in smeshBuilder.Mesh class
-    #  @internal
+    """
+    name of the dynamic method in smeshBuilder.Mesh class
+    """
     algoType   = "Cartesian_3D"
-    ## flag pointing whether this algorithm should be used by default in dynamic method
-    #  of smeshBuilder.Mesh class
-    #  @internal
+    """
+    type of algorithm used with helper function in smeshBuilder.Mesh class
+    """
     isDefault  = True
-    ## doc string of the method
-    #  @internal
+    """
+    flag pointing whether this algorithm should be used by default in dynamic method
+        of smeshBuilder.Mesh class
+    """
     docHelper  = "Creates Body Fitting 3D algorithm for volumes"
+    """
+    doc string of the method
+    """
 
-    ## Private constructor.
-    #  @param mesh parent mesh object algorithm is assigned to
-    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
-    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
+        """
+        Private constructor.
+
+        Parameters:
+            mesh: parent mesh object algorithm is assigned to
+            geom: geometry (shape/sub-shape) algorithm is assigned to;
+                if it is :code:`0` (default), the algorithm is assigned to the main shape
+        """
         self.Create(mesh, geom, self.algoType)
         self.hyp = None
         pass
 
-    ## Defines "Body Fitting parameters" hypothesis
-    #  @param xGridDef is definition of the grid along the X asix.
-    #  It can be in either of two following forms:
-    #  - Explicit coordinates of nodes, e.g. [-1.5, 0.0, 3.1] or range( -100,200,10)
-    #  - Functions f(t) defining grid spacing at each point on grid axis. If there are
-    #    several functions, they must be accompanied by relative coordinates of
-    #    points dividing the whole shape into ranges where the functions apply; points
-    #    coodrinates should vary within (0.0, 1.0) range. Parameter \a t of the spacing
-    #    function f(t) varies from 0.0 to 1.0 within a shape range. 
-    #    Examples:
-    #    - "10.5" - defines a grid with a constant spacing
-    #    - [["1", "1+10*t", "11"] [0.1, 0.6]] - defines different spacing in 3 ranges.
-    #  @param yGridDef defines the grid along the Y asix the same way as \a xGridDef does.
-    #  @param zGridDef defines the grid along the Z asix the same way as \a xGridDef does.
-    #  @param sizeThreshold (> 1.0) defines a minimal size of a polyhedron so that
-    #         a polyhedron of size less than hexSize/sizeThreshold is not created.
-    #  @param implEdges enables implementation of geometrical edges into the mesh.
     def SetGrid(self, xGridDef, yGridDef, zGridDef, sizeThreshold=4.0, implEdges=False):
+        """
+        Defines "Body Fitting parameters" hypothesis
+
+        Parameters:
+            xGridDef: is definition of the grid along the X asix.
+                It can be in either of two following forms:
+
+                    - Explicit coordinates of nodes, e.g. [-1.5, 0.0, 3.1] or range( -100,200,10)
+                    - Functions f(t) defining grid spacing at each point on grid axis. If there are
+                        several functions, they must be accompanied by relative coordinates of
+                        points dividing the whole shape into ranges where the functions apply; points
+                        coodrinates should vary within (0.0, 1.0) range. Parameter *t* of the spacing
+                        function f(t) varies from 0.0 to 1.0 within a shape range. 
+
+        Examples:
+            "10.5" - defines a grid with a constant spacing
+            [["1", "1+10*t", "11"] [0.1, 0.6]] - defines different spacing in 3 ranges.
+
+        Parameters:
+            yGridDef: defines the grid along the Y asix the same way as *xGridDef* does.
+            zGridDef: defines the grid along the Z asix the same way as *xGridDef* does.
+            sizeThreshold: (> 1.0) defines a minimal size of a polyhedron so that
+                a polyhedron of size less than hexSize/sizeThreshold is not created.
+            implEdges: enables implementation of geometrical edges into the mesh.
+        """
         if not self.hyp:
             compFun = lambda hyp, args: False
             self.hyp = self.Hypothesis("CartesianParameters3D",
@@ -1507,11 +1870,15 @@ class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
         self.hyp.SetToAddEdges( implEdges )
         return self.hyp
 
-    ## Defines custom directions of axes of the grid
-    #  @param xAxis either SMESH.DirStruct or a vector, or 3 vector components
-    #  @param yAxis either SMESH.DirStruct or a vector, or 3 vector components
-    #  @param zAxis either SMESH.DirStruct or a vector, or 3 vector components
     def SetAxesDirs( self, xAxis, yAxis, zAxis ):
+        """
+        Defines custom directions of axes of the grid
+
+        Parameters:
+            xAxis: either SMESH.DirStruct or a vector, or 3 vector components
+            yAxis: either SMESH.DirStruct or a vector, or 3 vector components
+            zAxis: either SMESH.DirStruct or a vector, or 3 vector components
+        """
         import GEOM
         if hasattr( xAxis, "__getitem__" ):
             xAxis = self.mesh.smeshpyD.MakeDirStruct( xAxis[0],xAxis[1],xAxis[2] )
@@ -1532,10 +1899,14 @@ class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
         self.hyp.SetAxesDirs( xAxis, yAxis, zAxis )
         return self.hyp
 
-    ## Automatically defines directions of axes of the grid at which
-    #  a number of generated hexahedra is maximal
-    #  @param isOrthogonal defines whether the axes mush be orthogonal
     def SetOptimalAxesDirs(self, isOrthogonal=True):
+        """
+        Automatically defines directions of axes of the grid at which
+            a number of generated hexahedra is maximal
+
+        Parameters:
+            isOrthogonal: defines whether the axes mush be orthogonal
+        """
         if not self.hyp:
             self.hyp = self.Hypothesis("CartesianParameters3D")
         if not self.mesh.IsUsedHypothesis( self.hyp, self.geom ):
@@ -1544,13 +1915,17 @@ class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
         self.hyp.SetAxesDirs( x,y,z )
         return self.hyp
 
-    ## Sets/unsets a fixed point. The algorithm makes a plane of the grid pass
-    #  through the fixed point in each direction at which the grid is defined
-    #  by spacing
-    #  @param p coordinates of the fixed point. Either SMESH.PointStruct or
-    #         a vertex or 3 components of coordinates.
-    #  @param toUnset defines whether the fixed point is defined or removed.
     def SetFixedPoint( self, p, toUnset=False ):
+        """
+        Sets/unsets a fixed point. The algorithm makes a plane of the grid pass
+            through the fixed point in each direction at which the grid is defined
+            by spacing
+
+        Parameters:
+            p: coordinates of the fixed point. Either SMESH.PointStruct or
+                a vertex or 3 components of coordinates.
+            toUnset: defines whether the fixed point is defined or removed.
+        """
         import SMESH, GEOM
         if toUnset:
             if not self.hyp: return
@@ -1569,57 +1944,71 @@ class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
 
     pass # end of StdMeshersBuilder_Cartesian_3D class
 
-## Defines a stub 1D algorithm, which enables "manual" creation of nodes and
-#  segments usable by 2D algorithms
-#
-#  It is created by calling smeshBuilder.Mesh.UseExistingSegments(geom=0)
-#
-#  @ingroup l3_algos_basic
 class StdMeshersBuilder_UseExisting_1D(Mesh_Algorithm):
+    """ Defines a stub 1D algorithm, which enables "manual" creation of nodes and
+        segments usable by 2D algorithms
 
-    ## name of the dynamic method in smeshBuilder.Mesh class
-    #  @internal
+    It is created by calling smeshBuilder.Mesh.UseExistingSegments(geom=0)
+    """
+
+
     meshMethod = "UseExistingSegments"
-    ## type of algorithm used with helper function in smeshBuilder.Mesh class
-    #  @internal
+    """
+    name of the dynamic method in smeshBuilder.Mesh class
+    """
     algoType   = "UseExisting_1D"
-    ## doc string of the method
-    #  @internal
+    """
+    type of algorithm used with helper function in smeshBuilder.Mesh class
+    """
     docHelper  = "Creates 1D algorithm allowing batch meshing of edges"
+    """
+    doc string of the method
+    """
 
-    ## Private constructor.
-    #  @param mesh parent mesh object algorithm is assigned to
-    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
-    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
+        """
+        Private constructor.
+
+        Parameters:
+            mesh: parent mesh object algorithm is assigned to
+            geom: geometry (shape/sub-shape) algorithm is assigned to;
+                if it is :code:`0` (default), the algorithm is assigned to the main shape
+        """
         self.Create(mesh, geom, self.algoType)
         pass
 
     pass # end of StdMeshersBuilder_UseExisting_1D class
 
-## Defines a stub 2D algorithm, which enables "manual" creation of nodes and
-#  faces usable by 3D algorithms
-#
-#  It is created by calling smeshBuilder.Mesh.UseExistingFaces(geom=0)
-#
-#  @ingroup l3_algos_basic
 class StdMeshersBuilder_UseExisting_2D(Mesh_Algorithm):
+    """ Defines a stub 2D algorithm, which enables "manual" creation of nodes and
+    faces usable by 3D algorithms
 
-    ## name of the dynamic method in smeshBuilder.Mesh class
-    #  @internal
+    It is created by calling smeshBuilder.Mesh.UseExistingFaces(geom=0)
+    """
+    
+
     meshMethod = "UseExistingFaces"
-    ## type of algorithm used with helper function in smeshBuilder.Mesh class
-    #  @internal
+    """
+    name of the dynamic method in smeshBuilder.Mesh class
+    """
     algoType   = "UseExisting_2D"
-    ## doc string of the method
-    #  @internal
+    """
+    type of algorithm used with helper function in smeshBuilder.Mesh class
+    """
     docHelper  = "Creates 2D algorithm allowing batch meshing of faces"
+    """
+    doc string of the method
+    """
 
-    ## Private constructor.
-    #  @param mesh parent mesh object algorithm is assigned to
-    #  @param geom geometry (shape/sub-shape) algorithm is assigned to;
-    #              if it is @c 0 (default), the algorithm is assigned to the main shape
     def __init__(self, mesh, geom=0):
+        """
+        Private constructor.
+
+        Parameters:
+            mesh: parent mesh object algorithm is assigned to
+            geom: geometry (shape/sub-shape) algorithm is assigned to;
+            if it is :code:`0` (default), the algorithm is assigned to the main shape
+        """
         self.Create(mesh, geom, self.algoType)
         pass
 

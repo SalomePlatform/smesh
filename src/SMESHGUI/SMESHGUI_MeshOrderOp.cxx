@@ -52,7 +52,7 @@ SMESHGUI_MeshOrderOp::SMESHGUI_MeshOrderOp()
 {
   myDlg = new SMESHGUI_MeshOrderDlg( desktop() );
   
-  myHelpFileName = "constructing_meshes_page.html#mesh_order_anchor";
+  myHelpFileName = "constructing_meshes.html#mesh-order-anchor";
 }
 
 //================================================================================

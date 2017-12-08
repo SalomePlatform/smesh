@@ -1,0 +1,295 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-03-30 11:57+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 7725fc981cc94de89acdccd2088f35a4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:5
+msgid "Python interface"
+msgstr ""
+
+# e19368b7f7a34dc48db2569dae7e5291
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:7
+msgid ""
+"Python API of SALOME Mesh module defines several classes that can be used"
+" for easy mesh creation and edition."
+msgstr ""
+
+# 6be23d95e5a44e398692170febb6d4cb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:10
+msgid "Documentation of SALOME %Mesh module Python API is available in two forms:"
+msgstr ""
+
+# 37a1e3ce35854a629095d7682fa27e60
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:12
+msgid ""
+":ref:`Structured documentation <modules_page>`, where all methods and "
+"classes are grouped by their functionality."
+msgstr ""
+
+# 03cd99fd95d94b309127b679dc6835d2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:14
+msgid ""
+":ref:`Linear documentation <genindex>` grouped only by classes, declared "
+"in the :mod:`smeshBuilder` and :mod:`StdMeshersBuilder` Python packages."
+msgstr ""
+
+# d710e9461bdc4f45a0faeea434abc341
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:16
+msgid ""
+"With SALOME 7.2, the Python interface for Mesh has been slightly modified"
+" to offer new functionality."
+msgstr ""
+
+# 66861809e6df468f8a3fef6ee7fdb292
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:18
+msgid ""
+"You may have to modify your scripts generated with SALOME 6 or older "
+"versions."
+msgstr ""
+
+# 7b5fb1f27d7b4cf1b515f027b0b9cc15
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:20
+msgid "Please see :ref:`smesh_migration_page`."
+msgstr ""
+
+# c35f8f8a860c4f199edbe17f196b75d0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:22
+msgid ""
+"Class :class:`smeshBuilder.smeshBuilder` provides an interface to create "
+"and handle meshes. It can be used to create an empty mesh or to import "
+"mesh from the data file."
+msgstr ""
+
+# 38a66953850d4e8cb67317feb8d3ff49
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:25
+msgid ""
+"As soon as a mesh is created, it is possible to manage it via its own "
+"methods, described in class :class:`smeshBuilder.Mesh` documentation."
+msgstr ""
+
+# 65d27fa322db4233bb1d057c699932a6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:28
+msgid ""
+"Class :class:`smeshstudytools.SMeshStudyTools` provides several methods "
+"to manipulate mesh objects in Salome study."
+msgstr ""
+
+# ebfdbb9b5cb2423a80484d465b9bbda3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:30
+msgid "A usual workflow to generate a mesh on geometry is following:"
+msgstr ""
+
+# 7325e774da0e4d99bb2c0e18076b491e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:37
+msgid "Create an instance of :class:`smeshBuilder.smeshBuilder`:"
+msgstr ""
+
+# c9bb680e5d76433b8ddaa0121fc35150
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:39
+msgid "Create a :class:`smeshBuilder.Mesh` object:"
+msgstr ""
+
+# ee4c46ea575e486d88d054940aebcb2a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:53
+msgid ""
+"Create and assign :ref:`basic_meshing_algos_page` by calling "
+"corresponding methods of the mesh. If a sub-shape is provided as an "
+"argument, a :ref:`constructing_submeshes_page` is implicitly created on "
+"this sub-shape:"
+msgstr ""
+
+# c618faa4367a4977a3ed8ad425e6702b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:62
+msgid ""
+"Create and assign :ref:`about_hypo_page` by calling corresponding methods"
+" of algorithms:"
+msgstr ""
+
+# d18d0e12f0b44249a6529df2d07ebf10
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:68
+msgid ":ref:`compute_anchor` the mesh (generate mesh nodes and elements):"
+msgstr ""
+
+# 99bd87d2643a4cb685770112da7f5f42
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:70
+msgid ""
+"An easiest way to start with Python scripting is to do something in GUI "
+"and then to get a corresponding Python script via **File > Dump Study** "
+"menu item. Don't forget that you can get all methods of any object in "
+"hand (e.g. a mesh group or a hypothesis) by calling *dir()* Python built-"
+"in function."
+msgstr ""
+
+# 1e7aa4e79e8743afb20ebbf22a07fd3c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:76
+msgid ""
+"All methods of the Mesh Group can be found in "
+":ref:`tui_create_standalone_group` sample script."
+msgstr ""
+
+# a10ee356e3554a3d9df617d0b081f99c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:78
+msgid ""
+"An example below demonstrates usage of the Python API for 3d mesh "
+"generation and for retrieving information on mesh nodes and elements."
+msgstr ""
+
+# d35a364206ff45e99fea9dc0167a64ed
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:84
+msgid "Example of 3d mesh generation:"
+msgstr ""
+
+# 44c7b11cfd9c43b7a73072480ad32a85
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:88
+msgid "``3dmesh.py``"
+msgstr ""
+
+# a942d88c2ed943c5a6cbedf59a34c248
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:95
+msgid ":download:`../../../examples/3dmesh.py`"
+msgstr ""
+
+# fe6fd0e0d01f4ae8817e4275e0562c37
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:97
+msgid ""
+"Examples of Python scripts for Mesh operations are available by the "
+"following links:"
+msgstr ""
+
+# a0fef6efd55c42c1bd33865cada37134
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:100
+msgid ":ref:`tui_creating_meshes_page`"
+msgstr ""
+
+# a028be6d0d634101ad9b80da9ad0991f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:101
+msgid ":ref:`tui_defining_hypotheses_page`"
+msgstr ""
+
+# 70b167a57c9a40d385efc613ea487e2b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:102
+msgid ":ref:`tui_grouping_elements_page`"
+msgstr ""
+
+# dd96f10655c4490c8837571a81eff790
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:103
+msgid ":ref:`tui_filters_page`"
+msgstr ""
+
+# 838f3d1c63fc4ee6b15b18bcf913d3f1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:104
+msgid ":ref:`tui_modifying_meshes_page`"
+msgstr ""
+
+# b78563d5084e412a8f7069f85b629857
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:105
+msgid ":ref:`tui_transforming_meshes_page`"
+msgstr ""
+
+# 269060f5e2214b5ba0a890690f423ac2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:106
+msgid ":ref:`tui_viewing_meshes_page`"
+msgstr ""
+
+# 2014b65e70fa478ba342a7d0a68c9e1c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:107
+msgid ":ref:`tui_quality_controls_page`"
+msgstr ""
+
+# 4b599a1a794e4a8db2491c54a4da91a5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:108
+msgid ":ref:`tui_measurements_page`"
+msgstr ""
+
+# ed0c02dab98f4da19f0e54c062681f3f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:109
+msgid ":ref:`tui_work_on_objects_from_gui`"
+msgstr ""
+
+# e2883b7908054fdc94bad4f98b5fe582
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:110
+msgid ":ref:`tui_notebook_smesh_page`"
+msgstr ""
+
+# 1bd3f44f2ac4411c9288dc412be849c2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:111
+msgid ":ref:`tui_cartesian_algo`"
+msgstr ""
+
+# 6b1a4810574845b99cd0c0e08edcbc87
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:112
+msgid ":ref:`tui_use_existing_faces`"
+msgstr ""
+
+# cbb9ddbc6deb4a4b8919d92abf2cdda2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:113
+msgid ":ref:`tui_prism_3d_algo`"
+msgstr ""
+
+# a99f6683a95541dcb17ed36456920232
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/smeshpy_interface.rst:114
+msgid ":ref:`tui_generate_flat_elements_page`"
+msgstr ""
+
+# b6db276b1c9f4b77a10b39c00717905a
+#~ msgid ""
+#~ "`Structured documentation <smeshpy_doc/modules.html>`_,"
+#~ " where all methods and classes are"
+#~ " grouped by their functionality."
+#~ msgstr ""
+
+# 3f32cff184674840aa9cce12b5775f27
+#~ msgid ""
+#~ "`Linear documentation <smeshpy_doc/namespaces.html>`_ "
+#~ "grouped only by classes, declared in "
+#~ "the :ref:`smeshBuilder` and :ref:`StdMeshersBuilder`"
+#~ " Python packages."
+#~ msgstr ""
+
+# dd7b4ac9c12b4d698a16d1bfb393ac8c
+#~ msgid ""
+#~ "Class :ref:`smeshBuilder.smeshBuilder` provides an"
+#~ " interface to create and handle "
+#~ "meshes. It can be used to create"
+#~ " an empty mesh or to import "
+#~ "mesh from the data file."
+#~ msgstr ""
+
+# c428e5aec6a94435a7a613fa1ec960c0
+#~ msgid ""
+#~ "As soon as a mesh is created, "
+#~ "it is possible to manage it via"
+#~ " its own methods, described in class"
+#~ " :ref:`smeshBuilder.Mesh` documentation."
+#~ msgstr ""
+
+# 4e0780af47564120b2a66ce3a8e5d8be
+#~ msgid ""
+#~ "Class :ref:`smeshstudytools.SMeshStudyTools` provides "
+#~ "several methods to manipulate mesh "
+#~ "objects in Salome study."
+#~ msgstr ""
+
+# fd6196348a2846818ded35ae61ab3a67
+#~ msgid "Create an instance of :ref:`smeshBuilder.smeshBuilder`:"
+#~ msgstr ""
+
+# 2fc22dfd6ae844e7863238ea9ace54cc
+#~ msgid "Create a :ref:`smeshBuilder.Mesh` object:"
+#~ msgstr ""
+

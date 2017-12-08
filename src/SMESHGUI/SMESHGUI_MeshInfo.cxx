@@ -3114,8 +3114,8 @@ void SMESHGUI_MeshInfoDlg::updateSelection()
 void SMESHGUI_MeshInfoDlg::help()
 {
   SMESH::ShowHelpFile( ( myTabWidget->currentIndex() == BaseInfo || myTabWidget->currentIndex() == AddInfo ) ?
-                       "mesh_infos_page.html#advanced_mesh_infos_anchor" : 
-                       "mesh_infos_page.html#mesh_element_info_anchor" );
+                       "mesh_infos.html#advanced-mesh-infos-anchor" : 
+                       "mesh_infos.html#mesh-element-info-anchor" );
 }
 
 /*!
@@ -4041,5 +4041,5 @@ void SMESHGUI_CtrlInfoDlg::dump()
  */
 void SMESHGUI_CtrlInfoDlg::help()
 {
-  SMESH::ShowHelpFile("mesh_infos_page.html#mesh_quality_info_anchor");
+  SMESH::ShowHelpFile("mesh_infos.html#mesh_quality_info_anchor");
 }

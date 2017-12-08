@@ -1,0 +1,155 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# ceb118d3f4cb467c9ede1c28cacfc0a7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/clipping.rst:5
+msgid "Clipping"
+msgstr ""
+
+# e19904b1f4e545ccb7382a3fb8372d4a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/clipping.rst:7
+msgid ""
+"**Clipping** allows creating cross-section views (clipping planes) of "
+"your mesh. It is available as a sub-item in the context menu of an active"
+" mesh. To create a clipping plane, click on the **New** button in the "
+"dialog and choose how it is  defined: by **Absolute** or **Relative** "
+"coordinates. **Absolute Coordinates**"
+msgstr ""
+
+# 0d52999f90594fedbee68d90b3aab4af
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/clipping.rst:15
+msgid ""
+"**Base point** - allows defining the coordinates of the base point for "
+"the clipping plane."
+msgstr ""
+
+# 3ba5b5e4f43d4f4e954bc31d09d62031
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/clipping.rst:16
+msgid "**Reset** - returns the base point to coordinate origin."
+msgstr ""
+
+# 2e7752ba55ce4f6885e05619a6991789
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/clipping.rst:17
+msgid "**Direction** - allows defining the orientation of the clipping plane."
+msgstr ""
+
+# 28e905d68bb341a68b0beae8da9c86f0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/clipping.rst:18
+msgid ""
+"**Invert** - allows selecting, which part of the object will be removed "
+"and which will remain after clipping."
+msgstr ""
+
+# 1734f629e76a45d7b278ef60498609bf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/clipping.rst:20
+msgid "**Relative mode**"
+msgstr ""
+
+# 9f5a256c38f14fde80e06168db416a39
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/clipping.rst:25
+msgid "**Orientation** ( ||X-Y, ||X-Z or ||Y-Z)."
+msgstr ""
+
+# 933953854d944d4097ac9485693e044e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/clipping.rst:26
+msgid ""
+"**Distance** between the opposite extremities of the boundary box of "
+"selected objects, if it is set to 0.5 the boundary box is split in two "
+"halves."
+msgstr ""
+
+# 54f7cd8ae92c486e8567a4d21760e2a9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/clipping.rst:27
+msgid ""
+"**Rotation** (in angle degrees) **around X** (Y to Z) and **around Y** (X"
+" to Z) (depending on the chosen Orientation)"
+msgstr ""
+
+# d19ba527c11f4ffa8a1acb71d26f97bd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/clipping.rst:32
+msgid "\"The preview plane and the cut object\""
+msgstr ""
+
+# 77794a5cf0784f70859fcb0327a488d5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/clipping.rst:34
+msgid "The other parameters are available in both modes :"
+msgstr ""
+
+# 957ea51506dc40b0adc032c5fd0096f5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/clipping.rst:36
+msgid ""
+"**OpenGL clipping** check-box allows choosing OpenGL native clipping, "
+"which clips the whole presentation. If it is unchecked, the clipping is "
+"done on the dataset i.e. only the visibility of separate mesh cells is "
+"changed (see the examples)."
+msgstr ""
+
+# 639fff4f76f24519854f7e90eff8338b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/clipping.rst:37
+msgid ""
+"The List contains **Meshes, sub-meshes and groups** to which the cross-"
+"section will be applied."
+msgstr ""
+
+# f02378bb1d49463dbb09a0b1f9a24a74
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/clipping.rst:38
+msgid ""
+"**Select all** check-box allows to selecting and deselecting all "
+"available objects at once."
+msgstr ""
+
+# cf9db5bce38f4659bd092817cf5a32b4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/clipping.rst:39
+msgid "**Show preview** check-box shows the clipping plane in the **3D Viewer**."
+msgstr ""
+
+# 3f8e80ea656d464c9daa6f17aa70d7b6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/clipping.rst:40
+msgid ""
+"**Auto Apply** check-box shows button is on, you can preview the cross-"
+"section in the **3D Viewer**."
+msgstr ""
+
+# fe51b17a0ff6427980d17a9e399e40b4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/clipping.rst:42
+msgid ""
+"It is also possible to interact  with the clipping plane directly in 3D "
+"view using the mouse."
+msgstr ""
+
+# 43e1d59fcd374017a1faddb5ea481ea9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/clipping.rst:44
+msgid "To get a new object from **Clipping**, click **Apply**."
+msgstr ""
+
+# 0ca0d76ecbf94a36a2b63b9cadb7470b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/clipping.rst:46
+msgid "**Examples:**"
+msgstr ""
+
+# 2b9286e5d01f46be8021b2a959fb9650
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/clipping.rst:51
+msgid "\"The cross-section using dataset\""
+msgstr ""
+
+# 5521df28f71943719c6f67617bf9678e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/clipping.rst:56
+msgid "\"The OpenGL cross-section\""
+msgstr ""
+

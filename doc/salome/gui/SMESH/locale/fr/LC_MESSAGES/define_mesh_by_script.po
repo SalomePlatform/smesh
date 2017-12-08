@@ -1,0 +1,86 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 7a83ceb457994f0489883d15259eaf09
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/define_mesh_by_script.rst:5
+msgid "Use Edges/Faces to be Created Manually"
+msgstr ""
+
+# ddfb94d55abf4777a40b1a0204d3f171
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/define_mesh_by_script.rst:7
+msgid ""
+"The algorithms **Use Edges to be Created Manually** and **Use Faces to be"
+" Created Manually** allow  creating a 1D or a 2D mesh in a python script "
+"(using **AddNode, AddEdge** and **AddFace** commands) and then using such"
+" sub-meshes in the construction of a 2D or a 3D mesh."
+msgstr ""
+
+# 97ab6ee01a514db696c51dfc106d7cbb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/define_mesh_by_script.rst:9
+msgid ""
+"For example, you want to use standard algorithms to generate 1D and 3D "
+"meshes and to create 2D mesh by your python code. For this, you"
+msgstr ""
+
+# b51c5c631ad54f7ea57be1f01dd6278a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/define_mesh_by_script.rst:12
+msgid "create a mesh object, assign a 1D algorithm,"
+msgstr ""
+
+# 1606b74fadb94199897e3e4a0900958c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/define_mesh_by_script.rst:13
+msgid "invoke **Compute** command, which computes a 1D mesh,"
+msgstr ""
+
+# 9eff4a607bdf43b8a5c6a70ab0397ca9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/define_mesh_by_script.rst:15
+msgid "assign **Use Faces to be Created Manually** and a 3D algorithm,"
+msgstr ""
+
+# 3972a11e34084b7685f90a6f9a37718b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/define_mesh_by_script.rst:16
+msgid "run your python code, which creates a 2D mesh,"
+msgstr ""
+
+# ec5b08b76d7d489d990cb8a48be0ca6f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/define_mesh_by_script.rst:17
+msgid "invoke **Compute** command, which computes a 3D mesh."
+msgstr ""
+
+# bf07fde4deac4f89a7fc0e1dd4fd340d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/define_mesh_by_script.rst:19
+msgid ""
+"**Use Edges to be Created Manually** and **Use Faces to be Created "
+"Manually** algorithms should be assigned _before_ mesh generation by the "
+"Python code."
+msgstr ""
+
+# 6778e7ee297443d3a2447643f28b7422
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/define_mesh_by_script.rst:21
+msgid ""
+"Consider trying a sample script demonstrating the usage of "
+":ref:`tui_use_existing_faces` algorithm for construction of a 2D mesh "
+"using Python commands."
+msgstr ""
+
+# cd5cbe7268414edb841f7dff26f2d607
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/define_mesh_by_script.rst:26
+msgid "**Mesh computed by** :ref:`tui_use_existing_faces` shown in a Shrink mode."
+msgstr ""
+

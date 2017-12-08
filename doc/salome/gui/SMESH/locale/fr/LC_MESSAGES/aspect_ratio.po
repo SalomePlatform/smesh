@@ -1,0 +1,76 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 8864e747737c4f0e99b4b6b55ea866bf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/aspect_ratio.rst:5
+msgid "Aspect Ratio"
+msgstr ""
+
+# 9fd308cc60b641d59f671994d5c260c8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/aspect_ratio.rst:7
+msgid ""
+"The **Aspect Ratio** quality criterion for mesh elements reveals the "
+"degree of conformity of a mesh element to the regular element of its type"
+" (with all edges having the same length)."
+msgstr ""
+
+# 5d1d18e8f44d496e94a4844eb5b6f29c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/aspect_ratio.rst:10
+msgid ""
+"The **Aspect Ratio** of a **triangle** 2D element consisting of 3 nodes "
+"is calculated by the formula:"
+msgstr ""
+
+# d3b211f181e541d99b735f09343b9345
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/aspect_ratio.rst:15
+msgid ""
+"The **Aspect Ratio** of a **quadrangle** 2D element consisting of 4 nodes"
+" is calculated using The Verdict Geometric Quality Library available "
+"within VTK. The calculation formula is:"
+msgstr ""
+
+# e95e73027d274edfb7f807dd9b23135e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/aspect_ratio.rst:20
+msgid "**To apply the Aspect Ratio quality criterion to your mesh:**"
+msgstr ""
+
+# 26a652d49e734e51845afecec6b3287d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/aspect_ratio.rst:22
+msgid "Display your mesh in the viewer."
+msgstr ""
+
+# b86656d6ad1d4f75b782e9bfdea3b8ec
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/aspect_ratio.rst:23
+msgid ""
+"Choose **Controls > Face Controls > Aspect Ratio** or click  **Aspect "
+"Ratio** button in the toolbar."
+msgstr ""
+
+# 275fe710e1a2456a9b6b4e556263e5ce
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/aspect_ratio.rst:32
+msgid ""
+"Your mesh will be displayed in the viewer with its elements colored "
+"according to the applied mesh quality control criterion:"
+msgstr ""
+
+# aa48b40c005d41aa92e47b939df4c8e6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/aspect_ratio.rst:38
+msgid "**See Also** a sample TUI Script of an :ref:`tui_aspect_ratio` operation."
+msgstr ""
+

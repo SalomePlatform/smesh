@@ -1,0 +1,46 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 88d8c854db4644f6a5b009412db1b608
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_control.rst:5
+msgid "Double nodes"
+msgstr ""
+
+# 22529b5a5a764ab8a59c1f4110f95a06
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_control.rst:7
+msgid ""
+"This mesh quality control highlights the nodes which are coincident with "
+"other nodes (within a given tolerance). Distance at which two nodes are "
+"considered coincident is defined by :ref:`dbl_nodes_tol_pref` preference."
+msgstr ""
+
+# 93d2ce3a6fbd44fba9a23d3e38513d3b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_control.rst:12
+msgid ""
+"In this picture some nodes are coincident after copying all elements with"
+" translation."
+msgstr ""
+
+# 6342070c6e5748f0a06f3032b1eb7f83
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/double_nodes_control.rst:14
+msgid ""
+"**See also**: A sample TUI Script of a :ref:`tui_double_nodes_control` "
+"filter."
+msgstr ""
+

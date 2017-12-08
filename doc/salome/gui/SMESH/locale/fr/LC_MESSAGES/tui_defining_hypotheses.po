@@ -1,0 +1,411 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# fef0008953ff493596317de50d9af198
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:5
+msgid "Defining Hypotheses and Algorithms"
+msgstr ""
+
+# c2761b3cd6e847e284c642207a9dbae4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:7
+msgid ""
+"This page provides example codes of :ref:`tui_defining_meshing_algos` "
+"\"defining algorithms\" and hypotheses."
+msgstr ""
+
+# c9e1c1c60edb4751a3db653b97a21c87
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:10
+msgid "Wire discretisation 1D algorithm"
+msgstr ""
+
+# 344303a5cba04a3985a3355bbe1d6e38
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:12
+msgid ":ref:`tui_1d_adaptive` hypothesis"
+msgstr ""
+
+# 1035ff9af9b8425a8c48f39ac5e2ce00
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:13
+msgid ":ref:`tui_1d_arithmetic` hypothesis"
+msgstr ""
+
+# 4b851dd0ec06429d8e0a533db3975b81
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:14
+msgid ":ref:`tui_deflection_1d` hypotheses"
+msgstr ""
+
+# c27b16f572ff4412b14a330c42389c1c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:15
+msgid ":ref:`tui_start_and_end_length` hypotheses"
+msgstr ""
+
+# ed963d98d21b4aefaf2bda832c09bd0b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:16
+msgid ":ref:`tui_average_length`"
+msgstr ""
+
+# 748167c82d78473ea526f4e8d8c2d3ec
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:17
+msgid ":ref:`tui_propagation` additional hypothesis"
+msgstr ""
+
+# 29d0006192824915a840be1e7d8ae177
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:18
+msgid ":ref:`tui_fixed_points` hypothesis"
+msgstr ""
+
+# 65a07e23b54b4b28a44b18cee2f6eb18
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:21
+msgid "Triangle: Mefisto 2D algorithm"
+msgstr ""
+
+# 88b6fff7e253450eb7ea36fb2fe5445d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:23
+msgid ":ref:`tui_max_element_area` hypothesis"
+msgstr ""
+
+# 9660d4c455c8431995e1af311aed3eff
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:24
+msgid ":ref:`tui_length_from_edges` hypothesis"
+msgstr ""
+
+# 286dfd3e3ac64755bf7c7f8352d83af0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:27
+msgid "NETGEN 3D algorithm"
+msgstr ""
+
+# ea8cdcd73ac04ef382c07aeb47336de2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:29
+msgid ":ref:`tui_max_element_volume` hypothesis"
+msgstr ""
+
+# 97b45786031b4464b8e918b006ed31a3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:30
+msgid ":ref:`tui_viscous_layers`"
+msgstr ""
+
+# d3fa46618ba3491182a63f8f3e36991d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:33
+msgid ":ref:`tui_projection`"
+msgstr ""
+
+# e2a68a4edf124db7ab3fdc6cb0f2fd9e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:34
+msgid ":ref:`tui_radial_quadrangle` algorithm"
+msgstr ""
+
+# ee80908dfbfb41cf9a458f3a733b3b9d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:35
+msgid "Quadrangle: Mapping 2D algorithm"
+msgstr ""
+
+# eb5627bfc52d4e7ea8ed4b488b5ff940
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:37
+msgid ":ref:`tui_quadrangle_parameters` hypothesis"
+msgstr ""
+
+# 7ba0bfac54614d77bb0afac0d3886ae8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:40
+msgid ":ref:`tui_import` from Another Mesh\" algorithm"
+msgstr ""
+
+# 9135b65a44554235a1fb725ebbd7e9b6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:45
+msgid "Defining 1D Hypotheses"
+msgstr ""
+
+# d379efca0bc04b01a9f0d9aa9cc26361
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:52
+msgid "Arithmetic Progression and Geometric Progression"
+msgstr ""
+
+# 2ea89443e3804bc5913ae6a42272dbef
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:56
+msgid "``defining_hypotheses_ex01.py``"
+msgstr ""
+
+# 8c40e54d62834623b01e282b9b4f53aa
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:62
+msgid ":download:`../../../examples/defining_hypotheses_ex01.py`"
+msgstr ""
+
+# 865233d5ffe541189bcf7f275e045c6b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:67
+msgid "Adaptive"
+msgstr ""
+
+# 52d08d7e4014430eaa0126397b6304fe
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:71
+msgid "``defining_hypotheses_adaptive1d.py``"
+msgstr ""
+
+# 32df2bbad47248d1a27591bbfdb558f6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:77
+msgid ":download:`../../../examples/defining_hypotheses_adaptive1d.py`"
+msgstr ""
+
+# 4fc2284ef7bd47729a90b2baa918b58f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:83
+msgid "Deflection and Number of Segments"
+msgstr ""
+
+# 3457de0a170e4f51b5a38950cb33a7d6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:87
+msgid "``defining_hypotheses_ex02.py``"
+msgstr ""
+
+# fbf4cb07dde24d8d902b4411cd68adca
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:93
+msgid ":download:`../../../examples/defining_hypotheses_ex02.py`"
+msgstr ""
+
+# 4133a0078c2947e98e1a23eaa1214723
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:99
+msgid "Start and End Length"
+msgstr ""
+
+# 1d6528b2e1674de2ba414b87b4be3089
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:103
+msgid "``defining_hypotheses_ex03.py``"
+msgstr ""
+
+# 30db29e648d244e2a8132ff959c7e407
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:109
+msgid ":download:`../../../examples/defining_hypotheses_ex03.py`"
+msgstr ""
+
+# d8ffb18c8207454eb0e4c8dee64df112
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:115
+msgid "Local Length"
+msgstr ""
+
+# 598f4c31b8574891a0965e55e70866c6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:119
+msgid "``defining_hypotheses_ex04.py``"
+msgstr ""
+
+# a0766eac8a974673842c45660f8cdef5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:125
+msgid ":download:`../../../examples/defining_hypotheses_ex04.py`"
+msgstr ""
+
+# 0e8b365ab8ab4d8fb15e5d2ea9b405b4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:128
+msgid "Defining 2D and 3D hypotheses"
+msgstr ""
+
+# 89800fec137147feb01f7d9ee2d09b2f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:134
+msgid "Maximum Element Area"
+msgstr ""
+
+# 5d20cdabae6d4f7785dfd0505ff8bd0e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:138
+msgid "``defining_hypotheses_ex05.py``"
+msgstr ""
+
+# d65f02a1247c4ad5b511199a2224afea
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:144
+msgid ":download:`../../../examples/defining_hypotheses_ex05.py`"
+msgstr ""
+
+# aed2c2c8c4534e8ba031bbb04c0b1c1e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:150
+msgid "Maximum Element Volume"
+msgstr ""
+
+# a99e22f6a36f465f92b39f281cb5374d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:154
+msgid "``defining_hypotheses_ex06.py``"
+msgstr ""
+
+# deda9ab5387443659f0e9560218d1715
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:160
+msgid ":download:`../../../examples/defining_hypotheses_ex06.py`"
+msgstr ""
+
+# a65055b4628340938008c65a533013ef
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:166
+msgid "Length from Edges"
+msgstr ""
+
+# 6de5dfa06ff54c19a898663e34448044
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:170
+msgid "``defining_hypotheses_ex07.py``"
+msgstr ""
+
+# 4c857ba35cdf4cf8a1124e7ec6156cba
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:176
+msgid ":download:`../../../examples/defining_hypotheses_ex07.py`"
+msgstr ""
+
+# 1b5eeb8e22c6416e97c9f0d5603ab0a8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:179
+msgid "Defining Additional Hypotheses"
+msgstr ""
+
+# d7e5a198618a4d81842e05f5dc7a0d9a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:184
+msgid "Propagation"
+msgstr ""
+
+# e5fa3c56469742528a05851b980f65c2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:188
+msgid "``defining_hypotheses_ex08.py``"
+msgstr ""
+
+# 3250b509d75a4ee89b947cc9028a59d3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:194
+msgid ":download:`../../../examples/defining_hypotheses_ex08.py`"
+msgstr ""
+
+# eb1e47f19f8544ffb91f05b2af1ee246
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:200
+msgid "Defining Meshing Algorithms"
+msgstr ""
+
+# beb05965953640b2a8e7be99a2011ae7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:204
+msgid "``defining_hypotheses_ex09.py``"
+msgstr ""
+
+# ce043d0aabab4e09bfae6e5f93bc499f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:210
+msgid ":download:`../../../examples/defining_hypotheses_ex09.py`"
+msgstr ""
+
+# f908d90100b342378143b7fb5a37cbde
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:216
+msgid "Projection Algorithms"
+msgstr ""
+
+# 0165bd13c2354adb88815bc8bc4f8f55
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:220
+msgid "``defining_hypotheses_ex10.py``"
+msgstr ""
+
+# 5a0fd55a3dfe46fa849ddcb9f6e9e947
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:226
+msgid ":download:`../../../examples/defining_hypotheses_ex10.py`"
+msgstr ""
+
+# ec37fa753ca144bc8cc78a6a23dabe49
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:229
+msgid "Projection 1D2D"
+msgstr ""
+
+# d73ecba8b9a14a23905217b1b85639e2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:233
+msgid "``defining_hypotheses_ex11.py``"
+msgstr ""
+
+# 67392b0373064c3987a2ba0589613aec
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:239
+msgid ":download:`../../../examples/defining_hypotheses_ex11.py`"
+msgstr ""
+
+# c1aae1e4269641deab1b0c442e86a486
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:244
+msgid "1D Mesh with Fixed Points example"
+msgstr ""
+
+# 42cc5b76354244dda062e9ab67178fba
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:248
+msgid "``defining_hypotheses_ex12.py``"
+msgstr ""
+
+# 0494d3054fa84ccbbdadaab71ab49c9c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:254
+msgid ":download:`../../../examples/defining_hypotheses_ex12.py`"
+msgstr ""
+
+# b5bf09c0c65441a5b649a8b4f872e4f8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:259
+msgid "Radial Quadrangle 1D-2D example"
+msgstr ""
+
+# e11dc47febb3451eae79505194a3b470
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:263
+msgid "``defining_hypotheses_ex13.py``"
+msgstr ""
+
+# e2042fb6379647289d81b952790fa19f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:269
+msgid ":download:`../../../examples/defining_hypotheses_ex13.py`"
+msgstr ""
+
+# a64deb7c4c0f4b1d85c9ab9698dffe82
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:274
+msgid "Quadrangle Parameters example 1 (meshing a face with 3 edges)"
+msgstr ""
+
+# 43383104800842d8bf7f3410cdac69e7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:278
+msgid "``defining_hypotheses_ex14.py``"
+msgstr ""
+
+# 8d1842c107224648a84e981c6f1fc2a7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:284
+msgid ":download:`../../../examples/defining_hypotheses_ex14.py`"
+msgstr ""
+
+# 74a27c17676d434a8c3d25ac9796ade7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:287
+msgid "Quadrangle Parameters example 2 (using different types)"
+msgstr ""
+
+# e5ff359d6f554d7f941d66fb203ec978
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:291
+msgid "``defining_hypotheses_ex15.py``"
+msgstr ""
+
+# 7c928ac31c924ffda50887b7dcd566c3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:297
+msgid ":download:`../../../examples/defining_hypotheses_ex15.py`"
+msgstr ""
+
+# f1274f94ecca401fbaa85dab2a3b6be9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:302
+msgid "\"Import 1D-2D Elements from Another Mesh\" example"
+msgstr ""
+
+# 5fdf903d6e714f6786bee45b22031939
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:306
+msgid "``defining_hypotheses_ex16.py``"
+msgstr ""
+
+# 8ecaa3f528ed4bec820d5b01fc54a9e3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:312
+msgid ":download:`../../../examples/defining_hypotheses_ex16.py`"
+msgstr ""
+
+# 38475312a47b409d884787b40e75f9bf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:317
+msgid "Viscous layers construction"
+msgstr ""
+
+# 96c7c221e83c4d5092d4b663d1440e03
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:321
+msgid "``defining_hypotheses_ex17.py``"
+msgstr ""
+
+# 5101a4bf06ca4c6aa3d7738ab9890209
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_defining_hypotheses.rst:327
+msgid ":download:`../../../examples/defining_hypotheses_ex17.py`"
+msgstr ""
+

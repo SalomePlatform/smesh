@@ -1,9 +1,0 @@
-/*!
-
-\page tui_prism_3d_algo Use Extrusion 3D meshing algorithm
-\tui_script{prism_3d_algo.py}
-
-The result geometry and mesh is shown below
-\image html prism_tui_sample.png
-
-*/

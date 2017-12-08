@@ -1,0 +1,115 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 94b9bfcad24f4c1a8904595aacacd2a8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_generate_flat_elements.rst:5
+msgid "Generate flat elements"
+msgstr ""
+
+# 2d87fc8590ba46db8cfb3fdcb334acdd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_generate_flat_elements.rst:11
+msgid "Double nodes on groups boundaries"
+msgstr ""
+
+# b2e0b61a2bd541658aaa85d3701e2616
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_generate_flat_elements.rst:13
+msgid ""
+"Double nodes on shared faces between groups of volumes and create flat "
+"elements on demand."
+msgstr ""
+
+# ccba3377d12c4a03a60d8f94161453cf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_generate_flat_elements.rst:15
+msgid ""
+"The list of groups must contain at least two groups. The groups have to "
+"be disjoint: no common element into two different groups."
+msgstr ""
+
+# fecd61ff694c43ba92b41f184f8d29b0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_generate_flat_elements.rst:17
+msgid ""
+"The nodes of the internal faces at the boundaries of the groups are "
+"doubled. Optionally, the internal faces are replaced by flat elements."
+msgstr ""
+
+# bcfba18f40da4612ad4ff5c79d493694
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_generate_flat_elements.rst:19
+msgid "Triangles are transformed into prisms, and quadrangles into hexahedrons."
+msgstr ""
+
+# 9399b78410d546ac85910821b7ce6936
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_generate_flat_elements.rst:21
+msgid "The flat elements are stored in groups of volumes."
+msgstr ""
+
+# 0da6b80f0f2d469cbc70306609b90150
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_generate_flat_elements.rst:23
+msgid ""
+"These groups are named according to the position of the group in the "
+"list: the group j_n_p is the group of the flat elements that are built "
+"between the group \\#n and the group \\#p in the list. If there is no "
+"shared faces between the group \\#n and the group \\#p in the list, the "
+"group j_n_p is not created. All the flat elements are gathered into the "
+"group named \"joints3D\" (or \"joints2D\" in 2D situation). The flat "
+"element of the multiple junctions between the simple junction are stored "
+"in a group named \"jointsMultiples\"."
+msgstr ""
+
+# 791916a68e6a4ac68d0ca337f597f83c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_generate_flat_elements.rst:29
+msgid ""
+"This example represents an iron cable (a thin cylinder) in a concrete "
+"bloc (a big cylinder). The big cylinder is defined by two geometric "
+"volumes."
+msgstr ""
+
+# 32891b0da8c04c99a9f893d9a3d55737
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_generate_flat_elements.rst:34
+msgid "``generate_flat_elements.py``"
+msgstr ""
+
+# d28029c4ca634a2f8919c4710c5275fa
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_generate_flat_elements.rst:40
+msgid ":download:`../../../examples/generate_flat_elements.py`"
+msgstr ""
+
+# d44554c1bbfa4b8e9f233f65f79b94ec
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_generate_flat_elements.rst:42
+msgid ""
+"Here, the 4 groups of volumes [Solid_1_1, Solid_2_1, Solid_3_1, "
+"Solid_4_1] constitute a partition of the mesh. The flat elements on group"
+" boundaries and on faces are built with the 2 last lines of the code "
+"above."
+msgstr ""
+
+# cd05508af49441a9a33f12dbeb40ba64
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_generate_flat_elements.rst:46
+msgid ""
+"If the last argument (Boolean) in DoubleNodesOnGroupBoundaries is set to "
+"1, the flat elements are built, otherwise, there is only a duplication of"
+" the nodes."
+msgstr ""
+
+# f5207480da63486c8a5da024105cc022
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_generate_flat_elements.rst:49
+msgid ""
+"To observe flat element groups, save the resulting mesh on a MED file and"
+" reload it."
+msgstr ""
+

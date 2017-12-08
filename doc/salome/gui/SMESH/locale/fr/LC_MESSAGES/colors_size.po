@@ -1,0 +1,189 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 25d2f26ace5b4b829c8a87ada850ddf3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:5
+msgid "Properties"
+msgstr ""
+
+# 2997394fe84a44f88c477482d902c875
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:10
+msgid ""
+"Using this dialog you can customize different properties of the mesh "
+"visualization parameters."
+msgstr ""
+
+# 31ec38d757fc4badb8d42324193fcab7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:12
+msgid ""
+"The GUI elements in the \"Properties\" dialog box are grouped according "
+"to the entity types of mesh data. If some data entities are not present "
+"in the mesh object, the corresponding GUI elements are not shown."
+msgstr ""
+
+# 655c3a41d3fa45b2a7c4b5a535850a84
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:15
+msgid "**Nodes**:"
+msgstr ""
+
+# fcc0e7b140ea49df90de65f407fe638c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:15
+msgid "**Color** - color of nodes."
+msgstr ""
+
+# 2dc38fccf0464b21a18d71a9b469aea9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:16
+msgid ""
+"**Type** and **Scale** - these options allow changing the nodes "
+"representation (see :ref:point_marker_page \"Point Marker\" page for more"
+" details)."
+msgstr ""
+
+# faae687f9e164f03a8714f74be9ff516
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:18
+msgid "**Edges / wireframe**:"
+msgstr ""
+
+# f60f348a1e044ff6881398709e6ddf52
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:18
+msgid "**Color** - color of element borders in wireframe mode."
+msgstr ""
+
+# 6adaf5a525794040a264748695570501
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:19
+msgid ""
+"**Width** - width of lines (edges and borders of elements in wireframe "
+"mode)."
+msgstr ""
+
+# e48a7e183557491a9e3fcad995f0b6f8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:21
+msgid "**Faces**:"
+msgstr ""
+
+# ef55986094b643f38e984ff14d9a0ef2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:21
+msgid "**Front** - surface color of face elements (seen in shading mode)."
+msgstr ""
+
+# 99746ad5f3b2461aaf22ea0d1f88e4fe
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:22
+msgid ""
+"**Back** - backside surface color of face elements. Use the slider to "
+"select this color generated on the base of the **Face** color by changing"
+" its brightness and saturation."
+msgstr ""
+
+# 996adee3928449c4844f05c8679d5c10
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:24
+msgid "**Volumes**:"
+msgstr ""
+
+# 8b8a404f6c3d49758ded898c5ebf4b28
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:24
+msgid ""
+"**Normal** - surface color of normal volume elements (seen in shading "
+"mode)."
+msgstr ""
+
+# 1b4f147aba284490a763af666ee1cf20
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:25
+msgid ""
+"**Reversed** - surface color of volume elements. Use the slider to select"
+" this color generated on the base of the **Normal** color by changing its"
+" brightness and saturation."
+msgstr ""
+
+# 1539339650874bd3960985a85822a812
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:27
+msgid "**Outlines**:"
+msgstr ""
+
+# 68b3ee1f2ef74b1fbf8101a25f1ea553
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:27
+msgid "**Color** - color of element borders in shading mode."
+msgstr ""
+
+# 760937016686488880f8c72c2494a896
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:28
+msgid "**Width** - width of outlines (borders of elements in shading mode)."
+msgstr ""
+
+# dd46341914784677b8cb0951668ce54d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:30
+msgid "**0D elements**:"
+msgstr ""
+
+# 524e211e12034fbca561d87318b9e099
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:30
+msgid "**Color** - color of 0D elements."
+msgstr ""
+
+# dcdae6f65e7e48de8be8b79cb374855b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:31
+msgid "**Size** - size of 0D elements."
+msgstr ""
+
+# db588562142a4bcba130e8f6ff2794ba
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:34
+msgid "**Balls**:"
+msgstr ""
+
+# 0bcfd9f2bf4a404598722f088e30324b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:33
+msgid "**Color** - color of discrete ball elements."
+msgstr ""
+
+# ff10af519b734385b6d2f8f04884b912
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:34
+msgid "**Size** - size of discrete ball elements."
+msgstr ""
+
+# edbd1c084f46466798861d0b55f02875
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:35
+msgid "**Scale** - scale factor of discrete ball elements."
+msgstr ""
+
+# 4fa0f7d6cb234b54b436bfdc82b471ac
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:38
+msgid "**Orientation vectors**:"
+msgstr ""
+
+# 3b45de37801e459d8f6de945985a070d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:37
+msgid "**Color** - color of orientation vectors."
+msgstr ""
+
+# c2e38c98b8aa4b2a9674bdf474a61ae3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:38
+msgid "**Scale** - size of orientation vectors."
+msgstr ""
+
+# 3faad5944dc640bbaca6ccd2a1db8748
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:39
+msgid "**3D vectors** - allows to choose between 2D planar and 3D vectors."
+msgstr ""
+
+# e5487d6283fc470dba1d0a129808aa9e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/colors_size.rst:40
+msgid ""
+"**Shrink coef.** - relative space of elements compared to gaps between "
+"them in shrink mode."
+msgstr ""
+

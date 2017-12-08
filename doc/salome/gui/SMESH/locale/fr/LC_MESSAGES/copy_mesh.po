@@ -1,0 +1,112 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# e7cd2a18c59c4648a1faaed666fd84b0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/copy_mesh.rst:5
+msgid "Copy Mesh"
+msgstr ""
+
+# cbc50f1b60a6483bb6e2e89bca786e62
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/copy_mesh.rst:7
+msgid "A mesh can be created by copying a part of or the whole other mesh."
+msgstr ""
+
+# 3781b11c6beb432c8d056ac6f6fcf99d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/copy_mesh.rst:9
+msgid "**To make a copy of a mesh:**"
+msgstr ""
+
+# 6e8c46cb80674215bbf3161c454f3661
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/copy_mesh.rst:11
+msgid ""
+"From the contextual menu in the Object Browser of from the **Mesh** menu "
+"select **Copy Mesh** or click **\"Copy Mesh\"** button in the toolbar."
+msgstr ""
+
+# 2bb71b2fbf554441aa9251c03c930ccb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/copy_mesh.rst:19
+msgid "The following dialog box will appear:"
+msgstr ""
+
+# dabcb5bb2bef4d118b89bcd4a8dc0826
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/copy_mesh.rst:25
+msgid "In the dialog:"
+msgstr ""
+
+# 059682ffde4e4f088720752990795816
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/copy_mesh.rst:27
+msgid "specify the part of mesh to copy:"
+msgstr ""
+
+# 3f339c70213b4eeaa304464cf3db00a4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/copy_mesh.rst:29
+msgid ""
+"**Select whole mesh, sub-mesh or group** by mouse activating this "
+"checkbox; or"
+msgstr ""
+
+# 650efe9c14c74143a119a5ebf11a55f6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/copy_mesh.rst:30
+msgid ""
+"choose mesh elements with the mouse in the 3D Viewer. It is possible to "
+"select a whole area with a mouse frame; or"
+msgstr ""
+
+# 0358c0af28bb4938a6ac4b37c426ca12
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/copy_mesh.rst:31
+msgid ""
+"input the **Source Element IDs** directly in this field. The selected "
+"elements will be highlighted in the viewer; or"
+msgstr ""
+
+# 29ed8815de9b476b8e09e3e59d28fa46
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/copy_mesh.rst:32
+msgid ""
+"apply Filters. **Set filter** button allows to apply a filter to the "
+"selection of elements. See more about filters in the "
+":ref:`selection_filter_library_page` \"Selection filter library\" page."
+msgstr ""
+
+# 48cd5b14e17a4565bf59566249673382
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/copy_mesh.rst:34
+msgid "specify the **New Mesh Name**;"
+msgstr ""
+
+# f6122dd4855b4c228b945b0c2148dc6f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/copy_mesh.rst:35
+msgid "specify the conditions of copying:"
+msgstr ""
+
+# 5c5832137f004dfca00c8a4c2789b60e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/copy_mesh.rst:37
+msgid ""
+"activate **Generate groups** checkbox to copy the groups of the source "
+"mesh to the newly created mesh."
+msgstr ""
+
+# 9051de3d4349497fab059d46049e6a77
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/copy_mesh.rst:39
+msgid "Click **Apply** or **Apply and Close** button to confirm the operation."
+msgstr ""
+
+# 814e98a0b5f14d8f9aa10e9effedb459
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/copy_mesh.rst:42
+msgid "**See Also** a sample :ref:`tui_copy_mesh`."
+msgstr ""
+

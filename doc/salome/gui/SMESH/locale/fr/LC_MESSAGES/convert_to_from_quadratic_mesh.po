@@ -1,0 +1,102 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 437a3b67c9b74dbeb3d875e7c0e8b1d4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/convert_to_from_quadratic_mesh.rst:5
+msgid "Convert to/from Quadratic Mesh"
+msgstr ""
+
+# c001a095307b42058c85f22ceb9fe2ed
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/convert_to_from_quadratic_mesh.rst:7
+msgid ""
+"This functionality allows transforming linear meshes (or sub-meshes) to "
+"quadratic and vice versa."
+msgstr ""
+
+# 0f85f2f27d3043d1adfaae24d89e5f06
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/convert_to_from_quadratic_mesh.rst:10
+msgid ""
+"that conversion of a sub-mesh most probably will produce a non-conformal "
+"mesh. Elements on the boundary between quadratic and linear sub-meshes "
+"become (or remain) quadratic."
+msgstr ""
+
+# b529473bb5364b7b9b76ee74355b2c10
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/convert_to_from_quadratic_mesh.rst:12
+msgid ""
+"See :ref:`adding_quadratic_elements_page` for more information about "
+"quadratic meshes."
+msgstr ""
+
+# b9b265c493d54d278f7f2ade025246c2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/convert_to_from_quadratic_mesh.rst:14
+msgid "**To produce a conversion:**"
+msgstr ""
+
+# b7568e5f42ba4c0b98fda5b26036bc07
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/convert_to_from_quadratic_mesh.rst:16
+msgid "Select a mesh or a sub-mesh in the Object Browser or in the Viewer."
+msgstr ""
+
+# 40d3bc8d12ed4c5e98f368db94916b52
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/convert_to_from_quadratic_mesh.rst:17
+msgid ""
+"From the Modification menu or from the contextual menu in the Object "
+"Browser choose **Convert to/from Quadratic Mesh** item, or click "
+"**\"Convert to/from quadratic\"** button in the toolbar."
+msgstr ""
+
+# 5730d84d6bcb41c89c4817e13e541674
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/convert_to_from_quadratic_mesh.rst:25
+msgid "The following dialog box will appear:"
+msgstr ""
+
+# 55c98ecd42a84163931c4b731039438d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/convert_to_from_quadratic_mesh.rst:30
+msgid "In this dialog box specify:"
+msgstr ""
+
+# f098a3dabcb24e3b97f890bddf872ee5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/convert_to_from_quadratic_mesh.rst:32
+msgid ""
+"If it is necessary to convert a linear mesh to quadratic or a quadratic "
+"mesh to linear. **Convert to bi-quadratic** creates some types of "
+"quadratic elements with additional central nodes: TRIA7, QUAD9 and HEXA27"
+" elements instead of TRIA6, QUAD8, and HEXA20 elements respectively."
+msgstr ""
+
+# b8247159e5a34709a2e87fae094405a0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/convert_to_from_quadratic_mesh.rst:33
+msgid ""
+"If it is necessary to place **medium nodes** of the quadratic mesh **on "
+"the geometry** (meshed shape). This option is relevant for conversion to "
+"quadratic provided that the mesh is based on a geometry (not imported "
+"from file)."
+msgstr ""
+
+# 825d7f71de5d48d28132a2499de90f29
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/convert_to_from_quadratic_mesh.rst:49
+msgid "Click the **Apply** or **Apply and Close** button."
+msgstr ""
+
+# 992225f722ce406c8df8b165ff5fe521
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/convert_to_from_quadratic_mesh.rst:52
+msgid "**See Also** a sample TUI Script of a :ref:`tui_quadratic` operation."
+msgstr ""
+

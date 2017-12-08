@@ -1,0 +1,224 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 29bf61a3b72547389506b6a4965bd37c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:5
+msgid "Transforming Meshes"
+msgstr ""
+
+# 57af2fd00488467fb00a9e03a72759c0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:0
+msgid "`Table of contents`"
+msgstr ""
+
+# 1c60f8c47a3e4be98e503c34b554dc09
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:13
+msgid "Translation"
+msgstr ""
+
+# b878258a6bf448e1b9830f1c73f41637
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:17
+msgid "``transforming_meshes_ex01.py``"
+msgstr ""
+
+# 1766f2bf2ab24dc988ad390de07e89ad
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:23
+msgid ":download:`../../../examples/transforming_meshes_ex01.py`"
+msgstr ""
+
+# af8b339fa0fe4dc982b2796537a795db
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:28
+msgid "Rotation"
+msgstr ""
+
+# 3e8063e2480b4f8ba76ec78c425f49dd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:32
+msgid "``transforming_meshes_ex02.py``"
+msgstr ""
+
+# 9fe78b8a34c348d59749f25e7335d14c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:38
+msgid ":download:`../../../examples/transforming_meshes_ex02.py`"
+msgstr ""
+
+# aa586e69c42a4abd8923ddd1b7ab0cf0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:43
+msgid "Scale"
+msgstr ""
+
+# 3ae31c66014b45ad83a413a5c6235bdb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:47
+msgid "``transforming_meshes_ex03.py``"
+msgstr ""
+
+# 6493aa79b1714ac492c6850e4cfecbef
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:53
+msgid ":download:`../../../examples/transforming_meshes_ex03.py`"
+msgstr ""
+
+# 66e92a4ad2c84565b94a231fb7c5f32e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:58
+msgid "Symmetry"
+msgstr ""
+
+# 497ee5890c624291b06e090511967f8b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:62
+msgid "``transforming_meshes_ex04.py``"
+msgstr ""
+
+# 5540f43535344d868236748555f493f5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:68
+msgid ":download:`../../../examples/transforming_meshes_ex04.py`"
+msgstr ""
+
+# eaea65b5483d45a89c341a5703e35a03
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:73
+msgid "Merging Nodes"
+msgstr ""
+
+# a1c5602d67184c2c971d7820782b32dd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:77
+msgid "``transforming_meshes_ex05.py``"
+msgstr ""
+
+# 5d0bda0b10c343c99f7dbbca2224798a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:83
+msgid ":download:`../../../examples/transforming_meshes_ex05.py`"
+msgstr ""
+
+# 14edd06325a34255bce5f7a6a84d8b43
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:88
+msgid "Merging Elements"
+msgstr ""
+
+# 7910501187be43ad8347f57291429a5b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:92
+msgid "``transforming_meshes_ex06.py``"
+msgstr ""
+
+# c772435312ae4ec491cf1b0620c82f7a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:98
+msgid ":download:`../../../examples/transforming_meshes_ex06.py`"
+msgstr ""
+
+# 0dcc87a2f6ff443f834bd65409e3f0ea
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:103
+msgid "Sew Meshes Border to Side"
+msgstr ""
+
+# e513c5cff88c4988b5b348e62e405230
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:107
+msgid "``transforming_meshes_ex07.py``"
+msgstr ""
+
+# 9c1952b3506047d18c737045e2ac7948
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:113
+msgid ":download:`../../../examples/transforming_meshes_ex07.py`"
+msgstr ""
+
+# 6d328da4f3e643cdaa0d3918489b374c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:118
+msgid "Sew Conform Free Borders"
+msgstr ""
+
+# a465d0a871a74164817c27b0f9221e2c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:122
+msgid "``transforming_meshes_ex08.py``"
+msgstr ""
+
+# bb8c800633044961980283b51ee5c778
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:128
+msgid ":download:`../../../examples/transforming_meshes_ex08.py`"
+msgstr ""
+
+# 5891f30fd4a54ff6b456551a455b870f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:133
+msgid "Sew Free Borders"
+msgstr ""
+
+# 20626fb04a77496fbd712257159998bf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:137
+msgid "``transforming_meshes_ex09.py``"
+msgstr ""
+
+# c4a9a4507341432890f2792f0f7001c9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:143
+msgid ":download:`../../../examples/transforming_meshes_ex09.py`"
+msgstr ""
+
+# 9e70aa09d8274ba794836660edf208d2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:148
+msgid "Sew Side Elements"
+msgstr ""
+
+# 76fe380dea9a4fa79d1e11790bd51f38
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:152
+msgid "``transforming_meshes_ex10.py``"
+msgstr ""
+
+# 016d984b3be4476bb71ae33174b0f927
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:158
+msgid ":download:`../../../examples/transforming_meshes_ex10.py`"
+msgstr ""
+
+# ed239c8e17e343f7956d9344959a9f07
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:163
+msgid "Duplicate nodes or/and elements"
+msgstr ""
+
+# 65dee1a957b646d4a17602e87ae626bf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:167
+msgid "``transforming_meshes_ex11.py``"
+msgstr ""
+
+# 10f039ec9f1b48eebe57b990c2304fa9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:173
+msgid ":download:`../../../examples/transforming_meshes_ex11.py`"
+msgstr ""
+
+# 5f67454206644f72825d645d1844ab73
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:178
+msgid "Create boundary elements"
+msgstr ""
+
+# 4bb99511ee02479cb382af3532557158
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:182
+msgid "``transforming_meshes_ex12.py``"
+msgstr ""
+
+# 6b7afe9a5e55413cb8b60ae64081928f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:188
+msgid ":download:`../../../examples/transforming_meshes_ex12.py`"
+msgstr ""
+
+# 5d157cdb1ae345e6a6108ab5fef97706
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:193
+msgid "Reorient faces"
+msgstr ""
+
+# fdccce5846f243c38659c5aed18b65ee
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:197
+msgid "``transforming_meshes_ex13.py``"
+msgstr ""
+
+# 4a4fc603eaef4c1c8c7b97fab58caf4f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_transforming_meshes.rst:203
+msgid ":download:`../../../examples/transforming_meshes_ex13.py`"
+msgstr ""
+

@@ -462,9 +462,9 @@ void SMESHGUI_MergeDlg::Init()
   updateControls();
   
   if ( myAction == MERGE_NODES )
-    myHelpFileName = "merging_nodes_page.html";
+    myHelpFileName = "merging_nodes.html";
   else
-    myHelpFileName = "merging_elements_page.html";
+    myHelpFileName = "merging_elements.html";
 }
 
 //=================================================================================

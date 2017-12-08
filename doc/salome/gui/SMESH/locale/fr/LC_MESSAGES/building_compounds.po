@@ -1,0 +1,117 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 67e4b2dcef5f44219170b804924a32d4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/building_compounds.rst:5
+msgid "Building Compound Meshes"
+msgstr ""
+
+# 343ff5ee2e404c4cacb3701d7e63c355
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/building_compounds.rst:7
+msgid ""
+"Compound Mesh is a combination of several meshes. All elements and groups"
+" present in input meshes are present in the compound mesh. However, it "
+"does not use geometry or hypotheses of the initial meshes. The links "
+"between the input meshes and the compound mesh are not supported, "
+"consequently the modification of an input mesh does not lead to the "
+"update of the compound mesh."
+msgstr ""
+
+# 218176393db0429b83f003c7f27abeb2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/building_compounds.rst:10
+msgid "**To Build a compound mesh:**"
+msgstr ""
+
+# 8ae6eecfc11b4cc4bb362110cec348a2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/building_compounds.rst:12
+msgid ""
+"From the **Mesh** menu select **Build Compound** or click **\"Build "
+"Compound Mesh\"** button in the toolbar."
+msgstr ""
+
+# 48ee70b54e184ebfbd5038e12b55e040
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/building_compounds.rst:17
+msgid "**\"Build Compound Mesh\" button**"
+msgstr ""
+
+# f1035bf666d34447a81f354e3abdde43
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/building_compounds.rst:20
+msgid "The following dialog box will appear:"
+msgstr ""
+
+# 7b2ce5d693c04a7d976032fe2a719fcf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/building_compounds.rst:25
+msgid "**Name** - allows selecting the name of the resulting **Compound** mesh."
+msgstr ""
+
+# 45bb597168cd4515936ab86be4ab002d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/building_compounds.rst:26
+msgid ""
+"**Meshes, sub-meshes, groups** - allows selecting the meshes, sub-meshes "
+"and groups to be concatenated. They can be chosen in the Object Browser "
+"while holding **Ctrl** button."
+msgstr ""
+
+# ada9e86048ff49ec9518d83ed23bcdae
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/building_compounds.rst:27
+msgid ""
+"**Processing identical groups** - allows selecting the method of "
+"processing the namesake groups existing in the input meshes. They can be "
+"either"
+msgstr ""
+
+# 5ddde549badf4897bf5c070e00601711
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/building_compounds.rst:29
+msgid ""
+"**United** - all elements of **Group1** of **Mesh_1** and **Group1** of "
+"**Mesh_2** become the elements of **Group1** of the **Compound_Mesh**, or"
+msgstr ""
+
+# cd183fb362f54a8d89255ee5a53fe390
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/building_compounds.rst:30
+msgid ""
+"**Renamed** - **Group1** of **Mesh_1** becomes **Group1_1** and "
+"**Group1** of **Mesh_2** becomes **Group1_2**."
+msgstr ""
+
+# ac06126abbd94f50acff31e923c5e1c5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/building_compounds.rst:32
+msgid "See :ref:`grouping_elements_page` for more information about groups."
+msgstr ""
+
+# 253ffe6ee5f044ff9859469e41b73457
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/building_compounds.rst:33
+msgid ""
+"**Create groups from input objects** check-box permits to automatically "
+"create groups corresponding to every initial mesh."
+msgstr ""
+
+# 642a6a491eb54a51a35daf71ec5f8ad4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/building_compounds.rst:41
+msgid ""
+"You can choose to additionally :ref:`merging_nodes_page`, "
+":ref:`merging_elements_page` in the compound mesh, in which case it is "
+"possible to define the **Tolerance** for this operation."
+msgstr ""
+
+# 188a4077b8a34a7c9b5f004b744f31b0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/building_compounds.rst:49
+msgid "**See Also** a sample :ref:`tui_building_compound`."
+msgstr ""
+

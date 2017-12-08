@@ -1,0 +1,346 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 2364aec5fd98494fa6a3b3bea96909b9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:5
+msgid "Extrusion"
+msgstr ""
+
+# ebff233d82a74fcb981c8c470c7219cf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:7
+msgid ""
+"Extrusion is used to build mesh elements of plus one dimension than the "
+"input ones. Boundary elements around generated mesh of plus one dimension"
+" are additionally created. All created elements can be automatically "
+"grouped. Extrusion can be used to create a "
+":ref:`extrusion_struct`:\"structured mesh from scratch\"."
+msgstr ""
+
+# bc07284d8f4f4e28b6e5527d32132997
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:15
+msgid ""
+"Any node, segment or 2D element can be extruded. Each type of elements is"
+" extruded into a corresponding type of result elements:"
+msgstr ""
+
+# ee1ba33fc49041b8ae0e3ca45b004ae6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:18
+msgid "**Extruded element**"
+msgstr ""
+
+# 66f55ddccdce468ab1523f3f86a39835
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:18
+msgid "**Result element**"
+msgstr ""
+
+# 38c41b21cf1d40f7b4cd9739fcf5b02d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:20
+msgid "Node"
+msgstr ""
+
+# 632755e4966948b0b6b4193471772513
+# 1d43529b13fe4903a0dad1c935023197
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:20
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:22
+msgid "Segment"
+msgstr ""
+
+# f1ba62dcf07641cba2c6e659df2cc409
+# fc5653560d5f4a6cbbcf5a4e48603537
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:22
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:26
+msgid "Quadrilateral"
+msgstr ""
+
+# 8884d612e5f54aec87829e567d81bcc6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:24
+msgid "Triangle"
+msgstr ""
+
+# 63ba769c64114e27b40f0a74bd8d3604
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:24
+msgid "Pentahedron"
+msgstr ""
+
+# a322c15c31f142d488551274d60e8a9e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:26
+msgid "Hexahedron"
+msgstr ""
+
+# 7eb6eaf57f004d31927ac6eabf97b7cb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:28
+msgid "Polygon"
+msgstr ""
+
+# f611530d307e459aa62eefb31be44873
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:28
+msgid "Polyhedron"
+msgstr ""
+
+# de5e6214009d48b0a25cf0e005ac62ad
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:30
+msgid "Hexagonal polygon"
+msgstr ""
+
+# 54d5dcd07ecb4111bd18c06a6da7be1a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:30
+msgid "Hexagonal prism"
+msgstr ""
+
+# 5783f80db812442fa92882f2cd6ed227
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:34
+msgid ""
+"When 2D elements are extruded, in addition to 3D elements segments are "
+"created on the ribs of the resulting 3D mesh. Free edges of input 2D "
+"elements generate logically horizontal rib segments. Logically vertical "
+"rib segments are generated from the nodes belonging to a sole input 2D "
+"element (the figure below illustrates this rule)."
+msgstr ""
+
+# b1cbf516acca40e5bcb88be731246438
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:43
+msgid "**To use extrusion:**"
+msgstr ""
+
+# e4b0a7aca4d349309ef5d31e63b00a66
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:45
+msgid ""
+"From the **Modification** menu choose the **Extrusion** item or click "
+"**\"Extrusion\"** button in the toolbar."
+msgstr ""
+
+# 693752be10014feb9a87762183d890d6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:53
+msgid "The following dialog will appear:"
+msgstr ""
+
+# c3703d1aa91c49ba8e99c04e8c52df4f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:60
+msgid "In this dialog:"
+msgstr ""
+
+# c30f5aa684394cba8f2b31d58410292f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:67
+msgid ""
+"Use *Selection* button to specify what you are going to  select at a "
+"given moment, **Nodes**, **Edges** or **Faces**."
+msgstr ""
+
+# d0159decd96a479591271a64f8f09a9d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:73
+msgid ""
+"Specify **Nodes**, **Edges** and **Faces**, which will be extruded, by "
+"one of following means:"
+msgstr ""
+
+# cf74b51d01e74797a40dcdc6ec5d65a1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:70
+msgid ""
+"**Select the whole mesh, sub-mesh or group** activating the corresponding"
+" check-box."
+msgstr ""
+
+# 496ae8d70e244acba70124abc8c6539a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:71
+msgid ""
+"Choose mesh elements with the mouse in the 3D Viewer. It is possible to "
+"select a whole area with a mouse frame."
+msgstr ""
+
+# 63c868c12f4a44e3ae22eed9bfb4826e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:72
+msgid ""
+"Input the element IDs directly in **Node IDs**, **Edge IDs** and **Face "
+"IDs** fields. The selected elements will be highlighted in the viewer, if"
+" the mesh is shown there."
+msgstr ""
+
+# c723cfa91f234662a336c6e696edad7c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:73
+msgid ""
+"Apply Filters. **Set filter** button allows to apply a filter to the "
+"selection of elements. See more about filters in the "
+":ref:`filtering_elements`:\"Selection filters\" page."
+msgstr ""
+
+# ee94b752be9d4b75b998a61ef027b8f8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:76
+msgid "If the **Extrusion to Distance** radio button is selected"
+msgstr ""
+
+# 80f0a501c039494fa6cdb49a95f3c8b6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:76
+msgid "specify the translation vector by which the elements will be extruded."
+msgstr ""
+
+# 46a93739cd43409782f9cc81529f5e6d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:78
+msgid "If the **Extrusion Along Vector** radio button is selected"
+msgstr ""
+
+# fefb6a7cb0f749b9953fe4b142909237
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:83
+msgid ""
+"specify the components of the **Vector** along which the elements will be"
+" extruded, either directly or by selecting the mesh face (the normal to "
+"the face will define the vector),"
+msgstr ""
+
+# 43be03535a7a4e1ea9dca1e8b3dc71fe
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:84
+msgid ""
+"specify the **Distance** of extrusion along the vector (it can be "
+"negative)."
+msgstr ""
+
+# bb5c369c3e7846afbada8631f4c62600
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:88
+msgid ""
+"If the **Extrusion By Normal** radio button is selected, every node of "
+"the selected faces is extruded along the *average* of the *normal* "
+"vectors to the faces sharing the node. (Nodes and edges cannot be "
+"extruded in this mode.)"
+msgstr ""
+
+# 66f8279ea7fd47b3b42c0d87987bc3ad
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:93
+msgid "Specify the **Distance** of extrusion (it can be negative),"
+msgstr ""
+
+# 5a68a26f70a343b68a8b65c58a0ca736
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:94
+msgid ""
+"Use **Along average normal** check-box to specify along which vector the "
+"distance is measured."
+msgstr ""
+
+# 774f7b697b244ed692daa2e4ea20c506
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:95
+msgid ""
+"If it is *activated* the distance is measured along the average normal "
+"mentioned above."
+msgstr ""
+
+# 141e69fb74d748b3801bb69d53369658
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:96
+msgid ""
+"If it is *deactivated* every node is extruded along the average normal "
+"till its intersection with a virtual plane obtained by translation of the"
+" face sharing the node along its own normal by the **Distance**."
+msgstr ""
+
+# 5a16428f873e499bbb978c871ebda02f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:98
+msgid ""
+"The picture below shows a cross-section of a 2D mesh extruded with "
+"**Along average normal** activated (to the left) and deactivated (to the "
+"right)."
+msgstr ""
+
+# 13537234a1ae43bf87fcc450c709eb58
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:108
+msgid ""
+"**Use only input elements** check-box specifies what elements will be "
+"used to compute the average normal."
+msgstr ""
+
+# 1aee516cd243484b96295b8061828dd2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:109
+msgid ""
+"If it is *activated* only selected faces, among faces sharing the node, "
+"are used to compute the average normal at the node."
+msgstr ""
+
+# d644b3e115f34653a56f746f7d775170
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:110
+msgid "Else all faces sharing the node are used."
+msgstr ""
+
+# c980870b2226438eb4237b372b558037
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:112
+msgid ""
+"The picture below shows a cross-section of a 2D mesh the upper plane of "
+"which is extruded with **Use only input elements** activated (to the "
+"left) and deactivated (to the right)."
+msgstr ""
+
+# b79e7639a6474f3182a838f2757aa90f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:122
+msgid "Specify the **Number of steps**."
+msgstr ""
+
+# b16bd8b181304246b9bcecf63b4a58cd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:141
+msgid ""
+"Optionally specify **Scale Factors**. Each scale factor in the list is "
+"applied to nodes of a corresponding extrusion step unless **Linear "
+"Variation of Scale Factors** is checked, is which case the scale factors "
+"are spread over all extrusion steps."
+msgstr ""
+
+# 68c3f5a414364ee8a09781e956586294
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:124
+msgid ""
+"**Scaling Center** can be defined either using spin boxes or by picking a"
+" node in the Viewer or by picking a geometrical vertex in the Object "
+"Browser."
+msgstr ""
+
+# 836c4b43b7c24aa4aa676a9173dc9e0c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:125
+msgid "**Add** button adds a scale factor to the list."
+msgstr ""
+
+# 08a65a077ad74266bb3dc428552672ed
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:133
+msgid "**Remove** button removes selected scale factors from the list."
+msgstr ""
+
+# 65c23b96ef0c4583af562130852040cc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:143
+msgid ""
+"If you activate **Generate Groups** check-box, the **result elements** "
+"created from **selected elements** contained in groups will be included "
+"into new groups named by pattern \"<old group name>_extruded\" and \"<old"
+" group name>_top\". For example if a selected quadrangle is included in "
+"*g_Faces* group (see figures below) then result hexahedra will be "
+"included in *g_Faces_extruded* group and a quadrangle created at the "
+"\"top\" of extruded mesh will be included in *g_Faces_top group*."
+msgstr ""
+
+# 67e7563b3d7e4482a49aa461a724ffa1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:151
+msgid "This check-box is active only if there are some groups in the mesh."
+msgstr ""
+
+# bd6a9b1d09cb4817b044a257b9c221cd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:155
+msgid "Click **Apply** or **Apply and Close**  button to confirm the operation."
+msgstr ""
+
+# f08ac327c1d042559c34b64d86c475bf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:160
+msgid "Example: creation of a structured mesh from scratch"
+msgstr ""
+
+# 75d97cfe13ff4c22aadf096504c666df
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/extrusion.rst:181
+msgid "**See Also** a sample TUI Script of an :ref:`tui_extrusion` operation."
+msgstr ""
+

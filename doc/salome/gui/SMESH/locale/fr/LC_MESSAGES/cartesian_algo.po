@@ -1,0 +1,223 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# a8e930acb63f44f4b997deb515406300
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:5
+msgid "Body Fitting 3D meshing algorithm"
+msgstr ""
+
+# 9910dbcae2b54873a9fbe1949092c565
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:7
+msgid ""
+"Body Fitting algorithm generates hexahedrons of a Cartesian grid in the "
+"internal part of geometry and polyhedrons and other types of elements at "
+"the intersection of Cartesian cells with the geometrical boundary."
+msgstr ""
+
+# d7359f93f6a548bdad23de6ae3d468cf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:18
+msgid "The meshing algorithm is as follows."
+msgstr ""
+
+# 40dcc8dc839149ccae3463069ccedc40
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:20
+msgid ""
+"Lines of a Cartesian structured grid defined by "
+":ref:`cartesian_hyp_anchor` hypothesis are intersected with the geometry "
+"boundary, thus nodes lying on the boundary are found. This step also "
+"allows finding out for each node of the Cartesian grid if it is inside or"
+" outside the geometry."
+msgstr ""
+
+# 5086ae5fb11d492588240d7cb7c2ab6e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:21
+msgid ""
+"For each cell of the grid, check how many of its nodes are outside of the"
+" geometry boundary. Depending on a result of this check"
+msgstr ""
+
+# 8f9abd85d3314fbc960850ffc427d32c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:22
+msgid "skip a cell, if all its nodes are outside"
+msgstr ""
+
+# b4a9ee73831a4b78b1beed76ea20ebc3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:23
+msgid "skip a cell, if it is too small according to **Size Threshold** parameter"
+msgstr ""
+
+# a6636e49ee944dc49d1443efe959e6dc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:24
+msgid "add a hexahedron in the mesh, if all nodes are inside"
+msgstr ""
+
+# a342af446281426e939081be935cc062
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:25
+msgid ""
+"add a polyhedron or another cell type in the mesh, if some nodes are "
+"inside and some outside."
+msgstr ""
+
+# 1b709cb0a50c4116b737a084946641e8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:27
+msgid ""
+"To apply this algorithm when you define your mesh, select **Body "
+"Fitting** in the list of 3D algorithms and add **Body Fitting  "
+"Parameters** hypothesis. The following dialog will appear:"
+msgstr ""
+
+# 43f05e2d944c45a8ba6e9a588efd7a72
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:32
+msgid "Body Fitting Parameters hypothesis"
+msgstr ""
+
+# 2b52cecbc75c4291b7c67f8a35b75aa8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:40
+msgid "This dialog allows to define"
+msgstr ""
+
+# d87ae3b140c4486b99566c643801769f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:42
+msgid "**Name** of the algorithm."
+msgstr ""
+
+# ef240d03b53c43c786f69034ea33eff6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:43
+msgid ""
+"Minimal size of a cell truncated by the geometry boundary. If the size of"
+" a truncated grid cell is **Threshold** times less than a initial cell "
+"size, then a mesh element is not created."
+msgstr ""
+
+# bd47ac9350824864aa06382db8ee86bf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:44
+msgid ""
+"**Implement Edges** check-box activates incorporation of geometrical "
+"edges in the mesh."
+msgstr ""
+
+# 5baff056db5e4d83a014f9b7ee4870d4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:52
+msgid ""
+"**Definition mode** allows choosing how Cartesian structured grid is "
+"defined. Location of nodes along each grid axis is defined individually:"
+msgstr ""
+
+# 04af1c69153943fc94b0eb1559764663
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:55
+msgid ""
+"You can specify the **Coordinates** of grid nodes. **Insert** button "
+"inserts a node at **Step** distance (negative or positive) from the "
+"selected node. **Delete** button removes the selected node. Double click "
+"on a coordinate in the list enables its edition."
+msgstr ""
+
+# 498e3aacb6d049dd9cbf56e2d276d388
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:56
+msgid ""
+"that node coordinates are measured along directions of axes that can "
+"differ from the directions of the Global Coordinate System."
+msgstr ""
+
+# 8e8eb1fa61b84f73b31fbd1309e136bf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:57
+msgid ""
+"You can define the **Spacing** of a grid as an algebraic formula **f(t)**"
+" where *t* is a position along a grid axis normalized at [0.0,1.0]. "
+"**f(t)** must be non-negative at 0. <= *t* <= 1. The whole extent of "
+"geometry can be divided into ranges with their own spacing formulas to "
+"apply; a t varies between 0.0 and 1.0 within each **Range**. **Insert** "
+"button divides a selected range into two. **Delete** button adds the "
+"selected sub-range to the previous one. Double click on a range in the "
+"list enables edition of its right boundary. Double click on a function in"
+" the list enables its edition."
+msgstr ""
+
+# 77758a7e751a4659a9b8332760e46d53
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:59
+msgid ""
+"**Fixed Point** group allows defining an exact location of a grid node in"
+" the direction defined by spacing. The following cases are possible:"
+msgstr ""
+
+# 0d7a5b6700b5418b8ecff106ab703ff9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:61
+msgid ""
+"If all three directions are defined by spacing, there will be a mesh node"
+" at the **Fixed Point**."
+msgstr ""
+
+# 780deb00eb6543fe8c3cd80c09cf9f9f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:62
+msgid ""
+"If two directions are defined by spacing, there will be at least a link "
+"between mesh nodes passing through the **Fixed Point**."
+msgstr ""
+
+# 9f89cbedc11c4b808087371c5843b502
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:63
+msgid ""
+"If only one direction is defined by spacing, there will be at least an "
+"element facet passing through the **Fixed Point**."
+msgstr ""
+
+# 7c3cfc7fa79448998f6ad6e1c6fcb1a2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:64
+msgid "If no directions are defined by spacing, **Fixed Point** is disabled."
+msgstr ""
+
+# 1c1175fe90b24bd5be0f5c3a254698e6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:66
+msgid "**Directions of Axes** group allows setting the directions of grid axes."
+msgstr ""
+
+# 45a3134007e2474085d37c880226b945
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:68
+msgid ""
+"If **Orthogonal Axes** check-box is activated the axes remain orthogonal "
+"during their modification."
+msgstr ""
+
+# 5e62f1b6a9da4933b9311638965b67ab
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:69
+msgid ""
+"Selection buttons enable snapping corresponding axes to direction of a "
+"geometrical edge selected in the Object Browser. Edge direction is "
+"defined by coordinates of its end points."
+msgstr ""
+
+# 137f0b6c5afa4c35bb2460e208d31705
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:70
+msgid ""
+"**Optimal Axes** button runs an algorithm that tries to set the axes to "
+"maximize the number of generated hexahedra."
+msgstr ""
+
+# 3d3c72fee116466bbe4150c2ed3bbe66
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:71
+msgid ""
+"**Reset** button returns the axes in a default position parallel to the "
+"axes of the Global Coordinate System."
+msgstr ""
+
+# bca1ceb497d2487ab725b4d1cb3a4ec3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/cartesian_algo.rst:76
+msgid "**See Also** a sample TUI Script of a :ref:`tui_cartesian_algo`."
+msgstr ""
+

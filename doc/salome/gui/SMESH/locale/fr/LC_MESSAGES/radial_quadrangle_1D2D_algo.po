@@ -1,0 +1,65 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# f0ac03aa977749fbbd906fdab24b64be
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/radial_quadrangle_1D2D_algo.rst:5
+msgid "Radial Quadrangle 1D-2D"
+msgstr ""
+
+# fa9894d81bb64b7e8ca471ffe1d0a458
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/radial_quadrangle_1D2D_algo.rst:7
+msgid ""
+"This algorithm applies to the meshing of 2D shapes under the following "
+"conditions: the face must be a full ellipse or a part of ellipse (i.e. "
+"the number of edges is less or equal to 3 and one of them is an ellipse "
+"curve). The resulting mesh consists of triangles (near the center point) "
+"and quadrangles."
+msgstr ""
+
+# 259b8a9a3c9148a18cf68c58c3d597ed
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/radial_quadrangle_1D2D_algo.rst:13
+msgid ""
+"This algorithm is optionally parametrized by the hypothesis indicating "
+"the number of mesh layers along the radius. The distribution of layers "
+"can be set with any 1D Hypothesis. If the face boundary includes radial "
+"edges, this distribution is applied to the longest radial edge. If the "
+"face boundary does not include radial edges, this distribution is applied"
+" to the longest virtual radial edge. The distribution is applied to the "
+"longest radial edge starting from its end lying on the elliptic curve."
+msgstr ""
+
+# 7ee304ad57e440008cffc634c3739734
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/radial_quadrangle_1D2D_algo.rst:23
+msgid ""
+"If no own hypothesis of the algorithm is assigned, any local or global "
+"hypothesis is used by the algorithm to discretize edges."
+msgstr ""
+
+# 9a87ad2f50a1473385f55fd5593ba561
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/radial_quadrangle_1D2D_algo.rst:26
+msgid ""
+"If no 1D hypothesis is assigned to an edge, :ref:`nb_segments_pref` "
+"preferences parameter is used to discretize the edge."
+msgstr ""
+
+# f69a04ca46b746e284f55cb575200996
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/radial_quadrangle_1D2D_algo.rst:45
+msgid "**See also** A sample :ref:`tui_radial_quadrangle`."
+msgstr ""
+

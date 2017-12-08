@@ -180,7 +180,7 @@ SMESHGUI_GroupOnShapeOp::SMESHGUI_GroupOnShapeOp()
   : SMESHGUI_SelectionOp(ActorSelection),
     myDlg( 0 )
 {
-  myHelpFileName = "create_groups_from_geometry_page.html";
+  myHelpFileName = "create_groups_from_geometry.html";
 }
 
 SMESHGUI_GroupOnShapeOp::~SMESHGUI_GroupOnShapeOp()

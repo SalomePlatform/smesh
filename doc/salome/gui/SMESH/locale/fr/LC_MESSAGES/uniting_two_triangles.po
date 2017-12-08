@@ -1,0 +1,68 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# d10d95c85acc44b59aa60cc145c274f1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/uniting_two_triangles.rst:5
+msgid "Uniting two triangles"
+msgstr ""
+
+# 7efb4f33b07c4d7c9b96666b50332748
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/uniting_two_triangles.rst:7
+msgid ""
+"In MESH you can union two neighboring triangles by deletion of the common"
+" edge."
+msgstr ""
+
+# 0a773ec39a8040e7b6431f0bac5d7e8b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/uniting_two_triangles.rst:9
+msgid "**To unite two triangles:**"
+msgstr ""
+
+# 9cd5777e6184434cb5434d682eb64c97
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/uniting_two_triangles.rst:11
+msgid ""
+"From the **Modification** menu choose the **Union of two triangles** item"
+" or click **\"Union of two triangles\"** button in the tool-bar."
+msgstr ""
+
+# cc9997ad658044a49b45e7072e7f2702
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/uniting_two_triangles.rst:19
+msgid "The following dialog box shall appear:"
+msgstr ""
+
+# 4b000ffa624b43e290c100700553f0ff
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/uniting_two_triangles.rst:25
+msgid ""
+"Enter IDs of nodes forming the required edge in the **Edge** field (a "
+"couple of node IDs separated by a dash) or select this edge in the 3D "
+"viewer."
+msgstr ""
+
+# c3db06c8f1e44be388aec4b9659acea1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/uniting_two_triangles.rst:26
+msgid "Click the **Apply** or **Apply and Close** button."
+msgstr ""
+
+# 34c5c46c61514edca75e1ef4a0ed3dd2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/uniting_two_triangles.rst:41
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_uniting_two_triangles` "
+"operation."
+msgstr ""
+

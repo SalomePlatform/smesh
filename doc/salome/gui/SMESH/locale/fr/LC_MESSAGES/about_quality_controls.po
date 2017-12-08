@@ -1,0 +1,252 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 1ee8b31425374381af2cfb8401ef4f22
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:5
+msgid "About quality controls"
+msgstr ""
+
+# f6ab5ca061f14d87958b45a6eccb1867
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:8
+msgid ""
+"**Mesh quality control** in MESH is destined for visual control of the "
+"generated mesh."
+msgstr ""
+
+# a45fbb955cd7401d9e4a8aae1f14bb08
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:10
+msgid ""
+"Application of a definite quality control consists of usage of the "
+"corresponding algorithm, which calculates a value of a definite geometric"
+" characteristic (Area, Length of edges, etc) for all meshing elements, "
+"composing your mesh. Then all meshing elements are colored according the "
+"calculated values. The reference between the coloring of the meshing "
+"elements and these calculated values is shown with the help of a scalar "
+"bar, which is displayed near the presentation of your mesh."
+msgstr ""
+
+# ded5b6f9b30f4033bdf008efac6be875
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:12
+msgid ""
+"There are four types of quality controls, corresponding to node, edge, "
+"face and volume entity type."
+msgstr ""
+
+# 300e980259b048168030a8045bb7ef99
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:14
+msgid "Node quality controls:"
+msgstr ""
+
+# a56a842402c748b1a450684ac448f30b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:16
+msgid ":ref:`free_nodes_page`"
+msgstr ""
+
+# 9579927bc68945e7bb57df2cc60bcc7e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:17
+msgid ":ref:`double_nodes_control_page`"
+msgstr ""
+
+# eb9a884d72b84a20a80ef86bd2016aa4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:20
+msgid "Edge quality controls:"
+msgstr ""
+
+# de4c7ad561754197886c465f7ba9b493
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:22
+msgid ":ref:`free_borders_page`"
+msgstr ""
+
+# 514b8747c33343508f22259c2745a0d4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:23
+msgid ":ref:`length_page`"
+msgstr ""
+
+# 29ca9e18e3044f728d2bbabd9daf70ef
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:24
+msgid ":ref:`borders_at_multi_connection_page`"
+msgstr ""
+
+# 1f2a0b4bba2d49938eb08cd4fd88e506
+# 9f94241b84ec424093f789232f7741ca
+# 89e8eaaee4c442cdbef054f7b3e5e80f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:25
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:43
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:53
+msgid ":ref:`double_elements_page`"
+msgstr ""
+
+# f848afd5310a462dbab6c26cb8a547a7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:28
+msgid "Face quality controls:"
+msgstr ""
+
+# 0aa1f1e12ed94d5b8e66db9a11001bf1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:30
+msgid ":ref:`free_edges_page`"
+msgstr ""
+
+# 72064f0d04994068b33a360cdbba28e1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:31
+msgid ":ref:`free_faces_page`"
+msgstr ""
+
+# a129a1a3d9264e9bb1c59001e5bd5215
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:32
+msgid ":ref:`bare_border_faces_page`"
+msgstr ""
+
+# ac50d8b3124c4ef4b365f04a6501d770
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:33
+msgid ":ref:`over_constrained_faces_page`"
+msgstr ""
+
+# 518ba97e1b04492e8a65a09fc3e34c36
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:34
+msgid ":ref:`length_2d_page`"
+msgstr ""
+
+# 8465eafd82c941db8578142d9c8df8a5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:35
+msgid ":ref:`borders_at_multi_connection_2d_page`"
+msgstr ""
+
+# 176553bb796040aeb915efba7fecb379
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:36
+msgid ":ref:`area_page`"
+msgstr ""
+
+# e6254c2642c14e1a9f436dd528e96ff4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:37
+msgid ":ref:`taper_page`"
+msgstr ""
+
+# 3400cf1721384c5784a097bdd5b82e6d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:38
+msgid ":ref:`aspect_ratio_page`"
+msgstr ""
+
+# ccdb34f54e5747b7888ae9981b9e450e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:39
+msgid ":ref:`minimum_angle_page`"
+msgstr ""
+
+# 9cd991036b664bc8a1101d022982e5a1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:40
+msgid ":ref:`warping_page`"
+msgstr ""
+
+# 41f8256446cc4b1aac9eb970eeda4ce0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:41
+msgid ":ref:`skew_page`"
+msgstr ""
+
+# 78825a0aa02c4988a21bf69e73879db1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:42
+msgid ":ref:`max_element_length_2d_page`"
+msgstr ""
+
+# 5afb46f9acac4a9eb4756abdfc9f27cc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:46
+msgid "Volume quality controls:"
+msgstr ""
+
+# a9f0ee19881d492aa3a27ae458c996f1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:48
+msgid ":ref:`aspect_ratio_3d_page`"
+msgstr ""
+
+# 4bb9f6eab8164103923c4826e2ecc0f3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:49
+msgid ":ref:`volume_page`"
+msgstr ""
+
+# d7afca49a69c41d7ac8abb0299803a21
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:50
+msgid ":ref:`max_element_length_3d_page`"
+msgstr ""
+
+# 18158bdf984a4244844feb0237e2ade9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:51
+msgid ":ref:`bare_border_volumes_page`"
+msgstr ""
+
+# 867e8cad934641798deb2b24ae70e0d0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:52
+msgid ":ref:`over_constrained_volumes_page`"
+msgstr ""
+
+# e37bfbc3abe44516bc3624f19c0f361f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:56
+msgid ""
+"To manage the quality controls call pop-up in the VTK viewer and select "
+"\"Controls\" sub-menu"
+msgstr ""
+
+# b511cd0c11694da7880052ef367b4387
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:62
+msgid "**Reset** switches off quality controls;"
+msgstr ""
+
+# 07202335cad14c63aad3f0c725c35022
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:63
+msgid "**Node Controls** provides access to the node quality controls;"
+msgstr ""
+
+# b2fe1e355db74664ac3915b3c71f0213
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:64
+msgid "**Edge Controls** provides access to the edge quality controls;"
+msgstr ""
+
+# 2f26a38df6f2496c9ab9baf9251182f8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:65
+msgid "**Face Controls** provides access to the face quality controls;"
+msgstr ""
+
+# 5f6103624b344cf493f1711075e65f45
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:66
+msgid "**Volume Controls** provides access to the volume quality controls;"
+msgstr ""
+
+# 96197eb4535d4f8a968ddc916c251213
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:67
+msgid "**Scalar Bar Properties** allows setting :ref:scalar_bar_dlg;"
+msgstr ""
+
+# d75ea00701944ff4bdb5db1347f3e187
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:68
+msgid ""
+"**Distribution -> Export ...** allows saving the distribution of quality "
+"control values in the text file;"
+msgstr ""
+
+# 077eda1f512648b7873804a13d69ce46
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:69
+msgid ""
+"**Distribution -> Show** Shows/Hides the distribution histogram of the "
+"quality control values in the VTK Viewer."
+msgstr ""
+
+# 9ed4e072f8e144cc9ae6c0b2d3df0cc5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_quality_controls.rst:70
+msgid ""
+"**Distribution -> Plot** Plots the distribution histogram of the quality "
+"control values in the Plot 2D Viewer."
+msgstr ""
+

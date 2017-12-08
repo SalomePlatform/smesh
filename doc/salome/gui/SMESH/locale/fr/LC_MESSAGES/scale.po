@@ -1,0 +1,211 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 976649347dc04341ae9ba242b046a63f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:5
+msgid "Scale"
+msgstr ""
+
+# aa6151bc0ee9433c86ad127eb2accce5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:7
+msgid ""
+"This geometrical operation allows to scale in space your mesh or some of "
+"its elements."
+msgstr ""
+
+# 7c93fc0bfad147c388e6f8288ea113a3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:9
+msgid "**To scale a mesh:**"
+msgstr ""
+
+# 516f478f73cf4c57b83ebbd9c5abda5e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:22
+msgid ""
+"From the **Modification** menu choose **Transformation** -> **Scale "
+"Transform** item."
+msgstr ""
+
+# 592174632303487d8ce9c13810433a54
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:12
+msgid "One of the following dialogs will appear:"
+msgstr ""
+
+# b3abf3343d4e4614b82fd4471bef6f23
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:14
+msgid "With one scale factor:"
+msgstr ""
+
+# 1727f2fa7cf14d689c8d20b9b7fb5fa4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:19
+msgid "Or with different scale factors for axes:"
+msgstr ""
+
+# f6d8459879304805a1f76ac536164444
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:44
+msgid "In the dialog:"
+msgstr ""
+
+# 0c332aca8bd949ec80c5867c1787a603
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:29
+msgid "specify the IDs of the translated elements:"
+msgstr ""
+
+# f7cda11020c543ff8fea7ad971549c8d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:26
+msgid "**Select the whole mesh, submesh or group** activating this checkbox; or"
+msgstr ""
+
+# f9b333cbe5ac44e9acd16c790192e3db
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:27
+msgid ""
+"choose mesh elements with the mouse in the 3D Viewer. It is possible to "
+"select a whole area with a mouse frame; or"
+msgstr ""
+
+# e1518aed969b48f8a270e5f08cf051e1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:28
+msgid ""
+"input the element IDs directly in **ID Elements** field. The selected "
+"elements will be highlighted in the viewer; or"
+msgstr ""
+
+# 0c0b04720a4143e88071e45d47be2573
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:29
+msgid ""
+"apply Filters. **Set filter** button allows to apply a filter to the "
+"selection of elements. See more about filters in the "
+":ref:`selection_filter_library_page` page."
+msgstr ""
+
+# 0dff07c6312e4602a6d73eab27f77b16
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:31
+msgid "specify the base point for scale"
+msgstr ""
+
+# cb38c5456f3a420fa73112e558383d4c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:33
+msgid "specify the scale factor"
+msgstr ""
+
+# 207ff7432d104971920e94f1a1489058
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:35
+msgid "specify the conditions of scale:"
+msgstr ""
+
+# ae76fd3de0e145cbae97b2557a1ae1b4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:37
+msgid ""
+"activate **Move elements** radio button to scale the selected mesh (or "
+"elements) without creating a copy;"
+msgstr ""
+
+# 2b45e07b65e5447c81a5a9fa7a730813
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:38
+msgid ""
+"activate **Copy elements** radio button to duplicate the selected mesh "
+"(or elements) and to apply scaling to the copy within the same mesh;"
+msgstr ""
+
+# cfe3fb629ea3424a91a18cb3c2c343db
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:39
+msgid ""
+"activate **Create as new mesh** radio button to leave the selected mesh "
+"(or elements) at its previous location and create a new mesh of the "
+"scaled copy of the selected elements; the new mesh appears in the Object "
+"Browser with the default name MeshName_scaled (it is possible to change "
+"this name in the adjacent box);"
+msgstr ""
+
+# 7991c68193e24dc29f5a406dee204dd2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:40
+msgid ""
+"activate **Copy groups** checkbox to copy the groups of elements existing"
+" in the source mesh to the newly created mesh."
+msgstr ""
+
+# bf35cd9cb59e4b18b39740b76ef4e40f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:42
+msgid ""
+"activate **Preview** checkbox to show the result of transformation in the"
+" viewer"
+msgstr ""
+
+# eab666d03f084db59220125c74308d29
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:43
+msgid "click **Apply** or **Apply and Close** button to confirm the operation."
+msgstr ""
+
+# 30a53807813c440680fd35fe9e1fa820
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:46
+msgid "**Example of using:**"
+msgstr ""
+
+# e1be3e4a68d9473c99099a90dfeaae68
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:48
+msgid "Create quandrangle mesh 3x3 on a simple planar face (200x200)"
+msgstr ""
+
+# c9c9dec075ba4cad992dde2f2bdc5155
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:53
+msgid "and union 3 faces (along axis Z) to group \"gr_faces\""
+msgstr ""
+
+# ccee25b07af74515b94b5d27c3be58de
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:60
+msgid "Perform scale operation for the whole mesh and create a new mesh:"
+msgstr ""
+
+# 8d1cc8863f5645ca872ec1934ea72f82
+# 7c4b36782d234b55b1b5d4ea505b3fe1
+# 11937ca304cb451bbcb27a93701a01ce
+# 01da8b1362bb4532bc2a36e54870acdf
+# da6c180ec04043119602a6e5bb6f7e4f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:65
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:75
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:85
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:97
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:109
+msgid "result after operation:"
+msgstr ""
+
+# 95e75f754ac247448c9da13196a037f8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:70
+msgid "Perform scale operation for the whole mesh and copy elements:"
+msgstr ""
+
+# 09834714eb3540e1a254907302799225
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:80
+msgid "Perform scale operation for a group of faces and copy elements:"
+msgstr ""
+
+# 9b1c18e6ff8c4001bab9401ec88179f2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:92
+msgid "Perform scale operation for two edges and move elements:"
+msgstr ""
+
+# 6aee0052fed448c8b135b26af4479692
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:104
+msgid "Perform scale operation for one face and move elements:"
+msgstr ""
+
+# e5db8678a3a4415eaa2ef2096cc1e865
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/scale.rst:115
+msgid "**See Also** a sample TUI Script of a :ref:`tui_scale` operation."
+msgstr ""
+

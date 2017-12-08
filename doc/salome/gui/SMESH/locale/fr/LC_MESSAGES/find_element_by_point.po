@@ -1,0 +1,73 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 4dc0f3e4fe6748a0a6ce1f0e9807ce9d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/find_element_by_point.rst:5
+msgid "Find Element by Point"
+msgstr ""
+
+# 073b2bfeb80f44cca499fa25b7521de3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/find_element_by_point.rst:7
+msgid ""
+"This functionality allows you to find all mesh elements to which belongs "
+"a certain point."
+msgstr ""
+
+# 95619f5461e542d38f9ec4798818c2eb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/find_element_by_point.rst:9
+msgid ""
+"**To find the elements:** #. Select a mesh or a group #. Select from the "
+"Mesh menu or from the context menu the Find Element by Point item."
+msgstr ""
+
+# 808cd972a4064043ab3b4519afbd56bf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/find_element_by_point.rst:19
+msgid "The following dialog box will appear:"
+msgstr ""
+
+# a552b96c818645748f81db671bcd62b5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/find_element_by_point.rst:26
+msgid "In this dialog box you should select:"
+msgstr ""
+
+# 936ef9f5e4974b3bbb3ea1fb48943b6e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/find_element_by_point.rst:26
+msgid "the coordinates of the point;"
+msgstr ""
+
+# 8000622bf5b54cc782de0ecaf6ffe524
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/find_element_by_point.rst:27
+msgid ""
+"the type of elements to be found; it is also possible to find elements of"
+" all types related to the reference point. Choose type \"All\" to find "
+"elements of any type except for nodes and 0D elements."
+msgstr ""
+
+# 468a7c6589434779ae54692db6406554
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/find_element_by_point.rst:28
+msgid "Click the **Find** button."
+msgstr ""
+
+# cd9815de90004e28830104b04231c2b6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/find_element_by_point.rst:37
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_find_element_by_point` "
+"operation."
+msgstr ""
+

@@ -218,7 +218,7 @@ SMESHGUI_CopyMeshDlg::SMESHGUI_CopyMeshDlg( SMESHGUI* theModule )
   // Selection filter
   myIdSourceFilter = new SMESH_TypeFilter( SMESH::IDSOURCE );
 
-  myHelpFileName = "copy_mesh_page.html";
+  myHelpFileName = "copy_mesh.html";
 
   Init();
 

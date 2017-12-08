@@ -1,0 +1,44 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 89411e86108a40ff9ef699aa212edc20
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/generate_flat_elements.rst:5
+msgid "Generate flat elements on group boundaries or on faces"
+msgstr ""
+
+# 4d4976b61bf94a46b7add0d0a5acd818
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/generate_flat_elements.rst:7
+msgid ""
+"These functionalities, used in some mechanics calculations, allow to "
+"generate flat volume elements on the boundaries of a list of groups of "
+"volumes, or on a list of groups of faces."
+msgstr ""
+
+# 7b495da34061472ab6f9cb826c9d8879
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/generate_flat_elements.rst:10
+msgid "These functionalities are only available in python scripts."
+msgstr ""
+
+# 93ea46b0809d42a3b7a9807af09e7282
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/generate_flat_elements.rst:12
+msgid ""
+"**See** a sample TUI Script of "
+":ref:`tui_double_nodes_on_group_boundaries` operation."
+msgstr ""
+

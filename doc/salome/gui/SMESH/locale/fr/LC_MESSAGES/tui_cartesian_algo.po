@@ -1,0 +1,39 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 180ddd91e3f14cbb8f6d62fc133a1ea9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_cartesian_algo.rst:4
+msgid "Body Fitting algorithm"
+msgstr ""
+
+# 40444fa973b44a7882e66a58c21dcc98
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_cartesian_algo.rst:6
+msgid "Usage of Body Fitting algorithm"
+msgstr ""
+
+# dae7c3c0de1641d1942ce8c46b5c10fb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_cartesian_algo.rst:10
+msgid "``cartesian_algo.py``"
+msgstr ""
+
+# e943416703384b49abd17b441a843bbe
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_cartesian_algo.rst:16
+msgid ":download:`../../../examples/cartesian_algo.py`"
+msgstr ""
+

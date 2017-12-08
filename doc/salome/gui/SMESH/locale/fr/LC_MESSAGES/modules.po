@@ -1,0 +1,2262 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2018.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.4.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-03-29 19:04+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# e41e3c671aa54728b4e5f5ca6bddbf86
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:5
+msgid "Modules"
+msgstr ""
+
+# aebf98fd861d4330b03ef7b64056fa02
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:9
+msgid "Auxiliary methods and structures"
+msgstr ""
+
+# 811bc64367414a5e9ff781cf8554a052
+# a0d581078ae54c05b39be45170c4ae0a
+# 833f3ba9a22943d1921a681210df069d
+# f705209abf3943bcb0a2e09c4a540f92
+# e601d074e02742daaae08693703243b8
+# 5037ee543108413b8ec8a2de598111a5
+# 05449a7321cd48fb94e0f1be9de0fb32
+# db8f2686329e4652953758af4947ece8
+# 4cb751468e10471e93d61039402100fd
+# 13970cfb87434b04a32db9eecfb903a5
+# 4033255d507a452aa311ae5473f7dc7a
+# d80bfa3e0976405f923273ec99aa2d32
+# 3ad42612015247b4bdb16b3e49e3e43e
+# 48dffecd658e401abb436f0cb8ee9418
+# 17ee12b84391457d8813dff553c9e848
+# f8f6b38cdf87402ebf89c6323e3310d1
+# 0bc2f8de0d494fa993a816fc52fadcde
+# f2082e2c86904a56bb80a3f631166244
+# a44d1f363dec46d780a728aa2d4273c6
+# 1132bc4b1642403ca7d5a215870d9975
+# 7987824601644f049d6f3e1f502c7c3c
+# e974e569b598409e8ae0982bfac3fbf2
+# 84e5f6e90539423abda4f8a842a8b445
+# b76ec16a72f74b488b47cd9d98a471d4
+# 264bfb3ce9974cf59bd283d458093656
+# 294f1c8a01084d1aaebc6c741c5ba9e5
+# 9bcc9b34bead4b80ae7dfaff61a97164
+# 44272bb07e564f4f9e86895a04480a07
+# fbd275b4f6bb40afbd87bf6d8f3fcccc
+# 093b90cc9407408faabdaad9815a1e63
+# a57c9921cd714979b517a9b1874fe079
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:11
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:81
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:90
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:124
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:187
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:213
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:239
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:269
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:279
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:296
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:312
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:325
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:342
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:483
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:507
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:519
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:551
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:573
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:584
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:594
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:644
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:670
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:680
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:739
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:752
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:785
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:800
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:815
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:858
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:869
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:905
+msgid "Functions:"
+msgstr ""
+
+# 90d7d9c366264e3cb33de218f9746a35
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:13
+msgid ":meth:`def ParseParameters <smeshBuilder.ParseParameters>`"
+msgstr ""
+
+# dff21f5a6faf431f85c1310c07d165f7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:15
+msgid ":meth:`def ParseAngles <smeshBuilder.ParseAngles>`"
+msgstr ""
+
+# 131d4ac6295a4a08b0354384a78fed31
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:17
+msgid ":meth:`def __initPointStruct <smeshBuilder.__initPointStruct>`"
+msgstr ""
+
+# 594dc5118b6e47f4a48eab53ca6ec2cd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:19
+msgid ":meth:`def __initAxisStruct <smeshBuilder.__initAxisStruct>`"
+msgstr ""
+
+# d8dd52dbcac94904af5331430d882ea8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:21
+msgid ":meth:`def IsEqual <smeshBuilder.IsEqual>`"
+msgstr ""
+
+# 5c241e5788bb496188e0da7d3ae7e675
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:23
+msgid ":meth:`def GetName <smeshBuilder.GetName>`"
+msgstr ""
+
+# 073745b0d49a44228c12d376085d0e50
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:25
+msgid ":meth:`def TreatHypoStatus <smeshBuilder.TreatHypoStatus>`"
+msgstr ""
+
+# 60a4a00c8fb140a7a8138c2ba80a0cd9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:27
+msgid ":meth:`def AssureGeomPublished <smeshBuilder.AssureGeomPublished>`"
+msgstr ""
+
+# e0d3b809865e4952938ce5cbbb6f05a7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:29
+msgid ":meth:`def FirstVertexOnCurve <smeshBuilder.FirstVertexOnCurve>`"
+msgstr ""
+
+# 4570428a6bb64ebdb16d35716cee8851
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:31
+msgid ":meth:`def DumpPython <smeshBuilder.smeshBuilder.DumpPython>`"
+msgstr ""
+
+# 07dd4d93980941c58f01921a273f450a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:33
+msgid ""
+":meth:`def SetDumpPythonHistorical "
+"<smeshBuilder.smeshBuilder.SetDumpPythonHistorical>`"
+msgstr ""
+
+# 54aea7ee63a447b78baf263a2fb67a45
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:35
+msgid ":meth:`def init_smesh <smeshBuilder.smeshBuilder.init_smesh>`"
+msgstr ""
+
+# d867ca13d77146db80d0116ffd8364f9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:37
+msgid ":meth:`def EnumToLong <smeshBuilder.smeshBuilder.EnumToLong>`"
+msgstr ""
+
+# b358173ebc07437abd819fc4fc66eb42
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:39
+msgid ":meth:`def ColorToString <smeshBuilder.smeshBuilder.ColorToString>`"
+msgstr ""
+
+# bd7f4d82ae644c6780db68f4a46ff570
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:41
+msgid ":meth:`def GetPointStruct <smeshBuilder.smeshBuilder.GetPointStruct>`"
+msgstr ""
+
+# 2090d4b1e0c84c81ad0481932b4633b5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:43
+msgid ":meth:`def GetDirStruct <smeshBuilder.smeshBuilder.GetDirStruct>`"
+msgstr ""
+
+# 70dac38e98f14d5cbe0ff0ee25c7b975
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:45
+msgid ":meth:`def MakeDirStruct <smeshBuilder.smeshBuilder.MakeDirStruct>`"
+msgstr ""
+
+# bbbe42f4edeb42a19355501cb85b45f2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:47
+msgid ":meth:`def GetAxisStruct <smeshBuilder.smeshBuilder.GetAxisStruct>`"
+msgstr ""
+
+# 22e3e252f0b94814a8c2addc678a2293
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:49
+msgid ":meth:`def SetName <smeshBuilder.smeshBuilder.SetName>`"
+msgstr ""
+
+# 32475d1ca7674396ba6cb634910d0850
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:51
+msgid ":meth:`def SetEmbeddedMode <smeshBuilder.smeshBuilder.SetEmbeddedMode>`"
+msgstr ""
+
+# 03385dd886c24fb6b92ddf0a436a4ce6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:53
+msgid ":meth:`def IsEmbeddedMode <smeshBuilder.smeshBuilder.IsEmbeddedMode>`"
+msgstr ""
+
+# 0d69434db52a486f964328ffce6173b2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:55
+msgid ":meth:`def SetCurrentStudy <smeshBuilder.smeshBuilder.SetCurrentStudy>`"
+msgstr ""
+
+# ddc249302ea34d25ba0d14c8160061b8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:57
+msgid ":meth:`def GetCurrentStudy <smeshBuilder.smeshBuilder.GetCurrentStudy>`"
+msgstr ""
+
+# 7bfb9cb67ee64872b6622ba365432dfd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:59
+msgid ":meth:`def GetSubShapesId <smeshBuilder.smeshBuilder.GetSubShapesId>`"
+msgstr ""
+
+# bb345a3a49834096bc496c663c98d0d4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:61
+msgid ""
+":meth:`def SetBoundaryBoxSegmentation "
+"<smeshBuilder.smeshBuilder.SetBoundaryBoxSegmentation>`"
+msgstr ""
+
+# d1b4f3f8b52a43c7b5c49b86630ff525
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:63
+msgid ":meth:`def GetSubShapeName <smeshBuilder.Mesh.GetSubShapeName>`"
+msgstr ""
+
+# f4612f5aa6f24f88ba2db64c4ac546de
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:65
+msgid ":meth:`def GetLog <smeshBuilder.Mesh.GetLog>`"
+msgstr ""
+
+# d8762a58cfda46a388041959f6d36997
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:67
+msgid ":meth:`def ClearLog <smeshBuilder.Mesh.ClearLog>`"
+msgstr ""
+
+# 26c352b4467b4740912f04a036f2b4b4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:69
+msgid ":meth:`def GetId <smeshBuilder.Mesh.GetId>`"
+msgstr ""
+
+# eedad0f5bf634ae59fe53170bc3ea2ff
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:71
+msgid ":meth:`def GetStudyId <smeshBuilder.Mesh.GetStudyId>`"
+msgstr ""
+
+# af879cf7b64d42c690626af6f1ab445c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:73
+msgid ":meth:`def GetIDSource <smeshBuilder.Mesh.GetIDSource>`"
+msgstr ""
+
+# 073eb7535d8a4e928e9265895e21d19c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:79
+msgid "Creating Meshes"
+msgstr ""
+
+# 09e09d0d59d4427a9921e756d792d29d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:83
+msgid ":meth:`def Concatenate <smeshBuilder.smeshBuilder.Concatenate>`"
+msgstr ""
+
+# 322db18922f94b97bc77a091b2638883
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:85
+msgid ":meth:`def CopyMesh <smeshBuilder.smeshBuilder.CopyMesh>`"
+msgstr ""
+
+# f342c057d7014cc4a434b6334e4c72fd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:88
+msgid "Importing and exporting meshes"
+msgstr ""
+
+# 8bdbcc46f3c74735b19555ab43020932
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:92
+msgid ""
+":meth:`def CreateMeshesFromUNV "
+"<smeshBuilder.smeshBuilder.CreateMeshesFromUNV>`"
+msgstr ""
+
+# 62f1d7ae5d05468982a2e90912cd623f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:94
+msgid ""
+":meth:`def CreateMeshesFromMED "
+"<smeshBuilder.smeshBuilder.CreateMeshesFromMED>`"
+msgstr ""
+
+# 77a8b8ceb0114334a3e00ed3fb55e46e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:96
+msgid ""
+":meth:`def CreateMeshesFromSAUV "
+"<smeshBuilder.smeshBuilder.CreateMeshesFromSAUV>`"
+msgstr ""
+
+# 1812c824f8e046efb21b0b6b592cbc1a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:98
+msgid ""
+":meth:`def CreateMeshesFromSTL "
+"<smeshBuilder.smeshBuilder.CreateMeshesFromSTL>`"
+msgstr ""
+
+# c1e1c96d625246cba7c0ca455f3c70bd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:100
+msgid ""
+":meth:`def CreateMeshesFromCGNS "
+"<smeshBuilder.smeshBuilder.CreateMeshesFromCGNS>`"
+msgstr ""
+
+# 2f3b3d70b8d1423ba1ac125eb4f1705a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:102
+msgid ""
+":meth:`def CreateMeshesFromGMF "
+"<smeshBuilder.smeshBuilder.CreateMeshesFromGMF>`"
+msgstr ""
+
+# 91cb65d7c24a4e708418f70306cab7aa
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:104
+msgid ":meth:`def ExportMED <smeshBuilder.Mesh.ExportMED>`"
+msgstr ""
+
+# e8f1566fabc643dfa22e9c46e764aaa4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:106
+msgid ":meth:`def ExportSAUV <smeshBuilder.Mesh.ExportSAUV>`"
+msgstr ""
+
+# 3070a5a1cef34fb3ac18a0ef1e93ff62
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:108
+msgid ":meth:`def ExportDAT <smeshBuilder.Mesh.ExportDAT>`"
+msgstr ""
+
+# 5d6fb5d0bc4f4fd4977fab31880b32b8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:110
+msgid ":meth:`def ExportUNV <smeshBuilder.Mesh.ExportUNV>`"
+msgstr ""
+
+# 3bef8c6c3906485faaa7556904ca9f91
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:112
+msgid ":meth:`def ExportSTL <smeshBuilder.Mesh.ExportSTL>`"
+msgstr ""
+
+# c1ed1d11d65a4f3cbbc10d9f41a23bf8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:114
+msgid ":meth:`def ExportCGNS <smeshBuilder.Mesh.ExportCGNS>`"
+msgstr ""
+
+# c1785d8ab26b4b46a22e82b5c25ac092
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:116
+msgid ":meth:`def ExportGMF <smeshBuilder.Mesh.ExportGMF>`"
+msgstr ""
+
+# a6e7032bfd0845cf8b9635dcef3c8ff1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:118
+msgid ":meth:`def ExportToMED <smeshBuilder.Mesh.ExportToMED>`"
+msgstr ""
+
+# 08e10ce37d254a75b17ad8f7b03245f2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:122
+msgid "Constructing meshes"
+msgstr ""
+
+# 7f80816f45cb427d86cd48312b85d454
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:126
+msgid ":meth:`def Mesh <smeshBuilder.smeshBuilder.Mesh>`"
+msgstr ""
+
+# 3570d5cef38140eab58ae7358e13155f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:128
+msgid ":meth:`def __init__ <smeshBuilder.Mesh.__init__>`"
+msgstr ""
+
+# 6c356fd86ca14d85ad70edb72f8f3280
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:130
+msgid ":meth:`def SetMesh <smeshBuilder.Mesh.SetMesh>`"
+msgstr ""
+
+# 1eec8d6fd56d4c00aaaf9c9f8fc4018d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:132
+msgid ":meth:`def GetMesh <smeshBuilder.Mesh.GetMesh>`"
+msgstr ""
+
+# d0ab7abc61a84800978083a708a8a3cf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:134
+msgid ":meth:`def SetName <smeshBuilder.Mesh.SetName>`"
+msgstr ""
+
+# 11854ab7467e44c9a85f9b5a02d75026
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:136
+msgid ":meth:`def GetShape <smeshBuilder.Mesh.GetShape>`"
+msgstr ""
+
+# 532b9f9ec8f54f159bdf2cba70ce60c0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:138
+msgid ":meth:`def SetShape <smeshBuilder.Mesh.SetShape>`"
+msgstr ""
+
+# b1e0499e07aa43739118022c31da07a5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:140
+msgid ":meth:`def IsReadyToCompute <smeshBuilder.Mesh.IsReadyToCompute>`"
+msgstr ""
+
+# 972c7173efca41ada77ca446bf67a4bb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:142
+msgid ":meth:`def GetAlgoState <smeshBuilder.Mesh.GetAlgoState>`"
+msgstr ""
+
+# 1bde60ad100e4364aefa49e3af9e5e26
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:144
+msgid ":meth:`def Evaluate <smeshBuilder.Mesh.Evaluate>`"
+msgstr ""
+
+# 77d84e818e4740bd88215858492a70a7
+# 552eaeaa3ffc496bb31c50ed8bd82cf7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:146
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:318
+msgid ":meth:`def Compute <smeshBuilder.Mesh.Compute>`"
+msgstr ""
+
+# 2a44df70cbfe4f589ee8d49facbe179b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:148
+msgid ":meth:`def GetComputeErrors <smeshBuilder.Mesh.GetComputeErrors>`"
+msgstr ""
+
+# 23f41325df7e47948c17cee6c046e070
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:150
+msgid ":meth:`def GetFailedShapes <smeshBuilder.Mesh.GetFailedShapes>`"
+msgstr ""
+
+# b3b68ca1b4c843c8835c266b631d5b9a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:152
+msgid ":meth:`def GetMeshOrder <smeshBuilder.Mesh.GetMeshOrder>`"
+msgstr ""
+
+# d59031835d3049e6856d66247321b127
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:154
+msgid ":meth:`def SetMeshOrder <smeshBuilder.Mesh.SetMeshOrder>`"
+msgstr ""
+
+# 0485a1cd38d847d6aad4ffa75e311793
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:156
+msgid ":meth:`def Clear <smeshBuilder.Mesh.Clear>`"
+msgstr ""
+
+# 2181954fca7242c6a25d119b4a67f00f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:160
+msgid "Defining Algorithms"
+msgstr ""
+
+# 2e0a6a7fa3cb4749a282f3d65f5b05fe
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:163
+msgid "Basic meshing algorithms"
+msgstr ""
+
+# 82cc814736ee4f8a8898524b83a784c6
+# 7eb1d475c69141a7a86ef31e16de4ce7
+# ee2746236c2446019689dcfa6d1af203
+# 3d1bcf3b332848ca955b252c7047e982
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:165
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:199
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:220
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:961
+msgid "Data Structures:"
+msgstr ""
+
+# 4d3775c80aa84eb5a9784a3c5b66da23
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:167
+msgid ""
+":class:`class StdMeshersBuilder_Segment "
+"<StdMeshersBuilder.StdMeshersBuilder_Segment>`"
+msgstr ""
+
+# a3f57976149d4bc789a124d482de506d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:169
+msgid ""
+":class:`class StdMeshersBuilder_Segment_Python "
+"<StdMeshersBuilder.StdMeshersBuilder_Segment_Python>`"
+msgstr ""
+
+# b6808242be2242988b35bec91f2de31d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:171
+msgid ""
+":class:`class StdMeshersBuilder_Triangle_MEFISTO "
+"<StdMeshersBuilder.StdMeshersBuilder_Triangle_MEFISTO>`"
+msgstr ""
+
+# 573a1c516cf346dd90494b51060a74ad
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:173
+msgid ""
+":class:`class StdMeshersBuilder_Quadrangle "
+"<StdMeshersBuilder.StdMeshersBuilder_Quadrangle>`"
+msgstr ""
+
+# d7bd792aa45c41c68cc326557392147a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:175
+msgid ""
+":class:`class StdMeshersBuilder_Hexahedron "
+"<StdMeshersBuilder.StdMeshersBuilder_Hexahedron>`"
+msgstr ""
+
+# c523efa55c0d49b4b9d22a6c5fc95c97
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:177
+msgid ""
+":class:`class StdMeshersBuilder_UseExistingElements_1D "
+"<StdMeshersBuilder.StdMeshersBuilder_UseExistingElements_1D>`"
+msgstr ""
+
+# fccec022af6546739ebb61f95b173e23
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:179
+msgid ""
+":class:`class StdMeshersBuilder_UseExistingElements_1D2D "
+"<StdMeshersBuilder.StdMeshersBuilder_UseExistingElements_1D2D>`"
+msgstr ""
+
+# 0ef9264751cb4f3fb47a0d70c74bbc99
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:181
+msgid ""
+":class:`class StdMeshersBuilder_Cartesian_3D "
+"<StdMeshersBuilder.StdMeshersBuilder_Cartesian_3D>`"
+msgstr ""
+
+# 9fde0b802f9b4d82b4ef7c5e8bd814a2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:183
+msgid ""
+":class:`class StdMeshersBuilder_UseExisting_1D "
+"<StdMeshersBuilder.StdMeshersBuilder_UseExisting_1D>`"
+msgstr ""
+
+# 6a68789b8da44b73a6608bfabc3c1cb5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:185
+msgid ""
+":class:`class StdMeshersBuilder_UseExisting_2D "
+"<StdMeshersBuilder.StdMeshersBuilder_UseExisting_2D>`"
+msgstr ""
+
+# 789c897757a34167ad0d5a317706f72f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:189
+msgid ""
+":meth:`def AutomaticTetrahedralization "
+"<smeshBuilder.Mesh.AutomaticTetrahedralization>`"
+msgstr ""
+
+# b9f75aa73ed1416db9ece9233006b3e7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:191
+msgid ""
+":meth:`def AutomaticHexahedralization "
+"<smeshBuilder.Mesh.AutomaticHexahedralization>`"
+msgstr ""
+
+# 45da06286cc8461281e6b31185600563
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:197
+msgid "Projection algorithms"
+msgstr ""
+
+# 45a100c2190d4dada6265984f58a9530
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:201
+msgid ""
+":class:`class StdMeshersBuilder_Projection1D "
+"<StdMeshersBuilder.StdMeshersBuilder_Projection1D>`"
+msgstr ""
+
+# 9640587e49e14b779ca8e2c0e0263ea1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:203
+msgid ""
+":class:`class StdMeshersBuilder_Projection2D "
+"<StdMeshersBuilder.StdMeshersBuilder_Projection2D>`"
+msgstr ""
+
+# 7a9fdc711da0407ab38489b2593dbb28
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:205
+msgid ""
+":class:`class StdMeshersBuilder_Projection1D2D "
+"<StdMeshersBuilder.StdMeshersBuilder_Projection1D2D>`"
+msgstr ""
+
+# 50a150525d0c454d96dd0689f930e112
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:207
+msgid ""
+":class:`class StdMeshersBuilder_Projection3D "
+"<StdMeshersBuilder.StdMeshersBuilder_Projection3D>`"
+msgstr ""
+
+# d32354a66a414814b0a324e0bbe26815
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:211
+msgid "Segments around vertex"
+msgstr ""
+
+# 4f8b799d533e4f959ce45f7f35690c8a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:215
+msgid ""
+":meth:`def LengthNearVertex "
+"<StdMeshersBuilder.StdMeshersBuilder_Segment.LengthNearVertex>`"
+msgstr ""
+
+# 29a3b64774c24ff3b8406959c58ebd72
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:218
+msgid "3D extrusion meshing algorithms"
+msgstr ""
+
+# 7688de0666fd494bbcac9429c63df307
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:222
+msgid ""
+":class:`class StdMeshersBuilder_Prism3D "
+"<StdMeshersBuilder.StdMeshersBuilder_Prism3D>`"
+msgstr ""
+
+# e03cb08ed072472bb321b42e253ae4ad
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:224
+msgid ""
+":class:`class StdMeshersBuilder_RadialPrism3D "
+"<StdMeshersBuilder.StdMeshersBuilder_RadialPrism3D>`"
+msgstr ""
+
+# 8e95711c2e614fceb1d30efcde1d660a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:228
+msgid "Mesh_Algorithm"
+msgstr ""
+
+# 784fb8424a394648947541d019b4eb90
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:230
+msgid ":class:`class Mesh_Algorithm <smesh_algorithm.Mesh_Algorithm>`"
+msgstr ""
+
+# cd6dc62a15e345ff8698f4d305e28599
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:234
+msgid "Defining hypotheses"
+msgstr ""
+
+# e3222cec51754113a7c63c6a07a85d14
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:237
+msgid "1D Meshing Hypotheses"
+msgstr ""
+
+# e160300eab7e40a490db844edc1d129d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:241
+msgid ""
+":meth:`def ReversedEdgeIndices "
+"<smesh_algorithm.Mesh_Algorithm.ReversedEdgeIndices>`"
+msgstr ""
+
+# fda4e0e314b9462e97fb97420d34681c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:243
+msgid ""
+":meth:`def LocalLength "
+"<StdMeshersBuilder.StdMeshersBuilder_Segment.LocalLength>`"
+msgstr ""
+
+# a43d1314e3d243ec8d37e0017ac5a80e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:245
+msgid ":meth:`def MaxSize <StdMeshersBuilder.StdMeshersBuilder_Segment.MaxSize>`"
+msgstr ""
+
+# 1ac3613850f8427fa1c1bdc7d345b743
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:247
+msgid ""
+":meth:`def NumberOfSegments "
+"<StdMeshersBuilder.StdMeshersBuilder_Segment.NumberOfSegments>`"
+msgstr ""
+
+# 3c41ce408a3e4bafb25cc5e301531183
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:249
+msgid ""
+":meth:`def Adaptive "
+"<StdMeshersBuilder.StdMeshersBuilder_Segment.Adaptive>`"
+msgstr ""
+
+# c617340303ec4a7b9206b4f6d00d539e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:251
+msgid ""
+":meth:`def Arithmetic1D "
+"<StdMeshersBuilder.StdMeshersBuilder_Segment.Arithmetic1D>`"
+msgstr ""
+
+# e49a13a09dad4f00a9d967ec833decc4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:253
+msgid ""
+":meth:`def GeometricProgression "
+"<StdMeshersBuilder.StdMeshersBuilder_Segment.GeometricProgression>`"
+msgstr ""
+
+# 290f0d2f9d1c4167aa864bdf3943cd82
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:255
+msgid ""
+":meth:`def FixedPoints1D "
+"<StdMeshersBuilder.StdMeshersBuilder_Segment.FixedPoints1D>`"
+msgstr ""
+
+# 99ae57b41f5d4d138715db6a2ff6088b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:257
+msgid ""
+":meth:`def StartEndLength "
+"<StdMeshersBuilder.StdMeshersBuilder_Segment.StartEndLength>`"
+msgstr ""
+
+# 02dc50745d4a43aba8dcdecef7bed2aa
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:259
+msgid ""
+":meth:`def Deflection1D "
+"<StdMeshersBuilder.StdMeshersBuilder_Segment.Deflection1D>`"
+msgstr ""
+
+# 954928c224d24145b2fd1088db142bf4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:261
+msgid ""
+":meth:`def AutomaticLength "
+"<StdMeshersBuilder.StdMeshersBuilder_Segment.AutomaticLength>`"
+msgstr ""
+
+# 905bcc87101e4f6581ea1ea69e5fb4b0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:263
+msgid ""
+":meth:`def PythonSplit1D "
+"<StdMeshersBuilder.StdMeshersBuilder_Segment_Python.PythonSplit1D>`"
+msgstr ""
+
+# 141d450ce1c343069eaaa806ec964150
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:267
+msgid "2D Meshing Hypotheses"
+msgstr ""
+
+# 72267422f8d84d33bbc586872f988d24
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:271
+msgid ""
+":meth:`def MaxElementArea "
+"<StdMeshersBuilder.StdMeshersBuilder_Triangle_MEFISTO.MaxElementArea>`"
+msgstr ""
+
+# 2375cc9407614359858e4688deb91feb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:273
+msgid ""
+":meth:`def LengthFromEdges "
+"<StdMeshersBuilder.StdMeshersBuilder_Triangle_MEFISTO.LengthFromEdges>`"
+msgstr ""
+
+# 352ded15f52c41648176439a6c728b09
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:277
+msgid "Quadrangle Hypotheses"
+msgstr ""
+
+# 24564408c2314fd39fd3fdb482c80de1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:281
+msgid ""
+":meth:`def QuadrangleParameters "
+"<StdMeshersBuilder.StdMeshersBuilder_Quadrangle.QuadrangleParameters>`"
+msgstr ""
+
+# df2f16d7acdb47a5a6e62770fde58ca9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:283
+msgid ""
+":meth:`def QuadranglePreference "
+"<StdMeshersBuilder.StdMeshersBuilder_Quadrangle.QuadranglePreference>`"
+msgstr ""
+
+# 477b7334b8e6459b8afefab61f81494c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:285
+msgid ""
+":meth:`def TrianglePreference "
+"<StdMeshersBuilder.StdMeshersBuilder_Quadrangle.TrianglePreference>`"
+msgstr ""
+
+# b4e8d5b6d0654d70a414985f2ec14982
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:287
+msgid ""
+":meth:`def Reduced "
+"<StdMeshersBuilder.StdMeshersBuilder_Quadrangle.Reduced>`"
+msgstr ""
+
+# 0222925902964a719bd740a908df1c40
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:289
+msgid ""
+":meth:`def TriangleVertex "
+"<StdMeshersBuilder.StdMeshersBuilder_Quadrangle.TriangleVertex>`"
+msgstr ""
+
+# 333de62a8d074c2c9cf562b29955da75
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:294
+msgid "Additional Hypotheses"
+msgstr ""
+
+# 50e24034e723406a837308c0485dedd6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:298
+msgid ":meth:`def ViscousLayers <smesh_algorithm.Mesh_Algorithm.ViscousLayers>`"
+msgstr ""
+
+# 0780d4f66eb94546846a97e166306190
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:300
+msgid ""
+":meth:`def ViscousLayers2D "
+"<smesh_algorithm.Mesh_Algorithm.ViscousLayers2D>`"
+msgstr ""
+
+# c55f790b8d114d51860f7d09a9b0428e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:302
+msgid ""
+":meth:`def Propagation "
+"<StdMeshersBuilder.StdMeshersBuilder_Segment.Propagation>`"
+msgstr ""
+
+# 589dde07b9fc49dd864c61694d0d7b5a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:304
+msgid ""
+":meth:`def PropagationOfDistribution "
+"<StdMeshersBuilder.StdMeshersBuilder_Segment.PropagationOfDistribution>`"
+msgstr ""
+
+# 662f59f313a1498c989856b07829c8ca
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:306
+msgid ""
+":meth:`def QuadraticMesh "
+"<StdMeshersBuilder.StdMeshersBuilder_Segment.QuadraticMesh>`"
+msgstr ""
+
+# 6cf0c71b952044728b2d3a9fc7c5c09b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:310
+msgid "Constructing sub-meshes"
+msgstr ""
+
+# cfd057aa90b34826ad29c0a7ddac1829
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:314
+msgid ":meth:`def GetSubMesh <smeshBuilder.Mesh.GetSubMesh>`"
+msgstr ""
+
+# 8e48623eae2844edbd39655bb2e4c5f1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:316
+msgid ":meth:`def ClearSubMesh <smeshBuilder.Mesh.ClearSubMesh>`"
+msgstr ""
+
+# 6cc7defcbee94020b151cbaa5b7b2eb9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:323
+msgid "Editing meshes"
+msgstr ""
+
+# 51f75e073b484fa7aa578be23342b1b2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:327
+msgid ":meth:`def AddHypothesis <smeshBuilder.Mesh.AddHypothesis>`"
+msgstr ""
+
+# 038a297979fb4c578cbf75507e4662cb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:329
+msgid ":meth:`def IsUsedHypothesis <smeshBuilder.Mesh.IsUsedHypothesis>`"
+msgstr ""
+
+# 5dcc2cb2b10648ceb9fdb9a48013f88b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:331
+msgid ":meth:`def RemoveHypothesis <smeshBuilder.Mesh.RemoveHypothesis>`"
+msgstr ""
+
+# e1f482aa007b4bb5aa380e8f1ff7f546
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:333
+msgid ":meth:`def GetHypothesisList <smeshBuilder.Mesh.GetHypothesisList>`"
+msgstr ""
+
+# 92e6a6758ec94509b44d79e73bab869e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:335
+msgid ""
+":meth:`def RemoveGlobalHypotheses "
+"<smeshBuilder.Mesh.RemoveGlobalHypotheses>`"
+msgstr ""
+
+# 6c917e64889a4f0c8251d4b327d04c0f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:340
+msgid "Mesh Information"
+msgstr ""
+
+# c76db93a4c5b49b4ad8025a9d3b09e7f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:344
+msgid ":meth:`def GetMeshInfo <smeshBuilder.smeshBuilder.GetMeshInfo>`"
+msgstr ""
+
+# 43b487b08ef0490f8cd368a4f98eccc6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:346
+msgid ""
+":meth:`def GetGeometryByMeshElement "
+"<smeshBuilder.Mesh.GetGeometryByMeshElement>`"
+msgstr ""
+
+# 68b8092a4a8d470fa8eda8d8e16dbdf7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:348
+msgid ":meth:`def MeshDimension <smeshBuilder.Mesh.MeshDimension>`"
+msgstr ""
+
+# a8ae9becbd3e460fb1720d37f17bfdb5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:350
+msgid ":meth:`def GetMeshInfo <smeshBuilder.Mesh.GetMeshInfo>`"
+msgstr ""
+
+# 1f768de43b5c4149b5cc31f8f548690b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:352
+msgid ":meth:`def NbNodes <smeshBuilder.Mesh.NbNodes>`"
+msgstr ""
+
+# 954f4ea4947d41339b5c0697315ae2d9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:354
+msgid ":meth:`def NbElements <smeshBuilder.Mesh.NbElements>`"
+msgstr ""
+
+# 99840649cf174b6fb9df85babf5f791f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:356
+msgid ":meth:`def Nb0DElements <smeshBuilder.Mesh.Nb0DElements>`"
+msgstr ""
+
+# 00ae407333a74cebba243c9285822a24
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:358
+msgid ":meth:`def NbBalls <smeshBuilder.Mesh.NbBalls>`"
+msgstr ""
+
+# 4f98d77cd16d4963b2541702a2c38b64
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:360
+msgid ":meth:`def NbEdges <smeshBuilder.Mesh.NbEdges>`"
+msgstr ""
+
+# a66478403ed54b148f49be6276cbe3a4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:362
+msgid ":meth:`def NbEdgesOfOrder <smeshBuilder.Mesh.NbEdgesOfOrder>`"
+msgstr ""
+
+# a4dbc4ea31344be1ac3f6dcb73c52030
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:364
+msgid ":meth:`def NbFaces <smeshBuilder.Mesh.NbFaces>`"
+msgstr ""
+
+# 36e3ef6e66914db1a5ec72be05f287ee
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:366
+msgid ":meth:`def NbFacesOfOrder <smeshBuilder.Mesh.NbFacesOfOrder>`"
+msgstr ""
+
+# eb5677ee000f49898342fbcd1de47a75
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:368
+msgid ":meth:`def NbTriangles <smeshBuilder.Mesh.NbTriangles>`"
+msgstr ""
+
+# 9f4cde40e15843eb87394059e3125ee4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:370
+msgid ":meth:`def NbTrianglesOfOrder <smeshBuilder.Mesh.NbTrianglesOfOrder>`"
+msgstr ""
+
+# 24c0622b6f2240c88cddfae7e49b0e61
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:372
+msgid ":meth:`def NbBiQuadTriangles <smeshBuilder.Mesh.NbBiQuadTriangles>`"
+msgstr ""
+
+# d4dc3b2edb1f400c8e9ad717c1f706d3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:374
+msgid ":meth:`def NbQuadrangles <smeshBuilder.Mesh.NbQuadrangles>`"
+msgstr ""
+
+# dba0d61b72fa4857a483ed61b75d7626
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:376
+msgid ":meth:`def NbQuadranglesOfOrder <smeshBuilder.Mesh.NbQuadranglesOfOrder>`"
+msgstr ""
+
+# 8c32f6cd75fa4f0fad55ec3112db66fe
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:378
+msgid ":meth:`def NbBiQuadQuadrangles <smeshBuilder.Mesh.NbBiQuadQuadrangles>`"
+msgstr ""
+
+# ca5317db87e342b099898411f64a8c6d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:380
+msgid ":meth:`def NbPolygons <smeshBuilder.Mesh.NbPolygons>`"
+msgstr ""
+
+# 0bacba5c96004b4a98214bfd724ff178
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:382
+msgid ":meth:`def NbVolumes <smeshBuilder.Mesh.NbVolumes>`"
+msgstr ""
+
+# 4b685ff130574fa8ba6dfd07d55d9142
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:384
+msgid ":meth:`def NbVolumesOfOrder <smeshBuilder.Mesh.NbVolumesOfOrder>`"
+msgstr ""
+
+# 2c897a5f0dc04c91ba17c87e45eb96f7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:386
+msgid ":meth:`def NbTetras <smeshBuilder.Mesh.NbTetras>`"
+msgstr ""
+
+# 0a8310de5d624249be63362b43fbf5db
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:388
+msgid ":meth:`def NbTetrasOfOrder <smeshBuilder.Mesh.NbTetrasOfOrder>`"
+msgstr ""
+
+# 04a5850ba04f4aa28f57ec1dacf47d38
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:390
+msgid ":meth:`def NbHexas <smeshBuilder.Mesh.NbHexas>`"
+msgstr ""
+
+# a60ad57141f1498ba25460cf40f8c888
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:392
+msgid ":meth:`def NbHexasOfOrder <smeshBuilder.Mesh.NbHexasOfOrder>`"
+msgstr ""
+
+# a3256c58d04f4ee3983814ad7f40625b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:394
+msgid ":meth:`def NbTriQuadraticHexas <smeshBuilder.Mesh.NbTriQuadraticHexas>`"
+msgstr ""
+
+# f172dd6198d7481191541ca3413eb9c8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:396
+msgid ":meth:`def NbPyramids <smeshBuilder.Mesh.NbPyramids>`"
+msgstr ""
+
+# 76f711639d1546c494681cf375fdd28b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:398
+msgid ":meth:`def NbPyramidsOfOrder <smeshBuilder.Mesh.NbPyramidsOfOrder>`"
+msgstr ""
+
+# 503e7b5252da4fb4ae9cbde6c51b96b0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:400
+msgid ":meth:`def NbPrisms <smeshBuilder.Mesh.NbPrisms>`"
+msgstr ""
+
+# 238c818e887c4bcf955f2bd88704ea98
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:402
+msgid ":meth:`def NbPrismsOfOrder <smeshBuilder.Mesh.NbPrismsOfOrder>`"
+msgstr ""
+
+# f9c2a5ec351949ca84196ff81ace34e5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:404
+msgid ":meth:`def NbHexagonalPrisms <smeshBuilder.Mesh.NbHexagonalPrisms>`"
+msgstr ""
+
+# 751765671b034dc5bf0fbb7513d2ce06
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:406
+msgid ":meth:`def NbPolyhedrons <smeshBuilder.Mesh.NbPolyhedrons>`"
+msgstr ""
+
+# db8c6392653845a08bf83991f2b03e36
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:408
+msgid ":meth:`def NbSubMesh <smeshBuilder.Mesh.NbSubMesh>`"
+msgstr ""
+
+# 03924bc78b4545dbb6c7d56f211e4863
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:410
+msgid ":meth:`def GetElementsId <smeshBuilder.Mesh.GetElementsId>`"
+msgstr ""
+
+# 3c1aa5db6a984b3fbe3301404618abae
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:412
+msgid ":meth:`def GetElementsByType <smeshBuilder.Mesh.GetElementsByType>`"
+msgstr ""
+
+# 1827a79be5b2491fbaf7af844e732506
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:414
+msgid ":meth:`def GetNodesId <smeshBuilder.Mesh.GetNodesId>`"
+msgstr ""
+
+# bfbb4deb474b4edaa8eda767a56bdcf0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:416
+msgid ":meth:`def GetElementType <smeshBuilder.Mesh.GetElementType>`"
+msgstr ""
+
+# 380b0241657b4706b6a5516674895f10
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:418
+msgid ":meth:`def GetElementGeomType <smeshBuilder.Mesh.GetElementGeomType>`"
+msgstr ""
+
+# a2e56fdc555e4821b1d6c496adf48684
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:420
+msgid ":meth:`def GetElementShape <smeshBuilder.Mesh.GetElementShape>`"
+msgstr ""
+
+# addea412ef13465b9d05fdffcf9cc4b1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:422
+msgid ":meth:`def GetSubMeshElementsId <smeshBuilder.Mesh.GetSubMeshElementsId>`"
+msgstr ""
+
+# 7df8e273cad647aeb73d465346f6e7e2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:424
+msgid ":meth:`def GetSubMeshNodesId <smeshBuilder.Mesh.GetSubMeshNodesId>`"
+msgstr ""
+
+# 9020037c46694af999e88d5d07c816e8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:426
+msgid ""
+":meth:`def GetSubMeshElementType "
+"<smeshBuilder.Mesh.GetSubMeshElementType>`"
+msgstr ""
+
+# 69130589b557470281b5903f260affd8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:428
+msgid ":meth:`def Dump <smeshBuilder.Mesh.Dump>`"
+msgstr ""
+
+# b5f49f2df8904ff29222430605c3bc94
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:430
+msgid ":meth:`def GetNodeXYZ <smeshBuilder.Mesh.GetNodeXYZ>`"
+msgstr ""
+
+# c7d092db70ca422196290e502d2e7979
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:432
+msgid ""
+":meth:`def GetNodeInverseElements "
+"<smeshBuilder.Mesh.GetNodeInverseElements>`"
+msgstr ""
+
+# 4f9d3f65dc3648b09df64110ed5cf556
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:434
+msgid ":meth:`def GetNodePosition <smeshBuilder.Mesh.GetNodePosition>`"
+msgstr ""
+
+# 10c9dbd9f0924888a68ba51eb522da5e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:436
+msgid ":meth:`def GetElementPosition <smeshBuilder.Mesh.GetElementPosition>`"
+msgstr ""
+
+# 0539225d7f004145a6babe9bf75e68d9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:438
+msgid ":meth:`def GetShapeID <smeshBuilder.Mesh.GetShapeID>`"
+msgstr ""
+
+# 5e65e2e29cf9462b973c9967ee040034
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:440
+msgid ":meth:`def GetShapeIDForElem <smeshBuilder.Mesh.GetShapeIDForElem>`"
+msgstr ""
+
+# 49e95d91198645528ef66089459ca493
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:442
+msgid ":meth:`def GetElemNbNodes <smeshBuilder.Mesh.GetElemNbNodes>`"
+msgstr ""
+
+# b79913eff730480e9e242fb7f83f2ac6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:444
+msgid ":meth:`def GetElemNode <smeshBuilder.Mesh.GetElemNode>`"
+msgstr ""
+
+# c9899e9d096d47ba87fb0790e54d601c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:446
+msgid ":meth:`def GetElemNodes <smeshBuilder.Mesh.GetElemNodes>`"
+msgstr ""
+
+# c1c3eddb04de4ae4b80b02dce08782c1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:448
+msgid ":meth:`def IsMediumNode <smeshBuilder.Mesh.IsMediumNode>`"
+msgstr ""
+
+# 16820b1b996d47e0ae61f618c3e98e5b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:450
+msgid ""
+":meth:`def IsMediumNodeOfAnyElem "
+"<smeshBuilder.Mesh.IsMediumNodeOfAnyElem>`"
+msgstr ""
+
+# f9b41aff38f74d9cb673b3800591125a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:452
+msgid ":meth:`def ElemNbEdges <smeshBuilder.Mesh.ElemNbEdges>`"
+msgstr ""
+
+# 6780db8e9eb7424aa6c43a481af532a3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:454
+msgid ":meth:`def ElemNbFaces <smeshBuilder.Mesh.ElemNbFaces>`"
+msgstr ""
+
+# 99a23c156b124bb1abe5d7e479ddfc03
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:456
+msgid ":meth:`def GetElemFaceNodes <smeshBuilder.Mesh.GetElemFaceNodes>`"
+msgstr ""
+
+# aca35efb8db74b1588943f779371a20a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:458
+msgid ":meth:`def GetFaceNormal <smeshBuilder.Mesh.GetFaceNormal>`"
+msgstr ""
+
+# 323b4e444cbf45e68eb7509f287c9df2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:460
+msgid ":meth:`def FindElementByNodes <smeshBuilder.Mesh.FindElementByNodes>`"
+msgstr ""
+
+# 28a1af510c5948f990bff38d7e9db58b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:462
+msgid ":meth:`def GetElementsByNodes <smeshBuilder.Mesh.GetElementsByNodes>`"
+msgstr ""
+
+# 1ecc8de04b0f47c3b034d001b61559ca
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:464
+msgid ":meth:`def IsPoly <smeshBuilder.Mesh.IsPoly>`"
+msgstr ""
+
+# bd6b88ee9dc648a784d7059b01253a4c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:466
+msgid ":meth:`def IsQuadratic <smeshBuilder.Mesh.IsQuadratic>`"
+msgstr ""
+
+# 48adf66c10844d2390146a8b1dd0ae16
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:468
+msgid ":meth:`def GetBallDiameter <smeshBuilder.Mesh.GetBallDiameter>`"
+msgstr ""
+
+# 5764e34980c447a4abeba3c760979853
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:470
+msgid ":meth:`def BaryCenter <smeshBuilder.Mesh.BaryCenter>`"
+msgstr ""
+
+# cf6d71caf33e4cb2b0c8c32e614ae44b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:472
+msgid ":meth:`def FindNodeClosestTo <smeshBuilder.Mesh.FindNodeClosestTo>`"
+msgstr ""
+
+# ac85be2785674b55aa0d1d6f9aaaffff
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:474
+msgid ":meth:`def FindElementsByPoint <smeshBuilder.Mesh.FindElementsByPoint>`"
+msgstr ""
+
+# 1d1d88770b364847bd44cb47868fde1d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:476
+msgid ":meth:`def GetPointState <smeshBuilder.Mesh.GetPointState>`"
+msgstr ""
+
+# dcd08ac271c146b88b2656967be6ccdb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:481
+msgid "Quality controls and Filtering"
+msgstr ""
+
+# fa2cb7ad03b54185925961b0d5977b38
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:485
+msgid ""
+":meth:`def GetEmptyCriterion "
+"<smeshBuilder.smeshBuilder.GetEmptyCriterion>`"
+msgstr ""
+
+# 43ff82d0338242f382b9359f4deb1f60
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:487
+msgid ":meth:`def GetCriterion <smeshBuilder.smeshBuilder.GetCriterion>`"
+msgstr ""
+
+# 0e0572b2e9d3445387b9cf60aad1bf25
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:489
+msgid ":meth:`def GetFilter <smeshBuilder.smeshBuilder.GetFilter>`"
+msgstr ""
+
+# d6d7c9fad5c04313a2a0727c5fdeaac1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:491
+msgid ""
+":meth:`def GetFilterFromCriteria "
+"<smeshBuilder.smeshBuilder.GetFilterFromCriteria>`"
+msgstr ""
+
+# 06e86322085c42a49cc8fcbffcba596e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:493
+msgid ":meth:`def GetFunctor <smeshBuilder.smeshBuilder.GetFunctor>`"
+msgstr ""
+
+# 364133b01cf244d68debd89ff78e203e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:495
+msgid ":meth:`def GetIdsFromFilter <smeshBuilder.Mesh.GetIdsFromFilter>`"
+msgstr ""
+
+# 14efcd4479ab4c5897492823160c73d0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:497
+msgid ":meth:`def IsManifold <smeshBuilder.Mesh.IsManifold>`"
+msgstr ""
+
+# 47949f78e0874c80bc948974d34678b8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:499
+msgid ""
+":meth:`def IsCoherentOrientation2D "
+"<smeshBuilder.Mesh.IsCoherentOrientation2D>`"
+msgstr ""
+
+# 7619e057b99142aea7ceddba0a2697b2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:505
+msgid "Grouping elements"
+msgstr ""
+
+# e1ddf65f695b444580732c0bfbf3420e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:509
+msgid ":meth:`def SetAutoColor <smeshBuilder.Mesh.SetAutoColor>`"
+msgstr ""
+
+# 43c393b9ce7a432db32738accfbb4479
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:511
+msgid ":meth:`def GetAutoColor <smeshBuilder.Mesh.GetAutoColor>`"
+msgstr ""
+
+# 7fcc1ad4de454a7cac102032b8a6d461
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:513
+msgid ""
+":meth:`def HasDuplicatedGroupNamesMED "
+"<smeshBuilder.Mesh.HasDuplicatedGroupNamesMED>`"
+msgstr ""
+
+# dc3bcded96994f2683443bf8f36789d9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:517
+msgid "Creating groups"
+msgstr ""
+
+# c1e4318a3e6a41339c9f925820b553e6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:521
+msgid ":meth:`def CreateEmptyGroup <smeshBuilder.Mesh.CreateEmptyGroup>`"
+msgstr ""
+
+# 7f59b73c5a034124bed02fe7a80aa1a9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:523
+msgid ":meth:`def Group <smeshBuilder.Mesh.Group>`"
+msgstr ""
+
+# 526937197efb4aa0ba5bc5117451db63
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:525
+msgid ":meth:`def GroupOnGeom <smeshBuilder.Mesh.GroupOnGeom>`"
+msgstr ""
+
+# afbd9e404c4142c58a910f71f5b42940
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:527
+msgid ":meth:`def GroupOnFilter <smeshBuilder.Mesh.GroupOnFilter>`"
+msgstr ""
+
+# b59a15e6bb8b4cc2804c8db67fcb3878
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:529
+msgid ":meth:`def MakeGroupByIds <smeshBuilder.Mesh.MakeGroupByIds>`"
+msgstr ""
+
+# b4fd00be80b94b7c95bf561e34be9f1d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:531
+msgid ":meth:`def MakeGroup <smeshBuilder.Mesh.MakeGroup>`"
+msgstr ""
+
+# dea817c333ea4921ac122bfe2258ad8a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:533
+msgid ":meth:`def MakeGroupByCriterion <smeshBuilder.Mesh.MakeGroupByCriterion>`"
+msgstr ""
+
+# 9ea5d2a9469947fa9a46e517f0546ddc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:535
+msgid ":meth:`def MakeGroupByCriteria <smeshBuilder.Mesh.MakeGroupByCriteria>`"
+msgstr ""
+
+# 6af590a3c4304e14ab438b9bf8fc38ef
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:537
+msgid ":meth:`def MakeGroupByFilter <smeshBuilder.Mesh.MakeGroupByFilter>`"
+msgstr ""
+
+# 3505dc6f56e04ddfa49953788330911d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:539
+msgid ":meth:`def GetGroups <smeshBuilder.Mesh.GetGroups>`"
+msgstr ""
+
+# 4ec6990ada494c00b604aa67bf5c2f5c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:541
+msgid ":meth:`def NbGroups <smeshBuilder.Mesh.NbGroups>`"
+msgstr ""
+
+# 5bf02958c3ed4323affefb4a87e216e9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:543
+msgid ":meth:`def GetGroupNames <smeshBuilder.Mesh.GetGroupNames>`"
+msgstr ""
+
+# 76206598280549248ed7cc370d413377
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:545
+msgid ":meth:`def GetGroupByName <smeshBuilder.Mesh.GetGroupByName>`"
+msgstr ""
+
+# 9d3ac80899df4bb4809c73351f46f7fa
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:549
+msgid "Using operations on groups"
+msgstr ""
+
+# ea0222a6d2764631838be50b926307b3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:553
+msgid ":meth:`def UnionGroups <smeshBuilder.Mesh.UnionGroups>`"
+msgstr ""
+
+# d8c432df42a640e7a9227e38de0cfd2f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:555
+msgid ":meth:`def UnionListOfGroups <smeshBuilder.Mesh.UnionListOfGroups>`"
+msgstr ""
+
+# 1cad96c02561499094bf37d0bac8ed38
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:557
+msgid ":meth:`def IntersectGroups <smeshBuilder.Mesh.IntersectGroups>`"
+msgstr ""
+
+# 06a8959f158443a2b7686c3c3e2a0497
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:559
+msgid ""
+":meth:`def IntersectListOfGroups "
+"<smeshBuilder.Mesh.IntersectListOfGroups>`"
+msgstr ""
+
+# 06d24d6fff774547af488e3d58597afa
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:561
+msgid ":meth:`def CutGroups <smeshBuilder.Mesh.CutGroups>`"
+msgstr ""
+
+# 6cc2630aae9e4368a78bc41cfd016f8c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:563
+msgid ":meth:`def CutListOfGroups <smeshBuilder.Mesh.CutListOfGroups>`"
+msgstr ""
+
+# 1ac1dd8f5d474d3a977ae209a22d2d6e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:565
+msgid ":meth:`def CreateDimGroup <smeshBuilder.Mesh.CreateDimGroup>`"
+msgstr ""
+
+# 5a314bffaeae4756a5af4293f5cb4806
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:567
+msgid ":meth:`def ConvertToStandalone <smeshBuilder.Mesh.ConvertToStandalone>`"
+msgstr ""
+
+# 8d5ec94d536c4b5d97909b4723a3d54f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:571
+msgid "Deleting groups"
+msgstr ""
+
+# b6c2d50d6e7b4a9a881ef1f9957a1a08
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:575
+msgid ":meth:`def RemoveGroup <smeshBuilder.Mesh.RemoveGroup>`"
+msgstr ""
+
+# 12886886c20f48aaa1ef06a3e0eedb91
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:577
+msgid ""
+":meth:`def RemoveGroupWithContents "
+"<smeshBuilder.Mesh.RemoveGroupWithContents>`"
+msgstr ""
+
+# db8216644ddb498d920616a88d964d44
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:582
+msgid "Modifying meshes"
+msgstr ""
+
+# fc9163a484d44811b09b7691af8917c8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:586
+msgid ":meth:`def GetPattern <smeshBuilder.smeshBuilder.GetPattern>`"
+msgstr ""
+
+# 1ca825356b6049d49779fda241585440
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:588
+msgid ":meth:`def GetMeshEditor <smeshBuilder.Mesh.GetMeshEditor>`"
+msgstr ""
+
+# 23d3f0b765364481af9352faa320c1df
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:592
+msgid "Adding nodes and elements"
+msgstr ""
+
+# 7a48ed64d3bf4268ba874d987232ffb0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:596
+msgid ":meth:`def AddNode <smeshBuilder.Mesh.AddNode>`"
+msgstr ""
+
+# 8e5db9e3a5fd4094a46e63d1d8a38ebd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:598
+msgid ":meth:`def Add0DElement <smeshBuilder.Mesh.Add0DElement>`"
+msgstr ""
+
+# 9ae4ac435eae4e0c9799797f70dab2e2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:600
+msgid ""
+":meth:`def Add0DElementsToAllNodes "
+"<smeshBuilder.Mesh.Add0DElementsToAllNodes>`"
+msgstr ""
+
+# 8e1607e1b4e44a358d83a2b601802ac9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:602
+msgid ":meth:`def AddBall <smeshBuilder.Mesh.AddBall>`"
+msgstr ""
+
+# 1681b79b28b64e45bc4fcef1d3b7f59c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:604
+msgid ":meth:`def AddEdge <smeshBuilder.Mesh.AddEdge>`"
+msgstr ""
+
+# 4532f45d09cb497a92e1fc8fb6b61e27
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:606
+msgid ":meth:`def AddFace <smeshBuilder.Mesh.AddFace>`"
+msgstr ""
+
+# b2259a8903ae44f3ac518ba7feb1e03e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:608
+msgid ":meth:`def AddPolygonalFace <smeshBuilder.Mesh.AddPolygonalFace>`"
+msgstr ""
+
+# ec5492e82bdc4cafbc8944bbb25d1aaa
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:610
+msgid ":meth:`def AddQuadPolygonalFace <smeshBuilder.Mesh.AddQuadPolygonalFace>`"
+msgstr ""
+
+# 2e0296655d864cccb38c09f627595aa9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:612
+msgid ":meth:`def AddVolume <smeshBuilder.Mesh.AddVolume>`"
+msgstr ""
+
+# d7f163ff1f7642d9b7de09847b059f8c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:614
+msgid ":meth:`def AddPolyhedralVolume <smeshBuilder.Mesh.AddPolyhedralVolume>`"
+msgstr ""
+
+# a51315a53ba3474cb2229a96bf9e6022
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:616
+msgid ""
+":meth:`def AddPolyhedralVolumeByFaces "
+"<smeshBuilder.Mesh.AddPolyhedralVolumeByFaces>`"
+msgstr ""
+
+# 0ea3fae8f16444b1a647d45334981d2f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:618
+msgid ":meth:`def SetNodeOnVertex <smeshBuilder.Mesh.SetNodeOnVertex>`"
+msgstr ""
+
+# 1a9700a129354a86b4cf96e6185e66e0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:620
+msgid ":meth:`def SetNodeOnEdge <smeshBuilder.Mesh.SetNodeOnEdge>`"
+msgstr ""
+
+# f4c054f968f04bb584c52039f32d9e48
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:622
+msgid ":meth:`def SetNodeOnFace <smeshBuilder.Mesh.SetNodeOnFace>`"
+msgstr ""
+
+# 84d892a26de84848b69c9dada7132c7a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:624
+msgid ":meth:`def SetNodeInVolume <smeshBuilder.Mesh.SetNodeInVolume>`"
+msgstr ""
+
+# 63b28ca6e7eb410ca2b3623db87db04f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:626
+msgid ""
+":meth:`def SetMeshElementOnShape "
+"<smeshBuilder.Mesh.SetMeshElementOnShape>`"
+msgstr ""
+
+# c67ed93d1bd24cf6b5cb159a09baa71c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:628
+msgid ":meth:`def Make2DMeshFrom3D <smeshBuilder.Mesh.Make2DMeshFrom3D>`"
+msgstr ""
+
+# ab02c4c770ed41d398927abaea2dec53
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:630
+msgid ":meth:`def MakeBoundaryMesh <smeshBuilder.Mesh.MakeBoundaryMesh>`"
+msgstr ""
+
+# 330c552912024f259d8907e86251be24
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:632
+msgid ":meth:`def MakeBoundaryElements <smeshBuilder.Mesh.MakeBoundaryElements>`"
+msgstr ""
+
+# ebf6aad9b717442ebf64cdd3d48f208e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:634
+msgid ":meth:`def GetLastCreatedNodes <smeshBuilder.Mesh.GetLastCreatedNodes>`"
+msgstr ""
+
+# a04cc5c028a54d03861ece9fad317d41
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:636
+msgid ":meth:`def GetLastCreatedElems <smeshBuilder.Mesh.GetLastCreatedElems>`"
+msgstr ""
+
+# e9cc0fc3baa748718c0e1b9565d78fe5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:638
+msgid ":meth:`def ClearLastCreated <smeshBuilder.Mesh.ClearLastCreated>`"
+msgstr ""
+
+# 8f1aafa6c1cd4ef1b09d5e2731200a2d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:642
+msgid "Removing nodes and elements"
+msgstr ""
+
+# f3771c9094924a18abfbd1fd322b7332
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:646
+msgid ":meth:`def RemoveElements <smeshBuilder.Mesh.RemoveElements>`"
+msgstr ""
+
+# 2052ac8112504711a295bba532dd96a3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:648
+msgid ":meth:`def RemoveNodes <smeshBuilder.Mesh.RemoveNodes>`"
+msgstr ""
+
+# dab20ca75d0e41a1a84dd38d7ec55898
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:650
+msgid ":meth:`def RemoveOrphanNodes <smeshBuilder.Mesh.RemoveOrphanNodes>`"
+msgstr ""
+
+# 2affc8ab488f46208c25b84e320446dd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:654
+msgid "Modifying nodes and elements"
+msgstr ""
+
+# 3b56d50a33ce418ea0a42f50845cf428
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:656
+msgid "functions:"
+msgstr ""
+
+# 0b23874b7dea4f1cbeebff7c8fdf2781
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:658
+msgid ":meth:`def MoveNode <smeshBuilder.Mesh.MoveNode>`"
+msgstr ""
+
+# 87157a9a3b6242d0951e4a444db4e236
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:660
+msgid ""
+":meth:`def MoveClosestNodeToPoint "
+"<smeshBuilder.Mesh.MoveClosestNodeToPoint>`"
+msgstr ""
+
+# bbb8094228b540679b4dda8c2afa2061
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:662
+msgid ""
+":meth:`def MeshToPassThroughAPoint "
+"<smeshBuilder.Mesh.MeshToPassThroughAPoint>`"
+msgstr ""
+
+# 5cefaf2967764ad38f8bf3fe6545e1c7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:664
+msgid ":meth:`def ChangeElemNodes <smeshBuilder.Mesh.ChangeElemNodes>`"
+msgstr ""
+
+# b9fc90e122ae49b39407a81343b5a34f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:668
+msgid "Renumbering nodes and elements"
+msgstr ""
+
+# 79117ce1b05046eab44d776f7cdd3fc9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:672
+msgid ":meth:`def RenumberNodes <smeshBuilder.Mesh.RenumberNodes>`"
+msgstr ""
+
+# cb0bbc96cc174dc59f442fd1071d502c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:674
+msgid ":meth:`def RenumberElements <smeshBuilder.Mesh.RenumberElements>`"
+msgstr ""
+
+# c52bcd7c63374e8a8a809d46fccc6f07
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:678
+msgid "Transforming meshes (Translation, Rotation, Symmetry, Sewing, Merging)"
+msgstr ""
+
+# 52491266a8704bc8b19dfd0ca72f34e3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:682
+msgid ":meth:`def Mirror <smeshBuilder.Mesh.Mirror>`"
+msgstr ""
+
+# 156b889faa49438f9f5a1cbdd74560de
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:684
+msgid ":meth:`def MirrorMakeMesh <smeshBuilder.Mesh.MirrorMakeMesh>`"
+msgstr ""
+
+# d8cad3abefd346a7838a8bac25c45d4e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:686
+msgid ":meth:`def MirrorObject <smeshBuilder.Mesh.MirrorObject>`"
+msgstr ""
+
+# b80a51a5b08e475c955b74b18b25ce33
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:688
+msgid ":meth:`def MirrorObjectMakeMesh <smeshBuilder.Mesh.MirrorObjectMakeMesh>`"
+msgstr ""
+
+# cf6aa3d2564c4ee585c60755790c6d39
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:690
+msgid ":meth:`def Translate <smeshBuilder.Mesh.Translate>`"
+msgstr ""
+
+# 6477a78623b348598ff2c60ebded4af2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:692
+msgid ":meth:`def TranslateMakeMesh <smeshBuilder.Mesh.TranslateMakeMesh>`"
+msgstr ""
+
+# 0bec18ac771545adb8a9e2522cca87af
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:694
+msgid ":meth:`def TranslateObject <smeshBuilder.Mesh.TranslateObject>`"
+msgstr ""
+
+# dfe798659d3845bb9473d6dd05f92f62
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:696
+msgid ""
+":meth:`def TranslateObjectMakeMesh "
+"<smeshBuilder.Mesh.TranslateObjectMakeMesh>`"
+msgstr ""
+
+# 44934955eea347a49c7d6e0c924d11fb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:698
+msgid ":meth:`def Rotate <smeshBuilder.Mesh.Rotate>`"
+msgstr ""
+
+# 0f11692135754a8cb7e4b5c75156c9ac
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:700
+msgid ":meth:`def RotateMakeMesh <smeshBuilder.Mesh.RotateMakeMesh>`"
+msgstr ""
+
+# 0ae561bc02d845cd968efbb0e4922dcd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:702
+msgid ":meth:`def RotateObject <smeshBuilder.Mesh.RotateObject>`"
+msgstr ""
+
+# e17fc29d010e47ee8e892fd87383c9d3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:704
+msgid ":meth:`def RotateObjectMakeMesh <smeshBuilder.Mesh.RotateObjectMakeMesh>`"
+msgstr ""
+
+# 8bf17ed272fd42518c78e38e0b837058
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:706
+msgid ":meth:`def FindCoincidentNodes <smeshBuilder.Mesh.FindCoincidentNodes>`"
+msgstr ""
+
+# 4f00e1e07330450e9936d5cabfdf8f06
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:708
+msgid ""
+":meth:`def FindCoincidentNodesOnPart "
+"<smeshBuilder.Mesh.FindCoincidentNodesOnPart>`"
+msgstr ""
+
+# b7d412d18b2d4d718a8b64ba8bc0e91d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:710
+msgid ":meth:`def MergeNodes <smeshBuilder.Mesh.MergeNodes>`"
+msgstr ""
+
+# fc7ba0fe671a4280823c3e73ca014808
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:712
+msgid ":meth:`def FindEqualElements <smeshBuilder.Mesh.FindEqualElements>`"
+msgstr ""
+
+# 81a42d4e1f3b446fa353b41336b9aa47
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:714
+msgid ":meth:`def MergeElements <smeshBuilder.Mesh.MergeElements>`"
+msgstr ""
+
+# 3a267717d10e4a3b8490766360a90eb6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:716
+msgid ":meth:`def MergeEqualElements <smeshBuilder.Mesh.MergeEqualElements>`"
+msgstr ""
+
+# ab91a1c63aa7423ea4f56f147369e5ec
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:718
+msgid ":meth:`def FindFreeBorders <smeshBuilder.Mesh.FindFreeBorders>`"
+msgstr ""
+
+# bf5a5c514e3a47fbb7a39672c0bf9268
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:720
+msgid ":meth:`def FillHole <smeshBuilder.Mesh.FillHole>`"
+msgstr ""
+
+# 9ebfd371264846fd93d66da4209af34e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:722
+msgid ""
+":meth:`def FindCoincidentFreeBorders "
+"<smeshBuilder.Mesh.FindCoincidentFreeBorders>`"
+msgstr ""
+
+# 854cdfbc46dd46adbed52889be4b0961
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:724
+msgid ""
+":meth:`def SewCoincidentFreeBorders "
+"<smeshBuilder.Mesh.SewCoincidentFreeBorders>`"
+msgstr ""
+
+# 2952bf3fb43a49fc9c67818cf07bf3d9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:726
+msgid ":meth:`def SewFreeBorders <smeshBuilder.Mesh.SewFreeBorders>`"
+msgstr ""
+
+# a99e40b848264e7ca390eb4c52c72c17
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:728
+msgid ""
+":meth:`def SewConformFreeBorders "
+"<smeshBuilder.Mesh.SewConformFreeBorders>`"
+msgstr ""
+
+# 70e5c7cfce404fd6a69b8f327d0b4738
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:730
+msgid ":meth:`def SewBorderToSide <smeshBuilder.Mesh.SewBorderToSide>`"
+msgstr ""
+
+# a3e58b93634e4bbb8b6e70db7344793b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:732
+msgid ":meth:`def SewSideElements <smeshBuilder.Mesh.SewSideElements>`"
+msgstr ""
+
+# f19f69caa06d4df7bf33c51d0278bb14
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:737
+msgid "Uniting triangles"
+msgstr ""
+
+# afe2ce2d2f1443ebabb0a4f7f6860598
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:741
+msgid ":meth:`def DeleteDiag <smeshBuilder.Mesh.DeleteDiag>`"
+msgstr ""
+
+# 4c03aa5fedad421a9f0581d9602bcef8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:743
+msgid ":meth:`def TriToQuad <smeshBuilder.Mesh.TriToQuad>`"
+msgstr ""
+
+# b2a4a85adc744066ba34e7f63b42ca2f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:745
+msgid ":meth:`def TriToQuadObject <smeshBuilder.Mesh.TriToQuadObject>`"
+msgstr ""
+
+# bbf7eac775cb45a689f227964a979dc2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:750
+msgid "Cutting elements"
+msgstr ""
+
+# 92ea318045ff46b8b4eaf49171e75f31
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:754
+msgid ":meth:`def InverseDiag <smeshBuilder.Mesh.InverseDiag>`"
+msgstr ""
+
+# 9e4170fd36f0401bab37ec3cfe57c868
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:756
+msgid ":meth:`def QuadToTri <smeshBuilder.Mesh.QuadToTri>`"
+msgstr ""
+
+# 023be8af89b7452fb59b1f46881c7639
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:758
+msgid ":meth:`def QuadToTriObject <smeshBuilder.Mesh.QuadToTriObject>`"
+msgstr ""
+
+# 940bdd067de04b9c95aa86b571b07055
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:760
+msgid ":meth:`def QuadTo4Tri <smeshBuilder.Mesh.QuadTo4Tri>`"
+msgstr ""
+
+# e63a1d9a987d4e03afa474bd0ed2a078
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:762
+msgid ":meth:`def SplitQuad <smeshBuilder.Mesh.SplitQuad>`"
+msgstr ""
+
+# ff3671a6290b41d9afb3bfa7c608693c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:764
+msgid ":meth:`def SplitQuadObject <smeshBuilder.Mesh.SplitQuadObject>`"
+msgstr ""
+
+# c29477f93ce549568696b7cb0fb4bdb5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:766
+msgid ":meth:`def BestSplit <smeshBuilder.Mesh.BestSplit>`"
+msgstr ""
+
+# 9ca81aa1146f43a7a1984ee8ad125511
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:768
+msgid ""
+":meth:`def SplitVolumesIntoTetra "
+"<smeshBuilder.Mesh.SplitVolumesIntoTetra>`"
+msgstr ""
+
+# 5d2262b2b4514a099ce7d74a012108c2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:770
+msgid ""
+":meth:`def SplitBiQuadraticIntoLinear "
+"<smeshBuilder.Mesh.SplitBiQuadraticIntoLinear>`"
+msgstr ""
+
+# 573170162eac4e5e883119812daa935f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:772
+msgid ""
+":meth:`def SplitHexahedraIntoPrisms "
+"<smeshBuilder.Mesh.SplitHexahedraIntoPrisms>`"
+msgstr ""
+
+# 4138c66fa27d40d1aa162e2617d3ad1b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:774
+msgid ""
+":meth:`def SplitQuadsNearTriangularFacets "
+"<smeshBuilder.Mesh.SplitQuadsNearTriangularFacets>`"
+msgstr ""
+
+# cc61ba036c614a758cdb7bb96ca0203d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:776
+msgid ":meth:`def SplitHexaToTetras <smeshBuilder.Mesh.SplitHexaToTetras>`"
+msgstr ""
+
+# 1785c80335ba43edb7e621f0be17a09f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:778
+msgid ":meth:`def SplitHexaToPrisms <smeshBuilder.Mesh.SplitHexaToPrisms>`"
+msgstr ""
+
+# ef498fe64e9e4d1e980b62181c38df73
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:783
+msgid "Changing orientation of elements"
+msgstr ""
+
+# 021ec661a4e8415a940c810c165d5314
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:787
+msgid ":meth:`def Reorient <smeshBuilder.Mesh.Reorient>`"
+msgstr ""
+
+# 965fdd6ed4034fc792ae6c5c10ce94e5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:789
+msgid ":meth:`def ReorientObject <smeshBuilder.Mesh.ReorientObject>`"
+msgstr ""
+
+# d98cbd13f00445449dbbce77ea01109d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:791
+msgid ":meth:`def Reorient2D <smeshBuilder.Mesh.Reorient2D>`"
+msgstr ""
+
+# cd030f23da584d63be3dbd1d3cb3ec9c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:793
+msgid ":meth:`def Reorient2DBy3D <smeshBuilder.Mesh.Reorient2DBy3D>`"
+msgstr ""
+
+# 6577aae1aa8c4c6b9a7dcaee56e03ac0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:798
+msgid "Smoothing"
+msgstr ""
+
+# 2dceedca7f2b4b928100ad7ecdf9730c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:802
+msgid ":meth:`def Smooth <smeshBuilder.Mesh.Smooth>`"
+msgstr ""
+
+# 60d8cc4f3f844039b28e6f20fac77818
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:804
+msgid ":meth:`def SmoothObject <smeshBuilder.Mesh.SmoothObject>`"
+msgstr ""
+
+# 407ef83cb149412e9a0d793aeb886e3c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:806
+msgid ":meth:`def SmoothParametric <smeshBuilder.Mesh.SmoothParametric>`"
+msgstr ""
+
+# 7f4b74f8ee6444a796c878e07c3c1c0b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:808
+msgid ""
+":meth:`def SmoothParametricObject "
+"<smeshBuilder.Mesh.SmoothParametricObject>`"
+msgstr ""
+
+# 0561311ab1ec49b9bbf9ad43315e2ffa
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:813
+msgid "Extrusion and Revolution"
+msgstr ""
+
+# b35f910325f94984a743685362d08967
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:817
+msgid ":meth:`def RotationSweepObjects <smeshBuilder.Mesh.RotationSweepObjects>`"
+msgstr ""
+
+# 1ce1f751992340f399961195f4f9f4d5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:819
+msgid ":meth:`def RotationSweep <smeshBuilder.Mesh.RotationSweep>`"
+msgstr ""
+
+# 0bda5290f2424c7aae39ffb6e78e45d1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:821
+msgid ":meth:`def RotationSweepObject <smeshBuilder.Mesh.RotationSweepObject>`"
+msgstr ""
+
+# bc677fcce521411db428433277b64bd9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:823
+msgid ""
+":meth:`def RotationSweepObject1D "
+"<smeshBuilder.Mesh.RotationSweepObject1D>`"
+msgstr ""
+
+# eabd288217db466a947aeefc138d48b5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:825
+msgid ""
+":meth:`def RotationSweepObject2D "
+"<smeshBuilder.Mesh.RotationSweepObject2D>`"
+msgstr ""
+
+# 57d64c25131c4b5b8fb2b69cf0d12330
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:827
+msgid ""
+":meth:`def ExtrusionSweepObjects "
+"<smeshBuilder.Mesh.ExtrusionSweepObjects>`"
+msgstr ""
+
+# 0158d23af530444397a3d6f10fb12059
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:829
+msgid ":meth:`def ExtrusionSweep <smeshBuilder.Mesh.ExtrusionSweep>`"
+msgstr ""
+
+# 867072ab3ce344029cd8ec07cbeaba43
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:831
+msgid ":meth:`def ExtrusionByNormal <smeshBuilder.Mesh.ExtrusionByNormal>`"
+msgstr ""
+
+# 6947db5c2f2040c4914549fa963fc251
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:833
+msgid ":meth:`def ExtrusionSweepObject <smeshBuilder.Mesh.ExtrusionSweepObject>`"
+msgstr ""
+
+# 9c10d33f9c7545d2b74bce4e5af10c4e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:835
+msgid ""
+":meth:`def ExtrusionSweepObject1D "
+"<smeshBuilder.Mesh.ExtrusionSweepObject1D>`"
+msgstr ""
+
+# cec00539b219405ebd95d14fac5fd20e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:837
+msgid ""
+":meth:`def ExtrusionSweepObject2D "
+"<smeshBuilder.Mesh.ExtrusionSweepObject2D>`"
+msgstr ""
+
+# 12a0e9f769aa487aa0e24e1f1be7dfcd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:839
+msgid ":meth:`def AdvancedExtrusion <smeshBuilder.Mesh.AdvancedExtrusion>`"
+msgstr ""
+
+# 39ac68db390949f1af51567f7ad6022c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:841
+msgid ""
+":meth:`def ExtrusionAlongPathObjects "
+"<smeshBuilder.Mesh.ExtrusionAlongPathObjects>`"
+msgstr ""
+
+# 153036bcd18442afb5f80202cc8df2a3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:843
+msgid ":meth:`def ExtrusionAlongPathX <smeshBuilder.Mesh.ExtrusionAlongPathX>`"
+msgstr ""
+
+# 4089ff73c66f42ebbab51b1440ba8dee
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:845
+msgid ":meth:`def ExtrusionAlongPath <smeshBuilder.Mesh.ExtrusionAlongPath>`"
+msgstr ""
+
+# a803a9e0f9dc4d20bbde0cf23870c48b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:847
+msgid ""
+":meth:`def ExtrusionAlongPathObject "
+"<smeshBuilder.Mesh.ExtrusionAlongPathObject>`"
+msgstr ""
+
+# 296bd20c43124438b3d992ce449e687b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:849
+msgid ""
+":meth:`def ExtrusionAlongPathObject1D "
+"<smeshBuilder.Mesh.ExtrusionAlongPathObject1D>`"
+msgstr ""
+
+# 1ae49f032c0843d1b6b33fccf6edb66d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:851
+msgid ""
+":meth:`def ExtrusionAlongPathObject2D "
+"<smeshBuilder.Mesh.ExtrusionAlongPathObject2D>`"
+msgstr ""
+
+# ebdddf705f594ae9b198a6c8b42ed733
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:856
+msgid "Convert to/from Quadratic Mesh"
+msgstr ""
+
+# 082d34e5587a4de1af651d1c2200d4cd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:860
+msgid ":meth:`def ConvertToQuadratic <smeshBuilder.Mesh.ConvertToQuadratic>`"
+msgstr ""
+
+# 903b038e90554c6383d4fe5b57ccdf77
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:862
+msgid ":meth:`def ConvertFromQuadratic <smeshBuilder.Mesh.ConvertFromQuadratic>`"
+msgstr ""
+
+# c90b906ed17147e38eed9d95dfbd0156
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:867
+msgid "Duplication of nodes and elements (to emulate cracks)"
+msgstr ""
+
+# 443144e7223a495896fda9a019a54c89
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:871
+msgid ":meth:`def DoubleElements <smeshBuilder.Mesh.DoubleElements>`"
+msgstr ""
+
+# 177d508a7b6b4450afbbd69d1c8e2f47
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:873
+msgid ":meth:`def DoubleNodes <smeshBuilder.Mesh.DoubleNodes>`"
+msgstr ""
+
+# 565067fc88f64bd79c87db855cceb9d5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:875
+msgid ":meth:`def DoubleNode <smeshBuilder.Mesh.DoubleNode>`"
+msgstr ""
+
+# a4ba2d6b744543df90ac95bc3a71803d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:877
+msgid ":meth:`def DoubleNodeGroup <smeshBuilder.Mesh.DoubleNodeGroup>`"
+msgstr ""
+
+# d09a6b85b2f440bda3d76d558bb85aef
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:879
+msgid ":meth:`def DoubleNodeGroups <smeshBuilder.Mesh.DoubleNodeGroups>`"
+msgstr ""
+
+# 6ab0e0a9de4f47b58db11c9712f85510
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:881
+msgid ":meth:`def DoubleNodeElem <smeshBuilder.Mesh.DoubleNodeElem>`"
+msgstr ""
+
+# 745308aff91f4f74a5448462bdb0d268
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:883
+msgid ""
+":meth:`def DoubleNodeElemInRegion "
+"<smeshBuilder.Mesh.DoubleNodeElemInRegion>`"
+msgstr ""
+
+# e3a6b9baa7bb4fcb935ffbd705d695e0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:885
+msgid ":meth:`def DoubleNodeElemGroup <smeshBuilder.Mesh.DoubleNodeElemGroup>`"
+msgstr ""
+
+# 30af0bf0d14847c9868ae41f8d390caf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:887
+msgid ""
+":meth:`def DoubleNodeElemGroupInRegion "
+"<smeshBuilder.Mesh.DoubleNodeElemGroupInRegion>`"
+msgstr ""
+
+# ad4b709f35db437d9729704a400cfeb8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:889
+msgid ":meth:`def DoubleNodeElemGroups <smeshBuilder.Mesh.DoubleNodeElemGroups>`"
+msgstr ""
+
+# 0c85d6856abd4f0e869efd3c0319fcae
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:891
+msgid ""
+":meth:`def DoubleNodeElemGroupsInRegion "
+"<smeshBuilder.Mesh.DoubleNodeElemGroupsInRegion>`"
+msgstr ""
+
+# f4e3cd4e0d3b427b9f84253d4f7547cb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:893
+msgid ""
+":meth:`def AffectedElemGroupsInRegion "
+"<smeshBuilder.Mesh.AffectedElemGroupsInRegion>`"
+msgstr ""
+
+# 3bd0bc3edb4d40db97c1ce1904b95a5c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:895
+msgid ""
+":meth:`def DoubleNodesOnGroupBoundaries "
+"<smeshBuilder.Mesh.DoubleNodesOnGroupBoundaries>`"
+msgstr ""
+
+# 4bae5a9fa9224b4e83739225df7f26e8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:897
+msgid ""
+":meth:`def CreateFlatElementsOnFacesGroups "
+"<smeshBuilder.Mesh.CreateFlatElementsOnFacesGroups>`"
+msgstr ""
+
+# aa9625f8cc0c4f98a10c561807b0fd45
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:903
+msgid "Measurements"
+msgstr ""
+
+# ff946f026b284d88b6d33ba681bec784
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:908
+msgid ":meth:`def MinDistance <smeshBuilder.smeshBuilder.MinDistance>`"
+msgstr ""
+
+# f1597e5b1ace4148a543e81d917e16ad
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:910
+msgid ":meth:`def GetMinDistance <smeshBuilder.smeshBuilder.GetMinDistance>`"
+msgstr ""
+
+# 8c061732c84243e4999c791d5013c457
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:912
+msgid ":meth:`def BoundingBox <smeshBuilder.smeshBuilder.BoundingBox>`"
+msgstr ""
+
+# cb9496005d9e4bd08374be8da5b6d955
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:914
+msgid ":meth:`def GetBoundingBox <smeshBuilder.smeshBuilder.GetBoundingBox>`"
+msgstr ""
+
+# ab581091987f47edb3536661186299d8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:916
+msgid ":meth:`def GetLength <smeshBuilder.smeshBuilder.GetLength>`"
+msgstr ""
+
+# ff8cba895f7e45c1b6a4125f7d2e6292
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:918
+msgid ":meth:`def GetArea <smeshBuilder.smeshBuilder.GetArea>`"
+msgstr ""
+
+# ac5dd4739c6349df9e30e171ba2112f6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:920
+msgid ":meth:`def GetVolume <smeshBuilder.smeshBuilder.GetVolume>`"
+msgstr ""
+
+# c1b1cf4ab290495c9c7b6fb25c9964be
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:922
+msgid ":meth:`def GetFreeBorders <smeshBuilder.Mesh.GetFreeBorders>`"
+msgstr ""
+
+# 7fc75b85d5444815a8949d02a41ff011
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:924
+msgid ":meth:`def MinDistance <smeshBuilder.Mesh.MinDistance>`"
+msgstr ""
+
+# 7f62a709e8114689b264f1e22222e72f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:926
+msgid ":meth:`def GetMinDistance <smeshBuilder.Mesh.GetMinDistance>`"
+msgstr ""
+
+# 9f7b563371434850ba91c4076e1e7d47
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:928
+msgid ":meth:`def BoundingBox <smeshBuilder.Mesh.BoundingBox>`"
+msgstr ""
+
+# 8dacd3983a9b4fe5abe7aeb8d1a3abd1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:930
+msgid ":meth:`def GetBoundingBox <smeshBuilder.Mesh.GetBoundingBox>`"
+msgstr ""
+
+# 49f25d14f1a8477b8e6634c2df06c9b8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:932
+msgid ":meth:`def GetFunctor <smeshBuilder.Mesh.GetFunctor>`"
+msgstr ""
+
+# 40708bb5cb564f7386340e94bb58097f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:934
+msgid ":meth:`def FunctorValue <smeshBuilder.Mesh.FunctorValue>`"
+msgstr ""
+
+# 0852d20741c34483bdf302ae17b9d6cc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:936
+msgid ":meth:`def GetLength <smeshBuilder.Mesh.GetLength>`"
+msgstr ""
+
+# 329b0f363aa14f87a300b439ce45950b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:938
+msgid ":meth:`def GetArea <smeshBuilder.Mesh.GetArea>`"
+msgstr ""
+
+# b67a175962b048b3a089e0cf1d4adce4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:940
+msgid ":meth:`def GetVolume <smeshBuilder.Mesh.GetVolume>`"
+msgstr ""
+
+# 8d7ea48673fb4afb828461ea52e24a51
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:942
+msgid ":meth:`def GetMaxElementLength <smeshBuilder.Mesh.GetMaxElementLength>`"
+msgstr ""
+
+# 9429fe5fd98f48e286ef1302ed70b7a5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:944
+msgid ":meth:`def GetAspectRatio <smeshBuilder.Mesh.GetAspectRatio>`"
+msgstr ""
+
+# 70f0db05da184f5d8bede2bc579da788
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:946
+msgid ":meth:`def GetWarping <smeshBuilder.Mesh.GetWarping>`"
+msgstr ""
+
+# 3923e5251d964e39b30978e8603d0bfc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:948
+msgid ":meth:`def GetMinimumAngle <smeshBuilder.Mesh.GetMinimumAngle>`"
+msgstr ""
+
+# dfc93a88fbbb413f8823bc2638fe9f44
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:950
+msgid ":meth:`def GetTaper <smeshBuilder.Mesh.GetTaper>`"
+msgstr ""
+
+# 41be6e44395240ab88848d50ad80a7ec
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:952
+msgid ":meth:`def GetSkew <smeshBuilder.Mesh.GetSkew>`"
+msgstr ""
+
+# 6c64d11fb1b44b7d849aa9230061297f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:954
+msgid ":meth:`def GetMinMax <smeshBuilder.Mesh.GetMinMax>`"
+msgstr ""
+
+# d3a8a9a4e3a8464082cb87f04506af4b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:959
+msgid "Accessing SMESH object in study"
+msgstr ""
+
+# a4f60f9a61a548678577ca804acca3f8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/modules.rst:963
+msgid ":class:`SMeshStudyTools <smeshstudytools.SMeshStudyTools>`"
+msgstr ""
+

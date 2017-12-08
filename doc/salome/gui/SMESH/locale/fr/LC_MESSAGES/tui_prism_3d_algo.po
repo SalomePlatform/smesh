@@ -1,0 +1,39 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 7db5116cadad4c5d8ef9c5b1562f3dd0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_prism_3d_algo.rst:5
+msgid "Use Extrusion 3D meshing algorithm"
+msgstr ""
+
+# 59d16afb08774f12bf587dcb9abeb044
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_prism_3d_algo.rst:10
+msgid "``prism_3d_algo.py``"
+msgstr ""
+
+# 4b2c1b045b1149e3933960789e9d33f8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_prism_3d_algo.rst:16
+msgid ":download:`../../../examples/prism_3d_algo.py`"
+msgstr ""
+
+# dbe9fc1e748e455b8069f3c2ef87c23b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/tui_prism_3d_algo.rst:18
+msgid "The result geometry and mesh is shown below"
+msgstr ""
+

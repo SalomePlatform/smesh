@@ -1,0 +1,114 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# f8042d07102047329268efb61e02b9a2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/uniting_set_of_triangles.rst:5
+msgid "Uniting a set of triangles"
+msgstr ""
+
+# a6b547af1c8c4296adddfd3bf6849a03
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/uniting_set_of_triangles.rst:7
+msgid ""
+"It is possible to unite many neighboring triangles into quadrangles by "
+"deletion of the common edge."
+msgstr ""
+
+# f039a145e7f2459ab878bae042d7ef71
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/uniting_set_of_triangles.rst:10
+msgid "**To union several triangles:**"
+msgstr ""
+
+# 6ee1069129ae4a4f8f46b2ac201ec417
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/uniting_set_of_triangles.rst:12
+msgid ""
+"Select a mesh (and display it in the 3D Viewer if you are going to pick "
+"elements by mouse)."
+msgstr ""
+
+# 485bc385f58141c3a3a7560b2e06a6ce
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/uniting_set_of_triangles.rst:13
+msgid ""
+"In the **Modification** menu select the **Union of triangles** item or "
+"click **\"Union of triangles\"** button in the tool-bar."
+msgstr ""
+
+# 1b121a3390c84d18baaac7eb0dd8f178
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/uniting_set_of_triangles.rst:21
+msgid "The following dialog box will appear:"
+msgstr ""
+
+# 9fc7d11072d64e46b333e451a6c1b43c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/uniting_set_of_triangles.rst:26
+msgid ""
+"**The main list** shall contain the triangles which will be united. You "
+"can click on a triangle in the 3D viewer and it will be highlighted. "
+"After that click the **Add** button and the ID of this triangle will be "
+"added to the list. To remove a selected element or elements from the list"
+" click the **Remove** button. The **Sort** button allows to sort the list"
+" of IDs. The **Filter** button allows to apply a definite "
+":ref:`filtering_elements` to selection of triangles."
+msgstr ""
+
+# 092a1e4d360445b09db5d8c37251412f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/uniting_set_of_triangles.rst:27
+msgid ""
+"**Apply to all** radio button allows to apply the operation to all "
+"triangles of the selected mesh."
+msgstr ""
+
+# e7eb65c04f0f444295a0c69df326a9b7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/uniting_set_of_triangles.rst:28
+msgid "**Preview** provides a preview in the viewer."
+msgstr ""
+
+# 8fb609e2e5db4de6bd2cbf4d0f5526fc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/uniting_set_of_triangles.rst:29
+msgid ""
+"**Criterion** menu allows to choose a quality criterion, which will be "
+"optimized to select triangles to unite."
+msgstr ""
+
+# f84bc27ba947439c9e4d5c378e3b2b79
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/uniting_set_of_triangles.rst:30
+msgid ""
+"**Select from** set of fields allows to choose a sub-mesh or an existing "
+"group whose triangle elements then can be added to the list."
+msgstr ""
+
+# 08c9b313413c4804b0bfdbc252be2301
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/uniting_set_of_triangles.rst:32
+msgid ""
+"Click the **Apply** or **Apply and Close** button to confirm the "
+"operation."
+msgstr ""
+
+# 57153b5d99ab4d89af9d593e0402fe3e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/uniting_set_of_triangles.rst:34
+msgid ""
+"If some selected triangle elements have no adjacent edges with one of the"
+" others, the operation on these elements shall take no effect."
+msgstr ""
+
+# 28a06926cf8d49ec89524b0c68e54bfc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/uniting_set_of_triangles.rst:49
+msgid ""
+"**See Also** a sample TUI Script of a :ref:`tui_uniting_set_of_triangles`"
+" operation."
+msgstr ""
+

@@ -1,0 +1,176 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# cf5c5ca41bf34fb1ad6c3de88dd1d060
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:5
+msgid "About Hypotheses"
+msgstr ""
+
+# 81550c4a85c94e458babb3434b2da0f2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:7
+msgid ""
+"**Hypotheses** represent boundary conditions which will be taken into "
+"account by meshing algorithms. The hypotheses allow you to manage the "
+"level of detail of the resulting mesh: when applying different hypotheses"
+" with different parameters you can preset the quantity or size of "
+"elements which will compose your mesh. So, it will be possible to "
+"generate a coarse or a more refined mesh."
+msgstr ""
+
+# 8c7553e9086446319f1133e6c2fa42a3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:9
+msgid "The choice of a hypothesis depends on the selected algorithm."
+msgstr ""
+
+# 849ac0846ee64c26a9c1bc76c9ce81fb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:11
+msgid ""
+"Hypotheses are created during creation and edition of "
+":ref:`constructing_meshes_page`:\"meshes\" and "
+":ref:`constructing_submeshes_page`:\"sub-meshes\". Once created a "
+"hypotheses can be reused during creation and edition of other meshes and "
+"sub-meshes. All created hypotheses and algorithms are present in the "
+"Object Browser in *Hypotheses* and *Algorithms* folders correspondingly. "
+"It is possible to open a dialog to modify the parameters of a hypothesis "
+"from its context menu. This menu also provides  **Unassign** command that"
+" will unassign the hypothesis from all meshes and sub-meshes using it. "
+"Modification of any parameter of a hypothesis and its unassignment leads "
+"to automatic removal of elements generated using it."
+msgstr ""
+
+# 274cef5d5ea04de697c378a00fba0f75
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:16
+msgid "In  **MESH** there are the following Basic Hypotheses:"
+msgstr ""
+
+# 71d2e621d7324f0ebb6ceb26cc82ab88
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:28
+msgid ":ref:`a1d_meshing_hypo_page` (for meshing of **edges**):"
+msgstr ""
+
+# 3448a2d7d3d34e969a0c77b659031f3a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:19
+msgid ":ref:`number_of_segments_anchor`"
+msgstr ""
+
+# b7a48255d4e04b40aa8f21ac290aafc7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:20
+msgid ":ref:`average_length_anchor`"
+msgstr ""
+
+# 73bde0a663a74b129cc144e2e6320bad
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:21
+msgid ":ref:`max_length_anchor`"
+msgstr ""
+
+# 2ab941e1ce4d43c19545dcef537e3302
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:22
+msgid ":ref:`adaptive_1d_anchor`"
+msgstr ""
+
+# d202e9fcfb904f519d01d6ef62e127c9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:23
+msgid ":ref:`arithmetic_1d_anchor`"
+msgstr ""
+
+# d002a42bc00c4198b6848fb367705e1a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:24
+msgid ":ref:`geometric_1d_anchor`"
+msgstr ""
+
+# 08a40e5172de48a796fee45cd666e649
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:25
+msgid ":ref:`start_and_end_length_anchor`"
+msgstr ""
+
+# 46f1c6a5ac664195bce56d33434ddd68
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:26
+msgid ":ref:`deflection_1d_anchor`"
+msgstr ""
+
+# 076afced002441818a1b12f92f8b3108
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:27
+msgid ":ref:`automatic_length_anchor`"
+msgstr ""
+
+# 1424e2ee42694e7ba9ad71610b503d67
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:28
+msgid ":ref:`fixed_points_1d_anchor`"
+msgstr ""
+
+# 9c513d5204534df0a79b9a7f5c635cdc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:30
+msgid ":ref:`a2d_meshing_hypo_page` (for meshing of **faces**):"
+msgstr ""
+
+# 73d34e2054e140ea86e4ad6010c0a78b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:32
+msgid ":ref:`max_element_area_anchor`"
+msgstr ""
+
+# 68b2a01b7abb4ee087a50db8cb7aecf0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:33
+msgid ":ref:`length_from_edges_anchor`"
+msgstr ""
+
+# d22c0f63c7c24df686de9435ba9f30c2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:34
+msgid ":ref:`hypo_quad_params_anchor`"
+msgstr ""
+
+# 2d7fb7b4e93f43209fc61f61b5988406
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:36
+msgid "3D Hypothesis (for meshing of **volumes**):"
+msgstr ""
+
+# 302ca3189198469085114e21b9fe769a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:38
+msgid ":ref:`max_element_volume_hypo_page`"
+msgstr ""
+
+# 5207e8583dc9412bbd2b9ac42fb4e0e8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:42
+msgid "There also exist :ref:`additional_hypo_page`:"
+msgstr ""
+
+# a02afdc27184497ea23d14034586ed6d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:44
+msgid ":ref:`propagation_anchor`"
+msgstr ""
+
+# d9416ba6db414d4ab1550d022658ef2c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:45
+msgid ":ref:`propagofdistribution_anchor`"
+msgstr ""
+
+# db07dc3d875244ab8717f460c6a9ed69
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:46
+msgid ":ref:`viscous_layers_anchor`"
+msgstr ""
+
+# 10d4f8d7345041379fcd7107912ff551
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:47
+msgid ":ref:`quadratic_mesh_anchor`"
+msgstr ""
+
+# e4cee0c6f5164f2ebdda479a43ad432a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/about_hypo.rst:48
+msgid ":ref:`quadrangle_preference_anchor`"
+msgstr ""
+

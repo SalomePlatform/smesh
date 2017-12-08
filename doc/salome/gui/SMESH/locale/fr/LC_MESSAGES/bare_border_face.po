@@ -1,0 +1,40 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 4d2a7fab9f7f4f6b99e1e55c1d4c1afa
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/bare_border_face.rst:5
+msgid "Bare border faces"
+msgstr ""
+
+# 127287f59f734105888c3f0ef2c0affe
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/bare_border_face.rst:7
+msgid ""
+"This mesh quality control highlights the faces having the border not "
+"shared with other faces (free border) and missing an edge based on nodes "
+"of the free border. The faces with bare border are shown with a color "
+"different from the color of shared faces."
+msgstr ""
+
+# e82b80f6afed4c5999dc1c076ebdafc0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/bare_border_face.rst:15
+msgid ""
+"**See also** A sample TUI Script making a group of faces highlighted in "
+"the picture is :ref:`tui_bare_border_faces`."
+msgstr ""
+

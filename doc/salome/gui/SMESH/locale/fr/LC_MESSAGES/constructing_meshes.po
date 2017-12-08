@@ -1,0 +1,819 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# 35a6bce1095b465fabb44dde0652f678
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:5
+msgid "Constructing meshes"
+msgstr ""
+
+# 6799ee6badd440f88c4d2609a7a06b25
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:7
+msgid ""
+"To create a mesh on geometry, it is necessary to create a mesh object by "
+"choosing"
+msgstr ""
+
+# 8f06bf03ed5e458782b05086b05406fe
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:9
+msgid "a geometrical shape produced in the Geometry module (*main shape*);"
+msgstr ""
+
+# 27fc703367ec47c9b3543de9a457d851
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:12
+msgid "*meshing parameters*, including"
+msgstr ""
+
+# 117c209f24f3493b990791363a4ff7a0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:11
+msgid ":ref:`basic_meshing_algos_page` and"
+msgstr ""
+
+# 9aefbc3f841d49908a17917248299c9d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:12
+msgid ""
+":ref:`about_hypo_page` specifying constraints to be taken into account by"
+" the chosen meshing algorithms."
+msgstr ""
+
+# 66d9db4d76a2413fb9252948963441c7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:14
+msgid ""
+"Then you can launch mesh generation by invoking :ref:`compute_anchor` "
+"command. The generated mesh will be automatically shown in the Viewer. "
+"You can switch off automatic visualization or limit mesh size until which"
+" it is automatically shown in :ref:`mesh_preferences_page` (**Automatic "
+"update** entry)."
+msgstr ""
+
+# 031fef73322d4036bec803d06c213857
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:20
+msgid ""
+"Sometimes *hypotheses* term is used to refer to both algorithms and "
+"hypotheses."
+msgstr ""
+
+# 5b1b5a16624b43aaabf130e214850262
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:22
+msgid ""
+"Mesh generation on the geometry is performed in the bottom-up flow: nodes"
+" on vertices are created first, then edges are divided into segments "
+"using nodes on vertices; the nodes of segments are then used to mesh "
+"faces; then the nodes of faces are used to mesh solids. This "
+"automatically assures the conformity of the mesh."
+msgstr ""
+
+# 01a7a1179d7242489aade2846022bb0c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:28
+msgid ""
+"It is required to choose a meshing algorithm for every dimension of sub-"
+"shapes up to the highest dimension to be generated. Note that some "
+"algorithms generate elements of several dimensions, and others of only "
+"one. It is not necessary to define meshing parameters for all dimensions "
+"at once; you can start from 1D meshing parameters only, compute the 1D "
+"mesh, then define 2D meshing parameters and compute the 2D mesh (note "
+"that 1D mesh will not be re-computed)."
+msgstr ""
+
+# db1f1b20a38c4773b327e70c23e7fa87
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:37
+msgid ""
+"An algorithm of a certain dimension chosen at mesh creation is applied to"
+" discretize every sub-shape of this dimension. It is possible to specify "
+"a different algorithm or hypothesis to be applied to one or a group of "
+"sub-shapes by creating a :ref:`constructing_submeshes_page`. You can "
+"specify no algorithms at all at mesh object creation and specify the "
+"meshing parameters on sub-meshes only; then only the sub-shapes, for "
+"which an algorithm and a hypothesis (if any) have been defined will be "
+"discretized."
+msgstr ""
+
+# 1cc36153af4b41c2b2e40dcdf79074fc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:46
+msgid ""
+"Construction of a mesh on a geometry includes at least two "
+"(:ref:`create_mesh_anchor` and :ref:`compute_anchor`) of the following "
+"steps:"
+msgstr ""
+
+# 3a3ed77dbdc24aea8491fcdf18e36e4f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:48
+msgid ""
+":ref:`create_mesh_anchor`, where you can specify meshing parameters to "
+"apply to all sub-shapes of the main shape."
+msgstr ""
+
+# 17d14027f31f4503bafb86c3addeba89
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:49
+msgid ""
+":ref:`constructing_submeshes_page`, (optional) where you can specify "
+"meshing parameters to apply to the selected sub-shapes."
+msgstr ""
+
+# 66722c0909e847459028d210bd99ac98
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:50
+msgid ""
+":ref:`evaluate_anchor` (optional) can be used to know an approximate "
+"number of elements before their actual generation."
+msgstr ""
+
+# 2297f50a14754737bb784d905947b5a6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:51
+msgid ""
+":ref:`preview_anchor` (optional) can be used to generate mesh of only "
+"lower dimension(s) in order to visually estimate it before full mesh "
+"generation, which can be much longer."
+msgstr ""
+
+# 3b4674e6440e48a183b41e5feb5b3881
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:52
+msgid ""
+":ref:`submesh_order_anchor` (optional) can be useful if there are "
+"concurrent sub-meshes defined."
+msgstr ""
+
+# 1fa25cbc35584fd886fea4763c4c72f2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:53
+msgid ""
+":ref:`compute_anchor` uses defined meshing parameters to generate mesh "
+"elements."
+msgstr ""
+
+# 45e6866d043e48a8930fe2ace94ed287
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:54
+msgid ""
+":ref:`edit_anchor` (optional) can be used to :ref:`modifying_meshes_page`"
+" the mesh of a lower dimension before :ref:`compute_anchor` elements of "
+"an upper dimension."
+msgstr ""
+
+# 520242a7013c4dd78c6e7772ca553008
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:60
+msgid "Creation of a mesh object"
+msgstr ""
+
+# 9ac62efda06c462199e0bb84bad38740
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:62
+msgid "**To construct a mesh:**"
+msgstr ""
+
+# 7bb8b082000840e3ae1bbf00611dcf19
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:64
+msgid "Select a geometrical object for meshing."
+msgstr ""
+
+# 884454ebff044f98b7f6a815d0ef5ad4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:65
+msgid ""
+"In the **Mesh** menu select **Create Mesh** or click **\"Create Mesh\"** "
+"button in the toolbar."
+msgstr ""
+
+# dfd67b2436424371903f4028dc636ecd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:73
+msgid "The following dialog box will appear:"
+msgstr ""
+
+# 3215a25a328e43cea0c717ed5af5a1eb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:78
+msgid ""
+"To filter off irrelevant meshing algorithms, you can select **Mesh Type**"
+" in the corresponding list from **Any, Hexahedral, Tetrahedral, "
+"Triangular** and **Quadrilateral** (there can be less items for the "
+"geometry of lower dimensions). Selection of a mesh type hides all meshing"
+" algorithms that cannot generate elements of this type."
+msgstr ""
+
+# 91421ed52fd34f79b3eb4949a699a357
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:80
+msgid ""
+"Apply :ref:`basic_meshing_algos_page` and :ref:`about_hypo_page` which "
+"will be used to compute this mesh."
+msgstr ""
+
+# b04311b3ce03402da2227e8a2aeb22cb
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:82
+msgid ""
+"\"Create mesh\" dialog box contains several tab pages titled **3D**, "
+"**2D**, **1D** and **0D**. The title of each page reflects the dimension "
+"of the sub-shapes the algorithms listed on this page affect and the "
+"maximal dimension of elements the algorithms generate. For example, "
+"**3D** page lists the algorithms that affect 3D sub-shapes (solids) and "
+"generate 3D mesh elements (tetrahedra, hexahedra etc.)"
+msgstr ""
+
+# a1cd5bdf6585476aa808f1365c919d1b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:84
+msgid ""
+"As soon as you have selected an algorithm, you can create a hypothesis "
+"(or select an already created one). A set of accessible hypotheses "
+"includes only the hypotheses that can be used by the selected algorithm."
+msgstr ""
+
+# b7da1d8d2df0427b8e8a42a3ac4cb43b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:87
+msgid ""
+"Some page(s) can be disabled if the geometrical object does not include "
+"shapes (sub-shapes) of the corresponding dimension(s). For example, if "
+"the input object is a geometrical face, **3D** page is disabled."
+msgstr ""
+
+# f8d6c54b422d437385cdf39ea7ff66b7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:88
+msgid ""
+"Some algorithms affect the geometry of several dimensions, i.e. 1D+2D or "
+"1D+2D+3D. If such an algorithm is selected, the dialog pages related to "
+"the corresponding lower dimensions are disabled."
+msgstr ""
+
+# bae8798576284526a61201c4b3bc4852
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:89
+msgid ""
+"**0D** page refers to 0D geometry (vertices) rather than to 0D elements. "
+"Mesh module does not provide algorithms that produce 0D elements. "
+"Currently **0D** page provides only one algorithm \"Segments around "
+"vertex\" that allows specifying the required size of mesh edges about the"
+" selected vertex (or vertices)."
+msgstr ""
+
+# 6d786dbce4a34dd8a8f4c55d29447059
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:91
+msgid "For example, you need to mesh a 3D object."
+msgstr ""
+
+# acc400d18f4d4e3e8233d3ba4c7ee40c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:98
+msgid ""
+"First, you can change a default name of your mesh in the **Name** box. "
+"Then check that the selected geometrical object indicated in **Geometry**"
+" field, is what you wish to mesh; if not, select the correct object in "
+"the Object Browser. Click \"Select\" button near **Geometry** field if "
+"the name of the object has not yet appeared in **Geometry** field."
+msgstr ""
+
+# b3d6b94bf1854d908d55066eff4793c0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:105
+msgid ""
+"Now you can define 3D Algorithm and 3D Hypotheses, which will be applied "
+"to discretize the solids of your geometrical object using 3D elements. "
+"Click the **\"Add Hypothesis\"** button to create  and add a hypothesis."
+msgstr ""
+
+# 43aad14857134ff694b57418c2b9c553
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:107
+msgid "Click the **\"Plus\"** button to enable adding more additional hypotheses."
+msgstr ""
+
+# 81bfbd32aedb4c9fa4f4866c44941d47
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:114
+msgid ""
+"Click the **\"Edit Hypothesis\"** button to change the values for the "
+"current hypothesis."
+msgstr ""
+
+# 3cf1d63b1511452a937f0afe68fc74cd
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:116
+msgid ""
+"Most 2D and 3D algorithms can work without hypotheses using default "
+"meshing parameters. Some algorithms do not require any hypotheses. After "
+"selection of an algorithm \"Hypothesis\" field of the dialog can contain:"
+msgstr ""
+
+# e64c32c9aa484aad89b33cedd41b535e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:118
+msgid "**\\<Default\\>** if the algorithm can work using default parameters."
+msgstr ""
+
+# 837bde06cd3b4edda687a8ee03988eff
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:119
+msgid ""
+"**\\<None\\>** if the algorithm requires a hypothesis defining its "
+"parameters."
+msgstr ""
+
+# 167fb1f44282436aae9e8168a8d2fc92
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:120
+msgid "If the algorithm does not use hypotheses, this field is grayed."
+msgstr ""
+
+# 0eb15e737c2c4807afc1db58d94f31ad
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:122
+msgid "After selection of an algorithm **Add. Hypothesis** field can contain:"
+msgstr ""
+
+# 7c6acd80061c47aa82b914f790c43b50
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:124
+msgid ""
+"**\\<None\\>** if the algorithm can be tuned using an additional "
+"hypothesis."
+msgstr ""
+
+# 3dbebd2338684d7a8ac7e931736488f4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:125
+msgid "If the algorithm does not use additional hypotheses, this field is grayed."
+msgstr ""
+
+# a7246cd9501342cc851a57f1225011a3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:128
+msgid ""
+"Proceed in the same way with 2D and 1D Algorithms and Hypotheses that "
+"will be used to mesh faces and edges of your geometry. (Note that any "
+"object has edges, even if their existence is not apparent, for example, a"
+" sphere has 4 edges). Note that the choice of hypotheses and lower "
+"dimension algorithms depends on the higher dimension algorithm."
+msgstr ""
+
+# 8ead53be1024488e847e532a9476d06b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:130
+msgid ""
+"If you wish you can select other algorithms and/or hypotheses for meshing"
+" some sub-shapes of your CAD model by :ref:`constructing_submeshes_page`."
+msgstr ""
+
+# 396d01fdc08d473287f072274be2a413
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:132
+msgid ""
+"Some algorithms generate mesh of several dimensions, while others produce"
+" mesh of only one dimension. In the latter case there must be one "
+"Algorithm and zero or several Hypotheses for each dimension of your "
+"object, otherwise you will not get any mesh at all. Of course, if you "
+"wish to mesh a face, which is a 2D object, you do not need to define a 3D"
+" Algorithm and Hypotheses."
+msgstr ""
+
+# ea9666bc33b04d11885e95f751aa40e1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:134
+msgid ""
+"In the **Object Browser** the structure of the new mesh is displayed as "
+"follows:"
+msgstr ""
+
+# f7ac7badac6842f79434fcaa9791f7cf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:139
+msgid "It contains:"
+msgstr ""
+
+# fb3397d4abdb4b78859a81410ffee107
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:141
+msgid "a mesh name (**Mesh_mechanic**);"
+msgstr ""
+
+# 1167ac91887746d2bcab140eb8280f97
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:142
+msgid ""
+"a reference to the geometrical object on the basis of which the mesh has "
+"been constructed (*mechanic*);"
+msgstr ""
+
+# 799d3cc185da4b879bccc4b7f993f12d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:143
+msgid ""
+"**Applied hypotheses** folder containing the references to the hypotheses"
+" chosen at the construction of the mesh;"
+msgstr ""
+
+# 893ccebd1d654ddab671c14b92fca974
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:144
+msgid ""
+"**Applied algorithms** folder containing the references to the algorithms"
+" chosen at the construction of the mesh."
+msgstr ""
+
+# c04a128f95144a5885051b9ea865e54f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:145
+msgid ""
+"**SubMeshes on Face** folder containing the sub-meshes defined on "
+"geometrical faces. There also can be folders for sub-meshes on vertices, "
+"edges, wires, shells, solids and compounds."
+msgstr ""
+
+# dff4c4a8948a442499340b64b19b1221
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:146
+msgid ""
+"**Groups of Faces** folder containing the groups of mesh faces. There "
+"also can be folders for groups of nodes, edges, volumes 0D elements and "
+"balls."
+msgstr ""
+
+# 02316e8c5f54451bbbb1f692ca13778a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:149
+msgid ""
+"There is an alternative way to assign Algorithms and Hypotheses by "
+"clicking **Assign a set of hypotheses** button and selecting among pre-"
+"defined sets of algorithms and hypotheses. In addition to the built-in "
+"sets of hypotheses, it is possible to create custom sets by editing "
+"CustomMeshers.xml file located in the home directory. CustomMeshers.xml "
+"file must describe sets of hypotheses in the same way as "
+"${SMESH_ROOT_DIR}/share/salome/resources/smesh/StdMeshers.xml file does "
+"(sets of hypotheses are enclosed between \\<hypotheses-set-group\\> "
+"tags). For example: ::"
+msgstr ""
+
+# aeef8be810624f59be9f0d7834858269
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:162
+msgid ""
+"If the file contents are incorrect, there can be an error at activation "
+"of Mesh module: **\"fatal parsing error: error triggered by consumer in "
+"line ...\"**"
+msgstr ""
+
+# e229cf9561124f7fafba9ae4637112a9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:167
+msgid ""
+"List of sets of hypotheses. Tag **[custom]** is automatically added to "
+"the sets defined by the user."
+msgstr ""
+
+# a839bd695c4f4ffc8d7972e4eb743455
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:170
+msgid ""
+"*\"Automatic\"* in the names of predefined sets of hypotheses does not "
+"actually mean that they are suitable for meshing any geometry."
+msgstr ""
+
+# 10c50356cf44475cad554d56daebf771
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:171
+msgid ""
+"The list of sets of hypotheses can be shorter than in the above image "
+"depending on the geometry dimension."
+msgstr ""
+
+# d41cb527e2bc4fe9a5b9a782bf9775c1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:174
+msgid ""
+"Consider trying a sample script for construction of a mesh from our "
+":ref:`tui_creating_meshes_page` section."
+msgstr ""
+
+# 35525ecb30bd46fa9e42928143f8ced0
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:179
+msgid "Evaluating mesh size"
+msgstr ""
+
+# 51368d5040804dc4b7927584b827f197
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:181
+msgid ""
+"After the mesh object is created and all hypotheses are assigned and "
+"before :ref:`compute_anchor` operation, it is possible to calculate the "
+"eventual mesh size. For this, select the mesh in the **Object Browser** "
+"and from the **Mesh** menu select **Evaluate**. The result of evaluation "
+"will be displayed in the following information box:"
+msgstr ""
+
+# 1fa07ee04a024eba9a896ddac279c8ac
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:190
+msgid "Previewing the mesh"
+msgstr ""
+
+# 77c3ec771e6b491aa62e6df1bab0215b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:192
+msgid ""
+"Before :ref:`compute_anchor` , it is also possible to see the mesh "
+"preview. This operation allows to incrementally compute the mesh, "
+"dimension by dimension, and to discard an unsatisfactory mesh."
+msgstr ""
+
+# 02eb9a3faafb465395536def97113eff
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:194
+msgid ""
+"For this, select the mesh in the Object Browser. From the **Mesh** menu "
+"select **Preview** or click \"Preview\" button in the toolbar or activate"
+" \"Preview\" item from the pop-up menu."
+msgstr ""
+
+# cae5eac0aaa24cb0bc9edbaf677889b1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:202
+msgid "Select **1D mesh** or **2D mesh** preview mode in the Preview dialog."
+msgstr ""
+
+# 430d6d6c0f784909874e9c95c8f9ceb8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:218
+msgid "**Compute** button computes the whole mesh."
+msgstr ""
+
+# d5edccc13ca343c49e62430cbccb1903
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:220
+msgid ""
+"When the Preview dialog is closed, the question about the storage of "
+"temporarily created mesh elements appears:"
+msgstr ""
+
+# 2a13fbef304843fca5b33f991891a670
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:225
+msgid "These elements can be kept in the mesh."
+msgstr ""
+
+# a1e92798cd1f4a54b8ea76440e8cdf63
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:231
+msgid "Changing sub-mesh priority"
+msgstr ""
+
+# 004d8f83536b4c54b3738d0d87bb1867
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:233
+msgid ""
+"If the mesh contains concurrent :ref:`constructing_submeshes_page`, it is"
+" possible to change the priority of their computation, i.e. to change the"
+" priority of applying algorithms to the shared sub-shapes of the Mesh "
+"shape."
+msgstr ""
+
+# 75c42caf0e8043dcb989055191e9b406
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:235
+msgid "**To change sub-mesh priority:**"
+msgstr ""
+
+# 41e08c22f2524e14917e99a55da724af
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:237
+msgid ""
+"Choose \"Change sub-mesh priority\" from the Mesh menu or a pop-up menu. "
+"The opened dialog shows a list of sub-meshes in the order of their "
+"priority."
+msgstr ""
+
+# 54a55c30130e4ffeb0c17abe8ad883e5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:239
+msgid ""
+"There is an example of sub-mesh order modifications taking a Mesh created"
+" on a Box shape. The main Mesh object:"
+msgstr ""
+
+# a09339ed609242588c4e1e2e6698dfb4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:241
+msgid "*1D* **Wire discretisation** with **Number of Segments** =20"
+msgstr ""
+
+# 223a2036b61245b9a74d39e766c41171
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:242
+msgid "*2D* **Triangle: Mefisto** with Hypothesis **Max Element Area**"
+msgstr ""
+
+# af68c57a6c6541e4a5ee565e61ce82a8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:245
+msgid "The first sub-mesh **Submesh_1** created on **Face_1** is:"
+msgstr ""
+
+# 4191031e23f540e09498f3254a4d2fe5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:247
+msgid "*1D* **Wire discretisation** with **Number of Segments** =4"
+msgstr ""
+
+# 6370ac3a9fb84887b43f8a67bc8af0ae
+# 6d3a07784a6b42609cb8a8d5e067a24b
+# fb1de1eb32ee44638f5eab58a8312570
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:248
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:253
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:259
+msgid "*2D* **Triangle: Mefisto** with Hypothesis **MaxElementArea** =1200"
+msgstr ""
+
+# dae60f1eb8924fd19c98131c2b68967a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:250
+msgid "The second sub-mesh **Submesh_2** created on **Face_2** is:"
+msgstr ""
+
+# 6f7d66913e8846d2820e54b67b2ff311
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:252
+msgid "*1D* **Wire discretisation** with **Number of Segments** =8"
+msgstr ""
+
+# 0075cb1b57944449b460c5cbd84c8462
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:256
+msgid "And the last sub-mesh **Submesh_3** created on **Face_3** is:"
+msgstr ""
+
+# f320f5e7c50e46a6a3e8d991c71b4b05
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:258
+msgid "*1D* **Wire discretisation** with **Number of Segments** =12"
+msgstr ""
+
+# f3f15a180c4a4451a51b242d0471adc8
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:262
+msgid ""
+"The sub-meshes become concurrent if they share sub-shapes that can be "
+"meshed with different algorithms (or different hypotheses). In the "
+"example, we have three sub-meshes with concurrent algorithms, because "
+"they have different hypotheses."
+msgstr ""
+
+# 879b05bdc25147548a35291dddc94263
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:264
+msgid "The first mesh computation is made with:"
+msgstr ""
+
+# 53ebc41a65514158af854ea7f525f409
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:279
+msgid "The next mesh computation is made with:"
+msgstr ""
+
+# 629461484abc4517b3a0972549a04cfc
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:293
+msgid "And the last mesh computation is made with:"
+msgstr ""
+
+# d0f18c41144744baa9b41f3e2753ddb4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:308
+msgid ""
+"As we can see, each mesh computation has a different number of result "
+"elements and a different mesh discretization on the shared edges (the "
+"edges that are shared between **Face_1**, **Face_2** and **Face_3**)"
+msgstr ""
+
+# 5f57089459974700b9daaa0862b11370
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:312
+msgid ""
+"Additionally, sub-mesh priority (the order of applied algorithms) can be "
+"modified not only in a separate dialog box, but also in the **Preview**. "
+"This helps to preview different mesh results, modifying the order of sub-"
+"meshes."
+msgstr ""
+
+# 22f246ae649948639a3e6371b8288185
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:323
+msgid ""
+"If there are no concurrent sub-meshes under the Mesh object, the user "
+"will see the following information."
+msgstr ""
+
+# bd0286f95d4c43eab2cad76e77ebc982
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:336
+msgid "Computing the mesh"
+msgstr ""
+
+# fadce4968b754a0f9a41afeb7cb48573
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:338
+msgid ""
+"It is equally possible to skip  :ref:`evaluate_anchor` and "
+":ref:`preview_anchor` and to **Compute** the mesh after the hypotheses "
+"are assigned. For this, select your mesh in the **Object Browser**. From "
+"the **Mesh** menu or the context menu select **Compute** or click "
+"*\"Compute\"* button of the toolbar."
+msgstr ""
+
+# 0cc9e0020d0742d380060bc06afdc520
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:350
+msgid ""
+"After the mesh computation finishes, the Mesh Computation information box"
+" appears. If you close this box and click \"Compute\" button again, "
+"without previously changing meshing parameters, the mesh will NOT be re-"
+"computed and the Mesh Computation information box will be shown with the "
+"same contents. (To fully re-compute the mesh, invoke "
+":ref:`clear_mesh_anchor` command before)."
+msgstr ""
+
+# 6a2a4ad2643e4d949abd363984f0c0bf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:360
+msgid "Meshing Results"
+msgstr ""
+
+# b93b73178564476197eea31627301e35
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:362
+msgid ""
+"If the mesh computation has been a success, the box shows information on "
+"the number of entities of different types in the mesh."
+msgstr ""
+
+# e04fbcc854d94f908dffc46beb04e701
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:370
+msgid "Meshing Failed"
+msgstr ""
+
+# 4212b5c23b1b43dfa0a5a8c4f6ea080a
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:372
+msgid ""
+"If the mesh computation has failed, the information about the cause of "
+"the failure is provided in **Errors** table."
+msgstr ""
+
+# 6fdec30e41954175a4a96b60453ae773
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:377
+msgid ""
+"After you select an error in **Errors** table, **Show Sub-shape** button "
+"allows visualizing in magenta the geometrical entity meshing of which "
+"failed (Name of this entity or its ID and type is shown in *Sub-shape* "
+"column)."
+msgstr ""
+
+# 56bdf662a9ba4f9d9b02eeaf5b7e6319
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:387
+msgid ""
+"**Publish Sub-shape** button publishes the sub-shape, whose meshing has "
+"failed, in the Geometry component as a child of the main shape, which "
+"allows analyzing the problematic geometry and creating a sub-mesh on it "
+"in order to locally tune the hypotheses."
+msgstr ""
+
+# 12dd5ffbce32416fb376edbbc2459e28
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:392
+msgid ""
+"If the failure is caused by an invalid input mesh and the algorithm has "
+"found which mesh entities are bad, **Show bad Mesh** button appears in "
+"the dialog. Clicked, it shows the bad mesh entities in the Viewer in "
+"magenta. Sometimes the shown mesh entities are too small or/and hidden by"
+" other mesh elements. They can be seen after switching the mesh to "
+"Wireframe visualization mode or switching off the visualization of faces "
+"and volumes (if any)."
+msgstr ""
+
+# 9668bc680047467ebfa64d8a99edf715
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:400
+msgid ""
+"**Bad Mesh to Group** button creates groups of bad mesh entities to "
+"facilitate their analysis."
+msgstr ""
+
+# 3750b205e07d49ae946cd1ee904de0cf
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:405
+msgid ""
+"Edges bounding a hole in the surface are shown in magenta using **Show "
+"bad Mesh** button"
+msgstr ""
+
+# cf8d66c5929c4fa3953306bf91e563c6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:408
+msgid ""
+"Mesh Computation Information box does not appear if you set "
+":ref:`show_comp_result_pref` preference to the \"Never\" value. This "
+"option gives the possibility to control mesh computation reporting. There"
+" are the following possibilities: always show the information box, show "
+"only if an error occurs or never. By default, the information box is "
+"always shown after mesh computation operation."
+msgstr ""
+
+# e498ca4e2a6848f99d7f37d6bc44857c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:413
+msgid "Editing the mesh"
+msgstr ""
+
+# 6a0b3dfdd3764cba94d01c7854ac28ac
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:415
+msgid ""
+"It is possible to :ref:`modifying_meshes_page` of a lower dimension "
+"before generation of the mesh of a higher dimension."
+msgstr ""
+
+# 5cfa5a1b73a247d4a450281973d2e37e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:418
+msgid ""
+"For example you can generate a 2D mesh, modify it using e.g. "
+":ref:`pattern_mapping_page`, and then generate a 3D mesh basing on the "
+"modified 2D mesh. The workflow is as follows:"
+msgstr ""
+
+# d0c505f4dc734c5bb42b132969cac374
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:420
+msgid "Define 1D and 2D meshing algorithms."
+msgstr ""
+
+# 58f9803c1a464650b1a217f141cc9020
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:421
+msgid "Compute the mesh. 2D mesh is generated."
+msgstr ""
+
+# f9ed216a02de432d97a491a91dfded16
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:422
+msgid "Apply :ref:`pattern_mapping_page`."
+msgstr ""
+
+# 164f7a63410043e2a98fa695d64d7025
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:423
+msgid ""
+"Define 3D meshing algorithms without modifying 1D and 2D algorithms and "
+"hypotheses."
+msgstr ""
+
+# c02d8786afe94ddc941f3db9b97013c4
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:424
+msgid "Compute the mesh. 3D mesh is generated."
+msgstr ""
+
+# 0b39821ac1664579bc0a71abb488d558
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:427
+msgid ""
+"Nodes and elements added :ref:`adding_nodes_and_elements_page` cannot be "
+"used in this workflow because the manually created entities are not "
+"attached to any geometry and thus (usually) cannot be found by the mesher"
+" paving a geometry."
+msgstr ""
+
+# f4c5d8f58ed44c5c94387fccac9eb6d6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/constructing_meshes.rst:429
+msgid ""
+"**See Also** a sample TUI Script demonstrates the possibility of "
+":ref:`tui_editing_while_meshing`."
+msgstr ""
+

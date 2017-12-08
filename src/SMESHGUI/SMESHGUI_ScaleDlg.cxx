@@ -291,7 +291,7 @@ SMESHGUI_ScaleDlg::SMESHGUI_ScaleDlg( SMESHGUI* theModule ) :
   myMeshOrSubMeshOrGroupFilter =
     new SMESH_LogicalFilter(aListOfFilters, SMESH_LogicalFilter::LO_OR);
 
-  myHelpFileName = "scale_page.html";
+  myHelpFileName = "scale.html";
 
   Init();
 

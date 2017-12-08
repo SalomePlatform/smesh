@@ -1,0 +1,40 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# c54d596b4abd408ba45bb44439fd034e
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/bare_border_volumes.rst:5
+msgid "Bare border volumes"
+msgstr ""
+
+# 2c5b52929f8e4ce08d892863f011f665
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/bare_border_volumes.rst:7
+msgid ""
+"This mesh quality control highlights the volumes having the border not "
+"shared with other volumes (free border) and missing a face based on nodes"
+" of the free border. The volumes with bare border are shown with a color "
+"different from the color of shared volumes."
+msgstr ""
+
+# 96579bbe562c4cd38e97920f542414f1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/bare_border_volumes.rst:15
+msgid ""
+"**See also** A sample TUI Script making a group of volumes highlighted in"
+" the picture is :ref:`tui_bare_border_volumes`."
+msgstr ""
+

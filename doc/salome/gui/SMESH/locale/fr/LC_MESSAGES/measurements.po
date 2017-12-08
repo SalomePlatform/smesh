@@ -1,0 +1,229 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# fc322395f3114a83adb58370f446f95f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:5
+msgid "Measurements"
+msgstr ""
+
+# 5602a5a07c844159a417072a006f34d7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:7
+msgid ""
+"Mesh module provides the possibility to perform different measurements of"
+" the selected mesh data."
+msgstr ""
+
+# ca57bc0c665840db9be756b5f53834f2
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:9
+msgid ""
+"All measurement operations are available via **Measurements** top-level "
+"menu. Access to the measurements operations is implemented via a single "
+"dialog box, where each operation is represented as a separate tab page."
+msgstr ""
+
+# f3defa3bd44e4c6e8c67384d1c7ce878
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:14
+msgid "Minimum Distance"
+msgstr ""
+
+# cda8821e60574c028b59127f8b5c1420
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:16
+msgid ""
+"This operation allows measuring the distance between two objects. "
+"Currently only node-to-node and node-to-origin operations are available, "
+"but this operation will be extended in the future to support other mesh "
+"objects - elements, meshes, sub-meshes and groups."
+msgstr ""
+
+# d58990a267a6467289d1c24c72d17bb1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:18
+msgid ""
+"To start **Minimum Distance** operation, select **Minimum Distance** tab "
+"in **Measurements** dialog."
+msgstr ""
+
+# f43b6ff99b8e479cb1afde93f509c84b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:23
+msgid ""
+"Choose the first and the second target by switching the corresponding "
+"radio buttons, then select the objects the distance between which is to "
+"be calculated (or input their IDs directly in case of nodes/elements) and"
+" press **Compute** button."
+msgstr ""
+
+# 0672e2abea29499f8ee4bf6f6cea1989
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:25
+msgid "The following targets are supported:"
+msgstr ""
+
+# da713fad99714e7188634cba70b2fd5d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:27
+msgid "**Node:** single mesh node;"
+msgstr ""
+
+# a9f97eb4ee2141b1bf3e286171e01028
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:28
+msgid "**Element:** single mesh element (not available in this version);"
+msgstr ""
+
+# b09e4ea655c24f0c87101b2ae1cd0322
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:29
+msgid ""
+"**Object:** mesh, sub-mesh or group object (not available in this "
+"version);"
+msgstr ""
+
+# 591c17d6e4794e4b9f26fcbee026ea1b
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:30
+msgid "**Origin:** origin of the global co-ordinate system."
+msgstr ""
+
+# 5003e44fc8c0476e882b706cc7dc432c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:32
+msgid ""
+"The result will be shown in the bottom area of the dialog. In addition, a"
+" simple preview will be shown in the 3D viewer."
+msgstr ""
+
+# 3ad37ba999964ff3a6b7a1e88e984770
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:40
+msgid "Bounding Box"
+msgstr ""
+
+# da5bdcea8e5a49308d61c9e12ecca419
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:42
+msgid ""
+"This operation allows calculating the bounding box of the selected "
+"object(s)."
+msgstr ""
+
+# 4f60b9cfbf7a4f19968029f505ec96e1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:44
+msgid ""
+"To start **Bounding Box** operation, select **Bounding Box** tab in "
+"**Measurements** dialog."
+msgstr ""
+
+# 9a3d5692ef8e47b5a03c060ac103bb38
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:49
+msgid ""
+"Choose the required type of the object by switching the corresponding "
+"radio button, select the object(s) and press *Compute* button."
+msgstr ""
+
+# 6003a5bb337b4ac4b36dfedff847fc92
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:51
+msgid "The following types of input are available:"
+msgstr ""
+
+# afe2b77d7ec34faf981b09ec9c6ffcc6
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:53
+msgid "**Objects:** one or several mesh, sub-mesh or group objects;"
+msgstr ""
+
+# 44f599f7d67d4e39bf4b91f9b980090c
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:54
+msgid "**Nodes:** a set of mesh nodes;"
+msgstr ""
+
+# 11fef5ea64e6465e97e804f548f6b58f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:55
+msgid "**Elements:** a set of mesh elements."
+msgstr ""
+
+# 038b1e48ec5747f3973ef6c599bd3881
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:57
+msgid ""
+"The result of calculation will be shown in the bottom area of the dialog."
+" In addition, a simple preview will be shown in the 3D viewer."
+msgstr ""
+
+# 7cc54603cadd42a4841f479edf2facb3
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:65
+msgid "Basic Properties"
+msgstr ""
+
+# 5b9cc739e81f4463a60775f822ac6d66
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:67
+msgid ""
+"This operation provides calculation of length, area or volume for the the"
+" selected object:"
+msgstr ""
+
+# 7c75bcf01add43d9848c2758084caa73
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:69
+msgid "**Length** is calculated as a sum of lengths of all 1D elements;"
+msgstr ""
+
+# bbb98a9329f14fdb8c678b837e5f3633
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:70
+msgid "**Area** is a sum of areas of all 2D elements"
+msgstr ""
+
+# b7ae3f6bc9764b319d3433773d047f94
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:71
+msgid "**Volume** is a sum of volumes of all 3D elements."
+msgstr ""
+
+# d1331a969e75457b99dbfe68629a44d9
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:73
+msgid ""
+"To start a **Basic Properties** calculation, select **Length**, **Area** "
+"or **Volume** item."
+msgstr ""
+
+# 4893de06f03b48a3ada2aaddaa0cda4d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:78
+msgid ""
+"In the dialog box select the required type of calculation (length, area "
+"or volume) and the object (mesh, sub-mesh or group) and press **Compute**"
+" button."
+msgstr ""
+
+# 47114ce539c94a6e909d19dc534989f1
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:80
+msgid "The result of calculation will be shown in the bottom area of the dialog."
+msgstr ""
+
+# 263c60be188e4fdea91b20b8baf75215
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:83
+msgid ""
+"If the mesh consists of 3D elements only, its \"length\" and \"area\" "
+"will be 0."
+msgstr ""
+
+# b9aed2df15ca451fb2a046b12b2cd1f7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:84
+msgid ""
+"As calculation result is a sum of lengths, areas and volumes of all mesh "
+"elements, the duplication is not taken into account; i.e. all duplicated "
+"elements (elements built on the same set of nodes) will be included into "
+"the result."
+msgstr ""
+
+# c83732dc863246aebcd686b2d67c5586
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:85
+msgid "Similarly, intersection of elements is not taken into account."
+msgstr ""
+
+# 1f23367c476649a6ad4e6a02af31278d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/measurements.rst:87
+msgid "**See Also** a sample TUI Script of :ref:`tui_measurements_page`."
+msgstr ""
+

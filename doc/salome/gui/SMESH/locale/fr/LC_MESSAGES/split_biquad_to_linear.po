@@ -1,0 +1,93 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C)
+# This file is distributed under the same license as the Mesh package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Mesh 8.3.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-12-11 15:10+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.0\n"
+
+# d586796a73ed444e91fca369f1699c42
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_biquad_to_linear.rst:5
+msgid "Split bi-quadratic into linear"
+msgstr ""
+
+# a79e0b1e063e46faa6f423c43a4aeaf7
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_biquad_to_linear.rst:7
+msgid ""
+"This functionality allows to split bi-quadratic elements into linear ones"
+" without creation of additional nodes."
+msgstr ""
+
+# 4d26ed47efe84c3c9533d8445441be70
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_biquad_to_linear.rst:10
+msgid "So that"
+msgstr ""
+
+# 37150c27548e4b21a205806e6a919e44
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_biquad_to_linear.rst:12
+msgid "bi-quadratic triangle will be split into 3 linear quadrangles;"
+msgstr ""
+
+# 623375dedc9d4cdab7697d7cd9a3ae4d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_biquad_to_linear.rst:13
+msgid "bi-quadratic quadrangle will be split into 4 linear quadrangles;"
+msgstr ""
+
+# 53b082a4b9de48a39e252ed9b5a93567
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_biquad_to_linear.rst:14
+msgid "tri-quadratic hexahedron will be split into 8 linear hexahedra;"
+msgstr ""
+
+# ca05f179a444481ba31a54aa5c4b5b74
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_biquad_to_linear.rst:15
+msgid ""
+"quadratic segments adjacent to the split bi-quadratic element will be "
+"split into 2 liner segments."
+msgstr ""
+
+# 14a637e5ca384229857536f0a34c4720
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_biquad_to_linear.rst:23
+msgid "**To split bi-quadratic elements into linear:**"
+msgstr ""
+
+# bc78cab1ddad45aa81406b25c497ecd5
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_biquad_to_linear.rst:25
+msgid ""
+"From the **Modification** menu choose the **Split bi-quadratic into "
+"linear** item or click **\"Split bi-quadratic into linear\"** button in "
+"the toolbar."
+msgstr ""
+
+# b11085bb6b954cff8ac5b193770c9e4f
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_biquad_to_linear.rst:33
+msgid "The following dialog box shall appear:"
+msgstr ""
+
+# cacf4180b5b64f73967f535192bf0b59
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_biquad_to_linear.rst:39
+msgid ""
+"Select a mesh, groups or sub-meshes in the Object Browser or in the "
+"Viewer."
+msgstr ""
+
+# 90bbda9e43704bd085035d1d0e65bcfe
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_biquad_to_linear.rst:40
+msgid "Click the **Apply** or **Apply and Close** button."
+msgstr ""
+
+# 5fe7f729cf444b5ea9d400310506ea7d
+#: ../../../../../../../SRC/SMESH_SRC/doc/salome/gui/SMESH/input/split_biquad_to_linear.rst:42
+msgid "**See Also** a sample TUI Script of a :ref:`tui_split_biquad` operation."
+msgstr ""
+
