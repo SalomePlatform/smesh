@@ -62,12 +62,16 @@
  #define LoadLib( name ) LoadLibrary( name )
  #define GetProc GetProcAddress
  #define UnLoadLib( handle ) FreeLibrary( handle );
-#else
+#else // WIN32
  #define LibHandle void*
- #define LoadLib( name ) dlopen( name, RTLD_LAZY | RTLD_GLOBAL )
+ #ifdef DYNLOAD_LOCAL
+  #define LoadLib( name ) dlopen( name, RTLD_LAZY | RTLD_LOCAL )
+ #else // DYNLOAD_LOCAL
+  #define LoadLib( name ) dlopen( name, RTLD_LAZY | RTLD_GLOBAL )
+ #endif // DYNLOAD_LOCAL
  #define GetProc dlsym
  #define UnLoadLib( handle ) dlclose( handle );
-#endif
+#endif // WIN32
 
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_version.h"
@@ -2968,8 +2972,19 @@ CORBA::Boolean SMESH_Gen_i::GetMEDVersion(const char* theFileName,
   theVersion = SMESH::MED_V2_1;
   MED::EVersion aVersion = MED::GetVersionId( theFileName );
   switch( aVersion ) {
-    case MED::eV2_1     : theVersion = SMESH::MED_V2_1; return true;
-    case MED::eV2_2     : theVersion = SMESH::MED_V2_2; return true;
+    case MED::eV2_1     : theVersion = SMESH::MED_V2_1;    return true;
+    case MED::eV2_2     : theVersion = SMESH::MED_V2_2;    return true;
+    case MED::eLATEST   : theVersion = SMESH::MED_LATEST;  return true;
+    case MED::eMINOR_0  : theVersion = SMESH::MED_MINOR_0; return true;
+    case MED::eMINOR_1  : theVersion = SMESH::MED_MINOR_1; return true;
+    case MED::eMINOR_2  : theVersion = SMESH::MED_MINOR_2; return true;
+    case MED::eMINOR_3  : theVersion = SMESH::MED_MINOR_3; return true;
+    case MED::eMINOR_4  : theVersion = SMESH::MED_MINOR_4; return true;
+    case MED::eMINOR_5  : theVersion = SMESH::MED_MINOR_5; return true;
+    case MED::eMINOR_6  : theVersion = SMESH::MED_MINOR_6; return true;
+    case MED::eMINOR_7  : theVersion = SMESH::MED_MINOR_7; return true;
+    case MED::eMINOR_8  : theVersion = SMESH::MED_MINOR_8; return true;
+    case MED::eMINOR_9  : theVersion = SMESH::MED_MINOR_9; return true;
     case MED::eVUnknown : return false;
   }
   return false;

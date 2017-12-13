@@ -23,7 +23,6 @@
 #include "MED_Factory.hxx"
 #include "MED_Utilities.hxx"
 #include "MED_V2_2_Wrapper.hxx"
-
 #include <stdio.h>
 #include <errno.h>
 #include <sstream>
@@ -90,6 +89,7 @@ namespace MED
         if(aMajor == 2 && aMinor == 1)
           aVersion = eV2_1;
         else
+          // TODO: check major is not superior to library and switch on minor
           aVersion = eV2_2;
       }
       else {
@@ -124,20 +124,19 @@ namespace MED
   }
 
   PWrapper CrWrapper(const std::string& theFileName,
-                     bool theDoPreCheckInSeparateProcess)
+                     bool theDoPreCheckInSeparateProcess,
+                     int  theMinor)
   {
     PWrapper aWrapper;
+    if (theMinor <0)
+      theMinor = MED_MINOR_NUM;
     EVersion aVersion = GetVersionId(theFileName,theDoPreCheckInSeparateProcess);
     switch(aVersion){
-    case eV2_2:
-      aWrapper.reset(new MED::V2_2::TVWrapper(theFileName));
-      break;
     case eV2_1:
       EXCEPTION(std::runtime_error,"Cannot open file '"<<theFileName<<"'. Med version 2.1 is not supported any more.");
-      //aWrapper.reset(new MED::V2_1::TVWrapper(theFileName));
       break;
     default:
-      EXCEPTION(std::runtime_error,"MED::CrWrapper - theFileName = '"<<theFileName<<"'");
+      aWrapper.reset(new MED::V2_2::TVWrapper(theFileName, theMinor));
     }
     return aWrapper;
   }
@@ -145,22 +144,29 @@ namespace MED
   PWrapper CrWrapper(const std::string& theFileName, EVersion theId)
   {
     EVersion aVersion = GetVersionId(theFileName);
+    if (aVersion == eVUnknown) // no existing file
+      aVersion = theId;
 
     if(aVersion != theId)
-      remove(theFileName.c_str());
-    
-    PWrapper aWrapper;
-    switch(theId){
-    case eV2_2:
-      aWrapper.reset(new MED::V2_2::TVWrapper(theFileName));
-      break;
-    case eV2_1:
-      EXCEPTION(std::runtime_error,"Cannot open file '"<<theFileName<<"'. Med version 2.1 is not supported any more.");
-      //aWrapper.reset(new MED::V2_1::TVWrapper(theFileName));
-      break;
-    default:
-      aWrapper.reset(new MED::V2_2::TVWrapper(theFileName));
+      //remove(theFileName.c_str());
+      EXCEPTION(std::runtime_error,"Cannot open file for writing '"<<theFileName<<"'. existing file with another Med version.");
+
+    aVersion = theId;
+    int theMinor = -1; // not supported
+    switch (aVersion)
+    {
+      case eV2_1:     break; // not supported
+      case eVUnknown:
+      case eV2_2:
+      case eLATEST:   theMinor = MED_MINOR_NUM; break;
+      default:        theMinor = aVersion - eMINOR_0;
     }
+
+    if (theMinor < 0)
+      EXCEPTION(std::runtime_error,"Cannot open file '"<<theFileName<<"'. Med version 2.1 is not supported any more.");
+
+    PWrapper aWrapper;
+    aWrapper.reset(new MED::V2_2::TVWrapper(theFileName, theMinor));
     return aWrapper;
   }
 

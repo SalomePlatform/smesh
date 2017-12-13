@@ -40,6 +40,10 @@
       <translation>CGNS ファイル</translation>
     </message>
     <message>
+      <source>CGNS_EXPORT_ELEMS_BY_TYPE</source>
+      <translation>タイプで要素をグループ化</translation>
+    </message>
+    <message>
       <source>GMF_ASCII_FILES_FILTER</source>
       <translation>GMFアスキーファイル</translation>
     </message>
@@ -382,6 +386,22 @@
     <message>
       <source>MEN_DEL_GROUP</source>
       <translation>グループとその内容を削除します。</translation>
+    </message>
+    <message>
+      <source>MEN_ADD_TO_GROUP</source>
+      <translation>グループに追加</translation>
+    </message>
+    <message>
+      <source>MEN_REMOVE_FROM_GROUP</source>
+      <translation>グループから削除</translation>
+    </message>
+    <message>
+      <source>STB_ADD_TO_GROUP</source>
+      <translation>選択要素をグループに追加</translation>
+    </message>
+    <message>
+      <source>STB_REMOVE_FROM_GROUP</source>
+      <translation>選択要素をグループから削除</translation>
     </message>
     <message>
       <source>MEN_FACE_ORIENTATION</source>
@@ -872,6 +892,10 @@
       <translation>二次ウェッジ</translation>
     </message>
     <message>
+      <source>MEN_BIQUADRATIC_PENTAHEDRON</source>
+      <translation>4次五面体</translation>
+    </message>
+    <message>
       <source>MEN_QUADRATIC_PYRAMID</source>
       <translation>四角錐</translation>
     </message>
@@ -1342,6 +1366,10 @@
     <message>
       <source>SMESH_ADD_QUADRATIC_PENTAHEDRON_TITLE</source>
       <translation>二次くさびを追加します。</translation>
+    </message>
+    <message>
+      <source>SMESH_ADD_BIQUADRATIC_PENTAHEDRON_TITLE</source>
+      <translation>4次五面体の追加</translation>
     </message>
     <message>
       <source>SMESH_ADD_QUADRATIC_PYRAMID_TITLE</source>
@@ -2480,8 +2508,16 @@
       <translation>二次ウェッジ</translation>
     </message>
     <message>
+      <source>SMESH_BIQUADRATIC_PENTAHEDRON</source>
+      <translation>4次五面体</translation>
+    </message>
+    <message>
       <source>SMESH_QUADRATIC_PENTAHEDRONS</source>
       <translation>二次ウェッジ</translation>
+    </message>
+    <message>
+      <source>SMESH_BIQUADRATIC_PENTAHEDRONS</source>
+      <translation>4次五面体</translation>
     </message>
     <message>
       <source>SMESH_QUADRATIC_PYRAMID</source>
@@ -3328,6 +3364,10 @@
       <translation>二次ウェッジ</translation>
     </message>
     <message>
+      <source>STB_BIQUADRATIC_PENTAHEDRON</source>
+      <translation>4次五面体</translation>
+    </message>
+    <message>
       <source>STB_QUADRATIC_PYRAMID</source>
       <translation>四角錐</translation>
     </message>
@@ -4002,6 +4042,10 @@
     <message>
       <source>TOP_QUADRATIC_PENTAHEDRON</source>
       <translation>二次ウェッジ</translation>
+    </message>
+    <message>
+      <source>TOP_BIQUADRATIC_PENTAHEDRON</source>
+      <translation>4次五面体</translation>
     </message>
     <message>
       <source>TOP_QUADRATIC_PYRAMID</source>
@@ -4832,6 +4876,10 @@
       <translation>二次くさびを追加します。</translation>
     </message>
     <message>
+      <source>SMESH_ADD_BIQUADRATIC_PENTAHEDRON</source>
+      <translation>4次五面体の追加</translation>
+    </message>
+    <message>
       <source>SMESH_ADD_QUADRATIC_PYRAMID</source>
       <translation>二次ピラミッドの追加</translation>
     </message>
@@ -5251,6 +5299,10 @@
     <message>
       <source>SEPARATE_CORNERS_AND_MEDIUM</source>
       <translation>2次セルのコーナ節点と中間節点をマージできません</translation>
+    </message>
+    <message>
+      <source>AVOID_MAKING_HOLES</source>
+      <translation>穴作成の回避</translation>
     </message>
     <message>
       <source>KEEP_NODES</source>
@@ -5848,108 +5900,108 @@
       <translation>エンティティの種類</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_0</source>
-        <translation>NONE</translation>
+      <source>ENTITY_TYPE_0</source>
+      <translation>POINT1</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_1</source>
-        <translation>POINT1</translation>
+      <source>ENTITY_TYPE_1</source>
+      <translation>POINT1</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_2</source>
-        <translation>SEG2</translation>
+      <source>ENTITY_TYPE_2</source>
+      <translation>SEG2</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_3</source>
-        <translation>SEG3</translation>
+      <source>ENTITY_TYPE_3</source>
+      <translation>SEG3</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_4</source>
-        <translation>TRIA3</translation>
+      <source>ENTITY_TYPE_4</source>
+      <translation>TRIA3</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_5</source>
-        <translation>TRIA6</translation>
+      <source>ENTITY_TYPE_5</source>
+      <translation>TRIA6</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_6</source>
-        <translation>TRIA7</translation>
+      <source>ENTITY_TYPE_6</source>
+      <translation>QUAD4</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_7</source>
-        <translation>QUAD4</translation>
+      <source>ENTITY_TYPE_7</source>
+      <translation>QUAD8</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_8</source>
-        <translation>QUAD8</translation>
+      <source>ENTITY_TYPE_8</source>
+      <translation>QUAD9</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_9</source>
-        <translation>QUAD9</translation>
+      <source>ENTITY_TYPE_9</source>
+      <translation>TETRA4</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_10</source>
-        <translation>POLYGON</translation>
+      <source>ENTITY_TYPE_10</source>
+      <translation>TETRA10</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_11</source>
-        <translation>QPOLYGON</translation>
+      <source>ENTITY_TYPE_11</source>
+      <translation>PYRA5</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_12</source>
-        <translation>TETRA4</translation>
+      <source>ENTITY_TYPE_12</source>
+      <translation>PYRA13</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_13</source>
-        <translation>TETRA10</translation>
+      <source>ENTITY_TYPE_13</source>
+      <translation>PENTA6</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_14</source>
-        <translation>PYRA5</translation>
+      <source>ENTITY_TYPE_14</source>
+      <translation>PENTA15</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_15</source>
-        <translation>PYRA13</translation>
+      <source>ENTITY_TYPE_15</source>
+      <translation>HEXA8</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_16</source>
-        <translation>HEXA8</translation>
+      <source>ENTITY_TYPE_16</source>
+      <translation>HEXA20</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_17</source>
-        <translation>HEXA20</translation>
+      <source>ENTITY_TYPE_17</source>
+      <translation>HEXA27</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_18</source>
-        <translation>HEXA27</translation>
+      <source>ENTITY_TYPE_18</source>
+      <translation>OCTA12</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_19</source>
-        <translation>PENTA6</translation>
+      <source>ENTITY_TYPE_19</source>
+      <translation>ポリゴン</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_20</source>
-        <translation>PENTA15</translation>
+      <source>ENTITY_TYPE_20</source>
+      <translation>POLYEDRE</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_21</source>
-        <translation>PENTA18</translation>
+      <source>ENTITY_TYPE_21</source>
+      <translation>[なし]</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_22</source>
-        <translation>OCTA12</translation>
+      <source>ENTITY_TYPE_22</source>
+      <translation>ボール</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_23</source>
-        <translation>POLYEDRE</translation>
+      <source>ENTITY_TYPE_23</source>
+      <translation>QPOLYEDRE</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_24</source>
-        <translation>QPOLYEDRE</translation>
+      <source>ENTITY_TYPE_24</source>
+      <translation>ボール</translation>
     </message>
     <message>
-        <source>ENTITY_TYPE_25</source>
-        <translation>BALL</translation>
+      <source>ENTITY_TYPE_25</source>
+      <translation>ボール</translation>
     </message>
     <message>
       <source>GEOM_TYPE</source>
@@ -6878,6 +6930,14 @@
       <source>SMESH_CREATE_GROUP_FROM_GEOM</source>
       <translation>ジオメトリからグループを作成</translation>
     </message>
+    <message>
+      <source>ELEMENTS</source>
+      <translation>要素</translation>
+    </message>
+    <message>
+      <source>ELEMENTS_TOOLTIP</source>
+      <translation>0D要素がない</translation>
+    </message>
   </context>
   <context>
     <name>SMESHGUI_MeshOrderDlg</name>
@@ -7305,6 +7365,10 @@
     <message>
       <source>ELEM_MODE</source>
       <translation>要素</translation>
+    </message>
+    <message>
+      <source>SHOW_IDS</source>
+      <translation>IDの表示</translation>
     </message>
     <message>
       <source>BUT_DUMP_MESH</source>

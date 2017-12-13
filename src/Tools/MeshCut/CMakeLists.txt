@@ -38,7 +38,7 @@ SET(_link_LIBRARIES
 # --- scripts ---
 
 # scripts / static
-SET(plugin_SCRIPTS
+SET(_plugin_SCRIPTS
   meshcut_plugin.py
 )
 
@@ -61,26 +61,25 @@ SET(MeshCut_SOURCES
 )
 
 IF(SALOME_BUILD_GUI)
-  # --- resources ---
-
   # uic files / to be processed by pyuic
-  SET(_pyuic_files
+  SET(_pyuic_FILES
     MeshCutDialog.ui
   )
-
   # scripts / pyuic wrappings
-  PYQT_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_files})
-
+  PYQT_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_FILES} TARGET_NAME _target_name_pyuic)
 ENDIF(SALOME_BUILD_GUI)
 
 # --- rules ---
 
-SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS})
+SALOME_INSTALL_SCRIPTS("${_plugin_SCRIPTS}" ${SALOME_SMESH_INSTALL_PLUGINS})
 
 ADD_EXECUTABLE(MeshCut ${MeshCut_SOURCES})
 TARGET_LINK_LIBRARIES(MeshCut ${_link_LIBRARIES})
 INSTALL(TARGETS MeshCut EXPORT ${PROJECT_NAME}TargetGroup DESTINATION ${SALOME_INSTALL_BINS})
 
 IF(SALOME_BUILD_GUI)
-  INSTALL(FILES ${_pyuic_SCRIPTS} DESTINATION ${SALOME_INSTALL_BINS})
+  SALOME_INSTALL_SCRIPTS("${_pyuic_SCRIPTS}" ${SALOME_INSTALL_BINS} TARGET_NAME _target_name_pyuic_py)
+  # add dependency of compiled py files on uic files in order
+  # to avoid races problems when compiling in parallel
+  ADD_DEPENDENCIES(${_target_name_pyuic_py} ${_target_name_pyuic})
 ENDIF(SALOME_BUILD_GUI)

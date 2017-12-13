@@ -39,7 +39,8 @@ namespace MED
   MEDWRAPPER_FACTORY_EXPORT
   PWrapper 
   CrWrapper(const std::string& theFileName,
-            bool theDoPreCheckInSeparateProcess = false);
+            bool theDoPreCheckInSeparateProcess = false,
+            int theMinor=-1);
 
   MEDWRAPPER_FACTORY_EXPORT
   PWrapper 

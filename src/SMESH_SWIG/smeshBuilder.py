@@ -1795,9 +1795,14 @@ class Mesh:
     #  @param auto_groups boolean parameter for creating/not creating
     #  the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
     #  the typical use is auto_groups=False.
-    #  @param version MED format version (MED_V2_1 or MED_V2_2,
-    #                 the latter meaning any current version). The parameter is
-    #                 obsolete since MED_V2_1 is no longer supported.
+    #  @param version MED format version
+    #         - MED_V2_1 is obsolete.
+    #         - MED_V2_2 means current version (kept for compatibility reasons)
+    #         - MED_LATEST means current version.
+    #         - MED_MINOR_x where x from 0 to 9 indicates the minor version of MED
+    #           to use for writing MED files, for backward compatibility :
+    #           for instance, with SALOME 8.4 use MED 3.2 (minor=2) instead of 3.3,
+    #           to allow the file to be read with SALOME 8.3.
     #  @param overwrite boolean parameter for overwriting/not overwriting the file
     #  @param meshPart a part of mesh (group, sub-mesh) to export instead of the mesh
     #  @param autoDimension if @c True (default), a space dimension of a MED mesh can be either
@@ -1813,7 +1818,7 @@ class Mesh:
     #         - 'f' stands for "_faces _" field;
     #         - 's' stands for "_solids _" field.
     #  @ingroup l2_impexp
-    def ExportMED(self, f, auto_groups=0, version=MED_V2_2,
+    def ExportMED(self, f, auto_groups=0, version=MED_LATEST,
                   overwrite=1, meshPart=None, autoDimension=True, fields=[], geomAssocFields=''):
         if meshPart or fields or geomAssocFields:
             unRegister = genObjUnRegister()
@@ -1917,9 +1922,14 @@ class Mesh:
     #  Export the mesh in a file in MED format
     #  allowing to overwrite the file if it exists or add the exported data to its contents
     #  @param f the file name
-    #  @param version MED format version (MED_V2_1 or MED_V2_2,
-    #                 the latter meaning any current version). The parameter is
-    #                 obsolete since MED_V2_1 is no longer supported.
+    #  @param version MED format version:
+    #         - MED_V2_1 is obsolete.
+    #         - MED_V2_2 means current version (kept for compatibility reasons)
+    #         - MED_LATEST means current version.
+    #         - MED_MINOR_x where x from 0 to 9 indicates the minor version of MED
+    #           to use for writing MED files, for backward compatibility :
+    #           for instance, with SALOME 8.4 use MED 3.2 (minor=2) instead of 3.3,
+    #           to allow the file to be read with SALOME 8.3.
     #  @param opt boolean parameter for creating/not creating
     #         the groups Group_On_All_Nodes, Group_On_All_Faces, ...
     #  @param overwrite boolean parameter for overwriting/not overwriting the file
@@ -1929,7 +1939,7 @@ class Mesh:
     #         - 3D in the rest cases.<br>
     #         If @a autoDimension is @c False, the space dimension is always 3.
     #  @ingroup l2_impexp
-    def ExportToMED(self, f, version=MED_V2_2, opt=0, overwrite=1, autoDimension=True):
+    def ExportToMED(self, f, version=MED_LATEST, opt=0, overwrite=1, autoDimension=True):
         self.mesh.ExportToMEDX(f, opt, version, overwrite, autoDimension)
 
     # Operations with groups:

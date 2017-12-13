@@ -1984,9 +1984,7 @@ void SMESHGUI_PrecomputeOp::onPreview()
   
   SMESH::long_array_var aShapesId = new SMESH::long_array();
   try {
-#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
     OCC_CATCH_SIGNALS;
-#endif
       
     SMESH::MeshPreviewStruct_var previewData =
       gen->Precompute(myMesh, myMainShape, (SMESH::Dimension)dim, aShapesId);
@@ -2009,9 +2007,7 @@ void SMESHGUI_PrecomputeOp::onPreview()
   }
 
   try {
-#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
     OCC_CATCH_SIGNALS;
-#endif
     aCompErrors = gen->GetComputeErrors( myMesh, myMainShape );
     // check if there are memory problems
     for ( CORBA::ULong i = 0; (i < aCompErrors->length()) && !memoryLack; ++i )
@@ -2227,9 +2223,7 @@ void SMESHGUI_BaseComputeOp::evaluateMesh()
     }
     SUIT_OverrideCursor aWaitCursor;
     try {
-#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
       OCC_CATCH_SIGNALS;
-#endif
       aRes = gen->Evaluate(myMesh, myMainShape);
     }
     catch(const SALOME::SALOME_Exception & S_ex){
@@ -2237,9 +2231,7 @@ void SMESHGUI_BaseComputeOp::evaluateMesh()
     }
 
     try {
-#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
       OCC_CATCH_SIGNALS;
-#endif
       aCompErrors = gen->GetComputeErrors( myMesh, myMainShape );
     }
     catch(const SALOME::SALOME_Exception & S_ex){

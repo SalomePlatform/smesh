@@ -91,7 +91,7 @@ namespace MED
       TVWrapper& operator=(const TVWrapper&);
       
     public:
-      TVWrapper(const std::string& theFileName);
+      TVWrapper(const std::string& theFileName, TInt theMinor=-1);
 
       //----------------------------------------------------------------------------
       virtual 
@@ -482,6 +482,7 @@ namespace MED
 
     protected:
       PFile myFile;
+      TInt myMinor;
     };
   }
 }

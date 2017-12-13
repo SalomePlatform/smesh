@@ -295,9 +295,7 @@ SMESH::point_array*
   }
   bool ok = false;
   try {
-#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
     OCC_CATCH_SIGNALS;
-#endif
     ok = myPattern.Apply( aMesh, fset, theNodeIndexOnKeyPoint1, theReverse );
   }
   catch (Standard_Failure& exc) {

@@ -26,6 +26,7 @@
 
 #include <med.h>
 #include <med_err.h>
+#include <med_proto.h>
 
 #ifdef _DEBUG_
 static int MYDEBUG = 0;
@@ -99,11 +100,14 @@ namespace MED
       TFile(const TFile&);
       
     public:
-      TFile(const std::string& theFileName): 
+      TFile(const std::string& theFileName, TInt theMinor=-1):
         myCount(0),
         myFid(0), 
-        myFileName(theFileName)
-      {}
+        myFileName(theFileName),
+        myMinor(theMinor)
+      {
+        if ((myMinor < 0) || (myMinor > MED_MINOR_NUM)) myMinor = MED_MINOR_NUM;
+      }
       
       ~TFile()
       { 
@@ -115,12 +119,12 @@ namespace MED
       {
         if(myCount++ == 0){
           const char* aFileName = myFileName.c_str();
-          myFid = MEDfileOpen(aFileName,med_access_mode(theMode));
+          myFid = MEDfileVersionOpen(aFileName,med_access_mode(theMode), MED_MAJOR_NUM, myMinor, MED_RELEASE_NUM);
         }
         if(theErr)
           *theErr = TErr(myFid);
         else if(myFid < 0)
-          EXCEPTION(std::runtime_error,"TFile - MEDfileOpen('"<<myFileName<<"',"<<theMode<<")");
+          EXCEPTION(std::runtime_error,"TFile - MEDfileVersionOpen('"<<myFileName<<"',"<<theMode<<"',"<< MED_MAJOR_NUM<<"',"<< myMinor<<"',"<< MED_RELEASE_NUM<<")");
       }
 
       const TIdt& Id() const 
@@ -140,6 +144,7 @@ namespace MED
       TInt myCount;
       TIdt myFid;
       std::string myFileName;
+      TInt myMinor;
     };
 
 
@@ -147,11 +152,14 @@ namespace MED
     class TFileWrapper
     {
       PFile myFile;
+      TInt myMinor;
 
     public:
-      TFileWrapper(const PFile& theFile, EModeAcces theMode, TErr* theErr = NULL): 
-        myFile(theFile)
+      TFileWrapper(const PFile& theFile, EModeAcces theMode, TErr* theErr = NULL, TInt theMinor=-1):
+        myFile(theFile),
+        myMinor(theMinor)
       {
+        if (myMinor < 0) myMinor = MED_MINOR_NUM;
         myFile->Open(theMode,theErr);
       }
       
@@ -163,15 +171,12 @@ namespace MED
 
 
     //---------------------------------------------------------------
-    TVWrapper::TVWrapper(const std::string& theFileName):
-      myFile(new TFile(theFileName))
+    TVWrapper::TVWrapper(const std::string& theFileName, TInt theMinor):
+      myMinor(theMinor),
+      myFile(new TFile(theFileName, theMinor))
     {
       TErr aRet;
       myFile->Open( eLECTURE_ECRITURE, &aRet );
-      // if(aRet < 0)
-      //   myFile->Close();
-      //   myFile->Open( eLECTURE_AJOUT, &aRet );
-      // }
       if(aRet < 0) {
         myFile->Close();
         myFile->Open( eLECTURE, &aRet );
@@ -188,7 +193,7 @@ namespace MED
     TVWrapper
     ::GetNbMeshes(TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return -1;
@@ -204,7 +209,7 @@ namespace MED
                   MED::TMeshInfo& theInfo,
                   TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return;
@@ -247,7 +252,7 @@ namespace MED
                   EModeAcces theMode,
                   TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,theMode,theErr);
+      TFileWrapper aFileWrapper(myFile,theMode,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return;
@@ -316,7 +321,7 @@ namespace MED
     ::GetNbFamilies(const MED::TMeshInfo& theInfo,
                     TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return -1;
@@ -334,7 +339,7 @@ namespace MED
                    const MED::TMeshInfo& theInfo,
                    TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return -1;
@@ -354,7 +359,7 @@ namespace MED
                     const MED::TMeshInfo& theInfo,
                     TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return -1;
@@ -374,7 +379,7 @@ namespace MED
                     MED::TFamilyInfo& theInfo,
                     TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return;
@@ -417,7 +422,7 @@ namespace MED
                     EModeAcces theMode,
                     TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,theMode,theErr);
+      TFileWrapper aFileWrapper(myFile,theMode,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return;
@@ -476,7 +481,7 @@ namespace MED
                EGeometrieElement theGeom,
                TErr*             theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return;
@@ -514,7 +519,7 @@ namespace MED
                     EGeometrieElement theGeom,
                     TErr*             theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return;
@@ -552,7 +557,7 @@ namespace MED
                   EGeometrieElement theGeom,
                   TErr*             theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return;
@@ -613,7 +618,7 @@ namespace MED
                EGeometrieElement theGeom,
                TErr*             theErr)
     {
-      TFileWrapper aFileWrapper(myFile,theMode,theErr);
+      TFileWrapper aFileWrapper(myFile,theMode,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return;
@@ -669,7 +674,7 @@ namespace MED
                     EGeometrieElement theGeom,
                     TErr*             theErr)
     {
-      TFileWrapper aFileWrapper(myFile,theMode,theErr);
+      TFileWrapper aFileWrapper(myFile,theMode,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return;
@@ -723,7 +728,7 @@ namespace MED
                   EGeometrieElement theGeom,
                   TErr*             theErr)
     {
-      TFileWrapper aFileWrapper(myFile,theMode,theErr);
+      TFileWrapper aFileWrapper(myFile,theMode,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return;
@@ -761,7 +766,7 @@ namespace MED
                  ETable theTable,
                  TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return -1;
@@ -790,7 +795,7 @@ namespace MED
     ::GetNodeInfo(MED::TNodeInfo& theInfo,
                   TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return;
@@ -867,7 +872,7 @@ namespace MED
                   EModeAcces theMode,
                   TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,theMode,theErr);
+      TFileWrapper aFileWrapper(myFile,theMode,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return;
@@ -953,7 +958,7 @@ namespace MED
     ::GetPolygoneInfo(MED::TPolygoneInfo& theInfo,
                       TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
 
       if(theErr && *theErr < 0)
         return;
@@ -1012,7 +1017,7 @@ namespace MED
                       EModeAcces theMode,
                       TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,theMode,theErr);
+      TFileWrapper aFileWrapper(myFile,theMode,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return;
@@ -1071,7 +1076,7 @@ namespace MED
                           EConnectivite theConnMode,
                           TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
 
       if(theErr && *theErr < 0)
         return 0;
@@ -1105,7 +1110,7 @@ namespace MED
     ::GetPolyedreInfo(TPolyedreInfo& theInfo,
                       TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
 
       if(theErr && *theErr < 0)
         return;
@@ -1168,7 +1173,7 @@ namespace MED
                       EModeAcces theMode,
                       TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,theMode,theErr);
+      TFileWrapper aFileWrapper(myFile,theMode,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return;
@@ -1272,7 +1277,7 @@ namespace MED
                           EConnectivite theConnMode,
                           TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
 
       if(theErr && *theErr < 0) 
         EXCEPTION(std::runtime_error,"GetPolyedreConnSize - (...)");
@@ -1321,7 +1326,7 @@ namespace MED
     {
       TEntityInfo anInfo;
       
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return anInfo;
@@ -1431,7 +1436,7 @@ namespace MED
                                EConnectivite theConnMode,
                                TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
 
       if(theErr && *theErr < 0)
         return -1;
@@ -1478,7 +1483,7 @@ namespace MED
     //----------------------------------------------------------------------------
     void TVWrapper::GetCellInfo(MED::TCellInfo& theInfo, TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
 
       if(theErr && *theErr < 0)
         return;
@@ -1537,7 +1542,7 @@ namespace MED
                   EModeAcces theMode,
                   TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,theMode,theErr);
+      TFileWrapper aFileWrapper(myFile,theMode,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return;
@@ -1618,7 +1623,8 @@ namespace MED
     //! Read geom type of MED_BALL structural element
     EGeometrieElement TVWrapper::GetBallGeom(const TMeshInfo& theMeshInfo)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE);
+      TErr anError;
+      TFileWrapper aFileWrapper(myFile, eLECTURE, &anError, myMinor);
 
       // read med_geometry_type of "MED_BALL" element
       char geotypename[ MED_NAME_SIZE + 1] = MED_BALL_NAME;
@@ -1629,7 +1635,8 @@ namespace MED
     //! Read number of balls in the Mesh
     TInt TVWrapper::GetNbBalls(const TMeshInfo& theMeshInfo)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE);
+      TErr anError;
+      TFileWrapper aFileWrapper(myFile, eLECTURE, &anError, myMinor);
 
       EGeometrieElement ballType = GetBallGeom( theMeshInfo );
       if ( ballType < 0 )
@@ -1642,7 +1649,7 @@ namespace MED
     //! Read a MEDWrapped representation of MED_BALL from the MED file
     void TVWrapper::GetBallInfo(TBallInfo& theInfo, TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
 
       // check geometry of MED_BALL
       if ( theInfo.myGeom == eBALL )
@@ -1681,7 +1688,7 @@ namespace MED
     //! Write a MEDWrapped representation of MED_BALL to the MED file
     void  TVWrapper::SetBallInfo(const TBallInfo& theInfo, EModeAcces theMode, TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,theMode,theErr);
+      TFileWrapper aFileWrapper(myFile,theMode,theErr, myMinor);
 
       TErr ret;
       char ballsupportname[MED_NAME_SIZE+1]="BALL_SUPPORT_MESH";
@@ -1769,7 +1776,7 @@ namespace MED
     TVWrapper
     ::GetNbFields(TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return -1;
@@ -1784,7 +1791,7 @@ namespace MED
     ::GetNbComp(TInt theFieldId,
                 TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return -1;
@@ -1800,7 +1807,7 @@ namespace MED
                    MED::TFieldInfo& theInfo,
                    TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return;
@@ -1850,7 +1857,7 @@ namespace MED
                    EModeAcces theMode,
                    TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,theMode,theErr);
+      TFileWrapper aFileWrapper(myFile,theMode,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return;
@@ -1902,7 +1909,7 @@ namespace MED
     TVWrapper
     ::GetNbGauss(TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return -1;
@@ -1917,7 +1924,7 @@ namespace MED
     ::GetGaussPreInfo(TInt theId, 
                       TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
 
       if(theErr && *theErr < 0)
         return TGaussInfo::TInfo( TGaussInfo::TKey(ePOINT1,""),0 );
@@ -1958,7 +1965,7 @@ namespace MED
                    TGaussInfo& theInfo,
                    TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return;
@@ -1989,7 +1996,7 @@ namespace MED
     TVWrapper
     ::GetNbProfiles(TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return -1;
@@ -2002,7 +2009,7 @@ namespace MED
     ::GetProfilePreInfo(TInt theId, 
                         TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
 
       if(theErr && *theErr < 0)
         return TProfileInfo::TInfo();
@@ -2029,7 +2036,7 @@ namespace MED
                      TProfileInfo& theInfo,
                      TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return;
@@ -2054,7 +2061,7 @@ namespace MED
                      EModeAcces          theMode,
                      TErr*               theErr)
     {
-      TFileWrapper aFileWrapper(myFile,theMode,theErr);
+      TFileWrapper aFileWrapper(myFile,theMode,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return;
@@ -2102,7 +2109,7 @@ namespace MED
                       TErr* theErr)
     {
       theEntity = EEntiteMaillage(-1);
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
 
       if(theErr){
         if(theEntityInfo.empty())
@@ -2225,7 +2232,7 @@ namespace MED
                        MED::TTimeStampInfo& theInfo,
                        TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
       
       const TGeom2Size& aGeom2Size = theInfo.myGeom2Size;
       
@@ -2320,7 +2327,7 @@ namespace MED
                         const TKey2Gauss& theKey2Gauss,
                         TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return;
@@ -2488,7 +2495,7 @@ namespace MED
                         EModeAcces theMode,
                         TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,theMode,theErr);
+      TFileWrapper aFileWrapper(myFile,theMode,theErr, myMinor);
       
       if(theErr && *theErr < 0)
         return;
@@ -2598,7 +2605,7 @@ namespace MED
     {
       if(theInfo.myMeshInfo->myType != eSTRUCTURE)
         return;
-      TFileWrapper aFileWrapper(myFile,theMode,theErr);
+      TFileWrapper aFileWrapper(myFile,theMode,theErr, myMinor);
       
       if(theErr && *theErr < 0)
           return;
@@ -2675,7 +2682,7 @@ namespace MED
     ::GetGrilleInfo(TGrilleInfo& theInfo,
                     TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
 
       if(theErr && *theErr < 0)
           return;
@@ -2831,7 +2838,7 @@ namespace MED
                     EGrilleType& theGridType,
                     TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
 
       if(theErr && *theErr < 0)
         EXCEPTION(std::runtime_error," GetGrilleType - aFileWrapper (...)");
@@ -2856,7 +2863,7 @@ namespace MED
                       TIntVector& theStruct,
                       TErr* theErr)
     {
-      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr);
+      TFileWrapper aFileWrapper(myFile,eLECTURE,theErr, myMinor);
       
       if(theErr && *theErr < 0)
           return;
