@@ -104,7 +104,7 @@ namespace {
     gp_Vec v1( P1 - P2 ), v2( P3 - P2 );
     double dot = v1 * v2, len1 = v1.SquareMagnitude(), len2 = v2.SquareMagnitude();
 
-    return ( len1 < gp::Resolution() || len2 < gp::Resolution() ? -1 :
+    return ( dot < 0 || len1 < gp::Resolution() || len2 < gp::Resolution() ? -1 :
              dot * dot / len1 / len2 );
   }
 
@@ -736,7 +736,7 @@ double MinimumAngle::GetValue( const TSequenceOfXYZ& P )
     double A0 = getCos2( P( i-1 ), P( i ), P( i+1 ) );
     aMaxCos2 = Max( aMaxCos2, A0 );
   }
-  if ( aMaxCos2 <= 0 )
+  if ( aMaxCos2 < 0 )
     return 0; // all nodes coincide
 
   double cos = sqrt( aMaxCos2 );
