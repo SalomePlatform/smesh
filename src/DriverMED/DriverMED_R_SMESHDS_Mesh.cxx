@@ -1092,8 +1092,8 @@ list<TNameAndType> DriverMED_R_SMESHDS_Mesh::GetGroupNamesAndTypes()
     set<string>::const_iterator aGrNamesIter = aGroupNames.begin();
     for (; aGrNamesIter != aGroupNames.end(); aGrNamesIter++)
     {
-      const set< SMDSAbs_ElementType >& types = aFamily->GetTypes();
-      set< SMDSAbs_ElementType >::const_iterator type = types.begin();
+      const ElemTypeSet& types = aFamily->GetTypes();
+      ElemTypeSet::const_iterator type = types.begin();
       for ( ; type != types.end(); ++type )
       {
         TNameAndType aNameAndType = make_pair( *aGrNamesIter, *type );
@@ -1109,28 +1109,51 @@ list<TNameAndType> DriverMED_R_SMESHDS_Mesh::GetGroupNamesAndTypes()
 
 void DriverMED_R_SMESHDS_Mesh::GetGroup(SMESHDS_Group* theGroup)
 {
-  string aGroupName (theGroup->GetStoreName());
+  TFamilyVec * famVecPtr;
+
+  if ( myGroups2FamiliesMap.IsEmpty() ) // PAL23514
+  {
+    TFamilyVec famVector( 1 );
+    map<int, DriverMED_FamilyPtr>::iterator famIter = myFamilies.begin();
+    for ( ; famIter != myFamilies.end(); famIter++ )
+    {
+      DriverMED_FamilyPtr    family = famIter->second;
+      const MED::TStringSet& groups = family->GetGroupNames();
+      famVector[ 0 ] = family;
+      MED::TStringSet::const_iterator grpIter = groups.begin();
+      for ( ; grpIter != groups.end(); ++grpIter )
+      {
+        TCollection_AsciiString groupName = grpIter->c_str();
+        if (( famVecPtr = myGroups2FamiliesMap.ChangeSeek( groupName )))
+          famVecPtr->push_back( family );
+        else
+          myGroups2FamiliesMap.Bind( groupName, famVector );
+      }
+    }
+  }
+
+  const char* aGroupName = theGroup->GetStoreName();
   if(MYDEBUG) MESSAGE("Get Group " << aGroupName);
 
-  map<int, DriverMED_FamilyPtr>::iterator aFamsIter = myFamilies.begin();
-  for (; aFamsIter != myFamilies.end(); aFamsIter++)
+  if (( famVecPtr = myGroups2FamiliesMap.ChangeSeek( aGroupName )))
   {
-    DriverMED_FamilyPtr aFamily = (*aFamsIter).second;
-    if (aFamily->GetTypes().count( theGroup->GetType() ) && aFamily->MemberOf(aGroupName))
+    for ( size_t i = 0; i < famVecPtr->size(); ++i )
     {
-      const ElementsSet&           anElements = aFamily->GetElements();
-      ElementsSet::const_iterator anElemsIter = anElements.begin();
-      for (; anElemsIter != anElements.end(); anElemsIter++)
+      DriverMED_FamilyPtr aFamily = (*famVecPtr)[i];
+      if ( aFamily->GetTypes().count( theGroup->GetType() ))
       {
-        const SMDS_MeshElement * element = *anElemsIter;
-        if ( element->GetType() == theGroup->GetType() ) // Issue 0020576
-          theGroup->SMDSGroup().Add(element);
+        const ElementsSet&           anElements = aFamily->GetElements();
+        ElementsSet::const_iterator anElemsIter = anElements.begin();
+        for (; anElemsIter != anElements.end(); anElemsIter++)
+        {
+          const SMDS_MeshElement * element = *anElemsIter;
+          if ( element->GetType() == theGroup->GetType() ) // Issue 0020576
+            theGroup->SMDSGroup().Add(element);
+        }
+        int aGroupAttrVal = aFamily->GetGroupAttributVal();
+        if( aGroupAttrVal != 0 )
+          theGroup->SetColorGroup(aGroupAttrVal);
       }
-      int aGroupAttrVal = aFamily->GetGroupAttributVal();
-      if( aGroupAttrVal != 0)
-        theGroup->SetColorGroup(aGroupAttrVal);
-//       if ( element ) -- Issue 0020576
-//         theGroup->SetType( theGroup->SMDSGroup().GetType() );
     }
   }
 }

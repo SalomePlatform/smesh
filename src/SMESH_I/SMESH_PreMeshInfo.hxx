@@ -33,6 +33,7 @@
 #include CORBA_SERVER_HEADER(SALOMEDS)
 
 #include <TopAbs_ShapeEnum.hxx>
+#include <TColStd_MapOfAsciiString.hxx>
 
 class DriverMED_R_SMESHDS_Mesh;
 class HDFfile;
@@ -101,7 +102,9 @@ private:
 
   // reading from the new study, for which SaveToFile() was called
   bool readPreInfoFromHDF();
-  void hdf2meshInfo( const std::string& dataSetName, HDFgroup* infoHdfGroup );
+  void hdf2meshInfo( const std::string&              dataSetName,
+                     HDFgroup*                       infoHdfGroup,
+                     const TColStd_MapOfAsciiString& allHdfNames);
 
   // reading from the old study, for which SaveToFile() was not called
   bool readMeshInfo();
