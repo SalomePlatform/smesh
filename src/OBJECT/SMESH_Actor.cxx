@@ -1438,6 +1438,10 @@ double* SMESH_ActorDef::GetNodeCoord(int theObjID)
   return myPickableActor->GetNodeCoord(theObjID);
 }
 
+int SMESH_ActorDef::GetNodeVtkId(int theObjID)
+{
+  return myPickableActor->GetNodeVtkId(theObjID);
+}
 
 int SMESH_ActorDef::GetElemObjId(int theVtkID)
 {

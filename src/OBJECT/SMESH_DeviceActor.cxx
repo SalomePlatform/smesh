@@ -861,6 +861,12 @@ SMESH_DeviceActor
   return aCoord;
 }
 
+int
+SMESH_DeviceActor
+::GetNodeVtkId(int theObjID) 
+{
+  return myVisualObj->GetNodeVTKId(theObjID);
+}
 
 int
 SMESH_DeviceActor

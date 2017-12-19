@@ -48,9 +48,13 @@
 
 %include "typemaps.i"
 %include "std_vector.i"
+%include "std_pair.i"
 
 namespace std {
+  
     %template(VectorInt) vector<int>;
+    %template() std::pair<int,int>;
+    %template(PairVector) std::vector<std::pair<int,int> >;
 };
 
 
@@ -128,6 +132,11 @@ class SMESH_Swig
 
   void CreateAndDisplayActor( const char* Mesh_Entry );
   void EraseActor( const char* Mesh_Entry, const bool allViewers = false );
+  void UpdateActor( const char* Mesh_Entry );
+
+  void setSelectionMode( SelectionMode selectionMode);
+  std::vector<int> getSelected( const char* Mesh_Entry );
+  std::vector<std::pair<int,int> > getSelectedEdgeOfCell( const char* Mesh_Entry );
 
   actorAspect GetActorAspect(const char* Mesh_Entry, int viewId = 0 );
   void SetActorAspect( const actorAspect& actorPres, const char* Mesh_Entry, int viewId = 0 );
@@ -139,5 +148,6 @@ class SMESH_Swig
   SelectionMode  getSelectionMode();
   void select( const char *id, std::vector<int> ids, bool append = false );
   void select( const char *id, int id1, bool append = false );
+  void select( const char *id, std::vector<std::pair<int,int> >, bool apend = false );
 
 };

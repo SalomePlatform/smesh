@@ -32,6 +32,12 @@ void SMESH::doNothing(const char* txt)
 {
   MESSAGE( txt << " " << __FILE__ << ": " << __LINE__ );
 }
+
+const char* SMESH::returnError(const char* txt)
+{
+  return txt;
+}
+
 // ------------------------------------------------------------------
 #include "SMESH_ComputeError.hxx"
 

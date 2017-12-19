@@ -4974,6 +4974,32 @@ class Mesh:
     def CreateHoleSkin(self, radius, theShape, groupName, theNodesCoords):
         return self.editor.CreateHoleSkin( radius, theShape, groupName, theNodesCoords )
 
+    ## Create a polyline consisting of 1D mesh elements each lying on a 2D element of
+    #  the initial mesh. Positions of new nodes are found by cutting the mesh by the
+    #  plane passing through pairs of points specified by each PolySegment structure.
+    #  If there are several paths connecting a pair of points, the shortest path is
+    #  selected by the module. Position of the cutting plane is defined by the two
+    #  points and an optional vector lying on the plane specified by a PolySegment.
+    #  By default the vector is defined by Mesh module as following. A middle point
+    #  of the two given points is computed. The middle point is projected to the mesh.
+    #  The vector goes from the middle point to the projection point. In case of planar
+    #  mesh, the vector is normal to the mesh.
+    #  @param segments - PolySegment's defining positions of cutting planes.
+    #         Return the used vector which goes from the middle point to its projection.
+    #  @param groupName - optional name of a group where created mesh segments will
+    #         be added.
+    #  @ingroup l2_modif_duplicat
+    def MakePolyLine(self, segments, groupName='', isPreview=False ):
+        editor = self.editor
+        if isPreview:
+            editor = self.mesh.GetMeshEditPreviewer()
+        segmentsRes = editor.MakePolyLine( segments, groupName )
+        for i, seg in enumerate( segmentsRes ):
+            segments[i].vector = seg.vector
+        if isPreview:
+            return editor.GetPreviewData()
+        return None        
+
     ## Return a cached numerical functor by its type.
     #  @param theCriterion functor type - an item of SMESH.FunctorType enumeration.
     #          Type SMESH.FunctorType._items in the Python Console to see all items.

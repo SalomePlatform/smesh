@@ -840,7 +840,7 @@ public:
                       const char* groupName,
                       const SMESH::double_array& theNodesCoords,
                       SMESH::array_of_long_array_out GroupsOfNodes)
-  throw (SALOME::SALOME_Exception);
+    throw (SALOME::SALOME_Exception);
 
   /*!
    * \brief Generated skin mesh (containing 2D cells) from 3D mesh
@@ -868,7 +868,28 @@ public:
                                    SMESH::SMESH_Group_out group)
     throw (SALOME::SALOME_Exception);
 
-private: //!< private methods
+  /*!
+   * \brief Create a polyline consisting of 1D mesh elements each lying on a 2D element of
+   *        the initial mesh. Positions of new nodes are found by cutting the mesh by the
+   *        plane passing through pairs of points specified by each PolySegment structure.
+   *        If there are several paths connecting a pair of points, the shortest path is
+   *        selected by the module. Position of the cutting plane is defined by the two
+   *        points and an optional vector lying on the plane specified by a PolySegment.
+   *        By default the vector is defined by Mesh module as following. A middle point
+   *        of the two given points is computed. The middle point is projected to the mesh.
+   *        The vector goes from the middle point to the projection point. In case of planar
+   *        mesh, the vector is normal to the mesh.
+   *  \param [inout] segments - PolySegment's defining positions of cutting planes.
+   *        Return the used vector and position of the middle point.
+   *  \param [in] groupName - optional name of a group where created mesh segments will
+   *        be added.
+   */
+  void MakePolyLine(SMESH::ListOfPolySegments& segments,
+                    const char*               groupName)
+    throw (SALOME::SALOME_Exception);
+
+
+ private: //!< private methods
 
   ::SMESH_MeshEditor& getEditor();
 

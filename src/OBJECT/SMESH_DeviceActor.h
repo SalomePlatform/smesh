@@ -70,6 +70,7 @@ class SMESHOBJECT_EXPORT SMESH_DeviceActor: public vtkLODActor{
 
   virtual int GetNodeObjId(int theVtkID);
   virtual double* GetNodeCoord(int theObjID);
+  virtual int GetNodeVtkId(int theObjID);
 
   virtual int GetElemObjId(int theVtkID);
   virtual vtkCell* GetElemCell(int theObjID);
