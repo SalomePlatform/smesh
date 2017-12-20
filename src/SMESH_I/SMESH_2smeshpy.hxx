@@ -390,7 +390,7 @@ public:
   virtual void Flush() {}
   virtual bool CanClear();
 
-  DEFINE_STANDARD_RTTIEXT(_pyMesh,_pyObject)
+  DEFINE_STANDARD_RTTIEXT(_pyMeshEditor,_pyObject)
 };
 
 // -------------------------------------------------------------------------------------
