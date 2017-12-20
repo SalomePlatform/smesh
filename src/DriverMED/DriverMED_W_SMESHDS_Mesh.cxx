@@ -780,6 +780,13 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
         continue;
       }
 
+      // build map of family numbers for this type
+      if ( !isElemFamMapBuilt[ aElemTypeData->_smdsType ])
+      {
+        fillElemFamilyMap( anElemFamMap, aFamilies, aElemTypeData->_smdsType );
+        isElemFamMapBuilt[ aElemTypeData->_smdsType ] = true;
+      }
+
       // iterator on elements of a current type
       SMDS_ElemIteratorPtr elemIterator;
       int iElem = 0;
@@ -853,7 +860,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       else if (aElemTypeData->_geomType == ePOLYEDRE )
       {
         elemIterator = myMesh->elementGeomIterator( SMDSGeom_POLYHEDRA );
-        
+
         if ( nbPolyhedronNodes == 0 ) {
           // Count nb of nodes
           while ( elemIterator->more() ) {
@@ -930,13 +937,6 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
         // allocate data arrays
         PBallInfo aBallInfo = myMed->CrBallInfo( aMeshInfo, aElemTypeData->_nbElems );
 
-        // build map of family numbers for this type
-        if ( !isElemFamMapBuilt[ aElemTypeData->_smdsType ])
-        {
-          fillElemFamilyMap( anElemFamMap, aFamilies, aElemTypeData->_smdsType );
-          isElemFamMapBuilt[ aElemTypeData->_smdsType ] = true;
-        }
-
         elemIterator = myMesh->elementsIterator( SMDSAbs_Ball );
         while ( elemIterator->more() )
         {
@@ -976,12 +976,6 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
                                                  theConnMode,
                                                  theIsElemNum,
                                                  theIsElemNames);
-        // build map of family numbers for this type
-        if ( !isElemFamMapBuilt[ aElemTypeData->_smdsType ])
-        {
-          fillElemFamilyMap( anElemFamMap, aFamilies, aElemTypeData->_smdsType );
-          isElemFamMapBuilt[ aElemTypeData->_smdsType ] = true;
-        }
 
         TInt aNbNodes = MED::GetNbNodes(aElemTypeData->_geomType);
         elemIterator = myMesh->elementsIterator( aElemTypeData->_smdsType );
