@@ -42,7 +42,6 @@
 #include "SMDS_Mesh0DElement.hxx"
 #include "SMDS_MeshFace.hxx"
 #include "SMDS_MeshVolume.hxx"
-#include "SMDS_PolyhedralVolumeOfNodes.hxx"
 #include "SMDS_SetIterator.hxx"
 #include "SMDS_VolumeTool.hxx"
 #include "SMESHDS_Group.hxx"
@@ -534,7 +533,9 @@ SMESH::MeshPreviewStruct* SMESH_MeshEditor_i::GetPreviewData()
     SMESHDS_Mesh* aMeshDS;
     std::unique_ptr< SMESH_MeshPartDS > aMeshPartDS;
     if ( hasBadElems ) {
-      aMeshPartDS.reset( new SMESH_MeshPartDS( getEditor().GetError()->myBadElements ));
+      const list<const SMDS_MeshElement*>& badElems =
+        static_cast<SMESH_BadInputElements*>( getEditor().GetError().get() )->myBadElements;
+      aMeshPartDS.reset( new SMESH_MeshPartDS( badElems ));
       aMeshDS = aMeshPartDS.get();
     }
     else {
@@ -680,7 +681,7 @@ SMESH::ComputeError* SMESH_MeshEditor_i::GetLastError()
     errOut->code       = -( errIn->myName < 0 ? errIn->myName + 1: errIn->myName ); // -1 -> 0
     errOut->comment    = errIn->myComment.c_str();
     errOut->subShapeID = -1;
-    errOut->hasBadMesh = !errIn->myBadElements.empty();
+    errOut->hasBadMesh = errIn->HasBadElems();
   }
   else
   {
@@ -6963,7 +6964,7 @@ CORBA::Long SMESH_MeshEditor_i::MakeBoundaryElements(SMESH::Bnd_Dimension dim,
   // group of boundary elements
   SMESH_Group* smesh_group = 0;
   SMDSAbs_ElementType elemType = (dim == SMESH::BND_2DFROM3D) ? SMDSAbs_Volume : SMDSAbs_Face;
-  if ( strlen(groupName) )
+  if ( strlen( groupName ))
   {
     SMESH::ElementType groupType = SMESH::ElementType( int(elemType)-1 );
     group_var = mesh_i->CreateGroup( groupType, groupName );

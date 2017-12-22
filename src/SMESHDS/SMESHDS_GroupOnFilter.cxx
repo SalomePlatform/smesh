@@ -26,10 +26,13 @@
 #include "SMESHDS_GroupOnFilter.hxx"
 
 #include "SMDS_SetIterator.hxx"
+#include "ObjectPool.hxx"
 #include "SMESHDS_Mesh.hxx"
 
 #include <numeric>
 #include <limits>
+
+#include <boost/make_shared.hpp>
 
 using namespace std;
 
@@ -45,11 +48,12 @@ SMESHDS_GroupOnFilter::SMESHDS_GroupOnFilter (const int                 theID,
                                               const SMESHDS_Mesh*       theMesh,
                                               const SMDSAbs_ElementType theType,
                                               const SMESH_PredicatePtr& thePredicate)
-  : SMESHDS_GroupBase(theID,theMesh,theType),
+  : SMESHDS_GroupBase( theID, theMesh, theType ),
+    SMDS_ElementHolder( theMesh ),
     myMeshInfo( SMDSEntity_Last, 0 ),
-    myMeshModifTime(0),
-    myPredicateTic(0),
-    myNbElemToSkip(0)
+    myMeshModifTime( 0 ),
+    myPredicateTic( 0 ),
+    myNbElemToSkip( 0 )
 {
   SetPredicate( thePredicate );
 }
@@ -531,4 +535,39 @@ SMESHDS_GroupOnFilter::setNbElemToSkip( SMDS_ElemIteratorPtr& okElemIt )
       ++myNbElemToSkip;
   }
   return firstOkElem;
+}
+
+//================================================================================
+/*!
+ * \brief Return elements before mesh compacting
+ */
+//================================================================================
+
+SMDS_ElemIteratorPtr SMESHDS_GroupOnFilter::getElements()
+{
+  return boost::make_shared< SMDS_ElementVectorIterator >( myElements.begin(), myElements.end() );
+}
+
+//================================================================================
+/*!
+ * \brief clear myElements before re-filling after mesh compacting
+ */
+//================================================================================
+
+void SMESHDS_GroupOnFilter::tmpClear()
+{
+  std::vector< const SMDS_MeshElement*> newElems( myElements.size() );
+  myElements.swap( newElems );
+  myElements.clear();
+}
+
+//================================================================================
+/*!
+ * \brief Re-fill myElements after mesh compacting
+ */
+//================================================================================
+
+void SMESHDS_GroupOnFilter::add( const SMDS_MeshElement* element )
+{
+  myElements.push_back( element );
 }

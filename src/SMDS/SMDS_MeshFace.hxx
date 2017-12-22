@@ -31,11 +31,37 @@
 
 #include "SMDS_MeshCell.hxx"
 
-class SMDS_EXPORT SMDS_MeshFace:public SMDS_MeshCell
+#include "Utils_SALOME_Exception.hxx"
+
+/*!
+ * \brief Mesh face. This type is not allocated.
+ *        It is only used as function argument type to provide more clear semantic.
+ */
+class SMDS_EXPORT SMDS_MeshFace : public SMDS_MeshCell
 {
-  public:
-        SMDSAbs_ElementType GetType() const;
-        virtual vtkIdType GetVtkType() const;
+  void init( const std::vector<vtkIdType>& vtkNodeIds )
+  {
+    SMDSAbs_EntityType entity = SMDSEntity_Triangle;
+    switch ( vtkNodeIds.size())
+    {
+    case 3: entity = SMDSEntity_Triangle;          break;
+    case 4: entity = SMDSEntity_Quadrangle;        break;
+    case 6: entity = SMDSEntity_Quad_Triangle;     break;
+    case 8: entity = SMDSEntity_Quad_Quadrangle;   break;
+    case 7: entity = SMDSEntity_BiQuad_Triangle;   break;
+    case 9: entity = SMDSEntity_BiQuad_Quadrangle; break;
+    default: throw SALOME_Exception("wrong face nodes");
+    }
+    SMDS_MeshCell::init( entity, vtkNodeIds );
+  }
+
+  friend class SMDS_Mesh;
+
+ public:
+
+  virtual SMDSAbs_ElementType GetType() const { return SMDSAbs_Face; }
+
+  static SMDSAbs_ElementType Type() { return SMDSAbs_Face; }
 };
 
 #endif

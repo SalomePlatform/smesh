@@ -1289,7 +1289,7 @@ void SMESHGUI_ExtrusionDlg::ClickOnHelp()
 #endif
     SUIT_MessageBox::warning(this, tr("WRN_WARNING"),
                              tr("EXTERNAL_BROWSER_CANNOT_SHOW_PAGE").
-                             arg(app->resourceMgr()->stringValue("ExternalBrowser", 
+                             arg(app->resourceMgr()->stringValue("ExternalBrowser",
                                                                  platform)).
                              arg(myHelpFileName));
   }
@@ -1323,7 +1323,7 @@ void SMESHGUI_ExtrusionDlg::SelectionIntoArgument()
       return;
 
     const SMDS_MeshFace* face =
-      dynamic_cast<const SMDS_MeshFace*>(aMesh->FindElement(aMapIndex(1)));
+      aMesh->DownCast< SMDS_MeshFace >(aMesh->FindElement(aMapIndex(1)));
     if (!face)
       return;
 

@@ -27,13 +27,14 @@
 
 #include "SMESH_SMESHDS.hxx"
 
+#include "SMDS_ElementHolder.hxx"
 #include "SMESHDS_GroupBase.hxx"
 #include "SMESH_Controls.hxx"
-  
+
 /*!
  * \brief Groups whose contents is dynamically updated using the filter
  */
-class SMESHDS_EXPORT SMESHDS_GroupOnFilter: public SMESHDS_GroupBase
+class SMESHDS_EXPORT SMESHDS_GroupOnFilter: public SMESHDS_GroupBase, SMDS_ElementHolder
 {
  public:
 
@@ -68,6 +69,13 @@ class SMESHDS_EXPORT SMESHDS_GroupOnFilter: public SMESHDS_GroupBase
   virtual int  GetTic() const;
 
   bool         IsUpToDate() const;
+
+ protected: // methods of SMDS_ElementHolder
+
+  virtual SMDS_ElemIteratorPtr getElements();
+  virtual void tmpClear();
+  virtual void add( const SMDS_MeshElement* element );
+  virtual void compact() {};
 
  private:
 

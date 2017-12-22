@@ -39,7 +39,10 @@ const char* SMESH::returnError(const char* txt)
 }
 
 // ------------------------------------------------------------------
+
 #include "SMESH_ComputeError.hxx"
+#include "SMDS_SetIterator.hxx"
+#include <boost/make_shared.hpp>
 
 #define _case2char(err) case err: return #err;
 
@@ -78,11 +81,31 @@ SMESH_ComputeErrorPtr SMESH_ComputeError::Worst( SMESH_ComputeErrorPtr er1,
   if ( !er1->IsKO() ) return er2;
   if ( !er2->IsKO() ) return er1;
   // both KO
-  bool hasInfo1 = er1->myComment.size() || !er1->myBadElements.empty();
-  bool hasInfo2 = er2->myComment.size() || !er2->myBadElements.empty();
+  bool hasInfo1 = er1->myComment.size() || er1->HasBadElems();
+  bool hasInfo2 = er2->myComment.size() || er2->HasBadElems();
   if ( er1->myName == er2->myName ||
        hasInfo1    != hasInfo2 )
     return hasInfo1 < hasInfo2 ? er2 : er1;
 
   return er1->myName == COMPERR_CANCELED ? er2 : er1;
+}
+
+// Return bad elements
+SMDS_ElemIteratorPtr SMESH_BadInputElements::getElements()
+{
+  typedef SMDS_SetIterator< const SMDS_MeshElement*,
+                            std::list< const SMDS_MeshElement* >::const_iterator> TIterator;
+  return boost::make_shared< TIterator >( myBadElements.begin(), myBadElements.end() );
+}
+
+// Temporary remove its elements before the mesh compacting
+void SMESH_BadInputElements::tmpClear()
+{
+  myBadElements.clear();
+}
+
+// Re-add elements after the mesh compacting
+void SMESH_BadInputElements::add( const SMDS_MeshElement* element )
+{
+  myBadElements.push_back( element );
 }

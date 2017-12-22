@@ -142,6 +142,9 @@ Driver_Mesh::Status DriverSTL_R_SMDS_Mesh::Perform()
   else
     aResult = readBinary( file );
 
+  myMesh->Modified();
+  myMesh->CompactMesh();
+
   return aResult;
 }
 

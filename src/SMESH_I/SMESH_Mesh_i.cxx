@@ -29,12 +29,14 @@
 #include "DriverMED_W_Field.h"
 #include "DriverMED_W_SMESHDS_Mesh.h"
 #include "MED_Factory.hxx"
+#include "SMDS_LinearEdge.hxx"
 #include "SMDS_EdgePosition.hxx"
 #include "SMDS_ElemIterator.hxx"
 #include "SMDS_FacePosition.hxx"
 #include "SMDS_IteratorOnIterators.hxx"
 #include "SMDS_MeshGroup.hxx"
 #include "SMDS_SetIterator.hxx"
+#include "SMDS_StdIterator.hxx"
 #include "SMDS_VolumeTool.hxx"
 #include "SMESHDS_Command.hxx"
 #include "SMESHDS_CommandType.hxx"
@@ -1102,7 +1104,8 @@ void SMESH_Mesh_i::RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup 
     return;
 
   vector<int> nodeIds; // to remove nodes becoming free
-  if ( !theGroup->IsEmpty() )
+  bool isNodal = ( theGroup->GetType() == SMESH::NODE );
+  if ( !isNodal && !theGroup->IsEmpty() )
   {
     CORBA::Long elemID = theGroup->GetID( 1 );
     int nbElemNodes = GetElemNbNodes( elemID );
@@ -1110,35 +1113,43 @@ void SMESH_Mesh_i::RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup 
       nodeIds.reserve( theGroup->Size() * nbElemNodes );
   }
 
-  // Remove contents
+  // Retrieve contents
   SMESH::SMESH_IDSource_var idSrc = SMESH::SMESH_IDSource::_narrow( theGroup );
   SMDS_ElemIteratorPtr     elemIt = GetElements( idSrc, theGroup->GetType() );
-  while ( elemIt->more() )
+  SMDS_StdIterator< const SMDS_MeshElement*, SMDS_ElemIteratorPtr > elemBeg( elemIt ), elemEnd;
+  std::vector< const SMDS_MeshElement* > elems( theGroup->Size() );
+  elems.assign( elemBeg, elemEnd );
+
+  TPythonDump pyDump; // Suppress dump from RemoveGroup()
+
+  // Remove group
+  RemoveGroup( theGroup );
+
+  // Remove contents
+  for ( size_t i = 0; i < elems.size(); ++i )
   {
-    const SMDS_MeshElement* e = elemIt->next();
+    if ( !isNodal )
+    {
+      for ( SMDS_ElemIteratorPtr nIt = elems[i]->nodesIterator(); nIt->more(); )
+        nodeIds.push_back( nIt->next()->GetID() );
 
-    SMDS_ElemIteratorPtr nIt = e->nodesIterator();
-    while ( nIt->more() )
-      nodeIds.push_back( nIt->next()->GetID() );
-
-    _impl->GetMeshDS()->RemoveElement( e );
+      _impl->GetMeshDS()->RemoveFreeElement( elems[i], /*sm=*/0 );
+    }
+    else
+    {
+      _impl->GetMeshDS()->RemoveElement( elems[i] );
+    }
   }
 
   // Remove free nodes
-  if ( theGroup->GetType() != SMESH::NODE )
-    for ( size_t i = 0 ; i < nodeIds.size(); ++i )
-      if ( const SMDS_MeshNode* n = _impl->GetMeshDS()->FindNode( nodeIds[i] ))
-        if ( n->NbInverseElements() == 0 )
-          _impl->GetMeshDS()->RemoveFreeNode( n, /*sm=*/0 );
-
-  TPythonDump pyDump; // Suppress dump from RemoveGroup()
+  for ( size_t i = 0 ; i < nodeIds.size(); ++i )
+    if ( const SMDS_MeshNode* n = _impl->GetMeshDS()->FindNode( nodeIds[i] ))
+      if ( n->NbInverseElements() == 0 )
+        _impl->GetMeshDS()->RemoveFreeNode( n, /*sm=*/0 );
 
   // Update Python script (theGroup must be alive for this)
   pyDump << SMESH::SMESH_Mesh_var(_this())
          << ".RemoveGroupWithContents( " << theGroup << " )";
-
-  // Remove group
-  RemoveGroup( theGroup );
 
   SMESH_CATCH( SMESH::throwCorbaException );
 }
@@ -2552,7 +2563,7 @@ SMESH::SMESH_GroupBase_ptr SMESH_Mesh_i::createGroup (SMESH::ElementType        
                                                       const SMESH_PredicatePtr& thePredicate )
 {
   std::string newName;
-  if ( !theName || strlen( theName ) == 0 )
+  if ( !theName || !theName[0] )
   {
     std::set< std::string > presentNames;
     std::map<int, SMESH::SMESH_GroupBase_ptr>::const_iterator i_gr = _mapGroups.begin();
@@ -4099,14 +4110,14 @@ SMESH::long_array* SMESH_Mesh_i::GetNodesId()
     _preMeshInfo->FullLoadFromFile();
 
   SMESH::long_array_var aResult = new SMESH::long_array();
-  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
+  SMESHDS_Mesh* aMeshDS = _impl->GetMeshDS();
 
-  if ( aSMESHDS_Mesh == NULL )
+  if ( aMeshDS == NULL )
     return aResult._retn();
 
   long nbNodes = NbNodes();
   aResult->length( nbNodes );
-  SMDS_NodeIteratorPtr anIt = aSMESHDS_Mesh->nodesIterator(/*idInceasingOrder=*/true);
+  SMDS_NodeIteratorPtr anIt = aMeshDS->nodesIterator();
   for ( int i = 0, n = nbNodes; i < n && anIt->more(); i++ )
     aResult[i] = anIt->next()->GetID();
 
@@ -4326,12 +4337,12 @@ SMESH::double_array* SMESH_Mesh_i::GetNodeXYZ(const CORBA::Long id)
     _preMeshInfo->FullLoadFromFile();
 
   SMESH::double_array_var aResult = new SMESH::double_array();
-  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
-  if ( aSMESHDS_Mesh == NULL )
+  SMESHDS_Mesh* aMeshDS = _impl->GetMeshDS();
+  if ( aMeshDS == NULL )
     return aResult._retn();
 
   // find node
-  const SMDS_MeshNode* aNode = aSMESHDS_Mesh->FindNode(id);
+  const SMDS_MeshNode* aNode = aMeshDS->FindNode(id);
   if(!aNode)
     return aResult._retn();
 
@@ -4357,12 +4368,12 @@ SMESH::long_array* SMESH_Mesh_i::GetNodeInverseElements(const CORBA::Long id)
     _preMeshInfo->FullLoadFromFile();
 
   SMESH::long_array_var aResult = new SMESH::long_array();
-  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
-  if ( aSMESHDS_Mesh == NULL )
+  SMESHDS_Mesh* aMeshDS = _impl->GetMeshDS();
+  if ( aMeshDS == NULL )
     return aResult._retn();
 
   // find node
-  const SMDS_MeshNode* aNode = aSMESHDS_Mesh->FindNode(id);
+  const SMDS_MeshNode* aNode = aMeshDS->FindNode(id);
   if(!aNode)
     return aResult._retn();
 
@@ -4404,17 +4415,16 @@ SMESH::NodePosition* SMESH_Mesh_i::GetNodePosition(CORBA::Long NodeID)
       case SMDS_TOP_EDGE:
         aNodePosition->shapeType = GEOM::EDGE;
         aNodePosition->params.length(1);
-        aNodePosition->params[0] =
-          static_cast<SMDS_EdgePosition*>( pos )->GetUParameter();
+        aNodePosition->params[0] = SMDS_EdgePositionPtr( pos )->GetUParameter();
         break;
-      case SMDS_TOP_FACE:
+      case SMDS_TOP_FACE: {
+        SMDS_FacePositionPtr fPos = pos;
         aNodePosition->shapeType = GEOM::FACE;
         aNodePosition->params.length(2);
-        aNodePosition->params[0] =
-          static_cast<SMDS_FacePosition*>( pos )->GetUParameter();
-        aNodePosition->params[1] =
-          static_cast<SMDS_FacePosition*>( pos )->GetVParameter();
+        aNodePosition->params[0] = fPos->GetUParameter();
+        aNodePosition->params[1] = fPos->GetVParameter();
         break;
+      }
       case SMDS_TOP_VERTEX:
         aNodePosition->shapeType = GEOM::VERTEX;
         break;
@@ -4489,12 +4499,12 @@ CORBA::Long SMESH_Mesh_i::GetShapeID(const CORBA::Long id)
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
-  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
-  if ( aSMESHDS_Mesh == NULL )
+  SMESHDS_Mesh* aMeshDS = _impl->GetMeshDS();
+  if ( aMeshDS == NULL )
     return -1;
 
   // try to find node
-  const SMDS_MeshNode* aNode = aSMESHDS_Mesh->FindNode(id);
+  const SMDS_MeshNode* aNode = aMeshDS->FindNode(id);
   if(aNode) {
     return aNode->getshapeId();
   }
@@ -4516,12 +4526,12 @@ CORBA::Long SMESH_Mesh_i::GetShapeIDForElem(const CORBA::Long id)
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
-  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
-  if ( aSMESHDS_Mesh == NULL )
+  SMESHDS_Mesh* aMeshDS = _impl->GetMeshDS();
+  if ( aMeshDS == NULL )
     return -1;
 
   // try to find element
-  const SMDS_MeshElement* elem = aSMESHDS_Mesh->FindElement(id);
+  const SMDS_MeshElement* elem = aMeshDS->FindElement(id);
   if(!elem)
     return -1;
 
@@ -4546,10 +4556,10 @@ CORBA::Long SMESH_Mesh_i::GetElemNbNodes(const CORBA::Long id)
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
-  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
-  if ( aSMESHDS_Mesh == NULL ) return -1;
+  SMESHDS_Mesh* aMeshDS = _impl->GetMeshDS();
+  if ( aMeshDS == NULL ) return -1;
   // try to find element
-  const SMDS_MeshElement* elem = aSMESHDS_Mesh->FindElement(id);
+  const SMDS_MeshElement* elem = aMeshDS->FindElement(id);
   if(!elem) return -1;
   return elem->NbNodes();
 }
@@ -4568,9 +4578,9 @@ CORBA::Long SMESH_Mesh_i::GetElemNode(const CORBA::Long id, const CORBA::Long in
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
-  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
-  if ( aSMESHDS_Mesh == NULL ) return -1;
-  const SMDS_MeshElement* elem = aSMESHDS_Mesh->FindElement(id);
+  SMESHDS_Mesh* aMeshDS = _impl->GetMeshDS();
+  if ( aMeshDS == NULL ) return -1;
+  const SMDS_MeshElement* elem = aMeshDS->FindElement(id);
   if(!elem) return -1;
   if( index>=elem->NbNodes() || index<0 ) return -1;
   return elem->GetNode(index)->GetID();
@@ -4588,9 +4598,9 @@ SMESH::long_array* SMESH_Mesh_i::GetElemNodes(const CORBA::Long id)
     _preMeshInfo->FullLoadFromFile();
 
   SMESH::long_array_var aResult = new SMESH::long_array();
-  if ( SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS() )
+  if ( SMESHDS_Mesh* aMeshDS = _impl->GetMeshDS() )
   {
-    if ( const SMDS_MeshElement* elem = aSMESHDS_Mesh->FindElement(id) )
+    if ( const SMDS_MeshElement* elem = aMeshDS->FindElement(id) )
     {
       aResult->length( elem->NbNodes() );
       for ( int i = 0; i < elem->NbNodes(); ++i )
@@ -4612,13 +4622,13 @@ CORBA::Boolean SMESH_Mesh_i::IsMediumNode(const CORBA::Long ide, const CORBA::Lo
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
-  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
-  if ( aSMESHDS_Mesh == NULL ) return false;
+  SMESHDS_Mesh* aMeshDS = _impl->GetMeshDS();
+  if ( aMeshDS == NULL ) return false;
   // try to find node
-  const SMDS_MeshNode* aNode = aSMESHDS_Mesh->FindNode(idn);
+  const SMDS_MeshNode* aNode = aMeshDS->FindNode(idn);
   if(!aNode) return false;
   // try to find element
-  const SMDS_MeshElement* elem = aSMESHDS_Mesh->FindElement(ide);
+  const SMDS_MeshElement* elem = aMeshDS->FindElement(ide);
   if(!elem) return false;
 
   return elem->IsMediumNode(aNode);
@@ -4638,11 +4648,11 @@ CORBA::Boolean SMESH_Mesh_i::IsMediumNodeOfAnyElem(const CORBA::Long idn,
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
-  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
-  if ( aSMESHDS_Mesh == NULL ) return false;
+  SMESHDS_Mesh* aMeshDS = _impl->GetMeshDS();
+  if ( aMeshDS == NULL ) return false;
 
   // try to find node
-  const SMDS_MeshNode* aNode = aSMESHDS_Mesh->FindNode(idn);
+  const SMDS_MeshNode* aNode = aMeshDS->FindNode(idn);
   if(!aNode) return false;
 
   SMESH_MesherHelper aHelper( *(_impl) );
@@ -4668,9 +4678,9 @@ CORBA::Long SMESH_Mesh_i::ElemNbEdges(const CORBA::Long id)
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
-  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
-  if ( aSMESHDS_Mesh == NULL ) return -1;
-  const SMDS_MeshElement* elem = aSMESHDS_Mesh->FindElement(id);
+  SMESHDS_Mesh* aMeshDS = _impl->GetMeshDS();
+  if ( aMeshDS == NULL ) return -1;
+  const SMDS_MeshElement* elem = aMeshDS->FindElement(id);
   if(!elem) return -1;
   return elem->NbEdges();
 }
@@ -4687,9 +4697,9 @@ CORBA::Long SMESH_Mesh_i::ElemNbFaces(const CORBA::Long id)
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
-  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
-  if ( aSMESHDS_Mesh == NULL ) return -1;
-  const SMDS_MeshElement* elem = aSMESHDS_Mesh->FindElement(id);
+  SMESHDS_Mesh* aMeshDS = _impl->GetMeshDS();
+  if ( aMeshDS == NULL ) return -1;
+  const SMDS_MeshElement* elem = aMeshDS->FindElement(id);
   if(!elem) return -1;
   return elem->NbFaces();
 }
@@ -4706,9 +4716,9 @@ SMESH::long_array* SMESH_Mesh_i::GetElemFaceNodes(CORBA::Long  elemId,
     _preMeshInfo->FullLoadFromFile();
 
   SMESH::long_array_var aResult = new SMESH::long_array();
-  if ( SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS() )
+  if ( SMESHDS_Mesh* aMeshDS = _impl->GetMeshDS() )
   {
-    if ( const SMDS_MeshElement* elem = aSMESHDS_Mesh->FindElement(elemId) )
+    if ( const SMDS_MeshElement* elem = aMeshDS->FindElement(elemId) )
     {
       SMDS_VolumeTool vtool( elem );
       if ( faceIndex < vtool.NbFaces() )
@@ -4819,9 +4829,9 @@ CORBA::Boolean SMESH_Mesh_i::IsPoly(const CORBA::Long id)
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
-  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
-  if ( aSMESHDS_Mesh == NULL ) return false;
-  const SMDS_MeshElement* elem = aSMESHDS_Mesh->FindElement(id);
+  SMESHDS_Mesh* aMeshDS = _impl->GetMeshDS();
+  if ( aMeshDS == NULL ) return false;
+  const SMDS_MeshElement* elem = aMeshDS->FindElement(id);
   if(!elem) return false;
   return elem->IsPoly();
 }
@@ -4838,9 +4848,9 @@ CORBA::Boolean SMESH_Mesh_i::IsQuadratic(const CORBA::Long id)
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
-  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
-  if ( aSMESHDS_Mesh == NULL ) return false;
-  const SMDS_MeshElement* elem = aSMESHDS_Mesh->FindElement(id);
+  SMESHDS_Mesh* aMeshDS = _impl->GetMeshDS();
+  if ( aMeshDS == NULL ) return false;
+  const SMDS_MeshElement* elem = aMeshDS->FindElement(id);
   if(!elem) return false;
   return elem->IsQuadratic();
 }
@@ -4857,7 +4867,7 @@ CORBA::Double SMESH_Mesh_i::GetBallDiameter(CORBA::Long id)
     _preMeshInfo->FullLoadFromFile();
 
   if ( const SMDS_BallElement* ball =
-       dynamic_cast<const SMDS_BallElement*>( _impl->GetMeshDS()->FindElement( id )))
+       SMDS_Mesh::DownCast<SMDS_BallElement>( _impl->GetMeshDS()->FindElement( id )))
     return ball->GetDiameter();
 
   return 0;
@@ -4875,11 +4885,11 @@ SMESH::double_array* SMESH_Mesh_i::BaryCenter(const CORBA::Long id)
     _preMeshInfo->FullLoadFromFile();
 
   SMESH::double_array_var aResult = new SMESH::double_array();
-  SMESHDS_Mesh* aSMESHDS_Mesh = _impl->GetMeshDS();
-  if ( aSMESHDS_Mesh == NULL )
+  SMESHDS_Mesh* aMeshDS = _impl->GetMeshDS();
+  if ( aMeshDS == NULL )
     return aResult._retn();
 
-  const SMDS_MeshElement* elem = aSMESHDS_Mesh->FindElement(id);
+  const SMDS_MeshElement* elem = aMeshDS->FindElement(id);
   if(!elem)
     return aResult._retn();
 
@@ -4939,12 +4949,14 @@ SMESH_Mesh_i::MakeGroupsOfBadInputElements( int         theSubShapeID,
   {
     // compute error
     SMESH_ComputeErrorPtr error = sm->GetComputeError();
-    if ( error && !error->myBadElements.empty())
+    if ( error && error->HasBadElems() )
     {
       // sort bad elements by type
       vector< const SMDS_MeshElement* > elemsByType[ SMDSAbs_NbElementTypes ];
-      list<const SMDS_MeshElement*>::iterator elemIt  = error->myBadElements.begin();
-      list<const SMDS_MeshElement*>::iterator elemEnd = error->myBadElements.end();
+      const list<const SMDS_MeshElement*>& badElems =
+        static_cast<SMESH_BadInputElements*>( error.get() )->myBadElements;
+      list<const SMDS_MeshElement*>::const_iterator elemIt  = badElems.begin();
+      list<const SMDS_MeshElement*>::const_iterator elemEnd = badElems.end();
       for ( ; elemIt != elemEnd; ++elemIt )
       {
         const SMDS_MeshElement* elem = *elemIt;
@@ -5313,7 +5325,7 @@ SALOMEDS::TMPFile* SMESH_Mesh_i::GetVtkUgStream()
 {
   SALOMEDS::TMPFile_var SeqFile;
   if ( SMESHDS_Mesh* aMeshDS = _impl->GetMeshDS() ) {
-    SMDS_UnstructuredGrid* aGrid = aMeshDS->getGrid();
+    SMDS_UnstructuredGrid* aGrid = aMeshDS->GetGrid();
     if(aGrid) {
       vtkUnstructuredGridWriter* aWriter = vtkUnstructuredGridWriter::New();
       aWriter->WriteToOutputStringOn();
@@ -6112,6 +6124,24 @@ void SMESH_Mesh_i::convertMeshOrder (const TListOfListOfInt&     theIdsOrder,
   }
 }
 
+namespace // utils used by SMESH_MeshPartDS
+{
+  /*!
+   * \brief Class used to access to protected data of SMDS_MeshInfo
+   */
+  struct TMeshInfo : public SMDS_MeshInfo
+  {
+    void Add(const SMDS_MeshElement* e) { SMDS_MeshInfo::addWithPoly( e ); }
+  };
+  /*!
+   * \brief Element holing its ID only
+   */
+  struct TElemID : public SMDS_LinearEdge
+  {
+    TElemID(int ID) : SMDS_LinearEdge(0,0) { setID( ID ); }
+  };
+}
+
 //================================================================================
 //
 // Implementation of SMESH_MeshPartDS
@@ -6218,7 +6248,7 @@ SMDS_ElemIteratorPtr SMESH_MeshPartDS::elementGeomIterator(SMDSAbs_GeometryType 
     SMDS_MeshElement::GeomFilter
     > TIter;
 
-  SMDSAbs_ElementType type = SMDS_MeshCell::toSmdsType( geomType );
+  SMDSAbs_ElementType type = SMDS_MeshCell::ElemType( geomType );
 
   return SMDS_ElemIteratorPtr( new TIter( _elements[type].begin(),
                                           _elements[type].end(),
@@ -6236,7 +6266,7 @@ SMDS_ElemIteratorPtr SMESH_MeshPartDS::elementEntityIterator(SMDSAbs_EntityType 
     SMDS_MeshElement::EntityFilter
     > TIter;
 
-  SMDSAbs_ElementType type = SMDS_MeshCell::toSmdsType( entity );
+  SMDSAbs_ElementType type = SMDS_MeshCell::ElemType( entity );
 
   return SMDS_ElemIteratorPtr( new TIter( _elements[type].begin(),
                                           _elements[type].end(),
@@ -6263,10 +6293,10 @@ SMDS_ElemIteratorPtr SMESH_MeshPartDS::elementsIterator(SMDSAbs_ElementType type
 }
 // -------------------------------------------------------------------------------------
 #define _GET_ITER_DEFINE( iterType, methName, elem, elemType)                       \
-  iterType SMESH_MeshPartDS::methName( bool idInceasingOrder) const                 \
+  iterType SMESH_MeshPartDS::methName() const                 \
   {                                                                                 \
     typedef SMDS_SetIterator<const elem*, TIDSortedElemSet::const_iterator > TIter; \
-    return _meshDS ? _meshDS->methName(idInceasingOrder) : iterType                 \
+    return _meshDS ? _meshDS->methName() : iterType                 \
       ( new TIter( _elements[elemType].begin(), _elements[elemType].end() ));       \
   }
 // -------------------------------------------------------------------------------------

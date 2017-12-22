@@ -32,23 +32,17 @@
 #include "SMDSAbs_ElementType.hxx"
 #include "SMDS_MeshObject.hxx"
 #include "SMDS_ElemIterator.hxx"
-#include "SMDS_MeshElementIDFactory.hxx"
 #include "SMDS_StdIterator.hxx"
 
-#include <vector>
 #include <iostream>
 
 #include <vtkType.h>
 #include <vtkCellType.h>
 
-//typedef unsigned short UShortType;
-typedef short ShortType;
-typedef int   LongType;
-
-class SMDS_MeshNode;
-class SMDS_MeshEdge;
-class SMDS_MeshFace;
+class SMDS_ElementChunk;
 class SMDS_Mesh;
+class SMDS_MeshNode;
+class SMDS_UnstructuredGrid;
 
 // ============================================================
 /*!
@@ -61,43 +55,36 @@ class SMDS_EXPORT SMDS_MeshElement : public SMDS_MeshObject
 {
 public:
 
-  SMDS_ElemIteratorPtr nodesIterator() const;
-  SMDS_ElemIteratorPtr edgesIterator() const;
-  SMDS_ElemIteratorPtr facesIterator() const;
-  virtual SMDS_ElemIteratorPtr elementsIterator(SMDSAbs_ElementType type) const;
-  virtual SMDS_ElemIteratorPtr interlacedNodesElemIterator() const;
+  // ===========================
+  // Access to nodes
+  // ===========================
+  virtual SMDS_ElemIteratorPtr nodesIterator() const = 0;
 
-  virtual SMDS_NodeIteratorPtr nodeIterator() const;
-  virtual SMDS_NodeIteratorPtr interlacedNodesIterator() const;
-  virtual SMDS_NodeIteratorPtr nodesIteratorToUNV() const;
+  virtual SMDS_NodeIteratorPtr nodeIterator() const = 0;
+  virtual SMDS_NodeIteratorPtr interlacedNodesIterator() const { return nodeIterator(); }
+  virtual SMDS_NodeIteratorPtr nodesIteratorToUNV() const  { return nodeIterator(); }
 
   // std-like iteration on nodes
-  typedef SMDS_StdIterator< const SMDS_MeshNode*, SMDS_ElemIteratorPtr > iterator;
-  iterator begin_nodes() const { return iterator( nodesIterator() ); }
+  typedef SMDS_StdIterator< const SMDS_MeshNode*, SMDS_NodeIteratorPtr > iterator;
+  iterator begin_nodes() const { return iterator( nodeIterator() ); }
   iterator end_nodes()   const { return iterator(); }
 
-  virtual int NbNodes() const;
-  virtual int NbEdges() const;
-  virtual int NbFaces() const;
-  inline int GetID() const { return myID; }
+  // ===========================
+  // Type of element
+  // ===========================
+  virtual int NbNodes() const = 0;
+  virtual int NbEdges() const = 0;
+  virtual int NbFaces() const = 0;
 
-  ///Return the type of the current element
   virtual SMDSAbs_ElementType  GetType() const = 0;
   virtual SMDSAbs_EntityType   GetEntityType() const = 0;
   virtual SMDSAbs_GeometryType GetGeomType() const = 0;
-  virtual vtkIdType            GetVtkType() const = 0;
+  virtual VTKCellType          GetVtkType() const = 0;
 
-  virtual bool IsPoly() const { return false; }
-  virtual bool IsQuadratic() const;
+  virtual bool IsPoly() const = 0;
+  virtual bool IsQuadratic() const = 0;
   virtual bool IsMediumNode(const SMDS_MeshNode* node) const;
-  virtual int  NbCornerNodes() const;
-
-  friend SMDS_EXPORT std::ostream & operator <<(std::ostream & OS, const SMDS_MeshElement *);
-  friend SMDS_EXPORT bool SMDS_MeshElementIDFactory::BindID(int ID,SMDS_MeshElement* elem);
-  friend class SMDS_Mesh;
-  friend class SMESHDS_Mesh;
-  friend class SMESHDS_SubMesh;
-  friend class SMDS_MeshElementIDFactory;
+  virtual int  NbCornerNodes() const = 0;
 
   // ===========================
   //  Access to nodes by index
@@ -107,14 +94,14 @@ public:
     * \param ind - node index
     * \retval const SMDS_MeshNode* - the node
    */
-  virtual const SMDS_MeshNode* GetNode(const int ind) const;
+  virtual const SMDS_MeshNode* GetNode(const int ind) const = 0;
 
   /*!
    * \brief Return node by its index
     * \param ind - node index
     * \retval const SMDS_MeshNode* - the node
    * 
-   * Index is wrapped if it is out of a valid range
+   * Index is wrapped if it is out of a valid range of corner nodes
    */
   const SMDS_MeshNode* GetNodeWrap(const int ind) const { return GetNode( WrappedIndex( ind )); }
 
@@ -126,15 +113,11 @@ public:
   virtual bool IsValidIndex(const int ind) const;
 
   /*!
-   * \brief Return a valid node index, fixing the given one if necessary
+   * \brief Return a valid corner node index, fixing the given one if necessary
     * \param ind - node index
     * \retval int - valid node index
    */
-  int WrappedIndex(const int ind) const {
-    if ( ind < 0 ) return NbNodes() + ind % NbNodes();
-    if ( ind >= NbNodes() ) return ind % NbNodes();
-    return ind;
-  }
+  int WrappedIndex(const int ind) const;
 
   /*!
    * \brief Check if a node belongs to the element
@@ -143,14 +126,26 @@ public:
    */
   virtual int GetNodeIndex( const SMDS_MeshNode* node ) const;
 
-  inline ShortType getMeshId()    const { return myMeshId; }
-  inline LongType  getshapeId()   const { return myShapeId >> BITS_SHIFT; }
-  inline int       getIdInShape() const { return myIdInShape; }
-  inline int       getVtkId()     const { return myVtkID; }
+
+  virtual int GetID() const;
+  virtual int GetVtkID()   const;
+  virtual int getshapeId() const { return GetShapeID(); }
+  virtual int GetShapeID() const;
 
   // mark this element; to be used in algos
-  inline void setIsMarked( bool is ) const;
-  inline bool isMarked() const;
+  virtual void setIsMarked( bool is ) const;
+  virtual bool isMarked() const;
+
+  // element can be allocated but "not used"
+  bool IsNull() const { return myHolder == 0; }
+
+  SMDS_Mesh* GetMesh() const;
+
+  void Print(std::ostream & OS) const;
+
+  friend SMDS_EXPORT std::ostream & operator <<(std::ostream & OS, const SMDS_MeshElement *);
+  friend class SMDS_ElementFactory;
+  friend class SMESHDS_SubMesh;
 
   /*!
    * \brief Filters of elements, to be used with SMDS_SetIterator
@@ -183,41 +178,19 @@ public:
     bool operator()(const SMDS_MeshElement* e) const { return e && e->GetGeomType() == _type; }
   };
 
-protected:
-  inline void setId(int id)                { myID = id; }
-  inline void setVtkId(int vtkId)          { myVtkID = vtkId; }
-  inline void setIdInShape(int id)         { myIdInShape = id; }
-  inline void setShapeId(LongType shapeId) { myShapeId = ( shapeId << BITS_SHIFT ) | ( myShapeId & BIT_IS_MARKED ); }
-  SMDS_MeshElement(int ID=-1);
-  SMDS_MeshElement(int id, ShortType meshId, LongType shapeId = 0);
-  virtual void init(int id = -1, ShortType meshId = -1, LongType shapeId = 0);
-  virtual void Print(std::ostream & OS) const;
+ protected:
 
-  //! Element index in vector SMDS_Mesh::myNodes or SMDS_Mesh::myCells
-  int myID;
-  //! index in vtkUnstructuredGrid
-  int myVtkID;
-  //! SMDS_Mesh identification in SMESH
-  ShortType myMeshId;
-  //! SubShape and SubMesh identification in SMESHDS; one bit is used to mark the element
-  LongType myShapeId;
-  //! Element index in SMESHDS_SubMesh vector
-  int myIdInShape;
+  SMDS_MeshElement();
 
-  enum Bits { // use the 1st right bit of myShapeId to set/unset a mark
-    BIT_IS_MARKED = 1,
-    BITS_SHIFT = 1
-  };
+  void setVtkID(const int vtkID );
+  virtual void setShapeID( const int shapeID ) const;
+
+  SMDS_UnstructuredGrid* getGrid() const;
+
+ protected:
+
+  SMDS_ElementChunk* myHolder;
 };
-
-inline void SMDS_MeshElement::setIsMarked( bool is ) const
-{
-  const_cast< SMDS_MeshElement* >( this )->myShapeId = ( myShapeId & ~BIT_IS_MARKED ) | is;
-}
-inline bool SMDS_MeshElement::isMarked() const
-{
-  return myShapeId & BIT_IS_MARKED;
-}
 
 // ============================================================
 /*!

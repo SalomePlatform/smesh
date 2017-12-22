@@ -28,17 +28,52 @@
 
 class SMDS_EXPORT SMDS_MeshCell: public SMDS_MeshElement
 {
-public:
-  SMDS_MeshCell();
-  virtual ~SMDS_MeshCell();
+ protected:
 
-  virtual bool ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes)= 0;
-  virtual bool vtkOrder(const SMDS_MeshNode* nodes[], const int nbNodes) { return true; }
+  void init( SMDSAbs_EntityType entityType, int nbNodes, ... );
 
-  static VTKCellType         toVtkType (SMDSAbs_EntityType vtkType);
-  static SMDSAbs_EntityType  toSmdsType(VTKCellType vtkType);
-  static SMDSAbs_ElementType toSmdsType(SMDSAbs_GeometryType geomType);
-  static SMDSAbs_ElementType toSmdsType(SMDSAbs_EntityType entityType);
+  void init( SMDSAbs_EntityType entityType, const std::vector<const SMDS_MeshNode*>& nodes );
+
+  void init( SMDSAbs_EntityType entityType, const std::vector<vtkIdType>& vtkNodeIds );
+
+  friend class SMDS_Mesh;
+
+ public:
+
+  virtual int  NbEdges() const;
+  virtual int  NbFaces() const;
+  virtual int  NbNodes() const;
+  virtual int  NbCornerNodes() const;
+  virtual bool ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes);
+  virtual int  GetNodeIndex( const SMDS_MeshNode* node ) const;
+  virtual const SMDS_MeshNode* GetNode(const int ind) const;
+
+  virtual SMDSAbs_ElementType  GetType() const;
+  virtual SMDSAbs_EntityType   GetEntityType() const;
+  virtual SMDSAbs_GeometryType GetGeomType() const;
+  virtual VTKCellType          GetVtkType() const;
+
+  virtual bool IsPoly() const;
+  virtual bool IsQuadratic() const;
+
+  virtual SMDS_ElemIteratorPtr nodesIterator() const;
+  virtual SMDS_NodeIteratorPtr nodeIterator() const;
+  virtual SMDS_NodeIteratorPtr interlacedNodesIterator() const;
+  virtual SMDS_NodeIteratorPtr nodesIteratorToUNV() const;
+
+
+  static void InitStaticMembers();
+  static VTKCellType          toVtkType    ( SMDSAbs_EntityType   entityType );
+  static SMDSAbs_EntityType   toSmdsType   ( VTKCellType          vtkType );
+  static SMDSAbs_ElementType  ElemType     ( SMDSAbs_GeometryType geomType );
+  static SMDSAbs_ElementType  ElemType     ( SMDSAbs_EntityType   entityType );
+  static SMDSAbs_GeometryType GeomType     ( SMDSAbs_EntityType   entityType );
+  static bool                 IsPoly       ( SMDSAbs_EntityType   entityType );
+  static bool                 IsQuadratic  ( SMDSAbs_EntityType   entityType );
+  static int                  NbCornerNodes( SMDSAbs_EntityType   entityType );
+  static int                  NbNodes      ( SMDSAbs_EntityType   entityType );
+  static int                  NbEdges      ( SMDSAbs_EntityType   entityType );
+  static int                  NbFaces      ( SMDSAbs_EntityType   entityType );
 
   static const std::vector<int>& toVtkOrder(VTKCellType vtkType);
   static const std::vector<int>& toVtkOrder(SMDSAbs_EntityType smdsType);
@@ -49,6 +84,7 @@ public:
                                                   const size_t       nbNodes=0);
   static const std::vector<int>& interlacedSmdsOrder(SMDSAbs_EntityType smdsType,
                                                      const size_t       nbNodes=0);
+
 
   template< class VECT > // interlacedIDs[i] = smdsIDs[ indices[ i ]]
     static void applyInterlace( const std::vector<int>& interlace, VECT & data)
@@ -69,15 +105,6 @@ public:
     data.swap( tmpData );
   }
 
-  static int nbCells;
-
-protected:
-  inline void exchange(const SMDS_MeshNode* nodes[],int a, int b)
-  {
-    const SMDS_MeshNode* noda = nodes[a];
-    nodes[a] = nodes[b];
-    nodes[b] = noda;
-  }
 };
 
 #endif

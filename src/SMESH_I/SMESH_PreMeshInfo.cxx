@@ -1059,8 +1059,7 @@ void SMESH_PreMeshInfo::readSubMeshes(DriverMED_R_SMESHDS_Mesh* reader) const
             // -- Most probably a bad study was saved when there were
             // not fixed bugs in SMDS_MeshInfo
             if ( aPos->GetTypeOfPosition() == SMDS_TOP_FACE ) {
-              SMDS_FacePosition* fPos = const_cast<SMDS_FacePosition*>
-                ( static_cast<const SMDS_FacePosition*>( aPos ));
+              SMDS_FacePositionPtr fPos = aPos;
               fPos->SetUParameter( aUPos[ iNode ]);
               fPos->SetVParameter( aVPos[ iNode ]);
             }
@@ -1068,9 +1067,8 @@ void SMESH_PreMeshInfo::readSubMeshes(DriverMED_R_SMESHDS_Mesh* reader) const
           else {
             // ASSERT( aPos->GetTypeOfPosition() == SMDS_TOP_EDGE );-- issue 20182
             if ( aPos->GetTypeOfPosition() == SMDS_TOP_EDGE ) {
-              SMDS_EdgePosition* fPos = const_cast<SMDS_EdgePosition*>
-                ( static_cast<const SMDS_EdgePosition*>( aPos ));
-              fPos->SetUParameter( aUPos[ iNode ]);
+              SMDS_EdgePositionPtr ePos = aPos;
+              ePos->SetUParameter( aUPos[ iNode ]);
             }
           }
         }

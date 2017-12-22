@@ -31,50 +31,53 @@
 
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_Position.hxx"
-#include "ObjectPool.hxx"
 
 class SMDS_EXPORT SMDS_MeshNode: public SMDS_MeshElement
 {
-public:
-  friend class SMESHDS_Mesh;
-  friend class SMDS_Mesh;
-  friend class ObjectPool<SMDS_MeshNode>;
-  friend class SMDS_VtkFace;
+ public:
 
-  void Print(std::ostream & OS) const;
+  void setXYZ(double x, double y, double z);
   double X() const; // ! NOT thread safe methods !
   double Y() const;
   double Z() const;
   void   GetXYZ(double xyz[3]) const; // thread safe getting coords
+
   SMDS_ElemIteratorPtr    GetInverseElementIterator(SMDSAbs_ElementType type=SMDSAbs_All) const;
   int                     NbInverseElements(SMDSAbs_ElementType type=SMDSAbs_All) const;
-  const SMDS_PositionPtr& GetPosition() const;
-  virtual SMDSAbs_ElementType  GetType() const;
-  virtual vtkIdType            GetVtkType() const;
+
+  SMDS_PositionPtr GetPosition() const; // WARNING result is std::unique_ptr !
+  void SetPosition(const SMDS_PositionPtr& aPos, int shapeID = 0 );
+
+  virtual SMDSAbs_ElementType  GetType() const       { return SMDSAbs_Node; }
+  virtual VTKCellType          GetVtkType() const    { return VTK_VERTEX; }
   virtual SMDSAbs_EntityType   GetEntityType() const { return SMDSEntity_Node;}
   virtual SMDSAbs_GeometryType GetGeomType() const   { return SMDSGeom_NONE; }
-  virtual int                  NbNodes() const;
+  virtual int                  NbNodes() const       { return 1; }
+  virtual int                  NbEdges() const       { return 0; }
+  virtual int                  NbFaces() const       { return 0; }
 
-  void SetPosition(const SMDS_PositionPtr& aPos);
-  void setXYZ(double x, double y, double z);
+  virtual SMDS_ElemIteratorPtr nodesIterator() const;
+  virtual SMDS_NodeIteratorPtr nodeIterator() const;
+  virtual const SMDS_MeshNode* GetNode(const int ind) const;
 
-  static int nbNodes;
+  virtual bool IsPoly() const { return false; }
+  virtual bool IsQuadratic() const { return false; }
+  virtual bool IsMediumNode(const SMDS_MeshNode* node) const  { return false; }
+  virtual int  NbCornerNodes() const { return 1; }
 
-protected:
-  SMDS_MeshNode();
-  SMDS_MeshNode(int id, int meshId, int shapeId = -1, double x=0, double y=0, double z=0);
-  virtual ~SMDS_MeshNode();
-  void init(int id, int meshId, int shapeId = -1, double x=0, double y=0, double z=0);
+  void Print(std::ostream & OS) const;
+
+ private:
+
+  void init(double x=0, double y=0, double z=0);
+
   double* getCoord() const;
-  void AddInverseElement(const SMDS_MeshElement * ME);
-  void RemoveInverseElement(const SMDS_MeshElement * parent);
+  void AddInverseElement   (const SMDS_MeshElement * elem);
+  void RemoveInverseElement(const SMDS_MeshElement * elem);
   void ClearInverseElements();
 
-  SMDS_ElemIteratorPtr
-  elementsIterator(SMDSAbs_ElementType type) const;
+  friend class SMDS_Mesh;
 
-private:
-  SMDS_PositionPtr myPosition;
 };
 
 #endif

@@ -42,96 +42,72 @@ SET(_link_LIBRARIES
 # header files / no moc processing
 SET(SMDS_HEADERS
   ObjectPool.hxx
-  SMDS_TypeOfPosition.hxx
   SMDSAbs_ElementType.hxx
+  SMDS_BallElement.hxx
+  SMDS_CellOfNodes.hxx
+  SMDS_Downward.hxx
   SMDS_EdgePosition.hxx
   SMDS_ElemIterator.hxx
+  SMDS_ElementFactory.hxx
+  SMDS_FaceOfNodes.hxx
   SMDS_FacePosition.hxx
+  SMDS_Iterator.hxx
+  SMDS_IteratorOnIterators.hxx
+  SMDS_LinearEdge.hxx
   SMDS_Mesh.hxx
   SMDS_Mesh0DElement.hxx
-  SMDS_LinearEdge.hxx
+  SMDS_MeshCell.hxx
   SMDS_MeshEdge.hxx
   SMDS_MeshElement.hxx
-  SMDS_MeshElementIDFactory.hxx
-  SMDS_MeshCell.hxx
   SMDS_MeshFace.hxx
   SMDS_MeshGroup.hxx
-  SMDS_MeshIDFactory.hxx
+  SMDS_MeshInfo.hxx
   SMDS_MeshNode.hxx
-  SMDS_MeshNodeIDFactory.hxx
   SMDS_MeshObject.hxx
   SMDS_MeshVolume.hxx
-  SMDS_Position.hxx
-  SMDS_SpacePosition.hxx
-  SMDS_VertexPosition.hxx
-  SMDS_Iterator.hxx
-  SMDS_IteratorOfElements.hxx
-  SMDS_VolumeOfFaces.hxx
-  SMDS_VolumeOfNodes.hxx
-  SMDS_VtkEdge.hxx
-  SMDS_VtkFace.hxx
-  SMDS_VtkVolume.hxx
-  SMDS_VtkCellIterator.hxx
-  SMDS_PolyhedralVolumeOfNodes.hxx
-  SMDS_FaceOfEdges.hxx
-  SMDS_FaceOfNodes.hxx
   SMDS_PolygonalFaceOfNodes.hxx
-  SMDS_VolumeTool.hxx
-  SMDS_QuadraticEdge.hxx
-  SMDS_QuadraticFaceOfNodes.hxx
-  SMDS_QuadraticVolumeOfNodes.hxx
+  SMDS_Position.hxx
   SMDS_SetIterator.hxx
-  SMESH_SMDS.hxx
-  SMDS_MeshInfo.hxx
-  SMDS_UnstructuredGrid.hxx
-  SMDS_Downward.hxx
+  SMDS_SpacePosition.hxx
   SMDS_StdIterator.hxx
-  SMDS_IteratorOnIterators.hxx
-  SMDS_BallElement.hxx
-)
+  SMDS_TypeOfPosition.hxx
+  SMDS_UnstructuredGrid.hxx
+  SMDS_VertexPosition.hxx
+  SMDS_VolumeOfNodes.hxx
+  SMDS_VolumeTool.hxx
+  SMDS_VtkCellIterator.hxx
+  SMDS_ElementHolder.hxx
+  SMESH_SMDS.hxx
+  chrono.hxx
+  )
 
 # --- sources ---
 
 # sources / static
 SET(SMDS_SOURCES
-  chrono.cxx
-  SMDS_MeshObject.cxx
-  SMDS_MeshElement.cxx
-  SMDS_MeshCell.cxx
-  SMDS_Position.cxx
-  SMDS_EdgePosition.cxx
-  SMDS_FacePosition.cxx
-  SMDS_SpacePosition.cxx
-  SMDS_VertexPosition.cxx
-  SMDS_MeshNode.cxx
-  SMDS_Mesh0DElement.cxx
-  SMDS_LinearEdge.cxx
-  SMDS_MeshEdge.cxx
-  SMDS_MeshFace.cxx
-  SMDS_MeshVolume.cxx
-  SMDS_MeshNodeIDFactory.cxx
-  SMDS_MeshElementIDFactory.cxx
-  SMDS_MeshGroup.cxx
-  SMDS_MeshIDFactory.cxx
-  SMDS_Mesh.cxx
-  SMDS_IteratorOfElements.cxx
-  SMDS_VolumeOfFaces.cxx
-  SMDS_VolumeOfNodes.cxx
-  SMDS_VtkEdge.cxx
-  SMDS_VtkFace.cxx
-  SMDS_VtkVolume.cxx
-  SMDS_VtkCellIterator.cxx
-  SMDS_PolyhedralVolumeOfNodes.cxx
-  SMDS_FaceOfEdges.cxx
-  SMDS_FaceOfNodes.cxx
-  SMDS_PolygonalFaceOfNodes.cxx
-  SMDS_VolumeTool.cxx
-  SMDS_QuadraticEdge.cxx
-  SMDS_QuadraticFaceOfNodes.cxx
-  SMDS_QuadraticVolumeOfNodes.cxx
-  SMDS_UnstructuredGrid.cxx
+  SMDS_BallElement.cxx
   SMDS_Downward.cxx
-  SMDS_BallElement.cxx 
+  SMDS_CellOfNodes.cxx
+  SMDS_ElementFactory.cxx
+  SMDS_FaceOfNodes.cxx
+  SMDS_FacePosition.cxx
+  SMDS_LinearEdge.cxx
+  SMDS_MemoryLimit.cxx
+  SMDS_Mesh.cxx
+  SMDS_MeshCell.cxx
+  SMDS_MeshElement.cxx
+  SMDS_MeshGroup.cxx
+  SMDS_MeshNode.cxx
+  SMDS_MeshObject.cxx
+  SMDS_MeshVolume.cxx
+  SMDS_PolygonalFaceOfNodes.cxx
+  SMDS_SpacePosition.cxx
+  SMDS_UnstructuredGrid.cxx
+  SMDS_VolumeOfNodes.cxx
+  SMDS_VolumeTool.cxx
+  SMDS_VtkCellIterator.cxx
+  SMDS_ElementHolder.cxx
+  chrono.cxx
 )
 
 # bin programs

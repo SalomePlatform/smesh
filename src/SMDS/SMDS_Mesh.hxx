@@ -29,61 +29,45 @@
 
 #include "SMESH_SMDS.hxx"
 
-#include "SMDS_MeshNode.hxx"
-#include "SMDS_MeshCell.hxx"
+#include "SMDS_BallElement.hxx"
+#include "SMDS_ElemIterator.hxx"
 #include "SMDS_Mesh0DElement.hxx"
+#include "SMDS_MeshCell.hxx"
 #include "SMDS_MeshEdge.hxx"
 #include "SMDS_MeshFace.hxx"
-#include "SMDS_MeshVolume.hxx"
-#include "SMDS_MeshNodeIDFactory.hxx"
-#include "SMDS_MeshElementIDFactory.hxx"
 #include "SMDS_MeshInfo.hxx"
-#include "SMDS_ElemIterator.hxx"
-#include "SMDS_VolumeOfNodes.hxx"
-#include "SMDS_VtkEdge.hxx"
-#include "SMDS_VtkFace.hxx"
-#include "SMDS_VtkVolume.hxx"
-#include "ObjectPool.hxx"
+#include "SMDS_MeshNode.hxx"
+#include "SMDS_MeshVolume.hxx"
 #include "SMDS_UnstructuredGrid.hxx"
-#include "SMDS_BallElement.hxx"
 
-#include <boost/shared_ptr.hpp>
 #include <set>
 #include <list>
 #include <vector>
-#include <vtkSystemIncludes.h>
-#include <cassert>
 
-#include "Utils_SALOME_Exception.hxx"
-
-#define MYASSERT(val) if (!(val)) throw SALOME_Exception(LOCALIZED("assertion not verified"));
+class SMDS_ElementHolder;
+class SMDS_ElementFactory;
+class SMDS_NodeFactory;
 
 class SMDS_EXPORT SMDS_Mesh : public SMDS_MeshObject
 {
 public:
-  friend class SMDS_MeshIDFactory;
-  friend class SMDS_MeshNodeIDFactory;
-  friend class SMDS_MeshElementIDFactory;
-  friend class SMDS_MeshVolumeVtkNodes;
-  friend class SMDS_MeshNode;
 
   SMDS_Mesh();
   
-  //! to retrieve this SMDS_Mesh instance from its elements (index stored in SMDS_Elements)
-  static std::vector<SMDS_Mesh*> _meshList;
-
   //! actual nodes coordinates, cells definition and reverse connectivity are stored in a vtkUnstructuredGrid
-  inline SMDS_UnstructuredGrid* getGrid() { return myGrid; }
-  inline int getMeshId() { return myMeshId; }
+  inline SMDS_UnstructuredGrid* GetGrid() { return myGrid; }
 
-  virtual SMDS_NodeIteratorPtr   nodesIterator     (bool idInceasingOrder=false) const;
-  virtual SMDS_EdgeIteratorPtr   edgesIterator     (bool idInceasingOrder=false) const;
-  virtual SMDS_FaceIteratorPtr   facesIterator     (bool idInceasingOrder=false) const;
-  virtual SMDS_VolumeIteratorPtr volumesIterator   (bool idInceasingOrder=false) const;
+  virtual SMDS_NodeIteratorPtr   nodesIterator  () const;
+  virtual SMDS_EdgeIteratorPtr   edgesIterator  () const;
+  virtual SMDS_FaceIteratorPtr   facesIterator  () const;
+  virtual SMDS_VolumeIteratorPtr volumesIterator() const;
 
   virtual SMDS_ElemIteratorPtr elementsIterator(SMDSAbs_ElementType type=SMDSAbs_All) const;
   virtual SMDS_ElemIteratorPtr elementGeomIterator(SMDSAbs_GeometryType type) const;
   virtual SMDS_ElemIteratorPtr elementEntityIterator(SMDSAbs_EntityType type) const;
+
+  virtual SMDS_NodeIteratorPtr shapeNodesIterator   (int shapeID, size_t nbElemsToReturn=-1) const;
+  virtual SMDS_ElemIteratorPtr shapeElementsIterator(int shapeID, size_t nbElemsToReturn=-1) const;
 
   SMDSAbs_ElementType GetElementType( const int id, const bool iselem ) const;
 
@@ -137,21 +121,6 @@ public:
                                  const SMDS_MeshNode * n3,
                                  const SMDS_MeshNode * n4);
 
-  virtual SMDS_MeshFace* AddFaceWithID(const SMDS_MeshEdge * e1,
-                                       const SMDS_MeshEdge * e2,
-                                       const SMDS_MeshEdge * e3, int ID);
-  virtual SMDS_MeshFace* AddFace(const SMDS_MeshEdge * e1,
-                                 const SMDS_MeshEdge * e2,
-                                 const SMDS_MeshEdge * e3);
-
-  virtual SMDS_MeshFace* AddFaceWithID(const SMDS_MeshEdge * e1,
-                                       const SMDS_MeshEdge * e2,
-                                       const SMDS_MeshEdge * e3,
-                                       const SMDS_MeshEdge * e4, int ID);
-  virtual SMDS_MeshFace* AddFace(const SMDS_MeshEdge * e1,
-                                 const SMDS_MeshEdge * e2,
-                                 const SMDS_MeshEdge * e3,
-                                 const SMDS_MeshEdge * e4);
 
   // 2d order triangle of 6 nodes
   virtual SMDS_MeshFace* AddFaceWithID(int n1, int n2, int n3,
@@ -293,38 +262,6 @@ public:
                                      const SMDS_MeshNode * n7,
                                      const SMDS_MeshNode * n8);
 
-  virtual SMDS_MeshVolume* AddVolumeWithID(const SMDS_MeshFace * f1,
-                                           const SMDS_MeshFace * f2,
-                                           const SMDS_MeshFace * f3,
-                                           const SMDS_MeshFace * f4, int ID);
-  virtual SMDS_MeshVolume* AddVolume(const SMDS_MeshFace * f1,
-                                     const SMDS_MeshFace * f2,
-                                     const SMDS_MeshFace * f3,
-                                     const SMDS_MeshFace * f4);
-
-  virtual SMDS_MeshVolume* AddVolumeWithID(const SMDS_MeshFace * f1,
-                                           const SMDS_MeshFace * f2,
-                                           const SMDS_MeshFace * f3,
-                                           const SMDS_MeshFace * f4,
-                                           const SMDS_MeshFace * f5, int ID);
-  virtual SMDS_MeshVolume* AddVolume(const SMDS_MeshFace * f1,
-                                     const SMDS_MeshFace * f2,
-                                     const SMDS_MeshFace * f3,
-                                     const SMDS_MeshFace * f4,
-                                     const SMDS_MeshFace * f5);
-
-  virtual SMDS_MeshVolume* AddVolumeWithID(const SMDS_MeshFace * f1,
-                                           const SMDS_MeshFace * f2,
-                                           const SMDS_MeshFace * f3,
-                                           const SMDS_MeshFace * f4,
-                                           const SMDS_MeshFace * f5,
-                                           const SMDS_MeshFace * f6, int ID);
-  virtual SMDS_MeshVolume* AddVolume(const SMDS_MeshFace * f1,
-                                     const SMDS_MeshFace * f2,
-                                     const SMDS_MeshFace * f3,
-                                     const SMDS_MeshFace * f4,
-                                     const SMDS_MeshFace * f5,
-                                     const SMDS_MeshFace * f6);
 
   // hexagonal prism
   virtual SMDS_MeshVolume* AddVolumeWithID(int n1, int n2, int n3, int n4, int n5, int n6,
@@ -639,33 +576,24 @@ public:
   virtual SMDS_MeshVolume* AddPolyhedralVolumeWithID
     (const std::vector<const SMDS_MeshNode*> & nodes,
      const std::vector<int>                  & quantities,
-                            const int                                 ID);
+     const int                                 ID);
 
   virtual SMDS_MeshVolume* AddPolyhedralVolume
-                           (const std::vector<const SMDS_MeshNode*> & nodes,
-                            const std::vector<int>                  & quantities);
+    (const std::vector<const SMDS_MeshNode*> & nodes,
+     const std::vector<int>                  & quantities);
 
   virtual SMDS_MeshVolume* AddVolumeFromVtkIds(const std::vector<vtkIdType>& vtkNodeIds);
 
-  virtual SMDS_MeshVolume* AddVolumeFromVtkIdsWithID(const std::vector<vtkIdType>& vtkNodeIds,
-                                                     const int ID);
-
   virtual SMDS_MeshFace* AddFaceFromVtkIds(const std::vector<vtkIdType>& vtkNodeIds);
 
-  virtual SMDS_MeshFace* AddFaceFromVtkIdsWithID(const std::vector<vtkIdType>& vtkNodeIds,
-                                                     const int ID);
   virtual void MoveNode(const SMDS_MeshNode *n, double x, double y, double z);
 
-  virtual void RemoveElement(const SMDS_MeshElement *        elem,
-                             std::list<const SMDS_MeshElement *>& removedElems,
-                             std::list<const SMDS_MeshElement *>& removedNodes,
-                             const bool                      removenodes = false);
+  virtual void RemoveElement(const SMDS_MeshElement *               elem,
+                             std::vector<const SMDS_MeshElement *>& removedElems,
+                             std::vector<const SMDS_MeshElement *>& removedNodes,
+                             const bool                             removenodes = false);
   virtual void RemoveElement(const SMDS_MeshElement * elem, bool removenodes = false);
   virtual void RemoveNode(const SMDS_MeshNode * node);
-  virtual void Remove0DElement(const SMDS_Mesh0DElement * elem0d);
-  virtual void RemoveEdge(const SMDS_MeshEdge * edge);
-  virtual void RemoveFace(const SMDS_MeshFace * face);
-  virtual void RemoveVolume(const SMDS_MeshVolume * volume);
 
   /*! Remove only the given element and only if it is free.
    *  Method does not work for meshes with descendants.
@@ -681,27 +609,23 @@ public:
   bool ChangeElementNodes(const SMDS_MeshElement * elem,
                           const SMDS_MeshNode    * nodes[],
                           const int                nbnodes);
-  bool ChangePolyhedronNodes(const SMDS_MeshElement *                 elem,
-                             const std::vector<const SMDS_MeshNode*>& nodes,
-                             const std::vector<int> &                 quantities);
 
-  virtual void Renumber (const bool isNodes, const int startID = 1, const int deltaID = 1);
+  //virtual void Renumber (const bool isNodes, const int startID = 1, const int deltaID = 1);
   // Renumber all nodes or elements.
-  virtual void compactMesh();
-  virtual void CompactMesh() { compactMesh(); }
+
+  virtual void CompactMesh();
+  bool IsCompacted();
+
+  template<class ELEMTYPE>
+    static const ELEMTYPE* DownCast( const SMDS_MeshElement* e )
+  {
+    return (( e && !e->IsNull() && ELEMTYPE::Type() == e->GetType() ) ?
+            static_cast<const ELEMTYPE*>(e) : 0 );
+  }
 
   const SMDS_MeshNode *FindNode(int idnode) const;
   const SMDS_MeshNode *FindNodeVtk(int idnode) const;
-  const SMDS_Mesh0DElement* Find0DElement(int idnode) const;
-  const SMDS_BallElement* FindBall(int idnode) const;
-  const SMDS_MeshEdge *FindEdge(int idnode1, int idnode2) const;
-  const SMDS_MeshEdge *FindEdge(int idnode1, int idnode2, int idnode3) const;
-  const SMDS_MeshFace *FindFace(int idnode1, int idnode2, int idnode3) const;
-  const SMDS_MeshFace *FindFace(int idnode1, int idnode2, int idnode3, int idnode4) const;
-  const SMDS_MeshFace *FindFace(int idnode1, int idnode2, int idnode3,
-                                int idnode4, int idnode5, int idnode6) const;
-  const SMDS_MeshFace *FindFace(int idnode1, int idnode2, int idnode3, int idnode4,
-                                int idnode5, int idnode6, int idnode7, int idnode8) const;
+  const SMDS_MeshElement *FindElementVtk(int IDelem) const;
   virtual const SMDS_MeshElement * FindElement(int IDelem) const;
   static const SMDS_Mesh0DElement* Find0DElement(const SMDS_MeshNode * n);
   static const SMDS_BallElement* FindBall(const SMDS_MeshNode * n);
@@ -732,14 +656,15 @@ public:
                                        const SMDS_MeshNode *n7,
                                        const SMDS_MeshNode *n8);
 
-  const SMDS_MeshFace *FindFace(const std::vector<int>& nodes_ids) const;
-  static const SMDS_MeshFace* FindFace(const std::vector<const SMDS_MeshNode *>& nodes);
+  static const SMDS_MeshFace*    FindFace   (const std::vector<const SMDS_MeshNode *>& nodes);
   static const SMDS_MeshElement* FindElement(const std::vector<const SMDS_MeshNode *>& nodes,
                                              const SMDSAbs_ElementType                 type=SMDSAbs_All,
                                              const bool                                noMedium=true);
   static int GetElementsByNodes(const std::vector<const SMDS_MeshNode *>& nodes,
                                 std::vector<const SMDS_MeshElement *>&    foundElems,
                                 const SMDSAbs_ElementType                 type=SMDSAbs_All);
+
+  virtual bool Contains( const SMDS_MeshElement* elem ) const;
 
   /*!
    * \brief Raise an exception if free memory (ram+swap) too low
@@ -764,36 +689,10 @@ public:
   virtual int NbVolumes() const;
   virtual int NbSubMesh() const;
 
-  void DumpNodes() const;
-  void Dump0DElements() const;
-  void DumpEdges() const;
-  void DumpFaces() const;
-  void DumpVolumes() const;
-  void DebugStats() const;
-
   virtual ~SMDS_Mesh();
 
-  bool hasConstructionEdges();
-  bool hasConstructionFaces();
-  bool hasInverseElements();
-  void setConstructionEdges(bool);
-  void setConstructionFaces(bool);
-  void setInverseElements(bool);
-
-  /*!
-   * Checks if the element is present in mesh.
-   * Useful to determine dead pointers.
-   * Use this function for debug purpose only! Do not check in the code
-   * using it even in _DEBUG_ mode
-   */
-  bool Contains (const SMDS_MeshElement* elem) const;
-
-  typedef std::vector<SMDS_MeshNode *> SetOfNodes;
-  typedef std::vector<SMDS_MeshCell *> SetOfCells;
-
-  //void updateBoundingBox();
   double getMaxDim();
-  int fromVtkToSmds(int vtkid);
+  int FromVtkToSmds(int vtkid) const;
 
   void dumpGrid(std::string ficdump="dumpGrid");
   static int chunkSize;
@@ -803,43 +702,13 @@ public:
 
   void Modified();
   vtkMTimeType GetMTime() const;
-  bool isCompacted();
 
 protected:
   SMDS_Mesh(SMDS_Mesh * parent);
 
-  SMDS_MeshFace * createTriangle(const SMDS_MeshNode * node1,
-                                 const SMDS_MeshNode * node2,
-                                 const SMDS_MeshNode * node3,
-                                 int ID);
-  SMDS_MeshFace * createQuadrangle(const SMDS_MeshNode * node1,
-                                   const SMDS_MeshNode * node2,
-                                   const SMDS_MeshNode * node3,
-                                   const SMDS_MeshNode * node4,
-                                   int ID);
-  SMDS_MeshEdge* FindEdgeOrCreate(const SMDS_MeshNode * n1,
-                                  const SMDS_MeshNode * n2);
-  SMDS_MeshFace* FindFaceOrCreate(const SMDS_MeshNode *n1,
-                                  const SMDS_MeshNode *n2,
-                                  const SMDS_MeshNode *n3);
-  SMDS_MeshFace* FindFaceOrCreate(const SMDS_MeshNode *n1,
-                                  const SMDS_MeshNode *n2,
-                                  const SMDS_MeshNode *n3,
-                                  const SMDS_MeshNode *n4);
-
-  bool registerElement(int ID, SMDS_MeshElement * element);
-
   void addChildrenWithNodes(std::set<const SMDS_MeshElement*>& setOfChildren,
                             const SMDS_MeshElement *           element,
                             std::set<const SMDS_MeshElement*>& nodes);
-
-  inline void adjustmyCellsCapacity(int ID)
-  {
-    assert(ID >= 0);
-    myElementIDFactory->adjustMaxId(ID);
-    if (ID >= (int)myCells.size())
-      myCells.resize(ID+SMDS_Mesh::chunkSize,0);
-  }
 
   inline void adjustBoundingBox(double x, double y, double z)
   {
@@ -851,47 +720,29 @@ protected:
     else if (z < zmin) zmin = z;
   }
 
+  void setNbShapes( size_t nbShapes );
+
+
   // Fields PRIVATE
 
-  //! index of this SMDS_mesh in the static vector<SMDS_Mesh*> _meshList
-  int myMeshId;
-
   //! actual nodes coordinates, cells definition and reverse connectivity are stored in a vtkUnstructuredGrid
-  SMDS_UnstructuredGrid*        myGrid;
+  SMDS_UnstructuredGrid* myGrid;
 
   //! Small objects like SMDS_MeshNode are allocated by chunks to limit memory costs of new
-  ObjectPool<SMDS_MeshNode>*    myNodePool;
+  SMDS_NodeFactory*      myNodeFactory;
+  SMDS_ElementFactory*   myCellFactory;
 
-  //! Small objects like SMDS_VtkVolume are allocated by chunks to limit memory costs of new
-  ObjectPool<SMDS_VtkVolume>*   myVolumePool;
-  ObjectPool<SMDS_VtkFace>*     myFacePool;
-  ObjectPool<SMDS_VtkEdge>*     myEdgePool;
-  ObjectPool<SMDS_BallElement>* myBallPool;
-
-  //! SMDS_MeshNodes refer to vtk nodes (vtk id != index in myNodes),store reference to this mesh, and sub-shape
-  SetOfNodes                    myNodes;
-  SetOfCells                    myCells;
-
-  //! a buffer to speed up elements addition by excluding some memory allocation
-  std::vector<vtkIdType>        myNodeIds;
-
-  //! for cells only: index = ID in vtkUnstructuredGrid, value = ID for SMDS users
-  std::vector<int>              myCellIdVtkToSmds;
-
-  SMDS_Mesh *                   myParent;
-  std::list<SMDS_Mesh *>        myChildren;
-  SMDS_MeshNodeIDFactory *      myNodeIDFactory;
-  SMDS_MeshElementIDFactory *   myElementIDFactory;
-  SMDS_MeshInfo                 myInfo;
+  SMDS_Mesh *            myParent;
+  std::list<SMDS_Mesh *> myChildren;
+  SMDS_MeshInfo          myInfo;
 
   //! any add, remove or change of node or cell
-  bool myModified;
+  bool                   myModified;
   //! use a counter to keep track of modifications
-  unsigned long myModifTime, myCompactTime;
+  unsigned long          myModifTime, myCompactTime;
 
-  bool myHasConstructionEdges;
-  bool myHasConstructionFaces;
-  bool myHasInverseElements;
+  friend class SMDS_ElementHolder;
+  std::set< SMDS_ElementHolder* > myElemHolders;
 
   double xmin;
   double xmax;

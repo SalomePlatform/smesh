@@ -140,7 +140,7 @@ bool StdMeshers_Projection_1D2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape
     {
       const SMDS_MeshElement* f = fIt->next();
       //if ( !f->IsQuadratic() ) continue;
-      nodes.assign( SMDS_MeshElement::iterator( f->interlacedNodesElemIterator() ),
+      nodes.assign( SMDS_MeshElement::iterator( f->interlacedNodesIterator() ),
                     SMDS_MeshElement::iterator() );
       nodes.push_back( nodes[0] );
       for ( size_t i = 2; i < nodes.size(); i += 2 )
@@ -149,8 +149,8 @@ bool StdMeshers_Projection_1D2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape
         if ( idType.second == TopAbs_EDGE &&
              idType.first  != nodes[i-1]->getshapeId() )
         {
-          faceSubMesh->RemoveNode( nodes[i-1], /*isDeleted=*/false );
-          meshDS->SetNodeOnEdge( (SMDS_MeshNode*) nodes[i-1], idType.first );
+          faceSubMesh->RemoveNode( nodes[i-1] );
+          meshDS->SetNodeOnEdge( nodes[i-1], idType.first );
           posFixer.SetSubShape( idType.first );
           posFixer.CheckNodeU( TopoDS::Edge( posFixer.GetSubShape() ),
                                nodes[i-1], dummyU=0., tol, /*force=*/true );

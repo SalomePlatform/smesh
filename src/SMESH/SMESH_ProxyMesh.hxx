@@ -26,6 +26,7 @@
 
 #include "SMESH_SMESH.hxx"
 
+#include "SMDS_ElementHolder.hxx"
 #include "SMESHDS_SubMesh.hxx"
 #include "SMESH_TypeDefs.hxx"
 
@@ -56,7 +57,7 @@ public:
   /*!
    * \brief Proxy sub-mesh
    */
-  class SMESH_EXPORT SubMesh : public SMESHDS_SubMesh
+  class SMESH_EXPORT SubMesh : public SMESHDS_SubMesh, SMDS_ElementHolder
   {
   public:
 
@@ -66,19 +67,20 @@ public:
     virtual void         AddElement(const SMDS_MeshElement * e);
     virtual int          NbElements() const;
     virtual int          NbNodes() const;
-    virtual SMDS_ElemIteratorPtr GetElements(bool reverse=false) const;
-    virtual SMDS_NodeIteratorPtr GetNodes(bool reverse=false) const;
+    virtual SMDS_ElemIteratorPtr GetElements() const;
+    virtual SMDS_NodeIteratorPtr GetNodes() const;
     virtual void         Clear();
     virtual bool         Contains(const SMDS_MeshElement * ME) const;
 
     template< class ITERATOR >
-    void ChangeElements( ITERATOR it, ITERATOR end )
+      void ChangeElements( ITERATOR it, ITERATOR end )
     {
       // change SubMesh contents without deleting tmp elements
       // for which the caller is responsible
       _elements.assign( it, end );
     }
-    SubMesh(int index=0):SMESHDS_SubMesh(0,index),_n2n(0) {}
+    SubMesh(const SMDS_Mesh* mesh, int index=0)
+      :SMESHDS_SubMesh(0,index), SMDS_ElementHolder(mesh), _n2n(0) {}
     virtual ~SubMesh() { Clear(); }
 
   protected:
@@ -86,13 +88,20 @@ public:
     TN2NMap*                              _n2n;
     UVPtStructVec                         _uvPtStructVec; // for SubMesh of EDGE
     friend class SMESH_ProxyMesh;
+
+  protected: // methods of SMDS_ElementHolder; remove elements before mesh compacting or clearing
+    virtual SMDS_ElemIteratorPtr getElements() { Clear(); return GetElements(); }
+    virtual void tmpClear() {}
+    virtual void add( const SMDS_MeshElement* element ) {}
+    virtual void compact() {}
+    virtual void clear() { Clear(); }
   };
   //--------------------------------------------------------------------------------
   // Public interface
 
   SMESH_ProxyMesh();
   SMESH_ProxyMesh(std::vector<SMESH_ProxyMesh::Ptr>& components);
-  SMESH_ProxyMesh(const SMESH_Mesh& mesh) { _mesh = &mesh; }
+  SMESH_ProxyMesh(const SMESH_Mesh& mesh);
   virtual ~SMESH_ProxyMesh();
 
   // Returns the submesh of a shape; it can be a proxy sub-mesh
@@ -129,11 +138,11 @@ public:
   // Interface for descendants
  protected:
 
-  void     setMesh(const SMESH_Mesh& mesh) { _mesh = &mesh; }
+  void     setMesh(const SMESH_Mesh& mesh);
 
   int      shapeIndex(const TopoDS_Shape& shape) const;
 
-  virtual SubMesh* newSubmesh(int index=0) const { return new SubMesh(index); }
+  virtual SubMesh* newSubmesh(int index=0) const;
 
   // returns a proxy sub-mesh; zero index is for the case of mesh w/o shape
   SubMesh* findProxySubMesh(int shapeIndex=0) const;
@@ -177,7 +186,7 @@ public:
   std::set< const SMDS_MeshElement* > _elemsInMesh;
 
   // Complex submesh used to iterate over elements in other sub-meshes
-  mutable SubMesh _subContainer;
+  mutable SubMesh* _subContainer;
 };
 
 #endif

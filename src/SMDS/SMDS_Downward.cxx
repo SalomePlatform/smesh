@@ -1145,7 +1145,7 @@ void SMDS_DownTetra::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& o
       return;
     }
   }
-  MESSAGE("=== Problem volume " << _vtkCellIds[cellId] << " " << _grid->_mesh->fromVtkToSmds(_vtkCellIds[cellId]));
+  MESSAGE("=== Problem volume " << _vtkCellIds[cellId] << " " << _grid->_mesh->FromVtkToSmds(_vtkCellIds[cellId]));
   MESSAGE(orderedNodes[0] << " " << orderedNodes[1] << " " << orderedNodes[2]);
   MESSAGE(nodes[0] << " " << nodes[1] << " " << nodes[2] << " " << nodes[3]);
 }
@@ -1253,7 +1253,7 @@ void SMDS_DownQuadTetra::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType
       return;
     }
   }
-  MESSAGE("=== Problem volume " << _vtkCellIds[cellId] << " " << _grid->_mesh->fromVtkToSmds(_vtkCellIds[cellId]));
+  MESSAGE("=== Problem volume " << _vtkCellIds[cellId] << " " << _grid->_mesh->FromVtkToSmds(_vtkCellIds[cellId]));
   MESSAGE(orderedNodes[0] << " " << orderedNodes[1] << " " << orderedNodes[2]);
   MESSAGE(nodes[0] << " " << nodes[1] << " " << nodes[2] << " " << nodes[3]);
 }
@@ -1387,7 +1387,7 @@ void SMDS_DownPyramid::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>&
       return;
     }
   }
-  MESSAGE("=== Problem volume " << _vtkCellIds[cellId] << " " << _grid->_mesh->fromVtkToSmds(_vtkCellIds[cellId]));
+  MESSAGE("=== Problem volume " << _vtkCellIds[cellId] << " " << _grid->_mesh->FromVtkToSmds(_vtkCellIds[cellId]));
   MESSAGE(orderedNodes[0] << " " << orderedNodes[1] << " " << orderedNodes[2]);
   MESSAGE(nodes[0] << " " << nodes[1] << " " << nodes[2] << " " << nodes[3]);
 }
@@ -1531,7 +1531,7 @@ void SMDS_DownQuadPyramid::getOrderedNodesOfFace(int cellId, std::vector<vtkIdTy
       return;
     }
   }
-  MESSAGE("=== Problem volume " << _vtkCellIds[cellId] << " " << _grid->_mesh->fromVtkToSmds(_vtkCellIds[cellId]));
+  MESSAGE("=== Problem volume " << _vtkCellIds[cellId] << " " << _grid->_mesh->FromVtkToSmds(_vtkCellIds[cellId]));
   MESSAGE(orderedNodes[0] << " " << orderedNodes[1] << " " << orderedNodes[2] << " " << orderedNodes[3]);
   MESSAGE(nodes[0] << " " << nodes[1] << " " << nodes[2] << " " << nodes[3]);
 }
@@ -1694,7 +1694,7 @@ void SMDS_DownPenta::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& o
       return;
     }
   }
-  MESSAGE("=== Problem volume " << _vtkCellIds[cellId] << " " << _grid->_mesh->fromVtkToSmds(_vtkCellIds[cellId]));
+  MESSAGE("=== Problem volume " << _vtkCellIds[cellId] << " " << _grid->_mesh->FromVtkToSmds(_vtkCellIds[cellId]));
   MESSAGE(orderedNodes[0] << " " << orderedNodes[1] << " " << orderedNodes[2]);
   MESSAGE(nodes[0] << " " << nodes[1] << " " << nodes[2] << " " << nodes[3]);
 }
@@ -1845,7 +1845,7 @@ void SMDS_DownQuadPenta::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType
       return;
     }
   }
-  MESSAGE("=== Problem volume " << _vtkCellIds[cellId] << " " << _grid->_mesh->fromVtkToSmds(_vtkCellIds[cellId]));
+  MESSAGE("=== Problem volume " << _vtkCellIds[cellId] << " " << _grid->_mesh->FromVtkToSmds(_vtkCellIds[cellId]));
   MESSAGE(orderedNodes[0] << " " << orderedNodes[1] << " " << orderedNodes[2]);
   MESSAGE(nodes[0] << " " << nodes[1] << " " << nodes[2] << " " << nodes[3]);
 }
@@ -2000,7 +2000,7 @@ void SMDS_DownHexa::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& or
       return;
     }
   }
-  MESSAGE("=== Problem volume " << _vtkCellIds[cellId] << " " << _grid->_mesh->fromVtkToSmds(_vtkCellIds[cellId]));
+  MESSAGE("=== Problem volume " << _vtkCellIds[cellId] << " " << _grid->_mesh->FromVtkToSmds(_vtkCellIds[cellId]));
   MESSAGE(orderedNodes[0] << " " << orderedNodes[1] << " " << orderedNodes[2] << " " << orderedNodes[3]);
   MESSAGE(nodes[0] << " " << nodes[1] << " " << nodes[2] << " " << nodes[3]);
   MESSAGE(nodes[4] << " " << nodes[5] << " " << nodes[6] << " " << nodes[7]);
@@ -2132,7 +2132,7 @@ void SMDS_DownQuadHexa::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>
       return;
     }
   }
-  MESSAGE("=== Problem volume " << _vtkCellIds[cellId] << " " << _grid->_mesh->fromVtkToSmds(_vtkCellIds[cellId]));
+  MESSAGE("=== Problem volume " << _vtkCellIds[cellId] << " " << _grid->_mesh->FromVtkToSmds(_vtkCellIds[cellId]));
   MESSAGE(orderedNodes[0] << " " << orderedNodes[1] << " " << orderedNodes[2] << " " << orderedNodes[3]);
   MESSAGE(nodes[0] << " " << nodes[1] << " " << nodes[2] << " " << nodes[3]);
 }

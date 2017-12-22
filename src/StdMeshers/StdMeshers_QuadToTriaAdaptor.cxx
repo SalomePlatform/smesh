@@ -296,12 +296,13 @@ namespace
       SMESH_ComputeErrorPtr& err = sm->GetComputeError();
       if ( !err || err->IsOK() )
       {
-        err = SMESH_ComputeError::New( COMPERR_BAD_INPUT_MESH, msg, sm->GetAlgo() );
-        err->myBadElements.push_back( face1 );
-        err->myBadElements.push_back( face2 );
+        SMESH_BadInputElements* badElems =
+          new SMESH_BadInputElements( mesh.GetMeshDS(),COMPERR_BAD_INPUT_MESH, msg, sm->GetAlgo() );
+        badElems->add( face1 );
+        badElems->add( face2 );
+        err.reset( badElems );
       }
     }
-    //throw SALOME_Exception( msg.c_str() );
 
     return false; // == "algo fails"
   }
@@ -1035,7 +1036,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
   vector<const SMDS_MeshNode*> FNodes(5);
   TColgp_SequenceOfPnt aContour;
 
-  SMDS_FaceIteratorPtr fIt = meshDS->facesIterator(/*idInceasingOrder=*/true);
+  SMDS_FaceIteratorPtr fIt = meshDS->facesIterator();
   while( fIt->more())
   {
     const SMDS_MeshElement* face = fIt->next();

@@ -28,9 +28,9 @@
 namespace
 {
   // assure deallocation of memory of a vector
-  template<class Y> void clearVector(std::vector<Y>& v )
+  template<class Y> void clearVector(Y & v )
   {
-    std::vector<Y> emptyVec; v.swap( emptyVec );
+    Y emptyVec; v.swap( emptyVec );
   }
 }
 

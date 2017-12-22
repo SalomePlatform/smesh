@@ -1121,7 +1121,7 @@ SMESHGUI_ElemInfo::XYZ SMESHGUI_ElemInfo::gravityCenter( const SMDS_MeshElement*
 */
 SMESHGUI_ElemInfo::XYZ SMESHGUI_ElemInfo::normal( const SMDS_MeshElement* element )
 {
-  gp_XYZ n = SMESH::getNormale( dynamic_cast<const SMDS_MeshFace*>( element ));
+  gp_XYZ n = SMESH::getNormale( SMDS_Mesh::DownCast<SMDS_MeshFace>( element ));
   return XYZ(n.X(), n.Y(), n.Z());
 }
 
@@ -1397,7 +1397,7 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
         if ( e->GetEntityType() > SMDSEntity_0D && e->GetEntityType() < SMDSEntity_Ball ) {
           myInfo->append( QString( "<b>%1?</b> %2" ).arg( SMESHGUI_ElemInfo::tr( "QUADRATIC" )).arg( e->IsQuadratic() ? SMESHGUI_ElemInfo::tr( "YES" ) : SMESHGUI_ElemInfo::tr( "NO" )) );
         }
-        if ( const SMDS_BallElement* ball = dynamic_cast<const SMDS_BallElement*>( e )) {
+        if ( const SMDS_BallElement* ball = SMDS_Mesh::DownCast<SMDS_BallElement>( e )) {
           // Ball diameter
           myInfo->append( QString( "<b>%1:</b> %2" ).arg( SMESHGUI_ElemInfo::tr( "BALL_DIAMETER" )).arg( ball->GetDiameter() ));
         }
@@ -1915,7 +1915,7 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
         case SMDSEntity_Polyhedra:
         case SMDSEntity_Quad_Polyhedra:
           gtype = SMESHGUI_ElemInfo::tr( "POLYHEDRON" ); break;
-        default: 
+        default:
           break;
         }
         if ( !gtype.isEmpty() ) {
@@ -1930,7 +1930,7 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
           quadItem->setText( 0, SMESHGUI_ElemInfo::tr( "QUADRATIC" ));
           quadItem->setText( 1, e->IsQuadratic() ? SMESHGUI_ElemInfo::tr( "YES" ) : SMESHGUI_ElemInfo::tr( "NO" ));
         }
-        if ( const SMDS_BallElement* ball = dynamic_cast<const SMDS_BallElement*>( e )) {
+        if ( const SMDS_BallElement* ball = SMDS_Mesh::DownCast< SMDS_BallElement >( e )) {
           // ball diameter
           QTreeWidgetItem* diamItem = createItem( elemItem, Bold );
           diamItem->setText( 0, SMESHGUI_ElemInfo::tr( "BALL_DIAMETER" ));
@@ -1949,12 +1949,14 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
           }
         }
         else {
-          const SMDS_VtkVolume* aVtkVolume = dynamic_cast<const SMDS_VtkVolume*>(e);
-          SMDS_ElemIteratorPtr nodeIt = aVtkVolume->uniqueNodesIterator();
+          SMDS_NodeIteratorPtr nodeIt = e->nodeIterator();
+          std::set< const SMDS_MeshNode* > addedNodes;
           QList<const SMDS_MeshElement*> uniqueNodes;
-          while ( nodeIt->more() )
-            uniqueNodes.append( nodeIt->next() );
-
+          while ( nodeIt->more() ) {
+            const SMDS_MeshNode* node = nodeIt->next();
+            if ( addedNodes.insert( node ).second )
+              uniqueNodes.append( nodeIt->next() );
+          }
           SMDS_VolumeTool vtool( e );
           const int nbFaces = vtool.NbFaces();
           for( int face_id = 0; face_id < nbFaces; face_id++ ) {
@@ -1963,10 +1965,10 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
             faceItem->setExpanded( true );
 
             const SMDS_MeshNode** aNodeIds = vtool.GetFaceNodes( face_id );
-            const int nbNodes = vtool.NbFaceNodes( face_id );
+            const int              nbNodes = vtool.NbFaceNodes ( face_id );
             for( int node_id = 0; node_id < nbNodes; node_id++ ) {
               const SMDS_MeshNode* node = aNodeIds[node_id];
-              nodeInfo( node, uniqueNodes.indexOf(node) + 1, aVtkVolume->NbUniqueNodes(), faceItem );
+              nodeInfo( node, uniqueNodes.indexOf(node) + 1, uniqueNodes.size(), faceItem );
             }
           }
         }

@@ -30,23 +30,68 @@
 #include "SMESH_SMDS.hxx"
 
 #include "SMDS_TypeOfPosition.hxx"
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
-class SMDS_Position;
+//class SMDS_Position;
 //typedef boost::shared_ptr<SMDS_Position> SMDS_PositionPtr;
-typedef SMDS_Position* SMDS_PositionPtr;
+//typedef SMDS_Position* SMDS_PositionPtr;
 
 class SMDS_EXPORT SMDS_Position
 {
 
-  public:
-        virtual SMDS_TypeOfPosition GetTypeOfPosition() const = 0;
-        virtual int GetDim() const;
-        virtual ~SMDS_Position() {}
-
-  protected:
-          SMDS_Position();
+ public:
+  virtual SMDS_TypeOfPosition GetTypeOfPosition() const = 0;
+  int GetDim() const { return GetTypeOfPosition(); }
+  virtual const double* GetParameters() const = 0;
+  virtual ~SMDS_Position() {}
 };
 
+/*!
+ * \brief Replace "typedef SMDS_Position* SMDS_PositionPtr" by a smart
+ *        pointer allowing implicit casting to derived types; e.g.
+ *        if ( SMDS_FacePositionPtr fPos = node->GetPosition() )
+ *          fPos->SetUParameter(0);
+ */
+
+template<class T>
+class SMDS_EXPORT SMDS_Ptr : public std::unique_ptr< T >
+{
+  bool myIsOwner;
+
+ public:
+  SMDS_Ptr( T * pos = (T *) 0, bool isOwner=true ):
+    std::unique_ptr< T >( pos ), myIsOwner( isOwner ) {}
+
+  SMDS_Ptr( const SMDS_Ptr& from ) : myIsOwner( from.myIsOwner )
+  { this->swap( const_cast<SMDS_Ptr&>( from )); }
+
+  SMDS_Ptr& operator=( const SMDS_Ptr& from  )
+  {
+    myIsOwner = from.myIsOwner;
+    this->swap( const_cast<SMDS_Ptr&>( from ));
+    return *this;
+  }
+
+  template<class Y>
+    SMDS_Ptr( const SMDS_Ptr< Y >& base ): myIsOwner( true )
+  {
+    if ( const T* p = dynamic_cast<const T*>( base.get() ))
+    {
+      this->reset( const_cast<T*>( p ));
+      this->myIsOwner = base.IsOwner();
+      const_cast< SMDS_Ptr< Y >& >( base ).release();
+    }
+  }
+  ~SMDS_Ptr() { if ( !myIsOwner ) this->release(); }
+
+  operator bool () const { return bool( this->get() ); }
+  bool IsOwner() const { return myIsOwner; }
+};
+
+class SMDS_EdgePosition;
+class SMDS_FacePosition;
+typedef SMDS_Ptr< SMDS_Position >     SMDS_PositionPtr;
+typedef SMDS_Ptr< SMDS_EdgePosition > SMDS_EdgePositionPtr;
+typedef SMDS_Ptr< SMDS_FacePosition > SMDS_FacePositionPtr;
 
 #endif

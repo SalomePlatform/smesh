@@ -28,8 +28,6 @@
 #include "SMDS_Mesh.hxx"
 #include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
-#include "SMDS_QuadraticEdge.hxx"
-#include "SMDS_QuadraticFaceOfNodes.hxx"
 #include "SMDS_VolumeTool.hxx"
 #include "SMESHDS_GroupBase.hxx"
 #include "SMESHDS_GroupOnFilter.hxx"
@@ -253,26 +251,7 @@ bool NumericalFunctor::GetPoints(const SMDS_MeshElement* anElem,
   theRes.setElement( anElem );
 
   // Get nodes of the element
-  SMDS_ElemIteratorPtr anIter;
-
-  if ( anElem->IsQuadratic() ) {
-    switch ( anElem->GetType() ) {
-    case SMDSAbs_Edge:
-      anIter = dynamic_cast<const SMDS_VtkEdge*>
-        (anElem)->interlacedNodesElemIterator();
-      break;
-    case SMDSAbs_Face:
-      anIter = dynamic_cast<const SMDS_VtkFace*>
-        (anElem)->interlacedNodesElemIterator();
-      break;
-    default:
-      anIter = anElem->nodesIterator();
-    }
-  }
-  else {
-    anIter = anElem->nodesIterator();
-  }
-
+  SMDS_NodeIteratorPtr anIter= anElem->interlacedNodesIterator();
   if ( anIter ) {
     SMESH_NodeXYZ p;
     while( anIter->more() ) {
@@ -771,8 +750,8 @@ double AspectRatio::GetValue( long theId )
   if ( myCurrElement && myCurrElement->GetVtkType() == VTK_QUAD )
   {
     // issue 21723
-    vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myCurrElement->getMeshId()]->getGrid();
-    if ( vtkCell* avtkCell = grid->GetCell( myCurrElement->getVtkId() ))
+    vtkUnstructuredGrid* grid = const_cast<SMDS_Mesh*>( myMesh )->GetGrid();
+    if ( vtkCell* avtkCell = grid->GetCell( myCurrElement->GetVtkID() ))
       aVal = Round( vtkMeshQuality::QuadAspectRatio( avtkCell ));
   }
   else
@@ -1015,8 +994,8 @@ double AspectRatio3D::GetValue( long theId )
     // Action from CoTech | ACTION 31.3:
     // EURIWARE BO: Homogenize the formulas used to calculate the Controls in SMESH to fit with
     // those of ParaView. The library used by ParaView for those calculations can be reused in SMESH.
-    vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myCurrElement->getMeshId()]->getGrid();
-    if ( vtkCell* avtkCell = grid->GetCell( myCurrElement->getVtkId() ))
+    vtkUnstructuredGrid* grid = const_cast<SMDS_Mesh*>( myMesh )->GetGrid();
+    if ( vtkCell* avtkCell = grid->GetCell( myCurrElement->GetVtkID() ))
       aVal = Round( vtkMeshQuality::TetAspectRatio( avtkCell ));
   }
   else
@@ -1035,7 +1014,7 @@ double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )
 
   int nbNodes = P.size();
 
-  if(myCurrElement->IsQuadratic()) {
+  if( myCurrElement->IsQuadratic() ) {
     if(nbNodes==10) nbNodes=4; // quadratic tetrahedron
     else if(nbNodes==13) nbNodes=5; // quadratic pyramid
     else if(nbNodes==15) nbNodes=6; // quadratic pentahedron
@@ -1827,35 +1806,33 @@ bool Length2D::Value::operator<(const Length2D::Value& x) const
 void Length2D::GetValues(TValues& theValues)
 {
   TValues aValues;
-  SMDS_FaceIteratorPtr anIter = myMesh->facesIterator();
-  for(; anIter->more(); ){
+  for ( SMDS_FaceIteratorPtr anIter = myMesh->facesIterator(); anIter->more(); )
+  {
     const SMDS_MeshFace* anElem = anIter->next();
-
-    if(anElem->IsQuadratic()) {
-      const SMDS_VtkFace* F =
-        dynamic_cast<const SMDS_VtkFace*>(anElem);
+    if ( anElem->IsQuadratic() )
+    {
       // use special nodes iterator
-      SMDS_ElemIteratorPtr anIter = F->interlacedNodesElemIterator();
+      SMDS_NodeIteratorPtr anIter = anElem->interlacedNodesIterator();
       long aNodeId[4] = { 0,0,0,0 };
       gp_Pnt P[4];
 
       double aLength = 0;
-      const SMDS_MeshElement* aNode;
-      if(anIter->more()){
-        aNode = anIter->next();
-        const SMDS_MeshNode* aNodes = (SMDS_MeshNode*) aNode;
-        P[0] = P[1] = gp_Pnt(aNodes->X(),aNodes->Y(),aNodes->Z());
+      if ( anIter->more() )
+      {
+        const SMDS_MeshNode* aNode = anIter->next();
+        P[0] = P[1] = SMESH_NodeXYZ( aNode );
         aNodeId[0] = aNodeId[1] = aNode->GetID();
         aLength = 0;
       }
-      for(; anIter->more(); ){
-        const SMDS_MeshNode* N1 = static_cast<const SMDS_MeshNode*> (anIter->next());
-        P[2] = gp_Pnt(N1->X(),N1->Y(),N1->Z());
+      for ( ; anIter->more(); )
+      {
+        const SMDS_MeshNode* N1 = anIter->next();
+        P[2] = SMESH_NodeXYZ( N1 );
         aNodeId[2] = N1->GetID();
         aLength = P[1].Distance(P[2]);
         if(!anIter->more()) break;
-        const SMDS_MeshNode* N2 = static_cast<const SMDS_MeshNode*> (anIter->next());
-        P[3] = gp_Pnt(N2->X(),N2->Y(),N2->Z());
+        const SMDS_MeshNode* N2 = anIter->next();
+        P[3] = SMESH_NodeXYZ( N2 );
         aNodeId[3] = N2->GetID();
         aLength += P[2].Distance(P[3]);
         Value aValue1(aLength,aNodeId[1],aNodeId[2]);
@@ -1872,28 +1849,28 @@ void Length2D::GetValues(TValues& theValues)
       theValues.insert(aValue2);
     }
     else {
-      SMDS_ElemIteratorPtr aNodesIter = anElem->nodesIterator();
+      SMDS_NodeIteratorPtr aNodesIter = anElem->nodeIterator();
       long aNodeId[2] = {0,0};
       gp_Pnt P[3];
 
       double aLength;
       const SMDS_MeshElement* aNode;
-      if(aNodesIter->more()){
+      if ( aNodesIter->more())
+      {
         aNode = aNodesIter->next();
-        const SMDS_MeshNode* aNodes = (SMDS_MeshNode*) aNode;
-        P[0] = P[1] = gp_Pnt(aNodes->X(),aNodes->Y(),aNodes->Z());
+        P[0] = P[1] = SMESH_NodeXYZ( aNode );
         aNodeId[0] = aNodeId[1] = aNode->GetID();
         aLength = 0;
       }
-      for(; aNodesIter->more(); ){
+      for( ; aNodesIter->more(); )
+      {
         aNode = aNodesIter->next();
-        const SMDS_MeshNode* aNodes = (SMDS_MeshNode*) aNode;
         long anId = aNode->GetID();
-        
-        P[2] = gp_Pnt(aNodes->X(),aNodes->Y(),aNodes->Z());
-        
+
+        P[2] = SMESH_NodeXYZ( aNode );
+
         aLength = P[1].Distance(P[2]);
-        
+
         Value aValue(aLength,aNodeId[1],anId);
         aNodeId[1] = anId;
         P[1] = P[2];
@@ -1947,8 +1924,7 @@ double Deflection2D::GetValue( const TSequenceOfXYZ& P )
       {
         gc += P(i+1);
 
-        if ( const SMDS_FacePosition* fPos = dynamic_cast<const SMDS_FacePosition*>
-             ( P.getElement()->GetNode( i )->GetPosition() ))
+        if ( SMDS_FacePositionPtr fPos = P.getElement()->GetNode( i )->GetPosition() )
         {
           uv.ChangeCoord(1) += fPos->GetUParameter();
           uv.ChangeCoord(2) += fPos->GetVParameter();
@@ -2124,59 +2100,24 @@ bool MultiConnection2D::Value::operator<(const MultiConnection2D::Value& x) cons
 void MultiConnection2D::GetValues(MValues& theValues)
 {
   if ( !myMesh ) return;
-  SMDS_FaceIteratorPtr anIter = myMesh->facesIterator();
-  for(; anIter->more(); ){
-    const SMDS_MeshFace* anElem = anIter->next();
-    SMDS_ElemIteratorPtr aNodesIter;
-    if ( anElem->IsQuadratic() )
-      aNodesIter = dynamic_cast<const SMDS_VtkFace*>
-        (anElem)->interlacedNodesElemIterator();
-    else
-      aNodesIter = anElem->nodesIterator();
-    long aNodeId[3] = {0,0,0};
+  for ( SMDS_FaceIteratorPtr anIter = myMesh->facesIterator(); anIter->more(); )
+  {
+    const SMDS_MeshFace*     anElem = anIter->next();
+    SMDS_NodeIteratorPtr aNodesIter = anElem->interlacedNodesIterator();
 
-    //int aNbConnects=0;
-    const SMDS_MeshNode* aNode0;
-    const SMDS_MeshNode* aNode1;
+    const SMDS_MeshNode* aNode1 = anElem->GetNode( anElem->NbNodes() - 1 );
     const SMDS_MeshNode* aNode2;
-    if(aNodesIter->more()){
-      aNode0 = (SMDS_MeshNode*) aNodesIter->next();
-      aNode1 = aNode0;
-      const SMDS_MeshNode* aNodes = (SMDS_MeshNode*) aNode1;
-      aNodeId[0] = aNodeId[1] = aNodes->GetID();
-    }
-    for(; aNodesIter->more(); ) {
-      aNode2 = (SMDS_MeshNode*) aNodesIter->next();
-      long anId = aNode2->GetID();
-      aNodeId[2] = anId;
+    for ( ; aNodesIter->more(); )
+    {
+      aNode2 = aNodesIter->next();
 
-      Value aValue(aNodeId[1],aNodeId[2]);
-      MValues::iterator aItr = theValues.find(aValue);
-      if (aItr != theValues.end()){
-        aItr->second += 1;
-        //aNbConnects = nb;
-      }
-      else {
-        theValues[aValue] = 1;
-        //aNbConnects = 1;
-      }
-      //cout << "NodeIds: "<<aNodeId[1]<<","<<aNodeId[2]<<" nbconn="<<aNbConnects<<endl;
-      aNodeId[1] = aNodeId[2];
+      Value aValue ( aNode1->GetID(), aNode2->GetID() );
+      MValues::iterator aItr = theValues.insert( std::make_pair( aValue, 0 )).first;
+      aItr->second++;
       aNode1 = aNode2;
     }
-    Value aValue(aNodeId[0],aNodeId[2]);
-    MValues::iterator aItr = theValues.find(aValue);
-    if (aItr != theValues.end()) {
-      aItr->second += 1;
-      //aNbConnects = nb;
-    }
-    else {
-      theValues[aValue] = 1;
-      //aNbConnects = 1;
-    }
-    //cout << "NodeIds: "<<aNodeId[0]<<","<<aNodeId[2]<<" nbconn="<<aNbConnects<<endl;
   }
-
+  return;
 }
 
 //================================================================================
@@ -2191,7 +2132,7 @@ double BallDiameter::GetValue( long theId )
   double diameter = 0;
 
   if ( const SMDS_BallElement* ball =
-       dynamic_cast<const SMDS_BallElement*>( myMesh->FindElement( theId )))
+       myMesh->DownCast< SMDS_BallElement >( myMesh->FindElement( theId )))
   {
     diameter = ball->GetDiameter();
   }
@@ -2429,7 +2370,7 @@ void CoincidentNodes::SetMesh( const SMDS_Mesh* theMesh )
   if ( myMeshModifTracer.IsMeshModified() )
   {
     TIDSortedNodeSet nodesToCheck;
-    SMDS_NodeIteratorPtr nIt = theMesh->nodesIterator(/*idInceasingOrder=*/true);
+    SMDS_NodeIteratorPtr nIt = theMesh->nodesIterator();
     while ( nIt->more() )
       nodesToCheck.insert( nodesToCheck.end(), nIt->next() );
 
@@ -2632,31 +2573,21 @@ inline void UpdateBorders(const FreeEdges::Border& theBorder,
 void FreeEdges::GetBoreders(TBorders& theBorders)
 {
   TBorders aRegistry;
-  SMDS_FaceIteratorPtr anIter = myMesh->facesIterator();
-  for(; anIter->more(); ){
+  for ( SMDS_FaceIteratorPtr anIter = myMesh->facesIterator(); anIter->more(); )
+  {
     const SMDS_MeshFace* anElem = anIter->next();
     long anElemId = anElem->GetID();
-    SMDS_ElemIteratorPtr aNodesIter;
-    if ( anElem->IsQuadratic() )
-      aNodesIter = static_cast<const SMDS_VtkFace*>(anElem)->
-        interlacedNodesElemIterator();
-    else
-      aNodesIter = anElem->nodesIterator();
+    SMDS_NodeIteratorPtr aNodesIter = anElem->interlacedNodesIterator();
+    if ( !aNodesIter->more() ) continue;
     long aNodeId[2] = {0,0};
-    const SMDS_MeshElement* aNode;
-    if(aNodesIter->more()){
-      aNode = aNodesIter->next();
-      aNodeId[0] = aNodeId[1] = aNode->GetID();
+    aNodeId[0] = anElem->GetNode( anElem->NbNodes()-1 )->GetID();
+    for ( ; aNodesIter->more(); )
+    {
+      aNodeId[1] = aNodesIter->next()->GetID();
+      Border aBorder( anElemId, aNodeId[0], aNodeId[1] );
+      UpdateBorders( aBorder, aRegistry, theBorders );
+      aNodeId[0] = aNodeId[1];
     }
-    for(; aNodesIter->more(); ){
-      aNode = aNodesIter->next();
-      long anId = aNode->GetID();
-      Border aBorder(anElemId,aNodeId[1],anId);
-      aNodeId[1] = anId;
-      UpdateBorders(aBorder,aRegistry,theBorders);
-    }
-    Border aBorder(anElemId,aNodeId[0],aNodeId[1]);
-    UpdateBorders(aBorder,aRegistry,theBorders);
   }
 }
 
@@ -4008,24 +3939,20 @@ void ManifoldPart::expandBoundary
 void ManifoldPart::getFacesByLink( const ManifoldPart::Link& theLink,
                                    ManifoldPart::TVectorOfFacePtr& theFaces ) const
 {
-  std::set<SMDS_MeshCell *> aSetOfFaces;
+
   // take all faces that shared first node
-  SMDS_ElemIteratorPtr anItr = theLink.myNode1->facesIterator();
-  for ( ; anItr->more(); )
-  {
-    SMDS_MeshFace* aFace = (SMDS_MeshFace*)anItr->next();
-    if ( !aFace )
-      continue;
-    aSetOfFaces.insert( aFace );
-  }
+  SMDS_ElemIteratorPtr anItr = theLink.myNode1->GetInverseElementIterator( SMDSAbs_Face );
+  SMDS_StdIterator< const SMDS_MeshElement*, SMDS_ElemIteratorPtr > faces( anItr ), facesEnd;
+  std::set<const SMDS_MeshElement *> aSetOfFaces( faces, facesEnd );
+
   // take all faces that shared second node
-  anItr = theLink.myNode2->facesIterator();
+  anItr = theLink.myNode2->GetInverseElementIterator( SMDSAbs_Face );
   // find the common part of two sets
   for ( ; anItr->more(); )
   {
-    SMDS_MeshFace* aFace = (SMDS_MeshFace*)anItr->next();
-    if ( aSetOfFaces.count( aFace ) )
-      theFaces.push_back( aFace );
+    const SMDS_MeshElement* aFace = anItr->next();
+    if ( aSetOfFaces.count( aFace ))
+      theFaces.push_back( (SMDS_MeshFace*) aFace );
   }
 }
 

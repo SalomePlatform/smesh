@@ -31,12 +31,12 @@
 
 #include "SMDS_Position.hxx"
 
-class SMDS_EXPORT SMDS_VertexPosition:public SMDS_Position
+class SMDS_EXPORT SMDS_VertexPosition : public SMDS_Position
 {
-
-  public:       
-        SMDS_TypeOfPosition GetTypeOfPosition() const;
-        SMDS_VertexPosition();
+ public:
+  SMDS_TypeOfPosition GetTypeOfPosition() const { return SMDS_TOP_VERTEX; }
+  virtual const double* GetParameters() const { return 0; }
+  static SMDS_PositionPtr StaticPosition(); 
 };
 
 #endif

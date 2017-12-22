@@ -3619,7 +3619,7 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
         for ( ; solidExp.More() && volIt->more(); solidExp.Next() )
         {
           const SMDS_MeshElement* vol = volIt->next();
-          sm1->RemoveElement( vol, /*isElemDeleted=*/false );
+          sm1->RemoveElement( vol );
           meshDS->SetMeshElementOnShape( vol, solidExp.Current() );
         }
       }

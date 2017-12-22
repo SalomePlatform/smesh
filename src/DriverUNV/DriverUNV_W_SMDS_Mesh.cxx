@@ -25,9 +25,6 @@
 #include "DriverUNV_W_SMDS_Mesh.h"
 
 #include "SMDS_Mesh.hxx"
-#include "SMDS_QuadraticEdge.hxx"
-#include "SMDS_QuadraticFaceOfNodes.hxx"
-#include "SMDS_PolyhedralVolumeOfNodes.hxx"
 #include "SMESHDS_GroupBase.hxx"
 
 #include "utilities.h"

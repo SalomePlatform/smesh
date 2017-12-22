@@ -25,27 +25,28 @@
 #ifndef _SMDS_Iterator_HeaderFile
 #define _SMDS_Iterator_HeaderFile
 
-#include "SMESH_SMDS.hxx"
-
 ///////////////////////////////////////////////////////////////////////////////
 ///Abstract class for iterators
 ///@author Jerome Robert
 ///////////////////////////////////////////////////////////////////////////////
 template<typename VALUE> class SMDS_Iterator
 {
-  public:
-        /// Return true if and only if there are other object in this iterator
-          virtual bool more()=0;
+public:
+
+  typedef VALUE value_type;
+
+  /// Return true if and only if there are other object in this iterator
+  virtual bool more()=0;
+
+  /// Return the current object and step to the next one
+  virtual VALUE next()=0;
         
-        /// Return the current object and step to the next one
-          virtual VALUE next()=0;
+  /// Delete the current element and step to the next one
+  virtual void remove(){}
         
-        /// Delete the current element and step to the next one
-        virtual void remove(){}
-        
-        /// Provide virtual destructor just for case if some derived iterator
-        /// must have a destructor
-        virtual ~SMDS_Iterator(){}
+  /// Provide virtual destructor just for case if some derived iterator
+  /// must have a destructor
+  virtual ~SMDS_Iterator(){}
 };
 
 #endif

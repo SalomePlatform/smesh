@@ -255,16 +255,13 @@ static void enlargeBoundingBox(const SMESH::SMESH_IDSource_ptr theObject,
       enlargeBoundingBox( aMesh->FindNode( aElementsId[i] ), theMeasure);
     else
     {
-      const SMDS_MeshElement* elem = aMesh->FindElement( aElementsId[i] );
-      if (!elem)
-        continue;
-      SMDS_ElemIteratorPtr aNodeIter = elem->nodesIterator();
-      while( aNodeIter->more() )
-        enlargeBoundingBox( dynamic_cast<const SMDS_MeshNode*>( aNodeIter->next() ), theMeasure);
+      if ( const SMDS_MeshElement* elem = aMesh->FindElement( aElementsId[i] ))
+        for (SMDS_NodeIteratorPtr aNodeIter = elem->nodeIterator(); aNodeIter->more(); )
+          enlargeBoundingBox( aNodeIter->next(), theMeasure);
     }
   }
 }
-                               
+
 //=======================================================================
 // name    : BoundingBox
 // Purpose : compute common bounding box of entities

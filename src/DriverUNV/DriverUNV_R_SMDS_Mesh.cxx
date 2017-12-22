@@ -93,10 +93,10 @@ namespace
 
 DriverUNV_R_SMDS_Mesh::~DriverUNV_R_SMDS_Mesh()
 {
-  if (myGroup != 0) 
-    delete myGroup;
+  TGroupNamesMap::iterator grp2name = myGroupNames.begin();
+  for ( ; grp2name != myGroupNames.end(); ++grp2name )
+    delete grp2name->first;
 }
-
 
 Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 {
@@ -137,7 +137,7 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
         }
       }
       // Move nodes to SI unit system
-      const double lenFactor = aUnitsRecord.factors[ UNV164::LENGTH_FACTOR ]; 
+      const double lenFactor = aUnitsRecord.factors[ UNV164::LENGTH_FACTOR ];
       if ( lenFactor != 1. )
       {
         TDataSet::iterator nodeIter = aDataSet2411.begin(), nodeEnd;
@@ -187,23 +187,23 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
         else if(IsFace(aRec.fe_descriptor_id)) {
           //MESSAGE("add face " << aRec.label);
           switch(aRec.fe_descriptor_id){
-          case 41: // Plane Stress Linear Triangle      
-          case 51: // Plane Strain Linear Triangle      
-          case 61: // Plate Linear Triangle             
-          case 74: // Membrane Linear Triangle          
-          case 81: // Axisymetric Solid Linear Triangle 
-          case 91: // Thin Shell Linear Triangle        
+          case 41: // Plane Stress Linear Triangle
+          case 51: // Plane Strain Linear Triangle
+          case 61: // Plate Linear Triangle
+          case 74: // Membrane Linear Triangle
+          case 81: // Axisymetric Solid Linear Triangle
+          case 91: // Thin Shell Linear Triangle
             anElement = myMesh->AddFaceWithID(aRec.node_labels[0],
                                               aRec.node_labels[1],
                                               aRec.node_labels[2],
                                               aRec.label);
             break;
 
-          case 42: //  Plane Stress Parabolic Triangle       
-          case 52: //  Plane Strain Parabolic Triangle       
-          case 62: //  Plate Parabolic Triangle              
-          case 72: //  Membrane Parabolic Triangle           
-          case 82: //  Axisymetric Solid Parabolic Triangle  
+          case 42: //  Plane Stress Parabolic Triangle
+          case 52: //  Plane Strain Parabolic Triangle
+          case 62: //  Plate Parabolic Triangle
+          case 72: //  Membrane Parabolic Triangle
+          case 82: //  Axisymetric Solid Parabolic Triangle
           case 92: //  Thin Shell Parabolic Triangle
             if ( aRec.node_labels.size() == 7 )
               anElement = myMesh->AddFaceWithID(aRec.node_labels[0],
@@ -224,12 +224,12 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
                                                 aRec.label);
             break;
 
-          case 44: // Plane Stress Linear Quadrilateral     
-          case 54: // Plane Strain Linear Quadrilateral     
-          case 64: // Plate Linear Quadrilateral            
-          case 71: // Membrane Linear Quadrilateral         
+          case 44: // Plane Stress Linear Quadrilateral
+          case 54: // Plane Strain Linear Quadrilateral
+          case 64: // Plate Linear Quadrilateral
+          case 71: // Membrane Linear Quadrilateral
           case 84: // Axisymetric Solid Linear Quadrilateral
-          case 94: // Thin Shell Linear Quadrilateral       
+          case 94: // Thin Shell Linear Quadrilateral
             anElement = myMesh->AddFaceWithID(aRec.node_labels[0],
                                               aRec.node_labels[1],
                                               aRec.node_labels[2],
@@ -237,12 +237,12 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
                                               aRec.label);
             break;
 
-          case 45: // Plane Stress Parabolic Quadrilateral      
-          case 55: // Plane Strain Parabolic Quadrilateral      
-          case 65: // Plate Parabolic Quadrilateral             
-          case 75: // Membrane Parabolic Quadrilateral          
-          case 85: // Axisymetric Solid Parabolic Quadrilateral 
-          case 95: // Thin Shell Parabolic Quadrilateral        
+          case 45: // Plane Stress Parabolic Quadrilateral
+          case 55: // Plane Strain Parabolic Quadrilateral
+          case 65: // Plate Parabolic Quadrilateral
+          case 75: // Membrane Parabolic Quadrilateral
+          case 85: // Axisymetric Solid Parabolic Quadrilateral
+          case 95: // Thin Shell Parabolic Quadrilateral
             if ( aRec.node_labels.size() == 9 )
               anElement = myMesh->AddFaceWithID(aRec.node_labels[0],
                                                 aRec.node_labels[2],
@@ -295,7 +295,7 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
                                                 aRec.node_labels[7],
                                                 aRec.label);
             break;
-            
+
           case 112: // Solid Linear Prism - PRISM6
             anElement = myMesh->AddVolumeWithID(aRec.node_labels[0],
                                                 aRec.node_labels[2],
@@ -305,7 +305,7 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
                                                 aRec.node_labels[4],
                                                 aRec.label);
             break;
-            
+
           case 113: // Solid Quadratic Prism - PRISM15
             anElement = myMesh->AddVolumeWithID(aRec.node_labels[0],
                                                 aRec.node_labels[4],
@@ -328,7 +328,7 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
                                                 aRec.node_labels[7],
                                                 aRec.label);
             break;
-            
+
           case 115: // Solid Linear Brick - HEX8
             anElement = myMesh->AddVolumeWithID(aRec.node_labels[0],
                                                 aRec.node_labels[3],
@@ -396,101 +396,63 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
       }
     }
     {
-      using namespace UNV2417;      
+      using namespace UNV2417;
       TDataSet aDataSet2417;
       UNV2417::Read(in_stream,aDataSet2417);
       if(MYDEBUG) MESSAGE("Perform - aDataSet2417.size() = "<<aDataSet2417.size());
-      if  (aDataSet2417.size() > 0) {
-        myGroup = new SMDS_MeshGroup(myMesh);
+      if (aDataSet2417.size() > 0)
+      {
         TDataSet::const_iterator anIter = aDataSet2417.begin();
-        for(; anIter != aDataSet2417.end(); anIter++){
-          const TGroupId& aLabel = anIter->first;
+        for ( ; anIter != aDataSet2417.end(); anIter++ )
+        {
           const TRecord& aRec = anIter->second;
-
-          int aNodesNb = aRec.NodeList.size();
-          int aElementsNb = aRec.ElementList.size();
+          int        aNodesNb = aRec.NodeList.size();
+          int     aElementsNb = aRec.ElementList.size();
 
           bool useSuffix = ((aNodesNb > 0) && (aElementsNb > 0));
-          int i;
-          if (aNodesNb > 0) {
-            SMDS_MeshGroup* aNodesGroup = (SMDS_MeshGroup*) myGroup->AddSubGroup(SMDSAbs_Node);
+          if ( aNodesNb > 0 )
+          {
+            SMDS_MeshGroup* aNodesGroup = new SMDS_MeshGroup( myMesh );
             std::string aGrName = (useSuffix) ? aRec.GroupName + "_Nodes" : aRec.GroupName;
             int i = aGrName.find( "\r" );
             if (i > 0)
               aGrName.erase (i, 2);
-            myGroupNames.insert(TGroupNamesMap::value_type(aNodesGroup, aGrName));
-            myGroupId.insert(TGroupIdMap::value_type(aNodesGroup, aLabel));
+            myGroupNames.insert( std::make_pair( aNodesGroup, aGrName ));
 
-            for (i = 0; i < aNodesNb; i++) {
-              const SMDS_MeshNode* aNode = myMesh->FindNode(aRec.NodeList[i]);
-              if (aNode)
-                aNodesGroup->Add(aNode);
-            }
+            for ( int i = 0; i < aNodesNb; i++ )
+              if ( const SMDS_MeshNode* aNode = myMesh->FindNode( aRec.NodeList[i] ))
+                aNodesGroup->Add( aNode );
           }
-          if (aElementsNb > 0){
-            SMDS_MeshGroup* aEdgesGroup = 0;
-            SMDS_MeshGroup* aFacesGroup = 0;
-            SMDS_MeshGroup* aVolumeGroup = 0;
+          if ( aElementsNb > 0 )
+          {
+            std::vector< SMDS_MeshGroup* > aGroupVec( SMDSAbs_NbElementTypes, (SMDS_MeshGroup*)0 );
+            const char* aSuffix[] = { "", "", "_Edges", "_Faces", "_Volumes", "_0D", "_Balls" };
             bool createdGroup = false;
+            for ( int i = 0; i < aElementsNb; i++)
+            {
+              const SMDS_MeshElement* aElement = myMesh->FindElement( aRec.ElementList[i] );
+              if ( !aElement ) continue;
 
-            for (i = 0; i < aElementsNb; i++) {
-              const SMDS_MeshElement* aElement = myMesh->FindElement(aRec.ElementList[i]);
-              if (aElement) {
-                switch (aElement->GetType()) {
-
-                case SMDSAbs_Edge:
-                  if (!aEdgesGroup) {
-                    aEdgesGroup = (SMDS_MeshGroup*) myGroup->AddSubGroup(SMDSAbs_Edge);
-                    if (!useSuffix && createdGroup) useSuffix = true;
-                    std::string aEdgesGrName = (useSuffix) ? aRec.GroupName + "_Edges" : aRec.GroupName;
-                    int i = aEdgesGrName.find( "\r" );
-                    if (i > 0)
-                      aEdgesGrName.erase (i, 2);
-                    myGroupNames.insert(TGroupNamesMap::value_type(aEdgesGroup, aEdgesGrName));
-                    myGroupId.insert(TGroupIdMap::value_type(aEdgesGroup, aLabel));
-                    createdGroup = true;
-                  }
-                  aEdgesGroup->Add(aElement);
-                  break;
-
-                case SMDSAbs_Face:
-                  if (!aFacesGroup) {
-                    aFacesGroup = (SMDS_MeshGroup*) myGroup->AddSubGroup(SMDSAbs_Face);
-                    if (!useSuffix && createdGroup) useSuffix = true;
-                    std::string aFacesGrName = (useSuffix) ? aRec.GroupName + "_Faces" : aRec.GroupName;
-                    int i = aFacesGrName.find( "\r" );
-                    if (i > 0)
-                      aFacesGrName.erase (i, 2);
-                    myGroupNames.insert(TGroupNamesMap::value_type(aFacesGroup, aFacesGrName));
-                    myGroupId.insert(TGroupIdMap::value_type(aFacesGroup, aLabel));
-                    createdGroup = true;
-                  }
-                  aFacesGroup->Add(aElement);
-                  break;
-
-                case SMDSAbs_Volume:
-                  if (!aVolumeGroup) {
-                    aVolumeGroup = (SMDS_MeshGroup*) myGroup->AddSubGroup(SMDSAbs_Volume);
-                    if (!useSuffix && createdGroup) useSuffix = true;
-                    std::string aVolumeGrName = (useSuffix) ? aRec.GroupName + "_Volumes" : aRec.GroupName;
-                    int i = aVolumeGrName.find( "\r" );
-                    if (i > 0)
-                      aVolumeGrName.erase (i, 2);
-                    myGroupNames.insert(TGroupNamesMap::value_type(aVolumeGroup, aVolumeGrName));
-                    myGroupId.insert(TGroupIdMap::value_type(aVolumeGroup, aLabel));
-                    createdGroup = true;
-                  }
-                  aVolumeGroup->Add(aElement);
-                  break;
-
-                default:;
-                }
-              } 
+              SMDS_MeshGroup * & aGroup = aGroupVec[ aElement->GetType() ];
+              if ( !aGroup )
+              {
+                aGroup = new SMDS_MeshGroup( myMesh );
+                if (!useSuffix && createdGroup) useSuffix = true;
+                std::string aGrName = aRec.GroupName;
+                int i = aGrName.find( "\r" );
+                if ( i > 0 )
+                  aGrName.erase (i, 2);
+                if ( useSuffix )
+                  aGrName += aSuffix[ aElement->GetType() ];
+                myGroupNames.insert( std::make_pair( aGroup, aGrName ));
+                createdGroup = true;
+              }
+              aGroup->Add(aElement);
             }
           }
         }
       }
-    } 
+    }
   }
   catch(const std::exception& exc){
     INFOS("Follow exception was cought:\n\t"<<exc.what());
@@ -499,6 +461,9 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
     INFOS("Unknown exception was cought !!!");
   }
   if (myMesh)
-    myMesh->compactMesh();
+  {
+    myMesh->Modified();
+    myMesh->CompactMesh();
+  }
   return aResult;
 }

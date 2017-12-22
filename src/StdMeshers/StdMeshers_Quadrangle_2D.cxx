@@ -643,9 +643,11 @@ bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
               SMESH_ComputeErrorPtr& err = aMesh.GetSubMesh( aFace )->GetComputeError();
               if ( !err || err->IsOK() || err->myName < COMPERR_WARNING )
               {
-                err.reset( new SMESH_ComputeError( COMPERR_WARNING,
-                                                   "Bad quality quad created"));
-                err->myBadElements.push_back( face );
+                SMESH_BadInputElements* badElems =
+                  new SMESH_BadInputElements( meshDS, COMPERR_WARNING,
+                                              "Bad quality quad created");
+                badElems->add( face );
+                err.reset( badElems );
               }
             }
             --i;
@@ -818,9 +820,11 @@ bool StdMeshers_Quadrangle_2D::computeQuadDominant(SMESH_Mesh&         aMesh,
               SMESH_ComputeErrorPtr& err = aMesh.GetSubMesh( aFace )->GetComputeError();
               if ( !err || err->IsOK() || err->myName < COMPERR_WARNING )
               {
-                err.reset( new SMESH_ComputeError( COMPERR_WARNING,
-                                                   "Bad quality quad created"));
-                err->myBadElements.push_back( face );
+                SMESH_BadInputElements* badElems =
+                  new SMESH_BadInputElements( meshDS, COMPERR_WARNING,
+                                              "Bad quality quad created");
+                badElems->add( face );
+                err.reset( badElems );
               }
             }
             --i;
@@ -4668,9 +4672,11 @@ bool StdMeshers_Quadrangle_2D::check()
   {
     SMESH_subMesh* fSM = myHelper->GetMesh()->GetSubMesh( geomFace );
     SMESH_ComputeErrorPtr& err = fSM->GetComputeError();
-    err.reset ( new SMESH_ComputeError( COMPERR_ALGO_FAILED,
-                                        "Inverted elements generated"));
-    err->myBadElements.swap( badFaces );
+    SMESH_BadInputElements* badElems =
+      new SMESH_BadInputElements( meshDS, COMPERR_ALGO_FAILED,
+                                  "Inverted elements generated");
+    badElems->myBadElements.swap( badFaces );
+    err.reset( badElems );
 
     return !isOK;
   }

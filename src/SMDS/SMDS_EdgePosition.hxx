@@ -31,18 +31,19 @@
 
 #include "SMDS_Position.hxx"
 
-class SMDS_EXPORT SMDS_EdgePosition:public SMDS_Position
+class SMDS_EXPORT SMDS_EdgePosition : public SMDS_Position
 {
 
-  public:
-        SMDS_EdgePosition(const double aUParam=0);
-        SMDS_TypeOfPosition GetTypeOfPosition() const;
-        void SetUParameter(double aUparam);
-        double GetUParameter() const;
+ public:
+  SMDS_EdgePosition(const double aUParam=0) : myUParameter( aUParam ) {}
+  virtual SMDS_TypeOfPosition GetTypeOfPosition() const { return SMDS_TOP_EDGE; }
+  virtual void   SetUParameter(double aUparam) { myUParameter = aUparam; }
+  virtual double GetUParameter() const { return myUParameter; }
+  virtual const double* GetParameters() const { return &myUParameter; }
 
-  private:
+ private:
 
-        double myUParameter;
+  double myUParameter;
 
 };
 

@@ -85,7 +85,6 @@
 #include "MED_Factory.hxx"
 #include "SMDS_EdgePosition.hxx"
 #include "SMDS_FacePosition.hxx"
-#include "SMDS_PolyhedralVolumeOfNodes.hxx"
 #include "SMDS_SetIterator.hxx"
 #include "SMDS_SpacePosition.hxx"
 #include "SMDS_VertexPosition.hxx"
@@ -1639,7 +1638,7 @@ SMESH::compute_error_array* SMESH_Gen_i::GetComputeErrors( SMESH::SMESH_Mesh_ptr
           else {
             errStruct.algoName = error->myAlgo->GetName();
           }
-          errStruct.hasBadMesh = !error->myBadElements.empty();
+          errStruct.hasBadMesh = error->HasBadElems();
         }
       }
       error_array->length( nbErr );
@@ -1681,7 +1680,7 @@ SMESH_Gen_i::GetBadInputElements( SMESH::SMESH_Mesh_ptr theMesh,
       {
         // compute error
         SMESH_ComputeErrorPtr error = sm->GetComputeError();
-        if ( error && !error->myBadElements.empty())
+        if ( error && error->HasBadElems() )
         {
           typedef map<const SMDS_MeshElement*, int > TNode2LocalIDMap;
           typedef TNode2LocalIDMap::iterator         TNodeLocalID;
@@ -1691,8 +1690,10 @@ SMESH_Gen_i::GetBadInputElements( SMESH::SMESH_Mesh_ptr theMesh,
           list< TNodeLocalID > connectivity;
           int i, nbElements = 0, nbConnNodes = 0;
 
-          list<const SMDS_MeshElement*>::iterator elemIt  = error->myBadElements.begin();
-          list<const SMDS_MeshElement*>::iterator elemEnd = error->myBadElements.end();
+          const list<const SMDS_MeshElement*>& badElems =
+            static_cast<SMESH_BadInputElements*>( error.get() )->myBadElements;
+          list<const SMDS_MeshElement*>::const_iterator elemIt  = badElems.begin();
+          list<const SMDS_MeshElement*>::const_iterator elemEnd = badElems.end();
           for ( ; elemIt != elemEnd; ++elemIt, ++nbElements )
           {
             SMDS_ElemIteratorPtr nIt = (*elemIt)->nodesIterator();
@@ -1719,7 +1720,7 @@ SMESH_Gen_i::GetBadInputElements( SMESH::SMESH_Mesh_ptr theMesh,
           }
           // fill element types
           result->elementTypes.length( nbElements );
-          for ( i = 0, elemIt = error->myBadElements.begin(); i <nbElements; ++i, ++elemIt )
+          for ( i = 0, elemIt = badElems.begin(); i <nbElements; ++i, ++elemIt )
           {
             const SMDS_MeshElement* elem = *elemIt;
             result->elementTypes[i].SMDS_ElementType = (SMESH::ElementType) elem->GetType();
@@ -3126,8 +3127,9 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
           if ( !myHyp->_is_nil() ) {
             SMESH_Hypothesis_i* myImpl = dynamic_cast<SMESH_Hypothesis_i*>( GetServant( myHyp ).in() );
             if ( myImpl ) {
-              string hypname = string( myHyp->GetName() );
-              string libname = string( myHyp->GetLibName() );
+              CORBA::String_var hn = myHyp->GetName(), ln = myHyp->GetLibName();
+              std::string hypname = hn.in();
+              std::string libname = ln.in();
               // BUG SWP13062
               // Needs for save crossplatform libname, i.e. parth of name ( ".dll" for
               // WIN32 and ".so" for X-system) must be deleted
@@ -3139,13 +3141,13 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
               // PAL17753 (Regression: missing hypothesis in restored study)
               // "lib" also should be removed from the beginning
               //if( libname_len > 3 )
-                //libname.resize( libname_len - 3 );
+              //libname.resize( libname_len - 3 );
               if( libname_len > 6 )
                 libname = libname.substr( 3, libname_len - 3 - 3 );
 #endif
-              CORBA::String_var objStr = GetORB()->object_to_string( anObject );
-              int    id      = myStudyContext->findId( string( objStr.in() ) );
-              string hypdata = string( myImpl->SaveTo() );
+              CORBA::String_var  objStr = GetORB()->object_to_string( anObject );
+              CORBA::String_var hypdata = myImpl->SaveTo();
+              int                    id = myStudyContext->findId( string( objStr.in() ));
 
               // for each hypothesis create HDF group basing on its id
               char hypGrpName[30];
@@ -3165,10 +3167,10 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
               aDataset->WriteOnDisk( ( char* )( libname.c_str() ) );
               aDataset->CloseOnDisk();
               // --> persistent data of hypothesis
-              aSize[ 0 ] = hypdata.length() + 1;
+              aSize[ 0 ] = strlen( hypdata.in() ) + 1;
               aDataset = new HDFdataset( "Data", aGroup, HDF_STRING, aSize, 1 );
               aDataset->CreateOnDisk();
-              aDataset->WriteOnDisk( ( char* )( hypdata.c_str() ) );
+              aDataset->WriteOnDisk( ( char* )( hypdata.in() ) );
               aDataset->CloseOnDisk();
               // close hypothesis HDF group
               aGroup->CloseOnDisk();
@@ -3195,8 +3197,9 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
           if ( !myHyp->_is_nil() ) {
             SMESH_Hypothesis_i* myImpl = dynamic_cast<SMESH_Hypothesis_i*>( GetServant( myHyp ).in() );
             if ( myImpl ) {
-              string hypname = string( myHyp->GetName() );
-              string libname = string( myHyp->GetLibName() );
+              CORBA::String_var hn = myHyp->GetName(), ln = myHyp->GetLibName();
+              std::string hypname = hn.in();
+              std::string libname = ln.in();
               // BUG SWP13062
               // Needs for save crossplatform libname, i.e. parth of name ( ".dll" for
               // WIN32 and ".so" for X-system) must be deleted
@@ -3208,13 +3211,13 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
               // PAL17753 (Regression: missing hypothesis in restored study)
               // "lib" also should be removed from the beginning
               //if( libname_len > 3 )
-                //libname.resize( libname_len - 3 );
+              //libname.resize( libname_len - 3 );
               if( libname_len > 6 )
                 libname = libname.substr( 3, libname_len - 3 - 3 );
 #endif
-              CORBA::String_var objStr = GetORB()->object_to_string( anObject );
-              int    id      = myStudyContext->findId( string( objStr.in() ) );
-              string hypdata = string( myImpl->SaveTo() );
+              CORBA::String_var  objStr = GetORB()->object_to_string( anObject );
+              CORBA::String_var hypdata = myImpl->SaveTo();
+              int                    id = myStudyContext->findId( string( objStr.in() ) );
 
               // for each algorithm create HDF group basing on its id
               char hypGrpName[30];
@@ -3234,10 +3237,10 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
               aDataset->WriteOnDisk( ( char* )( libname.c_str() ) );
               aDataset->CloseOnDisk();
               // --> persistent data of algorithm
-              aSize[0] = hypdata.length() + 1;
+              aSize[0] = strlen( hypdata.in() ) + 1;
               aDataset = new HDFdataset( "Data", aGroup, HDF_STRING, aSize, 1 );
               aDataset->CreateOnDisk();
-              aDataset->WriteOnDisk( ( char* )( hypdata.c_str() ) );
+              aDataset->WriteOnDisk( ( char* )( hypdata.in() ));
               aDataset->CloseOnDisk();
               // close algorithm HDF group
               aGroup->CloseOnDisk();
@@ -3319,13 +3322,14 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
               SALOMEDS::SObject_wrap myShape;
               bool ok = myRef->ReferencedObject( myShape.inout() );
               if ( ok ) {
-                shapeRefFound = (! CORBA::is_nil( myShape->GetObject() ));
-                string myRefOnObject = myShape->GetID();
-                if ( shapeRefFound && myRefOnObject.length() > 0 ) {
-                  aSize[ 0 ] = myRefOnObject.length() + 1;
+                CORBA::Object_var shapeObj = myShape->GetObject();
+                shapeRefFound = (! CORBA::is_nil( shapeObj ));
+                CORBA::String_var myRefOnObject = myShape->GetID();
+                if ( shapeRefFound && myRefOnObject.in()[0] ) {
+                  aSize[ 0 ] = strlen( myRefOnObject.in() ) + 1;
                   aDataset = new HDFdataset( "Ref on shape", aTopGroup, HDF_STRING, aSize, 1 );
                   aDataset->CreateOnDisk();
-                  aDataset->WriteOnDisk( ( char* )( myRefOnObject.c_str() ) );
+                  aDataset->WriteOnDisk( ( char* )( myRefOnObject.in() ) );
                   aDataset->CloseOnDisk();
                 }
               }
@@ -3334,7 +3338,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
             // write applied hypotheses if exist
             SALOMEDS::SObject_wrap myHypBranch;
             found = gotBranch->FindSubObject( GetRefOnAppliedHypothesisTag(), myHypBranch.inout() );
-            if ( found && !shapeRefFound && hasShape) { // remove applied hyps
+            if ( found && !shapeRefFound && hasShape ) { // remove applied hyps
               myCurrentStudy->NewBuilder()->RemoveObjectWithChildren( myHypBranch );
             }
             if ( found && (shapeRefFound || !hasShape) ) {
@@ -3671,8 +3675,8 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 
                     // For each group, create a dataset named "Group <group_persistent_id>"
                     // and store the group's user name into it
-                    const char* grpName = aGrpBaseDS->GetStoreName();
-                    char* aUserName = myGroupImpl->GetName();
+                    const char*         grpName = aGrpBaseDS->GetStoreName();
+                    CORBA::String_var aUserName = myGroupImpl->GetName();
                     aSize[ 0 ] = strlen( aUserName ) + 1;
 
                     aDataset = new HDFdataset( grpName, aGroup, HDF_STRING, aSize, 1 );
@@ -3710,14 +3714,14 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                           mySubRef->ReferencedObject( myShape.inout() ) &&
                           !CORBA::is_nil( myShape->GetObject() ))
                       {
-                        string myRefOnObject = myShape->GetID();
-                        if ( myRefOnObject.length() > 0 ) {
+                        CORBA::String_var myRefOnObject = myShape->GetID();
+                        if ( myRefOnObject.in()[0] ) {
                           char aRefName[ 30 ];
                           sprintf( aRefName, "Ref on shape %d", anId);
-                          aSize[ 0 ] = myRefOnObject.length() + 1;
+                          aSize[ 0 ] = strlen( myRefOnObject.in() ) + 1;
                           aDataset = new HDFdataset(aRefName, aGroup, HDF_STRING, aSize, 1);
                           aDataset->CreateOnDisk();
-                          aDataset->WriteOnDisk( ( char* )( myRefOnObject.c_str() ) );
+                          aDataset->WriteOnDisk( ( char* )( myRefOnObject.in() ));
                           aDataset->CloseOnDisk();
                         }
                       }
@@ -3865,8 +3869,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                       // Position
                       const SMDS_PositionPtr pos = node->GetPosition();
                       if ( onFace ) { // on FACE
-                        const SMDS_FacePosition* fPos =
-                          dynamic_cast<const SMDS_FacePosition*>( pos );
+                        SMDS_FacePositionPtr fPos = pos;
                         if ( fPos ) {
                           aUPos[ iNode ] = fPos->GetUParameter();
                           aVPos[ iNode ] = fPos->GetVParameter();
@@ -3876,8 +3879,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                           nbNodes--;
                       }
                       else { // on EDGE
-                        const SMDS_EdgePosition* ePos =
-                          dynamic_cast<const SMDS_EdgePosition*>( pos );
+                        SMDS_EdgePositionPtr ePos = pos;
                         if ( ePos ) {
                           aUPos[ iNode ] = ePos->GetUParameter();
                           iNode++;
@@ -4558,6 +4560,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                     myStudyContext->mapOldToNew( subid, newSubId );
                   }
                 }
+                delete [] refFromFile;
               }
 
               if ( aSubMesh->_is_nil() )
@@ -4592,6 +4595,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                           myNewMeshImpl->addHypothesis( aSubShapeObject, anHyp );
                       }
                     }
+                    delete [] refFromFile;
                   }
                 }
                 // close "applied algorithms" HDF group
@@ -4627,6 +4631,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                           myNewMeshImpl->addHypothesis( aSubShapeObject, anHyp );
                       }
                     }
+                    delete [] refFromFile;
                   }
                 }
                 // close "APPLIED HYPOTHESES" hdf group
@@ -4708,6 +4713,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                       aShape = GeomObjectToShape( aShapeObject );
                   }
                 }
+                delete [] refFromFile;
               }
               // Try to read a filter of SMESH_GroupOnFilter
               SMESH::Filter_var filter;
@@ -4726,12 +4732,14 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                   predicate = SMESH_GroupOnFilter_i::GetPredicate( filter );
                   filters.push_back( filter );
                 }
+                delete [] persistStr;
               }
 
               // Create group servant
               SMESH::ElementType type = (SMESH::ElementType)(ii - GetNodeGroupsTag() + 1);
               SMESH::SMESH_GroupBase_var aNewGroup = SMESH::SMESH_GroupBase::_duplicate
                 ( myNewMeshImpl->createGroup( type, nameFromFile, aShape, predicate ) );
+              delete [] nameFromFile;
               // Obtain a SMESHDS_Group object
               if ( aNewGroup->_is_nil() )
                 continue;
@@ -4770,6 +4778,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                 aDataset->CloseOnDisk();
                 Quantity_Color aColor( anRGB[0], anRGB[1], anRGB[2], Quantity_TOC_RGB );
                 aGroupBaseDS->SetColor( aColor );
+                delete [] anRGB;
               }
             }
           }
@@ -4787,7 +4796,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
       }
 
       // read Sub-Mesh ORDER if any
-      if( aTopGroup->ExistInternalObject( "Mesh Order" ) ) {
+      if ( aTopGroup->ExistInternalObject( "Mesh Order" )) {
         aDataset = new HDFdataset( "Mesh Order", aTopGroup );
         aDataset->OpenOnDisk();
         size = aDataset->GetSize();
@@ -4803,6 +4812,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
             anOrderIds.back().push_back(smIDs[ i ]);
 
         myNewMeshImpl->GetImpl().SetMeshOrder( anOrderIds );
+        delete [] smIDs;
       }
     } // loop on meshes
 

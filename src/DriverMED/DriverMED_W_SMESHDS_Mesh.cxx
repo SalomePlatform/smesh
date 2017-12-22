@@ -31,9 +31,7 @@
 #include "MED_Factory.hxx"
 #include "MED_Utilities.hxx"
 #include "SMDS_IteratorOnIterators.hxx"
-#include "SMDS_MeshElement.hxx"
 #include "SMDS_MeshNode.hxx"
-#include "SMDS_PolyhedralVolumeOfNodes.hxx"
 #include "SMDS_SetIterator.hxx"
 #include "SMESHDS_Mesh.hxx"
 
@@ -360,10 +358,6 @@ namespace
 Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 {
   Status aResult = DRS_OK;
-  if (myMesh->hasConstructionEdges() || myMesh->hasConstructionFaces()) {
-    INFOS("SMDS_MESH with hasConstructionEdges() or hasConstructionFaces() do not supports!!!");
-    return DRS_FAIL;
-  }
   try {
     //MESSAGE("Perform - myFile : "<<myFile);
 
@@ -408,7 +402,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
           const SMDS_MeshNode* aNode = aNodesIter->next();
           aBounds[0] = min(aBounds[0],aNode->X());
           aBounds[1] = max(aBounds[1],aNode->X());
-          
+
           aBounds[2] = min(aBounds[2],aNode->Y());
           aBounds[3] = max(aBounds[3],aNode->Y());
 
@@ -454,7 +448,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
         }
       }
 
-      SMDS_NodeIteratorPtr aNodesIter = myMesh->nodesIterator(/*idInceasingOrder=*/true);
+      SMDS_NodeIteratorPtr aNodesIter = myMesh->nodesIterator();
       switch ( aSpaceDimension ) {
       case 3:
         aCoordHelperPtr.reset(new TCoordHelper(aNodesIter,aXYZGetCoord,aXYZName));
@@ -857,7 +851,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
 
       // Treat POLYEDREs
       // ----------------
-      else if (aElemTypeData->_geomType == ePOLYEDRE )
+      else if ( aElemTypeData->_geomType == ePOLYEDRE )
       {
         elemIterator = myMesh->elementGeomIterator( SMDSGeom_POLYHEDRA );
 
@@ -865,10 +859,8 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
           // Count nb of nodes
           while ( elemIterator->more() ) {
             const SMDS_MeshElement*  anElem = elemIterator->next();
-            const SMDS_VtkVolume *aPolyedre = dynamic_cast<const SMDS_VtkVolume*>(anElem);
-            if ( !aPolyedre ) continue;
-            nbPolyhedronNodes += aPolyedre->NbNodes();
-            nbPolyhedronFaces += aPolyedre->NbFaces();
+            nbPolyhedronNodes += anElem->NbNodes();
+            nbPolyhedronFaces += anElem->NbFaces();
             if ( ++iElem == aElemTypeData->_nbElems )
               break;
           }
@@ -893,8 +885,8 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
           TInt iFace = 0, iNode = 0;
           while ( elemIterator->more() )
           {
-            const SMDS_MeshElement*  anElem = elemIterator->next();
-            const SMDS_VtkVolume *aPolyedre = dynamic_cast<const SMDS_VtkVolume*>(anElem);
+            const SMDS_MeshElement* anElem = elemIterator->next();
+            const SMDS_MeshVolume *aPolyedre = myMesh->DownCast< SMDS_MeshVolume >( anElem );
             if ( !aPolyedre ) continue;
             // index
             TInt aNbFaces = aPolyedre->NbFaces();

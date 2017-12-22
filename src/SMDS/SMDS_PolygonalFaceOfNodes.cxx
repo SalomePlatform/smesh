@@ -28,22 +28,20 @@
 
 #include "SMDS_PolygonalFaceOfNodes.hxx"
 
-#include "SMDS_IteratorOfElements.hxx"
 #include "SMDS_SetIterator.hxx"
 #include "SMDS_Mesh.hxx"
 
-#include "utilities.h"
+#include <boost/make_shared.hpp>
 
-using namespace std;
+#include <utilities.h>
 
 //=======================================================================
 //function : Constructor
 //purpose  : 
 //=======================================================================
-SMDS_PolygonalFaceOfNodes::SMDS_PolygonalFaceOfNodes
-                          (const std::vector<const SMDS_MeshNode *>& nodes)
+SMDS_PolygonalFaceOfNodes::
+SMDS_PolygonalFaceOfNodes (const std::vector<const SMDS_MeshNode *>& nodes)
 {
-  //MESSAGE("******************************************** SMDS_PolygonalFaceOfNodes");
   myNodes = nodes;
 }
 
@@ -54,41 +52,40 @@ SMDS_PolygonalFaceOfNodes::SMDS_PolygonalFaceOfNodes
 SMDSAbs_ElementType SMDS_PolygonalFaceOfNodes::GetType() const
 {
   return SMDSAbs_Face;
-  //return SMDSAbs_PolygonalFace;
 }
 
 //=======================================================================
 //function : ChangeNodes
 //purpose  : 
 //=======================================================================
-bool SMDS_PolygonalFaceOfNodes::ChangeNodes (std::vector<const SMDS_MeshNode *> nodes)
-{
-  if (nodes.size() < 3)
-    return false;
+// bool SMDS_PolygonalFaceOfNodes::ChangeNodes (std::vector<const SMDS_MeshNode *> nodes)
+// {
+//   if (nodes.size() < 3)
+//     return false;
 
-  myNodes = nodes;
+//   myNodes = nodes;
 
-  return true;
-}
+//   return true;
+// }
 
 //=======================================================================
 //function : ChangeNodes
 //purpose  : to support the same interface, as SMDS_FaceOfNodes
 //=======================================================================
-bool SMDS_PolygonalFaceOfNodes::ChangeNodes (const SMDS_MeshNode* nodes[],
-                                             const int            nbNodes)
-{
-  if (nbNodes < 3)
-    return false;
+// bool SMDS_PolygonalFaceOfNodes::ChangeNodes (const SMDS_MeshNode* nodes[],
+//                                              const int            nbNodes)
+// {
+//   if (nbNodes < 3)
+//     return false;
 
-  myNodes.resize(nbNodes);
-  int i = 0;
-  for (; i < nbNodes; i++) {
-    myNodes[i] = nodes[i];
-  }
+//   myNodes.resize(nbNodes);
+//   int i = 0;
+//   for (; i < nbNodes; i++) {
+//     myNodes[i] = nodes[i];
+//   }
 
-  return true;
-}
+//   return true;
+// }
 
 //=======================================================================
 //function : NbNodes
@@ -130,64 +127,11 @@ void SMDS_PolygonalFaceOfNodes::Print(ostream & OS) const
   OS << myNodes[i] << ") " << endl;
 }
 
-//=======================================================================
-//function : elementsIterator
-//purpose  : 
-//=======================================================================
-class SMDS_PolygonalFaceOfNodes_MyIterator:public SMDS_NodeVectorElemIterator
-{
- public:
-  SMDS_PolygonalFaceOfNodes_MyIterator(const vector<const SMDS_MeshNode *>& s):
-    SMDS_NodeVectorElemIterator( s.begin(), s.end() ) {}
-};
-
 /// ===================================================================
 /*!
  * \brief Iterator on edges of face
  */
 /// ===================================================================
-
-class _MyEdgeIterator : public SMDS_ElemIterator
-{
-  vector< const SMDS_MeshElement* > myElems;
-  size_t                            myIndex;
-public:
-  _MyEdgeIterator(const SMDS_MeshFace* face):myIndex(0) {
-    myElems.reserve( face->NbNodes() );
-    for ( int i = 0; i < face->NbNodes(); ++i ) {
-      const SMDS_MeshElement* edge =
-        SMDS_Mesh::FindEdge( face->GetNode( i ), face->GetNodeWrap( i + 1 ));
-      if ( edge )
-        myElems.push_back( edge );
-    }
-  }
-  /// Return true if and only if there are other object in this iterator
-  virtual bool more() { return myIndex < myElems.size(); }
-
-  /// Return the current object and step to the next one
-  virtual const SMDS_MeshElement* next() { return myElems[ myIndex++ ]; }
-};
-
-SMDS_ElemIteratorPtr SMDS_PolygonalFaceOfNodes::elementsIterator
-                                         (SMDSAbs_ElementType type) const
-{
-  switch(type)
-  {
-  case SMDSAbs_Face:
-    return SMDS_MeshElement::elementsIterator(SMDSAbs_Face);
-  case SMDSAbs_Node:
-    return SMDS_ElemIteratorPtr(new SMDS_PolygonalFaceOfNodes_MyIterator(myNodes));
-  case SMDSAbs_Edge:
-    return SMDS_ElemIteratorPtr(new _MyEdgeIterator( this ));
-    break;
-  default:
-    return SMDS_ElemIteratorPtr
-      (new SMDS_IteratorOfElements
-       (this,type,SMDS_ElemIteratorPtr
-        (new SMDS_PolygonalFaceOfNodes_MyIterator(myNodes))));
-  }
-  return SMDS_ElemIteratorPtr();
-}
 
 /*!
  * \brief Return node by its index
@@ -197,4 +141,14 @@ SMDS_ElemIteratorPtr SMDS_PolygonalFaceOfNodes::elementsIterator
 const SMDS_MeshNode* SMDS_PolygonalFaceOfNodes::GetNode(const int ind) const
 {
   return myNodes[ WrappedIndex( ind )];
+}
+
+SMDS_ElemIteratorPtr SMDS_PolygonalFaceOfNodes::nodesIterator() const
+{
+  return boost::make_shared< SMDS_NodeArrayElemIterator >( &myNodes[0], &myNodes[0] + NbNodes() );
+}
+
+SMDS_NodeIteratorPtr SMDS_PolygonalFaceOfNodes::nodeIterator() const
+{
+  return boost::make_shared< SMDS_NodeArrayIterator >( &myNodes[0], &myNodes[0] + NbNodes() );
 }

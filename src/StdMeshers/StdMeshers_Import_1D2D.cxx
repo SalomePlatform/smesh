@@ -581,7 +581,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
                 if ( Abs(u-f) < 2 * faceTol || Abs(u-l) < 2 * faceTol )
                   // duplicated node on vertex
                   return error("Source elements overlap one another");
-                tgtFaceSM->RemoveNode( n, /*isNodeDeleted=*/false );
+                tgtFaceSM->RemoveNode( n );
                 tgtMesh->SetNodeOnEdge( n, edges[iE], u );
                 break;
               }
@@ -634,7 +634,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
 
           TopoDS_Edge geomEdge = TopoDS::Edge(bndShapes.back());
           helper.CheckNodeU( geomEdge, link._medium, u, projTol, /*force=*/true );
-          tgtFaceSM->RemoveNode( link._medium, /*isNodeDeleted=*/false );
+          tgtFaceSM->RemoveNode( link._medium );
           tgtMesh->SetNodeOnEdge( (SMDS_MeshNode*)link._medium, geomEdge, u );
         }
         else
@@ -747,7 +747,7 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
           seamHelper.AddEdge( node1, node2 );
           if ( node2->getshapeId() == helper.GetSubShapeID() )
           {
-            tgtFaceSM->RemoveNode( node2, /*isNodeDeleted=*/false );
+            tgtFaceSM->RemoveNode( node2 );
             tgtMesh->SetNodeOnEdge( const_cast<SMDS_MeshNode*>( node2 ), seamEdge, n2->first );
           }
         }

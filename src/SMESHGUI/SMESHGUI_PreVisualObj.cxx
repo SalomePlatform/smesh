@@ -98,7 +98,7 @@ bool SMESHGUI_PreVisualObj::IsValid() const
 
 vtkUnstructuredGrid* SMESHGUI_PreVisualObj::GetUnstructuredGrid()
 {
-  return myMesh->getGrid();
+  return myMesh->GetGrid();
 }
 
 
@@ -116,13 +116,13 @@ vtkIdType SMESHGUI_PreVisualObj::GetNodeVTKId( int theObjID )
 
 vtkIdType SMESHGUI_PreVisualObj::GetElemObjId( int theVTKID )
 {
-  return this->GetMesh()->fromVtkToSmds(theVTKID);
+  return this->GetMesh()->FromVtkToSmds(theVTKID);
 }
 
 vtkIdType SMESHGUI_PreVisualObj::GetElemVTKId( int theObjID )
 {
   const SMDS_MeshElement* e = myMesh->FindElement(theObjID);
-  return e ? e->getVtkId() : -1;
+  return e ? e->GetVtkID() : -1;
 }
 
 void SMESHGUI_PreVisualObj::ClearEntitiesFlags()

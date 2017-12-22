@@ -25,8 +25,8 @@
 
 #include <map>
 #include <vector>
-#include <fstream>      
-#include <string>       
+#include <fstream>
+#include <string>
 
 
 namespace UNV2417{
@@ -34,9 +34,9 @@ namespace UNV2417{
   typedef std::vector<int> TListOfId; // Nodal connectivitiesList of Id
 
   struct TRecord{
-    std::string    GroupName;
-    TListOfId NodeList;
-    TListOfId ElementList;
+    std::string GroupName;
+    TListOfId   NodeList;
+    TListOfId   ElementList;
   };
 
   typedef int TGroupId; // type of element label

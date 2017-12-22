@@ -40,6 +40,7 @@
 class SMESHDS_Mesh;
 class SMESHDS_GroupBase;
 class SMESHDS_SubMesh;
+class SMDS_MeshElement;
 
 class MESHDRIVERMED_EXPORT DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
 {

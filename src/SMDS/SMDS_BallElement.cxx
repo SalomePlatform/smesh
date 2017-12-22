@@ -24,78 +24,24 @@
 
 #include "SMDS_BallElement.hxx"
 
-#include "SMDS_ElemIterator.hxx"
 #include "SMDS_Mesh.hxx"
 #include "SMDS_MeshNode.hxx"
-#include "SMDS_VtkCellIterator.hxx"
 
-SMDS_BallElement::SMDS_BallElement()
+void SMDS_BallElement::init(const SMDS_MeshNode * node, double diameter )
 {
-  SMDS_MeshCell::init();
-}
-
-SMDS_BallElement::SMDS_BallElement (const SMDS_MeshNode * node, double diameter)
-{
-  init( node->getVtkId(), diameter, SMDS_Mesh::_meshList[ node->getMeshId() ] );
-}
-
-SMDS_BallElement::SMDS_BallElement(vtkIdType nodeId, double diameter, SMDS_Mesh* mesh)
-{
-  init( nodeId, diameter, mesh );
-}
-
-void SMDS_BallElement::init(vtkIdType nodeId, double diameter, SMDS_Mesh* mesh)
-{
-  SMDS_MeshCell::init();
-  myMeshId = mesh->getMeshId();
-  myVtkID = mesh->getGrid()->InsertNextLinkedCell( GetVtkType(), 1, &nodeId );
-  mesh->getGrid()->SetBallDiameter( myVtkID, diameter );
-  mesh->setMyModified();
+  int nodeVtkID = node->GetVtkID();
+  int vtkID = getGrid()->InsertNextLinkedCell( toVtkType( SMDSEntity_Ball ), 1, &nodeVtkID );
+  setVtkID( vtkID );
+  getGrid()->SetBallDiameter( GetVtkID(), diameter );
 }
 
 double SMDS_BallElement::GetDiameter() const
 {
-  return SMDS_Mesh::_meshList[myMeshId]->getGrid()->GetBallDiameter( myVtkID );
+  return getGrid()->GetBallDiameter( GetVtkID() );
 }
 
 void SMDS_BallElement::SetDiameter(double diameter)
 {
-  SMDS_Mesh::_meshList[myMeshId]->getGrid()->SetBallDiameter( myVtkID, diameter );
+  getGrid()->SetBallDiameter( GetVtkID(), diameter );
+  GetMesh()->setMyModified();
 }
-
-bool SMDS_BallElement::ChangeNode (const SMDS_MeshNode * node)
-{
-  vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
-  vtkIdType npts = 0;
-  vtkIdType* pts = 0;
-  grid->GetCellPoints(myVtkID, npts, pts);
-  pts[0] = node->getVtkId();
-  SMDS_Mesh::_meshList[myMeshId]->setMyModified();
-  return true;
-}
-
-void SMDS_BallElement::Print (std::ostream & OS) const
-{
-  OS << "ball<" << GetID() << "> : ";
-}
-
-const SMDS_MeshNode* SMDS_BallElement::GetNode (const int ind) const
-{
-  vtkUnstructuredGrid* grid = SMDS_Mesh::_meshList[myMeshId]->getGrid();
-  vtkIdType npts, *pts;
-  grid->GetCellPoints( myVtkID, npts, pts );
-  return SMDS_Mesh::_meshList[myMeshId]->FindNodeVtk( pts[ 0 ]);
-}
-
-SMDS_ElemIteratorPtr SMDS_BallElement::elementsIterator (SMDSAbs_ElementType type) const
-{
-  switch (type)
-  {
-    case SMDSAbs_Node:
-      return SMDS_ElemIteratorPtr(new SMDS_VtkCellIterator(SMDS_Mesh::_meshList[myMeshId], myVtkID, GetEntityType()));
-    default:
-      ;
-      return SMDS_ElemIteratorPtr((SMDS_ElemIterator*) NULL);
-  }
-}
-

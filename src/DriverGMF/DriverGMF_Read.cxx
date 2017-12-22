@@ -444,6 +444,9 @@ Driver_Mesh::Status DriverGMF_Read::Perform()
     }
   }
 
+  myMesh->Modified();
+  myMesh->CompactMesh();
+
   return status;
 }
 

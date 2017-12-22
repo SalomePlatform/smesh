@@ -1293,40 +1293,19 @@ static void cleanSubMesh( SMESH_subMesh * subMesh )
       SMESHDS_Mesh * meshDS = subMesh->GetFather()->GetMeshDS();
       int nbElems = subMeshDS->NbElements();
       if ( nbElems > 0 )
-      {
-        // start from elem with max ID to avoid filling the pool of IDs
-        bool rev = true;
-        SMDS_ElemIteratorPtr ite = subMeshDS->GetElements( rev );
-        const SMDS_MeshElement * lastElem = ite->next();
-        rev = ( lastElem->GetID() == meshDS->MaxElementID() );
-        if ( !rev )
-          ite = subMeshDS->GetElements( rev );
-        else
-          meshDS->RemoveFreeElement( lastElem, subMeshDS );
-        while (ite->more()) {
-          const SMDS_MeshElement * elt = ite->next();
-          meshDS->RemoveFreeElement( elt, subMeshDS );
-        }
-      }
+        for ( SMDS_ElemIteratorPtr ite = subMeshDS->GetElements(); ite->more(); )
+          meshDS->RemoveFreeElement( ite->next(), subMeshDS );
+
       int nbNodes = subMeshDS->NbNodes();
       if ( nbNodes > 0 )
-      {
-        bool rev = true;
-        SMDS_NodeIteratorPtr itn = subMeshDS->GetNodes( rev );
-        const SMDS_MeshNode * lastNode = itn->next();
-        rev = ( lastNode->GetID() == meshDS->MaxNodeID() );
-        if ( !rev )
-          itn = subMeshDS->GetNodes( rev );
-        else
-          meshDS->RemoveNode( lastNode );
-        while (itn->more()) {
+        for ( SMDS_NodeIteratorPtr itn = subMeshDS->GetNodes(); itn->more() ; )
+        {
           const SMDS_MeshNode * node = itn->next();
           if ( node->NbInverseElements() == 0 )
             meshDS->RemoveFreeNode( node, subMeshDS );
           else // for StdMeshers_CompositeSegment_1D: node in one submesh, edge in another
-            meshDS->RemoveNode(node);
+            meshDS->RemoveNode( node );
         }
-      }
       subMeshDS->Clear();
     }
   }

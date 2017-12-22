@@ -30,8 +30,11 @@
 #include "SMESH_SMESHDS.hxx"
 
 #include "SMDS_Mesh.hxx"
-#include <set>
 #include <vector>
+
+#include <boost/container/flat_set.hpp>
+class SMESHDS_SubMesh;
+typedef boost::container::flat_set< const SMESHDS_SubMesh* > TSubMeshSet;
 
 class SMESHDS_SubMesh;
 typedef SMDS_Iterator<const SMESHDS_SubMesh*> SMESHDS_SubMeshIterator;
@@ -49,11 +52,11 @@ class SMESHDS_EXPORT SMESHDS_SubMesh
 
   // if !IsComplexSubmesh()
   virtual void AddElement(const SMDS_MeshElement * ME);
-  virtual bool RemoveElement(const SMDS_MeshElement * ME, bool isElemDeleted); // ret true if ME was in
+  virtual bool RemoveElement(const SMDS_MeshElement * ME); // ret true if ME was in
   virtual void AddNode(const SMDS_MeshNode * ME);
-  virtual bool RemoveNode(const SMDS_MeshNode * ME, bool isNodeDeleted);       // ret true if ME was in
-  virtual const SMDS_MeshElement* GetElement( size_t idInShape ) const;
-  virtual const SMDS_MeshNode*    GetNode   ( size_t idInShape ) const;
+  virtual bool RemoveNode(const SMDS_MeshNode * ME);       // ret true if ME was in
+  //virtual const SMDS_MeshElement* GetElement( size_t idInShape ) const;
+  //virtual const SMDS_MeshNode*    GetNode   ( size_t idInShape ) const;
 
   // if IsComplexSubmesh()
   void AddSubMesh( const SMESHDS_SubMesh* theSubMesh );
@@ -65,29 +68,25 @@ class SMESHDS_EXPORT SMESHDS_SubMesh
 
   // for both types
   virtual int NbElements() const;
-  virtual SMDS_ElemIteratorPtr GetElements(bool reverse=false) const;
   virtual int NbNodes() const;
-  virtual SMDS_NodeIteratorPtr GetNodes(bool reverse=false) const;
+  virtual SMDS_ElemIteratorPtr GetElements() const;
+  virtual SMDS_NodeIteratorPtr GetNodes() const;
   virtual bool Contains(const SMDS_MeshElement * ME) const;      // check if elem or node is in
   virtual bool IsQuadratic() const;
 
   // clear the contents
   virtual void Clear();
-  int  getSize();
-  void compactList();
 
   SMESHDS_Mesh* GetParent() const { return const_cast< SMESHDS_Mesh*>( myParent ); }
   int           GetID()     const { return myIndex; }
 
  private:
-  SMESHDS_Mesh *                       myParent;
-  std::vector<const SMDS_MeshElement*> myElements;
-  std::vector<const SMDS_MeshNode*>    myNodes;
 
-  int myUnusedIdNodes;
-  int myUnusedIdElements;
-  int myIndex;
+  int             myIndex;
+  int             myNbElements;
+  int             myNbNodes;
+  SMESHDS_Mesh *  myParent;
+  TSubMeshSet     mySubMeshes;
 
-  std::set<const SMESHDS_SubMesh*> mySubMeshes;
 };
 #endif

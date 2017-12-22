@@ -28,12 +28,16 @@
 
 #include "SMDS_MeshCell.hxx"
 
+/*!
+ * \brief Edge mesh element. This type is not allocated.
+ *        It is only used as function argument type to provide more clear semantic.
+ */
 class SMDS_EXPORT SMDS_MeshEdge: public SMDS_MeshCell
 {
-        
  public:
-  virtual SMDSAbs_ElementType  GetType() const;
-  virtual vtkIdType            GetVtkType() const;
+  virtual SMDSAbs_ElementType  GetType()     const { return SMDSAbs_Edge; }
   virtual SMDSAbs_GeometryType GetGeomType() const { return SMDSGeom_EDGE; }
+
+  static SMDSAbs_ElementType Type() { return SMDSAbs_Edge; }
 };
 #endif

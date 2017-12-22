@@ -50,8 +50,6 @@
 
 #include "utilities.h"
 
-using namespace std;
-
 class SMESHDS_Mesh::SubMeshHolder : public SMESHDS_TSubMeshHolder< const SMESHDS_SubMesh >
 {
 };
@@ -105,7 +103,7 @@ int SMESHDS_Mesh::GetPersistentId() const
 //=======================================================================
 void SMESHDS_Mesh::ShapeToMesh(const TopoDS_Shape & S)
 {
-  if ( !myShape.IsNull() && S.IsNull() )
+  if ( !myShape.IsNull() && S.IsNull() ) // case: "save study" after geometry removal
   {
     // removal of a shape to mesh, delete ...
     // - hypotheses
@@ -116,7 +114,7 @@ void SMESHDS_Mesh::ShapeToMesh(const TopoDS_Shape & S)
       if ( !sm->IsComplexSubmesh() ) {
         SMDS_NodeIteratorPtr nIt = sm->GetNodes();
         while ( nIt->more() )
-          sm->RemoveNode(nIt->next(), false);
+          sm->RemoveNode(nIt->next());
       }
     }
     // - sub-meshes
@@ -124,7 +122,7 @@ void SMESHDS_Mesh::ShapeToMesh(const TopoDS_Shape & S)
 
     myIndexToShape.Clear();
     // - groups on geometry
-    set<SMESHDS_GroupBase*>::iterator gr = myGroups.begin();
+    std::set<SMESHDS_GroupBase*>::iterator gr = myGroups.begin();
     while ( gr != myGroups.end() ) {
       if ( dynamic_cast<SMESHDS_GroupOnGeom*>( *gr ))
         myGroups.erase( gr++ );
@@ -137,6 +135,8 @@ void SMESHDS_Mesh::ShapeToMesh(const TopoDS_Shape & S)
     if ( !S.IsNull() )
       TopExp::MapShapes(myShape, myIndexToShape);
   }
+
+  SMDS_Mesh::setNbShapes( MaxShapeIndex() );
 }
 
 //=======================================================================
@@ -148,14 +148,14 @@ bool SMESHDS_Mesh::AddHypothesis(const TopoDS_Shape & SS,
                                  const SMESHDS_Hypothesis * H)
 {
   if (!myShapeToHypothesis.IsBound(SS/*.Oriented(TopAbs_FORWARD)*/)) {
-    list<const SMESHDS_Hypothesis *> aList;
+    std::list<const SMESHDS_Hypothesis *> aList;
     myShapeToHypothesis.Bind(SS/*.Oriented(TopAbs_FORWARD)*/, aList);
   }
-  list<const SMESHDS_Hypothesis *>& alist =
+  std::list<const SMESHDS_Hypothesis *>& alist =
     myShapeToHypothesis(SS/*.Oriented(TopAbs_FORWARD)*/); // ignore orientation of SS
 
   //Check if the Hypothesis is still present
-  list<const SMESHDS_Hypothesis*>::iterator ith = find(alist.begin(),alist.end(), H );
+  std::list<const SMESHDS_Hypothesis*>::iterator ith = find(alist.begin(),alist.end(), H );
 
   if (alist.end() != ith) return false;
 
@@ -173,8 +173,8 @@ bool SMESHDS_Mesh::RemoveHypothesis(const TopoDS_Shape &       S,
 {
   if( myShapeToHypothesis.IsBound( S/*.Oriented(TopAbs_FORWARD)*/ ) )
   {
-    list<const SMESHDS_Hypothesis *>& alist=myShapeToHypothesis.ChangeFind( S/*.Oriented(TopAbs_FORWARD)*/ );
-    list<const SMESHDS_Hypothesis*>::iterator ith=find(alist.begin(),alist.end(), H );
+    std::list<const SMESHDS_Hypothesis *>& alist=myShapeToHypothesis.ChangeFind( S/*.Oriented(TopAbs_FORWARD)*/ );
+    std::list<const SMESHDS_Hypothesis*>::iterator ith=find(alist.begin(),alist.end(), H );
     if (ith != alist.end())
     {
       alist.erase(ith);
@@ -223,7 +223,7 @@ bool SMESHDS_Mesh::ChangeElementNodes(const SMDS_MeshElement * elem,
   if ( ! SMDS_Mesh::ChangeElementNodes( elem, nodes, nbnodes ))
     return false;
 
-  vector<int> IDs( nbnodes );
+  std::vector<int> IDs( nbnodes );
   for ( int i = 0; i < nbnodes; i++ )
     IDs [ i ] = nodes[ i ]->GetID();
   myScript->ChangeElementNodes( elem->GetID(), &IDs[0], nbnodes);
@@ -236,8 +236,8 @@ bool SMESHDS_Mesh::ChangeElementNodes(const SMDS_MeshElement * elem,
 //purpose  : 
 //=======================================================================
 bool SMESHDS_Mesh::ChangePolygonNodes
-                   (const SMDS_MeshElement *     elem,
-                    vector<const SMDS_MeshNode*> nodes)
+(const SMDS_MeshElement *     elem,
+ std::vector<const SMDS_MeshNode*> nodes)
 {
   ASSERT(nodes.size() > 3);
 
@@ -249,14 +249,14 @@ bool SMESHDS_Mesh::ChangePolygonNodes
 //purpose  : 
 //=======================================================================
 bool SMESHDS_Mesh::ChangePolyhedronNodes
-                   (const SMDS_MeshElement * elem,
-                    std::vector<const SMDS_MeshNode*> nodes,
-                    std::vector<int>                  quantities)
+(const SMDS_MeshElement * elem,
+ std::vector<const SMDS_MeshNode*> nodes,
+ std::vector<int>                  quantities)
 {
   ASSERT(nodes.size() > 3);
 
-  if (!SMDS_Mesh::ChangePolyhedronNodes(elem, nodes, quantities))
-    return false;
+  //if (!SMDS_Mesh::ChangePolyhedronNodes(elem, nodes, quantities))
+  return false;
 
   int i, len = nodes.size();
   std::vector<int> nodes_ids (len);
@@ -276,10 +276,10 @@ bool SMESHDS_Mesh::ChangePolyhedronNodes
 void SMESHDS_Mesh::Renumber (const bool isNodes, const int startID, const int deltaID)
 {
   // TODO not possible yet to have node numbers not starting to O and continuous.
-  if (!this->isCompacted())
-    this->compactMesh();
-//  SMDS_Mesh::Renumber( isNodes, startID, deltaID );
-//  myScript->Renumber( isNodes, startID, deltaID );
+  if ( !this->IsCompacted() )
+    this->CompactMesh();
+  //  SMDS_Mesh::Renumber( isNodes, startID, deltaID );
+  //  myScript->Renumber( isNodes, startID, deltaID );
 }
 
 //=======================================================================
@@ -294,7 +294,7 @@ SMDS_Mesh0DElement* SMESHDS_Mesh::Add0DElementWithID(int nodeID, int ID)
 }
 
 SMDS_Mesh0DElement* SMESHDS_Mesh::Add0DElementWithID
-                                  (const SMDS_MeshNode * node, int ID)
+(const SMDS_MeshNode * node, int ID)
 {
   return Add0DElementWithID(node->GetID(), ID);
 }
@@ -801,9 +801,9 @@ SMDS_MeshVolume* SMESHDS_Mesh::AddPolyhedralVolumeWithID (const std::vector<int>
 }
 
 SMDS_MeshVolume* SMESHDS_Mesh::AddPolyhedralVolumeWithID
-                               (const std::vector<const SMDS_MeshNode*>& nodes,
-                                const std::vector<int>&                  quantities,
-                                const int                                ID)
+(const std::vector<const SMDS_MeshNode*>& nodes,
+ const std::vector<int>&                  quantities,
+ const int                                ID)
 {
   SMDS_MeshVolume *anElem = SMDS_Mesh::AddPolyhedralVolumeWithID(nodes, quantities, ID);
   if (anElem) {
@@ -818,8 +818,8 @@ SMDS_MeshVolume* SMESHDS_Mesh::AddPolyhedralVolumeWithID
 }
 
 SMDS_MeshVolume* SMESHDS_Mesh::AddPolyhedralVolume
-                               (const std::vector<const SMDS_MeshNode*>& nodes,
-                                const std::vector<int>&                  quantities)
+(const std::vector<const SMDS_MeshNode*>& nodes,
+ const std::vector<int>&                  quantities)
 {
   SMDS_MeshVolume *anElem = SMDS_Mesh::AddPolyhedralVolume(nodes, quantities);
   if (anElem) {
@@ -838,10 +838,9 @@ SMDS_MeshVolume* SMESHDS_Mesh::AddPolyhedralVolume
 //purpose  : 
 //=======================================================================
 
-static void removeFromContainers (SMESHDS_Mesh*                  theMesh,
-                                  set<SMESHDS_GroupBase*>&       theGroups,
-                                  list<const SMDS_MeshElement*>& theElems,
-                                  const bool                     isNode)
+static void removeFromContainers (SMESHDS_Mesh*                         theMesh,
+                                  std::set<SMESHDS_GroupBase*>&         theGroups,
+                                  std::vector<const SMDS_MeshElement*>& theElems)
 {
   if ( theElems.empty() )
     return;
@@ -850,13 +849,13 @@ static void removeFromContainers (SMESHDS_Mesh*                  theMesh,
   // Element can belong to several groups
   if ( !theGroups.empty() )
   {
-    set<SMESHDS_GroupBase*>::iterator GrIt = theGroups.begin();
+    std::set<SMESHDS_GroupBase*>::iterator GrIt = theGroups.begin();
     for ( ; GrIt != theGroups.end(); GrIt++ )
     {
       SMESHDS_Group* group = dynamic_cast<SMESHDS_Group*>( *GrIt );
       if ( !group || group->IsEmpty() ) continue;
 
-      list<const SMDS_MeshElement *>::iterator elIt = theElems.begin();
+      std::vector<const SMDS_MeshElement *>::iterator elIt = theElems.begin();
       for ( ; elIt != theElems.end(); elIt++ )
       {
         group->SMDSGroup().Remove( *elIt );
@@ -865,24 +864,24 @@ static void removeFromContainers (SMESHDS_Mesh*                  theMesh,
     }
   }
 
-  const bool deleted=true;
+  //const bool deleted=true;
 
   // Rm from sub-meshes
   // Element should belong to only one sub-mesh
-  if ( theMesh->SubMeshes()->more() )
-  {
-    list<const SMDS_MeshElement *>::iterator elIt = theElems.begin();
-    if ( isNode ) {
-      for ( ; elIt != theElems.end(); ++elIt )
-        if ( SMESHDS_SubMesh* sm = theMesh->MeshElements( (*elIt)->getshapeId() ))
-          sm->RemoveNode( static_cast<const SMDS_MeshNode*> (*elIt), deleted );
-    }
-    else {
-      for ( ; elIt != theElems.end(); ++elIt )
-        if ( SMESHDS_SubMesh* sm = theMesh->MeshElements( (*elIt)->getshapeId() ))
-          sm->RemoveElement( *elIt, deleted );
-    }
-  }
+  // if ( theMesh->SubMeshes()->more() )
+  // {
+  //   std::list<const SMDS_MeshElement *>::iterator elIt = theElems.begin();
+  //   if ( isNode ) {
+  //     for ( ; elIt != theElems.end(); ++elIt )
+  //       if ( SMESHDS_SubMesh* sm = theMesh->MeshElements( (*elIt)->getshapeId() ))
+  //         sm->RemoveNode( static_cast<const SMDS_MeshNode*> (*elIt), deleted );
+  //   }
+  //   else {
+  //     for ( ; elIt != theElems.end(); ++elIt )
+  //       if ( SMESHDS_SubMesh* sm = theMesh->MeshElements( (*elIt)->getshapeId() ))
+  //         sm->RemoveElement( *elIt, deleted );
+  //   }
+  // }
 }
 
 //=======================================================================
@@ -891,56 +890,69 @@ static void removeFromContainers (SMESHDS_Mesh*                  theMesh,
 //=======================================================================
 void SMESHDS_Mesh::RemoveNode(const SMDS_MeshNode * n)
 {
-  if ( n->NbInverseElements() == 0 && !(hasConstructionEdges() || hasConstructionFaces()))
-  {
-    RemoveFreeNode( n, 0, true );
+  if ( RemoveFreeNode( n, 0, true ))
     return;
-  }
 
   myScript->RemoveNode(n->GetID());
 
-  list<const SMDS_MeshElement *> removedElems;
-  list<const SMDS_MeshElement *> removedNodes;
+  // remove inverse elements from the sub-meshes
+  for ( SMDS_ElemIteratorPtr eIt = n->GetInverseElementIterator(); eIt->more() ; )
+  {
+    const SMDS_MeshElement* e = eIt->next();
+    if ( SMESHDS_SubMesh * sm = MeshElements( e->getshapeId() ))
+      sm->RemoveElement( e );
+  }
+  if ( SMESHDS_SubMesh * sm = MeshElements( n->getshapeId() ))
+    sm->RemoveNode( n );
+    
+  
+  std::vector<const SMDS_MeshElement *> removedElems;
+  std::vector<const SMDS_MeshElement *> removedNodes;
 
   SMDS_Mesh::RemoveElement( n, removedElems, removedNodes, true );
 
-  removeFromContainers( this, myGroups, removedElems, false );
-  removeFromContainers( this, myGroups, removedNodes, true );
+  removeFromContainers( this, myGroups, removedElems );
+  removeFromContainers( this, myGroups, removedNodes );
 }
 
 //=======================================================================
 //function : RemoveFreeNode
 //purpose  : 
 //=======================================================================
-void SMESHDS_Mesh::RemoveFreeNode(const SMDS_MeshNode * n,
+bool SMESHDS_Mesh::RemoveFreeNode(const SMDS_MeshNode * n,
                                   SMESHDS_SubMesh *     subMesh,
                                   bool                  fromGroups)
 {
+  if ( n->NbInverseElements() > 0 )
+    return false;
+
   myScript->RemoveNode(n->GetID());
 
   // Rm from group
   // Node can belong to several groups
-  if (fromGroups && !myGroups.empty()) {
-    set<SMESHDS_GroupBase*>::iterator GrIt = myGroups.begin();
+  if ( fromGroups && !myGroups.empty() ) {
+    std::set<SMESHDS_GroupBase*>::iterator GrIt = myGroups.begin();
     for (; GrIt != myGroups.end(); GrIt++) {
       SMESHDS_Group* group = dynamic_cast<SMESHDS_Group*>(*GrIt);
-      if (group && !group->IsEmpty())
+      if (group && group->GetType() == SMDSAbs_Node )
         group->SMDSGroup().Remove(n);
     }
   }
 
   // Rm from sub-mesh
   // Node should belong to only one sub-mesh
-  if ( !subMesh || !subMesh->RemoveNode(n,/*deleted=*/false))
+  if ( !subMesh || !subMesh->RemoveNode( n ))
     if (( subMesh = MeshElements( n->getshapeId() )))
-      subMesh->RemoveNode(n,/*deleted=*/false );
+      subMesh->RemoveNode(n);
 
   SMDS_Mesh::RemoveFreeElement(n);
+
+  return true;
 }
 
 //=======================================================================
 //function : RemoveElement
-//purpose  : 
+//purpose  :
 //========================================================================
 void SMESHDS_Mesh::RemoveElement(const SMDS_MeshElement * elt)
 {
@@ -949,7 +961,7 @@ void SMESHDS_Mesh::RemoveElement(const SMDS_MeshElement * elt)
     RemoveNode( static_cast<const SMDS_MeshNode*>( elt ));
     return;
   }
-  if (!hasConstructionEdges() && !hasConstructionFaces())
+  //if (!hasConstructionEdges() && !hasConstructionFaces())
   {
     SMESHDS_SubMesh* subMesh=0;
     if ( elt->getshapeId() > 0 )
@@ -961,12 +973,12 @@ void SMESHDS_Mesh::RemoveElement(const SMDS_MeshElement * elt)
  
   myScript->RemoveElement(elt->GetID());
 
-  list<const SMDS_MeshElement *> removedElems;
-  list<const SMDS_MeshElement *> removedNodes;
+  std::vector<const SMDS_MeshElement *> removedElems;
+  std::vector<const SMDS_MeshElement *> removedNodes;
 
-  SMDS_Mesh::RemoveElement(elt, removedElems, removedNodes, false );
+  SMDS_Mesh::RemoveElement(elt, removedElems, removedNodes );
   
-  removeFromContainers( this, myGroups, removedElems, false );
+  removeFromContainers( this, myGroups, removedElems );
 }
 
 //=======================================================================
@@ -982,16 +994,16 @@ void SMESHDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elt,
     return;
   }
 
-  if (hasConstructionEdges() || hasConstructionFaces())
-    // this methods is only for meshes without descendants
-    return;
+  // if (hasConstructionEdges() || hasConstructionFaces())
+  //   // this methods is only for meshes without descendants
+  //   return;
 
   myScript->RemoveElement(elt->GetID());
 
   // Rm from group
   // Element can belong to several groups
   if ( fromGroups && !myGroups.empty() ) {
-    set<SMESHDS_GroupBase*>::iterator GrIt = myGroups.begin();
+    std::set<SMESHDS_GroupBase*>::iterator GrIt = myGroups.begin();
     for (; GrIt != myGroups.end(); GrIt++) {
       SMESHDS_Group* group = dynamic_cast<SMESHDS_Group*>(*GrIt);
       if (group && !group->IsEmpty())
@@ -1004,7 +1016,7 @@ void SMESHDS_Mesh::RemoveFreeElement(const SMDS_MeshElement * elt,
   if ( !subMesh && elt->getshapeId() > 0 )
     subMesh = MeshElements( elt->getshapeId() );
   if ( subMesh )
-    subMesh->RemoveElement( elt, /*deleted=*/false );
+    subMesh->RemoveElement( elt );
 
   SMDS_Mesh::RemoveFreeElement( elt );
 }
@@ -1043,8 +1055,8 @@ void SMESHDS_Mesh::ClearMesh()
 //================================================================================
 /*!
  * \brief return submesh by shape
-  * \param shape - the sub-shape
-  * \retval SMESHDS_SubMesh* - the found submesh
+ * \param shape - the sub-shape
+ * \retval SMESHDS_SubMesh* - the found submesh
  */
 //================================================================================
 
@@ -1059,84 +1071,81 @@ SMESHDS_SubMesh* SMESHDS_Mesh::getSubmesh( const TopoDS_Shape & shape )
 //================================================================================
 /*!
  * \brief Add element or node to submesh
-  * \param elem - element to add
-  * \param subMesh - submesh to be filled in
+ * \param elem - element to add
+ * \param subMesh - submesh to be filled in
  */
 //================================================================================
 
-bool SMESHDS_Mesh::add(const SMDS_MeshElement* elem, SMESHDS_SubMesh* subMesh )
+int SMESHDS_Mesh::add(const SMDS_MeshElement* elem, SMESHDS_SubMesh* subMesh )
 {
   if ( elem && subMesh ) {
-    if ( elem->GetType() == SMDSAbs_Node )
-      subMesh->AddNode( static_cast<const SMDS_MeshNode* >( elem ));
-    else
-      subMesh->AddElement( elem );
-    return true;
+    subMesh->AddElement( elem );
+    return subMesh->GetID();
   }
-  return false;
+  return 0;
 }
 
 //=======================================================================
 //function : SetNodeOnVolume
-//purpose  : 
+//purpose  :
 //=======================================================================
 void SMESHDS_Mesh::SetNodeInVolume(const SMDS_MeshNode* aNode,
                                    const TopoDS_Shell & S)
 {
-  if ( add( aNode, getSubmesh(S) ))
+  if ( int shapeID = add( aNode, getSubmesh( S )))
     const_cast< SMDS_MeshNode* >
-      ( aNode )->SetPosition( SMDS_SpacePosition::originSpacePosition() );
+      ( aNode )->SetPosition( SMDS_SpacePosition::originSpacePosition(), shapeID );
 }
 
 //=======================================================================
 //function : SetNodeOnVolume
-//purpose  : 
+//purpose  :
 //=======================================================================
 void SMESHDS_Mesh::SetNodeInVolume(const SMDS_MeshNode *      aNode,
                                    const TopoDS_Solid & S)
 {
-  if ( add( aNode, getSubmesh(S) ))
+  if ( int shapeID = add( aNode, getSubmesh( S )))
     const_cast< SMDS_MeshNode* >
-      ( aNode )->SetPosition( SMDS_SpacePosition::originSpacePosition() );
+      ( aNode )->SetPosition( SMDS_SpacePosition::originSpacePosition(), shapeID );
 }
 
 //=======================================================================
 //function : SetNodeOnFace
-//purpose  : 
+//purpose  :
 //=======================================================================
-void SMESHDS_Mesh::SetNodeOnFace(const SMDS_MeshNode *     aNode,
-                                 const TopoDS_Face & S,
-                                 double              u,
-                                 double              v)
+void SMESHDS_Mesh::SetNodeOnFace(const SMDS_MeshNode * aNode,
+                                 const TopoDS_Face &   S,
+                                 double                u,
+                                 double                v)
 {
-  if ( add( aNode, getSubmesh(S) ))
+  if ( int shapeID = add( aNode, getSubmesh( S )))
     const_cast< SMDS_MeshNode* >
-      ( aNode )->SetPosition(SMDS_PositionPtr(new SMDS_FacePosition( u, v)));
+      ( aNode )->SetPosition(SMDS_PositionPtr( new SMDS_FacePosition( u, v )), shapeID );
 }
 
 //=======================================================================
 //function : SetNodeOnEdge
-//purpose  : 
+//purpose  :
 //=======================================================================
-void SMESHDS_Mesh::SetNodeOnEdge(const SMDS_MeshNode *     aNode,
-                                 const TopoDS_Edge & S,
-                                 double              u)
+void SMESHDS_Mesh::SetNodeOnEdge(const SMDS_MeshNode * aNode,
+                                 const TopoDS_Edge &   S,
+                                 double                u)
 {
-  if ( add( aNode, getSubmesh(S) ))
+  if ( int shapeID = add( aNode, getSubmesh( S )))
     const_cast< SMDS_MeshNode* >
-      ( aNode )->SetPosition(SMDS_PositionPtr(new SMDS_EdgePosition(u)));
+      ( aNode )->SetPosition(SMDS_PositionPtr( new SMDS_EdgePosition( u )), shapeID );
 }
 
 //=======================================================================
 //function : SetNodeOnVertex
-//purpose  : 
+//purpose  :
 //=======================================================================
-void SMESHDS_Mesh::SetNodeOnVertex(const SMDS_MeshNode *       aNode,
+void SMESHDS_Mesh::SetNodeOnVertex(const SMDS_MeshNode * aNode,
                                    const TopoDS_Vertex & S)
 {
-  if ( add( aNode, getSubmesh(S) ))
+  if ( int shapeID = add( aNode, getSubmesh( S )))
     const_cast< SMDS_MeshNode* >
-      ( aNode )->SetPosition(SMDS_PositionPtr(new SMDS_VertexPosition()));
+      ( aNode )->SetPosition(SMDS_PositionPtr( new SMDS_VertexPosition()), shapeID );
 }
 
 //=======================================================================
@@ -1148,12 +1157,12 @@ void SMESHDS_Mesh::UnSetNodeOnShape(const SMDS_MeshNode* aNode)
   int shapeId = aNode->getshapeId();
   if (shapeId > 0)
     if ( SMESHDS_SubMesh* sm = MeshElements( shapeId ))
-      sm->RemoveNode(aNode, /*deleted=*/false);
+      sm->RemoveNode(aNode);
 }
 
 //=======================================================================
 //function : SetMeshElementOnShape
-//purpose  : 
+//purpose  :
 //=======================================================================
 void SMESHDS_Mesh::SetMeshElementOnShape(const SMDS_MeshElement * anElement,
                                          const TopoDS_Shape &     S)
@@ -1169,12 +1178,7 @@ void SMESHDS_Mesh::UnSetMeshElementOnShape(const SMDS_MeshElement * elem,
                                            const TopoDS_Shape &     S)
 {
   if ( SMESHDS_SubMesh* sm = MeshElements( S ))
-  {
-    if (elem->GetType() == SMDSAbs_Node)
-      sm->RemoveNode(static_cast<const SMDS_MeshNode*> (elem), /*deleted=*/false);
-    else
-      sm->RemoveElement(elem, /*deleted=*/false);
-  }
+    sm->RemoveElement(elem);
 }
 
 //=======================================================================
@@ -1226,9 +1230,9 @@ SMESHDS_SubMesh * SMESHDS_Mesh::MeshElements(const int Index) const
 //function : SubMeshIndices
 //purpose  : 
 //=======================================================================
-list<int> SMESHDS_Mesh::SubMeshIndices() const
+std::list<int> SMESHDS_Mesh::SubMeshIndices() const
 {
-  list<int> anIndices;
+  std::list<int> anIndices;
   SMESHDS_SubMeshIteratorPtr smIt = SubMeshes();
   while ( const SMESHDS_SubMesh* sm = smIt->next() )
     anIndices.push_back( sm->GetID() );
@@ -1251,13 +1255,13 @@ SMESHDS_SubMeshIteratorPtr SMESHDS_Mesh::SubMeshes() const
 //purpose  : 
 //=======================================================================
 
-const list<const SMESHDS_Hypothesis*>&
+const std::list<const SMESHDS_Hypothesis*>&
 SMESHDS_Mesh::GetHypothesis(const TopoDS_Shape & S) const
 {
   if ( myShapeToHypothesis.IsBound( S/*.Oriented(TopAbs_FORWARD)*/ ) ) // ignore orientation of S
-     return myShapeToHypothesis.Find( S/*.Oriented(TopAbs_FORWARD)*/ );
+    return myShapeToHypothesis.Find( S/*.Oriented(TopAbs_FORWARD)*/ );
 
-  static list<const SMESHDS_Hypothesis*> empty;
+  static std::list<const SMESHDS_Hypothesis*> empty;
   return empty;
 }
 
@@ -1282,7 +1286,7 @@ bool SMESHDS_Mesh::IsUsedHypothesis(const SMESHDS_Hypothesis * H) const
 //=======================================================================
 SMESHDS_Script* SMESHDS_Mesh::GetScript()
 {
-        return myScript;
+  return myScript;
 }
 
 //=======================================================================
@@ -1291,7 +1295,7 @@ SMESHDS_Script* SMESHDS_Mesh::GetScript()
 //=======================================================================
 void SMESHDS_Mesh::ClearScript()
 {
-        myScript->Clear();
+  myScript->Clear();
 }
 
 //=======================================================================
@@ -1408,46 +1412,46 @@ int SMESHDS_Mesh::ShapeToIndex(const TopoDS_Shape & S) const
 //=======================================================================
 void SMESHDS_Mesh::SetNodeInVolume(const SMDS_MeshNode* aNode, int Index)
 {
-  if ( add( aNode, NewSubMesh( Index )))
-    ((SMDS_MeshNode*) aNode)->SetPosition( SMDS_SpacePosition::originSpacePosition());
+  if ( int shapeID = add( aNode, NewSubMesh( Index )))
+    ((SMDS_MeshNode*) aNode)->SetPosition( SMDS_SpacePosition::originSpacePosition(), shapeID );
 }
 
 //=======================================================================
 //function : SetNodeOnFace
-//purpose  : 
+//purpose  :
 //=======================================================================
 void SMESHDS_Mesh::SetNodeOnFace(const SMDS_MeshNode* aNode, int Index, double u, double v)
 {
   //Set Position on Node
-  if ( add( aNode, NewSubMesh( Index )))
+  if ( int shapeID = add( aNode, NewSubMesh( Index )))
     const_cast< SMDS_MeshNode* >
-      ( aNode )->SetPosition(SMDS_PositionPtr(new SMDS_FacePosition( u, v)));
+      ( aNode )->SetPosition(SMDS_PositionPtr(new SMDS_FacePosition( u, v )), shapeID );
 }
 
 //=======================================================================
 //function : SetNodeOnEdge
-//purpose  : 
+//purpose  :
 //=======================================================================
 void SMESHDS_Mesh::SetNodeOnEdge(const SMDS_MeshNode* aNode,
                                  int                  Index,
                                  double               u)
 {
   //Set Position on Node
-  if ( add( aNode, NewSubMesh( Index )))
+  if (  int shapeID = add( aNode, NewSubMesh( Index )))
     const_cast< SMDS_MeshNode* >
-      ( aNode )->SetPosition(SMDS_PositionPtr(new SMDS_EdgePosition(u)));
+      ( aNode )->SetPosition(SMDS_PositionPtr(new SMDS_EdgePosition( u )), shapeID );
 }
 
 //=======================================================================
 //function : SetNodeOnVertex
-//purpose  : 
+//purpose  :
 //=======================================================================
 void SMESHDS_Mesh::SetNodeOnVertex(const SMDS_MeshNode* aNode, int Index)
 {
   //Set Position on Node
-  if ( add( aNode, NewSubMesh( Index )))
+  if (  int shapeID = add( aNode, NewSubMesh( Index )))
     const_cast< SMDS_MeshNode* >
-      ( aNode )->SetPosition(SMDS_PositionPtr(new SMDS_VertexPosition()));
+      ( aNode )->SetPosition(SMDS_PositionPtr(new SMDS_VertexPosition()), shapeID );
 }
 
 //=======================================================================
@@ -2213,7 +2217,7 @@ SMDS_MeshVolume* SMESHDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
                                                const SMDS_MeshNode * n15,
                                                const SMDS_MeshNode * n26,
                                                const SMDS_MeshNode * n37,
-                                               const SMDS_MeshNode * n48, 
+                                               const SMDS_MeshNode * n48,
                                                const SMDS_MeshNode * n1234,
                                                const SMDS_MeshNode * n1256,
                                                const SMDS_MeshNode * n2367,
@@ -2232,126 +2236,14 @@ SMDS_MeshVolume* SMESHDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
                          n1458->GetID(),n5678->GetID(),nCenter->GetID(), ID);
 }
 
-void SMESHDS_Mesh::compactMesh()
+void SMESHDS_Mesh::CompactMesh()
 {
-  if ( isCompacted() )
+  if ( IsCompacted() )
     return;
-  SMDS_Mesh::compactMesh();
 
-  int newNodeSize = 0;
-  int nbNodes     = myNodes.size();
-  int nbVtkNodes  = myGrid->GetNumberOfPoints();
-  int nbNodeTemp  = Max( nbVtkNodes, nbNodes );
-  vector<int> idNodesOldToNew(nbNodeTemp, -1); // all unused id will be -1
-
-  for (int i = 0; i < nbNodes; i++)
-  {
-    if (myNodes[i])
-    {
-      int vtkid = myNodes[i]->getVtkId();
-      idNodesOldToNew[vtkid] = i; // old vtkId --> old smdsId (valid smdsId are >= 0)
-      newNodeSize++;
-    }
-  }
-  bool areNodesModified = (newNodeSize != nbVtkNodes);
-  areNodesModified = true;
-
-  int newCellSize = 0;
-  int nbCells     = myCells.size();
-  int nbVtkCells  = myGrid->GetNumberOfCells();
-  int nbCellTemp  = Max( nbVtkCells, nbCells );
-  vector<int> idCellsOldToNew(nbCellTemp, -1); // all unused id will be -1
-
-  for (int i = 0; i < nbCells; i++)
-  {
-    if (myCells[i])
-    {
-      newCellSize++;
-    }
-  }
-  if (areNodesModified)
-    myGrid->compactGrid(idNodesOldToNew, newNodeSize, idCellsOldToNew, newCellSize);
-  else
-    myGrid->compactGrid(idNodesOldToNew, 0, idCellsOldToNew, newCellSize);
-
-  int nbVtkPts = myGrid->GetNumberOfPoints();
-  nbVtkCells = myGrid->GetNumberOfCells();
-  if (nbVtkPts != newNodeSize)
-  {
-    MESSAGE("===> nbVtkPts != newNodeSize " << nbVtkPts << " " << newNodeSize);
-    if (nbVtkPts > newNodeSize) newNodeSize = nbVtkPts; // several points with same SMDS Id
-  }
-  if (nbVtkCells != newCellSize)
-  {
-    MESSAGE("===> nbVtkCells != newCellSize " << nbVtkCells << " " << newCellSize);
-    if (nbVtkCells > newCellSize) newCellSize = nbVtkCells; // several cells with same SMDS Id
-  }
-
-  // --- SMDS_MeshNode and myNodes, myNodeIdFactory
-
-  if ( true )
-  {
-    SetOfNodes newNodes(newNodeSize+1,NULL); // 0 not used, SMDS numbers 1..n
-    int newSmdsId = 0;
-    for (int i = 0; i < nbNodes; i++)
-    {
-      if (myNodes[i])
-      {
-        newSmdsId++; // SMDS id starts from 1
-        int oldVtkId = myNodes[i]->getVtkId();
-        int newVtkId = idNodesOldToNew[oldVtkId];
-        myNodes[i]->setVtkId(newVtkId);
-        myNodes[i]->setId(newSmdsId);
-        newNodes[newSmdsId] = myNodes[i];
-      }
-    }
-    myNodes.swap(newNodes);
-    this->myNodeIDFactory->emptyPool(newSmdsId); // newSmdsId = number of nodes
-  }
-
-  // --- SMDS_MeshCell, myCellIdVtkToSmds, myCellIdSmdsToVtk, myCells
-
-  int vtkIndexSize = myCellIdVtkToSmds.size();
-  for (int oldVtkId = 0; oldVtkId < vtkIndexSize; oldVtkId++)
-  {
-    int oldSmdsId = this->myCellIdVtkToSmds[oldVtkId];
-    if (oldSmdsId > 0)
-    {
-      int newVtkId = idCellsOldToNew[oldVtkId];
-      myCells[oldSmdsId]->setVtkId(newVtkId);
-    }
-  }
-
-  SetOfCells      newCells(newCellSize+1, NULL); // 0 not used, SMDS numbers 1..n
-  vector<int> newVtkToSmds(newCellSize+1, -1);
-
-  int myCellsSize = myCells.size();
-  int newSmdsId = 0;
-  for (int i = 0; i < myCellsSize; i++)
-  {
-    if ( myCells[i] )
-    {
-      newSmdsId++; // SMDS id starts from 1
-      assert(newSmdsId <= newCellSize);
-      newCells[newSmdsId] = myCells[i];
-      newCells[newSmdsId]->setId(newSmdsId);
-      int idvtk = myCells[i]->getVtkId();
-      assert(idvtk < newCellSize);
-      newVtkToSmds[idvtk] = newSmdsId;
-    }
-  }
-
-  myCells.swap(newCells);
-  myCellIdVtkToSmds.swap(newVtkToSmds);
-  this->myElementIDFactory->emptyPool(newSmdsId);
+  SMDS_Mesh::CompactMesh();
 
   this->myScript->SetModified(true); // notify GUI client for buildPrs when update
-
-  // --- compact list myNodes and myElements in submeshes
-
-  SMESHDS_SubMeshIteratorPtr smIt = SubMeshes();
-  while ( SMESHDS_SubMesh* sm = const_cast< SMESHDS_SubMesh* >( smIt->next() ))
-    sm->compactList();
 }
 
 void SMESHDS_Mesh::CleanDownWardConnectivity()

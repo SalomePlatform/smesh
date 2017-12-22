@@ -450,7 +450,7 @@ void SMESH_Mesh::Clear()
 
 void SMESH_Mesh::ClearSubMesh(const int theShapeId)
 {
-  // clear sub-meshes; get ready to re-compute as a side-effect 
+  // clear sub-meshes; get ready to re-compute as a side-effect
   if ( SMESH_subMesh *sm = GetSubMeshContaining( theShapeId ) )
   {
     SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(/*includeSelf=*/true,
@@ -458,7 +458,7 @@ void SMESH_Mesh::ClearSubMesh(const int theShapeId)
     while ( smIt->more() )
     {
       sm = smIt->next();
-      TopAbs_ShapeEnum shapeType = sm->GetSubShape().ShapeType();      
+      TopAbs_ShapeEnum shapeType = sm->GetSubShape().ShapeType();
       if ( shapeType == TopAbs_VERTEX || shapeType < TopAbs_SOLID )
         // all other shapes depends on vertices so they are already cleaned
         sm->ComputeStateEngine( SMESH_subMesh::CLEAN );
@@ -470,7 +470,7 @@ void SMESH_Mesh::ClearSubMesh(const int theShapeId)
 
 //=======================================================================
 //function : UNVToMesh
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 int SMESH_Mesh::UNVToMesh(const char* theFileName)
@@ -485,32 +485,19 @@ int SMESH_Mesh::UNVToMesh(const char* theFileName)
   myReader.SetMeshId(-1);
   myReader.Perform();
 
-  if ( SMDS_MeshGroup* aGroup = (SMDS_MeshGroup*) myReader.GetGroup() )
+  TGroupNamesMap& aGroupNames = myReader.GetGroupNamesMap();
+  TGroupNamesMap::iterator gr2names;
+  int anId = 1 + ( _mapGroup.empty() ? 0 : _mapGroup.rbegin()->first );
+  for ( gr2names = aGroupNames.begin(); gr2names != aGroupNames.end(); ++gr2names )
   {
-    TGroupNamesMap aGroupNames = myReader.GetGroupNamesMap();
-    aGroup->InitSubGroupsIterator();
-    while (aGroup->MoreSubGroups())
-    {
-      SMDS_MeshGroup* aSubGroup = (SMDS_MeshGroup*) aGroup->NextSubGroup();
-      string aName = aGroupNames[aSubGroup];
-      int aId;
-      if ( SMESH_Group* aSMESHGroup = AddGroup( aSubGroup->GetType(), aName.c_str(), aId ))
-      {
-        SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( aSMESHGroup->GetGroupDS() );
-        if ( aGroupDS ) {
-          aGroupDS->SetStoreName(aName.c_str());
-          aSubGroup->InitIterator();
-          const SMDS_MeshElement* aElement = 0;
-          while ( aSubGroup->More() )
-            if (( aElement = aSubGroup->Next() ))
-              aGroupDS->SMDSGroup().Add( aElement );
-
-          if (aElement)
-            aGroupDS->SetType( aElement->GetType() );
-        }
-      }
-    }
+    SMDS_MeshGroup*   aGroup = gr2names->first;
+    const std::string& aName = gr2names->second;
+    SMESHDS_Group* aGroupDS = new SMESHDS_Group( anId++, _myMeshDS, aGroup->GetType() );
+    aGroupDS->SMDSGroup() = std::move( *aGroup );
+    aGroupDS->SetStoreName( aName.c_str() );
+    AddGroup( aGroupDS );
   }
+
   return 1;
 }
 
@@ -551,12 +538,16 @@ int SMESH_Mesh::MEDToMesh(const char* theFileName, const char* theMeshName)
       }
     }
   }
+
+  _myMeshDS->Modified();
+  _myMeshDS->CompactMesh();
+
   return (int) status;
 }
 
 //=======================================================================
 //function : STLToMesh
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 std::string SMESH_Mesh::STLToMesh(const char* theFileName)

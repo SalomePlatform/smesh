@@ -117,7 +117,7 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
   }
 
   SMDS_VolumeIteratorPtr itVolumes=myMesh->volumesIterator();
-  const SMDS_VtkVolume* v;
+  const SMDS_MeshVolume* v;
   while(itVolumes->more())
   {
     const SMDS_MeshElement * elem = itVolumes->next();
@@ -125,7 +125,7 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
     {
       fprintf(aFileId, "%d %d ", elem->GetID(), 500+elem->NbNodes());
 
-      if (( v = dynamic_cast< const SMDS_VtkVolume*>( elem )))
+      if (( v = myMesh->DownCast< SMDS_MeshVolume >( elem )))
       {
         std::vector<int> quant = v->GetQuantities();
         if ( !quant.empty() )
@@ -146,7 +146,7 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
 
     fprintf(aFileId, "\n");
   }
-  
+
   fclose(aFileId);
 
   return aResult;

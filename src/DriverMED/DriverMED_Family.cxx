@@ -574,3 +574,21 @@ void DriverMED_Family::Split (DriverMED_FamilyPtr by,
     common->myType = myType;
   }
 }
+
+//================================================================================
+/*!
+ * \brief Return a number of elements of a given type
+ */
+//================================================================================
+
+size_t DriverMED_Family::NbElements( SMDSAbs_ElementType theType ) const
+{
+  if ( myTypes.size() < 2 )
+    return myElements.size();
+
+  int nb = 0;
+  for ( ElementsSet::iterator e = myElements.begin(); e != myElements.end(); ++e )
+    nb += ( theType == (*e)->GetType() );
+
+  return nb;
+}

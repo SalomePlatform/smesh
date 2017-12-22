@@ -22,14 +22,41 @@
 
 //  SMESH SMDS : implementation of Salome mesh data structure
 //
-#include "SMDS_MeshFace.hxx"
 
-SMDSAbs_ElementType SMDS_MeshFace::GetType() const
+#include "SMDS_CellOfNodes.hxx"
+
+SMDS_CellOfNodes::SMDS_CellOfNodes( int id, int shapeID )
+  : myID( id )
 {
-        return SMDSAbs_Face;
+  setShapeID( shapeID );
 }
 
-vtkIdType SMDS_MeshFace::GetVtkType() const
+void SMDS_CellOfNodes::setID(const int id)
 {
-  return VTK_POLY_LINE;  // --- must be reimplemented in derived classes
+  myID = id;
+}
+
+int SMDS_CellOfNodes::GetID() const
+{
+  return myID;
+}
+
+void SMDS_CellOfNodes::setShapeID( const int shapeID )
+{
+  myShapeID = ( shapeID << BITS_SHIFT ) | ( myShapeID & BIT_IS_MARKED );
+}
+
+int SMDS_CellOfNodes::GetShapeID() const
+{
+  return myShapeID >> BITS_SHIFT;
+}
+
+void SMDS_CellOfNodes::setIsMarked( bool is ) const
+{
+  const_cast< SMDS_CellOfNodes* >( this )->myShapeID = ( myShapeID & ~BIT_IS_MARKED ) | is;
+}
+
+bool SMDS_CellOfNodes::isMarked() const
+{
+  return myShapeID & BIT_IS_MARKED;
 }

@@ -25,6 +25,7 @@
 #define SMESH_ComputeError_HeaderFile
 
 #include "SMESH_Utils.hxx"
+#include "SMDS_ElementHolder.hxx"
 
 #include <string>
 #include <list>
@@ -75,22 +76,20 @@ struct SMESHUtils_EXPORT SMESH_ComputeError
   std::string       myComment;
   const SMESH_Algo* myAlgo;
 
-  std::list<const SMDS_MeshElement*> myBadElements; //!< to explain COMPERR_BAD_INPUT_MESH
-
   static SMESH_ComputeErrorPtr New( int               error   = COMPERR_OK,
                                     std::string       comment = "",
                                     const SMESH_Algo* algo    = 0)
   { return SMESH_ComputeErrorPtr( new SMESH_ComputeError( error, comment, algo )); }
 
-  SMESH_ComputeError(int               error   = COMPERR_OK,
-                     std::string       comment = "",
-                     const SMESH_Algo* algo    = 0)
-    :myName(error),myComment(comment),myAlgo(algo) {}
+  SMESH_ComputeError( int               error   = COMPERR_OK,
+                      std::string       comment = "",
+                      const SMESH_Algo* algo    = 0)
+    : myName(error), myComment(comment), myAlgo(algo) {}
 
   bool IsOK()        const { return myName == COMPERR_OK; }
   bool IsKO()        const { return myName != COMPERR_OK && myName != COMPERR_WARNING; }
   bool IsCommon()    const { return myName < 0 && myName > COMPERR_LAST_ALGO_ERROR; }
-  bool HasBadElems() const { return !myBadElements.empty(); }
+  virtual bool HasBadElems() const { return false; }
 
   // not inline methods are implemented in   src/SMESHUtils/SMESH_TryCatch.cxx
 
@@ -100,6 +99,31 @@ struct SMESHUtils_EXPORT SMESH_ComputeError
   // Return the most severe error
   static SMESH_ComputeErrorPtr Worst( SMESH_ComputeErrorPtr er1,
                                       SMESH_ComputeErrorPtr er2 );
+
+  virtual ~SMESH_ComputeError() {}
+};
+
+struct SMESHUtils_EXPORT SMESH_BadInputElements : public SMESH_ComputeError, SMDS_ElementHolder
+{
+  typedef std::list<const SMDS_MeshElement*> TElemList;
+  TElemList myBadElements; //!< to explain COMPERR_BAD_INPUT_MESH
+
+  SMESH_BadInputElements(const SMDS_Mesh*  mesh,
+                         int               error   = COMPERR_OK,
+                         std::string       comment = "",
+                         const SMESH_Algo* algo    = 0)
+    :SMESH_ComputeError(error, comment ,algo), SMDS_ElementHolder(mesh) {}
+
+  const SMDS_Mesh* GetMesh() const { return myMesh; }
+  const TElemList& GetElements()   { return myBadElements; }
+
+  virtual bool HasBadElems() const { return !myBadElements.empty(); }
+
+  // methods of SMDS_ElementHolder
+  virtual SMDS_ElemIteratorPtr getElements();
+  virtual void tmpClear();
+  virtual void add( const SMDS_MeshElement* element );
+  virtual void compact() { }
 };
 
 #endif

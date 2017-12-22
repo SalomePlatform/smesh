@@ -358,12 +358,9 @@ bool SMESH_Algo::GetNodeParamOnEdge(const SMESHDS_Mesh* theMesh,
     SMDS_NodeIteratorPtr nIt = eSubMesh->GetNodes();
     while ( nIt->more() )
     {
-      const SMDS_MeshNode* node = nIt->next();
-      const SMDS_PositionPtr& pos = node->GetPosition();
-      if ( pos->GetTypeOfPosition() != SMDS_TOP_EDGE )
+      SMDS_EdgePositionPtr epos = nIt->next()->GetPosition();
+      if ( !epos )
         return false;
-      const SMDS_EdgePosition* epos =
-        static_cast<const SMDS_EdgePosition*>(node->GetPosition());
       if ( !paramSet.insert( epos->GetUParameter() ).second )
         return false; // equal parameters
     }
@@ -424,11 +421,9 @@ bool SMESH_Algo::GetSortedNodesOnEdge(const SMESHDS_Mesh*                   theM
       const SMDS_MeshNode* node = nIt->next();
       if ( ignoreMediumNodes && SMESH_MesherHelper::IsMedium( node, typeToCheck ))
         continue;
-      const SMDS_PositionPtr& pos = node->GetPosition();
-      if ( pos->GetTypeOfPosition() != SMDS_TOP_EDGE )
+      SMDS_EdgePositionPtr epos = node->GetPosition();
+      if ( ! epos )
         return false;
-      const SMDS_EdgePosition* epos =
-        static_cast<const SMDS_EdgePosition*>(node->GetPosition());
       theNodes.insert( theNodes.end(), make_pair( epos->GetUParameter(), node ));
       ++nbNodes;
     }
@@ -914,7 +909,12 @@ bool SMESH_Algo::error(SMESH_ComputeErrorPtr error)
   if ( error ) {
     _error   = error->myName;
     _comment = error->myComment;
-    _badInputElements = error->myBadElements;
+    if ( error->HasBadElems() )
+    {
+      SMESH_BadInputElements* badElems = static_cast<SMESH_BadInputElements*>( error.get() );
+      _badInputElements = badElems->GetElements();
+      _mesh             = badElems->GetMesh();
+    }
     return error->IsOK();
   }
   return true;
@@ -928,11 +928,15 @@ bool SMESH_Algo::error(SMESH_ComputeErrorPtr error)
 
 SMESH_ComputeErrorPtr SMESH_Algo::GetComputeError() const
 {
-  SMESH_ComputeErrorPtr err = SMESH_ComputeError::New( _error, _comment, this );
-  // hope this method is called by only SMESH_subMesh after this->Compute()
-  err->myBadElements.splice( err->myBadElements.end(),
-                             (list<const SMDS_MeshElement*>&) _badInputElements );
-  return err;
+  if ( !_badInputElements.empty() && _mesh )
+  {
+    SMESH_BadInputElements* err = new SMESH_BadInputElements( _mesh, _error, _comment, this );
+    // hope this method is called by only SMESH_subMesh after this->Compute()
+    err->myBadElements.splice( err->myBadElements.end(),
+                               (list<const SMDS_MeshElement*>&) _badInputElements );
+    return SMESH_ComputeErrorPtr( err );
+  }
+  return SMESH_ComputeError::New( _error, _comment, this );
 }
 
 //================================================================================
@@ -950,6 +954,7 @@ void SMESH_Algo::InitComputeError()
     if ( (*elem)->GetID() < 1 )
       delete *elem;
   _badInputElements.clear();
+  _mesh = 0;
 
   _computeCanceled = false;
   _progressTic     = 0;
@@ -1243,7 +1248,7 @@ bool SMESH_2D_Algo::FixInternalNodes(const SMESH_ProxyMesh& mesh,
       gp_Pnt p = S->Value( uv.Coord(1), uv.Coord(2));
       const SMDS_MeshNode* n = nodeRows[iRow][iCol];
       meshDS->MoveNode( n, p.X(), p.Y(), p.Z() );
-      if ( SMDS_FacePosition* pos = dynamic_cast< SMDS_FacePosition*>( n->GetPosition() ))
+      if ( SMDS_FacePositionPtr pos = n->GetPosition() )
         pos->SetParameters( uv.Coord(1), uv.Coord(2) );
     }
   }

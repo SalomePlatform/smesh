@@ -516,8 +516,7 @@ static bool fixCommonVertexUV (R2 &                 theUV,
         // check if node is medium
         if ( theCreateQuadratic && SMESH_MesherHelper::IsMedium( node, SMDSAbs_Edge ))
           continue;
-        const SMDS_EdgePosition* epos =
-          static_cast<const SMDS_EdgePosition*>(node->GetPosition());
+        SMDS_EdgePositionPtr epos = node->GetPosition();
         double u = epos->GetUParameter();
         if ( u < umin )
           umin = u;
@@ -535,10 +534,10 @@ static bool fixCommonVertexUV (R2 &                 theUV,
   }
   R2 uv0, uv1, uv2;
   uv0.x = thisUV.X();   uv0.y = thisUV.Y();
-  uv1.x = nextUV.X();   uv1.y = nextUV.Y(); 
+  uv1.x = nextUV.X();   uv1.y = nextUV.Y();
   uv2.x = thisUV.X();   uv2.y = thisUV.Y();
 
-  uv1.x *= theScaleX;   uv1.y *= theScaleY; 
+  uv1.x *= theScaleX;   uv1.y *= theScaleY;
 
   if ( fixOverlappedLinkUV( uv0, uv1, uv2 ))
   {

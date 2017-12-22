@@ -27,15 +27,9 @@
 
 #include "SMESH_SMDS.hxx"
 
-#include "SMDS_MeshFace.hxx"
-//#include "SMDS_FaceOfNodes.hxx"
-#include "SMDS_MeshNode.hxx"
-#include "SMDS_Iterator.hxx"
+#include "SMDS_CellOfNodes.hxx"
 
-#include <iostream>
-
-//class SMDS_PolygonalFaceOfNodes:public SMDS_FaceOfNodes
-class SMDS_EXPORT SMDS_PolygonalFaceOfNodes:public SMDS_MeshFace
+class SMDS_EXPORT SMDS_PolygonalFaceOfNodes : public SMDS_CellOfNodes
 {
  public:
   SMDS_PolygonalFaceOfNodes (const std::vector<const SMDS_MeshNode *>& nodes);
@@ -43,13 +37,10 @@ class SMDS_EXPORT SMDS_PolygonalFaceOfNodes:public SMDS_MeshFace
   virtual SMDSAbs_ElementType GetType() const;
   virtual SMDSAbs_EntityType  GetEntityType() const { return SMDSEntity_Polygon; }
   virtual SMDSAbs_GeometryType GetGeomType()  const { return SMDSGeom_POLYGON; }
-  virtual bool IsPoly() const { return true; };
-
-  bool ChangeNodes (std::vector<const SMDS_MeshNode *> nodes);
-
-  bool ChangeNodes (const SMDS_MeshNode* nodes[],
-                    const int            nbNodes);
-  // to support the same interface, as SMDS_FaceOfNodes
+  virtual bool IsPoly() const { return true; }
+  virtual bool IsQuadratic() const { return false; }
+  virtual bool IsMediumNode(const SMDS_MeshNode* node) const { return false; }
+  virtual int  NbCornerNodes() const { return NbNodes(); }
 
   virtual int NbNodes() const;
   virtual int NbEdges() const;
@@ -57,15 +48,12 @@ class SMDS_EXPORT SMDS_PolygonalFaceOfNodes:public SMDS_MeshFace
 
   virtual void Print (std::ostream & OS) const;
 
-  /*!
-   * \brief Return node by its index
-    * \param ind - node index
-    * \retval const SMDS_MeshNode* - the node
-   */
   virtual const SMDS_MeshNode* GetNode(const int ind) const;
 
+  virtual SMDS_ElemIteratorPtr nodesIterator() const;
+  virtual SMDS_NodeIteratorPtr nodeIterator() const;
+
  protected:
-  virtual SMDS_ElemIteratorPtr elementsIterator (SMDSAbs_ElementType type) const;
 
   std::vector<const SMDS_MeshNode *> myNodes;
 };

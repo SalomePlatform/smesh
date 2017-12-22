@@ -28,8 +28,9 @@
 
 #include "SMESH_Comment.hxx"
 
-#include "SMESH_TypeDefs.hxx"
+#include "ObjectPool.hxx"
 #include "SMDS_Mesh.hxx"
+#include "SMESH_TypeDefs.hxx"
 
 #include <Utils_SALOME_Exception.hxx>
 

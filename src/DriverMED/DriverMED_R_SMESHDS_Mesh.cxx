@@ -273,7 +273,7 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
             if ( anIsElemNum && !aBallInfo->myElemNum->empty() )
               maxID = *std::max_element( aBallInfo->myElemNum->begin(),
                                          aBallInfo->myElemNum->end() );
-            myMesh->getGrid()->AllocateDiameters( maxID ); // performance optimization
+            myMesh->GetGrid()->AllocateDiameters( maxID ); // performance optimization
 
             // create balls
             SMDS_MeshElement* anElement;
@@ -1038,8 +1038,6 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
     aResult = addMessage( "Unknown exception", /*isFatal=*/true );
   }
 #endif
-  if (myMesh)
-    myMesh->compactMesh();
 
   // Mantis issue 0020483
   if (aResult == DRS_OK && isDescConn) {
@@ -1137,6 +1135,14 @@ void DriverMED_R_SMESHDS_Mesh::GetGroup(SMESHDS_Group* theGroup)
 
   if (( famVecPtr = myGroups2FamiliesMap.ChangeSeek( aGroupName )))
   {
+    size_t groupSize = 0;
+    for ( size_t i = 0; i < famVecPtr->size(); ++i )
+    {
+      DriverMED_FamilyPtr aFamily = (*famVecPtr)[i];
+      groupSize += aFamily->NbElements( theGroup->GetType() );
+    }
+    theGroup->SMDSGroup().Reserve( groupSize );
+
     for ( size_t i = 0; i < famVecPtr->size(); ++i )
     {
       DriverMED_FamilyPtr aFamily = (*famVecPtr)[i];

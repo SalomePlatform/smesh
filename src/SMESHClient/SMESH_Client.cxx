@@ -749,30 +749,30 @@ namespace
                                      SMESH::log_array_var& theSeq,
                                      CORBA::Long theId)
   {
-    const SMESH::long_array& anIndexes = theSeq[theId].indexes;
-    CORBA::Long iind = 0, aNbElems = theSeq[theId].number;
+    // const SMESH::long_array& anIndexes = theSeq[theId].indexes;
+    // CORBA::Long iind = 0, aNbElems = theSeq[theId].number;
 
-    for (CORBA::Long anElemId = 0; anElemId < aNbElems; anElemId++)
-    {
-      // find element
-      const SMDS_MeshElement* elem = FindElement(theMesh, anIndexes[iind++]);
-      // nb nodes
-      int nbNodes = anIndexes[iind++];
-      // nodes
-      std::vector<const SMDS_MeshNode*> aNodes (nbNodes);
-      for (int iNode = 0; iNode < nbNodes; iNode++) {
-        aNodes[iNode] = FindNode(theMesh, anIndexes[iind++]);
-      }
-      // nb faces
-      int nbFaces = anIndexes[iind++];
-      // quantities
-      std::vector<int> quantities (nbFaces);
-      for (int iFace = 0; iFace < nbFaces; iFace++) {
-        quantities[iFace] = anIndexes[iind++];
-      }
-      // change
-      theMesh->ChangePolyhedronNodes(elem, aNodes, quantities);
-    }
+    // for (CORBA::Long anElemId = 0; anElemId < aNbElems; anElemId++)
+    // {
+    //   // find element
+    //   const SMDS_MeshElement* elem = FindElement(theMesh, anIndexes[iind++]);
+    //   // nb nodes
+    //   int nbNodes = anIndexes[iind++];
+    //   // nodes
+    //   std::vector<const SMDS_MeshNode*> aNodes (nbNodes);
+    //   for (int iNode = 0; iNode < nbNodes; iNode++) {
+    //     aNodes[iNode] = FindNode(theMesh, anIndexes[iind++]);
+    //   }
+    //   // nb faces
+    //   int nbFaces = anIndexes[iind++];
+    //   // quantities
+    //   std::vector<int> quantities (nbFaces);
+    //   for (int iFace = 0; iFace < nbFaces; iFace++) {
+    //     quantities[iFace] = anIndexes[iind++];
+    //   }
+    //   // change
+    //   theMesh->ChangePolyhedronNodes(elem, aNodes, quantities);
+    // }
   }
 }
 
@@ -986,10 +986,10 @@ SMESH_Client::Update(bool theIsClear)
           ChangePolyhedronNodes(mySMDSMesh, aSeq, anId);
           break;
         case SMESH::RENUMBER:
-          for(CORBA::Long i=0; anElemId < aNbElems; anElemId++, i+=3)
-          {
-            mySMDSMesh->Renumber( anIndexes[i], anIndexes[i+1], anIndexes[i+2] );
-          }
+          // for(CORBA::Long i=0; anElemId < aNbElems; anElemId++, i+=3)
+          // {
+          //   mySMDSMesh->Renumber( anIndexes[i], anIndexes[i+1], anIndexes[i+2] );
+          // }
           break;
 
         default:;

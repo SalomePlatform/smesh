@@ -33,7 +33,6 @@
 
 class SMDS_MeshElement;
 class SMDS_MeshNode;
-class SMDS_VtkVolume;
 class SMDS_MeshVolume;
 
 #include <vector>
@@ -252,7 +251,7 @@ class SMDS_EXPORT SMDS_VolumeTool
   bool projectNodesToNormal( int faceIndex, double& minProj, double& maxProj ) const;
 
   const SMDS_MeshElement* myVolume;
-  const SMDS_VtkVolume*   myPolyedre;
+  const SMDS_MeshVolume*  myPolyedre;
   bool                    myIgnoreCentralNodes;
 
   bool                    myVolForward;

@@ -884,7 +884,7 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
                 {
                   const bool reverse = ( elemData[ pos-1 ] < 0 );
                   const int    iQuad = face->IsQuadratic() ? 1 : 0;
-                  SMDS_ElemIteratorPtr nIter = face->interlacedNodesElemIterator();
+                  SMDS_NodeIteratorPtr nIter = face->interlacedNodesIterator();
                   faceNodes.assign( SMDS_MeshElement::iterator( nIter ),
                                     SMDS_MeshElement::iterator());
                   if ( iQuad && reverse )
@@ -1183,6 +1183,9 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
   }
 
   aResult = myErrorMessages.empty() ? DRS_OK : DRS_WARN_SKIP_ELEM;
+
+  myMesh->Modified();
+  myMesh->CompactMesh();
 
   return aResult;
 }

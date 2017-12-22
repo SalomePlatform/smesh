@@ -25,6 +25,7 @@ INCLUDE_DIRECTORIES(
   ${KERNEL_INCLUDE_DIRS}
   ${PROJECT_SOURCE_DIR}/src/SMESHUtils
   ${PROJECT_SOURCE_DIR}/src/SMESHDS
+  ${PROJECT_SOURCE_DIR}/src/SMDS
 )
 
 # additional preprocessor / compiler flags

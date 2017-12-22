@@ -462,6 +462,7 @@ protected:
   int         _error;    //!< SMESH_ComputeErrorName or anything algo specific
   std::string _comment;  //!< any text explaining what is wrong in Compute()
   std::list<const SMDS_MeshElement*> _badInputElements; //!< to explain COMPERR_BAD_INPUT_MESH
+  const SMDS_Mesh* _mesh; //!< mesh being computed, needed to create SMESH_BadInputElements
 
   volatile bool _computeCanceled; //!< is set to True while computing to stop it
 

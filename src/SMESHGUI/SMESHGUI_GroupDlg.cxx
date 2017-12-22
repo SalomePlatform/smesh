@@ -1426,8 +1426,8 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
           aGroupMainShape = aGeomGroup;
           aGroupMainShape->Register();
         }
-        _PTR(SObject) aGroupMainShapeSO =
-          aStudy->FindObjectID(aGroupMainShape->GetStudyEntry());
+        CORBA::String_var entry = aGroupMainShape->GetStudyEntry();
+        _PTR(SObject) aGroupMainShapeSO = aStudy->FindObjectID( entry.in() );
 
         _PTR(SObject) anObj, aRef;
         bool isRefOrSubShape = false;
@@ -1451,10 +1451,10 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
 
       myGeomObjects->length(i);
       if ( i == 0 )
-        {
-          myIsBusy = false;
-          return;
-        }
+      {
+        myIsBusy = false;
+        return;
+      }
 
       aNbSel = i;
     }
@@ -2453,9 +2453,9 @@ void SMESHGUI_GroupDlg::onPublishShapeByMeshDlg(SUIT_Operation* op)
     GEOM::GEOM_Object_var aGeomVar = myShapeByMeshOp->GetShape();
     if ( !aGeomVar->_is_nil() )
     {
-      QString ID = aGeomVar->GetStudyEntry();
-      _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-      if ( _PTR(SObject) aGeomSO = aStudy->FindObjectID( ID.toLatin1().data() )) {
+      CORBA::String_var ID = aGeomVar->GetStudyEntry();
+      _PTR(Study)   aStudy = SMESH::GetActiveStudyDocument();
+      if ( _PTR(SObject) aGeomSO = aStudy->FindObjectID( ID.in() )) {
         SALOME_ListIO anIOList;
         Handle(SALOME_InteractiveObject) anIO = new SALOME_InteractiveObject
           ( aGeomSO->GetID().c_str(), "SMESH", aGeomSO->GetName().c_str() );

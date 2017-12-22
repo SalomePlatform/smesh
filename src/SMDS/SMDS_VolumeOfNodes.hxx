@@ -29,63 +29,66 @@
 
 #include "SMESH_SMDS.hxx"
 
-#include "SMDS_MeshVolume.hxx"
+#include "SMDS_CellOfNodes.hxx"
 
-class SMDS_EXPORT SMDS_VolumeOfNodes:public SMDS_MeshVolume
+class SMDS_EXPORT SMDS_VolumeOfNodes: public SMDS_CellOfNodes
 {
         
-  public:
-        SMDS_VolumeOfNodes(
-                const SMDS_MeshNode * node1,
-                const SMDS_MeshNode * node2,
-                const SMDS_MeshNode * node3,
-                const SMDS_MeshNode * node4);
-        SMDS_VolumeOfNodes(
-                const SMDS_MeshNode * node1,
-                const SMDS_MeshNode * node2,
-                const SMDS_MeshNode * node3,
-                const SMDS_MeshNode * node4,
-                const SMDS_MeshNode * node5);
-        SMDS_VolumeOfNodes(
-                const SMDS_MeshNode * node1,
-                const SMDS_MeshNode * node2,
-                const SMDS_MeshNode * node3,
-                const SMDS_MeshNode * node4,
-                const SMDS_MeshNode * node5,
-                const SMDS_MeshNode * node6);
-        SMDS_VolumeOfNodes(
-                const SMDS_MeshNode * node1,
-                const SMDS_MeshNode * node2,
-                const SMDS_MeshNode * node3,
-                const SMDS_MeshNode * node4,
-                const SMDS_MeshNode * node5,
-                const SMDS_MeshNode * node6,
-                const SMDS_MeshNode * node7,
-                const SMDS_MeshNode * node8);
-        bool ChangeNodes(const SMDS_MeshNode* nodes[],
-                         const int            nbNodes);
-        ~SMDS_VolumeOfNodes();
+ public:
+  SMDS_VolumeOfNodes(const SMDS_MeshNode * node1,
+                     const SMDS_MeshNode * node2,
+                     const SMDS_MeshNode * node3,
+                     const SMDS_MeshNode * node4);
+  SMDS_VolumeOfNodes(const SMDS_MeshNode * node1,
+                     const SMDS_MeshNode * node2,
+                     const SMDS_MeshNode * node3,
+                     const SMDS_MeshNode * node4,
+                     const SMDS_MeshNode * node5);
+  SMDS_VolumeOfNodes(const SMDS_MeshNode * node1,
+                     const SMDS_MeshNode * node2,
+                     const SMDS_MeshNode * node3,
+                     const SMDS_MeshNode * node4,
+                     const SMDS_MeshNode * node5,
+                     const SMDS_MeshNode * node6);
+  SMDS_VolumeOfNodes(const SMDS_MeshNode * node1,
+                     const SMDS_MeshNode * node2,
+                     const SMDS_MeshNode * node3,
+                     const SMDS_MeshNode * node4,
+                     const SMDS_MeshNode * node5,
+                     const SMDS_MeshNode * node6,
+                     const SMDS_MeshNode * node7,
+                     const SMDS_MeshNode * node8);
+  bool ChangeNodes(const SMDS_MeshNode* nodes[],
+                   const int            nbNodes);
+  ~SMDS_VolumeOfNodes();
 
-        void Print(std::ostream & OS) const;
-        int NbFaces() const;
-        int NbNodes() const;
-        int NbEdges() const;
-        virtual SMDSAbs_ElementType  GetType() const;    
-        virtual SMDSAbs_EntityType   GetEntityType() const;
-        virtual SMDSAbs_GeometryType GetGeomType() const;
+  void Print(std::ostream & OS) const;
+  int NbFaces() const;
+  int NbNodes() const;
+  int NbEdges() const;
+  virtual SMDSAbs_ElementType  GetType() const;    
+  virtual SMDSAbs_EntityType   GetEntityType() const;
+  virtual SMDSAbs_GeometryType GetGeomType() const;
 
+  virtual bool IsPoly() const { return false; }
+  virtual bool IsQuadratic() const { return false; }
   /*!
    * \brief Return node by its index
-    * \param ind - node index
-    * \retval const SMDS_MeshNode* - the node
+   * \param ind - node index
+   * \retval const SMDS_MeshNode* - the node
    */
   virtual const SMDS_MeshNode* GetNode(const int ind) const;
 
-  protected:
-        SMDS_ElemIteratorPtr
-                elementsIterator(SMDSAbs_ElementType type) const;
-        const SMDS_MeshNode** myNodes;
-        int                   myNbNodes;
+  virtual int  NbCornerNodes() const { return NbNodes(); }
+  virtual int  GetNodeIndex( const SMDS_MeshNode* node ) const;
+
+  virtual SMDS_ElemIteratorPtr nodesIterator() const;
+  virtual SMDS_NodeIteratorPtr nodeIterator() const;
+
+ protected:
+
+  const SMDS_MeshNode** myNodes;
+  int                   myNbNodes;
 
 };
 

@@ -641,7 +641,7 @@ void SMESHGUI_RevolutionDlg::SelectionIntoArgument()
     else if ( isFaceSelected )
     {
       const SMDS_MeshFace* face =
-        dynamic_cast<const SMDS_MeshFace*>(aMesh->FindElement(aMapIndex(1)));
+        SMDS_Mesh::DownCast<SMDS_MeshFace>( aMesh->FindElement( aMapIndex( 1 )));
       if (!face)
         return;
       gp_XYZ aNormale = SMESH::getNormale(face);

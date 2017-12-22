@@ -27,19 +27,18 @@
 //
 
 #include "SMDS_SpacePosition.hxx"
+#include "SMDS_VertexPosition.hxx"
 
 SMDS_SpacePosition* SMDS_SpacePosition::_originPosition = new SMDS_SpacePosition();
 
-SMDS_SpacePosition::SMDS_SpacePosition(double x, double y, double z)
-{
-}
-
-SMDS_TypeOfPosition SMDS_SpacePosition::GetTypeOfPosition() const
-{
-  return SMDS_TOP_3DSPACE;
-}
-
 SMDS_PositionPtr SMDS_SpacePosition::originSpacePosition()
 {
-  return _originPosition;
+  return SMDS_PositionPtr( _originPosition, /*isOwner=*/false );
 }
+
+SMDS_PositionPtr SMDS_VertexPosition::StaticPosition()
+{
+  static SMDS_Position* _vertexPosition = new SMDS_VertexPosition;
+  return SMDS_PositionPtr( _vertexPosition, /*isOwner=*/false );
+}
+

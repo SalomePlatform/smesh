@@ -27,48 +27,68 @@
 #include <vtkCell.h>
 #include <vtkIdList.h>
 
-class SMDS_VtkCellIterator: public SMDS_ElemIterator
+//--------------------------------------------------------------------------------
+/*!
+ * \brief Retrieve nodes of a cell
+ */
+struct _GetVtkNodes
+{
+  _GetVtkNodes( vtkIdList* nodeIds, SMDS_Mesh* mesh, int vtkCellId, SMDSAbs_EntityType type);
+};
+struct _GetVtkNodesToUNV
+{
+  _GetVtkNodesToUNV( vtkIdList* nodeIds, SMDS_Mesh* mesh, int vtkCellId, SMDSAbs_EntityType type);
+};
+struct _GetVtkNodesPolyh
+{
+  _GetVtkNodesPolyh( vtkIdList* nodeIds, SMDS_Mesh* mesh, int vtkCellId, SMDSAbs_EntityType type);
+};
+
+//--------------------------------------------------------------------------------
+/*!
+ * \brief Iterator on nodes of a cell
+ */
+template< class SMDS_ITERATOR = SMDS_ElemIterator, class GET_VTK_NODES = _GetVtkNodes >
+class SMDS_VtkCellIterator: public SMDS_ITERATOR
 {
 public:
-  SMDS_VtkCellIterator(SMDS_Mesh* mesh, int vtkCellId, SMDSAbs_EntityType aType);
-  virtual ~SMDS_VtkCellIterator();
-  virtual bool more();
-  virtual const SMDS_MeshElement* next();
-  inline void exchange(vtkIdType a, vtkIdType b)
+  typedef typename SMDS_ITERATOR::value_type result_type;
+
+  SMDS_VtkCellIterator(SMDS_Mesh* mesh, int vtkCellId, SMDSAbs_EntityType aType)
+    : _mesh(mesh), _index(0), _vtkIdList( vtkIdList::New() )
   {
-    vtkIdType t = _vtkIdList->GetId(a);
-    _vtkIdList->SetId(a, _vtkIdList->GetId(b));
-    _vtkIdList->SetId(b, t);
+    GET_VTK_NODES getNodes( _vtkIdList, mesh, vtkCellId, aType );
   }
-
+  virtual ~SMDS_VtkCellIterator() { _vtkIdList->Delete(); }
+  virtual bool        more()      {  return ( _index < _vtkIdList->GetNumberOfIds() ); }
+  virtual result_type next()      {
+    vtkIdType id = _vtkIdList->GetId( _index++ );
+    return static_cast<result_type>( _mesh->FindNodeVtk( id ));
+  }
 protected:
-  SMDS_VtkCellIterator() {};
-
   SMDS_Mesh* _mesh;
-  int _cellId;
-  int _index;
-  int _nbNodes;
-  SMDSAbs_EntityType _type;
+  int        _index;
   vtkIdList* _vtkIdList;
 };
 
-class SMDS_VtkCellIteratorToUNV: public SMDS_NodeIterator, protected SMDS_VtkCellIterator
+//--------------------------------------------------------------------------------
+template< class SMDS_ITERATOR = SMDS_ElemIterator >
+class SMDS_VtkCellIteratorToUNV: public SMDS_VtkCellIterator< SMDS_ITERATOR, _GetVtkNodesToUNV >
 {
+  typedef SMDS_VtkCellIterator< SMDS_ITERATOR, _GetVtkNodesToUNV > parent_t;
 public:
-  SMDS_VtkCellIteratorToUNV(SMDS_Mesh* mesh, int vtkCellId, SMDSAbs_EntityType aType);
-  virtual const SMDS_MeshNode* next();
-  virtual bool more();
-  virtual ~SMDS_VtkCellIteratorToUNV();
+  SMDS_VtkCellIteratorToUNV(SMDS_Mesh* mesh, int vtkCellId, SMDSAbs_EntityType type):
+    parent_t( mesh, vtkCellId, type ) {}
 };
 
-class SMDS_VtkCellIteratorPolyH: public SMDS_VtkCellIterator
+//--------------------------------------------------------------------------------
+template< class SMDS_ITERATOR = SMDS_ElemIterator >
+class SMDS_VtkCellIteratorPolyH: public SMDS_VtkCellIterator< SMDS_ITERATOR, _GetVtkNodesPolyh >
 {
+  typedef SMDS_VtkCellIterator< SMDS_ITERATOR, _GetVtkNodesPolyh > parent_t;
 public:
-  SMDS_VtkCellIteratorPolyH(SMDS_Mesh* mesh, int vtkCellId, SMDSAbs_EntityType aType);
-  virtual ~SMDS_VtkCellIteratorPolyH();
-  virtual bool more();
-protected:
-  int _nbNodesInFaces;
+  SMDS_VtkCellIteratorPolyH(SMDS_Mesh* mesh, int vtkCellId, SMDSAbs_EntityType type):
+    parent_t( mesh, vtkCellId, type ) {}
 };
 
 #endif

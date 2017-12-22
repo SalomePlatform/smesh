@@ -110,7 +110,7 @@ namespace VISCOUS_2D
     // Proxy sub-mesh of an EDGE. It contains nodes in _uvPtStructVec.
     struct _EdgeSubMesh : public SMESH_ProxyMesh::SubMesh
     {
-      _EdgeSubMesh(int index=0): SubMesh(index) {}
+      _EdgeSubMesh(const SMDS_Mesh* mesh, int index=0): SubMesh(mesh,index) {}
       //virtual int NbElements() const { return _elements.size()+1; }
       virtual int NbNodes() const { return Max( 0, _uvPtStructVec.size()-2 ); }
       void SetUVPtStructVec(UVPtStructVec& vec) { _uvPtStructVec.swap( vec ); }
@@ -118,7 +118,7 @@ namespace VISCOUS_2D
     };
     _ProxyMeshOfFace(const SMESH_Mesh& mesh): SMESH_ProxyMesh(mesh) {}
     _EdgeSubMesh* GetEdgeSubMesh(int ID) { return (_EdgeSubMesh*) getProxySubMesh(ID); }
-    virtual SubMesh* newSubmesh(int index=0) const { return new _EdgeSubMesh(index); }
+    virtual SubMesh* newSubmesh(int index=0) const { return new _EdgeSubMesh( GetMeshDS(), index); }
   };
   //--------------------------------------------------------------------------------
   /*!
@@ -1998,7 +1998,7 @@ bool _ViscousBuilder2D::shrink()
         throw SALOME_Exception(SMESH_Comment("ViscousBuilder2D: not SMDS_TOP_EDGE node position: ")
                                << oldNode->GetPosition()->GetTypeOfPosition()
                                << " of node " << oldNode->GetID());
-      SMDS_EdgePosition* pos = static_cast<SMDS_EdgePosition*>( oldNode->GetPosition() );
+      SMDS_EdgePositionPtr pos = oldNode->GetPosition();
       pos->SetUParameter( nodeDataVec[iP].param );
 
       gp_Pnt newP = curve.Value( nodeDataVec[iP].param );

@@ -28,6 +28,7 @@
 
 #include "SMESH_MeshAlgos.hxx"
 
+#include "ObjectPool.hxx"
 #include "SMDS_FaceOfNodes.hxx"
 #include "SMDS_LinearEdge.hxx"
 #include "SMDS_Mesh.hxx"
@@ -69,7 +70,7 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
 
     TIDSortedNodeSet nodes;
     if ( theMesh ) {
-      SMDS_NodeIteratorPtr nIt = theMesh->nodesIterator(/*idInceasingOrder=*/true);
+      SMDS_NodeIteratorPtr nIt = theMesh->nodesIterator();
       while ( nIt->more() )
         nodes.insert( nodes.end(), nIt->next() );
     }
@@ -1292,7 +1293,7 @@ bool SMESH_MeshAlgos::IsOut( const SMDS_MeshElement* element, const gp_Pnt& poin
 
   std::vector< SMESH_TNodeXYZ > xyz; xyz.reserve( element->NbNodes()+1 );
 
-  SMDS_ElemIteratorPtr nodeIt = element->interlacedNodesElemIterator();
+  SMDS_NodeIteratorPtr nodeIt = element->interlacedNodesIterator();
   for ( int i = 0; nodeIt->more(); ++i )
     xyz.push_back( SMESH_TNodeXYZ( nodeIt->next() ));
 
@@ -1528,11 +1529,11 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshElement* elem,
   switch ( elem->GetType() )
   {
   case SMDSAbs_Volume:
-    return GetDistance( dynamic_cast<const SMDS_MeshVolume*>( elem ), point, closestPnt );
+    return GetDistance( static_cast<const SMDS_MeshVolume*>( elem ), point, closestPnt );
   case SMDSAbs_Face:
-    return GetDistance( dynamic_cast<const SMDS_MeshFace*>( elem ), point, closestPnt );
+    return GetDistance( static_cast<const SMDS_MeshFace*>( elem ), point, closestPnt );
   case SMDSAbs_Edge:
-    return GetDistance( dynamic_cast<const SMDS_MeshEdge*>( elem ), point, closestPnt );
+    return GetDistance( static_cast<const SMDS_MeshEdge*>( elem ), point, closestPnt );
   case SMDSAbs_Node:
     if ( closestPnt ) *closestPnt = SMESH_TNodeXYZ( elem );
     return point.Distance( SMESH_TNodeXYZ( elem ));
@@ -1664,9 +1665,8 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshEdge* seg,
   int i = 0, nbNodes = seg->NbNodes();
 
   std::vector< SMESH_TNodeXYZ > xyz( nbNodes );
-  SMDS_ElemIteratorPtr nodeIt = seg->interlacedNodesElemIterator();
-  while ( nodeIt->more() )
-    xyz[ i++ ].Set( nodeIt->next() );
+  for ( SMDS_NodeIteratorPtr nodeIt = seg->interlacedNodesIterator(); nodeIt->more(); i++ )
+    xyz[ i ].Set( nodeIt->next() );
 
   for ( i = 1; i < nbNodes; ++i )
   {
@@ -1836,7 +1836,7 @@ SMESH_MeshAlgos::FindFaceInSet(const SMDS_MeshNode*    n1,
     if ( !face && elem->IsQuadratic())
     {
       // analysis for quadratic elements using all nodes
-      SMDS_ElemIteratorPtr anIter = elem->interlacedNodesElemIterator();
+      SMDS_NodeIteratorPtr anIter = elem->interlacedNodesIterator();
       const SMDS_MeshNode* prevN = static_cast<const SMDS_MeshNode*>( anIter->next() );
       for ( i1 = -1, i2 = 0; anIter->more() && !face; i1++, i2++ )
       {

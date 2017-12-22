@@ -31,14 +31,15 @@
 
 #include "SMDS_Position.hxx"
 
-class SMDS_EXPORT SMDS_SpacePosition:public SMDS_Position
+class SMDS_EXPORT SMDS_SpacePosition : public SMDS_Position
 {
+ public:
 
-public:
-  SMDS_SpacePosition(double x=0, double y=0, double z=0);
-  virtual inline SMDS_TypeOfPosition GetTypeOfPosition() const;
-  static SMDS_PositionPtr originSpacePosition();
-private:
+  virtual SMDS_TypeOfPosition GetTypeOfPosition() const { return SMDS_TOP_3DSPACE; }
+  static  SMDS_PositionPtr     originSpacePosition();
+  virtual const double* GetParameters() const { return 0; }
+
+ private:
   static SMDS_SpacePosition* _originPosition;
 };
 

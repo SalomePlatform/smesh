@@ -54,9 +54,6 @@
 
 using namespace std;
 
-//#include <vtkDebugLeaks.h>
-
-
 //=============================================================================
 /*!
  *  Constructor
@@ -68,9 +65,7 @@ SMESH_Gen::SMESH_Gen()
   _localId = 0;
   _hypId   = 0;
   _segmentation = _nbSegments = 10;
-  SMDS_Mesh::_meshList.clear();
   _compute_canceled = false;
-  //vtkDebugLeaks::SetExitError(0);
 }
 
 namespace
@@ -407,8 +402,10 @@ bool SMESH_Gen::Compute(SMESH_Mesh &          aMesh,
   }
 
   if ( aCompactMesh )
-    aMesh.GetMeshDS()->compactMesh();
-
+  {
+    aMesh.GetMeshDS()->Modified();
+    aMesh.GetMeshDS()->CompactMesh();
+  }
   return ret;
 }
 

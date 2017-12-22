@@ -31,11 +31,42 @@
 
 #include "SMDS_MeshCell.hxx"
 
-class SMDS_EXPORT SMDS_MeshVolume:public SMDS_MeshCell
+/*!
+ * \brief Mesh volume. This type is not allocated.
+ *        It is only used as function argument type to provide more clear semantic
+ *        and to provide API specific to polyherdal volume
+ */
+class SMDS_EXPORT SMDS_MeshVolume : public SMDS_MeshCell
 {
-        
-  public:
-        SMDSAbs_ElementType GetType() const;
-  virtual vtkIdType GetVtkType() const;
+  void init( const std::vector<const SMDS_MeshNode*>& nodes,
+             const std::vector<int>&                  nbNodesPerFace ); // init a polyherdon
+
+  void init( const std::vector<vtkIdType>& vtkNodeIds );
+
+  friend class SMDS_Mesh;
+
+ public:
+  virtual SMDSAbs_ElementType  GetType() const { return SMDSAbs_Volume; }
+  virtual const SMDS_MeshNode* GetNode(const int ind) const;
+  virtual int  NbNodes() const;
+  virtual int  NbFaces() const;
+  virtual int  NbEdges() const;
+  virtual int  GetNodeIndex( const SMDS_MeshNode* node ) const;
+  virtual bool ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes);
+  virtual bool IsMediumNode(const SMDS_MeshNode* node) const;
+  virtual int  NbCornerNodes() const;
+
+  virtual SMDS_ElemIteratorPtr nodesIterator() const = 0;
+  virtual SMDS_NodeIteratorPtr nodeIterator() const = 0;
+
+  // 1 <= face_ind <= NbFaces()
+  int NbFaceNodes (const int face_ind) const;
+  // 1 <= face_ind <= NbFaces()
+  // 1 <= node_ind <= NbFaceNodes()
+  const SMDS_MeshNode* GetFaceNode (const int face_ind, const int node_ind) const;
+
+  std::vector<int> GetQuantities() const;
+
+  static SMDSAbs_ElementType Type() { return SMDSAbs_Volume; }
 };
 #endif

@@ -116,9 +116,12 @@ protected:
   SMDS_UnstructuredGrid();
   ~SMDS_UnstructuredGrid();
   void copyNodes(vtkPoints *newPoints, std::vector<int>& idNodesOldToNew, int& alreadyCopied, int start, int end);
-  void copyBloc(vtkUnsignedCharArray *newTypes, std::vector<int>& idCellsOldToNew, std::vector<int>& idNodesOldToNew,
-                vtkCellArray* newConnectivity, vtkIdTypeArray* newLocations, vtkIdType* pointsCell, int& alreadyCopied,
-                int start, int end);
+  void copyBloc(vtkUnsignedCharArray *newTypes,
+                const std::vector<int>& idCellsOldToNew,
+                const std::vector<int>& idNodesOldToNew,
+                vtkCellArray* newConnectivity,
+                vtkIdTypeArray* newLocations,
+                std::vector<vtkIdType>& pointsCell);
 
   std::vector<int> _cellIdToDownId; //!< convert vtk Id to downward[vtkType] id, initialized with -1
   std::vector<unsigned char> _downTypes;

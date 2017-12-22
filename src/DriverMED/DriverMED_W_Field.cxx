@@ -33,7 +33,6 @@
 #include "MED_Wrapper.hxx"
 #include "SMDS_IteratorOnIterators.hxx"
 #include "SMDS_MeshElement.hxx"
-#include "SMDS_PolyhedralVolumeOfNodes.hxx"
 #include "SMDS_SetIterator.hxx"
 #include "SMESHDS_Mesh.hxx"
 
@@ -101,7 +100,7 @@ bool DriverMED_W_Field::Set(SMESHDS_Mesh *      mesh,
     for ( int iG = 0; iG < SMDSEntity_Last; ++iG )
     {
       SMDSAbs_EntityType  geom = (SMDSAbs_EntityType) iG;
-      SMDSAbs_ElementType t = SMDS_MeshCell::toSmdsType( geom );
+      SMDSAbs_ElementType    t = SMDS_MeshCell::ElemType( geom );
       if ( t != _elemType ) continue;
 
       nbElems = mesh->GetMeshInfo().NbElements( geom );

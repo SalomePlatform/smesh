@@ -28,28 +28,15 @@
 
 #include "SMDS_MeshCell.hxx"
 
-#include <iostream>
-
+/*!
+ * \brief 0D mesh element. This type is not allocated.
+ *        It is only used as function argument type to provide more clear semantic.
+ */
 class SMDS_EXPORT SMDS_Mesh0DElement: public SMDS_MeshCell
 {
  public:
-  SMDS_Mesh0DElement (const SMDS_MeshNode * node);
-  virtual bool ChangeNodes(const SMDS_MeshNode* nodes[], const int nbNodes);
-  virtual void Print (std::ostream & OS) const;
 
-  virtual SMDSAbs_ElementType  GetType() const;
-  virtual vtkIdType            GetVtkType() const;
-  virtual SMDSAbs_EntityType   GetEntityType() const {return SMDSEntity_0D;}
-  virtual SMDSAbs_GeometryType GetGeomType() const { return SMDSGeom_POINT; }
-  virtual const SMDS_MeshNode* GetNode (const int ind) const;
-  virtual int NbNodes() const;
-  virtual int NbEdges() const;
-
- protected:
-  virtual SMDS_ElemIteratorPtr elementsIterator (SMDSAbs_ElementType type) const;
-
- protected:
-  const SMDS_MeshNode* myNode;
+  static SMDSAbs_ElementType Type() { return SMDSAbs_0DElement; }
 };
 
 #endif
