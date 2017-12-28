@@ -358,7 +358,7 @@ Driver_Mesh::Status DriverMED_W_Field::Perform()
   return DRS_OK;
 }
 
-namespace DriverMED // Implemetation of fuctions declared in DriverMED.hxx
+namespace DriverMED // Implementation of functions declared in DriverMED.hxx
 {
   //================================================================================
   /*!

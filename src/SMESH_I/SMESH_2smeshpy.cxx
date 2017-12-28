@@ -501,7 +501,7 @@ SMESH_2smeshpy::ConvertScript(std::list< TCollection_AsciiString >&     theScrip
   MESSAGE_BEGIN ( std::endl << " ######## RESULT ######## " << std::endl<< std::endl );
 #endif
 
-  // clean commmands of removed objects depending on myIsPublished flag
+  // clean commands of removed objects depending on myIsPublished flag
   theGen->ClearCommands();
 
   // reorder commands after conversion
@@ -1215,7 +1215,7 @@ void _pyGen::PlaceSubmeshAfterItsCreation( Handle(_pyCommand) theCmdUsingSubmesh
 
 //================================================================================
 /*!
- * \brief Clean commmands of removed objects depending on myIsPublished flag
+ * \brief Clean commands of removed objects depending on myIsPublished flag
  */
 //================================================================================
 
@@ -4086,7 +4086,7 @@ void _pyCommand::SetPart(int thePartIndex, const TCollection_AsciiString& thePar
 
 //================================================================================
 /*!
- * \brief Set agrument
+ * \brief Set argument
  *  \param index - The argument index, it counts from 1
  *  \param theArg - The argument string
  */

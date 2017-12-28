@@ -76,7 +76,7 @@ module SMESH
   const long Tag_LastGroup              = 16;
 
   /*!
-   * Hypothesis definintion error
+   * Hypothesis definition error
    */
   struct AlgoStateError
   {
@@ -343,7 +343,7 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
 
     /*!
-     * Return errors of hypotheses definintion
+     * Return errors of hypotheses definition
      * algo_error_array is empty if everything is OK
      */
     algo_error_array GetAlgoState( in SMESH_Mesh        theMesh,

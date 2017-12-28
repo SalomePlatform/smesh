@@ -4309,7 +4309,7 @@ void _Simplex::SortSimplices(vector<_Simplex>& simplices)
 
 //================================================================================
 /*!
- * \brief DEBUG. Create groups contating temorary data of _LayerEdge's
+ * \brief DEBUG. Create groups containing temporary data of _LayerEdge's
  */
 //================================================================================
 
@@ -6722,7 +6722,7 @@ void _ViscousBuilder::findCollisionEdges( _SolidData& data, SMESH_MesherHelper& 
              src2->GetID() < edge->_nodes[0]->GetID() )
           continue; // avoid using same segment twice
 
-        // a _LayerEdge containg tgt2
+        // a _LayerEdge containing tgt2
         _LayerEdge* neiborEdge = edge->_2neibors->_edges[j];
 
         _TmpMeshFaceOnEdge* f = new _TmpMeshFaceOnEdge( edge, neiborEdge, --_tmpFaceID );
@@ -10981,7 +10981,7 @@ void _ViscousBuilder::restoreNoShrink( _LayerEdge& edge ) const
 
 //================================================================================
 /*!
- * \brief Try to fix triangles with high aspect ratio by swaping diagonals
+ * \brief Try to fix triangles with high aspect ratio by swapping diagonals
  */
 //================================================================================
 

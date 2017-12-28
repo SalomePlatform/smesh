@@ -154,9 +154,9 @@ public:
   // Get the SALOMEDS::SObject corresponding to a CORBA object
   static SALOMEDS::SObject_ptr ObjectToSObject(SALOMEDS::Study_ptr theStudy,
                                                CORBA::Object_ptr   theObject);
-  // Get GEOM Object correspoding to TopoDS_Shape
+  // Get GEOM Object corresponding to TopoDS_Shape
   GEOM::GEOM_Object_ptr ShapeToGeomObject (const TopoDS_Shape& theShape );
-  // Get TopoDS_Shape correspoding to GEOM_Object
+  // Get TopoDS_Shape corresponding to GEOM_Object
   TopoDS_Shape GeomObjectToShape(GEOM::GEOM_Object_ptr theGeomObject);
 
   // Default constructor
@@ -321,7 +321,7 @@ public:
                                         SMESH::long_array&    theShapesId )
     throw ( SALOME::SALOME_Exception );
 
-  // Returns errors of hypotheses definintion
+  // Returns errors of hypotheses definition
   SMESH::algo_error_array* GetAlgoState( SMESH::SMESH_Mesh_ptr theMesh,
                                          GEOM::GEOM_Object_ptr theSubObject )
       throw ( SALOME::SALOME_Exception );

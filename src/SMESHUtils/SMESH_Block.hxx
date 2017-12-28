@@ -306,7 +306,7 @@ public:
  protected:
 
   /*!
-   * \brief Call it after geometry initialisation
+   * \brief Call it after geometry initialization
    */
   void init();
 

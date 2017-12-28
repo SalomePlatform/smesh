@@ -128,7 +128,7 @@ module StdMeshers
   };
 
   /*!
-   * Common inteface of 1D hypotheses that can be reversed
+   * Common interface of 1D hypotheses that can be reversed
    */
   interface Reversible1D
   {

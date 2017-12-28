@@ -3388,7 +3388,7 @@ namespace
   }
   //================================================================================
   /*!
-   * \brief Classify a point by grid paremeters
+   * \brief Classify a point by grid parameters
    */
   bool Hexahedron::isOutParam(const double uvw[3]) const
   {
@@ -3588,7 +3588,7 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
       facesItersectors[i].Intersect();
 #endif
 
-    // put interesection points onto the GridLine's; this is done after intersection
+    // put intersection points onto the GridLine's; this is done after intersection
     // to avoid contention of facesItersectors for writing into the same GridLine
     // in case of parallel work of facesItersectors
     for ( size_t i = 0; i < facesItersectors.size(); ++i )

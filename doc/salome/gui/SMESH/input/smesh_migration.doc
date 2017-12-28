@@ -1,6 +1,6 @@
 /*!
 
-\page smesh_migration_page Modifing Mesh Python scripts from SALOME 6 and before
+\page smesh_migration_page Modifying Mesh Python scripts from SALOME 6 and before
 
 \n In SALOME 7.2, the Python interface for %Mesh has been slightly modified to offer new functionality:
 

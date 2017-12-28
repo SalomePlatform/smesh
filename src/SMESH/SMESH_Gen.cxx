@@ -20,7 +20,7 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH : implementaion of SMESH idl descriptions
+//  SMESH SMESH : implementation of SMESH idl descriptions
 //  File   : SMESH_Gen.cxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
@@ -121,7 +121,7 @@ SMESH_Mesh* SMESH_Gen::CreateMesh(int theStudyId, bool theIsEmbeddedMode)
 {
   Unexpect aCatch(SalomeException);
 
-  // Get studyContext, create it if it does'nt exist, with a SMESHDS_Document
+  // Get studyContext, create it if it doesn't exist, with a SMESHDS_Document
   StudyContextStruct *aStudyContext = GetStudyContext(theStudyId);
 
   // create a new SMESH_mesh object
@@ -1151,7 +1151,7 @@ SMESH_Algo *SMESH_Gen::GetAlgo(SMESH_subMesh * aSubMesh,
 
 StudyContextStruct *SMESH_Gen::GetStudyContext(int studyId)
 {
-  // Get studyContext, create it if it does'nt exist, with a SMESHDS_Document
+  // Get studyContext, create it if it doesn't exist, with a SMESHDS_Document
 
   if (_mapStudyContext.find(studyId) == _mapStudyContext.end())
   {

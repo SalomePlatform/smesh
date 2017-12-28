@@ -318,7 +318,7 @@ module SMESH
      * \param IDsOfElements Ids of triangles to be fused.
      * \param theCriterion Is used to choose a neighbour to fuse with.
      * \param theMaxAngle  Is a max angle between element normals at which fusion
-     *                     is still performed; theMaxAngle is mesured in radians.
+     *                     is still performed; theMaxAngle is measured in radians.
      * \return \c true in case of success, FALSE otherwise.
      */
     boolean TriToQuad (in long_array       IDsOfElements,
@@ -356,7 +356,7 @@ module SMESH
 
     /*!
      * \brief Split quadrangles into triangles.
-     * \param theElems  The faces to be splitted.
+     * \param theElems  The faces to be split.
      * \param the13Diag Is used to choose a diagonal for splitting.
      * \return TRUE in case of success, FALSE otherwise.
      */
@@ -372,7 +372,7 @@ module SMESH
 
     /*!
      *  Find better splitting of the given quadrangle.
-     *  \param IDOfQuad  ID of the quadrangle to be splitted.
+     *  \param IDOfQuad  ID of the quadrangle to be split.
      *  \param Criterion A criterion to choose a diagonal for splitting.
      *  \return 1 if 1-3 diagonal is better, 2 if 2-4
      *          diagonal is better, 0 if error occurs.

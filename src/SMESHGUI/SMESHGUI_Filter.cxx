@@ -176,7 +176,7 @@ int SMESHGUI_PredicateFilter::GetId() const
 
 /*
   Class       : SMESHGUI_QuadrangleFilter
-  Description : Verify whether selected cell is quadranle
+  Description : Verify whether selected cell is quadrangle
 */
 
 //=======================================================================
@@ -194,7 +194,7 @@ SMESHGUI_QuadrangleFilter::~SMESHGUI_QuadrangleFilter()
 
 //=======================================================================
 // name    : SMESHGUI_QuadrangleFilter::IsValid
-// Purpose : Verify whether selected cell is quadranle
+// Purpose : Verify whether selected cell is quadrangle
 //=======================================================================
 bool SMESHGUI_QuadrangleFilter::IsValid( const int theCellId ) const
 {
@@ -214,7 +214,7 @@ bool SMESHGUI_QuadrangleFilter::IsValid( const int theCellId ) const
 
 //=======================================================================
 // name    : SMESHGUI_QuadrangleFilter::IsValid
-// Purpose : Verify whether selected cell is quadranle
+// Purpose : Verify whether selected cell is quadrangle
 //=======================================================================
 bool SMESHGUI_QuadrangleFilter::IsObjValid( const int theObjId ) const
 {

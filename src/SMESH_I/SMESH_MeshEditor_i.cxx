@@ -2013,7 +2013,7 @@ CORBA::Boolean SMESH_MeshEditor_i::SplitQuadObject (SMESH::SMESH_IDSource_ptr th
 //=============================================================================
 /*!
  * Find better splitting of the given quadrangle.
- *  \param IDOfQuad  ID of the quadrangle to be splitted.
+ *  \param IDOfQuad  ID of the quadrangle to be split.
  *  \param Criterion A criterion to choose a diagonal for splitting.
  *  \return 1 if 1-3 diagonal is better, 2 if 2-4
  *          diagonal is better, 0 if error occurs.

@@ -20,7 +20,7 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH : implementaion of SMESH idl descriptions
+//  SMESH SMESH : implementation of SMESH idl descriptions
 //  File   : SMESH_Algo.hxx
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
@@ -69,7 +69,7 @@ typedef std::map< SMESH_subMesh*, std::vector<int> >::iterator MapShapeNbElemsIt
  *  Methods of the class are grouped into several parts:
  *  - main lifecycle methods, like Compute()
  *  - methods describing features of the algorithm, like NeedShape()
- *  - methods related to dependencies between sub-meshes imposed by the algorith
+ *  - methods related to dependencies between sub-meshes imposed by the algorithm
  *  - static utilities, like EdgeLength()
  */
 // ==================================================================================

@@ -378,7 +378,7 @@ GenericHypothesisCreator_i* SMESH_Gen_i::getHypothesisCreator(const char* theHyp
   throw (SALOME::SALOME_Exception)
 {
   std::string aPlatformLibName;
-  /* It's Need to tranlate lib name for WIN32 or X platform */
+  /* It's Need to translate lib name for WIN32 or X platform */
   if ( theLibName && theLibName[0] != '\0'  )
   {
     int libNameLen = strlen(theLibName);
@@ -1754,7 +1754,7 @@ SMESH_Gen_i::MakeGroupsOfBadInputElements( SMESH::SMESH_Mesh_ptr theMesh,
 
 //================================================================================
 /*!
- * \brief Returns errors of hypotheses definintion
+ * \brief Returns errors of hypotheses definition
  * \param theMesh - the mesh
  * \param theSubObject - the main or sub- shape
  * \retval SMESH::algo_error_array* - sequence of errors

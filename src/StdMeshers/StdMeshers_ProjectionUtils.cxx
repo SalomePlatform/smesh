@@ -479,7 +479,7 @@ namespace {
   }
 
   /*!
-   * \brief Convertor used in Delaunay constructor
+   * \brief Converter used in Delaunay constructor
    */
   struct SideVector2UVPtStructVec
   {
@@ -1253,7 +1253,7 @@ bool StdMeshers_ProjectionUtils::FindSubShapeAssociation(const TopoDS_Shape& the
     const TopoDS_Shape& v1 = vMap1(i);
     if ( vMap2.Contains( v1 ))
     {
-      // find an egde sharing v1 and sharing at the same time another common vertex
+      // find an edge sharing v1 and sharing at the same time another common vertex
       PShapeIteratorPtr edgeIt = SMESH_MesherHelper::GetAncestors( v1, *theMesh1, TopAbs_EDGE);
       bool edgeFound = false;
       while ( edgeIt->more() && !edgeFound )

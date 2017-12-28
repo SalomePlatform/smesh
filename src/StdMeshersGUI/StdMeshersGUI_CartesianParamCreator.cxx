@@ -430,7 +430,7 @@ namespace StdMeshersGUI
 
   //================================================================================
   /*!
-   * \brief Checks grid definintion mode
+   * \brief Checks grid definition mode
    */
   //================================================================================
 
@@ -1428,7 +1428,7 @@ void StdMeshersGUI_CartesianParamCreator::onResetAxes(bool)
 
 //================================================================================
 /*!
- * \brief SLOT called when the grid definintion mode changes
+ * \brief SLOT called when the grid definition mode changes
  */
 //================================================================================
 

@@ -192,7 +192,7 @@ static TopoDS_Shape getShapeByID (const char* theID)
 
 /*
   Class       : Functor_i
-  Description : An abstact class for all functors
+  Description : An abstract class for all functors
 */
 Functor_i::Functor_i():
   SALOME::GenericObj_i( SMESH_Gen_i::GetPOA() )

@@ -20,7 +20,7 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH StdMeshers_Penta_3D implementaion of SMESH idl descriptions
+//  SMESH StdMeshers_Penta_3D implementation of SMESH idl descriptions
 //  File   : StdMeshers_Penta_3D.cxx
 //  Module : SMESH
 //
@@ -421,7 +421,7 @@ void StdMeshers_Penta_3D::MakeNodes()
       aZ=(double)i/(double)(myISize-1);
       aCoords.SetCoord(aX, aY, aZ);
       //
-      //   suporting shape ID
+      //   supporting shape ID
       ShapeSupportID(bIsUpperLayer, aBNSSID, aSSID);
       if (!myErrorStatus->IsOK()) {
         MESSAGE("StdMeshers_Penta_3D::MakeNodes() pb");

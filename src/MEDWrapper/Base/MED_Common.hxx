@@ -44,7 +44,7 @@
 #endif
 
 namespace MED{
-  // enum EVersion sould be synchronized with enum MED_VERSION in SMESH_Mesh.idl (.hh)
+  // enum EVersion should be synchronized with enum MED_VERSION in SMESH_Mesh.idl (.hh)
   // i.e. same positive values!
   enum EVersion {eVUnknown = -1, eV2_1, eV2_2, eLATEST,
                  eMINOR_0, eMINOR_1, eMINOR_2, eMINOR_3, eMINOR_4, eMINOR_5, eMINOR_6, eMINOR_7, eMINOR_8, eMINOR_9};

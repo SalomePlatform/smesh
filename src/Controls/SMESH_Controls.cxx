@@ -1279,7 +1279,7 @@ double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )
   } // switch(nbNodes)
 
   if ( nbNodes > 4 ) {
-    // avaluate aspect ratio of quadranle faces
+    // evaluate aspect ratio of quadrangle faces
     AspectRatio aspect2D;
     SMDS_VolumeTool::VolumeType type = SMDS_VolumeTool::GetType( nbNodes );
     int nbFaces = SMDS_VolumeTool::NbFaces( type );
@@ -1288,7 +1288,7 @@ double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )
       if ( SMDS_VolumeTool::NbFaceNodes( type, i ) != 4 )
         continue;
       const int* pInd = SMDS_VolumeTool::GetFaceNodesIndices( type, i, true );
-      for ( int p = 0; p < 4; ++p ) // loop on nodes of a quadranle face
+      for ( int p = 0; p < 4; ++p ) // loop on nodes of a quadrangle face
         points( p + 1 ) = P( pInd[ p ] + 1 );
       aQuality = std::max( aQuality, aspect2D.GetValue( points ));
     }

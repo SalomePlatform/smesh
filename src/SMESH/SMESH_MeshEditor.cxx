@@ -1279,7 +1279,7 @@ int SMESH_MeshEditor::Reorient2D (TIDSortedElemSet &       theFaces,
         }
         if ( otherFace && otherFace != theFace)
         {
-          // link must be reverse in otherFace if orientation ot otherFace
+          // link must be reverse in otherFace if orientation to otherFace
           // is same as that of theFace
           if ( abs(nodeInd2-nodeInd1) == 1 ? nodeInd2 > nodeInd1 : nodeInd1 > nodeInd2 )
           {
@@ -1501,7 +1501,7 @@ bool SMESH_MeshEditor::QuadToTri (TIDSortedElemSet &                   theElems,
 //=======================================================================
 /*!
  * \brief Split each of given quadrangles into 4 triangles.
- * \param theElems - The faces to be splitted. If empty all faces are split.
+ * \param theElems - The faces to be split. If empty all faces are split.
  */
 //=======================================================================
 
@@ -6145,7 +6145,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet     theElements[2],
         makeEdgePathPoints(aPrms, aTrackEdge,(aN1->GetID()==startNid), LPP);
         LLPPs.push_back(LPP);
         UsedNums.Add(k);
-        // update startN for search following egde
+        // update startN for search following edge
         if( aN1->GetID() == startNid ) startNid = aN2->GetID();
         else startNid = aN1->GetID();
         break;
@@ -6444,7 +6444,7 @@ SMESH_MeshEditor::ExtrusionAlongTrack (TIDSortedElemSet     theElements[2],
         makeEdgePathPoints(aPrms, aTrackEdge, aN1isOK, LPP);
         LLPPs.push_back(LPP);
         UsedNums.Add(k);
-        // update startN for search following egde
+        // update startN for search following edge
         if ( aN1isOK ) aVprev = aV2;
         else           aVprev = aV1;
         break;

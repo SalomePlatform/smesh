@@ -17,7 +17,7 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH : implementaion of SMESH idl descriptions
+//  SMESH SMESH : implementation of SMESH idl descriptions
 // File      : StdMeshers_CompositeHexa_3D.cxx
 // Module    : SMESH
 // Created   : Tue Nov 25 11:04:59 2008
@@ -85,7 +85,7 @@ enum EAxes{ COO_X=1, COO_Y, COO_Z };
 
 //================================================================================
 /*!
- * \brief Convertor of a pair of integers to a sole index
+ * \brief Converter of a pair of integers to a sole index
  */
 struct _Indexer
 {
@@ -564,7 +564,7 @@ bool StdMeshers_CompositeHexa_3D::findBoxFaces( const TopoDS_Shape&    shape,
   if ( !fTop )
     return error(COMPERR_BAD_SHAPE);
 
-  // orient bottom egde of faces along axes of the unit box
+  // orient bottom edge of faces along axes of the unit box
   fBottom->ReverseEdges();
   fBack  ->ReverseEdges();
   fLeft  ->ReverseEdges();
@@ -1158,7 +1158,7 @@ bool _QuadFaceGrid::LoadGrid( SMESH_Mesh& mesh )
 
   myGrid.resize( myIndexer.size() );
 
-  // strore nodes bound to the bottom edge
+  // store nodes bound to the bottom edge
   mySides.GetSide( Q_BOTTOM )->StoreNodes( mesh, myGrid, myReverse );
 
   // store the rest nodes row by row

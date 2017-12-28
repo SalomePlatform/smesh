@@ -1006,7 +1006,7 @@ bool SMESH_Gen_i::RemoveHypothesisFromShape(SALOMEDS::Study_ptr         theStudy
  * \brief Stores names of variables that WILL be passes as parameters when calling
  *        some method of a given object.
  *  \param [in] theObject - the object whose a method WILL be called with \a theParameters.
- *  \param [in] theParameters - a string contating parameters separated by ':'.
+ *  \param [in] theParameters - a string containing parameters separated by ':'.
  */
 //================================================================================
 

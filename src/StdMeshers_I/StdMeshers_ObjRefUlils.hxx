@@ -20,7 +20,7 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH : implementaion of SMESH idl descriptions
+//  SMESH SMESH : implementation of SMESH idl descriptions
 // File      : StdMeshers_ObjRefUlils.hxx
 // Created   : Wed Oct 18 15:15:27 2006
 // Author    : Edward AGAPOV (eap)
@@ -42,7 +42,7 @@ class StdMeshers_ObjRefUlils
 {
 public:
   /*!
-   * \brief Return GEOM Object correspoding to TopoDS_Shape
+   * \brief Return GEOM Object corresponding to TopoDS_Shape
     * \param theShape - input TopoDS_Shape
     * \retval GEOM::GEOM_Object_ptr - result object
    */
@@ -54,7 +54,7 @@ public:
    }
 
   /*!
-   * \brief Return TopoDS_Shape correspoding to GEOM_Object
+   * \brief Return TopoDS_Shape corresponding to GEOM_Object
     * \param theGeomObject - input object
     * \retval TopoDS_Shape - result TopoDS_Shape
    */

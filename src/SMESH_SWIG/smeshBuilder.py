@@ -3290,7 +3290,7 @@ class Mesh:
         return self.editor.TriToQuadObject(theObject, Functor, MaxAngle)
 
     ## Split quadrangles into triangles.
-    #  @param IDsOfElements the faces to be splitted.
+    #  @param IDsOfElements the faces to be split.
     #  @param theCriterion is a numerical functor, in terms of enum SMESH.FunctorType, used to
     #         choose a diagonal for splitting. If @a theCriterion is None, which is a default
     #         value, then quadrangles will be split by the smallest diagonal.
@@ -3326,7 +3326,7 @@ class Mesh:
 
     ## Split each of given quadrangles into 4 triangles. A node is added at the center of
     #  a quadrangle.
-    #  @param theElements the faces to be splitted. This can be either mesh, sub-mesh,
+    #  @param theElements the faces to be split. This can be either mesh, sub-mesh,
     #         group or a list of face IDs. By default all quadrangles are split
     #  @ingroup l2_modif_cutquadr
     def QuadTo4Tri (self, theElements=[]):
@@ -3341,7 +3341,7 @@ class Mesh:
         return self.editor.QuadTo4Tri( theElements )
 
     ## Split quadrangles into triangles.
-    #  @param IDsOfElements the faces to be splitted
+    #  @param IDsOfElements the faces to be split
     #  @param Diag13        is used to choose a diagonal for splitting.
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_cutquadr
@@ -3362,7 +3362,7 @@ class Mesh:
         return self.editor.SplitQuadObject(theObject, Diag13)
 
     ## Find a better splitting of the given quadrangle.
-    #  @param IDOfQuad   the ID of the quadrangle to be splitted.
+    #  @param IDOfQuad   the ID of the quadrangle to be split.
     #  @param theCriterion  is a numerical functor, in terms of enum SMESH.FunctorType, used to
     #         choose a diagonal for splitting.
     #         Type SMESH.FunctorType._items in the Python Console to see all items.
