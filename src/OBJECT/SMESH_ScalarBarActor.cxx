@@ -557,7 +557,8 @@ int SMESH_ScalarBarActor::RenderOpaqueGeometry(vtkViewport *viewport)
     }
 
     //polygons & cell colors
-    unsigned char *rgba, *rgb;
+    unsigned char *rgb;
+    const unsigned char *rgba;
     vtkIdType ptIds[4], dcCount=0;
     for ( i = 0; i < numColors; i++ )
     {
