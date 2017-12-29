@@ -435,7 +435,7 @@ void SMESHGUI_MultiEditDlg::onOk()
 
 //=======================================================================
 // name    : SMESHGUI_MultiEditDlg::getIds
-// Purpose : Retrive identifiers from list box or the whole object
+// Purpose : Retrieve identifiers from list box or the whole object
 //=======================================================================
 
 SMESH::long_array_var SMESHGUI_MultiEditDlg::getIds(SMESH::SMESH_IDSource_var& obj)

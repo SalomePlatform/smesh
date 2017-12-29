@@ -493,6 +493,7 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
             case ePYRA13:  aNbNodes = 13; break;
             case ePENTA6:  aNbNodes = 6;  break;
             case ePENTA15: aNbNodes = 15; break;
+            case ePENTA18: aNbNodes = 18; break;
             case eHEXA8:   aNbNodes = 8;  break;
             case eHEXA20:  aNbNodes = 20; break;
             case eHEXA27:  aNbNodes = 27; break;
@@ -811,6 +812,41 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
                     isRenum = anIsElemNum;
                   }
                   break;
+                case ePENTA18:
+                  aNbNodes = 18;
+                  if(anIsElemNum)
+                    anElement = myMesh->AddVolumeWithID(aNodeIds[0], aNodeIds[1],
+                                                        aNodeIds[2], aNodeIds[3],
+                                                        aNodeIds[4], aNodeIds[5],
+                                                        aNodeIds[6], aNodeIds[7],
+                                                        aNodeIds[8], aNodeIds[9],
+                                                        aNodeIds[10], aNodeIds[11],
+                                                        aNodeIds[12], aNodeIds[13],
+                                                        aNodeIds[14], aNodeIds[15],
+                                                        aNodeIds[16], aNodeIds[17],
+                                                        aCellInfo->GetElemNum(iElem));
+                  if (!anElement) {
+                    anElement = myMesh->AddVolume(FindNode(myMesh,aNodeIds[0]),
+                                                  FindNode(myMesh,aNodeIds[1]),
+                                                  FindNode(myMesh,aNodeIds[2]),
+                                                  FindNode(myMesh,aNodeIds[3]),
+                                                  FindNode(myMesh,aNodeIds[4]),
+                                                  FindNode(myMesh,aNodeIds[5]),
+                                                  FindNode(myMesh,aNodeIds[6]),
+                                                  FindNode(myMesh,aNodeIds[7]),
+                                                  FindNode(myMesh,aNodeIds[8]),
+                                                  FindNode(myMesh,aNodeIds[9]),
+                                                  FindNode(myMesh,aNodeIds[10]),
+                                                  FindNode(myMesh,aNodeIds[11]),
+                                                  FindNode(myMesh,aNodeIds[12]),
+                                                  FindNode(myMesh,aNodeIds[13]),
+                                                  FindNode(myMesh,aNodeIds[14]),
+                                                  FindNode(myMesh,aNodeIds[15]),
+                                                  FindNode(myMesh,aNodeIds[16]),
+                                                  FindNode(myMesh,aNodeIds[17]));
+                    isRenum = anIsElemNum;
+                  }
+                  break;
                 case eHEXA8:
                   aNbNodes = 8;
                   if(anIsElemNum)
@@ -1056,8 +1092,8 @@ list<TNameAndType> DriverMED_R_SMESHDS_Mesh::GetGroupNamesAndTypes()
     set<string>::const_iterator aGrNamesIter = aGroupNames.begin();
     for (; aGrNamesIter != aGroupNames.end(); aGrNamesIter++)
     {
-      const set< SMDSAbs_ElementType >& types = aFamily->GetTypes();
-      set< SMDSAbs_ElementType >::const_iterator type = types.begin();
+      const ElemTypeSet& types = aFamily->GetTypes();
+      ElemTypeSet::const_iterator type = types.begin();
       for ( ; type != types.end(); ++type )
       {
         TNameAndType aNameAndType = make_pair( *aGrNamesIter, *type );
@@ -1073,28 +1109,51 @@ list<TNameAndType> DriverMED_R_SMESHDS_Mesh::GetGroupNamesAndTypes()
 
 void DriverMED_R_SMESHDS_Mesh::GetGroup(SMESHDS_Group* theGroup)
 {
-  string aGroupName (theGroup->GetStoreName());
+  TFamilyVec * famVecPtr;
+
+  if ( myGroups2FamiliesMap.IsEmpty() ) // PAL23514
+  {
+    TFamilyVec famVector( 1 );
+    map<int, DriverMED_FamilyPtr>::iterator famIter = myFamilies.begin();
+    for ( ; famIter != myFamilies.end(); famIter++ )
+    {
+      DriverMED_FamilyPtr    family = famIter->second;
+      const MED::TStringSet& groups = family->GetGroupNames();
+      famVector[ 0 ] = family;
+      MED::TStringSet::const_iterator grpIter = groups.begin();
+      for ( ; grpIter != groups.end(); ++grpIter )
+      {
+        TCollection_AsciiString groupName = grpIter->c_str();
+        if (( famVecPtr = myGroups2FamiliesMap.ChangeSeek( groupName )))
+          famVecPtr->push_back( family );
+        else
+          myGroups2FamiliesMap.Bind( groupName, famVector );
+      }
+    }
+  }
+
+  const char* aGroupName = theGroup->GetStoreName();
   if(MYDEBUG) MESSAGE("Get Group " << aGroupName);
 
-  map<int, DriverMED_FamilyPtr>::iterator aFamsIter = myFamilies.begin();
-  for (; aFamsIter != myFamilies.end(); aFamsIter++)
+  if (( famVecPtr = myGroups2FamiliesMap.ChangeSeek( aGroupName )))
   {
-    DriverMED_FamilyPtr aFamily = (*aFamsIter).second;
-    if (aFamily->GetTypes().count( theGroup->GetType() ) && aFamily->MemberOf(aGroupName))
+    for ( size_t i = 0; i < famVecPtr->size(); ++i )
     {
-      const ElementsSet&           anElements = aFamily->GetElements();
-      ElementsSet::const_iterator anElemsIter = anElements.begin();
-      for (; anElemsIter != anElements.end(); anElemsIter++)
+      DriverMED_FamilyPtr aFamily = (*famVecPtr)[i];
+      if ( aFamily->GetTypes().count( theGroup->GetType() ))
       {
-        const SMDS_MeshElement * element = *anElemsIter;
-        if ( element->GetType() == theGroup->GetType() ) // Issue 0020576
-          theGroup->SMDSGroup().Add(element);
+        const ElementsSet&           anElements = aFamily->GetElements();
+        ElementsSet::const_iterator anElemsIter = anElements.begin();
+        for (; anElemsIter != anElements.end(); anElemsIter++)
+        {
+          const SMDS_MeshElement * element = *anElemsIter;
+          if ( element->GetType() == theGroup->GetType() ) // Issue 0020576
+            theGroup->SMDSGroup().Add(element);
+        }
+        int aGroupAttrVal = aFamily->GetGroupAttributVal();
+        if( aGroupAttrVal != 0 )
+          theGroup->SetColorGroup(aGroupAttrVal);
       }
-      int aGroupAttrVal = aFamily->GetGroupAttributVal();
-      if( aGroupAttrVal != 0)
-        theGroup->SetColorGroup(aGroupAttrVal);
-//       if ( element ) -- Issue 0020576
-//         theGroup->SetType( theGroup->SMDSGroup().GetType() );
     }
   }
 }

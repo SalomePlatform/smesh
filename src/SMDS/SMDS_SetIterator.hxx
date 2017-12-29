@@ -51,6 +51,11 @@ namespace SMDS {
     static VALUE value(VALUE_SET_ITERATOR it) { return (VALUE) it->second; }
   };
 
+  template<typename VALUE,typename VALUE_SET_ITERATOR>
+  struct PointerAccessor {
+    static VALUE value(VALUE_SET_ITERATOR it) { return (VALUE) &(*it); }
+  };
+
   ///////////////////////////////////////////////////////////////////////////////
   /// Filters of value pointed by iterator
   ///////////////////////////////////////////////////////////////////////////////

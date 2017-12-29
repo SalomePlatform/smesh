@@ -114,7 +114,7 @@ namespace VISCOUS_3D
   enum UIndex { U_TGT = 1, U_SRC, LEN_TGT };
 
   const double theMinSmoothCosin = 0.1;
-  const double theSmoothThickToElemSizeRatio = 0.3;
+  const double theSmoothThickToElemSizeRatio = 0.6;
   const double theMinSmoothTriaAngle = 30;
   const double theMinSmoothQuadAngle = 45;
 
@@ -501,9 +501,11 @@ namespace VISCOUS_3D
     gp_XY  LastUV( const TopoDS_Face& F, _EdgesOnShape& eos, int which=-1 ) const;
     bool   IsOnEdge() const { return _2neibors; }
     bool   IsOnFace() const { return ( _nodes[0]->GetPosition()->GetDim() == 2 ); }
+    int    BaseShapeDim() const { return _nodes[0]->GetPosition()->GetDim(); }
     gp_XYZ Copy( _LayerEdge& other, _EdgesOnShape& eos, SMESH_MesherHelper& helper );
     void   SetCosin( double cosin );
     void   SetNormal( const gp_XYZ& n ) { _normal = n; }
+    void   SetMaxLen( double l ) { _maxLen = l; }
     int    NbSteps() const { return _pos.size() - 1; } // nb inlation steps
     bool   IsNeiborOnEdge( const _LayerEdge* edge ) const;
     void   SetSmooLen( double len ) { // set _len at which smoothing is needed
@@ -845,6 +847,8 @@ namespace VISCOUS_3D
 
     void Append( const gp_Pnt& center, _LayerEdge* ledge )
     {
+      if ( ledge->Is( _LayerEdge::MULTI_NORMAL ))
+        return;
       if ( _curvaCenters.size() > 0 )
         _segLength2.push_back( center.SquareDistance( _curvaCenters.back() ));
       _curvaCenters.push_back( center );
@@ -960,7 +964,7 @@ namespace VISCOUS_3D
     void limitMaxLenByCurvature( _SolidData& data, SMESH_MesherHelper& helper );
     void limitMaxLenByCurvature( _LayerEdge* e1, _LayerEdge* e2,
                                  _EdgesOnShape& eos1, _EdgesOnShape& eos2,
-                                 SMESH_MesherHelper& helper );
+                                 const bool isSmoothable );
     bool updateNormals( _SolidData& data, SMESH_MesherHelper& helper, int stepNb, double stepSize );
     bool updateNormalsOfConvexFaces( _SolidData&         data,
                                      SMESH_MesherHelper& helper,
@@ -1085,6 +1089,8 @@ namespace VISCOUS_3D
       return _eos._edges[ is2nd ? _eos._edges.size()-1 : 0 ]->_2neibors->_edges[ is2nd ];
     }
     bool isAnalytic() const { return !_anaCurve.IsNull(); }
+
+    void offPointsToPython() const; // debug
   };
   //--------------------------------------------------------------------------------
   /*!
@@ -1604,8 +1610,8 @@ namespace VISCOUS_3D
     // look for two neighbor not in-FACE nodes of face
     for ( int i = 0; i < 2; ++i )
     {
-      if ( nNext[i]->GetPosition()->GetDim() != 2 &&
-           nNext[i]->GetID() < nodeOnEdge->GetID() )
+      if (( nNext[i]->GetPosition()->GetDim() != 2 ) &&
+          ( nodeOnEdge->GetPosition()->GetDim() == 0 || nNext[i]->GetID() < nodeOnEdge->GetID() ))
       {
         // look for an in-FACE node
         for ( int iN = 0; iN < nbN; ++iN )
@@ -2339,7 +2345,7 @@ bool _ViscousBuilder::findFacesWithLayers(const bool onlyWith)
       for ( TopoDS_Iterator vIt( edge ); vIt.More(); vIt.Next() )
       {
         TGeomID vID = getMeshDS()->ShapeToIndex( vIt.Value() );
-        bool noShrinkV = false;
+        bool noShrinkV = false, noShrinkIfAdjMeshed = false;
 
         if ( iSolid < _sdVec.size() )
         {
@@ -2349,7 +2355,8 @@ bool _ViscousBuilder::findFacesWithLayers(const bool onlyWith)
             i2S    = _sdVec[i     ]._shrinkShape2Shape.find( vID );
             i2SAdj = _sdVec[iSolid]._shrinkShape2Shape.find( vID );
             if ( i2SAdj == _sdVec[iSolid]._shrinkShape2Shape.end() )
-              noShrinkV = ( i2S->second.ShapeType() == TopAbs_EDGE || isStructured );
+              noShrinkV = (( isStructured ) ||
+                           ( noShrinkIfAdjMeshed = i2S->second.ShapeType() == TopAbs_EDGE ));
             else
               noShrinkV = ( ! i2S->second.IsSame( i2SAdj->second ));
           }
@@ -2361,8 +2368,31 @@ bool _ViscousBuilder::findFacesWithLayers(const bool onlyWith)
         else
         {
           // the adjacent SOLID has NO layers at all
-          noShrinkV = ( isStructured ||
-                        _sdVec[i]._shrinkShape2Shape[ vID ].ShapeType() == TopAbs_EDGE );
+          if ( isStructured )
+          {
+            noShrinkV = true;
+          }
+          else
+          {
+            noShrinkV = noShrinkIfAdjMeshed =
+              ( _sdVec[i]._shrinkShape2Shape[ vID ].ShapeType() == TopAbs_EDGE );
+          }
+        }
+
+        if ( noShrinkV && noShrinkIfAdjMeshed )
+        {
+          // noShrinkV if FACEs in the adjacent SOLID are meshed
+          PShapeIteratorPtr fIt = helper.GetAncestors( _sdVec[i]._shrinkShape2Shape[ vID ],
+                                                       *_mesh, TopAbs_FACE, &solid );
+          while ( fIt->more() )
+          {
+            const TopoDS_Shape* f = fIt->next();
+            if ( !f->IsSame( fWOL ))
+            {
+              noShrinkV = ! _mesh->GetSubMesh( *f )->IsEmpty();
+              break;
+            }
+          }
         }
         if ( noShrinkV )
           _sdVec[i]._noShrinkShapes.insert( vID );
@@ -2856,7 +2886,7 @@ void _ViscousBuilder::limitStepSizeByCurvature( _SolidData& data )
             double curvature = Max( surfProp.MaxCurvature() * oriFactor,
                                     surfProp.MinCurvature() * oriFactor );
             if ( curvature > minCurvature )
-              ledge->_maxLen = Min( ledge->_maxLen, 1. / curvature );
+              ledge->SetMaxLen( Min( ledge->_maxLen, 1. / curvature ));
           }
         }
       }
@@ -2877,7 +2907,12 @@ void _ViscousBuilder::limitStepSizeByCurvature( _SolidData& data )
         for ( size_t j = 0; j < ledge->_simplices.size(); ++j )
           if ( ledge->_simplices[j]._nNext->GetPosition()->GetDim() < 2 )
           {
-            convFace._simplexTestEdges.push_back( ledge );
+            // do not select _LayerEdge's neighboring sharp EDGEs
+            bool sharpNbr = false;
+            for ( size_t iN = 0; iN < ledge->_neibors.size()  && !sharpNbr; ++iN )
+              sharpNbr = ( ledge->_neibors[iN]->_cosin > theMinSmoothCosin );
+            if ( !sharpNbr )
+              convFace._simplexTestEdges.push_back( ledge );
             break;
           }
       }
@@ -2931,9 +2966,7 @@ bool _ViscousBuilder::findShapesToSmooth( _SolidData& data )
   // Find shapes needing smoothing; such a shape has _LayerEdge._normal on it's
   // boundary inclined to the shape at a sharp angle
 
-  //list< TGeomID > shapesToSmooth;
   TopTools_MapOfShape edgesOfSmooFaces;
-
   SMESH_MesherHelper helper( *_mesh );
   bool ok = true;
 
@@ -2948,32 +2981,34 @@ bool _ViscousBuilder::findShapesToSmooth( _SolidData& data )
       continue;
 
     double tgtThick = eos._hyp.GetTotalThickness();
-    TopExp_Explorer eExp( edgesByGeom[iS]._shape, TopAbs_EDGE );
-    for ( ; eExp.More() && !eos._toSmooth; eExp.Next() )
+    SMESH_subMeshIteratorPtr subIt = eos._subMesh->getDependsOnIterator(/*includeSelf=*/false );
+    while ( subIt->more() && !eos._toSmooth )
     {
-      TGeomID iE = getMeshDS()->ShapeToIndex( eExp.Current() );
-      vector<_LayerEdge*>& eE = edgesByGeom[ iE ]._edges;
-      if ( eE.empty() ) continue;
+      TGeomID iSub = subIt->next()->GetId();
+      const vector<_LayerEdge*>& eSub = edgesByGeom[ iSub ]._edges;
+      if ( eSub.empty() ) continue;
 
       double faceSize;
-      for ( size_t i = 0; i < eE.size() && !eos._toSmooth; ++i )
-        if ( eE[i]->_cosin > theMinSmoothCosin )
+      for ( size_t i = 0; i < eSub.size() && !eos._toSmooth; ++i )
+        if ( eSub[i]->_cosin > theMinSmoothCosin )
         {
-          SMDS_ElemIteratorPtr fIt = eE[i]->_nodes[0]->GetInverseElementIterator(SMDSAbs_Face);
+          SMDS_ElemIteratorPtr fIt = eSub[i]->_nodes[0]->GetInverseElementIterator(SMDSAbs_Face);
           while ( fIt->more() && !eos._toSmooth )
           {
             const SMDS_MeshElement* face = fIt->next();
             if ( face->getshapeId() == eos._shapeID &&
-                 getDistFromEdge( face, eE[i]->_nodes[0], faceSize ))
+                 getDistFromEdge( face, eSub[i]->_nodes[0], faceSize ))
             {
-              eos._toSmooth = needSmoothing( eE[i]->_cosin, tgtThick, faceSize );
+              eos._toSmooth = needSmoothing( eSub[i]->_cosin,
+                                             tgtThick * eSub[i]->_lenFactor,
+                                             faceSize);
             }
           }
         }
     }
     if ( eos._toSmooth )
     {
-      for ( eExp.ReInit(); eExp.More(); eExp.Next() )
+      for ( TopExp_Explorer eExp( edgesByGeom[iS]._shape, TopAbs_EDGE ); eExp.More(); eExp.Next() )
         edgesOfSmooFaces.Add( eExp.Current() );
 
       data.PrepareEdgesToSmoothOnFace( &edgesByGeom[iS], /*substituteSrcNodes=*/false );
@@ -3017,8 +3052,8 @@ bool _ViscousBuilder::findShapesToSmooth( _SolidData& data )
           if ( endSeg->getshapeId() == (int) iS )
           {
             double segLen =
-              SMESH_TNodeXYZ( endSeg->GetNode(0) ).Distance( endSeg->GetNode(1 ));
-            eos._toSmooth = needSmoothing( cosinAbs, tgtThick, segLen );
+              SMESH_TNodeXYZ( endSeg->GetNode( 0 )).Distance( endSeg->GetNode( 1 ));
+            eos._toSmooth = needSmoothing( cosinAbs, tgtThick * eV[0]->_lenFactor, segLen );
           }
         }
         if ( eos._toSmooth )
@@ -3042,7 +3077,8 @@ bool _ViscousBuilder::findShapesToSmooth( _SolidData& data )
 
     if ( !eos._hyp.ToSmooth() )
       for ( size_t i = 0; i < eos._edges.size(); ++i )
-        eos._edges[i]->SetCosin( 0 );
+        //eos._edges[i]->SetCosin( 0 ); // keep _cosin to use in limitMaxLenByCurvature()
+        eos._edges[i]->_lenFactor = 1;
   }
 
 
@@ -3106,18 +3142,20 @@ bool _ViscousBuilder::findShapesToSmooth( _SolidData& data )
         {
           _EdgesOnShape* eof = data.GetShapeEdges( *face );
           if ( !eof ) continue; // other solid
+          if ( eos._shapeID == eof->_shapeID ) continue;
+          if ( !eos.HasC1( eof ))
+          {
+            // check the FACEs
+            eos._eosC1.push_back( eof );
+            eof->_toSmooth = false;
+            data.PrepareEdgesToSmoothOnFace( eof, /*substituteSrcNodes=*/false );
+            smQueue.push_back( eof->_subMesh );
+          }
           if ( !eos.HasC1( eoe ))
           {
             eos._eosC1.push_back( eoe );
             eoe->_toSmooth = false;
             data.PrepareEdgesToSmoothOnFace( eoe, /*substituteSrcNodes=*/false );
-          }
-          if ( eos._shapeID != eof->_shapeID && !eos.HasC1( eof )) 
-          {
-            eos._eosC1.push_back( eof );
-            eof->_toSmooth = false;
-            data.PrepareEdgesToSmoothOnFace( eof, /*substituteSrcNodes=*/false );
-            smQueue.push_back( eof->_subMesh );
           }
         }
       }
@@ -3274,6 +3312,7 @@ void _ViscousBuilder::setShapeData( _EdgesOnShape& eos,
     if ( eos.ShapeType() == TopAbs_FACE ) // get normals to elements on a FACE
     {
       SMESHDS_SubMesh* smDS = sm->GetSubMeshDS();
+      if ( !smDS ) return;
       eos._faceNormals.resize( smDS->NbElements() );
 
       SMDS_ElemIteratorPtr eIt = smDS->GetElements();
@@ -3554,7 +3593,7 @@ bool _ViscousBuilder::setEdgeData(_LayerEdge&         edge,
     getMeshDS()->RemoveFreeNode( edge._nodes.back(), 0, /*fromGroups=*/false );
     edge._nodes.resize( 1 );
     edge._normal.SetCoord( 0,0,0 );
-    edge._maxLen = 0;
+    edge.SetMaxLen( 0 );
   }
 
   // Set the rest data
@@ -4102,6 +4141,8 @@ void _LayerEdge::SetDataByNeighbors( const SMDS_MeshNode* n1,
 {
   if ( eos.ShapeType() != TopAbs_EDGE )
     return;
+  if ( _curvature && Is( SMOOTHED_C1 ))
+    return;
 
   gp_XYZ  pos = SMESH_TNodeXYZ( _nodes[0] );
   gp_XYZ vec1 = pos - SMESH_TNodeXYZ( n1 );
@@ -4375,13 +4416,13 @@ void _ViscousBuilder::computeGeomSize( _SolidData& data )
     for ( size_t i = 0; i < eos._edges.size(); ++i )
     {
       if ( eos._edges[i]->Is( _LayerEdge::BLOCKED )) continue;
-      eos._edges[i]->_maxLen = thinkness;
+      eos._edges[i]->SetMaxLen( thinkness );
       eos._edges[i]->FindIntersection( *searcher, intersecDist, data._epsilon, eos, &face );
       if ( intersecDist > 0 && face )
       {
         data._geomSize = Min( data._geomSize, intersecDist );
         if ( !neighborFaces.count( face->getshapeId() ))
-          eos._edges[i]->_maxLen = Min( thinkness, intersecDist / ( face->GetID() < 0 ? 3. : 2. ));
+          eos[i]->SetMaxLen( Min( thinkness, intersecDist / ( face->GetID() < 0 ? 3. : 2. )));
       }
     }
   }
@@ -4949,6 +4990,7 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
   const SMDS_MeshElement* intFace = 0;
   const SMDS_MeshElement* closestFace = 0;
   _LayerEdge* le = 0;
+  bool is1stBlocked = true; // dbg
   for ( size_t iS = 0; iS < data._edgesOnShape.size(); ++iS )
   {
     _EdgesOnShape& eos = data._edgesOnShape[ iS ];
@@ -5020,7 +5062,7 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
           continue;
 
         // ignore intersection with intFace of an adjacent FACE
-        if ( dist > 0 )
+        if ( dist > 0.1 * eos._edges[i]->_len )
         {
           bool toIgnore = false;
           if (  eos._toSmooth )
@@ -5059,6 +5101,9 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
         if ( toBlockInfaltion &&
              dist < ( eos._edges[i]->_len * theThickToIntersection ))
         {
+          if ( is1stBlocked ) { is1stBlocked = false; // debug
+            dumpFunction(SMESH_Comment("blockIntersected") <<data._index<<"_InfStep"<<infStep);
+          }
           eos._edges[i]->Set( _LayerEdge::INTERSECTED ); // not to intersect
           eos._edges[i]->Block( data );                  // not to inflate
 
@@ -5092,11 +5137,14 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
     } // loop on eos._edges
   } // loop on data._edgesOnShape
 
+  if ( !is1stBlocked )
+    dumpFunctionEnd();
+
   if ( closestFace && le )
   {
 #ifdef __myDEBUG
     SMDS_MeshElement::iterator nIt = closestFace->begin_nodes();
-    cout << "Shortest distance: _LayerEdge nodes: tgt " << le->_nodes.back()->GetID()
+    cout << "#Shortest distance: _LayerEdge nodes: tgt " << le->_nodes.back()->GetID()
          << " src " << le->_nodes[0]->GetID()<< ", intersection with face ("
          << (*nIt++)->GetID()<<" "<< (*nIt++)->GetID()<<" "<< (*nIt++)->GetID()
          << ") distance = " << distToIntersection<< endl;
@@ -5290,7 +5338,8 @@ void _ViscousBuilder::makeOffsetSurface( _EdgesOnShape& eos, SMESH_MesherHelper&
 
   try
   {
-    BRepOffsetAPI_MakeOffsetShape offsetMaker( eos._shape, -offset, Precision::Confusion() );
+    BRepOffsetAPI_MakeOffsetShape offsetMaker;
+    offsetMaker.PerformByJoin( eos._shape, -offset, Precision::Confusion() );
     if ( !offsetMaker.IsDone() ) return;
 
     TopExp_Explorer fExp( offsetMaker.Shape(), TopAbs_FACE );
@@ -5567,8 +5616,10 @@ void _Smoother1D::findEdgesToSmooth()
   {
     if ( !_eos[i]->Is( _LayerEdge::TO_SMOOTH ))
     {
-      if ( needSmoothing( _leOnV[0]._cosin, _eos[i]->_len, _curveLen * _leParams[i] ) ||
-           isToSmooth( i ))
+      if ( needSmoothing( _leOnV[0]._cosin,
+                          _eos[i]->_len * leOnV[0]->_lenFactor, _curveLen * _leParams[i] ) ||
+           isToSmooth( i )
+           )
         _eos[i]->Set( _LayerEdge::TO_SMOOTH );
       else
         break;
@@ -5582,7 +5633,8 @@ void _Smoother1D::findEdgesToSmooth()
   {
     if ( !_eos[i]->Is( _LayerEdge::TO_SMOOTH ))
     {
-      if ( needSmoothing( _leOnV[1]._cosin, _eos[i]->_len, _curveLen * ( 1.-_leParams[i] )) ||
+      if ( needSmoothing( _leOnV[1]._cosin,
+                          _eos[i]->_len * leOnV[1]->_lenFactor, _curveLen * ( 1.-_leParams[i] )) ||
            isToSmooth( i ))
         _eos[i]->Set( _LayerEdge::TO_SMOOTH );
       else
@@ -5923,12 +5975,14 @@ bool _Smoother1D::smoothComplexEdge( _SolidData&                    data,
   if ( e[1]->Is( updatedOrBlocked )) _iSeg[1] = _offPoints.size()-2;
 
   gp_Pnt pExtreme[2], pProj[2];
+  bool isProjected[2];
   for ( int is2nd = 0; is2nd < 2; ++is2nd )
   {
     pExtreme[ is2nd ] = SMESH_TNodeXYZ( e[is2nd]->_nodes.back() );
     int  i = _iSeg[ is2nd ];
     int di = is2nd ? -1 : +1;
-    bool projected = false;
+    bool & projected = isProjected[ is2nd ];
+    projected = false;
     double uOnSeg, distMin = Precision::Infinite(), dist, distPrev = 0;
     int nbWorse = 0;
     do {
@@ -5975,7 +6029,7 @@ bool _Smoother1D::smoothComplexEdge( _SolidData&                    data,
   gp_Vec vDiv0( pExtreme[0], pProj[0] );
   gp_Vec vDiv1( pExtreme[1], pProj[1] );
   double d0 = vDiv0.Magnitude();
-  double d1 = vDiv1.Magnitude();
+  double d1 = isProjected[1] ? vDiv1.Magnitude() : 0;
   if ( e[0]->Is( _LayerEdge::BLOCKED )) {
     if ( e[0]->_normal * vDiv0.XYZ() < 0 ) e[0]->_len += d0;
     else                                   e[0]->_len -= d0;
@@ -5989,27 +6043,28 @@ bool _Smoother1D::smoothComplexEdge( _SolidData&                    data,
   // compute normalized length of the offset segments located between the projections
   // ---------------------------------------------------------------------------------
 
+  // temporary replace extreme _offPoints by pExtreme
+  gp_XYZ opXYZ[2] = { _offPoints[ _iSeg[0]   ]._xyz,
+                      _offPoints[ _iSeg[1]+1 ]._xyz };
+  _offPoints[ _iSeg[0]   ]._xyz = pExtreme[0].XYZ();
+  _offPoints[ _iSeg[1]+ 1]._xyz = pExtreme[1].XYZ();
+
   size_t iSeg = 0, nbSeg = _iSeg[1] - _iSeg[0] + 1;
   vector< double > len( nbSeg + 1 );
   len[ iSeg++ ] = 0;
-  len[ iSeg++ ] = pProj[ 0 ].Distance( _offPoints[ _iSeg[0]+1 ]._xyz )/* * e[0]->_lenFactor*/;
+  len[ iSeg++ ] = pProj[ 0 ].Distance( _offPoints[ _iSeg[0]+1 ]._xyz );
   for ( size_t i = _iSeg[0]+1; i <= _iSeg[1]; ++i, ++iSeg )
   {
     len[ iSeg ] = len[ iSeg-1 ] + _offPoints[i].Distance( _offPoints[i+1] );
   }
-  len[ nbSeg ] -= pProj[ 1 ].Distance( _offPoints[ _iSeg[1]+1 ]._xyz )/* * e[1]->_lenFactor*/;
+  // if ( isProjected[ 1 ])
+  //   len[ nbSeg ] -= pProj[ 1 ].Distance( _offPoints[ _iSeg[1]+1 ]._xyz );
+  // else
+  //   len[ nbSeg ] += pExtreme[ 1 ].Distance( _offPoints[ _iSeg[1]+1 ]._xyz );
 
-  // d0 *= e[0]->_lenFactor;
-  // d1 *= e[1]->_lenFactor;
   double fullLen = len.back() - d0 - d1;
   for ( iSeg = 0; iSeg < len.size(); ++iSeg )
     len[iSeg] = ( len[iSeg] - d0 ) / fullLen;
-
-  // temporary replace extreme _offPoints by pExtreme
-  gp_XYZ op[2] = { _offPoints[ _iSeg[0]   ]._xyz,
-                   _offPoints[ _iSeg[1]+1 ]._xyz };
-  _offPoints[ _iSeg[0]   ]._xyz = pExtreme[0].XYZ();
-  _offPoints[ _iSeg[1]+ 1]._xyz = pExtreme[1].XYZ();
 
   // -------------------------------------------------------------
   // distribute tgt nodes of _LayerEdge's between the projections
@@ -6043,8 +6098,8 @@ bool _Smoother1D::smoothComplexEdge( _SolidData&                    data,
     dumpMove( tgtNode );
   }
 
-  _offPoints[ _iSeg[0]   ]._xyz = op[0];
-  _offPoints[ _iSeg[1]+1 ]._xyz = op[1];
+  _offPoints[ _iSeg[0]   ]._xyz = opXYZ[0];
+  _offPoints[ _iSeg[1]+1 ]._xyz = opXYZ[1];
 
   return true;
 }
@@ -6241,6 +6296,30 @@ gp_XYZ _Smoother1D::getNormalNormal( const gp_XYZ & normal,
 
 //================================================================================
 /*!
+ * \brief Writes a script creating a mesh composed of _offPoints
+ */
+//================================================================================
+
+void _Smoother1D::offPointsToPython() const
+{
+  const char* fname = "/tmp/offPoints.py";
+  cout << "execfile('"<<fname<<"')"<<endl;
+  ofstream py(fname);
+  py << "import SMESH" << endl
+     << "from salome.smesh import smeshBuilder" << endl
+     << "smesh  = smeshBuilder.New(salome.myStudy)" << endl
+     << "mesh   = smesh.Mesh( 'offPoints' )"<<endl;
+  for ( size_t i = 0; i < _offPoints.size(); i++ )
+  {
+    py << "mesh.AddNode( "
+       << _offPoints[i]._xyz.X() << ", "
+       << _offPoints[i]._xyz.Y() << ", "
+       << _offPoints[i]._xyz.Z() << " )" << endl;
+  }
+}
+
+//================================================================================
+/*!
  * \brief Sort _LayerEdge's by a parameter on a given EDGE
  */
 //================================================================================
@@ -6346,43 +6425,43 @@ void _SolidData::PrepareEdgesToSmoothOnFace( _EdgesOnShape* eos, bool substitute
     }
 
     // SetSmooLen() to _LayerEdge's on FACE
-    for ( size_t i = 0; i < eos->_edges.size(); ++i )
-    {
-      eos->_edges[i]->SetSmooLen( Precision::Infinite() );
-    }
-    SMESH_subMeshIteratorPtr smIt = eos->_subMesh->getDependsOnIterator(/*includeSelf=*/false);
-    while ( smIt->more() ) // loop on sub-shapes of the FACE
-    {
-      _EdgesOnShape* eoe = GetShapeEdges( smIt->next()->GetId() );
-      if ( !eoe ) continue;
+    // for ( size_t i = 0; i < eos->_edges.size(); ++i )
+    // {
+    //   eos->_edges[i]->SetSmooLen( Precision::Infinite() );
+    // }
+    // SMESH_subMeshIteratorPtr smIt = eos->_subMesh->getDependsOnIterator(/*includeSelf=*/false);
+    // while ( smIt->more() ) // loop on sub-shapes of the FACE
+    // {
+    //   _EdgesOnShape* eoe = GetShapeEdges( smIt->next()->GetId() );
+    //   if ( !eoe ) continue;
 
-      vector<_LayerEdge*>& eE = eoe->_edges;
-      for ( size_t iE = 0; iE < eE.size(); ++iE ) // loop on _LayerEdge's on EDGE or VERTEX
-      {
-        if ( eE[iE]->_cosin <= theMinSmoothCosin )
-          continue;
+    //   vector<_LayerEdge*>& eE = eoe->_edges;
+    //   for ( size_t iE = 0; iE < eE.size(); ++iE ) // loop on _LayerEdge's on EDGE or VERTEX
+    //   {
+    //     if ( eE[iE]->_cosin <= theMinSmoothCosin )
+    //       continue;
 
-        SMDS_ElemIteratorPtr segIt = eE[iE]->_nodes[0]->GetInverseElementIterator(SMDSAbs_Edge);
-        while ( segIt->more() )
-        {
-          const SMDS_MeshElement* seg = segIt->next();
-          if ( !eos->_subMesh->DependsOn( seg->getshapeId() ))
-            continue;
-          if ( seg->GetNode(0) != eE[iE]->_nodes[0] )
-            continue; // not to check a seg twice
-          for ( size_t iN = 0; iN < eE[iE]->_neibors.size(); ++iN )
-          {
-            _LayerEdge* eN = eE[iE]->_neibors[iN];
-            if ( eN->_nodes[0]->getshapeId() != eos->_shapeID )
-              continue;
-            double dist    = SMESH_MeshAlgos::GetDistance( seg, SMESH_TNodeXYZ( eN->_nodes[0] ));
-            double smooLen = getSmoothingThickness( eE[iE]->_cosin, dist );
-            eN->SetSmooLen( Min( smooLen, eN->GetSmooLen() ));
-            eN->Set( _LayerEdge::NEAR_BOUNDARY );
-          }
-        }
-      }
-    }
+    //     SMDS_ElemIteratorPtr segIt = eE[iE]->_nodes[0]->GetInverseElementIterator(SMDSAbs_Edge);
+    //     while ( segIt->more() )
+    //     {
+    //       const SMDS_MeshElement* seg = segIt->next();
+    //       if ( !eos->_subMesh->DependsOn( seg->getshapeId() ))
+    //         continue;
+    //       if ( seg->GetNode(0) != eE[iE]->_nodes[0] )
+    //         continue; // not to check a seg twice
+    //       for ( size_t iN = 0; iN < eE[iE]->_neibors.size(); ++iN )
+    //       {
+    //         _LayerEdge* eN = eE[iE]->_neibors[iN];
+    //         if ( eN->_nodes[0]->getshapeId() != eos->_shapeID )
+    //           continue;
+    //         double dist    = SMESH_MeshAlgos::GetDistance( seg, SMESH_TNodeXYZ( eN->_nodes[0] ));
+    //         double smooLen = getSmoothingThickness( eE[iE]->_cosin, dist );
+    //         eN->SetSmooLen( Min( smooLen, eN->GetSmooLen() ));
+    //         eN->Set( _LayerEdge::NEAR_BOUNDARY );
+    //       }
+    //     }
+    //   }
+    // }
   } // if ( eos->ShapeType() == TopAbs_FACE )
 
   for ( size_t i = 0; i < eos->_edges.size(); ++i )
@@ -6420,6 +6499,7 @@ void _SolidData::PrepareEdgesToSmoothOnFace( _EdgesOnShape* eos, bool substitute
     avgLen      /= edge->_simplices.size();
     if (( edge->_curvature = _Curvature::New( avgNormProj, avgLen )))
     {
+      edge->Set( _LayerEdge::SMOOTHED_C1 );
       isCurved = true;
       SMDS_FacePosition* fPos = dynamic_cast<SMDS_FacePosition*>( edge->_nodes[0]->GetPosition() );
       if ( !fPos )
@@ -6515,7 +6595,7 @@ void _ViscousBuilder::limitMaxLenByCurvature( _SolidData& data, SMESH_MesherHelp
           if ( eI->_nodes[0]->GetID() < eN->_nodes[0]->GetID() ) // treat this pair once
           {
             _EdgesOnShape* eosN = data.GetShapeEdges( eN );
-            limitMaxLenByCurvature( eI, eN, eosI, *eosN, helper );
+            limitMaxLenByCurvature( eI, eN, eosI, *eosN, eosI._hyp.ToSmooth() );
           }
         }
       }
@@ -6529,7 +6609,7 @@ void _ViscousBuilder::limitMaxLenByCurvature( _SolidData& data, SMESH_MesherHelp
       for ( size_t i = 1; i < eosI._edges.size(); ++i )
       {
         _LayerEdge* eI = eosI._edges[i];
-        limitMaxLenByCurvature( eI, e0, eosI, eosI, helper );
+        limitMaxLenByCurvature( eI, e0, eosI, eosI, eosI._hyp.ToSmooth() );
         e0 = eI;
       }
     }
@@ -6542,12 +6622,17 @@ void _ViscousBuilder::limitMaxLenByCurvature( _SolidData& data, SMESH_MesherHelp
  */
 //================================================================================
 
-void _ViscousBuilder::limitMaxLenByCurvature( _LayerEdge*         e1,
-                                              _LayerEdge*         e2,
-                                              _EdgesOnShape&      eos1,
-                                              _EdgesOnShape&      eos2,
-                                              SMESH_MesherHelper& helper )
+void _ViscousBuilder::limitMaxLenByCurvature( _LayerEdge*    e1,
+                                              _LayerEdge*    e2,
+                                              _EdgesOnShape& eos1,
+                                              _EdgesOnShape& eos2,
+                                              const bool     isSmoothable )
 {
+  if (( e1->_nodes[0]->GetPosition()->GetDim() !=
+        e2->_nodes[0]->GetPosition()->GetDim() ) &&
+      ( e1->_cosin < 0.75 ))
+    return; // angle > 90 deg at e1
+
   gp_XYZ plnNorm = e1->_normal ^ e2->_normal;
   double norSize = plnNorm.SquareModulus();
   if ( norSize < std::numeric_limits<double>::min() )
@@ -6567,9 +6652,10 @@ void _ViscousBuilder::limitMaxLenByCurvature( _LayerEdge*         e1,
     double ovl = ( u1 * e1->_normal * dir12 -
                    u2 * e2->_normal * dir12 ) / dir12.SquareModulus();
     if ( ovl > theSmoothThickToElemSizeRatio )
-    {    
-      e1->_maxLen = Min( e1->_maxLen, 0.75 * u1 / e1->_lenFactor );
-      e2->_maxLen = Min( e2->_maxLen, 0.75 * u2 / e2->_lenFactor );
+    {
+      const double coef = 0.75;
+      e1->SetMaxLen( Min( e1->_maxLen, coef * u1 / e1->_lenFactor ));
+      e2->SetMaxLen( Min( e2->_maxLen, coef * u2 / e2->_lenFactor ));
     }
   }
 }
@@ -6744,7 +6830,7 @@ void _ViscousBuilder::findCollisionEdges( _SolidData& data, SMESH_MesherHelper& 
         // else
         // {
         //   double shortLen = 0.75 * ( Min( dist1, dist2 ) / edge->_lenFactor );
-        //   edge->_maxLen = Min( shortLen, edge->_maxLen );
+        //   edge->SetMaxLen( Min( shortLen, edge->_maxLen ));
         // }
       }
 
@@ -6994,7 +7080,7 @@ bool _ViscousBuilder::updateNormals( _SolidData&         data,
         e2neIt = edge2newEdge.insert( make_pair( edge1, zeroEdge )).first;
         e2neIt->second._normal += distWgt * newNormal;
         e2neIt->second._cosin   = newCos;
-        e2neIt->second._maxLen  = 0.7 * minIntDist / edge1->_lenFactor;
+        e2neIt->second.SetMaxLen( 0.7 * minIntDist / edge1->_lenFactor );
         if ( iter > 0 && sgn1 * sgn2 < 0 && edge1->_cosin < 0 )
           e2neIt->second._normal += dir2;
 
@@ -7003,7 +7089,7 @@ bool _ViscousBuilder::updateNormals( _SolidData&         data,
         if ( Precision::IsInfinite( zeroEdge._maxLen ))
         {
           e2neIt->second._cosin  = edge2->_cosin;
-          e2neIt->second._maxLen = 1.3 * minIntDist / edge1->_lenFactor;
+          e2neIt->second.SetMaxLen( 1.3 * minIntDist / edge1->_lenFactor );
         }
         if ( iter > 0 && sgn1 * sgn2 < 0 && edge2->_cosin < 0 )
           e2neIt->second._normal += dir1;
@@ -7033,7 +7119,7 @@ bool _ViscousBuilder::updateNormals( _SolidData&         data,
         if ( newEdge._maxLen < edge->_len && iter > 0 ) // limit _maxLen
         {
           edge->InvalidateStep( stepNb + 1, *eos, /*restoreLength=*/true  );
-          edge->_maxLen = newEdge._maxLen;
+          edge->SetMaxLen( newEdge._maxLen );
           edge->SetNewLength( newEdge._maxLen, *eos, helper );
         }
         continue; // the new _normal is bad
@@ -9454,9 +9540,9 @@ void _LayerEdge::Block( _SolidData& data )
   SMESH_Comment msg( "#BLOCK shape=");
   msg << data.GetShapeEdges( this )->_shapeID
       << ", nodes " << _nodes[0]->GetID() << ", " << _nodes.back()->GetID();
-  dumpCmd( msg + " -- BEGIN")
+  dumpCmd( msg + " -- BEGIN");
 
-  _maxLen = _len;
+  SetMaxLen( _len );
   std::queue<_LayerEdge*> queue;
   queue.push( this );
 
@@ -9480,18 +9566,19 @@ void _LayerEdge::Block( _SolidData& data )
       double newMaxLen = edge->_maxLen + 0.5 * Sqrt( minDist );
       //if ( edge->_nodes[0]->getshapeId() == neibor->_nodes[0]->getshapeId() ) viscous_layers_00/A3
       {
-        newMaxLen *= edge->_lenFactor / neibor->_lenFactor;
+        //newMaxLen *= edge->_lenFactor / neibor->_lenFactor;
         // newMaxLen *= Min( edge->_lenFactor / neibor->_lenFactor,
         //                   neibor->_lenFactor / edge->_lenFactor );
       }
       if ( neibor->_maxLen > newMaxLen )
       {
-        neibor->_maxLen = newMaxLen;
+        neibor->SetMaxLen( newMaxLen );
         if ( neibor->_maxLen < neibor->_len )
         {
           _EdgesOnShape* eos = data.GetShapeEdges( neibor );
+          int       lastStep = neibor->Is( BLOCKED ) ? 1 : 0;
           while ( neibor->_len > neibor->_maxLen &&
-                  neibor->NbSteps() > 0 )
+                  neibor->NbSteps() > lastStep )
             neibor->InvalidateStep( neibor->NbSteps(), *eos, /*restoreLength=*/true );
           neibor->SetNewLength( neibor->_maxLen, *eos, data.GetHelper() );
           //neibor->Block( data );
@@ -9500,7 +9587,7 @@ void _LayerEdge::Block( _SolidData& data )
       }
     }
   }
-  dumpCmd( msg + " -- END")
+  dumpCmd( msg + " -- END");
 }
 
 //================================================================================
@@ -9545,10 +9632,13 @@ void _LayerEdge::InvalidateStep( size_t curStep, const _EdgesOnShape& eos, bool 
     {
       if ( NbSteps() == 0 )
         _len = 0.;
+      else if ( IsOnFace() && Is( MOVED ))
+        _len = ( nXYZ.XYZ() - SMESH_NodeXYZ( _nodes[0] )) * _normal;
       else
         _len -= ( nXYZ.XYZ() - curXYZ ).Modulus() / _lenFactor;
     }
   }
+  return;
 }
 
 //================================================================================
@@ -9584,10 +9674,23 @@ void _LayerEdge::SmoothPos( const vector< double >& segLen, const double tol )
   int iSmoothed = GetSmoothedPos( tol );
   if ( !iSmoothed ) return;
 
-  //if ( 1 || Is( DISTORTED ))
+  gp_XYZ normal = _normal;
+  if ( Is( NORMAL_UPDATED ))
   {
-    gp_XYZ normal = _normal;
-    if ( Is( NORMAL_UPDATED ))
+    double minDot = 1;
+    for ( size_t i = 0; i < _neibors.size(); ++i )
+    {
+      if ( _neibors[i]->IsOnFace() )
+      {
+        double dot = _normal * _neibors[i]->_normal;
+        if ( dot < minDot )
+        {
+          normal = _neibors[i]->_normal;
+          minDot = dot;
+        }
+      }
+    }
+    if ( minDot == 1. )
       for ( size_t i = 1; i < _pos.size(); ++i )
       {
         normal = _pos[i] - _pos[0];
@@ -9598,42 +9701,29 @@ void _LayerEdge::SmoothPos( const vector< double >& segLen, const double tol )
           break;
         }
       }
-    const double r = 0.2;
-    for ( int iter = 0; iter < 50; ++iter )
-    {
-      double minDot = 1;
-      for ( size_t i = Max( 1, iSmoothed-1-iter ); i < _pos.size()-1; ++i )
-      {
-        gp_XYZ midPos = 0.5 * ( _pos[i-1] + _pos[i+1] );
-        gp_XYZ newPos = ( 1-r ) * midPos + r * _pos[i];
-        _pos[i] = newPos;
-        double midLen = 0.5 * ( segLen[i-1] + segLen[i+1] );
-        double newLen = ( 1-r ) * midLen + r * segLen[i];
-        const_cast< double& >( segLen[i] ) = newLen;
-        // check angle between normal and (_pos[i+1], _pos[i] )
-        gp_XYZ posDir = _pos[i+1] - _pos[i];
-        double size   = posDir.SquareModulus();
-        if ( size > RealSmall() )
-          minDot = Min( minDot, ( normal * posDir ) * ( normal * posDir ) / size );
-      }
-      if ( minDot > 0.5 * 0.5 )
-        break;
-    }
   }
-  // else
-  // {
-  //   for ( size_t i = 1; i < _pos.size()-1; ++i )
-  //   {
-  //     if ((int) i < iSmoothed  &&  ( segLen[i] / segLen.back() < 0.5 ))
-  //       continue;
-
-  //     double     wgt = segLen[i] / segLen.back();
-  //     gp_XYZ normPos = _pos[0] + _normal * wgt * _len;
-  //     gp_XYZ tgtPos  = ( 1 - wgt ) * _pos[0] +  wgt * _pos.back();
-  //     gp_XYZ newPos  = ( 1 - wgt ) * normPos +  wgt * tgtPos;
-  //     _pos[i] = newPos;
-  //   }
-  // }
+  const double r = 0.2;
+  for ( int iter = 0; iter < 50; ++iter )
+  {
+    double minDot = 1;
+    for ( size_t i = Max( 1, iSmoothed-1-iter ); i < _pos.size()-1; ++i )
+    {
+      gp_XYZ midPos = 0.5 * ( _pos[i-1] + _pos[i+1] );
+      gp_XYZ newPos = ( 1-r ) * midPos + r * _pos[i];
+      _pos[i] = newPos;
+      double midLen = 0.5 * ( segLen[i-1] + segLen[i+1] );
+      double newLen = ( 1-r ) * midLen + r * segLen[i];
+      const_cast< double& >( segLen[i] ) = newLen;
+      // check angle between normal and (_pos[i+1], _pos[i] )
+      gp_XYZ posDir = _pos[i+1] - _pos[i];
+      double size   = posDir.SquareModulus();
+      if ( size > RealSmall() )
+        minDot = Min( minDot, ( normal * posDir ) * ( normal * posDir ) / size );
+    }
+    if ( minDot > 0.5 * 0.5 )
+      break;
+  }
+  return;
 }
 
 //================================================================================
@@ -9674,11 +9764,11 @@ std::string _LayerEdge::DumpFlags() const
   return dump;
 }
 
+
 //================================================================================
 /*!
-  case brief:
-  default:
-*/
+ * \brief Create layers of prisms
+ */
 //================================================================================
 
 bool _ViscousBuilder::refine(_SolidData& data)
@@ -9733,11 +9823,8 @@ bool _ViscousBuilder::refine(_SolidData& data)
       surface  = helper.GetSurface( geomFace );
       // propagate _toSmooth back to _eosC1, which was unset in findShapesToSmooth()
       for ( size_t i = 0; i < eos._eosC1.size(); ++i )
-      {
         eos._eosC1[ i ]->_toSmooth = true;
-        for ( size_t j = 0; j < eos._eosC1[i]->_edges.size(); ++j )
-          eos._eosC1[i]->_edges[j]->Set( _LayerEdge::SMOOTHED_C1 );
-      }
+
       isTooConvexFace = false;
       if ( _ConvexFace* cf = data.GetConvexFace( eos._shapeID ))
         isTooConvexFace = cf->_isTooCurved;
@@ -11586,11 +11673,11 @@ bool _ViscousBuilder::addBoundaryElements(_SolidData& data)
         const SMDS_MeshNode* tgtN0 = ledges[0]->_nodes.back();
         const SMDS_MeshNode* tgtN1 = ledges[1]->_nodes.back();
         int nbSharedPyram = 0;
-        SMDS_ElemIteratorPtr vIt = tgtN0->GetInverseElementIterator(SMDSAbs_Volume);
+        SMDS_ElemIteratorPtr vIt = tgtN1->GetInverseElementIterator(SMDSAbs_Volume);
         while ( vIt->more() )
         {
           const SMDS_MeshElement* v = vIt->next();
-          nbSharedPyram += int( v->GetNodeIndex( tgtN1 ) >= 0 );
+          nbSharedPyram += int( v->GetNodeIndex( tgtN0 ) >= 0 );
         }
         if ( nbSharedPyram > 1 )
           continue; // not free border of the pyramid

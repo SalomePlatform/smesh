@@ -46,6 +46,7 @@ SET(BAD_TESTS
 
 SET(GOOD_TESTS
   cartesian_algo.py
+  create_penta_biquad.py
   creating_meshes_ex02.py
   creating_meshes_ex04.py
   creating_meshes_ex06.py
@@ -66,6 +67,7 @@ SET(GOOD_TESTS
   defining_hypotheses_ex15.py
   defining_hypotheses_ex16.py
   defining_hypotheses_adaptive1d.py
+  extrusion_penta_biquad.py
   filters_ex01.py
   filters_ex03.py
   filters_ex04.py
@@ -154,6 +156,7 @@ SET(GOOD_TESTS
   quality_controls_ex17.py
   quality_controls_ex18.py
   quality_controls_ex19.py
+  quality_controls_defl.py
   transforming_meshes_ex01.py
   transforming_meshes_ex02.py
   transforming_meshes_ex03.py

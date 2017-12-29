@@ -1113,14 +1113,14 @@ bool SMESHGUI_GroupDlg::onApply()
   {
     if ( myFilter->_is_nil() ) return false;
 
-    if (CORBA::is_nil(myGroupOnFilter)) { // creation
+    if (CORBA::is_nil(myGroupOnFilter)) // creation
+    {
       if (myMesh->_is_nil())
         return false;
 
       myGroupOnFilter = myMesh->CreateGroupFromFilter(aType,
                                                       SMESH::toUtf8(myName->text()),
                                                       myFilter);
-
       resultGroup = SMESH::SMESH_GroupBase::_narrow( myGroupOnFilter );
       isCreation = true;
     }
@@ -1134,7 +1134,7 @@ bool SMESHGUI_GroupDlg::onApply()
     anIsOk = true;
   }
 
-  if( anIsOk )
+  if ( anIsOk )
   {
     SALOMEDS::Color aColor = getGroupColor();
     resultGroup->SetColor(aColor);

@@ -64,7 +64,6 @@
 #include <Utils_CorbaException.hxx>
 #include <SALOMEDS_wrap.hxx>
 #include <SALOME_GenericObj_i.hh>
-#include <Basics_OCCTVersion.hxx>
 
 #include <BRepAdaptor_Surface.hxx>
 #include <BRep_Tool.hxx>
@@ -76,15 +75,8 @@
 #include <gp_Ax2.hxx>
 #include <gp_Vec.hxx>
 
-#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
-#define NO_CAS_CATCH
-#endif
-
 #include <Standard_Failure.hxx>
-
-#ifdef NO_CAS_CATCH
 #include <Standard_ErrorHandler.hxx>
-#endif
 
 #include <sstream>
 #include <limits>
@@ -1150,6 +1142,10 @@ CORBA::Long SMESH_MeshEditor_i::AddVolume(const SMESH::long_array & IDsOfNodes)
   case 20:elem = getMeshDS()->AddVolume(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7],
                                         n[8],n[9],n[10],n[11],n[12],n[13],n[14],
                                         n[15],n[16],n[17],n[18],n[19]);
+    break;
+  case 18:elem = getMeshDS()->AddVolume(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7],
+                                        n[8],n[9],n[10],n[11],n[12],n[13],n[14],
+                                        n[15],n[16],n[17]);
     break;
   case 27:elem = getMeshDS()->AddVolume(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7],
                                         n[8],n[9],n[10],n[11],n[12],n[13],n[14],
@@ -3108,17 +3104,14 @@ SMESH_MeshEditor_i::mirror(TIDSortedElemSet &                  theElements,
   ::SMESH_MeshEditor::PGroupIDs groupIds =
       getEditor().Transform (*workElements, aTrsf, theCopy, theMakeGroups, theTargetMesh);
 
-  if ( theCopy && !myIsPreviewMode)
+  if ( !myIsPreviewMode )
   {
     if ( theTargetMesh )
-    {
       theTargetMesh->GetMeshDS()->Modified();
-    }
     else
-    {
       declareMeshModified( /*isReComputeSafe=*/false );
-    }
   }
+
   return theMakeGroups ? getGroups(groupIds.get()) : 0;
 
   SMESH_CATCH( SMESH::throwCorbaException );
@@ -3375,16 +3368,12 @@ SMESH_MeshEditor_i::translate(TIDSortedElemSet        & theElements,
   ::SMESH_MeshEditor::PGroupIDs groupIds =
       getEditor().Transform (*workElements, aTrsf, theCopy, theMakeGroups, theTargetMesh);
 
-  if ( theCopy && !myIsPreviewMode )
+  if ( !myIsPreviewMode )
   {
     if ( theTargetMesh )
-    {
       theTargetMesh->GetMeshDS()->Modified();
-    }
     else
-    {
       declareMeshModified( /*isReComputeSafe=*/false );
-    }
   }
 
   return theMakeGroups ? getGroups(groupIds.get()) : 0;
@@ -3632,7 +3621,7 @@ SMESH_MeshEditor_i::rotate(TIDSortedElemSet &        theElements,
   ::SMESH_MeshEditor::PGroupIDs groupIds =
       getEditor().Transform (*workElements, aTrsf, theCopy, theMakeGroups, theTargetMesh);
 
-  if ( theCopy && !myIsPreviewMode)
+  if ( !myIsPreviewMode)
   {
     if ( theTargetMesh ) theTargetMesh->GetMeshDS()->Modified();
     else                 declareMeshModified( /*isReComputeSafe=*/false );
@@ -3893,7 +3882,6 @@ SMESH_MeshEditor_i::scale(SMESH::SMESH_IDSource_ptr  theObject,
   };
   gp_Trsf aTrsf;
 
-#if OCC_VERSION_LARGE > 0x06070100
   // fight against orthogonalization
   // aTrsf.SetValues( S[0], 0,    0,    thePoint.x * (1-S[0]),
   //                  0,    S[1], 0,    thePoint.y * (1-S[1]),
@@ -3905,13 +3893,6 @@ SMESH_MeshEditor_i::scale(SMESH::SMESH_IDSource_ptr  theObject,
                 thePoint.y * (1-S[1]),
                 thePoint.z * (1-S[2]));
   M.SetDiagonal( S[0], S[1], S[2] );
-
-#else
-  double tol = std::numeric_limits<double>::max();
-  aTrsf.SetValues( S[0], 0,    0,    thePoint.x * (1-S[0]),
-                   0,    S[1], 0,    thePoint.y * (1-S[1]),
-                   0,    0,    S[2], thePoint.z * (1-S[2]),   tol, tol);
-#endif
 
   TIDSortedElemSet  copyElements;
   TIDSortedElemSet* workElements = &elements;
@@ -3932,7 +3913,7 @@ SMESH_MeshEditor_i::scale(SMESH::SMESH_IDSource_ptr  theObject,
   ::SMESH_MeshEditor::PGroupIDs groupIds =
       getEditor().Transform (*workElements, aTrsf, theCopy, theMakeGroups, theTargetMesh);
 
-  if ( theCopy && !myIsPreviewMode )
+  if ( !myIsPreviewMode )
   {
     if ( theTargetMesh ) theTargetMesh->GetMeshDS()->Modified();
     else                 declareMeshModified( /*isReComputeSafe=*/false );
@@ -4009,7 +3990,7 @@ SMESH_MeshEditor_i::ScaleMakeMesh(SMESH::SMESH_IDSource_ptr  theObject,
     // and then "GetGroups" using SMESH_Mesh::GetGroups()
 
     TPythonDump pydump; // to prevent dump at mesh creation
-    mesh = makeMesh( theMeshName );
+    mesh   = makeMesh( theMeshName );
     mesh_i = SMESH::DownCast<SMESH_Mesh_i*>( mesh );
 
     if ( mesh_i )
@@ -4594,6 +4575,151 @@ CORBA::Short SMESH_MeshEditor_i::GetPointState(CORBA::Double x,
 
   SMESH_CATCH( SMESH::throwCorbaException );
   return 0;
+}
+
+//=======================================================================
+//function : IsManifold
+//purpose  : Check if a 2D mesh is manifold
+//=======================================================================
+
+CORBA::Boolean SMESH_MeshEditor_i::IsManifold()
+  throw (SALOME::SALOME_Exception)
+{
+  bool isManifold = true;
+
+  SMESH_TRY;
+  SMESH_MeshAlgos::TFreeBorderVec foundFreeBordes;
+  SMESH_MeshAlgos::FindFreeBorders( *getMeshDS(),
+                                    foundFreeBordes,
+                                    /*closedOnly=*/true,
+                                    &isManifold );
+  SMESH_CATCH( SMESH::throwCorbaException );
+
+  return isManifold;
+}
+
+//=======================================================================
+//function : IsCoherentOrientation2D
+//purpose  : Check if orientation of 2D elements is coherent
+//=======================================================================
+
+CORBA::Boolean SMESH_MeshEditor_i::IsCoherentOrientation2D()
+  throw (SALOME::SALOME_Exception)
+{
+  bool isGoodOri = true;
+
+  SMESH_TRY;
+  SMESH_MeshAlgos::TFreeBorderVec foundFreeBordes;
+  SMESH_MeshAlgos::FindFreeBorders( *getMeshDS(),
+                                    foundFreeBordes,
+                                    /*closedOnly=*/true,
+                                    /*isManifold=*/0,
+                                    &isGoodOri);
+  SMESH_CATCH( SMESH::throwCorbaException );
+
+  return isGoodOri;
+}
+
+//=======================================================================
+//function : FindFreeBorders
+//purpose  : Returns all or only closed FreeBorder's.
+//=======================================================================
+
+SMESH::ListOfFreeBorders* SMESH_MeshEditor_i::FindFreeBorders(CORBA::Boolean closedOnly)
+  throw (SALOME::SALOME_Exception)
+{
+  SMESH::ListOfFreeBorders_var resBorders = new SMESH::ListOfFreeBorders;
+  SMESH_TRY;
+
+  SMESH_MeshAlgos::TFreeBorderVec foundFreeBordes;
+  SMESH_MeshAlgos::FindFreeBorders( *getMeshDS(), foundFreeBordes, closedOnly );
+
+  resBorders->length( foundFreeBordes.size() );
+  for ( size_t i = 0; i < foundFreeBordes.size(); ++i )
+  {
+    const SMESH_MeshAlgos::TFreeBorder& bordNodes = foundFreeBordes[i];
+    SMESH::FreeBorder&                    bordOut = resBorders[i];
+    bordOut.nodeIDs.length( bordNodes.size() );
+    for ( size_t iN = 0; iN < bordNodes.size(); ++iN )
+      bordOut.nodeIDs[ iN ] = bordNodes[ iN ]->GetID();
+  }
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+
+  return resBorders._retn();
+}
+
+//=======================================================================
+//function : FillHole
+//purpose  : Fill with 2D elements a hole defined by a FreeBorder.
+//=======================================================================
+
+void SMESH_MeshEditor_i::FillHole(const SMESH::FreeBorder& theHole)
+  throw (SALOME::SALOME_Exception)
+{
+  initData();
+
+  if ( theHole.nodeIDs.length() < 4 )
+    THROW_SALOME_CORBA_EXCEPTION("A hole should be bound by at least 3 nodes", SALOME::BAD_PARAM);
+  if ( theHole.nodeIDs[0] != theHole.nodeIDs[ theHole.nodeIDs.length()-1 ] )
+    THROW_SALOME_CORBA_EXCEPTION("Not closed hole boundary. "
+                                 "First and last nodes must be same", SALOME::BAD_PARAM);
+
+  SMESH_MeshAlgos::TFreeBorder bordNodes;
+  bordNodes.resize( theHole.nodeIDs.length() );
+  for ( size_t iN = 0; iN < theHole.nodeIDs.length(); ++iN )
+  {
+    bordNodes[ iN ] = getMeshDS()->FindNode( theHole.nodeIDs[ iN ]);
+    if ( !bordNodes[ iN ] )
+      THROW_SALOME_CORBA_EXCEPTION(SMESH_Comment("Node #") << theHole.nodeIDs[ iN ]
+                                   << " does not exist", SALOME::BAD_PARAM);
+  }
+
+  SMESH_TRY;
+
+  MeshEditor_I::TPreviewMesh* previewMesh = 0;
+  SMDS_Mesh* meshDS = getMeshDS();
+  if ( myIsPreviewMode )
+  {
+    // copy faces sharing nodes of theHole
+    TIDSortedElemSet holeFaces;
+    previewMesh = getPreviewMesh( SMDSAbs_Face );
+    for ( size_t i = 0; i < bordNodes.size(); ++i )
+    {
+      SMDS_ElemIteratorPtr fIt = bordNodes[i]->GetInverseElementIterator( SMDSAbs_Face );
+      while ( fIt->more() )
+      {
+        const SMDS_MeshElement* face = fIt->next();
+        if ( holeFaces.insert( face ).second )
+          previewMesh->Copy( face );
+      }
+      bordNodes[i] = previewMesh->GetMeshDS()->FindNode( bordNodes[i]->GetID() );
+      ASSERT( bordNodes[i] );
+    }
+    meshDS = previewMesh->GetMeshDS();
+  }
+
+  std::vector<const SMDS_MeshElement*> newFaces;
+  SMESH_MeshAlgos::FillHole( bordNodes, *meshDS, newFaces );
+
+  if ( myIsPreviewMode )
+  {
+    previewMesh->Clear();
+    for ( size_t i = 0; i < newFaces.size(); ++i )
+      previewMesh->Copy( newFaces[i] );
+  }
+  else
+  {
+    getEditor().ClearLastCreated();
+    SMESH_SequenceOfElemPtr& aSeq =
+      const_cast<SMESH_SequenceOfElemPtr&>( getEditor().GetLastCreatedElems() );
+    for ( size_t i = 0; i < newFaces.size(); ++i )
+      aSeq.Append( newFaces[i] );
+
+    TPythonDump() << this << ".FillHole( SMESH.FreeBorder(" << theHole.nodeIDs << " ))";
+  }
+
+  SMESH_CATCH( SMESH::throwCorbaException );
 }
 
 //=======================================================================
@@ -6829,4 +6955,131 @@ CORBA::Long SMESH_MeshEditor_i::MakeBoundaryElements(SMESH::Bnd_Dimension dim,
 
   SMESH_CATCH( SMESH::throwCorbaException );
   return 0;
+}
+
+//================================================================================
+/*!
+ * \brief Create a polyline consisting of 1D mesh elements each lying on a 2D element of
+ *        the initial mesh. Positions of new nodes are found by cutting the mesh by the
+ *        plane passing through pairs of points specified by each PolySegment structure.
+ *        If there are several paths connecting a pair of points, the shortest path is
+ *        selected by the module. Position of the cutting plane is defined by the two
+ *        points and an optional vector lying on the plane specified by a PolySegment.
+ *        By default the vector is defined by Mesh module as following. A middle point
+ *        of the two given points is computed. The middle point is projected to the mesh.
+ *        The vector goes from the middle point to the projection point. In case of planar
+ *        mesh, the vector is normal to the mesh.
+ *  \param [inout] segments - PolySegment's defining positions of cutting planes.
+ *        Return the used vector and position of the middle point.
+ *  \param [in] groupName - optional name of a group where created mesh segments will
+ *        be added.
+ */
+//================================================================================
+
+void SMESH_MeshEditor_i::MakePolyLine(SMESH::ListOfPolySegments& theSegments,
+                                      const char*                theGroupName)
+  throw (SALOME::SALOME_Exception)
+{
+  if ( theSegments.length() == 0 )
+    THROW_SALOME_CORBA_EXCEPTION("No segments given", SALOME::BAD_PARAM );
+  if ( myMesh->NbFaces() == 0 )
+    THROW_SALOME_CORBA_EXCEPTION("No faces in the mesh", SALOME::BAD_PARAM );
+
+  SMESH_TRY;
+  initData(/*deleteSearchers=*/false);
+
+  SMESHDS_Group* groupDS = 0;
+  SMESHDS_Mesh*   meshDS = getMeshDS();
+  if ( myIsPreviewMode ) // copy faces to the tmp mesh
+  {
+    TPreviewMesh * tmpMesh = getPreviewMesh( SMDSAbs_Edge );
+    SMDS_ElemIteratorPtr faceIt = getMeshDS()->elementsIterator( SMDSAbs_Face );
+    while ( faceIt->more() )
+      tmpMesh->Copy( faceIt->next() );
+    meshDS = tmpMesh->GetMeshDS();
+  }
+  else if ( theGroupName[0] ) // find/create a group of segments
+  {
+    SMESH_Mesh::GroupIteratorPtr grpIt = myMesh->GetGroups();
+    while ( !groupDS && grpIt->more() )
+    {
+      SMESH_Group* group = grpIt->next();
+      if ( group->GetGroupDS()->GetType() == SMDSAbs_Edge &&
+           strcmp( group->GetName(), theGroupName ) == 0 )
+      {
+        groupDS = dynamic_cast< SMESHDS_Group* >( group->GetGroupDS() );
+      }
+    }
+    if ( !groupDS )
+    {
+      SMESH::SMESH_Group_var groupVar = myMesh_i->CreateGroup( SMESH::EDGE, theGroupName );
+
+      if ( SMESH_Group_i* groupImpl = SMESH::DownCast<SMESH_Group_i*>( groupVar ))
+        groupDS = dynamic_cast< SMESHDS_Group* >( groupImpl->GetGroupDS() );
+    }
+  }
+
+  // convert input polySegments
+  ::SMESH_MeshEditor::TListOfPolySegments segments( theSegments.length() );
+  for ( CORBA::ULong i = 0; i < theSegments.length(); ++i )
+  {
+    SMESH::PolySegment&               segIn = theSegments[ i ];
+    ::SMESH_MeshEditor::PolySegment& segOut = segments[ i ];
+    segOut.myNode1[0] = meshDS->FindNode( segIn.node1ID1 );
+    segOut.myNode2[0] = meshDS->FindNode( segIn.node1ID2 );
+    segOut.myNode1[1] = meshDS->FindNode( segIn.node2ID1 );
+    segOut.myNode2[1] = meshDS->FindNode( segIn.node2ID2 );
+    segOut.myVector.SetCoord( segIn.vector.PS.x,
+                              segIn.vector.PS.y,
+                              segIn.vector.PS.z );
+    if ( !segOut.myNode1[0] )
+      THROW_SALOME_CORBA_EXCEPTION( SMESH_Comment( "Invalid node ID: ") << segIn.node1ID1,
+                                    SALOME::BAD_PARAM );
+    if ( !segOut.myNode1[1] )
+      THROW_SALOME_CORBA_EXCEPTION( SMESH_Comment( "Invalid node ID: ") << segIn.node2ID1,
+                                    SALOME::BAD_PARAM );
+  }
+
+  // get a static ElementSearcher
+  SMESH::SMESH_IDSource_var idSource = SMESH::SMESH_IDSource::_narrow( myMesh_i->_this() );
+  theSearchersDeleter.Set( myMesh, getPartIOR( idSource, SMESH::FACE ));
+  if ( !theElementSearcher )
+    theElementSearcher = SMESH_MeshAlgos::GetElementSearcher( *getMeshDS() );
+
+  // compute
+  getEditor().MakePolyLine( segments, groupDS, theElementSearcher );
+
+  // return vectors
+  if ( myIsPreviewMode )
+  {
+    for ( CORBA::ULong i = 0; i < theSegments.length(); ++i )
+    {
+      SMESH::PolySegment&             segOut = theSegments[ i ];
+      ::SMESH_MeshEditor::PolySegment& segIn = segments[ i ];
+      segOut.vector.PS.x = segIn.myVector.X();
+      segOut.vector.PS.y = segIn.myVector.Y();
+      segOut.vector.PS.z = segIn.myVector.Z();
+    }
+  }
+  else
+  {
+    TPythonDump() << "_segments = []";
+    for ( CORBA::ULong i = 0; i < theSegments.length(); ++i )
+    {
+      SMESH::PolySegment& segIn = theSegments[ i ];
+      TPythonDump() << "_segments.append( SMESH.PolySegment( "
+                    << segIn.node1ID1 << ", "
+                    << segIn.node1ID2 << ", "
+                    << segIn.node2ID1 << ", "
+                    << segIn.node2ID2 << ", "
+                    << "smeshBuilder.MakeDirStruct( "
+                    << segIn.vector.PS.x << ", "
+                    << segIn.vector.PS.y << ", "
+                    << segIn.vector.PS.z << ")))";
+    }
+    TPythonDump() << this << ".MakePolyLine( _segments, '" << theGroupName << "')";
+  }
+  meshDS->Modified();
+  SMESH_CATCH( SMESH::throwCorbaException );
+  return;
 }

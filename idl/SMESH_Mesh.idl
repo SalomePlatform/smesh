@@ -191,6 +191,7 @@ module SMESH
     Entity_TriQuad_Hexa,
     Entity_Penta,
     Entity_Quad_Penta,
+    Entity_BiQuad_Penta,
     Entity_Hexagonal_Prism,
     Entity_Polyhedra,
     Entity_Quad_Polyhedra,
@@ -541,7 +542,7 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
-     * Remove an hypothesis previouly added with AddHypothesis.
+     * Remove an hypothesis previously added with AddHypothesis.
      */
     Hypothesis_Status RemoveHypothesis(in GEOM::GEOM_Object aSubObject,
                                        in SMESH_Hypothesis anHyp)
@@ -675,7 +676,8 @@ module SMESH
                     in boolean isascii ) raises (SALOME::SALOME_Exception);
     void ExportCGNS( in SMESH_IDSource meshPart, 
                      in string         file,
-                     in boolean        overwrite ) raises (SALOME::SALOME_Exception);
+                     in boolean        overwrite,
+                     in boolean        groupElemsByType) raises (SALOME::SALOME_Exception);
     void ExportGMF( in SMESH_IDSource  meshPart, 
                     in string          file,
                     in boolean         withRequiredGroups) raises (SALOME::SALOME_Exception);
@@ -692,7 +694,7 @@ module SMESH
     double GetComputeProgress();
 
     /*!
-     * Get informations about mesh contents
+     * Get information about mesh contents
      */
     long NbNodes()
       raises (SALOME::SALOME_Exception);

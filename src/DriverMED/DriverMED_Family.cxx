@@ -93,7 +93,7 @@ DriverMED_Family
   return myType; 
 }
 
-const std::set< SMDSAbs_ElementType >&
+const ElemTypeSet&
 DriverMED_Family
 ::GetTypes() const
 {

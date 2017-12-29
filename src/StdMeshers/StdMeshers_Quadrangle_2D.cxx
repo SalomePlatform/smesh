@@ -64,16 +64,14 @@
 #include "utilities.h"
 #include "Utils_ExceptHandlers.hxx"
 
-#ifndef StdMeshers_Array2OfNode_HeaderFile
-#define StdMeshers_Array2OfNode_HeaderFile
-typedef const SMDS_MeshNode* SMDS_MeshNodePtr;
-typedef NCollection_Array2<SMDS_MeshNodePtr> StdMeshers_Array2OfNode;
-#endif
+#include <boost/container/flat_set.hpp>
 
-using namespace std;
+typedef NCollection_Array2<const SMDS_MeshNode*> StdMeshers_Array2OfNode;
 
 typedef gp_XY gp_UV;
 typedef SMESH_Comment TComm;
+
+using namespace std;
 
 //=============================================================================
 /*!
@@ -1010,14 +1008,14 @@ bool StdMeshers_Quadrangle_2D::IsApplicable( const TopoDS_Shape & aShape, bool t
       continue;
     }
 
-    int nbNoDegenEdges = 0;
+    int nbNoDegenEdges = 0, totalNbEdges = 0;
     TopExp_Explorer eExp( aFace, TopAbs_EDGE );
-    for ( ; eExp.More() && nbNoDegenEdges < 3; eExp.Next() ) {
+    for ( ; eExp.More() && nbNoDegenEdges < 3; eExp.Next(), ++totalNbEdges ) {
       if ( !SMESH_Algo::isDegenerated( TopoDS::Edge( eExp.Current() )))
         ++nbNoDegenEdges;
     }
-    if ( toCheckAll  && nbNoDegenEdges <  3 ) return false;
-    if ( !toCheckAll && nbNoDegenEdges >= 3 ) return true;
+    if (  toCheckAll && ( totalNbEdges <  4 && nbNoDegenEdges <  3 )) return false;
+    if ( !toCheckAll && ( totalNbEdges >= 4 || nbNoDegenEdges >= 3 )) return true;
   }
   return ( toCheckAll && nbFoundFaces != 0 );
 }
@@ -1139,7 +1137,7 @@ FaceQuadStruct::Ptr StdMeshers_Quadrangle_2D::CheckNbEdges(SMESH_Mesh &         
             }
           }
         }
-        else
+        else //if ( !myHelper || !myHelper->IsRealSeam( edge ))
         {
           sideEdges.push_back( edge );
         }
@@ -3895,171 +3893,177 @@ void StdMeshers_Quadrangle_2D::smooth (FaceQuadStruct::Ptr quad)
   {
     // "smooth" by computing node positions using 3D TFI and further projection
 
-    int nbhoriz  = quad->iSize;
-    int nbvertic = quad->jSize;
-
-    SMESH_TNodeXYZ a0( quad->UVPt( 0,         0          ).node );
-    SMESH_TNodeXYZ a1( quad->UVPt( nbhoriz-1, 0          ).node );
-    SMESH_TNodeXYZ a2( quad->UVPt( nbhoriz-1, nbvertic-1 ).node );
-    SMESH_TNodeXYZ a3( quad->UVPt( 0,         nbvertic-1 ).node );
-
-    for (int i = 1; i < nbhoriz-1; i++)
+    list< FaceQuadStruct::Ptr >::iterator q = myQuadList.begin();
+    for ( ; q != myQuadList.end() ; ++q )
     {
-      SMESH_TNodeXYZ p0( quad->UVPt( i, 0          ).node );
-      SMESH_TNodeXYZ p2( quad->UVPt( i, nbvertic-1 ).node );
-      for (int j = 1; j < nbvertic-1; j++)
+      quad = *q;
+      int nbhoriz  = quad->iSize;
+      int nbvertic = quad->jSize;
+
+      SMESH_TNodeXYZ a0( quad->UVPt( 0,         0          ).node );
+      SMESH_TNodeXYZ a1( quad->UVPt( nbhoriz-1, 0          ).node );
+      SMESH_TNodeXYZ a2( quad->UVPt( nbhoriz-1, nbvertic-1 ).node );
+      SMESH_TNodeXYZ a3( quad->UVPt( 0,         nbvertic-1 ).node );
+
+      for (int i = 1; i < nbhoriz-1; i++)
       {
-        SMESH_TNodeXYZ p1( quad->UVPt( nbhoriz-1, j ).node );
-        SMESH_TNodeXYZ p3( quad->UVPt( 0,         j ).node );
-
-        UVPtStruct& uvp = quad->UVPt( i, j );
-
-        gp_Pnt    p = myHelper->calcTFI(uvp.x,uvp.y, a0,a1,a2,a3, p0,p1,p2,p3);
-        gp_Pnt2d uv = surface->NextValueOfUV( uvp.UV(), p, 10*tol );
-        gp_Pnt pnew = surface->Value( uv );
-
-        meshDS->MoveNode( uvp.node, pnew.X(), pnew.Y(), pnew.Z() );
-        uvp.u = uv.X();
-        uvp.v = uv.Y();
-      }
-    }
-    return;
-  }
-
-  // Get nodes to smooth
-
-  typedef map< const SMDS_MeshNode*, TSmoothNode, TIDCompare > TNo2SmooNoMap;
-  TNo2SmooNoMap smooNoMap;
-
-  // fixed nodes
-  set< const SMDS_MeshNode* > fixedNodes;
-  for ( size_t i = 0; i < myForcedPnts.size(); ++i )
-  {
-    fixedNodes.insert( myForcedPnts[i].node );
-    if ( myForcedPnts[i].node->getshapeId() != myHelper->GetSubShapeID() )
-    {
-      TSmoothNode & sNode = smooNoMap[ myForcedPnts[i].node ];
-      sNode._uv  = myForcedPnts[i].uv;
-      sNode._xyz = SMESH_TNodeXYZ( myForcedPnts[i].node );
-    }
-  }
-  SMESHDS_SubMesh* fSubMesh = meshDS->MeshElements( quad->face );
-  SMDS_NodeIteratorPtr  nIt = fSubMesh->GetNodes();
-  while ( nIt->more() ) // loop on nodes bound to a FACE
-  {
-    const SMDS_MeshNode* node = nIt->next();
-    TSmoothNode & sNode = smooNoMap[ node ];
-    sNode._uv  = myHelper->GetNodeUV( quad->face, node );
-    sNode._xyz = SMESH_TNodeXYZ( node );
-    if ( fixedNodes.count( node ))
-      continue; // fixed - no triangles
-
-    // set sNode._triangles
-    SMDS_ElemIteratorPtr fIt = node->GetInverseElementIterator( SMDSAbs_Face );
-    while ( fIt->more() )
-    {
-      const SMDS_MeshElement* face = fIt->next();
-      const int nbN     = face->NbCornerNodes();
-      const int nInd    = face->GetNodeIndex( node );
-      const int prevInd = myHelper->WrapIndex( nInd - 1, nbN );
-      const int nextInd = myHelper->WrapIndex( nInd + 1, nbN );
-      const SMDS_MeshNode* prevNode = face->GetNode( prevInd );
-      const SMDS_MeshNode* nextNode = face->GetNode( nextInd );
-      sNode._triangles.push_back( TTriangle( & smooNoMap[ prevNode ],
-                                             & smooNoMap[ nextNode ]));
-    }
-  }
-  // set _uv of smooth nodes on FACE boundary
-  set< StdMeshers_FaceSide* > sidesOnEdge;
-  list< FaceQuadStruct::Ptr >::iterator q = myQuadList.begin();
-  for ( ; q != myQuadList.end() ; ++q )
-    for ( size_t i = 0; i < (*q)->side.size(); ++i )
-      if ( ! (*q)->side[i].grid->Edge(0).IsNull() &&
-           //(*q)->nbNodeOut( i ) == 0 &&
-           sidesOnEdge.insert( (*q)->side[i].grid.get() ).second )
-      {
-        const vector<UVPtStruct>& uvVec = (*q)->side[i].grid->GetUVPtStruct();
-        for ( unsigned j = 0; j < uvVec.size(); ++j )
+        SMESH_TNodeXYZ p0( quad->UVPt( i, 0          ).node );
+        SMESH_TNodeXYZ p2( quad->UVPt( i, nbvertic-1 ).node );
+        for (int j = 1; j < nbvertic-1; j++)
         {
-          TSmoothNode & sNode = smooNoMap[ uvVec[j].node ];
-          sNode._uv  = uvVec[j].UV();
-          sNode._xyz = SMESH_TNodeXYZ( uvVec[j].node );
+          SMESH_TNodeXYZ p1( quad->UVPt( nbhoriz-1, j ).node );
+          SMESH_TNodeXYZ p3( quad->UVPt( 0,         j ).node );
+
+          UVPtStruct& uvp = quad->UVPt( i, j );
+
+          gp_Pnt    p = myHelper->calcTFI(uvp.x,uvp.y, a0,a1,a2,a3, p0,p1,p2,p3);
+          gp_Pnt2d uv = surface->NextValueOfUV( uvp.UV(), p, 10*tol );
+          gp_Pnt pnew = surface->Value( uv );
+
+          meshDS->MoveNode( uvp.node, pnew.X(), pnew.Y(), pnew.Z() );
+          uvp.u = uv.X();
+          uvp.v = uv.Y();
         }
       }
-
-  // define reference orientation in 2D
-  TNo2SmooNoMap::iterator n2sn = smooNoMap.begin();
-  for ( ; n2sn != smooNoMap.end(); ++n2sn )
-    if ( !n2sn->second._triangles.empty() )
-      break;
-  if ( n2sn == smooNoMap.end() ) return;
-  const TSmoothNode & sampleNode = n2sn->second;
-  const bool refForward = ( sampleNode._triangles[0].IsForward( sampleNode._uv ));
-
-  // Smoothing
-
-  for ( int iLoop = 0; iLoop < 5; ++iLoop )
+    }
+  }
+  else
   {
+    // Get nodes to smooth
+
+    typedef map< const SMDS_MeshNode*, TSmoothNode, TIDCompare > TNo2SmooNoMap;
+    TNo2SmooNoMap smooNoMap;
+
+    // fixed nodes
+    boost::container::flat_set< const SMDS_MeshNode* > fixedNodes;
+    for ( size_t i = 0; i < myForcedPnts.size(); ++i )
+    {
+      fixedNodes.insert( myForcedPnts[i].node );
+      if ( myForcedPnts[i].node->getshapeId() != myHelper->GetSubShapeID() )
+      {
+        TSmoothNode & sNode = smooNoMap[ myForcedPnts[i].node ];
+        sNode._uv  = myForcedPnts[i].uv;
+        sNode._xyz = SMESH_TNodeXYZ( myForcedPnts[i].node );
+      }
+    }
+    SMESHDS_SubMesh* fSubMesh = meshDS->MeshElements( quad->face );
+    SMDS_NodeIteratorPtr  nIt = fSubMesh->GetNodes();
+    while ( nIt->more() ) // loop on nodes bound to a FACE
+    {
+      const SMDS_MeshNode* node = nIt->next();
+      TSmoothNode & sNode = smooNoMap[ node ];
+      sNode._uv  = myHelper->GetNodeUV( quad->face, node );
+      sNode._xyz = SMESH_TNodeXYZ( node );
+      if ( fixedNodes.count( node ))
+        continue; // fixed - no triangles
+
+      // set sNode._triangles
+      SMDS_ElemIteratorPtr fIt = node->GetInverseElementIterator( SMDSAbs_Face );
+      while ( fIt->more() )
+      {
+        const SMDS_MeshElement* face = fIt->next();
+        const int nbN     = face->NbCornerNodes();
+        const int nInd    = face->GetNodeIndex( node );
+        const int prevInd = myHelper->WrapIndex( nInd - 1, nbN );
+        const int nextInd = myHelper->WrapIndex( nInd + 1, nbN );
+        const SMDS_MeshNode* prevNode = face->GetNode( prevInd );
+        const SMDS_MeshNode* nextNode = face->GetNode( nextInd );
+        sNode._triangles.push_back( TTriangle( & smooNoMap[ prevNode ],
+                                               & smooNoMap[ nextNode ]));
+      }
+    }
+    // set _uv of smooth nodes on FACE boundary
+    set< StdMeshers_FaceSide* > sidesOnEdge;
+    list< FaceQuadStruct::Ptr >::iterator q = myQuadList.begin();
+    for ( ; q != myQuadList.end() ; ++q )
+      for ( size_t i = 0; i < (*q)->side.size(); ++i )
+        if ( ! (*q)->side[i].grid->Edge(0).IsNull() &&
+             //(*q)->nbNodeOut( i ) == 0 &&
+             sidesOnEdge.insert( (*q)->side[i].grid.get() ).second )
+        {
+          const vector<UVPtStruct>& uvVec = (*q)->side[i].grid->GetUVPtStruct();
+          for ( unsigned j = 0; j < uvVec.size(); ++j )
+          {
+            TSmoothNode & sNode = smooNoMap[ uvVec[j].node ];
+            sNode._uv  = uvVec[j].UV();
+            sNode._xyz = SMESH_TNodeXYZ( uvVec[j].node );
+          }
+        }
+
+    // define reference orientation in 2D
+    TNo2SmooNoMap::iterator n2sn = smooNoMap.begin();
+    for ( ; n2sn != smooNoMap.end(); ++n2sn )
+      if ( !n2sn->second._triangles.empty() )
+        break;
+    if ( n2sn == smooNoMap.end() ) return;
+    const TSmoothNode & sampleNode = n2sn->second;
+    const bool refForward = ( sampleNode._triangles[0].IsForward( sampleNode._uv ));
+
+    // Smoothing
+
+    for ( int iLoop = 0; iLoop < 5; ++iLoop )
+    {
+      for ( n2sn = smooNoMap.begin(); n2sn != smooNoMap.end(); ++n2sn )
+      {
+        TSmoothNode& sNode = n2sn->second;
+        if ( sNode._triangles.empty() )
+          continue; // not movable node
+
+        gp_XY newUV;
+        bool isValid = false;
+        bool use3D   = ( iLoop > 2 ); // 3 loops in 2D and 2, in 3D
+
+        if ( use3D )
+        {
+          // compute a new XYZ
+          gp_XYZ newXYZ (0,0,0);
+          for ( size_t i = 0; i < sNode._triangles.size(); ++i )
+            newXYZ += sNode._triangles[i]._n1->_xyz;
+          newXYZ /= sNode._triangles.size();
+
+          // compute a new UV by projection
+          newUV = surface->NextValueOfUV( sNode._uv, newXYZ, 10*tol ).XY();
+
+          // check validity of the newUV
+          for ( size_t i = 0; i < sNode._triangles.size() && isValid; ++i )
+            isValid = ( sNode._triangles[i].IsForward( newUV ) == refForward );
+        }
+        if ( !isValid )
+        {
+          // compute a new UV by averaging
+          newUV.SetCoord(0.,0.);
+          for ( unsigned i = 0; i < sNode._triangles.size(); ++i )
+            newUV += sNode._triangles[i]._n1->_uv;
+          newUV /= sNode._triangles.size();
+
+          // check validity of the newUV
+          isValid = true;
+          for ( unsigned i = 0; i < sNode._triangles.size() && isValid; ++i )
+            isValid = ( sNode._triangles[i].IsForward( newUV ) == refForward );
+        }
+        if ( isValid )
+        {
+          sNode._uv = newUV;
+          sNode._xyz = surface->Value( newUV ).XYZ();
+        }
+      }
+    }
+
+    // Set new XYZ to the smoothed nodes
+
     for ( n2sn = smooNoMap.begin(); n2sn != smooNoMap.end(); ++n2sn )
     {
       TSmoothNode& sNode = n2sn->second;
       if ( sNode._triangles.empty() )
         continue; // not movable node
 
-      gp_XY newUV;
-      bool isValid = false;
-      bool use3D   = ( iLoop > 2 ); // 3 loops in 2D and 2, in 3D
+      SMDS_MeshNode* node = const_cast< SMDS_MeshNode*>( n2sn->first );
+      gp_Pnt xyz = surface->Value( sNode._uv );
+      meshDS->MoveNode( node, xyz.X(), xyz.Y(), xyz.Z() );
 
-      if ( use3D )
-      {
-        // compute a new XYZ
-        gp_XYZ newXYZ (0,0,0);
-        for ( size_t i = 0; i < sNode._triangles.size(); ++i )
-          newXYZ += sNode._triangles[i]._n1->_xyz;
-        newXYZ /= sNode._triangles.size();
-
-        // compute a new UV by projection
-        newUV = surface->NextValueOfUV( sNode._uv, newXYZ, 10*tol ).XY();
-
-        // check validity of the newUV
-        for ( size_t i = 0; i < sNode._triangles.size() && isValid; ++i )
-          isValid = ( sNode._triangles[i].IsForward( newUV ) == refForward );
-      }
-      if ( !isValid )
-      {
-        // compute a new UV by averaging
-        newUV.SetCoord(0.,0.);
-        for ( unsigned i = 0; i < sNode._triangles.size(); ++i )
-          newUV += sNode._triangles[i]._n1->_uv;
-        newUV /= sNode._triangles.size();
-
-        // check validity of the newUV
-        isValid = true;
-        for ( unsigned i = 0; i < sNode._triangles.size() && isValid; ++i )
-          isValid = ( sNode._triangles[i].IsForward( newUV ) == refForward );
-      }
-      if ( isValid )
-      {
-        sNode._uv = newUV;
-        sNode._xyz = surface->Value( newUV ).XYZ();
-      }
+      // store the new UV
+      node->SetPosition( SMDS_PositionPtr( new SMDS_FacePosition( sNode._uv.X(), sNode._uv.Y() )));
     }
-  }
-
-  // Set new XYZ to the smoothed nodes
-
-  for ( n2sn = smooNoMap.begin(); n2sn != smooNoMap.end(); ++n2sn )
-  {
-    TSmoothNode& sNode = n2sn->second;
-    if ( sNode._triangles.empty() )
-      continue; // not movable node
-
-    SMDS_MeshNode* node = const_cast< SMDS_MeshNode*>( n2sn->first );
-    gp_Pnt xyz = surface->Value( sNode._uv );
-    meshDS->MoveNode( node, xyz.X(), xyz.Y(), xyz.Z() );
-
-    // store the new UV
-    node->SetPosition( SMDS_PositionPtr( new SMDS_FacePosition( sNode._uv.X(), sNode._uv.Y() )));
   }
 
   // Move medium nodes in quadratic mesh
@@ -4085,6 +4089,7 @@ void StdMeshers_Quadrangle_2D::smooth (FaceQuadStruct::Ptr quad)
       meshDS->MoveNode( node, xyz.X(), xyz.Y(), xyz.Z() );
     }
   }
+  return;
 }
 
 //================================================================================
@@ -4180,12 +4185,18 @@ bool StdMeshers_Quadrangle_2D::check()
     if ( myHelper->HasSeam() )
       for ( int i = 0; i < nbN && !nInFace; ++i )
         if ( !myHelper->IsSeamShape( nn[i]->getshapeId() ))
+        {
           nInFace = nn[i];
+          gp_XY uv = myHelper->GetNodeUV( geomFace, nInFace );
+          if ( myHelper->IsOnSeam( uv ))
+            nInFace = NULL;
+        }
 
     toCheckUV = true;
     for ( int i = 0; i < nbN; ++i )
       uv[ i ] = myHelper->GetNodeUV( geomFace, nn[i], nInFace, &toCheckUV );
 
+    bool isBad = false;
     switch ( nbN ) {
     case 4:
     {
@@ -4198,19 +4209,34 @@ bool StdMeshers_Quadrangle_2D::check()
         if ( sign1 * sign2 < 0 )
           continue; // this should not happen
       }
-      if ( sign1 * okSign < 0 )
-        badFaces.push_back ( f );
+      isBad = ( sign1 * okSign < 0 );
       break;
     }
     case 3:
     {
       double sign = getArea( uv[0], uv[1], uv[2] );
-      if ( sign * okSign < 0 )
-        badFaces.push_back ( f );
+      isBad = ( sign * okSign < 0 );
       break;
     }
     default:;
     }
+
+    // if ( isBad && myHelper->HasRealSeam() )
+    // {
+    //   // detect a case where a face intersects the seam
+    //   for ( int iPar = 1; iPar < 3; ++iPar )
+    //     if ( iPar & myHelper->GetPeriodicIndex() )
+    //     {
+    //       double min = uv[0].Coord( iPar ), max = uv[0].Coord( iPar );
+    //       for ( int i = 1; i < nbN; ++i )
+    //       {
+    //         min = Min( min, uv[i].Coord( iPar ));
+    //         max = Max( max, uv[i].Coord( iPar ));
+    //       }
+    //     }
+    // }
+    if ( isBad )
+      badFaces.push_back ( f );
   }
 
   if ( !badFaces.empty() )
@@ -4264,7 +4290,7 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
   if ( SMESH_Algo::isDegenerated( prevE ))
   {
     list<TopoDS_Edge>::reverse_iterator edge = ++theWire.rbegin();
-    while ( SMESH_Algo::isDegenerated( *edge ))
+    while ( SMESH_Algo::isDegenerated( *edge ) /*|| helper.IsRealSeam( *edge )*/)
       ++edge;
     if ( edge == theWire.rend() )
       return false;
@@ -4273,7 +4299,7 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
   list<TopoDS_Edge>::iterator edge = theWire.begin();
   for ( int iE = 0; edge != theWire.end(); ++edge, ++iE )
   {
-    if ( SMESH_Algo::isDegenerated( *edge ))
+    if ( SMESH_Algo::isDegenerated( *edge ) /*|| helper.IsRealSeam( *edge )*/)
     {
       ++theNbDegenEdges;
       continue;
@@ -4567,7 +4593,7 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
           {
             d = Abs( idealLen - accuLength[ iEV ]);
 
-            // take into account presence of a coresponding halfDivider
+            // take into account presence of a corresponding halfDivider
             const double cornerWgt = 0.5  / nbSides;
             const double vertexWgt = 0.25 / nbSides;
             TGeoIndex hd = halfDivider[ evVec[ iEV ]];

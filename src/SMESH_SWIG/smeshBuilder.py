@@ -1029,6 +1029,8 @@ class smeshBuilder(SMESH._objref_SMESH_Gen):
             functor = aFilterMgr.CreateLength()
         elif theCriterion == FT_Length2D:
             functor = aFilterMgr.CreateLength2D()
+        elif theCriterion == FT_Deflection2D:
+            functor = aFilterMgr.CreateDeflection2D()
         elif theCriterion == FT_NodeConnectivityNumber:
             functor = aFilterMgr.CreateNodeConnectivityNumber()
         elif theCriterion == FT_BallDiameter:
@@ -1946,8 +1948,11 @@ class Mesh(metaclass=MeshMeta):
     #  @param f is the file name
     #  @param overwrite boolean parameter for overwriting/not overwriting the file
     #  @param meshPart a part of mesh (group, sub-mesh) to export instead of the mesh
+    #  @param groupElemsByType if true all elements of same entity type are exported at ones,
+    #         else elements are exported in order of their IDs which can cause creation
+    #         of multiple cgns sections
     #  @ingroup l2_impexp
-    def ExportCGNS(self, f, overwrite=1, meshPart=None):
+    def ExportCGNS(self, f, overwrite=1, meshPart=None, groupElemsByType=False):
         unRegister = genObjUnRegister()
         if isinstance( meshPart, list ):
             meshPart = self.GetIDSource( meshPart, SMESH.ALL )
@@ -1956,7 +1961,7 @@ class Mesh(metaclass=MeshMeta):
             meshPart = meshPart.mesh
         elif not meshPart:
             meshPart = self.mesh
-        self.mesh.ExportCGNS(meshPart, f, overwrite)
+        self.mesh.ExportCGNS(meshPart, f, overwrite, groupElemsByType)
 
     ## Export the mesh in a file in GMF format.
     #  GMF files must have .mesh extension for the ASCII format and .meshb for
@@ -2114,6 +2119,8 @@ class Mesh(metaclass=MeshMeta):
     #  @ingroup l2_grps_create
     def MakeGroupByIds(self, groupName, elementType, elemIDs):
         group = self.mesh.CreateGroup(elementType, groupName)
+        if isinstance( elemIDs, Mesh ):
+            elemIDs = elemIDs.GetMesh()
         if hasattr( elemIDs, "GetIDs" ):
             if hasattr( elemIDs, "SetMesh" ):
                 elemIDs.SetMesh( self.GetMesh() )
@@ -2394,10 +2401,10 @@ class Mesh(metaclass=MeshMeta):
         return self.editor.MakeIDSource(ids, elemType)
 
 
-    # Get informations about mesh contents:
+    # Get information about mesh contents:
     # ------------------------------------
 
-    ## Get the mesh stattistic
+    ## Get the mesh statistic
     #  @return dictionary type element - count of elements
     #  @ingroup l1_meshinfo
     def GetMeshInfo(self, obj = None):
@@ -3210,6 +3217,16 @@ class Mesh(metaclass=MeshMeta):
     def GetPointState(self, x, y, z):
         return self.editor.GetPointState(x, y, z)
 
+    ## Check if a 2D mesh is manifold
+    #  @ingroup l1_controls
+    def IsManifold(self):
+        return self.editor.IsManifold()
+
+    ## Check if orientation of 2D elements is coherent
+    #  @ingroup l1_controls
+    def IsCoherentOrientation2D(self):
+        return self.editor.IsCoherentOrientation2D()
+
     ## Find the node closest to a point and moves it to a point location
     #  @param x  the X coordinate of a point
     #  @param y  the Y coordinate of a point
@@ -3330,7 +3347,7 @@ class Mesh(metaclass=MeshMeta):
     #          Type SMESH.FunctorType._items in the Python Console to see all items.
     #          Note that not all items correspond to numerical functors.
     #  @param MaxAngle      is the maximum angle between element normals at which the fusion
-    #          is still performed; theMaxAngle is mesured in radians.
+    #          is still performed; theMaxAngle is measured in radians.
     #          Also it could be a name of variable which defines angle in degrees.
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_unitetri
@@ -3349,7 +3366,7 @@ class Mesh(metaclass=MeshMeta):
     #          Type SMESH.FunctorType._items in the Python Console to see all items.
     #          Note that not all items correspond to numerical functors.
     #  @param MaxAngle   a max angle between element normals at which the fusion
-    #          is still performed; theMaxAngle is mesured in radians.
+    #          is still performed; theMaxAngle is measured in radians.
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_unitetri
     def TriToQuadObject (self, theObject, theCriterion, MaxAngle):
@@ -4712,6 +4729,24 @@ class Mesh(metaclass=MeshMeta):
     def MergeEqualElements(self):
         self.editor.MergeEqualElements()
 
+    ## Returns all or only closed free borders
+    #  @return list of SMESH.FreeBorder's
+    #  @ingroup l2_modif_trsf
+    def FindFreeBorders(self, ClosedOnly=True):
+        return self.editor.FindFreeBorders( ClosedOnly )
+
+    ## Fill with 2D elements a hole defined by a SMESH.FreeBorder.
+    #  @param FreeBorder either a SMESH.FreeBorder or a list on node IDs. These nodes
+    #         must describe all sequential nodes of the hole border. The first and the last
+    #         nodes must be the same. Use FindFreeBorders() to get nodes of holes.
+    #  @ingroup l2_modif_trsf
+    def FillHole(self, holeNodes):
+        if holeNodes and isinstance( holeNodes, list ) and isinstance( holeNodes[0], int ):
+            holeNodes = SMESH.FreeBorder(nodeIDs=holeNodes)
+        if not isinstance( holeNodes, SMESH.FreeBorder ):
+            raise TypeError("holeNodes must be either SMESH.FreeBorder or list of integer and not %s" % holeNodes)
+        self.editor.FillHole( holeNodes )
+
     ## Return groups of FreeBorder's coincident within the given tolerance.
     #  @param tolerance the tolerance. If the tolerance <= 0.0 then one tenth of an average
     #         size of elements adjacent to free borders being compared is used.
@@ -4987,12 +5022,12 @@ class Mesh(metaclass=MeshMeta):
 
     ## Identify the elements that will be affected by node duplication (actual duplication is not performed.
     #  This method is the first step of DoubleNodeElemGroupsInRegion.
-    #  @param theElems - list of groups of elements (edges or faces) to be replicated
+    #  @param theElems - list of groups of nodes or elements (edges or faces) to be replicated
     #  @param theNodesNot - list of groups of nodes not to replicated
     #  @param theShape - shape to detect affected elements (element which geometric center
     #         located on or inside shape).
     #         The replicated nodes should be associated to affected elements.
-    #  @return groups of affected elements
+    #  @return groups of affected elements in order: volumes, faces, edges
     #  @ingroup l2_modif_duplicat
     def AffectedElemGroupsInRegion(self, theElems, theNodesNot, theShape):
         return self.editor.AffectedElemGroupsInRegion(theElems, theNodesNot, theShape)
@@ -5027,8 +5062,41 @@ class Mesh(metaclass=MeshMeta):
     def CreateHoleSkin(self, radius, theShape, groupName, theNodesCoords):
         return self.editor.CreateHoleSkin( radius, theShape, groupName, theNodesCoords )
 
-    def _getFunctor(self, funcType ):
-        fn = self.functors[ EnumToLong(funcType) ]
+    ## Create a polyline consisting of 1D mesh elements each lying on a 2D element of
+    #  the initial mesh. Positions of new nodes are found by cutting the mesh by the
+    #  plane passing through pairs of points specified by each PolySegment structure.
+    #  If there are several paths connecting a pair of points, the shortest path is
+    #  selected by the module. Position of the cutting plane is defined by the two
+    #  points and an optional vector lying on the plane specified by a PolySegment.
+    #  By default the vector is defined by Mesh module as following. A middle point
+    #  of the two given points is computed. The middle point is projected to the mesh.
+    #  The vector goes from the middle point to the projection point. In case of planar
+    #  mesh, the vector is normal to the mesh.
+    #  @param segments - PolySegment's defining positions of cutting planes.
+    #         Return the used vector which goes from the middle point to its projection.
+    #  @param groupName - optional name of a group where created mesh segments will
+    #         be added.
+    #  @ingroup l2_modif_duplicat
+    def MakePolyLine(self, segments, groupName='', isPreview=False ):
+        editor = self.editor
+        if isPreview:
+            editor = self.mesh.GetMeshEditPreviewer()
+        segmentsRes = editor.MakePolyLine( segments, groupName )
+        for i, seg in enumerate( segmentsRes ):
+            segments[i].vector = seg.vector
+        if isPreview:
+            return editor.GetPreviewData()
+        return None        
+
+    ## Return a cached numerical functor by its type.
+    #  @param theCriterion functor type - an item of SMESH.FunctorType enumeration.
+    #          Type SMESH.FunctorType._items in the Python Console to see all items.
+    #          Note that not all items correspond to numerical functors.
+    #  @return SMESH_NumericalFunctor. The functor is already initialized
+    #          with a mesh
+    #  @ingroup l1_measurements
+    def GetFunctor(self, funcType ):
+        fn = self.functors[ funcType._v ]
         if not fn:
             fn = self.smeshpyD.GetFunctor(funcType)
             fn.SetMesh(self.mesh)
@@ -5043,7 +5111,7 @@ class Mesh(metaclass=MeshMeta):
     #  @return the functor value or zero in case of invalid arguments
     #  @ingroup l1_measurements
     def FunctorValue(self, funcType, elemId, isElem=True):
-        fn = self._getFunctor( funcType )
+        fn = self.GetFunctor( funcType )
         if fn.GetElementType() == self.GetElementType(elemId, isElem):
             val = fn.GetValue(elemId)
         else:
@@ -5149,7 +5217,7 @@ class Mesh(metaclass=MeshMeta):
             unRegister.set( meshPart )
         if isinstance( meshPart, Mesh ):
             meshPart = meshPart.mesh
-        fun = self._getFunctor( funType )
+        fun = self.GetFunctor( funType )
         if fun:
             if meshPart:
                 if hasattr( meshPart, "SetMesh" ):

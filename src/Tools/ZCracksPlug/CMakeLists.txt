@@ -19,12 +19,14 @@
 
 ADD_SUBDIRECTORY(casTests)
 
-INCLUDE(UsePyQt)
+IF(SALOME_BUILD_GUI)
+  INCLUDE(UsePyQt)
+ENDIF(SALOME_BUILD_GUI)
 
 # --- scripts ---
 
 # scripts / static
-SET(plugin_SCRIPTS
+SET(_plugin_SCRIPTS
   __init__.py
   ellipse.py
   genereCrack.py
@@ -37,29 +39,35 @@ SET(plugin_SCRIPTS
   Zset.py
 )
 
-SET(command_SCRIPTS
+SET(_command_SCRIPTS
   zcracksLaunch.py
 )
 
-# --- resources ---
-
-# uic files / to be processed by pyuic
-SET(_pyuic_files
-  zcracks.ui
-)
+IF(SALOME_BUILD_GUI)
+  # uic files / to be processed by pyuic
+  SET(_pyuic_FILES
+    zcracks.ui
+  )
 
 # qrc files / to be processed by pyrcc
-SET(_pyqrcc_files
+SET(_pyqrc_FILES
   images.qrc
 )
 
-# scripts / pyuic wrappings
-PYQT_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_files} OPTIONS "--import-from=Zcracks" "--resource-suffix=_qrc")
-PYQT_WRAP_QRC(_pyqrc_SCRIPTS ${_pyqrcc_files})
+  # scripts / pyuic wrappings
+  PYQT_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_FILES} TARGET_NAME _target_name_pyuic OPTIONS "--import-from=Zcracks" "--resource-suffix=_qrc")
+  PYQT_WRAP_QRC(_pyqrc_SCRIPTS ${_pyqrc_FILES})
+ENDIF(SALOME_BUILD_GUI)
 
 # --- rules ---
 
-SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/Zcracks)
-SALOME_INSTALL_SCRIPTS("${_pyuic_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/Zcracks)
-SALOME_INSTALL_SCRIPTS("${_pyqrc_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/Zcracks)
-SALOME_INSTALL_SCRIPTS("${command_SCRIPTS}" ${SALOME_INSTALL_BINS})
+SALOME_INSTALL_SCRIPTS("${_plugin_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/Zcracks)
+SALOME_INSTALL_SCRIPTS("${_command_SCRIPTS}" ${SALOME_INSTALL_BINS})
+IF(SALOME_BUILD_GUI)
+  SALOME_INSTALL_SCRIPTS("${_pyuic_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/Zcracks TARGET_NAME _target_name_pyuic_py)
+  SALOME_INSTALL_SCRIPTS("${_pyqrc_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/Zcracks)
+  # add dependency of compiled py files on uic files in order
+  # to avoid races problems when compiling in parallel
+  ADD_DEPENDENCIES(${_target_name_pyuic_py} ${_target_name_pyuic})
+ENDIF(SALOME_BUILD_GUI)
+

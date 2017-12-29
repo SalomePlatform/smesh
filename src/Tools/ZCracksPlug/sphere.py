@@ -8,10 +8,9 @@ import sys, numpy
 import salome
 
 salome.salome_init()
-theStudy = salome.myStudy
 
 import salome_notebook
-notebook = salome_notebook.NoteBook(theStudy)
+notebook = salome_notebook.NoteBook()
 
 ###
 ### GEOM component
@@ -30,7 +29,7 @@ def generate(data_rayon,data_centre,outFile):
   #data_rayon = 0.1
   #data_centre = [1., 1., 01.]
 
-  geompy = geomBuilder.New(theStudy)
+  geompy = geomBuilder.New()
 
   O = geompy.MakeVertex(0, 0, 0)
   OX = geompy.MakeVectorDXDYDZ(1, 0, 0)
@@ -48,7 +47,7 @@ def generate(data_rayon,data_centre,outFile):
   import  SMESH, SALOMEDS
   from salome.smesh import smeshBuilder
 
-  smesh = smeshBuilder.New(theStudy)
+  smesh = smeshBuilder.New()
 
   A=numpy.pi/(20.)
   chordal, minSize = uF.calcElemSize(A, data_rayon)
@@ -67,4 +66,4 @@ def generate(data_rayon,data_centre,outFile):
 
 
   if salome.sg.hasDesktop():
-    salome.sg.updateObjBrowser(True)
+    salome.sg.updateObjBrowser()

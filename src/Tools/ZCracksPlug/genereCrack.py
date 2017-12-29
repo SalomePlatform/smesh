@@ -212,13 +212,12 @@ def generateCustom(crack, outFile):
 
   import salome
   salome.salome_init()
-  theStudy = salome.myStudy
   import salome_notebook
-  notebook = salome_notebook.NoteBook(theStudy)
+  notebook = salome_notebook.NoteBook()
   import  SMESH, SALOMEDS
   from salome.smesh import smeshBuilder
 
-  smesh = smeshBuilder.New(theStudy)
+  smesh = smeshBuilder.New()
   ([Maillage_1], status) = smesh.CreateMeshesFromMED(crack['med file'])
   isCrack=False
   for group in Maillage_1.GetGroups():

@@ -40,6 +40,10 @@
       <translation>CGNS ファイル</translation>
     </message>
     <message>
+      <source>CGNS_EXPORT_ELEMS_BY_TYPE</source>
+      <translation>タイプで要素をグループ化</translation>
+    </message>
+    <message>
       <source>GMF_ASCII_FILES_FILTER</source>
       <translation>GMFアスキーファイル</translation>
     </message>
@@ -382,6 +386,22 @@
     <message>
       <source>MEN_DEL_GROUP</source>
       <translation>グループとその内容を削除します。</translation>
+    </message>
+    <message>
+      <source>MEN_ADD_TO_GROUP</source>
+      <translation>グループに追加</translation>
+    </message>
+    <message>
+      <source>MEN_REMOVE_FROM_GROUP</source>
+      <translation>グループから削除</translation>
+    </message>
+    <message>
+      <source>STB_ADD_TO_GROUP</source>
+      <translation>選択要素をグループに追加</translation>
+    </message>
+    <message>
+      <source>STB_REMOVE_FROM_GROUP</source>
+      <translation>選択要素をグループから削除</translation>
     </message>
     <message>
       <source>MEN_FACE_ORIENTATION</source>
@@ -872,6 +892,10 @@
       <translation>二次ウェッジ</translation>
     </message>
     <message>
+      <source>MEN_BIQUADRATIC_PENTAHEDRON</source>
+      <translation>4次五面体</translation>
+    </message>
+    <message>
       <source>MEN_QUADRATIC_PYRAMID</source>
       <translation>四角錐</translation>
     </message>
@@ -1342,6 +1366,10 @@
     <message>
       <source>SMESH_ADD_QUADRATIC_PENTAHEDRON_TITLE</source>
       <translation>二次くさびを追加します。</translation>
+    </message>
+    <message>
+      <source>SMESH_ADD_BIQUADRATIC_PENTAHEDRON_TITLE</source>
+      <translation>4次五面体の追加</translation>
     </message>
     <message>
       <source>SMESH_ADD_QUADRATIC_PYRAMID_TITLE</source>
@@ -2476,8 +2504,16 @@
       <translation>二次ウェッジ</translation>
     </message>
     <message>
+      <source>SMESH_BIQUADRATIC_PENTAHEDRON</source>
+      <translation>4次五面体</translation>
+    </message>
+    <message>
       <source>SMESH_QUADRATIC_PENTAHEDRONS</source>
       <translation>二次ウェッジ</translation>
+    </message>
+    <message>
+      <source>SMESH_BIQUADRATIC_PENTAHEDRONS</source>
+      <translation>4次五面体</translation>
     </message>
     <message>
       <source>SMESH_QUADRATIC_PYRAMID</source>
@@ -3324,6 +3360,10 @@
       <translation>二次ウェッジ</translation>
     </message>
     <message>
+      <source>STB_BIQUADRATIC_PENTAHEDRON</source>
+      <translation>4次五面体</translation>
+    </message>
+    <message>
       <source>STB_QUADRATIC_PYRAMID</source>
       <translation>四角錐</translation>
     </message>
@@ -3998,6 +4038,10 @@
     <message>
       <source>TOP_QUADRATIC_PENTAHEDRON</source>
       <translation>二次ウェッジ</translation>
+    </message>
+    <message>
+      <source>TOP_BIQUADRATIC_PENTAHEDRON</source>
+      <translation>4次五面体</translation>
     </message>
     <message>
       <source>TOP_QUADRATIC_PYRAMID</source>
@@ -4828,6 +4872,10 @@
       <translation>二次くさびを追加します。</translation>
     </message>
     <message>
+      <source>SMESH_ADD_BIQUADRATIC_PENTAHEDRON</source>
+      <translation>4次五面体の追加</translation>
+    </message>
+    <message>
       <source>SMESH_ADD_QUADRATIC_PYRAMID</source>
       <translation>二次ピラミッドの追加</translation>
     </message>
@@ -5247,6 +5295,10 @@
     <message>
       <source>SEPARATE_CORNERS_AND_MEDIUM</source>
       <translation>2次セルのコーナ節点と中間節点をマージできません</translation>
+    </message>
+    <message>
+      <source>AVOID_MAKING_HOLES</source>
+      <translation>穴作成の回避</translation>
     </message>
     <message>
       <source>KEEP_NODES</source>
@@ -5941,6 +5993,10 @@
     </message>
     <message>
       <source>ENTITY_TYPE_24</source>
+      <translation>ボール</translation>
+    </message>
+    <message>
+      <source>ENTITY_TYPE_25</source>
       <translation>ボール</translation>
     </message>
     <message>
@@ -6870,6 +6926,14 @@
       <source>SMESH_CREATE_GROUP_FROM_GEOM</source>
       <translation>ジオメトリからグループを作成</translation>
     </message>
+    <message>
+      <source>ELEMENTS</source>
+      <translation>要素</translation>
+    </message>
+    <message>
+      <source>ELEMENTS_TOOLTIP</source>
+      <translation>0D要素がない</translation>
+    </message>
   </context>
   <context>
     <name>SMESHGUI_MeshOrderDlg</name>
@@ -7297,6 +7361,10 @@
     <message>
       <source>ELEM_MODE</source>
       <translation>要素</translation>
+    </message>
+    <message>
+      <source>SHOW_IDS</source>
+      <translation>IDの表示</translation>
     </message>
     <message>
       <source>BUT_DUMP_MESH</source>

@@ -66,6 +66,7 @@ VTKCellType SMDS_MeshCell::toVtkType (SMDSAbs_EntityType smdsType)
     vtkTypes[ SMDSEntity_TriQuad_Hexa ]      = VTK_TRIQUADRATIC_HEXAHEDRON;
     vtkTypes[ SMDSEntity_Penta ]             = VTK_WEDGE;
     vtkTypes[ SMDSEntity_Quad_Penta ]        = VTK_QUADRATIC_WEDGE;
+    vtkTypes[ SMDSEntity_BiQuad_Penta ]      = VTK_BIQUADRATIC_QUADRATIC_WEDGE;
     vtkTypes[ SMDSEntity_Hexagonal_Prism ]   = VTK_HEXAGONAL_PRISM;
     vtkTypes[ SMDSEntity_Polyhedra ]         = VTK_POLYHEDRON;
     //vtkTypes[ SMDSEntity_Quad_Polyhedra ]    = ;
@@ -153,8 +154,12 @@ const std::vector< int >& SMDS_MeshCell::toVtkOrder(SMDSAbs_EntityType smdsType)
       toVtkInterlaces[SMDSEntity_Penta].assign( &ids[0], &ids[0]+6 );
     }
     {
-      const int ids[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14};
+      const int ids[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14}; // TODO: check
       toVtkInterlaces[SMDSEntity_Quad_Penta].assign( &ids[0], &ids[0]+15 );
+    }
+    {
+      const int ids[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17};// TODO: check
+      toVtkInterlaces[SMDSEntity_BiQuad_Penta].assign( &ids[0], &ids[0]+18 );
     }
     {
       const int ids[] = {0,5,4,3,2,1,6,11,10,9,8,7};
@@ -254,6 +259,10 @@ const std::vector<int>& SMDS_MeshCell::reverseSmdsOrder(SMDSAbs_EntityType smdsT
       reverseInterlaces[SMDSEntity_Quad_Penta].assign( &ids[0], &ids[0]+15 );
     }
     {
+      const int ids[] = {0,2,1,3,5,4, 8,7,6,11,10,9,12,14,13,15,16,17};
+      reverseInterlaces[SMDSEntity_BiQuad_Penta].assign( &ids[0], &ids[0]+18 );
+    }
+   {
       const int ids[] = {0,5,4,3,2,1,6,11,10,9,8,7};
       reverseInterlaces[SMDSEntity_Hexagonal_Prism].assign( &ids[0], &ids[0]+12 );
     }
@@ -414,6 +423,7 @@ SMDSAbs_ElementType SMDS_MeshCell::toSmdsType(SMDSAbs_EntityType entityType)
   case SMDSEntity_TriQuad_Hexa:
   case SMDSEntity_Penta:
   case SMDSEntity_Quad_Penta:
+  case SMDSEntity_BiQuad_Penta:
   case SMDSEntity_Hexagonal_Prism:
   case SMDSEntity_Polyhedra:
   case SMDSEntity_Quad_Polyhedra: return SMDSAbs_Volume;

@@ -1397,6 +1397,7 @@ void SMESH_Mesh::ExportMED(const char *        file,
                            bool                theAllElemsToGroup)
   throw(SALOME_Exception)
 {
+  //MESSAGE("MED_VERSION:"<< theVersion);
   SMESH_TRY;
 
   DriverMED_W_SMESHDS_Mesh myWriter;
@@ -1532,6 +1533,7 @@ void SMESH_Mesh::ExportUNV(const char *        file,
   myWriter.SetMeshId(_id);
   //  myWriter.SetGroups(_mapGroup);
 
+  // pass group names to SMESHDS
   if ( !meshPart )
   {
     for ( map<int, SMESH_Group*>::iterator it = _mapGroup.begin(); it != _mapGroup.end(); it++ ) {
@@ -1576,17 +1578,37 @@ void SMESH_Mesh::ExportSTL(const char *        file,
 
 void SMESH_Mesh::ExportCGNS(const char *        file,
                             const SMESHDS_Mesh* meshDS,
-                            const char *        meshName)
+                            const char *        meshName,
+                            const bool          groupElemsByType)
 {
   int res = Driver_Mesh::DRS_FAIL;
+
+  // pass group names to SMESHDS
+  for ( map<int, SMESH_Group*>::iterator it = _mapGroup.begin(); it != _mapGroup.end(); it++ ) {
+    SMESH_Group*       group   = it->second;
+    SMESHDS_GroupBase* groupDS = group->GetGroupDS();
+    if ( groupDS ) {
+      string groupName = group->GetName();
+      groupDS->SetStoreName( groupName.c_str() );
+    }
+  }
 #ifdef WITH_CGNS
+
   DriverCGNS_Write myWriter;
   myWriter.SetFile( file );
   myWriter.SetMesh( const_cast<SMESHDS_Mesh*>( meshDS ));
   myWriter.SetMeshName( SMESH_Comment("Mesh_") << meshDS->GetPersistentId());
   if ( meshName && meshName[0] )
     myWriter.SetMeshName( meshName );
+  myWriter.SetElementsByType( groupElemsByType );
   res = myWriter.Perform();
+  if ( res != Driver_Mesh::DRS_OK )
+  {
+    SMESH_ComputeErrorPtr err = myWriter.GetError();
+    if ( err && !err->IsOK() && !err->myComment.empty() )
+      throw SALOME_Exception(("Export failed: " + err->myComment ).c_str() );
+  }
+
 #endif
   if ( res != Driver_Mesh::DRS_OK )
     throw SALOME_Exception("Export failed");
@@ -1863,6 +1885,19 @@ int SMESH_Mesh::NbPrisms(SMDSAbs_ElementOrder order) const throw(SALOME_Exceptio
   Unexpect aCatch(SalomeException);
   return _myMeshDS->GetMeshInfo().NbPrisms(order);
 }
+
+int SMESH_Mesh::NbQuadPrisms() const throw (SALOME_Exception)
+{
+  Unexpect aCatch(SalomeException);
+  return _myMeshDS->GetMeshInfo().NbQuadPrisms();
+}
+
+int SMESH_Mesh::NbBiQuadPrisms() const throw (SALOME_Exception)
+{
+  Unexpect aCatch(SalomeException);
+  return _myMeshDS->GetMeshInfo().NbBiQuadPrisms();
+}
+
 
 //================================================================================
 /*!
@@ -2149,7 +2184,7 @@ ostream& SMESH_Mesh::Dump(ostream& save)
         save << clause << ".3) Faces in detail: " << endl;
         map <int,int>::iterator itF;
         for (itF = myFaceMap.begin(); itF != myFaceMap.end(); itF++)
-          save << "--> nb nodes: " << itF->first << " - nb elemens:\t" << itF->second << endl;
+          save << "--> nb nodes: " << itF->first << " - nb elements:\t" << itF->second << endl;
       }
     }
     save << ++clause << ") Total number of " << orderStr << " volumes:\t" << NbVolumes(order) << endl;
@@ -2174,7 +2209,7 @@ ostream& SMESH_Mesh::Dump(ostream& save)
         save << clause << ".5) Volumes in detail: " << endl;
         map <int,int>::iterator itV;
         for (itV = myVolumesMap.begin(); itV != myVolumesMap.end(); itV++)
-          save << "--> nb nodes: " << itV->first << " - nb elemens:\t" << itV->second << endl;
+          save << "--> nb nodes: " << itV->first << " - nb elements:\t" << itV->second << endl;
       }
     }
     save << endl;

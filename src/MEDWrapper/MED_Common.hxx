@@ -62,7 +62,7 @@ namespace MED
   typedef enum {ePOINT1=1, eSEG2=102, eSEG3=103, eTRIA3=203,
                 eQUAD4=204, eTRIA6=206, eTRIA7=207, eQUAD8=208, eQUAD9=209, eTETRA4=304,
                 ePYRA5=305, ePENTA6=306, eHEXA8=308, eOCTA12=312, eTETRA10=310,
-                ePYRA13=313, ePENTA15=315, eHEXA20=320, eHEXA27=327,
+                ePYRA13=313, ePENTA15=315, ePENTA18=318, eHEXA20=320, eHEXA27=327,
                 ePOLYGONE=400, ePOLYGON2=420, ePOLYEDRE=500, eNONE=0,
                 eBALL=1101, // no such a type in med.h, it's just a trick
                 eAllGeoType=-1} EGeometrieElement;

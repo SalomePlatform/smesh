@@ -2970,6 +2970,7 @@ void SMESH_Mesh_i::ExportMED(const char*        file,
                              CORBA::Boolean     autoDimension)
   throw(SALOME::SALOME_Exception)
 {
+  //MESSAGE("SMESH::MED_VERSION:"<< theVersion);
   SMESH_TRY;
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
@@ -3544,7 +3545,8 @@ void SMESH_Mesh_i::ExportPartToSTL(::SMESH::SMESH_IDSource_ptr meshPart,
 
 void SMESH_Mesh_i::ExportCGNS(::SMESH::SMESH_IDSource_ptr meshPart,
                               const char*                 file,
-                              CORBA::Boolean              overwrite)
+                              CORBA::Boolean              overwrite,
+                              CORBA::Boolean              groupElemsByType)
   throw (SALOME::SALOME_Exception)
 {
 #ifdef WITH_CGNS
@@ -3561,8 +3563,12 @@ void SMESH_Mesh_i::ExportCGNS(::SMESH::SMESH_IDSource_ptr meshPart,
     CORBA::String_var name = so->GetName();
     meshName = name.in();
   }
+  SMESH_TRY;
+
   SMESH_MeshPartDS partDS( meshPart );
-  _impl->ExportCGNS(file, &partDS, meshName.c_str() );
+  _impl->ExportCGNS(file, &partDS, meshName.c_str(), groupElemsByType );
+
+  SMESH_CATCH( SMESH::throwCorbaException );
 
   TPythonDump() << SMESH::SMESH_Mesh_var(_this()) << ".ExportCGNS( "
                 << meshPart<< ", r'" << file << "', " << overwrite << ")";
@@ -6018,6 +6024,7 @@ SMESH_MeshPartDS::SMESH_MeshPartDS(SMESH::SMESH_IDSource_ptr meshPart):
   SMESH::SMESH_Mesh_var mesh = meshPart->GetMesh();
   SMESH_Mesh_i*       mesh_i = SMESH::DownCast<SMESH_Mesh_i*>( mesh );
 
+  mesh_i->Load();
   _meshDS = mesh_i->GetImpl().GetMeshDS();
 
   SetPersistentId( _meshDS->GetPersistentId() );
@@ -6085,6 +6092,21 @@ SMESH_MeshPartDS::SMESH_MeshPartDS(const std::list< const SMDS_MeshElement* > & 
         }
       }
   myInfo = tmpInfo;
+}
+// -------------------------------------------------------------------------------------
+const SMDS_MeshElement * SMESH_MeshPartDS::FindElement(int IDelem) const
+{
+  if ( _meshDS ) return _meshDS->FindElement( IDelem );
+
+  TElemID elem( IDelem );
+  for ( int iType = SMDSAbs_Edge; iType < SMDSAbs_NbElementTypes; ++iType )
+    if ( !_elements[ iType ].empty() )
+    {
+      TIDSortedElemSet::const_iterator it = _elements[ iType ].find( &elem );
+      if ( it != _elements[ iType ].end() )
+        return *it;
+    }
+  return 0;
 }
 // -------------------------------------------------------------------------------------
 SMDS_ElemIteratorPtr SMESH_MeshPartDS::elementGeomIterator(SMDSAbs_GeometryType geomType) const

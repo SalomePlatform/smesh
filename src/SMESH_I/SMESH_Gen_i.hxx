@@ -49,6 +49,7 @@
 #include <TCollection_AsciiString.hxx>
 #include <Resource_DataMapOfAsciiStringAsciiString.hxx>
 #include <TColStd_HSequenceOfAsciiString.hxx>
+#include <NCollection_DataMap.hxx>
 
 #include <map>
 #include <sstream>
@@ -61,56 +62,53 @@ class SALOME_LifeCycleCORBA;
 // ==========================================================
 class SMESH_I_EXPORT StudyContext
 {
+  typedef NCollection_DataMap< int, std::string > TInt2StringMap;
+  typedef NCollection_DataMap< int, int >         TInt2IntMap;
 public:
   // constructor
   StudyContext() {}
-  // destructor
-  ~StudyContext()
-  {
-    mapIdToIOR.clear();
-    mapIdToId.clear();
-  }
+
   // register object in the internal map and return its id
   int addObject( std::string theIOR )
   {
     int nextId = getNextId();
-    mapIdToIOR[ nextId ]  = theIOR;
+    mapIdToIOR.Bind( nextId, theIOR );
     return nextId;
   }
   // find the object id in the internal map by the IOR
   int findId( std::string theIOR )
   {
-    std::map<int, std::string>::iterator imap;
+    TInt2StringMap::iterator imap;
     for ( imap = mapIdToIOR.begin(); imap != mapIdToIOR.end(); ++imap ) {
-      if ( imap->second == theIOR )
-        return imap->first;
+      if ( *imap == theIOR )
+        return imap.Iterator().Key();
     }
     return 0;
   }
   // get object's IOR by id
   std::string getIORbyId( const int theId )
   {
-    if ( mapIdToIOR.find( theId ) != mapIdToIOR.end() )
-      return mapIdToIOR[ theId ];
-    return std::string( "" );
+    if ( mapIdToIOR.IsBound( theId ) )
+      return mapIdToIOR( theId );
+    return std::string();
   }
   // get object's IOR by old id
   std::string getIORbyOldId( const int theOldId )
   {
-    if ( mapIdToId.find( theOldId ) != mapIdToId.end() )
-      return getIORbyId( mapIdToId[ theOldId ] );
-    return std::string( "" );
+    if ( mapIdToId.IsBound( theOldId ) )
+      return getIORbyId( mapIdToId( theOldId ));
+    return std::string();
   }
   // maps old object id to the new one (used when restoring data)
   void mapOldToNew( const int oldId, const int newId ) {
-    mapIdToId[ oldId ] = newId;
+    mapIdToId.Bind( oldId, newId );
   }
   // get old id by a new one
   int getOldId( const int newId ) {
-    std::map<int, int>::iterator imap;
+    TInt2IntMap::iterator imap;
     for ( imap = mapIdToId.begin(); imap != mapIdToId.end(); ++imap ) {
-      if ( imap->second == newId )
-        return imap->first;
+      if ( *imap == newId )
+        return imap.Iterator().Key();
     }
     return 0;
   }
@@ -120,13 +118,13 @@ private:
   int getNextId()
   {
     int id = 1;
-    while( mapIdToIOR.find( id ) != mapIdToIOR.end() )
+    while( mapIdToIOR.IsBound( id ) )
       id++;
     return id;
   }
 
-  std::map<int, std::string> mapIdToIOR; // persistent-to-transient map
-  std::map<int, int>         mapIdToId;  // to translate object from persistent to transient form
+  TInt2StringMap mapIdToIOR; // persistent-to-transient map
+  TInt2IntMap    mapIdToId;  // to translate object from persistent to transient form
 };
 
 // ===========================================================
@@ -565,7 +563,7 @@ public:
 
   // Return an object that previously had an oldID
   template<class TInterface>
-  typename TInterface::_var_type GetObjectByOldId( const int oldID )
+    typename TInterface::_var_type GetObjectByOldId( const int oldID )
   {
     if ( myStudyContext ) {
       std::string ior = myStudyContext->getIORbyOldId( oldID );

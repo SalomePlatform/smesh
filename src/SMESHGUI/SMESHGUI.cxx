@@ -143,6 +143,7 @@
 #include CORBA_CLIENT_HEADER(SALOMEDS_Attributes)
 #include CORBA_CLIENT_HEADER(SMESH_MeshEditor)
 #include CORBA_CLIENT_HEADER(SMESH_Measurements)
+#include CORBA_CLIENT_HEADER(SMESH_Mesh)
 
 // Qt includes
 // #define       INCLUDE_MENUITEM_DEF // VSR commented ????????
@@ -603,6 +604,7 @@ namespace
       notSupportedElemTypes.push_back( SMESH::Entity_Quad_Polygon );
       notSupportedElemTypes.push_back( SMESH::Entity_Quad_Pyramid );
       notSupportedElemTypes.push_back( SMESH::Entity_Quad_Penta );
+      notSupportedElemTypes.push_back( SMESH::Entity_BiQuad_Penta );
       notSupportedElemTypes.push_back( SMESH::Entity_Hexagonal_Prism );
       notSupportedElemTypes.push_back( SMESH::Entity_Polyhedra );
       notSupportedElemTypes.push_back( SMESH::Entity_Quad_Polyhedra );
@@ -626,6 +628,7 @@ namespace
         "SMESH_TETRAHEDRA","SMESH_QUADRATIC_TETRAHEDRONS","SMESH_PYRAMIDS",
         "SMESH_QUADRATIC_PYRAMIDS","SMESH_HEXAHEDRA","SMESH_QUADRATIC_HEXAHEDRONS",
         "SMESH_TRIQUADRATIC_HEXAHEDRONS","SMESH_PENTAHEDRA","SMESH_QUADRATIC_PENTAHEDRONS",
+        "SMESH_BIQUADRATIC_PENTAHEDRONS",
         "SMESH_OCTAHEDRA","SMESH_POLYEDRONS","SMESH_QUADRATIC_POLYEDRONS","SMESH_BALLS"
       };
       // is typeMsg complete? (compilation failure mains that enum SMDSAbs_EntityType changed)
@@ -683,7 +686,14 @@ namespace
     }
     else if ( isCGNS )// Export to CGNS
     {
-      SUIT_FileDlg* fd = new SUIT_FileDlg( SMESHGUI::desktop(), false, true, true );
+      const char* theByTypeResource = "cgns_group_elems_by_type";
+      toCreateGroups = SMESHGUI::resourceMgr()->booleanValue( "SMESH", theByTypeResource, false );
+
+      QStringList checkBoxes;
+      checkBoxes << QObject::tr("CGNS_EXPORT_ELEMS_BY_TYPE");
+
+      SalomeApp_CheckFileDlg* fd =
+        new SalomeApp_CheckFileDlg ( SMESHGUI::desktop(), false, checkBoxes, true, true );
       fd->setWindowTitle( aTitle );
       fd->setNameFilter( QObject::tr( "CGNS_FILES_FILTER" ) + " (*.cgns)" );
       if ( !anInitialPath.isEmpty() )
@@ -691,10 +701,13 @@ namespace
       fd->selectFile(aMeshName);
       SMESHGUI_FileValidator* fv = new SMESHGUI_FileValidator( fd );
       fd->setValidator( fv );
+      fd->SetChecked( toCreateGroups, 0 );
 
       if ( fd->exec() )
         aFilename = fd->selectedFile();
-      toOverwrite = fv->isOverwrite();
+      toOverwrite    = fv->isOverwrite();
+      toCreateGroups = fd->IsChecked(0);
+      SMESHGUI::resourceMgr()->setValue("SMESH", theByTypeResource, toCreateGroups );
 
       delete fd;
     }
@@ -740,7 +753,7 @@ namespace
 
       SMESHGUI_FieldSelectorWdg* fieldSelWdg = new SMESHGUI_FieldSelectorWdg();
       QList< QWidget* > wdgList;
-      if ( fieldSelWdg->GetAllFeilds( aMeshList, aFieldList ))
+      if ( fieldSelWdg->GetAllFields( aMeshList, aFieldList ))
         wdgList.append( fieldSelWdg );
 
       SalomeApp_CheckFileDlg* fd =
@@ -822,7 +835,7 @@ namespace
       }
       toCreateGroups = fd->IsChecked(0);
       toFindOutDim   = fd->IsChecked(1);
-      fieldSelWdg->GetSelectedFeilds();
+      fieldSelWdg->GetSelectedFields();
       if ( !fieldSelWdg->parent() )
         delete fieldSelWdg;
       delete fd;
@@ -912,7 +925,8 @@ namespace
             SMESH::SMESH_Mesh_var        aMeshItem = aMeshOrGroup->GetMesh();
             aMeshItem->ExportCGNS( aMeshOrGroup,
                                    aFilename.toUtf8().data(),
-                                   toOverwrite && aMeshIndex == 0 );
+                                   toOverwrite && aMeshIndex == 0,
+                                   toCreateGroups );
           }
         }
         else if ( isGMF )
@@ -1089,6 +1103,8 @@ namespace
       type = QObject::tr( "LENGTH_EDGES" );
     else if ( dynamic_cast< SMESH::Controls::Length2D* >( f.get() ) )
       type = QObject::tr( "LENGTH2D_EDGES" );
+    else if ( dynamic_cast< SMESH::Controls::Deflection2D* >( f.get() ) )
+      type = QObject::tr( "DEFLECTION2D_FACES" );
     else if ( dynamic_cast< SMESH::Controls::MultiConnection* >( f.get() ) )
       type = QObject::tr( "MULTI_BORDERS" );
     else if ( dynamic_cast< SMESH::Controls::MultiConnection2D* >( f.get() ) )
@@ -1621,6 +1637,7 @@ namespace
     ActionControl.Bind( SMESHOp::OpBareBorderFace,        SMESH_Actor::eBareBorderFace );
     ActionControl.Bind( SMESHOp::OpOverConstrainedFace,   SMESH_Actor::eOverConstrainedFace );
     ActionControl.Bind( SMESHOp::OpLength2D,              SMESH_Actor::eLength2D );
+    ActionControl.Bind( SMESHOp::OpDeflection2D,          SMESH_Actor::eDeflection2D );
     ActionControl.Bind( SMESHOp::OpConnection2D,          SMESH_Actor::eMultiConnection2D );
     ActionControl.Bind( SMESHOp::OpArea,                  SMESH_Actor::eArea );
     ActionControl.Bind( SMESHOp::OpTaper,                 SMESH_Actor::eTaper );
@@ -2074,7 +2091,7 @@ bool SMESHGUI::automaticUpdate( SMESH::SMESH_IDSource_ptr theMesh,
   long nbVolumes = info[SMDSEntity_Tetra]   + info[SMDSEntity_Quad_Tetra] + 
                    info[SMDSEntity_Hexa]    + info[SMDSEntity_Quad_Hexa] + info[SMDSEntity_TriQuad_Hexa] + 
                    info[SMDSEntity_Pyramid] + info[SMDSEntity_Quad_Pyramid] + 
-                   info[SMDSEntity_Penta]   + info[SMDSEntity_Quad_Penta] + 
+                   info[SMDSEntity_Penta]   + info[SMDSEntity_Quad_Penta] + info[SMDSEntity_BiQuad_Penta] +
                    info[SMDSEntity_Polyhedra] + 
                    info[SMDSEntity_Hexagonal_Prism];
   long nbBalls   = info[SMDSEntity_Ball];
@@ -2569,9 +2586,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       if(isStudyLocked()) break;
       SUIT_OverrideCursor wc;
       try {
-#if (OCC_VERSION_MAJOR << 16 | OCC_VERSION_MINOR << 8 | OCC_VERSION_MAINTENANCE) > 0x060100
         OCC_CATCH_SIGNALS;
-#endif
         SMESH::UpdateView();
       }
       catch (std::bad_alloc) { // PAL16774 (Crash after display of many groups)
@@ -3229,6 +3244,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpQuadraticTetrahedron:
   case SMESHOp::OpQuadraticPyramid:
   case SMESHOp::OpQuadraticPentahedron:
+  case SMESHOp::OpBiQuadraticPentahedron:
   case SMESHOp::OpQuadraticHexahedron:
   case SMESHOp::OpTriQuadraticHexahedron:
     {
@@ -3247,6 +3263,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         case SMESHOp::OpQuadraticTetrahedron:   type = SMDSEntity_Quad_Tetra; break;
         case SMESHOp::OpQuadraticPyramid:       type = SMDSEntity_Quad_Pyramid; break;
         case SMESHOp::OpQuadraticPentahedron:   type = SMDSEntity_Quad_Penta; break;
+        case SMESHOp::OpBiQuadraticPentahedron: type = SMDSEntity_BiQuad_Penta; break;
         case SMESHOp::OpQuadraticHexahedron:    type = SMDSEntity_Quad_Hexa; break;
         case SMESHOp::OpTriQuadraticHexahedron: type = SMDSEntity_TriQuad_Hexa; break;
         default: break;
@@ -3538,6 +3555,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpBareBorderFace:
   case SMESHOp::OpOverConstrainedFace:
   case SMESHOp::OpLength2D:
+  case SMESHOp::OpDeflection2D:
   case SMESHOp::OpConnection2D:
   case SMESHOp::OpArea:
   case SMESHOp::OpTaper:
@@ -3839,6 +3857,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpBareBorderFace,        "BARE_BORDER_FACE",        "ICON_BARE_BORDER_FACE",        0, true );
   createSMESHAction( SMESHOp::OpOverConstrainedFace,   "OVER_CONSTRAINED_FACE",   "ICON_OVER_CONSTRAINED_FACE",   0, true );
   createSMESHAction( SMESHOp::OpLength2D,              "LENGTH_2D",               "ICON_LENGTH_2D",     0, true );
+  createSMESHAction( SMESHOp::OpDeflection2D,          "DEFLECTION_2D",           "ICON_DEFLECTION_2D", 0, true );
   createSMESHAction( SMESHOp::OpConnection2D,          "CONNECTION_2D",           "ICON_CONNECTION_2D", 0, true );
   createSMESHAction( SMESHOp::OpArea,                  "AREA",                    "ICON_AREA",          0, true );
   createSMESHAction( SMESHOp::OpTaper,                 "TAPER",                   "ICON_TAPER",         0, true );
@@ -3879,6 +3898,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpQuadraticTetrahedron,   "QUADRATIC_TETRAHEDRON",   "ICON_DLG_QUADRATIC_TETRAHEDRON" );
   createSMESHAction( SMESHOp::OpQuadraticPyramid,       "QUADRATIC_PYRAMID",       "ICON_DLG_QUADRATIC_PYRAMID" );
   createSMESHAction( SMESHOp::OpQuadraticPentahedron,   "QUADRATIC_PENTAHEDRON",   "ICON_DLG_QUADRATIC_PENTAHEDRON" );
+  createSMESHAction( SMESHOp::OpBiQuadraticPentahedron, "BIQUADRATIC_PENTAHEDRON", "ICON_DLG_BIQUADRATIC_PENTAHEDRON" );
   createSMESHAction( SMESHOp::OpQuadraticHexahedron,    "QUADRATIC_HEXAHEDRON",    "ICON_DLG_QUADRATIC_HEXAHEDRON" );
   createSMESHAction( SMESHOp::OpTriQuadraticHexahedron, "TRIQUADRATIC_HEXAHEDRON", "ICON_DLG_TRIQUADRATIC_HEXAHEDRON" );
 
@@ -3967,6 +3987,7 @@ void SMESHGUI::initialize( CAM_Application* app )
                << SMESHOp::OpNodeConnectivityNb                                         // node controls
                << SMESHOp::OpFreeEdge << SMESHOp::OpFreeBorder
                << SMESHOp::OpLength << SMESHOp::OpConnection << SMESHOp::OpEqualEdge    // edge controls
+               << SMESHOp::OpDeflection2D
                << SMESHOp::OpFreeFace << SMESHOp::OpLength2D << SMESHOp::OpConnection2D
                << SMESHOp::OpArea << SMESHOp::OpTaper << SMESHOp::OpAspectRatio
                << SMESHOp::OpMinimumAngle << SMESHOp::OpWarpingAngle << SMESHOp::OpSkew
@@ -4080,6 +4101,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( SMESHOp::OpSkew,                  faceId,   -1 );
   createMenu( SMESHOp::OpMaxElementLength2D,    faceId,   -1 );
   createMenu( SMESHOp::OpEqualFace,             faceId,   -1 );
+  createMenu( SMESHOp::OpDeflection2D,          faceId,   -1 );
   createMenu( SMESHOp::OpAspectRatio3D,         volumeId, -1 );
   createMenu( SMESHOp::OpVolume,                volumeId, -1 );
   createMenu( SMESHOp::OpMaxElementLength3D,    volumeId, -1 );
@@ -4115,6 +4137,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( SMESHOp::OpQuadraticTetrahedron,   addId, -1 );
   createMenu( SMESHOp::OpQuadraticPyramid,       addId, -1 );
   createMenu( SMESHOp::OpQuadraticPentahedron,   addId, -1 );
+  createMenu( SMESHOp::OpBiQuadraticPentahedron, addId, -1 );
   createMenu( SMESHOp::OpQuadraticHexahedron,    addId, -1 );
   createMenu( SMESHOp::OpTriQuadraticHexahedron, addId, -1 );
 
@@ -4228,6 +4251,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( SMESHOp::OpSkew,                ctrl2dTb );
   createTool( SMESHOp::OpMaxElementLength2D,  ctrl2dTb );
   createTool( SMESHOp::OpEqualFace,           ctrl2dTb );
+  createTool( SMESHOp::OpDeflection2D,        ctrl2dTb );
 
   createTool( SMESHOp::OpAspectRatio3D,         ctrl3dTb );
   createTool( SMESHOp::OpVolume,                ctrl3dTb );
@@ -4260,6 +4284,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( SMESHOp::OpQuadraticTetrahedron,   addNonElemTb );
   createTool( SMESHOp::OpQuadraticPyramid,       addNonElemTb );
   createTool( SMESHOp::OpQuadraticPentahedron,   addNonElemTb );
+  createTool( SMESHOp::OpBiQuadraticPentahedron, addNonElemTb );
   createTool( SMESHOp::OpQuadraticHexahedron,    addNonElemTb );
   createTool( SMESHOp::OpTriQuadraticHexahedron, addNonElemTb );
 
@@ -4638,9 +4663,14 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert ( action( SMESHOp::OpOverConstrainedFace ), aSubId, -1 );
   popupMgr()->setRule( action( SMESHOp::OpOverConstrainedFace ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( SMESHOp::OpOverConstrainedFace ), "controlMode = 'eOverConstrainedFace'", QtxPopupMgr::ToggleRule );
+
   popupMgr()->insert ( action( SMESHOp::OpEqualFace ), aSubId, -1 );
   popupMgr()->setRule( action( SMESHOp::OpEqualFace ), aMeshInVtkHasFaces, QtxPopupMgr::VisibleRule );
   popupMgr()->setRule( action( SMESHOp::OpEqualFace ), "controlMode = 'eCoincidentElems2D'", QtxPopupMgr::ToggleRule );
+
+  popupMgr()->insert ( action( SMESHOp::OpDeflection2D ), aSubId, -1 );
+  popupMgr()->setRule( action( SMESHOp::OpDeflection2D ), aMeshInVtkHasFaces + " && hasGeomReference", QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( SMESHOp::OpDeflection2D ), "controlMode = 'eDeflection2D'", QtxPopupMgr::ToggleRule );
 
   aSubId = popupMgr()->insert( tr( "MEN_VOLUME_CTRL" ), anId, -1 ); // VOLUME CONTROLS
 

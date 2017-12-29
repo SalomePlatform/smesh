@@ -40,6 +40,10 @@
         <translation>Fichiers CGNS</translation>
     </message>
     <message>
+        <source>CGNS_EXPORT_ELEMS_BY_TYPE</source>
+        <translation>Groupe les éléments par type</translation>
+    </message>
+    <message>
         <source>GMF_ASCII_FILES_FILTER</source>
         <translation>Fichiers GMF ASCII</translation>
     </message>
@@ -383,6 +387,22 @@
     <message>
         <source>MEN_DEL_GROUP</source>
         <translation>Supprimer les groupes et leur contenu</translation>
+    </message>
+    <message>
+        <source>MEN_ADD_TO_GROUP</source>
+        <translation>Ajoute dans le groupe</translation>
+    </message>
+    <message>
+        <source>MEN_REMOVE_FROM_GROUP</source>
+        <translation>Supprime du groupe</translation>
+    </message>
+    <message>
+        <source>STB_ADD_TO_GROUP</source>
+        <translation>Ajoute dans le groupe les éléments sélectionnés</translation>
+    </message>
+    <message>
+        <source>STB_REMOVE_FROM_GROUP</source>
+        <translation>Supprime du groupe les éléments sélectionnés</translation>
     </message>
     <message>
         <source>MEN_FACE_ORIENTATION</source>
@@ -873,6 +893,10 @@
         <translation>Pentaèdre quadratique</translation>
     </message>
     <message>
+        <source>MEN_BIQUADRATIC_PENTAHEDRON</source>
+        <translation>Pentaèdre biquadratique</translation>
+    </message>
+    <message>
         <source>MEN_QUADRATIC_PYRAMID</source>
         <translation>Pyramide quadratique</translation>
     </message>
@@ -1349,6 +1373,10 @@ Merci de les corriger, puis essayez de nouveau</translation>
     <message>
         <source>SMESH_ADD_QUADRATIC_PENTAHEDRON_TITLE</source>
         <translation>Ajouter un pentaèdre quadratique</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_BIQUADRATIC_PENTAHEDRON_TITLE</source>
+        <translation>Ajouter un pentaèdre biquadratique</translation>
     </message>
     <message>
         <source>SMESH_ADD_QUADRATIC_PYRAMID_TITLE</source>
@@ -2504,8 +2532,16 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>Pentaèdre quadratique</translation>
     </message>
     <message>
+        <source>SMESH_BIQUADRATIC_PENTAHEDRON</source>
+        <translation>Pentaèdre biquadratique</translation>
+    </message>
+    <message>
         <source>SMESH_QUADRATIC_PENTAHEDRONS</source>
         <translation>Pentaèdres quadratiques</translation>
+    </message>
+    <message>
+        <source>SMESH_BIQUADRATIC_PENTAHEDRONS</source>
+        <translation>Pentaèdres biquadratiques</translation>
     </message>
     <message>
         <source>SMESH_QUADRATIC_PYRAMID</source>
@@ -3361,6 +3397,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Pentaèdre quadratique</translation>
     </message>
     <message>
+        <source>STB_BIQUADRATIC_PENTAHEDRON</source>
+        <translation>Pentaèdre biquadratique</translation>
+    </message>
+    <message>
         <source>STB_QUADRATIC_PYRAMID</source>
         <translation>Pyramide quadratique</translation>
     </message>
@@ -4035,6 +4075,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     <message>
         <source>TOP_QUADRATIC_PENTAHEDRON</source>
         <translation>Pentaèdre quadratique</translation>
+    </message>
+    <message>
+        <source>TOP_BIQUADRATIC_PENTAHEDRON</source>
+        <translation>Pentaèdre biquadratique</translation>
     </message>
     <message>
         <source>TOP_QUADRATIC_PYRAMID</source>
@@ -4874,6 +4918,10 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
         <translation>Ajouter un pentaèdre quadratique</translation>
     </message>
     <message>
+        <source>SMESH_ADD_BIQUADRATIC_PENTAHEDRON</source>
+        <translation>Ajouter un pentaèdre biquadratique</translation>
+    </message>
+    <message>
         <source>SMESH_ADD_QUADRATIC_PYRAMID</source>
         <translation>Ajouter une pyramide quadratique</translation>
     </message>
@@ -5301,6 +5349,10 @@ Choisissez un groupe et essayez de nouveau</translation>
     <message>
         <source>SEPARATE_CORNERS_AND_MEDIUM</source>
         <translation>Pas de fusion du coin et des noeuds moyens des cellules quadratiques</translation>
+    </message>
+    <message>
+        <source>AVOID_MAKING_HOLES</source>
+        <translation>Evite de créer des trous</translation>
     </message>
     <message>
         <source>KEEP_NODES</source>
@@ -6001,18 +6053,22 @@ Entrez une valeur correcte et essayez de nouveau</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_21</source>
-        <translation>OCTA12</translation>
+        <translation>PENTA18</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_22</source>
-        <translation>POLYEDRE</translation>
+        <translation>OCTA12</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_23</source>
-        <translation>QPOLYEDRE</translation>
+        <translation>POLYEDRE</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_24</source>
+        <translation>QPOLYEDRE</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_25</source>
         <translation>BALL</translation>
     </message>
     <message>
@@ -6972,6 +7028,14 @@ Il y a trop peu de points dans le fichier </translation>
         <source>SMESH_CREATE_GROUP_FROM_GEOM</source>
         <translation>Créer des groupes à partir de la géométrie</translation>
     </message>
+    <message>
+        <source>ELEMENTS</source>
+        <translation>Eléments</translation>
+    </message>
+    <message>
+        <source>ELEMENTS_TOOLTIP</source>
+        <translation>Pas d'éléments 0D</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_MeshOrderDlg</name>
@@ -7401,6 +7465,10 @@ en raison de leurs types incompatibles:
     <message>
         <source>ELEM_MODE</source>
         <translation>Elément</translation>
+    </message>
+    <message>
+        <source>SHOW_IDS</source>
+        <translation>Montre les IDs</translation>
     </message>
     <message>
         <source>BUT_DUMP_MESH</source>

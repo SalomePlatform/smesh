@@ -279,6 +279,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
   aFilter->RegisterCellsWithType(VTK_TRIQUADRATIC_HEXAHEDRON);
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
+  aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUADRATIC_WEDGE);
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
   aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
   aFilter->RegisterCellsWithType(VTK_POLYHEDRON);
@@ -310,6 +311,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
   aFilter->RegisterCellsWithType(VTK_TRIQUADRATIC_HEXAHEDRON);
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
+  aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUADRATIC_WEDGE);
   aFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
   aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
   aFilter->RegisterCellsWithType(VTK_POLYHEDRON);
@@ -842,11 +844,9 @@ void SMESH_ActorDef::SetControlMode( eControl theMode, bool theCheckEntityMode )
       break;
     }
     case eLength2D:
-    {
       myFunctor.reset(new SMESH::Controls::Length2D());
       myControlActor = my2DActor;
       break;
-    }
     case eFreeBorders:
       myFunctor.reset(new SMESH::Controls::FreeBorders());
       myControlActor = my1DActor;
@@ -954,6 +954,14 @@ void SMESH_ActorDef::SetControlMode( eControl theMode, bool theCheckEntityMode )
       aControl->SetPrecision( myControlsPrecision );
       myFunctor.reset( aControl );
       myControlActor = my3DActor;
+      break;
+    }
+    case eDeflection2D:
+    {
+      SMESH::Controls::Deflection2D* aControl = new SMESH::Controls::Deflection2D();
+      aControl->SetPrecision( myControlsPrecision );
+      myFunctor.reset( aControl );
+      myControlActor = my2DActor;
       break;
     }
     case eBareBorderVolume:
@@ -1430,6 +1438,10 @@ double* SMESH_ActorDef::GetNodeCoord(int theObjID)
   return myPickableActor->GetNodeCoord(theObjID);
 }
 
+int SMESH_ActorDef::GetNodeVtkId(int theObjID)
+{
+  return myPickableActor->GetNodeVtkId(theObjID);
+}
 
 int SMESH_ActorDef::GetElemObjId(int theVtkID)
 {
@@ -1683,6 +1695,7 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode)
         aFilter->RegisterCellsWithType(VTK_TRIQUADRATIC_HEXAHEDRON);
         aFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
         aFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
+        aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUADRATIC_WEDGE);
         aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
         aFilter->RegisterCellsWithType(VTK_POLYHEDRON);
 
@@ -1696,6 +1709,7 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode)
         aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
         aHltFilter->RegisterCellsWithType(VTK_TRIQUADRATIC_HEXAHEDRON);
         aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
+        aHltFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUADRATIC_WEDGE);
         aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
         aHltFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
         aHltFilter->RegisterCellsWithType(VTK_POLYHEDRON);

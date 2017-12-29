@@ -91,7 +91,7 @@ namespace SMESHOp {
     OpRemoveElemGroupPopup   = 2082,   // POPUP MENU - REMOVE ELEMENTS FROM GROUP
     OpMeshInformation        = 2100,   // MENU MESH  - MESH INFORMATION
     OpWhatIs                 = 2101,   // MENU MESH  - MESH ELEMENT INFORMATION
-    OpStdInfo                = 2102,   // MENU MESH  - MESH STANDART INFORMATION
+    OpStdInfo                = 2102,   // MENU MESH  - MESH STANDARD INFORMATION
     OpFindElementByPoint     = 2103,   // MENU MESH  - FIND ELEMENT BY POINT
     OpUpdate                 = 2200,   // POPUP MENU - UPDATE
     // Controls -----------------------//--------------------------------
@@ -116,6 +116,7 @@ namespace SMESHOp {
     OpSkew                   = 3210,   // MENU CONTROLS - SKEW
     OpMaxElementLength2D     = 3211,   // MENU CONTROLS - ELEMENT DIAMETER 2D
     OpEqualFace              = 3212,   // MENU CONTROLS - DOUBLE FACES
+    OpDeflection2D           = 3213,   // MENU CONTROLS - DEFLECTION 2D
     OpAspectRatio3D          = 3300,   // MENU CONTROLS - ASPECT RATIO 3D
     OpVolume                 = 3301,   // MENU CONTROLS - VOLUME
     OpMaxElementLength3D     = 3302,   // MENU CONTROLS - ELEMENT DIAMETER 3D
@@ -146,9 +147,10 @@ namespace SMESHOp {
     OpQuadraticTetrahedron   = 4105,   // MENU MODIFICATION - ADD - QUADRATIC TETRAHEDRON
     OpQuadraticPyramid       = 4106,   // MENU MODIFICATION - ADD - QUADRATIC PYRAMID
     OpQuadraticPentahedron   = 4107,   // MENU MODIFICATION - ADD - QUADRATIC PENTAHEDRON
-    OpQuadraticHexahedron    = 4108,   // MENU MODIFICATION - ADD - QUADRATIC HEXAHEDRON
-    OpTriQuadraticHexahedron = 4109,   // MENU MODIFICATION - ADD - TRIQUADRATIC HEXAHEDRON
-    OpQuadraticPolygon       = 4110,   // MENU MODIFICATION - ADD - QUADRATIC POLYGON
+    OpBiQuadraticPentahedron = 4108,   // MENU MODIFICATION - ADD - BIQUADRATIC PENTAHEDRON
+    OpQuadraticHexahedron    = 4110,   // MENU MODIFICATION - ADD - QUADRATIC HEXAHEDRON
+    OpTriQuadraticHexahedron = 4111,   // MENU MODIFICATION - ADD - TRIQUADRATIC HEXAHEDRON
+    OpQuadraticPolygon       = 4112,   // MENU MODIFICATION - ADD - QUADRATIC POLYGON
     OpRemoveNodes            = 4200,   // MENU MODIFICATION - REMOVE - NODE
     OpRemoveElements         = 4201,   // MENU MODIFICATION - REMOVE - ELEMENTS
     OpRemoveOrphanNodes      = 4202,   // MENU MODIFICATION - REMOVE - ORPHAN NODES

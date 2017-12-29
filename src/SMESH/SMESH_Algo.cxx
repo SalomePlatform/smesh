@@ -42,8 +42,6 @@
 #include "SMESH_TypeDefs.hxx"
 #include "SMESH_subMesh.hxx"
 
-#include <Basics_OCCTVersion.hxx>
-
 #include <BRepAdaptor_Curve.hxx>
 #include <BRepLProp.hxx>
 #include <BRep_Tool.hxx>
@@ -87,7 +85,7 @@ using namespace std;
 bool SMESH_Algo::Features::IsCompatible( const SMESH_Algo::Features& algo2 ) const
 {
   if ( _dim > algo2._dim ) return algo2.IsCompatible( *this );
-  // algo2 is of highter dimension
+  // algo2 is of higher dimension
   if ( _outElemTypes.empty() || algo2._inElemTypes.empty() )
     return false;
   bool compatible = true;

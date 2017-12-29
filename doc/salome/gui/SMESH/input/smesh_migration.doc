@@ -31,7 +31,7 @@ smesh =  smeshBuilder.New()
 
 
 <b> Of course, <em>from smesh import *</em> is no more possible.</b>
-\n You have to explicitely write <em>smesh.some_method()</em>.
+\n You have to explicitly write <em>smesh.some_method()</em>.
 
 <b>All algorithms have been transferred from the namespace <em>smesh</em> to the namespace <em>smeshBuilder</em>.</b>
 \n For instance:
@@ -79,7 +79,7 @@ is replaced by:
 Compound1 = smesh.Concatenate([Mesh_inf.GetMesh(), Mesh_sup.GetMesh()], 0, 1, 1e-05)
 \endcode
 
-<b>If you need to import a %SMESH Plugin explicitely, keep in mind that  they are now located in separate namespaces.</b>
+<b>If you need to import a %SMESH Plugin explicitly, keep in mind that they are now located in separate namespaces.</b>
 \n For instance:
 \code
 import StdMeshers

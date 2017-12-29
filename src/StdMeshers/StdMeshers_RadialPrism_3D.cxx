@@ -29,8 +29,6 @@
 
 #include "StdMeshers_RadialPrism_3D.hxx"
 
-#include <Basics_OCCTVersion.hxx>
-
 #include "StdMeshers_ProjectionUtils.hxx"
 #include "StdMeshers_NumberOfLayers.hxx"
 #include "StdMeshers_LayerDistribution.hxx"

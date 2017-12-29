@@ -131,11 +131,10 @@ def meshCrack(geomObject, minSize, maxSize, chordal, dim):
   import salome
 
   salome.salome_init()
-  theStudy = salome.myStudy
 
   import  SMESH, SALOMEDS
   from salome.smesh import smeshBuilder
-  smesh = smeshBuilder.New(theStudy)
+  smesh = smeshBuilder.New()
   Maillage = smesh.Mesh(geomObject)
 
   if dim==3:
@@ -173,9 +172,8 @@ def extendElsets(meshFile, outFile=None):
 
   import SMESH, salome
   #salome.salome_init()
-  theStudy = salome.myStudy
   from salome.smesh import smeshBuilder
-  smesh = smeshBuilder.New(theStudy)
+  smesh = smeshBuilder.New()
 
   ([mesh], status) = smesh.CreateMeshesFromMED(meshFile)
   

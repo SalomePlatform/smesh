@@ -381,6 +381,7 @@ SMDSAbs_EntityType SMDS_QuadraticVolumeOfNodes::GetEntityType() const
   case 10: aType = SMDSEntity_Quad_Tetra;   break;
   case 13: aType = SMDSEntity_Quad_Pyramid; break;
   case 15: aType = SMDSEntity_Quad_Penta;   break;
+  case 18: aType = SMDSEntity_BiQuad_Penta; break;
   case 20:
   default: aType = SMDSEntity_Quad_Hexa;    break;
   }

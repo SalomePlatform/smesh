@@ -1862,7 +1862,7 @@ SMDS_MeshVolume* SMESHDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
 
 //=======================================================================
 //function : AddVolume
-//purpose  : 
+//purpose  : 2nd order pentahedron (prism) with 15 nodes
 //=======================================================================
 SMDS_MeshVolume* SMESHDS_Mesh::AddVolume(const SMDS_MeshNode * n1,
                                          const SMDS_MeshNode * n2, 
@@ -1893,7 +1893,7 @@ SMDS_MeshVolume* SMESHDS_Mesh::AddVolume(const SMDS_MeshNode * n1,
 
 //=======================================================================
 //function : AddVolumeWithID
-//purpose  : 
+//purpose  : 2nd order pentahedron (prism) with 15 nodes
 //=======================================================================
 SMDS_MeshVolume* SMESHDS_Mesh::AddVolumeWithID(int n1, int n2, int n3,
                                                int n4, int n5, int n6,
@@ -1909,10 +1909,96 @@ SMDS_MeshVolume* SMESHDS_Mesh::AddVolumeWithID(int n1, int n2, int n3,
                                  n45,n56,n64,n14,n25,n36);
   return anElem;
 }
+
+//=======================================================================
+//function : AddVolumeWithID
+//purpose  : 2d order Pentahedron (prism) with 15 nodes
+//=======================================================================
+SMDS_MeshVolume* SMESHDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
+                                               const SMDS_MeshNode * n2,
+                                               const SMDS_MeshNode * n3,
+                                               const SMDS_MeshNode * n4,
+                                               const SMDS_MeshNode * n5,
+                                               const SMDS_MeshNode * n6,
+                                               const SMDS_MeshNode * n12,
+                                               const SMDS_MeshNode * n23,
+                                               const SMDS_MeshNode * n31,
+                                               const SMDS_MeshNode * n45,
+                                               const SMDS_MeshNode * n56,
+                                               const SMDS_MeshNode * n64,
+                                               const SMDS_MeshNode * n14,
+                                               const SMDS_MeshNode * n25,
+                                               const SMDS_MeshNode * n36,
+                                               int ID)
+{
+  return AddVolumeWithID(n1->GetID(), n2->GetID(), n3->GetID(),
+                         n4->GetID(), n5->GetID(), n6->GetID(),
+                         n12->GetID(), n23->GetID(), n31->GetID(),
+                         n45->GetID(), n56->GetID(), n64->GetID(),
+                         n14->GetID(), n25->GetID(), n36->GetID(),
+                         ID);
+}
+//=======================================================================
+//function : AddVolume
+//purpose  : 2nd order pentahedron (prism) with 18 nodes
+//=======================================================================
+SMDS_MeshVolume* SMESHDS_Mesh::AddVolume(const SMDS_MeshNode * n1,
+                                         const SMDS_MeshNode * n2,
+                                         const SMDS_MeshNode * n3,
+                                         const SMDS_MeshNode * n4,
+                                         const SMDS_MeshNode * n5,
+                                         const SMDS_MeshNode * n6,
+                                         const SMDS_MeshNode * n12,
+                                         const SMDS_MeshNode * n23,
+                                         const SMDS_MeshNode * n31,
+                                         const SMDS_MeshNode * n45,
+                                         const SMDS_MeshNode * n56,
+                                         const SMDS_MeshNode * n64,
+                                         const SMDS_MeshNode * n14,
+                                         const SMDS_MeshNode * n25,
+                                         const SMDS_MeshNode * n36,
+                                         const SMDS_MeshNode * n1245,
+                                         const SMDS_MeshNode * n2356,
+                                         const SMDS_MeshNode * n1346)
+{
+  SMDS_MeshVolume *anElem = SMDS_Mesh::AddVolume(n1,n2,n3,n4,n5,n6,n12,n23,n31,
+                                                 n45,n56,n64,n14,n25,n36,
+                                                 n1245, n2356, n1346);
+  if(anElem)
+    myScript->AddVolume(anElem->GetID(), n1->GetID(), n2->GetID(),
+                        n3->GetID(), n4->GetID(), n5->GetID(), n6->GetID(),
+                        n12->GetID(), n23->GetID(), n31->GetID(),
+                        n45->GetID(), n56->GetID(), n64->GetID(),
+                        n14->GetID(), n25->GetID(), n36->GetID(),
+                        n1245->GetID(), n2356->GetID(), n1346->GetID());
+  return anElem;
+}
+
+//=======================================================================
+//function : AddVolumeWithID
+//purpose  : 2nd order pentahedron (prism) with 18 nodes
+//=======================================================================
+SMDS_MeshVolume* SMESHDS_Mesh::AddVolumeWithID(int n1, int n2, int n3,
+                                               int n4, int n5, int n6,
+                                               int n12,int n23,int n31,
+                                               int n45,int n56,int n64,
+                                               int n14,int n25,int n36,
+                                               int n1245, int n2356, int n1346,
+                                               int ID)
+{
+  SMDS_MeshVolume *anElem = SMDS_Mesh::AddVolumeWithID(n1,n2,n3,n4,n5,n6,
+                                                       n12,n23,n31,
+                                                       n45,n56,n64,
+                                                       n14,n25,n36,
+                                                       n1245, n2356, n1346, ID);
+  if(anElem) myScript->AddVolume(ID,n1,n2,n3,n4,n5,n6,n12,n23,n31,
+                                 n45,n56,n64,n14,n25,n36, n1245, n2356, n1346);
+  return anElem;
+}
         
 //=======================================================================
 //function : AddVolumeWithID
-//purpose  : 2d order Pentahedron with 15 nodes
+//purpose  : 2d order Pentahedron with 18 nodes
 //=======================================================================
 SMDS_MeshVolume* SMESHDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
                                                const SMDS_MeshNode * n2,
@@ -1929,6 +2015,9 @@ SMDS_MeshVolume* SMESHDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
                                                const SMDS_MeshNode * n14,
                                                const SMDS_MeshNode * n25,
                                                const SMDS_MeshNode * n36,
+                                               const SMDS_MeshNode * n1245,
+                                               const SMDS_MeshNode * n2356,
+                                               const SMDS_MeshNode * n1346,
                                                int ID)
 {
   return AddVolumeWithID(n1->GetID(), n2->GetID(), n3->GetID(),
@@ -1936,7 +2025,7 @@ SMDS_MeshVolume* SMESHDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
                          n12->GetID(), n23->GetID(), n31->GetID(),
                          n45->GetID(), n56->GetID(), n64->GetID(),
                          n14->GetID(), n25->GetID(), n36->GetID(),
-                         ID);
+                         n1245->GetID(), n2356->GetID(), n1346->GetID(), ID);
 }
 
 

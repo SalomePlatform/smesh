@@ -393,6 +393,7 @@ namespace DriverMED // Implemetation of fuctions declared in DriverMED.hxx
       theVec[ SMDSEntity_TriQuad_Hexa       ] = MED::eHEXA27  ;
       theVec[ SMDSEntity_Penta              ] = MED::ePENTA6  ;
       theVec[ SMDSEntity_Quad_Penta         ] = MED::ePENTA15 ;
+      theVec[ SMDSEntity_BiQuad_Penta       ] = MED::ePENTA18 ;
       theVec[ SMDSEntity_Hexagonal_Prism    ] = MED::eOCTA12  ;
       theVec[ SMDSEntity_Polyhedra          ] = MED::ePOLYEDRE;
       //theVec[ SMDSEntity_Quad_Polyhedra     ] = MED::ePOLYEDRE; // !!

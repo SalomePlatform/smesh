@@ -110,6 +110,7 @@ namespace {
         algo->myProxyMesh.reset( new SMESH_ProxyMesh( *helper->GetMesh() ));
 
       algo->myQuadList.clear();
+      algo->myHelper = 0;
 
       if ( helper )
         algo->_quadraticMesh = helper->GetIsQuadratic();
@@ -2586,7 +2587,7 @@ double StdMeshers_Prism_3D::getSweepTolerance( const Prism_3D::TPrismTopo& thePr
 
 //=======================================================================
 //function : isSimpleQuad
-//purpose  : check if the bottom FACE is meshable with nice qudrangles,
+//purpose  : check if the bottom FACE is meshable with nice quadrangles,
 //           if so the block aproach can work rather fast.
 //           This is a temporary mean caused by problems in StdMeshers_Sweeper
 //=======================================================================

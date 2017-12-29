@@ -50,29 +50,29 @@
 #include <unistd.h>
 #endif
 
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyObject          ,Standard_Transient);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyCommand         ,Standard_Transient);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyHypothesisReader,Standard_Transient);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyGen             ,_pyObject);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyMesh            ,_pyObject);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pySubMesh         ,_pyObject);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyMeshEditor      ,_pyObject);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyHypothesis      ,_pyObject);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pySelfEraser      ,_pyObject);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyGroup           ,_pyObject);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyFilter          ,_pyObject);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyAlgorithm       ,_pyHypothesis);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyComplexParamHypo,_pyHypothesis);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyNumberOfSegmentsHyp,_pyHypothesis);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pyLayerDistributionHypo,_pyHypothesis);
-OCCT_IMPLEMENT_STANDARD_RTTIEXT(_pySegmentLengthAroundVertexHyp,_pyHypothesis);
+IMPLEMENT_STANDARD_RTTIEXT(_pyObject          ,Standard_Transient);
+IMPLEMENT_STANDARD_RTTIEXT(_pyCommand         ,Standard_Transient);
+IMPLEMENT_STANDARD_RTTIEXT(_pyHypothesisReader,Standard_Transient);
+IMPLEMENT_STANDARD_RTTIEXT(_pyGen             ,_pyObject);
+IMPLEMENT_STANDARD_RTTIEXT(_pyMesh            ,_pyObject);
+IMPLEMENT_STANDARD_RTTIEXT(_pySubMesh         ,_pyObject);
+IMPLEMENT_STANDARD_RTTIEXT(_pyMeshEditor      ,_pyObject);
+IMPLEMENT_STANDARD_RTTIEXT(_pyHypothesis      ,_pyObject);
+IMPLEMENT_STANDARD_RTTIEXT(_pySelfEraser      ,_pyObject);
+IMPLEMENT_STANDARD_RTTIEXT(_pyGroup           ,_pyObject);
+IMPLEMENT_STANDARD_RTTIEXT(_pyFilter          ,_pyObject);
+IMPLEMENT_STANDARD_RTTIEXT(_pyAlgorithm       ,_pyHypothesis);
+IMPLEMENT_STANDARD_RTTIEXT(_pyComplexParamHypo,_pyHypothesis);
+IMPLEMENT_STANDARD_RTTIEXT(_pyNumberOfSegmentsHyp,_pyHypothesis);
+IMPLEMENT_STANDARD_RTTIEXT(_pyLayerDistributionHypo,_pyHypothesis);
+IMPLEMENT_STANDARD_RTTIEXT(_pySegmentLengthAroundVertexHyp,_pyHypothesis);
 
 using namespace std;
 using SMESH::TPythonDump;
 
 /*!
  * \brief Container of commands into which the initial script is split.
- *        It also contains data coresponding to SMESH_Gen contents
+ *        It also contains data corresponding to SMESH_Gen contents
  */
 static Handle(_pyGen) theGen;
 
@@ -294,6 +294,8 @@ namespace {
     //   - FT_BelongToMeshGroup     = 22
     // v 8.1.0: FT_Undefined == 48, new items:
     //   - FT_NodeConnectivityNumber= 22
+    // v 8.5.0: FT_Undefined == 49, new items:
+    //   - FT_Deflection2D          = 22
     //
     // It's necessary to continue recording this history and to fill
     // undef2newItems (see below) accordingly.
@@ -316,6 +318,7 @@ namespace {
       undef2newItems[ 46 ].push_back( 39 );
       undef2newItems[ 47 ].push_back( 22 );
       undef2newItems[ 48 ].push_back( 22 );
+      undef2newItems[ 49 ].push_back( 22 );
 
       ASSERT( undef2newItems.rbegin()->first == SMESH::FT_Undefined );
     }
@@ -610,7 +613,7 @@ const char* _pyGen::AccessorMethod() const
 //================================================================================
 /*!
  * \brief Convert a command using a specific converter
-  * \param theCommand - the command to convert
+ *  \param theCommand - the command to convert
  */
 //================================================================================
 
@@ -864,8 +867,8 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
       aCommand->GetString() += tmpCmd.GetString();
     }
     // IMP issue 0021014
-    // set GetCriterion(elementType,CritType,Compare,Treshold,UnaryOp,BinaryOp,Tolerance)
-    //                  1           2        3       4        5       6        7
+    // set GetCriterion(elementType,CritType,Compare,Threshold,UnaryOp,BinaryOp,Tolerance)
+    //                  1           2        3       4         5       6        7
     // instead of "SMESH.Filter.Criterion(
     // Type,Compare,Threshold,ThresholdStr,ThresholdID,UnaryOp,BinaryOp,Tolerance,TypeOfElement,Precision)
     // 1    2       3         4            5           6       7        8         9             10
@@ -929,7 +932,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
           "Entity_Polygon", "Entity_Quad_Polygon", "Entity_Tetra", "Entity_Quad_Tetra",
           "Entity_Pyramid", "Entity_Quad_Pyramid",
           "Entity_Hexa", "Entity_Quad_Hexa", "Entity_TriQuad_Hexa",
-          "Entity_Penta", "Entity_Quad_Penta", "Entity_Hexagonal_Prism",
+          "Entity_Penta", "Entity_Quad_Penta", "Entity_BiQuad_Penta", "Entity_Hexagonal_Prism",
           "Entity_Polyhedra", "Entity_Quad_Polyhedra", "Entity_Ball" };
         if ( -1 < iGeom && iGeom < nbTypes )
           Threshold = SMESH + types[ iGeom ];
@@ -973,7 +976,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
 //================================================================================
 /*!
  * \brief Convert the command or remember it for later conversion
-  * \param theCommand - The python command calling a method of SMESH_Gen
+ *  \param theCommand - The python command calling a method of SMESH_Gen
  */
 //================================================================================
 
@@ -1282,8 +1285,8 @@ void _pyGen::Free()
 //================================================================================
 /*!
  * \brief Add access method to mesh that is an argument
-  * \param theCmd - command to add access method
-  * \retval bool - true if added
+ *  \param theCmd - command to add access method
+ * \retval bool - true if added
  */
 //================================================================================
 
@@ -1301,8 +1304,8 @@ bool _pyGen::AddMeshAccessorMethod( Handle(_pyCommand) theCmd ) const
 //================================================================================
 /*!
  * \brief Add access method to algo that is an object or an argument
-  * \param theCmd - command to add access method
-  * \retval bool - true if added
+ *  \param theCmd - command to add access method
+ * \retval bool - true if added
  */
 //================================================================================
 
@@ -1323,8 +1326,8 @@ bool _pyGen::AddAlgoAccessorMethod( Handle(_pyCommand) theCmd ) const
 //================================================================================
 /*!
  * \brief Find hypothesis by ID (entry)
-  * \param theHypID - The hypothesis ID
-  * \retval Handle(_pyHypothesis) - The found hypothesis
+ *  \param theHypID - The hypothesis ID
+ * \retval Handle(_pyHypothesis) - The found hypothesis
  */
 //================================================================================
 
@@ -1341,10 +1344,10 @@ Handle(_pyHypothesis) _pyGen::FindHyp( const _pyID& theHypID )
 //================================================================================
 /*!
  * \brief Find algorithm able to create a hypothesis
-  * \param theGeom - The shape ID the algorithm was created on
-  * \param theMesh - The mesh ID that created the algorithm
-  * \param theHypothesis - The hypothesis the algorithm should be able to create
-  * \retval Handle(_pyHypothesis) - The found algo
+ *  \param theGeom - The shape ID the algorithm was created on
+ *  \param theMesh - The mesh ID that created the algorithm
+ *  \param theHypothesis - The hypothesis the algorithm should be able to create
+ * \retval Handle(_pyHypothesis) - The found algo
  */
 //================================================================================
 
@@ -1365,8 +1368,8 @@ Handle(_pyHypothesis) _pyGen::FindAlgo( const _pyID& theGeom, const _pyID& theMe
 //================================================================================
 /*!
  * \brief Find subMesh by ID (entry)
-  * \param theSubMeshID - The subMesh ID
-  * \retval Handle(_pySubMesh) - The found subMesh
+ *  \param theSubMeshID - The subMesh ID
+ * \retval Handle(_pySubMesh) - The found subMesh
  */
 //================================================================================
 
@@ -1382,8 +1385,8 @@ Handle(_pySubMesh) _pyGen::FindSubMesh( const _pyID& theSubMeshID )
 //================================================================================
 /*!
  * \brief Change order of commands in the script
-  * \param theCmd1 - One command
-  * \param theCmd2 - Another command
+ *  \param theCmd1 - One command
+ *  \param theCmd2 - Another command
  */
 //================================================================================
 
@@ -1400,15 +1403,15 @@ void _pyGen::ExchangeCommands( Handle(_pyCommand) theCmd1, Handle(_pyCommand) th
   int nb1 = theCmd1->GetOrderNb();
   theCmd1->SetOrderNb( theCmd2->GetOrderNb() );
   theCmd2->SetOrderNb( nb1 );
-//   cout << "BECOME " << theCmd1->GetOrderNb() << "\t" << theCmd1->GetString() << endl
-//        << "BECOME " << theCmd2->GetOrderNb() << "\t" << theCmd2->GetString() << endl << endl;
+  //   cout << "BECOME " << theCmd1->GetOrderNb() << "\t" << theCmd1->GetString() << endl
+  //        << "BECOME " << theCmd2->GetOrderNb() << "\t" << theCmd2->GetString() << endl << endl;
 }
 
 //================================================================================
 /*!
  * \brief Set one command after the other
-  * \param theCmd - Command to move
-  * \param theAfterCmd - Command ater which to insert the first one
+ *  \param theCmd - Command to move
+ *  \param theAfterCmd - Command ater which to insert the first one
  */
 //================================================================================
 
@@ -1420,8 +1423,8 @@ void _pyGen::SetCommandAfter( Handle(_pyCommand) theCmd, Handle(_pyCommand) theA
 //================================================================================
 /*!
  * \brief Set one command before the other
-  * \param theCmd - Command to move
-  * \param theBeforeCmd - Command before which to insert the first one
+ *  \param theCmd - Command to move
+ *  \param theBeforeCmd - Command before which to insert the first one
  */
 //================================================================================
 
@@ -1433,8 +1436,8 @@ void _pyGen::SetCommandBefore( Handle(_pyCommand) theCmd, Handle(_pyCommand) the
 //================================================================================
 /*!
  * \brief Set one command before or after the other
-  * \param theCmd - Command to move
-  * \param theOtherCmd - Command ater or before which to insert the first one
+ *  \param theCmd - Command to move
+ *  \param theOtherCmd - Command ater or before which to insert the first one
  */
 //================================================================================
 
@@ -1461,7 +1464,7 @@ void _pyGen::setNeighbourCommand( Handle(_pyCommand)& theCmd,
 
 // void _pyGen::addFilterUser( Handle(_pyCommand)& theCommand, const Handle(_pyObject)& user )
 // {
-  // No more needed after adding _pyObject::myArgCommands
+// No more needed after adding _pyObject::myArgCommands
 
 //   const char filterPrefix[] = "aFilter0x";
 //   if ( theCommand->GetString().Search( filterPrefix ) < 1 )
@@ -1487,7 +1490,7 @@ void _pyGen::setNeighbourCommand( Handle(_pyCommand)& theCmd,
 //================================================================================
 /*!
  * \brief Set command be last in list of commands
-  * \param theCmd - Command to be last
+ *  \param theCmd - Command to be last
  */
 //================================================================================
 
@@ -1499,8 +1502,8 @@ Handle(_pyCommand)& _pyGen::GetLastCommand()
 //================================================================================
 /*!
  * \brief Set method to access to object wrapped with python class
-  * \param theID - The wrapped object entry
-  * \param theMethod - The accessor method
+ *  \param theID - The wrapped object entry
+ *  \param theMethod - The accessor method
  */
 //================================================================================
 
@@ -1512,7 +1515,7 @@ void _pyGen::SetAccessorMethod(const _pyID& theID, const char* theMethod )
 //================================================================================
 /*!
  * \brief Generated new ID for object and assign with existing name
-  * \param theID - ID of existing object
+ *  \param theID - ID of existing object
  */
 //================================================================================
 
@@ -1552,7 +1555,7 @@ bool _pyGen::AddObject( Handle(_pyObject)& theObj )
   }
   else if ( theObj->IsKind( STANDARD_TYPE( _pyMeshEditor ))) {
     add = myMeshEditors.insert( make_pair( theObj->GetID(),
-                                          Handle(_pyMeshEditor)::DownCast( theObj ))).second;
+                                           Handle(_pyMeshEditor)::DownCast( theObj ))).second;
   }
   else {
     add = myObjects.insert( make_pair( theObj->GetID(), theObj )).second;
@@ -1796,7 +1799,7 @@ _pyMesh::_pyMesh(const Handle(_pyCommand) theCreationCmd, const _pyID& meshId):
 //================================================================================
 /*!
  * \brief Convert an IDL API command of SMESH::SMESH_Mesh to a method call of python Mesh
-  * \param theCommand - Engine method called for this mesh
+ *  \param theCommand - Engine method called for this mesh
  */
 //================================================================================
 
@@ -2453,7 +2456,7 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       "ExtrusionAlongPathX","ExtrusionAlongPathObject1D","ExtrusionAlongPathObject2D",
       "ExtrusionSweepObjects","RotationSweepObjects","ExtrusionAlongPathObjects",
       "Mirror","MirrorObject","Translate","TranslateObject","Rotate","RotateObject",
-      "FindCoincidentNodes","MergeNodes","FindEqualElements",
+      "FindCoincidentNodes","MergeNodes","FindEqualElements","FillHole",
       "MergeElements","MergeEqualElements","SewFreeBorders","SewConformFreeBorders",
       "FindCoincidentFreeBorders", "SewCoincidentFreeBorders",
       "SewBorderToSide","SewSideElements","ChangeElemNodes","GetLastCreatedNodes",
@@ -2645,7 +2648,7 @@ bool _pyMeshEditor::CanClear()
 //================================================================================
 /*!
  * \brief _pyHypothesis constructor
-  * \param theCreationCmd -
+ *  \param theCreationCmd -
  */
 //================================================================================
 
@@ -2658,8 +2661,8 @@ _pyHypothesis::_pyHypothesis(const Handle(_pyCommand)& theCreationCmd):
 //================================================================================
 /*!
  * \brief Creates algorithm or hypothesis
-  * \param theCreationCmd - The engine command creating a hypothesis
-  * \retval Handle(_pyHypothesis) - Result _pyHypothesis
+ *  \param theCreationCmd - The engine command creating a hypothesis
+ * \retval Handle(_pyHypothesis) - Result _pyHypothesis
  */
 //================================================================================
 
@@ -2748,9 +2751,9 @@ bool _pyHypothesis::IsWrappable(const _pyID& theMesh) const
 //================================================================================
 /*!
  * \brief Convert the command adding a hypothesis to mesh into a smesh command
-  * \param theCmd - The command like mesh.AddHypothesis( geom, hypo )
-  * \param theAlgo - The algo that can create this hypo
-  * \retval bool - false if the command can't be converted
+ *  \param theCmd - The command like mesh.AddHypothesis( geom, hypo )
+ *  \param theAlgo - The algo that can create this hypo
+ * \retval bool - false if the command can't be converted
  */
 //================================================================================
 
@@ -2813,7 +2816,7 @@ bool _pyHypothesis::Addition2Creation( const Handle(_pyCommand)& theCmd,
 //================================================================================
 /*!
  * \brief Remember hypothesis parameter values
- * \param theCommand - The called hypothesis method
+ *  \param theCommand - The called hypothesis method
  */
 //================================================================================
 
@@ -3166,7 +3169,7 @@ void _pyHypothesis::setCreationArg( const int argNb, const _AString& arg )
 //================================================================================
 /*!
  * \brief Remember hypothesis parameter values
- * \param theCommand - The called hypothesis method
+ *  \param theCommand - The called hypothesis method
  */
 //================================================================================
 
@@ -3221,8 +3224,8 @@ void _pyComplexParamHypo::Process( const Handle(_pyCommand)& theCommand)
     {
       CreationMethod& crMethod = type2meth->second;
       while ( (int) crMethod.myArgs.size() < i+1 )
-          crMethod.myArgs.push_back( "[]" );
-        crMethod.myArgs[ i ] = theCommand->GetArg( 1 ); // arg value
+        crMethod.myArgs.push_back( "[]" );
+      crMethod.myArgs[ i ] = theCommand->GetArg( 1 ); // arg value
     }
     myArgCommands.push_back( theCommand );
   }
@@ -3266,7 +3269,7 @@ void _pyComplexParamHypo::Flush()
 //================================================================================
 /*!
  * \brief Convert methods of 1D hypotheses to my own methods
- * \param theCommand - The called hypothesis method
+ *  \param theCommand - The called hypothesis method
  */
 //================================================================================
 
@@ -3303,9 +3306,9 @@ void _pyLayerDistributionHypo::Process( const Handle(_pyCommand)& theCommand)
 //================================================================================
 /*!
  * \brief
-  * \param theAdditionCmd - command to be converted
-  * \param theMesh - mesh instance
-  * \retval bool - status
+ *  \param theAdditionCmd - command to be converted
+ *  \param theMesh - mesh instance
+ * \retval bool - status
  */
 //================================================================================
 
@@ -3407,9 +3410,9 @@ void _pyLayerDistributionHypo::Flush()
 //================================================================================
 /*!
  * \brief additionally to Addition2Creation, clears SetDistrType() command
-  * \param theCmd - AddHypothesis() command
-  * \param theMesh - mesh to which a hypothesis is added
-  * \retval bool - conversion result
+ *  \param theCmd - AddHypothesis() command
+ *  \param theMesh - mesh to which a hypothesis is added
+ * \retval bool - conversion result
  */
 //================================================================================
 
@@ -3489,9 +3492,9 @@ void _pyNumberOfSegmentsHyp::Flush()
 /*!
  * \brief Convert the command adding "SegmentLengthAroundVertex" to mesh
  * into regular1D.LengthNearVertex( length, vertex )
-  * \param theCmd - The command like mesh.AddHypothesis( vertex, SegmentLengthAroundVertex )
-  * \param theMesh - The mesh needing this hypo
-  * \retval bool - false if the command can't be converted
+ *  \param theCmd - The command like mesh.AddHypothesis( vertex, SegmentLengthAroundVertex )
+ *  \param theMesh - The mesh needing this hypo
+ * \retval bool - false if the command can't be converted
  */
 //================================================================================
 
@@ -3534,7 +3537,7 @@ bool _pySegmentLengthAroundVertexHyp::Addition2Creation( const Handle(_pyCommand
 //================================================================================
 /*!
  * \brief _pyAlgorithm constructor
- * \param theCreationCmd - The command like "algo = smeshgen.CreateHypothesis(type,lib)"
+ *  \param theCreationCmd - The command like "algo = smeshgen.CreateHypothesis(type,lib)"
  */
 //================================================================================
 
@@ -3547,9 +3550,9 @@ _pyAlgorithm::_pyAlgorithm(const Handle(_pyCommand)& theCreationCmd)
 //================================================================================
 /*!
  * \brief Convert the command adding an algorithm to mesh
-  * \param theCmd - The command like mesh.AddHypothesis( geom, algo )
-  * \param theMesh - The mesh needing this algo
-  * \retval bool - false if the command can't be converted
+ *  \param theCmd - The command like mesh.AddHypothesis( geom, algo )
+ *  \param theMesh - The mesh needing this algo
+ * \retval bool - false if the command can't be converted
  */
 //================================================================================
 
@@ -3567,8 +3570,8 @@ bool _pyAlgorithm::Addition2Creation( const Handle(_pyCommand)& theCmd,
 //================================================================================
 /*!
  * \brief Return starting position of a part of python command
-  * \param thePartIndex - The index of command part
-  * \retval int - Part position
+ *  \param thePartIndex - The index of command part
+ * \retval int - Part position
  */
 //================================================================================
 
@@ -3585,8 +3588,8 @@ int _pyCommand::GetBegPos( int thePartIndex ) const
 //================================================================================
 /*!
  * \brief Store starting position of a part of python command
-  * \param thePartIndex - The index of command part
-  * \param thePosition - Part position
+ *  \param thePartIndex - The index of command part
+ *  \param thePosition - Part position
  */
 //================================================================================
 
@@ -3601,7 +3604,7 @@ void _pyCommand::SetBegPos( int thePartIndex, int thePosition )
 //================================================================================
 /*!
  * \brief Returns whitespace symbols at the line beginning
-  * \retval TCollection_AsciiString - result
+ * \retval TCollection_AsciiString - result
  */
 //================================================================================
 
@@ -3618,7 +3621,7 @@ TCollection_AsciiString _pyCommand::GetIndentation()
 //================================================================================
 /*!
  * \brief Return substring of python command looking like ResultValue = Obj.Meth()
-  * \retval const TCollection_AsciiString & - ResultValue substring
+ * \retval const TCollection_AsciiString & - ResultValue substring
  */
 //================================================================================
 
@@ -3758,7 +3761,7 @@ const TCollection_AsciiString & _pyCommand::GetObject()
 //================================================================================
 /*!
  * \brief Return substring of python command looking like ResVal = Obj.Method()
-  * \retval const TCollection_AsciiString & - Method substring
+ * \retval const TCollection_AsciiString & - Method substring
  */
 //================================================================================
 
@@ -3801,7 +3804,7 @@ bool _pyCommand::IsMethodCall()
 //================================================================================
 /*!
  * \brief Return substring of python command looking like ResVal = Obj.Meth(Arg1,...)
-  * \retval const TCollection_AsciiString & - Arg<index> substring
+ * \retval const TCollection_AsciiString & - Arg<index> substring
  */
 //================================================================================
 
@@ -3902,8 +3905,8 @@ int _pyCommand::GetArgBeginning() const
 //================================================================================
 /*!
  * \brief Check if char is a word part
-  * \param c - The character to check
-  * \retval bool - The check result
+ *  \param c - The character to check
+ * \retval bool - The check result
  */
 //================================================================================
 
@@ -3916,10 +3919,10 @@ static inline bool isWord(const char c, const bool dotIsWord)
 //================================================================================
 /*!
  * \brief Looks for a word in the string and returns word's beginning
-  * \param theString - The input string
-  * \param theStartPos - The position to start the search, returning word's beginning
-  * \param theForward - The search direction
-  * \retval TCollection_AsciiString - The found word
+ *  \param theString - The input string
+ *  \param theStartPos - The position to start the search, returning word's beginning
+ *  \param theForward - The search direction
+ * \retval TCollection_AsciiString - The found word
  */
 //================================================================================
 
@@ -4050,9 +4053,9 @@ std::list< _pyID > _pyCommand::GetStudyEntries( const TCollection_AsciiString& s
 //================================================================================
 /*!
  * \brief Look for position where not space char is
-  * \param theString - The string
-  * \param thePos - The position to search from and which returns result
-  * \retval bool - false if there are only space after thePos in theString
+ *  \param theString - The string
+ *  \param thePos - The position to search from and which returns result
+ * \retval bool - false if there are only space after thePos in theString
  */
 //================================================================================
 
@@ -4070,14 +4073,14 @@ bool _pyCommand::SkipSpaces( const TCollection_AsciiString & theString, int & th
 //================================================================================
 /*!
  * \brief Modify a part of the command
-  * \param thePartIndex - The index of the part
-  * \param thePart - The new part string
-  * \param theOldPart - The old part
+ *  \param thePartIndex - The index of the part
+ *  \param thePart - The new part string
+ *  \param theOldPart - The old part
  */
 //================================================================================
 
 void _pyCommand::SetPart(int thePartIndex, const TCollection_AsciiString& thePart,
-                        TCollection_AsciiString& theOldPart)
+                         TCollection_AsciiString& theOldPart)
 {
   int pos = GetBegPos( thePartIndex );
   if ( pos <= Length() && theOldPart != thePart)
@@ -4110,8 +4113,8 @@ void _pyCommand::SetPart(int thePartIndex, const TCollection_AsciiString& thePar
 //================================================================================
 /*!
  * \brief Set agrument
-  * \param index - The argument index, it counts from 1
-  * \param theArg - The argument string
+ *  \param index - The argument index, it counts from 1
+ *  \param theArg - The argument string
  */
 //================================================================================
 
@@ -4212,9 +4215,9 @@ bool _pyCommand::SetDependentCmdsAfter() const
 //================================================================================
 /*!
  * \brief Insert accessor method after theObjectID
-  * \param theObjectID - id of the accessed object
-  * \param theAcsMethod - name of the method giving access to the object
-  * \retval bool - false if theObjectID is not found in the command string
+ *  \param theObjectID - id of the accessed object
+ *  \param theAcsMethod - name of the method giving access to the object
+ * \retval bool - false if theObjectID is not found in the command string
  */
 //================================================================================
 
@@ -4302,7 +4305,7 @@ void _pyObject::ClearCommands()
 //================================================================================
 /*!
  * \brief Return method name giving access to an interaface object wrapped by python class
-  * \retval const char* - method name
+ * \retval const char* - method name
  */
 //================================================================================
 
@@ -4434,39 +4437,39 @@ _pySubMesh::_pySubMesh(const Handle(_pyCommand)& theCreationCmd, bool toKeepAgrC
 bool _pySubMesh::CanBeArgOfMethod(const _AString& theMethodName)
 {
   return false;
-//   // names of all methods where a sub-mesh can be used as argument
-//   static TStringSet methods;
-//   if ( methods.empty() ) {
-//     const char * names[] = {
-//       // methods of SMESH_Gen
-//       "CopyMesh",
-//       // methods of SMESH_Group
-//       "AddFrom",
-//       // methods of SMESH_Measurements
-//       "MinDistance",
-//       // methods of SMESH_Mesh
-//       "ExportPartToMED","ExportCGNS","ExportPartToDAT","ExportPartToUNV","ExportPartToSTL",
-//       "RemoveSubMesh",
-//       // methods of SMESH_MeshEditor
-//       "ReorientObject","Reorient2D","TriToQuadObject","QuadToTriObject","SplitQuadObject",
-//       "SplitVolumesIntoTetra","SmoothObject","SmoothParametricObject","ConvertFromQuadraticObject",
-//       "RotationSweepObject","RotationSweepObjectMakeGroups","RotationSweepObject1D",
-//       "RotationSweepObject1DMakeGroups","RotationSweepObject2D","RotationSweepObject2DMakeGroups",
-//       "ExtrusionSweepObject","ExtrusionSweepObjectMakeGroups","ExtrusionSweepObject0D",
-//       "ExtrusionSweepObject0DMakeGroups","ExtrusionSweepObject1D","ExtrusionSweepObject2D",
-//       "ExtrusionSweepObject1DMakeGroups","ExtrusionSweepObject2DMakeGroups",
-//       "ExtrusionAlongPathObjX","ExtrusionAlongPathObject","ExtrusionAlongPathObjectMakeGroups",
-//       "ExtrusionAlongPathObject1D","ExtrusionAlongPathObject1DMakeGroups",
-//       "ExtrusionAlongPathObject2D","ExtrusionAlongPathObject2DMakeGroups","MirrorObject",
-//       "MirrorObjectMakeGroups","MirrorObjectMakeMesh","TranslateObject","Scale",
-//       "TranslateObjectMakeGroups","TranslateObjectMakeMesh","ScaleMakeGroups","ScaleMakeMesh",
-//       "RotateObject","RotateObjectMakeGroups","RotateObjectMakeMesh","FindCoincidentNodesOnPart",
-//       "FindCoincidentNodesOnPartBut","FindEqualElements","FindAmongElementsByPoint",
-//       "MakeBoundaryMesh","Create0DElementsOnAllNodes",
-//       "" }; // <- mark of end
-//     methods.Insert( names );
-//   }
-//   return methods.Contains( theMethodName );
+  // names of all methods where a sub-mesh can be used as argument
+  // static TStringSet methods;
+  // if ( methods.empty() ) {
+  //   const char * names[] = {
+  //     // methods of SMESH_Gen
+  //     "CopyMesh",
+  //     // methods of SMESH_Group
+  //     "AddFrom",
+  //     // methods of SMESH_Measurements
+  //     "MinDistance",
+  //     // methods of SMESH_Mesh
+  //     "ExportPartToMED","ExportCGNS","ExportPartToDAT","ExportPartToUNV","ExportPartToSTL",
+  //     "RemoveSubMesh",
+  //     // methods of SMESH_MeshEditor
+  //     "ReorientObject","Reorient2D","TriToQuadObject","QuadToTriObject","SplitQuadObject",
+  //     "SplitVolumesIntoTetra","SmoothObject","SmoothParametricObject","ConvertFromQuadraticObject",
+  //     "RotationSweepObject","RotationSweepObjectMakeGroups","RotationSweepObject1D",
+  //     "RotationSweepObject1DMakeGroups","RotationSweepObject2D","RotationSweepObject2DMakeGroups",
+  //     "ExtrusionSweepObject","ExtrusionSweepObjectMakeGroups","ExtrusionSweepObject0D",
+  //     "ExtrusionSweepObject0DMakeGroups","ExtrusionSweepObject1D","ExtrusionSweepObject2D",
+  //     "ExtrusionSweepObject1DMakeGroups","ExtrusionSweepObject2DMakeGroups",
+  //     "ExtrusionAlongPathObjX","ExtrusionAlongPathObject","ExtrusionAlongPathObjectMakeGroups",
+  //     "ExtrusionAlongPathObject1D","ExtrusionAlongPathObject1DMakeGroups",
+  //     "ExtrusionAlongPathObject2D","ExtrusionAlongPathObject2DMakeGroups","MirrorObject",
+  //     "MirrorObjectMakeGroups","MirrorObjectMakeMesh","TranslateObject","Scale",
+  //     "TranslateObjectMakeGroups","TranslateObjectMakeMesh","ScaleMakeGroups","ScaleMakeMesh",
+  //     "RotateObject","RotateObjectMakeGroups","RotateObjectMakeMesh","FindCoincidentNodesOnPart",
+  //     "FindCoincidentNodesOnPartBut","FindEqualElements","FindAmongElementsByPoint",
+  //     "MakeBoundaryMesh","Create0DElementsOnAllNodes",
+  //     "" }; // <- mark of end
+  //   methods.Insert( names );
+  // }
+  // return methods.Contains( theMethodName );
 }
 
 //================================================================================
@@ -4533,13 +4536,13 @@ _pyGroup::_pyGroup(const Handle(_pyCommand)& theCreationCmd, const _pyID & id)
     //}
     //else {
     // ------------------------->>>>> GroupOnGeom( geom, name, typ )
-      _pyID type = theCreationCmd->GetArg( 1 );
-      _pyID name = theCreationCmd->GetArg( 2 );
-      theCreationCmd->SetMethod( "GroupOnGeom" );
-      theCreationCmd->RemoveArgs();
-      theCreationCmd->SetArg( 1, geom );
-      theCreationCmd->SetArg( 2, name );
-      theCreationCmd->SetArg( 3, type );
+    _pyID type = theCreationCmd->GetArg( 1 );
+    _pyID name = theCreationCmd->GetArg( 2 );
+    theCreationCmd->SetMethod( "GroupOnGeom" );
+    theCreationCmd->RemoveArgs();
+    theCreationCmd->SetArg( 1, geom );
+    theCreationCmd->SetArg( 2, name );
+    theCreationCmd->SetArg( 3, type );
     //}
   }
   else if ( method == "CreateGroupFromFilter" )

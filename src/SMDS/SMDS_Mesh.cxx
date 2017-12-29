@@ -1556,8 +1556,14 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeFromVtkIdsWithID(const std::vector<vtkIdTyp
     case VTK_QUADRATIC_WEDGE:
       myInfo.myNbQuadPrisms++;
       break;
+    case VTK_BIQUADRATIC_QUADRATIC_WEDGE:
+      myInfo.myNbBiQuadPrisms++;
+      break;
     case VTK_QUADRATIC_HEXAHEDRON:
       myInfo.myNbQuadHexas++;
+      break;
+    case VTK_TRIQUADRATIC_HEXAHEDRON:
+      myInfo.myNbTriQuadHexas++;
       break;
 //#ifdef VTK_HAVE_POLYHEDRON
     case VTK_POLYHEDRON:
@@ -1690,10 +1696,10 @@ const SMDS_MeshNode * SMDS_Mesh::FindNodeVtk(int vtkId) const
   return (const SMDS_MeshNode *)myNodes[vtkId+1];
 }
 
-///////////////////////////////////////////////////////////////////////////////
-///Create a triangle and add it to the current mesh. This method do not bind an
-///ID to the create triangle.
-///////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
+///Create a triangle and add it to the current mesh. This method does not bind
+///an ID to the create triangle.
+//////////////////////////////////////////////////////////////////////////////
 SMDS_MeshFace * SMDS_Mesh::createTriangle(const SMDS_MeshNode * node1,
                                           const SMDS_MeshNode * node2,
                                           const SMDS_MeshNode * node3,
@@ -1740,10 +1746,10 @@ SMDS_MeshFace * SMDS_Mesh::createTriangle(const SMDS_MeshNode * node1,
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////
-///Create a quadrangle and add it to the current mesh. This methode do not bind
-///a ID to the create triangle.
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+///Create a quadrangle and add it to the current mesh. This method does not bind
+///an ID to the create triangle.
+////////////////////////////////////////////////////////////////////////////////
 SMDS_MeshFace * SMDS_Mesh::createQuadrangle(const SMDS_MeshNode * node1,
                                             const SMDS_MeshNode * node2,
                                             const SMDS_MeshNode * node3,
@@ -4210,7 +4216,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
 
 //=======================================================================
 //function : AddVolume
-//purpose  :
+//purpose  : 2d order Pentahedron (prism) with 15 nodes
 //=======================================================================
 SMDS_MeshVolume* SMDS_Mesh::AddVolume(const SMDS_MeshNode * n1,
                                       const SMDS_MeshNode * n2,
@@ -4238,7 +4244,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolume(const SMDS_MeshNode * n1,
 
 //=======================================================================
 //function : AddVolumeWithID
-//purpose  :
+//purpose  : 2d order Pentahedron (prism) with 15 nodes
 //=======================================================================
 SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(int n1, int n2, int n3,
                                             int n4, int n5, int n6,
@@ -4267,7 +4273,7 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(int n1, int n2, int n3,
 
 //=======================================================================
 //function : AddVolumeWithID
-//purpose  : 2d order Pentahedron with 15 nodes
+//purpose  : 2d order Pentahedron (prism) with 15 nodes
 //=======================================================================
 SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
                                             const SMDS_MeshNode * n2,
@@ -4326,6 +4332,149 @@ SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
   adjustmyCellsCapacity(ID);
   myCells[ID] = volvtk;
   myInfo.myNbQuadPrisms++;
+
+  //  if (!registerElement(ID, volvtk)) {
+  //    RemoveElement(volvtk, false);
+  //    volvtk = NULL;
+  //  }
+  return volvtk;
+}
+
+//=======================================================================
+//function : AddVolume
+//purpose  : 2d order Pentahedron (prism) with 18 nodes
+//=======================================================================
+SMDS_MeshVolume* SMDS_Mesh::AddVolume(const SMDS_MeshNode * n1,
+                                      const SMDS_MeshNode * n2,
+                                      const SMDS_MeshNode * n3,
+                                      const SMDS_MeshNode * n4,
+                                      const SMDS_MeshNode * n5,
+                                      const SMDS_MeshNode * n6,
+                                      const SMDS_MeshNode * n12,
+                                      const SMDS_MeshNode * n23,
+                                      const SMDS_MeshNode * n31,
+                                      const SMDS_MeshNode * n45,
+                                      const SMDS_MeshNode * n56,
+                                      const SMDS_MeshNode * n64,
+                                      const SMDS_MeshNode * n14,
+                                      const SMDS_MeshNode * n25,
+                                      const SMDS_MeshNode * n36,
+                                      const SMDS_MeshNode * n1245,
+                                      const SMDS_MeshNode * n2356,
+                                      const SMDS_MeshNode * n1346)
+{
+  //MESSAGE("AddVolume penta18");
+  int ID = myElementIDFactory->GetFreeID();
+  SMDS_MeshVolume * v =
+    SMDS_Mesh::AddVolumeWithID(n1, n2, n3, n4, n5, n6, n12, n23, n31,
+                               n45, n56, n64, n14, n25, n36, n1245, n2356, n1346, ID);
+  if(v==NULL) myElementIDFactory->ReleaseID(ID);
+  return v;
+}
+
+//=======================================================================
+//function : AddVolumeWithID
+//purpose  : 2d order Pentahedron (prism) with 18 nodes
+//=======================================================================
+SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(int n1, int n2, int n3,
+                                            int n4, int n5, int n6,
+                                            int n12,int n23,int n31,
+                                            int n45,int n56,int n64,
+                                            int n14,int n25,int n36,
+                                            int n1245, int n2356, int n1346, int ID)
+{
+  //MESSAGE("AddVolumeWithID penta18 " << ID);
+  return SMDS_Mesh::AddVolumeWithID
+    ((SMDS_MeshNode*) myNodeIDFactory->MeshElement(n1) ,
+     (SMDS_MeshNode*) myNodeIDFactory->MeshElement(n2) ,
+     (SMDS_MeshNode*) myNodeIDFactory->MeshElement(n3) ,
+     (SMDS_MeshNode*) myNodeIDFactory->MeshElement(n4) ,
+     (SMDS_MeshNode*) myNodeIDFactory->MeshElement(n5) ,
+     (SMDS_MeshNode*) myNodeIDFactory->MeshElement(n6) ,
+     (SMDS_MeshNode*) myNodeIDFactory->MeshElement(n12),
+     (SMDS_MeshNode*) myNodeIDFactory->MeshElement(n23),
+     (SMDS_MeshNode*) myNodeIDFactory->MeshElement(n31),
+     (SMDS_MeshNode*) myNodeIDFactory->MeshElement(n45),
+     (SMDS_MeshNode*) myNodeIDFactory->MeshElement(n56),
+     (SMDS_MeshNode*) myNodeIDFactory->MeshElement(n64),
+     (SMDS_MeshNode*) myNodeIDFactory->MeshElement(n14),
+     (SMDS_MeshNode*) myNodeIDFactory->MeshElement(n25),
+     (SMDS_MeshNode*) myNodeIDFactory->MeshElement(n36),
+     (SMDS_MeshNode*) myNodeIDFactory->MeshElement(n1245),
+     (SMDS_MeshNode*) myNodeIDFactory->MeshElement(n2356),
+     (SMDS_MeshNode*) myNodeIDFactory->MeshElement(n1346),
+     ID);
+}
+
+//=======================================================================
+//function : AddVolumeWithID
+//purpose  : 2d order Pentahedron (prism) with 18 nodes
+//=======================================================================
+SMDS_MeshVolume* SMDS_Mesh::AddVolumeWithID(const SMDS_MeshNode * n1,
+                                            const SMDS_MeshNode * n2,
+                                            const SMDS_MeshNode * n3,
+                                            const SMDS_MeshNode * n4,
+                                            const SMDS_MeshNode * n5,
+                                            const SMDS_MeshNode * n6,
+                                            const SMDS_MeshNode * n12,
+                                            const SMDS_MeshNode * n23,
+                                            const SMDS_MeshNode * n31,
+                                            const SMDS_MeshNode * n45,
+                                            const SMDS_MeshNode * n56,
+                                            const SMDS_MeshNode * n64,
+                                            const SMDS_MeshNode * n14,
+                                            const SMDS_MeshNode * n25,
+                                            const SMDS_MeshNode * n36,
+                                            const SMDS_MeshNode * n1245,
+                                            const SMDS_MeshNode * n2356,
+                                            const SMDS_MeshNode * n1346,
+                                            int ID)
+{
+  //MESSAGE("AddVolumeWithID penta18 "<< ID);
+  if (!n1 || !n2 || !n3 || !n4 || !n5 || !n6 || !n12 || !n23 ||
+      !n31 || !n45 || !n56 || !n64 || !n14 || !n25 || !n36 || !n1245 || !n2356 || !n1346)
+    return 0;
+  if(hasConstructionFaces()) {
+    // creation quadratic faces - not implemented
+    return 0;
+  }
+  // --- retrieve nodes ID
+  myNodeIds.resize(18);
+  myNodeIds[0] = n1->getVtkId();
+  myNodeIds[1] = n2->getVtkId();
+  myNodeIds[2] = n3->getVtkId();
+
+  myNodeIds[3] = n4->getVtkId();
+  myNodeIds[4] = n5->getVtkId();
+  myNodeIds[5] = n6->getVtkId();
+
+  myNodeIds[6] = n12->getVtkId();
+  myNodeIds[7] = n23->getVtkId();
+  myNodeIds[8] = n31->getVtkId();
+
+  myNodeIds[9] = n45->getVtkId();
+  myNodeIds[10] = n56->getVtkId();
+  myNodeIds[11] = n64->getVtkId();
+
+  myNodeIds[12] = n14->getVtkId();
+  myNodeIds[13] = n25->getVtkId();
+  myNodeIds[14] = n36->getVtkId();
+
+  myNodeIds[15] = n1245->getVtkId();
+  myNodeIds[16] = n2356->getVtkId();
+  myNodeIds[17] = n1346->getVtkId();
+
+  SMDS_VtkVolume *volvtk = myVolumePool->getNew();
+  volvtk->init(myNodeIds, this);
+  if (!this->registerElement(ID,volvtk))
+  {
+    this->myGrid->GetCellTypesArray()->SetValue(volvtk->getVtkId(), VTK_EMPTY_CELL);
+    myVolumePool->destroy(volvtk);
+    return 0;
+  }
+  adjustmyCellsCapacity(ID);
+  myCells[ID] = volvtk;
+  myInfo.myNbBiQuadPrisms++;
 
   //  if (!registerElement(ID, volvtk)) {
   //    RemoveElement(volvtk, false);

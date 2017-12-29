@@ -588,7 +588,7 @@ namespace
                         const SMDS_MeshElement* cornerQuad,
                         const SMDS_MeshNode*    nCorner)
   {
-    // Find out size of block side mesured in nodes and by the way find two rows
+    // Find out size of block side measured in nodes and by the way find two rows
     // of nodes in two directions.
 
     int x, y, nbX, nbY;

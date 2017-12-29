@@ -677,7 +677,11 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
                                              SMDSAbs_Volume));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              ePENTA15,
-                                             nbElemInfo.NbPrisms( ORDER_QUADRATIC ),
+                                             nbElemInfo.NbQuadPrisms(),
+                                             SMDSAbs_Volume));
+    aTElemTypeDatas.push_back( TElemTypeData(anEntity,
+                                             ePENTA18,
+                                             nbElemInfo.NbBiQuadPrisms(),
                                              SMDSAbs_Volume));
     aTElemTypeDatas.push_back( TElemTypeData(anEntity,
                                              eHEXA8,
@@ -727,6 +731,13 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       case SMDSAbs_Volume:    defaultFamilyId = myVolumesDefaultFamilyId;    break;
       default:
         continue;
+      }
+
+      // build map of family numbers for this type
+      if ( !isElemFamMapBuilt[ aElemTypeData->_smdsType ])
+      {
+        fillElemFamilyMap( anElemFamMap, aFamilies, aElemTypeData->_smdsType );
+        isElemFamMapBuilt[ aElemTypeData->_smdsType ] = true;
       }
 
       // iterator on elements of a current type
@@ -802,7 +813,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       else if (aElemTypeData->_geomType == ePOLYEDRE )
       {
         elemIterator = myMesh->elementGeomIterator( SMDSGeom_POLYHEDRA );
-        
+
         if ( nbPolyhedronNodes == 0 ) {
           // Count nb of nodes
           while ( elemIterator->more() ) {
@@ -879,13 +890,6 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
         // allocate data arrays
         PBallInfo aBallInfo = myMed->CrBallInfo( aMeshInfo, aElemTypeData->_nbElems );
 
-        // build map of family numbers for this type
-        if ( !isElemFamMapBuilt[ aElemTypeData->_smdsType ])
-        {
-          fillElemFamilyMap( anElemFamMap, aFamilies, aElemTypeData->_smdsType );
-          isElemFamMapBuilt[ aElemTypeData->_smdsType ] = true;
-        }
-
         elemIterator = myMesh->elementsIterator( SMDSAbs_Ball );
         while ( elemIterator->more() )
         {
@@ -917,7 +921,6 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       {
         // Treat standard types
         // ---------------------
-
         // allocate data arrays
         PCellInfo aCellInfo = myMed->CrCellInfo( aMeshInfo,
                                                  aElemTypeData->_entity,
@@ -926,13 +929,6 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
                                                  theConnMode,
                                                  theIsElemNum,
                                                  theIsElemNames);
-        // build map of family numbers for this type
-        if ( !isElemFamMapBuilt[ aElemTypeData->_smdsType ])
-        {
-          //cout << " fillElemFamilyMap()" << endl;
-          fillElemFamilyMap( anElemFamMap, aFamilies, aElemTypeData->_smdsType );
-          isElemFamMapBuilt[ aElemTypeData->_smdsType ] = true;
-        }
 
         TInt aNbNodes = MED::GetNbNodes(aElemTypeData->_geomType);
         elemIterator = myMesh->elementsIterator( aElemTypeData->_smdsType );
@@ -967,10 +963,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
         // store data in a file
         myMed->SetCellInfo(aCellInfo);
       }
-
     } // loop on geom types
-
-
   }
   catch(const std::exception& exc) {
     INFOS("The following exception was caught:\n\t"<<exc.what());

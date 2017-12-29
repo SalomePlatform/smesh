@@ -1,6 +1,6 @@
 # - Config file for the @PROJECT_NAME@ package
 # It defines the following variables. 
-# Specific to the pacakge @PROJECT_NAME@ itself:
+# Specific to the package @PROJECT_NAME@ itself:
 #  @PROJECT_NAME_UC@_ROOT_DIR_EXP - the root path of the installation providing this CMake file
 #
 

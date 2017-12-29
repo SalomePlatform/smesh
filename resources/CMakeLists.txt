@@ -228,6 +228,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_quality.png
   mesh_show.png
   mesh_hide.png
+  mesh_deflection.png
 )
 
 INSTALL(FILES ${SMESH_RESOURCES_FILES} DESTINATION ${SALOME_SMESH_INSTALL_RES_DATA})

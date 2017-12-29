@@ -154,7 +154,7 @@ module SMESH
     boolean IsEnablePublish();
 
     /*!
-     * Create a hypothesis that can be shared by differents parts of the mesh.
+     * Create a hypothesis that can be shared by different parts of the mesh.
      * An hypothesis is either:
      * - a method used to generate or modify a part of the mesh (algorithm).
      * - a parameter or a law used by an algorithm.

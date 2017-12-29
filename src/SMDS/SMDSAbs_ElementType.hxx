@@ -98,6 +98,7 @@ enum SMDSAbs_EntityType {
   SMDSEntity_TriQuad_Hexa,
   SMDSEntity_Penta,
   SMDSEntity_Quad_Penta,
+  SMDSEntity_BiQuad_Penta,
   SMDSEntity_Hexagonal_Prism,
   SMDSEntity_Polyhedra,
   SMDSEntity_Quad_Polyhedra,

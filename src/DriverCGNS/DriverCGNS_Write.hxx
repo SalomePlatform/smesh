@@ -45,9 +45,16 @@ public:
 
   virtual Status Perform();
 
+  // to export elements either in the order of their IDs or by geometric type
+  void SetElementsByType( bool isByType ) { _elementsByType = isByType; }
+
 private:
 
   int _fn; //!< file index
+
+  // if true all elements of same geometry are exported at ones,
+  // else elements are exported in order of their IDs
+  bool _elementsByType;
 };
 
 #endif

@@ -527,7 +527,7 @@ public:
                                          SMESH::ElementType type)
     throw (SALOME::SALOME_Exception);
   /*!
-   * Searching among the given elements, return elements of given type 
+   * Searching among the given elements, return elements of given type
    * where the given point is IN or ON.
    * 'ALL' type means elements of any type excluding nodes
    */
@@ -545,6 +545,30 @@ public:
   CORBA::Short GetPointState(CORBA::Double x, CORBA::Double y, CORBA::Double z)
     throw (SALOME::SALOME_Exception);
 
+  /*!
+   * Check if a 2D mesh is manifold
+   */
+  CORBA::Boolean IsManifold()
+    throw (SALOME::SALOME_Exception);
+
+  /*!
+   * Check if orientation of 2D elements is coherent
+   */
+  CORBA::Boolean IsCoherentOrientation2D()
+    throw (SALOME::SALOME_Exception);
+
+  /*!
+   * Returns all or only closed FreeBorder's.
+   */
+  SMESH::ListOfFreeBorders* FindFreeBorders(CORBA::Boolean closedOnly)
+    throw (SALOME::SALOME_Exception);
+
+  /*!
+   * Fill with 2D elements a hole defined by a FreeBorder.
+   */
+  void FillHole(const SMESH::FreeBorder& hole)
+    throw (SALOME::SALOME_Exception);
+
   SMESH::CoincidentFreeBorders* FindCoincidentFreeBorders(CORBA::Double tolerance);
   CORBA::Short SewCoincidentFreeBorders(const SMESH::CoincidentFreeBorders& freeBorders,
                                         CORBA::Boolean                      createPolygons,
@@ -552,35 +576,35 @@ public:
     throw (SALOME::SALOME_Exception);
 
   SMESH::SMESH_MeshEditor::Sew_Error
-  SewFreeBorders(CORBA::Long FirstNodeID1,
-                 CORBA::Long SecondNodeID1,
-                 CORBA::Long LastNodeID1,
-                 CORBA::Long FirstNodeID2,
-                 CORBA::Long SecondNodeID2,
-                 CORBA::Long LastNodeID2,
-                 CORBA::Boolean CreatePolygons,
-                 CORBA::Boolean CreatePolyedrs) throw (SALOME::SALOME_Exception);
+    SewFreeBorders(CORBA::Long FirstNodeID1,
+                   CORBA::Long SecondNodeID1,
+                   CORBA::Long LastNodeID1,
+                   CORBA::Long FirstNodeID2,
+                   CORBA::Long SecondNodeID2,
+                   CORBA::Long LastNodeID2,
+                   CORBA::Boolean CreatePolygons,
+                   CORBA::Boolean CreatePolyedrs) throw (SALOME::SALOME_Exception);
   SMESH::SMESH_MeshEditor::Sew_Error
-  SewConformFreeBorders(CORBA::Long FirstNodeID1,
-                        CORBA::Long SecondNodeID1,
-                        CORBA::Long LastNodeID1,
-                        CORBA::Long FirstNodeID2,
-                        CORBA::Long SecondNodeID2) throw (SALOME::SALOME_Exception);
+    SewConformFreeBorders(CORBA::Long FirstNodeID1,
+                          CORBA::Long SecondNodeID1,
+                          CORBA::Long LastNodeID1,
+                          CORBA::Long FirstNodeID2,
+                          CORBA::Long SecondNodeID2) throw (SALOME::SALOME_Exception);
   SMESH::SMESH_MeshEditor::Sew_Error
-  SewBorderToSide(CORBA::Long FirstNodeIDOnFreeBorder,
-                  CORBA::Long SecondNodeIDOnFreeBorder,
-                  CORBA::Long LastNodeIDOnFreeBorder,
-                  CORBA::Long FirstNodeIDOnSide,
-                  CORBA::Long LastNodeIDOnSide,
-                  CORBA::Boolean CreatePolygons,
-                  CORBA::Boolean CreatePolyedrs) throw (SALOME::SALOME_Exception);
+    SewBorderToSide(CORBA::Long FirstNodeIDOnFreeBorder,
+                    CORBA::Long SecondNodeIDOnFreeBorder,
+                    CORBA::Long LastNodeIDOnFreeBorder,
+                    CORBA::Long FirstNodeIDOnSide,
+                    CORBA::Long LastNodeIDOnSide,
+                    CORBA::Boolean CreatePolygons,
+                    CORBA::Boolean CreatePolyedrs) throw (SALOME::SALOME_Exception);
   SMESH::SMESH_MeshEditor::Sew_Error
-  SewSideElements(const SMESH::long_array& IDsOfSide1Elements,
-                  const SMESH::long_array& IDsOfSide2Elements,
-                  CORBA::Long NodeID1OfSide1ToMerge,
-                  CORBA::Long NodeID1OfSide2ToMerge,
-                  CORBA::Long NodeID2OfSide1ToMerge,
-                  CORBA::Long NodeID2OfSide2ToMerge) throw (SALOME::SALOME_Exception);
+    SewSideElements(const SMESH::long_array& IDsOfSide1Elements,
+                    const SMESH::long_array& IDsOfSide2Elements,
+                    CORBA::Long NodeID1OfSide1ToMerge,
+                    CORBA::Long NodeID1OfSide2ToMerge,
+                    CORBA::Long NodeID2OfSide1ToMerge,
+                    CORBA::Long NodeID2OfSide2ToMerge) throw (SALOME::SALOME_Exception);
 
   /*!
    * Set new nodes for given element.
@@ -816,7 +840,7 @@ public:
                       const char* groupName,
                       const SMESH::double_array& theNodesCoords,
                       SMESH::array_of_long_array_out GroupsOfNodes)
-  throw (SALOME::SALOME_Exception);
+    throw (SALOME::SALOME_Exception);
 
   /*!
    * \brief Generated skin mesh (containing 2D cells) from 3D mesh
@@ -844,7 +868,28 @@ public:
                                    SMESH::SMESH_Group_out group)
     throw (SALOME::SALOME_Exception);
 
-private: //!< private methods
+  /*!
+   * \brief Create a polyline consisting of 1D mesh elements each lying on a 2D element of
+   *        the initial mesh. Positions of new nodes are found by cutting the mesh by the
+   *        plane passing through pairs of points specified by each PolySegment structure.
+   *        If there are several paths connecting a pair of points, the shortest path is
+   *        selected by the module. Position of the cutting plane is defined by the two
+   *        points and an optional vector lying on the plane specified by a PolySegment.
+   *        By default the vector is defined by Mesh module as following. A middle point
+   *        of the two given points is computed. The middle point is projected to the mesh.
+   *        The vector goes from the middle point to the projection point. In case of planar
+   *        mesh, the vector is normal to the mesh.
+   *  \param [inout] segments - PolySegment's defining positions of cutting planes.
+   *        Return the used vector and position of the middle point.
+   *  \param [in] groupName - optional name of a group where created mesh segments will
+   *        be added.
+   */
+  void MakePolyLine(SMESH::ListOfPolySegments& segments,
+                    const char*               groupName)
+    throw (SALOME::SALOME_Exception);
+
+
+ private: //!< private methods
 
   ::SMESH_MeshEditor& getEditor();
 

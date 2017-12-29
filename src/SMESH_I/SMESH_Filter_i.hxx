@@ -266,11 +266,23 @@ namespace SMESH
     Length2D_i();
     SMESH::Length2D::Values*        GetValues();
     FunctorType                     GetFunctorType();
-    
+
   protected:
     Controls::Length2DPtr          myLength2DPtr;
   };
-  
+
+  /*
+    Class       : Deflection2D_i
+    Description : Functor for calculating distance between a face and geometry
+  */
+  class SMESH_I_EXPORT Deflection2D_i: public virtual POA_SMESH::Deflection2D,
+                                       public virtual NumericalFunctor_i
+  {
+  public:
+    Deflection2D_i();
+    FunctorType                     GetFunctorType();
+  };
+
   /*
     Class       : MultiConnection_i
     Description : Functor for calculating number of faces conneted to the edge
@@ -1087,6 +1099,7 @@ namespace SMESH
     MaxElementLength3D_ptr    CreateMaxElementLength3D();
     Length_ptr                CreateLength();
     Length2D_ptr              CreateLength2D();
+    Deflection2D_ptr          CreateDeflection2D();
     NodeConnectivityNumber_ptr CreateNodeConnectivityNumber();
     MultiConnection_ptr       CreateMultiConnection();
     MultiConnection2D_ptr     CreateMultiConnection2D();

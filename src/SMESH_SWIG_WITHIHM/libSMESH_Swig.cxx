@@ -24,6 +24,7 @@
 //
 #include "libSMESH_Swig.h"
 
+#include <SVTK_Selector.h>
 
 #include <SMESHGUI.h>
 #include <SMESHGUI_Utils.h>
@@ -802,6 +803,25 @@ void SMESH_Swig::EraseActor( const char* Mesh_Entry, const bool allViewers )
   ProcessVoidEvent(new TEvent(Mesh_Entry, allViewers));
 }
 
+void SMESH_Swig::UpdateActor( const char* Mesh_Entry ) {
+  class TEvent: public SALOME_Event
+  {
+  private:
+    const char* _entry;
+  public:
+    TEvent( const char* Mesh_Entry ) {
+      _entry = Mesh_Entry;
+    }
+    virtual void Execute() {
+      Handle(SALOME_InteractiveObject) anIO = new SALOME_InteractiveObject
+        ( _entry, "SMESH", "" );
+      SMESH::Update( anIO, true );
+    }
+  };
+
+  ProcessVoidEvent( new TEvent(Mesh_Entry) );
+}
+
 void SMESH_Swig::SetName(const char* theEntry,
                          const char* theName)
 {
@@ -940,6 +960,78 @@ void SMESH_Swig::select( const char* id, int id1, bool append ) {
   ProcessVoidEvent( new TSelectListEvent( id, ids, append ) );
 }
 
+/*!
+  \brief Helper class for selection edges of cell event
+*/
+class TSelectListOfPairEvent: public SALOME_Event
+{
+  const char*                        myId;
+  std::vector<std::pair<int, int> >  myIdsList;
+  bool                               myIsAppend;
+
+public:
+  TSelectListOfPairEvent(const char* id, std::vector<std::pair<int, int> > ids, bool append) :
+    myId(id),
+    myIdsList(ids),
+    myIsAppend(append)
+  {}
+  virtual void Execute()
+  {
+    
+    LightApp_SelectionMgr* selMgr = 0;
+    SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
+    if( anApp )
+      selMgr = dynamic_cast<LightApp_SelectionMgr*>( anApp->selectionMgr() );
+
+    if( !selMgr )
+      return;
+    
+    selMgr->clearFilters();
+
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow();
+    if(!aViewWindow)
+      return;
+
+    SMESH_Actor* anActor = SMESH::FindActorByEntry( myId );
+    
+    if (!anActor || !anActor->hasIO())
+      return;
+    
+    Handle(SALOME_InteractiveObject) anIO = anActor->getIO();
+    SALOME_ListIO aList;
+    aList.Append(anIO);
+    selMgr->setSelectedObjects(aList, false);
+
+    if ( aViewWindow->SelectionMode() !=  EdgeOfCellSelection ) {
+      return;
+    }
+        
+    SVTK_IndexedMapOfIds aMap;
+    std::vector<std::pair<int, int> >::const_iterator anIter;
+    for (anIter = myIdsList.begin(); anIter != myIdsList.end(); ++anIter) {
+      std::vector<int> aCompositeId;
+      aCompositeId.push_back((*anIter).first);
+      aCompositeId.push_back((*anIter).second);
+      aMap.Add(aCompositeId);
+    }
+
+    // Set new selection
+    SVTK_Selector* aSelector  = aViewWindow->GetSelector();
+    aSelector->AddOrRemoveCompositeIndex(anIO, aMap, myIsAppend);
+    aViewWindow->highlight( anIO, true, true );
+    aViewWindow->GetInteractor()->onEmitSelectionChanged();
+  }
+};
+
+/*!
+  \brief Select the elements on the mesh, sub-mesh or group.
+  \param id object entry
+  \param ids list of the element ids
+  \param mode selection mode
+*/
+void SMESH_Swig::select( const char* id, std::vector<std::pair<int,int> > ids, bool append ) {
+  ProcessVoidEvent( new TSelectListOfPairEvent( id, ids, append ) );
+}
 
 class TGetSelectionModeEvent : public SALOME_Event
 {
@@ -1047,3 +1139,46 @@ public:
 std::vector<int> SMESH_Swig::getSelected( const char* Mesh_Entry ) {
   return ProcessEvent( new TGetSelectedEvent(Mesh_Entry) );
 }
+
+class TGetSelectedPairEvent : public SALOME_Event
+{
+public:
+  typedef std::vector<std::pair<int, int> > TResult;
+  TResult myResult;
+  const char* myId;
+  
+  TGetSelectedPairEvent( const char* id) : 
+    myResult( std::vector<std::pair<int,int> >() ),
+    myId(id)
+  {}
+  
+  virtual void Execute()
+  {
+    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow();
+    if( !aViewWindow )
+      return;
+
+    if(aViewWindow->SelectionMode() != EdgeOfCellSelection )
+      return;
+
+    SVTK_Selector* aSelector  = aViewWindow->GetSelector();    
+    if( !aSelector )
+      return;
+
+    SMESH_Actor* anActor = SMESH::FindActorByEntry( myId );
+    
+    if ( !anActor || !anActor->hasIO() )
+      return;
+
+    SVTK_IndexedMapOfIds aMapIndex;
+    aSelector->GetCompositeIndex(anActor->getIO(),aMapIndex);
+
+    for( int i = 1; i <= aMapIndex.Extent(); i++ )
+      myResult.push_back( std::make_pair<int,int>( (int)aMapIndex( i )[0], (int)aMapIndex( i )[1]) );
+  }
+};
+
+std::vector<std::pair<int,int> > SMESH_Swig::getSelectedEdgeOfCell( const char* Mesh_Entry ) {
+  return ProcessEvent( new TGetSelectedPairEvent(Mesh_Entry) );
+}
+

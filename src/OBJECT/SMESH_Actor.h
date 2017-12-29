@@ -141,7 +141,7 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
   virtual void SetFacesOrientation3DVectors(bool theState) = 0;
   virtual bool GetFacesOrientation3DVectors() = 0;
 
-  enum eControl{eNone, eLength, eLength2D, eFreeBorders, eFreeEdges, eFreeNodes,
+  enum eControl{eNone, eLength, eLength2D, eDeflection2D, eFreeBorders, eFreeEdges, eFreeNodes,
                 eFreeFaces, eMultiConnection, eArea, eTaper, eAspectRatio,
                 eMinimumAngle, eWarping, eSkew, eAspectRatio3D, eMultiConnection2D, eVolume3D,
                 eMaxElementLength2D, eMaxElementLength3D, eBareBorderFace, eBareBorderVolume,

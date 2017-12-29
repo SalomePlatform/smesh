@@ -4,7 +4,6 @@ import sys
 import salome
 
 salome.salome_init()
-theStudy = salome.myStudy
 
 import salome_notebook
 notebook = salome_notebook.notebook
@@ -149,8 +148,8 @@ SubMesh_1 = Regular_1D_1.GetSubMesh()
 SubMesh_2 = Regular_1D_2.GetSubMesh()
 
 ## some objects were removed
-aStudyBuilder = theStudy.NewBuilder()
-SO = theStudy.FindObjectIOR(theStudy.ConvertObjectToIOR(smeshObj_1))
+aStudyBuilder = salome.myStudy.NewBuilder()
+SO = salome.myStudy.FindObjectIOR(salome.myStudy.ConvertObjectToIOR(smeshObj_1))
 if SO is not None: aStudyBuilder.RemoveObjectWithChildren(SO)
 ## set object names
 smesh.SetName(CylindreSain_1.GetMesh(), 'CylindreSain')

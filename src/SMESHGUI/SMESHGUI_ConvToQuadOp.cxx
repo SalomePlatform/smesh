@@ -332,6 +332,7 @@ SMESHGUI_ConvToQuadOp::DestinationMesh( const SMESH::SMESH_IDSource_var& idSourc
 
   bool hasBiQuad     = ( nbElemOfType[SMDSEntity_BiQuad_Triangle   ] ||
                          nbElemOfType[SMDSEntity_BiQuad_Quadrangle ] ||
+                         nbElemOfType[SMDSEntity_BiQuad_Penta      ] ||
                          nbElemOfType[SMDSEntity_TriQuad_Hexa      ] );
   bool hasLinBiQuad  = ( nbElemOfType[SMDSEntity_Triangle   ] ||
                          nbElemOfType[SMDSEntity_Quadrangle ] ||

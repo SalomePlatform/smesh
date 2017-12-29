@@ -40,8 +40,6 @@
 #include <SALOMEDS_wrap.hxx>
 #include <GEOM_wrap.hxx>
 
-#include <Basics_OCCTVersion.hxx>
-
 #include <BRep_Tool.hxx>
 #include <Geom_CylindricalSurface.hxx>
 #include <Geom_Plane.hxx>
@@ -521,6 +519,21 @@ SMESH::Length2D::Values* Length2D_i::GetValues()
   }
 
   return aResult._retn();
+}
+
+/*
+  Class       : Deflection2D_i
+  Description : Functor for calculating distance between a face and geometry
+*/
+Deflection2D_i::Deflection2D_i()
+{
+  myNumericalFunctorPtr.reset( new Controls::Deflection2D() );
+  myFunctorPtr = myNumericalFunctorPtr;
+}
+
+FunctorType Deflection2D_i::GetFunctorType()
+{
+  return SMESH::FT_Deflection2D;
 }
 
 /*
@@ -2094,6 +2107,14 @@ Length2D_ptr FilterManager_i::CreateLength2D()
   return anObj._retn();
 }
 
+Deflection2D_ptr FilterManager_i::CreateDeflection2D()
+{
+  SMESH::Deflection2D_i* aServant = new SMESH::Deflection2D_i();
+  SMESH::Deflection2D_var   anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateLength2D()";
+  return anObj._retn();
+}
+
 MultiConnection_ptr FilterManager_i::CreateMultiConnection()
 {
   SMESH::MultiConnection_i* aServant = new SMESH::MultiConnection_i();
@@ -2937,6 +2958,9 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
       case SMESH::FT_Length2D:
         aFunctor = aFilterMgr->CreateLength2D();
         break;
+      case SMESH::FT_Deflection2D:
+        aFunctor = aFilterMgr->CreateDeflection2D();
+        break;
       case SMESH::FT_AspectRatio:
         aFunctor = aFilterMgr->CreateAspectRatio();
         break;
@@ -3432,9 +3456,10 @@ static inline LDOMString toString( CORBA::Long theType )
     case FT_EqualFaces            : return "Equal faces";
     case FT_EqualVolumes          : return "Equal volumes";
     case FT_MultiConnection       : return "Borders at multi-connections";
-    case FT_MultiConnection2D     :return "Borders at multi-connections 2D";
+    case FT_MultiConnection2D     : return "Borders at multi-connections 2D";
     case FT_Length                : return "Length";
     case FT_Length2D              : return "Length 2D";
+    case FT_Deflection2D          : return "Deflection 2D";
     case FT_LessThan              : return "Less than";
     case FT_MoreThan              : return "More than";
     case FT_EqualTo               : return "Equal to";
@@ -3443,7 +3468,7 @@ static inline LDOMString toString( CORBA::Long theType )
     case FT_LogicalOR             : return "Or";
     case FT_GroupColor            : return "Color of Group";
     case FT_LinearOrQuadratic     : return "Linear or Quadratic";
-    case FT_ElemGeomType          : return "Element geomtry type";
+    case FT_ElemGeomType          : return "Element geometry type";
     case FT_EntityType            : return "Entity type";
     case FT_Undefined             : return "";
     default                       : return "";
@@ -3483,6 +3508,7 @@ static inline SMESH::FunctorType toFunctorType( const LDOMString& theStr )
   //  else if ( theStr.equals( "Borders at multi-connections 2D" ) ) return FT_MultiConnection2D;
   else if ( theStr.equals( "Length"                       ) ) return FT_Length;
   //  else if ( theStr.equals( "Length2D"                     ) ) return FT_Length2D;
+  else if ( theStr.equals( "Deflection"                   ) ) return FT_Deflection2D;
   else if ( theStr.equals( "Range of IDs"                 ) ) return FT_RangeOfIds;
   else if ( theStr.equals( "Bad Oriented Volume"          ) ) return FT_BadOrientedVolume;
   else if ( theStr.equals( "Volumes with bare border"     ) ) return FT_BareBorderVolume;
@@ -3497,7 +3523,7 @@ static inline SMESH::FunctorType toFunctorType( const LDOMString& theStr )
   else if ( theStr.equals( "Or"                           ) ) return FT_LogicalOR;
   else if ( theStr.equals( "Color of Group"               ) ) return FT_GroupColor;
   else if ( theStr.equals( "Linear or Quadratic"          ) ) return FT_LinearOrQuadratic;
-  else if ( theStr.equals( "Element geomtry type"         ) ) return FT_ElemGeomType;
+  else if ( theStr.equals( "Element geometry type"        ) ) return FT_ElemGeomType;
   else if ( theStr.equals( "Entity type"                  ) ) return FT_EntityType;
   else if ( theStr.equals( ""                             ) ) return FT_Undefined;
   else  return FT_Undefined;
@@ -3922,16 +3948,6 @@ CORBA::Boolean FilterLibrary_i::Save()
   if ( myFileName == 0 || strlen( myFileName ) == 0 )
     return false;
 
-#if OCC_VERSION_MAJOR < 7
-  FILE* aOutFile = fopen( myFileName, "wt" );
-  if ( !aOutFile )
-    return false;
-
-  LDOM_XmlWriter aWriter( aOutFile );
-  aWriter.SetIndentation( 2 );
-  aWriter << myDoc;
-  fclose( aOutFile );
-#else
   std::filebuf fb;
   fb.open( myFileName, std::ios::out );
 
@@ -3941,7 +3957,6 @@ CORBA::Boolean FilterLibrary_i::Save()
   aWriter.SetIndentation( 2 );
   aWriter.Write( os, myDoc );
   fb.close();
-#endif
 
   TPythonDump()<<this<<".Save()";
   return true;
@@ -4059,6 +4074,7 @@ static const char** getFunctNames()
     "FT_MultiConnection2D",
     "FT_Length",
     "FT_Length2D",
+    "FT_Deflection2D",
     "FT_NodeConnectivityNumber",
     "FT_BelongToMeshGroup",
     "FT_BelongToGeom",
@@ -4075,7 +4091,7 @@ static const char** getFunctNames()
     "FT_LinearOrQuadratic",
     "FT_GroupColor",
     "FT_ElemGeomType",
-    "FT_EntityType", 
+    "FT_EntityType",
     "FT_CoplanarFaces",
     "FT_BallDiameter",
     "FT_ConnectedElements",

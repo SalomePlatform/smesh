@@ -953,6 +953,10 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
     ## doc string of the method
     #  @internal
     docHelper  = "Creates prism 3D algorithm for volumes"
+    ## flag pointing whether this algorithm should be used by default in dynamic method
+    #  of smeshBuilder.Mesh class
+    #  @internal
+    isDefault  = True
 
     ## Private constructor.
     #  @param mesh parent mesh object algorithm is assigned to

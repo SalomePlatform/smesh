@@ -153,7 +153,7 @@ public:
   SMESHGUI_ElemInfo( QWidget* = 0 );
   ~SMESHGUI_ElemInfo();
 
-  void         setSource( SMESH_Actor* );
+  void         setSource( SMESH_Actor*, SMESH::SMESH_IDSource_var );
   void         showInfo( long, bool );
   void         showInfo( QSet<long>, bool );
   void         clear();
@@ -179,6 +179,7 @@ protected:
   QWidget*     frame() const;
   SMESH_Actor* actor() const;
   bool         isElements() const;
+  bool         hasShapeToMesh() const { return myMeshHasShape; }
 
   virtual void information( const QList<long>& ) = 0;
   virtual void clearInternal();
@@ -204,6 +205,7 @@ private:
   QWidget*         myFrame;
   ExtraWidget*     myExtra;
   int              myIndex;
+  bool             myMeshHasShape;
 };
 
 class SMESHGUI_EXPORT SMESHGUI_SimpleElemInfo : public SMESHGUI_ElemInfo

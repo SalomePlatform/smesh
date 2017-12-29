@@ -27,6 +27,7 @@
 #define __SMESH_MeshPartDS_HXX__
 
 #include "SMESHDS_Mesh.hxx"
+#include "SMESH_TypeDefs.hxx"
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
@@ -55,6 +56,8 @@ public:
   virtual SMDS_ElemIteratorPtr elementGeomIterator(SMDSAbs_GeometryType type) const;
   virtual SMDS_ElemIteratorPtr elementEntityIterator(SMDSAbs_EntityType type) const;
 
+  virtual const SMDS_MeshElement *FindElement(int IDelem) const;
+
 private:
   TIDSortedElemSet _elements[ SMDSAbs_NbElementTypes ];
   SMESHDS_Mesh*    _meshDS;
@@ -64,6 +67,17 @@ private:
   struct TMeshInfo : public SMDS_MeshInfo
   {
     void Add(const SMDS_MeshElement* e) { SMDS_MeshInfo::addWithPoly( e ); }
+  };
+  /*!
+   * \brief Element holing its ID only
+   */
+  struct TElemID : public SMDS_MeshElement
+  {
+    TElemID(int ID) : SMDS_MeshElement( ID ) {}
+    virtual SMDSAbs_ElementType  GetType() const { return SMDSAbs_All; }
+    virtual SMDSAbs_EntityType   GetEntityType() const { return SMDSEntity_Last; }
+    virtual SMDSAbs_GeometryType GetGeomType() const { return SMDSGeom_NONE; }
+    virtual vtkIdType            GetVtkType() const { return -1; }
   };
 };
 

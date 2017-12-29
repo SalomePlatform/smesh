@@ -41,7 +41,7 @@ Installation
 Pre-requisites
 --------------
 
-SALOME platform relies on a set of third-party softwares; some of them are needed
+SALOME platform relies on a set of third-party software; some of them are needed
 at build time only, while other ones are needed in runtime also.
 
 For more information about the pre-requisites please visit SALOME platform web

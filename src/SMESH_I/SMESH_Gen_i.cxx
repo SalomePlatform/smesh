@@ -23,30 +23,31 @@
 //  Author : Paul RASCLE, EDF
 //  Module : SMESH
 
+#include <BRepPrimAPI_MakeBox.hxx>
+#include <BRepPrimAPI_MakeCylinder.hxx>
+#include <BRepPrimAPI_MakeSphere.hxx>
+#include <BRep_Tool.hxx>
+#include <OSD.hxx>
+#include <TColStd_MapOfAsciiString.hxx>
+#include <TCollection_AsciiString.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
-#include <TopoDS.hxx>
-#include <TopoDS_Iterator.hxx>
-#include <TopoDS_Compound.hxx>
-#include <TopoDS_CompSolid.hxx>
-#include <TopoDS_Solid.hxx>
-#include <TopoDS_Shell.hxx>
-#include <TopoDS_Face.hxx>
-#include <TopoDS_Wire.hxx>
-#include <TopoDS_Edge.hxx>
-#include <TopoDS_Vertex.hxx>
-#include <TopoDS_Shape.hxx>
-#include <TopTools_MapOfShape.hxx>
 #include <TopTools_IndexedMapOfShape.hxx>
-#include <TopTools_ListOfShape.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
+#include <TopTools_ListOfShape.hxx>
+#include <TopTools_MapOfShape.hxx>
+#include <TopoDS.hxx>
+#include <TopoDS_CompSolid.hxx>
+#include <TopoDS_Compound.hxx>
+#include <TopoDS_Edge.hxx>
+#include <TopoDS_Face.hxx>
+#include <TopoDS_Iterator.hxx>
+#include <TopoDS_Shape.hxx>
+#include <TopoDS_Shell.hxx>
+#include <TopoDS_Solid.hxx>
+#include <TopoDS_Vertex.hxx>
+#include <TopoDS_Wire.hxx>
 #include <gp_Pnt.hxx>
-#include <BRep_Tool.hxx>
-#include <TCollection_AsciiString.hxx>
-#include <OSD.hxx>
-#include <BRepPrimAPI_MakeSphere.hxx>
-#include <BRepPrimAPI_MakeCylinder.hxx>
-#include <BRepPrimAPI_MakeBox.hxx>
 
 
 #ifdef WIN32
@@ -62,12 +63,16 @@
  #define LoadLib( name ) LoadLibrary( name )
  #define GetProc GetProcAddress
  #define UnLoadLib( handle ) FreeLibrary( handle );
-#else
+#else // WIN32
  #define LibHandle void*
- #define LoadLib( name ) dlopen( name, RTLD_LAZY | RTLD_GLOBAL )
+ #ifdef DYNLOAD_LOCAL
+  #define LoadLib( name ) dlopen( name, RTLD_LAZY | RTLD_LOCAL )
+ #else // DYNLOAD_LOCAL
+  #define LoadLib( name ) dlopen( name, RTLD_LAZY | RTLD_GLOBAL )
+ #endif // DYNLOAD_LOCAL
  #define GetProc dlsym
  #define UnLoadLib( handle ) dlclose( handle );
-#endif
+#endif // WIN32
 
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_version.h"
@@ -3819,7 +3824,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                 // "Face V positions" - V parameter of node on face
 
                 // Find out nb of nodes on edges and faces
-                // Collect corresponing sub-meshes
+                // Collect corresponding sub-meshes
                 int nbEdgeNodes = 0, nbFaceNodes = 0;
                 list<SMESHDS_SubMesh*> aEdgeSM, aFaceSM;
                 // loop on SMESHDS_SubMesh'es
@@ -4667,18 +4672,23 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
         if ( aTopGroup->ExistInternalObject( name_group ) ) {
           aGroup = new HDFgroup( name_group, aTopGroup );
           aGroup->OpenOnDisk();
-          // get number of groups
-          int aNbSubObjects = aGroup->nInternalObjects();
-          for ( int j = 0; j < aNbSubObjects; j++ ) {
-            char name_dataset[ HDF_NAME_MAX_LEN+1 ];
-            aGroup->InternalObjectIndentify( j, name_dataset );
-            // check if it is an group
-            if ( string( name_dataset ).substr( 0, 5 ) == string( "Group" ) ) {
+          // PAL23514: get all names from the HDFgroup to avoid iteration on its contents
+          // within aGroup->ExistInternalObject( name )
+          std::vector< std::string > subNames;
+          TColStd_MapOfAsciiString mapOfNames;
+          aGroup->GetAllObjects( subNames );
+          for ( size_t iN = 0; iN < subNames.size(); ++iN )
+            mapOfNames.Add( subNames[ iN ].c_str() );
+          // loop on groups
+          for ( size_t j = 0; j < subNames.size(); j++ ) {
+            const std::string& name_dataset = subNames[ j ];
+            // check if it is a group
+            if ( name_dataset.substr( 0, 5 ) == "Group" ) {
               // --> get group id
-              int subid = atoi( string( name_dataset ).substr( 5 ).c_str() );
+              int subid = atoi( name_dataset.substr( 5 ).c_str() );
               if ( subid <= 0 )
                 continue;
-              aDataset = new HDFdataset( name_dataset, aGroup );
+              aDataset = new HDFdataset( name_dataset.c_str(), aGroup );
               aDataset->OpenOnDisk();
 
               // Retrieve actual group name
@@ -4691,7 +4701,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
               TopoDS_Shape aShape;
               char aRefName[ 30 ];
               sprintf( aRefName, "Ref on shape %d", subid);
-              if ( aGroup->ExistInternalObject( aRefName ) ) {
+              if ( mapOfNames.Contains( aRefName ))
+              {
                 // load mesh "Ref on shape" - it's an entry to SObject
                 aDataset = new HDFdataset( aRefName, aGroup );
                 aDataset->OpenOnDisk();
@@ -4712,8 +4723,8 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
               // Try to read a filter of SMESH_GroupOnFilter
               SMESH::Filter_var filter;
               SMESH_PredicatePtr predicate;
-              std::string hdfGrpName = "Filter " + SMESH_Comment(subid);
-              if ( aGroup->ExistInternalObject( hdfGrpName.c_str() ))
+              std::string hdfGrpName = ( SMESH_Comment( "Filter ") << subid );
+              if ( mapOfNames.Contains( hdfGrpName.c_str() ))
               {
                 aDataset = new HDFdataset( hdfGrpName.c_str(), aGroup );
                 aDataset->OpenOnDisk();
@@ -4754,13 +4765,13 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
               if ( !aGroupBaseDS )
                 continue;
 
-              aGroupBaseDS->SetStoreName( name_dataset );
+              aGroupBaseDS->SetStoreName( name_dataset.c_str() );
 
               // ouv : NPAL12872
               // Read color of the group
               char aGroupColorName[ 30 ];
               sprintf( aGroupColorName, "ColorGroup %d", subid);
-              if ( aGroup->ExistInternalObject( aGroupColorName ) )
+              if ( mapOfNames.Contains( aGroupColorName ))
               {
                 aDataset = new HDFdataset( aGroupColorName, aGroup );
                 aDataset->OpenOnDisk();

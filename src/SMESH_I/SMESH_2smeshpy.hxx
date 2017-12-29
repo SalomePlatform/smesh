@@ -40,8 +40,6 @@
 #include <vector>
 #include <set>
 
-#include <Basics_OCCTVersion.hxx>
-
 #include <SALOMEconfig.h>
 #include CORBA_CLIENT_HEADER(SALOMEDS)
 
@@ -160,7 +158,7 @@ public:
 
   bool AddAccessorMethod( _pyID theObjectID, const char* theAcsMethod );
 
-  OCCT_DEFINE_STANDARD_RTTIEXT(_pyCommand,Standard_Transient)
+  DEFINE_STANDARD_RTTIEXT(_pyCommand,Standard_Transient)
 };
 
 // -------------------------------------------------------------------------------------
@@ -200,7 +198,7 @@ public:
   virtual void ClearCommands();
   virtual void Free() {}
 
-  OCCT_DEFINE_STANDARD_RTTIEXT(_pyObject,Standard_Transient)
+  DEFINE_STANDARD_RTTIEXT(_pyObject,Standard_Transient)
 };
 
 // -------------------------------------------------------------------------------------
@@ -329,7 +327,7 @@ private:
   std::map< _AString, ExportedMeshData >    myFile2ExportedMesh;
   Handle( _pyHypothesisReader )             myHypReader;
 
-  OCCT_DEFINE_STANDARD_RTTIEXT(_pyGen,_pyObject)
+  DEFINE_STANDARD_RTTIEXT(_pyGen,_pyObject)
 };
 
 // -------------------------------------------------------------------------------------
@@ -370,7 +368,7 @@ private:
   static void AddMeshAccess( const Handle(_pyCommand)& theCommand )
   { theCommand->SetObject( theCommand->GetObject() + "." _pyMesh_ACCESS_METHOD ); }
 
-  OCCT_DEFINE_STANDARD_RTTIEXT(_pyMesh,_pyObject)
+  DEFINE_STANDARD_RTTIEXT(_pyMesh,_pyObject)
 };
 #undef _pyMesh_ACCESS_METHOD 
 
@@ -390,7 +388,7 @@ public:
   virtual void Flush() {}
   virtual bool CanClear();
 
-  OCCT_DEFINE_STANDARD_RTTIEXT(_pyMesh,_pyObject)
+  DEFINE_STANDARD_RTTIEXT(_pyMeshEditor,_pyObject)
 };
 
 // -------------------------------------------------------------------------------------
@@ -474,7 +472,7 @@ public:
   //void ComputeSaved    ( const Handle(_pyCommand)& theComputeCommand );
 
 
-  OCCT_DEFINE_STANDARD_RTTIEXT(_pyHypothesis,_pyObject)
+  DEFINE_STANDARD_RTTIEXT(_pyHypothesis,_pyObject)
 };
 
 // -------------------------------------------------------------------------------------
@@ -491,7 +489,7 @@ public:
   virtual const char* AccessorMethod() const { return "GetAlgorithm()"; }
   virtual bool IsWrappable(const _pyID& theMesh) { return !myIsWrapped; }
 
-  OCCT_DEFINE_STANDARD_RTTIEXT(_pyAlgorithm,_pyHypothesis)
+  DEFINE_STANDARD_RTTIEXT(_pyAlgorithm,_pyHypothesis)
 };
 
 // -------------------------------------------------------------------------------------
@@ -506,7 +504,7 @@ public:
   virtual void Process( const Handle(_pyCommand)& theCommand);
   virtual void Flush();
 
-  OCCT_DEFINE_STANDARD_RTTIEXT(_pyComplexParamHypo,_pyHypothesis)
+  DEFINE_STANDARD_RTTIEXT(_pyComplexParamHypo,_pyHypothesis)
 };
 DEFINE_STANDARD_HANDLE (_pyComplexParamHypo, _pyHypothesis);
 
@@ -528,7 +526,7 @@ public:
                                   const _pyID&              theMesh);
   virtual void Free() { my1dHyp.Nullify(); }
 
-  OCCT_DEFINE_STANDARD_RTTIEXT(_pyLayerDistributionHypo,_pyHypothesis)
+  DEFINE_STANDARD_RTTIEXT(_pyLayerDistributionHypo,_pyHypothesis)
 };
 DEFINE_STANDARD_HANDLE (_pyLayerDistributionHypo, _pyHypothesis);
 
@@ -545,7 +543,7 @@ public:
                                   const _pyID&              theMesh);
   void Flush();
 
-  OCCT_DEFINE_STANDARD_RTTIEXT(_pyNumberOfSegmentsHyp,_pyHypothesis)
+  DEFINE_STANDARD_RTTIEXT(_pyNumberOfSegmentsHyp,_pyHypothesis)
 };
 DEFINE_STANDARD_HANDLE (_pyNumberOfSegmentsHyp, _pyHypothesis);
 
@@ -560,7 +558,7 @@ public:
   _pySegmentLengthAroundVertexHyp(const Handle(_pyCommand)& theCrCmd): _pyHypothesis(theCrCmd) {}
   virtual bool Addition2Creation( const Handle(_pyCommand)& theAdditionCmd,
                                   const _pyID&              theMesh);
-  OCCT_DEFINE_STANDARD_RTTIEXT(_pySegmentLengthAroundVertexHyp,_pyHypothesis)
+  DEFINE_STANDARD_RTTIEXT(_pySegmentLengthAroundVertexHyp,_pyHypothesis)
 };
 DEFINE_STANDARD_HANDLE (_pySegmentLengthAroundVertexHyp, _pyHypothesis);
 
@@ -579,7 +577,7 @@ public:
   virtual bool CanClear();
   static bool IsAliveCmd( const Handle(_pyCommand)& theCmd );
 
-  OCCT_DEFINE_STANDARD_RTTIEXT(_pySelfEraser,_pyObject)
+  DEFINE_STANDARD_RTTIEXT(_pySelfEraser,_pyObject)
 };
 DEFINE_STANDARD_HANDLE (_pySelfEraser, _pyObject);
 
@@ -601,7 +599,7 @@ public:
   void SetCreator( const Handle(_pyObject)& theCreator ) { myCreator = theCreator; }
   static bool CanBeArgOfMethod(const _AString& theMethodName);
 
-  OCCT_DEFINE_STANDARD_RTTIEXT(_pySubMesh,_pyObject)
+  DEFINE_STANDARD_RTTIEXT(_pySubMesh,_pyObject)
 };
 // -------------------------------------------------------------------------------------
 /*!
@@ -621,7 +619,7 @@ public:
   //virtual void Free() { myUsers.clear(); }
   const _pyID& GetNewID() const { return myNewID; }
 
-  OCCT_DEFINE_STANDARD_RTTIEXT(_pyFilter,_pyObject)
+  DEFINE_STANDARD_RTTIEXT(_pyFilter,_pyObject)
 };
 DEFINE_STANDARD_HANDLE (_pyFilter, _pyObject);
 
@@ -642,7 +640,7 @@ public:
   virtual bool CanClear();
   void RemovedWithContents();
 
-  OCCT_DEFINE_STANDARD_RTTIEXT(_pyGroup,_pySubMesh)
+  DEFINE_STANDARD_RTTIEXT(_pyGroup,_pySubMesh)
 };
 
 // -------------------------------------------------------------------------------------
@@ -657,7 +655,7 @@ public:
   _pyHypothesisReader();
   Handle(_pyHypothesis) GetHypothesis(const _AString&           hypType,
                                       const Handle(_pyCommand)& creationCmd) const;
-  OCCT_DEFINE_STANDARD_RTTIEXT(_pyHypothesisReader,Standard_Transient)
+  DEFINE_STANDARD_RTTIEXT(_pyHypothesisReader,Standard_Transient)
 };
 
 #endif

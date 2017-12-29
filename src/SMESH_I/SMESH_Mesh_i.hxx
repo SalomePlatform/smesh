@@ -238,7 +238,8 @@ public:
   void ExportSTL( const char* file, bool isascii ) throw (SALOME::SALOME_Exception);
   void ExportCGNS(SMESH::SMESH_IDSource_ptr meshPart,
                   const char*               file,
-                  CORBA::Boolean            overwrite) throw (SALOME::SALOME_Exception);
+                  CORBA::Boolean            overwrite,
+                  CORBA::Boolean            groupElemsByType) throw (SALOME::SALOME_Exception);
   void ExportGMF(SMESH::SMESH_IDSource_ptr meshPart,
                  const char*               file,
                  CORBA::Boolean            withRequiredGroups) throw (SALOME::SALOME_Exception);

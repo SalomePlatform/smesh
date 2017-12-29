@@ -233,6 +233,7 @@ namespace SMESH
     case Entity_TriQuad_Hexa:      myStream<<"Entity_TriQuad_Hexa";      break;
     case Entity_Penta:             myStream<<"Entity_Penta";             break;
     case Entity_Quad_Penta:        myStream<<"Entity_Quad_Penta";        break;
+    case Entity_BiQuad_Penta:      myStream<<"Entity_BiQuad_Penta";      break;
     case Entity_Hexagonal_Prism:   myStream<<"Entity_Hexagonal_Prism";   break;
     case Entity_Polyhedra:         myStream<<"Entity_Polyhedra";         break;
     case Entity_Quad_Polyhedra:    myStream<<"Entity_Quad_Polyhedra";    break;
@@ -426,6 +427,7 @@ namespace SMESH
       case FT_MultiConnection2D:     myStream<< "aMultiConnection2D";     break;
       case FT_Length:                myStream<< "aLength";                break;
       case FT_Length2D:              myStream<< "aLength2D";              break;
+      case FT_Deflection2D:          myStream<< "aDeflection2D";          break;
       case FT_NodeConnectivityNumber:myStream<< "aNodeConnectivityNumber";break;
       case FT_BelongToMeshGroup:     myStream<< "aBelongToMeshGroup";     break;
       case FT_BelongToGeom:          myStream<< "aBelongToGeom";          break;

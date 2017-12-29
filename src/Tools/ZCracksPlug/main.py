@@ -431,9 +431,8 @@ class ShipHolderApplication(QGroupBox):
     else:
       import SMESH, salome
       #salome.salome_init()
-      theStudy = salome.myStudy
       from salome.smesh import smeshBuilder
-      smesh = smeshBuilder.New(theStudy)
+      smesh = smeshBuilder.New()
 
       ([objetSain], status) = smesh.CreateMeshesFromMED(saneFile)
 

@@ -15,7 +15,7 @@ You usually don't have to set this parameter but you can choose to limit the amo
     
 - **File** 
 
-You can change the file used to store remeshing hypotheses, see :ref:`hypothesis-label` for further informations.
+You can change the file used to store remeshing hypotheses, see :ref:`hypothesis-label` for further information.
 
 .. image:: images/Generic.png
    :align: center

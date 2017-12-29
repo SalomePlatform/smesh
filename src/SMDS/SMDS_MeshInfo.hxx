@@ -29,6 +29,7 @@
 #include "SMESH_SMDS.hxx"
 
 #include "SMDS_MeshElement.hxx"
+#include<utilities.h>
 
 class SMDS_EXPORT SMDS_MeshInfo
 {
@@ -64,6 +65,8 @@ public:
   inline int NbPrisms  (SMDSAbs_ElementOrder order = ORDER_ANY) const;
   inline int NbHexPrisms(SMDSAbs_ElementOrder order = ORDER_ANY) const;
   int NbTriQuadHexas() const { return myNbTriQuadHexas; }
+  int NbQuadPrisms() const { return myNbQuadPrisms; }
+  int NbBiQuadPrisms() const { return myNbBiQuadPrisms; }
   int NbPolyhedrons() const { return myNbPolyhedrons; }
 
 protected:
@@ -94,7 +97,7 @@ private:
   int myNbTetras  , myNbQuadTetras  ;
   int myNbHexas   , myNbQuadHexas,    myNbTriQuadHexas;
   int myNbPyramids, myNbQuadPyramids;
-  int myNbPrisms  , myNbQuadPrisms  ;
+  int myNbPrisms  , myNbQuadPrisms,   myNbBiQuadPrisms;
   int myNbHexPrism;
   int myNbPolyhedrons;
 
@@ -113,7 +116,7 @@ inline SMDS_MeshInfo::SMDS_MeshInfo():
   myNbTetras     (0), myNbQuadTetras  (0),
   myNbHexas      (0), myNbQuadHexas   (0), myNbTriQuadHexas(0),
   myNbPyramids   (0), myNbQuadPyramids(0),
-  myNbPrisms     (0), myNbQuadPrisms  (0),
+  myNbPrisms     (0), myNbQuadPrisms  (0), myNbBiQuadPrisms(0),
   myNbHexPrism   (0),
   myNbPolyhedrons(0)
 {
@@ -142,26 +145,30 @@ inline SMDS_MeshInfo::SMDS_MeshInfo():
   // 15  *
   // 16        *
   // 17        *
-  // 18     *
-  // 19     *
+  // 18  *
+  // 19
   // 20  *   
-  // 21     *
-  // 22     *
-  // 23     *
-  // 24     *
-  // 25
-  // 26
+  // 21
+  // 22
+  // 23
+  // 24
+  // 25     *
+  // 26     *
   // 27  *
+  // 28     *
+  // 29     *
+  // 30     *
+  // 31     *
   //
   // So to have a unique index for each type basing on nb of nodes, we use a shift:
   myShift.resize(SMDSAbs_NbElementTypes, 0);
 
-  myShift[ SMDSAbs_Face      ] = +15;// 3->18, 4->19, etc.
+  myShift[ SMDSAbs_Face      ] = +22;// 3->25, 4->26, etc.
   myShift[ SMDSAbs_Edge      ] = +14;// 2->16, 3->17
   myShift[ SMDSAbs_0DElement ] = +2; // 1->3
   myShift[ SMDSAbs_Ball      ] = +1; // 1->2
 
-  myNb.resize( index( SMDSAbs_Volume,27 ) + 1, NULL);
+  myNb.resize( index( SMDSAbs_Face,9 ) + 1, NULL);
 
   myNb[ index( SMDSAbs_Node,1 )] = & myNbNodes;
   myNb[ index( SMDSAbs_0DElement,1 )] = & myNb0DElements;
@@ -185,6 +192,7 @@ inline SMDS_MeshInfo::SMDS_MeshInfo():
   myNb[ index( SMDSAbs_Volume, 12)] = & myNbHexPrism;
   myNb[ index( SMDSAbs_Volume, 13)] = & myNbQuadPyramids;
   myNb[ index( SMDSAbs_Volume, 15)] = & myNbQuadPrisms;  
+  myNb[ index( SMDSAbs_Volume, 18)] = & myNbBiQuadPrisms;
   myNb[ index( SMDSAbs_Volume, 20)] = & myNbQuadHexas;   
   myNb[ index( SMDSAbs_Volume, 27)] = & myNbTriQuadHexas;   
 }
@@ -280,7 +288,7 @@ SMDS_MeshInfo::NbPyramids(SMDSAbs_ElementOrder order) const
 
 inline int  // NbPrisms
 SMDS_MeshInfo::NbPrisms  (SMDSAbs_ElementOrder order) const
-{ return order == ORDER_ANY ? myNbPrisms+myNbQuadPrisms : order == ORDER_LINEAR ? myNbPrisms : myNbQuadPrisms; }
+{ return order == ORDER_ANY ? myNbPrisms+myNbQuadPrisms+myNbBiQuadPrisms: order == ORDER_LINEAR ? myNbPrisms : myNbQuadPrisms+myNbBiQuadPrisms; }
 
 inline int  // NbHexPrisms
 SMDS_MeshInfo::NbHexPrisms  (SMDSAbs_ElementOrder order) const
@@ -297,7 +305,7 @@ SMDS_MeshInfo::NbElements(SMDSAbs_ElementType type) const
     break;
   case SMDSAbs_Volume:
     nb = ( myNbTetras+     myNbPyramids+     myNbPrisms+     myNbHexas+     myNbHexPrism+
-           myNbQuadTetras+ myNbQuadPyramids+ myNbQuadPrisms+ myNbQuadHexas+ myNbTriQuadHexas+
+           myNbQuadTetras+ myNbQuadPyramids+ myNbQuadPrisms+ myNbBiQuadPrisms + myNbQuadHexas+ myNbTriQuadHexas+
            myNbPolyhedrons );
     break;
   case SMDSAbs_Face:
@@ -345,6 +353,7 @@ SMDS_MeshInfo::NbEntities(SMDSAbs_EntityType type) const
   case SMDSEntity_TriQuad_Hexa:     return myNbTriQuadHexas;
   case SMDSEntity_Penta:            return myNbPrisms;
   case SMDSEntity_Quad_Penta:       return myNbQuadPrisms;
+  case SMDSEntity_BiQuad_Penta:     return myNbBiQuadPrisms;
   case SMDSEntity_Hexagonal_Prism:  return myNbHexPrism;
   case SMDSEntity_Polyhedra:        return myNbPolyhedrons;
   case SMDSEntity_0D:               return myNb0DElements;
@@ -383,7 +392,8 @@ SMDS_MeshInfo::NbElementsOfGeom(SMDSAbs_GeometryType geom) const
                                          myNbQuadHexas +
                                          myNbTriQuadHexas);
   case SMDSGeom_PENTA:           return (myNbPrisms +
-                                         myNbQuadPrisms);
+                                         myNbQuadPrisms +
+                                         myNbBiQuadPrisms);
   case SMDSGeom_HEXAGONAL_PRISM: return myNbHexPrism;
   case SMDSGeom_POLYHEDRA:       return myNbPolyhedrons;
     // Discrete:
@@ -414,6 +424,7 @@ SMDS_MeshInfo::setNb(const SMDSAbs_EntityType geomType, const int nb)
   case SMDSEntity_Quad_Edge:        myNbQuadEdges         = nb; break;
   case SMDSEntity_Quad_Hexa:        myNbQuadHexas         = nb; break;
   case SMDSEntity_Quad_Penta:       myNbQuadPrisms        = nb; break;
+  case SMDSEntity_BiQuad_Penta:     myNbBiQuadPrisms      = nb; break;
   case SMDSEntity_Quad_Pyramid:     myNbQuadPyramids      = nb; break;
   case SMDSEntity_Quad_Quadrangle:  myNbQuadQuadrangles   = nb; break;
   case SMDSEntity_Quad_Tetra:       myNbQuadTetras        = nb; break;

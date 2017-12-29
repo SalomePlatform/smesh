@@ -31,7 +31,7 @@ ENDIF(WIN32)
 STRING(TOUPPER ${PROJECT_NAME} PROJECT_NAME_UC)
 
 SET(${PROJECT_NAME_UC}_MAJOR_VERSION 8)
-SET(${PROJECT_NAME_UC}_MINOR_VERSION 3)
+SET(${PROJECT_NAME_UC}_MINOR_VERSION 4)
 SET(${PROJECT_NAME_UC}_PATCH_VERSION 0)
 SET(${PROJECT_NAME_UC}_VERSION
   ${${PROJECT_NAME_UC}_MAJOR_VERSION}.${${PROJECT_NAME_UC}_MINOR_VERSION}.${${PROJECT_NAME_UC}_PATCH_VERSION})
@@ -77,6 +77,11 @@ OPTION(SALOME_BUILD_DOC "Generate SALOME SMESH documentation" ON)
 OPTION(SALOME_BUILD_GUI            "Enable GUI" ON)
 OPTION(SALOME_SMESH_USE_CGNS       "Enable import/export to CGNS format" OFF)
 OPTION(SALOME_SMESH_USE_TBB        "Enable parallel computation" OFF)
+OPTION(SALOME_SMESH_DYNLOAD_LOCAL  "Load plug-ins' symbols locally (Linux only)" ON)
+
+IF(SALOME_SMESH_DYNLOAD_LOCAL)
+  ADD_DEFINITIONS(-DDYNLOAD_LOCAL)
+ENDIF(SALOME_SMESH_DYNLOAD_LOCAL)
 
 #On Linux use Fortran to compile MEFISTO2D
 IF(NOT WIN32)
@@ -85,12 +90,12 @@ IF(NOT WIN32)
   ADD_DEFINITIONS(-DENABLE_MEFISTO)
 ENDIF(NOT WIN32)
 
-MARK_AS_ADVANCED(SALOME_BUILD_GUI SALOME_SMESH_USE_CGNS SALOME_SMESH_USE_TBB)
+MARK_AS_ADVANCED(SALOME_BUILD_GUI SALOME_SMESH_USE_CGNS SALOME_SMESH_USE_TBB SALOME_SMESH_DYNLOAD_LOCAL)
 
 # Prerequisites
 # =============
 # Find "big" prerequisites first - they reference themselves many others
-#   -> this can help finding the smaller prerequisites and detect conficts.
+#   -> this can help finding the smaller prerequisites and detect conflicts.
 # In our case KERNEL has already loaded many prereq:
 
 ##

@@ -22,6 +22,9 @@
 
 // File   : SMESHGUI_SingleEditDlg.cxx
 // Author : Sergey LITONIN, Open CASCADE S.A.S.
+
+#include <SVTK_Selector.h>
+
 // SMESH includes
 //
 #include "SMESHGUI_SingleEditDlg.h"
@@ -42,7 +45,6 @@
 #include <SUIT_Desktop.h>
 #include <SUIT_Session.h>
 
-#include <SVTK_Selector.h>
 #include <SVTK_ViewWindow.h>
 #include <SALOME_ListIO.hxx>
 
@@ -347,9 +349,9 @@ void SMESHGUI_SingleEditDlg::onTextChange (const QString& theNewText)
       aList.Append(anIO);
       mySelectionMgr->setSelectedObjects(aList,false);
       
-      TColStd_IndexedMapOfInteger selectedIndices;
-      TColStd_MapOfInteger newIndices;
-      mySelector->GetIndex(anIO,selectedIndices);
+      SVTK_IndexedMapOfIds selectedIndices;
+      SVTK_ListOfInteger newIndices;
+      mySelector->GetCompositeIndex(anIO,selectedIndices);
 
       int id1, id2;
       if ( !getNodeIds(myEdge->text(), id1, id2) )
@@ -367,25 +369,13 @@ void SMESHGUI_SingleEditDlg::onTextChange (const QString& theNewText)
 
       if ( findTriangles(aNode1,aNode2,tria1,tria2) )
       {
-        newIndices.Add(tria1->GetID());
-
-        const SMDS_MeshNode* a3Nodes[3];
-        SMDS_ElemIteratorPtr it;
-        int edgeInd = 2, i;
-        for (i = 0, it = tria1->nodesIterator(); it->more(); i++) {
-          a3Nodes[ i ] = static_cast<const SMDS_MeshNode*>(it->next());
-          if (i > 0 && ( (a3Nodes[ i ] == aNode1 && a3Nodes[ i - 1] == aNode2) ||
-                         (a3Nodes[ i ] == aNode2 && a3Nodes[ i - 1] == aNode1) ) ) {
-            edgeInd = i - 1;
-            break;
-          }
-        }
-        newIndices.Add(-edgeInd-1);
+	newIndices.push_back( aNode1->GetID() );
+	newIndices.push_back( aNode2->GetID() );
         
         myOkBtn->setEnabled(true);
         myApplyBtn->setEnabled(true);
       }
-      mySelector->AddOrRemoveIndex(anIO,newIndices, false);
+      mySelector->AddOrRemoveCompositeIndex(anIO, newIndices, false);
       SMESH::GetViewWindow(mySMESHGUI)->highlight( anIO, true, true );
     }
   }
@@ -420,7 +410,17 @@ void SMESHGUI_SingleEditDlg::onSelectionDone()
     if(SMDS_Mesh* aMesh = aVisualObj->GetMesh())
     {
       const SMDS_MeshElement* tria[2];
-      if( SMESH::GetEdgeNodes( mySelector, aVisualObj, anId1, anId2 ) >= 1 &&
+      
+      bool valid = false;      
+      SVTK_IndexedMapOfIds anIds;
+      mySelector->GetCompositeIndex(anIO,anIds);
+      if( anIds.Extent() == 1 && anIds(1).size() == 2 ) {
+	anId1 = anIds(1)[0];
+	anId2 = anIds(1)[1];
+	valid = true;
+      }
+	      
+      if( valid &&
           findTriangles( aMesh->FindNode( anId1 ), aMesh->FindNode( anId2 ), tria[0],tria[1] ) )
       {
         QString aText = QString("%1-%2").arg(anId1).arg(anId2);
@@ -523,6 +523,7 @@ bool SMESHGUI_SingleEditDlg::onApply()
   // update actor
   if (aResult) {
     mySelector->ClearIndex();
+    mySelector->ClearCompositeIndex();
     mySelectionMgr->setSelectedObjects(aList, false);
     onSelectionDone();
     SMESH::UpdateView();

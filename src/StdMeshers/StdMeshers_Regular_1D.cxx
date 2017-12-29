@@ -1138,7 +1138,7 @@ bool StdMeshers_Regular_1D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & t
   if ( !nFirst || !nLast )
     return error( COMPERR_BAD_INPUT_MESH, "No node on vertex");
 
-  // remove elements created by e.g. patern mapping (PAL21999)
+  // remove elements created by e.g. pattern mapping (PAL21999)
   // CLEAN event is incorrectly ptopagated seemingly due to Propagation hyp
   // so TEMPORARY solution is to clean the submesh manually
   if (SMESHDS_SubMesh * subMeshDS = meshDS->MeshElements(theShape))

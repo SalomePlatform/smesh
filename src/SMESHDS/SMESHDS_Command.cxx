@@ -684,6 +684,43 @@ void SMESHDS_Command::AddVolume(int NewVolID, int n1, int n2,
   myIntegers.push_back(n36);
   myNumber++;
 }
+//=======================================================================
+//function : AddVolume
+//purpose  :
+//=======================================================================
+void SMESHDS_Command::AddVolume(int NewVolID, int n1, int n2,
+                                int n3, int n4, int n5,int n6,
+                                int n12, int n23, int n31,
+                                int n45, int n56, int n64,
+                                int n14, int n25, int n36,
+                                int n1245, int n2356, int n1346)
+{
+  if ( myType != SMESHDS_AddBiQuadPentahedron) {
+    MESSAGE("SMESHDS_Command::AddVolume : Bad Type");
+    return;
+  }
+  myIntegers.push_back(NewVolID);
+  myIntegers.push_back(n1);
+  myIntegers.push_back(n2);
+  myIntegers.push_back(n3);
+  myIntegers.push_back(n4);
+  myIntegers.push_back(n5);
+  myIntegers.push_back(n6);
+  myIntegers.push_back(n12);
+  myIntegers.push_back(n23);
+  myIntegers.push_back(n31);
+  myIntegers.push_back(n45);
+  myIntegers.push_back(n56);
+  myIntegers.push_back(n64);
+  myIntegers.push_back(n14);
+  myIntegers.push_back(n25);
+  myIntegers.push_back(n36);
+  myIntegers.push_back(n1245);
+  myIntegers.push_back(n2356);
+  myIntegers.push_back(n1346);
+  myNumber++;
+}
+
 
 //=======================================================================
 //function : AddVolume
@@ -735,7 +772,7 @@ void SMESHDS_Command::AddVolume(int NewVolID, int n1, int n2, int n3,
                                 int n1234,int n1256,int n2367,int n3478,
                                 int n1458,int n5678,int nCenter)
 {
-  if ( myType != SMESHDS_AddQuadHexahedron) {
+  if ( myType != SMESHDS_AddTriQuadHexa) {
     MESSAGE("SMESHDS_Command::AddVolume : Bad Type");
     return;
   }

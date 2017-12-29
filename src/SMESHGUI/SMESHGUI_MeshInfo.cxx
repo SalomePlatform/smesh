@@ -322,7 +322,7 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   QLabel*  a2DTriQuad   = createField();
   a2DTriQuad->setObjectName("nbQuadraticTriangle");
   QLabel*  a2DTriBiQuad = createField();
-    a2DTriBiQuad->setObjectName("nbBiQuadraticTriangle");
+  a2DTriBiQuad->setObjectName("nbBiQuadraticTriangle");
   QLabel*  a2DQuaLab    = new QLabel( tr( "QUADRANGLES_LAB" ), this );
   QLabel*  a2DQuaTotal  = createField();
   a2DQuaTotal->setObjectName("nbQuadrangle");
@@ -386,6 +386,8 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   a3DPriLin->setObjectName("nbLinearPrism");
   QLabel*  a3DPriQuad   = createField();
   a3DPriQuad->setObjectName("nbQuadraticPrism");
+  QLabel*  a3DPriBiQuad   = createField();
+  a3DPriBiQuad->setObjectName("nbBiQuadraticPrism");
   QLabel*  a3DHexPriLab   = new QLabel( tr( "HEX_PRISMS_LAB" ), this );
   QLabel*  a3DHexPriTotal = createField();
   a3DHexPriTotal->setObjectName("nbHexagonalPrism");
@@ -397,7 +399,7 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   myWidgets[ index++ ] << a3DTetLab << a3DTetTotal << a3DTetLin << a3DTetQuad;
   myWidgets[ index++ ] << a3DHexLab << a3DHexTotal << a3DHexLin << a3DHexQuad << a3DHexBiQuad;
   myWidgets[ index++ ] << a3DPyrLab << a3DPyrTotal << a3DPyrLin << a3DPyrQuad;
-  myWidgets[ index++ ] << a3DPriLab << a3DPriTotal << a3DPriLin << a3DPriQuad;
+  myWidgets[ index++ ] << a3DPriLab << a3DPriTotal << a3DPriLin << a3DPriQuad << a3DPriBiQuad;
   myWidgets[ index++ ] << a3DHexPriLab << a3DHexPriTotal;
   myWidgets[ index++ ] << a3DPolLab << a3DPolTotal;
 
@@ -491,6 +493,7 @@ SMESHGUI_MeshInfo::SMESHGUI_MeshInfo( QWidget* parent )
   l->addWidget( a3DPriTotal,  24, 1 );
   l->addWidget( a3DPriLin,    24, 2 );
   l->addWidget( a3DPriQuad,   24, 3 );
+  l->addWidget( a3DPriBiQuad, 24, 4 );
   l->addWidget( a3DHexPriLab,   25, 0 );
   l->addWidget( a3DHexPriTotal, 25, 1 );
   l->addWidget( a3DPolLab,    26, 0 );
@@ -581,10 +584,10 @@ void SMESHGUI_MeshInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
     long nbTetrahedrons  = info[SMDSEntity_Tetra]   + info[SMDSEntity_Quad_Tetra];
     long nbHexahedrons   = info[SMDSEntity_Hexa]    + info[SMDSEntity_Quad_Hexa] + info[SMDSEntity_TriQuad_Hexa];
     long nbPyramids      = info[SMDSEntity_Pyramid] + info[SMDSEntity_Quad_Pyramid];
-    long nbPrisms        = info[SMDSEntity_Penta]   + info[SMDSEntity_Quad_Penta];
+    long nbPrisms        = info[SMDSEntity_Penta]   + info[SMDSEntity_Quad_Penta] + info[SMDSEntity_BiQuad_Penta];
     long nb3DLinear      = info[SMDSEntity_Tetra]   + info[SMDSEntity_Hexa] + info[SMDSEntity_Pyramid] + info[SMDSEntity_Penta] + info[SMDSEntity_Polyhedra] + info[SMDSEntity_Hexagonal_Prism];
     long nb3DQuadratic   = info[SMDSEntity_Quad_Tetra] + info[SMDSEntity_Quad_Hexa] + info[SMDSEntity_Quad_Pyramid] + info[SMDSEntity_Quad_Penta];
-    long nb3DBiQuadratic = info[SMDSEntity_TriQuad_Hexa];
+    long nb3DBiQuadratic = info[SMDSEntity_TriQuad_Hexa] + info[SMDSEntity_BiQuad_Penta];
     long nb3DTotal       = nb3DLinear + nb3DQuadratic + nb3DBiQuadratic;
     myWidgets[i3D][iTotal]                  ->setProperty( "text", QString::number( nb3DTotal ));
     myWidgets[i3D][iLinear]                 ->setProperty( "text", QString::number( nb3DLinear ));
@@ -603,6 +606,7 @@ void SMESHGUI_MeshInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
     myWidgets[i3DPrisms][iTotal]            ->setProperty( "text", QString::number( nbPrisms ));
     myWidgets[i3DPrisms][iLinear]           ->setProperty( "text", QString::number( info[SMDSEntity_Penta] ));
     myWidgets[i3DPrisms][iQuadratic]        ->setProperty( "text", QString::number( info[SMDSEntity_Quad_Penta] ));
+    myWidgets[i3DPrisms][iBiQuadratic]      ->setProperty( "text", QString::number( info[SMDSEntity_BiQuad_Penta] ));
     myWidgets[i3DHexaPrisms][iTotal]        ->setProperty( "text", QString::number( info[SMDSEntity_Hexagonal_Prism] ));
     myWidgets[i3DPolyhedrons][iTotal]       ->setProperty( "text", QString::number( info[SMDSEntity_Polyhedra] ));
     long nbElemTotal       = info[SMDSEntity_0D] + info[SMDSEntity_Ball] + nbEdges + nb2DTotal + nb3DTotal;
@@ -937,7 +941,7 @@ void SMESHGUI_MeshInfo::saveInfo( QTextStream &out )
   \param parent parent widget
 */
 SMESHGUI_ElemInfo::SMESHGUI_ElemInfo( QWidget* parent )
-: QWidget( parent ), myActor( 0 ), myIsElement( -1 )
+  : QWidget( parent ), myActor( 0 ), myIsElement( -1 )
 {
   myFrame = new QWidget( this );
   myExtra = new ExtraWidget( this );
@@ -962,11 +966,13 @@ SMESHGUI_ElemInfo::~SMESHGUI_ElemInfo()
   \brief Set mesh data source (actor)
   \param actor mesh object actor
 */
-void SMESHGUI_ElemInfo::setSource( SMESH_Actor* actor )
+void SMESHGUI_ElemInfo::setSource( SMESH_Actor* actor, SMESH::SMESH_IDSource_var obj )
 {
   if ( myActor != actor ) {
     myActor = actor;
     myIsElement = -1;
+    SMESH::SMESH_Mesh_var mesh = obj->GetMesh();
+    myMeshHasShape = ( !mesh->_is_nil() && mesh->HasShapeToMesh() );
     clear();
   }
 }
@@ -1159,7 +1165,7 @@ void SMESHGUI_ElemInfo::updateControls()
   \param parent parent widget
 */
 SMESHGUI_SimpleElemInfo::SMESHGUI_SimpleElemInfo( QWidget* parent )
-: SMESHGUI_ElemInfo( parent )
+  : SMESHGUI_ElemInfo( parent )
 {
   myInfo = new QTextBrowser( frame() );
   QVBoxLayout* l = new QVBoxLayout( frame() );
@@ -1174,12 +1180,12 @@ SMESHGUI_SimpleElemInfo::SMESHGUI_SimpleElemInfo( QWidget* parent )
 void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
 {
   clearInternal();
-  
+
   if ( actor() ) {
     int grp_details = SMESHGUI::resourceMgr()->booleanValue( "SMESH", "elem_info_grp_details", false );
     int precision   = SMESHGUI::resourceMgr()->integerValue( "SMESH", "length_precision", 6 );
     int cprecision = -1;
-    if ( SMESHGUI::resourceMgr()->booleanValue( "SMESH", "use_precision", false )) 
+    if ( SMESHGUI::resourceMgr()->booleanValue( "SMESH", "use_precision", false ))
       cprecision = SMESHGUI::resourceMgr()->integerValue( "SMESH", "controls_precision", -1 );
     foreach ( long id, ids ) {
       if ( !isElements() ) {
@@ -1224,7 +1230,7 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
           myInfo->append( QString( "<b>%1</b>" ).arg( SMESHGUI_ElemInfo::tr( "FREE_NODE" )).arg( id ));
         }
         // node position
-        SMESH::SMESH_Mesh_ptr aMeshPtr = actor()->GetObject()->GetMeshServer();   
+        SMESH::SMESH_Mesh_ptr aMeshPtr = actor()->GetObject()->GetMeshServer();
         if ( !CORBA::is_nil( aMeshPtr )) {
           SMESH::NodePosition_var pos = aMeshPtr->GetNodePosition( id );
           int shapeID = pos->shapeID;
@@ -1240,8 +1246,8 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
             case GEOM::FACE:
               shapeType = SMESHGUI_ElemInfo::tr( "GEOM_FACE" );
               if ( pos->params.length() == 2 ) {
-               u = pos->params[0];
-               v = pos->params[1];
+                u = pos->params[0];
+                v = pos->params[1];
               }
               break;
             case GEOM::VERTEX:
@@ -1285,7 +1291,7 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
                 SMESH::SMESH_Group_var         aStdGroup  = SMESH::SMESH_Group::_narrow( aGrp );
                 SMESH::SMESH_GroupOnGeom_var   aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGrp );
                 SMESH::SMESH_GroupOnFilter_var aFltGroup  = SMESH::SMESH_GroupOnFilter::_narrow( aGrp );
-                
+
                 // type : group on geometry, standalone group, group on filter
                 if ( !CORBA::is_nil( aStdGroup )) {
                   myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "TYPE" )).
@@ -1305,11 +1311,11 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
                   myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "TYPE" )).
                                   arg( SMESHGUI_AddInfo::tr( "GROUP_ON_FILTER" )) );
                 }
-                
+
                 // size
                 myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "SIZE" )).
                                 arg( QString::number( aGrp->Size() )) );
-                
+
                 // color
                 SALOMEDS::Color color = aGrp->GetColor();
                 myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "COLOR" )).
@@ -1322,11 +1328,11 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
       else {
         //
         // show element info
-        // 
+        //
         const SMDS_MeshElement* e = actor()->GetObject()->GetMesh()->FindElement( id );
         SMESH::Controls::NumericalFunctorPtr afunctor;
         if ( !e ) return;
-        
+
         // Element ID && Type
         QString stype;
         switch( e->GetType() ) {
@@ -1340,7 +1346,7 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
           stype = SMESHGUI_ElemInfo::tr( "FACE" ); break;
         case SMDSAbs_Volume:
           stype = SMESHGUI_ElemInfo::tr( "VOLUME" ); break;
-        default: 
+        default:
           break;
         }
         if ( stype.isEmpty() ) return;
@@ -1374,13 +1380,14 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
           gtype = SMESHGUI_ElemInfo::tr( "HEXAHEDRON" ); break;
         case SMDSEntity_Penta:
         case SMDSEntity_Quad_Penta:
+        case SMDSEntity_BiQuad_Penta:
           gtype = SMESHGUI_ElemInfo::tr( "PRISM" ); break;
         case SMDSEntity_Hexagonal_Prism:
           gtype = SMESHGUI_ElemInfo::tr( "HEX_PRISM" ); break;
         case SMDSEntity_Polyhedra:
         case SMDSEntity_Quad_Polyhedra:
           gtype = SMESHGUI_ElemInfo::tr( "POLYHEDRON" ); break;
-        default: 
+        default:
           break;
         }
         if ( !gtype.isEmpty() )
@@ -1439,53 +1446,58 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
           afunctor.reset( new SMESH::Controls::Length() );
           afunctor->SetMesh( actor()->GetObject()->GetMesh() );
           afunctor->SetPrecision( cprecision );
-          myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "LENGTH_EDGES" )).arg( afunctor->GetValue( id )) );  
+          myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "LENGTH_EDGES" )).arg( afunctor->GetValue( id )) );
         }
         if( e->GetType() == SMDSAbs_Face ) {
           //Area
           afunctor.reset(  new SMESH::Controls::Area() );
           afunctor->SetMesh( actor()->GetObject()->GetMesh() );
-          afunctor->SetPrecision( cprecision );  
+          afunctor->SetPrecision( cprecision );
           myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "AREA_ELEMENTS" )).arg( afunctor->GetValue( id )) );
           //Taper
           afunctor.reset( new SMESH::Controls::Taper() );
-          afunctor->SetMesh( actor()->GetObject()->GetMesh() );  
+          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
           afunctor->SetPrecision( cprecision );
           myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "TAPER_ELEMENTS" )).arg( afunctor->GetValue( id )) );
           //AspectRatio2D
           afunctor.reset( new SMESH::Controls::AspectRatio() );
           afunctor->SetMesh( actor()->GetObject()->GetMesh() );
           myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "ASPECTRATIO_ELEMENTS" )).arg( afunctor->GetValue( id )) );
-          //Minimum angle         
+          //Minimum angle
           afunctor.reset( new SMESH::Controls::MinimumAngle() );
           afunctor->SetMesh( actor()->GetObject()->GetMesh() );
           afunctor->SetPrecision( cprecision );
           myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "MINIMUMANGLE_ELEMENTS" )).arg( afunctor->GetValue( id )) );
-          //Wraping angle        
+          //Warping angle
           afunctor.reset( new SMESH::Controls::Warping() );
           afunctor->SetMesh( actor()->GetObject()->GetMesh() );
           afunctor->SetPrecision( cprecision );
           myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "WARP_ELEMENTS" )).arg( afunctor->GetValue( id )) );
-          //Skew         
+          //Skew
           afunctor.reset( new SMESH::Controls::Skew() );
           afunctor->SetMesh( actor()->GetObject()->GetMesh() );
           afunctor->SetPrecision( cprecision );
           myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "SKEW_ELEMENTS" )).arg( afunctor->GetValue( id )) );
-          //ElemDiam2D   
+          //ElemDiam2D
           afunctor.reset( new SMESH::Controls::MaxElementLength2D() );
           afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+          afunctor->SetPrecision( cprecision );
           myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "MAX_ELEMENT_LENGTH_2D" )).arg( afunctor->GetValue( id )) );
+          //min edge length
+          afunctor.reset( new SMESH::Controls::Length2D() );
+          afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+          myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "MIN_ELEM_EDGE" )).arg( afunctor->GetValue( id )) );
         }
         if( e->GetType() == SMDSAbs_Volume ) {
           //AspectRatio3D
           afunctor.reset(  new SMESH::Controls::AspectRatio3D() );
           afunctor->SetMesh( actor()->GetObject()->GetMesh() );
           myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "ASPECTRATIO_3D_ELEMENTS" )).arg( afunctor->GetValue( id )) );
-          //Volume      
+          //Volume
           afunctor.reset(  new SMESH::Controls::Volume() );
           afunctor->SetMesh( actor()->GetObject()->GetMesh() );
           myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "VOLUME_3D_ELEMENTS" )).arg( afunctor->GetValue( id )) );
-          //ElementDiameter3D    
+          //ElementDiameter3D
           afunctor.reset(  new SMESH::Controls::Volume() );
           afunctor->SetMesh( actor()->GetObject()->GetMesh() );
           myInfo->append( QString( "- <b>%1:</b> %2" ).arg( tr( "MAX_ELEMENT_LENGTH_3D" )).arg( afunctor->GetValue( id )) );
@@ -1496,7 +1508,7 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
         // Gravity center
         XYZ gc = gravityCenter( e );
         myInfo->append( QString( "<b>%1:</b> (%2, %3, %4)" ).arg( SMESHGUI_ElemInfo::tr( "GRAVITY_CENTER" )).arg( gc.x() ).arg( gc.y() ).arg( gc.z() ));
-        
+
         // Normal vector
         if( e->GetType() == SMDSAbs_Face ) {
           XYZ gc = normal( e );
@@ -1505,7 +1517,7 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
 
         // Element position
         if ( e->GetType() >= SMDSAbs_Edge && e->GetType() <= SMDSAbs_Volume ) {
-          SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();    
+          SMESH::SMESH_Mesh_ptr aMesh = actor()->GetObject()->GetMeshServer();
           if ( !CORBA::is_nil( aMesh )) {
             SMESH::ElementPosition pos = aMesh->GetElementPosition( id );
             int shapeID = pos.shapeID;
@@ -1545,7 +1557,7 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
                 SMESH::SMESH_Group_var         aStdGroup  = SMESH::SMESH_Group::_narrow( aGrp );
                 SMESH::SMESH_GroupOnGeom_var   aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGrp );
                 SMESH::SMESH_GroupOnFilter_var aFltGroup  = SMESH::SMESH_GroupOnFilter::_narrow( aGrp );
-                
+
                 // type : group on geometry, standalone group, group on filter
                 if ( !CORBA::is_nil( aStdGroup )) {
                   myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "TYPE" )).
@@ -1565,10 +1577,10 @@ void SMESHGUI_SimpleElemInfo::information( const QList<long>& ids )
                   myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "TYPE" )).
                                   arg( SMESHGUI_AddInfo::tr( "GROUP_ON_FILTER" )) );
                 }
-                
+
                 myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "SIZE" )).
                                 arg( QString::number( aGrp->Size() )) );
-                
+
                 // color
                 SALOMEDS::Color color = aGrp->GetColor();
                 myInfo->append( QString( "  - <b>%1:</b> %2" ).arg( SMESHGUI_AddInfo::tr( "COLOR" )).
@@ -1647,7 +1659,7 @@ QWidget* SMESHGUI_TreeElemInfo::ItemDelegate::createEditor( QWidget* parent, con
   \param parent parent widget
 */
 SMESHGUI_TreeElemInfo::SMESHGUI_TreeElemInfo( QWidget* parent )
-: SMESHGUI_ElemInfo( parent )
+  : SMESHGUI_ElemInfo( parent )
 {
   myInfo = new QTreeWidget( frame() );
   myInfo->setColumnCount( 2 );
@@ -1896,6 +1908,7 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
           gtype = SMESHGUI_ElemInfo::tr( "HEXAHEDRON" ); break;
         case SMDSEntity_Penta:
         case SMDSEntity_Quad_Penta:
+        case SMDSEntity_BiQuad_Penta:
           gtype = SMESHGUI_ElemInfo::tr( "PRISM" ); break;
         case SMDSEntity_Hexagonal_Prism:
           gtype = SMESHGUI_ElemInfo::tr( "HEX_PRISM" ); break;
@@ -1986,7 +1999,7 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
             QTreeWidgetItem* taperlItem = createItem( cntrItem, Bold );
             taperlItem->setText( 0, tr( "TAPER_ELEMENTS" ));
             taperlItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id )) );
-            //Wraping angle
+            //Warping angle
             afunctor.reset( new SMESH::Controls::Warping() );
             afunctor->SetMesh( actor()->GetObject()->GetMesh() );
             afunctor->SetPrecision( cprecision );
@@ -2019,6 +2032,15 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
             QTreeWidgetItem* skewItem = createItem( cntrItem, Bold );
             skewItem->setText( 0, tr( "SKEW_ELEMENTS" ));
             skewItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id )) );
+          }
+          //Deflection
+          if ( hasShapeToMesh() )
+          {
+            afunctor.reset( new SMESH::Controls::Deflection2D() );
+            afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+            QTreeWidgetItem* deflItem = createItem( cntrItem, Bold );
+            deflItem->setText( 0, tr( "DEFLECTION_2D" ));
+            deflItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id )) );
           }
           //ElemDiam2D
           if ( !e->IsPoly() )
@@ -2053,6 +2075,13 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
           diam3Item->setText( 0, tr( "MAX_ELEMENT_LENGTH_3D" ));
           diam3Item->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id )) );
         }
+
+        //min edge length
+        afunctor.reset( new SMESH::Controls::Length2D() );
+        afunctor->SetMesh( actor()->GetObject()->GetMesh() );
+        QTreeWidgetItem* minEdgeItem = createItem( cntrItem, Bold );
+        minEdgeItem->setText( 0, tr( "MIN_ELEM_EDGE" ));
+        minEdgeItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id )) );
 
         // gravity center
         XYZ gc = gravityCenter( e );
@@ -2380,7 +2409,7 @@ void GrpComputor::compute()
   \param parent parent widget
 */
 SMESHGUI_AddInfo::SMESHGUI_AddInfo( QWidget* parent )
-: QTreeWidget( parent )
+  : QTreeWidget( parent )
 {
   setColumnCount( 2 );
   header()->setStretchLastSection( true );
@@ -2984,7 +3013,7 @@ void SMESHGUI_MeshInfoDlg::showInfo( const Handle(SALOME_InteractiveObject)& IO 
           SMESH::GetNameOfSelectedElements( selector, IO, ID ) :
           SMESH::GetNameOfSelectedNodes( selector, IO, ID );
       }
-      myElemInfo->setSource( myActor ) ;
+      myElemInfo->setSource( myActor, obj ) ;
       if ( nb > 0 ) {
         myID->setText( ID.trimmed() );
         QSet<long> ids;
@@ -3615,12 +3644,12 @@ void SMESHGUI_CtrlInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
       computeOverConstrainedVolumesInfo();
       // aspect Ratio 3D histogram
       computeAspectRatio3D();
-     }
-     else {
-       myButtons[7]->setEnabled( true );
-       myButtons[8]->setEnabled( true );
-       myButtons[9]->setEnabled( true );
-     }
+    }
+    else {
+      myButtons[7]->setEnabled( true );
+      myButtons[8]->setEnabled( true );
+      myButtons[9]->setEnabled( true );
+    }
 #ifdef DISABLE_PLOT2DVIEWER
     myMainLayout->setRowStretch(17,0);
     for( int i=35; i<=37; i++)
@@ -3848,7 +3877,7 @@ void SMESHGUI_CtrlInfo::saveInfo( QTextStream &out ) {
   \param parent parent widget
 */
 SMESHGUI_CtrlInfoDlg::SMESHGUI_CtrlInfoDlg( QWidget* parent )
-: QDialog( parent )
+  : QDialog( parent )
 {
   setAttribute( Qt::WA_DeleteOnClose, true );
   setWindowTitle( tr( "CTRL_INFO" ));

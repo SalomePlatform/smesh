@@ -265,7 +265,8 @@ class SMESH_EXPORT SMESH_Mesh
                  const SMESHDS_Mesh* meshPart = 0) throw(SALOME_Exception);
   void ExportCGNS(const char *        file,
                   const SMESHDS_Mesh* mesh,
-                  const char *        meshName = 0);
+                  const char *        meshName = 0,
+                  const bool          groupElemsByType = false);
   void ExportGMF(const char *        file,
                  const SMESHDS_Mesh* mesh,
                  bool                withRequiredGroups = true );
@@ -294,6 +295,8 @@ class SMESH_EXPORT SMESH_Mesh
   int NbTriQuadraticHexas() const throw(SALOME_Exception);
   int NbPyramids(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
   int NbPrisms(SMDSAbs_ElementOrder order = ORDER_ANY) const throw(SALOME_Exception);
+  int NbQuadPrisms() const throw(SALOME_Exception);
+  int NbBiQuadPrisms() const throw(SALOME_Exception);
   int NbHexagonalPrisms() const throw(SALOME_Exception);
   int NbPolyhedrons() const throw(SALOME_Exception);
   

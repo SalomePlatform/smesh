@@ -40,6 +40,7 @@
 
 //std includes
 #include <vector>
+#include <utility>
 
 #include <SVTK_Selection.h>
 
@@ -119,6 +120,8 @@ public:
 
   void                       EraseActor( const char*, const bool allViewers = false );
 
+  void                       UpdateActor( const char* Mesh_Entry );
+
   /*!
    * \brief Set mesh icon according to compute status
     * \param Mesh_Entry - entry of a mesh
@@ -131,11 +134,13 @@ public:
 
   void setSelectionMode( SelectionMode selectionMode );
   std::vector<int> getSelected( const char* Mesh_Entry );
+  std::vector<std::pair<int, int> > getSelectedEdgeOfCell( const char* Mesh_Entry );
 
   // --------------------- for the test purposes -----------------------
   SelectionMode getSelectionMode();
   void select( const char *id, std::vector<int> ids, bool append = false );
   void select( const char *id, int id1, bool append = false );
+  void select( const char *id, std::vector<std::pair<int,int> >, bool apend = false );
 
 private:
   SALOMEDS::StudyBuilder_var myStudyBuilder;

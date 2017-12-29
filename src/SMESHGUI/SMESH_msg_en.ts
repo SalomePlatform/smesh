@@ -40,6 +40,10 @@
         <translation>CGNS files</translation>
     </message>
     <message>
+        <source>CGNS_EXPORT_ELEMS_BY_TYPE</source>
+        <translation>Group elements by type</translation>
+    </message>
+    <message>
         <source>GMF_ASCII_FILES_FILTER</source>
         <translation>GMF ASCII files</translation>
     </message>
@@ -98,6 +102,10 @@
     <message>
         <source>MIN_DIAG_ELEMENTS</source>
         <translation>Minimum diagonal</translation>
+    </message>
+    <message>
+        <source>MIN_ELEM_EDGE</source>
+        <translation>Minimum Edge Length</translation>
     </message>
     <message>
         <source>ASPECTRATIO_3D_ELEMENTS</source>
@@ -221,6 +229,10 @@
         <translation>Length 2D</translation>
     </message>
     <message>
+        <source>DEFLECTION2D_FACES</source>
+        <translation>Deflection 2D</translation>
+    </message>
+    <message>
         <source>LENGTH_EDGES</source>
         <translation>Length</translation>
     </message>
@@ -235,6 +247,10 @@
     <message>
         <source>MAX_ELEMENT_LENGTH_3D</source>
         <translation>Element Diameter 3D</translation>
+    </message>
+    <message>
+        <source>DEFLECTION_2D</source>
+        <translation>Deflection 2D</translation>
     </message>
     <message>
         <source>MEN_ADD</source>
@@ -689,6 +705,10 @@
         <translation>Length 2D</translation>
     </message>
     <message>
+        <source>MEN_DEFLECTION_2D</source>
+        <translation>Deflection 2D</translation>
+    </message>
+    <message>
         <source>MEN_MAP</source>
         <translation>Pattern Mapping</translation>
     </message>
@@ -887,6 +907,10 @@
     <message>
         <source>MEN_QUADRATIC_PENTAHEDRON</source>
         <translation>Quadratic Pentahedron</translation>
+    </message>
+    <message>
+        <source>MEN_BIQUADRATIC_PENTAHEDRON</source>
+        <translation>BiQuadratic Pentahedron</translation>
     </message>
     <message>
         <source>MEN_QUADRATIC_PYRAMID</source>
@@ -1365,6 +1389,10 @@ Please enter correct values and try again</translation>
     <message>
         <source>SMESH_ADD_QUADRATIC_PENTAHEDRON_TITLE</source>
         <translation>Add Quadratic Pentahedron</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_BIQUADRATIC_PENTAHEDRON_TITLE</source>
+        <translation>Add BiQuadratic Pentahedron</translation>
     </message>
     <message>
         <source>SMESH_ADD_QUADRATIC_PYRAMID_TITLE</source>
@@ -2113,7 +2141,7 @@ Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>SMESH_MESHINFO_ALL_TYPES</source>
-        <translation>Heterogenous</translation>
+        <translation>Heterogeneous</translation>
     </message>
     <message>
         <source>SMESH_MESHINFO_EDGES</source>
@@ -2520,8 +2548,16 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Quadratic Pentahedron</translation>
     </message>
     <message>
+        <source>SMESH_BIQUADRATIC_PENTAHEDRON</source>
+        <translation>BiQuadratic Pentahedron</translation>
+    </message>
+    <message>
         <source>SMESH_QUADRATIC_PENTAHEDRONS</source>
         <translation>Quadratic Pentahedrons</translation>
+    </message>
+    <message>
+        <source>SMESH_BIQUADRATIC_PENTAHEDRONS</source>
+        <translation>BiQuadratic Pentahedrons</translation>
     </message>
     <message>
         <source>SMESH_QUADRATIC_PYRAMID</source>
@@ -3252,6 +3288,10 @@ Use Display Entity menu command to show them.
         <translation>Length 2D</translation>
     </message>
     <message>
+        <source>STB_DEFLECTION_2D</source>
+        <translation>Deflection 2D</translation>
+    </message>
+    <message>
         <source>STB_MAP</source>
         <translation>Pattern mapping</translation>
     </message>
@@ -3374,6 +3414,10 @@ Use Display Entity menu command to show them.
     <message>
         <source>STB_QUADRATIC_PENTAHEDRON</source>
         <translation>Quadratic Pentahedron</translation>
+    </message>
+    <message>
+        <source>STB_BIQUADRATIC_PENTAHEDRON</source>
+        <translation>BiQuadratic Pentahedron</translation>
     </message>
     <message>
         <source>STB_QUADRATIC_PYRAMID</source>
@@ -3928,6 +3972,10 @@ Use Display Entity menu command to show them.
         <translation>Length 2D</translation>
     </message>
     <message>
+        <source>TOP_DEFLECTION_2D</source>
+        <translation>Deflection 2D</translation>
+    </message>
+    <message>
         <source>TOP_MAP</source>
         <translation>Pattern mapping</translation>
     </message>
@@ -4050,6 +4098,10 @@ Use Display Entity menu command to show them.
     <message>
         <source>TOP_QUADRATIC_PENTAHEDRON</source>
         <translation>Quadratic Pentahedron</translation>
+    </message>
+    <message>
+        <source>TOP_BIQUADRATIC_PENTAHEDRON</source>
+        <translation>BiQuadratic Pentahedron</translation>
     </message>
     <message>
         <source>TOP_QUADRATIC_PYRAMID</source>
@@ -4887,6 +4939,10 @@ Please, create VTK viewer and try again</translation>
     <message>
         <source>SMESH_ADD_QUADRATIC_PENTAHEDRON</source>
         <translation>Add Quadratic Pentahedron</translation>
+    </message>
+    <message>
+        <source>SMESH_ADD_BIQUADRATIC_PENTAHEDRON</source>
+        <translation>Add BiQuadratic Pentahedron</translation>
     </message>
     <message>
         <source>SMESH_ADD_QUADRATIC_PYRAMID</source>
@@ -5831,6 +5887,10 @@ Please enter correct value and try again</translation>
         <translation>Length 2D</translation>
     </message>
     <message>
+        <source>DEFLECTION2D</source>
+        <translation>Deflection 2D</translation>
+    </message>
+    <message>
         <source>LESS_THAN</source>
         <translation>Less than</translation>
     </message>
@@ -6018,18 +6078,22 @@ Please enter correct value and try again</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_21</source>
-        <translation>OCTA12</translation>
+        <translation>PENTA18</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_22</source>
-        <translation>POLYEDRE</translation>
+        <translation>OCTA12</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_23</source>
-        <translation>QPOLYEDRE</translation>
+        <translation>POLYEDRE</translation>
     </message>
     <message>
         <source>ENTITY_TYPE_24</source>
+        <translation>QPOLYEDRE</translation>
+    </message>
+    <message>
+        <source>ENTITY_TYPE_25</source>
         <translation>BALL</translation>
     </message>
     <message>

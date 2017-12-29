@@ -22,7 +22,7 @@ INCLUDE(UsePyQt)
 # --- scripts ---
 
 # scripts / static
-SET(plugin_SCRIPTS
+SET(_plugin_SCRIPTS
   __init__.py
   fissureCoude_ihm.py
   fissureCoude_plugin.py
@@ -30,19 +30,19 @@ SET(plugin_SCRIPTS
   dialogFissureCoude.dic
 )
 
-# --- resources ---
-
 # uic files / to be processed by pyuic
-SET(_pyuic_files
+SET(_pyuic_FILES
   fissureCoude.ui
   fissureGenerale.ui
 )
-
 # scripts / pyuic wrappings
-PYQT_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_files} OPTIONS "--import-from=blocFissure" "--resource-suffix=_qrc")
+PYQT_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_FILES} TARGET_NAME _target_name_pyuic OPTIONS "--import-from=blocFissure" "--resource-suffix=_qrc")
 
 # --- rules ---
 
-SALOME_INSTALL_SCRIPTS("${plugin_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/blocFissure/ihm)
+SALOME_INSTALL_SCRIPTS("${_plugin_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/blocFissure/ihm)
 
-SALOME_INSTALL_SCRIPTS("${_pyuic_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/blocFissure/ihm)
+SALOME_INSTALL_SCRIPTS("${_pyuic_SCRIPTS}" ${SALOME_INSTALL_PYTHON}/blocFissure/ihm TARGET_NAME _target_name_pyuic_py)
+# add dependency of compiled py files on uic files in order
+# to avoid races problems when compiling in parallel
+ADD_DEPENDENCIES(${_target_name_pyuic_py} ${_target_name_pyuic})

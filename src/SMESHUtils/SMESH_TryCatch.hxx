@@ -33,7 +33,6 @@
 #include <Utils_SALOME_Exception.hxx>
 #include <Standard_Failure.hxx>
 #include <Standard_ErrorHandler.hxx>
-#include <Basics_OCCTVersion.hxx>
 #include <utilities.h>
 
 // IMPORTANT: include this file _after_ OCC ones, else OCC_CATCH_SIGNALS can be undefined!
@@ -42,7 +41,11 @@
 #define OCC_CATCH_SIGNALS
 #endif
 
-// Define macros to catch and convert some of possible exceptions into text or SALOME_Exception
+// Define macros to catch and convert some of possible exceptions into text or SALOME_Exception.
+// WARNING: SALOME::SALOME_Exception (CORBA exception) is not treated here; to care about it add
+//          #define SMY_OWN_CATCH catch ( SALOME::SALOME_Exception & e ) { do_something(e); }
+//          before #include<SMESH_TryCatch.hxx>
+
 
 //-------------------------------------------------------------------------------------
 #define SMESH_TRY                               \
@@ -104,6 +107,7 @@ namespace SMESH
 {
   SMESHUtils_EXPORT void throwSalomeEx(const char* txt);
   SMESHUtils_EXPORT void doNothing(const char* txt);
+  SMESHUtils_EXPORT const char* returnError(const char* txt);
 }
 
 #endif

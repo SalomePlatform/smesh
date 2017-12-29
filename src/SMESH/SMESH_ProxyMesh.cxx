@@ -95,7 +95,7 @@ SMESH_ProxyMesh::SMESH_ProxyMesh(std::vector<SMESH_ProxyMesh::Ptr>& components):
 
 //================================================================================
 /*!
- * \brief Destructor deletes proxy submeshes and tmp elemens
+ * \brief Destructor deletes proxy submeshes and tmp elements
  */
 //================================================================================
 

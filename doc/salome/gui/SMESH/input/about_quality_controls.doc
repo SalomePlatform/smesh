@@ -37,6 +37,7 @@ Face quality controls:
 <li>\subpage bare_border_faces_page "Bare border faces"</li>
 <li>\subpage over_constrained_faces_page "Over-constrained faces"</li>
 <li>\subpage length_2d_page "Length 2D"</li>
+<li>\subpage deflection_2d_page "Deflection 2D"</li>
 <li>\subpage borders_at_multi_connection_2d_page "Borders at multi-connection 2D"</li>
 <li>\subpage area_page "Area"</li>
 <li>\subpage taper_page "Taper"</li>

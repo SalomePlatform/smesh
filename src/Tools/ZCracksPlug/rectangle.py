@@ -8,10 +8,9 @@ import sys, numpy
 import salome
 
 salome.salome_init()
-theStudy = salome.myStudy
 
 import salome_notebook
-notebook = salome_notebook.NoteBook(theStudy)
+notebook = salome_notebook.NoteBook()
 
 ###
 ### GEOM component
@@ -65,7 +64,7 @@ def generate(data_longueur,data_largeur,data_centre,
   Vnormale, Vdirection, Vortho = uF.calcCoordVectors(data_normale, data_direction)
   Vcentre = numpy.array(data_centre)
 
-  geompy = geomBuilder.New(theStudy)
+  geompy = geomBuilder.New()
 
   O = geompy.MakeVertex(0, 0, 0)
   OX = geompy.MakeVectorDXDYDZ(1, 0, 0)
@@ -211,7 +210,7 @@ def generate(data_longueur,data_largeur,data_centre,
 
   import  SMESH, SALOMEDS
   from salome.smesh import smeshBuilder
-  smesh = smeshBuilder.New(theStudy)
+  smesh = smeshBuilder.New()
 
   Maillage=uF.meshCrack(FACE_FISSURE, minSize, maxSize, chordal, dim)
 
@@ -223,4 +222,4 @@ def generate(data_longueur,data_largeur,data_centre,
 
 
   if salome.sg.hasDesktop():
-    salome.sg.updateObjBrowser(True)
+    salome.sg.updateObjBrowser()

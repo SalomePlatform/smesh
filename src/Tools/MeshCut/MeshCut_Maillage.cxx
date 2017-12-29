@@ -324,7 +324,7 @@ void Maillage::inputMED(std::string fichierMED)
   // Lecture des infos concernant le premier maillage
   if (MEDmeshInfo(fid, 1, maa, &spacedim, &mdim, &type, desc, dtunit, &sortingtype, &nPasTemps, &axistype, axisname,
                   unitname) < 0)
-    ERREUR("Error while reading mesh informations ");
+    ERREUR("Error while reading mesh information ");
   //cout << chrono() << " --- inputMED: MEDmeshInfo: OK" << endl;
 
 //  cerr << "maa=" << maa << endl;
