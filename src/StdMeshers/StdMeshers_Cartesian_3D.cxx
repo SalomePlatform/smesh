@@ -2460,7 +2460,7 @@ namespace
       ip._faceIDs = e2fIt->second;
       ip._shapeID = edgeID;
 
-      // discretize the EGDE
+      // discretize the EDGE
       GCPnts_UniformDeflection discret( curve, deflection, true );
       if ( !discret.IsDone() || discret.NbPoints() < 2 )
         continue;

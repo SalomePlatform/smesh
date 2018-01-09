@@ -3063,7 +3063,7 @@ bool StdMeshers_Prism_3D::IsApplicable(const TopoDS_Shape & shape, bool toCheckA
 
           if ( side._topEdge.IsNull() )
           {
-            // find vertical EDGEs --- EGDEs shared with neighbor side FACEs
+            // find vertical EDGEs --- EDGEs shared with neighbor side FACEs
             for ( int is2nd = 0; is2nd < 2 && isOK; ++is2nd ) // 2 adjacent neighbors
             {
               int di = is2nd ? 1 : -1;

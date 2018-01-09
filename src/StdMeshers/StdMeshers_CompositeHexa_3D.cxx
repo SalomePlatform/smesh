@@ -577,7 +577,7 @@ bool StdMeshers_CompositeHexa_3D::findBoxFaces( const TopoDS_Shape&    shape,
  * \brief Computes hexahedral mesh on a box with composite sides
  *  \param aMesh - mesh to compute
  *  \param aShape - shape to mesh
- *  \retval bool - succes sign
+ *  \retval bool - success sign
  */
 //================================================================================
 

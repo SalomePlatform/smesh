@@ -574,7 +574,7 @@ double StdMeshers_Penta_3D::SetHorizEdgeXYZ(const gp_XYZ&                  aBase
   SMESH_Block::GetFaceEdgesIDs( aFaceID, edgeVec );
   //
   int coord = SMESH_Block::GetCoordIndOnEdge( edgeVec[ BASE ] );
-  bool isForward = myBlock.IsForwadEdge( edgeVec[ BASE ] );
+  bool isForward = myBlock.IsForwardEdge( edgeVec[ BASE ] );
 
   double param = aBaseNodeParams.Coord( coord );
   if ( !isForward)
@@ -1543,7 +1543,7 @@ bool StdMeshers_Penta_3D::LoadIJNodes(StdMeshers_IJNodeMap & theIJNodes,
         }
         // look for a not loaded node of the <face>
         bool found = false;
-        const SMDS_MeshNode* n3 = 0; // a node defferent from n1 and n2
+        const SMDS_MeshNode* n3 = 0; // a node different from n1 and n2
         eIt = face->nodesIterator() ;
         while ( !found && eIt->more() ) {
           node = static_cast<const SMDS_MeshNode*>( eIt->next() );
@@ -1609,11 +1609,11 @@ StdMeshers_SMESHBlock::StdMeshers_SMESHBlock()
 }
 
 //=======================================================================
-//function : IsForwadEdge
+//function : IsForwardEdge
 //purpose  : 
 //=======================================================================
 
-bool StdMeshers_SMESHBlock::IsForwadEdge(const int theEdgeID)
+bool StdMeshers_SMESHBlock::IsForwardEdge(const int theEdgeID)
 {
   int index = myTBlock.ShapeIndex( theEdgeID );
   if ( !myTBlock.IsEdgeID( theEdgeID ))

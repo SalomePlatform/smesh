@@ -190,7 +190,7 @@ filters over-constrained faces:
 \section filter_double_elements Double edges, Double faces, Double volumes
 
 filters mesh elements basing on the same set of nodes:
-- element type is either \a SMESH.EGDE, \a SMESH.FACE or \a SMESH.VOLUME
+- element type is either \a SMESH.EDGE, \a SMESH.FACE or \a SMESH.VOLUME
 - functor type is either \a SMESH.FT_EqualEdges, \a
           SMESH.FT_EqualFaces or \a SMESH.FT_EqualVolumes,
 - threshold value is not required

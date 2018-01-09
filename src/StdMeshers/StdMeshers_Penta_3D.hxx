@@ -86,7 +86,7 @@ public:
 
   SMESH_Block & Block() { return myTBlock; }
 
-  bool IsForwadEdge(const int theEdgeID);
+  bool IsForwardEdge(const int theEdgeID);
 
   int  ErrorStatus() const;
 
