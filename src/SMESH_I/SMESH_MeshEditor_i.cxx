@@ -5691,10 +5691,7 @@ CORBA::Boolean SMESH_MeshEditor_i::DoubleNodeGroup(SMESH::SMESH_GroupBase_ptr th
   if ( !CORBA::is_nil( theModifiedElems ) )
     aModifiedElems = theModifiedElems->GetListOfID();
   else
-  {
     aModifiedElems = new SMESH::long_array;
-    aModifiedElems->length( 0 );
-  }
 
   TPythonDump pyDump; // suppress dump by the next line
 
@@ -6407,12 +6404,9 @@ SMESH_MeshEditor_i::AffectedElemGroupsInRegion( const SMESH::ListOfGroups& theEl
 {
   SMESH_TRY;
   SMESH::ListOfGroups_var aListOfGroups = new SMESH::ListOfGroups();
-  bool isEdgeGroup = false;
-  bool isFaceGroup = false;
-  bool isVolumeGroup = false;
-  SMESH::SMESH_Group_var aNewEdgeGroup = myMesh_i->CreateGroup(SMESH::EDGE, "affectedEdges");
-  SMESH::SMESH_Group_var aNewFaceGroup = myMesh_i->CreateGroup(SMESH::FACE, "affectedFaces");
-  SMESH::SMESH_Group_var aNewVolumeGroup = myMesh_i->CreateGroup(SMESH::VOLUME, "affectedVolumes");
+  SMESH::SMESH_Group_var aNewEdgeGroup   = SMESH::SMESH_Group::_nil();
+  SMESH::SMESH_Group_var aNewFaceGroup   = SMESH::SMESH_Group::_nil();
+  SMESH::SMESH_Group_var aNewVolumeGroup = SMESH::SMESH_Group::_nil();
 
   initData();
 
@@ -6420,75 +6414,75 @@ SMESH_MeshEditor_i::AffectedElemGroupsInRegion( const SMESH::ListOfGroups& theEl
 
   SMESHDS_Mesh* aMeshDS = getMeshDS();
   TIDSortedElemSet anElems, aNodes;
-  listOfGroupToSet(theElems, aMeshDS, anElems, false);
+  bool isNodeGrp = theElems.length() ? theElems[0]->GetType() == SMESH::NODE : false;
+  listOfGroupToSet(theElems, aMeshDS, anElems, isNodeGrp);
   listOfGroupToSet(theNodesNot, aMeshDS, aNodes, true);
 
   TopoDS_Shape aShape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape(theShape);
   TIDSortedElemSet anAffected;
   bool aResult = aMeshEditor.AffectedElemGroupsInRegion(anElems, aNodes, aShape, anAffected);
 
-
   declareMeshModified( /*isReComputeSafe=*/ !aResult );
 
   TPythonDump pyDump;
-  if (aResult)
+  if ( aResult && anAffected.size() > 0 )
   {
-    int lg = anAffected.size();
     SMESH::long_array_var volumeIds = new SMESH::long_array;
-    volumeIds->length(lg);
-    SMESH::long_array_var faceIds = new SMESH::long_array;
-    faceIds->length(lg);
-    SMESH::long_array_var edgeIds = new SMESH::long_array;
-    edgeIds->length(lg);
+    SMESH::long_array_var   faceIds = new SMESH::long_array;
+    SMESH::long_array_var   edgeIds = new SMESH::long_array;
+    volumeIds->length( anAffected.size() );
+    faceIds  ->length( anAffected.size() );
+    edgeIds  ->length( anAffected.size() );
+
     int ivol = 0;
     int iface = 0;
     int iedge = 0;
-
     TIDSortedElemSet::const_iterator eIt = anAffected.begin();
     for (; eIt != anAffected.end(); ++eIt)
     {
       const SMDS_MeshElement* anElem = *eIt;
-      if (!anElem)
-        continue;
       int elemId = anElem->GetID();
-      if (myMesh->GetElementType(elemId, true) == SMDSAbs_Volume)
-        volumeIds[ivol++] = elemId;
-      else if (myMesh->GetElementType(elemId, true) == SMDSAbs_Face)
-        faceIds[iface++] = elemId;
-      else if (myMesh->GetElementType(elemId, true) == SMDSAbs_Edge)
-        edgeIds[iedge++] = elemId;
+      switch ( anElem->GetType() ) {
+      case SMDSAbs_Volume: volumeIds[ivol++] = elemId; break;
+      case SMDSAbs_Face:    faceIds[iface++] = elemId; break;
+      case SMDSAbs_Edge:    edgeIds[iedge++] = elemId; break;
+      default:;
+      }
     }
     volumeIds->length(ivol);
     faceIds->length(iface);
     edgeIds->length(iedge);
 
-    aNewVolumeGroup->Add(volumeIds);
-    aNewFaceGroup->Add(faceIds);
-    aNewEdgeGroup->Add(edgeIds);
-    isVolumeGroup = (aNewVolumeGroup->Size() > 0);
-    isFaceGroup = (aNewFaceGroup->Size() > 0);
-    isEdgeGroup = (aNewEdgeGroup->Size() > 0);
+    int nbGroups = 0;
+    if ( ivol > 0 )
+    {
+      aNewVolumeGroup = myMesh_i->CreateGroup(SMESH::VOLUME,
+                                              generateGroupName("affectedVolumes").c_str());
+      aNewVolumeGroup->Add(volumeIds);
+      aListOfGroups->length( nbGroups+1 );
+      aListOfGroups[ nbGroups++ ] = aNewVolumeGroup._retn();
+    }
+    if ( iface > 0 )
+    {
+      aNewFaceGroup = myMesh_i->CreateGroup(SMESH::FACE,
+                                            generateGroupName("affectedFaces").c_str());
+      aNewFaceGroup->Add(faceIds);
+      aListOfGroups->length( nbGroups+1 );
+      aListOfGroups[ nbGroups++ ] = aNewFaceGroup._retn();
+    }
+    if ( iedge > 0 )
+    {
+      aNewEdgeGroup = myMesh_i->CreateGroup(SMESH::EDGE,
+                                            generateGroupName("affectedEdges").c_str());
+      aNewEdgeGroup->Add(edgeIds);
+      aListOfGroups->length( nbGroups+1 );
+      aListOfGroups[ nbGroups++ ] = aNewEdgeGroup._retn();
+    }
   }
-
-  int nbGroups = 0;
-  if (isEdgeGroup)   nbGroups++;
-  if (isFaceGroup)   nbGroups++;
-  if (isVolumeGroup) nbGroups++;
-  aListOfGroups->length(nbGroups);
-
-  int i = 0;
-  if (isEdgeGroup)   aListOfGroups[i++] = aNewEdgeGroup._retn();
-  if (isFaceGroup)   aListOfGroups[i++] = aNewFaceGroup._retn();
-  if (isVolumeGroup) aListOfGroups[i++] = aNewVolumeGroup._retn();
 
   // Update Python script
 
-  pyDump << "[ ";
-  if (isEdgeGroup)   pyDump << aNewEdgeGroup << ", ";
-  if (isFaceGroup)   pyDump << aNewFaceGroup << ", ";
-  if (isVolumeGroup) pyDump << aNewVolumeGroup << ", ";
-  pyDump << "] = ";
-  pyDump << this << ".AffectedElemGroupsInRegion( "
+  pyDump << aListOfGroups << " = " << this << ".AffectedElemGroupsInRegion( "
          << &theElems << ", " << &theNodesNot << ", " << theShape << " )";
 
   return aListOfGroups._retn();
@@ -6500,7 +6494,7 @@ SMESH_MeshEditor_i::AffectedElemGroupsInRegion( const SMESH::ListOfGroups& theEl
 //================================================================================
 /*!
   \brief Generated skin mesh (containing 2D cells) from 3D mesh
-   The created 2D mesh elements based on nodes of free faces of boundary volumes
+  The created 2D mesh elements based on nodes of free faces of boundary volumes
   \return TRUE if operation has been completed successfully, FALSE otherwise
 */
 //================================================================================
