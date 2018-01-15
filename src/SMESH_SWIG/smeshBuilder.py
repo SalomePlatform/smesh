@@ -1155,6 +1155,18 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         aMeasurements.UnRegister()
         return value
 
+    ## Get gravity center of all nodes of the mesh object.
+    #  @param obj mesh, submesh or group
+    #  @return three components of the gravity center: x,y,z
+    #  @ingroup l1_measurements
+    def GetGravityCenter(self, obj):
+        if isinstance(obj, Mesh): obj = obj.mesh
+        if isinstance(obj, Mesh_Algorithm): obj = obj.GetSubMesh()
+        aMeasurements = self.CreateMeasurements()
+        pointStruct = aMeasurements.GravityCenter(obj)
+        aMeasurements.UnRegister()
+        return pointStruct.x, pointStruct.y, pointStruct.z
+
     pass # end of class smeshBuilder
 
 import omniORB

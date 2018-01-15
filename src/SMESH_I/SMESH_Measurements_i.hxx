@@ -67,12 +67,17 @@ namespace SMESH
     /*!
      * sum of area of 2D elements of the source
      */
-    double Area(SMESH::SMESH_IDSource_ptr);
+    double Area(SMESH::SMESH_IDSource_ptr theSource);
 
     /*!
      * sum of volume of 3D elements of the source
      */
-    double Volume(SMESH::SMESH_IDSource_ptr);
+    double Volume(SMESH::SMESH_IDSource_ptr theSource);
+
+    /*!
+     * gravity center of the source
+     */
+    SMESH::PointStruct GravityCenter(SMESH::SMESH_IDSource_ptr  theSource);
   };
 }
 

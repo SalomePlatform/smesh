@@ -28,16 +28,15 @@
 
 #include "SMESH_Measurements_i.hxx"
 
-#include "SMESH_Gen_i.hxx"
-#include "SMESH_Filter_i.hxx"
-#include "SMESH_PythonDump.hxx"
-
-#include "SMDS_Mesh.hxx"
-#include "SMDS_MeshNode.hxx"
-#include "SMDS_MeshElement.hxx"
 #include "SMDS_ElemIterator.hxx"
-
+#include "SMDS_Mesh.hxx"
+#include "SMDS_MeshElement.hxx"
+#include "SMDS_MeshNode.hxx"
 #include "SMESHDS_Mesh.hxx"
+#include "SMESH_Filter_i.hxx"
+#include "SMESH_Gen_i.hxx"
+#include "SMESH_MeshAlgos.hxx"
+#include "SMESH_PythonDump.hxx"
 
 
 using namespace SMESH;
@@ -307,4 +306,46 @@ double Measurements_i::Area(SMESH::SMESH_IDSource_ptr theSource)
 double Measurements_i::Volume(SMESH::SMESH_IDSource_ptr theSource)
 {
   return getNumericalValue( theSource, SMESH::Controls::NumericalFunctorPtr(new SMESH::Controls::Volume()) );
+}
+
+//=======================================================================
+//function : GravityCenter
+//purpose  : return gravity center of the source: average coordinates of all nodes
+//=======================================================================
+
+SMESH::PointStruct Measurements_i::GravityCenter(SMESH::SMESH_IDSource_ptr theSource)
+{
+  SMESH::PointStruct grCenter = { 0.,0.,0. };
+  const SMESHDS_Mesh* mesh = getMesh( theSource );
+  if ( !mesh )
+    return grCenter;
+
+  // unmark all nodes; visited nodes will be marked
+  SMESH_MeshAlgos::MarkElems( mesh->nodesIterator(), /*isMarked=*/false );
+
+  gp_XYZ sumCoord( 0,0,0 );
+  int nodeCount = 0;
+
+  SMDS_ElemIteratorPtr eIt = SMESH_Mesh_i::GetElements( theSource, SMESH::ALL );
+  while ( eIt->more() )
+  {
+    const SMDS_MeshElement*   elem = eIt->next();
+    for ( SMDS_NodeIteratorPtr nIt = elem->nodeIterator(); nIt->more(); )
+    {
+      const SMDS_MeshNode* n = nIt->next();
+      if ( !n->isMarked() )
+      {
+        sumCoord += SMESH_NodeXYZ( n );
+        ++nodeCount;
+        n->setIsMarked( true );
+      }
+    }
+  }
+  sumCoord /= nodeCount;
+
+  grCenter.x = sumCoord.X();
+  grCenter.y = sumCoord.Y();
+  grCenter.z = sumCoord.Z();
+
+  return grCenter;
 }
