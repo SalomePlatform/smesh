@@ -7979,33 +7979,29 @@ void SMESH_MeshEditor::FindEqualElements(TIDSortedElemSet &        theElements,
   typedef map< SortableElement, int > TMapOfNodeSet;
   typedef list<int> TGroupOfElems;
 
-  if ( theElements.empty() )
-  { // get all elements in the mesh
-    SMDS_ElemIteratorPtr eIt = GetMeshDS()->elementsIterator();
-    while ( eIt->more() )
-      theElements.insert( theElements.end(), eIt->next() );
-  }
+  SMDS_ElemIteratorPtr elemIt;
+  if ( theElements.empty() ) elemIt = GetMeshDS()->elementsIterator();
+  else                       elemIt = elemSetIterator( theElements );
 
   vector< TGroupOfElems > arrayOfGroups;
   TGroupOfElems groupOfElems;
   TMapOfNodeSet mapOfNodeSet;
 
-  TIDSortedElemSet::iterator elemIt = theElements.begin();
-  for ( int i = 0; elemIt != theElements.end(); ++elemIt )
+  for ( int iGroup = 0; elemIt->more(); )
   {
-    const SMDS_MeshElement* curElem = *elemIt;
+    const SMDS_MeshElement* curElem = elemIt->next();
     SortableElement SE(curElem);
     // check uniqueness
-    pair< TMapOfNodeSet::iterator, bool> pp = mapOfNodeSet.insert(make_pair(SE, i));
+    pair< TMapOfNodeSet::iterator, bool> pp = mapOfNodeSet.insert(make_pair(SE, iGroup));
     if ( !pp.second ) { // one more coincident elem
       TMapOfNodeSet::iterator& itSE = pp.first;
-      int ind = (*itSE).second;
-      arrayOfGroups[ind].push_back( curElem->GetID() );
+      int iG = itSE->second;
+      arrayOfGroups[ iG ].push_back( curElem->GetID() );
     }
     else {
       arrayOfGroups.push_back( groupOfElems );
       arrayOfGroups.back().push_back( curElem->GetID() );
-      i++;
+      iGroup++;
     }
   }
 
@@ -11189,6 +11185,9 @@ void SMESH_MeshEditor::DoubleElements( const TIDSortedElemSet& theElements )
     elemIt = elemSetIterator( theElements );
   }
 
+  // un-mark all elements to avoid duplicating just created elements
+  SMESH_MeshAlgos::MarkElems( mesh->elementsIterator( type ), false );
+
   // duplicate elements
 
   ElemFeatures elemType;
@@ -11197,13 +11196,14 @@ void SMESH_MeshEditor::DoubleElements( const TIDSortedElemSet& theElements )
   while ( elemIt->more() )
   {
     const SMDS_MeshElement* elem = elemIt->next();
-    if ( elem->GetType() != type )
+    if ( elem->GetType() != type || elem->isMarked() )
       continue;
 
     elemType.Init( elem, /*basicOnly=*/false );
     nodes.assign( elem->begin_nodes(), elem->end_nodes() );
 
-    AddElement( nodes, elemType );
+    if ( const SMDS_MeshElement* newElem = AddElement( nodes, elemType ))
+      newElem->setIsMarked( true );
   }
 }
 
