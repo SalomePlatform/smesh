@@ -5490,10 +5490,10 @@ TopAbs_ShapeEnum shapeTypeByDim(const int theDim)
 
 //-----------------------------------------------------------------------------
 /*!
- * \brief Internal structure used to find concurent submeshes
+ * \brief Internal structure used to find concurrent submeshes
  *
- * It represents a pair < submesh, concurent dimension >, where
- * 'concurrent dimension' is dimension of shape where the submesh can concurent
+ * It represents a pair < submesh, concurrent dimension >, where
+ * 'concurrent dimension' is dimension of shape where the submesh can concurrent
  *  with another submesh. In other words, it is dimension of a hypothesis assigned
  *  to submesh.
  */
@@ -5885,7 +5885,7 @@ TListOfListOfInt SMESH_Mesh_i::findConcurrentSubMeshes()
     
     removeDimHyps(dimHypListArr);
     
-    // now, minimise the number of concurrent groups
+    // now, minimize the number of concurrent groups
     // Here we assume that lists of submeshes can have same submesh
     // in case of multi-dimension algorithms, as result
     //  list with common submesh has to be united into one list
@@ -5982,7 +5982,7 @@ void SMESH_Mesh_i::convertMeshOrder (const TListOfListOfInt&     theIdsOrder,
       continue;
     if ( theIsDump )
       aPythonDump << "[ ";
-    // convert shape indeces into interfaces
+    // convert shape indices into interfaces
     SMESH::submesh_array_var aResSubSet = new SMESH::submesh_array();
     aResSubSet->length(aSubOrder.size());
     TListOfInt::const_iterator subIt = aSubOrder.begin();

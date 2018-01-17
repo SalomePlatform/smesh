@@ -15,7 +15,7 @@ ids = filter.GetIDs()
 print("Number of faces with aspect ratio > 1.5:", len(ids))
 
 # copy the faces with aspect ratio > 1.5 to another mesh;
-# this demostrates that a filter can be used where usually a group or sub-mesh is acceptable
+# this demonstrates that a filter can be used where usually a group or sub-mesh is acceptable
 filter.SetMesh( mesh.GetMesh() ) # - actually non necessary as mesh is set at filter creation
 mesh2 = smesh.CopyMesh( filter, "AR > 1.5" )
 print("Number of copied faces with aspect ratio > 1.5:", mesh2.NbFaces())

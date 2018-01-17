@@ -247,7 +247,7 @@ int GmfOpenMesh(const char *FilNam, int mod, ...)
                 return(0);
         }
 
-        /* Open the file in the required mod and initialyse the mesh structure */
+        /* Open the file in the required mod and initialise the mesh structure */
 
         if(msh->mod == GmfRead)
         {

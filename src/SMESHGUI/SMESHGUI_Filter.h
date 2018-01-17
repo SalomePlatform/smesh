@@ -104,7 +104,7 @@ public:
 
 /*
   Class       : SMESHGUI_QuadrangleFilter
-  Description : Verify whether selected cell is quadranle
+  Description : Verify whether selected cell is quadrangle
 */
 
 DEFINE_STANDARD_HANDLE(SMESHGUI_QuadrangleFilter, SMESHGUI_Filter)

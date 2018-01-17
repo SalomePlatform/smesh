@@ -199,7 +199,7 @@ public:
                   const bool         the13Diag);
   /*!
    * \brief Split each of given quadrangles into 4 triangles.
-   * \param theElems - The faces to be splitted. If empty all faces are split.
+   * \param theElems - The faces to be split. If empty all faces are split.
    */
   void QuadTo4Tri (TIDSortedElemSet & theElems);
 
@@ -542,7 +542,7 @@ public:
   // of the side 2. If nb of links in the free border and
   // between theSide2FirstNode and theSide2LastNode are different,
   // additional nodes are inserted on a link provided that no
-  // volume elements share the splitted link.
+  // volume elements share the split link.
   // The side 2 is a free border if theSide2IsFreeBorder == true.
   // Sewing is performed between the given first, second and last
   // nodes on the sides.

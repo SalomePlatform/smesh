@@ -28,7 +28,7 @@
 
 #include <SMESHGUI_SpinBox.h>
 
-// Qt incldues
+// Qt includes
 #include <QItemDelegate>
 #include <QTableWidget>
 #include <QHeaderView>

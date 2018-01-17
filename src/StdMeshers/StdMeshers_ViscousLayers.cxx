@@ -764,7 +764,7 @@ namespace VISCOUS_3D
     // Convex FACEs whose radius of curvature is less than the thickness of layers
     map< TGeomID, _ConvexFace >      _convexFaces;
 
-    // shapes (EDGEs and VERTEXes) srink from which is forbidden due to collisions with
+    // shapes (EDGEs and VERTEXes) shrink from which is forbidden due to collisions with
     // the adjacent SOLID
     set< TGeomID >                   _noShrinkShapes;
 
@@ -3082,7 +3082,7 @@ bool _ViscousBuilder::findShapesToSmooth( _SolidData& data )
   }
 
 
-  // Fill _eosC1 to make that C1 FACEs and EGDEs between them to be smoothed as a whole
+  // Fill _eosC1 to make that C1 FACEs and EDGEs between them to be smoothed as a whole
 
   TopTools_MapOfShape c1VV;
 
@@ -4309,7 +4309,7 @@ void _Simplex::SortSimplices(vector<_Simplex>& simplices)
 
 //================================================================================
 /*!
- * \brief DEBUG. Create groups contating temorary data of _LayerEdge's
+ * \brief DEBUG. Create groups containing temporary data of _LayerEdge's
  */
 //================================================================================
 
@@ -6722,7 +6722,7 @@ void _ViscousBuilder::findCollisionEdges( _SolidData& data, SMESH_MesherHelper& 
              src2->GetID() < edge->_nodes[0]->GetID() )
           continue; // avoid using same segment twice
 
-        // a _LayerEdge containg tgt2
+        // a _LayerEdge containing tgt2
         _LayerEdge* neiborEdge = edge->_2neibors->_edges[j];
 
         _TmpMeshFaceOnEdge* f = new _TmpMeshFaceOnEdge( edge, neiborEdge, --_tmpFaceID );
@@ -10331,7 +10331,7 @@ bool _ViscousBuilder::shrink(_SolidData& theData)
   vector< _EdgesOnShape* > subEOS;
   vector< _LayerEdge* > lEdges;
 
-  // loop on FACEs to srink mesh on
+  // loop on FACEs to shrink mesh on
   map< TGeomID, list< _SolidData* > >::iterator f2sd = f2sdMap.begin();
   for ( ; f2sd != f2sdMap.end(); ++f2sd )
   {
@@ -10481,13 +10481,13 @@ bool _ViscousBuilder::shrink(_SolidData& theData)
         if ( eos.SWOLType() == TopAbs_EDGE )
         {
           SMESH_subMesh* edgeSM = _mesh->GetSubMesh( eos._sWOL );
-          _Shrinker1D& srinker  = e2shrMap[ edgeSM->GetId() ];
-          eShri1D.insert( & srinker );
-          srinker.AddEdge( eos._edges[0], eos, helper );
+          _Shrinker1D& shrinker  = e2shrMap[ edgeSM->GetId() ];
+          eShri1D.insert( & shrinker );
+          shrinker.AddEdge( eos._edges[0], eos, helper );
           VISCOUS_3D::ToClearSubWithMain( edgeSM, data._solid );
-          // restore params of nodes on EGDE if the EDGE has been already
-          // srinked while srinking other FACE
-          srinker.RestoreParams();
+          // restore params of nodes on EDGE if the EDGE has been already
+          // shrinked while shrinking other FACE
+          shrinker.RestoreParams();
         }
         for ( size_t i = 0; i < eos._edges.size(); ++i )
         {
@@ -10834,7 +10834,7 @@ bool _ViscousBuilder::shrink(_SolidData& theData)
     if ( data2 )
       VISCOUS_3D::ToClearSubWithMain( sm, data2->_solid );
 
-  } // loop on FACES to srink mesh on
+  } // loop on FACES to shrink mesh on
 
 
   // Replace source nodes by target nodes in shrinked mesh edges
@@ -10981,7 +10981,7 @@ void _ViscousBuilder::restoreNoShrink( _LayerEdge& edge ) const
 
 //================================================================================
 /*!
- * \brief Try to fix triangles with high aspect ratio by swaping diagonals
+ * \brief Try to fix triangles with high aspect ratio by swapping diagonals
  */
 //================================================================================
 

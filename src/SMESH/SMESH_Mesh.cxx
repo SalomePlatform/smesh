@@ -694,7 +694,7 @@ SMESH_Mesh::AddHypothesis(const TopoDS_Shape & aSubShape,
       }
     }
 
-    // check concurent hypotheses on ancestors
+    // check concurrent hypotheses on ancestors
     if (ret < SMESH_Hypothesis::HYP_CONCURENT && !isGlobalHyp )
     {
       SMESH_subMeshIteratorPtr smIt = subMesh->getDependsOnIterator(false,false);
@@ -764,7 +764,7 @@ SMESH_Mesh::RemoveHypothesis(const TopoDS_Shape & aSubShape,
     if (ret2 > ret) // more severe
       ret = ret2;
 
-    // check concurent hypotheses on ancestors
+    // check concurrent hypotheses on ancestors
     if (ret < SMESH_Hypothesis::HYP_CONCURENT && !IsMainShape( aSubShape ) )
     {
       SMESH_subMeshIteratorPtr smIt = subMesh->getDependsOnIterator(false,false);

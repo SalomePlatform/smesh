@@ -1683,7 +1683,7 @@ double SMDS_VolumeTool::MaxLinearSize2() const
 
 //================================================================================
 /*!
- * \brief fast check that only one volume is build on the face nodes
+ * \brief Fast quickly check that only one volume is built on the face nodes
  *        This check is valid for conformal meshes only
  */
 //================================================================================
@@ -1731,7 +1731,7 @@ bool SMDS_VolumeTool::IsFreeFace( int faceIndex, const SMDS_MeshElement** otherV
 
 //================================================================================
 /*!
- * \brief Thorough check that only one volume is build on the face nodes
+ * \brief Thorough check that only one volume is built on the face nodes
  */
 //================================================================================
 

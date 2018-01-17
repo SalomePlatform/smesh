@@ -1218,6 +1218,18 @@ class smeshBuilder(SMESH._objref_SMESH_Gen):
         aMeasurements.UnRegister()
         return value
 
+    ## Get gravity center of all nodes of the mesh object.
+    #  @param obj mesh, submesh or group
+    #  @return three components of the gravity center: x,y,z
+    #  @ingroup l1_measurements
+    def GetGravityCenter(self, obj):
+        if isinstance(obj, Mesh): obj = obj.mesh
+        if isinstance(obj, Mesh_Algorithm): obj = obj.GetSubMesh()
+        aMeasurements = self.CreateMeasurements()
+        pointStruct = aMeasurements.GravityCenter(obj)
+        aMeasurements.UnRegister()
+        return pointStruct.x, pointStruct.y, pointStruct.z
+
     pass # end of class smeshBuilder
 
 import omniORB
@@ -3378,7 +3390,7 @@ class Mesh(metaclass=MeshMeta):
         return self.editor.TriToQuadObject(theObject, Functor, MaxAngle)
 
     ## Split quadrangles into triangles.
-    #  @param IDsOfElements the faces to be splitted.
+    #  @param IDsOfElements the faces to be split.
     #  @param theCriterion is a numerical functor, in terms of enum SMESH.FunctorType, used to
     #         choose a diagonal for splitting. If @a theCriterion is None, which is a default
     #         value, then quadrangles will be split by the smallest diagonal.
@@ -3414,7 +3426,7 @@ class Mesh(metaclass=MeshMeta):
 
     ## Split each of given quadrangles into 4 triangles. A node is added at the center of
     #  a quadrangle.
-    #  @param theElements the faces to be splitted. This can be either mesh, sub-mesh,
+    #  @param theElements the faces to be split. This can be either mesh, sub-mesh,
     #         group or a list of face IDs. By default all quadrangles are split
     #  @ingroup l2_modif_cutquadr
     def QuadTo4Tri (self, theElements=[]):
@@ -3429,7 +3441,7 @@ class Mesh(metaclass=MeshMeta):
         return self.editor.QuadTo4Tri( theElements )
 
     ## Split quadrangles into triangles.
-    #  @param IDsOfElements the faces to be splitted
+    #  @param IDsOfElements the faces to be split
     #  @param Diag13        is used to choose a diagonal for splitting.
     #  @return TRUE in case of success, FALSE otherwise.
     #  @ingroup l2_modif_cutquadr
@@ -3450,7 +3462,7 @@ class Mesh(metaclass=MeshMeta):
         return self.editor.SplitQuadObject(theObject, Diag13)
 
     ## Find a better splitting of the given quadrangle.
-    #  @param IDOfQuad   the ID of the quadrangle to be splitted.
+    #  @param IDOfQuad   the ID of the quadrangle to be split.
     #  @param theCriterion  is a numerical functor, in terms of enum SMESH.FunctorType, used to
     #         choose a diagonal for splitting.
     #         Type SMESH.FunctorType._items in the Python Console to see all items.

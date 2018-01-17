@@ -31,7 +31,6 @@
 
 module SMESH
 {
-
   /*
    * Measure component
    */
@@ -70,7 +69,12 @@ module SMESH
      * sum of volume of 3D elements of the source
      */
     double Volume(in SMESH_IDSource source);
+
+    /*!
+     * gravity center of the source
+     */
+    PointStruct GravityCenter(in SMESH_IDSource source);
   };
-};    
+};
 
 #endif

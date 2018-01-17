@@ -720,7 +720,7 @@ bool SMESH_Block::ComputeParameters(const gp_Pnt& thePoint,
   const bool isOnFace = IsFaceID( theShapeID );
   double * coef = GetShapeCoef( theShapeID );
 
-  // Find the first guess paremeters
+  // Find the first guess parameters
 
   gp_XYZ start(0, 0, 0);
 
@@ -1585,7 +1585,7 @@ int SMESH_Block::GetOrderedEdges (const TopoDS_Face&   theFace,
 }
 //================================================================================
 /*!
- * \brief Call it after geometry initialisation
+ * \brief Call it after geometry initialization
  */
 //================================================================================
 

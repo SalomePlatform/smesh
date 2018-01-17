@@ -21,7 +21,7 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-#  SMESH SMESH_SWIG : binding of C++ implementaion with Python
+#  SMESH SMESH_SWIG : binding of C++ implementation with Python
 #  File   : SMESH_blocks.py
 #  Author : Julia DOROVSKIKH
 #  Module : SMESH

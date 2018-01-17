@@ -1761,7 +1761,7 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
   //       |   |  |   |
   //       |   |C |   |
   //       | L |  | R |
-  //  left |   |__|   | rigth
+  //  left |   |__|   | right
   //       |  /    \  |
   //       | /  C   \ |
   //       |/        \|
@@ -1774,7 +1774,7 @@ bool StdMeshers_Quadrangle_2D::computeQuadPref (SMESH_Mesh &        aMesh,
   //       |   |__|   |
   //       |  /    \  |
   //       | /  C   \ |
-  //  left |/________\| rigth
+  //  left |/________\| right
   //       |          |
   //       |    C     |
   //       |          |
@@ -2997,7 +2997,7 @@ bool StdMeshers_Quadrangle_2D::computeReduced (SMESH_Mesh &        aMesh,
     //       |   |  |   |
     //       |   |  |   |
     //       | L |  | R |
-    //  left |   |  |   | rigth
+    //  left |   |  |   | right
     //       |  /    \  |
     //       | /  C   \ |
     //       |/        \|

@@ -2481,7 +2481,7 @@ bool SMESH_Pattern::Apply (const TopoDS_Face&   theFace,
   // If there are several wires, define the order of edges of inner wires:
   // compute UV of inner edge-points using 2 methods: the one for in-face points
   // and the one for on-edge points and then choose the best edge order
-  // by the best correspondance of the 2 results
+  // by the best correspondence of the 2 results
   if ( nbWires > 1 )
   {
     // compute UV of inner edge-points using the method for in-face points

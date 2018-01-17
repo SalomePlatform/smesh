@@ -145,7 +145,7 @@ namespace
 
   //================================================================================
   /*!
-   * \brief Convertor of a pair of integers to a sole index
+   * \brief Converter of a pair of integers to a sole index
    */
   struct _Indexer
   {
@@ -156,7 +156,7 @@ namespace
   };
   //================================================================================
   /*!
-   * \brief Oriented convertor of a pair of integers to a sole index 
+   * \brief Oriented converter of a pair of integers to a sole index 
    */
   class _OrientedIndexer : public _Indexer
   {

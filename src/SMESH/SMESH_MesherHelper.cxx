@@ -2963,7 +2963,7 @@ bool SMESH_MesherHelper::IsDistorted2D( SMESH_subMesh*      faceSM,
  * \brief Find out elements orientation on a geometrical face
  * \param theFace - The face correctly oriented in the shape being meshed
  * \retval bool - true if the face normal and the normal of first element
- *                in the correspoding submesh point in different directions
+ *                in the corresponding submesh point in different directions
  */
 //================================================================================
 
@@ -4378,7 +4378,7 @@ namespace { // Structures used by FixQuadraticElements()
                                              vector< TChain> &   resultChains,
                                              SMDS_TypeOfPosition pos )
   {
-    // put links in the set and evalute number of result chains by number of boundary links
+    // put links in the set and evaluate number of result chains by number of boundary links
     TLinkSet linkSet;
     size_t nbBndLinks = 0;
     for ( TChain::iterator lnk = allLinks.begin(); lnk != allLinks.end(); ++lnk ) {

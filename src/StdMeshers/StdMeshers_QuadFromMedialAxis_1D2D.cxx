@@ -1018,7 +1018,7 @@ namespace
    *  \param [in] theDivPoints - projections of VERTEXes to MA
    *  \param [in] theSinuEdges - the sinuous EDGEs
    *  \param [in] theSideEdgeIDs - indices of sinuous EDGEs per side
-   *  \param [in] theIsEdgeComputed - is sinuous EGDE is meshed
+   *  \param [in] theIsEdgeComputed - is sinuous EDGE is meshed
    *  \param [in,out] thePointsOnE - the map to fill
    *  \param [out] theNodes2Merge - the map of nodes to merge
    */
@@ -1641,7 +1641,7 @@ namespace
   //================================================================================
   /*!
    * \brief Divide the sinuous EDGEs by projecting the division point of Medial
-   *        Axis to the EGDEs
+   *        Axis to the EDGEs
    *  \param [in] theHelper - the helper
    *  \param [in] theMinSegLen - minimal segment length
    *  \param [in] theMA - the Medial Axis

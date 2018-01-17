@@ -58,7 +58,7 @@ import SMESH, StdMeshers
 #  @ingroup l2_algorithms
 class Mesh_Algorithm:
     
-    ## Private constuctor
+    ## Private constructor
     def __init__(self):
         self.mesh = None
         self.geom = None

@@ -176,7 +176,7 @@ namespace VISCOUS_2D
    */
   struct _Segment
   {
-    const gp_XY* _uv[2];       // poiter to _LayerEdge::_uvIn
+    const gp_XY* _uv[2];       // pointer to _LayerEdge::_uvIn
     int          _indexInLine; // position in _PolyLine
 
     _Segment() {}

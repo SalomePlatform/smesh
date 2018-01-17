@@ -73,7 +73,7 @@ namespace SMESH
   
   /*
     Class       : Functor_i
-    Description : An abstact class for all functors 
+    Description : An abstract class for all functors 
   */
   class SMESH_I_EXPORT Functor_i: public virtual POA_SMESH::Functor,
                                   public virtual SALOME::GenericObj_i

@@ -165,21 +165,23 @@ SMESHGUI_DuplicateNodesDlg::SMESHGUI_DuplicateNodesDlg( SMESHGUI* theModule )
   mySelectButton3->setIcon(iconSelect);
   myLineEdit3 = new QLineEdit(myGroupArguments);
   myLineEdit3->setReadOnly(true);
+  myGenerateButton3 = new QPushButton(tr("GENERATE_GROUPS"), myGroupArguments);
 
   myCheckBox1 = new QCheckBox(tr("CONSTRUCT_NEW_GROUP_ELEMENTS"), myGroupArguments);
   myCheckBox2 = new QCheckBox(tr("CONSTRUCT_NEW_GROUP_NODES"), myGroupArguments);
 
-  aGroupArgumentsLayout->addWidget(myTextLabel1,    0, 0);
-  aGroupArgumentsLayout->addWidget(mySelectButton1, 0, 1);
-  aGroupArgumentsLayout->addWidget(myLineEdit1,     0, 2);
-  aGroupArgumentsLayout->addWidget(myTextLabel2,    1, 0);
-  aGroupArgumentsLayout->addWidget(mySelectButton2, 1, 1);
-  aGroupArgumentsLayout->addWidget(myLineEdit2,     1, 2);
-  aGroupArgumentsLayout->addWidget(myTextLabel3,    2, 0);
-  aGroupArgumentsLayout->addWidget(mySelectButton3, 2, 1);
-  aGroupArgumentsLayout->addWidget(myLineEdit3,     2, 2);
-  aGroupArgumentsLayout->addWidget(myCheckBox1, 3, 0);
-  aGroupArgumentsLayout->addWidget(myCheckBox2, 4, 0);
+  aGroupArgumentsLayout->addWidget(myTextLabel1,     0, 0);
+  aGroupArgumentsLayout->addWidget(mySelectButton1,  0, 1);
+  aGroupArgumentsLayout->addWidget(myLineEdit1,      0, 2, 1, 2);
+  aGroupArgumentsLayout->addWidget(myTextLabel2,     1, 0);
+  aGroupArgumentsLayout->addWidget(mySelectButton2,  1, 1);
+  aGroupArgumentsLayout->addWidget(myLineEdit2,      1, 2, 1, 2);
+  aGroupArgumentsLayout->addWidget(myTextLabel3,     2, 0);
+  aGroupArgumentsLayout->addWidget(mySelectButton3,  2, 1);
+  aGroupArgumentsLayout->addWidget(myLineEdit3,      2, 2);
+  aGroupArgumentsLayout->addWidget(myGenerateButton3,2, 3);
+  aGroupArgumentsLayout->addWidget(myCheckBox1,      3, 0);
+  aGroupArgumentsLayout->addWidget(myCheckBox2,      4, 0);
   aGroupArgumentsLayout->setRowStretch(5, 1);
   
   // Buttons
@@ -226,6 +228,7 @@ SMESHGUI_DuplicateNodesDlg::SMESHGUI_DuplicateNodesDlg( SMESHGUI* theModule )
   connect(mySelectButton1, SIGNAL (clicked()), this, SLOT(onEditCurrentArgument()));
   connect(mySelectButton2, SIGNAL (clicked()), this, SLOT(onEditCurrentArgument()));
   connect(mySelectButton3, SIGNAL (clicked()), this, SLOT(onEditCurrentArgument()));
+  connect(myGenerateButton3, SIGNAL (clicked()), this, SLOT(onGenerate()));
 
   connect(myCheckBox2,    SIGNAL(stateChanged(int)), SLOT(updateButtons()));
 
@@ -302,20 +305,21 @@ void SMESHGUI_DuplicateNodesDlg::onConstructorsClicked (int constructorId)
       // Set text to the group of arguments and to the first two labels
       myGroupArguments->setTitle(tr("DUPLICATION_WITHOUT_ELEMS"));
       myTextLabel1->setText(tr("GROUP_NODES_TO_DUPLICATE"));
-      myTextLabel2->setText(tr("GROUP_NODES_TO_REPLACE"));
+      myTextLabel3->setText(tr("GROUP_NODES_TO_REPLACE"));
 
       myCheckBox1->hide();
       myCheckBox2->show();
       myCheckBox2->setText( tr("CONSTRUCT_NEW_GROUP_NODES"));
       
-      // Hide the third field
-      myTextLabel2->show();
-      mySelectButton2->show();
-      myLineEdit2->show();
-      myTextLabel3->hide();
-      mySelectButton3->hide();
-      myLineEdit3->hide();
-      
+      // Hide the 2nd field
+      myTextLabel2     ->hide();
+      mySelectButton2  ->hide();
+      myLineEdit2      ->hide();
+      myTextLabel3     ->show();
+      mySelectButton3  ->show();
+      myLineEdit3      ->show();
+      myGenerateButton3->show();
+
       break;
     }
   case 1:
@@ -331,13 +335,14 @@ void SMESHGUI_DuplicateNodesDlg::onConstructorsClicked (int constructorId)
       myCheckBox1->setText( tr("CONSTRUCT_NEW_GROUP_ELEMENTS"));
       myCheckBox2->setText( tr("CONSTRUCT_NEW_GROUP_NODES"));
 
-      // Show the third field
-      myTextLabel2->show();
-      mySelectButton2->show();
-      myLineEdit2->show();
-      myTextLabel3->show();
-      mySelectButton3->show();
-      myLineEdit3->show();
+      // Show the 2nd field
+      myTextLabel2     ->show();
+      mySelectButton2  ->show();
+      myLineEdit2      ->show();
+      myTextLabel3     ->show();
+      mySelectButton3  ->show();
+      myLineEdit3      ->show();
+      myGenerateButton3->show();
 
       break;
     }
@@ -352,12 +357,13 @@ void SMESHGUI_DuplicateNodesDlg::onConstructorsClicked (int constructorId)
       myCheckBox2->hide();
 
       // Hide the second and the third field
-      myTextLabel2->hide();
-      mySelectButton2->hide();
-      myLineEdit2->hide();
-      myTextLabel3->hide();
-      mySelectButton3->hide();
-      myLineEdit3->hide();
+      myTextLabel2     ->hide();
+      mySelectButton2  ->hide();
+      myLineEdit2      ->hide();
+      myTextLabel3     ->hide();
+      mySelectButton3  ->hide();
+      myLineEdit3      ->hide();
+      myGenerateButton3->hide();
 
       break;
     }
@@ -373,12 +379,13 @@ void SMESHGUI_DuplicateNodesDlg::onConstructorsClicked (int constructorId)
       myCheckBox2->setText( tr("ON_ALL_BOUNDARIES"));
 
       // Hide the second and the third field
-      myTextLabel2->hide();
-      mySelectButton2->hide();
-      myLineEdit2->hide();
-      myTextLabel3->hide();
-      mySelectButton3->hide();
-      myLineEdit3->hide();
+      myTextLabel2     ->hide();
+      mySelectButton2  ->hide();
+      myLineEdit2      ->hide();
+      myTextLabel3     ->hide();
+      mySelectButton3  ->hide();
+      myLineEdit3      ->hide();
+      myGenerateButton3->hide();
 
       break;
     }
@@ -410,7 +417,7 @@ bool SMESHGUI_DuplicateNodesDlg::onApply()
   QStringList anEntryList;
 
   try {
-    SMESH::SMESH_Mesh_var aMesh = myGroups1[0]->GetMesh();
+    SMESH::SMESH_Mesh_var             aMesh = myGroups1[0]->GetMesh();
     SMESH::SMESH_MeshEditor_var aMeshEditor = aMesh->GetMeshEditor();
 
     switch ( operationMode ) {
@@ -421,9 +428,9 @@ bool SMESHGUI_DuplicateNodesDlg::onApply()
       for ( int i = 0; i < myGroups1.count(); i++ )
         g1[i] = myGroups1[i];
       SMESH::ListOfGroups_var g2 = new SMESH::ListOfGroups();
-      g2->length( myGroups2.count() );
-      for ( int i = 0; i < myGroups2.count(); i++ )
-        g2[i] = myGroups2[i];
+      g2->length( myGroups3.count() );
+      for ( int i = 0; i < myGroups3.count(); i++ )
+        g2[i] = myGroups3[i];
 
       if ( toCreateNodeGroup ) {
         SMESH::SMESH_GroupBase_var aNewGroup = 
@@ -504,10 +511,10 @@ bool SMESHGUI_DuplicateNodesDlg::onApply()
     SalomeApp_Tools::QtCatchCorbaException(S_ex);
   }
   catch ( const std::exception& exc ) {
-    INFOS( "Follow exception was cought:\n\t" << exc.what() );
+    INFOS( "Follow exception was caught:\n\t" << exc.what() );
   }
   catch (...) {
-    INFOS( "Unknown exception was cought !!!" );
+    INFOS( "Unknown exception was caught !!!" );
   }
 
   if (!result) {
@@ -638,6 +645,9 @@ void SMESHGUI_DuplicateNodesDlg::updateButtons()
   bool isDataValid = isValid();
   myButtonOk->setEnabled( isDataValid );
   myButtonApply->setEnabled( isDataValid );
+
+  int operationMode = myGroupConstructors->checkedId();
+  myGenerateButton3->setEnabled( operationMode <= 1 && !myGroups1.empty() );
 }
 
 /*!
@@ -688,6 +698,59 @@ void SMESHGUI_DuplicateNodesDlg::onDeactivate()
     mySMESHGUI->ResetState();
     mySMESHGUI->SetActiveDialogBox(0);
   }
+}
+
+/*!
+  \brief SLOT called when Generate button is clicked
+*/
+void SMESHGUI_DuplicateNodesDlg::onGenerate()
+{
+  if ( SMESHGUI::isStudyLocked() )
+    return;
+
+  SUIT_OverrideCursor aWaitCursor;
+  BusyLocker lock( myBusy );
+
+  try {
+    SMESH::SMESH_Mesh_var             aMesh = myGroups1[0]->GetMesh();
+    SMESH::SMESH_MeshEditor_var aMeshEditor = aMesh->GetMeshEditor();
+
+    SMESH::ListOfGroups_var g1 = new SMESH::ListOfGroups();
+    g1->length( myGroups1.count() );
+    for ( int i = 0; i < myGroups1.count(); i++ )
+      g1[i] = myGroups1[i];
+    SMESH::ListOfGroups_var g2 = new SMESH::ListOfGroups();
+    g2->length( myGroups2.count() );
+    for ( int i = 0; i < myGroups2.count(); i++ )
+      g2[i] = myGroups2[i];
+
+    SMESH::ListOfGroups_var newGroups =
+      aMeshEditor->AffectedElemGroupsInRegion( g1, g2, GEOM::GEOM_Object::_nil() );
+
+    QString text;
+    switch ( newGroups->length() ) {
+    case 0:  break;
+    case 1:  text = SMESH::toQStr( newGroups[0]->GetName() ); break;
+    default: text = tr( "SMESH_OBJECTS_SELECTED" ).arg( newGroups->length() );
+    }
+    myLineEdit3->setText( text );
+
+    myGroups3.clear();
+    for ( CORBA::ULong i = 0; i < newGroups->length(); ++i )
+      myGroups3 << SMESH::SMESH_GroupBase::_duplicate( newGroups[i] );
+  }
+  catch (const SALOME::SALOME_Exception& S_ex) {
+    SalomeApp_Tools::QtCatchCorbaException(S_ex);
+  }
+  catch ( const std::exception& exc ) {
+    INFOS( "Follow exception was caught:\n\t" << exc.what() );
+  }
+  catch (...) {
+    INFOS( "Unknown exception was caught !!!" );
+  }
+
+  mySMESHGUI->updateObjBrowser(true);
+  updateButtons();
 }
 
 /*!

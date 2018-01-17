@@ -1302,7 +1302,7 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
     {
       // find the function name
       int functBeg = posAlready;
-      char* script = (char*) anUpdatedScript.ToCString() + posAlready - 1; // look at ":" after "def fuction()"
+      char* script = (char*) anUpdatedScript.ToCString() + posAlready - 1; // look at ":" after "def function()"
       while ( *script != ' ' ) {
         script--;
         functBeg--;

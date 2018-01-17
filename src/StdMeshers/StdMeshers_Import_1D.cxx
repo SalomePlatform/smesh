@@ -20,7 +20,7 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH : implementaion of SMESH idl descriptions
+//  SMESH SMESH : implementation of SMESH idl descriptions
 //  File   : StdMeshers_Import_1D.cxx
 //  Module : SMESH
 //
@@ -211,7 +211,7 @@ namespace // INTERNAL STUFF
                                            "StdMeshers_Import_1D::_Listener") {}
 
   public:
-    // return poiter to a static listener
+    // return pointer to a static listener
     static _Listener* get() { static _Listener theListener; return &theListener; }
 
     static _ImportData* getImportData(const SMESH_Mesh* srcMesh, SMESH_Mesh* tgtMesh);

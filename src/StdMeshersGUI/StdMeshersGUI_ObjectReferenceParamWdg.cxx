@@ -36,7 +36,7 @@
 #include <SVTK_ViewWindow.h>
 #include <SALOME_ListIO.hxx>
 
-// SALOME KERNEL incldues
+// SALOME KERNEL includes
 #include <SALOMEDSClient_SObject.hxx>
 #include <SALOMEDSClient_Study.hxx>
 

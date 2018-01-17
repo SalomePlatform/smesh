@@ -20,7 +20,7 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMDS : implementaion of Salome mesh data structure
+//  SMESH SMDS : implementation of Salome mesh data structure
 // File      : SMDS_IteratorOnIterators.hxx
 // Author    : Edward AGAPOV (eap)
 //
@@ -32,7 +32,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 /// SMDS_Iterator iterating over all elements provided by other iterators
 ///
-/// Other iterators must implement SMDS_Iterator iterface and
+/// Other iterators must implement SMDS_Iterator interface and
 /// must be provided within a stl-like container
 /// BE CAREFUL: iterator pointed value is static_cast'ed to VALUE
 ///////////////////////////////////////////////////////////////////////////////

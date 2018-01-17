@@ -126,7 +126,7 @@ QWidget* StdMeshersGUI_StdHypothesisCreator::getWidgetForParam( int i ) const
 
 //================================================================================
 /*!
- * \brief Allow modifing myCustomWidgets in const methods
+ * \brief Allow modifying myCustomWidgets in const methods
   * \retval ListOfWidgets* - non-const pointer to myCustomWidgets
  */
 //================================================================================
@@ -1433,7 +1433,7 @@ QString StdMeshersGUI_StdHypothesisCreator::type() const
 //================================================================================
 /*!
  * \brief String to insert in "SMESH_%1_HYPOTHESIS" to get hypothesis type name
- * from message resouce file
+ * from message resource file
   * \param t - hypothesis type
   * \retval QString - result string
  */

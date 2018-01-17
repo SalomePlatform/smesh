@@ -42,7 +42,10 @@ Parameters to be defined in this mode:
 <li><b>Group of nodes to duplicate</b> (<em>mandatory</em>): these
   nodes will be duplicated.</li>
 <li><b>Group of elements to replace nodes with new ones</b>
-  (<em>optional</em>): the new nodes will replace the duplicated nodes within these elements.</li> 
+  (<em>optional</em>): the new nodes will replace the duplicated nodes
+  within these elements. \b Generate button automatically creates
+  these groups.
+</li> 
 <li><b>Construct group with newly created nodes</b> option
   (<em>checked by default</em>): if checked - the group with newly
   created nodes will be built.</li> 
@@ -73,7 +76,8 @@ Parameters to be defined in this mode:
   group of nodes at crack bottom which will not be duplicated.</li>
 <li><b>Group of elements to replace nodes with new ones</b>
   (<em>mandatory</em>): the new nodes will replace the nodes to
-  duplicate within these elements.</li> 
+  duplicate within these elements. \b Generate button automatically
+  creates these groups.</li>
 <li><b>Construct group with newly created elements</b> option
  (<em>checked by default</em>): if checked - the group of newly created
  elements will be built.</li>

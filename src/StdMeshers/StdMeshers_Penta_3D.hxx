@@ -20,7 +20,7 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH StdMeshers : implementaion of SMESH idl descriptions
+//  SMESH StdMeshers : implementation of SMESH idl descriptions
 //  File   : StdMeshers_Penta_3D.hxx
 //  Module : SMESH
 //
@@ -86,7 +86,7 @@ public:
 
   SMESH_Block & Block() { return myTBlock; }
 
-  bool IsForwadEdge(const int theEdgeID);
+  bool IsForwardEdge(const int theEdgeID);
 
   int  ErrorStatus() const;
 

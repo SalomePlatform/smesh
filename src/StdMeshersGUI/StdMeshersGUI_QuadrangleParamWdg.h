@@ -109,7 +109,7 @@ class STDMESHERSGUI_EXPORT StdMeshersGUI_QuadrangleParamWdg : public QWidget
   void typeChanged(int);
 
  private:
-  QButtonGroup* myType; // Quadranle preference, Triangle preference, Reduced
+  QButtonGroup* myType; // Quadrangle preference, Triangle preference, Reduced
 };
 
 //================================================================================

@@ -3060,7 +3060,7 @@ bool StdMeshers_Prism_3D::IsApplicable(const TopoDS_Shape & shape, bool toCheckA
 
           if ( side._topEdge.IsNull() )
           {
-            // find vertical EDGEs --- EGDEs shared with neighbor side FACEs
+            // find vertical EDGEs --- EDGEs shared with neighbor side FACEs
             for ( int is2nd = 0; is2nd < 2 && isOK; ++is2nd ) // 2 adjacent neighbors
             {
               int di = is2nd ? 1 : -1;
@@ -3421,7 +3421,7 @@ bool StdMeshers_Prism_3D::initPrism(Prism_3D::TPrismTopo& thePrism,
   if ( !botSM ) // find a proper bottom
   {
     bool savedSetErrorToSM = mySetErrorToSM;
-    mySetErrorToSM = false; // ingore errors in initPrism()
+    mySetErrorToSM = false; // ignore errors in initPrism()
 
     // search among meshed FACEs
     list< SMESH_subMesh* >::iterator sm = meshedSubMesh.begin();
@@ -4956,7 +4956,7 @@ bool StdMeshers_Sweeper::ComputeNodesByTrsf( const double tol,
   const size_t zSrc = 0, zTgt = zSize-1;
   if ( zSize < 3 ) return true;
 
-  vector< vector< gp_XYZ > > intPntsOfLayer( zSize ); // node coodinates to compute
+  vector< vector< gp_XYZ > > intPntsOfLayer( zSize ); // node coordinates to compute
   // set coordinates of src and tgt nodes
   for ( size_t z = 0; z < intPntsOfLayer.size(); ++z )
     intPntsOfLayer[ z ].resize( myIntColumns.size() );
@@ -4970,7 +4970,7 @@ bool StdMeshers_Sweeper::ComputeNodesByTrsf( const double tol,
   prepareTopBotDelaunay();
   bool isErrorCorrectable = findDelaunayTriangles();
 
-  // compute coordinates of internal nodes by projecting (transfroming) src and tgt
+  // compute coordinates of internal nodes by projecting (transforming) src and tgt
   // nodes towards the central layer
 
   vector< NSProjUtils::TrsfFinder3D > trsfOfLayer( zSize );

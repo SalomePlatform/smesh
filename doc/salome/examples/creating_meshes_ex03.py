@@ -42,7 +42,7 @@ Nb_Segments_4 = Regular_1D_3.NumberOfSegments(12)
 MEFISTO_2D_3 = Mesh_1.Triangle(algo=smeshBuilder.MEFISTO,geom=Face_3)
 SubMesh_3 = MEFISTO_2D_3.GetSubMesh()
 
-# check exisiting sub-mesh priority order
+# check existing sub-mesh priority order
 [ [ SubMesh_1, SubMesh_3, SubMesh_2 ] ] = Mesh_1.GetMeshOrder()
 isDone = Mesh_1.Compute()
 print("Nb elements at initial order of sub-meshes:", Mesh_1.NbElements())
