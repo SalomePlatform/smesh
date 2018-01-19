@@ -7057,7 +7057,7 @@ bool SMESHGUI::renameObject( const QString& entry, const QString& name) {
           aType == SMESH::SUBMESH_EDGE || aType == SMESH::SUBMESH_VERTEX ||
           aType == SMESH::HYPOTHESIS || aType == SMESH::ALGORITHM) {
         if ( !name.isEmpty() ) {
-          SMESHGUI::GetSMESHGen()->SetName(obj->GetIOR().c_str(), qPrintable(name) );
+          SMESHGUI::GetSMESHGen()->SetName(obj->GetIOR().c_str(), qUtf8Printable(name) );
 
           // update name of group object and its actor
           Handle(SALOME_InteractiveObject) IObject =
@@ -7067,7 +7067,7 @@ bool SMESHGUI::renameObject( const QString& entry, const QString& name) {
           if( !aGroupObject->_is_nil() ) {
             aGroupObject->SetName( qPrintable(name) );
             if ( SMESH_Actor *anActor = SMESH::FindActorByEntry( qPrintable(entry) ) )
-              anActor->setName( qPrintable(name) );
+              anActor->setName( qUtf8Printable(name) );
           }
           return true;
         }
