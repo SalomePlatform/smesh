@@ -268,7 +268,7 @@ QString SMESHGUI_BuildCompoundDlg::GetDefaultName(const QString& theOperation)
   bool isUnique = false;
   while (!isUnique) {
     aName = theOperation + "_" + QString::number(++aNumber);
-    isUnique = (aSet.count(aName.toLatin1().data()) == 0);
+    isUnique = (aSet.count(aName.toUtf8().data()) == 0);
   }
 
   return aName;
@@ -299,7 +299,7 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
     try {
 
       aMesh = myMeshArray[0]->GetMesh();
-      aMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+      aMesh->SetParameters( aParameters.join(":").toUtf8().constData() );
 
       SMESH::SMESH_Gen_var aSMESHGen = SMESHGUI::GetSMESHGen();
       // concatenate meshes

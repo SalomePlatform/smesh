@@ -379,16 +379,16 @@ bool StdMeshersGUI_NbSegmentsCreator::storeParamsToHypo( const NbSegmentsHypothe
   try
   {
     if( isCreation() )
-      SMESH::SetName( SMESH::FindSObject( h ), h_data.myName.toLatin1().data() );
+      SMESH::SetName( SMESH::FindSObject( h ), h_data.myName.toUtf8().data() );
 
-    h->SetVarParameter( h_data.myNbSegVarName.toLatin1().constData(), "SetNumberOfSegments" );
+    h->SetVarParameter( h_data.myNbSegVarName.toUtf8().constData(), "SetNumberOfSegments" );
     h->SetNumberOfSegments( h_data.myNbSeg );
     
     int distr = h_data.myDistrType;
     if ( distr == 0 )
       h->SetDistrType( distr ); // this is actually needed at non-uniform -> uniform switch
     if( distr==1 ) {
-      h->SetVarParameter( h_data.myScaleVarName.toLatin1().constData(), "SetScaleFactor" );
+      h->SetVarParameter( h_data.myScaleVarName.toUtf8().constData(), "SetScaleFactor" );
       h->SetScaleFactor( h_data.myScale );
     }
     if( distr==2 || distr==3 )
@@ -403,7 +403,7 @@ bool StdMeshersGUI_NbSegmentsCreator::storeParamsToHypo( const NbSegmentsHypothe
       h->SetTableFunction( h_data.myTable );
 
     if( distr==3 )
-      h->SetExpressionFunction( h_data.myExpr.toLatin1().data() );
+      h->SetExpressionFunction( h_data.myExpr.toUtf8().data() );
     //setting of function must follow after setConversionMode, because otherwise
     //the function will be checked with old conversion mode, so that it may occurs
     //unexpected errors for user

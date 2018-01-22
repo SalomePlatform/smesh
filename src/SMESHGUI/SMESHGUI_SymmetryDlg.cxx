@@ -512,12 +512,12 @@ bool SMESHGUI_SymmetryDlg::ClickOnApply()
         if(CheckBoxMesh->isChecked())
           for ( int i = 0; i < myObjects.count(); i++ ) {
             SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
-            myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+            myMeshes[i]->SetParameters(aParameters.join( ":" ).toUtf8().constData());
             aMeshEditor->MirrorObject(myObjects[i], aMirror, aMirrorType, false );
           }
         else {
           SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
-          myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+          myMeshes[0]->SetParameters(aParameters.join( ":" ).toUtf8().constData());
           aMeshEditor->Mirror(anElementsId, aMirror, aMirrorType, false );
         }
         break;
@@ -528,12 +528,12 @@ bool SMESHGUI_SymmetryDlg::ClickOnApply()
           if(CheckBoxMesh->isChecked())
             for ( int i = 0; i < myObjects.count(); i++ ) {
               SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
-              myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+              myMeshes[i]->SetParameters(aParameters.join( ":" ).toUtf8().constData());
               groups = aMeshEditor->MirrorObjectMakeGroups(myObjects[i], aMirror, aMirrorType);
             }
           else {
             SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
-            myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+            myMeshes[0]->SetParameters(aParameters.join( ":" ).toUtf8().constData());
             groups = aMeshEditor->MirrorMakeGroups(anElementsId, aMirror, aMirrorType);
           }
         }
@@ -541,12 +541,12 @@ bool SMESHGUI_SymmetryDlg::ClickOnApply()
           if(CheckBoxMesh->isChecked())
             for ( int i = 0; i < myObjects.count(); i++ ) {
               SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
-              myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+              myMeshes[i]->SetParameters(aParameters.join( ":" ).toUtf8().constData());
               aMeshEditor->MirrorObject(myObjects[i], aMirror, aMirrorType, true);
             }
           else {
             SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
-            myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+            myMeshes[0]->SetParameters(aParameters.join( ":" ).toUtf8().constData());
             aMeshEditor->Mirror(anElementsId, aMirror, aMirrorType, true);
           }
         }
@@ -558,17 +558,17 @@ bool SMESHGUI_SymmetryDlg::ClickOnApply()
           for ( int i = 0; i < myObjects.count(); i++ ) {
             QString aName = SMESH::UniqueMeshName( LineEditNewMesh->text().replace( "*", myObjectsNames[i] ) );
             SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
-            myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+            myMeshes[i]->SetParameters(aParameters.join( ":" ).toUtf8().constData());
             mesh = aMeshEditor->MirrorObjectMakeMesh(myObjects[i], aMirror, aMirrorType, makeGroups,
-                                                     aName.toLatin1().data());
+                                                     aName.toUtf8().data());
             if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
               anEntryList.append( aSObject->GetID().c_str() );
           }
         else {
           SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
-          myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+          myMeshes[0]->SetParameters(aParameters.join( ":" ).toUtf8().constData());
           mesh = aMeshEditor->MirrorMakeMesh(anElementsId, aMirror, aMirrorType, makeGroups,
-                                             LineEditNewMesh->text().toLatin1().data());
+                                             LineEditNewMesh->text().toUtf8().data());
           if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
             anEntryList.append( aSObject->GetID().c_str() );
         }

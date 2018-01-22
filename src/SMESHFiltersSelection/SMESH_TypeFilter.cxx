@@ -86,7 +86,7 @@ bool SMESH_TypeFilter::isOk (const SUIT_DataOwner* theDataOwner) const
     _PTR(Study) study = appStudy->studyDS();
     QString entry = owner->entry();
 
-    _PTR(SObject) obj (study->FindObjectID(entry.toLatin1().data())), aRefSO;
+    _PTR(SObject) obj (study->FindObjectID(entry.toUtf8().data())), aRefSO;
     if( extractReference && obj && obj->ReferencedObject( aRefSO ) )
       obj = aRefSO;
     if (!obj) return false;

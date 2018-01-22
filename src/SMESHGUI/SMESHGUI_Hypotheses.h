@@ -90,7 +90,7 @@ protected:
       isVariable = false;
     }
     const char* text() const {
-      ((QByteArray&) myTextAsBytes) = myText.toLatin1(); return myTextAsBytes.constData();
+      ((QByteArray&) myTextAsBytes) = myText.toUtf8(); return myTextAsBytes.constData();
     }
   };
 

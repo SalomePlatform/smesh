@@ -446,13 +446,13 @@ bool SMESHGUI_RotationDlg::ClickOnApply()
         if(CheckBoxMesh->isChecked()) {
           for ( int i = 0; i < myObjects.count(); i++ ) {
             SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
-            myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+            myMeshes[i]->SetParameters(aParameters.join( ":" ).toUtf8().constData());
             aMeshEditor->RotateObject(myObjects[i], anAxis, anAngle, false);
           }
         }
         else {
           SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
-          myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+          myMeshes[0]->SetParameters(aParameters.join( ":" ).toUtf8().constData());
           aMeshEditor->Rotate(anElementsId, anAxis, anAngle, false);
         }
         break;
@@ -462,13 +462,13 @@ bool SMESHGUI_RotationDlg::ClickOnApply()
           if(CheckBoxMesh->isChecked()) {
             for ( int i = 0; i < myObjects.count(); i++ ) {
               SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
-              myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+              myMeshes[i]->SetParameters(aParameters.join( ":" ).toUtf8().constData());
               groups = aMeshEditor->RotateObjectMakeGroups(myObjects[i], anAxis, anAngle);
             }
           }
           else {
             SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
-            myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+            myMeshes[0]->SetParameters(aParameters.join( ":" ).toUtf8().constData());
             groups = aMeshEditor->RotateMakeGroups(anElementsId, anAxis, anAngle);
           }
         }
@@ -476,13 +476,13 @@ bool SMESHGUI_RotationDlg::ClickOnApply()
           if(CheckBoxMesh->isChecked()) {
             for ( int i = 0; i < myObjects.count(); i++ ) {
               SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
-              myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+              myMeshes[i]->SetParameters(aParameters.join( ":" ).toUtf8().constData());
               aMeshEditor->RotateObject(myObjects[i], anAxis, anAngle, true);
             }
           }
           else {
             SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
-            myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+            myMeshes[0]->SetParameters(aParameters.join( ":" ).toUtf8().constData());
             aMeshEditor->Rotate(anElementsId, anAxis, anAngle, true);
           }
         }
@@ -493,9 +493,9 @@ bool SMESHGUI_RotationDlg::ClickOnApply()
           for ( int i = 0; i < myObjects.count(); i++ ) {
             QString aName = SMESH::UniqueMeshName( LineEditNewMesh->text().replace( "*", myObjectsNames[i] ) );
             SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
-            myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+            myMeshes[i]->SetParameters(aParameters.join( ":" ).toUtf8().constData());
             mesh = aMeshEditor->RotateObjectMakeMesh(myObjects[i], anAxis, anAngle, makeGroups,
-                                                     aName.toLatin1().data());
+                                                     aName.toUtf8().data());
             if (!mesh->_is_nil()) {
               if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
                 anEntryList.append( aSObject->GetID().c_str() );
@@ -504,9 +504,9 @@ bool SMESHGUI_RotationDlg::ClickOnApply()
         }
         else {
           SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
-          myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
+          myMeshes[0]->SetParameters(aParameters.join( ":" ).toUtf8().constData());
           mesh = aMeshEditor->RotateMakeMesh(anElementsId, anAxis, anAngle, makeGroups,
-                                             LineEditNewMesh->text().toLatin1().data());
+                                             LineEditNewMesh->text().toUtf8().data());
           if (!mesh->_is_nil()) {
             if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
               anEntryList.append( aSObject->GetID().c_str() );

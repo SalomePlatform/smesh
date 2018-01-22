@@ -399,7 +399,7 @@ void SMESHGUI_CreatePatternDlg::onSave()
 
     QFile aFile( fName );
     aFile.open( QIODevice::WriteOnly );
-    long aWritten = aFile.write( aData.toLatin1(), aLen );
+    long aWritten = aFile.write( aData.toUtf8(), aLen );
     aFile.close();
 
     if ( aWritten != aLen ) {

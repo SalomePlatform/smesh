@@ -66,13 +66,13 @@ SALOME_Prs* SMESHGUI_Displayer::buildPresentation( const QString& entry, SALOME_
     if( vtk_viewer )
     {
       SUIT_ViewWindow* wnd = vtk_viewer->getViewManager()->getActiveView();
-      SMESH_Actor* anActor = SMESH::FindActorByEntry( wnd, entry.toLatin1().data() );
+      SMESH_Actor* anActor = SMESH::FindActorByEntry( wnd, entry.toUtf8().data() );
       if( !anActor )
-        anActor = SMESH::CreateActor( entry.toLatin1().data(), true );
+        anActor = SMESH::CreateActor( entry.toUtf8().data(), true );
       if( anActor )
       {
         SMESH::DisplayActor( wnd, anActor );
-        prs = LightApp_Displayer::buildPresentation( entry.toLatin1().data(), aViewFrame );
+        prs = LightApp_Displayer::buildPresentation( entry.toUtf8().data(), aViewFrame );
       }
       if( prs )
         UpdatePrs( prs );
@@ -94,7 +94,7 @@ bool SMESHGUI_Displayer::canBeDisplayed( const QString& entry, const QString& vi
   if(viewer_type != SVTK_Viewer::Type())
     return res;
   
-  _PTR(SObject) obj = SMESH::getStudy()->FindObjectID( (const char*)entry.toLatin1() );
+  _PTR(SObject) obj = SMESH::getStudy()->FindObjectID( (const char*)entry.toUtf8() );
   CORBA::Object_var anObj = SMESH::SObjectToObject( obj );
   
     /*

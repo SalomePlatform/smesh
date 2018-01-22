@@ -1280,7 +1280,7 @@ void SMESHGUI_BaseComputeOp::onPublishShape()
       {
         QString name = GEOMBase::GetDefaultName( SMESH::shapeTypeName( myMainShape, "MAIN_SHAPE" ));
         SALOMEDS::SObject_wrap so = geomGen->AddInStudy( myMainShape,
-                                                         name.toLatin1().data(),
+                                                         name.toUtf8().data(),
                                                          GEOM::GEOM_Object::_nil());
         // look for myMainShape in the table
         for ( int r = 0, nr = table()->rowCount(); r < nr; ++r ) {
@@ -1299,7 +1299,7 @@ void SMESHGUI_BaseComputeOp::onPublishShape()
       }
       QString name = GEOMBase::GetDefaultName( SMESH::shapeTypeName( shape, "ERROR_SHAPE" ));
       SALOMEDS::SObject_wrap so = geomGen->AddInStudy( shape,
-                                                       name.toLatin1().data(), myMainShape);
+                                                       name.toUtf8().data(), myMainShape);
       if ( !so->_is_nil() ) {
         CORBA::String_var name  = so->GetName();
         CORBA::String_var entry = so->GetID();
@@ -1370,7 +1370,7 @@ void SMESHGUI_BaseComputeOp::onGroupOfBadMesh()
       else                    grName = "bad mesh of " + grName;
       SMESH::SMESH_Gen_var gen = getSMESHGUI()->GetSMESHGen();
       SMESH::ListOfGroups_var groups
-        ( gen->MakeGroupsOfBadInputElements(myMesh,curSub,grName.toLatin1().data()) );
+        ( gen->MakeGroupsOfBadInputElements(myMesh,curSub,grName.toUtf8().data()) );
       update( UF_ObjBrowser | UF_Model );
       if( LightApp_Application* anApp = dynamic_cast<LightApp_Application*>( application() ))
       {

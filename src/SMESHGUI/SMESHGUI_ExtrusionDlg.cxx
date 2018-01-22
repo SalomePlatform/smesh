@@ -1159,7 +1159,7 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
       SMESH::SMESH_MeshEditor_var meshEditor = mesh->GetMeshEditor();
       SMESH::ListOfGroups_var groups;
 
-      mesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+      mesh->SetParameters( aParameters.join(":").toUtf8().constData() );
 
       if ( ExtrMethod_RBut2->isVisible() &&
            ExtrMethod_RBut2->isChecked() ) // Extrusion by normal

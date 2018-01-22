@@ -693,7 +693,7 @@ bool SMESHGUI_ReorientFacesOp::onApply()
       point.y = myDlg->myY->GetValue();
       point.z = myDlg->myZ->GetValue();
 
-      aMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+      aMesh->SetParameters( aParameters.join(":").toUtf8().constData() );
 
       aResult = aMeshEditor->Reorient2D( myObject, direction, face, point );
     }
@@ -728,7 +728,7 @@ bool SMESHGUI_ReorientFacesOp::isValid( QString& msg )
 {
   // check object
   QString objectEntry = myDlg->selectedObject( EObject );
-  _PTR(SObject) pSObject = SMESH::getStudy()->FindObjectID( objectEntry.toLatin1().data() );
+  _PTR(SObject) pSObject = SMESH::getStudy()->FindObjectID( objectEntry.toUtf8().data() );
   myObject = SMESH::SMESH_IDSource::_narrow( _CAST( SObject,pSObject )->GetObject() );
   if ( myObject->_is_nil() )
   {
@@ -749,7 +749,7 @@ bool SMESHGUI_ReorientFacesOp::isValid( QString& msg )
   if ( myDlg->myConstructorGrp->checkedId() == CONSTRUCTOR_VOLUME )
   {
     objectEntry = myDlg->selectedObject( EVolumes );
-    _PTR(SObject) pSObject = SMESH::getStudy()->FindObjectID( objectEntry.toLatin1().data() );
+    _PTR(SObject) pSObject = SMESH::getStudy()->FindObjectID( objectEntry.toUtf8().data() );
     myVolumeObj = SMESH::SObjectToInterface< SMESH::SMESH_IDSource>( pSObject );
     if ( myVolumeObj->_is_nil() )
     {

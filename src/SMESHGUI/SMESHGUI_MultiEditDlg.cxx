@@ -1196,7 +1196,7 @@ bool SMESHGUI_UnionOfTrianglesDlg::process (SMESH::SMESH_MeshEditor_ptr theEdito
   {
     QStringList aParameters;
     aParameters << myMaxAngleSpin->text();
-    myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+    myMesh->SetParameters( aParameters.join(":").toUtf8().constData() );
   }
   SMESH::NumericalFunctor_var aCriterion = getNumericalFunctor();
   double aMaxAngle = myMaxAngleSpin->GetValue() * M_PI / 180.0;
@@ -1666,7 +1666,7 @@ bool SMESHGUI_SplitVolumesDlg::process (SMESH::SMESH_MeshEditor_ptr theEditor,
       aParameters << myDirSpin[0]->text();
       aParameters << myDirSpin[1]->text();
       aParameters << myDirSpin[2]->text();
-      myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+      myMesh->SetParameters( aParameters.join(":").toUtf8().constData() );
 
       SMESH::PointStruct_var point = new SMESH::PointStruct;
       point->x  = myPointSpin[0]->GetValue();

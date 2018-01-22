@@ -382,7 +382,7 @@ bool SMESHGUI_SmoothingDlg::ClickOnApply()
       SUIT_OverrideCursor aWaitCursor;
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
 
-      myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+      myMesh->SetParameters( aParameters.join(":").toUtf8().constData() );
 
       if ( CheckBoxParametric->isChecked() ) {
         if(CheckBoxMesh->isChecked())

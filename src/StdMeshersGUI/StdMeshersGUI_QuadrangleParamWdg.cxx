@@ -249,7 +249,7 @@ QString  StdMeshersGUI_QuadrangleParamCreator::storeParams() const
 
   // name
   if( myName )
-    SMESH::SetName( SMESH::FindSObject( h ), myName->text().toLatin1().constData() );
+    SMESH::SetName( SMESH::FindSObject( h ), myName->text().toUtf8().constData() );
 
   // transition
   h->SetQuadType( StdMeshers::QuadType( myTypeWdg->GetType()) );

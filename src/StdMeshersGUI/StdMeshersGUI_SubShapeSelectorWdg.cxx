@@ -578,7 +578,7 @@ void StdMeshersGUI_SubShapeSelectorWdg::updateState()
 GEOM::GEOM_Object_var StdMeshersGUI_SubShapeSelectorWdg::GetGeomObjectByEntry( const QString& theEntry )
 {
   GEOM::GEOM_Object_var aGeomObj;
-  SALOMEDS::SObject_var aSObj = SMESH_Gen_i::getStudyServant()->FindObjectID( theEntry.toLatin1().data() );
+  SALOMEDS::SObject_var aSObj = SMESH_Gen_i::getStudyServant()->FindObjectID( theEntry.toUtf8().data() );
   if (!aSObj->_is_nil() )
   {
     CORBA::Object_var obj = aSObj->GetObject();

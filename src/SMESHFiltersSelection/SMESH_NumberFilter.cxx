@@ -175,7 +175,7 @@ GEOM::GEOM_Object_ptr SMESH_NumberFilter::getGeom
   _PTR(Study) study = appStudy->studyDS();
   QString entry = owner->entry();
 
-  _PTR(SObject) aSO( study->FindObjectID( entry.toLatin1().data() ) ), aRefSO;
+  _PTR(SObject) aSO( study->FindObjectID( entry.toUtf8().data() ) ), aRefSO;
   if( extractReference && aSO && aSO->ReferencedObject( aRefSO ) )
     aSO = aRefSO;
 

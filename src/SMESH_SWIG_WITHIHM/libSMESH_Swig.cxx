@@ -96,7 +96,7 @@ namespace
       aDomainRoot = theStudyBuilder->NewObjectToTag(theSComponentMesh,theDomainRootTag);
       SALOMEDS::GenericAttribute_var anAttr = theStudyBuilder->FindOrCreateAttribute(aDomainRoot,"AttributeName");
       SALOMEDS::AttributeName_var aName = SALOMEDS::AttributeName::_narrow(anAttr);
-      aName->SetValue(theName.toLatin1().data());
+      aName->SetValue(theName.toUtf8().data());
       aName->UnRegister();
       anAttr = theStudyBuilder->FindOrCreateAttribute(aDomainRoot,"AttributePixMap");
       SALOMEDS::AttributePixMap_var aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
@@ -226,7 +226,7 @@ namespace
         SALOMEDS::GenericAttribute_var anAttr =
           theStudyBuilder->FindOrCreateAttribute(anAppliedDomainSO,"AttributeName");
         SALOMEDS::AttributeName_var aName = SALOMEDS::AttributeName::_narrow(anAttr);
-        aName->SetValue(theAppliedDomainMEN.toLatin1().data());
+        aName->SetValue(theAppliedDomainMEN.toUtf8().data());
         aName->UnRegister();
         anAttr = theStudyBuilder->FindOrCreateAttribute(anAppliedDomainSO,"AttributeSelectable");
         SALOMEDS::AttributeSelectable_var aSelAttr = SALOMEDS::AttributeSelectable::_narrow(anAttr);
@@ -551,7 +551,7 @@ const char* SMESH_Swig::AddSubMesh(const char* theMeshEntry,
       aSubMeshesRoot = myStudyBuilder->NewObjectToTag(aMeshSO,aShapeTag);
       anAttr = myStudyBuilder->FindOrCreateAttribute(aSubMeshesRoot,"AttributeName");
       SALOMEDS::AttributeName_var aName = SALOMEDS::AttributeName::_narrow(anAttr);
-      aName->SetValue(aSubMeshName.toLatin1().data());
+      aName->SetValue(aSubMeshName.toUtf8().data());
       aName->UnRegister();
       anAttr = myStudyBuilder->FindOrCreateAttribute(aSubMeshesRoot,"AttributeSelectable");
       SALOMEDS::AttributeSelectable_var aSelAttr = SALOMEDS::AttributeSelectable::_narrow(anAttr);

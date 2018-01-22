@@ -442,7 +442,7 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
 
     SMESH::SMESH_Mesh_var mesh = SelectorWdg->GetMesh();
 
-    mesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+    mesh->SetParameters( aParameters.join(":").toUtf8().constData() );
 
     SMESH::ListOfIDSources_var nodes = new SMESH::ListOfIDSources();
     SMESH::ListOfIDSources_var edges = new SMESH::ListOfIDSources();

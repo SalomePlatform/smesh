@@ -475,7 +475,7 @@ bool SMESHGUI_MeshPatternDlg::onApply()
         aParameters << myNode1->text();
         if(myType == Type_3d )
           aParameters << myNode2->text();
-        myMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+        myMesh->SetParameters( aParameters.join(":").toUtf8().constData() );
       }
       QList<int> ids;
       getIds(ids);
@@ -1149,7 +1149,7 @@ bool SMESHGUI_MeshPatternDlg::loadFromFile (const QString& theName)
   try {
     SMESH::SMESH_Pattern_var aPattern = SMESH::GetPattern();
 
-    if (!aPattern->LoadFromFile(theName.toLatin1().data()) ||
+    if (!aPattern->LoadFromFile(theName.toUtf8().data()) ||
         (myType == Type_2d && !aPattern->Is2D())) {
       SMESH::SMESH_Pattern::ErrorCode aCode = aPattern->GetErrorCode();
       QString aMess;

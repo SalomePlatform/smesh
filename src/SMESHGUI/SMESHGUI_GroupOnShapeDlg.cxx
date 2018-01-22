@@ -304,7 +304,7 @@ bool SMESHGUI_GroupOnShapeOp::onApply()
   if ( !aStudy ) return false;
 
   // mesh
-  _PTR(SObject) meshSO = aStudy->FindObjectID( myMeshID.toLatin1().data() );
+  _PTR(SObject) meshSO = aStudy->FindObjectID( myMeshID.toUtf8().data() );
   SMESH::SMESH_Mesh_var mesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( meshSO );
   if ( mesh->_is_nil() ) return false;
 
@@ -330,7 +330,7 @@ bool SMESHGUI_GroupOnShapeOp::onApply()
     for ( int i = 0; geomID != geomEnd; ++geomID, ++i )
     {
       // selected geom
-      _PTR(SObject) geomSO = aStudy->FindObjectID( geomID->toLatin1().data() );
+      _PTR(SObject) geomSO = aStudy->FindObjectID( geomID->toUtf8().data() );
       GEOM::GEOM_Object_var geom = SMESH::SObjectToInterface<GEOM::GEOM_Object>(geomSO);
       if ( geom->_is_nil() ) continue;
 
@@ -349,7 +349,7 @@ bool SMESHGUI_GroupOnShapeOp::onApply()
 //       groupNames.append( name );
 
       //printf( "apply() %s %s\n", (*geomID).latin1(), name.latin1() );
-      group = mesh->CreateGroupFromGEOM( elemType, name.toLatin1().data(), geom );
+      group = mesh->CreateGroupFromGEOM( elemType, name.toUtf8().data(), geom );
       if( !group->_is_nil() )
         if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( group ) )
           anEntryList.append( aSObject->GetID().c_str() );
@@ -462,7 +462,7 @@ void SMESHGUI_GroupOnShapeOp::selectionDone()
     // study
     if (_PTR(Study) aStudy = SMESH::getStudy()) {
       // mesh
-      if (_PTR(SObject)  meshSO = aStudy->FindObjectID( myMeshID.toLatin1().data() )) {
+      if (_PTR(SObject)  meshSO = aStudy->FindObjectID( myMeshID.toUtf8().data() )) {
         // shape to mesh
         _PTR(SObject) anObj, shapeToMesh;
         if (meshSO->FindSubObject(1, anObj) && anObj->ReferencedObject(shapeToMesh)) {
@@ -470,7 +470,7 @@ void SMESHGUI_GroupOnShapeOp::selectionDone()
           QStringList::iterator name = names.begin(), id = ids.begin(), idEnd = ids.end();
           for (; id != idEnd; ++id, ++name ) {
             // shape SO
-            if (_PTR(SObject) shapeSO = aStudy->FindObjectID( id->toLatin1().data() )) {
+            if (_PTR(SObject) shapeSO = aStudy->FindObjectID( id->toUtf8().data() )) {
             // check if shape SO is a child of shape to mesh 
               while ( shapeSO && shapeSO->GetID() != shapeToMesh->GetID() )
                 if  ( shapeSO->Depth() < 2 )

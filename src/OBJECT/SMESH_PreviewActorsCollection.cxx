@@ -84,7 +84,7 @@ bool SMESH_PreviewActorsCollection::Init( const TopoDS_Shape& theShape,
     return false;
 
   // Handle( SALOME_InteractiveObject ) anIO = new SALOME_InteractiveObject();
-  // anIO->setEntry( theEntry.toLatin1().constData() );
+  // anIO->setEntry( theEntry.toUtf8().constData() );
   
   // get indexes of seleted elements
   TopExp::MapShapes( theMainShape, myMapOfShapes );
@@ -248,7 +248,7 @@ void SMESH_PreviewActorsCollection::showCurrentChunk()
       QString entry = QString( "%1_%2" ).arg( myEntry ).arg( index );
       // Create interactive object
       Handle( SALOME_InteractiveObject ) anIO = new SALOME_InteractiveObject();
-      anIO->setEntry( entry.toLatin1().constData() );
+      anIO->setEntry( entry.toUtf8().constData() );
       // Init Actor
       anActor->SetVectorMode( myType==TopAbs_EDGE );
       anActor->setIO( anIO );

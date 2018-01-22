@@ -477,7 +477,7 @@ bool SMESHGUI_DuplicateNodesDlg::onApply()
       for ( int i = 0; i < myGroups1.count(); i++ )
       {
         SMESH::SMESH_Group_var group =
-          aMeshEditor->DoubleElements( myGroups1[i], groupName.toLatin1().data() );
+          aMeshEditor->DoubleElements( myGroups1[i], groupName.toUtf8().data() );
         if ( group->_is_nil() )
         {
           if ( toCreateElemGroup )
