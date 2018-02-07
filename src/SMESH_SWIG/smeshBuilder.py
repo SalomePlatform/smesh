@@ -1183,11 +1183,12 @@ omniORB.registerObjref(SMESH._objref_SMESH_Gen._NP_RepositoryId, smeshBuilder)
 #    from salome.smesh import smeshBuilder
 #    smesh = smeshBuilder.New(salome.myStudy)
 #  \endcode
-#  @param  study     SALOME study, generally obtained by salome.myStudy.
-#  @param  instance  CORBA proxy of SMESH Engine. If None, the default Engine is used.
+#  @param  study         SALOME study, generally obtained by salome.myStudy.
+#  @param  instance      CORBA proxy of SMESH Engine. If None, the default Engine is used.
+#  @param  instanceGeom  CORBA proxy of GEOM  Engine. If None, the default Engine is used.
 #  @return smeshBuilder instance
 
-def New( study, instance=None):
+def New( study, instance=None, instanceGeom=None):
     """
     Create a new smeshBuilder instance.The smeshBuilder class provides the Python
     interface to create or load meshes.
@@ -1199,8 +1200,9 @@ def New( study, instance=None):
         smesh = smeshBuilder.New(salome.myStudy)
 
     Parameters:
-        study     SALOME study, generally obtained by salome.myStudy.
-        instance  CORBA proxy of SMESH Engine. If None, the default Engine is used.
+        study         SALOME study, generally obtained by salome.myStudy.
+        instance      CORBA proxy of SMESH Engine. If None, the default Engine is used.
+        instanceGeom  CORBA proxy of GEOM  Engine. If None, the default Engine is used.
     Returns:
         smeshBuilder instance
     """
@@ -1212,7 +1214,7 @@ def New( study, instance=None):
       doLcc = True
     smeshInst = smeshBuilder()
     assert isinstance(smeshInst,smeshBuilder), "Smesh engine class is %s but should be smeshBuilder.smeshBuilder. Import salome.smesh.smeshBuilder before creating the instance."%smeshInst.__class__
-    smeshInst.init_smesh(study)
+    smeshInst.init_smesh(study, instanceGeom)
     return smeshInst
 
 
