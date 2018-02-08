@@ -298,10 +298,10 @@ static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
     if ( !sameIOR )
     {
       iorAttr->SetValue( objStr.in() );
-      // UnRegister() !!!
-      SALOME::GenericObj_var genObj = SALOME::GenericObj::_narrow( theIOR );
-      if ( !genObj->_is_nil() )
-        genObj->UnRegister();
+      // UnRegister() !!! --> No: random problems when meshing in parallel (yacs foreach) in distributed python scripts
+//      SALOME::GenericObj_var genObj = SALOME::GenericObj::_narrow( theIOR );
+//      if ( !genObj->_is_nil() )
+//        genObj->UnRegister();
     }
   }
 
