@@ -250,11 +250,11 @@ void SMESHGUI_SelectionOp::setSelectionMode( const Selection_Mode mode )
 // Purpose : Highlight object in 3d viewer
 //=======================================================================
 void SMESHGUI_SelectionOp::highlight( const Handle( SALOME_InteractiveObject )& obj,
-                                      const bool hilight, const bool immediately )
+                                      const bool highlight, const bool immediately )
 {
   SVTK_ViewWindow* wnd = viewWindow();
   if( wnd )
-    wnd->highlight( obj, hilight, immediately );
+    wnd->highlight( obj, highlight, immediately );
 }
 
 //=======================================================================

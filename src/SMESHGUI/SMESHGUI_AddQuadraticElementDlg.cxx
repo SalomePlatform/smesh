@@ -977,7 +977,7 @@ void SMESHGUI_AddQuadraticElementDlg::onTextChange (const QString& theNewText)
 
   mySimulation->SetVisibility(false);
 
-  // hilight entered nodes
+  // highlight entered nodes
   SMDS_Mesh* aMesh = 0;
   if (myActor)
     aMesh = myActor->GetObject()->GetMesh();

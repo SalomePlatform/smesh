@@ -24,7 +24,7 @@
 // Author    : Edward AGAPOV (eap)
 
 // This file holds some low level algorithms extracted from SMESH_MeshEditor
-// to make them accessible from Controls package
+// to make them accessible from Controls package, and more
 
 
 #ifndef __SMESH_MeshAlgos_HXX__
@@ -41,6 +41,7 @@
 
 class gp_Pnt;
 class gp_Ax1;
+class Bnd_B3d;
 class SMDS_MeshNode;
 class SMDS_MeshElement;
 class SMDS_Mesh;
@@ -97,6 +98,12 @@ struct SMESHUtils_EXPORT SMESH_ElementSearcher
                                     SMDSAbs_ElementType                     type,
                                     std::vector< const SMDS_MeshElement* >& foundElems) = 0;
   /*!
+   * \brief Return elements whose bounding box intersects a given bounding box
+   */
+  virtual void GetElementsInBox( const Bnd_B3d&                          box,
+                                 SMDSAbs_ElementType                     type,
+                                 std::vector< const SMDS_MeshElement* >& foundElems) = 0;
+  /*!
    * \brief Find out if the given point is out of closed 2D mesh.
    */
   virtual TopAbs_State GetPointState(const gp_Pnt& point) = 0;
@@ -114,6 +121,27 @@ struct SMESHUtils_EXPORT SMESH_ElementSearcher
 
 namespace SMESH_MeshAlgos
 {
+  /*!
+   * \brief Return SMESH_NodeSearcher. The caller is responsible for deleting it
+   */
+  SMESHUtils_EXPORT
+  SMESH_NodeSearcher* GetNodeSearcher( SMDS_Mesh& mesh );
+
+  SMESHUtils_EXPORT
+  SMESH_NodeSearcher* GetNodeSearcher( SMDS_ElemIteratorPtr elemIt );
+
+  /*!
+   * \brief Return SMESH_ElementSearcher. The caller is responsible for deleting it
+   */
+  SMESHUtils_EXPORT
+  SMESH_ElementSearcher* GetElementSearcher( SMDS_Mesh& mesh,
+                                             double     tolerance=-1.);
+  SMESHUtils_EXPORT
+  SMESH_ElementSearcher* GetElementSearcher( SMDS_Mesh& mesh,
+                                             SMDS_ElemIteratorPtr elemIt,
+                                             double     tolerance=-1. );
+
+
   /*!
    * \brief Return true if the point is IN or ON of the element
    */
@@ -219,26 +247,6 @@ namespace SMESH_MeshAlgos
         MarkElems( (*it)->nodesIterator(), isMarked );
   }
 
-  /*!
-   * \brief Return SMESH_NodeSearcher. The caller is responsible for deleting it
-   */
-  SMESHUtils_EXPORT
-  SMESH_NodeSearcher* GetNodeSearcher( SMDS_Mesh& mesh );
-
-  SMESHUtils_EXPORT
-  SMESH_NodeSearcher* GetNodeSearcher( SMDS_ElemIteratorPtr elemIt );
-
-  /*!
-   * \brief Return SMESH_ElementSearcher. The caller is responsible for deleting it
-   */
-  SMESHUtils_EXPORT
-  SMESH_ElementSearcher* GetElementSearcher( SMDS_Mesh& mesh,
-                                             double     tolerance=-1.);
-  SMESHUtils_EXPORT
-  SMESH_ElementSearcher* GetElementSearcher( SMDS_Mesh& mesh,
-                                             SMDS_ElemIteratorPtr elemIt,
-                                             double     tolerance=-1. );
-
 
 
   typedef std::vector<const SMDS_MeshNode*> TFreeBorder;
@@ -262,18 +270,16 @@ namespace SMESH_MeshAlgos
    * Returns TFreeBorder's coincident within the given tolerance.
    * If the tolerance <= 0.0 then one tenth of an average size of elements adjacent
    * to free borders being compared is used.
-   *
-   * (Implemented in ./SMESH_FreeBorders.cxx)
    */
   SMESHUtils_EXPORT
   void FindCoincidentFreeBorders(SMDS_Mesh&              mesh,
                                  double                  tolerance,
                                  CoincidentFreeBorders & foundFreeBordes);
+  // Implemented in ./SMESH_FreeBorders.cxx
+
   /*!
    * Returns all or only closed TFreeBorder's.
    * Optionally check if the mesh is manifold and if faces are correctly oriented.
-   *
-   * (Implemented in ./SMESH_FreeBorders.cxx)
    */
   SMESHUtils_EXPORT
   void FindFreeBorders(SMDS_Mesh&       mesh,
@@ -281,26 +287,84 @@ namespace SMESH_MeshAlgos
                        const bool       closedOnly,
                        bool*            isManifold = 0,
                        bool*            isGoodOri = 0);
+  // Implemented in ./SMESH_FreeBorders.cxx
+
   /*!
    * Fill a hole defined by a TFreeBorder with 2D elements.
-   *
-   * (Implemented in ./SMESH_FillHole.cxx)
    */
   SMESHUtils_EXPORT
   void FillHole(const TFreeBorder &                   freeBorder,
                 SMDS_Mesh&                            mesh,
                 std::vector<const SMDS_MeshElement*>& newFaces);
+  // Implemented in ./SMESH_FillHole.cxx
 
 
   /*!
    * \brief Find nodes whose merge makes the element invalid
-   *
-   * (Implemented in SMESH_DeMerge.cxx)
    */
   SMESHUtils_EXPORT
   void DeMerge(const SMDS_MeshElement*              elem,
                std::vector< const SMDS_MeshNode* >& newNodes,
                std::vector< const SMDS_MeshNode* >& noMergeNodes);
+  // Implemented in SMESH_DeMerge.cxx
+
+
+  typedef std::vector< std::pair< const SMDS_MeshElement*, const SMDS_MeshElement* > > TEPairVec;
+  typedef std::vector< std::pair< const SMDS_MeshNode*, const SMDS_MeshNode* > >       TNPairVec;
+  /*!
+   * \brief Create an offset mesh of given faces
+   *  \param [in] faceIt - the input faces
+   *  \param [in] theFixIntersections - to fix self intersections of the offset mesh or not
+   *  \param [out] new2OldFaces - history of faces
+   *  \param [out] new2OldNodes - history of nodes
+   *  \return SMDS_Mesh* - the new offset mesh, a caller should delete
+   */
+  SMESHUtils_EXPORT
+  SMDS_Mesh* MakeOffset( SMDS_ElemIteratorPtr faceIt,
+                         SMDS_Mesh&           mesh,
+                         const double         offset,
+                         const bool           theFixIntersections,
+                         TEPairVec&           new2OldFaces,
+                         TNPairVec&           new2OldNodes );
+  // Implemented in ./SMESH_Offset.cxx
+
+
+  /*!
+   * \brief Divide a mesh face into triangles
+   */
+  // Implemented in ./SMESH_Triangulate.cxx
+
+  class SMESHUtils_EXPORT Triangulate
+  {
+  public:
+
+    static int GetNbTriangles( const SMDS_MeshElement* face );
+
+    int GetTriangles( const SMDS_MeshElement*             face,
+                      std::vector< const SMDS_MeshNode*>& nodes);
+  private:
+
+    bool triangulate( std::vector< const SMDS_MeshNode*>& nodes, const size_t nbNodes );
+
+    /*!
+     * \brief Vertex of a polygon. Together with 2 neighbor Vertices represents a triangle
+     */
+    struct PolyVertex
+    {
+      SMESH_NodeXYZ _nxyz;
+      gp_XY         _xy;
+      PolyVertex*   _prev;
+      PolyVertex*   _next;
+
+      void   SetNodeAndNext( const SMDS_MeshNode* n, PolyVertex& v );
+      void   GetTriaNodes( const SMDS_MeshNode** nodes) const;
+      double TriaArea() const;
+      bool   IsInsideTria( const PolyVertex* v );
+      PolyVertex* Delete();
+    };
+    std::vector< PolyVertex > _pv;
+  };
+
 
 } // namespace SMESH_MeshAlgos
 

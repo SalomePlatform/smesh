@@ -165,7 +165,10 @@ namespace MeshEditor_I {
     }
     void Remove( SMDSAbs_ElementType type )
     {
-      SMDS_ElemIteratorPtr eIt = GetMeshDS()->elementsIterator( type );
+      Remove( GetMeshDS()->elementsIterator( type ));
+    }
+    void Remove( SMDS_ElemIteratorPtr eIt )
+    {
       while ( eIt->more() )
         GetMeshDS()->RemoveFreeElement( eIt->next(), /*sm=*/0, /*fromGroups=*/false );
     }
@@ -522,14 +525,14 @@ SMESH::MeshPreviewStruct* SMESH_MeshEditor_i::GetPreviewData()
   SMESH_TRY;
   const bool hasBadElems = ( getEditor().GetError() && getEditor().GetError()->HasBadElems() );
 
-  if ( myIsPreviewMode || hasBadElems ) { // --- MeshPreviewStruct filling ---
-
+  if ( myIsPreviewMode || hasBadElems )
+  {
     list<int> aNodesConnectivity;
     typedef map<int, int> TNodesMap;
     TNodesMap nodesMap;
 
     SMESHDS_Mesh* aMeshDS;
-    std::auto_ptr< SMESH_MeshPartDS > aMeshPartDS;
+    std::unique_ptr< SMESH_MeshPartDS > aMeshPartDS;
     if ( hasBadElems ) {
       aMeshPartDS.reset( new SMESH_MeshPartDS( getEditor().GetError()->myBadElements ));
       aMeshDS = aMeshPartDS.get();
@@ -615,9 +618,9 @@ SMESH::long_array* SMESH_MeshEditor_i::GetLastCreatedNodes()
   SMESH::long_array_var myLastCreatedNodes = new SMESH::long_array();
 
   const SMESH_SequenceOfElemPtr& aSeq = getEditor().GetLastCreatedNodes();
-  myLastCreatedNodes->length( aSeq.Length() );
-  for (int i = 1; i <= aSeq.Length(); i++)
-    myLastCreatedNodes[i-1] = aSeq.Value(i)->GetID();
+  myLastCreatedNodes->length( aSeq.size() );
+  for ( size_t i = 0; i < aSeq.size(); i++)
+    myLastCreatedNodes[i] = aSeq[i]->GetID();
 
   return myLastCreatedNodes._retn();
   SMESH_CATCH( SMESH::throwCorbaException );
@@ -638,9 +641,9 @@ SMESH::long_array* SMESH_MeshEditor_i::GetLastCreatedElems()
   SMESH::long_array_var myLastCreatedElems = new SMESH::long_array();
 
   const SMESH_SequenceOfElemPtr& aSeq = getEditor().GetLastCreatedElems();
-  myLastCreatedElems->length( aSeq.Length() );
-  for ( int i = 1; i <= aSeq.Length(); i++ )
-    myLastCreatedElems[i-1] = aSeq.Value(i)->GetID();
+  myLastCreatedElems->length( aSeq.size() );
+  for ( size_t i = 0; i < aSeq.size(); i++ )
+    myLastCreatedElems[i] = aSeq[i]->GetID();
 
   return myLastCreatedElems._retn();
   SMESH_CATCH( SMESH::throwCorbaException );
@@ -4014,6 +4017,84 @@ SMESH_MeshEditor_i::ScaleMakeMesh(SMESH::SMESH_IDSource_ptr  theObject,
   return mesh._retn();
 }
 
+//================================================================================
+/*!
+ * \brief Make an offset mesh from a source 2D mesh
+ *  \param [inout] theObject - source mesh. New elements are added to this mesh
+ *         if \a theMeshName is empty.
+ *  \param [in] theValue - offset value
+ *  \param [in] theCopyGroups - to generate groups
+ *  \param [in] theMeshName - optional name of a new mesh
+ *  \param [out] theGroups - new groups
+ *  \return SMESH::SMESH_Mesh_ptr - the modified mesh
+ */
+//================================================================================
+
+SMESH::SMESH_Mesh_ptr SMESH_MeshEditor_i::Offset( SMESH::SMESH_IDSource_ptr theObject,
+                                                  CORBA::Double             theValue,
+                                                  CORBA::Boolean            theCopyGroups,
+                                                  const char*               theMeshName,
+                                                  SMESH::ListOfGroups_out   theGroups)
+  throw (SALOME::SALOME_Exception)
+{
+  SMESH_TRY;
+  initData();
+
+  SMESHDS_Mesh* aMeshDS = getMeshDS();
+
+  SMESH::SMESH_Mesh_var         mesh_var;
+  ::SMESH_MeshEditor::PGroupIDs groupIds;
+
+  TPythonDump pyDump;
+
+  TIDSortedElemSet elements, copyElements;
+  if ( idSourceToSet( theObject, aMeshDS, elements, SMDSAbs_Face,
+                      /*emptyIfIsMesh=*/ !myIsPreviewMode ))
+  {
+    // mesh to modify
+    SMESH_Mesh* tgtMesh = 0;
+    if ( myIsPreviewMode )
+    {
+      TPreviewMesh * tmpMesh = getPreviewMesh();
+      tgtMesh = tmpMesh;
+      tmpMesh->Copy( elements, copyElements );
+      theCopyGroups = false;
+    }
+    else
+    {
+      mesh_var =
+        *theMeshName ? makeMesh( theMeshName ) : SMESH::SMESH_Mesh::_duplicate( myMesh_i->_this() );
+      SMESH_Mesh_i* mesh_i = SMESH::DownCast<SMESH_Mesh_i*>( mesh_var );
+      tgtMesh = & mesh_i->GetImpl();
+    }
+    groupIds = getEditor().Offset( elements, theValue, tgtMesh, theCopyGroups, !myIsPreviewMode );
+
+    tgtMesh->GetMeshDS()->Modified();
+  }
+
+  if ( myIsPreviewMode )
+  {
+    getPreviewMesh()->Remove( SMESHUtils::elemSetIterator( copyElements ));
+  }
+  else
+  {
+    theGroups = theCopyGroups ? getGroups( groupIds.get() ) : new SMESH::ListOfGroups;
+
+    // result of Offset() is a tuple (mesh, groups)
+    if ( mesh_var->_is_nil() ) pyDump << myMesh_i->_this() << ", ";
+    else                       pyDump << mesh_var          << ", ";
+    pyDump << theGroups << " = "
+           << this << ".Offset( "
+           << theValue << ", "
+           << theCopyGroups << ", "
+           << "'" << theMeshName<< "')";
+  }
+
+  return mesh_var._retn();
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+  return SMESH::SMESH_Mesh::_nil();
+}
 
 //=======================================================================
 //function : findCoincidentNodes
@@ -4713,8 +4794,7 @@ void SMESH_MeshEditor_i::FillHole(const SMESH::FreeBorder& theHole)
     getEditor().ClearLastCreated();
     SMESH_SequenceOfElemPtr& aSeq =
       const_cast<SMESH_SequenceOfElemPtr&>( getEditor().GetLastCreatedElems() );
-    for ( size_t i = 0; i < newFaces.size(); ++i )
-      aSeq.Append( newFaces[i] );
+    aSeq.swap( newFaces );
 
     TPythonDump() << this << ".FillHole( SMESH.FreeBorder(" << theHole.nodeIDs << " ))";
   }
@@ -5529,7 +5609,7 @@ bool SMESH_MeshEditor_i::idSourceToSet(SMESH::SMESH_IDSource_ptr  theIDSource,
  * \param theElements - container of elements to duplicate.
  * \param theGroupName - a name of group to contain the generated elements.
  *                    If a group with such a name already exists, the new elements
- *                    are added to the existng group, else a new group is created.
+ *                    are added to the existing group, else a new group is created.
  *                    If \a theGroupName is empty, new elements are not added 
  *                    in any group.
  * \return a group where the new elements are added. NULL if theGroupName == "".
@@ -5554,11 +5634,11 @@ SMESH_MeshEditor_i::DoubleElements(SMESH::SMESH_IDSource_ptr theElements,
   {
     getEditor().DoubleElements( elems );
 
-    if ( strlen( theGroupName ) && !getEditor().GetLastCreatedElems().IsEmpty() )
+    if ( strlen( theGroupName ) && !getEditor().GetLastCreatedElems().empty() )
     {
       // group type
       SMESH::ElementType type =
-        SMESH::ElementType( getEditor().GetLastCreatedElems().Value(1)->GetType() );
+        SMESH::ElementType( getEditor().GetLastCreatedElems()[0]->GetType() );
       // find existing group
       SMESH::ListOfGroups_var groups = myMesh_i->GetGroups();
       for ( size_t i = 0; i < groups->length(); ++i )
@@ -5578,8 +5658,8 @@ SMESH_MeshEditor_i::DoubleElements(SMESH::SMESH_IDSource_ptr theElements,
       {
         SMESHDS_Group* groupDS = static_cast< SMESHDS_Group* >( group_i->GetGroupDS() );
         const SMESH_SequenceOfElemPtr& aSeq = getEditor().GetLastCreatedElems();
-        for ( int i = 1; i <= aSeq.Length(); i++ )
-          groupDS->SMDSGroup().Add( aSeq(i) );
+        for ( size_t i = 0; i <= aSeq.size(); i++ )
+          groupDS->SMDSGroup().Add( aSeq[i] );
       }
     }
   }
@@ -6070,14 +6150,14 @@ SMESH_MeshEditor_i::DoubleNodeElemGroup2New(SMESH::SMESH_GroupBase_ptr theElems,
     // Create group with newly created elements
     CORBA::String_var elemGroupName = theElems->GetName();
     std::string aNewName = generateGroupName( std::string(elemGroupName.in()) + "_double");
-    if ( !getEditor().GetLastCreatedElems().IsEmpty() && theElemGroupNeeded )
+    if ( !getEditor().GetLastCreatedElems().empty() && theElemGroupNeeded )
     {
       SMESH::long_array_var anIds = GetLastCreatedElems();
       SMESH::ElementType aGroupType = myMesh_i->GetElementType(anIds[0], true);
       aNewElemGroup = myMesh_i->CreateGroup(aGroupType, aNewName.c_str());
       aNewElemGroup->Add(anIds);
     }
-    if ( !getEditor().GetLastCreatedNodes().IsEmpty() && theNodeGroupNeeded )
+    if ( !getEditor().GetLastCreatedNodes().empty() && theNodeGroupNeeded )
     {
       SMESH::long_array_var anIds = GetLastCreatedNodes();
       aNewNodeGroup = myMesh_i->CreateGroup(SMESH::NODE, aNewName.c_str());
@@ -6302,14 +6382,14 @@ SMESH_MeshEditor_i::DoubleNodeElemGroups2New(const SMESH::ListOfGroups& theElems
     // Create group with newly created elements
     CORBA::String_var elemGroupName = theElems[0]->GetName();
     std::string aNewName = generateGroupName( std::string(elemGroupName.in()) + "_double");
-    if ( !getEditor().GetLastCreatedElems().IsEmpty() && theElemGroupNeeded )
+    if ( !getEditor().GetLastCreatedElems().empty() && theElemGroupNeeded )
     {
       SMESH::long_array_var anIds = GetLastCreatedElems();
       SMESH::ElementType aGroupType = myMesh_i->GetElementType(anIds[0], true);
       aNewElemGroup = myMesh_i->CreateGroup(aGroupType, aNewName.c_str());
       aNewElemGroup->Add(anIds);
     }
-    if ( !getEditor().GetLastCreatedNodes().IsEmpty() && theNodeGroupNeeded )
+    if ( !getEditor().GetLastCreatedNodes().empty() && theNodeGroupNeeded )
     {
       SMESH::long_array_var anIds = GetLastCreatedNodes();
       aNewNodeGroup = myMesh_i->CreateGroup(SMESH::NODE, aNewName.c_str());

@@ -100,10 +100,10 @@ class PluginDialog(QDialog):
 
     def setupJobManager(self):
         '''
-        This function configures the jobmanager by transmiting the
+        This function configures the jobmanager by transmitting the
         parameters required for a local execution and a remote
         execution. The choice between "local" and "remote" is done at
-        the initialize step, by specifing the name of the resource to
+        the initialize step, by specifying the name of the resource to
         be used.
         '''
         # We first

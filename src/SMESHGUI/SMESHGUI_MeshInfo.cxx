@@ -2373,7 +2373,7 @@ void SMESHGUI_TreeElemInfo::saveInfo( QTextStream &out )
 */
 
 /*!
-  \brief Contructor
+  \brief Constructor
 */
 GrpComputor::GrpComputor( SMESH::SMESH_GroupBase_ptr grp,
                           QTreeWidgetItem*           item,

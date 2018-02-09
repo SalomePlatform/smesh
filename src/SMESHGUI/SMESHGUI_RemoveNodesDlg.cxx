@@ -351,7 +351,7 @@ void SMESHGUI_RemoveNodesDlg::onTextChange(const QString& theNewText)
 
   myNbOkNodes = 0;
 
-  // hilight entered nodes
+  // highlight entered nodes
   if(myActor){
     if(SMDS_Mesh* aMesh = myActor->GetObject()->GetMesh()){
       Handle(SALOME_InteractiveObject) anIO = myActor->getIO();

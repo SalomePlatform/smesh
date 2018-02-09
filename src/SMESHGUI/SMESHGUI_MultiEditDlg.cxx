@@ -883,7 +883,7 @@ void SMESHGUI_MultiEditDlg::onListSelectionChanged()
     if (myListBox->item(i)->isSelected())
     {
       int anId = myListBox->item(i)->text().toInt();
-      if (anObj->GetElemVTKId(anId) >= 0) // avoid exception in hilight
+      if (anObj->GetElemVTKId(anId) >= 0) // avoid exception in highlight
         anIndexes.Add(anId);
     }
   }

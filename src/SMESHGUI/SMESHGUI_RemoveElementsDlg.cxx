@@ -345,7 +345,7 @@ void SMESHGUI_RemoveElementsDlg::onTextChange(const QString& theNewText)
 
   myNbOkElements = 0;
 
-  // hilight entered elements
+  // highlight entered elements
   if(myActor){
     if(SMDS_Mesh* aMesh = myActor->GetObject()->GetMesh()){
       Handle(SALOME_InteractiveObject) anIO = myActor->getIO();

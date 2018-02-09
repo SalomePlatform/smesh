@@ -104,7 +104,7 @@ protected:
   //! Set selection mode in VTK viewer
   void                          setSelectionMode( const Selection_Mode );
 
-  //! Hilight object in VTK viewer
+  //! Highlight object in VTK viewer
   void                          highlight( const Handle( SALOME_InteractiveObject )&,
                                            const bool, const bool = true );
                                

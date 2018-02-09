@@ -1532,7 +1532,7 @@ void SMESHGUI_SewingDlg::onTextChange (const QString& theNewText)
   else if (send == LineEdit6)
     myOk6 = false;
 
-  // hilight entered elements/nodes
+  // highlight entered elements/nodes
   SMDS_Mesh* aMesh = 0;
 
   if (myActor)

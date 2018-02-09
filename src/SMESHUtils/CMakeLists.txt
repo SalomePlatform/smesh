@@ -87,6 +87,8 @@ SET(SMESHUtils_SOURCES
   SMESH_DeMerge.cxx
   SMESH_Delaunay.cxx
   SMESH_FillHole.cxx
+  SMESH_Triangulate.cxx
+  SMESH_Offset.cxx
   )
 
 # --- rules ---

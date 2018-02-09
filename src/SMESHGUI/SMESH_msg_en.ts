@@ -1093,6 +1093,10 @@
         <translation>Scale Transform</translation>
     </message>
     <message>
+        <source>MEN_OFFSET</source>
+        <translation>Offset</translation>
+    </message>
+    <message>
         <source>MEN_DUPLICATE_NODES</source>
         <translation>Duplicate Nodes or/and Elements</translation>
     </message>
@@ -1926,7 +1930,7 @@ add the exported data to its contents?</translation>
         <translation>Hexahedrons</translation>
     </message>
     <message>
-        <source>SMESH_HILIGHT_COLOR</source>
+        <source>SMESH_HIGHLIGHT_COLOR</source>
         <translation>Highlight Color</translation>
     </message>
     <message>
@@ -3555,6 +3559,10 @@ Use Display Entity menu command to show them.
         <translation>Scale Transform</translation>
     </message>
     <message>
+        <source>STB_OFFSET</source>
+        <translation>Offset</translation>
+    </message>
+    <message>
         <source>STB_DUPLICATE_NODES</source>
         <translation>Duplicate Nodes or/and Elements</translation>
     </message>
@@ -4235,6 +4243,10 @@ Use Display Entity menu command to show them.
         <translation>Scale Transform</translation>
     </message>
     <message>
+        <source>TOP_OFFSET</source>
+        <translation>Offset</translation>
+    </message>
+    <message>
         <source>TOP_DUPLICATE_NODES</source>
         <translation>Duplicate Nodes or/and Elements</translation>
     </message>
@@ -4507,6 +4519,21 @@ It can&apos;t be deleted </translation>
     <message>
         <source>FIELDS_TO_EXPORT</source>
         <translation>Export Fields</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_OffsetDlg</name>
+    <message>
+        <source>SMESH_OFFSET_TITLE</source>
+        <translation>Offset</translation>
+    </message>
+    <message>
+        <source>SMESH_OFFSET</source>
+        <translation>Offset</translation>
+    </message>
+    <message>
+        <source>OFFSET_VALUE</source>
+        <translation>Offset Value</translation>
     </message>
 </context>
 <context>

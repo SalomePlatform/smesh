@@ -56,7 +56,7 @@ namespace SMESH_MAT2d
   //-------------------------------------------------------------------------------------
   // type of Branch end point
   enum BranchEndType { BE_UNDEF,
-                       BE_ON_VERTEX, // branch ends at a convex VRTEX
+                       BE_ON_VERTEX, // branch ends at a convex VERTEX
                        BE_BRANCH_POINT, // branch meats 2 or more other branches
                        BE_END // branch end equidistant from several adjacent segments
   };

@@ -90,7 +90,7 @@ namespace SMESH
 
   // ===========================================================================================
   /*!
-   * \brief Object used to make TPythonDump know that its held value can be a varible
+   * \brief Object used to make TPythonDump know that its held value can be a variable
    *
    * TPythonDump substitute TVar with names of notebook variables if any.
    */

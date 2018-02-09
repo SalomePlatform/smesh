@@ -166,6 +166,7 @@ namespace SMESHOp {
     OpMergeNodes             = 4405,   // MENU MODIFICATION - TRANSFORMATION - MERGE NODES
     OpMergeElements          = 4406,   // MENU MODIFICATION - TRANSFORMATION - MERGE ELEMENTS
     OpDuplicateNodes         = 4407,   // MENU MODIFICATION - TRANSFORMATION - DUPLICATE NODES OR/AND ELEMENTS
+    OpOffset                 = 4408,   // MENU MODIFICATION - TRANSFORMATION - OFFSET
     OpMoveNode               = 4500,   // MENU MODIFICATION - MOVE NODE
     OpDiagonalInversion      = 4501,   // MENU MODIFICATION - DIAGONAL INVERSION
     OpUnionOfTwoTriangle     = 4502,   // MENU MODIFICATION - UNION OF TWO TRIANGLE

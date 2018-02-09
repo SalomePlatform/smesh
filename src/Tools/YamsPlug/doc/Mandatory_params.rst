@@ -22,7 +22,7 @@ Simple case
 Optimisation
 ------------
     
-This is the main remeshing Option.  SurfOpt always does quality improvement. It is done by point smooting and edge swapping.  It can produce a regular mesh for finite element computation (initial mesh is a a geometrical mesh). In this case, the given surface trianglation is modified in accordance to a size map : an intrinsic size map is computed automatically. it is based on the surface proporties.  SurfOpt is also able to  produce a geometrical mesh (initial mesh is a a mesh for finite element computation). In both case, It can coarsen or enrich the mesh.     
+This is the main remeshing Option.  SurfOpt always does quality improvement. It is done by point smoothing and edge swapping.  It can produce a regular mesh for finite element computation (initial mesh is a a geometrical mesh). In this case, the given surface trianglation is modified in accordance to a size map : an intrinsic size map is computed automatically. it is based on the surface proporties.  SurfOpt is also able to  produce a geometrical mesh (initial mesh is a mesh for finite element computation). In both case, It can coarsen or enrich the mesh.     
 
    - **Quality improvement** 
 

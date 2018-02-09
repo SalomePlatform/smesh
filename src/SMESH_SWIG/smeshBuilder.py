@@ -4583,6 +4583,24 @@ class Mesh:
         self.mesh.SetParameters(Parameters)
         return Mesh( self.smeshpyD, self.geompyD, mesh )
 
+    ## Create an offset mesh from the given 2D object
+    #  @param theObject the source object (mesh, submesh, group or filter)
+    #  @param theValue signed offset size
+    #  @param MakeGroups forces the generation of new groups from existing ones
+    #  @param NewMeshName the name of a mesh to create. If empty, offset elements are added
+    #         to this mesh
+    #  @return a tuple (mesh, list_of_groups)
+    #  @ingroup l2_modif_trsf
+    def Offset(self, theObject, theValue, MakeGroups=False, NewMeshName=''):
+        if isinstance( theObject, Mesh ):
+            theObject = theObject.GetMesh()
+        theValue,Parameters,hasVars = ParseParameters(theValue)
+        mesh_groups = self.editor.Offset(theObject, theValue, MakeGroups, NewMeshName )
+        self.mesh.SetParameters(Parameters)
+        # if mesh_groups[0]:
+        #     return Mesh( self.smeshpyD, self.geompyD, mesh_groups[0] ), mesh_groups[1]
+        return mesh_groups
+
     ## Find groups of adjacent nodes within Tolerance.
     #  @param Tolerance the value of tolerance
     #  @param SeparateCornerAndMediumNodes if @c True, in quadratic mesh puts
@@ -4794,7 +4812,7 @@ class Mesh:
     #         a Mesh, elements of highest dimension are duplicated
     #  @param theGroupName - a name of group to contain the generated elements.
     #                    If a group with such a name already exists, the new elements
-    #                    are added to the existng group, else a new group is created.
+    #                    are added to the existing group, else a new group is created.
     #                    If \a theGroupName is empty, new elements are not added 
     #                    in any group.
     # @return a group where the new elements are added. None if theGroupName == "".

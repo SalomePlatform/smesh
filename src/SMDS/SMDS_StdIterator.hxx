@@ -45,7 +45,7 @@ public:
 
   // constructor to use as return from begin()
   SMDS_StdIterator( PtrSMDSIterator pItr )
-    : _value( pItr->more() ? (VALUE)(pItr->next()) : 0 ), _piterator(pItr)
+    : _value( pItr->more() ? VALUE(pItr->next()) : VALUE(0) ), _piterator(pItr)
   {}
   // constructor to use as return from end()
   SMDS_StdIterator(): _value( 0 )
@@ -58,12 +58,12 @@ public:
   //  Step to the next one
   _Self&
   operator++()
-  { _value = _piterator->more() ? VALUE( _piterator->next()) : 0; return *this; }
+  { _value = _piterator->more() ? VALUE( _piterator->next()) : VALUE(0); return *this; }
 
   //  Step to the next one
   _Self
   operator++(int)
-  { _Self res = *this; _value = _piterator->more() ? VALUE( _piterator->next()) : 0; return res; }
+  { _Self res = *this; _value = _piterator->more() ? VALUE( _piterator->next()) : VALUE(0); return res; }
 
   // Test of end
   bool

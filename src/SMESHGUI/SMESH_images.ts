@@ -456,6 +456,10 @@
             <translation>scale.png</translation>
         </message>
         <message>
+            <source>ICON_DLG_MESH_OFFSET</source>
+            <translation>mesh_offset.png</translation>
+        </message>
+        <message>
             <source>ICON_DLG_SCALE_ALONG_AXES</source>
             <translation>scale_along_axes.png</translation>
         </message>

@@ -48,7 +48,7 @@
 #include <limits>
 #include <numeric>
 
-using namespace std;
+#include <boost/container/flat_set.hpp>
 
 //=======================================================================
 /*!
@@ -110,21 +110,21 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
    */
   const SMDS_MeshNode* FindClosestTo( const gp_Pnt& thePnt )
   {
-    map<double, const SMDS_MeshNode*> dist2Nodes;
+    std::map<double, const SMDS_MeshNode*> dist2Nodes;
     myOctreeNode->NodesAround( thePnt.Coord(), dist2Nodes, myHalfLeafSize );
     if ( !dist2Nodes.empty() )
       return dist2Nodes.begin()->second;
-    list<const SMDS_MeshNode*> nodes;
+    std::list<const SMDS_MeshNode*> nodes;
     //myOctreeNode->NodesAround( &tgtNode, &nodes, myHalfLeafSize );
 
     double minSqDist = DBL_MAX;
     if ( nodes.empty() )  // get all nodes of OctreeNode's closest to thePnt
     {
       // sort leafs by their distance from thePnt
-      typedef map< double, SMESH_OctreeNode* > TDistTreeMap;
+      typedef std::map< double, SMESH_OctreeNode* > TDistTreeMap;
       TDistTreeMap treeMap;
-      list< SMESH_OctreeNode* > treeList;
-      list< SMESH_OctreeNode* >::iterator trIt;
+      std::list< SMESH_OctreeNode* > treeList;
+      std::list< SMESH_OctreeNode* >::iterator trIt;
       treeList.push_back( myOctreeNode );
 
       gp_XYZ pointNode( thePnt.X(), thePnt.Y(), thePnt.Z() );
@@ -143,9 +143,10 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
         {
           const Bnd_B3d& box = *tree->getBox();
           double sqDist = thePnt.SquareDistance( 0.5 * ( box.CornerMin() + box.CornerMax() ));
-          pair<TDistTreeMap::iterator,bool> it_in = treeMap.insert( make_pair( sqDist, tree ));
+          std::pair<TDistTreeMap::iterator,bool> it_in =
+            treeMap.insert( std::make_pair( sqDist, tree ));
           if ( !it_in.second ) // not unique distance to box center
-            treeMap.insert( it_in.first, make_pair( sqDist + 1e-13*treeMap.size(), tree ));
+            treeMap.insert( it_in.first, std::make_pair( sqDist + 1e-13*treeMap.size(), tree ));
         }
       }
       // find distance after which there is no sense to check tree's
@@ -168,7 +169,7 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
     // find closest among nodes
     minSqDist = DBL_MAX;
     const SMDS_MeshNode* closestNode = 0;
-    list<const SMDS_MeshNode*>::iterator nIt = nodes.begin();
+    std::list<const SMDS_MeshNode*>::iterator nIt = nodes.begin();
     for ( ; nIt != nodes.end(); ++nIt ) {
       double sqDist = thePnt.SquareDistance( SMESH_TNodeXYZ( *nIt ) );
       if ( minSqDist > sqDist ) {
@@ -226,15 +227,16 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
   {
   public:
 
+    typedef boost::container::flat_set< const SMDS_MeshElement* > TElemSeq;
+
     ElementBndBoxTree(const SMDS_Mesh&     mesh,
                       SMDSAbs_ElementType  elemType,
                       SMDS_ElemIteratorPtr theElemIt = SMDS_ElemIteratorPtr(),
                       double               tolerance = NodeRadius );
-    void getElementsNearPoint( const gp_Pnt& point, vector<const SMDS_MeshElement*>& foundElems );
-    void getElementsNearLine ( const gp_Ax1& line,  vector<const SMDS_MeshElement*>& foundElems);
-    void getElementsInSphere ( const gp_XYZ&                    center,
-                               const double                     radius,
-                               vector<const SMDS_MeshElement*>& foundElems);
+    void getElementsNearPoint( const gp_Pnt& point, TElemSeq& foundElems );
+    void getElementsNearLine ( const gp_Ax1& line,  TElemSeq& foundElems );
+    void getElementsInBox    ( const Bnd_B3d& box,  TElemSeq& foundElems );
+    void getElementsInSphere ( const gp_XYZ& center, const double radius, TElemSeq& foundElems );
     ElementBndBoxTree* getLeafAtPoint( const gp_XYZ& point );
 
   protected:
@@ -247,10 +249,9 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
     struct ElementBox : public Bnd_B3d
     {
       const SMDS_MeshElement* _element;
-      bool                    _isMarked;
       void init(const SMDS_MeshElement* elem, double tolerance);
     };
-    vector< ElementBox* > _elements;
+    std::vector< ElementBox* > _elements;
 
     typedef ObjectPool< ElementBox > TElementBoxPool;
 
@@ -258,7 +259,6 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
     struct LimitAndPool : public SMESH_TreeLimit
     {
       TElementBoxPool            _elBoPool;
-      std::vector< ElementBox* > _markedElems;
       LimitAndPool():SMESH_TreeLimit( MaxLevel, /*minSize=*/0. ) {}
     };
     LimitAndPool* getLimitAndPool() const
@@ -345,37 +345,21 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
    */
   //================================================================================
 
-  void ElementBndBoxTree::getElementsNearPoint( const gp_Pnt&                    point,
-                                                vector<const SMDS_MeshElement*>& foundElems)
+  void ElementBndBoxTree::getElementsNearPoint( const gp_Pnt& point, TElemSeq& foundElems)
   {
     if ( getBox()->IsOut( point.XYZ() ))
       return;
 
     if ( isLeaf() )
     {
-      LimitAndPool* pool = getLimitAndPool();
-
       for ( size_t i = 0; i < _elements.size(); ++i )
-        if ( !_elements[i]->IsOut( point.XYZ() ) &&
-             !_elements[i]->_isMarked )
-        {
-          foundElems.push_back( _elements[i]->_element );
-          _elements[i]->_isMarked = true;
-          pool->_markedElems.push_back( _elements[i] );
-        }
+        if ( !_elements[i]->IsOut( point.XYZ() ))
+          foundElems.insert( _elements[i]->_element );
     }
     else
     {
       for (int i = 0; i < 8; i++)
         ((ElementBndBoxTree*) myChildren[i])->getElementsNearPoint( point, foundElems );
-
-      if ( level() == 0 )
-      {
-        LimitAndPool* pool = getLimitAndPool();
-        for ( size_t i = 0; i < pool->_markedElems.size(); ++i )
-          pool->_markedElems[i]->_isMarked = false;
-        pool->_markedElems.clear();
-      }
     }
   }
 
@@ -385,37 +369,21 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
    */
   //================================================================================
 
-  void ElementBndBoxTree::getElementsNearLine( const gp_Ax1&                    line,
-                                               vector<const SMDS_MeshElement*>& foundElems)
+  void ElementBndBoxTree::getElementsNearLine( const gp_Ax1& line, TElemSeq& foundElems )
   {
     if ( getBox()->IsOut( line ))
       return;
 
     if ( isLeaf() )
     {
-      LimitAndPool* pool = getLimitAndPool();
-
       for ( size_t i = 0; i < _elements.size(); ++i )
-        if ( !_elements[i]->IsOut( line ) &&
-             !_elements[i]->_isMarked )
-        {
-          foundElems.push_back( _elements[i]->_element );
-          _elements[i]->_isMarked = true;
-          pool->_markedElems.push_back( _elements[i] );
-        }
+        if ( !_elements[i]->IsOut( line ) )
+          foundElems.insert( _elements[i]->_element );
     }
     else
     {
       for (int i = 0; i < 8; i++)
         ((ElementBndBoxTree*) myChildren[i])->getElementsNearLine( line, foundElems );
-
-      if ( level() == 0 )
-      {
-        LimitAndPool* pool = getLimitAndPool();
-        for ( size_t i = 0; i < pool->_markedElems.size(); ++i )
-          pool->_markedElems[i]->_isMarked = false;
-        pool->_markedElems.clear();
-      }
     }
   }
 
@@ -425,38 +393,47 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
    */
   //================================================================================
 
-  void ElementBndBoxTree::getElementsInSphere ( const gp_XYZ&                    center,
-                                                const double                     radius,
-                                                vector<const SMDS_MeshElement*>& foundElems)
+  void ElementBndBoxTree::getElementsInSphere ( const gp_XYZ& center,
+                                                const double  radius,
+                                                TElemSeq&     foundElems)
   {
     if ( getBox()->IsOut( center, radius ))
       return;
 
     if ( isLeaf() )
     {
-      LimitAndPool* pool = getLimitAndPool();
-
       for ( size_t i = 0; i < _elements.size(); ++i )
-        if ( !_elements[i]->IsOut( center, radius ) &&
-             !_elements[i]->_isMarked )
-        {
-          foundElems.push_back( _elements[i]->_element );
-          _elements[i]->_isMarked = true;
-          pool->_markedElems.push_back( _elements[i] );
-        }
+        if ( !_elements[i]->IsOut( center, radius ))
+          foundElems.insert( _elements[i]->_element );
     }
     else
     {
       for (int i = 0; i < 8; i++)
         ((ElementBndBoxTree*) myChildren[i])->getElementsInSphere( center, radius, foundElems );
+    }
+  }
 
-      if ( level() == 0 )
-      {
-        LimitAndPool* pool = getLimitAndPool();
-        for ( size_t i = 0; i < pool->_markedElems.size(); ++i )
-          pool->_markedElems[i]->_isMarked = false;
-        pool->_markedElems.clear();
-      }
+  //================================================================================
+  /*!
+   * \brief Return elements from leaves intersecting the box
+   */
+  //================================================================================
+
+  void ElementBndBoxTree::getElementsInBox( const Bnd_B3d& box,  TElemSeq& foundElems )
+  {
+    if ( getBox()->IsOut( box ))
+      return;
+
+    if ( isLeaf() )
+    {
+      for ( size_t i = 0; i < _elements.size(); ++i )
+        if ( !_elements[i]->IsOut( box ))
+          foundElems.insert( _elements[i]->_element );
+    }
+    else
+    {
+      for (int i = 0; i < 8; i++)
+        ((ElementBndBoxTree*) myChildren[i])->getElementsInBox( box, foundElems );
     }
   }
 
@@ -493,7 +470,6 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
   void ElementBndBoxTree::ElementBox::init(const SMDS_MeshElement* elem, double tolerance)
   {
     _element  = elem;
-    _isMarked = false;
     SMDS_ElemIteratorPtr nIt = elem->nodesIterator();
     while ( nIt->more() )
       Add( SMESH_NodeXYZ( nIt->next() ));
@@ -515,15 +491,15 @@ SMESH_ElementSearcher::~SMESH_ElementSearcher()
 
 struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
 {
-  SMDS_Mesh*                   _mesh;
-  SMDS_ElemIteratorPtr         _meshPartIt;
-  ElementBndBoxTree*           _ebbTree      [SMDSAbs_NbElementTypes];
-  int                          _ebbTreeHeight[SMDSAbs_NbElementTypes];
-  SMESH_NodeSearcherImpl*      _nodeSearcher;
-  SMDSAbs_ElementType          _elementType;
-  double                       _tolerance;
-  bool                         _outerFacesFound;
-  set<const SMDS_MeshElement*> _outerFaces; // empty means "no internal faces at all"
+  SMDS_Mesh*                        _mesh;
+  SMDS_ElemIteratorPtr              _meshPartIt;
+  ElementBndBoxTree*                _ebbTree      [SMDSAbs_NbElementTypes];
+  int                               _ebbTreeHeight[SMDSAbs_NbElementTypes];
+  SMESH_NodeSearcherImpl*           _nodeSearcher;
+  SMDSAbs_ElementType               _elementType;
+  double                            _tolerance;
+  bool                              _outerFacesFound;
+  std::set<const SMDS_MeshElement*> _outerFaces; // empty means "no internal faces at all"
 
   SMESH_ElementSearcherImpl( SMDS_Mesh&           mesh,
                              double               tol=-1,
@@ -545,20 +521,23 @@ struct SMESH_ElementSearcherImpl: public SMESH_ElementSearcher
     }
     if ( _nodeSearcher ) delete _nodeSearcher; _nodeSearcher = 0;
   }
-  virtual int FindElementsByPoint(const gp_Pnt&                      point,
-                                  SMDSAbs_ElementType                type,
-                                  vector< const SMDS_MeshElement* >& foundElements);
+  virtual int FindElementsByPoint(const gp_Pnt&                           point,
+                                  SMDSAbs_ElementType                     type,
+                                  std::vector< const SMDS_MeshElement* >& foundElements);
   virtual TopAbs_State GetPointState(const gp_Pnt& point);
   virtual const SMDS_MeshElement* FindClosestTo( const gp_Pnt&       point,
                                                  SMDSAbs_ElementType type );
 
-  virtual void GetElementsNearLine( const gp_Ax1&                      line,
-                                    SMDSAbs_ElementType                type,
-                                    vector< const SMDS_MeshElement* >& foundElems);
-  virtual void GetElementsInSphere( const gp_XYZ&                      center,
-                                    const double                       radius,
-                                    SMDSAbs_ElementType                type,
-                                    vector< const SMDS_MeshElement* >& foundElems);
+  virtual void GetElementsNearLine( const gp_Ax1&                           line,
+                                    SMDSAbs_ElementType                     type,
+                                    std::vector< const SMDS_MeshElement* >& foundElems);
+  virtual void GetElementsInSphere( const gp_XYZ&                           center,
+                                    const double                            radius,
+                                    SMDSAbs_ElementType                     type,
+                                    std::vector< const SMDS_MeshElement* >& foundElems);
+  virtual void GetElementsInBox( const Bnd_B3d&                          box,
+                                 SMDSAbs_ElementType                     type,
+                                 std::vector< const SMDS_MeshElement* >& foundElems);
   virtual gp_XYZ Project(const gp_Pnt&            point,
                          SMDSAbs_ElementType      type,
                          const SMDS_MeshElement** closestElem);
@@ -649,7 +628,7 @@ double SMESH_ElementSearcherImpl::getTolerance()
         while ( nodeIt->more() )
         {
           double dist = n1.Distance( static_cast<const SMDS_MeshNode*>( nodeIt->next() ));
-          elemSize = max( dist, elemSize );
+          elemSize = std::max( dist, elemSize );
         }
       }
       _tolerance = 1e-4 * elemSize;
@@ -707,10 +686,10 @@ void SMESH_ElementSearcherImpl::findOuterBoundary(const SMDS_MeshElement* outerF
   // and BTW find out if there are internal faces at all.
 
   // checked links and links where outer boundary meets internal one
-  set< SMESH_TLink > visitedLinks, seamLinks;
+  std::set< SMESH_TLink > visitedLinks, seamLinks;
 
   // links to treat with already visited faces sharing them
-  list < TFaceLink > startLinks;
+  std::list < TFaceLink > startLinks;
 
   // load startLinks with the first outerFace
   startLinks.push_back( TFaceLink( outerFace->GetNode(0), outerFace->GetNode(1), outerFace));
@@ -752,8 +731,8 @@ void SMESH_ElementSearcherImpl::findOuterBoundary(const SMDS_MeshElement* outerF
         // direction from the link inside outerFace
         gp_Vec dirInOF = gp_Vec( ofNorm ) ^ n1n2;
         // sort all other faces by angle with the dirInOF
-        map< double, const SMDS_MeshElement* > angle2Face;
-        set< const SMDS_MeshElement*, TIDCompare >::const_iterator face = faces.begin();
+        std::map< double, const SMDS_MeshElement* > angle2Face;
+        std::set< const SMDS_MeshElement*, TIDCompare >::const_iterator face = faces.begin();
         for ( ; face != faces.end(); ++face )
         {
           if ( *face == outerFace ) continue;
@@ -762,7 +741,7 @@ void SMESH_ElementSearcherImpl::findOuterBoundary(const SMDS_MeshElement* outerF
           gp_Vec dirInF = gp_Vec( fNorm ) ^ n1n2;
           double angle = dirInOF.AngleWithRef( dirInF, n1n2 );
           if ( angle < 0 ) angle += 2. * M_PI;
-          angle2Face.insert( make_pair( angle, *face ));
+          angle2Face.insert( std::make_pair( angle, *face ));
         }
         if ( !angle2Face.empty() )
           outerFace2 = angle2Face.begin()->second;
@@ -807,9 +786,9 @@ void SMESH_ElementSearcherImpl::findOuterBoundary(const SMDS_MeshElement* outerF
 //=======================================================================
 
 int SMESH_ElementSearcherImpl::
-FindElementsByPoint(const gp_Pnt&                      point,
-                    SMDSAbs_ElementType                type,
-                    vector< const SMDS_MeshElement* >& foundElements)
+FindElementsByPoint(const gp_Pnt&                           point,
+                    SMDSAbs_ElementType                     type,
+                    std::vector< const SMDS_MeshElement* >& foundElements)
 {
   foundElements.clear();
   _elementType = type;
@@ -850,9 +829,9 @@ FindElementsByPoint(const gp_Pnt&                      point,
     {
       _ebbTree[_elementType] = new ElementBndBoxTree( *_mesh, type, _meshPartIt, tolerance );
     }
-    vector< const SMDS_MeshElement* > suspectElems;
+    ElementBndBoxTree::TElemSeq suspectElems;
     _ebbTree[ type ]->getElementsNearPoint( point, suspectElems );
-    vector< const SMDS_MeshElement* >::iterator elem = suspectElems.begin();
+    ElementBndBoxTree::TElemSeq::iterator elem = suspectElems.begin();
     for ( ; elem != suspectElems.end(); ++elem )
       if ( !SMESH_MeshAlgos::IsOut( *elem, point, tolerance ))
         foundElements.push_back( *elem );
@@ -883,7 +862,7 @@ SMESH_ElementSearcherImpl::FindClosestTo( const gp_Pnt&       point,
     if ( !ebbTree )
       ebbTree = new ElementBndBoxTree( *_mesh, type, _meshPartIt );
 
-    vector<const SMDS_MeshElement*> suspectElems;
+    ElementBndBoxTree::TElemSeq suspectElems;
     ebbTree->getElementsNearPoint( point, suspectElems );
 
     if ( suspectElems.empty() && ebbTree->maxSize() > 0 )
@@ -902,20 +881,20 @@ SMESH_ElementSearcherImpl::FindClosestTo( const gp_Pnt&       point,
       }
     }
     double minDist = std::numeric_limits<double>::max();
-    multimap< double, const SMDS_MeshElement* > dist2face;
-    vector<const SMDS_MeshElement*>::iterator elem = suspectElems.begin();
+    std::multimap< double, const SMDS_MeshElement* > dist2face;
+    ElementBndBoxTree::TElemSeq::iterator elem = suspectElems.begin();
     for ( ; elem != suspectElems.end(); ++elem )
     {
       double dist = SMESH_MeshAlgos::GetDistance( *elem, point );
       if ( dist < minDist + 1e-10)
       {
         minDist = dist;
-        dist2face.insert( dist2face.begin(), make_pair( dist, *elem ));
+        dist2face.insert( dist2face.begin(), std::make_pair( dist, *elem ));
       }
     }
     if ( !dist2face.empty() )
     {
-      multimap< double, const SMDS_MeshElement* >::iterator d2f = dist2face.begin();
+      std::multimap< double, const SMDS_MeshElement* >::iterator d2f = dist2face.begin();
       closestElem = d2f->second;
       // if there are several elements at the same distance, select one
       // with GC closest to the point
@@ -974,21 +953,21 @@ TopAbs_State SMESH_ElementSearcherImpl::GetPointState(const gp_Pnt& point)
 
   const int nbAxes = 3;
   gp_Dir axisDir[ nbAxes ] = { gp::DX(), gp::DY(), gp::DZ() };
-  map< double, TInters >   paramOnLine2TInters[ nbAxes ];
-  list< TInters > tangentInters[ nbAxes ]; // of faces whose plane includes the line
-  multimap< int, int > nbInt2Axis; // to find the simplest case
+  std::map< double, TInters >   paramOnLine2TInters[ nbAxes ];
+  std::list< TInters > tangentInters[ nbAxes ]; // of faces whose plane includes the line
+  std::multimap< int, int > nbInt2Axis; // to find the simplest case
   for ( int axis = 0; axis < nbAxes; ++axis )
   {
     gp_Ax1 lineAxis( point, axisDir[axis]);
     gp_Lin line    ( lineAxis );
 
-    vector<const SMDS_MeshElement*> suspectFaces; // faces possibly intersecting the line
+    ElementBndBoxTree::TElemSeq suspectFaces; // faces possibly intersecting the line
     ebbTree->getElementsNearLine( lineAxis, suspectFaces );
 
     // Intersect faces with the line
 
-    map< double, TInters > & u2inters = paramOnLine2TInters[ axis ];
-    vector<const SMDS_MeshElement*>::iterator face = suspectFaces.begin();
+    std::map< double, TInters > & u2inters = paramOnLine2TInters[ axis ];
+    ElementBndBoxTree::TElemSeq::iterator face = suspectFaces.begin();
     for ( ; face != suspectFaces.end(); ++face )
     {
       // get face plane
@@ -1009,7 +988,7 @@ TopAbs_State SMESH_ElementSearcherImpl::GetPointState(const gp_Pnt& point)
         double tol = 1e-4 * Sqrt( fNorm.Modulus() );
         gp_Pnt intersectionPoint = intersection.Point(1);
         if ( !SMESH_MeshAlgos::IsOut( *face, intersectionPoint, tol ))
-          u2inters.insert(make_pair( intersection.ParamOnConic(1), TInters( *face, fNorm )));
+          u2inters.insert( std::make_pair( intersection.ParamOnConic(1), TInters( *face, fNorm )));
       }
     }
     // Analyse intersections roughly
@@ -1033,7 +1012,7 @@ TopAbs_State SMESH_ElementSearcherImpl::GetPointState(const gp_Pnt& point)
     if ( nbIntBeforePoint == 1 || nbIntAfterPoint == 1 )
       return TopAbs_IN;
 
-    nbInt2Axis.insert( make_pair( min( nbIntBeforePoint, nbIntAfterPoint ), axis ));
+    nbInt2Axis.insert( std::make_pair( std::min( nbIntBeforePoint, nbIntAfterPoint ), axis ));
 
     if ( _outerFacesFound ) break; // pass to thorough analysis
 
@@ -1047,29 +1026,29 @@ TopAbs_State SMESH_ElementSearcherImpl::GetPointState(const gp_Pnt& point)
 
   for ( int hasPositionInfo = _outerFacesFound; hasPositionInfo < 2; ++hasPositionInfo )
   {
-    multimap< int, int >::const_iterator nb_axis = nbInt2Axis.begin();
+    std::multimap< int, int >::const_iterator nb_axis = nbInt2Axis.begin();
     for ( ; nb_axis != nbInt2Axis.end(); ++nb_axis )
     {
       int axis = nb_axis->second;
-      map< double, TInters > & u2inters = paramOnLine2TInters[ axis ];
+      std::map< double, TInters > & u2inters = paramOnLine2TInters[ axis ];
 
       gp_Ax1 lineAxis( point, axisDir[axis]);
       gp_Lin line    ( lineAxis );
 
       // add tangent intersections to u2inters
       double param;
-      list< TInters >::const_iterator tgtInt = tangentInters[ axis ].begin();
+      std::list< TInters >::const_iterator tgtInt = tangentInters[ axis ].begin();
       for ( ; tgtInt != tangentInters[ axis ].end(); ++tgtInt )
         if ( getIntersParamOnLine( line, tgtInt->_face, tolerance, param ))
-          u2inters.insert(make_pair( param, *tgtInt ));
+          u2inters.insert( std::make_pair( param, *tgtInt ));
       tangentInters[ axis ].clear();
 
       // Count intersections before and after the point excluding touching ones.
       // If hasPositionInfo we count intersections of outer boundary only
 
       int nbIntBeforePoint = 0, nbIntAfterPoint = 0;
-      double f = numeric_limits<double>::max(), l = -numeric_limits<double>::max();
-      map< double, TInters >::iterator u_int1 = u2inters.begin(), u_int2 = u_int1;
+      double f = std::numeric_limits<double>::max(), l = -std::numeric_limits<double>::max();
+      std::map< double, TInters >::iterator u_int1 = u2inters.begin(), u_int2 = u_int1;
       bool ok = ! u_int1->second._coincides;
       while ( ok && u_int1 != u2inters.end() )
       {
@@ -1118,8 +1097,8 @@ TopAbs_State SMESH_ElementSearcherImpl::GetPointState(const gp_Pnt& point)
           // decide if we skipped a touching intersection
           if ( nbSamePnt + nbTgt > 0 )
           {
-            double minDot = numeric_limits<double>::max(), maxDot = -numeric_limits<double>::max();
-            map< double, TInters >::iterator u_int = u_int1;
+            double minDot = std::numeric_limits<double>::max(), maxDot = -minDot;
+            std::map< double, TInters >::iterator u_int = u_int1;
             for ( ; u_int != u_int2; ++u_int )
             {
               if ( u_int->second._coincides ) continue;
@@ -1172,7 +1151,7 @@ TopAbs_State SMESH_ElementSearcherImpl::GetPointState(const gp_Pnt& point)
     if ( !hasPositionInfo )
     {
       // gather info on faces position - is face in the outer boundary or not
-      map< double, TInters > & u2inters = paramOnLine2TInters[ 0 ];
+      std::map< double, TInters > & u2inters = paramOnLine2TInters[ 0 ];
       findOuterBoundary( u2inters.begin()->second._face );
     }
 
@@ -1187,16 +1166,20 @@ TopAbs_State SMESH_ElementSearcherImpl::GetPointState(const gp_Pnt& point)
  */
 //=======================================================================
 
-void SMESH_ElementSearcherImpl::GetElementsNearLine( const gp_Ax1&                      line,
-                                                     SMDSAbs_ElementType                type,
-                                                     vector< const SMDS_MeshElement* >& foundElems)
+void SMESH_ElementSearcherImpl::
+GetElementsNearLine( const gp_Ax1&                           line,
+                     SMDSAbs_ElementType                     type,
+                     std::vector< const SMDS_MeshElement* >& foundElems)
 {
   _elementType = type;
   ElementBndBoxTree*& ebbTree = _ebbTree[ type ];
   if ( !ebbTree )
     ebbTree = new ElementBndBoxTree( *_mesh, _elementType, _meshPartIt );
 
-  ebbTree->getElementsNearLine( line, foundElems );
+  ElementBndBoxTree::TElemSeq elems;
+  ebbTree->getElementsNearLine( line, elems );
+
+  foundElems.insert( foundElems.end(), elems.begin(), elems.end() );
 }
 
 //=======================================================================
@@ -1205,17 +1188,43 @@ void SMESH_ElementSearcherImpl::GetElementsNearLine( const gp_Ax1&              
  */
 //=======================================================================
 
-void SMESH_ElementSearcherImpl::GetElementsInSphere( const gp_XYZ&                      center,
-                                                     const double                       radius,
-                                                     SMDSAbs_ElementType                type,
-                                                     vector< const SMDS_MeshElement* >& foundElems)
+void SMESH_ElementSearcherImpl::
+GetElementsInSphere( const gp_XYZ&                           center,
+                     const double                            radius,
+                     SMDSAbs_ElementType                     type,
+                     std::vector< const SMDS_MeshElement* >& foundElems)
 {
   _elementType = type;
   ElementBndBoxTree*& ebbTree = _ebbTree[ type ];
   if ( !ebbTree )
     ebbTree = new ElementBndBoxTree( *_mesh, _elementType, _meshPartIt );
 
-  ebbTree->getElementsInSphere( center, radius, foundElems );
+  ElementBndBoxTree::TElemSeq elems;
+  ebbTree->getElementsInSphere( center, radius, elems );
+
+  foundElems.insert( foundElems.end(), elems.begin(), elems.end() );
+}
+
+//=======================================================================
+/*
+ * Return elements whose bounding box intersects a given bounding box
+ */
+//=======================================================================
+
+void SMESH_ElementSearcherImpl::
+GetElementsInBox( const Bnd_B3d&                          box,
+                  SMDSAbs_ElementType                     type,
+                  std::vector< const SMDS_MeshElement* >& foundElems)
+{
+  _elementType = type;
+  ElementBndBoxTree*& ebbTree = _ebbTree[ type ];
+  if ( !ebbTree )
+    ebbTree = new ElementBndBoxTree( *_mesh, _elementType, _meshPartIt, getTolerance() );
+
+  ElementBndBoxTree::TElemSeq elems;
+  ebbTree->getElementsInBox( box, elems );
+
+  foundElems.insert( foundElems.end(), elems.begin(), elems.end() );
 }
 
 //=======================================================================
@@ -1242,7 +1251,7 @@ gp_XYZ SMESH_ElementSearcherImpl::Project(const gp_Pnt&            point,
   const Bnd_B3d* box = ebbLeaf->getBox();
   double radius = ( box->CornerMax() - box->CornerMin() ).Modulus();
 
-  vector< const SMDS_MeshElement* > elems;
+  ElementBndBoxTree::TElemSeq elems;
   ebbTree->getElementsInSphere( p, radius, elems );
   while ( elems.empty() )
   {
@@ -1252,13 +1261,14 @@ gp_XYZ SMESH_ElementSearcherImpl::Project(const gp_Pnt&            point,
   gp_XYZ proj, bestProj;
   const SMDS_MeshElement* elem = 0;
   double minDist = 2 * radius;
-  for ( size_t i = 0; i < elems.size(); ++i )
+  ElementBndBoxTree::TElemSeq::iterator e = elems.begin();
+  for ( ; e != elems.end(); ++e )
   {
-    double d = SMESH_MeshAlgos::GetDistance( elems[i], p, &proj );
+    double d = SMESH_MeshAlgos::GetDistance( *e, p, &proj );
     if ( d < minDist )
     {
       bestProj = proj;
-      elem = elems[i];
+      elem = *e;
       minDist = d;
     }
   }
@@ -1282,7 +1292,7 @@ bool SMESH_MeshAlgos::IsOut( const SMDS_MeshElement* element, const gp_Pnt& poin
 
   // get ordered nodes
 
-  vector< SMESH_TNodeXYZ > xyz; xyz.reserve( element->NbNodes()+1 );
+  std::vector< SMESH_TNodeXYZ > xyz; xyz.reserve( element->NbNodes()+1 );
 
   SMDS_ElemIteratorPtr nodeIt = element->interlacedNodesElemIterator();
   for ( int i = 0; nodeIt->more(); ++i )
@@ -1347,7 +1357,7 @@ bool SMESH_MeshAlgos::IsOut( const SMDS_MeshElement* element, const gp_Pnt& poin
     if ( n2pSize * n2pSize > fNormSize * 100 ) return true; // point is very far
     plnNorm /= n2pSize;
     // for each node of the face, compute its signed distance to the cutting plane
-    vector<double> dist( nbNodes + 1);
+    std::vector<double> dist( nbNodes + 1);
     for ( i = 0; i < nbNodes; ++i )
     {
       gp_Vec n2p( xyz[i], point );
@@ -1550,7 +1560,7 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshFace* face,
 
   // coordinates of nodes (medium nodes, if any, ignored)
   typedef SMDS_StdIterator< SMESH_TNodeXYZ, SMDS_ElemIteratorPtr > TXyzIterator;
-  vector<gp_XYZ> xyz( TXyzIterator( face->nodesIterator()), TXyzIterator() );
+  std::vector<gp_XYZ> xyz( TXyzIterator( face->nodesIterator()), TXyzIterator() );
   xyz.resize( face->NbCornerNodes()+1 );
 
   // transformation to get xyz[0] lies on the origin, xyz[1] lies on the Z axis,
@@ -1574,7 +1584,7 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshFace* face,
   trsf.SetTransformation( tgtCS );
 
   // move all the nodes to 2D
-  vector<gp_XY> xy( xyz.size() );
+  std::vector<gp_XY> xy( xyz.size() );
   for ( size_t i = 0;i < xyz.size()-1; ++i )
   {
     gp_XYZ p3d = xyz[i];
@@ -1590,7 +1600,7 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshFace* face,
   gp_XY point2D( tmpPnt.X(), tmpPnt.Z() );
 
   // loop on edges of the face to analyze point position ralative to the face
-  set< PointPos > pntPosSet;
+  std::set< PointPos > pntPosSet;
   for ( size_t i = 1; i < xy.size(); ++i )
   {
     PointPos pos = getPointPosition( point2D, &xy[0], i-1 );
@@ -1608,7 +1618,7 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshFace* face,
     gp_Vec n1p ( xyz[ pos._index ], point  );
     double u = ( edge * n1p ) / edge.SquareMagnitude(); // param [0,1] on the edge
     // projection of the point on the edge
-    gp_XYZ proj = ( 1. - u ) * xyz[ pos._index ] + u * xyz[ pos._index+1 ];
+    gp_XYZ proj = xyz[ pos._index ] + u * edge.XYZ();
     if ( closestPnt ) *closestPnt = proj;
     return point.Distance( proj );
   }
@@ -1655,7 +1665,7 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshEdge* seg,
 
   int i = 0, nbNodes = seg->NbNodes();
 
-  vector< SMESH_TNodeXYZ > xyz( nbNodes );
+  std::vector< SMESH_TNodeXYZ > xyz( nbNodes );
   SMDS_ElemIteratorPtr nodeIt = seg->interlacedNodesElemIterator();
   while ( nodeIt->more() )
     xyz[ i++ ].Set( nodeIt->next() );
@@ -1734,7 +1744,7 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshVolume* volume,
       break;
     }
     default:
-      vector<const SMDS_MeshNode *> nvec( nodes, nodes + vTool.NbFaceNodes( iF ));
+      std::vector<const SMDS_MeshNode *> nvec( nodes, nodes + vTool.NbFaceNodes( iF ));
       SMDS_PolygonalFaceOfNodes tmpFace( nvec );
       dist = GetDistance( &tmpFace, point, closestPnt );
     }
@@ -1839,7 +1849,7 @@ SMESH_MeshAlgos::FindFaceInSet(const SMDS_MeshNode*    n1,
         }
         else if ( n2 == prevN && n1 == n )
         {
-          face = elem; swap( i1, i2 );
+          face = elem; std::swap( i1, i2 );
         }
         prevN = n;
       }
@@ -1874,7 +1884,7 @@ bool SMESH_MeshAlgos::FaceNormal(const SMDS_MeshElement* F, gp_XYZ& normal, bool
     normal += ( p[2] - p[1] ) ^ ( p[0] - p[1] );
   }
   double size2 = normal.SquareModulus();
-  bool ok = ( size2 > numeric_limits<double>::min() * numeric_limits<double>::min());
+  bool ok = ( size2 > std::numeric_limits<double>::min() * std::numeric_limits<double>::min());
   if ( normalized && ok )
     normal /= sqrt( size2 );
 
@@ -1886,10 +1896,10 @@ bool SMESH_MeshAlgos::FaceNormal(const SMDS_MeshElement* F, gp_XYZ& normal, bool
 //purpose  : Return nodes common to two elements
 //=======================================================================
 
-vector< const SMDS_MeshNode*> SMESH_MeshAlgos::GetCommonNodes(const SMDS_MeshElement* e1,
-                                                              const SMDS_MeshElement* e2)
+std::vector< const SMDS_MeshNode*> SMESH_MeshAlgos::GetCommonNodes(const SMDS_MeshElement* e1,
+                                                                   const SMDS_MeshElement* e2)
 {
-  vector< const SMDS_MeshNode*> common;
+  std::vector< const SMDS_MeshNode*> common;
   for ( int i = 0 ; i < e1->NbNodes(); ++i )
     if ( e2->GetNodeIndex( e1->GetNode( i )) >= 0 )
       common.push_back( e1->GetNode( i ));

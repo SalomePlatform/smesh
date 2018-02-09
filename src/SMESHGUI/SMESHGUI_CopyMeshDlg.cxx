@@ -452,7 +452,7 @@ void SMESHGUI_CopyMeshDlg::onTextChange (const QString& theNewText)
   buttonOk->setEnabled(false);
   buttonApply->setEnabled(false);
 
-  // hilight entered elements
+  // highlight entered elements
   SMDS_Mesh* aMesh = 0;
   if (myActor)
     aMesh = myActor->GetObject()->GetMesh();

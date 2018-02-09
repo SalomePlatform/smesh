@@ -346,7 +346,7 @@ void SMESHGUI_FindElemByPointOp::onCloseView()
 }
 //================================================================================
 /*!
- * \brief hilight found selected elements
+ * \brief highlight found selected elements
  */
 //================================================================================
 

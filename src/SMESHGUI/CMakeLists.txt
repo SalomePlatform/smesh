@@ -111,6 +111,7 @@ SET(_moc_HEADERS
   SMESHGUI_RotationDlg.h
   SMESHGUI_TranslationDlg.h
   SMESHGUI_ScaleDlg.h
+  SMESHGUI_OffsetDlg.h
   SMESHGUI_SymmetryDlg.h
   SMESHGUI_SewingDlg.h
   SMESHGUI_DuplicateNodesDlg.h
@@ -206,6 +207,7 @@ SET(_other_SOURCES
   SMESHGUI_RotationDlg.cxx
   SMESHGUI_TranslationDlg.cxx
   SMESHGUI_ScaleDlg.cxx
+  SMESHGUI_OffsetDlg.cxx
   SMESHGUI_SymmetryDlg.cxx
   SMESHGUI_SewingDlg.cxx
   SMESHGUI_DuplicateNodesDlg.cxx

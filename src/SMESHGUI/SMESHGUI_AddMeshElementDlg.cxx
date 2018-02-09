@@ -40,7 +40,7 @@
 #include <SMESH_FaceOrientationFilter.h>
 #include <SMDS_Mesh.hxx>
 
-// SALOME GUI inclues
+// SALOME GUI includes
 #include <SUIT_Desktop.h>
 #include <SUIT_Session.h>
 #include <SUIT_ResourceMgr.h>
@@ -56,7 +56,7 @@
 #include <Qtx.h>
 
 
-// IDL incldues
+// IDL includes
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 // OCCT includes
@@ -777,7 +777,7 @@ void SMESHGUI_AddMeshElementDlg::onTextChange (const QString& theNewText)
 
   mySimulation->SetVisibility(false);
 
-  // hilight entered nodes
+  // highlight entered nodes
   SMDS_Mesh* aMesh = 0;
   if (myActor)
     aMesh = myActor->GetObject()->GetMesh();

@@ -1021,7 +1021,7 @@ void SMESH_Gen_i::UpdateParameters(CORBA::Object_ptr theObject, const char* theP
   myLastObj.clear();
   myLastParameters.clear();
   myLastParamIndex.clear(); /* vector holding indices of virables within the string
-                               of all varibles used for theObject */ 
+                               of all variables used for theObject */ 
   int nbVars = 0;
   int pos = 0, prevPos = 0, len = strlen( theParameters );
   if ( len == 0 ) return;
@@ -1050,7 +1050,7 @@ void SMESH_Gen_i::UpdateParameters(CORBA::Object_ptr theObject, const char* theP
     return;
 
   // store
-  // (1) variable names in the string of all varibles used for theObject and
+  // (1) variable names in the string of all variables used for theObject and
   // (2) indices of found variables in myLastParamIndex.
 
   // remember theObject

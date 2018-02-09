@@ -518,7 +518,7 @@ void SMESHGUI_SmoothingDlg::onTextChange (const QString& theNewText)
   buttonOk->setEnabled(false);
   buttonApply->setEnabled(false);
 
-  // hilight entered elements/nodes
+  // highlight entered elements/nodes
   SMDS_Mesh* aMesh = myActor ? myActor->GetObject()->GetMesh() : 0;
   QStringList aListId = theNewText.split(" ", QString::SkipEmptyParts);
 

@@ -341,7 +341,7 @@ void SMESHGUI_SingleEditDlg::onTextChange (const QString& theNewText)
   myOkBtn->setEnabled(false);
   myApplyBtn->setEnabled(false);
 
-  // hilight entered edge
+  // highlight entered edge
   if(myActor){
     if(SMDS_Mesh* aMesh = myActor->GetObject()->GetMesh()){
       Handle(SALOME_InteractiveObject) anIO = myActor->getIO();

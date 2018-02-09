@@ -465,6 +465,13 @@ public:
                        SMESH_Mesh*        theTargetMesh=0);
   // Move or copy theElements applying theTrsf to their nodes
 
+  PGroupIDs Offset( TIDSortedElemSet & theElements,
+                    const double       theValue,
+                    SMESH_Mesh*        theTgtMesh,
+                    const bool         theMakeGroups,
+                    const bool         theFixSelfIntersection);
+  // Make an offset mesh from a source 2D mesh
+
   typedef std::list< std::list< const SMDS_MeshNode* > > TListOfListOfNodes;
 
   void FindCoincidentNodes (TIDSortedNodeSet &   theNodes,

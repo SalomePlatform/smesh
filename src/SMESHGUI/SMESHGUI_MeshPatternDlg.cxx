@@ -1400,7 +1400,7 @@ void SMESHGUI_MeshPatternDlg::onTextChanged (const QString& theNewText)
     activateSelection();
   }
 
-  // hilight entered elements/nodes
+  // highlight entered elements/nodes
   SMDS_Mesh* aMesh = 0;
   SMESH_Actor* anActor = SMESH::FindActorByObject(myMesh);
   if (anActor)

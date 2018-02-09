@@ -1910,7 +1910,7 @@ les données exportées ?</translation>
         <translation>Hexaèdres</translation>
     </message>
     <message>
-        <source>SMESH_HILIGHT_COLOR</source>
+        <source>SMESH_HIGHLIGHT_COLOR</source>
         <translation>Couleur de sélection</translation>
     </message>
     <message>

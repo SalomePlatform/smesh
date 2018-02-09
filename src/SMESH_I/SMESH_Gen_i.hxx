@@ -117,10 +117,7 @@ private:
   // get next free object identifier
   int getNextId()
   {
-    int id = 1;
-    while( mapIdToIOR.IsBound( id ) )
-      id++;
-    return id;
+    return mapIdToIOR.Extent() + 1;
   }
 
   TInt2StringMap mapIdToIOR; // persistent-to-transient map

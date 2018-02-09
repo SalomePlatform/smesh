@@ -2613,34 +2613,34 @@ namespace
   {
     enum { X = 1, Y = 2, Z = 4 }; // == 001, 010, 100
     int nbFacets = 0;
-    int vertex = 0, egdeMask = 0;
+    int vertex = 0, edgeMask = 0;
 
     if ( Abs( _grid->_coords[0][ _i   ] - ip->_uvw[0] ) < _grid->_tol ) {
       facets[ nbFacets++ ] = SMESH_Block::ID_F0yz;
-      egdeMask |= X;
+      edgeMask |= X;
     }
     else if ( Abs( _grid->_coords[0][ _i+1 ] - ip->_uvw[0] ) < _grid->_tol ) {
       facets[ nbFacets++ ] = SMESH_Block::ID_F1yz;
       vertex   |= X;
-      egdeMask |= X;
+      edgeMask |= X;
     }
     if ( Abs( _grid->_coords[1][ _j   ] - ip->_uvw[1] ) < _grid->_tol ) {
       facets[ nbFacets++ ] = SMESH_Block::ID_Fx0z;
-      egdeMask |= Y;
+      edgeMask |= Y;
     }
     else if ( Abs( _grid->_coords[1][ _j+1 ] - ip->_uvw[1] ) < _grid->_tol ) {
       facets[ nbFacets++ ] = SMESH_Block::ID_Fx1z;
       vertex   |= Y;
-      egdeMask |= Y;
+      edgeMask |= Y;
     }
     if ( Abs( _grid->_coords[2][ _k   ] - ip->_uvw[2] ) < _grid->_tol ) {
       facets[ nbFacets++ ] = SMESH_Block::ID_Fxy0;
-      egdeMask |= Z;
+      edgeMask |= Z;
     }
     else if ( Abs( _grid->_coords[2][ _k+1 ] - ip->_uvw[2] ) < _grid->_tol ) {
       facets[ nbFacets++ ] = SMESH_Block::ID_Fxy1;
       vertex   |= Z;
-      egdeMask |= Z;
+      edgeMask |= Z;
     }
 
     switch ( nbFacets )
@@ -2656,7 +2656,7 @@ namespace
         { SMESH_Block::ID_Ex00, 0, SMESH_Block::ID_Ex10, 0,
           SMESH_Block::ID_Ex01, 0, SMESH_Block::ID_Ex11 }
       };
-      switch ( egdeMask ) {
+      switch ( edgeMask ) {
       case X | Y: sub = edge[ 0 ][ vertex ]; break;
       case X | Z: sub = edge[ 1 ][ vertex ]; break;
       default:    sub = edge[ 2 ][ vertex ];

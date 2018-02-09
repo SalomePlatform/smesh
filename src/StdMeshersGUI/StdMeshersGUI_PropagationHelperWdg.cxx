@@ -219,7 +219,7 @@ bool StdMeshersGUI_PropagationHelperWdg::buildChains()
   // aPreviewActor holds a map od all sub-shapes of mainShape
   SMESH_PreviewActorsCollection* previewActor = mySubSelectWdg->GetActorCollection();
   if ( !previewActor ) return false;
-  const QList<int>& egdeIDs = previewActor->GetIndices();
+  const QList<int>& edgeIDs = previewActor->GetIndices();
 
   // Make a 'map' of WIREs of EDGE with quadrilateral WIREs only
 
@@ -277,11 +277,11 @@ bool StdMeshersGUI_PropagationHelperWdg::buildChains()
 
   TColStd_MapOfInteger shapeEdges;
   if ( !shape.IsSame( mainShape ))
-    for ( QList<TGeomID>::const_iterator ieIt = egdeIDs.begin(); ieIt != egdeIDs.end(); ++ieIt )
+    for ( QList<TGeomID>::const_iterator ieIt = edgeIDs.begin(); ieIt != edgeIDs.end(); ++ieIt )
       shapeEdges.Add( *ieIt );
 
   // loop on all EDGEs in mainShape
-  for ( QList<TGeomID>::const_iterator ieIt = egdeIDs.begin(); ieIt != egdeIDs.end(); ++ieIt )
+  for ( QList<TGeomID>::const_iterator ieIt = edgeIDs.begin(); ieIt != edgeIDs.end(); ++ieIt )
   {
     if ( chainedEdges.Contains( *ieIt ))
       continue;
@@ -329,7 +329,7 @@ bool StdMeshersGUI_PropagationHelperWdg::buildChains()
       if ( ch.size() < 2 )
         myChains.pop_back();
     }
-  } // loop on egdeIDs
+  } // loop on edgeIDs
 
   return !myChains.empty();
 }

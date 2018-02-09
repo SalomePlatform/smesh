@@ -337,7 +337,7 @@ void SMESHGUI_3TypesSelector::onTextChange( const QString& theNewText )
 
   myBusy = true;
 
-  // hilight entered elements/nodes
+  // highlight entered elements/nodes
 
   myIDSource[ iType ]->length( 0 );
 

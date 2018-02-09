@@ -688,6 +688,7 @@ public:
   virtual void Renumber (const bool isNodes, const int startID = 1, const int deltaID = 1);
   // Renumber all nodes or elements.
   virtual void compactMesh();
+  virtual void CompactMesh() { compactMesh(); }
 
   const SMDS_MeshNode *FindNode(int idnode) const;
   const SMDS_MeshNode *FindNodeVtk(int idnode) const;

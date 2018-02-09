@@ -29,6 +29,7 @@
 
 #include "SMESH_Utils.hxx"
 
+#include "SMDS_SetIterator.hxx"
 #include "SMDS_MeshNode.hxx"
 
 #include <gp_XYZ.hxx>
@@ -38,6 +39,8 @@
 #include <list>
 #include <set>
 #include <cassert>
+
+#include <boost/make_shared.hpp>
 
 typedef std::map<const SMDS_MeshElement*,
                  std::list<const SMDS_MeshElement*>, TIDCompare > TElemOfElemListMap;
@@ -100,6 +103,14 @@ namespace SMESHUtils
   private:
     ArrayDeleter( const ArrayDeleter& );
   };
+
+  template < class ELEM_SET >
+  SMDS_ElemIteratorPtr elemSetIterator( const ELEM_SET& elements )
+  {
+    typedef SMDS_SetIterator
+      < SMDS_pElement, typename ELEM_SET::const_iterator> TSetIterator;
+    return boost::make_shared< TSetIterator >( elements.begin(), elements.end() );
+  }
 }
 
 //=======================================================================
@@ -127,6 +138,7 @@ struct SMESH_TLink: public NLink
     return ( l1.node1() == l2.node1() && l1.node2() == l2.node2() );
   }
 };
+typedef SMESH_TLink SMESH_Link;
 
 //=======================================================================
 /*!
@@ -163,9 +175,13 @@ struct SMESH_TNodeXYZ : public gp_XYZ
     }
     return false;
   }
+  const SMDS_MeshNode* Node() const { return _node; }
   double Distance(const SMDS_MeshNode* n)       const { return (SMESH_TNodeXYZ( n )-*this).Modulus(); }
   double SquareDistance(const SMDS_MeshNode* n) const { return (SMESH_TNodeXYZ( n )-*this).SquareModulus(); }
   bool operator==(const SMESH_TNodeXYZ& other)  const { return _node == other._node; }
+  bool operator!=(const SMESH_TNodeXYZ& other)  const { return _node != other._node; }
+  bool operator!() const { return !_node; }
+  const SMDS_MeshNode* operator->() const { return _node; }
 };
 typedef SMESH_TNodeXYZ SMESH_NodeXYZ;
 
@@ -198,17 +214,12 @@ typedef std::vector< UVPtStruct > UVPtStructVec;
 
 // --------------------------------------------------------------------------------
 // class SMESH_SequenceOfElemPtr
-#include <NCollection_DefineSequence.hxx>
 
-class SMDS_MeshElement;
-
-typedef const SMDS_MeshElement* SMDS_MeshElementPtr;
-
-DEFINE_SEQUENCE (SMESH_SequenceOfElemPtr, SMESH_BaseCollectionElemPtr, SMDS_MeshElementPtr)
-
+typedef std::vector< const SMDS_MeshElement* > SMESH_SequenceOfElemPtr;
 
 // --------------------------------------------------------------------------------
 // class SMESH_SequenceOfNode
+#include <NCollection_DefineSequence.hxx>
 typedef const SMDS_MeshNode* SMDS_MeshNodePtr;
 
 DEFINE_SEQUENCE(SMESH_SequenceOfNode,

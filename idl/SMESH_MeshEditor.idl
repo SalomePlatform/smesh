@@ -688,6 +688,13 @@ module SMESH
                                      in string         MeshName)
       raises (SALOME::SALOME_Exception);
 
+    SMESH_Mesh Offset(in SMESH_IDSource theObject,
+                      in double         Value,
+                      in boolean        CopyGroups,
+                      in string         MeshName,
+                      out ListOfGroups  Groups)
+      raises (SALOME::SALOME_Exception);
+
     void FindCoincidentNodes (in  double              Tolerance,
                               out array_of_long_array GroupsOfNodes,
                               in  boolean             SeparateCornersAndMedium)
@@ -874,7 +881,7 @@ module SMESH
      * \param theElements - container of elements to duplicate.
      * \param theGroupName - a name of group to contain the generated elements.
      *                    If a group with such a name already exists, the new elements
-     *                    are added to the existng group, else a new group is created.
+     *                    are added to the existing group, else a new group is created.
      *                    If \a theGroupName is empty, new elements are not added 
      *                    in any group.
      * \return a group where the new elements are added. NULL if theGroupName == "".

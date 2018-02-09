@@ -717,7 +717,7 @@ void SMESHGUI_CreatePolyhedralVolumeDlg::onTextChange(const QString& theNewText)
         buttonOk->setEnabled( false );
         buttonApply->setEnabled( false );
       
-        // check entered ids of faces and hilight them
+        // check entered ids of faces and highlight them
         QStringList aListId;
         if ( aMesh ) {
           TColStd_MapOfInteger newIndices;

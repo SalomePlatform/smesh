@@ -67,7 +67,6 @@ class SMDS_EXPORT SMDS_PolygonalFaceOfNodes:public SMDS_MeshFace
  protected:
   virtual SMDS_ElemIteratorPtr elementsIterator (SMDSAbs_ElementType type) const;
 
- private:
   std::vector<const SMDS_MeshNode *> myNodes;
 };
 

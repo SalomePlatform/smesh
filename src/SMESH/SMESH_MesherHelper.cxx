@@ -4143,9 +4143,9 @@ namespace { // Structures used by FixQuadraticElements()
   {
     // code is valid for convex faces only
     gp_XYZ gc(0,0,0);
-    for ( TIDSortedNodeSet::const_iterator n = begin(); n!=end(); ++n)
-      gc += XYZ( *n ) / size();
-    for (unsigned i = 0; i < _sides.size(); ++i )
+    for ( TIDSortedNodeSet::const_iterator n = begin(); n != end(); ++n )
+      gc += XYZ( *n ) / double( size() );
+    for ( size_t i = 0; i < _sides.size(); ++i )
     {
       if ( _sides[i] == bentLink ) continue;
       gp_Vec linkNorm = _normal ^ gp_Vec( XYZ(_sides[i]->node1()), XYZ(_sides[i]->node2()));
@@ -4161,12 +4161,12 @@ namespace { // Structures used by FixQuadraticElements()
         return true;
     }
     return false;
-    
+
   }
 
   //================================================================================
   /*!
-   * \brief Find pairs of continues faces 
+   * \brief Find pairs of continues faces
    */
   //================================================================================
 

@@ -35,7 +35,7 @@ These two parameters allow the user to prescribe a Maximal/Minimal size for the 
 
 - **Mesh gradation**
 This parameter P controls the element size variation : MeshGems-SurfOpt will avoid having two adjacent edges which sizes vary more than the given gradation. A size correction is applied to the size map : if two adjacent edges are respectively e1 and e2 long and e2 > Pxe1, then, the new size for the second edge will be set to P x e1.
-**This procedure is deactived if P=-1**
+**This procedure is deactivated if P=-1**
 
 
 

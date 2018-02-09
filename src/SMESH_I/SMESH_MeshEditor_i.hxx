@@ -472,11 +472,18 @@ public:
                                        const SMESH::double_array& theScaleFact)
     throw (SALOME::SALOME_Exception);
 
-  SMESH::SMESH_Mesh_ptr ScaleMakeMesh(SMESH::SMESH_IDSource_ptr Object,
-                                      const SMESH::PointStruct& Point,
+  SMESH::SMESH_Mesh_ptr ScaleMakeMesh(SMESH::SMESH_IDSource_ptr  Object,
+                                      const SMESH::PointStruct&  Point,
                                       const SMESH::double_array& theScaleFact,
-                                      CORBA::Boolean            CopyGroups,
-                                      const char*               MeshName)
+                                      CORBA::Boolean             CopyGroups,
+                                      const char*                MeshName)
+    throw (SALOME::SALOME_Exception);
+
+  SMESH::SMESH_Mesh_ptr Offset( SMESH::SMESH_IDSource_ptr theObject,
+                                CORBA::Double             Value,
+                                CORBA::Boolean            CopyGroups,
+                                const char*               MeshName,
+                                SMESH::ListOfGroups_out   Groups)
     throw (SALOME::SALOME_Exception);
 
   void FindCoincidentNodes (CORBA::Double                  Tolerance,
@@ -983,8 +990,6 @@ public:
 
   // temporary IDSources
   struct _IDSource;
-  // std::list< _IDSource* >      myAuxIDSources;
-  // void                         deleteAuxIDSources();
 };
 
 #endif

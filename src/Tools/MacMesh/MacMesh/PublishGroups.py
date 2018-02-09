@@ -56,8 +56,8 @@ def PublishGroups ():
                 TempNames = []
                 for MacroObj in Config.ListObj :
                         if group in MacroObj.GroupNames :
-                                Occurences = IndexMultiOcc(MacroObj.GroupNames, group)
-                                for Occ in Occurences :
+                                Occurrences = IndexMultiOcc(MacroObj.GroupNames, group)
+                                for Occ in Occurrences :
                                         TempGEOList += MacroObj.GetBorder(Occ)
                 GroupGEO.append(geompy.MakeCompound(TempGEOList))
                 geompy.addToStudyInFather(FinalCompound,GroupGEO[-1],'GR_'+group)

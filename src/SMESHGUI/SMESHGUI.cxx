@@ -74,6 +74,7 @@
 #include "SMESHGUI_RevolutionDlg.h"
 #include "SMESHGUI_RotationDlg.h"
 #include "SMESHGUI_ScaleDlg.h"
+#include "SMESHGUI_OffsetDlg.h"
 #include "SMESHGUI_Selection.h"
 #include "SMESHGUI_SewingDlg.h"
 #include "SMESHGUI_SingleEditDlg.h"
@@ -3534,6 +3535,20 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
 
+  case SMESHOp::OpOffset:
+    {
+      if(checkLock(aStudy)) break;
+      if ( vtkwnd ) {
+        EmitSignalDeactivateDialog();
+        ( new SMESHGUI_OffsetDlg( this ) )->show();
+      }
+      else {
+        SUIT_MessageBox::warning(SMESHGUI::desktop(),
+                                 tr("SMESH_WRN_WARNING"), tr("SMESH_WRN_VIEWER_VTK"));
+      }
+      break;
+    }
+
   case SMESHOp::OpSewing:
     {
       if(checkLock(aStudy)) break;
@@ -3984,6 +3999,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpRotation,               "ROT",             "ICON_DLG_MESH_ROTATION" );
   createSMESHAction( SMESHOp::OpSymmetry,               "SYM",             "ICON_SMESH_SYMMETRY_PLANE" );
   createSMESHAction( SMESHOp::OpScale,                  "SCALE",           "ICON_DLG_MESH_SCALE" );
+  createSMESHAction( SMESHOp::OpOffset,                 "OFFSET",          "ICON_DLG_MESH_OFFSET" );
   createSMESHAction( SMESHOp::OpSewing,                 "SEW",             "ICON_SMESH_SEWING_FREEBORDERS" );
   createSMESHAction( SMESHOp::OpMergeNodes,             "MERGE",           "ICON_SMESH_MERGE_NODES" );
   createSMESHAction( SMESHOp::OpMergeElements,          "MERGE_ELEMENTS",  "ICON_DLG_MERGE_ELEMENTS" );
@@ -4222,31 +4238,32 @@ void SMESHGUI::initialize( CAM_Application* app )
   //createMenu( SMESHOp::OpRenumberingNodes,    renumId, -1 );
   //createMenu( SMESHOp::OpRenumberingElements, renumId, -1 );
 
+  createMenu( SMESHOp::OpMergeNodes,     transfId, -1 );
+  createMenu( SMESHOp::OpMergeElements,  transfId, -1 );
   createMenu( SMESHOp::OpTranslation,    transfId, -1 );
   createMenu( SMESHOp::OpRotation,       transfId, -1 );
   createMenu( SMESHOp::OpSymmetry,       transfId, -1 );
   createMenu( SMESHOp::OpScale,          transfId, -1 );
+  createMenu( SMESHOp::OpOffset,         transfId, -1 );
   createMenu( SMESHOp::OpSewing,         transfId, -1 );
-  createMenu( SMESHOp::OpMergeNodes,     transfId, -1 );
-  createMenu( SMESHOp::OpMergeElements,  transfId, -1 );
   createMenu( SMESHOp::OpDuplicateNodes, transfId, -1 );
 
+  createMenu( SMESHOp::OpConvertMeshToQuadratic, modifyId, -1 );
+  createMenu( SMESHOp::OpCreateBoundaryElements, modifyId, -1 );
+  createMenu( SMESHOp::OpExtrusion,              modifyId, -1 );
+  createMenu( SMESHOp::OpExtrusionAlongAPath,    modifyId, -1 );
+  createMenu( SMESHOp::OpRevolution,             modifyId, -1 );
+  createMenu( SMESHOp::OpOrientation,            modifyId, -1 );
+  createMenu( SMESHOp::OpReorientFaces,          modifyId, -1 );
   createMenu( SMESHOp::OpMoveNode,               modifyId, -1 );
   createMenu( SMESHOp::OpDiagonalInversion,      modifyId, -1 );
   createMenu( SMESHOp::OpUnionOfTwoTriangle,     modifyId, -1 );
-  createMenu( SMESHOp::OpOrientation,            modifyId, -1 );
-  createMenu( SMESHOp::OpReorientFaces,          modifyId, -1 );
   createMenu( SMESHOp::OpUnionOfTriangles,       modifyId, -1 );
   createMenu( SMESHOp::OpCuttingOfQuadrangles,   modifyId, -1 );
   createMenu( SMESHOp::OpSplitVolumes,           modifyId, -1 );
   createMenu( SMESHOp::OpSplitBiQuadratic,       modifyId, -1 );
   createMenu( SMESHOp::OpSmoothing,              modifyId, -1 );
-  createMenu( SMESHOp::OpExtrusion,              modifyId, -1 );
-  createMenu( SMESHOp::OpExtrusionAlongAPath ,   modifyId, -1 );
-  createMenu( SMESHOp::OpRevolution,             modifyId, -1 );
   createMenu( SMESHOp::OpPatternMapping,         modifyId, -1 );
-  createMenu( SMESHOp::OpConvertMeshToQuadratic, modifyId, -1 );
-  createMenu( SMESHOp::OpCreateBoundaryElements, modifyId, -1 );
 
   createMenu( SMESHOp::OpMinimumDistance,  measureId,   -1 );
   createMenu( SMESHOp::OpBoundingBox,      measureId,   -1 );
@@ -4366,31 +4383,32 @@ void SMESHGUI::initialize( CAM_Application* app )
   //createTool( SMESHOp::OpRenumberingNodes,    renumbTb );
   //createTool( SMESHOp::OpRenumberingElements, renumbTb );
 
+  createTool( SMESHOp::OpMergeNodes,     transformTb );
+  createTool( SMESHOp::OpMergeElements,  transformTb );
   createTool( SMESHOp::OpTranslation,    transformTb );
   createTool( SMESHOp::OpRotation,       transformTb );
   createTool( SMESHOp::OpSymmetry,       transformTb );
   createTool( SMESHOp::OpScale,          transformTb );
+  createTool( SMESHOp::OpOffset,         transformTb );
   createTool( SMESHOp::OpSewing,         transformTb );
-  createTool( SMESHOp::OpMergeNodes,     transformTb );
-  createTool( SMESHOp::OpMergeElements,  transformTb );
   createTool( SMESHOp::OpDuplicateNodes, transformTb );
 
+  createTool( SMESHOp::OpConvertMeshToQuadratic, modifyTb );
+  createTool( SMESHOp::OpCreateBoundaryElements, modifyTb );
+  createTool( SMESHOp::OpExtrusion,              modifyTb );
+  createTool( SMESHOp::OpExtrusionAlongAPath,    modifyTb );
+  createTool( SMESHOp::OpRevolution,             modifyTb );
+  createTool( SMESHOp::OpOrientation,            modifyTb );
+  createTool( SMESHOp::OpReorientFaces,          modifyTb );
   createTool( SMESHOp::OpMoveNode,               modifyTb );
   createTool( SMESHOp::OpDiagonalInversion,      modifyTb );
   createTool( SMESHOp::OpUnionOfTwoTriangle,     modifyTb );
-  createTool( SMESHOp::OpOrientation,            modifyTb );
-  createTool( SMESHOp::OpReorientFaces,          modifyTb );
   createTool( SMESHOp::OpUnionOfTriangles,       modifyTb );
   createTool( SMESHOp::OpCuttingOfQuadrangles,   modifyTb );
   createTool( SMESHOp::OpSplitVolumes,           modifyTb );
   createTool( SMESHOp::OpSplitBiQuadratic,       modifyTb );
   createTool( SMESHOp::OpSmoothing,              modifyTb );
-  createTool( SMESHOp::OpExtrusion,              modifyTb );
-  createTool( SMESHOp::OpExtrusionAlongAPath,    modifyTb );
-  createTool( SMESHOp::OpRevolution,             modifyTb );
   createTool( SMESHOp::OpPatternMapping,         modifyTb );
-  createTool( SMESHOp::OpConvertMeshToQuadratic, modifyTb );
-  createTool( SMESHOp::OpCreateBoundaryElements, modifyTb );
 
   createTool( SMESHOp::OpMinimumDistance, measuremTb );
 
