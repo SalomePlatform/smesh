@@ -258,7 +258,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
     //!< allocator of ElementBox's and SMESH_TreeLimit
     struct LimitAndPool : public SMESH_TreeLimit
     {
-      TElementBoxPool            _elBoPool;
+      TElementBoxPool _elBoPool;
       LimitAndPool():SMESH_TreeLimit( MaxLevel, /*minSize=*/0. ) {}
     };
     LimitAndPool* getLimitAndPool() const
