@@ -209,6 +209,7 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual bool GetFacesOrientation3DVectors();
 
   virtual void SetControlMode(eControl theMode);
+  virtual void SetControl(SMESH::Controls::FunctorPtr theFunctor);
   virtual int GetNumberControlEntities();
   virtual eControl GetControlMode(){ return myControlMode;}
   virtual SMESH::Controls::FunctorPtr GetFunctor() { return myFunctor; }

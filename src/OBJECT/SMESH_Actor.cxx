@@ -804,11 +804,19 @@ bool SMESH_ActorDef::GetFacesOrientation3DVectors()
 }
 
 
+void SMESH_ActorDef::SetControl(SMESH::Controls::FunctorPtr theFunctor)
+{
+  myFunctor = theFunctor;
+  if ( !theFunctor )
+    SetControlMode( eNone, true );
+  else
+    SetControlMode( eCustomControl, true );
+}
+
 void SMESH_ActorDef::SetControlMode(eControl theMode)
 {
   SetControlMode(theMode,true);
 }
-
 
 void SMESH_ActorDef::SetControlMode( eControl theMode, bool theCheckEntityMode )
 {
@@ -1004,6 +1012,19 @@ void SMESH_ActorDef::SetControlMode( eControl theMode, bool theCheckEntityMode )
     {
       myFunctor.reset( new SMESH::Controls::NodeConnectivityNumber() );
       myControlActor = myNodeActor;
+      break;
+    }
+    case eCustomControl:
+    {
+      if ( !myFunctor )
+        return;
+      switch ( myFunctor->GetType() ) {
+      case SMDSAbs_Node          : myControlActor = myNodeActor; break;
+      case SMDSAbs_Edge          : myControlActor = my1DActor;   break;
+      case SMDSAbs_Face          : myControlActor = my2DActor;   break;
+      case SMDSAbs_Volume        : myControlActor = my3DActor;   break;
+      default                    : return;
+      }
       break;
     }
     default:

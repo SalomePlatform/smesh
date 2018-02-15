@@ -162,7 +162,7 @@ namespace MED
         if (myMinor < 0) myMinor = MED_MINOR_NUM;
         myFile->Open(theMode,theErr);
       }
-      
+
       ~TFileWrapper()
       {
         myFile->Close();
@@ -172,8 +172,8 @@ namespace MED
 
     //---------------------------------------------------------------
     TVWrapper::TVWrapper(const std::string& theFileName, TInt theMinor):
-      myMinor(theMinor),
-      myFile(new TFile(theFileName, theMinor))
+      myFile(new TFile(theFileName, theMinor)),
+      myMinor(theMinor)
     {
       TErr aRet;
       myFile->Open( eLECTURE_ECRITURE, &aRet );
