@@ -114,14 +114,15 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
     myOctreeNode->NodesAround( thePnt.Coord(), dist2Nodes, myHalfLeafSize );
     if ( !dist2Nodes.empty() )
       return dist2Nodes.begin()->second;
-    std::list<const SMDS_MeshNode*> nodes;
+
+    std::vector<const SMDS_MeshNode*> nodes;
     //myOctreeNode->NodesAround( &tgtNode, &nodes, myHalfLeafSize );
 
     double minSqDist = DBL_MAX;
     if ( nodes.empty() )  // get all nodes of OctreeNode's closest to thePnt
     {
       // sort leafs by their distance from thePnt
-      typedef std::map< double, SMESH_OctreeNode* > TDistTreeMap;
+      typedef std::multimap< double, SMESH_OctreeNode* > TDistTreeMap;
       TDistTreeMap treeMap;
       std::list< SMESH_OctreeNode* > treeList;
       std::list< SMESH_OctreeNode* >::iterator trIt;
@@ -143,10 +144,7 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
         {
           const Bnd_B3d& box = *tree->getBox();
           double sqDist = thePnt.SquareDistance( 0.5 * ( box.CornerMin() + box.CornerMax() ));
-          std::pair<TDistTreeMap::iterator,bool> it_in =
-            treeMap.insert( std::make_pair( sqDist, tree ));
-          if ( !it_in.second ) // not unique distance to box center
-            treeMap.insert( it_in.first, std::make_pair( sqDist + 1e-13*treeMap.size(), tree ));
+          treeMap.insert( std::make_pair( sqDist, tree ));
         }
       }
       // find distance after which there is no sense to check tree's
@@ -163,17 +161,17 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
         if ( sqDist_tree->first > sqLimit )
           break;
         SMESH_OctreeNode* tree = sqDist_tree->second;
-        tree->NodesAround( tree->GetNodeIterator()->next(), &nodes );
+        tree->AllNodesAround( tree->GetNodeIterator()->next(), &nodes );
       }
     }
     // find closest among nodes
     minSqDist = DBL_MAX;
     const SMDS_MeshNode* closestNode = 0;
-    std::list<const SMDS_MeshNode*>::iterator nIt = nodes.begin();
-    for ( ; nIt != nodes.end(); ++nIt ) {
-      double sqDist = thePnt.SquareDistance( SMESH_TNodeXYZ( *nIt ) );
+    for ( size_t i = 0; i < nodes.size(); ++i )
+    {
+      double sqDist = thePnt.SquareDistance( SMESH_NodeXYZ( nodes[ i ]));
       if ( minSqDist > sqDist ) {
-        closestNode = *nIt;
+        closestNode = nodes[ i ];
         minSqDist = sqDist;
       }
     }
@@ -182,7 +180,7 @@ struct SMESH_NodeSearcherImpl: public SMESH_NodeSearcher
 
   //---------------------------------------------------------------------
   /*!
-   * \brief Finds nodes located within a tolerance near a point 
+   * \brief Finds nodes located within a tolerance near a point
    */
   int FindNearPoint(const gp_Pnt&                        point,
                     const double                         tolerance,
@@ -227,7 +225,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
   {
   public:
 
-    typedef boost::container::flat_set< const SMDS_MeshElement* > TElemSeq;
+    typedef boost::container::flat_set< const SMDS_MeshElement*, TIDCompare > TElemSeq;
 
     ElementBndBoxTree(const SMDS_Mesh&     mesh,
                       SMDSAbs_ElementType  elemType,
