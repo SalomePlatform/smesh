@@ -178,7 +178,23 @@ PortableServer::ServantBase_var SMESH_Gen_i::GetServant( CORBA::Object_ptr theOb
     PortableServer::Servant aServant = GetPOA()->reference_to_servant( theObject );
     return aServant;
   }
-  catch (...) {
+  catch (PortableServer::POA::ObjectNotActive &ex)
+  {
+    INFOS("GetServant: ObjectNotActive");
+    return NULL;
+  }
+  catch (PortableServer::POA::WrongAdapter &ex)
+  {
+    INFOS("GetServant: WrongAdapter: OK when several servants used to build several mesh in parallel...");
+    return NULL;
+  }
+  catch (PortableServer::POA::WrongPolicy &ex)
+  {
+    INFOS("GetServant: WrongPolicy");
+    return NULL;
+  }
+  catch (...)
+  {
     INFOS( "GetServant - Unknown exception was caught!!!" );
     return NULL;
   }
@@ -629,9 +645,11 @@ void SMESH_Gen_i::setCurrentStudy( SALOMEDS::Study_ptr theStudy,
                                    bool                theStudyIsBeingClosed)
 {
   int curStudyId = GetCurrentStudyID();
+  MESSAGE("curStudyId " << curStudyId);
   myCurrentStudy = SALOMEDS::Study::_duplicate( theStudy );
   // create study context, if it doesn't exist and set current study
   int studyId = GetCurrentStudyID();
+  MESSAGE("studyId " << studyId);
   if ( myStudyContextMap.find( studyId ) == myStudyContextMap.end() )
     myStudyContextMap[ studyId ] = new StudyContext;
 
@@ -645,6 +663,7 @@ void SMESH_Gen_i::setCurrentStudy( SALOMEDS::Study_ptr theStudy,
     // Let meshes update their data depending on GEOM groups that could change
     if ( curStudyId != studyId )
     {
+      MESSAGE("curStudyId " << curStudyId << " studyId " << studyId);
       CORBA::String_var compDataType = ComponentDataType();
       SALOMEDS::SComponent_wrap me = myCurrentStudy->FindComponent( compDataType.in() );
       if ( !me->_is_nil() ) {
