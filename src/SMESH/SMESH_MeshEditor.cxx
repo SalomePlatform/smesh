@@ -7729,26 +7729,55 @@ bool SMESH_MeshEditor::applyMerge( const SMDS_MeshElement* elem,
 
 
 // ========================================================
-// class   : SortableElement
-// purpose : allow sorting elements basing on their nodes
+// class   : ComparableElement
+// purpose : allow comparing elements basing on their nodes
 // ========================================================
-class SortableElement : public set <const SMDS_MeshElement*>
+
+class ComparableElement : public boost::container::flat_set< int >
 {
+  typedef boost::container::flat_set< int >  int_set;
+
+  const SMDS_MeshElement* myElem;
+  int                     mySumID;
+  mutable int             myGroupID;
+
 public:
 
-  SortableElement( const SMDS_MeshElement* theElem )
+  ComparableElement( const SMDS_MeshElement* theElem ):
+    myElem ( theElem ), mySumID( 0 ), myGroupID( -1 )
   {
-    myElem = theElem;
-    SMDS_ElemIteratorPtr nodeIt = theElem->nodesIterator();
-    while ( nodeIt->more() )
-      this->insert( nodeIt->next() );
+    this->reserve( theElem->NbNodes() );
+    for ( SMDS_ElemIteratorPtr nodeIt = theElem->nodesIterator(); nodeIt->more(); )
+    {
+      int id = nodeIt->next()->GetID();
+      mySumID += id;
+      this->insert( id );
+    }
   }
 
-  const SMDS_MeshElement* Get() const
-  { return myElem; }
+  const SMDS_MeshElement* GetElem() const { return myElem; }
 
-private:
-  mutable const SMDS_MeshElement* myElem;
+  int& GroupID() const { return myGroupID; }
+  //int& GroupID() const { return const_cast< int& >( myGroupID ); }
+
+  ComparableElement( const ComparableElement& theSource ) // move copy
+  {
+    ComparableElement& src = const_cast< ComparableElement& >( theSource );
+    (int_set&) (*this ) = boost::move( src );
+    myElem    = src.myElem;
+    mySumID   = src.mySumID;
+    myGroupID = src.myGroupID;
+  }
+
+  static int HashCode(const ComparableElement& se, int limit )
+  {
+    return ::HashCode( se.mySumID, limit );
+  }
+  static Standard_Boolean IsEqual(const ComparableElement& se1, const ComparableElement& se2 )
+  {
+    return ( se1 == se2 );
+  }
+
 };
 
 //=======================================================================
@@ -7757,48 +7786,47 @@ private:
 //           Search among theElements or in the whole mesh if theElements is empty
 //=======================================================================
 
-void SMESH_MeshEditor::FindEqualElements(TIDSortedElemSet &        theElements,
-                                         TListOfListOfElementsID & theGroupsOfElementsID)
+void SMESH_MeshEditor::FindEqualElements( TIDSortedElemSet &        theElements,
+                                          TListOfListOfElementsID & theGroupsOfElementsID )
 {
   ClearLastCreated();
-
-  typedef map< SortableElement, int > TMapOfNodeSet;
-  typedef list<int> TGroupOfElems;
 
   SMDS_ElemIteratorPtr elemIt;
   if ( theElements.empty() ) elemIt = GetMeshDS()->elementsIterator();
   else                       elemIt = SMESHUtils::elemSetIterator( theElements );
 
-  vector< TGroupOfElems > arrayOfGroups;
-  TGroupOfElems groupOfElems;
-  TMapOfNodeSet mapOfNodeSet;
+  typedef NCollection_Map< ComparableElement, ComparableElement > TMapOfElements;
+  typedef std::list<int>                                          TGroupOfElems;
+  TMapOfElements               mapOfElements;
+  std::vector< TGroupOfElems > arrayOfGroups;
+  TGroupOfElems                groupOfElems;
 
-  for ( int iGroup = 0; elemIt->more(); )
+  while ( elemIt->more() )
   {
     const SMDS_MeshElement* curElem = elemIt->next();
-    SortableElement SE(curElem);
+    ComparableElement      compElem = curElem;
     // check uniqueness
-    pair< TMapOfNodeSet::iterator, bool> pp = mapOfNodeSet.insert(make_pair(SE, iGroup));
-    if ( !pp.second ) { // one more coincident elem
-      TMapOfNodeSet::iterator& itSE = pp.first;
-      int iG = itSE->second;
+    const ComparableElement& elemInSet = mapOfElements.Added( compElem );
+    if ( elemInSet.GetElem() != curElem ) // coincident elem
+    {
+      int& iG = elemInSet.GroupID();
+      if ( iG < 0 )
+      {
+        iG = arrayOfGroups.size();
+        arrayOfGroups.push_back( groupOfElems );
+        arrayOfGroups[ iG ].push_back( elemInSet.GetElem()->GetID() );
+      }
       arrayOfGroups[ iG ].push_back( curElem->GetID() );
-    }
-    else {
-      arrayOfGroups.push_back( groupOfElems );
-      arrayOfGroups.back().push_back( curElem->GetID() );
-      iGroup++;
     }
   }
 
   groupOfElems.clear();
-  vector< TGroupOfElems >::iterator groupIt = arrayOfGroups.begin();
+  std::vector< TGroupOfElems >::iterator groupIt = arrayOfGroups.begin();
   for ( ; groupIt != arrayOfGroups.end(); ++groupIt )
   {
     if ( groupIt->size() > 1 ) {
-      //groupOfElems.sort(); -- theElements is sorted already
-      theGroupsOfElementsID.push_back( groupOfElems );
-      theGroupsOfElementsID.back().splice( theGroupsOfElementsID.back().end(), *groupIt );
+      //groupOfElems.sort(); -- theElements are sorted already
+      theGroupsOfElementsID.emplace_back( *groupIt );
     }
   }
 }
@@ -7849,8 +7877,8 @@ void SMESH_MeshEditor::MergeEqualElements()
   TIDSortedElemSet aMeshElements; /* empty input ==
                                      to merge equal elements in the whole mesh */
   TListOfListOfElementsID aGroupsOfElementsID;
-  FindEqualElements(aMeshElements, aGroupsOfElementsID);
-  MergeElements(aGroupsOfElementsID);
+  FindEqualElements( aMeshElements, aGroupsOfElementsID );
+  MergeElements( aGroupsOfElementsID );
 }
 
 //=======================================================================

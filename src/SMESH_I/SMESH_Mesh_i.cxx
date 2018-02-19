@@ -5450,7 +5450,7 @@ namespace /* Iterators used in SMESH_Mesh_i::GetElements(SMESH::SMESH_IDSource_v
     {
       const SMDS_MeshElement* res = _node;
       _node = 0;
-      while (( _elemIter->more() || _nodeIter->more() ) && !_node )
+      while ( !_node && ( _elemIter->more() || _nodeIter->more() ))
       {
         if ( _nodeIter->more() )
         {

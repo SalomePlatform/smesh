@@ -49,6 +49,7 @@ class SMESH_OctreeNode;
 typedef SMDS_Iterator<SMESH_OctreeNode*>              SMESH_OctreeNodeIterator;
 typedef boost::shared_ptr<SMESH_OctreeNodeIterator>   SMESH_OctreeNodeIteratorPtr;
 typedef std::set< const SMDS_MeshNode*, TIDCompare >  TIDSortedNodeSet;
+typedef std::list< std::list< const SMDS_MeshNode*> > TListOfNodeLists;
 
 class SMESHUtils_EXPORT SMESH_OctreeNode : public SMESH_Octree
 {
@@ -65,9 +66,9 @@ class SMESHUtils_EXPORT SMESH_OctreeNode : public SMESH_Octree
   virtual const bool isInside(const gp_XYZ& p, const double precision = 0.);
 
   // Return in Result a list of Nodes potentials to be near Node
-  void               NodesAround(const SMDS_MeshNode *            node,
-                                 std::list<const SMDS_MeshNode*>* result,
-                                 const double                     precision = 0.);
+  void               AllNodesAround(const SMDS_MeshNode *              node,
+                                    std::vector<const SMDS_MeshNode*>* result,
+                                    const double                       precision = 0.);
 
   // Return in dist2Nodes nodes mapped to their square distance from Node
   bool               NodesAround(const gp_XYZ&                           point,
@@ -81,21 +82,21 @@ class SMESHUtils_EXPORT SMESH_OctreeNode : public SMESH_Octree
 
   // Return in theGroupsOfNodes a list of group of nodes close to each other within theTolerance
   // Search for all the nodes in nodes
-  void               FindCoincidentNodes ( TIDSortedNodeSet*           nodes,
-                                           const double                theTolerance,
-                                           std::list< std::list< const SMDS_MeshNode*> >* theGroupsOfNodes);
+  void               FindCoincidentNodes ( TIDSortedNodeSet*  nodes,
+                                           const double       theTolerance,
+                                           TListOfNodeLists * theGroupsOfNodes);
 
   // Static method that return in theGroupsOfNodes a list of group of nodes close to each other within
   // theTolerance search for all the nodes in nodes
-  static void        FindCoincidentNodes ( TIDSortedNodeSet&                              nodes,
-                                           std::list< std::list< const SMDS_MeshNode*> >* theGroupsOfNodes,
-                                           const double theTolerance = 0.00001,
-                                           const int maxLevel = -1,
-                                           const int maxNbNodes = 5);
+  static void        FindCoincidentNodes ( TIDSortedNodeSet& nodes,
+                                           TListOfNodeLists* theGroupsOfNodes,
+                                           const double      theTolerance = 0.00001,
+                                           const int         maxLevel = -1,
+                                           const int         maxNbNodes = 5);
   /*!
    * \brief Update data according to node movement
    */
-  void                        UpdateByMoveNode( const SMDS_MeshNode* node, const gp_Pnt& toPnt );
+  void               UpdateByMoveNode( const SMDS_MeshNode* node, const gp_Pnt& toPnt );
   /*!
    * \brief Return iterator over children
    */
@@ -131,14 +132,14 @@ protected:
   // Construct an empty SMESH_OctreeNode used by SMESH_Octree::buildChildren()
   virtual SMESH_Octree* newChild() const;
 
-  // Return in result a list of nodes closed to Node and remove it from SetOfNodes
-  void                  FindCoincidentNodes( const SMDS_MeshNode *            Node,
-                                             TIDSortedNodeSet*                SetOfNodes,
-                                             std::list<const SMDS_MeshNode*>* Result,
-                                             const double                     precision);
+  // Return in result a list of nodes closed to Node
+  void                  findCoincidentNodes( const SMDS_MeshNode *              Node,
+                                             TIDSortedNodeSet*                  SetOfNodes,
+                                             std::vector<const SMDS_MeshNode*>* Result,
+                                             const double                       precision);
 
   // The set of nodes inside the box of the Octree (Empty if Octree is not a leaf)
-  TIDSortedNodeSet   myNodes;
+  std::vector< const SMDS_MeshNode* > myNodes;
 
 };
 

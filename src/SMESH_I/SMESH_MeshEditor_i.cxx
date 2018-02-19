@@ -5658,7 +5658,7 @@ SMESH_MeshEditor_i::DoubleElements(SMESH::SMESH_IDSource_ptr theElements,
       {
         SMESHDS_Group* groupDS = static_cast< SMESHDS_Group* >( group_i->GetGroupDS() );
         const SMESH_SequenceOfElemPtr& aSeq = getEditor().GetLastCreatedElems();
-        for ( size_t i = 0; i <= aSeq.size(); i++ )
+        for ( size_t i = 0; i < aSeq.size(); i++ )
           groupDS->SMDSGroup().Add( aSeq[i] );
       }
     }

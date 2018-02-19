@@ -30,7 +30,9 @@
 #include "SMESH_OctreeNode.hxx"
 
 #include "SMDS_SetIterator.hxx"
+#include "SMESH_MeshAlgos.hxx"
 #include "SMESH_TypeDefs.hxx"
+
 #include <gp_Pnt.hxx>
 
 using namespace std;
@@ -48,7 +50,7 @@ using namespace std;
 SMESH_OctreeNode::SMESH_OctreeNode (const TIDSortedNodeSet & theNodes, const int maxLevel,
                                     const int maxNbNodes , const double minBoxSize )
   :SMESH_Octree( new Limit( maxLevel,minBoxSize,maxNbNodes)),
-   myNodes(theNodes)
+   myNodes( theNodes.begin(), theNodes.end() )
 {
   compute();
 }
@@ -96,12 +98,9 @@ SMESH_Octree* SMESH_OctreeNode::newChild() const
 Bnd_B3d* SMESH_OctreeNode::buildRootBox()
 {
   Bnd_B3d* box = new Bnd_B3d;
-  TIDSortedNodeSet::iterator it = myNodes.begin();
-  for (; it != myNodes.end(); it++) {
-    const SMDS_MeshNode* n1 = *it;
-    gp_XYZ p1( n1->X(), n1->Y(), n1->Z() );
-    box->Add(p1);
-  }
+  for ( size_t i = 0; i < myNodes.size(); ++i )
+    box->Add( SMESH_NodeXYZ( myNodes[ i ]));
+
   if ((int) myNodes.size() <= getMaxNbNodes() )
     myIsLeaf = true;
 
@@ -117,12 +116,13 @@ Bnd_B3d* SMESH_OctreeNode::buildRootBox()
  */
 //====================================================================================
 
-const bool SMESH_OctreeNode::isInside (const gp_XYZ& p, const double precision)
+const bool SMESH_OctreeNode::isInside ( const gp_XYZ& p, const double precision )
 {
-  if (precision <= 0.)
-    return !(getBox()->IsOut(p));
+  if ( precision <= 0.)
+    return !( getBox()->IsOut(p) );
+
   Bnd_B3d BoxWithPrecision = *getBox();
-  BoxWithPrecision.Enlarge(precision);
+  BoxWithPrecision.Enlarge( precision );
   return ! BoxWithPrecision.IsOut(p);
 }
 
@@ -132,27 +132,37 @@ const bool SMESH_OctreeNode::isInside (const gp_XYZ& p, const double precision)
  * Shares the father's data with each of his child
  */
 //================================================
+
 void SMESH_OctreeNode::buildChildrenData()
 {
   gp_XYZ min = getBox()->CornerMin();
   gp_XYZ max = getBox()->CornerMax();
   gp_XYZ mid = (min + max)/2.;
 
-  TIDSortedNodeSet::iterator it = myNodes.begin();
-  while (it != myNodes.end())
+  for ( int i = 0; i < 8; i++ )
   {
-    const SMDS_MeshNode* n1 = *it;
-    int ChildBoxNum = getChildIndex( n1->X(), n1->Y(), n1->Z(), mid );
-    SMESH_OctreeNode* myChild = dynamic_cast<SMESH_OctreeNode*> (myChildren[ChildBoxNum]);
-    myChild->myNodes.insert(myChild->myNodes.end(),n1);
-    myNodes.erase( it );
-    it = myNodes.begin();
+    SMESH_OctreeNode* myChild = static_cast<SMESH_OctreeNode*>( myChildren[ i ]);
+    myChild->myNodes.reserve( myNodes.size() / 8 );
   }
-  for (int i = 0; i < 8; i++)
+
+  for ( size_t i = 0; i < myNodes.size(); ++i )
   {
-    SMESH_OctreeNode* myChild = dynamic_cast<SMESH_OctreeNode*> (myChildren[i]);
+    SMESH_NodeXYZ n = myNodes[ i ];
+    int ChildBoxNum = getChildIndex( n.X(), n.Y(), n.Z(), mid );
+    SMESH_OctreeNode* myChild = static_cast<SMESH_OctreeNode*>( myChildren[ ChildBoxNum ]);
+    myChild->myNodes.push_back( myNodes[ i ]);
+  }
+  SMESHUtils::FreeVector( myNodes );
+
+  for ( int i = 0; i < 8; i++ )
+  {
+    SMESH_OctreeNode* myChild = static_cast<SMESH_OctreeNode*>( myChildren[ i ]);
     if ((int) myChild->myNodes.size() <= getMaxNbNodes() )
+    {
       myChild->myIsLeaf = true;
+      if ( myChild->myNodes.empty() )
+        SMESHUtils::FreeVector( myChild->myNodes );
+    }
   }
 }
 
@@ -164,23 +174,24 @@ void SMESH_OctreeNode::buildChildrenData()
  * \param Result - list of Nodes potentials to be near Node
  */
 //====================================================================
-void SMESH_OctreeNode::NodesAround (const SMDS_MeshNode * Node,
-                                    list<const SMDS_MeshNode*>* Result,
-                                    const double precision)
+
+void SMESH_OctreeNode::AllNodesAround (const SMDS_MeshNode *              Node,
+                                       std::vector<const SMDS_MeshNode*>* Result,
+                                       const double                       precision)
 {
-  SMESH_TNodeXYZ p(Node);
-  if (isInside(p, precision))
+  SMESH_NodeXYZ p = Node;
+  if ( isInside( p, precision ))
   {
-    if (isLeaf())
+    if ( isLeaf() )
     {
-      Result->insert(Result->end(), myNodes.begin(), myNodes.end());
+      Result->insert( Result->end(), myNodes.begin(), myNodes.end() );
     }
     else
     {
-      for (int i = 0; i < 8; i++)
+      for ( int i = 0; i < 8; i++ )
       {
-        SMESH_OctreeNode* myChild = dynamic_cast<SMESH_OctreeNode*> (myChildren[i]);
-        myChild->NodesAround(Node, Result, precision);
+        SMESH_OctreeNode* myChild = static_cast<SMESH_OctreeNode*> (myChildren[i]);
+        myChild->AllNodesAround( Node, Result, precision );
       }
     }
   }
@@ -197,7 +208,7 @@ void SMESH_OctreeNode::NodesAround (const SMDS_MeshNode * Node,
  */
 //================================================================================
 
-bool SMESH_OctreeNode::NodesAround(const gp_XYZ &node,
+bool SMESH_OctreeNode::NodesAround(const gp_XYZ &                     node,
                                    map<double, const SMDS_MeshNode*>& dist2Nodes,
                                    double                             precision)
 {
@@ -206,16 +217,16 @@ bool SMESH_OctreeNode::NodesAround(const gp_XYZ &node,
   else if ( precision == 0. )
     precision = maxSize() / 2;
 
-  if (isInside(node, precision))
+  if ( isInside( node, precision ))
   {
-    if (!isLeaf())
+    if ( !isLeaf() )
     {
       // first check a child containing node
       gp_XYZ mid = (getBox()->CornerMin() + getBox()->CornerMax()) / 2.;
       int nodeChild  = getChildIndex( node.X(), node.Y(), node.Z(), mid );
       if ( ((SMESH_OctreeNode*) myChildren[nodeChild])->NodesAround(node, dist2Nodes, precision))
         return true;
-      
+
       for (int i = 0; i < 8; i++)
         if ( i != nodeChild )
           if (((SMESH_OctreeNode*) myChildren[i])->NodesAround(node, dist2Nodes, precision))
@@ -224,16 +235,15 @@ bool SMESH_OctreeNode::NodesAround(const gp_XYZ &node,
     else if ( NbNodes() > 0 )
     {
       double minDist = precision * precision;
-      TIDSortedNodeSet::iterator nIt = myNodes.begin();
-      for ( ; nIt != myNodes.end(); ++nIt )
+      for ( size_t i = 0; i < myNodes.size(); ++i )
       {
-        SMESH_TNodeXYZ p2( *nIt );
-        double dist2 = ( node - p2 ).SquareModulus();
+        SMESH_NodeXYZ p2 = myNodes[ i ];
+        double     dist2 = ( node - p2 ).SquareModulus();
         if ( dist2 < minDist )
-          dist2Nodes.insert( make_pair( minDist = dist2, p2._node ));
+          dist2Nodes.insert( std::make_pair( minDist = dist2, myNodes[ i ] ));
       }
-//       if ( dist2Nodes.size() > 1 ) // leave only closest node in dist2Nodes
-//         dist2Nodes.erase( ++dist2Nodes.begin(), dist2Nodes.end());
+      // if ( dist2Nodes.size() > 1 ) // leave only closest node in dist2Nodes
+      //   dist2Nodes.erase( ++dist2Nodes.begin(), dist2Nodes.end());
 
       // true if an exact overlapping found
       return ( sqrt( minDist ) <= precision * 1e-12 );
@@ -260,21 +270,20 @@ void SMESH_OctreeNode::NodesAround(const gp_XYZ&                      point,
     if ( isLeaf() && NbNodes() )
     {
       double minDist2 = precision * precision;
-      TIDSortedNodeSet::iterator nIt = myNodes.begin();
-      for ( ; nIt != myNodes.end(); ++nIt )
+      for ( size_t i = 0; i < myNodes.size(); ++i )
       {
-        SMESH_TNodeXYZ p2( *nIt );
+        SMESH_NodeXYZ p2 = myNodes[ i ];
         double dist2 = ( point - p2 ).SquareModulus();
         if ( dist2 <= minDist2 )
-          nodes.push_back( p2._node );
+          nodes.push_back( myNodes[ i ] );
       }
     }
     else if ( myChildren )
     {
       for (int i = 0; i < 8; i++)
       {
-        SMESH_OctreeNode* myChild = dynamic_cast<SMESH_OctreeNode*> (myChildren[i]);
-        myChild->NodesAround( point, nodes, precision);
+        SMESH_OctreeNode* myChild = static_cast<SMESH_OctreeNode*>( myChildren[ i ]);
+        myChild->NodesAround( point, nodes, precision );
       }
     }
   }
@@ -292,15 +301,19 @@ void SMESH_OctreeNode::NodesAround(const gp_XYZ&                      point,
  * \param maxNbNodes - maximum Nodes in a Leaf of the SMESH_OctreeNode constructed, default value is 5
  */
 //=============================
+
 void SMESH_OctreeNode::FindCoincidentNodes (TIDSortedNodeSet& theSetOfNodes,
-                                            list< list< const SMDS_MeshNode*> >* theGroupsOfNodes,
-                                            const double theTolerance,
-                                            const int maxLevel,
-                                            const int maxNbNodes)
+                                            TListOfNodeLists* theGroupsOfNodes,
+                                            const double      theTolerance,
+                                            const int         maxLevel,
+                                            const int         maxNbNodes)
 {
-  // VSR 14/10/2011: limit max number of the levels in order to avoid endless recursing
+  // VSR 14/10/2011: limit max number of the levels in order to avoid endless recursion
   const int MAX_LEVEL = 10;
-  SMESH_OctreeNode theOctreeNode(theSetOfNodes, maxLevel < 0 ? MAX_LEVEL : maxLevel, maxNbNodes, theTolerance);
+  SMESH_OctreeNode theOctreeNode(theSetOfNodes,
+                                 maxLevel < 0 ? MAX_LEVEL : maxLevel,
+                                 maxNbNodes,
+                                 theTolerance);
   theOctreeNode.FindCoincidentNodes (&theSetOfNodes, theTolerance, theGroupsOfNodes);
 }
 
@@ -314,36 +327,40 @@ void SMESH_OctreeNode::FindCoincidentNodes (TIDSortedNodeSet& theSetOfNodes,
  * \param theGroupsOfNodes - list of nodes closed to each other returned
  */
 //=============================
-void SMESH_OctreeNode::FindCoincidentNodes ( TIDSortedNodeSet*                    theSetOfNodes,
-                                             const double                         theTolerance,
-                                             list< list< const SMDS_MeshNode*> >* theGroupsOfNodes)
-{
-  TIDSortedNodeSet::iterator it1 = theSetOfNodes->begin();
-  list<const SMDS_MeshNode*>::iterator it2;
 
-  list<const SMDS_MeshNode*> ListOfCoincidentNodes;
+void SMESH_OctreeNode::FindCoincidentNodes ( TIDSortedNodeSet* theSetOfNodes,
+                                             const double      theTolerance,
+                                             TListOfNodeLists* theGroupsOfNodes )
+{
+  // un-mark all nodes; we mark nodes added to theGroupsOfNodes
+  SMESH_MeshAlgos::MarkElems( SMESHUtils::elemSetIterator( *theSetOfNodes ), false );
+
+  vector<const SMDS_MeshNode*> coincidentNodes;
   TIDCompare idLess;
 
-  while (it1 != theSetOfNodes->end())
+  TIDSortedNodeSet::iterator it1 = theSetOfNodes->begin();
+  for ( ; it1 != theSetOfNodes->end(); ++it1 )
   {
     const SMDS_MeshNode * n1 = *it1;
+    if ( n1->isMarked() )
+      continue;
+    n1->setIsMarked( true );
 
-    // Searching for Nodes around n1 and put them in ListofCoincidentNodes.
+    // Searching for Nodes around n1 and put them in coincidentNodes.
     // Found nodes are also erased from theSetOfNodes
-    FindCoincidentNodes(n1, theSetOfNodes, &ListOfCoincidentNodes, theTolerance);
+    coincidentNodes.clear();
+    findCoincidentNodes( n1, theSetOfNodes, &coincidentNodes, theTolerance );
 
-    if ( !ListOfCoincidentNodes.empty() )
+    if ( !coincidentNodes.empty() )
     {
       // We build a list {n1 + his neighbors} and add this list in theGroupsOfNodes
-      if ( idLess( n1, ListOfCoincidentNodes.front() )) ListOfCoincidentNodes.push_front( n1 );
-      else                                              ListOfCoincidentNodes.push_back ( n1 );
-      ListOfCoincidentNodes.sort( idLess );
-      theGroupsOfNodes->push_back( list<const SMDS_MeshNode*>() );
-      theGroupsOfNodes->back().splice( theGroupsOfNodes->back().end(), ListOfCoincidentNodes );
-    }
+      std::sort( coincidentNodes.begin(), coincidentNodes.end(), idLess );
+      list<const SMDS_MeshNode*> newGroup;
+      newGroup.push_back( n1 );
+      newGroup.insert( newGroup.end(), coincidentNodes.begin(), coincidentNodes.end() );
 
-    theSetOfNodes->erase(it1);
-    it1 = theSetOfNodes->begin();
+      theGroupsOfNodes->emplace_back( newGroup );
+    }
   }
 }
 
@@ -357,57 +374,45 @@ void SMESH_OctreeNode::FindCoincidentNodes ( TIDSortedNodeSet*                  
  * \param precision - Precision used
  */
 //======================================================================================
-void SMESH_OctreeNode::FindCoincidentNodes (const SMDS_MeshNode *       Node,
-                                            TIDSortedNodeSet*           SetOfNodes,
-                                            list<const SMDS_MeshNode*>* Result,
-                                            const double                precision)
-{
-  gp_Pnt p1 (Node->X(), Node->Y(), Node->Z());
-  bool isInsideBool = isInside( p1.XYZ(), precision );
 
-  if (isInsideBool)
+void SMESH_OctreeNode::findCoincidentNodes (const SMDS_MeshNode *              Node,
+                                            TIDSortedNodeSet*                  SetOfNodes,
+                                            std::vector<const SMDS_MeshNode*>* Result,
+                                            const double                       precision)
+{
+  SMESH_NodeXYZ p1 = Node;
+
+  if ( isInside( p1, precision ))
   {
     // I'm only looking in the leaves, since all the nodes are stored there.
-    if (isLeaf())
+    if ( isLeaf() )
     {
-      TIDSortedNodeSet::iterator it = myNodes.begin();
       const double tol2 = precision * precision;
-      bool squareBool;
 
-      while (it != myNodes.end())
+      for ( size_t i = 0; i < myNodes.size(); ++i )
       {
-        const SMDS_MeshNode* n2 = *it;
-        squareBool = false;
-        // We're only looking at nodes with a superior Id.
-        // JFA: Why?
-        //if (Node->GetID() < n2->GetID())
-        if (Node->GetID() != n2->GetID()) // JFA: for bug 0020185
-        {
-          gp_Pnt p2 (n2->X(), n2->Y(), n2->Z());
-          // Distance optimized computation
-          squareBool = (p1.SquareDistance( p2 ) <= tol2);
+        if ( myNodes[ i ]->isMarked() ) // coincident node already found
+          continue;
 
-          // If n2 inside the SquareDistance, we add it in Result and remove it from SetOfNodes and myNodes
-          if (squareBool)
+        //if ( Node != myNodes[ i ]) // JFA: for bug 0020185
+        {
+          // If n2 inside the SquareDistance, we add it in Result
+          bool coincide = ( p1.SquareDistance( myNodes[ i ]) <= tol2 );
+          if ( coincide )
           {
-            Result->insert(Result->begin(), n2);
-            SetOfNodes->erase( n2 );
-            myNodes.erase( *it++ ); // it++ goes forward and returns it's previous position
+            Result->push_back ( myNodes[ i ]);
+            myNodes[ i ]->setIsMarked( true );
           }
         }
-        if ( !squareBool )
-          it++;
       }
-      if ( !Result->empty() )
-        myNodes.erase(Node); // JFA: for bug 0020185
     }
     else
     {
       // If I'm not a leaf, I'm going to see my children !
-      for (int i = 0; i < 8; i++)
+      for ( int i = 0; i < 8; i++ )
       {
-        SMESH_OctreeNode* myChild = dynamic_cast<SMESH_OctreeNode*> (myChildren[i]);
-        myChild->FindCoincidentNodes(Node, SetOfNodes, Result, precision);
+        SMESH_OctreeNode* myChild = static_cast<SMESH_OctreeNode*> (myChildren[i]);
+        myChild->findCoincidentNodes( Node, SetOfNodes, Result, precision );
       }
     }
   }
@@ -423,17 +428,18 @@ void SMESH_OctreeNode::UpdateByMoveNode( const SMDS_MeshNode* node, const gp_Pnt
 {
   if ( isLeaf() )
   {
-    TIDSortedNodeSet::iterator pNode = myNodes.find( node );
-    bool nodeInMe = ( pNode != myNodes.end() );
+    std::vector< const SMDS_MeshNode* >::iterator pNode =
+      std::find( myNodes.begin(), myNodes.end(), node );
 
+    bool  nodeInMe = ( pNode != myNodes.end() );
     bool pointInMe = isInside( toPnt.Coord(), 1e-10 );
 
     if ( pointInMe != nodeInMe )
     {
       if ( pointInMe )
-        myNodes.insert( node );
+        myNodes.push_back( node );
       else
-        myNodes.erase( node );
+        myNodes.erase( pNode );
     }
   }
   else if ( myChildren )
@@ -454,6 +460,7 @@ void SMESH_OctreeNode::UpdateByMoveNode( const SMDS_MeshNode* node, const gp_Pnt
  * \brief Return iterator over children
  */
 //================================================================================
+
 SMESH_OctreeNodeIteratorPtr SMESH_OctreeNode::GetChildrenIterator()
 {
   return SMESH_OctreeNodeIteratorPtr
@@ -466,9 +473,8 @@ SMESH_OctreeNodeIteratorPtr SMESH_OctreeNode::GetChildrenIterator()
  * \brief Return nodes iterator
  */
 //================================================================================
+
 SMDS_NodeIteratorPtr SMESH_OctreeNode::GetNodeIterator()
 {
-  return SMDS_NodeIteratorPtr
-    ( new SMDS_SetIterator< SMDS_pNode, TIDSortedNodeSet::const_iterator >
-      ( myNodes.begin(), myNodes.size() ? myNodes.end() : myNodes.begin()));
+  return boost::make_shared< SMDS_NodeVectorIterator >( myNodes.begin(), myNodes.end());
 }
