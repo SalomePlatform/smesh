@@ -207,7 +207,7 @@ public:
                                           double constValue = 0) const;
   /*!
    * \brief Return nodes in the order they encounter while walking along
-   *  the while side or a specified EDGE. For a closed side, the 1st point repeats at end.
+   *  the whole side or a specified EDGE. For a closed side, the 1st point repeats at end.
    *  \param iE - index of the EDGE. Default is "all EDGEs".
    */
   std::vector<const SMDS_MeshNode*> GetOrderedNodes( int iE = ALL_EDGES ) const;
