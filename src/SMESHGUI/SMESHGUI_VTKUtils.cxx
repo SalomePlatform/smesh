@@ -794,12 +794,13 @@ namespace SMESH
     return false;
   }
 
-  void UpdateView(){
+  void UpdateView( bool withChildrenOfSelected )
+  {
     if ( SVTK_ViewWindow* aWnd = SMESH::GetCurrentVtkView()) {
       LightApp_SelectionMgr* mgr = SMESHGUI::selectionMgr();
       SALOME_ListIO selected; mgr->selectedObjects( selected );
 
-      if( selected.Extent() == 0){
+      if ( selected.Extent() == 0 ) {
         vtkRenderer* aRenderer = aWnd->getRenderer();
         VTK::ActorCollectionCopy aCopy(aRenderer->GetActors());
         vtkActorCollection *aCollection = aCopy.GetActors();
@@ -811,12 +812,36 @@ namespace SMESH
                 break; // avoid multiple warinings if visu failed
           }
         }
-      }else{
+      }
+      else
+      {
         SALOME_ListIteratorOfListIO anIter( selected );
-        for( ; anIter.More(); anIter.Next()){
+        for( ; anIter.More(); anIter.Next())
+        {
           Handle(SALOME_InteractiveObject) anIO = anIter.Value();
-          if ( !Update(anIO,true) )
+          if ( !Update( anIO, true ))
             break; // avoid multiple warinings if visu failed
+
+          if ( withChildrenOfSelected ) // update all visible children
+          {
+            QString aFatherID = anIO->getEntry();
+            vtkRenderer* aRenderer = aWnd->getRenderer();
+            VTK::ActorCollectionCopy aCopy(aRenderer->GetActors());
+            vtkActorCollection *aCollection = aCopy.GetActors();
+            aCollection->InitTraversal();
+            while ( vtkActor *anAct = aCollection->GetNextActor() ) {
+              if ( SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>( anAct )) {
+                if ( anActor->hasIO() && anActor->GetVisibility() )
+                {
+                  QString aChildID = anActor->getIO()->getEntry();
+                  if ( aChildID.size() > aFatherID.size() &&
+                       aChildID.startsWith( aFatherID ))
+                    if ( ! Update( anActor->getIO(), true ))
+                      break;
+                }
+              }
+            }
+          }
         }
       }
       RepaintCurrentView();
