@@ -564,7 +564,7 @@ SMESH::Hypothesis_Status SMESH_Mesh_i::ConvertHypothesisStatus
   switch (theStatus) {
   RETURNCASE( HYP_OK            );
   RETURNCASE( HYP_MISSING       );
-  RETURNCASE( HYP_CONCURENT     );
+  RETURNCASE( HYP_CONCURRENT    );
   RETURNCASE( HYP_BAD_PARAMETER );
   RETURNCASE( HYP_HIDDEN_ALGO   );
   RETURNCASE( HYP_HIDING_ALGO   );

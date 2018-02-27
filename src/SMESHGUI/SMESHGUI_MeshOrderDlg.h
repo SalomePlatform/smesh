@@ -57,7 +57,7 @@ class SMESHGUI_EXPORT SMESHGUI_MeshOrderBox : public QGroupBox
   //! Clear mesh box
   void         Clear();
 
-  //! Set mesh (submesh) names and indeces
+  //! Set mesh (submesh) names and indices
   void         SetMeshes(const ListListName& theMeshNames,
                          const ListListId&   theMeshIds);
 
@@ -66,7 +66,7 @@ class SMESHGUI_EXPORT SMESHGUI_MeshOrderBox : public QGroupBox
 
   //! Returns result (ordered by user) mesh names
   ListListId   GetMeshIds() const;
-  //! Returns result (ordered by user) mesh indeces
+  //! Returns result (ordered by user) mesh indices
   ListListName GetMeshNames() const;
  
  private slots:

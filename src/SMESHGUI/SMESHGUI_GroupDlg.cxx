@@ -1197,7 +1197,7 @@ bool SMESHGUI_GroupDlg::onApply()
             anActor->SetSufaceColor( aColor.R, aColor.G, aColor.B, delta ); break;          
             break;
           }
-          // update a visible group accoding to a changed contents
+          // update a visible group according to a changed contents
           if ( !isConversion && anActor->GetVisibility() )
           {
             SMESH::Update( anIO, true );
@@ -2310,7 +2310,7 @@ void SMESHGUI_GroupDlg::onHelp()
 
 //=================================================================================
 // function : SMESHGUI_GroupDlg::onDeactivate
-// purpose  : SLOT called when dialog must be deativated
+// purpose  : SLOT called when dialog must be deactivated
 //=================================================================================
 void SMESHGUI_GroupDlg::onDeactivate()
 {

@@ -512,25 +512,25 @@ bool SMESH_subMesh::CanAddHypothesis(const SMESH_Hypothesis* theHypothesis) cons
 }
 
 //=======================================================================
-//function : IsApplicableHypotesis
+//function : IsApplicableHypothesis
 //purpose  : check if this sub-mesh can be computed using a hypothesis
 //=======================================================================
 
-bool SMESH_subMesh::IsApplicableHypotesis(const SMESH_Hypothesis* theHypothesis) const
+bool SMESH_subMesh::IsApplicableHypothesis(const SMESH_Hypothesis* theHypothesis) const
 {
   if ( !_father->HasShapeToMesh() && _subShape.ShapeType() == TopAbs_SOLID )
     return true; // true for the PseudoShape
 
-  return IsApplicableHypotesis( theHypothesis, _subShape.ShapeType() );
+  return IsApplicableHypothesis( theHypothesis, _subShape.ShapeType() );
 }
 
 //=======================================================================
-//function : IsApplicableHypotesis
+//function : IsApplicableHypothesis
 //purpose  : compare shape type and hypothesis type
 //=======================================================================
 
-bool SMESH_subMesh::IsApplicableHypotesis(const SMESH_Hypothesis* theHypothesis,
-                                          const TopAbs_ShapeEnum  theShapeType)
+bool SMESH_subMesh::IsApplicableHypothesis(const SMESH_Hypothesis* theHypothesis,
+                                           const TopAbs_ShapeEnum  theShapeType)
 {
   if ( theHypothesis->GetType() > SMESHDS_Hypothesis::PARAM_ALGO)
   {
@@ -622,7 +622,7 @@ SMESH_Hypothesis::Hypothesis_Status
   bool modifiedHyp = (event == MODIF_HYP);  // if set to true, force event MODIF_ALGO_STATE
   SMESH_Algo* algoRequiringCleaning = 0;
 
-  bool isApplicableHyp = IsApplicableHypotesis( anHyp );
+  bool isApplicableHyp = IsApplicableHypothesis( anHyp );
 
   if (event == ADD_ALGO || event == ADD_FATHER_ALGO)
   {
@@ -1072,7 +1072,7 @@ bool SMESH_subMesh::IsConform(const SMESH_Algo* theAlgo)
   if ( !theAlgo ) return false;
 
   // Suppose that theAlgo is applicable to _subShape, do not check it here
-  //if ( !IsApplicableHypotesis( theAlgo )) return false;
+  //if ( !IsApplicableHypothesis( theAlgo )) return false;
 
   // check only algo that doesn't NeedDiscreteBoundary(): because mesh made
   // on a sub-shape will be ignored by theAlgo
@@ -2207,13 +2207,13 @@ const SMESH_Hypothesis* SMESH_subMesh::getSimilarAttached(const TopoDS_Shape&   
 }
 
 //=======================================================================
-//function : CheckConcurentHypothesis
+//function : CheckConcurrentHypothesis
 //purpose  : check if there are several applicable hypothesis attached to
 //           ancestors
 //=======================================================================
 
 SMESH_Hypothesis::Hypothesis_Status
-  SMESH_subMesh::CheckConcurentHypothesis (const int theHypType)
+  SMESH_subMesh::CheckConcurrentHypothesis (const int theHypType)
 {
   // is there local hypothesis on me?
   if ( getSimilarAttached( _subShape, 0, theHypType ) )
@@ -2235,7 +2235,7 @@ SMESH_Hypothesis::Hypothesis_Status
         aPrevHyp     = hyp;
       }
       else if ( aPrevWithHyp.ShapeType() == ancestor.ShapeType() && aPrevHyp != hyp )
-        return SMESH_Hypothesis::HYP_CONCURENT;
+        return SMESH_Hypothesis::HYP_CONCURRENT;
       else
         return SMESH_Hypothesis::HYP_OK;
     }

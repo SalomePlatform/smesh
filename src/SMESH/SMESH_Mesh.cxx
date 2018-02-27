@@ -661,7 +661,7 @@ SMESH_Mesh::AddHypothesis(const TopoDS_Shape & aSubShape,
     string hypName = anHyp->GetName();
     if ( hypName == "NotConformAllowed" )
     {
-      if(MYDEBUG) MESSAGE( "Hypotesis <NotConformAllowed> can be only global" );
+      if(MYDEBUG) MESSAGE( "Hypothesis <NotConformAllowed> can be only global" );
       return SMESH_Hypothesis::HYP_INCOMPATIBLE;
     }
   }
@@ -698,13 +698,13 @@ SMESH_Mesh::AddHypothesis(const TopoDS_Shape & aSubShape,
     }
 
     // check concurrent hypotheses on ancestors
-    if (ret < SMESH_Hypothesis::HYP_CONCURENT && !isGlobalHyp )
+    if (ret < SMESH_Hypothesis::HYP_CONCURRENT && !isGlobalHyp )
     {
       SMESH_subMeshIteratorPtr smIt = subMesh->getDependsOnIterator(false,false);
       while ( smIt->more() ) {
         SMESH_subMesh* sm = smIt->next();
-        if ( sm->IsApplicableHypotesis( anHyp )) {
-          ret2 = sm->CheckConcurentHypothesis( anHyp->GetType() );
+        if ( sm->IsApplicableHypothesis( anHyp )) {
+          ret2 = sm->CheckConcurrentHypothesis( anHyp->GetType() );
           if (ret2 > ret) {
             ret = ret2;
             break;
@@ -751,10 +751,10 @@ SMESH_Mesh::RemoveHypothesis(const TopoDS_Shape & aSubShape,
   SMESH_Hypothesis::Hypothesis_Status ret = subMesh->AlgoStateEngine(event, anHyp);
 
   // there may appear concurrent hyps that were covered by the removed hyp
-  if (ret < SMESH_Hypothesis::HYP_CONCURENT &&
-      subMesh->IsApplicableHypotesis( anHyp ) &&
-      subMesh->CheckConcurentHypothesis( anHyp->GetType() ) != SMESH_Hypothesis::HYP_OK)
-    ret = SMESH_Hypothesis::HYP_CONCURENT;
+  if (ret < SMESH_Hypothesis::HYP_CONCURRENT &&
+      subMesh->IsApplicableHypothesis( anHyp ) &&
+      subMesh->CheckConcurrentHypothesis( anHyp->GetType() ) != SMESH_Hypothesis::HYP_OK)
+    ret = SMESH_Hypothesis::HYP_CONCURRENT;
 
   // sub-shapes
   if (!SMESH_Hypothesis::IsStatusFatal(ret) &&
@@ -768,13 +768,13 @@ SMESH_Mesh::RemoveHypothesis(const TopoDS_Shape & aSubShape,
       ret = ret2;
 
     // check concurrent hypotheses on ancestors
-    if (ret < SMESH_Hypothesis::HYP_CONCURENT && !IsMainShape( aSubShape ) )
+    if (ret < SMESH_Hypothesis::HYP_CONCURRENT && !IsMainShape( aSubShape ) )
     {
       SMESH_subMeshIteratorPtr smIt = subMesh->getDependsOnIterator(false,false);
       while ( smIt->more() ) {
         SMESH_subMesh* sm = smIt->next();
-        if ( sm->IsApplicableHypotesis( anHyp )) {
-          ret2 = sm->CheckConcurentHypothesis( anHyp->GetType() );
+        if ( sm->IsApplicableHypothesis( anHyp )) {
+          ret2 = sm->CheckConcurrentHypothesis( anHyp->GetType() );
           if (ret2 > ret) {
             ret = ret2;
             break;
@@ -1169,7 +1169,7 @@ bool SMESH_Mesh::IsUsedHypothesis(SMESHDS_Hypothesis * anHyp,
   SMESH_Hypothesis* hyp = static_cast<SMESH_Hypothesis*>(anHyp);
 
   // check if anHyp can be used to mesh aSubMesh
-  if ( !aSubMesh || !aSubMesh->IsApplicableHypotesis( hyp ))
+  if ( !aSubMesh || !aSubMesh->IsApplicableHypothesis( hyp ))
     return false;
 
   SMESH_Algo *algo = aSubMesh->GetAlgo();
@@ -1232,7 +1232,7 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
     {
       const TopoDS_Shape & aSubShape = aSubMesh->GetSubShape();
 
-      if (( aSubMesh->IsApplicableHypotesis( hyp )) &&
+      if (( aSubMesh->IsApplicableHypothesis( hyp )) &&
           ( algo = aSubMesh->GetAlgo() )            &&
           ( compatibleHypoKind = algo->GetCompatibleHypoFilter( !hyp->IsAuxiliary() )) &&
           ( compatibleHypoKind->IsOk( hyp, aSubShape )))

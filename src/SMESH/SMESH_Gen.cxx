@@ -675,7 +675,7 @@ static bool checkConformIgnoredAlgos(SMESH_Mesh&               aMesh,
           checkConform = false; // no more check conformity
           INFOS( "ERROR: Local <" << algo->GetName() <<
                 "> would produce not conform mesh: "
-                "<Not Conform Mesh Allowed> hypotesis is missing");
+                "<Not Conform Mesh Allowed> hypothesis is missing");
           theErrors.push_back( SMESH_Gen::TAlgoStateError() );
           theErrors.back().Set( SMESH_Hypothesis::HYP_NOTCONFORM, algo, false );
         }

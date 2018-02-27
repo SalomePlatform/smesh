@@ -45,9 +45,9 @@ public:
   virtual ~SMESHGUI_MeshOrderMgr();
   //! Set root mesh object
   void                   SetMesh( SMESH::SMESH_Mesh_var& theMesh );
-  //! Check for concurents between submesh objects
+  //! Check for concurrents between submesh objects
   bool                   GetMeshOrder();
-  //! Check for concurents between submesh objects
+  //! Check for concurrents between submesh objects
   bool                   GetMeshOrder( ListListId& theIds );
   //! Store submesh priority order
   bool                   SetMeshOrder();

@@ -122,7 +122,7 @@ static void addMeshItem( QListWidget* theList,
 
 // =========================================================================================
 /*!
- * \brief Clear submesh names and indeces
+ * \brief Clear submesh names and indices
  */
 // =========================================================================================
 
@@ -134,7 +134,7 @@ void SMESHGUI_MeshOrderBox::Clear()
 
 // =========================================================================================
 /*!
- * \brief Set submesh names and indeces
+ * \brief Set submesh names and indices
  */
 // =========================================================================================
 
@@ -159,7 +159,7 @@ void SMESHGUI_MeshOrderBox::SetMeshes(const ListListName& theMeshNames,
 
 // =========================================================================================
 /*!
- * \brief cehck that item exists and not a separator
+ * \brief check that item exists and not a separator
  */
 // =========================================================================================
 
@@ -191,7 +191,7 @@ ListListId SMESHGUI_MeshOrderBox::GetMeshIds() const
 
 // =========================================================================================
 /*!
- * \brief Returns result (ordered by user) mesh indeces
+ * \brief Returns result (ordered by user) mesh indices
  */
 // =========================================================================================
 

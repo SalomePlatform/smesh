@@ -191,7 +191,7 @@ void SMESHGUI_TransparencyDlg::ClickOnHelp()
 //=================================================================================
 // function : SetTransparency()
 // purpose  : Called when value of slider change
-//          : or the first time as initilisation
+//          : or the first time as initialisation
 //=================================================================================
 void SMESHGUI_TransparencyDlg::SetTransparency()
 {

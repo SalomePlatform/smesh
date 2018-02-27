@@ -238,14 +238,14 @@ public:
   // return true if theHypothesis can be attached to me:
   // its dimension is checked
 
-  static bool IsApplicableHypotesis(const SMESH_Hypothesis* theHypothesis,
+  static bool IsApplicableHypothesis(const SMESH_Hypothesis* theHypothesis,
                                     const TopAbs_ShapeEnum  theShapeType);
 
-  bool IsApplicableHypotesis(const SMESH_Hypothesis* theHypothesis) const;
+  bool IsApplicableHypothesis(const SMESH_Hypothesis* theHypothesis) const;
   // return true if theHypothesis can be used to mesh me:
   // its shape type is checked
   
-  SMESH_Hypothesis::Hypothesis_Status CheckConcurentHypothesis (const int theHypType);
+  SMESH_Hypothesis::Hypothesis_Status CheckConcurrentHypothesis (const int theHypType);
   // check if there are several applicable hypothesis on fathers
 
   /*!

@@ -692,7 +692,7 @@ void SMESHGUI_MeshDlg::reset()
 
 //================================================================================
 /*!
- * \brief Sets curent tab
+ * \brief Sets current tab
  */
 //================================================================================    
 void SMESHGUI_MeshDlg::setCurrentTab( const int theId  )

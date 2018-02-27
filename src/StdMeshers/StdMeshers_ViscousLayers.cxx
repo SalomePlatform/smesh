@@ -8771,7 +8771,7 @@ void _LayerEdge::ChooseSmooFunction( const set< TGeomID >& concaveVertices,
       }
     }
 
-    // // this coice is done only if ( !concaveVertices.empty() ) for Grids/smesh/bugs_19/X1
+    // // this choice is done only if ( !concaveVertices.empty() ) for Grids/smesh/bugs_19/X1
     // // where the nodes are smoothed too far along a sphere thus creating
     // // inverted _simplices
     // double dist[theNbSmooFuns];

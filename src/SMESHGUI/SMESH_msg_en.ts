@@ -7107,7 +7107,7 @@ It is impossible to read point coordinates from file</translation>
     <name>SMESHGUI_MeshOrderOp</name>
     <message>
         <source>SMESH_NO_CONCURENT_MESH</source>
-        <translation>No concurent sub-meshes detected</translation>
+        <translation>No concurrent sub-meshes detected</translation>
     </message>
 </context>
 <context>
