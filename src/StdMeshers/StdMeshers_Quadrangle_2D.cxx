@@ -1089,7 +1089,8 @@ namespace
     void AddSelf( QuadQuality::set& theVariants )
     {
       if ( myCornerE[2] == myCornerE[1] || // exclude invalid variants
-           myCornerE[2] == myCornerE[3] )
+           myCornerE[2] == myCornerE[3] ||
+           myCornerE[0] == myCornerE[3] )
         return;
 
       // count nb segments between corners
@@ -1109,7 +1110,7 @@ namespace
 
       double nbSideIdeal = totNbSeg / 4.;
       myQuartDiff = -( Min( Min( myNbSeg[0], myNbSeg[1] ),
-                            Min( myNbSeg[1], myNbSeg[2] )) / nbSideIdeal );
+                            Min( myNbSeg[2], myNbSeg[3] )) / nbSideIdeal );
 
       theVariants.insert( *this );
 
@@ -1149,10 +1150,9 @@ namespace
                    const bool                  theConsiderMesh,
                    const StdMeshers_FaceSide&  theFaceSide,
                    const TopoDS_Shape&         theBaseVertex,
-                   std::vector<TopoDS_Vertex>& theVertices )
+                   std::vector<TopoDS_Vertex>& theVertices,
+                   bool&                       theHaveConcaveVertices)
   {
-    theVertices.clear();
-
     // form a circular list of EDGEs
     std::vector< Edge > edges( theFaceSide.NbEdges() );
     boost::intrusive::circular_list_algorithms< Edge > circularList;
@@ -1179,7 +1179,9 @@ namespace
 
     // sort edges by angle
     std::multimap< double, Edge* > edgeByAngle;
-    int i, iBase = -1, nbConvexAngles = 0;
+    int i, iBase = -1, nbConvexAngles = 0, nbSharpAngles = 0;
+    const double angTol     = 5. / 180 * M_PI;
+    const double sharpAngle = 0.5 * M_PI - angTol;
     Edge* e = edge0;
     for ( i = 0; i < nbEdges; ++i, e = e->myNext )
     {
@@ -1196,11 +1198,28 @@ namespace
           e->myAngle *= -1.;
       }
       edgeByAngle.insert( std::make_pair( e->myAngle, e ));
-      nbConvexAngles += ( e->myAngle > 0 );
+      nbConvexAngles += ( e->myAngle > angTol );
+      nbSharpAngles  += ( e->myAngle > sharpAngle );
     }
 
-    if ( !theConsiderMesh || theNbCorners < 4 || nbConvexAngles <= theNbCorners )
+    theHaveConcaveVertices = ( nbConvexAngles < nbEdges );
+
+    if ((int) theVertices.size() == theNbCorners )
+      return;
+
+    theVertices.clear();
+
+    if ( !theConsiderMesh || theNbCorners < 4 ||
+         nbConvexAngles <= theNbCorners ||
+         nbSharpAngles  == theNbCorners )
     {
+      if ( nbEdges == theNbCorners ) // return all vertices
+      {
+        for ( e = edge0; (int) theVertices.size() < theNbCorners; e = e->myNext )
+          theVertices.push_back( e->my1stVertex );
+        return;
+      }
+
       // return corners with maximal angles
 
       std::set< int > cornerIndices;
@@ -1224,9 +1243,16 @@ namespace
     for ( i = 0, e = edge0; i < nbEdges; ++i, e = e->myNext )
     {
       nodes.clear();
-      theFaceSide.GetEdgeNodes( e->myIndex, nodes, /*addVertex=*/false, false );
-      e->myNbSegments += nodes.size() + 1;
-      totNbSeg += nodes.size() + 1;
+      theFaceSide.GetEdgeNodes( e->myIndex, nodes, /*addVertex=*/true, true );
+      if ( nodes.size() == 2 && nodes[0] == nodes[1] ) // all nodes merged
+      {
+        e->myAngle = -1; // to remove
+      }
+      else
+      {
+        e->myNbSegments += nodes.size() - 1;
+        totNbSeg        += nodes.size() - 1;
+      }
 
       // join with the previous edge those edges with concave angles
       if ( e->myAngle <= 0 )
@@ -1376,7 +1402,7 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
   // check nb of available EDGEs
   if ( faceSide.NbEdges() < nbCorners )
     return error(COMPERR_BAD_SHAPE,
-                 TComm("Face must have 4 sides and not ") << faceSide.NbEdges() );
+                 TComm("Face must have 4 sides but not ") << faceSide.NbEdges() );
 
   if ( theConsiderMesh )
   {
@@ -1389,7 +1415,7 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
   {
     if ( theVertices.size() < 3 )
       return error(COMPERR_BAD_SHAPE,
-                   TComm("Face must have 3 meshed sides and not ") << theVertices.size() );
+                   TComm("Face must have 3 meshed sides but not ") << theVertices.size() );
   }
   else // triaVertex not defined or invalid
   {
@@ -1408,14 +1434,13 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
     }
     if ( theVertices.size() + theNbDegenEdges < 4 )
       return error(COMPERR_BAD_SHAPE,
-                   TComm("Face must have 4 meshed sides and not ") << theVertices.size() );
+                   TComm("Face must have 4 meshed sides but not ") << theVertices.size() );
   }
 
-  if ((int) theVertices.size() > nbCorners )
+  myCheckOri = false;
+  if ( theVertices.size() > 3 )
   {
-    // there are more EDGEs than required nb of sides;
-    // unite some EDGEs to fix the nb of sides
-    uniteEdges( nbCorners, theConsiderMesh, faceSide, triaVertex, theVertices );
+    uniteEdges( nbCorners, theConsiderMesh, faceSide, triaVertex, theVertices, myCheckOri );
   }
 
   if ( nbCorners == 3 && !triaVertex.IsSame( theVertices[0] ))
