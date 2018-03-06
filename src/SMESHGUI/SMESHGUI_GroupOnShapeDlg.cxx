@@ -134,7 +134,7 @@ SMESHGUI_GroupOnShapeDlg::~SMESHGUI_GroupOnShapeDlg()
 
 //================================================================================
 /*!
- * \brief slot to enable/diable [Apply]
+ * \brief slot to enable/disable [Apply]
  */
 //================================================================================
 
@@ -505,6 +505,6 @@ void SMESHGUI_GroupOnShapeOp::selectionDone()
     myNodeGeoIDs = goodIds;
   }
 
-  // enable/diable Apply, which can change at selection
+  // enable/disable Apply, which can change at selection
   myDlg->updateButtons();
 }

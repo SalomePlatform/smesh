@@ -482,7 +482,7 @@ void SMESHGUI_GroupOpDlg::setVisible( bool visible )
 }
 
 /*!
-  \brief SLOT called when dialog must be deativated
+  \brief SLOT called when dialog must be deactivated
 */
 void SMESHGUI_GroupOpDlg::onDeactivate()
 {

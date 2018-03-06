@@ -65,10 +65,11 @@
 #include "Utils_ExceptHandlers.hxx"
 
 #include <boost/container/flat_set.hpp>
+#include <boost/intrusive/circular_list_algorithms.hpp>
 
 typedef NCollection_Array2<const SMDS_MeshNode*> StdMeshers_Array2OfNode;
 
-typedef gp_XY gp_UV;
+typedef gp_XY         gp_UV;
 typedef SMESH_Comment TComm;
 
 using namespace std;
@@ -1020,30 +1021,454 @@ bool StdMeshers_Quadrangle_2D::IsApplicable( const TopoDS_Shape & aShape, bool t
   return ( toCheckAll && nbFoundFaces != 0 );
 }
 
+namespace
+{
+  //================================================================================
+  /*!
+   * \brief Return true if only two given edges meat at their common vertex
+   */
+  //================================================================================
+
+  bool twoEdgesMeatAtVertex(const TopoDS_Edge& e1,
+                            const TopoDS_Edge& e2,
+                            SMESH_Mesh &       mesh)
+  {
+    TopoDS_Vertex v;
+    if (!TopExp::CommonVertex(e1, e2, v))
+      return false;
+    TopTools_ListIteratorOfListOfShape ancestIt(mesh.GetAncestors(v));
+    for (; ancestIt.More() ; ancestIt.Next())
+      if (ancestIt.Value().ShapeType() == TopAbs_EDGE)
+        if (!e1.IsSame(ancestIt.Value()) && !e2.IsSame(ancestIt.Value()))
+          return false;
+    return true;
+  }
+
+  //--------------------------------------------------------------------------------
+  /*!
+   * \brief EDGE of a FACE
+   */
+  struct Edge
+  {
+    TopoDS_Edge   myEdge;
+    TopoDS_Vertex my1stVertex;
+    int           myIndex;
+    double        myAngle;      // angle at my1stVertex
+    int           myNbSegments; // discretization
+    Edge*         myPrev;       // preceding EDGE
+    Edge*         myNext;       // next EDGE
+
+    // traits used by boost::intrusive::circular_list_algorithms
+    typedef Edge         node;
+    typedef Edge *       node_ptr;
+    typedef const Edge * const_node_ptr;
+    static node_ptr get_next(const_node_ptr n)             {  return n->myNext;  }
+    static void     set_next(node_ptr n, node_ptr next)    {  n->myNext = next;  }
+    static node_ptr get_previous(const_node_ptr n)         {  return n->myPrev;  }
+    static void     set_previous(node_ptr n, node_ptr prev){  n->myPrev = prev;  }
+  };
+
+  //--------------------------------------------------------------------------------
+  /*!
+   * \brief Four sides of a quadrangle evaluating its quality
+   */
+  struct QuadQuality
+  {
+    typedef std::set< QuadQuality, QuadQuality > set;
+
+    Edge*  myCornerE[4];
+    int    myNbSeg  [4];
+
+    // quality criteria to minimize
+    int    myOppDiff;
+    double myQuartDiff;
+    double mySumAngle;
+
+    // Compute quality criateria and add self to the set of variants
+    //
+    void AddSelf( QuadQuality::set& theVariants )
+    {
+      if ( myCornerE[2] == myCornerE[1] || // exclude invalid variants
+           myCornerE[2] == myCornerE[3] ||
+           myCornerE[0] == myCornerE[3] )
+        return;
+
+      // count nb segments between corners
+      mySumAngle = 0;
+      double totNbSeg = 0;
+      for ( int i1 = 3, i2 = 0; i2 < 4; i1 = i2++ )
+      {
+        myNbSeg[ i1 ] = 0;
+        for ( Edge* e = myCornerE[ i1 ]; e != myCornerE[ i2 ]; e = e->myNext )
+          myNbSeg[ i1 ] += e->myNbSegments;
+        mySumAngle -= myCornerE[ i1 ]->myAngle / M_PI; // [-1,1]
+        totNbSeg += myNbSeg[ i1 ];
+      }
+
+      myOppDiff = ( Abs( myNbSeg[0] - myNbSeg[2] ) +
+                    Abs( myNbSeg[1] - myNbSeg[3] ));
+
+      double nbSideIdeal = totNbSeg / 4.;
+      myQuartDiff = -( Min( Min( myNbSeg[0], myNbSeg[1] ),
+                            Min( myNbSeg[2], myNbSeg[3] )) / nbSideIdeal );
+
+      theVariants.insert( *this );
+
+#ifndef _DEBUG_
+      if ( theVariants.size() > 1 ) // erase a worse variant
+        theVariants.erase( ++theVariants.begin() );
+#endif
+    };
+
+    // first criterion - equality of nbSeg of opposite sides
+    int    crit1() const { return myOppDiff; }
+
+    // second criterion - equality of nbSeg of adjacent sides and sharpness of angles
+    double crit2() const { return myQuartDiff + mySumAngle; }
+
+    bool operator () ( const QuadQuality& q1, const QuadQuality& q2) const
+    {
+      if ( q1.crit1() < q2.crit1() )
+        return true;
+      if ( q1.crit1() > q2.crit1() )
+        return false;
+      return q1.crit2() < q2.crit2();
+    }
+  };
+
+  //================================================================================
+  /*!
+   * \brief Unite EDGEs to get a required number of sides
+   *  \param [in] theNbCorners - the required number of sides
+   *  \param [in] theConsiderMesh - to considered only meshed VERTEXes
+   *  \param [in] theFaceSide - the FACE EDGEs
+   *  \param [out] theVertices - the found corner vertices
+   */
+  //================================================================================
+
+  void uniteEdges( const int                   theNbCorners,
+                   const bool                  theConsiderMesh,
+                   const StdMeshers_FaceSide&  theFaceSide,
+                   const TopoDS_Shape&         theBaseVertex,
+                   std::vector<TopoDS_Vertex>& theVertices,
+                   bool&                       theHaveConcaveVertices)
+  {
+    // form a circular list of EDGEs
+    std::vector< Edge > edges( theFaceSide.NbEdges() );
+    boost::intrusive::circular_list_algorithms< Edge > circularList;
+    circularList.init_header( &edges[0] );
+    edges[0].myEdge       = theFaceSide.Edge( 0 );
+    edges[0].myIndex      = 0;
+    edges[0].myNbSegments = 0;
+    for ( int i = 1; i < theFaceSide.NbEdges(); ++i )
+    {
+      edges[ i ].myEdge       = theFaceSide.Edge( i );
+      edges[ i ].myIndex      = i;
+      edges[ i ].myNbSegments = 0;
+      circularList.link_after( &edges[ i-1 ], &edges[ i ] );
+    }
+    // remove degenerated edges
+    int nbEdges = edges.size();
+    Edge* edge0 = &edges[0];
+    for ( size_t i = 0; i < edges.size(); ++i )
+      if ( SMESH_Algo::isDegenerated( edges[i].myEdge ))
+      {
+        edge0 = circularList.unlink( &edges[i] );
+        --nbEdges;
+      }
+
+    // sort edges by angle
+    std::multimap< double, Edge* > edgeByAngle;
+    int i, iBase = -1, nbConvexAngles = 0, nbSharpAngles = 0;
+    const double angTol     = 5. / 180 * M_PI;
+    const double sharpAngle = 0.5 * M_PI - angTol;
+    Edge* e = edge0;
+    for ( i = 0; i < nbEdges; ++i, e = e->myNext )
+    {
+      e->my1stVertex = SMESH_MesherHelper::IthVertex( 0, e->myEdge );
+      if ( e->my1stVertex.IsSame( theBaseVertex ))
+        iBase = e->myIndex;
+
+      e->myAngle = -2 * M_PI;
+      if ( !theConsiderMesh || theFaceSide.VertexNode( e->myIndex ))
+      {
+        e->myAngle = SMESH_MesherHelper::GetAngle( e->myPrev->myEdge, e->myEdge,
+                                                   theFaceSide.Face(), e->my1stVertex );
+        if ( e->myAngle > 2 * M_PI ) // GetAngle() failed
+          e->myAngle *= -1.;
+      }
+      edgeByAngle.insert( std::make_pair( e->myAngle, e ));
+      nbConvexAngles += ( e->myAngle > angTol );
+      nbSharpAngles  += ( e->myAngle > sharpAngle );
+    }
+
+    theHaveConcaveVertices = ( nbConvexAngles < nbEdges );
+
+    if ((int) theVertices.size() == theNbCorners )
+      return;
+
+    theVertices.clear();
+
+    if ( !theConsiderMesh || theNbCorners < 4 ||
+         nbConvexAngles <= theNbCorners ||
+         nbSharpAngles  == theNbCorners )
+    {
+      if ( nbEdges == theNbCorners ) // return all vertices
+      {
+        for ( e = edge0; (int) theVertices.size() < theNbCorners; e = e->myNext )
+          theVertices.push_back( e->my1stVertex );
+        return;
+      }
+
+      // return corners with maximal angles
+
+      std::set< int > cornerIndices;
+      if ( iBase != -1 )
+        cornerIndices.insert( iBase );
+
+      std::multimap< double, Edge* >::reverse_iterator a2e = edgeByAngle.rbegin();
+      for (; (int) cornerIndices.size() < theNbCorners; ++a2e )
+        cornerIndices.insert( a2e->second->myIndex );
+
+      std::set< int >::iterator i = cornerIndices.begin();
+      for ( ; i != cornerIndices.end(); ++i )
+        theVertices.push_back( edges[ *i ].my1stVertex );
+
+      return;
+    }
+
+    // get nb of segments
+    int totNbSeg = 0; // tatal nb segments
+    std::vector<const SMDS_MeshNode*> nodes;
+    for ( i = 0, e = edge0; i < nbEdges; ++i, e = e->myNext )
+    {
+      nodes.clear();
+      theFaceSide.GetEdgeNodes( e->myIndex, nodes, /*addVertex=*/true, true );
+      if ( nodes.size() == 2 && nodes[0] == nodes[1] ) // all nodes merged
+      {
+        e->myAngle = -1; // to remove
+      }
+      else
+      {
+        e->myNbSegments += nodes.size() - 1;
+        totNbSeg        += nodes.size() - 1;
+      }
+
+      // join with the previous edge those edges with concave angles
+      if ( e->myAngle <= 0 )
+      {
+        e->myPrev->myNbSegments += e->myNbSegments;
+        e = circularList.unlink( e )->myPrev;
+        --nbEdges;
+        --i;
+      }
+    }
+
+    if ( edge0->myNext->myPrev != edge0 ) // edge0 removed, find another edge0
+      for ( size_t i = 0; i < edges.size(); ++i )
+        if ( edges[i].myNext->myPrev == & edges[i] )
+        {
+          edge0 = &edges[i];
+          break;
+        }
+
+
+    // sort different variants by quality
+
+    QuadQuality::set quadVariants;
+
+    // find index of a corner most opposite to corner of edge0
+    int iOpposite0, nbHalf = 0;
+    for ( e = edge0; nbHalf <= totNbSeg / 2; e = e->myNext )
+      nbHalf += e->myNbSegments;
+    iOpposite0 = e->myIndex;
+
+    // compose different variants of quadrangles
+    QuadQuality quad;
+    for ( ; edge0->myIndex != iOpposite0; edge0 = edge0->myNext )
+    {
+      quad.myCornerE[ 0 ] = edge0;
+
+      // find opposite corner 2
+      for ( nbHalf = 0, e = edge0; nbHalf < totNbSeg / 2; e = e->myNext )
+        nbHalf += e->myNbSegments;
+      if ( e == edge0->myNext ) // no space for corner 1
+        e = e->myNext;
+      quad.myCornerE[ 2 ] = e;
+
+      bool moreVariants2 = ( totNbSeg % 2 || nbHalf != totNbSeg / 2 );
+
+      // enumerate different variants of corners 1 and 3
+      for ( Edge* e1 = edge0->myNext; e1 != quad.myCornerE[ 2 ]; e1 = e1->myNext )
+      {
+        quad.myCornerE[ 1 ] = e1;
+
+        // find opposite corner 3
+        for ( nbHalf = 0, e = e1; nbHalf < totNbSeg / 2; e = e->myNext )
+          nbHalf += e->myNbSegments;
+        if ( e == quad.myCornerE[ 2 ] )
+          e = e->myNext;
+        quad.myCornerE[ 3 ] = e;
+
+        bool moreVariants3 = ( totNbSeg % 2 || nbHalf != totNbSeg / 2 );
+
+        quad.AddSelf( quadVariants );
+
+        // another variants
+        if ( moreVariants2 )
+        {
+          quad.myCornerE[ 2 ] = quad.myCornerE[ 2 ]->myPrev;
+          quad.AddSelf( quadVariants );
+          quad.myCornerE[ 2 ] = quad.myCornerE[ 2 ]->myNext;
+        }
+        if ( moreVariants3 )
+        {
+          quad.myCornerE[ 3 ] = quad.myCornerE[ 3 ]->myPrev;
+          quad.AddSelf( quadVariants );
+
+          if ( moreVariants2 )
+          {
+            quad.myCornerE[ 2 ] = quad.myCornerE[ 2 ]->myPrev;
+            quad.AddSelf( quadVariants );
+            quad.myCornerE[ 2 ] = quad.myCornerE[ 2 ]->myNext;
+          }
+        }
+      }
+    }
+
+    const QuadQuality& bestQuad = *quadVariants.begin();
+    theVertices.resize( 4 );
+    theVertices[ 0 ] = bestQuad.myCornerE[ 0 ]->my1stVertex;
+    theVertices[ 1 ] = bestQuad.myCornerE[ 1 ]->my1stVertex;
+    theVertices[ 2 ] = bestQuad.myCornerE[ 2 ]->my1stVertex;
+    theVertices[ 3 ] = bestQuad.myCornerE[ 3 ]->my1stVertex;
+
+    return;
+  }
+
+} // namespace
+
 //================================================================================
 /*!
- * \brief Return true if only two given edges meat at their common vertex
+ * \brief Finds vertices at the most sharp face corners
+ *  \param [in] theFace - the FACE
+ *  \param [in,out] theWire - the ordered edges of the face. It can be modified to
+ *         have the first VERTEX of the first EDGE in \a vertices
+ *  \param [out] theVertices - the found corner vertices in the order corresponding to
+ *         the order of EDGEs in \a theWire
+ *  \param [out] theNbDegenEdges - nb of degenerated EDGEs in theFace
+ *  \param [in] theConsiderMesh - if \c true, only meshed VERTEXes are considered
+ *         as possible corners
+ *  \return int - number of quad sides found: 0, 3 or 4
  */
 //================================================================================
 
-static bool twoEdgesMeatAtVertex(const TopoDS_Edge& e1,
-                                 const TopoDS_Edge& e2,
-                                 SMESH_Mesh &       mesh)
+int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
+                                         SMESH_Mesh &                theMesh,
+                                         std::list<TopoDS_Edge>&     theWire,
+                                         std::vector<TopoDS_Vertex>& theVertices,
+                                         int &                       theNbDegenEdges,
+                                         const bool                  theConsiderMesh)
 {
-  TopoDS_Vertex v;
-  if (!TopExp::CommonVertex(e1, e2, v))
-    return false;
-  TopTools_ListIteratorOfListOfShape ancestIt(mesh.GetAncestors(v));
-  for (; ancestIt.More() ; ancestIt.Next())
-    if (ancestIt.Value().ShapeType() == TopAbs_EDGE)
-      if (!e1.IsSame(ancestIt.Value()) && !e2.IsSame(ancestIt.Value()))
-        return false;
-  return true;
+  theNbDegenEdges = 0;
+
+  SMESH_MesherHelper helper( theMesh );
+  if ( myHelper )
+    helper.CopySubShapeInfo( *myHelper );
+
+  StdMeshers_FaceSide faceSide( theFace, theWire, &theMesh,
+                                /*isFwd=*/true, /*skipMedium=*/true, &helper );
+
+  // count degenerated EDGEs and possible corner VERTEXes
+  for ( int iE = 0; iE < faceSide.NbEdges(); ++iE )
+  {
+    if ( SMESH_Algo::isDegenerated( faceSide.Edge( iE )))
+      ++theNbDegenEdges;
+    else if ( !theConsiderMesh || faceSide.VertexNode( iE ))
+      theVertices.push_back( faceSide.FirstVertex( iE ));
+  }
+
+  // find out required nb of corners (3 or 4)
+  int nbCorners = 4;
+  TopoDS_Shape triaVertex = helper.GetMeshDS()->IndexToShape( myTriaVertexID );
+  if ( !triaVertex.IsNull() &&
+       triaVertex.ShapeType() == TopAbs_VERTEX &&
+       helper.IsSubShape( triaVertex, theFace ) &&
+       theVertices.size() != 4 )
+    nbCorners = 3;
+  else
+    triaVertex.Nullify();
+
+  // check nb of available EDGEs
+  if ( faceSide.NbEdges() < nbCorners )
+    return error(COMPERR_BAD_SHAPE,
+                 TComm("Face must have 4 sides but not ") << faceSide.NbEdges() );
+
+  if ( theConsiderMesh )
+  {
+    const int nbSegments = Max( faceSide.NbPoints()-1, faceSide.NbSegments() );
+    if ( nbSegments < nbCorners )
+      return error(COMPERR_BAD_INPUT_MESH, TComm("Too few boundary nodes: ") << nbSegments);
+  }
+
+  if ( nbCorners == 3 )
+  {
+    if ( theVertices.size() < 3 )
+      return error(COMPERR_BAD_SHAPE,
+                   TComm("Face must have 3 meshed sides but not ") << theVertices.size() );
+  }
+  else // triaVertex not defined or invalid
+  {
+    if ( theVertices.size() == 3 && theNbDegenEdges == 0 )
+    {
+      if ( myTriaVertexID < 1 )
+        return error(COMPERR_BAD_PARMETERS,
+                     "No Base vertex provided for a trilateral geometrical face");
+
+      TComm comment("Invalid Base vertex: ");
+      comment << myTriaVertexID << ", which is not in [ ";
+      comment << helper.GetMeshDS()->ShapeToIndex( faceSide.FirstVertex(0) ) << ", ";
+      comment << helper.GetMeshDS()->ShapeToIndex( faceSide.FirstVertex(1) ) << ", ";
+      comment << helper.GetMeshDS()->ShapeToIndex( faceSide.FirstVertex(2) ) << " ]";
+      return error(COMPERR_BAD_PARMETERS, comment );
+    }
+    if ( theVertices.size() + theNbDegenEdges < 4 )
+      return error(COMPERR_BAD_SHAPE,
+                   TComm("Face must have 4 meshed sides but not ") << theVertices.size() );
+  }
+
+  myCheckOri = false;
+  if ( theVertices.size() > 3 )
+  {
+    uniteEdges( nbCorners, theConsiderMesh, faceSide, triaVertex, theVertices, myCheckOri );
+  }
+
+  if ( nbCorners == 3 && !triaVertex.IsSame( theVertices[0] ))
+  {
+    // make theVertices begin from triaVertex
+    for ( size_t i = 0; i < theVertices.size(); ++i )
+      if ( triaVertex.IsSame( theVertices[i] ))
+      {
+        theVertices.erase( theVertices.begin(), theVertices.begin() + i );
+        break;
+      }
+      else
+      {
+        theVertices.push_back( theVertices[i] );
+      }
+  }
+
+  // make theWire begin from the 1st corner vertex
+  while ( !theVertices[0].IsSame( helper.IthVertex( 0, theWire.front() )) ||
+          SMESH_Algo::isDegenerated( theWire.front() ))
+    theWire.splice( theWire.end(), theWire, theWire.begin() );
+
+  return nbCorners;
 }
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 
@@ -4251,388 +4676,6 @@ bool StdMeshers_Quadrangle_2D::check()
   }
 
   return isOK;
-}
-
-//================================================================================
-/*!
- * \brief Finds vertices at the most sharp face corners
- *  \param [in] theFace - the FACE
- *  \param [in,out] theWire - the ordered edges of the face. It can be modified to
- *         have the first VERTEX of the first EDGE in \a vertices
- *  \param [out] theVertices - the found corner vertices in the order corresponding to
- *         the order of EDGEs in \a theWire
- *  \param [out] theNbDegenEdges - nb of degenerated EDGEs in theFace
- *  \param [in] theConsiderMesh - if \c true, only meshed VERTEXes are considered
- *         as possible corners
- *  \return int - number of quad sides found: 0, 3 or 4
- */
-//================================================================================
-
-int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
-                                         SMESH_Mesh &                theMesh,
-                                         std::list<TopoDS_Edge>&     theWire,
-                                         std::vector<TopoDS_Vertex>& theVertices,
-                                         int &                       theNbDegenEdges,
-                                         const bool                  theConsiderMesh)
-{
-  theNbDegenEdges = 0;
-
-  SMESH_MesherHelper helper( theMesh );
-  if ( myHelper )
-    helper.CopySubShapeInfo( *myHelper );
-  StdMeshers_FaceSide faceSide( theFace, theWire, &theMesh,
-                                /*isFwd=*/true, /*skipMedium=*/true, &helper );
-
-  // sort theVertices by angle
-  multimap<double, TopoDS_Vertex> vertexByAngle;
-  TopTools_DataMapOfShapeReal     angleByVertex;
-  TopoDS_Edge prevE = theWire.back();
-  if ( SMESH_Algo::isDegenerated( prevE ))
-  {
-    list<TopoDS_Edge>::reverse_iterator edge = ++theWire.rbegin();
-    while ( SMESH_Algo::isDegenerated( *edge ) /*|| helper.IsRealSeam( *edge )*/)
-      ++edge;
-    if ( edge == theWire.rend() )
-      return false;
-    prevE = *edge;
-  }
-  list<TopoDS_Edge>::iterator edge = theWire.begin();
-  for ( int iE = 0; edge != theWire.end(); ++edge, ++iE )
-  {
-    if ( SMESH_Algo::isDegenerated( *edge ) /*|| helper.IsRealSeam( *edge )*/)
-    {
-      ++theNbDegenEdges;
-      continue;
-    }
-    if ( !theConsiderMesh || faceSide.VertexNode( iE ))
-    {
-      TopoDS_Vertex v = helper.IthVertex( 0, *edge );
-      double    angle = helper.GetAngle( prevE, *edge, theFace, v );
-      vertexByAngle.insert( make_pair( angle, v ));
-      angleByVertex.Bind( v, angle );
-    }
-    prevE = *edge;
-  }
-
-  // find out required nb of corners (3 or 4)
-  int nbCorners = 4;
-  TopoDS_Shape triaVertex = helper.GetMeshDS()->IndexToShape( myTriaVertexID );
-  if ( !triaVertex.IsNull() &&
-       triaVertex.ShapeType() == TopAbs_VERTEX &&
-       helper.IsSubShape( triaVertex, theFace ) &&
-       ( vertexByAngle.size() != 4 || vertexByAngle.begin()->first < 5 * M_PI/180. ))
-    nbCorners = 3;
-  else
-    triaVertex.Nullify();
-
-  // check nb of available corners
-  if ( faceSide.NbEdges() < nbCorners )
-    return error(COMPERR_BAD_SHAPE,
-                 TComm("Face must have 4 sides but not ") << faceSide.NbEdges() );
-
-  if ( theConsiderMesh )
-  {
-    const int nbSegments = Max( faceSide.NbPoints()-1, faceSide.NbSegments() );
-    if ( nbSegments < nbCorners )
-      return error(COMPERR_BAD_INPUT_MESH, TComm("Too few boundary nodes: ") << nbSegments);
-  }
-
-  if ( nbCorners == 3 )
-  {
-    if ( vertexByAngle.size() < 3 )
-      return error(COMPERR_BAD_SHAPE,
-                   TComm("Face must have 3 sides but not ") << vertexByAngle.size() );
-  }
-  else
-  {
-    if ( vertexByAngle.size() == 3 && theNbDegenEdges == 0 )
-    {
-      if ( myTriaVertexID < 1 )
-        return error(COMPERR_BAD_PARMETERS,
-                     "No Base vertex provided for a trilateral geometrical face");
-        
-      TComm comment("Invalid Base vertex: ");
-      comment << myTriaVertexID << " its ID is not among [ ";
-      multimap<double, TopoDS_Vertex>::iterator a2v = vertexByAngle.begin();
-      comment << helper.GetMeshDS()->ShapeToIndex( a2v->second ) << ", "; a2v++;
-      comment << helper.GetMeshDS()->ShapeToIndex( a2v->second ) << ", "; a2v++;
-      comment << helper.GetMeshDS()->ShapeToIndex( a2v->second ) << " ]";
-      return error(COMPERR_BAD_PARMETERS, comment );
-    }
-    if ( vertexByAngle.size() + ( theNbDegenEdges > 0 ) < 4 &&
-         vertexByAngle.size() + theNbDegenEdges != 4 )
-      return error(COMPERR_BAD_SHAPE,
-                   TComm("Face must have 4 sides but not ") << vertexByAngle.size() );
-  }
-
-  // put all corner vertices in a map
-  TopTools_MapOfShape vMap;
-  if ( nbCorners == 3 )
-    vMap.Add( triaVertex );
-  multimap<double, TopoDS_Vertex>::reverse_iterator a2v = vertexByAngle.rbegin();
-  for ( int iC = 0; a2v != vertexByAngle.rend() && iC < nbCorners; ++a2v, ++iC )
-    vMap.Add( (*a2v).second );
-
-  // check if there are possible variations in choosing corners
-  bool haveVariants = false;
-  if ((int) vertexByAngle.size() > nbCorners )
-  {
-    double lostAngle = a2v->first;
-    double lastAngle = ( --a2v, a2v->first );
-    haveVariants  = ( lostAngle * 1.1 >= lastAngle );
-  }
-
-  const double angleTol = 5.* M_PI/180;
-  myCheckOri = ( (int)vertexByAngle.size() > nbCorners ||
-                 vertexByAngle.begin()->first < angleTol );
-
-  // make theWire begin from a corner vertex or triaVertex
-  if ( nbCorners == 3 )
-    while ( !triaVertex.IsSame( ( helper.IthVertex( 0, theWire.front() ))) ||
-            SMESH_Algo::isDegenerated( theWire.front() ))
-      theWire.splice( theWire.end(), theWire, theWire.begin() );
-  else
-    while ( !vMap.Contains( helper.IthVertex( 0, theWire.front() )) ||
-            SMESH_Algo::isDegenerated( theWire.front() ))
-      theWire.splice( theWire.end(), theWire, theWire.begin() );
-
-  // fill the result vector and prepare for its refinement
-  theVertices.clear();
-  vector< double >      angles;
-  vector< TopoDS_Edge > edgeVec;
-  vector< int >         cornerInd, nbSeg;
-  int nbSegTot = 0;
-  angles .reserve( vertexByAngle.size() );
-  edgeVec.reserve( vertexByAngle.size() );
-  nbSeg  .reserve( vertexByAngle.size() );
-  cornerInd.reserve( nbCorners );
-  for ( edge = theWire.begin(); edge != theWire.end(); ++edge )
-  {
-    if ( SMESH_Algo::isDegenerated( *edge ))
-      continue;
-    TopoDS_Vertex v = helper.IthVertex( 0, *edge );
-    bool   isCorner = vMap.Contains( v );
-    if ( isCorner )
-    {
-      theVertices.push_back( v );
-      cornerInd.push_back( angles.size() );
-    }
-    angles .push_back( angleByVertex.IsBound( v ) ? angleByVertex( v ) : -M_PI );
-    edgeVec.push_back( *edge );
-    if ( theConsiderMesh && haveVariants )
-    {
-      if ( SMESHDS_SubMesh* sm = helper.GetMeshDS()->MeshElements( *edge ))
-        nbSeg.push_back( sm->NbNodes() + 1 );
-      else
-        nbSeg.push_back( 0 );
-      nbSegTot += nbSeg.back();
-    }
-  }
-
-  // refine the result vector - make sides equal by length if
-  // there are several equal angles
-  if ( haveVariants )
-  {
-    if ( nbCorners == 3 )
-      angles[0] = 2 * M_PI; // not to move the base triangle VERTEX
-
-    // here we refer to VERTEX'es and EDGEs by indices in angles and edgeVec vectors
-    typedef int TGeoIndex;
-
-    // for each vertex find a vertex till which there are nbSegHalf segments
-    const int nbSegHalf = ( nbSegTot % 2 || nbCorners == 3 ) ? 0 : nbSegTot / 2;
-    vector< TGeoIndex > halfDivider( angles.size(), -1 );
-    int nbHalfDividers = 0;
-    if ( nbSegHalf )
-    {
-      // get min angle of corners
-      double minAngle = 10.;
-      for ( size_t iC = 0; iC < cornerInd.size(); ++iC )
-        minAngle = Min( minAngle, angles[ cornerInd[ iC ]]);
-
-      // find halfDivider's
-      for ( TGeoIndex iV1 = 0; iV1 < TGeoIndex( angles.size() ); ++iV1 )
-      {
-        int nbSegs = 0;
-        TGeoIndex iV2 = iV1;
-        do {
-          nbSegs += nbSeg[ iV2 ];
-          iV2 = helper.WrapIndex( iV2 + 1, nbSeg.size() );
-        } while ( nbSegs < nbSegHalf );
-
-        if ( nbSegs == nbSegHalf &&
-             angles[ iV1 ] + angleTol >= minAngle &&
-             angles[ iV2 ] + angleTol >= minAngle )
-        {
-          halfDivider[ iV1 ] = iV2;
-          ++nbHalfDividers;
-        }
-      }
-    }
-
-    set< TGeoIndex > refinedCorners, treatedCorners;
-    for ( size_t iC = 0; iC < cornerInd.size(); ++iC )
-    {
-      TGeoIndex iV = cornerInd[iC];
-      if ( !treatedCorners.insert( iV ).second )
-        continue;
-      list< TGeoIndex > equVerts; // inds of vertices that can become corners
-      equVerts.push_back( iV );
-      int nbC[2] = { 0, 0 };
-      // find equal angles backward and forward from the iV-th corner vertex
-      for ( int isFwd = 0; isFwd < 2; ++isFwd )
-      {
-        int           dV = isFwd ? +1 : -1;
-        int       iCNext = helper.WrapIndex( iC + dV, cornerInd.size() );
-        TGeoIndex iVNext = helper.WrapIndex( iV + dV, angles.size() );
-        while ( iVNext != iV )
-        {
-          bool equal = Abs( angles[iV] - angles[iVNext] ) < angleTol;
-          if ( equal )
-            equVerts.insert( isFwd ? equVerts.end() : equVerts.begin(), iVNext );
-          if ( iVNext == cornerInd[ iCNext ])
-          {
-            if ( !equal )
-            {
-              if ( angles[iV] < angles[iVNext] )
-                refinedCorners.insert( iVNext );
-              break;
-            }
-            nbC[ isFwd ]++;
-            treatedCorners.insert( cornerInd[ iCNext ] );
-            iCNext = helper.WrapIndex( iCNext + dV, cornerInd.size() );
-          }
-          iVNext = helper.WrapIndex( iVNext + dV, angles.size() );
-        }
-        if ( iVNext == iV )
-          break; // all angles equal
-      }
-
-      const bool allCornersSame = ( nbC[0] == 3 );
-      if ( allCornersSame && nbHalfDividers > 0 )
-      {
-        // select two halfDivider's as corners
-        TGeoIndex hd1, hd2 = -1;
-        size_t iC2;
-        for ( iC2 = 0; iC2 < cornerInd.size() && hd2 < 0; ++iC2 )
-        {
-          hd1 = cornerInd[ iC2 ];
-          hd2 = halfDivider[ hd1 ];
-          if ( std::find( equVerts.begin(), equVerts.end(), hd2 ) == equVerts.end() )
-            hd2 = -1; // hd2-th vertex can't become a corner
-          else
-            break;
-        }
-        if ( hd2 >= 0 )
-        {
-          angles[ hd1 ] = 2 * M_PI; // make hd1-th vertex no more "equal"
-          angles[ hd2 ] = 2 * M_PI;
-          refinedCorners.insert( hd1 );
-          refinedCorners.insert( hd2 );
-          treatedCorners = refinedCorners;
-          // update cornerInd
-          equVerts.push_front( equVerts.back() );
-          equVerts.push_back( equVerts.front() );
-          list< TGeoIndex >::iterator hdPos =
-            std::find( equVerts.begin(), equVerts.end(), hd2 );
-          if ( hdPos == equVerts.end() ) break;
-          cornerInd[ helper.WrapIndex( iC2 + 0, cornerInd.size()) ] = hd1;
-          cornerInd[ helper.WrapIndex( iC2 + 1, cornerInd.size()) ] = *( --hdPos );
-          cornerInd[ helper.WrapIndex( iC2 + 2, cornerInd.size()) ] = hd2;
-          cornerInd[ helper.WrapIndex( iC2 + 3, cornerInd.size()) ] = *( ++hdPos, ++hdPos );
-
-          theVertices[ 0 ] = helper.IthVertex( 0, edgeVec[ cornerInd[0] ]);
-          theVertices[ 1 ] = helper.IthVertex( 0, edgeVec[ cornerInd[1] ]);
-          theVertices[ 2 ] = helper.IthVertex( 0, edgeVec[ cornerInd[2] ]);
-          theVertices[ 3 ] = helper.IthVertex( 0, edgeVec[ cornerInd[3] ]);
-          iC = -1;
-          continue;
-        }
-      }
-
-      // move corners to make sides equal by length
-      int nbEqualV  = equVerts.size();
-      int nbExcessV = nbEqualV - ( 1 + nbC[0] + nbC[1] );
-      if ( nbExcessV > 0 ) // there are nbExcessV vertices that can become corners
-      {
-        // calculate normalized length of each "side" enclosed between neighbor equVerts
-        vector< double > accuLength;
-        double totalLen = 0;
-        vector< TGeoIndex > evVec( equVerts.begin(), equVerts.end() );
-        size_t      iEV = 0;
-        TGeoIndex    iE = cornerInd[ helper.WrapIndex( iC - nbC[0] - 1, cornerInd.size() )];
-        TGeoIndex iEEnd = cornerInd[ helper.WrapIndex( iC + nbC[1] + 1, cornerInd.size() )];
-        while ((int) accuLength.size() < nbEqualV + int( !allCornersSame ) )
-        {
-          // accumulate length of edges before iEV-th equal vertex
-          accuLength.push_back( totalLen );
-          do {
-            accuLength.back() += SMESH_Algo::EdgeLength( edgeVec[ iE ]);
-            iE = helper.WrapIndex( iE + 1, edgeVec.size());
-            if ( iEV < evVec.size() && iE == evVec[ iEV ] ) {
-              iEV++;
-              break; // equal vertex reached
-            }
-          }
-          while( iE != iEEnd );
-          totalLen = accuLength.back();
-        }
-        accuLength.resize( equVerts.size() );
-        for ( size_t iS = 0; iS < accuLength.size(); ++iS )
-          accuLength[ iS ] /= totalLen;
-
-        // find equVerts most close to the ideal sub-division of all sides
-        int iBestEV = 0;
-        int iCorner = helper.WrapIndex( iC - nbC[0], cornerInd.size() );
-        int nbSides = Min( nbCorners, 2 + nbC[0] + nbC[1] );
-        for ( int iS = 1; iS < nbSides; ++iS, ++iBestEV )
-        {
-          double idealLen = iS / double( nbSides );
-          double d, bestDist = 2.;
-          for ( iEV = iBestEV; iEV < accuLength.size(); ++iEV )
-          {
-            d = Abs( idealLen - accuLength[ iEV ]);
-
-            // take into account presence of a corresponding halfDivider
-            const double cornerWgt = 0.5  / nbSides;
-            const double vertexWgt = 0.25 / nbSides;
-            TGeoIndex hd = halfDivider[ evVec[ iEV ]];
-            if ( hd < 0 )
-              d += vertexWgt;
-            else if( refinedCorners.count( hd ))
-              d -= cornerWgt;
-            else
-              d -= vertexWgt;
-
-            // choose vertex with the best d
-            if ( d < bestDist )
-            {
-              bestDist = d;
-              iBestEV  = iEV;
-            }
-          }
-          if ( iBestEV > iS-1 + nbExcessV )
-            iBestEV = iS-1 + nbExcessV;
-          theVertices[ iCorner ] = helper.IthVertex( 0, edgeVec[ evVec[ iBestEV ]]);
-          cornerInd  [ iCorner ] = evVec[ iBestEV ];
-          refinedCorners.insert( evVec[ iBestEV ]);
-          iCorner = helper.WrapIndex( iCorner + 1, cornerInd.size() );
-        }
-
-      } // if ( nbExcessV > 0 )
-      else
-      {
-        refinedCorners.insert( cornerInd[ iC ]);
-      }
-    } // loop on cornerInd
-
-    // make theWire begin from the cornerInd[0]-th EDGE
-    while ( !theWire.front().IsSame( edgeVec[ cornerInd[0] ]))
-      theWire.splice( theWire.begin(), theWire, --theWire.end() );
-
-  } // if ( haveVariants )
-
-  return nbCorners;
 }
 
 //================================================================================

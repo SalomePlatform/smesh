@@ -439,7 +439,7 @@ void SMESHGUI_SingleEditDlg::onSelectionDone()
 
 //=======================================================================
 // name    : onDeactivate()
-// Purpose : SLOT called when dialog must be deativated
+// Purpose : SLOT called when dialog must be deactivated
 //=======================================================================
 void SMESHGUI_SingleEditDlg::onDeactivate()
 {

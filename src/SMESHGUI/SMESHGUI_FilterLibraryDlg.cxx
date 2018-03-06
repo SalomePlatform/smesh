@@ -517,7 +517,7 @@ void SMESHGUI_FilterLibraryDlg::onHelp()
 
 //=======================================================================
 // name    : SMESHGUI_FilterLibraryDlg::onDeactivate
-// Purpose : SLOT called when dialog must be deativated
+// Purpose : SLOT called when dialog must be deactivated
 //=======================================================================
 void SMESHGUI_FilterLibraryDlg::onDeactivate()
 {
@@ -602,7 +602,7 @@ QStringList SMESHGUI_FilterLibraryDlg::prepareFilters() const
 
 //================================================================
 // Function : onBrowse
-// Purpose  : SLOT. Display "Open file" dialog for chosing library name
+// Purpose  : SLOT. Display "Open file" dialog for choosing library name
 //================================================================
 void SMESHGUI_FilterLibraryDlg::onBrowse()
 {

@@ -1994,7 +1994,7 @@ void SMESHGUI_PrecomputeOp::onPreview()
     {
       computeFailed = false;
       myPreviewDisplayer->SetData( previewRes );
-      // append shape indeces with computed mesh entities
+      // append shape indices with computed mesh entities
       for ( int i = 0, n = aShapesId->length(); i < n; i++ )
         myMapShapeId[ aShapesId[ i ] ] = 0;
     }

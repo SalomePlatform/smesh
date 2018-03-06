@@ -51,7 +51,7 @@ public:
   {
     HYP_OK = 0,
     HYP_MISSING,      // algo misses a hypothesis
-    HYP_CONCURENT,    // several applicable hypotheses assigned to father shapes
+    HYP_CONCURRENT,   // several applicable hypotheses assigned to father shapes
     HYP_BAD_PARAMETER,// hypothesis has a bad parameter value
     HYP_HIDDEN_ALGO,  // an algo is hidden by an upper dim algo generating all-dim elements
     HYP_HIDING_ALGO,  // an algo hides lower dim algos by generating all-dim elements

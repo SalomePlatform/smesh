@@ -723,7 +723,7 @@ void SMESHGUI_MeshPatternDlg::resetSelInput()
 
 //=======================================================================
 // name    : SMESHGUI_MeshPatternDlg::onDeactivate
-// Purpose : SLOT called when dialog must be deativated
+// Purpose : SLOT called when dialog must be deactivated
 //=======================================================================
 void SMESHGUI_MeshPatternDlg::onDeactivate()
 {

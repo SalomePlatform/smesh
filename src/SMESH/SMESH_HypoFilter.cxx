@@ -77,7 +77,7 @@ int SMESH_HypoFilter::DimPredicate::Value( const SMESH_Hypothesis* aHyp ) const
 bool SMESH_HypoFilter::ApplicablePredicate::IsOk(const SMESH_Hypothesis* aHyp,
                                                  const TopoDS_Shape&     /*aShape*/) const
 {
-  return SMESH_subMesh::IsApplicableHypotesis( aHyp, (TopAbs_ShapeEnum)_shapeType );
+  return SMESH_subMesh::IsApplicableHypothesis( aHyp, (TopAbs_ShapeEnum)_shapeType );
 };
 
 //=======================================================================

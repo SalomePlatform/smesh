@@ -231,7 +231,7 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo, mesh):
         reason = hypType + " of the same dimension is already assigned to this shape"
     elif status == HYP_BAD_DIM :
         reason = hypType + " mismatches the shape"
-    elif status == HYP_CONCURENT :
+    elif status == HYP_CONCURRENT :
         reason = "there are concurrent hypotheses on sub-shapes"
     elif status == HYP_BAD_SUBSHAPE :
         reason = "the shape is neither the main one, nor its sub-shape, nor a valid group"

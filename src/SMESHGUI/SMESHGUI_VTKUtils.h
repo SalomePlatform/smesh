@@ -120,7 +120,7 @@ SMESHGUI_EXPORT
   bool UpdateView( EDisplaing, const char* = "" );
 
 SMESHGUI_EXPORT
-  void UpdateView();
+  void UpdateView( bool withChildrenOfSelected = false );
 
 SMESHGUI_EXPORT
   bool UpdateNulData( const Handle(SALOME_InteractiveObject)& theIO, bool theDisplay);

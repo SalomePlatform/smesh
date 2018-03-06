@@ -622,7 +622,7 @@ void SMESHGUI_CreatePatternDlg::onSelectionDone()
 
 //=======================================================================
 // function : onDeactivate()
-// purpose  : SLOT called when dialog must be deativated
+// purpose  : SLOT called when dialog must be deactivated
 //=======================================================================
 void SMESHGUI_CreatePatternDlg::onDeactivate()
 {

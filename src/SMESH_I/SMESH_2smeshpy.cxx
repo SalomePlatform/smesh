@@ -5056,7 +5056,7 @@ bool _pyStringFamily::Add( const char* str )
 
     _strings.erase( itLess, ++itMore );
   }
-  else // to few string to make a family fot them
+  else // too few string to make a family for them
   {
     _strings.insert( itStr, str );
   }

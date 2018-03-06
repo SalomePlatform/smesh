@@ -669,7 +669,7 @@ public:
     return true;
   }
   // -----------------------------------------------------------------------------
-  //! Make mesh on an adge using assigned 1d hyp or default nb of segments
+  //! Make mesh on an edge using assigned 1d hyp or default nb of segments
   bool ComputeCircularEdge( SMESH_Mesh&                   aMesh,
                             const StdMeshers_FaceSidePtr& aSide )
   {
@@ -697,7 +697,7 @@ public:
     return ok;
   }
   // -----------------------------------------------------------------------------
-  //! Make mesh on an adge using assigned 1d hyp or default nb of segments
+  //! Make mesh on an edge using assigned 1d hyp or default nb of segments
   bool EvaluateCircularEdge(SMESH_Mesh&                  aMesh,
                             const StdMeshers_FaceSidePtr aSide,
                             MapShapeNbElems&             aResMap)

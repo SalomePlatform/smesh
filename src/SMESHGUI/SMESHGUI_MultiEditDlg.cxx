@@ -600,7 +600,7 @@ void SMESHGUI_MultiEditDlg::onSelectionDone()
 
 //=======================================================================
 // name    : SMESHGUI_MultiEditDlg::onDeactivate
-// Purpose : SLOT called when dialog must be deativated
+// Purpose : SLOT called when dialog must be deactivated
 //=======================================================================
 void SMESHGUI_MultiEditDlg::onDeactivate()
 {
@@ -1628,7 +1628,7 @@ SMESHGUI_SplitVolumesDlg::SMESHGUI_SplitVolumesDlg(SMESHGUI* theModule)
       gb->setTitle( tr("TARGET_ELEM_TYPE"));
   }
 
-  myToAllChk->setChecked( true ); //aplly to the whole mesh by default
+  myToAllChk->setChecked( true ); //apply to the whole mesh by default
 
   bool hasHexa = true;//myMesh->_is_nil() ? false : myMesh->NbHexas();
   if ( hasHexa )

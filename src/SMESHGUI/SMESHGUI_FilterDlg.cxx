@@ -3073,7 +3073,7 @@ void SMESHGUI_FilterDlg::onHelp()
 
 //=======================================================================
 // name    : SMESHGUI_FilterDlg::onDeactivate
-// Purpose : SLOT called when dialog must be deativated
+// Purpose : SLOT called when dialog must be deactivated
 //=======================================================================
 void SMESHGUI_FilterDlg::onDeactivate()
 {

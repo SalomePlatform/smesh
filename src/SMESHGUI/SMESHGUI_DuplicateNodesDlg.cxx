@@ -688,7 +688,7 @@ bool SMESHGUI_DuplicateNodesDlg::isValid()
 }
 
 /*!
-  \brief SLOT called when dialog shoud be deativated.
+  \brief SLOT called when dialog should be deactivated.
 */
 void SMESHGUI_DuplicateNodesDlg::onDeactivate()
 {

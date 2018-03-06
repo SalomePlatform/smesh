@@ -120,7 +120,7 @@ void SMESHGUI_MeshOrderOp::initDialog()
   if ( !myMgr->GetMeshOrder() ) {
     SUIT_MessageBox::information(desktop(),
                              tr("SMESH_INFORMATION"),
-                             tr("SMESH_NO_CONCURENT_MESH"));
+                             tr("SMESH_NO_CONCURRENT_MESH"));
     
     onCancel();
     return;
@@ -199,7 +199,7 @@ void SMESHGUI_MeshOrderMgr::SetMesh(SMESH::SMESH_Mesh_var& theMesh)
 
 //================================================================================
 /*!
- * \brief Check for concurents between submesh objects
+ * \brief Check for concurrents between submesh objects
  */
 //================================================================================
 
@@ -211,7 +211,7 @@ bool SMESHGUI_MeshOrderMgr::GetMeshOrder()
 
 //================================================================================
 /*!
- * \brief Check for concurents between submesh objects
+ * \brief Check for concurrents between submesh objects
  */
 //================================================================================
 
@@ -300,8 +300,8 @@ bool SMESHGUI_MeshOrderMgr::SetMeshOrder( const  ListListId& theListListIds )
     }
   }
 
-  // is it enought to set modifid attribute on root mesh objects only?
-  //  it is seems that modifaction flag will be set on child submeshes 
+  // is it enough to set modified attribute on root mesh objects only?
+  //  it is seems that modifcation flag will be set on child submeshes 
   //  automatically  (see SMESH::ModifiedMesh for details)
   SMESH::ModifiedMesh( aMeshSObj, false, false );
 

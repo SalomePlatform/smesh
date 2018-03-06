@@ -247,15 +247,13 @@ void SMESHGUI_RemoveElementsDlg::ClickOnApply()
 
     } catch (const SALOME::SALOME_Exception& S_ex) {
       SalomeApp_Tools::QtCatchCorbaException(S_ex);
-      myEditCurrentArgument->clear();
-    } catch (...){
-      myEditCurrentArgument->clear();
+    } catch (...) {
     }
 
+    myEditCurrentArgument->clear();
     if (aResult) {
-      myEditCurrentArgument->clear();
       mySelector->ClearIndex();
-      SMESH::UpdateView();
+      SMESH::UpdateView( /*withChildrenOfSelected=*/true );
       SMESHGUI::Modified();
     }
   }

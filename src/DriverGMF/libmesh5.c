@@ -1029,7 +1029,7 @@ static int ScaKwdTab(GmfMshSct *msh)
                         if(isalpha(str[0]))
                         {
                                 /* Search which kwd code this string is associated with, 
-                                        then get its header and save the curent position in file (just before the data) */
+                                        then get its header and save the current position in file (just before the data) */
 
                                 for(KwdCod=1; KwdCod<= GmfMaxKwd; KwdCod++)
                                         if(!strcmp(str, GmfKwdFmt[ KwdCod ][0]))
