@@ -1700,7 +1700,9 @@ namespace
     ActionControl.Bind( SMESHOp::OpOverConstrainedVolume, SMESH_Actor::eOverConstrainedVolume );
     ActionControl.Bind( SMESHOp::OpEqualVolume,           SMESH_Actor::eCoincidentElems3D );
 
-    return theReversed ? ActionControl.Find2( theID ) : ActionControl.Find1( theID );
+    if ( theReversed )
+      return ActionControl.IsBound2( theID ) ? ActionControl.Find2( theID ) : 0;
+    return   ActionControl.IsBound1( theID ) ? ActionControl.Find1( theID ) : 0;
   }
 
   void Control( int theCommandID )
