@@ -2485,10 +2485,13 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::ListOfIDSources& theMeshesArray,
 
     // assure that IDs increments by one during iteration
     ::SMESH_Mesh& initLocMesh = initImpl->GetImpl();
-    SMESHDS_Mesh* initMeshDS = initLocMesh.GetMeshDS();
-    if ( initMeshDS->MaxNodeID()    != initMeshDS->NbNodes() ||
-         initMeshDS->MaxElementID() != initMeshDS->NbElements() )
+    SMESHDS_Mesh*  initMeshDS = initLocMesh.GetMeshDS();
+    if ( initMeshDS->MaxNodeID()    > initMeshDS->NbNodes() ||
+         initMeshDS->MaxElementID() > initMeshDS->NbElements() )
+    {
+      initMeshDS->Modified();
       initMeshDS->CompactMesh();
+    }
 
     // remember nb of elements before filling in
     SMESH::long_array_var prevState =  newMesh->GetNbElementsByType();

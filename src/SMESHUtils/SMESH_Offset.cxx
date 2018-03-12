@@ -40,7 +40,7 @@
 
 namespace
 {
-  const size_t theMaxNbFaces = 256; // max number of faces sharing a node
+  const int theMaxNbFaces = 256; // max number of faces sharing a node
 
   typedef NCollection_DataMap< Standard_Address, const SMDS_MeshNode* > TNNMap;
   typedef NCollection_Map< SMESH_Link, SMESH_Link >                     TLinkMap;
@@ -575,7 +575,7 @@ namespace
     TIDSortedElemSet elemSet, avoidSet;
     int iFace = 0;
     const SMDS_MeshElement* f;
-    for ( ; faceIt->more(); faceIt->next() )
+    for ( ; faceIt->more() && iFace < theMaxNbFaces; faceIt->next() )
     {
       avoidSet.insert( faces[ iFace ].myFace );
       f = SMESH_MeshAlgos::FindFaceInSet( theNewNode, faces[ iFace ].myNode2.Node(),
@@ -597,7 +597,7 @@ namespace
       faces[ iFace ].SetNodes( i0, i1 );
       faces[ iFace ].SetNormal( theFaceNormals );
     }
-    int nbFaces = Min( iFace + 1, (int)theMaxNbFaces );
+    int nbFaces = iFace + 1;
 
     theNewPos.SetCoord( 0, 0, 0 );
     gp_XYZ oldXYZ = SMESH_NodeXYZ( theNewNode );
@@ -682,9 +682,10 @@ namespace
           dot *= -1;
         if ( dot * theSign < 0 )
         {
-          gp_XYZ p1 = oldXYZ + faces[ i ].Norm()     * theOffset;
-          gp_XYZ p2 = oldXYZ + faces[ iPrev ].Norm() * theOffset;
-          useOneNormal = ( p1 - p2 ).SquareModulus() > theTol * theTol;
+          useOneNormal = true;
+          // gp_XYZ p1 = oldXYZ + faces[ i ].Norm()     * theOffset;
+          // gp_XYZ p2 = oldXYZ + faces[ iPrev ].Norm() * theOffset;
+          // useOneNormal = ( p1 - p2 ).SquareModulus() > theTol * theTol;
         }
       }
       if ( useOneNormal && theNewNode->isMarked() )
@@ -1393,7 +1394,8 @@ namespace
     for ( int is2nd = 0; is2nd < 2; ++is2nd )
     {
       const SMDS_MeshElement* f = is2nd ? myFace1 : myFace2;
-      const CutFace&         cf = myCutFaces.Added( CutFace( is2nd ? myFace2 : myFace1 ));
+      if ( !f ) continue;
+      const CutFace& cf = myCutFaces.Added( CutFace( is2nd ? myFace2 : myFace1 ));
       for ( size_t i = 0; i < cf.myLinks.size(); ++i )
         if ( cf.myLinks[i].myFace == f &&
              //cf.myLinks[i].myIndex != EdgePart::_COPLANAR &&
