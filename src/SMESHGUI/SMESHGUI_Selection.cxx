@@ -389,6 +389,7 @@ QString SMESHGUI_Selection::controlMode( int ind ) const
     case SMESH_Actor::eCoincidentElems1D:     mode = "eCoincidentElems1D";     break;
     case SMESH_Actor::eCoincidentElems2D:     mode = "eCoincidentElems2D";     break;
     case SMESH_Actor::eCoincidentElems3D:     mode = "eCoincidentElems3D";     break;
+    case SMESH_Actor::eCustomControl:         mode = "eCustomControl";         break;
     default:break;
     }
   }
