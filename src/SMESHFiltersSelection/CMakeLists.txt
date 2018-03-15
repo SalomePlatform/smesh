@@ -20,7 +20,8 @@
 # --- options ---
 # additional include directories
 INCLUDE_DIRECTORIES(
-  ${CAS_INCLUDE_DIRS}
+  ${OpenCASCADE_INCLUDE_DIR}
+  ${QT_INCLUDES}
   ${PYTHON_INCLUDE_DIRS}
   ${VTK_INCLUDE_DIRS}
   ${KERNEL_INCLUDE_DIRS}
@@ -36,7 +37,7 @@ INCLUDE_DIRECTORIES(
 ADD_DEFINITIONS(
   ${OMNIORB_DEFINITIONS}
   ${PYTHON_DEFINITIONS}
-  ${CAS_DEFINITIONS}
+  ${OpenCASCADE_DEFINITIONS}
 )
 
 # libraries to link to
@@ -48,9 +49,8 @@ SET(_link_LIBRARIES
   ${GUI_LightApp}
   ${GEOM_GEOM}
   ${GEOM_GEOMClient}
-  ${CAS_TKernel}
-  ${CAS_TKMath}
-  ${CAS_TKBRep}
+  ${OpenCASCADE_FoundationClasses_LIBRARIES}
+  ${OpenCASCADE_ModelingData_LIBRARIES}
   SalomeIDLSMESH
 )
 

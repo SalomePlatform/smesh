@@ -24,7 +24,7 @@ INCLUDE(UseQtExt)
 INCLUDE_DIRECTORIES(
   ${QT_INCLUDES}
   ${VTK_INCLUDE_DIRS}
-  ${CAS_INCLUDE_DIRS}
+  ${OpenCASCADE_INCLUDE_DIR}
   ${PYTHON_INCLUDE_DIRS}
   ${KERNEL_INCLUDE_DIRS}
   ${GUI_INCLUDE_DIRS}
@@ -48,7 +48,7 @@ INCLUDE_DIRECTORIES(
 
 # additional preprocessor / compiler flags
 ADD_DEFINITIONS(
-  ${CAS_DEFINITIONS}
+  ${OpenCASCADE_DEFINITIONS}
   ${BOOST_DEFINITIONS}
   ${OMNIORB_DEFINITIONS}
   ${QWT_DEFINITIONS}
@@ -57,9 +57,8 @@ ADD_DEFINITIONS(
 # libraries to link to
 SET(_link_LIBRARIES
   ${GUI_SalomeApp}
-  ${CAS_TKernel}
-  ${CAS_TKBO}
-  ${CAS_TKAdvTools}
+  ${OpenCASCADE_FoundationClasses_LIBRARIES}
+  ${OpenCASCADE_ModelingAlgorithms_LIBRARIES}
   ${QWT_LIBRARY}
   SalomeIDLSMESH
   SMESHFiltersSelection

@@ -21,7 +21,7 @@
 # additional include directories
 INCLUDE_DIRECTORIES(
   ${KERNEL_INCLUDE_DIRS}
-  ${CAS_INCLUDE_DIRS}
+  ${OpenCASCADE_INCLUDE_DIR}
   ${CGNS_INCLUDE_DIRS}
   ${VTK_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
@@ -33,7 +33,7 @@ INCLUDE_DIRECTORIES(
 
 # additional preprocessor / compiler flags
 ADD_DEFINITIONS(
-  ${CAS_DEFINITIONS}
+  ${OpenCASCADE_DEFINITIONS}
   ${BOOST_DEFINITIONS}
 )
 

@@ -21,7 +21,7 @@
 # additional include directories
 INCLUDE_DIRECTORIES(
   ${KERNEL_INCLUDE_DIRS}
-  ${CAS_INCLUDE_DIRS}
+  ${OpenCASCADE_INCLUDE_DIR}
   ${VTK_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
   ${PROJECT_SOURCE_DIR}/src/SMDS
@@ -29,25 +29,18 @@ INCLUDE_DIRECTORIES(
 
 # additional preprocessor / compiler flags
 ADD_DEFINITIONS(
-  ${CAS_DEFINITIONS}
+  ${OpenCASCADE_DEFINITIONS}
   ${BOOST_DEFINITIONS}
 )
 
 # libraries to link to
 SET(_link_LIBRARIES
-  ${CAS_TKShHealing}
-  ${CAS_TKPrim}
-  ${CAS_TKernel}
-  ${CAS_TKBRep}
-  ${CAS_TKG2d}
-  ${CAS_TKG3d}
-  ${CAS_TKGeomBase}
-  ${CAS_TKGeomAlgo}
-  ${CAS_TKTopAlgo}
-  ${CAS_TKMesh}
-  ${Boost_LIBRARIES}
-  SMDS
-  )
+   ${OpenCASCADE_ModelingAlgorithms_LIBRARIES}
+   ${OpenCASCADE_FoundationClasses_LIBRARIES}
+   ${OpenCASCADE_ModelingData_LIBRARIES}
+   ${Boost_LIBRARIES}
+   SMDS
+)
 
 # --- headers ---
 

@@ -20,7 +20,7 @@
 # --- options ---
 # additional include directories
 INCLUDE_DIRECTORIES(
-  ${CAS_INCLUDE_DIRS}
+  ${OpenCASCADE_INCLUDE_DIR}
   ${HDF5_INCLUDE_DIRS}
   ${KERNEL_INCLUDE_DIRS}
   ${GEOM_INCLUDE_DIRS}
@@ -47,7 +47,7 @@ ENDIF(SALOME_SMESH_ENABLE_MEFISTO)
 
 # additional preprocessor / compiler flags
 ADD_DEFINITIONS(
-  ${CAS_DEFINITIONS}
+  ${OpenCASCADE_DEFINITIONS}
   ${BOOST_DEFINITIONS}
   ${OMNIORB_DEFINITIONS}
 )
@@ -61,8 +61,7 @@ ENDIF(WIN32)
 SET(_link_LIBRARIES
   ${KERNEL_SALOMELocalTrace}
   ${KERNEL_SalomeGenericObj}
-  ${CAS_TKBRep}
-  ${CAS_TKG3d}
+  ${OpenCASCADE_ModelingData_LIBRARIES}
   SalomeIDLSMESH
   StdMeshers
   SMESHEngine

@@ -21,7 +21,7 @@
 # additional include directories
 INCLUDE_DIRECTORIES(
   ${KERNEL_INCLUDE_DIRS}
-  ${CAS_INCLUDE_DIRS}
+  ${OpenCASCADE_INCLUDE_DIR}
   ${VTK_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
   ${PROJECT_SOURCE_DIR}/src/Driver
@@ -32,16 +32,15 @@ INCLUDE_DIRECTORIES(
 
 # additional preprocessor / compiler flags
 ADD_DEFINITIONS(
-  ${CAS_DEFINITIONS}
+  ${OpenCASCADE_DEFINITIONS}
   ${BOOST_DEFINITIONS}
 )
 
 # libraries to link to
 SET(_link_LIBRARIES
-  ${CAS_TKernel}
-  ${CAS_TKSTL}
-  ${CAS_TKTopAlgo}
-  ${CAS_TKMesh}
+  ${OpenCASCADE_FoundationClasses_LIBRARIES}
+  ${OpenCASCADE_DataExchange_LIBRARIES}
+  ${OpenCASCADE_ModelingAlgorithms_LIBRARIES}
   ${KERNEL_SALOMEBasics}
   MeshDriver
   SMDS
@@ -53,11 +52,9 @@ SET(_link_LIBRARIES_bin
   ${KERNEL_SALOMELocalTrace}
   ${KERNEL_SALOMEBasics}
   ${KERNEL_SalomeIDLKERNEL}
-  ${CAS_TKernel}
-  ${CAS_TKSTL}
-  ${CAS_TKTopAlgo}
-  ${CAS_TKMesh}
-  ${CAS_TKBO}
+  ${OpenCASCADE_FoundationClasses_LIBRARIES}
+  ${OpenCASCADE_DataExchange_LIBRARIES}
+  ${OpenCASCADE_ModelingAlgorithms_LIBRARIES}
   MeshDriver
   SMDS
 )

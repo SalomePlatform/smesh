@@ -21,7 +21,7 @@
 # additional include directories
 INCLUDE_DIRECTORIES(
   ${QT_INCLUDES}
-  ${CAS_INCLUDE_DIRS}
+  ${OpenCASCADE_INCLUDE_DIR}
   ${PYTHON_INCLUDE_DIRS}
   ${KERNEL_INCLUDE_DIRS}
   ${GUI_INCLUDE_DIRS}
@@ -36,7 +36,7 @@ INCLUDE_DIRECTORIES(
 # additional preprocessor / compiler flags
 ADD_DEFINITIONS(
   ${QT_DEFINITIONS}
-  ${CAS_DEFINITIONS}
+  ${OpenCASCADE_DEFINITIONS}
   ${BOOST_DEFINITIONS}
   ${OMNIORB_DEFINITIONS}
 )
@@ -46,8 +46,8 @@ SET(_link_LIBRARIES
   ${KERNEL_SalomeIDLKernel}
   ${KERNEL_SALOMELocalTrace}
   ${KERNEL_SalomeLifeCycleCORBA}
-  ${CAS_TKBRep}
-  ${CAS_TKV3d}
+  ${OpenCASCADE_ModelingData_LIBRARIES}
+  ${OpenCASCADE_Visualization_LIBRARIES}
   ${QT_LIBRARIES}
   ${QT_MT_LIBS}
   ${GUI_SalomeObject}
