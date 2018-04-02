@@ -1856,20 +1856,24 @@ void SMESHGUI::OnEditDelete()
   int objectCount = 0;
   QString aNameList;
   QString aParentComponent = QString::null;
-  Handle(SALOME_InteractiveObject) anIO;
+  
   for( SALOME_ListIteratorOfListIO anIt( selected ); anIt.More(); anIt.Next() )
   {
-    anIO = anIt.Value();
-    QString cur = anIO->getComponentDataType();
-    _PTR(SObject) aSO = aStudy->FindObjectID(anIO->getEntry());
+    Handle(SALOME_InteractiveObject) anIO = anIt.Value();
+    if ( anIO.IsNull() ) continue;
+    
+    QString father = "unknown";
+
+    _PTR(SObject) aSO = aStudy->FindObjectID( anIO->getEntry() );
     if (aSO) {
+      father = QString::fromStdString( aSO->GetFatherComponent()->ComponentDataType() );
       // check if object is reference
       _PTR(SObject) aRefSObj;
       aNameList.append("\n    - ");
       if ( aSO->ReferencedObject( aRefSObj ) ) {
         QString aRefName = QString::fromStdString ( aRefSObj->GetName() );
         aNameList.append( aRefName );
-        cur = QString::fromStdString ( aRefSObj->GetFatherComponent()->ComponentDataType() );
+        father = QString::fromStdString ( aRefSObj->GetFatherComponent()->ComponentDataType() );
       }
       else
         aNameList.append(anIO->getName());
@@ -1877,8 +1881,8 @@ void SMESHGUI::OnEditDelete()
     }
 
     if( aParentComponent.isNull() )
-      aParentComponent = cur;
-    else if( !aParentComponent.isEmpty() && aParentComponent!=cur )
+      aParentComponent = father;
+    else if( !aParentComponent.isEmpty() && aParentComponent!=father )
       aParentComponent = "";
   }
 
