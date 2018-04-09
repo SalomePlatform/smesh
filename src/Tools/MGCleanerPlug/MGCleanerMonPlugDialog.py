@@ -583,7 +583,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
       self.commande+=" --resolution_length " + self.SP_toStr(self.SP_ResolutionLength)
     self.commande+=" --folding_angle " + str(self.SP_FoldingAngle.value())
     if self.CB_RemeshPlanes.isChecked(): #no remesh default
-      self.commande+=" --remesh_planes"
+      self.commande+=" --remesh_planes yes"
     if not self.CB_ComputedOverlapDistance.isChecked(): #computed default
       self.commande+=" --overlap_distance " + self.SP_toStr(self.SP_OverlapDistance)
     self.commande+=" --overlap_angle " + str(self.SP_OverlapAngle.value())
