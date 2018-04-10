@@ -33,8 +33,6 @@
 #include "SMDS_Mesh.hxx"
 #include <set>
 
-#include <boost/container/flat_set.hpp>
-
 class SMDS_EXPORT SMDS_MeshGroup: public SMDS_MeshObject, SMDS_ElementHolder
 {
  public:
@@ -43,7 +41,7 @@ class SMDS_EXPORT SMDS_MeshGroup: public SMDS_MeshObject, SMDS_ElementHolder
 
   void SetType (const SMDSAbs_ElementType theType);
   void Clear();
-  void Reserve(size_t nbElems) { myElements.reserve( nbElems ); }
+  void Reserve(size_t nbElems) {}
   bool Add(const SMDS_MeshElement * theElem);
   bool Remove(const SMDS_MeshElement * theElem);
   bool IsEmpty() const { return myElements.empty(); }
@@ -62,12 +60,12 @@ class SMDS_EXPORT SMDS_MeshGroup: public SMDS_MeshObject, SMDS_ElementHolder
   virtual SMDS_ElemIteratorPtr getElements() { return GetElements(); }
   virtual void tmpClear();
   virtual void add( const SMDS_MeshElement* element ) { Add( element ); }
-  virtual void compact() { myElements.shrink_to_fit(); }
+  virtual void compact() {}
 
  private:
 
-  typedef boost::container::flat_set< const SMDS_MeshElement* > TElementSet;
-  typedef TElementSet::const_iterator                           TIterator;
+  typedef std::set< const SMDS_MeshElement* > TElementSet;
+  typedef TElementSet::const_iterator         TIterator;
 
   const SMDS_Mesh *   myMesh;
   SMDSAbs_ElementType myType;

@@ -41,6 +41,7 @@ namespace
     SMDSAbs_ElementType  myType;
     SMDSAbs_GeometryType myGeom;
     bool                 myIsPoly;
+    bool                 myIsQuadratic;
     int                  myNbCornerNodes;
     int                  myNbNodes;
     int                  myNbEdges;
@@ -65,12 +66,12 @@ namespace
       myType          = Type;
       myGeom          = Geom;
       myIsPoly        = IsPoly;
+      myIsQuadratic   = ( NbNodes > NbCornerNodes );
       myNbCornerNodes = NbCornerNodes;
       myNbNodes       = NbNodes;
       myNbEdges       = NbEdges;
       myNbFaces       = NbFaces;
     }
-    bool IsQuadratic() const { return myNbNodes > myNbCornerNodes; }
   };
 
   //! return vector a CellProps
@@ -259,7 +260,7 @@ bool SMDS_MeshCell::ChangeNodes(const SMDS_MeshNode* nodes[], const int theNbNod
 ///////////////////////////////////////////////////////////////////////////////
 int SMDS_MeshCell::NbNodes() const
 {
-  if ( GetEntityType() == SMDSEntity_Polyhedra )
+  if ( GetVtkType() == VTK_POLYHEDRON )
     return static_cast< const SMDS_MeshVolume* >( this )->SMDS_MeshVolume::NbNodes();
   vtkIdType *pts, npts;
   getGrid()->GetCellPoints( GetVtkID(), npts, pts );
@@ -268,7 +269,7 @@ int SMDS_MeshCell::NbNodes() const
 
 int SMDS_MeshCell::NbFaces() const
 {
-  if ( GetEntityType() == SMDSEntity_Polyhedra )
+  if ( GetVtkType() == VTK_POLYHEDRON )
     return static_cast< const SMDS_MeshVolume* >( this )->SMDS_MeshVolume::NbFaces();
   return getCellProps( GetVtkType() ).myNbFaces;
 }
@@ -290,13 +291,13 @@ int SMDS_MeshCell::NbEdges() const
 
 int SMDS_MeshCell::NbCornerNodes() const
 {
-  switch ( GetEntityType() )
+  switch ( GetVtkType() )
   {
-  case SMDSEntity_Polyhedra:
+  case VTK_POLYHEDRON:
     return static_cast< const SMDS_MeshVolume* >( this )->SMDS_MeshVolume::NbCornerNodes();
-  case SMDSEntity_Polygon:
+  case VTK_POLYGON:
     return NbNodes();
-  case SMDSEntity_Quad_Polygon:
+  case VTK_QUADRATIC_POLYGON:
     return NbNodes() / 2;
   default:;
   }
@@ -308,7 +309,7 @@ int SMDS_MeshCell::NbCornerNodes() const
 ///////////////////////////////////////////////////////////////////////////////
 SMDS_ElemIteratorPtr SMDS_MeshCell::nodesIterator() const
 {
-  if ( GetEntityType() == SMDSEntity_Polyhedra )
+  if ( GetVtkType() == VTK_POLYHEDRON )
     return static_cast< const SMDS_MeshVolume* >( this )->SMDS_MeshVolume::nodesIterator();
 
   return boost::make_shared< SMDS_VtkCellIterator<> >( GetMesh(), GetVtkID(), GetEntityType());
@@ -319,7 +320,7 @@ SMDS_ElemIteratorPtr SMDS_MeshCell::nodesIterator() const
 ///////////////////////////////////////////////////////////////////////////////
 SMDS_NodeIteratorPtr SMDS_MeshCell::nodeIterator() const
 {
-  if ( GetEntityType() == SMDSEntity_Polyhedra )
+  if ( GetVtkType() == VTK_POLYHEDRON )
     return static_cast< const SMDS_MeshVolume* >( this )->SMDS_MeshVolume::nodeIterator();
 
   return SMDS_NodeIteratorPtr
@@ -340,7 +341,7 @@ SMDS_NodeIteratorPtr SMDS_MeshCell::nodesIteratorToUNV() const
 
 SMDSAbs_ElementType SMDS_MeshCell::GetType() const
 {
-  return ElemType( GetEntityType() );
+  return getCellProps( GetVtkType() ).myType;
 }
 
 SMDSAbs_EntityType SMDS_MeshCell::GetEntityType() const
@@ -365,12 +366,12 @@ bool SMDS_MeshCell::IsPoly() const
 
 bool SMDS_MeshCell::IsQuadratic() const
 {
-  return getCellProps( GetVtkType() ).IsQuadratic();
+  return getCellProps( GetVtkType() ).myIsQuadratic;
 }
 
 const SMDS_MeshNode* SMDS_MeshCell::GetNode(const int ind) const
 {
-  if ( GetEntityType() == SMDSEntity_Polyhedra )
+  if ( GetVtkType() == VTK_POLYHEDRON )
     return static_cast< const SMDS_MeshVolume* >( this )->SMDS_MeshVolume::GetNode( ind );
 
   vtkIdType npts, *pts;
@@ -381,7 +382,7 @@ const SMDS_MeshNode* SMDS_MeshCell::GetNode(const int ind) const
 
 int SMDS_MeshCell::GetNodeIndex( const SMDS_MeshNode* node ) const
 {
-  if ( GetEntityType() == SMDSEntity_Polyhedra )
+  if ( GetVtkType() == VTK_POLYHEDRON )
     return static_cast< const SMDS_MeshVolume* >( this )->SMDS_MeshVolume::GetNodeIndex( node );
 
   vtkIdType npts, *pts;
@@ -767,7 +768,7 @@ bool SMDS_MeshCell::IsPoly( SMDSAbs_EntityType entityType )
 
 bool SMDS_MeshCell::IsQuadratic( SMDSAbs_EntityType entityType )
 {
-  return getCellProps( entityType ).IsQuadratic();
+  return getCellProps( entityType ).myIsQuadratic;
 }
 
 int SMDS_MeshCell::NbCornerNodes( SMDSAbs_EntityType entityType )

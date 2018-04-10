@@ -36,7 +36,7 @@ class SMDS_EXPORT SMDS_SpacePosition : public SMDS_Position
  public:
 
   virtual SMDS_TypeOfPosition GetTypeOfPosition() const { return SMDS_TOP_3DSPACE; }
-  static  SMDS_PositionPtr     originSpacePosition();
+  static  SMDS_PositionPtr    originSpacePosition();
   virtual const double* GetParameters() const { return 0; }
 
  private:

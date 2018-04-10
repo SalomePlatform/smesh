@@ -45,7 +45,7 @@
 
 SMDS_MeshGroup::SMDS_MeshGroup(const SMDS_Mesh *         theMesh,
                                const SMDSAbs_ElementType theType)
-  : SMDS_ElementHolder( theMesh ), myType(theType), myTic(0)
+  : SMDS_ElementHolder( theMesh ), myType( theType ), myTic( 0 )
 {
 }
 
@@ -69,15 +69,15 @@ void SMDS_MeshGroup::Clear()
 bool SMDS_MeshGroup::Add(const SMDS_MeshElement * theElem)
 {
   // the type of the group is determined by the first element added
-  if (myElements.empty()) {
+  if ( myElements.empty() ) {
     myType = theElem->GetType();
   }
-  else if (theElem->GetType() != myType) {
+  else if ( theElem->GetType() != myType ) {
     MESSAGE("SMDS_MeshGroup::Add : Type Mismatch "<<theElem->GetType()<<"!="<<myType);
     return false;
   }
 
-  myElements.insert(theElem);
+  myElements.insert( theElem );
   ++myTic;
 
   return true;
@@ -88,12 +88,12 @@ bool SMDS_MeshGroup::Add(const SMDS_MeshElement * theElem)
 //purpose  :
 //=======================================================================
 
-bool SMDS_MeshGroup::Remove(const SMDS_MeshElement * theElem)
+bool SMDS_MeshGroup::Remove( const SMDS_MeshElement * theElem )
 {
   TElementSet::iterator found = myElements.find(theElem);
   if ( found != myElements.end() ) {
-    myElements.erase(found);
-    if (myElements.empty()) myType = SMDSAbs_All;
+    myElements.erase( found );
+    if ( myElements.empty() ) myType = SMDSAbs_All;
     ++myTic;
     return true;
   }
@@ -102,12 +102,12 @@ bool SMDS_MeshGroup::Remove(const SMDS_MeshElement * theElem)
 
 //=======================================================================
 //function : Contains
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 bool SMDS_MeshGroup::Contains(const SMDS_MeshElement * theElem) const
 {
-  return myElements.find(theElem) != myElements.end();
+  return myElements.find( theElem ) != myElements.end();
 }
 
 //=======================================================================
@@ -152,6 +152,5 @@ void SMDS_MeshGroup::operator=( SMDS_MeshGroup && other )
 
 void SMDS_MeshGroup::tmpClear()
 {
-  compact();
   myElements.clear();
 }
