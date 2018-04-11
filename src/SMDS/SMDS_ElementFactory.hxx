@@ -266,8 +266,13 @@ struct _RangeSet
    */
   attr_t SetValue( int theIndex, attr_t theValue )
   {
-    set_iterator rNext = mySet.upper_bound( theIndex );
+    set_iterator rNext = mySet.end(); // case of adding elements
     set_iterator     r = rNext - 1;
+    if ( r->my1st > theIndex )
+    {
+      rNext = mySet.upper_bound( theIndex );
+      r     = rNext - 1;
+    }
     int          rSize = Size( r ); // range size
     attr_t      rValue = r->myValue;
     if ( rValue == theValue )
