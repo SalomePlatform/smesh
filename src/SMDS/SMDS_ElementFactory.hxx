@@ -352,7 +352,8 @@ typedef _Range< bool > _UsedRange;    // range of used elements
 typedef _RangeSet< _ShapeIDRange > TSubIDRangeSet;
 typedef _RangeSet< _UsedRange >    TUsedRangeSet;
 typedef boost::dynamic_bitset<>    TBitSet;
-typedef float                       TParam;
+//typedef float                       TParam;
+typedef double                     TParam;
 
 //------------------------------------------------------------------------------------
 /*!

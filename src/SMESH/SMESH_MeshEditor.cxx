@@ -7168,8 +7168,11 @@ void SMESH_MeshEditor::MergeNodes (TListOfListOfNodes & theGroupsOfNodes,
     const SMDS_MeshNode* nToKeep = nnIt->second;
     TNodeNodeMap::iterator nnIt_i = nodeNodeMap.find( nToKeep );
     while ( nnIt_i != nodeNodeMap.end() && nnIt_i->second != nnIt->second )
+    {
       nToKeep = nnIt_i->second;
-    nnIt->second = nToKeep;
+      nnIt->second = nToKeep;
+      nnIt_i = nodeNodeMap.find( nToKeep );
+    }
   }
 
   if ( theAvoidMakingHoles )
@@ -8526,6 +8529,7 @@ SMESH_MeshEditor::SewFreeBorder (const SMDS_MeshNode* theBordFirstNode,
   for ( ; groupIt != nodeGroupsToMerge.end(); groupIt++ )
   {
     const list<const SMDS_MeshNode*>& nodes = *groupIt;
+    if ( nodes.front()->IsNull() ) continue;
     SMDS_ElemIteratorPtr segIt = nodes.front()->GetInverseElementIterator( SMDSAbs_Edge );
     while ( segIt->more() )
       segments.insert( segIt->next() );

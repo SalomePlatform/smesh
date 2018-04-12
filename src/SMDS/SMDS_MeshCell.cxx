@@ -422,12 +422,15 @@ namespace
 
 void SMDS_MeshCell::InitStaticMembers()
 {
-  initCellProps();
-  initVtkTypes();
-  initToVtkInterlaces();
-  initReverseInterlaces();
-  initQuadInterlace();
-  initFromVtkInterlaces();
+  if ( theCellProps.empty() )
+  {
+    initCellProps();
+    initVtkTypes();
+    initToVtkInterlaces();
+    initReverseInterlaces();
+    initQuadInterlace();
+    initFromVtkInterlaces();
+  }
 }
 
 void SMDS_MeshCell::init( SMDSAbs_EntityType theEntity, int theNbNodes, ... )
