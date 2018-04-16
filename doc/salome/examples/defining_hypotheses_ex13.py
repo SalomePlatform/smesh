@@ -25,15 +25,18 @@ radial_Quad_algo = mesh.Quadrangle(algo=smeshBuilder.RADIAL_QUAD)
 
 # The Radial Quadrange algorithm can work without any hypothesis
 # In this case it uses "Default Nb of Segments" preferences parameter to discretize edges
+# So by default there will be 15 segments in both radial and circular directions
 mesh.Compute()
 
 # The Radial Quadrange uses global or local 1d hypotheses if it does
 # not have its own hypotheses.
 # Define global hypotheses to discretize radial edges and a local one for circular edge
+# So that there will be 5 radial layers and 10 circular segments
 global_Nb_Segments = mesh.Segment().NumberOfSegments(5)
 local_Nb_Segments  = mesh.Segment(circle).NumberOfSegments(10)
 mesh.Compute()
 
 # Define own parameters of Radial Quadrange algorithm
+# The number of radial layers will be 4
 radial_Quad_algo.NumberOfLayers( 4 )
 mesh.Compute()

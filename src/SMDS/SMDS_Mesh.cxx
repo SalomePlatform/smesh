@@ -2916,9 +2916,10 @@ void SMDS_Mesh::CompactMesh()
     for ( ; holder != myElemHolders.end(); ++holder )
       (*holder)->beforeCompacting();
   }
+  int oldCellSize = myCellFactory->GetMaxID();
 
   // remove "holes" in SMDS numeration
-  std::vector<int> idNodesOldToNew, idCellsNewToOld;
+  std::vector<int> idNodesOldToNew, idCellsNewToOld, idCellsOldToNew;
   myNodeFactory->Compact( idNodesOldToNew );
   myCellFactory->Compact( idCellsNewToOld );
 
@@ -2927,10 +2928,22 @@ void SMDS_Mesh::CompactMesh()
   int newCellSize = myCellFactory->NbUsedElements();
   myGrid->compactGrid( idNodesOldToNew, newNodeSize, idCellsNewToOld, newCellSize );
 
+  if ( idsChange && !myElemHolders.empty() )
+  {
+    // idCellsNewToOld -> idCellsOldToNew
+    idCellsOldToNew.resize( oldCellSize, oldCellSize );
+    for ( size_t iNew = 0; iNew < idCellsNewToOld.size(); ++iNew )
+    {
+      if ( idCellsNewToOld[ iNew ] >= (int) idCellsOldToNew.size() )
+        idCellsOldToNew.resize( ( 1 + idCellsNewToOld[ iNew ]) * 1.5, oldCellSize );
+      idCellsOldToNew[ idCellsNewToOld[ iNew ]] = iNew;
+    }
+  }
+
   std::set< SMDS_ElementHolder* >::iterator holder = myElemHolders.begin();
   for ( ; holder != myElemHolders.end(); ++holder )
     if ( idsChange )
-      (*holder)->restoreElements( idNodesOldToNew, idCellsNewToOld );
+      (*holder)->restoreElements( idNodesOldToNew, idCellsOldToNew );
     else
       (*holder)->compact();
 
