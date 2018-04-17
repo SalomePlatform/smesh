@@ -492,7 +492,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishInStudy(SALOMEDS::Study_ptr   theStudy
   // Publishing a hypothesis or algorithm
   SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( theIOR );
   if ( aSO->_is_nil() && !aHyp->_is_nil() )
-    aSO = PublishHypothesis( theStudy, aHyp );
+    aSO = PublishHypothesis( theStudy, aHyp, theName );
 
   // Publishing a group
   SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow(theIOR);

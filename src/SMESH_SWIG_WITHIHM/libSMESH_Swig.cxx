@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2016  CEA/DEN, EDF R&D, OPEN CASCADE
+// Copyright (C) 2007-2016  CEA/DEN, EDF R&D, OPEN CADE
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -17,11 +17,44 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-// SMESH SMESH : GUI for SMESH component
-// File   : libSMESH_Swig.cxx
-// Author : Nicolas REJNERI, Open CASCADE S.A.S.
-// SMESH includes
-//
+/////////////////////////////////////////////////////////////////
+/// \package libSMESH_Swig
+/// \brief Python API for %SMESH GUI.
+///
+/// See SMESH_Swig class for %SMESH GUI Python API.
+///
+/// \par Note about publishing of mesh objects in the study
+///
+/// Mesh objects are automatically published in the study. It is
+/// not needed to specify a target SALOMEDS object (SObject) or
+/// even name (%SMESH engine will will default name if it is not
+/// specified).
+/// So, normally functions of %SMESH GUI Python API like
+///   AddNewMesh
+///   AddNewHypothesis
+///   AddNewAlgorithms
+///   etc.
+/// may only be needed to be called in case if mesh objects are
+/// created when no active study is set to %SMESH component.
+/// In this case, mentioned functions can be used to forcibly
+/// publish existing objects in the currrently active study.
+///
+/// Note that if there are no open study, these methods will do
+/// nothing.
+///
+/// \par Note about selection
+///
+/// In SALOME, selection is automatically synchronlized between
+/// all GUI elements (like Object browser, view windows, etc).
+/// This means that any changes to selection applied with
+/// select() methods, will automatically apply to all view
+/// windows, taking into account selection modes switched in
+/// each particular view window (e.g. if you select edges, while
+/// in some view window Face selection mode is switched on,
+/// selection will not be immediately applied to this view
+/// window.
+/////////////////////////////////////////////////////////////////
+
 #include "libSMESH_Swig.h"
 
 #include <SVTK_Selector.h>
@@ -36,6 +69,7 @@
 #include <Utils_ORB_INIT.hxx>
 #include <Utils_SINGLETON.hxx>
 #include <SALOMEDSClient_ClientFactory.hxx>
+#include <SALOMEDS_Study.hxx>
 
 #include <utilities.h>
 
@@ -45,7 +79,7 @@
 #include <SALOME_Prs.h>
 #include <SUIT_ViewWindow.h>
 #include <SVTK_ViewWindow.h>
-#include <VTKViewer_ViewModel.h>
+#include <SVTK_ViewModel.h>
 #include <SALOME_Event.h>
 #include <SalomeApp_Application.h>
 #include <LightApp_SelectionMgr.h>
@@ -68,1139 +102,2000 @@
 #include <vtkActorCollection.h>
 #include <vtkRenderer.h>
 
-static CORBA::ORB_var anORB;
-
 namespace
 {
-  //---------------------------------------------------------------
-  inline
-  CORBA::Object_var
-  StringToObject(const std::string& theIOR)
+  ///////////////////////////////////////////////////////////////
+  /// \internal
+  /// \brief Print deprecation warning to termninal.
+  /// \param function Interface function's name.
+  /// \param replacement Replacement (new) function's name
+  ///        (if there's any).
+  ///////////////////////////////////////////////////////////////
+  void deprecated(const char* function, const char* replacement = 0)
   {
-    return anORB->string_to_object(theIOR.c_str());
+    if ( replacement )
+      printf("libSMESH_Swig: method '%s' is deprecated; use '%s' instead.\n", function, replacement);
+    else
+      printf("libSMESH_Swig: method '%s' is deprecated.\n", function);
   }
 
-
-  //---------------------------------------------------------------
-  inline
-  SALOMEDS::SObject_var
-  GetDomainRoot(const SALOMEDS::SComponent_var& theSComponentMesh,
-                const SALOMEDS::StudyBuilder_var& theStudyBuilder,
-                CORBA::Long theDomainRootTag,
-                const QString& theName,
-                const QString& thePixmap)
+  ///////////////////////////////////////////////////////////////
+  /// \internal
+  /// \brief Get CORBA object by its IOR.
+  /// \param ior Object's IOR.
+  /// \return CORBA object (nil object if it isn't found).
+  ///////////////////////////////////////////////////////////////
+  CORBA::Object_var string2object(const std::string& ior)
   {
-    SALOMEDS::SObject_var aDomainRoot;
-    if (!theSComponentMesh->FindSubObject(theDomainRootTag,aDomainRoot)) {
-      aDomainRoot = theStudyBuilder->NewObjectToTag(theSComponentMesh,theDomainRootTag);
-      SALOMEDS::GenericAttribute_var anAttr = theStudyBuilder->FindOrCreateAttribute(aDomainRoot,"AttributeName");
-      SALOMEDS::AttributeName_var aName = SALOMEDS::AttributeName::_narrow(anAttr);
-      aName->SetValue(theName.toLatin1().data());
-      aName->UnRegister();
-      anAttr = theStudyBuilder->FindOrCreateAttribute(aDomainRoot,"AttributePixMap");
-      SALOMEDS::AttributePixMap_var aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
-      aPixmap->SetPixMap(thePixmap.toLatin1().data());
-      aPixmap->UnRegister();
-      anAttr = theStudyBuilder->FindOrCreateAttribute(aDomainRoot,"AttributeSelectable");
-      SALOMEDS::AttributeSelectable_var aSelAttr = SALOMEDS::AttributeSelectable::_narrow(anAttr);
-      aSelAttr->SetSelectable(false);
-      aSelAttr->UnRegister();
-    }
-
-    return aDomainRoot;
+    return SalomeApp_Application::orb()->string_to_object(ior.c_str());
   }
 
-
-  //---------------------------------------------------------------
-  inline
-  SALOMEDS::SObject_var
-  GetHypothesisRoot(const SALOMEDS::SComponent_var& theSComponentMesh,
-                    const SALOMEDS::StudyBuilder_var& theStudyBuilder)
+  ///////////////////////////////////////////////////////////////
+  /// \internal
+  /// \brief Get study object by its study UID or IOR.
+  /// \param studyId Study UID.
+  /// \param uid Object's study UID or IOR.
+  /// \return Pointer to study object (null object if it isn't
+  ///         found).
+  ///////////////////////////////////////////////////////////////
+  _PTR(SObject) uid2object(int studyId, const std::string& uid)
   {
-    return GetDomainRoot(theSComponentMesh,
-                         theStudyBuilder,
-                         SMESH::Tag_HypothesisRoot,
-                         QObject::tr("SMESH_MEN_HYPOTHESIS"),
-                         "ICON_SMESH_TREE_HYPO");
-  }
-
-
-  //---------------------------------------------------------------
-  inline
-  SALOMEDS::SObject_var
-  GetAlgorithmsRoot(const SALOMEDS::SComponent_var& theSComponentMesh,
-                    const SALOMEDS::StudyBuilder_var& theStudyBuilder)
-  {
-    return GetDomainRoot(theSComponentMesh,
-                         theStudyBuilder,
-                         SMESH::Tag_AlgorithmsRoot,
-                         QObject::tr("SMESH_MEN_ALGORITHMS"),
-                         "ICON_SMESH_TREE_ALGO");
-  }
-
-
-  //---------------------------------------------------------------
-  inline
-  SALOMEDS::SObject_var
-  AddToDomain(const std::string&                theIOR,
-              const SALOMEDS::SComponent_var&   theSComponentMesh,
-              const SALOMEDS::StudyBuilder_var& theStudyBuilder,
-              CORBA::Long                       theDomainRootTag,
-              const QString&                    theDomainName,
-              const QString&                    theDomainPixmap)
-  {
-    SALOMEDS::SObject_var aDomain = GetDomainRoot(theSComponentMesh,
-                                                  theStudyBuilder,
-                                                  SMESH::Tag_AlgorithmsRoot,
-                                                  theDomainName,
-                                                  theDomainPixmap);
-    // Add New Hypothesis
-    SALOMEDS::SObject_var aSObject = theStudyBuilder->NewObject(aDomain);
-    aDomain->UnRegister();
-    SALOMEDS::GenericAttribute_var anAttr = theStudyBuilder->FindOrCreateAttribute(aSObject,"AttributePixMap");
-    SALOMEDS::AttributePixMap_var aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
-    CORBA::Object_var anObject = StringToObject(theIOR);
-    SMESH::SMESH_Hypothesis_var aDomainItem = SMESH::SMESH_Hypothesis::_narrow(anObject.in());
-    CORBA::String_var aType = aDomainItem->GetName();
-    QString aPixmapName = theDomainPixmap + "_" + aType.in();
-    aPixmap->SetPixMap(aPixmapName.toLatin1().data());
-    aPixmap->UnRegister();
-    anAttr = theStudyBuilder->FindOrCreateAttribute(aSObject,"AttributeIOR");
-    SALOMEDS::AttributeIOR_var anIOR = SALOMEDS::AttributeIOR::_narrow(anAttr);
-    anIOR->SetValue(theIOR.c_str());
-    anIOR->UnRegister();
-
-    return aSObject;
-  }
-
-
-  //---------------------------------------------------------------
-  SALOMEDS::SObject_var
-  AddHypothesis(const std::string& theIOR,
-                const SALOMEDS::SComponent_var& theSComponentMesh,
-                const SALOMEDS::StudyBuilder_var& theStudyBuilder)
-  {
-    return AddToDomain(theIOR,
-                       theSComponentMesh,
-                       theStudyBuilder,
-                       SMESH::Tag_HypothesisRoot,
-                       QObject::tr("SMESH_MEN_HYPOTHESIS"),
-                       "ICON_SMESH_TREE_HYPO");
-  }
-
-
-  //---------------------------------------------------------------
-  SALOMEDS::SObject_var
-  AddAlgorithms(const std::string& theIOR,
-                const SALOMEDS::SComponent_var& theSComponentMesh,
-                const SALOMEDS::StudyBuilder_var& theStudyBuilder)
-  {
-    return AddToDomain(theIOR,
-                       theSComponentMesh,
-                       theStudyBuilder,
-                       SMESH::Tag_AlgorithmsRoot,
-                       QObject::tr("SMESH_MEN_ALGORITHMS"),
-                       "ICON_SMESH_TREE_ALGO");
-  }
-
-
-  //---------------------------------------------------------------
-  void
-  SetDomain(const char*                       theMeshOrSubMeshEntry,
-            const char*                       theDomainEntry,
-            const SALOMEDS::Study_var&        theStudy,
-            const SALOMEDS::StudyBuilder_var& theStudyBuilder,
-            long                              theRefOnAppliedDomainTag,
-            const QString&                    theAppliedDomainMEN,
-            const QString&                    theAppliedDomainICON)
-  {
-    SALOMEDS::SObject_var aMeshOrSubMeshSO = theStudy->FindObjectID(theMeshOrSubMeshEntry);
-    SALOMEDS::SObject_var    aHypothesisSO = theStudy->FindObjectID(theDomainEntry);
-
-    if(!aMeshOrSubMeshSO->_is_nil() && !aHypothesisSO->_is_nil()){
-      //Find or Create Applied Hypothesis root
-      SALOMEDS::SObject_var anAppliedDomainSO;
-      if( !aMeshOrSubMeshSO->FindSubObject( theRefOnAppliedDomainTag, anAppliedDomainSO ))
+    _PTR(SObject) sobject;
+    if ( studyId > 0 )
+    {
+      _PTR(Study) study = SalomeApp_Application::studyMgr()->GetStudyByID( studyId );
+      if ( study )
       {
-        anAppliedDomainSO = theStudyBuilder->NewObjectToTag(aMeshOrSubMeshSO,theRefOnAppliedDomainTag);
-        SALOMEDS::GenericAttribute_var anAttr =
-          theStudyBuilder->FindOrCreateAttribute(anAppliedDomainSO,"AttributeName");
-        SALOMEDS::AttributeName_var aName = SALOMEDS::AttributeName::_narrow(anAttr);
-        aName->SetValue(theAppliedDomainMEN.toLatin1().data());
-        aName->UnRegister();
-        anAttr = theStudyBuilder->FindOrCreateAttribute(anAppliedDomainSO,"AttributeSelectable");
-        SALOMEDS::AttributeSelectable_var aSelAttr = SALOMEDS::AttributeSelectable::_narrow(anAttr);
-        aSelAttr->SetSelectable(false);
-        aSelAttr->UnRegister();
-        anAttr = theStudyBuilder->FindOrCreateAttribute(anAppliedDomainSO,"AttributePixMap");
-        SALOMEDS::AttributePixMap_var aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
-        aPixmap->SetPixMap(theAppliedDomainICON.toLatin1().data());
-        aPixmap->UnRegister();
+	sobject = study->FindObjectID( uid );
+	if ( !sobject )
+	  sobject = study->FindObjectIOR( uid );
       }
-      SALOMEDS::SObject_var aSObject = theStudyBuilder->NewObject(anAppliedDomainSO);
-      theStudyBuilder->Addreference(aSObject,aHypothesisSO);
-      aSObject->UnRegister();
-      anAppliedDomainSO->UnRegister();
     }
-    if ( !aMeshOrSubMeshSO->_is_nil() ) aMeshOrSubMeshSO->UnRegister();
-    if ( !aHypothesisSO->_is_nil())     aHypothesisSO->UnRegister();
+    return sobject;
   }
 
-
-  //---------------------------------------------------------------
-  void
-  SetHypothesis(const char*                       theMeshOrSubMeshEntry,
-                const char*                       theDomainEntry,
-                const SALOMEDS::Study_var&        theStudy,
-                const SALOMEDS::StudyBuilder_var& theStudyBuilder)
+  ///////////////////////////////////////////////////////////////
+  /// \internal
+  /// \brief Get view window by its identifier.
+  /// \param uid Window's identifier.
+  /// \return Pointer to the view window (0 if it isn't found).
+  ///////////////////////////////////////////////////////////////
+  SALOME_View* uid2wnd(int uid, bool create = false)
   {
-    SetDomain(theMeshOrSubMeshEntry,
-              theDomainEntry,
-              theStudy,
-              theStudyBuilder,
-              SMESH::Tag_RefOnAppliedHypothesis,
-              QObject::tr("SMESH_MEN_APPLIED_HYPOTHESIS"),
-              "ICON_SMESH_TREE_HYPO");
+    SALOME_View* window = 0;
+
+    SUIT_Session* session = SUIT_Session::session();
+    SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>( session->activeApplication() );
+    if ( app )
+    {
+      if ( uid )
+      {
+	ViewManagerList vms = app->viewManagers();
+	for ( int i = 0; i < vms.count() && !window; i++ )
+	{
+	  SUIT_ViewManager* vm = vms[i];
+	  QVector<SUIT_ViewWindow*> vws = vm->getViews();
+	  for ( int j = 0; j < vws.count() && !window; j++)
+	  {
+	    SUIT_ViewWindow* vw = vws[0];
+	    if ( uid == vw->getId() )
+	      window = dynamic_cast<SALOME_View*>( vm->getViewModel() );
+	  }
+	}
+      }
+      else
+      {
+	SUIT_ViewManager* vm = app->getViewManager( SVTK_Viewer::Type(), create );
+	if ( vm )
+	{ 
+	  window = dynamic_cast<SALOME_View*>( vm->getViewModel() );
+	}
+      }
+    }
+    return window;
   }
 
-
-  //---------------------------------------------------------------
-  void
-  SetAlgorithms(const char*                       theMeshOrSubMeshEntry,
-                const char*                       theDomainEntry,
-                const SALOMEDS::Study_var&        theStudy,
-                const SALOMEDS::StudyBuilder_var& theStudyBuilder)
+  ///////////////////////////////////////////////////////////////
+  /// \internal
+  /// \brief Get all view windows.
+  /// \return List of view windows.
+  ///////////////////////////////////////////////////////////////
+  QList<SALOME_View*> windows()
   {
-    SetDomain(theMeshOrSubMeshEntry,
-              theDomainEntry,
-              theStudy,
-              theStudyBuilder,
-              SMESH::Tag_RefOnAppliedAlgorithms,
-              QObject::tr("SMESH_MEN_APPLIED_ALGORIHTMS"),
-              "ICON_SMESH_TREE_ALGO");
+    QList<SALOME_View*> views;
+    SUIT_Session* session = SUIT_Session::session();
+    SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>( session->activeApplication() );
+    if ( app )
+    {
+      ViewManagerList vms = app->viewManagers();
+      foreach( SUIT_ViewManager* vm, vms )
+      {
+        if ( vm && vm->getType() == SVTK_Viewer::Type() )
+	{
+          SALOME_View* view = dynamic_cast<SALOME_View*>( vm->getViewModel() );
+          if ( view )
+	    views << view;
+	}
+      }
+    }
+    return views;
   }
-}
 
+  ///////////////////////////////////////////////////////////////
+  /// \internal
+  /// \brief Get mesh actor from view.
+  /// \param view Pointer to the view window.
+  /// \param uid Mesh object's study UID.
+  /// \return Mesh actor (0 if it isn't found).
+  ///////////////////////////////////////////////////////////////
+  SMESH_Actor* actorFromView(SALOME_View* view, const char* uid)
+  {
+    SMESH_Actor* actor = 0;
+    SVTK_Viewer* model = dynamic_cast<SVTK_Viewer*>( view );
+    if ( model )
+    {
+      SUIT_ViewWindow* vw = model->getViewManager()->getActiveView();
+      if ( vw )
+      {
+        actor = SMESH::FindActorByEntry( vw, uid );
+      }
+    }
+    return actor;
+  }
 
-//===============================================================
+  ///////////////////////////////////////////////////////////////
+  /// \internal
+  /// \brief Get mesh object's visual properties.
+  /// \param view Pointer to the view window.
+  /// \param uid Mesh object's study UID.
+  /// \return Properties data structure.
+  ///////////////////////////////////////////////////////////////
+  Properties properties(SALOME_View* view, const char* uid)
+  {
+    Properties props;
+    SMESH_Actor* actor = actorFromView( view, uid );
+    if ( actor )
+    {
+      actor->GetNodeColor( props.nodeColor.r,
+			   props.nodeColor.g,
+			   props.nodeColor.b );
+      props.markerType = actor->GetMarkerType();
+      props.markerScale = actor->GetMarkerScale();
+      
+      actor->GetEdgeColor( props.edgeColor.r,
+			   props.edgeColor.g,
+			   props.edgeColor.b );
+      props.edgeWidth = qMax( (int)actor->GetLineWidth(), 1 );
+      
+      actor->GetSufaceColor( props.surfaceColor.r,
+			     props.surfaceColor.g,
+			     props.surfaceColor.b,
+			     props.surfaceColor.delta );
+      
+      actor->GetVolumeColor( props.volumeColor.r,
+			     props.volumeColor.g,
+			     props.volumeColor.b,
+			     props.volumeColor.delta );
+      
+      actor->Get0DColor( props.elem0dColor.r,
+			 props.elem0dColor.g,
+			 props.elem0dColor.b );
+      props.elem0dSize = qMax( (int)actor->Get0DSize(), 1 );
+      
+      actor->GetBallColor( props.ballColor.r,
+			   props.ballColor.g,
+			   props.ballColor.b );
+      props.ballScale = qMax( actor->GetBallScale(), 1e-2 );
+      
+      actor->GetOutlineColor( props.outlineColor.r,
+			      props.outlineColor.g,
+			      props.outlineColor.b );
+      props.outlineWidth = qMax( (int)actor->GetOutlineWidth(), 1 );
+      
+      actor->GetFacesOrientationColor( props.orientationColor.r,
+				       props.orientationColor.g,
+				       props.orientationColor.b );
+      props.orientationScale = actor->GetFacesOrientationScale();
+      props.orientation3d = actor->GetFacesOrientation3DVectors();
+      
+      props.shrinkFactor = actor->GetShrinkFactor();
+      
+      props.opacity = actor->GetOpacity();
+    }
+    return props;
+  }
+
+  ///////////////////////////////////////////////////////////////
+  /// \internal
+  /// \brief Set mesh object's visual properties.
+  /// \param view Pointer to the view window.
+  /// \param uid Mesh object's study UID.
+  /// \param props Properties data structure.
+  ///////////////////////////////////////////////////////////////
+  void setProperties(SALOME_View* view, const char* uid, const Properties& props)
+  {
+    SMESH_Actor* actor = actorFromView( view, uid );
+    if ( actor )
+    {
+      actor->SetNodeColor( props.nodeColor.r,
+			   props.nodeColor.g,
+			   props.nodeColor.b );
+      if ( props.markerType != VTK::MT_USER )
+	actor->SetMarkerStd( props.markerType, props.markerScale );
+      
+      actor->SetEdgeColor( props.edgeColor.r,
+			   props.edgeColor.g,
+			   props.edgeColor.b );
+      actor->SetLineWidth( qMax( (double)props.edgeWidth, 1. ) );
+      
+      actor->SetSufaceColor( props.surfaceColor.r,
+			     props.surfaceColor.g,
+			     props.surfaceColor.b,
+			     props.surfaceColor.delta );
+      
+      actor->SetVolumeColor( props.volumeColor.r,
+			     props.volumeColor.g,
+			     props.volumeColor.b,
+			     props.volumeColor.delta );
+      
+      actor->Set0DColor( props.elem0dColor.r,
+			 props.elem0dColor.g,
+			 props.elem0dColor.b );
+      actor->Set0DSize( qMax( (double)props.elem0dSize, 1. ) );
+      
+      actor->SetBallColor( props.ballColor.r,
+			   props.ballColor.g,
+			   props.ballColor.b );
+      actor->SetBallScale( qMax( props.ballScale, 1e-2 ) );
+      
+      actor->SetOutlineColor( props.outlineColor.r,
+			      props.outlineColor.g,
+			      props.outlineColor.b );
+      actor->SetOutlineWidth( qMax( (double)props.outlineWidth, 1. ) );
+      
+      actor->SetFacesOrientationColor( props.orientationColor.r,
+				       props.orientationColor.g,
+				       props.orientationColor.b );
+      actor->SetFacesOrientationScale( props.orientationScale );
+      actor->SetFacesOrientation3DVectors( props.orientation3d );
+      
+      actor->SetShrinkFactor( props.shrinkFactor );
+      
+      actor->SetOpacity( props.opacity );
+      
+      view->Repaint();
+    }
+  }
+} // end of anonymous namespace
+
+/////////////////////////////////////////////////////////////////
+/// \enum EntityMode
+/// \brief Enumeration for mesh entities.
+/// \var EntityMode Entity0d
+/// \brief 0D elements.
+/// \var EntityMode EntityEdges
+/// \brief Edges.
+/// \var EntityMode EntityFaces
+/// \brief Faces.
+/// \var EntityMode EntityVolumes
+/// \brief Volumes.
+/// \var EntityMode EntityBalls
+/// \brief Ball elements.
+/// \var EntityMode EntityAll
+/// \brief All elements.
+/////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////
+/// \enum SelectionMode
+/// \brief Selection mode.
+/// \var SelectionMode Undefined
+/// \brief Undefined selection mode.
+/// \var SelectionMode Node
+/// \brief Selection of mesh nodes.
+/// \var SelectionMode Cell
+/// \brief Selection of any mesh cells.
+/// \var SelectionMode EdgeOfCell
+/// \brief Selection of pseudo-edges specified by couple of nodes.
+/// \var SelectionMode Edge
+/// \brief Selection of edges.
+/// \var SelectionMode Face
+/// \brief Selection of faces.
+/// \var SelectionMode Volume
+/// \brief Selection of volumes
+/// \var SelectionMode Actor
+/// \brief Selection of whole actors (meshes, sub-meshes, groups).
+/// \var SelectionMode Elem0D
+/// \brief Selection of 0D elements.
+/// \var SelectionMode Ball
+/// \brief Selection of ball ellements.
+/////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////
+/// \enum DisplayMode
+/// \brief Display mode.
+/// \var DisplayMode UndefinedMode
+/// \brief Undefined display mode.
+/// \var DisplayMode PointMode
+/// \brief Point representation.
+/// \var DisplayMode EdgeMode
+/// \brief Wireframe representation.
+/// \var DisplayMode SurfaceMode
+/// \brief Surface representation.
+/////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////
+/// \struct ColorData
+/// \brief Color data, in RGBf format.
+/// \var ColorData::r
+/// \brief Red color's component (0.0:1.0).
+/// \var ColorData::g
+/// \brief Green color's component (0.0:1.0).
+/// \var ColorData::b
+/// \brief Blue color's component (0.0:1.0).
+/////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////
+/// \brief Constructor.
+/////////////////////////////////////////////////////////////////
+ColorData::ColorData()
+  : r( 0 ), g( 0 ), b( 0 )
+{}
+
+/////////////////////////////////////////////////////////////////
+/// \struct BicolorData
+/// \brief Bi-color data, in RGBf format.
+/// \var BicolorData::r
+/// \brief Red color's component (0.0:1.0).
+/// \var BicolorData::g
+/// \brief Green color's component (0.0:1.0).
+/// \var BicolorData::b
+/// \brief Blue color's component (0.0:1.0).
+/// \var BicolorData::delta
+/// \brief Shift for backface color (-100:100).
+/////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////
+/// \brief Constructor.
+/////////////////////////////////////////////////////////////////
+BicolorData::BicolorData()
+  : r( 0 ), g( 0 ), b( 0 ), delta( 0 )
+{}
+
+/////////////////////////////////////////////////////////////////
+/// \struct Properties
+/// \brief Mesh object presentation's properties.
+/// \var Properties::nodeColor
+/// \brief Node color.
+/// \var Properties::markerType
+/// \brief Node standard marker type.
+/// \var Properties::markerScale
+/// \brief Node scale factor.
+/// \var Properties::edgeColor
+/// \brief Edges color.
+/// \var Properties::edgeWidth
+/// \brief Edges width.
+/// \var Properties::surfaceColor
+/// \brief Faces color.
+/// \var Properties::volumeColor
+/// \brief Volumes color.
+/// \var Properties::elem0dColor
+/// \brief 0D elements color.
+/// \var Properties::elem0dSize
+/// \brief 0D elements size.
+/// \var Properties::ballColor
+/// \brief Ball elements color.
+/// \var Properties::ballScale
+/// \brief Ball elements scale factor.
+/// \var Properties::outlineColor
+/// \brief Outlines color.
+/// \var Properties::outlineWidth
+/// \brief Outlines width.
+/// \var Properties::orientationColor
+/// \brief Face orientation vectors color.
+/// \var Properties::orientationScale
+/// \brief Face orientation vectors scale factor.
+/// \var Properties::orientation3d
+/// \brief Face orientation vectors 3d flag.
+/// \var Properties::shrinkFactor
+/// \brief Shrink coefficient.
+/// \var Properties::opacity
+/// \brief Opacity.
+/////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////
+/// \brief Constructor.
+/////////////////////////////////////////////////////////////////
+Properties::Properties()
+  : markerType( VTK::MT_NONE ), markerScale( VTK::MS_NONE ),
+    edgeWidth( 1 ), elem0dSize( 1 ), ballScale( 1 ), outlineWidth( 1 ),
+    orientationScale( 0 ), orientation3d( false ), shrinkFactor( 0 ),
+    opacity( 1 )
+{}
+
+/////////////////////////////////////////////////////////////////
+/// \typedef nodeColorStruct
+/// \deprecated Use ColorData instead.
+/// \typedef edgeColorStruct
+/// \deprecated Use ColorData instead.
+/// \typedef surfaceColorStruct
+/// \deprecated Use BicolorData instead.
+/// \typedef volumeColorStruct
+/// \deprecated Use BicolorData instead.
+/// \typedef actorAspect
+/// \deprecated Use Properties instead.
+/////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////
+/// \class SMESH_Swig
+/// \brief %SMESH GUI Python interface.
+/////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////
+/// \brief Constructor.
+/////////////////////////////////////////////////////////////////
 SMESH_Swig::SMESH_Swig()
+  : myCachedStudyId( 0 )
 {
-  class TEvent: public SALOME_Event
-  {
-    CORBA::ORB_var& myORB;
-  public:
-
-    TEvent(CORBA::ORB_var& theORB):
-      myORB(theORB)
-    {}
-
-    virtual
-    void
-    Execute()
-    {
-      try {
-        ORB_INIT &anORBInit = *SINGLETON_<ORB_INIT>::Instance();
-        ASSERT(SINGLETON_<ORB_INIT>::IsAlreadyExisting());
-        myORB = anORBInit( 0, 0 );
-      } catch (...) {
-        INFOS("internal error : orb not found");
-      }
-    }
-  };
-
-  //MESSAGE("Constructeur");
-
-  if(CORBA::is_nil(anORB))
-    ProcessVoidEvent(new TEvent(anORB));
-
-  ASSERT(!CORBA::is_nil(anORB));
+  init();
 }
 
-
-//===============================================================
-void
-SMESH_Swig::Init(int theStudyID)
-{
-  class TEvent: public SALOME_Event
-  {
-    int                         myStudyID;
-    SALOMEDS::Study_var&        myStudy;
-    SALOMEDS::StudyBuilder_var& myStudyBuilder;
-    SALOMEDS::SComponent_var&   mySComponentMesh;
-  public:
-    TEvent(int                         theStudyID,
-           SALOMEDS::Study_var&        theStudy,
-           SALOMEDS::StudyBuilder_var& theStudyBuilder,
-           SALOMEDS::SComponent_var&   theSComponentMesh):
-      myStudyID       (theStudyID),
-      myStudy         (theStudy),
-      myStudyBuilder  (theStudyBuilder),
-      mySComponentMesh(theSComponentMesh)
-    {}
-
-    ~TEvent()
-    {
-      if ( !mySComponentMesh->_is_nil() ) mySComponentMesh->UnRegister();
-    }
-
-    virtual
-    void
-    Execute()
-    {
-      SUIT_Session* aSession          = SUIT_Session::session();
-      SUIT_Application* anApplication = aSession->activeApplication();
-      SalomeApp_Application* anApp    = dynamic_cast<SalomeApp_Application*>(anApplication);
-
-      SALOME_NamingService* aNamingService = anApp->namingService();
-      CORBA::Object_var anObject           = aNamingService->Resolve("/myStudyManager");
-      SALOMEDS::StudyManager_var aStudyMgr = SALOMEDS::StudyManager::_narrow(anObject);
-      myStudy = aStudyMgr->GetStudyByID(myStudyID);
-
-      SMESH::SMESH_Gen_var aSMESHGen = SMESHGUI::GetSMESHGen();
-      aSMESHGen->SetCurrentStudy( myStudy.in() );
-
-      myStudyBuilder = myStudy->NewBuilder();
-
-      SALOMEDS::GenericAttribute_var anAttr;
-      SALOMEDS::AttributeName_var    aName;
-      SALOMEDS::AttributePixMap_var  aPixmap;
-
-      SALOMEDS::SComponent_var aSComponent = myStudy->FindComponent("SMESH");
-      if ( aSComponent->_is_nil() )
-      {
-        bool aLocked = myStudy->GetProperties()->IsLocked();
-        if (aLocked)
-          myStudy->GetProperties()->SetLocked(false);
-
-        SMESHGUI* aSMESHGUI = SMESHGUI::GetSMESHGUI();
-        //SRN: BugID IPAL9186, load a SMESH gui if it hasn't been loaded
-        if (!aSMESHGUI) {
-          CAM_Module* aModule = anApp->module("Mesh");
-          if(!aModule)
-            aModule = anApp->loadModule("Mesh");
-          aSMESHGUI = dynamic_cast<SMESHGUI*>(aModule);
-        } //SRN: BugID IPAL9186: end of a fix
-
-        aSComponent = myStudyBuilder->NewComponent("SMESH");
-
-        anAttr = myStudyBuilder->FindOrCreateAttribute(aSComponent,"AttributeName");
-        aName  = SALOMEDS::AttributeName::_narrow(anAttr);
-        aName->SetValue(aSMESHGUI->moduleName().toLatin1().data());
-        aName->UnRegister();
-
-        anAttr = myStudyBuilder->FindOrCreateAttribute(aSComponent,"AttributePixMap");
-        aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
-        aPixmap->SetPixMap( "ICON_OBJBROWSER_SMESH" );
-        aPixmap->UnRegister();
-
-        SALOMEDS::UseCaseBuilder_var useCaseBuilder = myStudy->GetUseCaseBuilder();
-        useCaseBuilder->SetRootCurrent();
-        useCaseBuilder->Append( aSComponent.in() );
-  
-        myStudyBuilder->DefineComponentInstance(aSComponent,aSMESHGen);
-        if (aLocked)
-          myStudy->GetProperties()->SetLocked(true);
-      }
-
-      mySComponentMesh = SALOMEDS::SComponent::_narrow(aSComponent);
-
-      qApp->processEvents(); // Workaround for bug 12662
-    }
-  };
-
-  //MESSAGE("Init");
-
-  ProcessVoidEvent(new TEvent(theStudyID,
-                              myStudy,
-                              myStudyBuilder,
-                              mySComponentMesh));
-}
-
-
-//===============================================================
+/////////////////////////////////////////////////////////////////
+/// \brief Destructor.
+/////////////////////////////////////////////////////////////////
 SMESH_Swig::~SMESH_Swig()
 {
-  //MESSAGE("Destructeur");
 }
 
-
-//===============================================================
-const char* SMESH_Swig::AddNewMesh(const char* theIOR)
+/////////////////////////////////////////////////////////////////
+/// \internal
+/// \brief Initialize interface.
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::init()
 {
-
-  // VSR: added temporarily - to be removed - objects are published automatically by engine
-  SALOMEDS::SObject_var aSObject = myStudy->FindObjectIOR(theIOR);
-  if (aSObject->_is_nil())
-  {
-    //Find or Create Hypothesis root
-    SALOMEDS::SObject_var hroot = GetHypothesisRoot(mySComponentMesh,myStudyBuilder);
-    SALOMEDS::SObject_var aroot = GetAlgorithmsRoot(mySComponentMesh,myStudyBuilder);
-    hroot->UnRegister();
-    aroot->UnRegister();
-
-    // Add New Mesh
-    aSObject = myStudyBuilder->NewObject(mySComponentMesh);
-    SALOMEDS::GenericAttribute_var anAttr = myStudyBuilder->FindOrCreateAttribute(aSObject,"AttributePixMap");
-    SALOMEDS::AttributePixMap_var aPixmap = SALOMEDS::AttributePixMap::_narrow(anAttr);
-    aPixmap->SetPixMap( "ICON_SMESH_TREE_MESH" );
-    aPixmap->UnRegister();
-
-    anAttr = myStudyBuilder->FindOrCreateAttribute(aSObject, "AttributeIOR");
-    SALOMEDS::AttributeIOR_var anIOR = SALOMEDS::AttributeIOR::_narrow(anAttr);
-    anIOR->SetValue(theIOR);
-    anIOR->UnRegister();
-  }
-
-  CORBA::String_var anEntry = aSObject->GetID();
-  aSObject->UnRegister();
-
-  return anEntry._retn();
-}
-
-
-//===============================================================
-const char* SMESH_Swig::AddNewHypothesis(const char* theIOR)
-{
-  SALOMEDS::SObject_var aSObject = ::AddHypothesis(theIOR,
-                                                   mySComponentMesh,
-                                                   myStudyBuilder);
-  CORBA::String_var anEntry = aSObject->GetID();
-  aSObject->UnRegister();
-
-  return anEntry._retn();
-}
-
-
-//===============================================================
-const char* SMESH_Swig::AddNewAlgorithms(const char* theIOR)
-{
-  SALOMEDS::SObject_var aSObject = ::AddAlgorithms(theIOR,
-                                                   mySComponentMesh,
-                                                   myStudyBuilder);
-  CORBA::String_var anEntry = aSObject->GetID();
-  aSObject->UnRegister();
-
-  return anEntry._retn();
-}
-
-
-//===============================================================
-void SMESH_Swig::SetShape(const char* theShapeEntry,
-                          const char* theMeshEntry)
-{
-  SALOMEDS::SObject_var aGeomShapeSO = myStudy->FindObjectID( theShapeEntry );
-  SALOMEDS::SObject_var      aMeshSO = myStudy->FindObjectID( theMeshEntry );
-
-  if(!aMeshSO->_is_nil() && !aGeomShapeSO->_is_nil()){
-    SALOMEDS::SObject_var aSObject = myStudyBuilder->NewObjectToTag(aMeshSO, SMESH::Tag_RefOnShape);
-    myStudyBuilder->Addreference(aSObject,aGeomShapeSO);
-    aSObject->UnRegister();
-  }
-  if ( !aMeshSO->_is_nil() )      aMeshSO->UnRegister();
-  if ( !aGeomShapeSO->_is_nil() ) aGeomShapeSO->UnRegister();
-}
-
-
-//===============================================================
-void SMESH_Swig::SetHypothesis(const char* theMeshOrSubMeshEntry,
-                               const char* theDomainEntry)
-{
-  ::SetHypothesis(theMeshOrSubMeshEntry,
-                  theDomainEntry,
-                  myStudy,
-                  myStudyBuilder);
-}
-
-
-//===============================================================
-void SMESH_Swig::SetAlgorithms(const char* theMeshOrSubMeshEntry,
-                               const char* theDomainEntry)
-{
-  ::SetAlgorithms(theMeshOrSubMeshEntry,
-                  theDomainEntry,
-                  myStudy,
-                  myStudyBuilder);
-}
-
-
-//===============================================================
-void
-SMESH_Swig::UnSetHypothesis(const char* theDomainEntry)
-{
-  SALOMEDS::SObject_var aDomainSO = myStudy->FindObjectID(theDomainEntry);
-  if(!aDomainSO->_is_nil())
-    myStudyBuilder->RemoveObject(aDomainSO);
-}
-
-const char* SMESH_Swig::AddSubMesh(const char* theMeshEntry,
-                                   const char* theSubMeshIOR,
-                                   int theShapeType)
-{
-  SALOMEDS::SObject_var aMeshSO = myStudy->FindObjectID(theMeshEntry);
-  if(!aMeshSO->_is_nil()) {
-    long aShapeTag;
-    QString aSubMeshName;
-    switch(theShapeType) {
-    case TopAbs_SOLID:
-      aShapeTag    = SMESH::Tag_SubMeshOnSolid;
-      aSubMeshName = QObject::tr("SMESH_MEN_SubMeshesOnSolid");
-      break;
-    case TopAbs_FACE:
-      aShapeTag    = SMESH::Tag_SubMeshOnFace;
-      aSubMeshName = QObject::tr("SMESH_MEN_SubMeshesOnFace");
-      break;
-    case TopAbs_EDGE:
-      aShapeTag    = SMESH::Tag_SubMeshOnEdge;
-      aSubMeshName = QObject::tr("SMESH_MEN_SubMeshesOnEdge");
-      break;
-    case TopAbs_VERTEX:
-      aShapeTag    = SMESH::Tag_SubMeshOnVertex;
-      aSubMeshName = QObject::tr("SMESH_MEN_SubMeshesOnVertex");
-      break;
-    default:
-      aShapeTag    = SMESH::Tag_SubMeshOnCompound;
-      aSubMeshName = QObject::tr("SMESH_MEN_SubMeshesOnCompound");
-    }
-
-    SALOMEDS::GenericAttribute_var anAttr;
-    SALOMEDS::SObject_var aSubMeshesRoot;
-    if ( !aMeshSO->FindSubObject( aShapeTag, aSubMeshesRoot ) )
-    {
-      aSubMeshesRoot = myStudyBuilder->NewObjectToTag(aMeshSO,aShapeTag);
-      anAttr = myStudyBuilder->FindOrCreateAttribute(aSubMeshesRoot,"AttributeName");
-      SALOMEDS::AttributeName_var aName = SALOMEDS::AttributeName::_narrow(anAttr);
-      aName->SetValue(aSubMeshName.toLatin1().data());
-      aName->UnRegister();
-      anAttr = myStudyBuilder->FindOrCreateAttribute(aSubMeshesRoot,"AttributeSelectable");
-      SALOMEDS::AttributeSelectable_var aSelAttr = SALOMEDS::AttributeSelectable::_narrow(anAttr);
-      aSelAttr->SetSelectable(false);
-      aSelAttr->UnRegister();
-    }
-    aSubMeshesRoot->UnRegister();
-    aMeshSO->UnRegister();
-
-    SALOMEDS::SObject_var aSObject = myStudyBuilder->NewObject(aSubMeshesRoot);
-    anAttr = myStudyBuilder->FindOrCreateAttribute(aSObject,"AttributeIOR");
-    SALOMEDS::AttributeIOR_var anIOR = SALOMEDS::AttributeIOR::_narrow(anAttr);
-    anIOR->SetValue(theSubMeshIOR);
-    anIOR->UnRegister();
-
-    CORBA::String_var aString = aSObject->GetID();
-    aSObject->UnRegister();
-
-    return aString._retn();
-  }
-
-  return "";
-}
-
-const char* SMESH_Swig::AddSubMeshOnShape(const char* theMeshEntry,
-                                          const char* theGeomShapeEntry,
-                                          const char* theSubMeshIOR,
-                                          int         ShapeType)
-{
-  SALOMEDS::SObject_var aGeomShapeSO = myStudy->FindObjectID(theGeomShapeEntry);
-  if(!aGeomShapeSO->_is_nil())
-  {
-    const char *       aSubMeshEntry = AddSubMesh(theMeshEntry,theSubMeshIOR,ShapeType);
-    SALOMEDS::SObject_var aSubMeshSO = myStudy->FindObjectID(aSubMeshEntry);
-    if ( !aSubMeshSO->_is_nil()) {
-      SetShape( theGeomShapeEntry, aSubMeshEntry );
-      CORBA::String_var aString = aSubMeshSO->GetID();
-      aSubMeshSO->UnRegister();
-      return aString._retn();
-    }
-    aGeomShapeSO->UnRegister();
-  }
-
-  return "";
-}
-
-/*!
-  \brief Gets window with specified identifier
-  \internal
-  \param id window identifier
-  \return pointer on the window
-*/
-
-SUIT_ViewWindow* getWnd( const int id )
-{
-  SUIT_ViewWindow* resWnd = 0;
-  SUIT_Session* aSession          = SUIT_Session::session();
-  SUIT_Application* anApplication = aSession->activeApplication();
-  SalomeApp_Application* app    = dynamic_cast<SalomeApp_Application*>(anApplication);
-  if ( app ) {
-    ViewManagerList vmlist = app->viewManagers();
-    foreach( SUIT_ViewManager* vm, vmlist ) {
-      QVector<SUIT_ViewWindow*> vwlist = vm->getViews();
-      foreach ( SUIT_ViewWindow* vw, vwlist ) {
-        if ( id == vw->getId() ) {
-          resWnd = vw;
-          break;
-        }
-      }
-    }
-  }
-  return resWnd;
-}
-
-class TGetActorAspect: public SALOME_Event
-{
-public:
-  typedef actorAspect TResult;
-  TResult myResult;
-  const char* _entry;
-  int _wid;
-  TGetActorAspect( const char* Mesh_Entry, int viewId )
-  {
-    _entry = Mesh_Entry;
-    _wid = viewId;
-  }
-  virtual void Execute()
-    {
-      SMESH_Actor* anActor;
-      if (_wid)
-        {
-          SUIT_ViewWindow* w = getWnd(_wid);
-          anActor = SMESH::FindActorByEntry( w, _entry );
-        }
-      else
-        anActor = SMESH::FindActorByEntry( _entry );
-      if ( !anActor )
-        {
-          MESSAGE("GetActorAspect: no actor corresponding to: " << _entry);
-          return;
-        }
-      anActor->GetSufaceColor(myResult.surfaceColor.r,
-                              myResult.surfaceColor.g,
-                              myResult.surfaceColor.b,
-                              myResult.surfaceColor.delta);
-      anActor->GetVolumeColor(myResult.volumeColor.r,
-                              myResult.volumeColor.g,
-                              myResult.volumeColor.b,
-                              myResult.volumeColor.delta);
-      anActor->GetEdgeColor(myResult.edgeColor.r,
-                            myResult.edgeColor.g,
-                            myResult.edgeColor.b);
-      anActor->GetNodeColor(myResult.nodeColor.r,
-                            myResult.nodeColor.g,
-                            myResult.nodeColor.b);
-      myResult.opacity= anActor->GetOpacity();
-      MESSAGE("opacity: " << myResult.opacity);
-    }
-};
-
-actorAspect SMESH_Swig::GetActorAspect( const char* Mesh_Entry, int viewId )
-{
-  return ProcessEvent(new TGetActorAspect( Mesh_Entry, viewId));
-}
-
-void SMESH_Swig::SetActorAspect( const actorAspect& actorPres, const char* Mesh_Entry, int viewId )
-{
-  class TSetActorAspect: public SALOME_Event
+  class TInitEvent: public SALOME_Event
   {
   public:
-    const char* _entry;
-    actorAspect _actorPres;
-    int _wid;
-    TSetActorAspect(const actorAspect& actorPres, const char* Mesh_Entry, int viewId )
-    {
-      _entry = Mesh_Entry;
-      _actorPres = actorPres;
-      _wid = viewId;
-    }
+    TInitEvent() {}
     virtual void Execute()
     {
-      SMESH_Actor* anActor;
-      if (_wid)
-        {
-          SUIT_ViewWindow* w = getWnd(_wid);
-          anActor = SMESH::FindActorByEntry( w, _entry );
-        }
-      else
-        anActor = SMESH::FindActorByEntry( _entry );
-      if ( !anActor )
-        {
-          MESSAGE("SetActorAspect: no actor corresponding to: " << _entry);
-          return;
-        }
-      anActor->SetSufaceColor(_actorPres.surfaceColor.r,
-                              _actorPres.surfaceColor.g,
-                              _actorPres.surfaceColor.b,
-                              _actorPres.surfaceColor.delta);
-      anActor->SetVolumeColor(_actorPres.volumeColor.r,
-                              _actorPres.volumeColor.g,
-                              _actorPres.volumeColor.b,
-                              _actorPres.volumeColor.delta);
-      anActor->SetEdgeColor(_actorPres.edgeColor.r,
-                            _actorPres.edgeColor.g,
-                            _actorPres.edgeColor.b);
-      anActor->SetNodeColor(_actorPres.nodeColor.r,
-                            _actorPres.nodeColor.g,
-                            _actorPres.nodeColor.b);
-      anActor->SetOpacity(_actorPres.opacity);
-      if (_wid)
-        {
-          SUIT_ViewWindow* w = getWnd(_wid);
-          w->repaint();
-        }
-      else
-        {
-          SUIT_Session* aSession          = SUIT_Session::session();
-          SUIT_Application* anApplication = aSession->activeApplication();
-          SalomeApp_Application* anApp    = dynamic_cast<SalomeApp_Application*>(anApplication);
-          SUIT_ViewManager* vman          = anApp->getViewManager(VTKViewer_Viewer::Type(),true);
-          vman->getActiveView()->repaint();
-        }
+      SUIT_Session* session = SUIT_Session::session();
+      SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>( session->activeApplication() );
+
+      if ( !SMESHGUI::GetSMESHGUI() )
+	app->loadModule( "Mesh" );
     }
   };
 
-  ProcessVoidEvent(new TSetActorAspect(actorPres, Mesh_Entry, viewId));
-}
+  // load SMESH GUI if it's not yet loaded
+  ProcessVoidEvent( new TInitEvent() );
 
-void SMESH_Swig::CreateAndDisplayActor( const char* Mesh_Entry )
-{
-  //  SMESH_Actor* Mesh = smeshGUI->ReadScript(aM);
-  class TEvent: public SALOME_Event
+  // set current study
+  std::vector<std::string> studies = SalomeApp_Application::studyMgr()->GetOpenStudies();
+  if ( studies.size() > 0 )
   {
-  private:
-    const char* _entry;
-  public:
-    TEvent(const char* Mesh_Entry) {
-      _entry = Mesh_Entry;
+    _PTR(Study) study = SalomeApp_Application::studyMgr()->GetStudyByName( studies[0] );
+    int studyId = study->StudyId();
+    if ( myCachedStudyId != studyId )
+    {
+      myCachedStudyId = studyId;
+      SMESHGUI::GetSMESHGen()->SetCurrentStudy( _CAST(Study, study)->GetStudy() );
     }
-    virtual void Execute() {
-      //SMESH::UpdateView(SMESH::eDisplay, _entry);
-      SUIT_Session* aSession          = SUIT_Session::session();
-      SUIT_Application* anApplication = aSession->activeApplication();
-      SalomeApp_Application* anApp    = dynamic_cast<SalomeApp_Application*>(anApplication);
-      /*SUIT_ViewManager* vman        = */anApp->getViewManager(VTKViewer_Viewer::Type(),true);
-      SMESHGUI_Displayer* aDisp       = new SMESHGUI_Displayer(anApp);
-      aDisp->Display(_entry,1);
-    }
-  };
-
-  ProcessVoidEvent(new TEvent(Mesh_Entry));
-}
-
-void SMESH_Swig::EraseActor( const char* Mesh_Entry, const bool allViewers )
-{
-  class TEvent: public SALOME_Event
+  }
+  else
   {
-  private:
-    const char* _entry;
-    bool        _allViewers;
-  public:
-    TEvent(const char* Mesh_Entry, const bool allViewers ) {
-      _entry = Mesh_Entry;
-      _allViewers = allViewers;
-    }
-    virtual void Execute() {
-      SUIT_Session* aSession          = SUIT_Session::session();
-      SUIT_Application* anApplication = aSession->activeApplication();
-      SalomeApp_Application* anApp    = dynamic_cast<SalomeApp_Application*>(anApplication);
-      SMESHGUI_Displayer* aDisp       = new SMESHGUI_Displayer(anApp);
-      ViewManagerList aManagers;
-      if ( !_allViewers ) {
-        aManagers << anApp->activeViewManager();
-      }
-      else {
-        aManagers = anApp->viewManagers();
-      }
-      foreach( SUIT_ViewManager* aMgr, aManagers ) {
-        if ( aMgr && aMgr->getType() == VTKViewer_Viewer::Type() ) {
-          SALOME_View* aSalomeView = dynamic_cast<SALOME_View*>(aMgr->getViewModel());
-          if (aSalomeView) {
-            aDisp->Erase(_entry,true, true, aSalomeView);
-          }
-        }
-      }
-    }
-  };
-
-  ProcessVoidEvent(new TEvent(Mesh_Entry, allViewers));
-}
-
-void SMESH_Swig::UpdateActor( const char* Mesh_Entry ) {
-  class TEvent: public SALOME_Event
-  {
-  private:
-    const char* _entry;
-  public:
-    TEvent( const char* Mesh_Entry ) {
-      _entry = Mesh_Entry;
-    }
-    virtual void Execute() {
-      Handle(SALOME_InteractiveObject) anIO = new SALOME_InteractiveObject
-        ( _entry, "SMESH", "" );
-      SMESH::Update( anIO, true );
-    }
-  };
-
-  ProcessVoidEvent( new TEvent(Mesh_Entry) );
-}
-
-void SMESH_Swig::SetName(const char* theEntry,
-                         const char* theName)
-{
-  SALOMEDS::SObject_var aSObject = myStudy->FindObjectID(theEntry);
-  SALOMEDS::GenericAttribute_var anAttr;
-  SALOMEDS::AttributeName_var aName;
-  if(!aSObject->_is_nil()){
-    anAttr = myStudyBuilder->FindOrCreateAttribute(aSObject,"AttributeName");
-    aName = SALOMEDS::AttributeName::_narrow(anAttr);
-    aName->SetValue(theName);
-    aName->UnRegister();
-    aSObject->UnRegister();
+    myCachedStudyId = 0;
   }
 }
 
-//================================================================================
-/*!
- * \brief Set mesh icon according to compute status
-  * \param Mesh_Entry - entry of a mesh
-  * \param isComputed - is mesh computed or not
- */
-//================================================================================
-
-void SMESH_Swig::SetMeshIcon(const char* theMeshEntry,
-                             const bool  theIsComputed,
-                             const bool  isEmpty)
+/////////////////////////////////////////////////////////////////
+/// \brief Publish object.
+/// \param ior IOR of the mesh object to publish.
+/// \param name Study name of the object; if not given,
+///             name is assigned automatically.
+/// \return UID of the data object.
+/////////////////////////////////////////////////////////////////
+const char* SMESH_Swig::publish(const char* ior, const char* name)
 {
-  class TEvent: public SALOME_Event
-  {
-    SALOMEDS::Study_var myStudy;
-    std::string         myMeshEntry;
-    bool                myIsComputed, myIsEmpty;
-  public:
-    TEvent(const SALOMEDS::Study_var& theStudy,
-           const std::string&         theMeshEntry,
-           const bool                 theIsComputed,
-           const bool                 isEmpty):
-      myStudy     (theStudy),
-      myMeshEntry (theMeshEntry),
-      myIsComputed(theIsComputed),
-      myIsEmpty   (isEmpty)
-    {}
+  init();
 
-    virtual
-    void
-    Execute()
+  std::string uid;
+
+  if ( myCachedStudyId > 0 )
+  {
+    _PTR(Study) study = SalomeApp_Application::studyMgr()->GetStudyByID( myCachedStudyId );
+    CORBA::Object_var object = string2object( ior );
+    if ( study && !CORBA::is_nil( object ) )
     {
-      SALOMEDS::SObject_ptr aMeshSO = myStudy->FindObjectID(myMeshEntry.c_str());
-      if(_PTR(SObject) aMesh = ClientFactory::SObject(aMeshSO))
-        SMESH::ModifiedMesh(aMesh,myIsComputed,myIsEmpty);
-      // aMeshSO->UnRegister();  ~aMesh() already called UnRegister()!
+      SALOMEDS::SObject_var sobject =
+	SMESHGUI::GetSMESHGen()->PublishInStudy( _CAST(Study, study)->GetStudy(),
+						 SALOMEDS::SObject::_nil(),
+						 object.in(),
+						 name );
+      if ( !CORBA::is_nil( sobject ) )
+      {
+	uid = sobject->GetID();
+      }
+      sobject->UnRegister();
+    }
+  }
+
+  return strdup( uid.c_str() );
+}
+
+/////////////////////////////////////////////////////////////////
+/// \brief Set new study name of given object.
+/// \param uid Object's study UID or IOR.
+/// \param name New name of the object.
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::rename(const char* uid, const char* name)
+{
+  init();
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+    sobject->SetAttrString( "AttributeName", name );
+}
+
+/////////////////////////////////////////////////////////////////
+/// \brief Display mesh object.
+/// \param uid Object's study UID or IOR.
+/// \param viewUid View window UID (0 means currently active view
+///                window; if there's no view, it is created).
+///                Default: 0.
+/// \param updateViewer "Update view" flag. Default: \c true.
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::display(const char* uid, int viewUid, bool updateViewer)
+{
+  class TDisplayEvent: public SALOME_Event
+  {
+  private:
+    const char* myUid;
+    int myViewUid;
+    bool myIsUpdate;
+  public:
+    TDisplayEvent(const char* uid, int viewUid, bool updateViewer)
+      : myUid( uid ), myViewUid( viewUid ), myIsUpdate( updateViewer ) {}
+    virtual void Execute()
+    {
+      SALOME_View* view = uid2wnd( myViewUid, true ); // create view if it's not present
+      if ( view )
+	LightApp_Displayer::FindDisplayer( "Mesh", true )->Display( myUid, myIsUpdate, view );
     }
   };
 
-  ProcessVoidEvent(new TEvent(myStudy,
-                              theMeshEntry,
-                              theIsComputed,
-                              isEmpty));
+  init();
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+    ProcessVoidEvent( new TDisplayEvent( sobject->GetID().c_str(), viewUid, updateViewer ) );
 }
 
-/*!
-  \brief Helper class for selection event.
-*/
+/////////////////////////////////////////////////////////////////
+/// \brief Erase mesh object.
+/// \param uid Object's study UID or IOR.
+/// \param viewUid View window UID (0 means currently active view
+///                window); -1 means "all view windows".
+///                Default: 0.
+/// \param updateViewer "Update view" flag. Default: \c true.
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::erase(const char* uid, int viewUid, bool updateViewer)
+{
+  class TEraseEvent: public SALOME_Event
+  {
+  private:
+    const char* myUid;
+    int myViewUid;
+    bool myIsUpdate;
+  public:
+    TEraseEvent(const char* uid, int viewUid, bool updateViewer)
+      : myUid( uid ), myViewUid( viewUid ), myIsUpdate( updateViewer ) {}
+    virtual void Execute()
+    {
+      if ( myViewUid == -1 )
+      {
+	QList<SALOME_View*> views = windows();
+	foreach( SALOME_View* view, views )
+	  LightApp_Displayer::FindDisplayer( "Mesh", true )->Erase( myUid, true, myIsUpdate, view );
+      }
+      else
+      {
+	SALOME_View* view = uid2wnd( myViewUid );
+	if ( view )
+	  LightApp_Displayer::FindDisplayer( "Mesh", true )->Erase( myUid, true, myIsUpdate, view );
+      }
+    }
+  };
+
+  init();
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+    ProcessVoidEvent( new TEraseEvent( sobject->GetID().c_str(), viewUid, updateViewer ) );
+}
+
+/////////////////////////////////////////////////////////////////
+/// \brief Update mesh object.
+/// \param uid Object's study UID or IOR.
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::update(const char* uid)
+{
+  class TUpdateEvent: public SALOME_Event
+  {
+  private:
+    const char* myUid;
+  public:
+    TUpdateEvent( const char* uid ) : myUid( uid ) {}
+    virtual void Execute()
+    {
+      Handle(SALOME_InteractiveObject) io = 
+	new SALOME_InteractiveObject( myUid, "SMESH", "" );
+      SMESH::Update( io, true );
+    }
+  };
+
+  init();
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+    ProcessVoidEvent( new TUpdateEvent( uid ) );
+}
+
+/////////////////////////////////////////////////////////////////
+/// \internal
+class TGetPropsEvent: public SALOME_Event
+{
+public:
+  typedef Properties TResult;
+  TResult myResult;
+  const char* myUid;
+  int myViewUid;
+
+  TGetPropsEvent( const char* uid, int viewUid )
+    : myUid( uid ), myViewUid( viewUid ) {}
+
+  virtual void Execute()
+  {
+    SALOME_View* view = uid2wnd( myViewUid );
+    myResult = properties( view, myUid );
+  }
+};
+
+/////////////////////////////////////////////////////////////////
+/// \brief Get mesh object's visual properties.
+/// \param uid Mesh object's study UID or IOR.
+/// \param viewUid View window UID (0 means currently active view
+///                window); Default: 0.
+/// \return Properties data structure.
+/////////////////////////////////////////////////////////////////
+Properties SMESH_Swig::properties(const char* uid, int viewUid)
+{
+  Properties props;
+
+  init();
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+    props = ProcessEvent( new TGetPropsEvent( sobject->GetID().c_str(), viewUid ) );
+
+  return props;
+}
+
+/////////////////////////////////////////////////////////////////
+/// \internal
+/////////////////////////////////////////////////////////////////
+class TSetPropsEvent: public SALOME_Event
+{
+public:
+  const char* myUid;
+  Properties myProps;
+  int myViewUid;
+
+  TSetPropsEvent( const char* uid, const Properties& props, int viewUid )
+    : myUid( uid ), myProps( props), myViewUid( viewUid ) {}
+
+  virtual void Execute()
+  {
+    if ( myViewUid == -1 )
+    {
+      QList<SALOME_View*> views = windows();
+      foreach( SALOME_View* view, views )
+      {
+	setProperties( view, myUid, myProps );
+      }
+    }
+    else
+    {
+      SALOME_View* view = uid2wnd( myViewUid );
+      setProperties( view, myUid, myProps );
+    }
+  }
+};
+
+/////////////////////////////////////////////////////////////////
+/// \brief Set mesh object's visual properties.
+/// \param uid Mesh object's study UID or IOR.
+/// \param props Properties data structure.
+/// \param viewUid View window UID (0 means currently active view
+///                window); Default: 0.
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::setProperties(const char* uid, const Properties& props, int viewUid)
+{
+  init();
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+    ProcessVoidEvent( new TSetPropsEvent( sobject->GetID().c_str(), props, viewUid ) );
+}
+
+/////////////////////////////////////////////////////////////////
+/// \internal
+/////////////////////////////////////////////////////////////////
+class TGetNodeNumberingEvent: public SALOME_Event
+{
+public:
+  typedef bool TResult;
+  TResult myResult;
+  const char* myUid;
+  int myViewUid;
+
+  TGetNodeNumberingEvent( const char* uid, int viewUid )
+    : myResult( false ), myUid( uid ), myViewUid( viewUid ) {}
+
+  virtual void Execute()
+  {
+    SALOME_View* view = uid2wnd( myViewUid );
+    SMESH_Actor* actor = actorFromView( view, myUid );
+    if ( actor )
+      myResult = actor->GetPointsLabeled();
+  }
+};
+
+/////////////////////////////////////////////////////////////////
+/// \brief Check if nodes numbering is switched on.
+/// \param uid Mesh object's study UID or IOR.
+/// \param viewUid View window UID (0 means currently active view
+///                window); Default: 0.
+/// \return \c true if nodes numbering is switched on;
+///         \c false otherwise.
+/////////////////////////////////////////////////////////////////
+bool SMESH_Swig::nodesNumbering(const char* uid, int viewUid)
+{
+  bool numbering = false;
+
+  init();
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+    numbering = ProcessEvent( new TGetNodeNumberingEvent( sobject->GetID().c_str(), viewUid ) );
+
+  return numbering;
+}
+
+/////////////////////////////////////////////////////////////////
+/// \internal
+/////////////////////////////////////////////////////////////////
+class TSetNodeNumberingEvent: public SALOME_Event
+{
+public:
+  const char* myUid;
+  bool myNumbering;
+  int myViewUid;
+
+  TSetNodeNumberingEvent( const char* uid, bool numbering, int viewUid )
+    : myUid( uid ), myNumbering( numbering ), myViewUid( viewUid ) {}
+
+  virtual void Execute()
+  {
+    SALOME_View* view = uid2wnd( myViewUid );
+    SMESH_Actor* actor = actorFromView( view, myUid );
+    if ( actor )
+    {
+      actor->SetPointsLabeled( myNumbering );
+      if ( view )
+	view->Repaint();
+    }
+  }
+};
+
+/////////////////////////////////////////////////////////////////
+/// \brief Switch nodes numbering on/off.
+/// \param uid Mesh object's study UID or IOR.
+/// \param numbering \c true to switch nodes numbering on;
+///                  \c false otherwise.
+/// \param viewUid View window UID (0 means currently active view
+///                window); Default: 0.
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::setNodesNumbering(const char* uid, bool numbering, int viewUid)
+{
+  init();
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+    ProcessVoidEvent( new TSetNodeNumberingEvent( sobject->GetID().c_str(), numbering, viewUid ) );
+}
+
+/////////////////////////////////////////////////////////////////
+/// \internal
+/////////////////////////////////////////////////////////////////
+class TGetElementNumberingEvent: public SALOME_Event
+{
+public:
+  typedef bool TResult;
+  TResult myResult;
+  const char* myUid;
+  int myViewUid;
+
+  TGetElementNumberingEvent( const char* uid, int viewUid )
+    : myResult( false ), myUid( uid ), myViewUid( viewUid ) {}
+
+  virtual void Execute()
+  {
+    SALOME_View* view = uid2wnd( myViewUid );
+    SMESH_Actor* actor = actorFromView( view, myUid );
+    if ( actor )
+      myResult = actor->GetCellsLabeled();
+  }
+};
+
+/////////////////////////////////////////////////////////////////
+/// \brief Check if elements numbering is switched on.
+/// \param uid Mesh object's study UID or IOR.
+/// \param viewUid View window UID (0 means currently active view
+///                window); Default: 0.
+/// \return \c true if elements numbering is switched on;
+///         \c false otherwise.
+/////////////////////////////////////////////////////////////////
+bool SMESH_Swig::elementsNumbering(const char* uid, int viewUid)
+{
+  bool numbering = false;
+
+  init();
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+    numbering = ProcessEvent( new TGetElementNumberingEvent( sobject->GetID().c_str(), viewUid ) );
+
+  return numbering;
+}
+
+/////////////////////////////////////////////////////////////////
+/// \internal
+/////////////////////////////////////////////////////////////////
+class TSetElementNumberingEvent: public SALOME_Event
+{
+public:
+  const char* myUid;
+  bool myNumbering;
+  int myViewUid;
+
+  TSetElementNumberingEvent( const char* uid, bool numbering, int viewUid )
+    : myUid( uid ), myNumbering( numbering ), myViewUid( viewUid ) {}
+
+  virtual void Execute()
+  {
+    SALOME_View* view = uid2wnd( myViewUid );
+    SMESH_Actor* actor = actorFromView( view, myUid );
+    if ( actor )
+    {
+      actor->SetCellsLabeled( myNumbering );
+      if ( view )
+	view->Repaint();
+    }
+  }
+};
+
+/////////////////////////////////////////////////////////////////
+/// \brief Switch elements numbering on/off.
+/// \param uid Mesh object's study UID or IOR.
+/// \param numbering \c true to switch elements numbering on;
+///                  \c false otherwise.
+/// \param viewUid View window UID (0 means currently active view
+///                window); Default: 0.
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::setElementsNumbering(const char* uid, bool numbering, int viewUid)
+{
+  init();
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+    ProcessVoidEvent( new TSetElementNumberingEvent( sobject->GetID().c_str(), numbering, viewUid ) );
+}
+
+/////////////////////////////////////////////////////////////////
+/// \internal
+/////////////////////////////////////////////////////////////////
+class TGetDisplayModeEvent: public SALOME_Event
+{
+public:
+  typedef DisplayMode TResult;
+  TResult myResult;
+  const char* myUid;
+  int myViewUid;
+
+  TGetDisplayModeEvent( const char* uid, int viewUid )
+    : myResult( UndefinedMode ), myUid( uid ), myViewUid( viewUid ) {}
+
+  virtual void Execute()
+  {
+    SALOME_View* view = uid2wnd( myViewUid );
+    SMESH_Actor* actor = actorFromView( view, myUid );
+    if ( actor )
+      myResult = (DisplayMode)actor->GetRepresentation();
+  }
+};
+
+/////////////////////////////////////////////////////////////////
+/// \brief Get mesh object's display mode.
+/// \param uid Mesh object's study UID or IOR.
+/// \param viewUid View window UID (0 means currently active view
+///                window); Default: 0.
+/// \return Display mode (UndefinedMode if actor isn't found).
+/////////////////////////////////////////////////////////////////
+DisplayMode SMESH_Swig::displayMode(const char* uid, int viewUid)
+{
+  DisplayMode mode = UndefinedMode;
+
+  init();
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+    mode = ProcessEvent( new TGetDisplayModeEvent( sobject->GetID().c_str(), viewUid ) );
+
+  return mode;
+}
+
+/////////////////////////////////////////////////////////////////
+/// \internal
+/////////////////////////////////////////////////////////////////
+class TSetDisplayModeEvent: public SALOME_Event
+{
+public:
+  const char* myUid;
+  DisplayMode myMode;
+  int myViewUid;
+
+  TSetDisplayModeEvent( const char* uid, DisplayMode mode, int viewUid )
+    : myUid( uid ), myMode( mode), myViewUid( viewUid ) {}
+
+  virtual void Execute()
+  {
+    SALOME_View* view = uid2wnd( myViewUid );
+    SMESH_Actor* actor = actorFromView( view, myUid );
+    if ( actor && myMode != UndefinedMode )
+    {
+      actor->SetRepresentation( myMode );
+      if ( view )
+	view->Repaint();
+    }
+  }
+};
+
+/////////////////////////////////////////////////////////////////
+/// \brief Set mesh object's display mode.
+/// \param uid Mesh object's study UID or IOR.
+/// \param mode Display mode.
+/// \param viewUid View window UID (0 means currently active view
+///                window); Default: 0.
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::setDisplayMode(const char* uid, DisplayMode mode, int viewUid)
+{
+  init();
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+    ProcessVoidEvent( new TSetDisplayModeEvent( sobject->GetID().c_str(), mode, viewUid ) );
+}
+
+/////////////////////////////////////////////////////////////////
+/// \internal
+/////////////////////////////////////////////////////////////////
+class TGetShrinkModeEvent: public SALOME_Event
+{
+public:
+  typedef bool TResult;
+  TResult myResult;
+  const char* myUid;
+  int myViewUid;
+
+  TGetShrinkModeEvent( const char* uid, int viewUid )
+    : myResult( false ), myUid( uid ), myViewUid( viewUid ) {}
+
+  virtual void Execute()
+  {
+    SALOME_View* view = uid2wnd( myViewUid );
+    SMESH_Actor* actor = actorFromView( view, myUid );
+    if ( actor )
+      myResult = actor->IsShrunk();
+  }
+};
+
+/////////////////////////////////////////////////////////////////
+/// \brief Check if shrink mode is switched on.
+/// \param uid Mesh object's study UID or IOR.
+/// \param viewUid View window UID (0 means currently active view
+///                window); Default: 0.
+/// \return \c true if shrink mode is switched on;
+///         \c false otherwise.
+/////////////////////////////////////////////////////////////////
+bool SMESH_Swig::shrinkMode(const char* uid, int viewUid)
+{
+  bool shrinkMode = false;
+
+  init();
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+    shrinkMode = ProcessEvent( new TGetShrinkModeEvent( sobject->GetID().c_str(), viewUid ) );
+
+  return shrinkMode;
+}
+
+/////////////////////////////////////////////////////////////////
+/// \internal
+/////////////////////////////////////////////////////////////////
+class TSetShrinkModeEvent: public SALOME_Event
+{
+public:
+  const char* myUid;
+  bool myShrink;
+  int myViewUid;
+
+  TSetShrinkModeEvent( const char* uid, bool shrink, int viewUid )
+    : myUid( uid ), myShrink( shrink ), myViewUid( viewUid ) {}
+
+  virtual void Execute()
+  {
+    SALOME_View* view = uid2wnd( myViewUid );
+    SMESH_Actor* actor = actorFromView( view, myUid );
+    if ( actor )
+    {
+      if ( myShrink )
+	actor->SetShrink();
+      else
+	actor->UnShrink();
+      if ( view )
+	view->Repaint();
+    }
+  }
+};
+
+/////////////////////////////////////////////////////////////////
+/// \brief Switch shrink mode on/off.
+/// \param uid Mesh object's study UID or IOR.
+/// \param shrink \c true to switch shrink mode on;
+///               \c false otherwise.
+/// \param viewUid View window UID (0 means currently active view
+///                window); Default: 0.
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::setShrinkMode(const char* uid, bool shrink, int viewUid)
+{
+  init();
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+    ProcessVoidEvent( new TSetShrinkModeEvent( sobject->GetID().c_str(), shrink, viewUid ) );
+}
+
+/////////////////////////////////////////////////////////////////
+/// \internal
+/////////////////////////////////////////////////////////////////
+class TGetOpacityEvent: public SALOME_Event
+{
+public:
+  typedef double TResult;
+  TResult myResult;
+  const char* myUid;
+  int myViewUid;
+
+  TGetOpacityEvent( const char* uid, int viewUid )
+    : myResult( 0 ), myUid( uid ), myViewUid( viewUid ) {}
+
+  virtual void Execute()
+  {
+    SALOME_View* view = uid2wnd( myViewUid );
+    SMESH_Actor* actor = actorFromView( view, myUid );
+    if ( actor )
+      myResult = actor->GetOpacity();
+  }
+};
+
+/////////////////////////////////////////////////////////////////
+/// \brief Get mesh object's opacity.
+/// \param uid Mesh object's study UID or IOR.
+/// \param viewUid View window UID (0 means currently active view
+///                window); Default: 0.
+/// \return Opacity value.
+/////////////////////////////////////////////////////////////////
+double SMESH_Swig::opacity(const char* uid, int viewUid)
+{
+  double opacity = 0;
+
+  init();
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+    opacity = ProcessEvent( new TGetOpacityEvent( sobject->GetID().c_str(), viewUid ) );
+
+  return opacity;
+}
+
+/////////////////////////////////////////////////////////////////
+/// \internal
+/////////////////////////////////////////////////////////////////
+class TSetOpacityEvent: public SALOME_Event
+{
+public:
+  const char* myUid;
+  double myOpacity;
+  int myViewUid;
+
+  TSetOpacityEvent( const char* uid, double opacity, int viewUid )
+    : myUid( uid ), myOpacity( opacity ), myViewUid( viewUid ) {}
+
+  virtual void Execute()
+  {
+    SALOME_View* view = uid2wnd( myViewUid );
+    SMESH_Actor* actor = actorFromView( view, myUid );
+    if ( actor )
+    {
+      actor->SetOpacity( myOpacity );
+      if ( view )
+	view->Repaint();
+    }
+  }
+};
+
+/////////////////////////////////////////////////////////////////
+/// \brief Set mesh object's opacity.
+/// \param uid Mesh object's study UID or IOR.
+/// \param opacity Opacity value.
+/// \param viewUid View window UID (0 means currently active view
+///                window); Default: 0.
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::setOpacity(const char* uid, double opacity, int viewUid)
+{
+  init();
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+    ProcessVoidEvent( new TSetOpacityEvent( sobject->GetID().c_str(), opacity, viewUid ) );
+}
+
+/////////////////////////////////////////////////////////////////
+/// \internal
+/////////////////////////////////////////////////////////////////
+class TGetOrientationEvent: public SALOME_Event
+{
+public:
+  typedef bool TResult;
+  TResult myResult;
+  const char* myUid;
+  int myViewUid;
+
+  TGetOrientationEvent( const char* uid, int viewUid )
+    : myResult( false ), myUid( uid ), myViewUid( viewUid ) {}
+
+  virtual void Execute()
+  {
+    SALOME_View* view = uid2wnd( myViewUid );
+    SMESH_Actor* actor = actorFromView( view, myUid );
+    if ( actor )
+      myResult = actor->GetFacesOriented();
+  }
+};
+
+/////////////////////////////////////////////////////////////////
+/// \brief Check if faces orientation vectors are shown.
+/// \param uid Mesh object's study UID or IOR.
+/// \param viewUid View window UID (0 means currently active view
+///                window); Default: 0.
+/// \return \c true if faces orientation vectors are shown;
+///         \c false otherwise.
+/////////////////////////////////////////////////////////////////
+bool SMESH_Swig::isOrientationShown(const char* uid, int viewUid)
+{
+  bool shown = false;
+
+  init();
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+    shown = ProcessEvent( new TGetOrientationEvent( sobject->GetID().c_str(), viewUid ) );
+
+  return shown;
+}
+
+/////////////////////////////////////////////////////////////////
+/// \internal
+/////////////////////////////////////////////////////////////////
+class TSetOrientationEvent: public SALOME_Event
+{
+public:
+  const char* myUid;
+  bool myShown;
+  int myViewUid;
+
+  TSetOrientationEvent( const char* uid, bool shown, int viewUid )
+    : myUid( uid ), myShown( shown ), myViewUid( viewUid ) {}
+
+  virtual void Execute()
+  {
+    SALOME_View* view = uid2wnd( myViewUid );
+    SMESH_Actor* actor = actorFromView( view, myUid );
+    if ( actor )
+    {
+      actor->SetFacesOriented( myShown );
+      if ( view )
+	view->Repaint();
+    }
+  }
+};
+
+/////////////////////////////////////////////////////////////////
+/// \brief Show/hide faces orientation vectors.
+/// \param uid Mesh object's study UID or IOR.
+/// \param shown \c true to show faces orientation vectors;
+///              \c false otherwise.
+/// \param viewUid View window UID (0 means currently active view
+///                window); Default: 0.
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::setOrientationShown(const char* uid, bool shown, int viewUid)
+{
+  init();
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+    ProcessVoidEvent( new TSetOrientationEvent( sobject->GetID().c_str(), shown, viewUid ) );
+}
+
+/////////////////////////////////////////////////////////////////
+/// \internal
+/////////////////////////////////////////////////////////////////
+class TGetEntitiesEvent: public SALOME_Event
+{
+public:
+  typedef int TResult;
+  TResult myResult;
+  const char* myUid;
+  int myViewUid;
+
+  TGetEntitiesEvent( const char* uid, int viewUid )
+    : myResult( EntityNone ), myUid( uid ), myViewUid( viewUid ) {}
+
+  virtual void Execute()
+  {
+    SALOME_View* view = uid2wnd( myViewUid );
+    SMESH_Actor* actor = actorFromView( view, myUid );
+    if ( actor )
+      myResult = actor->GetEntityMode();
+  }
+};
+
+/////////////////////////////////////////////////////////////////
+/// \brief Get mesh object's visible entities.
+/// \param uid Mesh object's study UID or IOR.
+/// \param viewUid View window UID (0 means currently active view
+///                window); Default: 0.
+/// \return Enumerator describing entities being visible.
+/////////////////////////////////////////////////////////////////
+int SMESH_Swig::entitiesShown(const char* uid, int viewUid)
+{
+  int entities = EntityNone;
+
+  init();
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+    entities = ProcessEvent( new TGetEntitiesEvent( sobject->GetID().c_str(), viewUid ) );
+
+  return entities;
+}
+
+/////////////////////////////////////////////////////////////////
+/// \internal
+/////////////////////////////////////////////////////////////////
+class TSetEntitiesEvent: public SALOME_Event
+{
+public:
+  const char* myUid;
+  int myEntities;
+  int myViewUid;
+
+  TSetEntitiesEvent( const char* uid, int entities, int viewUid )
+    : myUid( uid ), myEntities( entities ), myViewUid( viewUid ) {}
+
+  virtual void Execute()
+  {
+    SALOME_View* view = uid2wnd( myViewUid );
+    SMESH_Actor* actor = actorFromView( view, myUid );
+    if ( actor )
+    {
+      actor->SetEntityMode( myEntities );
+      if ( view )
+	view->Repaint();
+    }
+  }
+};
+
+/////////////////////////////////////////////////////////////////
+/// \brief Set mesh object's visible entities.
+/// \param uid Mesh object's study UID or IOR.
+/// \param entities Enumerator describing entities to be shown.
+/// \param viewUid View window UID (0 means currently active view
+///                window); Default: 0.
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::setEntitiesShown(const char* uid, int entities, int viewUid)
+{
+  init();
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+    ProcessVoidEvent( new TSetEntitiesEvent( sobject->GetID().c_str(), entities, viewUid ) );
+}
+
+/////////////////////////////////////////////////////////////////
+/// \brief Check if given mesh object's entity is shown.
+/// \param uid Mesh object's study UID or IOR.
+/// \param entity Mesh entity.
+/// \param viewUid View window UID (0 means currently active view
+///                window); Default: 0.
+/// \return \c true if entity is shown; \c false otherwise.
+/////////////////////////////////////////////////////////////////
+bool SMESH_Swig::isEntityShown(const char* uid, EntityMode entity, int viewUid)
+{
+  bool shown = false;
+
+  init();
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+  {
+    int entities = ProcessEvent( new TGetEntitiesEvent( sobject->GetID().c_str(), viewUid ) );
+    shown = (bool)( entities & entity );
+  }
+
+  return shown;
+}
+
+/////////////////////////////////////////////////////////////////
+/// \brief Show/hide entity for given mesh object.
+/// \param uid Mesh object's study UID or IOR.
+/// \param entity Mesh entity.
+/// \param show Visibility status.
+/// \param viewUid View window UID (0 means currently active view
+///                window); Default: 0.
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::setEntityShown(const char* uid, EntityMode entity, bool show, int viewUid)
+{
+  init();
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+  {
+    int entities = ProcessEvent( new TGetEntitiesEvent( sobject->GetID().c_str(), viewUid ) );
+    if ( show )
+      entities |= entity;
+    else
+      entities &= ~entity;
+    ProcessVoidEvent( new TSetEntitiesEvent( sobject->GetID().c_str(), entities, viewUid ) );
+  }
+}
+
+/////////////////////////////////////////////////////////////////
+/// \brief Initialize %SMESH GUI Python interface.
+/// \deprecated Interface is initialized automatically.
+/// \param studyID Study UID (not used).
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::Init(int /*studyID*/)
+{
+  deprecated("SMESH_Swig::Init");
+  // does nothing; initialization is done automatically.
+}
+
+/////////////////////////////////////////////////////////////////
+/// \brief Publish mesh in the active study.
+/// \deprecated Publishing is done automatically.
+/// \param ior IOR of the mesh.
+/// \param name Name of the mesh (optional).
+/// \return UID of the data object.
+/////////////////////////////////////////////////////////////////
+const char* SMESH_Swig::AddNewMesh(const char* ior, const char* name)
+{
+  deprecated("SMESH_Swig::AddNewMesh", "SMESH_Swig::publish");
+  return publish( ior, name );
+}
+
+/////////////////////////////////////////////////////////////////
+/// \brief Publish hypothesis in the active study.
+/// \deprecated Publishing is done automatically.
+/// \param ior IOR of the hypothesis.
+/// \param name Name of the hypothesis (optional).
+/// \return UID of the data object.
+/////////////////////////////////////////////////////////////////
+const char* SMESH_Swig::AddNewHypothesis(const char* ior, const char* name)
+{
+  deprecated("SMESH_Swig::AddNewHypothesis", "SMESH_Swig::publish");
+  return publish( ior, name );
+}
+
+/////////////////////////////////////////////////////////////////
+/// \brief Publish algorithm in the active study.
+/// \deprecated Publishing is done automatically.
+/// \param ior IOR of the algorithm.
+/// \param name Name of the algorithm (optional).
+/// \return UID of the data object.
+/////////////////////////////////////////////////////////////////
+const char* SMESH_Swig::AddNewAlgorithm(const char* ior, const char* name)
+{
+  deprecated("SMESH_Swig::AddNewAlgorithm", "SMESH_Swig::publish");
+  return publish( ior, name );
+}
+
+/////////////////////////////////////////////////////////////////
+/// \deprecated Publishing is done automatically.
+/// \deprecated Synonim of AddNewAlgorithm().
+/// \param ior IOR of the algorithm.
+/// \param name Name of the algorithm (optional).
+/// \return UID of the data object.
+/////////////////////////////////////////////////////////////////
+const char* SMESH_Swig::AddNewAlgorithms(const char* ior, const char* name)
+{
+  deprecated("SMESH_Swig::AddNewAlgorithms", "SMESH_Swig::publish");
+  return publish( ior, name );
+}
+
+/////////////////////////////////////////////////////////////////
+/// \brief Add reference on a shape for mesh in a study.
+/// \deprecated Publishing is done automatically.
+/// \param shapeUid GEOM shape's study UID (not used).
+/// \param meshUid Mesh's study UID (not used).
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::SetShape(const char* /*shapeUid*/, const char* /*meshUid*/)
+{
+  deprecated("SMESH_Swig::SetShape", "SMESH_Swig::publish");
+  // does nothing: publishing is done automatically
+}
+
+/////////////////////////////////////////////////////////////////
+/// \brief Assign hypothesis to mesh or sub-mesh.
+/// \deprecated Publishing is done automatically.
+/// \param meshUid Mesh's or sub-mesh's study UID (not used).
+/// \param hypoUID Hypothesis's study UID (not used).
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::SetHypothesis(const char* /*meshUid*/, const char* /*hypoUID*/)
+{
+  deprecated("SMESH_Swig::SetHypothesis", "SMESH_Swig::publish");
+  // does nothing: publishing is done automatically
+}
+
+/////////////////////////////////////////////////////////////////
+/// \brief Assign algorithm to mesh or sub-mesh.
+/// \deprecated Publishing is done automatically.
+/// \param meshUid Mesh's or sub-mesh's study UID (not used).
+/// \param algoUID Algorithm's study UID (not used).
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::SetAlgorithms(const char* /*meshUid*/, const char* /*algoUID*/)
+{
+  deprecated("SMESH_Swig::SetAlgorithms", "SMESH_Swig::publish");
+  // does nothing: publishing is done automatically
+}
+
+/////////////////////////////////////////////////////////////////
+/// \brief Anassign hypothesis or algorithm from mesh or sub-mesh.
+/// \deprecated Unpublishing is done automatically.
+/// \param uid Hypothesis's or algorithm's study UID (not used).
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::UnSetHypothesis(const char* /*uid*/)
+{
+  deprecated("SMESH_Swig::UnSetHypothesis");
+  // does nothing: unpublishing is done automatically
+}
+
+/////////////////////////////////////////////////////////////////
+/// \brief Publish sub-mesh in the active study.
+/// \deprecated Publishing is done automatically.
+/// \param meshUid Parent mesh's study UID (not used).
+/// \param ior IOR of the sub-mesh.
+/// \param shapeType GEOM shape's type (not used).
+/// \param name Name of the sub-mesh (optional).
+/// \return UID of the data object.
+/////////////////////////////////////////////////////////////////
+const char* SMESH_Swig::AddSubMesh(const char* /*meshUid*/,
+                                   const char* ior,
+                                   int /*shapeType*/,
+				   const char* name)
+{
+  deprecated("SMESH_Swig::AddSubMesh", "SMESH_Swig::publish");
+  return publish( ior, name );
+}
+
+/////////////////////////////////////////////////////////////////
+/// \brief Publish sub-mesh in the active study.
+/// \deprecated Publishing is done automatically.
+/// \param meshUid Parent mesh's study UID (not used).
+/// \param shapeUid GEOM shape's study UID (not used).
+/// \param ior IOR of the sub-mesh.
+/// \param shapeType GEOM shape's type (not used).
+/// \param name Name of the sub-mesh (optional).
+/// \return UID of the data object.
+/////////////////////////////////////////////////////////////////
+const char* SMESH_Swig::AddSubMeshOnShape(const char* /*meshUid*/,
+                                          const char* /*shapeUid*/,
+                                          const char* ior,
+                                          int /*shapeType*/,
+					  const char* name)
+{
+  deprecated("SMESH_Swig::AddSubMeshOnShape", "SMESH_Swig::publish");
+  return publish( ior, name );
+}
+
+/////////////////////////////////////////////////////////////////
+/// \brief Set new study name of given object.
+/// \deprecated Use rename() method.
+/// \param uid Object's study UID or IOR.
+/// \param name New name of the object.
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::SetName(const char* uid, const char* name)
+{
+  deprecated("SMESH_Swig::SetName", "SMESH_Swig::rename");
+  rename( uid, name );
+}
+
+/////////////////////////////////////////////////////////////////
+/// \brief Set mesh icon according to compute status
+/// \deprecated Publishing is done automatically.
+/// \param meshUid Mesh's study UID (not used).
+/// \param isComputed Flag pointing that mesh is computed or no
+///        (not used).
+/// \param isEmpty Flag pointing that mesh is empty or no
+///        (not used).
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::SetMeshIcon(const char* /*meshUid*/,
+                             const bool /*isComputed*/,
+                             const bool /*isEmpty*/)
+{
+  deprecated("SMESH_Swig::SetMeshIcon", "SMESH_Swig::publish");
+  // does nothing: publishing is done automatically
+}
+
+/////////////////////////////////////////////////////////////////
+/// Display mesh in the currently active view window.
+/// \deprecated Use display() method.
+/// \param meshUid Mesh's study UID.
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::CreateAndDisplayActor(const char* meshUid)
+{
+  deprecated("SMESH_Swig::CreateAndDisplayActor", "SMESH_Swig::display");
+  display( meshUid );
+}
+
+/////////////////////////////////////////////////////////////////
+/// Erase mesh in the view window(s).
+/// \deprecated Use erase() method.
+/// \param meshUid Mesh's study UID.
+/// \param allViewers If \c true, mesh is removed from all views.
+///                   Default: \c false.
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::EraseActor(const char* meshUid, const bool allViewers)
+{
+  deprecated("SMESH_Swig::EraseActor", "SMESH_Swig::erase");
+  erase( meshUid, allViewers ? -1 : 0 );
+}
+
+/////////////////////////////////////////////////////////////////
+/// Update mesh object.
+/// \deprecated Use update() method.
+/// \param meshUid Mesh's study UID.
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::UpdateActor(const char* meshUid)
+{
+  deprecated("SMESH_Swig::UpdateActor", "SMESH_Swig::update");
+  update( meshUid );
+}
+
+/////////////////////////////////////////////////////////////////
+/// Get mesh object's properties.
+/// \deprecated Use properties() method.
+/// \param meshUid Mesh's study UID.
+/// \param viewUid View window UID (0 means currently active view
+///                window). Default: 0.
+/////////////////////////////////////////////////////////////////
+actorAspect SMESH_Swig::GetActorAspect(const char* meshUid, int viewUid)
+{
+  deprecated("SMESH_Swig::GetActorAspect", "SMESH_Swig::properties");
+  return properties( meshUid, viewUid );
+}
+
+/////////////////////////////////////////////////////////////////
+/// Set mesh object's properties.
+/// \deprecated Use setProperties() method.
+/// \param meshUid Mesh's study UID.
+/// \param viewUid View window UID (0 means currently active view
+///                window). Default: 0.
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::SetActorAspect(const actorAspect& aspect, const char* meshUid, int viewUid)
+{
+  deprecated("SMESH_Swig::SetActorAspect", "SMESH_Swig::setProperties");
+  setProperties( meshUid, aspect, viewUid );
+}
+
+/////////////////////////////////////////////////////////////////
+/// \internal
+/////////////////////////////////////////////////////////////////
 class TSelectListEvent: public SALOME_Event
 {
-  const char*       myId;
-  std::vector<int>  myIdsList;
-  bool              myIsAppend;
+  const char* myUid;
+  std::vector<int> myIds;
+  bool myIsAppend;
 
 public:
-  TSelectListEvent(const char* id, std::vector<int> ids, bool append) :
-    myId(id),
-    myIdsList(ids),
-    myIsAppend(append)
+  TSelectListEvent(const char* uid, std::vector<int> ids, bool append)
+    : myUid( uid ), myIds( ids ), myIsAppend( append )
   {}
+
   virtual void Execute()
   {
-    
     LightApp_SelectionMgr* selMgr = 0;
-    SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
-    if( anApp )
-      selMgr = dynamic_cast<LightApp_SelectionMgr*>( anApp->selectionMgr() );
+    SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
+    if ( app )
+      selMgr = dynamic_cast<LightApp_SelectionMgr*>( app->selectionMgr() );
 
-    if( !selMgr )
+    if ( !selMgr )
       return;
     
     selMgr->clearFilters();
 
-    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow();
-    if(!aViewWindow)
+    SVTK_ViewWindow* vw = SMESH::GetViewWindow();
+    if ( !vw )
       return;
 
-    SMESH_Actor* anActor = SMESH::FindActorByEntry( myId );
+    SMESH_Actor* actor = SMESH::FindActorByEntry( myUid );
     
-    if (!anActor || !anActor->hasIO())
+    if ( !actor || !actor->hasIO() )
       return;
     
-    Handle(SALOME_InteractiveObject) anIO = anActor->getIO();
-    SALOME_ListIO aList;
-    aList.Append(anIO);
-    selMgr->setSelectedObjects(aList, false);
+    Handle(SALOME_InteractiveObject) io = actor->getIO();
+    SALOME_ListIO ios;
+    ios.Append( io );
+    selMgr->setSelectedObjects( ios, false );
 
-    if ( aViewWindow->SelectionMode() ==  ActorSelection ) {
+    if ( vw->SelectionMode() == ActorSelection )
       return;
-    }
         
-    TColStd_MapOfInteger aMap;
-    std::vector<int>::const_iterator anIter;
-    for (anIter = myIdsList.begin(); anIter != myIdsList.end(); ++anIter) {
-      aMap.Add(*anIter);
+    TColStd_MapOfInteger idMap;
+    std::vector<int>::const_iterator it;
+    for ( it = myIds.begin(); it != myIds.end(); ++it )
+    {
+      idMap.Add( *it );
     }
 
     // Set new selection
-    SVTK_Selector* aSelector  = aViewWindow->GetSelector();
-    aSelector->AddOrRemoveIndex(anIO, aMap, myIsAppend);
-    aViewWindow->highlight( anIO, true, true );
-    aViewWindow->GetInteractor()->onEmitSelectionChanged();
+    SVTK_Selector* selector = vw->GetSelector();
+    selector->AddOrRemoveIndex( io, idMap, myIsAppend );
+    vw->highlight( io, true, true );
+    vw->GetInteractor()->onEmitSelectionChanged();
   }
 };
 
-/*!
-  \brief Select the elements on the mesh, sub-mesh or group.
-  \param id object entry
-  \param ids list of the element ids
-  \param mode selection mode
-*/
-void SMESH_Swig::select( const char* id, std::vector<int> ids, bool append ) {
-  ProcessVoidEvent( new TSelectListEvent( id, ids, append ) );
+/////////////////////////////////////////////////////////////////
+/// \brief Select elements of the mesh, sub-mesh or group.
+/// \param uid Mesh object's study UID or IOR.
+/// \param ids List of mesh elements.
+/// \param append If \c true, elements are added to current
+///               selection; otherwise, previous selection is
+///               cleared.
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::select(const char* uid, std::vector<int> ids, bool append)
+{
+  init();
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+    ProcessVoidEvent( new TSelectListEvent( sobject->GetID().c_str(), ids, append ) );
 }
   
-/*!
-  \brief Select the elements on the mesh, sub-mesh or group.
-  \param id object entry
-  \param id id of the element
-  \param mode selection mode
-*/
-void SMESH_Swig::select( const char* id, int id1, bool append ) {
+/////////////////////////////////////////////////////////////////
+/// \brief Select element of the mesh, sub-mesh or group.
+/// \param uid Mesh object's study UID or IOR.
+/// \param id Mesh element.
+/// \param append If \c true, element is added to current
+///               selection; otherwise, previous selection is
+///               cleared.
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::select(const char* uid, int id, bool append)
+{
+  init();
+
   std::vector<int> ids;
-  ids.push_back( id1 );
-  ProcessVoidEvent( new TSelectListEvent( id, ids, append ) );
+  ids.push_back( id );
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+    ProcessVoidEvent( new TSelectListEvent( sobject->GetID().c_str(), ids, append ) );
 }
 
-/*!
-  \brief Helper class for selection edges of cell event
-*/
+/////////////////////////////////////////////////////////////////
+/// \internal
+/////////////////////////////////////////////////////////////////
 class TSelectListOfPairEvent: public SALOME_Event
 {
-  const char*                        myId;
-  std::vector<std::pair<int, int> >  myIdsList;
-  bool                               myIsAppend;
+  const char* myUid;
+  std::vector<std::pair<int, int> > myIds;
+  bool myIsAppend;
 
 public:
-  TSelectListOfPairEvent(const char* id, std::vector<std::pair<int, int> > ids, bool append) :
-    myId(id),
-    myIdsList(ids),
-    myIsAppend(append)
+  TSelectListOfPairEvent(const char* uid, std::vector<std::pair<int, int> > ids, bool append)
+    : myUid( uid ), myIds( ids ), myIsAppend( append )
   {}
+
   virtual void Execute()
   {
-    
     LightApp_SelectionMgr* selMgr = 0;
-    SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
-    if( anApp )
-      selMgr = dynamic_cast<LightApp_SelectionMgr*>( anApp->selectionMgr() );
+    SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
+    if ( app )
+      selMgr = dynamic_cast<LightApp_SelectionMgr*>( app->selectionMgr() );
 
-    if( !selMgr )
+    if ( !selMgr )
       return;
     
     selMgr->clearFilters();
 
-    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow();
-    if(!aViewWindow)
+    SVTK_ViewWindow* vw = SMESH::GetViewWindow();
+    if ( !vw )
       return;
 
-    SMESH_Actor* anActor = SMESH::FindActorByEntry( myId );
+    SMESH_Actor* actor = SMESH::FindActorByEntry( myUid );
     
-    if (!anActor || !anActor->hasIO())
+    if ( !actor || !actor->hasIO() )
       return;
     
-    Handle(SALOME_InteractiveObject) anIO = anActor->getIO();
-    SALOME_ListIO aList;
-    aList.Append(anIO);
-    selMgr->setSelectedObjects(aList, false);
+    Handle(SALOME_InteractiveObject) io = actor->getIO();
+    SALOME_ListIO ios;
+    ios.Append( io );
+    selMgr->setSelectedObjects( ios, false );
 
-    if ( aViewWindow->SelectionMode() !=  EdgeOfCellSelection ) {
+    if ( vw->SelectionMode() != EdgeOfCellSelection )
       return;
-    }
         
-    SVTK_IndexedMapOfIds aMap;
-    std::vector<std::pair<int, int> >::const_iterator anIter;
-    for (anIter = myIdsList.begin(); anIter != myIdsList.end(); ++anIter) {
-      std::vector<int> aCompositeId;
-      aCompositeId.push_back((*anIter).first);
-      aCompositeId.push_back((*anIter).second);
-      aMap.Add(aCompositeId);
+    SVTK_IndexedMapOfIds idMap;
+    std::vector<std::pair<int, int> >::const_iterator it;
+    for ( it = myIds.begin(); it != myIds.end(); ++it )
+    {
+      std::vector<int> pair;
+      pair.push_back( (*it).first );
+      pair.push_back( (*it).second );
+      idMap.Add( pair );
     }
 
     // Set new selection
-    SVTK_Selector* aSelector  = aViewWindow->GetSelector();
-    aSelector->AddOrRemoveCompositeIndex(anIO, aMap, myIsAppend);
-    aViewWindow->highlight( anIO, true, true );
-    aViewWindow->GetInteractor()->onEmitSelectionChanged();
+    SVTK_Selector* selector = vw->GetSelector();
+    selector->AddOrRemoveCompositeIndex( io, idMap, myIsAppend );
+    vw->highlight( io, true, true );
+    vw->GetInteractor()->onEmitSelectionChanged();
   }
 };
 
-/*!
-  \brief Select the elements on the mesh, sub-mesh or group.
-  \param id object entry
-  \param ids list of the element ids
-  \param mode selection mode
-*/
-void SMESH_Swig::select( const char* id, std::vector<std::pair<int,int> > ids, bool append ) {
-  ProcessVoidEvent( new TSelectListOfPairEvent( id, ids, append ) );
+/////////////////////////////////////////////////////////////////
+/// \brief Select pseudo-edges (specified by two nodes)
+///        of the mesh, sub-mesh or group.
+/// \param uid Mesh object's study UID or IOR.
+/// \param ids List of pairs containing two nodes IDs.
+/// \param append If \c true, pseudo-edges are added to current
+///               selection; otherwise, previous selection is
+///               cleared.
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::select(const char* uid, std::vector<std::pair<int,int> > ids, bool append)
+{
+  init();
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+    ProcessVoidEvent( new TSelectListOfPairEvent( sobject->GetID().c_str(), ids, append ) );
 }
 
-class TGetSelectionModeEvent : public SALOME_Event
+/////////////////////////////////////////////////////////////////
+/// \internal
+/////////////////////////////////////////////////////////////////
+class TGetSelectionModeEvent: public SALOME_Event
 {
 public:
   typedef SelectionMode TResult;
   TResult myResult;
-  TGetSelectionModeEvent() : myResult( Undefined ) {}
+  int myViewUid;
+
+  TGetSelectionModeEvent( int viewUid ) :
+    myResult( Undefined ), myViewUid( viewUid ) {}
+
   virtual void Execute()
   {
-    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( );
-    if(!aViewWindow)
-      return;
-    
-    myResult = (SelectionMode) aViewWindow->SelectionMode();
+    SVTK_Viewer* model = dynamic_cast<SVTK_Viewer*>( uid2wnd( myViewUid ) );
+    if ( model )
+    {
+      SVTK_ViewWindow* vw = dynamic_cast<SVTK_ViewWindow*>( model->getViewManager()->getActiveView() );
+      if ( vw )
+	myResult = (SelectionMode)vw->SelectionMode();
+    }
   }
 };
 
-/*!
-  \brief Get selection mode of the active VTK View window.
-*/
-SelectionMode SMESH_Swig::getSelectionMode() {
-  return ProcessEvent( new TGetSelectionModeEvent() );
+/////////////////////////////////////////////////////////////////
+/// \brief Get selection mode of view window.
+/// \param viewUid View window UID (0 means currently active view
+///                window); Default: 0.
+/// \return Current selection mode.
+/////////////////////////////////////////////////////////////////
+SelectionMode SMESH_Swig::getSelectionMode(int viewUid)
+{
+  init();
+  return ProcessEvent( new TGetSelectionModeEvent( viewUid ) );
 }
 
-
-/*!
- * Event to set selection mode
-*/
-class TSetSelectionModeEvent : public SALOME_Event
+/////////////////////////////////////////////////////////////////
+/// \internal
+/////////////////////////////////////////////////////////////////
+class TSetSelectionModeEvent: public SALOME_Event
 {
   SelectionMode mySelectionMode;
+  int myViewUid;
 
 public:
-
-  TSetSelectionModeEvent(const SelectionMode selectionMode) :
-    mySelectionMode(selectionMode) 
+  TSetSelectionModeEvent( const SelectionMode selectionMode, int viewUid )
+    : mySelectionMode( selectionMode ), myViewUid( viewUid )
   {}
 
   virtual void Execute()
   {
-    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow();
-    if(!aViewWindow)
-      return;
-
-    Selection_Mode prevMode = aViewWindow->SelectionMode();
-    bool changePointRepresentation = ( prevMode == NodeSelection && mySelectionMode != Node ) ||
-      (prevMode != NodeSelection && mySelectionMode == Node);
-      
-    if( changePointRepresentation ) {
-      vtkRenderer *aRenderer = aViewWindow->getRenderer();
-      VTK::ActorCollectionCopy aCopy(aRenderer->GetActors());
-      vtkActorCollection *aCollection = aCopy.GetActors();
-      aCollection->InitTraversal();
-      while(vtkActor *anAct = aCollection->GetNextActor()){
-	if(SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)){
-	  if(anActor->GetVisibility()){
-	    anActor->SetPointRepresentation(mySelectionMode == Node);
+    SVTK_Viewer* model = dynamic_cast<SVTK_Viewer*>( uid2wnd( myViewUid ) );
+    if ( model )
+    {
+      SVTK_ViewWindow* vw = dynamic_cast<SVTK_ViewWindow*>( model->getViewManager()->getActiveView() );
+      if ( vw )
+      {
+	SelectionMode previousMode = (SelectionMode)vw->SelectionMode();
+	bool switchPointMode = ( previousMode == Node && mySelectionMode != Node ) ||
+	  ( previousMode != Node && mySelectionMode == Node );
+	if ( switchPointMode )
+	{
+	  vtkRenderer* renderer = vw->getRenderer();
+	  VTK::ActorCollectionCopy actors( renderer->GetActors() );
+	  vtkActorCollection* collection = actors.GetActors();
+	  collection->InitTraversal();
+	  while ( vtkActor* vtkActor = collection->GetNextActor() )
+	  {
+	    if ( SMESH_Actor* actor = dynamic_cast<SMESH_Actor*>( vtkActor ) )
+	    {
+	      if ( actor->GetVisibility() )
+		actor->SetPointRepresentation( mySelectionMode == Node );
+	    }
 	  }
 	}
+	vw->SetSelectionMode( mySelectionMode );
       }
     }
-    aViewWindow->SetSelectionMode(mySelectionMode);
   }
 };
 
-void SMESH_Swig::setSelectionMode(SelectionMode selectionMode){
-  ProcessVoidEvent( new TSetSelectionModeEvent( selectionMode ) ); 
+/////////////////////////////////////////////////////////////////
+/// \brief Set selection mode to view window.
+/// \param viewUid View window UID (0 means currently active view
+///                window); Default: 0.
+/// \param mode Selection mode.
+/////////////////////////////////////////////////////////////////
+void SMESH_Swig::setSelectionMode(SelectionMode mode, int viewUid)
+{
+  init();
+  ProcessVoidEvent( new TSetSelectionModeEvent( mode, viewUid ) ); 
 }
 
-class TGetSelectedEvent : public SALOME_Event
+/////////////////////////////////////////////////////////////////
+/// \internal
+/////////////////////////////////////////////////////////////////
+class TGetSelectedEvent: public SALOME_Event
 {
 public:
   typedef std::vector<int> TResult;
   TResult myResult;
-  const char* myId;
+  const char* myUid;
   
-  TGetSelectedEvent( const char* id) : 
-    myResult( std::vector<int>() ),
-    myId(id)
-  {}
+  TGetSelectedEvent( const char* uid )
+    : myUid( uid ) {}
   
   virtual void Execute()
   {
-    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow();
-    if( !aViewWindow )
+    SVTK_ViewWindow* vw = SMESH::GetViewWindow();
+    if ( !vw )
       return;
 
-    SVTK_Selector* aSelector  = aViewWindow->GetSelector();    
-    if( !aSelector )
+    SVTK_Selector* selector = vw->GetSelector();    
+    if ( !selector )
       return;
 
-    SMESH_Actor* anActor = SMESH::FindActorByEntry( myId );
-    
-    if ( !anActor || !anActor->hasIO() )
+    SMESH_Actor* actor = SMESH::FindActorByEntry( myUid );
+    if ( !actor || !actor->hasIO() )
       return;
 
-    TColStd_IndexedMapOfInteger aMapIndex;
-    aSelector->GetIndex(anActor->getIO(),aMapIndex);
+    TColStd_IndexedMapOfInteger idMap;
+    selector->GetIndex( actor->getIO(), idMap );
 
-    for( int i = 1; i <= aMapIndex.Extent(); i++ )
-      myResult.push_back( aMapIndex( i ) );
+    for ( int i = 1; i <= idMap.Extent(); i++ )
+      myResult.push_back( idMap( i ) );
   }
 };
 
-std::vector<int> SMESH_Swig::getSelected( const char* Mesh_Entry ) {
-  return ProcessEvent( new TGetSelectedEvent(Mesh_Entry) );
+/////////////////////////////////////////////////////////////////
+/// \brief Get selected elements of the mesh, sub-mesh or group.
+/// \param uid Mesh object's study UID or IOR.
+/// \return List of selected mesh elements.
+/////////////////////////////////////////////////////////////////
+std::vector<int> SMESH_Swig::getSelected(const char* uid)
+{
+  std::vector<int> ids;
+
+  init();
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+    ids = ProcessEvent( new TGetSelectedEvent( sobject->GetID().c_str() ) );
+
+  return ids;
 }
 
+/////////////////////////////////////////////////////////////////
+/// \internal
+/////////////////////////////////////////////////////////////////
 class TGetSelectedPairEvent : public SALOME_Event
 {
 public:
   typedef std::vector<std::pair<int, int> > TResult;
   TResult myResult;
-  const char* myId;
+  const char* myUid;
   
-  TGetSelectedPairEvent( const char* id) : 
-    myResult( std::vector<std::pair<int,int> >() ),
-    myId(id)
-  {}
+  TGetSelectedPairEvent( const char* uid )
+    :  myUid( uid ) {}
   
   virtual void Execute()
   {
-    SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow();
-    if( !aViewWindow )
+    SVTK_ViewWindow* vw = SMESH::GetViewWindow();
+    if ( !vw )
       return;
 
-    if(aViewWindow->SelectionMode() != EdgeOfCellSelection )
+    if ( vw->SelectionMode() != EdgeOfCellSelection )
       return;
 
-    SVTK_Selector* aSelector  = aViewWindow->GetSelector();    
-    if( !aSelector )
+    SVTK_Selector* selector = vw->GetSelector();    
+    if ( !selector )
       return;
 
-    SMESH_Actor* anActor = SMESH::FindActorByEntry( myId );
-    
-    if ( !anActor || !anActor->hasIO() )
+    SMESH_Actor* actor = SMESH::FindActorByEntry( myUid );
+    if ( !actor || !actor->hasIO() )
       return;
 
-    SVTK_IndexedMapOfIds aMapIndex;
-    aSelector->GetCompositeIndex(anActor->getIO(),aMapIndex);
+    SVTK_IndexedMapOfIds idMap;
+    selector->GetCompositeIndex( actor->getIO(), idMap );
 
-    for( int i = 1; i <= aMapIndex.Extent(); i++ )
-      myResult.push_back( std::make_pair<int,int>( (int)aMapIndex( i )[0], (int)aMapIndex( i )[1]) );
+    for ( int i = 1; i <= idMap.Extent(); i++ )
+      myResult.push_back( std::make_pair<int,int>( (int)idMap( i )[0], (int)idMap( i )[1]) );
   }
 };
 
-std::vector<std::pair<int,int> > SMESH_Swig::getSelectedEdgeOfCell( const char* Mesh_Entry ) {
-  return ProcessEvent( new TGetSelectedPairEvent(Mesh_Entry) );
-}
+/////////////////////////////////////////////////////////////////
+/// \brief Get selected pseudo-edges (specified by two nodes)
+///        of the mesh, sub-mesh or group.
+/// \param uid Mesh object's study UID or IOR.
+/// \param ids List of pairs containing two nodes IDs.
+/// \param append If \c true, pseudo-edges are added to current
+///               selection; otherwise, previous selection is
+///               cleared.
+/////////////////////////////////////////////////////////////////
+std::vector<std::pair<int,int> > SMESH_Swig::getSelectedEdgeOfCell(const char* uid)
+{
+  std::vector<std::pair<int,int> > pairs;
 
+  init();
+
+  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  if ( sobject )
+    pairs = ProcessEvent( new TGetSelectedPairEvent( sobject->GetID().c_str() ) );
+
+  return pairs;
+}
