@@ -958,7 +958,7 @@ void SMESH_PreMeshInfo::readSubMeshes(DriverMED_R_SMESHDS_Mesh* reader) const
             if ( isNode ) {
               SMDS_PositionPtr pos = aPositionCreator.MakePosition( smType[ smID ]);
               SMDS_MeshNode* node = const_cast<SMDS_MeshNode*>( static_cast<const SMDS_MeshNode*>( elem ));
-              node->SetPosition( pos );
+              node->SetPosition( pos, sm->GetID() );
               sm->AddNode( node );
             } else {
               sm->AddElement( elem );
