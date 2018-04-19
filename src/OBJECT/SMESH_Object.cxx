@@ -518,7 +518,8 @@ bool SMESH_VisualObjDef::GetEdgeNodes( const int theElemId,
 
 vtkUnstructuredGrid* SMESH_VisualObjDef::GetUnstructuredGrid()
 {
-  if ( !myLocalGrid && !GetMesh()->IsCompacted() )
+  if ( !myLocalGrid && ( !GetMesh()->IsCompacted() || // !IsCompacted() is needed ???
+                         GetMesh()->GetGrid()->GetMTime() > myGrid->GetMTime() ))
   {
     NulData(); // detach from the SMDS grid to allow immediate memory de-allocation in CompactMesh()
     GetMesh()->CompactMesh();

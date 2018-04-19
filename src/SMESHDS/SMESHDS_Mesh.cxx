@@ -1047,7 +1047,7 @@ void SMESHDS_Mesh::ClearMesh()
     }
     else
     {
-      (*group)->Extent(); // to free cashed elements in GroupOnFilter's
+      (*group)->Extent(); // to free cached elements in GroupOnFilter's
     }
   }
 }

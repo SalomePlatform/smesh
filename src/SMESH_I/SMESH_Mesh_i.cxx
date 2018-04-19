@@ -160,7 +160,7 @@ SMESH_Mesh_i::~SMESH_Mesh_i()
   }
   _mapHypo.clear();
 
-  // clear cashed shapes if no more meshes remain; (the cash is blame,
+  // clear cached shapes if no more meshes remain; (the cache is blame,
   // together with publishing, of spent time increasing in issue 22874)
   if ( _impl->NbMeshes() == 1 )
     _gen_i->GetShapeReader()->ClearClientBuffer();
