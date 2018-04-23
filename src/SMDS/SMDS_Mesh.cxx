@@ -1831,6 +1831,7 @@ void SMDS_Mesh::RemoveElement(const SMDS_MeshElement *               elem,
     case SMDSAbs_All: // avoid compilation warning
     case SMDSAbs_NbElementTypes: break;
     }
+    removedElems.push_back( *it);
 
     myCellFactory->Free( static_cast< const SMDS_MeshCell*>( *it ));
 
