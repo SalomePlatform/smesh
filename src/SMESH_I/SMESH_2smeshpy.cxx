@@ -5130,7 +5130,7 @@ int _pyStringFamily::isIn( const char* str )
       if (( len = itSub->isIn( str + itSub->_prefix.Length() )) >= 0 )
         return itSub->_prefix.Length() + len;
     }
-    else if ( cmp > 0 )
+    else if ( cmp < 0 )
       break;
   }
   if ( !_strings.empty() )
