@@ -81,7 +81,7 @@ OPTION(SALOME_SMESH_USE_CGNS       "Enable import/export to CGNS format" OFF)
 OPTION(SALOME_SMESH_USE_TBB        "Enable parallel computation" OFF)
 OPTION(SALOME_SMESH_DYNLOAD_LOCAL  "Load plug-ins' symbols locally (Linux only)" ON)
 CMAKE_DEPENDENT_OPTION(SALOME_SMESH_BUILD_FRENCH_DOC "Generate SALOME SMESH French documentation" OFF
-                       "NOT SALOME_BUILD_DOC" OFF)
+                       "SALOME_BUILD_DOC" OFF)
 
 IF(SALOME_SMESH_DYNLOAD_LOCAL)
   ADD_DEFINITIONS(-DDYNLOAD_LOCAL)
