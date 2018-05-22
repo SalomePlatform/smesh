@@ -4425,6 +4425,12 @@ bool ElementsOnShape::IsSatisfy (const SMDS_MeshElement* elem)
   return isSatisfy;
 }
 
+//================================================================================
+/*!
+ * \brief Check and optionally return a satisfying shape
+ */
+//================================================================================
+
 bool ElementsOnShape::IsSatisfy (const SMDS_MeshNode* node,
                                  TopoDS_Shape*        okShape)
 {

@@ -2083,7 +2083,9 @@ void SMESHGUI_TreeElemInfo::information( const QList<long>& ids )
         afunctor->SetMesh( actor()->GetObject()->GetMesh() );
         QTreeWidgetItem* minEdgeItem = createItem( cntrItem, Bold );
         minEdgeItem->setText( 0, tr( "MIN_ELEM_EDGE" ));
-        minEdgeItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( id )) );
+        SMESH::Controls::TSequenceOfXYZ points;
+        afunctor->GetPoints( e, points ); // "non-standard" way, to make it work for all elem types
+        minEdgeItem->setText( 1, QString( "%1" ).arg( afunctor->GetValue( points )) );
 
         // gravity center
         XYZ gc = gravityCenter( e );

@@ -1170,6 +1170,11 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
   if ( !assocOrProjBottom2Top( bottomToTopTrsf, thePrism ) ) // it also fills myBotToColumnMap
     return false;
 
+  // If all "vertical" EDGEs are straight, then all nodes of an internal node column
+  // are located on a line connecting the top node and the bottom node.
+  bool isStrightColunm = allVerticalEdgesStraight( thePrism );
+  if ( isStrightColunm )
+    myUseBlock = false;
 
   // Create nodes inside the block
 
@@ -1208,9 +1213,6 @@ bool StdMeshers_Prism_3D::compute(const Prism_3D::TPrismTopo& thePrism)
 
     myHelper->SetElementsOnShape( true );
 
-    // If all "vertical" EDGEs are straight, then all nodes of an internal node column
-    // are located on a line connecting the top node and the bottom node.
-    bool isStrightColunm = allVerticalEdgesStraight( thePrism );
     if ( !isStrightColunm )
     {
       double tol = getSweepTolerance( thePrism );
