@@ -42,6 +42,7 @@ SET(BAD_TESTS
   quality_controls_ex21.py
   quality_controls_ex22.py
   viewing_meshes_ex01.py
+  radial_prism_3d_algo.py
   )
 
 SET(GOOD_TESTS
@@ -137,6 +138,7 @@ SET(GOOD_TESTS
   modifying_meshes_ex23.py
   modifying_meshes_ex24.py
   modifying_meshes_ex25.py
+  modifying_meshes_split_vol.py
   prism_3d_algo.py
   quality_controls_ex01.py
   quality_controls_ex02.py

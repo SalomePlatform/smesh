@@ -5,31 +5,33 @@ Clipping
 ********
 
 **Clipping** allows creating cross-section views (clipping planes) of your mesh.
-It is available as a sub-item in the context menu of an active mesh. 
-To create a clipping plane, click on the **New** button in the dialog and choose how it is  defined: by **Absolute** or **Relative** coordinates.
-**Absolute Coordinates**
+It is available as a sub-item in the context menu of an active mesh in 3D Viewer.
+To create a clipping plane, click on the **New** button in the dialog and choose how it is defined: by **Absolute** or **Relative** coordinates.
 
-.. image:: ../images/Clipping_Absolute.png
+* **Absolute Coordinates**
+
+  .. image:: ../images/Clipping_Absolute.png
 	:align: center
 
-* **Base point** - allows defining the coordinates of the base point for the clipping plane.
-* **Reset** - returns the base point to coordinate origin.
-* **Direction** - allows defining the orientation of the clipping plane.
-* **Invert** - allows selecting, which part of the object will be removed and which will remain after clipping.
+  * **Base point** - allows defining the coordinates of the base point for the clipping plane.
+     * **Reset** - returns the base point to the coordinate origin.
+  * **Direction** - allows defining the orientation of the clipping plane.
+     * **Invert** - allows selecting, which part of the object will be removed and which will remain after clipping.
     
-**Relative mode**  
+* **Relative mode**  
 
-.. image:: ../images/Clipping_Relative.png
+  .. image:: ../images/Clipping_Relative.png
 	:align: center
 
-* **Orientation** ( ||X-Y, ||X-Z or ||Y-Z).
-* **Distance** between the opposite extremities of the boundary box of selected objects, if it is set to 0.5 the boundary box is split in two halves.
-* **Rotation** (in angle degrees) **around X** (Y to Z) and **around Y** (X to Z) (depending on the chosen Orientation)
+  * **Orientation** ( ||X-Y, ||X-Z or ||Y-Z).
+  * **Distance** between the opposite extremities of the boundary box of selected objects, if it is set to 0.5 the boundary box is split in two halves.
+  * **Rotation** (in angle degrees) **around X** (Y to Z) and **around Y** (X to Z) (depending on the chosen Orientation)
 
 	.. image:: ../images/before_clipping_preview.png 
 		:align: center
 
-"The preview plane and the cut object"
+        .. centered:: 
+           The preview plane and the cut object
 
 The other parameters are available in both modes : 
 
@@ -39,20 +41,20 @@ The other parameters are available in both modes :
 * **Show preview** check-box shows the clipping plane in the **3D Viewer**.
 * **Auto Apply** check-box shows button is on, you can preview the cross-section in the **3D Viewer**.
 
-It is also possible to interact  with the clipping plane directly in 3D view using the mouse. 
+It is also possible to interact with the clipping plane directly in 3D view using the mouse. 
 
-To get a new object from **Clipping**, click **Apply**.
+To get an object clipped, click **Apply**.
 
 **Examples:**
 
 	.. image:: ../images/dataset_clipping.png
 		:align: center
 
-"The cross-section using dataset"
+        .. centered:: 
+           The cross-section using dataset
 
 	.. image:: ../images/opengl_clipping.png
 		:align: center
 
-"The OpenGL cross-section"
-
-
+        .. centered:: 
+           The OpenGL cross-section

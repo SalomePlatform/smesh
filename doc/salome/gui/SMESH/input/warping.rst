@@ -21,25 +21,17 @@ length of each half edge is measured and the shortest length is
 assigned *l*. The warp angle is the arcsine of the ratio of the
 projection height *h* to the half edge length *l*.
 
-**To apply the Warping quality criterion to your mesh:**
+*To apply the Warping quality criterion to your mesh:*
+
+.. |img| image:: ../images/image39.png
 
 #. Display your mesh in the viewer.
+#. Choose **Controls > Face Controls > Warping Angle** or click *"Warping angle"* button |img| of the toolbar.
 
-#. Choose **Controls > Face Controls > Warping Angle** or click **"Warping angle"** button of the toolbar.
-
-	.. image:: ../images/image39.png
-		:align: center
-
-	.. centered::
-		**"Warping angle" button**
-
-	Your mesh will be displayed in the viewer with its elements colored according to the applied mesh quality control criterion:
+   Your mesh will be displayed in the viewer with its elements colored according to the applied mesh quality control criterion:
 
 	.. image:: ../images/image97.jpg
        		:align: center
 
 
-**See Also** a sample TUI Script of a 
-:ref:`tui_warping` operation.  
-
-
+**See Also** a sample TUI Script of a :ref:`tui_warping` filter.

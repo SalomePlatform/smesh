@@ -7,15 +7,11 @@ Diagonal inversion of two triangles
 In MESH you can inverse the diagonal (edge) of a pseudo-quadrangle
 formed by two neighboring triangles with one common edge.
 
-**To inverse the diagonal:**
+*To inverse the diagonal:*
 
-#. From the **Modification** menu choose the **Diagonal inversion** item or click **"Diagonal Inversion"** button in the toolbar.
+#. From the **Modification** menu choose the **Diagonal inversion** item or click *"Diagonal Inversion"* |img| button in the toolbar.
 
-	.. image:: ../images/image70.png
-		  :align: center
-
-	.. centered::
-		**"Diagonal Inversion" button**
+.. |img| image:: ../images/image70.png
 
 The following dialog box shall appear:
 
@@ -29,13 +25,13 @@ The following dialog box shall appear:
 		  :align: center
 
 	.. centered::
-		"The selected edge"
+		The selected edge
 
 	.. image:: ../images/image36.jpg 
 		  :align: center
 
 	.. centered::
-		"The inverted edge"
+		The inverted edge
 
 **See Also** a sample TUI Script of a :ref:`tui_diagonal_inversion` operation.  
 

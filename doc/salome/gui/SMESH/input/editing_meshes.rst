@@ -4,21 +4,16 @@
 Editing Meshes
 **************
 
-After you have created a mesh or sub-mesh with definite applied meshing algorithms and hypotheses you can edit your mesh by **assigning** other
-algorithms and/or hypotheses or **unassigning** the applied hypotheses and algorithms. The editing proceeds in the same way as 
-:ref:`create_mesh_anchor`:"Mesh Creation".
+After you have created a mesh or sub-mesh with definite applied meshing algorithms and hypotheses you can edit your mesh by **assigning** other algorithms and/or hypotheses or **unassigning** the applied hypotheses and algorithms. The editing proceeds in the same way as 
+:ref:`Mesh Creation <create_mesh_anchor>`.
 
 .. image:: ../images/createmesh-inv3.png
 	:align: center
 
+.. |img| image:: ../images/image122.png
+
 You can also change values for the current hypothesis by clicking the
-**"Edit Hypothesis"** button.
-
-.. image:: ../images/image122.png
-	:align: center
-
-.. centered::
-	**"Edit Hypothesis" button**
+*"Edit Hypothesis"* |img| button.
 
 Mesh entities generated before using changed hypotheses are automatically removed.
 
@@ -29,15 +24,15 @@ changes if we apply different meshing parameters to it.
 	:align: center
 
 .. centered::
-	 "Example of a mesh with Max. Element area 2D hypothesis roughly corresponding to 1D hypotheses on edges"
+	 Example of a mesh with Max. Element area 2D hypothesis roughly corresponding to 1D hypotheses on edges
 
 
 .. image:: ../images/edit_mesh_change_value_hyp.png
 	:align: center
 
 .. centered::
-	"And now the Max Element area is greatly reduced"
+	And now the Max Element area is greatly reduced
 
-**See Also** a sample TUI Script of an :ref:`tui_editing_mesh` operation.  
+**See Also** a sample TUI Script of an :ref:`Edit Mesh <tui_editing_mesh>` operation.  
 
 

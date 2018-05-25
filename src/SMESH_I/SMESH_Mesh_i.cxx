@@ -1128,6 +1128,8 @@ void SMESH_Mesh_i::RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup 
   // Remove contents
   for ( size_t i = 0; i < elems.size(); ++i )
   {
+    // if ( !_impl->GetMeshDS()->Contains( elems[i] ))
+    //   continue;
     if ( !isNodal )
     {
       for ( SMDS_ElemIteratorPtr nIt = elems[i]->nodesIterator(); nIt->more(); )

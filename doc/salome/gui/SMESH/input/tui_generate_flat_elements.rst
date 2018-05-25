@@ -29,15 +29,11 @@ The flat element of the multiple junctions between the simple junction are store
 This example represents an iron cable (a thin cylinder) in a concrete bloc (a big cylinder).
 The big cylinder is defined by two geometric volumes.
 
-.. _generate_flat_elements.py:
-
-``generate_flat_elements.py``
-
 .. literalinclude:: ../../../examples/generate_flat_elements.py
     :linenos:
     :language: python
 
-:download:`../../../examples/generate_flat_elements.py`
+:download:`Download this script <../../../examples/generate_flat_elements.py>`
 
 Here, the 4 groups of volumes [Solid_1_1, Solid_2_1, Solid_3_1, Solid_4_1] constitute a partition of the mesh.
 The flat elements on group boundaries and on faces are built with the

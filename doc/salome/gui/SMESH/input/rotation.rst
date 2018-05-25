@@ -6,17 +6,12 @@ Rotation
 
 This operation allows to rotate in space the mesh or some of its elements.
 
-**To rotate the mesh:**
+*To rotate the mesh:*
 
-#. From the **Modification** menu choose **Transformation** -> **Rotation** item  or click **"Rotation"** button in the toolbar.
- 
-	.. image:: ../images/rotation_ico.png 
-		:align: center
+.. |img| image:: ../images/rotation_ico.png 
 
-	.. centered::
-		"Rotation button"
-
-	The following dialog will appear:
+#. From the **Modification** menu choose **Transformation** -> **Rotation** item  or click *"Rotation"* button |img| in the toolbar.
+   The following dialog will appear:
 
 	.. image:: ../images/rotation.png
 		:align: center
@@ -51,13 +46,13 @@ This operation allows to rotate in space the mesh or some of its elements.
 	:align: center
 
 .. centered::
-	"The initial mesh"
+	The initial mesh
 
 .. image:: ../images/rotation2.png 
 	:align: center
 
 .. centered::
-	"The rotated mesh"
+	The rotated mesh
 
 **See Also** a sample TUI Script of a :ref:`tui_rotation` operation.  
 

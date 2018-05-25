@@ -10,35 +10,29 @@ This functionality allows to generate mesh elements on the borders of elements o
 	:align: center
 
 .. centered::
-	"Missing 2D elements were generated"
+	Missing 2D elements were generated
 
 
-**To generate border elements:**
+*To generate border elements:*
+
+.. |img| image:: ../images/2d_from_3d_ico.png
 
 #. Select a mesh or group in the Object Browser or in the 3D Viewer
-#. From the Modification menu choose "Create boundary elements" item, or click "Create boundary elements" button in the toolbar
+#. From the **Modification** menu choose **Create boundary elements** item, or click "Create boundary elements" button |img| in the toolbar
 
-	.. image:: ../images/2d_from_3d_ico.png
-	 	:align: center
-
-	.. centered::
-		"Create boundary elements icon"
-
-
-	The following dialog box will appear:
+   The following dialog box will appear:
 
 	.. image:: ../images/2d_from_3d_dlg.png	
 		:align: center
 
 	.. centered::
-		 "Create boundary elements dialog box".
-
+		 Create boundary elements dialog box
 
 #. Check in the dialog box one of two radio buttons corresponding to the type of operation you would like to perform.
 #. Fill the other fields available in the dialog box.
 #. Click the **Apply** or **Apply and Close** button to perform the operation.
 
-"Create boundary elements" dialog allows creation of boundary elements of two types.
+*Create boundary elements* dialog allows creation of boundary elements of two types.
 
 * **2D from 3D** creates missing mesh faces on free facets of volume elements
 * **1D from 2D** creates missing mesh edges on free edges of mesh faces

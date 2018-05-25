@@ -8,7 +8,8 @@ You can change the representation of points in
 the 3D viewer either by selecting one of the predefined
 shapes or by loading a custom texture from an external file.
 
-- Standard point markers
+Standard point markers
+----------------------
 
 The Mesh module provides a set of predefined point marker shapes
 which can be used to display points in the 3D viewer.
@@ -23,9 +24,10 @@ form) and scale factor (defines shape size).
 	:align: center
 
 .. centered::
-	"Mesh presentation with standard point markers"
+	Mesh presentation with standard point markers
 
-- Custom point markers
+Custom point markers
+--------------------
 
 It is also possible to load a point marker shape from an external file.
 This file should provide a description of the point texture as a set
@@ -57,7 +59,4 @@ Here is a texture file sample:
 	:align: center
 
 .. centered::
-	"Mesh presentation with custom point markers"
-
-
-
+	Mesh presentation with custom point markers

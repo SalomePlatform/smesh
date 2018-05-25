@@ -11,5 +11,5 @@ This mesh quality control highlights segments according to the number of element
 
 In this picture the borders at multi-connection are displayed in blue.
 
-**See Also** a sample TUI Script of a :ref:`tui_borders_at_multiconnection` operation.
+**See Also** a sample TUI Script of a :ref:`tui_borders_at_multiconnection` filter.
 

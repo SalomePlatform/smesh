@@ -18,19 +18,16 @@ So that
 	:align: center
 
 .. centered:: 
-	"Mesh before and after splitting"
+	Mesh before and after splitting
 
-**To split bi-quadratic elements into linear:**
+*To split bi-quadratic elements into linear:*
 
-#. From the **Modification** menu choose the **Split bi-quadratic into linear** item or click **"Split bi-quadratic into linear"** button in the toolbar.
+.. |img| image:: ../images/split_biquad_to_linear_icon.png
 
-	.. image:: ../images/split_biquad_to_linear_icon.png
-		:align: center
+#. From the **Modification** menu choose the **Split bi-quadratic into linear** item or click *"Split bi-quadratic into linear"* button |img| in the toolbar.
 
-	.. centered:: 
-		**"Split bi-quadratic into linear" button**
 
-	The following dialog box shall appear:
+   The following dialog box shall appear:
 
 	.. image:: ../images/split_biquad_to_linear_dlg.png
 		:align: center

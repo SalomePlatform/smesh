@@ -4,7 +4,7 @@
 Creating groups
 ***************
 
-In MESH you can create a :ref:`grouping_elements_page` of elements of a certain type. The main way to create a group, is to
+In MESH you can create a group of elements of a certain type. The main way to create a group, is to
 select in the **Mesh** menu **Create Group** item (also available in the context menu of the mesh).
 To create a group you should define the following: 
 
@@ -32,7 +32,7 @@ Mesh module distinguishes between the three Group types:
 the following ways:
 
 * By adding all entities of the chosen type existing in the mesh. For this, turn on the **Select All** check-box. In this mode all controls, which allow selecting the entities, are disabled.
-* By choosing entities manually with the mouse in the 3D Viewer. For this, turn on the **Enable manual edition** check box. You can click on an element in the 3D viewer and it will be highlighted. After that click the **Add** button and the ID of this element will be added to the list. The **Set filter** button allows to define the filter for selection of the elements for your group. See more about filters on the :ref:`selection_filter_library_page` "Selection filter library" page. 
+* By choosing entities manually with the mouse in the 3D Viewer. For this, turn on the **Enable manual edition** check box. You can click on an element in the 3D viewer and it will be highlighted. After that click the **Add** button and the ID of this element will be added to the list. The **Set filter** button allows to define the filter for selection of the elements for your group. See more about filters on the :ref:`selection_filter_library_page` page. 
 * By adding entities from either a sub-mesh or another group. For this, turn on the **Enable manual edition** check box. **Select from** fields group allows to select a sub-mesh or a group of the appropriate type and to **Add** their elements to the group.
 
 In the **manual edition** mode you can
@@ -54,13 +54,13 @@ For example, to create a new group containing all faces of an existing group and
 * Click **Apply** button to create the new group.
 
 
-Please note that the new group does not have references to the source group. It contains only the list of face IDs. So if the source group is changed, the new one is not updated accordingly.
+.. note:: The new group does not have references to the source group. It contains only the list of face IDs. So if the source group is changed, the new one is not updated accordingly.
 
 .. image:: ../images/image130.gif
 	:align: center
 
 .. centered::
-	In this picture the brown cells belong to a group defined manually.
+	Brown cells belong to a group defined manually
 
 **See Also** a sample TUI Script of a :ref:`tui_create_standalone_group` operation.  
 
@@ -70,15 +70,17 @@ Please note that the new group does not have references to the source group. It 
 "Group on Geometry"
 ###################
 
+.. |sel| image:: ../images/image120.png
+
 To create a group on geometry check **Group on geometry** in the **Group** **type** field. The group on geometry contains the elements of a certain type generated on the selected geometrical object. Group contents are dynamically updated if the mesh is modified. The group on geometry can be created only if the mesh is based on geometry.
 
-To define a group, click the *Selection* button and choose
+To define a group, click the *Selection* button |sel| and choose
 
-* **Direct geometry selection** to select a shape in the Object Browser or in the Viewer;
-* **Find geometry by mesh element selection** to activate a dialog which retrieves a shape by the selected element generated on this shape.
+* *Direct geometry selection* to select a shape in the Object Browser or in the Viewer;
+* *Find geometry by mesh element selection* to activate a dialog which retrieves a shape by the selected element generated on this shape.
 
 .. note:: 
-	that this choice is available only if the mesh elements are already generated.
+	This choice is available only if the mesh elements are already generated.
 
 .. image:: ../images/a-creategroup.png
 	:align: center
@@ -88,7 +90,8 @@ After confirmation of the operation a new group of mesh elements will be created
 .. image:: ../images/image132.gif
 	:align: center
 
-In this picture the cells which belong to a certain geometrical face are selected in green.
+.. centered::
+   Cells belonging to a certain geometrical face are selected in green
 
 **See Also** a sample TUI Script of a  :ref:`tui_create_group_on_geometry` operation.
 
@@ -108,5 +111,3 @@ To define a group, click the **Set filter** button and define criteria of the fi
 		:align: center
 
 **See Also** a sample TUI Script of a :ref:`tui_create_group_on_filter` operation.
-
-

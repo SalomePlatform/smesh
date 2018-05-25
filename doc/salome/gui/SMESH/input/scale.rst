@@ -6,17 +6,18 @@ Scale
 
 This geometrical operation allows to scale in space your mesh or some of its elements.
 
-**To scale a mesh:**
+*To scale a mesh:*
 
 #. From the **Modification** menu choose **Transformation** -> **Scale Transform** item.
-	One of the following dialogs will appear:
 
-	With one scale factor:
+   The following dialogs will appear, where you can select how to scale:
+
+	* with one scale factor:
 
 	.. image:: ../images/scale01.png
 		:align: center
 
-	Or with different scale factors for axes:
+	* or with different scale factors for axes:
 
 	.. image:: ../images/scale02.png
 		:align: center
@@ -50,7 +51,7 @@ This geometrical operation allows to scale in space your mesh or some of its ele
 	.. image:: ../images/scaleinit01.png
 		:align: center
 
-	and union 3 faces (along axis Z) to group "gr_faces"
+   and union 3 faces (along axis Z) to group "gr_faces"
 
 	.. image:: ../images/scaleinit02.png
 		:align: center
@@ -62,7 +63,7 @@ This geometrical operation allows to scale in space your mesh or some of its ele
 	.. image:: ../images/scale03.png
 		:align: center
 
-	result after operation:
+   result after operation:
 
 	.. image:: ../images/scaleres03.png
 		:align: center
@@ -72,7 +73,7 @@ This geometrical operation allows to scale in space your mesh or some of its ele
 	.. image:: ../images/scale04.png
 		:align: center
 
-	result after operation:
+   result after operation:
 
 	.. image:: ../images/scaleres04.png
 		:align: center
@@ -82,7 +83,7 @@ This geometrical operation allows to scale in space your mesh or some of its ele
 	.. image:: ../images/scale06.png
 		:align: center
 
-	result after operation:
+   result after operation:
 
 	.. image:: ../images/scaleres06.png
 		:align: center
@@ -94,7 +95,7 @@ This geometrical operation allows to scale in space your mesh or some of its ele
 	.. image:: ../images/scale07.png
 		:align: center
 
-	result after operation:
+   result after operation:
 
 	.. image:: ../images/scaleres07.png
 		:align: center
@@ -106,7 +107,7 @@ This geometrical operation allows to scale in space your mesh or some of its ele
 	.. image:: ../images/scale09.png
 		:align: center
 
-	result after operation:
+   result after operation:
 
 	.. image:: ../images/scaleres09.png
 		:align: center

@@ -21,17 +21,16 @@ Syntax::
 
 	MeshCut input.med output.med resuMeshName aboveGroup belowGroup nx ny nz px py pz T
 
-where::
+where:
 
-	input.med = name of the original mesh file in med format
-	output.med = name of the result mesh file in med format 
-	resuMeshName = name of the result mesh                    
-	aboveGroup = name of the group of volumes above the cut plane 
-	belowGroups = name of the group of volumes below the cut plane 
-	nx ny nz = vector normal to the cut plane                       
-	px py pz = a point of the cut plane                              
-	T = 0 < T < 1 : vertices of a tetrahedron are considered as belonging to the cut plane if their distance from the plane is inferior to L*T,
-	where L is the mean edge size of the tetrahedron   
+* **input.med** = name of the original mesh file in med format
+* **output.med** = name of the result mesh file in med format 
+* **resuMeshName** = name of the result mesh                    
+* **aboveGroup** = name of the group of volumes above the cut plane 
+* **belowGroups** = name of the group of volumes below the cut plane 
+* **nx ny nz** = vector normal to the cut plane                       
+* **px py pz** = a point of the cut plane                              
+* **T** = 0 < T < 1 : vertices of a tetrahedron are considered as belonging to the cut plane if their distance from the plane is inferior to L*T, where L is the mean edge size of the tetrahedron   
 
 
 .. _meshcut_plugin:
@@ -53,7 +52,7 @@ The following dialog box will appear:
 	:align: center
 
 .. centered::
-	"MeshCut Plugin dialog box"
+	MeshCut Plugin dialog box
 
 See above for the meaning of the parameters. 
 

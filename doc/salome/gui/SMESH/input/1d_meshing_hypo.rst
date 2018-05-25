@@ -5,29 +5,29 @@
 *********************
 
 Basic 1D hypothesis specifies:
-	* how a :ref:`a1d_algos_anchor` should divide the edge;
-	* how a :ref:`a1d_algos_anchor` should divide the group of C1-continuous edges.
+	* how a :ref:`Wire Discretization <a1d_algos_anchor>` should divide the edge;
+	* how a :ref:`Composite Side Discretization <a1d_algos_anchor>` should divide the group of C1-continuous edges.
 
 1D hypotheses can be categorized by type of nodes distribution as follows:
 	* Uniform distribution:
-    		* :ref:`average_length_anchor`
-    		* :ref:`max_length_anchor`
-    		* :ref:`number_of_segments_anchor` with Equidistant distribution
-    		* :ref:`automatic_length_anchor`
+    		* :ref:`Local Length <average_length_anchor>`
+    		* :ref:`Max Size <max_length_anchor>`
+    		* :ref:`Number of Segments <number_of_segments_anchor>` with Equidistant distribution
+    		* :ref:`Automatic Length <automatic_length_anchor>`
 
 	* Constantly increasing or decreasing length of segments:
-    		* :ref:`arithmetic_1d_anchor` 
-    		* :ref:`geometric_1d_anchor`
-    		* :ref:`start_and_end_length_anchor` 
-    		* :ref:`number_of_segments_anchor` with Scale distribution
+    		* :ref:`Arithmetic Progression <arithmetic_1d_anchor>` 
+    		* :ref:`Geometric Progression <geometric_1d_anchor>`
+    		* :ref:`Start and end length <start_and_end_length_anchor>` 
+    		* :ref:`Number of Segments <number_of_segments_anchor>` with Scale distribution
 
 	* Distribution depending on curvature:
-    		* :ref:`adaptive_1d_anchor` 
-    		* :ref:`deflection_1d_anchor` 
+    		* :ref:`Adaptive <adaptive_1d_anchor>` 
+    		* :ref:`Deflection <deflection_1d_anchor>` 
 
 	* Arbitrary distribution:
-    		* :ref:`fixed_points_1d_anchor` 
-    		* :ref:`number_of_segments_anchor` "Number of Segments" with :ref:`analyticdensity_anchor` or Table Density Distribution
+    		* :ref:`Fixed Points <fixed_points_1d_anchor>` 
+    		* :ref:`Number of Segments <number_of_segments_anchor>` with :ref:`Analytic Density Distribution <analyticdensity_anchor>` or Table Density Distribution
 
 
 .. _adaptive_1d_anchor:
@@ -50,7 +50,7 @@ Adaptive hypothesis
 	.. centered::
 		Adaptive hypothesis and NETGEN 2D algorithm - the size of mesh segments reflects the size of geometrical features
 
-**See Also** a :ref:`tui_1d_adaptive` that uses Adaptive hypothesis.
+**See Also** a :ref:`sample TUI Script <tui_1d_adaptive>` that uses Adaptive hypothesis.
 
 .. _arithmetic_1d_anchor:
 
@@ -62,7 +62,7 @@ Arithmetic Progression hypothesis
 The splitting direction is defined by the orientation of the underlying geometrical edge. **Reverse Edges** list box allows specifying the edges, for which the splitting should be made in the direction opposite to their orientation. This list box is usable only if a geometry object is selected for meshing. In this case it is possible to select edges to be reversed either directly picking them in the 3D viewer or by selecting the edges or groups of edges in the Object Browser. Use 
 **Add** button to add the selected edges to the list.
 
-:ref:`reversed_edges_helper_anchor` group assists you in defining **Reversed Edges** parameter.
+:ref:`Helper <reversed_edges_helper_anchor>` group assists you in defining **Reversed Edges** parameter.
 
 
 .. image:: ../images/a-arithmetic1d.png
@@ -73,9 +73,9 @@ The splitting direction is defined by the orientation of the underlying geometri
 	:align: center
 
 .. centered::
-	"Arithmetic Progression hypothesis - the size of mesh elements gradually increases"
+	Arithmetic Progression hypothesis - the size of mesh elements gradually increases
 
-**See Also** a sample TUI Script of a :ref:`tui_1d_arithmetic` operation.  
+**See Also** a sample TUI Script of :ref:`Defining Arithmetic Progression and Geometric Progression hypothesis <tui_1d_arithmetic>` operation.  
 
 .. _geometric_1d_anchor:
 
@@ -87,13 +87,12 @@ Geometric Progression hypothesis
 The splitting direction is defined by the orientation of the underlying geometrical edge.
 **Reverse Edges** list box allows specifying the edges, for which the splitting should be made in the direction opposite to their orientation. This list box is usable only if a geometry object is selected for meshing. In this case it is possible to select edges to be reversed either directly picking them in the 3D viewer or by selecting the edges or groups of edges in the Object Browser. Use **Add** button to add the selected edges to the list.
 
-:ref:'reversed_edges_helper_anchor' group assists you in
-defining **Reversed Edges** parameter.
+:ref:`Helper <reversed_edges_helper_anchor>` group assists you in defining **Reversed Edges** parameter.
 
 .. image:: ../images/a-geometric1d.png
 	:align: center
 
-**See Also** a sample TUI Script of a :ref:`tui_1d_arithmetic` operation.  
+**See Also** a sample TUI Script of :ref:`Defining Arithmetic Progression and Geometric Progression hypothesis <tui_1d_arithmetic>` operation.  
 
 .. _deflection_1d_anchor:
 
@@ -111,9 +110,9 @@ A geometrical edge is divided into segments of length depending on edge curvatur
 	:align: center
 
 .. centered::
-	"Deflection hypothesis - useful for meshing curvilinear edges"
+	Deflection hypothesis - useful for meshing curvilinear edges
 
-**See Also** a sample TUI Script of a :ref:`tui_deflection_1d` operation.
+**See Also** a sample TUI Script of :ref:`Defining Deflection hypothesis <tui_deflection_1d>` operation.
 
 .. _average_length_anchor:
 
@@ -141,9 +140,9 @@ If **precision** is more than 0.33(3) then the edge is divided into 4 segments.
 	:align: center
 
 .. centered::
-	"Local Length hypothesis - all 1D mesh segments are equal"
+	Local Length hypothesis - all 1D mesh segments are equal
 
-**See Also** a sample TUI Script of a :ref:`tui_average_length` hypothesis
+**See Also** a sample TUI Script of :ref:`Defining Local Length <tui_average_length>` hypothesis
 operation.
 
 .. _max_length_anchor:
@@ -152,7 +151,7 @@ Max Size
 ########
 
 **Max Size** hypothesis allows splitting geometrical edges into segments not longer than the given length. Definition of this hypothesis consists of setting the maximal allowed **length** of segments.
-**Use preestimated length** check box lets you use **length** automatically calculated basing on size of your geometrical object, namely as diagonal of bounding box divided by ten. The divider can be changed via :ref:`diagonal_size_ratio_pref` preference parameter.
+**Use preestimated length** check box lets you use **length** automatically calculated basing on size of your geometrical object, namely as diagonal of bounding box divided by ten. The divider can be changed via :ref:`Ratio Bounding Box Diagonal / Max Size <diagonal_size_ratio_pref>` preference parameter.
 **Use preestimated length** check box is enabled only if the geometrical object has been selected before hypothesis definition.
 
 .. image:: ../images/a-maxsize1d.png
@@ -163,13 +162,13 @@ Max Size
 Number of Segments hypothesis
 #############################
 
-**Number of Segments** hypothesis can be applied for approximating edges by a definite number of mesh segments with length depending on the selected type of distribution of nodes. The default number of segments can be set via :ref:`nb_segments_pref` preference parameter.
+**Number of Segments** hypothesis can be applied for approximating edges by a definite number of mesh segments with length depending on the selected type of distribution of nodes. The default number of segments can be set via :ref:`Automatic Parameters / Default Number of Segments <nb_segments_pref>` preference parameter.
 
 The direction of the splitting is defined by the orientation of the underlying geometrical edge. **Reverse Edges** list box allows to specify the edges for which the splitting should be made in the direction opposing to their orientation. This list box is enabled only if the geometry object is selected for the meshing. In this case it is possible to select edges to be reversed either by directly picking them in the 3D viewer or by selecting the edges or groups of edges in the Object Browser.
 
-:ref:`reversed_edges_helper_anchor` group assists you in defining **Reversed Edges** parameter.
+:ref:`Helper <reversed_edges_helper_anchor>` group assists you in defining **Reversed Edges** parameter.
 
-You can set the type of node distribution for this hypothesis in the **Hypothesis Construction** dialog bog :
+You can set the type of node distribution for this hypothesis in the **Hypothesis Construction** dialog box:
 
 .. image:: ../images/a-nbsegments1.png
 	:align: center
@@ -178,42 +177,32 @@ You can set the type of node distribution for this hypothesis in the **Hypothesi
 
 **Scale Distribution** - length of segments gradually changes depending on the **Scale Factor**, which is a ratio of the first segment length to the last segment length.
 
-Length of segments changes in geometric progression with the common ratio (A) depending on the **Scale Factor** (S) and **Number of Segments** (N) as follows: <code> A = S**(1/(N-1))</code>. For an edge of length L, length of the first segment is 
-
-::
-
-	L * (1 - A)/(1 - A**N)
-
+Length of segments changes in geometric progression with the common ratio (A) depending on the **Scale Factor** (S) and **Number of Segments** (N) as follows: A = S**(1/(N-1)). For an edge of length L, length of the first segment is L * (1 - A)/(1 - A**N)
 
 .. image:: ../images/a-nbsegments2.png
 	:align: center
 
+.. _analyticdensity_anchor:
 
-**Distribution with Analytic Density** - you input the formula, which will rule the change of length of segments and the module shows in the plot the density function curve in red and the nodedistribution as blue crosses.
+**Distribution with Analytic Density** - you input the formula, which will rule the change of length of segments and the module shows in the plot the density function curve in red and the node distribution as blue crosses.
 
 .. image:: ../images/distributionwithanalyticdensity.png
 	:align: center
-
-
-.. _analyticdensity_anchor:
-
-Analytic Density
-================
 
 The node distribution is computed so that to have the density function integral on the range between two nodes equal for all segments.
 
 .. image:: ../images/analyticdensity.png
 	:align: center
 
-**Distribution with Table Density** - you input a number of pairs **t - F(t)**, where **t** ranges from 0 to 1, and the module computes the formula, which will rule the change of length of segments and shows in the plot the density function curve in red and the node distribution as blue crosses. The node distribution is computed in the same way as for :ref:`analyticdensity_anchor`. You can select the **Conversion mode** from **Exponent** and **Cut negative**.
+**Distribution with Table Density** - you input a number of pairs **t - F(t)**, where **t** ranges from 0 to 1, and the module computes the formula, which will rule the change of length of segments and shows in the plot the density function curve in red and the node distribution as blue crosses. The node distribution is computed in the same way as for :ref:`Distribution with Analytic Density <analyticdensity_anchor>`. You can select the **Conversion mode** from **Exponent** and **Cut negative**.
 
 .. image:: ../images/distributionwithtabledensity.png
 	:align: center
 
 
-**See Also** a sample TUI Script of a :ref:`tui_deflection_1d` hypothesis operation.
+**See Also** a sample TUI Script of :ref:`Defining Number of Segments <tui_deflection_1d>` hypothesis operation.
 
-.. The plot functionality is available only if GUI module is built with Plot 2D Viewer (option SALOME_USE_PLOT2DVIEWER is ON when building GUI module).
+.. note:: The plot functionality is available only if GUI module is built with Plot 2D Viewer (option SALOME_USE_PLOT2DVIEWER is ON when building GUI module).
 
 .. _start_and_end_length_anchor:
 
@@ -224,7 +213,7 @@ Start and End Length hypothesis
 
 The direction of the splitting is defined by the orientation of the underlying geometrical edge. **Reverse Edges** list box allows to specify the edges, for which the splitting should be made in the direction opposing to their orientation. This list box is enabled only if the geometry object is selected for the meshing. In this case it is possible to select edges to be reversed either by directly picking them in the 3D viewer or by selecting the edges or groups of edges in the Object Browser.
 
-:ref:`reversed_edges_helper_anchor` group assists you in defining **Reversed Edges** parameter.
+:ref:`Helper <reversed_edges_helper_anchor>` group assists you in defining **Reversed Edges** parameter.
 
 
 .. image:: ../images/a-startendlength.png
@@ -234,9 +223,9 @@ The direction of the splitting is defined by the orientation of the underlying g
 	:align: center
 
 .. centered::
-	 "The lengths of the first and the last segment are strictly defined"
+	 The lengths of the first and the last segment are strictly defined
 
-**See Also** a sample TUI Script of a :ref:`tui_start_and_end_length` hypothesis operation.
+**See Also** a sample TUI Script of :ref:`Defining Start and End Length <tui_start_and_end_length>` hypothesis operation.
 
 
 .. _automatic_length_anchor:
@@ -255,13 +244,13 @@ Compare one and the same object (sphere) meshed with minimum and maximum value o
 	:align: center
  
 .. centered::
-	"Example of a rough mesh at Automatic Length Fineness of 0."
+	Example of a rough mesh at Automatic Length Fineness of 0.
 
 .. image:: ../images/image148.gif
 	:align: center
  
 .. centered::
-	"Example of a fine mesh at Automatic Length Fineness of 1."
+	Example of a fine mesh at Automatic Length Fineness of 1.
 
 .. _fixed_points_1d_anchor:
 
@@ -277,16 +266,16 @@ It is possible to check in **Same Nb. Segments for all intervals** option and to
 
 The splitting direction is defined by the orientation of the underlying geometrical edge. **Reverse Edges** list box allows to specify the edges for which the splitting should be made in the direction opposite to their orientation. This list box is enabled only if the geometrical object is selected for meshing. In this case it is possible to select the edges to be reversed either directly picking them in the 3D viewer or selecting the edges or groups of edges in the Object Browser.
 
-:ref:`reversed_edges_helper_anchor`  group assists in defining **Reversed Edges** parameter.
+:ref:`Helper <reversed_edges_helper_anchor>`  group assists in defining **Reversed Edges** parameter.
 
 
 .. image:: ../images/mesh_fixedpnt.png 
 	:align: center
 
 .. centered::
-	"Example of a sub-mesh on the edge built using Fixed Points hypothesis"
+	Example of a sub-mesh on the edge built using Fixed Points hypothesis
 
-**See Also** a sample TUI Script of a :ref:`tui_fixed_points` hypothesis operation.
+**See Also** a sample TUI Script of a :ref:`Defining Fixed Points <tui_fixed_points>` hypothesis operation.
 
 
 .. _reversed_edges_helper_anchor:
@@ -307,9 +296,8 @@ Reversed Edges Helper
 	:align: center
 
 .. centered::
-	"The whole geometry and a propagation chain"
+	The whole geometry and a propagation chain
 
-.. note::
-	Alternatively, uniform direction of edges of one propagation chain can be achieved by :ref:`constructing_submeshes_page` on one edge of the chain and assigning a :ref:`propagation_anchor` additional hypothesis. Orientation of this edge (and hence of all the rest edges of the chain) can be controlled by using **Reversed Edges** field.
+.. note:: Alternatively, uniform direction of edges of one propagation chain can be achieved by :ref:`definition of a sub-mesh <constructing_submeshes_page>` on one edge of the chain and assigning a :ref:`Propagation <propagation_anchor>` additional hypothesis. Orientation of this edge (and hence of all the rest edges of the chain) can be controlled by using **Reversed Edges** field.
 
 

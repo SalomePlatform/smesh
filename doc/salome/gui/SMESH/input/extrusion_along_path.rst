@@ -63,13 +63,13 @@ In this example the path mesh has been built on a wire containing 3 edges. Node 
 	:align: center
 
 .. centered::
-	**Meshed wire**
+	Meshed wire
 
 .. image:: ../images/extr_along_wire_after.png
 	:align: center
 
 .. centered::
-	**The resulting extrusion**
+	The resulting extrusion
 
 Extrusion of 2d elements along a closed path
 ############################################
@@ -95,31 +95,21 @@ Extrusion of 2d elements along a closed path
 	The same, but using angles {45, -45, 45, -45, 45, -45, 45, -45}
 
 
-**To use Extrusion along Path:**
+*To use Extrusion along Path:*
 
-#. From the **Modification** menu choose the **Extrusion along a path** item or click **"Extrusion along a path"** button in the toolbar.
+.. |img| image:: ../images/image101.png
+.. |sel| image:: ../images/image120.png
 
-	.. image:: ../images/image101.png
-		:align: center
+#. From the **Modification** menu choose the **Extrusion along a path** item or click *"Extrusion along a path"* button |img| in the toolbar.
 
-	.. centered::
-		**"Extrusion along a path" button**
-
-	The following dialog will appear:
+   The following dialog will appear:
 
 	.. image:: ../images/extrusion_along_path_dlg.png
 
-
 #. In this dialog:
 
-	* Use *Selection* button to specify what you are going to select at a given moment, **Nodes**, **Edges** or **Faces**.
+	* Use *Selection* button |sel| to specify what you are going to select at a given moment, **Nodes**, **Edges** or **Faces**.
 
-	.. image:: ../images/image120.png
-		:align: center
-
-	.. centered::
-		**"Selection" button**
-    
 	* Specify **Nodes**, **Edges** and **Faces**, which will be extruded, by one of following means:
       
 		* **Select the whole mesh, sub-mesh or group** activating this check-box.
@@ -148,23 +138,15 @@ Extrusion of 2d elements along a closed path
 
 #. There are two optional parameters, which can be very useful:
 
-#. If the path of extrusion is curvilinear, at each iteration the extruded elements are rotated to keep its initial angularity to the curve. By default, the **Base Point** around which the elements are rotated is the mass center of the elements (note that it can differ from the gravity center computed by *Geometry* module for the  underlying shape), however, you can specify any point as the **Base Point** and the elements will be rotated with respect to this point. Note that only the displacement of the **Base Point** exactly equals to the path, and all other extruded elements simply keep their position relatively to the **Base Point** at each iteration.
+   * If the path of extrusion is curvilinear, at each iteration the extruded elements are rotated to keep its initial angularity to the curve. By default, the **Base Point** around which the elements are rotated is the mass center of the elements (note that it can differ from the gravity center computed by *Geometry* module for the  underlying shape), however, you can specify any point as the **Base Point** and the elements will be rotated with respect to this point. Note that only the displacement of the **Base Point** exactly equals to the path, and all other extruded elements simply keep their position relatively to the **Base Point** at each iteration.
 
-#. The elements can also be rotated around the path to get the resulting mesh in a helical fashion. You can set the values of angles at the right, add them to the list of angles at the left by pressing the **"Add"** button and remove them from the list by pressing the **"Remove"** button.
+   .. |add| image:: ../images/add.png
+   .. |rem| image:: ../images/remove.png
 
-	.. image:: ../images/add.png
-		:align: center
+   * The elements can also be rotated around the path to get the resulting mesh in a helical fashion. You can set the values of angles at the right, add them to the list of angles at the left by pressing the *"Add"* button |add| and remove them from the list by pressing the *"Remove"* button |rem|.
 
-	.. centered::
-		**"Add" button**
 
-	.. image:: ../images/remove.png
-		:align: center
-
-	.. centered::
-		**"Remove" button**
-
-	**Linear variation of the angles** option allows defining the angle of gradual rotation for the whole path. At each step the elements will be rotated by *( angle / nb. of steps )*.
+     **Linear variation of the angles** option allows defining the angle of gradual rotation for the whole path. At each step the elements will be rotated by *( angle / nb. of steps )*.
 
 
 

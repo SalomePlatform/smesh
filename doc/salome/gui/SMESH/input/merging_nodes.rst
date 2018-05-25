@@ -10,9 +10,9 @@ This functionality allows user to detect groups of coincident nodes with specifi
 	:align: center
 
 .. centered::
-	"Merge nodes menu button"
+	*"Merge nodes"* menu button
 
-**To merge nodes of your mesh:**
+*To merge nodes of your mesh:*
 
 #. Choose **Modification** -> **Transformation** -> **Merge nodes** menu item. The following dialog box shall appear:
 
@@ -53,37 +53,32 @@ This functionality allows user to detect groups of coincident nodes with specifi
 
 	* **Edit selected group of coincident nodes** list allows editing the selected group:
     
-	.. image:: ../images/add.png
-		:align: center
+          .. image:: ../images/add.png
+             :align: center
 
-	.. centered::
-		adds to the group the nodes selected in the viewer.
+	  * adds to the group the nodes selected in the viewer.
     
-	.. image:: ../images/remove.png
-		:align: center
+          .. image:: ../images/remove.png
+             :align: center
 
-	.. centered::
-		removes from the group the selected nodes.
+	  * removes from the group the selected nodes.
     
-	.. image:: ../images/sort.png
-		:align: center
+          .. image:: ../images/sort.png
+             :align: center
 
-	.. centered::
-		moves the selected node to the first position in the group in order to keep it in the mesh.
+	  * moves the selected node to the first position in the group in order to keep it in the mesh.
 
 #. To confirm your choice click **Apply** or **Apply and Close** button.
 
-.. image:: ../images/merging_nodes1.png 
-	:align: center
+.. figure:: ../images/merging_nodes1.png 
+   :align: center
 
-.. centered::
-	 The initial object. Nodes 25, 26 and 5 are added to **Nodes to keep during the merge** group.
+   The initial object. Nodes 25, 26 and 5 are added to **Nodes to keep during the merge** group.
 
-.. image:: ../images/merging_nodes2.png
-	:align: center
+.. figure:: ../images/merging_nodes2.png
+   :align: center
 
-.. centered::
-	The object has been merged
+   The object has been merged
 
 
 **See Also** a sample TUI Script of a :ref:`tui_merging_nodes` operation.  

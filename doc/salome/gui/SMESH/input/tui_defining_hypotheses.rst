@@ -4,18 +4,19 @@
 Defining Hypotheses and Algorithms
 **********************************
 
-This page provides example codes of :ref:`tui_defining_meshing_algos`
-"defining algorithms" and hypotheses. 
+This page provides example codes of :ref:`defining algorithms <tui_defining_meshing_algos>`
+and hypotheses.
 
 * Wire discretisation 1D algorithm
   
     * :ref:`tui_1d_adaptive` hypothesis
-    * :ref:`tui_1d_arithmetic` hypothesis
-    * :ref:`tui_deflection_1d` hypotheses
-    * :ref:`tui_start_and_end_length` hypotheses
-    * :ref:`tui_average_length` 
-    * :ref:`tui_propagation` additional hypothesis 
-    * :ref:`tui_fixed_points` hypothesis
+    * :ref:`rithmetic Progression <tui_1d_arithmetic>` hypothesis
+    * :ref:`Geometric Progression <tui_1d_arithmetic>` hypothesis
+    * :ref:`Deflection and Number of Segments <tui_deflection_1d>` hypotheses
+    * :ref:`Start and End Length <tui_start_and_end_length>` hypothesis
+    * :ref:`tui_average_length` hypothesis
+    * :ref:`tui_propagation` additional hypotheses 
+    * :ref:`Fixed Points 1D <tui_fixed_points>` hypothesis
   
 
 * Triangle: Mefisto 2D algorithm
@@ -27,54 +28,43 @@ This page provides example codes of :ref:`tui_defining_meshing_algos`
 * NETGEN 3D algorithm
   
     *  :ref:`tui_max_element_volume` hypothesis 
-    *  :ref:`tui_viscous_layers`
-  
+    *  :ref:`Viscous layers <tui_viscous_layers>` hypotheses
 
 * :ref:`tui_projection`
-* :ref:`tui_radial_quadrangle` algorithm
+* :ref:`Radial Quadrangle 1D-2D <tui_radial_quadrangle>` algorithm
 * Quadrangle: Mapping 2D algorithm
   
-    * :ref:`tui_quadrangle_parameters` hypothesis 
-  
+    * :ref:`Quadrangle Parameters <tui_quadrangle_parameters>` hypothesis 
 
-* :ref:`tui_import` from Another Mesh" algorithm
+* :ref:`tui_radial_prism`
+* :ref:`Import 1D-2D Elements from Another Mesh <tui_import>` algorithm
 
 
 
 Defining 1D Hypotheses
 ######################
 
-
-
 .. _tui_1d_arithmetic:
 
 Arithmetic Progression and Geometric Progression
 ================================================
 
-.. _defining_hypotheses_ex01.py:
-
-``defining_hypotheses_ex01.py``
-
 .. literalinclude:: ../../../examples/defining_hypotheses_ex01.py
     :linenos:
     :language: python
 
-:download:`../../../examples/defining_hypotheses_ex01.py`
+:download:`Download this script <../../../examples/defining_hypotheses_ex01.py>`
 
 .. _tui_1d_adaptive:
 
 Adaptive
 ========
 
-.. _defining_hypotheses_adaptive1d.py:
-
-``defining_hypotheses_adaptive1d.py``
-
 .. literalinclude:: ../../../examples/defining_hypotheses_adaptive1d.py
     :linenos:
     :language: python
 
-:download:`../../../examples/defining_hypotheses_adaptive1d.py`
+:download:`Download this script <../../../examples/defining_hypotheses_adaptive1d.py>`
 
 
 .. _tui_deflection_1d:
@@ -82,15 +72,11 @@ Adaptive
 Deflection and Number of Segments
 =================================
 
-.. _defining_hypotheses_ex02.py:
-
-``defining_hypotheses_ex02.py``
-
 .. literalinclude:: ../../../examples/defining_hypotheses_ex02.py
     :linenos:
     :language: python
 
-:download:`../../../examples/defining_hypotheses_ex02.py`
+:download:`Download this script <../../../examples/defining_hypotheses_ex02.py>`
 
 
 .. _tui_start_and_end_length:
@@ -98,15 +84,11 @@ Deflection and Number of Segments
 Start and End Length
 ====================
 
-.. _creating_meshes_ex08.py:
-
-``defining_hypotheses_ex03.py``
-
 .. literalinclude:: ../../../examples/defining_hypotheses_ex03.py
     :linenos:
     :language: python
 
-:download:`../../../examples/defining_hypotheses_ex03.py`
+:download:`Download this script <../../../examples/defining_hypotheses_ex03.py>`
 
 
 .. _tui_average_length:
@@ -114,15 +96,11 @@ Start and End Length
 Local Length
 ============
 
-.. _defining_hypotheses_ex04.py:
-
-``defining_hypotheses_ex04.py``
-
 .. literalinclude:: ../../../examples/defining_hypotheses_ex04.py
     :linenos:
     :language: python
 
-:download:`../../../examples/defining_hypotheses_ex04.py`
+:download:`Download this script <../../../examples/defining_hypotheses_ex04.py>`
 
 Defining 2D and 3D hypotheses
 #############################
@@ -133,15 +111,11 @@ Defining 2D and 3D hypotheses
 Maximum Element Area
 ====================
 
-.. _defining_hypotheses_ex05.py:
-
-``defining_hypotheses_ex05.py``
-
 .. literalinclude:: ../../../examples/defining_hypotheses_ex05.py
     :linenos:
     :language: python
 
-:download:`../../../examples/defining_hypotheses_ex05.py`
+:download:`Download this script <../../../examples/defining_hypotheses_ex05.py>`
 
 
 .. _tui_max_element_volume:
@@ -149,15 +123,11 @@ Maximum Element Area
 Maximum Element Volume
 ======================
 
-.. _defining_hypotheses_ex06.py:
-
-``defining_hypotheses_ex06.py``
-
 .. literalinclude:: ../../../examples/defining_hypotheses_ex06.py
     :linenos:
     :language: python
 
-:download:`../../../examples/defining_hypotheses_ex06.py`
+:download:`Download this script <../../../examples/defining_hypotheses_ex06.py>`
 
 
 .. _tui_length_from_edges:
@@ -165,15 +135,11 @@ Maximum Element Volume
 Length from Edges
 =================
 
-.. _defining_hypotheses_ex07.py:
-
-``defining_hypotheses_ex07.py``
-
 .. literalinclude:: ../../../examples/defining_hypotheses_ex07.py
     :linenos:
     :language: python
 
-:download:`../../../examples/defining_hypotheses_ex07.py`
+:download:`Download this script <../../../examples/defining_hypotheses_ex07.py>`
 
 Defining Additional Hypotheses
 ##############################
@@ -183,15 +149,11 @@ Defining Additional Hypotheses
 Propagation
 ===========
 
-.. _defining_hypotheses_ex08.py:
-
-``defining_hypotheses_ex08.py``
-
 .. literalinclude:: ../../../examples/defining_hypotheses_ex08.py
     :linenos:
     :language: python
 
-:download:`../../../examples/defining_hypotheses_ex08.py`
+:download:`Download this script <../../../examples/defining_hypotheses_ex08.py>`
 
 
 .. _tui_defining_meshing_algos:
@@ -199,15 +161,11 @@ Propagation
 Defining Meshing Algorithms
 ###########################
 
-.. _defining_hypotheses_ex09.py:
-
-``defining_hypotheses_ex09.py``
-
 .. literalinclude:: ../../../examples/defining_hypotheses_ex09.py
     :linenos:
     :language: python
 
-:download:`../../../examples/defining_hypotheses_ex09.py`
+:download:`Download this script <../../../examples/defining_hypotheses_ex09.py>`
 
 
 .. _tui_projection:
@@ -215,115 +173,92 @@ Defining Meshing Algorithms
 Projection Algorithms
 =====================
 
-.. _defining_hypotheses_ex10.py:
-
-``defining_hypotheses_ex10.py``
-
 .. literalinclude:: ../../../examples/defining_hypotheses_ex10.py
     :linenos:
     :language: python
 
-:download:`../../../examples/defining_hypotheses_ex10.py`
+:download:`Download this script <../../../examples/defining_hypotheses_ex10.py>`
 
 Projection 1D2D
 ===============
-
-.. _defining_hypotheses_ex11.py:
-
-``defining_hypotheses_ex11.py``
 
 .. literalinclude:: ../../../examples/defining_hypotheses_ex11.py
     :linenos:
     :language: python
 
-:download:`../../../examples/defining_hypotheses_ex11.py`
+:download:`Download this script <../../../examples/defining_hypotheses_ex11.py>`
 
 .. _tui_fixed_points:
 
 1D Mesh with Fixed Points example
 #################################
 
-.. _defining_hypotheses_ex12.py:
-
-``defining_hypotheses_ex12.py``
-
 .. literalinclude:: ../../../examples/defining_hypotheses_ex12.py
     :linenos:
     :language: python
 
-:download:`../../../examples/defining_hypotheses_ex12.py`
+:download:`Download this script <../../../examples/defining_hypotheses_ex12.py>`
 
 .. _tui_radial_quadrangle:
 
 Radial Quadrangle 1D-2D example
 ###############################
 
-.. _defining_hypotheses_ex13.py:
-
-``defining_hypotheses_ex13.py``
-
 .. literalinclude:: ../../../examples/defining_hypotheses_ex13.py
     :linenos:
     :language: python
 
-:download:`../../../examples/defining_hypotheses_ex13.py`
+:download:`Download this script <../../../examples/defining_hypotheses_ex13.py>`
 
 .. _tui_quadrangle_parameters:
 
 Quadrangle Parameters example 1 (meshing a face with 3 edges)
 ##############################################################
 
-.. _defining_hypotheses_ex14.py:
-
-``defining_hypotheses_ex14.py``
-
 .. literalinclude:: ../../../examples/defining_hypotheses_ex14.py
     :linenos:
     :language: python
 
-:download:`../../../examples/defining_hypotheses_ex14.py`
+:download:`Download this script <../../../examples/defining_hypotheses_ex14.py>`
 
 Quadrangle Parameters example 2 (using different types)
 #######################################################
-
-.. _defining_hypotheses_ex15.py:
-
-``defining_hypotheses_ex15.py``
 
 .. literalinclude:: ../../../examples/defining_hypotheses_ex15.py
     :linenos:
     :language: python
 
-:download:`../../../examples/defining_hypotheses_ex15.py`
+:download:`Download this script <../../../examples/defining_hypotheses_ex15.py>`
 
 .. _tui_import:
 
 "Import 1D-2D Elements from Another Mesh" example
 #################################################
 
-.. _defining_hypotheses_ex16.py:
-
-``defining_hypotheses_ex16.py``
-
 .. literalinclude:: ../../../examples/defining_hypotheses_ex16.py
     :linenos:
     :language: python
 
-:download:`../../../examples/defining_hypotheses_ex16.py`
+:download:`Download this script <../../../examples/defining_hypotheses_ex16.py>`
 
 .. _tui_viscous_layers:
 
 Viscous layers construction
 ###########################
 
-.. _defining_hypotheses_ex17.py:
-
-``defining_hypotheses_ex17.py``
-
 .. literalinclude:: ../../../examples/defining_hypotheses_ex17.py
     :linenos:
     :language: python
 
-:download:`../../../examples/defining_hypotheses_ex17.py`
+:download:`Download this script <../../../examples/defining_hypotheses_ex17.py>`
 
+.. _tui_radial_prism:
 
+Radial Prism example
+####################
+
+.. literalinclude:: ../../../examples/radial_prism_3d_algo.py
+    :linenos:
+    :language: python
+
+:download:`Download this script <../../../examples/radial_prism_3d_algo.py>`

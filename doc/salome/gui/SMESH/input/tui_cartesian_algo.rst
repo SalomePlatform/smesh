@@ -1,19 +1,13 @@
 .. _tui_cartesian_algo:
 
-Body Fitting algorithm
-######################
-
- Usage of Body Fitting algorithm
-
-.. _cartesian_alogo.py:
-
-``cartesian_algo.py``
+Usage of Body Fitting algorithm
+###############################
 
 .. literalinclude:: ../../../examples/cartesian_algo.py
     :linenos:
     :language: python
 
-:download:`../../../examples/cartesian_algo.py`
+:download:`Download this script <../../../examples/cartesian_algo.py>`
 
 
 

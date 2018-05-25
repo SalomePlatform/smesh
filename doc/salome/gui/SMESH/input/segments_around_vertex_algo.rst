@@ -11,8 +11,8 @@ vertex. If we assign this algorithm to a geometrical object of higher
 dimension, it applies to all its vertices.
 
 Length of segments near vertex is defined by **Length Near Vertex** hypothesis.
-This hypothesis is used by :ref:`a1d_algos_anchor` "Wire Discretization" or
-:ref:`a1d_algos_anchor` "Composite Side Discretization" algorithms as
+This hypothesis is used by :ref:`Wire Discretization <a1d_algos_anchor>` or
+:ref:`Composite Side Discretization <a1d_algos_anchor>` algorithms as
 follows: a geometrical edge is discretized according to a 1D 
 hypotheses and then nodes near vertices are modified to assure the 
 segment length required by **Length Near Vertex** hypothesis.

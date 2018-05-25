@@ -13,7 +13,7 @@ The GUI elements in the "Properties" dialog box are grouped according to the ent
 
 *  **Nodes**:
 	* **Color** - color of nodes.
-	* **Type** and **Scale** - these options allow changing the nodes representation (see :ref:point_marker_page "Point Marker" page for more details).
+	* **Type** and **Scale** - these options allow changing the nodes representation (see :ref:`point_marker_page` page for more details).
 * **Edges / wireframe**:
 	* **Color** - color of element borders in wireframe mode.
 	* **Width** - width of lines (edges and borders of elements in wireframe mode).
@@ -39,3 +39,7 @@ The GUI elements in the "Properties" dialog box are grouped according to the ent
 	* **3D vectors** - allows to choose between 2D planar and 3D vectors.
 * **Shrink coef.** - relative space of elements compared to gaps between them in shrink mode.
 
+.. toctree::
+   :hidden:
+
+   point_marker.rst

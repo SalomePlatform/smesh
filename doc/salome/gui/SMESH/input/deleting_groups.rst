@@ -12,7 +12,6 @@ Then click **Apply and Close** button to remove the selected groups and close th
 	.. image:: ../images/deletegroups.png
 		:align: center
 
-.. note:: 
-	Please, note that this operation removes groups **with their elements**. To delete a group and leave its elements intact, right-click on the group in the Object Browser and select **Delete** in the pop-up menu or select the group and choose **Edit -> Delete** in the main menu.
+.. note:: This operation removes groups **with their elements**. To delete a group and leave its elements intact, right-click on the group in the Object Browser and select **Delete** in the pop-up menu or select the group and choose **Edit -> Delete** in the main menu.
 
 

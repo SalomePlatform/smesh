@@ -30,7 +30,7 @@ by the projection of another already meshed edge (or group of edges).
 To apply this algorithm select the edge to be meshed (indicated in
 the field **Geometry** of **Create mesh** dialog box),
 **Projection1D** in the list of 1D algorithms and click the
-**"Add Hypothesis"** button.
+*"Add Hypothesis"* button.
 The following dialog box will appear:
 
 .. image:: ../images/projection_1d.png
@@ -41,7 +41,7 @@ In this dialog you can define
 * the **Name** of the algorithm,
 * the already meshed **Source Edge** and 
 * the **Source Mesh** (It can be omitted only when projecting a sub-mesh on another one of the same Mesh).
-* It could also be necessary to define the orientation of edges,  which is done by indicating the **Source Vertex** being the first point of the **Source Edge **and the **Target Vertex** being the first point of the edge being meshed.
+* It could also be necessary to define the orientation of edges,  which is done by indicating the **Source Vertex** being the first point of the **Source Edge** and the **Target Vertex** being the first point of the edge being meshed.
 
 
 For a group of edges, **Source** and **Target** vertices should be
@@ -64,7 +64,7 @@ segments as corresponding edges of the source face.
 
 To apply this algorithm select the face to be meshed (indicated in the
 field **Geometry** of **Create mesh** dialog box), **Projection
-2D** in the list of 2D algorithms and click the **"Add Hypothesis"** button. The following dialog box will appear:
+2D** in the list of 2D algorithms and click the *"Add Hypothesis"* button. The following dialog box will appear:
 
 .. image:: ../images/projection_2d.png
 	:align: center

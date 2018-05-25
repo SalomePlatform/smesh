@@ -8,16 +8,11 @@ This operation allows duplicating mesh nodes or/and elements, which can be usefu
 
 Duplication consists in creation of mesh elements "equal" to existing ones.
 
-**To duplicate nodes or/and elements:**
+*To duplicate nodes or/and elements:*
 
-#. From the **Modification** menu choose **Transformation** -> **Duplicate Nodes or/and Elements** item or click **"Duplicate Nodes or/and Elements"** button in the toolbar.
+.. |img| image:: ../images/duplicate_nodes.png 
 
-	.. image:: ../images/duplicate_nodes.png 
-		:align: center
-
-	.. centered::
-		"Duplicate Nodes or/and Elements button"
-
+#. From the **Modification** menu choose **Transformation** -> **Duplicate Nodes or/and Elements** item or click *"Duplicate Nodes or/and Elements"* button |img| in the toolbar.
 #. Check in the dialog box one of four radio buttons corresponding to the type of duplication operation you would like to perform.
 #. Fill the other fields available in the dialog box (depending on the chosen operation mode).
 #. Click the **Apply** or **Apply and Close** button to perform the operation of duplication. 
@@ -42,9 +37,9 @@ Duplicate nodes only
 
 Parameters to be defined in this mode:
 
-	* **Group of nodes to duplicate** (**mandatory**): these nodes will be duplicated.
-	* **Group of elements to replace nodes with new ones** (**optional**): the new nodes will replace the duplicated nodes within these elements. 
-	* **Construct group with newly created nodes** option (**checked by default**): if checked - the group with newly created nodes will be built. 
+	* **Group of nodes to duplicate** (*mandatory*): these nodes will be duplicated.
+	* **Group of elements to replace nodes with new ones** (*optional*): the new nodes will replace the duplicated nodes within these elements. **Generate** button tries to automatically find such elements and creates a group of them. This button becomes active as soon as **Group of nodes to duplicate** is selected.
+	* **Construct group with newly created nodes** option (*checked by default*): if checked - the group with newly created nodes will be built. 
 
 A schema below illustrates how the crack is emulated using the node duplication.
     
@@ -52,7 +47,7 @@ A schema below illustrates how the crack is emulated using the node duplication.
 	:align: center
 
 .. centered::
-	"Crack emulation"
+	Crack emulation
 
 
 This schema shows a virtual crack in a 2D mesh created using this duplication mode:
@@ -74,11 +69,11 @@ Duplicate nodes and border elements
 
 Parameters to be defined in this mode:
 
-	* **Group of elements to duplicate** (**mandatory**): these elements will be duplicated. 
-	* **Group of nodes not to duplicate** (**optional**): group of nodes at crack bottom which will not be duplicated.
-	* **Group of elements to replace nodes with new ones** (**mandatory**): the new nodes will replace the nodes to duplicate within these elements. 
-	* **Construct group with newly created elements** option (**checked by default**): if checked - the group of newly created elements will be built.
-	* **Construct group with newly created nodes** option (**checked by default**): if checked - the group of newly created nodes will be built.
+	* **Group of elements to duplicate** (*mandatory*): these elements will be duplicated. 
+	* **Group of nodes not to duplicate** (*optional*): group of nodes at crack bottom which will not be duplicated.
+	* **Group of elements to replace nodes with new ones** (*mandatory*): the new nodes will replace the nodes to duplicate within these elements. **Generate** button tries to automatically find such elements and creates a group of them. This button becomes active as soon as **Group of elements to duplicate** is selected.
+	* **Construct group with newly created elements** option (*checked by default*): if checked - the group of newly created elements will be built.
+	* **Construct group with newly created nodes** option (*checked by default*): if checked - the group of newly created nodes will be built.
 
 
 A schema below explains the crack emulation using the node duplication with border elements.
@@ -87,7 +82,7 @@ A schema below explains the crack emulation using the node duplication with bord
 		:align: center
 
 	.. centered::  
-		"Crack emulation" 
+		Crack emulation
 
 This schema shows a virtual crack in a 2D mesh created using this duplication mode. In this schema:
 
@@ -117,8 +112,8 @@ This mode duplicates the given elements, i.e. creates new elements with the same
 
 Parameters to be defined in this mode:
 
-	* **Group of elements to duplicate** (**mandatory**): these elements will be duplicated.
-	* **Construct group with newly created elements** option (**checked by default**): if checked - the group of newly created elements will be built. The name of the created group starts from "DoubleElements".
+	* **Group of elements to duplicate** (*mandatory*): these elements will be duplicated.
+	* **Construct group with newly created elements** option (*checked by default*): if checked - the group of newly created elements will be built. The name of the created group starts from "DoubleElements".
 
 
 .. _mode_group_boundary_anchor:
@@ -129,13 +124,12 @@ Duplicate nodes on group boundaries
 This mode duplicates nodes located on boundaries between given groups of volumes.
 
 
-
 .. image:: ../images/duplicate04.png
 	:align: center
 
 Parameters to be defined in this mode:
 
-	* **Groups (faces or volumes)** (**mandatory**): list of mesh groups. These groups should be disjoint, i.e. should not have shared elements.
+	* **Groups (faces or volumes)** (*mandatory*): list of mesh groups. These groups should be disjoint, i.e. should not have shared elements.
 	* If **Create joint elements** option is activated, flat elements are created on the duplicated nodes: a triangular facet shared by two volumes of two groups generates a flat prism, a quadrangular facet generates a flat hexahedron. Correspondingly 2D joint elements (null area faces) are generated where edges are shared by two faces. The created flat volumes (or faces) are stored in groups. These groups are named according to the position of the group in the list of groups: group "j_n_p" is a group of flat elements that are built between the group \#n and the group \#p in the group list. All flat elements are gathered into the group named "joints3D" (correspondingly "joints2D"). The flat elements of multiple junctions between the simple junction are stored in a group named "jointsMultiples".
 	* If **On all boundaries** option is activated, the volumes (or faces), which are not included into **Groups** input, are considered as another group and thus the nodes on the boundary between **Groups** and the remaining mesh are also duplicated.
 

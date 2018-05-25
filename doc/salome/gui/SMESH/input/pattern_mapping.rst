@@ -85,16 +85,13 @@ The image below provides a preview of the above pattern:
 Application of pattern mapping
 ##############################
 
-**To apply pattern mapping to a geometrical object or mesh elements:**
+*To apply pattern mapping to a geometrical object or mesh elements:*
+
+.. |img| image:: ../images/image98.png
 
 From the **Modification** menu choose the **Pattern Mapping** item or click 
-**"Pattern mapping"** button in the toolbar.
+*"Pattern mapping"* button |img| in the toolbar.
 
-.. image:: ../images/image98.png
-	:align: center
-
-.. centered::
-	**"Pattern mapping" button**
 
 The following dialog box will appear:
 

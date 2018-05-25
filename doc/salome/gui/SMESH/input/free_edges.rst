@@ -10,8 +10,6 @@ This mesh quality control highlights borders of faces (links between nodes, not 
 	:align: center
 
 .. centered::
-	In this picture some elements of mesh have been deleted and the "holes" are outlined in red.
+	Some elements of mesh have been deleted and the "holes" are outlined in red.
 
-**See Also** a sample TUI Script of a :ref:`tui_free_edges` operation.  
-
-
+**See Also** a sample TUI Script of a :ref:`tui_free_edges` filter.

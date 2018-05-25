@@ -10,12 +10,8 @@ Using SALOME NoteBook
 Notebook Smesh
 ==============
 
-.. _notebook_smesh.py:
-
-``notebook_smesh.py``
-
 .. literalinclude:: ../../../examples/notebook_smesh.py
     :linenos:
     :language: python
 
-:download:`../../../examples/notebook_smesh.py`
+:download:`Download this script <../../../examples/notebook_smesh.py>`

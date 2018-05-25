@@ -11,6 +11,4 @@ This mesh quality control highlights the faces connected to less than two mesh v
 
 In this picture some volume mesh elements have been removed, as a result some faces became connected only to one volume. i.e. became free.
 
-**See also:** A sample TUI Script of a :ref:`tui_free_faces` operation.
-
-
+**See also:** A sample TUI Script of a :ref:`tui_free_faces` filter.

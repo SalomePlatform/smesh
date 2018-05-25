@@ -6,27 +6,24 @@ Mesh Information
 
 The user can obtain information about the selected mesh object (mesh, sub-mesh or group) using **Mesh Information** dialog box.
 
-To view the **Mesh Information**, select your mesh, sub-mesh or group in the **Object Browser** and invoke **Mesh Information** item from the **Mesh** menu or from the context menu, or click **"Mesh Information"** button in the toolbar. 
+.. |img| image:: ../images/image49.png
 
-.. image:: ../images/image49.png
-	:align: center
+To view the **Mesh Information**, select your mesh, sub-mesh or group in the **Object Browser** and invoke **Mesh Information** item from the **Mesh** menu or from the context menu, or click *"Mesh Information"* button |img| in the toolbar. 
 
-.. centered::
-	**"Mesh Information" button**
 
 The **Mesh Information** dialog box provides three tab pages:
 
-* :ref:`advanced_mesh_infos_anchor` - to show base and quantitative information about the selected mesh object.
-* :ref:`mesh_element_info_anchor` - to show detailed information about the selected mesh nodes or elements.
-* :ref:`mesh_addition_info_anchor` - to show additional information available for the selected mesh, sub-mesh or group object. 
-* :ref:`mesh_quality_info_anchor` - to show overall quality information about the selected mesh, sub-mesh or group object. 
+* :ref:`Base Info <advanced_mesh_infos_anchor>` - to show base and quantitative information about the selected mesh object.
+* :ref:`Element Info <mesh_element_info_anchor>` - to show detailed information about the selected mesh nodes or elements.
+* :ref:`Additional Info <mesh_addition_info_anchor>` - to show additional information available for the selected mesh, sub-mesh or group object. 
+* :ref:`Quality Info <mesh_quality_info_anchor>` - to show overall quality information about the selected mesh, sub-mesh or group object. 
 
 .. _dump_mesh_infos:
 
 Dump Mesh Infos
 ###############
 
-The button **Dump** allows printing the information displayed in the dialog box to a .txt file. The dialog for choosing a file also allows to select which tab pages to dump via four check-boxes. The default state of the check-boxes can be changed via :ref:`mesh_information_pref` preferences.
+The button **Dump** allows printing the information displayed in the dialog box to a .txt file. The dialog for choosing a file also allows to select which tab pages to dump via four check-boxes. The default state of the check-boxes can be changed via :ref:`Mesh information <mesh_information_pref>` preferences.
 
 .. _advanced_mesh_infos_anchor:
 
@@ -39,7 +36,7 @@ The **Base Info** tab page of the dialog box provides general information on the
 	:align: center
 
 .. centered::
-	**"Base Info" page**
+	*"Base Info"* page
 
 .. _mesh_element_info_anchor:
 
@@ -59,7 +56,7 @@ The **Element Info** tab page of the dialog box gives detailed information about
 		:align: center
 
 	.. centered::
-		**"Element Info" page, node information**
+		*"Element Info"* page, node information
 
 
 * For an element:
@@ -75,13 +72,14 @@ The **Element Info** tab page of the dialog box gives detailed information about
 		:align: center
 
 	.. centered::
-		**"Element Info" page, element information**
+		*"Element Info"* page, element information
 
 The user can either input the ID of a node or element he wants to analyze directly in the dialog box or select the node(s) or element(s) in the 3D viewer.
+
 If **Show IDs** is activated, IDs of selected nodes or elements are displayed in the 3D viewer.
 
 .. note::
-	The information about the groups, to which the node or element belongs, can be shown in a short or in a detailed form. By default, for performance rasons, this information is shown in a short form (group names only). The detailed information on groups can be switched on via :ref:`group_detail_info_pref` option of :ref:`mesh_preferences_page`.
+	The information about the groups, to which the node or element belongs, can be shown in a short or in a detailed form. By default, for performance rasons, this information is shown in a short form (group names only). The detailed information on groups can be switched on via :ref:`Show details on groups in element information tab <group_detail_info_pref>` option of :ref:`mesh_preferences_page`.
 
 .. _mesh_addition_info_anchor:
 
@@ -103,7 +101,7 @@ For a mesh object, the following information is shown:
 	:align: center
 
 .. centered::
-	**"Additional Info" page, mesh information**
+	*"Additional Info"* page, mesh information
 
 
 For a sub-mesh object, the following information is shown:
@@ -116,7 +114,7 @@ For a sub-mesh object, the following information is shown:
 	:align: center
 
 .. centered::
-	**"Additional Info" page, sub-mesh information**
+	*"Additional Info"* page, sub-mesh information
 
 
 .. _mesh_addition_info_group_anchor:
@@ -138,11 +136,11 @@ For a group object, the following information is shown:
 	:align: center
 
 .. centered::
-	**"Additional Info" page, group information**
+	*"Additional Info"* page, group information
 
 
 .. note::
-	For the performance reasons, the number of underlying nodes is computed only by demand. For this, the user should press the "Compute" button (see picture). Also, the number of underlying nodes is automatically calculated if the size of the group does not exceed the :ref:`nb_nodes_limit_pref` preference value (zero value means no limit).
+	For the performance reasons, the number of underlying nodes is computed only by demand. For this, the user should press the "Compute" button (see picture). Also, the number of underlying nodes is automatically calculated if the size of the group does not exceed the :ref:`Automatic nodes compute limit <nb_nodes_limit_pref>` preference value (zero value means no limit).
 
 .. _mesh_quality_info_anchor:
 
@@ -171,18 +169,18 @@ The **Quality Info** tab provides overall information about mesh quality control
 	:align: center
 
 .. centered::
-	**"Quality Info" page**
+	*"Quality Info"* page
 
 .. note::
-	It is possible to change **Double nodes tolerance**, which will be used upon consequent pressing *Compute* button. The default value of the tolerance can be set via the :ref:`dbl_nodes_tol_pref` preferences.
+	It is possible to change **Double nodes tolerance**, which will be used upon consequent pressing *Compute* button. The default value of the tolerance can be set via the :ref:`Quality controls <dbl_nodes_tol_pref>` preferences.
 
 .. note::
-	For performance reasons, all quality control values for big meshes are computed only by demand. For this, press the *Compute* button. Also, values are automatically computed if the number of nodes / elements does not exceed the :ref:`auto_control_limit_pref` set via the :ref:`mesh_information_pref` preferences (zero value means that there is no limit).
+	For performance reasons, all quality control values for big meshes are computed only by demand. For this, press the *Compute* button. Also, values are automatically computed if the number of nodes / elements does not exceed the :ref:`Automatic controls compute limit <auto_control_limit_pref>` set via the :ref:`Mesh information <mesh_information_pref>` preferences (zero value means that there is no limit).
 
 .. note::
 	The plot functionality is available only if the GUI module is built with Plot 2D Viewer (option SALOME_USE_PLOT2DVIEWER is ON when building GUI module).
 
-See the :ref:`tui_viewing_mesh_infos`.
+See the :ref:`TUI Example <tui_viewing_mesh_infos>`.
 
 
 	

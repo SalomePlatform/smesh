@@ -12,5 +12,4 @@ color different from the color of shared faces.
 .. image:: ../images/bare_border_faces_smpl.png
 	:align: center
 
-**See also** A sample TUI Script making a group of faces highlighted in the picture is :ref:`tui_bare_border_faces`.
-
+**See also** a sample :ref:`TUI Script <tui_bare_border_faces>` making a group of faces highlighted in the picture.

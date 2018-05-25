@@ -6,17 +6,13 @@ Uniting two triangles
 
 In MESH you can union two neighboring triangles by deletion of the common edge.
 
-**To unite two triangles:**
+*To unite two triangles:*
 
-#. From the **Modification** menu choose the **Union of two triangles** item or click **"Union of two triangles"** button in the tool-bar.
+.. |img| image:: ../images/image71.png
 
-	.. image:: ../images/image71.png
-		:align: center
+#. From the **Modification** menu choose the **Union of two triangles** item or click *"Union of two triangles"* button |img| in the tool-bar.
 
-	.. centered::
-		**"Union of two triangles" button**
-
-	The following dialog box shall appear:
+   The following dialog box shall appear:
 
 	.. image:: ../images/unionoftwotriangles.png
 		:align: center

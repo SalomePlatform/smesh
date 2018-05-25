@@ -17,24 +17,17 @@ The **Aspect Ratio** quality criterion for mesh elements reveals the degree of c
 	.. image:: ../images/formula5.png
 		:align: center
 
-**To apply the Aspect Ratio quality criterion to your mesh:**
+*To apply the Aspect Ratio quality criterion to your mesh:*
+
+.. |img| image:: ../images/image37.png
 
 #. Display your mesh in the viewer.
-#. Choose **Controls > Face Controls > Aspect Ratio** or click	**Aspect Ratio** button in the toolbar.
-                         
+#. Choose **Controls > Face Controls > Aspect Ratio** or click *Aspect Ratio* button |img| in the toolbar.
    
-	.. image:: ../images/image37.png
-		:align: center
-
-	.. centered::
-		Aspect Ratio button
-
-	Your mesh will be displayed in the viewer with its elements colored according to the applied mesh quality control criterion:
+   Your mesh will be displayed in the viewer with its elements colored according to the applied mesh quality control criterion:
 
 	.. image:: ../images/image94.jpg
 		:align: center
 
 
-**See Also** a sample TUI Script of an :ref:`tui_aspect_ratio` operation.
-
-
+**See Also** a sample TUI Script of an :ref:`tui_aspect_ratio` filter.

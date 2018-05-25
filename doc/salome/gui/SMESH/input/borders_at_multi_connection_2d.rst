@@ -9,5 +9,4 @@ This mesh quality control highlights borders of faces (links between nodes) acco
 .. image:: ../images/image127.gif
 	:align: center
 
-**See Also** a sample TUI Script of a :ref:`tui_borders_at_multiconnection_2d`  operation.
-
+**See Also** a sample TUI Script of a :ref:`tui_borders_at_multiconnection_2d` filter.

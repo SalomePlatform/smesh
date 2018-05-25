@@ -20,7 +20,7 @@ validity depend on two factors:
 .. centered::
 	"Invalid mesh on quadrilateral concave faces"
 
-The algorithm uses **Transfinite Interpolation** technique in the 
+The algorithm uses *Transfinite Interpolation* technique in the 
 parametric space of a face to locate nodes inside the face.
 
 The algorithm treats any face as quadrangle. If a face is bound by
@@ -34,7 +34,7 @@ quadrangle.
 	:align: center
 
 .. centered::
-	"Algorithm generates a structured mesh on complex faces provided that edges are properly discretized"
+	Algorithm generates a structured mesh on complex faces provided that edges are properly discretized
 
 To get an all-quadrangle mesh you have to carefully define 1D
 hypotheses on edges of a face. To get a **structured** mesh you have to provide
@@ -51,7 +51,5 @@ of segments on one pair of opposite sides.
 
 The following hypotheses help to create quadrangle meshes. 
 
-* :ref:`propagation_anchor` additional 1D hypotheses help to get an equal number of segments on the opposite sides of a quadrilateral face.
-* :ref:`a1d_algos_anchor` algorithm is useful to discretize several C1 continuous edges as one quadrangle side.
-
-
+* :ref:`Propagation <propagation_anchor>` additional 1D hypotheses help to get an equal number of segments on the opposite sides of a quadrilateral face.
+* :ref:`Composite Side Discretization <a1d_algos_anchor>` algorithm is useful to discretize several C1 continuous edges as one quadrangle side.

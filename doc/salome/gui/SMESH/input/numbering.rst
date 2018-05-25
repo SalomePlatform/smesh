@@ -9,7 +9,7 @@ Displaying node numbers
 
 In MESH you can display the ID numbers of all nodes of your mesh in the viewer.
 
-**To display ID numbers of nodes:**
+*To display ID numbers of nodes:*
 
 #. Display your mesh in the viewer
 #. Right-click on the mesh in the 3D viewer and from the associated pop-up menu choose **Numbering > Display Nodes #**.
@@ -18,7 +18,7 @@ In MESH you can display the ID numbers of all nodes of your mesh in the viewer.
 	:align: center
 
 .. centered::
-	"Displayed node numbers"
+	Displayed node numbers
 
 
 Displaying element numbers
@@ -26,7 +26,7 @@ Displaying element numbers
 
 In MESH you can display the ID numbers of all meshing elements composing your mesh in the viewer.
 
-**To display ID numbers of elements:**
+*To display ID numbers of elements:*
 
 #. Display your mesh in the viewer
 #. Right-click on the mesh in the 3D viewer and from the associated pop-up menu choose **Numbering > Display Elements #**.
@@ -35,7 +35,4 @@ In MESH you can display the ID numbers of all meshing elements composing your me
 	:align: center
 
 .. centered::
-	"Displayed element numbers"
-
-
-
+	Displayed element numbers

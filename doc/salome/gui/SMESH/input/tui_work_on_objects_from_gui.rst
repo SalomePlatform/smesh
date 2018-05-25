@@ -5,37 +5,26 @@
 How to work with objects from the GUI ?
 ***************************************
 
-It is sometimes useful to work alternatively in the GUI of SALOME and in the Python Console. To fetch an object from the TUI simply type:
+It is sometimes useful to work alternatively in the GUI of SALOME and in the Python Console. To fetch an object from the TUI simply type::
 
-.. code-block:: python
-   :linenos:
+  myMesh_ref = salome.IDToObject( ID )
+  # were ID is a string looking like "0:1:2:3" that appears in the Object Browser in the Entry column.
+  # ( If hidden, show it by right clicking and checking the checkbox Entry )
+  myMesh = smesh.Mesh(myMesh_ref)
 
-	myMesh_ref = salome.IDToObject( ID )
-	# were ID is a string looking like "0:1:2:3" that appears in the Object Browser in the Entry column.
-	# ( If hidden, show it by right clicking and checking the checkbox Entry )
-	myMesh = smesh.Mesh(myMesh_ref)
+or:: 
 
-or 
+  myMesh_ref = salome.myStudy.FindObjectByPath("/Mesh/myMesh").GetObject() 
+  #'/Mesh/myMesh' is a path to the desired object in the Object Browser
+  myMesh = smesh.Mesh(myMesh_ref)
 
-.. code-block:: python
-   :linenos:
+or::
 
-	myMesh_ref = salome.myStudy.FindObjectByPath("/Mesh/myMesh").GetObject() 
-	#'/Mesh/myMesh' is a path to the desired object in the Object Browser
-	myMesh = smesh.Mesh(myMesh_ref)
+  # get a selected mesh
+  from salome.gui import helper
+  myMesh_ref = helper.getSObjectSelected()[0].GetObject() 
+  myMesh = smesh.Mesh(myMesh_ref)
 
-or 
+A result myMesh is an object of :class:`Mesh <smeshBuilder.Mesh>` class.
 
-.. code-block:: python
-   :linenos:
-
-	# get a selected mesh
-	from salome.gui import helper
-	myMesh_ref = helper.getSObjectSelected()[0].GetObject() 
-	myMesh = smesh.Mesh(myMesh_ref)
-
-All the methods documented in these pages can then be used on myMesh
-
-.. note:: The first statement only gives you access to a reference to the object created via the GUI. But the methods available on this reference are not exactly the same as those documented in these help pages. This Python API is meant to be used on smesh.Mesh instances. That's why you'll have to create such an instance with the second statement. 
-
-
+.. note:: The first statement only gives you access to a reference to the object created via the GUI (`myMesh_ref`). But the methods available on this reference differ from those of :class:`Mesh <smeshBuilder.Mesh>` class documented in these help pages. That's why you have to create an instance of :class:`Mesh <smeshBuilder.Mesh>` class with the last statement. 

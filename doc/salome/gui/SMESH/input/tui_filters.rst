@@ -4,9 +4,6 @@
 Filters usage
 *************
 
-.. contents:: `Table of contents`
-
-
 Filters allow picking only the mesh elements satisfying to a
 specific condition or a set of conditions. Filters can be used to create
 or edit mesh groups, remove elements from the mesh, control
@@ -25,6 +22,9 @@ Python scripts.
 
 **See also:** :ref:`tui_quality_controls_page`
 
+.. contents:: `Table of contents`
+
+
 .. _filter_aspect_ratio:
 
 Aspect ratio
@@ -36,15 +36,11 @@ filters 2D mesh elements (faces) according to the aspect ratio value:
 * functor type should be *SMESH.FT_AspectRatio*
 * threshold is floating point value (aspect ratio)
 
-.. _filters_ex01.py:
-
-``filters_ex01.py``
-
 .. literalinclude:: ../../../examples/filters_ex01.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex01.py`
+:download:`Download this script <../../../examples/filters_ex01.py>`
 
 **See also:** :ref:`tui_aspect_ratio`
 
@@ -59,15 +55,11 @@ filters 3D mesh elements (volumes) according to the aspect ratio value:
 * functor type is *SMESH.FT_AspectRatio3D*
 * threshold is floating point value (aspect ratio)
 
-.. _filters_ex02.py:
-
-``filters_ex02.py``
-
 .. literalinclude:: ../../../examples/filters_ex02.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex02.py`
+:download:`Download this script <../../../examples/filters_ex02.py>`
 
 **See also:** :ref:`tui_aspect_ratio_3d`
 
@@ -82,15 +74,11 @@ filters 2D mesh elements (faces) according to the warping angle value:
 * functor type is *SMESH.FT_Warping*
 * threshold is floating point value (warping angle)
 
-.. _filters_ex03.py:
-
-``filters_ex03.py``
-
 .. literalinclude:: ../../../examples/filters_ex03.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex03.py`
+:download:`Download this script <../../../examples/filters_ex03.py>`
 
 **See also:** :ref:`tui_warping`
 
@@ -105,15 +93,11 @@ filters 2D mesh elements (faces) according to the minimum angle value:
 * functor type is *SMESH.FT_MinimumAngle*
 * threshold is floating point value (minimum angle)
 
-.. _filters_ex04.py:
-
-``filters_ex04.py``
-
 .. literalinclude:: ../../../examples/filters_ex04.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex04.py`
+:download:`Download this script <../../../examples/filters_ex04.py>`
 
 **See also:** :ref:`tui_minimum_angle`
 
@@ -128,15 +112,11 @@ filters 2D mesh elements (faces) according to the taper value:
 * functor type is *SMESH.FT_Taper*
 * threshold is floating point value (taper)
 
-.. _filters_ex05.py:
-
-``filters_ex05.py``
-
 .. literalinclude:: ../../../examples/filters_ex05.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex05.py`
+:download:`Download this script <../../../examples/filters_ex05.py>`
 
 **See also:** :ref:`tui_taper`
 
@@ -151,15 +131,11 @@ filters 2D mesh elements (faces) according to the skew value:
 * functor type is *SMESH.FT_Skew*
 * threshold is floating point value (skew)
 
-.. _filters_ex06.py:
-
-``filters_ex06.py``
-
 .. literalinclude:: ../../../examples/filters_ex06.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex06.py`
+:download:`Download this script <../../../examples/filters_ex06.py>`
 
 **See also:** :ref:`tui_skew`
 
@@ -174,15 +150,11 @@ filters 2D mesh elements (faces) according to the area value:
 * functor type is *SMESH.FT_Area*
 * threshold is floating point value (area)
 
-.. _filters_ex07.py:
-
-``filters_ex07.py``
-
 .. literalinclude:: ../../../examples/filters_ex07.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex07.py`
+:download:`Download this script <../../../examples/filters_ex07.py>`
 
 **See also:** :ref:`tui_area`
 
@@ -197,15 +169,11 @@ filters 3D mesh elements (volumes) according to the volume value:
 * functor type is *SMESH.FT_Volume3D*
 * threshold is floating point value (volume)
 
-.. _filters_ex08.py:
-
-``filters_ex08.py``
-
 .. literalinclude:: ../../../examples/filters_ex08.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex08.py`
+:download:`Download this script <../../../examples/filters_ex08.py>`
 
 **See also:** :ref:`tui_volume`
 
@@ -220,16 +188,11 @@ filters 1D mesh elements (edges) which represent free borders of a mesh:
 * functor type is *SMESH.FT_FreeBorders*
 * threshold value is not required
 
-\tui_script{filters_ex09.py}
-.. _filters_ex09.py:
-
-``filters_ex09.py``
-
 .. literalinclude:: ../../../examples/filters_ex09.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex09.py`
+:download:`Download this script <../../../examples/filters_ex09.py>`
 
 **See also:** :ref:`tui_free_borders`
 
@@ -245,15 +208,11 @@ nodes, not mesh segments) belonging to one face of mesh only:
 * functor type is *SMESH.FT_FreeEdges*
 * threshold value is not required
 
-.. _filters_ex10.py:
-
-``filters_ex10.py``
-
 .. literalinclude:: ../../../examples/filters_ex10.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex10.py`
+:download:`Download this script <../../../examples/filters_ex10.py>`
 
 **See also:** :ref:`tui_free_edges`
 
@@ -268,15 +227,11 @@ filters free nodes:
 * functor type is *SMESH.FT_FreeNodes*
 * threshold value is not required
 
-.. _filters_ex11.py:
-
-``filters_ex11.py``
-
 .. literalinclude:: ../../../examples/filters_ex11.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex11.py`
+:download:`Download this script <../../../examples/filters_ex11.py>`
 
 **See also:** :ref:`tui_free_nodes`
 
@@ -291,15 +246,11 @@ filters free faces:
 * functor type is *SMESH.FT_FreeFaces*
 * threshold value is not required
 
-.. _filters_ex12.py:
-
-``filters_ex12.py``
-
 .. literalinclude:: ../../../examples/filters_ex12.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex12.py`
+:download:`Download this script <../../../examples/filters_ex12.py>`
 
 **See also:** :ref:`tui_free_faces`
 
@@ -314,15 +265,11 @@ filters faces with bare borders:
 * functor type is *SMESH.FT_BareBorderFace*
 * threshold value is not required
 
-.. _filters_ex13.py:
-
-``filters_ex13.py``
-
 .. literalinclude:: ../../../examples/filters_ex13.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex13.py`
+:download:`Download this script <../../../examples/filters_ex13.py>`
 
 **See also:** :ref:`tui_bare_border_faces`
 
@@ -338,15 +285,11 @@ filters coplanar faces:
 * threshold value is the face ID
 * tolerance is in degrees
 
-.. _filters_ex14.py:
-
-``filters_ex14.py``
-
 .. literalinclude:: ../../../examples/filters_ex14.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex14.py`
+:download:`Download this script <../../../examples/filters_ex14.py>`
 
 .. _filter_over_constrained_faces: 
 
@@ -359,15 +302,11 @@ filters over-constrained faces:
 * functor type is *SMESH.FT_OverConstrainedFace*
 * threshold value is not required
 
-.. _filters_ex15.py:
-
-``filters_ex15.py``
-
 .. literalinclude:: ../../../examples/filters_ex15.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex15.py`
+:download:`Download this script <../../../examples/filters_ex15.py>`
 
 **See also:** :ref:`tui_over_constrained_faces`
 
@@ -382,15 +321,11 @@ filters mesh elements basing on the same set of nodes:
 * functor type is either *SMESH.FT_EqualEdges*, *SMESH.FT_EqualFaces* or *SMESH.FT_EqualVolumes*,
 * threshold value is not required
 
-.. _filters_ex16.py:
-
-``filters_ex16.py``
-
 .. literalinclude:: ../../../examples/filters_ex16.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex16.py`
+:download:`Download this script <../../../examples/filters_ex16.py>`
 
 .. _tui_double_nodes_control: 
 
@@ -404,15 +339,11 @@ filters mesh nodes which are coincident with other nodes (within a given toleran
 * threshold value is not required
 * default tolerance is 1.0e-7
 
-.. _filters_ex17.py:
-
-``filters_ex17.py``
-
 .. literalinclude:: ../../../examples/filters_ex17.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex17.py`
+:download:`Download this script <../../../examples/filters_ex17.py>`
 
 .. _filter_node_nb_conn:
 
@@ -425,15 +356,11 @@ filters nodes according to a number of elements of highest dimension connected t
 * functor type should be *SMESH.FT_NodeConnectivityNumber*
 * threshold is an integer value (number of elements)
 
-.. _filters_node_nb_conn.py:
-
-``filters_node_nb_conn.py``
-
 .. literalinclude:: ../../../examples/filters_node_nb_conn.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_node_nb_conn.py`
+:download:`Download this script <../../../examples/filters_node_nb_conn.py>`
 
 .. _filter_borders_multiconnection: 
 
@@ -447,15 +374,11 @@ connections (faces and volumes on whose border the segment lies):
 * functor type is *SMESH.FT_MultiConnection*
 * threshold is integer value (number of connections)
 
-.. _filters_ex18.py:
-
-``filters_ex18.py``
-
 .. literalinclude:: ../../../examples/filters_ex18.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex18.py`
+:download:`Download this script <../../../examples/filters_ex18.py>`
 
 **See also:** :ref:`tui_borders_at_multiconnection`
 
@@ -471,15 +394,11 @@ faces connected to a border (link between nodes, not mesh segment):
 * functor type is *SMESH.FT_MultiConnection2D*
 * threshold is integer value (number of connections)
 
-.. _filters_ex19.py:
-
-``filters_ex19.py``
-
 .. literalinclude:: ../../../examples/filters_ex19.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex19.py`
+:download:`Download this script <../../../examples/filters_ex19.py>`
 
 **See also:** :ref:`tui_borders_at_multiconnection_2d`
 
@@ -494,15 +413,11 @@ filters 1D mesh elements (edges) according to the edge length value:
 * functor type should be *SMESH.FT_Length*
 * threshold is floating point value (length)
 
-.. _filters_ex20.py:
-
-``filters_ex20.py``
-
 .. literalinclude:: ../../../examples/filters_ex20.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex20.py`
+:download:`Download this script <../../../examples/filters_ex20.py>`
 
 **See also:** :ref:`tui_length_1d`
 
@@ -518,15 +433,11 @@ edges (links between nodes):
 * functor type should be *SMESH.FT_Length2D*
 * threshold is floating point value (edge length)
 
-.. _filters_ex21.py:
-
-``filters_ex21.py``
-
 .. literalinclude:: ../../../examples/filters_ex21.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex21.py`
+:download:`Download this script <../../../examples/filters_ex21.py>`
 
 **See also:** :ref:`tui_length_2d`
 
@@ -542,15 +453,11 @@ of its edges and diagonals:
 * functor type should be *SMESH.FT_MaxElementLength2D*
 * threshold is floating point value (length)
 
-.. _filters_ex22.py:
-
-``filters_ex22.py``
-
 .. literalinclude:: ../../../examples/filters_ex22.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex22.py`
+:download:`Download this script <../../../examples/filters_ex22.py>`
 
 **See also:** :ref:`tui_max_element_length_2d`
 
@@ -566,15 +473,11 @@ of its edges and diagonals:
 * functor type should be *SMESH.FT_MaxElementLength3D*
 * threshold is floating point value (edge/diagonal length)
 
-.. _filters_ex23.py:
-
-``filters_ex23.py``
-
 .. literalinclude:: ../../../examples/filters_ex23.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex23.py`
+:download:`Download this script <../../../examples/filters_ex23.py>`
 
 **See also:** :ref:`tui_max_element_length_3d`
 
@@ -590,15 +493,11 @@ shared with other volumes and without a face on it:
 * functor type is *SMESH.FT_BareBorderVolume*
 * threshold value is not required
 
-.. _filters_ex24.py:
-
-``filters_ex24.py``
-
 .. literalinclude:: ../../../examples/filters_ex24.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex24.py`
+:download:`Download this script <../../../examples/filters_ex24.py>`
 
 **See also:** :ref:`tui_bare_border_volumes`
 
@@ -613,15 +512,11 @@ filters over-constrained volumes, whose all nodes are on the mesh boundary:
 * functor type is *SMESH.FT_OverConstrainedVolume*
 * threshold value is not required
 
-.. _filters_ex25.py:
-
-``filters_ex25.py``
-
 .. literalinclude:: ../../../examples/filters_ex25.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex25.py`
+:download:`Download this script <../../../examples/filters_ex25.py>`
 
 **See also:** :ref:`tui_over_constrained_faces`
 
@@ -637,15 +532,11 @@ defined by threshold value:
 * functor type should be *SMESH.FT_BelongToMeshGroup*
 * threshold is mesh group object
 
-.. _filters_belong2group.py:
-
-``filters_belong2group.py``
-
 .. literalinclude:: ../../../examples/filters_belong2group.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_belong2group.py`
+:download:`Download this script <../../../examples/filters_belong2group.py>`
 
 .. _filter_belong_to_geom: 
 
@@ -660,15 +551,11 @@ shape defined by threshold value:
 * threshold is geometrical object
 * tolerance is a distance between a node and the geometrical object; it is used if an node is not associated to any geometry.
 
-.. _filters_ex26.py:
-
-``filters_ex26.py``
-
 .. literalinclude:: ../../../examples/filters_ex26.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex26.py`
+:download:`Download this script <../../../examples/filters_ex26.py>`
 
 .. _filter_lying_on_geom:
 
@@ -685,15 +572,11 @@ shape defined by threshold value:
 
 it is used if an node is not associated to any geometry.
 
-.. _filters_ex27.py:
-
-``filters_ex27.py``
-
 .. literalinclude:: ../../../examples/filters_ex27.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex27.py`
+:download:`Download this script <../../../examples/filters_ex27.py>`
 
 .. _filter_belong_to_plane: 
 
@@ -708,15 +591,11 @@ plane defined by threshold value with the given tolerance:
 * threshold is geometrical object (plane)
 * default tolerance is 1.0e-7
 
-.. _filters_ex28.py:
-
-``filters_ex28.py``
-
 .. literalinclude:: ../../../examples/filters_ex28.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex28.py`
+:download:`Download this script <../../../examples/filters_ex28.py>`
 
 .. _filter_belong_to_cylinder: 
 
@@ -731,15 +610,11 @@ cylindrical face defined by threshold value with the given tolerance:
 * threshold is geometrical object (cylindrical face)
 * default tolerance is 1.0e-7
 
-.. _filters_ex29.py:
-
-``filters_ex29.py``
-
 .. literalinclude:: ../../../examples/filters_ex29.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex29.py`
+:download:`Download this script <../../../examples/filters_ex29.py>`
 
 .. _filter_belong_to_surface: 
 
@@ -754,15 +629,11 @@ arbitrary surface defined by threshold value with the given tolerance:
 * threshold is geometrical object (arbitrary surface)
 * default tolerance is 1.0e-7
 
-.. _filters_ex30.py:
-
-``filters_ex30.py``
-
 .. literalinclude:: ../../../examples/filters_ex30.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex30.py`
+:download:`Download this script <../../../examples/filters_ex30.py>`
 
 .. _filter_range_of_ids: 
 
@@ -774,17 +645,13 @@ specified identifiers range:
 
 * element type can be any, from *SMESH.NODE* to *SMESH.BALL*
 * functor type is *SMESH.FT_RangeOfIds*
-* threshold is string listing required IDs and/or ranges of IDs, e.g."1,2,3,50-60,63,67,70-78"	
-
-.. _filters_ex31.py:
-
-``filters_ex31.py``
+* threshold is string listing required IDs and/or ranges of IDs, e.g."1,2,3,50-60,63,67,70-78"
 
 .. literalinclude:: ../../../examples/filters_ex31.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex31.py`
+:download:`Download this script <../../../examples/filters_ex31.py>`
 
 .. _filter_bad_oriented_volume:
 
@@ -798,15 +665,11 @@ the point of view of MED convention.
 * functor type is *SMESH.FT_BadOrientedVolume*
 * threshold is not required
 
-.. _filters_ex32.py:
-
-``filters_ex32.py``
-
 .. literalinclude:: ../../../examples/filters_ex32.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex32.py`
+:download:`Download this script <../../../examples/filters_ex32.py>`
 
 .. _filter_linear_or_quadratic: 
 
@@ -820,15 +683,11 @@ filters linear / quadratic mesh elements:
 * threshold is not required
 * if unary operator is set to SMESH.FT_LogicalNOT, the quadratic elements are selected, otherwise (by default) linear elements are selected
 
-.. _filters_ex33.py:
-
-``filters_ex33.py``
-
 .. literalinclude:: ../../../examples/filters_ex33.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex33.py`
+:download:`Download this script <../../../examples/filters_ex33.py>`
 
 .. _filter_group_color: 
 
@@ -841,15 +700,11 @@ filters mesh entities, belonging to the group with the color defined by the thre
 * functor type is *SMESH.FT_GroupColor*
 * threshold should be of SALOMEDS.Color type
 
-.. _filters_ex34.py:
-
-``filters_ex34.py``
-
 .. literalinclude:: ../../../examples/filters_ex34.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex34.py`
+:download:`Download this script <../../../examples/filters_ex34.py>`
 
 .. _filter_geom_type: 
 
@@ -864,15 +719,11 @@ entity type.
 * functor type should be *SMESH.FT_ElemGeomType*
 * threshold is either of smesh.GeometryType values. Type *SMESH.GeometryType._items* in the Python Console to see all geometric types.
 
-.. _filters_ex35.py:
-
-``filters_ex35.py``
-
 .. literalinclude:: ../../../examples/filters_ex35.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex35.py`
+:download:`Download this script <../../../examples/filters_ex35.py>`
 
 .. _filter_entity_type: 
 
@@ -885,15 +736,11 @@ filters mesh elements by the geometric type and number of nodes.
 * functor type should be *SMESH.FT_EntityType*
 * threshold is either of SMESH.EntityType values. Type *SMESH.EntityType._items* in the Python Console to see all entity types.
 
-.. _filters_ex37.py:
-
-``filters_ex37.py``
-
 .. literalinclude:: ../../../examples/filters_ex37.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex37.py`
+:download:`Download this script <../../../examples/filters_ex37.py>`
 
 .. _filter_ball_diam: 
 
@@ -906,15 +753,11 @@ filters ball elements by diameter.
 * functor type should be *SMESH.FT_BallDiameter*
 * threshold is floating point value (ball diameter)
 
-.. _filters_ex38.py:
-
-``filters_ex38.py``
-
 .. literalinclude:: ../../../examples/filters_ex38.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex38.py`
+:download:`Download this script <../../../examples/filters_ex38.py>`
 
 .. _filter_domain: 
 
@@ -927,15 +770,11 @@ filters elements of a specified domain.
 * functor type should be *SMESH.FT_ConnectedElements*
 * threshold is either (1) node ID or (2)  geometrical vertex or (3) 3 coordinates of a point.
 
-.. _filters_ex39.py:
-
-``filters_ex39.py``
-
 .. literalinclude:: ../../../examples/filters_ex39.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex39.py`
+:download:`Download this script <../../../examples/filters_ex39.py>`
 
 .. _combining_filters: 
 
@@ -944,16 +783,8 @@ How to combine several criteria into a filter?
 
 Several criteria can be combined into a filter.
 
-Example :
-
-.. _filters_ex36.py:
-
-``filters_ex36.py``
-
 .. literalinclude:: ../../../examples/filters_ex36.py
     :linenos:
     :language: python
 
-:download:`../../../examples/filters_ex36.py`
-
-
+:download:`Download this script <../../../examples/filters_ex36.py>`

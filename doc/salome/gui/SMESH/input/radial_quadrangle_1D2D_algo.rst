@@ -24,7 +24,7 @@ If no own hypothesis of the algorithm is assigned, any local or global
 hypothesis is used by the algorithm to discretize edges.
 
 If no 1D hypothesis is assigned to an edge, 
-:ref:`nb_segments_pref` preferences
+:ref:`Default Number of Segments <nb_segments_pref>` preferences
 parameter is used to discretize the edge.
 
 .. image:: ../images/hypo_radquad_dlg.png
@@ -34,14 +34,14 @@ parameter is used to discretize the edge.
 	:align: center
 
 .. centered::
-	"Radial Quadrangle 2D mesh on the top and the bottom faces of a cylinder"
+	Radial Quadrangle 2D mesh on the top and the bottom faces of a cylinder
 
 .. image:: ../images/mesh_radquad_02.png 
 	:align: center
 
 .. centered::
-	"Radial Quadrangle 2D mesh on a part of circle"
+	Radial Quadrangle 2D mesh on a part of circle
 
-**See also** A sample :ref:`tui_radial_quadrangle`.
+**See also** a sample :ref:`TUI Script <tui_radial_quadrangle>`.
 
 

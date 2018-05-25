@@ -10,16 +10,11 @@ Viewing Meshes
 Viewing Mesh Infos
 ##################
 
-
-.. _viewing_meshes_ex01.py:
-
-``viewing_meshes_ex01.py``
-
 .. literalinclude:: ../../../examples/viewing_meshes_ex01.py
     :linenos:
     :language: python
 
-:download:`../../../examples/viewing_meshes_ex01.py`
+:download:`Download this script <../../../examples/viewing_meshes_ex01.py>`
 
 .. _tui_find_element_by_point:
 
@@ -27,13 +22,8 @@ Viewing Mesh Infos
 Find Element by Point
 #####################
 
-.. _viewing_meshes_ex02.py:
-
-``viewing_meshes_ex02.py``
-
 .. literalinclude:: ../../../examples/viewing_meshes_ex02.py
     :linenos:
     :language: python
 
-:download:`../../../examples/viewing_meshes_ex02.py`
-
+:download:`Download this script <../../../examples/viewing_meshes_ex02.py>`

@@ -6,23 +6,23 @@ Adding nodes and elements
 
 In MESH you can add to your mesh different elements such as:
 
-* :ref:`adding_nodes_anchor`
-* :ref:`adding_0delems_anchor`
-* :ref:`adding_0delems_on_all_nodes_anchor`
-* :ref:`adding_balls_anchor`
-* :ref:`adding_edges_anchor`
-* :ref:`adding_triangles_anchor`
-* :ref:`adding_quadrangles_anchor`
-* :ref:`adding_polygons_anchor`
-* :ref:`adding_tetrahedrons_anchor`
-* :ref:`adding_hexahedrons_anchor`
-* :ref:`adding_octahedrons_anchor`
-* :ref:`adding_polyhedrons_anchor`
+* :ref:`Nodes <adding_nodes_anchor>`
+* :ref:`0D Elements <adding_0delems_anchor>`
+* :ref:`0D elements on Element Nodes <adding_0delems_on_all_nodes_anchor>`
+* :ref:`Ball Elements <adding_balls_anchor>`
+* :ref:`Edges <adding_edges_anchor>`
+* :ref:`Triangles <adding_triangles_anchor>`
+* :ref:`Quadrangles <adding_quadrangles_anchor>`
+* :ref:`Polygons <adding_polygons_anchor>`
+* :ref:`Tetrahedrons <adding_tetrahedrons_anchor>`
+* :ref:`Hexahedrons <adding_hexahedrons_anchor>`
+* :ref:`Hexagonal prism <adding_octahedrons_anchor>`
+* :ref:`Polyhedrons <adding_polyhedrons_anchor>`
 
 
-The convention of nodal connectivity of elements used in SALOME is the MED library convention. You can consult the description of nodal connectivity of elements in the documentation on MED library or :ref:`connectivity_page`.
+The convention of nodal connectivity of elements used in SALOME is the MED library convention. You can consult the description of nodal connectivity of elements in the documentation on MED library or :ref:`here <connectivity_page>`.
 
-**To add a node or an element to your mesh:**
+*To add a node or an element to your mesh:*
 
 #. Select your mesh in the Object Browser or in the 3D viewer.
 #. From the **Modification** menu choose the **Add** item, the following associated sub-menu will appear:
@@ -30,16 +30,9 @@ The convention of nodal connectivity of elements used in SALOME is the MED libra
 	.. image:: ../images/image152.png
 		:align: center
 
-	From this sub-menu select the type of element which you would like to add to your mesh.
+   From this sub-menu select the type of element which you would like to add to your mesh.
 
-	.. note::
-		All dialogs for new node or element adding to the mesh provide the possibility to automatically add a node or element to the specified group or to create it anew using **Add to group** box, that allows choosing an existing group for the created node or element or giving the name to a new group. By default, the **Add to group** check box is switched off. If the user switches this check box on, the combo box listing all currently existing groups of the corresponding type becomes available. By default, no group is selected. In this case, when the user presses **Apply** or **Apply & Close** button, the warning message box informs the user about the necessity to input new group name. The combo box lists groups of all the 
-		:ref:`grouping_elements_page`: both 
-		:ref:`standalone_group`,
-		:ref:`group_on_filter`, and 
-		:ref:`group_on_geom`. If the user chooses a group on geometry or on filter, he is warned and proposed to convert this group to standalone.
-
-	If the user rejects conversion operation, it is cancelled and a new node/element is not created!
+   .. note:: All dialogs for new node or element adding to the mesh provide the possibility to automatically add a node or element to the specified group or to create it anew using **Add to group** box, that allows choosing an existing group for the created node or element or giving the name to a new group. By default, the **Add to group** check box is switched off. If the user switches this check box on, the combo box listing all currently existing groups of the corresponding type becomes available. By default, no group is selected. In this case, when the user presses **Apply** or **Apply & Close** button, the warning message box informs the user about the necessity to input new group name. The combo box lists groups of all the :ref:`three types <grouping_elements_page>`: both :ref:`standalone groups <standalone_group>`, :ref:`groups on filter <group_on_filter>`, and :ref:`groups on geometry <group_on_geom>`. If the user chooses a group on geometry or on filter, he is warned and proposed to convert this group to standalone. If the user rejects conversion operation, it is cancelled and a new node/element is not created!
 
 
 **See Also** sample TUI Scripts of :ref:`tui_adding_nodes_and_elements` operations.  
@@ -91,9 +84,9 @@ In this dialog
 	* **Elements** - this button allows selecting elements in the VTK viewer or typing their IDs in the dialog.
 	* **Nodes** - this button allows selecting nodes to create 0D elements on in the VTK viewer or typing their IDs in the dialog.
   
-* **Set Filter** button allows selecting elements or nodes by filtering mesh elements or nodes with different criteria (see :ref:`filtering_elements`).
+* **Set Filter** button allows selecting elements or nodes by filtering mesh elements or nodes with different criteria (see :ref:`Filter usage <filtering_elements>`).
 * Activate **Allow duplicate elements** to get several 0D elements on a node. 
-* Switching on **Add to group** check-box allows specifying the name of the group to which all created or found (existing) 0D elements will be added. You can either select an existing group from a drop-down list, or enter the name of the group to be created. If a selected existing :ref:`grouping_elements_page` is not Standalone (Group On Geometry or Group On Filter) it will be converted to Standalone.
+* Switching on **Add to group** check-box allows specifying the name of the group to which all created or found (existing) 0D elements will be added. You can either select an existing group from a drop-down list, or enter the name of the group to be created. If a selected existing :ref:`group <grouping_elements_page>` is not Standalone (Group On Geometry or Group On Filter) it will be converted to Standalone.
 
 .. warning:: If **Add to group** is activated it has to be filled in.
 

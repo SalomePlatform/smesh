@@ -27,8 +27,3 @@ In this dialog you can specify the properties of the scalar bar
 * **Distribution** - in this menu you can Show/Hide distribution histogram of the values of the **Scalar Bar** and specify histogram properties
 	* **Multicolor** the histogram is colored as **Scalar Bar**
 	* **Monocolor** the histogram is colored as selected with **Distribution color** selector
-
-
-
-
-

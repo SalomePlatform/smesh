@@ -14,8 +14,6 @@ In other words, the volumes having all their nodes on the external border of the
 	:align: center
 
 .. centered::
-	In this picture the over-constrained volume is displayed in red.
+	Over-constrained volume is displayed in red.
 
 **See Also** a sample TUI Script of a :ref:`tui_over_constrained_volumes` filter.  
-
-

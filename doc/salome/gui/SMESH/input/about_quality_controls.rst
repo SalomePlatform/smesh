@@ -4,8 +4,7 @@
 About quality controls
 **********************
 
-.. note:: 
-	**Mesh quality control** in MESH is destined for visual control of the generated mesh.
+**Mesh quality control** in MESH is destined for visual control of the generated mesh.
 
 Application of a definite quality control consists of usage of the corresponding algorithm, which calculates a value of a definite geometric characteristic (Area, Length of edges, etc) for all meshing elements, composing your mesh. Then all meshing elements are colored according the calculated values. The reference between the coloring of the meshing elements and these calculated values is shown with the help of a scalar bar, which is displayed near the presentation of your mesh.
 
@@ -64,11 +63,12 @@ To manage the quality controls call pop-up in the VTK viewer and select "Control
 *  **Edge Controls** provides access to the edge quality controls;
 *  **Face Controls** provides access to the face quality controls;
 *  **Volume Controls** provides access to the volume quality controls;
-*  **Scalar Bar Properties** allows setting :ref:scalar_bar_dlg;
+*  **Scalar Bar Properties** allows setting :ref:`scalar_bar_dlg`;
 *  **Distribution -> Export ...** allows saving the distribution of quality control values in the text file;
 *  **Distribution -> Show** Shows/Hides the distribution histogram of the quality control values in the VTK Viewer.
 *  **Distribution -> Plot** Plots the distribution histogram of the quality control values in the Plot 2D Viewer.
 
+**Table of Contents**
 
 .. toctree::
 	:maxdepth: 2
@@ -98,5 +98,3 @@ To manage the quality controls call pop-up in the VTK viewer and select "Control
 	bare_border_volumes.rst
 	over_constrained_volumes.rst
 	scalar_bar.rst	
-
-

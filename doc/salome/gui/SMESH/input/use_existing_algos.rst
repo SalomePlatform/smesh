@@ -28,7 +28,7 @@ by importing mesh edges contained in a group (or groups) from another mesh.
 To apply this algorithm select the edge to be meshed (indicated in
 the field **Geometry** of **Create mesh** dialog box),
 **Import 1D Elements from Another Mesh** in the list of 1D
-algorithms and click the **"Add Hypothesis"** button.
+algorithms and click the *"Add Hypothesis"* button.
 The following dialog box will appear:
 
 .. image:: ../images/hyp_source_edges.png
@@ -43,7 +43,7 @@ In this dialog box you can define
 
 **Import 1D-2D Elements from Another Mesh** algorithm allows to define the mesh of a geometrical face (or group of faces) by importing mesh faces contained in a group (or groups) from another (or this) mesh. 1D elements on the boundary of the geometrical face (if not yet present) are also created by the algorithm in conformity with the created 2D elements.
 
-To apply this algorithm select the geometrical face to be meshed (indicated in the field **Geometry** of **Create mesh** dialog box), **Import 1D-2D Elements from Another Mesh** in the list of 2D algorithms and click the **"Add Hypothesis"** button.
+To apply this algorithm select the geometrical face to be meshed (indicated in the field **Geometry** of **Create mesh** dialog box), **Import 1D-2D Elements from Another Mesh** in the list of 2D algorithms and click the *"Add Hypothesis"* button.
 
 The following dialog box will appear:
 
@@ -57,8 +57,4 @@ In this dialog box you can define
 * **To copy mesh** checkbox allows to import not only the faces of the selected **Groups of Faces**, but the whole source mesh. In this case **To copy groups** checkbox allows to create the same groups as in the imported source mesh.
 
 
-**See Also** a sample TUI Script of a 
-:ref:`tui_import`.
-
-
-
+**See Also** a sample TUI Script of :ref:`Import 2D Elements from Another Mesh <tui_import>`.

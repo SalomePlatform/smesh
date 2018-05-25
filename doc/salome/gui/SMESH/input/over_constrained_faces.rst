@@ -15,7 +15,7 @@ the free border of the 2D mesh are highlighted.
 	:align: center
 
 .. centered::
-	In this picture the over-constrained face is displayed in red.
+	Over-constrained face is displayed in red
 
 **See Also** a sample TUI Script of a :ref:`tui_over_constrained_faces` filter.  
 

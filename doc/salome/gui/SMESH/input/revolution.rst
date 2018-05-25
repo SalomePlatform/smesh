@@ -8,21 +8,18 @@ Revolution is used to build mesh elements of plus one
 dimension than the input ones.  Boundary elements around generated
 mesh of plus one dimension are additionally created. All created
 elements can be automatically grouped. Revolution can be used to create
-a :ref:`extrusion_struct`. 
+a :ref:`structured mesh from scratch <extrusion_struct>`. 
 See :ref:`extrusion_page` page for general information on Revolution,
 which can be viewed as extrusion along a circular path.
 
-**To apply revolution:**
+*To apply revolution:*
+
+.. |img| image:: ../images/image92.png
+.. |sel| image:: ../images/image120.png
 
 #. From the **Modification** menu choose the **Revolution** item or click  **"Revolution"** button in the toolbar.
 
-	.. image:: ../images/image92.png
-		:align: center
-
-	.. centered::
-		**"Revolution" button**
-
-	The following dialog will appear:
+   The following dialog will appear:
 
 	.. image:: ../images/revolution1.png
 		:align: center
@@ -30,14 +27,8 @@ which can be viewed as extrusion along a circular path.
 
 #. In this dialog:
     
-	* Use *Selection* button to specify what you are going to select at a given moment, **Nodes**, **Edges** or **Faces**.
+	* Use *Selection* button |sel| to specify what you are going to select at a given moment, **Nodes**, **Edges** or **Faces**.
 
-	.. image:: ../images/image120.png
-		:align: center
-
-	.. centered::
-		**"Selection" button**
-    
 	* Specify **Nodes**, **Edges** and **Faces**, which will be revolved, by one of following means:
 		* **Select the whole mesh, sub-mesh or group** activating this check-box.
 		* Choose mesh elements with the mouse in the 3D Viewer. It is possible to select a whole area with a mouse frame.
@@ -56,7 +47,7 @@ which can be viewed as extrusion along a circular path.
 			:align: center
 
 		.. centered::
-			"Example of Revolution with Angle by Step. Angle=30 and Number of Steps=3"
+			Example of Revolution with Angle by Step. Angle=30 and Number of Steps=3
         
 		* **Total Angle** - the elements are revolved by the specified angle only once and the number of steps defines the number of iterations (i.e. for Angle=30 and Number of Steps=3, the elements will be revolved by 30/3=10 degrees twice for a total of 30).
 
@@ -64,7 +55,7 @@ which can be viewed as extrusion along a circular path.
 			:align: center
 
 		.. centered::
-			"Example of Revolution with Total Angle. Angle=30 and Number of Steps=3"
+			Example of Revolution with Total Angle. Angle=30 and Number of Steps=3
         
       
     
@@ -84,5 +75,3 @@ which can be viewed as extrusion along a circular path.
 #. Click **Apply** or **Apply and Close** button to confirm the operation.
 
 **See Also** a sample TUI Script of a :ref:`tui_revolution` operation.
-
-

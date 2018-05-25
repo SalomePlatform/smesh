@@ -11,6 +11,4 @@ These mesh quality controls highlight the mesh elements basing on the same set o
 
 In this picture some faces are coincident after copying all elements with translation with subsequent Merge of nodes.
 
-*A sample TUI Script of a* :ref:`filter_double_elements`:.
-
-
+**See also** a sample TUI Script of a :ref:`filter_double_elements` filters.

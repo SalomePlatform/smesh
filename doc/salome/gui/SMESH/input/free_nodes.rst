@@ -11,6 +11,4 @@ This mesh quality control highlights the nodes which are not connected to any  m
 
 In this picture some nodes are not connected to any mesh element after deleting some elements and adding several isolated nodes.
 
-**See also:** A sample TUI Script of a :ref:`tui_free_nodes` operation.
-
-
+**See also:** A sample TUI Script of a :ref:`tui_free_nodes` filter.

@@ -9,17 +9,13 @@ locations of element corners (nodes).
 
 .. note:: Depending on the chosen method and mesh geometry the smoothing can actually decrease the quality of elements and even make some elements inverted.
 
-**To apply smoothing to the elements of your mesh:**
+*To apply smoothing to the elements of your mesh:*
 
-#. In the **Modification** menu select the **Smoothing** item or click **"Smoothing"** button in the toolbar.
+.. |img| image:: ../images/image84.png
 
-	.. image:: ../images/image84.png
-		:align: center
+#. In the **Modification** menu select the **Smoothing** item or click *"Smoothing"* button |img| in the toolbar.
 
-	.. centered:: 
-		**"Smoothing" button**
-
-	The following dialog will appear:
+   The following dialog will appear:
 
 	.. image:: ../images/smoothing.png
 		:align: center
@@ -55,15 +51,14 @@ locations of element corners (nodes).
 	:align: center
 
 .. centered:: 
-	"The initial mesh"
+	The initial mesh
 
 .. image:: ../images/smoothing2.png 
 	:align: center
 
 .. centered:: 
-	"The smoothed mesh"
+	The smoothed mesh: mesh quality improved
 
-**See Also** a sample TUI Script of a 
-:ref:`tui_smoothing` operation.  
+**See Also** a sample TUI Script of a :ref:`tui_smoothing` operation.  
 
 

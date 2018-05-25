@@ -10,7 +10,7 @@ This functionality allows to merge coincident elements of a mesh. Two elements a
 	:align: center
 
 .. centered::
-	"Merge elements menu button"
+	*"Merge elements"* menu button
 
 To merge elements choose in the main menu **Modification** -> **Transformation** -> **Merge elements** item. The following dialog box shall appear:
 
@@ -19,9 +19,10 @@ To merge elements choose in the main menu **Modification** -> **Transformation**
 
 In this dialog:
 
-	* Name is the name of the mesh object whose elements will be merged. 
+	* **Name** is the name of the mesh object whose elements will be merged. 
 	* **Automatic** or **Manual** Mode allows choosing how the elements are processed. In the **Automatic** Mode all elements created on the same nodes will be merged. In **Manual** mode you can adjust groups of coincident elements detected by the program.
-		If the **Manual** Mode is selected, additional controls are available:
+
+	  If the **Manual** Mode is selected, additional controls are available:
 
 		.. image:: ../images/mergeelems.png
 			:align: center
@@ -35,30 +36,27 @@ In this dialog:
 		* **Show double elements IDs** check-box shows/hides identifiers of elements of the selected groups in the 3D viewer.
 		* **Edit selected group of coincident elements** list allows editing the selected group:
     
-		.. image:: ../images/add.png
-			:align: center
+                        .. image:: ../images/add.png
+                           :align: center
 
-		.. centered:: 
-			adds to the group the elements selected in the viewer.
+			* adds to the group the elements selected in the viewer.
     
-		.. image:: ../images/remove.png
-			:align: center
+		        .. image:: ../images/remove.png
+                           :align: center
 
-		.. centered:: 
-			removes the selected elements from the group.
+			* removes the selected elements from the group.
     
-		.. image:: ../images/sort.png
-			:align: center
+                        .. image:: ../images/sort.png
+                           :align: center
 
-		.. centered:: 
-			moves the selected element to the first position in the group in order to keep it in the mesh.
+			* moves the selected element to the first position in the group in order to keep it in the mesh.
     
   
 
 	* To confirm your choice click **Apply** or **Apply and Close** button.
 
 
-In this picture you see a triangle which coincides with one of the elements of the mesh. After we apply **Merge Elements** functionality, the triangle will be completely merged with the mesh.
+In the following picture you see a triangle which coincides with one of the elements of the mesh. After we apply **Merge Elements** functionality, the triangle will be completely merged with the mesh.
 
 .. image:: ../images/meshtrianglemergeelem1.png
 	:align: center

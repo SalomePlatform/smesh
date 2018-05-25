@@ -4,26 +4,19 @@
 Volume
 ******
 
-**Volume** mesh quality criterion reflects the volume of meshes of a
-3D object.
+**Volume** mesh quality criterion reflects the volume of meshes of a 3D object.
 
-**To apply the Volume quality criterion to your mesh:**
+*To apply the Volume quality criterion to your mesh:*
+
+.. |img| image:: ../images/image145.png
 
 #. Display your mesh in the viewer.
-#. Choose **Controls > Volume Controls > Volume** or click **"Volume"** button in the toolbar.
+#. Choose **Controls > Volume Controls > Volume** or click *"Volume"* button |img| in the toolbar.
 
-	.. image:: ../images/image145.png
-		:align: center
-
-	.. centered::
-		**"Volume" button**
-
-	Your mesh will be displayed in the viewer with its elements colored according to the applied mesh quality control criterion:
+   Your mesh will be displayed in the viewer with its elements colored according to the applied mesh quality control criterion:
 
 	.. image:: ../images/image143.gif
 		:align: center
 
 
-**See Also** a sample TUI Script of a 
-:ref:`tui_volume` operation.  
-
+**See Also** a sample TUI Script of a :ref:`tui_volume` filter.

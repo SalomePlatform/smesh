@@ -7,16 +7,14 @@ Python interface
 Python API of SALOME Mesh module defines several classes that can
 be used for easy mesh creation and edition.
 
-Documentation of SALOME %Mesh module Python API is available in two forms:
+Documentation of SALOME Mesh module Python API is available in two forms:
 
-- :ref:`Structured documentation <modules_page>`, where all methods and classes are grouped by their functionality.
+- :doc:`Structured documentation <modules>`, where all methods and classes are grouped by their functionality.
 
-- :ref:`Linear documentation <genindex>` grouped only by classes, declared in the :mod:`smeshBuilder` and :mod:`StdMeshersBuilder` Python packages.
+- :ref:`Linear documentation <modindex>` grouped only by classes, declared in the :mod:`smeshBuilder` and :mod:`StdMeshersBuilder` Python packages.
 
 With SALOME 7.2, the Python interface for Mesh has been slightly modified to offer new functionality.
-
 You may have to modify your scripts generated with SALOME 6 or older versions.
-
 Please see :ref:`smesh_migration_page`.
 
 Class :class:`smeshBuilder.smeshBuilder` provides an interface to create and handle
@@ -43,21 +41,21 @@ A usual workflow to generate a mesh on geometry is following:
 
 		mesh = smesh.Mesh( geometry )
 
-#. Create and assign :ref:`basic_meshing_algos_page` by calling corresponding methods of the mesh. If a sub-shape is provided as an argument, a :ref:`constructing_submeshes_page` is implicitly created on this sub-shape:
+#. Create and assign :ref:`algorithms <basic_meshing_algos_page>` by calling corresponding methods of the mesh. If a sub-shape is provided as an argument, a :ref:`sub-mesh <constructing_submeshes_page>` is implicitly created on this sub-shape:
 	.. code-block:: python
 		:linenos:
 
-		regular1D = smeshBuilder.Mesh.Segment()
-		mefisto   = smeshBuilder.Mesh.Triangle( smeshBuilder.MEFISTO )
+		regular1D = mesh.Segment()
+		mefisto   = mesh.Triangle( smeshBuilder.MEFISTO )
 		# use other triangle algorithm on a face -- a sub-mesh appears in the mesh
-		netgen    = smeshBuilder.Mesh.Triangle( smeshBuilder.NETGEN_1D2D, face )
+		netgen    = mesh.Triangle( smeshBuilder.NETGEN_1D2D, face )
 
-#. Create and assign :ref:`about_hypo_page` by calling corresponding methods of algorithms:
+#. Create and assign :ref:`hypotheses <about_hypo_page>` by calling corresponding methods of algorithms:
 	.. code-block:: python
 		:linenos:
 
-		segLen10 = StdMeshersBuilder.StdMeshersBuilder_Segment.LocalLength( 10. )
-		maxArea  = StdMeshersBuilder.StdMeshersBuilder_Segment.LocalLength( 100. )
+		segLen10 = regular1D.LocalLength( 10. )
+		maxArea  = mefisto.LocalLength( 100. )
 		netgen.SetMaxSize( 20. )
 		netgen.SetFineness( smeshBuilder.VeryCoarse )
   
@@ -65,7 +63,7 @@ A usual workflow to generate a mesh on geometry is following:
 	.. code-block:: python
 		:linenos:
 
-		Mesh.Compute()
+		mesh.Compute()
 
 An easiest way to start with Python scripting is to do something in
 GUI and then to get a corresponding Python script via 
@@ -83,39 +81,40 @@ generation and for retrieving information on mesh nodes and elements.
 Example of 3d mesh generation:
 ##############################
 
-.. _3dmesh.py:
-
-``3dmesh.py`` 
-
-
 .. literalinclude:: ../../../examples/3dmesh.py
     :linenos:
     :language: python
 
-:download:`../../../examples/3dmesh.py`
+:download:`Download this script <../../../examples/3dmesh.py>`
 
 Examples of Python scripts for Mesh operations are available by
 the following links:
 
-- :ref:`tui_creating_meshes_page`
-- :ref:`tui_defining_hypotheses_page`
-- :ref:`tui_grouping_elements_page`
-- :ref:`tui_filters_page`
-- :ref:`tui_modifying_meshes_page`
-- :ref:`tui_transforming_meshes_page`
-- :ref:`tui_viewing_meshes_page`
-- :ref:`tui_quality_controls_page`
-- :ref:`tui_measurements_page`
-- :ref:`tui_work_on_objects_from_gui`
-- :ref:`tui_notebook_smesh_page`
-- :ref:`tui_cartesian_algo`
-- :ref:`tui_use_existing_faces`
-- :ref:`tui_prism_3d_algo`
-- :ref:`tui_generate_flat_elements_page`
+.. toctree::
+   :titlesonly:
 
-
+   tui_creating_meshes
+   tui_defining_hypotheses
+   tui_grouping_elements
+   tui_filters
+   tui_modifying_meshes
+   tui_transforming_meshes
+   tui_viewing_meshes
+   tui_quality_controls
+   tui_measurements
+   tui_work_on_objects_from_gui
+   tui_notebook_smesh
+   tui_cartesian_algo
+   tui_use_existing_faces
+   tui_prism_3d_algo
+   tui_generate_flat_elements
 
 .. toctree::
-	:maxdepth: 2
+   :hidden:
 
-	smesh_migration.rst
+   smesh_migration.rst
+   smeshBuilder.rst
+   StdMeshersBuilder.rst
+   smeshstudytools.rst
+   modules.rst
+   smesh_module.rst
