@@ -17,10 +17,6 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-// SMESH SMESHGUI : GUI for SMESH component
-// File   : libSMESH_Swig.i
-// Author : Nicolas REJNERI, Open CASCADE S.A.S.
-//
 %module libSMESH_Swig
 
 %{
@@ -38,7 +34,7 @@
     // Py_END_ALLOW_THREADS
     ~PyAllowThreadsGuard() { PyEval_RestoreThread(_save); }
   private:
-    PyThreadState *_save;
+    PyThreadState* _save;
   };
 
   PyAllowThreadsGuard guard;
@@ -50,104 +46,176 @@
 %include "std_vector.i"
 %include "std_pair.i"
 
-namespace std {
-  
-    %template(VectorInt) vector<int>;
-    %template() std::pair<int,int>;
-    %template(PairVector) std::vector<std::pair<int,int> >;
+namespace std
+{
+  %template(VectorInt) vector<int>;
+  %template() std::pair<int,int>;
+  %template(PairVector) std::vector<std::pair<int,int> >;
 };
 
+// See SMESH_Actor.h
+typedef enum
+{
+  EntityNone    = 0x00,
+  Entity0d      = 0x01,   // SMESH_Actor::e0DElements
+  EntityEdges   = 0x02,   // SMESH_Actor::eEdges
+  EntityFaces   = 0x04,   // SMESH_Actor::eFaces
+  EntityVolumes = 0x08,   // SMESH_Actor::eVolumes
+  EntityBalls   = 0x10,   // SMESH_Actor::eBallElem
+  EntityAll     = 0xff    // SMESH_Actor::eAllEntity
+} EntityMode;
 
-/* Selection mode enumeration (corresponds to constants from the SALOME_Selection.h) */
+// See SVTK_Selection.h
 enum SelectionMode
-  {
-    Undefined = -1,
-    Node = 0,
-    Cell,
-    EdgeOfCell,
-    Edge,
-    Face,
-    Volume,
-    Actor,
-    Elem0D,
-    Ball
-  };
+{
+  Undefined = -1,
+  Node = 0,       // NodeSelection
+  Cell,           // CellSelection
+  EdgeOfCell,     // EdgeOfCellSelection
+  Edge,           // EdgeSelection
+  Face,           // FaceSelection
+  Volume,         // VolumeSelection
+  Actor,          // ActorSelection
+  Elem0D,         // Elem0DSelection
+  Ball            // BallSelection
+};
 
-typedef struct
+// See SMESH_Actor.h
+enum DisplayMode
+{
+  UndefinedMode = -1,
+  PointMode = 0,      // SMESH_Actor::ePoint
+  EdgeMode,           // SMESH_Actor::eEdge
+  SurfaceMode         // SMESH_Actor::eSurface
+};
+
+struct ColorData
+{
+  double r, g, b;
+};
+
+struct BicolorData
 {
   double r, g, b;
   int delta;
-} surfaceColorStruct;
+};
 
-typedef struct
+struct Properties
 {
-  double r, g, b;
-  int delta;
-} volumeColorStruct;
+  ColorData nodeColor;
+  int markerType;
+  int markerScale;
 
-typedef struct
-{
-  double r, g, b;
-} edgeColorStruct;
+  ColorData edgeColor;
+  int edgeWidth;
 
-typedef struct
-{
-  double r, g, b;
-} nodeColorStruct;
+  BicolorData surfaceColor;
+  BicolorData volumeColor;
 
-struct actorAspect
-{
-  surfaceColorStruct surfaceColor;
-  volumeColorStruct volumeColor;
-  edgeColorStruct edgeColor;
-  nodeColorStruct nodeColor;
+  ColorData elem0dColor;
+  int elem0dSize;
+
+  ColorData ballColor;
+  double ballScale;
+
+  ColorData outlineColor;
+  int outlineWidth;
+
+  ColorData orientationColor;
+  double orientationScale;
+  bool orientation3d;
+
+  double shrinkFactor;
   double opacity;
 };
 
+typedef ColorData nodeColorStruct; // deprecated
+typedef ColorData edgeColorStruct; // deprecated
+typedef BicolorData surfaceColorStruct; // deprecated
+typedef BicolorData volumeColorStruct; // deprecated
+typedef Properties actorAspect; // deprecated
+
 class SMESH_Swig
 {
- public:
+public:
   SMESH_Swig();
   ~SMESH_Swig();
 
-  void Init(int studyID);
+  // Initialization =============================================
 
-  const char* AddNewMesh(const char* IOR);
-  const char* AddNewHypothesis(const char* IOR);
-  const char* AddNewAlgorithms(const char* IOR);
+  void Init(int); // deprecated
 
-  void SetShape(const char* ShapeEntry, const char* MeshEntry);
+  // Publishing =================================================
+  
+  const char* publish(const char*, const char* = 0);
+  void rename(const char*, const char*);
 
-  void SetHypothesis(const char* Mesh_Or_SubMesh_Entry, const char* Hypothesis_Entry);
-  void SetAlgorithms(const char* Mesh_Or_SubMesh_Entry, const char* Algorithms_Entry);
+  const char* AddNewMesh(const char*, const char* = 0); // deprecated
+  const char* AddNewHypothesis(const char*, const char* = 0); // deprecated
+  const char* AddNewAlgorithms(const char*, const char* = 0); // deprecated
+  const char* AddNewAlgorithm(const char*, const char* = 0); // deprecated
 
-  void UnSetHypothesis(const char* Applied_Hypothesis_Entry );
+  void SetShape(const char*, const char*); // deprecated
 
-  const char* AddSubMesh (const char* Mesh_Entry, const char* SM_IOR, int ST);
-  const char* AddSubMeshOnShape (const char* Mesh_Entry, const char* GeomShape_Entry, const char* SM_IOR, int ST);
+  void SetHypothesis(const char*, const char*); // deprecated
+  void SetAlgorithms(const char*, const char*); // deprecated
 
-  void SetName(const char* Entry, const char* Name);
+  void UnSetHypothesis(const char*); // deprecated
 
-  void SetMeshIcon(const char* Mesh_Entry, const bool isComputed, const bool isEmpty);
+  const char* AddSubMesh(const char*, const char*, int, const char* = 0); // deprecated
+  const char* AddSubMeshOnShape (const char*, const char*, const char*, int, const char* = 0); // deprecated
 
-  void CreateAndDisplayActor( const char* Mesh_Entry );
-  void EraseActor( const char* Mesh_Entry, const bool allViewers = false );
-  void UpdateActor( const char* Mesh_Entry );
+  void SetName(const char*, const char*); // deprecated
 
-  void setSelectionMode( SelectionMode selectionMode);
-  std::vector<int> getSelected( const char* Mesh_Entry );
-  std::vector<std::pair<int,int> > getSelectedEdgeOfCell( const char* Mesh_Entry );
+  void SetMeshIcon(const char*, const bool, const bool); // deprecated
 
-  actorAspect GetActorAspect(const char* Mesh_Entry, int viewId = 0 );
-  void SetActorAspect( const actorAspect& actorPres, const char* Mesh_Entry, int viewId = 0 );
+  // Visualization  =============================================
 
-  void setSelectionMode( SelectionMode selectionMode);
-  std::vector<int> getSelected( const char* Mesh_Entry );
+  void display(const char*, int = 0, bool = true);
+  void erase(const char*, int = 0, bool = true);
+  void update(const char*);
 
-  // --------------------- for the test purposes -----------------------
-  SelectionMode  getSelectionMode();
-  void select( const char *id, std::vector<int> ids, bool append = false );
-  void select( const char *id, int id1, bool append = false );
-  void select( const char *id, std::vector<std::pair<int,int> >, bool apend = false );
+  Properties properties(const char*, int = 0);
+  void setProperties(const char*, const Properties&, int = 0);
 
+  bool nodesNumbering(const char*, int = 0);
+  void setNodesNumbering(const char*, bool, int = 0);
+  bool elementsNumbering(const char*, int = 0);
+  void setElementsNumbering(const char*, bool, int = 0);
+
+  DisplayMode displayMode(const char*, int = 0);
+  void setDisplayMode(const char*, DisplayMode, int = 0);
+
+  bool shrinkMode(const char*, int = 0);
+  void setShrinkMode(const char*, bool, int = 0);
+
+  double opacity(const char*, int = 0);
+  void setOpacity(const char*, double, int = 0);
+
+  bool isOrientationShown(const char*, int = 0);
+  void setOrientationShown(const char*, bool, int = 0);
+
+  int entitiesShown(const char*, int = 0);
+  void setEntitiesShown(const char*, int, int = 0);
+  bool isEntityShown(const char*, EntityMode, int = 0);
+  void setEntityShown(const char*, EntityMode, bool, int = 0);
+
+  void CreateAndDisplayActor(const char*); // deprecated
+  void EraseActor(const char*, const bool = false); // deprecated
+  void UpdateActor(const char*); // deprecated
+
+  actorAspect GetActorAspect(const char*, int = 0); // deprecated
+  void SetActorAspect(const actorAspect&, const char*, int = 0); // deprecated
+
+  // Selection  =================================================
+
+  SelectionMode getSelectionMode(int = 0);
+  void setSelectionMode(SelectionMode, int = 0);
+
+  std::vector<int> getSelected(const char*);
+  std::vector<std::pair<int,int> > getSelectedEdgeOfCell(const char*);
+
+  void select(const char*, std::vector<int>, bool = false);
+  void select(const char*, int, bool = false);
+  void select(const char*, std::vector<std::pair<int,int> >, bool = false);
 };
