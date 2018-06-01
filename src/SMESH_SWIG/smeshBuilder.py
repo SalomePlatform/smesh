@@ -3640,17 +3640,17 @@ class Mesh:
             :meth:`BoundingBox()`
         """
 
-        if IDs is None:
-            IDs = [self.mesh]
-        elif isinstance(IDs, tuple):
-            IDs = list(IDs)
-        if not isinstance(IDs, list):
-            IDs = [IDs]
-        if len(IDs) > 0 and isinstance(IDs[0], int):
-            IDs = [IDs]
+        if objects is None:
+            objects = [self.mesh]
+        elif isinstance(objects, tuple):
+            objects = list(objects)
+        if not isinstance(objects, list):
+            objects = [objects]
+        if len(objects) > 0 and isinstance(objects[0], int):
+            objects = [objects]
         srclist = []
         unRegister = genObjUnRegister()
-        for o in IDs:
+        for o in objects:
             if isinstance(o, Mesh):
                 srclist.append(o.mesh)
             elif hasattr(o, "_narrow"):
