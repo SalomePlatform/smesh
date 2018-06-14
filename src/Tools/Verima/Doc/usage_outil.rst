@@ -137,7 +137,7 @@ Modifier les scripts pour les intégrer dans le mécanisme de test
             fichierMedResult = 'fichierMed.med'
             getStatsMaillage(monMaillage,fichierMedResult)
             getStatsGroupes(monMaillage,fichierMedResult)
-            getStatsCritere(dimMaillage,monMaillage,fichierMedResult,theStudy)
+            getStatsCritere(dimMaillage,monMaillage,fichierMedResult)
 
 Lancement du script de comparaison
 -----------------------------------

@@ -37,7 +37,7 @@
 class STDMESHERS_EXPORT StdMeshers_MaxElementArea:public SMESH_Hypothesis
 {
 public:
-  StdMeshers_MaxElementArea(int hypId, int studyId, SMESH_Gen * gen);
+  StdMeshers_MaxElementArea(int hypId, SMESH_Gen * gen);
   virtual ~ StdMeshers_MaxElementArea();
 
   void SetMaxArea(double maxArea) throw(SALOME_Exception);

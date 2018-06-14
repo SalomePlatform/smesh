@@ -213,7 +213,7 @@ QFrame* SMESHGUI_GenericHypothesisCreator::buildStdFrame()
       case QVariant::String:
         {
           if((*anIt).isVariable) {
-            _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+            _PTR(Study) aStudy = SMESH::getStudy();
             QString aVar = (*anIt).myValue.toString();
             if(aStudy->IsInteger(aVar.toLatin1().constData())){
               SalomeApp_IntSpinBox* sb = new SalomeApp_IntSpinBox( GroupC1 );
@@ -298,7 +298,7 @@ void SMESHGUI_GenericHypothesisCreator::onDialogFinished( int result )
   {
     //remove just created hypothesis
     _PTR(SObject) aHypSObject = SMESH::FindSObject( myHypo );
-    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+    _PTR(Study) aStudy = SMESH::getStudy();
     if( aStudy && !aStudy->GetProperties()->IsLocked() )
     {
       _PTR(StudyBuilder) aBuilder = aStudy->NewBuilder();

@@ -102,10 +102,9 @@ class SMESH_EXPORT SMESH_Algo : public SMESH_Hypothesis
   /*!
    * \brief Creates algorithm
     * \param hypId - algorithm ID
-    * \param studyId - study ID
     * \param gen - SMESH_Gen
    */
-  SMESH_Algo(int hypId, int studyId, SMESH_Gen * gen);
+  SMESH_Algo(int hypId, SMESH_Gen * gen);
 
   /*!
    * \brief Destructor
@@ -476,19 +475,19 @@ protected:
 class SMESH_EXPORT SMESH_0D_Algo: public SMESH_Algo
 {
 public:
-  SMESH_0D_Algo(int hypId, int studyId,  SMESH_Gen* gen);
+  SMESH_0D_Algo(int hypId, SMESH_Gen* gen);
 };
 
 class SMESH_EXPORT SMESH_1D_Algo: public SMESH_Algo
 {
 public:
-  SMESH_1D_Algo(int hypId, int studyId,  SMESH_Gen* gen);
+  SMESH_1D_Algo(int hypId, SMESH_Gen* gen);
 };
 
 class SMESH_EXPORT SMESH_2D_Algo: public SMESH_Algo
 {
 public:
-  SMESH_2D_Algo(int hypId, int studyId, SMESH_Gen* gen);
+  SMESH_2D_Algo(int hypId, SMESH_Gen* gen);
   /*!
    * \brief Method in which an algorithm generating a structured mesh
    *        fixes positions of in-face nodes after there movement
@@ -501,7 +500,7 @@ public:
 class SMESH_EXPORT SMESH_3D_Algo: public SMESH_Algo
 {
 public:
-  SMESH_3D_Algo(int hypId, int studyId, SMESH_Gen* gen);
+  SMESH_3D_Algo(int hypId, SMESH_Gen* gen);
 };
 
 #endif

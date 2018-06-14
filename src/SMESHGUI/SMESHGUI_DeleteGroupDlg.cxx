@@ -194,7 +194,7 @@ bool SMESHGUI_DeleteGroupDlg::isValid()
     return false;
   }
 
-  return !mySMESHGUI->isActiveStudyLocked();
+  return !SMESHGUI::isStudyLocked();
 }
 
 //=================================================================================

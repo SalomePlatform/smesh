@@ -511,7 +511,7 @@ void SMESHGUI_MergeDlg::FindGravityCenter(TColStd_MapOfInteger & theElemsIdMap,
 //=================================================================================
 bool SMESHGUI_MergeDlg::ClickOnApply()
 {
-  if (mySMESHGUI->isActiveStudyLocked() || myMesh->_is_nil())
+  if (SMESHGUI::isStudyLocked() || myMesh->_is_nil())
     return false;
 
   try {

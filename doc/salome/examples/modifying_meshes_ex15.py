@@ -5,11 +5,11 @@ import salome
 salome.salome_init()
 
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 
 box = geompy.MakeBoxDXDYDZ(200, 200, 200)
@@ -33,20 +33,20 @@ for vId in geompy.SubShapeAllIDs( box, geompy.ShapeType["VERTEX"]):
     pass
 
 if not node000:
-    raise "node000 not found"
+    raise Exception("node000 not found")
 
 # find node000 using a dedicated function 
 n = mesh.FindNodeClosestTo( -1,-1,-1 )
 if not n == node000:
-    raise "FindNodeClosestTo() returns " + str( n ) + " != " + str( node000 )
+    raise Exception("FindNodeClosestTo() returns " + str( n ) + " != " + str( node000 ))
 
 # move node000 to a new location
 x,y,z = -10, -10, -10
 n = mesh.MoveNode( n,x,y,z )
 if not n:
-    raise "MoveNode() returns " + n
+    raise Exception("MoveNode() returns " + n)
 
 # check the coordinates of the node000
 xyz = mesh.GetNodeXYZ( node000 )
 if not ( xyz[0] == x and xyz[1] == y and xyz[2] == z) :
-    raise "Wrong coordinates: " + str( xyz ) + " != " + str( [x,y,z] )
+    raise Exception("Wrong coordinates: " + str( xyz ) + " != " + str( [x,y,z] ))

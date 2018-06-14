@@ -4,11 +4,11 @@ import salome
 salome.salome_init()
 
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 OX = geompy.MakeVectorDXDYDZ(1,0,0)
 OY = geompy.MakeVectorDXDYDZ(0,1,0)

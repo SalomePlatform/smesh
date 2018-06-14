@@ -1,7 +1,7 @@
 import os, shutil
-import sphere, ellipse, rectangle
-import utilityFunctions as uF
-from output import message
+from . import sphere, ellipse, rectangle
+from . import utilityFunctions as uF
+from .output import message
 
 def main(data, outFile):
   activeCrack=data['crack']['actif']
@@ -32,7 +32,7 @@ def generateEllipse(crack, outFile):
     res=False
   demiGrandAxe=crack['Rayon'][0]
 
-  if 'Rayon 2' not in crack.keys(): crack['Rayon 2']=[]
+  if 'Rayon 2' not in list(crack.keys()): crack['Rayon 2']=[]
   if len(crack['Rayon 2'])==0:
     demiPetitAxe=demiGrandAxe
   else:
@@ -54,7 +54,7 @@ def generateEllipse(crack, outFile):
     res=False
   normale=crack['Normale']
 
-  if 'Direction' not in crack.keys(): crack['Direction']=[]
+  if 'Direction' not in list(crack.keys()): crack['Direction']=[]
   if len(crack['Direction'])==0:
     if normale==[1.,0.,0.]:
       direction=[0.,1.,0.]
@@ -71,7 +71,7 @@ def generateEllipse(crack, outFile):
       message('E','Normale and Direction are equals',goOn=True)
       res=False
 
-  if 'Angle' not in crack.keys(): crack['Angle']=[]
+  if 'Angle' not in list(crack.keys()): crack['Angle']=[]
   if len(crack['Angle'])==0:
     angle=0.0
   else:
@@ -81,7 +81,7 @@ def generateEllipse(crack, outFile):
       res=False
     angle=crack['Angle'][0]
 
-  if 'Rayon entaille' not in crack.keys(): crack['Rayon entaille']=[]
+  if 'Rayon entaille' not in list(crack.keys()): crack['Rayon entaille']=[]
   if len(crack['Rayon entaille'])==0:
     rayon_entaille=0.0
   else:
@@ -91,7 +91,7 @@ def generateEllipse(crack, outFile):
       res=False
     rayon_entaille=crack['Rayon entaille'][0]
 
-  if 'Extension' not in crack.keys(): crack['Extension']=[]
+  if 'Extension' not in list(crack.keys()): crack['Extension']=[]
   if len(crack['Extension'])==0:
     extension=0.0
   else:
@@ -117,7 +117,7 @@ def generateRectangle(crack, outFile):
     res=False
   longueur=crack['Longueur'][0]
 
-  if 'Largeur' not in crack.keys(): crack['Largeur']=[]
+  if 'Largeur' not in list(crack.keys()): crack['Largeur']=[]
   if len(crack['Largeur'])==0:
     largeur=longueur
   else:
@@ -145,7 +145,7 @@ def generateRectangle(crack, outFile):
     res=False
   direction=crack['Direction']
 
-  if 'Angle' not in crack.keys(): crack['Angle']=[]
+  if 'Angle' not in list(crack.keys()): crack['Angle']=[]
   if len(crack['Angle'])==0:
     angle=0.0
   else:
@@ -155,7 +155,7 @@ def generateRectangle(crack, outFile):
       res=False
     angle=crack['Angle'][0]
 
-  if 'Rayon' not in crack.keys(): crack['Rayon']=[]
+  if 'Rayon' not in list(crack.keys()): crack['Rayon']=[]
   if len(crack['Rayon'])==0:
     rayon=0.0
   else:
@@ -165,7 +165,7 @@ def generateRectangle(crack, outFile):
       res=False
     rayon=crack['Rayon'][0]
 
-  if 'Rayon entaille' not in crack.keys(): crack['Rayon entaille']=[]
+  if 'Rayon entaille' not in list(crack.keys()): crack['Rayon entaille']=[]
   if len(crack['Rayon entaille'])==0:
     rayon_entaille=0.0
   else:
@@ -212,13 +212,12 @@ def generateCustom(crack, outFile):
 
   import salome
   salome.salome_init()
-  theStudy = salome.myStudy
   import salome_notebook
-  notebook = salome_notebook.NoteBook(theStudy)
+  notebook = salome_notebook.NoteBook()
   import  SMESH, SALOMEDS
   from salome.smesh import smeshBuilder
 
-  smesh = smeshBuilder.New(theStudy)
+  smesh = smeshBuilder.New()
   ([Maillage_1], status) = smesh.CreateMeshesFromMED(crack['med file'])
   isCrack=False
   for group in Maillage_1.GetGroups():
@@ -228,7 +227,7 @@ def generateCustom(crack, outFile):
   else:
     Group_1 = Maillage_1.CreateEmptyGroup( SMESH.NODE, 'crack' )
     nbAdd = Group_1.AddFrom( Maillage_1.GetMesh() )
-    Maillage_1.ExportMED( outFile, 0, SMESH.MED_V2_2, 1, None ,1)
+    Maillage_1.ExportMED(outFile)
   return(True)
 
 

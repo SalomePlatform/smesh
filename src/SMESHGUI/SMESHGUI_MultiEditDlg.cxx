@@ -995,7 +995,7 @@ void SMESHGUI_MultiEditDlg::setSelectionMode()
 //=======================================================================
 bool SMESHGUI_MultiEditDlg::onApply()
 {
-  if (mySMESHGUI->isActiveStudyLocked())
+  if (SMESHGUI::isStudyLocked())
     return false;
   if (!isValid(true))
     return false;

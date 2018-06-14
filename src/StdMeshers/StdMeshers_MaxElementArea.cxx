@@ -48,8 +48,8 @@ using namespace std;
  */
 //=============================================================================
 
-StdMeshers_MaxElementArea::StdMeshers_MaxElementArea(int hypId, int studyId, SMESH_Gen* gen)
-  : SMESH_Hypothesis(hypId, studyId, gen)
+StdMeshers_MaxElementArea::StdMeshers_MaxElementArea(int hypId, SMESH_Gen* gen)
+  : SMESH_Hypothesis(hypId, gen)
 {
   _maxArea =1.;
   _name = "MaxElementArea";

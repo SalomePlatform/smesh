@@ -43,7 +43,6 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_Import_1D_i::StdMeshers_Import_1D_i( PortableServer::POA_ptr thePOA,
-                                                int                     theStudyId,
                                                 ::SMESH_Gen*            theGenImpl )
   : SALOME::GenericObj_i( thePOA ), 
     SMESH_Hypothesis_i( thePOA ), 
@@ -51,7 +50,6 @@ StdMeshers_Import_1D_i::StdMeshers_Import_1D_i( PortableServer::POA_ptr thePOA,
     SMESH_1D_Algo_i( thePOA )
 {
   myBaseImpl = new ::StdMeshers_Import_1D( theGenImpl->GetANewId(),
-                                           theStudyId,
                                            theGenImpl );
 }
 

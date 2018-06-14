@@ -4,7 +4,6 @@ import sys
 import salome
 
 salome.salome_init()
-theStudy = salome.myStudy
 
 import salome_notebook
 notebook = salome_notebook.notebook
@@ -22,7 +21,7 @@ import math
 import SALOMEDS
 
 
-geompy = geomBuilder.New(theStudy)
+geompy = geomBuilder.New()
 O = geompy.MakeVertex(0, 0, 0)
 OX = geompy.MakeVectorDXDYDZ(1, 0, 0)
 OY = geompy.MakeVectorDXDYDZ(0, 1, 0)
@@ -167,7 +166,7 @@ geompy.addToStudyInFather( Fissure, fondFiss, 'fondFiss' )
 import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
-smesh = smeshBuilder.New(theStudy)
+smesh = smeshBuilder.New()
 coupe_vis_1 = smesh.Mesh(coupe_vis)
 Regular_1D = coupe_vis_1.Segment()
 Nb_Segments_1 = Regular_1D.NumberOfSegments(10)
@@ -193,7 +192,7 @@ visHex80 = smesh.CopyMesh( coupe_vis_1, 'visHex80', 1, 0)
 [ tige_2, section_2, tige_haute_2, rond_2, tete_2, section_tete_2, conge_2, appui_2, p_imp_2, tige_rotated, tige_top, section_rotated, section_top, tige_haute_rotated, tige_haute_top, rond_rotated, rond_top, tete_rotated, tete_top, section_tete_rotated, section_tete_top, conge_rotated, conge_top, appui_rotated, appui_top, p_imp_rotated, p_imp_top ] = visHex80.GetGroups()
 Sub_mesh_1 = Regular_1D_1.GetSubMesh()
 Sub_mesh_2 = Regular_1D_2.GetSubMesh()
-visHex80.ExportMED( os.path.join(gmu.pathBloc, "materielCasTests/visSain.med"), 0, SMESH.MED_V2_2, 1 )
+visHex80.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests/visSain.med"))
  
 
 ## Set names of Mesh objects
@@ -245,4 +244,4 @@ smesh.SetName(tige_haute_2, 'tige_haute')
 
 
 if salome.sg.hasDesktop():
-  salome.sg.updateObjBrowser(True)
+  salome.sg.updateObjBrowser()

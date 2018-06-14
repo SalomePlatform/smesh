@@ -44,7 +44,7 @@ class TopoDS_Vertex;
 class STDMESHERS_EXPORT StdMeshers_Regular_1D: public SMESH_1D_Algo
 {
 public:
-  StdMeshers_Regular_1D(int hypId, int studyId, SMESH_Gen* gen);
+  StdMeshers_Regular_1D(int hypId, SMESH_Gen* gen);
   virtual ~StdMeshers_Regular_1D();
 
   virtual bool CheckHypothesis(SMESH_Mesh& aMesh,

@@ -1,7 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from qtsalome import *
-from Gui.myMain_ui import Ui_Gestion
+from .Gui.myMain_ui import Ui_Gestion
 import sys
 
 
@@ -30,19 +30,19 @@ class MonAppli(Ui_Gestion,QWidget):
          pass
 
      def BCreePressed(self):
-         from Gui.monNomBase import DataBaseName
+         from .Gui.monNomBase import DataBaseName
          maW=DataBaseName(self)
          maW.exec_()
-         from createDatabase import creeDatabase
+         from .createDatabase import creeDatabase
          creeDatabase(self.nomBase)
 
      def BVuePressed(self):
          if self.nomBase == "" :
-            from Gui.monNomBase import DataBaseName
+            from .Gui.monNomBase import DataBaseName
             maW=DataBaseName(self)
             maW.exec_()
-         from Gui.maFenetreChoix import MaFenetreChoix
-         from Base.dataBase import Base
+         from .Gui.maFenetreChoix import MaFenetreChoix
+         from .Base.dataBase import Base
          maBase=Base(self.nomBase)
          maBase.initialise()
          window = MaFenetreChoix(maBase)

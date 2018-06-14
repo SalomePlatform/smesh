@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from geomsmesh import geompy
-from geomsmesh import geomPublish
-from geomsmesh import geomPublishInFather
-import initLog
-from prolongeVertices import prolongeVertices
+from .geomsmesh import geompy
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+from . import initLog
+from .prolongeVertices import prolongeVertices
 
 # -----------------------------------------------------------------------------
 # --- zone de defaut, constructions geometrique avec CAO d'origine

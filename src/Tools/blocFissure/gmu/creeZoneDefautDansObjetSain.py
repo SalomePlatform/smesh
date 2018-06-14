@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from geomsmesh import smesh
+from .geomsmesh import smesh
 import SMESH
 import SALOMEDS
 
-from creeZoneDefautMaillage import creeZoneDefautMaillage
-from peauInterne import peauInterne
-from quadranglesToShapeNoCorner import quadranglesToShapeNoCorner
-from creeZoneDefautFilling import creeZoneDefautFilling
-from creeZoneDefautGeom import creeZoneDefautGeom
-from getCentreFondFiss import getCentreFondFiss
+from .creeZoneDefautMaillage import creeZoneDefautMaillage
+from .peauInterne import peauInterne
+from .quadranglesToShapeNoCorner import quadranglesToShapeNoCorner
+from .creeZoneDefautFilling import creeZoneDefautFilling
+from .creeZoneDefautGeom import creeZoneDefautGeom
+from .getCentreFondFiss import getCentreFondFiss
 
 # -----------------------------------------------------------------------------
 # ---
@@ -21,8 +21,6 @@ def creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure,
   #TODO: a compléter
   """
   logging.info('start')
-  
-  #smesh.SetCurrentStudy(salome.myStudy)
 
   geometrieSaine      = geometriesSaines[0]
   maillageSain        = maillagesSains[0]
@@ -32,10 +30,10 @@ def creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure,
   coordsNoeudsFissure = shapesFissure[3]
 
   isElliptique = False
-  if shapeFissureParams.has_key('elliptique'):
+  if 'elliptique' in shapeFissureParams:
     isElliptique      = shapeFissureParams['elliptique']
   if isElliptique:
-    if shapeFissureParams.has_key('demiGrandAxe'):
+    if 'demiGrandAxe' in shapeFissureParams:
       demiGrandAxe    = shapeFissureParams['demiGrandAxe']
     else:
       demiGrandAxe    = shapeFissureParams['longueur']
@@ -59,7 +57,7 @@ def creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure,
   [origShapes, verticesShapes, dmoyen] = \
     creeZoneDefautMaillage(maillagesSains, shapeDefaut, tailleDefaut, nomZones, coordsNoeudsFissure)
 
-  maillageSain.ExportMED( fichierMaillageSain, 0, SMESH.MED_V2_2, 1 )
+  maillageSain.ExportMED(fichierMaillageSain)
   logging.debug("fichier maillage sain %s", fichierMaillageSain)
   [maillageSain, internalBoundary, zoneDefaut, zoneDefaut_skin, zoneDefaut_internalFaces, zoneDefaut_internalEdges] = \
     peauInterne(fichierMaillageSain, shapeDefaut, nomZones)
@@ -88,7 +86,7 @@ def creeZoneDefautDansObjetSain(geometriesSaines, maillagesSains, shapesFissure,
     for face in facesDefaut:
       bordsPartages.append([None,None]) # TODO : traitement des arêtes vives ?
     fillconts = facesDefaut
-    idFilToCont = range(len(facesDefaut))
+    idFilToCont = list(range(len(facesDefaut)))
 
   return [facesDefaut, centresDefaut, normalsDefaut, extrusionsDefaut, dmoyen, bordsPartages, fillconts, idFilToCont,
           maillageSain, internalBoundary, zoneDefaut, zoneDefaut_skin, zoneDefaut_internalFaces, zoneDefaut_internalEdges,

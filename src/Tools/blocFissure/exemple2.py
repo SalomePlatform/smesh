@@ -4,10 +4,8 @@ import sys
 import salome
 
 salome.salome_init()
-theStudy = salome.myStudy
 
 import salome_notebook
-notebook = salome_notebook.NoteBook(theStudy)
 
 ###
 ### GEOM component
@@ -18,8 +16,7 @@ from salome.geom import geomBuilder
 import math
 import SALOMEDS
 
-
-geompy = geomBuilder.New(theStudy)
+geompy = geomBuilder.New()
 
 O = geompy.MakeVertex(0, 0, 0)
 OX = geompy.MakeVectorDXDYDZ(1, 0, 0)
@@ -49,7 +46,7 @@ geompy.addToStudy( Cut_1, 'Cut_1' )
 import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
-smesh = smeshBuilder.New(theStudy)
+smesh = smeshBuilder.New()
 from salome.StdMeshers import StdMeshersBuilder
 boite = smesh.Mesh(Box_1)
 Regular_1D = boite.Segment()
@@ -59,7 +56,7 @@ Quadrangle_2D = boite.Quadrangle(algo=smeshBuilder.QUADRANGLE)
 Hexa_3D = boite.Hexahedron(algo=smeshBuilder.Hexa)
 isDone = boite.Compute()
 smesh.SetName(boite, 'boite')
-boite.ExportMED( r'boite.med', 0, SMESH.MED_V2_2, 1 )
+boite.ExportMED(r'boite.med')
 
 ## set object names
 smesh.SetName(boite.GetMesh(), 'boite')
@@ -91,4 +88,4 @@ dicoParams = dict(nomCas            = 'angleCube2',
 execInstance = casStandard(dicoParams)
 
 if salome.sg.hasDesktop():
-  salome.sg.updateObjBrowser(True)
+  salome.sg.updateObjBrowser()

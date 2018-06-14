@@ -85,7 +85,7 @@ public:
   
   SMESH_Actor*            getActor( int ) const;
 
-  static int              type( const QString&, _PTR(Study) );
+  static int              type( const QString& );
   static QString          typeName( const int );
   static  int             guiState();
   

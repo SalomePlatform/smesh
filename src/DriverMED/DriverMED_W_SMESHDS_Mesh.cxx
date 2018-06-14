@@ -50,7 +50,6 @@ using namespace MED;
 
 
 DriverMED_W_SMESHDS_Mesh::DriverMED_W_SMESHDS_Mesh():
-  myMedVersion(MED::eV2_2),
   myAllSubMeshes (false),
   myDoGroupOfNodes (false),
   myDoGroupOfEdges (false),
@@ -63,55 +62,9 @@ DriverMED_W_SMESHDS_Mesh::DriverMED_W_SMESHDS_Mesh():
   myDoAllInGroups(false)
 {}
 
-void DriverMED_W_SMESHDS_Mesh::SetFile(const std::string& theFileName, 
-                                       MED::EVersion      theId)
-{
-  Driver_SMESHDS_Mesh::SetFile(theFileName);
-  myMedVersion = theId;
-  //MESSAGE("myMedVersion:"<<myMedVersion);
-}
-
 void DriverMED_W_SMESHDS_Mesh::SetFile(const std::string& theFileName)
 {
   Driver_SMESHDS_Mesh::SetFile(theFileName);
-}
-
-/*!
- * MED version is either the latest available, or with an inferior minor,
- * to ensure backward compatibility on writing med files.
- */
-string DriverMED_W_SMESHDS_Mesh::GetVersionString(const MED::EVersion theVersion, int theNbDigits)
-{
-  TInt majeur, mineur, release;
-  majeur =  mineur = release = 0;
-  MED::GetVersionRelease<eV2_2>(majeur, mineur, release);
-  TInt imposedMineur = mineur;
-  switch( theVersion ) {
-    case MED::eV2_1     :
-    case MED::eV2_2     :
-    case MED::eLATEST   : break;
-    case MED::eMINOR_0  : imposedMineur = 0; break;
-    case MED::eMINOR_1  : imposedMineur = 1; break;
-    case MED::eMINOR_2  : imposedMineur = 2; break;
-    case MED::eMINOR_3  : imposedMineur = 3; break;
-    case MED::eMINOR_4  : imposedMineur = 4; break;
-    case MED::eMINOR_5  : imposedMineur = 5; break;
-    case MED::eMINOR_6  : imposedMineur = 6; break;
-    case MED::eMINOR_7  : imposedMineur = 7; break;
-    case MED::eMINOR_8  : imposedMineur = 8; break;
-    case MED::eMINOR_9  : imposedMineur = 9; break;
-    case MED::eVUnknown : imposedMineur = mineur; break;
-  }
-  if (imposedMineur > mineur)
-    imposedMineur = mineur;
-  ostringstream name;
-  if ( theNbDigits > 0 )
-    name << majeur;
-  if ( theNbDigits > 1 )
-    name << "." << imposedMineur;
-  if ( theNbDigits > 2 )
-    name << "." << release;
-  return name.str();
 }
 
 void DriverMED_W_SMESHDS_Mesh::AddGroup(SMESHDS_GroupBase* theGroup)
@@ -471,8 +424,8 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
         break;
       }
     }
-    //MESSAGE("myMedVersion:"<<myMedVersion);
-    MED::PWrapper myMed = CrWrapper(myFile,myMedVersion);
+
+    MED::PWrapper myMed = CrWrapperW(myFile);
     PMeshInfo aMeshInfo = myMed->CrMeshInfo(aMeshDimension,aSpaceDimension,aMeshName);
     //MESSAGE("Add - aMeshName : "<<aMeshName<<"; "<<aMeshInfo->GetName());
     myMed->SetMeshInfo(aMeshInfo);

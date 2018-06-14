@@ -65,8 +65,8 @@ namespace TAssocTool = StdMeshers_ProjectionUtils;
 //purpose  : 
 //=======================================================================
 
-StdMeshers_Projection_1D::StdMeshers_Projection_1D(int hypId, int studyId, SMESH_Gen* gen)
-  :SMESH_1D_Algo(hypId, studyId, gen)
+StdMeshers_Projection_1D::StdMeshers_Projection_1D(int hypId, SMESH_Gen* gen)
+  :SMESH_1D_Algo(hypId, gen)
 {
   _name = "Projection_1D";
   _shapeType = (1 << TopAbs_EDGE);      // 1 bit per shape type

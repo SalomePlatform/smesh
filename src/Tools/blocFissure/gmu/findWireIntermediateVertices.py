@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from geomsmesh import geompy
-from geomsmesh import geomPublish
-from geomsmesh import geomPublishInFather
-import initLog
+from .geomsmesh import geompy
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+from . import initLog
 
 # -----------------------------------------------------------------------------
 # --- trouver les vertices intermediaires d'un wire
@@ -39,7 +39,7 @@ def findWireIntermediateVertices(aWire, getNormals=False):
         normals += [n1, n0]
   for i, sub in enumerate(vertices):
     subid = geompy.GetSubShapeID(aWire, sub)
-    if subid in idsubs.keys():
+    if subid in list(idsubs.keys()):
       idsubs[subid].append(sub)
     else:
       idsubs[subid] = [sub]
@@ -49,7 +49,7 @@ def findWireIntermediateVertices(aWire, getNormals=False):
         idnorm[subid] = normals[i]
         name='norm%d'%i
         geomPublishInFather(initLog.debug, aWire, normals[i], name)
-  for k, v in idsubs.iteritems():
+  for k, v in idsubs.items():
     if len(v) > 1:
       shortList.append(v[0])
       if getNormals:

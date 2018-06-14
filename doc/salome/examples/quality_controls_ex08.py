@@ -5,11 +5,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 import salome_notebook
 
 
@@ -25,7 +25,7 @@ mesh.AutomaticHexahedralization();
 
 # remove half of mesh faces from the smallest face
 faceFaces = mesh.GetSubMeshElementsId(face)
-faceToRemove = faceFaces[: len(faceFaces)/2]
+faceToRemove = faceFaces[: len(faceFaces) // 2]
 mesh.RemoveElements( faceToRemove )
 
 # make a group of volumes missing the removed faces

@@ -31,8 +31,7 @@ INCLUDE_DIRECTORIES(
   ${PROJECT_SOURCE_DIR}/src/Controls
   ${PROJECT_SOURCE_DIR}/src/SMDS
   ${PROJECT_SOURCE_DIR}/src/SMESHDS
-  ${PROJECT_SOURCE_DIR}/src/MEDWrapper/Base
-  ${PROJECT_SOURCE_DIR}/src/MEDWrapper/Factory
+  ${PROJECT_SOURCE_DIR}/src/MEDWrapper
   ${PROJECT_SOURCE_DIR}/src/Driver
   ${PROJECT_SOURCE_DIR}/src/DriverMED
   ${PROJECT_SOURCE_DIR}/src/DriverCGNS
@@ -70,6 +69,7 @@ SET(_link_LIBRARIES
   ${KERNEL_SalomeGenericObj}
   ${KERNEL_SalomeIDLKERNEL}
   ${KERNEL_SALOMELocalTrace}
+  ${KERNEL_SalomeKernelHelpers}
   ${OpenCASCADE_ApplicationFramework_LIBRARIES}
   ${OpenCASCADE_ModelingAlgorithms_LIBRARIES}
   ${GEOM_GEOMClient}
@@ -114,7 +114,7 @@ SET(SMESHEngine_HEADERS
 SET(SMESHEngine_SOURCES
   SMESH_Gen_i.cxx
   SMESH_Gen_i_1.cxx
-  SMESH_DumpPython.cxx
+  SMESH_PythonDump.cxx
   SMESH_Mesh_i.cxx
   SMESH_subMesh_i.cxx
   SMESH_MeshEditor_i.cxx

@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-#  -*- coding: iso-8859-1 -*-
+#!/usr/bin/env python3
 # Copyright (C) 2007-2016  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
@@ -30,7 +29,7 @@ def set_env(args):
     python_version="python%d.%d" % sys.version_info[0:2]
 
 
-    if not os.environ.has_key("SALOME_StdMeshersResources"):
+    if "SALOME_StdMeshersResources" not in os.environ:
         os.environ["SALOME_StdMeshersResources"] \
         = os.path.join(os.environ["SMESH_ROOT_DIR"],"share",salome_subdir,"resources","smesh")
         pass
@@ -38,7 +37,7 @@ def set_env(args):
     # find plugins
     plugin_list = ["StdMeshers"]
     resource_path_list = []
-    for env_var in os.environ.keys():
+    for env_var in list(os.environ.keys()):
         value = os.environ[env_var]
         if env_var[-9:] == "_ROOT_DIR" and value:
             plugin_root = value
@@ -60,14 +59,14 @@ def set_env(args):
                 if plugin in plugin_list: continue
 
                 # add paths of plugin
-		plugin_list.append(plugin)
-                if not os.environ.has_key("SALOME_"+plugin+"Resources"):
+                plugin_list.append(plugin)
+                if "SALOME_"+plugin+"Resources" not in os.environ:
                     resource_path = os.path.join(plugin_root,"share",salome_subdir,"resources",plugin.lower())
                     os.environ["SALOME_"+plugin+"Resources"] = resource_path
                     resource_path_list.append( resource_path )
                     add_path(os.path.join(plugin_root,get_lib_dir(),python_version, "site-packages",salome_subdir), "PYTHONPATH")
                     add_path(os.path.join(plugin_root,get_lib_dir(),salome_subdir), "PYTHONPATH")
-                    
+
                     if sys.platform == "win32":
                         add_path(os.path.join(plugin_root,get_lib_dir(),salome_subdir), "PATH")
                         add_path(os.path.join(plugin_root,"bin",salome_subdir), "PYTHONPATH")
@@ -80,4 +79,3 @@ def set_env(args):
                 break
     os.environ["SMESH_MeshersList"] = ":".join(plugin_list)
     os.environ["SalomeAppConfig"] = os.environ["SalomeAppConfig"] + psep + psep.join(resource_path_list)
-

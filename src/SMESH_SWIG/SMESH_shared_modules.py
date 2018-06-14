@@ -31,7 +31,7 @@
 
 from launchConfigureParser import verbose
 
-if verbose(): print "============== import SMESH ======================="
+if verbose(): print("============== import SMESH =======================")
 
 import SMESH
 

@@ -4,7 +4,6 @@ import sys
 import salome
 
 salome.salome_init()
-theStudy = salome.myStudy
 
 import salome_notebook
 notebook = salome_notebook.notebook
@@ -22,7 +21,7 @@ import math
 import SALOMEDS
 
 
-geompy = geomBuilder.New(theStudy)
+geompy = geomBuilder.New()
 
 O = geompy.MakeVertex(0, 0, 0)
 OX = geompy.MakeVectorDXDYDZ(1, 0, 0)
@@ -75,7 +74,7 @@ geompy.addToStudy( FaceFissExtCoupe, 'FaceFissExtCoupe' )
 import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
-smesh = smeshBuilder.New(theStudy)
+smesh = smeshBuilder.New()
 from salome.StdMeshers import StdMeshersBuilder
 Mesh_1 = smesh.Mesh(objetSain)
 Regular_1D = Mesh_1.Segment()
@@ -85,7 +84,7 @@ Quadrangle_2D = Mesh_1.Quadrangle(algo=smeshBuilder.QUADRANGLE)
 Hexa_3D = Mesh_1.Hexahedron(algo=smeshBuilder.Hexa)
 isDone = Mesh_1.Compute()
 smesh.SetName(Mesh_1, 'Mesh_1')
-Mesh_1.ExportMED( os.path.join(gmu.pathBloc, "materielCasTests/boiteSaine.med"), 0, SMESH.MED_V2_2, 1 )
+Mesh_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests/boiteSaine.med"))
 
 ## set object names
 smesh.SetName(Mesh_1.GetMesh(), 'Mesh_1')
@@ -95,4 +94,4 @@ smesh.SetName(Quadrangle_2D.GetAlgorithm(), 'Quadrangle_2D')
 smesh.SetName(Hexa_3D.GetAlgorithm(), 'Hexa_3D')
 
 if salome.sg.hasDesktop():
-  salome.sg.updateObjBrowser(True)
+  salome.sg.updateObjBrowser()

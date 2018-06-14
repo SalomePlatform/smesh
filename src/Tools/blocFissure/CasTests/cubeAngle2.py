@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from cubeAngle import cubeAngle
+from .cubeAngle import cubeAngle
 
 class cubeAngle2(cubeAngle):
   """

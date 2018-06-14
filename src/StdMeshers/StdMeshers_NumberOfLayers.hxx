@@ -49,7 +49,7 @@ class STDMESHERS_EXPORT StdMeshers_NumberOfLayers:  public SMESH_Hypothesis
 {
 public:
   // Constructor
-  StdMeshers_NumberOfLayers( int hypId, int studyId, SMESH_Gen * gen );
+  StdMeshers_NumberOfLayers( int hypId, SMESH_Gen * gen );
   // Destructor
   virtual ~StdMeshers_NumberOfLayers();
 

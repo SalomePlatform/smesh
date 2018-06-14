@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (C) 2011-2016  EDF R&D
 #
 # This library is free software; you can redistribute it and/or
@@ -18,17 +18,17 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
+import csv
 import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 filename="/home/gboulant/development/projets/salome/SPADDER/spadder/resources/padderexe/REF_spheres.dat.xyz"
-file=open(filename,'rb')
 
-import csv
-datalines = csv.reader(file, delimiter=' ')
+with open(filename,'rb') as f:
+    datalines = csv.reader(file, delimiter=' ')
 i=0
 for row in datalines:
     x=float(row[0])

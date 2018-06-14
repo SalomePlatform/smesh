@@ -47,7 +47,6 @@ class STDMESHERS_I_EXPORT StdMeshers_Geometric1D_i:
  public:
   // Constructor
   StdMeshers_Geometric1D_i( PortableServer::POA_ptr thePOA,
-                            int                     theStudyId,
                             ::SMESH_Gen*            theGenImpl );
 
   void SetStartLength(CORBA::Double length) throw(SALOME::SALOME_Exception);

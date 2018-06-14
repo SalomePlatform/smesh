@@ -12,6 +12,10 @@
         <translation>Fichiers MED</translation>
     </message>
     <message>
+        <source>SAUV_FILES_FILTER</source>
+        <translation>Fichiers SAUV</translation>
+    </message>
+    <message>
         <source>IDEAS_FILES_FILTER</source>
         <translation>Fichiers IDEAS</translation>
     </message>
@@ -22,10 +26,6 @@
     <message>
         <source>TEXT_FILES_FILTER</source>
         <translation>Fichiers TXT</translation>
-    </message>
-    <message>
-        <source>MED_VX_FILES_FILTER</source>
-        <translation>Fichiers MED %1</translation>
     </message>
     <message>
         <source>STL_FILES_FILTER</source>
@@ -1776,13 +1776,6 @@ Voulez-vous continuer ?</translation>
         <source>SMESH_EXPORT_ONLY_GPOUP</source>
         <translation>Vous allez export le groupe sans son maillage.
 Voulez-vous continuer ?</translation>
-    </message>
-    <message>
-        <source>SMESH_EXPORT_MED_V2_1</source>
-        <translation>Les éléments polygonaux et polyèdriques seront omis 
-dans le cas d&apos;exportation du maillage &quot;%1&quot; à MED 2.1
-Utilisez MED 2.2 pour l&apos;exportation correcte.
-Voulez-vous effectuer l&apos;exportation à MED 2.1 ?</translation>
     </message>
     <message>
         <source>SMESH_EXPORT_MED_VERSION_COLLISION</source>

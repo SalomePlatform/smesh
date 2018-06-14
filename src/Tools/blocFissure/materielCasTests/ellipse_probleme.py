@@ -4,7 +4,6 @@ import sys
 import salome
 
 salome.salome_init()
-theStudy = salome.myStudy
 
 import salome_notebook
 notebook = salome_notebook.notebook
@@ -22,7 +21,7 @@ from salome.geom import geomBuilder
 import math
 import SALOMEDS
 
-geompy = geomBuilder.New(theStudy)
+geompy = geomBuilder.New()
 
 Disk_1 = geompy.MakeDiskR(100, 1)
 O = geompy.MakeVertex(0, 0, 0)
@@ -56,4 +55,4 @@ geompy.ExportBREP(ellipse1, os.path.join(gmu.pathBloc, "materielCasTests/ellipse
 
 
 if salome.sg.hasDesktop():
-  salome.sg.updateObjBrowser(True)
+  salome.sg.updateObjBrowser()

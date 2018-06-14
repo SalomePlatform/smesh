@@ -253,7 +253,7 @@ Driver_Mesh::Status DriverMED_W_Field::Perform()
   if ( !myMesh )
     return addMessage("Supporting mesh not set", /*isFatal=*/true );
 
-  MED::PWrapper medFile = MED::CrWrapper( myFile, MED::eV2_2 );
+  MED::PWrapper medFile = MED::CrWrapperW( myFile );
   MED::PMeshInfo meshInfo;
   if ( myMeshId > 0 )
   {

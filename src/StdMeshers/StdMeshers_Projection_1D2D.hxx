@@ -31,7 +31,7 @@
 class STDMESHERS_EXPORT StdMeshers_Projection_1D2D: public StdMeshers_Projection_2D
 {
 public:
-  StdMeshers_Projection_1D2D(int hypId, int studyId, SMESH_Gen* gen);
+  StdMeshers_Projection_1D2D(int hypId, SMESH_Gen* gen);
 
   virtual bool Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& aShape);
 

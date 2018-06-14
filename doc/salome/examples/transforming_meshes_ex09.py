@@ -5,11 +5,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 # make two not sewed quadranges
 OY0 = geompy.MakeVectorDXDYDZ(0, 1, 0)
@@ -45,6 +45,6 @@ CreatePolyedrs = False
 res = mesh.SewFreeBorders(FirstNodeID1, SecondNodeID1, LastNodeID1,
                           FirstNodeID2, SecondNodeID2, LastNodeID2,
                           CreatePolygons, CreatePolyedrs )
-print res
-print "nb polygons:", mesh.NbPolygons()
+print(res)
+print("nb polygons:", mesh.NbPolygons())
 

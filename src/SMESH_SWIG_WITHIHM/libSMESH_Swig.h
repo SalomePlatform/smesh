@@ -127,10 +127,11 @@ class SMESH_SWIG_EXPORT SMESH_Swig
 public:
   SMESH_Swig();
   ~SMESH_Swig();
-  
+
+
   // Initialization =============================================
-  
-  void                       Init(int); // deprecated
+
+  void                       Init(); // deprecated
 
   // Publishing =================================================
 
@@ -208,8 +209,6 @@ public:
 private:
   void init();
 
-private:
-  int myCachedStudyId;
 };
 
 #endif // LIBSMESH_SWIG_H

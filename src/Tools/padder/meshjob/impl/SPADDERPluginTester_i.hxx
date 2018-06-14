@@ -50,7 +50,7 @@ public:
   
   void demo(CORBA::Double a,CORBA::Double b,CORBA::Double& c);
   bool testkernel();
-  bool testsmesh(CORBA::Long studyId);
+  bool testsmesh();
 
 };
 

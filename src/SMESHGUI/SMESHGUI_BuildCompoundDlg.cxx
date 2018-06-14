@@ -250,10 +250,7 @@ QString SMESHGUI_BuildCompoundDlg::GetDefaultName(const QString& theOperation)
   QString aName = "";
 
   // collect all object names of SMESH component
-  SalomeApp_Study* appStudy =
-    dynamic_cast<SalomeApp_Study*>( SUIT_Session::session()->activeApplication()->activeStudy() );
-  if ( !appStudy ) return aName;
-  _PTR(Study) aStudy = appStudy->studyDS();
+  _PTR(Study) aStudy = SMESH::getStudy();
 
   std::set<std::string> aSet;
   _PTR(SComponent) aMeshCompo (aStudy->FindComponent("SMESH"));
@@ -283,7 +280,7 @@ QString SMESHGUI_BuildCompoundDlg::GetDefaultName(const QString& theOperation)
 //=================================================================================
 bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
 {
-  if (mySMESHGUI->isActiveStudyLocked())
+  if (SMESHGUI::isStudyLocked())
     return false;
 
   if (!isValid())
@@ -335,7 +332,7 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
       SMESH::UpdateView();
 
       _PTR(SObject) aSO = SMESH::FindSObject(aMesh.in());
-      if ( SMESH_Actor* anActor = SMESH::CreateActor(aSO->GetStudy(), aSO->GetID().c_str()) ) {
+      if ( SMESH_Actor* anActor = SMESH::CreateActor( aSO->GetID().c_str()) ) {
         SMESH::DisplayActor(SMESH::GetActiveWindow(), anActor);
         SMESH::UpdateView();
       }

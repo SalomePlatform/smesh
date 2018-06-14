@@ -36,9 +36,8 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_QuadraticMesh::StdMeshers_QuadraticMesh(int         hypId,
-                                                   int         studyId,
                                                    SMESH_Gen * gen)
-     :SMESH_Hypothesis(hypId, studyId, gen)
+     :SMESH_Hypothesis(hypId, gen)
 {
   _name = "QuadraticMesh";
   _param_algo_dim = -1; // it means auxiliary, dim = 1

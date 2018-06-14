@@ -53,25 +53,25 @@ geompy.addToStudy(aGeomGroup2, "Group on Edges")
 aSmeshGroup1 = mesh.GroupOnGeom(aGeomGroup1, "SMESHGroup1", SMESH.FACE)
 aSmeshGroup2 = mesh.GroupOnGeom(aGeomGroup2, "SMESHGroup2", SMESH.EDGE)
 
-print "Create aGroupOnShell - a group linked to a shell"
+print("Create aGroupOnShell - a group linked to a shell")
 aGroupOnShell = mesh.GroupOnGeom(shell, "GroupOnShell", SMESH.EDGE)
-print "aGroupOnShell type =", aGroupOnShell.GetType()
-print "aGroupOnShell size =", aGroupOnShell.Size()
-print "aGroupOnShell ids :", aGroupOnShell.GetListOfID()
+print("aGroupOnShell type =", aGroupOnShell.GetType())
+print("aGroupOnShell size =", aGroupOnShell.Size())
+print("aGroupOnShell ids :", aGroupOnShell.GetListOfID())
 
-print " "
+print(" ")
 
-print "Modify <LocalLength> hypothesis: 100 -> 50"
+print("Modify <LocalLength> hypothesis: 100 -> 50")
 hypLen1.SetLength(50)
-print "Contents of aGroupOnShell changes:"
-print "aGroupOnShell size =", aGroupOnShell.Size()
-print "aGroupOnShell ids :", aGroupOnShell.GetListOfID()
+print("Contents of aGroupOnShell changes:")
+print("aGroupOnShell size =", aGroupOnShell.Size())
+print("aGroupOnShell ids :", aGroupOnShell.GetListOfID())
 
-print " "
+print(" ")
 
-print "Re-compute mesh, contents of aGroupOnShell changes again:"
+print("Re-compute mesh, contents of aGroupOnShell changes again:")
 mesh.Compute()
-print "aGroupOnShell size =", aGroupOnShell.Size()
-print "aGroupOnShell ids :", aGroupOnShell.GetListOfID()
+print("aGroupOnShell size =", aGroupOnShell.Size())
+print("aGroupOnShell ids :", aGroupOnShell.GetListOfID())
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

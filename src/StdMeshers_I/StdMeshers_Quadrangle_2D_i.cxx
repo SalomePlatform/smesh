@@ -45,7 +45,6 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_Quadrangle_2D_i::StdMeshers_Quadrangle_2D_i( PortableServer::POA_ptr thePOA,
-                                                        int                     theStudyId,
                                                         ::SMESH_Gen*            theGenImpl )
   : SALOME::GenericObj_i( thePOA ),
     SMESH_Hypothesis_i( thePOA ),
@@ -53,7 +52,6 @@ StdMeshers_Quadrangle_2D_i::StdMeshers_Quadrangle_2D_i( PortableServer::POA_ptr 
     SMESH_2D_Algo_i( thePOA )
 {
   myBaseImpl = new ::StdMeshers_Quadrangle_2D( theGenImpl->GetANewId(),
-                                               theStudyId,
                                                theGenImpl );
 }
 
@@ -107,7 +105,6 @@ CORBA::Boolean StdMeshers_Quadrangle_2D_i::IsApplicable( const TopoDS_Shape &S,
 
 StdMeshers_QuadFromMedialAxis_1D2D_i::
 StdMeshers_QuadFromMedialAxis_1D2D_i( PortableServer::POA_ptr thePOA,
-                                      int                     theStudyId,
                                       ::SMESH_Gen*            theGenImpl )
   : SALOME::GenericObj_i( thePOA ),
     SMESH_Hypothesis_i( thePOA ),
@@ -115,7 +112,6 @@ StdMeshers_QuadFromMedialAxis_1D2D_i( PortableServer::POA_ptr thePOA,
     SMESH_2D_Algo_i( thePOA )
 {
   myBaseImpl = new ::StdMeshers_QuadFromMedialAxis_1D2D( theGenImpl->GetANewId(),
-                                                         theStudyId,
                                                          theGenImpl );
 }
 

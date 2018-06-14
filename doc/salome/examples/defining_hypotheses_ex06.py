@@ -4,11 +4,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 # create a cylinder
 cyl = geompy.MakeCylinderRH(30., 50.)
@@ -32,6 +32,6 @@ algo3D.MaxElementVolume(200.)
 # compute the mesh
 ret = tetra.Compute()
 if ret == 0:
-    print "problem when computing the mesh"
+    print("problem when computing the mesh")
 else:
-    print "Computation succeeded"
+    print("Computation succeeded")

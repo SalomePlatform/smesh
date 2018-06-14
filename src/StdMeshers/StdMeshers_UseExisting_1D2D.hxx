@@ -35,7 +35,7 @@
 class STDMESHERS_EXPORT StdMeshers_UseExisting_2D: public SMESH_2D_Algo
 {
 public:
-  StdMeshers_UseExisting_2D(int hypId, int studyId, SMESH_Gen* gen);
+  StdMeshers_UseExisting_2D(int hypId, SMESH_Gen* gen);
 
   virtual bool CheckHypothesis(SMESH_Mesh&                          aMesh,
                                const TopoDS_Shape&                  aShape,
@@ -50,7 +50,7 @@ public:
 class STDMESHERS_EXPORT StdMeshers_UseExisting_1D: public SMESH_1D_Algo
 {
 public:
-  StdMeshers_UseExisting_1D(int hypId, int studyId, SMESH_Gen* gen);
+  StdMeshers_UseExisting_1D(int hypId, SMESH_Gen* gen);
 
   virtual bool CheckHypothesis(SMESH_Mesh&                          aMesh,
                                const TopoDS_Shape&                  aShape,

@@ -63,8 +63,6 @@ class LightApp_SelectionMgr;
 class SMESH_Actor;
 class SMESHGUI_FilterLibraryDlg;
 
-typedef std::map<int, VTK::MarkerMap> SMESHGUI_StudyId2MarkerMap;
-
 namespace SMESH
 {
   class OrientedPlane;
@@ -96,13 +94,13 @@ public :
   static SUIT_ResourceMgr*        resourceMgr();
   static SUIT_Desktop*            desktop();
   static SalomeApp_Study*         activeStudy();
-  
-  bool                            isActiveStudyLocked();
 
   static bool                     automaticUpdate(unsigned int requestedSize = 0, bool* limitExceeded = 0);
   static bool                     automaticUpdate( SMESH::SMESH_IDSource_ptr, int*, bool*, int*, long* );
 
   static void                     Modified( bool = true );
+
+  static bool                     isStudyLocked( bool = true );
 
   virtual LightApp_Displayer*     displayer();
   virtual QString                 engineIOR() const;
@@ -225,7 +223,7 @@ private :
 
   SMESHGUI_FilterLibraryDlg*      myFilterLibraryDlg;
 
-  SMESHGUI_StudyId2MarkerMap      myMarkerMap;
+  VTK::MarkerMap                  myMarkerMap;
   SMESHGUI_ClippingPlaneInfoMap   myClippingPlaneInfoMap;
 
   vtkSmartPointer<vtkCallbackCommand> myEventCallbackCommand;

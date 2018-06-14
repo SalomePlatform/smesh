@@ -34,4 +34,4 @@ Mesh_1.MakePolyLine( segments, "1D group")
 
 
 if salome.sg.hasDesktop():
-  salome.sg.updateObjBrowser(True)
+  salome.sg.updateObjBrowser()

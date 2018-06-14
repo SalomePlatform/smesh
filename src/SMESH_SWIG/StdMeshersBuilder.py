@@ -188,21 +188,21 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
 
     def NumberOfSegments(self, n, s=[], reversedEdges=[], UseExisting=0):
         """
-	Defines "NumberOfSegments" hypothesis to cut an edge in a fixed number of segments
+        Defines "NumberOfSegments" hypothesis to cut an edge in a fixed number of segments
 
         Parameters:
             n: for the number of segments that cut an edge
             s: for the scale factor (optional)
             reversedEdges: is a list of edges to mesh using reversed orientation.
-		    A list item can also be a tuple (edge, 1st_vertex_of_edge)
+                    A list item can also be a tuple (edge, 1st_vertex_of_edge)
             UseExisting: if ==true - searches for an existing hypothesis created with
-		    the same parameters, else (default) - create a new one
+                    the same parameters, else (default) - create a new one
     
         Returns: 
-    	    an instance of StdMeshers_NumberOfSegments hypothesis
+            an instance of StdMeshers_NumberOfSegments hypothesis
         """
     
-	
+        
         if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
             reversedEdges, UseExisting = [], reversedEdges
         entry = self.MainShapeEntry()
@@ -223,8 +223,8 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
 
     def _compareNumberOfSegments(self, hyp, args):
         """
-    	Private method
-	Checks if the given "NumberOfSegments" hypothesis has the same parameters as the given arguments
+        Private method
+        Checks if the given "NumberOfSegments" hypothesis has the same parameters as the given arguments
         """
         if hyp.GetNumberOfSegments() == args[0]:
             if len(args) == 3:
@@ -257,7 +257,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         Returns:
             an instance of StdMeshers_Adaptive1D hypothesis
         """
-	
+        
         from salome.smesh.smeshBuilder import IsEqual
         compFun = lambda hyp, args: ( IsEqual(hyp.GetMinSize(), args[0]) and \
                                       IsEqual(hyp.GetMaxSize(), args[1]) and \
@@ -270,21 +270,21 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         return hyp
 
     def Arithmetic1D(self, start, end, reversedEdges=[], UseExisting=0):
-	"""
-	Defines "Arithmetic1D" hypothesis to cut an edge in several segments with a length
-		that changes in arithmetic progression
+        """
+        Defines "Arithmetic1D" hypothesis to cut an edge in several segments with a length
+                that changes in arithmetic progression
 
-	Parameters:
-	    start: defines the length of the first segment
-	    end:   defines the length of the last  segment
-	    reversedEdges: is a list of edges to mesh using reversed orientation.
-		A list item can also be a tuple (edge, 1st_vertex_of_edge)
-	    UseExisting: if ==true - searches for an existing hypothesis created with
-		the same parameters, else (default) - creates a new one
+        Parameters:
+            start: defines the length of the first segment
+            end:   defines the length of the last  segment
+            reversedEdges: is a list of edges to mesh using reversed orientation.
+                A list item can also be a tuple (edge, 1st_vertex_of_edge)
+            UseExisting: if ==true - searches for an existing hypothesis created with
+                the same parameters, else (default) - creates a new one
 
-	Returns:
-		an instance of StdMeshers_Arithmetic1D hypothesis
-	"""
+        Returns:
+                an instance of StdMeshers_Arithmetic1D hypothesis
+        """
         
         if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
             reversedEdges, UseExisting = [], reversedEdges
@@ -304,21 +304,21 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         return hyp
 
     def GeometricProgression(self, start, ratio, reversedEdges=[], UseExisting=0):
-	"""
-	    Defines "GeometricProgression" hypothesis to cut an edge in several
-		segments with a length that changes in Geometric progression
+        """
+            Defines "GeometricProgression" hypothesis to cut an edge in several
+                segments with a length that changes in Geometric progression
 
-	    Parameters:
-		start: defines the length of the first segment
-		ratio: defines the common ratio of the geometric progression
-		reversedEdges: is a list of edges to mesh using reversed orientation.
-		    A list item can also be a tuple (edge, 1st_vertex_of_edge)
-		UseExisting: if ==true - searches for an existing hypothesis created with
-		    the same parameters, else (default) - creates a new one
+            Parameters:
+                start: defines the length of the first segment
+                ratio: defines the common ratio of the geometric progression
+                reversedEdges: is a list of edges to mesh using reversed orientation.
+                    A list item can also be a tuple (edge, 1st_vertex_of_edge)
+                UseExisting: if ==true - searches for an existing hypothesis created with
+                    the same parameters, else (default) - creates a new one
 
-	    Returns:
-		an instance of StdMeshers_Geometric1D hypothesis
-	"""
+            Returns:
+                an instance of StdMeshers_Geometric1D hypothesis
+        """
         
         reversedEdgeInd = self.ReversedEdgeIndices(reversedEdges)
         entry = self.MainShapeEntry()
@@ -337,23 +337,23 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
 
     def FixedPoints1D(self, points, nbSegs=[1], reversedEdges=[], UseExisting=0):
         """
-	Defines "FixedPoints1D" hypothesis to cut an edge using parameter
-		on curve from 0 to 1 (additionally it is neecessary to check
-		orientation of edges and create list of reversed edges if it is
-		needed) and sets numbers of segments between given points (default
-		values are 1)
+        Defines "FixedPoints1D" hypothesis to cut an edge using parameter
+                on curve from 0 to 1 (additionally it is neecessary to check
+                orientation of edges and create list of reversed edges if it is
+                needed) and sets numbers of segments between given points (default
+                values are 1)
 
-	Parameters:
-	    points: defines the list of parameters on curve
-	    nbSegs: defines the list of numbers of segments
-	    reversedEdges: is a list of edges to mesh using reversed orientation.
-		A list item can also be a tuple (edge, 1st_vertex_of_edge)
-	    UseExisting: if ==true - searches for an existing hypothesis created with
-		the same parameters, else (default) - creates a new one
+        Parameters:
+            points: defines the list of parameters on curve
+            nbSegs: defines the list of numbers of segments
+            reversedEdges: is a list of edges to mesh using reversed orientation.
+                A list item can also be a tuple (edge, 1st_vertex_of_edge)
+            UseExisting: if ==true - searches for an existing hypothesis created with
+                the same parameters, else (default) - creates a new one
 
-	Returns:
-		an instance of StdMeshers_FixedPoints1D hypothesis
-	"""
+        Returns:
+                an instance of StdMeshers_FixedPoints1D hypothesis
+        """
         
         if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
             reversedEdges, UseExisting = [], reversedEdges
@@ -386,7 +386,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         Returns:
             an instance of StdMeshers_StartEndLength hypothesis
         """
-	
+        
         if not isinstance(reversedEdges,list): #old version script, before adding reversedEdges
             reversedEdges, UseExisting = [], reversedEdges
         reversedEdgeInd = self.ReversedEdgeIndices(reversedEdges)
@@ -405,14 +405,14 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         return hyp
 
     def Deflection1D(self, d, UseExisting=0):
-	"""
-	Defines "Deflection1D" hypothesis
+        """
+        Defines "Deflection1D" hypothesis
 
-	Parameters:
+        Parameters:
             d: for the deflection
             UseExisting: if ==true - searches for an existing hypothesis created with
                 the same parameters, else (default) - create a new one
-	"""
+        """
         
         from salome.smesh.smeshBuilder import IsEqual
         compFun = lambda hyp, args: IsEqual(hyp.GetDeflection(), args[0])
@@ -421,35 +421,35 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         return hyp
 
     def Propagation(self):
-	"""
-	Defines "Propagation" hypothesis that propagates 1D hypotheses
-		from an edge where this hypothesis is assigned to
-		on all other edges that are at the opposite side in case of quadrangular faces
-		This hypothesis should be assigned to an edge to propagate a hypothesis from.
-	"""
+        """
+        Defines "Propagation" hypothesis that propagates 1D hypotheses
+                from an edge where this hypothesis is assigned to
+                on all other edges that are at the opposite side in case of quadrangular faces
+                This hypothesis should be assigned to an edge to propagate a hypothesis from.
+        """
         
         return self.Hypothesis("Propagation", UseExisting=1, CompareMethod=self.CompareEqualHyp)
 
     def PropagationOfDistribution(self):
-	"""
-	Defines "Propagation of Node Distribution" hypothesis that propagates
-		distribution of nodes from an edge where this hypothesis is assigned to,
-		to opposite edges of quadrangular faces, so that number of segments on all these
-		edges will be the same, as well as relations between segment lengths. 
-	"""
+        """
+        Defines "Propagation of Node Distribution" hypothesis that propagates
+                distribution of nodes from an edge where this hypothesis is assigned to,
+                to opposite edges of quadrangular faces, so that number of segments on all these
+                edges will be the same, as well as relations between segment lengths. 
+        """
         
         return self.Hypothesis("PropagOfDistribution", UseExisting=1,
                                CompareMethod=self.CompareEqualHyp)
 
     def AutomaticLength(self, fineness=0, UseExisting=0):
-	"""
-	Defines "AutomaticLength" hypothesis
+        """
+        Defines "AutomaticLength" hypothesis
 
-	Parameters:
-	    fineness: for the fineness [0-1]
-	    UseExisting: if ==true - searches for an existing hypothesis created with the
-		same parameters, else (default) - create a new one
-	"""
+        Parameters:
+            fineness: for the fineness [0-1]
+            UseExisting: if ==true - searches for an existing hypothesis created with the
+                same parameters, else (default) - create a new one
+        """
         
         from salome.smesh.smeshBuilder import IsEqual
         compFun = lambda hyp, args: IsEqual(hyp.GetFineness(), args[0])
@@ -459,21 +459,21 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         return hyp
 
     def LengthNearVertex(self, length, vertex=0, UseExisting=0):
-	"""
-	Defines "SegmentLengthAroundVertex" hypothesis
+        """
+        Defines "SegmentLengthAroundVertex" hypothesis
 
-	Parameters:
-	    length: for the segment length
-	    vertex: for the length localization: the vertex index [0,1] | vertex object.
-		Any other integer value means that the hypothesis will be set on the
-		whole 1D shape, where Mesh_Segment algorithm is assigned.
-	    UseExisting: if ==true - searches for an  existing hypothesis created with
-		the same parameters, else (default) - creates a new one
-	"""
+        Parameters:
+            length: for the segment length
+            vertex: for the length localization: the vertex index [0,1] | vertex object.
+                Any other integer value means that the hypothesis will be set on the
+                whole 1D shape, where Mesh_Segment algorithm is assigned.
+            UseExisting: if ==true - searches for an  existing hypothesis created with
+                the same parameters, else (default) - creates a new one
+        """
         
         import types
         store_geom = self.geom
-        if type(vertex) is types.IntType:
+        if isinstance(vertex, int):
             if vertex == 0 or vertex == 1:
                 from salome.geom import geomBuilder
                 vertex = self.mesh.geompyD.ExtractShapes(self.geom, geomBuilder.geomBuilder.ShapeType["VERTEX"],True)[vertex]
@@ -486,7 +486,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         # 0D algorithm
         if self.geom is None:
             self.geom = store_geom
-            raise RuntimeError, "Attempt to create SegmentAroundVertex_0D algorithm on None shape"
+            raise RuntimeError("Attempt to create SegmentAroundVertex_0D algorithm on None shape")
         from salome.smesh.smeshBuilder import AssureGeomPublished, GetName, TreatHypoStatus
         AssureGeomPublished( self.mesh, self.geom )
         name = GetName(self.geom)
@@ -507,15 +507,15 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         return hyp
 
     def QuadraticMesh(self):
-	"""
-	Defines "QuadraticMesh" hypothesis, forcing construction of quadratic edges.
-	If the 2D mesher sees that all boundary edges are quadratic,
-	it generates quadratic faces, else it generates linear faces using
-	medium nodes as if they are vertices.
-	The 3D mesher generates quadratic volumes only if all boundary faces
-	are quadratic, else it fails.
-	"""
-	
+        """
+        Defines "QuadraticMesh" hypothesis, forcing construction of quadratic edges.
+        If the 2D mesher sees that all boundary edges are quadratic,
+        it generates quadratic faces, else it generates linear faces using
+        medium nodes as if they are vertices.
+        The 3D mesher generates quadratic volumes only if all boundary faces
+        are quadratic, else it fails.
+        """
+        
         hyp = self.Hypothesis("QuadraticMesh", UseExisting=1, CompareMethod=self.CompareEqualHyp)
         return hyp
 
@@ -567,7 +567,7 @@ class StdMeshersBuilder_CompositeSegment(StdMeshersBuilder_Segment):
 class StdMeshersBuilder_Segment_Python(Mesh_Algorithm):
     """
     Defines a segment 1D algorithm for discretization of edges with Python function
-	It is created by calling smeshBuilder.Mesh.Segment(smeshBuilder.PYTHON,geom=0)
+        It is created by calling smeshBuilder.Mesh.Segment(smeshBuilder.PYTHON,geom=0)
     """
     
 
@@ -807,12 +807,12 @@ class StdMeshersBuilder_Quadrangle(Mesh_Algorithm):
             quadrangles are built in the transition area along the finer meshed sides,
             if the total quantity of segments on all four sides of the face is even.
 
-	Parameters:
+        Parameters:
             reversed: if True, transition area is located along the coarser meshed sides.
         UseExisting: if ==true - searches for the existing hypothesis created with
             the same parameters, else (default) - creates a new one
         """
-	
+        
         if reversed:
             return self.QuadrangleParameters(QUAD_QUADRANGLE_PREF_REVERSED,UseExisting=UseExisting)
         return self.QuadrangleParameters(QUAD_QUADRANGLE_PREF,UseExisting=UseExisting)
@@ -1211,7 +1211,7 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
             3D hypothesis holding the 1D one
         """
         if self.algoType != "RadialPrism_3D":
-            print "Prism_3D algorithm doesn't support any hypothesis"
+            print("Prism_3D algorithm doesn't support any hypothesis")
             return None
         return self.distribHyp
 
@@ -1224,15 +1224,14 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
             the created hypothesis
         """
         if self.algoType != "RadialPrism_3D":
-            print "Prism_3D algorithm doesn't support any hypothesis"
+            print("Prism_3D algorithm doesn't support any hypothesis")
             return None
         if not self.nbLayers is None:
             self.mesh.GetMesh().RemoveHypothesis( self.geom, self.nbLayers )
             self.mesh.GetMesh().AddHypothesis( self.geom, self.distribHyp )
-        study = self.mesh.smeshpyD.GetCurrentStudy() # prevents publishing own 1D hypothesis
-        self.mesh.smeshpyD.SetCurrentStudy( None )
+        self.mesh.smeshpyD.SetEnablePublish( False ) # prevents publishing own 1D hypothesis
         hyp = self.mesh.smeshpyD.CreateHypothesis(hypType, so)
-        self.mesh.smeshpyD.SetCurrentStudy( study ) # enables publishing
+        self.mesh.smeshpyD.SetEnablePublish( True ) # enables publishing
         if not self.distribHyp:
             self.distribHyp = self.Hypothesis("LayerDistribution", UseExisting=0)
         self.distribHyp.SetLayerDistribution( hyp )
@@ -1249,7 +1248,7 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
                 the same parameters, else (default) - creates a new one
         """
         if self.algoType != "RadialPrism_3D":
-            print "Prism_3D algorithm doesn't support any hypothesis"
+            print("Prism_3D algorithm doesn't support any hypothesis")
             return None
         self.mesh.RemoveHypothesis( self.distribHyp, self.geom )
         from salome.smesh.smeshBuilder import IsEqual
@@ -1269,7 +1268,7 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
             p: the precision of rounding
         """
         if self.algoType != "RadialPrism_3D":
-            print "Prism_3D algorithm doesn't support any hypothesis"
+            print("Prism_3D algorithm doesn't support any hypothesis")
             return None
         hyp = self.OwnHypothesis("LocalLength", [l,p])
         hyp.SetLength(l)
@@ -1286,7 +1285,7 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
             s: the scale factor (optional)
         """
         if self.algoType != "RadialPrism_3D":
-            print "Prism_3D algorithm doesn't support any hypothesis"
+            print("Prism_3D algorithm doesn't support any hypothesis")
             return None
         if not s:
             hyp = self.OwnHypothesis("NumberOfSegments", [n])
@@ -1307,7 +1306,7 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
             end:    the length of the last  segment
         """
         if self.algoType != "RadialPrism_3D":
-            print "Prism_3D algorithm doesn't support any hypothesis"
+            print("Prism_3D algorithm doesn't support any hypothesis")
             return None
         hyp = self.OwnHypothesis("Arithmetic1D", [start, end])
         hyp.SetLength(start, 1)
@@ -1325,7 +1324,7 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
             ratio:  the common ratio of the geometric progression
         """
         if self.algoType != "RadialPrism_3D":
-            print "Prism_3D algorithm doesn't support any hypothesis"
+            print("Prism_3D algorithm doesn't support any hypothesis")
             return None
         hyp = self.OwnHypothesis("GeometricProgression", [start, ratio])
         hyp.SetStartLength( start )
@@ -1342,7 +1341,7 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
         end:   for the length of the last  segment
         """
         if self.algoType != "RadialPrism_3D":
-            print "Prism_3D algorithm doesn't support any hypothesis"
+            print("Prism_3D algorithm doesn't support any hypothesis")
             return None
         hyp = self.OwnHypothesis("StartEndLength", [start, end])
         hyp.SetLength(start, 1)
@@ -1358,7 +1357,7 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
             fineness: defines the quality of the mesh within the range [0-1]
         """
         if self.algoType != "RadialPrism_3D":
-            print "Prism_3D algorithm doesn't support any hypothesis"
+            print("Prism_3D algorithm doesn't support any hypothesis")
             return None
         hyp = self.OwnHypothesis("AutomaticLength")
         hyp.SetFineness( fineness )
@@ -1440,10 +1439,9 @@ class StdMeshersBuilder_RadialAlgorithm(Mesh_Algorithm):
             self.distribHyp = self.Hypothesis("LayerDistribution2D", UseExisting=0)
         else:
             self.mesh.GetMesh().AddHypothesis( self.geom, self.distribHyp )
-        study = self.mesh.smeshpyD.GetCurrentStudy() # prevents publishing own 1D hypothesis
-        self.mesh.smeshpyD.SetCurrentStudy( None )
+        self.mesh.smeshpyD.SetEnablePublish( False )
         hyp = self.mesh.smeshpyD.CreateHypothesis(hypType, so)
-        self.mesh.smeshpyD.SetCurrentStudy( study ) # enables publishing
+        self.mesh.smeshpyD.SetEnablePublish( True )
         self.distribHyp.SetLayerDistribution( hyp )
         return hyp
 
@@ -1856,7 +1854,7 @@ class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
             self.mesh.AddHypothesis( self.hyp, self.geom )
 
         for axis, gridDef in enumerate( [xGridDef, yGridDef, zGridDef] ):
-            if not gridDef: raise ValueError, "Empty grid definition"
+            if not gridDef: raise ValueError("Empty grid definition")
             if isinstance( gridDef, str ):
                 self.hyp.SetGridSpacing( [gridDef], [], axis )
             elif isinstance( gridDef[0], str ):

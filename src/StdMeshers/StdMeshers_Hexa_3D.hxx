@@ -40,7 +40,7 @@ class SMESH_MesherHelper;
 class STDMESHERS_EXPORT StdMeshers_Hexa_3D : public SMESH_3D_Algo
 {
 public:
-  StdMeshers_Hexa_3D(int hypId, int studyId, SMESH_Gen* gen);
+  StdMeshers_Hexa_3D(int hypId, SMESH_Gen* gen);
   virtual ~StdMeshers_Hexa_3D();
 
   virtual bool CheckHypothesis(SMESH_Mesh& aMesh,

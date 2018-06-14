@@ -51,7 +51,6 @@ class StdMeshers_NumberOfLayers_i:
 public:
   // Constructor
   StdMeshers_NumberOfLayers_i( PortableServer::POA_ptr thePOA,
-                               int                     theStudyId,
                                ::SMESH_Gen*            theGenImpl );
   // Destructor
   virtual ~StdMeshers_NumberOfLayers_i();

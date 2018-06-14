@@ -1068,11 +1068,7 @@ void SMESHGUI_ClippingDlg::updateActorList()
 {
   ActorList->clear();
 
-  SalomeApp_Study* anAppStudy = SMESHGUI::activeStudy();
-  if( !anAppStudy )
-    return;
-
-  _PTR(Study) aStudy = anAppStudy->studyDS();
+  _PTR(Study) aStudy = SMESH::getStudy();
   if( !aStudy )
     return;
 

@@ -106,7 +106,6 @@ class SMESH_Mesh::SubMeshHolder : public SMESHDS_TSubMeshHolder< SMESH_subMesh >
 //=============================================================================
 
 SMESH_Mesh::SMESH_Mesh(int               theLocalId, 
-                       int               theStudyId, 
                        SMESH_Gen*        theGen,
                        bool              theIsEmbeddedMode,
                        SMESHDS_Document* theDocument):
@@ -114,7 +113,6 @@ SMESH_Mesh::SMESH_Mesh(int               theLocalId,
 {
   if(MYDEBUG) MESSAGE("SMESH_Mesh::SMESH_Mesh(int localId)");
   _id            = theLocalId;
-  _studyId       = theStudyId;
   _gen           = theGen;
   _myDocument    = theDocument;
   _myMeshDS      = theDocument->NewMesh(theIsEmbeddedMode,theLocalId);
@@ -135,7 +133,6 @@ SMESH_Mesh::SMESH_Mesh(int               theLocalId,
 
 SMESH_Mesh::SMESH_Mesh():
   _id(-1),
-  _studyId(-1),
   _groupId( 0 ),
   _nbSubShapes( 0 ),
   _isShapeToMesh( false ),
@@ -208,7 +205,7 @@ SMESH_Mesh::~SMESH_Mesh()
   // remove self from studyContext
   if ( _gen )
   {
-    StudyContextStruct * studyContext = _gen->GetStudyContext( _studyId );
+    StudyContextStruct * studyContext = _gen->GetStudyContext();
     studyContext->mapMesh.erase( _id );
   }
   if ( _myDocument )
@@ -248,7 +245,7 @@ SMESH_Mesh* SMESH_Mesh::FindMesh( int meshId ) const
   if ( _id == meshId )
     return (SMESH_Mesh*) this;
 
-  if ( StudyContextStruct *aStudyContext = _gen->GetStudyContext( _studyId ))
+  if ( StudyContextStruct *aStudyContext = _gen->GetStudyContext())
   {
     std::map < int, SMESH_Mesh * >::iterator i_m = aStudyContext->mapMesh.find( meshId );
     if ( i_m != aStudyContext->mapMesh.end() )
@@ -725,7 +722,7 @@ SMESH_Mesh::RemoveHypothesis(const TopoDS_Shape & aSubShape,
   Unexpect aCatch(SalomeException);
   if(MYDEBUG) MESSAGE("SMESH_Mesh::RemoveHypothesis");
 
-  StudyContextStruct *sc = _gen->GetStudyContext(_studyId);
+  StudyContextStruct *sc = _gen->GetStudyContext();
   if (sc->mapHypothesis.find(anHypId) == sc->mapHypothesis.end())
     throw SALOME_Exception(LOCALIZED("hypothesis does not exist"));
 
@@ -986,7 +983,7 @@ int SMESH_Mesh::GetHypotheses(const SMESH_subMesh *               aSubMesh,
 
 SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const int anHypId) const
 {
-  StudyContextStruct *sc = _gen->GetStudyContext(_studyId);
+  StudyContextStruct *sc = _gen->GetStudyContext();
   if (sc->mapHypothesis.find(anHypId) == sc->mapHypothesis.end())
     return NULL;
 
@@ -1370,7 +1367,6 @@ bool SMESH_Mesh::HasDuplicatedGroupNamesMED()
  *  \param [in] theAutoGroups - boolean parameter for creating/not creating
  *              the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
  *              the typical use is auto_groups=false.
- *  \param [in] theVersion - defines the version of format of MED file, that will be created
  *  \param [in] meshPart - mesh data to export
  *  \param [in] theAutoDimension - if \c true, a space dimension of a MED mesh can be either
      *         - 1D if all mesh nodes lie on OX coordinate axis, or
@@ -1386,7 +1382,6 @@ bool SMESH_Mesh::HasDuplicatedGroupNamesMED()
 void SMESH_Mesh::ExportMED(const char *        file, 
                            const char*         theMeshName, 
                            bool                theAutoGroups,
-                           int                 theVersion,
                            const SMESHDS_Mesh* meshPart,
                            bool                theAutoDimension,
                            bool                theAddODOnVertices,
@@ -1397,7 +1392,7 @@ void SMESH_Mesh::ExportMED(const char *        file,
   SMESH_TRY;
 
   DriverMED_W_SMESHDS_Mesh myWriter;
-  myWriter.SetFile         ( file, MED::EVersion(theVersion) );
+  myWriter.SetFile         ( file );
   myWriter.SetMesh         ( meshPart ? (SMESHDS_Mesh*) meshPart : _myMeshDS   );
   myWriter.SetAutoDimension( theAutoDimension );
   myWriter.AddODOnVertices ( theAddODOnVertices );
@@ -1467,19 +1462,19 @@ void SMESH_Mesh::ExportSAUV(const char *file,
 #ifdef WIN32
   cmd = "%PYTHONBIN% ";
 #else
-  cmd = "python ";
+  cmd = "python3 ";
 #endif
   cmd += "-c \"";
   cmd += "from medutilities import my_remove ; my_remove(r'" + medfilename + "')";
   cmd += "\"";
   system(cmd.c_str());
-  ExportMED(medfilename.c_str(), theMeshName, theAutoGroups, /*theVersion=*/1,
+  ExportMED(medfilename.c_str(), theMeshName, theAutoGroups,
             /*meshPart=*/NULL, /*theAutoDimension=*/false, /*theAddODOnVertices=*/false,
             /*theAllElemsToGroup=*/true ); // theAllElemsToGroup is for PAL0023413
 #ifdef WIN32
   cmd = "%PYTHONBIN% ";
 #else
-  cmd = "python ";
+  cmd = "python3 ";
 #endif
   cmd += "-c \"";
   cmd += "from medutilities import convert ; convert(r'" + medfilename + "', 'MED', 'GIBI', 1, r'" + file + "')";
@@ -1488,7 +1483,7 @@ void SMESH_Mesh::ExportSAUV(const char *file,
 #ifdef WIN32
   cmd = "%PYTHONBIN% ";
 #else
-  cmd = "python ";
+  cmd = "python3 ";
 #endif
   cmd += "-c \"";
   cmd += "from medutilities import my_remove ; my_remove(r'" + medfilename + "')";

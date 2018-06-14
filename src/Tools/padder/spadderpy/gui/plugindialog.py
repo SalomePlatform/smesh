@@ -22,10 +22,10 @@
 
 from qtsalome import QDialog, QIcon, Qt
 
-from plugindialog_ui import Ui_PluginDialog
-from inputdialog import InputDialog, INPUTDATA_KEY_FILES, INPUTDATA_KEY_PARAM
-from inputdialog import PARAM_KEY_NBITER, PARAM_KEY_RMAXRMIN
-from inputdata import InputData
+from salome.smesh.spadder.gui.plugindialog_ui import Ui_PluginDialog
+from salome.smesh.spadder.gui.inputdialog import InputDialog, INPUTDATA_KEY_FILES, INPUTDATA_KEY_PARAM
+from salome.smesh.spadder.gui.inputdialog import PARAM_KEY_NBITER, PARAM_KEY_RMAXRMIN
+from salome.smesh.spadder.gui.inputdata import InputData
 # __GBO__: uncomment this line and comment the previous one to use the
 # demo input dialog instead of the real one.
 #from demoinputdialog import InputDialog
@@ -38,7 +38,7 @@ from salome.kernel.uiexception import AdminException
 from omniORB import CORBA
 import SMESH
 from salome.smesh import smeshBuilder
-smesh = smeshBuilder.New(salome.myStudy)
+smesh = smeshBuilder.New()
 import MESHJOB
 
 gui_states = ["CAN_SELECT", "CAN_COMPUTE", "CAN_REFRESH", "CAN_PUBLISH"]
@@ -87,7 +87,7 @@ class PluginDialog(QDialog):
         self.__ui.btnClear.setIcon(icon)
 
         # Then, we can connect the slot to there associated button event
-	self.__ui.btnInput.clicked.connect( self.onInput )
+        self.__ui.btnInput.clicked.connect( self.onInput )
         self.__ui.btnCompute.clicked.connect( self.onCompute )
         self.__ui.btnRefresh.clicked.connect( self.onRefresh )
         self.__ui.btnPublish.clicked.connect( self.onPublish )
@@ -140,7 +140,7 @@ class PluginDialog(QDialog):
                 self.__inputDialog.windowFlags() | Qt.WindowStaysOnTopHint)
             # The signal inputValidated emitted from inputDialog is
             # connected to the slot function onProcessInput:
-    	    self.__inputDialog.inputValidated.connect( self.onProcessInput )
+            self.__inputDialog.inputValidated.connect( self.onProcessInput )
 
         else:
             self.__ui.frameInput.setVisible(True)
@@ -179,7 +179,7 @@ class PluginDialog(QDialog):
         servant. Note that the component is loaded on first demand,
         and then the reference is recycled.
         """
-        if self.__dict__.has_key("__jobManager") and self.__jobManager is not None:
+        if "__jobManager" in self.__dict__ and self.__jobManager is not None:
             return self.__jobManager
 
         # WARN: we first have to update the SALOME components catalog
@@ -211,7 +211,7 @@ class PluginDialog(QDialog):
         name. This returns the filename.
         '''
         filename=str("/tmp/padder_inputfile_"+meshName+".med")
-        meshObject.ExportToMEDX( filename, 0, SMESH.MED_V2_2, 1, 1 )
+        meshObject.ExportMED(filename, False, True, True)
         return filename
 
     def clear(self):
@@ -294,7 +294,7 @@ class PluginDialog(QDialog):
         # And to create a list of the additional parameters.
         # WARN: the CORBA interface requires string values.
         meshJobParameterList=[]
-        for inputParameterKey in self.__dictInputParameters.keys():
+        for inputParameterKey in self.__dictInputParameters:
             value = self.__dictInputParameters[inputParameterKey]
             parameter = MESHJOB.MeshJobParameter(name=inputParameterKey,value=str(value))
             meshJobParameterList.append(parameter)
@@ -368,7 +368,7 @@ class PluginDialog(QDialog):
         medfilename = os.path.join(meshJobResults.results_dirname,
                                    meshJobResults.outputmesh_filename)
 
-        smesh.SetCurrentStudy(studyedit.getActiveStudy())
+        smesh.UpdateStudy()
         ([outputMesh], status) = smesh.CreateMeshesFromMED(medfilename)
 
         # By convention, the name of the output mesh in the study is
@@ -376,7 +376,7 @@ class PluginDialog(QDialog):
         meshname = 'padder_'+str(self.__jobid)
         smesh.SetName(outputMesh.GetMesh(), meshname)
         if salome.sg.hasDesktop():
-            salome.sg.updateObjBrowser(False)
+            salome.sg.updateObjBrowser()
 
         self.__ui.lblStatusBar.setText("Publication OK")
         self.__setGuiState(["CAN_SELECT"])
@@ -417,6 +417,3 @@ def TEST_PluginDialog():
 
 if __name__ == "__main__":
     TEST_PluginDialog()
-
-
-

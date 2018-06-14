@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from geomsmesh import geompy
-from geomsmesh import geomPublish
-from geomsmesh import geomPublishInFather
-import initLog
-from sortFaces import sortFaces
+from .geomsmesh import geompy
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+from . import initLog
+from .sortFaces import sortFaces
 import traceback
-from fissError import fissError
+from .fissError import fissError
 
 def restreintFaceFissure(shapeDefaut, facesDefaut, pointInterne):
   """

@@ -43,7 +43,6 @@ class StdMeshers_NumberOfLayers2D_i:
 public:
   // Constructor
   StdMeshers_NumberOfLayers2D_i( PortableServer::POA_ptr thePOA,
-                                 int                     theStudyId,
                                  ::SMESH_Gen*            theGenImpl );
   // Destructor
   virtual ~StdMeshers_NumberOfLayers2D_i();

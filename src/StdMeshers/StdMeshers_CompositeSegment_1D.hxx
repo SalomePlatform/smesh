@@ -39,7 +39,7 @@ class TopoDS_Face;
 class STDMESHERS_EXPORT StdMeshers_CompositeSegment_1D: public StdMeshers_Regular_1D
 {
 public:
-  StdMeshers_CompositeSegment_1D(int hypId, int studyId, SMESH_Gen* gen);
+  StdMeshers_CompositeSegment_1D(int hypId, SMESH_Gen* gen);
 
   virtual bool Compute(SMESH_Mesh&         aMesh,
                        const TopoDS_Shape& aShape);

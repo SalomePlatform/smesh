@@ -1,5 +1,5 @@
 from qtsalome import QSqlQuery
-from tableDeBase import TableDeBase
+from Base.tableDeBase import TableDeBase
 
 class TableMailles (TableDeBase):
       def __init__(self):
@@ -17,7 +17,7 @@ class TableMailles (TableDeBase):
           texteQuery+="foreign key (idVersion) references Versions(id)," 
           texteQuery+="primary key (idMaillage,idVersion,Entite));"
 
-          print "Creation de TableMailles : " , query.exec_(texteQuery)
+          print("Creation de TableMailles : " , query.exec_(texteQuery))
 
  
       def getVal(self,idMaillage, idVersion,  Entite):
@@ -31,7 +31,7 @@ class TableMailles (TableDeBase):
             while (query.next()) :
                val=query.value(0).toInt()[0]
                nb=nb+1
-            if nb > 1 : print "Double valeur de Reference dans la table des mailles"
+            if nb > 1 : print("Double valeur de Reference dans la table des mailles")
             return val
 
 

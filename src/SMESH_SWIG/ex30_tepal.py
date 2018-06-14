@@ -26,11 +26,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 # Parameters
 # ----------
@@ -53,7 +53,7 @@ geompy.addToStudy(cylinder, "Cylinder")
 # Define a mesh on a geometry
 # ---------------------------
 
-smesh.SetCurrentStudy(salome.myStudy)
+smesh.UpdateStudy()
 
 m = smesh.Mesh(cylinder)
 
@@ -76,7 +76,6 @@ algo3d.SetMEDName(results)
 algo3d.SetNbPart(4)
 algo3d.SetBackground(False)
 algo3d.SetKeepFiles(False)
-algo3d.SetToMeshHoles(True)
 
 # Launch meshers
 # --------------
@@ -87,11 +86,11 @@ status = m.Compute()
 # ----------
 
 if os.access(results+".xml", os.F_OK):
-    print "Ok: tepal"
+    print("Ok: tepal")
 else:
-    print "KO: tepal"
+    print("KO: tepal")
 
 # Update object browser
 # ---------------------
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

@@ -85,16 +85,15 @@ namespace {
  */
 //=============================================================================
 
-StdMeshers_Propagation::StdMeshers_Propagation (int hypId, int studyId, SMESH_Gen * gen)
-  : SMESH_Hypothesis(hypId, studyId, gen)
+StdMeshers_Propagation::StdMeshers_Propagation (int hypId, SMESH_Gen * gen)
+  : SMESH_Hypothesis(hypId, gen)
 {
   _name = GetName();
   _param_algo_dim = -1; // 1D auxiliary
 }
 StdMeshers_PropagOfDistribution::StdMeshers_PropagOfDistribution (int hypId,
-                                                                  int studyId,
                                                                   SMESH_Gen * gen)
-  : StdMeshers_Propagation(hypId, studyId, gen)                        { _name = GetName(); }
+  : StdMeshers_Propagation(hypId, gen)                                 { _name = GetName(); }
 StdMeshers_Propagation::~StdMeshers_Propagation()                      {}
 string StdMeshers_Propagation::GetName ()                              { return "Propagation"; }
 string StdMeshers_PropagOfDistribution::GetName ()                     { return "PropagOfDistribution"; }

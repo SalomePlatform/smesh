@@ -1293,7 +1293,7 @@ void SMESHGUI_SewingDlg::onSwapClicked()
 //=================================================================================
 bool SMESHGUI_SewingDlg::ClickOnApply()
 {
-  if (mySMESHGUI->isActiveStudyLocked())
+  if (SMESHGUI::isStudyLocked())
     return false;
 
   bool aResult = false;

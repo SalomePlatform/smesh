@@ -36,9 +36,8 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_QuadranglePreference::StdMeshers_QuadranglePreference(int         hypId,
-                                                                 int         studyId,
                                                                  SMESH_Gen * gen)
-     :SMESH_Hypothesis(hypId, studyId, gen)
+     :SMESH_Hypothesis(hypId, gen)
 {
   _name = "QuadranglePreference";
   _param_algo_dim = -2; // auxiliary used by NETGEN 2D

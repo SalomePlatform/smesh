@@ -2,13 +2,13 @@
 
 import logging
 
-from geomsmesh import geompy
-from geomsmesh import geomPublish
-from geomsmesh import geomPublishInFather
-import initLog
+from .geomsmesh import geompy
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+from . import initLog
 
-from extractionOrientee import extractionOrientee
-from extractionOrienteeMulti import extractionOrienteeMulti
+from .extractionOrientee import extractionOrientee
+from .extractionOrienteeMulti import extractionOrienteeMulti
  
 def identifieElementsFissure(ifil, facesDefaut, partitionPeauFissFond,
                              edgesPipeFiss, edgesFondFiss, aretesVivesC,

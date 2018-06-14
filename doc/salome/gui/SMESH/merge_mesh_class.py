@@ -38,8 +38,8 @@ def main(module_name, output_file = "smeshBuilder.py"):
         
         f.write( origin_module_text.replace( origin_meshClass_text, new_meshClass_text) )
         f.close()        
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         pass
     pass
 

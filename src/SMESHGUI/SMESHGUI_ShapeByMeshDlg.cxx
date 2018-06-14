@@ -319,13 +319,12 @@ void SMESHGUI_ShapeByMeshOp::commitOperation()
     else
     {
       GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
-      _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
 
-      if (geomGen->_is_nil() || !aStudy)
+      if (geomGen->_is_nil())
         return;
 
       GEOM::GEOM_IShapesOperations_wrap aShapesOp =
-        geomGen->GetIShapesOperations(aStudy->StudyId());
+        geomGen->GetIShapesOperations();
       if (aShapesOp->_is_nil() )
         return;
 
@@ -364,7 +363,7 @@ void SMESHGUI_ShapeByMeshOp::commitOperation()
       else if (aNumberOfGO > 1)
       {
         GEOM::GEOM_IGroupOperations_wrap aGroupOp =
-          geomGen->GetIGroupOperations(aStudy->StudyId());
+          geomGen->GetIGroupOperations();
         if(aGroupOp->_is_nil())
           return;
 
@@ -386,9 +385,8 @@ void SMESHGUI_ShapeByMeshOp::commitOperation()
 
       // publish the GEOM object in study
       QString aNewGeomGroupName ( myDlg->myGeomName->text() );
-      SALOMEDS::Study_var aStudyVar = _CAST(Study,aStudy)->GetStudy();
       SALOMEDS::SObject_wrap aNewGroupSO =
-        geomGen->AddInStudy( aStudyVar, aGeomObject, 
+        geomGen->AddInStudy( aGeomObject,
                              aNewGeomGroupName.toLatin1().data(), aMeshShape);
 
       // get a GEOM_Object already published, which doesn't need UnRegister()

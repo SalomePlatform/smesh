@@ -25,11 +25,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 
 # Create box without one plane
@@ -48,7 +48,7 @@ idbox = geompy.addToStudy( aBox, "box" )
 aBox  = salome.IDToObject( idbox )
 
 # Create mesh
-smesh.SetCurrentStudy(salome.myStudy)
+smesh.UpdateStudy()
 
 mesh = smesh.Mesh(aBox, "Mesh_freebord")
 
@@ -71,8 +71,8 @@ aGroup = mesh.MakeGroupByCriterion("Free edges", aCriterion)
 anIds = aGroup.GetIDs()
 
 # print result
-print "Criterion: Free edges Nb = ", len( anIds )
+print("Criterion: Free edges Nb = ", len( anIds ))
 for i in range( len( anIds ) ):
-  print anIds[ i ]
+  print(anIds[ i ])
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

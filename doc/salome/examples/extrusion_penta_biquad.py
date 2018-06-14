@@ -4,14 +4,13 @@ import sys
 import salome
 
 salome.salome_init()
-theStudy = salome.myStudy
 
 import GEOM
 from salome.geom import geomBuilder
 import math
 import SALOMEDS
 
-geompy = geomBuilder.New(theStudy)
+geompy = geomBuilder.New()
 
 O = geompy.MakeVertex(0, 0, 0)
 OX = geompy.MakeVectorDXDYDZ(1, 0, 0)
@@ -27,7 +26,7 @@ geompy.addToStudy( Divided_Disk_1, 'Divided Disk_1' )
 import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
-smesh = smeshBuilder.New(theStudy)
+smesh = smeshBuilder.New()
 aFilterManager = smesh.CreateFilterManager()
 Mesh_1 = smesh.Mesh(Divided_Disk_1)
 Regular_1D = Mesh_1.Segment()
@@ -40,7 +39,7 @@ Mesh_1.ExtrusionSweepObjects( [ Mesh_1 ], [ Mesh_1 ], [ Mesh_1 ], [ 0, 0, 50 ], 
 Mesh_1.ConvertToQuadratic(0, Mesh_1,True)
 
 infos = Mesh_1.GetMeshInfo()
-print "Number of biquadratic pentahedrons:", infos[SMESH.Entity_BiQuad_Penta]
+print("Number of biquadratic pentahedrons:", infos[SMESH.Entity_BiQuad_Penta])
 if (infos[SMESH.Entity_BiQuad_Penta] != 1080):
   raise RuntimeError("Bad number of biquadratic pentahedrons: should be 1080")
   
@@ -52,4 +51,4 @@ smesh.SetName(Mesh_1.GetMesh(), 'Mesh_1')
 
 
 if salome.sg.hasDesktop():
-  salome.sg.updateObjBrowser(True)
+  salome.sg.updateObjBrowser()

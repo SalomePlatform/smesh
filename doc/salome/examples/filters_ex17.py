@@ -3,10 +3,10 @@
 import salome
 salome.salome_init()
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 import SMESH
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 # make a mesh on a box
 box = geompy.MakeBoxDXDYDZ(100,100,100)
@@ -20,4 +20,4 @@ mesh.TranslateObject( mesh, [10,0,0], Copy=True )
 # create  a filter to find nodes equal within tolerance of 1e-5
 filter = smesh.GetFilter(SMESH.NODE, SMESH.FT_EqualNodes, Tolerance=1e-5)
 # get equal nodes
-print "Number of equal nodes:", len( mesh.GetIdsFromFilter( filter ))
+print("Number of equal nodes:", len( mesh.GetIdsFromFilter( filter )))

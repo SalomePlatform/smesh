@@ -36,8 +36,8 @@
 //=======================================================================
 
 StdMeshers_SegmentAroundVertex_0D::StdMeshers_SegmentAroundVertex_0D
-                                   (int hypId, int studyId, SMESH_Gen* gen)
-  :SMESH_0D_Algo(hypId, studyId, gen)
+                                   (int hypId, SMESH_Gen* gen)
+  :SMESH_0D_Algo(hypId, gen)
 {
   _name = "SegmentAroundVertex_0D";
   // it is assigned to vertices but influence a state of EDGE submeshes

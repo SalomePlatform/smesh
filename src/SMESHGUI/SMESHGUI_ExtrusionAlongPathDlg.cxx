@@ -394,7 +394,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::CheckIsEnable()
 //=================================================================================
 bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
 {
-  if (mySMESHGUI->isActiveStudyLocked())
+  if (SMESHGUI::isStudyLocked())
     return false;
 
   if ( !SelectorWdg->IsAnythingSelected() || myPath->_is_nil() )

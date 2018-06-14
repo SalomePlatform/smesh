@@ -1092,7 +1092,7 @@ void SMESHGUI_ExtrusionDlg::ClickOnRadio()
 
 bool SMESHGUI_ExtrusionDlg::ClickOnApply()
 {
-  if (mySMESHGUI->isActiveStudyLocked())
+  if (SMESHGUI::isStudyLocked())
     return false;
 
   if (!isValid())

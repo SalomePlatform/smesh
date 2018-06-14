@@ -8,10 +8,9 @@ import sys, numpy
 import salome
 
 salome.salome_init()
-theStudy = salome.myStudy
 
 import salome_notebook
-notebook = salome_notebook.NoteBook(theStudy)
+notebook = salome_notebook.NoteBook()
 
 ###
 ### GEOM component
@@ -21,8 +20,8 @@ import GEOM
 from salome.geom import geomBuilder
 import math
 import SALOMEDS
-import utilityFunctions as uF
-from output import message
+from . import utilityFunctions as uF
+from .output import message
 
 #import GEOM_Gen.ild
 
@@ -30,7 +29,7 @@ def generate(data_rayon,data_centre,outFile):
   #data_rayon = 0.1
   #data_centre = [1., 1., 01.]
 
-  geompy = geomBuilder.New(theStudy)
+  geompy = geomBuilder.New()
 
   O = geompy.MakeVertex(0, 0, 0)
   OX = geompy.MakeVectorDXDYDZ(1, 0, 0)
@@ -48,7 +47,7 @@ def generate(data_rayon,data_centre,outFile):
   import  SMESH, SALOMEDS
   from salome.smesh import smeshBuilder
 
-  smesh = smeshBuilder.New(theStudy)
+  smesh = smeshBuilder.New()
 
   A=numpy.pi/(20.)
   chordal, minSize = uF.calcElemSize(A, data_rayon)
@@ -57,14 +56,14 @@ def generate(data_rayon,data_centre,outFile):
   Maillage=uF.meshCrack(FACE_FISSURE, minSize, maxSize, chordal, dim=3)
 
   try:
-    Maillage.ExportMED( outFile, 0, SMESH.MED_V2_2, 1, None ,1)
+    Maillage.ExportMED(outFile)
     smesh.SetName(Maillage.GetMesh(), 'MAILLAGE_FISSURE')
   except:
-    print 'ExportToMEDX() failed. Invalid file name?'
+    print('ExportMED() failed. Invalid file name?')
 
 
   ## Set names of Mesh objects
 
 
   if salome.sg.hasDesktop():
-    salome.sg.updateObjBrowser(1)
+    salome.sg.updateObjBrowser()

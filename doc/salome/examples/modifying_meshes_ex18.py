@@ -5,11 +5,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 import salome_notebook
 
 
@@ -46,9 +46,9 @@ ff[4] = mesh.AddFace([bb[2], bb[3], tt[3]])
 ff[5] = mesh.AddFace([bb[2], tt[3], tt[2]])
 
 # unite a set of triangles
-print "\nUnite a set of triangles ... ",
+print("\nUnite a set of triangles ... ", end=' ')
 res = mesh.TriToQuad([ff[2], ff[3], ff[4], ff[5]], SMESH.FT_MinimumAngle, 60.)
-if not res: print "failed!"
-else:       print "done."
+if not res: print("failed!")
+else:       print("done.")
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

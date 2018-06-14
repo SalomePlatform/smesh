@@ -31,11 +31,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 # ---------------------------- GEOM --------------------------------------
 
@@ -131,27 +131,27 @@ shape_mesh = salome.IDToObject( Id_mechanic )
 
 mesh = smesh.Mesh(shape_mesh, "Mesh_mechanic")
 
-print "-------------------------- NumberOfSegments"
+print("-------------------------- NumberOfSegments")
 
 numberOfSegment = 10
 
 algo = mesh.Segment()
 hypNbSeg = algo.NumberOfSegments(numberOfSegment)
-print hypNbSeg.GetName()
-print hypNbSeg.GetId()
-print hypNbSeg.GetNumberOfSegments()
+print(hypNbSeg.GetName())
+print(hypNbSeg.GetId())
+print(hypNbSeg.GetNumberOfSegments())
 smesh.SetName(hypNbSeg, "NumberOfSegments_" + str(numberOfSegment))
 
 
-print "-------------------------- MaxElementArea"
+print("-------------------------- MaxElementArea")
 
 maxElementArea = 25
 
 algo = mesh.Triangle()
 hypArea25 = algo.MaxElementArea(maxElementArea)
-print hypArea25.GetName()
-print hypArea25.GetId()
-print hypArea25.GetMaxElementArea()
+print(hypArea25.GetName())
+print(hypArea25.GetId())
+print(hypArea25.GetMaxElementArea())
 smesh.SetName(hypArea25, "MaxElementArea_" + str(maxElementArea))
 
 
@@ -179,18 +179,18 @@ smesh.SetName(algo.GetSubMesh(), "SubMeshFace4")
 submesh4 = algo.GetSubMesh()
 
 
-print "-------------------------- compute the mesh of the mechanic piece"
+print("-------------------------- compute the mesh of the mechanic piece")
 
 mesh.Compute()
 
-print "Information about the Mesh_mechanic:"
-print "Number of nodes       : ", mesh.NbNodes()
-print "Number of edges       : ", mesh.NbEdges()
-print "Number of faces       : ", mesh.NbFaces()
-print "Number of triangles   : ", mesh.NbTriangles()
-print "Number of quadrangles : ", mesh.NbQuadrangles()
-print "Number of volumes     : ", mesh.NbVolumes()
-print "Number of tetrahedrons: ", mesh.NbTetras()
+print("Information about the Mesh_mechanic:")
+print("Number of nodes       : ", mesh.NbNodes())
+print("Number of edges       : ", mesh.NbEdges())
+print("Number of faces       : ", mesh.NbFaces())
+print("Number of triangles   : ", mesh.NbTriangles())
+print("Number of quadrangles : ", mesh.NbQuadrangles())
+print("Number of volumes     : ", mesh.NbVolumes())
+print("Number of tetrahedrons: ", mesh.NbTetras())
 
 
 #1 cutting of quadrangles of the 'SubMeshFace2' submesh
@@ -234,4 +234,4 @@ mesh.RotationSweepObject(GroupRotate, axisXYZ, angle45, 4, 1e-5)
 #9 reorientation of the submesh1
 mesh.ReorientObject(submesh1)
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

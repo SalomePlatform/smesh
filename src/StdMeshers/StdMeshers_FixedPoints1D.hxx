@@ -38,7 +38,7 @@ class STDMESHERS_EXPORT StdMeshers_FixedPoints1D:
   public SMESH_Hypothesis
 {
 public:
-  StdMeshers_FixedPoints1D(int hypId, int studyId, SMESH_Gen* gen);
+  StdMeshers_FixedPoints1D(int hypId, SMESH_Gen* gen);
   virtual ~StdMeshers_FixedPoints1D();
 
   void SetPoints(std::vector<double>& listParams)

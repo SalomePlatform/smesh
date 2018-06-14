@@ -155,7 +155,7 @@ namespace // internal utils
   class AdaptiveAlgo : public StdMeshers_Regular_1D
   {
   public:
-    AdaptiveAlgo(int hypId, int studyId, SMESH_Gen* gen);
+    AdaptiveAlgo(int hypId, SMESH_Gen* gen);
     virtual bool Compute(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape );
     virtual bool Evaluate(SMESH_Mesh &         theMesh,
                           const TopoDS_Shape & theShape,
@@ -916,9 +916,8 @@ namespace // internal utils
 //function : StdMeshers_Adaptive1D
 //purpose  : Constructor
 StdMeshers_Adaptive1D::StdMeshers_Adaptive1D(int         hypId,
-                                             int         studyId,
                                              SMESH_Gen * gen)
-  :SMESH_Hypothesis(hypId, studyId, gen)
+  :SMESH_Hypothesis(hypId, gen)
 {
   myMinSize       = 1e-10;
   myMaxSize       = 1e+10;
@@ -1076,7 +1075,7 @@ SMESH_Algo* StdMeshers_Adaptive1D::GetAlgo() const
   if ( !myAlgo )
   {
     AdaptiveAlgo* newAlgo = 
-      new AdaptiveAlgo( _gen->GetANewId(), _studyId, _gen );
+      new AdaptiveAlgo( _gen->GetANewId(), _gen );
     newAlgo->SetHypothesis( this );
 
     ((StdMeshers_Adaptive1D*) this)->myAlgo = newAlgo;
@@ -1091,9 +1090,8 @@ SMESH_Algo* StdMeshers_Adaptive1D::GetAlgo() const
 //================================================================================
 
 AdaptiveAlgo::AdaptiveAlgo(int        hypId,
-                           int        studyId,
                            SMESH_Gen* gen)
-  : StdMeshers_Regular_1D( hypId, studyId, gen ),
+  : StdMeshers_Regular_1D( hypId, gen ),
     myHyp(NULL)
 {
   _name = "AdaptiveAlgo_1D";

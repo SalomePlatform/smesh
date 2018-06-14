@@ -13,9 +13,9 @@ def creeDatabase(fichier):
 
 
 if __name__ == "__main__":
-     from optparse import OptionParser
-     p=OptionParser()
-     p.add_option('-d',dest='database',default="myMesh.db",help='nom de la database')
-     options, args = p.parse_args()
-     creeDatabase(options.database )
+     from argparse import ArgumentParser
+     p=ArgumentParser()
+     p.add_argument('-d',dest='database',default="myMesh.db",help='nom de la database')
+     args = p.parse_args()
+     creeDatabase(args.database )
 

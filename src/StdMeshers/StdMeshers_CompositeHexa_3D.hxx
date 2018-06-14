@@ -42,7 +42,7 @@ struct _QuadFaceGrid;
 class STDMESHERS_EXPORT StdMeshers_CompositeHexa_3D: public SMESH_3D_Algo
 {
 public:
-  StdMeshers_CompositeHexa_3D(int hypId, int studyId, SMESH_Gen* gen);
+  StdMeshers_CompositeHexa_3D(int hypId, SMESH_Gen* gen);
   //virtual ~StdMeshers_CompositeHexa_3D();
 
   virtual bool Compute(SMESH_Mesh&         aMesh,

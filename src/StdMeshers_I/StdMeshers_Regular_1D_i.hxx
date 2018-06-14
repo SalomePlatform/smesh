@@ -47,8 +47,7 @@ class STDMESHERS_I_EXPORT StdMeshers_Regular_1D_i:
 public:
   // Constructor
   StdMeshers_Regular_1D_i( PortableServer::POA_ptr thePOA,
-                      int                     theStudyId,
-                      ::SMESH_Gen*            theGenImpl );
+                           ::SMESH_Gen*            theGenImpl );
   // Destructor
   virtual ~StdMeshers_Regular_1D_i();
  

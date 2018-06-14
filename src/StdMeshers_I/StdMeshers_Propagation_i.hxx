@@ -48,7 +48,6 @@ class STDMESHERS_I_EXPORT StdMeshers_Propagation_i:
 public:
   // Constructor
   StdMeshers_Propagation_i (PortableServer::POA_ptr thePOA,
-                            int                     theStudyId,
                             ::SMESH_Gen*            theGenImpl);
   
   // Verify whether hypothesis supports given entity type 
@@ -66,7 +65,6 @@ class STDMESHERS_I_EXPORT StdMeshers_PropagOfDistribution_i:
 public:
   // Constructor
   StdMeshers_PropagOfDistribution_i (PortableServer::POA_ptr thePOA,
-                                     int                     theStudyId,
                                      ::SMESH_Gen*            theGenImpl);
   
   // Verify whether hypothesis supports given entity type 

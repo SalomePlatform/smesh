@@ -92,9 +92,8 @@ GetAllFields(const QList< QPair< SMESH::SMESH_IDSource_var, QString > >& meshes,
   myFields = & fields;
   myTree->clear();
   
-  _PTR(Study) study = SMESH::GetActiveStudyDocument();
   GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
-  GEOM::GEOM_IFieldOperations_wrap fieldOp = geomGen->GetIFieldOperations( study->StudyId() );
+  GEOM::GEOM_IFieldOperations_wrap fieldOp = geomGen->GetIFieldOperations();
 
   for ( int iM = 0; iM < meshes.count(); ++iM )
   {

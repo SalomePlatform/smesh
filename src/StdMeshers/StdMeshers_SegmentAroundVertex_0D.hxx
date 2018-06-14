@@ -38,7 +38,7 @@
 class STDMESHERS_EXPORT StdMeshers_SegmentAroundVertex_0D: public SMESH_0D_Algo
 {
 public:
-  StdMeshers_SegmentAroundVertex_0D(int hypId, int studyId, SMESH_Gen* gen);
+  StdMeshers_SegmentAroundVertex_0D(int hypId, SMESH_Gen* gen);
   virtual ~StdMeshers_SegmentAroundVertex_0D();
 
   virtual bool CheckHypothesis(SMESH_Mesh&                          aMesh,

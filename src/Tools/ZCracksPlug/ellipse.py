@@ -9,10 +9,9 @@ import sys, numpy
 import salome
 
 salome.salome_init()
-theStudy = salome.myStudy
 
 import salome_notebook
-notebook = salome_notebook.NoteBook(theStudy)
+notebook = salome_notebook.NoteBook()
 
 ###
 ### GEOM component
@@ -22,8 +21,8 @@ import GEOM
 from salome.geom import geomBuilder
 import math
 import SALOMEDS
-import utilityFunctions as uF
-from output import message
+from . import utilityFunctions as uF
+from .output import message
 
 #ellipse.generate(data_demi_grand_axe, data_centre, data_normale,data_direction, data_demi_petit_axe, data_angle, rayon_entaille,extension, outFile)
 #if True:
@@ -45,7 +44,7 @@ def generate(data_demi_grand_axe, data_centre, data_normale,
   Vnormale, Vdirection, Vortho = uF.calcCoordVectors(data_normale, data_direction)
   Vcentre = numpy.array(data_centre)
 
-  geompy = geomBuilder.New(theStudy)
+  geompy = geomBuilder.New()
 
   O = geompy.MakeVertex(0, 0, 0)
   OX = geompy.MakeVectorDXDYDZ(1, 0, 0)
@@ -172,7 +171,7 @@ def generate(data_demi_grand_axe, data_centre, data_normale,
 
   import  SMESH, SALOMEDS
   from salome.smesh import smeshBuilder
-  smesh = smeshBuilder.New(theStudy)
+  smesh = smeshBuilder.New()
 
   A=numpy.pi/(30.)
   minAxes=numpy.min([data_demi_grand_axe,data_demi_petit_axe])
@@ -189,14 +188,14 @@ def generate(data_demi_grand_axe, data_centre, data_normale,
   Maillage=uF.meshCrack(FACE_FISSURE, minSize, maxSize, chordal, dim)
 
   try:
-    Maillage.ExportMED( outFile, 0, SMESH.MED_V2_2, 1, None ,1)
+    Maillage.ExportMED(outFile)
     smesh.SetName(Maillage.GetMesh(), 'MAILLAGE_FISSURE')
   except:
-    print 'ExportToMEDX() failed. Invalid file name?'
+    print('ExportMED() failed. Invalid file name?')
 
 
   ## Set names of Mesh objects
 
 
   if salome.sg.hasDesktop():
-    salome.sg.updateObjBrowser(1)
+    salome.sg.updateObjBrowser()

@@ -130,13 +130,13 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     import SMESH
     from salome.kernel import studyedit
     from salome.smesh import smeshBuilder
-    smesh = smeshBuilder.New(salome.myStudy)
+    smesh = smeshBuilder.New()
     
     if not os.path.isfile(self.fichierOut):
       QMessageBox.warning(self, "Compute", "Result file "+self.fichierOut+" not found")
 
-    maStudy=studyedit.getActiveStudy()
-    smesh.SetCurrentStudy(maStudy)
+    maStudy=salome.myStudy
+    smesh.UpdateStudy()
     (outputMesh, status) = smesh.CreateMeshesFromGMF(self.fichierOut)
     name=str(self.LE_MeshSmesh.text())
     initialMeshFile=None
@@ -178,7 +178,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     newLink=monStudyBuilder.NewObject(SOMesh)
     monStudyBuilder.Addreference(newLink, newStudyIter)
 
-    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser(False)
+    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser()
     self.num+=1
     return True
 
@@ -223,7 +223,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     #myStudy.IsStudyLocked()
     myComponent = myStudy.FindComponent(name)
     if myComponent == None:
-      print "myComponent not found, create"
+      print("myComponent not found, create")
       myComponent = myBuilder.NewComponent(name)
     AName = myBuilder.FindOrCreateAttribute(myComponent, "AttributeName")
     AName.SetValue(name)
@@ -236,9 +236,9 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     ACmt = myBuilder.FindOrCreateAttribute(myObject, "AttributeComment")
     ACmt.SetValue(datai)
 
-    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser(False)
+    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser()
     self.num += 1
-    if verbose: print("save %s in Object Browser done: %s\n%s" % (name, myObject.GetID(), datai))
+    if verbose: print(("save %s in Object Browser done: %s\n%s" % (name, myObject.GetID(), datai)))
     return True
 
   def PBSaveHypPressed(self):
@@ -254,10 +254,10 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     QMessageBox.warning(self, "Save", "waiting for fix: Object Browser will not display hypothesis")
     
     if verbose: print("save hypothesis in Object Browser")
-    smesh = smeshBuilder.New(salome.myStudy)
+    smesh = smeshBuilder.New()
 
-    maStudy=studyedit.getActiveStudy()
-    smesh.SetCurrentStudy(maStudy)
+    maStudy=salome.myStudy
+    smesh.UpdateStudy()
 
     self.editor = studyedit.getStudyEditor()
     moduleEntry=self.editor.findOrCreateComponent("SMESH","SMESH")
@@ -273,9 +273,9 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     data = self.getResumeData(separator=" ; ")
     self.editor.setAttributeValue(newStudyIter, "AttributeComment", data)
     
-    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser(False)
+    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser()
     self.num += 1
-    if verbose: print("save %s in Object Browser done:\n%s" % (name, data))
+    if verbose: print(("save %s in Object Browser done:\n%s" % (name, data)))
     return True
 
   def SP_toStr(self, widget):
@@ -413,7 +413,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     if fd.exec_():
       infile = fd.selectedFiles()[0]
       self.LE_MeshFile.setText(infile)
-      self.fichierIn=unicode(infile).encode("latin-1")
+      self.fichierIn=str(infile).encode("latin-1")
       self.MeshIn=""
       self.LE_MeshSmesh.setText("")
 
@@ -422,7 +422,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     if fd.exec_():
       infile = fd.selectedFiles()[0]
       self.LE_ParamsFile.setText(infile)
-      self.paramsFile=unicode(infile).encode("latin-1")
+      self.paramsFile=str(infile).encode("latin-1")
 
   def meshFileNameChanged(self):
     self.fichierIn=str(self.LE_MeshFile.text())
@@ -452,7 +452,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     from salome.smesh.smeshstudytools import SMeshStudyTools
     from salome.gui import helper as guihelper
     from salome.smesh import smeshBuilder
-    smesh = smeshBuilder.New(salome.myStudy)
+    smesh = smeshBuilder.New()
 
     mySObject, myEntry = guihelper.getSObjectSelected()
     if CORBA.is_nil(mySObject) or mySObject==None:
@@ -504,7 +504,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
       except:
         pass
       
-    style = unicode(self.style).encode("latin-1")
+    style = str(self.style).encode("latin-1")
     # Translation of old Yams options to new MG-SurfOpt options
     if   style == "0" :
       self.commande+= " --optimisation only"
@@ -543,7 +543,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     self.commande+=" --in "  + self.fichierIn
     self.commande+=" --out " + self.fichierOut
     
-    print self.commande
+    print(self.commande)
     return True
 
   def clean(self):

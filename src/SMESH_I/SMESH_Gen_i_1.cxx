@@ -40,6 +40,7 @@
 #include <Utils_ExceptHandlers.hxx>
 #include <SALOMEDS_wrap.hxx>
 #include <SALOMEDS_Attributes_wrap.hxx>
+#include <SALOME_KernelServices.hxx>
 
 #include <TCollection_AsciiString.hxx>
 #include <TopoDS_Solid.hxx>
@@ -162,10 +163,11 @@ long SMESH_Gen_i::GetBallElementsGroupsTag()
 
 bool SMESH_Gen_i::CanPublishInStudy(CORBA::Object_ptr theIOR)
 {
-  if(MYDEBUG) MESSAGE("CanPublishInStudy - "<<!CORBA::is_nil(myCurrentStudy));
-  if( GetCurrentStudyID() < 0 )
-    return false;
+  if(MYDEBUG) MESSAGE("CanPublishInStudy - "<<!CORBA::is_nil(getStudyServant()));
   
+  if( !myIsEnablePublish )
+    return false;
+
   SMESH::SMESH_Mesh_var aMesh       = SMESH::SMESH_Mesh::_narrow(theIOR);
   if( !aMesh->_is_nil() )
     return true;
@@ -191,16 +193,24 @@ bool SMESH_Gen_i::CanPublishInStudy(CORBA::Object_ptr theIOR)
 //purpose  : Put a result into a SALOMEDS::SObject_wrap or call UnRegister()!
 //=======================================================================
 
-SALOMEDS::SObject_ptr SMESH_Gen_i::ObjectToSObject(SALOMEDS::Study_ptr theStudy,
-                                                   CORBA::Object_ptr   theObject)
+SALOMEDS::SObject_ptr SMESH_Gen_i::ObjectToSObject(CORBA::Object_ptr theObject)
 {
   SALOMEDS::SObject_wrap aSO;
-  if ( !CORBA::is_nil( theStudy ) && !CORBA::is_nil( theObject ))
+  if ( !CORBA::is_nil( theObject ))
   {
     CORBA::String_var objStr = SMESH_Gen_i::GetORB()->object_to_string( theObject );
-    aSO = theStudy->FindObjectIOR( objStr.in() );
+    aSO = getStudyServant()->FindObjectIOR( objStr.in() );
   }
   return aSO._retn();
+}
+
+//=======================================================================
+//function : GetStudyPtr
+//purpose  : Get study from naming service
+//=======================================================================
+SALOMEDS::Study_ptr SMESH_Gen_i::getStudyServant()
+{
+  return SALOMEDS::Study::_duplicate(KERNEL::getStudyServant());
 }
 
 //=======================================================================
@@ -255,14 +265,14 @@ TopoDS_Shape SMESH_Gen_i::GeomObjectToShape(GEOM::GEOM_Object_ptr theGeomObject)
 //purpose  : 
 //=======================================================================
 
-static SALOMEDS::SObject_ptr publish(SALOMEDS::Study_ptr   theStudy,
-                                     CORBA::Object_ptr     theIOR,
+static SALOMEDS::SObject_ptr publish(CORBA::Object_ptr     theIOR,
                                      SALOMEDS::SObject_ptr theFatherObject,
                                      const int             theTag = 0,
                                      const char*           thePixMap = 0,
                                      const bool            theSelectable = true)
 {
-  SALOMEDS::SObject_wrap SO = SMESH_Gen_i::ObjectToSObject( theStudy, theIOR );
+  SALOMEDS::Study_var theStudy = SMESH_Gen_i::getStudyServant();
+  SALOMEDS::SObject_wrap SO = SMESH_Gen_i::ObjectToSObject( theIOR );
   SALOMEDS::StudyBuilder_var     aStudyBuilder = theStudy->NewBuilder();
   SALOMEDS::UseCaseBuilder_wrap useCaseBuilder = theStudy->GetUseCaseBuilder();
   bool isNewSO = false, isInUseCaseTree = false;
@@ -356,8 +366,7 @@ void SMESH_Gen_i::SetName(SALOMEDS::SObject_ptr theSObject,
                           const char*           theDefaultName)
 {
   if ( !theSObject->_is_nil() ) {
-    SALOMEDS::Study_var               aStudy = theSObject->GetStudy();
-    SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
+    SALOMEDS::StudyBuilder_var aStudyBuilder = getStudyServant()->NewBuilder();
     SALOMEDS::GenericAttribute_wrap   anAttr =
       aStudyBuilder->FindOrCreateAttribute( theSObject, "AttributeName" );
     SALOMEDS::AttributeName_wrap aNameAttr = anAttr;
@@ -389,8 +398,7 @@ void SMESH_Gen_i::SetPixMap(SALOMEDS::SObject_ptr theSObject,
 {
   if ( !theSObject->_is_nil() && thePixMap && strlen( thePixMap ))
   {
-    SALOMEDS::Study_var               aStudy = theSObject->GetStudy();
-    SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
+    SALOMEDS::StudyBuilder_var aStudyBuilder = getStudyServant()->NewBuilder();
     SALOMEDS::GenericAttribute_wrap anAttr =
       aStudyBuilder->FindOrCreateAttribute( theSObject, "AttributePixMap" );
     SALOMEDS::AttributePixMap_wrap aPMAttr = anAttr;
@@ -403,21 +411,21 @@ void SMESH_Gen_i::SetPixMap(SALOMEDS::SObject_ptr theSObject,
 //purpose  : 
 //=======================================================================
 
-static void addReference (SALOMEDS::Study_ptr   theStudy,
-                          SALOMEDS::SObject_ptr theSObject,
+static void addReference (SALOMEDS::SObject_ptr theSObject,
                           CORBA::Object_ptr     theToObject,
                           int                   theTag = 0)
 {
-  SALOMEDS::SObject_wrap aToObjSO = SMESH_Gen_i::ObjectToSObject( theStudy, theToObject );
+  SALOMEDS::Study_var aStudy = SMESH_Gen_i::getStudyServant();
+  SALOMEDS::SObject_wrap aToObjSO = SMESH_Gen_i::ObjectToSObject( theToObject );
   if ( !aToObjSO->_is_nil() && !theSObject->_is_nil() ) {
-    SALOMEDS::StudyBuilder_var aStudyBuilder = theStudy->NewBuilder();
+    SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
     SALOMEDS::SObject_wrap aReferenceSO;
     if ( !theTag ) {
       // check if the reference to theToObject already exists
       // and find a free label for the reference object
       bool isReferred = false;
       int tag = 1;
-      SALOMEDS::ChildIterator_wrap anIter = theStudy->NewChildIterator( theSObject );
+      SALOMEDS::ChildIterator_wrap anIter = aStudy->NewChildIterator( theSObject );
       for ( ; !isReferred && anIter->More(); anIter->Next(), ++tag ) {
         SALOMEDS::SObject_wrap curSO = anIter->Value();
         if ( curSO->ReferencedObject( aReferenceSO.inout() )) {
@@ -444,7 +452,7 @@ static void addReference (SALOMEDS::Study_ptr   theStudy,
 
     // add reference to the use case tree
     // (to support tree representation customization and drag-n-drop)
-    SALOMEDS::UseCaseBuilder_wrap  useCaseBuilder = theStudy->GetUseCaseBuilder();
+    SALOMEDS::UseCaseBuilder_wrap  useCaseBuilder = aStudy->GetUseCaseBuilder();
     SALOMEDS::UseCaseIterator_wrap    useCaseIter = useCaseBuilder->GetUseCaseIterator(theSObject);
     for ( ; useCaseIter->More(); useCaseIter->Next() )
     {
@@ -464,42 +472,41 @@ static void addReference (SALOMEDS::Study_ptr   theStudy,
  */
 //=============================================================================
 
-SALOMEDS::SObject_ptr SMESH_Gen_i::PublishInStudy(SALOMEDS::Study_ptr   theStudy,
-                                                  SALOMEDS::SObject_ptr theSObject,
+SALOMEDS::SObject_ptr SMESH_Gen_i::PublishInStudy(SALOMEDS::SObject_ptr theSObject,
                                                   CORBA::Object_ptr     theIOR,
                                                   const char*           theName)
      throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
   SALOMEDS::SObject_wrap aSO;
-  if ( CORBA::is_nil( theStudy ) || CORBA::is_nil( theIOR ))
+  if ( CORBA::is_nil( theIOR ))
     return aSO._retn();
   if(MYDEBUG) MESSAGE("PublishInStudy");
 
   // Publishing a mesh
   SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow( theIOR );
   if( !aMesh->_is_nil() )
-    aSO = PublishMesh( theStudy, aMesh, theName );
+    aSO = PublishMesh( aMesh, theName );
 
   // Publishing a sub-mesh
   SMESH::SMESH_subMesh_var aSubMesh = SMESH::SMESH_subMesh::_narrow( theIOR );
   if( aSO->_is_nil() && !aSubMesh->_is_nil() ) {
     GEOM::GEOM_Object_var aShapeObject = aSubMesh->GetSubShape();
     aMesh = aSubMesh->GetFather();
-    aSO = PublishSubMesh( theStudy, aMesh, aSubMesh, aShapeObject, theName );
+    aSO = PublishSubMesh( aMesh, aSubMesh, aShapeObject, theName );
   }
 
   // Publishing a hypothesis or algorithm
   SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( theIOR );
   if ( aSO->_is_nil() && !aHyp->_is_nil() )
-    aSO = PublishHypothesis( theStudy, aHyp, theName );
+    aSO = PublishHypothesis( aHyp, theName );
 
   // Publishing a group
   SMESH::SMESH_GroupBase_var aGroup = SMESH::SMESH_GroupBase::_narrow(theIOR);
   if ( aSO->_is_nil() && !aGroup->_is_nil() ) {
     GEOM::GEOM_Object_var aShapeObject;
     aMesh = aGroup->GetMesh();
-    aSO = PublishGroup( theStudy, aMesh, aGroup, aShapeObject, theName );
+    aSO = PublishGroup( aMesh, aGroup, aShapeObject, theName );
   }
   if(MYDEBUG) MESSAGE("PublishInStudy_END");
 
@@ -511,17 +518,15 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishInStudy(SALOMEDS::Study_ptr   theStudy
 //purpose  : 
 //=======================================================================
 
-SALOMEDS::SComponent_ptr SMESH_Gen_i::PublishComponent(SALOMEDS::Study_ptr theStudy)
+SALOMEDS::SComponent_ptr SMESH_Gen_i::PublishComponent()
 {
-  if ( CORBA::is_nil( theStudy ))
-    return SALOMEDS::SComponent::_nil();
   if(MYDEBUG) MESSAGE("PublishComponent");
 
-  SALOMEDS::StudyBuilder_var    aStudyBuilder  = theStudy->NewBuilder(); 
-  SALOMEDS::UseCaseBuilder_wrap useCaseBuilder = theStudy->GetUseCaseBuilder();
+  SALOMEDS::StudyBuilder_var    aStudyBuilder  = getStudyServant()->NewBuilder();
+  SALOMEDS::UseCaseBuilder_wrap useCaseBuilder = getStudyServant()->GetUseCaseBuilder();
 
   CORBA::String_var   compDataType = ComponentDataType();
-  SALOMEDS::SComponent_wrap father = theStudy->FindComponent( compDataType.in() );
+  SALOMEDS::SComponent_wrap father = getStudyServant()->FindComponent( compDataType.in() );
   if ( !CORBA::is_nil( father ) ) {
     // check that the component is added to the use case browser
     if ( !useCaseBuilder->IsUseCaseNode( father ) ) {
@@ -564,21 +569,19 @@ SALOMEDS::SComponent_ptr SMESH_Gen_i::PublishComponent(SALOMEDS::Study_ptr theSt
 //purpose  : 
 //=======================================================================
 
-SALOMEDS::SObject_ptr SMESH_Gen_i::PublishMesh (SALOMEDS::Study_ptr   theStudy,
-                                                SMESH::SMESH_Mesh_ptr theMesh,
+SALOMEDS::SObject_ptr SMESH_Gen_i::PublishMesh (SMESH::SMESH_Mesh_ptr theMesh,
                                                 const char*           theName)
 {
-  if ( CORBA::is_nil( theStudy ) ||
-       CORBA::is_nil( theMesh ))
+  if ( CORBA::is_nil( theMesh ))
     return SALOMEDS::SComponent::_nil();
   if(MYDEBUG) MESSAGE("PublishMesh--IN");
 
   // find or publish a mesh
 
-  SALOMEDS::SObject_wrap aMeshSO = ObjectToSObject( theStudy, theMesh );
+  SALOMEDS::SObject_wrap aMeshSO = ObjectToSObject( theMesh );
   if ( aMeshSO->_is_nil() )
   {
-    SALOMEDS::SComponent_wrap father = PublishComponent( theStudy );
+    SALOMEDS::SComponent_wrap father = PublishComponent();
     if ( father->_is_nil() )
       return aMeshSO._retn();
 
@@ -589,7 +592,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishMesh (SALOMEDS::Study_ptr   theStudy,
     else
       aTag++;
 
-    aMeshSO = publish (theStudy, theMesh, father, aTag, "ICON_SMESH_TREE_MESH_WARN" );
+    aMeshSO = publish ( theMesh, father, aTag, "ICON_SMESH_TREE_MESH_WARN" );
     if ( aMeshSO->_is_nil() )
       return aMeshSO._retn();
   }
@@ -599,7 +602,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishMesh (SALOMEDS::Study_ptr   theStudy,
 
   GEOM::GEOM_Object_var aShapeObject = theMesh->GetShapeToMesh();
   if ( !CORBA::is_nil( aShapeObject )) {
-    addReference( theStudy, aMeshSO, aShapeObject, GetRefOnShapeTag() );
+    addReference( aMeshSO, aShapeObject, GetRefOnShapeTag() );
 
     // Publish global hypotheses
 
@@ -607,8 +610,8 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishMesh (SALOMEDS::Study_ptr   theStudy,
     for ( CORBA::ULong i = 0; i < hypList->length(); i++ )
     {
       SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( hypList[ i ]);
-      SALOMEDS::SObject_wrap so = PublishHypothesis( theStudy, aHyp );
-      AddHypothesisToShape( theStudy, theMesh, aShapeObject, aHyp );
+      SALOMEDS::SObject_wrap so = PublishHypothesis( aHyp );
+      AddHypothesisToShape( theMesh, aShapeObject, aHyp );
     }
   }
 
@@ -623,7 +626,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishMesh (SALOMEDS::Study_ptr   theStudy,
     SMESH::SMESH_subMesh_ptr aSubMesh = (*subIt).second->_this();
     if ( !CORBA::is_nil( aSubMesh )) {
       aShapeObject = aSubMesh->GetSubShape();
-      SALOMEDS::SObject_wrap( PublishSubMesh( theStudy, theMesh, aSubMesh, aShapeObject ));
+      SALOMEDS::SObject_wrap( PublishSubMesh( theMesh, aSubMesh, aShapeObject ));
     }
   }
 
@@ -638,7 +641,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishMesh (SALOMEDS::Study_ptr   theStudy,
       SMESH::SMESH_GroupOnGeom_var aGeomGroup = SMESH::SMESH_GroupOnGeom::_narrow( aGroup );
       if ( !aGeomGroup->_is_nil() )
         aShapeObj = aGeomGroup->GetShape();
-      SALOMEDS::SObject_wrap( PublishGroup( theStudy, theMesh, aGroup, aShapeObj ));
+      SALOMEDS::SObject_wrap( PublishGroup( theMesh, aGroup, aShapeObj ));
     }
   }
 
@@ -651,22 +654,20 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishMesh (SALOMEDS::Study_ptr   theStudy,
 //purpose  : 
 //=======================================================================
 
-SALOMEDS::SObject_ptr SMESH_Gen_i::PublishSubMesh (SALOMEDS::Study_ptr      theStudy,
-                                                   SMESH::SMESH_Mesh_ptr    theMesh,
+SALOMEDS::SObject_ptr SMESH_Gen_i::PublishSubMesh (SMESH::SMESH_Mesh_ptr    theMesh,
                                                    SMESH::SMESH_subMesh_ptr theSubMesh,
                                                    GEOM::GEOM_Object_ptr    theShapeObject,
                                                    const char*              theName)
 {
-  if (theStudy->_is_nil() || theMesh->_is_nil() ||
-      theSubMesh->_is_nil() || theShapeObject->_is_nil() )
+  if ( theMesh->_is_nil() || theSubMesh->_is_nil() || theShapeObject->_is_nil() )
     return SALOMEDS::SObject::_nil();
 
-  SALOMEDS::SObject_wrap aSubMeshSO = ObjectToSObject( theStudy, theSubMesh );
+  SALOMEDS::SObject_wrap aSubMeshSO = ObjectToSObject( theSubMesh );
   if ( aSubMeshSO->_is_nil() )
   {
-    SALOMEDS::SObject_wrap aMeshSO = ObjectToSObject( theStudy, theMesh );
+    SALOMEDS::SObject_wrap aMeshSO = ObjectToSObject( theMesh );
     if ( aMeshSO->_is_nil() ) {
-      aMeshSO = PublishMesh( theStudy, theMesh );
+      aMeshSO = PublishMesh( theMesh );
       if ( aMeshSO->_is_nil())
         return SALOMEDS::SObject::_nil();
     }
@@ -705,8 +706,8 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishSubMesh (SALOMEDS::Study_ptr      theS
     }
 
     // Find or create submesh root
-    SALOMEDS::SObject_wrap aRootSO = publish (theStudy, CORBA::Object::_nil(),
-                                             aMeshSO, aRootTag, 0, false );
+    SALOMEDS::SObject_wrap aRootSO = publish ( CORBA::Object::_nil(),
+                                               aMeshSO, aRootTag, 0, false );
     if ( aRootSO->_is_nil() )
       return aSubMeshSO._retn();
 
@@ -716,7 +717,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishSubMesh (SALOMEDS::Study_ptr      theS
     SMESH::array_of_ElementType_var elemTypes = theSubMesh->GetTypes();
     const int isEmpty = ( elemTypes->length() == 0 );
     const char* pm[2] = { "ICON_SMESH_TREE_MESH", "ICON_SMESH_TREE_MESH_WARN" };
-    aSubMeshSO = publish (theStudy, theSubMesh, aRootSO, 0, pm[isEmpty] );
+    aSubMeshSO = publish ( theSubMesh, aRootSO, 0, pm[isEmpty] );
     if ( aSubMeshSO->_is_nil() )
       return aSubMeshSO._retn();
   }
@@ -724,15 +725,15 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishSubMesh (SALOMEDS::Study_ptr      theS
 
   // Add reference to theShapeObject
 
-  addReference( theStudy, aSubMeshSO, theShapeObject, 1 );
+  addReference( aSubMeshSO, theShapeObject, 1 );
 
   // Publish hypothesis
 
   SMESH::ListOfHypothesis_var hypList = theMesh->GetHypothesisList( theShapeObject );
   for ( CORBA::ULong i = 0; i < hypList->length(); i++ ) {
     SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( hypList[ i ]);
-    SALOMEDS::SObject_wrap so = PublishHypothesis( theStudy, aHyp );
-    AddHypothesisToShape( theStudy, theMesh, theShapeObject, aHyp );
+    SALOMEDS::SObject_wrap so = PublishHypothesis( aHyp );
+    AddHypothesisToShape( theMesh, theShapeObject, aHyp );
   }
 
   return aSubMeshSO._retn();
@@ -743,21 +744,20 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishSubMesh (SALOMEDS::Study_ptr      theS
 //purpose  : 
 //=======================================================================
 
-SALOMEDS::SObject_ptr SMESH_Gen_i::PublishGroup (SALOMEDS::Study_ptr    theStudy,
-                                                 SMESH::SMESH_Mesh_ptr  theMesh,
+SALOMEDS::SObject_ptr SMESH_Gen_i::PublishGroup (SMESH::SMESH_Mesh_ptr  theMesh,
                                                  SMESH::SMESH_GroupBase_ptr theGroup,
                                                  GEOM::GEOM_Object_ptr  theShapeObject,
                                                  const char*            theName)
 {
-  if (theStudy->_is_nil() || theMesh->_is_nil() || theGroup->_is_nil() )
+  if (theMesh->_is_nil() || theGroup->_is_nil() )
     return SALOMEDS::SObject::_nil();
 
-  SALOMEDS::SObject_wrap aGroupSO = ObjectToSObject( theStudy, theGroup );
+  SALOMEDS::SObject_wrap aGroupSO = ObjectToSObject( theGroup );
   if ( aGroupSO->_is_nil() )
   {
-    SALOMEDS::SObject_wrap aMeshSO = ObjectToSObject( theStudy, theMesh );
+    SALOMEDS::SObject_wrap aMeshSO = ObjectToSObject( theMesh );
     if ( aMeshSO->_is_nil() ) {
-      aMeshSO = PublishInStudy( theStudy, SALOMEDS::SObject::_nil(), theMesh, "");
+      aMeshSO = PublishInStudy( SALOMEDS::SObject::_nil(), theMesh, "");
       if ( aMeshSO->_is_nil())
         return SALOMEDS::SObject::_nil();
     }
@@ -773,8 +773,8 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishGroup (SALOMEDS::Study_ptr    theStudy
       long aRootTag = GetNodeGroupsTag() + aType - 1;
 
       // Find or create groups root
-      SALOMEDS::SObject_wrap aRootSO = publish (theStudy, CORBA::Object::_nil(),
-                                               aMeshSO, aRootTag, 0, false );
+      SALOMEDS::SObject_wrap aRootSO = publish ( CORBA::Object::_nil(),
+                                                 aMeshSO, aRootTag, 0, false );
       if ( aRootSO->_is_nil() ) return SALOMEDS::SObject::_nil();
 
       if ( aType < sizeof(aRootNames)/sizeof(char*) )
@@ -798,7 +798,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishGroup (SALOMEDS::Study_ptr    theStudy
             isEmpty = ( allElemTypes[i] != theGroup->GetType() );
         }
       }
-      aGroupSO = publish (theStudy, theGroup, aRootSO, 0, pm[isEmpty].c_str() );
+      aGroupSO = publish ( theGroup, aRootSO, 0, pm[isEmpty].c_str() );
     }
     if ( aGroupSO->_is_nil() )
       return aGroupSO._retn();
@@ -808,7 +808,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishGroup (SALOMEDS::Study_ptr    theStudy
 
   //Add reference to geometry
   if ( !theShapeObject->_is_nil() )
-    addReference( theStudy, aGroupSO, theShapeObject, 1 );
+    addReference( aGroupSO, theShapeObject, 1 );
 
   return aGroupSO._retn();
 }
@@ -819,20 +819,19 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishGroup (SALOMEDS::Study_ptr    theStudy
 //=======================================================================
 
 SALOMEDS::SObject_ptr
-  SMESH_Gen_i::PublishHypothesis (SALOMEDS::Study_ptr         theStudy,
-                                  SMESH::SMESH_Hypothesis_ptr theHyp,
+  SMESH_Gen_i::PublishHypothesis (SMESH::SMESH_Hypothesis_ptr theHyp,
                                   const char*                 theName)
 {
   if(MYDEBUG) MESSAGE("PublishHypothesis")
-  if (theStudy->_is_nil() || theHyp->_is_nil())
+  if (theHyp->_is_nil())
     return SALOMEDS::SObject::_nil();
 
   CORBA::String_var hypType = theHyp->GetName();
 
-  SALOMEDS::SObject_wrap aHypSO = ObjectToSObject( theStudy, theHyp );
+  SALOMEDS::SObject_wrap aHypSO = ObjectToSObject( theHyp );
   if ( aHypSO->_is_nil() )
   {
-    SALOMEDS::SComponent_wrap father = PublishComponent( theStudy );
+    SALOMEDS::SComponent_wrap father = PublishComponent();
     if ( father->_is_nil() )
       return aHypSO._retn();
 
@@ -840,7 +839,7 @@ SALOMEDS::SObject_ptr
     bool isAlgo = ( !SMESH::SMESH_Algo::_narrow( theHyp )->_is_nil() );
     int aRootTag = isAlgo ? GetAlgorithmsRootTag() : GetHypothesisRootTag();
     SALOMEDS::SObject_wrap aRootSO =
-      publish (theStudy, CORBA::Object::_nil(),father, aRootTag,
+      publish (CORBA::Object::_nil(),father, aRootTag,
                isAlgo ? "ICON_SMESH_TREE_ALGO" : "ICON_SMESH_TREE_HYPO", false);
     SetName( aRootSO, isAlgo ?  "Algorithms" : "Hypotheses" );
 
@@ -851,7 +850,7 @@ SALOMEDS::SObject_ptr
     string pluginName = myHypCreatorMap[ hypType.in() ]->GetModuleName();
     if ( pluginName != "StdMeshers" )
       aPmName = pluginName + "::" + aPmName;
-    aHypSO = publish( theStudy, theHyp, aRootSO, 0, aPmName.c_str() );
+    aHypSO = publish( theHyp, aRootSO, 0, aPmName.c_str() );
   }
 
   SetName( aHypSO, theName, hypType.in() );
@@ -866,8 +865,7 @@ SALOMEDS::SObject_ptr
 //=======================================================================
 
 SALOMEDS::SObject_ptr
-  SMESH_Gen_i::GetMeshOrSubmeshByShape (SALOMEDS::Study_ptr   theStudy,
-                                        SMESH::SMESH_Mesh_ptr theMesh,
+  SMESH_Gen_i::GetMeshOrSubmeshByShape (SMESH::SMESH_Mesh_ptr theMesh,
                                         GEOM::GEOM_Object_ptr theShape)
 {
   if(MYDEBUG) MESSAGE("GetMeshOrSubmeshByShape")
@@ -886,12 +884,12 @@ SALOMEDS::SObject_ptr
   if ( !aShape.IsNull() && mesh_i && mesh_i->GetImpl().GetMeshDS() ) {
     SMESHDS_Mesh* meshDS = mesh_i->GetImpl().GetMeshDS();
     if ( aShape.IsSame( meshDS->ShapeToMesh() ))
-      aMeshOrSubMesh = ObjectToSObject( theStudy, theMesh );
+      aMeshOrSubMesh = ObjectToSObject( theMesh );
     else {
       int shapeID = meshDS->ShapeToIndex( aShape );
       SMESH::SMESH_subMesh_var aSubMesh = mesh_i->getSubMesh(shapeID);
       if ( !aSubMesh->_is_nil() )
-        aMeshOrSubMesh = ObjectToSObject( theStudy, aSubMesh );
+        aMeshOrSubMesh = ObjectToSObject( aSubMesh );
     }
   }
   if(MYDEBUG) MESSAGE("GetMeshOrSubmeshByShape--END")
@@ -903,27 +901,26 @@ SALOMEDS::SObject_ptr
 //purpose  : 
 //=======================================================================
 
-bool SMESH_Gen_i::AddHypothesisToShape(SALOMEDS::Study_ptr         theStudy,
-                                       SMESH::SMESH_Mesh_ptr       theMesh,
+bool SMESH_Gen_i::AddHypothesisToShape(SMESH::SMESH_Mesh_ptr       theMesh,
                                        GEOM::GEOM_Object_ptr       theShape,
                                        SMESH::SMESH_Hypothesis_ptr theHyp)
 {
   if(MYDEBUG) MESSAGE("AddHypothesisToShape")
-  if (theStudy->_is_nil() || theMesh->_is_nil() ||
+  if (theMesh->_is_nil() ||
       theHyp->_is_nil() || (theShape->_is_nil()
                             && theMesh->HasShapeToMesh()) )
     return false;
 
-  SALOMEDS::SObject_wrap aMeshSO = ObjectToSObject( theStudy, theMesh );
+  SALOMEDS::SObject_wrap aMeshSO = ObjectToSObject( theMesh );
   if ( aMeshSO->_is_nil() )
-    aMeshSO = PublishMesh( theStudy, theMesh );
-  SALOMEDS::SObject_wrap aHypSO = PublishHypothesis( theStudy, theHyp );
+    aMeshSO = PublishMesh( theMesh );
+  SALOMEDS::SObject_wrap aHypSO = PublishHypothesis( theHyp );
   if ( aMeshSO->_is_nil() || aHypSO->_is_nil())
     return false;
 
   // Find a mesh or submesh referring to theShape
   SALOMEDS::SObject_wrap aMeshOrSubMesh =
-    GetMeshOrSubmeshByShape( theStudy, theMesh, theShape );
+    GetMeshOrSubmeshByShape( theMesh, theShape );
   if ( aMeshOrSubMesh->_is_nil() )
   {
     // publish submesh
@@ -933,7 +930,7 @@ bool SMESH_Gen_i::AddHypothesisToShape(SALOMEDS::Study_ptr         theStudy,
       SMESHDS_Mesh* meshDS = mesh_i->GetImpl().GetMeshDS();
       int shapeID = meshDS->ShapeToIndex( aShape );
       SMESH::SMESH_subMesh_var aSubMesh = mesh_i->getSubMesh(shapeID);
-      aMeshOrSubMesh = PublishSubMesh( theStudy, theMesh, aSubMesh, theShape );
+      aMeshOrSubMesh = PublishSubMesh( theMesh, aSubMesh, theShape );
     }
     if ( aMeshOrSubMesh->_is_nil() )
       return false;
@@ -942,12 +939,12 @@ bool SMESH_Gen_i::AddHypothesisToShape(SALOMEDS::Study_ptr         theStudy,
   //Find or Create Applied Hypothesis root
   bool aIsAlgo = !SMESH::SMESH_Algo::_narrow( theHyp )->_is_nil();
   SALOMEDS::SObject_wrap AHR =
-    publish (theStudy, CORBA::Object::_nil(), aMeshOrSubMesh,
+    publish (CORBA::Object::_nil(), aMeshOrSubMesh,
              aIsAlgo ? GetRefOnAppliedAlgorithmsTag() : GetRefOnAppliedHypothesisTag(),
              aIsAlgo ? "ICON_SMESH_TREE_ALGO" : "ICON_SMESH_TREE_HYPO", false);
   SetName( AHR, aIsAlgo ? "Applied algorithms" : "Applied hypotheses" );
 
-  addReference( theStudy, AHR, theHyp );
+  addReference( AHR, theHyp );
 
   if(MYDEBUG) MESSAGE("AddHypothesisToShape--END")
   return true;
@@ -958,17 +955,16 @@ bool SMESH_Gen_i::AddHypothesisToShape(SALOMEDS::Study_ptr         theStudy,
 //purpose  : 
 //=======================================================================
 
-bool SMESH_Gen_i::RemoveHypothesisFromShape(SALOMEDS::Study_ptr         theStudy,
-                                            SMESH::SMESH_Mesh_ptr       theMesh,
+bool SMESH_Gen_i::RemoveHypothesisFromShape(SMESH::SMESH_Mesh_ptr       theMesh,
                                             GEOM::GEOM_Object_ptr       theShape,
                                             SMESH::SMESH_Hypothesis_ptr theHyp)
 {
-  if (theStudy->_is_nil() || theMesh->_is_nil() ||
+  if (theMesh->_is_nil() ||
       theHyp->_is_nil() || (theShape->_is_nil()
                             && theMesh->HasShapeToMesh()))
     return false;
 
-  SALOMEDS::SObject_wrap aHypSO = ObjectToSObject( theStudy, theHyp );
+  SALOMEDS::SObject_wrap aHypSO = ObjectToSObject( theHyp );
   if ( aHypSO->_is_nil() )
     return false;
 
@@ -976,13 +972,13 @@ bool SMESH_Gen_i::RemoveHypothesisFromShape(SALOMEDS::Study_ptr         theStudy
 
   // Find a mesh or sub-mesh referring to theShape
   SALOMEDS::SObject_wrap aMeshOrSubMesh =
-    GetMeshOrSubmeshByShape( theStudy, theMesh, theShape );
+    GetMeshOrSubmeshByShape( theMesh, theShape );
   if ( aMeshOrSubMesh->_is_nil() )
     return false;
 
   // Find and remove a reference to aHypSO
   SALOMEDS::SObject_wrap aRef, anObj;
-  SALOMEDS::ChildIterator_wrap it = theStudy->NewChildIterator( aMeshOrSubMesh );
+  SALOMEDS::ChildIterator_wrap it = getStudyServant()->NewChildIterator( aMeshOrSubMesh );
   bool found = false;
   for ( it->InitEx( true ); ( it->More() && !found ); it->Next() ) {
     anObj = it->Value();
@@ -993,7 +989,7 @@ bool SMESH_Gen_i::RemoveHypothesisFromShape(SALOMEDS::Study_ptr         theStudy
     }
     if ( found )
     {
-      SALOMEDS::StudyBuilder_var builder = theStudy->NewBuilder();
+      SALOMEDS::StudyBuilder_var builder = getStudyServant()->NewBuilder();
       builder->RemoveObject( anObj );
     }
   }
@@ -1012,10 +1008,6 @@ bool SMESH_Gen_i::RemoveHypothesisFromShape(SALOMEDS::Study_ptr         theStudy
 
 void SMESH_Gen_i::UpdateParameters(CORBA::Object_ptr theObject, const char* theParameters)
 {
-  SALOMEDS::Study_var aStudy = GetCurrentStudy();
-  if ( aStudy->_is_nil() )
-    return;
-
   // find variable names within theParameters
 
   myLastObj.clear();
@@ -1032,7 +1024,7 @@ void SMESH_Gen_i::UpdateParameters(CORBA::Object_ptr theObject, const char* theP
       if ( prevPos < pos )
       {
         string val( theParameters + prevPos, theParameters + pos );
-        if ( !aStudy->IsVariable( val.c_str() ))
+        if ( !getStudyServant()->IsVariable( val.c_str() ))
           val.clear();
         myLastParameters.push_back( val );
         nbVars += (! myLastParameters.back().empty() );
@@ -1054,14 +1046,14 @@ void SMESH_Gen_i::UpdateParameters(CORBA::Object_ptr theObject, const char* theP
   // (2) indices of found variables in myLastParamIndex.
 
   // remember theObject
-  SALOMEDS::SObject_wrap aSObj =  ObjectToSObject(aStudy,theObject);
+  SALOMEDS::SObject_wrap aSObj =  ObjectToSObject(theObject);
   if ( aSObj->_is_nil() )
     return;
   CORBA::String_var anObjEntry = aSObj->GetID();
   myLastObj = anObjEntry.in();
 
   // get a string of variable names
-  SALOMEDS::StudyBuilder_var   aStudyBuilder = aStudy->NewBuilder();
+  SALOMEDS::StudyBuilder_var   aStudyBuilder = getStudyServant()->NewBuilder();
   SALOMEDS::GenericAttribute_wrap     anAttr =
     aStudyBuilder->FindOrCreateAttribute( aSObj, "AttributeString" );
   SALOMEDS::AttributeString_wrap aStringAttr = anAttr;
@@ -1130,15 +1122,11 @@ void SMESH_Gen_i::UpdateParameters(CORBA::Object_ptr theObject, const char* theP
 std::vector< std::string > SMESH_Gen_i::GetAllParameters(const std::string& theObjectEntry) const
 {
   std::vector< std::string > varNames;
-  if ( myCurrentStudy->_is_nil() )
-    return varNames;
 
-  SALOMEDS::SObject_wrap aSObj = myCurrentStudy->FindObjectID( theObjectEntry.c_str() );
-  if ( myCurrentStudy->_is_nil() )
-    return varNames;
+  SALOMEDS::SObject_wrap aSObj = getStudyServant()->FindObjectID( theObjectEntry.c_str() );
 
   // get a string of variable names
-  SALOMEDS::StudyBuilder_var   aStudyBuilder = myCurrentStudy->NewBuilder();
+  SALOMEDS::StudyBuilder_var   aStudyBuilder = getStudyServant()->NewBuilder();
   SALOMEDS::GenericAttribute_wrap     anAttr =
     aStudyBuilder->FindOrCreateAttribute( aSObj, "AttributeString" );
   SALOMEDS::AttributeString_wrap aStringAttr = anAttr;
@@ -1183,7 +1171,7 @@ std::vector< std::string > SMESH_Gen_i::GetAllParameters(const std::string& theO
 //   //const char* aParameters = theParameters;
 // //   const char* aParameters = CORBA::string_dup(theParameters);
 //   TCollection_AsciiString anInputParams;
-//   SALOMEDS::Study_var aStudy = GetCurrentStudy();
+//   SALOMEDS::Study_var aStudy = getStudyServant();
 //   if( !aStudy->_is_nil() ) {
 // //     SALOMEDS::ListOfListOfStrings_var aSections = aStudy->ParseVariables(theParameters);
 // //     for(int j=0;j<aSections->length();j++) {
@@ -1232,7 +1220,7 @@ char* SMESH_Gen_i::GetParameters(CORBA::Object_ptr theObject)
 {
   CORBA::String_var aResult("");
 
-  SALOMEDS::SObject_wrap aSObj = ObjectToSObject( myCurrentStudy, theObject );
+  SALOMEDS::SObject_wrap aSObj = ObjectToSObject( theObject );
   if ( !aSObj->_is_nil() )
   {
     SALOMEDS::GenericAttribute_wrap attr;

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from geomsmesh import geompy
+from .geomsmesh import geompy
 
 # -----------------------------------------------------------------------------
 # --- trouver les vertices intermediaires d'un wire
@@ -29,16 +29,16 @@ def orderEdgesFromWire(aWire):
       idverts[(i,1)] = verts[0]
      
   idsubs = {}
-  for kv, sub in idverts.iteritems():
+  for kv, sub in idverts.items():
     subid = geompy.GetSubShapeID(aWire, sub)
-    if subid in idsubs.keys():
+    if subid in list(idsubs.keys()):
       idsubs[subid].append(kv)
     else:
       idsubs[subid] = [kv]
   
   debut = -1
   fin = -1    
-  for k, kvs in idsubs.iteritems():
+  for k, kvs in idsubs.items():
     if len(kvs) == 1: # une extremité
       kv = kvs[0]
       if kv[1] == 0:
@@ -48,13 +48,13 @@ def orderEdgesFromWire(aWire):
   logging.debug("nombre d'edges: %s, indice edge début: %s, fin: %s",len(edges), debut, fin)
   if debut < 0:
     logging.critical("les edges du wire ne sont pas orientées dans le même sens: pas de début trouvé")
-    return edges, range(len(edges))
+    return edges, list(range(len(edges)))
   
   orderedList = [debut]
   while len(orderedList) < len(edges):
     bout = orderedList[-1]
     vertex = idverts[(bout,1)]
-    for k, v in idverts.iteritems():
+    for k, v in idverts.items():
       if k[0] not in orderedList:
         if geompy.MinDistance(vertex, v) < 1.e-4:
           if k[1] == 0:
@@ -62,10 +62,10 @@ def orderEdgesFromWire(aWire):
             break
           else:
             logging.critical("les edges du wire ne sont pas orientées dans le même sens: une edge à l'envers")
-            return edges, range(len(edges))
+            return edges, list(range(len(edges)))
 
   logging.debug("liste des edges ordonnées selon le sens de parcours: %s", orderedList)
-  accessList = range(len(orderedList))
+  accessList = list(range(len(orderedList)))
   for i,k in enumerate(orderedList):
     accessList[k] = i
   logging.info("position ordonnée des edges selon le sens de parcours: %s", accessList)

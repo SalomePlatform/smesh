@@ -439,7 +439,7 @@ void SMESHGUI_ScaleDlg::ConstructorsClicked (int constructorId)
 //=================================================================================
 bool SMESHGUI_ScaleDlg::ClickOnApply()
 {
-  if (mySMESHGUI->isActiveStudyLocked())
+  if (SMESHGUI::isStudyLocked())
     return false;
 
   if( !isValid() )

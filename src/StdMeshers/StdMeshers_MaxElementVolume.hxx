@@ -38,7 +38,7 @@ class STDMESHERS_EXPORT StdMeshers_MaxElementVolume:
   public SMESH_Hypothesis
 {
 public:
-  StdMeshers_MaxElementVolume(int hypId, int studyId, SMESH_Gen* gen);
+  StdMeshers_MaxElementVolume(int hypId, SMESH_Gen* gen);
   virtual ~StdMeshers_MaxElementVolume();
 
   void SetMaxVolume(double maxVolume)

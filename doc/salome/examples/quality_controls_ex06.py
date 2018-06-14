@@ -5,11 +5,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 ####### GEOM part ########
 
@@ -54,14 +54,14 @@ aGroup = Mesh_1.CreateEmptyGroup(SMESH.FACE, "Free_faces")
 aGroup.Add(aFaceIds)
 
 # print the result
-print "Criterion: Free faces Nb = ", len(aFaceIds)
+print("Criterion: Free faces Nb = ", len(aFaceIds))
 j = 1
 for i in range(len(aFaceIds)):
-  if j > 20: j = 1; print ""
-  print aFaceIds[i],
+  if j > 20: j = 1; print("")
+  print(aFaceIds[i], end=' ')
   j = j + 1
   pass
-print ""
+print("")
 
 #filter faces from plane 2
 aFilter = smesh.GetFilter(SMESH.FACE, SMESH.FT_BelongToPlane, Plane_2)
@@ -75,4 +75,4 @@ aFaceIds = Mesh_1.GetIdsFromFilter(aFilter)
 aGroup = Mesh_1.CreateEmptyGroup(SMESH.FACE, "Shared_faces")
 aGroup.Add(aFaceIds)
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

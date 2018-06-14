@@ -3,7 +3,7 @@
 
 import numpy, subprocess, sys
 from os import remove, getpid, path, environ
-from output import message
+from .output import message
 
 def calcCoordVectors(normalIN, directionIN):
   V3TEMP=numpy.cross(normalIN,directionIN)
@@ -17,11 +17,11 @@ def calcCoordVectors(normalIN, directionIN):
 
 def testStrictRange(x, inf=0.0, sup=False):
   test=False
-  c1=(type(x)==list)
+  c1=(isinstance(x, list))
   if c1:
     c2=(len(x)==1)
     if c2:
-      c3=(type(x[0])==type(inf))
+      c3=(isinstance(x[0], type(inf)))
       if c3:
         c4=(x[0]>inf)
         c5=True
@@ -33,24 +33,24 @@ def testStrictRange(x, inf=0.0, sup=False):
 
 def test3dVector(x):
   test=False
-  c1=(type(x)==list)
+  c1=(isinstance(x, list))
   if c1:
     c2=(len(x)==3)
     if c2:
-      c3=(type(x[0])==float)
-      c4=(type(x[1])==float)
-      c5=(type(x[2])==float)
+      c3=(isinstance(x[0], float))
+      c4=(isinstance(x[1], float))
+      c5=(isinstance(x[2], float))
       if c3 and c4 and c5:
         test=True
   return(test)
 
 def testRange(x, inf=0.0, sup=False):
   test=False
-  c1=(type(x)==list)
+  c1=(isinstance(x, list))
   if c1:
     c2=(len(x)==1)
     if c2:
-      c3=(type(x[0])==type(inf))
+      c3=(isinstance(x[0], type(inf)))
       if c3:
         c4=(x[0]>=inf)
         c5=True
@@ -131,11 +131,10 @@ def meshCrack(geomObject, minSize, maxSize, chordal, dim):
   import salome
 
   salome.salome_init()
-  theStudy = salome.myStudy
 
   import  SMESH, SALOMEDS
   from salome.smesh import smeshBuilder
-  smesh = smeshBuilder.New(theStudy)
+  smesh = smeshBuilder.New()
   Maillage = smesh.Mesh(geomObject)
 
   if dim==3:
@@ -173,9 +172,8 @@ def extendElsets(meshFile, outFile=None):
 
   import SMESH, salome
   #salome.salome_init()
-  theStudy = salome.myStudy
   from salome.smesh import smeshBuilder
-  smesh = smeshBuilder.New(theStudy)
+  smesh = smeshBuilder.New()
 
   ([mesh], status) = smesh.CreateMeshesFromMED(meshFile)
   
@@ -233,7 +231,7 @@ def extendElsets(meshFile, outFile=None):
     if len(front)==0: crackOnly=False
 
   if crackOnly:
-    mesh.ExportMED(outFile, 0, SMESH.MED_V2_2, 1, None ,1)
+    mesh.ExportMED(outFile)
     return('crack')
 
   # Propagates color using elem connectivity
@@ -266,8 +264,8 @@ def extendElsets(meshFile, outFile=None):
   while ifChanged :
     ifChanged=False
     for elemId in elemList[0]:
-      minColor=sys.maxint
-      maxColor=-sys.maxint
+      minColor=sys.maxsize
+      maxColor=-sys.maxsize
       for elemNodeId in mesh.GetElemNodes(elemId) :
         nodeColor=colorList[elemNodeId-1]
         if nodeColor<minColor : minColor=nodeColor
@@ -304,7 +302,7 @@ def extendElsets(meshFile, outFile=None):
       mesh.MakeGroupByIds('Extended_side%d' %n ,SMESH.EDGE,grElemList[2][n])
 
   if outFile==None: outFile=meshFile
-  mesh.ExportMED(outFile, 0, SMESH.MED_V2_2, 1, None ,1)
+  mesh.ExportMED(outFile)
   return(True)
 
 
@@ -332,7 +330,7 @@ def cleanGroups(mesh):
 
 def getMaxAspectRatio(tmpdir):
   logFile=path.join(tmpdir,'MESHING_OUTPUT')
-  print logFile
+  print(logFile)
   if not path.isfile(logFile): return(-1)
 
   import re
@@ -348,8 +346,8 @@ def getMaxAspectRatio(tmpdir):
 
 
 def removeFromSessionPath(envVar, patern):
-  if type(patern) is not list: patern=[patern]
-  if type(envVar) is not list: envVar=[envVar]
+  if not isinstance(patern, list): patern=[patern]
+  if not isinstance(envVar, list): envVar=[envVar]
 
   for env in envVar:
     path=environ[env]

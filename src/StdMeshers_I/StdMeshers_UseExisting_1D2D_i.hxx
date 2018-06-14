@@ -46,7 +46,6 @@ class StdMeshers_UseExisting_1D_i:
 public:
   // Constructor
   StdMeshers_UseExisting_1D_i( PortableServer::POA_ptr thePOA,
-                               int                     theStudyId,
                                ::SMESH_Gen*            theGenImpl );
 
   // Destructor
@@ -63,7 +62,6 @@ class StdMeshers_UseExisting_2D_i:
 public:
   // Constructor
   StdMeshers_UseExisting_2D_i( PortableServer::POA_ptr thePOA,
-                               int                     theStudyId,
                                ::SMESH_Gen*            theGenImpl );
 
   // Destructor

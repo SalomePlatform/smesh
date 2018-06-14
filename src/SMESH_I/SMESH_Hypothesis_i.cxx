@@ -128,8 +128,7 @@ bool SMESH_Hypothesis_i::IsPublished()
   bool res = false;
   if ( SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen())
   {
-    SALOMEDS::Study_var study = gen->GetCurrentStudy();
-    SALOMEDS::SObject_wrap SO = SMESH_Gen_i::ObjectToSObject( study, _this());
+    SALOMEDS::SObject_wrap SO = SMESH_Gen_i::ObjectToSObject( _this());
     res = !SO->_is_nil();
   }
   return res;

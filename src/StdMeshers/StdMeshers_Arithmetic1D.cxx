@@ -48,8 +48,8 @@ using namespace std;
  */
 //=============================================================================
 
-StdMeshers_Arithmetic1D::StdMeshers_Arithmetic1D(int hypId, int studyId, SMESH_Gen * gen)
-  :SMESH_Hypothesis(hypId, studyId, gen)
+StdMeshers_Arithmetic1D::StdMeshers_Arithmetic1D(int hypId, SMESH_Gen * gen)
+  :SMESH_Hypothesis(hypId, gen)
 {
   _begLength = 1.;
   _endLength = 10.;

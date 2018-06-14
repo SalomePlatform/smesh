@@ -48,7 +48,7 @@ class SMESH_subMesh;
 class STDMESHERS_EXPORT StdMeshers_ImportSource1D : public SMESH_Hypothesis
 {
  public:
-  StdMeshers_ImportSource1D(int hypId, int studyId, SMESH_Gen * gen);
+  StdMeshers_ImportSource1D(int hypId, SMESH_Gen * gen);
   virtual ~ StdMeshers_ImportSource1D();
 
   void SetGroups(const std::vector<SMESH_Group*>& groups);
@@ -95,6 +95,6 @@ private:
 class STDMESHERS_EXPORT StdMeshers_ImportSource2D : public StdMeshers_ImportSource1D
 {
  public:
-  StdMeshers_ImportSource2D(int hypId, int studyId, SMESH_Gen * gen);
+  StdMeshers_ImportSource2D(int hypId, SMESH_Gen * gen);
 };
 #endif

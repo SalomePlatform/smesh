@@ -40,7 +40,7 @@
 class STDMESHERS_EXPORT StdMeshers_SegmentLengthAroundVertex:public SMESH_Hypothesis
 {
  public:
-  StdMeshers_SegmentLengthAroundVertex(int hypId, int studyId, SMESH_Gen * gen);
+  StdMeshers_SegmentLengthAroundVertex(int hypId, SMESH_Gen * gen);
   virtual ~ StdMeshers_SegmentLengthAroundVertex();
 
   void SetLength(double length) throw(SALOME_Exception);

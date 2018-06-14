@@ -47,14 +47,12 @@ using namespace std;
 //=============================================================================
 
 StdMeshers_MaxElementArea_i::StdMeshers_MaxElementArea_i( PortableServer::POA_ptr thePOA,
-                                                int                     theStudyId,
-                                                ::SMESH_Gen*            theGenImpl )
+                                                          ::SMESH_Gen*            theGenImpl )
      : SALOME::GenericObj_i( thePOA ), 
        SMESH_Hypothesis_i( thePOA ) 
 {
   myBaseImpl = new ::StdMeshers_MaxElementArea( theGenImpl->GetANewId(),
-                                           theStudyId,
-                                           theGenImpl );
+                                                theGenImpl );
 }
 
 //=============================================================================

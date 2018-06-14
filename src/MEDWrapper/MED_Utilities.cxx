@@ -20,31 +20,40 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-#ifndef MED_Factory_HeaderFile
-#define MED_Factory_HeaderFile
+#include "MED_Utilities.hxx"
+#include "MED_Common.hxx"
 
-#include "MED_WrapperFactory.hxx"
-#include "MED_Wrapper.hxx"
+#ifdef _DEBUG_
+static int MYDEBUG = 0;
+#else
+static int MYDEBUG = 0;
+#endif
 
-namespace MED
+int MED::PrefixPrinter::myCounter = 0;
+
+MED::PrefixPrinter::PrefixPrinter(bool theIsActive):
+  myIsActive(theIsActive)
 {
-  MEDWRAPPER_FACTORY_EXPORT
-  EVersion  
-  GetVersionId(const std::string& theFileName,
-               bool theDoPreCheckInSeparateProcess = false);
-
-  MEDWRAPPER_FACTORY_EXPORT
-    bool getMEDVersion( const std::string&, int&, int&, int& );
-  
-  MEDWRAPPER_FACTORY_EXPORT
-  PWrapper 
-  CrWrapper(const std::string& theFileName,
-            bool theDoPreCheckInSeparateProcess = false,
-            int theMinor=-1);
-
-  MEDWRAPPER_FACTORY_EXPORT
-  PWrapper 
-  CrWrapper(const std::string& theFileName, EVersion theId);
+  if(myIsActive)
+    myCounter++;
+  MSG(MYDEBUG,"MED::PrefixPrinter::PrefixPrinter(...)- "<<myCounter);
 }
 
-#endif
+MED::PrefixPrinter::~PrefixPrinter()
+{
+  if(myIsActive){
+    myCounter--;
+    if(myCounter < 0)
+      EXCEPTION(std::runtime_error,"PrefixPrinter::~PrefixPrinter() - myCounter("<<myCounter<<") < 0");
+  }
+}
+
+std::string MED::PrefixPrinter::GetPrefix()
+{
+  if(myCounter){
+    if(myCounter < 0)
+      EXCEPTION(std::runtime_error,"PrefixPrinter::~PrefixPrinter() - myCounter("<<myCounter<<") < 0");
+    return std::string(myCounter*2,' ');
+  }
+  return "";
+}

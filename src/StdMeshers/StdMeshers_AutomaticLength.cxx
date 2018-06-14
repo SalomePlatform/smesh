@@ -47,8 +47,8 @@ using namespace std;
  */
 //=============================================================================
 
-StdMeshers_AutomaticLength::StdMeshers_AutomaticLength(int hypId, int studyId, SMESH_Gen * gen)
-  :SMESH_Hypothesis(hypId, studyId, gen)
+StdMeshers_AutomaticLength::StdMeshers_AutomaticLength(int hypId, SMESH_Gen * gen)
+  :SMESH_Hypothesis(hypId, gen)
 {
   _name = "AutomaticLength";
   _param_algo_dim = 1; // is used by SMESH_Regular_1D

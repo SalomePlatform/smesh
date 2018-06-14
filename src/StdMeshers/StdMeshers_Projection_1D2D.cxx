@@ -93,8 +93,8 @@ namespace
 //purpose  : 
 //=======================================================================
 
-StdMeshers_Projection_1D2D::StdMeshers_Projection_1D2D(int hypId, int studyId, SMESH_Gen* gen)
-  :StdMeshers_Projection_2D(hypId, studyId, gen)
+StdMeshers_Projection_1D2D::StdMeshers_Projection_1D2D(int hypId, SMESH_Gen* gen)
+  :StdMeshers_Projection_2D(hypId, gen)
 {
   _name = "Projection_1D2D";
   _requireDiscreteBoundary = false;

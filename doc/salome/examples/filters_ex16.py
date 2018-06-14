@@ -5,11 +5,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 import salome_notebook
 
 # make a mesh on a box
@@ -27,6 +27,6 @@ equalEdgesFilter   = smesh.GetFilter(SMESH.EDGE, SMESH.FT_EqualEdges)
 equalFacesFilter   = smesh.GetFilter(SMESH.FACE, SMESH.FT_EqualFaces)
 equalVolumesFilter = smesh.GetFilter(SMESH.VOLUME, SMESH.FT_EqualVolumes)
 # get equal elements
-print "Number of equal edges:",   len( mesh.GetIdsFromFilter( equalEdgesFilter ))
-print "Number of equal faces:",   len( mesh.GetIdsFromFilter( equalFacesFilter ))
-print "Number of equal volumes:", len( mesh.GetIdsFromFilter( equalVolumesFilter ))
+print("Number of equal edges:",   len( mesh.GetIdsFromFilter( equalEdgesFilter )))
+print("Number of equal faces:",   len( mesh.GetIdsFromFilter( equalFacesFilter )))
+print("Number of equal volumes:", len( mesh.GetIdsFromFilter( equalVolumesFilter )))

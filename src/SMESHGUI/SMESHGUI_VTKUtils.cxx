@@ -76,7 +76,7 @@
 
 namespace SMESH
 {
-  typedef std::map<TKeyOfVisualObj,TVisualObjPtr> TVisualObjCont;
+  typedef std::map<std::string,TVisualObjPtr> TVisualObjCont;
   static TVisualObjCont VISUAL_OBJ_CONT;
 
   //=============================================================================
@@ -136,17 +136,13 @@ namespace SMESH
       }
     }
     
-    if (aViewManager ) {
-      int aStudyId = aViewManager->study()->id();
-      TVisualObjCont::key_type aKey(aStudyId,theEntry);
-      TVisualObjCont::iterator anIter = VISUAL_OBJ_CONT.find(aKey);
-      if(anIter != VISUAL_OBJ_CONT.end()) {
-        // for unknown reason, object destructor is not called, so clear object manually
-        anIter->second->GetUnstructuredGrid()->SetCells(0,0,0,0,0);
-        anIter->second->GetUnstructuredGrid()->SetPoints(0);
-      }
-      VISUAL_OBJ_CONT.erase(aKey);
+    TVisualObjCont::iterator anIter = VISUAL_OBJ_CONT.find(theEntry);
+    if(anIter != VISUAL_OBJ_CONT.end()) {
+      // for unknown reason, object destructor is not called, so clear object manually
+      anIter->second->GetUnstructuredGrid()->SetCells(0,0,0,0,0);
+      anIter->second->GetUnstructuredGrid()->SetPoints(0);
     }
+    VISUAL_OBJ_CONT.erase(theEntry);
 
     if(actorRemoved)
       aStudy->setVisibilityState(theEntry, Qtx::HiddenState);
@@ -199,7 +195,7 @@ namespace SMESH
    */
   //================================================================================
 
-  void RemoveVisuData(int studyID)
+  void RemoveVisuData()
   {
     SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>
       ( SUIT_Session::session()->activeApplication() );
@@ -207,8 +203,7 @@ namespace SMESH
     ViewManagerList viewMgrs = app->viewManagers();
     for ( int iM = 0; iM < viewMgrs.count(); ++iM ) {
       SUIT_ViewManager* aViewManager = viewMgrs.at( iM );
-      if ( aViewManager && aViewManager->getType() == SVTK_Viewer::Type() &&
-           aViewManager->study()->id() == studyID ) {
+      if ( aViewManager && aViewManager->getType() == SVTK_Viewer::Type() ) {
         QVector<SUIT_ViewWindow*> views = aViewManager->getViews();
         for ( int iV = 0; iV < views.count(); ++iV ) {
           if(SVTK_ViewWindow* vtkWnd = GetVtkViewWindow(views[iV])) {
@@ -229,16 +224,10 @@ namespace SMESH
     }
     TVisualObjCont::iterator anIter = VISUAL_OBJ_CONT.begin();
     for ( ; anIter != VISUAL_OBJ_CONT.end(); ) {
-      int curId = anIter->first.first;
-      if ( curId == studyID ) {
-        // for unknown reason, object destructor is not called, so clear object manually
-        anIter->second->GetUnstructuredGrid()->SetCells(0,0,0,0,0);
-        anIter->second->GetUnstructuredGrid()->SetPoints(0);
-        VISUAL_OBJ_CONT.erase( anIter++ ); // anIter++ returns a copy of self before incrementing
-      }
-      else {
-        anIter++;
-      }
+      // for unknown reason, object destructor is not called, so clear object manually
+      anIter->second->GetUnstructuredGrid()->SetCells(0,0,0,0,0);
+      anIter->second->GetUnstructuredGrid()->SetPoints(0);
+      VISUAL_OBJ_CONT.erase( anIter++ ); // anIter++ returns a copy of self before incrementing
     }
   }
 
@@ -278,18 +267,17 @@ namespace SMESH
    */
   //================================================================================
 
-  TVisualObjPtr GetVisualObj(int theStudyId, const char* theEntry, bool nulData){
+  TVisualObjPtr GetVisualObj(const char* theEntry, bool nulData){
     TVisualObjPtr aVisualObj;
-    TVisualObjCont::key_type aKey(theStudyId,theEntry);
     try{
       OCC_CATCH_SIGNALS;
-      TVisualObjCont::iterator anIter = VISUAL_OBJ_CONT.find(aKey);
+      TVisualObjCont::iterator anIter = VISUAL_OBJ_CONT.find(theEntry);
       if(anIter != VISUAL_OBJ_CONT.end()){
         aVisualObj = anIter->second;
       }else{
         SalomeApp_Application* app =
           dynamic_cast<SalomeApp_Application*>( SMESHGUI::activeStudy()->application() );
-        _PTR(Study) aStudy = SMESHGUI::activeStudy()->studyDS();
+        _PTR(Study) aStudy = SMESH::getStudy();
         _PTR(SObject) aSObj = aStudy->FindObjectID(theEntry);
         if(aSObj){
           _PTR(GenericAttribute) anAttr;
@@ -302,7 +290,7 @@ namespace SMESH
               SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow(anObj);
               if(!aMesh->_is_nil()){
                 aVisualObj.reset(new SMESH_MeshObj(aMesh));
-                TVisualObjCont::value_type aValue(aKey,aVisualObj);
+                TVisualObjCont::value_type aValue(theEntry,aVisualObj);
                 VISUAL_OBJ_CONT.insert(aValue);
               }
               //Try narrow to SMESH_Group interface
@@ -313,10 +301,10 @@ namespace SMESH
                 aFatherSObj = aFatherSObj->GetFather();
                 if(!aFatherSObj) return aVisualObj;
                 CORBA::String_var anEntry = aFatherSObj->GetID().c_str();
-                TVisualObjPtr aVisObj = GetVisualObj(theStudyId,anEntry.in());
+                TVisualObjPtr aVisObj = GetVisualObj(anEntry.in());
                 if(SMESH_MeshObj* aMeshObj = dynamic_cast<SMESH_MeshObj*>(aVisObj.get())){
                   aVisualObj.reset(new SMESH_GroupObj(aGroup,aMeshObj));
-                  TVisualObjCont::value_type aValue(aKey,aVisualObj);
+                  TVisualObjCont::value_type aValue(theEntry,aVisualObj);
                   VISUAL_OBJ_CONT.insert(aValue);
                 }
               }
@@ -328,10 +316,10 @@ namespace SMESH
                 aFatherSObj = aFatherSObj->GetFather();
                 if(!aFatherSObj) return aVisualObj;
                 CORBA::String_var anEntry = aFatherSObj->GetID().c_str();
-                TVisualObjPtr aVisObj = GetVisualObj(theStudyId,anEntry.in());
+                TVisualObjPtr aVisObj = GetVisualObj(anEntry.in());
                 if(SMESH_MeshObj* aMeshObj = dynamic_cast<SMESH_MeshObj*>(aVisObj.get())){
                   aVisualObj.reset(new SMESH_subMeshObj(aSubMesh,aMeshObj));
-                  TVisualObjCont::value_type aValue(aKey,aVisualObj);
+                  TVisualObjCont::value_type aValue(theEntry,aVisualObj);
                   VISUAL_OBJ_CONT.insert(aValue);
                 }
               }
@@ -553,7 +541,7 @@ namespace SMESH
       return NULL;
 
     if(!CORBA::is_nil(theObject)){
-      _PTR(Study) aStudy = GetActiveStudyDocument();
+      _PTR(Study) aStudy = getStudy();
       CORBA::String_var anIOR = app->orb()->object_to_string( theObject );
       _PTR(SObject) aSObject = aStudy->FindObjectIOR(anIOR.in());
       if(aSObject){
@@ -565,14 +553,12 @@ namespace SMESH
   }
 
 
-  SMESH_Actor* CreateActor(_PTR(Study) theStudy,
-                           const char* theEntry,
+  SMESH_Actor* CreateActor(const char* theEntry,
                            int theIsClear)
   {
     SMESH_Actor *anActor = NULL;
-    CORBA::Long anId = theStudy->StudyId();
-    if(TVisualObjPtr aVisualObj = GetVisualObj(anId,theEntry)){
-      _PTR(SObject) aSObj = theStudy->FindObjectID(theEntry);
+    if(TVisualObjPtr aVisualObj = GetVisualObj(theEntry)){
+      _PTR(SObject) aSObj = getStudy()->FindObjectID(theEntry);
       if(aSObj){
         _PTR(GenericAttribute) anAttr;
         if(aSObj->FindAttribute(anAttr,"AttributeName")){
@@ -645,10 +631,7 @@ namespace SMESH
         Handle(SALOME_InteractiveObject) anIO = theActor->getIO();
         if(anIO->hasEntry()){
           std::string anEntry = anIO->getEntry();
-          SalomeApp_Study* aStudy = dynamic_cast<SalomeApp_Study*>( vtkWnd->getViewManager()->study() );
-          int aStudyId = aStudy->id();
-          TVisualObjCont::key_type aKey(aStudyId,anEntry);
-          VISUAL_OBJ_CONT.erase(aKey);
+          VISUAL_OBJ_CONT.erase(anEntry);
         }
       }
       theActor->Delete();
@@ -753,13 +736,10 @@ namespace SMESH
             {
               //MESSAGE("---");
               SalomeApp_Study* aStudy = dynamic_cast<SalomeApp_Study*>(theWnd->getViewManager()->study());
-              _PTR(Study) aDocument = aStudy->studyDS();
-              // Pass non-visual objects (hypotheses, etc.), return true in this case
-              CORBA::Long anId = aDocument->StudyId();
               TVisualObjPtr aVisualObj;
-              if ( (aVisualObj = GetVisualObj(anId,theEntry)) && aVisualObj->IsValid())
+              if ( (aVisualObj = GetVisualObj(theEntry)) && aVisualObj->IsValid())
               {
-                if ((anActor = CreateActor(aDocument,theEntry,true))) {
+                if ((anActor = CreateActor(theEntry,true))) {
                   bool needFitAll = noSmeshActors(theWnd); // fit for the first object only
                   DisplayActor(theWnd,anActor);
                   anActor->SetVisibility(true);
@@ -852,9 +832,7 @@ namespace SMESH
   bool Update(const Handle(SALOME_InteractiveObject)& theIO, bool theDisplay)
   {
     //MESSAGE("Update");
-    _PTR(Study) aStudy = GetActiveStudyDocument();
-    CORBA::Long anId = aStudy->StudyId();
-    if ( TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId,theIO->getEntry())) {
+    if ( TVisualObjPtr aVisualObj = SMESH::GetVisualObj(theIO->getEntry())) {
       if ( theDisplay )
         UpdateView(SMESH::eDisplay,theIO->getEntry());
       return true;
@@ -865,9 +843,7 @@ namespace SMESH
   bool UpdateNulData(const Handle(SALOME_InteractiveObject)& theIO, bool theDisplay)
   {
     //MESSAGE("UpdateNulData");
-    _PTR(Study) aStudy = GetActiveStudyDocument();
-    CORBA::Long anId = aStudy->StudyId();
-    if ( TVisualObjPtr aVisualObj = SMESH::GetVisualObj(anId,theIO->getEntry(), true)) {
+    if ( TVisualObjPtr aVisualObj = SMESH::GetVisualObj(theIO->getEntry(), true)) {
       if ( theDisplay )
         UpdateView(SMESH::eDisplay,theIO->getEntry());
       return true;

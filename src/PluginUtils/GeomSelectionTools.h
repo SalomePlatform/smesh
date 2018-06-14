@@ -49,13 +49,9 @@ class LightApp_SelectionMgr;
 class PLUGINUTILS_EXPORT GeomSelectionTools
 {
 
-private:
-
-  _PTR(Study) myStudy;
-
 public:
 
-  GeomSelectionTools(_PTR(Study));
+  GeomSelectionTools();
   static SalomeApp_Application*  GetSalomeApplication();
   static LightApp_SelectionMgr* selectionMgr();
   SALOME_ListIO* getSelectedSalomeObjects();
@@ -67,7 +63,6 @@ public:
   TopAbs_ShapeEnum getFirstSelectedShapeType();
   TopAbs_ShapeEnum entryToShapeType(std::string );
   GeomAbs_SurfaceType getFaceInformation(TopoDS_Shape);
-  _PTR(Study) getMyStudy();
 };
 
 //////////////////////////////////////////

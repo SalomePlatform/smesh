@@ -6,11 +6,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 # 1. Create points
 points = [[0, 0], [50, 30], [50, 110], [0, 150], [-80, 150], [-130, 70], [-130, -20]]
@@ -19,7 +19,7 @@ iv = 1
 vertices = []
 for point in points:
     vert = geompy.MakeVertex(point[0], point[1], 0)
-    geompy.addToStudy(vert, "Vertex_" + `iv`)
+    geompy.addToStudy(vert, "Vertex_" + repr(iv))
     vertices.append(vert)
     iv += 1
     pass
@@ -38,7 +38,7 @@ geompy.addToStudy(Edge_Circle  , "Edge_Circle")
 # 3. Explode wire on edges, as they will be used for mesh extrusion
 Wire_polyline_edges = geompy.SubShapeAll(Wire_polyline, geompy.ShapeType["EDGE"])
 for ii in range(len(Wire_polyline_edges)):
-    geompy.addToStudyInFather(Wire_polyline, Wire_polyline_edges[ii], "Edge_" + `ii + 1`)
+    geompy.addToStudyInFather(Wire_polyline, Wire_polyline_edges[ii], "Edge_" + repr(ii + 1))
     pass
 
 # Mesh
@@ -49,7 +49,7 @@ def Mesh1D(shape1d, nbSeg, name):
   algo = mesh1d_tool.Segment()
   hyp  = algo.NumberOfSegments(nbSeg)
   isDone = mesh1d_tool.Compute()
-  if not isDone: print 'Mesh ', name, ': computation failed'
+  if not isDone: print('Mesh ', name, ': computation failed')
   return mesh1d_tool
 
 # Create a mesh with six nodes, seven edges and two quadrangle faces
@@ -128,4 +128,4 @@ error = quad_6.ExtrusionAlongPath(ff_6 , Edge_Circle_mesh, Edge_Circle, 1,
 error = quad_7.ExtrusionAlongPath(ff_7, Edge_Circle_mesh, Edge_Circle, 1,
                                   1, [a45, -a45, a45, -a45, a45, -a45, a45, -a45], 0, refPoint)
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

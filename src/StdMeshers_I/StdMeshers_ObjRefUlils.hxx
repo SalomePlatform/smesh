@@ -110,7 +110,7 @@ public:
     if (SMESH_Gen_i* gen = SMESH_Gen_i::GetSMESHGen()) {
       std::string str;
       if (stream >> str) {
-        if ( StudyContext* myStudyContext = gen->GetCurrentStudyContext() ) {
+        if ( StudyContext* myStudyContext = gen->GetStudyContext() ) {
           std::string ior = myStudyContext->getIORbyOldId( atoi( str.c_str() ));
           if ( !ior.empty() )
              return TInterface::_narrow(gen->GetORB()->string_to_object( ior.c_str() ));

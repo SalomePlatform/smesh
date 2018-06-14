@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from geomsmesh import geompy
-from geomsmesh import geomPublish
-from geomsmesh import geomPublishInFather
-import initLog
-from orderEdgesFromWire import orderEdgesFromWire
+from .geomsmesh import geompy
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+from . import initLog
+from .orderEdgesFromWire import orderEdgesFromWire
 
 # -----------------------------------------------------------------------------
 # --- prolongation d'un wire par deux segments tangents
@@ -22,7 +22,7 @@ def prolongeWire(aWire, extrem, norms, long):
     uneSeuleEdge = True
   edgesBout = []
   for i, v1 in enumerate(extrem):
-    exts = [geompy.MakeTranslationVectorDistance(v1, norms[i], l) for l in (-long, long)]
+    exts = [geompy.MakeTranslationVectorDistance(v1, norms[i], l) for l in (-int, int)]
     dists = [(geompy.MinDistance(v, aWire), i , v) for i, v in enumerate(exts)]
     dists.sort()
     v2 = dists[-1][-1]

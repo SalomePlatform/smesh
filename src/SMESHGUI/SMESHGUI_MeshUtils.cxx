@@ -64,7 +64,7 @@ namespace SMESH
   {
     QString baseName = thePostfix.isEmpty() ? 
       theBaseName : theBaseName + "_" + thePostfix;
-    if ( _PTR(Study) aStudy = GetActiveStudyDocument() ) {
+    if ( _PTR(Study) aStudy = getStudy() ) {
       QString name = baseName;
       while ( !aStudy->FindObjectByName( name.toLatin1().data(), "SMESH" ).empty() ) {
         int nb = 0;
@@ -90,7 +90,7 @@ namespace SMESH
     QString baseName = thePostfix.isEmpty() ? 
       theBaseName : theBaseName + "_" + thePostfix;
     QString name = baseName;
-    if ( _PTR(Study) aStudy = GetActiveStudyDocument() ) {
+    if ( _PTR(Study) aStudy = getStudy() ) {
       _PTR(SObject) p = theParent;
       if ( !p ) p = aStudy->FindComponent( "SMESH" );
       if ( p ) {

@@ -1,15 +1,14 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 import sys,os
 import salome
-from getStats import getGroupesRef
-from Type_Maille import dicoDimENtite
+from .getStats import getGroupesRef
+from .Type_Maille import dicoDimENtite
 
-def getCritere(dim,NomMesh,acritere,theStudy):
+def getCritere(dim,NomMesh,acritere):
   import SMESH
   from salome.smesh import smeshBuilder
-  smesh = smeshBuilder.New(theStudy)
+  smesh = smeshBuilder.New()
   import numpy
 #  print dim,NomMesh,acritere
   if dim == 2 :
@@ -36,10 +35,10 @@ def getCritere(dim,NomMesh,acritere,theStudy):
   
   return [max,min,Q1,M,Q3,moyenne]
 
-def getCritereGroupe(NomMesh,NomGr,acritere,theStudy):
+def getCritereGroupe(NomMesh,NomGr,acritere):
   import SMESH
   from salome.smesh import smeshBuilder
-  smesh = smeshBuilder.New(theStudy)
+  smesh = smeshBuilder.New()
   import numpy
     
   # on ne traite que les mailles 2D et 3D
@@ -72,7 +71,7 @@ def getCritereGroupe(NomMesh,NomGr,acritere,theStudy):
   
   return [max,min,Q1,M,Q3,moyenne]
 
-def getObjectsGroupe(Mesh,liste,theStudy):
+def getObjectsGroupe(Mesh,liste):
   import SMESH
   from salome.smesh import smeshBuilder
   dico={}
@@ -83,29 +82,29 @@ def getObjectsGroupe(Mesh,liste,theStudy):
           if name == n :  dico[name]=g
   return dico
 
-def getStatsCritere(dim,Mesh,fichierMedResult,theStudy):
+def getStatsCritere(dim,Mesh,fichierMedResult):
   fichierStatRatio=fichierMedResult.replace('.med','.ratio')
-  max,min,Q1,M,Q3,moyenne = getCritere(dim,Mesh,"Ratio",theStudy)
+  max,min,Q1,M,Q3,moyenne = getCritere(dim,Mesh,"Ratio")
   f = open(fichierStatRatio, 'w')
   f.write(str(max)+","+str(min)+","+str(Q1)+","+str(M)+","+str(Q3)+","+str(moyenne))
   f.close()
 
   fichierStatRatio=fichierMedResult.replace('.med','.taille')
-  max,min,Q1,M,Q3,moyenne = getCritere(dim,Mesh,"Length",theStudy)
+  max,min,Q1,M,Q3,moyenne = getCritere(dim,Mesh,"Length")
   f = open(fichierStatRatio, 'w')
   f.write(str(max)+","+str(min)+","+str(Q1)+","+str(M)+","+str(Q3)+","+str(moyenne))
   f.close()
 
   liste=getGroupesRef(fichierMedResult)
-  dicoGroupe=getObjectsGroupe(Mesh,liste,theStudy)
+  dicoGroupe=getObjectsGroupe(Mesh,liste)
   for groupe in liste :
-      max,min,Q1,M,Q3,moyenne=getCritereGroupe(Mesh,dicoGroupe[groupe],"Ratio",theStudy)
+      max,min,Q1,M,Q3,moyenne=getCritereGroupe(Mesh,dicoGroupe[groupe],"Ratio")
       extension="_"+groupe+'_Ratio.res'
       fichier=fichierMedResult.replace('.med',extension)
       f = open(fichier, 'w')
       f.write(str(max)+","+str(min)+","+str(Q1)+","+str(M)+","+str(Q3)+","+str(moyenne))
       f.close()
-      max,min,Q1,M,Q3,moyenne=getCritereGroupe(Mesh,dicoGroupe[groupe],"Length",theStudy)
+      max,min,Q1,M,Q3,moyenne=getCritereGroupe(Mesh,dicoGroupe[groupe],"Length")
       extension="_"+groupe+'_Taille.res'
       fichier=fichierMedResult.replace('.med',extension)
       f = open(fichier, 'w')

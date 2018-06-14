@@ -2,8 +2,8 @@
 
 import logging
 
-from geomsmesh import geompy
-from whichSideVertex import whichSideVertex
+from .geomsmesh import geompy
+from .whichSideVertex import whichSideVertex
 
 def elimineExtremitesPipe(ptEdgeFond, facesDefaut, centres, gptsdisks, nbsegCercle):
   """

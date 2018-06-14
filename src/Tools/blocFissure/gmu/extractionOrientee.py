@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from geomsmesh import geompy
-from geomsmesh import geomPublish
-from geomsmesh import geomPublishInFather
-import initLog
+from .geomsmesh import geompy
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+from . import initLog
 
-from whichSide import whichSide
+from .whichSide import whichSide
 
 # -----------------------------------------------------------------------------
 # --- renvoie l'extraction des shapes d'un objet selon leur position par rapport à la face.

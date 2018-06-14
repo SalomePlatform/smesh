@@ -28,7 +28,7 @@ sm_gui = libSMESH_Swig.SMESH_Swig()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 import GEOM
 
@@ -46,7 +46,7 @@ _converter = {
 
 # Converts swig to idl enumeration
 def _swig2idl( type ):
-    if _converter.has_key( type ) :
+    if type in _converter :
         return _converter[type]
     return None
 
@@ -80,7 +80,7 @@ def select( mesh, lst, append = False ) :
     # Check mesh parameter
     entry = _getEntry(mesh)   
     if entry is None:
-        print "Wrong 'mesh' parameter"
+        print("Wrong 'mesh' parameter")
         return
     
     # Check lst parameter
@@ -91,7 +91,7 @@ def select( mesh, lst, append = False ) :
         if isinstance( lst,list ) :
             tmp = lst
         else :
-            print "Wrong 'lst' parameter"
+            print("Wrong 'lst' parameter")
             return
     sm_gui.select( entry, tmp, append )
 
@@ -99,7 +99,7 @@ def select( mesh, lst, append = False ) :
 def _preProcess(mesh) :
     m = _getMesh(mesh);
     if m is None:
-        print "Wrong 'mesh' parameter"
+        print("Wrong 'mesh' parameter")
         return [None, None]
     
     elemType = _swig2idl(sm_gui.getSelectionMode())

@@ -24,12 +24,91 @@ import salome
 from salome.geom import geomBuilder
 
 import SMESH # This is necessary for back compatibility
+import omniORB                                   # back compatibility
+SMESH.MED_V2_1 = omniORB.EnumItem("MED_V2_1", 0) # back compatibility
+SMESH.MED_V2_2 = omniORB.EnumItem("MED_V2_2", 1) # back compatibility
+
 from   SMESH import *
 from   salome.smesh.smesh_algorithm import Mesh_Algorithm
 
 import SALOME
 import SALOMEDS
 import os
+import inspect
+
+# In case the omniORBpy EnumItem class does not fully support Python 3
+# (for instance in version 4.2.1-2), the comparison ordering methods must be
+# defined
+#
+try:
+    SMESH.Entity_Triangle < SMESH.Entity_Quadrangle
+except TypeError:
+    def enumitem_eq(self, other):
+        try:
+            if isinstance(other, omniORB.EnumItem):
+                if other._parent_id == self._parent_id:
+                    return self._v == other._v
+                else:
+                    return self._parent_id == other._parent_id
+            else:
+                return id(self) == id(other)
+        except:
+            return id(self) == id(other)
+
+    def enumitem_lt(self, other):
+        try:
+            if isinstance(other, omniORB.EnumItem):
+                if other._parent_id == self._parent_id:
+                    return self._v < other._v
+                else:
+                    return self._parent_id < other._parent_id
+            else:
+                return id(self) < id(other)
+        except:
+            return id(self) < id(other)
+
+    def enumitem_le(self, other):
+        try:
+            if isinstance(other, omniORB.EnumItem):
+                if other._parent_id == self._parent_id:
+                    return self._v <= other._v
+                else:
+                    return self._parent_id <= other._parent_id
+            else:
+                return id(self) <= id(other)
+        except:
+            return id(self) <= id(other)
+
+    def enumitem_gt(self, other):
+        try:
+            if isinstance(other, omniORB.EnumItem):
+                if other._parent_id == self._parent_id:
+                    return self._v > other._v
+                else:
+                    return self._parent_id > other._parent_id
+            else:
+                return id(self) > id(other)
+        except:
+            return id(self) > id(other)
+
+    def enumitem_ge(self, other):
+        try:
+            if isinstance(other, omniORB.EnumItem):
+                if other._parent_id == self._parent_id:
+                    return self._v >= other._v
+                else:
+                    return self._parent_id >= other._parent_id
+            else:
+                return id(self) >= id(other)
+        except:
+            return id(self) >= id(other)
+
+    omniORB.EnumItem.__eq__ = enumitem_eq
+    omniORB.EnumItem.__lt__ = enumitem_lt
+    omniORB.EnumItem.__le__ = enumitem_le
+    omniORB.EnumItem.__gt__ = enumitem_gt
+    omniORB.EnumItem.__ge__ = enumitem_ge
+
 
 class MeshMeta(type):
     """Private class used to workaround a problem that sometimes isinstance(m, Mesh) returns False
@@ -63,7 +142,7 @@ def ParseParameters(*args):
     Parameters = ""
     hasVariables = False
     varModifFun=None
-    if args and callable( args[-1] ):
+    if args and callable(args[-1]):
         args, varModifFun = args[:-1], args[-1]
     for parameter in args:
 
@@ -72,7 +151,7 @@ def ParseParameters(*args):
         if isinstance(parameter,str):
             # check if there is an inexistent variable name
             if not notebook.isVariable(parameter):
-                raise ValueError, "Variable with name '" + parameter + "' doesn't exist!!!"
+                raise ValueError("Variable with name '" + parameter + "' doesn't exist!!!")
             parameter = notebook.get(parameter)
             hasVariables = True
             if varModifFun:
@@ -108,8 +187,7 @@ def __initAxisStruct(ax,*args):
     Parameters are stored in AxisStruct.parameters attribute
     """
     if len( args ) != 6:
-        raise RuntimeError,\
-              "Bad nb args (%s) passed in SMESH.AxisStruct(x,y,z,dx,dy,dz)"%(len( args ))
+        raise RuntimeError("Bad nb args (%s) passed in SMESH.AxisStruct(x,y,z,dx,dy,dz)"%(len( args )))
     ax.x, ax.y, ax.z, ax.vx, ax.vy, ax.vz, ax.parameters,hasVars = ParseParameters(*args)
     pass
 SMESH.AxisStruct.__init__ = __initAxisStruct
@@ -141,13 +219,8 @@ def GetName(obj):
         except:
             ior = None
         if ior:
-            # CORBA object
-            studies = salome.myStudyManager.GetOpenStudies()
-            for sname in studies:
-                s = salome.myStudyManager.GetStudyByName(sname)
-                if not s: continue
-                sobj = s.FindObjectIOR(ior)
-                if not sobj: continue
+            sobj = salome.myStudy.FindObjectIOR(ior)
+            if sobj:
                 return sobj.GetName()
             if hasattr(obj, "GetName"):
                 # unknown CORBA object, having GetName() method
@@ -160,7 +233,7 @@ def GetName(obj):
             # unknown non-CORBA object, having GetName() method
             return obj.GetName()
         pass
-    raise RuntimeError, "Null or invalid object"
+    raise RuntimeError("Null or invalid object")
 
 def TreatHypoStatus(status, hypName, geomName, isAlgo, mesh):
     """
@@ -173,21 +246,21 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo, mesh):
         pass
     reason = ""
     if hasattr( status, "__getitem__" ):
-        status,reason = status[0],status[1]
-    if status == HYP_UNKNOWN_FATAL :
+        status, reason = status[0], status[1]
+    if status == HYP_UNKNOWN_FATAL:
         reason = "for unknown reason"
-    elif status == HYP_INCOMPATIBLE :
+    elif status == HYP_INCOMPATIBLE:
         reason = "this hypothesis mismatches the algorithm"
-    elif status == HYP_NOTCONFORM :
+    elif status == HYP_NOTCONFORM:
         reason = "a non-conform mesh would be built"
-    elif status == HYP_ALREADY_EXIST :
+    elif status == HYP_ALREADY_EXIST:
         if isAlgo: return # it does not influence anything
         reason = hypType + " of the same dimension is already assigned to this shape"
-    elif status == HYP_BAD_DIM :
+    elif status == HYP_BAD_DIM:
         reason = hypType + " mismatches the shape"
     elif status == HYP_CONCURRENT :
         reason = "there are concurrent hypotheses on sub-shapes"
-    elif status == HYP_BAD_SUBSHAPE :
+    elif status == HYP_BAD_SUBSHAPE:
         reason = "the shape is neither the main one, nor its sub-shape, nor a valid group"
     elif status == HYP_BAD_GEOMETRY:
         reason = "the algorithm is not applicable to this geometry"
@@ -209,11 +282,11 @@ def TreatHypoStatus(status, hypName, geomName, isAlgo, mesh):
             if meshName and meshName != NO_NAME:
                 where = '"%s" shape in "%s" mesh ' % ( geomName, meshName )
     if status < HYP_UNKNOWN_FATAL and where:
-        print '"%s" was assigned to %s but %s' %( hypName, where, reason )
+        print('"%s" was assigned to %s but %s' %( hypName, where, reason ))
     elif where:
-        print '"%s" was not assigned to %s : %s' %( hypName, where, reason )
+        print('"%s" was not assigned to %s : %s' %( hypName, where, reason ))
     else:
-        print '"%s" was not assigned : %s' %( hypName, reason )
+        print('"%s" was not assigned : %s' %( hypName, reason ))
         pass
 
 def AssureGeomPublished(mesh, geom, name=''):
@@ -222,12 +295,7 @@ def AssureGeomPublished(mesh, geom, name=''):
     """
     if not isinstance( geom, geomBuilder.GEOM._objref_GEOM_Object ):
         return
-    if not geom.GetStudyEntry() and \
-           mesh.smeshpyD.GetCurrentStudy():
-        ## set the study
-        studyID = mesh.smeshpyD.GetCurrentStudy()._get_StudyId()
-        if studyID != mesh.geompyD.myStudyId:
-            mesh.geompyD.init_geom( mesh.smeshpyD.GetCurrentStudy())
+    if not geom.GetStudyEntry():
         ## get a name
         if not name and geom.GetShapeType() != geomBuilder.GEOM.COMPOUND:
             # for all groups SubShapeName() return "Compound_-1"
@@ -245,7 +313,7 @@ def FirstVertexOnCurve(mesh, edge):
     """
     vv = mesh.geompyD.SubShapeAll( edge, geomBuilder.geomBuilder.ShapeType["VERTEX"])
     if not vv:
-        raise TypeError, "Given object has no vertices"
+        raise TypeError("Given object has no vertices")
     if len( vv ) == 1: return vv[0]
     v0   = mesh.geompyD.MakeVertexOnCurve(edge,0.)
     xyz  = mesh.geompyD.PointCoordinates( v0 ) # coords of the first vertex
@@ -269,7 +337,7 @@ engine = None
 doLcc = False
 created = False
 
-class smeshBuilder(object, SMESH._objref_SMESH_Gen):
+class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
     """
     This class allows to create, load or manipulate meshes.
     It has a set of methods to create, load or copy meshes, to combine several meshes, etc.
@@ -288,16 +356,16 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
     PrecisionConfusion = smeshPrecisionConfusion
 
     # TopAbs_State enumeration
-    [TopAbs_IN, TopAbs_OUT, TopAbs_ON, TopAbs_UNKNOWN] = range(4)
+    [TopAbs_IN, TopAbs_OUT, TopAbs_ON, TopAbs_UNKNOWN] = list(range(4))
 
     # Methods of splitting a hexahedron into tetrahedra
     Hex_5Tet, Hex_6Tet, Hex_24Tet, Hex_2Prisms, Hex_4Prisms = 1, 2, 3, 1, 2
 
-    def __new__(cls):
+    def __new__(cls, *args):
         global engine
         global smeshInst
         global doLcc
-        #print "==== __new__", engine, smeshInst, doLcc
+        #print("==== __new__", engine, smeshInst, doLcc)
 
         if smeshInst is None:
             # smesh engine is either retrieved from engine, or created
@@ -312,30 +380,31 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
                     # FindOrLoadComponent called:
                     # 1. CORBA resolution of server
                     # 2. the __new__ method is called again
-                    #print "==== smeshInst = lcc.FindOrLoadComponent ", engine, smeshInst, doLcc
+                    #print("==== smeshInst = lcc.FindOrLoadComponent ", engine, smeshInst, doLcc)
                     smeshInst = salome.lcc.FindOrLoadComponent( "FactoryServer", "SMESH" )
             else:
                 # FindOrLoadComponent not called
                 if smeshInst is None:
                     # smeshBuilder instance is created from lcc.FindOrLoadComponent
-                    #print "==== smeshInst = super(smeshBuilder,cls).__new__(cls) ", engine, smeshInst, doLcc
+                    #print("==== smeshInst = super(smeshBuilder,cls).__new__(cls) ", engine, smeshInst, doLcc)
                     smeshInst = super(smeshBuilder,cls).__new__(cls)
                 else:
                     # smesh engine not created: existing engine found
-                    #print "==== existing ", engine, smeshInst, doLcc
+                    #print("==== existing ", engine, smeshInst, doLcc)
                     pass
-            #print "====1 ", smeshInst
+            #print("====1 ", smeshInst)
             return smeshInst
 
-        #print "====2 ", smeshInst
+        #print("====2 ", smeshInst)
         return smeshInst
 
-    def __init__(self):
+    def __init__(self, *args):
         global created
-        #print "--------------- smeshbuilder __init__ ---", created
+        #print("--------------- smeshbuilder __init__ ---", created)
         if not created:
-          created = True
-          SMESH._objref_SMESH_Gen.__init__(self)
+            created = True
+            SMESH._objref_SMESH_Gen.__init__(self, *args)
+
 
     def DumpPython(self, theStudy, theIsPublished=True, theIsMultiFile=True):
         """
@@ -358,16 +427,13 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         else:            val = "false"
         SMESH._objref_SMESH_Gen.SetOption(self, "historical_python_dump", val)
 
-    def init_smesh(self,theStudy,geompyD = None):
+    def init_smesh(self,geompyD = None):
         """
-        Set the current study and Geometry component
-        """
-
-        #print "init_smesh"
-        self.SetCurrentStudy(theStudy,geompyD)
-        if theStudy:
-            global notebook
-            notebook.myStudy = theStudy
+        Set Geometry component
+        """    
+        #print("init_smesh")
+        self.UpdateStudy(geompyD)
+        notebook.myStudy = salome.myStudy
 
     def Mesh(self, obj=0, name=0):
         """
@@ -395,7 +461,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
 
         if isinstance(obj,str):
             obj,name = name,obj
-        return Mesh(self,self.geompyD,obj,name)
+        return Mesh(self, self.geompyD, obj, name)
 
     def EnumToLong(self,theItem):
         """
@@ -422,7 +488,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         elif isinstance(c, str):
             val = c
         else:
-            raise ValueError, "Color value should be of string or SALOMEDS.Color type"
+            raise ValueError("Color value should be of string or SALOMEDS.Color type")
         return val
 
     def GetPointStruct(self,theVertex):
@@ -452,7 +518,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
 
         vertices = self.geompyD.SubShapeAll( theVector, geomBuilder.geomBuilder.ShapeType["VERTEX"] )
         if(len(vertices) != 2):
-            print "Error: vector object is incorrect."
+            print("Error: vector object is incorrect.")
             return None
         p1 = self.geompyD.PointCoordinates(vertices[0])
         p2 = self.geompyD.PointCoordinates(vertices[1])
@@ -544,37 +610,35 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
 
         return SMESH._objref_SMESH_Gen.IsEmbeddedMode(self)
 
-    def SetCurrentStudy( self, theStudy, geompyD = None ):
-        """
-        Set the current study. Calling SetCurrentStudy( None ) allows to
-        switch **off** automatic pubilishing in the Study of mesh objects.
-        """
-
-        if not geompyD:
+    def UpdateStudy( self, geompyD = None  ):
+    	"""
+        Update the current study. Calling UpdateStudy() allows to 
+    	update meshes at switching GEOM->SMESH
+    	"""
+        #self.UpdateStudy()
+    	if not geompyD:
             from salome.geom import geomBuilder
             geompyD = geomBuilder.geom
             pass
-        self.geompyD=geompyD
-        self.SetGeomEngine(geompyD)
-        SMESH._objref_SMESH_Gen.SetCurrentStudy(self,theStudy)
-        global notebook
-        if theStudy:
-            notebook = salome_notebook.NoteBook( theStudy )
-        else:
-            notebook = salome_notebook.NoteBook( salome_notebook.PseudoStudyForNoteBook() )
-        if theStudy:
-            sb = theStudy.NewBuilder()
-            sc = theStudy.FindComponent("SMESH")
-            if sc: sb.LoadWith(sc, self)
-            pass
-        pass
+    	self.geompyD=geompyD
+    	self.SetGeomEngine(geompyD)
+    	SMESH._objref_SMESH_Gen.UpdateStudy(self)
+    	sb = salome.myStudy.NewBuilder()
+    	sc = salome.myStudy.FindComponent("SMESH")
+    	if sc:
+            sb.LoadWith(sc, self)
+    	pass
+    
+    def SetEnablePublish( self, theIsEnablePublish ):
+    	"""
+        Sets enable publishing in the study. Calling SetEnablePublish( false ) allows to
+    	switch OFF publishing in the Study of mesh objects.
+    	"""
+        #self.SetEnablePublish(theIsEnablePublish)
+    	SMESH._objref_SMESH_Gen.SetEnablePublish(self,theIsEnablePublish)
+    	global notebook
+    	notebook = salome_notebook.NoteBook( theIsEnablePublish )
 
-    def GetCurrentStudy(self):
-        """
-        Get the current study
-        """
-
-        return SMESH._objref_SMESH_Gen.GetCurrentStudy(self)
 
     def CreateMeshesFromUNV( self,theFileName ):
         """
@@ -650,7 +714,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         aSmeshMesh, error = SMESH._objref_SMESH_Gen.CreateMeshesFromGMF(self,
                                                                         theFileName,
                                                                         True)
-        if error.comment: print "*** CreateMeshesFromGMF() errors:\n", error.comment
+        if error.comment: print("*** CreateMeshesFromGMF() errors:\n", error.comment)
         return Mesh(self, self.geompyD, aSmeshMesh), error
 
     def Concatenate( self, meshes, uniteIdenticalGroups,
@@ -797,7 +861,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         """
 
         if not CritType in SMESH.FunctorType._items:
-            raise TypeError, "CritType should be of SMESH.FunctorType"
+            raise TypeError("CritType should be of SMESH.FunctorType")
         aCriterion               = self.GetEmptyCriterion()
         aCriterion.TypeOfElement = elementType
         aCriterion.Type          = self.EnumToLong(CritType)
@@ -832,7 +896,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
             elif isinstance( aThreshold, str ):
                 aCriterion.ThresholdStr = aThreshold
             else:
-                raise TypeError, "The Threshold should be a shape."
+                raise TypeError("The Threshold should be a shape.")
             if isinstance(UnaryOp,float):
                 aCriterion.Tolerance = UnaryOp
                 UnaryOp = FT_Undefined
@@ -841,10 +905,10 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
             # Check that Threshold is a group
             if isinstance(aThreshold, SMESH._objref_SMESH_GroupBase):
                 if aThreshold.GetType() != elementType:
-                    raise ValueError, "Group type mismatches Element type"
+                    raise ValueError("Group type mismatches Element type")
                 aCriterion.ThresholdStr = aThreshold.GetName()
                 aCriterion.ThresholdID  = salome.orb.object_to_string( aThreshold )
-                study = self.GetCurrentStudy()
+                study = salome.myStudy
                 if study:
                     so = study.FindObjectIOR( aCriterion.ThresholdID )
                     if so:
@@ -852,13 +916,13 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
                         if entry:
                             aCriterion.ThresholdID = entry
             else:
-                raise TypeError, "The Threshold should be a Mesh Group"
+                raise TypeError("The Threshold should be a Mesh Group")
         elif CritType == FT_RangeOfIds:
             # Check that Threshold is string
             if isinstance(aThreshold, str):
                 aCriterion.ThresholdStr = aThreshold
             else:
-                raise TypeError, "The Threshold should be a string."
+                raise TypeError("The Threshold should be a string.")
         elif CritType == FT_CoplanarFaces:
             # Check the Threshold
             if isinstance(aThreshold, int):
@@ -866,11 +930,10 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
             elif isinstance(aThreshold, str):
                 ID = int(aThreshold)
                 if ID < 1:
-                    raise ValueError, "Invalid ID of mesh face: '%s'"%aThreshold
+                    raise ValueError("Invalid ID of mesh face: '%s'"%aThreshold)
                 aCriterion.ThresholdID = aThreshold
             else:
-                raise TypeError,\
-                      "The Threshold should be an ID of mesh face and not '%s'"%aThreshold
+                raise TypeError("The Threshold should be an ID of mesh face and not '%s'"%aThreshold)
         elif CritType == FT_ConnectedElements:
             # Check the Threshold
             if isinstance(aThreshold, geomBuilder.GEOM._objref_GEOM_Object): # shape
@@ -884,7 +947,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
                 aCriterion.Threshold = aThreshold
             elif isinstance(aThreshold, list): # 3 point coordinates
                 if len( aThreshold ) < 3:
-                    raise ValueError, "too few point coordinates, must be 3"
+                    raise ValueError("too few point coordinates, must be 3")
                 aCriterion.ThresholdStr = " ".join( [str(c) for c in aThreshold[:3]] )
             elif isinstance(aThreshold, str):
                 if aThreshold.isdigit():
@@ -892,9 +955,8 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
                 else:
                     aCriterion.ThresholdStr = aThreshold # hope that it's point coordinates
             else:
-                raise TypeError,\
-                      "The Threshold should either a VERTEX, or a node ID, "\
-                      "or a list of point coordinates and not '%s'"%aThreshold
+                raise TypeError("The Threshold should either a VERTEX, or a node ID, "\
+                      "or a list of point coordinates and not '%s'"%aThreshold)
         elif CritType == FT_ElemGeomType:
             # Check the Threshold
             try:
@@ -904,7 +966,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
                 if isinstance(aThreshold, int):
                     aCriterion.Threshold = aThreshold
                 else:
-                    raise TypeError, "The Threshold should be an integer or SMESH.GeometryType."
+                    raise TypeError("The Threshold should be an integer or SMESH.GeometryType.")
                 pass
             pass
         elif CritType == FT_EntityType:
@@ -916,7 +978,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
                 if isinstance(aThreshold, int):
                     aCriterion.Threshold = aThreshold
                 else:
-                    raise TypeError, "The Threshold should be an integer or SMESH.EntityType."
+                    raise TypeError("The Threshold should be an integer or SMESH.EntityType.")
                 pass
             pass
 
@@ -925,7 +987,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
             try:
                 aCriterion.ThresholdStr = self.ColorToString(aThreshold)
             except:
-                raise TypeError, "The threshold value should be of SALOMEDS.Color type"
+                raise TypeError("The threshold value should be of SALOMEDS.Color type")
             pass
         elif CritType in [FT_FreeBorders, FT_FreeEdges, FT_FreeNodes, FT_FreeFaces,
                           FT_LinearOrQuadratic, FT_BadOrientedVolume,
@@ -943,7 +1005,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
                 aThreshold = float(aThreshold)
                 aCriterion.Threshold = aThreshold
             except:
-                raise TypeError, "The Threshold should be a number."
+                raise TypeError("The Threshold should be a number.")
                 return None
 
         if Threshold ==  FT_LogicalNOT or UnaryOp ==  FT_LogicalNOT:
@@ -1075,7 +1137,7 @@ class smeshBuilder(object, SMESH._objref_SMESH_Gen):
         elif theCriterion == FT_BallDiameter:
             functor = aFilterMgr.CreateBallDiameter()
         else:
-            print "Error: given parameter is not numerical functor type."
+            print("Error: given parameter is not numerical functor type.")
         aFilterMgr.UnRegister()
         return functor
 
@@ -1339,22 +1401,21 @@ omniORB.registerObjref(SMESH._objref_SMESH_Gen._NP_RepositoryId, smeshBuilder)
 """Registering the new proxy for SMESH.SMESH_Gen"""
 
 
-def New( study, instance=None, instanceGeom=None):
+def New( instance=None, instanceGeom=None):
     """
     Create a new smeshBuilder instance. The smeshBuilder class provides the Python
     interface to create or load meshes.
 
-    Typical use is::
+    Typical use is:
 
         import salome
         salome.salome_init()
         from salome.smesh import smeshBuilder
-        smesh = smeshBuilder.New(salome.myStudy)
+        smesh = smeshBuilder.New()
 
     Parameters:
-        study:         SALOME study, generally obtained by salome.myStudy.
-        instance:      CORBA proxy of SMESH Engine. If None, the default Engine is used.
-        instanceGeom:  CORBA proxy of GEOM  Engine. If None, the default Engine is used.
+        isPublished If False, the notebool will not be used.
+        instance  CORBA proxy of SMESH Engine. If None, the default Engine is used.
     Returns:
         :class:`smeshBuilder` instance
     """
@@ -1363,31 +1424,32 @@ def New( study, instance=None, instanceGeom=None):
     global doLcc
     engine = instance
     if engine is None:
-      doLcc = True
+        doLcc = True
     smeshInst = smeshBuilder()
     assert isinstance(smeshInst,smeshBuilder), "Smesh engine class is %s but should be smeshBuilder.smeshBuilder. Import salome.smesh.smeshBuilder before creating the instance."%smeshInst.__class__
-    smeshInst.init_smesh(study, instanceGeom)
+    smeshInst.init_smesh(instanceGeom)
     return smeshInst
 
 
 # Public class: Mesh
 # ==================
 
-class Mesh:
+
+class Mesh(metaclass = MeshMeta):
     """
     This class allows defining and managing a mesh.
     It has a set of methods to build a mesh on the given geometry, including the definition of sub-meshes.
     It also has methods to define groups of mesh elements, to modify a mesh (by addition of
     new nodes and elements and by changing the existing entities), to get information
     about a mesh and to export a mesh in different formats.
-    """
-    __metaclass__ = MeshMeta
+    """    
 
     geom = 0
     mesh = 0
     editor = 0
 
     def __init__(self, smeshpyD, geompyD, obj=0, name=0):
+
         """
         Constructor
 
@@ -1401,8 +1463,8 @@ class Mesh:
                 name: Study name of the mesh
         """
 
-        self.smeshpyD=smeshpyD
-        self.geompyD=geompyD
+        self.smeshpyD = smeshpyD
+        self.geompyD = geompyD
         if obj is None:
             obj = 0
         objHasName = False
@@ -1411,12 +1473,9 @@ class Mesh:
                 self.geom = obj
                 objHasName = True
                 # publish geom of mesh (issue 0021122)
-                if not self.geom.GetStudyEntry() and smeshpyD.GetCurrentStudy():
+                if not self.geom.GetStudyEntry():
                     objHasName = False
-                    studyID = smeshpyD.GetCurrentStudy()._get_StudyId()
-                    if studyID != geompyD.myStudyId:
-                        geompyD.init_geom( smeshpyD.GetCurrentStudy())
-                        pass
+                    geompyD.init_geom()
                     if name:
                         geo_name = name + " shape"
                     else:
@@ -1671,12 +1730,12 @@ class Mesh:
             if discardModifs and self.mesh.HasModificationsToDiscard(): # issue 0020693
                 self.mesh.Clear()
             ok = self.smeshpyD.Compute(self.mesh, geom)
-        except SALOME.SALOME_Exception, ex:
-            print "Mesh computation failed, exception caught:"
-            print "    ", ex.details.text
+        except SALOME.SALOME_Exception as ex:
+            print("Mesh computation failed, exception caught:")
+            print("    ", ex.details.text)
         except:
             import traceback
-            print "Mesh computation failed, exception caught:"
+            print("Mesh computation failed, exception caught:")
             traceback.print_exc()
         if True:#not ok:
             allReasons = ""
@@ -1753,15 +1812,15 @@ class Mesh:
                 else:  msg += " has not been computed"
                 if allReasons != "": msg += ":"
                 else:                msg += "."
-                print msg
-                print allReasons
+                print(msg)
+                print(allReasons)
             pass
-        if salome.sg.hasDesktop() and self.mesh.GetStudyId() >= 0:
+        if salome.sg.hasDesktop():
             if not isinstance( refresh, list): # not a call from subMesh.Compute()
                 smeshgui = salome.ImportComponentGUI("SMESH")
-                smeshgui.Init(self.mesh.GetStudyId())
+                smeshgui.Init()
                 smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), ok, (self.NbNodes()==0) )
-                if refresh: salome.sg.updateObjBrowser(True)
+                if refresh: salome.sg.updateObjBrowser()
 
         return ok
 
@@ -1797,11 +1856,9 @@ class Mesh:
         try:
             shapeText = ""
             mainIOR  = salome.orb.object_to_string( self.GetShape() )
-            for sname in salome.myStudyManager.GetOpenStudies():
-                s = salome.myStudyManager.GetStudyByName(sname)
-                if not s: continue
-                mainSO = s.FindObjectIOR(mainIOR)
-                if not mainSO: continue
+            s = salome.myStudy
+            mainSO = s.FindObjectIOR(mainIOR)
+            if mainSO:
                 if subShapeID == 1:
                     shapeText = '"%s"' % mainSO.GetName()
                 subIt = s.NewChildIterator(mainSO)
@@ -1818,7 +1875,6 @@ class Mesh:
                         continue
                     if ids == subShapeID:
                         shapeText = '"%s"' % subSO.GetName()
-                        break
             if not shapeText:
                 shape = self.geompyD.GetSubShape( self.GetShape(), [subShapeID])
                 if shape:
@@ -1854,7 +1910,7 @@ class Mesh:
             pass
 
         groups = []
-        for algoName, shapes in algo2shapes.items():
+        for algoName, shapes in list(algo2shapes.items()):
             while shapes:
                 groupType = self.smeshpyD.EnumToLong( shapes[0].GetShapeType() )
                 otherTypeShapes = []
@@ -1907,12 +1963,11 @@ class Mesh:
         """
 
         self.mesh.Clear()
-        if ( salome.sg.hasDesktop() and
-             salome.myStudyManager.GetStudyByID( self.mesh.GetStudyId() ) ):
+        if ( salome.sg.hasDesktop() ):
             smeshgui = salome.ImportComponentGUI("SMESH")
-            smeshgui.Init(self.mesh.GetStudyId())
+            smeshgui.Init()
             smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), False, True )
-            if refresh: salome.sg.updateObjBrowser(True)
+            if refresh: salome.sg.updateObjBrowser()
 
     def ClearSubMesh(self, geomId, refresh=False):
         """
@@ -1926,9 +1981,9 @@ class Mesh:
         self.mesh.ClearSubMesh(geomId)
         if salome.sg.hasDesktop():
             smeshgui = salome.ImportComponentGUI("SMESH")
-            smeshgui.Init(self.mesh.GetStudyId())
+            smeshgui.Init()
             smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), False, True )
-            if refresh: salome.sg.updateObjBrowser(True)
+            if refresh: salome.sg.updateObjBrowser()
 
     def AutomaticTetrahedralization(self, fineness=0):
         """
@@ -2011,7 +2066,7 @@ class Mesh:
             AssureGeomPublished( self, geom, "shape for %s" % hyp.GetName())
             status = self.mesh.AddHypothesis(geom, hyp)
         else:
-            status = HYP_BAD_GEOMETRY,""
+            status = HYP_BAD_GEOMETRY, ""
         hyp_name = GetName( hyp )
         geom_name = ""
         if geom:
@@ -2068,7 +2123,7 @@ class Mesh:
             return self.mesh.RemoveHypothesis( shape, hyp )
         hypName = GetName( hyp )
         geoName = GetName( shape )
-        print "WARNING: RemoveHypothesis() failed as '%s' is not assigned to '%s' shape" % ( hypName, geoName )
+        print("WARNING: RemoveHypothesis() failed as '%s' is not assigned to '%s' shape" % ( hypName, geoName ))
         return None
 
     def GetHypothesisList(self, geom):
@@ -2094,29 +2149,22 @@ class Mesh:
             self.mesh.RemoveHypothesis( self.geom, hyp )
             pass
         pass
-
-    def ExportMED(self, f, auto_groups=0, version=MED_V2_2,
-                  overwrite=1, meshPart=None, autoDimension=True, fields=[], geomAssocFields=''):
+    def ExportMED(self, *args, **kwargs):
         """
         Export the mesh in a file in MED format
         allowing to overwrite the file if it exists or add the exported data to its contents
 
         Parameters:
-                f: is the file name
-                auto_groups: boolean parameter for creating/not creating
-                        the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
-                        the typical use is auto_groups=False.
-                version: MED format version (MED_V2_1 or MED_V2_2,
-                        the latter meaning any current version). The parameter is
-                        obsolete since MED_V2_1 is no longer supported.
-                overwrite: boolean parameter for overwriting/not overwriting the file
-                meshPart: a part of mesh (:class:`sub-mesh, group or filter <SMESH.SMESH_IDSource>`) to export instead of the mesh
-                autoDimension: if *True* (default), a space dimension of a MED mesh can be either
-
-                        - 1D if all mesh nodes lie on OX coordinate axis, or
-                        - 2D if all mesh nodes lie on XOY coordinate plane, or
-                        - 3D in the rest cases.
-
+                fileName: is the file name
+                auto_groups (boolean): parameter for creating/not creating
+                       the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
+                       the typical use is auto_groups=False.
+                overwrite (boolean): parameter for overwriting/not overwriting the file
+                meshPart: a part of mesh (group, sub-mesh) to export instead of the mesh
+                autoDimension if @c True (default), a space dimension of a MED mesh can be either
+                       - 1D if all mesh nodes lie on OX coordinate axis, or
+                       - 2D if all mesh nodes lie on XOY coordinate plane, or
+                       - 3D in the rest cases.
                         If *autoDimension* is *False*, the space dimension is always 3.
                 fields: list of GEOM fields defined on the shape to mesh.
                 geomAssocFields: each character of this string means a need to export a 
@@ -2126,16 +2174,32 @@ class Mesh:
                         - 'f' stands for "_faces _" field;
                         - 's' stands for "_solids _" field.
         """
-
+        # process positional arguments
+        args = [i for i in args if i not in [SMESH.MED_V2_1, SMESH.MED_V2_2]] # backward compatibility
+        fileName        = args[0]
+        auto_groups     = args[1] if len(args) > 1 else False
+        overwrite       = args[2] if len(args) > 2 else True
+        meshPart        = args[3] if len(args) > 3 else None
+        autoDimension   = args[4] if len(args) > 4 else True
+        fields          = args[5] if len(args) > 5 else []
+        geomAssocFields = args[6] if len(args) > 6 else ''
+        # process keywords arguments
+        auto_groups     = kwargs.get("auto_groups", auto_groups)
+        overwrite       = kwargs.get("overwrite", overwrite)
+        meshPart        = kwargs.get("meshPart", meshPart)
+        autoDimension   = kwargs.get("autoDimension", autoDimension)
+        fields          = kwargs.get("fields", fields)
+        geomAssocFields = kwargs.get("geomAssocFields", geomAssocFields)
+        # invoke engine's function
         if meshPart or fields or geomAssocFields:
             unRegister = genObjUnRegister()
             if isinstance( meshPart, list ):
                 meshPart = self.GetIDSource( meshPart, SMESH.ALL )
                 unRegister.set( meshPart )
-            self.mesh.ExportPartToMED( meshPart, f, auto_groups, version, overwrite, autoDimension,
+            self.mesh.ExportPartToMED( meshPart, fileName, auto_groups, overwrite, autoDimension,
                                        fields, geomAssocFields)
         else:
-            self.mesh.ExportToMEDX(f, auto_groups, version, overwrite, autoDimension)
+            self.mesh.ExportMED(fileName, auto_groups, overwrite, autoDimension)
 
     def ExportSAUV(self, f, auto_groups=0):
         """
@@ -2250,18 +2314,15 @@ class Mesh:
             meshPart = self.mesh
         self.mesh.ExportGMF(meshPart, f, True)
 
-    def ExportToMED(self, f, version=MED_V2_2, opt=0, overwrite=1, autoDimension=True):
+    def ExportToMED(self, *args, **kwargs):
         """
         Deprecated, used only for compatibility! Please, use :meth:`ExportMED` method instead.
         Export the mesh in a file in MED format
         allowing to overwrite the file if it exists or add the exported data to its contents
 
         Parameters:
-                f: the file name
-                version: MED format version (MED_V2_1 or MED_V2_2,
-                        the latter meaning any current version). The parameter is
-                        obsolete since MED_V2_1 is no longer supported.
-                opt: boolean parameter for creating/not creating
+                fileName: the file name
+                opt (boolean): parameter for creating/not creating
                         the groups Group_On_All_Nodes, Group_On_All_Faces, ...
                 overwrite: boolean parameter for overwriting/not overwriting the file
                 autoDimension: if *True* (default), a space dimension of a MED mesh can be either
@@ -2272,12 +2333,57 @@ class Mesh:
 
                         If **autoDimension** is *False*, the space dimension is always 3.
         """
+    
+        print("WARNING: ExportToMED() is deprecated, use ExportMED() instead")
+        # process positional arguments
+        args = [i for i in args if i not in [SMESH.MED_V2_1, SMESH.MED_V2_2]] # backward compatibility
+        fileName      = args[0]
+        auto_groups   = args[1] if len(args) > 1 else False
+        overwrite     = args[2] if len(args) > 2 else True
+        autoDimension = args[3] if len(args) > 3 else True
+        # process keywords arguments
+        auto_groups   = kwargs.get("opt", auto_groups)         # old keyword name
+        auto_groups   = kwargs.get("auto_groups", auto_groups) # new keyword name
+        overwrite     = kwargs.get("overwrite", overwrite)
+        autoDimension = kwargs.get("autoDimension", autoDimension)
+        # invoke engine's function
+        self.mesh.ExportMED(fileName, auto_groups, overwrite, autoDimension)
 
-        self.mesh.ExportToMEDX(f, opt, version, overwrite, autoDimension)
+    def ExportToMEDX(self, *args, **kwargs):
+        """
+        Deprecated, used only for compatibility! Please, use ExportMED() method instead.
+        Export the mesh in a file in MED format
+
+        Parameters:
+                fileName: the file name
+                opt (boolean): parameter for creating/not creating
+                        the groups Group_On_All_Nodes, Group_On_All_Faces, ...
+                overwrite: boolean parameter for overwriting/not overwriting the file
+                autoDimension: if *True* (default), a space dimension of a MED mesh can be either
+
+                        - 1D if all mesh nodes lie on OX coordinate axis, or
+                        - 2D if all mesh nodes lie on XOY coordinate plane, or
+                        - 3D in the rest cases.
+
+                        If **autoDimension** is *False*, the space dimension is always 3.
+		"""
+
+        print("WARNING: ExportToMEDX() is deprecated, use ExportMED() instead")
+        # process positional arguments
+        args = [i for i in args if i not in [SMESH.MED_V2_1, SMESH.MED_V2_2]] # backward compatibility
+        fileName      = args[0]
+        auto_groups   = args[1] if len(args) > 1 else False
+        overwrite     = args[2] if len(args) > 2 else True
+        autoDimension = args[3] if len(args) > 3 else True
+        # process keywords arguments
+        auto_groups   = kwargs.get("auto_groups", auto_groups)
+        overwrite     = kwargs.get("overwrite", overwrite)
+        autoDimension = kwargs.get("autoDimension", autoDimension)
+        # invoke engine's function
+        self.mesh.ExportMED(fileName, auto_groups, overwrite, autoDimension)
 
     # Operations with groups:
     # ----------------------
-
     def CreateEmptyGroup(self, elementType, name):
         """
         Create an empty mesh group
@@ -2352,11 +2458,10 @@ class Mesh:
         elif tgeo == "COMPOUND":
             sub = self.geompyD.SubShapeAll( shape, self.geompyD.ShapeType["SHAPE"])
             if not sub:
-                raise ValueError,"_groupTypeFromShape(): empty geometric group or compound '%s'" % GetName(shape)
+                raise ValueError("_groupTypeFromShape(): empty geometric group or compound '%s'" % GetName(shape))
             return self._groupTypeFromShape( sub[0] )
         else:
-            raise ValueError, \
-                  "_groupTypeFromShape(): invalid geometry '%s'" % GetName(shape)
+            raise ValueError("_groupTypeFromShape(): invalid geometry '%s'" % GetName(shape))
         return typ
 
     def GroupOnFilter(self, typ, name, filter):
@@ -2610,7 +2715,6 @@ class Mesh:
         Returns:
                 instance of :class:`SMESH.SMESH_Group`
         """
-
         return self.mesh.UnionListOfGroups(groups, name)
 
     def IntersectGroups(self, group1, group2, name):
@@ -2641,7 +2745,6 @@ class Mesh:
         Returns:
                 instance of :class:`SMESH.SMESH_Group`
         """
-
         return self.mesh.IntersectListOfGroups(groups, name)
 
     def CutGroups(self, main_group, tool_group, name):
@@ -2771,16 +2874,6 @@ class Mesh:
         """
 
         return self.mesh.GetId()
-
-    def GetStudyId(self):
-        """
-        Get the study Id
-
-        Returns:
-            integer value, which is the study Id of the mesh
-        """
-
-        return self.mesh.GetStudyId()
 
     def HasDuplicatedGroupNamesMED(self):
         """
@@ -3902,8 +3995,8 @@ class Mesh:
             VertexID = Vertex
         try:
             self.editor.SetNodeOnVertex(NodeID, VertexID)
-        except SALOME.SALOME_Exception, inst:
-            raise ValueError, inst.details.text
+        except SALOME.SALOME_Exception as inst:
+            raise ValueError(inst.details.text)
         return True
 
 
@@ -3926,8 +4019,8 @@ class Mesh:
             EdgeID = Edge
         try:
             self.editor.SetNodeOnEdge(NodeID, EdgeID, paramOnEdge)
-        except SALOME.SALOME_Exception, inst:
-            raise ValueError, inst.details.text
+        except SALOME.SALOME_Exception as inst:
+            raise ValueError(inst.details.text)
         return True
 
     def SetNodeOnFace(self, NodeID, Face, u, v):
@@ -3950,8 +4043,8 @@ class Mesh:
             FaceID = Face
         try:
             self.editor.SetNodeOnFace(NodeID, FaceID, u, v)
-        except SALOME.SALOME_Exception, inst:
-            raise ValueError, inst.details.text
+        except SALOME.SALOME_Exception as inst:
+            raise ValueError(inst.details.text)
         return True
 
     def SetNodeInVolume(self, NodeID, Solid):
@@ -3972,8 +4065,8 @@ class Mesh:
             SolidID = Solid
         try:
             self.editor.SetNodeInVolume(NodeID, SolidID)
-        except SALOME.SALOME_Exception, inst:
-            raise ValueError, inst.details.text
+        except SALOME.SALOME_Exception as inst:
+            raise ValueError(inst.details.text)
         return True
 
     def SetMeshElementOnShape(self, ElementID, Shape):
@@ -3994,8 +4087,8 @@ class Mesh:
             ShapeID = Shape
         try:
             self.editor.SetMeshElementOnShape(ElementID, ShapeID)
-        except SALOME.SALOME_Exception, inst:
-            raise ValueError, inst.details.text
+        except SALOME.SALOME_Exception as inst:
+            raise ValueError(inst.details.text)
         return True
 
 
@@ -4066,7 +4159,6 @@ class Mesh:
         Returns:
             list of IDs of found elements
         """
-
         if meshPart:
             return self.editor.FindAmongElementsByPoint( meshPart, x, y, z, elementType );
         else:
@@ -4585,12 +4677,12 @@ class Mesh:
         pattern = self.smeshpyD.GetPattern()
         isDone  = pattern.LoadFromFile(pattern_tetra)
         if not isDone:
-            print 'Pattern.LoadFromFile :', pattern.GetErrorCode()
+            print('Pattern.LoadFromFile :', pattern.GetErrorCode())
             return isDone
 
         pattern.ApplyToHexahedrons(self.mesh, theObject.GetIDs(), theNode000, theNode001)
         isDone = pattern.MakeMesh(self.mesh, False, False)
-        if not isDone: print 'Pattern.MakeMesh :', pattern.GetErrorCode()
+        if not isDone: print('Pattern.MakeMesh :', pattern.GetErrorCode())
 
         # split quafrangle faces near triangular facets of volumes
         self.SplitQuadsNearTriangularFacets()
@@ -4644,12 +4736,12 @@ class Mesh:
         pattern = self.smeshpyD.GetPattern()
         isDone  = pattern.LoadFromFile(pattern_prism)
         if not isDone:
-            print 'Pattern.LoadFromFile :', pattern.GetErrorCode()
+            print('Pattern.LoadFromFile :', pattern.GetErrorCode())
             return isDone
 
         pattern.ApplyToHexahedrons(self.mesh, theObject.GetIDs(), theNode000, theNode001)
         isDone = pattern.MakeMesh(self.mesh, False, False)
-        if not isDone: print 'Pattern.MakeMesh :', pattern.GetErrorCode()
+        if not isDone: print('Pattern.MakeMesh :', pattern.GetErrorCode())
 
         # Split quafrangle faces near triangular facets of volumes
         self.SplitQuadsNearTriangularFacets()
@@ -4783,7 +4875,7 @@ class Mesh:
                 self.editor.ConvertToQuadratic(theForce3d)
         error = self.editor.GetLastError()
         if error and error.comment:
-            print error.comment
+            print(error.comment)
         return error
 
     def ConvertFromQuadratic(self, theSubMesh=None):
@@ -5088,7 +5180,7 @@ class Mesh:
         if isinstance( basePoint, int):
             xyz = self.GetNodeXYZ( basePoint )
             if not xyz:
-                raise RuntimeError, "Invalid node ID: %s" % basePoint
+                raise RuntimeError("Invalid node ID: %s" % basePoint)
             basePoint = xyz
         if isinstance( basePoint, geomBuilder.GEOM._objref_GEOM_Object ):
             basePoint = self.geompyD.PointCoordinates( basePoint )
@@ -5160,7 +5252,7 @@ class Mesh:
             Elements = [ Elements.GetMesh() ]
         if isinstance( Elements, list ):
             if not Elements:
-                raise RuntimeError, "Elements empty!"
+                raise RuntimeError("Elements empty!")
             if isinstance( Elements[0], int ):
                 Elements = self.GetIDSource( Elements, SMESH.ALL )
                 unRegister.set( Elements )
@@ -5746,9 +5838,9 @@ class Mesh:
         if ( isinstance( thePoint, list )):
             thePoint = PointStruct( thePoint[0], thePoint[1], thePoint[2] )
         if ( isinstance( theScaleFact, float )):
-             theScaleFact = [theScaleFact]
+            theScaleFact = [theScaleFact]
         if ( isinstance( theScaleFact, int )):
-             theScaleFact = [ float(theScaleFact)]
+            theScaleFact = [ float(theScaleFact)]
 
         self.mesh.SetParameters(thePoint.parameters)
 
@@ -5780,9 +5872,9 @@ class Mesh:
         if ( isinstance( thePoint, list )):
             thePoint = PointStruct( thePoint[0], thePoint[1], thePoint[2] )
         if ( isinstance( theScaleFact, float )):
-             theScaleFact = [theScaleFact]
+            theScaleFact = [theScaleFact]
         if ( isinstance( theScaleFact, int )):
-             theScaleFact = [ float(theScaleFact)]
+            theScaleFact = [ float(theScaleFact)]
 
         self.mesh.SetParameters(thePoint.parameters)
         mesh = self.editor.ScaleMakeMesh(theObject, thePoint, theScaleFact,
@@ -6044,7 +6136,7 @@ class Mesh:
         if holeNodes and isinstance( holeNodes, list ) and isinstance( holeNodes[0], int ):
             holeNodes = SMESH.FreeBorder(nodeIDs=holeNodes)
         if not isinstance( holeNodes, SMESH.FreeBorder ):
-            raise TypeError, "holeNodes must be either SMESH.FreeBorder or list of integer and not %s" % holeNodes
+            raise TypeError("holeNodes must be either SMESH.FreeBorder or list of integer and not %s" % holeNodes)
         self.editor.FillHole( holeNodes )
 
     def FindCoincidentFreeBorders (self, tolerance=0.):
@@ -6092,7 +6184,7 @@ class Mesh:
             coincidentGroups = []
             for nodeList in freeBorders:
                 if not nodeList or len( nodeList ) % 3:
-                    raise ValueError, "Wrong number of nodes in this group: %s" % nodeList
+                    raise ValueError("Wrong number of nodes in this group: %s" % nodeList)
                 group = []
                 while nodeList:
                     group.append  ( SMESH.FreeBorderPart( len(borders), 0, 1, 2 ))
@@ -6449,6 +6541,7 @@ class Mesh:
         return self.editor.AffectedElemGroupsInRegion(theElems, theNodesNot, theShape)
 
     def DoubleNodesOnGroupBoundaries(self, theDomains, createJointElems, onAllBoundaries=False ):
+
         """
         Double nodes on shared faces between groups of volumes and create flat elements on demand.
         The list of groups must describe a partition of the mesh volumes.
@@ -6738,28 +6831,47 @@ class meshProxy(SMESH._objref_SMESH_Mesh):
     Private class used to compensate change of CORBA API of SMESH_Mesh for backward compatibility
     with old dump scripts which call SMESH_Mesh directly and not via smeshBuilder.Mesh
     """
-    def __init__(self):
-        SMESH._objref_SMESH_Mesh.__init__(self)
+    def __init__(self,*args):
+        SMESH._objref_SMESH_Mesh.__init__(self,*args)
     def __deepcopy__(self, memo=None):
-        new = self.__class__()
+        new = self.__class__(self)
         return new
     def CreateDimGroup(self,*args): # 2 args added: nbCommonNodes, underlyingOnly
         if len( args ) == 3:
             args += SMESH.ALL_NODES, True
-        return SMESH._objref_SMESH_Mesh.CreateDimGroup( self, *args )
+        return SMESH._objref_SMESH_Mesh.CreateDimGroup(self, *args)
+    def ExportToMEDX(self, *args): # function removed
+        print("WARNING: ExportToMEDX() is deprecated, use ExportMED() instead")
+        args = [i for i in args if i not in [SMESH.MED_V2_1, SMESH.MED_V2_2]]
+        SMESH._objref_SMESH_Mesh.ExportMED(self, *args)
+    def ExportToMED(self, *args): # function removed
+        print("WARNING: ExportToMED() is deprecated, use ExportMED() instead")
+        args = [i for i in args if i not in [SMESH.MED_V2_1, SMESH.MED_V2_2]]
+        while len(args) < 4:  # !!!! nb of parameters for ExportToMED IDL's method
+            args.append(True)
+        SMESH._objref_SMESH_Mesh.ExportMED(self, *args)
+    def ExportPartToMED(self, *args): # 'version' parameter removed
+        args = [i for i in args if i not in [SMESH.MED_V2_1, SMESH.MED_V2_2]]
+        SMESH._objref_SMESH_Mesh.ExportPartToMED(self, *args)
+    def ExportMED(self, *args): # signature of method changed
+        args = [i for i in args if i not in [SMESH.MED_V2_1, SMESH.MED_V2_2]]
+        while len(args) < 4:  # !!!! nb of parameters for ExportToMED IDL's method
+            args.append(True)
+        SMESH._objref_SMESH_Mesh.ExportMED(self, *args)
     pass
 omniORB.registerObjref(SMESH._objref_SMESH_Mesh._NP_RepositoryId, meshProxy)
 
 
 class submeshProxy(SMESH._objref_SMESH_subMesh):
+
     """
     Private class wrapping SMESH.SMESH_SubMesh in order to add Compute()
     """
-    def __init__(self):
-        SMESH._objref_SMESH_subMesh.__init__(self)
+    def __init__(self,*args):
+        SMESH._objref_SMESH_subMesh.__init__(self,*args)
         self.mesh = None
     def __deepcopy__(self, memo=None):
-        new = self.__class__()
+        new = self.__class__(self)
         return new
 
     def Compute(self,refresh=False):
@@ -6781,11 +6893,11 @@ class submeshProxy(SMESH._objref_SMESH_subMesh):
 
         ok = self.mesh.Compute( self.GetSubShape(),refresh=[] )
 
-        if salome.sg.hasDesktop() and self.mesh.GetStudyId() >= 0:
+        if salome.sg.hasDesktop():
             smeshgui = salome.ImportComponentGUI("SMESH")
-            smeshgui.Init(self.mesh.GetStudyId())
+            smeshgui.Init()
             smeshgui.SetMeshIcon( salome.ObjectToID( self ), ok, (self.GetNumberOfElements()==0) )
-            if refresh: salome.sg.updateObjBrowser(True)
+            if refresh: salome.sg.updateObjBrowser()
             pass
 
         return ok
@@ -6799,8 +6911,8 @@ class meshEditor(SMESH._objref_SMESH_MeshEditor):
     compatibility with old dump scripts which call SMESH_MeshEditor directly and not via
     smeshBuilder.Mesh
     """
-    def __init__(self):
-        SMESH._objref_SMESH_MeshEditor.__init__(self)
+    def __init__(self,*args):
+        SMESH._objref_SMESH_MeshEditor.__init__( self, *args)
         self.mesh = None
     def __getattr__(self, name ): # method called if an attribute not found
         if not self.mesh:         # look for name() method in Mesh class
@@ -6809,10 +6921,10 @@ class meshEditor(SMESH._objref_SMESH_MeshEditor):
             return getattr( self.mesh, name )
         if name == "ExtrusionAlongPathObjX":
             return getattr( self.mesh, "ExtrusionAlongPathX" ) # other method name
-        print "meshEditor: attribute '%s' NOT FOUND" % name
+        print("meshEditor: attribute '%s' NOT FOUND" % name)
         return None
     def __deepcopy__(self, memo=None):
-        new = self.__class__()
+        new = self.__class__(self)
         return new
     def FindCoincidentNodes(self,*args): # a 2nd arg added (SeparateCornerAndMediumNodes)
         if len( args ) == 1: args += False,
@@ -6885,13 +6997,13 @@ class algoCreator:
         """
         Store a python class of algorithm
         """
-        if type( algoClass ).__name__ == 'classobj' and \
+        if inspect.isclass(algoClass) and \
            hasattr( algoClass, "algoType"):
             self.algoTypeToClass[ algoClass.algoType ] = algoClass
             if not self.defaultAlgoType and \
                hasattr( algoClass, "isDefault") and algoClass.isDefault:
                 self.defaultAlgoType = algoClass.algoType
-            #print "Add",algoClass.algoType, "dflt",self.defaultAlgoType
+            #print("Add",algoClass.algoType, "dflt",self.defaultAlgoType)
 
     def copy(self, mesh):
         """
@@ -6939,10 +7051,11 @@ class algoCreator:
             algoType = self.defaultAlgoType
         if not algoType and self.algoTypeToClass:
             algoType = sorted( self.algoTypeToClass.keys() )[0]
-        if self.algoTypeToClass.has_key( algoType ):
-            #print "Create algo",algoType
+        if algoType in self.algoTypeToClass:
+            #print("Create algo",algoType)
+
             return self.algoTypeToClass[ algoType ]( self.mesh, shape )
-        raise RuntimeError, "No class found for algo type %s" % algoType
+        raise RuntimeError( "No class found for algo type %s" % algoType)
         return None
 
 class hypMethodWrapper:
@@ -6953,7 +7066,7 @@ class hypMethodWrapper:
     def __init__(self, hyp, method):
         self.hyp    = hyp
         self.method = method
-        #print "REBIND:", method.__name__
+        #print("REBIND:", method.__name__)
         return
 
     def __call__(self,*args):
@@ -6964,7 +7077,7 @@ class hypMethodWrapper:
         if not args:
             return self.method( self.hyp, *args ) # hypothesis method with no args
 
-        #print "MethWrapper.__call__",self.method.__name__, args
+        #print("MethWrapper.__call__", self.method.__name__, args)
         try:
             parsed = ParseParameters(*args)     # replace variables with their values
             self.hyp.SetVarParameter( parsed[-2], self.method.__name__ )
@@ -6972,11 +7085,11 @@ class hypMethodWrapper:
         except omniORB.CORBA.BAD_PARAM: # raised by hypothesis method call
             # maybe there is a replaced string arg which is not variable
             result = self.method( self.hyp, *args )
-        except ValueError, detail: # raised by ParseParameters()
+        except ValueError as detail: # raised by ParseParameters()
             try:
                 result = self.method( self.hyp, *args )
             except omniORB.CORBA.BAD_PARAM:
-                raise ValueError, detail # wrong variable name
+                raise ValueError(detail) # wrong variable name
 
         return result
     pass
@@ -7009,25 +7122,25 @@ for pluginName in os.environ[ "SMESH_MeshersList" ].split( ":" ):
     Bind methods creating mesher plug-ins to the Mesh class
     """
 
-    # print "pluginName: ", pluginName
+    # print("pluginName: ", pluginName)
     pluginBuilderName = pluginName + "Builder"
     try:
         exec( "from salome.%s.%s import *" % (pluginName, pluginBuilderName))
-    except Exception, e:
+    except Exception as e:
         from salome_utils import verbose
-        if verbose(): print "Exception while loading %s: %s" % ( pluginBuilderName, e )
+        if verbose(): print("Exception while loading %s: %s" % ( pluginBuilderName, e ))
         continue
     exec( "from salome.%s import %s" % (pluginName, pluginBuilderName))
     plugin = eval( pluginBuilderName )
-    # print "  plugin:" , str(plugin)
+    # print("  plugin:" , str(plugin))
 
     # add methods creating algorithms to Mesh
     for k in dir( plugin ):
         if k[0] == '_': continue
         algo = getattr( plugin, k )
-        # print "             algo:", str(algo)
-        if type( algo ).__name__ == 'classobj' and hasattr( algo, "meshMethod" ):
-            # print "                     meshMethod:" , str(algo.meshMethod)
+        #print("             algo:", str(algo))
+        if inspect.isclass(algo) and hasattr(algo, "meshMethod"):
+            #print("                     meshMethod:" , str(algo.meshMethod))
             if not hasattr( Mesh, algo.meshMethod ):
                 setattr( Mesh, algo.meshMethod, algoCreator( algo.meshMethod ))
                 pass

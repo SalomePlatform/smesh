@@ -41,7 +41,7 @@ class StdMeshers_CartesianParameters3D;
 class STDMESHERS_EXPORT StdMeshers_Cartesian_3D : public SMESH_3D_Algo
 {
 public:
-  StdMeshers_Cartesian_3D(int hypId, int studyId, SMESH_Gen* gen);
+  StdMeshers_Cartesian_3D(int hypId, SMESH_Gen* gen);
 
   virtual bool CheckHypothesis(SMESH_Mesh&         aMesh,
                                const TopoDS_Shape& aShape,

@@ -210,7 +210,7 @@ void SMESHGUI_RenumberingDlg::Init()
 //=================================================================================
 void SMESHGUI_RenumberingDlg::ClickOnApply()
 {
-  if (mySMESHGUI->isActiveStudyLocked())
+  if (SMESHGUI::isStudyLocked())
     return;
 
   if (!myMesh->_is_nil()) {

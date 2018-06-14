@@ -47,4 +47,4 @@ BuildGroupLyingOn(mesh.GetMesh(), SMESH.FACE, "Group of faces lying on edge #1",
 # Second way
 mesh.MakeGroup("Group of faces lying on edge #2", SMESH.FACE, SMESH.FT_LyingOnGeom, edge)
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

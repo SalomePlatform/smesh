@@ -5,11 +5,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 import salome_notebook
 
 
@@ -35,7 +35,7 @@ init_mesh.AutomaticHexahedralization() # it makes 3 x 3 x 3 hexahedrons
 # remove some faces
 faces = init_mesh.GetElementsByType( SMESH.FACE )
 nb_faces = len( faces )
-rm_face = faces[ : nb_faces/2]
+rm_face = faces[ : nb_faces // 2]
 init_mesh.RemoveElements( rm_face )
 
 # restore boundary in this mesh
@@ -65,7 +65,7 @@ init_mesh.AutomaticHexahedralization()
 # remove some edges
 edges = init_mesh.GetElementsByType( SMESH.EDGE )
 nb_edges = len( edges )
-rm_edge = edges[ : nb_edges/2]
+rm_edge = edges[ : nb_edges // 2]
 init_mesh.RemoveElements( rm_edge )
 
 

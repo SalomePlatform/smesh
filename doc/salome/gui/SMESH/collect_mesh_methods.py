@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-#  -*- coding: iso-8859-1 -*-
+#!/usr/bin/env python3
 # Copyright (C) 2012-2016  CEA/DEN, EDF R&D, OPEN CASCADE
 #
 # This library is free software; you can redistribute it and/or
@@ -31,7 +30,7 @@
 # class.
 # 
 # This script is intended for internal usage - only
-# for generatation of the extra developer documentation for
+# for generation of the extra developer documentation for
 # the meshing plug-in(s).
 # 
 # Usage:
@@ -45,20 +44,22 @@
 # variables are set properly; otherwise the script will fail.
 #
 ################################################################################
+
+import inspect
 import sys
 
 def main(plugin_name, dummymeshhelp = True, output_file = "smeshBuilder.py", format = "doxygen"):
     plugin_module_name  = plugin_name + "Builder"
     plugin_module       = "salome.%s.%s" % (plugin_name, plugin_module_name)
     try:
-        exec( "from salome.smesh.smeshBuilder import *")
-        exec( "import %s" % plugin_module )
-        exec( "mod = %s" % plugin_module )
+        exec("from salome.smesh.smeshBuilder import *", globals())
+        exec("import %s" % plugin_module, globals())
+        exec("mod = %s" % plugin_module , globals())
         methods = {}
         for attr in dir( mod ):
             if attr.startswith( '_' ): continue
             algo = getattr( mod, attr )
-            if type( algo ).__name__ == 'classobj' and hasattr( algo, "meshMethod" ):
+            if inspect.isclass(algo) and hasattr(algo, "meshMethod"):
                 method = getattr( algo, "meshMethod" )
                 if method not in methods: methods[ method ] = []
                 methods[ method ].append( algo )
@@ -67,7 +68,7 @@ def main(plugin_name, dummymeshhelp = True, output_file = "smeshBuilder.py", for
         if methods:
             output = []
             if dummymeshhelp:
-        	if format == "doxygen":
+                if format == "doxygen":
                     output.append( "## @package smeshBuilder" )
                     output.append( "#  Documentation of the methods dynamically added by the " + plugin_name + " meshing plug-in to the Mesh class." )
                     output.append( "" )
@@ -89,7 +90,7 @@ def main(plugin_name, dummymeshhelp = True, output_file = "smeshBuilder.py", for
                 # Add dummy Mesh help
                 # This is supposed to be done when generating documentation for meshing plug-ins
                 if format == "doxygen":
-            	    output.append( "#  @note The documentation below does not provide complete description of class @b %Mesh" )
+                    output.append( "#  @note The documentation below does not provide complete description of class @b %Mesh" )
                     output.append( "#  from @b smeshBuilder package. This documentation provides only information about" )
                     output.append( "#  the methods dynamically added to the %Mesh class by the " + plugin_name + " plugin" )
                     output.append( "#  For more details on the %Mesh class, please refer to the SALOME %Mesh module" )
@@ -108,13 +109,13 @@ def main(plugin_name, dummymeshhelp = True, output_file = "smeshBuilder.py", for
                 # This is supposed to be done only when building documentation for SMESH module
                 if format ==  "doxygen":
                     output.append( "#  @note Some methods are dynamically added to the @b %Mesh class in runtime by meshing " )
-	            output.append( "#  plug-in modules. If you fail to find help on some methods in the documentation of SMESH module, " )
-    	            output.append( "#  try to look into the documentation for the meshing plug-ins." )
-    	        elif format == "sphinx":
+                    output.append( "#  plug-in modules. If you fail to find help on some methods in the documentation of SMESH module, " )
+                    output.append( "#  try to look into the documentation for the meshing plug-ins." )
+                elif format == "sphinx":
                     output.append( "    Note:")
                     output.append( "        Some methods are dynamically added to the @b %Mesh class in runtime by meshing " )
-	            output.append( "        plug-in modules. If you fail to find help on some methods in the documentation of SMESH module, " )
-    	            output.append( "        try to look into the documentation for the meshing plug-ins." )
+                    output.append( "        plug-in modules. If you fail to find help on some methods in the documentation of SMESH module, " )
+                    output.append( "        try to look into the documentation for the meshing plug-ins." )
                     output.append( '    """' )
                     output.append( '    ' )
                 pass
@@ -160,37 +161,39 @@ def main(plugin_name, dummymeshhelp = True, output_file = "smeshBuilder.py", for
                     output.append( '        """' )
                     output.append( '        pass' )
                 pass
-            f = open(output_file, "w")
-            for line in output: f.write( line + "\n" )
-            f.close()
+            with open(output_file, "w", encoding='utf8') as f:
+                f.write('\n'.join(output))
             pass
         pass
-    except Exception, e:
-        print e
+    except Exception as e:
+        print(e)
         pass
     pass
     
 if __name__ == "__main__":
-    import optparse
-    parser = optparse.OptionParser(usage="%prog [options] plugin")
+    import argparse
+    parser = argparse.ArgumentParser()
     h  = "Output file (smesh.py by default)"
-    parser.add_option("-o", "--output", dest="output",
-                      action="store", default=None, metavar="file",
+    parser.add_argument("-o", "--output", dest="output",
+                      action="store", default='smesh.py', metavar="file",
                       help=h)
     h  = "If this option is True, dummy help for Mesh class is added. "
     h += "This option should be False (default) when building documentation for SMESH module "
     h += "and True when building documentation for meshing plug-ins."
-    parser.add_option("-d", "--dummy-mesh-help", dest="dummymeshhelp",
+    parser.add_argument("-d", "--dummy-mesh-help", dest="dummymeshhelp",
                       action="store_true", default=False,
                       help=h)
     h = "Format of the documentation strings in the output file. Possible values are: "
     h+= "'doxygen' - documentation strings are generated in the doxygen format, before a method defenition."
     h+= "'sphinx' - documentation strings are generated in the sphinx format, after a method defenition."
-    parser.add_option("-f", "--format", dest="format",
+    parser.add_argument("-f", "--format", dest="format",
                       action="store", default="doxygen", help=h)
 
-    (options, args) = parser.parse_args()
+    parser.add_argument("plugin_name")
 
-    if len( args ) < 1: sys.exit("Plugin name is not specified")
-    main( args[0], options.dummymeshhelp, options.output, options.format )
+
+    args = parser.parse_args()
+
+    if args.plugin_name is None : sys.exit("Plugin name is not specified")
+    main( args.plugin_name, args.dummymeshhelp, args.output, args.format )
     pass

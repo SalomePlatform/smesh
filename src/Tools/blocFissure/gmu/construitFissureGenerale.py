@@ -2,12 +2,12 @@
 
 import logging
 import salome
-from geomsmesh import geompy
-from geomsmesh import geomPublish
-from geomsmesh import geomPublishInFather
-import initLog
+from .geomsmesh import geompy
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+from . import initLog
 import GEOM
-from geomsmesh import smesh
+from .geomsmesh import smesh
 from salome.smesh import smeshBuilder
 import SMESH
 import math
@@ -23,36 +23,36 @@ import traceback
 # from produitMixte import produitMixte
 # from findWireEndVertices import findWireEndVertices
 #from findWireIntermediateVertices import findWireIntermediateVertices
-from orderEdgesFromWire import orderEdgesFromWire
+from .orderEdgesFromWire import orderEdgesFromWire
 # from getSubshapeIds import getSubshapeIds
-from putName import putName
+from .putName import putName
 # from distance2 import distance2
-from enleveDefaut import enleveDefaut
-from shapeSurFissure import shapeSurFissure
-from regroupeSainEtDefaut import RegroupeSainEtDefaut
-from triedreBase import triedreBase
+from .enleveDefaut import enleveDefaut
+from .shapeSurFissure import shapeSurFissure
+from .regroupeSainEtDefaut import RegroupeSainEtDefaut
+from .triedreBase import triedreBase
 # from checkDecoupePartition import checkDecoupePartition
 # from whichSide import whichSide
 # from whichSideMulti import whichSideMulti
 #from whichSideVertex import whichSideVertex
 #from projettePointSurCourbe import projettePointSurCourbe
 # from prolongeWire import prolongeWire
-from restreintFaceFissure import restreintFaceFissure
-from partitionneFissureParPipe import partitionneFissureParPipe
-from construitPartitionsPeauFissure import construitPartitionsPeauFissure
-from compoundFromList import compoundFromList
-from identifieElementsGeometriquesPeau import identifieElementsGeometriquesPeau
-from identifieFacesEdgesFissureExterne import identifieFacesEdgesFissureExterne
-from calculePointsAxiauxPipe import calculePointsAxiauxPipe
-from elimineExtremitesPipe import elimineExtremitesPipe
-from construitEdgesRadialesDebouchantes import construitEdgesRadialesDebouchantes
-from creePointsPipePeau import creePointsPipePeau
-from ajustePointsEdgePipeFissure import ajustePointsEdgePipeFissure
-from construitMaillagePipe import construitMaillagePipe
-from mailleAretesEtJonction import mailleAretesEtJonction
-from mailleFacesFissure import mailleFacesFissure
-from mailleFacesPeau import mailleFacesPeau
-from fissError import fissError
+from .restreintFaceFissure import restreintFaceFissure
+from .partitionneFissureParPipe import partitionneFissureParPipe
+from .construitPartitionsPeauFissure import construitPartitionsPeauFissure
+from .compoundFromList import compoundFromList
+from .identifieElementsGeometriquesPeau import identifieElementsGeometriquesPeau
+from .identifieFacesEdgesFissureExterne import identifieFacesEdgesFissureExterne
+from .calculePointsAxiauxPipe import calculePointsAxiauxPipe
+from .elimineExtremitesPipe import elimineExtremitesPipe
+from .construitEdgesRadialesDebouchantes import construitEdgesRadialesDebouchantes
+from .creePointsPipePeau import creePointsPipePeau
+from .ajustePointsEdgePipeFissure import ajustePointsEdgePipeFissure
+from .construitMaillagePipe import construitMaillagePipe
+from .mailleAretesEtJonction import mailleAretesEtJonction
+from .mailleFacesFissure import mailleFacesFissure
+from .mailleFacesPeau import mailleFacesPeau
+from .fissError import fissError
 
 # -----------------------------------------------------------------------------
 # --- procédure complète fissure générale
@@ -69,7 +69,7 @@ def construitFissureGenerale(maillagesSains,
   fondFiss          = shapesFissure[4] # groupe d'edges de fond de fissure
 
   rayonPipe = shapeFissureParams['rayonPipe']
-  if shapeFissureParams.has_key('lenSegPipe'):
+  if 'lenSegPipe' in shapeFissureParams:
     lenSegPipe = shapeFissureParams['lenSegPipe']
   else:
     lenSegPipe = rayonPipe
@@ -82,20 +82,20 @@ def construitFissureGenerale(maillagesSains,
   nbsegCercle       = maillageFissureParams['nbsegCercle']   # nombre de secteur dans un cercle du pipe
   areteFaceFissure  = maillageFissureParams['areteFaceFissure']
   lgAretesVives     = 0
-  if maillageFissureParams.has_key('aretesVives'):
+  if 'aretesVives' in maillageFissureParams:
     lgAretesVives   = maillageFissureParams['aretesVives']
 
   pointIn_x = 0.0
   pointIn_y = 0.0
   pointIn_z = 0.0
   isPointInterne = False
-  if shapeFissureParams.has_key('pointIn_x'):
+  if 'pointIn_x' in shapeFissureParams:
     pointIn_x = shapeFissureParams['pointIn_x']
     isPointInterne = True
-  if shapeFissureParams.has_key('pointIn_y'):
+  if 'pointIn_y' in shapeFissureParams:
     pointIn_y = shapeFissureParams['pointIn_y']
     isPointInterne = True
-  if shapeFissureParams.has_key('pointIn_z'):
+  if 'pointIn_z' in shapeFissureParams:
     pointIn_z = shapeFissureParams['pointIn_z']
     isPointInterne = True
   if isPointInterne:
@@ -328,12 +328,12 @@ def construitFissureGenerale(maillagesSains,
   fond = maillageComplet.GetMesh().CreateDimGroup( grps, SMESH.NODE, 'FACE2' )
 
   logging.info("export maillage fini")
-  maillageComplet.ExportMED( fichierMaillageFissure, 0, SMESH.MED_V2_2, 1 )
+  maillageComplet.ExportMED(fichierMaillageFissure)
   putName(maillageComplet, nomFicFissure)
   logging.info("fichier maillage fissure %s", fichierMaillageFissure)
 
   if salome.sg.hasDesktop():
-    salome.sg.updateObjBrowser(True)
+    salome.sg.updateObjBrowser()
 
   logging.info("maillage fissure fini")
   

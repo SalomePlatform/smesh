@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from geomsmesh import geompy
+from .geomsmesh import geompy
 
 # -----------------------------------------------------------------------------
 # --- subShapes communes à deux listes
@@ -17,7 +17,7 @@ def commonSubShapes(obj, sub1, sub2):
     idsub1[geompy.GetSubShapeID(obj, s)] = s
   for s in sub2:
     idsub = geompy.GetSubShapeID(obj, s)
-    if idsub in idsub1.keys():
+    if idsub in list(idsub1.keys()):
       subList.append(s)
   logging.debug("subList=%s", subList)
   return subList

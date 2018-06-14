@@ -16,21 +16,19 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-// File   : MED_GaussDef.hxx
-// Author : Edward AGAPOV (eap)
-//
+
 #ifndef MED_GaussDef_HeaderFile
 #define MED_GaussDef_HeaderFile
 
-#include "MED_WrapperBase.hxx"
+#include "MED_WrapperDef.hxx"
 
-//#include "MED_GaussUtils.hxx" <<<---- avoid dependence on boost
 #include <vector>
 
 namespace MED
 {
   class TShapeFun;
   typedef std::vector<double> TDoubleVector;
+
   /*!
    * \brief Description of family of integration points
    */
@@ -46,9 +44,9 @@ namespace MED
      *  \param geomType - element geometry (EGeometrieElement or med_geometrie_element)
      *  \param nbPoints - nb gauss point
      *  \param variant - [1-3] to choose the variant of definition
-     * 
+     *
      * Throws in case of invalid parameters
-     * variant == 1 refers to "Fonctions de forme et points d'integration 
+     * variant == 1 refers to "Fonctions de forme et points d'integration
      *              des elements finis" v7.4 by J. PELLET, X. DESROCHES, 15/09/05
      * variant == 2 refers to the same doc v6.4 by J.P. LEFEBVRE, X. DESROCHES, 03/07/03
      * variant == 3 refers to the same doc v6.4, second variant for 2D elements
@@ -66,4 +64,4 @@ namespace MED
   };
 }
 
-#endif
+#endif // MED_GaussDef_HeaderFile

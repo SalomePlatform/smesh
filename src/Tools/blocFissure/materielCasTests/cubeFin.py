@@ -4,10 +4,8 @@ import sys
 import salome
 
 salome.salome_init()
-theStudy = salome.myStudy
 
 import salome_notebook
-notebook = salome_notebook.NoteBook(theStudy)
 
 import os
 from blocFissure import gmu
@@ -22,7 +20,7 @@ import math
 import SALOMEDS
 
 
-geompy = geomBuilder.New(theStudy)
+geompy = geomBuilder.New()
 
 O = geompy.MakeVertex(0, 0, 0)
 OX = geompy.MakeVectorDXDYDZ(1, 0, 0)
@@ -104,7 +102,7 @@ geompy.ExportBREP(cubeFin_Milieu, os.path.join(gmu.pathBloc, "materielCasTests/c
 import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
-smesh = smeshBuilder.New(theStudy)
+smesh = smeshBuilder.New()
 cubeFin_1 = smesh.Mesh(cubeFin)
 Regular_1D = cubeFin_1.Segment()
 Nb_Segments_1 = Regular_1D.NumberOfSegments(20)
@@ -124,7 +122,7 @@ smesh.SetName(ENCASTR_1, 'ENCASTR')
 smesh.SetName(cubeFin_1.GetMesh(), 'cubeFin')
 smesh.SetName(Nb_Segments_1, 'Nb. Segments_1')
 
-cubeFin_1.ExportMED( os.path.join(gmu.pathBloc, "materielCasTests/cubeFin.med"), 0, SMESH.MED_V2_2, 1 )
+cubeFin_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests/cubeFin.med"))
 
 if salome.sg.hasDesktop():
-  salome.sg.updateObjBrowser(True)
+  salome.sg.updateObjBrowser()

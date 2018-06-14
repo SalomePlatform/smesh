@@ -68,7 +68,6 @@ class SMESH_EXPORT SMESH_Mesh
 {
  public:
   SMESH_Mesh(int               theLocalId,
-             int               theStudyId,
              SMESH_Gen*        theGen,
              bool              theIsEmbeddedMode,
              SMESHDS_Document* theDocument);
@@ -250,7 +249,6 @@ class SMESH_EXPORT SMESH_Mesh
   void ExportMED(const char *        theFile, 
                  const char*         theMeshName = NULL, 
                  bool                theAutoGroups = true, 
-                 int                 theVersion = 0,
                  const SMESHDS_Mesh* theMeshPart = 0,
                  bool                theAutoDimension = false,
                  bool                theAddODOnVertices = false,
@@ -362,7 +360,6 @@ private:
   
 protected:
   int                        _id;           // id given by creator (unique within the creator instance)
-  int                        _studyId;
   int                        _groupId;      // id generator for group objects
   int                        _nbSubShapes;  // initial nb of subshapes in the shape to mesh
   bool                       _isShapeToMesh;// set to true when a shape is given (only once)

@@ -44,7 +44,6 @@ class STDMESHERS_I_EXPORT StdMeshers_NotConformAllowed_i:
 {
 public:
   StdMeshers_NotConformAllowed_i(PortableServer::POA_ptr thePOA,
-                                 int studyId,
                                  ::SMESH_Gen* genImpl);
   virtual ~StdMeshers_NotConformAllowed_i();
   

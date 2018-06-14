@@ -1,8 +1,8 @@
 .. _smesh_migration_page:
 
-*****************************************************
-Modifing Mesh Python scripts from SALOME 6 and before
-*****************************************************
+******************************************************
+Modifying Mesh Python scripts from SALOME 6 and before
+******************************************************
 
 In SALOME 7.2, the Python interface for Mesh has been slightly modified to offer new functionality:
 
@@ -28,12 +28,12 @@ The compatibility mode allows old scripts to work in almost all cases, but with 
 
 	import SMESH, SALOMEDS
 	from salome.smesh import smeshBuilder
-	smesh =  smeshBuilder.New(salome.myStudy)
+	smesh =  smeshBuilder.New()
 
 
 * Of course, **from smesh import** * is **no more possible.**
 
-  You have to explicitely write *smesh.some_method()*.
+  You have to explicitly write *smesh.some_method()*.
 
 * All **algorithms** have been transferred from the namespace *smesh* to the namespace *smeshBuilder*.
 
@@ -84,7 +84,7 @@ The compatibility mode allows old scripts to work in almost all cases, but with 
 
 	Compound1 = smesh.Concatenate([Mesh_inf.GetMesh(), Mesh_sup.GetMesh()], 0, 1, 1e-05)
 
-* If you need to **import a SMESH Plugin** explicitely, keep in mind that  they are now located in separate namespaces.
+* If you need to **import a SMESH Plugin** explicitly, keep in mind that  they are now located in separate namespaces.
 
   For instance::
 

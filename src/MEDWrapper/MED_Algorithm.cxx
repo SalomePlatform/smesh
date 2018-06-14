@@ -19,24 +19,24 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #include "MED_Algorithm.hxx"
 #include "MED_Wrapper.hxx"
-
 #include "MED_Utilities.hxx"
- 
+
 #ifdef _DEBUG_
 static int MYDEBUG = 0;
 static int MYVALUEDEBUG = 0;
 #else
-// static int MYDEBUG = 0;
-// static int MYVALUEDEBUG = 0;
+static int MYDEBUG = 0;
+static int MYVALUEDEBUG = 0;
 #endif
 
 namespace MED
 {
   //---------------------------------------------------------------
-  TEntity2TGeom2ElemInfo 
-  GetEntity2TGeom2ElemInfo(const PWrapper& theWrapper, 
+  TEntity2TGeom2ElemInfo
+  GetEntity2TGeom2ElemInfo(const PWrapper& theWrapper,
                            const PMeshInfo& theMeshInfo,
                            const MED::TEntityInfo& theEntityInfo)
   {
@@ -64,8 +64,7 @@ namespace MED
     ADDMSG(MYDEBUG,"\n");
     return anEntity2TGeom2ElemInfo;
   }
-  
-  
+
   //---------------------------------------------------------------
   TFamilyInfoSet
   GetFamilyInfoSet(const PWrapper& theWrapper,
@@ -85,7 +84,6 @@ namespace MED
     return aFamilyInfoSet;
   }
 
-
   //---------------------------------------------------------------
   TGroupInfo
   GetGroupInfo(const TFamilyInfoSet& theFamilyInfoSet)
@@ -98,7 +96,7 @@ namespace MED
       TInt aNbGroup = aFamilyInfo->GetNbGroup();
       for(TInt iGroup = 0; iGroup < aNbGroup; iGroup++){
         aGroup[aFamilyInfo->GetGroupName(iGroup)].insert(aFamilyInfo);
-      } 
+      }
     }
 
 #ifdef _DEBUG_
@@ -121,10 +119,9 @@ namespace MED
     return aGroup;
   }
 
-
   //---------------------------------------------------------------
-  TFieldInfo2TimeStampInfoSet 
-  GetFieldInfo2TimeStampInfoSet(const PWrapper& theWrapper, 
+  TFieldInfo2TimeStampInfoSet
+  GetFieldInfo2TimeStampInfoSet(const PWrapper& theWrapper,
                                 const PMeshInfo& theMeshInfo,
                                 const MED::TEntityInfo& theEntityInfo)
   {
@@ -141,7 +138,7 @@ namespace MED
       TInt aNbTimeStamps = theWrapper->GetNbTimeStamps(aFieldInfo,theEntityInfo,anEntity,aGeom2Size);
       ADDMSG(MYDEBUG,"anEntity = "<<anEntity<<"; GetNbTimeStamps = "<<aNbTimeStamps<<"\n");
       for(TInt iTimeStamp = 1; iTimeStamp <= aNbTimeStamps; iTimeStamp++){
-        PTimeStampInfo aTimeStamp = 
+        PTimeStampInfo aTimeStamp =
           theWrapper->GetPTimeStampInfo(aFieldInfo,anEntity,aGeom2Size,iTimeStamp);
         aFieldInfo2TimeStampInfoSet[aFieldInfo].insert(aTimeStamp);
         INITMSG(MYDEBUG,
@@ -152,10 +149,9 @@ namespace MED
     ADDMSG(MYDEBUG,"\n");
     return aFieldInfo2TimeStampInfoSet;
   }
-  
 
   //---------------------------------------------------------------
-  TEntite2TFieldInfo2TimeStampInfoSet 
+  TEntite2TFieldInfo2TimeStampInfoSet
   GetEntite2TFieldInfo2TimeStampInfoSet(const TFieldInfo2TimeStampInfoSet& theFieldInfo2TimeStampInfoSet)
   {
     TEntite2TFieldInfo2TimeStampInfoSet anEntite2TFieldInfo2TimeStampInfoSet;
@@ -163,14 +159,13 @@ namespace MED
     for(; anIter != theFieldInfo2TimeStampInfoSet.end(); anIter++){
       const TTimeStampInfoSet& aTimeStampInfoSet = anIter->second;
       //const PFieldInfo& aFieldInfo = anIter->first;
-      if(aTimeStampInfoSet.empty()) 
+      if(aTimeStampInfoSet.empty())
         continue;
       const PTimeStampInfo& aTimeStampInfo = *aTimeStampInfoSet.begin();
       anEntite2TFieldInfo2TimeStampInfoSet[ConvertEntity(aTimeStampInfo->GetEntity())].insert(*anIter);
     }
     return anEntite2TFieldInfo2TimeStampInfoSet;
   }
-  
 
   //---------------------------------------------------------------
   bool
@@ -181,16 +176,15 @@ namespace MED
     return aLeftInfo->GetId() < aRightInfo->GetId();
   }
 
-
   //---------------------------------------------------------------
-  TEntity2FamilySet 
-  GetEntity2FamilySet(const PWrapper& theWrapper, 
+  TEntity2FamilySet
+  GetEntity2FamilySet(const PWrapper& theWrapper,
                       const TEntity2TGeom2ElemInfo& theEntity2TGeom2ElemInfo,
                       const TFamilyInfoSet& theFamilyInfoSet)
   {
     MSG(MYDEBUG,"GetFamiliesByEntity(...)");
     TEntity2FamilySet anEntity2FamilySet;
-    
+
     typedef std::map<TInt,PFamilyInfo> TId2Family;
     TId2Family anId2Family;
     TFamilyInfoSet::const_iterator anIter = theFamilyInfoSet.begin();
@@ -198,12 +192,12 @@ namespace MED
       const PFamilyInfo& aFamilyInfo = *anIter;
       anId2Family.insert(TId2Family::value_type(aFamilyInfo->GetId(),aFamilyInfo));
     }
-    
+
     if(!anId2Family.empty()){
       typedef std::map<TInt,TInt> TFamilyID2Size;
       typedef std::map<EEntiteMaillage,TFamilyID2Size> TEntity2FamilyID;
       TEntity2FamilyID anEntity2FamilyID;
-      
+
       if(!theEntity2TGeom2ElemInfo.empty()){
         TEntity2TGeom2ElemInfo::const_iterator anIter = theEntity2TGeom2ElemInfo.begin();
         for(; anIter != theEntity2TGeom2ElemInfo.end(); anIter++){
@@ -221,7 +215,7 @@ namespace MED
           }
         }
       }
-      
+
       if(!anEntity2FamilyID.empty()){
         TEntity2FamilyID::const_iterator anIter = anEntity2FamilyID.begin();
         for(; anIter != anEntity2FamilyID.end(); anIter++){
@@ -243,15 +237,14 @@ namespace MED
           }
         }
       }
-    }    
+    }
     ADDMSG(MYDEBUG,"\n");
     return anEntity2FamilySet;
   }
-  
 
   //---------------------------------------------------------------
   TKey2Gauss
-  GetKey2Gauss(const PWrapper& theWrapper, 
+  GetKey2Gauss(const PWrapper& theWrapper,
                TErr* theErr,
                EModeSwitch theMode)
   {
@@ -278,10 +271,9 @@ namespace MED
     return aKey2Gauss;
   }
 
-
   //---------------------------------------------------------------
   PProfileInfo
-  GetProfileInfo(const PWrapper& theWrapper, 
+  GetProfileInfo(const PWrapper& theWrapper,
                  const std::string& theProfileName,
                  TErr* theErr,
                  EModeProfil theMode)
@@ -296,11 +288,10 @@ namespace MED
     }
     return anInfo;
   }
-  
 
   //---------------------------------------------------------------
   TMKey2Profile
-  GetMKey2Profile(const PWrapper& theWrapper, 
+  GetMKey2Profile(const PWrapper& theWrapper,
                   TErr* theErr,
                   EModeProfil theMode)
   {
@@ -312,7 +303,7 @@ namespace MED
       PProfileInfo anInfo = theWrapper->GetPProfileInfo(anId,theMode,theErr);
       const std::string& aName = boost::get<0>(aPreInfo);
       aKey2Profile[aName] = anInfo;
-      
+
 #ifdef _DEBUG_
       INITMSG(MYDEBUG,
               "- aName = '"<<aName<<"'"<<
@@ -324,14 +315,16 @@ namespace MED
       }
       ADDMSG(MYVALUEDEBUG, std::endl);
 #endif
-      
+
     }
     return TMKey2Profile(theMode,aKey2Profile);
   }
 
   //---------------------------------------------------------------
   EEntiteMaillage
-  GetEntityByFamilyId(PGrilleInfo& theInfo,TInt theId){
+  GetEntityByFamilyId(PGrilleInfo& theInfo,
+                      TInt theId)
+  {
     TElemNum::iterator aNodeFamIter = (theInfo->myFamNumNode).begin();
     for(;aNodeFamIter != (theInfo->myFamNumNode).end(); aNodeFamIter++){
       if(theId == *aNodeFamIter)
@@ -346,8 +339,10 @@ namespace MED
     return EEntiteMaillage(-1);
   }
 
+  //---------------------------------------------------------------
   TFamilyID2NbCells
-  GetFamilyID2NbCells(PGrilleInfo& theInfo){
+  GetFamilyID2NbCells(PGrilleInfo& theInfo)
+  {
     TFamilyID2NbCells aFamily2NbCells;
     TInt aNbNodes = theInfo->myFamNumNode.size();
     TInt aNbCells = theInfo->myFamNum.size();
@@ -358,17 +353,21 @@ namespace MED
     return aFamily2NbCells;
   }
 
-  EEntiteMaillage ConvertEntity(const EEntiteMaillage& aEntity){
+  //---------------------------------------------------------------
+  EEntiteMaillage
+  ConvertEntity(const EEntiteMaillage& aEntity)
+  {
     switch( aEntity ){
-      
     case eNOEUD_ELEMENT:
-    case eMAILLE: return eMAILLE; //eNOEUD_ELEMENT it is eMAILLE
-      
+    case eMAILLE:
+      return eMAILLE; // eNOEUD_ELEMENT is eMAILLE
     case eFACE:
     case eARETE:
-    case eNOEUD: return aEntity; break;
-    default: return EEntiteMaillage(-1);
-      
+    case eNOEUD:
+      return aEntity;
+    default:
+      break;
     }
+    return EEntiteMaillage(-1);
   }
 }

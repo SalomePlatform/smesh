@@ -19,10 +19,11 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef MED_SliceArray_HeaderFile
 #define MED_SliceArray_HeaderFile
 
-#ifdef WIN32 // for correctly compiling "valarray" in modules, which includes this file
+#ifdef WIN32 // for correct compiling of "valarray" in modules, which include this file
   #undef max
   #undef min
 #endif
@@ -38,12 +39,12 @@ namespace MED
 {
   //---------------------------------------------------------------
   //! This class intends to provide a uniform way to handle multidimensional data (const version)
-  /*! 
+  /*!
     It just contains a pointer to real sequence and implement proper calculation of its indexes.
     This class deals with constant pointer to the sources data and provides const method to
     read them (data).
    */
-  template<class TValueType> 
+  template<class TValueType>
   class TCSlice
   {
     const TValueType* myCValuePtr; //!< Reference to source multidimensional data
@@ -69,7 +70,7 @@ namespace MED
     {
       return mySlice.start() + theId*mySlice.stride();
     }
-    
+
     size_t
     get_id(size_t theId) const
     {
@@ -78,7 +79,7 @@ namespace MED
 #endif
       return calculate_id(theId);
     }
-    
+
     size_t
     get_id_at(size_t theId) const
     {
@@ -92,38 +93,38 @@ namespace MED
     //! Construct the class from bare pointer
     TCSlice(const value_type* theValuePtr,
             size_t theSourceSize,
-            const std::slice& theSlice): 
+            const std::slice& theSlice):
       myCValuePtr(theValuePtr),
       mySourceSize(theSourceSize),
       mySlice(theSlice)
     {}
-    
+
     //! Construct the class from corresponding container
     TCSlice(const TVector<value_type>& theContainer,
-            const std::slice& theSlice): 
+            const std::slice& theSlice):
       myCValuePtr(&theContainer[0]),
       mySourceSize(theContainer.size()),
       mySlice(theSlice)
     {}
-    
+
     //! Default constructor (dangerous)
     TCSlice():
       myCValuePtr(NULL)
     {}
 
     //! Get element by its number (const version)
-    const value_type& 
+    const value_type&
     operator[](size_t theId) const
     {
       return *(myCValuePtr + get_id(theId));
     }
-    
-    const value_type& 
+
+    const value_type&
     at(size_t theId) const
     {
       return *(myCValuePtr + get_id_at(theId));
     }
-    
+
     //! Get range of the order numbers
     size_t
     size() const
@@ -131,15 +132,14 @@ namespace MED
       return mySlice.size();
     }
   };
-  
 
   //---------------------------------------------------------------
   //! This class extends TCSlice functionality for non-constant case
-  template<class TValueType> 
+  template<class TValueType>
   class TSlice: public TCSlice<TValueType>
   {
     TValueType* myValuePtr;
-    
+
   public:
     typedef TValueType value_type;
     typedef TCSlice<TValueType> TSupperClass;
@@ -147,39 +147,38 @@ namespace MED
     //! Construct the class from bare pointer
     TSlice(value_type* theValuePtr,
            size_t theSourceSize,
-           const std::slice& theSlice): 
+           const std::slice& theSlice):
       TSupperClass(theValuePtr, theSourceSize, theSlice),
       myValuePtr(theValuePtr)
     {}
-    
+
     //! Construct the class from corresponding container
     TSlice(TVector<value_type>& theContainer,
-           const std::slice& theSlice): 
+           const std::slice& theSlice):
       TSupperClass(theContainer, theSlice),
       myValuePtr(&theContainer[0])
     {}
-    
+
     //! Default constructor (dangerous)
     TSlice():
       myValuePtr(NULL)
     {}
 
     //! Get element by its number
-    value_type& 
+    value_type&
     operator[](size_t theId)
     {
       return *(myValuePtr + this->get_id(theId));
     }
 
-    value_type& 
+    value_type&
     at(size_t theId)
     {
       return *(myValuePtr + this->get_id_at(theId));
     }
   };
-
 }
 
 #undef MED_TCSLICE_CHECK_RANGE
 
-#endif
+#endif // MED_SliceArray_HeaderFile

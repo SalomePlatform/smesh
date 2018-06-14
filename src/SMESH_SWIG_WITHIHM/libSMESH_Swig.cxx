@@ -133,17 +133,15 @@ namespace
   ///////////////////////////////////////////////////////////////
   /// \internal
   /// \brief Get study object by its study UID or IOR.
-  /// \param studyId Study UID.
   /// \param uid Object's study UID or IOR.
   /// \return Pointer to study object (null object if it isn't
   ///         found).
   ///////////////////////////////////////////////////////////////
-  _PTR(SObject) uid2object(int studyId, const std::string& uid)
+  _PTR(SObject) uid2object(const std::string& uid)
   {
     _PTR(SObject) sobject;
-    if ( studyId > 0 )
     {
-      _PTR(Study) study = SalomeApp_Application::studyMgr()->GetStudyByID( studyId );
+      _PTR(Study) study = SMESH::getStudy();
       if ( study )
       {
 	sobject = study->FindObjectID( uid );
@@ -534,7 +532,6 @@ Properties::Properties()
 /// \brief Constructor.
 /////////////////////////////////////////////////////////////////
 SMESH_Swig::SMESH_Swig()
-  : myCachedStudyId( 0 )
 {
   init();
 }
@@ -568,23 +565,7 @@ void SMESH_Swig::init()
 
   // load SMESH GUI if it's not yet loaded
   ProcessVoidEvent( new TInitEvent() );
-
-  // set current study
-  std::vector<std::string> studies = SalomeApp_Application::studyMgr()->GetOpenStudies();
-  if ( studies.size() > 0 )
-  {
-    _PTR(Study) study = SalomeApp_Application::studyMgr()->GetStudyByName( studies[0] );
-    int studyId = study->StudyId();
-    if ( myCachedStudyId != studyId )
-    {
-      myCachedStudyId = studyId;
-      SMESHGUI::GetSMESHGen()->SetCurrentStudy( _CAST(Study, study)->GetStudy() );
-    }
-  }
-  else
-  {
-    myCachedStudyId = 0;
-  }
+  SMESHGUI::GetSMESHGen()->UpdateStudy();
 }
 
 /////////////////////////////////////////////////////////////////
@@ -599,25 +580,19 @@ const char* SMESH_Swig::publish(const char* ior, const char* name)
   init();
 
   std::string uid;
-
-  if ( myCachedStudyId > 0 )
-  {
-    _PTR(Study) study = SalomeApp_Application::studyMgr()->GetStudyByID( myCachedStudyId );
-    CORBA::Object_var object = string2object( ior );
-    if ( study && !CORBA::is_nil( object ) )
+  CORBA::Object_var object = string2object( ior );
+  if ( !CORBA::is_nil( object ) )
     {
       SALOMEDS::SObject_var sobject =
-	SMESHGUI::GetSMESHGen()->PublishInStudy( _CAST(Study, study)->GetStudy(),
-						 SALOMEDS::SObject::_nil(),
+	SMESHGUI::GetSMESHGen()->PublishInStudy( SALOMEDS::SObject::_nil(),
 						 object.in(),
 						 name );
       if ( !CORBA::is_nil( sobject ) )
-      {
-	uid = sobject->GetID();
-      }
+	{
+	  uid = sobject->GetID();
+	}
       sobject->UnRegister();
     }
-  }
 
   return strdup( uid.c_str() );
 }
@@ -631,7 +606,7 @@ void SMESH_Swig::rename(const char* uid, const char* name)
 {
   init();
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
     sobject->SetAttrString( "AttributeName", name );
 }
@@ -665,7 +640,7 @@ void SMESH_Swig::display(const char* uid, int viewUid, bool updateViewer)
 
   init();
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
     ProcessVoidEvent( new TDisplayEvent( sobject->GetID().c_str(), viewUid, updateViewer ) );
 }
@@ -708,7 +683,7 @@ void SMESH_Swig::erase(const char* uid, int viewUid, bool updateViewer)
 
   init();
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
     ProcessVoidEvent( new TEraseEvent( sobject->GetID().c_str(), viewUid, updateViewer ) );
 }
@@ -735,7 +710,7 @@ void SMESH_Swig::update(const char* uid)
 
   init();
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
     ProcessVoidEvent( new TUpdateEvent( uid ) );
 }
@@ -773,7 +748,7 @@ Properties SMESH_Swig::properties(const char* uid, int viewUid)
 
   init();
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
     props = ProcessEvent( new TGetPropsEvent( sobject->GetID().c_str(), viewUid ) );
 
@@ -822,7 +797,7 @@ void SMESH_Swig::setProperties(const char* uid, const Properties& props, int vie
 {
   init();
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
     ProcessVoidEvent( new TSetPropsEvent( sobject->GetID().c_str(), props, viewUid ) );
 }
@@ -864,7 +839,7 @@ bool SMESH_Swig::nodesNumbering(const char* uid, int viewUid)
 
   init();
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
     numbering = ProcessEvent( new TGetNodeNumberingEvent( sobject->GetID().c_str(), viewUid ) );
 
@@ -909,7 +884,7 @@ void SMESH_Swig::setNodesNumbering(const char* uid, bool numbering, int viewUid)
 {
   init();
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
     ProcessVoidEvent( new TSetNodeNumberingEvent( sobject->GetID().c_str(), numbering, viewUid ) );
 }
@@ -951,7 +926,7 @@ bool SMESH_Swig::elementsNumbering(const char* uid, int viewUid)
 
   init();
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
     numbering = ProcessEvent( new TGetElementNumberingEvent( sobject->GetID().c_str(), viewUid ) );
 
@@ -996,7 +971,7 @@ void SMESH_Swig::setElementsNumbering(const char* uid, bool numbering, int viewU
 {
   init();
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
     ProcessVoidEvent( new TSetElementNumberingEvent( sobject->GetID().c_str(), numbering, viewUid ) );
 }
@@ -1037,7 +1012,7 @@ DisplayMode SMESH_Swig::displayMode(const char* uid, int viewUid)
 
   init();
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
     mode = ProcessEvent( new TGetDisplayModeEvent( sobject->GetID().c_str(), viewUid ) );
 
@@ -1081,7 +1056,7 @@ void SMESH_Swig::setDisplayMode(const char* uid, DisplayMode mode, int viewUid)
 {
   init();
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
     ProcessVoidEvent( new TSetDisplayModeEvent( sobject->GetID().c_str(), mode, viewUid ) );
 }
@@ -1123,7 +1098,7 @@ bool SMESH_Swig::shrinkMode(const char* uid, int viewUid)
 
   init();
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
     shrinkMode = ProcessEvent( new TGetShrinkModeEvent( sobject->GetID().c_str(), viewUid ) );
 
@@ -1171,7 +1146,7 @@ void SMESH_Swig::setShrinkMode(const char* uid, bool shrink, int viewUid)
 {
   init();
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
     ProcessVoidEvent( new TSetShrinkModeEvent( sobject->GetID().c_str(), shrink, viewUid ) );
 }
@@ -1212,7 +1187,7 @@ double SMESH_Swig::opacity(const char* uid, int viewUid)
 
   init();
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
     opacity = ProcessEvent( new TGetOpacityEvent( sobject->GetID().c_str(), viewUid ) );
 
@@ -1256,7 +1231,7 @@ void SMESH_Swig::setOpacity(const char* uid, double opacity, int viewUid)
 {
   init();
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
     ProcessVoidEvent( new TSetOpacityEvent( sobject->GetID().c_str(), opacity, viewUid ) );
 }
@@ -1298,7 +1273,7 @@ bool SMESH_Swig::isOrientationShown(const char* uid, int viewUid)
 
   init();
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
     shown = ProcessEvent( new TGetOrientationEvent( sobject->GetID().c_str(), viewUid ) );
 
@@ -1343,7 +1318,7 @@ void SMESH_Swig::setOrientationShown(const char* uid, bool shown, int viewUid)
 {
   init();
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
     ProcessVoidEvent( new TSetOrientationEvent( sobject->GetID().c_str(), shown, viewUid ) );
 }
@@ -1384,7 +1359,7 @@ int SMESH_Swig::entitiesShown(const char* uid, int viewUid)
 
   init();
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
     entities = ProcessEvent( new TGetEntitiesEvent( sobject->GetID().c_str(), viewUid ) );
 
@@ -1428,7 +1403,7 @@ void SMESH_Swig::setEntitiesShown(const char* uid, int entities, int viewUid)
 {
   init();
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
     ProcessVoidEvent( new TSetEntitiesEvent( sobject->GetID().c_str(), entities, viewUid ) );
 }
@@ -1447,7 +1422,7 @@ bool SMESH_Swig::isEntityShown(const char* uid, EntityMode entity, int viewUid)
 
   init();
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
   {
     int entities = ProcessEvent( new TGetEntitiesEvent( sobject->GetID().c_str(), viewUid ) );
@@ -1469,7 +1444,7 @@ void SMESH_Swig::setEntityShown(const char* uid, EntityMode entity, bool show, i
 {
   init();
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
   {
     int entities = ProcessEvent( new TGetEntitiesEvent( sobject->GetID().c_str(), viewUid ) );
@@ -1484,9 +1459,8 @@ void SMESH_Swig::setEntityShown(const char* uid, EntityMode entity, bool show, i
 /////////////////////////////////////////////////////////////////
 /// \brief Initialize %SMESH GUI Python interface.
 /// \deprecated Interface is initialized automatically.
-/// \param studyID Study UID (not used).
 /////////////////////////////////////////////////////////////////
-void SMESH_Swig::Init(int /*studyID*/)
+void SMESH_Swig::Init()
 {
   deprecated("SMESH_Swig::Init");
   // does nothing; initialization is done automatically.
@@ -1789,7 +1763,7 @@ void SMESH_Swig::select(const char* uid, std::vector<int> ids, bool append)
 {
   init();
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
     ProcessVoidEvent( new TSelectListEvent( sobject->GetID().c_str(), ids, append ) );
 }
@@ -1809,7 +1783,7 @@ void SMESH_Swig::select(const char* uid, int id, bool append)
   std::vector<int> ids;
   ids.push_back( id );
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
     ProcessVoidEvent( new TSelectListEvent( sobject->GetID().c_str(), ids, append ) );
 }
@@ -1888,7 +1862,7 @@ void SMESH_Swig::select(const char* uid, std::vector<std::pair<int,int> > ids, b
 {
   init();
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
     ProcessVoidEvent( new TSelectListOfPairEvent( sobject->GetID().c_str(), ids, append ) );
 }
@@ -2033,7 +2007,7 @@ std::vector<int> SMESH_Swig::getSelected(const char* uid)
 
   init();
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
     ids = ProcessEvent( new TGetSelectedEvent( sobject->GetID().c_str() ) );
 
@@ -2093,7 +2067,7 @@ std::vector<std::pair<int,int> > SMESH_Swig::getSelectedEdgeOfCell(const char* u
 
   init();
 
-  _PTR(SObject) sobject = uid2object( myCachedStudyId, uid );
+  _PTR(SObject) sobject = uid2object( uid );
   if ( sobject )
     pairs = ProcessEvent( new TGetSelectedPairEvent( sobject->GetID().c_str() ) );
 

@@ -71,8 +71,8 @@ using namespace std;
 class StdMeshers_QuadFromMedialAxis_1D2D::Algo1D : public StdMeshers_Regular_1D
 {
 public:
-  Algo1D(int studyId, SMESH_Gen* gen):
-    StdMeshers_Regular_1D( gen->GetANewId(), studyId, gen )
+  Algo1D(SMESH_Gen* gen):
+    StdMeshers_Regular_1D( gen->GetANewId(), gen )
   {
   }
   void SetSegmentLength( double len )
@@ -152,9 +152,8 @@ public:
 //================================================================================
 
 StdMeshers_QuadFromMedialAxis_1D2D::StdMeshers_QuadFromMedialAxis_1D2D(int        hypId,
-                                                                       int        studyId,
                                                                        SMESH_Gen* gen)
-  : StdMeshers_Quadrangle_2D(hypId, studyId, gen),
+  : StdMeshers_Quadrangle_2D(hypId, gen),
     _regular1D( 0 )
 {
   _name = "QuadFromMedialAxis_1D2D";
@@ -741,7 +740,7 @@ namespace
     }
 
     // cout << "from salome.geom import geomBuilder" << endl;
-    // cout << "geompy = geomBuilder.New(salome.myStudy)" << endl;
+    // cout << "geompy = geomBuilder.New()" << endl;
     Handle(TColgp_HArray1OfPnt) points = new TColgp_HArray1OfPnt(1, pnt.size());
     for ( size_t i = 0; i < pnt.size(); ++i )
     {
@@ -2166,7 +2165,7 @@ bool StdMeshers_QuadFromMedialAxis_1D2D::Compute(SMESH_Mesh&         theMesh,
     SMESH_MAT2d::MedialAxis ma( F, sinuFace._sinuEdges, minSegLen, /*ignoreCorners=*/true );
 
     if ( !_regular1D )
-      _regular1D = new Algo1D( _studyId, _gen );
+      _regular1D = new Algo1D( _gen );
     _regular1D->SetSegmentLength( minSegLen );
 
     vector<double> maParams;

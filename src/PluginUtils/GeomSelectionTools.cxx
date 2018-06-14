@@ -45,21 +45,10 @@
 
 /*!
  * Constructor
- * @param aStudy pointer to the Study
  *
  */
-GeomSelectionTools::GeomSelectionTools(_PTR(Study) aStudy)
+GeomSelectionTools::GeomSelectionTools()
 {
-  myStudy = aStudy;
-}
-
-/*!
- * Accessor to the Study used by this GeomSelectionTools object
- * @return The study used by the GeomSelectionTools class
- */
-_PTR(Study) GeomSelectionTools::getMyStudy()
-{
-    return myStudy;
 }
 
 /*!
@@ -137,7 +126,7 @@ std::string GeomSelectionTools::getFirstSelectedEntry()
  */
 std::string GeomSelectionTools::getEntryOfObject(Handle(SALOME_InteractiveObject) anIO){
   std::string entry="";
-  _PTR(SObject) aSO = myStudy->FindObjectID(anIO->getEntry());
+  _PTR(SObject) aSO = SalomeApp_Application::getStudy()->FindObjectID(anIO->getEntry());
   if (aSO){
     _PTR(SObject) aRefSObj;
     // If selected object is a reference
@@ -157,7 +146,7 @@ std::string GeomSelectionTools::getEntryOfObject(Handle(SALOME_InteractiveObject
  */
 std::string GeomSelectionTools::getNameFromEntry(std::string entry){
   std::string name = "";
-  _PTR(SObject) aSO = myStudy->FindObjectID(entry);
+  _PTR(SObject) aSO = SalomeApp_Application::getStudy()->FindObjectID(entry);
   if (aSO){
     _PTR(SObject) aRefSObj;
     // If selected object is a reference
@@ -180,7 +169,7 @@ std::string GeomSelectionTools::getFirstSelectedComponentDataType()
   Handle(SALOME_InteractiveObject) anIO;
   std::string DataType="";
   anIO=GeomSelectionTools::getFirstSelectedSalomeObject();
-  _PTR(SObject) aSO = myStudy->FindObjectID(anIO->getEntry());
+  _PTR(SObject) aSO = SalomeApp_Application::getStudy()->FindObjectID(anIO->getEntry());
   if (aSO){
     _PTR(SObject) aRefSObj;
     // If selected object is a reference
@@ -201,7 +190,7 @@ TopAbs_ShapeEnum GeomSelectionTools::entryToShapeType(std::string entry){
 //   MESSAGE("GeomSelectionTools::entryToShapeType"<<entry );
   TopoDS_Shape S = TopoDS_Shape();
   TopAbs_ShapeEnum ShapeType = TopAbs_SHAPE;
-   _PTR(SObject) aSO = myStudy->FindObjectID(entry);
+   _PTR(SObject) aSO = SalomeApp_Application::getStudy()->FindObjectID(entry);
   if (aSO){
     _PTR(SObject) aRefSObj;
     GEOM::GEOM_Object_var aShape;
@@ -225,7 +214,7 @@ TopAbs_ShapeEnum GeomSelectionTools::entryToShapeType(std::string entry){
         if (aShape->GetType() == GEOM_GROUP){
 //           MESSAGE("It's a group");
           GEOM::GEOM_IGroupOperations_wrap aGroupOp =
-            _geomEngine->GetIGroupOperations(myStudy->StudyId());
+            _geomEngine->GetIGroupOperations();
           ShapeType= (TopAbs_ShapeEnum)aGroupOp->GetType(aShape);
         }
         // if not

@@ -38,7 +38,7 @@ class STDMESHERS_EXPORT StdMeshers_LengthFromEdges:
   public SMESH_Hypothesis
 {
 public:
-  StdMeshers_LengthFromEdges(int hypId, int studyId, SMESH_Gen* gen);
+  StdMeshers_LengthFromEdges(int hypId, SMESH_Gen* gen);
   virtual ~StdMeshers_LengthFromEdges();
 
   void SetMode(int mode)

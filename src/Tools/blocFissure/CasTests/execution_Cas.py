@@ -144,4 +144,4 @@ for i in range(len(problemes)):
       problemes[i].executeProbleme()
     except:
       traceback.print_exc()
-    print "---------------------------------------------------------------------"
+    print("---------------------------------------------------------------------")

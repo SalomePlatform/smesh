@@ -21,9 +21,8 @@
 # if not, copy this file as ${HOME}/Plugins/smesh_plugins.py or ${APPLI}/Plugins/smesh_plugins.py
 
 def MeshCut(context):
-  # get context study, studyId, salomeGui
+  # get context study, salomeGui
   study = context.study
-  studyId = context.studyId
   sg = context.sg
   
   import os
@@ -50,7 +49,7 @@ def MeshCut(context):
       if fd.exec_():
         infile = fd.selectedFiles()[0]
         self.ui.le_origMeshFile.setText(infile)
-        insplit = os.path.splitext(unicode(infile).encode())
+        insplit = os.path.splitext(str(infile).encode())
         outfile = insplit[0] + '_cut' + insplit[1]
         self.ui.le_cutMeshFile.setText(outfile)
       pass
@@ -97,11 +96,11 @@ and T the tolerance.
     if result:
       # dialog accepted
       args = ['MeshCut']
-      args += [unicode(window.ui.le_origMeshFile.text()).encode()]
-      args += [unicode(window.ui.le_cutMeshFile.text()).encode()]
-      args += [unicode(window.ui.le_outMeshName.text()).encode()]
-      args += [unicode(window.ui.le_groupAbove.text()).encode()]
-      args += [unicode(window.ui.le_groupBelow.text()).encode()]
+      args += [str(window.ui.le_origMeshFile.text()).encode()]
+      args += [str(window.ui.le_cutMeshFile.text()).encode()]
+      args += [str(window.ui.le_outMeshName.text()).encode()]
+      args += [str(window.ui.le_groupAbove.text()).encode()]
+      args += [str(window.ui.le_groupBelow.text()).encode()]
       args += [str(window.ui.dsb_normX.value())]
       args += [str(window.ui.dsb_normY.value())]
       args += [str(window.ui.dsb_normZ.value())]

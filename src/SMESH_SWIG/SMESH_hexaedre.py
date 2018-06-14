@@ -24,11 +24,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 # -----------------------------------------------------------------------------
 
@@ -58,18 +58,18 @@ idblob = geompy.addToStudy(blob,"blob")
 edgeGroups = geompy.Propagate( blob )
 assert len( edgeGroups ) == 3
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()
 
 # -----------------------------------------------------------------------------
 
-print "-------------------------- mesh"
-smesh.SetCurrentStudy(salome.myStudy)
+print("-------------------------- mesh")
+smesh.UpdateStudy()
 
 # ---- define a mesh on the geom shape 'blob'
 mesh=smesh.Mesh(blob, "MeshBlob")
 
 # ---- assign global hypothesis and algorithms to mesh
-print "-------------------------- add hypothesis to mesh"
+print("-------------------------- add hypothesis to mesh")
 algo1 = mesh.Segment()
 algo2 = mesh.Quadrangle()
 algo3 = mesh.Hexahedron()
@@ -85,17 +85,17 @@ for edges in edgeGroups: # loop on groups of logically parallel edges
     pass
 
 # ---- compute mesh
-print "-------------------------- compute mesh"
+print("-------------------------- compute mesh")
 ok = mesh.Compute()
 if ok:
-    print "Information about the Mesh:"
-    print "Number of nodes       : ", mesh.NbNodes()
-    print "Number of edges       : ", mesh.NbEdges()
-    print "Number of faces       : ", mesh.NbFaces()
-    print "Number of quadrangles : ", mesh.NbQuadrangles()
-    print "Number of volumes     : ", mesh.NbVolumes()
-    print "Number of hexahedrons : ", mesh.NbHexas()
+    print("Information about the Mesh:")
+    print("Number of nodes       : ", mesh.NbNodes())
+    print("Number of edges       : ", mesh.NbEdges())
+    print("Number of faces       : ", mesh.NbFaces())
+    print("Number of quadrangles : ", mesh.NbQuadrangles())
+    print("Number of volumes     : ", mesh.NbVolumes())
+    print("Number of hexahedrons : ", mesh.NbHexas())
 else:
-    print "problem when Computing the mesh"
+    print("problem when Computing the mesh")
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

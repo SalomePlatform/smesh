@@ -2,29 +2,29 @@
 
 import logging
 import salome
-from geomsmesh import geompy
-from geomsmesh import geomPublish
-from geomsmesh import geomPublishInFather
-import initLog
-from geomsmesh import smesh
+from .geomsmesh import geompy
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+from . import initLog
+from .geomsmesh import smesh
 from salome.smesh import smeshBuilder
 import SMESH
 import math
 
-from extractionOrientee import extractionOrientee
-from sortFaces import sortFaces
-from sortEdges import sortEdges
-from eliminateDoubles import eliminateDoubles
-from substractSubShapes import substractSubShapes
-from produitMixte import produitMixte
-from findWireEndVertices import findWireEndVertices
-from getSubshapeIds import getSubshapeIds
-from putName import putName
-from distance2 import distance2
-from enleveDefaut import enleveDefaut
-from shapeSurFissure import shapeSurFissure
-from regroupeSainEtDefaut import RegroupeSainEtDefaut
-from triedreBase import triedreBase
+from .extractionOrientee import extractionOrientee
+from .sortFaces import sortFaces
+from .sortEdges import sortEdges
+from .eliminateDoubles import eliminateDoubles
+from .substractSubShapes import substractSubShapes
+from .produitMixte import produitMixte
+from .findWireEndVertices import findWireEndVertices
+from .getSubshapeIds import getSubshapeIds
+from .putName import putName
+from .distance2 import distance2
+from .enleveDefaut import enleveDefaut
+from .shapeSurFissure import shapeSurFissure
+from .regroupeSainEtDefaut import RegroupeSainEtDefaut
+from .triedreBase import triedreBase
 
 # -----------------------------------------------------------------------------
 # --- procedure complete fissure longue
@@ -649,11 +649,11 @@ def insereFissureLongue(geometriesSaines, maillagesSains,
   #isDone = maillageComplet.ReorientObject( grps[0] )
   fond = maillageComplet.GetMesh().CreateDimGroup( grps, SMESH.NODE, 'FACE2' )
 
-  maillageComplet.ExportMED( fichierMaillageFissure, 0, SMESH.MED_V2_2, 1 )
+  maillageComplet.ExportMED(fichierMaillageFissure)
   putName(maillageComplet, nomFicFissure)
   logging.info("fichier maillage fissure %s", fichierMaillageFissure)
 
   if salome.sg.hasDesktop():
-    salome.sg.updateObjBrowser(True)
+    salome.sg.updateObjBrowser()
 
   return  maillageComplet

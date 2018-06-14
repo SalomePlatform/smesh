@@ -39,7 +39,7 @@ class StdMeshers_LayerDistribution;
 class STDMESHERS_EXPORT StdMeshers_RadialQuadrangle_1D2D: public StdMeshers_Quadrangle_2D
 {
 public:
-  StdMeshers_RadialQuadrangle_1D2D(int hypId, int studyId, SMESH_Gen* gen);
+  StdMeshers_RadialQuadrangle_1D2D(int hypId, SMESH_Gen* gen);
   virtual ~StdMeshers_RadialQuadrangle_1D2D();
 
   virtual bool CheckHypothesis(SMESH_Mesh&                          aMesh,

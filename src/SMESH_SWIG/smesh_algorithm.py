@@ -30,7 +30,7 @@ class Mesh_Algorithm:
     The base class to define meshing algorithms
 
     Note:
-    	This class should not be used directly, it is supposed to be sub-classed
+        This class should not be used directly, it is supposed to be sub-classed
     for implementing Python API for specific meshing algorithms
 
     For each meshing algorithm, a python class inheriting from class %Mesh_Algorithm
@@ -38,37 +38,37 @@ class Mesh_Algorithm:
     it is created by class Mesh (see e.g. class :class:`~StdMeshersBuilder.StdMeshersBuilder_Segment`
     in StdMeshersBuilder package):
 
-    	- :code:`meshMethod` attribute defines name of method of class smesh.Mesh by calling which the
-    		python class of algorithm is created; this method is dynamically added to the smesh.Mesh class
-    		in runtime. For example, if in :code:`class MyPlugin_Algorithm` this attribute is defined as
-    		::
+        - :code:`meshMethod` attribute defines name of method of class smesh.Mesh by calling which the
+                python class of algorithm is created; this method is dynamically added to the smesh.Mesh class
+                in runtime. For example, if in :code:`class MyPlugin_Algorithm` this attribute is defined as
+                ::
 
-    			meshMethod = "MyAlgorithm"
+                        meshMethod = "MyAlgorithm"
 
-    		then an instance of :code:`MyPlugin_Algorithm` can be created by the direct invocation of the function
-    		of smesh.Mesh class:
-    		::
+                then an instance of :code:`MyPlugin_Algorithm` can be created by the direct invocation of the function
+                of smesh.Mesh class:
+                ::
     
-    			my_algo = mesh.MyAlgorithm()
+                        my_algo = mesh.MyAlgorithm()
     
-    	- :code:`algoType` defines type of algorithm and is used mostly to discriminate
-    		algorithms that are created by the same method of class smesh.Mesh. For example, if this attribute
-    		is specified in :code:`MyPlugin_Algorithm` class as
-    		::
+        - :code:`algoType` defines type of algorithm and is used mostly to discriminate
+                algorithms that are created by the same method of class smesh.Mesh. For example, if this attribute
+                is specified in :code:`MyPlugin_Algorithm` class as
+                ::
     
-    			algoType = "MyPLUGIN"
+                        algoType = "MyPLUGIN"
 
-    		then it's creation code can be:
-    		::
+                then it's creation code can be:
+                ::
 
-    			my_algo = mesh.MyAlgorithm(algo="MyPLUGIN")
+                        my_algo = mesh.MyAlgorithm(algo="MyPLUGIN")
     """
     
     
     def __init__(self):
-	"""
-	Private constuctor
-	"""
+        """
+        Private constuctor
+        """
         self.mesh = None
         self.geom = None
         self.subm = None
@@ -76,13 +76,13 @@ class Mesh_Algorithm:
         pass
 
     def FindHypothesis (self, hypname, args, CompareMethod, smeshpyD):
-	"""
-	Finds a hypothesis in the study by its type name and parameters.
-	Finds only the hypotheses created in smeshpyD engine.
-	Returns: 
-		SMESH.SMESH_Hypothesis
-	"""
-        study = smeshpyD.GetCurrentStudy()
+        """
+        Finds a hypothesis in the study by its type name and parameters.
+        Finds only the hypotheses created in smeshpyD engine.
+        Returns: 
+                SMESH.SMESH_Hypothesis
+        """
+        study = salome.myStudy
         if not study: return None
         #to do: find component by smeshpyD object, not by its data type
         scomp = study.FindComponent(smeshpyD.ComponentDataType())
@@ -123,14 +123,14 @@ class Mesh_Algorithm:
         return None
 
     def FindAlgorithm (self, algoname, smeshpyD):
-	"""
-	Finds the algorithm in the study by its type name.
-	Finds only the algorithms, which have been created in smeshpyD engine.
+        """
+        Finds the algorithm in the study by its type name.
+        Finds only the algorithms, which have been created in smeshpyD engine.
 
-	Returns:
-		SMESH.SMESH_Algo
-	"""
-        study = smeshpyD.GetCurrentStudy()
+        Returns:
+                SMESH.SMESH_Algo
+        """
+        study = salome.myStudy
         if not study: return None
         #to do: find component by smeshpyD object, not by its data type
         scomp = study.FindComponent(smeshpyD.ComponentDataType())
@@ -168,52 +168,52 @@ class Mesh_Algorithm:
         return None
 
     def GetSubMesh(self):
-	"""
-	If the algorithm is global, returns 0; 
-	else returns the submesh associated to this algorithm.
-	"""
+        """
+        If the algorithm is global, returns 0; 
+        else returns the submesh associated to this algorithm.
+        """
         return self.subm
 
     def GetAlgorithm(self):
-	"""
-	Returns the wrapped mesher.
-	"""
+        """
+        Returns the wrapped mesher.
+        """
         return self.algo
 
     def GetCompatibleHypothesis(self):
-	"""
-	Gets the list of hypothesis that can be used with this algorithm
-	"""
+        """
+        Gets the list of hypothesis that can be used with this algorithm
+        """
         mylist = []
         if self.algo:
             mylist = self.algo.GetCompatibleHypothesis()
         return mylist
 
     def GetName(self):
-	"""
-	Gets the name of the algorithm
-	"""
+        """
+        Gets the name of the algorithm
+        """
         from salome.smesh.smeshBuilder import GetName
         return GetName(self.algo)
 
     def SetName(self, name):
-	"""
-	Sets the name to the algorithm
-	"""
+        """
+        Sets the name to the algorithm
+        """
         self.mesh.smeshpyD.SetName(self.algo, name)
 
     def GetId(self):
-	"""
-	Gets the id of the algorithm
-	"""
+        """
+        Gets the id of the algorithm
+        """
         return self.algo.GetId()
 
     def Create(self, mesh, geom, hypo, so="libStdMeshersEngine.so"):
-	"""
-	Private method.
-	"""
+        """
+        Private method.
+        """
         if geom is None and mesh.mesh.HasShapeToMesh():
-            raise RuntimeError, "Attempt to create " + hypo + " algorithm on None shape"
+            raise RuntimeError("Attempt to create " + hypo + " algorithm on None shape")
         algo = self.FindAlgorithm(hypo, mesh.smeshpyD)
         if algo is None:
             algo = mesh.smeshpyD.CreateHypothesis(hypo, so)
@@ -222,12 +222,12 @@ class Mesh_Algorithm:
         return self.algo
 
     def Assign(self, algo, mesh, geom):
-	"""
-	Private method
-	"""
+        """
+        Private method
+        """
         from salome.smesh.smeshBuilder import AssureGeomPublished, TreatHypoStatus, GetName
         if geom is None and mesh.mesh.HasShapeToMesh():
-            raise RuntimeError, "Attempt to create " + algo + " algorithm on None shape"
+            raise RuntimeError("Attempt to create " + algo + " algorithm on None shape")
         self.mesh = mesh
         if not geom or geom.IsSame( mesh.geom ):
             self.geom = mesh.geom
@@ -240,7 +240,7 @@ class Mesh_Algorithm:
         return
 
     def CompareHyp (self, hyp, args):
-        print "CompareHyp is not implemented for ", self.__class__.__name__, ":", hyp.GetName()
+        print("CompareHyp is not implemented for ", self.__class__.__name__, ":", hyp.GetName())
         return False
 
     def CompareEqualHyp (self, hyp, args):
@@ -248,9 +248,9 @@ class Mesh_Algorithm:
 
     def Hypothesis (self, hyp, args=[], so="libStdMeshersEngine.so",
                     UseExisting=0, CompareMethod="", toAdd=True):
-	"""
-	Private method
-	"""
+        """
+        Private method
+        """
         from salome.smesh.smeshBuilder import TreatHypoStatus, GetName
         hypo = None
         if UseExisting:
@@ -285,9 +285,9 @@ class Mesh_Algorithm:
         return hypo
 
     def MainShapeEntry(self):
-	"""
-	Returns entry of the shape to mesh in the study
-	"""
+        """
+        Returns entry of the shape to mesh in the study
+        """
         if not self.mesh or not self.mesh.GetMesh(): return ""
         if not self.mesh.GetMesh().HasShapeToMesh(): return ""
         shape = self.mesh.GetShape()
@@ -295,40 +295,40 @@ class Mesh_Algorithm:
 
     def ViscousLayers(self, thickness, numberOfLayers, stretchFactor,
                       faces=[], isFacesToIgnore=True, extrMethod=StdMeshers.SURF_OFFSET_SMOOTH ):
-	"""
-	Defines "ViscousLayers" hypothesis to give parameters of layers of prisms to build
-	near mesh boundary. This hypothesis can be used by several 3D algorithms:
-	NETGEN 3D, MG-Tetra, Hexahedron(i,j,k)
+        """
+        Defines "ViscousLayers" hypothesis to give parameters of layers of prisms to build
+        near mesh boundary. This hypothesis can be used by several 3D algorithms:
+        NETGEN 3D, MG-Tetra, Hexahedron(i,j,k)
 
-	Parameters:
-		thickness: total thickness of layers of prisms
-		numberOfLayers: number of layers of prisms
-		stretchFactor: factor (>1.0) of growth of layer thickness towards inside of mesh
-		faces: list of geometrical faces (or their ids).
-			Viscous layers are either generated on these faces or not, depending on
-			the value of **isFacesToIgnore** parameter.
-		isFacesToIgnore: if *True*, the Viscous layers are not generated on the
-			faces specified by the previous parameter (**faces**).
-		extrMethod: extrusion method defines how position of new nodes are found during
-			prism construction and how creation of distorted and intersecting prisms is
-			prevented. Possible values are:
+        Parameters:
+                thickness: total thickness of layers of prisms
+                numberOfLayers: number of layers of prisms
+                stretchFactor: factor (>1.0) of growth of layer thickness towards inside of mesh
+                faces: list of geometrical faces (or their ids).
+                        Viscous layers are either generated on these faces or not, depending on
+                        the value of **isFacesToIgnore** parameter.
+                isFacesToIgnore: if *True*, the Viscous layers are not generated on the
+                        faces specified by the previous parameter (**faces**).
+                extrMethod: extrusion method defines how position of new nodes are found during
+                        prism construction and how creation of distorted and intersecting prisms is
+                        prevented. Possible values are:
 
-			- StdMeshers.SURF_OFFSET_SMOOTH (default) method extrudes nodes along normal
-				to underlying geometrical surface. Smoothing of internal surface of
-				element layers can be used to avoid creation of invalid prisms.
-			- StdMeshers.FACE_OFFSET method extrudes nodes along average normal of
-				surrounding mesh faces till intersection with a neighbor mesh face
-				translated along its own normal by the layers thickness. Thickness
-				of layers can be limited to avoid creation of invalid prisms.
-			- StdMeshers.NODE_OFFSET method extrudes nodes along average normal of
-				surrounding mesh faces by the layers thickness. Thickness of
-				layers can be limited to avoid creation of invalid prisms.
-	"""
+                        - StdMeshers.SURF_OFFSET_SMOOTH (default) method extrudes nodes along normal
+                                to underlying geometrical surface. Smoothing of internal surface of
+                                element layers can be used to avoid creation of invalid prisms.
+                        - StdMeshers.FACE_OFFSET method extrudes nodes along average normal of
+                                surrounding mesh faces till intersection with a neighbor mesh face
+                                translated along its own normal by the layers thickness. Thickness
+                                of layers can be limited to avoid creation of invalid prisms.
+                        - StdMeshers.NODE_OFFSET method extrudes nodes along average normal of
+                                surrounding mesh faces by the layers thickness. Thickness of
+                                layers can be limited to avoid creation of invalid prisms.
+        """
         
         if not isinstance(self.algo, SMESH._objref_SMESH_3D_Algo):
-            raise TypeError, "ViscousLayers are supported by 3D algorithms only"
+            raise TypeError("ViscousLayers are supported by 3D algorithms only")
         if not "ViscousLayers" in self.GetCompatibleHypothesis():
-            raise TypeError, "ViscousLayers are not supported by %s"%self.algo.GetName()
+            raise TypeError("ViscousLayers are not supported by %s"%self.algo.GetName())
         if faces and isinstance( faces, geomBuilder.GEOM._objref_GEOM_Object ):
             faces = [ faces ]
         if faces and isinstance( faces[0], geomBuilder.GEOM._objref_GEOM_Object ):
@@ -351,26 +351,26 @@ class Mesh_Algorithm:
 
     def ViscousLayers2D(self, thickness, numberOfLayers, stretchFactor,
                         edges=[], isEdgesToIgnore=True ):
-	"""
-	Defines "ViscousLayers2D" hypothesis to give parameters of layers of quadrilateral
-	elements to build near mesh boundary. This hypothesis can be used by several 2D algorithms:
-	NETGEN 2D, NETGEN 1D-2D, Quadrangle (mapping), MEFISTO, MG-CADSurf
+        """
+        Defines "ViscousLayers2D" hypothesis to give parameters of layers of quadrilateral
+        elements to build near mesh boundary. This hypothesis can be used by several 2D algorithms:
+        NETGEN 2D, NETGEN 1D-2D, Quadrangle (mapping), MEFISTO, MG-CADSurf
 
-	Parameters:
-		thickness: total thickness of layers of quadrilaterals
-		numberOfLayers: number of layers
-		stretchFactor: factor (>1.0) of growth of layer thickness towards inside of mesh
-		edges: list of geometrical edges (or their ids).
-			Viscous layers are either generated on these edges or not, depending on
-			the value of **isEdgesToIgnore** parameter.
-		isEdgesToIgnore: if *True*, the Viscous layers are not generated on the
-			edges specified by the previous parameter (**edges**).
-	"""
+        Parameters:
+                thickness: total thickness of layers of quadrilaterals
+                numberOfLayers: number of layers
+                stretchFactor: factor (>1.0) of growth of layer thickness towards inside of mesh
+                edges: list of geometrical edges (or their ids).
+                        Viscous layers are either generated on these edges or not, depending on
+                        the value of **isEdgesToIgnore** parameter.
+                isEdgesToIgnore: if *True*, the Viscous layers are not generated on the
+                        edges specified by the previous parameter (**edges**).
+        """
         
         if not isinstance(self.algo, SMESH._objref_SMESH_2D_Algo):
-            raise TypeError, "ViscousLayers2D are supported by 2D algorithms only"
+            raise TypeError("ViscousLayers2D are supported by 2D algorithms only")
         if not "ViscousLayers2D" in self.GetCompatibleHypothesis():
-            raise TypeError, "ViscousLayers2D are not supported by %s"%self.algo.GetName()
+            raise TypeError("ViscousLayers2D are not supported by %s"%self.algo.GetName())
         if edges and not isinstance( edges, list ) and not isinstance( edges, tuple ):
             edges = [edges]
         if edges and isinstance( edges[0], geomBuilder.GEOM._objref_GEOM_Object ):
@@ -391,10 +391,10 @@ class Mesh_Algorithm:
         return hyp
 
     def ReversedEdgeIndices(self, reverseList):
-	"""
-	Transform a list of either edges or tuples (edge, 1st_vertex_of_edge)
-	into a list acceptable to SetReversedEdges() of some 1D hypotheses
-	"""
+        """
+        Transform a list of either edges or tuples (edge, 1st_vertex_of_edge)
+        into a list acceptable to SetReversedEdges() of some 1D hypotheses
+        """
         
         from salome.smesh.smeshBuilder import FirstVertexOnCurve
         resList = []
@@ -403,29 +403,29 @@ class Mesh_Algorithm:
             if isinstance( i, int ):
                 s = geompy.SubShapes(self.mesh.geom, [i])[0]
                 if s.GetShapeType() != geomBuilder.GEOM.EDGE:
-                    raise TypeError, "Not EDGE index given"
+                    raise TypeError("Not EDGE index given")
                 resList.append( i )
             elif isinstance( i, geomBuilder.GEOM._objref_GEOM_Object ):
                 if i.GetShapeType() != geomBuilder.GEOM.EDGE:
-                    raise TypeError, "Not an EDGE given"
+                    raise TypeError("Not an EDGE given")
                 resList.append( geompy.GetSubShapeID(self.mesh.geom, i ))
             elif len( i ) > 1:
                 e = i[0]
                 v = i[1]
                 if not isinstance( e, geomBuilder.GEOM._objref_GEOM_Object ) or \
                    not isinstance( v, geomBuilder.GEOM._objref_GEOM_Object ):
-                    raise TypeError, "A list item must be a tuple (edge, 1st_vertex_of_edge)"
+                    raise TypeError("A list item must be a tuple (edge, 1st_vertex_of_edge)")
                 if v.GetShapeType() == geomBuilder.GEOM.EDGE and \
                    e.GetShapeType() == geomBuilder.GEOM.VERTEX:
                     v,e = e,v
                 if e.GetShapeType() != geomBuilder.GEOM.EDGE or \
                    v.GetShapeType() != geomBuilder.GEOM.VERTEX:
-                    raise TypeError, "A list item must be a tuple (edge, 1st_vertex_of_edge)"
+                    raise TypeError("A list item must be a tuple (edge, 1st_vertex_of_edge)")
                 vFirst = FirstVertexOnCurve( self.mesh, e )
                 tol    = geompy.Tolerance( vFirst )[-1]
                 if geompy.MinDistance( v, vFirst ) > 1.5*tol:
                     resList.append( geompy.GetSubShapeID(self.mesh.geom, e ))
             else:
-                raise TypeError, "Item must be either an edge or tuple (edge, 1st_vertex_of_edge)"
+                raise TypeError("Item must be either an edge or tuple (edge, 1st_vertex_of_edge)")
         return resList
 

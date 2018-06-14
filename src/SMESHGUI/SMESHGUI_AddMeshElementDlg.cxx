@@ -549,7 +549,7 @@ void SMESHGUI_AddMeshElementDlg::ClickOnApply()
   if( !isValid() )
     return;
 
-  if (myNbOkNodes && !mySMESHGUI->isActiveStudyLocked()) {
+  if (myNbOkNodes && !SMESHGUI::isStudyLocked()) {
     myBusy = true;
     QStringList aListId = myEditCurrentArgument->text().split(" ", QString::SkipEmptyParts);
     SMESH::long_array_var anArrayOfIndices = new SMESH::long_array;

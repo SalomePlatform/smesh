@@ -220,13 +220,12 @@ static SMESH::ElementType elementType(GEOM::GEOM_Object_var geom)
     case GEOM::COMPOUND: break;
     default:             return SMESH::ALL;
     }
-    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
     GEOM::GEOM_IShapesOperations_wrap aShapeOp =
-      SMESH::GetGEOMGen()->GetIShapesOperations(aStudy->StudyId());
+      SMESH::GetGEOMGen()->GetIShapesOperations();
 
     if ( geom->GetType() == 37 ) { // geom group
       GEOM::GEOM_IGroupOperations_wrap aGroupOp =
-        SMESH::GetGEOMGen()->GetIGroupOperations(aStudy->StudyId());
+        SMESH::GetGEOMGen()->GetIGroupOperations();
       if ( !aGroupOp->_is_nil() ) {
         // mainShape is an existing servant => GEOM_Object_var not GEOM_Object_wrap
         GEOM::GEOM_Object_var mainShape = aGroupOp->GetMainShape( geom );
@@ -297,11 +296,11 @@ bool SMESHGUI_GroupOnShapeOp::onApply()
 {
   SUIT_OverrideCursor aWaitCursor;
 
-  if (isStudyLocked())
+  if (SMESHGUI::isStudyLocked())
     return false;
 
   // study
-  _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+  _PTR(Study) aStudy = SMESH::getStudy();
   if ( !aStudy ) return false;
 
   // mesh
@@ -461,7 +460,7 @@ void SMESHGUI_GroupOnShapeOp::selectionDone()
   QStringList goodNames, goodIds;
   if (nbSelected > 0) {
     // study
-    if (_PTR(Study) aStudy = SMESH::GetActiveStudyDocument()) {
+    if (_PTR(Study) aStudy = SMESH::getStudy()) {
       // mesh
       if (_PTR(SObject)  meshSO = aStudy->FindObjectID( myMeshID.toLatin1().data() )) {
         // shape to mesh

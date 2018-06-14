@@ -504,7 +504,7 @@ bool SMESHGUI_MeshPatternDlg::onApply()
         _PTR(SObject) aSO = SMESH::FindSObject(myMesh.in());
         SMESH_Actor* anActor = SMESH::FindActorByEntry(aSO->GetID().c_str());
         if (!anActor) {
-          anActor = SMESH::CreateActor(aSO->GetStudy(), aSO->GetID().c_str());
+          anActor = SMESH::CreateActor(aSO->GetID().c_str());
           if (anActor) {
             SMESH::DisplayActor(SMESH::GetActiveWindow(), anActor);
             SMESH::FitAll();

@@ -65,9 +65,6 @@ protected:
   virtual void      setDialogActive( const bool );
 
   SMESHGUI*         getSMESHGUI() const;
-  bool              isStudyLocked( const bool = true ) const;
-
-  _PTR(Study)       studyDS() const;
   
   virtual bool      isValid( SUIT_Operation* ) const;
 

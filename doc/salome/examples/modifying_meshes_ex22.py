@@ -4,11 +4,11 @@
 import salome, math
 salome.salome_init()
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 # create an empty mesh
 mesh = smesh.Mesh() 
@@ -87,4 +87,4 @@ stepSize = 5.
 nbSteps  = 2
 mesh.ExtrusionByNormal( elements, stepSize, nbSteps )
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

@@ -35,7 +35,7 @@ using namespace std;
 //function : Create
 //purpose  : 
 //=======================================================================
-SMESHDS_Document::SMESHDS_Document(int UserID):myUserID(UserID)
+SMESHDS_Document::SMESHDS_Document()
 {
 }
 

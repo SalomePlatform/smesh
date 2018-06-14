@@ -2,7 +2,7 @@
 import os, tempfile
 
 directory=tempfile.mktemp(prefix='tmpZcracks')
-print "directory=", tmpdir
+print("directory=", tmpdir)
 
 # Tous les cas
 listCas=['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20','21']
@@ -23,5 +23,5 @@ for cas in listCas:
 
   synthese[cas]= os.path.isfile(result)
 
-print synthese
+print(synthese)
 

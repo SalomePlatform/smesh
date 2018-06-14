@@ -2,8 +2,8 @@
 
 import logging
 import math
-from geomsmesh import geompy
-from triedreBase import triedreBase
+from .geomsmesh import geompy
+from .triedreBase import triedreBase
 O, OX, OY, OZ = triedreBase()
 
 # -----------------------------------------------------------------------------

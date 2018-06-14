@@ -141,9 +141,10 @@ public:
   SMESH_Swig();
   ~SMESH_Swig();
 
+
   // Initialization =============================================
 
-  void Init(int); // deprecated
+  void Init(); // deprecated
 
   // Publishing =================================================
   

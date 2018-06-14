@@ -19,116 +19,107 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
+
 #ifndef MED_Algorithm_HeaderFile
 #define MED_Algorithm_HeaderFile
 
-#include "MED_WrapperBase.hxx"
+#include "MED_WrapperDef.hxx"
 #include "MED_Structures.hxx"
 
+#include <boost/tuple/tuple.hpp>
+
 #include <set>
+#include <string>
 
 namespace MED
 {
   //---------------------------------------------------------------
   typedef std::map<EGeometrieElement,PElemInfo> TGeom2ElemInfo;
   typedef std::map<EEntiteMaillage,TGeom2ElemInfo> TEntity2TGeom2ElemInfo;
+  typedef std::set<PFamilyInfo> TFamilyInfoSet;
+  typedef std::map<std::string,TFamilyInfoSet> TGroupInfo;
+  typedef boost::tuple<PFamilyInfo,TInt> TFamilyTSize;
+  typedef std::set<TFamilyTSize> TFamilyTSizeSet;
+  typedef std::map<EEntiteMaillage,TFamilyTSizeSet> TEntity2FamilySet;
+  typedef std::set<PTimeStampInfo> TTimeStampInfoSet;
+  typedef std::map<PFieldInfo,TTimeStampInfoSet> TFieldInfo2TimeStampInfoSet;
+  typedef std::map<EEntiteMaillage,TFieldInfo2TimeStampInfoSet> TEntite2TFieldInfo2TimeStampInfoSet;
+  typedef std::map<TGaussInfo::TKey,PGaussInfo,TGaussInfo::TLess> TKey2Gauss;
+  typedef std::map<TProfileInfo::TKey,PProfileInfo> TKey2Profile;
+  typedef boost::tuple<EModeProfil,TKey2Profile> TMKey2Profile;
+  typedef std::map<TInt,TInt> TFamilyID2NbCells;
 
+  //---------------------------------------------------------------
   //! Get set of TElemInfo by its geometrical type and corresponding MED ENTITY
   MEDWRAPPER_EXPORT
   TEntity2TGeom2ElemInfo
-  GetEntity2TGeom2ElemInfo(const PWrapper& theWrapper, 
+  GetEntity2TGeom2ElemInfo(const PWrapper& theWrapper,
                            const PMeshInfo& theMeshInfo,
                            const MED::TEntityInfo& theEntityInfo);
 
-
   //---------------------------------------------------------------
-  typedef std::set<PFamilyInfo> TFamilyInfoSet;
-
   //! Read set of MED FAMILIES for defined MED file
   MEDWRAPPER_EXPORT
   TFamilyInfoSet
-  GetFamilyInfoSet(const PWrapper& theWrapper, 
+  GetFamilyInfoSet(const PWrapper& theWrapper,
                    const PMeshInfo& theMeshInfo);
-  
 
   //---------------------------------------------------------------
-  typedef boost::tuple<PFamilyInfo,TInt> TFamilyTSize;
-
+  //! Compare two MED FAMILIES
+  MEDWRAPPER_EXPORT
   bool
   operator<(const TFamilyTSize& theLeft, const TFamilyTSize& theRight);
-  typedef std::set<TFamilyTSize> TFamilyTSizeSet;
-
 
   //---------------------------------------------------------------
-  typedef std::map<EEntiteMaillage,TFamilyTSizeSet> TEntity2FamilySet;
-  
   //! Split set of MED FAMILIES by corresponding MED ENTITY
   MEDWRAPPER_EXPORT
   TEntity2FamilySet
-  GetEntity2FamilySet(const PWrapper& theWrapper, 
+  GetEntity2FamilySet(const PWrapper& theWrapper,
                       const TEntity2TGeom2ElemInfo& theEntity2TGeom2ElemInfo,
                       const TFamilyInfoSet& theFamilyInfoSet);
-  
 
   //---------------------------------------------------------------
-  typedef std::map<std::string,TFamilyInfoSet> TGroupInfo;
-  
   //! Split the input set of MED FAMILIES by corresponding MED GROUPS
   MEDWRAPPER_EXPORT
   TGroupInfo
   GetGroupInfo(const TFamilyInfoSet& theFamilyInfoSet);
-  
-  
-  //---------------------------------------------------------------
-  typedef std::set<PTimeStampInfo> TTimeStampInfoSet;
-  typedef std::map<PFieldInfo,TTimeStampInfoSet> TFieldInfo2TimeStampInfoSet;
 
+  //---------------------------------------------------------------
   //! Read set of MED TIMESTAMPS groupped by corresponding MED FIELDS
   MEDWRAPPER_EXPORT
   TFieldInfo2TimeStampInfoSet
-  GetFieldInfo2TimeStampInfoSet(const PWrapper& theWrapper, 
+  GetFieldInfo2TimeStampInfoSet(const PWrapper& theWrapper,
                                 const PMeshInfo& theMeshInfo,
                                 const MED::TEntityInfo& theEntityInfo);
-  
 
   //---------------------------------------------------------------
-  typedef std::map<EEntiteMaillage,TFieldInfo2TimeStampInfoSet> TEntite2TFieldInfo2TimeStampInfoSet;
-
   //! Split the input set of MED TIMESTAMPS by corresponding MED FIELDS and MED ENTITIES
   MEDWRAPPER_EXPORT
   TEntite2TFieldInfo2TimeStampInfoSet
   GetEntite2TFieldInfo2TimeStampInfoSet(const TFieldInfo2TimeStampInfoSet& theFieldInfo2TimeStampInfoSet);
 
-
   //---------------------------------------------------------------
-  typedef std::map<TGaussInfo::TKey,PGaussInfo,TGaussInfo::TLess> TKey2Gauss;
-
   //! Read set of MED GAUSS
   MEDWRAPPER_EXPORT
   TKey2Gauss
-  GetKey2Gauss(const PWrapper& theWrapper, 
+  GetKey2Gauss(const PWrapper& theWrapper,
                TErr* theErr = NULL,
                EModeSwitch theMode = eFULL_INTERLACE);
-
 
   //---------------------------------------------------------------
   //! Get MED PROFILE by its name
   MEDWRAPPER_EXPORT
   PProfileInfo
-  GetProfileInfo(const PWrapper& theWrapper, 
+  GetProfileInfo(const PWrapper& theWrapper,
                  const std::string& theProfileName,
                  TErr* theErr = NULL,
                  EModeProfil theMode = eCOMPACT);
 
-
   //---------------------------------------------------------------
-  typedef std::map<TProfileInfo::TKey,PProfileInfo> TKey2Profile;
-  typedef boost::tuple<EModeProfil,TKey2Profile> TMKey2Profile;
-
   //! Read set of MED PROFILES
   MEDWRAPPER_EXPORT
   TMKey2Profile
-  GetMKey2Profile(const PWrapper& theWrapper, 
+  GetMKey2Profile(const PWrapper& theWrapper,
                   TErr* theErr = NULL,
                   EModeProfil theMode = eCOMPACT);
 
@@ -139,18 +130,17 @@ namespace MED
   GetEntityByFamilyId(PGrilleInfo& theInfo,
                       TInt theId);
 
-  typedef std::map<TInt,TInt> TFamilyID2NbCells;
-  
+  //---------------------------------------------------------------
   //! Get Number of cells for theId family, for Grille
   MEDWRAPPER_EXPORT
   TFamilyID2NbCells
   GetFamilyID2NbCells(PGrilleInfo& theInfo);
 
+  //---------------------------------------------------------------
   //! Convert eNOEUD_ELEMENT to eMAILLE
   MEDWRAPPER_EXPORT
   EEntiteMaillage
   ConvertEntity(const EEntiteMaillage& aEntity);
-
 }
 
-#endif
+#endif // MED_Algorithm_HeaderFile

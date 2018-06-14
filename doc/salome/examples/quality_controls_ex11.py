@@ -5,11 +5,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 # create open shell: a box without one plane
 box = geompy.MakeBox(0., 0., 0., 20., 20., 15.)
@@ -34,17 +34,17 @@ aFilter = smesh.GetFilter(SMESH.FACE, SMESH.FT_Length2D, SMESH.FT_MoreThan, leng
 anIds = mesh.GetIdsFromFilter(aFilter)
 
 # print the result
-print "Criterion: Edges length 2D > ", length_margin, " Nb = ", len(anIds)
+print("Criterion: Edges length 2D > ", length_margin, " Nb = ", len(anIds))
 j = 1
 for i in range(len(anIds)):
-  if j > 20: j = 1; print ""
-  print anIds[i],
+  if j > 20: j = 1; print("")
+  print(anIds[i], end=' ')
   j = j + 1
   pass
-print ""
+print("")
 
 # create a group
-aGroup = mesh.CreateEmptyGroup(SMESH.FACE, "Faces with length 2D > " + `length_margin`)
+aGroup = mesh.CreateEmptyGroup(SMESH.FACE, "Faces with length 2D > " + repr(length_margin))
 aGroup.Add(anIds)
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

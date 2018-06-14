@@ -5,11 +5,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 # create a face to be meshed
 px = geompy.MakeVertex(100., 0.  , 0.  )
@@ -54,27 +54,27 @@ trias.ExtrusionAlongPath([], circlemesh, circle,
                          1, 0, [], 0, SMESH.PointStruct(0, 0, 0))
 
 # merge nodes
-print "Number of nodes before MergeNodes:", 
+print("Number of nodes before MergeNodes:", end=' ') 
 trias.NbNodes()
 tolerance = 0.001
 array_of_nodes_groups = trias.FindCoincidentNodes(tolerance)
 
 trias.MergeNodes(array_of_nodes_groups)
 
-print "Number of nodes after MergeNodes:", trias.NbNodes()
-print ""
-print "Number of elements before MergeEqualElements:"
-print "Edges      : ", trias.NbEdges()
-print "Triangles  : ", trias.NbTriangles()
-print "Quadrangles: ", trias.NbQuadrangles()
-print "Volumes    : ", trias.NbVolumes()
+print("Number of nodes after MergeNodes:", trias.NbNodes())
+print("")
+print("Number of elements before MergeEqualElements:")
+print("Edges      : ", trias.NbEdges())
+print("Triangles  : ", trias.NbTriangles())
+print("Quadrangles: ", trias.NbQuadrangles())
+print("Volumes    : ", trias.NbVolumes())
 
 # merge elements
 trias.MergeEqualElements()
-print "Number of elements after MergeEqualElements:"
-print "Edges      : ", trias.NbEdges()
-print "Triangles  : ", trias.NbTriangles()
-print "Quadrangles: ", trias.NbQuadrangles()
-print "Volumes    : ", trias.NbVolumes()
+print("Number of elements after MergeEqualElements:")
+print("Edges      : ", trias.NbEdges())
+print("Triangles  : ", trias.NbTriangles())
+print("Quadrangles: ", trias.NbQuadrangles())
+print("Volumes    : ", trias.NbVolumes())
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

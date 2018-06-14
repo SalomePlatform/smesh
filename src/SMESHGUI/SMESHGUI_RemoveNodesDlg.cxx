@@ -229,7 +229,7 @@ void SMESHGUI_RemoveNodesDlg::Init()
 //=================================================================================
 void SMESHGUI_RemoveNodesDlg::ClickOnApply()
 {
-  if (mySMESHGUI->isActiveStudyLocked())
+  if (SMESHGUI::isStudyLocked())
     return;
 
   if (myNbOkNodes) {

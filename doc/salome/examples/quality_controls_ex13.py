@@ -15,17 +15,17 @@ aFilter = smesh.GetFilter(SMESH.FACE, SMESH.FT_Area, SMESH.FT_MoreThan, area_mar
 anIds = mesh.GetIdsFromFilter(aFilter) 
 
 # print the result
-print "Criterion: Area > ", area_margin, " Nb = ", len(anIds)
+print("Criterion: Area > ", area_margin, " Nb = ", len(anIds))
 j = 1
 for i in range(len(anIds)):
-  if j > 20: j = 1; print ""
-  print anIds[i],
+  if j > 20: j = 1; print("")
+  print(anIds[i], end=' ')
   j = j + 1
   pass
-print ""
+print("")
 
 # create a group
-aGroup = mesh.CreateEmptyGroup(SMESH.FACE, "Area > " + `area_margin`)
+aGroup = mesh.CreateEmptyGroup(SMESH.FACE, "Area > " + repr(area_margin))
 aGroup.Add(anIds)
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

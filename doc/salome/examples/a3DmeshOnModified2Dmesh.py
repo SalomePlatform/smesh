@@ -2,7 +2,7 @@ import salome
 salome.salome_init()
 
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 # This script demonstrates generation of 3D mesh basing on a modified 2D mesh
 #
@@ -31,7 +31,7 @@ Sph_Face = geompy.GetInPlace(Cut_1, Sph_Face, isNewImplementation=True, theName=
 
 import  SMESH
 from salome.smesh import smeshBuilder
-smesh = smeshBuilder.New(salome.myStudy)
+smesh = smeshBuilder.New()
 
 Mesh_1 = smesh.Mesh(Cut_1)
 
@@ -59,4 +59,4 @@ Mesh_1.Tetrahedron()
 Mesh_1.Compute()
 
 if salome.sg.hasDesktop():
-  salome.sg.updateObjBrowser(True)
+  salome.sg.updateObjBrowser()

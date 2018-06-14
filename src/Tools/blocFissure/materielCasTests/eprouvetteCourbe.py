@@ -4,7 +4,6 @@ import sys
 import salome
 
 salome.salome_init()
-theStudy = salome.myStudy
 
 import salome_notebook
 notebook = salome_notebook.notebook
@@ -22,7 +21,7 @@ import math
 import SALOMEDS
 
 
-geompy = geomBuilder.New(theStudy)
+geompy = geomBuilder.New()
 
 O = geompy.MakeVertex(0, 0, 0)
 OX = geompy.MakeVectorDXDYDZ(1, 0, 0)
@@ -72,7 +71,7 @@ geompy.addToStudyInFather( EprouvetteCourbe, Compound_x, 'Compound_x' )
 import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
-smesh = smeshBuilder.New(theStudy)
+smesh = smeshBuilder.New()
 from salome.StdMeshers import StdMeshersBuilder
 EprouvetteCourbe_1 = smesh.Mesh(EprouvetteCourbe)
 Regular_1D = EprouvetteCourbe_1.Segment()
@@ -88,7 +87,7 @@ Nb_Segments_3 = Regular_1D_2.NumberOfSegments(25)
 Nb_Segments_3.SetDistrType( 0 )
 isDone = EprouvetteCourbe_1.Compute()
 smesh.SetName(EprouvetteCourbe_1, 'EprouvetteCourbe')
-EprouvetteCourbe_1.ExportMED( os.path.join(gmu.pathBloc, "materielCasTests/EprouvetteCourbe.med"), 0, SMESH.MED_V2_2, 1 )
+EprouvetteCourbe_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests/EprouvetteCourbe.med"))
 SubMesh_1 = Regular_1D_1.GetSubMesh()
 SubMesh_2 = Regular_1D_2.GetSubMesh()
 
@@ -104,4 +103,4 @@ smesh.SetName(SubMesh_1, 'SubMesh_1')
 smesh.SetName(SubMesh_2, 'SubMesh_2')
 
 if salome.sg.hasDesktop():
-  salome.sg.updateObjBrowser(True)
+  salome.sg.updateObjBrowser()

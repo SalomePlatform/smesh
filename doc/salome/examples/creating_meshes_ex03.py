@@ -4,11 +4,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 Box_1 = geompy.MakeBoxDXDYDZ(200, 200, 200)
 [Face_1,Face_2,Face_3,Face_4,Face_5,Face_6] = geompy.SubShapeAllSorted(Box_1, geompy.ShapeType["FACE"])
@@ -45,15 +45,15 @@ SubMesh_3 = MEFISTO_2D_3.GetSubMesh()
 # check existing sub-mesh priority order
 [ [ SubMesh_1, SubMesh_3, SubMesh_2 ] ] = Mesh_1.GetMeshOrder()
 isDone = Mesh_1.Compute()
-print "Nb elements at initial order of sub-meshes:", Mesh_1.NbElements()
+print("Nb elements at initial order of sub-meshes:", Mesh_1.NbElements())
 
 # set new sub-mesh order
 isDone = Mesh_1.SetMeshOrder( [ [ SubMesh_1, SubMesh_2, SubMesh_3 ] ])
 # compute mesh
 isDone = Mesh_1.Compute()
-print "Nb elements at new order of sub-meshes:", Mesh_1.NbElements()
+print("Nb elements at new order of sub-meshes:", Mesh_1.NbElements())
 
 # compute with other sub-mesh order
 isDone = Mesh_1.SetMeshOrder( [ [ SubMesh_2, SubMesh_1, SubMesh_3 ] ])
 isDone = Mesh_1.Compute()
-print "Nb elements at another order of sub-meshes:", Mesh_1.NbElements()
+print("Nb elements at another order of sub-meshes:", Mesh_1.NbElements())

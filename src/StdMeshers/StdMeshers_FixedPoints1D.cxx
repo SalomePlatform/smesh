@@ -35,9 +35,9 @@ using namespace std;
  */
 //=============================================================================
 
-StdMeshers_FixedPoints1D::StdMeshers_FixedPoints1D(int hypId, int studyId,
+StdMeshers_FixedPoints1D::StdMeshers_FixedPoints1D(int hypId,
                                                    SMESH_Gen * gen)
-  :SMESH_Hypothesis(hypId, studyId, gen)
+  :SMESH_Hypothesis(hypId, gen)
 {
   _name = "FixedPoints1D";
   _param_algo_dim = 1;

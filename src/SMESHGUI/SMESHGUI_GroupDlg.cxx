@@ -498,10 +498,7 @@ QString SMESHGUI_GroupDlg::GetDefaultName(const QString& theOperation)
   QString aName = "";
 
   // collect all object names of SMESH component
-  SalomeApp_Study* appStudy =
-    dynamic_cast<SalomeApp_Study*>( SUIT_Session::session()->activeApplication()->activeStudy() );
-  if ( !appStudy ) return aName;
-  _PTR(Study) aStudy = appStudy->studyDS();
+  _PTR(Study) aStudy = SMESH::getStudy();
 
   std::set<std::string> aSet;
   _PTR(SComponent) aMeshCompo (aStudy->FindComponent( "SMESH" ));
@@ -528,14 +525,13 @@ QString SMESHGUI_GroupDlg::GetDefaultName(const QString& theOperation)
 void  SMESHGUI_GroupDlg::setDefaultName() const
 {
   QString aResName;
-  _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
   int i=1;
   QString aPrefix ="Group_";
   _PTR(SObject) anObj;
   do
   {
     aResName = aPrefix + QString::number( i++ );
-    anObj = aStudy->FindObject( SMESH::toUtf8(aResName) );
+    anObj = SMESH::getStudy()->FindObject( SMESH::toUtf8(aResName) );
   }
   while ( anObj );
   myName->setText(aResName); 
@@ -664,7 +660,7 @@ void SMESHGUI_GroupDlg::init (SMESH::SMESH_GroupBase_ptr theGroup,
   else if ( grpType == 1 ) // group on geom
   {
     QString aShapeName( "" );
-    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+    _PTR(Study) aStudy = SMESH::getStudy();
     GEOM::GEOM_Object_var aGroupShape = myGroupOnGeom->GetShape();
     if (!aGroupShape->_is_nil())
     {
@@ -915,7 +911,7 @@ void SMESHGUI_GroupDlg::setSelectionMode (int theMode)
 //=================================================================================
 bool SMESHGUI_GroupDlg::onApply()
 {
-  if (mySMESHGUI->isActiveStudyLocked())
+  if (SMESHGUI::isStudyLocked())
     return false;
 
   if (myName->text().trimmed().isEmpty())
@@ -1050,7 +1046,7 @@ bool SMESHGUI_GroupDlg::onApply()
       if (myMesh->_is_nil() || !myGeomObjects->length())
         return false;
 
-      _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+      _PTR(Study) aStudy = SMESH::getStudy();
 
       if (myGeomObjects->length() == 1) {
         myGroupOnGeom = myMesh->CreateGroupFromGEOM(aType,
@@ -1064,12 +1060,11 @@ bool SMESHGUI_GroupDlg::onApply()
 
         // create a geometry group
         GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
-        _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
 
-        if (geomGen->_is_nil() || !aStudy)
+        if (geomGen->_is_nil())
           return false;
 
-        GEOM::GEOM_IGroupOperations_wrap op = geomGen->GetIGroupOperations(aStudy->StudyId());
+        GEOM::GEOM_IGroupOperations_wrap op = geomGen->GetIGroupOperations();
         if (op->_is_nil())
           return false;
 
@@ -1095,7 +1090,7 @@ bool SMESHGUI_GroupDlg::onApply()
           QString aNewGeomGroupName ( "Auto_group_for_" );
           aNewGeomGroupName += myName->text();
           SALOMEDS::SObject_var aNewGroupSO =
-            geomGen->AddInStudy(aSMESHGen->GetCurrentStudy(), aGroupVar,
+            geomGen->AddInStudy(aGroupVar,
                                 SMESH::toUtf8(aNewGeomGroupName), aMeshShape);
         }
 
@@ -1412,13 +1407,12 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
           continue;
 
         // Check if group constructed on the same shape as a mesh or on its child
-        _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
 
         // The main shape of the group
         GEOM::GEOM_Object_var aGroupMainShape;
         if (aGeomGroup->GetType() == 37) {
           GEOM::GEOM_IGroupOperations_wrap anOp =
-            SMESH::GetGEOMGen()->GetIGroupOperations(aStudy->StudyId());
+            SMESH::GetGEOMGen()->GetIGroupOperations();
           aGroupMainShape = anOp->GetMainShape(aGeomGroup);
           // aGroupMainShape is an existing servant => GEOM_Object_var not GEOM_Object_wrap
         }
@@ -1427,7 +1421,8 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
           aGroupMainShape->Register();
         }
         CORBA::String_var entry = aGroupMainShape->GetStudyEntry();
-        _PTR(SObject) aGroupMainShapeSO = aStudy->FindObjectID( entry.in() );
+        _PTR(SObject) aGroupMainShapeSO =
+          SMESH::getStudy()->FindObjectID( entry.in() );
 
         _PTR(SObject) anObj, aRef;
         bool isRefOrSubShape = false;
@@ -2006,9 +2001,8 @@ void SMESHGUI_GroupDlg::onAdd()
     onListSelectionChanged();
 
   } else if (myCurrentLineEdit == myGeomGroupLine && myGeomObjects->length() == 1) {
-    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
     GEOM::GEOM_IGroupOperations_wrap aGroupOp =
-      SMESH::GetGEOMGen()->GetIGroupOperations(aStudy->StudyId());
+      SMESH::GetGEOMGen()->GetIGroupOperations();
 
     SMESH::ElementType aGroupType = SMESH::ALL;
     switch(aGroupOp->GetType(myGeomObjects[0])) {
@@ -2021,8 +2015,8 @@ void SMESHGUI_GroupDlg::onAdd()
 
     if (aGroupType == aType) {
       _PTR(SObject) aGroupSO =
-        //aStudy->FindObjectIOR(aStudy->ConvertObjectToIOR(myGeomGroup));
-        aStudy->FindObjectID(myGeomObjects[0]->GetStudyEntry());
+        //SMESH::getStudy()->FindObjectIOR(SMESH::getStudy()->ConvertObjectToIOR(myGeomGroup));
+        SMESH::getStudy()->FindObjectID(myGeomObjects[0]->GetStudyEntry());
       // Construct filter
       SMESH::FilterManager_var aFilterMgr = SMESH::GetFilterManager();
       SMESH::Filter_var aFilter = aFilterMgr->CreateFilter();
@@ -2453,9 +2447,8 @@ void SMESHGUI_GroupDlg::onPublishShapeByMeshDlg(SUIT_Operation* op)
     GEOM::GEOM_Object_var aGeomVar = myShapeByMeshOp->GetShape();
     if ( !aGeomVar->_is_nil() )
     {
-      CORBA::String_var ID = aGeomVar->GetStudyEntry();
-      _PTR(Study)   aStudy = SMESH::GetActiveStudyDocument();
-      if ( _PTR(SObject) aGeomSO = aStudy->FindObjectID( ID.in() )) {
+      QString ID = aGeomVar->GetStudyEntry();
+      if ( _PTR(SObject) aGeomSO = SMESH::getStudy()->FindObjectID( ID.toLatin1().data() )) {
         SALOME_ListIO anIOList;
         Handle(SALOME_InteractiveObject) anIO = new SALOME_InteractiveObject
           ( aGeomSO->GetID().c_str(), "SMESH", aGeomSO->GetName().c_str() );

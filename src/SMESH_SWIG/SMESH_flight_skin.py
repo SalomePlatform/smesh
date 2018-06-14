@@ -29,11 +29,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 
 # ---------------------------- GEOM --------------------------------------
@@ -51,18 +51,18 @@ filename = filePath + filename
 shape = geompy.Import(filename, "BREP")
 idShape = geompy.addToStudy(shape, "flight")
 
-print "Analysis of the geometry flight :"
+print("Analysis of the geometry flight :")
 subShellList = geompy.SubShapeAll(shape, geompy.ShapeType["SHELL"])
 subFaceList  = geompy.SubShapeAll(shape, geompy.ShapeType["FACE"])
 subEdgeList  = geompy.SubShapeAll(shape, geompy.ShapeType["EDGE"])
 
-print "number of Shells in flight : ", len(subShellList)
-print "number of Faces  in flight : ", len(subFaceList)
-print "number of Edges  in flight : ", len(subEdgeList)
+print("number of Shells in flight : ", len(subShellList))
+print("number of Faces  in flight : ", len(subFaceList))
+print("number of Edges  in flight : ", len(subEdgeList))
 
 
 ### ---------------------------- SMESH --------------------------------------
-smesh.SetCurrentStudy(salome.myStudy)
+smesh.UpdateStudy()
 
 # ---- init a Mesh with the shell
 shape_mesh = salome.IDToObject( idShape )
@@ -72,39 +72,39 @@ mesh = smesh.Mesh(shape_mesh, "MeshFlight")
 
 # ---- set Hypothesis and Algorithm
 
-print "-------------------------- LocalLength"
+print("-------------------------- LocalLength")
 
 lengthOfSegments = 0.3
 
 regular1D = mesh.Segment()
 hypLength = regular1D.LocalLength(lengthOfSegments)
-print hypLength.GetName()
-print hypLength.GetId()
-print hypLength.GetLength()
+print(hypLength.GetName())
+print(hypLength.GetId())
+print(hypLength.GetLength())
 smesh.SetName(hypLength, "LocalLength_" + str(lengthOfSegments))
 
-print "-------------------------- LengthFromEdges"
+print("-------------------------- LengthFromEdges")
 
 mefisto2D = mesh.Triangle()
 hypLengthFromEdge = mefisto2D.LengthFromEdges()
-print hypLengthFromEdge.GetName()
-print hypLengthFromEdge.GetId()
+print(hypLengthFromEdge.GetName())
+print(hypLengthFromEdge.GetId())
 smesh.SetName(hypLengthFromEdge,"LengthFromEdge")
 
-print "-------------------------- compute the skin flight"
+print("-------------------------- compute the skin flight")
 ret = mesh.Compute()
-print ret
+print(ret)
 if ret != 0:
     log = mesh.GetLog(0) # no erase trace
     for linelog in log:
-        print linelog
-    print "Information about the Mesh_mechanic_tetra:"
-    print "Number of nodes      : ", mesh.NbNodes()
-    print "Number of edges      : ", mesh.NbEdges()
-    print "Number of faces      : ", mesh.NbFaces()
-    print "Number of triangles  : ", mesh.NbTriangles()
-    print "Number of volumes    : ", mesh.NbVolumes()
+        print(linelog)
+    print("Information about the Mesh_mechanic_tetra:")
+    print("Number of nodes      : ", mesh.NbNodes())
+    print("Number of edges      : ", mesh.NbEdges())
+    print("Number of faces      : ", mesh.NbFaces())
+    print("Number of triangles  : ", mesh.NbTriangles())
+    print("Number of volumes    : ", mesh.NbVolumes())
 else:
-    print "probleme when computing the mesh"
+    print("probleme when computing the mesh")
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

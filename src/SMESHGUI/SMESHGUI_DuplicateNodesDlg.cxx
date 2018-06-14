@@ -402,7 +402,7 @@ void SMESHGUI_DuplicateNodesDlg::onConstructorsClicked (int constructorId)
 */
 bool SMESHGUI_DuplicateNodesDlg::onApply()
 {
-  if ( mySMESHGUI->isActiveStudyLocked() || !isValid() )
+  if ( SMESHGUI::isStudyLocked() || !isValid() )
     return false;
 
   BusyLocker lock( myBusy );
@@ -705,7 +705,7 @@ void SMESHGUI_DuplicateNodesDlg::onDeactivate()
 */
 void SMESHGUI_DuplicateNodesDlg::onGenerate()
 {
-  if ( mySMESHGUI->isActiveStudyLocked() )
+  if ( SMESHGUI::isStudyLocked() )
     return;
 
   SUIT_OverrideCursor aWaitCursor;

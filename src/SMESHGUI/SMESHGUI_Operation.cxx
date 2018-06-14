@@ -122,7 +122,7 @@ bool SMESHGUI_Operation::isReadyToStart() const
                               tr( "NO_MODULE" ) );
     return false;
   }
-  else if ( isStudyLocked() )
+  else if ( SMESHGUI::isStudyLocked() )
     return false;
 
   return true;
@@ -140,16 +140,6 @@ void SMESHGUI_Operation::setDialogActive( const bool active )
   if( d )
     d->setContentActive( active );
 
-}
-
-//=======================================================================
-// name    : studyDS
-// Purpose :
-//=======================================================================
-_PTR(Study) SMESHGUI_Operation::studyDS() const
-{
-  SalomeApp_Study* s = dynamic_cast<SalomeApp_Study*>( study() );
-  return s->studyDS();
 }
 
 //=======================================================================
@@ -234,30 +224,6 @@ void SMESHGUI_Operation::setIsApplyAndClose( const bool theFlag )
 bool SMESHGUI_Operation::isApplyAndClose() const
 {
   return myIsApplyAndClose;
-}
-
-/*!
- * \brief Verifies whether study of operation is locked
-  * \param theMess - specifies whether message box must be shown if study is locked
-  * \return State of study.
-*
-* Verifies whether study of operation is locked. If second parameter is TRUE and study
-* is locked when corresponding message box appears
-*/
-bool SMESHGUI_Operation::isStudyLocked( const bool theMess ) const
-{
-  if ( studyDS() )
-  {
-    if ( studyDS()->GetProperties()->IsLocked() )
-    {
-      if ( theMess )
-        SUIT_MessageBox::warning( SMESHGUI::desktop(), tr( "WRN_WARNING" ),
-                                  tr( "WRN_STUDY_LOCKED" ) );
-      return true;
-    }
-  }
-
-  return false;
 }
 
 /*!

@@ -2,26 +2,26 @@
 
 import logging
 import salome
-from geomsmesh import geompy
-from geomsmesh import geomPublish
-from geomsmesh import geomPublishInFather
-import initLog
-from geomsmesh import smesh
+from .geomsmesh import geompy
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+from . import initLog
+from .geomsmesh import smesh
 import SMESH
 import math
 
-from partitionBlocDefaut import partitionBlocDefaut
-from facesVolumesToriques import facesVolumesToriques
-from facesCirculaires import facesCirculaires
-from propagateTore import propagateTore
-from sortGeneratrices import sortGeneratrices
-from facesFissure import facesFissure
-from facesToreInBloc import facesToreInBloc
-from shapeSurFissure import shapeSurFissure
-from meshBlocPart import meshBlocPart
-from enleveDefaut import enleveDefaut
-from regroupeSainEtDefaut import RegroupeSainEtDefaut
-from putName import putName
+from .partitionBlocDefaut import partitionBlocDefaut
+from .facesVolumesToriques import facesVolumesToriques
+from .facesCirculaires import facesCirculaires
+from .propagateTore import propagateTore
+from .sortGeneratrices import sortGeneratrices
+from .facesFissure import facesFissure
+from .facesToreInBloc import facesToreInBloc
+from .shapeSurFissure import shapeSurFissure
+from .meshBlocPart import meshBlocPart
+from .enleveDefaut import enleveDefaut
+from .regroupeSainEtDefaut import RegroupeSainEtDefaut
+from .putName import putName
  
 # -----------------------------------------------------------------------------
 # --- procedure complete fissure elliptique
@@ -189,11 +189,11 @@ def insereFissureElliptique(geometriesSaines, maillagesSains,
 
   if step == 18:
     return None
-  maillageComplet.ExportMED( fichierMaillageFissure, 0, SMESH.MED_V2_2, 1 )
+  maillageComplet.ExportMED(fichierMaillageFissure)
   putName(maillageComplet, nomFicFissure)
   logging.info("fichier maillage fissure : %s", fichierMaillageFissure)
 
   if salome.sg.hasDesktop():
-    salome.sg.updateObjBrowser(True)
+    salome.sg.updateObjBrowser()
 
   return maillageComplet

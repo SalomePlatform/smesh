@@ -28,11 +28,11 @@ from SMESH_test1 import *
 
 # ---- compute box
 
-print "-------------------------- compute box"
+print("-------------------------- compute box")
 ret = mesh.Compute()
-print ret
+print(ret)
 log = mesh.GetLog(0); # no erase trace
 for linelog in log:
-    print linelog
+    print(linelog)
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

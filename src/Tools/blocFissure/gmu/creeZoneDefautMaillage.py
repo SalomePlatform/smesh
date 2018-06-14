@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from geomsmesh import geompy
+from .geomsmesh import geompy
 import math
-from distance2 import distance2
+from .distance2 import distance2
 import traceback
-from fissError import fissError
+from .fissError import fissError
 
 # -----------------------------------------------------------------------------
 # --- zone de defaut extraite du maillage

@@ -8,21 +8,21 @@ from Base.versions import  Chercheversion
 
 
 if __name__ == "__main__":
-      from optparse import OptionParser
-      p=OptionParser()
-      p.add_option('-s',dest='salomePath',help='chemin du runAppli de la version a comparer',default="Appli")
-      p.add_option('-v',dest='version',help='id de la version a comparer',default=None)
-      p.add_option('-r',dest='versionRef',help='liste des id des versions de reference',default=None)
-      p.add_option('-d',dest='database',default="myMesh.db",help='nom de la database')
-      p.add_option('-f',dest='fileHtml',default="/tmp/toto.htm",help='nom du fichier produit')
-      options, args = p.parse_args()
+      from argparse import ArgumentParser
+      p=ArgumentParser()
+      p.add_argument('-s',dest='salomePath',help='chemin du lanceur salome de la version a comparer',default="Appli")
+      p.add_argument('-v',dest='version',help='id de la version a comparer',default=None)
+      p.add_argument('-r',dest='versionRef',help='liste des id des versions de reference',default=None)
+      p.add_argument('-d',dest='database',default="myMesh.db",help='nom de la database')
+      p.add_argument('-f',dest='fileHtml',default="/tmp/toto.htm",help='nom du fichier produit')
+      args = p.parse_args()
 
-      if options.version==None : 
-         options.version=Chercheversion(options.salomePath)
+      if args.version is None : 
+         args.version=Chercheversion(args.salomePath)
       exit
 
-      maBase=Base(options.database)
+      maBase=Base(args.database)
       maBase.initialise()
-      maBase.compare(options.version,options.versionRef,options.fileHtml)
+      maBase.compare(args.version,args.versionRef,args.fileHtml)
       maBase.close()
 

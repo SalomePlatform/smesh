@@ -52,8 +52,8 @@ using namespace std;
  */
 //=============================================================================
 
-StdMeshers_LocalLength::StdMeshers_LocalLength(int hypId, int studyId, SMESH_Gen * gen)
-  :SMESH_Hypothesis(hypId, studyId, gen)
+StdMeshers_LocalLength::StdMeshers_LocalLength(int hypId, SMESH_Gen * gen)
+  :SMESH_Hypothesis(hypId, gen)
 {
   _length = 1.;
   _precision = Precision::Confusion();

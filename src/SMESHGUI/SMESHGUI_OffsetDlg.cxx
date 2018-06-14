@@ -328,7 +328,7 @@ void SMESHGUI_OffsetDlg::Init (bool ResetControls)
 //=================================================================================
 bool SMESHGUI_OffsetDlg::ClickOnApply()
 {
-  if (mySMESHGUI->isActiveStudyLocked())
+  if (mySMESHGUI->isStudyLocked())
     return false;
 
   if( !isValid() )

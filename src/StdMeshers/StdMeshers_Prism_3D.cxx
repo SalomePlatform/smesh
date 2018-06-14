@@ -96,15 +96,14 @@ namespace {
    */
   struct TQuadrangleAlgo : public StdMeshers_Quadrangle_2D
   {
-    TQuadrangleAlgo(int studyId, SMESH_Gen* gen)
-      : StdMeshers_Quadrangle_2D( gen->GetANewId(), studyId, gen)
+    TQuadrangleAlgo(SMESH_Gen* gen)
+      : StdMeshers_Quadrangle_2D( gen->GetANewId(), gen)
     {
     }
     static StdMeshers_Quadrangle_2D* instance( SMESH_Algo*         fatherAlgo,
                                                SMESH_MesherHelper* helper=0)
     {
-      static TQuadrangleAlgo* algo = new TQuadrangleAlgo( fatherAlgo->GetStudyId(),
-                                                          fatherAlgo->GetGen() );
+      static TQuadrangleAlgo* algo = new TQuadrangleAlgo( fatherAlgo->GetGen() );
       if ( helper &&
            algo->myProxyMesh &&
            algo->myProxyMesh->GetMesh() != helper->GetMesh() )
@@ -127,16 +126,15 @@ namespace {
   {
     StdMeshers_ProjectionSource1D myHyp;
 
-    TProjction1dAlgo(int studyId, SMESH_Gen* gen)
-      : StdMeshers_Projection_1D( gen->GetANewId(), studyId, gen),
-        myHyp( gen->GetANewId(), studyId, gen)
+    TProjction1dAlgo(SMESH_Gen* gen)
+      : StdMeshers_Projection_1D( gen->GetANewId(), gen),
+        myHyp( gen->GetANewId(), gen)
     {
       StdMeshers_Projection_1D::_sourceHypo = & myHyp;
     }
     static TProjction1dAlgo* instance( SMESH_Algo* fatherAlgo )
     {
-      static TProjction1dAlgo* algo = new TProjction1dAlgo( fatherAlgo->GetStudyId(),
-                                                            fatherAlgo->GetGen() );
+      static TProjction1dAlgo* algo = new TProjction1dAlgo( fatherAlgo->GetGen() );
       return algo;
     }
   };
@@ -148,16 +146,15 @@ namespace {
   {
     StdMeshers_ProjectionSource2D myHyp;
 
-    TProjction2dAlgo(int studyId, SMESH_Gen* gen)
-      : StdMeshers_Projection_1D2D( gen->GetANewId(), studyId, gen),
-        myHyp( gen->GetANewId(), studyId, gen)
+    TProjction2dAlgo(SMESH_Gen* gen)
+      : StdMeshers_Projection_1D2D( gen->GetANewId(), gen),
+        myHyp( gen->GetANewId(), gen)
     {
       StdMeshers_Projection_2D::_sourceHypo = & myHyp;
     }
     static TProjction2dAlgo* instance( SMESH_Algo* fatherAlgo )
     {
-      static TProjction2dAlgo* algo = new TProjction2dAlgo( fatherAlgo->GetStudyId(),
-                                                            fatherAlgo->GetGen() );
+      static TProjction2dAlgo* algo = new TProjction2dAlgo( fatherAlgo->GetGen() );
       return algo;
     }
     const NSProjUtils::TNodeNodeMap& GetNodesMap()
@@ -568,8 +565,8 @@ namespace {
 //purpose  : 
 //=======================================================================
 
-StdMeshers_Prism_3D::StdMeshers_Prism_3D(int hypId, int studyId, SMESH_Gen* gen)
-  :SMESH_3D_Algo(hypId, studyId, gen)
+StdMeshers_Prism_3D::StdMeshers_Prism_3D(int hypId, SMESH_Gen* gen)
+  :SMESH_3D_Algo(hypId, gen)
 {
   _name                    = "Prism_3D";
   _shapeType               = (1 << TopAbs_SOLID); // 1 bit per shape type

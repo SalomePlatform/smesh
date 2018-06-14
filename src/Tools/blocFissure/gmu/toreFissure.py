@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from geomsmesh import geompy
-from geomsmesh import geomPublish
-from geomsmesh import geomPublishInFather
-import initLog
+from .geomsmesh import geompy
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+from . import initLog
 import math
-from triedreBase import triedreBase
+from .triedreBase import triedreBase
 
 O, OX, OY, OZ = triedreBase()
 

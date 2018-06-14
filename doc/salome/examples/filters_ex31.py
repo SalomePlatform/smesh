@@ -9,4 +9,4 @@ criterion2 = smesh.GetCriterion(SMESH.NODE, SMESH.FT_RangeOfIds, Threshold="15-3
 filter = smesh.CreateFilterManager().CreateFilter()
 filter.SetCriteria([criterion1,criterion2])
 ids = mesh.GetIdsFromFilter(filter)
-print "Number of nodes in ranges [5-10] and [15-30]:", len(ids)
+print("Number of nodes in ranges [5-10] and [15-30]:", len(ids))

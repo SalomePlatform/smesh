@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from geomsmesh import geompy
-from geomsmesh import geomPublish
-from geomsmesh import geomPublishInFather
-import initLog
+from .geomsmesh import geompy
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+from . import initLog
 
-from toreFissure import toreFissure
-from ellipsoideDefaut import ellipsoideDefaut
-from rotTrans import rotTrans
-from genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
+from .toreFissure import toreFissure
+from .ellipsoideDefaut import ellipsoideDefaut
+from .rotTrans import rotTrans
+from .genereMeshCalculZoneDefaut import genereMeshCalculZoneDefaut
 
 # -----------------------------------------------------------------------------
 # --- création élements géométriques fissure elliptique

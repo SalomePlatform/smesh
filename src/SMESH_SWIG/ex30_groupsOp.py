@@ -22,18 +22,18 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 import math
 
 global Face_1
 Face_1 = geompy.MakeFaceHW(100, 100, 1)
 geompy.addToStudy( Face_1, "Face_1" )
 
-smesh.SetCurrentStudy(salome.myStudy)
+smesh.UpdateStudy()
 from salome.StdMeshers import StdMeshersBuilder
 pattern = smesh.GetPattern()
 Mesh_1 = smesh.Mesh(Face_1)
@@ -87,5 +87,5 @@ aIntGrp=Mesh_1.IntersectListOfGroups([aRedGroup, aGreenGroup, aBlueGroup], "IntG
 # CutListOfGroups()
 aCutGrp=Mesh_1.CutListOfGroups([aRedGroup],[aGreenGroup,aBlueGroup],"CutGrp")
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()
 

@@ -17,24 +17,46 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-# 
+#
 import SMESH
 import math
 import Config
 
 from salome.geom import geomBuilder
-geompy = geomBuilder.New( Config.theStudy )
+geompy = geomBuilder.New()
 
 from salome.smesh import smeshBuilder
-smesh = smeshBuilder.New( Config.theStudy )
+smesh = smeshBuilder.New()
 
 ##########################################################################################################
 
 def PublishGroups ():
+    aFilterManager = smesh.CreateFilterManager()
+
+    # Building geometric and mesh compounds and  groups ##############################################
+    if Config.debug : print("Searching for geometric groups and publishing final compound")
+
+    TempGEOList = []
+    TempMESHList = []
+
+    for MacroObj in Config.ListObj :
+        TempGEOList += MacroObj.GeoChildren
+        TempMESHList += MacroObj.Mesh
+
+    FinalCompound = geompy.MakeCompound(TempGEOList)
+    geompy.addToStudy (FinalCompound,Config.StudyName)
+    MeshCompound = smesh.Concatenate(TempMESHList, 1, 1, 1e-5)
+    MeshCompound.SetName(Config.StudyName)
+
+    GroupGEO = []
+    for group in Config.Groups :
+
+        # Geometric groups definition
+        TempGEOList = []
         aFilterManager = smesh.CreateFilterManager()
 
         # Building geometric and mesh compounds and  groups ##############################################
-        if Config.debug : print "Searching for geometric groups and publishing final compound"
+        if Config.debug : print("Searching for geometric groups and publishing final compound")
         
         TempGEOList = []
         TempMESHList = []
@@ -76,25 +98,25 @@ def PublishGroups ():
                 
 
 def IndexMultiOcc (Array,Element) :
-        """
-        This function returns the occurrences indices of Element in Array.
-        As opposed to Array.index(Element) method, this allows determining      
-        multiple entries rather than just the first one!
-        """
-        Output = []
-        try : Array.index(Element)
-        except ValueError : print "No more occurrences"
-        else : Output.append(Array.index(Element))
-                
-        if not(Output == [-1]) and len(Array) > 1 :
-                for index, ArrElem in enumerate(Array[Output[0]+1:]) :
-                        if ArrElem is Element : Output.append(index+Output[0]+1)
-                 
-        return Output
-            
+    """
+    This function returns the occurrences indices of Element in Array.
+    As opposed to Array.index(Element) method, this allows determining
+    multiple entries rather than just the first one!
+    """
+    Output = []
+    try : Array.index(Element)
+    except ValueError : print("No more occurrences")
+    else : Output.append(Array.index(Element))
+
+    if not(Output == [-1]) and len(Array) > 1 :
+        for index, ArrElem in enumerate(Array[Output[0]+1:]) :
+            if ArrElem is Element : Output.append(index+Output[0]+1)
+
+    return Output
+
 def Publish (ObjToPublish):
-	for i,GeoObj in enumerate(ObjToPublish) : geompy.addToStudy(GeoObj,"Sub_"+str(i))
-        
+    for i,GeoObj in enumerate(ObjToPublish) : geompy.addToStudy(GeoObj,"Sub_"+str(i))
+
 def RevolveMesh(MainMesh,**args):
         """
         This function permits to revolute and scale a 2D mesh while transforming the edge
@@ -111,18 +133,18 @@ def RevolveMesh(MainMesh,**args):
         ################################################################################       
         if 'Center' in args : CenterCoor = [float(Coor) for Coor in args['Center']]
         else : 
-                print "\nThe coordinates of the center of revolution were not given\nThe origin is used by default."
+                print("\nThe coordinates of the center of revolution were not given\nThe origin is used by default.")
                 CenterCoor = [0.,0.,0.]
         
         if 'Direction' in args : Direction = [float(Dir) for Dir in args['Direction']]
         else :
-                print "\nThe axis vector of revolution was not given\nThe x-axis is used by default."
+                print("\nThe axis vector of revolution was not given\nThe x-axis is used by default.")
                 Direction = [1.,0.,0.]
         
         if 'AngleDeg' in args : Angle = float(args['AngleDeg'])*math.pi/180.
         elif 'AngleRad' in args : Angle = float(args['AngleRad'])
         else :
-                print "\nThe revolution angle was not given\nAn angle of 10 degrees is used by default."
+                print("\nThe revolution angle was not given\nAn angle of 10 degrees is used by default.")
                 Angle = 10.*math.pi/180.
                 
         if 'Scale' in args : Scale = float(args['Scale'])
@@ -185,12 +207,12 @@ def ExtrudeMesh(MainMesh,**args):
         ################################################################################              
         if 'Distance' in args : Distance = float(args['Distance'])
         else :
-                print "\nThe extrusion distance was not given\nA default value of 1 is used."
+                print("\nThe extrusion distance was not given\nA default value of 1 is used.")
                 Distance = 1.
                 
         if 'Direction' in args : Direction = NormalizeVector([float(Dir) for Dir in args['Direction']],Distance)
         else :
-                print "\nThe extrusion vector of revolution was not given\nThe z-axis is used by default."
+                print("\nThe extrusion vector of revolution was not given\nThe z-axis is used by default.")
                 Direction = NormalizeVector([0.,0.,1.],Distance)
                                 
         if 'Scale' in args : Scale = float(args['Scale'])
@@ -237,11 +259,10 @@ def ExtrudeMesh(MainMesh,**args):
      
                
 def NormalizeVector (V,Norm):
-        """
-        This function returns a normalized vector (magnitude = Norm), parallel to the entered one
-        """
-        V = [float(Coor) for Coor in V]
-        Norm = float(Norm)
-        MagV = math.sqrt(V[0]*V[0]+V[1]*V[1]+V[2]*V[2])
-        return [Coor*Norm/MagV for Coor in V]
-  
+    """
+    This function returns a normalized vector (magnitude = Norm), parallel to the entered one
+    """
+    V = [float(Coor) for Coor in V]
+    Norm = float(Norm)
+    MagV = math.sqrt(V[0]*V[0]+V[1]*V[1]+V[2]*V[2])
+    return [Coor*Norm/MagV for Coor in V]

@@ -18,7 +18,7 @@ class Job:
       
   def execute(self):
       home=os.environ['HOME']
-      commande=os.path.abspath(os.path.join(home,self.salomePath,"runAppli"))
+      commande=os.path.abspath(os.path.join(home,self.salomePath,"salome"))
       script= os.path.abspath(os.path.join(os.path.abspath(__file__),'../..',self.script)) 
 
       debut=time.time()
@@ -26,7 +26,7 @@ class Job:
       a=os.system(commande+" -t "+script)
       fin=time.time()
       self.CPU=fin-debut
-      print "  Temps d execution : ",  self.CPU
+      print("  Temps d execution : ",  self.CPU)
 
       #stdout, stderr = p.communicate() 
 
@@ -35,7 +35,7 @@ class Job:
       try:
          text=open(self.fichierStatResult).read()
       except:
-         print "Impossible d'ouvrir le fichier: ", str(self.fichierStatResult)
+         print("Impossible d'ouvrir le fichier: ", str(self.fichierStatResult))
          exit(1)
       liste=text.split()
       i=0
@@ -55,7 +55,7 @@ class Job:
       try:
          text=open(fichier).read()
       except:
-         print "Impossible d'ouvrir le fichier: ", str(fichier)
+         print("Impossible d'ouvrir le fichier: ", str(fichier))
          exit(1)
       liste=text.split(",")
       return liste
@@ -67,7 +67,7 @@ class Job:
       try:
          text=open(fichier).read()
       except:
-         print "Impossible d'ouvrir le fichier: ", str(fichier)
+         print("Impossible d'ouvrir le fichier: ", str(fichier))
          exit(1)
       liste=text.split(",")
       return liste
@@ -80,7 +80,7 @@ class Job:
       try:
          text=open(fichier).read()
       except:
-         print "Impossible d'ouvrir le fichier: ", str(fichier)
+         print("Impossible d'ouvrir le fichier: ", str(fichier))
          exit(1)
       liste=text.split()
       i=0
@@ -98,7 +98,7 @@ class Job:
       try:
          text=open(fichier).read()
       except:
-         print "Impossible d'ouvrir le fichier: ", str(fichier)
+         print("Impossible d'ouvrir le fichier: ", str(fichier))
          exit(1)
       liste=text.split(",")
 #      print "taille",liste
@@ -110,7 +110,7 @@ class Job:
       try:
          text=open(fichier).read()
       except:
-         print "Impossible d'ouvrir le fichier: ", str(fichier)
+         print("Impossible d'ouvrir le fichier: ", str(fichier))
          exit(1)
       liste=text.split(",")
       return liste

@@ -28,11 +28,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 import CORBA
 import os
@@ -48,37 +48,37 @@ def SetSObjName(theSObj,theName) :
 def ConvertMED2UNV(thePath,theFile) :
     anInitFileName = thePath + theFile
     aMeshes,aResult = smesh.CreateMeshesFromMED(anInitFileName)
-    print aResult, aMeshes
+    print(aResult, aMeshes)
 
     for iMesh in range(len(aMeshes)) :
         aMesh = aMeshes[iMesh]
-        print aMesh.GetName(),
+        print(aMesh.GetName(), end=' ')
         aFileName = anInitFileName
         aFileName = os.path.basename(aFileName)
         aMesh.SetName(aFileName)
-        print aMesh.GetName()
+        print(aMesh.GetName())
 
         aOutPath = '/tmp/'
         aFileName = aOutPath + theFile + "." + str(iMesh) + ".unv"
         aMesh.ExportUNV(aFileName)
         aMesh = smesh.CreateMeshesFromUNV(aFileName)
-        print aMesh.GetName(),
+        print(aMesh.GetName(), end=' ')
         os.remove(aFileName)
         aFileName = os.path.basename(aFileName)
         aMesh.SetName(aFileName)
-        print aMesh.GetName()
+        print(aMesh.GetName())
 
 aPath = os.getenv('DATA_DIR') + '/MedFiles/'
 aListDir = os.listdir(aPath)
-print aListDir
+print(aListDir)
 
 for iFile in range(len(aListDir)) :
     aFileName = aListDir[iFile]
     aName,anExt = os.path.splitext(aFileName)
     if anExt == ".med" :
         aFileName = os.path.basename(aFileName)
-        print aFileName
+        print(aFileName)
         ConvertMED2UNV(aPath,aFileName)
         #break
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

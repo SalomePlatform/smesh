@@ -1,6 +1,6 @@
 import sys, os, shutil, pickle, tempfile
-import main, genereCrack, Zset
-import utilityFunctions as uF
+from Zcracks import main, genereCrack, Zset
+from Zcracks import utilityFunctions as uF
 
 os.environ['QT_QPA_PLATFORM_PLUGIN_PATH']=os.path.join(os.environ['QTDIR'],'plugins','platforms')
 
@@ -19,16 +19,16 @@ def IHM():
 
 def SCRIPT(dataFile=None, data=None, dim=3, names=None):
   if dim!=3 and dim!=2:
-    print 'ERROR'
+    print('ERROR')
     return(False)
 
   if dataFile==None and data==None:
-    print 'One of dataFile or data is mandatory'
+    print('One of dataFile or data is mandatory')
     return(False)
 
   if data==None: data=pickle.load(open(dataFile,'r'))
 
-  print data
+  print(data)
 
   tmpdir=tempfile.mkdtemp(prefix='tmpZcracks')
 
@@ -45,7 +45,7 @@ def SCRIPT(dataFile=None, data=None, dim=3, names=None):
   for f in [crackMed, crackedMed, saneGeo, crackGeo, crackedGeo]:
     if os.path.isfile(f): os.remove(f)
 
-  print crackMed
+  print(crackMed)
   genereCrack.main(data, crackMed)
   goOn=os.path.isfile(crackMed)
 

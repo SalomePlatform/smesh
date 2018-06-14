@@ -78,9 +78,8 @@ using namespace StdMeshers;
 //=============================================================================
 
 StdMeshers_Regular_1D::StdMeshers_Regular_1D(int         hypId,
-                                             int         studyId,
                                              SMESH_Gen * gen)
-  :SMESH_1D_Algo( hypId, studyId, gen )
+  :SMESH_1D_Algo( hypId, gen )
 {
   _name = "Regular_1D";
   _shapeType = (1 << TopAbs_EDGE);
@@ -629,7 +628,7 @@ void StdMeshers_Regular_1D::redistributeNearVertices (SMESH_Mesh &          theM
         double L = GCPnts_AbscissaPoint::Length( theC3d, *itU, l);
         static StdMeshers_Regular_1D* auxAlgo = 0;
         if ( !auxAlgo ) {
-          auxAlgo = new StdMeshers_Regular_1D( _gen->GetANewId(), _studyId, _gen );
+          auxAlgo = new StdMeshers_Regular_1D( _gen->GetANewId(), _gen );
           auxAlgo->_hypType = BEG_END_LENGTH;
         }
         auxAlgo->_value[ BEG_LENGTH_IND ] = Lm;

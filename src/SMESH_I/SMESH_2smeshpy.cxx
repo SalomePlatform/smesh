@@ -185,7 +185,7 @@ namespace {
     _AString comment;
 
     _pyID obj = cmd->GetObject();
-    if ( obj.Search( "print " ) == 1 )
+    if ( obj.Search( "print(" ) == 1 )
       return; // print statement
 
     if ( !obj.IsEmpty() && obj.Value( obj.Length() ) == ')' )
@@ -443,6 +443,18 @@ namespace {
       }
     }
   }
+
+  bool _FilterArg( const _AString& theArg  )
+  {
+    static std::list<_AString> filteredArgs;
+    static bool initialized = false;
+    if ( !initialized ) {
+      initialized = true;
+      filteredArgs.push_back( "SMESH.MED_V2_1" );
+      filteredArgs.push_back( "SMESH.MED_V2_2" );
+    }  
+    return std::find( filteredArgs.begin(), filteredArgs.end(), theArg ) != filteredArgs.end();
+  }
 }
 
 //================================================================================
@@ -464,7 +476,6 @@ SMESH_2smeshpy::ConvertScript(std::list< TCollection_AsciiString >&     theScrip
                               Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
                               Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
                               std::set< TCollection_AsciiString >&      theRemovedObjIDs,
-                              SALOMEDS::Study_ptr&                      theStudy,
                               const bool                                theToKeepAllCommands)
 {
   std::list< TCollection_AsciiString >::iterator lineIt;
@@ -487,7 +498,6 @@ SMESH_2smeshpy::ConvertScript(std::list< TCollection_AsciiString >&     theScrip
   theGen = new _pyGen( theEntry2AccessorMethod,
                        theObjectNames,
                        theRemovedObjIDs,
-                       theStudy,
                        theToKeepAllCommands );
 
   for ( lineIt = theScriptLines.begin(); lineIt != theScriptLines.end(); ++lineIt )
@@ -519,7 +529,6 @@ SMESH_2smeshpy::ConvertScript(std::list< TCollection_AsciiString >&     theScrip
   set<_pyID> createdObjects;
   createdObjects.insert( "smeshBuilder" );
   createdObjects.insert( "smesh" );
-  createdObjects.insert( "theStudy" );
   for ( cmd = theGen->GetCommands().begin(); cmd != theGen->GetCommands().end(); ++cmd )
   {
 #ifdef DUMP_CONVERSION
@@ -547,7 +556,6 @@ SMESH_2smeshpy::ConvertScript(std::list< TCollection_AsciiString >&     theScrip
 _pyGen::_pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
                Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
                std::set< TCollection_AsciiString >&      theRemovedObjIDs,
-               SALOMEDS::Study_ptr&                      theStudy,
                const bool                                theToKeepAllCommands)
   : _pyObject( new _pyCommand( "", 0 )),
     myNbCommands( 0 ),
@@ -556,7 +564,6 @@ _pyGen::_pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod
     myRemovedObjIDs( theRemovedObjIDs ),
     myNbFilters( 0 ),
     myToKeepAllCommands( theToKeepAllCommands ),
-    myStudy( SALOMEDS::Study::_duplicate( theStudy )),
     myGeomIDNb(0), myGeomIDIndex(-1)
 {
   // make that GetID() to return TPythonDump::SMESHGenName()
@@ -565,11 +572,11 @@ _pyGen::_pyGen(Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod
   GetCreationCmd()->GetString() += "=";
 
   // Find 1st digit of study entry by which a GEOM object differs from a SMESH object
-  if ( !theObjectNames.IsEmpty() && !CORBA::is_nil( theStudy ))
+  if ( !theObjectNames.IsEmpty() )
   {
     // find a GEOM entry
     _pyID geomID;
-    SALOMEDS::SComponent_wrap geomComp = theStudy->FindComponent("GEOM");
+    SALOMEDS::SComponent_wrap geomComp = SMESH_Gen_i::getStudyServant()->FindComponent("GEOM");
     if ( geomComp->_is_nil() ) return;
     CORBA::String_var entry = geomComp->GetID();
     geomID = entry.in();
@@ -691,7 +698,7 @@ Handle(_pyCommand) _pyGen::AddCommand( const TCollection_AsciiString& theCommand
       _AString newCmd = indent + tab + ( aCommand->GetString().ToCString() + indent.Length() );
       _AString pasCmd = indent + tab + "pass"; // to keep valid if newCmd is erased
       _AString excStr = indent + "except:";
-      _AString msgStr = indent + "\tprint '"; msgStr += method + "() failed. Invalid file name?'";
+      _AString msgStr = indent + "\tprint('"; msgStr += method + "() failed. Invalid file name?')";
 
       myCommands.insert( --myCommands.end(), new _pyCommand( tryStr, myNbCommands ));
       aCommand->Clear();
@@ -1105,7 +1112,7 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
   static TStringSet smeshpyMethods;
   if ( smeshpyMethods.empty() ) {
     const char * names[] =
-      { "SetEmbeddedMode","IsEmbeddedMode","SetCurrentStudy","GetCurrentStudy",
+      { "SetEmbeddedMode","IsEmbeddedMode","UpdateStudy","GetStudy",
         "GetPattern","GetSubShapesId",
         "" }; // <- mark of array end
     smeshpyMethods.Insert( names );
@@ -1677,7 +1684,7 @@ bool _pyGen::IsNotPublished(const _pyID& theObjID) const
   // either the SMESH object is not in study or it is a GEOM object
   if ( IsGeomObject( theObjID ))
   {
-    SALOMEDS::SObject_wrap so = myStudy->FindObjectID( theObjID.ToCString() );
+    SALOMEDS::SObject_wrap so = SMESH_Gen_i::getStudyServant()->FindObjectID( theObjID.ToCString() );
     if ( so->_is_nil() ) return true;
     CORBA::Object_var obj = so->GetObject();
     return CORBA::is_nil( obj );
@@ -1980,16 +1987,26 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
   // ----------------------------------------------------------------------
   else if ( theCommand->MethodStartsFrom( "Export" ))
   {
-    if ( method == "ExportToMED" ||  // ExportToMED()  --> ExportMED()
-         method == "ExportToMEDX" )  // ExportToMEDX() --> ExportMED()
+    if ( method == "ExportToMED"  || // ExportToMED()  --> ExportMED()
+         method == "ExportToMEDX" || // ExportToMEDX() --> ExportMED()
+         method == "ExportMED" )
     {
       theCommand->SetMethod( "ExportMED" );
-      if ( theCommand->GetNbArgs() == 5 )
+      // filter out deprecated version parameter
+      vector< _AString > args;
+      for ( int i = 1; i <= theCommand->GetNbArgs(); i++ ) {
+        if ( !_FilterArg( theCommand->GetArg( i ) ) )
+          args.push_back( theCommand->GetArg( i ) );
+      }
+      theCommand->RemoveArgs();
+      for ( uint i = 0; i < args.size(); i++ )
+        theCommand->SetArg( i+1, args[i] );
+      if ( theCommand->GetNbArgs() == 4 )
       {
         // ExportToMEDX(...,autoDimension) -> ExportToMEDX(...,meshPart=None,autoDimension)
-        _AString autoDimension = theCommand->GetArg( 5 );
-        theCommand->SetArg( 5, "None" );
-        theCommand->SetArg( 6, autoDimension );
+        _AString autoDimension = theCommand->GetArg( 4 );
+        theCommand->SetArg( 4, "None" );
+        theCommand->SetArg( 5, autoDimension );
       }
     }
     else if ( method == "ExportCGNS" )
@@ -2015,6 +2032,15 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
       TCollection_AsciiString newMethod = method;
       newMethod.Remove( /*where=*/7, /*howmany=*/6 );
       theCommand->SetMethod( newMethod );
+      // filter out deprecated version parameter
+      vector< _AString > args;
+      for ( int i = 1; i <= theCommand->GetNbArgs(); i++ ) {
+        if ( !_FilterArg( theCommand->GetArg( i ) ) )
+          args.push_back( theCommand->GetArg( i ) );
+      }
+      theCommand->RemoveArgs();
+      for ( uint i = 0; i < args.size(); i++ )
+        theCommand->SetArg( i+1, args[i] );
       // make the 1st arg be the last one (or last but three for ExportMED())
       _pyID partID = theCommand->GetArg( 1 );
       int nbArgs = theCommand->GetNbArgs() - 3 * (newMethod == "ExportMED");
@@ -2126,7 +2152,7 @@ bool _pyMesh::NeedMeshAccess( const Handle(_pyCommand)& theCommand )
     const char * names[] =
       { "ExportDAT","ExportUNV","ExportSTL","ExportSAUV", "RemoveGroup","RemoveGroupWithContents",
         "GetGroups","UnionGroups","IntersectGroups","CutGroups","CreateDimGroup","GetLog","GetId",
-        "ClearLog","GetStudyId","HasDuplicatedGroupNamesMED","GetMEDMesh","NbNodes","NbElements",
+        "ClearLog","HasDuplicatedGroupNamesMED","GetMEDMesh","NbNodes","NbElements",
         "NbEdges","NbEdgesOfOrder","NbFaces","NbFacesOfOrder","NbTriangles",
         "NbTrianglesOfOrder","NbQuadrangles","NbQuadranglesOfOrder","NbPolygons","NbVolumes",
         "NbVolumesOfOrder","NbTetras","NbTetrasOfOrder","NbHexas","NbHexasOfOrder",

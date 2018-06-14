@@ -29,11 +29,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 # ---------------------------- GEOM --------------------------------------
 
@@ -97,19 +97,19 @@ Id_mechanic = geompy.addToStudy( mechanic, "mechanic" )
 
 # ---- Analysis of the geometry
 
-print "Analysis of the geometry mechanic :"
+print("Analysis of the geometry mechanic :")
 
 subShellList = geompy.SubShapeAll(mechanic,geompy.ShapeType["SHELL"])
 subFaceList  = geompy.SubShapeAll(mechanic,geompy.ShapeType["FACE"])
 subEdgeList  = geompy.SubShapeAll(mechanic,geompy.ShapeType["EDGE"])
 
-print "number of Shells in mechanic : ",len(subShellList)
-print "number of Faces in mechanic : ",len(subFaceList)
-print "number of Edges in mechanic : ",len(subEdgeList)
+print("number of Shells in mechanic : ",len(subShellList))
+print("number of Faces in mechanic : ",len(subFaceList))
+print("number of Edges in mechanic : ",len(subEdgeList))
 
 ### ---------------------------- SMESH --------------------------------------
 
-print "-------------------------- create Mesh, algorithm, hypothesis"
+print("-------------------------- create Mesh, algorithm, hypothesis")
 
 mesh = smesh.Mesh(mechanic, "Mesh_mechanic");
 netgen = mesh.Triangle(smeshBuilder.NETGEN)
@@ -119,20 +119,20 @@ netgen.SetFineness( smeshBuilder.Fine )
 netgen.SetQuadAllowed( 1 )
 #netgen.SetOptimize( 1 )
 
-print "-------------------------- compute mesh"
+print("-------------------------- compute mesh")
 ret = mesh.Compute()
-print ret
+print(ret)
 if ret != 0:
-    print "Information about the MeshcompShel:"
-    print "Number of nodes        : ", mesh.NbNodes()
-    print "Number of edges        : ", mesh.NbEdges()
-    print "Number of faces        : ", mesh.NbFaces()
-    print "Number of triangles    : ", mesh.NbTriangles()
-    print "Number of quadrangles  : ", mesh.NbQuadrangles()
-    print "Number of volumes      : ", mesh.NbVolumes()
-    print "Number of tetrahedrons : ", mesh.NbTetras()
+    print("Information about the MeshcompShel:")
+    print("Number of nodes        : ", mesh.NbNodes())
+    print("Number of edges        : ", mesh.NbEdges())
+    print("Number of faces        : ", mesh.NbFaces())
+    print("Number of triangles    : ", mesh.NbTriangles())
+    print("Number of quadrangles  : ", mesh.NbQuadrangles())
+    print("Number of volumes      : ", mesh.NbVolumes())
+    print("Number of tetrahedrons : ", mesh.NbTetras())
     
 else:
-    print "problem when computing the mesh"
+    print("problem when computing the mesh")
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

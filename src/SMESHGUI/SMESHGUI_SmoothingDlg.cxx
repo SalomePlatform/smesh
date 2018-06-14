@@ -341,7 +341,7 @@ void SMESHGUI_SmoothingDlg::Init()
 //=================================================================================
 bool SMESHGUI_SmoothingDlg::ClickOnApply()
 {
-  if (mySMESHGUI->isActiveStudyLocked())
+  if (SMESHGUI::isStudyLocked())
     return false;
 
   if (!isValid())

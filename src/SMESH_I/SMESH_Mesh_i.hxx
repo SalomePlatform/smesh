@@ -59,8 +59,7 @@ class SMESH_I_EXPORT SMESH_Mesh_i:
   SMESH_Mesh_i(const SMESH_Mesh_i&);
 public:
   SMESH_Mesh_i( PortableServer::POA_ptr thePOA,
-                SMESH_Gen_i*            myGen_i,
-                CORBA::Long             studyId );
+                SMESH_Gen_i*            myGen_i );
 
   virtual ~SMESH_Mesh_i();
 
@@ -185,8 +184,6 @@ public:
 
   CORBA::Long GetId() throw (SALOME::SALOME_Exception);
 
-  CORBA::Long GetStudyId() throw (SALOME::SALOME_Exception);
-
   // --- C++ interface
 
   void SetImpl(::SMESH_Mesh* impl);
@@ -228,21 +225,11 @@ public:
    *  Consider maximum group name length stored in MED file.
    */
   CORBA::Boolean HasDuplicatedGroupNamesMED();
-  /*!
-   * Return string representation of a MED file version comprising nbDigits
-   */
-  char* GetVersionString(SMESH::MED_VERSION version, CORBA::Short nbDigits);
 
-  void ExportToMEDX( const char*        file,
-                     CORBA::Boolean     auto_groups,
-                     SMESH::MED_VERSION version,
-                     CORBA::Boolean     overwrite,
-                     CORBA::Boolean     autoDimension=true) throw (SALOME::SALOME_Exception);
-  void ExportToMED ( const char*        file,
-                     CORBA::Boolean     auto_groups,
-                     SMESH::MED_VERSION version ) throw (SALOME::SALOME_Exception);
-  void ExportMED   ( const char*        file,
-                     CORBA::Boolean     auto_groups ) throw (SALOME::SALOME_Exception);
+  void ExportMED( const char*        file,
+                  CORBA::Boolean     auto_groups,
+                  CORBA::Boolean     overwrite,
+                  CORBA::Boolean     autoDimension = true) throw (SALOME::SALOME_Exception);
 
   void ExportSAUV( const char* file, CORBA::Boolean auto_groups ) throw (SALOME::SALOME_Exception);
 
@@ -260,7 +247,6 @@ public:
   void ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
                        const char*               file,
                        CORBA::Boolean            auto_groups,
-                       SMESH::MED_VERSION        version,
                        CORBA::Boolean            overwrite,
                        CORBA::Boolean            autoDim,
                        const GEOM::ListOfFields& fields,
@@ -320,7 +306,7 @@ public:
   CORBA::Long NbPolygons()
     throw (SALOME::SALOME_Exception);
 
-  CORBA::Long NbPolygonsOfOrder(SMESH::ElementOrder order=SMESH::ORDER_ANY)
+  CORBA::Long NbPolygonsOfOrder(SMESH::ElementOrder order = SMESH::ORDER_ANY)
     throw (SALOME::SALOME_Exception);
 
   CORBA::Long NbVolumes()
@@ -704,7 +690,6 @@ private:
   ::SMESH_Mesh* _impl;        // :: force no namespace here
   SMESH_Gen_i*  _gen_i;
   int           _id;          // id given by creator (unique within the creator instance)
-  int           _studyId;
   std::map<int, SMESH::SMESH_subMesh_ptr>    _mapSubMeshIor;
   std::map<int, SMESH::SMESH_GroupBase_ptr>  _mapGroups;
   std::map<int, SMESH::SMESH_Hypothesis_ptr> _mapHypo;

@@ -79,8 +79,8 @@ using namespace std;
  */
 //=============================================================================
 
-StdMeshers_MEFISTO_2D::StdMeshers_MEFISTO_2D(int hypId, int studyId, SMESH_Gen * gen):
-  SMESH_2D_Algo(hypId, studyId, gen)
+StdMeshers_MEFISTO_2D::StdMeshers_MEFISTO_2D(int hypId, SMESH_Gen * gen):
+  SMESH_2D_Algo(hypId, gen)
 {
   _name = "MEFISTO_2D";
   _shapeType = (1 << TopAbs_FACE);

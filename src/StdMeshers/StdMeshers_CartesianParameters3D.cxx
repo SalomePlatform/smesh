@@ -61,9 +61,8 @@ using namespace std;
 //=======================================================================
 
 StdMeshers_CartesianParameters3D::StdMeshers_CartesianParameters3D(int         hypId,
-                                                                   int         studyId,
                                                                    SMESH_Gen * gen)
-  : SMESH_Hypothesis(hypId, studyId, gen),
+  : SMESH_Hypothesis(hypId, gen),
     _sizeThreshold( 4.0 ), // default according to the customer specification
     _toAddEdges( false )
 {

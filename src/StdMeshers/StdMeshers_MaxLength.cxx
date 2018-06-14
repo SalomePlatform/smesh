@@ -47,8 +47,8 @@ using namespace std;
  */
 //=============================================================================
 
-StdMeshers_MaxLength::StdMeshers_MaxLength(int hypId, int studyId, SMESH_Gen * gen)
-  :SMESH_Hypothesis(hypId, studyId, gen)
+StdMeshers_MaxLength::StdMeshers_MaxLength(int hypId, SMESH_Gen * gen)
+  :SMESH_Hypothesis(hypId, gen)
 {
   _length = 1.;
   _preestimated = 0.;

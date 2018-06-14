@@ -173,8 +173,8 @@ const SMESH_Algo::Features& SMESH_Algo::GetFeatures( const std::string& algoType
  */
 //=============================================================================
 
-SMESH_Algo::SMESH_Algo (int hypId, int studyId, SMESH_Gen * gen)
-  : SMESH_Hypothesis(hypId, studyId, gen)
+SMESH_Algo::SMESH_Algo (int hypId, SMESH_Gen * gen)
+  : SMESH_Hypothesis(hypId, gen)
 {
   _compatibleAllHypFilter = _compatibleNoAuxHypFilter = NULL;
   _onlyUnaryInput = _requireDiscreteBoundary = _requireShape = true;
@@ -202,26 +202,26 @@ SMESH_Algo::~SMESH_Algo()
  */
 //=============================================================================
 
-SMESH_0D_Algo::SMESH_0D_Algo(int hypId, int studyId, SMESH_Gen* gen)
-  : SMESH_Algo(hypId, studyId, gen)
+SMESH_0D_Algo::SMESH_0D_Algo(int hypId, SMESH_Gen* gen)
+  : SMESH_Algo(hypId, gen)
 {
   _shapeType = (1 << TopAbs_VERTEX);
   _type = ALGO_0D;
 }
-SMESH_1D_Algo::SMESH_1D_Algo(int hypId, int studyId, SMESH_Gen* gen)
-  : SMESH_Algo(hypId, studyId, gen)
+SMESH_1D_Algo::SMESH_1D_Algo(int hypId, SMESH_Gen* gen)
+  : SMESH_Algo(hypId, gen)
 {
   _shapeType = (1 << TopAbs_EDGE);
   _type = ALGO_1D;
 }
-SMESH_2D_Algo::SMESH_2D_Algo(int hypId, int studyId, SMESH_Gen* gen)
-  : SMESH_Algo(hypId, studyId, gen)
+SMESH_2D_Algo::SMESH_2D_Algo(int hypId, SMESH_Gen* gen)
+  : SMESH_Algo(hypId, gen)
 {
   _shapeType = (1 << TopAbs_FACE);
   _type = ALGO_2D;
 }
-SMESH_3D_Algo::SMESH_3D_Algo(int hypId, int studyId, SMESH_Gen* gen)
-  : SMESH_Algo(hypId, studyId, gen)
+SMESH_3D_Algo::SMESH_3D_Algo(int hypId, SMESH_Gen* gen)
+  : SMESH_Algo(hypId, gen)
 {
   _shapeType = (1 << TopAbs_SOLID);
   _type = ALGO_3D;

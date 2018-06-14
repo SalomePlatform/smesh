@@ -93,11 +93,7 @@ namespace SMESH
     if ( !aMeshShape->_is_nil() )
       return aMeshShape;
 
-    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-    if (!aStudy)
-      return aMeshShape;
-
-    _PTR(ChildIterator) anIter (aStudy->NewChildIterator(theSO));
+    _PTR(ChildIterator) anIter (SMESH::getStudy()->NewChildIterator(theSO));
     for ( ; anIter->More(); anIter->Next()) {
       _PTR(SObject) aSObject = anIter->Value();
       _PTR(SObject) aRefSOClient;
@@ -120,11 +116,7 @@ namespace SMESH
     if (!smeshSO)
       return 0;
 
-    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-    if (!aStudy)
-      return 0;
-
-    _PTR(ChildIterator) anIter (aStudy->NewChildIterator( smeshSO ));
+    _PTR(ChildIterator) anIter (SMESH::getStudy()->NewChildIterator( smeshSO ));
     for ( ; anIter->More(); anIter->Next()) {
       _PTR(SObject) aSObject = anIter->Value();
       _PTR(SObject) aRefSOClient;
@@ -153,11 +145,10 @@ namespace SMESH
                                      long                  theID)
   {
     GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
-    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-    if (!aStudy || geomGen->_is_nil())
+    if (geomGen->_is_nil())
       return GEOM::GEOM_Object::_nil();
     GEOM::GEOM_IShapesOperations_wrap aShapesOp =
-      geomGen->GetIShapesOperations(aStudy->StudyId());
+      geomGen->GetIShapesOperations();
     if (aShapesOp->_is_nil())
       return GEOM::GEOM_Object::_nil();
     GEOM::GEOM_Object_wrap subShape = aShapesOp->GetSubShape (theMainShape,theID);
@@ -183,10 +174,7 @@ namespace SMESH
     meshGeom.clear();
     if ( hypIO.IsNull() ) return false;
 
-    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
-    if ( !aStudy ) return false;
-
-    _PTR(SObject) hypSO = aStudy->FindObjectID( hypIO->getEntry() );
+    _PTR(SObject) hypSO = SMESH::getStudy()->FindObjectID( hypIO->getEntry() );
     if ( !hypSO ) return false;
 
     // Depth() is a number of fathers

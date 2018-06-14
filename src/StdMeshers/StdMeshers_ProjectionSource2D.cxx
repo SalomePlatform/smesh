@@ -45,9 +45,9 @@ using namespace std;
  */
 //=============================================================================
 
-StdMeshers_ProjectionSource2D::StdMeshers_ProjectionSource2D(int hypId, int studyId,
+StdMeshers_ProjectionSource2D::StdMeshers_ProjectionSource2D(int hypId,
                                                              SMESH_Gen * gen)
-  : SMESH_Hypothesis(hypId, studyId, gen)
+  : SMESH_Hypothesis(hypId, gen)
 {
   _name = "ProjectionSource2D"; // used by Projection_2D
   _param_algo_dim = 2; // 2D

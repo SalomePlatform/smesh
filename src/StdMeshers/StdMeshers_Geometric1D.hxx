@@ -35,7 +35,7 @@
 class STDMESHERS_EXPORT StdMeshers_Geometric1D: public StdMeshers_Reversible1D
 {
 public:
-  StdMeshers_Geometric1D(int hypId, int studyId, SMESH_Gen* gen);
+  StdMeshers_Geometric1D(int hypId, SMESH_Gen* gen);
 
   void SetStartLength(double length) throw(SALOME_Exception);
   void SetCommonRatio(double factor) throw(SALOME_Exception);

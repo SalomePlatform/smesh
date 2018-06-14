@@ -434,7 +434,7 @@ namespace
     text << "import salome, SMESH\n";
     text << "salome.salome_init()\n";
     text << "from salome.smesh import smeshBuilder\n";
-    text << "smesh = smeshBuilder.New(salome.myStudy)\n";
+    text << "smesh = smeshBuilder.New()\n";
     text << "m=smesh.Mesh()\n";
     for ( size_t iE = 0; iE < bndSegsPerEdge.size(); ++iE )
     {

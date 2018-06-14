@@ -4,7 +4,6 @@ import sys
 import salome
 
 salome.salome_init()
-theStudy = salome.myStudy
 
 import salome_notebook
 notebook = salome_notebook.notebook
@@ -23,7 +22,7 @@ import math
 import SALOMEDS
 
 
-geompy = geomBuilder.New(theStudy)
+geompy = geomBuilder.New()
 
 O = geompy.MakeVertex(0, 0, 0)
 OX = geompy.MakeVectorDXDYDZ(1, 0, 0)
@@ -56,7 +55,7 @@ geompy.addToStudyInFather( Disque, Compound_4, 'Compound_4' )
 import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
-smesh = smeshBuilder.New(theStudy)
+smesh = smeshBuilder.New()
 from salome.StdMeshers import StdMeshersBuilder
 Disque_1 = smesh.Mesh(Disque)
 Regular_1D = Disque_1.Segment()
@@ -71,7 +70,7 @@ status = Disque_1.AddHypothesis(Nb_Segments_2,Compound_4)
 Quadrangle_2D = Disque_1.Quadrangle(algo=smeshBuilder.QUADRANGLE)
 isDone = Disque_1.Compute()
 smesh.SetName(Disque_1, 'Disque')
-Disque_1.ExportMED( os.path.join(gmu.pathBloc, "materielCasTests/disque.med"), 0, SMESH.MED_V2_2, 1 )
+Disque_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests/disque.med"))
 SubMesh_1 = Regular_1D_1.GetSubMesh()
 SubMesh_2 = Regular_1D_2.GetSubMesh()
 
@@ -86,4 +85,4 @@ smesh.SetName(SubMesh_1, 'SubMesh_1')
 smesh.SetName(SubMesh_2, 'SubMesh_2')
 
 if salome.sg.hasDesktop():
-  salome.sg.updateObjBrowser(True)
+  salome.sg.updateObjBrowser()

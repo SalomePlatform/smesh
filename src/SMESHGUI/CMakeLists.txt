@@ -42,7 +42,7 @@ INCLUDE_DIRECTORIES(
   ${PROJECT_SOURCE_DIR}/src/SMESHUtils
   ${PROJECT_SOURCE_DIR}/src/Controls
   ${PROJECT_SOURCE_DIR}/src/SMESHClient
-  ${PROJECT_SOURCE_DIR}/src/MEDWrapper/Base
+  ${PROJECT_SOURCE_DIR}/src/MEDWrapper
   ${PROJECT_BINARY_DIR}
   ${PROJECT_BINARY_DIR}/idl
 )
@@ -143,7 +143,6 @@ SET(_moc_HEADERS
   SMESHGUI_FieldSelectorWdg.h
   SMESHGUI_DisplayEntitiesDlg.h
   SMESHGUI_SplitBiQuad.h
-  SMESHGUI_PreVisualObj.h
   SMESHGUI_IdPreview.h
 )
 

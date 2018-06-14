@@ -69,7 +69,6 @@ public:
                 Resource_DataMapOfAsciiStringAsciiString& theEntry2AccessorMethod,
                 Resource_DataMapOfAsciiStringAsciiString& theObjectNames,
                 std::set< TCollection_AsciiString >&      theRemovedObjIDs,
-                SALOMEDS::Study_ptr&                      theStudy,
                 const bool                                theHistoricalDump);
 
   /*!
@@ -200,9 +199,6 @@ namespace SMESH
 
     TPythonDump&
     operator<<(SMESH_MeshEditor_i* theArg);
-
-    TPythonDump&
-    operator<<(SMESH::MED_VERSION theArg);
 
     TPythonDump&
     operator<<(const SMESH::AxisStruct & theAxis);

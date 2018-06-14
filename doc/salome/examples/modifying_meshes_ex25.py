@@ -5,11 +5,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 # define the geometry
 Box_1 = geompy.MakeBoxDXDYDZ(200., 200., 200.)
@@ -29,7 +29,7 @@ algo1D.NumberOfSegments(3)
 Mesh_1.Quadrangle()
 
 isDone = Mesh_1.Compute()
-if not isDone: print 'Mesh Mesh_1 : computation failed'
+if not isDone: print('Mesh Mesh_1 : computation failed')
 
 # build a triangle mesh on Face_2
 Mesh_2 = smesh.Mesh(Face_2)
@@ -40,20 +40,20 @@ algo2D = Mesh_2.Triangle()
 algo2D.MaxElementArea(240)
 
 isDone = Mesh_2.Compute()
-if not isDone: print 'Mesh Mesh_2 : computation failed'
+if not isDone: print('Mesh Mesh_2 : computation failed')
 
 # create a 2d pattern
 pattern = smesh.GetPattern()
 
 isDone = pattern.LoadFromFace(Mesh_2.GetMesh(), Face_2, 0)
-if (isDone != 1): print 'LoadFromFace :', pattern.GetErrorCode()
+if (isDone != 1): print('LoadFromFace :', pattern.GetErrorCode())
 
 # apply the pattern to a face of the first mesh
 facesToSplit = Mesh_1.GetElementsByType(SMESH.FACE)
-print "Splitting %d rectangular face(s) to %d triangles..."%(len(facesToSplit), 2*len(facesToSplit))
+print("Splitting %d rectangular face(s) to %d triangles..."%(len(facesToSplit), 2*len(facesToSplit)))
 pattern.ApplyToMeshFaces(Mesh_1.GetMesh(), facesToSplit, 0, 0)
 isDone = pattern.MakeMesh(Mesh_1.GetMesh(), 0, 0)
-if (isDone != 1): print 'MakeMesh :', pattern.GetErrorCode()  
+if (isDone != 1): print('MakeMesh :', pattern.GetErrorCode())  
 
 # create quadrangle mesh
 Mesh_3 = smesh.Mesh(Box_1)
@@ -61,7 +61,7 @@ Mesh_3.Segment().NumberOfSegments(1)
 Mesh_3.Quadrangle()
 Mesh_3.Hexahedron()
 isDone = Mesh_3.Compute()
-if not isDone: print 'Mesh Mesh_3 : computation failed'
+if not isDone: print('Mesh Mesh_3 : computation failed')
 
 # create a 3d pattern (hexahedrons)
 pattern_hexa = smesh.GetPattern()
@@ -93,10 +93,10 @@ pattern_hexa.LoadFromFile(smp_hexa)
 
 # apply the pattern to a mesh
 volsToSplit = Mesh_3.GetElementsByType(SMESH.VOLUME)
-print "Splitting %d hexa volume(s) to %d hexas..."%(len(volsToSplit), 4*len(volsToSplit))
+print("Splitting %d hexa volume(s) to %d hexas..."%(len(volsToSplit), 4*len(volsToSplit)))
 pattern_hexa.ApplyToHexahedrons(Mesh_3.GetMesh(), volsToSplit,0,3)
 isDone = pattern_hexa.MakeMesh(Mesh_3.GetMesh(), True, True)
-if (isDone != 1): print 'MakeMesh :', pattern_hexa.GetErrorCode()  
+if (isDone != 1): print('MakeMesh :', pattern_hexa.GetErrorCode())  
 
 # create one more quadrangle mesh
 Mesh_4 = smesh.Mesh(Box_1)
@@ -104,7 +104,7 @@ Mesh_4.Segment().NumberOfSegments(1)
 Mesh_4.Quadrangle()
 Mesh_4.Hexahedron()
 isDone = Mesh_4.Compute()
-if not isDone: print 'Mesh Mesh_4 : computation failed'
+if not isDone: print('Mesh Mesh_4 : computation failed')
 
 # create another 3d pattern (pyramids)
 pattern_pyra = smesh.GetPattern()
@@ -132,7 +132,7 @@ pattern_pyra.LoadFromFile(smp_pyra)
 
 # apply the pattern to a face mesh
 volsToSplit = Mesh_4.GetElementsByType(SMESH.VOLUME)
-print "Splitting %d hexa volume(s) to %d hexas..."%(len(volsToSplit), 6*len(volsToSplit))
+print("Splitting %d hexa volume(s) to %d hexas..."%(len(volsToSplit), 6*len(volsToSplit)))
 pattern_pyra.ApplyToHexahedrons(Mesh_4.GetMesh(), volsToSplit,1,0)
 isDone = pattern_pyra.MakeMesh(Mesh_4.GetMesh(), True, True)
-if (isDone != 1): print 'MakeMesh :', pattern_pyra.GetErrorCode()  
+if (isDone != 1): print('MakeMesh :', pattern_pyra.GetErrorCode())  

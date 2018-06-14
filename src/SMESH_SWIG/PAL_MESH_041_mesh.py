@@ -25,11 +25,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 
 #-----------------------------GEOM----------------------------------------
@@ -67,7 +67,7 @@ plane_mesh = salome.IDToObject( Id_face1)
 
 mesh = smesh.Mesh(plane_mesh, "Mesh_1")
 
-print"---------------------Hypothesis and Algorithms"
+print("---------------------Hypothesis and Algorithms")
 
 #---------------- NumberOfSegments
 
@@ -75,12 +75,12 @@ numberOfSegment = 9
 
 algoWireDes = mesh.Segment()
 listHyp = algoWireDes.GetCompatibleHypothesis()
-print algoWireDes.GetName()
+print(algoWireDes.GetName())
 algoWireDes.SetName("Ware descritisation")
 
 hypNbSeg = algoWireDes.NumberOfSegments(numberOfSegment)
-print hypNbSeg.GetName()
-print hypNbSeg.GetNumberOfSegments()
+print(hypNbSeg.GetName())
+print(hypNbSeg.GetNumberOfSegments())
 smesh.SetName(hypNbSeg, "Nb. Segments")
 
 
@@ -89,19 +89,19 @@ maxElementArea = 200
 
 algoMef = mesh.Triangle()
 listHyp = algoMef.GetCompatibleHypothesis()
-print algoMef.GetName()
+print(algoMef.GetName())
 algoMef.SetName("Triangle (Mefisto)")
 
 hypArea200 = algoMef.MaxElementArea(maxElementArea)
-print hypArea200.GetName()
-print hypArea200.GetMaxElementArea()
+print(hypArea200.GetName())
+print(hypArea200.GetMaxElementArea())
 smesh.SetName(hypArea200, "Max. Element Area")
 
 
-print "---------------------Compute the mesh"
+print("---------------------Compute the mesh")
 
 ret = mesh.Compute()
-print ret
+print(ret)
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()
 

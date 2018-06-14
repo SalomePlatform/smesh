@@ -74,9 +74,8 @@ using namespace std;
 //=======================================================================
 
 StdMeshers_RadialQuadrangle_1D2D::StdMeshers_RadialQuadrangle_1D2D(int        hypId,
-                                                                   int        studyId,
                                                                    SMESH_Gen* gen)
-  :StdMeshers_Quadrangle_2D( hypId, studyId, gen )
+  :StdMeshers_Quadrangle_2D( hypId, gen )
 {
   _name = "RadialQuadrangle_1D2D";
   _shapeType = (1 << TopAbs_FACE);        // 1 bit per shape type
@@ -631,7 +630,7 @@ public:
     const int myID = -1001;
     TNodeDistributor* myHyp = dynamic_cast<TNodeDistributor*>( aMesh.GetHypothesis( myID ));
     if ( !myHyp )
-      myHyp = new TNodeDistributor( myID, 0, aMesh.GetGen() );
+      myHyp = new TNodeDistributor( myID, aMesh.GetGen() );
     return myHyp;
   }
   // -----------------------------------------------------------------------------
@@ -726,8 +725,8 @@ public:
   }
 protected:
   // -----------------------------------------------------------------------------
-  TNodeDistributor( int hypId, int studyId, SMESH_Gen* gen)
-    : StdMeshers_Regular_1D( hypId, studyId, gen)
+  TNodeDistributor( int hypId, SMESH_Gen* gen)
+    : StdMeshers_Regular_1D( hypId, gen)
   {
   }
   // -----------------------------------------------------------------------------

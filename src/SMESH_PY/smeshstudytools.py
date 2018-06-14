@@ -77,12 +77,12 @@ class SMeshStudyTools:
 
     ## This function updates the tools so that it works on the
     #  specified study.
-    def updateStudy(self, studyId=None):
+    def updateStudy(self):
         """
         This function updates the tools so that it works on the
         specified study.
         """
-        self.editor = getStudyEditor(studyId)
+        self.editor = getStudyEditor()
 
     ## Get the mesh item owning the mesh group \em meshGroupItem.
     #  \param  meshGroupItem (SObject) mesh group belonging to the searched mesh.
@@ -125,7 +125,7 @@ class SMeshStudyTools:
             return None
         import SMESH
         from salome.smesh import smeshBuilder
-        smesh = smeshBuilder.New(self.editor.study)
+        smesh = smeshBuilder.New()
 
         meshObject=salome.IDToObject(entry)
         return smesh.Mesh( meshObject )
@@ -155,7 +155,7 @@ class SMeshStudyTools:
             self.smeshGui = salome.ImportComponentGUI("SMESH")
 
         if not helper.SalomeGUI.hasDesktop():
-            print "displayMeshObject: no desktop available"
+            print("displayMeshObject: no desktop available")
             return
         self.smeshGui.CreateAndDisplayActor(entry)
 
@@ -183,17 +183,16 @@ class SMeshStudyTools:
 
 
 def TEST_createBoxMesh():
-    theStudy = helper.getActiveStudy()
     
     import GEOM
     from salome.geom import geomBuilder
-    geompy = geomBuilder.New(theStudy)
+    geompy = geomBuilder.New()
     
     box = geompy.MakeBoxDXDYDZ(200, 200, 200)
 
     import SMESH, SALOMEDS
     from salome.smesh import smeshBuilder
-    smesh = smeshBuilder.New(theStudy) 
+    smesh = smeshBuilder.New() 
 
     from salome.StdMeshers import StdMeshersBuilder
     boxmesh = smesh.Mesh(box)
@@ -207,7 +206,7 @@ def TEST_createBoxMesh():
 
     smesh.SetName(boxmesh.GetMesh(), 'boxmesh')
     if salome.sg.hasDesktop():
-        salome.sg.updateObjBrowser(True)
+        salome.sg.updateObjBrowser()
 
 #
 # Definitions:

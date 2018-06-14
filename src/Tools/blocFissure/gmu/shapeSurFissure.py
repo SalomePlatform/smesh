@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from geomsmesh import geompy
-from geomsmesh import geomPublish
-from geomsmesh import geomPublishInFather
-import initLog
+from .geomsmesh import geompy
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+from . import initLog
 
 # -----------------------------------------------------------------------------
 # --- construction d'une shape de dectection des éléments à modifier suite à la la duplication des noeuds de la face fissure (d'un coté de la face)

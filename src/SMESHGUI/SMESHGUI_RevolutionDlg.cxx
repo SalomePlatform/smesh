@@ -392,7 +392,7 @@ bool SMESHGUI_RevolutionDlg::isValid()
 //=================================================================================
 bool SMESHGUI_RevolutionDlg::ClickOnApply()
 {
-  if (mySMESHGUI->isActiveStudyLocked())
+  if (SMESHGUI::isStudyLocked())
     return false;
 
   if (!isValid())

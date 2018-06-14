@@ -493,7 +493,7 @@ void SMESHGUI_SingleEditDlg::enterEvent (QEvent*)
 //=================================================================================
 bool SMESHGUI_SingleEditDlg::onApply()
 {
-  if (mySMESHGUI->isActiveStudyLocked())
+  if (SMESHGUI::isStudyLocked())
     return false;
   // verify validity of input data
   if (!isValid(true))

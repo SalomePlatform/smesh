@@ -2,40 +2,40 @@
 
 import logging
 import salome
-from geomsmesh import geompy
-from geomsmesh import geomPublish
-from geomsmesh import geomPublishInFather
-import initLog
+from .geomsmesh import geompy
+from .geomsmesh import geomPublish
+from .geomsmesh import geomPublishInFather
+from . import initLog
 import GEOM
-from geomsmesh import smesh
+from .geomsmesh import smesh
 from salome.smesh import smeshBuilder
 import SMESH
 import math
 import bisect
 
-from extractionOrientee import extractionOrientee
-from extractionOrienteeMulti import extractionOrienteeMulti
-from sortFaces import sortFaces
-from sortEdges import sortEdges
-from eliminateDoubles import eliminateDoubles
-from substractSubShapes import substractSubShapes
-from produitMixte import produitMixte
-from findWireEndVertices import findWireEndVertices
-from findWireIntermediateVertices import findWireIntermediateVertices
-from orderEdgesFromWire import orderEdgesFromWire
-from getSubshapeIds import getSubshapeIds
-from putName import putName
-from distance2 import distance2
-from enleveDefaut import enleveDefaut
-from shapeSurFissure import shapeSurFissure
-from regroupeSainEtDefaut import RegroupeSainEtDefaut
-from triedreBase import triedreBase
-from checkDecoupePartition import checkDecoupePartition
-from whichSide import whichSide
-from whichSideMulti import whichSideMulti
-from whichSideVertex import whichSideVertex
-from projettePointSurCourbe import projettePointSurCourbe
-from prolongeWire import prolongeWire
+from .extractionOrientee import extractionOrientee
+from .extractionOrienteeMulti import extractionOrienteeMulti
+from .sortFaces import sortFaces
+from .sortEdges import sortEdges
+from .eliminateDoubles import eliminateDoubles
+from .substractSubShapes import substractSubShapes
+from .produitMixte import produitMixte
+from .findWireEndVertices import findWireEndVertices
+from .findWireIntermediateVertices import findWireIntermediateVertices
+from .orderEdgesFromWire import orderEdgesFromWire
+from .getSubshapeIds import getSubshapeIds
+from .putName import putName
+from .distance2 import distance2
+from .enleveDefaut import enleveDefaut
+from .shapeSurFissure import shapeSurFissure
+from .regroupeSainEtDefaut import RegroupeSainEtDefaut
+from .triedreBase import triedreBase
+from .checkDecoupePartition import checkDecoupePartition
+from .whichSide import whichSide
+from .whichSideMulti import whichSideMulti
+from .whichSideVertex import whichSideVertex
+from .projettePointSurCourbe import projettePointSurCourbe
+from .prolongeWire import prolongeWire
 #from getCentreFondFiss import getCentreFondFiss
 
 # -----------------------------------------------------------------------------
@@ -53,7 +53,7 @@ def insereFissureGenerale(maillagesSains,
   fondFiss          = shapesFissure[4] # groupe d'edges de fond de fissure
 
   rayonPipe = shapeFissureParams['rayonPipe']
-  if shapeFissureParams.has_key('lenSegPipe'):
+  if 'lenSegPipe' in shapeFissureParams:
     lenSegPipe = shapeFissureParams['lenSegPipe']
   else:
     lenSegPipe = rayonPipe
@@ -70,13 +70,13 @@ def insereFissureGenerale(maillagesSains,
   pointIn_y = 0.0
   pointIn_z = 0.0
   isPointInterne = False
-  if shapeFissureParams.has_key('pointIn_x'):
+  if 'pointIn_x' in shapeFissureParams:
     pointIn_x = shapeFissureParams['pointIn_x']
     isPointInterne = True
-  if shapeFissureParams.has_key('pointIn_y'):
+  if 'pointIn_y' in shapeFissureParams:
     pointIn_y = shapeFissureParams['pointIn_y']
     isPointInterne = True
-  if shapeFissureParams.has_key('pointIn_z'):
+  if 'pointIn_z' in shapeFissureParams:
     pointIn_z = shapeFissureParams['pointIn_z']
     isPointInterne = True
   if isPointInterne:
@@ -1373,12 +1373,12 @@ def insereFissureGenerale(maillagesSains,
   fond = maillageComplet.GetMesh().CreateDimGroup( grps, SMESH.NODE, 'FACE2' )
 
   logging.info("export maillage fini")
-  maillageComplet.ExportMED( fichierMaillageFissure, 0, SMESH.MED_V2_2, 1 )
+  maillageComplet.ExportMED(fichierMaillageFissure)
   putName(maillageComplet, nomFicFissure)
   logging.info("fichier maillage fissure %s", fichierMaillageFissure)
 
   if salome.sg.hasDesktop():
-    salome.sg.updateObjBrowser(True)
+    salome.sg.updateObjBrowser()
 
   logging.info("maillage fissure fini")
   

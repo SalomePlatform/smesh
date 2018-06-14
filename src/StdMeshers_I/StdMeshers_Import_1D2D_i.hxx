@@ -39,7 +39,6 @@ class StdMeshers_Import_1D2D_i:
 public:
   // Constructor
   StdMeshers_Import_1D2D_i( PortableServer::POA_ptr thePOA,
-                            int                     theStudyId,
                             ::SMESH_Gen*            theGenImpl );
 
   // Destructor

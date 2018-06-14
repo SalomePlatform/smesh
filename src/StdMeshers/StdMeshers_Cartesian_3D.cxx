@@ -107,8 +107,8 @@ using namespace std;
  */
 //=============================================================================
 
-StdMeshers_Cartesian_3D::StdMeshers_Cartesian_3D(int hypId, int studyId, SMESH_Gen * gen)
-  :SMESH_3D_Algo(hypId, studyId, gen)
+StdMeshers_Cartesian_3D::StdMeshers_Cartesian_3D(int hypId, SMESH_Gen * gen)
+  :SMESH_3D_Algo(hypId, gen)
 {
   _name = "Cartesian_3D";
   _shapeType = (1 << TopAbs_SOLID);       // 1 bit /shape type

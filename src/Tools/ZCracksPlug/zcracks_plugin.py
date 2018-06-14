@@ -27,5 +27,5 @@ def ZcracksLct(context):
     if command is not "":
       try:
         subprocess.check_call(command, executable = '/bin/bash', shell = True, bufsize=-1)
-      except Exception, e:
-        print "Error: ",e
+      except Exception as e:
+        print("Error: ",e)

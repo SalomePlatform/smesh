@@ -69,8 +69,8 @@ namespace ProjectionUtils = StdMeshers_ProjectionUtils;
 //purpose  : 
 //=======================================================================
 
-StdMeshers_RadialPrism_3D::StdMeshers_RadialPrism_3D(int hypId, int studyId, SMESH_Gen* gen)
-  :SMESH_3D_Algo(hypId, studyId, gen)
+StdMeshers_RadialPrism_3D::StdMeshers_RadialPrism_3D(int hypId, SMESH_Gen* gen)
+  :SMESH_3D_Algo(hypId, gen)
 {
   _name = "RadialPrism_3D";
   _shapeType = (1 << TopAbs_SOLID);     // 1 bit per shape type
@@ -336,7 +336,7 @@ public:
     const int myID = -1000;
     TNodeDistributor* myHyp = dynamic_cast<TNodeDistributor*>( aMesh.GetHypothesis( myID ));
     if ( !myHyp )
-      myHyp = new TNodeDistributor( myID, 0, aMesh.GetGen() );
+      myHyp = new TNodeDistributor( myID, aMesh.GetGen() );
     return myHyp;
   }
   // -----------------------------------------------------------------------------
@@ -374,8 +374,8 @@ public:
   }
 protected:
   // -----------------------------------------------------------------------------
-  TNodeDistributor( int hypId, int studyId, SMESH_Gen* gen)
-    : StdMeshers_Regular_1D( hypId, studyId, gen)
+  TNodeDistributor( int hypId, SMESH_Gen* gen)
+    : StdMeshers_Regular_1D( hypId, gen)
   {
   }
   // -----------------------------------------------------------------------------

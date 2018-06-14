@@ -157,13 +157,12 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     import SMESH
     from salome.kernel import studyedit
     from salome.smesh import smeshBuilder
-    smesh = smeshBuilder.New(salome.myStudy)
+    smesh = smeshBuilder.New()
     
     if not os.path.isfile(self.fichierOut):
       QMessageBox.warning(self, "Compute", "Result file "+self.fichierOut+" not found")
 
-    maStudy=studyedit.getActiveStudy()
-    smesh.SetCurrentStudy(maStudy)
+    maStudy=salome.myStudy
     (outputMesh, status) = smesh.CreateMeshesFromGMF(self.fichierOut)
     name=str(self.LE_MeshSmesh.text())
     initialMeshFile=None
@@ -205,7 +204,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     newLink=monStudyBuilder.NewObject(SOMesh)
     monStudyBuilder.Addreference(newLink, newStudyIter)
 
-    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser(False)
+    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser()
     self.num+=1
     return True
 
@@ -250,7 +249,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     #myStudy.IsStudyLocked()
     myComponent = myStudy.FindComponent(name)
     if myComponent == None:
-      print "myComponent not found, create"
+      print("myComponent not found, create")
       myComponent = myBuilder.NewComponent(name)
     AName = myBuilder.FindOrCreateAttribute(myComponent, "AttributeName")
     AName.SetValue(name)
@@ -263,9 +262,9 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     ACmt = myBuilder.FindOrCreateAttribute(myObject, "AttributeComment")
     ACmt.SetValue(datai)
 
-    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser(False)
+    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser()
     self.num += 1
-    if verbose: print("save %s in Object Browser done: %s\n%s" % (name, myObject.GetID(), datai))
+    if verbose: print(("save %s in Object Browser done: %s\n%s" % (name, myObject.GetID(), datai)))
     return True
 
   def PBSaveHypPressed(self):
@@ -281,10 +280,9 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     QMessageBox.warning(self, "Save", "waiting for fix: Object Browser will not display hypothesis")
     
     if verbose: print("save hypothesis in Object Browser")
-    smesh = smeshBuilder.New(salome.myStudy)
+    smesh = smeshBuilder.New()
 
-    maStudy=studyedit.getActiveStudy()
-    smesh.SetCurrentStudy(maStudy)
+    maStudy=salome.myStudy
 
     self.editor = studyedit.getStudyEditor()
     moduleEntry=self.editor.findOrCreateComponent("SMESH","SMESH")
@@ -307,9 +305,9 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     notebook.set("MGCleaner_%i" % self.num, data)
     """
 
-    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser(False)
+    if salome.sg.hasDesktop(): salome.sg.updateObjBrowser()
     self.num += 1
-    if verbose: print("save %s in Object Browser done:\n%s" % (name, data))
+    if verbose: print(("save %s in Object Browser done:\n%s" % (name, data)))
     return True
 
   def SP_toStr(self, widget):
@@ -456,7 +454,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     if fd.exec_():
       infile = fd.selectedFiles()[0]
       self.LE_MeshFile.setText(infile)
-      self.fichierIn=unicode(infile).encode("latin-1")
+      self.fichierIn=str(infile).encode("latin-1")
       self.MeshIn=""
       self.LE_MeshSmesh.setText("")
 
@@ -465,7 +463,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     if fd.exec_():
       infile = fd.selectedFiles()[0]
       self.LE_ParamsFile.setText(infile)
-      self.paramsFile=unicode(infile).encode("latin-1")
+      self.paramsFile=str(infile).encode("latin-1")
 
   def meshFileNameChanged(self):
     self.fichierIn=str(self.LE_MeshFile.text())
@@ -497,7 +495,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     from salome.smesh.smeshstudytools import SMeshStudyTools
     from salome.gui import helper as guihelper
     from salome.smesh import smeshBuilder
-    smesh = smeshBuilder.New(salome.myStudy)
+    smesh = smeshBuilder.New()
 
     mySObject, myEntry = guihelper.getSObjectSelected()
     if CORBA.is_nil(mySObject) or mySObject==None:
@@ -587,7 +585,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     if not self.CB_ComputedOverlapDistance.isChecked(): #computed default
       self.commande+=" --overlap_distance " + self.SP_toStr(self.SP_OverlapDistance)
     self.commande+=" --overlap_angle " + str(self.SP_OverlapAngle.value())
-    if verbose: print("INFO: MGCCleaner command:\n  %s" % self.commande)
+    if verbose: print(("INFO: MGCCleaner command:\n  %s" % self.commande))
     return True
 
   def clean(self):
@@ -642,7 +640,7 @@ def TEST_standalone():
   import SMESH
   from salome.kernel import studyedit
   salome.salome_init()
-  maStudy=studyedit.getActiveStudy()
+  maStudy=salome.myStudy
   #etc...a mano...
 
 #

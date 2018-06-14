@@ -629,7 +629,7 @@ void SMESHGUI_UnionGroupsDlg::reset()
 */
 bool SMESHGUI_UnionGroupsDlg::onApply()
 {
-  if ( getSMESHGUI()->isActiveStudyLocked())
+  if ( SMESHGUI::isStudyLocked())
     return false;
 
   // Verify validity of group name
@@ -738,7 +738,7 @@ void SMESHGUI_IntersectGroupsDlg::reset()
 */
 bool SMESHGUI_IntersectGroupsDlg::onApply()
 {
-  if ( getSMESHGUI()->isActiveStudyLocked())
+  if ( SMESHGUI::isStudyLocked())
     return false;
 
   // Verify validity of group name
@@ -898,7 +898,7 @@ void SMESHGUI_CutGroupsDlg::reset()
 */
 bool SMESHGUI_CutGroupsDlg::onApply()
 {
-  if ( getSMESHGUI()->isActiveStudyLocked())
+  if ( SMESHGUI::isStudyLocked())
     return false;
 
   // Verify validity of group name
@@ -1088,7 +1088,7 @@ void SMESHGUI_DimGroupDlg::setElementType( const SMESH::ElementType& theElemType
 */
 bool SMESHGUI_DimGroupDlg::onApply()
 {
-  if ( getSMESHGUI()->isActiveStudyLocked())
+  if ( SMESHGUI::isStudyLocked())
     return false;
 
   // Verify validity of group name

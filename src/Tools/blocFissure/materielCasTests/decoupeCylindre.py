@@ -4,7 +4,6 @@ import sys
 import salome
 
 salome.salome_init()
-theStudy = salome.myStudy
 
 import salome_notebook
 notebook = salome_notebook.notebook
@@ -22,7 +21,7 @@ import math
 import SALOMEDS
 
 
-geompy = geomBuilder.New(theStudy)
+geompy = geomBuilder.New()
 
 O = geompy.MakeVertex(0, 0, 0)
 OX = geompy.MakeVectorDXDYDZ(1, 0, 0)
@@ -125,7 +124,7 @@ geompy.addToStudy( FissInCylindre2, 'FissInCylindre2' )
 import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
-smesh = smeshBuilder.New(theStudy)
+smesh = smeshBuilder.New()
 from salome.StdMeshers import StdMeshersBuilder
 smeshObj_1 = smesh.CreateHypothesis('NumberOfSegments')
 smeshObj_1.SetNumberOfSegments( 5 )
@@ -144,13 +143,13 @@ Nb_Segments_3 = Regular_1D_2.NumberOfSegments(6,[],[  ])
 Nb_Segments_3.SetDistrType( 0 )
 isDone = CylindreSain_1.Compute()
 smesh.SetName(CylindreSain_1, 'CylindreSain')
-CylindreSain_1.ExportMED( os.path.join(gmu.pathBloc, "materielCasTests//CylindreSain.med"), 0, SMESH.MED_V2_2, 1 )
+CylindreSain_1.ExportMED(os.path.join(gmu.pathBloc, "materielCasTests//CylindreSain.med"))
 SubMesh_1 = Regular_1D_1.GetSubMesh()
 SubMesh_2 = Regular_1D_2.GetSubMesh()
 
 ## some objects were removed
-aStudyBuilder = theStudy.NewBuilder()
-SO = theStudy.FindObjectIOR(theStudy.ConvertObjectToIOR(smeshObj_1))
+aStudyBuilder = salome.myStudy.NewBuilder()
+SO = salome.myStudy.FindObjectIOR(salome.myStudy.ConvertObjectToIOR(smeshObj_1))
 if SO is not None: aStudyBuilder.RemoveObjectWithChildren(SO)
 ## set object names
 smesh.SetName(CylindreSain_1.GetMesh(), 'CylindreSain')
@@ -164,4 +163,4 @@ smesh.SetName(SubMesh_1, 'SubMesh_1')
 smesh.SetName(SubMesh_2, 'SubMesh_2')
 
 if salome.sg.hasDesktop():
-  salome.sg.updateObjBrowser(True)
+  salome.sg.updateObjBrowser()

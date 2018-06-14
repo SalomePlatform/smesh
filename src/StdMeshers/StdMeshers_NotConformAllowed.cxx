@@ -36,8 +36,8 @@ using namespace std;
  */
 //=============================================================================
 
-StdMeshers_NotConformAllowed::StdMeshers_NotConformAllowed(int hypId, int studyId, SMESH_Gen* gen)
-  : SMESH_Hypothesis(hypId, studyId, gen)
+StdMeshers_NotConformAllowed::StdMeshers_NotConformAllowed(int hypId, SMESH_Gen* gen)
+  : SMESH_Hypothesis(hypId, gen)
 {
   _name = "NotConformAllowed";
   _param_algo_dim = -1; 

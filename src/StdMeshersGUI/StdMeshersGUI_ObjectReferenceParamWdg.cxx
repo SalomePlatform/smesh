@@ -227,9 +227,9 @@ void StdMeshersGUI_ObjectReferenceParamWdg::SetObjects(SMESH::string_array_var& 
   
   for ( unsigned i = 0; i < objects->length(); ++i )
   {
-    _PTR(Study) aStudy = SMESH::GetActiveStudyDocument();
+    _PTR(Study) aStudy = SMESH::getStudy();
     _PTR(SObject) aSObj = aStudy->FindObjectID(objects[i].in());
-    CORBA::Object_var anObj = SMESH::SObjectToObject(aSObj,aStudy);
+    CORBA::Object_var anObj = SMESH::SObjectToObject(aSObj);
     if ( !CORBA::is_nil( anObj )) {
       std::string name = aSObj->GetName();
       QString text = myObjNameLineEdit->text();

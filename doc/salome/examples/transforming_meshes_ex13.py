@@ -5,11 +5,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 import salome_notebook
 
 
@@ -63,9 +63,9 @@ group1 = mesh3D.Group( faces[1] )
 
 # pass group0 and ids of faces of group1 to inverse
 nbRev = mesh3D.Reorient2DBy3D([ group0, group1.GetIDs() ], mesh3D, theOutsideNormal=False)
-print "Nb reoriented faces:", nbRev
+print("Nb reoriented faces:", nbRev)
 
 # orient the reversed faces back
 nbRev = mesh3D.Reorient2DBy3D( mesh3D, mesh3D, theOutsideNormal=True)
-print "Nb re-reoriented faces:", nbRev
+print("Nb re-reoriented faces:", nbRev)
 

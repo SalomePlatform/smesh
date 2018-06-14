@@ -4,12 +4,11 @@ import sys
 import salome
 
 salome.salome_init()
-theStudy = salome.myStudy
 
 import  SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 
-smesh = smeshBuilder.New(theStudy)
+smesh = smeshBuilder.New()
 unPentaBiQuad = smesh.Mesh()
 nodeID = unPentaBiQuad.AddNode( 0, 0, 0 )
 nodeID = unPentaBiQuad.AddNode( 10, 0, 0 )
@@ -32,7 +31,7 @@ nodeID = unPentaBiQuad.AddNode( -1, 5, 5 )
 volID = unPentaBiQuad.AddVolume( [ 4, 5, 6, 1, 2, 3, 10, 11, 12, 7, 8, 9, 13, 14, 15, 16, 17, 18 ] )
 
 infos = unPentaBiQuad.GetMeshInfo()
-print "Number of biquadratic pentahedrons:", infos[SMESH.Entity_BiQuad_Penta]
+print("Number of biquadratic pentahedrons:", infos[SMESH.Entity_BiQuad_Penta])
 if (infos[SMESH.Entity_BiQuad_Penta] != 1):
   raise RuntimeError("Bad number of biquadratic pentahedrons: should be 1")
 
@@ -40,4 +39,4 @@ if (infos[SMESH.Entity_BiQuad_Penta] != 1):
 smesh.SetName(unPentaBiQuad.GetMesh(), 'unPentaBiQuad')
 
 if salome.sg.hasDesktop():
-  salome.sg.updateObjBrowser(True)
+  salome.sg.updateObjBrowser()

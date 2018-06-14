@@ -36,7 +36,7 @@ SET(_pyuic_FILES
   fissureGenerale.ui
 )
 # scripts / pyuic wrappings
-PYQT_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_FILES} TARGET_NAME _target_name_pyuic)
+PYQT_WRAP_UIC(_pyuic_SCRIPTS ${_pyuic_FILES} TARGET_NAME _target_name_pyuic OPTIONS "--import-from=blocFissure" "--resource-suffix=_qrc")
 
 # --- rules ---
 

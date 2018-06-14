@@ -45,7 +45,7 @@ class STDMESHERS_EXPORT StdMeshers_NumberOfSegments:
   public SMESH_Hypothesis
 {
 public:
-  StdMeshers_NumberOfSegments(int hypId, int studyId, SMESH_Gen* gen);
+  StdMeshers_NumberOfSegments(int hypId, SMESH_Gen* gen);
   virtual ~StdMeshers_NumberOfSegments();
 
   // Builds point distribution according to passed function

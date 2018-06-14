@@ -28,11 +28,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 # ---- define a box
 
@@ -44,7 +44,7 @@ idbox = geompy.addToStudy(box, "box")
 subShapeList = geompy.SubShapeAll(box, geompy.ShapeType["FACE"])
 face = subShapeList[0]
 name = geompy.SubShapeName(face, box)
-print name
+print(name)
 idface = geompy.addToStudyInFather(box, face, name)
 
 # ---- add shell from box  in study
@@ -52,7 +52,7 @@ idface = geompy.addToStudyInFather(box, face, name)
 subShellList = geompy.SubShapeAll(box, geompy.ShapeType["SHELL"])
 shell = subShellList[0]
 name = geompy.SubShapeName(shell, box)
-print name
+print(name)
 idshell = geompy.addToStudyInFather(box, shell, name)
 
 # ---- add first edge of face in study
@@ -60,7 +60,7 @@ idshell = geompy.addToStudyInFather(box, shell, name)
 edgeList = geompy.SubShapeAll(face, geompy.ShapeType["EDGE"])
 edge = edgeList[0]
 name = geompy.SubShapeName(edge, face)
-print name
+print(name)
 idedge = geompy.addToStudyInFather(face, edge, name)
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

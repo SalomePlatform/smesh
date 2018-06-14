@@ -25,11 +25,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 import math
 
@@ -118,7 +118,7 @@ for i in range(0,nbzsteps):
             pass
         pass
     if len(nfaces)!=nbf:
-        print "len(nfaces)!=nbf"
+        print("len(nfaces)!=nbf")
         break
     newfaces.append(nfaces)
     # update faces for before next step of extrusion
@@ -217,4 +217,4 @@ for i in range(0,nbrs):
     oldnodes = newnodes
     pass
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

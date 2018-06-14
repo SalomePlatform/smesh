@@ -32,7 +32,7 @@
 class STDMESHERS_EXPORT StdMeshers_MaxLength: public SMESH_Hypothesis
 {
  public:
-  StdMeshers_MaxLength(int hypId, int studyId, SMESH_Gen * gen);
+  StdMeshers_MaxLength(int hypId, SMESH_Gen * gen);
   virtual ~ StdMeshers_MaxLength();
 
   void SetLength(double length) throw(SALOME_Exception);

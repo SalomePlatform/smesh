@@ -20,25 +20,17 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-#include <med.h>
+#ifndef MED_WrapperDef_HeaderFile
+#define MED_WrapperDef_HeaderFile
 
-#include <stdio.h>
-#include <stdlib.h>
+#ifdef WIN32
+#  if defined(MEDWRAPPER_EXPORTS) || defined(MEDWrapper_EXPORTS)
+#    define MEDWRAPPER_EXPORT __declspec( dllexport )
+#  else
+#    define MEDWRAPPER_EXPORT __declspec( dllimport )
+#  endif // WIN32
+#else
+#  define MEDWRAPPER_EXPORT
+#endif
 
-int main (int argc, char **argv)
-{
-  med_idt aFid = MEDfileOpen(argv[1],MED_ACC_RDONLY);
-  if(aFid < 0)
-    exit(1);
-
-  med_int aMajor, aMinor, aRelease;
-  med_err aRet = MEDfileNumVersionRd(aFid,&aMajor,&aMinor,&aRelease);
-  MEDfileClose(aFid);
-  if(aRet < 0) {
-    // VSR: simulate med 2.3.6 behavior, med file version is assumed to 2.1
-    aMajor=2;
-    aMinor=aRelease=-1;
-  }
-
-  printf("%d.%d.%d\n",aMajor,aMinor,aRelease);
-}
+#endif // MED_WrapperDef_HeaderFile

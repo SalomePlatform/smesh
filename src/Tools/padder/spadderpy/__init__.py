@@ -98,11 +98,11 @@ def loadSpadderCatalog():
     import SALOME_ModuleCatalog
     catalog = obj._narrow(SALOME_ModuleCatalog.ModuleCatalog)
     if not catalog:
-        raise RuntimeError, "Can't accesss module catalog"
+        raise RuntimeError("Can't accesss module catalog")
 
     filename = getSpadderCatalogFilename()
     catalog.ImportXmlCatalogFile(filename)
 
     from salome.kernel import services
-    print "The list of SALOME components is now:" 
-    print services.getComponentList()
+    print("The list of SALOME components is now:") 
+    print(services.getComponentList())

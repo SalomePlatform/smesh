@@ -5,11 +5,11 @@ import salome
 salome.salome_init()
 import GEOM
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
-smesh =  smeshBuilder.New(salome.myStudy)
+smesh =  smeshBuilder.New()
 
 # create box
 box = geompy.MakeBox(0., 0., 0., 100., 200., 300.)
@@ -42,13 +42,13 @@ aGroup = mesh.CreateEmptyGroup(SMESH.NODE, "Free_nodes")
 aGroup.Add(anNodeIds)
 
 # print the result
-print "Criterion: Free nodes Nb = ", len(anNodeIds)
+print("Criterion: Free nodes Nb = ", len(anNodeIds))
 j = 1
 for i in range(len(anNodeIds)):
-  if j > 20: j = 1; print ""
-  print anNodeIds[i],
+  if j > 20: j = 1; print("")
+  print(anNodeIds[i], end=' ')
   j = j + 1
   pass
-print ""
+print("")
 
-salome.sg.updateObjBrowser(True)
+salome.sg.updateObjBrowser()

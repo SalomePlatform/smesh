@@ -37,7 +37,7 @@ class STDMESHERS_EXPORT StdMeshers_NotConformAllowed:
   public SMESH_Hypothesis
 {
 public:
-  StdMeshers_NotConformAllowed(int hypId, int studyId, SMESH_Gen* gen);
+  StdMeshers_NotConformAllowed(int hypId, SMESH_Gen* gen);
   virtual ~StdMeshers_NotConformAllowed();
 
   virtual std::ostream & SaveTo(std::ostream & save);

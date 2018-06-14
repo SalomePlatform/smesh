@@ -65,14 +65,9 @@
             <service-by-default>0</service-by-default>
             <inParameter-list>
               <inParameter>
-		<inParameter-type>string</inParameter-type>
-		<inParameter-name>anHyp</inParameter-name>
-		<inParameter-comment></inParameter-comment>
-              </inParameter>
-              <inParameter>
-		<inParameter-type>long</inParameter-type>
-		<inParameter-name>studyId</inParameter-name>
-		<inParameter-comment></inParameter-comment>
+                <inParameter-type>string</inParameter-type>
+                <inParameter-name>anHyp</inParameter-name>
+                <inParameter-comment></inParameter-comment>
               </inParameter>
             </inParameter-list>
             <outParameter-list>
@@ -93,11 +88,6 @@
             <inParameter>
               <inParameter-type>GEOM/GEOM_Gen</inParameter-type>
               <inParameter-name>geomEngine</inParameter-name>
-              <inParameter-comment></inParameter-comment>
-            </inParameter>
-            <inParameter>
-              <inParameter-type>long</inParameter-type>
-              <inParameter-name>studyId</inParameter-name>
               <inParameter-comment></inParameter-comment>
             </inParameter>
             <inParameter>

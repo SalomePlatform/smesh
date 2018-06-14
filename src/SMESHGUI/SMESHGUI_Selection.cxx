@@ -40,7 +40,7 @@
 #include <SMESH_ScalarBarActor.h>
 
 // SALOME GUI includes
-#include <SalomeApp_Study.h>
+#include <SalomeApp_Application.h>
 #include <LightApp_VTKSelector.h>
 #include <SVTK_ViewWindow.h>
 
@@ -75,15 +75,10 @@ void SMESHGUI_Selection::init( const QString& client, LightApp_SelectionMgr* mgr
 {
   LightApp_Selection::init( client, mgr );
 
-  if( mgr && study() )
+  if( mgr )
   {
-    SalomeApp_Study* aSStudy = dynamic_cast<SalomeApp_Study*>(study());
-    if (!aSStudy)
-      return;
-    _PTR(Study) aStudy = aSStudy->studyDS();
-
     for( int i=0, n=count(); i<n; i++ ) {
-      myTypes.append( typeName( type( entry( i ), aStudy ) ) );
+      myTypes.append( typeName( type( entry( i ) ) ) );
       myControls.append( controlMode( i ) );
     }
   }
@@ -203,8 +198,8 @@ QList<QVariant> SMESHGUI_Selection::elemTypes( int ind, bool fromObj ) const
   {
     if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
     {
-      _PTR(SObject) sobj = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
-      CORBA::Object_var obj = SMESH::SObjectToObject( sobj, SMESH::GetActiveStudyDocument() );
+      _PTR(SObject) sobj = SMESH::getStudy()->FindObjectID( entry( ind ).toLatin1().data() );
+      CORBA::Object_var obj = SMESH::SObjectToObject( sobj );
       SMESH::SMESH_IDSource_var idSrc = SMESH::SMESH_IDSource::_narrow( obj );
       if ( !CORBA::is_nil( idSrc ) )
       {
@@ -268,7 +263,7 @@ QString SMESHGUI_Selection::displayMode( int ind ) const
 
 bool SMESHGUI_Selection::isQuadratic( int ind ) const
 {
-  _PTR(SObject) so = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
+  _PTR(SObject) so = SMESH::getStudy()->FindObjectID( entry( ind ).toLatin1().data() );
   if ( !so )
     return false;
   SMESH::SMESH_IDSource_var idSource =  SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( so );
@@ -471,11 +466,14 @@ bool SMESHGUI_Selection::isAutoColor( int ind ) const
 {
   if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
   {
-    _PTR(SObject) sobj = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
-    CORBA::Object_var      obj = SMESH::SObjectToObject( sobj, SMESH::GetActiveStudyDocument() );
-    SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( obj );
-    if ( !CORBA::is_nil( mesh ) )
-      return mesh->GetAutoColor();
+    _PTR(SObject) sobj = SMESH::getStudy()->FindObjectID( entry( ind ).toLatin1().data() );
+    CORBA::Object_var obj = SMESH::SObjectToObject( sobj );
+
+    if ( !CORBA::is_nil( obj ) ) {
+      SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( obj );
+      if ( !CORBA::is_nil( mesh ) )
+        return mesh->GetAutoColor();
+    }
   }
   return false;
 }
@@ -489,8 +487,8 @@ int SMESHGUI_Selection::numberOfNodes( int ind ) const
 {
   if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
   {
-    _PTR(SObject) sobj = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
-    CORBA::Object_var obj = SMESH::SObjectToObject( sobj, SMESH::GetActiveStudyDocument() );
+    _PTR(SObject) sobj = SMESH::getStudy()->FindObjectID( entry( ind ).toLatin1().data() );
+    CORBA::Object_var obj = SMESH::SObjectToObject( sobj );
 
     if ( !CORBA::is_nil( obj ) ) {
       SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( obj );
@@ -520,8 +518,8 @@ int SMESHGUI_Selection::dim( int ind ) const
   int dim = -1;
   if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
   {
-    _PTR(SObject) sobj = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
-    CORBA::Object_var obj = SMESH::SObjectToObject( sobj, SMESH::GetActiveStudyDocument() );
+    _PTR(SObject) sobj = SMESH::getStudy()->FindObjectID( entry( ind ).toLatin1().data() );
+    CORBA::Object_var obj = SMESH::SObjectToObject( sobj );
 
     if ( !CORBA::is_nil( obj ) ) {
       SMESH::SMESH_IDSource_var idSrc = SMESH::SMESH_IDSource::_narrow( obj );
@@ -555,7 +553,7 @@ bool SMESHGUI_Selection::isComputable( int ind ) const
                                               myTypes[ind].startsWith("Mesh " )))
   {
     QMap<int,int> modeMap;
-    _PTR(SObject) meshSO = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
+    _PTR(SObject) meshSO = SMESH::getStudy()->FindObjectID( entry( ind ).toLatin1().data() );
 
     _PTR(SComponent) component = meshSO->GetFatherComponent();
     if ( meshSO->Depth() - component->Depth() > 1 ) // sub-mesh, get a mesh
@@ -581,7 +579,7 @@ bool SMESHGUI_Selection::isPreComputable( int ind ) const
     if ( maxDim < 2 ) // we can preview 1D or 2D
     {
       QMap<int,int> modeMap;
-      _PTR(SObject) pMesh = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
+      _PTR(SObject) pMesh = SMESH::getStudy()->FindObjectID( entry( ind ).toLatin1().data() );
       SMESHGUI_PrecomputeOp::getAssignedAlgos( pMesh, modeMap );
       if ( modeMap.size() > 1 )
         return (( modeMap.contains( SMESH::DIM_3D )) ||
@@ -600,7 +598,7 @@ bool SMESHGUI_Selection::hasGeomReference( int ind ) const
 {
   if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] != "Unknown" )
   {
-    _PTR(SObject) so = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
+    _PTR(SObject) so = SMESH::getStudy()->FindObjectID( entry( ind ).toLatin1().data() );
     GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );
     return !shape->_is_nil();
   }
@@ -617,7 +615,7 @@ bool SMESHGUI_Selection::isEditableHyp( int ind ) const
   bool isEditable = true;
   if ( ind >= 0 && ind < myTypes.count() && myTypes[ind] == "Hypothesis" )
   {
-    _PTR(SObject) so = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
+    _PTR(SObject) so = SMESH::getStudy()->FindObjectID( entry( ind ).toLatin1().data() );
     SMESH::SMESH_Hypothesis_var hyp = SMESH::SObjectToInterface<SMESH::SMESH_Hypothesis>( so );
     if ( !hyp->_is_nil() )
     {
@@ -654,9 +652,9 @@ bool SMESHGUI_Selection::hasChildren( int ind ) const
 {
   if ( ind >= 0 )
   {
-    _PTR(SObject) sobj = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
+    _PTR(SObject) sobj = SMESH::getStudy()->FindObjectID( entry( ind ).toLatin1().data() );
     if ( sobj ) 
-      return SMESH::GetActiveStudyDocument()->GetUseCaseBuilder()->HasChildren( sobj );
+      return SMESH::getStudy()->GetUseCaseBuilder()->HasChildren( sobj );
   }
   return false;
 }
@@ -671,9 +669,10 @@ int SMESHGUI_Selection::nbChildren( int ind ) const
   int nb = 0;
   if ( ind >= 0 )
   {
-    _PTR(SObject) sobj = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().data() );
-    if ( sobj && sobj->GetStudy()->GetUseCaseBuilder()->IsUseCaseNode( sobj ) ) {
-      _PTR(UseCaseIterator) it = sobj->GetStudy()->GetUseCaseBuilder()->GetUseCaseIterator( sobj ); 
+    _PTR(Study) study = SMESH::getStudy();
+    _PTR(SObject) sobj = study->FindObjectID( entry( ind ).toLatin1().data() );
+    if ( sobj && study->GetUseCaseBuilder()->IsUseCaseNode( sobj ) ) {
+      _PTR(UseCaseIterator) it = study->GetUseCaseBuilder()->GetUseCaseIterator( sobj );
       for ( it->Init( false ); it->More(); it->Next() ) nb++;
     }
   }
@@ -695,10 +694,10 @@ bool SMESHGUI_Selection::isContainer( int ind ) const
 //purpose  : 
 //=======================================================================
 
-int SMESHGUI_Selection::type( const QString& entry, _PTR(Study) study )
+int SMESHGUI_Selection::type( const QString& entry )
 {
   int res = -1;
-  _PTR(SObject) obj = study->FindObjectID( entry.toLatin1().data() );
+  _PTR(SObject) obj = SalomeApp_Application::getStudy()->FindObjectID( entry.toLatin1().data() );
   if ( obj ) {
     _PTR(SObject) ref;
     if ( obj->ReferencedObject( ref ) )
@@ -794,7 +793,7 @@ QString SMESHGUI_Selection::typeName( const int t )
 bool SMESHGUI_Selection::isImported( const int ind ) const
 {
   bool res = false;
-  _PTR(SObject) sobj = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().constData() );
+  _PTR(SObject) sobj = SMESH::getStudy()->FindObjectID( entry( ind ).toLatin1().constData() );
   if ( sobj )
   {
     SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_narrow( SMESH::SObjectToObject( sobj ) );
@@ -824,7 +823,7 @@ int SMESHGUI_Selection::guiState()
 
 QString SMESHGUI_Selection::groupType( int ind ) const
 {
-  _PTR(SObject) sobj = SMESH::GetActiveStudyDocument()->FindObjectID( entry( ind ).toLatin1().constData() );
+  _PTR(SObject) sobj = SMESH::getStudy()->FindObjectID( entry( ind ).toLatin1().constData() );
   if ( sobj )
   {
     SMESH::SMESH_Group_var g = SMESH::SObjectToInterface<SMESH::SMESH_Group>( sobj );

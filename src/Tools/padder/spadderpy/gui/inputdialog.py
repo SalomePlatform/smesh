@@ -32,8 +32,8 @@ from omniORB import CORBA
 
 from qtsalome import QIcon, QStandardItemModel, QStandardItem, QMessageBox, pyqtSignal
 
-from inputframe_ui import Ui_InputFrame
-from inputdata import InputData
+from salome.smesh.spadder.gui.inputframe_ui import Ui_InputFrame
+from salome.smesh.spadder.gui.inputdata import InputData
 
 DEBUG_MODE=True
 GROUPNAME_MAXLENGTH=8
@@ -178,7 +178,7 @@ class InputDialog(GenericDialog):
             self.__selectedMesh = None
             return
 
-        self.smeshStudyTool.updateStudy(studyedit.getActiveStudyId())
+        self.smeshStudyTool.updateStudy()
         self.__selectedMesh = self.smeshStudyTool.getMeshObjectFromSObject(mySObject)
         if CORBA.is_nil(self.__selectedMesh):
             self.__ui.txtSmeshObject.setText("The selected object is not a mesh")
@@ -240,7 +240,7 @@ class InputDialog(GenericDialog):
         """
         # if the entry already exists, we remove it to replace by a
         # new one
-        if self.__dictInputFiles.has_key(meshName):
+        if meshName in self.__dictInputFiles:
             self.__delInputFromMap(meshName)
 
         inputData = InputData()
@@ -255,10 +255,10 @@ class InputDialog(GenericDialog):
         else:
             self.__nbSteelbarMesh += 1
 
-        print inputData
-        print "meshType = ",inputData.meshType
-        print "nb concrete mesh ",self.__nbConcreteMesh
-        print "nb steelbar mesh ",self.__nbSteelbarMesh
+        print(inputData)
+        print("meshType = ",inputData.meshType)
+        print("nb concrete mesh ",self.__nbConcreteMesh)
+        print("nb steelbar mesh ",self.__nbSteelbarMesh)
 
 
     def onDeleteInput(self):
@@ -287,9 +287,9 @@ class InputDialog(GenericDialog):
         else:
             self.__nbSteelbarMesh -= 1
 
-        print inputData
-        print "nb concrete mesh ",self.__nbConcreteMesh
-        print "nb steelbar mesh ",self.__nbSteelbarMesh
+        print(inputData)
+        print("nb concrete mesh ",self.__nbConcreteMesh)
+        print("nb steelbar mesh ",self.__nbSteelbarMesh)
 
 
     def setData(self, dictInputData={}):
@@ -298,14 +298,14 @@ class InputDialog(GenericDialog):
         the specified data list.
         """
         self.clear()
-        if dictInputData.has_key(INPUTDATA_KEY_FILES):
+        if INPUTDATA_KEY_FILES in dictInputData:
             listInputData = dictInputData["meshfiles"]
             for inputData in listInputData:
 
-                meshName   = inputData.meshName
+                meshName = inputData.meshName
                 meshObject = inputData.meshObject
-                meshType   = inputData.meshType
-                groupName  = inputData.groupName
+                meshType = inputData.meshType
+                groupName = inputData.groupName
 
                 self.__addInputInGui(meshName, meshObject, meshType, groupName)
                 self.__addInputInMap(meshName, meshObject, meshType, groupName)
@@ -313,12 +313,12 @@ class InputDialog(GenericDialog):
                 if not DEBUG_MODE:
                     self.onSelectSmeshObject()
 
-	    if dictInputData.has_key(INPUTDATA_KEY_PARAM):
-	        dictInputParameters = dictInputData[INPUTDATA_KEY_PARAM]
-            if dictInputParameters.has_key(PARAM_KEY_NBITER):
+        if INPUTDATA_KEY_PARAM in dictInputData:
+            dictInputParameters = dictInputData[INPUTDATA_KEY_PARAM]
+            if PARAM_KEY_NBITER in dictInputParameters:
                 self.__ui.txtParamNbIter.setValue(dictInputParameters[PARAM_KEY_NBITER])
-            if dictInputParameters.has_key(PARAM_KEY_RMAXRMIN):
-                self.__ui.txtParamRmaxRmin.setValue(dictInputParameters[PARAM_KEY_RMAXRMIN])
+            if PARAM_KEY_RMAXRMIN in dictInputParameters:
+                self.__ui.txtParamRminRmax.setValue(dictInputParameters[PARAM_KEY_RMAXRMIN])
 
     def getData(self):
         """
@@ -369,7 +369,7 @@ def TEST_InputDialog():
     dlg=InputDialog()
     dlg.displayAndWait()
     if dlg.wasOk():
-        print "OK has been pressed"
+        print("OK has been pressed")
 
 def TEST_InputDialog_setData():
     import sys
@@ -379,7 +379,7 @@ def TEST_InputDialog_setData():
 
     dlg=InputDialog()
 
-    from inputdata import InputData
+    from .inputdata import InputData
     inputData = InputData()
     inputData.meshName   = "myMesh"
     inputData.meshObject = None
@@ -392,9 +392,9 @@ def TEST_InputDialog_setData():
 
     dlg.displayAndWait()
     if dlg.wasOk():
-        print "OK has been pressed"
+        print("OK has been pressed")
         outputListInputData = dlg.getData2()
-        print outputListInputData
+        print(outputListInputData)
 
 
 if __name__ == "__main__":
