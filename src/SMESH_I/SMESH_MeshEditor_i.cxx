@@ -2597,7 +2597,7 @@ namespace MeshEditor_I
  *  \param [in] nbOfSteps - number of elements to generate from one element
  *  \param [in] toMakeGroups - if true, new elements will be included into new groups
  *              corresponding to groups the input elements included in.
- *  \return ListOfGroups - new groups craeted if \a toMakeGroups is true
+ *  \return ListOfGroups - new groups created if \a toMakeGroups is true
  */
 //=======================================================================
 
@@ -4088,10 +4088,9 @@ SMESH::SMESH_Mesh_ptr SMESH_MeshEditor_i::Offset( SMESH::SMESH_IDSource_ptr theO
     if ( *theMeshName && mesh_var->NbFaces() == 0 )
     {
       // new mesh empty, remove it
-      SMESH_Gen_i*        smesh = SMESH_Gen_i::GetSMESHGen();
-      SALOMEDS::Study_var study = smesh->GetCurrentStudy();
+      SALOMEDS::Study_var          study = SMESH_Gen_i::getStudyServant();
       SALOMEDS::StudyBuilder_var builder = study->NewBuilder();
-      SALOMEDS::SObject_wrap      meshSO = smesh->ObjectToSObject( study, mesh_var );
+      SALOMEDS::SObject_wrap      meshSO = SMESH_Gen_i::ObjectToSObject( mesh_var );
       builder->RemoveObjectWithChildren( meshSO );
       THROW_SALOME_CORBA_EXCEPTION("Offset failed", SALOME::INTERNAL_ERROR);
     }

@@ -198,7 +198,7 @@ full.append(geompy.MakeCut(geompy.MakeCommon(full_solid_2, full_internal), box))
 full.append(geompy.MakeCut(geompy.MakeCommon(full_solid_3, full_internal), box))
 full.append(geompy.MakeCut(geompy.MakeCommon(full_solid_4, full_internal), box))
 
-# Cut the cylinder thikness
+# Cut the cylinder thickness
 # -------------------------
 
 full_plan = geompy.MakePlane(geompy.MakeVertex(0, 0, cyl_dz+cyl_thick), cyl_dir, 5000)

@@ -126,7 +126,7 @@ CORBA::Long SMESH_Hypothesis_i::GetId()
 bool SMESH_Hypothesis_i::IsPublished()
 {
   bool res = false;
-  if ( SMESH_Gen_i *gen = SMESH_Gen_i::GetSMESHGen())
+  if ( SMESH_Gen_i::GetSMESHGen() )
   {
     SALOMEDS::SObject_wrap SO = SMESH_Gen_i::ObjectToSObject( _this());
     res = !SO->_is_nil();

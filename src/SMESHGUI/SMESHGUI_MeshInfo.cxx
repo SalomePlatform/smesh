@@ -610,11 +610,11 @@ void SMESHGUI_MeshInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
     myWidgets[i3DHexaPrisms][iTotal]        ->setProperty( "text", QString::number( info[SMDSEntity_Hexagonal_Prism] ));
     myWidgets[i3DPolyhedrons][iTotal]       ->setProperty( "text", QString::number( info[SMDSEntity_Polyhedra] ));
     long nbElemTotal       = info[SMDSEntity_0D] + info[SMDSEntity_Ball] + nbEdges + nb2DTotal + nb3DTotal;
-    long nbElemLinerial    = info[SMDSEntity_Edge] + nb2DLinear + nb3DLinear;
+    long nbElemLinearial   = info[SMDSEntity_Edge] + nb2DLinear + nb3DLinear;
     long nbElemQuadratic   = info[SMDSEntity_Quad_Edge] + nb2DQuadratic + nb3DQuadratic;
     long nbElemBiQuadratic = nb2DBiQuadratic + nb3DBiQuadratic;
     myWidgets[iNb][iTotal]      ->setProperty( "text", QString::number( nbElemTotal ));
-    myWidgets[iNb][iLinear]     ->setProperty( "text", QString::number( nbElemLinerial ));
+    myWidgets[iNb][iLinear]     ->setProperty( "text", QString::number( nbElemLinearial ));
     myWidgets[iNb][iQuadratic]  ->setProperty( "text", QString::number( nbElemQuadratic ));
     myWidgets[iNb][iBiQuadratic]->setProperty( "text", QString::number( nbElemBiQuadratic ));
     // before full loading from study file, type of elements in a sub-mesh can't be defined

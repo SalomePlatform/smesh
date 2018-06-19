@@ -300,7 +300,7 @@ public:
 
   /*!
    * \brief To set created elements on the shape set by IsQuadraticSubMesh()
-   *        or the next methods. By defaul elements are set on the shape if
+   *        or the next methods. By default elements are set on the shape if
    *        a mesh has no shape to be meshed
    */
   bool SetElementsOnShape(bool toSet)
@@ -539,7 +539,7 @@ public:
   bool GetNodeUVneedInFaceNode(const TopoDS_Face& F = TopoDS_Face()) const;
 
   /*!
-   * \brief Return projector intitialized by given face without location, which is returned
+   * \brief Return projector initialized by given face without location, which is returned
    */
   GeomAPI_ProjectPointOnSurf& GetProjector(const TopoDS_Face& F,
                                            TopLoc_Location&   loc,
@@ -577,7 +577,7 @@ public:
     * \retval bool - true if subShape is a seam shape
     *
     * It works only if IsQuadraticSubMesh() or SetSubShape() has been called.
-    * Seam shape has two 2D alternative represenations on the face
+    * Seam shape has two 2D alternative representations on the face
    */
   bool IsSeamShape(const int subShape) const
   { return mySeamShapeIds.find( subShape ) != mySeamShapeIds.end(); }
@@ -587,7 +587,7 @@ public:
     * \retval bool - true if subShape is a seam shape
     *
     * It works only if IsQuadraticSubMesh() or SetSubShape() has been called.
-    * Seam shape has two 2D alternative represenations on the face
+    * Seam shape has two 2D alternative representations on the face
    */
   bool IsSeamShape(const TopoDS_Shape& subShape) const
   { return IsSeamShape( ShapeToIndex( subShape )); }

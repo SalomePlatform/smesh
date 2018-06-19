@@ -182,7 +182,7 @@ module SMESH
 
     /*!
      * Return nodal connectivity of the elements of the pattern
-     * or of all elements to be crated
+     * or of all elements to be created
      */
     array_of_long_array GetElementPoints(in boolean all);
   };

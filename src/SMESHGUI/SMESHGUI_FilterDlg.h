@@ -61,7 +61,7 @@ class SVTK_Selector;
 
 /*!
  *  Class       : SMESHGUI_FilterTable
- *  Description : Frame containig 
+ *  Description : Frame containing 
  *                  - Button group for switching entity type
  *                  - Table for displaying filter criterions
  *                  - Buttons for editing table

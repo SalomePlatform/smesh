@@ -802,7 +802,7 @@ bool StdMeshers_CompositeHexa_3D::Evaluate(SMESH_Mesh&         theMesh,
       nbSeg1 += Max( nbElems[ SMDSEntity_Edge ], nbElems[ SMDSEntity_Quad_Edge ]);
   }
 
-  // Get an 1D size of a box side ortogonal to lessComplexSide
+  // Get an 1D size of a box side orthogonal to lessComplexSide
   int nbSeg2 = 0;
   _QuadFaceGrid* ortoSide =
     lessComplexSide->FindAdjacentForSide( Q_LEFT, boxFaceContainer, B_UNDEFINED );
@@ -815,7 +815,7 @@ bool StdMeshers_CompositeHexa_3D::Evaluate(SMESH_Mesh&         theMesh,
       nbSeg2 += Max( nbElems[ SMDSEntity_Edge ], nbElems[ SMDSEntity_Quad_Edge ]);
   }
 
-  // Get an 2D size of a box side ortogonal to lessComplexSide
+  // Get an 2D size of a box side orthogonal to lessComplexSide
   int nbFaces = 0, nbQuadFace = 0;
   list< TopoDS_Face > sideFaces;
   if ( ortoSide->IsComplex() )

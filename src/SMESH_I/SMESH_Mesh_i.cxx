@@ -2085,7 +2085,7 @@ void SMESH_Mesh_i::CheckGeomModif()
 /*!
  * \brief Update objects depending on changed geom groups
  *
- * NPAL16168: geometrical group edition from a submesh don't modifiy mesh computation
+ * NPAL16168: geometrical group edition from a submesh don't modify mesh computation
  * issue 0020210: Update of a smesh group after modification of the associated geom group
  */
 //=============================================================================
@@ -5514,7 +5514,7 @@ TopAbs_ShapeEnum shapeTypeByDim(const int theDim)
 class SMESH_DimHyp
 {
  public:
-  //! fileds
+  //! fields
   int _dim;    //!< a dimension the algo can build (concurrent dimension)
   int _ownDim; //!< dimension of shape of _subMesh (>=_dim)
   TopTools_MapOfShape _shapeMap;

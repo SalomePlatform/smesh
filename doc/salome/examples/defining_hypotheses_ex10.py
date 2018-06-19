@@ -80,5 +80,5 @@ proj3D = tgt_mesh.Projection3D()
 proj3D.SourceShape3D( box, src_mesh, v1F1, v1F2, v2F1, v2F2 )
 tgt_mesh.Compute()
 
-# Move the source mesh to visualy compare the two meshes
+# Move the source mesh to visually compare the two meshes
 src_mesh.TranslateObject( src_mesh, smesh.MakeDirStruct( 210, 0, 0 ), Copy=False)

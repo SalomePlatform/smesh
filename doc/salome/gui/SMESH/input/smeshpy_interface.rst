@@ -32,7 +32,7 @@ A usual workflow to generate a mesh on geometry is following:
 		:linenos:
 
 		from salome.smesh import smeshBuilder
-		smesh = smeshBuilder.New( salome.myStudy )
+		smesh = smeshBuilder.New()
 
 #. Create a :class:`smeshBuilder.Mesh` object:
 

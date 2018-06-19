@@ -566,8 +566,8 @@ class StdMeshersBuilder_CompositeSegment(StdMeshersBuilder_Segment):
 
 class StdMeshersBuilder_Segment_Python(Mesh_Algorithm):
     """
-    Defines a segment 1D algorithm for discretization of edges with Python function
-        It is created by calling smeshBuilder.Mesh.Segment(smeshBuilder.PYTHON,geom=0)
+    Defines a segment 1D algorithm for discretization of edges with Python function.
+    It is created by calling smeshBuilder.Mesh.Segment(smeshBuilder.PYTHON,geom=0)
     """
     
 
@@ -619,7 +619,7 @@ class StdMeshersBuilder_Segment_Python(Mesh_Algorithm):
 
 class StdMeshersBuilder_Triangle_MEFISTO(Mesh_Algorithm):
     """
-    Triangle MEFISTO 2D algorithm
+    Triangle MEFISTO 2D algorithm.
     It is created by calling smeshBuilder.Mesh.Triangle(smeshBuilder.MEFISTO,geom=0)
     """
     
@@ -685,7 +685,7 @@ class StdMeshersBuilder_Triangle_MEFISTO(Mesh_Algorithm):
 
 class StdMeshersBuilder_Quadrangle(Mesh_Algorithm):
     """
-    Defines a quadrangle 2D algorithm
+    Defines a quadrangle 2D algorithm.
     It is created by calling smeshBuilder.Mesh.Quadrangle(geom=0)
     """
     
@@ -863,7 +863,7 @@ class StdMeshersBuilder_Quadrangle(Mesh_Algorithm):
 
 class StdMeshersBuilder_Hexahedron(Mesh_Algorithm):
     """
-    Defines a hexahedron 3D algorithm
+    Defines a hexahedron 3D algorithm.
     It is created by calling smeshBuilder.Mesh.Hexahedron(geom=0)
     """
     
@@ -903,7 +903,7 @@ class StdMeshersBuilder_Hexahedron(Mesh_Algorithm):
 
 class StdMeshersBuilder_Projection1D(Mesh_Algorithm):
     """
-    Defines a projection 1D algorithm
+    Defines a projection 1D algorithm.
     It is created by calling smeshBuilder.Mesh.Projection1D(geom=0)
     """
     
@@ -971,7 +971,7 @@ class StdMeshersBuilder_Projection1D(Mesh_Algorithm):
 
 class StdMeshersBuilder_Projection2D(Mesh_Algorithm):
     """
-    Defines a projection 2D algorithm
+    Defines a projection 2D algorithm.
     It is created by calling smeshBuilder.Mesh.Projection2D(geom=0)
     """
     
@@ -1048,7 +1048,7 @@ class StdMeshersBuilder_Projection2D(Mesh_Algorithm):
 
 class StdMeshersBuilder_Projection1D2D(StdMeshersBuilder_Projection2D):
     """
-    Defines a projection 1D-2D algorithm
+    Defines a projection 1D-2D algorithm.
     It is created by calling smeshBuilder.Mesh.Projection1D2D(geom=0)
     """
     
@@ -1082,7 +1082,7 @@ class StdMeshersBuilder_Projection1D2D(StdMeshersBuilder_Projection2D):
 
 class StdMeshersBuilder_Projection3D(Mesh_Algorithm):
     """
-    Defines a projection 3D algorithm
+    Defines a projection 3D algorithm.
     It is created by calling smeshBuilder.Mesh.Projection3D(geom=0)
     """
     
@@ -1551,7 +1551,7 @@ class StdMeshersBuilder_RadialAlgorithm(Mesh_Algorithm):
 
 class StdMeshersBuilder_RadialQuadrangle1D2D(StdMeshersBuilder_RadialAlgorithm):
     """
-    Defines a Radial Quadrangle 1D-2D algorithm 
+    Defines a Radial Quadrangle 1D-2D algorithm.
     It is created by calling smeshBuilder.Mesh.Quadrangle(smeshBuilder.RADIAL_QUAD,geom=0)
     """
 
@@ -1587,7 +1587,7 @@ class StdMeshersBuilder_RadialQuadrangle1D2D(StdMeshersBuilder_RadialAlgorithm):
 
 class StdMeshersBuilder_QuadMA_1D2D(StdMeshersBuilder_RadialAlgorithm):
     """
-    Defines a Quadrangle (Medial Axis Projection) 1D-2D algorithm 
+    Defines a Quadrangle (Medial Axis Projection) 1D-2D algorithm .
     It is created by calling smeshBuilder.Mesh.Quadrangle(smeshBuilder.QUAD_MA_PROJ,geom=0)
     """
 
@@ -1620,7 +1620,7 @@ class StdMeshersBuilder_QuadMA_1D2D(StdMeshersBuilder_RadialAlgorithm):
     pass
 
 class StdMeshersBuilder_PolygonPerFace(Mesh_Algorithm):
-    """ Defines a Polygon Per Face 2D algorithm 
+    """ Defines a Polygon Per Face 2D algorithm.
         It is created by calling smeshBuilder.Mesh.Polygon(geom=0)
     """
 
@@ -1658,7 +1658,7 @@ class StdMeshersBuilder_PolygonPerFace(Mesh_Algorithm):
     pass
 
 class StdMeshersBuilder_UseExistingElements_1D(Mesh_Algorithm):
-    """ Defines a Use Existing Elements 1D algorithm
+    """ Defines a Use Existing Elements 1D algorithm.
 
     It is created by calling smeshBuilder.Mesh.UseExisting1DElements(geom=0)
     """
@@ -1720,7 +1720,7 @@ class StdMeshersBuilder_UseExistingElements_1D(Mesh_Algorithm):
     pass # end of StdMeshersBuilder_UseExistingElements_1D class
 
 class StdMeshersBuilder_UseExistingElements_1D2D(Mesh_Algorithm):
-    """ Defines a Use Existing Elements 1D-2D algorithm
+    """ Defines a Use Existing Elements 1D-2D algorithm.
 
     It is created by calling smeshBuilder.Mesh.UseExisting2DElements(geom=0)
     """
@@ -1783,7 +1783,7 @@ class StdMeshersBuilder_UseExistingElements_1D2D(Mesh_Algorithm):
     pass # end of StdMeshersBuilder_UseExistingElements_1D2D class
 
 class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
-    """ Defines a Body Fitting 3D algorithm
+    """ Defines a Body Fitting 3D algorithm.
 
     It is created by calling smeshBuilder.Mesh.BodyFitted(geom=0)
     """
@@ -1945,7 +1945,7 @@ class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
 
 class StdMeshersBuilder_UseExisting_1D(Mesh_Algorithm):
     """ Defines a stub 1D algorithm, which enables "manual" creation of nodes and
-        segments usable by 2D algorithms
+        segments usable by 2D algorithms.
 
     It is created by calling smeshBuilder.Mesh.UseExistingSegments(geom=0)
     """
@@ -1980,7 +1980,7 @@ class StdMeshersBuilder_UseExisting_1D(Mesh_Algorithm):
 
 class StdMeshersBuilder_UseExisting_2D(Mesh_Algorithm):
     """ Defines a stub 2D algorithm, which enables "manual" creation of nodes and
-    faces usable by 3D algorithms
+    faces usable by 3D algorithms.
 
     It is created by calling smeshBuilder.Mesh.UseExistingFaces(geom=0)
     """

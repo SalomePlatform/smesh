@@ -444,7 +444,7 @@ public:
   /*!
    * \brief Update hypotheses assigned to geom groups if the latter change
    *
-   * NPAL16168: "geometrical group edition from a submesh don't modifiy mesh computation"
+   * NPAL16168: "geometrical group edition from a submesh don't modify mesh computation"
    */
   void CheckGeomGroupModif();
 

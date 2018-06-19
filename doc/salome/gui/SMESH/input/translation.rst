@@ -34,7 +34,7 @@ This geometrical operation allows to translate in space your mesh or some of its
 
    * specify the vector of translation:
 
-     * specify the cooordinates of the start and end **Points** of the vector of translation; or
+     * specify the coordinates of the start and end **Points** of the vector of translation; or
      * specify the end point of the **Vector** of rotation starting at the origin of coordinates.
 
    * specify the conditions of translation:

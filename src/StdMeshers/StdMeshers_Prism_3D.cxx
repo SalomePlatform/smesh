@@ -2589,7 +2589,7 @@ double StdMeshers_Prism_3D::getSweepTolerance( const Prism_3D::TPrismTopo& thePr
 //=======================================================================
 //function : isSimpleQuad
 //purpose  : check if the bottom FACE is meshable with nice quadrangles,
-//           if so the block aproach can work rather fast.
+//           if so the block approach can work rather fast.
 //           This is a temporary mean caused by problems in StdMeshers_Sweeper
 //=======================================================================
 

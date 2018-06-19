@@ -510,7 +510,7 @@ void SMESHGUI_GroupOpDlg::enterEvent(QEvent*)
 /*!
   \brief Resets state of the dialog, initializes its fields with default value, etc. 
   Usually called by onApply() slot to reinitialize dialog  fields. This virtual method 
-  should be redefined in derived class to update its own fileds
+  should be redefined in derived class to update its own fields
 */
 void SMESHGUI_GroupOpDlg::reset()
 {

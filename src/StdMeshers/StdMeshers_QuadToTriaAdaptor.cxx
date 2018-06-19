@@ -667,7 +667,7 @@ bool StdMeshers_QuadToTriaAdaptor::LimitHeight (gp_Pnt&                         
 
 //================================================================================
 /*!
- * \brief Prepare data for the given face
+ * \brief Retrieve data of the given face
  *  \param PN - coordinates of face nodes
  *  \param VN - cross products of vectors (PC-PN(i)) ^ (PC-PN(i+1))
  *  \param FNodes - face nodes
@@ -706,7 +706,8 @@ int StdMeshers_QuadToTriaAdaptor::Preparation(const SMDS_MeshElement*       face
   int nbp = 4;
 
   int j = 0;
-  for(i=1; i<4; i++) {
+  for ( i = 1; i < 4; i++ )
+  {
     j = i+1;
     for(; j<=4; j++) {
       if( PN(i).Distance(PN(j)) < 1.e-6 )
@@ -714,11 +715,10 @@ int StdMeshers_QuadToTriaAdaptor::Preparation(const SMDS_MeshElement*       face
     }
     if(j<=4) break;
   }
-  //int deg_num = IsDegenarate(PN);
-  //if(deg_num>0) {
+
   bool hasdeg = false;
-  if(i<4) {
-    //cout<<"find degeneration"<<endl;
+  if ( i < 4 )
+  {
     hasdeg = true;
     gp_Pnt Pdeg = PN(i);
 
@@ -729,7 +729,6 @@ int StdMeshers_QuadToTriaAdaptor::Preparation(const SMDS_MeshElement*       face
       gp_Pnt Ptmp(N->X(),N->Y(),N->Z());
       if(Pdeg.Distance(Ptmp)<1.e-6) {
         DegNode = N;
-        //DegNode = const_cast<SMDS_MeshNode*>(N);
         break;
       }
     }
@@ -749,6 +748,7 @@ int StdMeshers_QuadToTriaAdaptor::Preparation(const SMDS_MeshElement*       face
 
   PN.SetValue(nbp+1,PN(1));
   FNodes[nbp] = FNodes[0];
+
   // find normal direction
   gp_Vec V1(PC,PN(nbp));
   gp_Vec V2(PC,PN(1));
@@ -790,7 +790,6 @@ int StdMeshers_QuadToTriaAdaptor::Preparation(const SMDS_MeshElement*       face
     }
   }
 
-  //cout<<"  VNorm("<<VNorm.X()<<","<<VNorm.Y()<<","<<VNorm.Z()<<")"<<endl;
   return hasdeg ? DEGEN_QUAD : QUAD;
 }
 

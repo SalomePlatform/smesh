@@ -49,7 +49,7 @@ This geometrical operation allows to perform a symmetrical copy of your mesh or 
 
 		* if the mesh is mirrored through a plane:
 
-		  * specify the cooordinates of the **Point** lying on the plane, either directly or by picking a mesh node;
+		  * specify the coordinates of the **Point** lying on the plane, either directly or by picking a mesh node;
 		  * specify the components of plane **Normal**, either directly or by picking a mesh node, in which case **Normal** is defined as a shift between the **Point** and the node.
 
 		* specify the conditions of symmetry operation:

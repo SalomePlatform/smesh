@@ -64,7 +64,7 @@ SMESH_Group::SMESH_Group (int                       theID,
 
 //================================================================================
 /*!
- * \brief Constructor accesible to SMESH_Mesh only
+ * \brief Constructor accessible to SMESH_Mesh only
  */
 //================================================================================
 

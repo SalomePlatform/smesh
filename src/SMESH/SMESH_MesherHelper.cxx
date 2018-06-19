@@ -854,7 +854,7 @@ bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
 
 //=======================================================================
 //function : GetProjector
-//purpose  : Return projector intitialized by given face without location, which is returned
+//purpose  : Return projector initialized by given face without location, which is returned
 //=======================================================================
 
 GeomAPI_ProjectPointOnSurf& SMESH_MesherHelper::GetProjector(const TopoDS_Face& F,
@@ -2903,7 +2903,7 @@ bool SMESH_MesherHelper::IsDistorted2D( SMESH_subMesh*      faceSM,
     for ( size_t i = 0; i < nodes.size(); ++n, ++i )
       nodes[ i ] = *n;
 
-    // avoid elems on degenarate shapes as UV on them can be wrong
+    // avoid elems on degenerate shapes as UV on them can be wrong
     if ( helper.HasDegeneratedEdges() )
     {
       bool isOnDegen = false;

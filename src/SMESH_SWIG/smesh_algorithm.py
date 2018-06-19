@@ -31,43 +31,38 @@ class Mesh_Algorithm:
 
     Note:
         This class should not be used directly, it is supposed to be sub-classed
-    for implementing Python API for specific meshing algorithms
+        for implementing Python API for specific meshing algorithms
 
-    For each meshing algorithm, a python class inheriting from class %Mesh_Algorithm
+    For each meshing algorithm, a python class inheriting from class *Mesh_Algorithm*
     should be defined. This descendant class should have two attributes defining the way
-    it is created by class Mesh (see e.g. class :class:`~StdMeshersBuilder.StdMeshersBuilder_Segment`
-    in StdMeshersBuilder package):
+    it is created by class :class:`~smeshBuilder.Mesh` (see e.g. class :class:`~StdMeshersBuilder.StdMeshersBuilder_Segment`):
 
-        - :code:`meshMethod` attribute defines name of method of class smesh.Mesh by calling which the
-                python class of algorithm is created; this method is dynamically added to the smesh.Mesh class
-                in runtime. For example, if in :code:`class MyPlugin_Algorithm` this attribute is defined as
-                ::
+    - :code:`meshMethod` attribute defines name of method of class :class:`~smeshBuilder.Mesh` by calling which the
+      python class of algorithm is created; this method is dynamically added to the :class:`~smeshBuilder.Mesh` class
+      in runtime. For example, if in :code:`class MyPlugin_Algorithm` this attribute is defined as::
 
-                        meshMethod = "MyAlgorithm"
+          meshMethod = "MyAlgorithm"
 
-                then an instance of :code:`MyPlugin_Algorithm` can be created by the direct invocation of the function
-                of smesh.Mesh class:
-                ::
+      then an instance of :code:`MyPlugin_Algorithm` can be created by the direct invocation of the function
+      of :class:`~smeshBuilder.Mesh` class::
     
-                        my_algo = mesh.MyAlgorithm()
+          my_algo = mesh.MyAlgorithm()
     
-        - :code:`algoType` defines type of algorithm and is used mostly to discriminate
-                algorithms that are created by the same method of class smesh.Mesh. For example, if this attribute
-                is specified in :code:`MyPlugin_Algorithm` class as
-                ::
+    - :code:`algoType` defines type of algorithm and is used mostly to discriminate
+      algorithms that are created by the same method of class :class:`~smeshBuilder.Mesh`. For example, if this attribute
+      is specified in :code:`MyPlugin_Algorithm` class as::
     
-                        algoType = "MyPLUGIN"
+          algoType = "MyPLUGIN"
 
-                then it's creation code can be:
-                ::
+      then it's creation code can be::
 
-                        my_algo = mesh.MyAlgorithm(algo="MyPLUGIN")
+          my_algo = mesh.MyAlgorithm(algo="MyPLUGIN")
     """
     
     
     def __init__(self):
         """
-        Private constuctor
+        Private constructor
         """
         self.mesh = None
         self.geom = None
@@ -78,9 +73,9 @@ class Mesh_Algorithm:
     def FindHypothesis (self, hypname, args, CompareMethod, smeshpyD):
         """
         Finds a hypothesis in the study by its type name and parameters.
-        Finds only the hypotheses created in smeshpyD engine.
+        Finds only the hypotheses created in smeshBuilder engine.
         Returns: 
-                SMESH.SMESH_Hypothesis
+                :class:`~SMESH.SMESH_Hypothesis`
         """
         study = salome.myStudy
         if not study: return None
@@ -125,7 +120,7 @@ class Mesh_Algorithm:
     def FindAlgorithm (self, algoname, smeshpyD):
         """
         Finds the algorithm in the study by its type name.
-        Finds only the algorithms, which have been created in smeshpyD engine.
+        Finds only the algorithms, which have been created in smeshBuilder engine.
 
         Returns:
                 SMESH.SMESH_Algo
@@ -170,7 +165,7 @@ class Mesh_Algorithm:
     def GetSubMesh(self):
         """
         If the algorithm is global, returns 0; 
-        else returns the submesh associated to this algorithm.
+        else returns the :class:`~SMESH.SMESH_subMesh` associated to this algorithm.
         """
         return self.subm
 

@@ -12,14 +12,14 @@ def main(module_name, output_file = "smeshBuilder.py"):
     dynamic_module_name = module_name + DYNAMIC_MODULE_SUFFIX
     try:
         exec( "import %s" % oringin_module_name )
-        exec( "origin_module = %s" % oringin_module_name )
+        origin_module = locals()[ oringin_module_name ]
         origin_module_lines = inspect.getsourcelines( origin_module )[0]
         origin_meshClass_lines = inspect.getsourcelines(origin_module.Mesh)[0]
         origin_module_text = "".join( origin_module_lines )
         origin_meshClass_text = "".join( origin_meshClass_lines )
         
         exec( "import %s" % dynamic_module_name )
-        exec( "dynanmic_module = %s" % dynamic_module_name )
+        dynanmic_module = locals()[ dynamic_module_name ]
         dynanmic_meshClass = dynanmic_module.Mesh
     
         new_meshClass_lines = copy.copy(origin_meshClass_lines)
@@ -30,7 +30,7 @@ def main(module_name, output_file = "smeshBuilder.py"):
         dynanmic_meshClass_methods = [x for x, y in dynanmic_meshClass.__dict__.items() if type(y) == FunctionType]
         for method in dynanmic_meshClass_methods:
             exec( "method_lines = inspect.getsourcelines(dynanmic_module.Mesh.%s)[0]"  % method)
-            new_meshClass_lines+=method_lines
+            new_meshClass_lines+=locals()['method_lines']
             pass
         new_meshClass_text = "".join( new_meshClass_lines )            
 

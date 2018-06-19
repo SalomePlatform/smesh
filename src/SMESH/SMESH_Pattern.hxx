@@ -195,7 +195,7 @@ class SMESH_EXPORT SMESH_Pattern {
     // MakeMesh
     ERR_MAKEM_NOT_COMPUTED, // mapping failed
     //Unexpected error 
-    ERR_UNEXPECTED // Unexpected of the pattern mapping alorithm
+    ERR_UNEXPECTED // Unexpected of the pattern mapping algorithm
   };
 
   ErrorCode GetErrorCode() const { return myErrorCode; }

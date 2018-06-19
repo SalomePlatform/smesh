@@ -84,7 +84,7 @@ The compatibility mode allows old scripts to work in almost all cases, but with 
 
 	Compound1 = smesh.Concatenate([Mesh_inf.GetMesh(), Mesh_sup.GetMesh()], 0, 1, 1e-05)
 
-* If you need to **import a SMESH Plugin** explicitly, keep in mind that  they are now located in separate namespaces.
+* If you need to **import a SMESH Plugin** explicitly, keep in mind that they are now located in separate namespaces.
 
   For instance::
 

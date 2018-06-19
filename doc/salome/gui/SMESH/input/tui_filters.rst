@@ -317,7 +317,7 @@ Double edges, Double faces, Double volumes
 
 filters mesh elements basing on the same set of nodes:
 
-* element type is either *SMESH.EGDE*, *SMESH.FACE* or *SMESH.VOLUME*
+* element type is either *SMESH.EDGE*, *SMESH.FACE* or *SMESH.VOLUME*
 * functor type is either *SMESH.FT_EqualEdges*, *SMESH.FT_EqualFaces* or *SMESH.FT_EqualVolumes*,
 * threshold value is not required
 

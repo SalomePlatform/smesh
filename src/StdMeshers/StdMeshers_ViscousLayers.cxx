@@ -4866,7 +4866,7 @@ bool _ViscousBuilder::smoothAndCheck(_SolidData& data,
 
           if ( nbBad == oldBadNb  &&
                nbBad > 0 &&
-               step < stepLimit ) // smooth w/o chech of validity
+               step < stepLimit ) // smooth w/o check of validity
           {
             dumpFunctionEnd();
             dumpFunction(SMESH_Comment("smoothWoCheck")<<data._index<<"_Fa"<<sInd
@@ -8740,7 +8740,7 @@ int _LayerEdge::Smooth(const int step, const bool isConcaveFace, bool findBest )
 
 //================================================================================
 /*!
- * \brief Chooses a smoothing technic giving a position most close to an initial one.
+ * \brief Chooses a smoothing technique giving a position most close to an initial one.
  *        For a correct result, _simplices must contain nodes lying on geometry.
  */
 //================================================================================
@@ -11348,7 +11348,7 @@ bool _SmoothNode::Smooth(int&                  nbBad,
 
 //================================================================================
 /*!
- * \brief Computes new UV using angle based smoothing technic
+ * \brief Computes new UV using angle based smoothing technique
  */
 //================================================================================
 

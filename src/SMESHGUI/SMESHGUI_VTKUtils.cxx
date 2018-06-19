@@ -789,7 +789,7 @@ namespace SMESH
           if(SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct)){
             if(anActor->hasIO())
               if (!Update(anActor->getIO(),anActor->GetVisibility()))
-                break; // avoid multiple warinings if visu failed
+                break; // avoid multiple warnings if visu failed
           }
         }
       }
@@ -800,7 +800,7 @@ namespace SMESH
         {
           Handle(SALOME_InteractiveObject) anIO = anIter.Value();
           if ( !Update( anIO, true ))
-            break; // avoid multiple warinings if visu failed
+            break; // avoid multiple warnings if visu failed
 
           if ( withChildrenOfSelected ) // update all visible children
           {
@@ -1422,7 +1422,7 @@ namespace SMESH
   //================================================================================
   /*!
    * \brief Find all SMESH_Actor's in the View Window.
-   * If actor constains Plot2d_Histogram object remove it from each Plot2d Viewer.
+   * If actor contains Plot2d_Histogram object remove it from each Plot2d Viewer.
    */
   //================================================================================
 

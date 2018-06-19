@@ -480,7 +480,7 @@ module SMESH
      *  \param NbOfSteps - number of elements to generate from one element
      *  \param ToMakeGroups - if true, new elements will be included into new groups
      *         corresponding to groups the input elements included in.
-     *  \return ListOfGroups - new groups craeted if \a ToMakeGroups is true
+     *  \return ListOfGroups - new groups created if \a ToMakeGroups is true
      */
     ListOfGroups RotationSweepObjects(in ListOfIDSources Nodes,
                                       in ListOfIDSources Edges,
@@ -501,7 +501,7 @@ module SMESH
      *  \param nbOfSteps - number of elements to generate from one element
      *  \param toMakeGroups - if true, new elements will be included into new groups
      *         corresponding to groups the input elements included in.
-     *  \return ListOfGroups - new groups craeted if \a toMakeGroups is true
+     *  \return ListOfGroups - new groups created if \a toMakeGroups is true
      */
     ListOfGroups ExtrusionSweepObjects(in ListOfIDSources nodes,
                                        in ListOfIDSources edges,
@@ -533,7 +533,7 @@ module SMESH
      *         EXTRUSION_FLAG_SEW is set
      *  \param ToMakeGroups - if true, new elements will be included into new groups
      *         corresponding to groups the input elements included in.
-     *  \return ListOfGroups - new groups craeted if \a ToMakeGroups is true
+     *  \return ListOfGroups - new groups created if \a ToMakeGroups is true
      */
     ListOfGroups AdvancedExtrusion(in long_array IDsOfElements,
                                    in DirStruct  StepVector,

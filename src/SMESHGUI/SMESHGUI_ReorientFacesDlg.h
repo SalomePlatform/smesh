@@ -39,7 +39,7 @@ class SMESHGUI_SpinBox;
 class SMESHGUI_ReorientFacesDlg;
 
 /*!
- * \brief Operation to reorient faces acoording to some criterion
+ * \brief Operation to reorient faces according to some criterion
  */
 class SMESHGUI_EXPORT SMESHGUI_ReorientFacesOp: public SMESHGUI_SelectionOp
 {
@@ -81,7 +81,7 @@ private:
 };
 
 /*!
- * \brief Dialog to reorient faces acoording to vector
+ * \brief Dialog to reorient faces according to vector
  */
 
 class SMESHGUI_EXPORT SMESHGUI_ReorientFacesDlg : public SMESHGUI_Dialog

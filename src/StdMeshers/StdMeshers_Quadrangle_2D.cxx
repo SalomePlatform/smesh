@@ -251,7 +251,7 @@ bool StdMeshers_Quadrangle_2D::Compute (SMESH_Mesh&         aMesh,
     int nfull = n1+n2+n3+n4;
     if ((nfull % 2) == 0 && ((n1 != n3) || (n2 != n4)))
     {
-      // special path genarating only quandrangle faces
+      // special path generating only quandrangle faces
       res = computeQuadPref( aMesh, F, quad );
     }
   }

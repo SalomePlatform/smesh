@@ -96,7 +96,7 @@ enum { CONSTRUCTOR_POINT=0, CONSTRUCTOR_FACE, CONSTRUCTOR_VOLUME,
 
 //=======================================================================
 /*!
- * \brief Dialog to reorient faces acoording to vector
+ * \brief Dialog to reorient faces according to vector
  */
 //=======================================================================
 

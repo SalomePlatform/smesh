@@ -43,10 +43,10 @@ int main (int argc, char ** argv)
     return -1;
   unsigned long freeRamKb = ( si.freeram  * si.mem_unit ) / 1024;
 
-  // totat RAM size in Gb, float is in order not to have 1 instead of 1.9
+  // total RAM size in Gb, float is in order not to have 1 instead of 1.9
   float totalramGb = float( si.totalram * si.mem_unit ) / 1024 / 1024 / 1024;
 
-  // nb Kbites to allocate at one step. Small nb leads to hung up
+  // nb Kbytes to allocate at one step. Small nb leads to hung up
   const int stepKb = int( 5 * totalramGb );
 
   unsigned long nbSteps = freeRamKb / stepKb * 2;

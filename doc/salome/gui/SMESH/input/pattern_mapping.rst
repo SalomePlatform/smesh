@@ -18,7 +18,7 @@ The smp file contains 4 sections:
 	#. The first line indicates the total number of pattern nodes (N).
 	#. The next N lines describe nodes coordinates. Each line contains 2 node coordinates for a 2D pattern or 3 node coordinates for a 3D pattern. Note, that node coordinates of a 3D pattern can be defined only by relative values in range [0;1].
 	#. The key-points line contains the indices of the nodes to be mapped on geometrical vertices (for a 2D pattern only). Index n refers to the node described on the n-th line of section 2. The index of the first node is zero. For a 3D pattern the key points are not specified.
-	#. The remaining lines describe nodal connectivity of elements, one line for each element. Each line holds indices of nodes forming an element. Index n refers to the node described on the n-th line of section 2. The first node index is zero. There must be 3 or 4 indices on each line for a 2D pattern (only liner 2d elements are allowed) and 4, 5, 6 or 8 indices for a 3D pattern (only linear 3d elements are allowed).
+	#. The remaining lines describe nodal connectivity of elements, one line for each element. Each line holds indices of nodes forming an element. Index n refers to the node described on the n-th line of section 2. The first node index is zero. There must be 3 or 4 indices on each line for a 2D pattern (only linear 2D elements are allowed) and 4, 5, 6 or 8 indices for a 3D pattern (only linear 3D elements are allowed).
 
 A 2D pattern must contain at least one element and at least one key-point. All key-points must lie on boundaries.
 
@@ -165,8 +165,8 @@ In this dialog you should specify:
 
 When a pattern is created from an existing mesh, two cases are possible:
 
-* A sub-mesh on a face/solid is selected. The pattern is created from the 2d/3d elements bound to the face/solid by the mesher. For a 2D pattern, the node coordinates are either "positions on face" computed by the mesher, or coordinates got by node projection on a geometrical surface, according to the user choice. For a 3D pattern, the node coordinates correspond to the nodes computed by the mesher.
-* A mesh, where the main shape is a face/solid, is selected. The pattern is created from all 2d/3d elements in a mesh. In addition, if all mesh elements of a 2D pattern are built by the mesher, the user can select how to get node coordinates, otherwise all nodes are projected on a face surface.
+* A sub-mesh on a face/solid is selected. The pattern is created from the 2D/3D elements bound to the face/solid by the mesher. For a 2D pattern, the node coordinates are either "positions on face" computed by the mesher, or coordinates got by node projection on a geometrical surface, according to the user choice. For a 3D pattern, the node coordinates correspond to the nodes computed by the mesher.
+* A mesh, where the main shape is a face/solid, is selected. The pattern is created from all 2D/3D elements in a mesh. In addition, if all mesh elements of a 2D pattern are built by the mesher, the user can select how to get node coordinates, otherwise all nodes are projected on a face surface.
 
 
 Mapping algorithm

@@ -26,7 +26,7 @@ This operation allows to rotate in space the mesh or some of its elements.
 		* apply Filters. **Set filter** button allows to apply a filter to the selection of elements. See more about filters in the :ref:`selection_filter_library_page` page.
 
 	* specify the axis of rotation:
-		* specify the cooordinates of the start **Point** of the vector of rotation;
+		* specify the coordinates of the start **Point** of the vector of rotation;
 		* specify the **Vector** of rotation through the coordinates of its end point with respect to the coordinates of the start point;
 
 	* specify the **Angle** of rotation 

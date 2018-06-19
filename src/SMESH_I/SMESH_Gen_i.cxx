@@ -1930,7 +1930,7 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
     ASSERT( meshServant );
     if ( meshServant ) {
       meshServant->Load();
-      // NPAL16168: "geometrical group edition from a submesh don't modifiy mesh computation"
+      // NPAL16168: "geometrical group edition from a submesh don't modify mesh computation"
       meshServant->CheckGeomModif();
       // get local TopoDS_Shape
       TopoDS_Shape myLocShape;
@@ -2015,7 +2015,7 @@ SMESH::MeshPreviewStruct* SMESH_Gen_i::Precompute( SMESH::SMESH_Mesh_ptr theMesh
     meshServant->Load();
     ASSERT( meshServant );
     if ( meshServant ) {
-      // NPAL16168: "geometrical group edition from a submesh don't modifiy mesh computation"
+      // NPAL16168: "geometrical group edition from a submesh don't modify mesh computation"
       meshServant->CheckGeomModif();
       // get local TopoDS_Shape
       TopoDS_Shape myLocShape;
@@ -2212,7 +2212,7 @@ SMESH::long_array* SMESH_Gen_i::Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
     ASSERT( meshServant );
     if ( meshServant ) {
       meshServant->Load();
-      // NPAL16168: "geometrical group edition from a submesh don't modifiy mesh computation"
+      // NPAL16168: "geometrical group edition from a submesh don't modify mesh computation"
       meshServant->CheckGeomModif();
       // get local TopoDS_Shape
       TopoDS_Shape myLocShape;

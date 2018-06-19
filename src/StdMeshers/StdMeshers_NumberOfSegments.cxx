@@ -551,7 +551,7 @@ istream & StdMeshers_NumberOfSegments::LoadFrom(istream & load)
   isOK = static_cast<bool>(load >> scale_factor);
   a = (int)scale_factor;
 
-  // try to interprete ditribution type,
+  // try to interpret ditribution type,
   // supposing that this hypothesis was written in the new format
   if (isOK)
   {

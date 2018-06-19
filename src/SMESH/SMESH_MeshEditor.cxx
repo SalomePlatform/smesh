@@ -1423,7 +1423,7 @@ bool SMESH_MeshEditor::QuadToTri (TIDSortedElemSet &                   theElems,
     const SMDS_MeshElement* newElem1 = 0;
     const SMDS_MeshElement* newElem2 = 0;
 
-    if ( !elem->IsQuadratic() ) // split liner quadrangle
+    if ( !elem->IsQuadratic() ) // split linear quadrangle
     {
       // for MaxElementLength2D functor we return minimum diagonal for splitting,
       // because aBadRate1=2*len(diagonal 1-3); aBadRate2=2*len(diagonal 2-4)

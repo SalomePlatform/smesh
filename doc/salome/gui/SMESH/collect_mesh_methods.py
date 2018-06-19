@@ -184,8 +184,8 @@ if __name__ == "__main__":
                       action="store_true", default=False,
                       help=h)
     h = "Format of the documentation strings in the output file. Possible values are: "
-    h+= "'doxygen' - documentation strings are generated in the doxygen format, before a method defenition."
-    h+= "'sphinx' - documentation strings are generated in the sphinx format, after a method defenition."
+    h+= "'doxygen' - documentation strings are generated in the doxygen format, before a method definition."
+    h+= "'sphinx' - documentation strings are generated in the sphinx format, after a method definition."
     parser.add_argument("-f", "--format", dest="format",
                       action="store", default="doxygen", help=h)
 

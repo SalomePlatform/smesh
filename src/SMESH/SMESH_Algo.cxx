@@ -751,7 +751,7 @@ SMESH_Algo::EMeshError SMESH_Algo::GetMeshError(SMESH_subMesh* subMesh)
     if ( !fIt->more() )
       return MEr_EMPTY;
 
-    // We check that only links on EDGEs encouter once, the rest links, twice
+    // We check that only links on EDGEs encounter once, the rest links, twice
     set< SMESH_TLink > links;
     while ( fIt->more() )
     {

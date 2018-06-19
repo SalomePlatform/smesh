@@ -287,7 +287,7 @@ void SMESHGUI_ShapeByMeshOp::SetMesh (SMESH::SMESH_Mesh_ptr thePtr)
       myHasSolids = nbShapes[ TopAbs_SOLID ];
     }
 
-  // disable inexistant elem types
+  // disable inexistent elem types
   for ( int i = 0; i < myDlg->myElemTypeGroup->buttons().count(); ++i ) {
     if ( QAbstractButton* button = myDlg->myElemTypeGroup->button( i ) )
       button->setEnabled( hasElement[ i ] );

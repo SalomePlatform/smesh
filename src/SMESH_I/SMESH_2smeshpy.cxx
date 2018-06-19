@@ -360,7 +360,7 @@ namespace {
   //================================================================================
   /*!
    * \brief Replaces "SMESH.PointStruct(x,y,z)" and "SMESH.DirStruct( SMESH.PointStruct(x,y,z))"
-   *        arguments of a given command by a list "[x,y,z]" if the list is accesible
+   *        arguments of a given command by a list "[x,y,z]" if the list is accessible
    *        type of argument.
    */
   //================================================================================
@@ -412,7 +412,7 @@ namespace {
   //================================================================================
   /*!
    * \brief Replaces "mesh.GetIDSource([id1,id2])" argument of a given command by
-   *        a list "[id1,id2]" if the list is an accesible type of argument.
+   *        a list "[id1,id2]" if the list is an accessible type of argument.
    */
   //================================================================================
 

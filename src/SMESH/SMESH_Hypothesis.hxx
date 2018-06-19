@@ -58,7 +58,7 @@ public:
     HYP_UNKNOWN_FATAL,//  --- all statuses below should be considered as fatal
                       //      for Add/RemoveHypothesis operations
     HYP_INCOMPATIBLE, // hypothesis does not fit algo
-    HYP_NOTCONFORM,   // not conform mesh is produced appling a hypothesis
+    HYP_NOTCONFORM,   // not conform mesh is produced applying a hypothesis
     HYP_ALREADY_EXIST,// several applicable hypothesis of same priority assigned
     HYP_BAD_DIM,      // bad dimension
     HYP_BAD_SUBSHAPE, // shape is neither the main one, nor its sub-shape, nor a group

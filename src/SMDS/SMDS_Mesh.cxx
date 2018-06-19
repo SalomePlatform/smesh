@@ -63,7 +63,7 @@ int SMDS_Mesh::chunkSize = 1024;
 //================================================================================
 /*!
  * \brief Raise an exception if free memory (ram+swap) too low
- * \param doNotRaise - if true, suppres exception, just return free memory size
+ * \param doNotRaise - if true, suppress exception, just return free memory size
  * \retval int - amount of available memory in MB or negative number in failure case
  */
 //================================================================================

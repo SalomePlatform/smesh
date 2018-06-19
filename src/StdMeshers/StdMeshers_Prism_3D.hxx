@@ -278,7 +278,7 @@ private:
     PSurface                        mySurface;
     TopoDS_Edge                     myBaseEdge;
     std::map< int, PSurface >       myShapeID2Surf;
-    // first and last normalized params and orientaion for each component or it-self
+    // first and last normalized params and orientation for each component or it-self
     std::vector< std::pair< double, double> > myParams; // select my columns in myParamToColumnMap
     bool                            myIsForward;
     std::vector< TSideFace* >       myComponents;

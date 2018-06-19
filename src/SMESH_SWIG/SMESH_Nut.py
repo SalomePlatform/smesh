@@ -23,7 +23,7 @@
 
 #####################################################################
 #Created                :17/02/2005
-#Auhtor                 :MASLOV Eugeny, KOVALTCHUK Alexey 
+#Author                 :MASLOV Eugeny, KOVALTCHUK Alexey 
 #####################################################################
 #
 import salome

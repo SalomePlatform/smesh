@@ -611,33 +611,33 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
         return SMESH._objref_SMESH_Gen.IsEmbeddedMode(self)
 
     def UpdateStudy( self, geompyD = None  ):
-    	"""
-        Update the current study. Calling UpdateStudy() allows to 
-    	update meshes at switching GEOM->SMESH
-    	"""
+        """
+        Update the current study. Calling UpdateStudy() allows to
+        update meshes at switching GEOM->SMESH
+        """
         #self.UpdateStudy()
-    	if not geompyD:
+        if not geompyD:
             from salome.geom import geomBuilder
             geompyD = geomBuilder.geom
             pass
-    	self.geompyD=geompyD
-    	self.SetGeomEngine(geompyD)
-    	SMESH._objref_SMESH_Gen.UpdateStudy(self)
-    	sb = salome.myStudy.NewBuilder()
-    	sc = salome.myStudy.FindComponent("SMESH")
-    	if sc:
+        self.geompyD=geompyD
+        self.SetGeomEngine(geompyD)
+        SMESH._objref_SMESH_Gen.UpdateStudy(self)
+        sb = salome.myStudy.NewBuilder()
+        sc = salome.myStudy.FindComponent("SMESH")
+        if sc:
             sb.LoadWith(sc, self)
-    	pass
+        pass
     
     def SetEnablePublish( self, theIsEnablePublish ):
-    	"""
-        Sets enable publishing in the study. Calling SetEnablePublish( false ) allows to
-    	switch OFF publishing in the Study of mesh objects.
-    	"""
-        #self.SetEnablePublish(theIsEnablePublish)
-    	SMESH._objref_SMESH_Gen.SetEnablePublish(self,theIsEnablePublish)
-    	global notebook
-    	notebook = salome_notebook.NoteBook( theIsEnablePublish )
+        """
+        Set enable publishing in the study. Calling SetEnablePublish( False ) allows to
+        switch **off** publishing in the Study of mesh objects.
+        """
+       #self.SetEnablePublish(theIsEnablePublish)
+        SMESH._objref_SMESH_Gen.SetEnablePublish(self,theIsEnablePublish)
+        global notebook
+        notebook = salome_notebook.NoteBook( theIsEnablePublish )
 
 
     def CreateMeshesFromUNV( self,theFileName ):
@@ -1406,7 +1406,7 @@ def New( instance=None, instanceGeom=None):
     Create a new smeshBuilder instance. The smeshBuilder class provides the Python
     interface to create or load meshes.
 
-    Typical use is:
+    Typical use is::
 
         import salome
         salome.salome_init()
@@ -1414,8 +1414,9 @@ def New( instance=None, instanceGeom=None):
         smesh = smeshBuilder.New()
 
     Parameters:
-        isPublished If False, the notebool will not be used.
-        instance  CORBA proxy of SMESH Engine. If None, the default Engine is used.
+        study:         SALOME study, generally obtained by salome.myStudy.
+        instance:      CORBA proxy of SMESH Engine. If None, the default Engine is used.
+        instanceGeom:  CORBA proxy of GEOM  Engine. If None, the default Engine is used.
     Returns:
         :class:`smeshBuilder` instance
     """
@@ -1875,6 +1876,7 @@ class Mesh(metaclass = MeshMeta):
                         continue
                     if ids == subShapeID:
                         shapeText = '"%s"' % subSO.GetName()
+                        break
             if not shapeText:
                 shape = self.geompyD.GetSubShape( self.GetShape(), [subShapeID])
                 if shape:
@@ -2157,14 +2159,16 @@ class Mesh(metaclass = MeshMeta):
         Parameters:
                 fileName: is the file name
                 auto_groups (boolean): parameter for creating/not creating
-                       the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
-                       the typical use is auto_groups=False.
+                        the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
+                        the typical use is auto_groups=False.
                 overwrite (boolean): parameter for overwriting/not overwriting the file
-                meshPart: a part of mesh (group, sub-mesh) to export instead of the mesh
-                autoDimension if @c True (default), a space dimension of a MED mesh can be either
-                       - 1D if all mesh nodes lie on OX coordinate axis, or
-                       - 2D if all mesh nodes lie on XOY coordinate plane, or
-                       - 3D in the rest cases.
+                meshPart: a part of mesh (:class:`sub-mesh, group or filter <SMESH.SMESH_IDSource>`) to export instead of the mesh
+                autoDimension: if *True* (default), a space dimension of a MED mesh can be either
+
+                        - 1D if all mesh nodes lie on OX coordinate axis, or
+                        - 2D if all mesh nodes lie on XOY coordinate plane, or
+                        - 3D in the rest cases.
+
                         If *autoDimension* is *False*, the space dimension is always 3.
                 fields: list of GEOM fields defined on the shape to mesh.
                 geomAssocFields: each character of this string means a need to export a 
@@ -2366,7 +2370,7 @@ class Mesh(metaclass = MeshMeta):
                         - 3D in the rest cases.
 
                         If **autoDimension** is *False*, the space dimension is always 3.
-		"""
+                """
 
         print("WARNING: ExportToMEDX() is deprecated, use ExportMED() instead")
         # process positional arguments
@@ -6311,7 +6315,7 @@ class Mesh(metaclass = MeshMeta):
                 a :class:`Mesh`, elements of highest dimension are duplicated
             theGroupName: a name of group to contain the generated elements.
                 If a group with such a name already exists, the new elements
-                are added to the existng group, else a new group is created.
+                are added to the existing group, else a new group is created.
                 If *theGroupName* is empty, new elements are not added
                 in any group.
 
@@ -7053,7 +7057,6 @@ class algoCreator:
             algoType = sorted( self.algoTypeToClass.keys() )[0]
         if algoType in self.algoTypeToClass:
             #print("Create algo",algoType)
-
             return self.algoTypeToClass[ algoType ]( self.mesh, shape )
         raise RuntimeError( "No class found for algo type %s" % algoType)
         return None
