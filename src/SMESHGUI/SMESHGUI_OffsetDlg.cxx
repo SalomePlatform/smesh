@@ -350,8 +350,9 @@ bool SMESHGUI_OffsetDlg::ClickOnApply()
     QStringList aParameters;
     aParameters << SpinBox->text();
 
-    int actionButton = ActionGroup->checkedId();
-    bool makeGroups = ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() );
+    int  actionButton = ActionGroup->checkedId();
+    bool copyElements = ( actionButton == COPY_ELEMS_BUTTON );
+    bool   makeGroups = ( MakeGroupsCheck->isEnabled() && MakeGroupsCheck->isChecked() );
     SMESH::ListOfGroups_var groups;
     SMESH::SMESH_Mesh_var mesh;
     QStringList anEntryList;
@@ -360,17 +361,20 @@ bool SMESHGUI_OffsetDlg::ClickOnApply()
       switch ( actionButton ) {
 
       case MOVE_ELEMS_BUTTON:
+        makeGroups = true;
         if ( CheckBoxMesh->isChecked() )
           for ( int i = 0; i < myObjects.count(); i++ ) {
             SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
             myMeshes[i]->SetParameters( aParameters.join( ":" ).toLatin1().constData() );
-            mesh = aMeshEditor->Offset( myObjects[i], offsetValue, true, "", groups.out() );
+            mesh = aMeshEditor->Offset( myObjects[i], offsetValue, makeGroups,
+                                        copyElements, "", groups.out() );
           }
         else {
           SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
           SMESH::IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::FACE);
           myMeshes[0]->SetParameters( aParameters.join( ":" ).toLatin1().constData() );
-          mesh = aMeshEditor->Offset( src, offsetValue, true, "", groups.out() );
+          mesh = aMeshEditor->Offset( src, offsetValue, makeGroups,
+                                      copyElements, "", groups.out() );
         }
         break;
 
@@ -379,13 +383,15 @@ bool SMESHGUI_OffsetDlg::ClickOnApply()
           for ( int i = 0; i < myObjects.count(); i++ ) {
             SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
             myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
-            mesh = aMeshEditor->Offset( myObjects[i], offsetValue, makeGroups, "", groups.out() );
+            mesh = aMeshEditor->Offset( myObjects[i], offsetValue, makeGroups,
+                                        copyElements, "", groups.out() );
           }
         else {
           SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
           SMESH::IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::FACE );
           myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
-          mesh = aMeshEditor->Offset( src, offsetValue, makeGroups, "", groups.out() );
+          mesh = aMeshEditor->Offset( src, offsetValue, makeGroups,
+                                      copyElements, "", groups.out() );
         }
         break;
 
@@ -397,7 +403,7 @@ bool SMESHGUI_OffsetDlg::ClickOnApply()
               SMESH::UniqueMeshName( LineEditNewMesh->text().replace( "*", myObjectsNames[i] ));
             SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditor();
             myMeshes[i]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
-            mesh = aMeshEditor->Offset( myObjects[i], offsetValue, makeGroups,
+            mesh = aMeshEditor->Offset( myObjects[i], offsetValue, makeGroups, copyElements,
                                         aName.toLatin1().data(), groups.out() );
             if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ))
               anEntryList.append( aSObject->GetID().c_str() );
@@ -407,7 +413,7 @@ bool SMESHGUI_OffsetDlg::ClickOnApply()
           SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditor();
           myMeshes[0]->SetParameters(aParameters.join( ":" ).toLatin1().constData());
           SMESH::IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::FACE );
-          mesh = aMeshEditor->Offset( src, offsetValue, makeGroups,
+          mesh = aMeshEditor->Offset( src, offsetValue, makeGroups, copyElements,
                                       LineEditNewMesh->text().toLatin1().data(), groups.out() );
           if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( mesh ) )
             anEntryList.append( aSObject->GetID().c_str() );
@@ -907,7 +913,7 @@ void SMESHGUI_OffsetDlg::onDisplaySimulation( bool toDisplayPreview )
           for ( int i = 0; i < myObjects.count(); i++ )
           {
             SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[i]->GetMeshEditPreviewer();
-            mesh = aMeshEditor->Offset( myObjects[i], offsetValue, false, "", groups.out() );
+            mesh = aMeshEditor->Offset( myObjects[i], offsetValue, false, false, "", groups.out() );
             aMeshPreviewStruct << aMeshEditor->GetPreviewData();
           }
         else
@@ -920,7 +926,7 @@ void SMESHGUI_OffsetDlg::onDisplaySimulation( bool toDisplayPreview )
 
           SMESH::SMESH_MeshEditor_var aMeshEditor = myMeshes[0]->GetMeshEditPreviewer();
           SMESH::IDSource_wrap src = aMeshEditor->MakeIDSource(anElementsId, SMESH::FACE);
-          mesh = aMeshEditor->Offset( src, offsetValue, false, "", groups.out() );
+          mesh = aMeshEditor->Offset( src, offsetValue, false, false, "", groups.out() );
           aMeshPreviewStruct << aMeshEditor->GetPreviewData();
         }
         setSimulationPreview(aMeshPreviewStruct);

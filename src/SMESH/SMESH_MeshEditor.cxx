@@ -6741,6 +6741,7 @@ SMESH_MeshEditor::PGroupIDs SMESH_MeshEditor::Offset( TIDSortedElemSet & theElem
                                                       const double       theValue,
                                                       SMESH_Mesh*        theTgtMesh,
                                                       const bool         theMakeGroups,
+                                                      const bool         theCopyElements,
                                                       const bool         theFixSelfIntersection)
 {
   SMESHDS_Mesh*    meshDS = GetMeshDS();
@@ -6757,6 +6758,18 @@ SMESH_MeshEditor::PGroupIDs SMESH_MeshEditor::Offset( TIDSortedElemSet & theElem
     ( SMESH_MeshAlgos::MakeOffset( eIt, *meshDS, theValue,
                                    theFixSelfIntersection,
                                    new2OldFaces, new2OldNodes ));
+  if ( offsetMesh->NbElements() == 0 )
+    return PGroupIDs(); // MakeOffset() failed
+
+
+  if ( theTgtMesh == myMesh && !theCopyElements )
+  {
+    // clear the source elements
+    if ( theElements.empty() ) eIt = meshDS->elementsIterator( SMDSAbs_Face );
+    else                       eIt = SMESHUtils::elemSetIterator( theElements );
+    while ( eIt->more() )
+      meshDS->RemoveFreeElement( eIt->next(), 0 );
+  }
 
   offsetMesh->Modified();
   offsetMesh->CompactMesh(); // make IDs start from 1
@@ -12883,7 +12896,7 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
         tgtNodes.resize( srcNodes.size() );
         for ( inode = 0; inode < srcNodes.size(); ++inode )
           tgtNodes[inode] = getNodeWithSameID( tgtMeshDS, srcNodes[inode] );
-        if ( aroundElements && tgtEditor.GetMeshDS()->FindElement( tgtNodes,
+        if ( /*aroundElements && */tgtEditor.GetMeshDS()->FindElement( tgtNodes,
                                                                    missType,
                                                                    /*noMedium=*/false))
           continue;
@@ -12894,7 +12907,7 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
       for ( size_t i = 0; i < missingBndElems.size(); ++i )
       {
         TConnectivity& nodes = missingBndElems[ i ];
-        if ( aroundElements && tgtEditor.GetMeshDS()->FindElement( nodes,
+        if ( /*aroundElements && */tgtEditor.GetMeshDS()->FindElement( nodes,
                                                                    missType,
                                                                    /*noMedium=*/false))
           continue;

@@ -482,6 +482,7 @@ public:
   SMESH::SMESH_Mesh_ptr Offset( SMESH::SMESH_IDSource_ptr theObject,
                                 CORBA::Double             Value,
                                 CORBA::Boolean            CopyGroups,
+                                CORBA::Boolean            CopyElements,
                                 const char*               MeshName,
                                 SMESH::ListOfGroups_out   Groups)
     throw (SALOME::SALOME_Exception);

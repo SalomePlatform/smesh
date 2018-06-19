@@ -36,7 +36,7 @@ This information can be defined using either of two hypotheses:
 .. centered::
 	*"Distribution of layers"* hypothesis
 
-*Distribution of layers* hypothesis allows using any of 
+*Distribution of layers* hypothesis allows using most of 
 :ref:`1D Hypotheses <a1d_meshing_hypo_page>` to define
 the distribution of mesh layers.
 

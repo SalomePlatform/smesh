@@ -4034,6 +4034,7 @@ SMESH_MeshEditor_i::ScaleMakeMesh(SMESH::SMESH_IDSource_ptr  theObject,
 SMESH::SMESH_Mesh_ptr SMESH_MeshEditor_i::Offset( SMESH::SMESH_IDSource_ptr theObject,
                                                   CORBA::Double             theValue,
                                                   CORBA::Boolean            theCopyGroups,
+                                                  CORBA::Boolean            theCopyElements,
                                                   const char*               theMeshName,
                                                   SMESH::ListOfGroups_out   theGroups)
   throw (SALOME::SALOME_Exception)
@@ -4059,7 +4060,9 @@ SMESH::SMESH_Mesh_ptr SMESH_MeshEditor_i::Offset( SMESH::SMESH_IDSource_ptr theO
       TPreviewMesh * tmpMesh = getPreviewMesh();
       tgtMesh = tmpMesh;
       tmpMesh->Copy( elements, copyElements );
+      elements.swap( copyElements );
       theCopyGroups = false;
+      theCopyElements = false;
     }
     else
     {
@@ -4068,26 +4071,39 @@ SMESH::SMESH_Mesh_ptr SMESH_MeshEditor_i::Offset( SMESH::SMESH_IDSource_ptr theO
       SMESH_Mesh_i* mesh_i = SMESH::DownCast<SMESH_Mesh_i*>( mesh_var );
       tgtMesh = & mesh_i->GetImpl();
     }
-    groupIds = getEditor().Offset( elements, theValue, tgtMesh, theCopyGroups, !myIsPreviewMode );
+    groupIds = getEditor().Offset( elements, theValue, tgtMesh,
+                                   theCopyGroups, theCopyElements, !myIsPreviewMode );
 
     tgtMesh->GetMeshDS()->Modified();
   }
 
   if ( myIsPreviewMode )
   {
-    getPreviewMesh()->Remove( SMESHUtils::elemSetIterator( copyElements ));
+    //getPreviewMesh()->Remove( SMESHUtils::elemSetIterator( copyElements ));
   }
   else
   {
     theGroups = theCopyGroups ? getGroups( groupIds.get() ) : new SMESH::ListOfGroups;
 
+    if ( *theMeshName && mesh_var->NbFaces() == 0 )
+    {
+      // new mesh empty, remove it
+      SMESH_Gen_i*        smesh = SMESH_Gen_i::GetSMESHGen();
+      SALOMEDS::Study_var study = smesh->GetCurrentStudy();
+      SALOMEDS::StudyBuilder_var builder = study->NewBuilder();
+      SALOMEDS::SObject_wrap      meshSO = smesh->ObjectToSObject( study, mesh_var );
+      builder->RemoveObjectWithChildren( meshSO );
+      THROW_SALOME_CORBA_EXCEPTION("Offset failed", SALOME::INTERNAL_ERROR);
+    }
+
     // result of Offset() is a tuple (mesh, groups)
     if ( mesh_var->_is_nil() ) pyDump << myMesh_i->_this() << ", ";
     else                       pyDump << mesh_var          << ", ";
-    pyDump << theGroups << " = "
-           << this << ".Offset( "
+    pyDump << theGroups << " = " << this << ".Offset( "
+           << theObject << ", "
            << theValue << ", "
            << theCopyGroups << ", "
+           << theCopyElements << ", "
            << "'" << theMeshName<< "')";
   }
 

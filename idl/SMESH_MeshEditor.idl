@@ -691,6 +691,7 @@ module SMESH
     SMESH_Mesh Offset(in SMESH_IDSource theObject,
                       in double         Value,
                       in boolean        CopyGroups,
+                      in boolean        CopyElements,
                       in string         MeshName,
                       out ListOfGroups  Groups)
       raises (SALOME::SALOME_Exception);

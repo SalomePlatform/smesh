@@ -682,10 +682,9 @@ namespace
           dot *= -1;
         if ( dot * theSign < 0 )
         {
-          useOneNormal = true;
-          // gp_XYZ p1 = oldXYZ + faces[ i ].Norm()     * theOffset;
-          // gp_XYZ p2 = oldXYZ + faces[ iPrev ].Norm() * theOffset;
-          // useOneNormal = ( p1 - p2 ).SquareModulus() > theTol * theTol;
+          gp_XYZ p1 = oldXYZ + faces[ i ].Norm()     * theOffset;
+          gp_XYZ p2 = oldXYZ + faces[ iPrev ].Norm() * theOffset;
+          useOneNormal = ( p1 - p2 ).SquareModulus() > 1e-12;
         }
       }
       if ( useOneNormal && theNewNode->isMarked() )

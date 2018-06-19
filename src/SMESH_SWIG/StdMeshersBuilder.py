@@ -1156,7 +1156,7 @@ class StdMeshersBuilder_Projection3D(Mesh_Algorithm):
 
 class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
     """
-    Defines a Prism 3D algorithm, which is either "Extrusion 3D" or "Radial Prism" depending on geometry
+    Defines a Prism 3D algorithm, which is either "Extrusion 3D" or "Radial Prism" depending on geometry.
     It is created by calling smeshBuilder.Mesh.Prism(geom=0)
     """
     
@@ -1367,10 +1367,11 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
 
 class StdMeshersBuilder_RadialPrism3D(StdMeshersBuilder_Prism3D):
     """
-    Defines Radial Prism 3D algorithm
-    It is created by calling smeshBuilder.Mesh.Prism(geom=0)
+    Defines Radial Prism 3D algorithm.
+    It is created by calling smeshBuilder.Mesh.Prism(geom=0).
+    See :class:`StdMeshersBuilder_Prism3D` for methods defining distribution of mesh layers
+    build between the inner and outer shells.
     """
-    
 
     meshMethod = "Prism"
     """

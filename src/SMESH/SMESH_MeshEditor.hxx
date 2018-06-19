@@ -469,6 +469,7 @@ public:
                     const double       theValue,
                     SMESH_Mesh*        theTgtMesh,
                     const bool         theMakeGroups,
+                    const bool         theCopyElements,
                     const bool         theFixSelfIntersection);
   // Make an offset mesh from a source 2D mesh
 
