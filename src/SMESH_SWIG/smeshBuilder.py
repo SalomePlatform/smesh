@@ -6038,7 +6038,7 @@ class Mesh(metaclass = MeshMeta):
     def FindCoincidentNodesOnPart (self, SubMeshOrGroup, Tolerance,
                                    exceptNodes=[], SeparateCornerAndMediumNodes=False):
         """
-        Find groups of ajacent nodes within Tolerance.
+        Find groups of adjacent nodes within Tolerance.
 
         Parameters:
             Tolerance: the value of tolerance

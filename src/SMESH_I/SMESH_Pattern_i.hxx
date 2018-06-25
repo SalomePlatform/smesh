@@ -20,7 +20,7 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
+//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's classes
 // File      : SMESH_Pattern_i.hxx
 // Created   : Fri Aug 20 16:03:15 2004
 // Author    : Edward AGAPOV (eap)

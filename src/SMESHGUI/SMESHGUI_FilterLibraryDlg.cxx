@@ -892,7 +892,7 @@ void SMESHGUI_FilterLibraryDlg::enableMainButtons()
 
 //=======================================================================
 // name    : SMESHGUI_FilterLibraryDlg::createFilter
-// Purpose : Cerate filter in accordance with library
+// Purpose : Create filter in accordance with library
 //=======================================================================
 SMESH::Filter_ptr SMESHGUI_FilterLibraryDlg::createFilter(const int theType)
 {

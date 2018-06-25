@@ -20,7 +20,7 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
+//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's classes
 //  File   : StdMeshers_ImportSource1D_i.cxx
 //  Module : SMESH
 //

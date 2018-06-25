@@ -74,7 +74,7 @@ SMESHGUI* SMESHGUI_Operation::getSMESHGUI() const
 
 //=======================================================================
 // name    : startOperation
-// Purpose : Start opeartion
+// Purpose : Start operation
 //=======================================================================
 void SMESHGUI_Operation::startOperation()
 {

@@ -654,7 +654,7 @@ namespace // internal utils
 
   //================================================================================
   /*!
-   * \brief Consturct ElementBndBoxTree of Poly_Triangulation of a FACE
+   * \brief Construct ElementBndBoxTree of Poly_Triangulation of a FACE
    */
   //================================================================================
 

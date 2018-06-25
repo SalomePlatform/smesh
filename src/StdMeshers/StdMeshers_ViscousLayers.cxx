@@ -1099,7 +1099,7 @@ namespace VISCOUS_3D
   /*!
    * \brief Class of temporary mesh face.
    * We can't use SMDS_FaceOfNodes since it's impossible to set it's ID which is
-   * needed because SMESH_ElementSearcher internaly uses set of elements sorted by ID
+   * needed because SMESH_ElementSearcher internally uses set of elements sorted by ID
    */
   struct _TmpMeshFace : public SMDS_PolygonalFaceOfNodes
   {

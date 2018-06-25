@@ -1790,7 +1790,7 @@ void SMESH_MeshAlgos::GetBarycentricCoords( const gp_XY& p,
   const double t11 = T22, t12 = -T12, t21 = -T21, t22 = T11;
   // vector
   const double r11 = p.X()-t2.X(), r12 = p.Y()-t2.Y();
-  // barycentric coordinates: mutiply matrix by vector
+  // barycentric coordinates: multiply matrix by vector
   bc0 = (t11 * r11 + t12 * r12)/Tdet;
   bc1 = (t21 * r11 + t22 * r12)/Tdet;
 }

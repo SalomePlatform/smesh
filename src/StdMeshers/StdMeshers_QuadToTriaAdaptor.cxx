@@ -174,7 +174,7 @@ namespace
                PrmJ->GetNodeIndex( otherFaceNode ) >= 0 ))
           continue; // f is a base quadrangle
 
-        // check projections of face direction (baOFN) to triange normals (nI and nJ)
+        // check projections of face direction (baOFN) to triangle normals (nI and nJ)
         gp_Vec baOFN( base2, SMESH_TNodeXYZ( otherFaceNode ));
         if ( nI * baOFN > 0 && nJ * baOFN > 0 &&
              baI* baOFN > 0 && baJ* baOFN > 0 ) // issue 0023212

@@ -20,7 +20,7 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
+//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's classes
 //  File   : StdMeshers_LengthFromEdges_i.cxx
 //           Moved here from SMESH_LengthFromEdges_i.cxx
 //  Author : Nadir BOUHAMOU CEA/DEN, Paul RASCLE, EDF

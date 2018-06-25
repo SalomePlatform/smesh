@@ -50,7 +50,7 @@ This is the main remeshing Option.  SurfOpt always does quality improvement. It 
    - **Geometrical Mesh : Coarsening** 
 
      The given surface triangulation is modified in such a way that the distance between the elements in the final mesh 
-     and those of the initial one is bounded by a user specfied tolerance value.
+     and those of the initial one is bounded by a user specified tolerance value.
      One should use this option, to coarsen when a purely geometrical mesh is needed. (a mesh that keeps and obeys its geometric features only.) 
      The meshes obtained with this option are usually not suitable for computation because anisotropic elements may be generated
 
@@ -99,7 +99,7 @@ it can be :
     of the bounding box longest diagonal. 
     By default, the parameter is set to 0.001 and the maximum deviation is then set to 0.001 x s,  
     which is equivalent to say that, for a bounding box of 1 meter, the maximal deviation is 1 mm.
-  - absolute : the maximal chordal deviation is the parameter itself. eg if the parameter equals 2, the maximal chordal deviation will be 2 (mm if the point coordonates are given in mm).
+  - absolute : the maximal chordal deviation is the parameter itself. eg if the parameter equals 2, the maximal chordal deviation will be 2 (mm if the point coordinates are given in mm).
 
 Following that criterion:
   - if the chordal deviation epsilon is smaller than epsilon max, it is acceptable to remove the considered point.

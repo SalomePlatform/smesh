@@ -191,7 +191,7 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
           case 51: // Plane Strain Linear Triangle
           case 61: // Plate Linear Triangle
           case 74: // Membrane Linear Triangle
-          case 81: // Axisymetric Solid Linear Triangle
+          case 81: // Axisymmetric Solid Linear Triangle
           case 91: // Thin Shell Linear Triangle
             anElement = myMesh->AddFaceWithID(aRec.node_labels[0],
                                               aRec.node_labels[1],
@@ -203,7 +203,7 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
           case 52: //  Plane Strain Parabolic Triangle
           case 62: //  Plate Parabolic Triangle
           case 72: //  Membrane Parabolic Triangle
-          case 82: //  Axisymetric Solid Parabolic Triangle
+          case 82: //  Axisymmetric Solid Parabolic Triangle
           case 92: //  Thin Shell Parabolic Triangle
             if ( aRec.node_labels.size() == 7 )
               anElement = myMesh->AddFaceWithID(aRec.node_labels[0],
@@ -228,7 +228,7 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
           case 54: // Plane Strain Linear Quadrilateral
           case 64: // Plate Linear Quadrilateral
           case 71: // Membrane Linear Quadrilateral
-          case 84: // Axisymetric Solid Linear Quadrilateral
+          case 84: // Axisymmetric Solid Linear Quadrilateral
           case 94: // Thin Shell Linear Quadrilateral
             anElement = myMesh->AddFaceWithID(aRec.node_labels[0],
                                               aRec.node_labels[1],
@@ -241,7 +241,7 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
           case 55: // Plane Strain Parabolic Quadrilateral
           case 65: // Plate Parabolic Quadrilateral
           case 75: // Membrane Parabolic Quadrilateral
-          case 85: // Axisymetric Solid Parabolic Quadrilateral
+          case 85: // Axisymmetric Solid Parabolic Quadrilateral
           case 95: // Thin Shell Parabolic Quadrilateral
             if ( aRec.node_labels.size() == 9 )
               anElement = myMesh->AddFaceWithID(aRec.node_labels[0],

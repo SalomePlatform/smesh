@@ -277,7 +277,7 @@ bool StdMeshers_RadialPrism_3D::Compute(SMESH_Mesh& aMesh, const TopoDS_Shape& a
 /*!
  * \brief Create a column of nodes from outNode to inNode
   * \param n2ColMap - map of node columns to add a created column
-  * \param outNode - botton node of a column
+  * \param outNode - bottom node of a column
   * \param inNode - top node of a column
   * \retval const TNodeColumn* - a new column pointer
  */

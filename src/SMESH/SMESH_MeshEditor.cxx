@@ -6354,7 +6354,7 @@ SMESH_MeshEditor::makeExtrElements(TIDSortedElemSet                  theElemSets
             gp_Vec aV01x( aP0x, aP1x );
             aTrsf.SetTranslation( aV01x );
 
-            // traslated point
+            // translated point
             aV1x = aV0x.Transformed( aTrsf );
             aPN1 = aPN0.Transformed( aTrsf );
 
@@ -12696,7 +12696,7 @@ bool SMESH_MeshEditor::Make2DMeshFrom3D()
       // add new face based on volume nodes
       if (aMesh->FindElement( nodes, SMDSAbs_Face, /*noMedium=*/false) )
       {
-        nbExisted++; // face already exsist
+        nbExisted++; // face already exists
       }
       else
       {

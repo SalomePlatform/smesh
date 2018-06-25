@@ -5,7 +5,7 @@
 Importing and exporting meshes
 ******************************
 
-In MESH there is a functionality allowing import/export of meshes in follwing formats:
+In MESH there is a functionality allowing import/export of meshes in the following formats:
 
 * **MED**,
 * **UNV** (I-DEAS 10),

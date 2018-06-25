@@ -29,7 +29,7 @@
 #  \}
 
 """
-This module provides a new class :class:`SMeshStudyTools` to facilitate the
+This module provides a class :class:`SMeshStudyTools` to facilitate the
 use of mesh objects in Salome study.
 """
 

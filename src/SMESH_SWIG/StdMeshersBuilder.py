@@ -1832,7 +1832,7 @@ class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
                     - Functions f(t) defining grid spacing at each point on grid axis. If there are
                         several functions, they must be accompanied by relative coordinates of
                         points dividing the whole shape into ranges where the functions apply; points
-                        coodrinates should vary within (0.0, 1.0) range. Parameter *t* of the spacing
+                        coordinates should vary within (0.0, 1.0) range. Parameter *t* of the spacing
                         function f(t) varies from 0.0 to 1.0 within a shape range. 
 
         Examples:

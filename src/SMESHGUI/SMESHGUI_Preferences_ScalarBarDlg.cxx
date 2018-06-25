@@ -848,7 +848,7 @@ void SMESHGUI_Preferences_ScalarBarDlg::initScalarBarFromResources()
   SUIT_ResourceMgr* mgr = SMESH::GetResourceMgr( mySMESHGUI );
   QString name;
   if (mgr){
-    // initialize from resoources
+    // initialize from resources
 
     // horizontal
     name = QString("scalar_bar_horizontal_%1");

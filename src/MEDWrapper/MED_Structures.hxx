@@ -133,7 +133,7 @@ namespace MED
   //! Define a base class which represents MED Family entity
   struct MEDWRAPPER_EXPORT TFamilyInfo: virtual TNameInfo
   {
-    PMeshInfo myMeshInfo; //!< A reference to correspondig MED Mesh
+    PMeshInfo myMeshInfo; //!< A reference to corresponding MED Mesh
     //! Get a reference to corresponding MED Mesh
     const PMeshInfo& GetMeshInfo() const { return myMeshInfo; }
 
@@ -186,7 +186,7 @@ namespace MED
   //! Define a parent class for all MED entities that describes mesh entities such as nodes and cells.
   struct MEDWRAPPER_EXPORT TElemInfo: virtual TBase
   {
-    PMeshInfo myMeshInfo; //!< A reference to correspondig MED Mesh
+    PMeshInfo myMeshInfo; //!< A reference to corresponding MED Mesh
     //! Get a reference to corresponding MED Mesh
     const PMeshInfo& GetMeshInfo() const { return myMeshInfo; }
 
@@ -289,7 +289,7 @@ namespace MED
     EGeometrieElement GetGeom() const { return myGeom; }
 
     EConnectivite myConnMode; //!< Defines connectivity mode
-    //! Find out in what connectivity the cells are writen
+    //! Find out in what connectivity the cells are written
     EConnectivite GetConnMode() const { return myConnMode; }
 
     virtual TInt GetConnDim() const = 0; //!< Gives step in the connectivity sequence
@@ -319,7 +319,7 @@ namespace MED
 
     //! Defines connectivity mode
     EConnectivite myConnMode; // eNOD|eDESC(eDESC not used)
-    //! Find out in what connectivity the cells are writen
+    //! Find out in what connectivity the cells are written
     EConnectivite GetConnMode() const { return myConnMode; }
 
     PElemNum myConn; //!< Table de connectivities
@@ -338,7 +338,7 @@ namespace MED
   //! Define a class representing MED_BALL structure element.
   /*!
     This could be a generic class for any structure element
-    holding any number of contant and variable attributes
+    holding any number of constant and variable attributes
     but it's too hard to implement
   */
   struct MEDWRAPPER_EXPORT TBallInfo:
@@ -368,7 +368,7 @@ namespace MED
 
     //! Defines connectivity mode
     EConnectivite myConnMode; // eNOD|eDESC(eDESC not used)
-    //! Find out in what connectivity the cells are writen
+    //! Find out in what connectivity the cells are written
     EConnectivite GetConnMode() const { return myConnMode; }
 
     PElemNum myConn; //!< Table de connectivities
@@ -499,7 +499,7 @@ namespace MED
   struct MEDWRAPPER_EXPORT TTimeStampInfo:
     virtual TBase
   {
-    PFieldInfo myFieldInfo; //!< A reference to correspondig MED Field
+    PFieldInfo myFieldInfo; //!< A reference to corresponding MED Field
     //! Get a reference to corresponding MED Field
     const PFieldInfo& GetFieldInfo() const { return myFieldInfo; }
 
@@ -773,9 +773,9 @@ namespace MED
   struct MEDWRAPPER_EXPORT TTimeStampValueBase:
     virtual TModeSwitchInfo
   {
-    //! A reference to correspondig MED TimeStamp
+    //! A reference to corresponding MED TimeStamp
     PTimeStampInfo myTimeStampInfo;
-    //!< Get a reference to correspondig MED TimeStamp
+    //!< Get a reference to corresponding MED TimeStamp
     const PTimeStampInfo& GetTimeStampInfo() const { return myTimeStampInfo; }
 
     //! Keeps set of MED EGeometrieElement which contains values for the timestamp

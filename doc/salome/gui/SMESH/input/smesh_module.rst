@@ -328,7 +328,7 @@ Hypothesis_Status
 
    .. py:attribute::  HYP_NOTCONFORM
 
-      not conform mesh is produced appling a hypothesis
+      not conform mesh is produced applying a hypothesis
 
    .. py:attribute::  HYP_ALREADY_EXIST
 

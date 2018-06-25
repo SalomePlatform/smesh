@@ -20,7 +20,7 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH : idl implementation based on 'SMESH' unit's calsses
+//  SMESH SMESH : idl implementation based on 'SMESH' unit's classes
 // File      : StdMeshers_ProjectionUtils.hxx
 // Created   : Thu Oct 26 15:37:24 2006
 // Author    : Edward AGAPOV (eap)

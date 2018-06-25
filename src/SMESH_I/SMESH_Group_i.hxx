@@ -176,7 +176,7 @@ class SMESH_I_EXPORT SMESH_GroupOnGeom_i:
 };
 
 // =========================
-// Group deined by filter
+// Group denied by filter
 // =========================
 
 class SMESH_I_EXPORT SMESH_GroupOnFilter_i:

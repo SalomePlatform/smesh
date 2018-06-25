@@ -63,7 +63,7 @@ class InputDialog(GenericDialog):
         GenericDialog.__init__(self, parent, name, modal)
         # Set up the user interface from Designer.
         self.__ui = Ui_InputFrame()
-        # BE CAREFULL HERE, the ui form is NOT drawn in the global
+        # BE CAREFUL HERE, the ui form is NOT drawn in the global
         # dialog (already containing some generic widgets) but in the
         # center panel created in the GenericDialog as a void
         # container for the form. The InputFrame form is supposed

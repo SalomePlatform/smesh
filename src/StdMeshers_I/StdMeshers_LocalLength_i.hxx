@@ -20,7 +20,7 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's calsses
+//  SMESH SMESH_I : idl implementation based on 'SMESH' unit's classes
 //  File   : StdMeshers_LocalLength_i.hxx
 //           Moved here from SMESH_LocalLength_i.hxx
 //  Author : Paul RASCLE, EDF

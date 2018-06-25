@@ -1261,7 +1261,7 @@ static int getTabDim (const QObject* tab, SMESHGUI_MeshDlg* dlg )
 /*!
  * \brief Create hypothesis
   * \param theHypType - hypothesis category (main or additional)
-  * \param theIndex - index of type of hypothesis to be cerated
+  * \param theIndex - index of type of hypothesis to be created
  *
  * Specifies dimension of hypothesis to be created (using sender() method),
  * specifies its type and calls method for hypothesis creation

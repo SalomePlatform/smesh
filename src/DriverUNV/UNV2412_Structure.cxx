@@ -122,10 +122,10 @@ using namespace UNV2412;
 //    74  Membrane Linear Triangle
 //    75  Membrane Parabolic Quadrilateral
 //    76  Membrane Cubic Quadrilateral
-//    81  Axisymetric Solid Linear Triangle
-//    82  Axisymetric Solid Parabolic Triangle
-//    84  Axisymetric Solid Linear Quadrilateral
-//    85  Axisymetric Solid Parabolic Quadrilateral
+//    81  Axisymmetric Solid Linear Triangle
+//    82  Axisymmetric Solid Parabolic Triangle
+//    84  Axisymmetric Solid Linear Quadrilateral
+//    85  Axisymmetric Solid Parabolic Quadrilateral
 //    91  Thin Shell Linear Triangle
 //    92  Thin Shell Parabolic Triangle
 //    93  Thin Shell Cubic Triangle
@@ -157,8 +157,8 @@ using namespace UNV2412;
 //    151 Node To Node Gap
 //    152 Node To Ground Gap
 //    161 Lumped Mass
-//    171 Axisymetric Linear Shell
-//    172 Axisymetric Parabolic Shell
+//    171 Axisymmetric Linear Shell
+//    172 Axisymmetric Parabolic Shell
 //    181 Constraint
 //    191 Plastic Cold Runner
 //    192 Plastic Hot Runner
@@ -175,8 +175,8 @@ using namespace UNV2412;
 //    213 Parabolic axisymmetric interface
 //    221 Linear rigid surface
 //    222 Parabolic rigin surface
-//    231 Axisymetric linear rigid surface
-//    232 Axisymentric parabolic rigid surface
+//    231 Axisymmetric linear rigid surface
+//    232 Axisymmetric parabolic rigid surface
 
 
 

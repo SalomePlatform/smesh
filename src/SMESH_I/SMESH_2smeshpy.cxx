@@ -2115,7 +2115,7 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
   else if ( method == "GetMeshOrder" || method == "SetMeshOrder" )
   {
     // make commands GetSubMesh() returning sub-meshes be before using sub-meshes
-    // by GetMeshOrder() and SetMeshOrder(), since by defalut GetSubMesh()
+    // by GetMeshOrder() and SetMeshOrder(), since by default GetSubMesh()
     // commands are moved at the end of the script
     TCollection_AsciiString subIDs =
       ( method == "SetMeshOrder" ) ? theCommand->GetArg(1) : theCommand->GetResultValue();
@@ -3041,7 +3041,7 @@ void _pyHypothesis::rememberCmdOfParameter( const Handle(_pyCommand) & theComman
   // parameters are discriminated by method name
   _AString method = theCommand->GetMethod();
   if ( myAccumulativeMethods.count( method ))
-    return; // this method adds values and not override the previus value
+    return; // this method adds values and not override the previous value
 
   // discriminate commands setting different parameters via one method
   // by passing parameter names like e.g. SetOption("size", "0.2")
@@ -4028,7 +4028,7 @@ bool _pyCommand::IsID( const TCollection_AsciiString& str )
 
 //================================================================================
 /*!
- * \brief Finds entries in a sting
+ * \brief Finds entries in a string
  */
 //================================================================================
 

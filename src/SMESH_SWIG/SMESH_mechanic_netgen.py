@@ -37,7 +37,7 @@ smesh =  smeshBuilder.New()
 
 # ---------------------------- GEOM --------------------------------------
 
-# ---- define contigous arcs and segment to define a closed wire
+# ---- define contiguous arcs and segment to define a closed wire
 p1   = geompy.MakeVertex( 100.0,   0.0,  0.0 )
 p2   = geompy.MakeVertex(  50.0,  50.0,  0.0 )
 p3   = geompy.MakeVertex( 100.0, 100.0,  0.0 )

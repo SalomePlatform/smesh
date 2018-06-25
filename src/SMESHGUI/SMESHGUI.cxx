@@ -3765,7 +3765,7 @@ void SMESHGUI::createPopupItem( const int id,
     popupMgr()->insert( action( id ), pId, 0 );
 
   QString lc = "$";        // VSR : instead of QtxPopupSelection::defEquality();
-  QString dc = "selcount"; // VSR : insetad of QtxPopupSelection::defSelCountParam()
+  QString dc = "selcount"; // VSR : instead of QtxPopupSelection::defSelCountParam()
   QString rule = "(%1) and (%2) and (%3)";
   rule = rule.arg( QString( "%1>0" ).arg( dc ) );
   if( clients.isEmpty() )

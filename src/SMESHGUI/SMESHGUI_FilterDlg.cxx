@@ -2057,7 +2057,7 @@ void SMESHGUI_FilterTable::addRow (Table* theTable, const int theType, const boo
   }
   myIsLocked = false;
 
-  // IPAL19372 - to prevent calling onCriterionChaged() slot before completion of setItem()
+  // IPAL19372 - to prevent calling onCriterionChanged() slot before completion of setItem()
   bool isSignalsBlocked = theTable->signalsBlocked();
   theTable->blockSignals( true );
 

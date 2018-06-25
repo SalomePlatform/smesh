@@ -120,7 +120,7 @@ When 2D elements are extruded, in addition to 3D elements segments are created o
 		* **Add** button |add| adds a scale factor to the list.   
 		* **Remove** button |rm| removes selected scale factors from the list.
 
-	* If you activate **Generate Groups** check-box, the **result elements** created from **selected elements** contained in groups will be included into new groups named by pattern "<old group name>_extruded" and "<old group name>_top". For example if a selected quadrangle is included in *g_Faces* group (see figures below) then result hexahedra will be included in *g_Faces_extruded* group and a quadrangle created at the "top" of extruded mesh will be included in *g_Faces_top group*.  
+	* If you activate **Generate Groups** check-box, the *result elements* created from *selected elements* contained in groups will be included into new groups named by pattern "<old group name>_extruded" and "<old group name>_top". For example if a selected quadrangle is included in *g_Faces* group (see figures below) then result hexahedra will be included in *g_Faces_extruded* group and a quadrangle created at the "top" of extruded mesh will be included in *g_Faces_top group*.  
 
 		.. image:: ../images/extrusion_groups.png
 			:align: center

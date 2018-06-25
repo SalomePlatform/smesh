@@ -4176,7 +4176,7 @@ namespace { // Structures used by FixQuadraticElements()
     //       |          Between _faces of link x2 two vertical faces are continues
     // x1----x2-----x3  and two horizontal faces are continues. We set vertical faces
     //       |          to _faces[0] and _faces[1] and horizontal faces to
-    //   v2  |   v3     _faces[2] and _faces[3] (or vise versa).
+    //   v2  |   v3     _faces[2] and _faces[3] (or vice versa).
     //       x4
 
     if ( _faces.empty() )

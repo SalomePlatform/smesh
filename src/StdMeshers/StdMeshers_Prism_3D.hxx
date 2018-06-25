@@ -250,7 +250,7 @@ class STDMESHERS_EXPORT StdMeshers_PrismAsBlock: public SMESH_Block
    *  \param columnsMap - node columns map of side face
    *  \param bottomEdge - the bootom edge
    *  \param sideFaceID - side face in-block ID
-   *  \retval bool - true if orienation coinside with in-block froward orienation
+   *  \retval bool - true if orientation coincide with in-block forward orientation
    */
   static bool IsForwardEdge(SMESHDS_Mesh*           meshDS,
                             const TParam2ColumnMap& columnsMap,

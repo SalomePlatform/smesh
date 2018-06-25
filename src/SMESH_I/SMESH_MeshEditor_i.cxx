@@ -4194,7 +4194,7 @@ FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr      theObject,
 
 //================================================================================
 /*!
- * \brief Finds nodes coinsident with Tolerance within Object excluding nodes within
+ * \brief Finds nodes coincident with Tolerance within Object excluding nodes within
  *        ExceptSubMeshOrGroups
  */
 //================================================================================

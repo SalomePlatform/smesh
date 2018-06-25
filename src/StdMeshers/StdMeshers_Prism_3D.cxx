@@ -3979,7 +3979,7 @@ bool StdMeshers_PrismAsBlock::GetLayersTransformation(vector<gp_Trsf> &         
       if ( p0.SquareDistance( pz ) > tol2 )
       {
         t = gp_Trsf();
-        return ( z == zSize - 1 ); // OK if fails only botton->top trsf
+        return ( z == zSize - 1 ); // OK if fails only bottom->top trsf
       }
     }
   }
@@ -3993,7 +3993,7 @@ bool StdMeshers_PrismAsBlock::GetLayersTransformation(vector<gp_Trsf> &         
   * \param columnsMap - node columns map of side face
   * \param bottomEdge - the bootom edge
   * \param sideFaceID - side face in-block ID
-  * \retval bool - true if orientation coinside with in-block forward orientation
+  * \retval bool - true if orientation coincide with in-block forward orientation
  */
 //================================================================================
 

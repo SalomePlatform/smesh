@@ -904,7 +904,7 @@ void SMESHGUI_MeshPatternDlg::onNew()
 
 //=======================================================================
 // name    : SMESHGUI_MeshPatternDlg::onReverse
-// Purpose : SLOT. Called when state of "Reverse order..." checkbox chaged
+// Purpose : SLOT. Called when state of "Reverse order..." checkbox changed
 //           Calculate new points of the mesh to be created. Redisplay preview
 //=======================================================================
 void SMESHGUI_MeshPatternDlg::onReverse (bool)

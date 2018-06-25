@@ -177,7 +177,7 @@ namespace StdMeshersGUI
     myStepSpin->SetStep( 1. );
     myStepSpin->SetValue( myStep = 1. );
 
-    // 3) Coodrinates/Spacing group
+    // 3) Coordinates/Spacing group
     QFrame*    csFrame = new QFrame( this );
     QVBoxLayout* scLay = new QVBoxLayout( csFrame );
     scLay->setMargin( 0 );
