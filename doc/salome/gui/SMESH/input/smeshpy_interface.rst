@@ -11,7 +11,7 @@ Documentation of SALOME Mesh module Python API is available in two forms:
 
 - :doc:`Structured documentation <modules>`, where all methods and classes are grouped by their functionality.
 
-- :ref:`Linear documentation <modindex>` grouped only by classes, declared in the :mod:`smeshBuilder` and :mod:`StdMeshersBuilder` Python packages.
+- :ref:`Linear documentation <modindex>` grouped only by classes, declared in the :mod:`smeshBuilder` Python module.
 
 With SALOME 7.2, the Python interface for Mesh has been slightly modified to offer new functionality.
 You may have to modify your scripts generated with SALOME 6 or older versions.
@@ -73,7 +73,7 @@ by calling *dir()* Python built-in function.
 
 All methods of the Mesh Group can be found in :ref:`tui_create_standalone_group` sample script.
 
-An example below demonstrates usage of the Python API for 3d mesh
+An example below demonstrates usage of the Python API for 3D mesh
 generation and for retrieving information on mesh nodes and elements.
 
 .. _example_3d_mesh:

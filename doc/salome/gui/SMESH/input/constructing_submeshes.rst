@@ -15,7 +15,9 @@ different meshing parameters than those assigned to the main shape.
 Structurally, the sub-mesh is a mesh on a certain sub-shape, or a group of
 sub-shapes, possibly generated using different meshing algorithms
 and/or hypotheses than those used to generate the mesh on other
-sub-shapes.
+sub-shapes. Elements generated on a sub-shape can be retrieved without
+explicit creation of a sub-mesh by creating a *Group on Geometry* using
+:ref:`Create Groups from Geometry <create_groups_from_geometry_page>` dialog.
 
 Creation of a sub-mesh allows to control individually meshing of a
 certain sub-shape, thus to get a locally coarser or finer mesh, to get

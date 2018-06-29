@@ -4567,6 +4567,7 @@ ElementsOnShape::Classifier::~Classifier()
 
 bool ElementsOnShape::Classifier::isOutOfSolid (const gp_Pnt& p)
 {
+  if ( isOutOfBox( p )) return true;
   mySolidClfr->Perform( p, myTol );
   return ( mySolidClfr->State() != TopAbs_IN && mySolidClfr->State() != TopAbs_ON );
 }
@@ -4578,6 +4579,7 @@ bool ElementsOnShape::Classifier::isOutOfBox (const gp_Pnt& p)
 
 bool ElementsOnShape::Classifier::isOutOfFace  (const gp_Pnt& p)
 {
+  if ( isOutOfBox( p )) return true;
   myProjFace.Perform( p );
   if ( myProjFace.IsDone() && myProjFace.LowerDistance() <= myTol )
   {
@@ -4594,6 +4596,7 @@ bool ElementsOnShape::Classifier::isOutOfFace  (const gp_Pnt& p)
 
 bool ElementsOnShape::Classifier::isOutOfEdge  (const gp_Pnt& p)
 {
+  if ( isOutOfBox( p )) return true;
   myProjEdge.Perform( p );
   return ! ( myProjEdge.NbPoints() > 0 && myProjEdge.LowerDistance() <= myTol );
 }

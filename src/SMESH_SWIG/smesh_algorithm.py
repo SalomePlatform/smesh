@@ -74,6 +74,7 @@ class Mesh_Algorithm:
         """
         Finds a hypothesis in the study by its type name and parameters.
         Finds only the hypotheses created in smeshBuilder engine.
+
         Returns: 
                 :class:`~SMESH.SMESH_Hypothesis`
         """

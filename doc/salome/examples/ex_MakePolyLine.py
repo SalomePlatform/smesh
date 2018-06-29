@@ -4,7 +4,7 @@ salome.salome_init()
 ### create geometry
 
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 
 Box_1 = geompy.MakeBoxDXDYDZ(200, 200, 200)
 geompy.addToStudy( Box_1, 'Box_1' )
@@ -13,7 +13,7 @@ geompy.addToStudy( Box_1, 'Box_1' )
 
 import SMESH
 from salome.smesh import smeshBuilder
-smesh = smeshBuilder.New(salome.myStudy)
+smesh = smeshBuilder.New()
 
 Mesh_1 = smesh.Mesh( Box_1 )
 Mesh_1.Segment().NumberOfSegments(15)

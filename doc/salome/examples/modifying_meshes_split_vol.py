@@ -4,9 +4,9 @@ import salome
 salome.salome_init()
 
 from salome.geom import geomBuilder
-geompy = geomBuilder.New(salome.myStudy)
+geompy = geomBuilder.New()
 from salome.smesh import smeshBuilder
-smesh = smeshBuilder.New(salome.myStudy)
+smesh = smeshBuilder.New()
 
 # mesh a hexahedral mesh
 box = geompy.MakeBoxDXDYDZ (1, 1, 1 )
