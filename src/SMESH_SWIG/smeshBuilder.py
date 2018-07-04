@@ -619,6 +619,8 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
         if not geompyD:
             from salome.geom import geomBuilder
             geompyD = geomBuilder.geom
+            if not geompyD:
+                geompyD = geomBuilder.New()
             pass
         self.geompyD=geompyD
         self.SetGeomEngine(geompyD)

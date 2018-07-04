@@ -195,7 +195,7 @@ PolySegment
 .. py:class:: PolySegment
 
    Define a cutting plane passing through two points. 
-   Used in :meth:`smeshBuilder.Mesh.MakePolyLine`
+   Used in :meth:`~smeshBuilder.Mesh.MakePolyLine`
 
    .. py:attribute:: node1ID1, node1ID2
 
@@ -545,7 +545,7 @@ Filter
       Return satisfying elements
 
       :param SMESH.SMESH_Mesh mesh: the mesh; 
-                                    it can be obtained via :meth:`smeshBuilder.Mesh.GetMesh`
+                                    it can be obtained via :meth:`~smeshBuilder.Mesh.GetMesh`
 
       :return: list of IDs
                                     
@@ -553,7 +553,7 @@ Filter
 
       Return satisfying elements. 
       A mesh to filter must be already set, either via :meth:`SetMesh` method 
-      or via ``mesh`` argument of :meth:`smeshBuilder.smeshBuilder.GetFilter`
+      or via ``mesh`` argument of :meth:`~smeshBuilder.smeshBuilder.GetFilter`
 
       :return: list of IDs
                                     
@@ -562,7 +562,7 @@ Filter
       Set mesh to filter
 
       :param SMESH.SMESH_Mesh mesh: the mesh;
-                                    it can be obtained via :meth:`smeshBuilder.Mesh.GetMesh`
+                                    it can be obtained via :meth:`~smeshBuilder.Mesh.GetMesh`
 
    .. py:function:: SetCriteria( criteria )
 
@@ -605,7 +605,7 @@ SMESH_MeshEditor
 
    .. py:class:: Extrusion_Error
 
-      Enumeration of errors of :meth:`smeshBuilder.Mesh.ExtrusionAlongPathObjects`
+      Enumeration of errors of :meth:`~smeshBuilder.Mesh.ExtrusionAlongPathObjects`
 
       .. py:attribute::
          EXTR_OK
@@ -777,7 +777,7 @@ SMESH_subMesh
    .. py:function:: GetMeshInfo()
 
       Return number of mesh elements of each :class:`SMESH.EntityType`.
-      Use :meth:`smeshBuilder.smeshBuilder.EnumToLong` to get an integer from 
+      Use :meth:`~smeshBuilder.smeshBuilder.EnumToLong` to get an integer from 
       an item of :class:`SMESH.EntityType`.
 
       :return: array of number of elements per :class:`SMESH.EntityType`
@@ -912,7 +912,7 @@ SMESH_IDSource
    * :class:`SMESH.SMESH_subMesh`
    * :class:`SMESH.SMESH_GroupBase`
    * :class:`SMESH.Filter`
-   * temporal ID source created by :meth:`smeshBuilder.Mesh.GetIDSource`
+   * temporal ID source created by :meth:`~smeshBuilder.Mesh.GetIDSource`
 
    .. py:function:: GetIDs()
 
@@ -921,13 +921,13 @@ SMESH_IDSource
    .. py:function:: GetMeshInfo()
 
       Return number of mesh elements of each :class:`SMESH.EntityType`.
-      Use :meth:`smeshBuilder.smeshBuilder.EnumToLong` to get an integer from 
+      Use :meth:`~smeshBuilder.smeshBuilder.EnumToLong` to get an integer from 
       an item of :class:`SMESH.EntityType`.
 
    .. py:function:: GetNbElementsByType()
 
       Return number of mesh elements of each :class:`SMESH.ElementType`.
-      Use :meth:`smeshBuilder.smeshBuilder.EnumToLong` to get an integer from 
+      Use :meth:`~smeshBuilder.smeshBuilder.EnumToLong` to get an integer from 
       an item of :class:`SMESH.ElementType`.
 
 
