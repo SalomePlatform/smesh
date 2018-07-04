@@ -1416,7 +1416,6 @@ def New( instance=None, instanceGeom=None):
         smesh = smeshBuilder.New()
 
     Parameters:
-        study:         SALOME study, generally obtained by salome.myStudy.
         instance:      CORBA proxy of SMESH Engine. If None, the default Engine is used.
         instanceGeom:  CORBA proxy of GEOM  Engine. If None, the default Engine is used.
     Returns:
@@ -1425,6 +1424,10 @@ def New( instance=None, instanceGeom=None):
     global engine
     global smeshInst
     global doLcc
+    if instance and isinstance( instance, SALOMEDS._objref_Study ):
+        import sys
+        sys.stderr.write("Warning: 'study' argument is no more needed in smeshBuilder.New(). Consider updating your script!!!\n\n")
+        instance = None
     engine = instance
     if engine is None:
         doLcc = True
