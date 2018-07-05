@@ -293,7 +293,7 @@ bool SMESHGUI_MeshOrderBox:: IsOrderChanged() const
 // =========================================================================================
 
 SMESHGUI_MeshOrderDlg::SMESHGUI_MeshOrderDlg(QWidget* theParent)
-: SMESHGUI_Dialog( theParent, true, false, OK | Cancel | Help )
+: SMESHGUI_Dialog( theParent, true, true, OK | Cancel | Help )
 {
   setWindowTitle( tr( "SMESH_MESHORDER_TITLE") );
   QFrame* main = mainFrame();

@@ -120,7 +120,7 @@ void SMESHGUI_MeshOrderOp::initDialog()
   if ( !myMgr->GetMeshOrder() ) {
     SUIT_MessageBox::information(desktop(),
                              tr("SMESH_INFORMATION"),
-                             tr("SMESH_NO_CONCURRENT_MESH"));
+                             tr("SMESH_NO_CONCURENT_MESH"));
     
     onCancel();
     return;
