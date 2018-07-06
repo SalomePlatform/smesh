@@ -143,7 +143,7 @@ namespace
            /*isPoly=*/0,/*nbCN=*/6,/*nbN=*/15,/*nbE=*/9,/*nbF=*/5 );
     p[ VTK_BIQUADRATIC_QUADRATIC_WEDGE ].
       Set( SMDSEntity_BiQuad_Penta, SMDSAbs_Volume, SMDSGeom_PENTA,
-           /*isPoly=*/0,/*nbCN=*/6,/*nbN=*/21,/*nbE=*/9,/*nbF=*/5 );
+           /*isPoly=*/0,/*nbCN=*/6,/*nbN=*/18,/*nbE=*/9,/*nbF=*/5 );
     p[ VTK_HEXAGONAL_PRISM].
       Set( SMDSEntity_Hexagonal_Prism, SMDSAbs_Volume, SMDSGeom_HEXAGONAL_PRISM,
            /*isPoly=*/0,/*nbCN=*/12,/*nbN=*/12,/*nbE=*/18,/*nbF=*/8 );
