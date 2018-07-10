@@ -159,9 +159,6 @@ SMESHGUI_EXPORT
   _PTR(SObject) GetMeshOrSubmesh( _PTR(SObject) );
 
 SMESHGUI_EXPORT
-  void ModifiedMesh( _PTR(SObject), bool, bool = false );
-
-SMESHGUI_EXPORT
   void ShowHelpFile( const QString& );
 
   /*!

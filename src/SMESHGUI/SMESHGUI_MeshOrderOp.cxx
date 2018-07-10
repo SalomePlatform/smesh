@@ -24,6 +24,7 @@
 
 #include "SMESHGUI.h"
 #include "SMESHGUI_Utils.h"
+#include "SMESHGUI_VTKUtils.h"
 #include "SMESHGUI_MeshUtils.h"
 
 // SALOME GUI includes
@@ -139,7 +140,10 @@ bool SMESHGUI_MeshOrderOp::onApply()
   bool res = myMgr ? myMgr->SetMeshOrder() : false;
 
   if( res )
+  {
     SMESHGUI::Modified();
+    SMESH::UpdateView();
+  }
 
   delete myMgr;
   myMgr = 0;
@@ -299,11 +303,6 @@ bool SMESHGUI_MeshOrderMgr::SetMeshOrder( const  ListListId& theListListIds )
         mapOfSubMesh[ sm->GetId() ] = SMESH::SMESH_subMesh::_duplicate(sm);
     }
   }
-
-  // is it enough to set modified attribute on root mesh objects only?
-  //  it is seems that modifcation flag will be set on child submeshes 
-  //  automatically  (see SMESH::ModifiedMesh for details)
-  SMESH::ModifiedMesh( aMeshSObj, false, false );
 
   SMESH::submesh_array_array_var meshOrder = new SMESH::submesh_array_array();
   meshOrder->length(theListListIds.count() );

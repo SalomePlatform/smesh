@@ -261,7 +261,7 @@ public:
    *        none mesh entity is bound to it
    */
   void SetIsAlwaysComputed(bool isAlCo);
-  bool IsAlwaysComputed() { return _alwaysComputed; }
+  bool IsAlwaysComputed() const { return _alwaysComputed; }
 
   bool SubMeshesComputed(bool * isFailedToCompute=0) const;
 

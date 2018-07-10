@@ -208,7 +208,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::ObjectToSObject(CORBA::Object_ptr theObject)
 //function : GetStudyPtr
 //purpose  : Get study from naming service
 //=======================================================================
-SALOMEDS::Study_ptr SMESH_Gen_i::getStudyServant()
+SALOMEDS::Study_var SMESH_Gen_i::getStudyServant()
 {
   return SALOMEDS::Study::_duplicate(KERNEL::getStudyServant());
 }
@@ -396,7 +396,7 @@ void SMESH_Gen_i::SetName(SALOMEDS::SObject_ptr theSObject,
 void SMESH_Gen_i::SetPixMap(SALOMEDS::SObject_ptr theSObject,
                             const char*           thePixMap)
 {
-  if ( !theSObject->_is_nil() && thePixMap && strlen( thePixMap ))
+  if ( !theSObject->_is_nil() && thePixMap && thePixMap && thePixMap[0] )
   {
     SALOMEDS::StudyBuilder_var aStudyBuilder = getStudyServant()->NewBuilder();
     SALOMEDS::GenericAttribute_wrap anAttr =
@@ -860,13 +860,86 @@ SALOMEDS::SObject_ptr
 }
 
 //=======================================================================
+//function : UpdateIcons
+//purpose  : update icons of a mesh and its children upon mesh modification
+//=======================================================================
+
+void SMESH_Gen_i::UpdateIcons( SMESH::SMESH_Mesh_ptr theMesh )
+{
+  SMESH_Mesh_i* mesh_i = SMESH::DownCast< SMESH_Mesh_i* >( theMesh );
+  if ( ! mesh_i )
+    return;
+
+  SALOMEDS::SObject_wrap so = ObjectToSObject( theMesh );
+  if ( so->_is_nil() )
+    return;
+
+  // set icon of the mesh
+  if ( mesh_i->NbNodes() == 0 )
+    SetPixMap( so, "ICON_SMESH_TREE_MESH_WARN" );
+  else if ( mesh_i->IsComputedOK() )
+    SetPixMap( so, "ICON_SMESH_TREE_MESH" );
+  else
+    SetPixMap( so, "ICON_SMESH_TREE_MESH_PARTIAL" );
+
+  // set icons of sub-objects
+  SALOMEDS::Study_var         study = getStudyServant();
+  SALOMEDS::ChildIterator_wrap iter = study->NewChildIterator( so );
+  for ( ; iter->More(); iter->Next() )
+  {
+    so = iter->Value(); // 1st level child - root of algos, hyps, sub-meshes or groups
+    if ( so->Tag() < SMESH::Tag_FirstSubMesh )
+      continue;
+
+    SALOMEDS::ChildIterator_wrap subIter = study->NewChildIterator( so );
+    for ( ; subIter->More(); subIter->Next() )
+    {
+      so = subIter->Value(); // 2nd level child - a sub-mesh or group
+
+      CORBA::Object_var           obj = SObjectToObject( so );
+      SMESH::SMESH_IDSource_var idSrc = SMESH::SMESH_IDSource::_narrow( obj );
+      if ( idSrc->_is_nil() )
+        continue;
+
+      SMESH::SMESH_GroupBase_var     grp = SMESH::SMESH_GroupBase::_narrow( obj );
+      SMESH::SMESH_GroupOnFilter_var gof = SMESH::SMESH_GroupOnFilter::_narrow( obj );
+      const bool         isGroup = !grp->_is_nil();
+      const bool isGroupOnFilter = !gof->_is_nil();
+
+      bool isEmpty = ( mesh_i->NbNodes() == 0 );
+      if ( !isEmpty )
+      {
+        if ( isGroupOnFilter ) // GetTypes() can be very long on GroupOnFilter!
+        {
+          SMESH::long_array_var nbByType = mesh_i->GetNbElementsByType();
+          isEmpty = ( nbByType[ grp->GetType() ] == 0 );
+        }
+        else
+        {
+          SMESH::array_of_ElementType_var elemTypes = idSrc->GetTypes();
+          isEmpty = ( elemTypes->length() == 0 );
+        }
+      }
+      if ( isEmpty )
+        SetPixMap( so, "ICON_SMESH_TREE_MESH_WARN");
+      else if ( !isGroup )
+        SetPixMap( so, "ICON_SMESH_TREE_MESH" );
+      else if ( isGroupOnFilter )
+        SetPixMap( so, "ICON_SMESH_TREE_GROUP_ON_FILTER" );
+      else
+        SetPixMap( so, "ICON_SMESH_TREE_GROUP" );
+    }
+  }
+}
+
+//=======================================================================
 //function : GetMeshOrSubmeshByShape
 //purpose  : 
 //=======================================================================
 
 SALOMEDS::SObject_ptr
-  SMESH_Gen_i::GetMeshOrSubmeshByShape (SMESH::SMESH_Mesh_ptr theMesh,
-                                        GEOM::GEOM_Object_ptr theShape)
+SMESH_Gen_i::GetMeshOrSubmeshByShape (SMESH::SMESH_Mesh_ptr theMesh,
+                                      GEOM::GEOM_Object_ptr theShape)
 {
   if(MYDEBUG) MESSAGE("GetMeshOrSubmeshByShape")
   SALOMEDS::SObject_wrap aMeshOrSubMesh;
@@ -1231,4 +1304,86 @@ char* SMESH_Gen_i::GetParameters(CORBA::Object_ptr theObject)
     }
   }
   return aResult._retn();
+}
+
+
+
+// ==============
+// Study context
+// ==============
+
+//=======================================================================
+//function : addObject
+//purpose  : register object in the internal map and return its id
+//=======================================================================
+
+int StudyContext::addObject( const std::string& theIOR )
+{
+  int nextId = getNextId();
+  mapIdToIOR.Bind( nextId, theIOR );
+  return nextId;
+}
+
+//=======================================================================
+//function : findId
+//purpose  : find the object id in the internal map by the IOR
+//=======================================================================
+
+int StudyContext::findId( const std::string& theIOR )
+{
+  TInt2StringMap::iterator imap;
+  for ( imap = mapIdToIOR.begin(); imap != mapIdToIOR.end(); ++imap ) {
+    if ( *imap == theIOR )
+      return imap.Iterator().Key();
+  }
+  return 0;
+}
+
+//=======================================================================
+//function : getIORbyId
+//purpose  : get object's IOR by id
+//=======================================================================
+
+std::string StudyContext::getIORbyId( const int theId )
+{
+  if ( mapIdToIOR.IsBound( theId ) )
+    return mapIdToIOR( theId );
+  return std::string();
+}
+
+//=======================================================================
+//function : getIORbyOldId
+//purpose  : get object's IOR by old id
+//=======================================================================
+
+std::string StudyContext::getIORbyOldId( const int theOldId )
+{
+  if ( mapIdToId.IsBound( theOldId ) )
+    return getIORbyId( mapIdToId( theOldId ));
+  return std::string();
+}
+
+//=======================================================================
+//function : mapOldToNew
+//purpose  : maps old object id to the new one (used when restoring data)
+//=======================================================================
+
+void StudyContext::mapOldToNew( const int oldId, const int newId )
+{
+  mapIdToId.Bind( oldId, newId );
+}
+
+//=======================================================================
+//function : getOldId
+//purpose  : get old id by a new one
+//=======================================================================
+
+int StudyContext::getOldId( const int newId )
+{
+  TInt2IntMap::iterator imap;
+  for ( imap = mapIdToId.begin(); imap != mapIdToId.end(); ++imap ) {
+    if ( *imap == newId )
+      return imap.Iterator().Key();
+  }
+  return 0;
 }

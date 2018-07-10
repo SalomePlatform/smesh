@@ -21,7 +21,6 @@
 
 # scripts / static
 SET(_bin_SCRIPTS
-  smesh.py
   ex00_all.py
   ex01_cube2build.py
   ex02_cube2primitive.py

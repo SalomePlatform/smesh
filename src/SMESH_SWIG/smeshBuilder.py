@@ -1823,9 +1823,6 @@ class Mesh(metaclass = MeshMeta):
             pass
         if salome.sg.hasDesktop():
             if not isinstance( refresh, list): # not a call from subMesh.Compute()
-                smeshgui = salome.ImportComponentGUI("SMESH")
-                smeshgui.Init()
-                smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), ok, (self.NbNodes()==0) )
                 if refresh: salome.sg.updateObjBrowser()
 
         return ok
@@ -1971,9 +1968,6 @@ class Mesh(metaclass = MeshMeta):
 
         self.mesh.Clear()
         if ( salome.sg.hasDesktop() ):
-            smeshgui = salome.ImportComponentGUI("SMESH")
-            smeshgui.Init()
-            smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), False, True )
             if refresh: salome.sg.updateObjBrowser()
 
     def ClearSubMesh(self, geomId, refresh=False):
@@ -1987,9 +1981,6 @@ class Mesh(metaclass = MeshMeta):
 
         self.mesh.ClearSubMesh(geomId)
         if salome.sg.hasDesktop():
-            smeshgui = salome.ImportComponentGUI("SMESH")
-            smeshgui.Init()
-            smeshgui.SetMeshIcon( salome.ObjectToID( self.mesh ), False, True )
             if refresh: salome.sg.updateObjBrowser()
 
     def AutomaticTetrahedralization(self, fineness=0):
@@ -6903,9 +6894,6 @@ class submeshProxy(SMESH._objref_SMESH_subMesh):
         ok = self.mesh.Compute( self.GetSubShape(),refresh=[] )
 
         if salome.sg.hasDesktop():
-            smeshgui = salome.ImportComponentGUI("SMESH")
-            smeshgui.Init()
-            smeshgui.SetMeshIcon( salome.ObjectToID( self ), ok, (self.GetNumberOfElements()==0) )
             if refresh: salome.sg.updateObjBrowser()
             pass
 

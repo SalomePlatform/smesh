@@ -349,7 +349,6 @@ namespace SMESH
   {
     if ( CORBA::is_nil( theArg ) )
       return *this << "None";
-    SMESH_Gen_i*          aSMESHGen = SMESH_Gen_i::GetSMESHGen();
     SALOMEDS::SObject_wrap aSObject = SMESH_Gen_i::ObjectToSObject(theArg);
     if(!aSObject->_is_nil())
     {

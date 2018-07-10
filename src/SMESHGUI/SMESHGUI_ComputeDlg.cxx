@@ -925,10 +925,6 @@ void SMESHGUI_BaseComputeOp::computeMesh()
 
     // NPAL16631: if ( !memoryLack )
     {
-      _PTR(SObject) sobj = SMESH::getStudy()->FindObjectID(myIObject->getEntry());
-      SMESH::ModifiedMesh( sobj,
-                           !computeFailed && aHypErrors.isEmpty(),
-                           myMesh->NbNodes() == 0);
       update( UF_ObjBrowser | UF_Model );
 
       // SHOW MESH

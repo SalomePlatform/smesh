@@ -631,12 +631,6 @@ namespace SMESH
       try {
         CORBA::String_var error;
         res = aMesh->AddHypothesis(aShapeObject, aHyp, error.out());
-        if (res < SMESH::HYP_UNKNOWN_FATAL) {
-          _PTR(SObject) aSH = SMESH::FindSObject(aHyp);
-          if (SM && aSH) {
-            SMESH::ModifiedMesh(SM, false, aMesh->NbNodes()==0);
-          }
-        }
         if (res > SMESH::HYP_OK) {
           wc.suspend();
           processHypothesisStatus(res, aHyp, true, error.in() );
@@ -668,11 +662,6 @@ namespace SMESH
         {
           CORBA::String_var error;
           res = aMesh->AddHypothesis( aShapeObject, aHyp, error.out() );
-          if (res < SMESH::HYP_UNKNOWN_FATAL)  {
-            _PTR(SObject) meshSO = SMESH::FindSObject(aMesh);
-            if (meshSO)
-              SMESH::ModifiedMesh(meshSO, false, aMesh->NbNodes()==0);
-          }
           if (res > SMESH::HYP_OK) {
             wc.suspend();
             processHypothesisStatus( res, aHyp, true, error.in() );
@@ -763,9 +752,6 @@ namespace SMESH
           }
           if ( _PTR(SObject) meshSO = SMESH::FindSObject(aMesh) )
           {
-            if ( res < SMESH::HYP_UNKNOWN_FATAL )
-              SMESH::ModifiedMesh(meshSO, false, aMesh->NbNodes()==0);
-
             if ( SMESH_Actor* actor = SMESH::FindActorByEntry( meshSO->GetID().c_str() ))
               if( actor->GetVisibility() )
                 actor->Update();

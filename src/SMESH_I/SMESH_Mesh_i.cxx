@@ -299,6 +299,9 @@ void SMESH_Mesh_i::Clear() throw (SALOME::SALOME_Exception)
   }
 
   TPythonDump() <<  SMESH::SMESH_Mesh_var(_this()) << ".Clear()";
+
+  SMESH::SMESH_Mesh_var mesh = _this();
+  _gen_i->UpdateIcons( mesh );
 }
 
 //================================================================================
@@ -594,6 +597,7 @@ SMESH_Mesh_i::AddHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
   if ( !SMESH_Hypothesis::IsStatusFatal(status) )
   {
     _gen_i->AddHypothesisToShape( mesh, aSubShape, anHyp );
+    _gen_i->UpdateIcons( mesh );
   }
   if(MYDEBUG) MESSAGE( " AddHypothesis(): status = " << status );
 
@@ -679,6 +683,7 @@ SMESH::Hypothesis_Status SMESH_Mesh_i::RemoveHypothesis(GEOM::GEOM_Object_ptr aS
   if ( !SMESH_Hypothesis::IsStatusFatal(status) )
   {
     _gen_i->RemoveHypothesisFromShape( mesh, aSubShape, anHyp );
+    _gen_i->UpdateIcons( mesh );
   }
   // Update Python script
   if(_impl->HasShapeToMesh())
@@ -2705,6 +2710,9 @@ void SMESH_Mesh_i::onHypothesisModified()
 {
   if ( _preMeshInfo )
     _preMeshInfo->ForgetOrLoad();
+
+  SMESH::SMESH_Mesh_var mesh = _this();
+  _gen_i->UpdateIcons( mesh );
 }
 
 //=============================================================================
@@ -4993,6 +5001,17 @@ void SMESH_Mesh_i::CreateGroupServants()
 
 //=============================================================================
 /*!
+ * \brief Return true if all sub-meshes are computed OK - to update an icon
+ */
+//=============================================================================
+
+bool SMESH_Mesh_i::IsComputedOK()
+{
+  return _impl->IsComputedOK();
+}
+
+//=============================================================================
+/*!
  * \brief Return groups cantained in _mapGroups by their IDs
  */
 //=============================================================================
@@ -5968,6 +5987,9 @@ TListOfListOfInt SMESH_Mesh_i::findConcurrentSubMeshes()
   mesh.SetMeshOrder( subMeshOrder );
   res = true;
   
+  SMESH::SMESH_Mesh_var me = _this();
+  _gen_i->UpdateIcons( me );
+
   return res;
 }
 

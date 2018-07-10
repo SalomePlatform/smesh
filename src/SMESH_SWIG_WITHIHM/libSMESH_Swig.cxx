@@ -144,9 +144,9 @@ namespace
       _PTR(Study) study = SMESH::getStudy();
       if ( study )
       {
-	sobject = study->FindObjectID( uid );
-	if ( !sobject )
-	  sobject = study->FindObjectIOR( uid );
+        sobject = study->FindObjectID( uid );
+        if ( !sobject )
+          sobject = study->FindObjectIOR( uid );
       }
     }
     return sobject;
@@ -168,26 +168,26 @@ namespace
     {
       if ( uid )
       {
-	ViewManagerList vms = app->viewManagers();
-	for ( int i = 0; i < vms.count() && !window; i++ )
-	{
-	  SUIT_ViewManager* vm = vms[i];
-	  QVector<SUIT_ViewWindow*> vws = vm->getViews();
-	  for ( int j = 0; j < vws.count() && !window; j++)
-	  {
-	    SUIT_ViewWindow* vw = vws[0];
-	    if ( uid == vw->getId() )
-	      window = dynamic_cast<SALOME_View*>( vm->getViewModel() );
-	  }
-	}
+        ViewManagerList vms = app->viewManagers();
+        for ( int i = 0; i < vms.count() && !window; i++ )
+        {
+          SUIT_ViewManager* vm = vms[i];
+          QVector<SUIT_ViewWindow*> vws = vm->getViews();
+          for ( int j = 0; j < vws.count() && !window; j++)
+          {
+            SUIT_ViewWindow* vw = vws[0];
+            if ( uid == vw->getId() )
+              window = dynamic_cast<SALOME_View*>( vm->getViewModel() );
+          }
+        }
       }
       else
       {
-	SUIT_ViewManager* vm = app->getViewManager( SVTK_Viewer::Type(), create );
-	if ( vm )
-	{ 
-	  window = dynamic_cast<SALOME_View*>( vm->getViewModel() );
-	}
+        SUIT_ViewManager* vm = app->getViewManager( SVTK_Viewer::Type(), create );
+        if ( vm )
+        { 
+          window = dynamic_cast<SALOME_View*>( vm->getViewModel() );
+        }
       }
     }
     return window;
@@ -209,11 +209,11 @@ namespace
       foreach( SUIT_ViewManager* vm, vms )
       {
         if ( vm && vm->getType() == SVTK_Viewer::Type() )
-	{
+        {
           SALOME_View* view = dynamic_cast<SALOME_View*>( vm->getViewModel() );
           if ( view )
-	    views << view;
-	}
+            views << view;
+        }
       }
     }
     return views;
@@ -255,44 +255,44 @@ namespace
     if ( actor )
     {
       actor->GetNodeColor( props.nodeColor.r,
-			   props.nodeColor.g,
-			   props.nodeColor.b );
+                           props.nodeColor.g,
+                           props.nodeColor.b );
       props.markerType = actor->GetMarkerType();
       props.markerScale = actor->GetMarkerScale();
       
       actor->GetEdgeColor( props.edgeColor.r,
-			   props.edgeColor.g,
-			   props.edgeColor.b );
+                           props.edgeColor.g,
+                           props.edgeColor.b );
       props.edgeWidth = qMax( (int)actor->GetLineWidth(), 1 );
       
       actor->GetSufaceColor( props.surfaceColor.r,
-			     props.surfaceColor.g,
-			     props.surfaceColor.b,
-			     props.surfaceColor.delta );
+                             props.surfaceColor.g,
+                             props.surfaceColor.b,
+                             props.surfaceColor.delta );
       
       actor->GetVolumeColor( props.volumeColor.r,
-			     props.volumeColor.g,
-			     props.volumeColor.b,
-			     props.volumeColor.delta );
+                             props.volumeColor.g,
+                             props.volumeColor.b,
+                             props.volumeColor.delta );
       
       actor->Get0DColor( props.elem0dColor.r,
-			 props.elem0dColor.g,
-			 props.elem0dColor.b );
+                         props.elem0dColor.g,
+                         props.elem0dColor.b );
       props.elem0dSize = qMax( (int)actor->Get0DSize(), 1 );
       
       actor->GetBallColor( props.ballColor.r,
-			   props.ballColor.g,
-			   props.ballColor.b );
+                           props.ballColor.g,
+                           props.ballColor.b );
       props.ballScale = qMax( actor->GetBallScale(), 1e-2 );
       
       actor->GetOutlineColor( props.outlineColor.r,
-			      props.outlineColor.g,
-			      props.outlineColor.b );
+                              props.outlineColor.g,
+                              props.outlineColor.b );
       props.outlineWidth = qMax( (int)actor->GetOutlineWidth(), 1 );
       
       actor->GetFacesOrientationColor( props.orientationColor.r,
-				       props.orientationColor.g,
-				       props.orientationColor.b );
+                                       props.orientationColor.g,
+                                       props.orientationColor.b );
       props.orientationScale = actor->GetFacesOrientationScale();
       props.orientation3d = actor->GetFacesOrientation3DVectors();
       
@@ -316,44 +316,44 @@ namespace
     if ( actor )
     {
       actor->SetNodeColor( props.nodeColor.r,
-			   props.nodeColor.g,
-			   props.nodeColor.b );
+                           props.nodeColor.g,
+                           props.nodeColor.b );
       if ( props.markerType != VTK::MT_USER )
-	actor->SetMarkerStd( props.markerType, props.markerScale );
+        actor->SetMarkerStd( props.markerType, props.markerScale );
       
       actor->SetEdgeColor( props.edgeColor.r,
-			   props.edgeColor.g,
-			   props.edgeColor.b );
+                           props.edgeColor.g,
+                           props.edgeColor.b );
       actor->SetLineWidth( qMax( (double)props.edgeWidth, 1. ) );
       
       actor->SetSufaceColor( props.surfaceColor.r,
-			     props.surfaceColor.g,
-			     props.surfaceColor.b,
-			     props.surfaceColor.delta );
+                             props.surfaceColor.g,
+                             props.surfaceColor.b,
+                             props.surfaceColor.delta );
       
       actor->SetVolumeColor( props.volumeColor.r,
-			     props.volumeColor.g,
-			     props.volumeColor.b,
-			     props.volumeColor.delta );
+                             props.volumeColor.g,
+                             props.volumeColor.b,
+                             props.volumeColor.delta );
       
       actor->Set0DColor( props.elem0dColor.r,
-			 props.elem0dColor.g,
-			 props.elem0dColor.b );
+                         props.elem0dColor.g,
+                         props.elem0dColor.b );
       actor->Set0DSize( qMax( (double)props.elem0dSize, 1. ) );
       
       actor->SetBallColor( props.ballColor.r,
-			   props.ballColor.g,
-			   props.ballColor.b );
+                           props.ballColor.g,
+                           props.ballColor.b );
       actor->SetBallScale( qMax( props.ballScale, 1e-2 ) );
       
       actor->SetOutlineColor( props.outlineColor.r,
-			      props.outlineColor.g,
-			      props.outlineColor.b );
+                              props.outlineColor.g,
+                              props.outlineColor.b );
       actor->SetOutlineWidth( qMax( (double)props.outlineWidth, 1. ) );
       
       actor->SetFacesOrientationColor( props.orientationColor.r,
-				       props.orientationColor.g,
-				       props.orientationColor.b );
+                                       props.orientationColor.g,
+                                       props.orientationColor.b );
       actor->SetFacesOrientationScale( props.orientationScale );
       actor->SetFacesOrientation3DVectors( props.orientation3d );
       
@@ -559,7 +559,7 @@ void SMESH_Swig::init()
       SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>( session->activeApplication() );
 
       if ( !SMESHGUI::GetSMESHGUI() )
-	app->loadModule( "Mesh" );
+        app->loadModule( "Mesh" );
     }
   };
 
@@ -584,13 +584,13 @@ const char* SMESH_Swig::publish(const char* ior, const char* name)
   if ( !CORBA::is_nil( object ) )
     {
       SALOMEDS::SObject_var sobject =
-	SMESHGUI::GetSMESHGen()->PublishInStudy( SALOMEDS::SObject::_nil(),
-						 object.in(),
-						 name );
+        SMESHGUI::GetSMESHGen()->PublishInStudy( SALOMEDS::SObject::_nil(),
+                                                 object.in(),
+                                                 name );
       if ( !CORBA::is_nil( sobject ) )
-	{
-	  uid = sobject->GetID();
-	}
+        {
+          uid = sobject->GetID();
+        }
       sobject->UnRegister();
     }
 
@@ -634,7 +634,7 @@ void SMESH_Swig::display(const char* uid, int viewUid, bool updateViewer)
     {
       SALOME_View* view = uid2wnd( myViewUid, true ); // create view if it's not present
       if ( view )
-	LightApp_Displayer::FindDisplayer( "Mesh", true )->Display( myUid, myIsUpdate, view );
+        LightApp_Displayer::FindDisplayer( "Mesh", true )->Display( myUid, myIsUpdate, view );
     }
   };
 
@@ -668,15 +668,15 @@ void SMESH_Swig::erase(const char* uid, int viewUid, bool updateViewer)
     {
       if ( myViewUid == -1 )
       {
-	QList<SALOME_View*> views = windows();
-	foreach( SALOME_View* view, views )
-	  LightApp_Displayer::FindDisplayer( "Mesh", true )->Erase( myUid, true, myIsUpdate, view );
+        QList<SALOME_View*> views = windows();
+        foreach( SALOME_View* view, views )
+          LightApp_Displayer::FindDisplayer( "Mesh", true )->Erase( myUid, true, myIsUpdate, view );
       }
       else
       {
-	SALOME_View* view = uid2wnd( myViewUid );
-	if ( view )
-	  LightApp_Displayer::FindDisplayer( "Mesh", true )->Erase( myUid, true, myIsUpdate, view );
+        SALOME_View* view = uid2wnd( myViewUid );
+        if ( view )
+          LightApp_Displayer::FindDisplayer( "Mesh", true )->Erase( myUid, true, myIsUpdate, view );
       }
     }
   };
@@ -703,7 +703,7 @@ void SMESH_Swig::update(const char* uid)
     virtual void Execute()
     {
       Handle(SALOME_InteractiveObject) io = 
-	new SALOME_InteractiveObject( myUid, "SMESH", "" );
+        new SALOME_InteractiveObject( myUid, "SMESH", "" );
       SMESH::Update( io, true );
     }
   };
@@ -775,7 +775,7 @@ public:
       QList<SALOME_View*> views = windows();
       foreach( SALOME_View* view, views )
       {
-	setProperties( view, myUid, myProps );
+        setProperties( view, myUid, myProps );
       }
     }
     else
@@ -867,7 +867,7 @@ public:
     {
       actor->SetPointsLabeled( myNumbering );
       if ( view )
-	view->Repaint();
+        view->Repaint();
     }
   }
 };
@@ -954,7 +954,7 @@ public:
     {
       actor->SetCellsLabeled( myNumbering );
       if ( view )
-	view->Repaint();
+        view->Repaint();
     }
   }
 };
@@ -1040,7 +1040,7 @@ public:
     {
       actor->SetRepresentation( myMode );
       if ( view )
-	view->Repaint();
+        view->Repaint();
     }
   }
 };
@@ -1125,11 +1125,11 @@ public:
     if ( actor )
     {
       if ( myShrink )
-	actor->SetShrink();
+        actor->SetShrink();
       else
-	actor->UnShrink();
+        actor->UnShrink();
       if ( view )
-	view->Repaint();
+        view->Repaint();
     }
   }
 };
@@ -1215,7 +1215,7 @@ public:
     {
       actor->SetOpacity( myOpacity );
       if ( view )
-	view->Repaint();
+        view->Repaint();
     }
   }
 };
@@ -1301,7 +1301,7 @@ public:
     {
       actor->SetFacesOriented( myShown );
       if ( view )
-	view->Repaint();
+        view->Repaint();
     }
   }
 };
@@ -1387,7 +1387,7 @@ public:
     {
       actor->SetEntityMode( myEntities );
       if ( view )
-	view->Repaint();
+        view->Repaint();
     }
   }
 };
@@ -1577,7 +1577,7 @@ void SMESH_Swig::UnSetHypothesis(const char* /*uid*/)
 const char* SMESH_Swig::AddSubMesh(const char* /*meshUid*/,
                                    const char* ior,
                                    int /*shapeType*/,
-				   const char* name)
+                                   const char* name)
 {
   deprecated("SMESH_Swig::AddSubMesh", "SMESH_Swig::publish");
   return publish( ior, name );
@@ -1597,7 +1597,7 @@ const char* SMESH_Swig::AddSubMeshOnShape(const char* /*meshUid*/,
                                           const char* /*shapeUid*/,
                                           const char* ior,
                                           int /*shapeType*/,
-					  const char* name)
+                                          const char* name)
 {
   deprecated("SMESH_Swig::AddSubMeshOnShape", "SMESH_Swig::publish");
   return publish( ior, name );
@@ -1887,7 +1887,7 @@ public:
     {
       SVTK_ViewWindow* vw = dynamic_cast<SVTK_ViewWindow*>( model->getViewManager()->getActiveView() );
       if ( vw )
-	myResult = (SelectionMode)vw->SelectionMode();
+        myResult = (SelectionMode)vw->SelectionMode();
     }
   }
 };
@@ -1925,25 +1925,25 @@ public:
       SVTK_ViewWindow* vw = dynamic_cast<SVTK_ViewWindow*>( model->getViewManager()->getActiveView() );
       if ( vw )
       {
-	SelectionMode previousMode = (SelectionMode)vw->SelectionMode();
-	bool switchPointMode = ( previousMode == Node && mySelectionMode != Node ) ||
-	  ( previousMode != Node && mySelectionMode == Node );
-	if ( switchPointMode )
-	{
-	  vtkRenderer* renderer = vw->getRenderer();
-	  VTK::ActorCollectionCopy actors( renderer->GetActors() );
-	  vtkActorCollection* collection = actors.GetActors();
-	  collection->InitTraversal();
-	  while ( vtkActor* vtkActor = collection->GetNextActor() )
-	  {
-	    if ( SMESH_Actor* actor = dynamic_cast<SMESH_Actor*>( vtkActor ) )
-	    {
-	      if ( actor->GetVisibility() )
-		actor->SetPointRepresentation( mySelectionMode == Node );
-	    }
-	  }
-	}
-	vw->SetSelectionMode( mySelectionMode );
+        SelectionMode previousMode = (SelectionMode)vw->SelectionMode();
+        bool switchPointMode = ( previousMode == Node && mySelectionMode != Node ) ||
+          ( previousMode != Node && mySelectionMode == Node );
+        if ( switchPointMode )
+        {
+          vtkRenderer* renderer = vw->getRenderer();
+          VTK::ActorCollectionCopy actors( renderer->GetActors() );
+          vtkActorCollection* collection = actors.GetActors();
+          collection->InitTraversal();
+          while ( vtkActor* vtkActor = collection->GetNextActor() )
+          {
+            if ( SMESH_Actor* actor = dynamic_cast<SMESH_Actor*>( vtkActor ) )
+            {
+              if ( actor->GetVisibility() )
+                actor->SetPointRepresentation( mySelectionMode == Node );
+            }
+          }
+        }
+        vw->SetSelectionMode( mySelectionMode );
       }
     }
   }
