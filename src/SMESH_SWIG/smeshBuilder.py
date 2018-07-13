@@ -24,9 +24,19 @@ import salome
 from salome.geom import geomBuilder
 
 import SMESH # This is necessary for back compatibility
-import omniORB                                   # back compatibility
-SMESH.MED_V2_1 = omniORB.EnumItem("MED_V2_1", 0) # back compatibility
-SMESH.MED_V2_2 = omniORB.EnumItem("MED_V2_2", 1) # back compatibility
+import omniORB                                       # back compatibility
+SMESH.MED_V2_1    = 11 #omniORB.EnumItem("MED_V2_1", 11) # back compatibility: use number > MED minor version
+SMESH.MED_V2_2    = 12 #omniORB.EnumItem("MED_V2_2", 12) # back compatibility: latest minor will be used
+SMESH.MED_MINOR_0 = 20 # back compatibility
+SMESH.MED_MINOR_1 = 21 # back compatibility
+SMESH.MED_MINOR_2 = 22 # back compatibility
+SMESH.MED_MINOR_3 = 23 # back compatibility
+SMESH.MED_MINOR_4 = 24 # back compatibility
+SMESH.MED_MINOR_5 = 25 # back compatibility
+SMESH.MED_MINOR_6 = 26 # back compatibility
+SMESH.MED_MINOR_7 = 27 # back compatibility
+SMESH.MED_MINOR_8 = 28 # back compatibility
+SMESH.MED_MINOR_9 = 29 # back compatibility
 
 from   SMESH import *
 from   salome.smesh.smesh_algorithm import Mesh_Algorithm
@@ -2157,6 +2167,10 @@ class Mesh(metaclass = MeshMeta):
                 auto_groups (boolean): parameter for creating/not creating
                         the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
                         the typical use is auto_groups=False.
+                minor (int): define the minor version (y, where version is x.y.z) of MED file format.
+                        The minor must be between 0 and the current minor version of MED file library.
+                        If minor is equal to -1, the minor version is not changed (default).
+                        The major version (x, where version is x.y.z) cannot be changed.
                 overwrite (boolean): parameter for overwriting/not overwriting the file
                 meshPart: a part of mesh (:class:`sub-mesh, group or filter <SMESH.SMESH_IDSource>`) to export instead of the mesh
                 autoDimension: if *True* (default), a space dimension of a MED mesh can be either
@@ -2175,16 +2189,18 @@ class Mesh(metaclass = MeshMeta):
                         - 's' stands for "_solids _" field.
         """
         # process positional arguments
-        args = [i for i in args if i not in [SMESH.MED_V2_1, SMESH.MED_V2_2]] # backward compatibility
+        #args = [i for i in args if i not in [SMESH.MED_V2_1, SMESH.MED_V2_2]] # backward compatibility
         fileName        = args[0]
         auto_groups     = args[1] if len(args) > 1 else False
-        overwrite       = args[2] if len(args) > 2 else True
-        meshPart        = args[3] if len(args) > 3 else None
-        autoDimension   = args[4] if len(args) > 4 else True
-        fields          = args[5] if len(args) > 5 else []
-        geomAssocFields = args[6] if len(args) > 6 else ''
+        minor           = args[2] if len(args) > 2 else -1
+        overwrite       = args[3] if len(args) > 3 else True
+        meshPart        = args[4] if len(args) > 4 else None
+        autoDimension   = args[5] if len(args) > 5 else True
+        fields          = args[6] if len(args) > 6 else []
+        geomAssocFields = args[7] if len(args) > 7 else ''
         # process keywords arguments
         auto_groups     = kwargs.get("auto_groups", auto_groups)
+        minor           = kwargs.get("minor", minor)
         overwrite       = kwargs.get("overwrite", overwrite)
         meshPart        = kwargs.get("meshPart", meshPart)
         autoDimension   = kwargs.get("autoDimension", autoDimension)
@@ -2196,10 +2212,10 @@ class Mesh(metaclass = MeshMeta):
             if isinstance( meshPart, list ):
                 meshPart = self.GetIDSource( meshPart, SMESH.ALL )
                 unRegister.set( meshPart )
-            self.mesh.ExportPartToMED( meshPart, fileName, auto_groups, overwrite, autoDimension,
+            self.mesh.ExportPartToMED( meshPart, fileName, auto_groups, minor, overwrite, autoDimension,
                                        fields, geomAssocFields)
         else:
-            self.mesh.ExportMED(fileName, auto_groups, overwrite, autoDimension)
+            self.mesh.ExportMED(fileName, auto_groups, minor, overwrite, autoDimension)
 
     def ExportSAUV(self, f, auto_groups=0):
         """
@@ -2336,7 +2352,7 @@ class Mesh(metaclass = MeshMeta):
     
         print("WARNING: ExportToMED() is deprecated, use ExportMED() instead")
         # process positional arguments
-        args = [i for i in args if i not in [SMESH.MED_V2_1, SMESH.MED_V2_2]] # backward compatibility
+        #args = [i for i in args if i not in [SMESH.MED_V2_1, SMESH.MED_V2_2]] # backward compatibility
         fileName      = args[0]
         auto_groups   = args[1] if len(args) > 1 else False
         overwrite     = args[2] if len(args) > 2 else True
@@ -2346,8 +2362,9 @@ class Mesh(metaclass = MeshMeta):
         auto_groups   = kwargs.get("auto_groups", auto_groups) # new keyword name
         overwrite     = kwargs.get("overwrite", overwrite)
         autoDimension = kwargs.get("autoDimension", autoDimension)
+        minor = -1
         # invoke engine's function
-        self.mesh.ExportMED(fileName, auto_groups, overwrite, autoDimension)
+        self.mesh.ExportMED(fileName, auto_groups, minor, overwrite, autoDimension)
 
     def ExportToMEDX(self, *args, **kwargs):
         """
@@ -2370,7 +2387,7 @@ class Mesh(metaclass = MeshMeta):
 
         print("WARNING: ExportToMEDX() is deprecated, use ExportMED() instead")
         # process positional arguments
-        args = [i for i in args if i not in [SMESH.MED_V2_1, SMESH.MED_V2_2]] # backward compatibility
+        #args = [i for i in args if i not in [SMESH.MED_V2_1, SMESH.MED_V2_2]] # backward compatibility
         fileName      = args[0]
         auto_groups   = args[1] if len(args) > 1 else False
         overwrite     = args[2] if len(args) > 2 else True
@@ -2379,8 +2396,9 @@ class Mesh(metaclass = MeshMeta):
         auto_groups   = kwargs.get("auto_groups", auto_groups)
         overwrite     = kwargs.get("overwrite", overwrite)
         autoDimension = kwargs.get("autoDimension", autoDimension)
+        minor = -1
         # invoke engine's function
-        self.mesh.ExportMED(fileName, auto_groups, overwrite, autoDimension)
+        self.mesh.ExportMED(fileName, auto_groups, minor, overwrite, autoDimension)
 
     # Operations with groups:
     # ----------------------
@@ -6842,19 +6860,19 @@ class meshProxy(SMESH._objref_SMESH_Mesh):
         return SMESH._objref_SMESH_Mesh.CreateDimGroup(self, *args)
     def ExportToMEDX(self, *args): # function removed
         print("WARNING: ExportToMEDX() is deprecated, use ExportMED() instead")
-        args = [i for i in args if i not in [SMESH.MED_V2_1, SMESH.MED_V2_2]]
+        #args = [i for i in args if i not in [SMESH.MED_V2_1, SMESH.MED_V2_2]]
         SMESH._objref_SMESH_Mesh.ExportMED(self, *args)
     def ExportToMED(self, *args): # function removed
         print("WARNING: ExportToMED() is deprecated, use ExportMED() instead")
-        args = [i for i in args if i not in [SMESH.MED_V2_1, SMESH.MED_V2_2]]
+        #args = [i for i in args if i not in [SMESH.MED_V2_1, SMESH.MED_V2_2]]
         while len(args) < 4:  # !!!! nb of parameters for ExportToMED IDL's method
             args.append(True)
         SMESH._objref_SMESH_Mesh.ExportMED(self, *args)
     def ExportPartToMED(self, *args): # 'version' parameter removed
-        args = [i for i in args if i not in [SMESH.MED_V2_1, SMESH.MED_V2_2]]
+        #args = [i for i in args if i not in [SMESH.MED_V2_1, SMESH.MED_V2_2]]
         SMESH._objref_SMESH_Mesh.ExportPartToMED(self, *args)
     def ExportMED(self, *args): # signature of method changed
-        args = [i for i in args if i not in [SMESH.MED_V2_1, SMESH.MED_V2_2]]
+        #args = [i for i in args if i not in [SMESH.MED_V2_1, SMESH.MED_V2_2]]
         while len(args) < 4:  # !!!! nb of parameters for ExportToMED IDL's method
             args.append(True)
         SMESH._objref_SMESH_Mesh.ExportMED(self, *args)

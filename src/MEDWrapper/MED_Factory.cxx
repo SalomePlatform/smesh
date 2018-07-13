@@ -111,10 +111,10 @@ namespace MED
     return new MED::TWrapper(fileName);
   }
 
-  PWrapper CrWrapperW(const std::string& fileName)
+  PWrapper CrWrapperW(const std::string& fileName, int theMinor)
   {
     if (!CheckCompatibility(fileName))
       remove(fileName.c_str());
-    return new MED::TWrapper(fileName);
+    return new MED::TWrapper(fileName, theMinor);
   }
 }

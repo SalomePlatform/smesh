@@ -28,6 +28,10 @@
         <translation>TXT files</translation>
     </message>
     <message>
+        <source>MED_VX_FILES_FILTER</source>
+        <translation>MED %1 files</translation>
+    </message>
+    <message>
         <source>STL_FILES_FILTER</source>
         <translation>STL files</translation>
     </message>

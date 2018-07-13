@@ -48,8 +48,10 @@ class MESHDRIVERMED_EXPORT DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
 
   DriverMED_W_SMESHDS_Mesh();
 
-  void SetFile(const std::string& theFileName);
+  void SetFile(const std::string& theFileName, int theMinor=-1);
   void SetAutoDimension(bool toFindOutDimension) { myAutoDimension = toFindOutDimension; }
+
+  static std::string GetVersionString(int theVersion, int theNbDigits=2);
 
   void AddGroupOfNodes();
   void AddGroupOfEdges();
@@ -87,6 +89,7 @@ class MESHDRIVERMED_EXPORT DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
   bool myAutoDimension;
   bool myAddODOnVertices;
   bool myDoAllInGroups;
+  int myMinor;
 };
 
 #endif

@@ -35,6 +35,8 @@
 #include "SMDS_SetIterator.hxx"
 #include "SMESHDS_Mesh.hxx"
 
+#include <med.h>
+
 #include <BRep_Tool.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopoDS.hxx>
@@ -62,9 +64,39 @@ DriverMED_W_SMESHDS_Mesh::DriverMED_W_SMESHDS_Mesh():
   myDoAllInGroups(false)
 {}
 
-void DriverMED_W_SMESHDS_Mesh::SetFile(const std::string& theFileName)
+void DriverMED_W_SMESHDS_Mesh::SetFile(const std::string& theFileName, int theMinor)
 {
+  myMinor = theMinor;
   Driver_SMESHDS_Mesh::SetFile(theFileName);
+}
+
+/*!
+ * MED version is either the latest available, or with an inferior minor,
+ * to ensure backward compatibility on writing med files.
+ */
+string DriverMED_W_SMESHDS_Mesh::GetVersionString(int theVersion, int theNbDigits)
+{
+  TInt majeur, mineur, release;
+  majeur=MED_MAJOR_NUM;
+  mineur=MED_MINOR_NUM;
+  release=MED_RELEASE_NUM;
+  TInt imposedMineur = mineur;
+
+  if (theVersion < 0)
+    imposedMineur = mineur;
+  else if (theVersion > MED_MINOR_NUM)
+    imposedMineur = mineur;
+  else
+    imposedMineur = theVersion;
+
+  ostringstream name;
+  if ( theNbDigits > 0 )
+    name << majeur;
+  if ( theNbDigits > 1 )
+    name << "." << imposedMineur;
+  if ( theNbDigits > 2 )
+    name << "." << release;
+  return name.str();
 }
 
 void DriverMED_W_SMESHDS_Mesh::AddGroup(SMESHDS_GroupBase* theGroup)
@@ -425,7 +457,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       }
     }
 
-    MED::PWrapper myMed = CrWrapperW(myFile);
+    MED::PWrapper myMed = CrWrapperW(myFile, myMinor);
     PMeshInfo aMeshInfo = myMed->CrMeshInfo(aMeshDimension,aSpaceDimension,aMeshName);
     //MESSAGE("Add - aMeshName : "<<aMeshName<<"; "<<aMeshInfo->GetName());
     myMed->SetMeshInfo(aMeshInfo);

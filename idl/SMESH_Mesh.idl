@@ -622,6 +622,10 @@ module SMESH
      *                 the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
      *                 the typical use is auto_groups=false.
      * - overwrite : boolean parameter for overwriting/not overwriting the file, if it exists
+     * - minor : define the minor version of MED file format.
+     *           The minor must be between 0 and the current minor version of MED file library.
+     *           If minor is equal to -1, the minor version is not changed (default).
+     *           The major version cannot be changed.
      * - autoDimension : if @c true, a space dimension of a MED mesh can be either
      *         - 1D if all mesh nodes lie on OX coordinate axis, or
      *         - 2D if all mesh nodes lie on XOY coordinate plane, or
@@ -630,6 +634,7 @@ module SMESH
      */
     void ExportMED( in string      fileName, 
 		    in boolean     auto_groups, 
+		    in long        minor,
 		    in boolean     overwrite,
 		    in boolean     autoDimension) raises (SALOME::SALOME_Exception);
 
@@ -639,6 +644,10 @@ module SMESH
      * - meshPart : a part of mesh to store
      * - fileName : name of the MED file
      * - overwrite : boolean parameter for overwriting/not overwriting the file, if it exists
+     * - minor : define the minor version (y, where version is x.y.z) of MED file format.
+     *           The minor must be between 0 and the current minor version of MED file library.
+     *           If minor is equal to -1, the minor version is not changed (default).
+     *           The major version (x, where version is x.y.z) cannot be changed.
      * - autoDimension : if @c True, a space dimension for export is defined by mesh 
      *                 configuration; for example a planar mesh lying on XOY plane
      *                 will be exported as a mesh in 2D space. 
@@ -654,6 +663,7 @@ module SMESH
     void ExportPartToMED( in SMESH_IDSource     meshPart,
                           in string             fileName,
                           in boolean            auto_groups,
+                          in long               minor,
                           in boolean            overwrite,
                           in boolean            autoDimension,
                           in GEOM::ListOfFields fields,
@@ -665,6 +675,11 @@ module SMESH
      */
     void ExportSAUV( in string file, in boolean auto_groups )
       raises (SALOME::SALOME_Exception);
+    
+    /*!
+     * Return string representation of a MED file version comprising nbDigits
+     */
+    string GetVersionString(in long minor, in short nbDigits);
 
     /*!
      * Export Mesh to different Formats

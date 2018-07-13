@@ -448,6 +448,19 @@ SMESH::DriverMED_ReadStatus SMESH_Mesh_i::ImportCGNSFile( const char*  theFileNa
   return ConvertDriverMEDReadStatus(status);
 }
 
+//================================================================================
+/*!
+ * \brief Return string representation of a MED file version comprising nbDigits
+ */
+//================================================================================
+
+char* SMESH_Mesh_i::GetVersionString(CORBA::Long minor, CORBA::Short nbDigits)
+{
+  string ver = DriverMED_W_SMESHDS_Mesh::GetVersionString(minor,
+                                                          nbDigits);
+  return CORBA::string_dup( ver.c_str() );
+}
+
 //=============================================================================
 /*!
  *  ImportUNVFile
@@ -2987,22 +3000,26 @@ string SMESH_Mesh_i::prepareMeshNameAndGroups(const char*    file,
 
 void SMESH_Mesh_i::ExportMED(const char*        file,
                              CORBA::Boolean     auto_groups,
+                             CORBA::Long        minor,
                              CORBA::Boolean     overwrite,
                              CORBA::Boolean     autoDimension)
   throw(SALOME::SALOME_Exception)
 {
-  //MESSAGE("SMESH::MED_VERSION:"<< theVersion);
+  MESSAGE("MED minor version: "<< minor);
   SMESH_TRY;
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
 
   string aMeshName = prepareMeshNameAndGroups(file, overwrite);
-  _impl->ExportMED( file, aMeshName.c_str(), auto_groups, 0, autoDimension );
+  _impl->ExportMED( file, aMeshName.c_str(), auto_groups, minor, 0, autoDimension );
 
   TPythonDump() << SMESH::SMESH_Mesh_var(_this()) << ".ExportMED( r'"
-                << file << "', " << auto_groups << ", "
-                << overwrite << ", "
-                << autoDimension << " )";
+                << file << "', "
+                << "auto_groups=" <<auto_groups << ", "
+                << "minor=" << minor <<  ", "
+                << "overwrite=" << overwrite << ", "
+                << "meshPart=None, "
+                << "autoDimension=" << autoDimension << " )";
 
   SMESH_CATCH( SMESH::throwCorbaException );
 }
@@ -3112,12 +3129,14 @@ void SMESH_Mesh_i::ExportSTL (const char *file, const bool isascii)
 void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
                                    const char*               file,
                                    CORBA::Boolean            auto_groups,
+                                   CORBA::Long               minor,
                                    CORBA::Boolean            overwrite,
                                    CORBA::Boolean            autoDimension,
                                    const GEOM::ListOfFields& fields,
                                    const char*               geomAssocFields)
   throw (SALOME::SALOME_Exception)
 {
+  MESSAGE("MED minor version: "<< minor);
   SMESH_TRY;
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
@@ -3164,7 +3183,7 @@ void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
        SMESH::DownCast< SMESH_Mesh_i* >( meshPart ))
   {
     aMeshName = prepareMeshNameAndGroups(file, overwrite);
-    _impl->ExportMED( file, aMeshName.c_str(), auto_groups,
+    _impl->ExportMED( file, aMeshName.c_str(), auto_groups, minor,
                       0, autoDimension, /*addODOnVertices=*/have0dField);
     meshDS = _impl->GetMeshDS();
   }
@@ -3182,7 +3201,7 @@ void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
     }
 
     SMESH_MeshPartDS* partDS = new SMESH_MeshPartDS( meshPart );
-    _impl->ExportMED( file, aMeshName.c_str(), auto_groups,
+    _impl->ExportMED( file, aMeshName.c_str(), auto_groups, minor,
                       partDS, autoDimension, /*addODOnVertices=*/have0dField);
     meshDS = tmpDSDeleter._obj = partDS;
   }
@@ -3207,11 +3226,15 @@ void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
     GEOM::GEOM_BaseObject_var gbo = GEOM::GEOM_BaseObject::_narrow( fields[i] );
     goList[i] = gbo;
   }
-  TPythonDump() << _this() << ".ExportPartToMED( "
-                << meshPart << ", r'" << file << "', "
-                << auto_groups << ", " << overwrite << ", "
-                << autoDimension << ", " << goList
-                << ", '" << ( geomAssocFields ? geomAssocFields : "" ) << "'" << " )";
+  TPythonDump() << _this() << ".ExportPartToMED( r'"
+                << file << "', "
+                << "auto_groups=" << auto_groups << ", "
+                << "minor=" << minor <<  ", "
+                << "overwrite=" << overwrite << ", "
+                << "meshPart=" << meshPart << ", "
+                << "autoDimension=" << autoDimension << ", "
+                << "fields=" << goList << ", geomAssocFields='"
+                << ( geomAssocFields ? geomAssocFields : "" ) << "'" << " )";
 
   SMESH_CATCH( SMESH::throwCorbaException );
 }

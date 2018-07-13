@@ -655,6 +655,8 @@ namespace
     // Get parameters of export operation
 
     QString aFilename;
+    int aFormat =-1; // for MED minor versions
+
     // Init the parameters with the default values
     bool aIsASCII_STL   = true;
     bool toCreateGroups = false;
@@ -741,14 +743,40 @@ namespace
     }
     else if ( isMED || isSAUV ) // Export to MED or SAUV
     {
-      QStringList filters;
+      QMap<QString, int> aFilterMap;
       if ( isMED ) {
-        filters << QObject::tr( "MED_FILES_FILTER" ) + " (*.med)";
+        //filters << QObject::tr( "MED_FILES_FILTER" ) + " (*.med)";
+        QString vmed (aMesh->GetVersionString(-1, 2));
+        MESSAGE("MED version: " << vmed.toStdString());
+        int minor = vmed.split(".").last().toInt();
+        MESSAGE("MED version minor: "<< minor);
+        minor +=3; // TODO test, to remove
+        aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( vmed ) + " (*.med)", minor );
+        for (int ii=0; ii<minor; ii++)
+          {
+            QString vs = aMesh->GetVersionString(ii, 2);
+            std::ostringstream vss; // TODO test, to remove
+            vss << "4.";            //
+            vss << ii;              //
+            vs = vss.str().c_str(); // TODO test, to remove
+            MESSAGE("MED version: " << vs.toStdString());
+            aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( vs ) + " (*.med)",  ii);
+          }
       }
       else { // isSAUV
-        filters << QObject::tr( "SAUV_FILES_FILTER" ) + " (*.sauv *.sauve)";
+        aFilterMap.insert("All files (*)", -1 );
+        aFilterMap.insert("SAUV files (*.sauv)", -1 );
+        aFilterMap.insert("SAUV files (*.sauve)", -1 );
       }
 
+      QStringList filters;
+      QString aDefaultFilter;
+      QMap<QString, int>::const_iterator it = aFilterMap.begin();
+      for ( ; it != aFilterMap.end(); ++it ) {
+        filters.push_back( it.key() );
+        if (it.key() == 0)
+          aDefaultFilter = it.key();
+      }
       QStringList checkBoxes;
       checkBoxes << QObject::tr("SMESH_AUTO_GROUPS") << QObject::tr("SMESH_AUTO_DIM");
 
@@ -788,6 +816,8 @@ namespace
           aFilename = QString::null;
           break;
         }
+        aFormat = aFilterMap[fd->selectedNameFilter()];
+        MESSAGE("selected minor: " << aFormat);
         toOverwrite = fv->isOverwrite();
         is_ok = true;
         if ( !aFilename.isEmpty() ) {
@@ -879,10 +909,10 @@ namespace
             const QString&            geoAssFields = aFieldList[ aMeshIndex ].second;
             const bool                   hasFields = ( fields.length() || !geoAssFields.isEmpty() );
             if ( !hasFields && aMeshOrGroup->_is_equivalent( aMeshItem ))
-              aMeshItem->ExportMED( aFilename.toUtf8().data(), toCreateGroups,
+              aMeshItem->ExportMED( aFilename.toUtf8().data(), toCreateGroups, aFormat,
                                     toOverwrite && aMeshIndex == 0, toFindOutDim );
             else
-              aMeshItem->ExportPartToMED( aMeshOrGroup, aFilename.toUtf8().data(), toCreateGroups,
+              aMeshItem->ExportPartToMED( aMeshOrGroup, aFilename.toUtf8().data(), toCreateGroups, aFormat,
                                           toOverwrite && aMeshIndex == 0, toFindOutDim,
                                           fields, geoAssFields.toLatin1().data() );
           }
