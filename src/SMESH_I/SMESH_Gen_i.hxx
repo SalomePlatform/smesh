@@ -58,7 +58,7 @@ class SMESH_Mesh_i;
 class SALOME_LifeCycleCORBA;
 
 // ===========================================================
-// Study context - stores study-connected objects references
+// Study context - store study-connected objects references
 // ==========================================================
 class SMESH_I_EXPORT StudyContext
 {
@@ -67,58 +67,22 @@ class SMESH_I_EXPORT StudyContext
 public:
   // constructor
   StudyContext() {}
-
   // register object in the internal map and return its id
-  int addObject( std::string theIOR )
-  {
-    int nextId = getNextId();
-    mapIdToIOR.Bind( nextId, theIOR );
-    return nextId;
-  }
+  int         addObject( const std::string& theIOR );
   // find the object id in the internal map by the IOR
-  int findId( std::string theIOR )
-  {
-    TInt2StringMap::iterator imap;
-    for ( imap = mapIdToIOR.begin(); imap != mapIdToIOR.end(); ++imap ) {
-      if ( *imap == theIOR )
-        return imap.Iterator().Key();
-    }
-    return 0;
-  }
+  int         findId( const std::string& theIOR );
   // get object's IOR by id
-  std::string getIORbyId( const int theId )
-  {
-    if ( mapIdToIOR.IsBound( theId ) )
-      return mapIdToIOR( theId );
-    return std::string();
-  }
+  std::string getIORbyId( const int theId );
   // get object's IOR by old id
-  std::string getIORbyOldId( const int theOldId )
-  {
-    if ( mapIdToId.IsBound( theOldId ) )
-      return getIORbyId( mapIdToId( theOldId ));
-    return std::string();
-  }
+  std::string getIORbyOldId( const int theOldId );
   // maps old object id to the new one (used when restoring data)
-  void mapOldToNew( const int oldId, const int newId ) {
-    mapIdToId.Bind( oldId, newId );
-  }
+  void        mapOldToNew( const int oldId, const int newId );
   // get old id by a new one
-  int getOldId( const int newId ) {
-    TInt2IntMap::iterator imap;
-    for ( imap = mapIdToId.begin(); imap != mapIdToId.end(); ++imap ) {
-      if ( *imap == newId )
-        return imap.Iterator().Key();
-    }
-    return 0;
-  }
+  int         getOldId( const int newId );
 
 private:
   // get next free object identifier
-  int getNextId()
-  {
-    return mapIdToIOR.Extent() + 1;
-  }
+  int         getNextId() { return mapIdToIOR.Extent() + 1; }
 
   TInt2StringMap mapIdToIOR; // persistent-to-transient map
   TInt2IntMap    mapIdToId;  // to translate object from persistent to transient form
@@ -151,7 +115,7 @@ public:
   // Get the SALOMEDS::SObject corresponding to a CORBA object
   static SALOMEDS::SObject_ptr ObjectToSObject(CORBA::Object_ptr theObject);
   // Get the SALOMEDS::Study from naming service
-  static SALOMEDS::Study_ptr getStudyServant();
+  static SALOMEDS::Study_var getStudyServant();
   // Get GEOM Object corresponding to TopoDS_Shape
   GEOM::GEOM_Object_ptr ShapeToGeomObject (const TopoDS_Shape& theShape );
   // Get TopoDS_Shape corresponding to GEOM_Object
@@ -534,6 +498,7 @@ public:
                                       SMESH::SMESH_GroupBase_ptr theGroup,
                                       GEOM::GEOM_Object_ptr  theShapeObject,
                                       const char*            theName = 0);
+  void UpdateIcons(SMESH::SMESH_Mesh_ptr theMesh);
   bool AddHypothesisToShape(SMESH::SMESH_Mesh_ptr       theMesh,
                             GEOM::GEOM_Object_ptr       theShapeObject,
                             SMESH::SMESH_Hypothesis_ptr theHyp);

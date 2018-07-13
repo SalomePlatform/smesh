@@ -1947,6 +1947,7 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
       bool ok = myGen.Compute( myLocMesh, myLocShape, how );
       meshServant->CreateGroupServants(); // algos can create groups (issue 0020918)
       myLocMesh.GetMeshDS()->Modified();
+      UpdateIcons( theMesh );
       return ok;
     }
   }

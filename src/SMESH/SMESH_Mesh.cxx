@@ -1336,6 +1336,41 @@ bool SMESH_Mesh::HasModificationsToDiscard() const
   return false;
 }
 
+//=============================================================================
+/*!
+ * \brief Return true if all sub-meshes are computed OK - to update an icon
+ */
+//=============================================================================
+
+bool SMESH_Mesh::IsComputedOK()
+{
+  if ( NbNodes() == 0 )
+    return false;
+
+  if ( !HasShapeToMesh() )
+    return true;
+
+  if ( SMESH_subMesh* mainSM = GetSubMeshContaining( 1 ))
+  {
+    SMESH_subMeshIteratorPtr smIt = mainSM->getDependsOnIterator(/*includeSelf=*/true);
+    while ( smIt->more() )
+    {
+      const SMESH_subMesh* sm = smIt->next();
+      if ( !sm->IsAlwaysComputed() )
+        switch ( sm->GetComputeState() )
+        {
+        case SMESH_subMesh::NOT_READY:
+        case SMESH_subMesh::COMPUTE_OK:
+          continue; // ok
+        case SMESH_subMesh::FAILED_TO_COMPUTE:
+        case SMESH_subMesh::READY_TO_COMPUTE:
+          return false;
+        }
+    }
+  }
+  return true;
+}
+
 //================================================================================
 /*!
  * \brief Check if any groups of the same type have equal names

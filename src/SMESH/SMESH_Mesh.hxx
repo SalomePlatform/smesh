@@ -236,6 +236,11 @@ class SMESH_EXPORT SMESH_Mesh
   bool HasModificationsToDiscard() const;
 
   /*!
+   * \brief Return true if all sub-meshes are computed OK - to update an icon
+   */
+  bool IsComputedOK();
+
+  /*!
    * \brief Return data map of descendant to ancestor shapes
    */
   typedef TopTools_IndexedDataMapOfShapeListOfShape TAncestorMap;

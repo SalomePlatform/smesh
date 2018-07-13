@@ -1942,10 +1942,6 @@ void SMESHGUI::OnEditDelete()
     else if ( !aSubMesh->_is_nil() ) {                   // DELETE SUBMESH
       SMESH::SMESH_Mesh_var aMesh = aSubMesh->GetFather();
       aMesh->RemoveSubMesh( aSubMesh );
-
-      _PTR(SObject) aMeshSO = SMESH::FindSObject(aMesh);
-      if (aMeshSO)
-        SMESH::ModifiedMesh(aMeshSO, false, aMesh->NbNodes()==0);
     }
     else {
       Handle(SALOME_InteractiveObject) IObject = new SALOME_InteractiveObject
@@ -3331,7 +3327,6 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         if ( aMesh->NbNodes() == 0 ) // imported mesh is not empty
           SMESH::RemoveVisualObjectWithActors(IOS->getEntry(), true);
         _PTR(SObject) aMeshSObj = SMESH::FindSObject(aMesh);
-        SMESH::ModifiedMesh( aMeshSObj, false, true);
         // hide groups and submeshes
         _PTR(ChildIterator) anIter =
           SMESH::getStudy()->NewChildIterator( aMeshSObj );

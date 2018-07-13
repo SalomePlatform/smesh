@@ -317,7 +317,6 @@ void SMESHGUI_GenericHypothesisCreator::onDialogFinished( int result )
         if( !aSubMesh->_is_nil() )
           aMesh = aSubMesh->GetFather();
         _PTR(SObject) meshSO = SMESH::FindSObject( aMesh );
-        SMESH::ModifiedMesh( meshSO, false, aMesh->NbNodes()==0);
         SMESH_Actor* actor = SMESH::FindActorByEntry( meshSO->GetID().c_str() );
         if( actor && actor->GetVisibility() )
           actor->Update();

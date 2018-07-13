@@ -396,8 +396,11 @@ public:
                                                      const char* theGroupName)
     throw (SALOME::SALOME_Exception);
 
+  // ===================================================
   // Internal methods not available through CORBA
   // They are called by corresponding interface methods
+  // ===================================================
+
   SMESH_Hypothesis::Hypothesis_Status addHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
                                                     SMESH::SMESH_Hypothesis_ptr anHyp,
                                                     std::string*                anErrorText=0);
@@ -454,6 +457,16 @@ public:
    * \brief Assure that all groups are published
    */
   void CreateGroupServants();
+
+  /*!
+   * \brief Return true if all sub-meshes are computed OK - to update an icon
+   */
+  bool IsComputedOK();
+
+
+  // ====================================
+  // SMESH_Mesh interface (continuation)
+  // ====================================
 
   /*!
    * \brief Return groups cantained in _mapGroups by their IDs
@@ -649,10 +662,11 @@ public:
    * happen if mesh data is not yet fully loaded from the file of study.
    */
   bool IsMeshInfoCorrect();
-   /*!
-    * Returns mesh unstructed grid information.
-    */
-   virtual SALOMEDS::TMPFile* GetVtkUgStream();
+  /*!
+   * Returns mesh unstructed grid information.
+   */
+  virtual SALOMEDS::TMPFile* GetVtkUgStream();
+
 
   std::map<int, SMESH_subMesh_i*> _mapSubMesh_i; //NRI
   std::map<int, ::SMESH_subMesh*> _mapSubMesh;   //NRI
