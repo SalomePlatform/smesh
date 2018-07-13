@@ -304,7 +304,7 @@ int SMESHGUI_SelectionOp::typeById( const QString& str, const EntityType objtype
     if( t<0 )
     {
       //try to get GEOM type
-      _PTR( SObject ) sobj = aStudy->FindObjectID( str.toLatin1().data() );
+      _PTR( SObject ) sobj = aStudy->FindObjectID( str.toUtf8().data() );
       if( sobj )
       {
         GEOM::GEOM_Object_var obj = GEOM::GEOM_Object::_narrow(
@@ -327,7 +327,7 @@ int SMESHGUI_SelectionOp::typeById( const QString& str, const EntityType objtype
     int id = _id.toInt( &ok );
     if( ok )
     {
-      _PTR( SObject ) sobj = aStudy->FindObjectID( entry.toLatin1().data() );
+      _PTR( SObject ) sobj = aStudy->FindObjectID( entry.toUtf8().data() );
       SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( 
         dynamic_cast<SALOMEDS_SObject*>( sobj.get() )->GetObject() );
       SMESH::SMESH_subMesh_var submesh = SMESH::SMESH_subMesh::_narrow( 

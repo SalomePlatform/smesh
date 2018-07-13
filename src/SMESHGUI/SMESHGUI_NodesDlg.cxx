@@ -100,7 +100,7 @@ namespace SMESH
     try {
       _PTR(SObject) aSobj = SMESH::FindSObject( theMesh );
       SMESH::SMESH_MeshEditor_var aMeshEditor = theMesh->GetMeshEditor();
-      theMesh->SetParameters( theParameters.join(":").toLatin1().constData() );
+      theMesh->SetParameters( theParameters.join(":").toUtf8().constData() );
       aNodeId = aMeshEditor->AddNode( x, y, z );
       if (TVisualObjPtr aVisualObj = SMESH::GetVisualObj( aSobj->GetID().c_str() ) ) {
         aVisualObj->Update( true );

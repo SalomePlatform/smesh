@@ -528,7 +528,7 @@ bool SMESHGUI_MakeNodeAtPointOp::onApply()
     if (aMeshEditor->_is_nil())
       return true;
 
-    aMesh->SetParameters( aParameters.join(":").toLatin1().constData() );
+    aMesh->SetParameters( aParameters.join(":").toUtf8().constData() );
 
     bool ok;
     int anId = myDlg->myId->text().toInt( &ok );

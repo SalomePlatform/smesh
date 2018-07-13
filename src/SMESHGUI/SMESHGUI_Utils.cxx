@@ -135,7 +135,7 @@ namespace SMESH
   {
     if (getStudy()->GetProperties()->IsLocked())
       return;
-    SMESHGUI::GetSMESHGen()->SetName(theSObject->GetIOR().c_str(), theName.toLatin1().data());
+    SMESHGUI::GetSMESHGen()->SetName(theSObject->GetIOR().c_str(), theName.toUtf8().data());
   }
 
   void SetValue (_PTR(SObject) theSObject, const QString& theValue)
@@ -148,7 +148,7 @@ namespace SMESH
       aBuilder->FindOrCreateAttribute(theSObject, "AttributeComment");
     _PTR(AttributeComment) aComment = anAttr;
     if (aComment)
-      aComment->SetValue(theValue.toLatin1().data());
+      aComment->SetValue(theValue.toUtf8().data());
   }
   
   void setFileName (_PTR(SObject) theSObject, const QString& theValue)
@@ -161,7 +161,7 @@ namespace SMESH
       aBuilder->FindOrCreateAttribute(theSObject, "AttributeExternalFileDef");
     _PTR(AttributeExternalFileDef) aFileName = anAttr;
     if (aFileName)
-      aFileName->SetValue(theValue.toLatin1().data());
+      aFileName->SetValue(theValue.toUtf8().data());
   }
   
   void setFileType (_PTR(SObject) theSObject, const QString& theValue)
@@ -174,7 +174,7 @@ namespace SMESH
       aBuilder->FindOrCreateAttribute(theSObject, "AttributeFileType");
     _PTR(AttributeFileType) aFileType = anAttr;
     if (aFileType)
-      aFileType->SetValue(theValue.toLatin1().data());
+      aFileType->SetValue(theValue.toUtf8().data());
   }
 
   CORBA::Object_var SObjectToObject (_PTR(SObject) theSObject )

@@ -521,7 +521,7 @@ namespace SMESH
       try {
         // load plugin library
         if(MYDEBUG) MESSAGE("Loading client meshers plugin library ...");
-        LibHandle libHandle = LoadLib( aClientLibName.toLatin1().data() );
+        LibHandle libHandle = LoadLib( aClientLibName.toUtf8().data() );
         if (!libHandle) {
           // report any error, if occurred
           {
@@ -585,7 +585,7 @@ namespace SMESH
     try {
       SMESH::SMESH_Hypothesis_var aHypothesis;
       aHypothesis = SMESHGUI::GetSMESHGen()->CreateHypothesis(aHypType.toLatin1().data(),
-                                                              aServLib.toLatin1().data());
+                                                              aServLib.toUtf8().data());
       if (!aHypothesis->_is_nil()) {
         _PTR(SObject) aHypSObject = SMESH::FindSObject(aHypothesis.in());
         if (aHypSObject) {
@@ -613,7 +613,7 @@ namespace SMESH
     HypothesisData* aHypData = GetHypothesisData(aHypType);
     QString aServLib = aHypData->ServerLibName;
     return SMESHGUI::GetSMESHGen()->IsApplicable( aHypType.toLatin1().data(),
-                                                  aServLib.toLatin1().data(),
+                                                  aServLib.toUtf8().data(),
                                                   theGeomObject,
                                                   toCheckAll);
   }

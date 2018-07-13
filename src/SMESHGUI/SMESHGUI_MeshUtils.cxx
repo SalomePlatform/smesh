@@ -66,7 +66,7 @@ namespace SMESH
       theBaseName : theBaseName + "_" + thePostfix;
     if ( _PTR(Study) aStudy = getStudy() ) {
       QString name = baseName;
-      while ( !aStudy->FindObjectByName( name.toLatin1().data(), "SMESH" ).empty() ) {
+      while ( !aStudy->FindObjectByName( name.toUtf8().data(), "SMESH" ).empty() ) {
         int nb = 0;
         QStringList names = name.split("_", QString::KeepEmptyParts);
         if ( names.count() > 0 ) {

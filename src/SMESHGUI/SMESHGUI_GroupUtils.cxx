@@ -42,7 +42,7 @@ namespace SMESH
     SMESH::SMESH_Group_var aGroup;
     try {
       if ( !theMesh->_is_nil() )
-        aGroup = theMesh->CreateGroup( theType, SMESH::toUtf8(theGroupName) );
+        aGroup = theMesh->CreateGroup( theType, theGroupName.toUtf8() );
     }
     catch( const SALOME::SALOME_Exception& S_ex ) {
       SalomeApp_Tools::QtCatchCorbaException( S_ex );

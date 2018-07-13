@@ -467,7 +467,7 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
   bool res = getStdParamFromDlg( params );
   if( isCreation() )
   {
-    SMESH::SetName( SMESH::FindSObject( hypothesis() ), params[0].myValue.toString().toLatin1().data() );
+    SMESH::SetName( SMESH::FindSObject( hypothesis() ), params[0].myValue.toString().toUtf8().data() );
     params.erase( params.begin() );
   }
 

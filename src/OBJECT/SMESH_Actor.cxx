@@ -1106,7 +1106,7 @@ void SMESH_ActorDef::SetControlMode( eControl theMode, bool theCheckEntityMode )
     }
     QString aTitle = QString(myScalarBarActor->GetTitle());
     aTitle.replace(QRegExp("(:\\s).*"),"\\1"+ QString::number(GetNumberControlEntities()));
-    myScalarBarActor->SetTitle(aTitle.toLatin1().constData());
+    myScalarBarActor->SetTitle(aTitle.toUtf8().constData());
 
   }
   else {

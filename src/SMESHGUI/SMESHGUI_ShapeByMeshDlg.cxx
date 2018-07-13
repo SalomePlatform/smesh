@@ -314,7 +314,7 @@ void SMESHGUI_ShapeByMeshOp::commitOperation()
       // GEOM_Object is published -> no need to UnRegister()
       myGeomObj = GEOM::GEOM_Object::_duplicate
         (SMESHGUI::GetSMESHGen()->GetGeometryByMeshElement
-         ( myMesh.in(), elemID, myDlg->myGeomName->text().toLatin1().constData()) );
+         ( myMesh.in(), elemID, myDlg->myGeomName->text().toUtf8().constData()) );
     }
     else
     {
@@ -387,7 +387,7 @@ void SMESHGUI_ShapeByMeshOp::commitOperation()
       QString aNewGeomGroupName ( myDlg->myGeomName->text() );
       SALOMEDS::SObject_wrap aNewGroupSO =
         geomGen->AddInStudy( aGeomObject,
-                             aNewGeomGroupName.toLatin1().data(), aMeshShape);
+                             aNewGeomGroupName.toUtf8().data(), aMeshShape);
 
       // get a GEOM_Object already published, which doesn't need UnRegister()
       CORBA::Object_var obj = aNewGroupSO->GetObject();
