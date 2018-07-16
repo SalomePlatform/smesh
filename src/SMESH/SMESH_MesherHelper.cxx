@@ -818,6 +818,7 @@ bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
       }
       // uv incorrect, project the node to surface
       GeomAPI_ProjectPointOnSurf& projector = GetProjector( F, loc, tol );
+      projector.SetExtremaFlag( Extrema_ExtFlag_MIN );
       projector.Perform( nodePnt );
       if ( !projector.IsDone() || projector.NbPoints() < 1 )
       {
@@ -836,8 +837,20 @@ bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
       }
       if ( dist > tol )
       {
-        MESSAGE( "SMESH_MesherHelper::CheckNodeUV(), invalid projection" );
-        return false;
+        Handle(ShapeAnalysis_Surface) sprojector = GetSurface( F );
+        uv = sprojector->ValueOfUV( nodePnt, tol ).XY();
+        surfPnt = sprojector->Value( uv );
+        dist = nodePnt.Distance( surfPnt );
+        if ( distXYZ ) {
+          surfPnt.Transform( loc );
+          distXYZ[0] = dist;
+          distXYZ[1] = surfPnt.X(); distXYZ[2] = surfPnt.Y(); distXYZ[3]=surfPnt.Z();
+        }
+        if ( dist > tol )
+        {
+          MESSAGE( "SMESH_MesherHelper::CheckNodeUV(), invalid projection" );
+          return false;
+        }
       }
       // store the fixed UV on the face
       if ( myShape.IsSame(F) && shapeID == myShapeID && myFixNodeParameters )
