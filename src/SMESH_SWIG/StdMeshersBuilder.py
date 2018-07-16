@@ -169,7 +169,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
     
 
         hyp = self.Hypothesis("MaxLength", [length], UseExisting=UseExisting)
-        if length > 0.0:
+        if isinstance(length,str) or length > 0:
             # set given length
             hyp.SetLength(length)
         if not UseExisting:

@@ -165,7 +165,7 @@ bool SMESH_Gen_i::CanPublishInStudy(CORBA::Object_ptr theIOR)
 {
   if(MYDEBUG) MESSAGE("CanPublishInStudy - "<<!CORBA::is_nil(getStudyServant()));
   
-  if( !myIsEnablePublish )
+  if ( !myIsEnablePublish )
     return false;
 
   SMESH::SMESH_Mesh_var aMesh       = SMESH::SMESH_Mesh::_narrow(theIOR);
@@ -479,6 +479,8 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishInStudy(SALOMEDS::SObject_ptr theSObje
 {
   Unexpect aCatch(SALOME_SalomeException);
   SALOMEDS::SObject_wrap aSO;
+  if ( !myIsEnablePublish )
+    return aSO._retn();
   if ( CORBA::is_nil( theIOR ))
     return aSO._retn();
   if(MYDEBUG) MESSAGE("PublishInStudy");
@@ -521,6 +523,8 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishInStudy(SALOMEDS::SObject_ptr theSObje
 SALOMEDS::SComponent_ptr SMESH_Gen_i::PublishComponent()
 {
   if(MYDEBUG) MESSAGE("PublishComponent");
+  if ( !myIsEnablePublish )
+    return SALOMEDS::SComponent::_nil();
 
   SALOMEDS::StudyBuilder_var    aStudyBuilder  = getStudyServant()->NewBuilder();
   SALOMEDS::UseCaseBuilder_wrap useCaseBuilder = getStudyServant()->GetUseCaseBuilder();
@@ -572,8 +576,10 @@ SALOMEDS::SComponent_ptr SMESH_Gen_i::PublishComponent()
 SALOMEDS::SObject_ptr SMESH_Gen_i::PublishMesh (SMESH::SMESH_Mesh_ptr theMesh,
                                                 const char*           theName)
 {
+  if ( !myIsEnablePublish )
+    return SALOMEDS::SObject::_nil();
   if ( CORBA::is_nil( theMesh ))
-    return SALOMEDS::SComponent::_nil();
+    return SALOMEDS::SObject::_nil();
   if(MYDEBUG) MESSAGE("PublishMesh--IN");
 
   // find or publish a mesh
@@ -659,6 +665,8 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishSubMesh (SMESH::SMESH_Mesh_ptr    theM
                                                    GEOM::GEOM_Object_ptr    theShapeObject,
                                                    const char*              theName)
 {
+  if ( !myIsEnablePublish )
+    return SALOMEDS::SObject::_nil();
   if ( theMesh->_is_nil() || theSubMesh->_is_nil() || theShapeObject->_is_nil() )
     return SALOMEDS::SObject::_nil();
 
@@ -749,6 +757,8 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishGroup (SMESH::SMESH_Mesh_ptr  theMesh,
                                                  GEOM::GEOM_Object_ptr  theShapeObject,
                                                  const char*            theName)
 {
+  if ( !myIsEnablePublish )
+    return SALOMEDS::SObject::_nil();
   if (theMesh->_is_nil() || theGroup->_is_nil() )
     return SALOMEDS::SObject::_nil();
 
@@ -823,6 +833,8 @@ SALOMEDS::SObject_ptr
                                   const char*                 theName)
 {
   if(MYDEBUG) MESSAGE("PublishHypothesis")
+  if ( !myIsEnablePublish )
+    return SALOMEDS::SObject::_nil();
   if (theHyp->_is_nil())
     return SALOMEDS::SObject::_nil();
 

@@ -4167,7 +4167,7 @@ class Mesh(metaclass = MeshMeta):
     def GetPointState(self, x, y, z):
         """
         Return point state in a closed 2D mesh in terms of TopAbs_State enumeration:
-        0-IN, 1-OUT, 2-ON, 3-UNKNOWN.
+        smesh.TopAbs_IN, smesh.TopAbs_OUT, smesh.TopAbs_ON and smesh.TopAbs_UNKNOWN.
         UNKNOWN state means that either mesh is wrong or the analysis fails.
         """
 
@@ -5608,7 +5608,7 @@ class Mesh(metaclass = MeshMeta):
         Parameters:
             IDsOfElements: list of elements ids
             Mirror: is :class:`SMESH.AxisStruct` or geom object (point, line, plane)
-            theMirrorType: smeshBuilder.POINT, smeshBuilder.AXIS or smeshBuilder.PLANE.
+            theMirrorType: smesh.POINT, smesh.AXIS or smesh.PLANE.
                 If the *Mirror* is a geom object this parameter is unnecessary
             Copy: allows to copy element (Copy is 1) or to replace with its mirroring (Copy is 0)
             MakeGroups: forces the generation of new groups from existing ones (if Copy)
@@ -5636,7 +5636,7 @@ class Mesh(metaclass = MeshMeta):
         Parameters:
             IDsOfElements: the list of elements ids
             Mirror: is :class:`SMESH.AxisStruct` or geom object (point, line, plane)
-            theMirrorType: smeshBuilder.POINT, smeshBuilder.AXIS or smeshBuilder.PLANE.
+            theMirrorType: smesh.POINT, smesh.AXIS or smesh.PLANE.
                 If the *Mirror* is a geom object this parameter is unnecessary
             MakeGroups: to generate new groups from existing ones
             NewMeshName: a name of the new mesh to create
@@ -5663,7 +5663,7 @@ class Mesh(metaclass = MeshMeta):
         Parameters:
             theObject: :class:`mesh, sub-mesh, group or filter <SMESH.SMESH_IDSource>`
             Mirror: :class:`SMESH.AxisStruct` or geom object (point, line, plane)
-            theMirrorType: smeshBuilder.POINT, smeshBuilder.AXIS or smeshBuilder.PLANE.
+            theMirrorType: smesh.POINT, smesh.AXIS or smesh.PLANE.
                 If the *Mirror* is a geom object this parameter is unnecessary
             Copy: allows copying the element (Copy==True) or replacing it with its mirror (Copy==False)
             MakeGroups: forces the generation of new groups from existing ones (if Copy)
@@ -5691,7 +5691,7 @@ class Mesh(metaclass = MeshMeta):
         Parameters:
             theObject: :class:`mesh, sub-mesh, group or filter <SMESH.SMESH_IDSource>`
             Mirror: :class:`SMESH.AxisStruct` or geom object (point, line, plane)
-            theMirrorType: smeshBuilder.POINT, smeshBuilder.AXIS or smeshBuilder.PLANE.
+            theMirrorType: smesh.POINT, smesh.AXIS or smesh.PLANE.
                 If the *Mirror* is a geom object this parameter is unnecessary
             MakeGroups: forces the generation of new groups from existing ones
             NewMeshName: the name of the new mesh to create
