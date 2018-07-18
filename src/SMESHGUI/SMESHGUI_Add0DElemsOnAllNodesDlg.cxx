@@ -442,7 +442,7 @@ bool SMESHGUI_Add0DElemsOnAllNodesOp::onApply()
 
     QString groupName = myDlg->myGroupListCmBox->currentText();
     SMESH::SMESH_IDSource_var newObj =
-      editor->Create0DElementsOnAllNodes( meshObject, groupName.toLatin1().data(),
+      editor->Create0DElementsOnAllNodes( meshObject, groupName.toUtf8().data(),
                                           myDlg->myDuplicateElemsChkBox->isChecked() );
 
     int newNb0D = mesh->Nb0DElements() - prevNb0D;

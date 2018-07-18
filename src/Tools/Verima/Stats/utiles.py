@@ -6,7 +6,7 @@ def writeFile( fn, txt = None):
    if fn  == None : return
    fn = str(fn)
    try:
-      f = open(fn, 'wb')
+      f = open(fn, 'w')
       f.write(txt)
       f.close()
       return 1
@@ -20,7 +20,7 @@ def readFile( fn, txt):
 
    if fn  == None : return
    try:
-      f = open(fn, 'wb')
+      f = open(fn, 'w')
       txt=f.read()
       f.close()
    except IOError:

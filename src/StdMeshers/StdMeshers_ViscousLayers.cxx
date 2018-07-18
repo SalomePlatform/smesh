@@ -6680,6 +6680,7 @@ void _ViscousBuilder::findCollisionEdges( _SolidData& data, SMESH_MesherHelper& 
     _EdgesOnShape& eos = data._edgesOnShape[iS];
     if ( eos._edges.empty() ) continue;
     if ( eos.ShapeType() != TopAbs_EDGE && eos.ShapeType() != TopAbs_VERTEX ) continue;
+    if ( !eos._sWOL.IsNull() ) continue; // PAL23566
 
     for ( size_t i = 0; i < eos._edges.size(); ++i )
     {

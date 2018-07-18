@@ -804,33 +804,20 @@ bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
     // check that uv is correct
     TopLoc_Location loc;
     Handle(Geom_Surface) surface = BRep_Tool::Surface( F,loc );
-    gp_Pnt nodePnt = XYZ( n ), surfPnt(0,0,0);
+    SMESH_NodeXYZ nXYZ( n );
+    gp_Pnt nodePnt = nXYZ, surfPnt(0,0,0);
     double dist = 0;
     if ( !loc.IsIdentity() ) nodePnt.Transform( loc.Transformation().Inverted() );
     if ( infinit ||
          (dist = nodePnt.Distance( surfPnt = surface->Value( uv.X(), uv.Y() ))) > tol )
     {
       setPosOnShapeValidity( shapeID, false );
-      if ( !infinit && distXYZ ) {
-        surfPnt.Transform( loc );
-        distXYZ[0] = dist;
-        distXYZ[1] = surfPnt.X(); distXYZ[2] = surfPnt.Y(); distXYZ[3]=surfPnt.Z();
-      }
       // uv incorrect, project the node to surface
-      GeomAPI_ProjectPointOnSurf& projector = GetProjector( F, loc, tol );
-      projector.Perform( nodePnt );
-      if ( !projector.IsDone() || projector.NbPoints() < 1 )
-      {
-        MESSAGE( "SMESH_MesherHelper::CheckNodeUV() failed to project" );
-        return false;
-      }
-      Standard_Real U,V;
-      projector.LowerDistanceParameters(U,V);
-      uv.SetCoord( U,V );
-      surfPnt = surface->Value( U, V );
-      dist = nodePnt.Distance( surfPnt );
+      Handle(ShapeAnalysis_Surface) sprojector = GetSurface( F );
+      uv = sprojector->ValueOfUV( nXYZ, tol ).XY();
+      surfPnt = sprojector->Value( uv );
+      dist = surfPnt.Distance( nXYZ );
       if ( distXYZ ) {
-        surfPnt.Transform( loc );
         distXYZ[0] = dist;
         distXYZ[1] = surfPnt.X(); distXYZ[2] = surfPnt.Y(); distXYZ[3]=surfPnt.Z();
       }
@@ -842,7 +829,7 @@ bool SMESH_MesherHelper::CheckNodeUV(const TopoDS_Face&   F,
       // store the fixed UV on the face
       if ( myShape.IsSame(F) && shapeID == myShapeID && myFixNodeParameters )
         const_cast<SMDS_MeshNode*>(n)->SetPosition
-          ( SMDS_PositionPtr( new SMDS_FacePosition( U, V )));
+          ( SMDS_PositionPtr( new SMDS_FacePosition( uv.X(), uv.Y() )));
     }
     else if ( myShape.IsSame(F) && uv.Modulus() > numeric_limits<double>::min() )
     {

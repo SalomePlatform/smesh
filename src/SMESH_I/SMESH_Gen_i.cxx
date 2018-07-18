@@ -4016,7 +4016,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                         const char*              theURL,
                         bool                     isMultiFile )
 {
-  if (!myStudyContext)
+  //if (!myStudyContext)
     UpdateStudy();
   SALOMEDS::Study_var aStudy = getStudyServant();
   /*  if( !theComponent->_is_nil() )

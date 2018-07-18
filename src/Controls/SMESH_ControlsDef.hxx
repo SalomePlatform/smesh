@@ -291,7 +291,7 @@ namespace SMESH{
 
     /*
       Class       : Length2D
-      Description : Functor for calculating length of edge
+      Description : Functor for calculating minimal length of edge
     */
     class SMESHCONTROLS_EXPORT Length2D: public virtual NumericalFunctor{
     public:

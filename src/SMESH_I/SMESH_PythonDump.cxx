@@ -1176,26 +1176,28 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   }
   // import python files corresponding to plugins if they are used in anUpdatedScript
   {
-    TCollection_AsciiString importStr;
+    //TCollection_AsciiString importStr;
     std::vector<std::string> pluginNames = getPluginNames();
     for ( size_t i = 0; i < pluginNames.size(); ++i )
     {
       // Convert access to plugin members:
-      // e.g. StdMeshers.QUAD_REDUCED -> StdMeshersBuilder.QUAD_REDUCED
+      // e.g. StdMeshers.QUAD_REDUCED -> smeshBuilder.QUAD_REDUCED
       TCollection_AsciiString pluginAccess = (pluginNames[i] + ".").c_str() ;
       int iFrom = 1, iPos;
       while (( iPos = anUpdatedScript.Location( pluginAccess, iFrom, anUpdatedScript.Length() )))
       {
-        anUpdatedScript.Insert( iPos + pluginNames[i].size(), "Builder" );
-        iFrom = iPos + pluginNames[i].size() + 8;
+        //anUpdatedScript.Insert( iPos + pluginNames[i].size(), "Builder" );
+        anUpdatedScript.Remove( iPos, pluginNames[i].size() );
+        anUpdatedScript.Insert( iPos, "smeshBuilder" );
+        iFrom = iPos - pluginNames[i].size() + 12;
       }
       // if any plugin member is used, import the plugin
-      if ( iFrom > 1 )
-        importStr += ( helper + "\n" "from salome." + pluginNames[i].c_str() +
-                       " import " + pluginNames[i].c_str() +"Builder" );
+      // if ( iFrom > 1 )
+      //   importStr += ( helper + "\n" "from salome." + pluginNames[i].c_str() +
+      //                  " import " + pluginNames[i].c_str() +"Builder" );
     }
-    if ( !importStr.IsEmpty() )
-      initPart += importStr + "\n";
+    // if ( !importStr.IsEmpty() )
+    //   initPart += importStr + "\n";
   }
 
   if ( isMultiFile )

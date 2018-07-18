@@ -652,7 +652,7 @@ bool SMESHGUI_UnionGroupsDlg::onApply()
   {
     SMESH::ListOfGroups_var aList = convert( myGroups );
     SMESH::SMESH_Group_var aNewGrp = 
-      aMesh->UnionListOfGroups( aList, aName.toLatin1().constData() );
+      aMesh->UnionListOfGroups( aList, aName.toUtf8().constData() );
     if ( !CORBA::is_nil( aNewGrp ) )
     {
       aNewGrp->SetColor(  getColor() );
@@ -761,7 +761,7 @@ bool SMESHGUI_IntersectGroupsDlg::onApply()
   {
     SMESH::ListOfGroups_var aList = convert( myGroups );
     SMESH::SMESH_Group_var aNewGrp = 
-      aMesh->IntersectListOfGroups( aList, aName.toLatin1().constData() );
+      aMesh->IntersectListOfGroups( aList, aName.toUtf8().constData() );
     if ( !CORBA::is_nil( aNewGrp ) )
     {
       aNewGrp->SetColor(  getColor() );
@@ -934,7 +934,7 @@ bool SMESHGUI_CutGroupsDlg::onApply()
     SMESH::ListOfGroups_var aList1 = convert( myGroups1 );
     SMESH::ListOfGroups_var aList2 = convert( myGroups2 );
     SMESH::SMESH_Group_var aNewGrp = 
-      aMesh->CutListOfGroups( aList1, aList2, aName.toLatin1().constData() );
+      aMesh->CutListOfGroups( aList1, aList2, aName.toUtf8().constData() );
     if ( !CORBA::is_nil( aNewGrp ) )
     {
       aNewGrp->SetColor(  getColor() );
@@ -1120,7 +1120,7 @@ bool SMESHGUI_DimGroupDlg::onApply()
       (SMESH::NB_COMMON_NODES_ENUM) myNbNoCombo->currentIndex();
 
     SMESH::SMESH_Group_var aNewGrp =
-      aMesh->CreateDimGroup( aList, anElemType, aName.toLatin1().constData(),
+      aMesh->CreateDimGroup( aList, anElemType, aName.toUtf8().constData(),
                              aNbCoNodes, myUnderlOnlyChk->isChecked() );
     if ( !CORBA::is_nil( aNewGrp ) )
     {

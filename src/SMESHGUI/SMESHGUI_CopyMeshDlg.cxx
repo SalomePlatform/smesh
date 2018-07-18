@@ -331,7 +331,7 @@ bool SMESHGUI_CopyMeshDlg::ClickOnApply()
       SMESH::SMESH_MeshEditor_var aMeshEditor = myMesh->GetMeshEditor();
       aPartToCopy = aMeshEditor->MakeIDSource( anElementsId, SMESH::ALL );
     }
-    QByteArray meshName = myMeshNameEdit->text().toLatin1();
+    QByteArray meshName = myMeshNameEdit->text().toUtf8();
     bool toCopyGroups = ( myCopyGroupsCheck->isChecked() );
     bool toKeepIDs    = ( myKeepIdsCheck->isChecked() );
 

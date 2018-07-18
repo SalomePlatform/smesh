@@ -430,7 +430,7 @@ bool SMESHGUI_FilterLibraryDlg::onApply()
   }
 
   if (myFileName->text() != myLibrary->GetFileName())
-    myLibrary->SetFileName( myFileName->text().toLatin1().constData() );
+    myLibrary->SetFileName( myFileName->text().toUtf8().constData() );
 
   bool aResult = false;
 
@@ -439,8 +439,8 @@ bool SMESHGUI_FilterLibraryDlg::onApply()
   } else if (myMode == EDIT || myMode == ADD_TO) {
     SMESH::Filter_var aFilter = createFilter();
     if (!myListBox->selectedItems().empty() && 
-        !myLibrary->Replace(myCurrFilterName.toLatin1().constData(),
-                            myName->text().toLatin1().constData(),
+        !myLibrary->Replace(myCurrFilterName.toUtf8().constData(),
+                            myName->text().toUtf8().constData(),
                             aFilter.in())) {
       SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
                                    tr("ERROR_OF_EDITING"));
@@ -662,7 +662,7 @@ void SMESHGUI_FilterLibraryDlg::processNewLibrary()
   if (aFilterMgr->_is_nil())
     return;
 
-  myLibrary = aFilterMgr->LoadLibrary(autoExtension(getFileName()).toLatin1().constData());
+  myLibrary = aFilterMgr->LoadLibrary(autoExtension(getFileName()).toUtf8().constData());
   if (myLibrary->_is_nil()) {
     if (myMode == COPY_FROM) {
       SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
@@ -670,7 +670,7 @@ void SMESHGUI_FilterLibraryDlg::processNewLibrary()
       return;
     } else {
       myLibrary = aFilterMgr->CreateLibrary();
-      myLibrary->SetFileName(getFileName().toLatin1().constData());
+      myLibrary->SetFileName(getFileName().toUtf8().constData());
     }
   }
 
@@ -822,14 +822,14 @@ void SMESHGUI_FilterLibraryDlg::onFilterChanged()
     }
 
     SMESH::Filter_var aFilter = createFilter();
-    myLibrary->Replace(myCurrFilterName.toLatin1().constData(), 
-                       myName->text().toLatin1().constData(), 
+    myLibrary->Replace(myCurrFilterName.toUtf8().constData(), 
+                       myName->text().toUtf8().constData(), 
                        aFilter);
   }
 
   // Fill table with filter parameters
 
-  SMESH::Filter_var aFilter = myLibrary->Copy(theName.toLatin1().constData());
+  SMESH::Filter_var aFilter = myLibrary->Copy(theName.toUtf8().constData());
   myCurrFilterName = theName;
   myCurrFilter = myListBox->currentRow();
   myName->setText(theName);
@@ -929,8 +929,8 @@ void SMESHGUI_FilterLibraryDlg::onAddBtnPressed()
       return;
 
     SMESH::Filter_var aFilter = createFilter();
-    myLibrary->Replace(myCurrFilterName.toLatin1().constData(), 
-                       myName->text().toLatin1().constData(), 
+    myLibrary->Replace(myCurrFilterName.toUtf8().constData(), 
+                       myName->text().toUtf8().constData(), 
                        aFilter);
   }
   myTable->Clear(myTable->GetType());
@@ -966,8 +966,8 @@ void SMESHGUI_FilterLibraryDlg::addFilterToLib (const QString& theName)
 
   // add new filter in library
   bool aResult = !aFilter->GetPredicate()->_is_nil()
-    ? myLibrary->Add(aName.toLatin1().constData(), aFilter)
-    : myLibrary->AddEmpty(aName.toLatin1().constData(), (SMESH::ElementType)myTable->GetType());
+    ? myLibrary->Add(aName.toUtf8().constData(), aFilter)
+    : myLibrary->AddEmpty(aName.toUtf8().constData(), (SMESH::ElementType)myTable->GetType());
 
   if (!aResult) {
     SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
@@ -1087,7 +1087,7 @@ void SMESHGUI_FilterLibraryDlg::onDeleteBtnPressed()
 
   int anIndex = getIndex(myCurrFilterName);
 
-  if (anIndex == -1 || !myLibrary->Delete(myCurrFilterName.toLatin1().constData())) {
+  if (anIndex == -1 || !myLibrary->Delete(myCurrFilterName.toUtf8().constData())) {
     SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_ERROR"),
                                  tr("ERROR_OF_DELETING"));
   } else {
@@ -1179,8 +1179,8 @@ void SMESHGUI_FilterLibraryDlg::onNeedValidation()
     if (valid)
     {
       SMESH::Filter_var aFilter = createFilter(myTable->GetType());
-      myLibrary->Replace(myCurrFilterName.toLatin1().constData(),
-                         myName->text().toLatin1().constData(),
+      myLibrary->Replace(myCurrFilterName.toUtf8().constData(),
+                         myName->text().toUtf8().constData(),
                          aFilter);
     }
   }

@@ -6259,7 +6259,7 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
 
     // Check that the entry corresponds to a real object in the Study
     // as the object may be deleted or modified after the visual state is saved.
-    _PTR(SObject) so = studyDS->FindObjectID(entry.toLatin1().data());
+    _PTR(SObject) so = studyDS->FindObjectID(entry.toUtf8().data());
     if (!so) continue; //Skip the not existent entry
 
     std::vector<std::string> paramNames = ip->getAllParameterNames( *entIt );
@@ -6326,7 +6326,7 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
                 SMESH_Actor* aGeomAc = SMESH_Actor::SafeDownCast(ac);
                 if (aGeomAc->hasIO()) {
                   Handle(SALOME_InteractiveObject) io = aGeomAc->getIO();
-                  if (io->hasEntry() && strcmp(io->getEntry(), entry.toLatin1().data()) == 0) {
+                  if (io->hasEntry() && strcmp(io->getEntry(), entry.toUtf8().data()) == 0) {
                     isFound = true;
                     vtkActors.Bind(viewIndex, aGeomAc);
                   }
@@ -7012,7 +7012,7 @@ void SMESHGUI::message( const QString& msg )
       // get study
       _PTR(Study) study = dynamic_cast<SalomeApp_Study*>( application()->activeStudy() )->studyDS();
       // get mesh name
-      _PTR(SObject) obj = study->FindObjectID( entry.toLatin1().constData() );
+      _PTR(SObject) obj = study->FindObjectID( entry.toUtf8().constData() );
       QString name;
       if ( obj )
         name = SMESH::fromUtf8(obj->GetName());
@@ -7121,7 +7121,7 @@ bool SMESHGUI::renameObject( const QString& entry, const QString& name) {
           aType == SMESH::SUBMESH_EDGE || aType == SMESH::SUBMESH_VERTEX ||
           aType == SMESH::HYPOTHESIS || aType == SMESH::ALGORITHM) {
         if ( !name.isEmpty() ) {
-          SMESHGUI::GetSMESHGen()->SetName(obj->GetIOR().c_str(), qPrintable(name) );
+          SMESHGUI::GetSMESHGen()->SetName(obj->GetIOR().c_str(), qUtf8Printable(name) );
 
           // update name of group object and its actor
           Handle(SALOME_InteractiveObject) IObject =
@@ -7131,7 +7131,7 @@ bool SMESHGUI::renameObject( const QString& entry, const QString& name) {
           if( !aGroupObject->_is_nil() ) {
             aGroupObject->SetName( qPrintable(name) );
             if ( SMESH_Actor *anActor = SMESH::FindActorByEntry( qPrintable(entry) ) )
-              anActor->setName( qPrintable(name) );
+              anActor->setName( qUtf8Printable(name) );
           }
           return true;
         }

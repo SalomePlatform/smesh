@@ -1080,7 +1080,7 @@ QString StdMeshersGUI_CartesianParamCreator::storeParams() const
   try
   {
     if( isCreation() )
-      SMESH::SetName( SMESH::FindSObject( h ), myName->text().toLatin1().constData() );
+      SMESH::SetName( SMESH::FindSObject( h ), myName->text().toUtf8().constData() );
 
     // threshold
     h->SetVarParameter( myThreshold->text().toLatin1().constData(), "SetSizeThreshold" );
@@ -1109,7 +1109,7 @@ QString StdMeshersGUI_CartesianParamCreator::storeParams() const
     params << myPointSpin[0]->text();
     params << myPointSpin[1]->text();
     params << myPointSpin[2]->text();
-    h->SetVarParameter( params.join(":").toLatin1().constData(), "SetFixedPoint" );
+    h->SetVarParameter( params.join(":").toUtf8().constData(), "SetFixedPoint" );
     params.clear();
 
     SMESH::PointStruct ps;
@@ -1126,7 +1126,7 @@ QString StdMeshersGUI_CartesianParamCreator::storeParams() const
       params << spins[ax][1]->text();
       params << spins[ax][2]->text();
     }
-    h->SetVarParameter( params.join(":").toLatin1().constData(), "SetAxesDirs" );
+    h->SetVarParameter( params.join(":").toUtf8().constData(), "SetAxesDirs" );
 
     SMESH::DirStruct axDir[3];
     for ( int ax = 0; ax < 3; ++ax )

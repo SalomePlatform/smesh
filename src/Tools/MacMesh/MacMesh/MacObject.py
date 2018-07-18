@@ -185,6 +185,8 @@ class MacObject:
         self.DirectionalMeshParams =  MeshPar
         self.MeshPar[0] = GenFunctions.CompatibilityTest(self)
 
+        if isinstance( self.MeshPar[0], list ):
+            return # workaround, as CompatibilityTest() can return a list
         if self.MeshPar[0] < 0 :
             Alarms.Message(4)
             if self.MeshPar[0] == -1 : print(("Problem encountered with object(s) no. "+str(ObjectsInvolved)))
