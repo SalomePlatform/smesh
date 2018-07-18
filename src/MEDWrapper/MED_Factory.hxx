@@ -37,7 +37,7 @@ namespace MED
   bool GetMEDVersion( const std::string&, int&, int&, int& );
 
   MEDWRAPPER_EXPORT
-  bool CheckCompatibility( const std::string& );
+  bool CheckCompatibility( const std::string& , bool isForAppend=false);
 
   MEDWRAPPER_EXPORT
   PWrapper CrWrapperR( const std::string& );

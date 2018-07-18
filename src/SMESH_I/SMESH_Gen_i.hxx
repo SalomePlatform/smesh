@@ -348,8 +348,11 @@ public:
   // Get MED version of the file by its name
   char* GetMEDVersion(const char* theFileName);
 
-  // Check compatibility of file with MED format being used.
+  // Check compatibility of file with MED format being used, read only.
   CORBA::Boolean CheckCompatibility(const char* theFileName);
+
+  // Check compatibility of file with MED format being used, for append on write.
+  CORBA::Boolean CheckWriteCompatibility(const char* theFileName);
 
   // Get names of meshes defined in file with the specified name
   SMESH::string_array* GetMeshNames(const char* theFileName);

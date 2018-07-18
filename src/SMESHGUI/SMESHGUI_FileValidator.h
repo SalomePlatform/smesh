@@ -37,7 +37,7 @@ public:
   
   virtual bool canSave( const QString&, bool = true );
 
-  bool         isOverwrite() const { return myIsOverwrite; }
+  bool         isOverwrite( const QString& fileName) const;
 
 private:
   bool         myIsOverwrite;

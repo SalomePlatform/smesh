@@ -422,9 +422,14 @@ module SMESH
     string GetMEDVersion(in string theFileName);
 
     /*!
-     * \brief Check compatibility of file with MED format being used.
+     * \brief Check compatibility of file with MED format being used, for read only.
      */
     boolean CheckCompatibility(in string theFileName);
+
+    /*!
+     * \brief Check compatibility of file with MED format being used, for append on write.
+     */
+    boolean CheckWriteCompatibility(in string theFileName);
 
     /*!
      * \brief Get names of meshes defined in file with the specified name.

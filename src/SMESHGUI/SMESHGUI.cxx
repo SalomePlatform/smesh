@@ -655,7 +655,8 @@ namespace
     // Get parameters of export operation
 
     QString aFilename;
-    int aFormat =-1; // for MED minor versions
+    int aFormat =-1;         // for MED minor versions
+    bool isOkToWrite = true; // to check MED file version compatibility before adding a mesh in an existing file
 
     // Init the parameters with the default values
     bool aIsASCII_STL   = true;
@@ -708,7 +709,7 @@ namespace
 
       if ( fd->exec() )
         aFilename = fd->selectedFile();
-      toOverwrite    = fv->isOverwrite();
+      toOverwrite    = fv->isOverwrite(aFilename);
       toCreateGroups = fd->IsChecked(0);
       SMESHGUI::resourceMgr()->setValue("SMESH", theByTypeResource, toCreateGroups );
 
@@ -747,19 +748,19 @@ namespace
       if ( isMED ) {
         //filters << QObject::tr( "MED_FILES_FILTER" ) + " (*.med)";
         QString vmed (aMesh->GetVersionString(-1, 2));
-        MESSAGE("MED version: " << vmed.toStdString());
+        //MESSAGE("MED version: " << vmed.toStdString());
         int minor = vmed.split(".").last().toInt();
-        MESSAGE("MED version minor: "<< minor);
-        minor +=3; // TODO test, to remove
+        //MESSAGE("MED version minor: "<< minor);
+        //minor +=3;                  // TODO remove: test multiple minor
         aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( vmed ) + " (*.med)", minor );
         for (int ii=0; ii<minor; ii++)
           {
             QString vs = aMesh->GetVersionString(ii, 2);
-            std::ostringstream vss; // TODO test, to remove
-            vss << "4.";            //
-            vss << ii;              //
-            vs = vss.str().c_str(); // TODO test, to remove
-            MESSAGE("MED version: " << vs.toStdString());
+            //std::ostringstream vss; // TODO remove: test multiple minor
+            //vss << "4.";            // TODO remove: test multiple minor
+            //vss << ii;              // TODO remove: test multiple minor
+            //vs = vss.str().c_str(); // TODO remove: test multiple minor
+            //MESSAGE("MED version: " << vs.toStdString());
             aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( vs ) + " (*.med)",  ii);
           }
       }
@@ -810,6 +811,8 @@ namespace
 
       bool is_ok = false;
       while (!is_ok) {
+        //MESSAGE("******* Loop on file dialog ***********");
+        isOkToWrite =true;
         if ( fd->exec() )
           aFilename = fd->selectedFile();
         else {
@@ -817,13 +820,13 @@ namespace
           break;
         }
         aFormat = aFilterMap[fd->selectedNameFilter()];
-        MESSAGE("selected minor: " << aFormat);
-        toOverwrite = fv->isOverwrite();
+        //MESSAGE("selected minor: " << aFormat << " file: " << aFilename.toUtf8().constData());
+        toOverwrite = fv->isOverwrite(aFilename);
         is_ok = true;
         if ( !aFilename.isEmpty() ) {
           if( !toOverwrite ) {
             // can't append to an existing using other format
-            bool isVersionOk = SMESHGUI::GetSMESHGen()->CheckCompatibility( aFilename.toUtf8().constData() );
+            bool isVersionOk = SMESHGUI::GetSMESHGen()->CheckWriteCompatibility( aFilename.toUtf8().constData() );
             if ( !isVersionOk ) {
               int aRet = SUIT_MessageBox::warning(SMESHGUI::desktop(),
                                                   QObject::tr("SMESH_WRN_WARNING"),
@@ -831,11 +834,17 @@ namespace
                                                   QObject::tr("SMESH_BUT_YES"),
                                                   QObject::tr("SMESH_BUT_NO"), 0, 1);
               if (aRet == 0)
-                toOverwrite = true;
+                {
+                  toOverwrite = true;
+                  MESSAGE("incompatible MED file version for add, overwrite accepted");
+                }
               else
-                is_ok = false;
+                {
+                  isOkToWrite = false;
+                  is_ok = false;
+                  MESSAGE("incompatible MED file version for add, overwrite refused");
+                }
             }
-
             QStringList aMeshNamesCollisionList;
             SMESH::string_array_var aMeshNames = SMESHGUI::GetSMESHGen()->GetMeshNames( aFilename.toUtf8().constData() );
             for( int i = 0, n = aMeshNames->length(); i < n; i++ ) {
@@ -848,7 +857,8 @@ namespace
                 }
               }
             }
-            if( !aMeshNamesCollisionList.isEmpty() ) {
+           if( !aMeshNamesCollisionList.isEmpty() ) {
+              isOkToWrite = false;
               QString aMeshNamesCollisionString = aMeshNamesCollisionList.join( ", " );
               int aRet = SUIT_MessageBox::warning(SMESHGUI::desktop(),
                                                   QObject::tr("SMESH_WRN_WARNING"),
@@ -856,14 +866,18 @@ namespace
                                                   QObject::tr("SMESH_BUT_YES"),
                                                   QObject::tr("SMESH_BUT_NO"),
                                                   QObject::tr("SMESH_BUT_CANCEL"), 0, 2);
-              if (aRet == 0)
+             //MESSAGE("answer collision name " << aRet);
+             if (aRet == 0) {
                 toOverwrite = true;
+                isOkToWrite = true;
+              }
               else if (aRet == 2)
                 is_ok = false;
             }
           }
         }
       }
+      //MESSAGE(" ****** end of file dialog loop")
       toCreateGroups = fd->IsChecked(0);
       toFindOutDim   = fd->IsChecked(1);
       fieldSelWdg->GetSelectedFields();
@@ -898,8 +912,9 @@ namespace
 //           if ( SMESHGUI::automaticUpdate() )
 //             SMESH::UpdateView();
 //         }
-        if ( isMED )
+        if ( isMED && isOkToWrite)
         {
+          //MESSAGE("OK to write MED file "<< aFilename.toUtf8().constData());
           aMeshIter = aMeshList.begin();
           for( int aMeshIndex = 0; aMeshIter != aMeshList.end(); aMeshIter++, aMeshIndex++ )
           {

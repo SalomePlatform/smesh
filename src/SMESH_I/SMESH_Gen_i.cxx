@@ -2959,12 +2959,24 @@ char* SMESH_Gen_i::GetMEDVersion(const char* theFileName)
 /*!
  *  SMESH_Gen_i::CheckCompatibility
  *
- *  Check compatibility of file with MED format being used.
+ *  Check compatibility of file with MED format being used, read only.
  */
 //================================================================================
 CORBA::Boolean SMESH_Gen_i::CheckCompatibility(const char* theFileName)
 {
   return MED::CheckCompatibility( theFileName );
+}
+
+//================================================================================
+/*!
+ *  SMESH_Gen_i::CheckWriteCompatibility
+ *
+ *  Check compatibility of file with MED format being used, for append on write.
+ */
+//================================================================================
+CORBA::Boolean SMESH_Gen_i::CheckWriteCompatibility(const char* theFileName)
+{
+  return MED::CheckCompatibility( theFileName, true );
 }
 
 //================================================================================
@@ -2976,10 +2988,12 @@ CORBA::Boolean SMESH_Gen_i::CheckCompatibility(const char* theFileName)
 //================================================================================
 SMESH::string_array* SMESH_Gen_i::GetMeshNames(const char* theFileName)
 {
+  //MESSAGE("GetMeshNames " << theFileName);
   SMESH::string_array_var aResult = new SMESH::string_array();
   MED::PWrapper aMed = MED::CrWrapperR( theFileName );
   MED::TErr anErr;
   MED::TInt aNbMeshes = aMed->GetNbMeshes( &anErr );
+  //MESSAGE("---" << aNbMeshes);
   if( anErr >= 0 ) {
     aResult->length( aNbMeshes );
     for( MED::TInt i = 0; i < aNbMeshes; i++ ) {

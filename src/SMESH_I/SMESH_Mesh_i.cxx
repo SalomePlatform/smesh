@@ -3005,7 +3005,7 @@ void SMESH_Mesh_i::ExportMED(const char*        file,
                              CORBA::Boolean     autoDimension)
   throw(SALOME::SALOME_Exception)
 {
-  MESSAGE("MED minor version: "<< minor);
+  //MESSAGE("MED minor version: "<< minor);
   SMESH_TRY;
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
@@ -3136,7 +3136,7 @@ void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
                                    const char*               geomAssocFields)
   throw (SALOME::SALOME_Exception)
 {
-  MESSAGE("MED minor version: "<< minor);
+  //MESSAGE("MED minor version: "<< minor);
   SMESH_TRY;
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();

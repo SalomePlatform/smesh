@@ -35,6 +35,7 @@ extern "C"
   #include <unistd.h>
 #endif
 }
+#include <utilities.h>
 
 namespace MED
 {
@@ -47,22 +48,24 @@ namespace MED
 #endif
   }
 
-  bool CheckCompatibility(const std::string& fileName)
+  bool CheckCompatibility(const std::string& fileName, bool isForAppend)
   {
     bool ok = false;
     // check that file is accessible
     if ( exists(fileName) ) {
       // check HDF5 && MED compatibility
       med_bool hdfok, medok;
-      MEDfileCompatibility(fileName.c_str(), &hdfok, &medok);
-      if ( hdfok && medok ) {
+      med_err r0 = MEDfileCompatibility(fileName.c_str(), &hdfok, &medok);
+      //MESSAGE(r0 << " " << hdfok << " " << medok);
+      if ( r0==0 && hdfok && medok ) {
         med_idt aFid = MEDfileOpen(fileName.c_str(), MED_ACC_RDONLY);
         if (aFid >= 0) {
           med_int major, minor, release;
           med_err ret = MEDfileNumVersionRd(aFid, &major, &minor, &release);
+          //MESSAGE(ret << " " << major << "." << minor << "." << release);
           if (ret >= 0) {
-            int version = 100*major + minor;
-            if (version >= 202)
+            bool isReadOnly = !isForAppend;
+            if ( isReadOnly  || ((major == MED_MAJOR_NUM) && (minor == MED_MINOR_NUM)))
               ok = true;
           }
         }
@@ -113,7 +116,7 @@ namespace MED
 
   PWrapper CrWrapperW(const std::string& fileName, int theMinor)
   {
-    if (!CheckCompatibility(fileName))
+    if (!CheckCompatibility(fileName, true))
       remove(fileName.c_str());
     return new MED::TWrapper(fileName, theMinor);
   }

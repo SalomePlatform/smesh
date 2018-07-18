@@ -72,3 +72,10 @@ bool SMESHGUI_FileValidator::canSave( const QString& fileName, bool checkPermiss
   }
   return true;
 }
+
+bool SMESHGUI_FileValidator::isOverwrite( const QString& fileName) const
+{
+  if ( QFile::exists( fileName ) )
+    return myIsOverwrite;
+  return true;
+}
