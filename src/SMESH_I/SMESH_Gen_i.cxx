@@ -3075,7 +3075,6 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
             myMesh->Load(); // load from study file if not yet done
             TPythonDump pd; // not to dump GetGroups()
             SMESH::ListOfGroups_var groups = myMesh->GetGroups();
-            pd << ""; // to avoid optimizing pd out
             for ( CORBA::ULong i = 0; i < groups->length(); ++i )
             {
               SMESH_GroupBase_i* grImpl = SMESH::DownCast<SMESH_GroupBase_i*>( groups[i]);
@@ -3327,6 +3326,17 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                   aDataset->CloseOnDisk();
                 }
               }
+            }
+
+            // Store file info
+            std::string info = myImpl->FileInfoToString();
+            if ( !info.empty() )
+            {
+              aSize[ 0 ] = info.size();
+              aDataset = new HDFdataset( "file info", aTopGroup, HDF_STRING, aSize, 1 );
+              aDataset->CreateOnDisk();
+              aDataset->WriteOnDisk( (char*) info.data() );
+              aDataset->CloseOnDisk();
             }
 
             // write applied hypotheses if exist
@@ -4352,6 +4362,18 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
             aDataset->CloseOnDisk();
             myNewMeshImpl->GetImpl().GetMeshDS()->SetPersistentId( *meshPersistentId );
             delete [] meshPersistentId;
+          }
+
+          // Restore file info
+          if ( aTopGroup->ExistInternalObject( "file info" ))
+          {
+            aDataset = new HDFdataset( "file info", aTopGroup );
+            aDataset->OpenOnDisk();
+            size = aDataset->GetSize();
+            std::string info( size, ' ');
+            aDataset->ReadFromDisk( (char*) info.data() );
+            aDataset->CloseOnDisk();
+            myNewMeshImpl->FileInfoFromString( info );
           }
         }
       }

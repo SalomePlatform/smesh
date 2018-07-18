@@ -595,6 +595,12 @@ public:
   virtual SMESH::MedFileInfo* GetMEDFileInfo();
 
   /*!
+   * Persistence of file info
+   */
+  std::string FileInfoToString();
+  void FileInfoFromString(const std::string& info);
+
+  /*!
    * Sets list of notebook variables used for Mesh operations separated by ":" symbol
    */
   void SetParameters (const char* theParameters);

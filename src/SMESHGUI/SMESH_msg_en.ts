@@ -4321,7 +4321,7 @@ Use Display Entity menu command to show them.
     </message>
     <message>
         <source>MEN_FILE_INFO</source>
-        <translation>MED File Information</translation>
+        <translation>File Information</translation>
     </message>
     <message>
         <source>SMESH_WRN_NO_APPROPRIATE_SELECTION</source>
