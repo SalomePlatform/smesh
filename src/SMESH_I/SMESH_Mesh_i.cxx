@@ -445,6 +445,13 @@ SMESH::DriverMED_ReadStatus SMESH_Mesh_i::ImportCGNSFile( const char*  theFileNa
 
   CreateGroupServants();
 
+  _medFileInfo           = new SMESH::MedFileInfo();
+  _medFileInfo->fileName = theFileName;
+  _medFileInfo->major    = 0;
+  _medFileInfo->minor    = 0;
+  _medFileInfo->release  = 0;
+  _medFileInfo->fileSize = SMESH_File( theFileName ).size();
+
   return ConvertDriverMEDReadStatus(status);
 }
 
@@ -479,6 +486,13 @@ int SMESH_Mesh_i::ImportUNVFile( const char* theFileName )
 
   CreateGroupServants();
 
+  _medFileInfo           = new SMESH::MedFileInfo();
+  _medFileInfo->fileName = theFileName;
+  _medFileInfo->major    = 0;
+  _medFileInfo->minor    = 0;
+  _medFileInfo->release  = 0;
+  _medFileInfo->fileSize = SMESH_File( theFileName ).size();
+
   SMESH_CATCH( SMESH::throwCorbaException );
 
   return 1;
@@ -503,6 +517,12 @@ int SMESH_Mesh_i::ImportSTLFile( const char* theFileName )
     SALOMEDS::SObject_wrap meshSO = _gen_i->ObjectToSObject( _this() );
     _gen_i->SetName( meshSO, name.c_str() );
   }
+  _medFileInfo           = new SMESH::MedFileInfo();
+  _medFileInfo->fileName = theFileName;
+  _medFileInfo->major    = 0;
+  _medFileInfo->minor    = 0;
+  _medFileInfo->release  = 0;
+  _medFileInfo->fileSize = SMESH_File( theFileName ).size();
 
   SMESH_CATCH( SMESH::throwCorbaException );
 
@@ -540,6 +560,13 @@ SMESH::ComputeError* SMESH_Mesh_i::ImportGMFFile( const char* theFileName,
   SMESH_TRY;
 
   error = _impl->GMFToMesh( theFileName, theMakeRequiredGroups );
+
+  _medFileInfo           = new SMESH::MedFileInfo();
+  _medFileInfo->fileName = theFileName;
+  _medFileInfo->major    = 0;
+  _medFileInfo->minor    = 0;
+  _medFileInfo->release  = 0;
+  _medFileInfo->fileSize = SMESH_File( theFileName ).size();
 
   SMESH_CATCH( exceptionToComputeError );
 #undef SMESH_CAUGHT
@@ -5071,6 +5098,48 @@ SMESH::MedFileInfo* SMESH_Mesh_i::GetMEDFileInfo()
     res->fileSize = res->major = res->minor = res->release = -1;
   }
   return res._retn();
+}
+
+//=======================================================================
+//function : FileInfoToString
+//purpose  : Persistence of file info
+//=======================================================================
+
+std::string SMESH_Mesh_i::FileInfoToString()
+{
+  std::string s;
+  if ( &_medFileInfo.in() && _medFileInfo->fileName[0] )
+  {
+    s = SMESH_Comment( _medFileInfo->fileSize )
+      << " " << _medFileInfo->major
+      << " " << _medFileInfo->minor
+      << " " << _medFileInfo->release
+      << " " << _medFileInfo->fileName;
+  }
+  return s;
+}
+
+//=======================================================================
+//function : FileInfoFromString
+//purpose  : Persistence of file info
+//=======================================================================
+
+void SMESH_Mesh_i::FileInfoFromString(const std::string& info)
+{
+  std::string size, major, minor, release, fileName;
+  std::istringstream is(info);
+  is >> size >> major >> minor >> release;
+  fileName = info.data() + ( size.size()   + 1 +
+                             major.size()  + 1 +
+                             minor.size()  + 1 +
+                             release.size()+ 1 );
+
+  _medFileInfo           = new SMESH::MedFileInfo();
+  _medFileInfo->fileName = fileName.c_str();
+  _medFileInfo->fileSize = atoi( size.c_str() );
+  _medFileInfo->major    = atoi( major.c_str() );
+  _medFileInfo->minor    = atoi( minor.c_str() );
+  _medFileInfo->release  = atoi( release.c_str() );
 }
 
 //=============================================================================
