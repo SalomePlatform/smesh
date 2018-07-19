@@ -811,7 +811,7 @@ namespace
 
       bool is_ok = false;
       while (!is_ok) {
-        //MESSAGE("******* Loop on file dialog ***********");
+        MESSAGE("******* Loop on file dialog ***********");
         isOkToWrite =true;
         if ( fd->exec() )
           aFilename = fd->selectedFile();
@@ -820,13 +820,15 @@ namespace
           break;
         }
         aFormat = aFilterMap[fd->selectedNameFilter()];
-        //MESSAGE("selected minor: " << aFormat << " file: " << aFilename.toUtf8().constData());
+        MESSAGE("selected minor: " << aFormat << " file: " << aFilename.toUtf8().constData());
         toOverwrite = fv->isOverwrite(aFilename);
+        MESSAGE("toOverwrite:" << toOverwrite);
         is_ok = true;
         if ( !aFilename.isEmpty() ) {
           if( !toOverwrite ) {
             // can't append to an existing using other format
             bool isVersionOk = SMESHGUI::GetSMESHGen()->CheckWriteCompatibility( aFilename.toUtf8().constData() );
+            MESSAGE("Append check, isVersionOk:" << isVersionOk);
             if ( !isVersionOk ) {
               int aRet = SUIT_MessageBox::warning(SMESHGUI::desktop(),
                                                   QObject::tr("SMESH_WRN_WARNING"),
@@ -866,7 +868,7 @@ namespace
                                                   QObject::tr("SMESH_BUT_YES"),
                                                   QObject::tr("SMESH_BUT_NO"),
                                                   QObject::tr("SMESH_BUT_CANCEL"), 0, 2);
-             //MESSAGE("answer collision name " << aRet);
+             MESSAGE("answer collision name " << aRet);
              if (aRet == 0) {
                 toOverwrite = true;
                 isOkToWrite = true;
@@ -877,7 +879,7 @@ namespace
           }
         }
       }
-      //MESSAGE(" ****** end of file dialog loop")
+      MESSAGE(" ****** end of file dialog loop, toOverwrite:" << toOverwrite << " isOkToWrite:" << isOkToWrite);
       toCreateGroups = fd->IsChecked(0);
       toFindOutDim   = fd->IsChecked(1);
       fieldSelWdg->GetSelectedFields();
@@ -914,7 +916,7 @@ namespace
 //         }
         if ( isMED && isOkToWrite)
         {
-          //MESSAGE("OK to write MED file "<< aFilename.toUtf8().constData());
+          MESSAGE("OK to write MED file "<< aFilename.toUtf8().constData());
           aMeshIter = aMeshList.begin();
           for( int aMeshIndex = 0; aMeshIter != aMeshList.end(); aMeshIter++, aMeshIndex++ )
           {
