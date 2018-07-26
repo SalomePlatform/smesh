@@ -38,7 +38,7 @@ import math
 
 def MakeFace(lstEdges) :
     """
-    Creates a planar face from 4 edges
+    Create a planar face from 4 edges
     """
     wire = geompy.MakeWire(lstEdges)
     face = geompy.MakeFace(wire, 1)

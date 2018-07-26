@@ -4751,7 +4751,9 @@ SMESH::ListOfFreeBorders* SMESH_MeshEditor_i::FindFreeBorders(CORBA::Boolean clo
 //purpose  : Fill with 2D elements a hole defined by a FreeBorder.
 //=======================================================================
 
-void SMESH_MeshEditor_i::FillHole(const SMESH::FreeBorder& theHole)
+SMESH::SMESH_Group_ptr 
+SMESH_MeshEditor_i::FillHole(const SMESH::FreeBorder& theHole,
+                             const char*              theGroupName)
   throw (SALOME::SALOME_Exception)
 {
   initData();
@@ -4774,6 +4776,7 @@ void SMESH_MeshEditor_i::FillHole(const SMESH::FreeBorder& theHole)
 
   SMESH_TRY;
 
+  // prepare a preview mesh
   MeshEditor_I::TPreviewMesh* previewMesh = 0;
   SMDS_Mesh* meshDS = getMeshDS();
   if ( myIsPreviewMode )
@@ -4796,26 +4799,66 @@ void SMESH_MeshEditor_i::FillHole(const SMESH::FreeBorder& theHole)
     meshDS = previewMesh->GetMeshDS();
   }
 
+  // fill the hole
   std::vector<const SMDS_MeshElement*> newFaces;
   SMESH_MeshAlgos::FillHole( bordNodes, *meshDS, newFaces );
 
   if ( myIsPreviewMode )
   {
+    // show new faces
     previewMesh->Clear();
     for ( size_t i = 0; i < newFaces.size(); ++i )
       previewMesh->Copy( newFaces[i] );
   }
   else
   {
+    // return new faces via a group
+    SMESH::SMESH_Group_var group;
+    if ( theGroupName && theGroupName[0] && !newFaces.empty() )
+    {
+      SMESH::ListOfGroups_var groups = myMesh_i->GetGroups();
+      for ( CORBA::ULong i = 0; i < groups->length(); ++i )
+      {
+        SMESH::SMESH_GroupBase_var g = groups[ i ];
+        if ( g->GetType() != SMESH::FACE ) continue;
+        SMESH::SMESH_Group_var standalone = SMESH::SMESH_Group::_narrow( g );
+        if ( standalone->_is_nil() ) continue;
+        CORBA::String_var name = g->GetName();
+        if ( strcmp( theGroupName, name.in() ) == 0 )
+        {
+          group = standalone;
+          break;
+        }
+      }
+      if ( group->_is_nil() )
+        group = myMesh_i->CreateGroup( SMESH::FACE, theGroupName );
+
+      if ( !group->_is_nil() )
+      {
+        SMESH_GroupBase_i * grpI = SMESH::DownCast< SMESH_GroupBase_i* >( group );
+        SMESHDS_Group*     grpDS = static_cast< SMESHDS_Group* >( grpI->GetGroupDS() );
+        for ( size_t i = 0; i < newFaces.size(); ++i )
+          grpDS->Add( newFaces[ i ]);
+      }
+    }
+
+    // fill LastCreated
     getEditor().ClearLastCreated();
     SMESH_SequenceOfElemPtr& aSeq =
       const_cast<SMESH_SequenceOfElemPtr&>( getEditor().GetLastCreatedElems() );
     aSeq.swap( newFaces );
 
-    TPythonDump() << this << ".FillHole( SMESH.FreeBorder(" << theHole.nodeIDs << " ))";
+    TPythonDump pyDump;
+    if ( group->_is_nil() ) pyDump << "_group = ";
+    else                    pyDump << group << " = ";
+    pyDump << this << ".FillHole( SMESH.FreeBorder(" << theHole.nodeIDs << " ))";
+
+    return group._retn();
   }
 
   SMESH_CATCH( SMESH::throwCorbaException );
+
+  return SMESH::SMESH_Group::_nil();
 }
 
 //=======================================================================

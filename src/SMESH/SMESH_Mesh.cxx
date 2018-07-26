@@ -1347,8 +1347,8 @@ bool SMESH_Mesh::IsComputedOK()
   if ( NbNodes() == 0 )
     return false;
 
-  if ( !HasShapeToMesh() )
-    return true;
+  // if ( !HasShapeToMesh() )
+  //   return true;
 
   if ( SMESH_subMesh* mainSM = GetSubMeshContaining( 1 ))
   {

@@ -127,7 +127,7 @@ def main(plugin_name, dummymeshhelp = True, output_file = "smeshBuilder.py", for
                     if hasattr( algo, "docHelper" ): docHelper = getattr( algo, "docHelper" )
                     if docHelper: break
                     pass
-                if not docHelper: docHelper = "Creates new algorithm."
+                if not docHelper: docHelper = "Create new algorithm."
                 if format == "doxygen":
                     output.append( " ## %s" % docHelper )
                     output.append( " #" )

@@ -891,8 +891,10 @@ void SMESH_Gen_i::UpdateIcons( SMESH::SMESH_Mesh_ptr theMesh )
     SetPixMap( so, "ICON_SMESH_TREE_MESH_WARN" );
   else if ( mesh_i->IsComputedOK() )
     SetPixMap( so, "ICON_SMESH_TREE_MESH" );
-  else
+  else if ( mesh_i->HasShapeToMesh() )
     SetPixMap( so, "ICON_SMESH_TREE_MESH_PARTIAL" );
+  else
+    SetPixMap( so, "ICON_SMESH_TREE_MESH_IMPORTED" );
 
   // set icons of sub-objects
   SALOMEDS::Study_var         study = getStudyServant();

@@ -3043,7 +3043,7 @@ bool ConnectedElements::IsSatisfy( long theElementId )
       {
         // keep elements of myType
         const SMDS_MeshElement* element = eIt->next();
-        if ( element->GetType() == myType )
+        if ( myType == SMDSAbs_All || element->GetType() == myType )
           myOkIDs.insert( myOkIDs.end(), element->GetID() );
 
         // enqueue nodes of the element
@@ -4869,7 +4869,7 @@ bool BelongToGeom::IsSatisfy (long theId)
   {
     if ( const SMDS_MeshElement* anElem = myMeshDS->FindElement( theId ))
     {
-      if ( anElem->GetType() == myType )
+      if ( myType == SMDSAbs_All || anElem->GetType() == myType )
       {
         if ( anElem->getshapeId() < 1 )
           return myElementsOnShapePtr->IsSatisfy(theId);
@@ -5009,7 +5009,8 @@ bool LyingOnGeom::IsSatisfy( long theId )
   if ( mySubShapesIDs.Contains( elem->getshapeId() ))
     return true;
 
-  if ( elem->GetType() != SMDSAbs_Node && elem->GetType() == myType )
+  if (( elem->GetType() != SMDSAbs_Node ) &&
+      ( myType == SMDSAbs_All || elem->GetType() == myType ))
   {
     SMDS_ElemIteratorPtr nodeItr = elem->nodesIterator();
     while ( nodeItr->more() )
