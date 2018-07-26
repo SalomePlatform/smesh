@@ -884,25 +884,25 @@ namespace {
     bool isValidName = true;
     int nbUnderscore = 0;
     int p;
-    // replace not allowed chars by underscore
-    const char* name = aName.ToCString();
-    for ( p = 0; name[p]; ++p ) {
-      if ( !isalnum( name[p] ) && name[p] != '_' )
-      {
-        if ( p == 0 || p+1 == aName.Length() || name[p-1] == '_')
-        {
-          aName.Remove( p+1, 1 ); // remove __ and _ from the start and the end
-          --p;
-          name = aName.ToCString();
-        }
-        else
-        {
-          aName.SetValue( p+1, '_');
-          nbUnderscore++;
-        }
-        isValidName = false;
-      }
-    }
+//    // replace not allowed chars by underscore
+//    const char* name = aName.ToCString();
+//    for ( p = 0; name[p]; ++p ) {
+//      if ( !isalnum( name[p] ) && name[p] != '_' )
+//      {
+//        if ( p == 0 || p+1 == aName.Length() || name[p-1] == '_')
+//        {
+//          aName.Remove( p+1, 1 ); // remove __ and _ from the start and the end
+//          --p;
+//          name = aName.ToCString();
+//        }
+//        else
+//        {
+//          aName.SetValue( p+1, '_');
+//          nbUnderscore++;
+//        }
+//        isValidName = false;
+//      }
+//    }
     // aName must not start with a digit
     if ( aName.IsIntegerValue() ) {
       aName.Insert( 1, 'a' );
