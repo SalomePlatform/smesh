@@ -1598,7 +1598,7 @@ class Mesh(metaclass = MeshMeta):
 
                    algo1D = mesh.Segment(geom=Edge_1)
 
-                creates a sub-mesh on *Edge_1* and assign Wire Discretization algorithm to it.
+                create a sub-mesh on *Edge_1* and assign Wire Discretization algorithm to it.
                 The created sub-mesh can be retrieved from the algorithm::
 
                    submesh = algo1D.GetSubMesh()
@@ -1627,6 +1627,12 @@ class Mesh(metaclass = MeshMeta):
         """
 
         self.mesh = self.smeshpyD.CreateMesh(geom)
+
+    def HasShapeToMesh(self):
+        """
+        Return ``True`` if this mesh is based on geometry
+        """
+        return self.mesh.HasShapeToMesh()
 
     def Load(self):
         """
@@ -2404,7 +2410,7 @@ class Mesh(metaclass = MeshMeta):
     # ----------------------
     def CreateEmptyGroup(self, elementType, name):
         """
-        Create an empty mesh group
+        Create an empty standalone mesh group
 
         Parameters:
                 elementType: the :class:`type <SMESH.ElementType>` of elements in the group; 
@@ -2439,7 +2445,7 @@ class Mesh(metaclass = MeshMeta):
     def GroupOnGeom(self, grp, name="", typ=None):
         """
         Create a mesh group based on the geometrical object *grp*
-        and gives a *name*.
+        and give it a *name*.
         if *name* is not defined the name of the geometric group is used
 
         Parameters:
@@ -2484,8 +2490,8 @@ class Mesh(metaclass = MeshMeta):
 
     def GroupOnFilter(self, typ, name, filter):
         """
-        Create a mesh group with given *name* based on the *filter* which
-        is a special type of group dynamically updating it's contents during
+        Create a mesh group with given *name* based on the *filter*.
+        It is a special type of group dynamically updating it's contents during
         mesh modification
 
         Parameters:
@@ -2635,15 +2641,15 @@ class Mesh(metaclass = MeshMeta):
 
     def GetGroups(self, elemType = SMESH.ALL):
         """
-        Get the list of groups existing in the mesh in the order
-        of creation (starting from the oldest one)
+        Get the list of groups existing in the mesh in the order of creation 
+        (starting from the oldest one)
 
         Parameters:
                 elemType (SMESH.ElementType): type of elements the groups contain;
                         by default groups of elements of all types are returned
 
         Returns:
-                a sequence of :class:`SMESH.SMESH_GroupBase`
+                a list of :class:`SMESH.SMESH_GroupBase`
         """
 
         groups = self.mesh.GetGroups()
@@ -3997,7 +4003,7 @@ class Mesh(metaclass = MeshMeta):
 
     def SetNodeOnVertex(self, NodeID, Vertex):
         """
-        Binds a node to a vertex
+        Bind a node to a vertex
 
         Parameters:
                 NodeID: a node ID
@@ -4020,7 +4026,7 @@ class Mesh(metaclass = MeshMeta):
 
     def SetNodeOnEdge(self, NodeID, Edge, paramOnEdge):
         """
-        Stores the node position on an edge
+        Store the node position on an edge
 
         Parameters:
                 NodeID: a node ID
@@ -4043,7 +4049,7 @@ class Mesh(metaclass = MeshMeta):
 
     def SetNodeOnFace(self, NodeID, Face, u, v):
         """
-        Stores node position on a face
+        Store node position on a face
 
         Parameters:
                 NodeID: a node ID
@@ -4067,7 +4073,7 @@ class Mesh(metaclass = MeshMeta):
 
     def SetNodeInVolume(self, NodeID, Solid):
         """
-        Binds a node to a solid
+        Bind a node to a solid
 
         Parameters:
                 NodeID: a node ID
@@ -6140,7 +6146,7 @@ class Mesh(metaclass = MeshMeta):
 
         return self.editor.FindFreeBorders( ClosedOnly )
 
-    def FillHole(self, holeNodes):
+    def FillHole(self, holeNodes, groupName=""):
         """
         Fill with 2D elements a hole defined by a SMESH.FreeBorder.
 
@@ -6148,6 +6154,9 @@ class Mesh(metaclass = MeshMeta):
             FreeBorder: either a SMESH.FreeBorder or a list on node IDs. These nodes
                 must describe all sequential nodes of the hole border. The first and the last
                 nodes must be the same. Use :meth:`FindFreeBorders` to get nodes of holes.
+            groupName (string): name of a group to add new faces
+        Returns:
+            a :class:`group <SMESH.SMESH_GroupBase>` containing the new faces; or :code:`None` if :option:`groupName` == ""
         """
 
 
@@ -6155,7 +6164,7 @@ class Mesh(metaclass = MeshMeta):
             holeNodes = SMESH.FreeBorder(nodeIDs=holeNodes)
         if not isinstance( holeNodes, SMESH.FreeBorder ):
             raise TypeError("holeNodes must be either SMESH.FreeBorder or list of integer and not %s" % holeNodes)
-        self.editor.FillHole( holeNodes )
+        self.editor.FillHole( holeNodes, groupName )
 
     def FindCoincidentFreeBorders (self, tolerance=0.):
         """

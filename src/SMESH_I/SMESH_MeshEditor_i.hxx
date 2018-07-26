@@ -573,8 +573,10 @@ public:
 
   /*!
    * Fill with 2D elements a hole defined by a FreeBorder.
+   * Optionally add new faces to a given group, which is returned
    */
-  void FillHole(const SMESH::FreeBorder& hole)
+  SMESH::SMESH_Group_ptr FillHole(const SMESH::FreeBorder& hole,
+                                  const char*              groupName)
     throw (SALOME::SALOME_Exception);
 
   SMESH::CoincidentFreeBorders* FindCoincidentFreeBorders(CORBA::Double tolerance);

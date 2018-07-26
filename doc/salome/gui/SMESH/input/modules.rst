@@ -48,6 +48,7 @@ Constructing meshes
    Mesh.Clear
    Mesh.GetMesh
    Mesh.GetShape
+   Mesh.HasShapeToMesh
    Mesh.GetComputeErrors
    Mesh.GetAlgoState
    Mesh.GetFailedShapes

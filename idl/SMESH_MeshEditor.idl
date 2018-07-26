@@ -800,8 +800,9 @@ module SMESH
 
     /*!
      * Fill with 2D elements a hole defined by a FreeBorder.
+     * Optionally add new faces to a given group, which is returned.
      */
-    void FillHole(in FreeBorder hole)
+    SMESH_Group FillHole(in FreeBorder hole, in string groupName)
       raises (SALOME::SALOME_Exception);
 
     /*!

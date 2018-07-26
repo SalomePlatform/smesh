@@ -107,7 +107,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
     of smeshBuilder.Mesh class    
     """
 
-    docHelper  = "Creates segment 1D algorithm for edges"
+    docHelper  = "Create segment 1D algorithm for edges"
     """
     doc string of the method
     """
@@ -131,7 +131,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         Parameters:
             l : for the length of segments that cut an edge
             UseExisting : if == true - searches for an  existing hypothesis created with
-                the same parameters, else (default) - creates a new one
+                the same parameters, else (default) - Create a new one
             p : precision, used for calculation of the number of segments.
                 The precision should be a positive, meaningful value within the range [0,1].
                 In general, the number of segments is calculated with the formula:
@@ -161,7 +161,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
             length : is optional maximal allowed length of segment, if it is omitted
                 the preestimated length is used that depends on geometry size
             UseExisting : if ==true - searches for an existing hypothesis created with
-                the same parameters, else (default) - creates a new one
+                the same parameters, else (default) - Create a new one
         
         Returns:
             an instance of StdMeshers_MaxLength hypothesis
@@ -252,7 +252,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
             maxSize: defines the maximal allowed segment length
             deflection: defines the maximal allowed distance from a segment to an edge
             UseExisting: if ==true - searches for an existing hypothesis created with
-                the same parameters, else (default) - creates a new one
+                the same parameters, else (default) - Create a new one
 
         Returns:
             an instance of StdMeshers_Adaptive1D hypothesis
@@ -280,7 +280,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
             reversedEdges: is a list of edges to mesh using reversed orientation.
                 A list item can also be a tuple (edge, 1st_vertex_of_edge)
             UseExisting: if ==true - searches for an existing hypothesis created with
-                the same parameters, else (default) - creates a new one
+                the same parameters, else (default) - Create a new one
 
         Returns:
                 an instance of StdMeshers_Arithmetic1D hypothesis
@@ -314,7 +314,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
                 reversedEdges: is a list of edges to mesh using reversed orientation.
                     A list item can also be a tuple (edge, 1st_vertex_of_edge)
                 UseExisting: if ==true - searches for an existing hypothesis created with
-                    the same parameters, else (default) - creates a new one
+                    the same parameters, else (default) - Create a new one
 
             Returns:
                 an instance of StdMeshers_Geometric1D hypothesis
@@ -349,7 +349,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
             reversedEdges: is a list of edges to mesh using reversed orientation.
                 A list item can also be a tuple (edge, 1st_vertex_of_edge)
             UseExisting: if ==true - searches for an existing hypothesis created with
-                the same parameters, else (default) - creates a new one
+                the same parameters, else (default) - Create a new one
 
         Returns:
                 an instance of StdMeshers_FixedPoints1D hypothesis
@@ -381,7 +381,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
             reversedEdges: is a list of edges to mesh using reversed orientation.
                 A list item can also be a tuple (edge, 1st_vertex_of_edge)
             UseExisting: if ==true - searches for an existing hypothesis created with
-                the same parameters, else (default) - creates a new one
+                the same parameters, else (default) - Create a new one
 
         Returns:
             an instance of StdMeshers_StartEndLength hypothesis
@@ -468,7 +468,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
                 Any other integer value means that the hypothesis will be set on the
                 whole 1D shape, where Mesh_Segment algorithm is assigned.
             UseExisting: if ==true - searches for an  existing hypothesis created with
-                the same parameters, else (default) - creates a new one
+                the same parameters, else (default) - Create a new one
         """
         
         import types
@@ -545,7 +545,7 @@ class StdMeshersBuilder_CompositeSegment(StdMeshersBuilder_Segment):
         of smeshBuilder.Mesh class
     """
 
-    docHelper  = "Creates segment 1D algorithm for edges"
+    docHelper  = "Create segment 1D algorithm for edges"
     """
     doc string of the method
     """
@@ -579,7 +579,7 @@ class StdMeshersBuilder_Segment_Python(Mesh_Algorithm):
     """
     type of algorithm used with helper function in smeshBuilder.Mesh class
     """
-    docHelper  = "Creates segment 1D algorithm for edges"
+    docHelper  = "Create segment 1D algorithm for edges"
     """
     doc string of the method
     """
@@ -605,7 +605,7 @@ class StdMeshersBuilder_Segment_Python(Mesh_Algorithm):
             n: for the number of segments that cut an edge
             func: for the python function that calculates the length of all segments
             UseExisting: if ==true - searches for the existing hypothesis created with
-                the same parameters, else (default) - creates a new one
+                the same parameters, else (default) - Create a new one
         """
         
         compFun = lambda hyp, args: False
@@ -637,7 +637,7 @@ class StdMeshersBuilder_Triangle_MEFISTO(Mesh_Algorithm):
     flag pointing whether this algorithm should be used by default in dynamic method
         of smeshBuilder.Mesh class
     """
-    docHelper  = "Creates triangle 2D algorithm for faces"
+    docHelper  = "Create triangle 2D algorithm for faces"
     """
     doc string of the method
     """
@@ -662,7 +662,7 @@ class StdMeshersBuilder_Triangle_MEFISTO(Mesh_Algorithm):
         Parameters:
             area: for the maximum area of each triangle
             UseExisting: if ==true - searches for an  existing hypothesis created with the
-                same parameters, else (default) - creates a new one
+                same parameters, else (default) - Create a new one
         """
         
         from salome.smesh.smeshBuilder import IsEqual
@@ -703,7 +703,7 @@ class StdMeshersBuilder_Quadrangle(Mesh_Algorithm):
     flag pointing whether this algorithm should be used by default in dynamic method
         of smeshBuilder.Mesh class
     """
-    docHelper  = "Creates quadrangle 2D algorithm for faces"
+    docHelper  = "Create quadrangle 2D algorithm for faces"
     """
     doc string of the method
     """
@@ -763,7 +763,7 @@ class StdMeshersBuilder_Quadrangle(Mesh_Algorithm):
                 In the case if the defined QuadrangleParameters() refer to a sole face,
                 all given points must lie on this face, else the mesher fails.
             UseExisting: if *True* - searches for the existing hypothesis created with
-                the same parameters, else (default) - creates a new one
+                the same parameters, else (default) - Create a new one
         """
         
 
@@ -810,7 +810,7 @@ class StdMeshersBuilder_Quadrangle(Mesh_Algorithm):
         Parameters:
             reversed: if True, transition area is located along the coarser meshed sides.
         UseExisting: if ==true - searches for the existing hypothesis created with
-            the same parameters, else (default) - creates a new one
+            the same parameters, else (default) - Create a new one
         """
         
         if reversed:
@@ -824,7 +824,7 @@ class StdMeshersBuilder_Quadrangle(Mesh_Algorithm):
 
         Parameters:
             UseExisting: if ==true - searches for the existing hypothesis created with
-                the same parameters, else (default) - creates a new one
+                the same parameters, else (default) - Create a new one
         """
     
         return self.QuadrangleParameters(QUAD_TRIANGLE_PREF,UseExisting=UseExisting)
@@ -839,7 +839,7 @@ class StdMeshersBuilder_Quadrangle(Mesh_Algorithm):
 
         Parameters:
             UseExisting: if ==true - searches for the existing hypothesis created with
-                the same parameters, else (default) - creates a new one
+                the same parameters, else (default) - Create a new one
         """
         
         return self.QuadrangleParameters(QUAD_REDUCED,UseExisting=UseExisting)
@@ -854,7 +854,7 @@ class StdMeshersBuilder_Quadrangle(Mesh_Algorithm):
                 Vertex can be either a GEOM_Object or a vertex ID within the
                 shape to mesh
              UseExisting: if ==true - searches for the existing hypothesis created with
-                the same parameters, else (default) - creates a new one
+                the same parameters, else (default) - Create a new one
         """
         
         return self.QuadrangleParameters(QUAD_STANDARD,vertex,UseExisting)
@@ -881,7 +881,7 @@ class StdMeshersBuilder_Hexahedron(Mesh_Algorithm):
     flag pointing whether this algorithm should be used by default in dynamic method
         of smeshBuilder.Mesh class
     """
-    docHelper  = "Creates hexahedron 3D algorithm for volumes"
+    docHelper  = "Create hexahedron 3D algorithm for volumes"
     """
     doc string of the method
     """
@@ -921,7 +921,7 @@ class StdMeshersBuilder_Projection1D(Mesh_Algorithm):
     flag pointing whether this algorithm should be used by default in dynamic method
         of smeshBuilder.Mesh class
     """
-    docHelper  = "Creates projection 1D algorithm for edges"
+    docHelper  = "Create projection 1D algorithm for edges"
     """
     doc string of the method
     """
@@ -950,7 +950,7 @@ class StdMeshersBuilder_Projection1D(Mesh_Algorithm):
             srcV: a vertex of *edge* to associate with *tgtV* (optional)
             tgtV: a vertex of *the edge* to which the algorithm is assigned, to associate with *srcV* (optional)
             UseExisting: if ==true - searches for the existing hypothesis created with
-                the same parameters, else (default) - creates a new one
+                the same parameters, else (default) - Create a new one
         """
         from salome.smesh.smeshBuilder import AssureGeomPublished, Mesh
         AssureGeomPublished( self.mesh, edge )
@@ -989,7 +989,7 @@ class StdMeshersBuilder_Projection2D(Mesh_Algorithm):
     flag pointing whether this algorithm should be used by default in dynamic method
         of smeshBuilder.Mesh class
     """
-    docHelper  = "Creates projection 2D algorithm for faces"
+    docHelper  = "Create projection 2D algorithm for faces"
     """
     doc string of the method
     """
@@ -1061,7 +1061,7 @@ class StdMeshersBuilder_Projection1D2D(StdMeshersBuilder_Projection2D):
     """
     type of algorithm used with helper function in smeshBuilder.Mesh class
     """
-    docHelper  = "Creates projection 1D-2D algorithm for faces"
+    docHelper  = "Create projection 1D-2D algorithm for faces"
     """
     doc string of the method
     """
@@ -1095,7 +1095,7 @@ class StdMeshersBuilder_Projection3D(Mesh_Algorithm):
     """
     type of algorithm used with helper function in smeshBuilder.Mesh class
     """
-    docHelper  = "Creates projection 3D algorithm for volumes"
+    docHelper  = "Create projection 3D algorithm for volumes"
     """
     doc string of the method
     """
@@ -1128,7 +1128,7 @@ class StdMeshersBuilder_Projection3D(Mesh_Algorithm):
             srcV2: a vertex of *solid* to associate with *tgtV1* (optional)
             tgtV2: a vertex of *the solid* to which the algorithm is assigned,to associate with *srcV2* (optional)
             UseExisting: if ==true - searches for the existing hypothesis created with
-                    the same parameters, else (default) - creates a new one
+                    the same parameters, else (default) - Create a new one
 
         Note: 
             association vertices must belong to one edge of a solid
@@ -1169,7 +1169,7 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
     """
     type of algorithm used with helper function in smeshBuilder.Mesh class
     """
-    docHelper  = "Creates prism 3D algorithm for volumes"
+    docHelper  = "Create prism 3D algorithm for volumes"
     """
     doc string of the method
     """
@@ -1245,7 +1245,7 @@ class StdMeshersBuilder_Prism3D(Mesh_Algorithm):
         Parameters:
             n: number of layers
             UseExisting: if ==true - searches for the existing hypothesis created with
-                the same parameters, else (default) - creates a new one
+                the same parameters, else (default) - Create a new one
         """
         if self.algoType != "RadialPrism_3D":
             print("Prism_3D algorithm doesn't support any hypothesis")
@@ -1381,7 +1381,7 @@ class StdMeshersBuilder_RadialPrism3D(StdMeshersBuilder_Prism3D):
     """
     type of algorithm used with helper function in smeshBuilder.Mesh class
     """
-    docHelper  = "Creates Raial Prism 3D algorithm for volumes"
+    docHelper  = "Create Raial Prism 3D algorithm for volumes"
     """
     doc string of the method
     """
@@ -1453,7 +1453,7 @@ class StdMeshersBuilder_RadialAlgorithm(Mesh_Algorithm):
         Parameters:
             n: number of layers
             UseExisting: if ==true - searches for the existing hypothesis created with
-                the same parameters, else (default) - creates a new one
+                the same parameters, else (default) - Create a new one
         """
         if self.distribHyp:
             self.mesh.GetMesh().RemoveHypothesis( self.geom, self.distribHyp )
@@ -1563,7 +1563,7 @@ class StdMeshersBuilder_RadialQuadrangle1D2D(StdMeshersBuilder_RadialAlgorithm):
     """
     type of algorithm used with helper function in smeshBuilder.Mesh class
     """
-    docHelper  = "Creates quadrangle 1D-2D algorithm for faces having a shape of disk or a disk segment"
+    docHelper  = "Create quadrangle 1D-2D algorithm for faces having a shape of disk or a disk segment"
     """
     doc string of the method
     """
@@ -1599,7 +1599,7 @@ class StdMeshersBuilder_QuadMA_1D2D(StdMeshersBuilder_RadialAlgorithm):
     """
     type of algorithm used with helper function in smeshBuilder.Mesh class
     """
-    docHelper  = "Creates quadrangle 1D-2D algorithm for faces"
+    docHelper  = "Create quadrangle 1D-2D algorithm for faces"
     """
     doc string of the method
     """
@@ -1637,7 +1637,7 @@ class StdMeshersBuilder_PolygonPerFace(Mesh_Algorithm):
     flag pointing whether this algorithm should be used by default in dynamic method
         of smeshBuilder.Mesh class
     """
-    docHelper  = "Creates polygon 2D algorithm for faces"
+    docHelper  = "Create polygon 2D algorithm for faces"
     """
     doc string of the method
     """
@@ -1677,7 +1677,7 @@ class StdMeshersBuilder_UseExistingElements_1D(Mesh_Algorithm):
     flag pointing whether this algorithm should be used by default in dynamic method
         of smeshBuilder.Mesh class
     """
-    docHelper  = "Creates 1D algorithm for edges with reusing of existing mesh elements"
+    docHelper  = "Create 1D algorithm for edges with reusing of existing mesh elements"
     """
     doc string of the method
     """
@@ -1704,7 +1704,7 @@ class StdMeshersBuilder_UseExistingElements_1D(Mesh_Algorithm):
             toCopyMesh: if True, the whole mesh *groups* belong to is imported
             toCopyGroups: if True, all groups of the mesh *groups* belong to are imported
             UseExisting: if ==true - searches for the existing hypothesis created with
-                the same parameters, else (default) - creates a new one
+                the same parameters, else (default) - Create a new one
         """
         for group in groups:
             from salome.smesh.smeshBuilder import AssureGeomPublished
@@ -1739,7 +1739,7 @@ class StdMeshersBuilder_UseExistingElements_1D2D(Mesh_Algorithm):
     flag pointing whether this algorithm should be used by default in dynamic method
         of smeshBuilder.Mesh class
     """
-    docHelper  = "Creates 1D-2D algorithm for faces with reusing of existing mesh elements"
+    docHelper  = "Create 1D-2D algorithm for faces with reusing of existing mesh elements"
     """
     doc string of the method
     """
@@ -1766,7 +1766,7 @@ class StdMeshersBuilder_UseExistingElements_1D2D(Mesh_Algorithm):
             toCopyMesh: if True, the whole mesh *groups* belong to is imported
             toCopyGroups: if True, all groups of the mesh *groups* belong to are imported
             UseExisting: if ==true - searches for the existing hypothesis created with
-                the same parameters, else (default) - creates a new one
+                the same parameters, else (default) - Create a new one
         """
         import SMESH
         compFun = lambda hyp, args: ( hyp.GetSourceFaces() == args[0] and \
@@ -1802,7 +1802,7 @@ class StdMeshersBuilder_Cartesian_3D(Mesh_Algorithm):
     flag pointing whether this algorithm should be used by default in dynamic method
         of smeshBuilder.Mesh class
     """
-    docHelper  = "Creates Body Fitting 3D algorithm for volumes"
+    docHelper  = "Create Body Fitting 3D algorithm for volumes"
     """
     doc string of the method
     """
@@ -1959,7 +1959,7 @@ class StdMeshersBuilder_UseExisting_1D(Mesh_Algorithm):
     """
     type of algorithm used with helper function in smeshBuilder.Mesh class
     """
-    docHelper  = "Creates 1D algorithm allowing batch meshing of edges"
+    docHelper  = "Create 1D algorithm allowing batch meshing of edges"
     """
     doc string of the method
     """
@@ -1994,7 +1994,7 @@ class StdMeshersBuilder_UseExisting_2D(Mesh_Algorithm):
     """
     type of algorithm used with helper function in smeshBuilder.Mesh class
     """
-    docHelper  = "Creates 2D algorithm allowing batch meshing of faces"
+    docHelper  = "Create 2D algorithm allowing batch meshing of faces"
     """
     doc string of the method
     """
