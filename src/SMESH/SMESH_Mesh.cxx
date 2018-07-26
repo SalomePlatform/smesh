@@ -1508,7 +1508,7 @@ void SMESH_Mesh::ExportSAUV(const char *file,
   cmd += "from medutilities import my_remove ; my_remove(r'" + medfilename + "')";
   cmd += "\"";
   system(cmd.c_str());
-  ExportMED(medfilename.c_str(), theMeshName, theAutoGroups,
+  ExportMED(medfilename.c_str(), theMeshName, theAutoGroups, /*minor=*/-1,
             /*meshPart=*/NULL, /*theAutoDimension=*/false, /*theAddODOnVertices=*/false,
             /*theAllElemsToGroup=*/true ); // theAllElemsToGroup is for PAL0023413
 #ifdef WIN32
