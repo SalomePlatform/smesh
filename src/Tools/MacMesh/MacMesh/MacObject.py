@@ -69,7 +69,7 @@ class MacObject:
         self.MeshGroups = []
         self.CheckInterfaces()
         if 'auto' in MeshParameters : self.AutoParam()
-        if not(self.MeshPar[0]<0): self.Generate()
+        if isinstance(self.MeshPar[0], list) or not(self.MeshPar[0]<0): self.Generate()
         else :
             Config.ListObj.append(self)
             print("Aborting object creation\n ")
@@ -186,7 +186,7 @@ class MacObject:
         self.MeshPar[0] = GenFunctions.CompatibilityTest(self)
 
         if isinstance( self.MeshPar[0], list ):
-            return # workaround, as CompatibilityTest() can return a list
+            return # OK
         if self.MeshPar[0] < 0 :
             Alarms.Message(4)
             if self.MeshPar[0] == -1 : print(("Problem encountered with object(s) no. "+str(ObjectsInvolved)))
