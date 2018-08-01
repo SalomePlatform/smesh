@@ -4971,6 +4971,9 @@ void SMESH_Gen_i::Close( SALOMEDS::SComponent_ptr theComponent )
   // remove the tmp files meshes are loaded from
   SMESH_PreMeshInfo::RemoveStudyFiles_TMP_METHOD( theComponent );
 
+  // Clean trace of API methods calls
+  CleanPythonTrace();
+
   return;
 }
 

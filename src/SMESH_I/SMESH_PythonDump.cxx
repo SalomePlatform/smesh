@@ -678,33 +678,33 @@ namespace SMESH
     cout << "Exception in SMESH_Gen_i::DumpPython(): " << text << endl;
 #endif
   }
-}
 
 //=======================================================================
 //function : RemoveTabulation
 //purpose  : 
 //=======================================================================
-void RemoveTabulation( TCollection_AsciiString& theScript )
-{
-  std::string aString( theScript.ToCString() );
-  std::string::size_type aPos = 0;
-  while( aPos < aString.length() )
+  void RemoveTabulation( TCollection_AsciiString& theScript )
   {
-    aPos = aString.find( "\n\t", aPos );
-    if( aPos == std::string::npos )
-      break;
-    aString.replace( aPos, 2, "\n" );
-    aPos++;
+    std::string aString( theScript.ToCString() );
+    std::string::size_type aPos = 0;
+    while( aPos < aString.length() )
+    {
+      aPos = aString.find( "\n\t", aPos );
+      if( aPos == std::string::npos )
+        break;
+      aString.replace( aPos, 2, "\n" );
+      aPos++;
+    }
+    theScript = aString.c_str();
   }
-  theScript = aString.c_str();
 }
 
 //=======================================================================
 //function : DumpPython
 //purpose  :
 //=======================================================================
-Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Boolean isPublished,
-                                           CORBA::Boolean isMultiFile,
+Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Boolean  isPublished,
+                                           CORBA::Boolean  isMultiFile,
                                            CORBA::Boolean& isValidScript)
 {
   SALOMEDS::Study_var aStudy = getStudyServant();
@@ -995,10 +995,9 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   std::list< TCollection_AsciiString > lines; // lines of a script
   std::list< TCollection_AsciiString >::iterator linesIt;
   
-  if ( isPublished )
-    lines.push_back(  aSMESHGen + " = smeshBuilder.New()" );
-   else
-    lines.push_back(  aSMESHGen + " = smeshBuilder.New(False)" );
+  lines.push_back(  aSMESHGen + " = smeshBuilder.New()" );
+  if ( !isPublished )
+    lines.push_back(  aSMESHGen + ".SetEnablePublish( False )" );
   lines.push_back( helper + "aFilterManager = " + aSMESHGen + ".CreateFilterManager()" );
   lines.push_back( helper + "aMeasurements = "  + aSMESHGen + ".CreateMeasurements()" );
 

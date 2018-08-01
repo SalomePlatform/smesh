@@ -1120,7 +1120,7 @@ bool SMESHGUI_GroupDlg::onApply()
 
       myGroupOnFilter = myMesh->CreateGroupFromFilter(aType,
                                                       myName->text().toUtf8(),
-						      myFilter);
+                                                      myFilter);
       resultGroup = SMESH::SMESH_GroupBase::_narrow( myGroupOnFilter );
       isCreation = true;
     }
