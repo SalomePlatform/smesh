@@ -33,7 +33,7 @@
 
 // ============================================================
 /*!
- * \brief Base class for elements of not contained in the mesh
+ * \brief Base class for elements not contained in the mesh
  */
 // ============================================================
 

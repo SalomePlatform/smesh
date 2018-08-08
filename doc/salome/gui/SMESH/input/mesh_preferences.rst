@@ -117,8 +117,9 @@ General Preferences
 * **Python Dump**
 
   * **Historical python dump** - allows switching between *Historical* and *Snapshot* dump mode:
-  * In *Historical* mode, Python Dump script includes all commands performed by SMESH engine.
-  * In *Snapshot* mode, the commands relating to objects removed from the Study as well as the commands not influencing the current state of meshes are excluded from the script.
+
+    * In *Historical* mode, Python Dump script includes all commands performed by SMESH engine.
+    * In *Snapshot* mode, the commands relating to objects removed from the Study as well as the commands not influencing the current state of meshes are excluded from the script.
 
 .. _mesh_tab_preferences:
 

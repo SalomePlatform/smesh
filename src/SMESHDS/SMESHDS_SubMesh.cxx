@@ -28,11 +28,43 @@
 //
 #include "SMESHDS_SubMesh.hxx"
 
-#include "SMESHDS_Mesh.hxx"
-#include "SMDS_SetIterator.hxx"
 #include "SMDS_ElementFactory.hxx"
+#include "SMDS_IteratorOnIterators.hxx"
+#include "SMDS_SetIterator.hxx"
+#include "SMESHDS_Mesh.hxx"
 
 #include <utilities.h>
+
+namespace
+{
+  typedef const SMDS_MeshElement* PElem;
+  typedef const SMDS_MeshNode*    PNode;
+
+  typedef SMDS_SetIterator< PElem, PElem const *,
+                            SMDS::SimpleAccessor< PElem, PElem const * >,
+                            SMDS::NonNullFilter< PElem > >                 EArrayIterator;
+
+  typedef SMDS_SetIterator< PNode, PNode const *,
+                            SMDS::SimpleAccessor< PNode, PNode const * >,
+                            SMDS::NonNullFilter< PNode > >                 NArrayIterator;
+
+  int ind1st( SMDSAbs_ElementType t )
+  {
+    return t == SMDSAbs_Node;
+  }
+
+  //=======================================================================
+  //class : _MyElemIteratorFromNodeIterator
+  //=======================================================================
+  class _MyElemIteratorFromNodeIterator : public SMDS_ElemIterator
+  {
+    SMDS_NodeIteratorPtr myItr;
+  public:
+    _MyElemIteratorFromNodeIterator(SMDS_NodeIteratorPtr nodeItr): myItr( nodeItr ) {}
+    bool more()                    { return myItr->more(); }
+    const SMDS_MeshElement* next() { return myItr->next(); }
+  };
+}
 
 //================================================================================
 /*!
@@ -41,11 +73,13 @@
 //================================================================================
 
 SMESHDS_SubMesh::SMESHDS_SubMesh(SMESHDS_Mesh *parent, int index)
+  : SMDS_ElementHolder( parent )
 {
   myParent = parent;
   myIndex = index;
   myNbElements = 0;
   myNbNodes = 0;
+  my1stElemNode[0] = my1stElemNode[1] = 0;
 }
 
 //================================================================================
@@ -84,6 +118,9 @@ void SMESHDS_SubMesh::AddElement(const SMDS_MeshElement * elem)
 
     elem->setShapeID( myIndex );
     myNbElements++;
+
+    // remember element with smallest ID to optimize iteration on them
+    add( elem );
   }
 }
 
@@ -102,6 +139,11 @@ bool SMESHDS_SubMesh::RemoveElement(const SMDS_MeshElement * elem )
   {
     elem->setShapeID( 0 );
     myNbElements--;
+
+    const SMDS_MeshElement* & elem1st = my1stElemNode[ ind1st( elem->GetType() )];
+    if ( elem1st == elem )
+      elem1st = 0;
+
     return true;
   }
   return false;
@@ -126,6 +168,9 @@ void SMESHDS_SubMesh::AddNode(const SMDS_MeshNode * N)
     }
     N->setShapeID( myIndex );
     myNbNodes++;
+
+    // remember node with smallest ID to optimize iteration on them
+    add( N );
   }
 }
 
@@ -144,6 +189,11 @@ bool SMESHDS_SubMesh::RemoveNode(const SMDS_MeshNode * N)
   {
     N->setShapeID( 0 );
     myNbNodes--;
+
+    const SMDS_MeshElement* & node1st = my1stElemNode[ ind1st( SMDSAbs_Node )];
+    if ( node1st == N )
+      node1st = 0;
+
     return true;
   }
   return false;
@@ -184,49 +234,6 @@ int SMESHDS_SubMesh::NbNodes() const
 
   return nbElems;
 }
-
-/*!
- * Template class used for iteration on vector of elements which can resize
- * during iteration. The iterator returns only elements present upon its creation.
- */
-template <class ELEM, typename TSET> class MySetIterator : public SMDS_Iterator<ELEM>
-{
-protected:
-  int _iCur, _iEnd, _iDelta;
-  const TSET& _table;
-public:
-  MySetIterator(const TSET& table, bool reverse): _table( table )
-  {
-    if ( reverse )
-    {
-      _iCur = _table.size()-1;
-      _iEnd = -1;
-      _iDelta = -1;
-    }
-    else
-    {
-      _iCur = 0;
-      _iEnd = _table.size();
-      _iDelta = 1;
-    }
-    if ( more() && !_table[ _iCur ])
-      next();
-  }
-
-  virtual bool more()
-  {
-    return ( _iEnd - _iCur ) * _iDelta > 0;
-  }
-
-  virtual ELEM next()
-  {
-    ELEM e = more() ? _table[ _iCur ] : 0;
-    _iCur += _iDelta;
-    while ( more() && !_table[ _iCur ])
-      _iCur += _iDelta;
-    return e;
-  }
-};
 
 // =====================
 // class MyIterator
@@ -301,7 +308,13 @@ SMDS_ElemIteratorPtr SMESHDS_SubMesh::GetElements() const
   if ( IsComplexSubmesh() )
     return SMDS_ElemIteratorPtr( new MyElemIterator( mySubMeshes ));
 
-  return myParent->shapeElementsIterator( myIndex, myNbElements );
+  const SMDS_MeshElement* const * elem1st = & my1stElemNode[ ind1st( SMDSAbs_All )];
+  if ( myNbElements == 1 )
+  {
+    return boost::make_shared< EArrayIterator >( elem1st, elem1st+1 );
+  }
+
+  return myParent->shapeElementsIterator( myIndex, myNbElements, *elem1st );
 }
 
 //=======================================================================
@@ -314,7 +327,14 @@ SMDS_NodeIteratorPtr SMESHDS_SubMesh::GetNodes() const
   if ( IsComplexSubmesh() )
     return SMDS_NodeIteratorPtr( new MyNodeIterator( mySubMeshes ));
 
-  return myParent->shapeNodesIterator( myIndex, myNbNodes );
+  PNode const * node1st =
+    reinterpret_cast< PNode const* >( & my1stElemNode[ ind1st( SMDSAbs_Node )] );
+  if ( myNbNodes == 1 )
+  {
+    return boost::make_shared< NArrayIterator >( node1st, node1st+1 );
+  }
+
+  return myParent->shapeNodesIterator( myIndex, myNbNodes, *node1st );
 }
 
 //=======================================================================
@@ -438,6 +458,7 @@ void SMESHDS_SubMesh::Clear()
 
   myNbElements = 0;
   myNbNodes = 0;
+  my1stElemNode[0] = my1stElemNode[1] = 0;
   if ( NbSubMeshes() > 0 )
   {
     SMESHDS_SubMeshIteratorPtr sub = GetSubMeshIterator();
@@ -446,4 +467,44 @@ void SMESHDS_SubMesh::Clear()
         sm->Clear();
     }
   }
+}
+
+//=======================================================================
+//function : getElements
+//purpose  : Return iterator on all elements and nodes during compacting
+//=======================================================================
+
+SMDS_ElemIteratorPtr SMESHDS_SubMesh::getElements()
+{
+  if ( IsComplexSubmesh() ) // return nothing
+    boost::make_shared< EArrayIterator >( & my1stElemNode[0], & my1stElemNode[0] );
+
+  typedef std::vector< SMDS_ElemIteratorPtr > TIterVec;
+  TIterVec iterVec(2);
+  iterVec[0] = GetElements();
+  iterVec[1].reset( new _MyElemIteratorFromNodeIterator( GetNodes() ));
+
+  return boost::make_shared< SMDS_IteratorOnIterators< PElem, TIterVec > >( iterVec );
+}
+
+//=======================================================================
+//function : tmpClear
+//purpose  : clean up after compacting
+//=======================================================================
+
+void SMESHDS_SubMesh::tmpClear()
+{
+  my1stElemNode[0] = my1stElemNode[1] = 0;
+}
+
+//=======================================================================
+//function : add
+//purpose  : update my1stElemNode
+//=======================================================================
+
+void SMESHDS_SubMesh::add( const SMDS_MeshElement* elem )
+{
+  const SMDS_MeshElement* & oldElem = my1stElemNode[ ind1st( elem->GetType() )];
+  if ( !oldElem || oldElem->GetID() > elem->GetID() )
+    oldElem = elem;
 }

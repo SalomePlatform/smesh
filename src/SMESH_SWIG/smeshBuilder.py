@@ -2189,10 +2189,11 @@ class Mesh(metaclass = MeshMeta):
                 fields: list of GEOM fields defined on the shape to mesh.
                 geomAssocFields: each character of this string means a need to export a 
                         corresponding field; correspondence between fields and characters is following:
-                        - 'v' stands for "_vertices _" field;
-                        - 'e' stands for "_edges _" field;
-                        - 'f' stands for "_faces _" field;
-                        - 's' stands for "_solids _" field.
+
+                        - 'v' stands for "_vertices_" field;
+                        - 'e' stands for "_edges_" field;
+                        - 'f' stands for "_faces_" field;
+                        - 's' stands for "_solids_" field.
         """
         # process positional arguments
         #args = [i for i in args if i not in [SMESH.MED_V2_1, SMESH.MED_V2_2]] # backward compatibility

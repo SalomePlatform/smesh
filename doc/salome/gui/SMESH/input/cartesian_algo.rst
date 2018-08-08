@@ -15,6 +15,8 @@ boundary.
 .. centered::
 	A sphere meshed by Body Fitting algorithm
 
+.. note:: The algorithm creates only 3D elements. To add 2D elements use :ref:`Generate boundary elements <make_2dmesh_from_3d_page>` operation.
+
 The meshing algorithm is as follows.
 
 #. Lines of a Cartesian structured grid defined by :ref:`Body Fitting Parameters <cartesian_hyp_anchor>` hypothesis are intersected with the geometry boundary, thus nodes lying on the boundary are found. This step also allows finding out for each node of the Cartesian grid if it is inside or outside the geometry. 

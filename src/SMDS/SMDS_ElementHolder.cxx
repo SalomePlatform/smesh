@@ -37,7 +37,8 @@
 SMDS_ElementHolder::SMDS_ElementHolder( const SMDS_Mesh* mesh )
   : myMesh( const_cast< SMDS_Mesh* >( mesh ))
 {
-  myPtrInMesh = myMesh->myElemHolders.insert( this ).first;
+  if ( myMesh )
+    myPtrInMesh = myMesh->myElemHolders.insert( this ).first;
 }
 
 //=======================================================================
@@ -47,7 +48,8 @@ SMDS_ElementHolder::SMDS_ElementHolder( const SMDS_Mesh* mesh )
 
 SMDS_ElementHolder::~SMDS_ElementHolder()
 {
-  myMesh->myElemHolders.erase( myPtrInMesh );
+  if ( myMesh )
+    myMesh->myElemHolders.erase( myPtrInMesh );
 }
 
 //=======================================================================

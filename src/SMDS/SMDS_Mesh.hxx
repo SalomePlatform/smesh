@@ -66,8 +66,12 @@ public:
   virtual SMDS_ElemIteratorPtr elementGeomIterator(SMDSAbs_GeometryType type) const;
   virtual SMDS_ElemIteratorPtr elementEntityIterator(SMDSAbs_EntityType type) const;
 
-  virtual SMDS_NodeIteratorPtr shapeNodesIterator   (int shapeID, size_t nbElemsToReturn=-1) const;
-  virtual SMDS_ElemIteratorPtr shapeElementsIterator(int shapeID, size_t nbElemsToReturn=-1) const;
+  virtual SMDS_NodeIteratorPtr shapeNodesIterator   (int                  shapeID,
+                                                     size_t               nbElemsToReturn=-1,
+                                                     const SMDS_MeshNode* sm1stNode=0) const;
+  virtual SMDS_ElemIteratorPtr shapeElementsIterator(int                     shapeID,
+                                                     size_t                  nbElemsToReturn=-1,
+                                                     const SMDS_MeshElement* sm1stElem=0) const;
 
   SMDSAbs_ElementType GetElementType( const int id, const bool iselem ) const;
 

@@ -1611,14 +1611,18 @@ SMDS_VolumeIteratorPtr SMDS_Mesh::volumesIterator() const
                                              myInfo.NbVolumes());
 }
 
-SMDS_NodeIteratorPtr SMDS_Mesh::shapeNodesIterator(int shapeID, size_t nbElemsToReturn) const
+SMDS_NodeIteratorPtr SMDS_Mesh::shapeNodesIterator(int                  shapeID,
+                                                   size_t               nbElemsToReturn,
+                                                   const SMDS_MeshNode* sm1stNode) const
 {
-  return myNodeFactory->GetShapeIterator< SMDS_NodeIterator >( shapeID, nbElemsToReturn );
+  return myNodeFactory->GetShapeIterator< SMDS_NodeIterator >( shapeID, nbElemsToReturn, sm1stNode );
 }
 
-SMDS_ElemIteratorPtr SMDS_Mesh::shapeElementsIterator(int shapeID, size_t nbElemsToReturn) const
+SMDS_ElemIteratorPtr SMDS_Mesh::shapeElementsIterator(int                     shapeID,
+                                                      size_t                  nbElemsToReturn,
+                                                      const SMDS_MeshElement* sm1stElem) const
 {
-  return myCellFactory->GetShapeIterator< SMDS_ElemIterator >( shapeID, nbElemsToReturn );
+  return myCellFactory->GetShapeIterator< SMDS_ElemIterator >( shapeID, nbElemsToReturn, sm1stElem );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

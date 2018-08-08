@@ -6,7 +6,7 @@ Basic meshing algorithms
 
 The MESH module contains a set of meshing algorithms, which are	used for meshing entities (1D, 2D, 3D sub-shapes) composing geometrical objects.
 
-.. note:: Algorithms added to the module as plug-ins are described in documentation of the plug-ins.
+.. note:: Algorithms added to the module as plug-ins are described in documentation of the plug-ins (menu **Help / User's Guide / Mesh module / Plugins**).
 
 An algorithm represents either an implementation of a certain meshing technique or an interface to the whole meshing program generating elements of several dimensions.
 

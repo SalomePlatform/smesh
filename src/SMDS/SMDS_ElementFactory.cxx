@@ -513,9 +513,10 @@ void SMDS_NodeFactory::SetShapeDim( int shapeID, int dim )
 
 SMDS_ElementChunk::SMDS_ElementChunk( SMDS_ElementFactory* factory, int id0 ):
   myFactory( factory ),
-  my1stID( id0 ),
-  myMinSubID( std::numeric_limits<int>::max() ),
-  myMaxSubID( 0 )
+  my1stID( id0 )//,
+  //mySubIDSet( 0 )
+  // myMinSubID( std::numeric_limits<int>::max() ),
+  // myMaxSubID( 0 )
 {
   if ( !myFactory )
     return;
@@ -665,7 +666,7 @@ int SMDS_ElementChunk::GetShapeID( const SMDS_MeshElement* e ) const
 
 void SMDS_ElementChunk::SetShapeID( const SMDS_MeshElement* e, int shapeID ) const
 {
-  const size_t nbRanges = mySubIDRanges.Size();
+  //const size_t nbRanges = mySubIDRanges.Size();
 
   SMDS_ElementChunk* me = const_cast<SMDS_ElementChunk*>( this );
   int oldShapeID = me->mySubIDRanges.SetValue( Index( e ), shapeID );
@@ -678,24 +679,24 @@ void SMDS_ElementChunk::SetShapeID( const SMDS_MeshElement* e, int shapeID ) con
       uv[1] = 0.;
     }
   // update min/max
-  if (( nbRanges > mySubIDRanges.Size() ) &&
-      ( myMinSubID == oldShapeID || myMaxSubID == oldShapeID ))
-  {
-    me->myMinSubID = ( std::numeric_limits<int>::max() );
-    me->myMaxSubID = 0;
-    TSubIDRangeSet::set_iterator it;
-    for ( it = mySubIDRanges.mySet.begin(); it < mySubIDRanges.mySet.end(); ++it )
-      if ( it->myValue > 0 )
-      {
-        me->myMinSubID = std::min( myMinSubID, it->myValue );
-        me->myMaxSubID = std::max( myMaxSubID, it->myValue );
-      }
-  }
-  else if ( shapeID > 0 )
-  {
-    me->myMinSubID = std::min( myMinSubID, shapeID );
-    me->myMaxSubID = std::max( myMaxSubID, shapeID );
-  }
+  // if (( nbRanges > mySubIDRanges.Size() ) &&
+  //     ( myMinSubID == oldShapeID || myMaxSubID == oldShapeID ))
+  // {
+  //   me->myMinSubID = ( std::numeric_limits<int>::max() );
+  //   me->myMaxSubID = 0;
+  //   TSubIDRangeSet::set_iterator it;
+  //   for ( it = mySubIDRanges.mySet.begin(); it < mySubIDRanges.mySet.end(); ++it )
+  //     if ( it->myValue > 0 )
+  //     {
+  //       me->myMinSubID = std::min( myMinSubID, it->myValue );
+  //       me->myMaxSubID = std::max( myMaxSubID, it->myValue );
+  //     }
+  // }
+  // else if ( shapeID > 0 )
+  // {
+  //   me->myMinSubID = std::min( myMinSubID, shapeID );
+  //   me->myMaxSubID = std::max( myMaxSubID, shapeID );
+  // }
 }
 
 //================================================================================
@@ -850,7 +851,7 @@ void SMDS_ElementChunk::Dump() const
 {
   std::cout << "1stID: " << my1stID << std::endl;
 
-  std::cout << "SubID min/max: " << myMinSubID << ", " << myMaxSubID << std::endl;
+  //std::cout << "SubID min/max: " << myMinSubID << ", " << myMaxSubID << std::endl;
   std::cout << "SubIDRanges: " << mySubIDRanges.Size() << " ";
   {
     TSubIDRangeSet::set_iterator i = mySubIDRanges.mySet.begin();

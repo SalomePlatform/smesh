@@ -108,8 +108,12 @@ public:
   //! Return an iterator on all element assigned to a given shape.
   //  nbElemsToReturn is used to optimize by stopping the iteration as soon as
   //  all elements assigned to the shape encountered.
+  //  sm1stElem is used to quickly find the first chunk holding elements of the shape;
+  //  it must have smallest ID between elements on the shape
   template< class ElemIterator >
-  boost::shared_ptr< ElemIterator > GetShapeIterator( int shapeID, size_t nbElemsToReturn );
+  boost::shared_ptr< ElemIterator > GetShapeIterator( int                     shapeID,
+                                                      size_t                  nbElemsToReturn,
+                                                      const SMDS_MeshElement* sm1stElem );
 
   //! Mark the element as non-used
   void Free( const SMDS_MeshElement* );
@@ -231,9 +235,9 @@ struct _RangeSet
   {
     bool isFound = false;
 
-    if ( sizeof( attr_t ) == sizeof( int ) && theMinValue )
-      if ( theValue < *theMinValue || theValue > *theMaxValue )
-        return isFound;
+    // if ( sizeof( attr_t ) == sizeof( int ) && theMinValue )
+    //   if ( theValue < *theMinValue || theValue > *theMaxValue )
+    //     return isFound;
 
     for ( set_iterator it = mySet.begin(); it < mySet.end(); ++it )
     {
@@ -354,6 +358,7 @@ typedef _RangeSet< _UsedRange >    TUsedRangeSet;
 typedef boost::dynamic_bitset<>    TBitSet;
 //typedef float                       TParam;
 typedef double                     TParam;
+//typedef std::unordered_set<int>    TSubIDSet;
 
 //------------------------------------------------------------------------------------
 /*!
@@ -369,8 +374,9 @@ class SMDS_ElementChunk
   TBitSet              myMarkedSet;   // mark some elements
   TUsedRangeSet        myUsedRanges;  // ranges of used/unused elements
   TSubIDRangeSet       mySubIDRanges; // ranges of elements on the same sub-shape
-  int                  myMinSubID;    // min sub-shape ID
-  int                  myMaxSubID;    // max sub-shape ID
+  //TSubIDSet*           mySubIDSet;    // set of sub-shape IDs
+  // int                  myMinSubID;    // min sub-shape ID
+  // int                  myMaxSubID;    // max sub-shape ID
   std::vector<TParam>  myPositions;   // UV parameters on shape: 2*param_t per an element
 
 public:
@@ -412,7 +418,7 @@ public:
 
   //! Return ranges of elements assigned to sub-shapes and min/max of sub-shape IDs
   const TSubIDRangeSet& GetSubIDRangesMinMax( int& min, int& max ) const
-  { min = myMinSubID; max = myMaxSubID; return mySubIDRanges; }
+  { /*min = myMinSubID; max = myMaxSubID;*/ return mySubIDRanges; }
 
   //! Minimize allocated memory
   void Compact();
@@ -469,11 +475,12 @@ struct _ChunkIterator : public ELEM_ITERATOR
                   get_rangeset_fun          theGetRangeSetFun,
                   attr_type                 theAttrValue,
                   SMDS_MeshElement::Filter* theFilter,
-                  size_t                    theNbElemsToReturn = -1):
+                  size_t                    theNbElemsToReturn = -1,
+                  int                       theChunkIndex = 0):
     myElement( 0 ),
     myRangeIndex( 0 ),
     myChunks( theChunks ),
-    myChunkIndex( -1 ),
+    myChunkIndex( theChunkIndex-1 ),
     myGetRangeSetFun( theGetRangeSetFun ),
     myValue( theAttrValue ),
     myFilter( theFilter ),
@@ -552,14 +559,18 @@ SMDS_ElementFactory::GetIterator( SMDS_MeshElement::Filter* filter,
 
 template< class ElemIterator >
 boost::shared_ptr< ElemIterator >
-SMDS_ElementFactory::GetShapeIterator( int shapeID, size_t nbElemsToReturn )
+SMDS_ElementFactory::GetShapeIterator( int                     shapeID,
+                                       size_t                  nbElemsToReturn,
+                                       const SMDS_MeshElement* sm1stElem )
 {
+  int iChunk = sm1stElem ? (( sm1stElem->GetID() - 1 ) / ChunkSize()) : 0;
   typedef _ChunkIterator< ElemIterator, TSubIDRangeSet > TChuckIterator;
   return boost::make_shared< TChuckIterator >( myChunks,
                                                & SMDS_ElementChunk::GetSubIDRangesMinMax,
                                                /*shapeID=*/shapeID,
                                                new SMDS_MeshElement::NonNullFilter(),
-                                               nbElemsToReturn );
+                                               nbElemsToReturn,
+                                               iChunk );
 }
 
 #endif

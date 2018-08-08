@@ -29,6 +29,7 @@
 
 #include "SMESH_SMESHDS.hxx"
 
+#include "SMDS_ElementHolder.hxx"
 #include "SMDS_Mesh.hxx"
 #include <vector>
 
@@ -42,7 +43,7 @@ typedef boost::shared_ptr< SMESHDS_SubMeshIterator > SMESHDS_SubMeshIteratorPtr;
 
 class SMESHDS_Mesh;
 
-class SMESHDS_EXPORT SMESHDS_SubMesh
+class SMESHDS_EXPORT SMESHDS_SubMesh : public SMDS_ElementHolder
 {
  public:
   SMESHDS_SubMesh(SMESHDS_Mesh *parent, int index);
@@ -55,8 +56,6 @@ class SMESHDS_EXPORT SMESHDS_SubMesh
   virtual bool RemoveElement(const SMDS_MeshElement * ME); // ret true if ME was in
   virtual void AddNode(const SMDS_MeshNode * ME);
   virtual bool RemoveNode(const SMDS_MeshNode * ME);       // ret true if ME was in
-  //virtual const SMDS_MeshElement* GetElement( size_t idInShape ) const;
-  //virtual const SMDS_MeshNode*    GetNode   ( size_t idInShape ) const;
 
   // if IsComplexSubmesh()
   void AddSubMesh( const SMESHDS_SubMesh* theSubMesh );
@@ -80,13 +79,21 @@ class SMESHDS_EXPORT SMESHDS_SubMesh
   SMESHDS_Mesh* GetParent() const { return const_cast< SMESHDS_Mesh*>( myParent ); }
   int           GetID()     const { return myIndex; }
 
+ protected: // methods of SMDS_ElementHolder
+
+  virtual SMDS_ElemIteratorPtr getElements();
+  virtual void tmpClear();
+  virtual void add( const SMDS_MeshElement* element );
+  virtual void compact() {}
+
  private:
 
-  int             myIndex;
-  int             myNbElements;
-  int             myNbNodes;
-  SMESHDS_Mesh *  myParent;
-  TSubMeshSet     mySubMeshes;
+  int                     myIndex;
+  int                     myNbElements;
+  int                     myNbNodes;
+  const SMDS_MeshElement* my1stElemNode[2]; // elem and node with least ID, to optimize iteration
+  SMESHDS_Mesh *          myParent;
+  TSubMeshSet             mySubMeshes;
 
 };
 #endif
