@@ -40,3 +40,7 @@ The Medial Axis is used in two ways:
 
 .. centered::
 	Mesh depends on defined sub-meshes: to the left - sub-meshes on both wires, to the right - a sub-mesh on internal wire only
+
+
+**See Also** a sample TUI Script of a :ref:`tui_quad_ma_proj_algo`.
+

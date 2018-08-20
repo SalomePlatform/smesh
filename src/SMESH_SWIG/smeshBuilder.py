@@ -3679,7 +3679,9 @@ class Mesh(metaclass = MeshMeta):
                 isElem2: *True* if *id2* is element id, *False* if it is node id
 
         Returns:
-            minimum distance value **GetMinDistance()**
+            minimum distance value
+        See Also:
+            :meth:`GetMinDistance`
         """
 
         aMeasure = self.GetMinDistance(id1, id2, isElem1, isElem2)

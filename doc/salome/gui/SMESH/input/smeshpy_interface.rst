@@ -104,10 +104,6 @@ the following links:
    tui_measurements
    tui_work_on_objects_from_gui
    tui_notebook_smesh
-   tui_cartesian_algo
-   tui_use_existing_faces
-   tui_prism_3d_algo
-   tui_generate_flat_elements
 
 .. toctree::
    :hidden:

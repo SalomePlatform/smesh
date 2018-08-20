@@ -136,7 +136,7 @@ To construct a mesh:
    * **Applied algorithms** folder containing the references to the algorithms chosen at the construction of the mesh. 
    * **SubMeshes on Face** folder containing the sub-meshes defined on geometrical faces. There also can be folders for sub-meshes on vertices, edges, wires, shells, solids and compounds.
    * **Groups of Faces** folder containing the groups of mesh faces. There also can be folders for groups of nodes, edges, volumes 0D elements and balls.
-    
+
 
    There is an alternative way to assign Algorithms and Hypotheses by clicking **Assign a set of hypotheses** button and selecting among pre-defined sets of algorithms and hypotheses. In addition to the built-in sets of hypotheses, it is possible to create custom sets by editing CustomMeshers.xml file located in the home directory. CustomMeshers.xml file must describe sets of hypotheses in the same way as ${SMESH_ROOT_DIR}/share/salome/resources/smesh/StdMeshers.xml file does (sets of hypotheses are enclosed between \<hypotheses-set-group\> tags). For example:
 	::

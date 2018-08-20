@@ -175,6 +175,8 @@ SET(GOOD_TESTS
   use_existing_faces.py
   viewing_meshes_ex02.py
   split_biquad.py
+  quad_medial_axis_algo.py
+  defining_hypotheses_len_near_vertex.py
 )
 
 SET(EXAMPLES_TESTS ${BAD_TESTS} ${GOOD_TESTS} testme.py)

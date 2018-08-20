@@ -10,7 +10,6 @@ geompy = geomBuilder.New()
 import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 smesh =  smeshBuilder.New()
-import salome_notebook
 
 
 # create a sphere
