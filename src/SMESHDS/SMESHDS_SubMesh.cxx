@@ -142,8 +142,20 @@ bool SMESHDS_SubMesh::RemoveElement(const SMDS_MeshElement * elem )
 
     const SMDS_MeshElement* & elem1st = my1stElemNode[ ind1st( elem->GetType() )];
     if ( elem1st == elem )
-      elem1st = 0;
-
+    {
+      if ( myNbElements > 0 )
+      {
+        SMDS_ElemIteratorPtr it = myParent->shapeElementsIterator( myIndex, 1, elem1st );
+        if ( it->more() )
+          elem1st = it->next();
+        else
+          throw SALOME_Exception(LOCALIZED("invalid myNbElements"));
+      }
+      else
+      {
+        elem1st = 0;
+      }
+    }
     return true;
   }
   return false;
@@ -192,8 +204,21 @@ bool SMESHDS_SubMesh::RemoveNode(const SMDS_MeshNode * N)
 
     const SMDS_MeshElement* & node1st = my1stElemNode[ ind1st( SMDSAbs_Node )];
     if ( node1st == N )
-      node1st = 0;
-
+    {
+      if ( myNbNodes > 0 )
+      {
+        SMDS_NodeIteratorPtr it =
+          myParent->shapeNodesIterator( myIndex, 1, static_cast< PNode >( node1st ));
+        if ( it->more() )
+          node1st = it->next();
+        else
+          throw SALOME_Exception(LOCALIZED("invalid myNbNodes"));
+      }
+      else
+      {
+        node1st = 0;
+      }
+    }
     return true;
   }
   return false;
@@ -309,9 +334,9 @@ SMDS_ElemIteratorPtr SMESHDS_SubMesh::GetElements() const
     return SMDS_ElemIteratorPtr( new MyElemIterator( mySubMeshes ));
 
   const SMDS_MeshElement* const * elem1st = & my1stElemNode[ ind1st( SMDSAbs_All )];
-  if ( myNbElements == 1 )
+  if ( myNbElements < 2 )
   {
-    return boost::make_shared< EArrayIterator >( elem1st, elem1st+1 );
+    return boost::make_shared< EArrayIterator >( elem1st, elem1st + myNbElements );
   }
 
   return myParent->shapeElementsIterator( myIndex, myNbElements, *elem1st );
@@ -329,9 +354,9 @@ SMDS_NodeIteratorPtr SMESHDS_SubMesh::GetNodes() const
 
   PNode const * node1st =
     reinterpret_cast< PNode const* >( & my1stElemNode[ ind1st( SMDSAbs_Node )] );
-  if ( myNbNodes == 1 )
+  if ( myNbNodes < 2 )
   {
-    return boost::make_shared< NArrayIterator >( node1st, node1st+1 );
+    return boost::make_shared< NArrayIterator >( node1st, node1st + myNbNodes );
   }
 
   return myParent->shapeNodesIterator( myIndex, myNbNodes, *node1st );
@@ -459,6 +484,7 @@ void SMESHDS_SubMesh::Clear()
   myNbElements = 0;
   myNbNodes = 0;
   my1stElemNode[0] = my1stElemNode[1] = 0;
+
   if ( NbSubMeshes() > 0 )
   {
     SMESHDS_SubMeshIteratorPtr sub = GetSubMeshIterator();

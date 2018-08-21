@@ -458,7 +458,7 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
         hyp.SetFineness( fineness )
         return hyp
 
-    def LengthNearVertex(self, length, vertex=0, UseExisting=0):
+    def LengthNearVertex(self, length, vertex=-1, UseExisting=0):
         """
         Defines "SegmentLengthAroundVertex" hypothesis
 

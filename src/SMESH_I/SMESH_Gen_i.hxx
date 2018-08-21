@@ -79,6 +79,8 @@ public:
   void        mapOldToNew( const int oldId, const int newId );
   // get old id by a new one
   int         getOldId( const int newId );
+  // clear data
+  void        Clear();
 
 private:
   // get next free object identifier

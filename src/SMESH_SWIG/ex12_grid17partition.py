@@ -33,10 +33,13 @@ import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 smesh =  smeshBuilder.New()
 
+import time
+t1= time.time()
+
 # Geometry
 # ========
 
-# grid compound of 17 x 17 elements
+# grid compound of 3 x 3 elements
 # an element is compound of 3 concentric cylinders
 # an element is centered in a square of the grid
 
@@ -56,7 +59,7 @@ g_rayon1 = 20
 g_rayon2 = 30
 g_rayon3 = 40
 
-g_grid = 17
+g_grid = 3
 
 g_trim = 1000
 
@@ -120,6 +123,8 @@ piece = geompy.MakeMultiTranslation2D(c_element, geompy.MakeVectorDXDYDZ(1, 0, 0
 
 piece_id = geompy.addToStudy(piece, "ex12_grid17partition")
 
+t2= time.time()
+
 # Meshing
 # =======
 
@@ -139,6 +144,11 @@ hexa.Hexahedron()
 # -------------
 
 hexa.Compute()
+
+t3= time.time()
+
+print ("time geom",t2-t1)
+print ("time mesh",t3-t2 )
 
 # Update object browser
 # ---------------------

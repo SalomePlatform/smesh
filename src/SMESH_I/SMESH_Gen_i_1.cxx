@@ -1401,3 +1401,14 @@ int StudyContext::getOldId( const int newId )
   }
   return 0;
 }
+
+//=======================================================================
+//function : Clear
+//purpose  : clear data
+//=======================================================================
+
+void StudyContext::Clear()
+{
+  mapIdToIOR.Clear();
+  mapIdToId.Clear();
+}

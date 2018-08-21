@@ -4965,8 +4965,7 @@ void SMESH_Gen_i::Close( SALOMEDS::SComponent_ptr theComponent )
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::Close" );
 
   // Clear study contexts data
-  delete myStudyContext;
-  myStudyContext = 0;
+  myStudyContext->Clear();
 
   // remove the tmp files meshes are loaded from
   SMESH_PreMeshInfo::RemoveStudyFiles_TMP_METHOD( theComponent );
