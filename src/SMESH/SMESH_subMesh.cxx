@@ -2276,9 +2276,9 @@ void SMESH_subMesh::setEventListener(EventListener*     listener,
     _eventListeners.find( listener );
   if ( l_d != _eventListeners.end() ) {
     EventListenerData* curData = l_d->second;
+    l_d->second = data;
     if ( curData && curData != data && curData->IsDeletable() )
       delete curData;
-    l_d->second = data;
   }
   else
   {
@@ -2286,6 +2286,7 @@ void SMESH_subMesh::setEventListener(EventListener*     listener,
       if ( listener->GetName() == l_d->first->GetName() )
       {
         EventListenerData* curData = l_d->second;
+        l_d->second = 0;
         if ( curData && curData != data && curData->IsDeletable() )
           delete curData;
         if ( l_d->first != listener && l_d->first->IsDeletable() )
@@ -2548,9 +2549,9 @@ namespace {
 
 //================================================================================
 /*!
- * \brief  Return iterator on the submeshes this one depends on
-  * \param includeSelf - this submesh to be returned also
-  * \param reverse - if true, complex shape submeshes go first
+ * \brief Return iterator on the submeshes this one depends on
+ *  \param includeSelf - this submesh to be returned also
+ *  \param reverse - if true, complex shape submeshes go first
  */
 //================================================================================
 
@@ -2592,7 +2593,10 @@ const std::vector< SMESH_subMesh * > & SMESH_subMesh::GetAncestors() const
     me->_ancestors.reserve( ancShapes.Extent() );
 
     TopTools_MapOfShape map;
-   
+
+    // assure that all sub-meshes exist
+    _father->GetSubMesh( _father->GetShapeToMesh() )->DependsOn();
+
     for ( TopTools_ListIteratorOfListOfShape it( ancShapes ); it.More(); it.Next() )
       if ( SMESH_subMesh* sm = _father->GetSubMeshContaining( it.Value() ))
         if ( map.Add( it.Value() ))

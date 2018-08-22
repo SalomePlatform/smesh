@@ -3576,17 +3576,17 @@ void SMESHGUI_CtrlInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
 
   // nodes info
   const CORBA::Long nbNodes =   nbElemsByType[ SMESH::NODE ];
-  const CORBA::Long nbElems = ( nbElemsByType[ SMESH::EDGE ] +
-                                nbElemsByType[ SMESH::FACE ] +
-                                nbElemsByType[ SMESH::VOLUME ] );
-  if ( nbNodes + nbElems > 0 ) {
-    if ( Max( (int)nbNodes, (int)nbElems ) <= ctrlLimit ) {
+  // const CORBA::Long nbElems = ( nbElemsByType[ SMESH::EDGE ] +
+  //                               nbElemsByType[ SMESH::FACE ] +
+  //                               nbElemsByType[ SMESH::VOLUME ] );
+  if ( nbNodes > 0 ) {
+    if ( nbNodes <= ctrlLimit ) {
       // free nodes
       computeFreeNodesInfo();
+      // node connectivity number
       computeNodesNbConnInfo();
       // double nodes
-      if ( Max( (int)mesh->NbNodes(), (int)mesh->NbElements() ) <= ctrlLimit )
-        computeDoubleNodesInfo();
+      computeDoubleNodesInfo();
     }
     else {
       myButtons[0]->setEnabled( true );
@@ -3595,7 +3595,7 @@ void SMESHGUI_CtrlInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
     }
   }
   else {
-    for( int i=2; i<=11; i++)
+    for( int i=2; i<=13; i++)
       myMainLayout->itemAt(i)->widget()->setVisible( false );
   }
 
@@ -3608,7 +3608,7 @@ void SMESHGUI_CtrlInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
       myButtons[3]->setEnabled( true );
   }
   else {
-    for( int i=11; i<=14; i++)
+    for( int i=14; i<=17; i++)
       myMainLayout->itemAt(i)->widget()->setVisible( false );
   }
  

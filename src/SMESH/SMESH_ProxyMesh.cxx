@@ -526,6 +526,18 @@ bool SMESH_ProxyMesh::IsTemporary(const SMDS_MeshElement* elem ) const
 
 //================================================================================
 /*!
+ * \brief SubMesh Constructor
+ */
+//================================================================================
+
+SMESH_ProxyMesh::SubMesh::SubMesh( const SMDS_Mesh* mesh, int index )
+  : SMESHDS_SubMesh( static_cast<const SMESHDS_Mesh*>( mesh ), index ),
+    _n2n(0)
+{
+}
+
+//================================================================================
+/*!
  * \brief Return a proxy node or an input node
  */
 //================================================================================

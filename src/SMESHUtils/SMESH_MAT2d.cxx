@@ -469,7 +469,7 @@ namespace
     }
     text << "\n";
     file.write( text.c_str(), text.size() );
-    cout << "execfile( '" << fileName << "')" << endl;
+    cout << fileName << endl;
 #endif
   }
 
@@ -648,10 +648,18 @@ namespace
     for ( size_t iE = 0; iE < edges.size(); ++iE )
     {
       size_t iE2 = (iE+1) % edges.size();
-      if ( !TopExp::CommonVertex( edges[iE], edges[iE2], vShared ))
-        continue;
+      if ( !TopExp::CommonVertex( edges[iE], edges[iE2], vShared )) // FACE with several WIREs?
+        for ( size_t i = 1; i < edges.size(); ++i )
+        {
+          iE2 = (iE2+1) % edges.size();
+          if ( iE != iE2 &&
+               TopExp::CommonVertex( edges[iE], edges[iE2], vShared ) &&
+               vShared.IsSame( TopExp::LastVertex( edges[iE], true )))
+            break;
+        }
       if ( !vShared.IsSame( TopExp::LastVertex( edges[iE], true )))
-        return false;
+        continue;
+        //return false;
       vector< UVU > & points1 = uvuVec[ iE ];
       vector< UVU > & points2 = uvuVec[ iE2 ];
       gp_Pnt2d & uv1 = points1.back() ._uv;
@@ -798,6 +806,12 @@ namespace
     for (TVD::const_cell_iterator it = vd.cells().begin(); it != vd.cells().end(); ++it)
     {
       const TVDCell* cell = &(*it);
+      if ( cell->is_degenerate() )
+      {
+        std::cerr << "SMESH_MAT2d: encounter degenerate voronoi_cell. Invalid input data?"
+                  << std::endl;
+        return;
+      }
       if ( cell->contains_segment() )
       {
         InSegment& seg = inSegments[ cell->source_index() ];

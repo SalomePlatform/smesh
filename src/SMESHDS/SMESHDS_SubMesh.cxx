@@ -72,7 +72,7 @@ namespace
  */
 //================================================================================
 
-SMESHDS_SubMesh::SMESHDS_SubMesh(SMESHDS_Mesh *parent, int index)
+SMESHDS_SubMesh::SMESHDS_SubMesh(const SMESHDS_Mesh *parent, int index)
   : SMDS_ElementHolder( parent )
 {
   myParent = parent;
@@ -131,7 +131,7 @@ void SMESHDS_SubMesh::AddElement(const SMDS_MeshElement * elem)
 
 bool SMESHDS_SubMesh::RemoveElement(const SMDS_MeshElement * elem )
 {
-  if ( !elem || elem->IsNull() || elem->getshapeId() != myIndex )
+  if ( myNbElements == 0 || !elem || elem->IsNull() || elem->getshapeId() != myIndex )
   {
     return false;
   }
@@ -193,7 +193,7 @@ void SMESHDS_SubMesh::AddNode(const SMDS_MeshNode * N)
 
 bool SMESHDS_SubMesh::RemoveNode(const SMDS_MeshNode * N)
 {
-  if ( !N || N->getshapeId() != myIndex )
+  if ( myNbNodes == 0 || !N || N->getshapeId() != myIndex )
   {
     return false;
   }

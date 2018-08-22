@@ -46,7 +46,7 @@ class SMESHDS_Mesh;
 class SMESHDS_EXPORT SMESHDS_SubMesh : public SMDS_ElementHolder
 {
  public:
-  SMESHDS_SubMesh(SMESHDS_Mesh *parent, int index);
+  SMESHDS_SubMesh(const SMESHDS_Mesh *parent, int index);
   virtual ~SMESHDS_SubMesh();
 
   virtual bool IsComplexSubmesh() const { return !mySubMeshes.empty(); }
@@ -92,7 +92,7 @@ class SMESHDS_EXPORT SMESHDS_SubMesh : public SMDS_ElementHolder
   int                     myNbElements;
   int                     myNbNodes;
   const SMDS_MeshElement* my1stElemNode[2]; // elem and node with least ID, to optimize iteration
-  SMESHDS_Mesh *          myParent;
+  const SMESHDS_Mesh *    myParent;
   TSubMeshSet             mySubMeshes;
 
 };

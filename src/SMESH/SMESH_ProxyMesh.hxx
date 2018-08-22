@@ -57,7 +57,7 @@ public:
   /*!
    * \brief Proxy sub-mesh
    */
-  class SMESH_EXPORT SubMesh : public SMESHDS_SubMesh, SMDS_ElementHolder
+  class SMESH_EXPORT SubMesh : public SMESHDS_SubMesh
   {
   public:
 
@@ -79,8 +79,7 @@ public:
       // for which the caller is responsible
       _elements.assign( it, end );
     }
-    SubMesh(const SMDS_Mesh* mesh, int index=0)
-      :SMESHDS_SubMesh(0,index), SMDS_ElementHolder(mesh), _n2n(0) {}
+    SubMesh(const SMDS_Mesh* mesh, int index=0);
     virtual ~SubMesh() { Clear(); }
 
   protected:

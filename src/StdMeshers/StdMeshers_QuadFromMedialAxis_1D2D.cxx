@@ -1154,6 +1154,8 @@ namespace
       bool isShortPrev[2], isShortNext[2], isPrevCloser[2];
       TMAPar2NPoints::iterator u2NPPrev = u2NP, u2NPNext = u2NP;
       --u2NPPrev; ++u2NPNext;
+      if ( u2NPNext == thePointsOnE.end() )
+        u2NPNext = thePointsOnE.begin(); // hope theSinuFace.IsRing()
       for ( int iS = 0; iS < 2; ++iS ) // side with Vertex and side with Nodes
       {
         NodePoint np     = get( u2NP->second,     iS );
