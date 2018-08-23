@@ -156,7 +156,7 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
             }
             if(MYDEBUG) MESSAGE(aGroupName);
             if ( strncmp( aGroupName.c_str(), NIG_GROUP_PREFIX, strlen(NIG_GROUP_PREFIX) ) != 0 )
-              aFamily->AddGroupName(aGroupName);
+              aFamily->AddGroupName( fixUTF8( aGroupName ));
           }
           aFamily->SetId( aFamId );
           myFamilies[aFamId] = aFamily;

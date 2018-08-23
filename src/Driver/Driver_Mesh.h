@@ -75,6 +75,8 @@ class MESHDRIVER_EXPORT Driver_Mesh
   std::string myMeshName;
   int         myMeshId;
 
+  static std::string fixUTF8(const std::string & s );
+
   Status addMessage(const std::string& msg, const bool isFatal=false);
   std::vector< std::string > myErrorMessages;
   Status                     myStatus;

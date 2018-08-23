@@ -101,3 +101,41 @@ SMESH_ComputeErrorPtr Driver_Mesh::GetError()
   }
   return SMESH_ComputeError::New( myStatus == DRS_OK ? int(COMPERR_OK) : int(myStatus), msg );
 }
+
+//================================================================================
+/*!
+ * \brief Assure a string is UTF-8 valid by replacing invalid chars
+ */
+//================================================================================
+
+std::string Driver_Mesh::fixUTF8(const std::string & str )
+{
+  std::string fixed = str;
+  const unsigned char* s = reinterpret_cast<const unsigned char* >( fixed.data() );
+
+  for ( size_t i = 0; i < fixed.size(); ++i )
+  {
+    if ( s[i] < 128 )
+      continue; // latin
+
+    bool invalid = false;
+
+    // how many bytes follow?
+    int len = 0;
+    if      (s[i] >> 5 == 0b110  ) len = 1;
+    else if (s[i] >> 4 == 0b1110 ) len = 2;
+    else if (s[i] >> 3 == 0b11110) len = 3;
+    else
+      invalid = true;
+
+    // check the bytes
+    for ( int j = 0; j < len && !invalid; ++j )
+      invalid = ( s[i+j+1] >> 6 != 0b10 );
+
+    if ( invalid )
+      fixed[i] = '?';
+    else
+      i += len;
+  }
+  return fixed;
+}

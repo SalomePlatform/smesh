@@ -7131,7 +7131,7 @@ bool SMESHGUI::renameObject( const QString& entry, const QString& name) {
 
           SMESH::SMESH_GroupBase_var aGroupObject = SMESH::IObjectToInterface<SMESH::SMESH_GroupBase>(IObject);
           if( !aGroupObject->_is_nil() ) {
-            aGroupObject->SetName( qPrintable(name) );
+            aGroupObject->SetName( qUtf8Printable(name) );
             if ( SMESH_Actor *anActor = SMESH::FindActorByEntry( qPrintable(entry) ) )
               anActor->setName( qUtf8Printable(name) );
           }

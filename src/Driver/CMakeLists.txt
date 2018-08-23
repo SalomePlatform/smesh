@@ -47,7 +47,6 @@ SET(_link_LIBRARIES
 
 # header files / no moc processing
 SET(MeshDriver_HEADERS
-  Driver_Document.h
   Driver_Mesh.h
   Driver_SMDS_Mesh.h
   Driver_SMESHDS_Mesh.h
@@ -57,7 +56,6 @@ SET(MeshDriver_HEADERS
 
 # sources / static
 SET(MeshDriver_SOURCES
-  Driver_Document.cxx
   Driver_Mesh.cxx
   Driver_SMDS_Mesh.cxx
   Driver_SMESHDS_Mesh.cxx 
