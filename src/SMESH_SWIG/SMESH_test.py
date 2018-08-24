@@ -103,7 +103,7 @@ face = salome.IDToObject(idf)
 
 ret = mesh.Compute(face)
 print(ret)
-log = mesh.GetLog(0) # 0 - GetLog without ClearLog after, else if 1 - ClearLog after
+log = [] #mesh.GetLog(0) # 0 - GetLog without ClearLog after, else if 1 - ClearLog after
 for a in log:
     print("-------")
     ii = 0

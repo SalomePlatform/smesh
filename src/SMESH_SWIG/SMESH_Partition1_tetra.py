@@ -172,8 +172,8 @@ ret = mesh.Compute()
 
 if ret != 0:
     log=mesh.GetLog(0) # no erase trace
-    for linelog in log:
-        print(linelog)
+    # for linelog in log:
+    #     print(linelog)
     print("Information about the Mesh_mechanic:")
     print("Number of nodes       : ", mesh.NbNodes())
     print("Number of edges       : ", mesh.NbEdges())

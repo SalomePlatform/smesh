@@ -87,8 +87,8 @@ ret = mesh.Compute()
 print(ret)
 if ret != 0:
     log = mesh.GetLog(0) # no erase trace
-    for linelog in log:
-        print(linelog)
+    # for linelog in log:
+    #     print(linelog)
     print("Information about the MeshcompShel:")
     print("Number of nodes       : ", mesh.NbNodes())
     print("Number of edges       : ", mesh.NbEdges())

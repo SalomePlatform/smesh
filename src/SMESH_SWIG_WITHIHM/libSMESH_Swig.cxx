@@ -564,8 +564,11 @@ void SMESH_Swig::init()
   };
 
   // load SMESH GUI if it's not yet loaded
-  ProcessVoidEvent( new TInitEvent() );
-  SMESHGUI::GetSMESHGen()->UpdateStudy();
+  if ( SUIT_Session::session() )
+  {
+    ProcessVoidEvent( new TInitEvent() );
+    SMESHGUI::GetSMESHGen()->UpdateStudy();
+  }
 }
 
 /////////////////////////////////////////////////////////////////
