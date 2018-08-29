@@ -2595,8 +2595,11 @@ const std::vector< SMESH_subMesh * > & SMESH_subMesh::GetAncestors() const
     TopTools_MapOfShape map;
 
     // assure that all sub-meshes exist
-    _father->GetSubMesh( _father->GetShapeToMesh() )->DependsOn();
-
+    TopoDS_Shape mainShape = _father->GetShapeToMesh();
+    if (!mainShape.IsNull())
+      {
+        _father->GetSubMesh( _father->GetShapeToMesh() )->DependsOn();
+      }
     for ( TopTools_ListIteratorOfListOfShape it( ancShapes ); it.More(); it.Next() )
       if ( SMESH_subMesh* sm = _father->GetSubMeshContaining( it.Value() ))
         if ( map.Add( it.Value() ))
