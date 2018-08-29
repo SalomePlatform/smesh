@@ -87,6 +87,7 @@ SET(_bin_SCRIPTS
   PAL_MESH_043_3D.py
   SMESH_reg.py
   smesh_selection.py
+  YACS_geomesh0.py
 )
 
 SET(smesh_SCRIPTS
