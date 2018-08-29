@@ -37,12 +37,25 @@ extern "C"
 }
 #include <utilities.h>
 
+#ifdef WIN32
+#include <windows.h>
+#endif
+
+
 namespace MED
 {
   bool exists(const std::string& fileName)
   {
 #ifdef WIN32
-    return (GetFileAttributes(xmlPath.c_str()) != INVALID_FILE_ATTRIBUTES);
+#ifdef UNICODE
+	size_t length = strlen(fileName.c_str()) + sizeof(char);
+	wchar_t* path = new wchar_t[length];
+	memset(path, '\0', length);
+	mbstowcs(path, fileName.c_str(), length);
+#else
+	cosnt char* path = xmlPath.c_str();
+#endif
+    return (GetFileAttributes(path) != INVALID_FILE_ATTRIBUTES);
 #else
     return (access(fileName.c_str(), F_OK) == 0);
 #endif

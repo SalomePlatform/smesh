@@ -36,6 +36,8 @@
 
 #include <boost/filesystem.hpp>
 
+#include <Basics_Utils.hxx>
+
 namespace boofs = boost::filesystem;
 
 //================================================================================
@@ -79,9 +81,17 @@ bool SMESH_File::open()
   if ( !_map && length > 0 )
   {
 #ifdef WIN32
-    _file = CreateFile(_name.data(), GENERIC_READ, FILE_SHARE_READ,
+#ifdef UNICODE
+	  const wchar_t* name = Kernel_Utils::decode(_name.data());
+#else
+	  char* name = name.data();
+#endif
+    _file = CreateFile(name, GENERIC_READ, FILE_SHARE_READ,
                        NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     bool ok = ( _file != INVALID_HANDLE_VALUE );
+#ifdef UNICODE
+	delete name;
+#endif
 #else
     _file = ::open(_name.data(), O_RDONLY );
     bool ok = ( _file >= 0 );
@@ -291,14 +301,21 @@ bool SMESH_File::getInts(std::vector<int>& ints)
 bool SMESH_File::openForWriting()
 {
 #ifdef WIN32
-
-  _file = CreateFile( _name.c_str(),          // name of the write
+#ifdef UNICODE
+	const wchar_t* name = Kernel_Utils::decode(_name.data());
+#else
+	char* name = name.data();
+#endif
+  _file = CreateFile( name,          // name of the write
                       GENERIC_WRITE,          // open for writing
                       0,                      // do not share
                       NULL,                   // default security
                       OPEN_ALWAYS,            // CREATE NEW or OPEN EXISTING
                       FILE_ATTRIBUTE_NORMAL,  // normal file
                       NULL);                  // no attr. template
+#ifdef UNICODE
+  delete name;
+#endif
   return ( _file != INVALID_HANDLE_VALUE );
 
 #else

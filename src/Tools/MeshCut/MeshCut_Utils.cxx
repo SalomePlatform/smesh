@@ -25,6 +25,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <algorithm>
 
 using namespace std;
 using namespace MESHCUT;
@@ -924,7 +925,7 @@ void MESHCUT::champType(std::string type, med_entity_type MEM, med_geometry_type
       if (debug)
         {
           cout << endl << "       Liste des valeurs du champ brut aux 3 premiers éléments:" << endl;
-          for (imaille = 0; imaille < min(nmailles, 3); imaille++)
+          for (imaille = 0; imaille < std::min(nmailles, 3); imaille++)
             {
               cout << "         Maille " << imaille << endl;
               for (igauss = 0; igauss < ngauss; igauss++)

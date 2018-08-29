@@ -521,7 +521,17 @@ namespace SMESH
       try {
         // load plugin library
         if(MYDEBUG) MESSAGE("Loading client meshers plugin library ...");
-        LibHandle libHandle = LoadLib( aClientLibName.toUtf8().data() );
+#ifdef WIN32
+#ifdef UNICODE
+		LPTSTR path = new TCHAR[aClientLibName.length() + 1];
+		path[aClientLibName.toWCharArray(path)] = '\0';
+#else
+		const char* path = aClientLibName.toUtf8().data();
+#endif
+#else
+		char* path = aClientLibName.toUtf8().data();
+#endif
+        LibHandle libHandle = LoadLib( path );
         if (!libHandle) {
           // report any error, if occurred
           {

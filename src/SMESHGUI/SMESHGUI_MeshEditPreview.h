@@ -37,10 +37,8 @@ class SVTK_ViewWindow;
 class vtkTextActor;
 class vtkUnstructuredGrid;
 
-namespace SMESH
-{
-  class MeshPreviewStruct;
-}
+#include <SALOMEconfig.h>
+#include CORBA_SERVER_HEADER(SMESH_Mesh)
 
 /*!
  * \brief Displayer of the mesh edition preview
@@ -59,7 +57,7 @@ public:
   SMESHGUI_MeshEditPreview( SVTK_ViewWindow* );
   ~SMESHGUI_MeshEditPreview();
 
-  void                 SetData( const SMESH::MeshPreviewStruct* );
+  void                 SetData( const SMESH::MeshPreviewStruct_var );
 
   void                 SetVisibility( bool );
   void                 SetColor( double, double, double );

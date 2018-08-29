@@ -52,6 +52,8 @@
   #include <windows.h>
 #endif
 
+#include <Basics_Utils.hxx>
+
 using namespace std;
 
 //=============================================================================
@@ -1029,7 +1031,15 @@ std::vector< std::string > SMESH_Gen::GetPluginXMLPaths()
       xmlPath += sep + plugin + ".xml";
       bool fileOK;
 #ifdef WIN32
-      fileOK = (GetFileAttributes(xmlPath.c_str()) != INVALID_FILE_ATTRIBUTES);
+#ifdef UNICODE
+	  const wchar_t* path = Kernel_Utils::decode_s(xmlPath);
+#else
+	  const char* path = xmlPath.c_str();
+#endif
+      fileOK = (GetFileAttributes(path) != INVALID_FILE_ATTRIBUTES);
+#ifdef UNICODE
+	  delete path;
+#endif
 #else
       fileOK = (access(xmlPath.c_str(), F_OK) == 0);
 #endif

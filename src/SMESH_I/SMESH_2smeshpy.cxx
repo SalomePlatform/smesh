@@ -1999,7 +1999,7 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
           args.push_back( theCommand->GetArg( i ) );
       }
       theCommand->RemoveArgs();
-      for ( uint i = 0; i < args.size(); i++ )
+      for ( unsigned int i = 0; i < args.size(); i++ )
         theCommand->SetArg( i+1, args[i] );
       if ( theCommand->GetNbArgs() == 4 )
       {
@@ -2056,7 +2056,7 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
         args.splice( newPos, args, args.begin() );
       }
       std::list< _AString >::iterator a = args.begin();
-      for ( uint i = 1; a != args.end(); ++i, ++a )
+      for ( unsigned int i = 1; a != args.end(); ++i, ++a )
         theCommand->SetArg( i, *a );
     }
     // remember file name

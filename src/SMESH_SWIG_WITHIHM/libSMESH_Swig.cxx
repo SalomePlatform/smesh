@@ -2050,8 +2050,9 @@ public:
     SVTK_IndexedMapOfIds idMap;
     selector->GetCompositeIndex( actor->getIO(), idMap );
 
-    for ( int i = 1; i <= idMap.Extent(); i++ )
-      myResult.push_back( std::make_pair<int,int>( (int)idMap( i )[0], (int)idMap( i )[1]) );
+    for ( int i = 1; i <= idMap.Extent(); i++ ) {
+      myResult.push_back( std::make_pair( (int)idMap(i)[0], (int)idMap(i)[1]) );
+	}
   }
 };
 

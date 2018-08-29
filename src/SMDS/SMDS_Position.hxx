@@ -54,7 +54,7 @@ class SMDS_EXPORT SMDS_Position
  */
 
 template<class T>
-class SMDS_EXPORT SMDS_Ptr : public std::unique_ptr< T >
+class SMDS_Ptr : public std::unique_ptr< T >
 {
   bool myIsOwner;
 

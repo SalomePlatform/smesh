@@ -167,7 +167,7 @@ vtkIdType getCellType( const SMDSAbs_ElementType theType,
  */
 //================================================================================
 
-void SMESHGUI_MeshEditPreview::SetData (const SMESH::MeshPreviewStruct* previewData)
+void SMESHGUI_MeshEditPreview::SetData (const SMESH::MeshPreviewStruct_var previewData)
 {
   // Create points
   const SMESH::nodes_array& aNodesXYZ = previewData->nodesXYZ;
