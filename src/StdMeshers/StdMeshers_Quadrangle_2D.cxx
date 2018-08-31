@@ -127,6 +127,7 @@ bool StdMeshers_Quadrangle_2D::CheckHypothesis
   myTrianglePreference   = false;
   myHelper               = (SMESH_MesherHelper*)NULL;
   myParams               = NULL;
+  myProxyMesh.reset();
   myQuadList.clear();
 
   aStatus = SMESH_Hypothesis::HYP_OK;

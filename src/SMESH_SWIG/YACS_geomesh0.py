@@ -82,8 +82,15 @@ def geomesh(l0, r0, h0, d0, d1, my_container, direc):
   #geompy.addToStudyInFather( barre, f1, 'f1' )
   #geompy.addToStudyInFather( barre, f2, 'f2' )
 
+  smesh.SetEnablePublish( False )
+
   isTetra = False
   barre_1 = smesh.Mesh(barre)
+  # SO = salome.myStudy.FindObjectIOR(salome.myStudy.ConvertObjectToIOR(barre_1.GetMesh()))
+  # if SO:
+  #   print ("_______",SO.GetID(),SO.GetName())
+  # else:
+  #   print ("_______NO_SO!!!")
   if (isTetra):
     NETGEN_1D_2D_3D = barre_1.Tetrahedron(algo=smeshBuilder.NETGEN_1D2D3D)
     NETGEN_3D_Parameters_1 = NETGEN_1D_2D_3D.Parameters()
@@ -139,14 +146,15 @@ def geomesh(l0, r0, h0, d0, d1, my_container, direc):
 def clearMesh(theMesh, theStudy, aName):
   theMesh.Clear()
   aMesh = theMesh.GetMesh()
-  aStudyBuilder = theStudy.NewBuilder()
-  SO = theStudy.FindObjectIOR(theStudy.ConvertObjectToIOR(aMesh))
-  objects_to_unpublish = [SO]
-  refs = theStudy.FindDependances(SO)
-  objects_to_unpublish += refs
-  for o in objects_to_unpublish:
-    if o is not None:
-      aStudyBuilder.RemoveObjectWithChildren(o)
+  aMesh.UnRegister()
+  # aStudyBuilder = theStudy.NewBuilder()
+  # SO = theStudy.FindObjectIOR(theStudy.ConvertObjectToIOR(aMesh))
+  # objects_to_unpublish = [SO]
+  # refs = theStudy.FindDependances(SO)
+  # objects_to_unpublish += refs
+  # for o in objects_to_unpublish:
+  #   if o is not None:
+  #     aStudyBuilder.RemoveObjectWithChildren(o)
   print("clearMesh done:", aName)
 
 def genere(r0, h0, my_container, direc):
@@ -164,4 +172,3 @@ def genere2(r0h0, my_container, direc):
   d1 = d0/2.
   res = geomesh(l0, r0, h0, d0, d1, my_container, direc)
   return res
-  

@@ -308,10 +308,12 @@ static SALOMEDS::SObject_ptr publish(CORBA::Object_ptr     theIOR,
     if ( !sameIOR )
     {
       iorAttr->SetValue( objStr.in() );
-      // UnRegister() !!! --> No: random problems when meshing in parallel (yacs foreach) in distributed python scripts
-//      SALOME::GenericObj_var genObj = SALOME::GenericObj::_narrow( theIOR );
-//      if ( !genObj->_is_nil() )
-//        genObj->UnRegister();
+      // UnRegister() !!! --> random problems when meshing in parallel (yacs foreach) in
+      // distributed python scripts, because simultaneously created meshes are
+      // published into the same SO; as a result the mesh published first dies
+      SALOME::GenericObj_var genObj = SALOME::GenericObj::_narrow( theIOR );
+      if ( !genObj->_is_nil() )
+        genObj->UnRegister();
     }
   }
 
@@ -598,7 +600,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishMesh (SMESH::SMESH_Mesh_ptr theMesh,
     else
       aTag++;
 
-    aMeshSO = publish ( theMesh, father, aTag, "ICON_SMESH_TREE_MESH_WARN" );
+    aMeshSO = publish( theMesh, father, aTag, "ICON_SMESH_TREE_MESH_WARN" );
     if ( aMeshSO->_is_nil() )
       return aMeshSO._retn();
   }

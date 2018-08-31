@@ -2592,14 +2592,13 @@ const std::vector< SMESH_subMesh * > & SMESH_subMesh::GetAncestors() const
     SMESH_subMesh* me = const_cast< SMESH_subMesh* >( this );
     me->_ancestors.reserve( ancShapes.Extent() );
 
-    TopTools_MapOfShape map;
-
     // assure that all sub-meshes exist
     TopoDS_Shape mainShape = _father->GetShapeToMesh();
-    if (!mainShape.IsNull())
-      {
-        _father->GetSubMesh( _father->GetShapeToMesh() )->DependsOn();
-      }
+    if ( !mainShape.IsNull() )
+      _father->GetSubMesh( mainShape )->DependsOn();
+
+    TopTools_MapOfShape map;
+
     for ( TopTools_ListIteratorOfListOfShape it( ancShapes ); it.More(); it.Next() )
       if ( SMESH_subMesh* sm = _father->GetSubMeshContaining( it.Value() ))
         if ( map.Add( it.Value() ))
