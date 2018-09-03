@@ -531,8 +531,23 @@ SALOMEDS::SComponent_ptr SMESH_Gen_i::PublishComponent()
   SALOMEDS::StudyBuilder_var    aStudyBuilder  = getStudyServant()->NewBuilder();
   SALOMEDS::UseCaseBuilder_wrap useCaseBuilder = getStudyServant()->GetUseCaseBuilder();
 
-  CORBA::String_var   compDataType = ComponentDataType();
-  SALOMEDS::SComponent_wrap father = getStudyServant()->FindComponent( compDataType.in() );
+  std::string compDataType = ComponentDataType(); // SMESH module's data type
+  std::string ior = SMESH_Gen_i::GetORB()->object_to_string( SMESH_Gen::_this() ); // IOR of this SMESH engine
+
+  // Find study component which corresponds to this SMESH engine
+
+  SALOMEDS::SComponent_wrap father;
+  SALOMEDS::SComponentIterator_wrap citer = getStudyServant()->NewComponentIterator();
+  for ( ; citer->More(); citer->Next()) {
+    SALOMEDS::SComponent_wrap f_i = citer->Value();
+    CORBA::String_var ior_i;
+    bool ok = f_i->ComponentIOR(ior_i.out());
+    if ( ok && compDataType == f_i->ComponentDataType() && ior == ior_i.in()) {
+      father = f_i;
+      break;
+    }
+  }
+  
   if ( !CORBA::is_nil( father ) ) {
     // check that the component is added to the use case browser
     if ( !useCaseBuilder->IsUseCaseNode( father ) ) {
@@ -542,19 +557,21 @@ SALOMEDS::SComponent_ptr SMESH_Gen_i::PublishComponent()
     return father._retn();
   }
 
+  // If component for this SMESH engine does not exist in the study, create it
+
   SALOME_ModuleCatalog::ModuleCatalog_var aCat =
     SALOME_ModuleCatalog::ModuleCatalog::_narrow( GetNS()->Resolve("/Kernel/ModulCatalog") );
   if ( CORBA::is_nil( aCat ) )
     return father._retn();
 
-  SALOME_ModuleCatalog::Acomponent_var aComp = aCat->GetComponent( compDataType.in() );
+  SALOME_ModuleCatalog::Acomponent_var aComp = aCat->GetComponent( compDataType.c_str() );
   if ( CORBA::is_nil( aComp ) )
     return father._retn();
 
   SALOMEDS::GenericAttribute_wrap anAttr;
   SALOMEDS::AttributePixMap_wrap  aPixmap;
 
-  father  = aStudyBuilder->NewComponent( compDataType.in() );
+  father  = aStudyBuilder->NewComponent( compDataType.c_str() );
   aStudyBuilder->DefineComponentInstance( father, SMESH_Gen::_this() );
   anAttr  = aStudyBuilder->FindOrCreateAttribute( father, "AttributePixMap" );
   aPixmap = anAttr;
@@ -735,7 +752,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishSubMesh (SMESH::SMESH_Mesh_ptr    theM
 
   // Add reference to theShapeObject
 
-  addReference( aSubMeshSO, theShapeObject, 1 );
+  addReference( aSubMeshSO, theShapeObject, GetRefOnShapeTag() );
 
   // Publish hypothesis
 
@@ -820,7 +837,7 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishGroup (SMESH::SMESH_Mesh_ptr  theMesh,
 
   //Add reference to geometry
   if ( !theShapeObject->_is_nil() )
-    addReference( aGroupSO, theShapeObject, 1 );
+    addReference( aGroupSO, theShapeObject, GetRefOnShapeTag() );
 
   return aGroupSO._retn();
 }
