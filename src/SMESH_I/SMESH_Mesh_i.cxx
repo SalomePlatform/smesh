@@ -3253,14 +3253,14 @@ void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
     GEOM::GEOM_BaseObject_var gbo = GEOM::GEOM_BaseObject::_narrow( fields[i] );
     goList[i] = gbo;
   }
-  TPythonDump() << _this() << ".ExportPartToMED( r'"
+  TPythonDump() << _this() << ".ExportPartToMED( "
+                << meshPart << ", r'"
                 << file << "', "
-                << "auto_groups=" << auto_groups << ", "
-                << "minor=" << minor <<  ", "
-                << "overwrite=" << overwrite << ", "
-                << "meshPart=" << meshPart << ", "
-                << "autoDimension=" << autoDimension << ", "
-                << "fields=" << goList << ", geomAssocFields='"
+                << auto_groups << ", "
+                << minor << ", "
+                << overwrite << ", "
+                << autoDimension << ", "
+                << goList << ", '"
                 << ( geomAssocFields ? geomAssocFields : "" ) << "'" << " )";
 
   SMESH_CATCH( SMESH::throwCorbaException );

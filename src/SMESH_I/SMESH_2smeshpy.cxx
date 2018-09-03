@@ -2032,21 +2032,32 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
       TCollection_AsciiString newMethod = method;
       newMethod.Remove( /*where=*/7, /*howmany=*/6 );
       theCommand->SetMethod( newMethod );
-      // filter out deprecated version parameter
-      vector< _AString > args;
+      // replace version parameter by minor
+      std::list< _AString > args;
       for ( int i = 1; i <= theCommand->GetNbArgs(); i++ ) {
-        if ( !_FilterArg( theCommand->GetArg( i ) ) )
-          args.push_back( theCommand->GetArg( i ) );
+        if ( _FilterArg( theCommand->GetArg( i )))
+          args.push_back( "minor=0");
+        else
+          args.push_back( theCommand->GetArg( i ));
       }
-      theCommand->RemoveArgs();
-      for ( uint i = 0; i < args.size(); i++ )
-        theCommand->SetArg( i+1, args[i] );
-      // make the 1st arg be the last one (or last but three for ExportMED())
-      _pyID partID = theCommand->GetArg( 1 );
-      int nbArgs = theCommand->GetNbArgs() - 3 * (newMethod == "ExportMED");
-      for ( int i = 2; i <= nbArgs; ++i )
-        theCommand->SetArg( i-1, theCommand->GetArg( i ));
-      theCommand->SetArg( nbArgs, partID );
+      // check the 1st arg meshPart, it must be SMESH_IDSource
+      _AString meshPart = args.front();
+      if ( _pyCommand::IsStudyEntry( meshPart ) ||
+           meshPart.Search( "Filter"      ) > 0 ||
+           meshPart.Search( "GetIDSource" ) > 0 ||
+           meshPart.Search( "meshPart"    ) > 0 )
+      {
+        // set the 1st arg meshPart
+        // - to 5th place for ExportMED command
+        // - to last place for the rest commands
+        std::list< _AString >::iterator newPos = args.end();
+        if ( newMethod == "ExportMED" )
+          std::advance( newPos = args.begin(), 5 );
+        args.splice( newPos, args, args.begin() );
+      }
+      std::list< _AString >::iterator a = args.begin();
+      for ( uint i = 1; a != args.end(); ++i, ++a )
+        theCommand->SetArg( i, *a );
     }
     // remember file name
     theGen->AddExportedMesh( theCommand->GetArg( 1 ),
@@ -3712,17 +3723,17 @@ const TCollection_AsciiString & _pyCommand::GetObject()
     if ( begPos < 1 ) {
       begPos = myString.Location( "=", 1, Length() ) + 1;
       // is '=' in the string argument (for example, name) or not
-      int nb1 = 0; // number of ' character at the left of =
-      int nb2 = 0; // number of " character at the left of =
-      for ( int i = 1; i < begPos-1; i++ ) {
-        if ( myString.Value( i )=='\'' )
-          nb1 += 1;
-        else if ( myString.Value( i )=='"' )
-          nb2 += 1;
-      }
-      // if number of ' or " is not divisible by 2,
+      int nb[4] = { 0, 0, 0, 0 }; // number of '"() character at the left of =
+      for ( int i = 1; i < begPos-1; i++ )
+        switch ( myString.Value( i )) {
+        case '\'': nb[0]++; break;
+        case '"' : nb[1]++; break;
+        case '(' : nb[2]++; break;
+        case ')' : nb[3]++; break;
+        }
+      // if = is inside a string or a list
       // then get an object at the start of the command
-      if ( nb1 % 2 != 0 || nb2 % 2 != 0 )
+      if ( nb[0] % 2 != 0 || nb[1] % 2 != 0 || nb[2] != nb[3])
         begPos = 1;
     }
     else {
