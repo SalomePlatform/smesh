@@ -6771,8 +6771,8 @@ SMESH_MeshEditor::PGroupIDs SMESH_MeshEditor::Offset( TIDSortedElemSet & theElem
       meshDS->RemoveFreeElement( eIt->next(), 0 );
   }
 
-  offsetMesh->Modified();
-  offsetMesh->CompactMesh(); // make IDs start from 1
+  // offsetMesh->Modified();
+  // offsetMesh->CompactMesh(); // make IDs start from 1
 
   // source elements for each generated one
   SMESH_SequenceOfElemPtr srcElems, srcNodes;

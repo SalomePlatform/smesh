@@ -1683,6 +1683,8 @@ bool SMESH_subMesh::ComputeStateEngine(compute_event event)
           else
             updateDependantsState( SUBMESH_COMPUTED );
         }
+        // let algo clear its data gathered while algo->Compute()
+        algo->CheckHypothesis((*_father), _subShape, hyp_status);
       }
       break;
     case COMPUTE_CANCELED:               // nothing to do

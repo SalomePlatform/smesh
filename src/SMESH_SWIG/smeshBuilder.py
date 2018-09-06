@@ -303,6 +303,8 @@ def AssureGeomPublished(mesh, geom, name=''):
     """
     Private method. Add geom (sub-shape of the main shape) into the study if not yet there
     """
+    if not mesh.smeshpyD.IsEnablePublish():
+        return
     if not isinstance( geom, geomBuilder.GEOM._objref_GEOM_Object ):
         return
     if not geom.GetStudyEntry():
