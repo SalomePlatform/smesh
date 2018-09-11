@@ -28,6 +28,7 @@
 #include "SMESH_ActorDef.h"
 
 #include "SMDS_UnstructuredGrid.hxx"
+#include "SMESH_ActorProps.h"
 #include "SMESH_ActorUtils.h"
 #include "SMESH_CellLabelActor.h"
 #include "SMESH_ControlsDef.hxx"
@@ -87,9 +88,6 @@ static int MYDEBUG = 0;
 static int MYDEBUG = 0;
 #endif
 
-static int aLineWidthInc = 2;
-
-
 SMESH_ActorDef* SMESH_ActorDef::New(){
   return new SMESH_ActorDef();
 }
@@ -140,6 +138,9 @@ SMESH_ActorDef::SMESH_ActorDef()
   myIsShrunk = false;
 
   myIsFacesOriented = false;
+
+  int controlsIncrement = SMESH_ActorProps::props()->controlsIncrement();
+  int selectionIncrement = SMESH_ActorProps::props()->selectionIncrement();
 
   myControlsPrecision = -1;
   SUIT_ResourceMgr* mgr = SUIT_Session::session()->resourceMgr();
@@ -240,6 +241,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   anRGB[0] = 1 - anRGB[0];
   anRGB[1] = 1 - anRGB[1];
   anRGB[2] = 1 - anRGB[2];
+  my2DExtProp->SetLineWidth(aLineWidth + controlsIncrement);
   my2DExtProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
 
   my2DExtActor = SMESH_DeviceActor::New();
@@ -290,6 +292,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   anRGB[0] = 1 - anRGB[0];
   anRGB[1] = 1 - anRGB[1];
   anRGB[2] = 1 - anRGB[2];
+  my3DExtProp->SetLineWidth(aLineWidth + controlsIncrement);
   my3DExtProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
 
   my3DExtActor = SMESH_DeviceActor::New();
@@ -345,7 +348,7 @@ SMESH_ActorDef::SMESH_ActorDef()
 
   my1DProp = vtkProperty::New();
   my1DProp->DeepCopy(myEdgeProp);
-  my1DProp->SetLineWidth(aLineWidth + aLineWidthInc);
+  my1DProp->SetLineWidth(aLineWidth + controlsIncrement);
   my1DProp->SetPointSize(aElem0DSize);
 
   my1DExtProp = vtkProperty::New();
@@ -354,7 +357,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   anRGB[1] = 1 - anRGB[1];
   anRGB[2] = 1 - anRGB[2];
   my1DExtProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
-  my1DExtProp->SetLineWidth(aLineWidth + aLineWidthInc);
+  my1DExtProp->SetLineWidth(aLineWidth + controlsIncrement);
   my1DExtProp->SetPointSize(aElem0DSize);
 
   // my1DExtActor is used to show filtered edges or links between nodes
@@ -485,7 +488,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   SMESH::GetColor( "SMESH", "selection_object_color", anRGB[0], anRGB[1], anRGB[2], QColor( 255, 255, 255 ) );
   myHighlightProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
   myHighlightProp->SetPointSize(aElem0DSize); // ??
-  myHighlightProp->SetLineWidth(aLineWidth);
+  myHighlightProp->SetLineWidth(aLineWidth + selectionIncrement);
   myHighlightProp->SetRepresentation(1);
 
   myOutLineProp = vtkProperty::New();
@@ -504,7 +507,7 @@ SMESH_ActorDef::SMESH_ActorDef()
   SMESH::GetColor( "SMESH", "highlight_color", anRGB[0], anRGB[1], anRGB[2], QColor( 0, 255, 255 ) );
   myPreselectProp->SetColor(anRGB[0],anRGB[1],anRGB[2]);
   myPreselectProp->SetPointSize(aElem0DSize); // ??
-  myPreselectProp->SetLineWidth(aLineWidth);
+  myPreselectProp->SetLineWidth(aLineWidth + selectionIncrement);
   myPreselectProp->SetRepresentation(1);
 
   myHighlitableActor = SMESH_DeviceActor::New();
@@ -2197,28 +2200,18 @@ void SMESH_ActorDef::GetBallColor(double& r,double& g,double& b)
   ::GetColor(myBallProp,r,g,b);
 }
 
-void SMESH_ActorDef::SetHighlightColor(double r,double g,double b)
-{ 
-  myHighlightProp->SetColor(r,g,b);
+void SMESH_ActorDef::UpdateSelectionProps()
+{
+  QColor selectionColor = SMESH_ActorProps::props()->selectionColor();
+  QColor highlightColor = SMESH_ActorProps::props()->highlightColor();
+  int selectionIncrement = SMESH_ActorProps::props()->selectionIncrement();
+  double width = GetLineWidth();
+  myHighlightProp->SetColor(selectionColor.redF(), selectionColor.greenF(), selectionColor.blueF());
+  myHighlightProp->SetLineWidth(width + selectionIncrement);
+  myPreselectProp->SetColor(highlightColor.redF(), highlightColor.greenF(), highlightColor.blueF());
+  myPreselectProp->SetLineWidth(width + selectionIncrement);
   Modified();
 }
-
-void SMESH_ActorDef::GetHighlightColor(double& r,double& g,double& b)
-{ 
-  ::GetColor(myHighlightProp,r,g,b);
-}
-
-void SMESH_ActorDef::SetPreHighlightColor(double r,double g,double b)
-{ 
-  myPreselectProp->SetColor(r,g,b);
-  Modified();
-}
-
-void SMESH_ActorDef::GetPreHighlightColor(double& r,double& g,double& b)
-{ 
-  ::GetColor(myPreselectProp,r,g,b);
-}
-
 
 double SMESH_ActorDef::GetLineWidth()
 {
@@ -2228,15 +2221,17 @@ double SMESH_ActorDef::GetLineWidth()
 
 void SMESH_ActorDef::SetLineWidth(double theVal)
 {
+  int controlsIncrement = SMESH_ActorProps::props()->controlsIncrement();
+  int selectionIncrement = SMESH_ActorProps::props()->selectionIncrement();
+
   myEdgeProp->SetLineWidth(theVal);
 
-  my1DProp->SetLineWidth(theVal + aLineWidthInc);
-  my1DExtProp->SetLineWidth(theVal + aLineWidthInc);
-  my2DExtProp->SetLineWidth(theVal + aLineWidthInc);
-  my3DExtProp->SetLineWidth(theVal + aLineWidthInc);
-  myOutLineProp->SetLineWidth(theVal);
-  myHighlightProp->SetLineWidth(theVal);
-  myPreselectProp->SetLineWidth(theVal);
+  my1DProp->SetLineWidth(theVal + controlsIncrement);
+  my1DExtProp->SetLineWidth(theVal + controlsIncrement);
+  my2DExtProp->SetLineWidth(theVal + controlsIncrement);
+  my3DExtProp->SetLineWidth(theVal + controlsIncrement);
+  myHighlightProp->SetLineWidth(theVal + selectionIncrement);
+  myPreselectProp->SetLineWidth(theVal + selectionIncrement);
   Modified();
 }
 

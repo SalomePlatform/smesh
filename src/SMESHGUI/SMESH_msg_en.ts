@@ -4831,6 +4831,10 @@ Please, create VTK viewer and try again</translation>
         <translation>Objects</translation>
     </message>
     <message>
+        <source>PREF_SELECTION_INCREMENT</source>
+        <translation>Elements width increment</translation>
+    </message>
+    <message>
         <source>PREF_OBJECT_COLOR</source>
         <translation>Object color</translation>
     </message>

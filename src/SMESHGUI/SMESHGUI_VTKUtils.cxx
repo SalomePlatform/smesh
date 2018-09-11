@@ -32,6 +32,7 @@
 #include "SMESHGUI_Utils.h"
 #include "SMDS_Mesh.hxx"
 #include "SMESH_Actor.h"
+#include "SMESH_ActorProps.h"
 #include "SMESH_ActorUtils.h"
 #include "SMESH_CellLabelActor.h"
 #include "SMESH_ControlsDef.hxx"
@@ -903,6 +904,8 @@ namespace SMESH
       return;
     }
 
+    SMESH_ActorProps::props()->reset();
+
     QColor
       aHiColor = mgr->colorValue( "SMESH", "selection_object_color", Qt::white ),
       aSelColor = mgr->colorValue( "SMESH", "selection_element_color", Qt::yellow ),
@@ -944,12 +947,7 @@ namespace SMESH
         aCollection->InitTraversal();
         while ( vtkActor *anAct = aCollection->GetNextActor() ) {
           if ( SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct) ) {
-            anActor->SetHighlightColor(aHiColor.red()/255.,
-                                       aHiColor.green()/255.,
-                                       aHiColor.blue()/255.);
-            anActor->SetPreHighlightColor(aPreColor.red()/255.,
-                                          aPreColor.green()/255.,
-                                          aPreColor.blue()/255.);
+	    anActor->UpdateSelectionProps();
           }
         }
       }

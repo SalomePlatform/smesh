@@ -127,11 +127,7 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual void SetBallColor(double r,double g,double b);
   virtual void GetBallColor(double& r,double& g,double& b);
 
-  virtual void SetHighlightColor(double r,double g,double b);
-  virtual void GetHighlightColor(double& r,double& g,double& b);
-
-  virtual void SetPreHighlightColor(double r,double g,double b);
-  virtual void GetPreHighlightColor(double& r,double& g,double& b);
+  virtual void UpdateSelectionProps();
  
   virtual double GetLineWidth();
   virtual void SetLineWidth(double theVal);

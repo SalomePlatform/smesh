@@ -79,6 +79,7 @@ SET(SMESHObject_HEADERS
   SMESH_Actor.h
   SMESH_Object.h
   SMESH_ObjectDef.h
+  SMESH_ActorProps.h
   SMESH_ActorUtils.h
   SMESH_ActorDef.h
   SMESH_DeviceActor.h
@@ -98,6 +99,7 @@ SET(SMESHObject_SOURCES
   SMESH_Object.cxx
   SMESH_DeviceActor.cxx
   SMESH_Actor.cxx
+  SMESH_ActorProps.cxx
   SMESH_PreviewActorsCollection.cxx
   SMESH_ExtractGeometry.cxx
   SMESH_ActorUtils.cxx

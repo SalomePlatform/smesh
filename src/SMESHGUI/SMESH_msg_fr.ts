@@ -4781,6 +4781,10 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
         <translation>Objets</translation>
     </message>
     <message>
+        <source>PREF_SELECTION_INCREMENT</source>
+        <translation type="unfinished">Elements width increment</translation>
+    </message>
+    <message>
         <source>PREF_OBJECT_COLOR</source>
         <translation>Couleur d&apos;objet</translation>
     </message>
