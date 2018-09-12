@@ -5100,6 +5100,11 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( doubleNodesTol, "max", 1000000.0 );
   setPreferenceProperty( doubleNodesTol, "step", 0.0000001 );
 
+  /*
+  int cinc = addPreference(tr("PREF_CONTROLS_INCREMENT"), qaGroup, LightApp_Preferences::IntSpin, "SMESH", "controls_increment");
+  setPreferenceProperty( cinc, "min", 0 );
+  setPreferenceProperty( cinc, "max", 5 );
+  */
 
   int exportgroup = addPreference( tr( "PREF_GROUP_EXPORT" ), genTab );
   setPreferenceProperty( exportgroup, "columns", 2 );
@@ -5333,6 +5338,10 @@ void SMESHGUI::createPreferences()
   addPreference( tr( "PREF_ELEMENTS" ), precSelGroup, LightApp_Preferences::Double, "SMESH", "selection_precision_element" );
   addPreference( tr( "PREF_OBJECTS" ), precSelGroup, LightApp_Preferences::Double, "SMESH", "selection_precision_object" );
 
+  int sinc = addPreference(tr("PREF_SELECTION_INCREMENT"), selTab, LightApp_Preferences::IntSpin, "SMESH", "selection_increment");
+  setPreferenceProperty( sinc, "min", 0 );
+  setPreferenceProperty( sinc, "max", 5 );
+
   // Scalar Bar tab ------------------------------------------------------------------------
   int sbarTab = addPreference( tr( "SMESH_SCALARBAR" ) );
   int fontGr = addPreference( tr( "SMESH_FONT_SCALARBAR" ), sbarTab );
@@ -5432,7 +5441,8 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
          name==        "highlight_color" ||
          name=="selection_precision_node"    ||
          name=="selection_precision_element" ||
-         name=="selection_precision_object"   )
+         name=="selection_precision_object"   ||
+	 name=="selection_increment")
     {
       SMESH::UpdateSelectionProp( this );
     }

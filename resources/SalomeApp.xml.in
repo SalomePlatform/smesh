@@ -115,6 +115,8 @@
     <parameter name="parametric_precision"         value="-6"  />
     <parameter name="area_precision"               value="-6"  />
     <parameter name="vol_precision"                value="-6"  />
+    <parameter name="selection_increment"          value="0"  />
+    <parameter name="controls_increment"           value="2"  />
   </section>
   <section name="smesh_help" >
     <parameter name="User's Guide/Mesh module/User's Guide"      value="%SMESH_ROOT_DIR%/share/doc/salome/gui/SMESH/index.html"/>

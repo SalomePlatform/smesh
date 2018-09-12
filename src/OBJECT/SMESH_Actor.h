@@ -83,12 +83,8 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
   virtual void SetBallColor(double r,double g,double b) = 0;
   virtual void GetBallColor(double& r,double& g,double& b) = 0;
 
-  virtual void SetHighlightColor(double r,double g,double b) = 0;
-  virtual void GetHighlightColor(double& r,double& g,double& b) = 0;
-
-  virtual void SetPreHighlightColor(double r,double g,double b) = 0;
-  virtual void GetPreHighlightColor(double& r,double& g,double& b) = 0;
- 
+  virtual void UpdateSelectionProps() = 0;
+  
   virtual double GetLineWidth() = 0;
   virtual void SetLineWidth(double theVal) = 0;
 

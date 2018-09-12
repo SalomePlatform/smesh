@@ -4728,6 +4728,10 @@
       <translation>オブジェクト</translation>
     </message>
     <message>
+      <source>PREF_SELECTION_INCREMENT</source>
+      <translation type="unfinished">Elements width increment</translation>
+    </message>
+    <message>
       <source>PREF_OBJECT_COLOR</source>
       <translation>オブジェクトの色</translation>
     </message>
