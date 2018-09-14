@@ -43,6 +43,7 @@ SET(BAD_TESTS
   quality_controls_ex22.py
   viewing_meshes_ex01.py
   radial_prism_3d_algo.py
+  test_smeshplugins.py
   )
 
 SET(GOOD_TESTS
