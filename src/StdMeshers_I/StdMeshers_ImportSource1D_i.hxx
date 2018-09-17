@@ -64,6 +64,17 @@ class STDMESHERS_I_EXPORT StdMeshers_ImportSource1D_i:
   virtual void  LoadFrom( const char* theStream );
   virtual void  UpdateAsMeshesRestored();
 
+
+
+  // Methods for copying mesh definition to other geometry
+
+  // Return geometry this hypothesis depends on. Return false if there is no geometry parameter
+  virtual bool getObjectsDependOn( std::vector< std::string > & entryArray,
+                                   std::vector< int >         & subIDArray ) const { return 0; }
+
+  // Set new geometry instead of that returned by getObjectsDependOn()
+  virtual bool setObjectsDependOn( std::vector< std::string > & entryArray,
+                                   std::vector< int >         & subIDArray ) { return true; }
  private:
   SMESH::string_array_var _groupEntries;
   std::vector< std::string > _groupIDs;

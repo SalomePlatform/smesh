@@ -35,7 +35,7 @@
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
 
-#include "SMESH_Hypothesis_i.hxx"
+#include "StdMeshers_Reversible1D_i.hxx"
 #include "StdMeshers_NumberOfSegments.hxx"
 
 // ======================================================
@@ -43,7 +43,8 @@
 // ======================================================
 class STDMESHERS_I_EXPORT StdMeshers_NumberOfSegments_i:
   public virtual POA_StdMeshers::StdMeshers_NumberOfSegments,
-  public virtual SMESH_Hypothesis_i
+  public virtual SMESH_Hypothesis_i,
+  public virtual StdMeshers_Reversible1D_i
 {
 public:
   // Constructor
@@ -104,18 +105,16 @@ public:
   // Verify whether hypothesis supports given entity type 
   CORBA::Boolean IsDimSupported( SMESH::Dimension type );
 
-  //Set Reversed Edges
-  void SetReversedEdges( const SMESH::long_array& theIDs);
 
-  //Get Reversed Edges
-  SMESH::long_array*  GetReversedEdges();
+  // Methods for copying mesh definition to other geometry
 
-  //Set Object Entry
-  void SetObjectEntry( const char* entry);
+  // Return geometry this hypothesis depends on. Return false if there is no geometry parameter
+  virtual bool getObjectsDependOn( std::vector< std::string > & entryArray,
+                                   std::vector< int >         & subIDArray ) const;
 
-  //Get Object Entry
-  char* GetObjectEntry();
-
+  // Set new geometry instead of that returned by getObjectsDependOn()
+  virtual bool setObjectsDependOn( std::vector< std::string > & entryArray,
+                                   std::vector< int >         & subIDArray );
  protected:
   virtual std::string getMethodOfParameter(const int paramIndex, int nbVars) const;
 };

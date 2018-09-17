@@ -59,6 +59,12 @@ public:
   
   // Verify whether hypothesis supports given entity type 
   CORBA::Boolean IsDimSupported( SMESH::Dimension type );
+
+  // Methods for copying mesh definition to other geometry
+  virtual bool getObjectsDependOn( std::vector< std::string > & entryArray,
+                                   std::vector< int >         & subIDArray ) const { return false; }
+  virtual bool setObjectsDependOn( std::vector< std::string > & entryArray,
+                                   std::vector< int >         & subIDArray ) { return true; }
 };
 
 #endif

@@ -312,3 +312,48 @@ void StdMeshers_ProjectionSource3D_i::LoadFrom( const char* theStream )
     str >> myShapeEntries[ i ];
 }
 
+//================================================================================
+/*!
+ * \brief Return geometry this hypothesis depends on. Return false if there is no geometry parameter
+ */
+//================================================================================
+
+bool
+StdMeshers_ProjectionSource3D_i::getObjectsDependOn( std::vector< std::string > & entryArray,
+                                                     std::vector< int >         & subIDArray ) const
+{
+  for ( int i = 0; i < NB_SHAPES; ++i )
+    entryArray.push_back( myShapeEntries[ i ]);
+
+  return true;
+}
+
+//================================================================================
+/*!
+ * \brief Set new geometry instead of that returned by getObjectsDependOn()
+ */
+//================================================================================
+
+bool
+StdMeshers_ProjectionSource3D_i::setObjectsDependOn( std::vector< std::string > & entryArray,
+                                                     std::vector< int >         & subIDArray )
+{
+  TopoDS_Shape shapes[ NB_SHAPES ];
+  for ( int i = 0; i < NB_SHAPES; ++i )
+  {
+    myShapeEntries[ i ] = entryArray[ i ];
+    shapes[ i ] = StdMeshers_ObjRefUlils::EntryToShape( entryArray[ i ]);
+  }
+
+  try {
+    GetImpl()->SetSource3DShape    ( shapes[ SRC_SHAPE3D ] );
+    GetImpl()->SetVertexAssociation( shapes[ SRC_VERTEX1 ],
+                                     shapes[ SRC_VERTEX2 ],
+                                     shapes[ TGT_VERTEX1 ],
+                                     shapes[ TGT_VERTEX2 ]);
+  }
+  catch (...) {
+    return false;
+  }
+  return true;
+}

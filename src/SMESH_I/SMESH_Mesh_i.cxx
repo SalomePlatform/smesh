@@ -2460,9 +2460,25 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::createSubMesh( GEOM::GEOM_Object_ptr theS
   if(MYDEBUG) MESSAGE( "createSubMesh" );
   TopoDS_Shape  myLocSubShape = _gen_i->GeomObjectToShape(theSubShapeObject);
   ::SMESH_subMesh * mySubMesh = _impl->GetSubMesh(myLocSubShape);
-  const int         subMeshId = mySubMesh->GetId();
+  int               subMeshId = 0;
 
-  SMESH_subMesh_i * subMeshServant = new SMESH_subMesh_i(myPOA, _gen_i, this, subMeshId);
+  SMESH_subMesh_i * subMeshServant;
+  if ( mySubMesh )
+  {
+    subMeshId = mySubMesh->GetId();
+    subMeshServant = new SMESH_subMesh_i(myPOA, _gen_i, this, subMeshId);
+  }
+  else // "invalid sub-mesh"
+  {
+    // The invalid sub-mesh is created for the case where a valid sub-shape not found
+    // by SMESH_Gen_i::CopyMeshWithGeom(). The invalid sub-mesh has GetId() < 0.
+    if ( _mapSubMesh.empty() )
+      subMeshId = -1;
+    else
+      subMeshId = _mapSubMesh.begin()->first - 1;
+    subMeshServant = new SMESH_Invalid_subMesh_i(myPOA, _gen_i, this, subMeshId, theSubShapeObject);
+  }
+
   SMESH::SMESH_subMesh_var subMesh = subMeshServant->_this();
 
   _mapSubMesh   [subMeshId] = mySubMesh;
@@ -2477,7 +2493,8 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::createSubMesh( GEOM::GEOM_Object_ptr theS
   else        { nextId = 0; } // avoid "unused variable" warning
 
   // to track changes of GEOM groups
-  addGeomGroupData( theSubShapeObject, subMesh );
+  if ( subMeshId > 0 )
+    addGeomGroupData( theSubShapeObject, subMesh );
 
   return subMesh._retn();
 }
@@ -2513,7 +2530,8 @@ bool SMESH_Mesh_i::removeSubMesh (SMESH::SMESH_subMesh_ptr theSubMesh,
 
   if ( theSubShapeObject->_is_nil() )  // not published shape (IPAL13617)
   {
-    if ( _mapSubMesh.find( subMeshId ) != _mapSubMesh.end())
+    if ( _mapSubMesh.find( subMeshId ) != _mapSubMesh.end() &&
+         _mapSubMesh[ subMeshId ])
     {
       TopoDS_Shape S = _mapSubMesh[ subMeshId ]->GetSubShape();
       if ( !S.IsNull() )
@@ -2735,7 +2753,7 @@ namespace
     SMESH_Mesh_i* _mesh;
     TCallUp_i(SMESH_Mesh_i* mesh):_mesh(mesh) {}
     virtual void RemoveGroup (const int theGroupID) { _mesh->removeGroup( theGroupID ); }
-    virtual void HypothesisModified ()              { _mesh->onHypothesisModified(); }
+    virtual void HypothesisModified (int theHypID)  { _mesh->onHypothesisModified( theHypID ); }
     virtual void Load ()                            { _mesh->Load(); }
   };
 }
@@ -2746,13 +2764,30 @@ namespace
  */
 //================================================================================
 
-void SMESH_Mesh_i::onHypothesisModified()
+void SMESH_Mesh_i::onHypothesisModified(int theHypID)
 {
   if ( _preMeshInfo )
     _preMeshInfo->ForgetOrLoad();
 
   SMESH::SMESH_Mesh_var mesh = _this();
   _gen_i->UpdateIcons( mesh );
+
+  // mark a hypothesis as valid after edition
+  SALOMEDS::SComponent_wrap smeshComp = _gen_i->PublishComponent();
+  SALOMEDS::SObject_wrap hypRoot;
+  if ( !smeshComp->_is_nil() && 
+       smeshComp->FindSubObject( _gen_i->GetHypothesisRootTag(), hypRoot.inout() ))
+  {
+    SALOMEDS::ChildIterator_wrap anIter = _gen_i->getStudyServant()->NewChildIterator( hypRoot );
+    for ( ; anIter->More(); anIter->Next() )
+    {
+      SALOMEDS::SObject_wrap    hypSO = anIter->Value();
+      CORBA::Object_var           obj = _gen_i->SObjectToObject( hypSO );
+      SMESH::SMESH_Hypothesis_var hyp = SMESH::SMESH_Hypothesis::_narrow( obj );
+      if ( !hyp->_is_nil() && hyp->GetId() == theHypID )
+        _gen_i->HighLightInvalid( hyp, false );
+    }
+  }
 }
 
 //=============================================================================

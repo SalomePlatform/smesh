@@ -246,9 +246,24 @@ public:
   SMESH::SMESH_Mesh_ptr CopyMesh(SMESH::SMESH_IDSource_ptr meshPart,
                                  const char*               meshName,
                                  CORBA::Boolean            toCopyGroups,
-                                 CORBA::Boolean            toKeepIDs);
+                                 CORBA::Boolean            toKeepIDs)
+    throw ( SALOME::SALOME_Exception );
 
-  // Compute mesh on a shape
+  // Create a mesh by copying definitions of another mesh to a given geometry
+  CORBA::Boolean CopyMeshWithGeom( SMESH::SMESH_Mesh_ptr       sourceMesh,
+                                   GEOM::GEOM_Object_ptr       newGeometry,
+                                   const char*                 meshName,
+                                   CORBA::Boolean              toCopyGroups,
+                                   CORBA::Boolean              toReuseHypotheses,
+                                   CORBA::Boolean              toCopyElements,
+                                   SMESH::SMESH_Mesh_out       newMesh,
+                                   SMESH::ListOfGroups_out     newGroups,
+                                   SMESH::submesh_array_out    newSubmeshes,
+                                   SMESH::ListOfHypothesis_out newHypotheses,
+                                   SMESH::string_array_out     invalidEntries)
+    throw ( SALOME::SALOME_Exception );
+
+    // Compute mesh on a shape
   CORBA::Boolean Compute( SMESH::SMESH_Mesh_ptr theMesh,
                           GEOM::GEOM_Object_ptr theShapeObject )
     throw ( SALOME::SALOME_Exception );
@@ -504,6 +519,7 @@ public:
                                       GEOM::GEOM_Object_ptr  theShapeObject,
                                       const char*            theName = 0);
   void UpdateIcons(SMESH::SMESH_Mesh_ptr theMesh);
+  void HighLightInvalid(CORBA::Object_ptr theObject, bool isInvalid);
   bool AddHypothesisToShape(SMESH::SMESH_Mesh_ptr       theMesh,
                             GEOM::GEOM_Object_ptr       theShapeObject,
                             SMESH::SMESH_Hypothesis_ptr theHyp);
@@ -607,6 +623,14 @@ private:
   // Create empty mesh on shape
   SMESH::SMESH_Mesh_ptr createMesh()
     throw ( SALOME::SALOME_Exception );
+
+  // Create a sub-mesh on a geometry that is not a sub-shape of the main shape
+  // for the case where a valid sub-shape not found by CopyMeshWithGeom()
+  SMESH::SMESH_subMesh_ptr createInvalidSubMesh( SMESH::SMESH_Mesh_ptr mesh,
+                                                 GEOM::GEOM_Object_ptr strangerGeom,
+                                                 const char*           name );
+
+  void highLightInvalid( SALOMEDS::SObject_ptr theSObject, bool isInvalid );
 
   static void loadGeomData( SALOMEDS::SComponent_ptr theCompRoot );
 

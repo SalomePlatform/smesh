@@ -45,8 +45,9 @@ using namespace std;
 
 StdMeshers_FixedPoints1D_i::StdMeshers_FixedPoints1D_i( PortableServer::POA_ptr thePOA,
                                                         ::SMESH_Gen*            theGenImpl )
-     : SALOME::GenericObj_i( thePOA ), 
-       SMESH_Hypothesis_i( thePOA )
+  : SALOME::GenericObj_i( thePOA ),
+    SMESH_Hypothesis_i( thePOA ),
+    StdMeshers_Reversible1D_i( this )
 {
   myBaseImpl = new ::StdMeshers_FixedPoints1D(theGenImpl->GetANewId(),
                                               theGenImpl);
@@ -158,98 +159,6 @@ SMESH::long_array* StdMeshers_FixedPoints1D_i::GetNbSegments()
 
 //=============================================================================
 /*!
- *  StdMeshers_FixedPoints1D_i::SetReversedEdges
- *
- *  Set edges to reverse
- */
-//=============================================================================
-
-void StdMeshers_FixedPoints1D_i::SetReversedEdges( const SMESH::long_array& theIds )
-{
-  ASSERT( myBaseImpl );
-  try {
-    std::vector<int> ids( theIds.length() );
-    CORBA::Long iEnd = theIds.length();
-    for ( CORBA::Long i = 0; i < iEnd; i++ )
-      ids[ i ] = theIds[ i ];
-
-    this->GetImpl()->SetReversedEdges( ids );
-  }
-  catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-                                  SALOME::BAD_PARAM );
-  }
-
-  // Update Python script
-  SMESH::TPythonDump() << _this() << ".SetReversedEdges( " << theIds << " )";
-}
-
-//=============================================================================
-/*!
- *  StdMeshers_FixedPoints1D_i::SetObjectEntry
- *
- *  Set the Entry for the Main Object
- */
-//=============================================================================
-
-void StdMeshers_FixedPoints1D_i::SetObjectEntry( const char* theEntry )
-{
-  ASSERT( myBaseImpl );
-  string entry(theEntry); // actually needed as theEntry is spoiled by moment of dumping
-  try {
-    this->GetImpl()->SetObjectEntry( entry.c_str() );
-    // Update Python script
-    SMESH::TPythonDump() << _this() << ".SetObjectEntry( \"" << entry.c_str() << "\" )";
-  }
-  catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),SALOME::BAD_PARAM );
-  }
-}
-
-//=============================================================================
-/*!
- *  StdMeshers_FixedPoints1D_i::GetObjectEntry
- *
- *  Set the Entry for the Main Object
- */
-//=============================================================================
-
-char* StdMeshers_FixedPoints1D_i::GetObjectEntry()
-{
-  ASSERT( myBaseImpl );
-  const char* entry;
-  try {
-    entry = this->GetImpl()->GetObjectEntry();
-  }
-  catch ( SALOME_Exception& S_ex ) {
-    THROW_SALOME_CORBA_EXCEPTION( S_ex.what(),
-                                  SALOME::BAD_PARAM );
-  }
-  return CORBA::string_dup( entry );
-}
-
-//=============================================================================
-/*!
- *  StdMeshers_FixedPoints1D_i::GetReversedEdges
- *
- *  Get reversed edges
- */
-//=============================================================================
-
-SMESH::long_array* StdMeshers_FixedPoints1D_i::GetReversedEdges()
-{
-  ASSERT( myBaseImpl );
-  SMESH::long_array_var anArray = new SMESH::long_array;
-  std::vector<int> ids = this->GetImpl()->GetReversedEdges();
-  anArray->length( ids.size() );
-  for ( CORBA::ULong i = 0; i < ids.size(); i++)
-    anArray [ i ] = ids [ i ];
-
-  return anArray._retn();
-}
-
-//=============================================================================
-/*!
  *  StdMeshers_FixedPoints1D_i::GetImpl
  *
  *  Get implementation
@@ -269,9 +178,34 @@ SMESH::long_array* StdMeshers_FixedPoints1D_i::GetReversedEdges()
  * 
  * Verify whether hypothesis supports given entity type (see SMESH::Dimension enumeration)
  */
-//================================================================================  
+//================================================================================
 CORBA::Boolean StdMeshers_FixedPoints1D_i::IsDimSupported( SMESH::Dimension type )
 {
   return type == SMESH::DIM_1D;
 }
 
+//================================================================================
+/*!
+ * \brief Return geometry this hypothesis depends on. Return false if there is no geometry parameter
+ */
+//================================================================================
+
+bool
+StdMeshers_FixedPoints1D_i::getObjectsDependOn( std::vector< std::string > & entryArray,
+                                                std::vector< int >         & subIDArray ) const
+{
+  return StdMeshers_Reversible1D_i::getObjectsDependOn( entryArray, subIDArray );
+}
+
+//================================================================================
+/*!
+ * \brief Set new geometry instead of that returned by getObjectsDependOn()
+ */
+//================================================================================
+
+bool
+StdMeshers_FixedPoints1D_i::setObjectsDependOn( std::vector< std::string > & entryArray,
+                                                std::vector< int >         & subIDArray )
+{
+  return StdMeshers_Reversible1D_i::setObjectsDependOn( entryArray, subIDArray );
+}

@@ -540,6 +540,16 @@ namespace SMESH
     DumpArray( theList, *this );
     return *this;
   }
+  TPythonDump& TPythonDump::operator<<(const SMESH::submesh_array& theList)
+  {
+    DumpArray( theList, *this );
+    return *this;
+  }
+  TPythonDump& TPythonDump::operator<<(const SMESH::ListOfHypothesis& theList)
+  {
+    DumpArray( theList, *this );
+    return *this;
+  }
   TPythonDump& TPythonDump::operator<<(const SMESH::CoincidentFreeBorders& theCFB)
   {
     // dump CoincidentFreeBorders as a list of lists, each enclosed list

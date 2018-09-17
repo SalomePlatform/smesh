@@ -1006,10 +1006,10 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
     AddObject( mesh );
     return;
   }
-  if( method == "CreateMeshesFromMED" ||
-      method == "CreateMeshesFromSAUV"||
-      method == "CreateMeshesFromCGNS" ||
-      method == "CreateMeshesFromGMF" ) // command result is ( [mesh1,mesh2], status )
+  if ( method == "CreateMeshesFromMED" ||
+       method == "CreateMeshesFromSAUV"||
+       method == "CreateMeshesFromCGNS" ||
+       method == "CreateMeshesFromGMF" ) // command result is ( [mesh1,mesh2], status )
   {
     std::list< _pyID > meshIDs = theCommand->GetStudyEntries( theCommand->GetResultValue() );
     std::list< _pyID >::iterator meshID = meshIDs.begin();
@@ -1026,6 +1026,12 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
       theCommand->RemoveArgs();
       theCommand->SetArg( 1, file );
     }
+  }
+  if ( method == "CopyMeshWithGeom" )
+  {
+    std::list< _pyID > entries = theCommand->GetStudyEntries( theCommand->GetResultValue() );
+    Handle(_pyMesh) mesh = new _pyMesh( theCommand, entries.front() );
+    AddObject( mesh );
   }
 
   // CreateHypothesis()

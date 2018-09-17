@@ -81,3 +81,27 @@ SMESH::ListOfHypothesisName* SMESH_Algo_i::GetCompatibleHypothesis()
   }
   return listOfHypothesis._retn();
 }
+
+//================================================================================
+/*!
+ * Return geometry this hypothesis depends on. Return false if there is no geometry parameter
+ */
+//================================================================================
+
+bool SMESH_Algo_i::getObjectsDependOn( std::vector< std::string > & entryArray,
+                                       std::vector< int >         & subIDArray ) const
+{
+  return false;
+}
+
+//================================================================================
+/*!
+ * \brief Set new geometry instead of that returned by getObjectsDependOn()
+ */
+//================================================================================
+
+bool SMESH_Algo_i::setObjectsDependOn( std::vector< std::string > & entryArray,
+                                       std::vector< int >         & subIDArray )
+{
+  return true;
+}

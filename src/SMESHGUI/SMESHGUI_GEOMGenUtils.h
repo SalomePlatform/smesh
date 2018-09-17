@@ -51,6 +51,8 @@ namespace SMESH
 
   SMESHGUI_EXPORT GEOM::GEOM_Object_var GetGeom( _PTR(SObject) );
 
+  SMESHGUI_EXPORT GEOM::GEOM_Object_var GetGeom( Handle(SALOME_InteractiveObject) io );
+
   SMESHGUI_EXPORT char* GetGeomName( _PTR(SObject) smeshSO );
 
   SMESHGUI_EXPORT GEOM::GEOM_Object_ptr GetSubShape( GEOM::GEOM_Object_ptr, long );

@@ -139,5 +139,46 @@ SMESH::long_array* StdMeshers_Reversible1D_i::GetReversedEdges()
 
 ::StdMeshers_Reversible1D* StdMeshers_Reversible1D_i::GetImpl()
 {
-  return ( ::StdMeshers_Reversible1D* )myHyp->GetImpl();
+  return static_cast<::StdMeshers_Reversible1D* >( myHyp->GetImpl() );
+}
+
+//================================================================================
+/*!
+ * \brief Return geometry this hypothesis depends on. Return false if there is no geometry parameter
+ */
+//================================================================================
+
+bool
+StdMeshers_Reversible1D_i::getObjectsDependOn( std::vector< std::string > & entryArray,
+                                               std::vector< int >         & subIDArray ) const
+{
+  const ::StdMeshers_Reversible1D* impl = ( const ::StdMeshers_Reversible1D* ) myHyp->GetImpl();
+  subIDArray = impl->GetReversedEdges();
+  entryArray.push_back( impl->GetObjectEntry() );
+
+  return true;
+}
+
+//================================================================================
+/*!
+ * \brief Set new geometry instead of that returned by getObjectsDependOn()
+ */
+//================================================================================
+
+bool
+StdMeshers_Reversible1D_i::setObjectsDependOn( std::vector< std::string > & entryArray,
+                                               std::vector< int >         & subIDArray )
+{
+  std::vector< int > newIDs;
+  newIDs.reserve( subIDArray.size() );
+
+  for ( size_t i = 0; i < subIDArray.size(); ++i )
+    if ( subIDArray[ i ] > 0 )
+      newIDs.push_back( subIDArray[ i ]);
+  GetImpl()->SetReversedEdges( newIDs );
+
+  if ( !entryArray.empty() )
+    GetImpl()->SetObjectEntry( entryArray[0].c_str() );
+
+  return true;
 }

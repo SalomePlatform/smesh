@@ -452,6 +452,9 @@ static void addReference (SALOMEDS::SObject_ptr theSObject,
 
     aStudyBuilder->Addreference( aReferenceSO, aToObjSO );
 
+    // make the reference visible (invisible ref is created by createInvalidSubMesh())
+    aStudyBuilder->RemoveAttribute( aReferenceSO, "AttributeDrawable" );
+
     // add reference to the use case tree
     // (to support tree representation customization and drag-n-drop)
     SALOMEDS::UseCaseBuilder_wrap  useCaseBuilder = aStudy->GetUseCaseBuilder();
@@ -689,6 +692,8 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishSubMesh (SMESH::SMESH_Mesh_ptr    theM
   if ( theMesh->_is_nil() || theSubMesh->_is_nil() || theShapeObject->_is_nil() )
     return SALOMEDS::SObject::_nil();
 
+  std::string newName( theName ? theName : "" );
+
   SALOMEDS::SObject_wrap aSubMeshSO = ObjectToSObject( theSubMesh );
   if ( aSubMeshSO->_is_nil() )
   {
@@ -740,15 +745,37 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishSubMesh (SMESH::SMESH_Mesh_ptr    theM
 
     SetName( aRootSO, aRootName );
 
-    // Add new submesh to corresponding sub-tree
+    // Add new sub-mesh to corresponding sub-tree
+    int tag = 0; // to use a new SObject
+    if ( theName && theName[0] == '0' )
+    {
+      // theName can be an entry of an invalid sub-mesh which theSubMesh should replace
+      SALOMEDS::SObject_wrap aSObj = getStudyServant()->FindObjectID( theName );
+      if ( aSObj )
+      {
+        CORBA::String_var oldName = aSObj->GetName();
+        newName = oldName.in();
+        SALOMEDS::SObject_wrap aRootSO2 = aSObj->GetFather();
+        if ( aRootSO->Tag() == aRootSO2->Tag() ) // same parent
+          tag = aSObj->Tag(); // to use the same SObject
+        else
+        {
+          CORBA::Object_var anObj = SObjectToObject( aSObj );
+          SMESH::SMESH_subMesh_var sm = SMESH::SMESH_subMesh::_narrow( anObj );
+          theMesh->RemoveSubMesh( sm );
+        }
+      }
+    }
     SMESH::array_of_ElementType_var elemTypes = theSubMesh->GetTypes();
     const int isEmpty = ( elemTypes->length() == 0 );
     const char* pm[2] = { "ICON_SMESH_TREE_MESH", "ICON_SMESH_TREE_MESH_WARN" };
-    aSubMeshSO = publish ( theSubMesh, aRootSO, 0, pm[isEmpty] );
+    aSubMeshSO = publish ( theSubMesh, aRootSO, tag, pm[isEmpty] );
     if ( aSubMeshSO->_is_nil() )
       return aSubMeshSO._retn();
+
+    highLightInvalid( aSubMeshSO, false ); // now it is valid
   }
-  SetName( aSubMeshSO, theName, "SubMesh" );
+  SetName( aSubMeshSO, newName.c_str(), "SubMesh" );
 
   // Add reference to theShapeObject
 
@@ -757,7 +784,8 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishSubMesh (SMESH::SMESH_Mesh_ptr    theM
   // Publish hypothesis
 
   SMESH::ListOfHypothesis_var hypList = theMesh->GetHypothesisList( theShapeObject );
-  for ( CORBA::ULong i = 0; i < hypList->length(); i++ ) {
+  for ( CORBA::ULong i = 0; i < hypList->length(); i++ )
+  {
     SMESH::SMESH_Hypothesis_var aHyp = SMESH::SMESH_Hypothesis::_narrow( hypList[ i ]);
     SALOMEDS::SObject_wrap so = PublishHypothesis( aHyp );
     AddHypothesisToShape( theMesh, theShapeObject, aHyp );
@@ -961,6 +989,42 @@ void SMESH_Gen_i::UpdateIcons( SMESH::SMESH_Mesh_ptr theMesh )
         SetPixMap( so, "ICON_SMESH_TREE_GROUP_ON_FILTER" );
       else
         SetPixMap( so, "ICON_SMESH_TREE_GROUP" );
+    }
+  }
+}
+
+//=======================================================================
+//function : HighLightInvalid
+//purpose  : change font color of a object in the Object Browser
+//=======================================================================
+
+void SMESH_Gen_i::HighLightInvalid( CORBA::Object_ptr theObject, bool isInvalid )
+{
+  SALOMEDS::SObject_wrap so = ObjectToSObject(theObject);
+  highLightInvalid( so.in(), isInvalid );
+}
+
+//=======================================================================
+//function : highLightInvalid
+//purpose  : change font color of a object in the Object Browser
+//=======================================================================
+
+void SMESH_Gen_i::highLightInvalid( SALOMEDS::SObject_ptr theSObject, bool isInvalid )
+{
+  if ( !theSObject->_is_nil() )
+  {
+    SALOMEDS::StudyBuilder_var studyBuilder = getStudyServant()->NewBuilder();
+    if ( isInvalid )
+    {
+      SALOMEDS::Color red = { 178,34,34 }; // to differ from reference color
+      SALOMEDS::GenericAttribute_wrap attr =
+        studyBuilder->FindOrCreateAttribute( theSObject, "AttributeTextColor" );
+      SALOMEDS::AttributeTextColor_wrap colorAttr = attr;
+      colorAttr->SetTextColor( red );
+    }
+    else
+    {
+      studyBuilder->RemoveAttribute( theSObject, "AttributeTextColor" );
     }
   }
 }
@@ -1339,6 +1403,50 @@ char* SMESH_Gen_i::GetParameters(CORBA::Object_ptr theObject)
   return aResult._retn();
 }
 
+//================================================================================
+/*!
+ * \brief Create a sub-mesh on a geometry that is not a sub-shape of the main shape
+ * for the case where a valid sub-shape not found by CopyMeshWithGeom().
+ * The invalid sub-mesh has GetId() < 0.
+ */
+//================================================================================
+
+SMESH::SMESH_subMesh_ptr
+SMESH_Gen_i::createInvalidSubMesh(SMESH::SMESH_Mesh_ptr theMesh,
+                                  GEOM::GEOM_Object_ptr theStrangerGeom,
+                                  const char*           theName)
+{
+  SMESH::SMESH_subMesh_var subMesh;
+
+  try
+  {
+    SMESH_Mesh_i* mesh_i = SMESH::DownCast<SMESH_Mesh_i*>( theMesh );
+    subMesh = mesh_i->createSubMesh( theStrangerGeom );
+
+    if ( !subMesh->_is_nil() && CanPublishInStudy( subMesh ))
+    {
+      SALOMEDS::SObject_wrap so = PublishSubMesh( theMesh, subMesh, theStrangerGeom, theName );
+
+      // hide a reference to geometry
+      if ( !so->_is_nil() )
+      {
+        SALOMEDS::SObject_wrap refSO;
+        if ( so->FindSubObject( GetRefOnShapeTag(), refSO.inout() ))
+        {
+          SALOMEDS::StudyBuilder_var studyBuilder = getStudyServant()->NewBuilder();
+          SALOMEDS::GenericAttribute_wrap attr =
+            studyBuilder->FindOrCreateAttribute( refSO, "AttributeDrawable" );
+          SALOMEDS::AttributeDrawable_wrap ga = attr;
+          ga->SetDrawable( false );
+        }
+      }
+    }
+  }
+  catch (...) {
+  }
+
+  return subMesh._retn();
+}
 
 
 // ==============

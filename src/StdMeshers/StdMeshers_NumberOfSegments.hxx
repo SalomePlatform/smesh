@@ -29,10 +29,10 @@
 #ifndef _SMESH_NUMBEROFSEGMENTS_HXX_
 #define _SMESH_NUMBEROFSEGMENTS_HXX_
 
-#include "SMESH_StdMeshers.hxx"
-
+#include "StdMeshers_Reversible1D.hxx"
 #include "SMESH_Hypothesis.hxx"
 #include "Utils_SALOME_Exception.hxx"
+
 #include <vector>
 
 /*!
@@ -41,8 +41,7 @@
  * It provides parameters for subdivision an edge by various
  * distribution types, considering the given number of resulting segments
  */
-class STDMESHERS_EXPORT StdMeshers_NumberOfSegments:
-  public SMESH_Hypothesis
+class STDMESHERS_EXPORT StdMeshers_NumberOfSegments: public StdMeshers_Reversible1D
 {
 public:
   StdMeshers_NumberOfSegments(int hypId, SMESH_Gen* gen);
@@ -171,14 +170,6 @@ public:
   int ConversionMode() const
     throw (SALOME_Exception);
 
-  void SetReversedEdges( std::vector<int>& ids);
-
-  void SetObjectEntry( const char* entry ) { _objEntry = entry; }
-
-  const char* GetObjectEntry() { return _objEntry.c_str(); }
-
-  const std::vector<int>& GetReversedEdges() const { return _edgeIDs; }
-
   /*!
    * \brief Initialize number of segments by the mesh built on the geometry
    * \param theMesh - the built mesh
@@ -205,8 +196,6 @@ protected:
   std::vector<double> _table, _distr;    //!< the table for DT_TabFunc, a sequence of pairs of numbers
   std::string         _func;             //!< the expression of the function for DT_ExprFunc
   int                 _convMode;         //!< flag of conversion mode: 0=exponent, 1=cut negative
-  std::vector<int>    _edgeIDs;          //!< list of reversed edges ids
-  std::string         _objEntry;          //!< Entry of the main object to reverse edges
 };
 
 #endif

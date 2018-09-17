@@ -228,6 +228,12 @@ namespace SMESH
     operator<<(const SMESH::ListOfIDSources& theList);
 
     TPythonDump&
+    operator<<(const SMESH::submesh_array& theList);
+
+    TPythonDump&
+    operator<<(const SMESH::ListOfHypothesis& theList);
+
+    TPythonDump&
     operator<<(const SMESH::CoincidentFreeBorders& theCFB);
 
     TPythonDump&

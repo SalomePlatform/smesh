@@ -53,6 +53,15 @@ public:
   
   // Gets list of compatible hypotheses
   SMESH::ListOfHypothesisName* GetCompatibleHypothesis();
+
+
+  // Return geometry this hypothesis depends on. Return false if there is no geometry parameter
+  virtual bool getObjectsDependOn( std::vector< std::string > & entryArray,
+                                   std::vector< int >         & subIDArray ) const;
+
+  // Set new geometry instead of that returned by getObjectsDependOn()
+  virtual bool setObjectsDependOn( std::vector< std::string > & entryArray,
+                                   std::vector< int >         & subIDArray );
 };
 
 #endif

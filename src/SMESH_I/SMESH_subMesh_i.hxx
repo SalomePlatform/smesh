@@ -130,4 +130,26 @@ protected:
   friend class SMESH_PreMeshInfo;
 };
 
+
+class SMESH_I_EXPORT SMESH_Invalid_subMesh_i:
+  public virtual POA_SMESH::SMESH_subMesh,
+  public virtual SALOME::GenericObj_i,
+  public virtual SMESH_subMesh_i
+{
+ public:
+  SMESH_Invalid_subMesh_i( PortableServer::POA_ptr thePOA,
+                           SMESH_Gen_i*            gen_i,
+                           SMESH_Mesh_i*           mesh_i,
+                           int                     localId,
+                           GEOM::GEOM_Object_ptr   shape);
+
+  virtual GEOM::GEOM_Object_ptr GetSubShape()
+    throw (SALOME::SALOME_Exception);
+
+ protected:
+
+  GEOM::GEOM_Object_var _geom;
+
+};
+
 #endif

@@ -103,6 +103,9 @@
 #include "SMESH_PreMeshInfo.hxx"
 #include "SMESH_PythonDump.hxx"
 #include "SMESH_ControlsDef.hxx"
+
+// to pass CORBA exception through SMESH_TRY
+#define SMY_OWN_CATCH catch( SALOME::SALOME_Exception& se ) { throw se; }
 #include "SMESH_TryCatch.hxx" // to include after OCC headers!
 
 #include CORBA_SERVER_HEADER(SMESH_Group)
@@ -110,6 +113,7 @@
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
 
 
+#include <GEOMImpl_Types.hxx>
 #include <GEOM_Client.hxx>
 
 #include <Basics_Utils.hxx>
@@ -138,6 +142,7 @@
 #include <sstream>
 #include <cstdio>
 #include <cstdlib>
+#include <memory>
 
 using namespace std;
 using SMESH::TPythonDump;
@@ -440,17 +445,17 @@ GenericHypothesisCreator_i* SMESH_Gen_i::getHypothesisCreator(const char* theHyp
       // load plugin library
       if(MYDEBUG) MESSAGE("Loading server meshers plugin library ...");
 #ifdef WIN32
-  #ifdef UNICODE
-	  const wchar_t* path = Kernel_Utils::decode_s(aPlatformLibName);
-  #else
-	  const char* path = aPlatformLibName.c_str();
-  #endif
+#ifdef UNICODE
+      const wchar_t* path = Kernel_Utils::decode_s(aPlatformLibName);
 #else
-	  const char* path = aPlatformLibName.c_str();
+      const char* path = aPlatformLibName.c_str();
+#endif
+#else
+      const char* path = aPlatformLibName.c_str();
 #endif
       LibHandle libHandle = LoadLib( path );
 #if defined(WIN32) && defined(UNICODE)
-	  delete path;
+      delete path;
 #endif
       if (!libHandle)
       {
@@ -1938,7 +1943,7 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
 
   try {
     // get mesh servant
-    SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( theMesh ).in() );
+    SMESH_Mesh_i* meshServant = SMESH::DownCast<SMESH_Mesh_i*>( theMesh );
     ASSERT( meshServant );
     if ( meshServant ) {
       meshServant->Load();
@@ -1960,6 +1965,7 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
       meshServant->CreateGroupServants(); // algos can create groups (issue 0020918)
       myLocMesh.GetMeshDS()->Modified();
       UpdateIcons( theMesh );
+      HighLightInvalid( theMesh, /*isInvalid=*/!ok );
       return ok;
     }
   }
@@ -2724,10 +2730,12 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CopyMesh(SMESH::SMESH_IDSource_ptr meshPart,
                                             const char*               meshName,
                                             CORBA::Boolean            toCopyGroups,
                                             CORBA::Boolean            toKeepIDs)
+  throw ( SALOME::SALOME_Exception )
 {
   Unexpect aCatch(SALOME_SalomeException);
 
   TPythonDump* pyDump = new TPythonDump; // prevent dump from CreateMesh()
+  std::unique_ptr<TPythonDump> pyDumpDeleter( pyDump );
 
   // 1. Get source mesh
 
@@ -2930,12 +2938,874 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CopyMesh(SMESH::SMESH_IDSource_ptr meshPart,
           << toCopyGroups << ", "
           << toKeepIDs << ")";
 
-  delete pyDump; pyDump = 0; // allow dump in GetGroups()
+  pyDumpDeleter.reset(); // allow dump in GetGroups()
 
   if ( nbNewGroups > 0 ) // dump created groups
     SMESH::ListOfGroups_var groups = newMesh->GetGroups();
 
   return newMesh._retn();
+}
+
+
+namespace // utils for CopyMeshWithGeom()
+{
+  typedef std::map< std::string, std::string >             TStr2StrMap;
+  typedef std::map< std::string, std::set< std::string > > TStr2StrSetMap;
+
+  //================================================================================
+  /*!
+   * \brief Return a new sub-shape corresponding to an old one
+   */
+  //================================================================================
+
+  struct ShapeMapper
+  {
+    SMESH_Mesh_i* mySrcMesh_i;
+    SMESH_Mesh_i* myNewMesh_i;
+    SMESH_Gen_i*  myGen_i;
+    bool          myToPublish;
+    bool          myIsSameGeom;
+
+    TStr2StrMap   myOld2NewEntryMap; // map of study entries
+
+    bool                       myGIPMapDone;
+    GEOM::ListOfListOfLong_var myGIPMap; // filled by GetInPlaceMap()
+
+    // not directly relating to shape search
+    TStr2StrSetMap myInvalidMap; // blame shape -> invalid objects
+
+    //================================================================================
+    /*!
+     * \brief Constructor
+     */
+    ShapeMapper( SMESH_Mesh_i* srcMesh_i,
+                 SMESH_Mesh_i* newMesh_i,
+                 SMESH_Gen_i*  smeshGen_i )
+      : mySrcMesh_i( srcMesh_i ),
+        myNewMesh_i( newMesh_i ),
+        myGen_i    ( smeshGen_i ),
+        myToPublish( smeshGen_i->IsEnablePublish() ),
+        myGIPMapDone( false )
+    {
+      // retrieve from the study shape mapping made thanks to
+      // "Set presentation parameters and sub-shapes from arguments" option
+
+      GEOM::GEOM_Object_var mainShapeNew = myNewMesh_i->GetShapeToMesh();
+      GEOM::GEOM_Object_var mainShapeOld = mySrcMesh_i->GetShapeToMesh();
+      SALOMEDS::SObject_wrap oldSO = myGen_i->ObjectToSObject( mainShapeOld );
+      SALOMEDS::SObject_wrap newSO = myGen_i->ObjectToSObject( mainShapeNew );
+      if ( newSO->_is_nil() )
+      {
+        myToPublish = false;
+        return;
+      }
+      if (( myIsSameGeom = mainShapeNew->_is_equivalent( mainShapeOld )))
+        return;
+      CORBA::String_var oldEntry = oldSO->GetID();
+      CORBA::String_var newEntry = newSO->GetID();
+      myOld2NewEntryMap.insert( std::make_pair( std::string( oldEntry.in() ),
+                                                std::string( newEntry.in() )));
+
+      SALOMEDS::Study_var            study = myGen_i->getStudyServant();
+      GEOM::GEOM_Gen_var           geomGen = myGen_i->GetGeomEngine();
+      GEOM::GEOM_IShapesOperations_wrap op = geomGen->GetIShapesOperations();
+      GEOM::ListOfGO_var         subShapes = op->GetExistingSubObjects( mainShapeNew,
+                                                                        /*groupsOnly=*/false );
+      for ( CORBA::ULong i = 0; i < subShapes->length(); ++i )
+      {
+        newSO = myGen_i->ObjectToSObject( subShapes[ i ]);
+        SALOMEDS::ChildIterator_wrap anIter = study->NewChildIterator( newSO );
+        for ( ; anIter->More(); anIter->Next() )
+        {
+          SALOMEDS::SObject_wrap so = anIter->Value();
+          if ( so->ReferencedObject( oldSO.inout() ))
+          {
+            oldEntry = oldSO->GetID();
+            newEntry = newSO->GetID();
+            myOld2NewEntryMap.insert( std::make_pair( std::string( oldEntry.in() ),
+                                                      std::string( newEntry.in() )));
+          }
+        }
+      }
+    }
+
+    //================================================================================
+    /*!
+     * \brief Find a new sub-shape corresponding to an old one
+     */
+    GEOM::GEOM_Object_ptr FindNew( GEOM::GEOM_Object_ptr oldShape )
+    {
+      if ( myIsSameGeom )
+        return GEOM::GEOM_Object::_duplicate( oldShape );
+
+      GEOM::GEOM_Object_var newShape;
+
+      if ( CORBA::is_nil( oldShape ))
+        return newShape._retn();
+
+      if ( !isChildOfOld( oldShape ))
+        return GEOM::GEOM_Object::_duplicate( oldShape ); // shape independent of the old shape
+
+      GEOM::GEOM_Object_var mainShapeNew = myNewMesh_i->GetShapeToMesh();
+      GEOM::GEOM_Gen_var         geomGen = myGen_i->GetGeomEngine();
+
+      // try to find by entry
+      if ( myToPublish )
+      {
+        CORBA::String_var  oldEntry = oldShape->GetStudyEntry();
+        TStr2StrMap::iterator o2nID = myOld2NewEntryMap.find( oldEntry.in() );
+        if ( o2nID != myOld2NewEntryMap.end() )
+        {
+          newShape = getShapeByEntry( o2nID->second );
+        }
+      }
+
+      if ( newShape->_is_nil() )
+      {
+        // try to construct a new sub-shape using myGIPMap
+        buildGIPMap();
+        std::vector< int >   newIndices;
+        GEOM::ListOfLong_var oldIndices = oldShape->GetSubShapeIndices();
+        for ( CORBA::ULong i = 0; i < oldIndices->length(); ++i )
+        {
+          findNewIDs( oldIndices[i], newIndices );
+        }
+        if ( !newIndices.empty() )
+        {
+          try
+          {
+            if ( newIndices.size() > 1 || oldShape->GetType() == GEOM_GROUP )
+            {
+              int groupType = getShapeType( myNewMesh_i, newIndices[0] );
+
+              GEOM::GEOM_IGroupOperations_wrap grOp = geomGen->GetIGroupOperations();
+              newShape = grOp->CreateGroup( mainShapeNew, groupType );
+
+              GEOM::ListOfLong_var  newIndicesList = new GEOM::ListOfLong();
+              newIndicesList->length( newIndices.size() );
+              for ( size_t i = 0; i < newIndices.size(); ++i )
+                newIndicesList[ i ] = newIndices[ i ];
+              grOp->UnionIDs( newShape, newIndicesList );
+            }
+            else
+            {
+              GEOM::GEOM_IShapesOperations_wrap shOp = geomGen->GetIShapesOperations();
+              newShape = shOp->GetSubShape( mainShapeNew, newIndices[0] );
+            }
+          }
+          catch (...)
+          {
+          }
+        }
+      }
+
+      if ( !newShape->_is_nil() && myToPublish )
+      {
+        CORBA::String_var oldEntry, newEntry = newShape->GetStudyEntry();
+        if ( !newEntry.in() || !newEntry.in()[0] )
+        {
+          CORBA::String_var    name = oldShape->GetName();
+          SALOMEDS::SObject_wrap so = geomGen->AddInStudy( newShape, name, mainShapeNew );
+          newEntry = newShape->GetStudyEntry();
+          oldEntry = oldShape->GetStudyEntry();
+          myOld2NewEntryMap.insert( std::make_pair( std::string( oldEntry.in() ),
+                                                    std::string( newEntry.in() )));
+        }
+      }
+
+      return newShape._retn();
+    }
+
+    //================================================================================
+    /*!
+     * \brief Return a study entry of a new shape by study entry of the old one
+     */
+    std::string FindNew( const std::string & oldEntry )
+    {
+      if ( myIsSameGeom )
+        return oldEntry;
+
+      TStr2StrMap::iterator o2nID = myOld2NewEntryMap.find( oldEntry );
+      if ( o2nID != myOld2NewEntryMap.end() )
+        return o2nID->second;
+
+      GEOM::GEOM_Object_var oldShape = getShapeByEntry( oldEntry );
+      if ( oldShape->_is_nil() || !isChildOfOld( oldShape ))
+        return oldEntry;
+
+      GEOM::GEOM_Object_ptr newShape = FindNew( oldShape );
+      if ( newShape->_is_nil() )
+        return std::string();
+
+      CORBA::String_var newEntry = newShape->GetStudyEntry();
+      return newEntry.in();
+    }
+
+    //================================================================================
+    /*!
+     * \brief Return a sub-shape ID of a new shape by a sub-shape ID of the old one.
+     *        Return zero if not found or there are more than one new ID
+     */
+    int FindNew( int oldID )
+    {
+      if ( myIsSameGeom )
+        return oldID;
+
+      buildGIPMap();
+
+      int newID = 0;
+
+      if ( 0 < oldID && oldID < (int)myGIPMap->length() )
+      {
+        if ( myGIPMap[ oldID ].length() == 1 )
+          newID = myGIPMap[ oldID ][ 0 ];
+      }
+      return newID;
+    }
+
+    //================================================================================
+    /*!
+     * \brief Return a sub-shape ID of a new shape by an old sub-mesh.
+     *        Return zero if the old shape is not kept as is in the new shape.
+     */
+    int FindNewNotChanged( SMESH_subMesh* oldSM )
+    {
+      if ( myIsSameGeom )
+        return oldSM->GetId();
+
+      int newID = FindNew( oldSM->GetId() );
+      if ( !newID )
+        return 0;
+
+      SMESH_subMesh* newSM = myNewMesh_i->GetImpl().GetSubMeshContaining( newID );
+      if ( !newSM )
+        return 0;
+
+      // consider a sub-shape as not changed if all its sub-shapes are mapped into
+      // one new sub-shape of the same type.
+
+      if ( oldSM->DependsOn().size() !=
+           newSM->DependsOn().size() )
+        return 0;
+
+      SMESH_subMeshIteratorPtr srcSMIt = oldSM->getDependsOnIterator( /*includeSelf=*/true );
+      while ( srcSMIt->more() )
+      {
+        oldSM = srcSMIt->next();
+        int newSubID = FindNew( oldSM->GetId() );
+        if ( getShapeType( myNewMesh_i, newSubID ) !=
+             getShapeType( mySrcMesh_i, oldSM->GetId() ))
+          return 0;
+      }
+      return newID;
+    }
+
+    //================================================================================
+    /*!
+     * \brief Return shape by study entry
+     */
+    GEOM::GEOM_Object_ptr getShapeByEntry( const std::string & entry )
+    {
+      GEOM::GEOM_Object_var shape;
+      SALOMEDS::SObject_wrap so = myGen_i->getStudyServant()->FindObjectID( entry.c_str() );
+      if ( !so->_is_nil() )
+      {
+        CORBA::Object_var obj = so->GetObject();
+        shape = GEOM::GEOM_Object::_narrow( obj );
+      }
+      return shape._retn();
+    }
+
+    //================================================================================
+    /*!
+     * \brief Fill myGIPMap by calling GetInPlaceMap()
+     */
+    void buildGIPMap()
+    {
+      if ( !myGIPMapDone )
+      {
+        myGIPMapDone = true;
+
+        GEOM::GEOM_Object_var   mainShapeNew = myNewMesh_i->GetShapeToMesh();
+        GEOM::GEOM_Object_var   mainShapeOld = mySrcMesh_i->GetShapeToMesh();
+        GEOM::GEOM_Gen_var           geomGen = myGen_i->GetGeomEngine();
+        GEOM::GEOM_IShapesOperations_wrap op = geomGen->GetIShapesOperations();
+        try
+        {
+          myGIPMap = op->GetInPlaceMap( mainShapeNew, mainShapeOld );
+        }
+        catch( ... )
+        {
+          myGIPMap = new GEOM::ListOfListOfLong();
+        }
+      }
+    }
+
+    //================================================================================
+    /*!
+     * \brief Find a new sub-shape indices by an old one in myGIPMap. Return
+     *        number of found IDs
+     */
+    int findNewIDs( int oldID, std::vector< int >& newIDs  )
+    {
+      size_t prevNbIDs = newIDs.size();
+
+      if ( 0 < oldID && oldID < (int) myGIPMap->length() )
+      {
+        for ( CORBA::ULong i = 0; i < myGIPMap[ oldID ].length(); ++i )
+          newIDs.push_back( myGIPMap[ oldID ][ i ]);
+      }
+      return newIDs.size() - prevNbIDs;
+    }
+
+    //================================================================================
+    /*!
+     * \brief Check if an object relates to the old shape
+     */
+    bool isChildOfOld( GEOM::GEOM_Object_ptr oldShape )
+    {
+      if ( CORBA::is_nil( oldShape ))
+        return false;
+      GEOM::GEOM_Object_var mainShapeOld1 = mySrcMesh_i->GetShapeToMesh();
+      GEOM::GEOM_Object_var mainShapeOld2 = oldShape->GetMainShape();
+      return ( mainShapeOld1->_is_equivalent( mainShapeOld2 ) ||
+               mainShapeOld1->_is_equivalent( oldShape ));
+    }
+
+    //================================================================================
+    /*!
+     * \brief Return shape type by shape ID
+     */
+    TopAbs_ShapeEnum getShapeType( SMESH_Mesh_i* mesh_i, int shapeID )
+    {
+      SMESHDS_Mesh* meshDS = mesh_i->GetImpl().GetMeshDS();
+      const TopoDS_Shape& shape = meshDS->IndexToShape( shapeID );
+      return shape.IsNull() ? TopAbs_SHAPE : shape.ShapeType();
+    }
+
+    //================================================================================
+    /*!
+     * \brief Store a source sub-shape for which a counterpart not found and
+     *        a smesh object invalid due to that
+     */
+    void AddInvalid( GEOM::GEOM_Object_var  srcShape,
+                     SALOMEDS::SObject_wrap smeshSO )
+    {
+      CORBA::String_var geomEntry = srcShape->GetStudyEntry();
+      if ( geomEntry.in()[0] && !smeshSO->_is_nil() )
+      {
+        CORBA::String_var smeshEntry = smeshSO->GetID();
+        myInvalidMap[ geomEntry.in() ].insert( smeshEntry.in() );
+      }
+    }
+
+    //================================================================================
+    /*!
+     * \brief Store a source sub-shape for which a counterpart not found and
+     *        a smesh object invalid due to that
+     */
+    void AddInvalid( std::string            geomEntry,
+                     SALOMEDS::SObject_wrap smeshSO )
+    {
+      if ( !geomEntry.empty() )
+      {
+        CORBA::String_var smeshEntry = smeshSO->GetID();
+        myInvalidMap[ geomEntry ].insert( smeshEntry.in() );
+      }
+    }
+
+    //================================================================================
+    /*!
+     * \brief Store a source sub-shape for which a counterpart not found and
+     *        a smesh object invalid due to that
+     */
+    void AddInvalid( int                    oldGeomID,
+                     SALOMEDS::SObject_wrap smeshSO )
+    {
+      int shapeType = getShapeType( mySrcMesh_i, oldGeomID );
+      if ( shapeType < 0 || shapeType > TopAbs_SHAPE )
+        return;
+
+      const char* typeName[] = { "COMPOUND","COMPSOLID","SOLID","SHELL",
+                                 "FACE","WIRE","EDGE","VERTEX","SHAPE" };
+
+      SMESH_Comment geomName( typeName[ shapeType ]);
+      geomName << " #" << oldGeomID;
+
+      CORBA::String_var smeshEntry = smeshSO->GetID();
+      myInvalidMap[ geomName ].insert( smeshEntry.in() );
+    }
+
+    //================================================================================
+    /*!
+     * \brief Return entries of a source sub-shape for which a counterpart not found and
+     *        of smesh objects invalid due to that
+     */
+    void GetInvalid( SMESH::string_array_out &               theInvalidEntries,
+                     std::vector< SALOMEDS::SObject_wrap > & theInvalidMeshSObjects)
+    {
+      int nbSO = 0;
+      TStr2StrSetMap::iterator entry2entrySet = myInvalidMap.begin();
+      for ( ; entry2entrySet != myInvalidMap.end(); ++entry2entrySet )
+      {
+        nbSO += 1 + entry2entrySet->second.size();
+      }
+      int iSO = theInvalidMeshSObjects.size(), iEntry = 0;
+      theInvalidEntries->length  ( nbSO );
+      theInvalidMeshSObjects.resize( theInvalidMeshSObjects.size() + nbSO - myInvalidMap.size() );
+
+      entry2entrySet = myInvalidMap.begin();
+      for ( ; entry2entrySet != myInvalidMap.end(); ++entry2entrySet )
+      {
+        theInvalidEntries[ iEntry++ ] = entry2entrySet->first.c_str();
+
+        std::set< std::string > & entrySet = entry2entrySet->second;
+        std::set< std::string >::iterator entry = entrySet.begin();
+        for ( ; entry != entrySet.end(); ++entry )
+        {
+          theInvalidEntries[ iEntry++ ] = entry->c_str();
+
+          SALOMEDS::SObject_wrap so = myGen_i->getStudyServant()->FindObjectID( entry->c_str() );
+          if ( !so->_is_nil() )
+            theInvalidMeshSObjects[ iSO++ ] = so;
+        }
+      }
+    }
+
+  }; // struct ShapeMapper
+
+  //================================================================================
+  /*!
+   * \brief Append an item to a CORBA sequence
+   */
+  template < class CORBA_seq, class ITEM >
+  void append( CORBA_seq& seq, ITEM item )
+  {
+    if ( !CORBA::is_nil( item ))
+    {
+      seq->length( 1 + seq->length() );
+      seq[ seq->length() - 1 ] = item;
+    }
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Create a mesh by copying definitions of another mesh to a given geometry
+ *  \param [in] sourceMesh - a mesh to copy
+ *  \param [in] newGeometry - a new geometry
+ *  \param [in] toCopyGroups - to create groups in the new mesh
+ *  \param [in] toReuseHypotheses - if True, existing hypothesis will be used by the new mesh,
+ *         otherwise new hypotheses with the same parameters will be created for the new mesh.
+ *  \param [in] toCopyElements - to copy mesh elements of same sub-shapes of the two geometries
+ *  \param [out] newMesh - return a new mesh
+ *  \param [out] newGroups - return new groups
+ *  \param [out] newSubmeshes - return new sub-meshes
+ *  \param [out] newHypotheses - return new algorithms and hypotheses
+ *  \param [out] invalidEntries - return study entries of objects whose
+ *         counterparts are not found in the newGeometry, followed by entries
+ *         of mesh sub-objects that are invalid because they depend on a not found
+ *         preceeding sub-shape
+ *  \return CORBA::Boolean - is a success
+ */
+//================================================================================
+
+CORBA::Boolean SMESH_Gen_i::CopyMeshWithGeom( SMESH::SMESH_Mesh_ptr       theSourceMesh,
+                                              GEOM::GEOM_Object_ptr       theNewGeometry,
+                                              const char*                 theMeshName,
+                                              CORBA::Boolean              theToCopyGroups,
+                                              CORBA::Boolean              theToReuseHypotheses,
+                                              CORBA::Boolean              theToCopyElements,
+                                              SMESH::SMESH_Mesh_out       theNewMesh,
+                                              SMESH::ListOfGroups_out     theNewGroups,
+                                              SMESH::submesh_array_out    theNewSubmeshes,
+                                              SMESH::ListOfHypothesis_out theNewHypotheses,
+                                              SMESH::string_array_out     theInvalidEntries)
+throw ( SALOME::SALOME_Exception )
+{
+  if ( CORBA::is_nil( theSourceMesh ) ||
+       CORBA::is_nil( theNewGeometry ))
+    THROW_SALOME_CORBA_EXCEPTION( "NULL arguments", SALOME::BAD_PARAM );
+
+  if ( !theSourceMesh->HasShapeToMesh() )
+    THROW_SALOME_CORBA_EXCEPTION( "Source mesh not on geometry", SALOME::BAD_PARAM );
+
+  bool ok = true;
+  SMESH_TRY;
+
+  TPythonDump pyDump; // prevent dump from CreateMesh()
+
+  theNewMesh        = CreateMesh( theNewGeometry );
+  theNewGroups      = new SMESH::ListOfGroups();
+  theNewSubmeshes   = new SMESH::submesh_array();
+  theNewHypotheses  = new SMESH::ListOfHypothesis();
+  theInvalidEntries = new SMESH::string_array();
+
+  std::vector< SALOMEDS::SObject_wrap > invalidSObjects;
+
+  GEOM::GEOM_Object_var srcGeom = theSourceMesh->GetShapeToMesh();
+  GEOM::GEOM_Object_var geom, newGeom;
+  SALOMEDS::SObject_wrap so;
+
+  SMESH_Mesh_i* srcMesh_i = SMESH::DownCast<SMESH_Mesh_i*>( theSourceMesh );
+  SMESH_Mesh_i* newMesh_i = SMESH::DownCast<SMESH_Mesh_i*>( theNewMesh );
+
+  ShapeMapper shapeMapper( srcMesh_i, newMesh_i, this );
+
+  // treat hypotheses of mesh and sub-meshes
+  SMESH::submesh_array_var smList = theSourceMesh->GetSubMeshes();
+  for ( CORBA::ULong iSM = 0; iSM <= smList->length(); ++iSM )
+  {
+    bool isSubMesh = ( iSM < smList->length() );
+    if ( isSubMesh )
+    {
+      // create a new sub-mesh
+      SMESH::SMESH_subMesh_var newSM;
+      geom = smList[iSM]->GetSubShape();
+      so   = ObjectToSObject( smList[iSM] );
+      CORBA::String_var name;
+      if ( !so->_is_nil() )
+        name = so->GetName();
+      newGeom = shapeMapper.FindNew( geom );
+      if ( newGeom->_is_nil() )
+      {
+        newSM = createInvalidSubMesh( theNewMesh, geom, name.in() );
+        shapeMapper.AddInvalid( geom, ObjectToSObject( newSM ));
+        ok = false;
+      }
+      else
+      {
+        newSM = theNewMesh->GetSubMesh( newGeom, name.in() );
+      }
+      append( theNewSubmeshes, newSM );
+
+      if ( newGeom->_is_nil() )
+        continue; // don't assign hypotheses
+    }
+    else
+    {
+      newGeom = GEOM::GEOM_Object::_duplicate( theNewGeometry );
+      geom    = srcGeom;
+      so      = ObjectToSObject( theNewMesh );
+      SetName( so, theMeshName, "Mesh" );
+    }
+
+    // assign hypotheses
+    SMESH::ListOfHypothesis_var hypList = theSourceMesh->GetHypothesisList( geom );
+    for ( CORBA::ULong iHyp = 0; iHyp < hypList->length(); ++iHyp )
+    {
+      SMESH::SMESH_Hypothesis_var hyp = hypList[ iHyp ];
+      SMESH_Hypothesis_i*       hyp_i = SMESH::DownCast< SMESH_Hypothesis_i* >( hyp );
+
+      // get geometry hyp depends on
+      std::vector< std::string > entryArray;
+      std::vector< int >         subIDArray;
+      bool dependsOnGeom = hyp_i->getObjectsDependOn( entryArray, subIDArray );
+
+      if ( !theToReuseHypotheses || dependsOnGeom )
+      {
+        // create a new hypothesis
+        CORBA::String_var type = hyp->GetName();
+        CORBA::String_var lib  = hyp->GetLibName();
+        CORBA::String_var data = hyp_i->SaveTo();
+        if ( data.in()[0] )
+        {
+          hyp   = CreateHypothesis( type, lib );
+          hyp_i = SMESH::DownCast< SMESH_Hypothesis_i* >( hyp );
+          hyp_i->LoadFrom( data.in() );
+          append( theNewHypotheses, hyp );
+        }
+      }
+
+      // update geometry hyp depends on
+      if ( dependsOnGeom )
+      {
+        for ( size_t iGeo = 0; iGeo < entryArray.size(); ++iGeo )
+        {
+          if ( !entryArray[ iGeo ].empty() )
+          {
+            std::string newEntry = shapeMapper.FindNew( entryArray[ iGeo ]);
+            if ( newEntry.empty() )
+            {
+              ok = false;
+              shapeMapper.AddInvalid( entryArray[ iGeo ], ObjectToSObject( hyp ));
+              shapeMapper.AddInvalid( entryArray[ iGeo ], so ); // sub-mesh
+            }
+            entryArray[ iGeo ] = newEntry;
+          }
+        }
+        for ( size_t iGeo = 0; iGeo < subIDArray.size(); ++iGeo )
+        {
+          if ( subIDArray[ iGeo ] > 0 )
+          {
+            int newID = shapeMapper.FindNew( subIDArray[ iGeo ]);
+            if ( newID < 1 )
+            {
+              ok = false;
+              shapeMapper.AddInvalid( subIDArray[ iGeo ], ObjectToSObject( hyp ));
+              shapeMapper.AddInvalid( subIDArray[ iGeo ], so ); // sub-mesh
+            }
+            subIDArray[ iGeo ] = newID;
+          }
+        }
+        if ( !hyp_i->setObjectsDependOn( entryArray, subIDArray ))
+          ok = false;
+      }
+
+      CORBA::String_var errorText;
+      theNewMesh->AddHypothesis( newGeom, hyp, errorText.out() );
+      if ( errorText.in()[0] )
+        ok = false;
+
+    } // loop on hypotheses
+  } // loop on sub-meshes and mesh
+
+
+  // copy mesh elements, keeping IDs
+  if ( theToCopyElements && theSourceMesh->NbNodes() > 0 )
+  {
+    SMESHDS_Mesh* newMeshDS = newMesh_i->GetImpl().GetMeshDS();
+    ::SMESH_MeshEditor editor( &newMesh_i->GetImpl() );
+    ::SMESH_MeshEditor::ElemFeatures elemData;
+
+    SMESH_subMesh*         srcMainSM = srcMesh_i->GetImpl().GetSubMeshContaining( 1 );
+    SMESH_subMeshIteratorPtr srcSMIt = srcMainSM->getDependsOnIterator( /*includeSelf=*/true,
+                                                                        /*vertexLast=*/false);
+    while ( srcSMIt->more() )
+    {
+      SMESH_subMesh* srcSM = srcSMIt->next();
+      if ( srcSM->IsEmpty() )
+        continue; // not yet computed
+      int newID = shapeMapper.FindNewNotChanged( srcSM );
+      if ( newID < 1 )
+        continue;
+
+      SMESHDS_SubMesh* srcSMDS = srcSM->GetSubMeshDS();
+      SMDS_NodeIteratorPtr nIt = srcSMDS->GetNodes();
+      while ( nIt->more() )
+      {
+        SMESH_NodeXYZ node( nIt->next() );
+        const SMDS_MeshNode* newNode = newMeshDS->AddNodeWithID( node.X(), node.Y(), node.Z(),
+                                                                 node->GetID() );
+        const SMDS_PositionPtr pos = node->GetPosition();
+        const double*           uv = pos->GetParameters();
+        switch ( pos->GetTypeOfPosition() )
+        {
+        case SMDS_TOP_3DSPACE: newMeshDS->SetNodeInVolume( newNode, newID );               break;
+        case SMDS_TOP_FACE:    newMeshDS->SetNodeOnFace  ( newNode, newID, uv[0], uv[1] ); break;
+        case SMDS_TOP_EDGE:    newMeshDS->SetNodeOnEdge  ( newNode, newID, uv[0] );        break;
+        case SMDS_TOP_VERTEX:  newMeshDS->SetNodeOnVertex( newNode, newID );               break;
+        default: ;
+        }
+      }
+      SMDS_ElemIteratorPtr eIt = srcSMDS->GetElements();
+      while( eIt->more() )
+      {
+        const SMDS_MeshElement* e = eIt->next();
+        elemData.Init( e, /*basicOnly=*/false );
+        elemData.SetID( e->GetID() );
+        elemData.myNodes.resize( e->NbNodes() );
+        SMDS_NodeIteratorPtr nnIt = e->nodeIterator();
+        size_t iN;
+        for ( iN = 0; nnIt->more(); ++iN )
+        {
+          const SMDS_MeshNode* srcNode = nnIt->next();
+          elemData.myNodes[ iN ] = newMeshDS->FindNode( srcNode->GetID() );
+          if ( !elemData.myNodes[ iN ])
+            break;
+        }
+        if ( iN == elemData.myNodes.size() )
+          if ( const SMDS_MeshElement * newElem = editor.AddElement( elemData.myNodes, elemData ))
+            newMeshDS->SetMeshElementOnShape( newElem, newID );
+      }
+      if ( SMESH_subMesh* newSM = newMesh_i->GetImpl().GetSubMeshContaining( newID ))
+        newSM->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+    }
+  }
+
+
+  // treat groups
+
+  TStr2StrMap old2newGroupMap;
+
+  SALOME::GenericObj_wrap< SMESH::FilterManager > filterMgr = CreateFilterManager();
+
+  SMESH::ListOfGroups_var groups = theSourceMesh->GetGroups();
+  CORBA::ULong nbGroups = groups->length(), nbAddedGroups = 0;
+  for ( CORBA::ULong i = 0; i < nbGroups + nbAddedGroups; ++i )
+  {
+    SMESH::SMESH_Group_var         stdlGroup = SMESH::SMESH_Group::_narrow        ( groups[ i ]);
+    SMESH::SMESH_GroupOnGeom_var   geomGroup = SMESH::SMESH_GroupOnGeom::_narrow  ( groups[ i ]);
+    SMESH::SMESH_GroupOnFilter_var fltrGroup = SMESH::SMESH_GroupOnFilter::_narrow( groups[ i ]);
+
+    CORBA::String_var      name = groups[ i ]->GetName();
+    SMESH::ElementType elemType = groups[ i ]->GetType();
+
+    SMESH::SMESH_GroupBase_var newGroup;
+
+    if ( !stdlGroup->_is_nil() )
+    {
+      if ( theToCopyElements )
+      {
+        SMESH::long_array_var elemIDs = stdlGroup->GetIDs();
+        stdlGroup = theNewMesh->CreateGroup( elemType, name );
+        stdlGroup->Add( elemIDs );
+        newGroup = SMESH::SMESH_GroupBase::_narrow( stdlGroup );
+      }
+    }
+    else if ( !geomGroup->_is_nil() )
+    {
+      GEOM::GEOM_Object_var    geom = geomGroup->GetShape();
+      GEOM::GEOM_Object_var newGeom = shapeMapper.FindNew( geom );
+      if ( newGeom->_is_nil() )
+      {
+        newGroup = theNewMesh->CreateGroup( elemType, name ); // just to notify the user
+        shapeMapper.AddInvalid( geom, ObjectToSObject( newGroup ));
+        ok = false;
+      }
+      else
+      {
+        newGroup = theNewMesh->CreateGroupFromGEOM( elemType, name, newGeom );
+      }
+    }
+    else if ( !fltrGroup->_is_nil() )
+    {
+      // replace geometry in a filter
+      SMESH::Filter_var filter = fltrGroup->GetFilter();
+      SMESH::Filter::Criteria_var criteria;
+      filter->GetCriteria( criteria.out() );
+
+      bool isMissingGroup = false;
+      std::vector< std::string > badEntries;
+
+      for ( CORBA::ULong iCr = 0; iCr < criteria->length(); ++iCr )
+      {
+        const char* thresholdID = criteria[ iCr ].ThresholdID.in();
+        switch ( criteria[ iCr ].Type )
+        {
+        case SMESH::FT_BelongToMeshGroup:
+        {
+          SALOME::GenericObj_wrap< SMESH::BelongToMeshGroup > btgg = filterMgr->CreateBelongToMeshGroup();
+          btgg->SetGroupID( thresholdID );
+          SMESH::SMESH_GroupBase_ptr refGroup = btgg->GetGroup();
+          SALOMEDS::SObject_wrap   refGroupSO = ObjectToSObject( refGroup );
+          if ( refGroupSO->_is_nil() )
+            break;
+          CORBA::String_var     refID = refGroupSO->GetID();
+          TStr2StrMap::iterator o2nID = old2newGroupMap.find( refID.in() );
+          if ( o2nID == old2newGroupMap.end() )
+          {
+            isMissingGroup = true; // corresponding new group not yet created
+            break;
+          }
+          criteria[ iCr ].ThresholdID = o2nID->second.c_str();
+
+          if ( o2nID->second.empty() ) // new referred group is invalid
+            badEntries.push_back( refID.in() );
+          break;
+        }
+        case SMESH::FT_BelongToGeom:
+        case SMESH::FT_BelongToPlane:
+        case SMESH::FT_BelongToCylinder:
+        case SMESH::FT_BelongToGenSurface:
+        case SMESH::FT_LyingOnGeom:
+        {
+          std::string newID = shapeMapper.FindNew( thresholdID );
+          criteria[ iCr ].ThresholdID = newID.c_str();
+          if ( newID.empty() )
+            badEntries.push_back( thresholdID );
+          break;
+        }
+        case SMESH::FT_ConnectedElements:
+        {
+          if ( thresholdID && thresholdID[0] )
+          {
+            std::string newID = shapeMapper.FindNew( thresholdID );
+            criteria[ iCr ].ThresholdID = newID.c_str();
+            if ( newID.empty() )
+              badEntries.push_back( thresholdID );
+          }
+          break;
+        }
+        default:;
+        }
+      } // loop on criteria
+
+      if ( isMissingGroup && i < nbGroups )
+      {
+        // to treat the group again
+        append( groups, SMESH::SMESH_GroupBase::_duplicate( groups[ i ]));
+        ++nbAddedGroups;
+        continue;
+      }
+      SMESH::Filter_var newFilter = filterMgr->CreateFilter();
+      newFilter->SetCriteria( criteria );
+
+      newGroup = theNewMesh->CreateGroupFromFilter( elemType, name, newFilter );
+      newFilter->UnRegister();
+
+      SALOMEDS::SObject_wrap newSO = ObjectToSObject( newGroup );
+      for ( size_t iEnt = 0; iEnt < badEntries.size(); ++iEnt )
+        shapeMapper.AddInvalid( badEntries[ iEnt ], newSO );
+
+      if ( isMissingGroup ) // all groups treated but a referred groups still not found
+      {
+        invalidSObjects.push_back( ObjectToSObject( newGroup ));
+        ok = false;
+      }
+      if ( !badEntries.empty() )
+        ok = false;
+
+    } // treat a group on filter
+
+    append( theNewGroups, newGroup );
+
+    // fill old2newGroupMap
+    SALOMEDS::SObject_wrap srcSO = ObjectToSObject( groups[i] );
+    SALOMEDS::SObject_wrap newSO = ObjectToSObject( newGroup );
+    if ( !srcSO->_is_nil() )
+    {
+      CORBA::String_var srcID, newID;
+      srcID = srcSO->GetID();
+      if ( !newSO->_is_nil() )
+        newID = newSO->GetID();
+      old2newGroupMap.insert( std::make_pair( std::string( srcID.in() ),
+                                              std::string( newID.in() )));
+    }
+
+    if ( newGroup->_is_nil() )
+      ok = false;
+
+  } // loop on groups
+
+  // set mesh name
+  SALOMEDS::SObject_wrap soNew = ObjectToSObject( theNewMesh );
+  SALOMEDS::SObject_wrap soOld = ObjectToSObject( theSourceMesh );
+  CORBA::String_var oldName = soOld->GetName();
+  SetName( soNew, oldName.in(), "Mesh" );
+
+  // mark invalid objects
+  shapeMapper.GetInvalid( theInvalidEntries, invalidSObjects );
+
+  for ( size_t i = 0; i < invalidSObjects.size(); ++i )
+    highLightInvalid( invalidSObjects[i].in(), true );
+
+  pyDump << "ok, "
+         << theNewMesh << ", "
+         << theNewGroups << ", "
+         << *theNewSubmeshes.ptr() << ", "
+         << *theNewHypotheses.ptr() << ", "
+         << "invalidEntries = " << this << ".CopyMeshWithGeom( "
+         << theSourceMesh << ", "
+         << theNewGeometry << ", "
+         << "'" << theMeshName << "', "
+         << theToCopyGroups << ", "
+         << theToReuseHypotheses << ", "
+         << theToCopyElements << " )";
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+
+  return ok;
 }
 
 //================================================================================

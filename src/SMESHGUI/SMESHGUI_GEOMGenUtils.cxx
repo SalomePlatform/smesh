@@ -111,6 +111,17 @@ namespace SMESH
     return aMeshShape;
   }
 
+  GEOM::GEOM_Object_var GetGeom( Handle(SALOME_InteractiveObject) io )
+  {
+    GEOM::GEOM_Object_var go;
+    if ( !io.IsNull() && io->hasEntry() )
+    {
+      _PTR(SObject) so = SMESH::getStudy()->FindObjectID( io->getEntry() );
+      go = GetGeom( so );
+    }
+    return go._retn();
+  }
+
   SMESHGUI_EXPORT char* GetGeomName( _PTR(SObject) smeshSO )
   {
     if (!smeshSO)

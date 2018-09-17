@@ -96,6 +96,8 @@ typedef list<SMESHDS_SubMesh*> TListOfSubMeshes;
 bool getSubMeshes(::SMESH_subMesh*  theSubMesh,
                   TListOfSubMeshes& theSubMeshList)
 {
+  if ( !theSubMesh )
+    return false; // "invalid sub-mesh" created by SMESH_Gen_i::CopyMeshWithGeom()
   size_t size = theSubMeshList.size();
 
   // check all child sub-meshes of one complexity,
@@ -581,4 +583,31 @@ SALOMEDS::TMPFile* SMESH_subMesh_i::GetVtkUgStream()
 {
   SALOMEDS::TMPFile_var SeqFile;
   return SeqFile._retn();
+}
+
+//=======================================================================
+//function : SMESH_Invalid_subMesh_i
+//purpose  : constructor of "invalid sub-mesh" created by SMESH_Gen_i::CopyMeshWithGeom()
+//=======================================================================
+
+SMESH_Invalid_subMesh_i::SMESH_Invalid_subMesh_i( PortableServer::POA_ptr thePOA,
+                                                  SMESH_Gen_i*            gen_i,
+                                                  SMESH_Mesh_i*           mesh_i,
+                                                  int                     localId,
+                                                  GEOM::GEOM_Object_ptr   shape )
+  : SALOME::GenericObj_i( thePOA ),
+    SMESH_subMesh_i( thePOA, gen_i, mesh_i, localId )
+{
+  _geom = GEOM::GEOM_Object::_duplicate( shape );
+}
+
+//=======================================================================
+//function : GetSubShape
+//purpose  : return geomtry which is not a sub-shape of the main shape
+//=======================================================================
+
+GEOM::GEOM_Object_ptr SMESH_Invalid_subMesh_i::GetSubShape()
+  throw (SALOME::SALOME_Exception)
+{
+  return GEOM::GEOM_Object::_duplicate( _geom );
 }

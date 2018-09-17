@@ -29,13 +29,13 @@
 
 #include "SMESH_StdMeshers.hxx"
 
+#include "StdMeshers_Reversible1D.hxx"
 #include "SMESH_Hypothesis.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
 #include <vector>
 
-class STDMESHERS_EXPORT StdMeshers_FixedPoints1D:
-  public SMESH_Hypothesis
+class STDMESHERS_EXPORT StdMeshers_FixedPoints1D: public StdMeshers_Reversible1D
 {
 public:
   StdMeshers_FixedPoints1D(int hypId, SMESH_Gen* gen);
@@ -50,14 +50,6 @@ public:
   const std::vector<double>& GetPoints() const { return _params; }
 
   const std::vector<int>& GetNbSegments() const { return _nbsegs; }
-
-  void SetReversedEdges( std::vector<int>& ids);
-
-  void SetObjectEntry( const char* entry ) { _objEntry = entry; }
-
-  const char* GetObjectEntry() { return _objEntry.c_str(); }
-
-  const std::vector<int>& GetReversedEdges() const { return _edgeIDs; }
 
   virtual std::ostream & SaveTo(std::ostream & save);
   virtual std::istream & LoadFrom(std::istream & load);
@@ -79,8 +71,6 @@ public:
 protected:
   std::vector<double> _params;
   std::vector<int>    _nbsegs;
-  std::vector<int>    _edgeIDs;
-  std::string         _objEntry;
 };
 
 #endif

@@ -281,6 +281,37 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
 
     /*!
+     * Create a mesh by copying definitions of another mesh to a given geometry
+     *  \param sourceMesh - a mesh to copy
+     *  \param newGeometry - a new geometry
+     *  \param meshName - a name of the new mesh
+     *  \param toCopyGroups - to create groups in the new mesh
+     *  \param toReuseHypotheses - if True, existing hypothesis will be used by the new mesh, 
+     *         otherwise new hypotheses with the same parameters will be created for the new mesh.
+     *  \param toCopyElements - to copy mesh elements of same sub-shapes of the two geometries
+     *  \param newMesh - return a new mesh
+     *  \param newGroups - return new groups
+     *  \param newSubmeshes - return new sub-meshes
+     *  \param newHypotheses - return new algorithms and hypotheses
+     *  \param invalidEntries - return study entries of objects whose
+     *         counterparts are not found in the newGeometry, followed by entries
+     *         of mesh sub-objects that are invalid because they depend on a not found
+     *         preceeding sub-shape
+     */
+    boolean CopyMeshWithGeom( in SMESH_Mesh        sourceMesh,
+                              in GEOM::GEOM_Object newGeometry,
+                              in string            meshName,
+                              in boolean           toCopyGroups,
+                              in boolean           toReuseHypotheses,
+                              in boolean           toCopyElements,
+                              out SMESH_Mesh       newMesh,
+                              out ListOfGroups     newGroups,
+                              out submesh_array    newSubmeshes,
+                              out ListOfHypothesis newHypotheses,
+                              out string_array     invalidEntries)
+      raises ( SALOME::SALOME_Exception );
+
+    /*!
      * Concatenate the given meshes or groups into one mesh.
      * Union groups with the same name and type if
      * theUniteIdenticalGroups flag is true.

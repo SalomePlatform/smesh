@@ -226,6 +226,12 @@ namespace SMESH
     return app->orb()->string_to_object(theIOR.toLatin1().data());
   }
 
+  CORBA::Object_var EntryToObject( const QString& theEntry )
+  {
+    _PTR(SObject) anObj = getStudy()->FindObjectID( theEntry.toLatin1().data() );
+    return SObjectToObject(anObj);
+  }
+
   int GetNameOfSelectedIObjects(LightApp_SelectionMgr* theMgr, QString& theName)
   {
     if (!theMgr)

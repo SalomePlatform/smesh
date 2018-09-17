@@ -51,7 +51,7 @@ public:
   int GetTriaVertex() const { return _triaVertexID; }
 
   void SetObjectEntry (const char* entry) { _objEntry = entry; }
-  const char* GetObjectEntry() { return _objEntry.c_str(); }
+  const char* GetObjectEntry() const { return _objEntry.c_str(); }
 
   void SetQuadType (StdMeshers_QuadType type);
   StdMeshers_QuadType GetQuadType() const { return _quadType; }

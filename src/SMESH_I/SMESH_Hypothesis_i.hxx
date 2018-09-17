@@ -40,6 +40,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 class TCollection_AsciiString;
 
@@ -97,7 +98,18 @@ public:
   // Persistence
   virtual char* SaveTo();
   virtual void  LoadFrom( const char* theStream );
-  virtual void  UpdateAsMeshesRestored(); // for hyps needing full data restored
+  virtual void  UpdateAsMeshesRestored(); // for hyps needing full study data restored
+
+
+  // Methods for copying mesh definition to other geometry
+
+  // Return geometry this hypothesis depends on. Return false if there is no geometry parameter
+  virtual bool getObjectsDependOn( std::vector< std::string > & entryArray,
+                                   std::vector< int >         & subIDArray ) const = 0;
+
+  // Set new geometry instead of that returned by getObjectsDependOn()
+  virtual bool setObjectsDependOn( std::vector< std::string > & entryArray,
+                                   std::vector< int >         & subIDArray ) = 0;
 
  protected:
 

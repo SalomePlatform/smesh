@@ -196,6 +196,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_tree_hypo_quadratic.png
   mesh_build_compound.png
   copy_mesh.png
+  copy_mesh_with_geom.png
   mesh_node_to_point.png
   mesh_tree_mesh_partial.png
   mesh_extractGroup.png

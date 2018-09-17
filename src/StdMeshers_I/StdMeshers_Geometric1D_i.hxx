@@ -59,6 +59,18 @@ class STDMESHERS_I_EXPORT StdMeshers_Geometric1D_i:
 
   // Get implementation
   ::StdMeshers_Geometric1D* GetImpl();
+
+
+
+  // Methods for copying mesh definition to other geometry
+
+  // Return geometry this hypothesis depends on. Return false if there is no geometry parameter
+  virtual bool getObjectsDependOn( std::vector< std::string > & entryArray,
+                                   std::vector< int >         & subIDArray ) const;
+
+  // Set new geometry instead of that returned by getObjectsDependOn()
+  virtual bool setObjectsDependOn( std::vector< std::string > & entryArray,
+                                   std::vector< int >         & subIDArray );
 };
 
 #endif

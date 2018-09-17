@@ -838,7 +838,13 @@ void SMESH_GroupOnFilter_i::SetFilter(SMESH::Filter_ptr theFilter)
     Modified(); // notify dependent Filter with FT_BelongToMeshGroup criterion
   }
 
-  TPythonDump()<< SMESH::SMESH_GroupOnFilter_var(_this()) <<".SetFilter( "<<theFilter<<" )";
+  SMESH::SMESH_GroupOnFilter_var me = _this();
+
+  // mark the group valid after edition
+  GetMeshServant()->GetGen()->HighLightInvalid( me, false );
+
+
+  TPythonDump()<< me <<".SetFilter( "<< theFilter <<" )";
 }
 
 //================================================================================

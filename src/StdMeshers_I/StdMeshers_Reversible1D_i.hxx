@@ -36,7 +36,7 @@
 #include "StdMeshers_Reversible1D.hxx"
 
 // ======================================================
-// Common metrhods of Reversible 1D hypotheses
+// Common methods of Reversible 1D hypotheses
 // ======================================================
 class STDMESHERS_I_EXPORT StdMeshers_Reversible1D_i:
   public virtual POA_StdMeshers::Reversible1D
@@ -59,8 +59,17 @@ class STDMESHERS_I_EXPORT StdMeshers_Reversible1D_i:
   // Get implementation
   ::StdMeshers_Reversible1D* GetImpl();
 
+
+  // Methods for copying mesh definition to other geometry
+
+  // Return geometry this hypothesis depends on. Return false if there is no geometry parameter
+  virtual bool getObjectsDependOn( std::vector< std::string > & entryArray,
+                                   std::vector< int >         & subIDArray ) const;
+
+  // Set new geometry instead of that returned by getObjectsDependOn()
+  virtual bool setObjectsDependOn( std::vector< std::string > & entryArray,
+                                   std::vector< int >         & subIDArray );
  private:
   SMESH_Hypothesis_i* myHyp;
 };
-
 #endif

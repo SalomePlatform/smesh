@@ -36,6 +36,10 @@
             <translation>copy_mesh.png</translation>
         </message>
         <message>
+            <source>ICON_COPY_MESH_WG</source>
+            <translation>copy_mesh_with_geom.png</translation>
+        </message>
+        <message>
             <source>ICON_COMPUTE</source>
             <translation>mesh_compute.png</translation>
         </message>

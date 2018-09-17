@@ -44,7 +44,7 @@ public:
 
   void SetObjectEntry( const char* entry ) { _objEntry = entry; }
 
-  const char* GetObjectEntry() { return _objEntry.c_str(); }
+  const char* GetObjectEntry() const { return _objEntry.c_str(); }
 
   const std::vector<int>& GetReversedEdges() const { return _edgeIDs; }
 

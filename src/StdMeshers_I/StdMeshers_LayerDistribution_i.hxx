@@ -77,6 +77,17 @@ public:
   virtual char* SaveTo();
   virtual void  LoadFrom( const char* theStream );
 
+
+
+  // Methods for copying mesh definition to other geometry
+
+  // Return geometry this hypothesis depends on. Return false if there is no geometry parameter
+  virtual bool getObjectsDependOn( std::vector< std::string > & entryArray,
+                                   std::vector< int >         & subIDArray ) const { return 0; }
+
+  // Set new geometry instead of that returned by getObjectsDependOn()
+  virtual bool setObjectsDependOn( std::vector< std::string > & entryArray,
+                                   std::vector< int >         & subIDArray ) { return true; }
 protected:
   // restore myMethod2VarParams by parameters stored in an old study
   virtual void setOldParameters (const char* theParameters);

@@ -1939,6 +1939,14 @@ add the exported data to its contents?</translation>
         <translation>Hypotheses</translation>
     </message>
     <message>
+        <source>SMESH_HYPOTHESIS</source>
+        <translation>Hypothesis</translation>
+    </message>
+    <message>
+        <source>SMESH_ALGORITHM</source>
+        <translation>Algorithm</translation>
+    </message>
+    <message>
         <source>SMESH_HYP_1</source>
         <translation>Algorithm misses a hypothesis</translation>
     </message>
@@ -8069,6 +8077,25 @@ as they are of improper type:
     <message>
         <source>NEW_NAME</source>
         <translation>New Mesh Name</translation>
+    </message>
+    <message>
+        <source>NEW_GEOM</source>
+        <translation>New Geometry</translation>
+    </message>
+    <message>
+        <source>REUSE_HYPOTHESES</source>
+        <translation>Reuse Hypotheses</translation>
+    </message>
+    <message>
+        <source>COPY_ELEMENTS</source>
+        <translation>Copy Mesh Elements</translation>
+    </message>
+    <message>
+        <source>SUBSHAPES_NOT_FOUND_MSG</source>
+        <translation>
+Some sub-shapes not found in the new geometry. They are listed 
+below along with dependent mesh objects that are marked with
+with red in the Object Browser.</translation>
     </message>
 </context>
 <context>

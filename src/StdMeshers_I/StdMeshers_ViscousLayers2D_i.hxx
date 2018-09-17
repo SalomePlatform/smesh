@@ -73,6 +73,17 @@ class STDMESHERS_I_EXPORT StdMeshers_ViscousLayers2D_i:
   // Sets sub-mesh event listeners to clear sub-meshes of edges
   // shrinked by viscous layers
   virtual void  UpdateAsMeshesRestored();
+
+
+  // Methods for copying mesh definition to other geometry
+
+  // Return geometry this hypothesis depends on. Return false if there is no geometry parameter
+  virtual bool getObjectsDependOn( std::vector< std::string > & entryArray,
+                                   std::vector< int >         & subIDArray ) const;
+
+  // Set new geometry instead of that returned by getObjectsDependOn()
+  virtual bool setObjectsDependOn( std::vector< std::string > & entryArray,
+                                   std::vector< int >         & subIDArray );
 };
 
 #endif

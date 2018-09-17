@@ -378,3 +378,54 @@ void StdMeshers_QuadrangleParams_i::LoadFrom( const char* theStream )
 
   myBaseImpl->LoadFrom( is );
 }
+
+//================================================================================
+/*!
+ * \brief Return geometry this hypothesis depends on. Return false if there is no geometry parameter
+ */
+//================================================================================
+
+bool
+StdMeshers_QuadrangleParams_i::getObjectsDependOn( std::vector< std::string > & entryArray,
+                                                   std::vector< int >         & subIDArray ) const
+{
+  const ::StdMeshers_QuadrangleParams* impl =
+    static_cast<const ::StdMeshers_QuadrangleParams*>( myBaseImpl );
+
+  subIDArray.push_back( impl->GetTriaVertex() );
+
+  entryArray.push_back( impl->GetObjectEntry() );
+  entryArray.insert( entryArray.end(), myShapeEntries.begin(), myShapeEntries.end() );
+
+  return true;
+}
+
+//================================================================================
+/*!
+ * \brief Set new geometry instead of that returned by getObjectsDependOn()
+ */
+//================================================================================
+
+bool
+StdMeshers_QuadrangleParams_i::setObjectsDependOn( std::vector< std::string > & entryArray,
+                                                   std::vector< int >         & subIDArray )
+{
+  if ( !subIDArray.empty() )
+    GetImpl()->SetTriaVertex( subIDArray[0] );
+
+  GetImpl()->SetObjectEntry( entryArray[0].c_str() );
+
+  myShapeEntries.assign( ++entryArray.begin(), entryArray.end() );
+
+  std::vector< TopoDS_Shape > shapes;
+  std::vector< gp_Pnt       > points;
+  this->GetImpl()->GetEnforcedNodes( shapes, points );
+
+  shapes.clear();
+  for ( size_t i = 0; i < myShapeEntries.size(); ++i )
+    shapes.push_back( StdMeshers_ObjRefUlils::EntryToShape( myShapeEntries[i] ));
+
+  this->GetImpl()->SetEnforcedNodes( shapes, points );
+
+  return true;
+}

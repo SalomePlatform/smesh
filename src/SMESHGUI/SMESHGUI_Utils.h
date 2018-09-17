@@ -153,6 +153,18 @@ SMESHGUI_EXPORT
     }
 
 SMESHGUI_EXPORT
+  CORBA::Object_var EntryToObject( const QString& );
+
+  template<class TInterface> typename TInterface::_var_type
+    EntryToInterface( const QString& theEntry )
+    {
+      CORBA::Object_var anObj = EntryToObject( theEntry );
+      if ( !CORBA::is_nil( anObj ) )
+        return TInterface::_narrow( anObj );
+      return TInterface::_nil();
+    }
+
+SMESHGUI_EXPORT
   int GetNameOfSelectedIObjects( LightApp_SelectionMgr*, QString& );
 
 SMESHGUI_EXPORT

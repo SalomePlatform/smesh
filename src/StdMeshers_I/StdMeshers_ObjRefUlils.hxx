@@ -66,6 +66,13 @@ public:
   }
 
   /*!
+   * \brief Return TopoDS_Shape by a study entry
+   *  \param theEntry - study entry
+   *  \retval TopoDS_Shape - result TopoDS_Shape
+   */
+  static TopoDS_Shape EntryToShape(const std::string theEntry);
+
+  /*!
    * \brief Return study entry of GEOM Object
    */
   static std::string GeomObjectToEntry(GEOM::GEOM_Object_ptr theGeomObject);

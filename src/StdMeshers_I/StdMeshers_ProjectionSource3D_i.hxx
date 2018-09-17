@@ -114,6 +114,17 @@ public:
   virtual char* SaveTo();
   virtual void  LoadFrom( const char* theStream );
 
+
+  // Methods for copying mesh definition to other geometry
+
+  // Return geometry this hypothesis depends on. Return false if there is no geometry parameter
+  virtual bool getObjectsDependOn( std::vector< std::string > & entryArray,
+                                   std::vector< int >         & subIDArray ) const;
+
+  // Set new geometry instead of that returned by getObjectsDependOn()
+  virtual bool setObjectsDependOn( std::vector< std::string > & entryArray,
+                                   std::vector< int >         & subIDArray );
+
 private:
   // keep entries because the same shape can be published several times with
   // different names and in this case a correct name can't be restored by a TopoDS_Shape
@@ -124,4 +135,3 @@ private:
 };
 
 #endif
-

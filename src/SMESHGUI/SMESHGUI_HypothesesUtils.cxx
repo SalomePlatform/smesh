@@ -523,13 +523,15 @@ namespace SMESH
         if(MYDEBUG) MESSAGE("Loading client meshers plugin library ...");
 #ifdef WIN32
 #ifdef UNICODE
-		LPTSTR path = new TCHAR[aClientLibName.length() + 1];
-		path[aClientLibName.toWCharArray(path)] = '\0';
+        LPTSTR path = new TCHAR[aClientLibName.length() + 1];
+        path[aClientLibName.toWCharArray(path)] = '\0';
 #else
-		const char* path = aClientLibName.toUtf8().data();
+        QByteArray baPath = aClientLibName.toUtf8();
+        const char* path = baPath.data();
 #endif
 #else
-		char* path = aClientLibName.toUtf8().data();
+        QByteArray baPath = aClientLibName.toUtf8();
+        char* path = baPath.data();
 #endif
         LibHandle libHandle = LoadLib( path );
         if (!libHandle) {

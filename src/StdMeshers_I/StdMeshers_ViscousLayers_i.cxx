@@ -295,3 +295,44 @@ std::string StdMeshers_ViscousLayers_i::getMethodOfParameter(const int paramInde
   }
   return "";
 }
+
+
+//================================================================================
+/*!
+ * \brief Return geometry this hypothesis depends on. Return false if there is no geometry parameter
+ */
+//================================================================================
+
+bool
+StdMeshers_ViscousLayers_i::getObjectsDependOn( std::vector< std::string > & entryArray,
+                                                std::vector< int >         & subIDArray ) const
+{
+  const ::StdMeshers_ViscousLayers* impl =
+    static_cast<const ::StdMeshers_ViscousLayers*>( myBaseImpl );
+
+  subIDArray = impl->GetBndShapes();
+
+  return true;
+}
+
+//================================================================================
+/*!
+ * \brief Set new geometry instead of that returned by getObjectsDependOn()
+ */
+//================================================================================
+
+bool
+StdMeshers_ViscousLayers_i::setObjectsDependOn( std::vector< std::string > & entryArray,
+                                                std::vector< int >         & subIDArray )
+{
+  std::vector< int > newIDs;
+  newIDs.reserve( subIDArray.size() );
+
+  for ( size_t i = 0; i < subIDArray.size(); ++i )
+    if ( subIDArray[ i ] > 0 )
+      newIDs.push_back( subIDArray[ i ]);
+
+  GetImpl()->SetBndShapes( newIDs, GetIsToIgnoreFaces() );
+
+  return true;
+}

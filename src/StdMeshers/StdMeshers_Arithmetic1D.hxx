@@ -32,13 +32,11 @@
 
 #include "SMESH_StdMeshers.hxx"
 
+#include "StdMeshers_Reversible1D.hxx"
 #include "SMESH_Hypothesis.hxx"
 #include "Utils_SALOME_Exception.hxx"
 
-#include <vector>
-
-class STDMESHERS_EXPORT StdMeshers_Arithmetic1D:
-  public SMESH_Hypothesis
+class STDMESHERS_EXPORT StdMeshers_Arithmetic1D: public StdMeshers_Reversible1D
 {
 public:
   StdMeshers_Arithmetic1D(int hypId, SMESH_Gen* gen);
@@ -48,18 +46,8 @@ public:
 
   double GetLength(bool isStartLength) const;
 
-  void SetReversedEdges( std::vector<int>& ids);
-
-  void SetObjectEntry( const char* entry ) { _objEntry = entry; }
-
-  const char* GetObjectEntry() { return _objEntry.c_str(); }
-
-  const std::vector<int>& GetReversedEdges() const { return _edgeIDs; }
-
   virtual std::ostream & SaveTo(std::ostream & save);
   virtual std::istream & LoadFrom(std::istream & load);
-  friend std::ostream& operator << (std::ostream & save, StdMeshers_Arithmetic1D & hyp);
-  friend std::istream& operator >> (std::istream & load, StdMeshers_Arithmetic1D & hyp);
 
   /*!
    * \brief Initialize start and end length by the mesh built on the geometry
@@ -77,8 +65,6 @@ public:
 
 protected:
   double _begLength, _endLength;
-  std::vector<int>   _edgeIDs;
-  std::string        _objEntry;
 };
 
 #endif

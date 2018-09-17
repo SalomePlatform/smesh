@@ -35,12 +35,14 @@
 // IDL includes
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
+#include CORBA_SERVER_HEADER(SMESH_Gen)
 
 class QCheckBox;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
 class QPushButton;
+class QButtonGroup;
 
 class SMESHGUI;
 class SMESHGUI_IdValidator;
@@ -56,10 +58,10 @@ class SUIT_SelectionFilter;
 //=================================================================================
 
 class SMESHGUI_EXPORT SMESHGUI_CopyMeshDlg : public QDialog
-{ 
+{
   Q_OBJECT
 
-public:
+ public:
   SMESHGUI_CopyMeshDlg( SMESHGUI* );
   ~SMESHGUI_CopyMeshDlg();
 
@@ -67,10 +69,12 @@ private:
   void                   Init( bool = true );
   void                   enterEvent( QEvent* );           /* mouse enter the QWidget */
   void                   keyPressEvent( QKeyEvent* );
-  int                    GetConstructorId();
   void                   setNewMeshName();
+  QString                getErrorMsg( SMESH::string_array_var invalidEntries,
+                                      QStringList &           entriesToBrowse );
 
   bool                   isValid();
+  bool                   isWithGeomMode();
 
   void                   setIsApplyAndClose( const bool theFlag );
   bool                   isApplyAndClose() const;
@@ -84,10 +88,13 @@ private:
 
   bool                   myBusy;
   SMESH::SMESH_Mesh_var  myMesh;
+  GEOM::GEOM_Object_var  myNewGeometry;
   SMESH_Actor*           myActor;
   SUIT_SelectionFilter*  myIdSourceFilter;
 
   SMESH::SMESH_IDSource_var mySelectedObject;
+
+  QButtonGroup*          GroupConstructors;
 
   QGroupBox*             ConstructorsBox;
   QGroupBox*             GroupArguments;
@@ -99,10 +106,14 @@ private:
   QPushButton*           buttonHelp;
 
   QLabel*                myTextLabelElements;
+  QLabel*                myGeomLabel;
   QLineEdit*             myLineEditElements;
   QLineEdit*             myMeshNameEdit;
+  QLineEdit*             myGeomNameEdit;
   QCheckBox*             myIdSourceCheck;
   QCheckBox*             myCopyGroupsCheck;
+  QCheckBox*             myReuseHypCheck;
+  QCheckBox*             myCopyElementsCheck;
   QCheckBox*             myKeepIdsCheck;
 
   QPushButton*           myFilterBtn;
@@ -122,6 +133,7 @@ private slots:
   void                   SelectionIntoArgument();
   void                   DeactivateActiveDialog();
   void                   ActivateThisDialog();
+  void                   onConstructor( int );
   void                   onTextChange( const QString& );
   void                   onSelectIdSource( bool );
   void                   setFilters();

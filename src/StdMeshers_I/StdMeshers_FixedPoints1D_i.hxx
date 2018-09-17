@@ -30,7 +30,7 @@
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
 
-#include "SMESH_Hypothesis_i.hxx"
+#include "StdMeshers_Reversible1D_i.hxx"
 #include "StdMeshers_FixedPoints1D.hxx"
 
 // ======================================================
@@ -38,7 +38,8 @@
 // ======================================================
 class STDMESHERS_I_EXPORT StdMeshers_FixedPoints1D_i:
   public virtual POA_StdMeshers::StdMeshers_FixedPoints1D,
-  public virtual SMESH_Hypothesis_i
+  public virtual SMESH_Hypothesis_i,
+  public virtual StdMeshers_Reversible1D_i
 {
 public:
   // Constructor
@@ -62,23 +63,22 @@ public:
   // Returns list of numbers of segments
   SMESH::long_array* GetNbSegments();
     
-  //Set Reversed Edges
-  void SetReversedEdges( const SMESH::long_array& theIDs);
-
-  //Get Reversed Edges
-  SMESH::long_array*  GetReversedEdges();
-  
-  //Set the Entry of the Object
-  void SetObjectEntry( const char* theEntry);
-
-  //Get Object Entry
-  char* GetObjectEntry();
-
   // Get implementation
   ::StdMeshers_FixedPoints1D* GetImpl();
 
   // Verify whether hypothesis supports given entity type 
   CORBA::Boolean IsDimSupported( SMESH::Dimension type );
+
+
+  // Methods for copying mesh definition to other geometry
+
+  // Return geometry this hypothesis depends on. Return false if there is no geometry parameter
+  virtual bool getObjectsDependOn( std::vector< std::string > & entryArray,
+                                   std::vector< int >         & subIDArray ) const;
+
+  // Set new geometry instead of that returned by getObjectsDependOn()
+  virtual bool setObjectsDependOn( std::vector< std::string > & entryArray,
+                                   std::vector< int >         & subIDArray );
 };
 
 #endif

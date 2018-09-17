@@ -24,32 +24,34 @@
 #include "SMESHGUI_CopyMeshDlg.h"
 
 #include "SMESHGUI.h"
+#include "SMESHGUI_FilterDlg.h"
+#include "SMESHGUI_GEOMGenUtils.h"
+#include "SMESHGUI_IdValidator.h"
+#include "SMESHGUI_MeshUtils.h"
+#include "SMESHGUI_Selection.h"
 #include "SMESHGUI_SpinBox.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
-#include "SMESHGUI_MeshUtils.h"
-#include "SMESHGUI_IdValidator.h"
-#include "SMESHGUI_FilterDlg.h"
 
 #include <SMESH_Actor.h>
 #include <SMESH_TypeFilter.hxx>
 #include <SMDS_Mesh.hxx>
 
 // SALOME GUI includes
-#include <SUIT_Desktop.h>
-#include <SUIT_ResourceMgr.h>
-#include <SUIT_Session.h>
-#include <SUIT_MessageBox.h>
-#include <SUIT_OverrideCursor.h>
-
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
-
+#include <SALOME_ListIO.hxx>
+#include <SUIT_Desktop.h>
+#include <SUIT_MessageBox.h>
+#include <SUIT_OverrideCursor.h>
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Session.h>
 #include <SVTK_ViewModel.h>
 #include <SVTK_ViewWindow.h>
-#include <SALOME_ListIO.hxx>
+#include <SalomeApp_Tools.h>
 
 // SALOME KERNEL includes
+#include <SALOMEDSClient_Study.hxx>
 #include <SALOMEDSClient_SObject.hxx>
 
 // OCCT includes
@@ -113,7 +115,8 @@ SMESHGUI_CopyMeshDlg::SMESHGUI_CopyMeshDlg( SMESHGUI* theModule )
     myFilterDlg(0),
     myIsApplyAndClose( false )
 {
-  QPixmap image (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_COPY_MESH")));
+  QPixmap image1 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_COPY_MESH")));
+  QPixmap image2 (SMESH::GetResourceMgr( mySMESHGUI )->loadPixmap("SMESH", tr("ICON_COPY_MESH_WG")));
 
   setModal(false);
   setAttribute(Qt::WA_DeleteOnClose, true);
@@ -126,18 +129,21 @@ SMESHGUI_CopyMeshDlg::SMESHGUI_CopyMeshDlg( SMESHGUI* theModule )
 
   /***************************************************************/
   ConstructorsBox = new QGroupBox(tr("SMESH_COPY_MESH_TITLE"), this);
-  QButtonGroup* GroupConstructors = new QButtonGroup(this);
+  GroupConstructors = new QButtonGroup(this);
   QHBoxLayout* ConstructorsBoxLayout = new QHBoxLayout(ConstructorsBox);
   ConstructorsBoxLayout->setSpacing(SPACING);
   ConstructorsBoxLayout->setMargin(MARGIN);
 
   QRadioButton* RadioButton1= new QRadioButton(ConstructorsBox);
-  RadioButton1->setIcon(image);
+  RadioButton1->setIcon(image1);
   GroupConstructors->addButton(RadioButton1, 0);
+  QRadioButton* RadioButton2= new QRadioButton(ConstructorsBox);
+  RadioButton2->setIcon(image2);
+  GroupConstructors->addButton(RadioButton2, 1);
 
   ConstructorsBoxLayout->addWidget(RadioButton1);
+  ConstructorsBoxLayout->addWidget(RadioButton2);
   RadioButton1->setChecked(true);
-  GroupConstructors->addButton(RadioButton1, 0);
 
   /***************************************************************/
   GroupArguments = new QGroupBox(tr("SMESH_ARGUMENTS"), this);
@@ -164,12 +170,25 @@ SMESHGUI_CopyMeshDlg::SMESHGUI_CopyMeshDlg( SMESHGUI* theModule )
 
   // CheckBox for copying groups
   myCopyGroupsCheck = new QCheckBox(tr("SMESH_MAKE_GROUPS"), GroupArguments);
-  myCopyGroupsCheck->setChecked(false);
+  myCopyGroupsCheck->setChecked(true);
 
   // CheckBox for keeping ids ( OBSOLETE )
   myKeepIdsCheck = new QCheckBox(tr("SMESH_KEEP_IDS"), GroupArguments);
   myKeepIdsCheck->setChecked(true);
   myKeepIdsCheck->hide();
+
+  // New geometry
+  myGeomLabel = new QLabel( tr("NEW_GEOM"), GroupArguments );
+  myGeomNameEdit = new QLineEdit( GroupArguments );
+  myGeomNameEdit->setReadOnly(true);
+
+  // CheckBox to reuse hypotheses
+  myReuseHypCheck = new QCheckBox(tr("REUSE_HYPOTHESES"), GroupArguments);
+  myReuseHypCheck->setChecked(true);
+
+  // CheckBox to copy mesh elements
+  myCopyElementsCheck = new QCheckBox(tr("COPY_ELEMENTS"), GroupArguments);
+  myCopyElementsCheck->setChecked(true);
 
   // layout
   GroupArgumentsLayout->addWidget(myTextLabelElements,  0, 0);
@@ -178,8 +197,13 @@ SMESHGUI_CopyMeshDlg::SMESHGUI_CopyMeshDlg( SMESHGUI* theModule )
   GroupArgumentsLayout->addWidget(myIdSourceCheck,      1, 0, 1, 6);
   GroupArgumentsLayout->addWidget(meshNameLabel,        2, 0);
   GroupArgumentsLayout->addWidget(myMeshNameEdit,       2, 1, 1, 5);
-  GroupArgumentsLayout->addWidget(myCopyGroupsCheck,    3, 0, 1, 6);
-  // GroupArgumentsLayout->addWidget(myKeepIdsCheck,       4, 0, 1, 6);
+  GroupArgumentsLayout->addWidget(myGeomLabel,          3, 0);
+  GroupArgumentsLayout->addWidget(myGeomNameEdit,       3, 1, 1, 5);
+  GroupArgumentsLayout->addWidget(myCopyGroupsCheck,    4, 0, 1, 6);
+  GroupArgumentsLayout->addWidget(myReuseHypCheck,      5, 0, 1, 6);
+  GroupArgumentsLayout->addWidget(myCopyElementsCheck,  6, 0, 1, 6);
+  // GroupArgumentsLayout->addWidget(myKeepIdsCheck,       7, 0, 1, 6);
+  GroupArgumentsLayout->setRowStretch( 6, 1 );
 
   /***************************************************************/
   GroupButtons = new QGroupBox(this);
@@ -243,6 +267,9 @@ SMESHGUI_CopyMeshDlg::SMESHGUI_CopyMeshDlg( SMESHGUI* theModule )
           this,               SLOT  (onTextChange(const QString&)));
   connect(myIdSourceCheck,    SIGNAL(toggled(bool)),
           this,               SLOT  (onSelectIdSource(bool)));
+  connect(GroupConstructors,  SIGNAL(buttonClicked(int)),
+          this,               SLOT  (onConstructor(int)));
+
 
   SelectionIntoArgument();
 }
@@ -275,11 +302,12 @@ void SMESHGUI_CopyMeshDlg::Init (bool ResetControls)
 {
   myBusy = false;
 
-  myMeshNameEdit->setText( SMESH::UniqueMeshName("Mesh"));
+  if ( !isWithGeomMode() )
+    myMeshNameEdit->setText( SMESH::UniqueMeshName("Mesh"));
+
   if ( ResetControls )
   {
     myLineEditElements->clear();
-    //myElementsId = "";
     myNbOkElements = 0;
 
     buttonOk->setEnabled(false);
@@ -289,11 +317,98 @@ void SMESHGUI_CopyMeshDlg::Init (bool ResetControls)
     myMesh = SMESH::SMESH_Mesh::_nil();
 
     myIdSourceCheck->setChecked(true);
-    myCopyGroupsCheck->setChecked(false);
-    myKeepIdsCheck->setChecked(false);
 
-    onSelectIdSource( myIdSourceCheck->isChecked() );
+    onConstructor( 0 );
   }
+}
+
+//=======================================================================
+//function : onConstructor
+//purpose  : switch operation mode
+//=======================================================================
+
+void SMESHGUI_CopyMeshDlg::onConstructor( int withGeom )
+{
+  myGeomLabel        ->setVisible( withGeom );
+  myGeomNameEdit     ->setVisible( withGeom );
+  myReuseHypCheck    ->setVisible( withGeom );
+  myCopyElementsCheck->setVisible( withGeom );
+  myFilterBtn        ->setVisible( !withGeom );
+  myIdSourceCheck    ->setVisible( !withGeom );
+
+  if ( !withGeom )
+    myMeshNameEdit->setText( SMESH::UniqueMeshName("Mesh"));
+
+  onSelectIdSource( /*toSelectMesh=*/ myIdSourceCheck->isChecked() || withGeom );
+}
+
+//=======================================================================
+//function : getErrorMsg
+//purpose  : Return an error message and entries of invalid smesh object
+//=======================================================================
+
+QString SMESHGUI_CopyMeshDlg::getErrorMsg( SMESH::string_array_var theInvalidEntries,
+                                           QStringList &           theEntriesToBrowse )
+{
+  if ( theInvalidEntries->length() == 0 )
+    return tr("SMESH_OPERATION_FAILED");
+
+  // theInvalidEntries - SObject's that hold geometry objects whose
+  // counterparts are not found in the newGeometry, followed by SObject's
+  // holding mesh sub-objects that are invalid because they depend on a not found
+  // preceeding sub-shape
+
+  QString msg = tr("SUBSHAPES_NOT_FOUND_MSG") + "\n";
+
+  QString objString;
+  for ( CORBA::ULong i = 0; i < theInvalidEntries->length(); ++i )
+  {
+    _PTR(SObject) so = SMESH::getStudy()->FindObjectID( theInvalidEntries[i].in() );
+
+    int objType = SMESHGUI_Selection::type( theInvalidEntries[i].in() );
+    if ( objType < 0 ) // geom object
+    {
+      objString += "\n";
+      if ( so )
+        objString += so->GetName().c_str();
+      else
+        objString += theInvalidEntries[i].in(); // it's something like "FACE #2"
+    }
+    else // smesh object
+    {
+      theEntriesToBrowse.push_back( theInvalidEntries[i].in() );
+
+      objString += "\n   ";
+      switch ( objType ) {
+      case SMESH::MESH:
+        objString += tr("SMESH_MESH"); break;
+      case SMESH::HYPOTHESIS:
+        objString += tr("SMESH_HYPOTHESIS"); break;
+      case SMESH::ALGORITHM:
+        objString += tr("SMESH_ALGORITHM"); break;
+      case SMESH::SUBMESH_VERTEX:
+      case SMESH::SUBMESH_EDGE:
+      case SMESH::SUBMESH_FACE:
+      case SMESH::SUBMESH_SOLID:
+      case SMESH::SUBMESH_COMPOUND:
+      case SMESH::SUBMESH:
+        objString += tr("SMESH_SUBMESH"); break;
+      case SMESH::GROUP:
+        objString += tr("SMESH_GROUP"); break;
+      default:;
+      }
+      objString += " \"";
+      if ( so )
+        objString += so->GetName().c_str();
+      objString += "\" (";
+      objString += theInvalidEntries[i].in();
+      objString += ")";
+    }
+  }
+  if ( !objString.isEmpty() )
+    msg += objString;
+
+  return msg;
 }
 
 //=================================================================================
@@ -303,13 +418,14 @@ void SMESHGUI_CopyMeshDlg::Init (bool ResetControls)
 
 bool SMESHGUI_CopyMeshDlg::ClickOnApply()
 {
-  if (SMESHGUI::isStudyLocked())
+  if ( SMESHGUI::isStudyLocked() )
     return false;
 
   if( !isValid() )
     return false;
 
   QStringList anEntryList;
+  bool toShowObjects = isApplyAndClose();
   try
   {
     SUIT_OverrideCursor aWaitCursor;
@@ -333,16 +449,55 @@ bool SMESHGUI_CopyMeshDlg::ClickOnApply()
     }
     QByteArray meshName = myMeshNameEdit->text().toUtf8();
     bool toCopyGroups = ( myCopyGroupsCheck->isChecked() );
+    bool toReuseHyps  = ( myReuseHypCheck->isChecked() );
+    bool toCopyElems  = ( myCopyElementsCheck->isChecked() );
     bool toKeepIDs    = ( myKeepIdsCheck->isChecked() );
 
     SMESH::SMESH_Gen_var gen = SMESHGUI::GetSMESHGen();
-    SMESH::SMESH_Mesh_var newMesh =
-      gen->CopyMesh(aPartToCopy, meshName.constData(), toCopyGroups, toKeepIDs);
-    if( !newMesh->_is_nil() )
-      if( _PTR(SObject) aSObject = SMESH::ObjectToSObject( newMesh ) )
+    SMESH::SMESH_Mesh_var newMesh;
+    if ( isWithGeomMode() )
+    {
+      SMESH::SMESH_Mesh_var       srcMesh = mySelectedObject->GetMesh();
+      SMESH::ListOfGroups_var     newGroups;
+      SMESH::submesh_array_var    newSubmeshes;
+      SMESH::ListOfHypothesis_var newHypotheses;
+      SMESH::string_array_var     invalidEntries;
+      CORBA::Boolean ok = gen->CopyMeshWithGeom( srcMesh, myNewGeometry,
+                                                 meshName.constData(),
+                                                 toCopyGroups, toReuseHyps, toCopyElems,
+                                                 newMesh.out(),
+                                                 newGroups.out(),
+                                                 newSubmeshes.out(),
+                                                 newHypotheses.out(),
+                                                 invalidEntries.out() );
+      if ( !ok )
+      {
+        if ( invalidEntries->length() > 0 )
+          toShowObjects = true;
+        SUIT_MessageBox::warning( this,
+                                  tr("SMESH_WRN_WARNING"),
+                                  getErrorMsg( invalidEntries, anEntryList ));
+      }
+    }
+    else
+    {
+      newMesh = gen->CopyMesh(aPartToCopy, meshName.constData(), toCopyGroups, toKeepIDs);
+    }
+    if ( !newMesh->_is_nil() )
+      if ( _PTR(SObject) aSObject = SMESH::ObjectToSObject( newMesh ) )
+      {
         anEntryList.append( aSObject->GetID().c_str() );
+
+        if ( isWithGeomMode() )
+          SMESH::SetName( aSObject, meshName );
+      }
   }
-  catch (...) {
+  catch(const SALOME::SALOME_Exception & S_ex)
+  {
+    SalomeApp_Tools::QtCatchCorbaException(S_ex);
+  }
+  catch (...)
+  {
   }
 
   mySMESHGUI->updateObjBrowser(true);
@@ -350,7 +505,7 @@ bool SMESHGUI_CopyMeshDlg::ClickOnApply()
 
   if( LightApp_Application* anApp =
       dynamic_cast<LightApp_Application*>( SUIT_Session::session()->activeApplication() ) )
-    anApp->browseObjects( anEntryList, isApplyAndClose() );
+    anApp->browseObjects( anEntryList, toShowObjects );
 
   Init(false);
   mySelectedObject = SMESH::SMESH_IDSource::_nil();
@@ -503,13 +658,12 @@ void SMESHGUI_CopyMeshDlg::SelectionIntoArgument()
   myActor = 0;
   QString aString = "";
 
-  myLineEditElements->setText(aString);
   myNbOkElements = 0;
   buttonOk->setEnabled(false);
   buttonApply->setEnabled(false);
   myFilterBtn->setEnabled(false);
 
-  // get selected mesh
+  // get selected mesh or geometry
   SALOME_ListIO aList;
   mySelectionMgr->selectedObjects(aList);
   int nbSel = aList.Extent();
@@ -517,19 +671,29 @@ void SMESHGUI_CopyMeshDlg::SelectionIntoArgument()
     return;
 
   Handle(SALOME_InteractiveObject) IO = aList.First();
-  mySelectedObject = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO );
-  if ( mySelectedObject->_is_nil() )
+
+  SMESH::SMESH_Mesh_var mesh = SMESH::GetMeshByIO(IO);
+  GEOM::GEOM_Object_var geom = SMESH::GetGeom(IO);
+
+  if ( !mesh->_is_nil() )
+  {
+    myMesh  = mesh;
+    myActor = SMESH::FindActorByEntry(IO->getEntry());
+    if (!myActor)
+      myActor = SMESH::FindActorByObject(myMesh);
+
+    mySelectedObject = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO );
+    if ( mySelectedObject->_is_nil() )
+      return;
+  }
+  else if ( !geom->_is_nil() )
+  {
+    myNewGeometry = geom;
+  }
+  else
     return;
 
-  myMesh = SMESH::GetMeshByIO(IO);
-  if (myMesh->_is_nil())
-    return;
-
-  myActor = SMESH::FindActorByEntry(IO->getEntry());
-  if (!myActor)
-    myActor = SMESH::FindActorByObject(myMesh);
-
-  if (myIdSourceCheck->isChecked())
+  if (myIdSourceCheck->isChecked() || isWithGeomMode() )
   {
     SMESH::GetNameOfSelectedIObjects( mySelectionMgr, aString );
     if ( aString.isEmpty() ) aString = " ";
@@ -541,8 +705,23 @@ void SMESHGUI_CopyMeshDlg::SelectionIntoArgument()
     myNbOkElements = aString.size();
     myFilterBtn->setEnabled(true);
   }
-  myLineEditElements->setText( aString );
+
   bool ok = !aString.isEmpty();
+  if ( !mesh->_is_nil() )
+  {
+    myLineEditElements->setText( aString );
+    if ( isWithGeomMode() )
+      myMeshNameEdit->setText( aString );
+  }
+  else if ( !geom->_is_nil() )
+  {
+    myGeomNameEdit->setText( aString );
+    ok = ok && !myLineEditElements->text().isEmpty();
+  }
+
+  if ( ok && isWithGeomMode() && !myMesh->_is_nil() )
+    ok = myMesh->HasShapeToMesh();
+
 
   buttonOk->setEnabled(ok);
   buttonApply->setEnabled(ok);
@@ -554,7 +733,9 @@ void SMESHGUI_CopyMeshDlg::SelectionIntoArgument()
 //=======================================================================
 void SMESHGUI_CopyMeshDlg::onSelectIdSource (bool toSelectMesh)
 {
-  if (toSelectMesh)
+  if ( isWithGeomMode() )
+    myTextLabelElements->setText(tr("SMESH_MESH"));
+  else if ( toSelectMesh )
     myTextLabelElements->setText(tr("OBJECT_NAME"));
   else
     myTextLabelElements->setText(tr("ELEM_IDS"));
@@ -564,7 +745,8 @@ void SMESHGUI_CopyMeshDlg::onSelectIdSource (bool toSelectMesh)
   }
 
   mySelectionMgr->clearFilters();
-  mySelectionMgr->installFilter(myIdSourceFilter);
+  if ( !isWithGeomMode() )
+    mySelectionMgr->installFilter(myIdSourceFilter);
   SMESH::SetPointRepresentation(false);
 
   if (toSelectMesh) {
@@ -592,10 +774,29 @@ void SMESHGUI_CopyMeshDlg::onSelectIdSource (bool toSelectMesh)
 
 bool SMESHGUI_CopyMeshDlg::isValid()
 {
-  if ( myIdSourceCheck->isChecked() )
-    return !mySelectedObject->_is_nil();
+  bool ok = false;
+  if ( myIdSourceCheck->isChecked() || isWithGeomMode() )
+  {
+    ok = ( !mySelectedObject->_is_nil() );
+    if ( isWithGeomMode() )
+      ok = ok && ( !myNewGeometry->_is_nil() );
+  }
+  else
+  {
+    ok = ( myNbOkElements > 0 );
+  }
 
-  return myNbOkElements > 0;
+  return ok;
+}
+
+//=======================================================================
+//function : isWithGeomMode
+//purpose  : Return true if the mode is "with geometry"
+//=======================================================================
+
+bool SMESHGUI_CopyMeshDlg::isWithGeomMode()
+{
+  return ( GroupConstructors->checkedId() == 1 );
 }
 
 //=================================================================================

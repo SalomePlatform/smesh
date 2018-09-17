@@ -365,7 +365,7 @@ int SMESH_subMesh::computeCost() const
  */
 //=============================================================================
 
-const map < int, SMESH_subMesh * >& SMESH_subMesh::DependsOn()
+const std::map < int, SMESH_subMesh * >& SMESH_subMesh::DependsOn()
 {
   if ( _dependenceAnalysed || !_father->HasShapeToMesh() )
     return _mapDepend;

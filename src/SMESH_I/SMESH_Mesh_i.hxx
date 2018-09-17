@@ -439,7 +439,7 @@ public:
   const std::map<int, SMESH::SMESH_GroupBase_ptr>& getGroups() { return _mapGroups; }
   // return existing group objects
 
-  void onHypothesisModified();
+  void onHypothesisModified(int theHypID);
   // callback from _impl to forget not loaded mesh data (issue 0021208)
 
   void checkMeshLoaded();

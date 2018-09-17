@@ -92,6 +92,7 @@ SMESHGUI_MeshOp::SMESHGUI_MeshOp( const bool theToCreate, const bool theIsMesh )
   myShapeByMeshOp( 0 ),
   myToCreate( theToCreate ),
   myIsMesh( theIsMesh ),
+  myIsInvalidSubMesh( false ),
   myHypoSet( 0 )
 {
   if ( GeometryGUI::GetGeomGen()->_is_nil() )// check that GEOM_Gen exists
@@ -152,7 +153,7 @@ bool SMESHGUI_MeshOp::onApply()
     QStringList anEntryList;
     if ( myToCreate && myIsMesh )
       aResult = createMesh( aMess, anEntryList );
-    if ( myToCreate && !myIsMesh )
+    if (( myToCreate && !myIsMesh ) || myIsInvalidSubMesh )
       aResult = createSubMesh( aMess, anEntryList );
     else if ( !myToCreate )
       aResult = editMeshOrSubMesh( aMess );
@@ -519,6 +520,7 @@ void SMESHGUI_MeshOp::selectionDone()
   try
   {
     myIsOnGeometry = true;
+    myIsInvalidSubMesh = false;
 
     //Check geometry for mesh
     QString anObjEntry = myDlg->selectedObject(SMESHGUI_MeshDlg::Obj);
@@ -638,11 +640,21 @@ void SMESHGUI_MeshOp::selectionDone()
           SMESH::SMESH_subMesh_var submeshVar =
             SMESH::SMESH_subMesh::_narrow( _CAST( SObject,pObj )->GetObject() );
           myIsMesh = submeshVar->_is_nil();
+          myIsInvalidSubMesh = ( !myIsMesh && submeshVar->GetId() < 1 );
           myDlg->setTitile( myToCreate, myIsMesh );
           myDlg->setObjectShown( SMESHGUI_MeshDlg::Mesh, !submeshVar->_is_nil() );
           myDlg->setObjectShown( SMESHGUI_MeshDlg::Geom, true );
           myDlg->objectWg( SMESHGUI_MeshDlg::Mesh, SMESHGUI_MeshDlg::Btn )->hide();
-          myDlg->objectWg( SMESHGUI_MeshDlg::Geom, SMESHGUI_MeshDlg::Btn )->hide();
+          if ( myIsInvalidSubMesh )
+          {
+            // it is necessary to select a new geometry
+            myDlg->objectWg( SMESHGUI_MeshDlg::Geom, SMESHGUI_MeshDlg::Btn )->show();
+            myDlg->activateObject( SMESHGUI_MeshDlg::Geom );
+          }
+          else
+          {
+            myDlg->objectWg( SMESHGUI_MeshDlg::Geom, SMESHGUI_MeshDlg::Btn )->hide();
+          }
           myDlg->updateGeometry();
           myDlg->adjustSize();
           readMesh();
@@ -1877,9 +1889,9 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess, QStringList& theEntryList )
 //================================================================================
 /*!
  * \brief Creates sub-mesh
-  * \param theMess - Output parameter intended for returning error message
-  * \param theEntryList - List of entries of published objects
-  * \retval bool  - TRUE if sub-mesh is created, FALSE otherwise
+ * \param theMess - Output parameter intended for returning error message
+ * \param theEntryList - List of entries of published objects
+ * \retval bool  - TRUE if sub-mesh is created, FALSE otherwise
  *
  * Creates sub-mesh
  */
@@ -1893,11 +1905,16 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess, QStringList& theEntryList
     return false;
 
   // get mesh object
-  QString aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
-  _PTR(SObject) pMesh = SMESH::getStudy()->FindObjectID( aMeshEntry.toUtf8().data() );
   SMESH::SMESH_Mesh_var aMeshVar =
-    SMESH::SMESH_Mesh::_narrow( _CAST( SObject,pMesh )->GetObject() );
-  if (aMeshVar->_is_nil())
+    SMESH::EntryToInterface<SMESH::SMESH_Mesh>( myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh ));
+  if ( aMeshVar->_is_nil() && myIsInvalidSubMesh )
+  {
+    SMESH::SMESH_subMesh_var aSMVar =
+      SMESH::EntryToInterface<SMESH::SMESH_subMesh>( myDlg->selectedObject( SMESHGUI_MeshDlg::Obj ));
+    if ( !aSMVar->_is_nil() )
+      aMeshVar = aSMVar->GetMesh();
+  }
+  if ( aMeshVar->_is_nil() )
     return false;
 
   // GEOM shape of the main mesh
@@ -1971,8 +1988,14 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess, QStringList& theEntryList
 
   SUIT_OverrideCursor aWaitCursor;
 
+  QString aNameOrID = aName;
+  if ( myIsInvalidSubMesh )
+    // pass a sub-mesh entry to mesh->GetSubMesh() to replace the invalid sub-mesh
+    // by a valid one in an existing SO
+    aNameOrID = myDlg->selectedObject(SMESHGUI_MeshDlg::Obj);
+
   // create sub-mesh
-  SMESH::SMESH_subMesh_var aSubMeshVar = aMeshVar->GetSubMesh( aGeomVar, aName.toUtf8().data() );
+  SMESH::SMESH_subMesh_var aSubMeshVar = aMeshVar->GetSubMesh( aGeomVar, aNameOrID.toUtf8().data() );
   _PTR(SObject) aSubMeshSO = SMESH::FindSObject( aSubMeshVar.in() );
   if ( aSubMeshSO ) {
     SMESH::SetName( aSubMeshSO, aName.toUtf8().data() );
@@ -2249,10 +2272,13 @@ void SMESHGUI_MeshOp::readMesh()
       myHasConcurrentSubBefore = checkSubMeshConcurrency( aMeshVar, aSubMeshVar );
     }
 
-    // Get name of geometry object
-    CORBA::String_var name = SMESH::GetGeomName( pObj );
-    if ( name.in() )
-      myDlg->setObjectText( SMESHGUI_MeshDlg::Geom, name.in() );
+    if ( !myIsInvalidSubMesh )
+    {
+      // Get name of geometry object
+      CORBA::String_var name = SMESH::GetGeomName( pObj );
+      if ( name.in() )
+        myDlg->setObjectText( SMESHGUI_MeshDlg::Geom, name.in() );
+    }
   }
 
   // Get hypotheses and algorithms assigned to the mesh/sub-mesh

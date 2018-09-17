@@ -127,15 +127,41 @@ CORBA::Double StdMeshers_Geometric1D_i::GetCommonRatio()
 
 //================================================================================
 /*!
- * \brief Verify whether hypothesis supports given entity type 
-  * \param type - dimension (see SMESH::Dimension enumeration)
-  * \retval CORBA::Boolean - TRUE if dimension is supported, FALSE otherwise
- * 
+ * \brief Verify whether hypothesis supports given entity type
+ *  \param type - dimension (see SMESH::Dimension enumeration)
+ *  \retval CORBA::Boolean - TRUE if dimension is supported, FALSE otherwise
+ *
  * Verify whether hypothesis supports given entity type (see SMESH::Dimension enumeration)
  */
-//================================================================================  
+//================================================================================
 
 CORBA::Boolean StdMeshers_Geometric1D_i::IsDimSupported(::SMESH::Dimension type)
 {
   return type == SMESH::DIM_1D;
+}
+
+//================================================================================
+/*!
+ * \brief Return geometry this hypothesis depends on. Return false if there is no geometry parameter
+ */
+//================================================================================
+
+bool
+StdMeshers_Geometric1D_i::getObjectsDependOn( std::vector< std::string > & entryArray,
+                                              std::vector< int >         & subIDArray ) const
+{
+  return StdMeshers_Reversible1D_i::getObjectsDependOn( entryArray, subIDArray );
+}
+
+//================================================================================
+/*!
+ * \brief Set new geometry instead of that returned by getObjectsDependOn()
+ */
+//================================================================================
+
+bool
+StdMeshers_Geometric1D_i::setObjectsDependOn( std::vector< std::string > & entryArray,
+                                              std::vector< int >         & subIDArray )
+{
+  return StdMeshers_Reversible1D_i::setObjectsDependOn( entryArray, subIDArray );
 }

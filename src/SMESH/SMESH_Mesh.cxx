@@ -1193,8 +1193,8 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
   if ( !GetMeshDS()->IsUsedHypothesis( hyp ))
     return;
 
-  if (_callUp)
-    _callUp->HypothesisModified();
+  if (_callUp && hyp)
+    _callUp->HypothesisModified( hyp->GetID() );
 
   SMESH_Algo *algo;
   const SMESH_HypoFilter* compatibleHypoKind;

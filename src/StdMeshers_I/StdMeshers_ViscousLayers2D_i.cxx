@@ -235,13 +235,13 @@ throw ( SALOME::SALOME_Exception )
 
 //================================================================================
 /*!
- * \brief Verify whether hypothesis supports given entity type 
-  * \param type - dimension (see SMESH::Dimension enumeration)
-  * \retval CORBA::Boolean - TRUE if dimension is supported, FALSE otherwise
- * 
+ * \brief Verify whether hypothesis supports given entity type
+ *  \param type - dimension (see SMESH::Dimension enumeration)
+ *  \retval CORBA::Boolean - TRUE if dimension is supported, FALSE otherwise
+ *
  * Verify whether hypothesis supports given entity type (see SMESH::Dimension enumeration)
  */
-//================================================================================  
+//================================================================================
 
 CORBA::Boolean StdMeshers_ViscousLayers2D_i::IsDimSupported( SMESH::Dimension type )
 {
@@ -251,11 +251,51 @@ CORBA::Boolean StdMeshers_ViscousLayers2D_i::IsDimSupported( SMESH::Dimension ty
 //================================================================================
 /*!
  * \brief Sets sub-mesh event listeners to clear sub-meshes of edges
- * shrinked by viscous layers
+ *        shrinked by viscous layers
  */
 //================================================================================
 
 void StdMeshers_ViscousLayers2D_i::UpdateAsMeshesRestored()
 {
   GetImpl()->RestoreListeners();
+}
+
+//================================================================================
+/*!
+ * \brief Return geometry this hypothesis depends on. Return false if there is no geometry parameter
+ */
+//================================================================================
+
+bool
+StdMeshers_ViscousLayers2D_i::getObjectsDependOn( std::vector< std::string > & entryArray,
+                                                  std::vector< int >         & subIDArray ) const
+{
+  const ::StdMeshers_ViscousLayers2D* impl =
+    static_cast<const ::StdMeshers_ViscousLayers2D*>( myBaseImpl );
+
+  subIDArray = impl->GetBndShapes();
+
+  return true;
+}
+
+//================================================================================
+/*!
+ * \brief Set new geometry instead of that returned by getObjectsDependOn()
+ */
+//================================================================================
+
+bool
+StdMeshers_ViscousLayers2D_i::setObjectsDependOn( std::vector< std::string > & entryArray,
+                                                  std::vector< int >         & subIDArray )
+{
+  std::vector< int > newIDs;
+  newIDs.reserve( subIDArray.size() );
+
+  for ( size_t i = 0; i < subIDArray.size(); ++i )
+    if ( subIDArray[ i ] > 0 )
+      newIDs.push_back( subIDArray[ i ]);
+
+  GetImpl()->SetBndShapes( newIDs, GetIsToIgnoreEdges() );
+
+  return true;
 }

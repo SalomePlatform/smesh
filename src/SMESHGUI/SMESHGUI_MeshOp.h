@@ -153,8 +153,11 @@ private:
   SMESHGUI_ShapeByMeshOp*        myShapeByMeshOp;
   bool                           myToCreate;
   bool                           myIsMesh;
-  bool                           myIsOnGeometry; //!< TRUE if edited mesh accotiated with geometrical object
+  bool                           myIsOnGeometry; //!< TRUE if edited mesh is based on geometry
   bool                           myHasConcurrentSubBefore;
+  bool                           myIsInvalidSubMesh; //!< "invalid sub-mesh" is edited
+  // The geometry of "invalid sub-mesh" is not a sub-shape of the main shape;
+  // it is created for the case where a valid sub-shape not found by CopyMeshWithGeom()
 
   TDim2Type2HypList              myExistingHyps; //!< all hypothesis of SMESH module
   TDim2Type2HypList              myObjHyps;      //!< hypothesis assigned to the current
