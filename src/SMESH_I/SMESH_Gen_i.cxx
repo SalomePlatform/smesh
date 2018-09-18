@@ -1965,7 +1965,8 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
       meshServant->CreateGroupServants(); // algos can create groups (issue 0020918)
       myLocMesh.GetMeshDS()->Modified();
       UpdateIcons( theMesh );
-      HighLightInvalid( theMesh, /*isInvalid=*/!ok );
+      if ( ok )
+        HighLightInvalid( theMesh, /*isInvalid=*/false );
       return ok;
     }
   }
