@@ -534,6 +534,9 @@ namespace SMESH
         char* path = baPath.data();
 #endif
         LibHandle libHandle = LoadLib( path );
+#if defined(WIN32) && defined(UNICODE)
+      delete path;
+#endif
         if (!libHandle) {
           // report any error, if occurred
           {

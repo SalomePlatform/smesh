@@ -55,7 +55,11 @@ namespace MED
 #else
 	cosnt char* path = xmlPath.c_str();
 #endif
-    return (GetFileAttributes(path) != INVALID_FILE_ATTRIBUTES);
+	bool res = (GetFileAttributes(path) != INVALID_FILE_ATTRIBUTES);
+#ifdef UNICODE
+	delete path;
+#endif
+	return res;
 #else
     return (access(fileName.c_str(), F_OK) == 0);
 #endif
