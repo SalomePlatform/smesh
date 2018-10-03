@@ -225,10 +225,17 @@ public:
    *  Consider maximum group name length stored in MED file.
    */
   CORBA::Boolean HasDuplicatedGroupNamesMED();
+
   /*!
    * Return string representation of a MED file version comprising nbDigits
    */
   char* GetVersionString(CORBA::Long minor, CORBA::Short nbDigits);
+
+  /*!
+   *  Return the list of med versions compatibles for write/append,
+   *  encoded in 10*major+minor (for instance, code for med 3.2.1 is 32)
+   */
+  SMESH::long_array* GetMEDVersionsCompatibleForAppend();
 
   void ExportMED( const char*        file,
                   CORBA::Boolean     auto_groups,

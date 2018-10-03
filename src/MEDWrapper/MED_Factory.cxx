@@ -41,6 +41,17 @@ extern "C"
 #include <windows.h>
 #endif
 
+#define MED_MAJOR_EXPECTED 4
+#define MED_MINOR_EXPECTED 0
+#if MED_MAJOR_NUM != MED_MAJOR_EXPECTED
+  #error "MED major version does not correspond to the expected version, fix the minor and major compatibility values in CheckCompatibility method (MED_VERSIONS_APPEND_COMPATIBLE) and set the correct expected version"
+#endif
+#if MED_MINOR_NUM != MED_MINOR_EXPECTED
+  #error "MED minor version does not correspond to the expected version, fix the minor and major compatibility values in CheckCompatibility method (MED_VERSIONS_APPEND_COMPATIBLE) and set the correct expected version"
+#endif
+#define MED_VERSIONS_APPEND_COMPATIBLE {40, 32, 33} // --- 10*major + minor (the 3rd digit, release, is not used here,
+                                                    //                       med uses always the latest available)
+                                                    // --- The first in the list should be the default: current version
 
 namespace MED
 {
@@ -61,25 +72,51 @@ namespace MED
 #endif
   }
 
+  /*!
+   *  Return the list of med versions compatibles for write/append,
+   *  encoded in 10*major+minor (for instance, code for med 3.2.1 is 32)
+   */
+  std::vector<int> GetMEDVersionsAppendCompatible()
+  {
+    int mvok[] = MED_VERSIONS_APPEND_COMPATIBLE;
+    std::vector<int> MEDVersionsOK(mvok, mvok + sizeof(mvok)/sizeof(int));
+    return MEDVersionsOK;
+  }
+
+  /*!
+   *  \brief: Check read or write(append) Compatibility of a med file
+   *  \param [in] : fileName - the file to read or to append to
+   *  \param [in] : isforAppend - when true, check if the med file version is OK to append a mesh,
+   *                              when false, check if the med file is readable.
+   */
   bool CheckCompatibility(const std::string& fileName, bool isForAppend)
   {
     bool ok = false;
+    int medVersionsOK[] = MED_VERSIONS_APPEND_COMPATIBLE;
     // check that file is accessible
     if ( exists(fileName) ) {
       // check HDF5 && MED compatibility
       med_bool hdfok, medok;
       med_err r0 = MEDfileCompatibility(fileName.c_str(), &hdfok, &medok);
-      //MESSAGE(r0 << " " << hdfok << " " << medok);
+      MESSAGE(r0 << " " << hdfok << " " << medok);
       if ( r0==0 && hdfok && medok ) {
         med_idt aFid = MEDfileOpen(fileName.c_str(), MED_ACC_RDONLY);
         if (aFid >= 0) {
           med_int major, minor, release;
           med_err ret = MEDfileNumVersionRd(aFid, &major, &minor, &release);
-          //MESSAGE(ret << " " << major << "." << minor << "." << release);
+          MESSAGE(ret << " " << major << "." << minor << "." << release);
           if (ret >= 0) {
             bool isReadOnly = !isForAppend;
-            if ( isReadOnly  || ((major == MED_MAJOR_NUM) && (minor == MED_MINOR_NUM)))
+            if (isReadOnly)
               ok = true;
+            else {
+              int medVersion = 10*major + minor;
+              for (int ii=0; ii < sizeof(medVersionsOK)/sizeof(int); ii++)
+                if (medVersionsOK[ii] == medVersion) {
+                  ok =true;
+                  break;
+                }
+            }
           }
         }
         MEDfileClose(aFid);

@@ -27,6 +27,7 @@
 #include "MED_Wrapper.hxx"
 
 #include <string>
+#include <vector>
 
 namespace MED
 {
@@ -38,6 +39,9 @@ namespace MED
 
   MEDWRAPPER_EXPORT
   bool CheckCompatibility( const std::string& , bool isForAppend=false);
+
+  MEDWRAPPER_EXPORT
+  std::vector<int> GetMEDVersionsAppendCompatible();
 
   MEDWRAPPER_EXPORT
   PWrapper CrWrapperR( const std::string& );

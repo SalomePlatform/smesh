@@ -747,35 +747,33 @@ namespace
       QMap<QString, int> aFilterMap;
       if ( isMED ) {
         //filters << QObject::tr( "MED_FILES_FILTER" ) + " (*.med)";
-        QString vmed (aMesh->GetVersionString(-1, 2));
+        //QString vmed (aMesh->GetVersionString(-1, 2));
         //MESSAGE("MED version: " << vmed.toStdString());
-        int minor = vmed.split(".").last().toInt();
-        //MESSAGE("MED version minor: "<< minor);
-        //minor +=3;                  // TODO remove: test multiple minor
-        aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( vmed ) + " (*.med)", minor );
-        for (int ii=0; ii<minor; ii++)
+        SMESH::long_array_var mvok = aMesh->GetMEDVersionsCompatibleForAppend();
+        for ( int i = 0; i < mvok->length(); ++i )
           {
-            QString vs = aMesh->GetVersionString(ii, 2);
-            //std::ostringstream vss; // TODO remove: test multiple minor
-            //vss << "4.";            // TODO remove: test multiple minor
-            //vss << ii;              // TODO remove: test multiple minor
-            //vs = vss.str().c_str(); // TODO remove: test multiple minor
-            //MESSAGE("MED version: " << vs.toStdString());
-            aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( vs ) + " (*.med)",  ii);
+            int versionInt = mvok[i];
+            std::ostringstream vss;
+            vss << versionInt/10;
+            vss << ".";
+            vss << versionInt%10;
+            QString vs = vss.str().c_str();
+            MESSAGE("MED version: " << vs.toStdString());
+            aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( vs ) + " (*.med)",  i);
           }
       }
       else { // isSAUV
         aFilterMap.insert("All files (*)", -1 );
-        aFilterMap.insert("SAUV files (*.sauv)", -1 );
+        aFilterMap.insert("SAUV files (*.sauv)", 0 );
         aFilterMap.insert("SAUV files (*.sauve)", -1 );
       }
 
       QStringList filters;
-      QString aDefaultFilter;
       QMap<QString, int>::const_iterator it = aFilterMap.begin();
+      QString aDefaultFilter = it.key();
       for ( ; it != aFilterMap.end(); ++it ) {
         filters.push_back( it.key() );
-        if (it.key() == 0)
+        if (it.value() == 0) // explicit default for MED = current MED version
           aDefaultFilter = it.key();
       }
       QStringList checkBoxes;
@@ -790,6 +788,7 @@ namespace
         new SalomeApp_CheckFileDlg ( SMESHGUI::desktop(), false, checkBoxes, true, true, wdgList );
       fd->setWindowTitle( aTitle );
       fd->setNameFilters( filters );
+      fd->selectNameFilter( aDefaultFilter );
       fd->SetChecked( toCreateGroups, 0 );
       fd->SetChecked( toFindOutDim,   1 );
       if ( !anInitialPath.isEmpty() )

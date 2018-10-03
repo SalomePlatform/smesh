@@ -468,6 +468,23 @@ char* SMESH_Mesh_i::GetVersionString(CORBA::Long minor, CORBA::Short nbDigits)
   return CORBA::string_dup( ver.c_str() );
 }
 
+//================================================================================
+/*!
+ *  Return the list of med versions compatibles for write/append,
+ *  encoded in 10*major+minor (for instance, code for med 3.2.1 is 32)
+ */
+//================================================================================
+SMESH::long_array* SMESH_Mesh_i::GetMEDVersionsCompatibleForAppend()
+{
+  SMESH::long_array_var aResult = new SMESH::long_array();
+  std::vector<int> mvok = MED::GetMEDVersionsAppendCompatible();
+  long nbver = mvok.size();
+  aResult->length( nbver );
+  for ( int i = 0; i < nbver; i++ )
+    aResult[i] = mvok[i];
+  return aResult._retn();
+}
+
 //=============================================================================
 /*!
  *  ImportUNVFile

@@ -622,10 +622,13 @@ module SMESH
      *                 the groups Group_On_All_Nodes, Group_On_All_Faces, ... ;
      *                 the typical use is auto_groups=false.
      * - overwrite : boolean parameter for overwriting/not overwriting the file, if it exists
-     * - minor : define the minor version of MED file format.
+     * - version : define the version of MED file format, coded with major and minor digits (release digit not used)
+     *           for instance med 3.2.1 is coded 3*10+2 = 32, med 4.0.0 is coded 4*10+0 = 40.
+     *           The rules of compatibility to write a mesh in an older version than the current version
+     *           depend on the current version. For instance, with med 4.0 it is possible to write/append
+     *           med files in 4.0.0 (default format) or 3.2.1 or 3.3.1 formats.
      *           The minor must be between 0 and the current minor version of MED file library.
-     *           If minor is equal to -1, the minor version is not changed (default).
-     *           The major version cannot be changed.
+     *           If version is equal to -1, the version is not changed (default).
      * - autoDimension : if @c true, a space dimension of a MED mesh can be either
      *         - 1D if all mesh nodes lie on OX coordinate axis, or
      *         - 2D if all mesh nodes lie on XOY coordinate plane, or
@@ -634,7 +637,7 @@ module SMESH
      */
     void ExportMED( in string      fileName, 
 		    in boolean     auto_groups, 
-		    in long        minor,
+		    in long        version,
 		    in boolean     overwrite,
 		    in boolean     autoDimension) raises (SALOME::SALOME_Exception);
 
@@ -644,10 +647,13 @@ module SMESH
      * - meshPart : a part of mesh to store
      * - fileName : name of the MED file
      * - overwrite : boolean parameter for overwriting/not overwriting the file, if it exists
-     * - minor : define the minor version (y, where version is x.y.z) of MED file format.
+     * - version : define the version of MED file format, coded with major and minor digits (release digit not used)
+     *           for instance med 3.2.1 is coded 3*10+2 = 32, med 4.0.0 is coded 4*10+0 = 40.
+     *           The rules of compatibility to write a mesh in an older version than the current version
+     *           depend on the current version. For instance, with med 4.0 it is possible to write/append
+     *           med files in 4.0.0 (default format) or 3.2.1 or 3.3.1 formats.
      *           The minor must be between 0 and the current minor version of MED file library.
-     *           If minor is equal to -1, the minor version is not changed (default).
-     *           The major version (x, where version is x.y.z) cannot be changed.
+     *           If version is equal to -1, the version is not changed (default).
      * - autoDimension : if @c True, a space dimension for export is defined by mesh 
      *                 configuration; for example a planar mesh lying on XOY plane
      *                 will be exported as a mesh in 2D space. 
@@ -663,7 +669,7 @@ module SMESH
     void ExportPartToMED( in SMESH_IDSource     meshPart,
                           in string             fileName,
                           in boolean            auto_groups,
-                          in long               minor,
+                          in long               version,
                           in boolean            overwrite,
                           in boolean            autoDimension,
                           in GEOM::ListOfFields fields,
@@ -680,7 +686,13 @@ module SMESH
      * Return string representation of a MED file version comprising nbDigits
      */
     string GetVersionString(in long minor, in short nbDigits);
-
+    
+    /*!
+     *  Return the list of med versions compatibles for write/append,
+     *  encoded in 10*major+minor (for instance, code for med 3.2.1 is 32)
+     */
+    long_array GetMEDVersionsCompatibleForAppend();
+    
     /*!
      * Export Mesh to different Formats
      * (UNV supported version is I-DEAS 10)
