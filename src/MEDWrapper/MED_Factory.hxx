@@ -47,7 +47,7 @@ namespace MED
   PWrapper CrWrapperR( const std::string& );
 
   MEDWRAPPER_EXPORT
-  PWrapper CrWrapperW( const std::string&, int theMinor=-1 );
+  PWrapper CrWrapperW( const std::string&, int theVersion=-1 );
 }
 
 #endif // MED_Factory_HeaderFile

@@ -164,10 +164,45 @@ namespace MED
     return new MED::TWrapper(fileName);
   }
 
-  PWrapper CrWrapperW(const std::string& fileName, int theMinor)
+  PWrapper CrWrapperW(const std::string& fileName, int theVersion)
   {
+    bool isCreated = false;
     if (!CheckCompatibility(fileName, true))
-      remove(fileName.c_str());
-    return new MED::TWrapper(fileName, theMinor);
+      {
+        remove(fileName.c_str());
+        isCreated = true;
+      }
+    int minor = -1;
+    if (isCreated)
+      {
+        med_int wantedMajor = MED_MAJOR_NUM;
+        med_int wantedMinor = MED_MINOR_NUM;
+        if (theVersion > 0)
+          {
+            wantedMajor = theVersion/10;
+            wantedMinor = theVersion%10;
+          }
+        if (wantedMajor == MED_MAJOR_NUM) // the med file will be actually created
+          {
+            if (wantedMinor < MED_MINOR_NUM)
+              minor = wantedMinor;
+          }
+        else                            // an empty existing med file of the right version will be used for append
+          {
+            int medVersionsOK[] = MED_VERSIONS_APPEND_COMPATIBLE;
+            bool isVersionOK = false;
+            for (int ii=0; ii < sizeof(medVersionsOK)/sizeof(int); ii++)
+              if (medVersionsOK[ii] == theVersion)
+                {
+                  isVersionOK =true;
+                  break;
+                }
+            if (isVersionOK)           // copy an empty existing med file of the right version, for append
+              {
+                MESSAGE("copy an empty existing med file of the right version, for append" << theVersion);
+              }
+          }
+      }
+    return new MED::TWrapper(fileName, minor);
   }
 }

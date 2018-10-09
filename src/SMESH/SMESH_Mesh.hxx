@@ -254,7 +254,7 @@ class SMESH_EXPORT SMESH_Mesh
   void ExportMED(const char *        theFile, 
                  const char*         theMeshName = NULL, 
                  bool                theAutoGroups = true, 
-                 int                 TheMinor = -1,
+                 int                 theVersion = -1,
                  const SMESHDS_Mesh* theMeshPart = 0,
                  bool                theAutoDimension = false,
                  bool                theAddODOnVertices = false,

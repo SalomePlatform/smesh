@@ -239,7 +239,7 @@ public:
 
   void ExportMED( const char*        file,
                   CORBA::Boolean     auto_groups,
-                  CORBA::Long        minor,
+                  CORBA::Long        version,
                   CORBA::Boolean     overwrite,
                   CORBA::Boolean     autoDimension = true) throw (SALOME::SALOME_Exception);
 
@@ -259,7 +259,7 @@ public:
   void ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
                        const char*               file,
                        CORBA::Boolean            auto_groups,
-                       CORBA::Long               minor,
+                       CORBA::Long               version,
                        CORBA::Boolean            overwrite,
                        CORBA::Boolean            autoDim,
                        const GEOM::ListOfFields& fields,

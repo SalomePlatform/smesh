@@ -1421,18 +1421,18 @@ bool SMESH_Mesh::HasDuplicatedGroupNamesMED()
 void SMESH_Mesh::ExportMED(const char *        file, 
                            const char*         theMeshName, 
                            bool                theAutoGroups,
-                           int                 theMinor,
+                           int                 theVersion,
                            const SMESHDS_Mesh* meshPart,
                            bool                theAutoDimension,
                            bool                theAddODOnVertices,
                            bool                theAllElemsToGroup)
   throw(SALOME_Exception)
 {
-  //MESSAGE("MED_VERSION:"<< theVersion);
+  MESSAGE("MED_VERSION:"<< theVersion);
   SMESH_TRY;
 
   DriverMED_W_SMESHDS_Mesh myWriter;
-  myWriter.SetFile         ( file , theMinor);
+  myWriter.SetFile         ( file , theVersion);
   myWriter.SetMesh         ( meshPart ? (SMESHDS_Mesh*) meshPart : _myMeshDS   );
   myWriter.SetAutoDimension( theAutoDimension );
   myWriter.AddODOnVertices ( theAddODOnVertices );

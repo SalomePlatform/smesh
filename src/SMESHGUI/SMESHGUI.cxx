@@ -655,7 +655,7 @@ namespace
     // Get parameters of export operation
 
     QString aFilename;
-    int aFormat =-1;         // for MED minor versions
+    int aFormat =-1;         // for MED version used for write
     bool isOkToWrite = true; // to check MED file version compatibility before adding a mesh in an existing file
 
     // Init the parameters with the default values
@@ -744,36 +744,39 @@ namespace
     }
     else if ( isMED || isSAUV ) // Export to MED or SAUV
     {
+      int defaultVersion = 0;
       QMap<QString, int> aFilterMap;
       if ( isMED ) {
         //filters << QObject::tr( "MED_FILES_FILTER" ) + " (*.med)";
         //QString vmed (aMesh->GetVersionString(-1, 2));
         //MESSAGE("MED version: " << vmed.toStdString());
         SMESH::long_array_var mvok = aMesh->GetMEDVersionsCompatibleForAppend();
-        for ( int i = 0; i < mvok->length(); ++i )
+        for ( int i = 0; i < mvok->length(); ++i )  // i=0 must correspond to the current version to set the default filter on it
           {
             int versionInt = mvok[i];
+            if (i == 0)
+              defaultVersion = versionInt;
             std::ostringstream vss;
             vss << versionInt/10;
             vss << ".";
             vss << versionInt%10;
             QString vs = vss.str().c_str();
             MESSAGE("MED version: " << vs.toStdString());
-            aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( vs ) + " (*.med)",  i);
+            aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( vs ) + " (*.med)",  versionInt);
           }
       }
       else { // isSAUV
         aFilterMap.insert("All files (*)", -1 );
-        aFilterMap.insert("SAUV files (*.sauv)", 0 );
+        aFilterMap.insert("SAUV files (*.sauv)", defaultVersion ); // 0 = default filter (defaultVersion)
         aFilterMap.insert("SAUV files (*.sauve)", -1 );
       }
-
+      MESSAGE("default version="<< defaultVersion);
       QStringList filters;
       QMap<QString, int>::const_iterator it = aFilterMap.begin();
       QString aDefaultFilter = it.key();
       for ( ; it != aFilterMap.end(); ++it ) {
         filters.push_back( it.key() );
-        if (it.value() == 0) // explicit default for MED = current MED version
+        if (it.value() == defaultVersion) // explicit default for MED = current MED version
           aDefaultFilter = it.key();
       }
       QStringList checkBoxes;
@@ -819,13 +822,13 @@ namespace
           break;
         }
         aFormat = aFilterMap[fd->selectedNameFilter()];
-        MESSAGE("selected minor: " << aFormat << " file: " << aFilename.toUtf8().constData());
+        MESSAGE("selected version: " << aFormat << " file: " << aFilename.toUtf8().constData());
         toOverwrite = fv->isOverwrite(aFilename);
         MESSAGE("toOverwrite:" << toOverwrite);
         is_ok = true;
         if ( !aFilename.isEmpty() ) {
           if( !toOverwrite ) {
-            // can't append to an existing using other format
+            // append is only possible if the existing file format is compatible
             bool isVersionOk = SMESHGUI::GetSMESHGen()->CheckWriteCompatibility( aFilename.toUtf8().constData() );
             MESSAGE("Append check, isVersionOk:" << isVersionOk);
             if ( !isVersionOk ) {

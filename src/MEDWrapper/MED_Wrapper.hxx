@@ -52,7 +52,7 @@ namespace MED
     TWrapper& operator=(const TWrapper&);
 
   public:
-    TWrapper(const std::string& theFileName, TInt theMinor=-1);
+    TWrapper(const std::string& theFileName, TInt theVersion=-1);
 
     virtual
     ~TWrapper();

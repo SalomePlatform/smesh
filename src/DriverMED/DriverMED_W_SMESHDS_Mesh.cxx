@@ -61,12 +61,13 @@ DriverMED_W_SMESHDS_Mesh::DriverMED_W_SMESHDS_Mesh():
   myDoGroupOfBalls(false),
   myAutoDimension(false),
   myAddODOnVertices(false),
-  myDoAllInGroups(false)
+  myDoAllInGroups(false),
+  myVersion(-1)
 {}
 
-void DriverMED_W_SMESHDS_Mesh::SetFile(const std::string& theFileName, int theMinor)
+void DriverMED_W_SMESHDS_Mesh::SetFile(const std::string& theFileName, int theVersion)
 {
-  myMinor = theMinor;
+  myVersion = theVersion;
   Driver_SMESHDS_Mesh::SetFile(theFileName);
 }
 
@@ -74,7 +75,7 @@ void DriverMED_W_SMESHDS_Mesh::SetFile(const std::string& theFileName, int theMi
  * MED version is either the latest available, or with an inferior minor,
  * to ensure backward compatibility on writing med files.
  */
-string DriverMED_W_SMESHDS_Mesh::GetVersionString(int theVersion, int theNbDigits)
+string DriverMED_W_SMESHDS_Mesh::GetVersionString(int theMinor, int theNbDigits)
 {
   TInt majeur, mineur, release;
   majeur=MED_MAJOR_NUM;
@@ -82,12 +83,12 @@ string DriverMED_W_SMESHDS_Mesh::GetVersionString(int theVersion, int theNbDigit
   release=MED_RELEASE_NUM;
   TInt imposedMineur = mineur;
 
-  if (theVersion < 0)
+  if (theMinor < 0)
     imposedMineur = mineur;
-  else if (theVersion > MED_MINOR_NUM)
+  else if (theMinor > MED_MINOR_NUM)
     imposedMineur = mineur;
   else
-    imposedMineur = theVersion;
+    imposedMineur = theMinor;
 
   ostringstream name;
   if ( theNbDigits > 0 )
@@ -457,7 +458,7 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       }
     }
 
-    MED::PWrapper myMed = CrWrapperW(myFile, myMinor);
+    MED::PWrapper myMed = CrWrapperW(myFile, myVersion);
     PMeshInfo aMeshInfo = myMed->CrMeshInfo(aMeshDimension,aSpaceDimension,aMeshName);
     //MESSAGE("Add - aMeshName : "<<aMeshName<<"; "<<aMeshInfo->GetName());
     myMed->SetMeshInfo(aMeshInfo);
