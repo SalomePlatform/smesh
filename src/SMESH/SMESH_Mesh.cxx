@@ -361,6 +361,7 @@ double SMESH_Mesh::GetShapeDiagonalSize(const TopoDS_Shape & aShape)
     bool isPrecise = false;
     if ( nbFaces < maxNbFaces )
       try {
+        OCC_CATCH_SIGNALS;
         GEOMUtils::PreciseBoundingBox( aShape, Box );
         isPrecise = true;
       }
