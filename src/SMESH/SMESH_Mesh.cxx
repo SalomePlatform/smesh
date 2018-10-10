@@ -2431,8 +2431,9 @@ bool SMESH_Mesh::SortByMeshOrder(std::vector<SMESH_subMesh*>& theListToSort) con
     {
       TPosInList smPos = find( smBeg, smEnd, smVec[i] );
       if ( smPos != smEnd ) {
-        onlyOrderedList.push_back( smVec[i] );
         sortedPos[ distance( smBeg, smPos )] = smPos;
+        if ( sortedPos.size() > onlyOrderedList.size() )
+          onlyOrderedList.push_back( smVec[i] );
       }
     }
   }

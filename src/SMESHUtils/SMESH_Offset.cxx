@@ -2656,17 +2656,17 @@ SMDS_Mesh* SMESH_MeshAlgos::MakeOffset( SMDS_ElemIteratorPtr theFaceIt,
                                         TEPairVec&           theNew2OldFaces,
                                         TNPairVec&           theNew2OldNodes)
 {
+  if ( theSrcMesh.GetMeshInfo().NbFaces( ORDER_QUADRATIC ) > 0 )
+    throw SALOME_Exception( "Offset of quadratic mesh not supported" );
+  if ( theSrcMesh.GetMeshInfo().NbFaces() > theSrcMesh.GetMeshInfo().NbTriangles() )
+    throw SALOME_Exception( "Offset of non-triangular mesh not supported" );
+
   SMDS_Mesh* newMesh = new SMDS_Mesh;
   theNew2OldFaces.clear();
   theNew2OldNodes.clear();
   theNew2OldFaces.push_back
     ( std::make_pair(( const SMDS_MeshElement*) 0,
                      ( const SMDS_MeshElement*) 0)); // to have index == face->GetID()
-
-  if ( theSrcMesh.GetMeshInfo().NbFaces( ORDER_QUADRATIC ) > 0 )
-    throw SALOME_Exception( "Offset of quadratic mesh not supported" );
-  if ( theSrcMesh.GetMeshInfo().NbFaces() > theSrcMesh.GetMeshInfo().NbTriangles() )
-    throw SALOME_Exception( "Offset of non-triangular mesh not supported" );
 
   // copy input faces to the newMesh keeping IDs of nodes
 

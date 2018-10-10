@@ -1032,13 +1032,13 @@ std::vector< std::string > SMESH_Gen::GetPluginXMLPaths()
       bool fileOK;
 #ifdef WIN32
 #ifdef UNICODE
-	  const wchar_t* path = Kernel_Utils::decode_s(xmlPath);
+      const wchar_t* path = Kernel_Utils::decode_s(xmlPath);
 #else
-	  const char* path = xmlPath.c_str();
+      const char* path = xmlPath.c_str();
 #endif
       fileOK = (GetFileAttributes(path) != INVALID_FILE_ATTRIBUTES);
 #ifdef UNICODE
-	  delete path;
+      delete path;
 #endif
 #else
       fileOK = (access(xmlPath.c_str(), F_OK) == 0);
