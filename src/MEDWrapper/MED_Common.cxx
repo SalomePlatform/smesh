@@ -108,6 +108,7 @@ namespace MED
       aGeomMAILLESet.insert(MED::eTETRA10);
       aGeomMAILLESet.insert(MED::ePYRA13);
       aGeomMAILLESet.insert(MED::ePENTA15);
+      aGeomMAILLESet.insert(MED::ePENTA18);
       aGeomMAILLESet.insert(MED::eHEXA20);
       aGeomMAILLESet.insert(MED::eHEXA27);
       aGeomMAILLESet.insert(MED::ePOLYEDRE);
