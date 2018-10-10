@@ -989,7 +989,7 @@ namespace
         wc.suspend();
         SUIT_MessageBox::warning(SMESHGUI::desktop(),
                                  QObject::tr("SMESH_WRN_WARNING"),
-                                 QObject::tr("SMESH_EXPORT_FAILED"));
+                                 QObject::tr("SMESH_EXPORT_FAILED") + SalomeApp_Tools::ExceptionToString(S_ex));
         wc.resume();
       }
     }

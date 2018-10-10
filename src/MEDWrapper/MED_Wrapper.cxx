@@ -2171,7 +2171,7 @@ namespace MED
     if (theErr)
       *theErr = aRet;
     else if (aRet < 0)
-      EXCEPTION(std::runtime_error, "SetCellInfo - MEDmeshElementWr(...)");
+      EXCEPTION(std::runtime_error, "SetCellInfo - MEDmeshElementWr(...), ret="<< aRet);
   }
 
   //----------------------------------------------------------------------------

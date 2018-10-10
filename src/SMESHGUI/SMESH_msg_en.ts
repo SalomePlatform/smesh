@@ -1780,7 +1780,8 @@ so that the application may crash. Do you wish to continue visualization?</trans
     <message>
         <source>SMESH_EXPORT_FAILED</source>
         <translation>Mesh export failed.
-Probably, there is not enough space on disk.</translation>
+Probably, there is not enough space on disk, or the version of MED file used is not compatible with the mesh.
+</translation>
     </message>
     <message>
         <source>SMESH_EXPORT_MED_DUPLICATED_GRP</source>
