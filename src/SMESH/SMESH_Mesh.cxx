@@ -80,8 +80,6 @@
 #include <pthread.h>
 #endif
 
-using namespace std;
-
 // maximum stored group name length in MED file
 #define MAX_MED_GROUP_NAME_LENGTH 80
 
@@ -189,7 +187,7 @@ SMESH_Mesh::~SMESH_Mesh()
     sm->ComputeStateEngine( SMESH_subMesh::MESH_ENTITY_REMOVED );
 
   // delete groups
-  map < int, SMESH_Group * >::iterator itg;
+  std::map < int, SMESH_Group * >::iterator itg;
   for (itg = _mapGroup.begin(); itg != _mapGroup.end(); itg++) {
     SMESH_Group *aGroup = (*itg).second;
     delete aGroup;
@@ -276,7 +274,7 @@ void SMESH_Mesh::ShapeToMesh(const TopoDS_Shape & aShape)
     // - sub-meshes
     _subMeshHolder->DeleteAll();
     //  - groups on geometry
-    map <int, SMESH_Group *>::iterator i_gr = _mapGroup.begin();
+    std::map <int, SMESH_Group *>::iterator i_gr = _mapGroup.begin();
     while ( i_gr != _mapGroup.end() ) {
       if ( dynamic_cast<SMESHDS_GroupOnGeom*>( i_gr->second->GetGroupDS() )) {
         _myMeshDS->RemoveGroup( i_gr->second->GetGroupDS() );
@@ -518,13 +516,13 @@ int SMESH_Mesh::MEDToMesh(const char* theFileName, const char* theMeshName)
   Driver_Mesh::Status status = myReader.Perform();
 #ifdef _DEBUG_
   SMESH_ComputeErrorPtr er = myReader.GetError();
-  if ( er && !er->IsOK() ) cout << er->myComment << endl;
+  if ( er && !er->IsOK() ) std::cout << er->myComment << std::endl;
 #endif
 
   // Reading groups (sub-meshes are out of scope of MED import functionality)
-  list<TNameAndType> aGroupNames = myReader.GetGroupNamesAndTypes();
+  std::list<TNameAndType> aGroupNames = myReader.GetGroupNamesAndTypes();
   int anId;
-  list<TNameAndType>::iterator name_type = aGroupNames.begin();
+  std::list<TNameAndType>::iterator name_type = aGroupNames.begin();
   for ( ; name_type != aGroupNames.end(); name_type++ )
   {
     SMESH_Group* aGroup = AddGroup( name_type->second, name_type->first.c_str(), anId );
@@ -647,7 +645,7 @@ SMESH_Mesh::AddHypothesis(const TopoDS_Shape & aSubShape,
     // NOTE: this is not a correct way to check a name of hypothesis,
     // there should be an attribute of hypothesis saying that it can/can't
     // be global/local
-    string hypName = anHyp->GetName();
+    std::string hypName = anHyp->GetName();
     if ( hypName == "NotConformAllowed" )
     {
       if(MYDEBUG) MESSAGE( "Hypothesis <NotConformAllowed> can be only global" );
@@ -787,7 +785,7 @@ SMESH_Mesh::RemoveHypothesis(const TopoDS_Shape & aSubShape,
  */
 //=============================================================================
 
-const list<const SMESHDS_Hypothesis*>&
+const std::list<const SMESHDS_Hypothesis*>&
 SMESH_Mesh::GetHypothesisList(const TopoDS_Shape & aSubShape) const
   throw(SALOME_Exception)
 {
@@ -834,8 +832,8 @@ const SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const SMESH_subMesh *   aSubM
 
   {
     const TopoDS_Shape & aSubShape = aSubMesh->GetSubShape();
-    const list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(aSubShape);
-    list<const SMESHDS_Hypothesis*>::const_iterator hyp = hypList.begin();
+    const std::list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(aSubShape);
+    std::list<const SMESHDS_Hypothesis*>::const_iterator hyp = hypList.begin();
     for ( ; hyp != hypList.end(); hyp++ ) {
       const SMESH_Hypothesis * h = cSMESH_Hyp( *hyp );
       if ( aFilter.IsOk( h, aSubShape)) {
@@ -851,12 +849,12 @@ const SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const SMESH_subMesh *   aSubM
       const_cast< std::vector< SMESH_subMesh * > & > ( aSubMesh->GetAncestors() );
     SortByMeshOrder( ancestors );
 
-    vector<SMESH_subMesh*>::const_iterator smIt = ancestors.begin(); 
+    std::vector<SMESH_subMesh*>::const_iterator smIt = ancestors.begin(); 
     for ( ; smIt != ancestors.end(); smIt++ )
     {
       const TopoDS_Shape& curSh = (*smIt)->GetSubShape();
-      const list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(curSh);
-      list<const SMESHDS_Hypothesis*>::const_iterator hyp = hypList.begin();
+      const std::list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(curSh);
+      std::list<const SMESHDS_Hypothesis*>::const_iterator hyp = hypList.begin();
       for ( ; hyp != hypList.end(); hyp++ ) {
         const SMESH_Hypothesis * h = cSMESH_Hyp( *hyp );
         if (aFilter.IsOk( h, curSh )) {
@@ -880,11 +878,11 @@ const SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const SMESH_subMesh *   aSubM
  */
 //================================================================================
 
-int SMESH_Mesh::GetHypotheses(const TopoDS_Shape &                aSubShape,
-                              const SMESH_HypoFilter&             aFilter,
-                              list <const SMESHDS_Hypothesis * >& aHypList,
-                              const bool                          andAncestors,
-                              list< TopoDS_Shape > *              assignedTo/*=0*/) const
+int SMESH_Mesh::GetHypotheses(const TopoDS_Shape &                     aSubShape,
+                              const SMESH_HypoFilter&                  aFilter,
+                              std::list <const SMESHDS_Hypothesis * >& aHypList,
+                              const bool                               andAncestors,
+                              std::list< TopoDS_Shape > *              assignedTo/*=0*/) const
 {
   return GetHypotheses( const_cast< SMESH_Mesh* >(this)->GetSubMesh( aSubShape ),
                         aFilter, aHypList, andAncestors, assignedTo );
@@ -901,22 +899,22 @@ int SMESH_Mesh::GetHypotheses(const TopoDS_Shape &                aSubShape,
  */
 //================================================================================
 
-int SMESH_Mesh::GetHypotheses(const SMESH_subMesh *               aSubMesh,
-                              const SMESH_HypoFilter&             aFilter,
-                              list <const SMESHDS_Hypothesis * >& aHypList,
-                              const bool                          andAncestors,
-                              list< TopoDS_Shape > *              assignedTo/*=0*/) const
+int SMESH_Mesh::GetHypotheses(const SMESH_subMesh *                    aSubMesh,
+                              const SMESH_HypoFilter&                  aFilter,
+                              std::list <const SMESHDS_Hypothesis * >& aHypList,
+                              const bool                               andAncestors,
+                              std::list< TopoDS_Shape > *              assignedTo/*=0*/) const
 {
   if ( !aSubMesh ) return 0;
 
-  set<string> hypTypes; // to exclude same type hypos from the result list
+  std::set< std::string > hypTypes; // to exclude same type hypos from the result list
   int nbHyps = 0;
 
   // only one main hypothesis is allowed
   bool mainHypFound = false;
 
   // fill in hypTypes
-  list<const SMESHDS_Hypothesis*>::const_iterator hyp;
+  std::list<const SMESHDS_Hypothesis*>::const_iterator hyp;
   for ( hyp = aHypList.begin(); hyp != aHypList.end(); hyp++ ) {
     if ( hypTypes.insert( (*hyp)->GetName() ).second )
       nbHyps++;
@@ -927,7 +925,7 @@ int SMESH_Mesh::GetHypotheses(const SMESH_subMesh *               aSubMesh,
   // get hypos from aSubShape
   {
     const TopoDS_Shape & aSubShape = aSubMesh->GetSubShape();
-    const list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(aSubShape);
+    const std::list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(aSubShape);
     for ( hyp = hypList.begin(); hyp != hypList.end(); hyp++ )
     {
       const SMESH_Hypothesis* h = cSMESH_Hyp( *hyp );
@@ -952,11 +950,11 @@ int SMESH_Mesh::GetHypotheses(const SMESH_subMesh *               aSubMesh,
       const_cast< std::vector< SMESH_subMesh * > & > ( aSubMesh->GetAncestors() );
     SortByMeshOrder( ancestors );
 
-    vector<SMESH_subMesh*>::const_iterator smIt = ancestors.begin();
+    std::vector<SMESH_subMesh*>::const_iterator smIt = ancestors.begin();
     for ( ; smIt != ancestors.end(); smIt++ )
     {
       const TopoDS_Shape& curSh = (*smIt)->GetSubShape();
-      const list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(curSh);
+      const std::list<const SMESHDS_Hypothesis*>& hypList = _myMeshDS->GetHypothesis(curSh);
       for ( hyp = hypList.begin(); hyp != hypList.end(); hyp++ )
       {
         const SMESH_Hypothesis* h = cSMESH_Hyp( *hyp );
@@ -998,7 +996,7 @@ SMESH_Hypothesis * SMESH_Mesh::GetHypothesis(const int anHypId) const
  */
 //=============================================================================
 
-const list<SMESHDS_Command*> & SMESH_Mesh::GetLog() throw(SALOME_Exception)
+const std::list<SMESHDS_Command*> & SMESH_Mesh::GetLog() throw(SALOME_Exception)
 {
   Unexpect aCatch(SalomeException);
   return _myMeshDS->GetScript()->GetCommands();
@@ -1102,11 +1100,11 @@ throw(SALOME_Exception)
  */
 //================================================================================
 
-list<SMESH_subMesh*>
+std::list<SMESH_subMesh*>
 SMESH_Mesh::GetGroupSubMeshesContaining(const TopoDS_Shape & aSubShape) const
   throw(SALOME_Exception)
 {
-  list<SMESH_subMesh*> found;
+  std::list<SMESH_subMesh*> found;
 
   SMESH_subMesh * subMesh = GetSubMeshContaining(aSubShape);
   if ( !subMesh )
@@ -1173,7 +1171,7 @@ bool SMESH_Mesh::IsUsedHypothesis(SMESHDS_Hypothesis * anHyp,
     // look trough hypotheses used by algo
     const SMESH_HypoFilter* hypoKind;
     if (( hypoKind = algo->GetCompatibleHypoFilter( !hyp->IsAuxiliary() ))) {
-      list <const SMESHDS_Hypothesis * > usedHyps;
+      std::list <const SMESHDS_Hypothesis * > usedHyps;
       if ( GetHypotheses( aSubMesh, *hypoKind, usedHyps, true ))
         return ( find( usedHyps.begin(), usedHyps.end(), anHyp ) != usedHyps.end() );
     }
@@ -1199,8 +1197,8 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
 
   SMESH_Algo *algo;
   const SMESH_HypoFilter* compatibleHypoKind;
-  list <const SMESHDS_Hypothesis * > usedHyps;
-  vector< SMESH_subMesh* > smToNotify;
+  std::list <const SMESHDS_Hypothesis * > usedHyps;
+  std::vector< SMESH_subMesh* > smToNotify;
   bool allMeshedEdgesNotified = true;
 
   SMESH_subMeshIteratorPtr smIt( _subMeshHolder->GetIterator() );
@@ -1381,12 +1379,12 @@ bool SMESH_Mesh::IsComputedOK()
 bool SMESH_Mesh::HasDuplicatedGroupNamesMED()
 {
   // Corrected for Mantis issue 0020028
-  map< SMDSAbs_ElementType, set<string> > aGroupNames;
-  for ( map<int, SMESH_Group*>::iterator it = _mapGroup.begin(); it != _mapGroup.end(); it++ )
+  std::map< SMDSAbs_ElementType, std::set< std::string > > aGroupNames;
+  for ( std::map<int, SMESH_Group*>::iterator it = _mapGroup.begin(); it != _mapGroup.end(); it++ )
   {
     SMESH_Group*       aGroup = it->second;
     SMDSAbs_ElementType aType = aGroup->GetGroupDS()->GetType();
-    string         aGroupName = aGroup->GetName();
+    std::string    aGroupName = aGroup->GetName();
     aGroupName.resize( MAX_MED_GROUP_NAME_LENGTH );
     if ( !aGroupNames[aType].insert(aGroupName).second )
       return true;
@@ -1459,17 +1457,19 @@ void SMESH_Mesh::ExportMED(const char *        file,
   //set<string> aGroupNames; // Corrected for Mantis issue 0020028
   if ( !meshPart )
   {
-    map< SMDSAbs_ElementType, set<string> > aGroupNames;
+    std::map< SMDSAbs_ElementType, std::set<std::string> > aGroupNames;
     char aString [256];
     int maxNbIter = 10000; // to guarantee cycle finish
-    for ( map<int, SMESH_Group*>::iterator it = _mapGroup.begin(); it != _mapGroup.end(); it++ ) {
+    for ( std::map<int, SMESH_Group*>::iterator it = _mapGroup.begin();
+          it != _mapGroup.end();
+          it++ ) {
       SMESH_Group*       aGroup   = it->second;
       SMESHDS_GroupBase* aGroupDS = aGroup->GetGroupDS();
       if ( aGroupDS ) {
         SMDSAbs_ElementType aType = aGroupDS->GetType();
-        string aGroupName0 = aGroup->GetName();
+        std::string aGroupName0 = aGroup->GetName();
         aGroupName0.resize(MAX_MED_GROUP_NAME_LENGTH);
-        string aGroupName = aGroupName0;
+        std::string aGroupName = aGroupName0;
         for (int i = 1; !aGroupNames[aType].insert(aGroupName).second && i < maxNbIter; i++) {
           sprintf(&aString[0], "GR_%d_%s", i, aGroupName0.c_str());
           aGroupName = aString;
@@ -1568,11 +1568,12 @@ void SMESH_Mesh::ExportUNV(const char *        file,
   // pass group names to SMESHDS
   if ( !meshPart )
   {
-    for ( map<int, SMESH_Group*>::iterator it = _mapGroup.begin(); it != _mapGroup.end(); it++ ) {
+    std::map<int, SMESH_Group*>::iterator it = _mapGroup.begin();
+    for ( ; it != _mapGroup.end(); it++ ) {
       SMESH_Group*       aGroup   = it->second;
       SMESHDS_GroupBase* aGroupDS = aGroup->GetGroupDS();
       if ( aGroupDS ) {
-        string aGroupName = aGroup->GetName();
+        std::string aGroupName = aGroup->GetName();
         aGroupDS->SetStoreName( aGroupName.c_str() );
         myWriter.AddGroup( aGroupDS );
       }
@@ -1616,11 +1617,12 @@ void SMESH_Mesh::ExportCGNS(const char *        file,
   int res = Driver_Mesh::DRS_FAIL;
 
   // pass group names to SMESHDS
-  for ( map<int, SMESH_Group*>::iterator it = _mapGroup.begin(); it != _mapGroup.end(); it++ ) {
+  std::map<int, SMESH_Group*>::iterator it = _mapGroup.begin();
+  for ( ; it != _mapGroup.end(); it++ ) {
     SMESH_Group*       group   = it->second;
     SMESHDS_GroupBase* groupDS = group->GetGroupDS();
     if ( groupDS ) {
-      string groupName = group->GetName();
+      std::string groupName = group->GetName();
       groupDS->SetStoreName( groupName.c_str() );
     }
   }
@@ -1699,7 +1701,7 @@ double SMESH_Mesh::GetComputeProgress() const
       }
       catch (...) {
 #ifdef _DEBUG_
-        cerr << "Exception in " << algo->GetName() << "::GetProgress()" << endl;
+        std::cerr << "Exception in " << algo->GetName() << "::GetProgress()" << std::endl;
 #endif
       }
       if ( 0. < rate && rate < 1.001 )
@@ -2046,7 +2048,7 @@ SMESH_Group* SMESH_Mesh::AddGroup (SMESHDS_GroupBase* groupDS) throw(SALOME_Exce
   if ( !groupDS ) 
     throw SALOME_Exception(LOCALIZED ("SMESH_Mesh::AddGroup(): NULL SMESHDS_GroupBase"));
 
-  map <int, SMESH_Group*>::iterator i_g = _mapGroup.find( groupDS->GetID() );
+  std::map <int, SMESH_Group*>::iterator i_g = _mapGroup.find( groupDS->GetID() );
   if ( i_g != _mapGroup.end() && i_g->second )
   {
     if ( i_g->second->GetGroupDS() == groupDS )
@@ -2074,9 +2076,9 @@ SMESH_Group* SMESH_Mesh::AddGroup (SMESHDS_GroupBase* groupDS) throw(SALOME_Exce
 
 bool SMESH_Mesh::SynchronizeGroups()
 {
-  const size_t                       nbGroups = _mapGroup.size();
-  const set<SMESHDS_GroupBase*>&       groups = _myMeshDS->GetGroups();
-  set<SMESHDS_GroupBase*>::const_iterator gIt = groups.begin();
+  const size_t                            nbGroups = _mapGroup.size();
+  const std::set<SMESHDS_GroupBase*>&       groups = _myMeshDS->GetGroups();
+  std::set<SMESHDS_GroupBase*>::const_iterator gIt = groups.begin();
   for ( ; gIt != groups.end(); ++gIt )
   {
     SMESHDS_GroupBase* groupDS = (SMESHDS_GroupBase*) *gIt;
@@ -2098,7 +2100,7 @@ bool SMESH_Mesh::SynchronizeGroups()
 
 SMESH_Mesh::GroupIteratorPtr SMESH_Mesh::GetGroups() const
 {
-  typedef map <int, SMESH_Group *> TMap;
+  typedef std::map <int, SMESH_Group *> TMap;
   return GroupIteratorPtr( new SMDS_mapIterator<TMap>( _mapGroup ));
 }
 
@@ -2122,10 +2124,11 @@ SMESH_Group* SMESH_Mesh::GetGroup (const int theGroupID)
  */
 //=============================================================================
 
-list<int> SMESH_Mesh::GetGroupIds() const
+std::list<int> SMESH_Mesh::GetGroupIds() const
 {
-  list<int> anIds;
-  for ( map<int, SMESH_Group*>::const_iterator it = _mapGroup.begin(); it != _mapGroup.end(); it++ )
+  std::list<int> anIds;
+  std::map<int, SMESH_Group*>::const_iterator it = _mapGroup.begin();
+  for ( ; it != _mapGroup.end(); it++ )
     anIds.push_back( it->first );
   
   return anIds;
@@ -2194,7 +2197,7 @@ ostream& SMESH_Mesh::Dump(ostream& save)
   save << ++clause << ") Total number of polyhedrons:\t" << NbPolyhedrons() << endl << endl;
   for ( int isQuadratic = 0; isQuadratic < 2; ++isQuadratic )
   {
-    string orderStr = isQuadratic ? "quadratic" : "linear";
+    std::string orderStr = isQuadratic ? "quadratic" : "linear";
     SMDSAbs_ElementOrder order  = isQuadratic ? ORDER_QUADRATIC : ORDER_LINEAR;
 
     save << ++clause << ") Total number of " << orderStr << " edges:\t" << NbEdges(order) << endl;
@@ -2205,7 +2208,7 @@ ostream& SMESH_Mesh::Dump(ostream& save)
       save << clause << ".1) Number of " << orderStr << " triangles:  \t" << nb3 << endl;
       save << clause << ".2) Number of " << orderStr << " quadrangles:\t" << nb4 << endl;
       if ( nb3 + nb4 !=  NbFaces(order) ) {
-        map<int,int> myFaceMap;
+        std::map<int,int> myFaceMap;
         SMDS_FaceIteratorPtr itFaces=_myMeshDS->facesIterator();
         while( itFaces->more( ) ) {
           int nbNodes = itFaces->next()->NbNodes();
@@ -2214,7 +2217,7 @@ ostream& SMESH_Mesh::Dump(ostream& save)
           myFaceMap[ nbNodes ] = myFaceMap[ nbNodes ] + 1;
         }
         save << clause << ".3) Faces in detail: " << endl;
-        map <int,int>::iterator itF;
+        std::map <int,int>::iterator itF;
         for (itF = myFaceMap.begin(); itF != myFaceMap.end(); itF++)
           save << "--> nb nodes: " << itF->first << " - nb elements:\t" << itF->second << endl;
       }
@@ -2230,7 +2233,7 @@ ostream& SMESH_Mesh::Dump(ostream& save)
       save << clause << ".3) Number of " << orderStr << " prisms:      \t" << nb6 << endl;
       save << clause << ".4) Number of " << orderStr << " pyramids:    \t" << nb5 << endl;
       if ( nb8 + nb4 + nb5 + nb6 != NbVolumes(order) ) {
-        map<int,int> myVolumesMap;
+        std::map<int,int> myVolumesMap;
         SMDS_VolumeIteratorPtr itVolumes=_myMeshDS->volumesIterator();
         while( itVolumes->more( ) ) {
           int nbNodes = itVolumes->next()->NbNodes();
@@ -2239,7 +2242,7 @@ ostream& SMESH_Mesh::Dump(ostream& save)
           myVolumesMap[ nbNodes ] = myVolumesMap[ nbNodes ] + 1;
         }
         save << clause << ".5) Volumes in detail: " << endl;
-        map <int,int>::iterator itV;
+        std::map <int,int>::iterator itV;
         for (itV = myVolumesMap.begin(); itV != myVolumesMap.end(); itV++)
           save << "--> nb nodes: " << itV->first << " - nb elements:\t" << itV->second << endl;
       }
@@ -2269,7 +2272,7 @@ SMDSAbs_ElementType SMESH_Mesh::GetElementType( const int id, const bool iselem 
 SMESH_Group* SMESH_Mesh::ConvertToStandalone ( int theGroupID )
 {
   SMESH_Group* aGroup = 0;
-  map < int, SMESH_Group * >::iterator itg = _mapGroup.find( theGroupID );
+  std::map < int, SMESH_Group * >::iterator itg = _mapGroup.find( theGroupID );
   if ( itg == _mapGroup.end() )
     return aGroup;
 
@@ -2395,12 +2398,12 @@ bool SMESH_Mesh::SortByMeshOrder(std::vector<SMESH_subMesh*>& theListToSort) con
     return true;
   
   bool res = false;
-  vector<SMESH_subMesh*> onlyOrderedList, smVec;
+  std::vector<SMESH_subMesh*> onlyOrderedList, smVec;
 
   // collect all ordered submeshes in one list as pointers
   // and get their positions within theListToSort
-  typedef vector<SMESH_subMesh*>::iterator TPosInList;
-  map< int, TPosInList > sortedPos;
+  typedef std::vector<SMESH_subMesh*>::iterator TPosInList;
+  std::map< int, TPosInList > sortedPos;
   TPosInList smBeg = theListToSort.begin(), smEnd = theListToSort.end();
   TListOfListOfInt::const_iterator      listIdsIt = _mySubMeshOrder.begin();
   for( ; listIdsIt != _mySubMeshOrder.end(); listIdsIt++)
@@ -2431,7 +2434,7 @@ bool SMESH_Mesh::SortByMeshOrder(std::vector<SMESH_subMesh*>& theListToSort) con
     {
       TPosInList smPos = find( smBeg, smEnd, smVec[i] );
       if ( smPos != smEnd ) {
-        sortedPos[ distance( smBeg, smPos )] = smPos;
+        sortedPos[ std::distance( smBeg, smPos )] = smPos;
         if ( sortedPos.size() > onlyOrderedList.size() )
           onlyOrderedList.push_back( smVec[i] );
       }
@@ -2441,11 +2444,11 @@ bool SMESH_Mesh::SortByMeshOrder(std::vector<SMESH_subMesh*>& theListToSort) con
     return res;
   res = true;
 
-  vector<SMESH_subMesh*>::iterator onlyBIt = onlyOrderedList.begin();
-  vector<SMESH_subMesh*>::iterator onlyEIt = onlyOrderedList.end();
+  std::vector<SMESH_subMesh*>::iterator onlyBIt = onlyOrderedList.begin();
+  std::vector<SMESH_subMesh*>::iterator onlyEIt = onlyOrderedList.end();
 
   // iterate on ordered sub-meshes and insert them in detected positions
-  map< int, TPosInList >::iterator i_pos = sortedPos.begin();
+  std::map< int, TPosInList >::iterator i_pos = sortedPos.begin();
   for ( ; onlyBIt != onlyEIt; ++onlyBIt, ++i_pos )
     *(i_pos->second) = *onlyBIt;
 
