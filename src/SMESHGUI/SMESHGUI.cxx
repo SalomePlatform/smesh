@@ -1857,6 +1857,7 @@ void SMESHGUI::OnEditDelete()
   _PTR(GenericAttribute) anAttr;
   _PTR(AttributeIOR) anIOR;
 
+  const int objectCountLimit = 30; // PAL23599
   int objectCount = 0;
   QString aNameList;
   QString aParentComponent = QString::null;
@@ -1866,22 +1867,24 @@ void SMESHGUI::OnEditDelete()
     Handle(SALOME_InteractiveObject) anIO = anIt.Value();
     if ( anIO.IsNull() ) continue;
     
-    QString father = "unknown";
+    QString father = "unknown", name;
 
     _PTR(SObject) aSO = aStudy->FindObjectID( anIO->getEntry() );
     if (aSO) {
       father = QString::fromStdString( aSO->GetFatherComponent()->ComponentDataType() );
       // check if object is reference
       _PTR(SObject) aRefSObj;
-      aNameList.append("\n    - ");
       if ( aSO->ReferencedObject( aRefSObj ) ) {
-        QString aRefName = QString::fromStdString ( aRefSObj->GetName() );
-        aNameList.append( aRefName );
+        name = QString::fromStdString ( aRefSObj->GetName() );
         father = QString::fromStdString ( aRefSObj->GetFatherComponent()->ComponentDataType() );
       }
       else
-        aNameList.append(anIO->getName());
+        name = anIO->getName();
       objectCount++;
+    }
+    if ( objectCount < objectCountLimit ) { // avoid occupying the whole screen
+      aNameList.append("\n    - ");
+      aNameList.append( name );
     }
 
     if( aParentComponent.isNull() )
@@ -1889,6 +1892,8 @@ void SMESHGUI::OnEditDelete()
     else if( !aParentComponent.isEmpty() && aParentComponent!=father )
       aParentComponent = "";
   }
+  if ( objectCount >= objectCountLimit )
+    aNameList.append("\n    - ...");
 
   if ( objectCount == 0 )
     return; // No Valid Objects Selected
@@ -5444,7 +5449,7 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
          name=="selection_precision_node"    ||
          name=="selection_precision_element" ||
          name=="selection_precision_object"   ||
-	 name=="selection_increment")
+         name=="selection_increment")
     {
       SMESH::UpdateSelectionProp( this );
     }

@@ -3780,11 +3780,13 @@ throw ( SALOME::SALOME_Exception )
   } // loop on groups
 
   // set mesh name
-  SALOMEDS::SObject_wrap soNew = ObjectToSObject( theNewMesh );
-  SALOMEDS::SObject_wrap soOld = ObjectToSObject( theSourceMesh );
-  CORBA::String_var oldName = soOld->GetName();
-  SetName( soNew, oldName.in(), "Mesh" );
-
+  if ( !theMeshName || !theMeshName[0] )
+  {
+    SALOMEDS::SObject_wrap soNew = ObjectToSObject( theNewMesh );
+    SALOMEDS::SObject_wrap soOld = ObjectToSObject( theSourceMesh );
+    CORBA::String_var oldName = soOld->GetName();
+    SetName( soNew, oldName.in(), "Mesh" );
+  }
   // mark invalid objects
   shapeMapper.GetInvalid( theInvalidEntries, invalidSObjects );
 

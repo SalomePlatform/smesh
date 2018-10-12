@@ -11,7 +11,6 @@ Viewing Mesh Infos
 ##################
 
 .. literalinclude:: ../../../examples/viewing_meshes_ex01.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/viewing_meshes_ex01.py>`
@@ -23,7 +22,6 @@ Find Element by Point
 #####################
 
 .. literalinclude:: ../../../examples/viewing_meshes_ex02.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/viewing_meshes_ex02.py>`

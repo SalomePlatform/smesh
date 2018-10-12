@@ -13,7 +13,6 @@ Translation
 ===========
 
 .. literalinclude:: ../../../examples/transforming_meshes_ex01.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/transforming_meshes_ex01.py>`
@@ -24,7 +23,6 @@ Rotation
 ========
 
 .. literalinclude:: ../../../examples/transforming_meshes_ex02.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/transforming_meshes_ex02.py>`
@@ -35,7 +33,6 @@ Scale
 =====
 
 .. literalinclude:: ../../../examples/transforming_meshes_ex03.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/transforming_meshes_ex03.py>`
@@ -46,7 +43,6 @@ Symmetry
 ========
 
 .. literalinclude:: ../../../examples/transforming_meshes_ex04.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/transforming_meshes_ex04.py>`
@@ -57,7 +53,6 @@ Merging Nodes
 =============
 
 .. literalinclude:: ../../../examples/transforming_meshes_ex05.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/transforming_meshes_ex05.py>`
@@ -68,7 +63,6 @@ Merging Elements
 ================
 
 .. literalinclude:: ../../../examples/transforming_meshes_ex06.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/transforming_meshes_ex06.py>`
@@ -79,7 +73,6 @@ Sew Meshes Border to Side
 =========================
 
 .. literalinclude:: ../../../examples/transforming_meshes_ex07.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/transforming_meshes_ex07.py>`
@@ -90,7 +83,6 @@ Sew Conform Free Borders
 ========================
 
 .. literalinclude:: ../../../examples/transforming_meshes_ex08.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/transforming_meshes_ex08.py>`
@@ -101,7 +93,6 @@ Sew Free Borders
 ================
 
 .. literalinclude:: ../../../examples/transforming_meshes_ex09.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/transforming_meshes_ex09.py>`
@@ -112,7 +103,6 @@ Sew Side Elements
 =================
 
 .. literalinclude:: ../../../examples/transforming_meshes_ex10.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/transforming_meshes_ex10.py>`
@@ -123,7 +113,6 @@ Duplicate nodes or/and elements
 ===============================
 
 .. literalinclude:: ../../../examples/transforming_meshes_ex11.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/transforming_meshes_ex11.py>`
@@ -134,7 +123,6 @@ Create boundary elements
 ========================
 
 .. literalinclude:: ../../../examples/transforming_meshes_ex12.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/transforming_meshes_ex12.py>`
@@ -145,7 +133,6 @@ Reorient faces
 ==============
 
 .. literalinclude:: ../../../examples/transforming_meshes_ex13.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/transforming_meshes_ex13.py>`

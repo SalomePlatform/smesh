@@ -10,7 +10,6 @@ Minimum Distance
 ================
 
 .. literalinclude:: ../../../examples/measurements_ex01.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/measurements_ex01.py>`
@@ -21,7 +20,6 @@ Bounding Box
 ============
 
 .. literalinclude:: ../../../examples/measurements_ex02.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/measurements_ex02.py>`
@@ -32,7 +30,6 @@ Basic Properties
 ================
 
 .. literalinclude:: ../../../examples/measurements_ex03.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/measurements_ex03.py>`
