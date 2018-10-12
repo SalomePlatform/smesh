@@ -29,7 +29,6 @@ A usual workflow to generate a mesh on geometry is following:
 
 #. Create an instance of :class:`smeshBuilder.smeshBuilder`:
 	.. code-block:: python
-		:linenos:
 
 		from salome.smesh import smeshBuilder
 		smesh = smeshBuilder.New()
@@ -37,13 +36,11 @@ A usual workflow to generate a mesh on geometry is following:
 #. Create a :class:`smeshBuilder.Mesh` object:
 
 	.. code-block:: python
-		:linenos:
 
 		mesh = smesh.Mesh( geometry )
 
 #. Create and assign :ref:`algorithms <basic_meshing_algos_page>` by calling corresponding methods of the mesh. If a sub-shape is provided as an argument, a :ref:`sub-mesh <constructing_submeshes_page>` is implicitly created on this sub-shape:
 	.. code-block:: python
-		:linenos:
 
 		regular1D = mesh.Segment()
 		mefisto   = mesh.Triangle( smeshBuilder.MEFISTO )
@@ -52,7 +49,6 @@ A usual workflow to generate a mesh on geometry is following:
 
 #. Create and assign :ref:`hypotheses <about_hypo_page>` by calling corresponding methods of algorithms:
 	.. code-block:: python
-		:linenos:
 
 		segLen10 = regular1D.LocalLength( 10. )
 		maxArea  = mefisto.LocalLength( 100. )
@@ -61,7 +57,6 @@ A usual workflow to generate a mesh on geometry is following:
   
 #. :ref:`compute_anchor` the mesh (generate mesh nodes and elements):
 	.. code-block:: python
-		:linenos:
 
 		mesh.Compute()
 
@@ -82,7 +77,6 @@ Example of 3d mesh generation:
 ##############################
 
 .. literalinclude:: ../../../examples/3dmesh.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/3dmesh.py>`

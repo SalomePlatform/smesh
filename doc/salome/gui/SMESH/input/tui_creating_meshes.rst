@@ -16,7 +16,6 @@ Construction of a mesh
 ======================
 
 .. literalinclude:: ../../../examples/creating_meshes_ex01.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/creating_meshes_ex01.py>`
@@ -27,7 +26,6 @@ Construction of a sub-mesh
 ==========================
 
 .. literalinclude:: ../../../examples/creating_meshes_ex02.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/creating_meshes_ex02.py>`
@@ -38,7 +36,6 @@ Change priority of sub-meshes in mesh
 =====================================
 
 .. literalinclude:: ../../../examples/creating_meshes_ex03.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/creating_meshes_ex03.py>`
@@ -49,7 +46,6 @@ Intermediate edition while meshing
 ==================================
 
 .. literalinclude:: ../../../examples/a3DmeshOnModified2Dmesh.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/a3DmeshOnModified2Dmesh.py>`
@@ -60,7 +56,6 @@ Editing a mesh (i.e. changing hypotheses)
 =========================================
 
 .. literalinclude:: ../../../examples/creating_meshes_ex04.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/creating_meshes_ex04.py>`
@@ -71,7 +66,6 @@ Export of a Mesh
 ================
 
 .. literalinclude:: ../../../examples/creating_meshes_ex05.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/creating_meshes_ex05.py>`
@@ -85,7 +79,6 @@ The next script creates a hexahedral mesh on a cylinder. A picture below the scr
 demonstrates the resulting mesh.
 
 .. literalinclude:: ../../../examples/creating_meshes_ex06.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/creating_meshes_ex06.py>`
@@ -100,7 +93,6 @@ Building a compound of meshes
 =============================
 
 .. literalinclude:: ../../../examples/creating_meshes_ex07.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/creating_meshes_ex07.py>`
@@ -111,7 +103,6 @@ Mesh Copying
 ============
 
 .. literalinclude:: ../../../examples/creating_meshes_ex08.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/creating_meshes_ex08.py>`

@@ -37,7 +37,6 @@ filters 2D mesh elements (faces) according to the aspect ratio value:
 * threshold is floating point value (aspect ratio)
 
 .. literalinclude:: ../../../examples/filters_ex01.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex01.py>`
@@ -56,7 +55,6 @@ filters 3D mesh elements (volumes) according to the aspect ratio value:
 * threshold is floating point value (aspect ratio)
 
 .. literalinclude:: ../../../examples/filters_ex02.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex02.py>`
@@ -75,7 +73,6 @@ filters 2D mesh elements (faces) according to the warping angle value:
 * threshold is floating point value (warping angle)
 
 .. literalinclude:: ../../../examples/filters_ex03.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex03.py>`
@@ -94,7 +91,6 @@ filters 2D mesh elements (faces) according to the minimum angle value:
 * threshold is floating point value (minimum angle)
 
 .. literalinclude:: ../../../examples/filters_ex04.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex04.py>`
@@ -113,7 +109,6 @@ filters 2D mesh elements (faces) according to the taper value:
 * threshold is floating point value (taper)
 
 .. literalinclude:: ../../../examples/filters_ex05.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex05.py>`
@@ -132,7 +127,6 @@ filters 2D mesh elements (faces) according to the skew value:
 * threshold is floating point value (skew)
 
 .. literalinclude:: ../../../examples/filters_ex06.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex06.py>`
@@ -151,7 +145,6 @@ filters 2D mesh elements (faces) according to the area value:
 * threshold is floating point value (area)
 
 .. literalinclude:: ../../../examples/filters_ex07.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex07.py>`
@@ -170,7 +163,6 @@ filters 3D mesh elements (volumes) according to the volume value:
 * threshold is floating point value (volume)
 
 .. literalinclude:: ../../../examples/filters_ex08.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex08.py>`
@@ -189,7 +181,6 @@ filters 1D mesh elements (edges) which represent free borders of a mesh:
 * threshold value is not required
 
 .. literalinclude:: ../../../examples/filters_ex09.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex09.py>`
@@ -209,7 +200,6 @@ nodes, not mesh segments) belonging to one face of mesh only:
 * threshold value is not required
 
 .. literalinclude:: ../../../examples/filters_ex10.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex10.py>`
@@ -228,7 +218,6 @@ filters free nodes:
 * threshold value is not required
 
 .. literalinclude:: ../../../examples/filters_ex11.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex11.py>`
@@ -247,7 +236,6 @@ filters free faces:
 * threshold value is not required
 
 .. literalinclude:: ../../../examples/filters_ex12.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex12.py>`
@@ -266,7 +254,6 @@ filters faces with bare borders:
 * threshold value is not required
 
 .. literalinclude:: ../../../examples/filters_ex13.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex13.py>`
@@ -286,7 +273,6 @@ filters coplanar faces:
 * tolerance is in degrees
 
 .. literalinclude:: ../../../examples/filters_ex14.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex14.py>`
@@ -303,7 +289,6 @@ filters over-constrained faces:
 * threshold value is not required
 
 .. literalinclude:: ../../../examples/filters_ex15.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex15.py>`
@@ -322,7 +307,6 @@ filters mesh elements basing on the same set of nodes:
 * threshold value is not required
 
 .. literalinclude:: ../../../examples/filters_ex16.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex16.py>`
@@ -340,7 +324,6 @@ filters mesh nodes which are coincident with other nodes (within a given toleran
 * default tolerance is 1.0e-7
 
 .. literalinclude:: ../../../examples/filters_ex17.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex17.py>`
@@ -357,7 +340,6 @@ filters nodes according to a number of elements of highest dimension connected t
 * threshold is an integer value (number of elements)
 
 .. literalinclude:: ../../../examples/filters_node_nb_conn.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_node_nb_conn.py>`
@@ -375,7 +357,6 @@ connections (faces and volumes on whose border the segment lies):
 * threshold is integer value (number of connections)
 
 .. literalinclude:: ../../../examples/filters_ex18.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex18.py>`
@@ -395,7 +376,6 @@ faces connected to a border (link between nodes, not mesh segment):
 * threshold is integer value (number of connections)
 
 .. literalinclude:: ../../../examples/filters_ex19.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex19.py>`
@@ -414,7 +394,6 @@ filters 1D mesh elements (edges) according to the edge length value:
 * threshold is floating point value (length)
 
 .. literalinclude:: ../../../examples/filters_ex20.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex20.py>`
@@ -434,7 +413,6 @@ edges (links between nodes):
 * threshold is floating point value (edge length)
 
 .. literalinclude:: ../../../examples/filters_ex21.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex21.py>`
@@ -454,7 +432,6 @@ of its edges and diagonals:
 * threshold is floating point value (length)
 
 .. literalinclude:: ../../../examples/filters_ex22.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex22.py>`
@@ -474,7 +451,6 @@ of its edges and diagonals:
 * threshold is floating point value (edge/diagonal length)
 
 .. literalinclude:: ../../../examples/filters_ex23.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex23.py>`
@@ -494,7 +470,6 @@ shared with other volumes and without a face on it:
 * threshold value is not required
 
 .. literalinclude:: ../../../examples/filters_ex24.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex24.py>`
@@ -513,7 +488,6 @@ filters over-constrained volumes, whose all nodes are on the mesh boundary:
 * threshold value is not required
 
 .. literalinclude:: ../../../examples/filters_ex25.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex25.py>`
@@ -533,7 +507,6 @@ defined by threshold value:
 * threshold is mesh group object
 
 .. literalinclude:: ../../../examples/filters_belong2group.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_belong2group.py>`
@@ -552,7 +525,6 @@ shape defined by threshold value:
 * tolerance is a distance between a node and the geometrical object; it is used if an node is not associated to any geometry.
 
 .. literalinclude:: ../../../examples/filters_ex26.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex26.py>`
@@ -573,7 +545,6 @@ shape defined by threshold value:
 it is used if an node is not associated to any geometry.
 
 .. literalinclude:: ../../../examples/filters_ex27.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex27.py>`
@@ -592,7 +563,6 @@ plane defined by threshold value with the given tolerance:
 * default tolerance is 1.0e-7
 
 .. literalinclude:: ../../../examples/filters_ex28.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex28.py>`
@@ -611,7 +581,6 @@ cylindrical face defined by threshold value with the given tolerance:
 * default tolerance is 1.0e-7
 
 .. literalinclude:: ../../../examples/filters_ex29.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex29.py>`
@@ -630,7 +599,6 @@ arbitrary surface defined by threshold value with the given tolerance:
 * default tolerance is 1.0e-7
 
 .. literalinclude:: ../../../examples/filters_ex30.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex30.py>`
@@ -648,7 +616,6 @@ specified identifiers range:
 * threshold is string listing required IDs and/or ranges of IDs, e.g."1,2,3,50-60,63,67,70-78"
 
 .. literalinclude:: ../../../examples/filters_ex31.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex31.py>`
@@ -666,7 +633,6 @@ the point of view of MED convention.
 * threshold is not required
 
 .. literalinclude:: ../../../examples/filters_ex32.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex32.py>`
@@ -684,7 +650,6 @@ filters linear / quadratic mesh elements:
 * if unary operator is set to SMESH.FT_LogicalNOT, the quadratic elements are selected, otherwise (by default) linear elements are selected
 
 .. literalinclude:: ../../../examples/filters_ex33.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex33.py>`
@@ -701,7 +666,6 @@ filters mesh entities, belonging to the group with the color defined by the thre
 * threshold should be of SALOMEDS.Color type
 
 .. literalinclude:: ../../../examples/filters_ex34.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex34.py>`
@@ -720,7 +684,6 @@ entity type.
 * threshold is either of smesh.GeometryType values. Type *SMESH.GeometryType._items* in the Python Console to see all geometric types.
 
 .. literalinclude:: ../../../examples/filters_ex35.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex35.py>`
@@ -737,7 +700,6 @@ filters mesh elements by the geometric type and number of nodes.
 * threshold is either of SMESH.EntityType values. Type *SMESH.EntityType._items* in the Python Console to see all entity types.
 
 .. literalinclude:: ../../../examples/filters_ex37.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex37.py>`
@@ -754,7 +716,6 @@ filters ball elements by diameter.
 * threshold is floating point value (ball diameter)
 
 .. literalinclude:: ../../../examples/filters_ex38.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex38.py>`
@@ -771,7 +732,6 @@ filters elements of a specified domain.
 * threshold is either (1) node ID or (2)  geometrical vertex or (3) 3 coordinates of a point.
 
 .. literalinclude:: ../../../examples/filters_ex39.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex39.py>`
@@ -784,7 +744,6 @@ How to combine several criteria into a filter?
 Several criteria can be combined into a filter.
 
 .. literalinclude:: ../../../examples/filters_ex36.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/filters_ex36.py>`

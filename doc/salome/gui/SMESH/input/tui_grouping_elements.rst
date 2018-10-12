@@ -13,7 +13,6 @@ Create a Standalone Group
 =========================
 
 .. literalinclude:: ../../../examples/grouping_elements_ex01.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/grouping_elements_ex01.py>`
@@ -28,7 +27,6 @@ Create a Group on Geometry
 ==========================
 
 .. literalinclude:: ../../../examples/grouping_elements_ex02.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/grouping_elements_ex02.py>`
@@ -39,7 +37,6 @@ Create a Group on Filter
 ========================
 
 .. literalinclude:: ../../../examples/grouping_elements_ex03.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/grouping_elements_ex03.py>`
@@ -50,7 +47,6 @@ Edit a Group
 ============
 
 .. literalinclude:: ../../../examples/grouping_elements_ex04.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/grouping_elements_ex04.py>`
@@ -65,7 +61,6 @@ Union of groups
 ===============
 
 .. literalinclude:: ../../../examples/grouping_elements_ex05.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/grouping_elements_ex05.py>`
@@ -80,7 +75,6 @@ Intersection of groups
 ======================
 
 .. literalinclude:: ../../../examples/grouping_elements_ex06.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/grouping_elements_ex06.py>`
@@ -95,7 +89,6 @@ Cut of groups
 =============
 
 .. literalinclude:: ../../../examples/grouping_elements_ex07.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/grouping_elements_ex07.py>`
@@ -110,7 +103,6 @@ Creating groups of entities basing on nodes of other groups
 ===========================================================
 
 .. literalinclude:: ../../../examples/grouping_elements_ex08.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/grouping_elements_ex08.py>`

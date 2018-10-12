@@ -6196,7 +6196,7 @@ class Mesh(metaclass = MeshMeta):
                 nodes must be the same. Use :meth:`FindFreeBorders` to get nodes of holes.
             groupName (string): name of a group to add new faces
         Returns:
-            a :class:`group <SMESH.SMESH_GroupBase>` containing the new faces; or :code:`None` if :option:`groupName` == ""
+            a :class:`group <SMESH.SMESH_GroupBase>` containing the new faces; or :code:`None` if `groupName` == ""
         """
 
 

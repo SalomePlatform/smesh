@@ -13,7 +13,6 @@ Free Borders
 ============
 
 .. literalinclude:: ../../../examples/quality_controls_ex01.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/quality_controls_ex01.py>`
@@ -25,7 +24,6 @@ Borders at Multiconnection
 ==========================
 
 .. literalinclude:: ../../../examples/quality_controls_ex02.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/quality_controls_ex02.py>`
@@ -37,7 +35,6 @@ Length 1D
 =========
 
 .. literalinclude:: ../../../examples/quality_controls_ex03.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/quality_controls_ex03.py>`
@@ -48,7 +45,6 @@ Free Edges
 ==========
 
 .. literalinclude:: ../../../examples/quality_controls_ex04.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/quality_controls_ex04.py>`
@@ -59,7 +55,6 @@ Free Nodes
 ==========
 
 .. literalinclude:: ../../../examples/quality_controls_ex05.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/quality_controls_ex05.py>`
@@ -70,7 +65,6 @@ Free Faces
 ==========
 
 .. literalinclude:: ../../../examples/quality_controls_ex06.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/quality_controls_ex06.py>`
@@ -81,7 +75,6 @@ Bare border faces
 =================
 
 .. literalinclude:: ../../../examples/quality_controls_ex07.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/quality_controls_ex07.py>`
@@ -92,7 +85,6 @@ Bare border volumes
 ===================
 
 .. literalinclude:: ../../../examples/quality_controls_ex08.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/quality_controls_ex08.py>`
@@ -103,7 +95,6 @@ Over-constrained faces
 ======================
 
 .. literalinclude:: ../../../examples/quality_controls_ex09.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/quality_controls_ex09.py>`
@@ -114,7 +105,6 @@ Over-constrained volumes
 ========================
 
 .. literalinclude:: ../../../examples/quality_controls_ex10.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/quality_controls_ex10.py>`
@@ -125,7 +115,6 @@ Length 2D
 =========
 
 .. literalinclude:: ../../../examples/quality_controls_ex11.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/quality_controls_ex11.py>`
@@ -137,7 +126,6 @@ Borders at Multiconnection 2D
 =============================
 
 .. literalinclude:: ../../../examples/quality_controls_ex12.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/quality_controls_ex12.py>`
@@ -148,7 +136,6 @@ Area
 ====
 
 .. literalinclude:: ../../../examples/quality_controls_ex13.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/quality_controls_ex13.py>`
@@ -159,7 +146,6 @@ Taper
 =====
 
 .. literalinclude:: ../../../examples/quality_controls_ex14.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/quality_controls_ex14.py>`
@@ -170,7 +156,6 @@ Aspect Ratio
 ============
 
 .. literalinclude:: ../../../examples/quality_controls_ex15.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/quality_controls_ex15.py>`
@@ -181,7 +166,6 @@ Minimum Angle
 =============
 
 .. literalinclude:: ../../../examples/quality_controls_ex16.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/quality_controls_ex16.py>`
@@ -192,7 +176,6 @@ Warping
 =======
 
 .. literalinclude:: ../../../examples/quality_controls_ex17.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/quality_controls_ex17.py>`
@@ -203,7 +186,6 @@ Skew
 ====
 
 .. literalinclude:: ../../../examples/quality_controls_ex18.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/quality_controls_ex18.py>`
@@ -214,7 +196,6 @@ Element Diameter 2D
 ===================
 
 .. literalinclude:: ../../../examples/quality_controls_ex19.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/quality_controls_ex19.py>`
@@ -225,7 +206,6 @@ Aspect Ratio 3D
 ===============
 
 .. literalinclude:: ../../../examples/quality_controls_ex20.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/quality_controls_ex20.py>`
@@ -236,7 +216,6 @@ Volume
 ======
 
 .. literalinclude:: ../../../examples/quality_controls_ex21.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/quality_controls_ex21.py>`
@@ -247,7 +226,6 @@ Element Diameter 3D
 ===================
 
 .. literalinclude:: ../../../examples/quality_controls_ex22.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/quality_controls_ex22.py>`

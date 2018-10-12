@@ -18,7 +18,6 @@ Add Node
 ********
 
 .. literalinclude:: ../../../examples/modifying_meshes_ex01.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/modifying_meshes_ex01.py>`
@@ -29,7 +28,6 @@ Add 0D Element
 **************
 
 .. literalinclude:: ../../../examples/modifying_meshes_ex02.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/modifying_meshes_ex02.py>`
@@ -40,7 +38,6 @@ Add 0D Element on Element Nodes
 *******************************
 
 .. literalinclude:: ../../../examples/modifying_meshes_ex03.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/modifying_meshes_ex03.py>`
@@ -51,7 +48,6 @@ Add Edge
 ********
 
 .. literalinclude:: ../../../examples/modifying_meshes_ex04.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/modifying_meshes_ex04.py>`
@@ -62,7 +58,6 @@ Add Triangle
 ************
 
 .. literalinclude:: ../../../examples/modifying_meshes_ex05.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/modifying_meshes_ex05.py>`
@@ -73,7 +68,6 @@ Add Quadrangle
 **************
 
 .. literalinclude:: ../../../examples/modifying_meshes_ex06.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/modifying_meshes_ex06.py>`
@@ -84,7 +78,6 @@ Add Tetrahedron
 ***************
 
 .. literalinclude:: ../../../examples/modifying_meshes_ex07.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/modifying_meshes_ex07.py>`
@@ -95,7 +88,6 @@ Add Hexahedron
 **************
 
 .. literalinclude:: ../../../examples/modifying_meshes_ex08.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/modifying_meshes_ex08.py>`
@@ -106,7 +98,6 @@ Add Polygon
 ***********
 
 .. literalinclude:: ../../../examples/modifying_meshes_ex09.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/modifying_meshes_ex09.py>`
@@ -117,7 +108,6 @@ Add Polyhedron
 **************
 
 .. literalinclude:: ../../../examples/modifying_meshes_ex10.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/modifying_meshes_ex10.py>`
@@ -133,7 +123,6 @@ Removing Nodes
 **************
 
 .. literalinclude:: ../../../examples/modifying_meshes_ex11.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/modifying_meshes_ex11.py>`
@@ -144,7 +133,6 @@ Removing Elements
 *****************
 
 .. literalinclude:: ../../../examples/modifying_meshes_ex12.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/modifying_meshes_ex12.py>`
@@ -155,7 +143,6 @@ Removing Orphan Nodes
 *********************
 
 .. literalinclude:: ../../../examples/modifying_meshes_ex13.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/modifying_meshes_ex13.py>`
@@ -166,7 +153,6 @@ Moving Nodes
 ============
 
 .. literalinclude:: ../../../examples/modifying_meshes_ex15.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/modifying_meshes_ex15.py>`
@@ -177,7 +163,6 @@ Diagonal Inversion
 ==================
 
 .. literalinclude:: ../../../examples/modifying_meshes_ex16.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/modifying_meshes_ex16.py>`
@@ -188,7 +173,6 @@ Uniting two Triangles
 =====================
 
 .. literalinclude:: ../../../examples/modifying_meshes_ex17.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/modifying_meshes_ex17.py>`
@@ -199,7 +183,6 @@ Uniting a Set of Triangles
 ==========================
 
 .. literalinclude:: ../../../examples/modifying_meshes_ex18.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/modifying_meshes_ex18.py>`
@@ -210,7 +193,6 @@ Orientation
 ===========
 
 .. literalinclude:: ../../../examples/modifying_meshes_ex19.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/modifying_meshes_ex19.py>`
@@ -221,7 +203,6 @@ Cutting Quadrangles
 ===================
 
 .. literalinclude:: ../../../examples/modifying_meshes_ex20.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/modifying_meshes_ex20.py>`
@@ -232,7 +213,6 @@ Split Volumes into Tetrahedra
 =============================
 
 .. literalinclude:: ../../../examples/modifying_meshes_split_vol.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/modifying_meshes_split_vol.py>`
@@ -243,7 +223,6 @@ Smoothing
 =========
 
 .. literalinclude:: ../../../examples/modifying_meshes_ex21.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/modifying_meshes_ex21.py>`
@@ -254,7 +233,6 @@ Extrusion
 =========
 
 .. literalinclude:: ../../../examples/modifying_meshes_ex22.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/modifying_meshes_ex22.py>`
@@ -265,7 +243,6 @@ Extrusion along a Path
 ======================
 
 .. literalinclude:: ../../../examples/modifying_meshes_ex23.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/modifying_meshes_ex23.py>`
@@ -276,7 +253,6 @@ Revolution
 ==========
 
 .. literalinclude:: ../../../examples/modifying_meshes_ex24.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/modifying_meshes_ex24.py>`
@@ -287,7 +263,6 @@ Pattern Mapping
 ===============
 
 .. literalinclude:: ../../../examples/modifying_meshes_ex25.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/modifying_meshes_ex25.py>`
@@ -298,7 +273,6 @@ Convert mesh to/from quadratic
 ==============================
 
 .. literalinclude:: ../../../examples/modifying_meshes_ex26.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/modifying_meshes_ex26.py>`
@@ -309,7 +283,6 @@ Split bi-quadratic into linear
 ==============================
 
 .. literalinclude:: ../../../examples/split_biquad.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/split_biquad.py>`
@@ -339,7 +312,6 @@ This example represents an iron cable (a thin cylinder) in a concrete bloc (a bi
 The big cylinder is defined by two geometric volumes.
 
 .. literalinclude:: ../../../examples/generate_flat_elements.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/generate_flat_elements.py>`

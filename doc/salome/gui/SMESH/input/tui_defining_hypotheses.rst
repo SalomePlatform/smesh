@@ -53,7 +53,6 @@ Arithmetic Progression and Geometric Progression
 ================================================
 
 .. literalinclude:: ../../../examples/defining_hypotheses_ex01.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/defining_hypotheses_ex01.py>`
@@ -64,7 +63,6 @@ Adaptive
 ========
 
 .. literalinclude:: ../../../examples/defining_hypotheses_adaptive1d.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/defining_hypotheses_adaptive1d.py>`
@@ -76,7 +74,6 @@ Deflection and Number of Segments
 =================================
 
 .. literalinclude:: ../../../examples/defining_hypotheses_ex02.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/defining_hypotheses_ex02.py>`
@@ -88,7 +85,6 @@ Start and End Length
 ====================
 
 .. literalinclude:: ../../../examples/defining_hypotheses_ex03.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/defining_hypotheses_ex03.py>`
@@ -100,7 +96,6 @@ Local Length
 ============
 
 .. literalinclude:: ../../../examples/defining_hypotheses_ex04.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/defining_hypotheses_ex04.py>`
@@ -115,7 +110,6 @@ Maximum Element Area
 ====================
 
 .. literalinclude:: ../../../examples/defining_hypotheses_ex05.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/defining_hypotheses_ex05.py>`
@@ -127,7 +121,6 @@ Maximum Element Volume
 ======================
 
 .. literalinclude:: ../../../examples/defining_hypotheses_ex06.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/defining_hypotheses_ex06.py>`
@@ -139,7 +132,6 @@ Length from Edges
 =================
 
 .. literalinclude:: ../../../examples/defining_hypotheses_ex07.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/defining_hypotheses_ex07.py>`
@@ -153,7 +145,6 @@ Propagation
 ===========
 
 .. literalinclude:: ../../../examples/defining_hypotheses_ex08.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/defining_hypotheses_ex08.py>`
@@ -165,7 +156,6 @@ Defining Meshing Algorithms
 ###########################
 
 .. literalinclude:: ../../../examples/defining_hypotheses_ex09.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/defining_hypotheses_ex09.py>`
@@ -177,7 +167,6 @@ Projection Algorithms
 =====================
 
 .. literalinclude:: ../../../examples/defining_hypotheses_ex10.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/defining_hypotheses_ex10.py>`
@@ -186,7 +175,6 @@ Projection 1D2D
 ===============
 
 .. literalinclude:: ../../../examples/defining_hypotheses_ex11.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/defining_hypotheses_ex11.py>`
@@ -197,7 +185,6 @@ Projection 1D2D
 #################################
 
 .. literalinclude:: ../../../examples/defining_hypotheses_ex12.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/defining_hypotheses_ex12.py>`
@@ -208,7 +195,6 @@ Radial Quadrangle 1D-2D example
 ###############################
 
 .. literalinclude:: ../../../examples/defining_hypotheses_ex13.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/defining_hypotheses_ex13.py>`
@@ -219,7 +205,6 @@ Quadrangle Parameters example 1 (meshing a face with 3 edges)
 ##############################################################
 
 .. literalinclude:: ../../../examples/defining_hypotheses_ex14.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/defining_hypotheses_ex14.py>`
@@ -228,7 +213,6 @@ Quadrangle Parameters example 2 (using different types)
 #######################################################
 
 .. literalinclude:: ../../../examples/defining_hypotheses_ex15.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/defining_hypotheses_ex15.py>`
@@ -239,7 +223,6 @@ Quadrangle Parameters example 2 (using different types)
 #################################################
 
 .. literalinclude:: ../../../examples/defining_hypotheses_ex16.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/defining_hypotheses_ex16.py>`
@@ -250,7 +233,6 @@ Viscous layers construction
 ###########################
 
 .. literalinclude:: ../../../examples/defining_hypotheses_ex17.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/defining_hypotheses_ex17.py>`
@@ -261,7 +243,6 @@ Radial Prism example
 ####################
 
 .. literalinclude:: ../../../examples/radial_prism_3d_algo.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/radial_prism_3d_algo.py>`
@@ -272,7 +253,6 @@ Usage of Body Fitting algorithm
 ###############################
 
 .. literalinclude:: ../../../examples/cartesian_algo.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/cartesian_algo.py>`
@@ -287,7 +267,6 @@ which is actually just a stub allowing to use your own 2D algorithm
 implemented in Python.
 
 .. literalinclude:: ../../../examples/use_existing_faces.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/use_existing_faces.py>`
@@ -304,7 +283,6 @@ Usage of Extrusion 3D meshing algorithm
 ########################################
 
 .. literalinclude:: ../../../examples/prism_3d_algo.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/prism_3d_algo.py>`
@@ -321,7 +299,6 @@ Usage of Medial Axis Projection algorithm
 #########################################
 
 .. literalinclude:: ../../../examples/quad_medial_axis_algo.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/quad_medial_axis_algo.py>`
@@ -333,7 +310,6 @@ Usage of Segments around Vertex algorithm
 #########################################
 
 .. literalinclude:: ../../../examples/defining_hypotheses_len_near_vertex.py
-    :linenos:
     :language: python
 
 :download:`Download this script <../../../examples/defining_hypotheses_len_near_vertex.py>`

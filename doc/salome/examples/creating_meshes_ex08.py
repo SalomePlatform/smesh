@@ -15,9 +15,12 @@ box = geompy.MakeBoxDXDYDZ(100,100,100)
 face = geompy.SubShapeAllSorted(box, geompy.ShapeType["FACE"])[0]
 
 # generate a prismatic 3D mesh
-mesh = smesh.Mesh(box)
+mesh = smesh.Mesh(box, "box")
 localAlgo = mesh.Triangle(face)
-mesh.AutomaticHexahedralization()
+mesh.Segment().NumberOfSegments( 3 )
+mesh.Quadrangle()
+mesh.Prism()
+mesh.Compute()
 
 # objects to copy
 fGroup = mesh.GroupOnGeom( face, "2D on face")
@@ -45,3 +48,12 @@ newMesh = smesh.CopyMesh( mesh.GetIDSource( nodeIds, SMESH.NODE), "some nodes co
 
 # 6. copy a sub-mesh
 newMesh = smesh.CopyMesh( subMesh, "sub-mesh copy" )
+
+
+# make a new mesh with same hypotheses on a modified geometry
+
+smallBox = geompy.MakeScaleAlongAxes( box, None, 1, 0.5, 0.5 )
+cutBox = geompy.MakeCut( box, smallBox, theName="box - smallBox" )
+
+ok, newMesh, groups, submehses, hyps, invIDs = smesh.CopyMeshWithGeom( mesh, cutBox, "cutBox" )
+newMesh.Compute()
