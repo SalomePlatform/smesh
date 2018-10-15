@@ -85,8 +85,8 @@ bool SMESH_PreviewActorsCollection::Init( const TopoDS_Shape& theShape,
 
   // Handle( SALOME_InteractiveObject ) anIO = new SALOME_InteractiveObject();
   // anIO->setEntry( theEntry.toUtf8().constData() );
-  
-  // get indexes of seleted elements
+
+  // get indexes of selected elements
   TopExp::MapShapes( theMainShape, myMapOfShapes );
   TopExp_Explorer exp( theShape, theType );
   QSet<int> indices;

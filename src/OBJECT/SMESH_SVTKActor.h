@@ -50,11 +50,11 @@ public:
   //! To publish the actor an all its internal devices
   virtual
   void
-  AddToRender(vtkRenderer* theRendere); 
+  AddToRender(vtkRenderer* theRendere);
 
   virtual void SetVisibility( int theVisibility );
 
-  //! Initialiaze the instance completely
+  //! Initialize the instance completely
   virtual void
   Initialize();
 
@@ -78,7 +78,7 @@ public:
   vtkUnstructuredGrid* my0DGrid;
   vtkUnstructuredGrid* myBallGrid;
   TVisualObjPtr myVisualObj;
-  
+
   SMESH_SVTKActor();
   virtual ~SMESH_SVTKActor();
 };

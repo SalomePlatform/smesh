@@ -455,7 +455,7 @@ namespace {
     int nbEdges = thePrism.myNbEdgesInWires.front();  // nb outer edges
     int nbSides = nbEdges;
 
-    
+
     list< TopoDS_Edge >::const_iterator edgeIt = thePrism.myBottomEdges.begin();
     std::advance( edgeIt, nbEdges-1 );
     TopoDS_Edge   prevE = *edgeIt;
@@ -523,7 +523,7 @@ namespace {
     //   isPrevStraight = isCurStraight;
     //   iPrev = iE;
     // }
-    
+
     return nbSides;
   }
 
@@ -562,7 +562,7 @@ namespace {
 
 //=======================================================================
 //function : StdMeshers_Prism_3D
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 StdMeshers_Prism_3D::StdMeshers_Prism_3D(int hypId, SMESH_Gen* gen)
@@ -594,7 +594,7 @@ StdMeshers_Prism_3D::~StdMeshers_Prism_3D()
 
 //=======================================================================
 //function : CheckHypothesis
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 bool StdMeshers_Prism_3D::CheckHypothesis(SMESH_Mesh&                          aMesh,
@@ -921,7 +921,7 @@ bool StdMeshers_Prism_3D::getWallFaces( Prism_3D::TPrismTopo & thePrism,
   StdMeshers_Quadrangle_2D* quadAlgo = TQuadrangleAlgo::instance( this, myHelper );
 
   TopTools_MapOfShape faceMap;
-  TopTools_IndexedDataMapOfShapeListOfShape edgeToFaces;   
+  TopTools_IndexedDataMapOfShapeListOfShape edgeToFaces;
   TopExp::MapShapesAndAncestors( thePrism.myShape3D,
                                  TopAbs_EDGE, TopAbs_FACE, edgeToFaces );
 
@@ -1652,7 +1652,7 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
         for ( size_t iN = 1; iN < srcNodeStr.size(); ++iN ) // add segments
         {
           // find an EDGE to set a new segment
-          std::pair<int, TopAbs_ShapeEnum> id2type = 
+          std::pair<int, TopAbs_ShapeEnum> id2type =
             myHelper->GetMediumPos( newNodes[ iN-1 ], newNodes[ iN ] );
           if ( id2type.second != TopAbs_EDGE )
           {
@@ -1672,7 +1672,7 @@ bool StdMeshers_Prism_3D::computeWalls(const Prism_3D::TPrismTopo& thePrism)
             {
               SMESH_MeshEditor::TListOfListOfNodes lln( 1, list< const SMDS_MeshNode* >() );
               lln.back().push_back ( vn );
-              lln.back().push_front( newNodes[ iN-isPrev ] ); // to keep 
+              lln.back().push_front( newNodes[ iN-isPrev ] ); // to keep
               SMESH_MeshEditor( mesh ).MergeNodes( lln );
             }
           }
@@ -1997,7 +1997,7 @@ bool StdMeshers_Prism_3D::Evaluate(SMESH_Mesh&         theMesh,
     std::vector<int> aVec = (*anIt).second;
     nb2d += Max(aVec[SMDSEntity_Quadrangle],aVec[SMDSEntity_Quad_Quadrangle]);
   }
-  
+
   MapShapeNbElemsItr anIt = aResMap.find( meshFaces[NumBase-1] );
   std::vector<int> aVec = (*anIt).second;
   bool IsQuadratic = (aVec[SMDSEntity_Quad_Triangle]>aVec[SMDSEntity_Triangle]) ||
@@ -2310,7 +2310,7 @@ bool StdMeshers_Prism_3D::projectBottomToTop( const gp_Trsf &             bottom
   {
     return true;
   }
-  NSProjUtils::TNodeNodeMap& n2nMap = 
+  NSProjUtils::TNodeNodeMap& n2nMap =
     (NSProjUtils::TNodeNodeMap&) TProjction2dAlgo::instance( this )->GetNodesMap();
   n2nMap.clear();
 
@@ -2395,7 +2395,7 @@ bool StdMeshers_Prism_3D::projectBottomToTop( const gp_Trsf &             bottom
         meshDS->MoveNode( topNode, distXYZ[1], distXYZ[2], distXYZ[3] ); // transform can be inaccurate
     }
     // create node column
-    TNode2ColumnMap::iterator bN_col = 
+    TNode2ColumnMap::iterator bN_col =
       myBotToColumnMap.insert( make_pair ( bN, TNodeColumn() )).first;
     TNodeColumn & column = bN_col->second;
     column.resize( zSize );
@@ -2543,7 +2543,7 @@ double StdMeshers_Prism_3D::getSweepTolerance( const Prism_3D::TPrismTopo& thePr
       for ( int iN = 0; iN < nbNodes; ++iN )
         nodes[ iN ] = nIt->next();
       nodes.back() = nodes[0];
-      
+
       // loop on links
       double dist2;
       for ( int iN = 0; iN < nbNodes; ++iN )
@@ -2784,8 +2784,8 @@ namespace // utils used by StdMeshers_Prism_3D::IsApplicable()
     EdgeWithNeighbors() {}
     bool IsInternal() const { return !_edge.IsNull() && _edge.Orientation() == TopAbs_INTERNAL; }
   };
-  // PrismSide contains all FACEs linking a bottom EDGE with a top one. 
-  struct PrismSide 
+  // PrismSide contains all FACEs linking a bottom EDGE with a top one.
+  struct PrismSide
   {
     TopoDS_Face                 _face;    // a currently treated upper FACE
     TopTools_IndexedMapOfShape *_faces;   // all FACEs (pointer because of a private copy constructor)
@@ -2923,7 +2923,7 @@ namespace // utils used by StdMeshers_Prism_3D::IsApplicable()
     }
     return edges.size();
   }
-  
+
   //--------------------------------------------------------------------------------
   /*!
    * \brief Return number of faces sharing given edges
@@ -3536,7 +3536,7 @@ bool StdMeshers_PrismAsBlock::Init(SMESH_MesherHelper*         helper,
   SMESH_Block::init();
   myShapeIDMap.Clear();
   myShapeIndex2ColumnMap.clear();
-  
+
   int wallFaceIds[ NB_WALL_FACES ] = { // to walk around a block
     SMESH_Block::ID_Fx0z, SMESH_Block::ID_F1yz,
     SMESH_Block::ID_Fx1z, SMESH_Block::ID_F0yz
@@ -4064,7 +4064,7 @@ void StdMeshers_PrismAsBlock::faceGridToPythonDump(const SMESH_Block::TShapeID f
            << n << ", " << n+1 << ", "
            << n+nb+2 << ", " << n+nb+1 << "]) " << endl;
     }
-  
+
 #endif
 }
 
@@ -4216,8 +4216,8 @@ Adaptor3d_Curve* StdMeshers_PrismAsBlock::TSideFace::VertiCurve(const bool isMax
 //================================================================================
 /*!
  * \brief Return geometry of the top or bottom curve
-  * \param isTop - 
-  * \retval Adaptor3d_Curve* - 
+  * \param isTop -
+  * \retval Adaptor3d_Curve* -
  */
 //================================================================================
 
@@ -4473,7 +4473,7 @@ gp_Pnt StdMeshers_PrismAsBlock::TSideFace::Value(const Standard_Real U,
                                                        meshDS->IndexToShape( notFaceID2 ),
                                                        *myHelper.GetMesh(),
                                                        TopAbs_FACE );
-      if ( face.IsNull() ) 
+      if ( face.IsNull() )
         throw SALOME_Exception("StdMeshers_PrismAsBlock::TSideFace::Value() face.IsNull()");
       int faceID = meshDS->ShapeToIndex( face );
       me->mySurface = me->myShapeID2Surf[ faceID ];
@@ -4603,7 +4603,7 @@ int StdMeshers_PrismAsBlock::TSideFace::InsertSubShapes(TBlockShapes& shapeMap) 
   if ( v1.ShapeType() == TopAbs_VERTEX ) {
     nbInserted += SMESH_Block::Insert( v1, vertIdVec[ 1 ], shapeMap);
   }
-  
+
   // from V1 column
   SMESH_Block::GetEdgeVertexIDs( edgeIdVec[ V1_EDGE ], vertIdVec);
   GetColumns(1, col1, col2 );
@@ -4651,7 +4651,7 @@ int StdMeshers_PrismAsBlock::TSideFace::InsertSubShapes(TBlockShapes& shapeMap) 
 //   if ( edgeID = edgeIdVec[ _v1 ]) edgeID = edgeIdVec[ _v0 ];
 //   else                            edgeID = edgeIdVec[ _v1 ];
 //   SMESH_Block::Insert( sideEdge, edgeID, shapeMap);
-  
+
 //   // top edge
 //   TopoDS_Edge topEdge = GetEdge( TOP_EDGE );
 //   SMESH_Block::Insert( topEdge, edgeIdVec[ _u1 ], shapeMap);
@@ -4689,7 +4689,7 @@ void StdMeshers_PrismAsBlock::TSideFace::dumpNodes(int nbNodes) const
 
 //================================================================================
 /*!
- * \brief Creates TVerticalEdgeAdaptor 
+ * \brief Creates TVerticalEdgeAdaptor
   * \param columnsMap - node column map
   * \param parameter - normalized parameter
  */
@@ -4764,7 +4764,7 @@ void StdMeshers_PrismAsBlock::THorizontalEdgeAdaptor::dumpNodes(int nbNodes) con
   TParam2ColumnIt col, col2;
   TParam2ColumnMap* u2cols = side->GetColumns();
   side->GetColumns( u , col, col2 );
-  
+
   int j, i = myV ? mySide->ColumnHeight()-1 : 0;
 
   const SMDS_MeshNode* n = 0;
@@ -4793,7 +4793,7 @@ void StdMeshers_PrismAsBlock::THorizontalEdgeAdaptor::dumpNodes(int nbNodes) con
 
 //================================================================================
 /*!
- * \brief Costructor of TPCurveOnHorFaceAdaptor fills its map of
+ * \brief Constructor of TPCurveOnHorFaceAdaptor fills its map of
  * normalized parameter to node UV on a horizontal face
  *  \param [in] sideFace - lateral prism side
  *  \param [in] isTop - is \a horFace top or bottom of the prism

@@ -550,7 +550,7 @@ namespace
         }
       }
     }
-    
+
     // Warn the user about presence of not supported elements
     QString format;
     std::vector< SMESH::EntityType > notSupportedElemTypes, presentNotSupported;
@@ -673,7 +673,7 @@ namespace
 
     QList< QPair< GEOM::ListOfFields_var, QString > > aFieldList;
 
-    // Get a file name to write in and additional otions
+    // Get a file name to write in and additional options
     if ( isUNV || isDAT || isGMF ) // Export w/o options
     {
       if ( isUNV )
@@ -797,8 +797,8 @@ namespace
       if ( !anInitialPath.isEmpty() )
         fd->setDirectory( anInitialPath );
       fd->selectFile(aMeshName);
-      
-      
+
+
       QListView *lview = fd->findChild<QListView*>("listView");
       if( lview ) {
         lview->setMinimumHeight(200);
@@ -1491,7 +1491,7 @@ namespace
             presentEntities = presentEntities | SMESH_Actor::e0DElements;
           if ( !(presentEntities & SMESH_Actor::eBallElem) && anActor->GetObject()->GetNbEntities( SMDSAbs_Ball ) )
             presentEntities = presentEntities | SMESH_Actor::eBallElem;
-          
+
           // as we know that all types of elements are present, we can exit the loop
           if ( presentEntities == SMESH_Actor::eAllEntity )
             break;
@@ -1529,7 +1529,7 @@ namespace
         dlg.setShrinkCoef( int( shrinkCoef * 100. ) );
         // hide unused controls
         dlg.showControls( presentEntities, hasNodes );
-        
+
         if ( dlg.exec() ) {
           nodeColor        = dlg.nodeColor();
           markerType       = dlg.nodeMarkerType();
@@ -1563,7 +1563,7 @@ namespace
             if ( !IObject->hasEntry() ) continue;
             SMESH_Actor* anActor = SMESH::FindActorByEntry( IObject->getEntry() );
             if ( !anActor ) continue;
-            
+
             // nodes: color, marker
             anActor->SetNodeColor( nodeColor.redF(), nodeColor.greenF(), nodeColor.blueF() );
             if ( markerType != VTK::MT_USER ) {
@@ -1608,17 +1608,17 @@ namespace
                 aColor = nodeColor; break;
               case SMESH::EDGE:
                 aColor = edgeColor; break;
-              case SMESH::FACE: 
+              case SMESH::FACE:
                 aColor = faceColor; break;
               case SMESH::VOLUME:
                 aColor = volumeColor; break;
-              case SMESH::ELEM0D: 
+              case SMESH::ELEM0D:
                 aColor = elem0dColor; break;
-              case SMESH::BALL: 
+              case SMESH::BALL:
                 aColor = ballColor; break;
               default: break;
               }
-              
+
               if ( aColor.isValid() ) {
                 SALOMEDS::Color aGroupColor;
                 aGroupColor.R = aColor.redF();
@@ -1843,7 +1843,7 @@ namespace
     v = qMax( uint(0), qMin ( v, size-1 ) );
     return v;
   }
-  
+
 } //namespace
 
 void SMESHGUI::OnEditDelete()
@@ -2142,20 +2142,20 @@ bool SMESHGUI::automaticUpdate( SMESH::SMESH_IDSource_ptr theMesh,
   SMESH::long_array_var info = theMesh->GetMeshInfo();
   long nbOdElems = info[SMDSEntity_0D];
   long nbEdges   = info[SMDSEntity_Edge] + info[SMDSEntity_Quad_Edge];
-  long nbFaces   = info[SMDSEntity_Triangle]   + info[SMDSEntity_Quad_Triangle]   + info[SMDSEntity_BiQuad_Triangle] + 
-                   info[SMDSEntity_Quadrangle] + info[SMDSEntity_Quad_Quadrangle] + info[SMDSEntity_BiQuad_Quadrangle] + 
+  long nbFaces   = info[SMDSEntity_Triangle]   + info[SMDSEntity_Quad_Triangle]   + info[SMDSEntity_BiQuad_Triangle] +
+                   info[SMDSEntity_Quadrangle] + info[SMDSEntity_Quad_Quadrangle] + info[SMDSEntity_BiQuad_Quadrangle] +
                    info[SMDSEntity_Polygon] + info[SMDSEntity_Quad_Polygon];
-  long nbVolumes = info[SMDSEntity_Tetra]   + info[SMDSEntity_Quad_Tetra] + 
-                   info[SMDSEntity_Hexa]    + info[SMDSEntity_Quad_Hexa] + info[SMDSEntity_TriQuad_Hexa] + 
-                   info[SMDSEntity_Pyramid] + info[SMDSEntity_Quad_Pyramid] + 
+  long nbVolumes = info[SMDSEntity_Tetra]   + info[SMDSEntity_Quad_Tetra] +
+                   info[SMDSEntity_Hexa]    + info[SMDSEntity_Quad_Hexa] + info[SMDSEntity_TriQuad_Hexa] +
+                   info[SMDSEntity_Pyramid] + info[SMDSEntity_Quad_Pyramid] +
                    info[SMDSEntity_Penta]   + info[SMDSEntity_Quad_Penta] + info[SMDSEntity_BiQuad_Penta] +
-                   info[SMDSEntity_Polyhedra] + 
+                   info[SMDSEntity_Polyhedra] +
                    info[SMDSEntity_Hexagonal_Prism];
   long nbBalls   = info[SMDSEntity_Ball];
 
   long requestedSize = nbOdElems + nbBalls + nbEdges + nbFaces + nbVolumes;
   *nbElements = requestedSize;
-  
+
   *entities = SMESH_Actor::eAllEntity;
   *hidden   = 0;
 
@@ -3161,7 +3161,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         SALOME_ListIteratorOfListIO It( selected );
         for ( ; It.More(); It.Next() ) {
           SMESHGUI_MeshInfoDlg* dlg = new SMESHGUI_MeshInfoDlg( SMESHGUI::desktop(), page );
-          dlg->showInfo( It.Value() ); 
+          dlg->showInfo( It.Value() );
           dlg->show();
         }
       }
@@ -4273,8 +4273,8 @@ void SMESHGUI::initialize( CAM_Application* app )
       addElemTb    = createTool( tr( "TB_ADD" ),       QString( "SMESHAddElementToolbar" ) ),
       addNonElemTb = createTool( tr( "TB_ADDNON" ),    QString( "SMESHAddElementToolbar" ) ),
       remTb        = createTool( tr( "TB_REM" ),       QString( "SMESHRemoveToolbar" ) ),
-    //renumbTb     = createTool( tr( "TB_RENUMBER" ),  QString( "SMESHRenumberingToolbar" ) ),  
-      transformTb  = createTool( tr( "TB_TRANSFORM" ), QString( "SMESHTransformationToolbar" ) ),  
+    //renumbTb     = createTool( tr( "TB_RENUMBER" ),  QString( "SMESHRenumberingToolbar" ) ),
+      transformTb  = createTool( tr( "TB_TRANSFORM" ), QString( "SMESHTransformationToolbar" ) ),
       modifyTb     = createTool( tr( "TB_MODIFY" ),    QString( "SMESHModificationToolbar" ) ),
       measuremTb   = createTool( tr( "TB_MEASUREM" ),  QString( "SMESHMeasurementsToolbar" ) ),
       dispModeTb   = createTool( tr( "TB_DISP_MODE" ), QString( "SMESHDisplayModeToolbar" ) );
@@ -5305,7 +5305,7 @@ void SMESHGUI::createPreferences()
 
   int numGroup = addPreference( tr( "PREF_GROUP_NUMBERING" ), meshTab );
   setPreferenceProperty( numGroup, "columns", 2 );
-  
+
   addPreference( tr( "PREF_NUMBERING_NODE" ), numGroup, LightApp_Preferences::Color, "SMESH", "numbering_node_color" );
   addVtkFontPref( tr( "PREF_NUMBERING_FONT" ), numGroup, "numbering_node_font", true );
 
@@ -5731,7 +5731,7 @@ const char* gPathSep   = "|"; // character used to separate paths
  * \brief Store visual parameters
  *
  * This method is called just before the study document is saved.
- * Store visual parameters in AttributeParameter attribue(s)
+ * Store visual parameters in AttributeParameter attribute(s)
  */
 void SMESHGUI::storeVisualParameters (int savePoint)
 {
@@ -6083,7 +6083,7 @@ typedef std::map<int, TPlaneInfoList> TPlaneInfoMap;
  * \brief Restore visual parameters
  *
  * This method is called after the study document is opened.
- * Restore visual parameters from AttributeParameter attribue(s)
+ * Restore visual parameters from AttributeParameter attribute(s)
  */
 void SMESHGUI::restoreVisualParameters (int savePoint)
 {
@@ -6197,7 +6197,7 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
       aPlaneData.Mode = aPropertyValueList[0].toInt( &ok );
       if( !ok )
         continue;
-      
+
       ok = false;
       aPlaneData.isOpenGLClipping = aPropertyValueList[1].toInt( &ok );
       if( !ok )
@@ -6697,9 +6697,9 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
             // Clipping
             else if (paramNameStr.startsWith("ClippingPlane")) {
               QStringList vals = val.split(gDigitsSep, QString::SkipEmptyParts);
-              // old format - val looks like "Off" or "1:0:0:0.5:0:0" 
+              // old format - val looks like "Off" or "1:0:0:0.5:0:0"
               // (mode(relative), is OpenGL clipping plane, orientation, distance, two angles)
-              // or "0:1:1:10.5:1.0:1.0:15.0:10.0:10.0" 
+              // or "0:1:1:10.5:1.0:1.0:15.0:10.0:10.0"
               // (mode(absolute), is OpenGL clipping plane, orientation, base point(x, y, z), direction (dx, dy, dz))
               // new format - val looks like "Off" or "0" (plane id)
               // (note: in new format "Off" value is used only for consistency,
@@ -6899,10 +6899,10 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
           break;
         }
       }
-    
+
     }
   }
-  
+
 
   // update all VTK views
   QList<SUIT_ViewManager*> lst;
@@ -6918,7 +6918,7 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
       while( vtkActor* aVTKActor = anAllActors->GetNextActor() )
         if( SMESH_Actor* anActor = SMESH_Actor::SafeDownCast( aVTKActor ) )
           anActor->SetOpenGLClippingPlane();
-      
+
       vtkView->getRenderer()->ResetCameraClippingRange();
       vtkView->Repaint();
     }
@@ -7037,7 +7037,7 @@ void SMESHGUI::message( const QString& msg )
         name = SMESH::fromUtf8(obj->GetName());
       if ( name.isEmpty() )
         return;
-      
+
       if ( data.last() == "stop" )
         application()->putInfo( tr( "MESH_LOADING_MSG_FINISHED" ).arg( name ) );
       else
@@ -7078,7 +7078,7 @@ bool SMESHGUI::renameAllowed( const QString& entry) const {
     return false;
 
   SalomeApp_DataObject* obj = dynamic_cast<SalomeApp_DataObject*>(appStudy->findObjectByEntry(entry));
-  
+
   if(!obj)
     return false;
 
@@ -7108,17 +7108,17 @@ bool SMESHGUI::renameObject( const QString& entry, const QString& name) {
   SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( application() );
   if( !anApp )
     return false;
-    
+
   SalomeApp_Study* appStudy = dynamic_cast<SalomeApp_Study*>( anApp->activeStudy() );
 
   if(!appStudy)
     return false;
-  
+
   _PTR(Study) aStudy = appStudy->studyDS();
-  
+
   if(!aStudy)
     return false;
-  
+
   bool aLocked = (_PTR(AttributeStudyProperties)(appStudy->studyDS()->GetProperties()))->IsLocked();
   if ( aLocked ) {
     SUIT_MessageBox::warning ( anApp->desktop(), QObject::tr("WRN_WARNING"), QObject::tr("WRN_STUDY_LOCKED") );

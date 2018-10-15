@@ -37,7 +37,7 @@
 /// may only be needed to be called in case if mesh objects are
 /// created when no active study is set to %SMESH component.
 /// In this case, mentioned functions can be used to forcibly
-/// publish existing objects in the currrently active study.
+/// publish existing objects in the currently active study.
 ///
 /// Note that if there are no open study, these methods will do
 /// nothing.
@@ -185,7 +185,7 @@ namespace
       {
         SUIT_ViewManager* vm = app->getViewManager( SVTK_Viewer::Type(), create );
         if ( vm )
-        { 
+        {
           window = dynamic_cast<SALOME_View*>( vm->getViewModel() );
         }
       }
@@ -259,45 +259,45 @@ namespace
                            props.nodeColor.b );
       props.markerType = actor->GetMarkerType();
       props.markerScale = actor->GetMarkerScale();
-      
+
       actor->GetEdgeColor( props.edgeColor.r,
                            props.edgeColor.g,
                            props.edgeColor.b );
       props.edgeWidth = qMax( (int)actor->GetLineWidth(), 1 );
-      
+
       actor->GetSufaceColor( props.surfaceColor.r,
                              props.surfaceColor.g,
                              props.surfaceColor.b,
                              props.surfaceColor.delta );
-      
+
       actor->GetVolumeColor( props.volumeColor.r,
                              props.volumeColor.g,
                              props.volumeColor.b,
                              props.volumeColor.delta );
-      
+
       actor->Get0DColor( props.elem0dColor.r,
                          props.elem0dColor.g,
                          props.elem0dColor.b );
       props.elem0dSize = qMax( (int)actor->Get0DSize(), 1 );
-      
+
       actor->GetBallColor( props.ballColor.r,
                            props.ballColor.g,
                            props.ballColor.b );
       props.ballScale = qMax( actor->GetBallScale(), 1e-2 );
-      
+
       actor->GetOutlineColor( props.outlineColor.r,
                               props.outlineColor.g,
                               props.outlineColor.b );
       props.outlineWidth = qMax( (int)actor->GetOutlineWidth(), 1 );
-      
+
       actor->GetFacesOrientationColor( props.orientationColor.r,
                                        props.orientationColor.g,
                                        props.orientationColor.b );
       props.orientationScale = actor->GetFacesOrientationScale();
       props.orientation3d = actor->GetFacesOrientation3DVectors();
-      
+
       props.shrinkFactor = actor->GetShrinkFactor();
-      
+
       props.opacity = actor->GetOpacity();
     }
     return props;
@@ -320,47 +320,47 @@ namespace
                            props.nodeColor.b );
       if ( props.markerType != VTK::MT_USER )
         actor->SetMarkerStd( props.markerType, props.markerScale );
-      
+
       actor->SetEdgeColor( props.edgeColor.r,
                            props.edgeColor.g,
                            props.edgeColor.b );
       actor->SetLineWidth( qMax( (double)props.edgeWidth, 1. ) );
-      
+
       actor->SetSufaceColor( props.surfaceColor.r,
                              props.surfaceColor.g,
                              props.surfaceColor.b,
                              props.surfaceColor.delta );
-      
+
       actor->SetVolumeColor( props.volumeColor.r,
                              props.volumeColor.g,
                              props.volumeColor.b,
                              props.volumeColor.delta );
-      
+
       actor->Set0DColor( props.elem0dColor.r,
                          props.elem0dColor.g,
                          props.elem0dColor.b );
       actor->Set0DSize( qMax( (double)props.elem0dSize, 1. ) );
-      
+
       actor->SetBallColor( props.ballColor.r,
                            props.ballColor.g,
                            props.ballColor.b );
       actor->SetBallScale( qMax( props.ballScale, 1e-2 ) );
-      
+
       actor->SetOutlineColor( props.outlineColor.r,
                               props.outlineColor.g,
                               props.outlineColor.b );
       actor->SetOutlineWidth( qMax( (double)props.outlineWidth, 1. ) );
-      
+
       actor->SetFacesOrientationColor( props.orientationColor.r,
                                        props.orientationColor.g,
                                        props.orientationColor.b );
       actor->SetFacesOrientationScale( props.orientationScale );
       actor->SetFacesOrientation3DVectors( props.orientation3d );
-      
+
       actor->SetShrinkFactor( props.shrinkFactor );
-      
+
       actor->SetOpacity( props.opacity );
-      
+
       view->Repaint();
     }
   }
@@ -705,7 +705,7 @@ void SMESH_Swig::update(const char* uid)
     TUpdateEvent( const char* uid ) : myUid( uid ) {}
     virtual void Execute()
     {
-      Handle(SALOME_InteractiveObject) io = 
+      Handle(SALOME_InteractiveObject) io =
         new SALOME_InteractiveObject( myUid, "SMESH", "" );
       SMESH::Update( io, true );
     }
@@ -1719,7 +1719,7 @@ public:
 
     if ( !selMgr )
       return;
-    
+
     selMgr->clearFilters();
 
     SVTK_ViewWindow* vw = SMESH::GetViewWindow();
@@ -1727,10 +1727,10 @@ public:
       return;
 
     SMESH_Actor* actor = SMESH::FindActorByEntry( myUid );
-    
+
     if ( !actor || !actor->hasIO() )
       return;
-    
+
     Handle(SALOME_InteractiveObject) io = actor->getIO();
     SALOME_ListIO ios;
     ios.Append( io );
@@ -1738,7 +1738,7 @@ public:
 
     if ( vw->SelectionMode() == ActorSelection )
       return;
-        
+
     TColStd_MapOfInteger idMap;
     std::vector<int>::const_iterator it;
     for ( it = myIds.begin(); it != myIds.end(); ++it )
@@ -1770,7 +1770,7 @@ void SMESH_Swig::select(const char* uid, std::vector<int> ids, bool append)
   if ( sobject )
     ProcessVoidEvent( new TSelectListEvent( sobject->GetID().c_str(), ids, append ) );
 }
-  
+
 /////////////////////////////////////////////////////////////////
 /// \brief Select element of the mesh, sub-mesh or group.
 /// \param uid Mesh object's study UID or IOR.
@@ -1814,7 +1814,7 @@ public:
 
     if ( !selMgr )
       return;
-    
+
     selMgr->clearFilters();
 
     SVTK_ViewWindow* vw = SMESH::GetViewWindow();
@@ -1822,10 +1822,10 @@ public:
       return;
 
     SMESH_Actor* actor = SMESH::FindActorByEntry( myUid );
-    
+
     if ( !actor || !actor->hasIO() )
       return;
-    
+
     Handle(SALOME_InteractiveObject) io = actor->getIO();
     SALOME_ListIO ios;
     ios.Append( io );
@@ -1833,7 +1833,7 @@ public:
 
     if ( vw->SelectionMode() != EdgeOfCellSelection )
       return;
-        
+
     SVTK_IndexedMapOfIds idMap;
     std::vector<std::pair<int, int> >::const_iterator it;
     for ( it = myIds.begin(); it != myIds.end(); ++it )
@@ -1961,7 +1961,7 @@ public:
 void SMESH_Swig::setSelectionMode(SelectionMode mode, int viewUid)
 {
   init();
-  ProcessVoidEvent( new TSetSelectionModeEvent( mode, viewUid ) ); 
+  ProcessVoidEvent( new TSetSelectionModeEvent( mode, viewUid ) );
 }
 
 /////////////////////////////////////////////////////////////////
@@ -1973,17 +1973,17 @@ public:
   typedef std::vector<int> TResult;
   TResult myResult;
   const char* myUid;
-  
+
   TGetSelectedEvent( const char* uid )
     : myUid( uid ) {}
-  
+
   virtual void Execute()
   {
     SVTK_ViewWindow* vw = SMESH::GetViewWindow();
     if ( !vw )
       return;
 
-    SVTK_Selector* selector = vw->GetSelector();    
+    SVTK_Selector* selector = vw->GetSelector();
     if ( !selector )
       return;
 
@@ -2026,10 +2026,10 @@ public:
   typedef std::vector<std::pair<int, int> > TResult;
   TResult myResult;
   const char* myUid;
-  
+
   TGetSelectedPairEvent( const char* uid )
     :  myUid( uid ) {}
-  
+
   virtual void Execute()
   {
     SVTK_ViewWindow* vw = SMESH::GetViewWindow();
@@ -2039,7 +2039,7 @@ public:
     if ( vw->SelectionMode() != EdgeOfCellSelection )
       return;
 
-    SVTK_Selector* selector = vw->GetSelector();    
+    SVTK_Selector* selector = vw->GetSelector();
     if ( !selector )
       return;
 

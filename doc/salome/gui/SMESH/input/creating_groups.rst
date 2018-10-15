@@ -6,9 +6,9 @@ Creating groups
 
 In MESH you can create a group of elements of a certain type. The main way to create a group, is to
 select in the **Mesh** menu **Create Group** item (also available in the context menu of the mesh).
-To create a group you should define the following: 
+To create a group you should define the following:
 
-* **Mesh** - the mesh whose elements will form your group. You can select your mesh in the Objet Browser or in the 3D viewer.
+* **Mesh** - the mesh whose elements will form your group. You can select your mesh in the Object Browser or in the 3D viewer.
 * **Elements Type** - set of radio buttons allows to select the type of elements which will form your group:
 	* **Nodes**
 	* **0D Element**
@@ -32,7 +32,7 @@ Mesh module distinguishes between the three Group types:
 the following ways:
 
 * By adding all entities of the chosen type existing in the mesh. For this, turn on the **Select All** check-box. In this mode all controls, which allow selecting the entities, are disabled.
-* By choosing entities manually with the mouse in the 3D Viewer. For this, turn on the **Enable manual edition** check box. You can click on an element in the 3D viewer and it will be highlighted. After that click the **Add** button and the ID of this element will be added to the list. The **Set filter** button allows to define the filter for selection of the elements for your group. See more about filters on the :ref:`selection_filter_library_page` page. 
+* By choosing entities manually with the mouse in the 3D Viewer. For this, turn on the **Enable manual edition** check box. You can click on an element in the 3D viewer and it will be highlighted. After that click the **Add** button and the ID of this element will be added to the list. The **Set filter** button allows to define the filter for selection of the elements for your group. See more about filters on the :ref:`selection_filter_library_page` page.
 * By adding entities from either a sub-mesh or another group. For this, turn on the **Enable manual edition** check box. **Select from** fields group allows to select a sub-mesh or a group of the appropriate type and to **Add** their elements to the group.
 
 In the **manual edition** mode you can
@@ -62,7 +62,7 @@ For example, to create a new group containing all faces of an existing group and
 .. centered::
 	Brown cells belong to a group defined manually
 
-**See Also** a sample TUI Script of a :ref:`tui_create_standalone_group` operation.  
+**See Also** a sample TUI Script of a :ref:`tui_create_standalone_group` operation.
 
 
 .. _group_on_geom:
@@ -79,7 +79,7 @@ To define a group, click the *Selection* button |sel| and choose
 * *Direct geometry selection* to select a shape in the Object Browser or in the Viewer;
 * *Find geometry by mesh element selection* to activate a dialog which retrieves a shape by the selected element generated on this shape.
 
-.. note:: 
+.. note::
 	This choice is available only if the mesh elements are already generated.
 
 .. image:: ../images/a-creategroup.png
@@ -101,11 +101,11 @@ After confirmation of the operation a new group of mesh elements will be created
 "Group on Filter"
 #################
 
-To create a group on filter check **Group on filter** in the **Group type** field. 
-The group on filter contains the elements of a certain type satisfying the defined filter. 
+To create a group on filter check **Group on filter** in the **Group type** field.
+The group on filter contains the elements of a certain type satisfying the defined filter.
 Group contents are dynamically updated if the mesh is modified.
 
-To define a group, click the **Set filter** button and define criteria of the filter in the opened dialog. After the operation is confirmed, a new group of mesh elements will be created. See more about filters on the :ref:`selection_filter_library_page` page. 
+To define a group, click the **Set filter** button and define criteria of the filter in the opened dialog. After the operation is confirmed, a new group of mesh elements will be created. See more about filters on the :ref:`selection_filter_library_page` page.
 
 	.. image:: ../images/creategroup_on_filter.png
 		:align: center

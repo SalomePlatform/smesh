@@ -691,9 +691,9 @@ SMESH_Mesh_i::addHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
     //use PseudoShape in case if mesh has no shape
     if(HasShapeToMesh())
       myLocSubShape = _gen_i->GeomObjectToShape( aSubShape);
-    else              
+    else
       myLocSubShape = _impl->GetShapeToMesh();
-    
+
     const int hypId = anHyp->GetId();
     std::string error;
     status = _impl->AddHypothesis( myLocSubShape, hypId, &error );
@@ -1018,7 +1018,7 @@ SMESH_Mesh_i::CreateGroupFromGEOM (SMESH::ElementType    theElemType,
   TopoDS_Shape aShape = _gen_i->GeomObjectToShape( theGeomObj );
   if ( !aShape.IsNull() )
   {
-    aNewGroup = 
+    aNewGroup =
       SMESH::SMESH_GroupOnGeom::_narrow( createGroup( theElemType, theName, aShape ));
 
     if ( _gen_i->CanPublishInStudy( aNewGroup ) )
@@ -1410,7 +1410,7 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::IntersectGroups( SMESH::SMESH_GroupBase_ptr
 
 //=============================================================================
 /*!
-  \brief Intersect list of groups. New group is created. All mesh elements that 
+  \brief Intersect list of groups. New group is created. All mesh elements that
   are present in all initial groups simultaneously are added to the new one.
   \param theGroups list of groups
   \param theName name of group to be created
@@ -1495,7 +1495,7 @@ SMESH_Mesh_i::IntersectListOfGroups(const SMESH::ListOfGroups& theGroups,
 }
 
 //=============================================================================
-/*! 
+/*!
  *  New group is created. All mesh elements that are present in
  *  a main group but is not present in a tool group are added to the new one
  */
@@ -1558,7 +1558,7 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CutGroups( SMESH::SMESH_GroupBase_ptr theGr
 
 //=============================================================================
 /*!
-  \brief Cut lists of groups. New group is created. All mesh elements that are 
+  \brief Cut lists of groups. New group is created. All mesh elements that are
   present in main groups but do not present in tool groups are added to the new one
   \param theMainGroups list of main groups
   \param theToolGroups list of tool groups
@@ -1567,8 +1567,8 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CutGroups( SMESH::SMESH_GroupBase_ptr theGr
 */
 //=============================================================================
 SMESH::SMESH_Group_ptr
-SMESH_Mesh_i::CutListOfGroups(const SMESH::ListOfGroups& theMainGroups, 
-                              const SMESH::ListOfGroups& theToolGroups, 
+SMESH_Mesh_i::CutListOfGroups(const SMESH::ListOfGroups& theMainGroups,
+                              const SMESH::ListOfGroups& theToolGroups,
                               const char*                theName )
   throw (SALOME::SALOME_Exception)
 {
@@ -4296,7 +4296,7 @@ SMESH::long_array* SMESH_Mesh_i::GetSubMeshNodesId(const CORBA::Long ShapeID,
 
   return aResult._retn();
 }
-  
+
 //=============================================================================
 /*!
  * Returns type of elements for given submesh
@@ -4328,9 +4328,9 @@ SMESH::ElementType SMESH_Mesh_i::GetSubMeshElementType(const CORBA::Long ShapeID
 
   SMESH_CATCH( SMESH::throwCorbaException );
 
-  return type; 
+  return type;
 }
-  
+
 
 //=============================================================================
 /*!
@@ -4404,7 +4404,7 @@ SMESH::long_array* SMESH_Mesh_i::GetNodeInverseElements(const CORBA::Long id)
 
   // find inverse elements
   SMDS_ElemIteratorPtr eIt = aNode->GetInverseElementIterator();
-  aResult->length( aNode->NbInverseElements() );  
+  aResult->length( aNode->NbInverseElements() );
   for( int i = 0; eIt->more(); ++i )
   {
     const SMDS_MeshElement* elem = eIt->next();
@@ -4540,7 +4540,7 @@ CORBA::Long SMESH_Mesh_i::GetShapeID(const CORBA::Long id)
 
 //=============================================================================
 /*!
- * For given element returns ID of result shape after 
+ * For given element returns ID of result shape after
  * ::FindShape() from SMESH_MeshEditor
  * If there is not element for given ID - returns -1
  */
@@ -5205,7 +5205,7 @@ void SMESH_Mesh_i::checkGroupNames()
   int nbGrp = NbGroups();
   if ( !nbGrp )
     return;
-  
+
   SMESH::ListOfGroups* grpList = 0;
   // avoid dump of "GetGroups"
   {
@@ -5401,10 +5401,10 @@ SALOMEDS::TMPFile* SMESH_Mesh_i::GetVtkUgStream()
       aWriter->Write();
       char* str = aWriter->GetOutputString();
       int size = aWriter->GetOutputStringLength();
-      
-      //Allocate octect buffer of required size
+
+      //Allocate octet buffer of required size
       CORBA::Octet* OctetBuf = SALOMEDS::TMPFile::allocbuf(size);
-      //Copy ostrstream content to the octect buffer
+      //Copy ostrstream content to the octet buffer
       memcpy(OctetBuf, str, size);
       //Create and return TMPFile
       SeqFile = new SALOMEDS::TMPFile(size, size, OctetBuf, 1);
@@ -5735,7 +5735,7 @@ class SMESH_DimHyp
     }
     return isShared;
   }
-  
+
   //-----------------------------------------------------------------------------
   //! check algorithms
   static bool checkAlgo(const SMESHDS_Hypothesis* theA1,
@@ -5749,7 +5749,7 @@ class SMESH_DimHyp
     return strcmp( theA1->GetName(), theA2->GetName() ) == 0;
   }
 
-  
+
   //-----------------------------------------------------------------------------
   //! Check if sub-shape hypotheses are concurrent
   bool IsConcurrent(const SMESH_DimHyp* theOther) const
@@ -5801,7 +5801,7 @@ class SMESH_DimHyp
 
     return ( this->_subMesh->GetId() < theOther->_subMesh->GetId() );
   }
-  
+
 }; // end of SMESH_DimHyp
 //-----------------------------------------------------------------------------
 
@@ -5809,7 +5809,7 @@ typedef list<const SMESH_DimHyp*> TDimHypList;
 
 //-----------------------------------------------------------------------------
 
-void addDimHypInstance(const int                               theDim, 
+void addDimHypInstance(const int                               theDim,
                        const TopoDS_Shape&                     theShape,
                        const SMESH_Algo*                       theAlgo,
                        const SMESH_subMesh*                    theSubMesh,
@@ -5822,7 +5822,7 @@ void addDimHypInstance(const int                               theDim,
     dimHyp->_hypotheses.push_front(theAlgo);
     listOfdimHyp.push_back( dimHyp );
   }
-  
+
   SMESH_DimHyp* dimHyp = const_cast<SMESH_DimHyp*>( listOfdimHyp.back() );
   dimHyp->_hypotheses.insert( dimHyp->_hypotheses.end(),
                               theHypList.begin(), theHypList.end() );
@@ -5881,7 +5881,7 @@ void unionLists(TListOfInt&       theListOfId,
     if ( find_first_of( theListOfId.begin(), theListOfId.end(),
                         otherListOfId.begin(), otherListOfId.end() ) == theListOfId.end() )
       continue;
-         
+
     // union two lists (from source into target)
     TListOfInt::iterator it2 = otherListOfId.begin();
     for ( ; it2 != otherListOfId.end(); it2++ ) {
@@ -6034,7 +6034,7 @@ TListOfListOfInt SMESH_Mesh_i::findConcurrentSubMeshes()
           addDimHypInstance( j, aSubMeshShape, anAlgo, sm, hypList, dimHypListArr );
       }
     } // end iterations on submesh
-    
+
     // iterate on created dimension-hypotheses and check for concurrents
     for ( int i = 0; i < 4; i++ ) {
       const TDimHypList& listOfDimHyp = dimHypListArr[i];
@@ -6059,9 +6059,9 @@ TListOfListOfInt SMESH_Mesh_i::findConcurrentSubMeshes()
         }
       }
     }
-    
+
     removeDimHyps(dimHypListArr);
-    
+
     // now, minimize the number of concurrent groups
     // Here we assume that lists of submeshes can have same submesh
     // in case of multi-dimension algorithms, as result
@@ -6130,7 +6130,7 @@ TListOfListOfInt SMESH_Mesh_i::findConcurrentSubMeshes()
 
   mesh.SetMeshOrder( subMeshOrder );
   res = true;
-  
+
   SMESH::SMESH_Mesh_var me = _this();
   _gen_i->UpdateIcons( me );
 
@@ -6379,5 +6379,3 @@ _GET_ITER_DEFINE( SMDS_VolumeIteratorPtr, volumesIterator, SMDS_MeshVolume, SMDS
 // END Implementation of SMESH_MeshPartDS
 //
 //================================================================================
-
-
