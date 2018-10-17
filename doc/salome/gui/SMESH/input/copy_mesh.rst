@@ -41,7 +41,13 @@ In the dialog:
 
 * Click **Apply** or **Apply and Close** button to confirm the operation.
 
-When copying the mesh to the new geometry, it can happen that a sub-shape used to define a sub-mesh, group or hypotheses is not found in the new geometry. In this case a new object depending on the not found sub-shape is marked with red color in the Object Browser in order to allow identifying such objects and to fix them, either by modifying their definition or by removing. If a depending object is a group on geometry, a standalone group is created instead. You can't transform it to a group on geometry, it can only be removed and re-created anew.
+---------------------------------------------------
+Limitations of copying the mesh to the new geometry
+---------------------------------------------------
+
+It can happen that a sub-shape used to define a sub-mesh, group or hypotheses is not found in the new geometry. In this case a new object depending on the not found sub-shape is marked with red color in the Object Browser in order to allow identifying such objects and to fix them, either by modifying their definition or by removing. If a depending object is a group on geometry, a standalone group is created instead. You can't transform it to a group on geometry, it can only be removed and re-created anew.
+
+Empty standalone groups are not constructed.
 
 **See Also** a sample script of :ref:`tui_copy_mesh`.
 

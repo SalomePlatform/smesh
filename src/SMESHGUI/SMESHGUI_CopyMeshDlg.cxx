@@ -351,7 +351,7 @@ QString SMESHGUI_CopyMeshDlg::getErrorMsg( SMESH::string_array_var theInvalidEnt
                                            QStringList &           theEntriesToBrowse )
 {
   if ( theInvalidEntries->length() == 0 )
-    return tr("SMESH_OPERATION_FAILED");
+    return tr("OPERATION_FAILED");
 
   // theInvalidEntries - SObject's that hold geometry objects whose
   // counterparts are not found in the newGeometry, followed by SObject's
@@ -508,7 +508,6 @@ bool SMESHGUI_CopyMeshDlg::ClickOnApply()
     anApp->browseObjects( anEntryList, toShowObjects );
 
   Init(false);
-  mySelectedObject = SMESH::SMESH_IDSource::_nil();
   SelectionIntoArgument();
 
   return true;
@@ -685,6 +684,16 @@ void SMESHGUI_CopyMeshDlg::SelectionIntoArgument()
     mySelectedObject = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO );
     if ( mySelectedObject->_is_nil() )
       return;
+
+    if ( isWithGeomMode() ) // only mesh selection allowed
+    {
+      myMesh = SMESH::SMESH_Mesh::_narrow( mySelectedObject );
+      if ( myMesh->_is_nil() )
+      {
+        myLineEditElements->setText("");
+        return;
+      }
+    }
   }
   else if ( !geom->_is_nil() )
   {
@@ -716,12 +725,10 @@ void SMESHGUI_CopyMeshDlg::SelectionIntoArgument()
   else if ( !geom->_is_nil() )
   {
     myGeomNameEdit->setText( aString );
-    ok = ok && !myLineEditElements->text().isEmpty();
   }
 
-  if ( ok && isWithGeomMode() && !myMesh->_is_nil() )
-    ok = myMesh->HasShapeToMesh();
-
+  if ( ok && isWithGeomMode() )
+    ok = ( !myMesh->_is_nil() && myMesh->HasShapeToMesh() && !myNewGeometry->_is_nil() );
 
   buttonOk->setEnabled(ok);
   buttonApply->setEnabled(ok);

@@ -8092,6 +8092,10 @@ as they are of improper type:
         <translation>Copy Mesh Elements</translation>
     </message>
     <message>
+        <source>OPERATION_FAILED</source>
+        <translation>Not all mesh sub-objects have been copied</translation>
+    </message>
+    <message>
         <source>SUBSHAPES_NOT_FOUND_MSG</source>
         <translation>
 Some sub-shapes not found in the new geometry. They are listed 

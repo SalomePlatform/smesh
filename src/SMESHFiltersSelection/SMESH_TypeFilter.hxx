@@ -39,6 +39,7 @@ public:
 
   virtual bool isOk (const SUIT_DataOwner*) const;
   SMESH::MeshObjectType type() const;
+  void setType( SMESH::MeshObjectType theType ) { myType = theType; }
 
 protected:
   SMESH::MeshObjectType myType;
