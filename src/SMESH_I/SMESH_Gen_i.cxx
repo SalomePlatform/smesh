@@ -3454,6 +3454,7 @@ throw ( SALOME::SALOME_Exception )
 
   SMESH_Mesh_i* srcMesh_i = SMESH::DownCast<SMESH_Mesh_i*>( theSourceMesh );
   SMESH_Mesh_i* newMesh_i = SMESH::DownCast<SMESH_Mesh_i*>( theNewMesh );
+  srcMesh_i->Load();
 
   ShapeMapper shapeMapper( srcMesh_i, newMesh_i, this );
 
