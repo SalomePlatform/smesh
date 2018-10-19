@@ -2952,6 +2952,7 @@ namespace // utils for CopyMeshWithGeom()
 {
   typedef std::map< std::string, std::string >             TStr2StrMap;
   typedef std::map< std::string, std::set< std::string > > TStr2StrSetMap;
+  //typedef std::map< std::set<int>, int >                   TIdSet2IndexMap;
 
   //================================================================================
   /*!
@@ -2968,6 +2969,9 @@ namespace // utils for CopyMeshWithGeom()
     bool          myIsSameGeom;
 
     TStr2StrMap   myOld2NewEntryMap; // map of study entries
+
+    //GEOM::ListOfGO_var         mySubshapes; // sub-shapes existing in the new geometry
+    //TIdSet2IndexMap            myIds2SubshapeIndex; // to find an existing sub-shape
 
     bool                       myGIPMapDone;
     GEOM::ListOfListOfLong_var myGIPMap; // filled by GetInPlaceMap()
@@ -3158,11 +3162,19 @@ namespace // utils for CopyMeshWithGeom()
 
       if ( 0 < oldID && oldID < (int)myGIPMap->length() )
       {
-        if (( myGIPMap[ oldID ].length() == 1 ) ||
-            ( myGIPMap[ oldID ].length() > 1 &&
-              getShapeType( mySrcMesh_i, oldID ) == TopAbs_VERTEX ))
+        if ( myGIPMap[ oldID ].length() == 1 )
         {
           newID = myGIPMap[ oldID ][ 0 ];
+        }
+        else if ( myGIPMap[ oldID ].length() > 1 &&
+                  getShapeType( mySrcMesh_i, oldID ) == TopAbs_VERTEX )
+        {
+          // select a meshed VERTEX
+          SMESH_subMesh* newSM;
+          for ( CORBA::ULong i = 0; i < myGIPMap[ oldID ].length() && !newID; ++i )
+            if (( newSM = myNewMesh_i->GetImpl().GetSubMeshContaining( myGIPMap[ oldID ][ i ] )) &&
+                ( !newSM->IsEmpty() ))
+              newID = myGIPMap[ oldID ][ i ];
         }
       }
       return newID;
@@ -3392,7 +3404,7 @@ namespace // utils for CopyMeshWithGeom()
       seq[ seq->length() - 1 ] = item;
     }
   }
-}
+} // namespace // utils for CopyMeshWithGeom()
 
 //================================================================================
 /*!
@@ -3627,6 +3639,8 @@ throw ( SALOME::SALOME_Exception )
       if ( SMESH_subMesh* newSM = newMesh_i->GetImpl().GetSubMeshContaining( newID ))
         newSM->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
     }
+
+    newMeshDS->Modified();
   }
 
 
@@ -3637,7 +3651,7 @@ throw ( SALOME::SALOME_Exception )
   SALOME::GenericObj_wrap< SMESH::FilterManager > filterMgr = CreateFilterManager();
 
   SMESH::ListOfGroups_var groups = theSourceMesh->GetGroups();
-  CORBA::ULong nbGroups = groups->length(), nbAddedGroups = 0;
+  CORBA::ULong nbGroups = theToCopyGroups ? groups->length() : 0, nbAddedGroups = 0;
   for ( CORBA::ULong i = 0; i < nbGroups + nbAddedGroups; ++i )
   {
     SMESH::SMESH_Group_var         stdlGroup = SMESH::SMESH_Group::_narrow        ( groups[ i ]);
@@ -3791,6 +3805,8 @@ throw ( SALOME::SALOME_Exception )
       ok = false;
 
   } // loop on groups
+
+  newMeshDS->CompactMesh();
 
   // set mesh name
   if ( !theMeshName || !theMeshName[0] )
