@@ -10,6 +10,9 @@ In SALOME 7.2, the Python interface for Mesh has been slightly modified to offer
 Scripts generated for SALOME 6 and older versions must be adapted to work in SALOME 7.2 with full functionality.
 The compatibility mode allows old scripts to work in almost all cases, but with a warning.
 
+See also *"Modifying Geometry Python scripts from SALOME 6 and before"* page in the Geometry module's
+User Guide.
+
 * **Salome initialisation** must always be done as shown below.
 
   (*salome_init()* can be invoked safely several times)::
