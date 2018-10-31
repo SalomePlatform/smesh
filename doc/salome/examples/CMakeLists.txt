@@ -19,14 +19,21 @@
 
 INCLUDE(tests.set)
 
+SET(TEST_REINIT_SALOME "False")
+SALOME_CONFIGURE_FILE(tests.py.in tests.py)
+
 SALOME_GENERATE_TESTS_ENVIRONMENT(tests_env)
 
-FOREACH(test ${GOOD_TESTS})
-  GET_FILENAME_COMPONENT(testname ${test} NAME_WE)
-  ADD_TEST(NAME ${testname}
-           COMMAND ${PYTHON_EXECUTABLE} -B ${CMAKE_SOURCE_DIR}/doc/salome/examples/testme.py ${CMAKE_CURRENT_SOURCE_DIR}/${test})
-  SET_TESTS_PROPERTIES(${testname} PROPERTIES ENVIRONMENT "${tests_env}")
-ENDFOREACH()
+IF(SMESH_JOIN_TESTS)
+  ADD_TEST(NAME SMESH_examples COMMAND ${PYTHON_EXECUTABLE} -B ${CMAKE_SOURCE_DIR}/doc/salome/examples/testme.py tests.py)
+ELSE(SMESH_JOIN_TESTS)
+  FOREACH(test ${GOOD_TESTS})
+    GET_FILENAME_COMPONENT(testname ${test} NAME_WE)
+    ADD_TEST(NAME ${testname}
+             COMMAND ${PYTHON_EXECUTABLE} -B ${CMAKE_SOURCE_DIR}/doc/salome/examples/testme.py ${CMAKE_CURRENT_SOURCE_DIR}/${test})
+    SET_TESTS_PROPERTIES(${testname} PROPERTIES ENVIRONMENT "${tests_env}")
+  ENDFOREACH()
+ENDIF(SMESH_JOIN_TESTS)
 
 # install Python scripts
 SALOME_INSTALL_SCRIPTS("${EXAMPLES_TESTS}" ${SALOME_INSTALL_DOC}/examples/SMESH)

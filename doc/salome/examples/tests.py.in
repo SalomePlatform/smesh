@@ -1,0 +1,35 @@
+DIR='@CMAKE_CURRENT_SOURCE_DIR@'
+TESTS='@GOOD_TESTS@'
+REINIT_SALOME=@TEST_REINIT_SALOME@
+
+import os
+import unittest
+import salome
+
+class MyTest(unittest.TestCase):
+    def setUp(self):
+        if REINIT_SALOME:
+            salome.salome_init()
+    def tearDown(self):
+        if REINIT_SALOME:
+            salome.salome_close()
+    pass
+
+if __name__ == "__main__":
+    tests = TESTS.split(';')
+    for test in tests:
+        file_name = os.path.basename(test)
+        if os.path.isabs(test):
+            file_path = file_name
+        else:
+            file_path = os.path.join(DIR, file_name)
+        case_name = 'test_' + file_name[:-3]
+        code = """
+def func(self):
+  with open('{}') as f:
+    exec(f.read())
+"""
+        exec(code.format(file_path))
+        setattr(MyTest, case_name, func)
+
+    unittest.main()

@@ -44,8 +44,8 @@ for ii in range(len(Wire_polyline_edges)):
 # Mesh
 
 # Mesh the given shape with the given 1d hypothesis
-def Mesh1D(shape1d, nbSeg, name):
-  mesh1d_tool = smesh.Mesh(shape1d, name)
+def Mesh1D(shape1d, nbSeg, name, smesh_builder):
+  mesh1d_tool = smesh_builder.Mesh(shape1d, name)
   algo = mesh1d_tool.Segment()
   hyp  = algo.NumberOfSegments(nbSeg)
   isDone = mesh1d_tool.Compute()
@@ -53,8 +53,8 @@ def Mesh1D(shape1d, nbSeg, name):
   return mesh1d_tool
 
 # Create a mesh with six nodes, seven edges and two quadrangle faces
-def MakeQuadMesh2(mesh_name):
-  quad_1 = smesh.Mesh(name = mesh_name)
+def MakeQuadMesh2(mesh_name, smesh_builder):
+  quad_1 = smesh_builder.Mesh(name = mesh_name)
   
   # six nodes
   n1 = quad_1.AddNode(0, 20, 10)
@@ -79,19 +79,19 @@ def MakeQuadMesh2(mesh_name):
   return [quad_1, [1,2,3,4,5,6,7], [8,9]]
 
 # Path meshes
-Edge_straight_mesh = Mesh1D(Edge_straight, 7, "Edge_straight")
-Edge_bezierrr_mesh = Mesh1D(Edge_bezierrr, 7, "Edge_bezierrr")
-Wire_polyline_mesh = Mesh1D(Wire_polyline, 3, "Wire_polyline")
-Edge_Circle_mesh   = Mesh1D(Edge_Circle  , 8, "Edge_Circle")
+Edge_straight_mesh = Mesh1D(Edge_straight, 7, "Edge_straight", smesh_builder=smesh)
+Edge_bezierrr_mesh = Mesh1D(Edge_bezierrr, 7, "Edge_bezierrr", smesh_builder=smesh)
+Wire_polyline_mesh = Mesh1D(Wire_polyline, 3, "Wire_polyline", smesh_builder=smesh)
+Edge_Circle_mesh   = Mesh1D(Edge_Circle  , 8, "Edge_Circle"  , smesh_builder=smesh)
 
 # Initial meshes (to be extruded)
-[quad_1, ee_1, ff_1] = MakeQuadMesh2("quad_1")
-[quad_2, ee_2, ff_2] = MakeQuadMesh2("quad_2")
-[quad_3, ee_3, ff_3] = MakeQuadMesh2("quad_3")
-[quad_4, ee_4, ff_4] = MakeQuadMesh2("quad_4")
-[quad_5, ee_5, ff_5] = MakeQuadMesh2("quad_5")
-[quad_6, ee_6, ff_6] = MakeQuadMesh2("quad_6")
-[quad_7, ee_7, ff_7] = MakeQuadMesh2("quad_7")
+[quad_1, ee_1, ff_1] = MakeQuadMesh2("quad_1", smesh_builder=smesh)
+[quad_2, ee_2, ff_2] = MakeQuadMesh2("quad_2", smesh_builder=smesh)
+[quad_3, ee_3, ff_3] = MakeQuadMesh2("quad_3", smesh_builder=smesh)
+[quad_4, ee_4, ff_4] = MakeQuadMesh2("quad_4", smesh_builder=smesh)
+[quad_5, ee_5, ff_5] = MakeQuadMesh2("quad_5", smesh_builder=smesh)
+[quad_6, ee_6, ff_6] = MakeQuadMesh2("quad_6", smesh_builder=smesh)
+[quad_7, ee_7, ff_7] = MakeQuadMesh2("quad_7", smesh_builder=smesh)
 
 # ExtrusionAlongPath
 # IDsOfElements, PathMesh, PathShape, NodeStart,

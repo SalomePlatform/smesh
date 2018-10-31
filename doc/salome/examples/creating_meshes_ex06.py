@@ -58,24 +58,19 @@ geompy.addToStudy(blocks, "cylinder:blocks")
 # Build geometric groups
 # ----------------------
 
-def group(name, shape, type, base=None, direction=None):
-    t = geompy.ShapeType[type]
-    g = geompy.CreateGroup(shape, t)
+group_a = geompy.CreateGroup(blocks, geompy.ShapeType["FACE"])
+geompy.addToStudyInFather(blocks, group_a, "baseA")
+items = geompy.GetShapesOnPlaneWithLocationIDs(blocks, geompy.ShapeType["FACE"], direction, base, GEOM.ST_ON)
+geompy.UnionIDs(group_a, items)
 
-    geompy.addToStudyInFather(shape, g, name)
+base_b = geompy.MakeVertex(0, 0, height)
+group_b = geompy.CreateGroup(blocks, geompy.ShapeType["FACE"])
+geompy.addToStudyInFather(blocks, group_b, "baseB")
+items = geompy.GetShapesOnPlaneWithLocationIDs(blocks, geompy.ShapeType["FACE"], direction, base_b, GEOM.ST_ON)
+geompy.UnionIDs(group_b, items)
 
-    if base!=None:
-        l = geompy.GetShapesOnPlaneWithLocationIDs(shape, t, direction, base, GEOM.ST_ON)
-        geompy.UnionIDs(g, l)
-
-    return g
-
-group_a = group("baseA", blocks, "FACE", base, direction)
-
-base_b  = geompy.MakeVertex(0, 0, height)
-group_b = group("baseB", blocks, "FACE", base_b, direction)
-
-group_1     = group("limit", blocks, "SOLID")
+group_1 = geompy.CreateGroup(blocks, geompy.ShapeType["SOLID"])
+geompy.addToStudyInFather(blocks, group_1, "limit")
 group_1_all = geompy.SubShapeAllIDs(blocks, geompy.ShapeType["SOLID"])
 geompy.UnionIDs(group_1, group_1_all)
 group_1_box = geompy.GetBlockNearPoint(blocks, base)
@@ -86,22 +81,34 @@ geompy.DifferenceList(group_1, [group_1_box])
 
 smesh.UpdateStudy()
 
-def discretize(x, y, z,  nbSeg, shape=blocks):
-    vert = geompy.MakeVertex( x, y, z )
-    edge = geompy.GetEdgeNearPoint( shape, vert )
-    algo = hexa.Segment( edge )
-    algo.NumberOfSegments( nbSeg )
-    algo.Propagation()
-
 hexa = smesh.Mesh(blocks)
 
 hexa_1d = hexa.Segment()
 hexa_1d.NumberOfSegments(1)
 
-discretize(+radius        , +radius,        0,   5)
-discretize(-radius        , +radius,        0,   8)
-discretize((radius+size)/2,       0,        0,  10)
-discretize(        +radius,       0, height/2,  20)
+vertex = geompy.MakeVertex(+radius, +radius, 0)
+edge = geompy.GetEdgeNearPoint(blocks, vertex)
+algo = hexa.Segment(edge)
+algo.NumberOfSegments(5)
+algo.Propagation()
+
+vertex = geompy.MakeVertex(-radius, +radius, 0)
+edge = geompy.GetEdgeNearPoint(blocks, vertex)
+algo = hexa.Segment(edge)
+algo.NumberOfSegments(8)
+algo.Propagation()
+
+vertex = geompy.MakeVertex((radius+size)/2, 0, 0)
+edge = geompy.GetEdgeNearPoint(blocks, vertex)
+algo = hexa.Segment(edge)
+algo.NumberOfSegments(10)
+algo.Propagation()
+
+vertex = geompy.MakeVertex(+radius, 0, height/2)
+edge = geompy.GetEdgeNearPoint(blocks, vertex)
+algo = hexa.Segment(edge)
+algo.NumberOfSegments(20)
+algo.Propagation()
 
 hexa.Quadrangle()
 hexa.Hexahedron()
