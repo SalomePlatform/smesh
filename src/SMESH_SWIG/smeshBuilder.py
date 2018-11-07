@@ -4228,6 +4228,17 @@ class Mesh(metaclass = MeshMeta):
         else:
             return self.editor.FindElementsByPoint(x, y, z, elementType)
 
+    def ProjectPoint(self, x,y,z, meshObject, elementType):
+        """
+        Project a point to a mesh object.
+        Return ID of an element of given type where the given point is projected
+        and coordinates of the projection point.
+        In the case if nothing found, return -1 and []
+        """
+        if ( isinstance( meshObject, Mesh )):
+            meshObject = meshObject.GetMesh()
+        return self.editor.ProjectPoint( x,y,z, meshObject, elementType )
+
     def GetPointState(self, x, y, z):
         """
         Return point state in a closed 2D mesh in terms of TopAbs_State enumeration:

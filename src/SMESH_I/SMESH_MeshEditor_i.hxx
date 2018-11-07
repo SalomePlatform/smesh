@@ -547,6 +547,20 @@ public:
     throw (SALOME::SALOME_Exception);
 
   /*!
+   * Project a point to a mesh object.
+   * Return ID of an element of given type where the given point is projected
+   * and coordinates of the projection point.
+   * In the case if nothing found, return -1 and []
+   */
+  CORBA::Long ProjectPoint(CORBA::Double             x,
+                           CORBA::Double             y,
+                           CORBA::Double             z,
+                           SMESH::SMESH_IDSource_ptr meshObject,
+                           SMESH::ElementType        type,
+                           SMESH::double_array_out   projecton)
+    throw (SALOME::SALOME_Exception);
+
+  /*!
    * Return point state in a closed 2D mesh in terms of TopAbs_State enumeration.
    * TopAbs_UNKNOWN state means that either mesh is wrong or the analysis fails.
    */

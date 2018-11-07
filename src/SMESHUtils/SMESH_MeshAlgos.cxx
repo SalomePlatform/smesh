@@ -1243,11 +1243,11 @@ gp_XYZ SMESH_ElementSearcherImpl::Project(const gp_Pnt&            point,
 
   ElementBndBoxTree*& ebbTree = _ebbTree[ _elementType ];
   if ( !ebbTree )
-    ebbTree = new ElementBndBoxTree( *_mesh, _elementType );
+    ebbTree = new ElementBndBoxTree( *_mesh, _elementType, _meshPartIt );
 
   gp_XYZ p = point.XYZ();
   ElementBndBoxTree* ebbLeaf = ebbTree->getLeafAtPoint( p );
-  const Bnd_B3d* box = ebbLeaf->getBox();
+  const Bnd_B3d* box = ebbLeaf ? ebbLeaf->getBox() : ebbTree->getBox();
   double radius = ( box->CornerMax() - box->CornerMin() ).Modulus();
 
   ElementBndBoxTree::TElemSeq elems;

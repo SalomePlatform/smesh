@@ -774,6 +774,20 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
+     * Project a point to a mesh object.
+     * Return ID of an element of given type where the given point is projected
+     * and coordinates of the projection point.
+     * In the case if nothing found, return -1 and []
+     */
+    long ProjectPoint(in double         x,
+                      in double         y,
+                      in double         z,
+                      in SMESH_IDSource meshObject,
+                      in ElementType    type,
+                      out double_array  projecton)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
      * Return point state in a closed 2D mesh in terms of TopAbs_State enumeration.
      * TopAbs_UNKNOWN state means that either mesh is wrong or the analysis fails.
      */

@@ -178,7 +178,7 @@ namespace MeshEditor_I {
 
   //=============================================================================
   /*!
-   * \brief Deleter of theNodeSearcher at any compute event occurred
+   * \brief Deleter of theNodeSearcher and theElementSearcher at any compute event occurred
    */
   //=============================================================================
 
@@ -381,7 +381,7 @@ namespace MeshEditor_I {
    */
   //================================================================================
 
-  string getPartIOR( SMESH::SMESH_IDSource_ptr theMeshPart, SMESH::ElementType type)
+  string getPartIOR( SMESH::SMESH_IDSource_ptr theMeshPart, SMESH::ElementType type = SMESH::ALL )
   {
     string partIOR = SMESH_Gen_i::GetORB()->object_to_string( theMeshPart );
     if ( SMESH_Group_i* group_i = SMESH::DownCast<SMESH_Group_i*>( theMeshPart ))
@@ -4650,6 +4650,68 @@ SMESH_MeshEditor_i::FindAmongElementsByPoint(SMESH::SMESH_IDSource_ptr elementID
 
   SMESH_CATCH( SMESH::throwCorbaException );
   return 0;
+}
+
+//=======================================================================
+//function : ProjectPoint
+//purpose  : Project a point to a mesh object.
+//           Return ID of an element of given type where the given point is projected
+//           and coordinates of the projection point.
+//           In the case if nothing found, return -1 and []
+//=======================================================================
+
+CORBA::Long SMESH_MeshEditor_i::ProjectPoint(CORBA::Double             x,
+                                             CORBA::Double             y,
+                                             CORBA::Double             z,
+                                             SMESH::SMESH_IDSource_ptr meshObject,
+                                             SMESH::ElementType        type,
+                                             SMESH::double_array_out   projecton)
+  throw (SALOME::SALOME_Exception)
+{
+  if ( CORBA::is_nil( meshObject ))
+    THROW_SALOME_CORBA_EXCEPTION("NULL meshObject", SALOME::BAD_PARAM);
+
+  SMESH_TRY;
+
+  SMESH::SMESH_Mesh_var mesh = meshObject->GetMesh();
+  SMESH_Mesh_i*       mesh_i = SMESH::DownCast<SMESH_Mesh_i*>( mesh );
+  if ( mesh_i != myMesh_i )
+  {
+    SMESH::SMESH_MeshEditor_var editor=
+      myIsPreviewMode ? mesh_i->GetMeshEditPreviewer() : mesh_i->GetMeshEditor();
+    return editor->ProjectPoint( x,y,z, meshObject, type, projecton );
+  }
+
+
+  theSearchersDeleter.Set( myMesh, getPartIOR( meshObject ));
+  if ( !theElementSearcher )
+  {
+    // create a searcher from meshObject
+
+    SMDS_ElemIteratorPtr elemIt;
+    if ( ! SMESH::DownCast<SMESH_Mesh_i*>( meshObject ))
+      elemIt = myMesh_i->GetElements( meshObject, type );
+
+    theElementSearcher = SMESH_MeshAlgos::GetElementSearcher( *getMeshDS(), elemIt );
+  }
+
+  const SMDS_MeshElement* elem = 0;
+  gp_XYZ pProj = theElementSearcher->Project( gp_Pnt( x,y,z ),
+                                              SMDSAbs_ElementType( type ),
+                                              &elem );
+
+  projecton = new SMESH::double_array();
+  if ( elem && !elem->IsNull() )
+  {
+    projecton->length( 3 );
+    projecton[0] = pProj.X();
+    projecton[1] = pProj.Y();
+    projecton[2] = pProj.Z();
+    return elem->GetID();
+  }
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+  return -1;
 }
 
 //=======================================================================
