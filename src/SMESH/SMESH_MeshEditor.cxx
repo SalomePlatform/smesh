@@ -13449,6 +13449,12 @@ namespace // utils for MakePolyLine
       if ( myPaths[ iSeg ].myPoints.empty() )
         throw SALOME_Exception( SMESH_Comment("Can't find a full path for PolySegment #") << iSeg );
 
+      // reverse the path
+      double d00 = ( polySeg.myXYZ[0] - myPaths[ iSeg ].myPoints.front() ).SquareModulus();
+      double d01 = ( polySeg.myXYZ[0] - myPaths[ iSeg ].myPoints.back()  ).SquareModulus();
+      if ( d00 > d01 )
+        std::reverse( myPaths[ iSeg ].myPoints.begin(), myPaths[ iSeg ].myPoints.end() );
+
     } // PolyPathCompute::Compute()
 
   }; // struct PolyPathCompute
