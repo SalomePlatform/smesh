@@ -618,7 +618,7 @@ SMESH_MeshEditor
 
 .. py:class:: SMESH_MeshEditor.Sew_Error
 
-      Enumeration of errors SMESH_MeshEditor.Sewing... methods
+      Enumeration of errors of SMESH_MeshEditor.Sewing... methods
 
       .. py:attribute::
          SEW_OK

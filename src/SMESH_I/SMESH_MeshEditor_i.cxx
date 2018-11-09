@@ -7224,15 +7224,15 @@ void SMESH_MeshEditor_i::MakePolyLine(SMESH::ListOfPolySegments& theSegments,
     segOut.myNode2[0] = meshDS->FindNode( segIn.node1ID2 );
     segOut.myNode1[1] = meshDS->FindNode( segIn.node2ID1 );
     segOut.myNode2[1] = meshDS->FindNode( segIn.node2ID2 );
+    segOut.myXYZ[0].SetCoord( segIn.xyz1.x,
+                              segIn.xyz1.y,
+                              segIn.xyz1.z);
+    segOut.myXYZ[1].SetCoord( segIn.xyz2.x,
+                              segIn.xyz2.y,
+                              segIn.xyz2.z);
     segOut.myVector.SetCoord( segIn.vector.PS.x,
                               segIn.vector.PS.y,
                               segIn.vector.PS.z );
-    if ( !segOut.myNode1[0] )
-      THROW_SALOME_CORBA_EXCEPTION( SMESH_Comment( "Invalid node ID: ") << segIn.node1ID1,
-                                    SALOME::BAD_PARAM );
-    if ( !segOut.myNode1[1] )
-      THROW_SALOME_CORBA_EXCEPTION( SMESH_Comment( "Invalid node ID: ") << segIn.node2ID1,
-                                    SALOME::BAD_PARAM );
   }
 
   // get a static ElementSearcher

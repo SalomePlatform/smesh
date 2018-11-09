@@ -13050,14 +13050,15 @@ namespace // utils for MakePolyLine
     std::vector< gp_XYZ >   myPoints;
     double                  myLength;
 
-    int                     mySrcPntInd; //!< start point index
     const SMDS_MeshElement* myFace;
-    SMESH_NodeXYZ           myNode1;
+    SMESH_NodeXYZ           myNode1; // nodes of the edge the path entered myFace
     SMESH_NodeXYZ           myNode2;
     int                     myNodeInd1;
     int                     myNodeInd2;
     double                  myDot1;
     double                  myDot2;
+
+    int                     mySrcPntInd; //!< start point index
     TIDSortedElemSet        myElemSet, myAvoidSet;
 
     Path(): myLength(0.0), myFace(0) {}
@@ -13250,6 +13251,7 @@ namespace // utils for MakePolyLine
       myErrors( theSegments.size() )
     {
     }
+
 #undef SMESH_CAUGHT
 #define SMESH_CAUGHT myErrors[i] =
     void operator() ( const int i ) const
@@ -13259,6 +13261,7 @@ namespace // utils for MakePolyLine
       SMESH_CATCH( SMESH::returnError );
     }
 #undef SMESH_CAUGHT
+
     //================================================================================
     /*!
      * \brief Compute a path of a given segment
@@ -13269,21 +13272,15 @@ namespace // utils for MakePolyLine
     {
       SMESH_MeshEditor::PolySegment& polySeg = mySegments[ iSeg ];
 
-      // get a cutting plane
+      // the cutting plane
+      gp_XYZ plnNorm = ( polySeg.myXYZ[0] - polySeg.myXYZ[1] ) ^ polySeg.myVector.XYZ();
+      gp_XYZ plnOrig = polySeg.myXYZ[1];
 
-      gp_XYZ p1 = SMESH_NodeXYZ( polySeg.myNode1[0] );
-      gp_XYZ p2 = SMESH_NodeXYZ( polySeg.myNode1[1] );
-      if ( polySeg.myNode2[0] ) p1 = 0.5 * ( p1 + SMESH_NodeXYZ( polySeg.myNode2[0] ));
-      if ( polySeg.myNode2[1] ) p2 = 0.5 * ( p2 + SMESH_NodeXYZ( polySeg.myNode2[1] ));
-
-      gp_XYZ plnNorm = ( p1 - p2 ) ^ polySeg.myVector.XYZ();
-      gp_XYZ plnOrig = p2;
-
-      // find paths connecting the 2 end points of polySeg
+      // Find paths connecting the 2 end points of polySeg
 
       std::vector< Path > paths; paths.reserve(10);
 
-      // initialize paths
+      // 1) initialize paths; two paths starts at each end point
 
       for ( int iP = 0; iP < 2; ++iP ) // loop on the polySeg end points
       {
@@ -13291,8 +13288,76 @@ namespace // utils for MakePolyLine
         path.mySrcPntInd = iP;
         size_t nbPaths = paths.size();
 
+        if ( polySeg.myFace[ iP ]) // the end point lies on polySeg.myFace[ iP ]
+        {
+          // check coincidence of polySeg.myXYZ[ iP ] with nodes
+          const double tol = 1e-20;
+          SMESH_NodeXYZ nodes[4];
+          for ( int i = 0; i < 3 &&  !polySeg.myNode1[ iP ]; ++i )
+          {
+            nodes[ i ] = polySeg.myFace[ iP ]->GetNode( i );
+            if (( nodes[ i ] - polySeg.myXYZ[ iP ]).SquareModulus() < tol*tol )
+              polySeg.myNode1[ iP ] = nodes[ i ].Node();
+          }
+          nodes[ 3 ] = nodes[ 0 ];
+
+          // check coincidence of polySeg.myXYZ[ iP ] with edges
+          for ( int i = 0; i < 3 &&  !polySeg.myNode1[ iP ]; ++i )
+          {
+            SMDS_LinearEdge edge( nodes[i].Node(), nodes[i+1].Node() );
+            if ( SMESH_MeshAlgos::GetDistance( &edge, polySeg.myXYZ[ iP ]) < tol )
+            {
+              polySeg.myNode1[ iP ] = nodes[ i     ].Node();
+              polySeg.myNode2[ iP ] = nodes[ i + 1 ].Node();
+            }
+          }
+
+          if ( !polySeg.myNode1[ iP ] ) // polySeg.myXYZ[ iP ] is within polySeg.myFace[ iP ]
+          {
+            double dot[ 4 ];
+            for ( int i = 0; i < 3; ++i )
+              dot[ i ] = plnNorm * ( nodes[ i ] - plnOrig );
+            dot[ 3 ] = dot[ 0 ];
+
+            int iCut = 0; // index of a cut edge
+            if      ( dot[ 1 ] * dot[ 2 ] < 0. ) iCut = 1;
+            else if ( dot[ 2 ] * dot[ 3 ] < 0. ) iCut = 2;
+
+            // initialize path so as if it entered the face via iCut-th edge
+            path.myFace = polySeg.myFace[ iP ];
+            path.myNodeInd1 = iCut;
+            path.myNodeInd2 = iCut + 1;
+            path.myNode1.Set( nodes[ iCut     ].Node() );
+            path.myNode2.Set( nodes[ iCut + 1 ].Node() );
+            path.myDot1 = dot[ iCut ];
+            path.myDot2 = dot[ iCut + 1 ];
+            path.myPoints.clear();
+            path.AddPoint( polySeg.myXYZ[ iP ]);
+            paths.push_back( path );
+
+            path.Extend( plnNorm, plnOrig ); // to get another edge cut
+            path.myFace = polySeg.myFace[ iP ];
+            if ( path.myDot1 == 0. ) // cut at a node
+            {
+              path.myNodeInd1 = ( iCut + 2 ) % 3;
+              path.myNodeInd2 = ( iCut + 3 ) % 3;
+              path.myNode2.Set( path.myFace->GetNode( path.myNodeInd2 ));
+              path.myDot2 = dot[ path.myNodeInd2 ];
+            }
+            else
+            {
+              path.myNodeInd1 = path.myFace->GetNodeIndex( path.myNode1.Node() );
+              path.myNodeInd2 = path.myFace->GetNodeIndex( path.myNode2.Node() );
+            }
+            path.myPoints.clear();
+            path.AddPoint( polySeg.myXYZ[ iP ]);
+            paths.push_back( path );
+          }
+        }
+
         if ( polySeg.myNode2[ iP ] && polySeg.myNode2[ iP ] != polySeg.myNode1[ iP ] )
         {
+          // the end point is on an edge
           while (( path.myFace = SMESH_MeshAlgos::FindFaceInSet( polySeg.myNode1[ iP ],
                                                                  polySeg.myNode2[ iP ],
                                                                  path.myElemSet,
@@ -13305,7 +13370,7 @@ namespace // utils for MakePolyLine
             path.myDot1 = plnNorm * ( path.myNode1 - plnOrig );
             path.myDot2 = plnNorm * ( path.myNode2 - plnOrig );
             path.myPoints.clear();
-            path.AddPoint( 0.5 * ( path.myNode1 + path.myNode2 ));
+            path.AddPoint( polySeg.myXYZ[ iP ]);
             path.myAvoidSet.insert( path.myFace );
             paths.push_back( path );
           }
@@ -13313,7 +13378,7 @@ namespace // utils for MakePolyLine
             throw SALOME_Exception ( SMESH_Comment("No face edge found by point ") << iP+1
                                      << " in a PolySegment " << iSeg );
         }
-        else // an end point is at node
+        else if ( polySeg.myNode1[ iP ] ) // the end point is at a node
         {
           std::set<const SMDS_MeshNode* > nodes;
           SMDS_ElemIteratorPtr fIt = polySeg.myNode1[ iP ]->GetInverseElementIterator(SMDSAbs_Face);
@@ -13340,7 +13405,7 @@ namespace // utils for MakePolyLine
             }
       }
 
-      // extend paths
+      // 2) extend paths and compose the shortest one connecting the two points
 
       myPaths[ iSeg ].myLength = 1e100;
 
@@ -13349,7 +13414,7 @@ namespace // utils for MakePolyLine
         for ( size_t i = 0; i < paths.size(); ++i )
         {
           Path& path = paths[ i ];
-          if ( !path.Extend( plnNorm, plnOrig ) ||         // path reached a mesh boundary
+          if ( !path.Extend( plnNorm, plnOrig ) ||        // path reached a mesh boundary
                path.myLength > myPaths[ iSeg ].myLength ) // path is longer than others
           {
             Path::Remove( paths, i );
@@ -13423,6 +13488,18 @@ void SMESH_MeshEditor::MakePolyLine( TListOfPolySegments&   theSegments,
     gp_XYZ p2 = SMESH_NodeXYZ( polySeg.myNode1[1] );
     if ( polySeg.myNode2[0] ) p1 = 0.5 * ( p1 + SMESH_NodeXYZ( polySeg.myNode2[0] ));
     if ( polySeg.myNode2[1] ) p2 = 0.5 * ( p2 + SMESH_NodeXYZ( polySeg.myNode2[1] ));
+
+    polySeg.myFace[0] = polySeg.myFace[1] = 0;
+    if ( !polySeg.myNode1[0] && !polySeg.myNode2[0] )
+    {
+      p1 = searcher->Project( polySeg.myXYZ[0], SMDSAbs_Face, &polySeg.myFace[0] );
+    }
+    if ( !polySeg.myNode1[1] && !polySeg.myNode2[1] )
+    {
+      p2 = searcher->Project( polySeg.myXYZ[1], SMDSAbs_Face, &polySeg.myFace[1] );
+    }
+    polySeg.myXYZ[0] = p1;
+    polySeg.myXYZ[1] = p2;
 
     gp_XYZ plnNorm = ( p1 - p2 ) ^ polySeg.myVector.XYZ();
 

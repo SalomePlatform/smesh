@@ -721,12 +721,19 @@ public:
   // structure used in MakePolyLine() to define a cutting plane
   struct PolySegment
   {
-    // 2 points: if myNode2 != 0, then the point is the middle of a face edge defined
-    //           by two nodes, else it is at myNode1
-    const SMDS_MeshNode* myNode1[2];
-    const SMDS_MeshNode* myNode2[2];
+    // 2 points, each defined as follows:
+    // ( myNode1 &&  myNode2 ) ==> point is in the middle of an edge defined by two nodes
+    // ( myNode1 && !myNode2 ) ==> point is at myNode1
+    // else                    ==> point is at myXYZ
+    const SMDS_MeshNode*    myNode1[2];
+    const SMDS_MeshNode*    myNode2[2];
+    gp_XYZ                  myXYZ  [2];
 
-    gp_Vec myVector; // vector on the plane; to use a default plane set vector = (0,0,0)
+    // face on which myXYZ projects (found by MakePolyLine())
+    const SMDS_MeshElement* myFace [2];
+
+    // vector on the plane; to use a default plane set vector = (0,0,0)
+    gp_Vec myVector;
 
     // point to return coordinates of a middle of the two points, projected to mesh
     gp_Pnt myMidProjPoint;

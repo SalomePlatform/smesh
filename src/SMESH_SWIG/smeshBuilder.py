@@ -4536,7 +4536,7 @@ class Mesh(metaclass = MeshMeta):
 
         Parameters:
                 IDsOfElements: the faces to be splitted
-                Diag13:        is used to choose a diagonal for splitting.
+                Diag13 (boolean):        is used to choose a diagonal for splitting.
 
         Returns:
             True in case of success, False otherwise.
@@ -4552,7 +4552,7 @@ class Mesh(metaclass = MeshMeta):
         Parameters:
                 theObject: the object from which the list of elements is taken,
                         this is :class:`mesh, sub-mesh, group or filter <SMESH.SMESH_IDSource>`
-                Diag13:    is used to choose a diagonal for splitting.
+                Diag13 (boolean):    is used to choose a diagonal for splitting.
 
         Returns:
             True in case of success, False otherwise.
@@ -6665,7 +6665,7 @@ class Mesh(metaclass = MeshMeta):
     def MakePolyLine(self, segments, groupName='', isPreview=False ):
         """    
         Create a polyline consisting of 1D mesh elements each lying on a 2D element of
-        the initial mesh. Positions of new nodes are found by cutting the mesh by the
+        the initial triangle mesh. Positions of new nodes are found by cutting the mesh by the
         plane passing through pairs of points specified by each :class:`SMESH.PolySegment` structure.
         If there are several paths connecting a pair of points, the shortest path is
         selected by the module. Position of the cutting plane is defined by the two
@@ -6675,12 +6675,12 @@ class Mesh(metaclass = MeshMeta):
         The vector goes from the middle point to the projection point. In case of planar
         mesh, the vector is normal to the mesh.
 
-        *segments* [i].vector returns the used vector which goes from the middle point to its projection.
+        In preview mode, *segments* [i].vector returns the used vector which goes from the middle point to its projection.
 
-        Parameters:        
+        Parameters:
             segments: list of :class:`SMESH.PolySegment` defining positions of cutting planes.
             groupName: optional name of a group where created mesh segments will be added.
-            
+
         """    
         editor = self.editor
         if isPreview:

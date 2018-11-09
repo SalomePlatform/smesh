@@ -60,17 +60,23 @@ module SMESH
   // structure used in MakePolyLine() to define a cutting plane
   struct PolySegment
   {
-    // point 1: if node1ID2 > 0, then the point is in the middle of a face edge defined
-    //          by two nodes, else it is at node1ID1
+    // a point is defined as follows:
+    // ( node*ID1 > 0 && node*ID2 > 0 ) ==> point is in the middle of an edge defined by two nodes
+    // ( node*ID1 > 0 && node*ID2 <=0 ) ==> point is at node*ID1
+    // else                             ==> point is at xyz*
+
+    // point 1
     long node1ID1;
     long node1ID2;
+    PointStruct xyz1;
 
-    // point 2: if node2ID2 > 0, then the point is in the middle of a face edge defined
-    //          by two nodes, else it is at node2ID1
+    // point 2
     long node2ID1;
     long node2ID2;
+    PointStruct xyz2;
 
-    DirStruct vector; // vector on the plane; to use a default plane set vector = (0,0,0)
+    // vector on the plane; to use a default plane set vector = (0,0,0)
+    DirStruct vector;
   };
   typedef sequence<PolySegment> ListOfPolySegments;
 
@@ -1255,8 +1261,8 @@ module SMESH
 
     /*!
      * \brief Create a polyline consisting of 1D mesh elements each lying on a 2D element of
-     *        the initial mesh. Positions of new nodes are found by cutting the mesh by the
-     *        plane passing through pairs of points specified by each PolySegment structure.
+     *        the initial triangle mesh. Positions of new nodes are found by cutting the mesh by
+     *        the plane passing through pairs of points specified by each PolySegment structure.
      *        If there are several paths connecting a pair of points, the shortest path is
      *        selected by the module. Position of the cutting plane is defined by the two
      *        points and an optional vector lying on the plane specified by a PolySegment.

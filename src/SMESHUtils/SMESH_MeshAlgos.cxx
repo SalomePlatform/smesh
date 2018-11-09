@@ -1476,9 +1476,9 @@ namespace
 
   //================================================================================
   /*!
-   * \brief Return of a point relative to a segment
+   * \brief Return position of a point relative to a segment
    *  \param point2D      - the point to analyze position of
-   *  \param xyVec        - end points of segments
+   *  \param segEnds      - end points of segments
    *  \param index0       - 0-based index of the first point of segment
    *  \param posToFindOut - flags of positions to detect
    *  \retval PointPos - point position
@@ -1607,46 +1607,63 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshFace* face,
   }
 
   // compute distance
-  PointPos pos = *pntPosSet.begin();
-  switch ( pos._name )
+
+  double minDist2 = Precision::Infinite();
+  for ( std::set< PointPos >::iterator posIt = pntPosSet.begin(); posIt != pntPosSet.end(); ++posIt)
   {
-  case POS_LEFT:
-  {
-    // point is most close to an edge
-    gp_Vec edge( xyz[ pos._index ], xyz[ pos._index+1 ]);
-    gp_Vec n1p ( xyz[ pos._index ], point  );
-    double u = ( edge * n1p ) / edge.SquareMagnitude(); // param [0,1] on the edge
-    // projection of the point on the edge
-    gp_XYZ proj = xyz[ pos._index ] + u * edge.XYZ();
-    if ( closestPnt ) *closestPnt = proj;
-    return point.Distance( proj );
-  }
-  case POS_RIGHT:
-  {
-    // point is inside the face
-    double distToFacePlane = Abs( tmpPnt.Y() );
-    if ( closestPnt )
+    PointPos pos = *posIt;
+    if ( pos._name != pntPosSet.begin()->_name )
+      break;
+    switch ( pos._name )
     {
-      if ( distToFacePlane < std::numeric_limits<double>::min() ) {
-        *closestPnt = point.XYZ();
+    case POS_LEFT: // point is most close to an edge
+    {
+      gp_Vec edge( xyz[ pos._index ], xyz[ pos._index+1 ]);
+      gp_Vec n1p ( xyz[ pos._index ], point  );
+      double u = ( edge * n1p ) / edge.SquareMagnitude(); // param [0,1] on the edge
+      // projection of the point on the edge
+      gp_XYZ proj = xyz[ pos._index ] + u * edge.XYZ();
+      double dist2 = point.SquareDistance( proj );
+      if ( dist2 < minDist2 )
+      {
+        if ( closestPnt ) *closestPnt = proj;
+        minDist2 = dist2;
       }
-      else {
-        tmpPnt.SetY( 0 );
-        trsf.Inverted().Transforms( tmpPnt );
-        *closestPnt = tmpPnt;
-      }
+      break;
     }
-    return distToFacePlane;
+
+    case POS_RIGHT: // point is inside the face
+    {
+      double distToFacePlane = Abs( tmpPnt.Y() );
+      if ( closestPnt )
+      {
+        if ( distToFacePlane < std::numeric_limits<double>::min() ) {
+          *closestPnt = point.XYZ();
+        }
+        else {
+          tmpPnt.SetY( 0 );
+          trsf.Inverted().Transforms( tmpPnt );
+          *closestPnt = tmpPnt;
+        }
+      }
+      return distToFacePlane;
+    }
+
+    case POS_VERTEX: // point is most close to a node
+    {
+      double dist2 = point.SquareDistance( xyz[ pos._index ]);
+      if ( dist2 < minDist2 )
+      {
+        if ( closestPnt ) *closestPnt = xyz[ pos._index ];
+        minDist2 = dist2;
+      }
+      break;
+    }
+    default:;
+      return badDistance;
+    }
   }
-  case POS_VERTEX:
-  {
-    // point is most close to a node
-    gp_Vec distVec( point, xyz[ pos._index ]);
-    return distVec.Magnitude();
-  }
-  default:;
-  }
-  return badDistance;
+  return Sqrt( minDist2 );
 }
 
 //=======================================================================
