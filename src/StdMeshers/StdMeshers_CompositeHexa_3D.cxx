@@ -893,6 +893,8 @@ bool _QuadFaceGrid::Init(const TopoDS_Face& f, SMESH_Mesh& mesh)
     while ( !edges.empty()) {
       sideEdges.clear();
       sideEdges.splice( sideEdges.end(), edges, edges.begin());// edges.front()->sideEdges.back()
+      if ( SMESH_Algo::isDegenerated( sideEdges.back() ))
+        continue;
       while ( !edges.empty() ) {
         if ( SMESH_Algo::IsContinuous( sideEdges.back(), edges.front() )) {
           sideEdges.splice( sideEdges.end(), edges, edges.begin());
