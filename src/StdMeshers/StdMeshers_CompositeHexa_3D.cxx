@@ -312,13 +312,15 @@ namespace
     if ( !TopExp::CommonVertex( E1, E2, V )) return false;
 
     const SMDS_MeshNode* n = SMESH_Algo::VertexNode( V, mesh.GetMeshDS() );
-    if ( !n ) return false;
+    if ( !n ) return SMESH_Algo::IsContinuous( E1, E2 ); // meshed by "composite segment"
 
     SMESHDS_SubMesh* sm = mesh.GetSubMeshContaining( F )->GetSubMeshDS();
     if ( !sm ) return false;
 
     int nbQuads = 0;
     SMDS_ElemIteratorPtr fIt = n->GetInverseElementIterator(SMDSAbs_Face);
+    if ( !fIt->more() )
+      return SMESH_Algo::IsContinuous( E1, E2 ); // meshed by "composite segment"
     while ( fIt->more() )
     {
       const SMDS_MeshElement* f = fIt->next();
@@ -331,6 +333,28 @@ namespace
     }
     return nbQuads == 2;
   }
+
+  //================================================================================
+  /*!
+   * \brief Return true if a vertex holds a node and this node is used by some quadrangle
+   */
+  //================================================================================
+
+  // bool isMeshedVertex( TopoDS_Vertex&     V,
+  //                      const SMESH_Mesh&  mesh )
+  // {
+  //   const SMDS_MeshNode* n = SMESH_Algo::VertexNode( V, mesh.GetMeshDS() );
+  //   if ( !n ) return false;
+    
+  //   SMDS_ElemIteratorPtr fIt = n->GetInverseElementIterator(SMDSAbs_Face);
+  //   while ( fIt->more() )
+  //   {
+  //     const SMDS_MeshElement* f = fIt->next();
+  //     if ( f->NbCornerNodes() == 4 )
+  //       return true;
+  //   }
+  //   return false;
+  // }
 
   //================================================================================
   /*!
@@ -896,13 +920,7 @@ bool _QuadFaceGrid::Init(const TopoDS_Face& f, SMESH_Mesh& mesh)
       if ( SMESH_Algo::isDegenerated( sideEdges.back() ))
         continue;
       while ( !edges.empty() ) {
-        if ( SMESH_Algo::IsContinuous( sideEdges.back(), edges.front() )) {
-          sideEdges.splice( sideEdges.end(), edges, edges.begin());
-        }
-        else if ( SMESH_Algo::IsContinuous( sideEdges.front(), edges.back() )) {
-          sideEdges.splice( sideEdges.begin(), edges, --edges.end());
-        }
-        else if ( isContinuousMesh( sideEdges.back(), edges.front(), f, mesh )) {
+        if ( isContinuousMesh( sideEdges.back(), edges.front(), f, mesh )) {
           sideEdges.splice( sideEdges.end(), edges, edges.begin());
         }
         else if ( isContinuousMesh( sideEdges.front(), edges.back(), f, mesh )) {
@@ -1945,6 +1963,13 @@ bool _FaceSide::StoreNodes(SMESH_Mesh&                   mesh,
                                                 /*ignoreMediumNodes=*/true,
                                                 nodes);
     if ( !ok ) return false;
+
+    // skip nodes on VERTEXes not included in faces
+    if ( !nodes.begin()->second->GetInverseElementIterator(SMDSAbs_Face)->more() )
+      nodes.erase( nodes.begin() );
+    if ( !nodes.empty() &&
+         !nodes.rbegin()->second->GetInverseElementIterator(SMDSAbs_Face)->more() )
+      nodes.erase( --nodes.end() );
 
     bool forward = ( edge->Orientation() == TopAbs_FORWARD );
     if ( reverse ) forward = !forward;
