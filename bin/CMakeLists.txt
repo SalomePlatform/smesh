@@ -24,6 +24,7 @@ SALOME_CONFIGURE_FILE(VERSION.in VERSION INSTALL ${SALOME_INSTALL_BINS})
 # scripts / static
 SET(_bin_SCRIPTS
   smesh_setenv.py
+  smesh_test.py
 )
 
 # --- rules ---
