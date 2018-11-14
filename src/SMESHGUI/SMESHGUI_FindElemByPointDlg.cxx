@@ -536,7 +536,7 @@ void SMESHGUI_FindElemByPointOp::redisplayPreview()
   myPreview->nodesXYZ[0].z = myDlg->myZ->GetValue();
   if (!mySimulation)
     mySimulation = new SMESHGUI_MeshEditPreview(SMESH::GetViewWindow( mySMESHGUI ));
-  mySimulation->SetData( myPreview._retn());
+  mySimulation->SetData( myPreview.in());
 }
 
 //================================================================================

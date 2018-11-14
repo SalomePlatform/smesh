@@ -933,9 +933,9 @@ void SMESHGUI_ReorientFacesOp::redisplayPreview()
 //   }
 
 //   // display data
-//   if ( aMeshPreviewStruct.operator->() )
+//   if ( & aMeshPreviewStruct.in() )
 //   {
-//     myVectorPreview->SetData(aMeshPreviewStruct._retn());
+//     myVectorPreview->SetData(aMeshPreviewStruct.in());
 //   }
 //   else
 //   {

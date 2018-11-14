@@ -265,7 +265,7 @@ bool SMESHGUI_ConvToQuadOp::onApply()
           prop->Delete();
 
           SMESH::MeshPreviewStruct_var previewData = aEditor->GetPreviewData();
-          myBadElemsPreview->SetData( previewData._retn() );
+          myBadElemsPreview->SetData( previewData.in() );
           myBadElemsPreview->SetVisibility(true);
 
           SUIT_MessageBox* mb = new SUIT_MessageBox(SUIT_MessageBox::Warning,

@@ -811,9 +811,9 @@ void SMESHGUI_MakeNodeAtPointOp::redisplayPreview()
   if (!mySimulation)
     mySimulation = new SMESHGUI_MeshEditPreview(SMESH::GetViewWindow( mySMESHGUI ));
   // display data
-  if ( aMeshPreviewStruct.operator->() )
+  if ( & aMeshPreviewStruct.in() )
   {
-    mySimulation->SetData(aMeshPreviewStruct._retn());
+    mySimulation->SetData( aMeshPreviewStruct.in() );
   }
   else
   {

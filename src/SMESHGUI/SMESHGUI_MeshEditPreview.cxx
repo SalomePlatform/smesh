@@ -167,10 +167,10 @@ vtkIdType getCellType( const SMDSAbs_ElementType theType,
  */
 //================================================================================
 
-void SMESHGUI_MeshEditPreview::SetData (const SMESH::MeshPreviewStruct_var previewData)
+void SMESHGUI_MeshEditPreview::SetData (const SMESH::MeshPreviewStruct& previewData)
 {
   // Create points
-  const SMESH::nodes_array& aNodesXYZ = previewData->nodesXYZ;
+  const SMESH::nodes_array& aNodesXYZ = previewData.nodesXYZ;
   vtkPoints* aPoints = vtkPoints::New();
   aPoints->SetNumberOfPoints(aNodesXYZ.length());
 
@@ -182,8 +182,8 @@ void SMESHGUI_MeshEditPreview::SetData (const SMESH::MeshPreviewStruct_var previ
   aPoints->Delete();
 
   // Create cells
-  const SMESH::long_array&  anElemConnectivity = previewData->elementConnectivities;
-  const SMESH::types_array& anElemTypes = previewData->elementTypes;
+  const SMESH::long_array&  anElemConnectivity = previewData.elementConnectivities;
+  const SMESH::types_array& anElemTypes = previewData.elementTypes;
 
   vtkIdType aCellsSize = anElemConnectivity.length() + anElemTypes.length();
   vtkIdType aNbCells = anElemTypes.length();
