@@ -1573,7 +1573,7 @@ void SMESHGUI_ExtrusionDlg::onDisplaySimulation( bool toDisplayPreview )
                                                       makeGroups );
         }
         SMESH::MeshPreviewStruct_var aMeshPreviewStruct = meshEditor->GetPreviewData();
-        mySimulation->SetData(aMeshPreviewStruct._retn());
+        mySimulation->SetData(aMeshPreviewStruct);
 
       } catch (...) {
         hidePreview();

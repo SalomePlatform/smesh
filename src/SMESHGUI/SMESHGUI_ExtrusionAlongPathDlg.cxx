@@ -1112,7 +1112,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::onDisplaySimulation( bool toDisplayPreview 
           if( retVal == SMESH::SMESH_MeshEditor::EXTR_OK )
           {
             SMESH::MeshPreviewStruct_var aMeshPreviewStruct = meshEditor->GetPreviewData();
-            mySimulation->SetData( aMeshPreviewStruct._retn() );
+            mySimulation->SetData( aMeshPreviewStruct.in() );
           }
           else {
             hidePreview();

@@ -57,7 +57,7 @@ public:
   SMESHGUI_MeshEditPreview( SVTK_ViewWindow* );
   ~SMESHGUI_MeshEditPreview();
 
-  void                 SetData( const SMESH::MeshPreviewStruct_var );
+  void                 SetData( const SMESH::MeshPreviewStruct& );
 
   void                 SetVisibility( bool );
   void                 SetColor( double, double, double );

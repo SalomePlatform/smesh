@@ -248,7 +248,7 @@ void SMESHGUI_MultiPreviewDlg::setSimulationPreview( QList<SMESH::MeshPreviewStr
   mySimulationList.clear();
   for ( int i = 0; i < theMeshPreviewStruct.count(); i++ ) {
     mySimulationList << new SMESHGUI_MeshEditPreview( SMESH::GetViewWindow( mySMESHGUI ) );
-    mySimulationList[i]->SetData( theMeshPreviewStruct[i].operator->() );
+    mySimulationList[i]->SetData( theMeshPreviewStruct[i].in() );
   }
 }
 

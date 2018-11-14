@@ -1339,7 +1339,7 @@ void SMESHGUI_BaseComputeOp::onShowBadMesh()
       prop->SetPointSize( aPointSize * 3 );
       prop->SetColor( 250, 0, 250 );
       myBadMeshDisplayer->GetActor()->SetProperty( prop );
-      myBadMeshDisplayer->SetData( aMeshData._retn() );
+      myBadMeshDisplayer->SetData( aMeshData.in() );
       prop->Delete();
     }
   }
@@ -1979,11 +1979,10 @@ void SMESHGUI_PrecomputeOp::onPreview()
     SMESH::MeshPreviewStruct_var previewData =
       gen->Precompute(myMesh, myMainShape, (SMESH::Dimension)dim, aShapesId);
 
-    SMESH::MeshPreviewStruct* previewRes = previewData._retn();
-    if ( previewRes && previewRes->nodesXYZ.length() > 0 )
+    if ( & previewData.in() && previewData->nodesXYZ.length() > 0 )
     {
       computeFailed = false;
-      myPreviewDisplayer->SetData( previewRes );
+      myPreviewDisplayer->SetData( previewData );
       // append shape indices with computed mesh entities
       for ( int i = 0, n = aShapesId->length(); i < n; i++ )
         myMapShapeId[ aShapesId[ i ] ] = 0;

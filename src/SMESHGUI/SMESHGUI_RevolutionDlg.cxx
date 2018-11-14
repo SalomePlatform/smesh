@@ -796,7 +796,7 @@ void SMESHGUI_RevolutionDlg::onDisplaySimulation(bool toDisplayPreview)
                                          anAxis, anAngle, aNbSteps, aTolerance, makeGroups );
 
         SMESH::MeshPreviewStruct_var aMeshPreviewStruct = meshEditor->GetPreviewData();
-        mySimulation->SetData( aMeshPreviewStruct._retn() );
+        mySimulation->SetData( aMeshPreviewStruct.in() );
       }
       catch (...) {}
     }

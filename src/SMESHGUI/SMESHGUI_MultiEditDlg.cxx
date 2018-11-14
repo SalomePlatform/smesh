@@ -1242,7 +1242,7 @@ void SMESHGUI_UnionOfTrianglesDlg::onDisplaySimulation( bool toDisplayPreview )
         mySimulation->GetActor()->SetProperty( aProp );
         aProp->Delete();
 
-        mySimulation->SetData( aMeshPreviewStruct._retn() );
+        mySimulation->SetData( aMeshPreviewStruct.in() );
       } catch ( ... ) {
         hidePreview();
       }
