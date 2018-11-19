@@ -1025,7 +1025,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
 
   if ( !myElemSearcher )
     myElemSearcher = SMESH_MeshAlgos::GetElementSearcher( *meshDS );
-  SMESH_ElementSearcher* searcher = const_cast<SMESH_ElementSearcher*>(myElemSearcher);
+  SMESH_ElementSearcher* searcher = const_cast<SMESH_ElementSearcher*>( myElemSearcher );
   SMESHUtils::Deleter<SMESH_ElementSearcher>
     volSearcher( SMESH_MeshAlgos::GetElementSearcher( *meshDS ));
   vector< const SMDS_MeshElement* > suspectFaces, foundVolumes;
@@ -1044,7 +1044,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
     gp_Pnt PC;
     gp_Vec VNorm;
     const SMDS_MeshElement* volumes[2];
-    int what = Preparation(face, PN, VN, FNodes, PC, VNorm, volumes);
+    int what = Preparation( face, PN, VN, FNodes, PC, VNorm, volumes );
     if ( what == NOT_QUAD )
       continue;
     if ( volumes[0] && volumes[1] )
@@ -1163,7 +1163,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
 
     if ( toFindVolumes && 0 ) // non-conformal mesh is not suitable for any mesher so far
     {
-      // there are volumes in the mesh, in a non-conformal mesh an neighbor
+      // there are volumes in the mesh, in a non-conformal mesh a neighbor
       // volume can be not found yet
       for ( int isRev = 0; isRev < 2; ++isRev )
       {
@@ -1192,7 +1192,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
       gp_Pnt intP;
       for ( int isRev = 0; isRev < 2; ++isRev )
       {
-        if( !volumes[isRev] && HasIntersection(farPnt[isRev], PC, intP, aContour) )
+        if( !volumes[isRev] && HasIntersection( farPnt[isRev], PC, intP, aContour ))
         {
           double d = PC.Distance( intP );
           if ( d < dist2int[isRev] )
