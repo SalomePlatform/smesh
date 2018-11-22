@@ -237,7 +237,8 @@ GEOM::GEOM_Object_ptr SMESH_Gen_i::ShapeToGeomObject (const TopoDS_Shape& theSha
     if ( aClient && aClient->Find( theShape, IOR ))
     {
       CORBA::Object_var obj = GetORB()->string_to_object( IOR.ToCString() );
-      aShapeObj = GEOM::GEOM_Object::_narrow ( obj );
+      if ( !obj->_non_existent() )
+        aShapeObj = GEOM::GEOM_Object::_narrow ( obj );
     }
   }
   return aShapeObj._retn();
@@ -251,7 +252,7 @@ GEOM::GEOM_Object_ptr SMESH_Gen_i::ShapeToGeomObject (const TopoDS_Shape& theSha
 TopoDS_Shape SMESH_Gen_i::GeomObjectToShape(GEOM::GEOM_Object_ptr theGeomObject)
 {
   TopoDS_Shape S;
-  if ( !theGeomObject->_is_nil() ) {
+  if ( !theGeomObject->_is_nil() && !theGeomObject->_non_existent() ) {
     GEOM_Client* aClient = GetShapeReader();
     GEOM::GEOM_Gen_ptr aGeomEngine = GetGeomEngine();
     if ( aClient && !aGeomEngine->_is_nil () )
