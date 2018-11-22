@@ -62,7 +62,8 @@ DriverMED_W_SMESHDS_Mesh::DriverMED_W_SMESHDS_Mesh():
   myAutoDimension(false),
   myAddODOnVertices(false),
   myDoAllInGroups(false),
-  myVersion(-1)
+  myVersion(-1),
+  myZTolerance(-1.)
 {}
 
 void DriverMED_W_SMESHDS_Mesh::SetFile(const std::string& theFileName, int theVersion)
@@ -417,6 +418,8 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
         anIsXDimension = (aBounds[1] - aBounds[0]) + abs(aBounds[1]) + abs(aBounds[0]) > EPS;
         anIsYDimension = (aBounds[3] - aBounds[2]) + abs(aBounds[3]) + abs(aBounds[2]) > EPS;
         anIsZDimension = (aBounds[5] - aBounds[4]) + abs(aBounds[5]) + abs(aBounds[4]) > EPS;
+        if ( myZTolerance > 0 && anIsZDimension )
+          anIsZDimension = (aBounds[5] > myZTolerance || aBounds[4] < -myZTolerance );
         aSpaceDimension = Max( aMeshDimension, anIsXDimension + anIsYDimension + anIsZDimension );
         if ( !aSpaceDimension )
           aSpaceDimension = 3;
@@ -550,6 +553,10 @@ Driver_Mesh::Status DriverMED_W_SMESHDS_Mesh::Perform()
       for(TInt iCoord = 0; iCoord < aSpaceDimension; iCoord++){
         aTCoordSlice[iCoord] = aCoordHelperPtr->GetCoord(iCoord);
       }
+      if ( aSpaceDimension == 3 &&
+           -myZTolerance < aTCoordSlice[2] && aTCoordSlice[2] < myZTolerance )
+        aTCoordSlice[2] = 0.;
+
       // node number
       int aNodeID = aCoordHelperPtr->GetID();
       aNodeInfo->SetElemNum( iNode, aNodeID );

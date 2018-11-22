@@ -8,11 +8,12 @@ Importing and exporting meshes
 In MESH there is a functionality allowing import/export of meshes in the following formats:
 
 * **MED**,
+* **SAUV** (format of the CASTEM code),
 * **UNV** (I-DEAS 10),
-* **DAT** (simple ascii format), 
 * **STL**, 
+* **CGNS**,
 * **GMF** (internal format of DISTENE products from the MeshGems suite),
-* **CGNS**.
+* **DAT** (simple ascii format).
 
 You can also export a group as a whole mesh.
 
@@ -42,10 +43,13 @@ If you try to export a group, the warning will be shown:
 
 * **Don't show this warning anymore** check-box allows to switch off the warning. You can re-activate the warning in :ref:`Preferences <group_export_warning_pref>`.
 
+Only MED format supports all types of elements that can be created in the module. If you export a mesh or group that includes elements of types that are not supported by chosen format, you will be warned about that.
+
 There are additional parameters available at export to MED and SAUV format files.
 
 .. _export_auto_groups:
 
+* **Z tolerance** field if enabled specifies distance of nodes from the XOY plane below which the nodes snap to this plane. A default value can be set in :ref:`Preferences <medexport_z_tolerance_pref>`.
 * **Automatically create groups** check-box specifies whether to create groups of all mesh entities of available dimensions or not. The created groups have names like "Group_On_All_Nodes", "Group_On_All_Faces", etc. A default state of this check-box can be set in :ref:`Preferences <export_auto_groups_pref>`.
 * **Automatically define space dimension** check-box specifies whether to define space dimension for export by mesh configuration or not. Usually the mesh is exported as a mesh in 3D space, just as it is in Mesh module. The mesh can be exported as a mesh of a lower dimension in the following cases, provided that this check-box is checked:
 

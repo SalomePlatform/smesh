@@ -50,6 +50,7 @@ class MESHDRIVERMED_EXPORT DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
 
   void SetFile(const std::string& theFileName, int theVersion=-1);
   void SetAutoDimension(bool toFindOutDimension) { myAutoDimension = toFindOutDimension; }
+  void SetZTolerance(double tol) { myZTolerance = tol; }
 
   static std::string GetVersionString(int theMinor, int theNbDigits=2);
 
@@ -89,7 +90,8 @@ class MESHDRIVERMED_EXPORT DriverMED_W_SMESHDS_Mesh: public Driver_SMESHDS_Mesh
   bool myAutoDimension;
   bool myAddODOnVertices;
   bool myDoAllInGroups;
-  int myVersion;
+  int  myVersion;
+  double myZTolerance;
 };
 
 #endif

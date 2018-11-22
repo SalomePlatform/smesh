@@ -1467,6 +1467,10 @@ Please enter correct values and try again</translation>
         <translation>Automatically define space dimension</translation>
     </message>
     <message>
+        <source>SMESH_ZTOLERANCE</source>
+        <translation>Z tolerance</translation>
+    </message>
+    <message>
         <source>SMESH_REQUIRED_GROUPS</source>
         <translation>Create groups of required entities</translation>
     </message>
@@ -4583,6 +4587,10 @@ Please, create VTK viewer and try again</translation>
     <message>
         <source>PREF_SHOW_WARN</source>
         <translation>Show warning when exporting group</translation>
+    </message>
+    <message>
+        <source>PREF_ZTOLERANCE</source>
+        <translation>Z tolerance for MED export</translation>
     </message>
     <message>
         <source>PREF_GROUP_SEGMENT_LENGTH</source>

@@ -40,6 +40,7 @@
 #include "SMESHGUI_CopyMeshDlg.h"
 #include "SMESHGUI_CreatePolyhedralVolumeDlg.h"
 #include "SMESHGUI_DeleteGroupDlg.h"
+#include "SMESHGUI_DisplayEntitiesDlg.h"
 #include "SMESHGUI_Displayer.h"
 #include "SMESHGUI_DuplicateNodesDlg.h"
 #include "SMESHGUI_ExtrusionAlongPathDlg.h"
@@ -49,11 +50,15 @@
 #include "SMESHGUI_FileValidator.h"
 #include "SMESHGUI_FilterDlg.h"
 #include "SMESHGUI_FilterLibraryDlg.h"
+#include "SMESHGUI_FilterUtils.h"
 #include "SMESHGUI_FindElemByPointDlg.h"
+#include "SMESHGUI_GEOMGenUtils.h"
 #include "SMESHGUI_GroupDlg.h"
 #include "SMESHGUI_GroupOnShapeDlg.h"
 #include "SMESHGUI_GroupOpDlg.h"
+#include "SMESHGUI_GroupUtils.h"
 #include "SMESHGUI_Hypotheses.h"
+#include "SMESHGUI_HypothesesUtils.h"
 #include "SMESHGUI_Make2DFrom3DOp.h"
 #include "SMESHGUI_MakeNodeAtPointDlg.h"
 #include "SMESHGUI_Measurements.h"
@@ -62,9 +67,12 @@
 #include "SMESHGUI_MeshOp.h"
 #include "SMESHGUI_MeshOrderOp.h"
 #include "SMESHGUI_MeshPatternDlg.h"
+#include "SMESHGUI_MeshUtils.h"
 #include "SMESHGUI_MultiEditDlg.h"
 #include "SMESHGUI_NodesDlg.h"
+#include "SMESHGUI_OffsetDlg.h"
 #include "SMESHGUI_Operations.h"
+#include "SMESHGUI_PatternUtils.h"
 #include "SMESHGUI_Preferences_ScalarBarDlg.h"
 #include "SMESHGUI_PropertiesDlg.h"
 #include "SMESHGUI_RemoveElementsDlg.h"
@@ -74,23 +82,15 @@
 #include "SMESHGUI_RevolutionDlg.h"
 #include "SMESHGUI_RotationDlg.h"
 #include "SMESHGUI_ScaleDlg.h"
-#include "SMESHGUI_OffsetDlg.h"
 #include "SMESHGUI_Selection.h"
 #include "SMESHGUI_SewingDlg.h"
 #include "SMESHGUI_SingleEditDlg.h"
 #include "SMESHGUI_SmoothingDlg.h"
+#include "SMESHGUI_SpinBox.h"
+#include "SMESHGUI_SplitBiQuad.h"
 #include "SMESHGUI_SymmetryDlg.h"
 #include "SMESHGUI_TranslationDlg.h"
 #include "SMESHGUI_TransparencyDlg.h"
-#include "SMESHGUI_DisplayEntitiesDlg.h"
-#include "SMESHGUI_SplitBiQuad.h"
-
-#include "SMESHGUI_FilterUtils.h"
-#include "SMESHGUI_GEOMGenUtils.h"
-#include "SMESHGUI_GroupUtils.h"
-#include "SMESHGUI_HypothesesUtils.h"
-#include "SMESHGUI_MeshUtils.h"
-#include "SMESHGUI_PatternUtils.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
 
@@ -101,38 +101,33 @@
 #include "SMESH_ActorUtils.h"
 #include "SMESH_Client.hxx"
 #include "SMESH_ScalarBarActor.h"
+#include <SMESH_Comment.hxx>
 #include "SMESH_TypeFilter.hxx"
 
 // SALOME GUI includes
-#include <SalomeApp_Application.h>
-#include <SalomeApp_CheckFileDlg.h>
-#include <SalomeApp_DataObject.h>
-#include <SalomeApp_Study.h>
-#include <SalomeApp_Tools.h>
-
 #include <LightApp_DataOwner.h>
 #include <LightApp_NameDlg.h>
 #include <LightApp_Preferences.h>
 #include <LightApp_SelectionMgr.h>
 #include <LightApp_UpdateFlags.h>
-
-#include <SVTK_ViewManager.h>
-#include <SVTK_ViewModel.h>
-#include <SVTK_ViewWindow.h>
-
-#include <VTKViewer_Algorithm.h>
-
+#include <QtxFontEdit.h>
+#include <QtxPopupMgr.h>
+#include <SALOME_ListIO.hxx>
 #include <SUIT_Desktop.h>
 #include <SUIT_FileDlg.h>
 #include <SUIT_MessageBox.h>
 #include <SUIT_OverrideCursor.h>
 #include <SUIT_ResourceMgr.h>
 #include <SUIT_Session.h>
-
-#include <QtxPopupMgr.h>
-#include <QtxFontEdit.h>
-
-#include <SALOME_ListIO.hxx>
+#include <SVTK_ViewManager.h>
+#include <SVTK_ViewModel.h>
+#include <SVTK_ViewWindow.h>
+#include <SalomeApp_Application.h>
+#include <SalomeApp_CheckFileDlg.h>
+#include <SalomeApp_DataObject.h>
+#include <SalomeApp_Study.h>
+#include <SalomeApp_Tools.h>
+#include <VTKViewer_Algorithm.h>
 
 #ifndef DISABLE_PLOT2DVIEWER
 #include <SPlot2d_ViewModel.h>
@@ -149,13 +144,13 @@
 // Qt includes
 // #define       INCLUDE_MENUITEM_DEF // VSR commented ????????
 #include <QApplication>
+#include <QCheckBox>
+#include <QDialogButtonBox>
+#include <QLayout>
+#include <QListView>
 #include <QMenu>
 #include <QTextStream>
-#include <QListView>
 #include <QTreeView>
-#include <QCheckBox>
-#include <QLayout>
-#include <QDialogButtonBox>
 
 // BOOST includes
 #include <boost/shared_ptr.hpp>
@@ -491,17 +486,11 @@ namespace
         QDialogButtonBox* btnbox = msgBox.findChild<QDialogButtonBox*>();
         lt->addWidget(&dontShowCheckBox, lt->rowCount(), lt->columnCount()-1, lt->rowCount(), lt->columnCount());
         lt->addWidget(btnbox, lt->rowCount(), 0, lt->rowCount(), lt->columnCount());
-        if(msgBox.exec() == QMessageBox::Ok)
-        {
-          if(dontShowCheckBox.checkState() == Qt::Checked)
-          {
-            if ( resMgr )
-              resMgr->setValue( "SMESH", "show_warning", false);
-          }
-          aCheckWarn = false;
-        }
-        else
+        if ( msgBox.exec() != QMessageBox::Ok )
           return;
+
+        if ( dontShowCheckBox.checkState() == Qt::Checked && resMgr )
+          resMgr->setValue( "SMESH", "show_warning", false);
       }
 
       QString aMeshName = anIObject->getName();
@@ -665,6 +654,7 @@ namespace
       toCreateGroups = resMgr->booleanValue( "SMESH", "auto_groups", false );
     bool toOverwrite  = true;
     bool toFindOutDim = true;
+    double       zTol = resMgr ? resMgr->doubleValue( "SMESH", "med_ztolerance", 0. ) : 0.;
 
     QString aFilter, aTitle = QObject::tr("SMESH_EXPORT_MESH");
     QString anInitialPath = "";
@@ -749,28 +739,21 @@ namespace
       if ( isMED ) {
         //filters << QObject::tr( "MED_FILES_FILTER" ) + " (*.med)";
         //QString vmed (aMesh->GetVersionString(-1, 2));
-        //MESSAGE("MED version: " << vmed.toStdString());
         SMESH::long_array_var mvok = aMesh->GetMEDVersionsCompatibleForAppend();
-        for ( int i = 0; i < mvok->length(); ++i )  // i=0 must correspond to the current version to set the default filter on it
-          {
-            int versionInt = mvok[i];
-            if (i == 0)
-              defaultVersion = versionInt;
-            std::ostringstream vss;
-            vss << versionInt/10;
-            vss << ".";
-            vss << versionInt%10;
-            QString vs = vss.str().c_str();
-            MESSAGE("MED version: " << vs.toStdString());
-            aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( vs ) + " (*.med)",  versionInt);
-          }
+        if ( mvok->length() > 0)
+          defaultVersion = mvok[0]; // the current version to set the default filter on it
+        for ( CORBA::ULong i = 0; i < mvok->length(); ++i )
+        {
+          QString vs = (char*)( SMESH_Comment( mvok[i]/10 ) << "." << mvok[i]%10 );
+          MESSAGE("MED version: " << vs.toStdString());
+          aFilterMap.insert( QObject::tr( "MED_VX_FILES_FILTER" ).arg( vs ) + " (*.med)",  mvok[i]);
+        }
       }
       else { // isSAUV
         aFilterMap.insert("All files (*)", -1 );
         aFilterMap.insert("SAUV files (*.sauv)", defaultVersion ); // 0 = default filter (defaultVersion)
         aFilterMap.insert("SAUV files (*.sauve)", -1 );
       }
-      MESSAGE("default version="<< defaultVersion);
       QStringList filters;
       QMap<QString, int>::const_iterator it = aFilterMap.begin();
       QString aDefaultFilter = it.key();
@@ -786,6 +769,19 @@ namespace
       QList< QWidget* > wdgList;
       if ( fieldSelWdg->GetAllFields( aMeshList, aFieldList ))
         wdgList.append( fieldSelWdg );
+
+      QWidget*           zTolWdg = new QWidget();
+      QCheckBox*       zTolCheck = new QCheckBox( QObject::tr( "SMESH_ZTOLERANCE" ), zTolWdg );
+      SMESHGUI_SpinBox* zTolSpin = new SMESHGUI_SpinBox( zTolWdg );
+      QHBoxLayout*    zTolLayout = new QHBoxLayout( zTolWdg );
+      zTolLayout->addWidget( zTolCheck );
+      zTolLayout->addWidget( zTolSpin );
+      zTolLayout->setMargin( 0 );
+      zTolSpin->RangeStepAndValidator( 0, 1e+100, 1., "length_precision" );
+      zTolSpin->setValue( zTol );
+      //QObject::connect( zTolCheck, SIGNAL( stateChanged(int)), zTolSpin, SLOT( setEnabled(bool)));
+      zTolCheck->setChecked( resMgr->booleanValue( "SMESH", "enable_ztolerance", false ));
+      wdgList.append( zTolWdg );
 
       SalomeApp_CheckFileDlg* fd =
         new SalomeApp_CheckFileDlg ( SMESHGUI::desktop(), false, checkBoxes, true, true, wdgList );
@@ -812,8 +808,9 @@ namespace
       fd->setValidator( fv );
 
       bool is_ok = false;
-      while (!is_ok) {
-        MESSAGE("******* Loop on file dialog ***********");
+      while (!is_ok)
+      {
+        //MESSAGE("******* Loop on file dialog ***********");
         isOkToWrite =true;
         if ( fd->exec() )
           aFilename = fd->selectedFile();
@@ -822,9 +819,9 @@ namespace
           break;
         }
         aFormat = aFilterMap[fd->selectedNameFilter()];
-        MESSAGE("selected version: " << aFormat << " file: " << aFilename.toUtf8().constData());
+        //MESSAGE("selected version: " << aFormat << " file: " << aFilename.toUtf8().constData());
         toOverwrite = fv->isOverwrite(aFilename);
-        MESSAGE("toOverwrite:" << toOverwrite);
+        //MESSAGE("toOverwrite:" << toOverwrite);
         is_ok = true;
         if ( !aFilename.isEmpty() ) {
           if( !toOverwrite ) {
@@ -838,16 +835,16 @@ namespace
                                                   QObject::tr("SMESH_BUT_YES"),
                                                   QObject::tr("SMESH_BUT_NO"), 0, 1);
               if (aRet == 0)
-                {
-                  toOverwrite = true;
-                  MESSAGE("incompatible MED file version for add, overwrite accepted");
-                }
+              {
+                toOverwrite = true;
+                //MESSAGE("incompatible MED file version for add, overwrite accepted");
+              }
               else
-                {
-                  isOkToWrite = false;
-                  is_ok = false;
-                  MESSAGE("incompatible MED file version for add, overwrite refused");
-                }
+              {
+                isOkToWrite = false;
+                is_ok = false;
+                //MESSAGE("incompatible MED file version for add, overwrite refused");
+              }
             }
             QStringList aMeshNamesCollisionList;
             SMESH::string_array_var aMeshNames = SMESHGUI::GetSMESHGen()->GetMeshNames( aFilename.toUtf8().constData() );
@@ -861,7 +858,7 @@ namespace
                 }
               }
             }
-           if( !aMeshNamesCollisionList.isEmpty() ) {
+            if( !aMeshNamesCollisionList.isEmpty() ) {
               isOkToWrite = false;
               QString aMeshNamesCollisionString = aMeshNamesCollisionList.join( ", " );
               int aRet = SUIT_MessageBox::warning(SMESHGUI::desktop(),
@@ -870,8 +867,8 @@ namespace
                                                   QObject::tr("SMESH_BUT_YES"),
                                                   QObject::tr("SMESH_BUT_NO"),
                                                   QObject::tr("SMESH_BUT_CANCEL"), 0, 2);
-             MESSAGE("answer collision name " << aRet);
-             if (aRet == 0) {
+              MESSAGE("answer collision name " << aRet);
+              if (aRet == 0) {
                 toOverwrite = true;
                 isOkToWrite = true;
               }
@@ -881,12 +878,16 @@ namespace
           }
         }
       }
-      MESSAGE(" ****** end of file dialog loop, toOverwrite:" << toOverwrite << " isOkToWrite:" << isOkToWrite);
       toCreateGroups = fd->IsChecked(0);
       toFindOutDim   = fd->IsChecked(1);
+      zTol           = zTolCheck->isChecked() ? zTolSpin->value() : -1;
       fieldSelWdg->GetSelectedFields();
+      if ( resMgr ) resMgr->setValue( "SMESH", "enable_ztolerance", zTolCheck->isChecked() );
+
       if ( !fieldSelWdg->parent() )
         delete fieldSelWdg;
+      if ( !zTolWdg->parent() )
+        delete zTolWdg;
       delete fd;
     }
     else
@@ -905,12 +906,12 @@ namespace
 
       try {
         // Renumbering is not needed since SMDS redesign in V6.2.0 (Nov 2010)
-//         bool Renumber = false;
-//         // PAL 14172  : Check of we have to renumber or not from the preferences before export
-//         if (resMgr)
-//           Renumber= resMgr->booleanValue("renumbering");
-//         if (Renumber){
-//           SMESH::SMESH_MeshEditor_var aMeshEditor = aMesh->GetMeshEditor();
+        //         bool Renumber = false;
+        //         // PAL 14172  : Check of we have to renumber or not from the preferences before export
+        //         if (resMgr)
+        //           Renumber= resMgr->booleanValue("renumbering");
+        //         if (Renumber){
+        //           SMESH::SMESH_MeshEditor_var aMeshEditor = aMesh->GetMeshEditor();
 //           aMeshEditor->RenumberNodes();
 //           aMeshEditor->RenumberElements();
 //           if ( SMESHGUI::automaticUpdate() )
@@ -927,13 +928,14 @@ namespace
             const GEOM::ListOfFields&       fields = aFieldList[ aMeshIndex ].first.in();
             const QString&            geoAssFields = aFieldList[ aMeshIndex ].second;
             const bool                   hasFields = ( fields.length() || !geoAssFields.isEmpty() );
-            if ( !hasFields && aMeshOrGroup->_is_equivalent( aMeshItem ))
+            if ( !hasFields && aMeshOrGroup->_is_equivalent( aMeshItem ) && zTol < 0 )
               aMeshItem->ExportMED( aFilename.toUtf8().data(), toCreateGroups, aFormat,
                                     toOverwrite && aMeshIndex == 0, toFindOutDim );
             else
-              aMeshItem->ExportPartToMED( aMeshOrGroup, aFilename.toUtf8().data(), toCreateGroups, aFormat,
+              aMeshItem->ExportPartToMED( aMeshOrGroup, aFilename.toUtf8().data(),
+                                          toCreateGroups, aFormat,
                                           toOverwrite && aMeshIndex == 0, toFindOutDim,
-                                          fields, geoAssFields.toLatin1().data() );
+                                          fields, geoAssFields.toLatin1().data(), zTol );
           }
         }
         else if ( isSAUV )
@@ -5117,6 +5119,11 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( exportgroup, "columns", 2 );
   addPreference( tr( "PREF_AUTO_GROUPS" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "auto_groups" );
   addPreference( tr( "PREF_SHOW_WARN" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "show_warning" );
+  int zTol = addPreference( tr( "PREF_ZTOLERANCE" ), exportgroup, LightApp_Preferences::DblSpin, "SMESH", "med_ztolerance" );
+  setPreferenceProperty( zTol, "precision", 10 );
+  setPreferenceProperty( zTol, "min", 0.0000000001 );
+  setPreferenceProperty( zTol, "max", 1000000.0 );
+  setPreferenceProperty( zTol, "step", 1. );
   //addPreference( tr( "PREF_RENUMBER" ), exportgroup, LightApp_Preferences::Bool, "SMESH", "renumbering" );
 
   int computeGroup = addPreference( tr( "PREF_GROUP_COMPUTE" ), genTab );

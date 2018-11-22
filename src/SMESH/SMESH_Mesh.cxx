@@ -1407,25 +1407,29 @@ bool SMESH_Mesh::HasDuplicatedGroupNamesMED()
  *              The major version (x, where version is x.y.z) cannot be changed.
  *  \param [in] meshPart - mesh data to export
  *  \param [in] theAutoDimension - if \c true, a space dimension of a MED mesh can be either
-     *         - 1D if all mesh nodes lie on OX coordinate axis, or
-     *         - 2D if all mesh nodes lie on XOY coordinate plane, or
-     *         - 3D in the rest cases.
-     *         If \a theAutoDimension is \c false, the space dimension is always 3.
+ *              - 1D if all mesh nodes lie on OX coordinate axis, or
+ *              - 2D if all mesh nodes lie on XOY coordinate plane, or
+ *              - 3D in the rest cases.
+ *              If \a theAutoDimension is \c false, the space dimension is always 3.
  *  \param [in] theAddODOnVertices - to create 0D elements on all vertices
  *  \param [in] theAllElemsToGroup - to make every element to belong to any group (PAL23413)
+ *  \param [in] ZTolerance - tolerance in Z direction. If Z coordinate of a node is close to zero
+ *              within a given tolerance, the coordinate is set to zero.
+ *              If \a ZTolerance is negative, the node coordinates are kept as is.
  *  \return int - mesh index in the file
  */
 //================================================================================
 
-void SMESH_Mesh::ExportMED(const char *        file, 
-                           const char*         theMeshName, 
+void SMESH_Mesh::ExportMED(const char *        file,
+                           const char*         theMeshName,
                            bool                theAutoGroups,
                            int                 theVersion,
                            const SMESHDS_Mesh* meshPart,
                            bool                theAutoDimension,
                            bool                theAddODOnVertices,
+                           double              theZTolerance,
                            bool                theAllElemsToGroup)
-  throw(SALOME_Exception)
+throw(SALOME_Exception)
 {
   MESSAGE("MED_VERSION:"<< theVersion);
   SMESH_TRY;
@@ -1435,7 +1439,8 @@ void SMESH_Mesh::ExportMED(const char *        file,
   myWriter.SetMesh         ( meshPart ? (SMESHDS_Mesh*) meshPart : _myMeshDS   );
   myWriter.SetAutoDimension( theAutoDimension );
   myWriter.AddODOnVertices ( theAddODOnVertices );
-  if ( !theMeshName ) 
+  myWriter.SetZTolerance   ( theZTolerance );
+  if ( !theMeshName )
     myWriter.SetMeshId     ( _id         );
   else {
     myWriter.SetMeshId     ( -1          );
@@ -1511,7 +1516,7 @@ void SMESH_Mesh::ExportSAUV(const char *file,
   system(cmd.c_str());
   ExportMED(medfilename.c_str(), theMeshName, theAutoGroups, /*minor=*/-1,
             /*meshPart=*/NULL, /*theAutoDimension=*/false, /*theAddODOnVertices=*/false,
-            /*theAllElemsToGroup=*/true ); // theAllElemsToGroup is for PAL0023413
+            /*zTol=*/-1, /*theAllElemsToGroup=*/true ); // theAllElemsToGroup is for PAL0023413
 #ifdef WIN32
   cmd = "%PYTHONBIN% ";
 #else

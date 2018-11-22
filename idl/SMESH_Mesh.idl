@@ -665,6 +665,9 @@ module SMESH
      *         - 'e' stands for _edges_ field;
      *         - 'f' stands for _faces_ field;
      *         - 's' stands for _solids_ field.
+     * - ZTolerance : tolerance in Z direction. If Z coordinate of a node is close to zero
+     *                within a given tolerance, the coordinate is set to zero.
+     *                If @a ZTolerance is negative, the node coordinates are kept as is.
      */
     void ExportPartToMED( in SMESH_IDSource     meshPart,
                           in string             fileName,
@@ -673,7 +676,8 @@ module SMESH
                           in boolean            overwrite,
                           in boolean            autoDimension,
                           in GEOM::ListOfFields fields,
-                          in string             geomAssocFields ) raises (SALOME::SALOME_Exception);
+                          in string             geomAssocFields,
+                          in double             ZTolerance) raises (SALOME::SALOME_Exception);
 
     /*!
      * Export Mesh to SAUV formatted file

@@ -3212,7 +3212,8 @@ void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
                                    CORBA::Boolean            overwrite,
                                    CORBA::Boolean            autoDimension,
                                    const GEOM::ListOfFields& fields,
-                                   const char*               geomAssocFields)
+                                   const char*               geomAssocFields,
+                                   CORBA::Double             ZTolerance)
   throw (SALOME::SALOME_Exception)
 {
   MESSAGE("MED version: "<< version);
@@ -3263,7 +3264,8 @@ void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
   {
     aMeshName = prepareMeshNameAndGroups(file, overwrite);
     _impl->ExportMED( file, aMeshName.c_str(), auto_groups, version,
-                      0, autoDimension, /*addODOnVertices=*/have0dField);
+                      0, autoDimension, /*addODOnVertices=*/have0dField,
+                      ZTolerance);
     meshDS = _impl->GetMeshDS();
   }
   else
@@ -3281,7 +3283,7 @@ void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
 
     SMESH_MeshPartDS* partDS = new SMESH_MeshPartDS( meshPart );
     _impl->ExportMED( file, aMeshName.c_str(), auto_groups, version,
-                      partDS, autoDimension, /*addODOnVertices=*/have0dField);
+                      partDS, autoDimension, /*addODOnVertices=*/have0dField, ZTolerance);
     meshDS = tmpDSDeleter._obj = partDS;
   }
 
@@ -3313,7 +3315,9 @@ void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
                 << overwrite << ", "
                 << autoDimension << ", "
                 << goList << ", '"
-                << ( geomAssocFields ? geomAssocFields : "" ) << "'" << " )";
+                << ( geomAssocFields ? geomAssocFields : "" ) << "',"
+                << ZTolerance
+                << " )";
 
   SMESH_CATCH( SMESH::throwCorbaException );
 }

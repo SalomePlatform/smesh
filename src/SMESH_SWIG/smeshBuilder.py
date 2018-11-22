@@ -2225,12 +2225,17 @@ class Mesh(metaclass = MeshMeta):
                         If *autoDimension* is *False*, the space dimension is always 3.
                 fields: list of GEOM fields defined on the shape to mesh.
                 geomAssocFields: each character of this string means a need to export a 
-                        corresponding field; correspondence between fields and characters is following:
+                        corresponding field; correspondence between fields and characters 
+                        is following:
 
                         - 'v' stands for "_vertices_" field;
                         - 'e' stands for "_edges_" field;
                         - 'f' stands for "_faces_" field;
                         - 's' stands for "_solids_" field.
+
+                zTolerance (float): tolerance in Z direction. If Z coordinate of a node is 
+                             close to zero within a given tolerance, the coordinate is set to zero.
+                             If *ZTolerance* is negative (default), the node coordinates are kept as is.
         """
         # process positional arguments
         #args = [i for i in args if i not in [SMESH.MED_V2_1, SMESH.MED_V2_2]] # backward compatibility
@@ -2242,6 +2247,7 @@ class Mesh(metaclass = MeshMeta):
         autoDimension   = args[5] if len(args) > 5 else True
         fields          = args[6] if len(args) > 6 else []
         geomAssocFields = args[7] if len(args) > 7 else ''
+        z_tolerance     = args[8] if len(args) > 8 else -1.
         # process keywords arguments
         auto_groups     = kwargs.get("auto_groups", auto_groups)
         minor           = kwargs.get("minor", minor)
@@ -2250,14 +2256,15 @@ class Mesh(metaclass = MeshMeta):
         autoDimension   = kwargs.get("autoDimension", autoDimension)
         fields          = kwargs.get("fields", fields)
         geomAssocFields = kwargs.get("geomAssocFields", geomAssocFields)
+        z_tolerance     = kwargs.get("zTolerance", z_tolerance)
         # invoke engine's function
-        if meshPart or fields or geomAssocFields:
+        if meshPart or fields or geomAssocFields or z_tolerance > 0:
             unRegister = genObjUnRegister()
             if isinstance( meshPart, list ):
                 meshPart = self.GetIDSource( meshPart, SMESH.ALL )
                 unRegister.set( meshPart )
             self.mesh.ExportPartToMED( meshPart, fileName, auto_groups, minor, overwrite, autoDimension,
-                                       fields, geomAssocFields)
+                                       fields, geomAssocFields, z_tolerance)
         else:
             self.mesh.ExportMED(fileName, auto_groups, minor, overwrite, autoDimension)
 

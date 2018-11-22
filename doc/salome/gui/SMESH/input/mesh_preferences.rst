@@ -52,6 +52,10 @@ General Preferences
 
   * **Show warning when exporting group** - if activated, a warning is displayed when exporting a group.
 
+.. _medexport_z_tolerance_pref:
+
+  * **Z tolerance for MED export** - defines Z tolerance in :ref:`MED Export <export_auto_groups>` dialog.
+
 .. _show_comp_result_pref:
 
 * **Mesh computation**

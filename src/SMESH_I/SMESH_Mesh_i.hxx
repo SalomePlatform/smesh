@@ -263,7 +263,8 @@ public:
                        CORBA::Boolean            overwrite,
                        CORBA::Boolean            autoDim,
                        const GEOM::ListOfFields& fields,
-                       const char*               geomAssocFields) throw (SALOME::SALOME_Exception);
+                       const char*               geomAssocFields,
+                       CORBA::Double             ZTolerance) throw (SALOME::SALOME_Exception);
   void ExportPartToDAT(SMESH::SMESH_IDSource_ptr meshPart,
                        const char*               file) throw (SALOME::SALOME_Exception);
   void ExportPartToUNV(SMESH::SMESH_IDSource_ptr meshPart,

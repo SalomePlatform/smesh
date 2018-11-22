@@ -251,13 +251,14 @@ class SMESH_EXPORT SMESH_Mesh
    */
   bool HasDuplicatedGroupNamesMED();
 
-  void ExportMED(const char *        theFile, 
-                 const char*         theMeshName = NULL, 
-                 bool                theAutoGroups = true, 
+  void ExportMED(const char *        theFile,
+                 const char*         theMeshName = NULL,
+                 bool                theAutoGroups = true,
                  int                 theVersion = -1,
                  const SMESHDS_Mesh* theMeshPart = 0,
                  bool                theAutoDimension = false,
                  bool                theAddODOnVertices = false,
+                 double              theZTolerance = -1.,
                  bool                theAllElemsToGroup = false)
     throw(SALOME_Exception);
 
