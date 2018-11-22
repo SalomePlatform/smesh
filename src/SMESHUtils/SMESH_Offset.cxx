@@ -2747,8 +2747,9 @@ SMDS_Mesh* SMESH_MeshAlgos::MakeOffset( SMDS_ElemIteratorPtr theFaceIt,
       normals[i].SetCoord( 0,0,0 ); // TODO find norm by neighbors
   }
 
-  const double  tol = 1e-3 * Sqrt( minNodeDist );
   const double sign = ( theOffset < 0 ? -1 : +1 );
+  const double  tol = Min( 1e-3 * Sqrt( minNodeDist ),
+                           1e-2 * theOffset * sign );
 
   // translate new nodes by normal to input faces
   gp_XYZ newXYZ;

@@ -6789,7 +6789,9 @@ SMESH_MeshEditor::PGroupIDs SMESH_MeshEditor::Offset( TIDSortedElemSet & theElem
   for ( size_t i = 0; i < new2OldNodes.size(); ++i )
     if ( const SMDS_MeshNode* n = new2OldNodes[ i ].first )
     {
+#ifndef _DEBUG_
       if ( n->NbInverseElements() > 0 )
+#endif
       {
         const SMDS_MeshNode* n2 =
           tgtMeshDS->AddNodeWithID( n->X(), n->Y(), n->Z(), idShift + n->GetID() );
