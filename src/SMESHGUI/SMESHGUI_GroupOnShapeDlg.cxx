@@ -210,7 +210,7 @@ static SMESH::ElementType elementType(GEOM::GEOM_Object_var geom)
 {
   if ( !geom->_is_nil() ) {
     switch ( geom->GetShapeType() ) {
-    case GEOM::VERTEX:   return SMESH::NODE;
+    case GEOM::VERTEX:   return SMESH::ELEM0D; // NODE; -- 0023613
     case GEOM::EDGE:     return SMESH::EDGE;
     case GEOM::WIRE:     return SMESH::EDGE;
     case GEOM::FACE:     return SMESH::FACE;

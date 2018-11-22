@@ -66,13 +66,17 @@ class MyIterator: public SMDS_ElemIterator
   MyIterator(SMDSAbs_ElementType type, const SMESHDS_SubMesh* subMesh)
     : myType(type), myElem(0)
   {
-    if ( subMesh ) {
-      if ( myType == SMDSAbs_Node )
+    if ( subMesh )
+    {
+      if ( myType == SMDSAbs_Node ||
+           myType == SMDSAbs_0DElement ||
+           myType == SMDSAbs_Ball )
         myNodeIt = subMesh->GetNodes();
-      else {
+      else
         myElemIt = subMesh->GetElements();
+
+      if ( myType != SMDSAbs_Node )
         next();
-      }
     }
   }
   bool more()
@@ -85,15 +89,30 @@ class MyIterator: public SMDS_ElemIterator
   {
     if ( myType == SMDSAbs_Node && myNodeIt )
       return myNodeIt->next();
+
     const SMDS_MeshElement* res = myElem;
     myElem = 0;
-    while ( myElemIt && myElemIt->more() ) {
-      myElem = myElemIt->next();
-      if ( myElem && myElem->GetType() == myType )
-        break;
-      else
-        myElem = 0;
-    }
+
+    if ( myElemIt )
+      while ( myElemIt->more() ) {
+        myElem = myElemIt->next();
+        if ( myElem && myElem->GetType() == myType )
+          break;
+        else
+          myElem = 0;
+      }
+
+    if ( !myElem && myNodeIt ) // look for a 0D element
+      while ( myNodeIt->more() ) {
+        const SMDS_MeshNode* n = myNodeIt->next();
+        if (( myElemIt = n->GetInverseElementIterator( myType )) &&
+            ( myElemIt->more() ))
+        {
+          myElem = myElemIt->next();
+          break;
+        }
+      }
+
     return res;
   }
 };
@@ -125,6 +144,10 @@ bool SMESHDS_GroupOnGeom::Contains (const int theID)
 
 bool SMESHDS_GroupOnGeom::Contains (const SMDS_MeshElement* elem)
 {
+  if ( GetType() == SMDSAbs_0DElement ||
+       GetType() == SMDSAbs_Ball )
+    return elem ? mySubMesh->Contains( elem->GetNode(0) ) : false;
+
   return mySubMesh->Contains( elem );
 }
 
