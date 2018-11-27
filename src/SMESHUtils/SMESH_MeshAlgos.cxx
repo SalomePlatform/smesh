@@ -45,6 +45,7 @@
 #include <IntAna_Quadric.hxx>
 #include <gp_Lin.hxx>
 #include <gp_Pln.hxx>
+#include <NCollection_DataMap.hxx>
 
 #include <limits>
 #include <numeric>
@@ -1873,6 +1874,222 @@ SMESH_MeshAlgos::FindFaceInSet(const SMDS_MeshNode*    n1,
   if ( n1ind ) *n1ind = i1;
   if ( n2ind ) *n2ind = i2;
   return face;
+}
+
+//================================================================================
+/*!
+ * Return sharp edges of faces and non-manifold ones. Optionally adds existing edges.
+ */
+//================================================================================
+
+std::vector< SMESH_MeshAlgos::Edge >
+SMESH_MeshAlgos::FindSharpEdges( SMDS_Mesh* theMesh,
+                                 double     theAngle,
+                                 bool       theAddExisting )
+{
+  std::vector< Edge > resultEdges;
+  if ( !theMesh ) return resultEdges;
+
+  typedef std::pair< bool, const SMDS_MeshNode* >                            TIsSharpAndMedium;
+  typedef NCollection_DataMap< SMESH_TLink, TIsSharpAndMedium, SMESH_TLink > TLinkSharpMap;
+
+  TLinkSharpMap linkIsSharp( theMesh->NbFaces() );
+  TIsSharpAndMedium sharpMedium( true, 0 );
+  bool                 & isSharp = sharpMedium.first;
+  const SMDS_MeshNode* & nMedium = sharpMedium.second;
+
+  if ( theAddExisting )
+  {
+    for ( SMDS_EdgeIteratorPtr edgeIt = theMesh->edgesIterator(); edgeIt->more(); )
+    {
+      const SMDS_MeshElement* edge = edgeIt->next();
+      nMedium = ( edge->IsQuadratic() ) ? edge->GetNode(2) : 0;
+      linkIsSharp.Bind( SMESH_TLink( edge->GetNode(0), edge->GetNode(1)), sharpMedium );
+    }
+  }
+
+  // check angles between face normals
+
+  const double angleCos = Cos( theAngle * M_PI / 180. ), angleCos2 = angleCos * angleCos;
+  gp_XYZ norm1, norm2;
+  std::vector< const SMDS_MeshNode* > faceNodes, linkNodes(2);
+  std::vector<const SMDS_MeshElement *> linkFaces;
+
+  int nbSharp = linkIsSharp.Extent();
+  for ( SMDS_FaceIteratorPtr faceIt = theMesh->facesIterator(); faceIt->more(); )
+  {
+    const SMDS_MeshElement* face = faceIt->next();
+    size_t             nbCorners = face->NbCornerNodes();
+
+    faceNodes.assign( face->begin_nodes(), face->end_nodes() );
+    if ( faceNodes.size() == nbCorners )
+      faceNodes.resize( nbCorners * 2, 0 );
+
+    const SMDS_MeshNode* nPrev = faceNodes[ nbCorners-1 ];
+    for ( size_t i = 0; i < nbCorners; ++i )
+    {
+      SMESH_TLink link( nPrev, faceNodes[i] );
+      if ( !linkIsSharp.IsBound( link ))
+      {
+        linkNodes[0] = link.node1();
+        linkNodes[1] = link.node2();
+        linkFaces.clear();
+        theMesh->GetElementsByNodes( linkNodes, linkFaces, SMDSAbs_Face );
+
+        isSharp = false;
+        if ( linkFaces.size() > 2 )
+        {
+          isSharp = true;
+        }
+        else if ( linkFaces.size() == 2 &&
+                  FaceNormal( linkFaces[0], norm1, /*normalize=*/false ) &&
+                  FaceNormal( linkFaces[1], norm2, /*normalize=*/false ))
+        {
+          double dot = norm1 * norm2; // == cos * |norm1| * |norm2|
+          if (( dot < 0 ) == ( angleCos < 0 ))
+          {
+            double cos2 = dot * dot / norm1.SquareModulus() / norm2.SquareModulus();
+            isSharp = ( angleCos < 0 ) ? ( cos2 > angleCos2 ) : ( cos2 < angleCos2 );
+          }
+          else
+          {
+            isSharp = ( angleCos > 0 );
+          }
+        }
+        nMedium = faceNodes[( i-1+nbCorners ) % nbCorners + nbCorners ];
+
+        linkIsSharp.Bind( link, sharpMedium );
+        nbSharp += isSharp;
+      }
+
+      nPrev = faceNodes[i];
+    }
+  }
+
+  resultEdges.resize( nbSharp );
+  TLinkSharpMap::Iterator linkIsSharpIter( linkIsSharp );
+  for ( int i = 0; linkIsSharpIter.More() && i < nbSharp; linkIsSharpIter.Next() )
+  {
+    const SMESH_TLink&                link = linkIsSharpIter.Key();
+    const TIsSharpAndMedium& isSharpMedium = linkIsSharpIter.Value();
+    if ( isSharpMedium.first )
+    {
+      Edge & edge  = resultEdges[ i++ ];
+      edge._node1  = link.node1();
+      edge._node2  = link.node2();
+      edge._medium = isSharpMedium.second;
+    }
+  }
+
+  return resultEdges;
+}
+
+//================================================================================
+/*!
+ * Distribute all faces of the mesh between groups using given edges as group boundaries
+ */
+//================================================================================
+
+std::vector< std::vector< const SMDS_MeshElement* > >
+SMESH_MeshAlgos::SeparateFacesByEdges( SMDS_Mesh* theMesh, const std::vector< Edge >& theEdges )
+{
+  std::vector< std::vector< const SMDS_MeshElement* > > groups;
+  if ( !theMesh ) return groups;
+
+  // build map of face edges (SMESH_TLink) and their faces
+
+  typedef std::vector< const SMDS_MeshElement* >                    TFaceVec;
+  typedef NCollection_DataMap< SMESH_TLink, TFaceVec, SMESH_TLink > TFacesByLinks;
+  TFacesByLinks facesByLink( theMesh->NbFaces() );
+
+  std::vector< const SMDS_MeshNode* > faceNodes;
+  for ( SMDS_FaceIteratorPtr faceIt = theMesh->facesIterator(); faceIt->more(); )
+  {
+    const SMDS_MeshElement* face = faceIt->next();
+    size_t             nbCorners = face->NbCornerNodes();
+
+    faceNodes.assign( face->begin_nodes(), face->end_nodes() );
+    faceNodes.resize( nbCorners + 1 );
+    faceNodes[ nbCorners ] = faceNodes[0];
+
+    face->setIsMarked( false );
+
+    for ( size_t i = 0; i < nbCorners; ++i )
+    {
+      SMESH_TLink link( faceNodes[i], faceNodes[i+1] );
+      TFaceVec* linkFaces = facesByLink.ChangeSeek( link );
+      if ( !linkFaces )
+      {
+        linkFaces = facesByLink.Bound( link, TFaceVec() );
+        linkFaces->reserve(2);
+      }
+      linkFaces->push_back( face );
+    }
+  }
+
+  // remove the given edges from facesByLink map
+
+  for ( size_t i = 0; i < theEdges.size(); ++i )
+  {
+    SMESH_TLink link( theEdges[i]._node1, theEdges[i]._node2 );
+    facesByLink.UnBind( link );
+  }
+
+  // faces connected via links of facesByLink map form a group
+
+  while ( !facesByLink.IsEmpty() )
+  {
+    groups.push_back( TFaceVec() );
+    TFaceVec & group = groups.back();
+
+    group.push_back( TFacesByLinks::Iterator( facesByLink ).Value()[0] );
+    group.back()->setIsMarked( true );
+
+    for ( size_t iF = 0; iF < group.size(); ++iF )
+    {
+      const SMDS_MeshElement* face = group[iF];
+      size_t             nbCorners = face->NbCornerNodes();
+      faceNodes.assign( face->begin_nodes(), face->end_nodes() );
+      faceNodes.resize( nbCorners + 1 );
+      faceNodes[ nbCorners ] = faceNodes[0];
+
+      for ( size_t iN = 0; iN < nbCorners; ++iN )
+      {
+        SMESH_TLink link( faceNodes[iN], faceNodes[iN+1] );
+        if ( const TFaceVec* faces = facesByLink.Seek( link ))
+        {
+          const TFaceVec& faceNeighbors = *faces;
+          for ( size_t i = 0; i < faceNeighbors.size(); ++i )
+            if ( !faceNeighbors[i]->isMarked() )
+            {
+              group.push_back( faceNeighbors[i] );
+              faceNeighbors[i]->setIsMarked( true );
+            }
+          facesByLink.UnBind( link );
+        }
+      }
+    }
+  }
+
+  // find faces that are alone in its group; they were not in facesByLink
+
+  int nbInGroups = 0;
+  for ( size_t i = 0; i < groups.size(); ++i )
+    nbInGroups += groups[i].size();
+  if ( nbInGroups < theMesh->NbFaces() )
+  {
+    for ( SMDS_FaceIteratorPtr faceIt = theMesh->facesIterator(); faceIt->more(); )
+    {
+      const SMDS_MeshElement* face = faceIt->next();
+      if ( !face->isMarked() )
+      {
+        groups.push_back( TFaceVec() );
+        groups.back().push_back( face );
+      }
+    }
+  }
+
+  return groups;
 }
 
 //================================================================================

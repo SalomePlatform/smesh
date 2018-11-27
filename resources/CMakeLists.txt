@@ -231,6 +231,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_hide.png
   mesh_deflection.png
   mesh_offset.png
+  mesh_face_groups_by_edges.png
 )
 
 INSTALL(FILES ${SMESH_RESOURCES_FILES} DESTINATION ${SALOME_SMESH_INSTALL_RES_DATA})

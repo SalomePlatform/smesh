@@ -1,5 +1,3 @@
-.. _tui_grouping_elements_page:
-
 *****************
 Grouping Elements
 *****************
@@ -110,8 +108,11 @@ Creating groups of entities basing on nodes of other groups
 .. image:: ../images/dimgroup_tui1.png
 	:align: center
 
+Creating face groups separated by sharp edges
+=============================================
 
+.. literalinclude:: ../../../examples/grouping_elements_ex09.py
+    :language: python
 
-
-
+:download:`Download this script <../../../examples/grouping_elements_ex09.py>`
 

@@ -2257,12 +2257,17 @@ class Mesh(metaclass = MeshMeta):
         fields          = kwargs.get("fields", fields)
         geomAssocFields = kwargs.get("geomAssocFields", geomAssocFields)
         z_tolerance     = kwargs.get("zTolerance", z_tolerance)
+
         # invoke engine's function
         if meshPart or fields or geomAssocFields or z_tolerance > 0:
             unRegister = genObjUnRegister()
             if isinstance( meshPart, list ):
                 meshPart = self.GetIDSource( meshPart, SMESH.ALL )
                 unRegister.set( meshPart )
+
+            z_tolerance,Parameters,hasVars = ParseParameters(z_tolerance)
+            self.mesh.SetParameters(Parameters)
+
             self.mesh.ExportPartToMED( meshPart, fileName, auto_groups, minor, overwrite, autoDimension,
                                        fields, geomAssocFields, z_tolerance)
         else:
@@ -2880,6 +2885,22 @@ class Mesh(metaclass = MeshMeta):
             groups = [groups]
         return self.mesh.CreateDimGroup(groups, elemType, name, nbCommonNodes, underlyingOnly)
 
+    def FaceGroupsSeparatedByEdges( self, sharpAngle, createEdges=False, useExistingEdges=False ):
+        """
+        Distribute all faces of the mesh between groups using sharp edges and optionally
+        existing 1D elements as group boundaries.
+
+        Parameters:
+                sharpAngle: edge is considered sharp if an angle between normals of
+                            adjacent faces is more than \a sharpAngle in degrees.
+                createEdges (boolean): to create 1D elements for detected sharp edges.
+                useExistingEdges (boolean): to use existing edges as group boundaries
+        Returns:
+                ListOfGroups - the created groups
+        """
+        sharpAngle,Parameters,hasVars = ParseParameters( sharpAngle )
+        self.mesh.SetParameters(Parameters)
+        return self.mesh.FaceGroupsSeparatedByEdges( sharpAngle, createEdges, useExistingEdges );
 
     def ConvertToStandalone(self, group):
         """
@@ -4268,6 +4289,21 @@ class Mesh(metaclass = MeshMeta):
         """
 
         return self.editor.IsCoherentOrientation2D()
+
+    def FindSharpEdges( self, angle, addExisting=False ):
+        """
+        Return sharp edges of faces and non-manifold ones.
+        Optionally add existing edges.
+
+        Parameters:
+                angle: angle (in degrees) between normals of adjacent faces to detect sharp edges
+                addExisting: to return existing edges (1D elements) as well
+
+        Returns:
+            list of FaceEdge structures
+        """
+        angle = ParseParameters( angle )[0]
+        return self.editor.FindSharpEdges( angle, addExisting )
 
     def MeshToPassThroughAPoint(self, x, y, z):
         """

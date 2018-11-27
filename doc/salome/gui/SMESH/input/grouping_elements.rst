@@ -27,6 +27,7 @@ The following ways of group creation are possible:
 
 * :ref:`Create group <creating_groups_page>` dialog allows creation of a group of any type: :ref:`Standalone group<standalone_group>`, :ref:`Group on geometry <group_on_geom>` and :ref:`Group on filter <group_on_filter>` using dedicated tabs.
 * :ref:`Create Groups from Geometry <create_groups_from_geometry_page>` dialog allows creation of several groups on geometry at once.
+* :doc:`face_groups_by_sharp_edges` operation distributes all faces of the mesh between groups using sharp edges and/or existing 1D elements as group boundaries.
 * Standalone groups of all nodes and elements of the chosen sub-mesh (type of elements depends on dimension of sub-mesh geometry) can be created using **Mesh -> Construct Group** menu item (available from the context menu as well).
 * Standalone groups of any element type can be created basing on nodes of other groups - using :ref:`Group based on nodes of other groups <group_of_underlying_elements_page>` dialog.
 * Standalone groups can be created by applying :ref:`Boolean operations <using_operations_on_groups_page>` to other groups.
@@ -49,6 +50,9 @@ In the Object Browser, if an item contains more than one child group, it is poss
 
 An important tool, providing filters for creation of standalone groups and groups on filter is :ref:`selection_filter_library_page`.
 
+**See Also** sample TUI Scripts of :doc:`tui_grouping_elements` operations.
+
+
 **Table of Contents**
 
 .. toctree::
@@ -56,6 +60,7 @@ An important tool, providing filters for creation of standalone groups and group
 
 	creating_groups.rst
 	create_groups_from_geometry.rst
+	face_groups_by_sharp_edges.rst
 	group_of_underlying_elements.rst
 	using_operations_on_groups.rst
 	editing_groups.rst

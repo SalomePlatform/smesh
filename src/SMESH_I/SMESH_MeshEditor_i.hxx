@@ -95,6 +95,11 @@ public:
   static bool               IsTemporaryIDSource( SMESH::SMESH_IDSource_ptr& idSource );
   static CORBA::Long*       GetTemporaryIDs( SMESH::SMESH_IDSource_ptr& idSource, int& nbIds );
 
+  /*!
+   * \brief Generates the unique group name
+   */
+  std::string GenerateGroupName(const std::string& thePrefix);
+
   CORBA::Boolean RemoveElements(const SMESH::long_array & IDsOfElements)
     throw (SALOME::SALOME_Exception);
   CORBA::Boolean RemoveNodes   (const SMESH::long_array & IDsOfNodes)
@@ -580,6 +585,12 @@ public:
     throw (SALOME::SALOME_Exception);
 
   /*!
+   * Return sharp edges of faces and non-manifold ones. Optionally adds existing edges.
+   */
+  SMESH::ListOfEdges* FindSharpEdges(CORBA::Double angle, CORBA::Boolean addExisting)
+    throw (SALOME::SALOME_Exception);
+
+  /*!
    * Returns all or only closed FreeBorder's.
    */
   SMESH::ListOfFreeBorders* FindFreeBorders(CORBA::Boolean closedOnly)
@@ -972,8 +983,6 @@ public:
 
   void dumpGroupsList(SMESH::TPythonDump &        theDumpPython,
                       const SMESH::ListOfGroups * theGroupList);
-
-  std::string generateGroupName(const std::string& thePrefix);
 
   void prepareIdSource(SMESH::SMESH_IDSource_ptr theObject);
 

@@ -80,9 +80,19 @@ module SMESH
   };
   typedef sequence<PolySegment> ListOfPolySegments;
 
+  // face edge defined by two nodes + optional medium node
+  struct FaceEdge
+  {
+    long node1;
+    long node2;
+    long medium;
+  };
+  typedef sequence<FaceEdge> ListOfEdges;
+
 
   /*!
    * This interface makes modifications on the Mesh - removing elements and nodes etc.
+   * Also provides some analysis functions.
    */
   interface SMESH_MeshEditor
   {
@@ -810,6 +820,13 @@ module SMESH
      * Check if orientation of 2D elements is coherent
      */
     boolean IsCoherentOrientation2D()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Return sharp edges of faces and non-manifold ones. 
+     * Optionally add existing edges. Angle is in degrees.
+     */
+    ListOfEdges FindSharpEdges(in double angle, in boolean addExistingEdges)
       raises (SALOME::SALOME_Exception);
 
     /*!

@@ -517,6 +517,20 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
+     * Distribute all faces of the mesh between groups using sharp edges and optionally
+     * existing 1D elements as group boundaries.
+     *  \param [in] sharpAngle - edge is considered sharp if an angle between normals of
+     *              adjacent faces is more than \a sharpAngle in degrees.
+     *  \param [in] createEdges - to create 1D elements for detected sharp edges.
+     *  \param [in] useExistingEdges - to use existing edges as group boundaries
+     *  \return ListOfGroups - the created groups
+     */
+    ListOfGroups FaceGroupsSeparatedByEdges( in double  sharpAngle,
+                                             in boolean createEdges,
+                                             in boolean useExistingEdges )
+      raises (SALOME::SALOME_Exception);
+
+    /*!
      * Convert group on geometry or on filter into standalone group
      */
     SMESH_Group ConvertToStandalone( in SMESH_GroupBase theGroupOn )

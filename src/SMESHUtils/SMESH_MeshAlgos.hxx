@@ -198,7 +198,6 @@ namespace SMESH_MeshAlgos
   bool IsRightOrder( const SMDS_MeshElement* face,
                      const SMDS_MeshNode*    node0,
                      const SMDS_MeshNode*    node1 );
-
   /*!
    * \brief Mark elements given by SMDS_Iterator
    */
@@ -247,6 +246,27 @@ namespace SMESH_MeshAlgos
         MarkElems( (*it)->nodesIterator(), isMarked );
   }
 
+  // 2 nodes + optional medium node
+  struct Edge
+  {
+    const SMDS_MeshNode* _node1;
+    const SMDS_MeshNode* _node2;
+    const SMDS_MeshNode* _medium;
+  };
+
+  /*!
+   * Return sharp edges of faces and non-manifold ones.
+   * Optionally adds existing edges to the result. Angle is in degrees.
+   */
+  std::vector< Edge > FindSharpEdges( SMDS_Mesh* mesh,
+                                      double     angle,
+                                      bool       addExisting );
+
+  /*!
+   * Distribute all faces of the mesh between groups using given edges.
+   */
+  std::vector< std::vector< const SMDS_MeshElement* > >
+  SeparateFacesByEdges( SMDS_Mesh* mesh, const std::vector< Edge >& edges );
 
 
   typedef std::vector<const SMDS_MeshNode*> TFreeBorder;

@@ -4780,6 +4780,58 @@ CORBA::Boolean SMESH_MeshEditor_i::IsCoherentOrientation2D()
 }
 
 //=======================================================================
+//function : FindSharpEdges
+//purpose  : Return sharp edges of faces and non-manifold ones. Optionally add existing edges.
+//=======================================================================
+
+SMESH::ListOfEdges* SMESH_MeshEditor_i::FindSharpEdges(CORBA::Double  theAngle,
+                                                       CORBA::Boolean theAddExisting)
+  throw (SALOME::SALOME_Exception)
+{
+  SMESH::ListOfEdges_var resultEdges = new SMESH::ListOfEdges;
+  SMESH_TRY;
+
+  initData();
+
+  std::vector< SMESH_MeshAlgos::Edge > edges =
+    SMESH_MeshAlgos::FindSharpEdges( getMeshDS(), theAngle, theAddExisting );
+
+  if ( myIsPreviewMode ) // fill a preview mesh with edges
+  {
+    TPreviewMesh* mesh = getPreviewMesh( SMDSAbs_Edge );
+    SMDS_Mesh*  meshDS = mesh->GetMeshDS();
+    for ( size_t i = 0; i < edges.size(); ++i )
+    {
+      SMESH_NodeXYZ xyz1( edges[i]._node1), xyz2( edges[i]._node2);
+      SMDS_MeshNode* n1 = meshDS->AddNode( xyz1.X(), xyz1.Y(), xyz1.Z() );
+      SMDS_MeshNode* n2 = meshDS->AddNode( xyz2.X(), xyz2.Y(), xyz2.Z() );
+      if ( edges[i]._medium )
+      {
+        xyz1.Set( edges[i]._medium );
+        SMDS_MeshNode* nm = meshDS->AddNode( xyz1.X(), xyz1.Y(), xyz1.Z() );
+        mesh->GetMeshDS()->AddEdge( n1, n2, nm );
+      }
+      else
+      {
+        mesh->GetMeshDS()->AddEdge( n1, n2 );
+      }
+    }
+  }
+  else
+  {
+    resultEdges->length( edges.size() );
+    for ( size_t i = 0; i < edges.size(); ++i )
+    {
+      resultEdges[ i ].node1  = edges[i]._node1->GetID();
+      resultEdges[ i ].node2  = edges[i]._node2->GetID();
+      resultEdges[ i ].medium = edges[i]._medium ? edges[i]._medium->GetID() : 0;
+    }
+  }
+  SMESH_CATCH( SMESH::throwCorbaException );
+  return resultEdges._retn();
+}
+
+//=======================================================================
 //function : FindFreeBorders
 //purpose  : Returns all or only closed FreeBorder's.
 //=======================================================================
@@ -5624,7 +5676,7 @@ void SMESH_MeshEditor_i::dumpGroupsList(TPythonDump &               theDumpPytho
 */
 //================================================================================
 
-std::string SMESH_MeshEditor_i::generateGroupName(const std::string& thePrefix)
+std::string SMESH_MeshEditor_i::GenerateGroupName(const std::string& thePrefix)
 {
   SMESH::ListOfGroups_var groups = myMesh_i->GetGroups();
   set<std::string> groupNames;
@@ -5946,7 +5998,7 @@ SMESH_MeshEditor_i::DoubleNodeGroupNew( SMESH::SMESH_GroupBase_ptr theNodes,
     SMESH::long_array_var anIds = GetLastCreatedNodes();
     if (anIds->length() > 0) {
       std::string anUnindexedName (theNodes->GetName());
-      std::string aNewName = generateGroupName(anUnindexedName + "_double");
+      std::string aNewName = GenerateGroupName(anUnindexedName + "_double");
       aNewGroup = myMesh_i->CreateGroup(SMESH::NODE, aNewName.c_str());
       aNewGroup->Add(anIds);
       pyDump << aNewGroup << " = ";
@@ -6045,7 +6097,7 @@ SMESH_MeshEditor_i::DoubleNodeGroupsNew( const SMESH::ListOfGroups& theNodes,
     SMESH::long_array_var anIds = GetLastCreatedNodes();
     if (anIds->length() > 0) {
       std::string anUnindexedName (theNodes[0]->GetName());
-      std::string aNewName = generateGroupName(anUnindexedName + "_double");
+      std::string aNewName = GenerateGroupName(anUnindexedName + "_double");
       aNewGroup = myMesh_i->CreateGroup(SMESH::NODE, aNewName.c_str());
       aNewGroup->Add(anIds);
       pyDump << aNewGroup << " = ";
@@ -6269,7 +6321,7 @@ SMESH_MeshEditor_i::DoubleNodeElemGroup2New(SMESH::SMESH_GroupBase_ptr theElems,
   {
     // Create group with newly created elements
     CORBA::String_var elemGroupName = theElems->GetName();
-    std::string aNewName = generateGroupName( std::string(elemGroupName.in()) + "_double");
+    std::string aNewName = GenerateGroupName( std::string(elemGroupName.in()) + "_double");
     if ( !getEditor().GetLastCreatedElems().empty() && theElemGroupNeeded )
     {
       SMESH::long_array_var anIds = GetLastCreatedElems();
@@ -6501,7 +6553,7 @@ SMESH_MeshEditor_i::DoubleNodeElemGroups2New(const SMESH::ListOfGroups& theElems
   {
     // Create group with newly created elements
     CORBA::String_var elemGroupName = theElems[0]->GetName();
-    std::string aNewName = generateGroupName( std::string(elemGroupName.in()) + "_double");
+    std::string aNewName = GenerateGroupName( std::string(elemGroupName.in()) + "_double");
     if ( !getEditor().GetLastCreatedElems().empty() && theElemGroupNeeded )
     {
       SMESH::long_array_var anIds = GetLastCreatedElems();
@@ -6657,7 +6709,7 @@ SMESH_MeshEditor_i::AffectedElemGroupsInRegion( const SMESH::ListOfGroups& theEl
     if ( ivol > 0 )
     {
       aNewVolumeGroup = myMesh_i->CreateGroup(SMESH::VOLUME,
-                                              generateGroupName("affectedVolumes").c_str());
+                                              GenerateGroupName("affectedVolumes").c_str());
       aNewVolumeGroup->Add(volumeIds);
       aListOfGroups->length( nbGroups+1 );
       aListOfGroups[ nbGroups++ ] = aNewVolumeGroup._retn();
@@ -6665,7 +6717,7 @@ SMESH_MeshEditor_i::AffectedElemGroupsInRegion( const SMESH::ListOfGroups& theEl
     if ( iface > 0 )
     {
       aNewFaceGroup = myMesh_i->CreateGroup(SMESH::FACE,
-                                            generateGroupName("affectedFaces").c_str());
+                                            GenerateGroupName("affectedFaces").c_str());
       aNewFaceGroup->Add(faceIds);
       aListOfGroups->length( nbGroups+1 );
       aListOfGroups[ nbGroups++ ] = aNewFaceGroup._retn();
@@ -6673,7 +6725,7 @@ SMESH_MeshEditor_i::AffectedElemGroupsInRegion( const SMESH::ListOfGroups& theEl
     if ( iedge > 0 )
     {
       aNewEdgeGroup = myMesh_i->CreateGroup(SMESH::EDGE,
-                                            generateGroupName("affectedEdges").c_str());
+                                            GenerateGroupName("affectedEdges").c_str());
       aNewEdgeGroup->Add(edgeIds);
       aListOfGroups->length( nbGroups+1 );
       aListOfGroups[ nbGroups++ ] = aNewEdgeGroup._retn();

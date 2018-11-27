@@ -45,6 +45,7 @@
 #include "SMESHGUI_DuplicateNodesDlg.h"
 #include "SMESHGUI_ExtrusionAlongPathDlg.h"
 #include "SMESHGUI_ExtrusionDlg.h"
+#include "SMESHGUI_FaceGroupsSeparatedByEdgesDlg.h"
 #include "SMESHGUI_FieldSelectorWdg.h"
 #include "SMESHGUI_FileInfoDlg.h"
 #include "SMESHGUI_FileValidator.h"
@@ -779,8 +780,9 @@ namespace
       zTolLayout->setMargin( 0 );
       zTolSpin->RangeStepAndValidator( 0, 1e+100, 1., "length_precision" );
       zTolSpin->setValue( zTol );
-      //QObject::connect( zTolCheck, SIGNAL( stateChanged(int)), zTolSpin, SLOT( setEnabled(bool)));
+      QObject::connect( zTolCheck, SIGNAL( toggled(bool)), zTolSpin, SLOT( setEnabled(bool)));
       zTolCheck->setChecked( resMgr->booleanValue( "SMESH", "enable_ztolerance", false ));
+      zTolSpin ->setEnabled( zTolCheck->isChecked() );
       wdgList.append( zTolWdg );
 
       SalomeApp_CheckFileDlg* fd =
@@ -3132,6 +3134,18 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
 
+    case SMESHOp::OpFaceGroupsByEdges: // Create face groups separated by sharp edges
+    {
+      if ( isStudyLocked() )
+        break;
+
+      EmitSignalDeactivateDialog();
+      SMESHGUI_FaceGroupsSeparatedByEdgesDlg* aDlg = new SMESHGUI_FaceGroupsSeparatedByEdgesDlg( this );
+      aDlg->show();
+
+      break;
+    }
+
     case SMESHOp::OpDeleteGroup: // Delete groups with their contents
     {
       if ( !vtkwnd )
@@ -3909,6 +3923,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpIntersectGroups,      "INT_GROUP",               "ICON_INTERSECT" );
   createSMESHAction( SMESHOp::OpCutGroups,            "CUT_GROUP",               "ICON_CUT" );
   createSMESHAction( SMESHOp::OpGroupUnderlyingElem,  "UNDERLYING_ELEMS",        "ICON_UNDERLYING_ELEMS" );
+  createSMESHAction( SMESHOp::OpFaceGroupsByEdges,    "FACE_GROUPS_BY_EDGES",    "ICON_FACE_GROUPS_BY_EDGES" );
   createSMESHAction( SMESHOp::OpAddElemGroupPopup,    "ADD_TO_GROUP" );
   createSMESHAction( SMESHOp::OpRemoveElemGroupPopup, "REMOVE_FROM_GROUP" );
   createSMESHAction( SMESHOp::OpDeleteGroup,          "DEL_GROUP",               "ICON_DEL_GROUP" );
@@ -4146,6 +4161,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( SMESHOp::OpCutGroups,            meshId, -1 );
   createMenu( separator(),                     meshId, -1 );
   createMenu( SMESHOp::OpGroupUnderlyingElem,  meshId, -1 );
+  createMenu( SMESHOp::OpFaceGroupsByEdges,    meshId, -1 );
   createMenu( separator(),                     meshId, -1 );
   createMenu( SMESHOp::OpMeshInformation,      meshId, -1 );
   //createMenu( SMESHOp::OpStdInfo, meshId, -1 );

@@ -1145,6 +1145,10 @@
         <translation>Group based on nodes of other groups</translation>
     </message>
     <message>
+        <source>MEN_FACE_GROUPS_BY_EDGES</source>
+        <translation>Face groups separated by sharp edges</translation>
+    </message>
+    <message>
         <source>MEN_UPDATE</source>
         <translation>Update</translation>
     </message>
@@ -3613,6 +3617,10 @@ Use Display Entity menu command to show them.
         <translation>Create groups of entities basing on nodes of other groups</translation>
     </message>
     <message>
+        <source>STB_UNDERLYING_ELEMS</source>
+        <translation>Create face groups separated by sharp edges</translation>
+    </message>
+    <message>
         <source>STB_UPDATE</source>
         <translation>Update</translation>
     </message>
@@ -4297,6 +4305,10 @@ Use Display Entity menu command to show them.
         <translation>Create groups of entities basing on nodes of other groups</translation>
     </message>
     <message>
+        <source>TOP_FACE_GROUPS_BY_EDGES</source>
+        <translation>Create groups of faces separated by sharp edges</translation>
+    </message>
+    <message>
         <source>TOP_UPDATE</source>
         <translation>Update</translation>
     </message>
@@ -4529,6 +4541,29 @@ It can&apos;t be deleted </translation>
     <message>
         <source>FIELDS_TO_EXPORT</source>
         <translation>Export Fields</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_FaceGroupsSeparatedByEdgesDlg</name>
+    <message>
+        <source>CAPTION</source>
+        <translation>Face groups separated by sharp edges</translation>
+    </message>
+    <message>
+        <source>SHARP_ANGLE</source>
+        <translation>Sharp angle</translation>
+    </message>
+    <message>
+        <source>CREATE_EDGES</source>
+        <translation>Create edges</translation>
+    </message>
+    <message>
+        <source>USE_EXISTING_EDGES</source>
+        <translation>Use existing edges</translation>
+    </message>
+    <message>
+        <source>NB_GROUPS_CREATED</source>
+        <translation>%1 groups of faces created</translation>
     </message>
 </context>
 <context>

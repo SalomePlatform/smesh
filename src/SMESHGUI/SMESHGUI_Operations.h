@@ -86,6 +86,7 @@ namespace SMESHOp {
     OpIntersectGroups        = 2061,   // MENU MESH  - INTERSECT GROUPS
     OpCutGroups              = 2062,   // MENU MESH  - CUT GROUPS
     OpGroupUnderlyingElem    = 2070,   // MENU MESH  - GROUP OF UNDERLYING ENTITIES
+    OpFaceGroupsByEdges      = 2071,   // MENU MESH  - FACE GROUPS SEPARATED by EDGES
     OpEditGroupPopup         = 2080,   // POPUP MENU - EDIT GROUP
     OpAddElemGroupPopup      = 2081,   // POPUP MENU - ADD ELEMENTS TO GROUP
     OpRemoveElemGroupPopup   = 2082,   // POPUP MENU - REMOVE ELEMENTS FROM GROUP

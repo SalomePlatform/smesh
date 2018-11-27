@@ -167,6 +167,10 @@ public:
                                          CORBA::Boolean                theUnderlyingOnly )
     throw (SALOME::SALOME_Exception);
 
+  SMESH::ListOfGroups* FaceGroupsSeparatedByEdges( CORBA::Double  theSharpAngle,
+                                                   CORBA::Boolean theCreateEdges,
+                                                   CORBA::Boolean theUseExistingEdges )
+    throw (SALOME::SALOME_Exception);
 
   SMESH::SMESH_Group_ptr ConvertToStandalone( SMESH::SMESH_GroupBase_ptr theGroupOn )
     throw (SALOME::SALOME_Exception);

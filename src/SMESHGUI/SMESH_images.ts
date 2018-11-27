@@ -612,6 +612,10 @@
             <translation>mesh_extractGroup.png</translation>
         </message>
         <message>
+            <source>ICON_FACE_GROUPS_BY_EDGES</source>
+            <translation>mesh_face_groups_by_edges.png</translation>
+        </message>
+        <message>
             <source>ICON_2D_FROM_3D</source>
             <translation>mesh_2d_from_3d.png</translation>
         </message>

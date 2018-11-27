@@ -103,6 +103,7 @@ SET(_moc_HEADERS
   SMESHGUI_MultiEditDlg.h
   SMESHGUI_DeleteGroupDlg.h
   SMESHGUI_GroupOpDlg.h
+  SMESHGUI_FaceGroupsSeparatedByEdgesDlg.h
   SMESHGUI_SmoothingDlg.h
   SMESHGUI_RenumberingDlg.h
   SMESHGUI_ExtrusionDlg.h
@@ -198,6 +199,7 @@ SET(_other_SOURCES
   SMESHGUI_MultiEditDlg.cxx
   SMESHGUI_DeleteGroupDlg.cxx
   SMESHGUI_GroupOpDlg.cxx
+  SMESHGUI_FaceGroupsSeparatedByEdgesDlg.cxx
   SMESHGUI_SmoothingDlg.cxx
   SMESHGUI_RenumberingDlg.cxx
   SMESHGUI_ExtrusionDlg.cxx

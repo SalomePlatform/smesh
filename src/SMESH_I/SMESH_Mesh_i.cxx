@@ -96,6 +96,7 @@ static int MYDEBUG = 0;
 
 using namespace std;
 using SMESH::TPythonDump;
+using SMESH::TVar;
 
 int SMESH_Mesh_i::_idGenerator = 0;
 
@@ -1870,6 +1871,89 @@ SMESH_Mesh_i::CreateDimGroup(const SMESH::ListOfIDSources& theGroups,
 
 //================================================================================
 /*!
+ * \brief Distribute all faces of the mesh between groups using sharp edges and optionally
+ *        existing 1D elements as group boundaries.
+ *  \param [in] theSharpAngle - edge is considered sharp if an angle between normals of
+ *              adjacent faces is more than \a sharpAngle in degrees.
+ *  \param [in] theCreateEdges - to create 1D elements for detected sharp edges.
+ *  \param [in] theUseExistingEdges - to use existing edges as group boundaries
+ *  \return ListOfGroups - the created groups
+ */
+//================================================================================
+
+SMESH::ListOfGroups*
+SMESH_Mesh_i::FaceGroupsSeparatedByEdges( CORBA::Double  theSharpAngle,
+                                          CORBA::Boolean theCreateEdges,
+                                          CORBA::Boolean theUseExistingEdges )
+  throw (SALOME::SALOME_Exception)
+{
+  if ( theSharpAngle < 0 || theSharpAngle > 180 )
+    THROW_SALOME_CORBA_EXCEPTION("Invalid sharp angle, it must be between 0 and 180 degrees",
+                                 SALOME::BAD_PARAM);
+
+  SMESH::ListOfGroups_var resultGroups = new SMESH::ListOfGroups;
+
+  TPythonDump pyDump;
+
+  SMESH_TRY;
+  if ( _preMeshInfo )
+    _preMeshInfo->FullLoadFromFile();
+
+  SMESHDS_Mesh* meshDS = _impl->GetMeshDS();
+
+  std::vector< SMESH_MeshAlgos::Edge > edges =
+    SMESH_MeshAlgos::FindSharpEdges( meshDS, theSharpAngle, theUseExistingEdges );
+
+  if ( theCreateEdges )
+  {
+    std::vector<const SMDS_MeshNode *> nodes(2);
+    for ( size_t i = 0; i < edges.size(); ++i )
+    {
+      nodes[0] = edges[i]._node1;
+      nodes[1] = edges[i]._node2;
+      if ( meshDS->FindElement( nodes, SMDSAbs_Edge ))
+        continue;
+      if ( edges[i]._medium )
+        meshDS->AddEdge( edges[i]._node1, edges[i]._node2, edges[i]._medium );
+      else
+        meshDS->AddEdge( edges[i]._node1, edges[i]._node2 );
+    }
+  }
+
+  std::vector< std::vector< const SMDS_MeshElement* > > faceGroups =
+    SMESH_MeshAlgos::SeparateFacesByEdges( meshDS, edges );
+
+  SMESH::SMESH_MeshEditor_var( GetMeshEditor() ); // create _editor
+
+  resultGroups->length( faceGroups.size() );
+  for ( size_t iG = 0; iG < faceGroups.size(); ++iG )
+  {
+    SMESH::SMESH_Group_var group = CreateGroup( SMESH::FACE,
+                                                _editor->GenerateGroupName("Group").c_str());
+    resultGroups[iG] = SMESH::SMESH_Group::_duplicate( group );
+
+    SMESHDS_GroupBase* groupBaseDS =
+      SMESH::DownCast<SMESH_GroupBase_i*>( group )->GetGroupDS();
+    SMDS_MeshGroup& groupCore = static_cast< SMESHDS_Group* >( groupBaseDS )->SMDSGroup();
+
+    std::vector< const SMDS_MeshElement* >& faces = faceGroups[ iG ];
+    for ( size_t i = 0; i < faces.size(); ++i )
+      groupCore.Add( faces[i] );
+  }
+
+  pyDump << resultGroups << " = " << SMESH::SMESH_Mesh_var(_this())
+         << ".FaceGroupsSeparatedByEdges( "
+         << TVar( theSharpAngle ) << ", "
+         << theCreateEdges << ", "
+         << theUseExistingEdges << " )";
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+  return resultGroups._retn();
+
+}
+
+//================================================================================
+/*!
  * \brief Remember GEOM group data
  */
 //================================================================================
@@ -3316,7 +3400,7 @@ void SMESH_Mesh_i::ExportPartToMED(SMESH::SMESH_IDSource_ptr meshPart,
                 << autoDimension << ", "
                 << goList << ", '"
                 << ( geomAssocFields ? geomAssocFields : "" ) << "',"
-                << ZTolerance
+                << TVar( ZTolerance )
                 << " )";
 
   SMESH_CATCH( SMESH::throwCorbaException );
