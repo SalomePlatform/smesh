@@ -78,6 +78,13 @@ namespace SMESH
      * gravity center of the source
      */
     SMESH::PointStruct GravityCenter(SMESH::SMESH_IDSource_ptr  theSource);
+
+    /*!
+     * angle in radians defined by 3 points <(p1,p2,p3)
+     */
+    CORBA::Double Angle(const SMESH::PointStruct& p1,
+                        const SMESH::PointStruct& p2,
+                        const SMESH::PointStruct& p3 );
   };
 }
 

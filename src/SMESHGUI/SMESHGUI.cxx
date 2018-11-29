@@ -3719,6 +3719,7 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpPropertiesVolume:
   case SMESHOp::OpMinimumDistance:
   case SMESHOp::OpBoundingBox:
+  case SMESHOp::OpAngle:
     {
       int page = SMESHGUI_MeasureDlg::MinDistance;
       if ( theCommandID == SMESHOp::OpBoundingBox )
@@ -3729,6 +3730,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
         page = SMESHGUI_MeasureDlg::Area;
       else if ( theCommandID == SMESHOp::OpPropertiesVolume )
         page = SMESHGUI_MeasureDlg::Volume;
+      else if ( theCommandID == SMESHOp::OpAngle )
+        page = SMESHGUI_MeasureDlg::Angle;
 
       EmitSignalDeactivateDialog();
       SMESHGUI_MeasureDlg* dlg = new SMESHGUI_MeasureDlg( SMESHGUI::desktop(), page );
@@ -4063,6 +4066,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpPropertiesLength, "MEASURE_LENGTH",   "ICON_MEASURE_LENGTH" );
   createSMESHAction( SMESHOp::OpPropertiesArea,   "MEASURE_AREA",     "ICON_MEASURE_AREA" );
   createSMESHAction( SMESHOp::OpPropertiesVolume, "MEASURE_VOLUME",   "ICON_MEASURE_VOLUME" );
+  createSMESHAction( SMESHOp::OpAngle,            "MEASURE_ANGLE",    "ICON_MEASURE_ANGLE" );
 
   createSMESHAction( SMESHOp::OpHide,     "HIDE", "ICON_HIDE" );
   createSMESHAction( SMESHOp::OpShow,     "SHOW", "ICON_SHOW" );
@@ -4270,6 +4274,7 @@ void SMESHGUI::initialize( CAM_Application* app )
 
   createMenu( SMESHOp::OpMinimumDistance,  measureId,   -1 );
   createMenu( SMESHOp::OpBoundingBox,      measureId,   -1 );
+  createMenu( SMESHOp::OpAngle,            measureId,   -1 );
   createMenu( SMESHOp::OpPropertiesLength, basicPropId, -1 );
   createMenu( SMESHOp::OpPropertiesArea,   basicPropId, -1 );
   createMenu( SMESHOp::OpPropertiesVolume, basicPropId, -1 );

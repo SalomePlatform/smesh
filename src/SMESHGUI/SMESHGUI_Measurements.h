@@ -37,9 +37,12 @@ class SUIT_SelectionFilter;
 class SALOME_Actor;
 class SMESH_Actor;
 class SMESHGUI_IdValidator;
+class SMESHGUI_MeshEditPreview;
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
+
+#include <gp_Vec.hxx>
 
 class SMESHGUI_EXPORT SMESHGUI_MinDistance : public QWidget
 {
@@ -167,6 +170,40 @@ private:
   SUIT_SelectionFilter*     myFilter;
 };
 
+class SMESHGUI_EXPORT SMESHGUI_Angle : public QWidget
+{
+  Q_OBJECT;
+  
+public:
+
+  SMESHGUI_Angle( QWidget* = 0 );
+  ~SMESHGUI_Angle();
+
+  void deactivate();
+  void updateSelection();
+
+private slots:
+  void selectionChanged();
+  void nodesEdited();
+  void compute();
+  void clear();
+
+private:
+
+  bool addPointByActor( int id );
+  bool addPointByIDSource( int id );
+  gp_Vec getNormal(const gp_Vec& vec10 );
+
+  QLineEdit* myNodes;
+  QLineEdit* myResult;
+
+  SMESH::SMESH_IDSource_var myIDSrc;
+  SMESH_Actor*              myActor;
+
+  std::vector< SMESH::PointStruct > myPoints;
+  SMESHGUI_MeshEditPreview*         myPreview;
+};
+
 class SMESHGUI_EXPORT SMESHGUI_MeasureDlg : public QDialog
 { 
   Q_OBJECT;
@@ -180,7 +217,8 @@ public:
     BoundingBox,   //!< bounding box
     Length,        //!< length
     Area,          //!< area
-    Volume         //!< volume
+    Volume,        //!< volume
+    Angle
   };
 
   SMESHGUI_MeasureDlg( QWidget* = 0, int = MinDistance );
@@ -203,6 +241,7 @@ private:
   SMESHGUI_MinDistance* myMinDist;   
   SMESHGUI_BoundingBox* myBndBox;
   SMESHGUI_BasicProperties* myBasicProps;
+  SMESHGUI_Angle*       myAngle;
 };
 
 #endif // SMESHGUI_MEASUREMENTS_H

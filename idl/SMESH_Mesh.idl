@@ -517,7 +517,7 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
-     * Distribute all faces of the mesh between groups using sharp edges and optionally
+     * Distribute all faces of the mesh among groups using sharp edges and optionally
      * existing 1D elements as group boundaries.
      *  \param [in] sharpAngle - edge is considered sharp if an angle between normals of
      *              adjacent faces is more than \a sharpAngle in degrees.

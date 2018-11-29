@@ -849,6 +849,18 @@
         <translation>Volume</translation>
     </message>
     <message>
+        <source>MEN_MEASURE_ANGLE</source>
+        <translation>Angle</translation>
+    </message>
+    <message>
+        <source>STB_MEASURE_ANGLE</source>
+        <translation>Measure angle defined by three nodes</translation>
+    </message>
+    <message>
+        <source>TOP_MEASURE_ANGLE</source>
+        <translation>Angle</translation>
+    </message>
+    <message>
         <source>MEN_MOVE</source>
         <translation>Move Node</translation>
     </message>
@@ -3617,7 +3629,7 @@ Use Display Entity menu command to show them.
         <translation>Create groups of entities basing on nodes of other groups</translation>
     </message>
     <message>
-        <source>STB_UNDERLYING_ELEMS</source>
+        <source>STB_FACE_GROUPS_BY_EDGES</source>
         <translation>Create face groups separated by sharp edges</translation>
     </message>
     <message>
@@ -8109,6 +8121,21 @@ as they are of improper type:
     </message>
 </context>
 <context>
+    <name>SMESHGUI_Angle</name>
+    <message>
+        <source>NODES_GROUP</source>
+        <translation>Three nodes</translation>
+    </message>
+    <message>
+        <source>RESULT</source>
+        <translation>Angle in degrees</translation>
+    </message>
+    <message>
+        <source>COMPUTE</source>
+        <translation>Compute</translation>
+    </message>
+</context>
+<context>
     <name>SMESHGUI_CopyMeshDlg</name>
     <message>
         <source>OBJECT_NAME</source>
@@ -8163,6 +8190,10 @@ with red in the Object Browser.</translation>
     <message>
         <source>BASIC_PROPERTIES</source>
         <translation>Basic Properties</translation>
+    </message>
+    <message>
+        <source>ANGLE</source>
+        <translation>Angle</translation>
     </message>
 </context>
 <context>

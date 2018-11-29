@@ -33,3 +33,11 @@ Basic Properties
     :language: python
 
 :download:`Download this script <../../../examples/measurements_ex03.py>`
+
+Angle
+=====
+
+.. literalinclude:: ../../../examples/measurements_ex04.py
+    :language: python
+
+:download:`Download this script <../../../examples/measurements_ex04.py>`

@@ -1443,6 +1443,28 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
         aMeasurements.UnRegister()
         return pointStruct.x, pointStruct.y, pointStruct.z
 
+    def GetAngle(self, p1, p2, p3 ):
+        """
+        Computes a radian measure of an angle defined by 3 points: <(p1,p2,p3)
+
+        Parameters:            
+                p1,p2,p3: coordinates of 3 points defined by either SMESH.PointStruct 
+                          or list [x,y,z]
+
+        Returns:        
+            Angle in radians
+        """
+        if isinstance( p1, list ): p1 = PointStruct(*p1)
+        if isinstance( p2, list ): p2 = PointStruct(*p2)
+        if isinstance( p3, list ): p3 = PointStruct(*p3)
+
+        aMeasurements = self.CreateMeasurements()
+        angle = aMeasurements.Angle(p1,p2,p3)
+        aMeasurements.UnRegister()
+
+        return angle
+
+
     pass # end of class smeshBuilder
 
 import omniORB
@@ -2887,7 +2909,7 @@ class Mesh(metaclass = MeshMeta):
 
     def FaceGroupsSeparatedByEdges( self, sharpAngle, createEdges=False, useExistingEdges=False ):
         """
-        Distribute all faces of the mesh between groups using sharp edges and optionally
+        Distribute all faces of the mesh among groups using sharp edges and optionally
         existing 1D elements as group boundaries.
 
         Parameters:
@@ -2896,7 +2918,7 @@ class Mesh(metaclass = MeshMeta):
                 createEdges (boolean): to create 1D elements for detected sharp edges.
                 useExistingEdges (boolean): to use existing edges as group boundaries
         Returns:
-                ListOfGroups - the created groups
+                ListOfGroups - the created :class:`groups <SMESH.SMESH_Group>`
         """
         sharpAngle,Parameters,hasVars = ParseParameters( sharpAngle )
         self.mesh.SetParameters(Parameters)
@@ -6825,6 +6847,20 @@ class Mesh(metaclass = MeshMeta):
         else:
             volume = self.FunctorValue(SMESH.FT_Volume3D, elemId)
         return volume
+
+    def GetAngle(self, node1, node2, node3 ):
+        """
+        Computes a radian measure of an angle defined by 3 nodes: <(node1,node2,node3)
+
+        Parameters:            
+                node1,node2,node3: IDs of the three nodes
+
+        Returns:        
+            Angle in radians
+        """
+        return self.smeshpyD.GetAngle( self.GetNodeXYZ( node1 ),
+                                       self.GetNodeXYZ( node2 ),
+                                       self.GetNodeXYZ( node3 ))
 
     def GetMaxElementLength(self, elemId):
         """

@@ -2478,7 +2478,7 @@ void _pyMeshEditor::Process( const Handle(_pyCommand)& theCommand)
       "MergeElements","MergeEqualElements","SewFreeBorders","SewConformFreeBorders",
       "FindCoincidentFreeBorders", "SewCoincidentFreeBorders",
       "SewBorderToSide","SewSideElements","ChangeElemNodes","GetLastCreatedNodes",
-      "GetLastCreatedElems",
+      "GetLastCreatedElems", "FaceGroupsSeparatedByEdges",
       "MirrorMakeMesh","MirrorObjectMakeMesh","TranslateMakeMesh","TranslateObjectMakeMesh",
       "Scale","ScaleMakeMesh","RotateMakeMesh","RotateObjectMakeMesh","MakeBoundaryMesh",
       "MakeBoundaryElements", "SplitVolumesIntoTetra","SplitHexahedraIntoPrisms",

@@ -923,7 +923,7 @@ namespace SMESH
         aCollection->InitTraversal();
         while ( vtkActor *anAct = aCollection->GetNextActor() ) {
           if ( SMESH_Actor *anActor = dynamic_cast<SMESH_Actor*>(anAct) ) {
-	    anActor->UpdateSelectionProps();
+            anActor->UpdateSelectionProps();
           }
         }
       }

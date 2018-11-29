@@ -346,3 +346,30 @@ SMESH::PointStruct Measurements_i::GravityCenter(SMESH::SMESH_IDSource_ptr theSo
 
   return grCenter;
 }
+
+//=======================================================================
+//function : Angle
+//purpose  : Return angle in radians defined by 3 points <(p1,p2,p3)
+//=======================================================================
+
+CORBA::Double Measurements_i::Angle(const SMESH::PointStruct& p1,
+                                    const SMESH::PointStruct& p2,
+                                    const SMESH::PointStruct& p3 )
+{
+  gp_Vec v1( p1.x - p2.x, p1.y - p2.y, p1.z - p2.z );
+  gp_Vec v2( p3.x - p2.x, p3.y - p2.y, p3.z - p2.z );
+
+  double angle = -1;
+
+  try
+  {
+    angle = v1.Angle( v2 );
+  }
+  catch(...)
+  {
+  }
+  if ( isnan( angle ))
+    angle = -1;
+
+  return angle;
+}

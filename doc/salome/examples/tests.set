@@ -115,6 +115,8 @@ SET(GOOD_TESTS
   grouping_elements_ex09.py
   measurements_ex01.py
   measurements_ex02.py
+  measurements_ex03.py
+  measurements_ex04.py
   modifying_meshes_ex01.py
   modifying_meshes_ex02.py
   modifying_meshes_ex03.py

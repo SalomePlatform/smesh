@@ -652,6 +652,10 @@
             <translation>mesh_bounding_box.png</translation>
         </message>
         <message>
+            <source>ICON_MEASURE_ANGLE</source>
+            <translation>mesh_angle_measure.png</translation>
+        </message>
+        <message>
             <source>ICON_SHOW</source>
             <translation>mesh_show.png</translation>
         </message>

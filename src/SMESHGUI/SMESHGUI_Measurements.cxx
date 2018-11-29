@@ -28,9 +28,13 @@
 #include "SMESHGUI.h"
 #include "SMESHGUI_IdValidator.h"
 #include "SMESHGUI_Utils.h"
+#include "SMESHGUI_MeshEditPreview.h"
 #include "SMESHGUI_VTKUtils.h"
 #include <SMESH_TypeFilter.hxx>
+#include <SMESH_MeshAlgos.hxx>
 #include <SMESH_LogicalFilter.hxx>
+#include <SMDS_Mesh.hxx>
+#include <SMDS_MeshNode.hxx>
 
 #include <LightApp_SelectionMgr.h>
 #include <SUIT_OverrideCursor.h>
@@ -58,6 +62,8 @@
 #include <vtkDataSetMapper.h>
 #include <VTKViewer_CellLocationsArray.h>
 #include <vtkProperty.h>
+
+#include <ElCLib.hxx>
 
 #include <SALOMEconfig.h>
 #include CORBA_SERVER_HEADER(SMESH_MeshEditor)
@@ -1313,6 +1319,367 @@ void SMESHGUI_BasicProperties::clear()
 }
 
 /*!
+  \class SMESHGUI_Angle
+  \brief Angle measurement widget.
+  
+  Widget to calculate angle between 3 nodes.
+*/
+
+/*!
+  \brief Constructor.
+  \param parent parent widget
+*/
+SMESHGUI_Angle::SMESHGUI_Angle( QWidget* parent )
+  : QWidget( parent )
+{
+  // 3 nodes
+
+  QGroupBox* aNodesGrp = new QGroupBox( tr( "NODES_GROUP" ), this );
+  myNodes = new QLineEdit( aNodesGrp );
+  myNodes->setValidator( new SMESHGUI_IdValidator( this, 3 ));
+  QHBoxLayout* aNodesLayout = new QHBoxLayout( aNodesGrp );
+  aNodesLayout->addWidget( myNodes );
+  
+  // Compute button
+  QPushButton* aCompute = new QPushButton( tr( "COMPUTE" ), this );
+
+  // Angle
+
+  QGroupBox* aResultGrp = new QGroupBox( tr( "RESULT" ), this );
+
+  myResult = new QLineEdit;
+  myResult->setReadOnly( true );
+
+  QHBoxLayout* aResultLayout = new QHBoxLayout( aResultGrp );
+  aResultLayout->addWidget( myResult );
+  
+  // Layout
+
+  QGridLayout* aMainLayout = new QGridLayout( this );
+  aMainLayout->setMargin( MARGIN );
+  aMainLayout->setSpacing( SPACING );
+
+  aMainLayout->addWidget( aNodesGrp,   0, 0, 1, 2 );
+  aMainLayout->addWidget( aCompute,    1, 0 );
+  aMainLayout->addWidget( aResultGrp, 2, 0, 1, 2 );
+  aMainLayout->setColumnStretch( 1, 5 );
+  aMainLayout->setRowStretch( 3, 5 );
+
+  // Connections
+  connect( aCompute, SIGNAL( clicked() ), this, SLOT( compute() ));
+
+  // preview
+  myPreview = 0;
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow() )
+  {
+    myPreview = new SMESHGUI_MeshEditPreview( aViewWindow );
+    if ( myPreview && myPreview->GetActor() )
+      myPreview->GetActor()->GetProperty()->SetLineWidth( 5 );
+  }
+  myActor = 0;
+}
+
+SMESHGUI_Angle::~SMESHGUI_Angle()
+{
+  if ( myPreview )
+    delete myPreview;
+}
+
+/*!
+  \brief Setup selection mode
+*/
+void SMESHGUI_Angle::updateSelection()
+{
+  LightApp_SelectionMgr* selMgr = SMESHGUI::selectionMgr();
+
+  disconnect( selMgr, 0, this, 0 );
+  selMgr->clearFilters();
+
+  SMESH::SetPointRepresentation( true );
+  if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow() )
+    aViewWindow->SetSelectionMode( NodeSelection );
+
+  connect( selMgr,  SIGNAL( currentSelectionChanged() ), this, SLOT( selectionChanged() ));
+  connect( myNodes, SIGNAL( textEdited( QString ) ),     this, SLOT( nodesEdited() ));
+
+  if ( myPoints.empty() )
+    selectionChanged();
+}
+
+/*!
+  \brief Called when selection is changed
+*/
+void SMESHGUI_Angle::selectionChanged()
+{
+  clear();
+  QString nodesString;
+
+  TColStd_IndexedMapOfInteger idsMap;
+  SALOME_ListIO selected;
+  SMESHGUI::selectionMgr()->selectedObjects( selected );
+  selected.Reverse(); // to keep order of selection
+
+  SALOME_ListIteratorOfListIO ioIterator( selected );
+  for ( ; ioIterator.More(); ioIterator.Next() )
+  {
+    Handle(SALOME_InteractiveObject) IO = ioIterator.Value();
+
+    idsMap.Clear();
+    if ( SVTK_Selector* selector = SMESH::GetViewWindow()->GetSelector() )
+      selector->GetIndex( IO, idsMap );
+
+    if ( SMESH_Actor* actor = SMESH::FindActorByEntry( IO->getEntry() ))
+    {
+      myActor = actor;
+      for ( int i = 1; i <= idsMap.Extent() && myPoints.size() < 3; ++i )
+        if ( addPointByActor( idsMap(i) ))
+          nodesString += QString(" %1").arg( idsMap(i) );
+      idsMap.Clear();
+    }
+    SMESH::SMESH_IDSource_var obj = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>( IO );
+    if ( !CORBA::is_nil( obj ) )
+    {
+      myIDSrc = obj;
+      for ( int i = 1; i <= idsMap.Extent() && myPoints.size() < 3; ++i )
+        if ( addPointByIDSource( idsMap(i) ))
+          nodesString += QString(" %1").arg( idsMap(i) );
+    }
+  }
+
+  myNodes->setText( nodesString );
+}
+
+//=======================================================================
+//function : clear
+//purpose  : Erase preview and result
+//=======================================================================
+
+void SMESHGUI_Angle::clear()
+{
+  myPoints.clear();
+  myResult->clear();
+  if ( myPreview && myPreview->GetActor())
+  {
+    myPreview->GetActor()->SetVisibility( false );
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow() )
+      aViewWindow->Repaint();
+  }
+}
+
+//=======================================================================
+//function : addPointByActor
+//purpose  : append to myPoints XYZ got from myActor
+//=======================================================================
+
+bool SMESHGUI_Angle::addPointByActor( int id )
+{
+  size_t nbP = myPoints.size();
+
+  if ( myActor )
+  {
+    TVisualObjPtr obj = myActor->GetObject();
+    if ( SMDS_Mesh* mesh = obj->GetMesh() )
+      if ( const SMDS_MeshNode* node = mesh->FindNode( id ))
+      {
+        SMESH::PointStruct p = { node->X(), node->Y(), node->Z() };
+        myPoints.push_back( p );
+      }
+  }
+  return nbP < myPoints.size();
+}
+
+//=======================================================================
+//function : addPointByIDSource
+//purpose  : append to myPoints XYZ got from myIDSrc
+//=======================================================================
+
+bool SMESHGUI_Angle::addPointByIDSource( int id )
+{
+  size_t nbP = myPoints.size();
+
+  if ( !myIDSrc->_is_nil() )
+  {
+    SMESH::SMESH_Mesh_var mesh = myIDSrc->GetMesh();
+    if ( !mesh->_is_nil() )
+    {
+      SMESH::double_array_var xyz = mesh->GetNodeXYZ( id );
+      if ( xyz->length() == 3 )
+      {
+        SMESH::PointStruct p = { xyz[0], xyz[1], xyz[2] };
+        myPoints.push_back( p );
+      }
+    }
+  }
+  return nbP < myPoints.size();
+}
+
+//=======================================================================
+//function : nodesEdited
+//purpose  : SLOT called when the user types node IDs
+//=======================================================================
+
+void SMESHGUI_Angle::nodesEdited()
+{
+  clear();
+
+  TColStd_MapOfInteger ID;
+  QStringList ids = myNodes->text().split( " ", QString::SkipEmptyParts );
+  foreach ( QString idStr, ids )
+  {
+    int id = idStr.trimmed().toLong();
+    if (( !ID.Contains( id )) &&
+        ( addPointByActor( id ) || addPointByIDSource( id )))
+      ID.Add( id );
+  }
+
+  SVTK_Selector* selector = SMESH::GetViewWindow()->GetSelector();
+  if ( myActor && selector )
+  {
+    Handle(SALOME_InteractiveObject) IO = myActor->getIO();
+    selector->AddOrRemoveIndex( IO, ID, false );
+    if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow() )
+      aViewWindow->highlight( IO, true, true );
+  }
+}
+
+//=======================================================================
+//function : compute
+//purpose  : SLOT. Compute angle and show preview
+//=======================================================================
+
+void SMESHGUI_Angle::compute()
+{
+  if ( myPoints.size() != 3 )
+    return;
+
+  // --------------
+  // compute angle
+  // --------------
+
+  SMESH::Measurements_var measure = SMESHGUI::GetSMESHGen()->CreateMeasurements();
+  double radians = measure->Angle( myPoints[0], myPoints[1], myPoints[2] );
+  measure->UnRegister();
+  if ( radians < 0 )
+    return;
+
+  int precision = SMESHGUI::resourceMgr()->integerValue( "SMESH", "length_precision", 6 );
+  myResult->setText( QString::number( radians * 180 / M_PI,
+                                      precision > 0 ? 'f' : 'g', qAbs( precision )));
+
+  // -------------
+  // show preview
+  // -------------
+
+  if ( !myPreview || !myPreview->GetActor() )
+    return;
+
+  SMESH::MeshPreviewStruct preveiwData;
+
+  const double     anglePerSeg = 5 * M_PI/180; // angle per an arc segment
+  const double arcRadiusFactor = 0.5;          // arc position, from p1
+
+  gp_Pnt p0 ( myPoints[0].x, myPoints[0].y, myPoints[0].z );
+  gp_Pnt p1 ( myPoints[1].x, myPoints[1].y, myPoints[1].z );
+  gp_Pnt p2 ( myPoints[2].x, myPoints[2].y, myPoints[2].z );
+  gp_Vec vec10( p1, p0 ), vec12( p1, p2 ), norm( vec10 ^ vec12 );
+
+  if ( norm.Magnitude() <= gp::Resolution() ) // 180 degrees
+    norm = getNormal( vec10 );
+
+  double     len10 = vec10.Magnitude();
+  double     len12 = vec12.Magnitude();
+  double    lenMax = Max( len10, len12 );
+  double arcRadius = arcRadiusFactor * lenMax;
+
+  p0 = p1.Translated( lenMax * vec10.Normalized() );
+  p2 = p1.Translated( lenMax * vec12.Normalized() );
+
+  gp_Circ arc( gp_Ax2( p1, norm, vec10 ), arcRadius );
+
+  int nbRadialSegmensts = ceil( radians / anglePerSeg ) + 1;
+  int           nbNodes = 3 + ( nbRadialSegmensts + 1 );
+
+  // coordinates
+  preveiwData.nodesXYZ.length( nbNodes );
+  int iP = 0;
+  for ( ; iP < nbRadialSegmensts + 1; ++iP )
+  {
+    double u = double( iP ) / nbRadialSegmensts * radians;
+    gp_Pnt p = ElCLib::Value( u, arc );
+    preveiwData.nodesXYZ[ iP ].x = p.X();
+    preveiwData.nodesXYZ[ iP ].y = p.Y();
+    preveiwData.nodesXYZ[ iP ].z = p.Z();
+  }
+  int iP0 = iP;
+  preveiwData.nodesXYZ[ iP ].x = p0.X();
+  preveiwData.nodesXYZ[ iP ].y = p0.Y();
+  preveiwData.nodesXYZ[ iP ].z = p0.Z();
+  int iP1 = ++iP;
+  preveiwData.nodesXYZ[ iP ].x = p1.X();
+  preveiwData.nodesXYZ[ iP ].y = p1.Y();
+  preveiwData.nodesXYZ[ iP ].z = p1.Z();
+  int iP2 = ++iP;
+  preveiwData.nodesXYZ[ iP ].x = p2.X();
+  preveiwData.nodesXYZ[ iP ].y = p2.Y();
+  preveiwData.nodesXYZ[ iP ].z = p2.Z();
+
+  // connectivity
+  preveiwData.elementConnectivities.length( 2 * ( 2 + nbRadialSegmensts ));
+  for ( int iSeg = 0; iSeg < nbRadialSegmensts; ++iSeg )
+  {
+    preveiwData.elementConnectivities[ iSeg * 2 + 0 ] = iSeg;
+    preveiwData.elementConnectivities[ iSeg * 2 + 1 ] = iSeg + 1;
+  }
+  int iSeg = nbRadialSegmensts;
+  preveiwData.elementConnectivities[ iSeg * 2 + 0 ] = iP0;
+  preveiwData.elementConnectivities[ iSeg * 2 + 1 ] = iP1;
+  ++iSeg;
+  preveiwData.elementConnectivities[ iSeg * 2 + 0 ] = iP1;
+  preveiwData.elementConnectivities[ iSeg * 2 + 1 ] = iP2;
+
+  // types
+  preveiwData.elementTypes.length( 2 + nbRadialSegmensts );
+  SMESH::ElementSubType type = { SMESH::EDGE, /*isPoly=*/false, /*nbNodesInElement=*/2 };
+  for ( CORBA::ULong i = 0; i < preveiwData.elementTypes.length(); ++i )
+    preveiwData.elementTypes[ i ] = type;
+
+  myPreview->SetData( preveiwData );
+}
+
+//================================================================================
+/*!
+ * \brief Return normal to a plane of drawing in the case of 180 degrees angle
+ */
+//================================================================================
+
+gp_Vec SMESHGUI_Angle::getNormal(const gp_Vec& vec10 )
+{
+  gp_XYZ norm;
+
+  // try to get normal by a face at the 2nd node
+  if ( myActor && myActor->GetObject()->GetMesh() )
+  {
+    QStringList ids = myNodes->text().split( " ", QString::SkipEmptyParts );
+    SMDS_Mesh* mesh = myActor->GetObject()->GetMesh();
+    if ( const SMDS_MeshNode* n = mesh->FindNode( ids[1].trimmed().toLong() ))
+    {
+      SMDS_ElemIteratorPtr faceIt = n->GetInverseElementIterator( SMDSAbs_Face );
+      while ( faceIt->more() )
+        if ( SMESH_MeshAlgos::FaceNormal( faceIt->next(), norm ))
+          return norm;
+    }
+  }
+  int iMinCoord = 1;
+  if ( vec10.Coord( iMinCoord ) > vec10.Y() ) iMinCoord = 2;
+  if ( vec10.Coord( iMinCoord ) > vec10.Z() ) iMinCoord = 3;
+
+  gp_Vec vec = vec10;
+  vec.SetCoord( iMinCoord, vec10.Coord( iMinCoord ) + 1. );
+
+  return vec ^ vec10;
+}
+
+/*!
   \class SMESHGUI_MeshInfoDlg
   \brief Centralized dialog box for the measurements
 */
@@ -1323,7 +1690,7 @@ void SMESHGUI_BasicProperties::clear()
   \param page specifies the dialog page to be shown at the start-up
 */
 SMESHGUI_MeasureDlg::SMESHGUI_MeasureDlg( QWidget* parent, int page )
-: QDialog( parent )
+  : QDialog( parent )
 {
   setModal( false );
   setAttribute( Qt::WA_DeleteOnClose, true );
@@ -1348,6 +1715,9 @@ SMESHGUI_MeasureDlg::SMESHGUI_MeasureDlg( QWidget* parent, int page )
   
   myBasicProps = new SMESHGUI_BasicProperties( myTabWidget );
   int aBasicPropInd = myTabWidget->addTab( myBasicProps, resMgr->loadPixmap( "SMESH", tr( "ICON_MEASURE_BASIC_PROPS" ) ), tr( "BASIC_PROPERTIES" ) );
+
+  myAngle = new SMESHGUI_Angle( myTabWidget );
+  int aAngleInd = myTabWidget->addTab( myAngle, resMgr->loadPixmap( "SMESH", tr( "ICON_MEASURE_ANGLE" ) ), tr( "ANGLE" ) );
 
   // buttons
   QPushButton* okBtn = new QPushButton( tr( "SMESH_BUT_OK" ), this );
@@ -1376,6 +1746,8 @@ SMESHGUI_MeasureDlg::SMESHGUI_MeasureDlg( QWidget* parent, int page )
     anInd = aMinDistInd;
   } else if ( page == BoundingBox ) {
     anInd = aBndBoxInd;
+  } else if ( page == Angle ) {
+    anInd = aAngleInd;
   } else if ( page == Length || page == Area || page == Volume ) {
     myBasicProps->setMode( (SMESHGUI_BasicProperties::Mode)(page - Length) );
     anInd = aBasicPropInd;
@@ -1444,6 +1816,8 @@ void SMESHGUI_MeasureDlg::updateSelection()
     myMinDist->updateSelection();
   else if ( myTabWidget->currentIndex() == BoundingBox )
     myBndBox->updateSelection();
+  else if ( myTabWidget->currentWidget() == myAngle )
+    myAngle->updateSelection();
   else {
     myBndBox->erasePreview();
     myBasicProps->updateSelection();
@@ -1460,6 +1834,8 @@ void SMESHGUI_MeasureDlg::help()
     aHelpFile = "measurements.html#min-distance-anchor";
   } else if ( myTabWidget->currentIndex() == BoundingBox ) {
     aHelpFile = "measurements.html#bounding-box-anchor";
+  } else if ( myTabWidget->currentWidget() == myAngle ) {
+    aHelpFile = "measurements.html#angle-anchor";
   } else {
     aHelpFile = "measurements.html#basic-properties-anchor";
   }

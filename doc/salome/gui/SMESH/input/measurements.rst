@@ -84,6 +84,17 @@ The result of calculation will be shown in the bottom area of the dialog.
 	* As calculation result is a sum of lengths, areas and volumes of all mesh elements, the duplication is not taken into account; i.e. all duplicated elements (elements built on the same set of nodes) will be included into the result.
 	* Similarly, intersection of elements is not taken into account.
 
+.. _angle_anchor:
+
+Angle
+#####
+
+This operation measures angle defined by three nodes. The second of the specified nodes is a vertex of angle. 
+
+You can specify nodes either by clicking them in the Viewer or by typing their IDs in **Tree nodes** field. If the nodes are correctly specified, upon pressing **Compute** button the angle measure will be displayed and the angle will be shown in the Viewer.
+
+.. image:: ../images/angle_measure.png
+	:align: center
+
+
 **See Also** a sample TUI Script of :ref:`tui_measurements_page`.
-
-

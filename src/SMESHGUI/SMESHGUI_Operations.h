@@ -190,6 +190,7 @@ namespace SMESHOp {
     OpPropertiesVolume       = 5002,   // MENU MEASUREMENTS - BASIC PROPERTIES - VOLUME
     OpMinimumDistance        = 5003,   // MENU MEASUREMENTS - MINIMUM DISTANCE
     OpBoundingBox            = 5004,   // MENU MEASUREMENTS - BOUNDING BOX
+    OpAngle                  = 5005,   // MENU MEASUREMENTS - ANGLE
     // Hypothesis ---------------------//--------------------------------
     OpEditHypothesis         = 6000,   // POPUP MENU - EDIT HYPOTHESIS
     OpUnassign               = 6001,   // POPUP MENU - UNASSIGN

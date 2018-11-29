@@ -168,6 +168,7 @@ Creating groups
    Mesh.MakeGroupByCriterion
    Mesh.MakeGroupByCriteria
    Mesh.MakeGroupByFilter
+   Mesh.FaceGroupsSeparatedByEdges
    Mesh.GetGroups
    Mesh.NbGroups
    Mesh.GetGroupNames
@@ -305,6 +306,7 @@ Measurements
    smeshBuilder.GetLength
    smeshBuilder.GetArea
    smeshBuilder.GetVolume
+   smeshBuilder.GetAngle
    Mesh.GetFreeBorders
    Mesh.MinDistance
    Mesh.GetMinDistance
@@ -315,6 +317,7 @@ Measurements
    Mesh.GetLength
    Mesh.GetArea
    Mesh.GetVolume
+   Mesh.GetAngle
 
 ****************
 Modifying meshes

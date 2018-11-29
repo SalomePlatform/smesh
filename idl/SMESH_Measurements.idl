@@ -74,6 +74,11 @@ module SMESH
      * gravity center of the source
      */
     PointStruct GravityCenter(in SMESH_IDSource source);
+
+    /*!
+     * angle in radians defined by 3 points <(p1,p2,p3)
+     */
+    double Angle(in PointStruct p1, in PointStruct p2, in PointStruct p3 );
   };
 };
 
