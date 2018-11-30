@@ -3484,9 +3484,9 @@ SMESHGUI_CtrlInfo::SMESHGUI_CtrlInfo( QWidget* parent )
  
   myMainLayout->setColumnStretch(  0,  0 );
   myMainLayout->setColumnStretch(  1,  5 );
-  myMainLayout->setRowStretch   ( 11,  5 );
-  myMainLayout->setRowStretch   ( 16,  5 );
-  myMainLayout->setRowStretch   ( 17,  1 );
+  myMainLayout->setRowStretch   ( 12,  5 );
+  myMainLayout->setRowStretch   ( 17,  5 );
+  myMainLayout->setRowStretch   ( 18,  1 );
 
   clearInternal();
 }
@@ -3628,13 +3628,11 @@ void SMESHGUI_CtrlInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
       myButtons[6]->setEnabled( true );
     }
 #ifdef DISABLE_PLOT2DVIEWER
-    myMainLayout->setRowStretch(12,0);
     for( int i=25; i<=27; i++)
       myMainLayout->itemAt(i)->widget()->setVisible( false );
 #endif
   }
   else {
-    myMainLayout->setRowStretch(12,0);
     for( int i=18; i<=27; i++)
       myMainLayout->itemAt(i)->widget()->setVisible( false );
   }
@@ -3655,13 +3653,11 @@ void SMESHGUI_CtrlInfo::showInfo( SMESH::SMESH_IDSource_ptr obj )
       myButtons[9]->setEnabled( true );
     }
 #ifdef DISABLE_PLOT2DVIEWER
-    myMainLayout->setRowStretch(17,0);
     for( int i=35; i<=37; i++)
       myMainLayout->itemAt(i)->widget()->setVisible( false );
 #endif
   }
   else {
-    myMainLayout->setRowStretch(17,0);
     for( int i=28; i<=37; i++)
       myMainLayout->itemAt(i)->widget()->setVisible( false );
   }
@@ -3799,7 +3795,7 @@ void SMESHGUI_CtrlInfo::computeAspectRatio3D()
 */
 void SMESHGUI_CtrlInfo::clearInternal()
 {
-  for( int i=0; i<=35; i++)
+  for( int i=0; i<=37; i++)
     myMainLayout->itemAt(i)->widget()->setVisible( true );
   for( int i=0; i<=9; i++)
     myButtons[i]->setEnabled( false );
@@ -3810,8 +3806,6 @@ void SMESHGUI_CtrlInfo::clearInternal()
   myWidgets[0]->setText( QString() );
   for ( int i = 1; i < myWidgets.count(); i++ )
     myWidgets[i]->setText( "" );
-  myMainLayout->setRowStretch(11,5);
-  myMainLayout->setRowStretch(16,5);
 }
 
 void SMESHGUI_CtrlInfo::setTolerance( double theTolerance )
