@@ -4733,11 +4733,15 @@ Please, create VTK viewer and try again</translation>
     </message>
     <message>
         <source>PREF_DISPLAY_MODE_GROUP</source>
-        <translation>Display mode</translation>
+        <translation>Display</translation>
     </message>
     <message>
         <source>PREF_DISPLAY_MODE</source>
         <translation>Default display mode</translation>
+    </message>
+    <message>
+        <source>PREF_FITALL_ON_DISPLAYONLY</source>
+        <translation>Fit All upon Show Only</translation>
     </message>
     <message>
         <source>PREF_ELEMENTS</source>

@@ -47,8 +47,8 @@ right-clicking on the selected mesh.
 * :ref:`Transparency <transparency_page>` - allows to change the transparency of mesh elements.
 * :ref:`Controls <quality_page>` - graphically presents various information about the mesh. 
 * **Hide** - allows to hide the selected mesh from the viewer.
-* **Show Only** - allows to display only the selected mesh, hiding all others from the viewer.
-* :ref:`Clipping <clipping_page>` - allows to create cross-sections of the displayed objects.
+* **Show Only** - allows to display only the selected mesh, hiding all others from the viewer. If :ref:`Fit All upon Show Only <display_mode_pref>` Preference option is active, *Fit All* command is additionally performed.
+* :doc:`clipping` - allows to create cross-sections of the displayed objects.
 * **Dump view** - exports an object from the viewer in bmp, png or jpeg image format.
 * **Change background** - allows to redefine the background color. By default it is black.
 * **View Operations** - allows to show/hide the  visualization toolbar in the Viewer window.

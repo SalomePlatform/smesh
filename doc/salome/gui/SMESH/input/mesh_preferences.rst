@@ -22,7 +22,9 @@ General Preferences
 
 .. _display_mode_pref:
 
-* **Display mode**
+* **Display**
+
+  * **Fit All upon Show Only** - if activated, *Show Only* command additionally performs *Fit All* command.
 
   * **Default display mode** - allows to set Wireframe, Shading, Nodes or Shrink :ref:`presentation mode <display_mode_page>` as default.
 

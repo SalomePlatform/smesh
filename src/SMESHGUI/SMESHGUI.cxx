@@ -5086,6 +5086,9 @@ void SMESHGUI::createPreferences()
 
   int dispgroup = addPreference( tr( "PREF_DISPLAY_MODE_GROUP" ), genTab );
   setPreferenceProperty( dispgroup, "columns", 2 );
+
+  addPreference( tr( "PREF_FITALL_ON_DISPLAYONLY" ), dispgroup, LightApp_Preferences::Bool, "SMESH", "fitall_on_displayonly" );
+  
   int dispmode = addPreference( tr( "PREF_DISPLAY_MODE" ), dispgroup, LightApp_Preferences::Selector, "SMESH", "display_mode" );
   QStringList modes;
   modes.append( tr("MEN_WIRE") );

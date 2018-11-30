@@ -677,6 +677,7 @@ namespace SMESH
     if (!aStudy)
       return OK;
 
+    SUIT_ResourceMgr* resMgr;
     {
       OK = true;
       vtkRenderer *aRenderer = aViewWnd->getRenderer();
@@ -722,6 +723,10 @@ namespace SMESH
               anActor->SetVisibility(true);
               if (theAction == eDisplayOnly) aRenderer->ResetCameraClippingRange();
               aStudy->setVisibilityState(theEntry, Qtx::ShownState);
+              if (( theAction == eDisplayOnly ) &&
+                  ( resMgr = SMESHGUI::resourceMgr() ) &&
+                  ( resMgr->booleanValue( "SMESH", "fitall_on_displayonly", false )))
+                FitAll(); // PAL23615
               break;
             case eErase:
               //MESSAGE("--- erase " << anActor);
@@ -746,8 +751,16 @@ namespace SMESH
                   anActor->SetVisibility(true);
                   aStudy->setVisibilityState(theEntry, Qtx::ShownState);
                   // FitAll(); - PAL16770(Display of a group performs an automatic fit all)
-                  if (needFitAll) FitAll();
-                } else {
+                  if (( !needFitAll ) &&
+                      ( theAction == eDisplayOnly ) &&
+                      ( resMgr = SMESHGUI::resourceMgr() ))
+                  {
+                    needFitAll = resMgr->booleanValue( "SMESH", "fitall_on_displayonly", false );
+                  }
+                  if ( needFitAll )
+                    FitAll();
+                }
+                else {
                   OK = false;
                 }
               }
