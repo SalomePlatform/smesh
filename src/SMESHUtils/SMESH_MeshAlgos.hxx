@@ -258,6 +258,7 @@ namespace SMESH_MeshAlgos
    * Return sharp edges of faces and non-manifold ones.
    * Optionally adds existing edges to the result. Angle is in degrees.
    */
+  SMESHUtils_EXPORT
   std::vector< Edge > FindSharpEdges( SMDS_Mesh* mesh,
                                       double     angle,
                                       bool       addExisting );
@@ -265,6 +266,7 @@ namespace SMESH_MeshAlgos
   /*!
    * Distribute all faces of the mesh between groups using given edges.
    */
+  SMESHUtils_EXPORT
   std::vector< std::vector< const SMDS_MeshElement* > >
   SeparateFacesByEdges( SMDS_Mesh* mesh, const std::vector< Edge >& edges );
 
