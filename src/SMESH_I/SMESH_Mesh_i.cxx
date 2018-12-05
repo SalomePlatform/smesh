@@ -1923,7 +1923,7 @@ SMESH_Mesh_i::FaceGroupsSeparatedByEdges( CORBA::Double  theSharpAngle,
   std::vector< std::vector< const SMDS_MeshElement* > > faceGroups =
     SMESH_MeshAlgos::SeparateFacesByEdges( meshDS, edges );
 
-  SMESH::SMESH_MeshEditor_var( GetMeshEditor() ); // create _editor
+  SMESH::SMESH_MeshEditor_var editor = GetMeshEditor(); // create _editor
 
   resultGroups->length( faceGroups.size() );
   for ( size_t iG = 0; iG < faceGroups.size(); ++iG )
