@@ -5474,13 +5474,13 @@ void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
     std::string aWarning;
     SUIT_ResourceMgr* aResourceMgr = SMESH::GetResourceMgr(this);
 
-    if ( name== "selection_object_color" ||
-         name=="selection_element_color" ||
-         name==        "highlight_color" ||
-         name=="selection_precision_node"    ||
-         name=="selection_precision_element" ||
-         name=="selection_precision_object"   ||
-         name=="selection_increment")
+    if ( name ==  "selection_object_color" ||
+         name == "selection_element_color" ||
+         name ==         "highlight_color" ||
+         name == "selection_precision_node"    ||
+         name == "selection_precision_element" ||
+         name == "selection_precision_object"  ||
+         name == "selection_increment")
     {
       SMESH::UpdateSelectionProp( this );
     }

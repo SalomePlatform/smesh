@@ -988,21 +988,20 @@ void SMESHGUI_BaseComputeOp::computeMesh()
             try {
               OCC_CATCH_SIGNALS;
               bool toDisplay = false;
+              std::string entry = (*anIter).second->GetID();
               if ( !aMesh->_is_nil() ) // display only a mesh
               {
                 toDisplay = true;
                 SMESH_Actor *anActor = SMESH::FindActorByObject( aMesh );
-                if ( !anActor ) anActor = SMESH::CreateActor( (*anIter).second->GetID().c_str(),
-                                                              /*clearLog =*/ true );
+                if ( !anActor ) anActor = SMESH::CreateActor( entry.c_str(), /*clearLog =*/true );
                 if ( anActor ) // actor is not created for an empty mesh
                 {
                   anActor->SetEntityMode( entities );
-                  SMESH::DisplayActor( SMESH::GetActiveWindow(), anActor );
+                  //SMESH::DisplayActor( SMESH::GetActiveWindow(), anActor ); -- 23615
                 }
               }
-              Handle(SALOME_InteractiveObject) anIO = new SALOME_InteractiveObject
-                ( (*anIter).second->GetID().c_str(), "SMESH", (*anIter).second->GetName().c_str() );
-              SMESH::Update(anIO, toDisplay);
+              if ( toDisplay )
+                SMESH::UpdateView( SMESH::eDisplay, entry.c_str() );
 
               if ( SVTK_ViewWindow* vtkWnd = SMESH::GetVtkViewWindow(SMESH::GetActiveWindow() ))
                 if ( vtkWnd->getRenderer() )

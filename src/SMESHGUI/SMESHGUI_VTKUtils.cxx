@@ -896,7 +896,7 @@ namespace SMESH
     SMESH_ActorProps::props()->reset();
 
     QColor
-      aHiColor = mgr->colorValue( "SMESH", "selection_object_color", Qt::white ),
+      //aHiColor = mgr->colorValue( "SMESH", "selection_object_color", Qt::white ),
       aSelColor = mgr->colorValue( "SMESH", "selection_element_color", Qt::yellow ),
       aPreColor = mgr->colorValue( "SMESH", "highlight_color", Qt::cyan );
 
