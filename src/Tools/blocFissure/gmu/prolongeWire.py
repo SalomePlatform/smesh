@@ -10,7 +10,7 @@ from .orderEdgesFromWire import orderEdgesFromWire
 # -----------------------------------------------------------------------------
 # --- prolongation d'un wire par deux segments tangents
 
-def prolongeWire(aWire, extrem, norms, long):
+def prolongeWire(aWire, extrem, norms, lg):
   """
   """
   logging.info("start")
@@ -22,7 +22,7 @@ def prolongeWire(aWire, extrem, norms, long):
     uneSeuleEdge = True
   edgesBout = []
   for i, v1 in enumerate(extrem):
-    exts = [geompy.MakeTranslationVectorDistance(v1, norms[i], l) for l in (-int, int)]
+    exts = [geompy.MakeTranslationVectorDistance(v1, norms[i], l) for l in (-lg, lg)]
     dists = [(geompy.MinDistance(v, aWire), i , v) for i, v in enumerate(exts)]
     dists.sort()
     v2 = dists[-1][-1]

@@ -19,7 +19,7 @@
   <layout class="QGridLayout" name="gridLayout">
    <item row="2" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
+     <item>
       <spacer name="horizontalSpacer_xx">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -34,7 +34,7 @@
         </size>
        </property>
       </spacer>
-         </item>
+     </item>
      <item>
       <widget class="QPushButton" name="PB_OK">
        <property name="text">
@@ -67,12 +67,12 @@
        <property name="text">
         <string>Save</string>
        </property>
-        <property name="iconSize">
-         <size>
-          <width>18</width>
-          <height>18</height>
-         </size>
-        </property>
+       <property name="iconSize">
+        <size>
+         <width>18</width>
+         <height>18</height>
+        </size>
+       </property>
       </widget>
      </item>
      <item>
@@ -80,12 +80,12 @@
        <property name="text">
         <string>Load</string>
        </property>
-        <property name="iconSize">
-         <size>
-          <width>18</width>
-          <height>18</height>
-         </size>
-        </property>
+       <property name="iconSize">
+        <size>
+         <width>18</width>
+         <height>18</height>
+        </size>
+       </property>
       </widget>
      </item>
      <item>
@@ -120,7 +120,7 @@
        </property>
       </widget>
      </item>
-         <item>
+     <item>
       <spacer name="horizontalSpacer_xx">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -135,7 +135,7 @@
         </size>
        </property>
       </spacer>
-         </item>
+     </item>
     </layout>
    </item>
    <item row="1" column="0">
@@ -164,126 +164,102 @@
        <property name="title">
         <string>Options</string>
        </property>
-
-        <layout class="QHBoxLayout" name="RBLayoutopt">
-
-         <item>
-      <spacer name="horizontalSpacer_xx">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Minimum</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>30</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-         </item>
-
-         <item>
-        <layout class="QVBoxLayout" name="RBLayout1">
-         <item>
-          <widget class="QRadioButton" name="RB_Check">
-           <property name="toolTip">
-            <string>Performs checks only (no fixing).
+       <layout class="QHBoxLayout" name="RBLayoutopt">
+        <item>
+         <spacer name="horizontalSpacer_xx">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Minimum</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>30</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="RBLayout1">
+          <item>
+           <widget class="QRadioButton" name="RB_Check">
+            <property name="toolTip">
+             <string>Performs checks only (no fixing).
 Writes diagnostics into the output file.
 Default is to fix with two passes.</string>
-           </property>
-           <property name="text">
-            <string>Only checking</string>
-           </property>
-           <property name="checked">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="RB_Fix1">
-           <property name="toolTip">
-            <string>Analyses and fixes mesh with only the first stage of the cleaning procedure.
+            </property>
+            <property name="text">
+             <string>Only checking</string>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="RB_Fix1">
+            <property name="toolTip">
+             <string>Analyses and fixes mesh with only the first stage of the cleaning procedure.
 Does not write diagnostics into the output file.
 Default is to fix with two passes.</string>
-           </property>
-           <property name="text">
-            <string>Fix problems with one pass</string>
-           </property>
-           <property name="checked">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="RB_Fix2">
-           <property name="toolTip">
-            <string>Analyses and fixes mesh with the two stage cleaning procedure.
-Does not write diagnostics into the output file.
-Default is to fix with two passes.</string>
-           </property>
-           <property name="text">
-            <string>Fix problems with two passes</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-
-       <item>
-       <widget class="QCheckBox" name="CB_PreserveTopology">
-           <property name="toolTip">
-            <string>Disables fixing operations which induce topology modifications.
+            </property>
+            <property name="text">
+             <string>Fix problems</string>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="CB_PreserveTopology">
+            <property name="toolTip">
+             <string>Disables fixing operations which induce topology modifications.
 Default is enable topology modifications.
 (argument --topology)</string>
-           </property>
-           <property name="text">
-            <string>Preserve topology</string>
-           </property>
-           <property name="checked">
-            <bool>false</bool>
-           </property>
-          </widget>
-        </item>
-       <item>
-          <widget class="QCheckBox" name="CB_FillHoles">
-           <property name="toolTip">
-            <string>Default is not to fill holes.
+            </property>
+            <property name="text">
+             <string>Preserve topology</string>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="CB_FillHoles">
+            <property name="toolTip">
+             <string>Default is not to fill holes.
 if set: see 'surface size threshold of holes' in 'Advanced remeshing options'.</string>
-           </property>
-           <property name="text">
-            <string>Fill holes</string>
-           </property>
-           <property name="checked">
-            <bool>false</bool>
-           </property>
-          </widget>
-       </item>
-       <item>
-
-          <widget class="QCheckBox" name="CB_RemeshPlanes">
-           <property name="toolTip">
-            <string>Inserts vertices on planes to improve mesh quality .
+            </property>
+            <property name="text">
+             <string>Fill holes</string>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="CB_RemeshPlanes">
+            <property name="toolTip">
+             <string>Inserts vertices on planes to improve mesh quality .
 May be useful for poor quality triangulations (eg .STL or .DXF triangulations).
 Default is not to mesh planes.</string>
-           </property>
-           <property name="text">
-            <string>Remesh planes</string>
-           </property>
-           <property name="checked">
-            <bool>false</bool>
-           </property>
+            </property>
+            <property name="text">
+             <string>Remesh planes</string>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
            </widget>
-       </item>
-
+          </item>
          </layout>
-
-         </item>
-
-        </layout>
-        
+        </item>
+       </layout>
       </widget>
       <widget class="QGroupBox" name="groupBox">
        <property name="geometry">
@@ -411,8 +387,10 @@ Default is not to mesh planes.</string>
        <property name="title">
         <string>You can control</string>
        </property>
-#1
        <widget class="QLineEdit" name="SP_MinHoleSize">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="geometry">
          <rect>
           <x>20</x>
@@ -421,9 +399,6 @@ Default is not to mesh planes.</string>
           <height>25</height>
          </rect>
         </property>
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
        </widget>
        <widget class="QLabel" name="LA_minHoleSize">
         <property name="geometry">
@@ -442,8 +417,10 @@ Set 'Fill holes' in 'Simple Remeshing Options'.</string>
          <string>Surface size threshold of holes to fill (--min_hole_size)</string>
         </property>
        </widget>
-#2
        <widget class="QLineEdit" name="SP_ToleranceDisplacement">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="geometry">
          <rect>
           <x>20</x>
@@ -452,9 +429,6 @@ Set 'Fill holes' in 'Simple Remeshing Options'.</string>
           <height>25</height>
          </rect>
         </property>
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
        </widget>
        <widget class="QLabel" name="LA_toleranceDisplacement">
         <property name="geometry">
@@ -475,8 +449,7 @@ Unused in collision resolution .
 (--tolerance_displacement)</string>
         </property>
        </widget>
-
-          <widget class="QCheckBox" name="CB_ComputedToleranceDisplacement">
+       <widget class="QCheckBox" name="CB_ComputedToleranceDisplacement">
         <property name="geometry">
          <rect>
           <x>650</x>
@@ -485,19 +458,20 @@ Unused in collision resolution .
           <height>30</height>
          </rect>
         </property>
-           <property name="toolTip">
-            <string>If set default value is computed from model.</string>
-           </property>
-           <property name="text">
-            <string>Computed</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-
-#3
+        <property name="toolTip">
+         <string>If set default value is computed from model.</string>
+        </property>
+        <property name="text">
+         <string>Computed</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
        <widget class="QLineEdit" name="SP_ResolutionLength">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="geometry">
          <rect>
           <x>20</x>
@@ -506,9 +480,6 @@ Unused in collision resolution .
           <height>25</height>
          </rect>
         </property>
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
        </widget>
        <widget class="QLabel" name="LA_resolutionLength">
         <property name="geometry">
@@ -528,7 +499,7 @@ Default is computed from model.</string>
          <string>Distance threshold for two points distinct (--resolution_length)</string>
         </property>
        </widget>
-          <widget class="QCheckBox" name="CB_ComputedResolutionLength">
+       <widget class="QCheckBox" name="CB_ComputedResolutionLength">
         <property name="geometry">
          <rect>
           <x>650</x>
@@ -537,17 +508,16 @@ Default is computed from model.</string>
           <height>30</height>
          </rect>
         </property>
-           <property name="toolTip">
-            <string>If set default value is computed from model.</string>
-           </property>
-           <property name="text">
-            <string>Computed</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-#4
+        <property name="toolTip">
+         <string>If set default value is computed from model.</string>
+        </property>
+        <property name="text">
+         <string>Computed</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
        <widget class="QDoubleSpinBox" name="SP_FoldingAngle">
         <property name="geometry">
          <rect>
@@ -557,17 +527,17 @@ Default is computed from model.</string>
           <height>25</height>
          </rect>
         </property>
-        <property name="maximum">
-         <double>90</double>
-        </property>
         <property name="minimum">
-         <double>0</double>
+         <double>0.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>90.000000000000000</double>
         </property>
         <property name="singleStep">
-         <double>1</double>
+         <double>1.000000000000000</double>
         </property>
         <property name="value">
-         <double>15</double>
+         <double>15.000000000000000</double>
         </property>
        </widget>
        <widget class="QLabel" name="LA_foldingAngle">
@@ -589,8 +559,10 @@ Default is 15 degrees.</string>
          <string>Angle threshold for two connected triangles overlapping (--folding_angle)</string>
         </property>
        </widget>
-#5
        <widget class="QLineEdit" name="SP_OverlapDistance">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="geometry">
          <rect>
           <x>20</x>
@@ -599,9 +571,6 @@ Default is 15 degrees.</string>
           <height>25</height>
          </rect>
         </property>
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
        </widget>
        <widget class="QLabel" name="LA_overlapDistance">
         <property name="geometry">
@@ -622,7 +591,7 @@ Default is computed from model.</string>
 (--overlap_distance)</string>
         </property>
        </widget>
-          <widget class="QCheckBox" name="CB_ComputedOverlapDistance">
+       <widget class="QCheckBox" name="CB_ComputedOverlapDistance">
         <property name="geometry">
          <rect>
           <x>650</x>
@@ -631,17 +600,16 @@ Default is computed from model.</string>
           <height>30</height>
          </rect>
         </property>
-           <property name="toolTip">
-            <string>If set default value is computed from model.</string>
-           </property>
-           <property name="text">
-            <string>Computed</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-#6
+        <property name="toolTip">
+         <string>If set default value is computed from model.</string>
+        </property>
+        <property name="text">
+         <string>Computed</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
        <widget class="QDoubleSpinBox" name="SP_OverlapAngle">
         <property name="geometry">
          <rect>
@@ -651,17 +619,17 @@ Default is computed from model.</string>
           <height>25</height>
          </rect>
         </property>
-        <property name="maximum">
-         <double>90</double>
-        </property>
         <property name="minimum">
-         <double>0</double>
+         <double>0.000000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>90.000000000000000</double>
         </property>
         <property name="singleStep">
-         <double>1</double>
+         <double>1.000000000000000</double>
         </property>
         <property name="value">
-         <double>15</double>
+         <double>15.000000000000000</double>
         </property>
        </widget>
        <widget class="QLabel" name="LA_overlapAngle">
@@ -700,8 +668,7 @@ Default is 15 degrees.</string>
        <property name="title">
         <string>MGCleaner Generic Options</string>
        </property>
-       
-          <widget class="QSpinBox" name="SP_Verbosity">
+       <widget class="QSpinBox" name="SP_Verbosity">
         <property name="geometry">
          <rect>
           <x>20</x>
@@ -710,15 +677,14 @@ Default is 15 degrees.</string>
           <height>25</height>
          </rect>
         </property>
-           <property name="maximum">
-            <number>10</number>
-           </property>
-           <property name="value">
-            <number>3</number>
-           </property>
-          </widget>
-       
-          <widget class="QLabel" name="label">
+        <property name="maximum">
+         <number>10</number>
+        </property>
+        <property name="value">
+         <number>3</number>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label">
         <property name="geometry">
          <rect>
           <x>130</x>
@@ -732,12 +698,10 @@ Default is 15 degrees.</string>
 From 0 (no detail) to 10 (very detailed).
 Default is 3.</string>
         </property>
-           <property name="text">
-            <string>Verbosity level</string>
-           </property>
-          </widget>
-       
-       
+        <property name="text">
+         <string>Verbosity level</string>
+        </property>
+       </widget>
       </widget>
       <widget class="QGroupBox" name="groupBox_6">
        <property name="geometry">
@@ -787,8 +751,7 @@ Default is 3.</string>
          </rect>
         </property>
        </widget>
-
-      <widget class="QPushButton" name="PB_Save">
+       <widget class="QPushButton" name="PB_Save">
         <property name="geometry">
          <rect>
           <x>20</x>
@@ -797,18 +760,17 @@ Default is 3.</string>
           <height>31</height>
          </rect>
         </property>
-       <property name="text">
-        <string>Save</string>
-       </property>
+        <property name="text">
+         <string>Save</string>
+        </property>
         <property name="iconSize">
          <size>
           <width>18</width>
           <height>18</height>
          </size>
         </property>
-      </widget>
-
-      <widget class="QPushButton" name="PB_Load">
+       </widget>
+       <widget class="QPushButton" name="PB_Load">
         <property name="geometry">
          <rect>
           <x>120</x>
@@ -817,17 +779,16 @@ Default is 3.</string>
           <height>31</height>
          </rect>
         </property>
-       <property name="text">
-        <string>Load</string>
-       </property>
+        <property name="text">
+         <string>Load</string>
+        </property>
         <property name="iconSize">
          <size>
           <width>18</width>
           <height>18</height>
          </size>
         </property>
-      </widget>
-
+       </widget>
       </widget>
      </widget>
     </widget>

@@ -28,6 +28,10 @@
         <translation>Fichiers TXT</translation>
     </message>
     <message>
+        <source>MED_VX_FILES_FILTER</source>
+        <translation>fichiers MED %1</translation>
+    </message>
+    <message>
         <source>STL_FILES_FILTER</source>
         <translation>Fichiers STL</translation>
     </message>
@@ -102,6 +106,10 @@
     <message>
         <source>MIN_DIAG_ELEMENTS</source>
         <translation>Diagonale minimum</translation>
+    </message>
+    <message>
+        <source>MIN_ELEM_EDGE</source>
+        <translation>Longueur arête Minimum</translation>
     </message>
     <message>
         <source>ASPECTRATIO_3D_ELEMENTS</source>
@@ -225,6 +233,10 @@
         <translation>Longueur 2D</translation>
     </message>
     <message>
+        <source>DEFLECTION2D_FACES</source>
+        <translation>Deflection 2D</translation>
+    </message>
+    <message>
         <source>LENGTH_EDGES</source>
         <translation>Longueur</translation>
     </message>
@@ -238,7 +250,11 @@
     </message>
     <message>
         <source>MAX_ELEMENT_LENGTH_3D</source>
-        <translation>Diamètre d&apos;éléments 3D</translation>
+        <translation>Diamètre Element 3D</translation>
+    </message>
+    <message>
+        <source>DEFLECTION_2D</source>
+        <translation>Deflection 2D</translation>
     </message>
     <message>
         <source>MEN_ADD</source>
@@ -693,6 +709,10 @@
         <translation>Longueur 2D</translation>
     </message>
     <message>
+        <source>MEN_DEFLECTION_2D</source>
+        <translation>Deflection 2D</translation>
+    </message>
+    <message>
         <source>MEN_MAP</source>
         <translation>Projection de motif</translation>
     </message>
@@ -1074,7 +1094,11 @@
     </message>
     <message>
         <source>MEN_SCALE</source>
-        <translation>Transformation d&apos;échelle</translation>
+        <translation>Changement d'échelle</translation>
+    </message>
+    <message>
+        <source>MEN_OFFSET</source>
+        <translation>Offset</translation>
     </message>
     <message>
         <source>MEN_DUPLICATE_NODES</source>
@@ -1913,6 +1937,14 @@ les données exportées ?</translation>
     <message>
         <source>SMESH_HYPOTHESES</source>
         <translation>Hypothèses</translation>
+    </message>
+    <message>
+        <source>SMESH_HYPOTHESIS</source>
+        <translation>Hypothese</translation>
+    </message>
+    <message>
+        <source>SMESH_ALGORITHM</source>
+        <translation>Algorithme</translation>
     </message>
     <message>
         <source>SMESH_HYP_1</source>
@@ -3273,6 +3305,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Longueur 2D</translation>
     </message>
     <message>
+        <source>STB_DEFLECTION_2D</source>
+        <translation>Deflection 2D</translation>
+    </message>
+    <message>
         <source>STB_MAP</source>
         <translation>Projection de motif</translation>
     </message>
@@ -3526,7 +3562,11 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     </message>
     <message>
         <source>STB_SCALE</source>
-        <translation>Mise à l&apos;échelle</translation>
+        <translation>Mise à l'échelle</translation>
+    </message>
+    <message>
+        <source>STB_OFFSET</source>
+        <translation>Décalage</translation>
     </message>
     <message>
         <source>STB_DUPLICATE_NODES</source>
@@ -3953,6 +3993,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Longueur 2D</translation>
     </message>
     <message>
+        <source>TOP_DEFLECTION_2D</source>
+        <translation>Deflection 2D</translation>
+    </message>
+    <message>
         <source>TOP_MAP</source>
         <translation>Projection de motif</translation>
     </message>
@@ -4202,7 +4246,11 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     </message>
     <message>
         <source>TOP_SCALE</source>
-        <translation>Mise à l&apos;échelle</translation>
+        <translation>Mise à l'échelle</translation>
+    </message>
+    <message>
+        <source>TOP_OFFSET</source>
+        <translation>Offset</translation>
     </message>
     <message>
         <source>TOP_DUPLICATE_NODES</source>
@@ -4477,6 +4525,21 @@ Il ne peut pas être supprimé.</translation>
     <message>
         <source>FIELDS_TO_EXPORT</source>
         <translation>Exporter les champs</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_OffsetDlg</name>
+    <message>
+        <source>SMESH_OFFSET_TITLE</source>
+        <translation>Offset</translation>
+    </message>
+    <message>
+        <source>SMESH_OFFSET</source>
+        <translation>Offset</translation>
+    </message>
+    <message>
+        <source>OFFSET_VALUE</source>
+        <translation>Offset Value</translation>
     </message>
 </context>
 <context>
@@ -5870,6 +5933,10 @@ Entrez une valeur correcte et essayez de nouveau</translation>
         <translation>Longueur 2D</translation>
     </message>
     <message>
+        <source>DEFLECTION2D</source>
+        <translation>Deflection 2D</translation>
+    </message>
+    <message>
         <source>LESS_THAN</source>
         <translation>Inférieur à ...</translation>
     </message>
@@ -7210,7 +7277,11 @@ Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
         <source>ON_ALL_BOUNDARIES</source>
-        <translation>Sur toutes les frontières</translation>
+        <translation>sur toutes les frontières</translation>
+    </message>
+    <message>
+        <source>GENERATE_GROUPS</source>
+        <translation>Génerer</translation>
     </message>
 </context>
 <context>
@@ -8008,7 +8079,30 @@ en raison de leurs types incompatibles:
     </message>
     <message>
         <source>NEW_NAME</source>
-        <translation>Nom du nouveau maillage</translation>
+        <translation>New Mesh Name</translation>
+    </message>
+    <message>
+        <source>NEW_GEOM</source>
+        <translation>New Geometry</translation>
+    </message>
+    <message>
+        <source>REUSE_HYPOTHESES</source>
+        <translation>Reuse Hypotheses</translation>
+    </message>
+    <message>
+        <source>COPY_ELEMENTS</source>
+        <translation>Copy Mesh Elements</translation>
+    </message>
+    <message>
+        <source>OPERATION_FAILED</source>
+        <translation>Not all mesh sub-objects have been copied</translation>
+    </message>
+    <message>
+        <source>SUBSHAPES_NOT_FOUND_MSG</source>
+        <translation>
+Some sub-shapes not found in the new geometry. They are listed 
+below along with dependent mesh objects that are marked with
+with red in the Object Browser.</translation>
     </message>
 </context>
 <context>

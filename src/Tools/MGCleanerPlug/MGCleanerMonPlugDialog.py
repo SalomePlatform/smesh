@@ -339,12 +339,9 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
   def getResumeData(self, separator="\n"):
     text=""
     if self.RB_Fix1.isChecked():
-      CheckOrFix="fix1pass"
+      CheckOrFix="mode_fix"
     else:
-      if self.RB_Fix2.isChecked():
-        CheckOrFix="fix2pass"
-      else:
-        CheckOrFix="check"
+      CheckOrFix="mode_check"
     text+="CheckOrFix="+CheckOrFix+separator
     text+="PreserveTopology="+str(self.CB_PreserveTopology.isChecked())+separator
     text+="FillHoles="+str(self.CB_FillHoles.isChecked())+separator
@@ -377,11 +374,9 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
         tit,value=lig.split("=")
         if tit=="CheckOrFix":
           self.RB_Fix1.setChecked(False)
-          self.RB_Fix2.setChecked(False)
           self.RB_Check.setChecked(False)
-          if value=="fix1pass": self.RB_Fix1.setChecked(True)
-          if value=="fix2pass": self.RB_Fix2.setChecked(True)
-          if value=="check": self.RB_Check.setChecked(True)
+          if value=="mode_fix": self.RB_Fix1.setChecked(True)
+          if value=="mode_check": self.RB_Check.setChecked(True)
         if tit=="PreserveTopology": self.CB_PreserveTopology.setChecked(value=="True")
         if tit=="FillHoles": self.CB_FillHoles.setChecked(value=="True")
         if tit=="MinHoleSize": self.SP_MinHoleSize.setProperty("text", value)
@@ -563,12 +558,9 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     self.fichierOut=deb[0] + "_fix.mesh"
     self.commande+=" --out "+self.fichierOut
     if self.RB_Fix1.isChecked():
-      self.commande+=" --fix1pass"
+      self.commande+=" --mode fix"
     else:
-      if self.RB_Fix2.isChecked():
-        self.commande+=" --fix2pass"
-      else:
-        self.commande+=" --check"
+      self.commande+=" --mode check"
     if self.CB_PreserveTopology.isChecked():
       self.commande+=" --topology respect"
     else:
@@ -590,8 +582,7 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
 
   def clean(self):
     self.RB_Check.setChecked(False)
-    self.RB_Fix1.setChecked(False)
-    self.RB_Fix2.setChecked(True)
+    self.RB_Fix1.setChecked(True)
     self.CB_PreserveTopology.setChecked(False)
     self.CB_FillHoles.setChecked(False)
     self.CB_RemeshPlanes.setChecked(False)

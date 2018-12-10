@@ -522,7 +522,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
       self.commande+= " -O G"  # This option has not been updated to the new option style yet
 
     deb=os.path.splitext(self.fichierIn)
-    self.fichierOut=deb[0] + "_output.mesh"
+    self.fichierOut=deb[0].decode() + "_output.mesh"
     
     tolerance=self.SP_toStr(self.SP_Tolerance)
     if not self.RB_Absolute.isChecked():
@@ -540,7 +540,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     if self.SP_Memory.value()       != 0     : self.commande+=" --max_memory %d" %self.SP_Memory.value()
     if self.SP_Verbosity.value()    != 3     : self.commande+=" --verbose %d" %self.SP_Verbosity.value()
 
-    self.commande+=" --in "  + self.fichierIn
+    self.commande+=" --in "  + self.fichierIn.decode()
     self.commande+=" --out " + self.fichierOut
     
     print(self.commande)
