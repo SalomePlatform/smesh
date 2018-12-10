@@ -77,6 +77,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_octahedron.png
   mesh_orientation.png
   mesh.png
+  mesh_plugins_meshcut.png
   mesh_polygon.png
   mesh_polyhedron.png
   mesh_pyramid_n.png

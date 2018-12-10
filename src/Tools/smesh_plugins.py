@@ -21,6 +21,7 @@
 #
 import salome_pluginsmanager
 import os
+from qtsalome import QIcon
 
 try:
   from spadderPlugin import runSpadderPlugin
@@ -33,9 +34,10 @@ except Exception as e:
 
 try:
   from meshcut_plugin import MeshCut
+  icon_file = os.path.join(os.getenv('SMESH_ROOT_DIR'),'share', 'salome', 'resources', 'smesh', 'mesh_plugins_meshcut.png')
   salome_pluginsmanager.AddFunction('MeshCut',
                                     'Cut a tetrahedron mesh by a plane',
-                                    MeshCut)
+                                    MeshCut, icon=QIcon(icon_file))
 
 except Exception as e:
   salome_pluginsmanager.logger.info('ERROR: MeshCut plug-in is unavailable: {}'.format(e))
