@@ -550,6 +550,7 @@ void SMESHGUI_MeshPatternDlg::onOk()
 void SMESHGUI_MeshPatternDlg::reject()
 {
   mySelectionMgr->clearFilters();
+  mySelInput = Mesh;
   SMESH::SetPickable();
   if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
     aViewWindow->SetSelectionMode(ActorSelection);
