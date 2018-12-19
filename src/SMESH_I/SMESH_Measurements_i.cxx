@@ -38,6 +38,7 @@
 #include "SMESH_MeshAlgos.hxx"
 #include "SMESH_PythonDump.hxx"
 
+#include <cmath>
 
 using namespace SMESH;
 
@@ -368,7 +369,7 @@ CORBA::Double Measurements_i::Angle(const SMESH::PointStruct& p1,
   catch(...)
   {
   }
-  if ( isnan( angle ))
+  if ( std::isnan( angle ))
     angle = -1;
 
   return angle;
