@@ -1653,95 +1653,7 @@ void SMESH_ActorDef::SetEntityMode(unsigned int theMode)
     myEntityMode = theMode; // entities to show
 
     // Set cell types to extract
-
-    VTKViewer_ExtractUnstructuredGrid*    aFilter = myBaseActor->GetExtractUnstructuredGrid();
-    VTKViewer_ExtractUnstructuredGrid* aHltFilter = myHighlitableActor->GetExtractUnstructuredGrid();
-    aFilter->ClearRegisteredCellsWithType();
-    aHltFilter->ClearRegisteredCellsWithType();
-
-    bool isPassAll = ( myEntityMode == anObjectEntities && myEntityMode );
-    if ( isPassAll )
-    {
-      aFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::ePassAll);
-      aHltFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::ePassAll);
-    }
-    else
-    {
-      aFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
-      aHltFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
-
-      if (myEntityMode & e0DElements) {
-        aFilter->RegisterCellsWithType(VTK_VERTEX);
-        aHltFilter->RegisterCellsWithType(VTK_VERTEX);
-      }
-
-      if (myEntityMode & eBallElem) {
-        aFilter->RegisterCellsWithType(VTK_POLY_VERTEX);
-      }
-
-      if (myEntityMode & eEdges) {
-        aFilter->RegisterCellsWithType(VTK_LINE);
-        aFilter->RegisterCellsWithType(VTK_QUADRATIC_EDGE);
-
-        aHltFilter->RegisterCellsWithType(VTK_LINE);
-        aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_EDGE);
-      }
-
-      if (myEntityMode & eFaces) {
-        aFilter->RegisterCellsWithType(VTK_TRIANGLE);
-        aFilter->RegisterCellsWithType(VTK_QUAD);
-        aFilter->RegisterCellsWithType(VTK_POLYGON);
-        aFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
-        aFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
-        aFilter->RegisterCellsWithType(VTK_QUADRATIC_POLYGON);
-        aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUAD);
-        aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_TRIANGLE);
-
-        aHltFilter->RegisterCellsWithType(VTK_TRIANGLE);
-        aHltFilter->RegisterCellsWithType(VTK_QUAD);
-        aHltFilter->RegisterCellsWithType(VTK_POLYGON);
-        aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
-        aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
-        aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_POLYGON);
-        aHltFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUAD);
-        aHltFilter->RegisterCellsWithType(VTK_BIQUADRATIC_TRIANGLE);
-      }
-
-      if (myEntityMode & eVolumes) {
-        aFilter->RegisterCellsWithType(VTK_TETRA);
-        aFilter->RegisterCellsWithType(VTK_VOXEL);
-        aFilter->RegisterCellsWithType(VTK_HEXAHEDRON);
-        aFilter->RegisterCellsWithType(VTK_WEDGE);
-        aFilter->RegisterCellsWithType(VTK_PYRAMID);
-        aFilter->RegisterCellsWithType(VTK_HEXAGONAL_PRISM);
-        aFilter->RegisterCellsWithType(VTK_QUADRATIC_TETRA);
-        aFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
-        aFilter->RegisterCellsWithType(VTK_TRIQUADRATIC_HEXAHEDRON);
-        aFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
-        aFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
-        aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUADRATIC_WEDGE);
-        aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
-        aFilter->RegisterCellsWithType(VTK_POLYHEDRON);
-
-        aHltFilter->RegisterCellsWithType(VTK_TETRA);
-        aHltFilter->RegisterCellsWithType(VTK_VOXEL);
-        aHltFilter->RegisterCellsWithType(VTK_HEXAHEDRON);
-        aHltFilter->RegisterCellsWithType(VTK_WEDGE);
-        aHltFilter->RegisterCellsWithType(VTK_PYRAMID);
-        aHltFilter->RegisterCellsWithType(VTK_HEXAGONAL_PRISM);
-        aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_TETRA);
-        aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
-        aHltFilter->RegisterCellsWithType(VTK_TRIQUADRATIC_HEXAHEDRON);
-        aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
-        aHltFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUADRATIC_WEDGE);
-        aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
-        aHltFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
-        aHltFilter->RegisterCellsWithType(VTK_POLYHEDRON);
-      }
-    }
-    if ( GetVisibility() )
-      aFilter->Update();
-    if (MYDEBUG) MESSAGE(aFilter->GetOutput()->GetNumberOfCells());
+    UpdateFilter();
   }
 
   SetVisibility( GetVisibility(), myRepresentationCache != 0 );
@@ -2627,6 +2539,115 @@ void SMESH_ActorDef::SetMarkerTexture( int theMarkerId, VTK::MarkerTexture theMa
   myNodeActor->SetMarkerTexture( theMarkerId, theMarkerTexture );
   myNodeExtActor->SetMarkerTexture( theMarkerId, theMarkerTexture );
   myMarkerTexture = theMarkerTexture; // for deferred update of myHighlightActor
+}
+
+void SMESH_ActorDef::UpdateFilter()
+{
+  unsigned int anObjectEntities = eAllEntity; // entities present in my object
+
+  if(!myVisualObj->GetNbEntities(SMDSAbs_0DElement)) {
+    anObjectEntities &= ~e0DElements;
+  }
+
+  if(!myVisualObj->GetNbEntities(SMDSAbs_Ball)) {
+    anObjectEntities &= ~eBallElem;
+  }
+
+  if(!myVisualObj->GetNbEntities(SMDSAbs_Edge)) {
+    anObjectEntities &= ~eEdges;
+  }
+
+  if(!myVisualObj->GetNbEntities(SMDSAbs_Face)) {
+    anObjectEntities &= ~eFaces;
+  }
+
+  if(!myVisualObj->GetNbEntities(SMDSAbs_Volume)) {
+    anObjectEntities &= ~eVolumes;
+  }
+
+  VTKViewer_ExtractUnstructuredGrid*    aFilter = myBaseActor->GetExtractUnstructuredGrid();
+  VTKViewer_ExtractUnstructuredGrid* aHltFilter = myHighlitableActor->GetExtractUnstructuredGrid();
+  aFilter->ClearRegisteredCellsWithType();
+  aHltFilter->ClearRegisteredCellsWithType();
+
+  bool isPassAll = ( myEntityMode == anObjectEntities && myEntityMode );
+  if ( isPassAll )
+  {
+    aFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::ePassAll);
+    aHltFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::ePassAll);
+  }
+  else
+  {
+    aFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
+    aHltFilter->SetModeOfChanging(VTKViewer_ExtractUnstructuredGrid::eAdding);
+    if (myEntityMode & e0DElements) {
+      aFilter->RegisterCellsWithType(VTK_VERTEX);
+      aHltFilter->RegisterCellsWithType(VTK_VERTEX);
+    }
+
+    if (myEntityMode & eBallElem) {
+      aFilter->RegisterCellsWithType(VTK_POLY_VERTEX);
+    }
+    if (myEntityMode & eEdges) {
+      aFilter->RegisterCellsWithType(VTK_LINE);
+      aFilter->RegisterCellsWithType(VTK_QUADRATIC_EDGE);
+      aHltFilter->RegisterCellsWithType(VTK_LINE);
+      aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_EDGE);
+    }
+
+    if (myEntityMode & eFaces) {
+      aFilter->RegisterCellsWithType(VTK_TRIANGLE);
+      aFilter->RegisterCellsWithType(VTK_QUAD);
+      aFilter->RegisterCellsWithType(VTK_POLYGON);
+      aFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
+      aFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
+      aFilter->RegisterCellsWithType(VTK_QUADRATIC_POLYGON);
+      aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUAD);
+      aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_TRIANGLE);
+      aHltFilter->RegisterCellsWithType(VTK_TRIANGLE);
+      aHltFilter->RegisterCellsWithType(VTK_QUAD);
+      aHltFilter->RegisterCellsWithType(VTK_POLYGON);
+      aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_TRIANGLE);
+      aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_QUAD);
+      aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_POLYGON);
+      aHltFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUAD);
+      aHltFilter->RegisterCellsWithType(VTK_BIQUADRATIC_TRIANGLE);
+    }
+
+    if (myEntityMode & eVolumes) {
+      aFilter->RegisterCellsWithType(VTK_TETRA);
+      aFilter->RegisterCellsWithType(VTK_VOXEL);
+      aFilter->RegisterCellsWithType(VTK_HEXAHEDRON);
+      aFilter->RegisterCellsWithType(VTK_WEDGE);
+      aFilter->RegisterCellsWithType(VTK_PYRAMID);
+      aFilter->RegisterCellsWithType(VTK_HEXAGONAL_PRISM);
+      aFilter->RegisterCellsWithType(VTK_QUADRATIC_TETRA);
+      aFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
+      aFilter->RegisterCellsWithType(VTK_TRIQUADRATIC_HEXAHEDRON);
+      aFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
+      aFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
+      aFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUADRATIC_WEDGE);
+      aFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
+      aFilter->RegisterCellsWithType(VTK_POLYHEDRON);
+      aHltFilter->RegisterCellsWithType(VTK_TETRA);
+      aHltFilter->RegisterCellsWithType(VTK_VOXEL);
+      aHltFilter->RegisterCellsWithType(VTK_HEXAHEDRON);
+      aHltFilter->RegisterCellsWithType(VTK_WEDGE);
+      aHltFilter->RegisterCellsWithType(VTK_PYRAMID);
+      aHltFilter->RegisterCellsWithType(VTK_HEXAGONAL_PRISM);
+      aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_TETRA);
+      aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_HEXAHEDRON);
+      aHltFilter->RegisterCellsWithType(VTK_TRIQUADRATIC_HEXAHEDRON);
+      aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_WEDGE);
+      aHltFilter->RegisterCellsWithType(VTK_BIQUADRATIC_QUADRATIC_WEDGE);
+      aHltFilter->RegisterCellsWithType(VTK_QUADRATIC_PYRAMID);
+      aHltFilter->RegisterCellsWithType(VTK_CONVEX_POINT_SET);
+      aHltFilter->RegisterCellsWithType(VTK_POLYHEDRON);
+    }
+  }
+  if ( GetVisibility() )
+    aFilter->Update();
+  if (MYDEBUG) MESSAGE(aFilter->GetOutput()->GetNumberOfCells());
 }
 
 #ifndef DISABLE_PLOT2DVIEWER

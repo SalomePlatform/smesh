@@ -174,6 +174,8 @@ class SMESHOBJECT_EXPORT SMESH_Actor: public SALOME_Actor
                                        bool bold, bool italic, bool shadow,
                                        double r, double g, double b ) = 0;
 
+  virtual void UpdateFilter() = 0;
+
 #ifndef DISABLE_PLOT2DVIEWER
   virtual SPlot2d_Histogram* GetPlot2Histogram() = 0;
   virtual SPlot2d_Histogram* UpdatePlot2Histogram() = 0;

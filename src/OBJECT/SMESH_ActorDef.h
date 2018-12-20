@@ -239,6 +239,8 @@ class SMESH_ActorDef : public SMESH_Actor
   virtual void SetMarkerStd( VTK::MarkerType, VTK::MarkerScale );
   virtual void SetMarkerTexture( int, VTK::MarkerTexture );
 
+  virtual void UpdateFilter();
+
  protected:
   void SetControlMode(eControl theMode, bool theCheckEntityMode);
   void SetImplicitFunctionUsed(bool theIsImplicitFunctionUsed);
