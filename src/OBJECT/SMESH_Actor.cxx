@@ -732,6 +732,7 @@ void SMESH_ActorDef::SetCellsLabeled(bool theIsCellsLabeled)
   if(myBallActor)
     myBallActor->SetCellsLabeled(theIsCellsLabeled);
 
+  SetRepresentation(GetRepresentation());
   myTimeStamp->Modified();
 }
 
