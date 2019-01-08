@@ -120,11 +120,12 @@ class MGCleanerMonViewText(Ui_ViewExe, QDialog):
 
     def readFromStdErr(self):
         a=self.monExe.readAllStandardError()
-        self.TB_Exe.append(str(a.data()))
+        aa=a.data().decode(errors='ignore')
+        self.TB_Exe.append(aa)
 
     def readFromStdOut(self) :
         a=self.monExe.readAllStandardOutput()
-        aa=str(a.data())
+        aa=a.data().decode(errors='ignore')
         self.TB_Exe.append(aa)
     
     def finished(self):
