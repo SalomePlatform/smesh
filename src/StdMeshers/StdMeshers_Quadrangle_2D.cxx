@@ -965,8 +965,7 @@ bool StdMeshers_Quadrangle_2D::Evaluate(SMESH_Mesh&         aMesh,
   //int nbFaces4 = (nbhoriz-1-kdh)*(nbvertic-1-kdv);
   int nbFaces4 = (nbhoriz-1)*(nbvertic-1);
 
-  std::vector<int> aVec(SMDSEntity_Last);
-  for (int i=SMDSEntity_Node; i<SMDSEntity_Last; i++) aVec[i] = 0;
+  std::vector<int> aVec(SMDSEntity_Last,0);
   if (IsQuadratic) {
     aVec[SMDSEntity_Quad_Triangle] = nbFaces3;
     aVec[SMDSEntity_Quad_Quadrangle] = nbFaces4;
@@ -1718,6 +1717,8 @@ bool StdMeshers_Quadrangle_2D::checkNbEdgesForEvaluate(SMESH_Mesh&          aMes
         }
       }
       list<TopoDS_Edge>::iterator ite = sideEdges.begin();
+      if ( nbSides >= (int)aNbNodes.size() )
+        return false;
       aNbNodes[nbSides] = 1;
       for (; ite!=sideEdges.end(); ite++) {
         SMESH_subMesh * sm = aMesh.GetSubMesh(*ite);
