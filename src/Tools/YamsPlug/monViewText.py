@@ -94,16 +94,16 @@ class MonViewText(Ui_ViewExe, QDialog):
     def saveFile(self):
         #recuperation du nom du fichier
         savedir=os.environ['HOME']
-        fn = QFileDialog.getSaveFileName(None,"Save File",savedir)
-        if fn.isNull() : return
+        fn, mask = QFileDialog.getSaveFileName(None,"Save File",savedir)
+        if not fn: return
         ulfile = os.path.abspath(str(fn))
         try:
             f = open(fn, 'wb')
-            f.write(str(self.TB_Exe.toPlainText()))
+            f.write(self.TB_Exe.toPlainText().encode("utf-8"))
             f.close()
         except IOError as why:
             QMessageBox.critical(self, 'Save File',
-                 'The file <b>%1</b> could not be saved.<br>Reason: %2'%(str(fn), str(why)))
+                 'The file <b>%s</b> could not be saved.<br>Reason: %s'%(str(fn), str(why)))
 
     def readFromStdErr(self):
         a=self.monExe.readAllStandardError()

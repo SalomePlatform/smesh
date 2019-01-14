@@ -413,16 +413,17 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     if fd.exec_():
       infile = fd.selectedFiles()[0]
       self.LE_MeshFile.setText(infile)
-      self.fichierIn=str(infile).encode("latin-1")
+      self.fichierIn=str(infile)
       self.MeshIn=""
       self.LE_MeshSmesh.setText("")
+      self.__selectedMesh=None
 
   def setParamsFileName(self):
     fd = QFileDialog(self, "select a file", self.LE_ParamsFile.text(), "dat Files (*.dat);;All Files (*)")
     if fd.exec_():
       infile = fd.selectedFiles()[0]
       self.LE_ParamsFile.setText(infile)
-      self.paramsFile=str(infile).encode("latin-1")
+      self.paramsFile=str(infile)
 
   def meshFileNameChanged(self):
     self.fichierIn=str(self.LE_MeshFile.text())
@@ -504,7 +505,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
       except:
         pass
       
-    style = str(self.style).encode("latin-1")
+    style = str(self.style)
     # Translation of old Yams options to new MG-SurfOpt options
     if   style == "0" :
       self.commande+= " --optimisation only"
