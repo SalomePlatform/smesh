@@ -449,16 +449,17 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     if fd.exec_():
       infile = fd.selectedFiles()[0]
       self.LE_MeshFile.setText(infile)
-      self.fichierIn=str(infile).encode("latin-1")
+      self.fichierIn=str(infile)
       self.MeshIn=""
       self.LE_MeshSmesh.setText("")
+      self.__selectedMesh=None
 
   def setParamsFileName(self):
     fd = QFileDialog(self, "select a file", self.LE_ParamsFile.text(), "dat Files (*.dat);;All Files (*)")
     if fd.exec_():
       infile = fd.selectedFiles()[0]
       self.LE_ParamsFile.setText(infile)
-      self.paramsFile=str(infile).encode("latin-1")
+      self.paramsFile=str(infile)
 
   def meshFileNameChanged(self):
     self.fichierIn=str(self.LE_MeshFile.text())
