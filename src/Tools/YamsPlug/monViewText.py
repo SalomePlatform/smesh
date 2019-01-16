@@ -55,33 +55,10 @@ class MonViewText(Ui_ViewExe, QDialog):
         self.monExe.readyReadStandardError.connect( self.readFromStdErr )
         self.monExe.finished.connect( self.finished )
 
-        cmds = ''
-        ext = ''
-        if sys.platform == "win32":
-            if os.path.exists(self.parent().fichierOut):
-                cmds += 'del %s\n' % self.parent().fichierOut
-            ext = '.bat'
-        else:
-            cmds += '#!/bin/bash\n'
-            cmds += 'pwd\n'
-            #cmds += 'which mg-surfopt.exe\n'
-            cmds += 'echo "DISTENE_LICENSE_FILE="$DISTENE_LICENSE_FILE\n'
-            cmds += 'echo "DLIM8VAR="$DLIM8VAR\n'
-            cmds += 'rm -f %s\n' % self.parent().fichierOut
-            ext = '.bash'
+        if os.path.exists(self.parent().fichierOut):
+            os.remove(self.parent().fichierOut)
 
-        cmds += 'echo %s\n' % txt #to see what is compute command
-        cmds += txt+'\n'
-        cmds += 'echo "END_OF_MGSurfOpt"\n'
-
-        nomFichier = os.path.splitext(self.parent().fichierOut)[0] + ext
-        with open(nomFichier, 'w') as f:
-            f.write(cmds)
-        self.make_executable(nomFichier)
-
-        if verbose: print(("INFO: MGSurfOpt launch script file: %s" % nomFichier))
-
-        self.monExe.start(nomFichier)
+        self.monExe.start(txt)
         self.monExe.closeWriteChannel()
         self.enregistreResultatsDone=False
         self.show()
