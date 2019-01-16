@@ -67,33 +67,10 @@ class MGCleanerMonViewText(Ui_ViewExe, QDialog):
           PP.pprint([str(i) for i in sorted(self.monExe.processEnvironment().toStringList()) if 'DISTENE' in i])
         """
         
-        cmds = ''
-        ext = ''
-        if sys.platform == "win32":
-            if os.path.exists(self.parent().fichierOut):
-                cmds += 'del %s\n' % self.parent().fichierOut
-            ext = '.bat'
-        else:
-            cmds += '#!/bin/bash\n'
-            cmds += 'pwd\n'
-            #cmds += 'which mg-cleaner.exe\n'
-            cmds += 'echo "DISTENE_LICENSE_FILE="$DISTENE_LICENSE_FILE\n'
-            cmds += 'echo "DLIM8VAR="$DLIM8VAR\n'
-            cmds += 'rm -f %s\n' % self.parent().fichierOut
-            ext = '.bash'
-
-        cmds += 'echo %s\n' % txt #to see what is compute command
-        cmds += txt+'\n'
-        cmds += 'echo "END_OF_MGCleaner"\n'
+        if os.path.exists(self.parent().fichierOut):
+            os.remove(self.parent().fichierOut)
         
-        nomFichier = os.path.splitext(self.parent().fichierOut)[0] + ext
-        with open(nomFichier, 'w') as f:
-          f.write(cmds)
-        self.make_executable(nomFichier)
-        
-        if verbose: print(("INFO: MGCleaner launch script file: %s" % nomFichier))
-        
-        self.monExe.start(nomFichier)
+        self.monExe.start(txt)
         self.monExe.closeWriteChannel()
         self.enregistreResultatsDone=False
         self.show()
