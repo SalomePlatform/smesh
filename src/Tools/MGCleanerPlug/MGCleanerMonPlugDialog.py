@@ -553,11 +553,10 @@ class MGCleanerMonPlugDialog(Ui_MGCleanerPlugDialog,QWidget):
     self.commande="mg-cleaner.exe"
     verbosity=str(self.SP_Verbosity.value())
     self.commande+=" --verbose " + verbosity
-    self.commande+=" --in " + self.fichierIn
-    #print "self.fichierIn",self.fichierIn,type(self.fichierIn)
+    self.commande+=' --in "' + self.fichierIn+'"'
     deb=os.path.splitext(str(self.fichierIn))
     self.fichierOut=deb[0] + "_fix.mesh"
-    self.commande+=" --out "+self.fichierOut
+    self.commande+=' --out "'+self.fichierOut+'"'
     if self.RB_Fix1.isChecked():
       self.commande+=" --mode fix"
     else:
