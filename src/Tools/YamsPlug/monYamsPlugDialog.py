@@ -541,8 +541,8 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     if self.SP_Memory.value()       != 0     : self.commande+=" --max_memory %d" %self.SP_Memory.value()
     if self.SP_Verbosity.value()    != 3     : self.commande+=" --verbose %d" %self.SP_Verbosity.value()
 
-    self.commande+=" --in "  + self.fichierIn
-    self.commande+=" --out " + self.fichierOut
+    self.commande+=' --in "'  + self.fichierIn +'"'
+    self.commande+=' --out "' + self.fichierOut +'"'
     
     print(self.commande)
     return True
