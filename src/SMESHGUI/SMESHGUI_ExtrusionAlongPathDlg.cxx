@@ -1056,7 +1056,7 @@ bool SMESHGUI_ExtrusionAlongPathDlg::isValuesValid()
   }
   else
   {
-    SMESH::long_array_var elems = mesh->GetNodeInverseElements( aNodeStart );
+    SMESH::long_array_var elems = mesh->GetNodeInverseElements( aNodeStart, SMESH::ALL );
     if ( elems->length() != 1 ||
          mesh->GetElementType( elems[0], true ) != SMESH::EDGE )
       return false;

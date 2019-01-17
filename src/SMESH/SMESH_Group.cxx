@@ -99,7 +99,7 @@ void SMESH_Group::SetName (const char* theName)
 
 //================================================================================
 /*!
- * \brief Return group ID. It is negative if no SMESHDS_GroupBase exist
+ * \brief Return persistent group ID. It is negative if no SMESHDS_GroupBase exist
  */
 //================================================================================
 

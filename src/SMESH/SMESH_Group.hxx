@@ -58,7 +58,7 @@ class SMESH_EXPORT  SMESH_Group
 
   SMESHDS_GroupBase * GetGroupDS () { return myGroupDS; }
 
-  int GetID() const;
+  int GetID() const; // persistent ID
 
  private:
   SMESH_Group (const SMESH_Group& theOther);
