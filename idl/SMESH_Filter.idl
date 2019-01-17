@@ -523,6 +523,7 @@ module SMESH
     void          SetMesh( in SMESH_Mesh theMesh );
 
     long_array    GetElementsId( in SMESH_Mesh theMesh );
+    long_array    GetElementsIdFromParts( in ListOfIDSources theParts );
     ElementType   GetElementType();
     Predicate     GetPredicate();
 

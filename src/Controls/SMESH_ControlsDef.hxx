@@ -1178,14 +1178,16 @@ namespace SMESH{
 
       virtual
       void
-      GetElementsId( const SMDS_Mesh* theMesh,
-                     TIdSequence& theSequence );
+      GetElementsId( const SMDS_Mesh*     theMesh,
+                     TIdSequence&         theSequence,
+                     SMDS_ElemIteratorPtr theElements=0);
 
       static
       void
-      GetElementsId( const SMDS_Mesh* theMesh,
-                     PredicatePtr thePredicate,
-                     TIdSequence& theSequence );
+      GetElementsId( const SMDS_Mesh*     theMesh,
+                     PredicatePtr         thePredicate,
+                     TIdSequence&         theSequence,
+                     SMDS_ElemIteratorPtr theElements=0 );
       
     protected:
       PredicatePtr myPredicate;

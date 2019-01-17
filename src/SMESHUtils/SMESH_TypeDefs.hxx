@@ -185,6 +185,21 @@ struct SMESH_TNodeXYZ : public gp_XYZ
 };
 typedef SMESH_TNodeXYZ SMESH_NodeXYZ;
 
+// --------------------------------------------------------------------------------
+// SMESH_Hasher provide methods needed to put mesh data to NCollection maps
+
+struct SMESH_Hasher
+{
+  static Standard_Integer HashCode(const SMDS_MeshElement* e, const Standard_Integer upper)
+  {
+    return ::HashCode( e->GetID(), upper );
+  }
+  static Standard_Boolean IsEqual( const SMDS_MeshElement* e1, const SMDS_MeshElement* e2 )
+  {
+    return ( e1 == e2 );
+  }
+};
+
 //--------------------------------------------------
 /*!
  * \brief Data of a node generated on FACE boundary

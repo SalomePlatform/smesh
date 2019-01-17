@@ -911,7 +911,7 @@ void StdMeshers_Import_1D::importMesh(const SMESH_Mesh*          srcMesh,
         int nb = 1;
         while ( !namesByType[ srcGroupDS->GetType() ].insert( name ).second )
           name = SMESH_Comment(srcGroup->GetName()) << "_imported_" << nb++;
-        SMESH_Group* newGroup = tgtMesh.AddGroup( srcGroupDS->GetType(), name.c_str(), nb );
+        SMESH_Group* newGroup = tgtMesh.AddGroup( srcGroupDS->GetType(), name.c_str() );
         SMESHDS_Group* newGroupDS = (SMESHDS_Group*)newGroup->GetGroupDS();
         resultGroups.push_back( newGroup );
 

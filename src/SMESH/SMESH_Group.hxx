@@ -58,6 +58,8 @@ class SMESH_EXPORT  SMESH_Group
 
   SMESHDS_GroupBase * GetGroupDS () { return myGroupDS; }
 
+  int GetID() const;
+
  private:
   SMESH_Group (const SMESH_Group& theOther);
   // prohibited copy constructor

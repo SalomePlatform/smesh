@@ -902,7 +902,7 @@ module SMESH
      * For given node returns list of IDs of inverse elements
      * If there is not node for given ID - returns empty list
      */
-    long_array GetNodeInverseElements(in long id);
+    long_array GetNodeInverseElements(in long id, in ElementType elemType);
 
     /*!
      * \brief Return position of a node on shape

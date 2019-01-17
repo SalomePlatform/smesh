@@ -312,7 +312,8 @@ module SMESH
       raises ( SALOME::SALOME_Exception );
 
     /*!
-     * Concatenate the given meshes or groups into one mesh.
+     * Concatenate the given meshes or groups into one mesh,
+     * optionally to theMeshToAppendTo.
      * Union groups with the same name and type if
      * theUniteIdenticalGroups flag is true.
      * Merge coincident nodes and elements if
@@ -321,11 +322,13 @@ module SMESH
     SMESH_Mesh Concatenate(in ListOfIDSources theMeshesArray,
                            in boolean         theUniteIdenticalGroups,
                            in boolean         theMergeNodesAndElements,
-                           in double          theMergeTolerance)
+                           in double          theMergeTolerance,
+                           in SMESH_Mesh      theMeshToAppendTo)
       raises ( SALOME::SALOME_Exception );
 
     /*!
-     * Concatenate the given meshes into one mesh.
+     * Concatenate the given meshes into one mesh,
+     * optionally to theMeshToAppendTo.
      * Union groups with the same name and type if
      * theUniteIdenticalGroups flag is true.
      * Merge coincident nodes and elements if
@@ -335,7 +338,8 @@ module SMESH
     SMESH_Mesh ConcatenateWithGroups(in ListOfIDSources theMeshesArray,
                                      in boolean         theUniteIdenticalGroups,
                                      in boolean         theMergeNodesAndElements,
-                                     in double          theMergeTolerance)
+                                     in double          theMergeTolerance,
+                                     in SMESH_Mesh      theMeshToAppendTo)
       raises ( SALOME::SALOME_Exception );
 
     /*!

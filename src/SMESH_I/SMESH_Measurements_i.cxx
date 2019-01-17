@@ -120,6 +120,33 @@ static bool getNodeNodeDistance (SMESH::Measure& theMeasure,
   return true;
 }
 
+static bool getNodeElemDistance (SMESH::Measure&        theMeasure,
+                                 const SMDS_MeshNode*   theNode,
+                                 SMESH_ElementSearcher* theElemSearcher)
+{
+  if ( !theNode || !theElemSearcher )
+    return false;
+
+  const SMDS_MeshElement* closestElement = 0;
+  gp_Pnt        point = SMESH_NodeXYZ( theNode );
+  gp_Pnt closestPoint = theElemSearcher->Project( point, SMDSAbs_All, &closestElement );
+
+  if ( closestElement )
+  {
+    theMeasure.value = point.Distance( closestPoint );
+    theMeasure.node1 = theNode->GetID();
+    theMeasure.elem2 = closestElement->GetID();
+    theMeasure.maxX  = closestPoint.X();
+    theMeasure.maxY  = closestPoint.Y();
+    theMeasure.maxZ  = closestPoint.Z();
+    theMeasure.minX  = closestPoint.X() - point.X();
+    theMeasure.minY  = closestPoint.Y() - point.Y();
+    theMeasure.minZ  = closestPoint.Z() - point.Z();
+  }
+
+  return closestElement;
+}
+
 static SMESHDS_Mesh* getMesh(SMESH::SMESH_IDSource_ptr theSource)
 {
   if (!CORBA::is_nil( theSource ))
@@ -183,7 +210,6 @@ SMESH::Measure Measurements_i::MinDistance
 
   SMESH::long_array_var aElementsId1 = theSource1->GetIDs();
   SMESH::long_array_var aElementsId2;
-  if ( !isOrigin ) aElementsId2 = theSource2->GetIDs();
 
   // compute distance between two entities
   /* NOTE: currently only node-to-node case is implemented
@@ -196,9 +222,24 @@ SMESH::Measure Measurements_i::MinDistance
     // node - node
     const SMESHDS_Mesh* aMesh1 = getMesh( theSource1 );
     const SMESHDS_Mesh* aMesh2 = isOrigin ? 0 : getMesh( theSource2 );
+    if ( !isOrigin ) aElementsId2 = theSource2->GetIDs();
     const SMDS_MeshNode* theNode1 = aMesh1 ? aMesh1->FindNode( aElementsId1[0] ) : 0;
     const SMDS_MeshNode* theNode2 = aMesh2 ? aMesh2->FindNode( aElementsId2[0] ) : 0;
     getNodeNodeDistance( aMeasure, theNode1, theNode2 );
+  }
+  if (isNode1 && !isNode2 && aElementsId1->length() == 1 )
+  {
+    // node - elements
+    SMESHDS_Mesh* aMesh1 = getMesh( theSource1 );
+    SMESHDS_Mesh* aMesh2 = getMesh( theSource2 );
+    if ( aMesh1 && aMesh2 )
+    {
+      const SMDS_MeshNode* aNode    = aMesh1->FindNode( aElementsId1[0] );
+      SMDS_ElemIteratorPtr anElemIt = SMESH_Mesh_i::GetElements( theSource2, SMESH::ALL );
+      std::unique_ptr< SMESH_ElementSearcher > aSearcher
+        ( SMESH_MeshAlgos::GetElementSearcher( *aMesh2, anElemIt ));
+      getNodeElemDistance( aMeasure, aNode, aSearcher.get() );
+    }
   }
   else
   {

@@ -639,6 +639,9 @@ const SMDS_MeshNode* SMDS_MeshCell::GetNode(const int ind) const
 
 int SMDS_MeshCell::GetNodeIndex( const SMDS_MeshNode* node ) const
 {
+  if ( !node || node->IsNull() )
+    return -1;
+
   if ( GetVtkType() == VTK_POLYHEDRON )
     return static_cast< const SMDS_MeshVolume* >( this )->SMDS_MeshVolume::GetNodeIndex( node );
 

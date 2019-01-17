@@ -86,6 +86,7 @@
     <parameter name="display_mode"                 value="1"    />
     <parameter name="fitall_on_displayonly"        value="1"    />
     <parameter name="auto_groups"                  value="false"/>
+    <parameter name="med_ztolerance"               value="0.0"/>
     <parameter name="show_warning"                 value="true"/>
     <parameter name="show_result_notification"     value="2"/>
     <parameter name="mesh_elem_info"               value="1"/>

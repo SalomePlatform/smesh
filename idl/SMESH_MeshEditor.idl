@@ -798,8 +798,8 @@ module SMESH
     long ProjectPoint(in double         x,
                       in double         y,
                       in double         z,
-                      in SMESH_IDSource meshObject,
                       in ElementType    type,
+                      in SMESH_IDSource meshObject,
                       out double_array  projecton)
       raises (SALOME::SALOME_Exception);
 
@@ -820,6 +820,18 @@ module SMESH
      * Check if orientation of 2D elements is coherent
      */
     boolean IsCoherentOrientation2D()
+      raises (SALOME::SALOME_Exception);
+
+    /*!
+     * Partition given 1D elements into groups of contiguous edges.
+     * A node where number of meeting edges != 2 is a group end.
+     * An optional startNode is used to orient groups it belongs to.
+     * \return a list of edge groups and a list of corresponding node groups.
+     *         If a group is closed, the first and last nodes of the group are same.
+     */
+    array_of_long_array Get1DBranches( in SMESH_IDSource       edges,
+                                       in long                 startNode,
+                                       out array_of_long_array nodeGroups)
       raises (SALOME::SALOME_Exception);
 
     /*!
@@ -1295,6 +1307,17 @@ module SMESH
     void MakePolyLine(inout ListOfPolySegments segments,
                       in    string             groupName)
       raises (SALOME::SALOME_Exception);
+
+    /*!
+     * \brief Create a slot of given width around given 1D elements lying on a triangle mesh.
+     *        The slot is consrtucted by cutting faces by cylindrical surfaces made
+     *        around each segment. Segments are expected to be created by MakePolyLine().
+     * \return Edges located at the slot boundary
+     */
+    ListOfEdges MakeSlot( in SMESH_GroupBase segments,
+                          in double          width )
+      raises (SALOME::SALOME_Exception);
+
   };
 };
 

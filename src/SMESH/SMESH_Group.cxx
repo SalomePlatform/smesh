@@ -96,3 +96,14 @@ void SMESH_Group::SetName (const char* theName)
   myName = theName;
   myGroupDS->SetStoreName( theName );
 }
+
+//================================================================================
+/*!
+ * \brief Return group ID. It is negative if no SMESHDS_GroupBase exist
+ */
+//================================================================================
+
+int SMESH_Group::GetID() const
+{
+  return myGroupDS ? myGroupDS->GetID() : -1;
+}

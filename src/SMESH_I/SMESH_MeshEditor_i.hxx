@@ -560,8 +560,8 @@ public:
   CORBA::Long ProjectPoint(CORBA::Double             x,
                            CORBA::Double             y,
                            CORBA::Double             z,
-                           SMESH::SMESH_IDSource_ptr meshObject,
                            SMESH::ElementType        type,
+                           SMESH::SMESH_IDSource_ptr meshObject,
                            SMESH::double_array_out   projecton)
     throw (SALOME::SALOME_Exception);
 
@@ -582,6 +582,18 @@ public:
    * Check if orientation of 2D elements is coherent
    */
   CORBA::Boolean IsCoherentOrientation2D()
+    throw (SALOME::SALOME_Exception);
+
+  /*!
+   * Partition given 1D elements into groups of contiguous edges.
+   * A node where number of meeting edges != 2 is a group end.
+   * An optional startNode is used to orient groups it belongs to.
+   * \return a list of edge groups and a list of corresponding node groups.
+   *         If a group is closed, the first and last nodes of the group are same.
+   */
+  SMESH::array_of_long_array* Get1DBranches( SMESH::SMESH_IDSource_ptr      edges,
+                                             CORBA::Long                    startNode,
+                                             SMESH::array_of_long_array_out nodeGroups)
     throw (SALOME::SALOME_Exception);
 
   /*!
@@ -920,7 +932,17 @@ public:
    *        be added.
    */
   void MakePolyLine(SMESH::ListOfPolySegments& segments,
-                    const char*               groupName)
+                    const char*                groupName)
+    throw (SALOME::SALOME_Exception);
+
+  /*!
+   * \brief Create a slot of given width around given 1D elements lying on a triangle mesh.
+   *        The slot is consrtucted by cutting faces by cylindrical surfaces made
+   *        around each segment. Segments are expected to be created by MakePolyLine().
+   * \return Edges located at the slot boundary
+   */
+  SMESH::ListOfEdges* MakeSlot(SMESH::SMESH_GroupBase_ptr segments,
+                               CORBA::Double              width)
     throw (SALOME::SALOME_Exception);
 
 

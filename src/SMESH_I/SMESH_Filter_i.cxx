@@ -2577,6 +2577,36 @@ GetElementsId( SMESH_Mesh_ptr theMesh )
   return anArray._retn();
 }
 
+SMESH::long_array*
+Filter_i::
+GetElementsIdFromParts( const ListOfIDSources& theParts )
+{
+  SMESH::long_array_var array = new SMESH::long_array;
+  if ( theParts.length() > 0 && myPredicate )
+  {
+    SMESH_Mesh_ptr mesh = theParts[0]->GetMesh();
+    mesh->Load();
+    const SMDS_Mesh* meshDS = MeshPtr2SMDSMesh( mesh );
+    Controls::Filter::TIdSequence totalSequence;
+    for ( CORBA::ULong i = 0; i < theParts.length(); ++i )
+    {
+      if ( SMESH::Filter_i* filter = SMESH::DownCast<SMESH::Filter_i*>( theParts[i] ))
+        filter->SetMesh( mesh );
+      SMDS_ElemIteratorPtr iter = SMESH_Mesh_i::GetElements( theParts[i], GetElementType() );
+      if ( iter && meshDS )
+      {
+        Controls::Filter::TIdSequence sequence;
+        Controls::Filter::GetElementsId( meshDS, myPredicate->GetPredicate(), sequence, iter );
+        totalSequence.insert( totalSequence.end(), sequence.begin(), sequence.end() );
+      }
+    }
+    array->length( totalSequence.size() );
+    for ( size_t i = 0; i < totalSequence.size(); ++i )
+      array[ i ] = totalSequence[ i ];
+  }
+  return array._retn();
+}
+
 //=============================================================================
 /*!
  * \brief Returns number of mesh elements per each \a EntityType

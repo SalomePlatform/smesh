@@ -1888,7 +1888,7 @@ void Length2D::GetValues(TValues& theValues)
 //================================================================================
 /*
   Class       : Deflection2D
-  Description : Functor for calculating number of faces conneted to the edge
+  Description : computes distance between a face center and an underlying surface
 */
 //================================================================================
 
@@ -3589,9 +3589,10 @@ void Filter::SetPredicate( PredicatePtr thePredicate )
   myPredicate = thePredicate;
 }
 
-void Filter::GetElementsId( const SMDS_Mesh* theMesh,
-                            PredicatePtr     thePredicate,
-                            TIdSequence&     theSequence )
+void Filter::GetElementsId( const SMDS_Mesh*     theMesh,
+                            PredicatePtr         thePredicate,
+                            TIdSequence&         theSequence,
+                            SMDS_ElemIteratorPtr theElements )
 {
   theSequence.clear();
 
@@ -3600,21 +3601,28 @@ void Filter::GetElementsId( const SMDS_Mesh* theMesh,
 
   thePredicate->SetMesh( theMesh );
 
-  SMDS_ElemIteratorPtr elemIt = theMesh->elementsIterator( thePredicate->GetType() );
-  if ( elemIt ) {
-    while ( elemIt->more() ) {
-      const SMDS_MeshElement* anElem = elemIt->next();
-      long anId = anElem->GetID();
-      if ( thePredicate->IsSatisfy( anId ) )
-        theSequence.push_back( anId );
+  if ( !theElements )
+    theElements = theMesh->elementsIterator( thePredicate->GetType() );
+
+  if ( theElements ) {
+    while ( theElements->more() ) {
+      const SMDS_MeshElement* anElem = theElements->next();
+      if ( thePredicate->GetType() == SMDSAbs_All ||
+           thePredicate->GetType() == anElem->GetType() )
+      {
+        long anId = anElem->GetID();
+        if ( thePredicate->IsSatisfy( anId ) )
+          theSequence.push_back( anId );
+      }
     }
   }
 }
 
 void Filter::GetElementsId( const SMDS_Mesh*     theMesh,
-                            Filter::TIdSequence& theSequence )
+                            Filter::TIdSequence& theSequence,
+                            SMDS_ElemIteratorPtr theElements )
 {
-  GetElementsId(theMesh,myPredicate,theSequence);
+  GetElementsId(theMesh,myPredicate,theSequence,theElements);
 }
 
 /*
@@ -4042,8 +4050,10 @@ SMDSAbs_ElementType ElementsOnSurface::GetType() const
 void ElementsOnSurface::SetTolerance( const double theToler )
 {
   if ( myToler != theToler )
-    myIds.Clear();
-  myToler = theToler;
+  {
+    myToler = theToler;
+    process();
+  }
 }
 
 double ElementsOnSurface::GetTolerance() const

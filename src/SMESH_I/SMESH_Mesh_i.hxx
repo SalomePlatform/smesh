@@ -440,6 +440,7 @@ public:
 
   SMESH::SMESH_GroupBase_ptr createGroup(SMESH::ElementType        theElemType,
                                          const char*               theName,
+                                         const int                 theID = -1,
                                          const TopoDS_Shape&       theShape = TopoDS_Shape(),
                                          const SMESH_PredicatePtr& thePred = SMESH_PredicatePtr());
 
@@ -501,7 +502,8 @@ public:
    * For given node returns list of IDs of inverse elements
    * If there is not node for given ID - returns empty list
    */
-  SMESH::long_array* GetNodeInverseElements(CORBA::Long id);
+  SMESH::long_array* GetNodeInverseElements(CORBA::Long        id,
+                                            SMESH::ElementType elemType);
 
   /*!
    * \brief Return position of a node on shape

@@ -383,6 +383,8 @@ namespace MeshEditor_I {
 
   string getPartIOR( SMESH::SMESH_IDSource_ptr theMeshPart, SMESH::ElementType type = SMESH::ALL )
   {
+    if ( SMESH::DownCast<SMESH_Mesh_i*>( theMeshPart ))
+      return "";
     string partIOR = SMESH_Gen_i::GetORB()->object_to_string( theMeshPart );
     if ( SMESH_Group_i* group_i = SMESH::DownCast<SMESH_Group_i*>( theMeshPart ))
       // take into account passible group modification
@@ -2066,9 +2068,10 @@ void SMESH_MeshEditor_i::SplitVolumesIntoTetra (SMESH::SMESH_IDSource_ptr elems,
 
   ::SMESH_MeshEditor::TFacetOfElem elemSet;
   const int noneFacet = -1;
-  SMDS_ElemIteratorPtr volIt = myMesh_i->GetElements( elems, SMESH::VOLUME );
-  while( volIt->more() )
-    elemSet.insert( elemSet.end(), make_pair( volIt->next(), noneFacet ));
+  prepareIdSource( elems );
+  if ( SMDS_ElemIteratorPtr volIt = myMesh_i->GetElements( elems, SMESH::VOLUME ))
+    while ( volIt->more() )
+      elemSet.insert( elemSet.end(), make_pair( volIt->next(), noneFacet ));
 
   getEditor().SplitVolumes( elemSet, int( methodFlags ));
   declareMeshModified( /*isReComputeSafe=*/true ); // it does not influence Compute()
@@ -2109,6 +2112,7 @@ void SMESH_MeshEditor_i::SplitHexahedraIntoPrisms( SMESH::SMESH_IDSource_ptr  el
                             facetToSplitNormal.PS.y,
                             facetToSplitNormal.PS.z ));
   TIDSortedElemSet elemSet;
+  prepareIdSource( elems );
   SMESH::long_array_var anElementsId = elems->GetIDs();
   SMDS_MeshElement::GeomFilter filter( SMDSGeom_HEXA );
   arrayToSet( anElementsId, getMeshDS(), elemSet, SMDSAbs_Volume, &filter );
@@ -2423,8 +2427,8 @@ SMESH_MeshEditor_i::RotationSweepObjects(const SMESH::ListOfIDSources & theNodes
 
   TIDSortedElemSet elemsNodes[2];
   for ( int i = 0, nb = theNodes.length(); i < nb; ++i ) {
-    SMDS_ElemIteratorPtr nIt = myMesh_i->GetElements( theNodes[i], SMESH::NODE );
-    while ( nIt->more() ) elemsNodes[1].insert( nIt->next() );
+    if ( SMDS_ElemIteratorPtr nIt = myMesh_i->GetElements( theNodes[i], SMESH::NODE ))
+      while ( nIt->more() ) elemsNodes[1].insert( nIt->next() );
   }
   for ( int i = 0, nb = theEdges.length(); i < nb; ++i )
     idSourceToSet( theEdges[i], getMeshDS(), elemsNodes[0], SMDSAbs_Edge );
@@ -2621,8 +2625,8 @@ SMESH_MeshEditor_i::ExtrusionSweepObjects(const SMESH::ListOfIDSources & theNode
 
   TIDSortedElemSet elemsNodes[2];
   for ( int i = 0, nb = theNodes.length(); i < nb; ++i ) {
-    SMDS_ElemIteratorPtr nIt = myMesh_i->GetElements( theNodes[i], SMESH::NODE );
-    while ( nIt->more() ) elemsNodes[1].insert( nIt->next() );
+    if ( SMDS_ElemIteratorPtr nIt = myMesh_i->GetElements( theNodes[i], SMESH::NODE ))
+      while ( nIt->more() ) elemsNodes[1].insert( nIt->next() );
   }
   for ( int i = 0, nb = theEdges.length(); i < nb; ++i )
     idSourceToSet( theEdges[i], getMeshDS(), elemsNodes[0], SMDSAbs_Edge );
@@ -2900,8 +2904,8 @@ SMESH_MeshEditor_i::ExtrusionAlongPathObjects(const SMESH::ListOfIDSources & the
 
   TIDSortedElemSet elemsNodes[2];
   for ( int i = 0, nb = theNodes.length(); i < nb; ++i ) {
-    SMDS_ElemIteratorPtr nIt = myMesh_i->GetElements( theNodes[i], SMESH::NODE );
-    while ( nIt->more() ) elemsNodes[1].insert( nIt->next() );
+    if ( SMDS_ElemIteratorPtr nIt = myMesh_i->GetElements( theNodes[i], SMESH::NODE ))
+      while ( nIt->more() ) elemsNodes[1].insert( nIt->next() );
   }
   for ( int i = 0, nb = theEdges.length(); i < nb; ++i )
     idSourceToSet( theEdges[i], getMeshDS(), elemsNodes[0], SMDSAbs_Edge );
@@ -4180,6 +4184,7 @@ FindCoincidentNodesOnPart(SMESH::SMESH_IDSource_ptr      theObject,
   initData();
 
   TIDSortedNodeSet nodes;
+  prepareIdSource( theObject );
   idSourceToNodeSet( theObject, getMeshDS(), nodes );
 
   findCoincidentNodes( nodes, Tolerance, GroupsOfNodes, SeparateCornersAndMedium );
@@ -4211,14 +4216,15 @@ FindCoincidentNodesOnPartBut(SMESH::SMESH_IDSource_ptr      theObject,
   initData();
 
   TIDSortedNodeSet nodes;
+  prepareIdSource( theObject );
   idSourceToNodeSet( theObject, getMeshDS(), nodes );
 
   for ( CORBA::ULong i = 0; i < theExceptSubMeshOrGroups.length(); ++i )
   {
-    SMDS_ElemIteratorPtr nodeIt = myMesh_i->GetElements( theExceptSubMeshOrGroups[i],
-                                                         SMESH::NODE );
-    while ( nodeIt->more() )
-      nodes.erase( cast2Node( nodeIt->next() ));
+    if ( SMDS_ElemIteratorPtr nodeIt = myMesh_i->GetElements( theExceptSubMeshOrGroups[i],
+                                                              SMESH::NODE ))
+      while ( nodeIt->more() )
+        nodes.erase( cast2Node( nodeIt->next() ));
   }
   findCoincidentNodes( nodes, theTolerance, theGroupsOfNodes, theSeparateCornersAndMedium );
 
@@ -4253,9 +4259,9 @@ void SMESH_MeshEditor_i::MergeNodes (const SMESH::array_of_long_array& GroupsOfN
   for ( CORBA::ULong i = 0; i < NodesToKeep.length(); ++i )
   {
     prepareIdSource( NodesToKeep[i] );
-    SMDS_ElemIteratorPtr nodeIt = myMesh_i->GetElements( NodesToKeep[i], SMESH::NODE );
-    while ( nodeIt->more() )
-      setOfNodesToKeep.insert( setOfNodesToKeep.end(), cast2Node( nodeIt->next() ));
+    if ( SMDS_ElemIteratorPtr nodeIt = myMesh_i->GetElements( NodesToKeep[i], SMESH::NODE ))
+      while ( nodeIt->more() )
+        setOfNodesToKeep.insert( setOfNodesToKeep.end(), cast2Node( nodeIt->next() ));
   }
 
   ::SMESH_MeshEditor::TListOfListOfNodes aListOfListOfNodes;
@@ -4304,7 +4310,7 @@ void SMESH_MeshEditor_i::FindEqualElements(SMESH::SMESH_IDSource_ptr      theObj
   initData();
 
   SMESH::SMESH_GroupBase_var group = SMESH::SMESH_GroupBase::_narrow(theObject);
-  if ( !(!group->_is_nil() && group->GetType() == SMESH::NODE) )
+  if ( !( !group->_is_nil() && group->GetType() == SMESH::NODE ))
   {
     TIDSortedElemSet elems;
     idSourceToSet( theObject, getMeshDS(), elems, SMDSAbs_All, /*emptyIfIsMesh=*/true);
@@ -4606,6 +4612,7 @@ SMESH_MeshEditor_i::FindAmongElementsByPoint(SMESH::SMESH_IDSource_ptr elementID
   SMESH_TRY;
   SMESH::long_array_var res = new SMESH::long_array;
 
+  prepareIdSource( elementIDs );
   if ( type != SMESH::NODE )
   {
     SMESH::array_of_ElementType_var types = elementIDs->GetTypes();
@@ -4614,6 +4621,16 @@ SMESH_MeshEditor_i::FindAmongElementsByPoint(SMESH::SMESH_IDSource_ptr elementID
          type != types[0] ) // but search of elements of dim > 0
       return res._retn();
   }
+
+  SMESH::SMESH_Mesh_var mesh = elementIDs->GetMesh();
+  SMESH_Mesh_i*       mesh_i = SMESH::DownCast<SMESH_Mesh_i*>( mesh );
+  if ( mesh_i != myMesh_i )
+  {
+    SMESH::SMESH_MeshEditor_var editor=
+      myIsPreviewMode ? mesh_i->GetMeshEditPreviewer() : mesh_i->GetMeshEditor();
+    return editor->FindAmongElementsByPoint( elementIDs, x,y,z, type );
+  }
+
   if ( SMESH::DownCast<SMESH_Mesh_i*>( elementIDs )) // elementIDs is the whole mesh 
     return FindElementsByPoint( x,y,z, type );
 
@@ -4623,18 +4640,15 @@ SMESH_MeshEditor_i::FindAmongElementsByPoint(SMESH::SMESH_IDSource_ptr elementID
   if ( !theElementSearcher )
   {
     // create a searcher from elementIDs
-    SMESH::SMESH_Mesh_var mesh = elementIDs->GetMesh();
-    SMESHDS_Mesh* meshDS = SMESH::DownCast<SMESH_Mesh_i*>( mesh )->GetImpl().GetMeshDS();
-
-    if ( !idSourceToSet( elementIDs, meshDS, elements,
-                         ( type == SMESH::NODE ? SMDSAbs_All : (SMDSAbs_ElementType) type ),
-                         /*emptyIfIsMesh=*/true))
-      return res._retn();
-
-    typedef SMDS_SetIterator<const SMDS_MeshElement*, TIDSortedElemSet::const_iterator > TIter;
-    SMDS_ElemIteratorPtr elemsIt( new TIter( elements.begin(), elements.end() ));
-
-    theElementSearcher = SMESH_MeshAlgos::GetElementSearcher( *getMeshDS(), elemsIt );
+    SMDS_ElemIteratorPtr elemIt;
+    if ( ! SMESH::DownCast<SMESH_Mesh_i*>( elementIDs ))
+    {
+      //prepareIdSource( elementIDs );
+      elemIt = myMesh_i->GetElements( elementIDs, type );
+      if ( !elemIt )
+        return res._retn();
+    }
+    theElementSearcher = SMESH_MeshAlgos::GetElementSearcher( *getMeshDS(), elemIt );
   }
 
   vector< const SMDS_MeshElement* > foundElems;
@@ -4663,8 +4677,8 @@ SMESH_MeshEditor_i::FindAmongElementsByPoint(SMESH::SMESH_IDSource_ptr elementID
 CORBA::Long SMESH_MeshEditor_i::ProjectPoint(CORBA::Double             x,
                                              CORBA::Double             y,
                                              CORBA::Double             z,
-                                             SMESH::SMESH_IDSource_ptr meshObject,
                                              SMESH::ElementType        type,
+                                             SMESH::SMESH_IDSource_ptr meshObject,
                                              SMESH::double_array_out   projecton)
   throw (SALOME::SALOME_Exception)
 {
@@ -4679,19 +4693,23 @@ CORBA::Long SMESH_MeshEditor_i::ProjectPoint(CORBA::Double             x,
   {
     SMESH::SMESH_MeshEditor_var editor=
       myIsPreviewMode ? mesh_i->GetMeshEditPreviewer() : mesh_i->GetMeshEditor();
-    return editor->ProjectPoint( x,y,z, meshObject, type, projecton );
+    return editor->ProjectPoint( x,y,z, type, meshObject, projecton );
   }
 
 
-  theSearchersDeleter.Set( myMesh, getPartIOR( meshObject ));
+  theSearchersDeleter.Set( myMesh, getPartIOR( meshObject, type ));
   if ( !theElementSearcher )
   {
     // create a searcher from meshObject
 
     SMDS_ElemIteratorPtr elemIt;
     if ( ! SMESH::DownCast<SMESH_Mesh_i*>( meshObject ))
+    {
+      prepareIdSource( meshObject );
       elemIt = myMesh_i->GetElements( meshObject, type );
-
+      if ( !elemIt )
+        return -1;
+    }
     theElementSearcher = SMESH_MeshAlgos::GetElementSearcher( *getMeshDS(), elemIt );
   }
 
@@ -4777,6 +4795,59 @@ CORBA::Boolean SMESH_MeshEditor_i::IsCoherentOrientation2D()
   SMESH_CATCH( SMESH::throwCorbaException );
 
   return isGoodOri;
+}
+
+//=======================================================================
+//function : Get1DBranches
+//purpose  : Partition given 1D elements into groups of contiguous edges.
+//           A node where number of meeting edges != 2 is a group end.
+//           An optional startNode is used to orient groups it belongs to.
+//return   : a list of edge groups and a list of corresponding node groups.
+//           If a group is closed, the first and last nodes of the group are same.
+//=======================================================================
+
+SMESH::array_of_long_array*
+SMESH_MeshEditor_i::Get1DBranches( SMESH::SMESH_IDSource_ptr      theEdges,
+                                   CORBA::Long                    theStartNode,
+                                   SMESH::array_of_long_array_out theNodeGroups )
+  throw (SALOME::SALOME_Exception)
+{
+  if ( CORBA::is_nil( theEdges ))
+    THROW_SALOME_CORBA_EXCEPTION("Get1DBranches(): NULL group given", SALOME::BAD_PARAM);
+
+  SMESH::array_of_long_array_var edgeGroupArray = new SMESH::array_of_long_array;
+  theNodeGroups = new SMESH::array_of_long_array;
+
+  SMESH_TRY;
+
+  prepareIdSource( theEdges );
+
+  SMESH_MeshAlgos::TElemGroupVector edgeBranches;
+  SMESH_MeshAlgos::TNodeGroupVector nodeBranches;
+  SMESH_MeshAlgos::Get1DBranches( SMESH_Mesh_i::GetElements( theEdges, SMESH::EDGE ),
+                                  edgeBranches,
+                                  nodeBranches,
+                                  getMeshDS()->FindNode( theStartNode ));
+
+  edgeGroupArray->length( edgeBranches.size() );
+  for ( size_t iG = 0; iG < edgeBranches.size(); ++iG )
+  {
+    edgeGroupArray[ iG ].length( edgeBranches[ iG ].size() );
+    for ( size_t i = 0; i < edgeBranches[ iG ].size(); ++i )
+      edgeGroupArray[ iG ][ i ] = edgeBranches[ iG ][ i ]->GetID();
+  }
+
+  theNodeGroups->length( nodeBranches.size() );
+  for ( size_t iG = 0; iG < nodeBranches.size(); ++iG )
+  {
+    theNodeGroups[ iG ].length( nodeBranches[ iG ].size() );
+    for ( size_t i = 0; i < nodeBranches[ iG ].size(); ++i )
+      theNodeGroups[ iG ][ i ] = nodeBranches[ iG ][ i ]->GetID();
+  }
+
+  SMESH_CATCH( SMESH::throwCorbaException );
+
+  return edgeGroupArray._retn();
 }
 
 //=======================================================================
@@ -5525,8 +5596,8 @@ void SMESH_MeshEditor_i::convertToQuadratic(CORBA::Boolean            theForce3d
   bool elemsOK;
   if ( !( elemsOK = CORBA::is_nil( theObject )))
   {
-    elemsOK =  idSourceToSet( theObject, getMeshDS(), elems,
-                              SMDSAbs_All, /*emptyIfIsMesh=*/true );
+    elemsOK = idSourceToSet( theObject, getMeshDS(), elems,
+                             SMDSAbs_All, /*emptyIfIsMesh=*/true );
   }
   if ( elemsOK )
   {
@@ -7087,7 +7158,7 @@ CORBA::Long SMESH_MeshEditor_i::MakeBoundaryElements(SMESH::Bnd_Dimension dim,
   for ( CORBA::ULong i = 0; i < groups.length(); ++i )
   {
     SMESH::SMESH_Mesh_var m = groups[i]->GetMesh();
-    if ( myMesh_i != SMESH::DownCast<SMESH_Mesh_i*>( m ))
+    if ( !m->_is_nil() && myMesh_i != SMESH::DownCast<SMESH_Mesh_i*>( m ))
       groupsOfOtherMesh[ nbGroupsOfOtherMesh++ ] = groups[i];
     else
       groupsOfThisMesh[ nbGroups++ ] = groups[i];
@@ -7267,11 +7338,11 @@ void SMESH_MeshEditor_i::MakePolyLine(SMESH::ListOfPolySegments& theSegments,
   }
 
   // convert input polySegments
-  ::SMESH_MeshEditor::TListOfPolySegments segments( theSegments.length() );
+  SMESH_MeshAlgos::TListOfPolySegments segments( theSegments.length() );
   for ( CORBA::ULong i = 0; i < theSegments.length(); ++i )
   {
-    SMESH::PolySegment&               segIn = theSegments[ i ];
-    ::SMESH_MeshEditor::PolySegment& segOut = segments[ i ];
+    SMESH::PolySegment&            segIn = theSegments[ i ];
+    SMESH_MeshAlgos::PolySegment& segOut = segments[ i ];
     segOut.myNode1[0] = meshDS->FindNode( segIn.node1ID1 );
     segOut.myNode2[0] = meshDS->FindNode( segIn.node1ID2 );
     segOut.myNode1[1] = meshDS->FindNode( segIn.node2ID1 );
@@ -7294,15 +7365,24 @@ void SMESH_MeshEditor_i::MakePolyLine(SMESH::ListOfPolySegments& theSegments,
     theElementSearcher = SMESH_MeshAlgos::GetElementSearcher( *getMeshDS() );
 
   // compute
-  getEditor().MakePolyLine( segments, groupDS, theElementSearcher );
+  std::vector<const SMDS_MeshElement*> newEdges;
+  std::vector<const SMDS_MeshNode*>    newNodes;
+  SMESH_MeshAlgos::MakePolyLine( meshDS, segments, newEdges, newNodes,
+                                 groupDS ? &groupDS->SMDSGroup() : 0,
+                                 theElementSearcher );
+
+  const_cast< SMESH_SequenceOfElemPtr& >( getEditor().GetLastCreatedElems() ).
+    swap( newEdges );
+  const_cast< SMESH_SequenceOfElemPtr& >( getEditor().GetLastCreatedNodes() ).
+    assign( newNodes.begin(), newNodes.end() );
 
   // return vectors
   if ( myIsPreviewMode )
   {
     for ( CORBA::ULong i = 0; i < theSegments.length(); ++i )
     {
-      SMESH::PolySegment&             segOut = theSegments[ i ];
-      ::SMESH_MeshEditor::PolySegment& segIn = segments[ i ];
+      SMESH::PolySegment&           segOut = theSegments[ i ];
+      SMESH_MeshAlgos::PolySegment& segIn = segments[ i ];
       segOut.vector.PS.x = segIn.myVector.X();
       segOut.vector.PS.y = segIn.myVector.Y();
       segOut.vector.PS.z = segIn.myVector.Z();
@@ -7329,4 +7409,50 @@ void SMESH_MeshEditor_i::MakePolyLine(SMESH::ListOfPolySegments& theSegments,
   meshDS->Modified();
   SMESH_CATCH( SMESH::throwCorbaException );
   return;
+}
+
+//================================================================================
+/*!
+ * \brief Create a slot of given width around given 1D elements lying on a triangle mesh.
+ *        The slot is consrtucted by cutting faces by cylindrical surfaces made
+ *        around each segment. Segments are expected to be created by MakePolyLine().
+ * \return Edges located at the slot boundary
+ */
+//================================================================================
+
+SMESH::ListOfEdges* SMESH_MeshEditor_i::MakeSlot(SMESH::SMESH_GroupBase_ptr theSegments,
+                                                 CORBA::Double              theWidth)
+  throw (SALOME::SALOME_Exception)
+{
+  if ( CORBA::is_nil( theSegments ) ||
+       theSegments->GetType() != SMESH::EDGE )
+    THROW_SALOME_CORBA_EXCEPTION("No segments given", SALOME::BAD_PARAM );
+  if ( myMesh->NbFaces() == 0 )
+    THROW_SALOME_CORBA_EXCEPTION("No faces in the mesh", SALOME::BAD_PARAM );
+
+  SMESH::ListOfEdges_var resultEdges = new SMESH::ListOfEdges;
+
+  SMESH_TRY;
+  initData(/*deleteSearchers=*/false);
+
+  SMESHDS_Mesh* meshDS = getMeshDS();
+
+  std::vector< SMESH_MeshAlgos::Edge > edges =
+    SMESH_MeshAlgos::MakeSlot( SMESH_Mesh_i::GetElements( theSegments, SMESH::EDGE ),
+                               theWidth, meshDS );
+
+  resultEdges->length( edges.size() );
+  for ( size_t i = 0; i < edges.size(); ++i )
+  {
+    resultEdges[ i ].node1  = edges[i]._node1->GetID();
+    resultEdges[ i ].node2  = edges[i]._node2->GetID();
+    resultEdges[ i ].medium = edges[i]._medium ? edges[i]._medium->GetID() : 0;
+  }
+
+  meshDS->Modified();
+  SMESH_CATCH( SMESH::throwCorbaException );
+
+  TSearchersDeleter::Delete(); // face searcher becomes invalid as some faces were removed
+
+  return resultEdges._retn();
 }

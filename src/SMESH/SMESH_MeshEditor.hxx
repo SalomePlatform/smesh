@@ -717,49 +717,6 @@ public:
                        bool                    toAddExistingBondary = false,
                        bool                    aroundElements = false);
 
-
-  // structure used in MakePolyLine() to define a cutting plane
-  struct PolySegment
-  {
-    // 2 points, each defined as follows:
-    // ( myNode1 &&  myNode2 ) ==> point is in the middle of an edge defined by two nodes
-    // ( myNode1 && !myNode2 ) ==> point is at myNode1
-    // else                    ==> point is at myXYZ
-    const SMDS_MeshNode*    myNode1[2];
-    const SMDS_MeshNode*    myNode2[2];
-    gp_XYZ                  myXYZ  [2];
-
-    // face on which myXYZ projects (found by MakePolyLine())
-    const SMDS_MeshElement* myFace [2];
-
-    // vector on the plane; to use a default plane set vector = (0,0,0)
-    gp_Vec myVector;
-
-    // point to return coordinates of a middle of the two points, projected to mesh
-    gp_Pnt myMidProjPoint;
-  };
-  typedef std::vector<PolySegment> TListOfPolySegments;
-
-  /*!
-   * \brief Create a polyline consisting of 1D mesh elements each lying on a 2D element of
-   *        the initial mesh. Positions of new nodes are found by cutting the mesh by the
-   *        plane passing through pairs of points specified by each PolySegment structure.
-   *        If there are several paths connecting a pair of points, the shortest path is
-   *        selected by the module. Position of the cutting plane is defined by the two
-   *        points and an optional vector lying on the plane specified by a PolySegment.
-   *        By default the vector is defined by Mesh module as following. A middle point
-   *        of the two given points is computed. The middle point is projected to the mesh.
-   *        The vector goes from the middle point to the projection point. In case of planar
-   *        mesh, the vector is normal to the mesh.
-   *  \param [inout] segments - PolySegment's defining positions of cutting planes.
-   *        Return the used vector and position of the middle point.
-   *  \param [in] group - an optional group where created mesh segments will
-   *        be added.
-   */
-  void MakePolyLine( TListOfPolySegments&   segments,
-                     SMESHDS_Group*         group=0,
-                     SMESH_ElementSearcher* searcher=0);
-
  private:
 
   /*!

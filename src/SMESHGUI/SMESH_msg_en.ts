@@ -5119,6 +5119,14 @@ Please, create VTK viewer and try again</translation>
         <translation>Meshes, sub-meshes, groups</translation>
     </message>
     <message>
+        <source>NEW_MESH_NAME</source>
+        <translation>Create new mesh named</translation>
+    </message>
+    <message>
+        <source>MESH_APPEND_TO</source>
+        <translation>Append to mesh</translation>
+    </message>
+    <message>
         <source>PROCESSING_IDENTICAL_GROUPS</source>
         <translation>Processing identical groups</translation>
     </message>
@@ -5128,7 +5136,7 @@ Please, create VTK viewer and try again</translation>
     </message>
     <message>
         <source>RESULT_NAME</source>
-        <translation>Result name</translation>
+        <translation>Result</translation>
     </message>
     <message>
         <source>UNITE</source>

@@ -31,7 +31,182 @@
 #include <Standard_Failure.hxx>
 #include <gp_Ax2.hxx>
 
+#include <boost/container/flat_set.hpp>
+
 using namespace SMESH_MeshAlgos;
+
+namespace
+{
+  struct Node // node of a triangle
+  {
+    size_t _triaIndex; // triangle index == index of the 1st triangle node in triangulation array
+    size_t _nodeIndex; // node index within triangle [0-2]
+
+    //! return node index within the node array
+    size_t Index() const { return  _triaIndex + _nodeIndex; }
+
+    //! return local 3-d index [0-2]
+    static size_t ThirdIndex( size_t i1, size_t i2 )
+    {
+      size_t i3 = ( i2 + 1 ) % 3;
+      if ( i3 == i1 )
+        i3 = ( i2 + 2 ) % 3;
+      return i3;
+    }
+    //! return 3-d node index within the node array
+    static size_t ThirdIndex( const Node& n1, const Node& n2 )
+    {
+      return n1._triaIndex + ThirdIndex( n1._nodeIndex, n2._nodeIndex );
+    }
+    bool operator<(const Node& other) const { return _triaIndex < other._triaIndex; }
+  };
+  typedef boost::container::flat_set< Node > TNodeSet;
+
+}
+
+struct Triangulate::Optimizer
+{
+  std::vector< TNodeSet > _nodeUsage; // inclusions of a node in triangles
+
+  //================================================================================
+  /*!
+   * \brief Optimize triangles by edge swapping
+   *  \param [inout] nodes - polygon triangulation, i.e. connectivity of all triangles to optimize
+   *  \param [in] points - coordinates of nodes of the input polygon
+   *  \param [in] nodeIndices - indices of triangulation nodes within the input polygon
+   */
+  //================================================================================
+
+  void optimize( std::vector< const SMDS_MeshNode*>& nodes,
+                 std::vector< PolyVertex > &         points,
+                 std::vector< size_t > &             nodeIndices)
+  {
+    // for each node of the polygon, remember triangles using it
+    _nodeUsage.resize( points.size() );
+    for ( size_t i = 0; i < points.size(); ++i ) // clear old data
+    {
+      _nodeUsage[ i ].clear();
+    }
+    for ( size_t i = 0, iTria = 0; i < nodeIndices.size(); ++iTria )
+    {
+      _nodeUsage[ nodeIndices[ i++ ]].insert({ iTria * 3, 0 });
+      _nodeUsage[ nodeIndices[ i++ ]].insert({ iTria * 3, 1 });
+      _nodeUsage[ nodeIndices[ i++ ]].insert({ iTria * 3, 2 });
+    }
+
+    // optimization
+    for ( size_t iTria = 0; iTria < nodeIndices.size(); iTria += 3 )
+    {
+      double badness1 = computeBadness( nodeIndices[ iTria + 0 ],
+                                        nodeIndices[ iTria + 1 ],
+                                        nodeIndices[ iTria + 2 ],
+                                        points );
+      for ( size_t i = 0; i < 3; ++i ) // loop on triangle edges to find a neighbor triangle
+      {
+        size_t i1 = iTria + i; // node index in nodeIndices
+        size_t i2 = iTria + ( i + 1 ) % 3;
+        size_t ind1 = nodeIndices[ i1 ]; // node index in points
+        size_t ind2 = nodeIndices[ i2 ];
+        TNodeSet & usage1 = _nodeUsage[ ind1 ]; // triangles using a node
+        TNodeSet & usage2 = _nodeUsage[ ind2 ];
+        if ( usage1.size() < 2 ||
+             usage2.size() < 2 )
+          continue;
+
+        // look for another triangle using two nodes
+        TNodeSet::iterator usIt1 = usage1.begin();
+        for ( ; usIt1 != usage1.end(); ++usIt1 )
+        {
+          if ( usIt1->_triaIndex == iTria )
+            continue; // current triangle
+          TNodeSet::iterator usIt2 = usage2.find( *usIt1 );
+          if ( usIt2 == usage2.end() )
+            continue; // no common _triaIndex in two usages
+
+          size_t i3 = iTria + ( i + 2 ) % 3;
+          size_t i4 = Node::ThirdIndex( *usIt1, *usIt2 ); // 4th node of quadrangle
+          size_t ind3 = nodeIndices[ i3 ];
+          size_t ind4 = nodeIndices[ i4 ];
+
+          double badness2 = computeBadness( ind2, ind1, ind4, points );
+          double badness3 = computeBadness( ind1, ind4, ind3, points, /*checkArea=*/true );
+          double badness4 = computeBadness( ind2, ind3, ind4, points, /*checkArea=*/true );
+
+          if ( Max( badness1, badness2 ) < Max( badness3, badness4 ))
+            continue;
+
+          // swap edge by modifying nodeIndices
+
+          nodeIndices[ i2 ] = ind4;
+          _nodeUsage[ ind2 ].erase ({ iTria, i2 - iTria });
+          _nodeUsage[ ind4 ].insert({ iTria, i2 - iTria });
+
+          i1 = usIt1->Index();
+          nodeIndices[ i1 ] = ind3;
+          _nodeUsage[ ind1 ].erase ( *usIt1 );
+          _nodeUsage[ ind3 ].insert( *usIt1 );
+
+          --i; // to re-check a current edge
+          badness1 = badness3;
+          break;
+        }
+      }
+    }
+
+    // update nodes by updated nodeIndices
+    for ( size_t i = 0; i < nodeIndices.size(); ++i )
+      nodes[ i ] = points[ nodeIndices[ i ]]._nxyz.Node();
+
+    return;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Return 1./area. Initially: max cos^2 of triangle angles
+   */
+  //================================================================================
+
+  double computeBadness( size_t i1, size_t i2, size_t i3,
+                         std::vector< PolyVertex > & points,
+                         bool                        checkArea = false )
+  {
+    //if ( checkArea )
+    {
+      points[ i2 ]._prev = & points[ i1 ];
+      points[ i2 ]._next = & points[ i3 ];
+      double a = points[ i2 ].TriaArea();
+      if ( a < 0 )
+        return std::numeric_limits<double>::max();
+      return 1. / a;
+
+      if ( points[ i2 ].TriaArea() < 0 )
+        return 2;
+    }
+    const gp_XY & p1 = points[ i1 ]._xy;
+    const gp_XY & p2 = points[ i2 ]._xy;
+    const gp_XY & p3 = points[ i3 ]._xy;
+    gp_XY vec[3] = { p2 - p1,
+                     p3 - p2,
+                     p1 - p3 };
+    double len[3] = { vec[0].SquareModulus(),
+                      vec[1].SquareModulus(),
+                      vec[2].SquareModulus() };
+    if ( len[0] < gp::Resolution() ||
+         len[1] < gp::Resolution() ||
+         len[2] < gp::Resolution() )
+      return 2;
+
+    double maxCos2 = 0;
+    for ( int i = 0; i < 3; ++i )
+    {
+      int i2 = ( i+1 ) % 3;
+      double dot = -vec[ i ] * vec[ i2 ];
+      if ( dot > 0 )
+        maxCos2 = Max( maxCos2, dot * dot / len[ i ] / len[ i2 ] );
+    }
+    return maxCos2;
+  }
+};
 
 //================================================================================
 /*!
@@ -40,11 +215,13 @@ using namespace SMESH_MeshAlgos;
 //================================================================================
 
 void Triangulate::PolyVertex::SetNodeAndNext( const SMDS_MeshNode* n,
-                                              PolyVertex&          v )
+                                              PolyVertex&          v,
+                                              size_t               index )
 {
   _nxyz.Set( n );
   _next = &v;
   v._prev = this;
+  _index = index;
 }
 //================================================================================
 /*!
@@ -65,11 +242,15 @@ Triangulate::PolyVertex* Triangulate::PolyVertex::Delete()
  */
 //================================================================================
 
-void Triangulate::PolyVertex::GetTriaNodes( const SMDS_MeshNode** nodes) const
+  void Triangulate::PolyVertex::GetTriaNodes( const SMDS_MeshNode** nodes,
+                                              size_t*               nodeIndices) const
 {
   nodes[0] = _prev->_nxyz._node;
   nodes[1] =  this->_nxyz._node;
   nodes[2] = _next->_nxyz._node;
+  nodeIndices[0] = _prev->_index;
+  nodeIndices[1] =  this->_index;
+  nodeIndices[2] = _next->_index;
 }
 
 //================================================================================
@@ -112,7 +293,7 @@ bool Triangulate::PolyVertex::IsInsideTria( const PolyVertex* v )
   gp_XY p = _prev->_xy - v->_xy;
   gp_XY t =  this->_xy - v->_xy;
   gp_XY n = _next->_xy - v->_xy;
-  const double tol = -1e-12;
+  const double tol = -1e-7;
   return (( p ^ t ) >= tol &&
           ( t ^ n ) >= tol &&
           ( n ^ p ) >= tol );
@@ -128,13 +309,13 @@ bool Triangulate::PolyVertex::IsInsideTria( const PolyVertex* v )
 //================================================================================
 
 bool Triangulate::triangulate( std::vector< const SMDS_MeshNode*>& nodes,
-                               const size_t                        nbNodes )
+                               const size_t                        nbNodes)
 {
   // connect nodes into a ring
   _pv.resize( nbNodes );
   for ( size_t i = 1; i < nbNodes; ++i )
-    _pv[i-1].SetNodeAndNext( nodes[i-1], _pv[i] );
-  _pv[ nbNodes-1 ].SetNodeAndNext( nodes[ nbNodes-1 ], _pv[0] );
+    _pv[i-1].SetNodeAndNext( nodes[i-1], _pv[i], i-1 );
+  _pv[ nbNodes-1 ].SetNodeAndNext( nodes[ nbNodes-1 ], _pv[0], nbNodes-1 );
 
   // get a polygon normal
   gp_XYZ normal(0,0,0), p0,v01,v02;
@@ -163,7 +344,8 @@ bool Triangulate::triangulate( std::vector< const SMDS_MeshNode*>& nodes,
 
   // in a loop, find triangles with positive area and having no vertices inside
   int iN = 0, nbTria = nbNodes - 2;
-  nodes.reserve( nbTria * 3 );
+  nodes.resize( nbTria * 3 );
+  _nodeIndex.resize( nbTria * 3 );
   const double minArea = 1e-6;
   PolyVertex* v = &_pv[0], *vi;
   int nbVertices = nbNodes, nbBadTria = 0, isGoodTria;
@@ -182,13 +364,15 @@ bool Triangulate::triangulate( std::vector< const SMDS_MeshNode*>& nodes,
     }
     if ( isGoodTria )
     {
-      v->GetTriaNodes( &nodes[ iN ] );
+      v->GetTriaNodes( &nodes[ iN ], &_nodeIndex[ iN ] );
       iN += 3;
       v = v->Delete();
       if ( --nbVertices == 3 )
       {
         // last triangle remains
-        v->GetTriaNodes( &nodes[ iN ] );
+        v->GetTriaNodes( &nodes[ iN ], &_nodeIndex[ iN ] );
+        if ( _optimizer )
+          _optimizer->optimize( nodes, _pv, _nodeIndex );
         return true;
       }
       nbBadTria = 0;
@@ -207,13 +391,13 @@ bool Triangulate::triangulate( std::vector< const SMDS_MeshNode*>& nodes,
     isGoodTria = v->TriaArea() > minArea;
     if ( isGoodTria )
     {
-      v->GetTriaNodes( &nodes[ iN ] );
+      v->GetTriaNodes( &nodes[ iN ], &_nodeIndex[ iN ] );
       iN += 3;
       v = v->Delete();
       if ( --nbVertices == 3 )
       {
         // last triangle remains
-        v->GetTriaNodes( &nodes[ iN ] );
+        v->GetTriaNodes( &nodes[ iN ], &_nodeIndex[ iN ] );
         return true;
       }
       nbBadTria = 0;
@@ -228,7 +412,7 @@ bool Triangulate::triangulate( std::vector< const SMDS_MeshNode*>& nodes,
   // add all the rest triangles
   while ( nbVertices >= 3 )
   {
-    v->GetTriaNodes( &nodes[ iN ] );
+    v->GetTriaNodes( &nodes[ iN ], &_nodeIndex[ iN ] );
     iN += 3;
     v = v->Delete();
     --nbVertices;
@@ -237,6 +421,30 @@ bool Triangulate::triangulate( std::vector< const SMDS_MeshNode*>& nodes,
   return true;
 
 } // triangulate()
+
+//================================================================================
+/*!
+ * \brief Constructor
+ */
+//================================================================================
+
+Triangulate::Triangulate( bool optimize ): _optimizer(0)
+{
+  if ( optimize )
+    _optimizer = new Optimizer;
+}
+
+//================================================================================
+/*!
+ * \brief Destructor
+ */
+//================================================================================
+
+Triangulate::~Triangulate()
+{
+  delete _optimizer;
+  _optimizer = 0;
+}
 
 //================================================================================
 /*!

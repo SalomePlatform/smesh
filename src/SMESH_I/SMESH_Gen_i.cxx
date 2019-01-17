@@ -2431,14 +2431,16 @@ SMESH::SMESH_Mesh_ptr
 SMESH_Gen_i::Concatenate(const SMESH::ListOfIDSources& theMeshesArray,
                          CORBA::Boolean                theUniteIdenticalGroups,
                          CORBA::Boolean                theMergeNodesAndElements,
-                         CORBA::Double                 theMergeTolerance)
+                         CORBA::Double                 theMergeTolerance,
+                         SMESH::SMESH_Mesh_ptr         theMeshToAppendTo)
   throw ( SALOME::SALOME_Exception )
 {
   return ConcatenateCommon(theMeshesArray,
                            theUniteIdenticalGroups,
                            theMergeNodesAndElements,
                            theMergeTolerance,
-                           false);
+                           false,
+                           theMeshToAppendTo);
 }
 
 //================================================================================
@@ -2454,14 +2456,16 @@ SMESH::SMESH_Mesh_ptr
 SMESH_Gen_i::ConcatenateWithGroups(const SMESH::ListOfIDSources& theMeshesArray,
                                    CORBA::Boolean                theUniteIdenticalGroups,
                                    CORBA::Boolean                theMergeNodesAndElements,
-                                   CORBA::Double                 theMergeTolerance)
+                                   CORBA::Double                 theMergeTolerance,
+                                   SMESH::SMESH_Mesh_ptr         theMeshToAppendTo)
   throw ( SALOME::SALOME_Exception )
 {
   return ConcatenateCommon(theMeshesArray,
                            theUniteIdenticalGroups,
                            theMergeNodesAndElements,
                            theMergeTolerance,
-                           true);
+                           true,
+                           theMeshToAppendTo);
 }
 
 //================================================================================
@@ -2477,16 +2481,22 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::ListOfIDSources& theMeshesArray,
                                CORBA::Boolean                theUniteIdenticalGroups,
                                CORBA::Boolean                theMergeNodesAndElements,
                                CORBA::Double                 theMergeTolerance,
-                               CORBA::Boolean                theCommonGroups)
+                               CORBA::Boolean                theCommonGroups,
+                               SMESH::SMESH_Mesh_ptr         theMeshToAppendTo)
   throw ( SALOME::SALOME_Exception )
 {
   std::unique_ptr< TPythonDump > pPythonDump( new TPythonDump );
   TPythonDump& pythonDump = *pPythonDump; // prevent dump of called methods
 
-  // create mesh
-  SMESH::SMESH_Mesh_var newMesh = CreateEmptyMesh();
-  SMESH_Mesh_i*         newImpl = SMESH::DownCast<SMESH_Mesh_i*>( newMesh );
+  // create mesh if theMeshToAppendTo not provided
+  SMESH::SMESH_Mesh_var newMesh;
+  if ( CORBA::is_nil( theMeshToAppendTo ))
+    newMesh = CreateEmptyMesh();
+  else
+    newMesh = SMESH::SMESH_Mesh::_duplicate( theMeshToAppendTo );
+  SMESH_Mesh_i* newImpl = SMESH::DownCast<SMESH_Mesh_i*>( newMesh );
   if ( !newImpl ) return newMesh._retn();
+  newImpl->Load();
 
   ::SMESH_Mesh&   locMesh = newImpl->GetImpl();
   SMESHDS_Mesh* newMeshDS = locMesh.GetMeshDS();
@@ -2507,6 +2517,8 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::ListOfIDSources& theMeshesArray,
     SMESH::SMESH_Mesh_var initMesh = theMeshesArray[i]->GetMesh();
     SMESH_Mesh_i*         initImpl = SMESH::DownCast<SMESH_Mesh_i*>( initMesh );
     if ( !initImpl ) continue;
+    if ( initMesh->_is_equivalent( theMeshToAppendTo ))
+      continue;
     initImpl->Load();
 
     // assure that IDs increments by one during iteration
@@ -2693,11 +2705,12 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::ListOfIDSources& theMeshesArray,
 
   // Update Python script
   pythonDump << newMesh << " = " << this
-             << "." << ( theCommonGroups ? "ConcatenateWithGroups" : "Concatenate" ) << "("
+             << "." << ( theCommonGroups ? "ConcatenateWithGroups" : "Concatenate" ) << "( "
              << theMeshesArray << ", "
              << theUniteIdenticalGroups << ", "
              << theMergeNodesAndElements << ", "
-             << TVar( theMergeTolerance ) << ")";
+             << TVar( theMergeTolerance ) << ", "
+             << theMeshToAppendTo << " )";
 
   pPythonDump.reset(); // enable python dump from GetGroups()
 
@@ -4011,7 +4024,7 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                 CORBA::String_var objStr = GetORB()->object_to_string( grImpl->_this() );
                 int anId = myStudyContext->findId( string( objStr.in() ) );
                 char grpName[ 30 ];
-                sprintf( grpName, "Group %d", anId );
+                sprintf( grpName, "Group %d %d", anId, grImpl->GetLocalID() );
                 SMESHDS_GroupBase* aGrpBaseDS = grImpl->GetGroupDS();
                 aGrpBaseDS->SetStoreName( grpName );
               }
@@ -5334,7 +5347,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
       // get mesh old id
       CORBA::String_var iorString = GetORB()->object_to_string( myNewMeshImpl->_this() );
       int newId = myStudyContext->findId( iorString.in() );
-      int id = myStudyContext->getOldId( newId );
+      int meshOldId = myStudyContext->getOldId( newId );
 
       // try to find mesh data dataset
       if ( aTopGroup->ExistInternalObject( "Has data" ) ) {
@@ -5346,10 +5359,6 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
         aDataset->ReadFromDisk( strHasData );
         aDataset->CloseOnDisk();
         if ( strcmp( strHasData, "1") == 0 ) {
-          // read mesh data from MED file
-          // myReader.SetMesh( mySMESHDSMesh );
-          // myReader.SetMeshId( id );
-          // myReader.Perform();
           hasData = true;
         }
         delete [] strHasData;
@@ -5616,9 +5625,13 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
             // check if it is a group
             if ( name_dataset.substr( 0, 5 ) == "Group" ) {
               // --> get group id
-              int subid = atoi( name_dataset.substr( 5 ).c_str() );
+              char * endptr;
+              int subid = strtol( name_dataset.data() + 5, &endptr, 10 );
               if ( subid <= 0 )
                 continue;
+              int groupID = -1; // group local ID (also persistent)
+              if ( *endptr )
+                groupID = atoi( endptr + 1 );
               aDataset = new HDFdataset( name_dataset.c_str(), aGroup );
               aDataset->OpenOnDisk();
 
@@ -5675,7 +5688,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
               // Create group servant
               SMESH::ElementType type = (SMESH::ElementType)(ii - GetNodeGroupsTag() + 1);
               SMESH::SMESH_GroupBase_var aNewGroup = SMESH::SMESH_GroupBase::_duplicate
-                ( myNewMeshImpl->createGroup( type, nameFromFile, aShape, predicate ) );
+                ( myNewMeshImpl->createGroup( type, nameFromFile, groupID, aShape, predicate ) );
               delete [] nameFromFile;
               // Obtain a SMESHDS_Group object
               if ( aNewGroup->_is_nil() )
@@ -5724,10 +5737,10 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
       } // reading GROUPs
 
       // instead of reading mesh data, we read only brief information of all
-      // objects: mesh, groups, sub-meshes (issue 0021208 )
+      // objects: mesh, groups, sub-meshes (issue 0021208)
       if ( hasData )
       {
-        SMESH_PreMeshInfo::LoadFromFile( myNewMeshImpl, id,
+        SMESH_PreMeshInfo::LoadFromFile( myNewMeshImpl, meshOldId,
                                          meshfile.ToCString(), filename.ToCString(),
                                          !isMultiFile );
       }

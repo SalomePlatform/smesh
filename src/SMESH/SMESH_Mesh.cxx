@@ -521,11 +521,10 @@ int SMESH_Mesh::MEDToMesh(const char* theFileName, const char* theMeshName)
 
   // Reading groups (sub-meshes are out of scope of MED import functionality)
   std::list<TNameAndType> aGroupNames = myReader.GetGroupNamesAndTypes();
-  int anId;
   std::list<TNameAndType>::iterator name_type = aGroupNames.begin();
   for ( ; name_type != aGroupNames.end(); name_type++ )
   {
-    SMESH_Group* aGroup = AddGroup( name_type->second, name_type->first.c_str(), anId );
+    SMESH_Group* aGroup = AddGroup( name_type->second, name_type->first.c_str() );
     if ( aGroup ) {
       SMESHDS_Group* aGroupDS = dynamic_cast<SMESHDS_Group*>( aGroup->GetGroupDS() );
       if ( aGroupDS ) {
@@ -2029,16 +2028,18 @@ bool SMESH_Mesh::IsMainShape(const TopoDS_Shape& theShape) const
 
 SMESH_Group* SMESH_Mesh::AddGroup (const SMDSAbs_ElementType theType,
                                    const char*               theName,
-                                   int&                      theId,
+                                   const int                 theId,
                                    const TopoDS_Shape&       theShape,
                                    const SMESH_PredicatePtr& thePredicate)
 {
-  if (_mapGroup.count(_groupId))
+  if ( _mapGroup.count( theId ))
     return NULL;
-  theId = _groupId;
-  SMESH_Group* aGroup = new SMESH_Group (theId, this, theType, theName, theShape, thePredicate);
+  int id = ( theId < 0 ) ? _groupId : theId;
+  SMESH_Group* aGroup = new SMESH_Group ( id, this, theType, theName, theShape, thePredicate );
   GetMeshDS()->AddGroup( aGroup->GetGroupDS() );
-  _mapGroup[_groupId++] = aGroup;
+  _mapGroup[ id ] = aGroup;
+  while ( _mapGroup.count( _groupId ))
+    ++_groupId;
   return aGroup;
 }
 
@@ -2065,7 +2066,8 @@ SMESH_Group* SMESH_Mesh::AddGroup (SMESHDS_GroupBase* groupDS) throw(SALOME_Exce
   _mapGroup[ groupDS->GetID() ] = aGroup;
   GetMeshDS()->AddGroup( aGroup->GetGroupDS() );
 
-  _groupId = 1 + _mapGroup.rbegin()->first;
+  while ( _mapGroup.count( _groupId ))
+    ++_groupId;
 
   return aGroup;
 }
@@ -2091,8 +2093,8 @@ bool SMESH_Mesh::SynchronizeGroups()
     if ( !_mapGroup.count( _groupId ))
       _mapGroup[_groupId] = new SMESH_Group( groupDS );
   }
-  if ( !_mapGroup.empty() )
-    _groupId = _mapGroup.rbegin()->first + 1;
+  while ( _mapGroup.count( _groupId ))
+    ++_groupId;
 
   return nbGroups < _mapGroup.size();
 }
@@ -2115,11 +2117,12 @@ SMESH_Mesh::GroupIteratorPtr SMESH_Mesh::GetGroups() const
  */
 //=============================================================================
 
-SMESH_Group* SMESH_Mesh::GetGroup (const int theGroupID)
+SMESH_Group* SMESH_Mesh::GetGroup (const int theGroupID) const
 {
-  if (_mapGroup.find(theGroupID) == _mapGroup.end())
+  std::map <int, SMESH_Group*>::const_iterator id_grp = _mapGroup.find( theGroupID );
+  if ( id_grp == _mapGroup.end() )
     return NULL;
-  return _mapGroup[theGroupID];
+  return id_grp->second;
 }
 
 

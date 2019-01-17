@@ -307,7 +307,7 @@ public:
   // Returns errors of hypotheses definition
   SMESH::algo_error_array* GetAlgoState( SMESH::SMESH_Mesh_ptr theMesh,
                                          GEOM::GEOM_Object_ptr theSubObject )
-      throw ( SALOME::SALOME_Exception );
+    throw ( SALOME::SALOME_Exception );
 
   // Return mesh elements preventing computation of a subshape
   SMESH::MeshPreviewStruct* GetBadInputElements( SMESH::SMESH_Mesh_ptr theMesh,
@@ -341,14 +341,16 @@ public:
                                           CORBA::Boolean                uniteIdenticalGroups,
                                           CORBA::Boolean                mergeNodesAndElements,
                                           CORBA::Double                 mergeTolerance,
-                                          CORBA::Boolean                commonGroups)
+                                          CORBA::Boolean                commonGroups,
+                                          SMESH::SMESH_Mesh_ptr         meshToAppendTo)
     throw ( SALOME::SALOME_Exception );
 
   // Concatenate the given meshes into one mesh
   SMESH::SMESH_Mesh_ptr Concatenate(const SMESH::ListOfIDSources& meshesArray,
                                     CORBA::Boolean                uniteIdenticalGroups,
                                     CORBA::Boolean                mergeNodesAndElements,
-                                    CORBA::Double                 mergeTolerance)
+                                    CORBA::Double                 mergeTolerance,
+                                    SMESH::SMESH_Mesh_ptr         meshToAppendTo)
     throw ( SALOME::SALOME_Exception );
 
   // Concatenate the given meshes into one mesh
@@ -356,7 +358,8 @@ public:
   SMESH::SMESH_Mesh_ptr ConcatenateWithGroups(const SMESH::ListOfIDSources& meshesArray,
                                               CORBA::Boolean                uniteIdenticalGroups,
                                               CORBA::Boolean                mergeNodesAndElements,
-                                              CORBA::Double                 mergeTolerance)
+                                              CORBA::Double                 mergeTolerance,
+                                              SMESH::SMESH_Mesh_ptr         meshToAppendTo)
     throw ( SALOME::SALOME_Exception );
 
   // Get version of MED format being used.

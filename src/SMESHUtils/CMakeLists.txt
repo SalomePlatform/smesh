@@ -82,6 +82,8 @@ SET(SMESHUtils_SOURCES
   SMESH_FillHole.cxx
   SMESH_Triangulate.cxx
   SMESH_Offset.cxx
+  SMESH_Slot.cxx
+  SMESH_PolyLine.cxx
   )
 
 # --- rules ---

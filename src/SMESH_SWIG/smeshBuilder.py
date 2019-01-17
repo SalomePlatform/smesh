@@ -733,10 +733,10 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
 
     def Concatenate( self, meshes, uniteIdenticalGroups,
                      mergeNodesAndElements = False, mergeTolerance = 1e-5, allGroups = False,
-                     name = ""):
+                     name = "", meshToAppendTo = None):
         """
-        Concatenate the given meshes into one mesh. All groups of input meshes will be
-        present in the new mesh.
+        Concatenate the given meshes into one mesh, optionally to meshToAppendTo.
+        All groups of input meshes will be present in the new mesh.
 
         Parameters:
                 meshes: :class:`meshes, sub-meshes, groups or filters <SMESH.SMESH_IDSource>` to combine into one mesh
@@ -745,6 +745,7 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
                 mergeTolerance: tolerance for merging nodes
                 allGroups: forces creation of groups corresponding to every input mesh
                 name: name of a new mesh
+                meshToAppendTo a mesh to append all given meshes
 
         Returns:
                 an instance of class :class:`Mesh`
@@ -755,13 +756,21 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
             if isinstance(m, Mesh):
                 meshes[i] = m.GetMesh()
         mergeTolerance,Parameters,hasVars = ParseParameters(mergeTolerance)
-        meshes[0].SetParameters(Parameters)
+        if hasattr(meshes[0], "SetParameters"):
+            meshes[0].SetParameters(Parameters)
+        else:
+            meshes[0].GetMesh().SetParameters(Parameters)
+        if isinstance( meshToAppendTo, Mesh ):
+            meshToAppendTo = meshToAppendTo.GetMesh()
         if allGroups:
             aSmeshMesh = SMESH._objref_SMESH_Gen.ConcatenateWithGroups(
-                self,meshes,uniteIdenticalGroups,mergeNodesAndElements,mergeTolerance)
+                self,meshes,uniteIdenticalGroups,mergeNodesAndElements,
+                mergeTolerance,meshToAppendTo)
         else:
             aSmeshMesh = SMESH._objref_SMESH_Gen.Concatenate(
-                self,meshes,uniteIdenticalGroups,mergeNodesAndElements,mergeTolerance)
+                self,meshes,uniteIdenticalGroups,mergeNodesAndElements,
+                mergeTolerance,meshToAppendTo)
+
         aMesh = Mesh(self, self.geompyD, aSmeshMesh, name=name)
         return aMesh
 
@@ -1428,13 +1437,16 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
 
     def GetGravityCenter(self, obj):
         """
-        Get gravity center of all nodes of the mesh object.
+        Get gravity center of all nodes of a mesh object.
         
         Parameters:            
                 obj: :class:`mesh, sub-mesh, group or filter <SMESH.SMESH_IDSource>`
 
         Returns:        
-            Three components of the gravity center (x,y,z)
+                Three components of the gravity center (x,y,z)
+
+        See also: 
+                :meth:`Mesh.BaryCenter`
         """
         if isinstance(obj, Mesh): obj = obj.mesh
         if isinstance(obj, Mesh_Algorithm): obj = obj.GetSubMesh()
@@ -1617,6 +1629,18 @@ class Mesh(metaclass = MeshMeta):
         """
 
         return self.mesh
+
+    def GetEngine(self):
+        """
+        Return a smeshBuilder instance created this mesh
+        """
+        return self.smeshpyD
+
+    def GetGeomEngine(self):
+        """
+        Return a geomBuilder instance
+        """
+        return self.geompyD
 
     def GetName(self):
         """
@@ -2881,7 +2905,7 @@ class Mesh(metaclass = MeshMeta):
         Create a standalone group of entities basing on nodes of other groups.
 
         Parameters:
-                groups: list of reference :class:`sub-meshes, groups or filters <SMESH.SMESH_IDSource>`, of any type.
+                groups: list of :class:`sub-meshes, groups or filters <SMESH.SMESH_IDSource>`, of any type.
                 elemType: a type of elements to include to the new group; either of
                         (SMESH.NODE, SMESH.EDGE, SMESH.FACE, SMESH.VOLUME).
                 name: a name of the new group.
@@ -3532,16 +3556,20 @@ class Mesh(metaclass = MeshMeta):
 
         return self.mesh.GetNodeXYZ(id)
 
-    def GetNodeInverseElements(self, id):
+    def GetNodeInverseElements(self, id, elemType=SMESH.ALL):
         """
         Return list of IDs of inverse elements for the given node.
         If there is no node for the given ID - return an empty list
+
+        Parameters:
+                id: node ID
+                elementType: :class:`type of elements <SMESH.ElementType>` (SMESH.EDGE, SMESH.FACE, SMESH.VOLUME, etc.)
 
         Returns:
             list of integer values
         """
 
-        return self.mesh.GetNodeInverseElements(id)
+        return self.mesh.GetNodeInverseElements(id,elemType)
 
     def GetNodePosition(self,NodeID):
         """
@@ -3715,26 +3743,40 @@ class Mesh(metaclass = MeshMeta):
 
         Returns:
             a list of three double values
+
+        See also: 
+                :meth:`smeshBuilder.GetGravityCenter`
         """
 
         return self.mesh.BaryCenter(id)
 
-    def GetIdsFromFilter(self, theFilter):
+    def GetIdsFromFilter(self, filter, meshParts=[] ):
         """
         Pass mesh elements through the given filter and return IDs of fitting elements
 
         Parameters:
-                theFilter: :class:`SMESH.Filter`
+                filter: :class:`SMESH.Filter`
+                meshParts: list of mesh parts (:class:`sub-mesh, group or filter <SMESH.SMESH_IDSource>`) to filter
 
         Returns:
             a list of ids
 
         See Also:
             :meth:`SMESH.Filter.GetIDs`
+            :meth:`SMESH.Filter.GetElementsIdFromParts`
         """
 
-        theFilter.SetMesh( self.mesh )
-        return theFilter.GetIDs()
+        filter.SetMesh( self.mesh )
+
+        if meshParts:
+            if isinstance( meshParts, Mesh ):
+                filter.SetMesh( meshParts.GetMesh() )
+                return theFilter.GetIDs()
+            if isinstance( meshParts, SMESH._objref_SMESH_IDSource ):
+                meshParts = [ meshParts ]
+            return filter.GetElementsIdFromParts( meshParts )
+
+        return filter.GetIDs()
 
     # Get mesh measurements information:
     # ------------------------------------
@@ -4256,8 +4298,6 @@ class Mesh(metaclass = MeshMeta):
             the ID of a node
         """
 
-        #preview = self.mesh.GetMeshEditPreviewer()
-        #return preview.MoveClosestNodeToPoint(x, y, z, -1)
         return self.editor.FindNodeClosestTo(x, y, z)
 
     def FindElementsByPoint(self, x, y, z, elementType = SMESH.ALL, meshPart=None):
@@ -4278,16 +4318,18 @@ class Mesh(metaclass = MeshMeta):
         else:
             return self.editor.FindElementsByPoint(x, y, z, elementType)
 
-    def ProjectPoint(self, x,y,z, meshObject, elementType):
+    def ProjectPoint(self, x,y,z, elementType, meshObject=None):
         """
         Project a point to a mesh object.
         Return ID of an element of given type where the given point is projected
         and coordinates of the projection point.
         In the case if nothing found, return -1 and []
         """
-        if ( isinstance( meshObject, Mesh )):
+        if isinstance( meshObject, Mesh ):
             meshObject = meshObject.GetMesh()
-        return self.editor.ProjectPoint( x,y,z, meshObject, elementType )
+        if not meshObject:
+            meshObject = self.GetMesh()
+        return self.editor.ProjectPoint( x,y,z, elementType, meshObject )
 
     def GetPointState(self, x, y, z):
         """
@@ -4312,6 +4354,25 @@ class Mesh(metaclass = MeshMeta):
 
         return self.editor.IsCoherentOrientation2D()
 
+    def Get1DBranches( self, edges, startNode = 0 ):
+        """
+        Partition given 1D elements into groups of contiguous edges.
+        A node where number of meeting edges != 2 is a group end.
+        An optional startNode is used to orient groups it belongs to.
+
+        Returns:
+             A list of edge groups and a list of corresponding node groups,
+             where the group is a list of IDs of edges or elements.
+             If a group is closed, the first and last nodes of the group are same.
+        """
+        if isinstance( edges, Mesh ):
+            edges = edges.GetMesh()
+        unRegister = genObjUnRegister()
+        if isinstance( edges, list ):
+            edges = self.GetIDSource( edges, SMESH.EDGE )
+            unRegister.set( edges )
+        return self.editor.Get1DBranches( edges, startNode )
+    
     def FindSharpEdges( self, angle, addExisting=False ):
         """
         Return sharp edges of faces and non-manifold ones.
@@ -5102,7 +5163,7 @@ class Mesh(metaclass = MeshMeta):
                 groups: list of :class:`sub-meshes, groups or filters <SMESH.SMESH_IDSource>` of elements to make boundary around
 
         Returns:
-                tuple( long, mesh, groups )
+                tuple( long, mesh, group )
                        - long - number of added boundary elements
                        - mesh - the :class:`Mesh` where elements were added to
                        - group - the :class:`group <SMESH.SMESH_Group>` of boundary elements or None
@@ -6178,7 +6239,7 @@ class Mesh(metaclass = MeshMeta):
 
         Parameters:
             Tolerance: the value of tolerance
-            SubMeshOrGroup: :class:`sub-mesh, group or filter <SMESH.SMESH_IDSource>`
+            SubMeshOrGroup: :class:`sub-mesh, group or filter <SMESH.SMESH_IDSource>` or node IDs
             exceptNodes: list of either SubMeshes, Groups or node IDs to exclude from search
             SeparateCornerAndMediumNodes: if *True*, in quadratic mesh puts
                 corner and medium nodes in separate groups thus preventing
@@ -6191,11 +6252,16 @@ class Mesh(metaclass = MeshMeta):
         unRegister = genObjUnRegister()
         if (isinstance( SubMeshOrGroup, Mesh )):
             SubMeshOrGroup = SubMeshOrGroup.GetMesh()
+        if isinstance( SubMeshOrGroup, list ):
+            SubMeshOrGroup = self.GetIDSource( SubMeshOrGroup, SMESH.NODE )
+            unRegister.set( SubMeshOrGroup )
+
         if not isinstance( exceptNodes, list ):
             exceptNodes = [ exceptNodes ]
         if exceptNodes and isinstance( exceptNodes[0], int ):
             exceptNodes = [ self.GetIDSource( exceptNodes, SMESH.NODE )]
             unRegister.set( exceptNodes )
+
         return self.editor.FindCoincidentNodesOnPartBut(SubMeshOrGroup, Tolerance,
                                                         exceptNodes, SeparateCornerAndMediumNodes)
 
@@ -6755,7 +6821,18 @@ class Mesh(metaclass = MeshMeta):
             segments[i].vector = seg.vector
         if isPreview:
             return editor.GetPreviewData()
-        return None        
+        return None
+
+    def MakeSlot(self, segmentGroup, width ):
+        """
+        Create a slot of given width around given 1D elements lying on a triangle mesh.
+        The slot is consrtucted by cutting faces by cylindrical surfaces made
+        around each segment. Segments are expected to be created by MakePolyLine().
+
+        Returns:
+               FaceEdge's located at the slot boundary
+        """
+        return self.editor.MakeSlot( segmentGroup, width )
 
     def GetFunctor(self, funcType ):
         """
@@ -6856,11 +6933,15 @@ class Mesh(metaclass = MeshMeta):
                 node1,node2,node3: IDs of the three nodes
 
         Returns:        
-            Angle in radians
+            Angle in radians [0,PI]. -1 if failure case.
         """
-        return self.smeshpyD.GetAngle( self.GetNodeXYZ( node1 ),
-                                       self.GetNodeXYZ( node2 ),
-                                       self.GetNodeXYZ( node3 ))
+        p1 = self.GetNodeXYZ( node1 )
+        p2 = self.GetNodeXYZ( node2 )
+        p3 = self.GetNodeXYZ( node3 )
+        if p1 and p2 and p3:
+            return self.smeshpyD.GetAngle( p1,p2,p3 )
+        return -1.
+
 
     def GetMaxElementLength(self, elemId):
         """

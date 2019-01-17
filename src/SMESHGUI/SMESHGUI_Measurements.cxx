@@ -173,11 +173,11 @@ SMESHGUI_MinDistance::SMESHGUI_MinDistance( QWidget* parent )
   aSOrigin->setChecked( true );
 #ifndef MINDIST_ENABLE_ELEMENT
   aFElem->setEnabled( false );   // NOT AVAILABLE YET
-  aSElem->setEnabled( false );   // NOT AVAILABLE YET
+  //aSElem->setEnabled( false );   // NOT AVAILABLE YET
 #endif
 #ifndef MINDIST_ENABLE_OBJECT
   aFObject->setEnabled( false ); // NOT AVAILABLE YET
-  aSObject->setEnabled( false ); // NOT AVAILABLE YET
+  //aSObject->setEnabled( false ); // NOT AVAILABLE YET
 #endif
   myDX->setReadOnly( true );
   myDY->setReadOnly( true );
@@ -595,9 +595,13 @@ void SMESHGUI_MinDistance::compute()
     if ( isOrigin ) {
       x2 = y2 = z2 = 0.;
     }
-    else {
+    else if ( mySecond->checkedId() == NodeTgt ) {
       coord = s2->GetMesh()->GetNodeXYZ( result.node2 );
       x2 = coord[0]; y2 = coord[1]; z2 = coord[2];
+    }
+    else
+    {
+      x2 = result.maxX; y2 = result.maxY; z2 = result.maxZ; 
     }
     createPreview( x1, y1, z1, x2, y2, z2 );
     displayPreview();

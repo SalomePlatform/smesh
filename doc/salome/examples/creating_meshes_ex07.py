@@ -2,11 +2,8 @@
 
 import salome
 salome.salome_init()
-import GEOM
 from salome.geom import geomBuilder
 geompy = geomBuilder.New()
-
-import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 smesh =  smeshBuilder.New()
 
@@ -76,6 +73,13 @@ Compound1 = smesh.Concatenate([Mesh_inf, Mesh_sup], 0, 1, 1e-05,
 # creating groups of all elements
 Compound2 = smesh.Concatenate([Mesh_inf, Mesh_sup], 1, 0, 1e-05, True,
                               name='Compound with UniteGrps and GrpsOfAllElems')
+
+# copy Gsup1 into a separate mesh and translate it
+groupMesh = Mesh_inf.TranslateObjectMakeMesh( Gsup1, [300,0,0] )
+
+# add Ginf2 to groupMesh
+smesh.Concatenate([Ginf2], False, meshToAppendTo = groupMesh )
+
 
 if salome.sg.hasDesktop():
     salome.sg.updateObjBrowser()

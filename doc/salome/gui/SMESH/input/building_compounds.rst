@@ -4,8 +4,13 @@
 Building Compound Meshes
 ************************
 
-Compound Mesh is a combination of several meshes. All elements and groups present in input meshes are present in the compound mesh. However, it does not use geometry or hypotheses of the initial meshes. 
+Compound Mesh is a combination of several mesh objects (meshes, groups, submeshes). All elements and groups present in input meshes are present in the compound mesh. However, it does not use geometry or hypotheses of the initial mesh objects.
 The links between the input meshes and the compound mesh are not supported, consequently the modification of an input mesh does not lead to the update of the compound mesh.
+
+There are two modes of building a compound:
+
+* joining selected mesh objects into a new mesh.
+* appending selected mesh objects to an existing mesh.
 
 *To Build a compound mesh:*
 
@@ -16,9 +21,13 @@ From the **Mesh** menu select **Build Compound** or click *"Build Compound Mesh"
 	.. image:: ../images/buildcompound.png
 		:align: center
 
-* **Name** - allows selecting the name of the resulting **Compound** mesh.
-* **Meshes, sub-meshes, groups** - allows selecting the meshes, sub-meshes and groups to be concatenated. They can be chosen in the Object Browser while holding **Ctrl** button.
-* **Processing identical groups** - allows selecting the method of processing the namesake groups existing in the input meshes. They can be either 
+* **Result** group allows selecting a mode of operation
+
+  * Activating **Create new mesh named** enables typing the name of the resulting compound mesh.
+  * Activating **Append to mesh** enables selection of a mesh to append other selected objects to.
+   
+* **Meshes, sub-meshes, groups** allows selecting the meshes, sub-meshes and groups to be concatenated. They can be chosen in the Object Browser while holding *Ctrl* button.
+* **Processing identical groups** allows selecting the method of processing the namesake groups existing in the input meshes. They can be either 
 
   * **United** - all elements of *Group1* of *Mesh_1* and *Group1* of *Mesh_2* become the elements of *Group1* of the *Compound_Mesh*, or
   * **Renamed** - *Group1* of *Mesh_1* becomes *Group1_1* and *Group1* of *Mesh_2* becomes *Group1_2*.

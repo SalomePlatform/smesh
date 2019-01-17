@@ -23,7 +23,7 @@
 // Created   : Tue Apr 30 18:00:36 2013
 // Author    : Edward AGAPOV (eap)
 
-// This file holds some low level algorithms extracted from SMESH_MeshEditor
+// Initially this file held some low level algorithms extracted from SMESH_MeshEditor
 // to make them accessible from Controls package, and more
 
 
@@ -37,14 +37,17 @@
 #include "SMESH_TypeDefs.hxx"
 
 #include <TopAbs_State.hxx>
+#include <gp_Pnt.hxx>
+#include <gp_Vec.hxx>
+
 #include <vector>
 
-class gp_Pnt;
-class gp_Ax1;
 class Bnd_B3d;
-class SMDS_MeshNode;
-class SMDS_MeshElement;
+class gp_Ax1;
 class SMDS_Mesh;
+class SMDS_MeshElement;
+class SMDS_MeshGroup;
+class SMDS_MeshNode;
 
 //=======================================================================
 /*!
@@ -198,6 +201,22 @@ namespace SMESH_MeshAlgos
   bool IsRightOrder( const SMDS_MeshElement* face,
                      const SMDS_MeshNode*    node0,
                      const SMDS_MeshNode*    node1 );
+
+  typedef std::vector< std::vector< const SMDS_MeshElement* > > TElemGroupVector;
+  typedef std::vector< std::vector< const SMDS_MeshNode* > >    TNodeGroupVector;
+  /*!
+   * \brief Partition given 1D elements into groups of contiguous edges.
+   *        A node where number of meeting edges != 2 is a group end.
+   *        An optional startNode is used to orient groups it belongs to.
+   * \return a list of edge groups and a list of corresponding node groups.
+   *         If a group is closed, the first and last nodes of the group are same.
+   */
+  SMESHUtils_EXPORT
+  void Get1DBranches( SMDS_ElemIteratorPtr edgeIt,
+                      TElemGroupVector&    edgeGroups,
+                      TNodeGroupVector&    nodeGroups,
+                      const SMDS_MeshNode* startNode = 0 );
+
   /*!
    * \brief Mark elements given by SMDS_Iterator
    */
@@ -320,7 +339,6 @@ namespace SMESH_MeshAlgos
                 std::vector<const SMDS_MeshElement*>& newFaces);
   // Implemented in ./SMESH_FillHole.cxx
 
-
   /*!
    * \brief Find nodes whose merge makes the element invalid
    */
@@ -331,8 +349,8 @@ namespace SMESH_MeshAlgos
   // Implemented in SMESH_DeMerge.cxx
 
 
-  typedef std::vector< std::pair< const SMDS_MeshElement*, const SMDS_MeshElement* > > TEPairVec;
-  typedef std::vector< std::pair< const SMDS_MeshNode*, const SMDS_MeshNode* > >       TNPairVec;
+  typedef std::vector< std::pair< const SMDS_MeshElement*, int > > TElemIntPairVec;
+  typedef std::vector< std::pair< const SMDS_MeshNode*,    int > > TNodeIntPairVec;
   /*!
    * \brief Create an offset mesh of given faces
    *  \param [in] faceIt - the input faces
@@ -346,19 +364,76 @@ namespace SMESH_MeshAlgos
                          SMDS_Mesh&           mesh,
                          const double         offset,
                          const bool           theFixIntersections,
-                         TEPairVec&           new2OldFaces,
-                         TNPairVec&           new2OldNodes );
+                         TElemIntPairVec&           new2OldFaces,
+                         TNodeIntPairVec&           new2OldNodes );
   // Implemented in ./SMESH_Offset.cxx
 
 
+  //=======================================================================
+  /*!
+   * \brief Cut faces of a triangular mesh.
+   *  Usage work-flow: 1) call Cut() methods as many times as needed
+   *                   2) call MakeNewFaces() to really modify the mesh faces
+   */
+  //=======================================================================
+  // implemented in SMESH_Offset.cxx
+
+  class SMESHUtils_EXPORT Intersector
+  {
+  public:
+    Intersector( SMDS_Mesh* mesh, double tol, const std::vector< gp_XYZ >& normals );
+    ~Intersector();
+
+    //! Compute cut of two faces of the mesh
+    void Cut( const SMDS_MeshElement* face1,
+              const SMDS_MeshElement* face2,
+              const int               nbCommonNodes = -1 );
+
+    //! Store a face cut by a line given by its ends lying either on face edges or inside the face.
+    //  Line ends are accompanied by indices of intersected face edges.
+    //  Edge index is <0 if a line end is inside the face.
+    void Cut( const SMDS_MeshElement* face,
+              SMESH_NodeXYZ&          lineEnd1,
+              int                     edgeIndex1,
+              SMESH_NodeXYZ&          lineEnd2,
+              int                     edgeIndex2 );
+
+    //! Split all faces intersected by Cut() methods.
+    //  theSign = (-1|1) is used to choose which part of a face cut by another one to remove.
+    //  1 means to remove a part opposite to face normal.
+    //  Optionally optimize quality of split faces by edge swapping.
+    void MakeNewFaces( SMESH_MeshAlgos::TElemIntPairVec& theNew2OldFaces,
+                       SMESH_MeshAlgos::TNodeIntPairVec& theNew2OldNodes,
+                       const double                      theSign = 1.,
+                       const bool                        theOptimize = false );
+
+    typedef std::vector< SMESH_NodeXYZ > TFace;
+
+    //! Cut a face by planes, whose normals point to parts to keep.
+    //  Return true if the whole face is cut off
+    static bool CutByPlanes(const SMDS_MeshElement*       face,
+                            const std::vector< gp_Ax1 > & planes,
+                            const double                  tol,
+                            std::vector< TFace > &        newFaceConnectivity );
+
+  private:
+    struct Algo;
+    Algo* myAlgo;
+  };
+
+  //=======================================================================
   /*!
    * \brief Divide a mesh face into triangles
    */
+  //=======================================================================
   // Implemented in ./SMESH_Triangulate.cxx
 
   class SMESHUtils_EXPORT Triangulate
   {
   public:
+
+    Triangulate(bool optimize=false);
+    ~Triangulate();
 
     static int GetNbTriangles( const SMDS_MeshElement* face );
 
@@ -374,19 +449,81 @@ namespace SMESH_MeshAlgos
     struct PolyVertex
     {
       SMESH_NodeXYZ _nxyz;
+      size_t        _index;
       gp_XY         _xy;
       PolyVertex*   _prev;
       PolyVertex*   _next;
 
-      void   SetNodeAndNext( const SMDS_MeshNode* n, PolyVertex& v );
-      void   GetTriaNodes( const SMDS_MeshNode** nodes) const;
+      void   SetNodeAndNext( const SMDS_MeshNode* n, PolyVertex& v, size_t index );
+      void   GetTriaNodes( const SMDS_MeshNode** nodes, size_t* nodeIndices) const;
       double TriaArea() const;
       bool   IsInsideTria( const PolyVertex* v );
       PolyVertex* Delete();
     };
+    struct Optimizer;
+
     std::vector< PolyVertex > _pv;
+    std::vector< size_t >     _nodeIndex;
+    Optimizer*                _optimizer;
   };
 
+  // structure used in MakePolyLine() to define a cutting plane
+  struct PolySegment
+  {
+    // 2 points, each defined as follows:
+    // ( myNode1 &&  myNode2 ) ==> point is in the middle of an edge defined by two nodes
+    // ( myNode1 && !myNode2 ) ==> point is at myNode1 of a some face
+    // else                    ==> point is at myXYZ
+    const SMDS_MeshNode*    myNode1[2];
+    const SMDS_MeshNode*    myNode2[2];
+    gp_XYZ                  myXYZ  [2];
+
+    // face on which myXYZ projects (found by MakePolyLine())
+    const SMDS_MeshElement* myFace [2];
+
+    // vector on the plane; to use a default plane set vector = (0,0,0)
+    gp_Vec myVector;
+
+    // point returning coordinates of a middle of the two points, projected to mesh
+    gp_Pnt myMidProjPoint;
+  };
+  typedef std::vector<PolySegment> TListOfPolySegments;
+
+  /*!
+   * \brief Create a polyline consisting of 1D mesh elements each lying on a 2D element of
+   *        the initial mesh. Positions of new nodes are found by cutting the mesh by the
+   *        plane passing through pairs of points specified by each PolySegment structure.
+   *        If there are several paths connecting a pair of points, the shortest path is
+   *        selected by the module. Position of the cutting plane is defined by the two
+   *        points and an optional vector lying on the plane specified by a PolySegment.
+   *        By default the vector is defined by Mesh module as following. A middle point
+   *        of the two given points is computed. The middle point is projected to the mesh.
+   *        The vector goes from the middle point to the projection point. In case of planar
+   *        mesh, the vector is normal to the mesh.
+   *  \param [inout] segments - PolySegment's defining positions of cutting planes.
+   *        Return the used vector and position of the middle point.
+   *  \param [in] group - an optional group where created mesh segments will
+   *        be added.
+   */
+  // Implemented in ./SMESH_PolyLine.cxx
+  SMESHUtils_EXPORT
+  void MakePolyLine( SMDS_Mesh*                            mesh,
+                     TListOfPolySegments&                  segments,
+                     std::vector<const SMDS_MeshElement*>& newEdges,
+                     std::vector<const SMDS_MeshNode*>&    newNodes,
+                     SMDS_MeshGroup*                       group=0,
+                     SMESH_ElementSearcher*                searcher=0);
+
+  /*!
+   * Create a slot of given width around given 1D elements lying on a triangle mesh.
+   * The slot is consrtucted by cutting faces by cylindrical surfaces made around each segment.
+   * \return Edges located at the slot boundary
+   */
+  // Implemented in ./SMESH_Slot.cxx
+  SMESHUtils_EXPORT
+  std::vector< Edge > MakeSlot( SMDS_ElemIteratorPtr segmentIt,
+                                double               width,
+                                SMDS_Mesh*           mesh);
 
 } // namespace SMESH_MeshAlgos
 

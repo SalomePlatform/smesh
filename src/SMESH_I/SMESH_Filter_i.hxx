@@ -996,7 +996,11 @@ namespace SMESH
     GetElementsId( SMESH_Mesh_ptr );
 
     virtual
-    ElementType      
+    long_array*
+    GetElementsIdFromParts( const ListOfIDSources& theParts );
+
+    virtual
+    ElementType
     GetElementType();
     
     virtual

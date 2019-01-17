@@ -65,6 +65,8 @@
 #define SPACING 6
 #define MARGIN  11
 
+enum { NEW_MESH_ID, APPEND_TO_ID };
+
 //=================================================================================
 // name    : SMESHGUI_BuildCompoundDlg
 // Purpose :
@@ -103,16 +105,28 @@ SMESHGUI_BuildCompoundDlg::SMESHGUI_BuildCompoundDlg( SMESHGUI* theModule )
   ButtonGroup->addButton(Constructor1, 0);
 
   /***************************************************************/
-  GroupName = new QGroupBox(tr("RESULT_NAME"), this);
-  QHBoxLayout* GroupNameLayout = new QHBoxLayout(GroupName);
-  GroupNameLayout->setSpacing(SPACING);
-  GroupNameLayout->setMargin(MARGIN);
+  GroupResult = new QGroupBox(tr("RESULT_NAME"), this);
+  QGridLayout* GroupResultLayout = new QGridLayout(GroupResult);
+  GroupResultLayout->setSpacing(SPACING);
+  GroupResultLayout->setMargin(MARGIN);
 
-  TextLabelName = new QLabel(tr("SMESH_NAME"), GroupName);
-  LineEditName = new QLineEdit(GroupName);
+  QRadioButton* newMeshRadioBtn = new QRadioButton( tr("NEW_MESH_NAME"), GroupResult );
+  QRadioButton* appendToRadioBtn = new QRadioButton( tr("MESH_APPEND_TO"), GroupResult );
+  LineEditNewName = new QLineEdit(GroupResult);
+  LineEditAppendTo = new QLineEdit(GroupResult);
+  SelectButtonAppendTo = new QPushButton(GroupResult);
+  SelectButtonAppendTo->setIcon(image1);
+  SelectButtonAppendTo->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
+  ResultButtonGroup = new QButtonGroup( GroupResult );
+  ResultButtonGroup->addButton( newMeshRadioBtn,  NEW_MESH_ID );
+  ResultButtonGroup->addButton( appendToRadioBtn, APPEND_TO_ID );
+  newMeshRadioBtn->setChecked( true );
 
-  GroupNameLayout->addWidget(TextLabelName);
-  GroupNameLayout->addWidget(LineEditName);
+  GroupResultLayout->addWidget( newMeshRadioBtn,      0, 0, 1, 2 );
+  GroupResultLayout->addWidget( LineEditNewName,      0, 2 );
+  GroupResultLayout->addWidget( appendToRadioBtn,     1, 0 );
+  GroupResultLayout->addWidget( SelectButtonAppendTo, 1, 1 );
+  GroupResultLayout->addWidget( LineEditAppendTo,     1, 2 );
 
   /***************************************************************/
   GroupArgs = new QGroupBox(tr("SMESH_ARGUMENTS"), this);
@@ -175,7 +189,7 @@ SMESHGUI_BuildCompoundDlg::SMESHGUI_BuildCompoundDlg( SMESHGUI* theModule )
 
   /***************************************************************/
   aTopLayout->addWidget(GroupConstructors);
-  aTopLayout->addWidget(GroupName);
+  aTopLayout->addWidget(GroupResult);
   aTopLayout->addWidget(GroupArgs);
   aTopLayout->addWidget(GroupButtons);
 
@@ -200,11 +214,11 @@ void SMESHGUI_BuildCompoundDlg::Init()
 {
   mySMESHGUI->SetActiveDialogBox((QDialog*)this);
 
-  myMesh = SMESH::SMESH_IDSource::_nil();
+  myMeshToAppendTo = SMESH::SMESH_Mesh::_nil();
+  myMeshArray      = new SMESH::ListOfIDSources();
 
-  myMeshFilter = new SMESH_TypeFilter (SMESH::IDSOURCE);
-
-  myMeshArray = new SMESH::ListOfIDSources();
+  myMeshFilter     = new SMESH_TypeFilter (SMESH::IDSOURCE);
+  myAppendToFilter = new SMESH_TypeFilter (SMESH::MESH);
 
   // signals and slots connections
   connect(buttonOk,     SIGNAL(clicked()), this, SLOT(ClickOnOk()));
@@ -212,7 +226,10 @@ void SMESHGUI_BuildCompoundDlg::Init()
   connect(buttonApply,  SIGNAL(clicked()), this, SLOT(ClickOnApply()));
   connect(buttonHelp,   SIGNAL(clicked()), this, SLOT(ClickOnHelp()));
 
-  connect(SelectButton, SIGNAL(clicked()), this, SLOT(SelectionIntoArgument()));
+  connect(ResultButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(onResultTypeChange(int)));
+
+  connect(SelectButtonAppendTo, SIGNAL(clicked()), this, SLOT(onSelectionButton()));
+  connect(SelectButton, SIGNAL(clicked()), this, SLOT(onSelectionButton()));
 
   connect(CheckBoxMerge, SIGNAL(toggled(bool)), this, SLOT(onSelectMerge(bool)));
 
@@ -221,8 +238,7 @@ void SMESHGUI_BuildCompoundDlg::Init()
   connect(mySMESHGUI, SIGNAL(SignalDeactivateActiveDialog()), this, SLOT(DeactivateActiveDialog()));
   connect(mySMESHGUI, SIGNAL(SignalCloseAllDialogs()),        this, SLOT(reject()));
 
-  LineEditName->setText(GetDefaultName(tr("COMPOUND_MESH")));
-  LineEditMeshes->setFocus();
+  LineEditNewName->setText(GetDefaultName(tr("COMPOUND_MESH")));
 
   ComboBoxUnion->addItem(tr("UNITE"));
   ComboBoxUnion->addItem(tr("RENAME"));
@@ -235,10 +251,9 @@ void SMESHGUI_BuildCompoundDlg::Init()
 
   SpinBoxTol->setEnabled(CheckBoxMerge->isChecked());
 
-  mySelectionMgr->clearFilters();
-  mySelectionMgr->installFilter(myMeshFilter);
+  onResultTypeChange( ResultButtonGroup->checkedId() );
 
-  SelectionIntoArgument();
+  onSelectionButton();
 }
 
 //=================================================================================
@@ -290,7 +305,9 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
 
   SMESH::SMESH_Mesh_var aMesh;
 
-  if (!myMesh->_is_nil())
+  int nbMeshes = myMeshArray->length() + ( !myMeshToAppendTo->_is_nil() );
+
+  if ( nbMeshes > 1 )
   {
     QStringList aParameters;
     aParameters << (CheckBoxMerge->isChecked() ? SpinBoxTol->text() : QString(" "));
@@ -307,16 +324,19 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
         aMesh = aSMESHGen->ConcatenateWithGroups(myMeshArray,
                                                  !(ComboBoxUnion->currentIndex()),
                                                  CheckBoxMerge->isChecked(),
-                                                 SpinBoxTol->GetValue());
+                                                 SpinBoxTol->GetValue(),
+                                                 myMeshToAppendTo);
       else
         aMesh = aSMESHGen->Concatenate(myMeshArray,
                                        !(ComboBoxUnion->currentIndex()),
                                        CheckBoxMerge->isChecked(),
-                                       SpinBoxTol->GetValue());
+                                       SpinBoxTol->GetValue(),
+                                       myMeshToAppendTo);
 
       _PTR(SObject) aSO = SMESH::FindSObject( aMesh );
       if( aSO ) {
-        SMESH::SetName( aSO, LineEditName->text() );
+        if ( myMeshToAppendTo->_is_nil() )
+          SMESH::SetName( aSO, LineEditNewName->text() );
         anEntryList.append( aSO->GetID().c_str() );
       }
       mySMESHGUI->updateObjBrowser();
@@ -324,7 +344,7 @@ bool SMESHGUI_BuildCompoundDlg::ClickOnApply()
       return false;
     }
 
-    LineEditName->setText(GetDefaultName(tr("COMPOUND_MESH")));
+    LineEditNewName->setText(GetDefaultName(tr("COMPOUND_MESH")));
 
     // IPAL21468 Compound is hidden after creation.
     if ( SMESHGUI::automaticUpdate() ) {
@@ -401,30 +421,41 @@ void SMESHGUI_BuildCompoundDlg::SelectionIntoArgument()
     return;
 
   QString aString = "";
-
   SALOME_ListIO aList;
+
   mySelectionMgr->selectedObjects(aList);
   int nbSel = SMESH::GetNameOfSelectedIObjects(mySelectionMgr, aString);
 
-  if (nbSel != 0) {
-    myMeshArray->length(nbSel);
-    for (int i = 0; nbSel != 0; i++, nbSel--) {
-      Handle(SALOME_InteractiveObject) IO = aList.First();
+  bool toAppend = ( CurrentLineEdit == LineEditAppendTo );
+  bool     isOk = toAppend ? ( nbSel == 1 ) : ( nbSel > 0 );
+  if ( !isOk )
+    aString = "";
+
+  if ( toAppend )
+  {
+    myMeshToAppendTo = SMESH::SMESH_Mesh::_nil();
+    if ( isOk )
+      myMeshToAppendTo = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>( aList.First() );
+  }
+  else
+  {
+    myMeshArray->length( nbSel );
+    for ( int i = 0; !aList.IsEmpty(); i++ ) {
+      myMeshArray[i] = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>(aList.First());
       aList.RemoveFirst();
-      myMesh = SMESH::IObjectToInterface<SMESH::SMESH_IDSource>(IO);
-      myMeshArray[i] = myMesh;
     }
   }
-  else {
-    myMesh = SMESH::SMESH_IDSource::_nil();
-    aString = "";
-  }
+  CurrentLineEdit->setText(aString);
 
-  LineEditMeshes->setText(aString);
-
-  bool isEnabled = (!myMesh->_is_nil());
-  buttonOk->setEnabled(isEnabled);
-  buttonApply->setEnabled(isEnabled);
+  bool isEnabled;
+  if ( ResultButtonGroup->checkedId() == NEW_MESH_ID )
+    isEnabled = ( myMeshArray->length() > 1 );
+  else
+    isEnabled = ( myMeshArray->length() > 0 &&
+                  !myMeshToAppendTo->_is_nil() &&
+                  LineEditAppendTo->text() != LineEditMeshes->text() );
+  buttonOk   ->setEnabled( isEnabled );
+  buttonApply->setEnabled( isEnabled );
 }
 
 //=================================================================================
@@ -435,7 +466,7 @@ void SMESHGUI_BuildCompoundDlg::DeactivateActiveDialog()
 {
   if (GroupConstructors->isEnabled()) {
     GroupConstructors->setEnabled(false);
-    GroupName->setEnabled(false);
+    GroupResult->setEnabled(false);
     GroupArgs->setEnabled(false);
     GroupButtons->setEnabled(false);
     mySMESHGUI->ResetState();
@@ -452,7 +483,7 @@ void SMESHGUI_BuildCompoundDlg::ActivateThisDialog()
   /* Emit a signal to deactivate the active dialog */
   mySMESHGUI->EmitSignalDeactivateDialog();
   GroupConstructors->setEnabled(true);
-  GroupName->setEnabled(true);
+  GroupResult->setEnabled(true);
   GroupArgs->setEnabled(true);
   GroupButtons->setEnabled(true);
 
@@ -498,6 +529,56 @@ void SMESHGUI_BuildCompoundDlg::onSelectMerge(bool toMerge)
   SpinBoxTol->setEnabled(toMerge);
   if(!toMerge)
     SpinBoxTol->SetValue(1e-05);
+}
+
+//=======================================================================
+//function : onResultTypeChange
+//purpose  : 
+//=======================================================================
+
+void SMESHGUI_BuildCompoundDlg::onResultTypeChange( int buttonID )
+{
+  LineEditNewName     ->setEnabled( buttonID == NEW_MESH_ID );
+  SelectButtonAppendTo->setEnabled( buttonID == APPEND_TO_ID );
+  LineEditAppendTo    ->setEnabled( buttonID == APPEND_TO_ID );
+
+  if ( CurrentLineEdit == LineEditAppendTo && buttonID == NEW_MESH_ID )
+    onSelectionButton(); // to select into myMeshArray
+    
+  if ( buttonID == NEW_MESH_ID )
+  {
+    myMeshToAppendTo = SMESH::SMESH_Mesh::_nil();
+    LineEditAppendTo->setText("");
+  }
+  else
+  {
+    // activate selection of myMeshToAppendTo
+    SelectButtonAppendTo->click();
+    LineEditAppendTo->setFocus();
+  }
+}
+
+//=======================================================================
+//function : onSelectionButton
+//purpose  : 
+//=======================================================================
+
+void SMESHGUI_BuildCompoundDlg::onSelectionButton()
+{
+  mySelectionMgr->clearFilters();
+  if ( sender() == SelectButtonAppendTo )
+  {
+    mySelectionMgr->installFilter( myAppendToFilter );
+    CurrentLineEdit = LineEditAppendTo;
+  }
+  else
+  {
+    mySelectionMgr->installFilter( myMeshFilter );
+    CurrentLineEdit = LineEditMeshes;
+  }
+  CurrentLineEdit->setFocus();
+
+  SelectionIntoArgument();
 }
 
 //=================================================================================

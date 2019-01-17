@@ -315,9 +315,9 @@ class SMESH_EXPORT SMESH_Mesh
 
   SMESH_Group* AddGroup (const SMDSAbs_ElementType theType,
                          const char*               theName,
-                         int&                      theId,
-                         const TopoDS_Shape&       theShape=TopoDS_Shape(),
-                         const SMESH_PredicatePtr& thePredicate=SMESH_PredicatePtr());
+                         const int                 theId = -1,
+                         const TopoDS_Shape&       theShape = TopoDS_Shape(),
+                         const SMESH_PredicatePtr& thePredicate = SMESH_PredicatePtr());
 
   SMESH_Group* AddGroup (SMESHDS_GroupBase* groupDS) throw(SALOME_Exception);
 
@@ -326,7 +326,7 @@ class SMESH_EXPORT SMESH_Mesh
   
   std::list<int> GetGroupIds() const;
   
-  SMESH_Group* GetGroup (const int theGroupID);
+  SMESH_Group* GetGroup (const int theGroupID) const;
 
   bool RemoveGroup (const int theGroupID);
 

@@ -42,8 +42,8 @@ namespace
 {
   const int theMaxNbFaces = 256; // max number of faces sharing a node
 
-  typedef NCollection_DataMap< Standard_Address, const SMDS_MeshNode* > TNNMap;
-  typedef NCollection_Map< SMESH_Link, SMESH_Link >                     TLinkMap;
+  typedef NCollection_DataMap< const SMDS_MeshNode*, const SMDS_MeshNode*, SMESH_Hasher > TNNMap;
+  typedef NCollection_Map< SMESH_Link, SMESH_Link >                                       TLinkMap;
 
   //--------------------------------------------------------------------------------
   /*!
@@ -53,7 +53,7 @@ namespace
   struct CutLink
   {
     bool                     myReverse;
-    const SMDS_MeshNode*     myNode[2]; // side nodes
+    const SMDS_MeshNode*     myNode[2]; // side nodes. WARNING: don't set them directly, use Set()
     mutable SMESH_NodeXYZ    myIntNode; // intersection node
     const SMDS_MeshElement*  myFace;    // cutter face
     int                      myIndex;   // index of a node on the same link
@@ -694,11 +694,15 @@ namespace
     return useOneNormal;
   }
 
+} // namespace
+
+namespace SMESH_MeshAlgos
+{
   //--------------------------------------------------------------------------------
   /*!
    * \brief Intersect faces of a mesh
    */
-  struct Intersector
+  struct Intersector::Algo
   {
     SMDS_Mesh*                   myMesh;
     double                       myTol, myEps;
@@ -716,7 +720,7 @@ namespace
     int                          myNbOnPlane1, myNbOnPlane2;
     TIntPointSet                 myIntPointSet;
 
-    Intersector( SMDS_Mesh* mesh, double tol, const std::vector< gp_XYZ >& normals )
+    Algo( SMDS_Mesh* mesh, double tol, const std::vector< gp_XYZ >& normals )
       : myMesh( mesh ),
         myTol( tol ),
         myEps( 1e-100 ),
@@ -727,9 +731,20 @@ namespace
     void Cut( const SMDS_MeshElement* face1,
               const SMDS_MeshElement* face2,
               const int               nbCommonNodes );
-    void MakeNewFaces( SMESH_MeshAlgos::TEPairVec& theNew2OldFaces,
-                       SMESH_MeshAlgos::TNPairVec& theNew2OldNodes,
-                       const double                theSign );
+    void Cut( const SMDS_MeshElement* face,
+              SMESH_NodeXYZ&          lineEnd1,
+              int                     edgeIndex1,
+              SMESH_NodeXYZ&          lineEnd2,
+              int                     edgeIndex2 );
+    void MakeNewFaces( TElemIntPairVec& theNew2OldFaces,
+                       TNodeIntPairVec& theNew2OldNodes,
+                       const double     theSign,
+                       const bool       theOptimize );
+
+    //! Cut a face by planes, whose normals point to parts to keep
+    bool CutByPlanes(const SMDS_MeshElement*        face,
+                     const std::vector< gp_Ax1 > &  planes,
+                     std::vector< SMESH_NodeXYZ > & newConnectivity );
 
   private:
 
@@ -805,7 +820,7 @@ namespace
    */
   //================================================================================
 
-  const SMDS_MeshNode* Intersector::createNode( const gp_XYZ& p )
+  const SMDS_MeshNode* Intersector::Algo::createNode( const gp_XYZ& p )
   {
     const SMDS_MeshNode* n = myMesh->AddNode( p.X(), p.Y(), p.Z() );
     n->setIsMarked( true ); // cut nodes are marked
@@ -818,7 +833,7 @@ namespace
    */
   //================================================================================
 
-  void Intersector::addLink( CutLink& link )
+  void Intersector::Algo::addLink( CutLink& link )
   {
     link.myIndex = 0;
     const CutLink* added = & myCutLinks.Added( link );
@@ -844,7 +859,7 @@ namespace
    */
   //================================================================================
 
-  bool Intersector::findLink( CutLink& link )
+  bool Intersector::Algo::findLink( CutLink& link )
   {
     link.myIndex = 0;
     while ( myCutLinks.Contains( link ))
@@ -872,12 +887,12 @@ namespace
    */
   //================================================================================
 
-  bool Intersector::isPlaneIntersected( const gp_XYZ&                       n2,
-                                        const double                        d2,
-                                        const std::vector< SMESH_NodeXYZ >& nodes1,
-                                        std::vector< double > &             dist1,
-                                        int &                               nbOnPlane1,
-                                        int &                               iNotOnPlane1)
+  bool Intersector::Algo::isPlaneIntersected( const gp_XYZ&                       n2,
+                                              const double                        d2,
+                                              const std::vector< SMESH_NodeXYZ >& nodes1,
+                                              std::vector< double > &             dist1,
+                                              int &                               nbOnPlane1,
+                                              int &                               iNotOnPlane1)
   {
     iNotOnPlane1 = nbOnPlane1 = 0;
     dist1.resize( nodes1.size() );
@@ -915,12 +930,12 @@ namespace
    */
   //================================================================================
 
-  void Intersector::computeIntervals( const std::vector< SMESH_NodeXYZ >& nodes,
-                                      const std::vector< double >&        dist,
-                                      const int                           nbOnPln, 
-                                      const int                           iMaxCoo,
-                                      double *                            u,
-                                      int*                                iE)
+  void Intersector::Algo::computeIntervals( const std::vector< SMESH_NodeXYZ >& nodes,
+                                            const std::vector< double >&        dist,
+                                            const int                           nbOnPln,
+                                            const int                           iMaxCoo,
+                                            double *                            u,
+                                            int*                                iE)
   {
     if ( nbOnPln == 3 )
     {
@@ -961,9 +976,9 @@ namespace
    */
   //================================================================================
 
-  void Intersector::findIntPointOnPlane( const std::vector< SMESH_NodeXYZ >& nodes,
-                                         const std::vector< double > &       dist,
-                                         CutLink&                            link )
+  void Intersector::Algo::findIntPointOnPlane( const std::vector< SMESH_NodeXYZ >& nodes,
+                                               const std::vector< double > &       dist,
+                                               CutLink&                            link )
   {
     int i1 = ( dist[0] == 0 ? 0 : 1 ), i2 = ( dist[2] == 0 ? 2 : 1 );
     CutLink link2 = link;
@@ -978,11 +993,11 @@ namespace
    */
   //================================================================================
 
-  void Intersector::intersectLink( const std::vector< SMESH_NodeXYZ >& nodes1,
-                                   const std::vector< double > &       dist1,
-                                   const int                           iEdge1,
-                                   const SMDS_MeshElement*             face2,
-                                   CutLink&                            link1)
+  void Intersector::Algo::intersectLink( const std::vector< SMESH_NodeXYZ >& nodes1,
+                                         const std::vector< double > &       dist1,
+                                         const int                           iEdge1,
+                                         const SMDS_MeshElement*             face2,
+                                         CutLink&                            link1)
   {
     const int iEdge2 = ( iEdge1 + 1 ) % nodes1.size();
     const SMESH_NodeXYZ& p1 = nodes1[ iEdge1 ];
@@ -1028,15 +1043,15 @@ namespace
    */
   //================================================================================
 
-  void Intersector::replaceIntNode( const SMDS_MeshNode* nToKeep,
-                                    const SMDS_MeshNode* nToRemove )
+  void Intersector::Algo::replaceIntNode( const SMDS_MeshNode* nToKeep,
+                                          const SMDS_MeshNode* nToRemove )
   {
     if ( nToKeep == nToRemove )
       return;
     if ( nToRemove->GetID() < nToKeep->GetID() ) // keep node with lower ID
-      myRemove2KeepNodes.Bind((void*) nToKeep, nToRemove );
+      myRemove2KeepNodes.Bind( nToKeep, nToRemove );
     else
-      myRemove2KeepNodes.Bind((void*) nToRemove, nToKeep );
+      myRemove2KeepNodes.Bind( nToRemove, nToKeep );
   }
 
   //================================================================================
@@ -1053,13 +1068,13 @@ namespace
    */
   //================================================================================
 
-  void Intersector::computeIntPoint( const double           u1,
-                                     const double           u2,
-                                     const int              iE1,
-                                     const int              iE2,
-                                     CutLink &              link,
-                                     const SMDS_MeshNode* & node1,
-                                     const SMDS_MeshNode* & node2)
+  void Intersector::Algo::computeIntPoint( const double           u1,
+                                           const double           u2,
+                                           const int              iE1,
+                                           const int              iE2,
+                                           CutLink &              link,
+                                           const SMDS_MeshNode* & node1,
+                                           const SMDS_MeshNode* & node2)
   {
     if      ( u1 > u2 + myTol )
     {
@@ -1100,11 +1115,11 @@ namespace
    */
   //================================================================================
 
-  void Intersector::cutCollinearLink( const int                           iNotOnPlane1,
-                                      const std::vector< SMESH_NodeXYZ >& nodes1,
-                                      const SMDS_MeshElement*             face2,
-                                      const CutLink&                      link1,
-                                      const CutLink&                      link2)
+  void Intersector::Algo::cutCollinearLink( const int                           iNotOnPlane1,
+                                            const std::vector< SMESH_NodeXYZ >& nodes1,
+                                            const SMDS_MeshElement*             face2,
+                                            const CutLink&                      link1,
+                                            const CutLink&                      link2)
 
   {
     int iN1 = ( iNotOnPlane1 + 1 ) % 3;
@@ -1128,7 +1143,7 @@ namespace
    */
   //================================================================================
 
-  void Intersector::setPlaneIndices( const gp_XYZ& planeNorm )
+  void Intersector::Algo::setPlaneIndices( const gp_XYZ& planeNorm )
   {
     switch ( MaxIndex( planeNorm )) {
     case 1: myInd1 = 2; myInd2 = 3; break;
@@ -1143,9 +1158,9 @@ namespace
    */
   //================================================================================
 
-  void Intersector::Cut( const SMDS_MeshElement* face1,
-                         const SMDS_MeshElement* face2,
-                         const int               nbCommonNodes)
+  void Intersector::Algo::Cut( const SMDS_MeshElement* face1,
+                               const SMDS_MeshElement* face2,
+                               const int               nbCommonNodes)
   {
     myFace1 = face1;
     myFace2 = face2;
@@ -1243,14 +1258,81 @@ namespace
 
   //================================================================================
   /*!
+   * \brief Store a face cut by a line given by its ends
+   *        accompanied by indices of intersected face edges.
+   *        Edge index is <0 if a line end is inside the face.
+   *  \param [in] face - a face to cut
+   *  \param [inout] lineEnd1 - line end coordinates + optional node existing at this point
+   *  \param [in] edgeIndex1 - index of face edge cut by lineEnd1
+   *  \param [inout] lineEnd2 - line end coordinates + optional node existing at this point
+   *  \param [in] edgeIndex2 - index of face edge cut by lineEnd2
+   */
+  //================================================================================
+
+  void Intersector::Algo::Cut( const SMDS_MeshElement* face,
+                               SMESH_NodeXYZ&          lineEnd1,
+                               int                     edgeIndex1,
+                               SMESH_NodeXYZ&          lineEnd2,
+                               int                     edgeIndex2 )
+  {
+    if ( lineEnd1.Node() && lineEnd2.Node() &&
+         face->GetNodeIndex( lineEnd1.Node() ) >= 0 &&
+         face->GetNodeIndex( lineEnd2.Node() ) >= 0 )
+      return; // intersection at a face node or edge
+
+    if ((int) myNormals.size() <= face->GetID() )
+      const_cast< std::vector< gp_XYZ >& >( myNormals ).resize( face->GetID() + 1 );
+
+    const CutFace& cf = myCutFaces.Added( CutFace( face ));
+    cf.InitLinks();
+
+    // look for intersection nodes coincident with line ends
+    CutLink links[2];
+    for ( int is2nd = 0; is2nd < 2; ++is2nd )
+    {
+      SMESH_NodeXYZ& lineEnd = is2nd ? lineEnd2 : lineEnd1;
+      int          edgeIndex = is2nd ? edgeIndex2 : edgeIndex1;
+      CutLink &         link = links[ is2nd ];
+
+      link.myIntNode = lineEnd;
+
+      for ( size_t i = ( edgeIndex < 0 ? 3 : 0  ); i < cf.myLinks.size(); ++i )
+        if ( coincide( lineEnd, SMESH_NodeXYZ( cf.myLinks[i].myNode1 ), myTol ))
+        {
+          link.myIntNode = cf.myLinks[i].myNode1;
+          break;
+        }
+
+      if ( edgeIndex >= 0 )
+      {
+        link.Set( face->GetNode    ( edgeIndex ),
+                  face->GetNodeWrap( edgeIndex + 1 ),
+                  /*cuttingFace=*/0);
+        findLink( link );
+      }
+
+      if ( !link.myIntNode )
+        link.myIntNode.Set( createNode( lineEnd ));
+
+      lineEnd._node = link.IntNode();
+
+      if ( link.myNode[0] )
+        addLink( link );
+    }
+
+    cf.AddEdge( links[0], links[1], /*face=*/0, /*nbOnPlane=*/0, /*iNotOnPlane=*/-1 );
+  }
+
+  //================================================================================
+  /*!
    * \brief Intersect two 2D line segments
    */
   //================================================================================
 
-  bool Intersector::intersectEdgeEdge( const gp_XY s1p0, const gp_XY s1p1,
-                                       const gp_XY s2p0, const gp_XY s2p1,
-                                       double &    t1,   double &    t2,
-                                       bool &      isCollinear )
+  bool Intersector::Algo::intersectEdgeEdge( const gp_XY s1p0, const gp_XY s1p1,
+                                             const gp_XY s2p0, const gp_XY s2p1,
+                                             double &    t1,   double &    t2,
+                                             bool &      isCollinear )
   {
     gp_XY u = s1p1 - s1p0;
     gp_XY v = s2p1 - s2p0;
@@ -1306,7 +1388,7 @@ namespace
    */
   //================================================================================
 
-  bool Intersector::intersectEdgeEdge( int iE1, int iE2, IntPoint2D& intPoint )
+  bool Intersector::Algo::intersectEdgeEdge( int iE1, int iE2, IntPoint2D& intPoint )
   {
     int i01 = iE1, i11 = ( iE1 + 1 ) % 3;
     int i02 = iE2, i12 = ( iE2 + 1 ) % 3;
@@ -1422,7 +1504,7 @@ namespace
    */
   //================================================================================
 
-  bool Intersector::isPointInTriangle( const gp_XYZ& p, const std::vector< SMESH_NodeXYZ >& nodes )
+  bool Intersector::Algo::isPointInTriangle( const gp_XYZ& p, const std::vector< SMESH_NodeXYZ >& nodes )
   {
     double bc1, bc2;
     SMESH_MeshAlgos::GetBarycentricCoords( p2D( p ),
@@ -1437,7 +1519,7 @@ namespace
    */
   //================================================================================
 
-  void Intersector::cutCoplanar()
+  void Intersector::Algo::cutCoplanar()
   {
     // find intersections of edges
 
@@ -1554,7 +1636,7 @@ namespace
     }
     return;
 
-  } // Intersector::cutCoplanar()
+  } // Intersector::Algo::cutCoplanar()
 
   //================================================================================
   /*!
@@ -1562,12 +1644,18 @@ namespace
    */
   //================================================================================
 
-  void Intersector::intersectNewEdges( const CutFace& cf )
+  void Intersector::Algo::intersectNewEdges( const CutFace& cf )
   {
     IntPoint2D intPoint;
 
     if ( cf.NbInternalEdges() < 2 )
       return;
+
+    if ( myNodes1.empty() )
+    {
+      myNodes1.resize(2);
+      myNodes2.resize(2);
+    }
 
     const gp_XYZ& faceNorm = myNormals[ cf.myInitFace->GetID() ];
     setPlaneIndices( faceNorm ); // choose indices on an axis-aligned plane
@@ -1753,7 +1841,7 @@ namespace
           }
         }
         if ( cf.myLinks.size() >= limit )
-          throw SALOME_Exception( "Infinite loop in Intersector::intersectNewEdges()" );
+          throw SALOME_Exception( "Infinite loop in Intersector::Algo::intersectNewEdges()" );
       }
       ++i1; // each internal edge encounters twice
     }
@@ -1766,10 +1854,23 @@ namespace
    */
   //================================================================================
 
-  void Intersector::MakeNewFaces( SMESH_MeshAlgos::TEPairVec& theNew2OldFaces,
-                                  SMESH_MeshAlgos::TNPairVec& theNew2OldNodes,
-                                  const double                theSign)
+  void Intersector::Algo::MakeNewFaces( SMESH_MeshAlgos::TElemIntPairVec& theNew2OldFaces,
+                                        SMESH_MeshAlgos::TNodeIntPairVec& theNew2OldNodes,
+                                        const double                      theSign,
+                                        const bool                        theOptimize)
   {
+    // fill theNew2OldFaces if empty
+    TCutFaceMap::const_iterator cutFacesIt = myCutFaces.cbegin();
+    if ( theNew2OldFaces.empty() )
+      for ( ; cutFacesIt != myCutFaces.cend(); ++cutFacesIt )
+      {
+        const CutFace& cf = *cutFacesIt;
+        int index = cf.myInitFace->GetID(); // index in theNew2OldFaces
+        if ((int) theNew2OldFaces.size() <= index )
+          theNew2OldFaces.resize( index + 1 );
+        theNew2OldFaces[ index ] = std::make_pair( cf.myInitFace, index );
+      }
+
     // unmark all nodes except intersection ones
 
     for ( SMDS_NodeIteratorPtr nIt = myMesh->nodesIterator(); nIt->more(); )
@@ -1790,8 +1891,7 @@ namespace
 
     // intersect edges added to myCutFaces
 
-    TCutFaceMap::const_iterator cutFacesIt = myCutFaces.cbegin();
-    for ( ; cutFacesIt != myCutFaces.cend(); ++cutFacesIt )
+    for ( cutFacesIt = myCutFaces.cbegin(); cutFacesIt != myCutFaces.cend(); ++cutFacesIt )
     {
       const CutFace& cf = *cutFacesIt;
       cf.ReplaceNodes( myRemove2KeepNodes );
@@ -1801,11 +1901,11 @@ namespace
     // make new faces
 
     EdgeLoopSet                            loopSet;
-    SMESH_MeshAlgos::Triangulate           triangulator;
+    SMESH_MeshAlgos::Triangulate           triangulator( theOptimize );
     std::vector< EdgePart >                cutOffLinks;
     TLinkMap                               cutOffCoplanarLinks;
     std::vector< const CutFace* >          touchedFaces;
-    SMESH_MeshAlgos::TEPairVec::value_type new2OldTria;
+    SMESH_MeshAlgos::TElemIntPairVec::value_type new2OldTria;
     CutFace                                cutFace(0);
     std::vector< const SMDS_MeshNode* >    nodes;
     std::vector<const SMDS_MeshElement *>  faces;
@@ -1877,13 +1977,14 @@ namespace
     // remove split faces
     for ( size_t id = 1; id < theNew2OldFaces.size(); ++id )
     {
-      if ( theNew2OldFaces[id].first )
+      if ( theNew2OldFaces[id].first ||
+           theNew2OldFaces[id].second == 0 )
         continue;
       if ( const SMDS_MeshElement* f = myMesh->FindElement( id ))
         myMesh->RemoveFreeElement( f );
     }
 
-    // remove face connected to cut off parts of cf.myInitFace
+    // remove faces connected to cut off parts of cf.myInitFace
 
     nodes.resize(2);
     for ( size_t i = 0; i < cutOffLinks.size(); ++i )
@@ -1954,8 +2055,8 @@ namespace
 
 
     // add used new nodes to theNew2OldNodes
-    SMESH_MeshAlgos::TNPairVec::value_type new2OldNode;
-    new2OldNode.second = NULL;
+    SMESH_MeshAlgos::TNodeIntPairVec::value_type new2OldNode;
+    new2OldNode.second = 0;
     for ( cutLinksIt = myCutLinks.cbegin(); cutLinksIt != myCutLinks.cend(); ++cutLinksIt )
     {
       const CutLink& link = *cutLinksIt;
@@ -1969,6 +2070,185 @@ namespace
     return;
   }
 
+  //================================================================================
+  Intersector::Intersector( SMDS_Mesh* mesh, double tol, const std::vector< gp_XYZ >& normals )
+  {
+    myAlgo = new Algo( mesh, tol, normals );
+  }
+  //================================================================================
+  Intersector::~Intersector()
+  {
+    delete myAlgo;
+  }
+  //================================================================================
+  //! compute cut of two faces of the mesh
+  void Intersector::Cut( const SMDS_MeshElement* face1,
+                         const SMDS_MeshElement* face2,
+                         const int               nbCommonNodes )
+  {
+    myAlgo->Cut( face1, face2, nbCommonNodes );
+  }
+  //================================================================================
+  //! store a face cut by a line given by its ends
+  //  accompanied by indices of intersected face edges.
+  //  Edge index is <0 if a line end is inside the face.
+  void Intersector::Cut( const SMDS_MeshElement* face,
+                         SMESH_NodeXYZ&          lineEnd1,
+                         int                     edgeIndex1,
+                         SMESH_NodeXYZ&          lineEnd2,
+                         int                     edgeIndex2 )
+  {
+    myAlgo->Cut( face, lineEnd1, edgeIndex1, lineEnd2, edgeIndex2 );
+  }
+  //================================================================================
+  //! split all face intersected by Cut() methods
+  void Intersector::MakeNewFaces( SMESH_MeshAlgos::TElemIntPairVec& theNew2OldFaces,
+                                  SMESH_MeshAlgos::TNodeIntPairVec& theNew2OldNodes,
+                                  const double                      theSign,
+                                  const bool                        theOptimize )
+  {
+    myAlgo->MakeNewFaces( theNew2OldFaces, theNew2OldNodes, theSign, theOptimize );
+  }
+  //================================================================================
+  //! Cut a face by planes, whose normals point to parts to keep
+  bool Intersector::CutByPlanes(const SMDS_MeshElement*        theFace,
+                                const std::vector< gp_Ax1 > &  thePlanes,
+                                const double                   theTol,
+                                std::vector< TFace > &         theNewFaceConnectivity )
+  {
+    theNewFaceConnectivity.clear();
+
+    // check if theFace is wholly cut off
+    std::vector< SMESH_NodeXYZ > facePoints( theFace->begin_nodes(), theFace->end_nodes() );
+    facePoints.resize( theFace->NbCornerNodes() );
+    for ( size_t iP = 0; iP < thePlanes.size(); ++iP )
+    {
+      size_t nbOut = 0;
+      const gp_Pnt& O = thePlanes[iP].Location();
+      for ( size_t i = 0; i < facePoints.size(); ++i )
+      {
+        gp_Vec Op( O, facePoints[i] );
+        nbOut += ( Op * thePlanes[iP].Direction() <= 0 );
+      }
+      if ( nbOut == facePoints.size() )
+        return true;
+    }
+
+    // copy theFace into a temporary mesh
+    SMDS_Mesh mesh;
+    Bnd_B3d faceBox;
+    std::vector< const SMDS_MeshNode* > faceNodes;
+    faceNodes.resize( facePoints.size() );
+    for ( size_t i = 0; i < facePoints.size(); ++i )
+    {
+      const SMESH_NodeXYZ& n = facePoints[i];
+      faceNodes[i] = mesh.AddNode( n.X(), n.Y(), n.Z() );
+      faceBox.Add( n );
+    }
+    const SMDS_MeshElement* faceToCut = 0;
+    switch ( theFace->NbCornerNodes() )
+    {
+    case 3:
+      faceToCut = mesh.AddFace( faceNodes[0], faceNodes[1], faceNodes[2] );
+      break;
+    case 4:
+      faceToCut = mesh.AddFace( faceNodes[0], faceNodes[1], faceNodes[2], faceNodes[3] );
+      break;
+    default:
+      faceToCut = mesh.AddPolygonalFace( faceNodes );
+    }
+
+    std::vector< gp_XYZ > normals( 2 + thePlanes.size() );
+    SMESH_MeshAlgos::FaceNormal( faceToCut, normals[ faceToCut->GetID() ]);
+
+    // add faces corresponding to thePlanes
+    std::vector< const SMDS_MeshElement* > planeFaces;
+    double faceSize = Sqrt( faceBox.SquareExtent() );
+    gp_XYZ   center = 0.5 * ( faceBox.CornerMin() + faceBox.CornerMax() );
+    for ( size_t i = 0; i < thePlanes.size(); ++i )
+    {
+      gp_Ax2 plnAx( thePlanes[i].Location(), thePlanes[i].Direction() );
+      gp_XYZ O = plnAx.Location().XYZ();
+      gp_XYZ X = plnAx.XDirection().XYZ();
+      gp_XYZ Y = plnAx.YDirection().XYZ();
+      gp_XYZ Z = plnAx.Direction().XYZ();
+
+      double dot = ( O - center ) * Z;
+      gp_XYZ o = center + Z * dot; // center projected to a plane
+
+      gp_XYZ p1 = o + X * faceSize * 2;
+      gp_XYZ p2 = o + Y * faceSize * 2;
+      gp_XYZ p3 = o - (X + Y ) * faceSize * 2;
+
+      const SMDS_MeshNode* n1 = mesh.AddNode( p1.X(), p1.Y(), p1.Z() );
+      const SMDS_MeshNode* n2 = mesh.AddNode( p2.X(), p2.Y(), p2.Z() );
+      const SMDS_MeshNode* n3 = mesh.AddNode( p3.X(), p3.Y(), p3.Z() );
+      planeFaces.push_back( mesh.AddFace( n1, n2, n3 ));
+
+      normals[ planeFaces.back()->GetID() ] = thePlanes[i].Direction().XYZ();
+    }
+
+    // cut theFace
+    Algo algo ( &mesh, theTol, normals );
+    for ( size_t i = 0; i < planeFaces.size(); ++i )
+    {
+      algo.Cut( faceToCut, planeFaces[i], 0 );
+    }
+
+    // retrieve a result
+    SMESH_MeshAlgos::TElemIntPairVec new2OldFaces;
+    SMESH_MeshAlgos::TNodeIntPairVec new2OldNodes;
+    TCutFaceMap::const_iterator cutFacesIt= algo.myCutFaces.cbegin();
+    for ( ; cutFacesIt != algo.myCutFaces.cend(); ++cutFacesIt )
+    {
+      const CutFace& cf = *cutFacesIt;
+      if ( cf.myInitFace != faceToCut )
+        continue;
+
+      if ( !cf.IsCut() )
+      {
+        theNewFaceConnectivity.push_back( facePoints );
+        break;
+      }
+      // form loops of new faces
+      EdgeLoopSet loopSet;
+      cf.MakeLoops( loopSet, normals[ faceToCut->GetID() ]);
+
+      // erase loops that are cut off by thePlanes
+      const double sign = 1;
+      std::vector< EdgePart > cutOffLinks;
+      TLinkMap                cutOffCoplanarLinks;
+      cf.CutOffLoops( loopSet, sign, normals, cutOffLinks, cutOffCoplanarLinks );
+
+      for ( size_t iL = 0; iL < loopSet.myNbLoops; ++iL )
+      {
+        EdgeLoop& loop = loopSet.myLoops[ iL ];
+        if ( loop.myLinks.size() > 0 )
+        {
+          facePoints.clear();
+          for ( SMDS_NodeIteratorPtr nIt = loop.nodeIterator(); nIt->more(); )
+          {
+            const SMDS_MeshNode* n = nIt->next();
+            facePoints.push_back( n );
+            int iN = faceToCut->GetNodeIndex( n );
+            if ( iN < 0 )
+              facePoints.back()._node = 0; // an intersection point
+            else
+              facePoints.back()._node = theFace->GetNode( iN );
+          }
+          theNewFaceConnectivity.push_back( facePoints );
+        }
+      }
+      break;
+    }
+
+    return theNewFaceConnectivity.empty();
+  }
+
+} // namespace SMESH_MeshAlgos
+
+namespace
+{
   //================================================================================
   /*!
    * \brief Debug
@@ -2190,11 +2470,11 @@ namespace
     bool replaced = false;
     for ( size_t i = 0; i < myLinks.size(); ++i )
     {
-      while ( theRm2KeepMap.IsBound((Standard_Address) myLinks[i].myNode1 ))
-        replaced = ( myLinks[i].myNode1 = theRm2KeepMap((Standard_Address) myLinks[i].myNode1 ));
+      while ( theRm2KeepMap.IsBound( myLinks[i].myNode1 ))
+        replaced = ( myLinks[i].myNode1 = theRm2KeepMap( myLinks[i].myNode1 ));
 
-      while ( theRm2KeepMap.IsBound((Standard_Address) myLinks[i].myNode2 ))
-        replaced = ( myLinks[i].myNode2 = theRm2KeepMap((Standard_Address) myLinks[i].myNode2 ));
+      while ( theRm2KeepMap.IsBound( myLinks[i].myNode2 ))
+        replaced = ( myLinks[i].myNode2 = theRm2KeepMap( myLinks[i].myNode2 ));
     }
 
     //if ( replaced ) // remove equal links
@@ -2615,7 +2895,7 @@ namespace
 
   //================================================================================
   /*!
-   * \brief Replace _COPLANAR cut edge by _INTERNAL oe vice versa
+   * \brief Replace _COPLANAR cut edge by _INTERNAL or vice versa
    */
   //================================================================================
 
@@ -2643,8 +2923,8 @@ namespace
 /*!
  * \brief Create an offsetMesh of given faces
  *  \param [in] faceIt - the input faces
- *  \param [out] new2OldFaces - history of faces
- *  \param [out] new2OldNodes - history of nodes
+ *  \param [out] new2OldFaces - history of faces (new face -> old face ID)
+ *  \param [out] new2OldNodes - history of nodes (new node -> old node ID)
  *  \return SMDS_Mesh* - the new offset mesh, a caller should delete
  */
 //================================================================================
@@ -2653,8 +2933,8 @@ SMDS_Mesh* SMESH_MeshAlgos::MakeOffset( SMDS_ElemIteratorPtr theFaceIt,
                                         SMDS_Mesh&           theSrcMesh,
                                         const double         theOffset,
                                         const bool           theFixIntersections,
-                                        TEPairVec&           theNew2OldFaces,
-                                        TNPairVec&           theNew2OldNodes)
+                                        TElemIntPairVec&     theNew2OldFaces,
+                                        TNodeIntPairVec&     theNew2OldNodes)
 {
   if ( theSrcMesh.GetMeshInfo().NbFaces( ORDER_QUADRATIC ) > 0 )
     throw SALOME_Exception( "Offset of quadratic mesh not supported" );
@@ -2665,8 +2945,7 @@ SMDS_Mesh* SMESH_MeshAlgos::MakeOffset( SMDS_ElemIteratorPtr theFaceIt,
   theNew2OldFaces.clear();
   theNew2OldNodes.clear();
   theNew2OldFaces.push_back
-    ( std::make_pair(( const SMDS_MeshElement*) 0,
-                     ( const SMDS_MeshElement*) 0)); // to have index == face->GetID()
+    ( std::make_pair(( const SMDS_MeshElement*) 0, 0)); // to have index == face->GetID()
 
   // copy input faces to the newMesh keeping IDs of nodes
 
@@ -2687,7 +2966,7 @@ SMDS_Mesh* SMESH_MeshAlgos::MakeOffset( SMDS_ElemIteratorPtr theFaceIt,
       {
         SMESH_NodeXYZ xyz( nodes[i] );
         newNode = newMesh->AddNodeWithID( xyz.X(), xyz.Y(), xyz.Z(), nodes[i]->GetID() );
-        theNew2OldNodes.push_back( std::make_pair( newNode, nodes[i] ));
+        theNew2OldNodes.push_back( std::make_pair( newNode, nodes[i]->GetID() ));
         nodes[i] = newNode;
       }
     }
@@ -2725,7 +3004,7 @@ SMDS_Mesh* SMESH_MeshAlgos::MakeOffset( SMDS_ElemIteratorPtr theFaceIt,
     default:
       continue;
     }
-    theNew2OldFaces.push_back( std::make_pair( newFace, face ));
+    theNew2OldFaces.push_back( std::make_pair( newFace, face->GetID() ));
 
     SMESH_NodeXYZ pPrev = nodes.back(), p;
     for ( size_t i = 0; i < nodes.size(); ++i )
@@ -2743,7 +3022,7 @@ SMDS_Mesh* SMESH_MeshAlgos::MakeOffset( SMDS_ElemIteratorPtr theFaceIt,
   std::vector< gp_XYZ > normals( theNew2OldFaces.size() );
   for ( size_t i = 1; i < normals.size(); ++i )
   {
-    if ( !SMESH_MeshAlgos::FaceNormal( theNew2OldFaces[i].second, normals[i] ))
+    if ( !SMESH_MeshAlgos::FaceNormal( theNew2OldFaces[i].first, normals[i] ))
       normals[i].SetCoord( 0,0,0 ); // TODO find norm by neighbors
   }
 
@@ -2792,7 +3071,7 @@ SMDS_Mesh* SMESH_MeshAlgos::MakeOffset( SMDS_ElemIteratorPtr theFaceIt,
         {
           newNode = newMesh->AddNode( newXYZ.X(), newXYZ.Y(), newXYZ.Z() );
           newNode->setIsMarked( true );
-          theNew2OldNodes.push_back( std::make_pair( newNode, theNew2OldNodes[i].second ));
+          theNew2OldNodes.push_back( std::make_pair( newNode, 0 ));
           multiPos.emplace_back( newNode );
         }
       }

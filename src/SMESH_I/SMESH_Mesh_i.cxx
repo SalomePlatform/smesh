@@ -1020,7 +1020,7 @@ SMESH_Mesh_i::CreateGroupFromGEOM (SMESH::ElementType    theElemType,
   if ( !aShape.IsNull() )
   {
     aNewGroup =
-      SMESH::SMESH_GroupOnGeom::_narrow( createGroup( theElemType, theName, aShape ));
+      SMESH::SMESH_GroupOnGeom::_narrow( createGroup( theElemType, theName, /*id=*/-1, aShape ));
 
     if ( _gen_i->CanPublishInStudy( aNewGroup ) )
     {
@@ -1064,7 +1064,7 @@ SMESH_Mesh_i::CreateGroupFromFilter(SMESH::ElementType theElemType,
     THROW_SALOME_CORBA_EXCEPTION("Invalid filter", SALOME::BAD_PARAM);
 
   SMESH::SMESH_GroupOnFilter_var aNewGroup = SMESH::SMESH_GroupOnFilter::_narrow
-    ( createGroup( theElemType, theName, TopoDS_Shape(), predicate ));
+    ( createGroup( theElemType, theName, /*id=*/-1, TopoDS_Shape(), predicate ));
 
   TPythonDump pd;
   if ( !aNewGroup->_is_nil() )
@@ -2429,10 +2429,10 @@ void SMESH_Mesh_i::CheckGeomGroupModif()
         SALOMEDS::SObject_wrap groupSO = _gen_i->ObjectToSObject( _mapGroups[oldID] );
         CORBA::String_var      name    = groupSO->GetName();
         // update
-        SMESH_GroupBase_i*  group_i    = SMESH::DownCast<SMESH_GroupBase_i*>(_mapGroups[oldID] );
-        int newID;
-        if ( group_i && _impl->AddGroup( geomType->second, name.in(), newID, geom._shape ))
-          group_i->changeLocalId( newID );
+        if ( SMESH_GroupBase_i* group_i = SMESH::DownCast<SMESH_GroupBase_i*>(_mapGroups[oldID]))
+          if ( SMESH_Group* group = _impl->AddGroup( geomType->second, name.in(),
+                                                     /*id=*/-1, geom._shape ))
+            group_i->changeLocalId( group->GetID() );
       }
 
       break; // everything has been updated
@@ -2685,6 +2685,7 @@ bool SMESH_Mesh_i::removeSubMesh (SMESH::SMESH_subMesh_ptr theSubMesh,
 
 SMESH::SMESH_GroupBase_ptr SMESH_Mesh_i::createGroup (SMESH::ElementType        theElemType,
                                                       const char*               theName,
+                                                      const int                 theID,
                                                       const TopoDS_Shape&       theShape,
                                                       const SMESH_PredicatePtr& thePredicate )
 {
@@ -2703,10 +2704,11 @@ SMESH::SMESH_GroupBase_ptr SMESH_Mesh_i::createGroup (SMESH::ElementType        
     } while ( !presentNames.insert( newName ).second );
     theName = newName.c_str();
   }
-  int anId;
   SMESH::SMESH_GroupBase_var aGroup;
-  if ( _impl->AddGroup( (SMDSAbs_ElementType)theElemType, theName, anId, theShape, thePredicate ))
+  if ( SMESH_Group* g = _impl->AddGroup( (SMDSAbs_ElementType)theElemType, theName,
+                                         theID, theShape, thePredicate ))
   {
+    int anId = g->GetID();
     SMESH_GroupBase_i* aGroupImpl;
     if ( !theShape.IsNull() )
       aGroupImpl = new SMESH_GroupOnGeom_i( SMESH_Gen_i::GetPOA(), this, anId );
@@ -2722,7 +2724,7 @@ SMESH::SMESH_GroupBase_ptr SMESH_Mesh_i::createGroup (SMESH::ElementType        
     // register CORBA object for persistence
     int nextId = _gen_i->RegisterObject( aGroup );
     if(MYDEBUG) { MESSAGE( "Add group to map with id = "<< nextId); }
-    else        { nextId = 0; } // avoid "unused variable" warning in release mode
+    else        { nextId = ( nextId > 0 ); } // avoid "unused variable" warning in release mode
 
     // to track changes of GEOM groups
     if ( !theShape.IsNull() ) {
@@ -4475,7 +4477,8 @@ SMESH::double_array* SMESH_Mesh_i::GetNodeXYZ(const CORBA::Long id)
  */
 //=============================================================================
 
-SMESH::long_array* SMESH_Mesh_i::GetNodeInverseElements(const CORBA::Long id)
+SMESH::long_array* SMESH_Mesh_i::GetNodeInverseElements(const CORBA::Long  id,
+                                                        SMESH::ElementType elemType)
 {
   if ( _preMeshInfo )
     _preMeshInfo->FullLoadFromFile();
@@ -4486,13 +4489,14 @@ SMESH::long_array* SMESH_Mesh_i::GetNodeInverseElements(const CORBA::Long id)
     return aResult._retn();
 
   // find node
-  const SMDS_MeshNode* aNode = aMeshDS->FindNode(id);
-  if(!aNode)
+  const SMDS_MeshNode* aNode = aMeshDS->FindNode( id );
+  if ( !aNode )
     return aResult._retn();
 
   // find inverse elements
-  SMDS_ElemIteratorPtr eIt = aNode->GetInverseElementIterator();
-  aResult->length( aNode->NbInverseElements() );
+  SMDSAbs_ElementType type = SMDSAbs_ElementType( elemType );
+  SMDS_ElemIteratorPtr eIt = aNode->GetInverseElementIterator( type );
+  aResult->length( aNode->NbInverseElements( type ));
   for( int i = 0; eIt->more(); ++i )
   {
     const SMDS_MeshElement* elem = eIt->next();
@@ -5513,10 +5517,12 @@ namespace /* Iterators used in SMESH_Mesh_i::GetElements(SMESH::SMESH_IDSource_v
     SMDS_ElemIteratorPtr    _elemIter;
     PredicatePtr            _predicate;
     const SMDS_MeshElement* _elem;
+    SMDSAbs_ElementType     _type;
 
-    PredicateIterator( SMDS_ElemIteratorPtr   iterator,
-                       PredicatePtr predicate):
-      _elemIter(iterator), _predicate(predicate)
+    PredicateIterator( SMDS_ElemIteratorPtr iterator,
+                       PredicatePtr         predicate,
+                       SMDSAbs_ElementType  type):
+      _elemIter(iterator), _predicate(predicate), _type(type)
     {
       next();
     }
@@ -5530,8 +5536,9 @@ namespace /* Iterators used in SMESH_Mesh_i::GetElements(SMESH::SMESH_IDSource_v
       _elem = 0;
       while ( _elemIter->more() && !_elem )
       {
-        _elem = _elemIter->next();
-        if ( _elem && ( !_predicate->IsSatisfy( _elem->GetID() )))
+        if ((_elem = _elemIter->next()) &&
+            (( _type != SMDSAbs_All && _type != _elem->GetType() ) ||
+             ( !_predicate->IsSatisfy( _elem->GetID() ))))
           _elem = 0;
       }
       return res;
@@ -5685,6 +5692,7 @@ SMDS_ElemIteratorPtr SMESH_Mesh_i::GetElements(SMESH::SMESH_IDSource_ptr theObje
   else if ( SMESH::Filter_i* filter_i = SMESH::DownCast<SMESH::Filter_i*>( theObject ))
   {
     if ( filter_i->GetElementType() == theType ||
+         filter_i->GetElementType() == SMESH::ALL ||
          elemType == SMDSAbs_Node ||
          elemType == SMDSAbs_All)
     {
@@ -5693,8 +5701,10 @@ SMDS_ElemIteratorPtr SMESH_Mesh_i::GetElements(SMESH::SMESH_IDSource_ptr theObje
       {
         SMDSAbs_ElementType filterType = SMDSAbs_ElementType( filter_i->GetElementType() );
         SMDS_ElemIteratorPtr allElemIt = meshDS->elementsIterator( filterType );
-        elemIt = SMDS_ElemIteratorPtr( new PredicateIterator( allElemIt, pred_i->GetPredicate() ));
-        typeOK = ( filterType == elemType || elemType == SMDSAbs_All );
+        SMDSAbs_ElementType   iterType = elemType == SMDSAbs_Node ? filterType : elemType;
+        elemIt = SMDS_ElemIteratorPtr
+          ( new PredicateIterator( allElemIt, pred_i->GetPredicate(), iterType ));
+        typeOK = ( elemType == SMDSAbs_Node ? filterType == SMDSAbs_Node : elemIt->more() );
       }
     }
   }
@@ -5704,16 +5714,17 @@ SMDS_ElemIteratorPtr SMESH_Mesh_i::GetElements(SMESH::SMESH_IDSource_ptr theObje
     const bool                    isNodes = ( types->length() == 1 && types[0] == SMESH::NODE );
     if ( isNodes && elemType != SMDSAbs_Node && elemType != SMDSAbs_All )
       return elemIt;
+    SMDSAbs_ElementType iterType = isNodes ? SMDSAbs_Node : elemType;
     if ( SMESH_MeshEditor_i::IsTemporaryIDSource( theObject ))
     {
       int nbIds;
       if ( CORBA::Long* ids = SMESH_MeshEditor_i::GetTemporaryIDs( theObject, nbIds ))
-        elemIt = SMDS_ElemIteratorPtr( new IDSourceIterator( meshDS, ids, nbIds, elemType ));
+        elemIt = SMDS_ElemIteratorPtr( new IDSourceIterator( meshDS, ids, nbIds, iterType ));
     }
     else
     {
       SMESH::long_array_var ids = theObject->GetIDs();
-      elemIt = SMDS_ElemIteratorPtr( new IDSourceIterator( meshDS, ids._retn(), elemType ));
+      elemIt = SMDS_ElemIteratorPtr( new IDSourceIterator( meshDS, ids._retn(), iterType ));
     }
     typeOK = ( isNodes == ( elemType == SMDSAbs_Node )) || ( elemType == SMDSAbs_All );
   }

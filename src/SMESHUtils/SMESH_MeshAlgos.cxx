@@ -23,7 +23,7 @@
 // Created   : Tue Apr 30 18:00:36 2013
 // Author    : Edward AGAPOV (eap)
 
-// This file holds some low level algorithms extracted from SMESH_MeshEditor
+// Initially this file held some low level algorithms extracted from SMESH_MeshEditor
 // to make them accessible from Controls package
 
 #include "SMESH_MeshAlgos.hxx"
@@ -284,6 +284,11 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
     _elements.reserve( nbElems );
 
     TElementBoxPool& elBoPool = getLimitAndPool()->_elBoPool;
+
+#ifdef _DEBUG_
+    if ( theElemIt && !theElemIt->more() )
+      std::cout << "WARNING: ElementBndBoxTree constructed on empty iterator!" << std::endl;
+#endif
 
     SMDS_ElemIteratorPtr elemIt = theElemIt ? theElemIt : mesh.elementsIterator( elemType );
     while ( elemIt->more() )
@@ -874,7 +879,7 @@ SMESH_ElementSearcherImpl::FindClosestTo( const gp_Pnt&       point,
         radius = point.Distance( boxCenter ) - 0.5 * ebbTree->maxSize();
       if ( radius < 0 )
         radius = ebbTree->maxSize() / pow( 2., getTreeHeight()) / 2;
-      while ( suspectElems.empty() )
+      while ( suspectElems.empty() && radius < 1e100 )
       {
         ebbTree->getElementsInSphere( point.XYZ(), radius, suspectElems );
         radius *= 1.1;
@@ -1253,7 +1258,7 @@ gp_XYZ SMESH_ElementSearcherImpl::Project(const gp_Pnt&            point,
 
   ElementBndBoxTree::TElemSeq elems;
   ebbTree->getElementsInSphere( p, radius, elems );
-  while ( elems.empty() )
+  while ( elems.empty() && radius < 1e100 )
   {
     radius *= 1.5;
     ebbTree->getElementsInSphere( p, radius, elems );
@@ -1264,7 +1269,7 @@ gp_XYZ SMESH_ElementSearcherImpl::Project(const gp_Pnt&            point,
   ElementBndBoxTree::TElemSeq::iterator e = elems.begin();
   for ( ; e != elems.end(); ++e )
   {
-    double d = SMESH_MeshAlgos::GetDistance( *e, p, &proj );
+    double d = SMESH_MeshAlgos::GetDistance( *e, point, &proj );
     if ( d < minDist )
     {
       bestProj = proj;
@@ -1460,7 +1465,8 @@ namespace
   //            .  RIGHT    .
   //            .           .
   enum PositionName { POS_LEFT = 1, POS_VERTEX = 2, POS_RIGHT = 4, //POS_ON = 8,
-                      POS_ALL = POS_LEFT | POS_RIGHT | POS_VERTEX };
+                      POS_ALL = POS_LEFT | POS_RIGHT | POS_VERTEX,
+                      POS_MAX = POS_RIGHT };
   struct PointPos
   {
     PositionName _name;
@@ -1558,10 +1564,35 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshFace* face,
   const double badDistance = -1;
   if ( !face ) return badDistance;
 
+  int nbCorners = face->NbCornerNodes();
+  if ( nbCorners > 3 )
+  {
+    std::vector< const SMDS_MeshNode* > nodes;
+    int nbTria = SMESH_MeshAlgos::Triangulate().GetTriangles( face, nodes );
+
+    double minDist = Precision::Infinite();
+    gp_XYZ cp;
+    for ( int i = 0; i < 3 * nbTria; i += 3 )
+    {
+      SMDS_FaceOfNodes triangle( nodes[i], nodes[i+1], nodes[i+2] );
+      double dist = GetDistance( &triangle, point, closestPnt );
+      if ( dist < minDist )
+      {
+        minDist = dist;
+        if ( closestPnt )
+          cp = *closestPnt;
+      }
+    }
+
+    if ( closestPnt )
+      *closestPnt = cp;
+    return minDist;
+  }
+
   // coordinates of nodes (medium nodes, if any, ignored)
   typedef SMDS_StdIterator< SMESH_TNodeXYZ, SMDS_ElemIteratorPtr > TXyzIterator;
   std::vector<gp_XYZ> xyz( TXyzIterator( face->nodesIterator()), TXyzIterator() );
-  xyz.resize( face->NbCornerNodes()+1 );
+  xyz.resize( 4 );
 
   // transformation to get xyz[0] lies on the origin, xyz[1] lies on the Z axis,
   // and xyz[2] lies in the XZ plane. This is to pass to 2D space on XZ plane.
@@ -1585,7 +1616,7 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshFace* face,
 
   // move all the nodes to 2D
   std::vector<gp_XY> xy( xyz.size() );
-  for ( size_t i = 0;i < xyz.size()-1; ++i )
+  for ( size_t i = 0; i < 3; ++i )
   {
     gp_XYZ p3d = xyz[i];
     trsf.Transforms( p3d );
@@ -1600,71 +1631,63 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshFace* face,
   gp_XY point2D( tmpPnt.X(), tmpPnt.Z() );
 
   // loop on edges of the face to analyze point position ralative to the face
-  std::set< PointPos > pntPosSet;
+  std::vector< PointPos > pntPosByType[ POS_MAX + 1 ];
   for ( size_t i = 1; i < xy.size(); ++i )
   {
     PointPos pos = getPointPosition( point2D, &xy[0], i-1 );
-    pntPosSet.insert( pos );
+    pntPosByType[ pos._name ].push_back( pos );
   }
 
   // compute distance
 
-  double minDist2 = Precision::Infinite();
-  for ( std::set< PointPos >::iterator posIt = pntPosSet.begin(); posIt != pntPosSet.end(); ++posIt)
+  double dist = badDistance;
+
+  if ( pntPosByType[ POS_LEFT ].size() > 0 ) // point is most close to an edge
   {
-    PointPos pos = *posIt;
-    if ( pos._name != pntPosSet.begin()->_name )
-      break;
-    switch ( pos._name )
-    {
-    case POS_LEFT: // point is most close to an edge
-    {
-      gp_Vec edge( xyz[ pos._index ], xyz[ pos._index+1 ]);
-      gp_Vec n1p ( xyz[ pos._index ], point  );
-      double u = ( edge * n1p ) / edge.SquareMagnitude(); // param [0,1] on the edge
-      // projection of the point on the edge
-      gp_XYZ proj = xyz[ pos._index ] + u * edge.XYZ();
-      double dist2 = point.SquareDistance( proj );
-      if ( dist2 < minDist2 )
-      {
-        if ( closestPnt ) *closestPnt = proj;
-        minDist2 = dist2;
-      }
-      break;
-    }
+    PointPos& pos = pntPosByType[ POS_LEFT ][0];
 
-    case POS_RIGHT: // point is inside the face
-    {
-      double distToFacePlane = Abs( tmpPnt.Y() );
-      if ( closestPnt )
-      {
-        if ( distToFacePlane < std::numeric_limits<double>::min() ) {
-          *closestPnt = point.XYZ();
-        }
-        else {
-          tmpPnt.SetY( 0 );
-          trsf.Inverted().Transforms( tmpPnt );
-          *closestPnt = tmpPnt;
-        }
-      }
-      return distToFacePlane;
-    }
+    gp_Vec edge( xyz[ pos._index ], xyz[ pos._index+1 ]);
+    gp_Vec n1p ( xyz[ pos._index ], point  );
+    double u = ( edge * n1p ) / edge.SquareMagnitude(); // param [0,1] on the edge
+    gp_XYZ proj = xyz[ pos._index ] + u * edge.XYZ(); // projection on the edge
+    dist = point.Distance( proj );
+    if ( closestPnt ) *closestPnt = proj;
+  }
 
-    case POS_VERTEX: // point is most close to a node
+  else if ( pntPosByType[ POS_RIGHT ].size() >= 2 ) // point is inside the face
+  {
+    dist = Abs( tmpPnt.Y() );
+    if ( closestPnt )
     {
-      double dist2 = point.SquareDistance( xyz[ pos._index ]);
-      if ( dist2 < minDist2 )
-      {
-        if ( closestPnt ) *closestPnt = xyz[ pos._index ];
-        minDist2 = dist2;
+      if ( dist < std::numeric_limits<double>::min() ) {
+        *closestPnt = point.XYZ();
       }
-      break;
-    }
-    default:;
-      return badDistance;
+      else {
+        tmpPnt.SetY( 0 );
+        trsf.Inverted().Transforms( tmpPnt );
+        *closestPnt = tmpPnt;
+      }
     }
   }
-  return Sqrt( minDist2 );
+
+  else if ( pntPosByType[ POS_VERTEX ].size() > 0 ) // point is most close to a node
+  {
+    double minDist2 = Precision::Infinite();
+    for ( size_t i = 0; i < pntPosByType[ POS_VERTEX ].size(); ++i )
+    {
+      PointPos& pos = pntPosByType[ POS_VERTEX ][i];
+
+      double d2 = point.SquareDistance( xyz[ pos._index ]);
+      if ( minDist2 > d2 )
+      {
+        if ( closestPnt ) *closestPnt = xyz[ pos._index ];
+        minDist2 = d2;
+      }
+    }
+    dist = Sqrt( minDist2 );
+  }
+
+  return dist;
 }
 
 //=======================================================================
@@ -2164,6 +2187,207 @@ bool SMESH_MeshAlgos::IsRightOrder( const SMDS_MeshElement* face,
   }
   int diff = i1 - i0;
   return ( diff == 1 ) || ( diff == -face->NbNodes()+1 );
+}
+
+//=======================================================================
+/*!
+ * \brief Partition given 1D elements into groups of contiguous edges.
+ *        A node where number of meeting edges != 2 is a group end.
+ *        An optional startNode is used to orient groups it belongs to.
+ * \return a list of edge groups and a list of corresponding node groups.
+ *         If a group is closed, the first and last nodes of the group are same.
+ */
+//=======================================================================
+
+void SMESH_MeshAlgos::Get1DBranches( SMDS_ElemIteratorPtr theEdgeIt,
+                                     TElemGroupVector&    theEdgeGroups,
+                                     TNodeGroupVector&    theNodeGroups,
+                                     const SMDS_MeshNode* theStartNode )
+{
+  if ( !theEdgeIt )
+    return;
+
+  // build map of nodes and their adjacent edges
+
+  typedef std::vector< const SMDS_MeshNode* >                                 TNodeVec;
+  typedef std::vector< const SMDS_MeshElement* >                              TEdgeVec;
+  typedef NCollection_DataMap< const SMDS_MeshNode*, TEdgeVec, SMESH_Hasher > TEdgesByNodeMap;
+  TEdgesByNodeMap edgesByNode;
+
+  while ( theEdgeIt->more() )
+  {
+    const SMDS_MeshElement* edge = theEdgeIt->next();
+    if ( edge->GetType() != SMDSAbs_Edge )
+      continue;
+
+    const SMDS_MeshNode* nodes[2] = { edge->GetNode(0), edge->GetNode(1) };
+    for ( int i = 0; i < 2; ++i )
+    {
+      TEdgeVec* nodeEdges = edgesByNode.ChangeSeek( nodes[i] );
+      if ( !nodeEdges )
+      {
+        nodeEdges = edgesByNode.Bound( nodes[i], TEdgeVec() );
+        nodeEdges->reserve(2);
+      }
+      nodeEdges->push_back( edge );
+    }
+  }
+
+  if ( edgesByNode.IsEmpty() )
+    return;
+
+
+  // build edge branches
+
+  TElemGroupVector branches(2);
+  TNodeGroupVector nodeBranches(2);
+
+  while ( !edgesByNode.IsEmpty() )
+  {
+    if ( !theStartNode || !edgesByNode.IsBound( theStartNode ))
+    {
+      theStartNode = TEdgesByNodeMap::Iterator( edgesByNode ).Key();
+    }
+
+    size_t nbBranches = 0;
+    bool startIsBranchEnd = false;
+
+    while ( edgesByNode.IsBound( theStartNode ))
+    {
+      // initialize a new branch
+
+      ++nbBranches;
+      if ( branches.size() < nbBranches )
+      {
+        branches.push_back   ( TEdgeVec() );
+        nodeBranches.push_back( TNodeVec() );
+      }
+      TEdgeVec & branch     = branches    [ nbBranches - 1 ];
+      TNodeVec & nodeBranch = nodeBranches[ nbBranches - 1 ];
+      branch.clear();
+      nodeBranch.clear();
+      {
+        TEdgeVec& edges = edgesByNode( theStartNode );
+        startIsBranchEnd = ( edges.size() != 2 );
+
+        int nbEdges = 0;
+        const SMDS_MeshElement* startEdge = 0;
+        for ( size_t i = 0; i < edges.size(); ++i )
+        {
+          if ( !startEdge && edges[i] )
+          {
+            startEdge = edges[i];
+            edges[i] = 0;
+          }
+          nbEdges += bool( edges[i] );
+        }
+        if ( nbEdges == 0 )
+          edgesByNode.UnBind( theStartNode );
+        if ( !startEdge )
+          continue;
+
+        branch.push_back( startEdge );
+
+        nodeBranch.push_back( theStartNode );
+        nodeBranch.push_back( branch.back()->GetNode(0) );
+        if ( nodeBranch.back() == theStartNode )
+          nodeBranch.back() = branch.back()->GetNode(1);
+      }
+
+      // fill the branch
+
+      bool isBranchEnd = false;
+      TEdgeVec* edgesPtr;
+
+      while (( !isBranchEnd ) && ( edgesPtr = edgesByNode.ChangeSeek( nodeBranch.back() )))
+      {
+        TEdgeVec& edges = *edgesPtr;
+
+        isBranchEnd = ( edges.size() != 2 );
+
+        const SMDS_MeshNode* lastNode = nodeBranch.back();
+
+        switch ( edges.size() )
+        {
+        case 1:
+          edgesByNode.UnBind( lastNode );
+          break;
+
+        case 2:
+        {
+          if ( const SMDS_MeshElement* nextEdge = edges[ edges[0] == branch.back() ])
+          {
+            branch.push_back( nextEdge );
+
+            const SMDS_MeshNode* nextNode = nextEdge->GetNode(0);
+            if ( nodeBranch.back() == nextNode )
+              nextNode = nextEdge->GetNode(1);
+            nodeBranch.push_back( nextNode );
+          }
+          edgesByNode.UnBind( lastNode );
+          break;
+        }
+
+        default:
+          int nbEdges = 0;
+          for ( size_t i = 0; i < edges.size(); ++i )
+          {
+            if ( edges[i] == branch.back() )
+              edges[i] = 0;
+            nbEdges += bool( edges[i] );
+          }
+          if ( nbEdges == 0 )
+            edgesByNode.UnBind( lastNode );
+        }
+      }
+    } // while ( edgesByNode.IsBound( theStartNode ))
+
+
+    // put the found branches to the result
+
+    if ( nbBranches == 2 && !startIsBranchEnd ) // join two branches starting at the same node
+    {
+      if ( nodeBranches[0].back() == nodeBranches[1].back() )
+      {
+        // it is a closed branch, keep theStartNode first
+        nodeBranches[0].pop_back();
+        nodeBranches[0].reserve( nodeBranches[0].size() + nodeBranches[1].size() );
+        nodeBranches[0].insert( nodeBranches[0].end(),
+                                nodeBranches[1].rbegin(), nodeBranches[1].rend() );
+        branches[0].reserve( branches[0].size() + branches[1].size() );
+        branches[0].insert( branches[0].end(), branches[1].rbegin(), branches[1].rend() );
+      }
+      else
+      {
+        std::reverse( nodeBranches[0].begin(), nodeBranches[0].end() );
+        nodeBranches[0].pop_back();
+        nodeBranches[0].reserve( nodeBranches[0].size() + nodeBranches[1].size() );
+        nodeBranches[0].insert( nodeBranches[0].end(),
+                                nodeBranches[1].begin(), nodeBranches[1].end() );
+
+        std::reverse( branches[0].begin(), branches[0].end() );
+        branches[0].reserve( branches[0].size() + branches[1].size() );
+        branches[0].insert( branches[0].end(), branches[1].begin(), branches[1].end() );
+      }
+      nodeBranches[1].clear();
+      branches[1].clear();
+    }
+
+    for ( size_t i = 0; i < nbBranches; ++i )
+    {
+      if ( branches[i].empty() )
+        continue;
+
+      theEdgeGroups.push_back( TEdgeVec() );
+      theEdgeGroups.back().swap( branches[i] );
+
+      theNodeGroups.push_back( TNodeVec() );
+      theNodeGroups.back().swap( nodeBranches[i] );
+    }
+
+  } // while ( !edgesByNode.IsEmpty() )
+
+  return;
 }
 
 //=======================================================================

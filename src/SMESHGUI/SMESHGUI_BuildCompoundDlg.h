@@ -38,16 +38,17 @@
 #include CORBA_SERVER_HEADER(SMESH_Gen)
 #include CORBA_SERVER_HEADER(SMESH_Mesh)
 
+class LightApp_SelectionMgr;
+class QButtonGroup;
+class QCheckBox;
+class QComboBox;
 class QGroupBox;
 class QLabel;
 class QLineEdit;
 class QPushButton;
 class QRadioButton;
-class QCheckBox;
-class QComboBox;
 class SMESHGUI;
 class SMESHGUI_SpinBox;
-class LightApp_SelectionMgr;
 class SUIT_SelectionFilter;
 
 //=================================================================================
@@ -80,9 +81,10 @@ private:
   SMESHGUI*               mySMESHGUI;     /* Current SMESHGUI object */
   LightApp_SelectionMgr*  mySelectionMgr; /* User shape selection */
 
-  SMESH::SMESH_IDSource_var  myMesh;
-  SUIT_SelectionFilter*      myMeshFilter;
+  SMESH::SMESH_Mesh_var      myMeshToAppendTo;
   SMESH::ListOfIDSources_var myMeshArray;
+  SUIT_SelectionFilter*      myMeshFilter;
+  SUIT_SelectionFilter*      myAppendToFilter;
 
   // Widgets
   QGroupBox*              GroupConstructors;
@@ -94,9 +96,11 @@ private:
   QPushButton*            buttonApply;
   QPushButton*            buttonHelp;
 
-  QGroupBox*              GroupName;
-  QLabel*                 TextLabelName;
-  QLineEdit*              LineEditName;
+  QGroupBox*              GroupResult;
+  QButtonGroup*           ResultButtonGroup;
+  QLineEdit*              LineEditNewName;
+  QPushButton*            SelectButtonAppendTo;
+  QLineEdit*              LineEditAppendTo;
 
   QGroupBox*              GroupArgs;
   QLabel*                 TextLabelMeshes;
@@ -108,6 +112,8 @@ private:
   QCheckBox*              CheckBoxMerge;
   QLabel*                 TextLabelTol;
   SMESHGUI_SpinBox*       SpinBoxTol;
+
+  QLineEdit*              CurrentLineEdit;
 
   QString                 myHelpFileName;
 
@@ -124,6 +130,8 @@ private slots:
   void                    DeactivateActiveDialog();
   void                    ActivateThisDialog();
   void                    onSelectMerge( bool );
+  void                    onResultTypeChange( int );
+  void                    onSelectionButton();
 };
 
 #endif // SMESHGUI_BUILDCOMPOUNDDLG_H
