@@ -12,14 +12,18 @@ This functionality allows user to detect groups of coincident nodes with specifi
 .. centered::
 	*"Merge nodes"* menu button
 
+.. |ad| image:: ../images/add.png
+.. |rm| image:: ../images/remove.png
+.. |mv| image:: ../images/sort.png
+
 *To merge nodes of your mesh:*
 
 #. Choose **Modification** -> **Transformation** -> **Merge nodes** menu item. The following dialog box shall appear:
 
 	.. image:: ../images/mergenodes_auto.png
 		:align: center
-
-	* **Name** is the name of the mesh whose nodes will be merged.
+        
+	* **Names** contains names of the selected mesh objects whose nodes will be merged.
 	* **Automatic** or **Manual** mode allows choosing how the nodes are processed. In **Manual** mode you can adjust groups of coincident nodes detected by the program and/or select any nodes to be merged.
 	* **Tolerance** is a maximum distance between nodes sufficient for merging.
 	* Activation of **No merge of corner and medium nodes of quadratic cells** check-box prevents merging medium nodes of quadratic elements with corner nodes. This check-box is enabled provided that the selected mesh includes quadratic elements.
@@ -53,20 +57,9 @@ This functionality allows user to detect groups of coincident nodes with specifi
 
 	* **Edit selected group of coincident nodes** list allows editing the selected group:
     
-          .. image:: ../images/add.png
-             :align: center
-
-	  * adds to the group the nodes selected in the viewer.
-    
-          .. image:: ../images/remove.png
-             :align: center
-
-	  * removes from the group the selected nodes.
-    
-          .. image:: ../images/sort.png
-             :align: center
-
-	  * moves the selected node to the first position in the group in order to keep it in the mesh.
+    	  * |ad| adds to the group the nodes selected in the viewer.
+	  * |rm| removes from the group the selected nodes.
+	  * |mv| moves the selected node to the first position in the group in order to keep it in the mesh.
 
 #. To confirm your choice click **Apply** or **Apply and Close** button.
 

@@ -85,8 +85,8 @@ private:
   void                      enterEvent( QEvent* );              /* mouse enter the QWidget */
   void                      keyPressEvent( QKeyEvent* );
   void                      onEditGroup();
-  bool                      isKeepNodesIDsSelection();
-  bool                      isNewKeepNodesGroup( const char* entry );
+  bool                      isKeepIDsSelection();
+  bool                      isNewKeepGroup( const char* entry );
 
   void                      FindGravityCenter( TColStd_MapOfInteger&,
                                                std::vector<int>& , 
@@ -96,23 +96,29 @@ private:
 private:
   typedef QList<SMESH::SMESH_GroupBase_var> GrpList;
 
-  SMESHGUI*                 mySMESHGUI;     /* Current SMESHGUI object */
-  LightApp_SelectionMgr*    mySelectionMgr; /* User shape selection */
-  SVTK_Selector*            mySelector;
+  SMESHGUI*                  mySMESHGUI;     /* Current SMESHGUI object */
+  LightApp_SelectionMgr*     mySelectionMgr; /* User shape selection */
+  SVTK_Selector*             mySelector;
   
-  QWidget*                  myEditCurrentArgument;
+  QWidget*                   myEditCurrentArgument;
 
-  SMESH::SMESH_Mesh_var     myMesh;
-  SMESH::SMESH_IDSource_var mySubMeshOrGroup;
-  SMESH_Actor*              myActor;
-  SUIT_SelectionFilter*     myMeshOrSubMeshOrGroupFilter;
-  SUIT_SelectionFilter*     mySubMeshOrGroupFilter;
+  SMESH::SMESH_Mesh_var      myMesh;
+  SMESH::ListOfIDSources_var mySubMeshOrGroups;
+  GrpList                    myGroups;
+  QString                    myEntry;
 
-  SMESHGUI_IdPreview*       myIdPreview;
+  SMESH_Actor*               myActor;
+  SUIT_SelectionFilter*      myMeshOrSubMeshOrGroupFilter;
+  SUIT_SelectionFilter*      mySubMeshOrGroupFilter;
 
-  int                       myAction;
-  bool                      myIsBusy;
-  int                       myTypeId; // manual(1) or automatic(0)
+  SMESHGUI_IdPreview*        myIdPreview;
+  QString                    myHelpFileName;
+
+  int                        myAction;
+  bool                       myIsBusy;
+  int                        myTypeId; // manual(1) or automatic(0)
+    
+
 
   // Widgets
 
@@ -152,18 +158,13 @@ private:
 
   QGroupBox*                GroupKeep;
   QButtonGroup*             KeepFromButGroup;
-  QPushButton*              SelectKeepNodesButton;
-  QPushButton*              AddKeepNodesButton;
-  QPushButton*              RemoveKeepNodesButton;
+  QPushButton*              SelectKeepButton;
+  QPushButton*              AddKeepButton;
+  QPushButton*              RemoveKeepButton;
   QListWidget*              KeepList;
 
   QGroupBox*                TypeBox;
   QButtonGroup*             GroupType;
-    
-  QString                   myHelpFileName;
-
-  QString                   myEntry;
-  GrpList                   myGroups;
 
 protected slots:
   virtual void              reject();
@@ -174,10 +175,10 @@ protected slots:
   void                      ClickOnHelp();
   void                      updateControls();
   void                      onDetect();
-  void                      onAddKeepNode();
-  void                      onRemoveKeepNode();
-  void                      onSelectKeepNode();
-  void                      onKeepNodeSourceChanged(int);
+  void                      onAddKeep();
+  void                      onRemoveKeep();
+  void                      onSelectKeep();
+  void                      onKeepSourceChanged(int);
   void                      onAddGroup();
   void                      onRemoveGroup();
   void                      onSelectGroup();

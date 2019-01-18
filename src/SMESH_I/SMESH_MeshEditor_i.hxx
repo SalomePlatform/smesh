@@ -501,7 +501,7 @@ public:
                                  SMESH::array_of_long_array_out GroupsOfNodes,
                                  CORBA::Boolean                 SeparateCornersAndMedium)
     throw (SALOME::SALOME_Exception);
-  void FindCoincidentNodesOnPartBut(SMESH::SMESH_IDSource_ptr      Object,
+  void FindCoincidentNodesOnPartBut(const SMESH::ListOfIDSources&  Objects,
                                     CORBA::Double                  Tolerance,
                                     SMESH::array_of_long_array_out GroupsOfNodes,
                                     const SMESH::ListOfIDSources&  ExceptSubMeshOrGroups,
@@ -511,10 +511,12 @@ public:
                    const SMESH::ListOfIDSources&     NodesToKeep,
                    CORBA::Boolean                    AvoidMakingHoles )
     throw (SALOME::SALOME_Exception);
-  void FindEqualElements(SMESH::SMESH_IDSource_ptr      Object,
+  void FindEqualElements(const SMESH::ListOfIDSources&  Objects,
+                         const SMESH::ListOfIDSources&  ExceptSubMeshOrGroups,
                          SMESH::array_of_long_array_out GroupsOfElementsID)
     throw (SALOME::SALOME_Exception);
-  void MergeElements(const SMESH::array_of_long_array& GroupsOfElementsID)
+  void MergeElements(const SMESH::array_of_long_array& GroupsOfElementsID,
+                     const SMESH::ListOfIDSources&     ElementsToKeep)
     throw (SALOME::SALOME_Exception);
   void MergeEqualElements()
     throw (SALOME::SALOME_Exception);

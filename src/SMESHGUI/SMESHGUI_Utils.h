@@ -168,6 +168,9 @@ SMESHGUI_EXPORT
   int GetNameOfSelectedIObjects( LightApp_SelectionMgr*, QString& );
 
 SMESHGUI_EXPORT
+  QString GetName( const Handle(SALOME_InteractiveObject)& theIO );
+
+SMESHGUI_EXPORT
   _PTR(SObject) GetMeshOrSubmesh( _PTR(SObject) );
 
 SMESHGUI_EXPORT

@@ -17,10 +17,23 @@ To merge elements choose in the main menu **Modification** -> **Transformation**
 .. image:: ../images/mergeelems_auto.png
 	:align: center
 
+.. |ad| image:: ../images/add.png
+.. |rm| image:: ../images/remove.png
+.. |mv| image:: ../images/sort.png
+
 In this dialog:
 
-	* **Name** is the name of the mesh object whose elements will be merged. 
+	* **Names** contains names of the selected mesh objects whose elements will be merged.
 	* **Automatic** or **Manual** Mode allows choosing how the elements are processed. In the **Automatic** Mode all elements created on the same nodes will be merged. In **Manual** mode you can adjust groups of coincident elements detected by the program.
+	* **Exclude groups from detection** group allows to ignore the elements which belong to the specified mesh groups. This control is active provided that the mesh includes groups.
+	* **Elements to keep during the merge** group allows to specify elements to keep in the mesh. (By default an element being the first in a group of coincident elements is kept.) It is possible to either select elements in the Viewer or select groups whose elements will be kept.
+  
+		* *Selection* button activates selection of elements to keep.
+		* **Elements** button activates selection of elements in the Viewer.
+		* **Groups and sub-meshes** button activates selection of groups and sub-meshes.
+		* **Add** button adds selected elements or groups to the list.
+		* Elements or groups selected in the list can be removed using **Remove** button.
+
 
 	  If the **Manual** Mode is selected, additional controls are available:
 
@@ -36,20 +49,9 @@ In this dialog:
 		* **Show double elements IDs** check-box shows/hides identifiers of elements of the selected groups in the 3D viewer.
 		* **Edit selected group of coincident elements** list allows editing the selected group:
     
-                        .. image:: ../images/add.png
-                           :align: center
-
-			* adds to the group the elements selected in the viewer.
-    
-		        .. image:: ../images/remove.png
-                           :align: center
-
-			* removes the selected elements from the group.
-    
-                        .. image:: ../images/sort.png
-                           :align: center
-
-			* moves the selected element to the first position in the group in order to keep it in the mesh.
+			* |ad| adds to the group the elements selected in the viewer.
+			* |rm| removes the selected elements from the group.
+			* |mv| moves the selected element to the first position in the group in order to keep it in the mesh.
     
   
 

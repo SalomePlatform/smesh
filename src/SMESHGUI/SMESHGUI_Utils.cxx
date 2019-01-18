@@ -242,11 +242,28 @@ namespace SMESH
     int aNbSel = selected.Extent();
     if (aNbSel == 1) {
       Handle(SALOME_InteractiveObject) anIObject = selected.First();
-      theName = QString( anIObject->getName() ).trimmed();
+      theName = GetName( anIObject );
     } else {
       theName = QObject::tr("SMESH_OBJECTS_SELECTED").arg(aNbSel);
     }
     return aNbSel;
+  }
+
+  QString GetName( const Handle(SALOME_InteractiveObject)& theIO )
+  {
+    QString name;
+    if ( !theIO.IsNull() )
+    {
+      name = QString( theIO->getName() ).trimmed();
+
+      if ( name.isEmpty() && theIO->hasEntry() )
+      {
+        _PTR(SObject) sObj = getStudy()->FindObjectID( theIO->getEntry() );
+        if ( sObj )
+          name = sObj->GetName().c_str();
+      }
+    }
+    return name.trimmed();
   }
 
   _PTR(SObject) GetMeshOrSubmesh (_PTR(SObject) theSObject)

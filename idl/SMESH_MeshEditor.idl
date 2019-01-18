@@ -723,7 +723,7 @@ module SMESH
                                     in  boolean             SeparateCornersAndMedium)
       raises (SALOME::SALOME_Exception);
 
-    void FindCoincidentNodesOnPartBut (in  SMESH_IDSource      SubMeshOrGroup,
+    void FindCoincidentNodesOnPartBut (in  ListOfIDSources     SubMeshOrGroup,
                                        in  double              Tolerance,
                                        out array_of_long_array GroupsOfNodes,
                                        in  ListOfIDSources     ExceptSubMeshOrGroups,
@@ -740,7 +740,8 @@ module SMESH
      * \param MeshOrSubMeshOrGroup Mesh or SubMesh, or Group of elements for searching.
      * \return List of groups of equal elements.
      */
-    void FindEqualElements (in  SMESH_IDSource      MeshOrSubMeshOrGroup,
+    void FindEqualElements (in  ListOfIDSources     MeshOrSubMeshOrGroup,
+                            in  ListOfIDSources     ExceptSubMeshOrGroups,
                             out array_of_long_array GroupsOfElementsID) 
       raises (SALOME::SALOME_Exception);
 
@@ -748,7 +749,8 @@ module SMESH
      * \brief Merge elements in each given group.
      * \param GroupsOfElementsID Groups of elements for merging.
      */
-    void MergeElements(in array_of_long_array GroupsOfElementsID) 
+    void MergeElements(in array_of_long_array    GroupsOfElementsID,
+                       in SMESH::ListOfIDSources ElementsToKeep) 
       raises (SALOME::SALOME_Exception);
 
     /*!

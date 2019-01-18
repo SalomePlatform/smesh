@@ -2293,6 +2293,10 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Name</translation>
     </message>
     <message>
+        <source>SMESH_NAMES</source>
+        <translation>Names</translation>
+    </message>
+    <message>
         <source>SMESH_NODES</source>
         <translation>Nodes</translation>
     </message>
@@ -5489,6 +5493,10 @@ Please select a group and try again</translation>
     <message>
         <source>KEEP_NODES</source>
         <translation>Nodes to keep during the merge</translation>
+    </message>
+    <message>
+        <source>KEEP_ELEMENTS</source>
+        <translation>Elements to keep during the merge</translation>
     </message>
     <message>
         <source>GROUP_SUBMESH</source>

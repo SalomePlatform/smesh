@@ -10941,7 +10941,7 @@ void SMESH_MeshEditor::DoubleElements( const TIDSortedElemSet& theElements )
   }
   else
   {
-    type = (*theElements.begin())->GetType();
+    //type = (*theElements.begin())->GetType();
     elemIt = SMESHUtils::elemSetIterator( theElements );
   }
 
@@ -10956,7 +10956,8 @@ void SMESH_MeshEditor::DoubleElements( const TIDSortedElemSet& theElements )
   while ( elemIt->more() )
   {
     const SMDS_MeshElement* elem = elemIt->next();
-    if ( elem->GetType() != type || elem->isMarked() )
+    if (( type != SMDSAbs_All && elem->GetType() != type ) ||
+        ( elem->isMarked() ))
       continue;
 
     elemType.Init( elem, /*basicOnly=*/false );

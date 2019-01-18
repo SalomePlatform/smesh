@@ -5680,6 +5680,8 @@ class Mesh(metaclass = MeshMeta):
         Example: :ref:`tui_extrusion_along_path`
         """
 
+        if not IDsOfElements:
+            IDsOfElements = [ self.GetMesh() ]
         n,e,f = [],IDsOfElements,IDsOfElements
         gr,er = self.ExtrusionAlongPathObjects(n,e,f, PathMesh, PathShape,
                                                NodeStart, HasAngles, Angles,
@@ -6239,7 +6241,7 @@ class Mesh(metaclass = MeshMeta):
 
         Parameters:
             Tolerance: the value of tolerance
-            SubMeshOrGroup: :class:`sub-mesh, group or filter <SMESH.SMESH_IDSource>` or node IDs
+            SubMeshOrGroup: list of :class:`sub-meshes, groups or filters <SMESH.SMESH_IDSource>` or of node IDs
             exceptNodes: list of either SubMeshes, Groups or node IDs to exclude from search
             SeparateCornerAndMediumNodes: if *True*, in quadratic mesh puts
                 corner and medium nodes in separate groups thus preventing
@@ -6250,11 +6252,16 @@ class Mesh(metaclass = MeshMeta):
         """
 
         unRegister = genObjUnRegister()
-        if (isinstance( SubMeshOrGroup, Mesh )):
-            SubMeshOrGroup = SubMeshOrGroup.GetMesh()
-        if isinstance( SubMeshOrGroup, list ):
-            SubMeshOrGroup = self.GetIDSource( SubMeshOrGroup, SMESH.NODE )
-            unRegister.set( SubMeshOrGroup )
+        if not isinstance( SubMeshOrGroup, list ):
+            SubMeshOrGroup = [ SubMeshOrGroup ]
+        for i,obj in enumerate( SubMeshOrGroup ):
+            if isinstance( obj, Mesh ):
+                SubMeshOrGroup = [ obj.GetMesh() ]
+                break
+            if isinstance( obj, int ):
+                SubMeshOrGroup = self.GetIDSource( SubMeshOrGroup, SMESH.NODE )
+                unRegister.set( SubMeshOrGroup )
+                break
 
         if not isinstance( exceptNodes, list ):
             exceptNodes = [ exceptNodes ]
@@ -6272,44 +6279,72 @@ class Mesh(metaclass = MeshMeta):
         Parameters:
             GroupsOfNodes: a list of groups of nodes IDs for merging.
                 E.g. [[1,12,13],[25,4]] means that nodes 12, 13 and 4 will be removed and replaced
-                in all elements and groups by nodes 1 and 25 correspondingly
+                in all elements and mesh groups by nodes 1 and 25 correspondingly
             NodesToKeep: nodes to keep in the mesh: a list of groups, sub-meshes or node IDs.
                 If *NodesToKeep* does not include a node to keep for some group to merge,
                 then the first node in the group is kept.
             AvoidMakingHoles: prevent merging nodes which cause removal of elements becoming
                 invalid
         """
-        # NodesToKeep are converted to SMESH.SMESH_IDSource in meshEditor.MergeNodes()
         self.editor.MergeNodes( GroupsOfNodes, NodesToKeep, AvoidMakingHoles )
 
-    def FindEqualElements (self, MeshOrSubMeshOrGroup=None):
+    def FindEqualElements (self, MeshOrSubMeshOrGroup=None, exceptElements=[]):
         """
         Find the elements built on the same nodes.
 
         Parameters:
-            MeshOrSubMeshOrGroup: :class:`mesh, sub-mesh, group or filter <SMESH.SMESH_IDSource>`
+            MeshOrSubMeshOrGroup: :class:`mesh, sub-meshes, groups or filters <SMESH.SMESH_IDSource>` or element IDs to check for equal elements
+            exceptElements: list of either SubMeshes, Groups or elements IDs to exclude from search
+
 
         Returns:
             the list of groups of equal elements IDs (e.g. [[1,12,13],[4,25]])
         """
 
-        if not MeshOrSubMeshOrGroup:
-            MeshOrSubMeshOrGroup=self.mesh
+        unRegister = genObjUnRegister()
+        if MeshOrSubMeshOrGroup is None:
+            MeshOrSubMeshOrGroup = [ self.mesh ]
         elif isinstance( MeshOrSubMeshOrGroup, Mesh ):
-            MeshOrSubMeshOrGroup = MeshOrSubMeshOrGroup.GetMesh()
-        return self.editor.FindEqualElements( MeshOrSubMeshOrGroup )
+            MeshOrSubMeshOrGroup = [ MeshOrSubMeshOrGroup.GetMesh() ]
+        elif not isinstance( MeshOrSubMeshOrGroup, list ):
+            MeshOrSubMeshOrGroup = [ MeshOrSubMeshOrGroup ]
+        if isinstance( MeshOrSubMeshOrGroup[0], int ):
+            MeshOrSubMeshOrGroup = [ self.GetIDSource( MeshOrSubMeshOrGroup, SMESH.ALL )]
+            unRegister.set( MeshOrSubMeshOrGroup )
+        for item in MeshOrSubMeshOrGroup:
+            if isinstance( item, Mesh ):
+                MeshOrSubMeshOrGroup = [ item.GetMesh() ]
 
-    def MergeElements(self, GroupsOfElementsID):
+        if not isinstance( exceptElements, list ):
+            exceptElements = [ exceptElements ]
+        if exceptElements and isinstance( exceptElements[0], int ):
+            exceptElements = [ self.GetIDSource( exceptElements, SMESH.ALL )]
+            unRegister.set( exceptElements )
+
+        return self.editor.FindEqualElements( MeshOrSubMeshOrGroup, exceptElements )
+
+    def MergeElements(self, GroupsOfElementsID, ElementsToKeep=[]):
         """
         Merge elements in each given group.
 
         Parameters:
             GroupsOfElementsID: a list of groups (lists) of elements IDs for merging
                 (e.g. [[1,12,13],[25,4]] means that elements 12, 13 and 4 will be removed and
-                replaced in all groups by elements 1 and 25)
+                replaced in all mesh groups by elements 1 and 25)
+            ElementsToKeep: elements to keep in the mesh: a list of groups, sub-meshes or node IDs.
+                If *ElementsToKeep* does not include an element to keep for some group to merge,
+                then the first element in the group is kept.
         """
 
-        self.editor.MergeElements(GroupsOfElementsID)
+        unRegister = genObjUnRegister()
+        if ElementsToKeep:
+            if not isinstance( ElementsToKeep, list ):
+                ElementsToKeep = [ ElementsToKeep ]
+            if isinstance( ElementsToKeep[0], int ):
+                ElementsToKeep = [ self.GetIDSource( ElementsToKeep, SMESH.ALL )]
+                unRegister.set( ElementsToKeep )
+
+        self.editor.MergeElements( GroupsOfElementsID, ElementsToKeep )
 
     def MergeEqualElements(self):
         """
