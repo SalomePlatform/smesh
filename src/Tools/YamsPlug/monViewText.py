@@ -29,6 +29,7 @@ import pprint as PP #pretty print
 from qtsalome import *
 
 # Import des panels
+
 from ViewText_ui import Ui_ViewExe
 
 verbose = True
@@ -46,21 +47,30 @@ class MonViewText(Ui_ViewExe, QDialog):
         QDialog.__init__(self,parent)
         self.setupUi(self)
         self.resize( QSize(1000,600).expandedTo(self.minimumSizeHint()) )
-        # self.PB_Ok.clicked.connect(self.close)
         self.PB_Ok.clicked.connect( self.theClose )
+        # Button OK is disabled until computation is finished
+        self.PB_Ok.setEnabled(False)
+        # Button cancel allows to kill the computation
+        # It is disabled when the computation is finished
+        self.PB_Cancel.clicked.connect( self.cancelComputation )
+        self.PB_Cancel.setToolTip("Cancel computation")
         self.PB_Save.clicked.connect( self.saveFile )
+        self.PB_Save.setToolTip("Save trace in log file")
+        self.PB_Ok.setToolTip("Close view")
         self.monExe=QProcess(self)
 
         self.monExe.readyReadStandardOutput.connect( self.readFromStdOut )
         self.monExe.readyReadStandardError.connect( self.readFromStdErr )
         self.monExe.finished.connect( self.finished )
+        self.monExe.errorOccurred.connect( self.errorOccured )
 
         if os.path.exists(self.parent().fichierOut):
             os.remove(self.parent().fichierOut)
 
         self.monExe.start(txt)
         self.monExe.closeWriteChannel()
-        self.enregistreResultatsDone=False
+        self.hasBeenCanceled = False
+        self.anErrorOccured = False
         self.show()
 
     def make_executable(self, path):
@@ -93,11 +103,24 @@ class MonViewText(Ui_ViewExe, QDialog):
         self.TB_Exe.append(aa)
 
     def finished(self):
-        self.parent().enregistreResultat()
-        self.enregistreResultatsDone=True
+        self.PB_Ok.setEnabled(True)
+        self.PB_Cancel.setEnabled(False)
+        exit_code = self.monExe.exitCode()
+        if exit_code == 0 and not self.anErrorOccured:
+            self.parent().enregistreResultat()
+        elif not self.hasBeenCanceled:
+            QMessageBox.critical(self, 'Computation failed',
+                 'The computation has failed.<br>Please, check the log message.')
+        pass
+
+    def errorOccured(self):
+        # for instance if the executable is not found
+        self.anErrorOccured = True
+        self.finished()
+
+    def cancelComputation(self):
+        self.hasBeenCanceled = True
+        self.monExe.kill()
 
     def theClose(self):
-        if not self.enregistreResultatsDone:
-            self.parent().enregistreResultat()
-            self.enregistreResultatsDone=True
         self.close()
