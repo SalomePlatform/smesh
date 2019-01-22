@@ -36,6 +36,7 @@ SET(_link_LIBRARIES
   ${Boost_LIBRARIES}
   ${HDF5_LIBS}
   ${MEDFILE_C_LIBRARIES}
+  ${KERNEL_SALOMELocalTrace}
 )
 
 # --- headers ---
