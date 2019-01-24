@@ -1,8 +1,8 @@
 .. _hypothesis-label:
 
-===========================
-How to save MeshGems-SurfOpt Parameters 
-===========================
+=======================================
+How to save MeshGems-SurfOpt Parameters
+=======================================
 
 MeshGems-SurfOpt hypothesis is not a meshing hypothesis for Salome, but an hypothesis for MeshGems-SurfOpt.
 The current set of parameters is automatically written in the salome study object browser when you run computation.

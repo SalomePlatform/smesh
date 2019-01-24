@@ -1,5 +1,5 @@
-Running MeshGems-SurfOpt Plug-in 
-=====================
+Running MeshGems-SurfOpt Plug-in
+================================
 
 MeshGems-SurfOpt plug-in can be invoked via SMESH Plugin item in Mesh menu bar 
 
