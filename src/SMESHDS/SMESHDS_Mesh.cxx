@@ -1202,7 +1202,7 @@ bool SMESHDS_Mesh::IsGroupOfSubShapes (const TopoDS_Shape& theShape) const
     return true;
 
   for ( TopoDS_Iterator it( theShape ); it.More(); it.Next() )
-    if (IsGroupOfSubShapes( it.Value() ))
+    if ( IsGroupOfSubShapes( it.Value() ))
       return true;
 
   return false;

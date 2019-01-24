@@ -145,8 +145,11 @@ private:
   void                             getExtrusionVector(SMESH::DirStruct& aVector);
   void                             extrusionByNormal(SMESH::SMESH_MeshEditor_ptr meshEditor,
                                                      const bool                  makeGroups=false);
-  bool                             getScaleParams( SMESH::double_array*& scales,
-                                                   SMESH::double_array*& basePoint );
+  void                             getScaleParams( SMESH::double_array*& scales,
+                                                   SMESH::double_array*& basePoint,
+                                                   bool &                scalesVariation,
+                                                   SMESH::double_array*& angles,
+                                                   bool &                anglesVariation);
   
   bool                             isValid();
   bool                             isValuesValid();
@@ -154,6 +157,7 @@ private:
   LightApp_SelectionMgr*           mySelectionMgr;        /* User shape selection */
   SVTK_Selector*                   mySelector;
   QList<double>                    myScalesList;
+  QList<double>                    myAnglesList;
 
   // widgets
   SMESHGUI_3TypesSelector*         SelectorWdg;
@@ -197,6 +201,13 @@ private:
   QToolButton*                     RemoveScaleButton;
   SMESHGUI_SpinBox*                ScaleSpin;
   QCheckBox*                       LinearScalesCheck;
+
+  QGroupBox*                       AnglesGrp;
+  QListWidget*                     AnglesList;
+  QToolButton*                     AddAngleButton;
+  QToolButton*                     RemoveAngleButton;
+  SMESHGUI_SpinBox*                AngleSpin;
+  QCheckBox*                       LinearAnglesCheck;
 
   QGroupBox*                       GroupButtons;
   QPushButton*                     buttonOk;

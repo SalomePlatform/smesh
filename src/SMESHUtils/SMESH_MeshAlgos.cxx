@@ -1764,7 +1764,7 @@ double SMESH_MeshAlgos::GetDistance( const SMDS_MeshVolume* volume,
          !vTool.GetFaceBaryCenter( iF, bc[0], bc[1], bc[2] ))
       continue;
     gp_XYZ bcp = point.XYZ() - gp_XYZ( bc[0], bc[1], bc[2] );
-    if ( gp_XYZ( n[0], n[1], n[2] ) * bcp < 1e-6 )
+    if ( gp_XYZ( n[0], n[1], n[2] ) * bcp < -1e-12 )
       continue;
 
     // find distance to a facet

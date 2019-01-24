@@ -297,6 +297,7 @@ public:
    * USE_INPUT_ELEMS_ONLY: to use only input elements to compute extrusion direction
    *                       for ExtrusionByNormal()
    * SCALE_LINEAR_VARIATION: to make linear variation of scale factors
+   * ANGLE_LINEAR_VARIATION: to make linear variation of angles
    */
   enum ExtrusionFlags {
     EXTRUSION_FLAG_BOUNDARY = 0x01,
@@ -304,7 +305,8 @@ public:
     EXTRUSION_FLAG_GROUPS = 0x04,
     EXTRUSION_FLAG_BY_AVG_NORMAL = 0x08,
     EXTRUSION_FLAG_USE_INPUT_ELEMS_ONLY = 0x10,
-    EXTRUSION_FLAG_SCALE_LINEAR_VARIATION = 0x20
+    EXTRUSION_FLAG_SCALE_LINEAR_VARIATION = 0x20,
+    EXTRUSION_FLAG_ANGLE_LINEAR_VARIATION = 0x40
   };
 
   /*!
@@ -312,24 +314,20 @@ public:
    */
   class SMESH_EXPORT ExtrusParam
   {
-    gp_Dir                          myDir;   // direction of extrusion
-    Handle(TColStd_HSequenceOfReal) mySteps; // magnitudes for each step
-    std::vector<double>             myScales, myMediumScales;// scale factors
-    gp_XYZ                          myBaseP; // scaling center
-    SMESH_SequenceOfNode            myNodes; // nodes for using in sewing
-    int                             myFlags; // see ExtrusionFlags
-    double                          myTolerance; // tolerance for sewing nodes
-    const TIDSortedElemSet*         myElemsToUse; // elements to use for extrusion by normal
-
-    int (ExtrusParam::*myMakeNodesFun)(SMESHDS_Mesh*                     mesh,
-                                       const SMDS_MeshNode*              srcNode,
-                                       std::list<const SMDS_MeshNode*> & newNodes,
-                                       const bool                        makeMediumNodes);
-
   public:
+    //! Point on extrusion path
+    struct PathPoint
+    {
+      gp_Pnt myPnt;
+      gp_Dir myTgt;
+      double myAngle, myScale;
+      PathPoint(): myPnt(99., 99., 99.), myTgt(1.,0.,0.), myAngle(0), myScale(0) {}
+    };
+
     ExtrusParam( const gp_Vec&                   theStep,
                  const int                       theNbSteps,
                  const std::list<double>&        theScales,
+                 const std::list<double>&        theAngles,
                  const gp_XYZ*                   theBaseP,
                  const int                       theFlags = 0,
                  const double                    theTolerance = 1e-6);
@@ -341,15 +339,21 @@ public:
                  const int                       theNbSteps,
                  const int                       theFlags,
                  const int                       theDim); // for extrusion by normal
+    ExtrusParam( const std::vector< PathPoint >& thePoints,
+                 const gp_Pnt*                   theBaseP,
+                 const std::list<double>&        theScales,
+                 const bool                      theMakeGroups); // for extrusion along path
 
     SMESH_SequenceOfNode& ChangeNodes() { return myNodes; }
     int& Flags()                   { return myFlags; }
     bool ToMakeBoundary()    const { return myFlags & EXTRUSION_FLAG_BOUNDARY; }
     bool ToMakeGroups()      const { return myFlags & EXTRUSION_FLAG_GROUPS; }
     bool ToUseInpElemsOnly() const { return myFlags & EXTRUSION_FLAG_USE_INPUT_ELEMS_ONLY; }
-    bool IsLinearVariation() const { return myFlags & EXTRUSION_FLAG_SCALE_LINEAR_VARIATION; }
-    int  NbSteps()           const { return mySteps->Length(); }
-
+    bool IsScaleVariation()  const { return myFlags & EXTRUSION_FLAG_SCALE_LINEAR_VARIATION; }
+    bool IsAngleVariation()  const { return myFlags & EXTRUSION_FLAG_ANGLE_LINEAR_VARIATION; }
+    int  NbSteps()           const {
+      return mySteps.IsNull() ? myPathPoints.size() - 1: mySteps->Length();
+    }
     // stores elements to use for extrusion by normal, depending on
     // state of EXTRUSION_FLAG_USE_INPUT_ELEMS_ONLY flag;
     // define myBaseP for scaling
@@ -365,6 +369,20 @@ public:
     }
   private:
 
+    gp_Dir                          myDir;   // direction of extrusion
+    Handle(TColStd_HSequenceOfReal) mySteps; // magnitudes for each step
+    std::vector<double>             myScales;// scale factors
+    std::vector<double>             myAngles;// angles
+    gp_XYZ                          myBaseP; // scaling/rotation center
+    SMESH_SequenceOfNode            myNodes; // nodes for using in sewing
+    int                             myFlags; // see ExtrusionFlags
+    double                          myTolerance; // tolerance for sewing nodes
+    const TIDSortedElemSet*         myElemsToUse; // elements to use for extrusion by normal
+    std::vector< PathPoint >        myPathPoints; // points along a path
+    int (ExtrusParam::*             myMakeNodesFun)(SMESHDS_Mesh*, // function of extrusion method
+                                                    const SMDS_MeshNode*,
+                                                    std::list<const SMDS_MeshNode*> &,
+                                                    const bool);
     int makeNodesByDir( SMESHDS_Mesh*                     mesh,
                         const SMDS_MeshNode*              srcNode,
                         std::list<const SMDS_MeshNode*> & newNodes,
@@ -378,6 +396,10 @@ public:
                              std::list<const SMDS_MeshNode*> & newNodes,
                              const bool                        makeMediumNodes);
     int makeNodesByNormal1D( SMESHDS_Mesh*                     mesh,
+                             const SMDS_MeshNode*              srcNode,
+                             std::list<const SMDS_MeshNode*> & newNodes,
+                             const bool                        makeMediumNodes);
+    int makeNodesAlongTrack( SMESHDS_Mesh*                     mesh,
                              const SMDS_MeshNode*              srcNode,
                              std::list<const SMDS_MeshNode*> & newNodes,
                              const bool                        makeMediumNodes);
@@ -438,24 +460,16 @@ public:
     };
   
   Extrusion_Error ExtrusionAlongTrack (TIDSortedElemSet     theElements[2],
-                                       SMESH_subMesh*       theTrackPattern,
+                                       SMESH_Mesh*          theTrackMesh,
+                                       SMDS_ElemIteratorPtr theTrackIterator,
                                        const SMDS_MeshNode* theNodeStart,
-                                       const bool           theHasAngles,
                                        std::list<double>&   theAngles,
-                                       const bool           theLinearVariation,
-                                       const bool           theHasRefPoint,
-                                       const gp_Pnt&        theRefPoint,
+                                       const bool           theAngleVariation,
+                                       std::list<double>&   theScales,
+                                       const bool           theScaleVariation,
+                                       const gp_Pnt*        theRefPoint,
                                        const bool           theMakeGroups);
-  Extrusion_Error ExtrusionAlongTrack (TIDSortedElemSet     theElements[2],
-                                       SMESH_Mesh*          theTrackPattern,
-                                       const SMDS_MeshNode* theNodeStart,
-                                       const bool           theHasAngles,
-                                       std::list<double>&   theAngles,
-                                       const bool           theLinearVariation,
-                                       const bool           theHasRefPoint,
-                                       const gp_Pnt&        theRefPoint,
-                                       const bool           theMakeGroups);
-  // Generate new elements by extrusion of theElements along path given by theTrackPattern,
+  // Generate new elements by extrusion of theElements along path given by theTrackIterator,
   // theHasAngles are the rotation angles, base point can be given by theRefPoint
 
   PGroupIDs Transform (TIDSortedElemSet & theElements,
@@ -791,36 +805,10 @@ public:
                   const int                nbSteps,
                   SMESH_SequenceOfElemPtr& srcElements);
 
-  struct SMESH_MeshEditor_PathPoint
-  {
-    gp_Pnt myPnt;
-    gp_Dir myTgt;
-    double myAngle, myPrm;
-
-    SMESH_MeshEditor_PathPoint(): myPnt(99., 99., 99.), myTgt(1.,0.,0.), myAngle(0), myPrm(0) {}
-    void          SetPnt      (const gp_Pnt& aP3D)  { myPnt  =aP3D; }
-    void          SetTangent  (const gp_Dir& aTgt)  { myTgt  =aTgt; }
-    void          SetAngle    (const double& aBeta) { myAngle=aBeta; }
-    void          SetParameter(const double& aPrm)  { myPrm  =aPrm; }
-    const gp_Pnt& Pnt         ()const               { return myPnt; }
-    const gp_Dir& Tangent     ()const               { return myTgt; }
-    double        Angle       ()const               { return myAngle; }
-    double        Parameter   ()const               { return myPrm; }
-  };
-  Extrusion_Error makeEdgePathPoints(std::list<double>&                     aPrms,
-                                     const TopoDS_Edge&                     aTrackEdge,
-                                     bool                                   aFirstIsStart,
-                                     std::list<SMESH_MeshEditor_PathPoint>& aLPP);
-  Extrusion_Error makeExtrElements(TIDSortedElemSet                       theElements[2],
-                                   std::list<SMESH_MeshEditor_PathPoint>& theFullList,
-                                   const bool                             theHasAngles,
-                                   std::list<double>&                     theAngles,
-                                   const bool                             theLinearVariation,
-                                   const bool                             theHasRefPoint,
-                                   const gp_Pnt&                          theRefPoint,
-                                   const bool                             theMakeGroups);
   static void linearAngleVariation(const int          NbSteps,
                                    std::list<double>& theAngles);
+  static void linearScaleVariation(const int          NbSteps,
+                                   std::list<double>& theScales);
 
   bool doubleNodes( SMESHDS_Mesh*           theMeshDS,
                     const TIDSortedElemSet& theElems,

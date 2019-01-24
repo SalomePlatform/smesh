@@ -2496,7 +2496,8 @@ namespace MeshEditor_I
     bool myIsExtrusionByNormal;
 
     static int makeFlags( CORBA::Boolean MakeGroups,
-                          CORBA::Boolean LinearVariation = false,
+                          CORBA::Boolean ScaleVariation = false,
+                          CORBA::Boolean AngleVariation = false,
                           CORBA::Boolean ByAverageNormal = false,
                           CORBA::Boolean UseInputElemsOnly = false,
                           CORBA::Long    Flags = 0,
@@ -2505,7 +2506,8 @@ namespace MeshEditor_I
       if ( MakeGroups       ) Flags |= ::SMESH_MeshEditor::EXTRUSION_FLAG_GROUPS;
       if ( ByAverageNormal  ) Flags |= ::SMESH_MeshEditor::EXTRUSION_FLAG_BY_AVG_NORMAL;
       if ( UseInputElemsOnly) Flags |= ::SMESH_MeshEditor::EXTRUSION_FLAG_USE_INPUT_ELEMS_ONLY;
-      if ( LinearVariation  ) Flags |= ::SMESH_MeshEditor::EXTRUSION_FLAG_SCALE_LINEAR_VARIATION;
+      if ( ScaleVariation  )  Flags |= ::SMESH_MeshEditor::EXTRUSION_FLAG_SCALE_LINEAR_VARIATION;
+      if ( AngleVariation  )  Flags |= ::SMESH_MeshEditor::EXTRUSION_FLAG_ANGLE_LINEAR_VARIATION;
       if ( MakeBoundary     ) Flags |= ::SMESH_MeshEditor::EXTRUSION_FLAG_BOUNDARY;
       return Flags;
     }
@@ -2513,7 +2515,9 @@ namespace MeshEditor_I
     ExtrusionParams(const SMESH::DirStruct &    theDir,
                     CORBA::Long                 theNbOfSteps,
                     const SMESH::double_array & theScaleFactors,
-                    CORBA::Boolean              theLinearVariation,
+                    CORBA::Boolean              theScaleVariation,
+                    const SMESH::double_array & theAngles,
+                    CORBA::Boolean              theAngleVariation,
                     const SMESH::double_array & theBasePoint,
                     CORBA::Boolean              theMakeGroups):
       ::SMESH_MeshEditor::ExtrusParam ( gp_Vec( theDir.PS.x,
@@ -2521,8 +2525,9 @@ namespace MeshEditor_I
                                                 theDir.PS.z ),
                                         theNbOfSteps,
                                         toList( theScaleFactors ),
+                                        toList( theAngles ),
                                         TBasePoint( theBasePoint ),
-                                        makeFlags( theMakeGroups, theLinearVariation )),
+                                        makeFlags( theMakeGroups, theScaleVariation, theAngleVariation )),
       myIsExtrusionByNormal( false )
     {
     }
@@ -2537,8 +2542,9 @@ namespace MeshEditor_I
                                                 theDir.PS.z ),
                                         theNbOfSteps,
                                         std::list<double>(),
+                                        std::list<double>(),
                                         0,
-                                        makeFlags( theMakeGroups, false, false, false,
+                                        makeFlags( theMakeGroups, false, false, false, false,
                                                    theExtrFlags, false ),
                                         theSewTolerance ),
       myIsExtrusionByNormal( false )
@@ -2553,7 +2559,7 @@ namespace MeshEditor_I
                     CORBA::Boolean theMakeGroups ):
       ::SMESH_MeshEditor::ExtrusParam ( theStepSize, 
                                         theNbOfSteps,
-                                        makeFlags( theMakeGroups, false,
+                                        makeFlags( theMakeGroups, false, false,
                                                    theByAverageNormal, theUseInputElemsOnly ),
                                         theDim),
       myIsExtrusionByNormal( true )
@@ -2565,8 +2571,6 @@ namespace MeshEditor_I
       Flags() &= ~(::SMESH_MeshEditor::EXTRUSION_FLAG_GROUPS);
     }
 
-  private:
-
     static std::list<double> toList( const SMESH::double_array & theScaleFactors )
     {
       std::list<double> scales;
@@ -2574,6 +2578,8 @@ namespace MeshEditor_I
         scales.push_back( theScaleFactors[i] );
       return scales;
     }
+
+  private:
 
     // structure used to convert SMESH::double_array to gp_XYZ*
     struct TBasePoint
@@ -2613,17 +2619,19 @@ SMESH_MeshEditor_i::ExtrusionSweepObjects(const SMESH::ListOfIDSources & theNode
                                           const SMESH::ListOfIDSources & theFaces,
                                           const SMESH::DirStruct &       theStepVector,
                                           CORBA::Long                    theNbOfSteps,
+                                          CORBA::Boolean                 theToMakeGroups,
                                           const SMESH::double_array &    theScaleFactors,
-                                          CORBA::Boolean                 theLinearVariation,
+                                          CORBA::Boolean                 theScalesVariation,
                                           const SMESH::double_array &    theBasePoint,
-                                          CORBA::Boolean                 theToMakeGroups)
+                                          const SMESH::double_array &    theAngles,
+                                          CORBA::Boolean                 theAnglesVariation)
   throw (SALOME::SALOME_Exception)
 {
   SMESH_TRY;
   initData();
 
-  ExtrusionParams params( theStepVector, theNbOfSteps, theScaleFactors,
-                          theLinearVariation, theBasePoint, theToMakeGroups );
+  ExtrusionParams params( theStepVector, theNbOfSteps, theScaleFactors, theScalesVariation,
+                          theAngles, theAnglesVariation, theBasePoint, theToMakeGroups );
 
   TIDSortedElemSet elemsNodes[2];
   for ( int i = 0, nb = theNodes.length(); i < nb; ++i ) {
@@ -2664,12 +2672,17 @@ SMESH_MeshEditor_i::ExtrusionSweepObjects(const SMESH::ListOfIDSources & theNode
   {
     dumpGroupsList( aPythonDump, aGroups );
     aPythonDump << this<< ".ExtrusionSweepObjects( "
-                << theNodes             << ", "
-                << theEdges             << ", "
-                << theFaces             << ", "
-                << theStepVector        << ", "
-                << TVar( theNbOfSteps ) << ", "
-                << theToMakeGroups      << " )";
+                << theNodes                << ", "
+                << theEdges                << ", "
+                << theFaces                << ", "
+                << theStepVector           << ", "
+                << TVar( theNbOfSteps )    << ", "
+                << theToMakeGroups         << ", "
+                << TVar( theScaleFactors ) << ", "
+                << theScalesVariation      << ", "
+                << TVar( theBasePoint )    << ", "
+                << TVar( theAngles )       << ", "
+                << theAnglesVariation      << " )";
   }
   else
   {
@@ -2847,15 +2860,17 @@ SMESH::ListOfGroups*
 SMESH_MeshEditor_i::ExtrusionAlongPathObjects(const SMESH::ListOfIDSources & theNodes,
                                               const SMESH::ListOfIDSources & theEdges,
                                               const SMESH::ListOfIDSources & theFaces,
-                                              SMESH::SMESH_IDSource_ptr      thePathMesh,
+                                              SMESH::SMESH_IDSource_ptr      thePathObject,
                                               GEOM::GEOM_Object_ptr          thePathShape,
                                               CORBA::Long                    theNodeStart,
                                               CORBA::Boolean                 theHasAngles,
                                               const SMESH::double_array &    theAngles,
-                                              CORBA::Boolean                 theLinearVariation,
+                                              CORBA::Boolean                 theAnglesVariation,
                                               CORBA::Boolean                 theHasRefPoint,
                                               const SMESH::PointStruct &     theRefPoint,
                                               bool                           theMakeGroups,
+                                              const SMESH::double_array &    theScaleFactors,
+                                              CORBA::Boolean                 theScalesVariation,
                                               SMESH::SMESH_MeshEditor::Extrusion_Error& theError)
   throw (SALOME::SALOME_Exception)
 {
@@ -2865,44 +2880,57 @@ SMESH_MeshEditor_i::ExtrusionAlongPathObjects(const SMESH::ListOfIDSources & the
   SMESH::ListOfGroups_var aGroups = new SMESH::ListOfGroups;
 
   theError = SMESH::SMESH_MeshEditor::EXTR_BAD_PATH_SHAPE;
-  if ( thePathMesh->_is_nil() )
+  if ( thePathObject->_is_nil() )
     return aGroups._retn();
 
-  // get a sub-mesh
-  SMESH_subMesh* aSubMesh = 0;
-  SMESH_Mesh_i* aMeshImp = SMESH::DownCast<SMESH_Mesh_i*>( thePathMesh );
-  if ( thePathShape->_is_nil() )
+
+  SMDS_ElemIteratorPtr pathEdgesIterator;
+
+  SMESH_Mesh_i* aMeshImp = SMESH::DownCast<SMESH_Mesh_i*>( thePathObject );
+  if ( !CORBA::is_nil( thePathShape ) && aMeshImp )
   {
-    // thePathMesh should be either a sub-mesh or a mesh with 1D elements only
-    if ( SMESH_subMesh_i* sm = SMESH::DownCast<SMESH_subMesh_i*>( thePathMesh ))
-    {
-      SMESH::SMESH_Mesh_var mesh = thePathMesh->GetMesh();
-      aMeshImp = SMESH::DownCast<SMESH_Mesh_i*>( mesh );
-      if ( !aMeshImp ) return aGroups._retn();
-      aSubMesh = aMeshImp->GetImpl().GetSubMeshContaining( sm->GetId() );
-      if ( !aSubMesh ) return aGroups._retn();
-    }
-    else if ( !aMeshImp ||
-              aMeshImp->NbEdges() != aMeshImp->NbElements() )
-    {
+    // get a sub-mesh of thePathShape
+    TopoDS_Shape     aShape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape( thePathShape );
+    SMESH_subMesh* aSubMesh = aMeshImp->GetImpl().GetSubMesh( aShape );
+    if ( !aSubMesh )
       return aGroups._retn();
+
+    if ( !aSubMesh->GetSubMeshDS() )
+    {
+      SMESHDS_Mesh * meshDS = aMeshImp->GetImpl().GetMeshDS();
+      meshDS->AddCompoundSubmesh( aShape, TopAbs_EDGE );
+      if ( !aSubMesh->GetSubMeshDS() )
+        return aGroups._retn();
     }
+    theError = SMESH::SMESH_MeshEditor::EXTR_PATH_NOT_EDGE;
+    pathEdgesIterator = aSubMesh->GetSubMeshDS()->GetElements();
+    if ( !pathEdgesIterator->more() ||
+         pathEdgesIterator->next()->GetType() != SMDSAbs_Edge )
+      return aGroups._retn();
+
+    pathEdgesIterator = aSubMesh->GetSubMeshDS()->GetElements();
   }
   else
   {
-    if ( !aMeshImp ) return aGroups._retn();
-    TopoDS_Shape aShape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape( thePathShape );
-    aSubMesh = aMeshImp->GetImpl().GetSubMesh( aShape );
-    if ( !aSubMesh /*|| !aSubMesh->GetSubMeshDS()*/ )
+    theError = SMESH::SMESH_MeshEditor::EXTR_PATH_NOT_EDGE;
+    prepareIdSource( thePathObject );
+    pathEdgesIterator = SMESH_Mesh_i::GetElements( thePathObject, SMESH::EDGE );
+    if ( !pathEdgesIterator || !pathEdgesIterator->more() )
       return aGroups._retn();
   }
 
-  SMDS_MeshNode* nodeStart =
-    (SMDS_MeshNode*)aMeshImp->GetImpl().GetMeshDS()->FindNode(theNodeStart);
-  if ( !nodeStart ) {
-    theError = SMESH::SMESH_MeshEditor::EXTR_BAD_STARTING_NODE;
-    return aGroups._retn();
+  if ( !aMeshImp )
+  {
+    SMESH::SMESH_Mesh_var pathMesh = thePathObject->GetMesh();
+    aMeshImp = SMESH::DownCast<SMESH_Mesh_i*>( pathMesh );
   }
+
+
+  theError = SMESH::SMESH_MeshEditor::EXTR_BAD_STARTING_NODE;
+  const SMDS_MeshNode* nodeStart = aMeshImp->GetImpl().GetMeshDS()->FindNode( theNodeStart );
+  if ( !nodeStart )
+    return aGroups._retn();
+
 
   TIDSortedElemSet elemsNodes[2];
   for ( int i = 0, nb = theNodes.length(); i < nb; ++i ) {
@@ -2914,12 +2942,11 @@ SMESH_MeshEditor_i::ExtrusionAlongPathObjects(const SMESH::ListOfIDSources & the
   for ( int i = 0, nb = theFaces.length(); i < nb; ++i )
     idSourceToSet( theFaces[i], getMeshDS(), elemsNodes[0], SMDSAbs_Face );
 
-  list<double> angles;
-  for ( CORBA::ULong i = 0; i < theAngles.length(); i++ ) {
-    angles.push_back( theAngles[i] );
-  }
+  list<double> angles = ExtrusionParams::toList( theAngles );
+  list<double> scales = ExtrusionParams::toList( theScaleFactors );
 
   gp_Pnt refPnt( theRefPoint.x, theRefPoint.y, theRefPoint.z );
+  const gp_Pnt *refPntPtr = theHasRefPoint ? &refPnt : 0;
 
   int nbOldGroups = myMesh->NbGroup();
 
@@ -2934,15 +2961,12 @@ SMESH_MeshEditor_i::ExtrusionAlongPathObjects(const SMESH::ListOfIDSources & the
     theMakeGroups = false;
   }
 
-  ::SMESH_MeshEditor::Extrusion_Error error;
-  if ( !aSubMesh )
-    error = getEditor().ExtrusionAlongTrack( workElements, &(aMeshImp->GetImpl()), nodeStart,
-                                             theHasAngles, angles, theLinearVariation,
-                                             theHasRefPoint, refPnt, theMakeGroups );
-  else
-    error = getEditor().ExtrusionAlongTrack( workElements, aSubMesh, nodeStart,
-                                             theHasAngles, angles, theLinearVariation,
-                                             theHasRefPoint, refPnt, theMakeGroups );
+  ::SMESH_MeshEditor::Extrusion_Error error =
+      getEditor().ExtrusionAlongTrack( workElements,
+                                       &(aMeshImp->GetImpl()), pathEdgesIterator, nodeStart,
+                                       angles, theAnglesVariation,
+                                       scales, theScalesVariation,
+                                       refPntPtr, theMakeGroups );
 
   declareMeshModified( /*isReComputeSafe=*/true );
   theError = convExtrError( error );
@@ -2964,18 +2988,20 @@ SMESH_MeshEditor_i::ExtrusionAlongPathObjects(const SMESH::ListOfIDSources & the
                 << theNodes            << ", "
                 << theEdges            << ", "
                 << theFaces            << ", "
-                << thePathMesh         << ", "
+                << thePathObject       << ", "
                 << thePathShape        << ", "
                 << theNodeStart        << ", "
                 << theHasAngles        << ", "
                 << TVar( theAngles )   << ", "
-                << theLinearVariation  << ", "
+                << theAnglesVariation  << ", "
                 << theHasRefPoint      << ", "
                 << "SMESH.PointStruct( "
                 << TVar( theHasRefPoint ? theRefPoint.x : 0 ) << ", "
                 << TVar( theHasRefPoint ? theRefPoint.y : 0 ) << ", "
                 << TVar( theHasRefPoint ? theRefPoint.z : 0 ) << " ), "
-                << theMakeGroups       << " )";
+                << theMakeGroups           << ", "
+                << TVar( theScaleFactors ) << ", "
+                << theScalesVariation      << " )";
   }
   else
   {

@@ -82,6 +82,7 @@ private:
   bool                      isValuesValid();
   
   SMESH::double_array_var   getAngles();
+  SMESH::double_array_var   getScales();
 
   void                      updateLinearAngles();
   
@@ -94,6 +95,7 @@ private:
   SMESH::SMESH_IDSource_var myPath;
   SUIT_SelectionFilter*     myPathMeshFilter;
   QList<double>             myAnglesList;
+  QList<double>             myScalesList;
 
   // widgets
   SMESHGUI_3TypesSelector*  SelectorWdg;
@@ -103,12 +105,21 @@ private:
   QLineEdit*                PathMeshLineEdit;
   QPushButton*              SelectStartPointButton;
   QLineEdit*                StartPointLineEdit;
+
   QCheckBox*                LinearAnglesCheck;
   QGroupBox*                AnglesGrp;
   QListWidget*              AnglesList;
   QToolButton*              AddAngleButton;
   QToolButton*              RemoveAngleButton;
   SMESHGUI_SpinBox*         AngleSpin;
+
+  QCheckBox*                LinearScalesCheck;
+  QGroupBox*                ScalesGrp;
+  QListWidget*              ScalesList;
+  QToolButton*              AddScaleButton;
+  QToolButton*              RemoveScaleButton;
+  SMESHGUI_SpinBox*         ScaleSpin;
+
   QGroupBox*                BasePointGrp;
   QPushButton*              SelectBasePointButton;
   SMESHGUI_SpinBox*         XSpin;

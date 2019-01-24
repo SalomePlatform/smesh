@@ -79,8 +79,8 @@ class SMESHUtils_EXPORT SMESH_Delaunay
   // return UV of the i-th source boundary node (zero based)
   gp_XY GetBndUV(const int iNode) const;
 
-  // return scale factor to convert real UV to/from UV used for Delauney meshing:
-  // delauney_UV = real_UV * scale
+  // return scale factor to convert real UV to/from UV used for Delaunay meshing:
+  // delaunay_UV = real_UV * scale
   const gp_XY& GetScale() const { return _scale; }
 
   void ToPython() const;

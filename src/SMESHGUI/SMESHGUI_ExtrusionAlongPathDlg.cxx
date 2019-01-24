@@ -200,6 +200,7 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   BasePointGrpLayout->addWidget(ZLab);
   BasePointGrpLayout->addWidget(ZSpin);
 
+  // Angles
   AnglesGrp = new QGroupBox(tr("SMESH_ANGLES"), GroupArguments);
   AnglesGrp->setCheckable(true);
   AnglesGrp->setChecked(false);
@@ -219,14 +220,41 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
 
   LinearAnglesCheck = new QCheckBox(tr("LINEAR_ANGLES"), AnglesGrp);
 
-  // layouting
   AnglesGrpLayout->addWidget(AnglesList,        0, 0, 4, 1);
   AnglesGrpLayout->addWidget(AddAngleButton,    0, 1);
   AnglesGrpLayout->addWidget(RemoveAngleButton, 2, 1);
   AnglesGrpLayout->addWidget(AngleSpin,         0, 2);
-  AnglesGrpLayout->addWidget(LinearAnglesCheck, 4, 0);
+  AnglesGrpLayout->addWidget(LinearAnglesCheck, 4, 0, 1, 3);
   AnglesGrpLayout->setRowMinimumHeight(1, 10);
   AnglesGrpLayout->setRowStretch(3, 10);
+
+  // Scales
+  ScalesGrp = new QGroupBox(tr("SMESH_SCALES"), GroupArguments);
+  ScalesGrp->setCheckable(true);
+  ScalesGrp->setChecked(false);
+  QGridLayout* ScalesGrpLayout = new QGridLayout(ScalesGrp);
+  ScalesGrpLayout->setSpacing(SPACING); ScalesGrpLayout->setMargin(MARGIN);
+
+  ScalesList = new QListWidget(ScalesGrp);
+  ScalesList->setSelectionMode(QListWidget::ExtendedSelection);
+
+  AddScaleButton = new QToolButton(ScalesGrp);
+  AddScaleButton->setIcon(addImage);
+
+  RemoveScaleButton = new QToolButton(ScalesGrp);
+  RemoveScaleButton->setIcon(removeImage);
+
+  ScaleSpin = new SMESHGUI_SpinBox(ScalesGrp);
+
+  LinearScalesCheck = new QCheckBox(tr("LINEAR_SCALES"), ScalesGrp);
+
+  ScalesGrpLayout->addWidget(ScalesList,        0, 0, 4, 1);
+  ScalesGrpLayout->addWidget(AddScaleButton,    0, 1);
+  ScalesGrpLayout->addWidget(RemoveScaleButton, 2, 1);
+  ScalesGrpLayout->addWidget(ScaleSpin,         0, 2);
+  ScalesGrpLayout->addWidget(LinearScalesCheck, 4, 0, 1, 3);
+  ScalesGrpLayout->setRowMinimumHeight(1, 10);
+  ScalesGrpLayout->setRowStretch(3, 10);
 
   // CheckBox for groups generation
   MakeGroupsCheck = new QCheckBox(tr("SMESH_MAKE_GROUPS"), GroupArguments);
@@ -236,10 +264,11 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   myPreviewCheckBox = new QCheckBox(tr("PREVIEW"), GroupArguments);
 
   // layouting
-  GroupArgumentsLayout->addWidget(SelectorWdg,          0, 0);
-  GroupArgumentsLayout->addWidget(PathGrp,              1, 0);
-  GroupArgumentsLayout->addWidget(BasePointGrp,         2, 0);
+  GroupArgumentsLayout->addWidget(SelectorWdg,          0, 0, 1, 2);
+  GroupArgumentsLayout->addWidget(PathGrp,              1, 0, 1, 2);
+  GroupArgumentsLayout->addWidget(BasePointGrp,         2, 0, 1, 2);
   GroupArgumentsLayout->addWidget(AnglesGrp,            3, 0);
+  GroupArgumentsLayout->addWidget(ScalesGrp,            3, 1);
   GroupArgumentsLayout->addWidget(myPreviewCheckBox,    4, 0);
   GroupArgumentsLayout->addWidget(MakeGroupsCheck,      5, 0);
 
@@ -282,12 +311,13 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   YSpin->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
   ZSpin->RangeStepAndValidator(COORD_MIN, COORD_MAX, 10.0, "length_precision");
   AngleSpin->RangeStepAndValidator(-180.0, 180.0, 5.0, "angle_precision");
+  ScaleSpin->RangeStepAndValidator(COORD_MIN, COORD_MAX, 1.0, "length_precision");
 
-  mySelector = (SMESH::GetViewWindow( mySMESHGUI ))->GetSelector();
+  mySelector = SMESH::GetViewWindow( mySMESHGUI )->GetSelector();
 
   mySMESHGUI->SetActiveDialogBox(this);
 
-  myPathMeshFilter = new SMESH_TypeFilter(SMESH::MESHorSUBMESH);
+  myPathMeshFilter = new SMESH_TypeFilter(SMESH::IDSOURCE_EDGE);
 
   myHelpFileName = "extrusion_along_path.html";
 
@@ -302,6 +332,8 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
 
   connect(AddAngleButton,    SIGNAL(clicked()), this, SLOT(OnAngleAdded()));
   connect(RemoveAngleButton, SIGNAL(clicked()), this, SLOT(OnAngleRemoved()));
+  connect(AddScaleButton,    SIGNAL(clicked()), this, SLOT(OnAngleAdded()));
+  connect(RemoveScaleButton, SIGNAL(clicked()), this, SLOT(OnAngleRemoved()));
 
   connect(SelectPathMeshButton,   SIGNAL(clicked()), this, SLOT(SetEditCurrentArgument()));
   connect(SelectStartPointButton, SIGNAL(clicked()), this, SLOT(SetEditCurrentArgument()));
@@ -324,19 +356,27 @@ SMESHGUI_ExtrusionAlongPathDlg::SMESHGUI_ExtrusionAlongPathDlg( SMESHGUI* theMod
   connect(ZSpin,  SIGNAL(valueChanged(double)), this, SLOT(toDisplaySimulation()));
   connect(AddAngleButton,    SIGNAL(clicked()), this, SLOT(toDisplaySimulation()));
   connect(RemoveAngleButton, SIGNAL(clicked()), this, SLOT(toDisplaySimulation()));
-  //connect(LinearAnglesCheck, SIGNAL(toggled(bool)), SLOT(onSelectMesh()));
+  connect(AddScaleButton,    SIGNAL(clicked()), this, SLOT(toDisplaySimulation()));
+  connect(RemoveScaleButton, SIGNAL(clicked()), this, SLOT(toDisplaySimulation()));
+  connect(LinearScalesCheck, SIGNAL(toggled(bool)), this, SLOT(toDisplaySimulation()));
+  connect(LinearAnglesCheck, SIGNAL(toggled(bool)), this, SLOT(toDisplaySimulation()));
+  connect(ScalesGrp, SIGNAL(toggled(bool)), this, SLOT(toDisplaySimulation()));
+  connect(AnglesGrp, SIGNAL(toggled(bool)), this, SLOT(toDisplaySimulation()));
 
 
   //To Connect preview check box
   connectPreviewControl();
 
   AnglesList        ->installEventFilter(this);
+  ScalesList        ->installEventFilter(this);
   StartPointLineEdit->installEventFilter(this);
   XSpin->editor()   ->installEventFilter(this);
   YSpin->editor()   ->installEventFilter(this);
   ZSpin->editor()   ->installEventFilter(this);
 
   CheckIsEnable();
+
+  resize( minimumSizeHint() );
 }
 
 //=================================================================================
@@ -369,6 +409,7 @@ void SMESHGUI_ExtrusionAlongPathDlg::Init (bool ResetControls)
     ZSpin->SetValue(0.0);
 
     AngleSpin->SetValue(45);
+    ScaleSpin->SetValue(2);
     myPreviewCheckBox->setChecked(false);
     onDisplaySimulation(false);
   }
@@ -416,11 +457,9 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
   QStringList aParameters;
   
   //get angles
-  SMESH::double_array_var anAngles = getAngles();
-  
+  SMESH::double_array_var anAngles = getAngles(); 
   for (int i = 0; i < myAnglesList.count(); i++)
     aParameters << AnglesList->item(i)->text();
-
 
   // get base point
   SMESH::PointStruct aBasePoint;
@@ -432,6 +471,11 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
   aParameters << XSpin->text();
   aParameters << YSpin->text();
   aParameters << ZSpin->text();
+
+  //get scales
+  SMESH::double_array_var aScales = getScales();
+  for (int i = 0; i < myScalesList.count(); i++)
+    aParameters << ScalesList->item(i)->text();
 
   bool meshHadNewTypeBefore = true;
   int  maxSelType = 0;
@@ -464,8 +508,8 @@ bool SMESHGUI_ExtrusionAlongPathDlg::ClickOnApply()
                                               GEOM::GEOM_Object::_nil(),
                                               aNodeStart, AnglesGrp->isChecked(),
                                               anAngles, LinearAnglesCheck->isChecked(),
-                                              BasePointGrp->isChecked(), aBasePoint,
-                                              makeGroups, retVal );
+                                              BasePointGrp->isChecked(), aBasePoint, makeGroups,
+                                              aScales, LinearScalesCheck->isChecked(), retVal );
 
     wc.suspend();
     switch (retVal) {
@@ -911,17 +955,34 @@ void SMESHGUI_ExtrusionAlongPathDlg::enterEvent (QEvent*)
 //=======================================================================
 void SMESHGUI_ExtrusionAlongPathDlg::OnAngleAdded()
 {
-  QString msg;
-  if( !AngleSpin->isValid( msg, true ) ) {
-    QString str( tr( "SMESH_INCORRECT_INPUT" ) );
-    if ( !msg.isEmpty() )
-      str += "\n" + msg;
-    SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
-    return;
+  if ( sender() == AddAngleButton )
+  {
+    QString msg;
+    if( !AngleSpin->isValid( msg, true ) ) {
+      QString str( tr( "SMESH_INCORRECT_INPUT" ) );
+      if ( !msg.isEmpty() )
+        str += "\n" + msg;
+      SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
+      return;
+    }
+    AnglesList->addItem(AngleSpin->text());
+    myAnglesList.append(AngleSpin->GetValue());
   }
-  AnglesList->addItem(AngleSpin->text());
-  myAnglesList.append(AngleSpin->GetValue());
-
+  
+  if ( sender() == AddScaleButton )
+  {
+    QString msg;
+    if( !ScaleSpin->isValid( msg, true ) ) {
+      QString str( tr( "SMESH_INCORRECT_INPUT" ) );
+      if ( !msg.isEmpty() )
+        str += "\n" + msg;
+      SUIT_MessageBox::critical( this, tr( "SMESH_ERROR" ), str );
+      return;
+    }
+    ScalesList->addItem(ScaleSpin->text());
+    myScalesList.append(ScaleSpin->GetValue());
+  }
+  
   updateLinearAngles();
 }
 
@@ -931,10 +992,23 @@ void SMESHGUI_ExtrusionAlongPathDlg::OnAngleAdded()
 //=======================================================================
 void SMESHGUI_ExtrusionAlongPathDlg::OnAngleRemoved()
 {
-  QList<QListWidgetItem*> aList = AnglesList->selectedItems();
+  QListWidget* widget;
+  QList<double>* list;
+  if ( sender() == RemoveScaleButton )
+  {
+    widget = ScalesList;
+    list   = & myScalesList;
+  }
+  else
+  {
+    widget = AnglesList;
+    list   = & myAnglesList;
+  }
+
+  QList<QListWidgetItem*> aList = widget->selectedItems();
   QListWidgetItem* anItem;
   foreach(anItem, aList) {
-    myAnglesList.removeAt(AnglesList->row(anItem));
+    list->removeAt( widget->row( anItem ));
     delete anItem;
   }
 
@@ -951,7 +1025,11 @@ bool SMESHGUI_ExtrusionAlongPathDlg::eventFilter (QObject* object, QEvent* event
     QKeyEvent* ke = (QKeyEvent*)event;
     if (object == AnglesList) {
       if (ke->key() == Qt::Key_Delete)
-        OnAngleRemoved();
+        RemoveAngleButton->click();
+    }
+    if (object == ScalesList) {
+      if (ke->key() == Qt::Key_Delete)
+        RemoveScaleButton->click();
     }
   }
   else if (event->type() == QEvent::FocusIn) {
@@ -1023,6 +1101,19 @@ void SMESHGUI_ExtrusionAlongPathDlg::updateLinearAngles()
   if( !enableLinear )
     LinearAnglesCheck->setChecked( false );
   LinearAnglesCheck->setEnabled( enableLinear );
+
+  enableLinear = true;
+  for( int row = 0, nbRows = ScalesList->count(); row < nbRows; row++ ) {
+    if( QListWidgetItem* anItem = ScalesList->item( row ) ) {
+      enableLinear = false;
+      anItem->text().toDouble(&enableLinear);
+      if( !enableLinear )
+        break;
+    }
+  }
+  if( !enableLinear )
+    LinearScalesCheck->setChecked( false );
+  LinearScalesCheck->setEnabled( enableLinear );
 }
 
 //=================================================================================
@@ -1074,9 +1165,10 @@ void SMESHGUI_ExtrusionAlongPathDlg::onDisplaySimulation( bool toDisplayPreview 
   if ( myPreviewCheckBox->isChecked() && toDisplayPreview ) {
     if ( SelectorWdg->IsAnythingSelected() && isValid() && isValuesValid())
     {
-      // get angles
+      // get angles and scales
       SMESH::double_array_var anAngles = getAngles();
-      
+      SMESH::double_array_var aScales  = getScales();
+
       // get base point
       SMESH::PointStruct aBasePoint;
       if (BasePointGrp->isChecked()) {
@@ -1107,7 +1199,9 @@ void SMESHGUI_ExtrusionAlongPathDlg::onDisplaySimulation( bool toDisplayPreview 
                                                    aNodeStart, AnglesGrp->isChecked(),
                                                    anAngles, LinearAnglesCheck->isChecked(),
                                                    BasePointGrp->isChecked(), aBasePoint,
-                                                   makeGroups, retVal );
+                                                   makeGroups,
+                                                   aScales, LinearScalesCheck->isChecked(),
+                                                   retVal);
 
           if( retVal == SMESH::SMESH_MeshEditor::EXTR_OK )
           {
@@ -1133,18 +1227,36 @@ void SMESHGUI_ExtrusionAlongPathDlg::onDisplaySimulation( bool toDisplayPreview 
   }
 }
 
+//=======================================================================
+//function : getAngles
+//purpose  : return CORBA array of angles
+//=======================================================================
+
 SMESH::double_array_var SMESHGUI_ExtrusionAlongPathDlg::getAngles()
 {
   SMESH::double_array_var anAngles = new SMESH::double_array;
-  if (AnglesGrp->isChecked())
+  if ( AnglesGrp->isChecked() )
   {
-    anAngles->length(myAnglesList.count());
-    int j = 0;
-    for (int i = 0; i < myAnglesList.count(); i++) {
-      double angle = myAnglesList[i];
-      anAngles[ j++ ] = angle*M_PI/180.;
-    }
-    anAngles->length(j);
+    anAngles->length( myAnglesList.count() );
+    for (int i = 0; i < myAnglesList.count(); i++)
+      anAngles[ i ] = myAnglesList[ i ] * M_PI / 180.;
   }
   return anAngles;
+}
+
+//=======================================================================
+//function : getScales
+//purpose  : return CORBA array of scale factors
+//=======================================================================
+
+SMESH::double_array_var SMESHGUI_ExtrusionAlongPathDlg::getScales()
+{
+  SMESH::double_array_var anScales = new SMESH::double_array;
+  if ( ScalesGrp->isChecked() )
+  {
+    anScales->length( myScalesList.count() );
+    for (int i = 0; i < myScalesList.count(); i++)
+      anScales[ i ] = myScalesList[ i ];
+  }
+  return anScales;
 }

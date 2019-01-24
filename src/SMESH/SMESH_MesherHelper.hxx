@@ -29,7 +29,8 @@
 
 #include "SMESH_SMESH.hxx"
 
-#include "SMESH_MeshEditor.hxx" // needed for many meshers
+#include "SMESH_ComputeError.hxx"
+#include "SMESH_TypeDefs.hxx"
 
 #include <Geom_Surface.hxx>
 #include <ShapeAnalysis_Surface.hxx>
@@ -44,8 +45,15 @@ class GeomAPI_ProjectPointOnCurve;
 class GeomAPI_ProjectPointOnSurf;
 class SMDS_MeshNode;
 class SMESHDS_Hypothesis;
+class SMESHDS_Mesh;
+class SMESHDS_SubMesh;
 class SMESH_Gen;
+class SMESH_Mesh;
 class SMESH_ProxyMesh;
+class SMESH_subMesh;
+class TopoDS_Edge;
+class TopoDS_Face;
+class TopoDS_Vertex;
 
 typedef std::map<SMESH_TLink, const SMDS_MeshNode*>           TLinkNodeMap;
 typedef std::map<SMESH_TLink, const SMDS_MeshNode*>::iterator ItTLinkNode;

@@ -322,25 +322,27 @@ public:
   void RenumberNodes() throw (SALOME::SALOME_Exception);
   void RenumberElements() throw (SALOME::SALOME_Exception);
 
-  SMESH::ListOfGroups* RotationSweepObjects(const SMESH::ListOfIDSources & nodes,
-                                            const SMESH::ListOfIDSources & edges,
-                                            const SMESH::ListOfIDSources & faces,
+  SMESH::ListOfGroups* RotationSweepObjects(const SMESH::ListOfIDSources & Nodes,
+                                            const SMESH::ListOfIDSources & Edges,
+                                            const SMESH::ListOfIDSources & Faces,
                                             const SMESH::AxisStruct &      Axis,
                                             CORBA::Double                  AngleInRadians,
                                             CORBA::Long                    NbOfSteps,
                                             CORBA::Double                  Tolerance,
-                                            CORBA::Boolean                 toMakeGroups)
+                                            CORBA::Boolean                 ToMakeGroups)
     throw (SALOME::SALOME_Exception);
 
-  SMESH::ListOfGroups* ExtrusionSweepObjects(const SMESH::ListOfIDSources & nodes,
-                                             const SMESH::ListOfIDSources & edges,
-                                             const SMESH::ListOfIDSources & faces,
-                                             const SMESH::DirStruct &       stepVector,
-                                             CORBA::Long                    nbOfSteps,
-                                             const SMESH::double_array &    theScaleFactors,
-                                             CORBA::Boolean                 theLinearVariation,
-                                             const SMESH::double_array &    theBasePoint,
-                                             CORBA::Boolean                 toMakeGroups)
+  SMESH::ListOfGroups* ExtrusionSweepObjects(const SMESH::ListOfIDSources & Nodes,
+                                             const SMESH::ListOfIDSources & Edges,
+                                             const SMESH::ListOfIDSources & Faces,
+                                             const SMESH::DirStruct &       StepVector,
+                                             CORBA::Long                    NbOfSteps,
+                                             CORBA::Boolean                 ToMakeGroups,
+                                             const SMESH::double_array &    ScaleFactors,
+                                             CORBA::Boolean                 ScalesVariation,
+                                             const SMESH::double_array &    BasePoint,
+                                             const SMESH::double_array &    Angles,
+                                             CORBA::Boolean                 AnglesVariation)
     throw (SALOME::SALOME_Exception);
 
   SMESH::ListOfGroups* ExtrusionByNormal(const SMESH::ListOfIDSources& objects,
@@ -360,18 +362,20 @@ public:
     throw (SALOME::SALOME_Exception);
 
   SMESH::ListOfGroups*
-    ExtrusionAlongPathObjects(const SMESH::ListOfIDSources & nodes,
-                              const SMESH::ListOfIDSources & edges,
-                              const SMESH::ListOfIDSources & faces,
+    ExtrusionAlongPathObjects(const SMESH::ListOfIDSources & Nodes,
+                              const SMESH::ListOfIDSources & Edges,
+                              const SMESH::ListOfIDSources & Faces,
                               SMESH::SMESH_IDSource_ptr      PathMesh,
                               GEOM::GEOM_Object_ptr          PathShape,
                               CORBA::Long                    NodeStart,
                               CORBA::Boolean                 HasAngles,
                               const SMESH::double_array &    Angles,
-                              CORBA::Boolean                 LinearVariation,
+                              CORBA::Boolean                 AnglesVariation,
                               CORBA::Boolean                 HasRefPoint,
                               const SMESH::PointStruct &     RefPoint,
                               bool                           MakeGroups,
+                              const SMESH::double_array &    ScaleFactors,
+                              CORBA::Boolean                 ScalesVariation,
                               SMESH::SMESH_MeshEditor::Extrusion_Error& Error)
     throw (SALOME::SALOME_Exception);
 

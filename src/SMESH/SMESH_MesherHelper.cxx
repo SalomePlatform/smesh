@@ -36,6 +36,7 @@
 #include "SMESH_HypoFilter.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_MeshAlgos.hxx"
+#include "SMESH_MeshEditor.hxx"
 #include "SMESH_ProxyMesh.hxx"
 #include "SMESH_subMesh.hxx"
 
@@ -73,7 +74,7 @@ using namespace std;
 
 namespace {
 
-  inline SMESH_TNodeXYZ XYZ(const SMDS_MeshNode* n) { return SMESH_TNodeXYZ(n); }
+  inline SMESH_NodeXYZ XYZ(const SMDS_MeshNode* n) { return SMESH_NodeXYZ(n); }
 
   enum { U_periodic = 1, V_periodic = 2 };
 }
@@ -1035,6 +1036,16 @@ double SMESH_MesherHelper::GetNodeU(const TopoDS_Edge&   E,
       int vertexID = n->getshapeId();
       const TopoDS_Vertex& V = TopoDS::Vertex(meshDS->IndexToShape(vertexID));
       param =  BRep_Tool::Parameter( V, E );
+
+      if ( inEdgeNode )
+      {
+        BRepAdaptor_Curve curve( E );
+        if ( curve.IsPeriodic() )
+        {
+          double uInEdge = GetNodeU( E, inEdgeNode );
+          param += ShapeAnalysis::AdjustByPeriod( param, uInEdge, curve.Period() );
+        }
+      }
     }
   }
   if ( check )

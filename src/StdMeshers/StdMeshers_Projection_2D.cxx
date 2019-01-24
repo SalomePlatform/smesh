@@ -42,6 +42,7 @@
 #include "SMESH_Gen.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_MeshAlgos.hxx"
+#include "SMESH_MeshEditor.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_Pattern.hxx"
 #include "SMESH_subMesh.hxx"

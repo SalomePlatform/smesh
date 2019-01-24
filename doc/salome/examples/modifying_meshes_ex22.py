@@ -1,5 +1,7 @@
 # Extrusion
 
+# There is a series of Extrusion Along Line methods added at different times;
+# a fully functional method is ExtrusionSweepObjects()
 
 import salome, math
 salome.salome_init()
@@ -48,22 +50,13 @@ stepVector = [0.,0.,1.]
 mesh.ExtrusionSweepObject1D( obj, stepVector, nbSteps )
 
 # extrude a group
-lineExtruded = None
-for g in mesh.GetGroups( SMESH.FACE ):
-    if g.GetName() == "line_extruded":
-        lineExtruded = g
-        break
-obj        = lineExtruded
+obj        = mesh.GetGroupByName( "line_extruded", SMESH.FACE )[0]
 stepVector = [0,-5.,0.]
 nbSteps    = 1
 mesh.ExtrusionSweepObject( obj, stepVector, nbSteps )
 
 # extrude all nodes and triangle faces of the disk quarter, applying a scale factor
-diskGroup = None
-for g in mesh.GetGroups( SMESH.FACE ):
-    if g.GetName() == "line_rotated":
-        diskGroup = g
-        break
+diskGroup = mesh.GetGroupByName( "line_rotated", SMESH.FACE )[0]
 crit = [ smesh.GetCriterion( SMESH.FACE, SMESH.FT_ElemGeomType,'=',SMESH.Geom_TRIANGLE ),
          smesh.GetCriterion( SMESH.FACE, SMESH.FT_BelongToMeshGroup,'=', diskGroup )]
 trianglesFilter = smesh.GetFilterFromCriteria( crit )

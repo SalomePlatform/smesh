@@ -752,26 +752,28 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
         """
 
         if not meshes: return None
-        for i,m in enumerate(meshes):
-            if isinstance(m, Mesh):
+        if not isinstance( meshes, list ):
+            meshes = [ meshes ]
+        for i,m in enumerate( meshes ):
+            if isinstance( m, Mesh ):
                 meshes[i] = m.GetMesh()
-        mergeTolerance,Parameters,hasVars = ParseParameters(mergeTolerance)
+        mergeTolerance,Parameters,hasVars = ParseParameters( mergeTolerance )
         if hasattr(meshes[0], "SetParameters"):
-            meshes[0].SetParameters(Parameters)
+            meshes[0].SetParameters( Parameters )
         else:
-            meshes[0].GetMesh().SetParameters(Parameters)
+            meshes[0].GetMesh().SetParameters( Parameters )
         if isinstance( meshToAppendTo, Mesh ):
             meshToAppendTo = meshToAppendTo.GetMesh()
         if allGroups:
             aSmeshMesh = SMESH._objref_SMESH_Gen.ConcatenateWithGroups(
                 self,meshes,uniteIdenticalGroups,mergeNodesAndElements,
-                mergeTolerance,meshToAppendTo)
+                mergeTolerance,meshToAppendTo )
         else:
             aSmeshMesh = SMESH._objref_SMESH_Gen.Concatenate(
                 self,meshes,uniteIdenticalGroups,mergeNodesAndElements,
-                mergeTolerance,meshToAppendTo)
+                mergeTolerance,meshToAppendTo )
 
-        aMesh = Mesh(self, self.geompyD, aSmeshMesh, name=name)
+        aMesh = Mesh( self, self.geompyD, aSmeshMesh, name=name )
         return aMesh
 
     def CopyMesh( self, meshPart, meshName, toCopyGroups=False, toKeepIDs=False):
@@ -2501,6 +2503,25 @@ class Mesh(metaclass = MeshMeta):
         minor = -1
         # invoke engine's function
         self.mesh.ExportMED(fileName, auto_groups, minor, overwrite, autoDimension)
+        return
+
+
+    def Append(self, meshes, uniteIdenticalGroups = True,
+                     mergeNodesAndElements = False, mergeTolerance = 1e-5, allGroups = False):
+        """
+        Append given meshes into this mesh.
+        All groups of input meshes will be created in this mesh.
+
+        Parameters:
+                meshes: :class:`meshes, sub-meshes, groups or filters <SMESH.SMESH_IDSource>` to append
+                uniteIdenticalGroups: if True, groups with same names are united, else they are renamed
+                mergeNodesAndElements: if True, equal nodes and elements are merged
+                mergeTolerance: tolerance for merging nodes
+                allGroups: forces creation of groups corresponding to every input mesh
+        """
+        self.smeshpyD.Concatenate( meshes, uniteIdenticalGroups,
+                                   mergeNodesAndElements, mergeTolerance, allGroups,
+                                   meshToAppendTo = self.GetMesh() )
 
     # Operations with groups:
     # ----------------------
@@ -5340,7 +5361,8 @@ class Mesh(metaclass = MeshMeta):
                                          NbOfSteps, Tolerance, MakeGroups, TotalAngle)
 
     def ExtrusionSweepObjects(self, nodes, edges, faces, StepVector, NbOfSteps, MakeGroups=False,
-                              scaleFactors=[], linearVariation=False, basePoint=[] ):
+                              scaleFactors=[], linearVariation=False, basePoint=[],
+                              angles=[], anglesVariation=False):
         """
         Generate new elements by extrusion of the given elements and nodes
 
@@ -5354,15 +5376,19 @@ class Mesh(metaclass = MeshMeta):
             NbOfSteps: the number of steps
             MakeGroups: forces the generation of new groups from existing ones
             scaleFactors: optional scale factors to apply during extrusion
-            linearVariation: if *True*, scaleFactors are spread over all *scaleFactors*,
-                else scaleFactors[i] is applied to nodes at the i-th extrusion step
-            basePoint: optional scaling center; if not provided, a gravity center of
+            linearVariation: if *True*, *scaleFactors* are spread over all *NbOfSteps*,
+                else *scaleFactors* [i] is applied to nodes at the i-th extrusion step
+            basePoint: optional scaling and rotation center; if not provided, a gravity center of
                 nodes and elements being extruded is used as the scaling center.
                 It can be either
 
                         - a list of tree components of the point or
                         - a node ID or
                         - a GEOM point
+            angles: list of angles in radians. Nodes at each extrusion step are rotated 
+                around *basePoint*, additionally to previous steps.
+            anglesVariation: forces the computation of rotation angles as linear
+                variation of the given *angles* along path steps
         Returns:
             the list of created :class:`groups <SMESH.SMESH_GroupBase>` if *MakeGroups* == True, empty list otherwise
 
@@ -5387,13 +5413,17 @@ class Mesh(metaclass = MeshMeta):
             basePoint = self.geompyD.PointCoordinates( basePoint )
 
         NbOfSteps,Parameters,hasVars = ParseParameters(NbOfSteps)
-        Parameters = StepVector.PS.parameters + var_separator + Parameters
+        scaleFactors,scaleParameters,hasVars = ParseParameters(scaleFactors)
+        angles,angleParameters,hasVars = ParseAngles(angles)
+        Parameters = StepVector.PS.parameters + var_separator + \
+                     Parameters + var_separator + \
+                     scaleParameters + var_separator + angleParameters
         self.mesh.SetParameters(Parameters)
 
         return self.editor.ExtrusionSweepObjects( nodes, edges, faces,
-                                                  StepVector, NbOfSteps,
+                                                  StepVector, NbOfSteps, MakeGroups,
                                                   scaleFactors, linearVariation, basePoint,
-                                                  MakeGroups)
+                                                  angles, anglesVariation )
 
 
     def ExtrusionSweep(self, IDsOfElements, StepVector, NbOfSteps, MakeGroups=False, IsNodes = False):
@@ -5555,9 +5585,10 @@ class Mesh(metaclass = MeshMeta):
         return self.editor.AdvancedExtrusion(IDsOfElements, StepVector, NbOfSteps,
                                              ExtrFlags, SewTolerance, MakeGroups)
 
-    def ExtrusionAlongPathObjects(self, Nodes, Edges, Faces, PathMesh, PathShape=None,
+    def ExtrusionAlongPathObjects(self, Nodes, Edges, Faces, PathObject, PathShape=None,
                                   NodeStart=1, HasAngles=False, Angles=[], LinearVariation=False,
-                                  HasRefPoint=False, RefPoint=[0,0,0], MakeGroups=False):
+                                  HasRefPoint=False, RefPoint=[0,0,0], MakeGroups=False,
+                                  ScaleFactors=[], ScalesVariation=False):
         """
         Generate new elements by extrusion of the given elements and nodes along the path.
         The path of extrusion must be a meshed edge.
@@ -5566,20 +5597,22 @@ class Mesh(metaclass = MeshMeta):
             Nodes: nodes to extrude: a list including ids, :class:`a mesh, sub-meshes, groups or filters <SMESH.SMESH_IDSource>`
             Edges: edges to extrude: a list including ids, :class:`a mesh, sub-meshes, groups or filters <SMESH.SMESH_IDSource>`
             Faces: faces to extrude: a list including ids, :class:`a mesh, sub-meshes, groups or filters <SMESH.SMESH_IDSource>`
-            PathMesh: 1D mesh or 1D sub-mesh, along which proceeds the extrusion
-            PathShape: shape (edge) defines the sub-mesh of PathMesh if PathMesh
-                contains not only path segments, else it can be None
+            PathObject: :class:`mesh, sub-mesh, group or filter <SMESH.SMESH_IDSource>` containing edges along which proceeds the extrusion
+            PathShape: optional shape (edge or wire) which defines the sub-mesh of the mesh defined by *PathObject* if the mesh contains not only path segments, else it can be None
             NodeStart: the first or the last node on the path. Defines the direction of extrusion
-            HasAngles: allows the shape to be rotated around the path
-                to get the resulting mesh in a helical fashion
-            Angles: list of angles
+            HasAngles: not used obsolete
+            Angles: list of angles in radians. Nodes at each extrusion step are rotated 
+                around *basePoint*, additionally to previous steps.
             LinearVariation: forces the computation of rotation angles as linear
                 variation of the given Angles along path steps
             HasRefPoint: allows using the reference point
-            RefPoint: the reference point around which the shape is rotated (the mass center of the
-                shape by default). The User can specify any point as the Reference Point. 
+            RefPoint: optional scaling and rotation center (mass center of the extruded
+                elements by default). The User can specify any point as the Reference Point. 
                 *RefPoint* can be either GEOM Vertex, [x,y,z] or :class:`SMESH.PointStruct`
             MakeGroups: forces the generation of new groups from existing ones
+            ScaleFactors: optional scale factors to apply during extrusion
+            ScalesVariation: if *True*, *scaleFactors* are spread over all *NbOfSteps*,
+                else *scaleFactors* [i] is applied to nodes at the i-th extrusion step
 
         Returns:
             list of created :class:`groups <SMESH.SMESH_GroupBase>` and 
@@ -5597,15 +5630,18 @@ class Mesh(metaclass = MeshMeta):
         if isinstance( RefPoint, list ):
             if not RefPoint: RefPoint = [0,0,0]
             RefPoint = SMESH.PointStruct( *RefPoint )
-        if isinstance( PathMesh, Mesh ):
-            PathMesh = PathMesh.GetMesh()
+        if isinstance( PathObject, Mesh ):
+            PathObject = PathObject.GetMesh()
         Angles,AnglesParameters,hasVars = ParseAngles(Angles)
-        Parameters = AnglesParameters + var_separator + RefPoint.parameters
+        ScaleFactors,ScalesParameters,hasVars = ParseParameters(ScaleFactors)
+        Parameters = AnglesParameters + var_separator + \
+                     RefPoint.parameters + var_separator + ScalesParameters 
         self.mesh.SetParameters(Parameters)
         return self.editor.ExtrusionAlongPathObjects(Nodes, Edges, Faces,
-                                                     PathMesh, PathShape, NodeStart,
+                                                     PathObject, PathShape, NodeStart,
                                                      HasAngles, Angles, LinearVariation,
-                                                     HasRefPoint, RefPoint, MakeGroups)
+                                                     HasRefPoint, RefPoint, MakeGroups,
+                                                     ScaleFactors, ScalesVariation)
 
     def ExtrusionAlongPathX(self, Base, Path, NodeStart,
                             HasAngles=False, Angles=[], LinearVariation=False,
@@ -5619,9 +5655,9 @@ class Mesh(metaclass = MeshMeta):
             Base: :class:`mesh, sub-mesh, group, filter <SMESH.SMESH_IDSource>`, or list of ids of elements for extrusion
             Path: 1D mesh or 1D sub-mesh, along which proceeds the extrusion
             NodeStart: the start node from Path. Defines the direction of extrusion
-            HasAngles: allows the shape to be rotated around the path
-                to get the resulting mesh in a helical fashion
-            Angles: list of angles in radians
+            HasAngles: not used obsolete
+            Angles: list of angles in radians. Nodes at each extrusion step are rotated 
+                around *basePoint*, additionally to previous steps.
             LinearVariation: forces the computation of rotation angles as linear
                 variation of the given Angles along path steps
             HasRefPoint: allows using the reference point
@@ -5662,9 +5698,9 @@ class Mesh(metaclass = MeshMeta):
             PathMesh: mesh containing a 1D sub-mesh on the edge, along which proceeds the extrusion
             PathShape: shape (edge) defines the sub-mesh for the path
             NodeStart: the first or the last node on the edge. Defines the direction of extrusion
-            HasAngles: allows the shape to be rotated around the path
-                to get the resulting mesh in a helical fashion
-            Angles: list of angles in radians
+            HasAngles: not used obsolete
+            Angles: list of angles in radians. Nodes at each extrusion step are rotated 
+                around *basePoint*, additionally to previous steps.
             HasRefPoint: allows using the reference point
             RefPoint: the reference point around which the shape is rotated (the mass center of the shape by default).
                 The User can specify any point as the Reference Point.
@@ -5703,9 +5739,9 @@ class Mesh(metaclass = MeshMeta):
             PathMesh: mesh containing a 1D sub-mesh on the edge, along which the extrusion proceeds
             PathShape: shape (edge) defines the sub-mesh for the path
             NodeStart: the first or the last node on the edge. Defines the direction of extrusion
-            HasAngles: allows the shape to be rotated around the path
-                to get the resulting mesh in a helical fashion
-            Angles: list of angles
+            HasAngles: not used obsolete
+            Angles: list of angles in radians. Nodes at each extrusion step are rotated 
+                around *basePoint*, additionally to previous steps.
             HasRefPoint: allows using the reference point
             RefPoint: the reference point around which the shape is rotated (the mass center of the shape by default).
                 The User can specify any point as the Reference Point.
@@ -5741,9 +5777,9 @@ class Mesh(metaclass = MeshMeta):
             PathMesh: mesh containing a 1D sub-mesh on the edge, along which the extrusion proceeds
             PathShape: shape (edge) defines the sub-mesh for the path
             NodeStart: the first or the last node on the edge. Defines the direction of extrusion
-            HasAngles: allows the shape to be rotated around the path
-                to get the resulting mesh in a helical fashion
-            Angles: list of angles
+            HasAngles: not used obsolete
+            Angles: list of angles in radians. Nodes at each extrusion step are rotated 
+                around *basePoint*, additionally to previous steps.
             HasRefPoint: allows using the reference point
             RefPoint:  the reference point around which the shape is rotated (the mass center of the shape by default).
                 The User can specify any point as the Reference Point.
@@ -5779,9 +5815,9 @@ class Mesh(metaclass = MeshMeta):
             PathMesh: mesh containing a 1D sub-mesh on the edge, along which the extrusion proceeds
             PathShape: shape (edge) defines the sub-mesh for the path
             NodeStart: the first or the last node on the edge. Defines the direction of extrusion
-            HasAngles: allows the shape to be rotated around the path
-                to get the resulting mesh in a helical fashion
-            Angles: list of angles
+            HasAngles: not used obsolete
+            Angles: list of angles in radians. Nodes at each extrusion step are rotated 
+                around *basePoint*, additionally to previous steps.
             HasRefPoint: allows using the reference point
             RefPoint: the reference point around which the shape is rotated (the mass center of the shape by default).
                 The User can specify any point as the Reference Point.

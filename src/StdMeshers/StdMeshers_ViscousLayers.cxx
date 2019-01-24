@@ -43,6 +43,7 @@
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_ProxyMesh.hxx"
 #include "SMESH_subMesh.hxx"
+#include "SMESH_MeshEditor.hxx"
 #include "SMESH_subMeshEventListener.hxx"
 #include "StdMeshers_FaceSide.hxx"
 #include "StdMeshers_ViscousLayers2D.hxx"

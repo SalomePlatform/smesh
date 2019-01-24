@@ -32,10 +32,11 @@
 #include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_SubMesh.hxx"
 #include "SMESH_Algo.hxx"
-#include "SMESH_Mesh.hxx"
-#include "SMESH_MesherHelper.hxx"
-#include "SMESH_ComputeError.hxx"
 #include "SMESH_Block.hxx"
+#include "SMESH_ComputeError.hxx"
+#include "SMESH_Mesh.hxx"
+#include "SMESH_MeshEditor.hxx"
+#include "SMESH_MesherHelper.hxx"
 
 #include <Adaptor2d_Curve2d.hxx>
 #include <BRepAdaptor_CompCurve.hxx>

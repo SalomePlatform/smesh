@@ -31,6 +31,7 @@
 #include "SMDS_MeshNode.hxx"
 #include "SMESHDS_Mesh.hxx"
 #include "SMESHDS_SubMesh.hxx"
+#include "SMESH_MeshEditor.hxx"
 #include "SMESH_MesherHelper.hxx"
 
 #include "utilities.h"

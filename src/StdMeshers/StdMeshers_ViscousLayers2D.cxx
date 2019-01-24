@@ -38,6 +38,7 @@
 #include "SMESH_Group.hxx"
 #include "SMESH_HypoFilter.hxx"
 #include "SMESH_Mesh.hxx"
+#include "SMESH_MeshEditor.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_ProxyMesh.hxx"
 #include "SMESH_Quadtree.hxx"

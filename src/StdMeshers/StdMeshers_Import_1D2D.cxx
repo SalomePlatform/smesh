@@ -40,6 +40,7 @@
 #include "SMESH_Mesh.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_OctreeNode.hxx"
+#include "SMESH_MeshEditor.hxx"
 #include "SMESH_subMesh.hxx"
 
 #include "Utils_SALOME_Exception.hxx"

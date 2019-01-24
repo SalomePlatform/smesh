@@ -63,10 +63,10 @@ When 2D elements are extruded, in addition to 3D elements segments are created o
 		* Input the element IDs directly in **Node IDs**, **Edge IDs** and **Face IDs** fields. The selected elements will be highlighted in the viewer, if the mesh is shown there. 
 		* Apply Filters. **Set filter** button allows to apply a filter to the selection of elements. See more about filters in the :ref:`filtering_elements` page. 
 
-	* If the **Extrusion to Distance** radio button is selected 
+	* If the **Extrusion to distance** radio button is selected 
 		* specify the translation vector by which the elements will be extruded.
 
-	* If the **Extrusion Along Vector** radio button is selected
+	* If the **Extrusion along vector** radio button is selected
 
 		.. image:: ../images/extrusionalongaline2.png  
 			:align: center
@@ -76,7 +76,7 @@ When 2D elements are extruded, in addition to 3D elements segments are created o
     
   
 
-	* If the **Extrusion By Normal** radio button is selected, every node of the selected faces is extruded along the *average* of the *normal* vectors to the faces sharing the node. (Nodes and edges cannot be extruded in this mode.)
+	* If the **Extrusion by normal** radio button is selected, every node of the selected faces is extruded along the *average* of the *normal* vectors to the faces sharing the node. (Nodes and edges cannot be extruded in this mode.)
 
 		.. image:: ../images/extrusionalongaline3.png 
 			:align: center
@@ -115,10 +115,14 @@ When 2D elements are extruded, in addition to 3D elements segments are created o
 
 
 	* Specify the **Number of steps**.
-	* Optionally specify **Scale Factors**. Each scale factor in the list is applied to nodes of a corresponding extrusion step unless **Linear Variation of Scale Factors** is checked, is which case the scale factors are spread over all extrusion steps.
-		* **Scaling Center** can be defined either using spin boxes or by picking a node in the Viewer or by picking a geometrical vertex in the Object Browser.
+	* Optionally specify **Scale factors**. Each scale factor in the list is applied to nodes of a corresponding extrusion step unless **Linear variation of factors** is checked, is which case the scale factors are spread over all extrusion steps.
+		* **Base point** serving as a scaling canter can be defined either using spin boxes or by picking a node in the Viewer or by picking a geometrical vertex in the Object Browser.
 		* **Add** button |add| adds a scale factor to the list.   
 		* **Remove** button |rm| removes selected scale factors from the list.
+
+        * The elements can also be rotated around the **Base point** to get the resulting mesh in a helical fashion. You can set the values of **Rotation angles** to the list by pressing the *"Add"* button |add| and remove them from the list by pressing the *"Remove"* button |rm|.
+
+          **Linear variation of angles** option allows defining the angle of gradual rotation for the whole path. At each step the elements will be rotated by *( angle / nb. of steps )*.
 
 	* If you activate **Generate Groups** check-box, the *result elements* created from *selected elements* contained in groups will be included into new groups named by pattern "<old group name>_extruded" and "<old group name>_top". For example if a selected quadrangle is included in *g_Faces* group (see figures below) then result hexahedra will be included in *g_Faces_extruded* group and a quadrangle created at the "top" of extruded mesh will be included in *g_Faces_top group*.  
 

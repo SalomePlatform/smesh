@@ -1847,15 +1847,15 @@ Do you want to continue?</translation>
     </message>
     <message>
         <source>SMESH_EXTRUSION_TO_DISTANCE</source>
-        <translation>Extrusion To Distance</translation>
+        <translation>Extrusion to distance</translation>
     </message>
     <message>
         <source>SMESH_EXTRUSION_ALONG_VECTOR</source>
-        <translation>Extrusion Along Vector</translation>
+        <translation>Extrusion along vector</translation>
     </message>
     <message>
         <source>SMESH_EXTRUSION_BY_NORMAL</source>
-        <translation>Extrusion By Normal</translation>
+        <translation>Extrusion by normal</translation>
     </message>
     <message>
         <source>SMESH_FACE</source>
@@ -5518,18 +5518,6 @@ Please select a group and try again</translation>
         <translation>Can&apos;t get tangent for one of the path nodes</translation>
     </message>
     <message>
-        <source>EXTRUSION_0D</source>
-        <translation>Extrusion of 0D elements</translation>
-    </message>
-    <message>
-        <source>EXTRUSION_1D</source>
-        <translation>Extrusion of 1D elements</translation>
-    </message>
-    <message>
-        <source>EXTRUSION_2D</source>
-        <translation>Extrusion of 2D elements</translation>
-    </message>
-    <message>
         <source>EXTRUSION_ALONG_PATH</source>
         <translation>Extrusion along a path</translation>
     </message>
@@ -5539,7 +5527,7 @@ Please select a group and try again</translation>
     </message>
     <message>
         <source>LINEAR_ANGLES</source>
-        <translation>Linear variation of the angles</translation>
+        <translation>Linear variation of angles</translation>
     </message>
     <message>
         <source>NO_ELEMENTS_SELECTED</source>
@@ -5551,11 +5539,19 @@ Please select a group and try again</translation>
     </message>
     <message>
         <source>SMESH_ANGLES</source>
-        <translation>Rotation Angles</translation>
+        <translation>Rotation angles</translation>
     </message>
     <message>
         <source>SMESH_BASE_POINT</source>
-        <translation>Base Point</translation>
+        <translation>Base point</translation>
+    </message>
+    <message>
+        <source>SMESH_SCALES</source>
+        <translation>Scale factors</translation>
+    </message>
+    <message>
+        <source>LINEAR_SCALES</source>
+        <translation>Linear variation of factors</translation>
     </message>
     <message>
         <source>SMESH_PATH</source>
@@ -5575,11 +5571,11 @@ Please select a group and try again</translation>
     </message>
     <message>
         <source>SMESH_USE_ANGLES</source>
-        <translation>Use Angles</translation>
+        <translation>Use angles</translation>
     </message>
     <message>
         <source>SMESH_USE_BASE_POINT</source>
-        <translation>Use Base Point</translation>
+        <translation>Use base point</translation>
     </message>
     <message>
         <source>WRONG_ANGLES_NUMBER</source>
@@ -5588,18 +5584,6 @@ Please select a group and try again</translation>
 </context>
 <context>
     <name>SMESHGUI_ExtrusionDlg</name>
-    <message>
-        <source>EXTRUSION_0D</source>
-        <translation>Extrusion of nodes</translation>
-    </message>
-    <message>
-        <source>EXTRUSION_1D</source>
-        <translation>Extrusion of 1D elements</translation>
-    </message>
-    <message>
-        <source>EXTRUSION_2D</source>
-        <translation>Extrusion of 2D elements</translation>
-    </message>
     <message>
         <source>EXTRUSION_ALONG_LINE</source>
         <translation>Extrusion along a line</translation>
@@ -5614,15 +5598,23 @@ Please select a group and try again</translation>
     </message>
     <message>
         <source>SMESH_SCALES</source>
-        <translation>Scale Factors</translation>
+        <translation>Scale factors</translation>
     </message>
     <message>
         <source>LINEAR_SCALES</source>
-        <translation>Linear Variation of Scale Factors</translation>
+        <translation>Linear variation of factors</translation>
     </message>
     <message>
         <source>BASE_POINT</source>
-        <translation>Scaling Center</translation>
+        <translation>Base point</translation>
+    </message>
+    <message>
+        <source>LINEAR_ANGLES</source>
+        <translation>Linear variation of angles</translation>
+    </message>
+    <message>
+        <source>SMESH_ANGLES</source>
+        <translation>Rotation angles</translation>
     </message>
 </context>
 <context>

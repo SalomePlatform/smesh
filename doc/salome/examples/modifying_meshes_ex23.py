@@ -19,7 +19,7 @@ iv = 1
 vertices = []
 for point in points:
     vert = geompy.MakeVertex(point[0], point[1], 0)
-    geompy.addToStudy(vert, "Vertex_" + repr(iv))
+    #geompy.addToStudy(vert, "Vertex_" + repr(iv))
     vertices.append(vert)
     iv += 1
     pass
@@ -97,8 +97,8 @@ Edge_Circle_mesh   = Mesh1D(Edge_Circle  , 8, "Edge_Circle"  , smesh_builder=sme
 # IDsOfElements, PathMesh, PathShape, NodeStart,
 # HasAngles, Angles, HasRefPoint, RefPoint
 refPoint = SMESH.PointStruct(0, 0, 0)
-a10 = 10.0*math.pi/180.0
-a45 = 45.0*math.pi/180.0
+a10 = math.radians( 10.0 )
+a45 = math.radians( 45.0 )
 
 # 1. Extrusion of two mesh edges along a straight path
 error = quad_1.ExtrusionAlongPath([1,2], Edge_straight_mesh, Edge_straight, 1,
@@ -127,5 +127,54 @@ error = quad_6.ExtrusionAlongPath(ff_6 , Edge_Circle_mesh, Edge_Circle, 1,
 # 7. Extrusion of two mesh faces along a closed path with usage of angles
 error = quad_7.ExtrusionAlongPath(ff_7, Edge_Circle_mesh, Edge_Circle, 1,
                                   1, [a45, -a45, a45, -a45, a45, -a45, a45, -a45], 0, refPoint)
+
+
+
+# Make the same meshes using a fully functional method ExtrusionAlongPathObjects() having
+# the following arguments:
+#   Nodes, Edges, Faces, PathObject, PathShape=None,
+#   NodeStart=1, HasAngles=False, Angles=[], LinearVariation=False,
+#   HasRefPoint=False, RefPoint=[0,0,0], MakeGroups=False,
+#   ScaleFactors=[], ScalesVariation=False
+
+quad_1 = MakeQuadMesh2("quad_1", smesh_builder=smesh)[0]
+quad_2 = MakeQuadMesh2("quad_2", smesh_builder=smesh)[0]
+quad_3 = MakeQuadMesh2("quad_3", smesh_builder=smesh)[0]
+quad_4 = MakeQuadMesh2("quad_4", smesh_builder=smesh)[0]
+quad_5 = MakeQuadMesh2("quad_5", smesh_builder=smesh)[0]
+quad_6 = MakeQuadMesh2("quad_6", smesh_builder=smesh)[0]
+quad_7 = MakeQuadMesh2("quad_7", smesh_builder=smesh)[0]
+
+# 1. Extrusion of two mesh edges along a straight path
+nn, ee, ff = [], [1,2], []
+error = quad_1.ExtrusionAlongPathObjects( nn, ee, ff, Edge_straight_mesh )
+
+# 2. Extrusion of one mesh edge along a curved path
+nn, ee, ff = [], [2], []
+error = quad_2.ExtrusionAlongPathObjects( nn, ee, ff, Edge_bezierrr_mesh )
+
+# 3. Extrusion of one mesh edge along a curved path with usage of angles
+error = quad_3.ExtrusionAlongPathObjects( nn, ee, ff, Edge_bezierrr_mesh,
+                                          Angles=[a45, a45, a45, 0, -a45, -a45, -a45])
+
+# 4. Extrusion of one mesh edge along the path, which is a part of a meshed wire
+nn, ee, ff = [], [4], []
+error = quad_4.ExtrusionAlongPathObjects( nn, ee, ff, Wire_polyline_mesh, Wire_polyline_edges[0],
+                                          Angles=[a10, a10, a10])
+
+# 5. Extrusion of two mesh faces along the path, which is a part of a meshed wire
+nn, ee, ff = [], [], quad_5
+error = quad_5.ExtrusionAlongPathObjects( nn, ee, ff, Wire_polyline_mesh, Wire_polyline_edges[2],
+                                          NodeStart=4 )
+
+# 6. Extrusion of two mesh faces along a closed path
+nn, ee, ff = [], [], quad_6
+error = quad_6.ExtrusionAlongPathObjects( nn, ee, ff, Edge_Circle_mesh )
+
+# 7. Extrusion of two mesh faces along a closed path with usage of angles
+nn, ee, ff = [], [], quad_7
+error = quad_7.ExtrusionAlongPathObjects( nn, ee, ff, Edge_Circle_mesh, Edge_Circle,
+                                          Angles=[a45, -a45, a45, -a45, a45, -a45, a45, -a45])
+
 
 salome.sg.updateObjBrowser()

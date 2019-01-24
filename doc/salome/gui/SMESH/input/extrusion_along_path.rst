@@ -123,7 +123,7 @@ Extrusion of 2d elements along a closed path
 		* **Start node** - the start node of the Path. It is used to define the direction of extrusion. 
       
     
-	* If you activate **Generate Groups** check-box, the **result elements** created from **selected elements** contained in groups will be included into new groups named by pattern "<old group name>_extruded" and "<old group name>_top". For example if a  selected quadrangle is included in *g_Faces* group (see figures below) then result hexahedra will be included in *g_Faces_extruded* group and a quadrangle created at the "top" of extruded mesh will be included in *g_Faces_top group*.  
+	* If you activate **Generate groups** check-box, the *result elements* created from *selected elements* contained in groups will be included into new groups named by pattern "<old group name>_extruded" and "<old group name>_top". For example if a  selected quadrangle is included in *g_Faces* group (see figures below) then result hexahedra will be included in *g_Faces_extruded* group and a quadrangle created at the "top" of extruded mesh will be included in *g_Faces_top group*.  
 
 	.. image:: ../images/extrusion_groups.png
 		:align: center
@@ -138,16 +138,18 @@ Extrusion of 2d elements along a closed path
 
 #. There are two optional parameters, which can be very useful:
 
-   * If the path of extrusion is curvilinear, at each iteration the extruded elements are rotated to keep its initial angularity to the curve. By default, the **Base Point** around which the elements are rotated is the mass center of the elements (note that it can differ from the gravity center computed by *Geometry* module for the  underlying shape), however, you can specify any point as the **Base Point** and the elements will be rotated with respect to this point. Note that only the displacement of the **Base Point** exactly equals to the path, and all other extruded elements simply keep their position relatively to the **Base Point** at each iteration.
+   * If the path of extrusion is curvilinear, at each iteration the extruded elements are rotated to keep its initial angularity to the curve. By default, the **Base point** around which the elements are rotated is the mass center of the elements (note that it can differ from the gravity center computed by *Geometry* module for the  underlying shape), however, you can specify any point as the **Base point** and the elements will be rotated with respect to this point. Note that only the displacement of the **Base point** exactly equals to the path, and all other extruded elements simply keep their position relatively to the **Base point** at each iteration.
 
    .. |add| image:: ../images/add.png
    .. |rem| image:: ../images/remove.png
 
-   * The elements can also be rotated around the path to get the resulting mesh in a helical fashion. You can set the values of angles at the right, add them to the list of angles at the left by pressing the *"Add"* button |add| and remove them from the list by pressing the *"Remove"* button |rem|.
+   * The elements can also be rotated around the path with rotaion center at the **Base point** to get the resulting mesh in a helical fashion. You can set the values of angles at the right, add them to **Rotation angles** list at the left by pressing the *"Add"* button |add| and remove them from the list by pressing the *"Remove"* button |rem|.
 
+     **Linear variation of angles** option allows defining the angle of gradual rotation for the whole path. At each step the elements will be rotated by *( angle / nb. of steps )*.
 
-     **Linear variation of the angles** option allows defining the angle of gradual rotation for the whole path. At each step the elements will be rotated by *( angle / nb. of steps )*.
-
+   * Each of optional **Scale factors** in the list is applied to nodes of a corresponding extrusion step unless **Linear variation of factors** is checked, is which case the scale factors are spread over all extrusion steps. **Base point** serves as a scaling canter.
+	* *"Add"* button |add| adds a scale factor to the list.   
+	* *"Remove"* button |rem| removes selected scale factors from the list.
 
 
 #. Click **Apply** or **Apply and Close**  button to confirm the operation. Mesh edges will be extruded into faces, faces into volumes. The external surface of the resulting 3d mesh (if faces have been extruded) is covered with faces, and corners with edges. If the path is closed, the resulting mesh can contain duplicated nodes and faces, because no sewing is done.

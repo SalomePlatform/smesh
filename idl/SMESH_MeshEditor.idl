@@ -510,13 +510,21 @@ module SMESH
 
     /*!
      * \brief Generate dim+1 elements by extrusion of elements along vector
-     *  \param nodes - nodes to extrude: a list including groups, sub-meshes or a mesh
-     *  \param edges - edges to extrude: a list including groups, sub-meshes or a mesh
-     *  \param faces - faces to extrude: a list including groups, sub-meshes or a mesh
-     *  \param stepVector - vector giving direction and distance of an extrusion step
-     *  \param nbOfSteps - number of elements to generate from one element
+     *  \param nodes - nodes to extrude: a list including groups, sub-meshes or a mesh.
+     *  \param edges - edges to extrude: a list including groups, sub-meshes or a mesh.
+     *  \param faces - faces to extrude: a list including groups, sub-meshes or a mesh.
+     *  \param stepVector - vector giving direction and distance of an extrusion step.
+     *  \param nbOfSteps - number of elements to generate from one element.
      *  \param toMakeGroups - if true, new elements will be included into new groups
      *         corresponding to groups the input elements included in.
+     *  \param scaleFactors - optional scale factors to apply during extrusion; it's
+     *         usage depends on \a scalesVariation parameter.
+     *  \param scalesVariation - if \c True, \a scaleFactors are spread over all \a NbOfSteps,
+                otherwise \a scaleFactors[i] is applied to nodes at the i-th extrusion step.
+     *  \param angles - optional rotation angles to apply during extrusion; it's
+     *         usage depends on \a anglesVariation parameter.
+     *  \param anglesVariation - if \c True, \a angles are spread over all \a NbOfSteps,
+                otherwise \a angle[i] is applied to nodes at the i-th extrusion step.
      *  \return ListOfGroups - new groups created if \a toMakeGroups is true
      */
     ListOfGroups ExtrusionSweepObjects(in ListOfIDSources nodes,
@@ -524,10 +532,12 @@ module SMESH
                                        in ListOfIDSources faces,
                                        in DirStruct       stepVector,
                                        in long            nbOfSteps,
+                                       in boolean         toMakeGroups,
                                        in double_array    scaleFactors,
-                                       in boolean         linearVariation,
+                                       in boolean         scaleVariation,
                                        in double_array    basePoint,
-                                       in boolean         toMakeGroups)
+                                       in double_array    angles,
+                                       in boolean         angleVariation)
       raises (SALOME::SALOME_Exception);
 
     /*! Generates new elements by extrusion along the normal to a discretized surface or wire
@@ -569,18 +579,20 @@ module SMESH
       EXTR_CANT_GET_TANGENT
     };
 
-    ListOfGroups ExtrusionAlongPathObjects(in ListOfIDSources Nodes,
-                                           in ListOfIDSources Edges,
-                                           in ListOfIDSources Faces,
+    ListOfGroups ExtrusionAlongPathObjects(in ListOfIDSources   Nodes,
+                                           in ListOfIDSources   Edges,
+                                           in ListOfIDSources   Faces,
                                            in SMESH_IDSource    Path,
                                            in GEOM::GEOM_Object PathShape,
                                            in long              NodeStart,
                                            in boolean           HasAngles,
                                            in double_array      Angles,
-                                           in boolean           LinearVariation,
+                                           in boolean           AnglesVariation,
                                            in boolean           HasRefPoint,
                                            in PointStruct       RefPoint,
                                            in boolean           MakeGroups,
+                                           in double_array      ScaleFactors,
+                                           in boolean           ScaleVariation,
                                            out Extrusion_Error  Error)
       raises (SALOME::SALOME_Exception);
 

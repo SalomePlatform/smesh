@@ -37,6 +37,7 @@
 #include "SMESH_Hypothesis.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_MeshAlgos.hxx"
+#include "SMESH_MeshEditor.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMesh.hxx"
 #include "SMESH_subMeshEventListener.hxx"

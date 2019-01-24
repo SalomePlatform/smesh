@@ -33,6 +33,7 @@
 #include "SMESH_Comment.hxx"
 #include "SMESH_Gen.hxx"
 #include "SMESH_HypoFilter.hxx"
+#include "SMESH_MeshEditor.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "StdMeshers_FaceSide.hxx"
 #include "StdMeshers_ProjectionSource1D.hxx"
