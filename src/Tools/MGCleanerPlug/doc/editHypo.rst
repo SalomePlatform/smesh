@@ -1,8 +1,8 @@
 .. _hypothesis-label:
 
-===========================
-How to save MG-Cleaner Parameters 
-===========================
+=================================
+How to save MG-Cleaner Parameters
+=================================
 
 MG-Cleaner hypothesis is not meshing hypothesis for Salome, but hypothesis for MG-Cleaner.
 The current set of parameters is automatically written in the salome study object browser when you run computation.

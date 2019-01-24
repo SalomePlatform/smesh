@@ -1,5 +1,5 @@
-Running MGCleaner Plug-in 
-=====================
+Running MGCleaner Plug-in
+=========================
 
 MGCleaner plug-in can be invoked via SMESH Plugin item in Mesh menu bar 
 
