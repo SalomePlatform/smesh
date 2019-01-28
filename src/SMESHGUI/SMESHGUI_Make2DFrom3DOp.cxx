@@ -469,7 +469,10 @@ bool SMESHGUI_Make2DFrom3DOp::compute2DMesh( QStringList& theEntryList )
 
       for ( int i = 0; i < entries.count(); ++i )
         if ( SMESH_Actor* actor = SMESH::FindActorByEntry( entries[i].toUtf8().constData() ))
-          SMESH::Update(actor->getIO(),actor->GetVisibility());
+        {
+          actor->SetEntityMode( actor->GetEntityMode() | SMESH_Actor::eFaces );
+          SMESH::Update( actor->getIO(), actor->GetVisibility() );
+        }
       SMESH::RepaintCurrentView();
     }
   }
