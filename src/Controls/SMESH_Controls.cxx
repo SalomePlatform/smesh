@@ -233,7 +233,7 @@ bool NumericalFunctor::GetPoints(const int       theId,
     return false;
 
   const SMDS_MeshElement* anElem = myMesh->FindElement( theId );
-  if ( !anElem || anElem->GetType() != this->GetType() )
+  if ( !IsApplicable( anElem ))
     return false;
 
   return GetPoints( anElem, theRes );
@@ -290,6 +290,24 @@ double NumericalFunctor::GetValue( long theId )
 double NumericalFunctor::Round( const double & aVal )
 {
   return ( myPrecision >= 0 ) ? floor( aVal * myPrecisionValue + 0.5 ) / myPrecisionValue : aVal;
+}
+
+//================================================================================
+/*!
+ * \brief Return true if a value can be computed for a given element.
+ *        Some NumericalFunctor's are meaningful for elements of a certain
+ *        geometry only.
+ */
+//================================================================================
+
+bool NumericalFunctor::IsApplicable( const SMDS_MeshElement* element ) const
+{
+  return element && element->GetType() == this->GetType();
+}
+
+bool NumericalFunctor::IsApplicable( long theElementId ) const
+{
+  return IsApplicable( myMesh->FindElement( theElementId ));
 }
 
 //================================================================================
@@ -901,6 +919,11 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
   return 0;
 }
 
+bool AspectRatio::IsApplicable( const SMDS_MeshElement* element ) const
+{
+  return ( NumericalFunctor::IsApplicable( element ) && !element->IsPoly() );
+}
+
 double AspectRatio::GetBadRate( double Value, int /*nbNodes*/ ) const
 {
   // the aspect ratio is in the range [1.0,infinity]
@@ -1007,6 +1030,11 @@ double AspectRatio3D::GetValue( long theId )
   return aVal;
 }
 
+bool AspectRatio3D::IsApplicable( const SMDS_MeshElement* element ) const
+{
+  return ( NumericalFunctor::IsApplicable( element ) && !element->IsPoly() );
+}
+
 double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )
 {
   double aQuality = 0.0;
@@ -1015,11 +1043,11 @@ double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )
   int nbNodes = P.size();
 
   if( myCurrElement->IsQuadratic() ) {
-    if(nbNodes==10) nbNodes=4; // quadratic tetrahedron
+    if     (nbNodes==10) nbNodes=4; // quadratic tetrahedron
     else if(nbNodes==13) nbNodes=5; // quadratic pyramid
     else if(nbNodes==15) nbNodes=6; // quadratic pentahedron
     else if(nbNodes==20) nbNodes=8; // quadratic hexahedron
-    else if(nbNodes==27) nbNodes=8; // quadratic hexahedron
+    else if(nbNodes==27) nbNodes=8; // tri-quadratic hexahedron
     else return aQuality;
   }
 
@@ -1296,6 +1324,11 @@ SMDSAbs_ElementType AspectRatio3D::GetType() const
 */
 //================================================================================
 
+bool Warping::IsApplicable( const SMDS_MeshElement* element ) const
+{
+  return NumericalFunctor::IsApplicable( element ) && element->NbNodes() == 4;
+}
+
 double Warping::GetValue( const TSequenceOfXYZ& P )
 {
   if ( P.size() != 4 )
@@ -1360,6 +1393,11 @@ SMDSAbs_ElementType Warping::GetType() const
 */
 //================================================================================
 
+bool Taper::IsApplicable( const SMDS_MeshElement* element ) const
+{
+  return ( NumericalFunctor::IsApplicable( element ) && element->NbNodes() == 4 );
+}
+
 double Taper::GetValue( const TSequenceOfXYZ& P )
 {
   if ( P.size() != 4 )
@@ -1416,6 +1454,11 @@ static inline double skewAngle( const gp_XYZ& p1, const gp_XYZ& p2, const gp_XYZ
   gp_Vec v1( p31 - p2 ), v2( p12 - p23 );
 
   return v1.Magnitude() < gp::Resolution() || v2.Magnitude() < gp::Resolution() ? 0. : v1.Angle( v2 );
+}
+
+bool Skew::IsApplicable( const SMDS_MeshElement* element ) const
+{
+  return ( NumericalFunctor::IsApplicable( element ) && element->NbNodes() <= 4 );
 }
 
 double Skew::GetValue( const TSequenceOfXYZ& P )
@@ -1534,10 +1577,33 @@ SMDSAbs_ElementType Length::GetType() const
 
 //================================================================================
 /*
-  Class       : Length2D
-  Description : Functor for calculating minimal length of edge
+  Class       : Length3D
+  Description : Functor for calculating minimal length of element edge
 */
 //================================================================================
+
+Length3D::Length3D():
+  Length2D ( SMDSAbs_Volume )
+{
+}
+
+//================================================================================
+/*
+  Class       : Length2D
+  Description : Functor for calculating minimal length of element edge
+*/
+//================================================================================
+
+Length2D::Length2D( SMDSAbs_ElementType type ):
+  myType ( type )
+{
+}
+
+bool Length2D::IsApplicable( const SMDS_MeshElement* element ) const
+{
+  return ( NumericalFunctor::IsApplicable( element ) &&
+           element->GetEntityType() != SMDSEntity_Polyhedra );
+}
 
 double Length2D::GetValue( const TSequenceOfXYZ& P )
 {
@@ -1783,7 +1849,7 @@ double Length2D::GetBadRate( double Value, int /*nbNodes*/ ) const
 
 SMDSAbs_ElementType Length2D::GetType() const
 {
-  return SMDSAbs_Face;
+  return myType;
 }
 
 Length2D::Value::Value(double theLength,long thePntId1, long thePntId2):
@@ -1805,83 +1871,89 @@ bool Length2D::Value::operator<(const Length2D::Value& x) const
 
 void Length2D::GetValues(TValues& theValues)
 {
-  TValues aValues;
-  for ( SMDS_FaceIteratorPtr anIter = myMesh->facesIterator(); anIter->more(); )
+  if ( myType == SMDSAbs_Face )
   {
-    const SMDS_MeshFace* anElem = anIter->next();
-    if ( anElem->IsQuadratic() )
+    for ( SMDS_FaceIteratorPtr anIter = myMesh->facesIterator(); anIter->more(); )
     {
-      // use special nodes iterator
-      SMDS_NodeIteratorPtr anIter = anElem->interlacedNodesIterator();
-      long aNodeId[4] = { 0,0,0,0 };
-      gp_Pnt P[4];
+      const SMDS_MeshFace* anElem = anIter->next();
+      if ( anElem->IsQuadratic() )
+      {
+        // use special nodes iterator
+        SMDS_NodeIteratorPtr anIter = anElem->interlacedNodesIterator();
+        long aNodeId[4] = { 0,0,0,0 };
+        gp_Pnt P[4];
 
-      double aLength = 0;
-      if ( anIter->more() )
-      {
-        const SMDS_MeshNode* aNode = anIter->next();
-        P[0] = P[1] = SMESH_NodeXYZ( aNode );
-        aNodeId[0] = aNodeId[1] = aNode->GetID();
-        aLength = 0;
-      }
-      for ( ; anIter->more(); )
-      {
-        const SMDS_MeshNode* N1 = anIter->next();
-        P[2] = SMESH_NodeXYZ( N1 );
-        aNodeId[2] = N1->GetID();
-        aLength = P[1].Distance(P[2]);
-        if(!anIter->more()) break;
-        const SMDS_MeshNode* N2 = anIter->next();
-        P[3] = SMESH_NodeXYZ( N2 );
-        aNodeId[3] = N2->GetID();
-        aLength += P[2].Distance(P[3]);
+        double aLength = 0;
+        if ( anIter->more() )
+        {
+          const SMDS_MeshNode* aNode = anIter->next();
+          P[0] = P[1] = SMESH_NodeXYZ( aNode );
+          aNodeId[0] = aNodeId[1] = aNode->GetID();
+          aLength = 0;
+        }
+        for ( ; anIter->more(); )
+        {
+          const SMDS_MeshNode* N1 = anIter->next();
+          P[2] = SMESH_NodeXYZ( N1 );
+          aNodeId[2] = N1->GetID();
+          aLength = P[1].Distance(P[2]);
+          if(!anIter->more()) break;
+          const SMDS_MeshNode* N2 = anIter->next();
+          P[3] = SMESH_NodeXYZ( N2 );
+          aNodeId[3] = N2->GetID();
+          aLength += P[2].Distance(P[3]);
+          Value aValue1(aLength,aNodeId[1],aNodeId[2]);
+          Value aValue2(aLength,aNodeId[2],aNodeId[3]);
+          P[1] = P[3];
+          aNodeId[1] = aNodeId[3];
+          theValues.insert(aValue1);
+          theValues.insert(aValue2);
+        }
+        aLength += P[2].Distance(P[0]);
         Value aValue1(aLength,aNodeId[1],aNodeId[2]);
-        Value aValue2(aLength,aNodeId[2],aNodeId[3]);
-        P[1] = P[3];
-        aNodeId[1] = aNodeId[3];
+        Value aValue2(aLength,aNodeId[2],aNodeId[0]);
         theValues.insert(aValue1);
         theValues.insert(aValue2);
       }
-      aLength += P[2].Distance(P[0]);
-      Value aValue1(aLength,aNodeId[1],aNodeId[2]);
-      Value aValue2(aLength,aNodeId[2],aNodeId[0]);
-      theValues.insert(aValue1);
-      theValues.insert(aValue2);
-    }
-    else {
-      SMDS_NodeIteratorPtr aNodesIter = anElem->nodeIterator();
-      long aNodeId[2] = {0,0};
-      gp_Pnt P[3];
+      else {
+        SMDS_NodeIteratorPtr aNodesIter = anElem->nodeIterator();
+        long aNodeId[2] = {0,0};
+        gp_Pnt P[3];
 
-      double aLength;
-      const SMDS_MeshElement* aNode;
-      if ( aNodesIter->more())
-      {
-        aNode = aNodesIter->next();
-        P[0] = P[1] = SMESH_NodeXYZ( aNode );
-        aNodeId[0] = aNodeId[1] = aNode->GetID();
-        aLength = 0;
-      }
-      for( ; aNodesIter->more(); )
-      {
-        aNode = aNodesIter->next();
-        long anId = aNode->GetID();
+        double aLength;
+        const SMDS_MeshElement* aNode;
+        if ( aNodesIter->more())
+        {
+          aNode = aNodesIter->next();
+          P[0] = P[1] = SMESH_NodeXYZ( aNode );
+          aNodeId[0] = aNodeId[1] = aNode->GetID();
+          aLength = 0;
+        }
+        for( ; aNodesIter->more(); )
+        {
+          aNode = aNodesIter->next();
+          long anId = aNode->GetID();
 
-        P[2] = SMESH_NodeXYZ( aNode );
+          P[2] = SMESH_NodeXYZ( aNode );
 
-        aLength = P[1].Distance(P[2]);
+          aLength = P[1].Distance(P[2]);
 
-        Value aValue(aLength,aNodeId[1],anId);
-        aNodeId[1] = anId;
-        P[1] = P[2];
+          Value aValue(aLength,aNodeId[1],anId);
+          aNodeId[1] = anId;
+          P[1] = P[2];
+          theValues.insert(aValue);
+        }
+
+        aLength = P[0].Distance(P[1]);
+
+        Value aValue(aLength,aNodeId[0],aNodeId[1]);
         theValues.insert(aValue);
       }
-
-      aLength = P[0].Distance(P[1]);
-
-      Value aValue(aLength,aNodeId[0],aNodeId[1]);
-      theValues.insert(aValue);
     }
+  }
+  else
+  {
+    // not implemented
   }
 }
 

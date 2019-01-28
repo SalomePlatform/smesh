@@ -136,6 +136,8 @@ namespace SMESH{
                         const std::vector<int>& elements,
                         const double*           minmax=0,
                         const bool              isLogarithmic = false);
+      bool IsApplicable( long theElementId ) const;
+      virtual bool IsApplicable( const SMDS_MeshElement* element ) const;
       virtual SMDSAbs_ElementType GetType() const = 0;
       virtual double GetBadRate( double Value, int nbNodes ) const = 0;
       long  GetPrecision() const;
@@ -176,8 +178,8 @@ namespace SMESH{
       virtual double GetBadRate( double Value, int nbNodes ) const;
       virtual SMDSAbs_ElementType GetType() const;
     };
-  
-  
+
+
     /*
       Class       : MaxElementLength3D
       Description : Functor calculating maximum length of 3D element
@@ -212,6 +214,7 @@ namespace SMESH{
       virtual double GetValue( const TSequenceOfXYZ& thePoints );
       virtual double GetBadRate( double Value, int nbNodes ) const;
       virtual SMDSAbs_ElementType GetType() const;
+      virtual bool IsApplicable( const SMDS_MeshElement* element ) const;
     };
   
   
@@ -225,6 +228,7 @@ namespace SMESH{
       virtual double GetValue( const TSequenceOfXYZ& thePoints );
       virtual double GetBadRate( double Value, int nbNodes ) const;
       virtual SMDSAbs_ElementType GetType() const;
+      virtual bool IsApplicable( const SMDS_MeshElement* element ) const;
     };
   
   
@@ -237,7 +241,8 @@ namespace SMESH{
       virtual double GetValue( const TSequenceOfXYZ& thePoints );
       virtual double GetBadRate( double Value, int nbNodes ) const;
       virtual SMDSAbs_ElementType GetType() const;
-      
+      virtual bool IsApplicable( const SMDS_MeshElement* element ) const;
+
     private:
       double ComputeA( const gp_XYZ&, const gp_XYZ&, const gp_XYZ&, const gp_XYZ& ) const;
     };
@@ -252,6 +257,7 @@ namespace SMESH{
       virtual double GetValue( const TSequenceOfXYZ& thePoints );
       virtual double GetBadRate( double Value, int nbNodes ) const;
       virtual SMDSAbs_ElementType GetType() const;
+      virtual bool IsApplicable( const SMDS_MeshElement* element ) const;
     };
 
     /*
@@ -263,6 +269,7 @@ namespace SMESH{
       virtual double GetValue( const TSequenceOfXYZ& thePoints );
       virtual double GetBadRate( double Value, int nbNodes ) const;
       virtual SMDSAbs_ElementType GetType() const;
+      virtual bool IsApplicable( const SMDS_MeshElement* element ) const;
     };
 
 
@@ -291,10 +298,12 @@ namespace SMESH{
 
     /*
       Class       : Length2D
-      Description : Functor for calculating minimal length of edge
+      Description : Functor for calculating minimal length of edges of element
     */
     class SMESHCONTROLS_EXPORT Length2D: public virtual NumericalFunctor{
     public:
+      Length2D( SMDSAbs_ElementType type = SMDSAbs_Face );
+      virtual bool   IsApplicable( const SMDS_MeshElement* element ) const;
       virtual double GetValue( const TSequenceOfXYZ& thePoints );
       virtual double GetBadRate( double Value, int nbNodes ) const;
       virtual SMDSAbs_ElementType GetType() const;
@@ -306,8 +315,21 @@ namespace SMESH{
       };
       typedef std::set<Value> TValues;
       void GetValues(TValues& theValues);
+
+    private:
+      SMDSAbs_ElementType myType;
     };
     typedef boost::shared_ptr<Length2D> Length2DPtr;
+
+    /*
+      Class       : Length2D
+      Description : Functor for calculating minimal length of edges of 3D element
+    */
+    class SMESHCONTROLS_EXPORT Length3D: public virtual Length2D {
+    public:
+      Length3D();
+    };
+    typedef boost::shared_ptr<Length3D> Length3DPtr;
 
     /*
       Class       : Deflection2D

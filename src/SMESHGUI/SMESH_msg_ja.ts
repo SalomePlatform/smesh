@@ -1868,7 +1868,7 @@
       <translation>高さ:</translation>
     </message>
     <message>
-      <source>SMESH_HEXAS</source>
+      <source>SMESH_HEXAHEDRON</source>
       <translation>六面体</translation>
     </message>
     <message>
@@ -2704,7 +2704,7 @@
       <translation>オブジェクトの反転</translation>
     </message>
     <message>
-      <source>SMESH_TETRAS</source>
+      <source>SMESH_TETRAHEDRON</source>
       <translation>四面体</translation>
     </message>
     <message>
@@ -4426,6 +4426,10 @@
     <message>
       <source>SMESH_3D_ALGO_GROUP_ADVANCED</source>
       <translation>アドバンス</translation>
+    </message>
+    <message>
+      <source>SMESH_HEX_PRISM</source>
+      <translation>六角形プリズム</translation>
     </message>
   </context>
   <context>
@@ -7202,7 +7206,7 @@
     </message>
   </context>
   <context>
-    <name>SMESHGUI_MeshInfo</name>
+    <name>SMESHGUI_BaseInfo</name>
     <message>
       <source>BASE_INFO</source>
       <translation>基本情報</translation>
@@ -7332,6 +7336,18 @@
       <translation>粒子状物質の要素のグループ</translation>
     </message>
     <message>
+        <source>OBJECT_GROUP_STANDALONE</source>
+        <translation type="unfinished">(standalone)</translation>
+    </message>
+    <message>
+        <source>OBJECT_GROUP_GEOM</source>
+        <translation type="unfinished">(on geometry)</translation>
+    </message>
+    <message>
+        <source>OBJECT_GROUP_FILTER</source>
+        <translation type="unfinished">(on filter)</translation>
+    </message>
+    <message>
       <source>BUT_LOAD_MESH</source>
       <translation>サーバーからメッシュをロード</translation>
     </message>
@@ -7365,6 +7381,10 @@
     <message>
       <source>ELEM_MODE</source>
       <translation>要素</translation>
+    </message>
+    <message>
+      <source>GROUP_MODE</source>
+      <translation type="unfinished">Group</translation>
     </message>
     <message>
       <source>SHOW_IDS</source>
@@ -7694,6 +7714,14 @@
     <message>
       <source>FILE_NAME</source>
       <translation>ファイルの名前</translation>
+    </message>
+    <message>
+        <source>FILE_SIZE</source>
+        <translation type="unfinished">Size</translation>
+    </message>
+    <message>
+        <source>FILE_VERSION</source>
+        <translation type="unfinished">Version</translation>
     </message>
     <message>
       <source>STANDALONE_MESH</source>

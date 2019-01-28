@@ -1940,7 +1940,7 @@ add the exported data to its contents?</translation>
         <translation>Height:</translation>
     </message>
     <message>
-        <source>SMESH_HEXAS</source>
+        <source>SMESH_HEXAHEDRON</source>
         <translation>Hexahedron</translation>
     </message>
     <message>
@@ -2790,7 +2790,7 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Symmetry</translation>
     </message>
     <message>
-        <source>SMESH_TETRAS</source>
+        <source>SMESH_TETRAHEDRON</source>
         <translation>Tetrahedron</translation>
     </message>
     <message>
@@ -4551,6 +4551,10 @@ It can&apos;t be deleted </translation>
         <source>SMESH_3D_ALGO_GROUP_ADVANCED</source>
         <translation>Advanced</translation>
     </message>
+    <message>
+        <source>SMESH_HEX_PRISM</source>
+        <translation>Hexagonal Prism</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_FieldSelectorWdg</name>
@@ -5998,6 +6002,10 @@ Please enter correct value and try again</translation>
         <translation>Length 2D</translation>
     </message>
     <message>
+        <source>LENGTH3D</source>
+        <translation>Length 3D</translation>
+    </message>
+    <message>
         <source>DEFLECTION2D</source>
         <translation>Deflection 2D</translation>
     </message>
@@ -7442,7 +7450,7 @@ as they are of improper type:
     </message>
 </context>
 <context>
-    <name>SMESHGUI_MeshInfo</name>
+    <name>SMESHGUI_BaseInfo</name>
     <message>
         <source>BASE_INFO</source>
         <translation>Base information</translation>
@@ -7572,6 +7580,18 @@ as they are of improper type:
         <translation>Group of balls</translation>
     </message>
     <message>
+        <source>OBJECT_GROUP_STANDALONE</source>
+        <translation>(standalone)</translation>
+    </message>
+    <message>
+        <source>OBJECT_GROUP_GEOM</source>
+        <translation>(on geometry)</translation>
+    </message>
+    <message>
+        <source>OBJECT_GROUP_FILTER</source>
+        <translation>(on filter)</translation>
+    </message>
+    <message>
         <source>BUT_LOAD_MESH</source>
         <translation>Load mesh from server</translation>
     </message>
@@ -7607,6 +7627,10 @@ as they are of improper type:
         <translation>Element</translation>
     </message>
     <message>
+        <source>GROUP_MODE</source>
+        <translation>Group</translation>
+    </message>
+    <message>
         <source>SHOW_IDS</source>
         <translation>Show IDs</translation>
     </message>
@@ -7636,6 +7660,10 @@ as they are of improper type:
     <message>
         <source>COORDINATES</source>
         <translation>Coordinates</translation>
+    </message>
+    <message>
+        <source>NB_NODES</source>
+        <translation>Nb nodes</translation>
     </message>
     <message>
         <source>CONNECTIVITY</source>
@@ -7934,6 +7962,18 @@ as they are of improper type:
     <message>
         <source>FILE_NAME</source>
         <translation>File name</translation>
+    </message>
+    <message>
+        <source>FILE_SIZE</source>
+        <translation>Size</translation>
+    </message>
+    <message>
+        <source>FILE_VERSION</source>
+        <translation>Version</translation>
+    </message>
+    <message>
+        <source>VERSION_UNKNOWN</source>
+        <translation>Unknown</translation>
     </message>
     <message>
         <source>STANDALONE_MESH</source>

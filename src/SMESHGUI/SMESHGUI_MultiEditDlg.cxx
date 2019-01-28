@@ -1622,7 +1622,7 @@ SMESHGUI_SplitVolumesDlg::SMESHGUI_SplitVolumesDlg(SMESHGUI* theModule)
   }
   if ( myEntityTypeGrp )
   {
-    myEntityTypeGrp->button(0)->setText( tr("SMESH_TETRAS"));
+    myEntityTypeGrp->button(0)->setText( tr("SMESH_TETRAHEDRON"));
     myEntityTypeGrp->button(1)->setText( tr("SMESH_PRISM"));
     if ( QGroupBox* gb = qobject_cast< QGroupBox* >( myEntityTypeGrp->button(0)->parent() ))
       gb->setTitle( tr("TARGET_ELEM_TYPE"));

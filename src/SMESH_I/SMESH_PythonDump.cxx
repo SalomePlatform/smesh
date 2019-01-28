@@ -426,6 +426,7 @@ namespace SMESH
       case FT_MultiConnection2D:     myStream<< "aMultiConnection2D";     break;
       case FT_Length:                myStream<< "aLength";                break;
       case FT_Length2D:              myStream<< "aLength2D";              break;
+      case FT_Length3D:              myStream<< "aLength3D";              break;
       case FT_Deflection2D:          myStream<< "aDeflection2D";          break;
       case FT_NodeConnectivityNumber:myStream<< "aNodeConnectivityNumber";break;
       case FT_BelongToMeshGroup:     myStream<< "aBelongToMeshGroup";     break;

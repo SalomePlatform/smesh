@@ -61,6 +61,7 @@ module SMESH
     FT_MultiConnection2D,
     FT_Length,
     FT_Length2D,
+    FT_Length3D,
     FT_Deflection2D,
     FT_NodeConnectivityNumber,
     FT_BelongToMeshGroup,
@@ -118,7 +119,8 @@ module SMESH
   */
   interface NumericalFunctor: Functor
   {
-    double GetValue( in long theElementId );
+    double  GetValue    ( in long theElementId );
+    boolean IsApplicable( in long theElementId );
 
     Histogram GetHistogram     ( in short nbIntervals, in boolean isLogarithmic );
     Histogram GetLocalHistogram( in short nbIntervals, in boolean isLogarithmic,
@@ -151,6 +153,7 @@ module SMESH
     typedef sequence<Value> Values;
     Values GetValues();
   };
+  interface Length3D          : NumericalFunctor{};
   interface Deflection2D      : NumericalFunctor{};
   interface MultiConnection   : NumericalFunctor{};
   interface MultiConnection2D : NumericalFunctor
@@ -588,6 +591,7 @@ module SMESH
     MaxElementLength3D CreateMaxElementLength3D();
     Length             CreateLength();
     Length2D           CreateLength2D();
+    Length3D           CreateLength3D();
     Deflection2D       CreateDeflection2D();
     MultiConnection    CreateMultiConnection();
     MultiConnection2D  CreateMultiConnection2D();

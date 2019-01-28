@@ -1571,6 +1571,7 @@ void SMESHGUI_FilterTable::updateAdditionalWidget()
                  aCriterion == SMESH::FT_MaxElementLength3D ||
                  aCriterion == SMESH::FT_Length             ||
                  aCriterion == SMESH::FT_Length2D           ||
+                 aCriterion == SMESH::FT_Length3D           ||
                  aCriterion == SMESH::FT_Deflection2D       ||
                  aCriterion == SMESH::FT_BallDiameter );
 
@@ -1618,6 +1619,7 @@ const char* SMESHGUI_FilterTable::getPrecision( const int aType )
     retval = "len_tol_precision"; break;
   case SMESH::FT_Length:
   case SMESH::FT_Length2D:
+  case SMESH::FT_Length3D:
   case SMESH::FT_Deflection2D:
   case SMESH::FT_MaxElementLength2D:
   case SMESH::FT_MaxElementLength3D:
@@ -1830,6 +1832,7 @@ void SMESHGUI_FilterTable::onCriterionChanged (const int row, const int col, con
 
   case SMESH::FT_Length:
   case SMESH::FT_Length2D:
+  case SMESH::FT_Length3D:
   case SMESH::FT_Deflection2D: anIsDoubleCriterion = true; break;
 
   case SMESH::FT_BelongToMeshGroup: break;
@@ -2270,6 +2273,7 @@ const QMap<int, QString>& SMESHGUI_FilterTable::getCriteria (const int theType) 
       aCriteria[ SMESH::FT_BadOrientedVolume    ] = tr("BAD_ORIENTED_VOLUME");
       aCriteria[ SMESH::FT_BareBorderVolume     ] = tr("BARE_BORDER_VOLUME");
       aCriteria[ SMESH::FT_OverConstrainedVolume] = tr("OVER_CONSTRAINED_VOLUME");
+      aCriteria[ SMESH::FT_Length3D             ] = tr("LENGTH3D");
       aCriteria[ SMESH::FT_Volume3D             ] = tr("VOLUME_3D");
       aCriteria[ SMESH::FT_MaxElementLength3D   ] = tr("MAX_ELEMENT_LENGTH_3D");
       aCriteria[ SMESH::FT_LinearOrQuadratic    ] = tr("LINEAR");

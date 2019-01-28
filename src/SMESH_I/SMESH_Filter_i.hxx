@@ -99,6 +99,7 @@ namespace SMESH
   {
   public:
     CORBA::Double                   GetValue( CORBA::Long theElementId );
+    CORBA::Boolean                  IsApplicable( CORBA::Long theElementId );
     SMESH::Histogram*               GetHistogram(CORBA::Short   nbIntervals,
                                                  CORBA::Boolean isLogarithmic);
     SMESH::Histogram*               GetLocalHistogram(CORBA::Short               nbIntervals,
@@ -269,6 +270,22 @@ namespace SMESH
 
   protected:
     Controls::Length2DPtr          myLength2DPtr;
+  };
+
+  /*
+    Class       : Length3D_i
+    Description : Functor for calculating length of edge
+  */
+  class SMESH_I_EXPORT Length3D_i: public virtual POA_SMESH::Length3D,
+                                   public virtual NumericalFunctor_i
+  {
+  public:
+    Length3D_i();
+    //SMESH::Length2D::Values*        GetValues();
+    FunctorType                     GetFunctorType();
+
+  protected:
+    Controls::Length3DPtr          myLength3DPtr;
   };
 
   /*
@@ -1103,6 +1120,7 @@ namespace SMESH
     MaxElementLength3D_ptr    CreateMaxElementLength3D();
     Length_ptr                CreateLength();
     Length2D_ptr              CreateLength2D();
+    Length3D_ptr              CreateLength3D();
     Deflection2D_ptr          CreateDeflection2D();
     NodeConnectivityNumber_ptr CreateNodeConnectivityNumber();
     MultiConnection_ptr       CreateMultiConnection();

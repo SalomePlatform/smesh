@@ -217,6 +217,11 @@ CORBA::Double NumericalFunctor_i::GetValue( CORBA::Long theId )
   return myNumericalFunctorPtr->GetValue( theId );
 }
 
+CORBA::Boolean NumericalFunctor_i::IsApplicable( CORBA::Long theElementId )
+{
+  return myNumericalFunctorPtr->IsApplicable( theElementId );
+}
+
 SMESH::Histogram* NumericalFunctor_i::GetHistogram(CORBA::Short nbIntervals, CORBA::Boolean isLogarithmic)
 {
   std::vector<int> nbEvents;
@@ -520,6 +525,46 @@ SMESH::Length2D::Values* Length2D_i::GetValues()
 
   return aResult._retn();
 }
+
+
+/*
+  Class       : Length3D_i
+  Description : Functor for calculating length of edge
+*/
+Length3D_i::Length3D_i()
+{
+  myNumericalFunctorPtr.reset( new Controls::Length3D() );
+  myFunctorPtr = myNumericalFunctorPtr;
+}
+
+FunctorType Length3D_i::GetFunctorType()
+{
+  return SMESH::FT_Length3D;
+}
+
+// SMESH::Length3D::Values* Length3D_i::GetValues()
+// {
+//   SMESH::Controls::Length3D::TValues aValues;
+//   (dynamic_cast<SMESH::Controls::Length3D*>(myFunctorPtr.get()))->GetValues( aValues );
+
+//   long i = 0, iEnd = aValues.size();
+
+//   SMESH::Length3D::Values_var aResult = new SMESH::Length3D::Values(iEnd);
+//   aResult->length(iEnd);
+
+//   SMESH::Controls::Length3D::TValues::const_iterator anIter;
+//   for ( anIter = aValues.begin() ; anIter != aValues.end(); anIter++, i++ )
+//   {
+//     const SMESH::Controls::Length3D::Value&  aVal = *anIter;
+//     SMESH::Length3D::Value &aValue = aResult[ i ];
+
+//     aValue.myLength = aVal.myLength;
+//     aValue.myPnt1 = aVal.myPntId[ 0 ];
+//     aValue.myPnt2 = aVal.myPntId[ 1 ];
+//   }
+
+//   return aResult._retn();
+// }
 
 /*
   Class       : Deflection2D_i
@@ -2107,11 +2152,19 @@ Length2D_ptr FilterManager_i::CreateLength2D()
   return anObj._retn();
 }
 
+Length3D_ptr FilterManager_i::CreateLength3D()
+{
+  SMESH::Length3D_i* aServant = new SMESH::Length3D_i();
+  SMESH::Length3D_var anObj = aServant->_this();
+  TPythonDump()<<aServant<<" = "<<this<<".CreateLength3D()";
+  return anObj._retn();
+}
+
 Deflection2D_ptr FilterManager_i::CreateDeflection2D()
 {
   SMESH::Deflection2D_i* aServant = new SMESH::Deflection2D_i();
   SMESH::Deflection2D_var   anObj = aServant->_this();
-  TPythonDump()<<aServant<<" = "<<this<<".CreateLength2D()";
+  TPythonDump()<<aServant<<" = "<<this<<".CreateDeflection2D()";
   return anObj._retn();
 }
 
@@ -2988,6 +3041,9 @@ CORBA::Boolean Filter_i::SetCriteria( const SMESH::Filter::Criteria& theCriteria
       case SMESH::FT_Length2D:
         aFunctor = aFilterMgr->CreateLength2D();
         break;
+      case SMESH::FT_Length3D:
+        aFunctor = aFilterMgr->CreateLength3D();
+        break;
       case SMESH::FT_Deflection2D:
         aFunctor = aFilterMgr->CreateDeflection2D();
         break;
@@ -3489,6 +3545,7 @@ static inline LDOMString toString( CORBA::Long theType )
     case FT_MultiConnection2D     : return "Borders at multi-connections 2D";
     case FT_Length                : return "Length";
     case FT_Length2D              : return "Length 2D";
+    case FT_Length3D              : return "Length 3D";
     case FT_Deflection2D          : return "Deflection 2D";
     case FT_LessThan              : return "Less than";
     case FT_MoreThan              : return "More than";
@@ -3538,6 +3595,7 @@ static inline SMESH::FunctorType toFunctorType( const LDOMString& theStr )
   //  else if ( theStr.equals( "Borders at multi-connections 2D" ) ) return FT_MultiConnection2D;
   else if ( theStr.equals( "Length"                       ) ) return FT_Length;
   //  else if ( theStr.equals( "Length2D"                     ) ) return FT_Length2D;
+  //  else if ( theStr.equals( "Length3D"                     ) ) return FT_Length3D;
   else if ( theStr.equals( "Deflection"                   ) ) return FT_Deflection2D;
   else if ( theStr.equals( "Range of IDs"                 ) ) return FT_RangeOfIds;
   else if ( theStr.equals( "Bad Oriented Volume"          ) ) return FT_BadOrientedVolume;
@@ -4104,6 +4162,7 @@ static const char** getFunctNames()
     "FT_MultiConnection2D",
     "FT_Length",
     "FT_Length2D",
+    "FT_Length3D",
     "FT_Deflection2D",
     "FT_NodeConnectivityNumber",
     "FT_BelongToMeshGroup",

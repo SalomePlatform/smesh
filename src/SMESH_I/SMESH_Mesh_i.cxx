@@ -4720,8 +4720,9 @@ SMESH::long_array* SMESH_Mesh_i::GetElemNodes(const CORBA::Long id)
     if ( const SMDS_MeshElement* elem = aMeshDS->FindElement(id) )
     {
       aResult->length( elem->NbNodes() );
-      for ( int i = 0; i < elem->NbNodes(); ++i )
-        aResult[ i ] = elem->GetNode( i )->GetID();
+      for ( CORBA::ULong i = 0; i < aResult->length(); ++i )
+        if ( const SMDS_MeshNode* n = elem->GetNode( i ))
+          aResult[ i ] = n->GetID();
     }
   }
   return aResult._retn();
@@ -4837,7 +4838,7 @@ SMESH::long_array* SMESH_Mesh_i::GetElemFaceNodes(CORBA::Long  elemId,
   {
     if ( const SMDS_MeshElement* elem = aMeshDS->FindElement(elemId) )
     {
-      SMDS_VolumeTool vtool( elem );
+      SMDS_VolumeTool vtool( elem, /*skipCentralNodes = */false );
       if ( faceIndex < vtool.NbFaces() )
       {
         aResult->length( vtool.NbFaceNodes( faceIndex ));

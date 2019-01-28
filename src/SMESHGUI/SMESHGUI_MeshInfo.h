@@ -19,14 +19,12 @@
 //
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
-//  File   : SMESHGUI_MeshInfo.h
-//  Author : Vadim SANDLER, Open CASCADE S.A.S. (vadim.sandler@opencascade.com)
 
 #ifndef SMESHGUI_MESHINFO_H
 #define SMESHGUI_MESHINFO_H
 
 #include "SMESH_SMESHGUI.hxx"
-#include "SMESH_ControlsDef.hxx"
+#include "SMESHGUI_SelectionProxy.h"
 
 #ifndef DISABLE_PLOT2DVIEWER
   #include <Plot2d_Histogram.h>
@@ -34,17 +32,12 @@
   #include <qwt_plot.h>
 #endif
 
-#include <QFrame>
 #include <QDialog>
 #include <QList>
 #include <QMap>
 #include <QSet>
-#include <QTreeWidget>
-#include <QVector>
 
 #include <SALOMEconfig.h>
-#include CORBA_SERVER_HEADER(SMESH_Mesh)
-#include CORBA_SERVER_HEADER(SMESH_Group)
 #include CORBA_SERVER_HEADER(SMESH_Filter)
 
 #include <SALOME_InteractiveObject.hxx>
@@ -54,51 +47,65 @@ class QAbstractButton;
 class QButtonGroup;
 class QCheckBox;
 class QContextMenuEvent;
-class QGridLayout;
 class QLabel;
 class QLineEdit;
-class QPushButton;
 class QTabWidget;
 class QTextBrowser;
+class QTreeWidget;
+class QTreeWidgetItem;
 class SMDS_MeshElement;
 class SMDS_MeshNode;
 class SMESHGUI_IdPreview;
 class SMESHGUI_SpinBox;
-class SMESH_Actor;
 
 class ExtraWidget;
+class GroupCombo;
+class InfoWriter;
 
-class SMESHGUI_EXPORT SMESHGUI_MeshInfo : public QFrame
+class SMESHGUI_EXPORT SMESHGUI_Info : public QWidget
+{
+public:
+  SMESHGUI_Info( QWidget* = 0 );
+  virtual void saveInfo( QTextStream& ) = 0;
+};
+
+class SMESHGUI_EXPORT SMESHGUI_BaseInfo : public SMESHGUI_Info
 {
   Q_OBJECT;
   
-  enum {
-    iName,
+  enum
+  {
+    iStart,
+    iObjectStart = iStart,
+    iName = iObjectStart,
     iObject,
-    iNodesStart,
+    iObjectEnd,
+    iNodesStart = iObjectEnd,
     iNodes,
     iNodesEnd,
-    iElementsStart = iNodesEnd, 
-    iElements,
-    iNbStart,
-    iNb,
-    iNbEnd,
-    i0DStart = iNbEnd,
+    iElementsStart = iNodesEnd,
+    iElementsTitleStart = iElementsStart,
+    iElementsTitle,
+    iElementsTitleEnd,
+    iElementsTotalStart = iElementsTitleEnd,
+    iElementsTotal,
+    iElementsTotalEnd,
+    i0DStart = iElementsTotalEnd,
     i0D,
     i0DEnd,
     iBallsStart = i0DEnd,
     iBalls,
     iBallsEnd,
-    i1DStart       = iBallsEnd,
+    i1DStart = iBallsEnd,
     i1D,
     i1DEnd,
-    i2DStart       = i1DEnd,
+    i2DStart = i1DEnd,
     i2D,
     i2DTriangles,
     i2DQuadrangles,
     i2DPolygons,
     i2DEnd,
-    i3DStart       = i2DEnd,
+    i3DStart = i2DEnd,
     i3D,
     i3DTetrahedrons,
     i3DHexahedrons,
@@ -107,45 +114,49 @@ class SMESHGUI_EXPORT SMESHGUI_MeshInfo : public QFrame
     i3DHexaPrisms,
     i3DPolyhedrons,
     i3DEnd,
-    iElementsEnd   = i3DEnd
+    iElementsEnd = i3DEnd,
+    iEnd,
+    iOther = iEnd
   };
 
-  enum {
-    iSingle = 1,
-    iTotal  = iSingle,
+  enum
+  {
+    iLabel,
+    iSingle,
+    iTotal = iSingle,
     iLinear,
     iQuadratic,
-    iBiQuadratic
+    iBiQuadratic,
+    iNbColumns
   };
 
-  typedef QList<QWidget*> wlist;
-  typedef QVector<wlist>  iwlist;
+  typedef QMap<int, QWidget*> wlist;
+  typedef QMap<int, wlist> iwlist;
 
 public:
-  SMESHGUI_MeshInfo( QWidget* = 0 );
-  ~SMESHGUI_MeshInfo();
+  SMESHGUI_BaseInfo( QWidget* = 0 );
+  ~SMESHGUI_BaseInfo();
 
-  void     showInfo( SMESH::SMESH_IDSource_ptr );
-  void     clear();
-  void     saveInfo( QTextStream &out );
+  void showInfo( const SMESH::SelectionProxy& );
+  void clear();
+  void saveInfo( QTextStream& );
 
 private:
-  enum { Bold = 0x01, Italic = 0x02 };
-
-  QLabel*  createField();
-  QWidget* createLine();
-  void     setFontAttributes( QWidget*, int, bool = true );
-  void     setFieldsVisible( int, int, bool );
+  QWidget* addWidget( QWidget*, int, int, int = 1 );
+  QWidget* widget( int, int ) const;
+  QString value( int, int ) const;
+  void setFieldsVisible( int, int, bool );
 
 private slots:
+  void updateInfo();
   void loadMesh();
 
 private:
-  iwlist       myWidgets;
-  QPushButton* myLoadBtn;
+  iwlist myWidgets;
+  SMESH::SelectionProxy myProxy;
 };
 
-class SMESHGUI_EXPORT SMESHGUI_ElemInfo : public QWidget
+class SMESHGUI_EXPORT SMESHGUI_ElemInfo : public SMESHGUI_Info
 {
   Q_OBJECT;
 
@@ -153,74 +164,60 @@ public:
   SMESHGUI_ElemInfo( QWidget* = 0 );
   ~SMESHGUI_ElemInfo();
 
-  void         setSource( SMESH_Actor*, SMESH::SMESH_IDSource_var );
-  void         showInfo( long, bool );
-  void         showInfo( QSet<long>, bool );
-  void         clear();
-  virtual void saveInfo( QTextStream &out ) = 0;
-
-  gp_XYZ       getGravityCenter( const SMDS_MeshElement* e ) { return gravityCenter(e); }
+  void showInfo( const SMESH::SelectionProxy&, uint, bool );
+  void showInfo( const SMESH::SelectionProxy&, QSet<uint>, bool );
+  void showInfo( const SMESH::SelectionProxy& );
+  void clear();
+  void saveInfo( QTextStream& );
 
 protected:
-  struct XYZ
-  {
-    double myX, myY, myZ;
-    XYZ() { myX = myY = myZ = 0.0; }
-    XYZ(double x, double y, double z) { myX = x; myY = y; myZ = z; }
-    void add( double x, double y, double z ) { myX += x; myY += y; myZ += z; }
-    void divide( double a ) { if ( a != 0.) { myX /= a; myY /= a; myZ /= a; } }
-    double x() const  { return myX; }
-    double y() const  { return myY; }
-    double z() const  { return myZ; }
-    operator gp_XYZ() const { return gp_XYZ( myX, myY, myZ ); }
-  };
-  typedef QMap< int, QList<int> > Connectivity;
+  enum { ShowNone, ShowNodes, ShowElements };
 
-  QWidget*     frame() const;
-  SMESH_Actor* actor() const;
-  bool         isElements() const;
-  bool         hasShapeToMesh() const { return myMeshHasShape; }
+  QWidget* centralWidget() const;
 
-  virtual void information( const QList<long>& ) = 0;
+  SMESH::SelectionProxy proxy() const;
+  int what() const;
+
+  QString type2str( int, bool = false );
+  QString stype2str( int );
+  QString etype2str( int );
+  QString ctrl2str( int );
+  void writeInfo( InfoWriter*, const QList<uint>& );
+  virtual void information( const QList<uint>& ) = 0;
   virtual void clearInternal();
 
-  Connectivity nodeConnectivity( const SMDS_MeshNode* );
-  QString      formatConnectivity( Connectivity, int );
-  XYZ          gravityCenter( const SMDS_MeshElement* );
-  XYZ          normal( const SMDS_MeshElement* );
-
 signals:
-  void         itemInfo( int );
-  void         itemInfo( const QString& );
+  void itemInfo( int type, const QString& ids );
 
 private slots:
-  void         showPrevious();
-  void         showNext();
-  void         updateControls();
+  void showPrevious();
+  void showNext();
+  void updateControls();
 
 private:
-  SMESH_Actor*     myActor;
-  QList<long>      myIDs;
-  int              myIsElement;
-  QWidget*         myFrame;
-  ExtraWidget*     myExtra;
-  int              myIndex;
-  bool             myMeshHasShape;
+  QWidget* myFrame;
+  ExtraWidget* myExtra;
+  SMESH::SelectionProxy myProxy;
+  int myWhat;
+  QList<uint> myIDs;
+  int myIndex;
 };
 
 class SMESHGUI_EXPORT SMESHGUI_SimpleElemInfo : public SMESHGUI_ElemInfo
 {
-  Q_OBJECT
+  Q_OBJECT;
 
 public:
   SMESHGUI_SimpleElemInfo( QWidget* = 0 );
-  void          saveInfo( QTextStream &out );
 
 protected:
-  void          information( const QList<long>& );
-  void          clearInternal();
+  void information( const QList<uint>& );
+  void clearInternal();
 
-private:
+private slots:
+  void connectivityClicked(const QUrl &);
+
+ private:
   QTextBrowser* myInfo;
 };
 
@@ -229,85 +226,86 @@ class SMESHGUI_EXPORT SMESHGUI_TreeElemInfo : public SMESHGUI_ElemInfo
   Q_OBJECT;
 
   class ItemDelegate;
-
-  enum { Bold = 0x01, All = 0x80 };
+  class ItemCreator;
 
 public:
   SMESHGUI_TreeElemInfo( QWidget* = 0 );
-  void             saveInfo( QTextStream &out );
 
 protected:
-  void             contextMenuEvent( QContextMenuEvent* e );
-  void             information( const QList<long>& );
-  void             nodeInfo( const SMDS_MeshNode*, int, int, QTreeWidgetItem* );
-  void             clearInternal();
+  void contextMenuEvent( QContextMenuEvent* );
+  void information( const QList<uint>& );
+  void nodeInfo( const SMDS_MeshNode*, int, int, QTreeWidgetItem* );
+  void clearInternal();
 
 private slots:
-  void             itemDoubleClicked( QTreeWidgetItem*, int );
-  void             saveExpanded( QTreeWidgetItem* );
-  
+  void itemDoubleClicked( QTreeWidgetItem*, int );
+  void saveExpanded( QTreeWidgetItem* );
+
 private:
   QTreeWidgetItem* createItem( QTreeWidgetItem* = 0, int = 0 );
   QString          expandedResource( QTreeWidgetItem* );
   
 private:
-  QTreeWidget*     myInfo;
+  QTreeWidget* myInfo;
 };
 
-class GrpComputor: public QObject
+class InfoComputor: public QObject
 {
   Q_OBJECT;
 
 public:
-  GrpComputor( SMESH::SMESH_GroupBase_ptr, QTreeWidgetItem*, QObject*, bool = false);
-  QTreeWidgetItem* getItem() { return myItem; }
+  enum { GrpSize, GrpNbNodes };
+  
+  InfoComputor( QObject*, const SMESH::SelectionProxy&, int );
+
+signals:
+  void computed();
 
 public slots:
   void compute();
 
 private:
-  SMESH::SMESH_GroupBase_var myGroup;
-  QTreeWidgetItem*           myItem;
-  bool                       myToComputeSize;
+  SMESH::SelectionProxy myProxy;
+  int myOperation;
 };
 
-class SMESHGUI_EXPORT SMESHGUI_AddInfo : public QTreeWidget
+class SMESHGUI_EXPORT SMESHGUI_AddInfo : public SMESHGUI_Info
 {
   Q_OBJECT;
-
-  enum { Bold = 0x01, All = 0x80 };
 
 public:
   SMESHGUI_AddInfo( QWidget* = 0 );
   ~SMESHGUI_AddInfo();
 
-  void             showInfo( SMESH::SMESH_IDSource_ptr );
-  //  void             clear();
-  void             saveInfo( QTextStream &out );
+  void showInfo( const SMESH::SelectionProxy& );
+  void clear();
+  void saveInfo( QTextStream& );
 
 private slots:
-  void             changeLoadToCompute();
-  void             showPreviousGroups();
-  void             showNextGroups();
-  void             showPreviousSubMeshes();
-  void             showNextSubMeshes();
+  void updateInfo();
+  void showPreviousGroups();
+  void showNextGroups();
+  void showPreviousSubMeshes();
+  void showNextSubMeshes();
 
 private:
   QTreeWidgetItem* createItem( QTreeWidgetItem* = 0, int = 0 );
-  void             meshInfo( SMESH::SMESH_Mesh_ptr, QTreeWidgetItem* );
-  void             subMeshInfo( SMESH::SMESH_subMesh_ptr, QTreeWidgetItem* );
-  void             groupInfo( SMESH::SMESH_GroupBase_ptr, QTreeWidgetItem* );
+  void meshInfo( const SMESH::SelectionProxy&, QTreeWidgetItem* );
+  void subMeshInfo( const SMESH::SelectionProxy&, QTreeWidgetItem* );
+  void groupInfo( const SMESH::SelectionProxy&, QTreeWidgetItem* );
 
-  void             showGroups();
-  void             showSubMeshes();
+  void showGroups();
+  void showSubMeshes();
 
 private:
-  QList<GrpComputor*>      myComputors;
-  SMESH::ListOfGroups_var  myGroups;
-  SMESH::submesh_array_var mySubMeshes;
+  SMESH::SelectionProxy myProxy;
+  QTreeWidget* myTree;
+  QList<InfoComputor*> myComputors;
+  QList<SMESH::SelectionProxy> myGroups;
+  QList<SMESH::SelectionProxy> mySubMeshes;
 };
 
-class SMESHGUI_EXPORT SMESHGUI_CtrlInfo : public QFrame
+class SMESHGUI_EXPORT SMESHGUI_CtrlInfo : public SMESHGUI_Info
 {
   Q_OBJECT;
 
@@ -315,62 +313,59 @@ public:
   SMESHGUI_CtrlInfo( QWidget* = 0 );
   ~SMESHGUI_CtrlInfo();
 
-  void                  showInfo( SMESH::SMESH_IDSource_ptr );
-  void                  saveInfo( QTextStream &out );
+  void showInfo( const SMESH::SelectionProxy& );
+  void saveInfo( QTextStream& );
 
 private:
   enum ObjectType { Mesh, SubMesh, Group };
-  QLabel*               createField();
-  QwtPlot*              createPlot( QWidget* );
-  void                  setFontAttributes( QWidget* );
-  void                  clearInternal();
+  QwtPlot* createPlot( QWidget* );
+  void clearInternal();
 #ifndef DISABLE_PLOT2DVIEWER
-  Plot2d_Histogram*     getHistogram( SMESH::NumericalFunctor_ptr functor );
+  Plot2d_Histogram* getHistogram( SMESH::NumericalFunctor_ptr );
 #endif
-  void                  computeNb( int ft, int iBut, int iWdg );
+  void computeNb( int, int, int );
 
 private slots:
-  void                  computeAspectRatio();
-  void                  computeAspectRatio3D();
-  void                  computeFreeNodesInfo();
-  void                  computeNodesNbConnInfo();
-  void                  computeDoubleNodesInfo();
-  void                  computeDoubleEdgesInfo();
-  void                  computeDoubleFacesInfo();
-  void                  computeOverConstrainedFacesInfo();
-  void                  computeDoubleVolumesInfo();
-  void                  computeOverConstrainedVolumesInfo();
-  void                  setTolerance( const double theTolerance );
-  
+  void computeAspectRatio();
+  void computeAspectRatio3D();
+  void computeFreeNodesInfo();
+  void computeNodesNbConnInfo();
+  void computeDoubleNodesInfo();
+  void computeDoubleEdgesInfo();
+  void computeDoubleFacesInfo();
+  void computeOverConstrainedFacesInfo();
+  void computeDoubleVolumesInfo();
+  void computeOverConstrainedVolumesInfo();
+  void setTolerance( double );
 
 private:
-  typedef SALOME::GenericObj_wrap< SMESH::Predicate >        TPredicate;
+  typedef SALOME::GenericObj_wrap< SMESH::Predicate > TPredicate;
   typedef SALOME::GenericObj_wrap< SMESH::NumericalFunctor > TNumFunctor;
-  SMESH::SMESH_IDSource_var myObject;
-  ObjectType                myObjectType;
-  SMESHGUI_SpinBox*         myToleranceWidget;
-  QList<QLabel*>            myWidgets;
-  QGridLayout*              myMainLayout;
-  QwtPlot*                  myPlot;
-  QwtPlot*                  myPlot3D;
-  QList<QAbstractButton*>   myButtons;
-  QList<TPredicate>         myPredicates;
-  TNumFunctor               myAspectRatio, myAspectRatio3D, myNodeConnFunctor;
+  SMESH::SelectionProxy myProxy;
+  ObjectType myObjectType;
+  SMESHGUI_SpinBox* myToleranceWidget;
+  QList<QLabel*> myWidgets;
+  QwtPlot* myPlot;
+  QwtPlot* myPlot3D;
+  QList<QAbstractButton*> myButtons;
+  QList<TPredicate> myPredicates;
+  TNumFunctor myAspectRatio, myAspectRatio3D, myNodeConnFunctor;
 };
 
 class SMESHGUI_EXPORT SMESHGUI_MeshInfoDlg : public QDialog
 { 
   Q_OBJECT;
 
-  enum { NodeMode, ElemMode };
+  enum { NodeMode, ElemMode, GroupMode };
 
 public:
   //! Information type
-  enum { 
+  enum
+  { 
     BaseInfo,  //!< base mesh information
     ElemInfo,  //!< mesh element information
     AddInfo,   //!< additional information
-    CtrlInfo //!< controls information
+    CtrlInfo   //!< controls information
   };
 
   SMESHGUI_MeshInfoDlg( QWidget* = 0, int = BaseInfo );
@@ -381,33 +376,35 @@ public:
 
 protected:
   void keyPressEvent( QKeyEvent* );
-  void enterEvent( QEvent* );
+
+signals:
+  void switchMode( int );
 
 private slots:
   void help();
   void updateSelection();
   void updateInfo();
-  void activate();
   void deactivate();
   void modeChanged();
   void idChanged();
-  void idPreviewChange(bool);
-  void showItemInfo( int );
-  void showItemInfo( const QString& );
+  void idPreviewChange( bool );
+  void showItemInfo( int type, const QString& ids );
   void dump();
 
 private:
-  QTabWidget*                      myTabWidget;
-  SMESHGUI_MeshInfo*               myBaseInfo;
-  QButtonGroup*                    myMode;
-  QLineEdit*                       myID;
-  QCheckBox*                       myIDPreviewCheck;
-  SMESHGUI_IdPreview*              myIDPreview;
-  SMESHGUI_ElemInfo*               myElemInfo;   
-  SMESHGUI_AddInfo*                myAddInfo;
-  SMESHGUI_CtrlInfo*               myCtrlInfo;
-  SMESH_Actor*                     myActor;
-  Handle(SALOME_InteractiveObject) myIO;
+  void showInfo( const SMESH::SelectionProxy& );
+
+  SMESH::SelectionProxy myProxy;
+  QTabWidget* myTabWidget;
+  SMESHGUI_BaseInfo* myBaseInfo;
+  SMESHGUI_ElemInfo* myElemInfo;
+  SMESHGUI_AddInfo* myAddInfo;
+  SMESHGUI_CtrlInfo* myCtrlInfo;
+  QButtonGroup* myMode;
+  QLineEdit* myID;
+  QCheckBox* myIDPreviewCheck;
+  GroupCombo* myGroups;
+  SMESHGUI_IdPreview* myIDPreview;
 };
 
 class SMESHGUI_EXPORT SMESHGUI_CtrlInfoDlg : public QDialog
@@ -423,14 +420,16 @@ public:
 
 private slots:
   void updateInfo();
-  void activate();
   void deactivate();
   void updateSelection();
   void help();
   void dump();
 
 private:
-  SMESHGUI_CtrlInfo*  myCtrlInfo;
+  void showInfo( const SMESH::SelectionProxy& );
+
+  SMESH::SelectionProxy myProxy;
+  SMESHGUI_CtrlInfo* myCtrlInfo;
 };
 
 #endif // SMESHGUI_MESHINFO_H
