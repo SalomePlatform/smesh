@@ -3982,6 +3982,9 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
   cmd+="\" \"";
   cmd+=meshfile;
   cmd+="\"";
+#ifdef WIN32
+  cmd+=" 2>NUL";
+#endif
   system(cmd.ToCString());
 
   // MED writer to be used by storage process
