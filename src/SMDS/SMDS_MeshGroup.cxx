@@ -77,10 +77,11 @@ bool SMDS_MeshGroup::Add(const SMDS_MeshElement * theElem)
     return false;
   }
 
-  myElements.insert( theElem );
+  bool added = myElements.insert( theElem ).second;
+
   ++myTic;
 
-  return true;
+  return added;
 }
 
 //=======================================================================

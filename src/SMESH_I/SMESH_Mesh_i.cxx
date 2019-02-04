@@ -240,7 +240,7 @@ GEOM::GEOM_Object_ptr SMESH_Mesh_i::GetShapeToMesh()
         for ( ; data != _geomGroupData.end(); ++data )
           if ( data->_smeshObject->_is_equivalent( _this() ))
           {
-            SALOMEDS::SObject_wrap so = SMESH_Gen_i::getStudyServant()->FindObjectID( data->_groupEntry.c_str() );
+            SALOMEDS::SObject_wrap so = _gen_i->getStudyServant()->FindObjectID( data->_groupEntry.c_str() );
             CORBA::Object_var     obj = _gen_i->SObjectToObject( so );
             aShapeObj = GEOM::GEOM_Object::_narrow( obj );
             break;
@@ -772,6 +772,9 @@ SMESH_Mesh_i::removeHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
   if (CORBA::is_nil( anHyp ))
     THROW_SALOME_CORBA_EXCEPTION("bad hypothesis reference", SALOME::BAD_PARAM);
 
+  if ( _preMeshInfo )
+    _preMeshInfo->ForgetOrLoad();
+
   SMESH_Hypothesis::Hypothesis_Status status = SMESH_Hypothesis::HYP_OK;
   try
   {
@@ -955,7 +958,7 @@ void SMESH_Mesh_i::RemoveSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh )
     // if ( aSubShape->_is_nil() ) // not published shape (IPAL13617)
     //   aSubShape = theSubMesh->GetSubShape();
 
-    SALOMEDS::StudyBuilder_var builder = SMESH_Gen_i::getStudyServant()->NewBuilder();
+    SALOMEDS::StudyBuilder_var builder = _gen_i->getStudyServant()->NewBuilder();
     builder->RemoveObjectWithChildren( anSO );
 
     // Update Python script
@@ -2075,11 +2078,66 @@ namespace
   struct TGroupOnGeomData
   {
     int                 _oldID;
-    int                 _shapeID;
+    TopoDS_Shape        _shape;
     SMDSAbs_ElementType _type;
     std::string         _name;
     Quantity_Color      _color;
+
+    TGroupOnGeomData( const SMESHDS_GroupOnGeom* group )
+    {
+      _oldID = group->GetID();
+      _type  = group->GetType();
+      _name  = group->GetStoreName();
+      _color = group->GetColor();
+    }
   };
+
+  //-----------------------------------------------------------------------------
+  /*!
+   * \brief Check if a filter is still valid after geometry removal
+   */
+  bool isValidGeomFilter( SMESH::Filter_var theFilter )
+  {
+    if ( theFilter->_is_nil() )
+      return false;
+    SMESH::Filter::Criteria_var criteria;
+    theFilter->GetCriteria( criteria.out() );
+
+    for ( CORBA::ULong iCr = 0; iCr < criteria->length(); ++iCr )
+    {
+      const char* thresholdID = criteria[ iCr ].ThresholdID.in();
+      std::string entry;
+      switch ( criteria[ iCr ].Type )
+      {
+      case SMESH::FT_BelongToGeom:
+      case SMESH::FT_BelongToPlane:
+      case SMESH::FT_BelongToCylinder:
+      case SMESH::FT_BelongToGenSurface:
+      case SMESH::FT_LyingOnGeom:
+        entry = thresholdID;
+        break;
+      case SMESH::FT_ConnectedElements:
+        if ( thresholdID )
+        {
+          entry = thresholdID;
+          break;
+        }
+      default:
+        continue;
+      }
+      SMESH_Gen_i*           gen = SMESH_Gen_i::GetSMESHGen();
+      SALOMEDS::SObject_wrap  so = gen->getStudyServant()->FindObjectID( entry.c_str() );
+      if ( so->_is_nil() )
+        return false;
+      CORBA::Object_var      obj = so->GetObject();
+      GEOM::GEOM_Object_var geom = GEOM::GEOM_Object::_narrow( obj );
+      if ( gen->GeomObjectToShape( geom ).IsNull() )
+        return false;
+
+    } // loop on criteria
+
+    return true;
+  }
 }
 
 //=============================================================================
@@ -2092,19 +2150,67 @@ namespace
 
 void SMESH_Mesh_i::CheckGeomModif()
 {
+  SMESH::SMESH_Mesh_var me = _this();
+  GEOM::GEOM_Object_var mainGO = GetShapeToMesh();
+
+  //bool removedFromClient = false;
+
+  if ( mainGO->_is_nil() ) // GEOM_Client cleared or geometry removed? (IPAL52735, PAL23636)
+  {
+    //removedFromClient = _impl->HasShapeToMesh();
+
+    // try to find geometry by study reference
+    SALOMEDS::SObject_wrap meshSO = _gen_i->ObjectToSObject( me );
+    SALOMEDS::SObject_wrap geomRefSO, geomSO;
+    if ( !meshSO->_is_nil() &&
+         meshSO->FindSubObject( SMESH::Tag_RefOnShape, geomRefSO.inout() ) &&
+         geomRefSO->ReferencedObject( geomSO.inout() ))
+    {
+      CORBA::Object_var geomObj = _gen_i->SObjectToObject( geomSO );
+      mainGO = GEOM::GEOM_Object::_narrow( geomObj );
+    }
+
+    if ( mainGO->_is_nil() &&    // geometry removed ==>
+         !geomRefSO->_is_nil() ) // remove geom dependent data: sub-meshes etc.
+    {
+      // convert geom dependent groups into standalone ones
+      CheckGeomGroupModif();
+
+      _impl->ShapeToMesh( TopoDS_Shape() );
+
+      // remove sub-meshes
+      std::map<int, SMESH::SMESH_subMesh_ptr>::iterator i_sm = _mapSubMeshIor.begin();
+      while ( i_sm != _mapSubMeshIor.end() )
+      {
+        SMESH::SMESH_subMesh_ptr sm = i_sm->second;
+        ++i_sm;
+        RemoveSubMesh( sm );
+      }
+      // remove all children except groups in the study
+      SALOMEDS::StudyBuilder_var builder = _gen_i->getStudyServant()->NewBuilder();
+      SALOMEDS::SObject_wrap so;
+      for ( CORBA::Long tag = SMESH::Tag_RefOnShape; tag <= SMESH::Tag_LastSubMesh; ++tag )
+        if ( meshSO->FindSubObject( tag, so.inout() ))
+          builder->RemoveObjectWithChildren( so );
+
+      _gen_i->SetPixMap( meshSO, "ICON_SMESH_TREE_MESH_IMPORTED" );
+
+      return;
+    }
+  }
+
   if ( !_impl->HasShapeToMesh() ) return;
 
-  GEOM::GEOM_Object_var mainGO = _gen_i->ShapeToGeomObject( _impl->GetShapeToMesh() );
-  //if ( mainGO->_is_nil() ) return;
 
   // Update after group modification
 
-  if ( mainGO->_is_nil() || /* shape was removed from GEOM_Client by newGroupShape()
-                               called by other mesh (IPAL52735) */
-       mainGO->GetType() == GEOM_GROUP ||
+  if ( mainGO->GetType() == GEOM_GROUP ||    // is group or not modified
        mainGO->GetTick() == _mainShapeTick )
   {
+    int nb = NbNodes() + NbElements();
     CheckGeomGroupModif();
+    if ( nb != NbNodes() + NbElements() ) // something removed due to hypotheses change
+      _gen_i->UpdateIcons( me );
     return;
   }
 
@@ -2131,23 +2237,35 @@ void SMESH_Mesh_i::CheckGeomModif()
   SMESHDS_Mesh * meshDS = _impl->GetMeshDS();
 
   // store data of groups on geometry
-  vector< TGroupOnGeomData > groupsData;
-  const set<SMESHDS_GroupBase*>& groups = meshDS->GetGroups();
+  std::vector< TGroupOnGeomData > groupsData;
+  const std::set<SMESHDS_GroupBase*>& groups = meshDS->GetGroups();
   groupsData.reserve( groups.size() );
-  set<SMESHDS_GroupBase*>::const_iterator g = groups.begin();
+  std::set<SMESHDS_GroupBase*>::const_iterator g = groups.begin();
   for ( ; g != groups.end(); ++g )
+  {
     if ( const SMESHDS_GroupOnGeom* group = dynamic_cast< SMESHDS_GroupOnGeom* >( *g ))
     {
-      TGroupOnGeomData data;
-      data._oldID   = group->GetID();
-      data._shapeID = meshDS->ShapeToIndex( group->GetShape() );
-      data._type    = group->GetType();
-      data._name    = group->GetStoreName();
-      data._color   = group->GetColor();
-      groupsData.push_back( data );
+      groupsData.push_back( TGroupOnGeomData( group ));
+
+      // get a new shape
+      SMESH::SMESH_GroupOnGeom_var gog;
+      std::map<int, SMESH::SMESH_GroupBase_ptr>::iterator i_grp = _mapGroups.find( group->GetID() );
+      if ( i_grp != _mapGroups.end() )
+        gog = SMESH::SMESH_GroupOnGeom::_narrow( i_grp->second );
+
+      GEOM::GEOM_Object_var geom;
+      if ( !gog->_is_nil() )
+        geom = gog->GetShape();
+      if ( !geom->_is_nil() )
+      {
+        CORBA::String_var ior = geomGen->GetStringFromIOR( geom );
+        geomClient->RemoveShapeFromBuffer( ior.in() );
+        groupsData.back()._shape = _gen_i->GeomObjectToShape( geom );
+      }
     }
+  }
   // store assigned hypotheses
-  vector< pair< int, THypList > > ids2Hyps;
+  std::vector< pair< int, THypList > > ids2Hyps;
   const ShapeToHypothesis & hyps = meshDS->GetHypotheses();
   for ( ShapeToHypothesis::Iterator s2hyps( hyps ); s2hyps.More(); s2hyps.Next() )
   {
@@ -2162,7 +2280,7 @@ void SMESH_Mesh_i::CheckGeomModif()
   _impl->ShapeToMesh( newShape );
 
   // re-add shapes of geom groups
-  list<TGeomGroupData>::iterator data = _geomGroupData.begin();
+  std::list<TGeomGroupData>::iterator data = _geomGroupData.begin();
   for ( ; data != _geomGroupData.end(); ++data )
   {
     TopoDS_Shape newShape = newGroupShape( *data );
@@ -2192,36 +2310,28 @@ void SMESH_Mesh_i::CheckGeomModif()
       _impl->AddHypothesis( s, (*h)->GetID() );
   }
 
-  // restore groups
+  // restore groups on geometry
   for ( size_t i = 0; i < groupsData.size(); ++i )
   {
     const TGroupOnGeomData& data = groupsData[i];
+    if ( data._shape.IsNull() )
+      continue;
 
-    map<int, SMESH::SMESH_GroupBase_ptr>::iterator i2g = _mapGroups.find( data._oldID );
+    std::map<int, SMESH::SMESH_GroupBase_ptr>::iterator i2g = _mapGroups.find( data._oldID );
     if ( i2g == _mapGroups.end() ) continue;
 
     SMESH_GroupBase_i* gr_i = SMESH::DownCast<SMESH_GroupBase_i*>( i2g->second );
     if ( !gr_i ) continue;
 
-    int id;
-    SMESH_Group* g = _impl->AddGroup( data._type, data._name.c_str(), id,
-                                      meshDS->IndexToShape( data._shapeID ));
+    SMESH_Group* g = _impl->AddGroup( data._type, data._name.c_str(), data._oldID, data._shape );
     if ( !g )
-    {
       _mapGroups.erase( i2g );
-    }
     else
-    {
       g->GetGroupDS()->SetColor( data._color );
-      gr_i->changeLocalId( id );
-      _mapGroups[ id ] = i2g->second;
-      if ( data._oldID != id )
-        _mapGroups.erase( i2g );
-    }
   }
 
   // update _mapSubMesh
-  map<int, ::SMESH_subMesh*>::iterator i_sm = _mapSubMesh.begin();
+  std::map<int, ::SMESH_subMesh*>::iterator i_sm = _mapSubMesh.begin();
   for ( ; i_sm != _mapSubMesh.end(); ++i_sm )
     i_sm->second = _impl->GetSubMesh( meshDS->IndexToShape( i_sm->first ));
 
@@ -2238,6 +2348,98 @@ void SMESH_Mesh_i::CheckGeomModif()
 
 void SMESH_Mesh_i::CheckGeomGroupModif()
 {
+  // remove sub-meshes referring a removed sub-shapes (if main shape still exists)
+  SALOMEDS::StudyBuilder_var builder = _gen_i->getStudyServant()->NewBuilder();
+  GEOM::GEOM_Object_var  mainGO = GetShapeToMesh();
+  SALOMEDS::SObject_wrap meshSO = _gen_i->ObjectToSObject( SMESH::SMESH_Mesh_var( _this() ));
+  if ( !mainGO->_is_nil() && !meshSO->_is_nil() )
+  {
+    SALOMEDS::SObject_wrap rootSO, geomRefSO, geomSO;
+    for ( CORBA::Long tag = SMESH::Tag_FirstSubMesh; tag <= SMESH::Tag_LastSubMesh; ++tag )
+      if ( meshSO->FindSubObject( tag, rootSO.inout() ))
+      {
+        int nbValid = 0, nbRemoved = 0;
+        SALOMEDS::ChildIterator_wrap chItr = _gen_i->getStudyServant()->NewChildIterator( rootSO );
+        for ( ; chItr->More(); chItr->Next() )
+        {
+          SALOMEDS::SObject_wrap smSO = chItr->Value(); // sub-mesh SO
+          if ( !smSO->_is_nil() &&
+               smSO->FindSubObject( SMESH::Tag_RefOnShape, geomRefSO.inout() ) &&
+               geomRefSO->ReferencedObject( geomSO.inout() )) // find geometry by reference
+          {
+            CORBA::Object_var  geomObj = _gen_i->SObjectToObject( geomSO );
+            GEOM::GEOM_Object_var geom = GEOM::GEOM_Object::_narrow( geomObj );
+            if ( !geom->_non_existent() )
+            {
+              ++nbValid;
+              continue; // keep the sub-mesh
+            }
+          }
+          CORBA::Object_var     smObj = _gen_i->SObjectToObject( smSO );
+          SMESH::SMESH_subMesh_var sm = SMESH::SMESH_subMesh::_narrow( smObj );
+          if ( !sm->_is_nil() && !sm->_non_existent() )
+          {
+            GEOM::GEOM_Object_var smGeom = sm->GetSubShape();
+            if ( smGeom->_is_nil() )
+            {
+              RemoveSubMesh( sm );
+              ++nbRemoved;
+            }
+          }
+          else
+          {
+            if ( _preMeshInfo )
+              _preMeshInfo->ForgetAllData(); // unknown hypothesis modified
+            builder->RemoveObjectWithChildren( smSO ); // sub-shape removed before loading SMESH
+            ++nbRemoved;
+          }
+        }
+        if ( /*nbRemoved > 0 &&*/ nbValid == 0 )
+          builder->RemoveObjectWithChildren( rootSO );
+      }
+  }
+
+  // check for removed sub-shapes and convert geom dependent groups into standalone ones
+  std::map<int, SMESH::SMESH_GroupBase_ptr>::iterator i_gr = _mapGroups.begin();
+  while ( i_gr != _mapGroups.end())
+  {
+    SMESH::SMESH_GroupBase_ptr group = i_gr->second;
+    ++i_gr;
+    SALOMEDS::SObject_wrap        groupSO = _gen_i->ObjectToSObject( group ), refSO;
+    SMESH::SMESH_GroupOnGeom_var   onGeom = SMESH::SMESH_GroupOnGeom::_narrow  ( group );
+    SMESH::SMESH_GroupOnFilter_var onFilt = SMESH::SMESH_GroupOnFilter::_narrow( group );
+    bool isValidGeom = false;
+    if ( !onGeom->_is_nil() )
+    {
+      isValidGeom = ( ! GEOM::GEOM_Object_var( onGeom->GetShape() )->_is_nil() );
+    }
+    else if ( !onFilt->_is_nil() )
+    {
+      isValidGeom = isValidGeomFilter( onFilt->GetFilter() );
+    }
+    else // standalone
+    {
+      isValidGeom = ( !groupSO->_is_nil() &&
+                      !groupSO->FindSubObject( SMESH::Tag_RefOnShape, refSO.inout() ));
+    }
+    if ( !isValidGeom )
+    {
+      if ( !IsLoaded() || group->IsEmpty() )
+      {
+        RemoveGroup( group );
+      }
+      else if ( !onGeom->_is_nil() || !onFilt->_is_nil() )
+      {
+        SMESH::SMESH_Group_var ( ConvertToStandalone( group ));
+      }
+      else // is it possible?
+      {
+        builder->RemoveObjectWithChildren( refSO );
+      }
+    }
+  }
+
+
   if ( !_impl->HasShapeToMesh() ) return;
 
   CORBA::Long nbEntities = NbNodes() + NbElements();
@@ -2384,7 +2586,7 @@ void SMESH_Mesh_i::CheckGeomGroupModif()
           groupData.push_back
             ( make_pair( TIndexedShape( gog->GetID(),gog->GetShape()), gog->GetType()));
       }
-      // set new shape to mesh -> DS of sub-meshes and geom groups are deleted
+      // set new shape to mesh -> DS of sub-meshes and geom groups is deleted
       _impl->Clear();
       _impl->ShapeToMesh( TopoDS_Shape() ); // IPAL52730
       _impl->ShapeToMesh( newShape );
@@ -2510,9 +2712,11 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::ConvertToStandalone( SMESH::SMESH_GroupBase
       // remove reference to geometry
       SALOMEDS::ChildIterator_wrap chItr = aStudy->NewChildIterator(aGroupSO);
       for ( ; chItr->More(); chItr->Next() )
+      {
         // Remove group's child SObject
-        builder->RemoveObject( chItr->Value() );
-
+        SALOMEDS::SObject_wrap so = chItr->Value();
+        builder->RemoveObject( so );
+      }
       // Update Python script
       TPythonDump() << aGroupSO << " = " << SMESH::SMESH_Mesh_var(_this())
                     << ".ConvertToStandalone( " << aGroupSO << " )";
@@ -2520,9 +2724,9 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::ConvertToStandalone( SMESH::SMESH_GroupBase
       // change icon of Group on Filter
       if ( isOnFilter )
       {
-        SMESH::array_of_ElementType_var elemTypes = aGroupImpl->GetTypes();
-        const int isEmpty = ( elemTypes->length() == 0 );
-        if ( !isEmpty )
+        // SMESH::array_of_ElementType_var elemTypes = aGroupImpl->GetTypes();
+        // const int isEmpty = ( elemTypes->length() == 0 );
+        // if ( !isEmpty )
         {
           SALOMEDS::GenericAttribute_wrap anAttr =
             builder->FindOrCreateAttribute( aGroupSO, "AttributePixMap" );
@@ -2631,14 +2835,17 @@ bool SMESH_Mesh_i::removeSubMesh (SMESH::SMESH_subMesh_ptr theSubMesh,
 
   if ( theSubShapeObject->_is_nil() )  // not published shape (IPAL13617)
   {
-    if ( _mapSubMesh.find( subMeshId ) != _mapSubMesh.end() &&
-         _mapSubMesh[ subMeshId ])
+    SMESH_subMesh* sm;
+    if (( _mapSubMesh.count( subMeshId )) &&
+        ( sm = _impl->GetSubMeshContaining( subMeshId )))
     {
-      TopoDS_Shape S = _mapSubMesh[ subMeshId ]->GetSubShape();
+      TopoDS_Shape S = sm->GetSubShape();
       if ( !S.IsNull() )
       {
         list<const SMESHDS_Hypothesis*> hyps = _impl->GetHypothesisList( S );
         isHypChanged = !hyps.empty();
+        if ( isHypChanged && _preMeshInfo )
+          _preMeshInfo->ForgetOrLoad();
         list<const SMESHDS_Hypothesis*>::const_iterator hyp = hyps.begin();
         for ( ; hyp != hyps.end(); ++hyp )
           _impl->RemoveHypothesis(S, (*hyp)->GetID());

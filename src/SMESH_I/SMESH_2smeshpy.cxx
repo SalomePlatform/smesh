@@ -296,6 +296,8 @@ namespace {
     //   - FT_NodeConnectivityNumber= 22
     // v 8.5.0: FT_Undefined == 49, new items:
     //   - FT_Deflection2D          = 22
+    // v 9.3.0: FT_Undefined == 50, new items:
+    //   - FT_Length3D              = 22
     //
     // It's necessary to continue recording this history and to fill
     // undef2newItems (see below) accordingly.
@@ -319,6 +321,7 @@ namespace {
       undef2newItems[ 47 ].push_back( 22 );
       undef2newItems[ 48 ].push_back( 22 );
       undef2newItems[ 49 ].push_back( 22 );
+      undef2newItems[ 50 ].push_back( 22 );
 
       ASSERT( undef2newItems.rbegin()->first == SMESH::FT_Undefined );
     }

@@ -745,10 +745,13 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
                 mergeTolerance: tolerance for merging nodes
                 allGroups: forces creation of groups corresponding to every input mesh
                 name: name of a new mesh
-                meshToAppendTo a mesh to append all given meshes
+                meshToAppendTo: a mesh to append all given meshes
 
         Returns:
                 an instance of class :class:`Mesh`
+
+        See also: 
+                :meth:`Mesh.Append`
         """
 
         if not meshes: return None
@@ -1190,6 +1193,8 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
             functor = aFilterMgr.CreateLength()
         elif theCriterion == FT_Length2D:
             functor = aFilterMgr.CreateLength2D()
+        elif theCriterion == FT_Length3D:
+            functor = aFilterMgr.CreateLength3D()
         elif theCriterion == FT_Deflection2D:
             functor = aFilterMgr.CreateDeflection2D()
         elif theCriterion == FT_NodeConnectivityNumber:

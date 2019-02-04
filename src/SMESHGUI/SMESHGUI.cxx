@@ -4992,9 +4992,9 @@ void SMESHGUI::contextMenuPopup( const QString& client, QMenu* menu, QString& ti
     _PTR(Study) study = appStudy->studyDS();
     _PTR(SObject) obj = study->FindObjectID( io->getEntry() );
     if ( obj ) {
-      QString aName = QString( SMESH::fromUtf8(obj->GetName()) );
-      while ( aName.at( aName.length() - 1 ) == ' ' ) // Remove extraspaces in Name of Popup
-          aName.remove( (aName.length() - 1), 1 );
+      QString aName = SMESH::fromUtf8( obj->GetName());
+      while ( !aName.isEmpty() && aName.at( aName.length() - 1 ) == ' ' ) // Remove extraspaces in Name of Popup
+        aName.remove(( aName.length() - 1 ), 1 );
       title = aName;
     }
   }

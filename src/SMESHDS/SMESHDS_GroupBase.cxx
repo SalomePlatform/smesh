@@ -126,7 +126,7 @@ bool SMESHDS_GroupBase::IsEmpty()
 {
   if ( myMesh->GetMeshInfo().NbElements( myType ) == 0 )
     // avoid long iteration over sub-meshes of a complex sub-mesh of a group on geometry
-    return false;
+    return true;
   SMDS_ElemIteratorPtr it = GetElements();
   return ( !it || !it->more() );
 }

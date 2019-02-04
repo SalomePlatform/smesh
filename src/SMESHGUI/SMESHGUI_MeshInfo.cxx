@@ -974,6 +974,8 @@ void SMESHGUI_BaseInfo::clear()
         widget( i, j )->setProperty( "value", 0 );
     }
   }
+  // hide 'Load' button
+  widget( iEnd, iSingle )->setVisible( false );
 }
 
 /*!

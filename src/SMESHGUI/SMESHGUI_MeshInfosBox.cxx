@@ -520,7 +520,7 @@ void SMESHGUI_MeshInfosBox::SetMeshInfo(const SMESH::long_array& theInfo)
     // prisms
     myNbPrism    ->setText( QString("%1").arg( theInfo[SMDSEntity_Penta] +
                                                theInfo[SMDSEntity_Quad_Penta] +
-											   theInfo[SMDSEntity_BiQuad_Penta] ));
+                                               theInfo[SMDSEntity_BiQuad_Penta] ));
     myNbLinPrism   ->setText( QString("%1").arg( theInfo[SMDSEntity_Penta] ));
     myNbQuadPrism  ->setText( QString("%1").arg( theInfo[SMDSEntity_Quad_Penta] ));
     myNbBiQuadPrism->setText( QString("%1").arg( theInfo[SMDSEntity_BiQuad_Penta] ));

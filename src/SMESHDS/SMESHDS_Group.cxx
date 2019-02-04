@@ -105,15 +105,14 @@ bool SMESHDS_Group::Add (const int theID)
 
 bool SMESHDS_Group::Add (const SMDS_MeshElement* aElem )
 {
-  if (!aElem || myGroup.Contains(aElem))
-    return false;
-
-  if (myGroup.IsEmpty())
-    SetType( aElem->GetType() );
-
-  myGroup.Add (aElem);
-  resetIterator();
-  return true;
+  bool added = false;
+  if ( aElem )
+  {
+    added = myGroup.Add (aElem);
+    if ( added )
+      resetIterator();
+  }
+  return added;
 }
 
 //=============================================================================
@@ -124,12 +123,14 @@ bool SMESHDS_Group::Add (const SMDS_MeshElement* aElem )
 
 bool SMESHDS_Group::Remove (const int theID)
 {
-  const SMDS_MeshElement* aElem = findInMesh (theID);
-  if (!aElem || !myGroup.Contains(aElem))
-    return false;
-  myGroup.Remove (aElem);
-  resetIterator();
-  return true;
+  bool removed = false;
+  if ( const SMDS_MeshElement* aElem = findInMesh( theID ))
+  {
+    removed = myGroup.Remove (aElem);
+    if ( removed )
+      resetIterator();
+  }
+  return removed;
 }
 
 
