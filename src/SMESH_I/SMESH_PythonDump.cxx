@@ -1002,13 +1002,16 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   const TCollection_AsciiString anOldGen ( SMESH::TPythonDump::SMESHGenName() );
   const TCollection_AsciiString helper; // to comfortably append C strings to TCollection_AsciiString
   const TCollection_AsciiString tab( isMultiFile ? "\t" : "" ), nt = helper + "\n" + tab;
-
+  TCollection_AsciiString optionalComment;
+  
   std::list< TCollection_AsciiString > lines; // lines of a script
   std::list< TCollection_AsciiString >::iterator linesIt;
   
   lines.push_back(  aSMESHGen + " = smeshBuilder.New()" );
-  if ( !isPublished )
-    lines.push_back(  aSMESHGen + ".SetEnablePublish( False )" );
+  if ( isPublished )
+    optionalComment = helper + "#";
+  lines.push_back( optionalComment + aSMESHGen + ".SetEnablePublish( False ) # Set to False to avoid publish in study if not needed or in some particular situations:" );
+  lines.push_back( "                                 # multiples meshes built in parallel, complex and numerous mesh edition (performance)" );
   lines.push_back( helper + "aFilterManager = " + aSMESHGen + ".CreateFilterManager()" );
   lines.push_back( helper + "aMeasurements = "  + aSMESHGen + ".CreateMeasurements()" );
 

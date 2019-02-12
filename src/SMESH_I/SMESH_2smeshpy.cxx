@@ -3818,6 +3818,8 @@ bool _pyCommand::IsMethodCall()
 {
   if ( GetMethod().IsEmpty() )
     return false;
+  if ( myString.StartsWith("#") )
+    return false;
   const char* s = myString.ToCString() + GetBegPos( METHOD_IND ) + myMeth.Length() - 1;
   return ( s[0] == '(' || s[1] == '(' );
 }
