@@ -1233,6 +1233,7 @@ void SMESHGUI_MergeDlg::SelectionIntoArgument()
 
     // process groups
     myGroups.clear();
+    ListExclude->clear();
     if ( isMeshSelected )
     {
       SMESH::ListOfGroups_var aListOfGroups = myMesh->GetGroups();

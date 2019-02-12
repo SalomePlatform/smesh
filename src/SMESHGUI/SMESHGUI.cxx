@@ -1920,8 +1920,8 @@ void SMESHGUI::OnEditDelete()
 
   SalomeApp_Application* anApp = dynamic_cast<SalomeApp_Application*>( SUIT_Session::session()->activeApplication() );
 
-  // Put the whole hierarchy of sub-objects of the selected SO's into a list and
-  // then treat them all starting from the deepest objects (at list back)
+  // Put one level of sub-objects of the selected SO's into a list
+  // in order to get objects inside folders like "Assigned Algorithms"
   std::list< _PTR(SObject) > listSO;
   SALOME_ListIteratorOfListIO It(selected);
   for( ; It.More(); It.Next()) // loop on selected IO's
@@ -1942,41 +1942,45 @@ void SMESHGUI::OnEditDelete()
         aSO = aRefSObject; // Delete main Object instead of reference
 
       listSO.push_back( aSO );
-      std::list< _PTR(SObject) >::iterator itSO = --listSO.end();
-      for ( ; itSO != listSO.end(); ++itSO ) {
-        _PTR(ChildIterator) it = aStudy->NewChildIterator( *itSO );
-        for (it->InitEx(false); it->More(); it->Next())
-          listSO.push_back( it->Value() );
-      }
+
+      _PTR(ChildIterator) it = aStudy->NewChildIterator( aSO );
+      for (it->InitEx(false); it->More(); it->Next())
+        listSO.push_back( it->Value() );
     }
   }
   // Check if none of objects to delete is referred from outside
   std::list< _PTR(SObject) >::reverse_iterator ritSO;
+  std::vector< _PTR(SObject) > subSO;
   for ( ritSO = listSO.rbegin(); ritSO != listSO.rend(); ++ritSO )
   {
     _PTR(SObject) SO = *ritSO;
     if ( !SO ) continue;
-    std::vector<_PTR(SObject)> aReferences = aStudy->FindDependances( *ritSO  );
-    for (size_t i = 0; i < aReferences.size(); i++) {
-      _PTR(SComponent) aComponent = aReferences[i]->GetFatherComponent();
-      std::string type = aComponent->ComponentDataType();
-      if ( type != "SMESH" )
-      {
-        SUIT_MessageBox::warning( anApp->desktop(),
-                                  QObject::tr("WRN_WARNING"),
-                                  QObject::tr("DEP_OBJECT") );
-        return; // outside SMESH, there is an object depending on a SMESH object
+
+    int nbChildren = SO->GetLastChildTag();
+    subSO.clear();
+    subSO.reserve( 1 + nbChildren );
+    subSO.push_back( SO );
+    if ( nbChildren > 0 )
+    {
+      _PTR(ChildIterator) it = aStudy->NewChildIterator( SO );
+      for ( it->InitEx( true ); it->More(); it->Next() )
+        subSO.push_back( it->Value() );
+    }
+    for ( size_t i = 0; i < subSO.size(); ++i )
+    {
+      std::vector<_PTR(SObject)> aReferences = aStudy->FindDependances( subSO[i] );
+      for ( size_t j = 0; j < aReferences.size(); j++ ) {
+        _PTR(SComponent) aComponent = aReferences[j]->GetFatherComponent();
+        std::string type = aComponent->ComponentDataType();
+        if ( type != "SMESH" )
+        {
+          SUIT_MessageBox::warning( anApp->desktop(),
+                                    QObject::tr("WRN_WARNING"),
+                                    QObject::tr("DEP_OBJECT") );
+          return; // outside SMESH, there is an object depending on a SMESH object
+        }
       }
     }
-  }
-
-  // Call mesh->Clear() to prevent loading mesh from file caused by hypotheses removal
-  for( It.Initialize( selected ); It.More(); It.Next()) // loop on selected IO's
-  {
-    Handle(SALOME_InteractiveObject) IObject = It.Value();
-    SMESH::SMESH_Mesh_var mesh = SMESH::IObjectToInterface< SMESH::SMESH_Mesh >( IObject );
-    if ( !mesh->_is_nil() )
-      mesh->Clear();
   }
 
   // Treat SO's in the list starting from the back
@@ -1988,7 +1992,7 @@ void SMESHGUI::OnEditDelete()
     std::string anEntry = SO->GetID();
 
     /** Erase graphical object and remove all its data **/
-    if(SO->FindAttribute(anAttr, "AttributeIOR")) {
+    if ( SO->FindAttribute( anAttr, "AttributeIOR" )) {
       SMESH::RemoveVisualObjectWithActors( anEntry.c_str(), true);
     }
     /** Remove an object from data structures **/
