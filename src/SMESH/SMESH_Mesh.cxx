@@ -2038,8 +2038,7 @@ SMESH_Group* SMESH_Mesh::AddGroup (const SMDSAbs_ElementType theType,
   SMESH_Group* aGroup = new SMESH_Group ( id, this, theType, theName, theShape, thePredicate );
   GetMeshDS()->AddGroup( aGroup->GetGroupDS() );
   _mapGroup[ id ] = aGroup;
-  while ( _mapGroup.count( _groupId ))
-    ++_groupId;
+  _groupId = 1 + _mapGroup.rbegin()->first;
   return aGroup;
 }
 
@@ -2051,7 +2050,7 @@ SMESH_Group* SMESH_Mesh::AddGroup (const SMDSAbs_ElementType theType,
 
 SMESH_Group* SMESH_Mesh::AddGroup (SMESHDS_GroupBase* groupDS) throw(SALOME_Exception)
 {
-  if ( !groupDS ) 
+  if ( !groupDS )
     throw SALOME_Exception(LOCALIZED ("SMESH_Mesh::AddGroup(): NULL SMESHDS_GroupBase"));
 
   std::map <int, SMESH_Group*>::iterator i_g = _mapGroup.find( groupDS->GetID() );
@@ -2066,8 +2065,7 @@ SMESH_Group* SMESH_Mesh::AddGroup (SMESHDS_GroupBase* groupDS) throw(SALOME_Exce
   _mapGroup[ groupDS->GetID() ] = aGroup;
   GetMeshDS()->AddGroup( aGroup->GetGroupDS() );
 
-  while ( _mapGroup.count( _groupId ))
-    ++_groupId;
+  _groupId = 1 + _mapGroup.rbegin()->first;
 
   return aGroup;
 }
@@ -2077,7 +2075,7 @@ SMESH_Group* SMESH_Mesh::AddGroup (SMESHDS_GroupBase* groupDS) throw(SALOME_Exce
 /*!
  * \brief Creates SMESH_Groups for not wrapped SMESHDS_Groups
  *  \retval bool - true if new SMESH_Groups have been created
- * 
+ *
  */
 //================================================================================
 
@@ -2093,8 +2091,8 @@ bool SMESH_Mesh::SynchronizeGroups()
     if ( !_mapGroup.count( _groupId ))
       _mapGroup[_groupId] = new SMESH_Group( groupDS );
   }
-  while ( _mapGroup.count( _groupId ))
-    ++_groupId;
+  if ( !_mapGroup.empty() )
+    _groupId = 1 + _mapGroup.rbegin()->first;
 
   return nbGroups < _mapGroup.size();
 }
