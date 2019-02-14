@@ -5356,7 +5356,7 @@ void SMESH_Mesh_i::CreateGroupServants()
   while ( groupIt->more() )
   {
     ::SMESH_Group* group = groupIt->next();
-    int            anId = group->GetGroupDS()->GetID();
+    int             anId = group->GetID();
 
     map<int, SMESH::SMESH_GroupBase_ptr>::iterator it = _mapGroups.find(anId);
     if ( it != _mapGroups.end() && !CORBA::is_nil( it->second ))

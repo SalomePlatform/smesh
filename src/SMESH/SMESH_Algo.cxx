@@ -263,6 +263,10 @@ SMESH_Algo::GetUsedHypothesis(SMESH_Mesh &         aMesh,
                               const bool           ignoreAuxiliary) const
 {
   SMESH_Algo* me = const_cast< SMESH_Algo* >( this );
+
+  std::list<const SMESHDS_Hypothesis *> savedHyps; // don't delete the list if 
+  savedHyps.swap( me->_usedHypList );              // it does not change (#16578)
+
   me->_usedHypList.clear();
   if ( const SMESH_HypoFilter* filter = GetCompatibleHypoFilter( ignoreAuxiliary ))
   {
@@ -270,6 +274,9 @@ SMESH_Algo::GetUsedHypothesis(SMESH_Mesh &         aMesh,
     if ( ignoreAuxiliary && _usedHypList.size() > 1 )
       me->_usedHypList.clear(); //only one compatible hypothesis allowed
   }
+  if ( _usedHypList == savedHyps )
+    savedHyps.swap( me->_usedHypList );
+
   return _usedHypList;
 }
 
@@ -287,9 +294,16 @@ SMESH_Algo::GetAppliedHypothesis(SMESH_Mesh &         aMesh,
                                  const bool           ignoreAuxiliary) const
 {
   SMESH_Algo* me = const_cast< SMESH_Algo* >( this );
+
+  std::list<const SMESHDS_Hypothesis *> savedHyps; // don't delete the list if 
+  savedHyps.swap( me->_appliedHypList );           // it does not change (#16578)
+
   me->_appliedHypList.clear();
   if ( const SMESH_HypoFilter* filter = GetCompatibleHypoFilter( ignoreAuxiliary ))
     aMesh.GetHypotheses( aShape, *filter, me->_appliedHypList, false );
+
+  if ( _appliedHypList == savedHyps )
+    savedHyps.swap( me->_appliedHypList );
 
   return _appliedHypList;
 }

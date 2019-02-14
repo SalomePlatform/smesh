@@ -7394,16 +7394,16 @@ void SMESH_MeshEditor_i::MakePolyLine(SMESH::ListOfPolySegments& theSegments,
   }
   else if ( theGroupName[0] ) // find/create a group of segments
   {
-    SMESH_Mesh::GroupIteratorPtr grpIt = myMesh->GetGroups();
-    while ( !groupDS && grpIt->more() )
-    {
-      SMESH_Group* group = grpIt->next();
-      if ( group->GetGroupDS()->GetType() == SMDSAbs_Edge &&
-           strcmp( group->GetName(), theGroupName ) == 0 )
-      {
-        groupDS = dynamic_cast< SMESHDS_Group* >( group->GetGroupDS() );
-      }
-    }
+    // SMESH_Mesh::GroupIteratorPtr grpIt = myMesh->GetGroups();
+    // while ( !groupDS && grpIt->more() )
+    // {
+    //   SMESH_Group* group = grpIt->next();
+    //   if ( group->GetGroupDS()->GetType() == SMDSAbs_Edge &&
+    //        strcmp( group->GetName(), theGroupName ) == 0 )
+    //   {
+    //     groupDS = dynamic_cast< SMESHDS_Group* >( group->GetGroupDS() );
+    //   }
+    // }
     if ( !groupDS )
     {
       SMESH::SMESH_Group_var groupVar = myMesh_i->CreateGroup( SMESH::EDGE, theGroupName );
