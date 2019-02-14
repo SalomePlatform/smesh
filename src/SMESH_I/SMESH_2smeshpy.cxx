@@ -1098,9 +1098,21 @@ void _pyGen::Process( const Handle(_pyCommand)& theCommand )
   // Concatenate( [mesh1, ...], ... )
   else if ( method == "Concatenate" || method == "ConcatenateWithGroups")
   {
+    // OLD IDL: ( meshes, uniteGroups, toMerge, tol )
+    // IDL: ( meshes, uniteGroups, toMerge, tol, meshToAppendTo )
+    // PY:  ( meshes, uniteGroups, toMerge, tol, allGroups=False, name="", meshToAppendTo=None )
+    _pyID appendMesh = theCommand->GetArg( 5 );
     if ( method == "ConcatenateWithGroups" ) {
       theCommand->SetMethod( "Concatenate" );
-      theCommand->SetArg( theCommand->GetNbArgs() + 1, "True" );
+      theCommand->SetArg( 5, "True" );
+    }
+    else {
+      theCommand->SetArg( 5, "False" );
+    }
+    if ( !appendMesh.IsEmpty() && appendMesh != "None" )
+    {
+      appendMesh.Insert( 1, "meshToAppendTo=" );
+      theCommand->SetArg( theCommand->GetNbArgs() + 1, appendMesh );
     }
     Handle(_pyMesh) mesh = new _pyMesh( theCommand, theCommand->GetResultValue() );
     AddObject( mesh );
@@ -2219,7 +2231,7 @@ void _pyMesh::Flush()
   list < Handle(_pyCommand) >::iterator cmd;
 
   // try to convert algo addition like this:
-  // mesh.AddHypothesis(geom, ALGO ) --> ALGO = mesh.Algo()
+  // mesh.AddHypothesis( geom, ALGO ) --> ALGO = mesh.Algo()
   for ( cmd = myAddHypCmds.begin(); cmd != myAddHypCmds.end(); ++cmd )
   {
     Handle(_pyCommand) addCmd = *cmd;
