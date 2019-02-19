@@ -29,6 +29,7 @@
 
 #include "SMESH_TypeDefs.hxx"
 
+#include <TopoDS_Face.hxx>
 #include <BRepMesh_DataStructureOfDelaun.hxx>
 
 /*!

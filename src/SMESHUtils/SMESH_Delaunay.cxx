@@ -32,6 +32,8 @@
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepMesh_Delaun.hxx>
 
+#include <Basics_OCCTVersion.hxx>
+
 //================================================================================
 /*!
  * \brief Construct a Delaunay triangulation of given boundary nodes
@@ -82,7 +84,11 @@ SMESH_Delaunay::SMESH_Delaunay(const std::vector< const UVPtStructVec* > & bound
   _bndNodes.resize( nbP );
 
   // fill boundary points
+#if OCC_VERSION_LARGE <= 0x07030000
   BRepMesh::Array1OfVertexOfDelaun bndVert( 1, 1 + nbP );
+#else
+  IMeshData::Array1OfVertexOfDelaun bndVert( 1, 1 + nbP );
+#endif
   BRepMesh_Vertex v( 0, 0, BRepMesh_Frontier );
   for ( size_t iW = 0; iW < boundaryNodes.size(); ++iW )
   {
@@ -218,7 +224,11 @@ const BRepMesh_Triangle* SMESH_Delaunay::FindTriangle( const gp_XY&             
     gp_XY seg = uv - gc;
 
     tria->Edges( linkIDs, ori );
+#if OCC_VERSION_LARGE <= 0x07030000
     int triaID = _triaDS->IndexOf( *tria );
+#else
+    int triaID = tria - & ( _triaDS->GetElement( 0 ));
+#endif
     tria = 0;
 
     for ( int i = 0; i < 3; ++i )
@@ -262,8 +272,13 @@ const BRepMesh_Triangle* SMESH_Delaunay::GetTriangleNear( int iBndNode )
 {
   int nodeIDs[3];
   int nbNbNodes = _bndNodes.size();
+#if OCC_VERSION_LARGE <= 0x07030000
   const BRepMesh::ListOfInteger & linkIds = _triaDS->LinksConnectedTo( iBndNode + 1 );
   BRepMesh::ListOfInteger::const_iterator iLink = linkIds.cbegin();
+#else
+  const IMeshData::ListOfInteger & linkIds = _triaDS->LinksConnectedTo( iBndNode + 1 );
+  IMeshData::ListOfInteger::const_iterator iLink = linkIds.cbegin();
+#endif
   for ( ; iLink != linkIds.cend(); ++iLink )
   {
     const BRepMesh_PairOfIndex & triaIds = _triaDS->ElementsConnectedTo( *iLink );
