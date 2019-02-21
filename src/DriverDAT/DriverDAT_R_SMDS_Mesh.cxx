@@ -50,8 +50,13 @@ Driver_Mesh::Status DriverDAT_R_SMDS_Mesh::Perform()
   /****************************************************************************
    *                      OUVERTURE DU FICHIER EN LECTURE                      *
    ****************************************************************************/
+#if defined(WIN32) && defined(UNICODE)
+  std::wstring file2Read = Kernel_Utils::utf8_decode_s(myFile);
+  FILE* aFileId = _wfopen(file2Read.c_str(), L"r");
+#else
   char *file2Read = (char *)myFile.c_str();
   FILE* aFileId = fopen(file2Read, "r");
+#endif
   if ( !aFileId ) {
     fprintf(stderr, ">> ERREUR : ouverture du fichier %s \n", file2Read);
     return DRS_FAIL;

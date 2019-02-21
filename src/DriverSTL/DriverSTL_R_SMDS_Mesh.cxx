@@ -238,7 +238,12 @@ Driver_Mesh::Status DriverSTL_R_SMDS_Mesh::readAscii(SMESH_File& theFile) const
   theFile.close();
 
   // Open the file
-  FILE* file = fopen( myFile.c_str(),"r");
+#if defined(WIN32) && defined(UNICODE)
+  std::wstring aFile = Kernel_Utils::utf8_decode_s(myFile);
+  FILE* file = _wfopen( aFile.c_str(), L"r");
+#else
+  FILE* file = fopen(myFile.c_str(), "r");  
+#endif  
 
   // count the number of lines
   Standard_Integer nbLines = 0;

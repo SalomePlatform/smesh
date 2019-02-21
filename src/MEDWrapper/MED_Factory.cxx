@@ -92,10 +92,10 @@ namespace MED
   {
 #ifdef WIN32
 #ifdef UNICODE
-	size_t length = strlen(fileName.c_str()) + sizeof(char);
-	wchar_t* path = new wchar_t[length];
-	memset(path, '\0', length);
-	mbstowcs(path, fileName.c_str(), length);
+	int size_needed = MultiByteToWideChar(CP_UTF8, 0, fileName.c_str(), strlen(fileName.c_str()), NULL, 0);
+	wchar_t* path = new wchar_t[size_needed + 1];
+	MultiByteToWideChar(CP_UTF8, 0, fileName.c_str(), strlen(fileName.c_str()), path, size_needed);
+	path[size_needed] = '\0';
 #else
 	cosnt char* path = xmlPath.c_str();
 #endif

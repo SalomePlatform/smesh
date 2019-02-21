@@ -26,7 +26,9 @@
 #include <math.h>
 #include <ctype.h>
 #include "libmesh5.h"
-
+#ifdef WIN32
+#include <windows.h>
+#endif
 
 /*----------------------------------------------------------*/
 /* Defines                                                                                                      */
@@ -190,7 +192,10 @@ int GmfOpenMesh(const char *FilNam, int mod, ...)
         GmfMshSct *msh;
         char *ptr;
         int k;
-
+#if defined(WIN32) && defined(UNICODE)
+		wchar_t* encoded = 0;
+		int size_needed = 0;
+#endif
         if(!GmfIniFlg)
         {
                 for(i=0;i<=MaxMsh;i++)
@@ -262,12 +267,26 @@ int GmfOpenMesh(const char *FilNam, int mod, ...)
                 va_end(VarArg);
 
                 /* Create the name string and open the file */
-
-                if(!(msh->hdl = fopen(msh->FilNam, "rb")))
+#if defined(WIN32) && defined(UNICODE)
+				size_needed = MultiByteToWideChar(CP_UTF8, 0, msh->FilNam, strlen(msh->FilNam), NULL, 0);
+				encoded = malloc((size_needed + 1)*sizeof(wchar_t));
+				MultiByteToWideChar(CP_UTF8, 0, msh->FilNam, strlen(msh->FilNam), encoded, size_needed);
+				encoded[size_needed] = '\0';
+				if (!(msh->hdl = _wfopen(encoded, L"rb")))
+#else
+				if (!(msh->hdl = fopen(msh->FilNam, "rb")))
+#endif
                 {
                         free (msh);
+#if defined(WIN32) && defined(UNICODE)
+						free(encoded);
+#endif
                         return(0);
                 }
+
+#if defined(WIN32) && defined(UNICODE)
+				free(encoded);
+#endif
 
                 /* Read the endian coding tag, the mesh version and the mesh dimension (mandatory kwd) */
 
@@ -401,13 +420,26 @@ int GmfOpenMesh(const char *FilNam, int mod, ...)
                 }
 
                 /* Create the mesh file */
-
+#if defined(WIN32) && defined(UNICODE)
+				size_needed = MultiByteToWideChar(CP_UTF8, 0, msh->FilNam, strlen(msh->FilNam), NULL, 0);
+				encoded = malloc((size_needed + 1) * sizeof(wchar_t));
+				MultiByteToWideChar(CP_UTF8, 0, msh->FilNam, strlen(msh->FilNam), encoded, size_needed);
+				encoded[size_needed] = '\0';
+				if (!(msh->hdl = _wfopen(encoded, L"wb")))
+#else
                 if(!(msh->hdl = fopen(msh->FilNam, "wb")))
+#endif
                 {
                         free (msh);
+#if defined(WIN32) && defined(UNICODE)
+						free(encoded);
+#endif
                         return(0);
                 }
 
+#if defined(WIN32) && defined(UNICODE)
+				free(encoded);
+#endif
                 GmfMshTab[ MshIdx ] = msh;
 
 

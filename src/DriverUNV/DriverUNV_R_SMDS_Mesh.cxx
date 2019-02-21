@@ -102,7 +102,12 @@ Driver_Mesh::Status DriverUNV_R_SMDS_Mesh::Perform()
 {
   Kernel_Utils::Localizer loc;
   Status aResult = DRS_OK;
+#if defined(WIN32) && defined(UNICODE)
+  std::wstring aFile = Kernel_Utils::utf8_decode_s(myFile);
+  std::ifstream in_stream(aFile.c_str());
+#else
   std::ifstream in_stream(myFile.c_str());
+#endif
   try
   {
     {

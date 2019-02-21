@@ -82,16 +82,14 @@ bool SMESH_File::open()
   {
 #ifdef WIN32
 #ifdef UNICODE
-	  const wchar_t* name = Kernel_Utils::decode(_name.data());
+	  std::wstring aName = Kernel_Utils::utf8_decode_s(_name);
+	  const wchar_t* name = aName.c_str();
 #else
 	  char* name = name.data();
 #endif
     _file = CreateFile(name, GENERIC_READ, FILE_SHARE_READ,
                        NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     bool ok = ( _file != INVALID_HANDLE_VALUE );
-#ifdef UNICODE
-	delete name;
-#endif
 #else
     _file = ::open(_name.data(), O_RDONLY );
     bool ok = ( _file >= 0 );
@@ -178,7 +176,12 @@ bool SMESH_File::remove()
   close();
 
   boost::system::error_code err;
+#if defined(WIN32) && defined(UNICODE)
+  std::wstring name = Kernel_Utils::utf8_decode_s(_name);
+  boofs::remove(name.c_str(), err);
+#else
   boofs::remove( _name, err );
+#endif
   _error = err.message();
 
   return !err;
@@ -195,7 +198,12 @@ long SMESH_File::size()
   if ( _size >= 0 ) return _size; // size of an open file
 
   boost::system::error_code err;
+#if defined(WIN32) && defined(UNICODE)
+  std::wstring name = Kernel_Utils::utf8_decode_s(_name);
+  boost::uintmax_t size = boofs::file_size(name.c_str(), err);
+#else
   boost::uintmax_t size = boofs::file_size( _name, err );
+#endif
   _error = err.message();
 
   return !err ? (long) size : -1;
@@ -210,7 +218,13 @@ long SMESH_File::size()
 bool SMESH_File::exists()
 {
   boost::system::error_code err;
-  bool res = boofs::exists( _name, err );
+#if defined(WIN32) && defined(UNICODE)
+  std::wstring name = Kernel_Utils::utf8_decode_s(_name);
+  bool res = boofs::exists(name.c_str(), err);
+#else
+  bool res = boofs::exists(_name, err);
+#endif
+
   _error = err.message();
 
   return err ? false : res;
@@ -225,7 +239,12 @@ bool SMESH_File::exists()
 bool SMESH_File::isDirectory()
 {
   boost::system::error_code err;
+#if defined(WIN32) && defined(UNICODE)
+  std::wstring name = Kernel_Utils::utf8_decode_s(_name);
+  bool res = boofs::is_directory(name.c_str(), err);
+#else
   bool res = boofs::is_directory( _name, err );
+#endif
   _error = err.message();
 
   return err ? false : res;
@@ -302,7 +321,8 @@ bool SMESH_File::openForWriting()
 {
 #ifdef WIN32
 #ifdef UNICODE
-	const wchar_t* name = Kernel_Utils::decode(_name.data());
+	std::wstring aName = Kernel_Utils::utf8_decode_s(_name);
+	const wchar_t* name = aName.c_str();
 #else
 	char* name = name.data();
 #endif
@@ -313,11 +333,7 @@ bool SMESH_File::openForWriting()
                       OPEN_ALWAYS,            // CREATE NEW or OPEN EXISTING
                       FILE_ATTRIBUTE_NORMAL,  // normal file
                       NULL);                  // no attr. template
-#ifdef UNICODE
-  delete name;
-#endif
   return ( _file != INVALID_HANDLE_VALUE );
-
 #else
 
   _file = ::open( _name.c_str(),

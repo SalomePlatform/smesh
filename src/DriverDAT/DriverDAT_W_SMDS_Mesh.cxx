@@ -38,9 +38,14 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
   Status aResult = DRS_OK;
 
   int nbNodes, nbCells;
+#if defined(WIN32) && defined(UNICODE)
+  std::wstring file2Read = Kernel_Utils::utf8_decode_s(myFile);
+  FILE* aFileId = _wfopen(file2Read.c_str(), L"w+");
 
+#else
   char *file2Read = (char *)myFile.c_str();
   FILE* aFileId = fopen(file2Read, "w+");
+#endif
   if ( !aFileId )
   {
     fprintf(stderr, ">> ERREUR : ouverture du fichier %s \n", file2Read);
