@@ -1254,18 +1254,43 @@ gp_XYZ SMESH_ElementSearcherImpl::Project(const gp_Pnt&            point,
   gp_XYZ p = point.XYZ();
   ElementBndBoxTree* ebbLeaf = ebbTree->getLeafAtPoint( p );
   const Bnd_B3d* box = ebbLeaf ? ebbLeaf->getBox() : ebbTree->getBox();
-  double radius = ( box->CornerMax() - box->CornerMin() ).Modulus();
+  gp_XYZ pMin = box->CornerMin(), pMax = box->CornerMax();
+  double radius = Precision::Infinite();
+  if ( ebbLeaf || !box->IsOut( p ))
+  {
+    for ( int i = 1; i <= 3; ++i )
+    {
+      double d = 0.5 * ( pMax.Coord(i) - pMin.Coord(i) );
+      if ( d > Precision::Confusion() )
+        radius = Min( d, radius );
+    }
+    if ( !ebbLeaf )
+      radius /= ebbTree->getHeight( /*full=*/true );
+  }
+  else // p outside of box
+  {
+    for ( int i = 1; i <= 3; ++i )
+    {
+      double d = 0;
+      if ( point.Coord(i) < pMin.Coord(i) )
+        d = pMin.Coord(i) - point.Coord(i);
+      else if ( point.Coord(i) > pMax.Coord(i) )
+        d = point.Coord(i) - pMax.Coord(i);
+      if ( d > Precision::Confusion() )
+        radius = Min( d, radius );
+    }
+  }
 
   ElementBndBoxTree::TElemSeq elems;
   ebbTree->getElementsInSphere( p, radius, elems );
   while ( elems.empty() && radius < 1e100 )
   {
-    radius *= 1.5;
+    radius *= 1.1;
     ebbTree->getElementsInSphere( p, radius, elems );
   }
   gp_XYZ proj, bestProj;
   const SMDS_MeshElement* elem = 0;
-  double minDist = 2 * radius;
+  double minDist = Precision::Infinite();
   ElementBndBoxTree::TElemSeq::iterator e = elems.begin();
   for ( ; e != elems.end(); ++e )
   {
@@ -2347,28 +2372,16 @@ void SMESH_MeshAlgos::Get1DBranches( SMDS_ElemIteratorPtr theEdgeIt,
 
     if ( nbBranches == 2 && !startIsBranchEnd ) // join two branches starting at the same node
     {
-      if ( nodeBranches[0].back() == nodeBranches[1].back() )
-      {
-        // it is a closed branch, keep theStartNode first
-        nodeBranches[0].pop_back();
-        nodeBranches[0].reserve( nodeBranches[0].size() + nodeBranches[1].size() );
-        nodeBranches[0].insert( nodeBranches[0].end(),
-                                nodeBranches[1].rbegin(), nodeBranches[1].rend() );
-        branches[0].reserve( branches[0].size() + branches[1].size() );
-        branches[0].insert( branches[0].end(), branches[1].rbegin(), branches[1].rend() );
-      }
-      else
-      {
-        std::reverse( nodeBranches[0].begin(), nodeBranches[0].end() );
-        nodeBranches[0].pop_back();
-        nodeBranches[0].reserve( nodeBranches[0].size() + nodeBranches[1].size() );
-        nodeBranches[0].insert( nodeBranches[0].end(),
-                                nodeBranches[1].begin(), nodeBranches[1].end() );
+      std::reverse( nodeBranches[0].begin(), nodeBranches[0].end() );
+      nodeBranches[0].pop_back();
+      nodeBranches[0].reserve( nodeBranches[0].size() + nodeBranches[1].size() );
+      nodeBranches[0].insert( nodeBranches[0].end(),
+                              nodeBranches[1].begin(), nodeBranches[1].end() );
 
-        std::reverse( branches[0].begin(), branches[0].end() );
-        branches[0].reserve( branches[0].size() + branches[1].size() );
-        branches[0].insert( branches[0].end(), branches[1].begin(), branches[1].end() );
-      }
+      std::reverse( branches[0].begin(), branches[0].end() );
+      branches[0].reserve( branches[0].size() + branches[1].size() );
+      branches[0].insert( branches[0].end(), branches[1].begin(), branches[1].end() );
+
       nodeBranches[1].clear();
       branches[1].clear();
     }

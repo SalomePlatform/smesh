@@ -60,13 +60,47 @@ namespace
     }
     bool operator<(const Node& other) const { return _triaIndex < other._triaIndex; }
   };
-  typedef boost::container::flat_set< Node > TNodeSet;
+  typedef boost::container::flat_set< Node >                 TriaNodeSet;
 
 }
+/*!
+ * \brief Vertex of a polygon. Together with 2 neighbor Vertices represents a triangle
+ */
+struct Triangulate::PolyVertex
+{
+  SMESH_NodeXYZ _nxyz;
+  size_t        _index;
+  gp_XY         _xy;
+  PolyVertex*   _prev;
+  PolyVertex*   _next;
+
+  void   SetNodeAndNext( const SMDS_MeshNode* n, PolyVertex& v, size_t index );
+  void   GetTriaNodes( const SMDS_MeshNode** nodes, size_t* nodeIndices) const;
+  double TriaArea() const;
+  bool   IsInsideTria( const PolyVertex* v );
+  PolyVertex* Delete();
+
+  struct Compare // compare PolyVertex'es by node
+  {
+    bool operator()(const PolyVertex* a, const PolyVertex* b) const
+    {
+      return ( a->_nxyz.Node() <  b->_nxyz.Node() );
+    }
+  };
+  // set of PolyVertex sorted by mesh node
+  typedef boost::container::flat_set< PolyVertex*, Compare > PVSet;
+};
+
+struct Triangulate::Data
+{
+  std::vector< PolyVertex > _pv;
+  std::vector< size_t >     _nodeIndex;
+  PolyVertex::PVSet         _uniqueNodePV;
+};
 
 struct Triangulate::Optimizer
 {
-  std::vector< TNodeSet > _nodeUsage; // inclusions of a node in triangles
+  std::vector< TriaNodeSet > _nodeUsage; // inclusions of a node in triangles
 
   //================================================================================
   /*!
@@ -107,19 +141,19 @@ struct Triangulate::Optimizer
         size_t i2 = iTria + ( i + 1 ) % 3;
         size_t ind1 = nodeIndices[ i1 ]; // node index in points
         size_t ind2 = nodeIndices[ i2 ];
-        TNodeSet & usage1 = _nodeUsage[ ind1 ]; // triangles using a node
-        TNodeSet & usage2 = _nodeUsage[ ind2 ];
+        TriaNodeSet & usage1 = _nodeUsage[ ind1 ]; // triangles using a node
+        TriaNodeSet & usage2 = _nodeUsage[ ind2 ];
         if ( usage1.size() < 2 ||
              usage2.size() < 2 )
           continue;
 
         // look for another triangle using two nodes
-        TNodeSet::iterator usIt1 = usage1.begin();
+        TriaNodeSet::iterator usIt1 = usage1.begin();
         for ( ; usIt1 != usage1.end(); ++usIt1 )
         {
           if ( usIt1->_triaIndex == iTria )
             continue; // current triangle
-          TNodeSet::iterator usIt2 = usage2.find( *usIt1 );
+          TriaNodeSet::iterator usIt2 = usage2.find( *usIt1 );
           if ( usIt2 == usage2.end() )
             continue; // no common _triaIndex in two usages
 
@@ -138,13 +172,13 @@ struct Triangulate::Optimizer
           // swap edge by modifying nodeIndices
 
           nodeIndices[ i2 ] = ind4;
-          _nodeUsage[ ind2 ].erase ({ iTria, i2 - iTria });
           _nodeUsage[ ind4 ].insert({ iTria, i2 - iTria });
+          _nodeUsage[ ind2 ].erase ({ iTria, i2 - iTria });
 
           i1 = usIt1->Index();
           nodeIndices[ i1 ] = ind3;
-          _nodeUsage[ ind1 ].erase ( *usIt1 );
           _nodeUsage[ ind3 ].insert( *usIt1 );
+          _nodeUsage[ ind1 ].erase ( *usIt1 );
 
           --i; // to re-check a current edge
           badness1 = badness3;
@@ -170,16 +204,16 @@ struct Triangulate::Optimizer
                          std::vector< PolyVertex > & points,
                          bool                        checkArea = false )
   {
-    //if ( checkArea )
+    if ( checkArea )
     {
       points[ i2 ]._prev = & points[ i1 ];
       points[ i2 ]._next = & points[ i3 ];
       double a = points[ i2 ].TriaArea();
-      if ( a < 0 )
-        return std::numeric_limits<double>::max();
-      return 1. / a;
+      // if ( a < 0 )
+      //   return std::numeric_limits<double>::max();
+      // return 1. / a;
 
-      if ( points[ i2 ].TriaArea() < 0 )
+      if ( a < 0 )
         return 2;
     }
     const gp_XY & p1 = points[ i1 ]._xy;
@@ -311,11 +345,27 @@ bool Triangulate::PolyVertex::IsInsideTria( const PolyVertex* v )
 bool Triangulate::triangulate( std::vector< const SMDS_MeshNode*>& nodes,
                                const size_t                        nbNodes)
 {
+  std::vector< PolyVertex >&    _pv = _data->_pv;
+  std::vector< size_t >& _nodeIndex = _data->_nodeIndex;
+  PolyVertex::PVSet&  _uniqueNodePV = _data->_uniqueNodePV;
+
   // connect nodes into a ring
   _pv.resize( nbNodes );
   for ( size_t i = 1; i < nbNodes; ++i )
     _pv[i-1].SetNodeAndNext( nodes[i-1], _pv[i], i-1 );
   _pv[ nbNodes-1 ].SetNodeAndNext( nodes[ nbNodes-1 ], _pv[0], nbNodes-1 );
+
+  // assure correctness of PolyVertex::_index as a node can encounter more than once
+  // within a polygon boundary
+  if ( _optimizer && nbNodes > 4 )
+  {
+    _uniqueNodePV.clear();
+    for ( size_t i = 0; i < nbNodes; ++i )
+    {
+      PolyVertex::PVSet::iterator pv = _uniqueNodePV.insert( &_pv[i] ).first;
+      _pv[i]._index = (*pv)->_index;
+    }
+  }
 
   // get a polygon normal
   gp_XYZ normal(0,0,0), p0,v01,v02;
@@ -342,11 +392,16 @@ bool Triangulate::triangulate( std::vector< const SMDS_MeshNode*>& nodes,
     _pv[i]._xy.SetY( axes.YDirection().XYZ() * p );
   }
 
+  // compute minimal triangle area
+  double sumArea = 0;
+  for ( size_t i = 0; i < nbNodes; ++i )
+    sumArea += _pv[i].TriaArea();
+  const double minArea = 1e-6 * sumArea / ( nbNodes - 2 );
+
   // in a loop, find triangles with positive area and having no vertices inside
   int iN = 0, nbTria = nbNodes - 2;
   nodes.resize( nbTria * 3 );
   _nodeIndex.resize( nbTria * 3 );
-  const double minArea = 1e-6;
   PolyVertex* v = &_pv[0], *vi;
   int nbVertices = nbNodes, nbBadTria = 0, isGoodTria;
   while ( nbBadTria < nbVertices )
@@ -430,6 +485,7 @@ bool Triangulate::triangulate( std::vector< const SMDS_MeshNode*>& nodes,
 
 Triangulate::Triangulate( bool optimize ): _optimizer(0)
 {
+  _data = new Data;
   if ( optimize )
     _optimizer = new Optimizer;
 }
@@ -442,6 +498,7 @@ Triangulate::Triangulate( bool optimize ): _optimizer(0)
 
 Triangulate::~Triangulate()
 {
+  delete _data;
   delete _optimizer;
   _optimizer = 0;
 }

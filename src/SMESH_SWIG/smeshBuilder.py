@@ -6300,7 +6300,7 @@ class Mesh(metaclass = MeshMeta):
                 SubMeshOrGroup = [ obj.GetMesh() ]
                 break
             if isinstance( obj, int ):
-                SubMeshOrGroup = self.GetIDSource( SubMeshOrGroup, SMESH.NODE )
+                SubMeshOrGroup = [ self.GetIDSource( SubMeshOrGroup, SMESH.NODE )]
                 unRegister.set( SubMeshOrGroup )
                 break
 

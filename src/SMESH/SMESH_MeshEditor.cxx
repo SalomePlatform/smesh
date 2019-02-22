@@ -7588,35 +7588,37 @@ bool SMESH_MeshEditor::FindFreeBorder (const SMDS_MeshNode*             theFirst
   theNodes.push_back( theSecondNode );
 
   const SMDS_MeshNode *nIgnore = theFirstNode, *nStart = theSecondNode;
-  TIDSortedElemSet foundElems;
+  //TIDSortedElemSet foundElems;
   bool needTheLast = ( theLastNode != 0 );
 
+  vector<const SMDS_MeshNode*> nodes;
+  
   while ( nStart != theLastNode ) {
     if ( nStart == theFirstNode )
       return !needTheLast;
 
-    // find all free border faces sharing form nStart
+    // find all free border faces sharing nStart
 
     list< const SMDS_MeshElement* > curElemList;
     list< const SMDS_MeshNode* >    nStartList;
     SMDS_ElemIteratorPtr invElemIt = nStart->GetInverseElementIterator(SMDSAbs_Face);
     while ( invElemIt->more() ) {
       const SMDS_MeshElement* e = invElemIt->next();
-      if ( e == curElem || foundElems.insert( e ).second ) {
+      //if ( e == curElem || foundElems.insert( e ).second ) // e can encounter twice in border
+      {
         // get nodes
-        int iNode = 0, nbNodes = e->NbNodes();
-        vector<const SMDS_MeshNode*> nodes( nbNodes+1 );
         nodes.assign( SMDS_MeshElement::iterator( e->interlacedNodesIterator() ),
                       SMDS_MeshElement::iterator() );
         nodes.push_back( nodes[ 0 ]);
 
         // check 2 links
+        int iNode = 0, nbNodes = nodes.size() - 1;
         for ( iNode = 0; iNode < nbNodes; iNode++ )
-          if (((nodes[ iNode ] == nStart && nodes[ iNode + 1] != nIgnore ) ||
-               (nodes[ iNode + 1] == nStart && nodes[ iNode ] != nIgnore )) &&
-              ControlFreeBorder( &nodes[ iNode ], e->GetID() ))
+          if ((( nodes[ iNode ] == nStart && nodes[ iNode + 1] != nIgnore ) ||
+               ( nodes[ iNode + 1] == nStart && nodes[ iNode ] != nIgnore )) &&
+              ( ControlFreeBorder( &nodes[ iNode ], e->GetID() )))
           {
-            nStartList.push_back( nodes[ iNode + ( nodes[ iNode ] == nStart ? 1 : 0 )]);
+            nStartList.push_back( nodes[ iNode + ( nodes[ iNode ] == nStart )]);
             curElemList.push_back( e );
           }
       }
@@ -7668,7 +7670,7 @@ bool SMESH_MeshEditor::FindFreeBorder (const SMDS_MeshNode*             theFirst
         else if ( !contNodes[0].empty() && !contNodes[1].empty() ) {
           // choice: clear a worse one
           int iLongest = ( contNodes[0].size() < contNodes[1].size() ? 1 : 0 );
-          int iWorse = ( needTheLast ? 1 - iLongest : iLongest );
+          int   iWorse = ( needTheLast ? 1 - iLongest : iLongest );
           contNodes[ iWorse ].clear();
           contFaces[ iWorse ].clear();
         }
@@ -7682,10 +7684,8 @@ bool SMESH_MeshEditor::FindFreeBorder (const SMDS_MeshNode*             theFirst
       theNodes.pop_back(); // remove nIgnore
       theNodes.pop_back(); // remove nStart
       theFaces.pop_back(); // remove curElem
-      list< const SMDS_MeshNode* >::iterator nIt = cNL->begin();
-      list< const SMDS_MeshElement* >::iterator fIt = cFL->begin();
-      for ( ; nIt != cNL->end(); nIt++ ) theNodes.push_back( *nIt );
-      for ( ; fIt != cFL->end(); fIt++ ) theFaces.push_back( *fIt );
+      theNodes.splice( theNodes.end(), *cNL );
+      theFaces.splice( theFaces.end(), *cFL );
       return true;
 
     } // several continuations found
@@ -8026,6 +8026,10 @@ SMESH_MeshEditor::SewFreeBorder (const SMDS_MeshNode* theBordFirstNode,
     nIt[0] = nSide[0].begin(); eIt[0] = eSide[0].begin();
     nIt[1] = nSide[1].begin(); eIt[1] = eSide[1].begin();
 
+    // element can be split while iterating on border if it has two edges in the border
+    std::map< const SMDS_MeshElement* , const SMDS_MeshElement* > elemReplaceMap;
+    std::map< const SMDS_MeshElement* , const SMDS_MeshElement* >::iterator elemReplaceMapIt;
+
     TElemOfNodeListMap insertMap;
     TElemOfNodeListMap::iterator insertMapIt;
     // insertMap is
@@ -8073,12 +8077,15 @@ SMESH_MeshEditor::SewFreeBorder (const SMDS_MeshNode* theBordFirstNode,
         const SMDS_MeshNode*    nIns = *nIt [ 1 - intoBord ];
         if ( intoBord == 1 ) {
           // move node of the border to be on a link of elem of the side
-          gp_XYZ p1 (n1->X(), n1->Y(), n1->Z());
-          gp_XYZ p2 (n2->X(), n2->Y(), n2->Z());
+          SMESH_NodeXYZ p1( n1 ), p2( n2 );
           double ratio = du / ( param[ 1 ][ i[1] ] - param[ 1 ][ i[1]-1 ]);
           gp_XYZ p = p2 * ( 1 - ratio ) + p1 * ratio;
           GetMeshDS()->MoveNode( nIns, p.X(), p.Y(), p.Z() );
         }
+        elemReplaceMapIt = elemReplaceMap.find( elem );
+        if ( elemReplaceMapIt != elemReplaceMap.end() )
+          elem = elemReplaceMapIt->second;
+
         insertMapIt = insertMap.find( elem );
         bool  notFound = ( insertMapIt == insertMap.end() );
         bool otherLink = ( !notFound && (*insertMapIt).second.front() != n1 );
@@ -8101,8 +8108,10 @@ SMESH_MeshEditor::SewFreeBorder (const SMDS_MeshNode* theBordFirstNode,
             UpdateVolumes(n12, n22, nodeList);
           }
           // 3. find an element appeared on n1 and n2 after the insertion
-          insertMap.erase( elem );
-          elem = findAdjacentFace( n1, n2, 0 );
+          insertMap.erase( insertMapIt );
+          const SMDS_MeshElement* elem2 = findAdjacentFace( n1, n2, 0 );
+          elemReplaceMap.insert( std::make_pair( elem, elem2 ));
+          elem = elem2;
         }
         if ( notFound || otherLink ) {
           // add element and nodes of the side into the insertMap

@@ -141,11 +141,11 @@ namespace
     EdgeLoop() : SMDS_PolygonalFaceOfNodes( std::vector<const SMDS_MeshNode *>() ) {}
     void Clear() { myLinks.clear(); myIsBndConnected = false; myHasPending = false; }
     bool SetConnected() { bool was = myIsBndConnected; myIsBndConnected = true; return !was; }
-    bool Contains( const SMDS_MeshNode* n ) const
+    size_t Contains( const SMDS_MeshNode* n ) const
     {
       for ( size_t i = 0; i < myLinks.size(); ++i )
-        if ( myLinks[i]->myNode1 == n ) return true;
-      return false;
+        if ( myLinks[i]->myNode1 == n ) return i + 1;
+      return 0;
     }
     virtual int NbNodes() const { return myLinks.size(); }
     virtual SMDS_ElemIteratorPtr nodesIterator() const
@@ -223,6 +223,24 @@ namespace
       for ( size_t iE = 0; iE < loop->myLinks.size(); ++iE )
         myLoopOfEdge[ Index( *loop->myLinks[ iE ] )] = 0;
       loop->Clear();
+    }
+    void Join( EdgeLoop& loop1, size_t iAfterConcact,
+               EdgeLoop& loop2, size_t iFromEdge2 )
+    {
+      std::vector< const EdgePart* > linksAfterContact( loop1.myLinks.begin() + iAfterConcact,
+                                                        loop1.myLinks.end() );
+      loop1.myLinks.reserve( loop2.myLinks.size() + loop1.myLinks.size() );
+      loop1.myLinks.resize( iAfterConcact );
+      loop1.myLinks.insert( loop1.myLinks.end(),
+                            loop2.myLinks.begin() + iFromEdge2, loop2.myLinks.end() );
+      loop1.myLinks.insert( loop1.myLinks.end(),
+                            loop2.myLinks.begin(), loop2.myLinks.begin() + iFromEdge2 );
+      loop1.myLinks.insert( loop1.myLinks.end(),
+                            linksAfterContact.begin(), linksAfterContact.end() );
+      loop1.myIsBndConnected = loop2.myIsBndConnected;
+      loop2.Clear();
+      for ( size_t iE = 0; iE < loop1.myLinks.size(); ++iE )
+        myLoopOfEdge[ Index( *loop1.myLinks[ iE ] )] = & loop1;
     }
     size_t    Index( const EdgePart& edge ) const { return &edge - myEdge0; }
     EdgeLoop* GetLoopOf( const EdgePart* edge ) { return myLoopOfEdge[ Index( *edge )]; }
@@ -2558,7 +2576,8 @@ namespace
   //================================================================================
   /*!
    * \brief Remove loops that are not connected to boundary edges of myFace by
-   *        adding edges connecting these loops to the boundary
+   *        adding edges connecting these loops to the boundary.
+   *        Such loops must be removed as they form polygons with ring topology.
    */
   //================================================================================
 
@@ -2607,13 +2626,48 @@ namespace
     while ( prevNbReached < nbReachedLoops );
 
 
-    // add links connecting internal loops with the boundary ones
 
     for ( size_t iL = 0; iL < theLoops.myNbLoops; ++iL )
     {
       EdgeLoop& loop = theLoops.myLoops[ iL ];
-      if ( loop.myIsBndConnected )
+      if ( loop.myIsBndConnected || loop.myLinks.size() == 0 )
         continue;
+
+      if ( loop.myHasPending )
+      {
+        // try to join the loop to another one, with which it contacts at a node
+
+        // look for a node where the loop reverses
+        const EdgePart* edgePrev = loop.myLinks.back();
+        for ( size_t iE = 0; iE < loop.myLinks.size(); edgePrev = loop.myLinks[ iE++ ] )
+        {
+          if ( !edgePrev->IsTwin( *loop.myLinks[ iE ]))
+            continue;
+          const SMDS_MeshNode* reverseNode = edgePrev->myNode2;
+
+          // look for a loop including reverseNode
+          size_t iContactEdge2; // index(+1) of edge starting at reverseNode
+          for ( size_t iL2 = 0; iL2 < theLoops.myNbLoops; ++iL2 )
+          {
+            if ( iL == iL2 )
+              continue;
+            EdgeLoop& loop2 = theLoops.myLoops[ iL2 ];
+            if ( ! ( iContactEdge2 = loop2.Contains( reverseNode )))
+              continue;
+
+            // insert loop2 into the loop
+            theLoops.Join( loop, iE, loop2, iContactEdge2 - 1 );
+            break;
+          }
+          if ( loop.myIsBndConnected )
+            break;
+        }
+
+        if ( loop.myIsBndConnected )
+          continue;
+      }
+
+      // add links connecting internal loops with the boundary ones
 
       // find a pair of closest nodes
       const SMDS_MeshNode *closestNode1, *closestNode2;
@@ -2689,7 +2743,7 @@ namespace
 
     while ( !theLoops.AllEdgesUsed() )
     {
-      theLoops.AddNewLoop();
+      EdgeLoop& loop = theLoops.AddNewLoop();
 
       // add 1st edge to a new loop
       size_t i1;
@@ -2720,7 +2774,7 @@ namespace
         // choose among candidates
         if ( theLoops.myCandidates.size() == 0 )
         {
-          theLoops.GetLoopOf( lastEdge )->myHasPending = true;
+          loop.myHasPending = bool( twinEdge );
           lastEdge = twinEdge;
         }
         else if ( theLoops.myCandidates.size() == 1 )
@@ -2750,6 +2804,10 @@ namespace
         twinEdge = getTwin( lastEdge );
       }
       while ( lastNode != firstNode );
+
+
+      if ( twinEdge == & myLinks[ i1 ])
+        loop.myHasPending = true;
 
     } // while ( !theLoops.AllEdgesUsed() )
 

@@ -443,28 +443,12 @@ namespace SMESH_MeshAlgos
 
     bool triangulate( std::vector< const SMDS_MeshNode*>& nodes, const size_t nbNodes );
 
-    /*!
-     * \brief Vertex of a polygon. Together with 2 neighbor Vertices represents a triangle
-     */
-    struct PolyVertex
-    {
-      SMESH_NodeXYZ _nxyz;
-      size_t        _index;
-      gp_XY         _xy;
-      PolyVertex*   _prev;
-      PolyVertex*   _next;
-
-      void   SetNodeAndNext( const SMDS_MeshNode* n, PolyVertex& v, size_t index );
-      void   GetTriaNodes( const SMDS_MeshNode** nodes, size_t* nodeIndices) const;
-      double TriaArea() const;
-      bool   IsInsideTria( const PolyVertex* v );
-      PolyVertex* Delete();
-    };
+    struct PolyVertex;
     struct Optimizer;
+    struct Data;
 
-    std::vector< PolyVertex > _pv;
-    std::vector< size_t >     _nodeIndex;
-    Optimizer*                _optimizer;
+    Data*      _data;
+    Optimizer* _optimizer;
   };
 
   // structure used in MakePolyLine() to define a cutting plane

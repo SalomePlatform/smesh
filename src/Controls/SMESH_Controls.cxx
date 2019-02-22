@@ -4242,6 +4242,7 @@ struct ElementsOnShape::Classifier
   TopAbs_ShapeEnum ShapeType() const { return myShape.ShapeType(); }
   const TopoDS_Shape& Shape() const  { return myShape; }
   const Bnd_B3d* GetBndBox() const   { return & myBox; }
+  double Tolerance() const           { return myTol; }
   bool IsChecked()                   { return myFlags & theIsCheckedFlag; }
   bool IsSetFlag( int flag ) const   { return myFlags & flag; }
   void SetChecked( bool is ) { is ? SetFlag( theIsCheckedFlag ) : UnsetFlag( theIsCheckedFlag ); }
@@ -4458,10 +4459,9 @@ bool ElementsOnShape::IsSatisfy (const SMDS_MeshElement* elem)
     myOctree = new OctreeClassifier( myWorkClassifiers );
   }
 
-  SMDS_ElemIteratorPtr aNodeItr = elem->nodesIterator();
-  while (aNodeItr->more() && (isSatisfy == myAllNodesFlag))
+  for ( int i = 0, nb = elem->NbNodes(); i < nb  && (isSatisfy == myAllNodesFlag); ++i )
   {
-    SMESH_TNodeXYZ aPnt( aNodeItr->next() );
+    SMESH_TNodeXYZ aPnt( elem->GetNode( i ));
     centerXYZ += aPnt;
 
     isNodeOut = true;
@@ -4816,7 +4816,8 @@ void ElementsOnShape::OctreeClassifier::buildChildrenData()
   for ( int i = 0; i < nbChildren(); i++ )
   {
     OctreeClassifier* child = static_cast<OctreeClassifier*>( myChildren[ i ]);
-    child->myIsLeaf = ( child->myClassifiers.size() <= 5  );
+    child->myIsLeaf = ( child->myClassifiers.size() <= 5  ||
+                        child->maxSize() < child->myClassifiers[0]->Tolerance() );
   }
 }
 

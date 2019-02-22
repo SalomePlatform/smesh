@@ -52,7 +52,17 @@ namespace
     int                     mySrcPntInd; //!< start point index
     TIDSortedElemSet        myElemSet, myAvoidSet;
 
-    Path(): myLength(0.0), myFace(0) {}
+    Path(const SMDS_MeshElement* face=0, int srcInd=-1):
+      myLength(0.0), myFace(face), mySrcPntInd( srcInd ) {}
+
+    void CopyNoPoints( const Path& other );
+
+    bool Extend( const gp_XYZ& plnNorm, const gp_XYZ& plnOrig, std::vector< Path > * paths = 0 );
+
+    bool SetCutAtCorner( const SMESH_NodeXYZ&    cornerNode,
+                         const gp_XYZ&           plnNorm,
+                         const gp_XYZ&           plnOrig,
+                         std::vector< Path >*    paths);
 
     bool SetCutAtCorner( const SMESH_NodeXYZ&    cornerNode,
                          const SMDS_MeshElement* face,
@@ -60,8 +70,6 @@ namespace
                          const gp_XYZ&           plnOrig );
 
     void AddPoint( const gp_XYZ& p );
-
-    bool Extend( const gp_XYZ& plnNorm, const gp_XYZ& plnOrig );
 
     bool ReachSamePoint( const Path& other );
 
@@ -82,6 +90,25 @@ namespace
 
   //================================================================================
   /*!
+   * \brief Copy data except points
+   */
+  //================================================================================
+
+  void Path::CopyNoPoints( const Path& other )
+  {
+    myLength    = other.myLength;
+    mySrcPntInd = other.mySrcPntInd;
+    myFace      = other.myFace;
+    myNode1     = other.myNode1;
+    myNode2     = other.myNode2;
+    myNodeInd1  = other.myNodeInd1;
+    myNodeInd2  = other.myNodeInd2;
+    myDot1      = other.myDot1;
+    myDot2      = other.myDot2;
+  }
+
+  //================================================================================
+  /*!
    * \brief Remove a path from a vector
    */
   //================================================================================
@@ -93,21 +120,69 @@ namespace
       size_t j = paths.size() - 1; // last item to be removed
       if ( i < j )
       {
+        paths[ i ].CopyNoPoints ( paths[ j ]);
         paths[ i ].myPoints.swap( paths[ j ].myPoints );
-        paths[ i ].myLength    = paths[ j ].myLength;
-        paths[ i ].mySrcPntInd = paths[ j ].mySrcPntInd;
-        paths[ i ].myFace      = paths[ j ].myFace;
-        paths[ i ].myNode1     = paths[ j ].myNode1;
-        paths[ i ].myNode2     = paths[ j ].myNode2;
-        paths[ i ].myNodeInd1  = paths[ j ].myNodeInd1;
-        paths[ i ].myNodeInd2  = paths[ j ].myNodeInd2;
-        paths[ i ].myDot1      = paths[ j ].myDot1;
-        paths[ i ].myDot2      = paths[ j ].myDot2;
       }
     }
     paths.pop_back();
     if ( i > 0 )
       --i;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Try to extend self by a point located at a node.
+   *        Return a success flag.
+   */
+  //================================================================================
+
+  bool Path::SetCutAtCorner( const SMESH_NodeXYZ&  cornerNode,
+                             const gp_XYZ&         plnNorm,
+                             const gp_XYZ&         plnOrig,
+                             std::vector< Path > * paths )
+  {
+    bool ok = false;
+    const bool isContinuation = myFace; // extend this path or find all possible paths?
+    const SMDS_MeshElement* lastFace = myFace;
+
+    myAvoidSet.clear();
+
+    SMDS_ElemIteratorPtr fIt = cornerNode->GetInverseElementIterator(SMDSAbs_Face);
+    while ( fIt->more() )
+    {
+      Path path( lastFace, mySrcPntInd );
+      if ( !path.SetCutAtCorner( cornerNode, fIt->next(), plnNorm, plnOrig ))
+        continue;
+
+      if ( !myAvoidSet.insert( path.myNode1.Node() ).second ||
+           !myAvoidSet.insert( path.myNode2.Node() ).second )
+        continue;
+
+      if ( isContinuation )
+      {
+        if ( ok ) // non-manifold continuation
+        {
+          path.myPoints = myPoints;
+          path.myLength = myLength;
+          path.AddPoint( cornerNode );
+          paths->push_back( path );
+        }
+        else
+        {
+          double len = myLength;
+          this->CopyNoPoints( path );
+          this->myLength = len;
+          this->AddPoint( path.myPoints.back() );
+        }
+      }
+      else
+      {
+        paths->push_back( path );
+      }
+      ok = true;
+    }
+
+    return ok;
   }
 
   //================================================================================
@@ -169,11 +244,14 @@ namespace
    * \brief Try to find the next point
    *  \param [in] plnNorm - cutting plane normal
    *  \param [in] plnOrig - cutting plane origin
+   *  \param [in] paths - all paths
    */
   //================================================================================
 
-  bool Path::Extend( const gp_XYZ& plnNorm, const gp_XYZ& plnOrig )
+  bool Path::Extend( const gp_XYZ& plnNorm, const gp_XYZ& plnOrig, std::vector< Path > * paths )
   {
+    bool ok = false;
+
     int nodeInd3 = ( myNodeInd1 + 1 ) % myFace->NbCornerNodes();
     if ( myNodeInd2 == nodeInd3 )
       nodeInd3 = ( myNodeInd1 + 2 ) % myFace->NbCornerNodes();
@@ -195,20 +273,13 @@ namespace
     }
     else if ( dot3 == 0. )
     {
-      SMDS_ElemIteratorPtr fIt = node3._node->GetInverseElementIterator(SMDSAbs_Face);
-      while ( fIt->more() )
-        if ( SetCutAtCorner( node3, fIt->next(), plnNorm, plnOrig ))
-          return true;
-      return false;
+      ok = SetCutAtCorner( node3, plnNorm, plnOrig, paths );
+      return ok;
     }
     else if ( myDot2 == 0. )
     {
-      SMESH_NodeXYZ node2 = myNode2; // copy as myNode2 changes in SetCutAtCorner()
-      SMDS_ElemIteratorPtr fIt = node2._node->GetInverseElementIterator(SMDSAbs_Face);
-      while ( fIt->more() )
-        if ( SetCutAtCorner( node2, fIt->next(), plnNorm, plnOrig ))
-          return true;
-      return false;
+      ok = SetCutAtCorner( myNode2, plnNorm, plnOrig, paths );
+      return ok;
     }
 
     double r = Abs( myDot1 / ( myDot2 - myDot1 ));
@@ -216,10 +287,32 @@ namespace
 
     myAvoidSet.clear();
     myAvoidSet.insert( myFace );
-    myFace = SMESH_MeshAlgos::FindFaceInSet( myNode1._node, myNode2._node,
-                                             myElemSet,   myAvoidSet,
-                                             &myNodeInd1, &myNodeInd2 );
-    return myFace;
+    const SMDS_MeshElement* nextFace;
+    int ind1, ind2;
+    while (( nextFace = SMESH_MeshAlgos::FindFaceInSet( myNode1._node, myNode2._node,
+                                                        myElemSet, myAvoidSet,
+                                                        &ind1, &ind2 )))
+    {
+      if ( ok ) // non-manifold continuation
+      {
+        paths->push_back( *this );
+        paths->back().myFace = nextFace;
+        paths->back().myNodeInd1 = ind1;
+        paths->back().myNodeInd2 = ind2;
+      }
+      else
+      {
+        myFace = nextFace;
+        myNodeInd1 = ind1;
+        myNodeInd2 = ind2;
+      }
+      ok = true;
+      if ( !paths )
+        break;
+      myAvoidSet.insert( nextFace );
+    }
+
+    return ok;
   }
 
   //================================================================================
@@ -263,6 +356,13 @@ namespace
     {
       SMESH_MeshAlgos::PolySegment& polySeg = mySegments[ iSeg ];
 
+      if ( ( polySeg.myXYZ[0] - polySeg.myXYZ[1] ).SquareModulus() == 0 )
+      {
+        myPaths[ iSeg ].AddPoint( polySeg.myXYZ[0] );
+        myPaths[ iSeg ].AddPoint( polySeg.myXYZ[1] );
+        return;
+      }
+
       // the cutting plane
       gp_XYZ plnNorm = ( polySeg.myXYZ[0] - polySeg.myXYZ[1] ) ^ polySeg.myVector.XYZ();
       gp_XYZ plnOrig = polySeg.myXYZ[1];
@@ -275,14 +375,13 @@ namespace
 
       for ( int iP = 0; iP < 2; ++iP ) // loop on the polySeg end points
       {
-        Path path;
-        path.mySrcPntInd = iP;
+        Path path( 0, iP );
         size_t nbPaths = paths.size();
 
         if ( polySeg.myFace[ iP ]) // the end point lies on polySeg.myFace[ iP ]
         {
           // check coincidence of polySeg.myXYZ[ iP ] with nodes
-          const double tol = 1e-20;
+          const double tol = 1e-17;
           SMESH_NodeXYZ nodes[4];
           for ( int i = 0; i < 3 &&  !polySeg.myNode1[ iP ]; ++i )
           {
@@ -292,6 +391,11 @@ namespace
           }
           nodes[ 3 ] = nodes[ 0 ];
 
+          double dot[ 4 ];
+          for ( int i = 0; i < 3; ++i )
+            dot[ i ] = plnNorm * ( nodes[ i ] - plnOrig );
+          dot[ 3 ] = dot[ 0 ];
+
           // check coincidence of polySeg.myXYZ[ iP ] with edges
           for ( int i = 0; i < 3 &&  !polySeg.myNode1[ iP ]; ++i )
           {
@@ -300,16 +404,35 @@ namespace
             {
               polySeg.myNode1[ iP ] = nodes[ i     ].Node();
               polySeg.myNode2[ iP ] = nodes[ i + 1 ].Node();
+
+              int i3 = ( i + 2 ) % 3;
+              if ( dot[ i   ] * dot [ i3 ] > 0 &&
+                   dot[ i+1 ] * dot [ i3 ] > 0 ) // point iP is inside a neighbor triangle
+              {
+                path.myAvoidSet.insert( polySeg.myFace[ iP ]);
+                const SMDS_MeshElement* face2 = 
+                  SMESH_MeshAlgos::FindFaceInSet( polySeg.myNode1[ iP ],
+                                                  polySeg.myNode2[ iP ],
+                                                  path.myElemSet,
+                                                  path.myAvoidSet );
+                if ( face2 )
+                  polySeg.myFace[ iP ] = face2;
+                else
+                  ;// ??
+                for ( int i = 0; i < 3; ++i )
+                {
+                  nodes[ i ] = polySeg.myFace[ iP ]->GetNode( i );
+                  dot[ i ] = plnNorm * ( nodes[ i ] - plnOrig );
+                }
+                dot[ 3 ] = dot[ 0 ];
+                polySeg.myNode1[ iP ] = polySeg.myNode2[ iP ] = 0;
+                break;
+              }
             }
           }
 
           if ( !polySeg.myNode1[ iP ] ) // polySeg.myXYZ[ iP ] is within polySeg.myFace[ iP ]
           {
-            double dot[ 4 ];
-            for ( int i = 0; i < 3; ++i )
-              dot[ i ] = plnNorm * ( nodes[ i ] - plnOrig );
-            dot[ 3 ] = dot[ 0 ];
-
             int iCut = 0; // index of a cut edge
             if      ( dot[ 1 ] * dot[ 2 ] < 0. ) iCut = 1;
             else if ( dot[ 2 ] * dot[ 3 ] < 0. ) iCut = 2;
@@ -364,26 +487,44 @@ namespace
             path.AddPoint( polySeg.myXYZ[ iP ]);
             path.myAvoidSet.insert( path.myFace );
             paths.push_back( path );
+            std::swap( polySeg.myNode1[ iP ], polySeg.myNode2[ iP ]);
           }
           if ( nbPaths == paths.size() )
             throw SALOME_Exception ( SMESH_Comment("No face edge found by point ") << iP+1
                                      << " in a PolySegment " << iSeg );
-        }
-        else if ( polySeg.myNode1[ iP ] ) // the end point is at a node
-        {
-          std::set<const SMDS_MeshNode* > nodes;
-          SMDS_ElemIteratorPtr fIt = polySeg.myNode1[ iP ]->GetInverseElementIterator(SMDSAbs_Face);
-          while ( fIt->more() )
+
+          if ( path.myDot1 == 0. &&
+               path.myDot2 == 0. &&
+               paths.size() - nbPaths >= 2 ) // use a face non-parallel to the plane
           {
-            path.myPoints.clear();
-            if ( path.SetCutAtCorner( polySeg.myNode1[ iP ], fIt->next(), plnNorm, plnOrig ))
+            const SMDS_MeshElement* goodFace = 0;
+            for ( size_t j = nbPaths; j < paths.size(); ++j )
             {
-              if (( path.myDot1 * path.myDot2 != 0 ) ||
-                  ( nodes.insert( path.myDot1 == 0 ? path.myNode1._node : path.myNode2._node ).second ))
-                paths.push_back( path );
+              path = paths[j];
+              if ( path.Extend( plnNorm, plnOrig ))
+                goodFace = paths[j].myFace;
+              else
+                paths[j].myFace = 0;
             }
+            if ( !goodFace )
+              throw SALOME_Exception ( SMESH_Comment("Cant move from point ") << iP+1
+                                       << " of a PolySegment " << iSeg );
+            for ( size_t j = nbPaths; j < paths.size(); ++j )
+              if ( !paths[j].myFace )
+              {
+                paths[j].myFace = goodFace;
+                paths[j].myNodeInd1 = goodFace->GetNodeIndex( paths[j].myNode1.Node() );
+                paths[j].myNodeInd2 = goodFace->GetNodeIndex( paths[j].myNode2.Node() );
+              }
           }
         }
+
+        else if ( polySeg.myNode1[ iP ] ) // the end point is at a node
+        {
+          path.myFace = 0;
+          path.SetCutAtCorner( polySeg.myNode1[ iP ], plnNorm, plnOrig, &paths );
+        }
+
 
         // look for a one-segment path
         for ( size_t i = 0; i < nbPaths; ++i )
@@ -394,7 +535,9 @@ namespace
               myPaths[ iSeg ].myPoints.push_back( paths[j].myPoints[0] );
               paths.clear();
             }
-      }
+
+      }  // loop on the polySeg end points to initialize all possible paths
+
 
       // 2) extend paths and compose the shortest one connecting the two points
 
@@ -405,8 +548,8 @@ namespace
         for ( size_t i = 0; i < paths.size(); ++i )
         {
           Path& path = paths[ i ];
-          if ( !path.Extend( plnNorm, plnOrig ) ||        // path reached a mesh boundary
-               path.myLength > myPaths[ iSeg ].myLength ) // path is longer than others
+          if ( !path.Extend( plnNorm, plnOrig, &paths ) || // path reached a mesh boundary
+               path.myLength > myPaths[ iSeg ].myLength )  // path is longer than others
           {
             Path::Remove( paths, i );
             continue;
@@ -428,8 +571,10 @@ namespace
                                   paths[j].myPoints.rbegin(),
                                   paths[j].myPoints.rend() );
               }
+              if ( i < j ) std::swap( i, j );
               Path::Remove( paths, i );
               Path::Remove( paths, j );
+              break;
             }
           }
         }
@@ -504,7 +649,7 @@ void SMESH_MeshAlgos::MakePolyLine( SMDS_Mesh*                            theMes
     gp_XYZ plnNorm = ( p1 - p2 ) ^ polySeg.myVector.XYZ();
 
     isVectorOK[ iSeg ] = ( plnNorm.Modulus() > std::numeric_limits<double>::min() );
-    if ( !isVectorOK[ iSeg ])
+    if ( !isVectorOK[ iSeg ] && ( p1 - p2 ).SquareModulus() > 0. )
     {
       gp_XYZ pMid = 0.5 * ( p1 + p2 );
       const SMDS_MeshElement* face;
@@ -512,14 +657,35 @@ void SMESH_MeshAlgos::MakePolyLine( SMDS_Mesh*                            theMes
       polySeg.myVector       = polySeg.myMidProjPoint.XYZ() - pMid;
 
       gp_XYZ faceNorm;
-      SMESH_MeshAlgos::FaceNormal( face, faceNorm );
+      SMESH_MeshAlgos::FaceNormal( face, faceNorm, /*normalized=*/false );
 
-      if ( polySeg.myVector.Magnitude() < Precision::Confusion() ||
-           polySeg.myVector * faceNorm  < Precision::Confusion() )
+      const double tol = Precision::Confusion();
+      if ( polySeg.myVector.Magnitude() < tol || polySeg.myVector * faceNorm  < tol )
       {
         polySeg.myVector = faceNorm;
         polySeg.myMidProjPoint = pMid + faceNorm * ( p1 - p2 ).Modulus() * planarCoef;
       }
+      plnNorm = ( p1 - p2 ) ^ polySeg.myVector.XYZ();
+      if ( plnNorm.SquareModulus() == 0 ) // p1-p2 perpendicular to mesh
+      {
+        double radius = faceNorm.Modulus();
+        std::vector< const SMDS_MeshElement* > foundElems;
+        while ( plnNorm.SquareModulus() == 0  &&  radius < 1e200 )
+        {
+          foundElems.clear();
+          searcher->GetElementsInSphere( p1, radius, SMDSAbs_Face, foundElems );
+          searcher->GetElementsInSphere( p2, radius, SMDSAbs_Face, foundElems );
+          radius *= 2;
+          polySeg.myVector.SetCoord( 0,0,0 );
+          for ( size_t i = 0; i < foundElems.size(); ++i )
+          {
+            SMESH_MeshAlgos::FaceNormal( foundElems[i], faceNorm );
+            polySeg.myVector += faceNorm / foundElems.size();
+          }
+          plnNorm = ( p1 - p2 ) ^ polySeg.myVector.XYZ();
+        }
+      }
+      
     }
     else
     {

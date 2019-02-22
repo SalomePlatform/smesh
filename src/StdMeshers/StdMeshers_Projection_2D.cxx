@@ -1694,7 +1694,7 @@ bool StdMeshers_Projection_2D::Compute(SMESH_Mesh& theMesh, const TopoDS_Shape& 
   if ( !projDone || is1DComputed )
     // ----------------------------------------------------------------
     // The mapper can create distorted faces by placing nodes out of the FACE
-    // boundary, also bad face can be created if EDGEs already discretized
+    // boundary, also bad faces can be created if EDGEs already discretized
     // --> fix bad faces by smoothing
     // ----------------------------------------------------------------
     if ( helper.IsDistorted2D( tgtSubMesh, /*checkUV=*/false, &helper ))
