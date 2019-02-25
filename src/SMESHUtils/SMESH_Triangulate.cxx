@@ -80,15 +80,13 @@ struct Triangulate::PolyVertex
   bool   IsInsideTria( const PolyVertex* v );
   PolyVertex* Delete();
 
-  struct Compare // compare PolyVertex'es by node
-  {
-    bool operator()(const PolyVertex* a, const PolyVertex* b) const
-    {
+  // compare PolyVertex'es by node
+  bool operator()(const PolyVertex* a, const PolyVertex* b) const 
+	{
       return ( a->_nxyz.Node() <  b->_nxyz.Node() );
     }
-  };
   // set of PolyVertex sorted by mesh node
-  typedef boost::container::flat_set< PolyVertex*, Compare > PVSet;
+  typedef boost::container::flat_set< PolyVertex*, PolyVertex > PVSet;
 };
 
 struct Triangulate::Data
