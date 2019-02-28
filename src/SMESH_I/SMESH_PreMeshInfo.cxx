@@ -456,6 +456,7 @@ bool SMESH_PreMeshInfo::readPreInfoFromHDF()
                                                mapOfNames );
       }
     }
+	infoHdfGroup->CloseOnDisk();
   }
 
   aFile->CloseOnDisk();
