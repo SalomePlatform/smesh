@@ -456,7 +456,7 @@ bool SMESH_PreMeshInfo::readPreInfoFromHDF()
                                                mapOfNames );
       }
     }
-	infoHdfGroup->CloseOnDisk();
+    infoHdfGroup->CloseOnDisk();
   }
 
   aFile->CloseOnDisk();
@@ -841,8 +841,9 @@ void SMESH_PreMeshInfo::FullLoadFromFile() const
   meshDS->Modified();
 
   // load dependent meshes referring/referred via hypotheses
-  mesh.GetSubMesh( mesh.GetShapeToMesh() )->
-    ComputeStateEngine (SMESH_subMesh::SUBMESH_LOADED);
+  SMESH_subMesh* mainSub = mesh.GetSubMesh( mesh.GetShapeToMesh() );
+  mainSub->ComputeStateEngine (SMESH_subMesh::SUBMESH_RESTORED); // #16648 
+  mainSub->ComputeStateEngine (SMESH_subMesh::SUBMESH_LOADED);
 
   MYDEBUGOUT( "END FullLoadFromFile()" );
 }

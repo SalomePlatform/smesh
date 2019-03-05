@@ -1235,8 +1235,6 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
     def GetMeshInfo(self, obj):
         """
         Get the mesh statistic.
-        Use :meth:`smeshBuilder.EnumToLong` to get an integer from 
-        an item of :class:`SMESH.EntityType`.
 
         Returns:
                 dictionary { :class:`SMESH.EntityType` - "count of elements" }
@@ -3091,8 +3089,6 @@ class Mesh(metaclass = MeshMeta):
     def GetMeshInfo(self, obj = None):
         """
         Get the mesh statistic.
-        Use :meth:`smeshBuilder.EnumToLong` to get an integer from 
-        an item of :class:`SMESH.EntityType`.
 
         Returns:
                 dictionary { :class:`SMESH.EntityType` - "count of elements" }
@@ -6951,52 +6947,90 @@ class Mesh(metaclass = MeshMeta):
 
     def GetLength(self, elemId=None):
         """
-        Get length of 1D element or sum of lengths of all 1D mesh elements
+        Get length of all given 1D elements or sum length of all 1D mesh elements
 
         Parameters:
-            elemId: mesh element ID (if not defined - sum of length of all 1D elements will be calculated)
+            elemId: either a mesh element ID or a list of IDs or :class:`sub-mesh, group or filter <SMESH.SMESH_IDSource>`. By default sum length of all 1D elements will be calculated.
 
         Returns:
-            element's length value if *elemId* is specified or sum of all 1D mesh elements' lengths otherwise
+            Sum of lengths of given elements
         """
 
         length = 0
         if elemId == None:
             length = self.smeshpyD.GetLength(self)
+        elif isinstance(elemId, SMESH._objref_SMESH_IDSource):
+            length = self.smeshpyD.GetLength(elemId)
+        elif elemId == []:
+            length = 0
+        elif isinstance(elemId, list) and isinstance(elemId[0], SMESH._objref_SMESH_IDSource):
+            for obj in elemId:
+                length += self.smeshpyD.GetLength(obj)
+        elif isinstance(elemId, list) and isinstance(elemId[0], int):
+            unRegister = genObjUnRegister()
+            obj = self.GetIDSource( elemId )
+            unRegister.set( obj )
+            length = self.smeshpyD.GetLength( obj )
         else:
             length = self.FunctorValue(SMESH.FT_Length, elemId)
         return length
 
     def GetArea(self, elemId=None):
         """
-        Get area of 2D element or sum of areas of all 2D mesh elements
-        elemId mesh element ID (if not defined - sum of areas of all 2D elements will be calculated)
+        Get area of given 2D elements or sum area of all 2D mesh elements
+
+        Parameters:
+            elemId: either a mesh element ID or a list of IDs or :class:`sub-mesh, group or filter <SMESH.SMESH_IDSource>`. By default sum area of all 2D elements will be calculated.
 
         Returns:
-            element's area value if *elemId* is specified or sum of all 2D mesh elements' areas otherwise
+            Area of given element's if *elemId* is specified or sum of all 2D mesh elements' areas otherwise
         """
 
         area = 0
         if elemId == None:
             area = self.smeshpyD.GetArea(self)
+        elif isinstance(elemId, SMESH._objref_SMESH_IDSource):
+            area = self.smeshpyD.GetArea(elemId)
+        elif elemId == []:
+            area = 0
+        elif isinstance(elemId, list) and isinstance(elemId[0], SMESH._objref_SMESH_IDSource):
+            for obj in elemId:
+                area += self.smeshpyD.GetArea(obj)
+        elif isinstance(elemId, list) and isinstance(elemId[0], int):
+            unRegister = genObjUnRegister()
+            obj = self.GetIDSource( elemId )
+            unRegister.set( obj )
+            area = self.smeshpyD.GetArea( obj )
         else:
             area = self.FunctorValue(SMESH.FT_Area, elemId)
         return area
 
     def GetVolume(self, elemId=None):
         """
-        Get volume of 3D element or sum of volumes of all 3D mesh elements
+        Get volume of a 3D element or sum of volumes of all 3D mesh elements
 
         Parameters:
-            elemId: mesh element ID (if not defined - sum of volumes of all 3D elements will be calculated)
+            elemId: either a mesh element ID or a list of IDs or :class:`sub-mesh, group or filter <SMESH.SMESH_IDSource>`. By default sum volume of all 3D elements will be calculated.
 
         Returns:
-            element's volume value if *elemId* is specified or sum of all 3D mesh elements' volumes otherwise
+            Sum element's volume value if *elemId* is specified or sum of all 3D mesh elements' volumes otherwise
         """
 
         volume = 0
         if elemId == None:
-            volume = self.smeshpyD.GetVolume(self)
+            volume= self.smeshpyD.GetVolume(self)
+        elif isinstance(elemId, SMESH._objref_SMESH_IDSource):
+            volume= self.smeshpyD.GetVolume(elemId)
+        elif elemId == []:
+            volume = 0
+        elif isinstance(elemId, list) and isinstance(elemId[0], SMESH._objref_SMESH_IDSource):
+            for obj in elemId:
+                volume+= self.smeshpyD.GetVolume(obj)
+        elif isinstance(elemId, list) and isinstance(elemId[0], int):
+            unRegister = genObjUnRegister()
+            obj = self.GetIDSource( elemId )
+            unRegister.set( obj )
+            volume= self.smeshpyD.GetVolume( obj )
         else:
             volume = self.FunctorValue(SMESH.FT_Volume3D, elemId)
         return volume

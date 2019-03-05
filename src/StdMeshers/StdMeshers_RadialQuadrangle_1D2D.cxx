@@ -163,38 +163,45 @@ namespace
       static TEdgeMarker theEdgeMarker;
       return &theEdgeMarker;
     }
-    //! Clear face sumbesh if something happens on edges
+    //! Clear edge sumbesh if something happens on face
     void ProcessEvent(const int          event,
                       const int          eventType,
-                      SMESH_subMesh*     edgeSubMesh,
-                      EventListenerData* data,
+                      SMESH_subMesh*     faceSubMesh,
+                      EventListenerData* edgesHolder,
                       const SMESH_Hypothesis*  /*hyp*/)
     {
-      if ( data && !data->mySubMeshes.empty() && eventType == SMESH_subMesh::ALGO_EVENT)
+      if ( edgesHolder && eventType == SMESH_subMesh::ALGO_EVENT)
       {
-        ASSERT( data->mySubMeshes.front() != edgeSubMesh );
-        SMESH_subMesh* faceSubMesh = data->mySubMeshes.front();
-        faceSubMesh->ComputeStateEngine( SMESH_subMesh::CLEAN );
+        std::list<SMESH_subMesh*>::iterator smIt = edgesHolder->mySubMeshes.begin();
+        for ( ; smIt != edgesHolder->mySubMeshes.end(); ++smIt )
+        {
+          SMESH_subMesh* edgeSM = *smIt;
+          edgeSM->ComputeStateEngine( SMESH_subMesh::CLEAN );
+        }
+      }
+    }
+    //! Store edge SMESH_subMesh'es computed by the algo
+    static void markEdge( const TopoDS_Edge& edge, SMESH_subMesh* faceSM )
+    {
+      if ( SMESH_subMesh* edgeSM = faceSM->GetFather()->GetSubMeshContaining( edge ))
+      {
+        EventListenerData* edgesHolder = faceSM->GetEventListenerData( getListener() );
+        if ( edgesHolder )
+        {
+          std::list<SMESH_subMesh*>::iterator smIt = std::find( edgesHolder->mySubMeshes.begin(),
+                                                                edgesHolder->mySubMeshes.end(),
+                                                                edgeSM );
+          if ( smIt == edgesHolder->mySubMeshes.end() )
+            edgesHolder->mySubMeshes.push_back( edgeSM );
+        }
+        else
+        {
+          edgesHolder = SMESH_subMeshEventListenerData::MakeData( edgeSM );
+          faceSM->SetEventListener( TEdgeMarker::getListener(), edgesHolder, faceSM );
+        }
       }
     }
   };
-
-  //================================================================================
-  /*!
-   * \brief Mark an edge as computed by StdMeshers_RadialQuadrangle_1D2D
-   */
-  //================================================================================
-
-  void markEdgeAsComputedByMe(const TopoDS_Edge& edge, SMESH_subMesh* faceSubMesh)
-  {
-    if ( SMESH_subMesh* edgeSM = faceSubMesh->GetFather()->GetSubMeshContaining( edge ))
-    {
-      if ( !edgeSM->GetEventListenerData( TEdgeMarker::getListener() ))
-        faceSubMesh->SetEventListener( TEdgeMarker::getListener(),
-                                       SMESH_subMeshEventListenerData::MakeData(faceSubMesh),
-                                       edgeSM);
-    }
-  }
 
   //================================================================================
   /*!
@@ -744,7 +751,7 @@ protected:
  * \brief Allow algo to do something after persistent restoration
  * \param subMesh - restored submesh
  *
- * call markEdgeAsComputedByMe()
+ * call TEdgeMarker::markEdge()
  */
 //=======================================================================
 
@@ -754,7 +761,7 @@ void StdMeshers_RadialQuadrangle_1D2D::SubmeshRestored(SMESH_subMesh* faceSubMes
   {
     for ( TopExp_Explorer e( faceSubMesh->GetSubShape(), TopAbs_EDGE ); e.More(); e.Next() )
     {
-      markEdgeAsComputedByMe( TopoDS::Edge( e.Current() ), faceSubMesh );
+      TEdgeMarker::markEdge( TopoDS::Edge( e.Current() ), faceSubMesh );
     }
   }
 }
@@ -963,7 +970,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
 
   list< TopoDS_Edge >::iterator ee = emptyEdges.begin();
   for ( ; ee != emptyEdges.end(); ++ee )
-    markEdgeAsComputedByMe( *ee, aMesh.GetSubMesh( F ));
+    TEdgeMarker::markEdge( *ee, aMesh.GetSubMesh( F ));
 
   circSide->GetUVPtStruct(); // let sides take into account just computed nodes
   linSide1->GetUVPtStruct();

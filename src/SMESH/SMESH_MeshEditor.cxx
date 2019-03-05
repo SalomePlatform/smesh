@@ -7681,9 +7681,9 @@ bool SMESH_MeshEditor::FindFreeBorder (const SMDS_MeshNode*             theFirst
       // push_back the best free border
       cNL = & contNodes[ contNodes[0].empty() ? 1 : 0 ];
       cFL = & contFaces[ contFaces[0].empty() ? 1 : 0 ];
-      theNodes.pop_back(); // remove nIgnore
+      //theNodes.pop_back(); // remove nIgnore
       theNodes.pop_back(); // remove nStart
-      theFaces.pop_back(); // remove curElem
+      //theFaces.pop_back(); // remove curElem
       theNodes.splice( theNodes.end(), *cNL );
       theFaces.splice( theFaces.end(), *cFL );
       return true;

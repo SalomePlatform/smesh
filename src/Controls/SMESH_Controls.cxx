@@ -2565,18 +2565,14 @@ void FreeEdges::SetMesh( const SMDS_Mesh* theMesh )
 
 bool FreeEdges::IsFreeEdge( const SMDS_MeshNode** theNodes, const int theFaceId  )
 {
-  TColStd_MapOfInteger aMap;
-  for ( int i = 0; i < 2; i++ )
+  SMDS_ElemIteratorPtr anElemIter = theNodes[ 0 ]->GetInverseElementIterator(SMDSAbs_Face);
+  while( anElemIter->more() )
   {
-    SMDS_ElemIteratorPtr anElemIter = theNodes[ i ]->GetInverseElementIterator(SMDSAbs_Face);
-    while( anElemIter->more() )
+    if ( const SMDS_MeshElement* anElem = anElemIter->next())
     {
-      if ( const SMDS_MeshElement* anElem = anElemIter->next())
-      {
-        const int anId = anElem->GetID();
-        if ( anId != theFaceId && !aMap.Add( anId ))
-          return false;
-      }
+      const int anId = anElem->GetID();
+      if ( anId != theFaceId && anElem->GetNodeIndex( theNodes[1] ) >= 0 )
+        return false;
     }
   }
   return true;

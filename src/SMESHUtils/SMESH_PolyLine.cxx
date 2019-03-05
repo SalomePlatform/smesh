@@ -494,28 +494,37 @@ namespace
                                      << " in a PolySegment " << iSeg );
 
           if ( path.myDot1 == 0. &&
-               path.myDot2 == 0. &&
-               paths.size() - nbPaths >= 2 ) // use a face non-parallel to the plane
+               path.myDot2 == 0. )
           {
-            const SMDS_MeshElement* goodFace = 0;
-            for ( size_t j = nbPaths; j < paths.size(); ++j )
+            if ( paths.size() - nbPaths >= 2 ) // use a face non-parallel to the plane
             {
-              path = paths[j];
-              if ( path.Extend( plnNorm, plnOrig ))
-                goodFace = paths[j].myFace;
-              else
-                paths[j].myFace = 0;
-            }
-            if ( !goodFace )
-              throw SALOME_Exception ( SMESH_Comment("Cant move from point ") << iP+1
-                                       << " of a PolySegment " << iSeg );
-            for ( size_t j = nbPaths; j < paths.size(); ++j )
-              if ( !paths[j].myFace )
+              const SMDS_MeshElement* goodFace = 0;
+              for ( size_t j = nbPaths; j < paths.size(); ++j )
               {
-                paths[j].myFace = goodFace;
-                paths[j].myNodeInd1 = goodFace->GetNodeIndex( paths[j].myNode1.Node() );
-                paths[j].myNodeInd2 = goodFace->GetNodeIndex( paths[j].myNode2.Node() );
+                path = paths[j];
+                if ( path.Extend( plnNorm, plnOrig ))
+                  goodFace = paths[j].myFace;
+                else
+                  paths[j].myFace = 0;
               }
+              if ( !goodFace )
+                throw SALOME_Exception ( SMESH_Comment("Cant move from point ") << iP+1
+                                         << " of a PolySegment " << iSeg );
+              for ( size_t j = nbPaths; j < paths.size(); ++j )
+                if ( !paths[j].myFace )
+                {
+                  paths[j].myFace = goodFace;
+                  paths[j].myNodeInd1 = goodFace->GetNodeIndex( paths[j].myNode1.Node() );
+                  paths[j].myNodeInd2 = goodFace->GetNodeIndex( paths[j].myNode2.Node() );
+                }
+            }
+            else // use the sole found face
+            {
+              path = paths.back();
+              std::swap( path.myNode1,    path.myNode2 );
+              std::swap( path.myNodeInd1, path.myNodeInd2 );
+              paths.push_back( path );
+            }
           }
         }
 
