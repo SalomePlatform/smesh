@@ -228,6 +228,10 @@
             <translation>mesh_tree_hypo_layers_distribution.png</translation>
         </message>
         <message>
+            <source>ICON_SMESH_TREE_HYPO_NumberOfLayers2D</source>
+            <translation>mesh_tree_hypo_layers_distribution.png</translation>
+        </message>
+        <message>
             <source>ICON_SMESH_TREE_HYPO_NumberOfSegments</source>
             <translation>mesh_tree_hypo_segment.png</translation>
         </message>
