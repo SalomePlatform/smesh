@@ -4384,7 +4384,8 @@ class Mesh(metaclass = MeshMeta):
 
         Returns:
              A list of edge groups and a list of corresponding node groups,
-             where the group is a list of IDs of edges or elements.
+             where the group is a list of IDs of edges or elements, like follows
+             [[[branch_edges_1],[branch_edges_2]], [[branch_nodes_1],[branch_nodes_2]]].
              If a group is closed, the first and last nodes of the group are same.
         """
         if isinstance( edges, Mesh ):
@@ -6947,7 +6948,7 @@ class Mesh(metaclass = MeshMeta):
 
     def GetLength(self, elemId=None):
         """
-        Get length of all given 1D elements or sum length of all 1D mesh elements
+        Get length of given 1D elements or of all 1D mesh elements
 
         Parameters:
             elemId: either a mesh element ID or a list of IDs or :class:`sub-mesh, group or filter <SMESH.SMESH_IDSource>`. By default sum length of all 1D elements will be calculated.
@@ -6977,7 +6978,7 @@ class Mesh(metaclass = MeshMeta):
 
     def GetArea(self, elemId=None):
         """
-        Get area of given 2D elements or sum area of all 2D mesh elements
+        Get area of given 2D elements or of all 2D mesh elements
 
         Parameters:
             elemId: either a mesh element ID or a list of IDs or :class:`sub-mesh, group or filter <SMESH.SMESH_IDSource>`. By default sum area of all 2D elements will be calculated.
@@ -7007,7 +7008,7 @@ class Mesh(metaclass = MeshMeta):
 
     def GetVolume(self, elemId=None):
         """
-        Get volume of a 3D element or sum of volumes of all 3D mesh elements
+        Get volume of given 3D elements or of all 3D mesh elements
 
         Parameters:
             elemId: either a mesh element ID or a list of IDs or :class:`sub-mesh, group or filter <SMESH.SMESH_IDSource>`. By default sum volume of all 3D elements will be calculated.

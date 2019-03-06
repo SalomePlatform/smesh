@@ -55,7 +55,7 @@ A usual workflow to generate a mesh on geometry is following:
 		netgen.SetMaxSize( 20. )
 		netgen.SetFineness( smeshBuilder.VeryCoarse )
   
-#. :ref:`compute_anchor` the mesh (generate mesh nodes and elements):
+#. :ref:`Compute the mesh <compute_anchor>` (generate mesh nodes and elements):
 	.. code-block:: python
 
 		mesh.Compute()
@@ -66,10 +66,10 @@ GUI and then to get a corresponding Python script via
 all methods of any object in hand (e.g. a mesh group or a hypothesis)
 by calling *dir()* Python built-in function.
 
-All methods of the Mesh Group can be found in :ref:`tui_create_standalone_group` sample script.
+All methods of the :class:`Mesh Group <SMESH.SMESH_GroupBase>` can be found in :ref:`tui_create_standalone_group` sample script.
 
 An example below demonstrates usage of the Python API for 3D mesh
-generation and for retrieving information on mesh nodes and elements.
+generation and for retrieving basic information on mesh nodes, elements and groups.
 
 .. _example_3d_mesh:
 

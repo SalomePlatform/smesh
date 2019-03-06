@@ -238,6 +238,7 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
     void getElementsInBox    ( const Bnd_B3d& box,  TElemSeq& foundElems );
     void getElementsInSphere ( const gp_XYZ& center, const double radius, TElemSeq& foundElems );
     ElementBndBoxTree* getLeafAtPoint( const gp_XYZ& point );
+    int  getNbElements();
 
   protected:
     ElementBndBoxTree() {}
@@ -464,6 +465,27 @@ namespace // Utils used in SMESH_ElementSearcherImpl::FindElementsByPoint()
           return l;
     }
     return 0;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Return number of elements
+   */
+  //================================================================================
+
+  int ElementBndBoxTree::getNbElements()
+  {
+    int nb = 0;
+    if ( isLeaf() )
+    {
+      nb = _elements.size();
+    }
+    else
+    {
+      for (int i = 0; i < 8; i++)
+        nb += ((ElementBndBoxTree*) myChildren[i])->getNbElements();
+    }
+    return nb;
   }
 
   //================================================================================
@@ -1300,6 +1322,23 @@ gp_XYZ SMESH_ElementSearcherImpl::Project(const gp_Pnt&            point,
       bestProj = proj;
       elem = *e;
       minDist = d;
+    }
+  }
+  if ( minDist > radius )
+  {
+    ElementBndBoxTree::TElemSeq elems2;
+    ebbTree->getElementsInSphere( p, minDist, elems2 );
+    for ( e = elems2.begin(); e != elems2.end(); ++e )
+    {
+      if ( elems.count( *e ))
+        continue;
+      double d = SMESH_MeshAlgos::GetDistance( *e, point, &proj );
+      if ( d < minDist )
+      {
+        bestProj = proj;
+        elem = *e;
+        minDist = d;
+      }
     }
   }
   if ( closestElem ) *closestElem = elem;

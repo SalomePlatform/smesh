@@ -154,7 +154,10 @@ namespace
       if ( !path.SetCutAtCorner( cornerNode, fIt->next(), plnNorm, plnOrig ))
         continue;
 
-      if ( !myAvoidSet.insert( path.myNode1.Node() ).second ||
+      if ( path.myDot1 == 0 &&
+           !myAvoidSet.insert( path.myNode1.Node() ).second )
+        continue;
+      if ( path.myDot2 == 0 &&
            !myAvoidSet.insert( path.myNode2.Node() ).second )
         continue;
 

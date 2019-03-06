@@ -169,14 +169,16 @@ Creating groups
    Mesh.MakeGroupByCriteria
    Mesh.MakeGroupByFilter
    Mesh.FaceGroupsSeparatedByEdges
+   Mesh.CreateDimGroup
+   Mesh.ConvertToStandalone
    Mesh.GetGroups
    Mesh.NbGroups
    Mesh.GetGroupNames
    Mesh.GetGroupByName
 
 
-Using operations on groups
-==========================
+Operations on groups
+====================
 
 .. autosummary::
 
@@ -186,8 +188,6 @@ Using operations on groups
    Mesh.IntersectListOfGroups
    Mesh.CutGroups
    Mesh.CutListOfGroups
-   Mesh.CreateDimGroup
-   Mesh.ConvertToStandalone
 
 Deleting Groups
 ===============
@@ -204,6 +204,8 @@ Mesh Information
 .. autosummary::
 
    smeshBuilder.GetMeshInfo
+   Mesh.GetEngine
+   Mesh.GetGeomEngine
    Mesh.GetGeometryByMeshElement
    Mesh.MeshDimension
    Mesh.GetMeshInfo
@@ -269,6 +271,7 @@ Mesh Information
    Mesh.FindNodeClosestTo
    Mesh.FindElementsByPoint
    Mesh.GetPointState
+   Mesh.Get1DBranches
    Mesh.Dump
 
 ******************************
@@ -352,6 +355,7 @@ Adding nodes and elements
    Mesh.Make2DMeshFrom3D
    Mesh.MakeBoundaryMesh
    Mesh.MakeBoundaryElements
+   Mesh.Append
    Mesh.GetLastCreatedNodes
    Mesh.GetLastCreatedElems
    Mesh.ClearLastCreated

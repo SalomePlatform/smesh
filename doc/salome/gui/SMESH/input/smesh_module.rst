@@ -791,7 +791,11 @@ SMESH_GroupBase
 
 .. py:class:: SMESH_GroupBase
 
-   :doc:`Mesh group <grouping_elements>`
+   :doc:`Mesh group <grouping_elements>`. 
+   Base class of :class:`standalone group <SMESH_Group>`, 
+   :class:`group on geometry <SMESH_GroupOnGeom>` and 
+   :class:`group on filter <SMESH_GroupOnFilter>`.
+   Inherit all methods from :class:`SMESH_IDSource`.
 
    .. py:function:: SetName( name )
 
