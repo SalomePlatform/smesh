@@ -82,10 +82,10 @@ bool SMESH_File::open()
   {
 #ifdef WIN32
 #ifdef UNICODE
-	  std::wstring aName = Kernel_Utils::utf8_decode_s(_name);
-	  const wchar_t* name = aName.c_str();
+    std::wstring  aName = Kernel_Utils::utf8_decode_s(_name);
+    const wchar_t* name = aName.c_str();
 #else
-	  char* name = name.data();
+    char* name = _name.data();
 #endif
     _file = CreateFile(name, GENERIC_READ, FILE_SHARE_READ,
                        NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -321,12 +321,12 @@ bool SMESH_File::openForWriting()
 {
 #ifdef WIN32
 #ifdef UNICODE
-	std::wstring aName = Kernel_Utils::utf8_decode_s(_name);
-	const wchar_t* name = aName.c_str();
+  std::wstring  aName = Kernel_Utils::utf8_decode_s(_name);
+  const wchar_t* name = aName.c_str();
 #else
-	char* name = name.data();
+  char* name = _name.data();
 #endif
-  _file = CreateFile( name,          // name of the write
+  _file = CreateFile( name,                   // name of the write
                       GENERIC_WRITE,          // open for writing
                       0,                      // do not share
                       NULL,                   // default security
