@@ -33,8 +33,7 @@
 #include <cassert>
 #include <cstdlib>
 
-namespace UNV{
-  using namespace std;
+namespace UNV {
 
   const size_t theMaxLineLen = 82; // 80 for text + 2 for "\r\n"
 
@@ -44,7 +43,7 @@ namespace UNV{
     PrefixPrinter();
     ~PrefixPrinter();
 
-    static string GetPrefix();
+    static std::string GetPrefix();
   };
 
   /**
