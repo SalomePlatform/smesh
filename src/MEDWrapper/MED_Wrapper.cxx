@@ -188,8 +188,8 @@ namespace MED
   //---------------------------------------------------------------
   TWrapper
   ::TWrapper(const std::string& theFileName, TInt theMinor):
-    myMinor(theMinor),
-    myFile(new TFile(theFileName, theMinor))
+    myFile(new TFile(theFileName, theMinor)),
+    myMinor(theMinor)
   {
     TErr aRet;
     myFile->Open(eLECTURE_ECRITURE, &aRet);

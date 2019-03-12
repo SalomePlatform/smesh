@@ -4272,6 +4272,8 @@ struct ElementsOnShape::OctreeClassifier : public SMESH_Octree
                     std::vector< ElementsOnShape::Classifier >&       cls );
   void GetClassifiersAtPoint( const gp_XYZ& p,
                               std::vector< ElementsOnShape::Classifier* >& classifiers );
+  size_t GetSize();
+
 protected:
   OctreeClassifier() {}
   SMESH_Octree* newChild() const { return new OctreeClassifier; }
@@ -4297,6 +4299,21 @@ ElementsOnShape::~ElementsOnShape()
 
 Predicate* ElementsOnShape::clone() const
 {
+  size_t size = sizeof( *this );
+  if ( myOctree )
+    size += myOctree->GetSize();
+  if ( !myClassifiers.empty() )
+    size += sizeof( myClassifiers[0] ) * myClassifiers.size();
+  if ( !myWorkClassifiers.empty() )
+    size += sizeof( myWorkClassifiers[0] ) * myWorkClassifiers.size();
+  if ( size > 1e+9 ) // 1G
+  {
+#ifdef _DEBUG_
+    std::cout << "Avoid ElementsOnShape::clone(), too large: " << size << " bytes " << std::endl;
+#endif
+    return 0;
+  }
+
   ElementsOnShape* cln = new ElementsOnShape();
   cln->SetAllNodes ( myAllNodesFlag );
   cln->SetTolerance( myToler );
@@ -4453,6 +4470,8 @@ bool ElementsOnShape::IsSatisfy (const SMDS_MeshElement* elem)
     for ( size_t i = 0; i < myClassifiers.size(); ++i )
       myWorkClassifiers[ i ] = & myClassifiers[ i ];
     myOctree = new OctreeClassifier( myWorkClassifiers );
+
+    SMESHUtils::FreeVector( myWorkClassifiers );
   }
 
   for ( int i = 0, nb = elem->NbNodes(); i < nb  && (isSatisfy == myAllNodesFlag); ++i )
@@ -4624,6 +4643,16 @@ void ElementsOnShape::Classifier::Init( const TopoDS_Shape& theShape,
     {
       Bnd_Box box;
       BRepBndLib::Add( myShape, box );
+      if ( myShape.ShapeType() == TopAbs_FACE )
+      {
+        BRepAdaptor_Surface SA( TopoDS::Face( myShape ), /*useBoundaries=*/false );
+        if ( SA.GetType() == GeomAbs_BSplineSurface )
+        {
+          box.SetVoid();
+          BRepBndLib::AddOptimal( myShape, box,
+                                  /*useTriangulation=*/true, /*useShapeTolerance=*/true );
+        }
+      }
       myBox.Clear();
       myBox.Add( box.CornerMin() );
       myBox.Add( box.CornerMax() );
@@ -4643,19 +4672,19 @@ ElementsOnShape::Classifier::~Classifier()
   delete mySolidClfr; mySolidClfr = 0;
 }
 
-bool ElementsOnShape::Classifier::isOutOfSolid (const gp_Pnt& p)
+bool ElementsOnShape::Classifier::isOutOfSolid( const gp_Pnt& p )
 {
   if ( isOutOfBox( p )) return true;
   mySolidClfr->Perform( p, myTol );
   return ( mySolidClfr->State() != TopAbs_IN && mySolidClfr->State() != TopAbs_ON );
 }
 
-bool ElementsOnShape::Classifier::isOutOfBox (const gp_Pnt& p)
+bool ElementsOnShape::Classifier::isOutOfBox( const gp_Pnt& p )
 {
   return myBox.IsOut( p.XYZ() );
 }
 
-bool ElementsOnShape::Classifier::isOutOfFace  (const gp_Pnt& p)
+bool ElementsOnShape::Classifier::isOutOfFace( const gp_Pnt& p )
 {
   if ( isOutOfBox( p )) return true;
   myProjFace.Perform( p );
@@ -4672,19 +4701,19 @@ bool ElementsOnShape::Classifier::isOutOfFace  (const gp_Pnt& p)
   return true;
 }
 
-bool ElementsOnShape::Classifier::isOutOfEdge  (const gp_Pnt& p)
+bool ElementsOnShape::Classifier::isOutOfEdge( const gp_Pnt& p )
 {
   if ( isOutOfBox( p )) return true;
   myProjEdge.Perform( p );
   return ! ( myProjEdge.NbPoints() > 0 && myProjEdge.LowerDistance() <= myTol );
 }
 
-bool ElementsOnShape::Classifier::isOutOfVertex(const gp_Pnt& p)
+bool ElementsOnShape::Classifier::isOutOfVertex( const gp_Pnt& p )
 {
   return ( myVertexXYZ.Distance( p ) > myTol );
 }
 
-bool ElementsOnShape::Classifier::isBox (const TopoDS_Shape& theShape)
+bool ElementsOnShape::Classifier::isBox(const TopoDS_Shape& theShape )
 {
   TopTools_IndexedMapOfShape vMap;
   TopExp::MapShapes( theShape, TopAbs_VERTEX, vMap );
@@ -4766,6 +4795,19 @@ OctreeClassifier::GetClassifiersAtPoint( const gp_XYZ& point,
   }
 }
 
+size_t ElementsOnShape::OctreeClassifier::GetSize()
+{
+  size_t res = sizeof( *this );
+  if ( !myClassifiers.empty() )
+    res += sizeof( myClassifiers[0] ) * myClassifiers.size();
+
+  if ( !isLeaf() )
+    for (int i = 0; i < nbChildren(); i++)
+      res += ((OctreeClassifier*) myChildren[i])->GetSize();
+
+  return res;
+}
+
 void ElementsOnShape::OctreeClassifier::buildChildrenData()
 {
   // distribute myClassifiers among myChildren
@@ -4840,8 +4882,13 @@ BelongToGeom::BelongToGeom()
 
 Predicate* BelongToGeom::clone() const
 {
-  BelongToGeom* cln = new BelongToGeom( *this );
-  cln->myElementsOnShapePtr.reset( static_cast<ElementsOnShape*>( myElementsOnShapePtr->clone() ));
+  BelongToGeom* cln = 0;
+  if ( myElementsOnShapePtr )
+    if ( ElementsOnShape* eos = static_cast<ElementsOnShape*>( myElementsOnShapePtr->clone() ))
+    {
+      cln = new BelongToGeom( *this );
+      cln->myElementsOnShapePtr.reset( eos );
+    }
   return cln;
 }
 
@@ -5011,8 +5058,13 @@ LyingOnGeom::LyingOnGeom()
 
 Predicate* LyingOnGeom::clone() const
 {
-  LyingOnGeom* cln = new LyingOnGeom( *this );
-  cln->myElementsOnShapePtr.reset( static_cast<ElementsOnShape*>( myElementsOnShapePtr->clone() ));
+  LyingOnGeom* cln = 0;
+  if ( myElementsOnShapePtr )
+    if ( ElementsOnShape* eos = static_cast<ElementsOnShape*>( myElementsOnShapePtr->clone() ))
+    {
+      cln = new LyingOnGeom( *this );
+      cln->myElementsOnShapePtr.reset( eos );
+    }
   return cln;
 }
 

@@ -92,18 +92,18 @@ namespace MED
   {
 #ifdef WIN32
 #ifdef UNICODE
-	int size_needed = MultiByteToWideChar(CP_UTF8, 0, fileName.c_str(), strlen(fileName.c_str()), NULL, 0);
-	wchar_t* path = new wchar_t[size_needed + 1];
-	MultiByteToWideChar(CP_UTF8, 0, fileName.c_str(), strlen(fileName.c_str()), path, size_needed);
-	path[size_needed] = '\0';
+    int size_needed = MultiByteToWideChar(CP_UTF8, 0, fileName.c_str(), strlen(fileName.c_str()), NULL, 0);
+    wchar_t* path = new wchar_t[size_needed + 1];
+    MultiByteToWideChar(CP_UTF8, 0, fileName.c_str(), strlen(fileName.c_str()), path, size_needed);
+    path[size_needed] = '\0';
 #else
-	cosnt char* path = xmlPath.c_str();
+    cosnt char* path = xmlPath.c_str();
 #endif
-	bool res = (GetFileAttributes(path) != INVALID_FILE_ATTRIBUTES);
+    bool res = (GetFileAttributes(path) != INVALID_FILE_ATTRIBUTES);
 #ifdef UNICODE
-	delete path;
+    delete path;
 #endif
-	return res;
+    return res;
 #else
     return (access(fileName.c_str(), F_OK) == 0);
 #endif
@@ -148,7 +148,7 @@ namespace MED
               ok = true;
             else {
               int medVersion = 10*major + minor;
-              for (int ii=0; ii < sizeof(medVersionsOK)/sizeof(int); ii++)
+              for (size_t ii=0; ii < sizeof(medVersionsOK)/sizeof(int); ii++)
                 if (medVersionsOK[ii] == medVersion) {
                   ok =true;
                   break;
@@ -205,39 +205,39 @@ namespace MED
   {
     bool isCreated = false;
     if (!CheckCompatibility(fileName, true))
-      {
-        remove(fileName.c_str());
-        isCreated = true;
-      }
+    {
+      remove(fileName.c_str());
+      isCreated = true;
+    }
     int minor = -1;
     if (isCreated)
+    {
+      med_int wantedMajor = MED_MAJOR_NUM;
+      med_int wantedMinor = MED_MINOR_NUM;
+      if (theVersion > 0)
       {
-        med_int wantedMajor = MED_MAJOR_NUM;
-        med_int wantedMinor = MED_MINOR_NUM;
-        if (theVersion > 0)
-          {
-            wantedMajor = theVersion/10;
-            wantedMinor = theVersion%10;
-          }
-        if (wantedMajor == MED_MAJOR_NUM) // the med file will be actually created
-          {
-            if (wantedMinor < MED_MINOR_NUM)
-              minor = wantedMinor;
-          }
-        else                              // an empty existing med file of the right version will be used for append
-          {
-            int medVersionsOK[] = MED_VERSIONS_APPEND_COMPATIBLE;
-            bool isVersionOK = false;
-            for (int ii=0; ii < sizeof(medVersionsOK)/sizeof(int); ii++)
-              if (medVersionsOK[ii] == theVersion)
-                {
-                  isVersionOK =true;
-                  break;
-                }
-            if (isVersionOK)              // copy an empty existing med file of the right version, for append
-              CreateEmptyMEDFile(fileName, theVersion);
-          }
+        wantedMajor = theVersion/10;
+        wantedMinor = theVersion%10;
       }
+      if (wantedMajor == MED_MAJOR_NUM) // the med file will be actually created
+      {
+        if (wantedMinor < MED_MINOR_NUM)
+          minor = wantedMinor;
+      }
+      else                              // an empty existing med file of the right version will be used for append
+      {
+        int medVersionsOK[] = MED_VERSIONS_APPEND_COMPATIBLE;
+        bool isVersionOK = false;
+        for (size_t ii=0; ii < sizeof(medVersionsOK)/sizeof(int); ii++)
+          if (medVersionsOK[ii] == theVersion)
+          {
+            isVersionOK =true;
+            break;
+          }
+        if (isVersionOK)              // copy an empty existing med file of the right version, for append
+          CreateEmptyMEDFile(fileName, theVersion);
+      }
+    }
     return new MED::TWrapper(fileName, minor);
   }
 }
