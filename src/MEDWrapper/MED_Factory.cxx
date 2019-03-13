@@ -24,6 +24,8 @@
 #include "MED_Utilities.hxx"
 #include "MED_Wrapper.hxx"
 
+#include <Basics_Utils.hxx>
+
 #include <stdio.h>
 #include <errno.h>
 #include <sstream>
@@ -77,11 +79,22 @@ bool CreateEmptyMEDFile(const std::string& fileName, int version)
   MESSAGE("create an empty med file of the right version, for append " << version);
   static const unsigned char empty_32[] = EMPTY_FILE_32;
   static const unsigned char empty_33[] = EMPTY_FILE_33;
+#ifdef WIN32
+#ifdef UNICODE
+  std::wstring aFilename = Kernel_Utils::utf8_decode_s(fileName);
+#else
+  std::wstring aFilename = fileName;
+#endif
+  std::ofstream ofs(aFilename, std::ios::binary);
+#else
   std::ofstream ofs(fileName);
+#endif
   if (version == 32)
     ofs.write(reinterpret_cast<const char *>(empty_32),sizeof(empty_32));
   else if (version == 33)
     ofs.write(reinterpret_cast<const char *>(empty_33),sizeof(empty_33));
+  ofs.flush();
+  ofs.close();
   return true;
 }
 // -------------------------------------------------------------------------------------------------------------------
