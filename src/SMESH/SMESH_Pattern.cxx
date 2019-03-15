@@ -81,7 +81,8 @@
 
 using namespace std;
 
-typedef map< const SMDS_MeshElement*, int > TNodePointIDMap;
+typedef std::map< const SMDS_MeshElement*, int > TNodePointIDMap;
+typedef std::list< TopoDS_Edge >                 TWire;
 
 #define smdsNode( elem ) static_cast<const SMDS_MeshNode*>( elem )
 
@@ -2480,20 +2481,21 @@ bool SMESH_Pattern::Apply (const TopoDS_Face&   theFace,
   // If there are several wires, define the order of edges of inner wires:
   // compute UV of inner edge-points using 2 methods: the one for in-face points
   // and the one for on-edge points and then choose the best edge order
-  // by the best correspondence of the 2 results
+  // by the best correspondence of the 2 results.
+  // The wires are sorted by number of edges to correspond to wires of the pattern
   if ( nbWires > 1 )
   {
     // compute UV of inner edge-points using the method for in-face points
     // and divide eList into a list of separate wires
     bool aBool;
-    list< list< TopoDS_Edge > > wireList;
+    list< TWire > wireList;
     list<TopoDS_Edge>::iterator eIt = elIt;
     list<int>::iterator nbEIt = nbVertexInWires.begin();
     for ( nbEIt++; nbEIt != nbVertexInWires.end(); nbEIt++ )
     {
       int nbEdges = *nbEIt;
       wireList.push_back( list< TopoDS_Edge >() );
-      list< TopoDS_Edge > & wire = wireList.back();
+      TWire & wire = wireList.back();
       for ( iE = 0 ; iE < nbEdges; eIt++, iE++ )
       {
         list< TPoint* > & ePoints = getShapePoints( *eIt );
@@ -2524,13 +2526,13 @@ bool SMESH_Pattern::Apply (const TopoDS_Face&   theFace,
     // find points - edge correspondence for wires of unique size,
     // edge order within a wire should be defined only
 
-    list< list< TopoDS_Edge > >::iterator wlIt = wireList.begin();
+    list< TWire >::iterator wlIt = wireList.begin();
     while ( wlIt != wireList.end() )
     {
-      list< TopoDS_Edge >& wire = (*wlIt);
+      TWire& wire = (*wlIt);
       size_t nbEdges = wire.size();
       wlIt++;
-      if ( wlIt != wireList.end() && (*wlIt).size() != nbEdges ) // a unique size wire
+      if ( wlIt == wireList.end() || (*wlIt).size() != nbEdges ) // a unique size wire
       {
         // choose the best first edge of a wire
         setFirstEdge( wire, id1 );
@@ -2546,6 +2548,12 @@ bool SMESH_Pattern::Apply (const TopoDS_Face&   theFace,
           edgesPoints->insert( edgesPoints->end(), ePoints.begin(), (--ePoints.end()));
         }
       }
+      else
+      {
+        // skip same size wires
+        while ( wlIt != wireList.end() && (*wlIt).size() == nbEdges )
+          wlIt++;
+      }
       id1 += nbEdges;
     }
 
@@ -2556,7 +2564,7 @@ bool SMESH_Pattern::Apply (const TopoDS_Face&   theFace,
     while ( wlIt != wireList.end() )
     {
       size_t nbSameSize = 0, nbEdges = (*wlIt).size();
-      list< list< TopoDS_Edge > >::iterator wlIt2 = wlIt;
+      list< TWire >::iterator wlIt2 = wlIt;
       wlIt2++;
       while ( wlIt2 != wireList.end() && (*wlIt2).size() == nbEdges ) { // a same size wire
         nbSameSize++;
@@ -2573,7 +2581,7 @@ bool SMESH_Pattern::Apply (const TopoDS_Face&   theFace,
 
     for ( wlIt = wireList.begin(); wlIt != wireList.end(); wlIt++ )
     {
-      list< TopoDS_Edge >& wire = (*wlIt);
+      TWire& wire = (*wlIt);
       eList.splice( eList.end(), wire, wire.begin(), wire.end() );
     }
 
@@ -4930,12 +4938,12 @@ void SMESH_Pattern::DumpPoints() const
 SMESH_Pattern::TPoint::TPoint()
 {
 #ifdef _DEBUG_
-  myInitXYZ.SetCoord(0,0,0);
-  myInitUV.SetCoord(0.,0.);
-  myInitU = 0;
-  myXYZ.SetCoord(0,0,0);
-  myUV.SetCoord(0.,0.);
-  myU = 0;
+  myInitXYZ.SetCoord(7,7,7);
+  myInitUV.SetCoord(7.,7.);
+  myInitU = 7;
+  myXYZ.SetCoord(7,7,7);
+  myUV.SetCoord(7.,7.);
+  myU = 7;
 #endif
 }
 

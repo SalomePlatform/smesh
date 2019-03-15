@@ -25,7 +25,8 @@
 #include "SMDSAbs_ElementType.hxx"
 
 #include <vtkCell.h>
-#include <vtkIdList.h>
+
+typedef std::vector< vtkIdType > TVtkIdList;
 
 //--------------------------------------------------------------------------------
 /*!
@@ -33,15 +34,15 @@
  */
 struct _GetVtkNodes
 {
-  _GetVtkNodes( vtkIdList* nodeIds, SMDS_Mesh* mesh, int vtkCellId, SMDSAbs_EntityType type);
+  _GetVtkNodes( TVtkIdList& nodeIds, SMDS_Mesh* mesh, int vtkCellId, SMDSAbs_EntityType type);
 };
 struct _GetVtkNodesToUNV
 {
-  _GetVtkNodesToUNV( vtkIdList* nodeIds, SMDS_Mesh* mesh, int vtkCellId, SMDSAbs_EntityType type);
+  _GetVtkNodesToUNV( TVtkIdList& nodeIds, SMDS_Mesh* mesh, int vtkCellId, SMDSAbs_EntityType type);
 };
 struct _GetVtkNodesPolyh
 {
-  _GetVtkNodesPolyh( vtkIdList* nodeIds, SMDS_Mesh* mesh, int vtkCellId, SMDSAbs_EntityType type);
+  _GetVtkNodesPolyh( TVtkIdList& nodeIds, SMDS_Mesh* mesh, int vtkCellId, SMDSAbs_EntityType type);
 };
 
 //--------------------------------------------------------------------------------
@@ -55,20 +56,20 @@ public:
   typedef typename SMDS_ITERATOR::value_type result_type;
 
   SMDS_VtkCellIterator(SMDS_Mesh* mesh, int vtkCellId, SMDSAbs_EntityType aType)
-    : _mesh(mesh), _index(0), _vtkIdList( vtkIdList::New() )
+    : _mesh(mesh), _index(0)
   {
     GET_VTK_NODES getNodes( _vtkIdList, mesh, vtkCellId, aType );
   }
-  virtual ~SMDS_VtkCellIterator() { _vtkIdList->Delete(); }
-  virtual bool        more()      {  return ( _index < _vtkIdList->GetNumberOfIds() ); }
+  virtual ~SMDS_VtkCellIterator() {}
+  virtual bool        more()      {  return ( _index < _vtkIdList.size() ); }
   virtual result_type next()      {
-    vtkIdType id = _vtkIdList->GetId( _index++ );
+    vtkIdType id = _vtkIdList[ _index++ ];
     return static_cast<result_type>( _mesh->FindNodeVtk( id ));
   }
 protected:
   SMDS_Mesh* _mesh;
-  int        _index;
-  vtkIdList* _vtkIdList;
+  size_t     _index;
+  TVtkIdList _vtkIdList;
 };
 
 //--------------------------------------------------------------------------------

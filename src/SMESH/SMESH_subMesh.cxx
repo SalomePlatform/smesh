@@ -2452,7 +2452,8 @@ void SMESH_subMesh::loadDependentMeshes()
 {
   list< OwnListenerData >::iterator d;
   for ( d = _ownListeners.begin(); d != _ownListeners.end(); ++d )
-    if ( _father != d->mySubMesh->_father )
+    if ( _father != d->mySubMesh->_father &&
+         _father->FindMesh( d->myMeshID ))
       d->mySubMesh->_father->Load();
 
   // map< EventListener*, EventListenerData* >::iterator l_d = _eventListeners.begin();

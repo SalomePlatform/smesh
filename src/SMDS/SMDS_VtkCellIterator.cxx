@@ -23,37 +23,37 @@
 #include <vtkCell.h>
 #include <vtkIdList.h>
 
-_GetVtkNodes::_GetVtkNodes( vtkIdList*         _vtkIdList,
+_GetVtkNodes::_GetVtkNodes( TVtkIdList&        vtkIds,
                             SMDS_Mesh*         mesh,
                             int                vtkCellId,
-                            SMDSAbs_EntityType aType )
+                            SMDSAbs_EntityType type )
 {
-  vtkUnstructuredGrid* grid = mesh->GetGrid();
-  const std::vector<int>& interlace = SMDS_MeshCell::fromVtkOrder( aType );
+  vtkUnstructuredGrid*         grid = mesh->GetGrid();
+  const std::vector<int>& interlace = SMDS_MeshCell::fromVtkOrder( type );
+  vtkIdType npts, *pts;
+  grid->GetCellPoints( vtkCellId, npts, pts );
+  vtkIds.resize( npts );
   if ( interlace.empty() )
   {
-    grid->GetCellPoints( vtkCellId, _vtkIdList );
+    vtkIds.assign( pts, pts + npts );
   }
   else
   {
-    vtkIdType npts, *pts;
-    grid->GetCellPoints( vtkCellId, npts, pts );
-    _vtkIdList->SetNumberOfIds( npts );
-    for (int i = 0; i < npts; i++)
-      _vtkIdList->SetId(i, pts[interlace[i]]);
+    for (vtkIdType i = 0; i < npts; i++)
+      vtkIds[ i ] = pts[ interlace[i] ];
   }
 }
 
-_GetVtkNodesToUNV::_GetVtkNodesToUNV( vtkIdList*         _vtkIdList,
+_GetVtkNodesToUNV::_GetVtkNodesToUNV( TVtkIdList&        vtkIds,
                                       SMDS_Mesh*         mesh,
                                       int                vtkCellId,
-                                      SMDSAbs_EntityType aType )
+                                      SMDSAbs_EntityType type )
 {
-  vtkIdType * pts, npts;
   vtkUnstructuredGrid* grid = mesh->GetGrid();
-  grid->GetCellPoints( (vtkIdType)vtkCellId, npts, pts );
+  vtkIdType npts, *pts;
+  grid->GetCellPoints( vtkCellId, npts, pts );
   const int *ids = 0;
-  switch (aType)
+  switch ( type )
   {
   case SMDSEntity_Quad_Edge:
   {
@@ -115,28 +115,27 @@ _GetVtkNodesToUNV::_GetVtkNodesToUNV( vtkIdList*         _vtkIdList,
   case SMDSEntity_Polyhedra:
   case SMDSEntity_Quad_Polyhedra:
   default:
-    const std::vector<int>& i = SMDS_MeshCell::interlacedSmdsOrder( aType, npts );
+    const std::vector<int>& i = SMDS_MeshCell::interlacedSmdsOrder( type, npts );
     if ( !i.empty() )
       ids = & i[0];
   }
 
-  _vtkIdList->SetNumberOfIds( npts );
+  vtkIds.resize( npts );
 
   if ( ids )
     for (int i = 0; i < npts; i++)
-      _vtkIdList->SetId(i, pts[ids[i]]);
+      vtkIds[ i ] =  pts[ ids[i] ];
   else
-    for (int i = 0; i < npts; i++)
-      _vtkIdList->SetId(i, pts[i]);
+    vtkIds.assign( pts, pts + npts );
 }
 
-_GetVtkNodesPolyh::_GetVtkNodesPolyh( vtkIdList*         _vtkIdList,
+_GetVtkNodesPolyh::_GetVtkNodesPolyh( TVtkIdList&        vtkIds,
                                       SMDS_Mesh*         mesh,
                                       int                vtkCellId,
-                                      SMDSAbs_EntityType aType )
+                                      SMDSAbs_EntityType type )
 {
   vtkUnstructuredGrid* grid = mesh->GetGrid();
-  switch (aType)
+  switch ( type )
   {
   case SMDSEntity_Polyhedra:
   {
@@ -144,20 +143,20 @@ _GetVtkNodesPolyh::_GetVtkNodesPolyh( vtkIdList*         _vtkIdList,
     vtkIdType* ptIds = 0;
     grid->GetFaceStream( vtkCellId, nFaces, ptIds );
     int id = 0, nbNodesInFaces = 0;
-    for (int i = 0; i < nFaces; i++)
+    for ( int i = 0; i < nFaces; i++ )
     {
       int nodesInFace = ptIds[id]; // nodeIds in ptIds[id+1 .. id+nodesInFace]
       nbNodesInFaces += nodesInFace;
       id += (nodesInFace + 1);
     }
-    _vtkIdList->SetNumberOfIds( nbNodesInFaces );
+    vtkIds.resize( nbNodesInFaces );
     id = 0;
     int n = 0;
-    for (int i = 0; i < nFaces; i++)
+    for ( int i = 0; i < nFaces; i++ )
     {
       int nodesInFace = ptIds[id]; // nodeIds in ptIds[id+1 .. id+nodesInFace]
-      for (int k = 1; k <= nodesInFace; k++)
-        _vtkIdList->SetId(n++, ptIds[id + k]);
+      for ( int k = 1; k <= nodesInFace; k++ )
+        vtkIds[ n++ ] = ptIds[ id + k ];
       id += (nodesInFace + 1);
     }
     break;

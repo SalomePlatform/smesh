@@ -4642,17 +4642,15 @@ void ElementsOnShape::Classifier::Init( const TopoDS_Shape& theShape,
     else
     {
       Bnd_Box box;
-      BRepBndLib::Add( myShape, box );
       if ( myShape.ShapeType() == TopAbs_FACE )
       {
         BRepAdaptor_Surface SA( TopoDS::Face( myShape ), /*useBoundaries=*/false );
         if ( SA.GetType() == GeomAbs_BSplineSurface )
-        {
-          box.SetVoid();
           BRepBndLib::AddOptimal( myShape, box,
                                   /*useTriangulation=*/true, /*useShapeTolerance=*/true );
-        }
       }
+      if ( box.IsVoid() )
+        BRepBndLib::Add( myShape, box );
       myBox.Clear();
       myBox.Add( box.CornerMin() );
       myBox.Add( box.CornerMax() );
