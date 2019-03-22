@@ -2338,6 +2338,7 @@ void InfoComputor::compute()
   if ( myProxy )
   {
     SUIT_OverrideCursor wc;
+    myProxy.load();
     switch ( myOperation )
     {
     case GrpSize:

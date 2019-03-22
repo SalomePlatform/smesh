@@ -198,8 +198,12 @@ class SMESH_I_EXPORT SMESH_GroupOnFilter_i:
   // CORBA interface implementation
   void SetFilter(SMESH::Filter_ptr theFilter) throw (SALOME::SALOME_Exception);
   SMESH::Filter_ptr GetFilter();
+  virtual CORBA::Boolean IsUpToDate();
   virtual SMESH::long_array* GetListOfID();
   virtual SMESH::long_array* GetMeshInfo();
+  //! @return false in two cases: 1) if mesh not loaded and GetMeshInfo() returns
+  //! incorrect information 2) mesh loaded but group contents is not computed.
+  virtual bool IsMeshInfoCorrect();
 
   // method of SMESH::NotifyerAndWaiter to update self when myFilter changes
   virtual void OnBaseObjModified(NotifyerAndWaiter* filter, bool);

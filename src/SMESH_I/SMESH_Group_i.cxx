@@ -238,7 +238,7 @@ CORBA::Boolean SMESH_GroupBase_i::IsEmpty()
 
 //=============================================================================
 /*
- * Returns \c true if \c this group depends on the \a other via
+ * Return \c true if \c this group depends on the \a other via
  * FT_BelongToMeshGroup predicate or vice versa
  */
 //=============================================================================
@@ -677,7 +677,7 @@ void SMESH_GroupBase_i::SetColorNumber(CORBA::Long color)
 
 //=============================================================================
 /*
- * Returns number of mesh elements of each \a SMESH::EntityType
+ * Return number of mesh elements of each \a SMESH::EntityType
  * Result array of number of elements per \a SMESH::EntityType
  * Inherited from SMESH_IDSource
  */
@@ -707,7 +707,7 @@ SMESH::long_array* SMESH_GroupBase_i::GetMeshInfo()
 
 //=============================================================================
 /*
- * Returns number of mesh elements of each \a ElementType
+ * Return number of mesh elements of each \a ElementType
  */
 //=============================================================================
 
@@ -728,7 +728,7 @@ SMESH::long_array* SMESH_GroupBase_i::GetNbElementsByType()
 
 //=======================================================================
 //function : GetIDs
-//purpose  : Returns ids of members
+//purpose  : Return ids of members
 //=======================================================================
 
 SMESH::long_array* SMESH_GroupBase_i::GetIDs()
@@ -738,7 +738,7 @@ SMESH::long_array* SMESH_GroupBase_i::GetIDs()
 
 //=======================================================================
 //function : GetTypes
-//purpose  : Returns types of elements it contains
+//purpose  : Return types of elements it contains
 //=======================================================================
 
 SMESH::array_of_ElementType* SMESH_GroupBase_i::GetTypes()
@@ -754,7 +754,7 @@ SMESH::array_of_ElementType* SMESH_GroupBase_i::GetTypes()
 
 //=======================================================================
 //function : IsMeshInfoCorrect
-//purpose  : * Returns false if GetMeshInfo() returns incorrect information that may
+//purpose  : * Return false if GetMeshInfo() returns incorrect information that may
 //           * happen if mesh data is not yet fully loaded from the file of study.
 //=======================================================================
 
@@ -849,7 +849,7 @@ void SMESH_GroupOnFilter_i::SetFilter(SMESH::Filter_ptr theFilter)
 
 //================================================================================
 /*!
- * \brief Returns the filter defining group contents
+ * \brief Return the filter defining group contents
  */
 //================================================================================
 
@@ -860,9 +860,37 @@ SMESH::Filter_ptr SMESH_GroupOnFilter_i::GetFilter()
   return f._retn();
 }
 
+//================================================================================
+/*!
+ * @return true if group contents is computed
+ */
+//================================================================================
+
+CORBA::Boolean SMESH_GroupOnFilter_i::IsUpToDate()
+{
+  if ( myPreMeshInfo )
+    return false;
+
+  if ( SMESHDS_GroupOnFilter* grDS = dynamic_cast< SMESHDS_GroupOnFilter*>( GetGroupDS() ))
+    return grDS->IsUpToDate();
+
+  return false;
+}
+
+//=======================================================================
+//function : IsMeshInfoCorrect
+//purpose  : Return false in two cases: 1) if mesh not loaded and GetMeshInfo() returns
+//           incorrect information 2) mesh loaded but group contents is not computed
+//=======================================================================
+
+bool SMESH_GroupOnFilter_i::IsMeshInfoCorrect()
+{
+  return myPreMeshInfo ? myPreMeshInfo->IsMeshInfoCorrect() : IsUpToDate();
+}
+
 //=======================================================================
 //function : GetIDs
-//purpose  : Returns ids of members
+//purpose  : Return ids of members
 //=======================================================================
 
 SMESH::long_array* SMESH_GroupOnFilter_i::GetListOfID()
@@ -887,7 +915,7 @@ SMESH::long_array* SMESH_GroupOnFilter_i::GetListOfID()
 
 //=============================================================================
 /*!
- * Returns statistic of mesh elements
+ * Return statistic of mesh elements
  * Result array of number enityties
  * Inherited from SMESH_IDSource
  */
@@ -1052,3 +1080,4 @@ void SMESH_GroupOnFilter_i::OnBaseObjModified(NotifyerAndWaiter* filter, bool /*
   if ( SMESHDS_GroupOnFilter* grDS = dynamic_cast< SMESHDS_GroupOnFilter*>( GetGroupDS() ))
     grDS->SetPredicate( GetPredicate( myFilter )); // group resets its cache
 }
+

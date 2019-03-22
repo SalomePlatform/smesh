@@ -178,6 +178,9 @@ module SMESH
   {
     void   SetFilter( in Filter theFilter) raises (SALOME::SALOME_Exception); 
     Filter GetFilter();
+
+    //! @return True if group contents is computed
+    boolean IsUpToDate();
   };
 
 };

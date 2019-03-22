@@ -1170,7 +1170,7 @@ int SMESH::SelectionProxy::size( bool autoCompute ) const
     {
       if ( type() == GroupFilter )
         // for group on filter we check if value is already computed and cached
-        autoCompute |= group->IsNodeInfoAvailable();
+        autoCompute |= group->IsMeshInfoCorrect();
       else
         // for other groups we force autoCompute to true
         autoCompute = true;
