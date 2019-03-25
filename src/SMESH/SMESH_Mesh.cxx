@@ -1191,6 +1191,13 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
   if ( !GetMeshDS()->IsUsedHypothesis( hyp ))
     return;
 
+  bool toCallBack = true;
+  if ( _callUp && hyp && NbNodes() == 0 ) // for not loaded mesh
+  {
+    _callUp->HypothesisModified( hyp->GetID() );
+    toCallBack = ( NbNodes() > 0 );
+  }
+
   SMESH_Algo *algo;
   const SMESH_HypoFilter* compatibleHypoKind;
   std::list <const SMESHDS_Hypothesis * > usedHyps;
@@ -1258,7 +1265,7 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
   HasModificationsToDiscard(); // to reset _isModified flag if mesh becomes empty
   GetMeshDS()->Modified();
 
-  if (_callUp && hyp)
+  if ( _callUp && hyp && toCallBack )
     _callUp->HypothesisModified( hyp->GetID() );
 }
 
