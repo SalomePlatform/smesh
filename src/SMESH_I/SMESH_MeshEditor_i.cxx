@@ -7513,9 +7513,18 @@ SMESH::ListOfEdges* SMESH_MeshEditor_i::MakeSlot(SMESH::SMESH_GroupBase_ptr theS
 
   SMESHDS_Mesh* meshDS = getMeshDS();
 
+  // get standalone face groups to be updated
+  std::vector< SMDS_MeshGroup* > faceGroups;
+  const std::set<SMESHDS_GroupBase*>& allGroups = meshDS->GetGroups();
+  std::set<SMESHDS_GroupBase*>::const_iterator grIt = allGroups.begin();
+  for ( ; grIt != allGroups.end(); ++grIt )
+    if ( const SMESHDS_Group* gr = dynamic_cast< const SMESHDS_Group* >( *grIt ))
+      if ( gr->GetType() == SMDSAbs_Face )
+        faceGroups.push_back( & const_cast< SMESHDS_Group* >( gr )->SMDSGroup() );
+
   std::vector< SMESH_MeshAlgos::Edge > edges =
     SMESH_MeshAlgos::MakeSlot( SMESH_Mesh_i::GetElements( theSegments, SMESH::EDGE ),
-                               theWidth, meshDS );
+                               theWidth, meshDS, faceGroups );
 
   resultEdges->length( edges.size() );
   for ( size_t i = 0; i < edges.size(); ++i )

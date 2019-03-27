@@ -1192,7 +1192,7 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
     return;
 
   bool toCallBack = true;
-  if ( _callUp && hyp && NbNodes() == 0 ) // for not loaded mesh
+  if ( _callUp && hyp && NbNodes() == 0 ) // for not loaded mesh (#16648)
   {
     _callUp->HypothesisModified( hyp->GetID() );
     toCallBack = ( NbNodes() > 0 );

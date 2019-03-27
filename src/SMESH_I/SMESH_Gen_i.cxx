@@ -2509,6 +2509,22 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::ListOfIDSources& theMeshesArray,
   TGroupsMap       groupsMap;
   TListOfNewGroups listOfNewGroups;
 
+  if ( !CORBA::is_nil( theMeshToAppendTo ))
+  {
+    // fill groupsMap with existing groups
+    SMESH::ListOfGroups_var groups = theMeshToAppendTo->GetGroups();
+    for ( CORBA::ULong i = 0; i < groups->length(); ++i )
+    {
+      SMESH::SMESH_Group_var group = SMESH::SMESH_Group::_narrow( groups[ i ]);
+      if ( !group->_is_nil() )
+      {
+        CORBA::String_var  name = group->GetName();
+        SMESH::ElementType type = group->GetType();
+        groupsMap[ TNameAndType( name.in(), type ) ].push_back( group );
+      }
+    }
+  }
+
   ::SMESH_MeshEditor               newEditor( &locMesh );
   ::SMESH_MeshEditor::ElemFeatures elemType;
 

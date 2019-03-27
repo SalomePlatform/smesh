@@ -505,9 +505,10 @@ namespace SMESH_MeshAlgos
    */
   // Implemented in ./SMESH_Slot.cxx
   SMESHUtils_EXPORT
-  std::vector< Edge > MakeSlot( SMDS_ElemIteratorPtr segmentIt,
-                                double               width,
-                                SMDS_Mesh*           mesh);
+  std::vector< Edge > MakeSlot( SMDS_ElemIteratorPtr             segmentIt,
+                                double                           width,
+                                SMDS_Mesh*                       mesh,
+                                std::vector< SMDS_MeshGroup* > & groupsToUpdate);
 
 } // namespace SMESH_MeshAlgos
 

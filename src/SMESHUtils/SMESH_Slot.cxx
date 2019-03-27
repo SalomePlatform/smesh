@@ -25,6 +25,7 @@
 #include "ObjectPool.hxx"
 #include "SMDS_LinearEdge.hxx"
 #include "SMDS_Mesh.hxx"
+#include "SMDS_MeshGroup.hxx"
 
 #include <IntAna_IntConicQuad.hxx>
 #include <IntAna_Quadric.hxx>
@@ -290,6 +291,32 @@ namespace
 
     return faceNormals[ face->GetID() ];
   }
+
+  typedef std::vector< SMDS_MeshGroup* > TGroupVec;
+
+  //================================================================================
+  /*!
+   * \brief Fill theFaceID2Groups map for a given face
+   *  \param [in] theFace - the face
+   *  \param [in] theGroupsToUpdate - list of groups to treat
+   *  \param [out] theFaceID2Groups - the map to fill in
+   *  \param [out] theWorkGroups - a working buffer of groups
+   */
+  //================================================================================
+
+  void findGroups( const SMDS_MeshElement *                theFace,
+                   TGroupVec &                             theGroupsToUpdate,
+                   NCollection_DataMap< int, TGroupVec > & theFaceID2Groups,
+                   TGroupVec &                             theWorkGroups )
+  {
+    theWorkGroups.clear();
+    for ( size_t i = 0; i < theGroupsToUpdate.size(); ++i )
+      if ( theGroupsToUpdate[i]->Contains( theFace ))
+        theWorkGroups.push_back( theGroupsToUpdate[i] );
+
+    if ( !theWorkGroups.empty() )
+      theFaceID2Groups.Bind( theFace->GetID(), theWorkGroups );
+  }
 }
 
 //================================================================================
@@ -301,9 +328,10 @@ namespace
 //================================================================================
 
 std::vector< SMESH_MeshAlgos::Edge >
-SMESH_MeshAlgos::MakeSlot( SMDS_ElemIteratorPtr theSegmentIt,
-                           double               theWidth,
-                           SMDS_Mesh*           theMesh)
+SMESH_MeshAlgos::MakeSlot( SMDS_ElemIteratorPtr             theSegmentIt,
+                           double                           theWidth,
+                           SMDS_Mesh*                       theMesh,
+                           std::vector< SMDS_MeshGroup* > & theGroupsToUpdate)
 {
   std::vector< Edge > bndEdges;
 
@@ -351,6 +379,9 @@ SMESH_MeshAlgos::MakeSlot( SMDS_ElemIteratorPtr theSegmentIt,
   std::vector< IntPoint > intPoints, p(2);
   std::vector< SMESH_NodeXYZ > facePoints(4);
   std::vector< Intersector::TFace > cutFacePoints;
+
+  NCollection_DataMap< int, TGroupVec > faceID2Groups;
+  TGroupVec groupVec;
 
   std::vector< gp_Ax1 > planeNormalVec(2);
   gp_Ax1 * planeNormal = & planeNormalVec[0];
@@ -551,6 +582,9 @@ SMESH_MeshAlgos::MakeSlot( SMDS_ElemIteratorPtr theSegmentIt,
           Edge e = { intPoints[iE].myNode.Node(), intPoints[iE-1].myNode.Node(), 0 };
           segment->AddEdge( e, tol );
           bndEdges.push_back( e );
+
+          findGroups( face, theGroupsToUpdate, faceID2Groups, groupVec );
+
         }
       }  // loop on faces sharing an edge
 
@@ -664,6 +698,8 @@ SMESH_MeshAlgos::MakeSlot( SMDS_ElemIteratorPtr theSegmentIt,
       Edge e = { intPoints[0].myNode.Node(), intPoints[1].myNode.Node(), 0 };
       bndEdges.push_back( e );
 
+      findGroups( face, theGroupsToUpdate, faceID2Groups, groupVec );
+
       // add cut points to an adjacent face at ends of poly-line
       // if they fall onto face edges
       if (( i == 0                       && intPoints[0].myEdgeIndex >= 0 ) ||
@@ -687,6 +723,8 @@ SMESH_MeshAlgos::MakeSlot( SMDS_ElemIteratorPtr theSegmentIt,
               meshIntersector.Cut( faces[iF],
                                    intPoints[iE].myNode, intPoints[iE].myEdgeIndex,
                                    intPoints[iE].myNode, intPoints[iE].myEdgeIndex );
+
+              findGroups( faces[iF], theGroupsToUpdate, faceID2Groups, groupVec );
             }
         }
       }
@@ -701,6 +739,18 @@ SMESH_MeshAlgos::MakeSlot( SMDS_ElemIteratorPtr theSegmentIt,
   TElemIntPairVec new2OldFaces;
   TNodeIntPairVec new2OldNodes;
   meshIntersector.MakeNewFaces( new2OldFaces, new2OldNodes, /*sign=*/1, /*optimize=*/true );
+
+  // add new faces to theGroupsToUpdate
+  for ( size_t i = 0; i < new2OldFaces.size(); ++i )
+  {
+    const SMDS_MeshElement* newFace = new2OldFaces[i].first;
+    const int             oldFaceID = new2OldFaces[i].second;
+    if ( !newFace ) continue;
+
+    if ( TGroupVec* groups = const_cast< TGroupVec* >( faceID2Groups.Seek( oldFaceID )))
+      for ( size_t iG = 0; iG < groups->size(); ++iG )
+        (*groups)[ iG ]->Add( newFace );
+  }
 
   // remove poly-line edges
   for ( size_t i = 0; i < polySegments.size(); ++i )
