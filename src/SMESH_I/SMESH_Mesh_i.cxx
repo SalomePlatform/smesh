@@ -6427,11 +6427,15 @@ TListOfListOfInt SMESH_Mesh_i::findConcurrentSubMeshes()
     aPythonDump << " ]";
     subMeshOrder.push_back( subMeshIds );
 
-    // clear collected submeshes
+    // clear collected sub-meshes
     set<const SMESH_subMesh*>::iterator clrIt = subMeshToClear.begin();
     for ( ; clrIt != subMeshToClear.end(); clrIt++ )
       if ( SMESH_subMesh* sm = (SMESH_subMesh*)*clrIt )
+      {
         sm->ComputeStateEngine( SMESH_subMesh::CLEAN );
+        if ( SMESH_Algo* algo = sm->GetAlgo() ) // #16748
+          sm->AlgoStateEngine( SMESH_subMesh::MODIF_HYP, algo ); // to clear a cached algo
+      }
   }
   aPythonDump << " ])";
 
