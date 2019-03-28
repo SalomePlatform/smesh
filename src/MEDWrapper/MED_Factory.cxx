@@ -211,7 +211,7 @@ namespace MED
     if (!CheckCompatibility(fileName)) {
       EXCEPTION(std::runtime_error, "Cannot open file '"<<fileName<<"'.");
     }
-    return new MED::TWrapper(fileName);
+    return new MED::TWrapper(fileName, false);
   }
 
   PWrapper CrWrapperW(const std::string& fileName, int theVersion)
@@ -251,6 +251,6 @@ namespace MED
           CreateEmptyMEDFile(fileName, theVersion);
       }
     }
-    return new MED::TWrapper(fileName, minor);
+    return new MED::TWrapper(fileName, true, minor);
   }
 }
