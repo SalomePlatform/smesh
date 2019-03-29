@@ -1009,9 +1009,9 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
   
   lines.push_back(  aSMESHGen + " = smeshBuilder.New()" );
   if ( isPublished )
-    optionalComment = helper + "#";
+    optionalComment = "#";
   lines.push_back( optionalComment + aSMESHGen + ".SetEnablePublish( False ) # Set to False to avoid publish in study if not needed or in some particular situations:" );
-  lines.push_back( "                                 # multiples meshes built in parallel, complex and numerous mesh edition (performance)" );
+  lines.push_back( "                                 # multiples meshes built in parallel, complex and numerous mesh edition (performance)\n" );
   lines.push_back( helper + "aFilterManager = " + aSMESHGen + ".CreateFilterManager()" );
   lines.push_back( helper + "aMeasurements = "  + aSMESHGen + ".CreateMeasurements()" );
 

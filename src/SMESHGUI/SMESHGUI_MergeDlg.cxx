@@ -1144,6 +1144,9 @@ void SMESHGUI_MergeDlg::SetEditCurrentArgument()
 //=================================================================================
 void SMESHGUI_MergeDlg::SelectionIntoArgument()
 {
+  if ( myIsBusy )
+    return;
+
   if (myEditCurrentArgument == (QWidget*)LineEditMesh)
   {
     QString aString = "";
@@ -1222,6 +1225,9 @@ void SMESHGUI_MergeDlg::SelectionIntoArgument()
 
     LineEditMesh->setText( aString );
 
+    
+    myIsBusy = true; // here selection can change
+
     if (myAction == MERGE_NODES) {
       SMESH::SetPointRepresentation(true);
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
@@ -1230,6 +1236,8 @@ void SMESHGUI_MergeDlg::SelectionIntoArgument()
     else
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
         aViewWindow->SetSelectionMode(CellSelection);
+
+    myIsBusy = false;
 
     // process groups
     myGroups.clear();
@@ -1408,9 +1416,11 @@ void SMESHGUI_MergeDlg::onTypeChanged (int id)
 
     myIdPreview->SetPointsLabeled(false);
     SMESH::SetPointRepresentation(false);
+    myIsBusy = true; // keep currently selected mesh
     if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
       aViewWindow->SetSelectionMode(ActorSelection);
     mySelectionMgr->clearFilters();
+    myIsBusy = false;
     GroupCoincident->hide();
     GroupEdit->hide();
 
@@ -1424,6 +1434,7 @@ void SMESHGUI_MergeDlg::onTypeChanged (int id)
 
     myMeshOrSubMeshOrGroupFilter = new SMESH_TypeFilter (SMESH::IDSOURCE);
 
+    myIsBusy = true; // keep currently selected mesh
     if (myAction == MERGE_NODES) {
       SMESH::SetPointRepresentation(true);
       if ( SVTK_ViewWindow* aViewWindow = SMESH::GetViewWindow( mySMESHGUI ))
@@ -1435,11 +1446,14 @@ void SMESHGUI_MergeDlg::onTypeChanged (int id)
         if( mySelector->IsSelectionEnabled() )
           aViewWindow->SetSelectionMode(CellSelection);
     }
+    myIsBusy = false;
     GroupCoincident->show();
     GroupEdit->show();
     break;
   }
-  SelectionIntoArgument();
+
+  if ( myMesh->_is_nil() )
+    SelectionIntoArgument();
 
   updateControls();
 

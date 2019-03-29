@@ -5060,40 +5060,33 @@ bool _pyStringFamily::Add( const char* str )
   const int minPrefixSize = 4;
 
   // count "smaller" strings with the same prefix
-  std::list< _AString >::iterator itLess = itStr; --itLess;
   int nbLess = 0;
-  for ( ; itLess != _strings.end(); --itLess )
+  std::list< _AString >::iterator itLess = itStr;
+  while ( itLess != _strings.begin() )
+  {
+    --itLess;
     if ( strncmp( str, itLess->ToCString(), minPrefixSize ) == 0 )
       ++nbLess;
     else
+    {
+      ++itLess;
       break;
-  ++itLess;
+    }
+  }
+  // itLess points to the 1st string with same prefix
+
   // count "greater" strings with the same prefix
-  std::list< _AString >::iterator itMore = itStr;
   int nbMore = 0;
+  std::list< _AString >::iterator itMore = itStr;
   for ( ; itMore != _strings.end(); ++itMore )
     if ( strncmp( str, itMore->ToCString(), minPrefixSize ) == 0 )
       ++nbMore;
     else
       break;
-  --itMore;
+  // itMore points to the 1st string with greater prefix
+
   if ( nbLess + nbMore > 1 ) // ------- ADD a NEW CHILD FAMILY -------------
   {
-    // look for a maximal prefix length
-    // int lessPrefSize = 3, morePrefSize = 3;
-    // if ( nbLess > 0 )
-    //   while( itLess->ToCString()[ lessPrefSize ] == str[ lessPrefSize ]  )
-    //     ++lessPrefSize;
-    // if ( nbMore > 0 )
-    //   while ( itMore->ToCString()[ morePrefSize ] == str[ morePrefSize ] )
-    //     ++morePrefSize;
-    // int prefixSize = 3;
-    // if ( nbLess == 0 )
-    //   prefixSize = morePrefSize;
-    // else if ( nbMore == 0 )
-    //   prefixSize = lessPrefSize;
-    // else
-    //   prefixSize = Min( lessPrefSize, morePrefSize );
     int prefixSize = minPrefixSize;
     _AString newPrefix ( str, prefixSize );
 
@@ -5114,7 +5107,7 @@ bool _pyStringFamily::Add( const char* str )
     for ( ; nbMore > 0; --nbMore, ++itStr )
       newSubFam._strings.push_back( itStr->ToCString() + prefixSize );
 
-    _strings.erase( itLess, ++itMore );
+    _strings.erase( itLess, itMore );
   }
   else // too few string to make a family for them
   {
