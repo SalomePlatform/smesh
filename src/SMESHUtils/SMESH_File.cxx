@@ -319,6 +319,8 @@ bool SMESH_File::getInts(std::vector<int>& ints)
 
 bool SMESH_File::openForWriting()
 {
+  close();
+
 #ifdef WIN32
 #ifdef UNICODE
   std::wstring  aName = Kernel_Utils::utf8_decode_s(_name);
