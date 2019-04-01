@@ -3283,7 +3283,7 @@ CORBA::Boolean SMESH_Mesh_i::HasDuplicatedGroupNamesMED()
 
 void SMESH_Mesh_i::PrepareForWriting (const char* file, bool overwrite)
 {
-  SMESH_File aFile( file );
+  SMESH_File aFile( file , false );
   SMESH_Comment msg;
   if (aFile.exists()) {
     // existing filesystem node
