@@ -42,12 +42,10 @@
 
 #include <Utils_SALOME_Exception.hxx>
 
-#include <boost/container/flat_set.hpp>
-
 namespace
 {
   typedef SMESH_MeshAlgos::Edge TEdge;
-
+  
   //================================================================================
   //! point of intersection of a face edge with the cylinder
   struct IntPoint
@@ -55,19 +53,50 @@ namespace
     SMESH_NodeXYZ myNode;        // point and a node
     int           myEdgeIndex;   // face edge index
     bool          myIsOutPln[2]; // isOut of two planes
+
+    double SquareDistance( const IntPoint& p ) const { return ( myNode-p.myNode ).SquareModulus(); }
+  };
+
+  //================================================================================
+  //! cut of a face
+  struct Cut
+  {
+    IntPoint myIntPnt1, myIntPnt2;
+    const SMDS_MeshElement* myFace;
+
+    const IntPoint& operator[]( size_t i ) const { return i ? myIntPnt2 : myIntPnt1; }
+
+    double SquareDistance( const gp_Pnt& p, gp_XYZ & pClosest ) const
+    {
+      gp_Vec edge( myIntPnt1.myNode, myIntPnt2.myNode );
+      gp_Vec n1p ( myIntPnt1.myNode, p  );
+      double u = ( edge * n1p ) / edge.SquareMagnitude(); // param [0,1] on the edge
+      if ( u <= 0. )
+      {
+        pClosest = myIntPnt1.myNode;
+        return n1p.SquareMagnitude();
+      }
+      if ( u >= 1. )
+      {
+        pClosest = myIntPnt2.myNode;
+        return p.SquareDistance( myIntPnt2.myNode );
+      }
+      pClosest = myIntPnt1.myNode + u * edge.XYZ(); // projection of the point on the edge
+      return p.SquareDistance( pClosest );
+    }
   };
 
   //================================================================================
   //! poly-line segment
   struct Segment
   {
-    typedef boost::container::flat_set< const SMDS_MeshNode* > TNodeSet;
-    //typedef std::list< TEdge > TEdgeList;
+    typedef std::vector< Cut > TCutList;
 
-    const SMDS_MeshElement* myEdge;
-    TNodeSet                myEndNodes; // ends of cut edges
-    //TEdgeList               myCutEdges[2];
-    
+    const SMDS_MeshElement*        myEdge;
+    TCutList                       myCuts;
+    std::vector< const IntPoint* > myFreeEnds; // ends of cut edges
+
+    Segment( const SMDS_MeshElement* e = 0 ): myEdge(e) { myCuts.reserve( 4 ); }
 
     // return its axis
     gp_Ax1 Ax1( bool reversed = false ) const
@@ -76,67 +105,100 @@ namespace
       SMESH_NodeXYZ n2 = myEdge->GetNode( !reversed );
       return gp_Ax1( n1, gp_Dir( n2 - n1 ));
     }
+
     // return a node
     const SMDS_MeshNode* Node(int i) const
     {
       return myEdge->GetNode( i % 2 );
     }
+
     // store an intersection edge forming the slot border
-    void AddEdge( TEdge& e, double tol )
+    void AddCutEdge( const IntPoint& p1,
+                     const IntPoint& p2,
+                     const SMDS_MeshElement* myFace )
     {
-      const SMDS_MeshNode** nodes = & e._node1;
-      for ( int i = 0; i < 2; ++i )
-      {
-        std::pair< TNodeSet::iterator, bool > nItAdded = myEndNodes.insert( nodes[ i ]);
-        if ( !nItAdded.second )
-          myEndNodes.erase( nItAdded.first );
-      }
+      myCuts.push_back( Cut({ p1, p2, myFace }));
     }
-    // { -- PREV version
-    //   int i = myCutEdges[0].empty() ? 0 : 1;
-    //   std::insert_iterator< TEdgeList > where = inserter( myCutEdges[i], myCutEdges[i].begin() );
 
-    //   //double minDist = 1e100;
-    //   SMESH_NodeXYZ nNew[2] = { e._node1, e._node2 };
-    //   int iNewMin = 0, iCurMin = 1;
-    //   for ( i = 0; i < 2; ++i )
-    //   {
-    //     if ( myCutEdges[i].empty() )
-    //       continue;
-    //     SMESH_NodeXYZ nCur[2] = { myCutEdges[i].front()._node1,
-    //                               myCutEdges[i].back()._node2 };
-    //     for   ( int iN = 0; iN < 2; ++iN )
-    //       for ( int iC = 0; iC < 2; ++iC )
-    //       {
-    //         if (( nCur[iC].Node() && nCur[iC] == nNew[iN] ) ||
-    //             ( nCur[iC] - nNew[iN] ).SquareModulus() < tol * tol )
-    //         {
-    //           where   = inserter( myCutEdges[i], iC ? myCutEdges[i].end() : myCutEdges[i].begin() );
-    //           iNewMin = iN;
-    //           iCurMin = iC;
-    //           //minDist = dist;
-    //           iN = 2;
-    //           break;
-    //         }
-    //       }
-    //   }
-    //   if ( iNewMin == iCurMin )
-    //     std::swap( e._node1, e._node2 );
-
-    //   where = e;
-    // }
-    Segment( const SMDS_MeshElement* e = 0 ): myEdge(e) { myEndNodes.reserve( 4 ); }
+    // return number of not shared IntPoint's
+    int NbFreeEnds( double tol )
+    {
+      if ( myCuts.empty() )
+        return 0;
+      if ( myFreeEnds.empty() )
+      {
+        int nbShared = 0;
+        std::vector< bool > isSharedPnt( myCuts.size() * 2, false );
+        for ( size_t iC1 = 0; iC1 < myCuts.size() - 1; ++iC1 )
+          for ( size_t iP1 = 0; iP1 < 2; ++iP1 )
+          {
+            size_t i1 = iC1 * 2 + iP1;
+            if ( isSharedPnt[ i1 ])
+              continue;
+            for ( size_t iC2 = iC1 + 1; iC2 < myCuts.size(); ++iC2 )
+              for ( size_t iP2 = 0; iP2 < 2; ++iP2 )
+              {
+                size_t i2 = iC2 * 2 + iP2;
+                if ( isSharedPnt[ i2 ])
+                  continue;
+                if ( myCuts[ iC1 ][ iP1 ].SquareDistance( myCuts[ iC2 ][ iP2 ]) < tol * tol )
+                {
+                  nbShared += 2;
+                  isSharedPnt[ i1 ] = isSharedPnt[ i2 ] = true;
+                }
+              }
+          }
+        myFreeEnds.reserve( isSharedPnt.size() - nbShared );
+        for ( size_t i = 0; i < isSharedPnt.size(); ++i )
+          if ( !isSharedPnt[ i ] )
+          {
+            int iP = i % 2;
+            int iC = i / 2;
+            myFreeEnds.push_back( & myCuts[ iC ][ iP ]);
+          }
+      }
+      return myFreeEnds.size();
+    }
   };
   typedef ObjectPoolIterator<Segment> TSegmentIterator;
 
-  
+
+  //================================================================================
+  //! Segments and plane separating domains of segments, at common node
+  struct NodeData
+  {
+    std::vector< Segment* > mySegments;
+    gp_Ax1                  myPlane; // oriented OK for mySegments[0]
+
+    void AddSegment( Segment* seg, const SMDS_MeshNode* n )
+    {
+      mySegments.reserve(2);
+      mySegments.push_back( seg );
+      if ( mySegments.size() == 1 )
+      {
+        myPlane = mySegments[0]->Ax1( mySegments[0]->myEdge->GetNodeIndex( n ));
+      }
+      else
+      {
+        gp_Ax1 axis2 = mySegments[1]->Ax1( mySegments[1]->myEdge->GetNodeIndex( n ));
+        myPlane.SetDirection( myPlane.Direction().XYZ() - axis2.Direction().XYZ() );
+      }
+    }
+    gp_Ax1 Plane( const Segment* seg )
+    {
+      return ( seg == mySegments[0] ) ? myPlane : myPlane.Reversed();
+    }
+  };
+  typedef NCollection_DataMap< const SMDS_MeshNode*, NodeData, SMESH_Hasher > TSegmentsOfNode;
+
+
   //================================================================================
   /*!
    * \brief Intersect a face edge given by its nodes with a cylinder.
    */
   //================================================================================
 
-  void intersectEdge( const gp_Cylinder&      cyl,
+  bool intersectEdge( const gp_Cylinder&      cyl,
                       const SMESH_NodeXYZ&    n1,
                       const SMESH_NodeXYZ&    n2,
                       const double            tol,
@@ -149,7 +211,7 @@ namespace
          intersection.IsParallel()  ||
          intersection.IsInQuadric() ||
          intersection.NbPoints() == 0 )
-      return;
+      return false;
 
     gp_Vec edge( n1, n2 );
 
@@ -196,7 +258,7 @@ namespace
       std::swap( intPoints[ i ], intPoints[ i - 1 ]);
     }
 
-    return;
+    return intPoints.size() - oldNbPnts > 0;
   }
 
   //================================================================================
@@ -218,11 +280,11 @@ namespace
    */
   //================================================================================
 
-  bool isOut( const gp_Pnt& p, const gp_Ax1* planeNormal, bool* isOutPtr )
+  bool isOut( const gp_Pnt& p, const gp_Ax1* planeNormal, bool* isOutPtr, int nbPln = 2 )
   {
     isOutPtr[0] = isOutPtr[1] = false;
 
-    for ( int i = 0; i < 2; ++i )
+    for ( int i = 0; i < nbPln; ++i )
     {
       isOutPtr[i] = ( signedDist( p, planeNormal[i] ) <= 0. );
     }
@@ -317,6 +379,131 @@ namespace
     if ( !theWorkGroups.empty() )
       theFaceID2Groups.Bind( theFace->GetID(), theWorkGroups );
   }
+
+  //================================================================================
+  /*!
+   * \brief Check distance between a point and an edge defined by a couple of nodes
+   */
+  //================================================================================
+
+  bool isOnEdge( const SMDS_MeshNode* n1,
+                 const SMDS_MeshNode* n2,
+                 const gp_Pnt&        p,
+                 const double         tol )
+  {
+    SMDS_LinearEdge edge( n1, n2 );
+    return ( SMESH_MeshAlgos::GetDistance( &edge, p ) < tol );
+  }
+
+  //================================================================================
+  /*!
+   * \return Index of intersection point detected on a triangle cut by planes
+   *  \param [in] i - index of a cut triangle side
+   *  \param [in] n1 - 1st point of a cut triangle side
+   *  \param [in] n2 - 2nd point of a cut triangle side
+   *  \param [in] face - a not cut triangle
+   *  \param [in] intPoint - the intersection point
+   *  \param [in] faceNodes - nodes of not cut triangle
+   *  \param [in] tol - tolerance
+   */
+  //================================================================================
+
+  int edgeIndex( const int                                  i,
+                 const SMESH_NodeXYZ&                       n1,
+                 const SMESH_NodeXYZ&                       n2,
+                 const SMDS_MeshElement*                    face,
+                 const IntPoint&                            intPoint,
+                 const std::vector< const SMDS_MeshNode* >& faceNodes,
+                 const double                               tol )
+  {
+    if ( n1.Node() && n2.Node() )
+      return face->GetNodeIndex( n1.Node() );
+
+    // project intPoint to sides of face
+    for ( size_t i = 1; i < faceNodes.size(); ++i )
+      if ( isOnEdge( faceNodes[ i-1 ], faceNodes[ i ], intPoint.myNode, tol ))
+        return i - 1;
+
+    return -(i+1);
+  }
+
+  //================================================================================
+  /*!
+   * \brief Find a neighboring segment and its next node
+   *  \param [in] curSegment - a current segment
+   *  \param [in,out] curNode - a current node to update
+   *  \param [in] segmentsOfNode - map of segments of nodes
+   *  \return Segment* - the found segment
+   */
+  //================================================================================
+
+  Segment* nextSegment( const Segment*         curSegment,
+                        const SMDS_MeshNode* & curNode,
+                        const TSegmentsOfNode& segmentsOfNode )
+  {
+    Segment* neighborSeg = 0;
+    const NodeData& noData = segmentsOfNode( curNode );
+    for ( size_t iS = 0; iS < noData.mySegments.size()  && !neighborSeg; ++iS )
+      if ( noData.mySegments[ iS ] != curSegment )
+        neighborSeg = noData.mySegments[ iS ];
+
+    if ( neighborSeg )
+    {
+      int iN = ( neighborSeg->Node(0) == curNode );
+      curNode = neighborSeg->Node( iN );
+    }
+    return neighborSeg;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Tries to find a segment to which a given point is too close
+   *  \param [in] p - the point
+   *  \param [in] minDist - minimal allowed distance from segment
+   *  \param [in] curSegment - start segment
+   *  \param [in] curNode - start node
+   *  \param [in] segmentsOfNode - map of segments of nodes
+   *  \return bool - true if a too close segment found
+   */
+  //================================================================================
+
+  const Segment* findTooCloseSegment( const IntPoint&        p,
+                                      const double           minDist,
+                                      const double           tol,
+                                      const Segment*         curSegment,
+                                      const SMDS_MeshNode*   curNode,
+                                      const TSegmentsOfNode& segmentsOfNode )
+  {
+    double prevDist = Precision::Infinite();
+    while ( curSegment )
+    {
+      double dist = SMESH_MeshAlgos::GetDistance( curSegment->myEdge, p.myNode );
+      if ( dist < minDist )
+      {
+        // check if dist is less than distance of curSegment to its cuts
+        // double minCutDist = prevDist;
+        // bool     coincide = false;
+        // for ( size_t iC = 0; iC < curSegment->myCuts.size(); ++iC )
+        // {
+        //   if (( coincide = ( curSegment->myCuts[iC].SquareDistance( p.myNode ) < tol * tol )))
+        //     break;
+        //   for ( size_t iP = 0; iP < 2; ++iP )
+        //   {
+        //     double cutDist = SMESH_MeshAlgos::GetDistance( curSegment->myEdge,
+        //                                                    curSegment->myCuts[iC][iP].myNode );
+        //     minCutDist = std::min( minCutDist, cutDist );
+        //   }
+        // }
+        // if ( !coincide && minCutDist > dist )
+        return curSegment;
+      }
+      if ( dist > prevDist )
+        break;
+      prevDist   = dist;
+      curSegment = nextSegment( curSegment, curNode, segmentsOfNode );
+    }
+    return 0;
+  }
 }
 
 //================================================================================
@@ -338,10 +525,10 @@ SMESH_MeshAlgos::MakeSlot( SMDS_ElemIteratorPtr             theSegmentIt,
   if ( !theSegmentIt || !theSegmentIt->more() || !theMesh || theWidth == 0.)
     return bndEdges;
 
+  // ----------------------------------------------------------------------------------
   // put the input segments to a data map in order to be able finding neighboring ones
+  // ----------------------------------------------------------------------------------
 
-  typedef std::vector< Segment* >                                                TSegmentVec;
-  typedef NCollection_DataMap< const SMDS_MeshNode*, TSegmentVec, SMESH_Hasher > TSegmentsOfNode;
   TSegmentsOfNode segmentsOfNode;
   ObjectPool< Segment > segmentPool;
 
@@ -357,15 +544,16 @@ SMESH_MeshAlgos::MakeSlot( SMDS_ElemIteratorPtr             theSegmentIt,
     for ( SMDS_NodeIteratorPtr nIt = edge->nodeIterator(); nIt->more(); )
     {
       const SMDS_MeshNode* n = nIt->next();
-      TSegmentVec* segVec = segmentsOfNode.ChangeSeek( n );
-      if ( !segVec )
-        segVec = segmentsOfNode.Bound( n, TSegmentVec() );
-      segVec->reserve(2);
-      segVec->push_back( segment );
+      NodeData* noData = segmentsOfNode.ChangeSeek( n );
+      if ( !noData )
+        noData = segmentsOfNode.Bound( n, NodeData() );
+      noData->AddSegment( segment, n );
     }
   }
 
+  // ---------------------------------
   // Cut the mesh around the segments
+  // ---------------------------------
 
   const double tol = Precision::Confusion();
   std::vector< gp_XYZ > faceNormals;
@@ -398,21 +586,8 @@ SMESH_MeshAlgos::MakeSlot( SMDS_ElemIteratorPtr             theSegmentIt,
     // get normals of planes separating domains of neighboring segments
     for ( int i = 0; i < 2; ++i ) // loop on 2 segment ends
     {
-      planeNormal[i] = segment->Ax1(i);
-
-      const SMDS_MeshNode*    n = segment->Node( i );
-      const TSegmentVec& segVec = segmentsOfNode( n );
-      for ( size_t iS = 0; iS < segVec.size(); ++iS )
-      {
-        if ( segVec[iS] == segment )
-          continue;
-
-        gp_Ax1 axis2 = segVec[iS]->Ax1();
-        if ( n != segVec[iS]->Node( 1 ))
-          axis2.Reverse(); // along a wire
-
-        planeNormal[i].SetDirection( planeNormal[i].Direction().XYZ() + axis2.Direction().XYZ() );
-      }
+      const SMDS_MeshNode* n = segment->Node( i );
+      planeNormal[i] = segmentsOfNode( n ).Plane( segment );
     }
 
     // we explore faces around a segment starting from face edges;
@@ -455,11 +630,12 @@ SMESH_MeshAlgos::MakeSlot( SMDS_ElemIteratorPtr             theSegmentIt,
         int nbNodes = face->NbCornerNodes();
         if ( nbNodes != 3 )
           throw SALOME_Exception( "MakeSlot() accepts triangles only" );
-        facePoints.assign( face->begin_nodes(), face->end_nodes() );
-        facePoints.resize( nbNodes + 1 );
-        facePoints[ nbNodes ] = facePoints[ 0 ];
+        faceNodes.assign( face->begin_nodes(), face->end_nodes() );
+        faceNodes.resize( nbNodes + 1 );
+        faceNodes[ nbNodes ] = faceNodes[ 0 ];
+        facePoints.assign( faceNodes.begin(), faceNodes.end() );
 
-        // check if cylinder axis || face        
+        // check if cylinder axis || face
         const gp_XYZ& faceNorm = computeNormal( face, faceNormals );
         bool isCylinderOnFace  = ( Abs( faceNorm * cylAxis.Direction().XYZ() ) < tol );
 
@@ -489,28 +665,23 @@ SMESH_MeshAlgos::MakeSlot( SMDS_ElemIteratorPtr             theSegmentIt,
               intPoints[ iP ].myEdgeIndex = i;
           else
             for ( ; iP < intPoints.size(); ++iP )
-              if ( n1.Node() && n2.Node() )
-                intPoints[ iP ].myEdgeIndex = face->GetNodeIndex( n1.Node() );
-              else
-                intPoints[ iP ].myEdgeIndex = -(i+1);
+              intPoints[ iP ].myEdgeIndex = edgeIndex( i, n1, n2, face,
+                                                       intPoints[ iP ], faceNodes, tol );
 
           nbFarPoints += ( segLine.SquareDistance( n1 ) > radius2 );
         }
 
         // feed startEdges
         if ( nbFarPoints < nbPoints || !intPoints.empty() )
-          for ( int i = 0; i < nbPoints; ++i )
+          for ( size_t i = 1; i < faceNodes.size(); ++i )
           {
-            const SMESH_NodeXYZ& n1 = facePoints[i];
-            const SMESH_NodeXYZ& n2 = facePoints[i+1];
-            if ( n1.Node() && n2.Node() )
+            const SMESH_NodeXYZ& n1 = faceNodes[i];
+            const SMESH_NodeXYZ& n2 = faceNodes[i-1];
+            isOut( n1, planeNormal, p[0].myIsOutPln );
+            isOut( n2, planeNormal, p[1].myIsOutPln );
+            if ( !isSegmentOut( p[0].myIsOutPln, p[1].myIsOutPln ))
             {
-              isOut( n1, planeNormal, p[0].myIsOutPln );
-              isOut( n2, planeNormal, p[1].myIsOutPln );
-              if ( !isSegmentOut( p[0].myIsOutPln, p[1].myIsOutPln ))
-              {
-                startEdges.push_back( NLink( n1.Node(), n2.Node() ));
-              }
+              startEdges.push_back( NLink( n1.Node(), n2.Node() ));
             }
           }
 
@@ -570,20 +741,12 @@ SMESH_MeshAlgos::MakeSlot( SMDS_ElemIteratorPtr             theSegmentIt,
             cutOff( intPoints[iE-1], intPoints[iE],
                     planeNormal[ intPoints[iE-1].myIsOutPln[1] ], tol );
 
-          edegDir = intPoints[iE].myNode - intPoints[iE-1].myNode;
-          if ( edegDir.SquareModulus() < tol * tol )
+          gp_XYZ edegDirNew = intPoints[iE].myNode - intPoints[iE-1].myNode;
+          if ( edegDir * edegDirNew < 0 ||
+               edegDir.SquareModulus() < tol * tol )
             continue; // fully cut off
 
-          // face cut
-          meshIntersector.Cut( face,
-                               intPoints[iE-1].myNode, intPoints[iE-1].myEdgeIndex,
-                               intPoints[iE  ].myNode, intPoints[iE  ].myEdgeIndex );
-
-          Edge e = { intPoints[iE].myNode.Node(), intPoints[iE-1].myNode.Node(), 0 };
-          segment->AddEdge( e, tol );
-          bndEdges.push_back( e );
-
-          findGroups( face, theGroupsToUpdate, faceID2Groups, groupVec );
+          segment->AddCutEdge( intPoints[iE], intPoints[iE-1], face );
 
         }
       }  // loop on faces sharing an edge
@@ -595,63 +758,151 @@ SMESH_MeshAlgos::MakeSlot( SMDS_ElemIteratorPtr             theSegmentIt,
   } // loop on all input segments
 
 
+  // ----------------------------------------------------------
+  // If a plane fully cuts off edges of one side of a segment,
+  // it also may cut edges of adjacent segments
+  // ----------------------------------------------------------
+
+  for ( TSegmentIterator segIt( segmentPool ); segIt.more(); ) // loop on all segments
+  {
+    Segment* segment = const_cast< Segment* >( segIt.next() );
+    if ( segment->NbFreeEnds( tol ) >= 4 )
+      continue;
+
+    for ( int iE = 0; iE < 2; ++iE ) // loop on 2 segment ends
+    {
+      const SMDS_MeshNode* n1 = segment->Node( iE );
+      const SMDS_MeshNode* n2 = segment->Node( 1 - iE );
+      planeNormal[0] = segmentsOfNode( n1 ).Plane( segment );
+
+      bool isNeighborCut;
+      Segment* neighborSeg = segment;
+      do // check segments connected to the segment via n2
+      {
+        neighborSeg = nextSegment( neighborSeg, n2, segmentsOfNode );
+        if ( !neighborSeg )
+          break;
+
+        isNeighborCut = false;
+        for ( size_t iC = 0; iC < neighborSeg->myCuts.size(); ++iC ) // check cut edges
+        {
+          IntPoint* intPnt = &( neighborSeg->myCuts[iC].myIntPnt1 );
+          isOut( intPnt[0].myNode, planeNormal, intPnt[0].myIsOutPln, 1 );
+          isOut( intPnt[1].myNode, planeNormal, intPnt[1].myIsOutPln, 1 );
+          const Segment * closeSeg[2] = { 0, 0 };
+          if ( intPnt[0].myIsOutPln[0] )
+            closeSeg[0] = findTooCloseSegment( intPnt[0], 0.5 * theWidth - tol, tol,
+                                               segment, n1, segmentsOfNode );
+          if ( intPnt[1].myIsOutPln[0] )
+            closeSeg[1] = findTooCloseSegment( intPnt[1], 0.5 * theWidth - tol, tol,
+                                               segment, n1, segmentsOfNode );
+          int nbCut = bool( closeSeg[0] ) + bool( closeSeg[1] );
+          if ( nbCut == 0 )
+            continue;
+          isNeighborCut = true;
+          if ( nbCut == 2 ) // remove a cut
+          {
+            if ( iC < neighborSeg->myCuts.size() - 1 )
+              neighborSeg->myCuts[iC] = neighborSeg->myCuts.back();
+            neighborSeg->myCuts.pop_back();
+          }
+          else // shorten cuts of 1) neighborSeg and 2) closeSeg
+          {
+            // 1)
+            int iP = bool( closeSeg[1] );
+            gp_Lin      segLine( closeSeg[iP]->Ax1() );
+            gp_Ax3      cylAxis( segLine.Location(), segLine.Direction() );
+            gp_Cylinder cyl( cylAxis, 0.5 * theWidth );
+            intPoints.clear();
+            if ( intersectEdge( cyl, intPnt[iP].myNode, intPnt[1-iP].myNode, tol, intPoints ) &&
+                 intPoints[0].SquareDistance( intPnt[iP] ) > tol * tol )
+              intPnt[iP].myNode = intPoints[0].myNode;
+
+            // 2)
+            double minCutDist = theWidth;
+            gp_XYZ projection, closestProj;
+            int    iCut;
+            for ( size_t iC = 0; iC < closeSeg[iP]->myCuts.size(); ++iC )
+            {
+              double cutDist = closeSeg[iP]->myCuts[iC].SquareDistance( intPnt[iP].myNode,
+                                                                        projection );
+              if ( cutDist < minCutDist )
+              {
+                closestProj = projection;
+                minCutDist  = cutDist;
+                iCut        = iC;
+              }
+              if ( minCutDist < tol * tol )
+                break;
+            }
+            double d1 = SMESH_MeshAlgos::GetDistance( neighborSeg->myEdge,
+                                                      closeSeg[iP]->myCuts[iCut][0].myNode );
+            double d2 = SMESH_MeshAlgos::GetDistance( neighborSeg->myEdge,
+                                                      closeSeg[iP]->myCuts[iCut][1].myNode );
+            int iP2 = ( d2 < d1 );
+            IntPoint& ip = const_cast< IntPoint& >( closeSeg[iP]->myCuts[iCut][iP2] );
+            ip = intPnt[iP];
+          }
+          // update myFreeEnds
+          neighborSeg->myFreeEnds.clear();
+          neighborSeg->NbFreeEnds( tol );
+        }
+      }
+      while ( isNeighborCut );
+    }
+  }
+
+  // -----------------------
+  // Cut faces by cut edges
+  // -----------------------
+
+  for ( TSegmentIterator segIt( segmentPool ); segIt.more(); ) // loop on all segments
+  {
+    Segment* segment = const_cast< Segment* >( segIt.next() );
+    for ( size_t iC = 0; iC < segment->myCuts.size(); ++iC )
+    {
+      Cut & cut = segment->myCuts[ iC ];
+      computeNormal( cut.myFace, faceNormals );
+      meshIntersector.Cut( cut.myFace,
+                           cut.myIntPnt1.myNode, cut.myIntPnt1.myEdgeIndex,
+                           cut.myIntPnt2.myNode, cut.myIntPnt2.myEdgeIndex );
+
+      Edge e = { cut.myIntPnt1.myNode.Node(), cut.myIntPnt2.myNode.Node(), 0 };
+      bndEdges.push_back( e );
+
+      findGroups( cut.myFace, theGroupsToUpdate, faceID2Groups, groupVec );
+    }
+  }
+
+  // -----------------------------------------
   // Make cut at the end of group of segments
+  // -----------------------------------------
 
   std::vector<const SMDS_MeshElement*> polySegments;
 
   for ( TSegmentsOfNode::Iterator nSegsIt( segmentsOfNode ); nSegsIt.More(); nSegsIt.Next() )
   {
-    const TSegmentVec& segVec = nSegsIt.Value();
-    if ( segVec.size() != 1 )
+    const NodeData& noData = nSegsIt.Value();
+    if ( noData.mySegments.size() != 1 )
       continue;
 
-    const Segment*       segment = segVec[0];
-    const SMDS_MeshNode* segNode = nSegsIt.Key();
+    const Segment* segment = noData.mySegments[0];
 
-    // find two end nodes of cut edges to make a cut between
-    if ( segment->myEndNodes.size() != 4 )
+    // find two IntPoint's of cut edges to make a cut between
+    if ( segment->myFreeEnds.size() != 4 )
       throw SALOME_Exception( "MakeSlot(): too short end edge?" );
-    SMESH_MeshAlgos::PolySegment linkNodes;
-    gp_Ax1 planeNorm = segment->Ax1( segNode != segment->Node(0) );
-    double minDist[2] = { 1e100, 1e100 };
-    Segment::TNodeSet::const_iterator nIt = segment->myEndNodes.begin();
-    for ( ; nIt != segment->myEndNodes.end(); ++nIt )
+    std::multimap< double, const IntPoint* > dist2IntPntMap;
+    for ( size_t iE = 0; iE < segment->myFreeEnds.size(); ++iE )
     {
-      SMESH_NodeXYZ n = *nIt;
-      double d = Abs( signedDist( n, planeNorm ));
-      double diff1 = minDist[0] - d, diff2 = minDist[1] - d;
-      int i;
-      if ( diff1 > 0 && diff2 > 0 )
-      {
-        i = ( diff1 < diff2 );
-      }
-      else if ( diff1 > 0 )
-      {
-        i = 0;
-      }
-      else if ( diff2 > 0 )
-      {
-        i = 1;
-      }
-      else
-      {
-        continue;
-      }
-      linkNodes.myXYZ[ i ] = n;
-      minDist        [ i ] = d;
+      const SMESH_NodeXYZ& n = segment->myFreeEnds[ iE ]->myNode;
+      double d = Abs( signedDist( n, noData.myPlane ));
+      dist2IntPntMap.insert( std::make_pair( d, segment->myFreeEnds[ iE ]));
     }
-    // for ( int iSide = 0; iSide < 2; ++iSide )
-    // {
-    //   if ( segment->myCutEdges[ iSide ].empty() )
-    //     throw SALOME_Exception( "MakeSlot(): too short end edge?" );
-    //   SMESH_NodeXYZ n1 = segment->myCutEdges[ iSide ].front()._node1;
-    //   SMESH_NodeXYZ n2 = segment->myCutEdges[ iSide ].back ()._node2;
-    //   double d1 = Abs( signedDist( n1, planeNorm ));
-    //   double d2 = Abs( signedDist( n2, planeNorm ));
-    //   linkNodes.myXYZ  [ iSide ] = ( d1 < d2 ) ? n1 : n2;
-    //   linkNodes.myNode1[ iSide ] = linkNodes.myNode2[ iSide ] = 0;
-    // }
-    linkNodes.myVector = planeNorm.Direction() ^ (linkNodes.myXYZ[0] - linkNodes.myXYZ[1]);
+    std::multimap< double, const IntPoint* >::iterator d2ip = dist2IntPntMap.begin();
+    SMESH_MeshAlgos::PolySegment linkNodes;
+    linkNodes.myXYZ[0] = d2ip->second->myNode;
+    linkNodes.myXYZ[1] = (++d2ip)->second->myNode;
+    linkNodes.myVector = noData.myPlane.Direction() ^ (linkNodes.myXYZ[0] - linkNodes.myXYZ[1]);
     linkNodes.myNode1[ 0 ] = linkNodes.myNode2[ 0 ] = 0;
     linkNodes.myNode1[ 1 ] = linkNodes.myNode2[ 1 ] = 0;
 
@@ -682,8 +933,7 @@ SMESH_MeshAlgos::MakeSlot( SMDS_ElemIteratorPtr             theSegmentIt,
         intPoints[iP].myEdgeIndex = -1;
         for ( int iN = 0; iN < nbNodes &&  intPoints[iP].myEdgeIndex < 0; ++iN )
         {
-          SMDS_LinearEdge edge( faceNodes[iN], faceNodes[iN+1] );
-          if ( SMESH_MeshAlgos::GetDistance( &edge, intPoints[iP].myNode) < tol )
+          if ( isOnEdge( faceNodes[iN], faceNodes[iN+1], intPoints[iP].myNode, tol ))
             intPoints[iP].myEdgeIndex = iN;
         }
       }

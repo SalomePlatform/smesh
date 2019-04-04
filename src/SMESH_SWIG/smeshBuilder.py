@@ -6419,7 +6419,7 @@ class Mesh(metaclass = MeshMeta):
             holeNodes = SMESH.FreeBorder(nodeIDs=holeNodes)
         if not isinstance( holeNodes, SMESH.FreeBorder ):
             raise TypeError("holeNodes must be either SMESH.FreeBorder or list of integer and not %s" % holeNodes)
-        self.editor.FillHole( holeNodes, groupName )
+        return self.editor.FillHole( holeNodes, groupName )
 
     def FindCoincidentFreeBorders (self, tolerance=0.):
         """
