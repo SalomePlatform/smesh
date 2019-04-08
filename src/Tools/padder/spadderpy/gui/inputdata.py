@@ -36,6 +36,8 @@ class InputData(DataModeler):
         'STEELBAR'
         ])
 
+    maListe=MESHTYPES.listvalues()
+
     def __init__(self):
         DataModeler.__init__(self)
         self.addAttribute(
@@ -44,20 +46,22 @@ class InputData(DataModeler):
             )
         self.addAttribute(
             name  = "meshName",
-            type  = TypeString,
-            range = None
+            a_type  = TypeString,
+            a_range = None
             )
         self.addAttribute(
             name  = "meshType",
-            type  = TypeInteger,
-            range = self.MESHTYPES.listvalues()
+            a_type  = TypeInteger,
+            #range = self.MESHTYPES.listvalues()
+            a_range = [0,1] 
             )
         self.addAttribute(
             name  = "groupName",
-            type  = TypeString,
-            range = None
+            a_type  = TypeString,
+            a_range = None
             )
 
+ 
 #
 # ==============================================================================
 # Basic use cases and unit tests
