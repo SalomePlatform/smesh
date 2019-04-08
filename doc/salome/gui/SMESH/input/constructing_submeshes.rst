@@ -116,7 +116,7 @@ If the parent mesh is already computed, then you can define the **Geometry** by 
 .. image:: ../images/choose_geom_selection_way.png
 	:align: center
 
-**Direct geometry selection** enables selecting the sub-shape in the Objec Browser.
+**Direct geometry selection** enables selecting the sub-shape in the Object Browser.
 **Find geometry by mesh element selection** activates the following dialog.
 
 .. image:: ../images/find_geom_by_mesh_elem.png

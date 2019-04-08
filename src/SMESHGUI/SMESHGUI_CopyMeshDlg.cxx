@@ -356,7 +356,7 @@ QString SMESHGUI_CopyMeshDlg::getErrorMsg( SMESH::string_array_var theInvalidEnt
   // theInvalidEntries - SObject's that hold geometry objects whose
   // counterparts are not found in the newGeometry, followed by SObject's
   // holding mesh sub-objects that are invalid because they depend on a not found
-  // preceeding sub-shape
+  // preceding sub-shape
 
   QString msg = tr("SUBSHAPES_NOT_FOUND_MSG") + "\n";
 

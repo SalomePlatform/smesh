@@ -296,7 +296,7 @@ module SMESH
      *  \param invalidEntries - return study entries of objects whose
      *         counterparts are not found in the newGeometry, followed by entries
      *         of mesh sub-objects that are invalid because they depend on a not found
-     *         preceeding sub-shape
+     *         preceding sub-shape
      */
     boolean CopyMeshWithGeom( in SMESH_Mesh        sourceMesh,
                               in GEOM::GEOM_Object newGeometry,
@@ -500,9 +500,9 @@ module SMESH
      * Return indices of elements, which are located inside the sphere
      *  \param theSource - mesh, sub-mesh or group
      *  \param theElemType - mesh element type
-     *  \param theX - x cooridate of the center of the sphere
-     *  \param theY - y cooridate of the center of the sphere
-     *  \param theZ - y cooridate of the center of the sphere
+     *  \param theX - x coordinate of the center of the sphere
+     *  \param theY - y coordinate of the center of the sphere
+     *  \param theZ - y coordinate of the center of the sphere
      *  \param theR - radius of the sphere
      */
     long_array GetInsideSphere( in SMESH_IDSource theSource,
@@ -516,12 +516,12 @@ module SMESH
      * Return indices of elements, which are located inside the box
      *  \param theSource - mesh, sub-mesh or group
      *  \param theElemType - mesh element type
-     *  \param theX1 - x cooridate of the first opposite point
-     *  \param theY1 - y cooridate of the first opposite point
-     *  \param theZ1 - y cooridate of the first opposite point
-     *  \param theX2 - x cooridate of the second opposite point
-     *  \param theY2 - y cooridate of the second opposite point
-     *  \param theZ2 - y cooridate of the second opposite point
+     *  \param theX1 - x coordinate of the first opposite point
+     *  \param theY1 - y coordinate of the first opposite point
+     *  \param theZ1 - y coordinate of the first opposite point
+     *  \param theX2 - x coordinate of the second opposite point
+     *  \param theY2 - y coordinate of the second opposite point
+     *  \param theZ2 - y coordinate of the second opposite point
      */
     long_array GetInsideBox( in SMESH_IDSource theSource,
 			     in ElementType    theElemType,
@@ -535,12 +535,12 @@ module SMESH
      * Return indices of elements, which are located inside the box
      *  \param theSource - mesh, sub-mesh or group
      *  \param theElemType - mesh element type
-     *  \param theX - x cooridate of the cented of the bottom face
-     *  \param theY - y cooridate of the cented of the bottom face
-     *  \param theZ - y cooridate of the cented of the bottom face
-     *  \param theDX - x cooridate of the cented of the base vector
-     *  \param theDY - y cooridate of the cented of the base vector
-     *  \param theDZ - z cooridate of the cented of the base vector
+     *  \param theX - x coordinate of the cented of the bottom face
+     *  \param theY - y coordinate of the cented of the bottom face
+     *  \param theZ - y coordinate of the cented of the bottom face
+     *  \param theDX - x coordinate of the cented of the base vector
+     *  \param theDY - y coordinate of the cented of the base vector
+     *  \param theDZ - z coordinate of the cented of the base vector
      *  \param theH - height of the cylinder
      *  \param theR - radius of the cylinder
      */
