@@ -2391,8 +2391,9 @@ namespace
           // if ( !myLinks[i].IsInternal() )
           //   myLinks[ i ].myFace = cutterFace;
           // else
-          myLinks[ i   ].ReplaceCoplanar( newEdge );
-          myLinks[ i+1 ].ReplaceCoplanar( newEdge );
+          myLinks[ i ].ReplaceCoplanar( newEdge );
+          if ( myLinks[i].IsInternal() && i+1 < myLinks.size() )
+            myLinks[ i+1 ].ReplaceCoplanar( newEdge );
           return;
         }
         i += myLinks[i].IsInternal();
