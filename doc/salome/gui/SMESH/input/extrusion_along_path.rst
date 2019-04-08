@@ -143,7 +143,7 @@ Extrusion of 2d elements along a closed path
    .. |add| image:: ../images/add.png
    .. |rem| image:: ../images/remove.png
 
-   * The elements can also be rotated around the path with rotaion center at the **Base point** to get the resulting mesh in a helical fashion. You can set the values of angles at the right, add them to **Rotation angles** list at the left by pressing the *"Add"* button |add| and remove them from the list by pressing the *"Remove"* button |rem|.
+   * The elements can also be rotated around the path with rotation center at the **Base point** to get the resulting mesh in a helical fashion. You can set the values of angles at the right, add them to **Rotation angles** list at the left by pressing the *"Add"* button |add| and remove them from the list by pressing the *"Remove"* button |rem|.
 
      **Linear variation of angles** option allows defining the angle of gradual rotation for the whole path. At each step the elements will be rotated by *( angle / nb. of steps )*.
 

@@ -759,10 +759,7 @@ namespace SMESH_MeshAlgos
                        const double     theSign,
                        const bool       theOptimize );
 
-    //! Cut a face by planes, whose normals point to parts to keep
-    bool CutByPlanes(const SMDS_MeshElement*        face,
-                     const std::vector< gp_Ax1 > &  planes,
-                     std::vector< SMESH_NodeXYZ > & newConnectivity );
+    void IntersectNewEdges( const CutFace& theCFace );
 
   private:
 
@@ -815,7 +812,6 @@ namespace SMESH_MeshAlgos
                             bool &      isCollinear  );
     bool intersectEdgeEdge( int iE1, int iE2, IntPoint2D& intPoint );
     bool isPointInTriangle( const gp_XYZ& p, const std::vector< SMESH_NodeXYZ >& nodes );
-    void intersectNewEdges( const CutFace& theCFace );
     const SMDS_MeshNode* createNode( const gp_XYZ& p );
   };
 
@@ -1662,7 +1658,7 @@ namespace SMESH_MeshAlgos
    */
   //================================================================================
 
-  void Intersector::Algo::intersectNewEdges( const CutFace& cf )
+  void Intersector::Algo::IntersectNewEdges( const CutFace& cf )
   {
     IntPoint2D intPoint;
 
@@ -1859,7 +1855,7 @@ namespace SMESH_MeshAlgos
           }
         }
         if ( cf.myLinks.size() >= limit )
-          throw SALOME_Exception( "Infinite loop in Intersector::Algo::intersectNewEdges()" );
+          throw SALOME_Exception( "Infinite loop in Intersector::Algo::IntersectNewEdges()" );
       }
       ++i1; // each internal edge encounters twice
     }
@@ -1913,7 +1909,7 @@ namespace SMESH_MeshAlgos
     {
       const CutFace& cf = *cutFacesIt;
       cf.ReplaceNodes( myRemove2KeepNodes );
-      intersectNewEdges( cf );
+      IntersectNewEdges( cf );
     }
 
     // make new faces
@@ -1948,7 +1944,7 @@ namespace SMESH_MeshAlgos
       // avoid loops that are not connected to boundary edges of cf.myInitFace
       if ( cf.RemoveInternalLoops( loopSet ))
       {
-        intersectNewEdges( cf );
+        IntersectNewEdges( cf );
         cf.MakeLoops( loopSet, normal );
       }
       // erase loops that are cut off by face intersections
@@ -2228,6 +2224,10 @@ namespace SMESH_MeshAlgos
         theNewFaceConnectivity.push_back( facePoints );
         break;
       }
+
+      // intersect cut lines
+      algo.IntersectNewEdges( cf );
+
       // form loops of new faces
       EdgeLoopSet loopSet;
       cf.MakeLoops( loopSet, normals[ faceToCut->GetID() ]);
@@ -2391,8 +2391,9 @@ namespace
           // if ( !myLinks[i].IsInternal() )
           //   myLinks[ i ].myFace = cutterFace;
           // else
-          myLinks[ i   ].ReplaceCoplanar( newEdge );
-          myLinks[ i+1 ].ReplaceCoplanar( newEdge );
+          myLinks[ i ].ReplaceCoplanar( newEdge );
+          if ( myLinks[i].IsInternal() && i+1 < myLinks.size() )
+            myLinks[ i+1 ].ReplaceCoplanar( newEdge );
           return;
         }
         i += myLinks[i].IsInternal();

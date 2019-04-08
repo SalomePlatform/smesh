@@ -34,7 +34,7 @@ import SMESH, SALOMEDS
 from salome.smesh import smeshBuilder
 smesh =  smeshBuilder.New()
 
-# ---- define a boxe
+# ---- define a box
 
 box = geompy.MakeBox(0., 0., 0., 100., 200., 300.)
 
@@ -52,7 +52,7 @@ print("number of Edges  in box : ", len(subEdgeList))
 
 ### ---------------------------- SMESH --------------------------------------
 
-# ---- init a Mesh with the boxe
+# ---- init a Mesh with the box
 
 mesh = smesh.Mesh(box, "MeshBox")
 
@@ -90,7 +90,7 @@ print(hypVolume.GetId())
 print(hypVolume.GetMaxElementVolume())
 smesh.SetName(hypVolume, "MaxElementVolume_" + str(maxElementVolume))
 
-print("-------------------------- compute the mesh of the boxe")
+print("-------------------------- compute the mesh of the box")
 ret = mesh.Compute()
 print(ret)
 if ret != 0:

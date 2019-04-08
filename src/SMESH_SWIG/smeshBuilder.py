@@ -812,7 +812,7 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
 
         Parameters:
                 sourceMesh: the mesh to copy definition of.
-                newGeom: the new geomtry.
+                newGeom: the new geometry.
                 meshName: an optional name of the new mesh. If omitted, the mesh name is kept.
                 toCopyGroups: to create groups in the new mesh.
                 toReuseHypotheses: to reuse hypotheses of the *sourceMesh*.
@@ -823,7 +823,7 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
                 *invalidEntries* are study entries of objects whose
                 counterparts are not found in the *newGeom*, followed by entries
                 of mesh sub-objects that are invalid because they depend on a not found
-                preceeding sub-shape
+                preceding sub-shape
         """
         if isinstance( sourceMesh, Mesh ):
             sourceMesh = sourceMesh.GetMesh()
@@ -6419,7 +6419,7 @@ class Mesh(metaclass = MeshMeta):
             holeNodes = SMESH.FreeBorder(nodeIDs=holeNodes)
         if not isinstance( holeNodes, SMESH.FreeBorder ):
             raise TypeError("holeNodes must be either SMESH.FreeBorder or list of integer and not %s" % holeNodes)
-        self.editor.FillHole( holeNodes, groupName )
+        return self.editor.FillHole( holeNodes, groupName )
 
     def FindCoincidentFreeBorders (self, tolerance=0.):
         """

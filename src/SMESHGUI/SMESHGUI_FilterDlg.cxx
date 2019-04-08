@@ -1402,7 +1402,7 @@ void SMESHGUI_FilterTable::SetCriterion (const int                       theRow,
            theCriterion.Type != SMESH::FT_OverConstrainedVolume &&
            theCriterion.Type != SMESH::FT_LinearOrQuadratic)
   {
-    // Numberic criterion
+    // Numeric criterion
     aTable->item( theRow, 2 )->setText(QString("%1").arg(theCriterion.Threshold, 0, 'g', 15));
   }
   else

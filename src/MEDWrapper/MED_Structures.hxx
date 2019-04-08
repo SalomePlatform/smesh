@@ -193,7 +193,7 @@ namespace MED
     TInt myNbElem; //<! Number of corresponding mesh entities
     TInt GetNbElem() const { return myNbElem; } //! Get number of mesh elements
 
-    //! Defines sequence MED Family indexes for corresponding mesh entites
+    //! Defines sequence MED Family indexes for corresponding mesh entities
     PElemNum myFamNum;
     //! Get number of a MED FAMILY by order number of the mesh element
     TInt GetFamNum(TInt theId) const;
@@ -587,7 +587,7 @@ namespace MED
     size_t
     GetSize() const;
 
-    //! Returns MED interpetation of the value size
+    //! Returns MED interpretation of the value size
     size_t
     GetNbVal() const;
 

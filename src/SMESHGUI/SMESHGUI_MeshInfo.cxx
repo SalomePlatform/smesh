@@ -81,7 +81,7 @@ public:
 /*!
   \brief Constructor.
   \param parent Parent widget.
-  \param name Field name. Defauls to null string.
+  \param name Field name. Defaults to null string.
 */
 Field::Field( QWidget* parent, const QString& name ): QLabel( parent )
 {
@@ -382,7 +382,7 @@ namespace
     \brief Format connectivity data to string representation.
     \param connectivity Connectivity map.
     \param type Element type or face index if negative
-    \return Stringifed representation of the connectivity.
+    \return Stringified representation of the connectivity.
   */
   QString formatConnectivity( SMESH::Connectivity connectivity, int type )
   {
@@ -1036,7 +1036,7 @@ void SMESHGUI_BaseInfo::setFieldsVisible( int startRow, int lastRow, bool on )
 }
 
 /*!
-  \brief Write information from panel to ouput stream.
+  \brief Write information from panel to output stream.
   \param out Text stream output.
 */
 void SMESHGUI_BaseInfo::saveInfo( QTextStream& out )
@@ -1999,7 +1999,7 @@ void SMESHGUI_ElemInfo::updateControls()
 }
 
 /*!
-  \brief Write information from panel to ouput stream.
+  \brief Write information from panel to output stream.
   \param out Text stream output.
 */
 void SMESHGUI_ElemInfo::saveInfo( QTextStream &out )
@@ -2864,7 +2864,7 @@ void SMESHGUI_AddInfo::showNextSubMeshes()
 }
 
 /*!
-  \brief Write information from panel to ouput stream.
+  \brief Write information from panel to output stream.
   \param out Text stream output.
 */
 void SMESHGUI_AddInfo::saveInfo( QTextStream &out )
@@ -2926,7 +2926,7 @@ public:
 };
 
 /*!
-  \brief Contructor.
+  \brief Constructor.
   \param parent Parent widget.
   \internal
 */

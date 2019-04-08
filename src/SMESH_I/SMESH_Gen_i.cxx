@@ -3453,7 +3453,7 @@ namespace // utils for CopyMeshWithGeom()
  *  \param [out] invalidEntries - return study entries of objects whose
  *         counterparts are not found in the newGeometry, followed by entries
  *         of mesh sub-objects that are invalid because they depend on a not found
- *         preceeding sub-shape
+ *         preceding sub-shape
  *  \return CORBA::Boolean - is a success
  */
 //================================================================================

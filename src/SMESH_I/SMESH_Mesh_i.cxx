@@ -1104,6 +1104,10 @@ void SMESH_Mesh_i::RemoveGroup( SMESH::SMESH_GroupBase_ptr theGroup )
   if ( !aGroup )
     return;
 
+  if ( aGroup->GetMeshServant() != this )
+    THROW_SALOME_CORBA_EXCEPTION( "RemoveGroup(): group does not belong to this mesh",
+                                  SALOME::BAD_PARAM );
+
   SALOMEDS::SObject_wrap aGroupSO = _gen_i->ObjectToSObject( theGroup );
   if ( !aGroupSO->_is_nil() )
   {
@@ -1137,6 +1141,11 @@ void SMESH_Mesh_i::RemoveGroupWithContents( SMESH::SMESH_GroupBase_ptr theGroup 
 
   if ( theGroup->_is_nil() )
     return;
+
+  SMESH_GroupBase_i* groupImpl = SMESH::DownCast< SMESH_GroupBase_i* >( theGroup );
+  if ( !groupImpl || groupImpl->GetMeshServant() != this )
+    THROW_SALOME_CORBA_EXCEPTION( "RemoveGroupWithContents(): group does not belong to this mesh",
+                                  SALOME::BAD_PARAM);
 
   vector<int> nodeIds; // to remove nodes becoming free
   bool isNodal = ( theGroup->GetType() == SMESH::NODE );
