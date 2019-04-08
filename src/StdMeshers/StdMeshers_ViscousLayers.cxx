@@ -1591,7 +1591,7 @@ namespace VISCOUS_3D
 
   //================================================================================
   /*!
-   * \brief Computes mimimal distance of face in-FACE nodes from an EDGE
+   * \brief Computes minimal distance of face in-FACE nodes from an EDGE
    *  \param [in] face - the mesh face to treat
    *  \param [in] nodeOnEdge - a node on the EDGE
    *  \param [out] faceSize - the computed distance
@@ -4091,7 +4091,7 @@ gp_XYZ _OffsetPlane::GetCommonPoint(bool&                 isFound,
 
 //================================================================================
 /*!
- * \brief Find 2 neigbor nodes of a node on EDGE
+ * \brief Find 2 neighbor nodes of a node on EDGE
  */
 //================================================================================
 
@@ -4136,7 +4136,7 @@ bool _ViscousBuilder::findNeiborsOnEdge(const _LayerEdge*     edge,
 
 //================================================================================
 /*!
- * \brief Set _curvature and _2neibors->_plnNorm by 2 neigbor nodes residing the same EDGE
+ * \brief Set _curvature and _2neibors->_plnNorm by 2 neighbor nodes residing the same EDGE
  */
 //================================================================================
 

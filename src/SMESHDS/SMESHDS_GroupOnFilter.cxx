@@ -147,6 +147,7 @@ namespace // Iterator
     size_t                            myNbToFind, myNbFound, myTotalNb;
     vector< const SMDS_MeshElement*>& myFoundElems;
     bool &                            myFoundElemsOK;
+    bool                              myFoundElemsChecked;
 
     TIterator( const SMESH_PredicatePtr&         filter,
                SMDS_ElemIteratorPtr&             elems,
@@ -161,14 +162,15 @@ namespace // Iterator
       myNbFound( 0 ),
       myTotalNb( totalNb ),
       myFoundElems( foundElems ),
-      myFoundElemsOK( foundElemsOK )
+      myFoundElemsOK( foundElemsOK ),
+      myFoundElemsChecked( false )
     {
       myFoundElemsOK = false;
       next();
     }
     ~TIterator()
     {
-      if ( !myFoundElemsOK )
+      if ( !myFoundElemsChecked && !myFoundElemsOK )
         clearVector( myFoundElems );
     }
     virtual bool more()
@@ -225,6 +227,8 @@ namespace // Iterator
       }
       if ( !myFoundElemsOK )
         clearVector( myFoundElems );
+
+      myFoundElemsChecked = true; // in destructor: not to clearVector() which may already die
     }
   };
 

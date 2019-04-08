@@ -603,7 +603,7 @@ SMESH_Invalid_subMesh_i::SMESH_Invalid_subMesh_i( PortableServer::POA_ptr thePOA
 
 //=======================================================================
 //function : GetSubShape
-//purpose  : return geomtry which is not a sub-shape of the main shape
+//purpose  : return geometry which is not a sub-shape of the main shape
 //=======================================================================
 
 GEOM::GEOM_Object_ptr SMESH_Invalid_subMesh_i::GetSubShape()

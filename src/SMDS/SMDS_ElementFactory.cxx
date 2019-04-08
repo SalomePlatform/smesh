@@ -239,6 +239,9 @@ int SMDS_ElementFactory::FromVtkToSmds( vtkIdType vtkID )
 
 void SMDS_ElementFactory::Free( const SMDS_MeshElement* e )
 {
+  if ( e != FindElement( e->GetID() ))
+    SALOME_Exception("SMDS_ElementFactory::Free(): element of other mesh");
+
   if ( !myVtkIDs.empty() )
   {
     size_t    id = e->GetID() - 1;

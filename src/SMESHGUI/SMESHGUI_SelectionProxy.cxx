@@ -101,7 +101,7 @@ SMESH::SelectionProxy::SelectionProxy( const SelectionProxy& other )
 void SMESH::SelectionProxy::init()
 {
   if ( myIO.IsNull() )
-    myIO = new SALOME_InteractiveObject(); // create dummy IO to avoid crashes when accesing it
+    myIO = new SALOME_InteractiveObject(); // create dummy IO to avoid crashes when accessing it
 
   if ( !CORBA::is_nil( myObject ) )
   {
@@ -1376,7 +1376,7 @@ void SMESH::MedInfo::setVersion( uint major, uint minor, uint release )
 ////////////////////////////////////////////////////////////////////////////////
 
 /*!
-  \brief Contructor. Creates invalid position.
+  \brief Constructor. Creates invalid position.
 */
 SMESH::Position::Position():
   myShapeId(-1), myShapeType(-1), myU(0), myV(0), myHasU(false), myHasV(false)
