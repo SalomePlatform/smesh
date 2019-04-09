@@ -52,7 +52,6 @@ class InputData(DataModeler):
         self.addAttribute(
             name  = "meshType",
             a_type  = TypeInteger,
-            #range = self.MESHTYPES.listvalues()
             a_range = [0,1] 
             )
         self.addAttribute(
@@ -61,7 +60,6 @@ class InputData(DataModeler):
             a_range = None
             )
 
- 
 #
 # ==============================================================================
 # Basic use cases and unit tests
