@@ -2436,6 +2436,15 @@ SMDSAbs_ElementType CoincidentNodes::GetType() const
   return SMDSAbs_Node;
 }
 
+void CoincidentNodes::SetTolerance( const double theToler )
+{
+  if ( myToler != theToler )
+  {
+    SetMesh(0);
+    myToler = theToler;
+  }
+}
+
 void CoincidentNodes::SetMesh( const SMDS_Mesh* theMesh )
 {
   myMeshModifTracer.SetMesh( theMesh );
@@ -4897,6 +4906,8 @@ void BelongToGeom::SetMesh( const SMDS_Mesh* theMesh )
     myMeshDS = dynamic_cast<const SMESHDS_Mesh*>(theMesh);
     init();
   }
+  if ( myElementsOnShapePtr )
+    myElementsOnShapePtr->SetMesh( myMeshDS );
 }
 
 void BelongToGeom::SetGeom( const TopoDS_Shape& theShape )
@@ -5073,6 +5084,8 @@ void LyingOnGeom::SetMesh( const SMDS_Mesh* theMesh )
     myMeshDS = dynamic_cast<const SMESHDS_Mesh*>(theMesh);
     init();
   }
+  if ( myElementsOnShapePtr )
+    myElementsOnShapePtr->SetMesh( myMeshDS );
 }
 
 void LyingOnGeom::SetGeom( const TopoDS_Shape& theShape )

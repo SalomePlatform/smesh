@@ -3911,9 +3911,15 @@ void SMESHGUI_CtrlInfo::clearInternal()
 
 void SMESHGUI_CtrlInfo::setTolerance( double theTolerance )
 {
-  //SMESH::long_array_var anElems = getElementsByType( SMESH::NODE );
-  myButtons[1]->setEnabled( true );
-  myWidgets[2]->setText("");
+  myButtons[2]->setEnabled( true );
+  myWidgets[3]->setText("");
+  for ( int i = 0; i < myPredicates.count(); ++i )
+    if ( myPredicates[i]->GetFunctorType() == SMESH::FT_EqualNodes )
+    {
+      SMESH::EqualNodes_var functor = SMESH::EqualNodes::_narrow( myPredicates[i] );
+      if ( !functor->_is_nil() )
+        functor->SetTolerance( theTolerance );
+    }
 }
 
 #ifndef DISABLE_PLOT2DVIEWER
