@@ -419,7 +419,7 @@ namespace SMESH{
       virtual bool IsSatisfy( long theElementId );
       virtual SMDSAbs_ElementType GetType() const;
 
-      void SetTolerance (const double theToler)  { myToler = theToler; }
+      void SetTolerance (const double theToler);
       double GetTolerance () const { return myToler; }
 
     private:
@@ -819,7 +819,7 @@ namespace SMESH{
       ~ManifoldPart();
       //virtual Predicate* clone() const { return new ManifoldPart( *this ); }
       virtual void SetMesh( const SMDS_Mesh* theMesh );
-      // inoke when all parameters already set
+      // invoke when all parameters already set
       virtual bool IsSatisfy( long theElementId );
       virtual      SMDSAbs_ElementType GetType() const;
 
