@@ -33,10 +33,12 @@
 #include "SMESH_Block.hxx"
 #include "SMESH_Comment.hxx"
 #include "SMESH_ComputeError.hxx"
+#include "SMESH_HypoFilter.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_MeshAlgos.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMesh.hxx"
+#include "StdMeshers_ViscousLayers.hxx"
 
 #include <BRepAdaptor_Surface.hxx>
 #include <BRep_Tool.hxx>
@@ -118,8 +120,9 @@ public:
   bool Contain( const TopoDS_Vertex& vertex ) const;
   void AppendSide( const _FaceSide& side );
   void SetBottomSide( int i );
-  int GetNbSegments(SMESH_Mesh& mesh) const;
-  bool StoreNodes(SMESH_Mesh& mesh, vector<const SMDS_MeshNode*>& myGrid, bool reverse );
+  int GetNbSegments(SMESH_ProxyMesh& mesh, const SMESHDS_SubMesh* smToCheckEdges=0) const;
+  bool StoreNodes(SMESH_ProxyMesh& mesh, vector<const SMDS_MeshNode*>& myGrid,
+                  bool reverse, bool isProxy, const SMESHDS_SubMesh* smToCheckEdges=0 );
   void SetID(EQuadSides id) { myID = id; }
   static inline const TopoDS_TShape* ptr(const TopoDS_Shape& theShape)
   { return theShape.TShape().operator->(); }
@@ -150,7 +153,7 @@ public:
 public: //** Methods to find and orient faces of 6 sides of the box **//
   
   //!< initialization
-  bool Init(const TopoDS_Face& f, SMESH_Mesh& mesh );
+  bool Init(const TopoDS_Face& f, SMESH_ProxyMesh& mesh );
 
   //!< try to unite self with other face
   bool AddContinuousFace( const _QuadFaceGrid& f, const TopTools_MapOfShape& internalEdges );
@@ -180,16 +183,16 @@ public: //** Methods to find and orient faces of 6 sides of the box **//
 public: //** Loading and access to mesh **//
 
   //!< Load nodes of a mesh
-  bool LoadGrid( SMESH_Mesh& mesh );
+  bool LoadGrid( SMESH_ProxyMesh& mesh );
 
   //!< Computes normalized parameters of nodes of myGrid
   void ComputeIJK( int i1, int i2, double v3 );
 
   //!< Return number of segments on the hirizontal sides
-  int GetNbHoriSegments(SMESH_Mesh& mesh, bool withBrothers=false) const;
+  int GetNbHoriSegments(SMESH_ProxyMesh& mesh, bool withBrothers=false) const;
 
   //!< Return number of segments on the vertical sides
-  int GetNbVertSegments(SMESH_Mesh& mesh, bool withBrothers=false) const;
+  int GetNbVertSegments(SMESH_ProxyMesh& mesh, bool withBrothers=false) const;
 
   //!< Return edge on the hirizontal bottom sides
   int GetHoriEdges(vector<TopoDS_Edge> & edges) const;
@@ -230,9 +233,9 @@ private:
   bool error(const SMESH_ComputeErrorPtr& err)
   { myError = err; return ( !myError || myError->IsOK() ); }
 
-  bool loadCompositeGrid(SMESH_Mesh& mesh);
+  bool loadCompositeGrid(SMESH_ProxyMesh& mesh);
 
-  bool fillGrid(SMESH_Mesh&                    theMesh,
+  bool fillGrid(SMESH_ProxyMesh&               theMesh,
                 vector<const SMDS_MeshNode*> & theGrid,
                 const _Indexer&                theIndexer,
                 int                            theX,
@@ -298,10 +301,10 @@ namespace
    */
   //================================================================================
 
-  bool isContinuousMesh(TopoDS_Edge        E1,
-                        TopoDS_Edge        E2,
-                        const TopoDS_Face& F,
-                        const SMESH_Mesh&  mesh)
+  bool isContinuousMesh(TopoDS_Edge            E1,
+                        TopoDS_Edge            E2,
+                        const TopoDS_Face&     F,
+                        const SMESH_ProxyMesh& mesh)
   {
     if (E1.Orientation() > TopAbs_REVERSED) // INTERNAL
       E1.Orientation( TopAbs_FORWARD );
@@ -314,11 +317,13 @@ namespace
     const SMDS_MeshNode* n = SMESH_Algo::VertexNode( V, mesh.GetMeshDS() );
     if ( !n ) return SMESH_Algo::IsContinuous( E1, E2 ); // meshed by "composite segment"
 
-    SMESHDS_SubMesh* sm = mesh.GetSubMeshContaining( F )->GetSubMeshDS();
+    n = mesh.GetProxyNode( n );
+
+    const SMESHDS_SubMesh* sm = mesh.GetSubMesh( F );
     if ( !sm ) return false;
 
     int nbQuads = 0;
-    SMDS_ElemIteratorPtr fIt = n->GetInverseElementIterator(SMDSAbs_Face);
+    SMDS_ElemIteratorPtr fIt = mesh.GetInverseElementIterator( n, SMDSAbs_Face );
     if ( !fIt->more() )
       return SMESH_Algo::IsContinuous( E1, E2 ); // meshed by "composite segment"
     while ( fIt->more() )
@@ -362,11 +367,11 @@ namespace
    */
   //================================================================================
 
-  void getBlockCorners( SMESH_Mesh&          mesh,
+  void getBlockCorners( SMESH_ProxyMesh&     mesh,
                         const TopoDS_Shape&  shape,
                         TopTools_MapOfShape& cornerVV)
   {
-    set<int> faceIDs; // ids of FACEs in the shape
+    std::set<int> faceIDs; // ids of FACEs in the shape
     TopExp_Explorer exp;
     for ( exp.Init( shape, TopAbs_FACE ); exp.More(); exp.Next() )
       faceIDs.insert( mesh.GetMeshDS()->ShapeToIndex( exp.Current() ));
@@ -380,12 +385,19 @@ namespace
       const SMDS_MeshNode* n = SMESH_Algo::VertexNode( V, mesh.GetMeshDS() );
       if ( !n ) continue;
 
+      const SMDS_MeshNode* nProxy = mesh.GetProxyNode( n );
+      bool isProxy = ( nProxy != n );
+      n = nProxy;
+
       int nbQuads = 0;
-      SMDS_ElemIteratorPtr fIt = n->GetInverseElementIterator(SMDSAbs_Face);
+      SMDS_ElemIteratorPtr fIt = mesh.GetInverseElementIterator( n, SMDSAbs_Face );
       while ( fIt->more() )
       {
         const SMDS_MeshElement* f = fIt->next();
         if ( !faceIDs.count( f->getshapeId() )) continue;
+
+        if ( isProxy && !mesh.GetSubMesh( f->getshapeId() )->Contains( f ))
+          continue;
 
         if ( f->NbCornerNodes() == 4 )
           ++nbQuads;
@@ -486,6 +498,51 @@ namespace
 
     return true;
   } // getInternalEdges()
+
+  //================================================================================
+  /*!
+   * \brief Find a face including two given nodes
+   */
+  //================================================================================
+
+  const SMDS_MeshElement* FindFaceByNodes( const SMDS_MeshNode* n1,
+                                           const SMDS_MeshNode* n2,
+                                           TIDSortedElemSet     avoidSet,
+                                           SMESH_ProxyMesh&     mesh)
+  {
+    SMDS_ElemIteratorPtr faceIt = mesh.GetInverseElementIterator( n1, SMDSAbs_Face );
+    while ( faceIt->more() )
+    {
+      const SMDS_MeshElement* f = faceIt->next();
+      if ( !avoidSet.count( f ) && f->GetNodeIndex( n2 ) >= 0 )
+        return f;
+    }
+    return 0;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Check that a segment bounds a face belonging to smOfFaces
+   */
+  //================================================================================
+
+  bool IsSegmentOnSubMeshBoundary( const SMDS_MeshNode*   n1,
+                                   const SMDS_MeshNode*   n2,
+                                   const SMESHDS_SubMesh* smOfFaces,
+                                   SMESH_ProxyMesh&       mesh)
+  {
+    TIDSortedElemSet avoidSet;
+    bool faceFound = false;
+
+    while ( const SMDS_MeshElement* f = FindFaceByNodes( n1, n2, avoidSet, mesh ))
+    {
+      if (( faceFound = smOfFaces->Contains( f )))
+        break;
+      avoidSet.insert( f );
+    }
+    return faceFound;
+  }
+
 } // namespace
 
 //================================================================================
@@ -497,6 +554,7 @@ namespace
 bool StdMeshers_CompositeHexa_3D::findBoxFaces( const TopoDS_Shape&    shape,
                                                 list< _QuadFaceGrid >& boxFaces,
                                                 SMESH_Mesh&            mesh,
+                                                SMESH_ProxyMesh&       proxyMesh,
                                                 _QuadFaceGrid * &      fBottom,
                                                 _QuadFaceGrid * &      fTop,
                                                 _QuadFaceGrid * &      fFront,
@@ -505,7 +563,7 @@ bool StdMeshers_CompositeHexa_3D::findBoxFaces( const TopoDS_Shape&    shape,
                                                 _QuadFaceGrid * &      fRight)
 {
   TopTools_MapOfShape cornerVertices;
-  getBlockCorners( mesh, shape, cornerVertices );
+  getBlockCorners( proxyMesh, shape, cornerVertices );
   if ( cornerVertices.Extent() != 8 )
     return error( COMPERR_BAD_INPUT_MESH, "Can't find 8 corners of a block by 2D mesh" );
   TopTools_MapOfShape internalEdges;
@@ -518,7 +576,7 @@ bool StdMeshers_CompositeHexa_3D::findBoxFaces( const TopoDS_Shape&    shape,
   for ( exp.Init( shape, TopAbs_FACE ); exp.More(); exp.Next(), ++nbFaces )
   {
     _QuadFaceGrid f;
-    if ( !f.Init( TopoDS::Face( exp.Current() ), mesh ))
+    if ( !f.Init( TopoDS::Face( exp.Current() ), proxyMesh ))
       return error (COMPERR_BAD_SHAPE);
 
     _QuadFaceGrid* prevContinuous = 0;
@@ -547,7 +605,7 @@ bool StdMeshers_CompositeHexa_3D::findBoxFaces( const TopoDS_Shape&    shape,
     boxFaces.resize( 6 );
     boxFace = boxFaces.begin();
     for ( exp.Init( shape, TopAbs_FACE); exp.More(); exp.Next(), ++boxFace )
-      boxFace->Init( TopoDS::Face( exp.Current() ), mesh );
+      boxFace->Init( TopoDS::Face( exp.Current() ), proxyMesh );
   }
   // ----------------------------------------
   // Find out position of faces within a box
@@ -612,12 +670,22 @@ bool StdMeshers_CompositeHexa_3D::Compute(SMESH_Mesh&         theMesh,
   _quadraticMesh = helper.IsQuadraticSubMesh( theShape );
   helper.SetElementsOnShape( true );
 
+  // get Viscous Mesh
+  SMESH_ProxyMesh::Ptr proxyMesh;
+  SMESH_HypoFilter vlFilter( SMESH_HypoFilter::HasName( StdMeshers_ViscousLayers::GetHypType() ));
+  const SMESH_Hypothesis *          hyp = theMesh.GetHypothesis( theShape, vlFilter, true );
+  const StdMeshers_ViscousLayers* vlHyp = static_cast< const StdMeshers_ViscousLayers* >( hyp );
+  if ( vlHyp )
+    proxyMesh = vlHyp->Compute( theMesh, theShape, /*toMakeN2NMap=*/true );
+  else
+    proxyMesh.reset( new SMESH_ProxyMesh( theMesh ));
+
   // -------------------------
   // Try to find 6 side faces
   // -------------------------
   list< _QuadFaceGrid > boxFaceContainer;
   _QuadFaceGrid *fBottom, *fTop, *fFront, *fBack, *fLeft, *fRight;
-  if ( ! findBoxFaces( theShape, boxFaceContainer, theMesh,
+  if ( ! findBoxFaces( theShape, boxFaceContainer, theMesh, *proxyMesh,
                        fBottom, fTop, fFront, fBack, fLeft, fRight))
     return false;
 
@@ -626,12 +694,12 @@ bool StdMeshers_CompositeHexa_3D::Compute(SMESH_Mesh&         theMesh,
   // ------------------------------------------
 
   // let faces load their grids
-  if ( !fBottom->LoadGrid( theMesh )) return error( fBottom->GetError() );
-  if ( !fBack  ->LoadGrid( theMesh )) return error( fBack  ->GetError() );
-  if ( !fLeft  ->LoadGrid( theMesh )) return error( fLeft  ->GetError() );
-  if ( !fFront ->LoadGrid( theMesh )) return error( fFront ->GetError() );
-  if ( !fRight ->LoadGrid( theMesh )) return error( fRight ->GetError() );
-  if ( !fTop   ->LoadGrid( theMesh )) return error( fTop   ->GetError() );
+  if ( !fBottom->LoadGrid( *proxyMesh )) return error( fBottom->GetError() );
+  if ( !fBack  ->LoadGrid( *proxyMesh )) return error( fBack  ->GetError() );
+  if ( !fLeft  ->LoadGrid( *proxyMesh )) return error( fLeft  ->GetError() );
+  if ( !fFront ->LoadGrid( *proxyMesh )) return error( fFront ->GetError() );
+  if ( !fRight ->LoadGrid( *proxyMesh )) return error( fRight ->GetError() );
+  if ( !fTop   ->LoadGrid( *proxyMesh )) return error( fTop   ->GetError() );
 
   // compute normalized parameters of nodes on sides (PAL23189)
   fBottom->ComputeIJK( COO_X, COO_Y, /*z=*/0. );
@@ -641,9 +709,9 @@ bool StdMeshers_CompositeHexa_3D::Compute(SMESH_Mesh&         theMesh,
   fRight ->ComputeIJK( COO_Y, COO_Z, /*x=*/1. );
   fTop   ->ComputeIJK( COO_X, COO_Y, /*z=*/1. );
 
-  int x, xSize = fBottom->GetNbHoriSegments(theMesh) + 1, X = xSize - 1;
-  int y, ySize = fBottom->GetNbVertSegments(theMesh) + 1, Y = ySize - 1;
-  int z, zSize = fFront ->GetNbVertSegments(theMesh) + 1, Z = zSize - 1;
+  int x, xSize = fBottom->GetNbHoriSegments(*proxyMesh) + 1, X = xSize - 1;
+  int y, ySize = fBottom->GetNbVertSegments(*proxyMesh) + 1, Y = ySize - 1;
+  int z, zSize = fFront ->GetNbVertSegments(*proxyMesh) + 1, Z = zSize - 1;
   _Indexer colIndex( xSize, ySize );
   vector< vector< const SMDS_MeshNode* > > columns( colIndex.size() );
 
@@ -798,12 +866,14 @@ bool StdMeshers_CompositeHexa_3D::Evaluate(SMESH_Mesh&         theMesh,
                                            const TopoDS_Shape& theShape,
                                            MapShapeNbElems&    aResMap)
 {
+  SMESH_ProxyMesh::Ptr proxyMesh( new SMESH_ProxyMesh( theMesh ));
+
   // -------------------------
   // Try to find 6 side faces
   // -------------------------
   list< _QuadFaceGrid > boxFaceContainer;
   _QuadFaceGrid *fBottom, *fTop, *fFront, *fBack, *fLeft, *fRight;
-  if ( ! findBoxFaces( theShape, boxFaceContainer, theMesh,
+  if ( ! findBoxFaces( theShape, boxFaceContainer, theMesh, *proxyMesh,
                        fBottom, fTop, fFront, fBack, fLeft, fRight))
     return false;
 
@@ -889,7 +959,7 @@ _QuadFaceGrid::_QuadFaceGrid():
  */
 //================================================================================
 
-bool _QuadFaceGrid::Init(const TopoDS_Face& f, SMESH_Mesh& mesh)
+bool _QuadFaceGrid::Init(const TopoDS_Face& f, SMESH_ProxyMesh& mesh)
 {
   myFace         = f;
   mySides        = _FaceSide();
@@ -1144,7 +1214,7 @@ void _QuadFaceGrid::ReverseEdges()
  */
 //================================================================================
 
-bool _QuadFaceGrid::LoadGrid( SMESH_Mesh& mesh )
+bool _QuadFaceGrid::LoadGrid( SMESH_ProxyMesh& mesh )
 {
   if ( !myChildren.empty() )
   {
@@ -1166,24 +1236,33 @@ bool _QuadFaceGrid::LoadGrid( SMESH_Mesh& mesh )
   if ( !myGrid.empty() )
     return true;
 
-  SMESHDS_SubMesh* faceSubMesh = mesh.GetSubMesh( myFace )->GetSubMeshDS();
+  const SMESHDS_SubMesh* faceSubMesh = mesh.GetSubMesh( myFace );
+
   // check that all faces are quadrangular
   SMDS_ElemIteratorPtr fIt = faceSubMesh->GetElements();
   while ( fIt->more() )
     if ( fIt->next()->NbNodes() % 4 > 0 )
       return error("Non-quadrangular mesh faces are not allowed on sides of a composite block");
-  
-  myIndexer._xSize = 1 + mySides.GetSide( Q_BOTTOM )->GetNbSegments( mesh );
-  myIndexer._ySize = 1 + mySides.GetSide( Q_LEFT   )->GetNbSegments( mesh );
+
+  bool isProxy, isTmpElem;
+  if ( faceSubMesh && faceSubMesh->NbElements() > 0 )
+  {
+    isProxy   = dynamic_cast< const SMESH_ProxyMesh::SubMesh* >( faceSubMesh );
+    isTmpElem = mesh.IsTemporary( faceSubMesh->GetElements()->next() );
+  }
+  const SMESHDS_SubMesh* smToCheckEdges = ( isProxy && !isTmpElem ) ? faceSubMesh : 0;
+
+  myIndexer._xSize = 1 + mySides.GetSide( Q_BOTTOM )->GetNbSegments( mesh, smToCheckEdges );
+  myIndexer._ySize = 1 + mySides.GetSide( Q_LEFT   )->GetNbSegments( mesh, smToCheckEdges );
 
   myGrid.resize( myIndexer.size() );
 
   // store nodes bound to the bottom edge
-  mySides.GetSide( Q_BOTTOM )->StoreNodes( mesh, myGrid, myReverse );
+  mySides.GetSide( Q_BOTTOM )->StoreNodes( mesh, myGrid, myReverse, isProxy, smToCheckEdges );
 
   // store the rest nodes row by row
 
-  TIDSortedElemSet emptySet, avoidSet;
+  TIDSortedElemSet avoidSet;
   const SMDS_MeshElement* firstQuad = 0; // most left face above the last row of found nodes
 
   size_t nbFoundNodes = myIndexer._xSize;
@@ -1202,10 +1281,10 @@ bool _QuadFaceGrid::LoadGrid( SMESH_Mesh& mesh )
     //     o---o  o  o  o  o
     //n1down    n2down
     //
-    firstQuad = SMESH_MeshAlgos::FindFaceInSet( n1down, n2down, emptySet, avoidSet);
+    firstQuad = FindFaceByNodes( n1down, n2down, avoidSet, mesh );
     while ( firstQuad && !faceSubMesh->Contains( firstQuad )) {
       avoidSet.insert( firstQuad );
-      firstQuad = SMESH_MeshAlgos::FindFaceInSet( n1down, n2down, emptySet, avoidSet);
+      firstQuad = FindFaceByNodes( n1down, n2down, avoidSet, mesh);
     }
     if ( !firstQuad || !faceSubMesh->Contains( firstQuad ))
       return error(ERR_LI("Error in _QuadFaceGrid::LoadGrid()"));
@@ -1235,7 +1314,7 @@ bool _QuadFaceGrid::LoadGrid( SMESH_Mesh& mesh )
     {
       // next face
       avoidSet.clear(); avoidSet.insert( quad );
-      quad = SMESH_MeshAlgos::FindFaceInSet( n1down, n1up, emptySet, avoidSet );
+      quad = FindFaceByNodes( n1down, n1up, avoidSet, mesh );
       if ( !quad || quad->NbNodes() % 4 > 0)
         return error(ERR_LI("Error in _QuadFaceGrid::LoadGrid()"));
 
@@ -1352,7 +1431,7 @@ bool _QuadFaceGrid::locateChildren()
  */
 //================================================================================
 
-bool _QuadFaceGrid::loadCompositeGrid(SMESH_Mesh& mesh)
+bool _QuadFaceGrid::loadCompositeGrid(SMESH_ProxyMesh& mesh)
 {
   // Find out mutual location of children: find their right and up brothers
   if ( !locateChildren() )
@@ -1361,13 +1440,13 @@ bool _QuadFaceGrid::loadCompositeGrid(SMESH_Mesh& mesh)
   // Load nodes according to mutual location of children
 
   // grid size
-  myIndexer._xSize = 1 + myLeftBottomChild->GetNbHoriSegments(mesh, /*withBrothers=*/true);
-  myIndexer._ySize = 1 + myLeftBottomChild->GetNbVertSegments(mesh, /*withBrothers=*/true);
+  myIndexer._xSize = 1 + myLeftBottomChild->GetNbHoriSegments( mesh, /*withBrothers=*/true );
+  myIndexer._ySize = 1 + myLeftBottomChild->GetNbVertSegments( mesh, /*withBrothers=*/true );
 
   myGrid.resize( myIndexer.size() );
 
   int fromX = myReverse ? myIndexer._xSize : 0;
-  if (!myLeftBottomChild->fillGrid( mesh, myGrid, myIndexer, fromX, 0 ))
+  if ( !myLeftBottomChild->fillGrid( mesh, myGrid, myIndexer, fromX, 0 ))
     return error( myLeftBottomChild->GetError() );
 
   DumpGrid();
@@ -1429,7 +1508,7 @@ void _QuadFaceGrid::setBrothers( set< _QuadFaceGrid* >& notLocatedBrothers )
  */
 //================================================================================
 
-bool _QuadFaceGrid::fillGrid(SMESH_Mesh&                    theMesh,
+bool _QuadFaceGrid::fillGrid(SMESH_ProxyMesh&               theMesh,
                              vector<const SMDS_MeshNode*> & theGrid,
                              const _Indexer&                theIndexer,
                              int                            theX,
@@ -1472,7 +1551,7 @@ bool _QuadFaceGrid::fillGrid(SMESH_Mesh&                    theMesh,
  */
 //================================================================================
 
-int _QuadFaceGrid::GetNbHoriSegments(SMESH_Mesh& mesh, bool withBrothers) const
+int _QuadFaceGrid::GetNbHoriSegments(SMESH_ProxyMesh& mesh, bool withBrothers) const
 {
   int nbSegs = 0;
   if ( myLeftBottomChild )
@@ -1481,7 +1560,7 @@ int _QuadFaceGrid::GetNbHoriSegments(SMESH_Mesh& mesh, bool withBrothers) const
   }
   else
   {
-    nbSegs = mySides.GetSide( Q_BOTTOM )->GetNbSegments(mesh);
+    nbSegs = mySides.GetSide( Q_BOTTOM )->GetNbSegments( mesh );
     if ( withBrothers && myRightBrother )
       nbSegs += myRightBrother->GetNbHoriSegments( mesh, withBrothers );
   }
@@ -1494,7 +1573,7 @@ int _QuadFaceGrid::GetNbHoriSegments(SMESH_Mesh& mesh, bool withBrothers) const
  */
 //================================================================================
 
-int _QuadFaceGrid::GetNbVertSegments(SMESH_Mesh& mesh, bool withBrothers) const
+int _QuadFaceGrid::GetNbVertSegments(SMESH_ProxyMesh& mesh, bool withBrothers) const
 {
   int nbSegs = 0;
   if ( myLeftBottomChild )
@@ -1503,7 +1582,7 @@ int _QuadFaceGrid::GetNbVertSegments(SMESH_Mesh& mesh, bool withBrothers) const
   }
   else
   {
-    nbSegs = mySides.GetSide( Q_LEFT )->GetNbSegments(mesh);
+    nbSegs = mySides.GetSide( Q_LEFT )->GetNbSegments(mesh,0);
     if ( withBrothers && myUpBrother )
       nbSegs += myUpBrother->GetNbVertSegments( mesh, withBrothers );
   }
@@ -1914,30 +1993,46 @@ void _FaceSide::SetBottomSide( int i )
 //purpose  : 
 //=======================================================================
 
-int _FaceSide::GetNbSegments(SMESH_Mesh& mesh) const
+int _FaceSide::GetNbSegments(SMESH_ProxyMesh& mesh, const SMESHDS_SubMesh* smToCheckEdges) const
 {
   int nb = 0;
   if ( myChildren.empty() )
   {
-    nb = mesh.GetSubMesh(myEdge)->GetSubMeshDS()->NbElements();
+    nb = mesh.GetSubMesh(myEdge)->NbElements();
+
+    if ( smToCheckEdges )
+    {
+      // check that segments bound faces belonging to smToCheckEdges
+      SMDS_ElemIteratorPtr segIt = mesh.GetSubMesh(myEdge)->GetElements();
+      while ( segIt->more() )
+      {
+        const SMDS_MeshElement* seg = segIt->next();
+        if ( !IsSegmentOnSubMeshBoundary( mesh.GetProxyNode( seg->GetNode(0) ),
+                                          mesh.GetProxyNode( seg->GetNode(1) ),
+                                          smToCheckEdges, mesh ))
+          --nb;
+      }
+    }
   }
   else
   {
     list< _FaceSide >::const_iterator side = myChildren.begin(), sideEnd = myChildren.end();
     for ( ; side != sideEnd; ++side )
-      nb += side->GetNbSegments(mesh);
+      nb += side->GetNbSegments( mesh, smToCheckEdges );
   }
   return nb;
 }
 
 //=======================================================================
 //function : StoreNodes
-//purpose  : 
+//purpose  :
 //=======================================================================
 
-bool _FaceSide::StoreNodes(SMESH_Mesh&                   mesh,
+bool _FaceSide::StoreNodes(SMESH_ProxyMesh&              mesh,
                            vector<const SMDS_MeshNode*>& myGrid,
-                           bool                          reverse )
+                           bool                          reverse,
+                           bool                          isProxy,
+                           const SMESHDS_SubMesh*        smToCheckEdges)
 {
   list< TopoDS_Edge > edges;
   if ( myChildren.empty() )
@@ -1957,7 +2052,8 @@ bool _FaceSide::StoreNodes(SMESH_Mesh&                   mesh,
   list< TopoDS_Edge >::iterator edge = edges.begin(), eEnd = edges.end();
   for ( ; edge != eEnd; ++edge )
   {
-    map< double, const SMDS_MeshNode* > nodes;
+    typedef map< double, const SMDS_MeshNode* > TParamNodeMap;
+    TParamNodeMap nodes;
     bool ok = SMESH_Algo::GetSortedNodesOnEdge( mesh.GetMeshDS(),
                                                 *edge,
                                                 /*ignoreMediumNodes=*/true,
@@ -1971,17 +2067,46 @@ bool _FaceSide::StoreNodes(SMESH_Mesh&                   mesh,
          !nodes.rbegin()->second->GetInverseElementIterator(SMDSAbs_Face)->more() )
       nodes.erase( --nodes.end() );
 
+    if ( isProxy )
+    {
+      TParamNodeMap::iterator u_node, nEnd = nodes.end();
+      for ( u_node = nodes.begin(); u_node != nEnd; ++u_node )
+        u_node->second = mesh.GetProxyNode( u_node->second );
+    }
+
+    if ( smToCheckEdges ) // erase nodes of segments not bounding faces of smToCheckEdges
+    {
+      {
+        TParamNodeMap::iterator u_node1, u_node2 = nodes.begin(), nEnd = nodes.end();
+        for ( u_node1 = u_node2++; u_node2 != nEnd; u_node1 = u_node2++ )
+          if ( IsSegmentOnSubMeshBoundary( u_node1->second, u_node2->second,
+                                           smToCheckEdges, mesh ))
+            break;
+          else
+            nodes.erase( u_node1 );
+      }
+      {
+        TParamNodeMap::reverse_iterator u_node1, u_node2 = nodes.rbegin(), nEnd = nodes.rend();
+        for ( u_node1 = u_node2++; u_node2 != nEnd; u_node1 = u_node2++ )
+          if ( IsSegmentOnSubMeshBoundary( u_node1->second, u_node2->second,
+                                           smToCheckEdges, mesh ))
+            break;
+          else
+            nodes.erase( --( u_node1.base() ));
+      }
+    }
+
     bool forward = ( edge->Orientation() == TopAbs_FORWARD );
     if ( reverse ) forward = !forward;
     if ( forward )
     {
-      map< double, const SMDS_MeshNode* >::iterator u_node, nEnd = nodes.end();
+      TParamNodeMap::iterator u_node, nEnd = nodes.end();
       for ( u_node = nodes.begin(); u_node != nEnd; ++u_node )
         myGrid[ nbNodes++ ] = u_node->second;
     }
-    else 
+    else
     {
-      map< double, const SMDS_MeshNode* >::reverse_iterator u_node, nEnd = nodes.rend();
+      TParamNodeMap::reverse_iterator u_node, nEnd = nodes.rend();
       for ( u_node = nodes.rbegin(); u_node != nEnd; ++u_node )
         myGrid[ nbNodes++ ] = u_node->second;
     }

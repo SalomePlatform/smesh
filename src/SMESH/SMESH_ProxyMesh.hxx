@@ -31,6 +31,7 @@
 #include "SMESH_TypeDefs.hxx"
 
 #include <TopoDS_Shape.hxx>
+#include <NCollection_DataMap.hxx>
 
 #include <map>
 #include <vector>
@@ -103,29 +104,36 @@ public:
   SMESH_ProxyMesh(const SMESH_Mesh& mesh);
   virtual ~SMESH_ProxyMesh();
 
-  // Returns the submesh of a shape; it can be a proxy sub-mesh
+  // Returns a sub-mesh of a shape; it can be a proxy sub-mesh
   const SMESHDS_SubMesh* GetSubMesh(const TopoDS_Shape& shape) const;
 
-  // Returns the proxy sub-mesh of a shape; it can be NULL
+  // Return a sub-mesh by a shape ID; it can be a proxy sub-mesh
+  const SMESHDS_SubMesh* GetSubMesh(const int shapeID) const;
+
+  // Return a proxy sub-mesh of a shape; it can be NULL
   const SubMesh*         GetProxySubMesh(const TopoDS_Shape& shape) const;
 
-  // Returns the proxy node of a node; the input node is returned if no proxy exists
+  // Return a proxy node of a node; the input node is returned if no proxy exists
   const SMDS_MeshNode*   GetProxyNode( const SMDS_MeshNode* node ) const;
 
-  // Returns number of proxy sub-meshes
+  // Return number of proxy sub-meshes
   int                    NbProxySubMeshes() const;
 
-  // Returns iterator on all faces of the mesh taking into account substitutions.
+  // Return iterator on all faces of the mesh taking into account substitutions.
   // To be used in case of mesh without shape
   SMDS_ElemIteratorPtr   GetFaces() const;
 
-  // Returns iterator on all faces on the face taking into account substitutions
+  // Return iterator on all faces on the face taking into account substitutions
   SMDS_ElemIteratorPtr   GetFaces(const TopoDS_Shape& face) const;
 
   // Return total nb of faces taking into account substitutions
   int                    NbFaces() const;
 
   bool                   IsTemporary(const SMDS_MeshElement* elem ) const;
+
+  // Return iterator on inverse elements of a node that may be a proxy one
+  SMDS_ElemIteratorPtr   GetInverseElementIterator(const SMDS_MeshNode* node,
+                                                   SMDSAbs_ElementType  type) const;
 
 
 
@@ -143,13 +151,13 @@ public:
 
   virtual SubMesh* newSubmesh(int index=0) const;
 
-  // returns a proxy sub-mesh; zero index is for the case of mesh w/o shape
+  // Return a proxy sub-mesh; zero index is for the case of mesh w/o shape
   SubMesh* findProxySubMesh(int shapeIndex=0) const;
 
-  // returns a proxy sub-mesh; it is created if not yet exists
+  // Return a proxy sub-mesh; it is created if not yet exists
   SubMesh* getProxySubMesh(int shapeIndex);
 
-  // returns a proxy sub-mesh; it is created if not yet exists
+  // Return a proxy sub-mesh; it is created if not yet exists
   SubMesh* getProxySubMesh(const TopoDS_Shape& shape=TopoDS_Shape());
 
   // move proxy sub-mesh from other proxy mesh to this, returns true if sub-mesh found
@@ -183,6 +191,12 @@ public:
 
   // tmp elements residing the _mesh, to be deleted at destruction
   std::set< const SMDS_MeshElement* > _elemsInMesh;
+
+  // inverse elements of proxy nodes
+  typedef NCollection_DataMap< const SMDS_MeshNode*,
+                               std::vector< const SMDS_MeshElement* >,
+                               SMESH_Hasher                         > TNodeElemVecMap;
+  TNodeElemVecMap  _inverseElements;
 
   // Complex submesh used to iterate over elements in other sub-meshes
   mutable SubMesh* _subContainer;

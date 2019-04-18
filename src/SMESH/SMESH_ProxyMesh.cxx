@@ -32,6 +32,9 @@
 #include <TopExp.hxx>
 #include <TopTools_IndexedMapOfShape.hxx>
 
+#include <boost/container/flat_set.hpp>
+#include <boost/make_shared.hpp>
+
 //================================================================================
 /*!
  * \brief Constructor; mesh must be set by a descendant class
@@ -170,13 +173,23 @@ SMESH_ProxyMesh::SubMesh* SMESH_ProxyMesh::newSubmesh(int index) const
 
 const SMESHDS_SubMesh* SMESH_ProxyMesh::GetSubMesh(const TopoDS_Shape& shape) const
 {
+  return GetSubMesh( shapeIndex( shape ));
+}
+
+//================================================================================
+/*!
+ * \brief Return a sub-mesh by a shape ID; it can be a proxy sub-mesh
+ */
+//================================================================================
+
+const SMESHDS_SubMesh* SMESH_ProxyMesh::GetSubMesh(const int shapeID) const
+{
   const SMESHDS_SubMesh* sm = 0;
 
-  size_t i = shapeIndex(shape);
-  if ( i < _subMeshes.size() )
-    sm = _subMeshes[i];
+  if ( 0 < shapeID && shapeID < (int)_subMeshes.size() )
+    sm = _subMeshes[ shapeID ];
   if ( !sm )
-    sm = GetMeshDS()->MeshElements( i );
+    sm = GetMeshDS()->MeshElements( shapeID );
 
   return sm;
 }
@@ -272,6 +285,62 @@ namespace
       return res;
     }
   };
+
+  //================================================================================
+  /*!
+   * \brief Iterator returning unique elements from a vector and another iterator
+   */
+  //================================================================================
+
+  class TUniqueIterator : public SMDS_ElemIterator
+  {
+    typedef boost::container::flat_set< const SMDS_MeshElement* >                 TElemSet;
+    typedef SMDS_SetIterator< const SMDS_MeshElement*, TElemSet::const_iterator > TSetIterator;
+
+    TElemSet      _uniqueElems;
+    TSetIterator* _iterator;
+
+  public:
+    TUniqueIterator( const std::vector< const SMDS_MeshElement* >& elems,
+                     const SMDS_ElemIteratorPtr&                   elemIterator )
+      : _uniqueElems( elems.begin(), elems.end() )
+    {
+      if ( elemIterator )
+        while ( elemIterator->more() )
+          _uniqueElems.insert( elemIterator->next() );
+
+      _iterator = new TSetIterator( _uniqueElems.begin(), _uniqueElems.end() );
+    }
+    ~TUniqueIterator()
+    {
+      delete _iterator;
+    }
+    virtual bool more()
+    {
+      return _iterator->more();
+    }
+    virtual const SMDS_MeshElement* next()
+    {
+      return _iterator->next();
+    }
+  };
+
+  //================================================================================
+  /*!
+   * \brief Return iterator on 2 element iterators
+   */
+  //================================================================================
+
+  SMDS_ElemIteratorPtr iteratorOn2Iterators( SMDS_ElemIteratorPtr it1, SMDS_ElemIteratorPtr it2 )
+  {
+    std::vector< SMDS_ElemIteratorPtr > iters; iters.reserve(2);
+    if ( it1 ) iters.push_back( it1 );
+    if ( it2 ) iters.push_back( it2 );
+
+    typedef std::vector< SMDS_ElemIteratorPtr >                                 TElemIterVector;
+    typedef SMDS_IteratorOnIterators<const SMDS_MeshElement *, TElemIterVector> TItersIter;
+    return SMDS_ElemIteratorPtr( new TItersIter( iters ));
+  }
 }
 
 //================================================================================
@@ -324,13 +393,7 @@ SMDS_ElemIteratorPtr SMESH_ProxyMesh::GetFaces() const
   // ... else elements filtered using allowedTypes are additionally returned
   SMDS_ElemIteratorPtr facesIter = GetMeshDS()->elementsIterator(SMDSAbs_Face);
   SMDS_ElemIteratorPtr filterIter( new TFilteringIterator( _allowedTypes, facesIter ));
-  std::vector< SMDS_ElemIteratorPtr > iters(2);
-  iters[0] = proxyIter;
-  iters[1] = filterIter;
-    
-  typedef std::vector< SMDS_ElemIteratorPtr >                                 TElemIterVector;
-  typedef SMDS_IteratorOnIterators<const SMDS_MeshElement *, TElemIterVector> TItersIter;
-  return SMDS_ElemIteratorPtr( new TItersIter( iters ));
+  return iteratorOn2Iterators( proxyIter, filterIter );
 }
 
 //================================================================================
@@ -476,8 +539,14 @@ void SMESH_ProxyMesh::removeTmpElement( const SMDS_MeshElement* elem )
     std::set< const SMDS_MeshElement* >::iterator i = _elemsInMesh.find( elem );
     if ( i != _elemsInMesh.end() )
     {
+      std::vector< const SMDS_MeshNode* > nodes( elem->begin_nodes(), elem->end_nodes() );
+
       GetMeshDS()->RemoveFreeElement( elem, 0 );
       _elemsInMesh.erase( i );
+
+      for ( size_t i = 0; i < nodes.size(); ++i )
+        if ( nodes[i]->GetID() > 0 && nodes[i]->NbInverseElements() == 0 )
+          GetMeshDS()->RemoveFreeNode( nodes[i], 0, false );
     }
   }
   else
@@ -522,6 +591,52 @@ void SMESH_ProxyMesh::setNode2Node(const SMDS_MeshNode* srcNode,
 bool SMESH_ProxyMesh::IsTemporary(const SMDS_MeshElement* elem ) const
 {
   return ( elem->GetID() < 1 ) || _elemsInMesh.count( elem );
+}
+
+//================================================================================
+/*!
+ * \brief Return iterator on inverse elements of a node that may be a proxy one
+ */
+//================================================================================
+
+SMDS_ElemIteratorPtr SMESH_ProxyMesh::GetInverseElementIterator(const SMDS_MeshNode* node,
+                                                                SMDSAbs_ElementType  type) const
+{
+  typedef std::vector< const SMDS_MeshElement* > TElemVec;
+  TElemVec *elemVecPtr;
+
+  TNodeElemVecMap& inverseElements = const_cast< TNodeElemVecMap& >( _inverseElements );
+  if ( inverseElements.IsEmpty() && NbProxySubMeshes() > 0 )
+  {
+    TElemVec elemVec;
+    for ( size_t i = 0; i < _subMeshes.size(); ++i )
+      if ( _subMeshes[i] )
+        for ( size_t j = 0; j < _subMeshes[i]->_elements.size(); ++j )
+        {
+          const SMDS_MeshElement* e = _subMeshes[i]->_elements[j];
+          for ( SMDS_NodeIteratorPtr nIt = e->nodeIterator(); nIt->more(); )
+          {
+            const SMDS_MeshNode* n = nIt->next();
+            elemVecPtr = inverseElements.ChangeSeek( n );
+            if ( !elemVecPtr )
+              elemVecPtr = inverseElements.Bound( n, elemVec );
+            elemVecPtr->push_back( e );
+          }
+        }
+  }
+
+  SMDS_ElemIteratorPtr iter = node->GetInverseElementIterator( type );
+
+  if (( elemVecPtr = inverseElements.ChangeSeek( node )))
+  {
+    if ( iter->more() )
+      iter = boost::make_shared< TUniqueIterator >( *elemVecPtr, iter );
+    else
+      iter = boost::make_shared< SMDS_ElementVectorIterator> ( elemVecPtr->begin(),
+                                                               elemVecPtr->end() );
+  }
+
+  return iter;
 }
 
 //================================================================================

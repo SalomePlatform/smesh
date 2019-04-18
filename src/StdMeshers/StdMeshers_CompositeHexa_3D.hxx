@@ -28,6 +28,7 @@
 #include "SMESH_Algo.hxx"
 
 class SMESH_Mesh;
+class SMESH_ProxyMesh;
 class StdMeshers_FaceSide;
 class TopoDS_Edge;
 class TopoDS_Face;
@@ -60,6 +61,7 @@ private:
   bool findBoxFaces( const TopoDS_Shape&         shape,
                      std::list< _QuadFaceGrid >& boxFaceContainer,
                      SMESH_Mesh&                 mesh,
+                     SMESH_ProxyMesh&            proxyMesh,
                      _QuadFaceGrid * &           fBottom,
                      _QuadFaceGrid * &           fTop,
                      _QuadFaceGrid * &           fFront,
