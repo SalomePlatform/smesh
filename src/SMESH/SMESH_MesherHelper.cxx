@@ -1673,30 +1673,8 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
   // get positions of the given nodes on shapes
   if ( pos.second == TopAbs_FACE )
   {
-    F = TopoDS::Face(meshDS->IndexToShape( faceID = pos.first ));
+    F = TopoDS::Face( meshDS->IndexToShape( faceID = pos.first ));
     uv[0] = GetNodeUV(F,n1,n2, force3d ? 0 : &uvOK[0]);
-    if (( !force3d ) &&
-        ( HasDegeneratedEdges() || GetSurface( F )->HasSingularities( 1e-7 )))
-    {
-      // IPAL52850 (degen VERTEX not at singularity)
-      // project middle point to a surface
-      SMESH_TNodeXYZ p1( n1 ), p2( n2 );
-      gp_Pnt pMid = 0.5 * ( p1 + p2 );
-      Handle(ShapeAnalysis_Surface) projector = GetSurface( F );
-      gp_Pnt2d uvMid;
-      if ( uvOK[0] )
-        uvMid = projector->NextValueOfUV( uv[0], pMid, BRep_Tool::Tolerance( F ));
-      else
-        uvMid = projector->ValueOfUV( pMid, getFaceMaxTol( F ));
-      if ( projector->Gap() * projector->Gap() < ( p1 - p2 ).SquareModulus() / 4 )
-      {
-        gp_Pnt pProj = projector->Value( uvMid );
-        n12  = meshDS->AddNode( pProj.X(), pProj.Y(), pProj.Z() );
-        meshDS->SetNodeOnFace( n12, faceID, uvMid.X(), uvMid.Y() );
-        myTLinkNodeMap.insert( make_pair ( link, n12 ));
-        return n12;
-      }
-    }
     uv[1] = GetNodeUV(F,n2,n1, force3d ? 0 : &uvOK[1]);
   }
   else if ( pos.second == TopAbs_EDGE )
@@ -1729,26 +1707,43 @@ const SMDS_MeshNode* SMESH_MesherHelper::GetMediumNode(const SMDS_MeshNode* n1,
     // nodes, else - medium between corresponding 3d points
     if( ! F.IsNull() )
     {
-      //if ( uvOK[0] && uvOK[1] )
-      {
-        if ( IsDegenShape( n1->getshapeId() )) {
-          if ( myParIndex & U_periodic ) uv[0].SetCoord( 1, uv[1].Coord( 1 ));
-          else                           uv[0].SetCoord( 2, uv[1].Coord( 2 ));
-        }
-        else if ( IsDegenShape( n2->getshapeId() )) {
-          if ( myParIndex & U_periodic ) uv[1].SetCoord( 1, uv[0].Coord( 1 ));
-          else                           uv[1].SetCoord( 2, uv[0].Coord( 2 ));
-        }
-        TopLoc_Location loc;
-        Handle(Geom_Surface) S = BRep_Tool::Surface(F,loc);
-        gp_XY UV = GetMiddleUV( S, uv[0], uv[1] );
-        gp_Pnt P = S->Value( UV.X(), UV.Y() ).Transformed(loc);
-        n12 = meshDS->AddNode(P.X(), P.Y(), P.Z());
-        // if ( mySetElemOnShape ) node is not elem!
-        meshDS->SetNodeOnFace(n12, faceID, UV.X(), UV.Y());
-        myTLinkNodeMap.insert(make_pair(link,n12));
-        return n12;
+      if ( IsDegenShape( n1->getshapeId() )) {
+        if ( myParIndex & U_periodic ) uv[0].SetCoord( 1, uv[1].Coord( 1 ));
+        else                           uv[0].SetCoord( 2, uv[1].Coord( 2 ));
       }
+      else if ( IsDegenShape( n2->getshapeId() )) {
+        if ( myParIndex & U_periodic ) uv[1].SetCoord( 1, uv[0].Coord( 1 ));
+        else                           uv[1].SetCoord( 2, uv[0].Coord( 2 ));
+      }
+      TopLoc_Location loc;
+      Handle(Geom_Surface) S = BRep_Tool::Surface(F,loc);
+      gp_XY UV = GetMiddleUV( S, uv[0], uv[1] );
+      gp_Pnt P = S->Value( UV.X(), UV.Y() ).Transformed(loc);
+
+      SMESH_TNodeXYZ p1( n1 ), p2( n2 );
+      gp_Pnt pMid = 0.5 * ( p1 + p2 );
+      double distMid = pMid.SquareDistance( P );
+      double dist12  = ( p1 - p2 ).SquareModulus();
+      Handle(ShapeAnalysis_Surface) surfInfo = GetSurface( F );
+      if ( distMid > dist12 ||
+           HasDegeneratedEdges() ||
+           surfInfo->HasSingularities( 1e-7 ) )
+      {
+        // IPAL52850 (degen VERTEX not at singularity)
+        // project middle point to a surface
+        gp_Pnt2d uvMid;
+        if ( uvOK[0] )
+          uvMid = surfInfo->NextValueOfUV( uv[0], pMid, BRep_Tool::Tolerance( F ));
+        else
+          uvMid = surfInfo->ValueOfUV( pMid, getFaceMaxTol( F ));
+        if ( surfInfo->Gap() * surfInfo->Gap() < distMid )
+          P = surfInfo->Value( uvMid );
+      }
+      n12 = meshDS->AddNode(P.X(), P.Y(), P.Z());
+      // if ( mySetElemOnShape ) node is not elem!
+      meshDS->SetNodeOnFace(n12, faceID, UV.X(), UV.Y());
+      myTLinkNodeMap.insert(make_pair(link,n12));
+      return n12;
     }
     else if ( !E.IsNull() )
     {

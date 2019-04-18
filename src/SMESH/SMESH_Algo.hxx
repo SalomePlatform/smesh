@@ -482,12 +482,28 @@ class SMESH_EXPORT SMESH_1D_Algo: public SMESH_Algo
 {
 public:
   SMESH_1D_Algo(int hypId, SMESH_Gen* gen);
+  /*!
+   * \brief Return true if the algorithm can mesh a given shape
+   *  \param [in] aShape - shape to check
+   *  \param [in] toCheckAll - if true, this check returns OK if all shapes are OK,
+   *              else, returns OK if at least one shape is OK
+   *  \retval bool - \c true by default
+   */
+  virtual bool IsApplicableToShape(const TopoDS_Shape & shape, bool toCheckAll) const;
 };
 
 class SMESH_EXPORT SMESH_2D_Algo: public SMESH_Algo
 {
 public:
   SMESH_2D_Algo(int hypId, SMESH_Gen* gen);
+  /*!
+   * \brief Return true if the algorithm can mesh a given shape
+   *  \param [in] aShape - shape to check
+   *  \param [in] toCheckAll - if true, this check returns OK if all shapes are OK,
+   *              else, returns OK if at least one shape is OK
+   *  \retval bool - \c true by default
+   */
+  virtual bool IsApplicableToShape(const TopoDS_Shape & shape, bool toCheckAll) const;
   /*!
    * \brief Method in which an algorithm generating a structured mesh
    *        fixes positions of in-face nodes after there movement
@@ -501,6 +517,14 @@ class SMESH_EXPORT SMESH_3D_Algo: public SMESH_Algo
 {
 public:
   SMESH_3D_Algo(int hypId, SMESH_Gen* gen);
+  /*!
+   * \brief Return true if the algorithm can mesh a given shape
+   *  \param [in] aShape - shape to check
+   *  \param [in] toCheckAll - if true, this check returns OK if all shapes are OK,
+   *              else, returns OK if at least one shape is OK
+   *  \retval bool - \c true by default
+   */
+  virtual bool IsApplicableToShape(const TopoDS_Shape & shape, bool toCheckAll) const;
 };
 
 #endif

@@ -258,6 +258,7 @@ namespace
           meshDS->RemoveFreeNode( nodesToRemove[i], sm, /*fromGroups=*/false);
       }
     }
+    return;
   }
 
   //================================================================================
@@ -319,7 +320,7 @@ void StdMeshers_QuadToTriaAdaptor::MergePiramids( const SMDS_MeshElement*     Pr
                                                   set<const SMDS_MeshNode*> & nodesToMove)
 {
   // cout << endl << "Merge " << PrmI->GetID() << " " << PrmJ->GetID() << " "
-  //      << PrmI->GetNode(4) << PrmJ->GetNode(4) << endl;
+  //      << PrmI->GetNode(4)->GetID() << " " << PrmJ->GetNode(4)->GetID() << endl;
   const SMDS_MeshNode* Nrem = PrmJ->GetNode(4); // node to remove
   //int nbJ = Nrem->NbInverseElements( SMDSAbs_Volume );
   SMESH_TNodeXYZ Pj( Nrem );
@@ -338,6 +339,9 @@ void StdMeshers_QuadToTriaAdaptor::MergePiramids( const SMDS_MeshElement*     Pr
   typedef SMDS_StdIterator< const SMDS_MeshElement*, SMDS_ElemIteratorPtr > TStdElemIterator;
   TStdElemIterator itEnd;
 
+  typedef std::map< const SMDS_MeshNode*, const SMDS_MeshNode* > TNNMap;
+  TNNMap mediumReplaceMap;
+
   // find and remove coincided faces of merged pyramids
   vector< const SMDS_MeshElement* > inverseElems
     // copy inverse elements to avoid iteration on changing container
@@ -355,6 +359,11 @@ void StdMeshers_QuadToTriaAdaptor::MergePiramids( const SMDS_MeshElement*     Pr
     }
     if ( FJEqual )
     {
+      if ( FJEqual->NbNodes() == 6 ) // find medium nodes to replace
+      {
+        mediumReplaceMap.insert( std::make_pair( FJEqual->GetNode(3), FI->GetNode(5) ));
+        mediumReplaceMap.insert( std::make_pair( FJEqual->GetNode(5), FI->GetNode(3) ));
+      }
       removeTmpElement( FI );
       removeTmpElement( FJEqual );
       myRemovedTrias.insert( FI );
@@ -370,12 +379,27 @@ void StdMeshers_QuadToTriaAdaptor::MergePiramids( const SMDS_MeshElement*     Pr
     const SMDS_MeshElement* elem = inverseElems[i];
     nodes.assign( elem->begin_nodes(), elem->end_nodes() );
     nodes[ elem->GetType() == SMDSAbs_Volume ? PYRAM_APEX : TRIA_APEX ] = CommonNode;
+    if ( !mediumReplaceMap.empty() )
+      for ( size_t iN = elem->NbCornerNodes(); iN < nodes.size(); ++iN )
+      {
+        TNNMap::iterator n2n = mediumReplaceMap.find( nodes[iN] );
+        if ( n2n != mediumReplaceMap.end() )
+          nodes[iN] = n2n->second;
+      }
     GetMeshDS()->ChangeElementNodes( elem, &nodes[0], nodes.size());
   }
   ASSERT( Nrem->NbInverseElements() == 0 );
   GetMeshDS()->RemoveFreeNode( Nrem,
                                GetMeshDS()->MeshElements( Nrem->getshapeId()),
                                /*fromGroups=*/false);
+  if ( !mediumReplaceMap.empty() )
+    for ( TNNMap::iterator n2n = mediumReplaceMap.begin(); n2n != mediumReplaceMap.end(); ++n2n )
+    {
+      const SMDS_MeshNode* remNode = n2n->first;
+      if ( !remNode->IsNull() && remNode->NbInverseElements() == 0 )
+        GetMeshDS()->RemoveFreeNode( remNode, 0, /*fromGroups=*/false);
+    }
+  return;
 }
 
 //================================================================================
@@ -390,7 +414,7 @@ void StdMeshers_QuadToTriaAdaptor::MergeAdjacent(const SMDS_MeshElement*    PrmI
 {
   TIDSortedElemSet adjacentPyrams;
   bool mergedPyrams = false;
-  for ( int k=0; k<4; k++ ) // loop on 4 base nodes of PrmI
+  for ( int k = 0; k < 4; k++ ) // loop on 4 base nodes of PrmI
   {
     const SMDS_MeshNode*   n = PrmI->GetNode(k);
     SMDS_ElemIteratorPtr vIt = n->GetInverseElementIterator( SMDSAbs_Volume );
@@ -414,6 +438,7 @@ void StdMeshers_QuadToTriaAdaptor::MergeAdjacent(const SMDS_MeshElement*    PrmI
     for (prm = adjacentPyrams.begin(); prm != adjacentPyrams.end(); ++prm)
       MergeAdjacent( *prm, nodesToMove, true );
   }
+  return;
 }
 
 //================================================================================
@@ -474,7 +499,7 @@ static gp_Pnt FindBestPoint(const gp_Pnt& P1, const gp_Pnt& P2,
 //           and a segment [PC,P]
 //=======================================================================
 
-static bool HasIntersection3(const gp_Pnt& P, const gp_Pnt& PC, gp_Pnt& Pint,
+static bool HasIntersection3(const gp_Pnt& P,  const gp_Pnt& PC, gp_Pnt&       Pint,
                              const gp_Pnt& P1, const gp_Pnt& P2, const gp_Pnt& P3)
 {
   const double EPSILON = 1e-6;
@@ -522,7 +547,27 @@ static bool HasIntersection3(const gp_Pnt& P, const gp_Pnt& PC, gp_Pnt& Pint,
 
   Pint = orig + dir * t;
 
-  return ( t > 0.  &&  t < segLen );
+  bool hasInt = ( t > 0.  &&  t < segLen );
+
+  if ( hasInt && det < EPSILON ) // t is inaccurate, additionally check
+  {
+    gp_XYZ triNorm = edge1 ^ edge2;
+    gp_XYZ int0vec = Pint.XYZ() - vert0;
+    gp_XYZ in      = triNorm ^ edge1; // dir inside triangle from edge1
+    double dot     = int0vec * in;
+    if ( dot < 0 && dot / triNorm.Modulus() < -EPSILON )
+      return false;
+    in  = edge2 ^ triNorm;
+    dot = int0vec * in;
+    if ( dot < 0 && dot / triNorm.Modulus() < -EPSILON )
+      return false;
+    gp_XYZ int1vec = Pint.XYZ() - vert1;
+    in  = triNorm ^ ( vert2 - vert1 );
+    dot = int1vec * in;
+    if ( dot < 0 && dot / triNorm.Modulus() < -EPSILON )
+      return false;
+  }
+  return hasInt;
 }
 
 //=======================================================================
@@ -817,7 +862,6 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh&         aMesh,
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
   SMESH_MesherHelper helper(aMesh);
   helper.IsQuadraticSubMesh(aShape);
-  helper.SetElementsOnShape( true );
 
   if ( myElemSearcher ) delete myElemSearcher;
   vector< SMDS_ElemIteratorPtr > itVec;
@@ -877,10 +921,11 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh&         aMesh,
             // degenerate face
             // add triangles to result map
             SMDS_MeshFace* NewFace;
+            helper.SetElementsOnShape( false );
             if(!isRev)
-              NewFace = meshDS->AddFace( FNodes[0], FNodes[1], FNodes[2] );
+              NewFace = helper.AddFace( FNodes[0], FNodes[1], FNodes[2] );
             else
-              NewFace = meshDS->AddFace( FNodes[0], FNodes[2], FNodes[1] );
+              NewFace = helper.AddFace( FNodes[0], FNodes[2], FNodes[1] );
             storeTmpElement( NewFace );
             trias.push_back ( NewFace );
             quads.push_back( face );
@@ -916,20 +961,25 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh&         aMesh,
               if ( !LimitHeight( PCbest, PC, PN, FNodes, aMesh, face, /*UseApexRay=*/true, aShape ))
                 return false;
             }
-            // create node for PCbest
+            // create node at PCbest
+            helper.SetElementsOnShape( true );
             SMDS_MeshNode* NewNode = helper.AddNode( PCbest.X(), PCbest.Y(), PCbest.Z() );
 
+            // create a pyramid
+            SMDS_MeshVolume* aPyram;
+            if ( isRev )
+              aPyram = helper.AddVolume( FNodes[0], FNodes[3], FNodes[2], FNodes[1], NewNode );
+            else
+              aPyram = helper.AddVolume( FNodes[0], FNodes[1], FNodes[2], FNodes[3], NewNode );
+            myPyramids.push_back(aPyram);
+
             // add triangles to result map
-            for(i=0; i<4; i++)
+            helper.SetElementsOnShape( false );
+            for ( i = 0; i < 4; i++ )
             {
-              trias.push_back ( meshDS->AddFace( NewNode, FNodes[i], FNodes[i+1] ));
+              trias.push_back ( helper.AddFace( NewNode, FNodes[i], FNodes[i+1] ));
               storeTmpElement( trias.back() );
             }
-            // create a pyramid
-            if ( isRev ) swap( FNodes[1], FNodes[3]);
-            SMDS_MeshVolume* aPyram =
-              helper.AddVolume( FNodes[0], FNodes[1], FNodes[2], FNodes[3], NewNode );
-            myPyramids.push_back(aPyram);
 
             quads.push_back( face );
             hasNewTrias = true;
@@ -1018,7 +1068,6 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
   vector<const SMDS_MeshElement*> myPyramids;
   SMESH_MesherHelper helper(aMesh);
   helper.IsQuadraticSubMesh(aMesh.GetShapeToMesh());
-  helper.SetElementsOnShape( true );
 
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
   SMESH_ProxyMesh::SubMesh* prxSubMesh = getProxySubMesh();
@@ -1116,10 +1165,11 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
           IsRev = true;
         }
       }
+      helper.SetElementsOnShape( false );
       if(!IsRev)
-        NewFace = meshDS->AddFace( FNodes[0], FNodes[1], FNodes[2] );
+        NewFace = helper.AddFace( FNodes[0], FNodes[1], FNodes[2] );
       else
-        NewFace = meshDS->AddFace( FNodes[0], FNodes[2], FNodes[1] );
+        NewFace = helper.AddFace( FNodes[0], FNodes[2], FNodes[1] );
       storeTmpElement( NewFace );
       prxSubMesh->AddElement( NewFace );
       continue;
@@ -1238,18 +1288,9 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
         return false;
 
       // create node for Papex
+      helper.SetElementsOnShape( true );
       SMDS_MeshNode* NewNode = helper.AddNode( Papex.X(), Papex.Y(), Papex.Z() );
 
-      // add triangles to result map
-      for ( i = 0; i < 4; i++) {
-        SMDS_MeshFace* NewFace;
-        if(isRev)
-          NewFace = meshDS->AddFace( NewNode, FNodes[i], FNodes[i+1] );
-        else
-          NewFace = meshDS->AddFace( NewNode, FNodes[i+1], FNodes[i] );
-        storeTmpElement( NewFace );
-        prxSubMesh->AddElement( NewFace );
-      }
       // create a pyramid
       SMDS_MeshVolume* aPyram;
       if(isRev)
@@ -1257,6 +1298,18 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh& aMesh)
       else
         aPyram = helper.AddVolume( FNodes[0], FNodes[3], FNodes[2], FNodes[1], NewNode );
       myPyramids.push_back(aPyram);
+
+      // add triangles to result map
+      helper.SetElementsOnShape( false );
+      for ( i = 0; i < 4; i++) {
+        SMDS_MeshFace* NewFace;
+        if(isRev)
+          NewFace = helper.AddFace( NewNode, FNodes[i], FNodes[i+1] );
+        else
+          NewFace = helper.AddFace( NewNode, FNodes[i+1], FNodes[i] );
+        storeTmpElement( NewFace );
+        prxSubMesh->AddElement( NewFace );
+      }
     }
   } // end loop on all faces
 

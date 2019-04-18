@@ -4490,8 +4490,8 @@ class Mesh(metaclass = MeshMeta):
         Reorient faces contained in *the2DObject*.
 
         Parameters:
-                the2DObject: is a :class:`mesh, sub-mesh, group or filter <SMESH.SMESH_IDSource>` or list of IDs of 2D elements
-                theDirection: is a desired direction of normal of *theFace*.
+                the2DObject: a :class:`mesh, sub-mesh, group or filter <SMESH.SMESH_IDSource>` or list of IDs of 2D elements
+                theDirection: a desired direction of normal of *theFace*.
                         It can be either a GEOM vector or a list of coordinates [x,y,z].
                 theFaceOrPoint: defines a face of *the2DObject* whose normal will be
                         compared with theDirection. It can be either ID of face or a point

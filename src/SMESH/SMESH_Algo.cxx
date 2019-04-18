@@ -1268,3 +1268,33 @@ bool SMESH_2D_Algo::FixInternalNodes(const SMESH_ProxyMesh& mesh,
   }
   return true;
 }
+
+//=======================================================================
+//function : IsApplicableToShape
+//purpose  : Return true if the algorithm can mesh a given shape
+//=======================================================================
+
+bool SMESH_1D_Algo::IsApplicableToShape(const TopoDS_Shape & shape, bool toCheckAll) const
+{
+  return ( !shape.IsNull() && TopExp_Explorer( shape, TopAbs_EDGE ).More() );
+}
+
+//=======================================================================
+//function : IsApplicableToShape
+//purpose  : Return true if the algorithm can mesh a given shape
+//=======================================================================
+
+bool SMESH_2D_Algo::IsApplicableToShape(const TopoDS_Shape & shape, bool toCheckAll) const
+{
+  return ( !shape.IsNull() && TopExp_Explorer( shape, TopAbs_FACE ).More() );
+}
+
+//=======================================================================
+//function : IsApplicableToShape
+//purpose  : Return true if the algorithm can mesh a given shape
+//=======================================================================
+
+bool SMESH_3D_Algo::IsApplicableToShape(const TopoDS_Shape & shape, bool toCheckAll) const
+{
+  return ( !shape.IsNull() && TopExp_Explorer( shape, TopAbs_SOLID ).More() );
+}
