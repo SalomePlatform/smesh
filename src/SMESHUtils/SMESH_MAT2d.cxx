@@ -673,14 +673,12 @@ namespace
     // make 'scale' such that to have coordinates precise enough when converted to int
 
     gp_XY uvMin = uvBox.CornerMin(), uvMax = uvBox.CornerMax();
-    uvMin.ChangeCoord(1) = uvMin.X() * scale[0];
-    uvMin.ChangeCoord(2) = uvMin.Y() * scale[1];
-    uvMax.ChangeCoord(1) = uvMax.X() * scale[0];
-    uvMax.ChangeCoord(2) = uvMax.Y() * scale[1];
+    uvMin *= gp_XY( scale[0], scale[1] );
+    uvMax *= gp_XY( scale[0], scale[1] );
     double vMax[2] = { Max( Abs( uvMin.X() ), Abs( uvMax.X() )),
                        Max( Abs( uvMin.Y() ), Abs( uvMax.Y() )) };
     int iMax = ( vMax[0] > vMax[1] ) ? 0 : 1;
-    const double precision = Min( 1e-5, minSegLen * 1e-2 );
+    const double precision = Min( 1e-5, Min( minSegLen * 1e-2, vMax[iMax] * 1e-5 ));
     double preciScale = Min( vMax[iMax] / precision,
                              std::numeric_limits<int>::max() / vMax[iMax] );
     preciScale /= scale[iMax];
