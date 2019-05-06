@@ -187,23 +187,20 @@ namespace MED
 
   //---------------------------------------------------------------
   TWrapper
-  ::TWrapper(const std::string& theFileName, TInt theMinor):
+  ::TWrapper(const std::string& theFileName, bool write, TInt theMinor):
     myFile(new TFile(theFileName, theMinor)),
     myMinor(theMinor)
   {
     TErr aRet;
-    myFile->Open(eLECTURE_ECRITURE, &aRet);
-    // if (aRet < 0)
-    //   myFile->Close();
-    //   myFile->Open(eLECTURE_AJOUT, &aRet);
-    // }
-    if (aRet < 0) {
-      myFile->Close();
-      myFile->Open(eLECTURE, &aRet);
+    if ( write ) {
+      myFile->Open(eLECTURE_ECRITURE, &aRet);
+      if (aRet < 0) {
+	myFile->Close();
+	myFile->Open(eCREATION, &aRet);
+      }
     }
-    if (aRet < 0) {
-      myFile->Close();
-      myFile->Open(eCREATION, &aRet);
+    else {
+      myFile->Open(eLECTURE, &aRet);
     }
   }
 
