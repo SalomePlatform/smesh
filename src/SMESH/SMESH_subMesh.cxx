@@ -878,7 +878,10 @@ SMESH_Hypothesis::Hypothesis_Status
         const SMESH_Hypothesis * prevAlgo = _father->GetHypothesis( this, f, true );
         if (prevAlgo &&
             string( algo->GetName()) != prevAlgo->GetName())
-          modifiedHyp = true;
+        {
+          oldAlgoState = NO_ALGO; // force setting event listener (#16648)
+          modifiedHyp  = true;
+        }
       }
       else
         setAlgoState(MISSING_HYP);

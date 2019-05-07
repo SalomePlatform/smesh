@@ -17,7 +17,7 @@ hypothesis.
 	:align: center
 
 .. centered::
-	A mesh of a river model to the left and of a ring-face to the right
+	A mesh of a river model (to the left) and of a ring-face (to the right)
 
 The algorithm provides proper shape of quadrangles by constructing Medial
 Axis between sinuous borders of the face and using it to

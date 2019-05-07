@@ -50,14 +50,13 @@ public:
 
   virtual bool Evaluate(SMESH_Mesh & aMesh, const TopoDS_Shape & aShape,
                         MapShapeNbElems& aResMap);
-  /*!
-   * \brief Allow algo to do something after persistent restoration
-    * \param subMesh - restored submesh
-   *
-   * This method is called only if a submesh has HYP_OK algo_state.
-   */
+
+  // Allow algo to do something after persistent restoration
   virtual void SubmeshRestored(SMESH_subMesh* subMesh);
-  
+
+  // Sets event listener to a submesh
+  virtual void SetEventListener(SMESH_subMesh* subMesh);
+
   virtual bool IsApplicableToShape(const TopoDS_Shape & shape, bool toCheckAll) const
   {
     return IsApplicable( shape, toCheckAll );

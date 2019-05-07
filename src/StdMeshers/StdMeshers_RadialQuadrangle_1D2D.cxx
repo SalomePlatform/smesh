@@ -758,11 +758,23 @@ protected:
 void StdMeshers_RadialQuadrangle_1D2D::SubmeshRestored(SMESH_subMesh* faceSubMesh)
 {
   if ( !faceSubMesh->IsEmpty() )
+    SetEventListener( faceSubMesh );
+}
+
+//=======================================================================
+/*!
+ * \brief Sets event listener to a submesh
+ * \param subMesh - submesh where algo is set
+ *
+ * This method is called when a submesh gets HYP_OK algo_state.
+ */
+//=======================================================================
+
+void StdMeshers_RadialQuadrangle_1D2D::SetEventListener(SMESH_subMesh* faceSubMesh)
+{
+  for ( TopExp_Explorer e( faceSubMesh->GetSubShape(), TopAbs_EDGE ); e.More(); e.Next() )
   {
-    for ( TopExp_Explorer e( faceSubMesh->GetSubShape(), TopAbs_EDGE ); e.More(); e.Next() )
-    {
-      TEdgeMarker::markEdge( TopoDS::Edge( e.Current() ), faceSubMesh );
-    }
+    TEdgeMarker::markEdge( TopoDS::Edge( e.Current() ), faceSubMesh );
   }
 }
 
