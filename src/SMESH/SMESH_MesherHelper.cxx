@@ -4646,6 +4646,7 @@ namespace { // Structures used by FixQuadraticElements()
             const SMDS_MeshElement* f = faceIt->next();
             if ( !faceSM->Contains( f ) ||
                  f->NbNodes() < 6       || // check quadratic triangles only
+                 f->NbNodes() > 7       ||
                  !checkedFaces.insert( f ).second )
               continue;
 
@@ -4857,7 +4858,12 @@ namespace { // Structures used by FixQuadraticElements()
                     gp_Pnt pMedium = SMESH_TNodeXYZ( linkIt->second );
                     double hMedium = faceNorm * gp_Vec( pOnFace0, pMedium ).XYZ();
                     double hVol    = faceNorm * gp_Vec( pOnFace0, pInSolid ).XYZ();
-                    isDistorted = ( Abs( hMedium ) > Abs( hVol * 0.75 ));
+                    if ( Abs( hMedium ) > Abs( hVol * 0.75 ))
+                    {
+                      SMESH_TNodeXYZ pI( nOnFace[i]), pJ( nOnFace[j]);
+                      double angle = gp_Vec( pI, pMedium ).Angle( gp_Vec( pI, pJ ));
+                      isDistorted  = ( angle > M_PI / 20 );
+                    }
                   }
                 }
               }
