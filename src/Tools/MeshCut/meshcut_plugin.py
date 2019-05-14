@@ -51,7 +51,7 @@ def MeshCut(context):
         self.ui.le_origMeshFile.setText(infile)
         insplit = os.path.splitext(str(infile).encode())
         outfile = insplit[0] + '_cut'.encode() + insplit[1]
-        self.ui.le_cutMeshFile.setText(outfile)
+        self.ui.le_cutMeshFile.setText(outfile.decode())
       pass
     
     def setOutputFile(self):
