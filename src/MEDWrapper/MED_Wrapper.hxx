@@ -279,7 +279,7 @@ namespace MED
                EModeSwitch theMode = eFULL_INTERLACE,
                ERepere theSystem = eCART,
                EBooleen theIsElemNum = eVRAI,
-               EBooleen theIsElemNames = eVRAI);
+               EBooleen theIsElemNames = eFAUX);
 
     //! Create a MEDWrapper MED Nodes representation
     virtual
@@ -521,7 +521,7 @@ namespace MED
                TInt theNbElem,
                EConnectivite theConnMode = eNOD,
                EBooleen theIsElemNum = eVRAI,
-               EBooleen theIsElemNames = eVRAI,
+               EBooleen theIsElemNames = eFAUX,
                EModeSwitch theMode = eFULL_INTERLACE);
 
     //! Create a MEDWrapper MED Cells representation

@@ -195,8 +195,8 @@ namespace MED
     if ( write ) {
       myFile->Open(eLECTURE_ECRITURE, &aRet);
       if (aRet < 0) {
-	myFile->Close();
-	myFile->Open(eCREATION, &aRet);
+        myFile->Close();
+        myFile->Open(eCREATION, &aRet);
       }
     }
     else {
@@ -2058,6 +2058,24 @@ namespace MED
     TValueHolder<EConnectivite, med_connectivity_mode> aConnMode    (theInfo.myConnMode);
 
     TErr aRet;
+    med_bool dummy;
+    aRet = MEDmeshnEntity(myFile->Id(),
+                          &aMeshName,
+                          MED_NO_DT,
+                          MED_NO_IT,
+                          anEntity,
+                          aGeom,
+                          MED_NAME,
+                          aConnMode,
+                          &dummy, &dummy);
+    if ( aRet > 0 )
+    {
+      // names are present in the file, they will be read in spite of theInfo.myIsElemNames
+      theInfo.myIsElemNames = eVRAI;
+      theInfo.myElemNames.reset( new TString( theInfo.myNbElem * GetPNOMLength() + 1 ));
+      anElemNames.myRepresentation = & ((TString&) theInfo.myElemNames )[0];
+    }
+
     aRet = MEDmeshElementRd(myFile->Id(),
                             &aMeshName,
                             MED_NO_DT,
@@ -2080,11 +2098,11 @@ namespace MED
       EXCEPTION(std::runtime_error, "GetCellInfo - MEDmeshElementRd(...)");
 
     if (anIsFamNum == MED_FALSE)
-      {
-        int mySize = (int) theInfo.myFamNum->size();
-        theInfo.myFamNum->clear();
-        theInfo.myFamNum->resize(mySize, 0);
-      }
+    {
+      int mySize = (int) theInfo.myFamNum->size();
+      theInfo.myFamNum->clear();
+      theInfo.myFamNum->resize(mySize, 0);
+    }
 
   }
 
