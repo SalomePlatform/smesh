@@ -462,9 +462,10 @@ GenericHypothesisCreator_i* SMESH_Gen_i::getHypothesisCreator(const char* theHyp
         // report any error, if occurred
 #ifndef WIN32
         const char* anError = dlerror();
-        throw(SALOME_Exception(anError));
+        throw(SALOME_Exception( anError ));
 #else
-        throw(SALOME_Exception(LOCALIZED( "Can't load server meshers plugin library" )));
+        throw(SALOME_Exception ( SMESH_Comment("Can't load meshers plugin library " )
+                                 << aPlatformLibName));
 #endif
       }
 
@@ -474,7 +475,8 @@ GenericHypothesisCreator_i* SMESH_Gen_i::getHypothesisCreator(const char* theHyp
         (GetHypothesisCreator)GetProc( libHandle, "GetHypothesisCreator" );
       if (!procHandle)
       {
-        throw(SALOME_Exception(LOCALIZED("bad hypothesis plugin library")));
+        throw(SALOME_Exception(SMESH_Comment("bad hypothesis plugin library")
+                               << aPlatformLibName ));
         UnLoadLib(libHandle);
       }
 
@@ -483,7 +485,8 @@ GenericHypothesisCreator_i* SMESH_Gen_i::getHypothesisCreator(const char* theHyp
       aCreator = procHandle(theHypName);
       if (!aCreator)
       {
-        throw(SALOME_Exception(LOCALIZED("no such a hypothesis in this plugin")));
+        throw(SALOME_Exception( SMESH_Comment( theHypName ) << " is missing from "
+                                << aPlatformLibName));
       }
       // map hypothesis creator to a hypothesis name
       myHypCreatorMap[string(theHypName)] = aCreator;
@@ -5217,6 +5220,10 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 
             try { // protect persistence mechanism against exceptions
               myHyp = this->createHypothesis( hypname.c_str(), libname.c_str() );
+            }
+            catch( SALOME::SALOME_Exception& ex )
+            {
+              INFOS( "Exception during hypothesis creation: " << ex.details.text );
             }
             catch (...) {
               INFOS( "Exception during hypothesis creation" );
