@@ -20,6 +20,8 @@
 # if you already have plugins defined in a salome_plugins.py file, add this file at the end.
 # if not, copy this file as ${HOME}/Plugins/smesh_plugins.py or ${APPLI}/Plugins/smesh_plugins.py
 
+import sys
+
 def MeshCut(context):
   # get context study, salomeGui
   study = context.study
@@ -96,11 +98,18 @@ and T the tolerance.
     if result:
       # dialog accepted
       args = ['MeshCut']
-      args += [str(window.ui.le_origMeshFile.text()).encode()]
-      args += [str(window.ui.le_cutMeshFile.text()).encode()]
-      args += [str(window.ui.le_outMeshName.text()).encode()]
-      args += [str(window.ui.le_groupAbove.text()).encode()]
-      args += [str(window.ui.le_groupBelow.text()).encode()]
+      if sys.platform == "win32":
+        args += [str(window.ui.le_origMeshFile.text())]
+        args += [str(window.ui.le_cutMeshFile.text())]
+        args += [str(window.ui.le_outMeshName.text())]
+        args += [str(window.ui.le_groupAbove.text())]
+        args += [str(window.ui.le_groupBelow.text())]
+      else:
+        args += [str(window.ui.le_origMeshFile.text()).encode()]
+        args += [str(window.ui.le_cutMeshFile.text()).encode()]
+        args += [str(window.ui.le_outMeshName.text()).encode()]
+        args += [str(window.ui.le_groupAbove.text()).encode()]
+        args += [str(window.ui.le_groupBelow.text()).encode()]
       args += [str(window.ui.dsb_normX.value())]
       args += [str(window.ui.dsb_normY.value())]
       args += [str(window.ui.dsb_normZ.value())]
