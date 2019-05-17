@@ -1750,7 +1750,7 @@ namespace
                 int anEntitiesCount = anActor->GetNumberControlEntities();
                 if (anEntitiesCount >= 0)
                   functorName = functorName + ": " + QString::number(anEntitiesCount);
-                anActor->GetScalarBarActor()->SetTitle( functorName.toLatin1().constData() );
+                anActor->GetScalarBarActor()->SetTitle( functorName.toUtf8().constData() );
                 SMESH::RepaintCurrentView();
 #ifndef DISABLE_PLOT2DVIEWER
                 if ( anActor->GetPlot2Histogram() ) {
