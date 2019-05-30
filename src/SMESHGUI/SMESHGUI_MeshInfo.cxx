@@ -2147,11 +2147,7 @@ SMESHGUI_TreeElemInfo::SMESHGUI_TreeElemInfo( QWidget* parent )
   myInfo->setColumnCount( 2 );
   myInfo->setHeaderLabels( QStringList() << tr( "PROPERTY" ) << tr( "VALUE" ) );
   myInfo->header()->setStretchLastSection( true );
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  myInfo->header()->setResizeMode( 0, QHeaderView::ResizeToContents );
-#else
   myInfo->header()->setSectionResizeMode( 0, QHeaderView::ResizeToContents );
-#endif
   myInfo->setItemDelegate( new ItemDelegate( myInfo ) );
   QVBoxLayout* l = new QVBoxLayout( centralWidget() );
   l->setMargin( 0 );
@@ -2379,11 +2375,7 @@ SMESHGUI_AddInfo::SMESHGUI_AddInfo( QWidget* parent ): SMESHGUI_Info( parent )
 
   myTree->setColumnCount( 2 );
   myTree->header()->setStretchLastSection( true );
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-  myTree->header()->setResizeMode( 0, QHeaderView::ResizeToContents );
-#else
   myTree->header()->setSectionResizeMode( 0, QHeaderView::ResizeToContents );
-#endif
   myTree->header()->hide();
 
   l->addWidget( myTree );
