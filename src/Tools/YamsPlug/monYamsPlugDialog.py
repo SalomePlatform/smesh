@@ -80,7 +80,9 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     v1.setDecimals(3)
     self.SP_Tolerance.setValidator(v1)
     self.SP_Tolerance.titleForWarning="Chordal Tolerance"
-    
+
+    self.SP_MinSize.setDecimals(5)
+
     self.resize(800, 600)
     self.clean()
 
