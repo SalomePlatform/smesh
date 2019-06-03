@@ -110,8 +110,14 @@ class MGCleanerMonViewText(Ui_ViewExe, QDialog):
         if exit_code == 0 and not self.anErrorOccured:
             self.parent().enregistreResultat()
         elif not self.hasBeenCanceled:
-            QMessageBox.critical(self, 'Computation failed',
-                 'The computation has failed.<br>Please, check the log message.')
+            if os.path.exists(self.parent().fichierOut):
+                self.parent().enregistreResultat()
+                QMessageBox.critical(self, 'Computation ended in error',
+                  'A new mesh has been generated but with some errors.'+
+                  '<br>Please, check the log message.')
+            else:
+                QMessageBox.critical(self, 'Computation failed',
+                  'The computation has failed.<br>Please, check the log message.')
         pass
 
     def errorOccured(self):
