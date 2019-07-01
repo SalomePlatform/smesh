@@ -4336,6 +4336,7 @@ void StdMeshers_Quadrangle_2D::smooth (FaceQuadStruct::Ptr quad)
       SMESH_TNodeXYZ a2( quad->UVPt( nbhoriz-1, nbvertic-1 ).node );
       SMESH_TNodeXYZ a3( quad->UVPt( 0,         nbvertic-1 ).node );
 
+      // compute TFI
       for (int i = 1; i < nbhoriz-1; i++)
       {
         SMESH_TNodeXYZ p0( quad->UVPt( i, 0          ).node );
@@ -4347,13 +4348,39 @@ void StdMeshers_Quadrangle_2D::smooth (FaceQuadStruct::Ptr quad)
 
           UVPtStruct& uvp = quad->UVPt( i, j );
 
-          gp_Pnt    p = myHelper->calcTFI(uvp.x,uvp.y, a0,a1,a2,a3, p0,p1,p2,p3);
+          gp_Pnt pnew = myHelper->calcTFI(uvp.x,uvp.y, a0,a1,a2,a3, p0,p1,p2,p3);
+          meshDS->MoveNode( uvp.node, pnew.X(), pnew.Y(), pnew.Z() );
+        }
+      }
+      // project to surface
+      double cellSize;
+      for (int i = 1; i < nbhoriz-1; i++)
+      {
+        for (int j = 1; j < nbvertic-1; j++)
+        {
+          UVPtStruct& uvp = quad->UVPt( i, j );
+          SMESH_NodeXYZ p = uvp.node;
+
+          cellSize = Max( p.SquareDistance( quad->UVPt( i+1, j ).node ),
+                          p.SquareDistance( quad->UVPt( i-1, j ).node ));
+          cellSize = Max( p.SquareDistance( quad->UVPt( i, j+1 ).node ), cellSize );
+          cellSize = Max( p.SquareDistance( quad->UVPt( i, j-1 ).node ), cellSize );
+
           gp_Pnt2d uv = surface->NextValueOfUV( uvp.UV(), p, 10*tol );
           gp_Pnt pnew = surface->Value( uv );
-
-          meshDS->MoveNode( uvp.node, pnew.X(), pnew.Y(), pnew.Z() );
-          uvp.u = uv.X();
-          uvp.v = uv.Y();
+          bool     ok = ( pnew.SquareDistance( p ) < 2 * cellSize );
+          if ( !ok )
+          {
+            uv   = surface->ValueOfUV( p, 10*tol );
+            pnew = surface->Value( uv );
+            ok   = ( pnew.SquareDistance( p ) < 2 * cellSize );
+          }
+          if ( ok )
+          {
+            meshDS->MoveNode( uvp.node, pnew.X(), pnew.Y(), pnew.Z() );
+            uvp.u = uv.X();
+            uvp.v = uv.Y();
+          }
         }
       }
     }

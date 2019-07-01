@@ -40,7 +40,6 @@
  *  \param [in] boundaryNodes - vector of nodes of a wire
  *  \param [in] face - the face
  *  \param [in] faceID - the face ID
- *  \param [in] nbNodesToVisit - nb of non-marked nodes on the face
  */
 //================================================================================
 
@@ -56,6 +55,8 @@ SMESH_Delaunay::SMESH_Delaunay(const std::vector< const UVPtStructVec* > & bound
     const int nbDiv = 100;
     const double uRange = surf.LastUParameter() - surf.FirstUParameter();
     const double vRange = surf.LastVParameter() - surf.FirstVParameter();
+    const double uFixed = surf.FirstUParameter() + 0.5 * uRange;
+    const double vFixed = surf.FirstVParameter() + 0.5 * vRange;
     const double dU = uRange / nbDiv;
     const double dV = vRange / nbDiv;
     double u = surf.FirstUParameter(), v = surf.FirstVParameter();
@@ -63,10 +64,10 @@ SMESH_Delaunay::SMESH_Delaunay(const std::vector< const UVPtStructVec* > & bound
     double lenU = 0, lenV = 0;
     for ( ; u < surf.LastUParameter(); u += dU, v += dV )
     {
-      gp_Pnt p1U = surf.Value( u, surf.FirstVParameter() );
+      gp_Pnt p1U = surf.Value( u, vFixed );
       lenU += p1U.Distance( p0U );
       p0U = p1U;
-      gp_Pnt p1V = surf.Value( surf.FirstUParameter(), v );
+      gp_Pnt p1V = surf.Value( uFixed, v );
       lenV += p1V.Distance( p0V );
       p0V = p1V;
     }
@@ -270,6 +271,8 @@ const BRepMesh_Triangle* SMESH_Delaunay::FindTriangle( const gp_XY&             
 
 const BRepMesh_Triangle* SMESH_Delaunay::GetTriangleNear( int iBndNode )
 {
+  if ( iBndNode >= _triaDS->NbNodes() )
+    return 0;
   int nodeIDs[3];
   int nbNbNodes = _bndNodes.size();
 #if OCC_VERSION_LARGE <= 0x07030000

@@ -127,6 +127,15 @@ namespace
         return 0;
       if ( myFreeEnds.empty() )
       {
+        // remove degenerated cuts
+        // for ( size_t iC1 = 0; iC1 < myCuts.size(); ++iC1 )
+        //   if ( myCuts[ iC1 ][ 0 ].myNode == myCuts[ iC1 ][ 1 ].myNode )
+        //   {
+        //     if ( iC1 < myCuts.size() - 1 )
+        //       myCuts[ iC1 ] = myCuts.back();
+        //     myCuts.pop_back();
+        //   }
+
         int nbShared = 0;
         std::vector< bool > isSharedPnt( myCuts.size() * 2, false );
         for ( size_t iC1 = 0; iC1 < myCuts.size() - 1; ++iC1 )

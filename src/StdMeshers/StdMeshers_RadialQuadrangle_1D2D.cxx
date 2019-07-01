@@ -226,12 +226,19 @@ namespace
     if ( nbWire > 2 || nbEdgesInWire.front() < 1 ) return 0;
 
     // remove degenerated EDGEs
+    TopTools_MapOfShape degenVV;
     list<TopoDS_Edge>::iterator edge = edges.begin();
     while ( edge != edges.end() )
       if ( SMESH_Algo::isDegenerated( *edge ))
+      {
+        degenVV.Add( SMESH_MesherHelper::IthVertex( 0, *edge ));
+        degenVV.Add( SMESH_MesherHelper::IthVertex( 1, *edge ));
         edge = edges.erase( edge );
+      }
       else
+      {
         ++edge;
+      }
     int nbEdges = edges.size();
 
     // find VERTEXes between continues EDGEs
@@ -327,9 +334,25 @@ namespace
       double len1 = (++l2i)->first;
       double len2 = (++l2i)->first;
       if ( len1 - len0 > len2 - len1 )
-        deviation2sideInd.insert( make_pair( 0., len2sideInd.begin()->second ));
+        deviation2sideInd.insert( std::make_pair( 0., len2sideInd.begin()->second ));
       else
-        deviation2sideInd.insert( make_pair( 0., len2sideInd.rbegin()->second ));
+        deviation2sideInd.insert( std::make_pair( 0., len2sideInd.rbegin()->second ));
+    }
+
+    double minDevi = deviation2sideInd.begin()->first;
+    int   iMinCurv = deviation2sideInd.begin()->second;
+    if ( sides.size() == 3 && degenVV.Size() == 1 &&
+         minDevi / sides[ iMinCurv ]->Length() > 1e-3 )
+    {
+      // a triangle with curved sides and a degenerated EDGE (IPAL54585);
+      // use a side opposite to the degenerated EDGE as an elliptic one
+      for ( size_t iS = 0; iS < sides.size(); ++iS )
+        if ( degenVV.Contains( sides[ iS ]->FirstVertex() ))
+        {
+          deviation2sideInd.clear();
+          deviation2sideInd.insert( std::make_pair( 0.,( iS + 1 ) % sides.size() ));
+          break;
+        }
     }
 
     int iCirc = deviation2sideInd.rbegin()->second; 
@@ -994,6 +1017,7 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
   quad->side[1] = linSide1;
   quad->side[2] = StdMeshers_FaceSide::New( circSide.get(), centerNode, &centerUV );
   quad->side[3] = linSide2;
+  quad->face    = F;
 
   myQuadList.push_back( quad );
 
@@ -1003,6 +1027,12 @@ bool StdMeshers_RadialQuadrangle_1D2D::Compute(SMESH_Mesh&         aMesh,
     ok = StdMeshers_Quadrangle_2D::computeQuadDominant( aMesh, F, quad );
   else
     ok = StdMeshers_Quadrangle_2D::computeTriangles( aMesh, F, quad );
+
+  if ( helper.HasDegeneratedEdges() )
+  {
+    StdMeshers_Quadrangle_2D::myNeedSmooth = true;
+    StdMeshers_Quadrangle_2D::smooth( quad );
+  }
 
   StdMeshers_Quadrangle_2D::myHelper = 0;
 

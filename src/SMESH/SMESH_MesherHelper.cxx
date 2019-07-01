@@ -151,8 +151,6 @@ bool SMESH_MesherHelper::IsQuadraticSubMesh(const TopoDS_Shape& aSh)
   // we can create quadratic elements only if all elements
   // created on sub-shapes of given shape are quadratic
   myCreateQuadratic = true;
-  mySeamShapeIds.clear();
-  myDegenShapeIds.clear();
   TopAbs_ShapeEnum subType( aSh.ShapeType()==TopAbs_FACE ? TopAbs_EDGE : TopAbs_FACE );
   if ( aSh.ShapeType()==TopAbs_COMPOUND )
   {
@@ -741,7 +739,8 @@ gp_XY SMESH_MesherHelper::GetNodeUV(const TopoDS_Face&   F,
               if ( !C2d.IsNull() ) {
                 double u = ( V == IthVertex( 0, edge )) ?  f : l;
                 uv = C2d->Value( u );
-                uvOK = true;
+                gp_Pnt p = GetSurface( F )->Value( uv );
+                uvOK = ( p.Distance( BRep_Tool::Pnt( V )) < getFaceMaxTol( F ));
                 break;
               }
             }
