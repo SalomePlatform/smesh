@@ -6083,19 +6083,23 @@ class SMESH_DimHyp
     if ( (_ownDim == _dim  || theOther->_ownDim == _dim ) && (!meIsCompound || !otherIsCompound))
       return false;
 
-//     bool checkSubShape = ( _dim >= theOther->_dim )
-//       ? isShareSubShapes( _shapeMap, theOther->_shapeMap, shapeTypeByDim(theOther->_dim) )
-//       : isShareSubShapes( theOther->_shapeMap, _shapeMap, shapeTypeByDim(_dim) ) ;
     bool checkSubShape = isShareSubShapes( _shapeMap, theOther->_shapeMap, shapeTypeByDim(_dim));
     if ( !checkSubShape )
-        return false;
+      return false;
 
     // check algorithms to be same
-    if ( !checkAlgo( this->GetAlgo(), theOther->GetAlgo() ))
-      return true; // different algorithms -> concurrency !
+    const SMESH_Algo* a1 = this->GetAlgo();
+    const SMESH_Algo* a2 = theOther->GetAlgo();
+    bool isSame = checkAlgo( a1, a2 );
+    if ( !isSame )
+    {
+      if ( !a1 || !a2 )
+        return false; // pb?
+      return a1->GetDim() == a2->GetDim(); // different algorithms of same dim -> concurrency !
+    }
 
     // check hypothesises for concurrence (skip first as algorithm)
-    int nbSame = 0;
+    size_t nbSame = 0;
     // pointers should be same, because it is referened from mesh hypothesis partition
     list <const SMESHDS_Hypothesis*>::const_iterator hypIt = _hypotheses.begin();
     list <const SMESHDS_Hypothesis*>::const_iterator otheEndIt = theOther->_hypotheses.end();
@@ -6103,7 +6107,7 @@ class SMESH_DimHyp
       if ( find( theOther->_hypotheses.begin(), otheEndIt, *hypIt ) != otheEndIt )
         nbSame++;
     // the submeshes are concurrent if their algorithms has different parameters
-    return nbSame != (int)theOther->_hypotheses.size() - 1;
+    return nbSame != theOther->_hypotheses.size() - 1;
   }
 
   // Return true if algorithm of this SMESH_DimHyp is used if no
