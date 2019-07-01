@@ -81,10 +81,10 @@ struct Triangulate::PolyVertex
   PolyVertex* Delete();
 
   // compare PolyVertex'es by node
-  bool operator()(const PolyVertex* a, const PolyVertex* b) const 
-	{
-      return ( a->_nxyz.Node() <  b->_nxyz.Node() );
-    }
+  bool operator()(const PolyVertex* a, const PolyVertex* b) const
+  {
+    return ( a->_nxyz.Node() <  b->_nxyz.Node() );
+  }
   // set of PolyVertex sorted by mesh node
   typedef boost::container::flat_set< PolyVertex*, PolyVertex > PVSet;
 };
