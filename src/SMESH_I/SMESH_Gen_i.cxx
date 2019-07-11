@@ -3109,6 +3109,11 @@ namespace // utils for CopyMeshWithGeom()
         {
           findNewIDs( oldIndices[i], newIndices );
         }
+        if ( newIndices.size() < oldIndices->length() ) // issue #17096
+        {
+          newIndices.clear();
+          newShape = getInPlace( oldShape );
+        }
         if ( !newIndices.empty() )
         {
           try
@@ -3290,6 +3295,27 @@ namespace // utils for CopyMeshWithGeom()
           myGIPMap = new GEOM::ListOfListOfLong();
         }
       }
+    }
+
+    //================================================================================
+    /*!
+     * \brief Get new sub-shape by calling GetInPlace()
+     */
+    GEOM::GEOM_Object_ptr getInPlace( GEOM::GEOM_Object_ptr oldShape )
+    {
+      GEOM::GEOM_Object_var newShape;
+
+      GEOM::GEOM_Object_var   mainShapeNew = myNewMesh_i->GetShapeToMesh();
+      GEOM::GEOM_Gen_var           geomGen = myGen_i->GetGeomEngine();
+      GEOM::GEOM_IShapesOperations_wrap op = geomGen->GetIShapesOperations();
+      try
+      {
+        newShape = op->GetInPlace( mainShapeNew, oldShape );
+      }
+      catch( ... )
+      {
+      }
+      return newShape._retn();
     }
 
     //================================================================================
