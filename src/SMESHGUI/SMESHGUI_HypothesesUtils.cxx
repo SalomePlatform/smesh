@@ -668,7 +668,7 @@ namespace SMESH
     int res = SMESH::HYP_UNKNOWN_FATAL;
     SUIT_OverrideCursor wc;
 
-    if (!aSubMesh->_is_nil() && ! aHyp->_is_nil()) {
+    if ( !aSubMesh->_is_nil() && !aHyp->_is_nil() ) {
       try {
         SMESH::SMESH_Mesh_var aMesh = aSubMesh->GetFather();
         _PTR(SObject) SsubM = SMESH::FindSObject(aSubMesh);

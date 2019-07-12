@@ -57,7 +57,7 @@ public:
   ::StdMeshers_Prism_3D* GetImpl();
 
   // Return true if the algorithm is applicable to a shape
-  static CORBA::Boolean IsApplicable(const TopoDS_Shape &S, CORBA::Boolean toCheckAll);
+  static bool IsApplicable(const TopoDS_Shape &S, bool toCheckAll, int dim);
 };
 
 // ======================================================
@@ -79,7 +79,7 @@ public:
   ::StdMeshers_RadialPrism_3D* GetImpl();
 
   // Return true if the algorithm is applicable to a shape
-  static CORBA::Boolean IsApplicable(const TopoDS_Shape &S, CORBA::Boolean toCheckAll);
+  static bool IsApplicable(const TopoDS_Shape &S, bool toCheckAll, int dim);
 };
 
 

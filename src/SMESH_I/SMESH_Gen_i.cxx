@@ -6145,7 +6145,8 @@ CORBA::Boolean SMESH_Gen_i::IsApplicable ( const char*           theAlgoType,
   if (aCreator)
   {
     TopoDS_Shape shape = GeomObjectToShape( theGeomObject );
-    return shape.IsNull() || aCreator->IsApplicable( shape, toCheckAll );
+    const SMESH_Algo::Features& feat = SMESH_Algo::GetFeatures( theAlgoType );
+    return shape.IsNull() || aCreator->IsApplicable( shape, toCheckAll, feat._dim );
   }
   else
   {

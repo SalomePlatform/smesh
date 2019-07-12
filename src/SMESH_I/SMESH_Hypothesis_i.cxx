@@ -34,6 +34,8 @@
 #include <iostream>
 #include <sstream>
 
+#include <TopExp_Explorer.hxx>
+
 using namespace std;
 
 //=============================================================================
@@ -325,4 +327,25 @@ void SMESH_Hypothesis_i::LoadFrom( const char* theStream )
 void SMESH_Hypothesis_i::UpdateAsMeshesRestored()
 {
   // for hyps needing full data restored
+}
+
+//================================================================================
+/*!
+ * \brief Check if a shape includes sub-shapes of a given dimension
+ */
+//================================================================================
+
+bool GenericHypothesisCreator_i::IsShapeOfDim( const TopoDS_Shape & S,
+                                               int                  dim )
+{
+  TopAbs_ShapeEnum shapeType;
+  switch ( dim )
+  {
+  case 0: shapeType = TopAbs_VERTEX; break;
+  case 1: shapeType = TopAbs_EDGE; break;
+  case 2: shapeType = TopAbs_FACE; break;
+  case 3: shapeType = TopAbs_SOLID; break;
+  default: return true;
+  }
+  return TopExp_Explorer( S, shapeType ).More();
 }

@@ -830,6 +830,17 @@ bool SMESHGUI_MeshDlg::isTabEnabled(const int theTabId) const
 
 //================================================================================
 /*!
+ * \brief Return index of a current tab
+ * \return tab ID
+ */
+//================================================================================
+int SMESHGUI_MeshDlg::currentTab() const
+{
+  return Dim3D - myTabWg->currentIndex();
+}
+
+//================================================================================
+/*!
  * \brief SLOT called when a Geom selection button is clicked
  */
 //================================================================================
@@ -900,5 +911,8 @@ int SMESHGUI_MeshDlg::currentMeshType( )
 //================================================================================
 void SMESHGUI_MeshDlg::setCurrentMeshType( const int theIndex )
 {
-  myMeshType->setCurrentIndex( theIndex );
+  if ( theIndex < myMeshType->count() )
+    myMeshType->setCurrentIndex( theIndex );
+  else
+    myMeshType->setCurrentIndex( 0 );
 }

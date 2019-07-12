@@ -48,7 +48,7 @@ public:
   ::StdMeshers_RadialQuadrangle_1D2D* GetImpl();
 
   // Return true if the algorithm is applicable to a shape
-  static CORBA::Boolean IsApplicable(const TopoDS_Shape &S, CORBA::Boolean toCheckAll);
+  static bool IsApplicable(const TopoDS_Shape &S, bool toCheckAll, int dim);
 };
 
 

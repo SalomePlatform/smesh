@@ -73,10 +73,6 @@
 #include <TopExp_Explorer.hxx>
 #include <BRep_Tool.hxx>
 
-// IDL includes
-#include <SALOMEconfig.h>
-#include CORBA_CLIENT_HEADER(SMESH_Gen)
-
 //================================================================================
 /*!
  * \brief Constructor
@@ -92,8 +88,7 @@ SMESHGUI_MeshOp::SMESHGUI_MeshOp( const bool theToCreate, const bool theIsMesh )
   myShapeByMeshOp( 0 ),
   myToCreate( theToCreate ),
   myIsMesh( theIsMesh ),
-  myIsInvalidSubMesh( false ),
-  myHypoSet( 0 )
+  myIsInvalidSubMesh( false )
 {
   if ( GeometryGUI::GetGeomGen()->_is_nil() )// check that GEOM_Gen exists
     GeometryGUI::InitGeomGen();
@@ -218,6 +213,7 @@ void SMESHGUI_MeshOp::startOperation()
     connect( myDlg, SIGNAL( hypoSet( const QString& )), SLOT( onHypoSet( const QString& )));
     connect( myDlg, SIGNAL( geomSelectionByMesh( bool )), SLOT( onGeomSelectionByMesh( bool )));
     connect( myDlg, SIGNAL( selectMeshType( const int, const int ) ), SLOT( onAlgoSetByMeshType( const int, const int)));
+
     if ( myToCreate ) {
       if ( myIsMesh ) myHelpFileName = "constructing_meshes.html";
       else            myHelpFileName = "constructing_submeshes.html";
@@ -227,22 +223,20 @@ void SMESHGUI_MeshOp::startOperation()
     }
   }
   SMESHGUI_SelectionOp::startOperation();
-  // iterate through dimensions and get available algorithms, set them to the dialog
-  _PTR(SComponent) aFather = SMESH::getStudy()->FindComponent( "SMESH" );
+
+  // clear available hypotheses
+  QStringList hypList;
   for ( int i = SMESH::DIM_0D; i <= SMESH::DIM_3D; i++ )
   {
     SMESHGUI_MeshTab* aTab = myDlg->tab( i );
-    QStringList hypList;
-    // clear available hypotheses
+    // set algos
+    aTab->setAvailableHyps( Algo, hypList );
     aTab->setAvailableHyps( MainHyp, hypList );
     aTab->setAvailableHyps( AddHyp, hypList );
     aTab->setExistingHyps( MainHyp, hypList );
     aTab->setExistingHyps( AddHyp, hypList );
     myExistingHyps[ i ][ MainHyp ].clear();
     myExistingHyps[ i ][ AddHyp ].clear();
-    // set algos
-    availableHyps( i, Algo, hypList, myAvailableHypData[i][Algo] );
-    aTab->setAvailableHyps( Algo, hypList );
   }
   if ( myToCreate )
   {
@@ -253,18 +247,17 @@ void SMESHGUI_MeshOp::startOperation()
   {
     myDlg->activateObject( SMESHGUI_MeshDlg::Obj );
   }
+
+  updateMeshTypeList();
+  myDlg->setCurrentMeshType( MT_ANY );
+
   myDlg->setCurrentTab( SMESH::DIM_3D );
-
-  QStringList TypeMeshList;
-  createMeshTypeList( TypeMeshList );
-  setAvailableMeshType( TypeMeshList );
-
-  myDlg->show();
   myDlg->setGeomPopupEnabled(false);
+  myDlg->show();
+
   selectionDone();
 
   myHasConcurrentSubBefore = false;
-
   myObjectToSelect.clear();
 }
 
@@ -446,7 +439,7 @@ char* SMESHGUI_MeshOp::isSubmeshIgnored() const
                !algo->IsSupportSubmeshes )
             return CORBA::string_dup( algoNames[0].toUtf8().data() );
         }
-//       }
+        //       }
     }
   }
   return 0;
@@ -460,42 +453,37 @@ char* SMESHGUI_MeshOp::isSubmeshIgnored() const
 //================================================================================
 _PTR(SObject) SMESHGUI_MeshOp::getSubmeshByGeom() const
 {
-  QString aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
-  QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
+  QString  aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
   _PTR(SObject) pMesh = SMESH::getStudy()->FindObjectID( aMeshEntry.toUtf8().data() );
-  _PTR(SObject) pGeom = SMESH::getStudy()->FindObjectID( aGeomEntry.toUtf8().data() );
-  if ( pMesh && pGeom ) {
-    GEOM::GEOM_Object_var geom = SMESH::SObjectToInterface<GEOM::GEOM_Object>( pGeom );
-    if ( !geom->_is_nil() ) {
-      int tag = -1;
-      switch ( geom->GetShapeType() ) {
-      case GEOM::VERTEX:   tag = SMESH::Tag_SubMeshOnVertex;   break;
-      case GEOM::EDGE:     tag = SMESH::Tag_SubMeshOnEdge;     break;
-      case GEOM::WIRE:     tag = SMESH::Tag_SubMeshOnWire;     break;
-      case GEOM::FACE:     tag = SMESH::Tag_SubMeshOnFace;     break;
-      case GEOM::SHELL:    tag = SMESH::Tag_SubMeshOnShell;    break;
-      case GEOM::SOLID:    tag = SMESH::Tag_SubMeshOnSolid;    break;
-      case GEOM::COMPOUND: tag = SMESH::Tag_SubMeshOnCompound; break;
-      default:;
-      }
-      _PTR(GenericAttribute) anAttr;
-      _PTR(SObject) aSubmeshRoot;
-      _PTR(Study) aStudy = SMESH::getStudy();
-      if ( pMesh->FindSubObject( tag, aSubmeshRoot ) )
+  if ( pMesh && !myGeom->_is_nil() ) {
+    int tag = -1;
+    switch ( myGeom->GetShapeType() ) {
+    case GEOM::VERTEX:   tag = SMESH::Tag_SubMeshOnVertex;   break;
+    case GEOM::EDGE:     tag = SMESH::Tag_SubMeshOnEdge;     break;
+    case GEOM::WIRE:     tag = SMESH::Tag_SubMeshOnWire;     break;
+    case GEOM::FACE:     tag = SMESH::Tag_SubMeshOnFace;     break;
+    case GEOM::SHELL:    tag = SMESH::Tag_SubMeshOnShell;    break;
+    case GEOM::SOLID:    tag = SMESH::Tag_SubMeshOnSolid;    break;
+    case GEOM::COMPOUND: tag = SMESH::Tag_SubMeshOnCompound; break;
+    default:;
+    }
+    _PTR(GenericAttribute) anAttr;
+    _PTR(SObject) aSubmeshRoot;
+    _PTR(Study) aStudy = SMESH::getStudy();
+    if ( pMesh->FindSubObject( tag, aSubmeshRoot ) )
+    {
+      _PTR(ChildIterator) smIter = aStudy->NewChildIterator( aSubmeshRoot );
+      for ( ; smIter->More(); smIter->Next() )
       {
-        _PTR(ChildIterator) smIter = aStudy->NewChildIterator( aSubmeshRoot );
-        for ( ; smIter->More(); smIter->Next() )
-        {
-          _PTR(SObject) aSmObj = smIter->Value();
-          if ( ! aSmObj->FindAttribute( anAttr, "AttributeIOR" ))
-            continue;
-          _PTR(ChildIterator) anIter1 = aStudy->NewChildIterator(aSmObj);
-          for ( ; anIter1->More(); anIter1->Next()) {
-            _PTR(SObject) pGeom2 = anIter1->Value();
-            if ( pGeom2->ReferencedObject( pGeom2 ) &&
-                 pGeom2->GetID() == pGeom->GetID() )
-              return aSmObj;
-          }
+        _PTR(SObject) aSmObj = smIter->Value();
+        if ( ! aSmObj->FindAttribute( anAttr, "AttributeIOR" ))
+          continue;
+        _PTR(ChildIterator) anIter1 = aStudy->NewChildIterator(aSmObj);
+        for ( ; anIter1->More(); anIter1->Next()) {
+          _PTR(SObject) pGeom2 = anIter1->Value();
+          if ( pGeom2->ReferencedObject( pGeom2 ) &&
+               myGeomEntry == pGeom2->GetID().c_str() )
+            return aSmObj;
         }
       }
     }
@@ -517,232 +505,130 @@ void SMESHGUI_MeshOp::selectionDone()
 
   SMESHGUI_SelectionOp::selectionDone();
 
+  myGeomEntry.clear();
+  myGeom = GEOM::GEOM_Object::_nil();
+  myIsInvalidSubMesh = false;
+  myIsOnGeometry = true;
+
   try
   {
-    myIsOnGeometry = true;
-    myIsInvalidSubMesh = false;
-
-    //Check geometry for mesh
-    QString anObjEntry = myDlg->selectedObject(SMESHGUI_MeshDlg::Obj);
-    _PTR(SObject) pObj = SMESH::getStudy()->FindObjectID(anObjEntry.toUtf8().data());
-    if (pObj)
+    // allow selecting multiple geom objects only for sub-mesh creation
+    QStringList aGEOMs;
+    myDlg->selectedObject( SMESHGUI_MeshDlg::Geom, aGEOMs );
+    int nbGeoms = aGEOMs.count();
+    if ( nbGeoms > 0 )
     {
-      SMESH::SMESH_Mesh_var aMeshVar =
-        SMESH::SMESH_Mesh::_narrow(_CAST(SObject,pObj)->GetObject());
-      if (!aMeshVar->_is_nil()) {
-        if (!myToCreate && !aMeshVar->HasShapeToMesh())
-          myIsOnGeometry = false;
+      myGeomEntry = aGEOMs[0];
+      _PTR(SObject) pGeom = SMESH::getStudy()->FindObjectID( myGeomEntry.toUtf8().data() );
+      if ( nbGeoms > 1 && myToCreate && myIsMesh )
+      {
+        selectObject( pGeom );
+        selectionDone();
+        return;
       }
+      myGeom = SMESH::SObjectToInterface< GEOM::GEOM_Object >( pGeom ); // creation case
     }
 
-    if (myIsOnGeometry)
+    QString anObjEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj );
+    _PTR(SObject) pObj = SMESH::getStudy()->FindObjectID( anObjEntry.toUtf8().data() );
+
+    SMESH::SMESH_Mesh_var    mesh = SMESH::SObjectToInterface< SMESH::SMESH_Mesh >( pObj );
+    SMESH::SMESH_subMesh_var subMesh;
+
+    if ( !myToCreate ) // edition: read hypotheses
     {
-      // Enable tabs according to shape dimension
-
-      int shapeDim = 3;
-
-      QStringList aGEOMs;
-      myDlg->selectedObject(SMESHGUI_MeshDlg::Geom, aGEOMs);
-      GEOM::ListOfGO_var aSeq = new GEOM::ListOfGO;
-
-      if (aGEOMs.count() > 0) {
-        // one or more GEOM shape selected
-        aSeq->length(aGEOMs.count());
-        QStringList::const_iterator aSubShapesIter = aGEOMs.begin();
-        int iSubSh = 0;
-        for ( ; aSubShapesIter != aGEOMs.end(); aSubShapesIter++, iSubSh++) {
-          QString aSubGeomEntry = (*aSubShapesIter);
-          _PTR(SObject) pSubGeom = SMESH::getStudy()->FindObjectID(aSubGeomEntry.toUtf8().data());
-         
-          if( pSubGeom ) { 
-            SALOMEDS_SObject* sobj = _CAST(SObject,pSubGeom);
-            if( sobj ) {
-              GEOM::GEOM_Object_var aSubGeomVar =
-                GEOM::GEOM_Object::_narrow(sobj->GetObject());
-              if( !aSubGeomVar->_is_nil() ){
-                aSeq[iSubSh] = aSubGeomVar;
-              }
-            }
-          }
-        }
-      } else {
-        // get geometry by selected sub-mesh
-        QString anObjEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj );
-        _PTR(SObject) pObj = SMESH::getStudy()->FindObjectID( anObjEntry.toUtf8().data() );
-        GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pObj );
-        if (!aGeomVar->_is_nil()) {
-          aSeq->length(1);
-          aSeq[0] = aGeomVar;
-        }
-      }
-
-      if (aSeq->length() > 0) {
-        shapeDim = -1;
-        for ( CORBA::ULong iss = 0; iss < aSeq->length() && shapeDim < 3; iss++) {
-          GEOM::GEOM_Object_var aGeomVar = aSeq[iss];
-          switch ( aGeomVar->GetShapeType() ) {
-          case GEOM::SOLID:  shapeDim = 3; break;
-          case GEOM::SHELL:
-            // Bug 0016155: EDF PAL 447: If the shape is a Shell, disable 3D tab
-            // {
-            //   TopoDS_Shape aShape;
-            //   bool isClosed = GEOMBase::GetShape(aGeomVar, aShape) && /*aShape.Closed()*/BRep_Tool::IsClosed(aShape);
-            //   shapeDim = qMax(isClosed ? 3 : 2, shapeDim);
-            // }
-            // break;
-          case GEOM::FACE:   shapeDim = qMax(2, shapeDim); break;
-          case GEOM::WIRE:
-          case GEOM::EDGE:   shapeDim = qMax(1, shapeDim); break;
-          case GEOM::VERTEX: shapeDim = qMax(0, shapeDim); break;
-          default:
-            {
-              TopoDS_Shape aShape;
-              if (GEOMBase::GetShape(aGeomVar, aShape))
-              {
-                TopExp_Explorer exp (aShape, TopAbs_SOLID);
-                if (exp.More()) {
-                  shapeDim = 3;
-                }
-                // Bug 0016155: EDF PAL 447: If the shape is a Shell, disable 3D tab
-                // else if ( exp.Init( aShape, TopAbs_SHELL ), exp.More() )
-                // {
-                //   shapeDim = 2;
-                //   for (; exp.More() && shapeDim == 2; exp.Next()) {
-                //     if (/*exp.Current().Closed()*/BRep_Tool::IsClosed(exp.Current()))
-                //       shapeDim = 3;
-                //   }
-                // }
-                else if ( exp.Init( aShape, TopAbs_FACE ), exp.More() )
-                  shapeDim = qMax(2, shapeDim);
-                else if ( exp.Init( aShape, TopAbs_EDGE ), exp.More() )
-                  shapeDim = qMax(1, shapeDim);
-                else if ( exp.Init( aShape, TopAbs_VERTEX ), exp.More() )
-                  shapeDim = qMax(0, shapeDim);
-              }
-            }
-          }
-          if ( shapeDim == 3 )
-            break;
-        }
-      }
-      for (int i = SMESH::DIM_3D; i > shapeDim; i--) {
-        // reset algos before disabling tabs (0020138)
-        onAlgoSelected(-1, i);
-      }
-      myDlg->setMaxHypoDim( shapeDim );
-      myMaxShapeDim = shapeDim;
-      myDlg->setHypoSets( SMESH::GetHypothesesSets( shapeDim ));
-
-      if (!myToCreate) // edition: read hypotheses
+      if ( pObj )
       {
-        if (pObj != 0)
+        subMesh  = SMESH::SObjectToInterface< SMESH::SMESH_subMesh >( pObj );
+        myIsMesh = subMesh->_is_nil();
+        myGeom   = SMESH::GetShapeOnMeshOrSubMesh( pObj );
+        myIsInvalidSubMesh = ( !myIsMesh && subMesh->GetId() < 1 );
+        if ( !mesh->_is_nil() && !mesh->HasShapeToMesh() )
         {
-          SMESH::SMESH_subMesh_var submeshVar =
-            SMESH::SMESH_subMesh::_narrow( _CAST( SObject,pObj )->GetObject() );
-          myIsMesh = submeshVar->_is_nil();
-          myIsInvalidSubMesh = ( !myIsMesh && submeshVar->GetId() < 1 );
-          myDlg->setTitile( myToCreate, myIsMesh );
-          myDlg->setObjectShown( SMESHGUI_MeshDlg::Mesh, !submeshVar->_is_nil() );
-          myDlg->setObjectShown( SMESHGUI_MeshDlg::Geom, true );
-          myDlg->objectWg( SMESHGUI_MeshDlg::Mesh, SMESHGUI_MeshDlg::Btn )->hide();
-          if ( myIsInvalidSubMesh )
-          {
-            // it is necessary to select a new geometry
-            myDlg->objectWg( SMESHGUI_MeshDlg::Geom, SMESHGUI_MeshDlg::Btn )->show();
-            myDlg->activateObject( SMESHGUI_MeshDlg::Geom );
-          }
-          else
-          {
-            myDlg->objectWg( SMESHGUI_MeshDlg::Geom, SMESHGUI_MeshDlg::Btn )->hide();
-          }
-          myDlg->updateGeometry();
-          myDlg->adjustSize();
-          readMesh();
+          myIsOnGeometry = false;
+          myGeom = GEOM::GEOM_Object::_nil();
+        }
+        if ( !myGeom->_is_nil() )
+          myGeomEntry = myGeom->GetStudyEntry();
+
+        myDlg->setTitile( myToCreate, myIsMesh );
+        myDlg->setObjectShown( SMESHGUI_MeshDlg::Mesh, !subMesh->_is_nil() );
+        myDlg->setObjectShown( SMESHGUI_MeshDlg::Geom, !myGeom->_is_nil() );
+        myDlg->objectWg( SMESHGUI_MeshDlg::Mesh, SMESHGUI_MeshDlg::Btn )->hide();
+        if ( myIsInvalidSubMesh )
+        {
+          // it is necessary to select a new geometry
+          myDlg->objectWg( SMESHGUI_MeshDlg::Geom, SMESHGUI_MeshDlg::Btn )->show();
+          myDlg->activateObject( SMESHGUI_MeshDlg::Geom );
         }
         else
-          myDlg->reset();
-      }
-      else if ( !myIsMesh ) // submesh creation
-      {
-        // if a submesh on the selected shape already exist, pass to submesh edition mode
-        if ( _PTR(SObject) pSubmesh = getSubmeshByGeom() ) {
-          SMESH::SMESH_subMesh_var sm =
-            SMESH::SObjectToInterface<SMESH::SMESH_subMesh>( pSubmesh );
-          bool editSubmesh = ( !sm->_is_nil() &&
-                               SUIT_MessageBox::question( myDlg, tr( "SMESH_WARNING" ),
-                                                          tr( "EDIT_SUBMESH_QUESTION"),
-                                                          SUIT_MessageBox::Yes |
-                                                          SUIT_MessageBox::No,
-                                                          SUIT_MessageBox::No )
-                               == SUIT_MessageBox::Yes );
-          if ( editSubmesh )
-          {
-            selectionMgr()->clearFilters();
-            selectObject( pSubmesh );
-            SMESHGUI::GetSMESHGUI()->switchToOperation( SMESHOp::OpEditMeshOrSubMesh );
-            return;
-          }
-          else
-          {
-            myDlg->selectObject( "", SMESHGUI_MeshDlg::Geom, "" );
-            selectObject( _PTR(SObject)() );
-            selectionDone();
-            return;
-          }
+        {
+          myDlg->objectWg( SMESHGUI_MeshDlg::Geom, SMESHGUI_MeshDlg::Btn )->hide();
         }
-        // discard selected mesh if submesh creation not allowed because of
-        // a global algorithm that does not support submeshes
-        if ( char* algoName = isSubmeshIgnored() ) {
-          SUIT_MessageBox::warning( myDlg, tr( "SMESH_ERROR" ),
-                                    tr("SUBMESH_NOT_ALLOWED").arg(algoName));
-          CORBA::string_free( algoName );
-          myDlg->selectObject( "", SMESHGUI_MeshDlg::Mesh, "" );
+        myDlg->updateGeometry();
+        myDlg->adjustSize();
+        readMesh();
+      }
+      else
+        myDlg->reset();
+    }
+    else if ( !myIsMesh ) // sub-mesh creation
+    {
+      // if a submesh on the selected shape already exist, pass to submesh edition mode
+      if ( _PTR(SObject) pSubmesh = getSubmeshByGeom() ) {
+        subMesh = SMESH::SObjectToInterface<SMESH::SMESH_subMesh>( pSubmesh );
+        bool editSubmesh = ( !subMesh->_is_nil() &&
+                             SUIT_MessageBox::question( myDlg, tr( "SMESH_WARNING" ),
+                                                        tr( "EDIT_SUBMESH_QUESTION"),
+                                                        SUIT_MessageBox::Yes |
+                                                        SUIT_MessageBox::No,
+                                                        SUIT_MessageBox::No )
+                             == SUIT_MessageBox::Yes );
+        if ( editSubmesh )
+        {
+          selectionMgr()->clearFilters();
+          selectObject( pSubmesh );
+          SMESHGUI::GetSMESHGUI()->switchToOperation( SMESHOp::OpEditMeshOrSubMesh );
+          return;
+        }
+        else
+        {
+          myDlg->selectObject( "", SMESHGUI_MeshDlg::Geom, "" );
           selectObject( _PTR(SObject)() );
           selectionDone();
           return;
         }
-
-        // enable/disable popup for choice of geom selection way
-        bool enable = false;
-        QString aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
-        if ( _PTR(SObject) pMesh = SMESH::getStudy()->FindObjectID( aMeshEntry.toUtf8().data() )) {
-          SMESH::SMESH_Mesh_var mesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( pMesh );
-          if ( !mesh->_is_nil() ) {
-            //rnv: issue 21056: EDF 1608 SMESH: Dialog Box "Create Sub Mesh": focus should automatically switch to geometry
-            QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
-            _PTR(SObject) pGeom = SMESH::getStudy()->FindObjectID( aGeomEntry.toUtf8().data() );
-            if ( !pGeom || GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() )->_is_nil() )
-              myDlg->activateObject(SMESHGUI_MeshDlg::Geom);
-            enable = ( shapeDim > 1 ) && ( mesh->NbEdges() > 0 );
-          }
-        }
-        myDlg->setGeomPopupEnabled( enable );
       }
-    }
-    else { // no geometry defined
+      // discard selected mesh if submesh creation not allowed because of
+      // a global algorithm that does not support submeshes
+      if ( char* algoName = isSubmeshIgnored() ) {
+        SUIT_MessageBox::warning( myDlg, tr( "SMESH_ERROR" ),
+                                  tr("SUBMESH_NOT_ALLOWED").arg(algoName));
+        CORBA::string_free( algoName );
+        myDlg->selectObject( "", SMESHGUI_MeshDlg::Mesh, "" );
+        selectObject( _PTR(SObject)() );
+        selectionDone();
+        return;
+      }
 
-      QStringList hypList;
-      for ( int dim = SMESH::DIM_0D; dim <= SMESH::DIM_3D; dim++ )
+      // enable/disable popup for choice of geom selection way
+      bool enable = false;
+      QString aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
+      if ( _PTR(SObject) pMesh = SMESH::getStudy()->FindObjectID( aMeshEntry.toLatin1().data() ))
       {
-        availableHyps( dim, Algo, hypList, myAvailableHypData[dim][Algo]);
-        myDlg->tab( dim )->setAvailableHyps( Algo, hypList );
-        if ( hypList.empty() ) myDlg->disableTab( dim );
-        else                   myDlg->enableTab( dim );
+        mesh = SMESH::SObjectToInterface<SMESH::SMESH_Mesh>( pMesh );
+        if ( !mesh->_is_nil() )
+          enable = /*( shapeDim > 1 ) && */( mesh->NbEdges() > 0 );
       }
-      myMaxShapeDim = -1;
-      //Hide labels and fields (Mesh and Geometry)
-      myDlg->setObjectShown( SMESHGUI_MeshDlg::Mesh, false );
-      myDlg->setObjectShown( SMESHGUI_MeshDlg::Geom, false );
-      myDlg->adjustSize();
-      readMesh();
+      myDlg->setGeomPopupEnabled( enable );
+
+      //rnv: issue 21056: "Create Sub Mesh": focus should automatically switch to geometry
+      if ( pObj && myGeomEntry.isEmpty() )
+        myDlg->activateObject( SMESHGUI_MeshDlg::Geom );
     }
-    int curIndex = myDlg->currentMeshType( );
-    QStringList TypeMeshList;
-    createMeshTypeList( TypeMeshList );
-    setAvailableMeshType( TypeMeshList );
-    curIndex =( curIndex >= TypeMeshList.count() ) ? 0 : curIndex;
-    myDlg->setCurrentMeshType( curIndex );
-    setFilteredAlgoData( myMaxShapeDim, curIndex);
+
+    setFilteredAlgoData();
+
   }
   catch ( const SALOME::SALOME_Exception& S_ex )
   {
@@ -795,7 +681,7 @@ bool SMESHGUI_MeshOp::isValid( QString& theMess ) const
   }*/
 
   // Geom
-  if ( myToCreate )
+  if ( myToCreate || myIsInvalidSubMesh )
   {
     QString aGeomEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
     if ( aGeomEntry.isEmpty() )
@@ -850,11 +736,10 @@ bool SMESHGUI_MeshOp::isValid( QString& theMess ) const
 //================================================================================
 /*!
  * \brief check compatibility of the algorithm and another algorithm or hypothesis
-  * \param theAlgoData - algorithm data
-  * \param theHypData - hypothesis data
-  * \param theHypType - hypothesis type
-  * \param theHypTypeName - hypothesis type name, must be provided if 2-nd arg is not algo
-  * \retval bool - check result
+ *  \param theAlgoData - algorithm data
+ *  \param theHypData - hypothesis data
+ *  \param theHypType - hypothesis type
+ *  \retval bool - check result
  */
 //================================================================================
 static bool isCompatible(const HypothesisData* theAlgoData,
@@ -864,41 +749,40 @@ static bool isCompatible(const HypothesisData* theAlgoData,
   if ( !theAlgoData )
     return true;
 
-  if ( theHypType == SMESHGUI_MeshOp::Algo )
+  if ( theHypType == SMESHGUI_MeshOp::Algo ) // compatibility of 2 algos
     return SMESH::IsCompatibleAlgorithm( theAlgoData, theHypData );
 
-  bool isOptional;
+  bool isOptional; // compatibility of algo and hyp
   return ( SMESH::IsAvailableHypothesis( theAlgoData, theHypData->TypeName, isOptional ));
 }
 
 //================================================================================
 /*!
  * \brief check compatibility of the geometry
-  * \param theAlgoData - to select hypos able to be used by this algo
-  * \param theCurrentGeomToSelect - the current name of the selected geometry
-  * \param theGeomVar - currently selected geometry
-  * \retval bool - check result
+ * \param theAlgoData - to select hypos able to be used by this algo
+ * \param theDim - algo dimension
+ * \retval bool - check result
  */
 //================================================================================
 bool SMESHGUI_MeshOp::isCompatibleToGeometry(HypothesisData* theAlgoData,
-                                             QString theCurrentGeomToSelect,
-                                             GEOM::GEOM_Object_var theGeomVar)
+                                             const int       theDim)
 {
-  if ( theGeomVar->_is_nil() )
+  if ( theDim < 1 || myGeom->_is_nil() )
     return true;
 
   bool isApplicable = false;
-  if ( theCurrentGeomToSelect == myLastGeomToSelect && !theCurrentGeomToSelect.isEmpty() ) {
-    THypLabelIsAppMap::const_iterator iter = myHypMapIsApplicable.find( theAlgoData->Label );
-    if ( iter != myHypMapIsApplicable.end() && iter.key() == theAlgoData->Label ) {
-      isApplicable = iter.value();
+  if ( myGeomEntry == myLastGeomEntry && !myGeomEntry.isEmpty() ) {
+    THypLabelIsAppMap::const_iterator lab2isApp = myHypMapIsApplicable.find( theAlgoData->Label );
+    if ( lab2isApp != myHypMapIsApplicable.end() ) {
+      isApplicable = lab2isApp.value();
       return isApplicable;
     }
   }
   bool toCheckIsApplicableToAll = !myIsMesh;
   if ( toCheckIsApplicableToAll )
-    toCheckIsApplicableToAll = ( theGeomVar->GetType() == GEOM_GROUP );
-  isApplicable = SMESH::IsApplicable( theAlgoData->TypeName, theGeomVar, toCheckIsApplicableToAll );
+    toCheckIsApplicableToAll = ( myGeom->GetType() == GEOM_GROUP );
+
+  isApplicable = SMESH::IsApplicable( theAlgoData->TypeName, myGeom, toCheckIsApplicableToAll );
   myHypMapIsApplicable.insert( theAlgoData->Label, isApplicable );
   return isApplicable;
 }
@@ -906,18 +790,59 @@ bool SMESHGUI_MeshOp::isCompatibleToGeometry(HypothesisData* theAlgoData,
 //================================================================================
 /*!
  * \brief check compatibility of the mesh type
-  * \param theAlgoData - to select hypos able to be used by this algo
-  * \param theMeshType - type of mesh for filtering algorithms
-  * \retval bool - check result
+ *  \param theAlgoData - to select hypos able to be used by this algo
+ *  \param theDim - algo dimension
+ *  \retval bool - check result
  */
 //================================================================================
 bool SMESHGUI_MeshOp::isCompatibleToMeshType(HypothesisData* theAlgoData,
-                                             QString theMeshType)
+                                             const int       theDim)
 {
-  bool isAvailableAlgo = ( theAlgoData->OutputTypes.count() == 0 );
+  if ( theDim < 2 )
+    return true;
+
+  QString elemType;
+  int curMeshType = myDlg->currentMeshType();
+  switch ( curMeshType ) {
+  case MT_ANY:
+    return true;
+
+  case MT_TRIANGULAR:
+    if ( theDim > 2 )
+      return false;
+    elemType = "TRIA";
+    break;
+
+  case MT_QUADRILATERAL:
+    if ( theDim > 2 )
+      return false;
+    elemType = "QUAD";
+    break;
+
+  case MT_TETRAHEDRAL:
+    if ( theDim < 3 )
+      elemType = "TRIA";
+    else
+      elemType = "TETRA";
+    break;
+
+  case MT_HEXAHEDRAL:
+    if ( theDim < 3 )
+      elemType = "QUAD";
+    else
+      elemType = "HEXA";
+    break;
+
+  default:
+    return true;
+  }
+
+  bool isAvailableAlgo = theAlgoData->OutputTypes.isEmpty();
   QStringList::const_iterator inElemType = theAlgoData->OutputTypes.begin();
-  for ( ; inElemType != theAlgoData->OutputTypes.end(); inElemType++ ) {
-    if ( *inElemType == theMeshType ) {
+  for ( ; inElemType != theAlgoData->OutputTypes.end(); inElemType++ )
+  {
+    if ( *inElemType == elemType )
+    {
       isAvailableAlgo = true;
       break;
     }
@@ -927,16 +852,20 @@ bool SMESHGUI_MeshOp::isCompatibleToMeshType(HypothesisData* theAlgoData,
 
 //================================================================================
 /*!
- * \brief Gets available hypotheses or algorithms
-  * \param theDim - specifies dimension of returned hypotheses/algorifms
-  * \param theHypType - specifies whether algorims or hypotheses or additional ones
-  * are retrieved (possible values are in HypType enumeration)
-  * \param theHyps - Output list of hypotheses' names
-  * \param thePrevAlgoData - to select hypos able to be used by previously algo (optional)
-  * \param theNextAlgoData - to select hypos able to be used by next algo (optional)
-  * \param theMeshType - type of mesh for filtering algorithms (optional)
+ * \brief Get available hypotheses or algorithms
+ *  \param theDim - specifies dimension of returned hypotheses/algorifms
+ *  \param theHypType - specifies whether algorims or hypotheses or additional ones
+ *         are retrieved (possible values are in HypType enumeration)
+ *  \param theHyps - output list of hypotheses' names
+ *  \param thePrevAlgoData - to select hypos able to be used by previously algo (optional)
+ *  \param theNextAlgoData - to select hypos able to be used by next algo (optional)
+ *  \param theMeshType - type of mesh for filtering algorithms (optional)
  *
- * Gets available hypotheses or algorithm in accordance with input parameters
+ * Get available hypotheses or algorithm in accordance with input parameters.
+ * Result (\a theHyps) optionally depends on the following:
+ * - selected algorithm(s)
+ * - selected geometry
+ * - selected mesh type
  */
 //================================================================================
 void SMESHGUI_MeshOp::availableHyps( const int       theDim,
@@ -953,32 +882,16 @@ void SMESHGUI_MeshOp::availableHyps( const int       theDim,
   bool isAux  = ( theHypType >= AddHyp );
   QStringList aHypTypeNameList = SMESH::GetAvailableHypotheses( isAlgo, theDim, isAux, myIsOnGeometry, !myIsMesh );
 
-  GEOM::GEOM_Object_var aGeomVar;
-  QString aCurrentGeomToSelect;
-  if ( !theMeshType.isEmpty() ) {
-    aCurrentGeomToSelect = myDlg->selectedObject( myToCreate ? SMESHGUI_MeshDlg::Geom : SMESHGUI_MeshDlg::Obj );
-    if ( _PTR(SObject) so = SMESH::getStudy()->FindObjectID( aCurrentGeomToSelect.toUtf8().data() )) {
-      aGeomVar = SMESH::GetGeom( so );
-    }
-   if ( aCurrentGeomToSelect != myLastGeomToSelect )
-     myHypMapIsApplicable.clear();
-  }
-
   std::multimap< double, HypothesisData* > sortedHyps;
   QStringList::const_iterator anIter;
   for ( anIter = aHypTypeNameList.begin(); anIter != aHypTypeNameList.end(); ++anIter )
   {
     HypothesisData* aData = SMESH::GetHypothesisData( *anIter );
-    if ( ( isCompatible ( thePrevAlgoData, aData, theHypType ) &&
-           isCompatible ( theNextAlgoData, aData, theHypType ) ) ||
-           ( theMeshType == "ANY" && aData->InputTypes.isEmpty()))
+    if ( isCompatible( thePrevAlgoData, aData, theHypType ) &&
+         isCompatible( theNextAlgoData, aData, theHypType ) &&
+         isCompatibleToGeometry( aData, theDim )            &&
+         isCompatibleToMeshType( aData, theDim ))
     {
-      if ( ( !theMeshType.isEmpty() )  &&
-           ( theDim >= SMESH::DIM_2D ) &&
-           ( ( theMeshType != "ANY" && !isCompatibleToMeshType( aData, theMeshType )) ||
-             !isCompatibleToGeometry( aData, aCurrentGeomToSelect, aGeomVar )))
-        continue;
-
       int  groupID = aData->GroupID;
       int priority = aData->Priority;
       if ( groupID  < 0 || groupID > 9    ) groupID  = 9;
@@ -1006,9 +919,6 @@ void SMESHGUI_MeshOp::availableHyps( const int       theDim,
       theHyps.append( aData->Label );
     }
   }
-
-  if ( !theMeshType.isEmpty() && !aCurrentGeomToSelect.isEmpty() )
-    myLastGeomToSelect = aCurrentGeomToSelect;
 }
 
 //================================================================================
@@ -1016,7 +926,7 @@ void SMESHGUI_MeshOp::availableHyps( const int       theDim,
  * \brief Gets existing hypotheses or algorithms
  *  \param theDim - specifies dimension of returned hypotheses/algorifms
  *  \param theHypType - specifies whether algorims or hypotheses or additional ones
- *  are retrieved (possible values are in HypType enumeration)
+ *         are retrieved (possible values are in HypType enumeration)
  *  \param theFather - start object for finding ( may be component, mesh, or sub-mesh )
  *  \param theHyps - output list of names.
  *  \param theHypVars - output list of variables.
@@ -1124,7 +1034,7 @@ SMESHGUI_MeshOp::getInitParamsHypothesis( const QString& aHypType,
     myDlg->selectedObject( SMESHGUI_MeshDlg::Obj ).count(':') > nbColonsInMeshEntry;
 
   // get mesh and geom object
-  SMESH::SMESH_Mesh_var aMeshVar = SMESH::SMESH_Mesh::_nil();
+  SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_nil();
   GEOM::GEOM_Object_var aGeomVar = GEOM::GEOM_Object::_nil();
 
   QString anEntry;
@@ -1137,7 +1047,7 @@ SMESHGUI_MeshOp::getInitParamsHypothesis( const QString& aHypType,
       CORBA::Object_ptr Obj = _CAST( SObject,pObj )->GetObject();
       if ( myToCreate ) // mesh and geom may be selected
       {
-        aMeshVar = SMESH::SMESH_Mesh::_narrow( Obj );
+        aMesh = SMESH::SMESH_Mesh::_narrow( Obj );
         anEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Geom );
         if ( _PTR(SObject) pGeom = SMESH::getStudy()->FindObjectID( anEntry.toUtf8().data() ))
           aGeomVar= GEOM::GEOM_Object::_narrow( _CAST( SObject,pGeom )->GetObject() );
@@ -1146,7 +1056,7 @@ SMESHGUI_MeshOp::getInitParamsHypothesis( const QString& aHypType,
       {
         SMESH::SMESH_subMesh_var sm = SMESH::SMESH_subMesh::_narrow( Obj );
         if ( !sm->_is_nil() ) {
-          aMeshVar = sm->GetFather();
+          aMesh = sm->GetFather();
           aGeomVar = sm->GetSubShape();
         }
       }
@@ -1159,8 +1069,8 @@ SMESHGUI_MeshOp::getInitParamsHypothesis( const QString& aHypType,
       anEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Obj );
       if ( _PTR(SObject) pMesh = SMESH::getStudy()->FindObjectID( anEntry.toUtf8().data() ))
       {
-        aMeshVar = SMESH::SMESH_Mesh::_narrow( _CAST( SObject,pMesh )->GetObject() );
-        if ( !aMeshVar->_is_nil() )
+        aMesh = SMESH::SMESH_Mesh::_narrow( _CAST( SObject,pMesh )->GetObject() );
+        if ( !aMesh->_is_nil() )
           aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( pMesh );
       }
     }
@@ -1176,13 +1086,13 @@ SMESHGUI_MeshOp::getInitParamsHypothesis( const QString& aHypType,
   SMESH::SMESH_Hypothesis_var hyp =
     SMESHGUI::GetSMESHGen()->GetHypothesisParameterValues( aHypType.toUtf8().data(),
                                                            aServerLib.toUtf8().data(),
-                                                           aMeshVar,
+                                                           aMesh,
                                                            aGeomVar,
                                                            /*byMesh = */isSubMesh);
   if ( hyp->_is_nil() && isSubMesh )
     hyp = SMESHGUI::GetSMESHGen()->GetHypothesisParameterValues( aHypType.toLatin1().data(),
                                                                  aServerLib.toUtf8().data(),
-                                                                 aMeshVar,
+                                                                 aMesh,
                                                                  aGeomVar,
                                                                  /*byMesh = */false);
   return hyp;
@@ -1234,9 +1144,9 @@ void SMESHGUI_MeshOp::initHypCreator( SMESHGUI_GenericHypothesisCreator* theCrea
       SMESH::SMESH_subMesh_var aSubMeshVar =
         SMESH::SMESH_subMesh::_narrow( _CAST( SObject,pObj )->GetObject() );
       if ( !aSubMeshVar->_is_nil() ) {
-        SMESH::SMESH_Mesh_var aMeshVar =  aSubMeshVar->GetFather();
-        if ( !aMeshVar->_is_nil() ) {
-          _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshVar );
+        SMESH::SMESH_Mesh_var aMesh =  aSubMeshVar->GetFather();
+        if ( !aMesh->_is_nil() ) {
+          _PTR(SObject) aMeshSO = SMESH::FindSObject( aMesh );
           GEOM::GEOM_Object_var aGeomVar = SMESH::GetShapeOnMeshOrSubMesh( aMeshSO );
           if ( !aGeomVar->_is_nil() )
             aMeshEntry = SMESH::toQStr( aGeomVar->GetStudyEntry() );
@@ -1417,9 +1327,7 @@ void SMESHGUI_MeshOp::onHypoCreated( int result )
     for (int i = nbHyp; i < aNewHyps.count(); i++)
       myDlg->tab(myDim)->addHyp(myType, aNewHyps[i]);
   }
-
-  if( result!=2 && myHypoSet )
-    processSet();
+  return;
 }
 
 //================================================================================
@@ -1489,7 +1397,7 @@ void SMESHGUI_MeshOp::onHypoEdited( int result )
   * \param theHypType - hyp type (Algo,MainHyp or AddHyp)
   * \param theIndex - index in the list
   * \retval HypothesisData* - result data, may be 0
- */
+  */
 //================================================================================
 HypothesisData* SMESHGUI_MeshOp::hypData( const int theDim,
                                           const int theHypType,
@@ -1504,8 +1412,84 @@ HypothesisData* SMESHGUI_MeshOp::hypData( const int theDim,
 
 //================================================================================
 /*!
+ * \brief Update list of algorithms and hypotheses according to currently selected
+ *        algorithm, geometry and mesh type
+ */
+//================================================================================
+void SMESHGUI_MeshOp::setFilteredAlgoData()
+{
+  // keep current algorithms
+  HypothesisData* curAlgos[ 4 ];
+  for ( int dim = 0; dim <= 3; ++dim )
+    curAlgos[ dim ] = hypData( dim, Algo, currentHyp( dim, Algo ));
+
+  // find out myMaxShapeDim by checking algorithm applicability to geometry
+
+  int curMeshType = myDlg->currentMeshType();
+  myDlg->setCurrentMeshType( MT_ANY );
+  QStringList algosAvailable;
+  // get available algorithms taking into account geometry only
+  if ( myGeom->_is_nil() )
+  {
+    myMaxShapeDim = 3;
+
+    if ( myToCreate ) // readMesh() has done it if !myToCreate
+      for ( int dim = 0; dim <= 3; ++dim )
+        availableHyps( dim, Algo, algosAvailable, myAvailableHypData[ dim ][ Algo ] );
+  }
+  else
+  {
+    if ( myGeomEntry != myLastGeomEntry )
+      myHypMapIsApplicable.clear();
+
+    for ( int dim = 0; dim <= 3; ++dim )
+    {
+      availableHyps( dim, Algo, algosAvailable, myAvailableHypData[ dim ][ Algo ] );
+      if ( algosAvailable.count() )
+        myMaxShapeDim = dim;
+    }
+    if ( !myGeomEntry.isEmpty() )
+      myLastGeomEntry = myGeomEntry;
+  }
+  myDlg->setMaxHypoDim( myMaxShapeDim );
+
+  // set mesh types according to myMaxShapeDim
+  updateMeshTypeList();
+
+  // update available hypo-sets that depend on geometry and mesh type
+  myDlg->setCurrentMeshType( Max( MT_ANY, curMeshType ));
+  updateHypoSets(); // it sets myAvailableHypData by curMeshType
+
+  // restore current algorithms according to changed myAvailableHypData
+  for ( int dim = 0; dim <= 3; ++dim )
+  {
+    int algoIndex = myAvailableHypData[ dim ][ Algo ].indexOf( curAlgos[ dim ]);
+    while ( algosAvailable.count() <= algoIndex )
+      algosAvailable << "";
+    myDlg->tab( dim )->setAvailableHyps( Algo, algosAvailable );
+    setCurrentHyp( dim, Algo, algoIndex );
+    if ( algoIndex < 0 )
+      curAlgos[ dim ] = 0;
+  }
+
+  // find a selected algo, current or of highest dimension
+  int algoDim = myDlg->currentTab();
+  if ( !curAlgos[ algoDim ])
+    for ( algoDim = SMESH::DIM_3D; algoDim >= SMESH::DIM_0D; algoDim-- )
+      if ( curAlgos[ algoDim ] )
+        break;
+  if ( algoDim < SMESH::DIM_0D )
+    algoDim = myMaxShapeDim;
+
+  // set algorithms and hypotheses according to all parameters (mesh type etc)
+  onAlgoSelected( currentHyp( algoDim, Algo ), algoDim );
+}
+
+//================================================================================
+/*!
  * \brief Set available algos and hypos according to the selected algorithm
-  * \param theIndex - algorithm index
+ * \param theIndex - algorithm index
+ * \param theDim - algorithm dimension
  */
 //================================================================================
 void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
@@ -1526,101 +1510,58 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
   algoByDim[ aDim ] = algoData;
 
   QStringList anAvailable;
+  const int algoDim = aDim;
 
-  // enable / disable tabs
-  if ( myIsOnGeometry ) {
-    for (int i = SMESH::DIM_3D; i >= SMESH::DIM_0D; i--) {
-      if ( i > aDim ) {
-        if ( i > myMaxShapeDim ) myDlg->disableTab( i );
-        else                     myDlg->enableTab( i );
-      }
-      else if ( i == aDim ) {
-        continue;
-      }
-      else {//( i < aDim )
-        if ( algoData && algoData->InputTypes.isEmpty() ) {
-          myDlg->disableTab( i );
-          for ( int type = Algo, nbTypes = nbDlgHypTypes(i); type < nbTypes; type++ )
-            setCurrentHyp(i, type, -1);
-        }
-        else {
-          myDlg->enableTab( i );
-        }
-      }
-    }
-  }
-
-  int algoDim = aDim;
-  HypothesisData* a3DAlgo = 0;
-  // 2 loops: backward and forward from algo dimension
-  for ( int forward = 0; forward <= 1; ++forward )
+  // 2 loops: backward and forward from algo dimension (forward == to higher dimension)
+  for ( int forward = 1; forward >= 0; --forward )
   {
-    int dim = algoDim + 1, lastDim = SMESH::DIM_3D, dir = 1;
+    int dim = algoDim, lastDim = SMESH::DIM_3D, dir = 1;
     if ( !forward ) {
       dim = algoDim - 1; lastDim = SMESH::DIM_0D; dir = -1;
     }
-    HypothesisData* prevAlgo = algoData;
-    bool noCompatible = false;
+    //bool noCompatible = false;
     for ( ; dim * dir <= lastDim * dir; dim += dir)
     {
-      if ( !isAccessibleDim( dim ))
-        continue;
-      if ( noCompatible ) { // the selected algo has no compatible ones
-        anAvailable.clear();
+      // if ( noCompatible ) // the selected algo has no compatible ones (like 1D2D3D algo)
+      // {
+      //   anAvailable.clear();
+      //   myDlg->tab( dim )->setAvailableHyps( Algo, anAvailable );
+      //   myAvailableHypData[dim][Algo].clear();
+      //   algoByDim[ dim ] = 0;
+      // }
+      // else
+      {
+        int           algoIndex = currentHyp( dim, Algo );
+        HypothesisData *curAlgo = hypData( dim, Algo, algoIndex );
+
+        // set new available algorithms
+        HypothesisData *prevAlgo = 0;
+        if ( dim != algoDim )
+          for ( int prevDim = dim + 1; prevDim <=3 && !prevAlgo; ++prevDim )
+            prevAlgo = hypData( prevDim, Algo, currentHyp( prevDim, Algo ));
+        availableHyps( dim, Algo, anAvailable, myAvailableHypData[dim][Algo], prevAlgo );
         myDlg->tab( dim )->setAvailableHyps( Algo, anAvailable );
-        myAvailableHypData[dim][Algo].clear();
-        algoByDim[ dim ] = 0;
-        continue;
-      }
-      HypothesisData* nextAlgo = 0;
-      if ( myMaxShapeDim == SMESH::DIM_3D && a3DAlgo && dim == SMESH::DIM_2D ) {
-        nextAlgo = a3DAlgo;
-      }
-      // get currently selected algo
-      int algoIndex = currentHyp( dim, Algo );
-      HypothesisData* curAlgo = hypData( dim, Algo, algoIndex );
 
-      QString anCompareType = currentMeshTypeName(myDlg->currentMeshType());
-      QString anCurrentCompareType = "";
-      if ( dim == SMESH::DIM_3D || anCompareType == "ANY" )
-        anCurrentCompareType = anCompareType;
-      else if ( dim == SMESH::DIM_2D ) {
-        anCurrentCompareType = (anCompareType == "HEXA" || anCompareType == "QUAD") ? "QUAD" : "TRIA";
-        nextAlgo = 0;
+        //noCompatible = ( prevAlgo && !forward && anAvailable.isEmpty() );
+
+        // set current algo
+        algoIndex = myAvailableHypData[dim][Algo].indexOf( curAlgo );
+        setCurrentHyp( dim, Algo, algoIndex, /*updateHyps=*/true );
+
+        algoByDim[ dim ] = hypData( dim, Algo, algoIndex );
       }
 
-      // set new available algorithms
-      availableHyps( dim, Algo, anAvailable, myAvailableHypData[dim][Algo], prevAlgo, nextAlgo, anCurrentCompareType);
-      HypothesisData* soleCompatible = 0;
-      if ( anAvailable.count() == 1 )
-        soleCompatible = myAvailableHypData[dim][Algo][0];
-      myDlg->tab( dim )->setAvailableHyps( Algo, anAvailable );
-      noCompatible = anAvailable.isEmpty();
-      algoIndex = myAvailableHypData[dim][Algo].indexOf( curAlgo );
-      if ( !isSubmesh && algoIndex < 0 && soleCompatible && !forward && dim == curDim ) {
-        // select the sole compatible algo
-        algoIndex = 0;
-      }
-      setCurrentHyp( dim, Algo, algoIndex );
-
-      // remember current algo
-      prevAlgo = algoByDim[ dim ] = hypData( dim, Algo, algoIndex );
+      // activate tabs according to algorithms availability
+      if ( anAvailable.isEmpty() ) myDlg->disableTab( dim );
+      else                         myDlg->enableTab( dim );
 
     } // loop on dims
-
-    if ( myMaxShapeDim == SMESH::DIM_3D && forward && algoDim == SMESH::DIM_1D )
-    {
-      algoDim = SMESH::DIM_3D;
-      forward = -1;
-      a3DAlgo = prevAlgo;
-      continue;
-    }
   } // loops backward and forward
 
 
   // set hypotheses corresponding to the found algorithms
 
-  _PTR(SObject) pObj = SMESH::getStudy()->FindComponent("SMESH");
+  _PTR(SObject) pComp = SMESH::getStudy()->FindComponent("SMESH");
 
   for ( int dim = SMESH::DIM_0D; dim <= SMESH::DIM_3D; dim++ )
   {
@@ -1646,40 +1587,45 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
       int hypIndex = hypIndexByType[ dlgType ];
 
       SMESH::SMESH_Hypothesis_var curHyp;
+      QString                     curHypType;
+      HypothesisData*             hypData = 0;
       if ( hypIndex >= 0 && hypIndex < myExistingHyps[ dim ][ type ].count() )
+      {
         curHyp = myExistingHyps[ dim ][ type ][ hypIndex ].first;
-
-      if ( !myToCreate && !curAlgo && !curHyp->_is_nil() ) { // edition, algo not selected
+        if ( !curHyp->_is_nil() )
+        {
+          curHypType = SMESH::toQStr( curHyp->GetName() );
+          hypData = SMESH::GetHypothesisData( curHypType );
+        }
+      }
+      if ( !myToCreate && !curAlgo && !curHyp->_is_nil() ) // edition, algo not selected
+      {
         // try to find algo by selected hypothesis in order to keep it selected
         bool algoDeselectedByUser = ( theDim < 0 && aDim == dim );
-        QString curHypType = SMESH::toQStr( curHyp->GetName() );
         if ( !algoDeselectedByUser &&
              myObjHyps[ dim ][ type ].count() > 0 &&
              curHypType == SMESH::toQStr( myObjHyps[ dim ][ type ].first().first->GetName()) )
         {
-          HypothesisData* hypData = SMESH::GetHypothesisData( SMESH::toQStr( curHyp->GetName() ));
-          for (int i = 0; i < myAvailableHypData[ dim ][ Algo ].count(); ++i) {
+          for ( int i = 0; i < myAvailableHypData[ dim ][ Algo ].count(); ++i )
+          {
             curAlgo = myAvailableHypData[ dim ][ Algo ][ i ];
-            if (curAlgo && hypData && isCompatible(curAlgo, hypData, type))
+            if ( curAlgo && hypData && isCompatible( curAlgo, hypData, type ))
               break;
             else
               curAlgo = 0;
           }
         }
       }
+
       // get hyps compatible with curAlgo
       bool defaulHypAvlbl = false;
       if ( curAlgo )
       {
-        // check if a selected hyp is compatible with the curAlgo
-        if ( !curHyp->_is_nil() ) {
-          HypothesisData* hypData = SMESH::GetHypothesisData( SMESH::toQStr( curHyp->GetName() ));
-          if ( !isCompatible( curAlgo, hypData, type ))
-            curHyp = SMESH::SMESH_Hypothesis::_nil();
-        }
-        availableHyps( dim, type, anAvailable, myAvailableHypData[ dim ][ type ], curAlgo);
-        existingHyps( dim, type, pObj, anExisting, myExistingHyps[ dim ][ type ], curAlgo);
-        defaulHypAvlbl = (type == MainHyp && !curAlgo->IsAuxOrNeedHyp );
+        if ( hypData && !isCompatible( curAlgo, hypData, type ))
+          curHyp = SMESH::SMESH_Hypothesis::_nil();
+        availableHyps( dim, type, anAvailable, myAvailableHypData[ dim ][ type ], curAlgo );
+        existingHyps ( dim, type, pComp, anExisting, myExistingHyps[ dim ][ type ], curAlgo );
+        defaulHypAvlbl = ( type == MainHyp && !curAlgo->IsAuxOrNeedHyp );
       }
       // set list of hypotheses
       if ( dlgType <= AddHyp )
@@ -1705,6 +1651,7 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
       setCurrentHyp( dim, dlgType, hypIndex );
     }
   }
+  return;
 }
 
 //================================================================================
@@ -1715,89 +1662,60 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
 //================================================================================
 void SMESHGUI_MeshOp::onHypoSet( const QString& theSetName )
 {
-  myHypoSet = SMESH::GetHypothesesSet(theSetName);
-  if (!myHypoSet)
+  HypothesesSet* aHypoSet = SMESH::GetHypothesesSet(theSetName);
+  if (!aHypoSet)
     return;
 
   // clear all hyps
-  for (int dim = SMESH::DIM_0D; dim <= SMESH::DIM_3D; dim++) {
+  for (int dim = SMESH::DIM_0D; dim <= SMESH::DIM_3D; dim++)
+  {
     setCurrentHyp(dim, Algo, -1);
     setCurrentHyp(dim, AddHyp, -1);
     setCurrentHyp(dim, MainHyp, -1);
+    onAlgoSelected( -1, dim );
   }
 
-  myHypoSet->init(true); //algorithms
-  processSet();
-  myHypoSet->init(false); //hypotheses
-  processSet();
-  myHypoSet = 0;
-}
-
-//================================================================================
-/*!
- * \brief One step of hypothesis/algorithm list creation
- *
- * Creates a hypothesis or an algorithm for current item of internal list of names myHypoSet
- */
-//================================================================================
-void SMESHGUI_MeshOp::processSet()
-{
-  myHypoSet->next();
-  if( !myHypoSet->more() )
-    return;
-
-  bool isAlgo = myHypoSet->isAlgo();
-  QString aHypoTypeName = myHypoSet->current();
-  HypothesisData* aHypData = SMESH::GetHypothesisData(aHypoTypeName);
-  if (!aHypData)
-  {
-    processSet();
-    return;
-  }
-
-  int aDim = aHypData->Dim[0];
-  // create or/and set
-  if (isAlgo)
-  {
-    int index = myAvailableHypData[aDim][Algo].indexOf( aHypData );
-    if ( index < 0 )
+  for ( int isAlgo = 1; isAlgo >= 0; --isAlgo )
+    for ( aHypoSet->init( isAlgo ); aHypoSet->more(); aHypoSet->next() )
     {
-      QStringList anAvailable;
-      availableHyps( aDim, Algo, anAvailable, myAvailableHypData[aDim][Algo] );
-      myDlg->tab( aDim )->setAvailableHyps( Algo, anAvailable );
-      index = myAvailableHypData[aDim][Algo].indexOf( aHypData );
+      QString    aHypoTypeName = aHypoSet->current();
+      HypothesisData* aHypData = SMESH::GetHypothesisData( aHypoTypeName );
+      if (!aHypData)
+        continue;
+
+      int aDim = aHypData->Dim[0];
+      // create or/and set
+      if ( isAlgo )
+      {
+        int index = myAvailableHypData[aDim][Algo].indexOf( aHypData );
+        if ( index >= 0 )
+        {
+          setCurrentHyp( aDim, Algo, index );
+          onAlgoSelected( index, aDim );
+        }
+      }
+      else
+      {
+        bool mainHyp = true;
+        int index = myAvailableHypData[aDim][MainHyp].indexOf( aHypData );
+        if ( index < 0 )
+        {
+          mainHyp = false;
+          index = myAvailableHypData[aDim][AddHyp].indexOf( aHypData );
+        }
+        if ( index >= 0 )
+          createHypothesis( aDim, mainHyp ? MainHyp : AddHyp, aHypoTypeName );
+      }
     }
-    setCurrentHyp( aDim, Algo, index );
-    onAlgoSelected( index, aDim );
-    processSet();
-  }
-  else
-  {
-    bool mainHyp = true;
-    QStringList anAvailable;
-    availableHyps( aDim, MainHyp, anAvailable, myAvailableHypData[aDim][MainHyp] );
-    myDlg->tab( aDim )->setAvailableHyps( MainHyp, anAvailable );
-    int index = myAvailableHypData[aDim][MainHyp].indexOf( aHypData );
-    if ( index < 0 )
-    {
-      mainHyp = false;
-      index = myAvailableHypData[aDim][AddHyp].indexOf( aHypData );
-    }
-    if (index >= 0)
-      createHypothesis(aDim, mainHyp ? MainHyp : AddHyp, aHypoTypeName);
-    else
-      processSet();
-  }
+  return;
 }
 
 //================================================================================
 /*!
  * \brief Creates mesh
-  * \param theMess - Output parameter intended for returning error message
-  * \param theEntryList - List of entries of published objects
-  * \retval bool  - TRUE if mesh is created, FALSE otherwise
- *
- * Creates mesh
+ *  \param theMess - Output parameter intended for returning error message
+ *  \param theEntryList - List of entries of published objects
+ *  \retval bool  - TRUE if mesh is created, FALSE otherwise
  */
 //================================================================================
 bool SMESHGUI_MeshOp::createMesh( QString& theMess, QStringList& theEntryList )
@@ -1812,11 +1730,11 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess, QStringList& theEntryList )
     if ( aSMESHGen->_is_nil() )
       return false;
 
-    SMESH::SMESH_Mesh_var aMeshVar= aSMESHGen->CreateEmptyMesh();
-    if ( aMeshVar->_is_nil() )
+    SMESH::SMESH_Mesh_var aMesh= aSMESHGen->CreateEmptyMesh();
+    if ( aMesh->_is_nil() )
       return false;
 
-    _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshVar.in() );
+    _PTR(SObject) aMeshSO = SMESH::FindSObject( aMesh.in() );
     if ( aMeshSO ) {
       SMESH::SetName( aMeshSO, myDlg->objectText( SMESHGUI_MeshDlg::Obj ) );
       theEntryList.append( aMeshSO->GetID().c_str() );
@@ -1850,10 +1768,10 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess, QStringList& theEntryList )
     SUIT_OverrideCursor aWaitCursor;
 
     // create mesh
-    SMESH::SMESH_Mesh_var aMeshVar = aSMESHGen->CreateMesh( aGeomVar );
-    if ( aMeshVar->_is_nil() )
+    SMESH::SMESH_Mesh_var aMesh = aSMESHGen->CreateMesh( aGeomVar );
+    if ( aMesh->_is_nil() )
       return false;
-    _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshVar.in() );
+    _PTR(SObject) aMeshSO = SMESH::FindSObject( aMesh.in() );
     if ( aMeshSO ) {
       theEntryList.append( aMeshSO->GetID().c_str() );
       if ( i > 0 ) setDefaultName( namePrefix );
@@ -1874,13 +1792,13 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess, QStringList& theEntryList )
           SMESH::SMESH_Hypothesis_var aHypVar =
             myExistingHyps[ aDim ][ aHypType ][ aHypIndex ].first;
           if ( !aHypVar->_is_nil() )
-            SMESH::AddHypothesisOnMesh( aMeshVar, aHypVar );
+            SMESH::AddHypothesisOnMesh( aMesh, aHypVar );
         }
       }
       // find or create algorithm
       SMESH::SMESH_Hypothesis_var anAlgoVar = getAlgo( aDim );
       if ( !anAlgoVar->_is_nil() )
-        SMESH::AddHypothesisOnMesh( aMeshVar, anAlgoVar );
+        SMESH::AddHypothesisOnMesh( aMesh, anAlgoVar );
     }
   }
   return true;
@@ -1888,12 +1806,10 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess, QStringList& theEntryList )
 
 //================================================================================
 /*!
- * \brief Creates sub-mesh
+ * \brief Create sub-mesh
  * \param theMess - Output parameter intended for returning error message
  * \param theEntryList - List of entries of published objects
  * \retval bool  - TRUE if sub-mesh is created, FALSE otherwise
- *
- * Creates sub-mesh
  */
 //================================================================================
 bool SMESHGUI_MeshOp::createSubMesh( QString& theMess, QStringList& theEntryList )
@@ -1905,20 +1821,20 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess, QStringList& theEntryList
     return false;
 
   // get mesh object
-  SMESH::SMESH_Mesh_var aMeshVar =
+  SMESH::SMESH_Mesh_var aMesh =
     SMESH::EntryToInterface<SMESH::SMESH_Mesh>( myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh ));
-  if ( aMeshVar->_is_nil() && myIsInvalidSubMesh )
+  if ( aMesh->_is_nil() && myIsInvalidSubMesh )
   {
     SMESH::SMESH_subMesh_var aSMVar =
       SMESH::EntryToInterface<SMESH::SMESH_subMesh>( myDlg->selectedObject( SMESHGUI_MeshDlg::Obj ));
     if ( !aSMVar->_is_nil() )
-      aMeshVar = aSMVar->GetMesh();
+      aMesh = aSMVar->GetMesh();
   }
-  if ( aMeshVar->_is_nil() )
+  if ( aMesh->_is_nil() )
     return false;
 
   // GEOM shape of the main mesh
-  GEOM::GEOM_Object_var mainGeom = aMeshVar->GetShapeToMesh();
+  GEOM::GEOM_Object_var mainGeom = aMesh->GetShapeToMesh();
 
   // Name for the new sub-mesh
   QString aName = myDlg->objectText(SMESHGUI_MeshDlg::Obj);
@@ -1995,7 +1911,7 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess, QStringList& theEntryList
     aNameOrID = myDlg->selectedObject(SMESHGUI_MeshDlg::Obj);
 
   // create sub-mesh
-  SMESH::SMESH_subMesh_var aSubMeshVar = aMeshVar->GetSubMesh( aGeomVar, aNameOrID.toUtf8().data() );
+  SMESH::SMESH_subMesh_var aSubMeshVar = aMesh->GetSubMesh( aGeomVar, aNameOrID.toUtf8().data() );
   _PTR(SObject) aSubMeshSO = SMESH::FindSObject( aSubMeshVar.in() );
   if ( aSubMeshSO ) {
     SMESH::SetName( aSubMeshSO, aName.toUtf8().data() );
@@ -2030,24 +1946,25 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess, QStringList& theEntryList
   selectObject( _PTR(SObject)() );
   selectionDone();
 
-  checkSubMeshConcurrency( aMeshVar, aSubMeshVar, /*askUser=*/true );
+  checkSubMeshConcurrency( aMesh, aSubMeshVar, /*askUser=*/true );
 
   return true;
 }
 
 //================================================================================
 /*!
- * \brief Gets current hypothesis or algorithms
+ * \brief Return index of current hypothesis or algorithm
   * \param theDim - dimension of hypothesis or algorithm
   * \param theHypType - Type of hypothesis (Algo, MainHyp, AddHyp)
-  * \retval int - current hypothesis or algorithms
- *
- * Gets current hypothesis or algorithms
+  * \retval int - index of current hypothesis or algorithm, -1 if None selected
  */
 //================================================================================
 int SMESHGUI_MeshOp::currentHyp( const int theDim, const int theHypType ) const
 {
-  return myDlg->tab( theDim )->currentHyp( theHypType ) - 1;
+  if ( 0 <= theDim && theDim <= 3 )
+    return myDlg->tab( theDim )->currentHyp( theHypType ) - 1;
+  else
+    return -1;
 }
 
 //================================================================================
@@ -2177,9 +2094,9 @@ SMESH::SMESH_Hypothesis_var SMESHGUI_MeshOp::getAlgo( const int theDim )
   QString aHypName = dataList[ aHypIndex ]->TypeName;
 
   // get existing algorithms
-  _PTR(SObject) pObj = SMESH::getStudy()->FindComponent("SMESH");
+  _PTR(SObject) pComp = SMESH::getStudy()->FindComponent("SMESH");
   QStringList tmp;
-  existingHyps( theDim, Algo, pObj, tmp, myExistingHyps[ theDim ][ Algo ]);
+  existingHyps( theDim, Algo, pComp, tmp, myExistingHyps[ theDim ][ Algo ]);
 
   // look for an existing algo of such a type
   THypList& aHypVarList = myExistingHyps[ theDim ][ Algo ];
@@ -2256,25 +2173,25 @@ void SMESHGUI_MeshOp::readMesh()
   if ( !pObj )
     return;
 
-  if (myIsOnGeometry) {
-    // Get name of mesh if current object is sub-mesh
-    SMESH::SMESH_subMesh_var aSubMeshVar =
-      SMESH::SMESH_subMesh::_narrow( _CAST( SObject,pObj )->GetObject() );
-    if ( !aSubMeshVar->_is_nil() )
+  if ( myIsOnGeometry )
+  {
+    // Set name of mesh if current object is sub-mesh
+    SMESH::SMESH_subMesh_var subMesh = SMESH::SObjectToInterface< SMESH::SMESH_subMesh >( pObj );
+    if ( !subMesh->_is_nil() )
     {
-      SMESH::SMESH_Mesh_var aMeshVar =  aSubMeshVar->GetFather();
-      if ( !aMeshVar->_is_nil() )
+      SMESH::SMESH_Mesh_var aMesh =  subMesh->GetFather();
+      if ( !aMesh->_is_nil() )
       {
-        _PTR(SObject) aMeshSO = SMESH::FindSObject( aMeshVar );
-        QString aMeshName = name( aMeshSO );
+        _PTR(SObject) aMeshSO = SMESH::FindSObject( aMesh );
+        QString     aMeshName = name( aMeshSO );
         myDlg->setObjectText( SMESHGUI_MeshDlg::Mesh, aMeshName );
       }
-      myHasConcurrentSubBefore = checkSubMeshConcurrency( aMeshVar, aSubMeshVar );
+      myHasConcurrentSubBefore = checkSubMeshConcurrency( aMesh, subMesh );
     }
 
     if ( !myIsInvalidSubMesh )
     {
-      // Get name of geometry object
+      // Set name of geometry object
       CORBA::String_var name = SMESH::GetGeomName( pObj );
       if ( name.in() )
         myDlg->setObjectText( SMESHGUI_MeshDlg::Geom, name.in() );
@@ -2282,20 +2199,22 @@ void SMESHGUI_MeshOp::readMesh()
   }
 
   // Get hypotheses and algorithms assigned to the mesh/sub-mesh
-  QStringList anExisting;
-  const int lastDim = ( myIsOnGeometry ) ? SMESH::DIM_0D : SMESH::DIM_2D;
+  QStringList anExisting, anAvailable;
   bool algoFound = false;
-  for ( int dim = SMESH::DIM_3D; dim >= lastDim; --dim )
+  const int dim1st = ( myIsOnGeometry ) ? SMESH::DIM_0D : SMESH::DIM_2D;
+  for ( int dim = dim1st; dim <= SMESH::DIM_3D; ++dim )
   {
     // get algorithm
     existingHyps( dim, Algo, pObj, anExisting, myObjHyps[ dim ][ Algo ] );
     // find algo index among available ones
     int aHypIndex = -1;
+    anAvailable.clear();
     if ( myObjHyps[ dim ][ Algo ].count() > 0 )
     {
-      SMESH::SMESH_Hypothesis_var aVar = myObjHyps[ dim ][ Algo ].first().first;
-      HypothesisData* algoData = SMESH::GetHypothesisData( SMESH::toQStr( aVar->GetName() ));
-      aHypIndex = myAvailableHypData[ dim ][ Algo ].indexOf ( algoData );
+      SMESH::SMESH_Hypothesis_var hyp = myObjHyps[ dim ][ Algo ].first().first;
+      HypothesisData* algoData = SMESH::GetHypothesisData( SMESH::toQStr( hyp->GetName() ));
+      availableHyps( dim, Algo, anAvailable, myAvailableHypData[ dim ][ Algo ] );
+      aHypIndex = myAvailableHypData[ dim ][ Algo ].indexOf( algoData );
       //       if ( aHypIndex < 0 && algoData ) {
       //         // assigned algo is incompatible with other algorithms
       //         myAvailableHypData[ dim ][ Algo ].push_back( algoData );
@@ -2303,6 +2222,7 @@ void SMESHGUI_MeshOp::readMesh()
       //       }
       algoFound = ( aHypIndex > -1 );
     }
+    myDlg->tab( dim )->setAvailableHyps( Algo, anAvailable );
     setCurrentHyp( dim, Algo, aHypIndex );
     // set existing and available hypothesis according to the selected algo
     if ( aHypIndex > -1 || !algoFound )
@@ -2311,7 +2231,7 @@ void SMESHGUI_MeshOp::readMesh()
 
   // get hypotheses
   bool hypWithoutAlgo = false;
-  for ( int dim = SMESH::DIM_3D; dim >= lastDim; --dim )
+  for ( int dim = dim1st; dim <= SMESH::DIM_3D; ++dim )
   {
     for ( int hypType = MainHyp; hypType <= AddHyp; hypType++ )
     {
@@ -2344,7 +2264,7 @@ void SMESHGUI_MeshOp::readMesh()
   }
   // make available other hyps of same type as one without algo
   if ( hypWithoutAlgo )
-    onAlgoSelected( currentHyp( 0, Algo ), 0 );
+    onAlgoSelected( currentHyp( /*dim=*/0, Algo ), /*dim=*/0 );
 }
 
 //================================================================================
@@ -2451,11 +2371,11 @@ bool SMESHGUI_MeshOp::editMeshOrSubMesh( QString& theMess )
 
   SALOMEDS_SObject* aSObject = _CAST(SObject, pObj);
   CORBA::Object_var anObject = aSObject->GetObject();
-  SMESH::SMESH_Mesh_var       aMeshVar = SMESH::SMESH_Mesh::_narrow( anObject );
+  SMESH::SMESH_Mesh_var          aMesh = SMESH::SMESH_Mesh::_narrow( anObject );
   SMESH::SMESH_subMesh_var aSubMeshVar = SMESH::SMESH_subMesh::_narrow( anObject );
-  bool isMesh = !aMeshVar->_is_nil();
+  bool isMesh = !aMesh->_is_nil();
   if ( !isMesh && !aSubMeshVar->_is_nil() )
-    aMeshVar = aSubMeshVar->GetFather();
+    aMesh = aSubMeshVar->GetFather();
 
   // Assign new algorithms and hypotheses
   for ( int dim = aDim; dim <= SMESH::DIM_3D; dim++ )
@@ -2470,7 +2390,7 @@ bool SMESHGUI_MeshOp::editMeshOrSubMesh( QString& theMess )
          myObjHyps[ dim ][ Algo ].count() == 0 ) // no algo assigned
     {
       if ( isMesh )
-        SMESH::AddHypothesisOnMesh( aMeshVar, anAlgoVar );
+        SMESH::AddHypothesisOnMesh( aMesh, anAlgoVar );
       else if ( !aSubMeshVar->_is_nil() )
         SMESH::AddHypothesisOnSubMesh( aSubMeshVar, anAlgoVar );
 
@@ -2503,7 +2423,7 @@ bool SMESHGUI_MeshOp::editMeshOrSubMesh( QString& theMess )
         if ( !isAssigned )
         {
           if ( isMesh )
-            SMESH::AddHypothesisOnMesh (aMeshVar, hyp );
+            SMESH::AddHypothesisOnMesh (aMesh, hyp );
           else if ( !aSubMeshVar->_is_nil() )
             SMESH::AddHypothesisOnSubMesh ( aSubMeshVar, hyp );
         }
@@ -2515,7 +2435,7 @@ bool SMESHGUI_MeshOp::editMeshOrSubMesh( QString& theMess )
   }
 
   myHasConcurrentSubBefore =
-    checkSubMeshConcurrency( aMeshVar, aSubMeshVar, /*askUser=*/!myHasConcurrentSubBefore );
+    checkSubMeshConcurrency( aMesh, aSubMeshVar, /*askUser=*/!myHasConcurrentSubBefore );
 
   return true;
 }
@@ -2605,13 +2525,13 @@ void SMESHGUI_MeshOp::onGeomSelectionByMesh( bool theByMesh )
     // set mesh object to SMESHGUI_ShapeByMeshOp and start it
     QString aMeshEntry = myDlg->selectedObject( SMESHGUI_MeshDlg::Mesh );
     if ( _PTR(SObject) pMesh = SMESH::getStudy()->FindObjectID( aMeshEntry.toUtf8().data() )) {
-      SMESH::SMESH_Mesh_var aMeshVar =
+      SMESH::SMESH_Mesh_var aMesh =
         SMESH::SMESH_Mesh::_narrow( _CAST( SObject,pMesh )->GetObject() );
-      if ( !aMeshVar->_is_nil() ) {
+      if ( !aMesh->_is_nil() ) {
         myDlg->hide(); // stop processing selection
         myShapeByMeshOp->setModule( getSMESHGUI() );
         myShapeByMeshOp->setStudy( 0 ); // it's really necessary
-        myShapeByMeshOp->SetMesh( aMeshVar );
+        myShapeByMeshOp->SetMesh( aMesh );
         myShapeByMeshOp->start();
       }
     }
@@ -2673,185 +2593,55 @@ void SMESHGUI_MeshOp::selectObject( _PTR(SObject) theSObj ) const
 }
 //================================================================================
 /*!
- * \brief Create available list types of mesh
-  * \param theTypeMesh - Output list of available types of mesh
+ * \brief Update available list of mesh types
  */
 //================================================================================
-void SMESHGUI_MeshOp::createMeshTypeList( QStringList& theTypeMesh)
+void SMESHGUI_MeshOp::updateMeshTypeList()
 {
-  theTypeMesh.clear();
-  theTypeMesh.append( tr( "MT_ANY" ) );
+  QStringList meshTypes;
+  meshTypes.append( tr( "MT_ANY" ) );
   if ( myMaxShapeDim >= 2 || myMaxShapeDim == -1 )
   {
-    theTypeMesh.append( tr( "MT_TRIANGULAR" ) );
-    theTypeMesh.append( tr( "MT_QUADRILATERAL" ) );
+    meshTypes.append( tr( "MT_TRIANGULAR" ) );
+    meshTypes.append( tr( "MT_QUADRILATERAL" ) );
   }
   if ( myMaxShapeDim == 3 || myMaxShapeDim == -1 )
   {
-    theTypeMesh.append( tr( "MT_TETRAHEDRAL" ) );
-    theTypeMesh.append( tr( "MT_HEXAHEDRAL" ) );
+    meshTypes.append( tr( "MT_TETRAHEDRAL" ) );
+    meshTypes.append( tr( "MT_HEXAHEDRAL" ) );
   }
 
-}
-//================================================================================
-/*!
- * \brief Set available types of mesh
-  * \param theTypeMesh - List of available types of mesh
- */
-//================================================================================
-void SMESHGUI_MeshOp::setAvailableMeshType( const QStringList& theTypeMesh )
-{
-  myDlg->setAvailableMeshType( theTypeMesh );
+  myDlg->setAvailableMeshType( meshTypes );
 }
 
 //================================================================================
 /*!
- * \brief SLOT. Is called when the user select type of mesh
-  * \param theTabIndex - Index of current active tab
-  * \param theIndex - Index of current type of mesh
+ * \brief Update available list of hypothesis sets
  */
 //================================================================================
-void SMESHGUI_MeshOp::onAlgoSetByMeshType( const int theTabIndex, const int theIndex )
+void SMESHGUI_MeshOp::updateHypoSets()
 {
-  setFilteredAlgoData( theTabIndex, theIndex);
-}
+  // get available algorithms taking into account geometry and mesh type
+  QStringList algosAvailable;
+  if ( myDlg->currentMeshType() != MT_ANY )
+    for ( int dim = 0; dim <= 3; ++dim )
+      availableHyps( dim, Algo, algosAvailable, myAvailableHypData[ dim ][ Algo ] );
 
-//================================================================================
-/*!
- * \brief Set a filtered list of available algorithms by mesh type
-  * \param theTabIndex - Index of current active tab
-  * \param theIndex - Index of current type of mesh
- */
-//================================================================================
-void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theIndex )
-{
-  QStringList anAvailableAlgs;
-  QString anCompareType = currentMeshTypeName( theIndex );
-  int anCurrentAvailableAlgo = -1;
-  bool isNone = true;
-  int aDim = SMESH::DIM_3D;
-  if ( theIndex == MT_TRIANGULAR || theIndex == MT_QUADRILATERAL)
-    aDim = SMESH::DIM_2D;
-  if ( anCompareType == "ANY" )
-  {
-    bool isReqDisBound = false;
-    int aReqDim = SMESH::DIM_3D;
-    for ( int dim = SMESH::DIM_3D; dim >= SMESH::DIM_2D; dim-- )
-    {
-      anCurrentAvailableAlgo = -1;
-      isNone = currentHyp( dim, Algo ) < 0;
-      //return current algo in current tab and set new algorithm list
-      HypothesisData* algoCur = 0;
-      if ( !isNone && !myAvailableHypData[dim][Algo].empty() ) {
-        algoCur = myAvailableHypData[dim][Algo].at( currentHyp( dim, Algo ) );
-      }
-      HypothesisData* prevAlgo = 0;
-      HypothesisData* nextAlgo = 0;
-      if ( dim == SMESH::DIM_2D ) {
-        prevAlgo = hypData( SMESH::DIM_1D, Algo, currentHyp( SMESH::DIM_1D, Algo ) );
-        if ( aDim == SMESH::DIM_3D )
-          nextAlgo = hypData( SMESH::DIM_3D, Algo, currentHyp( SMESH::DIM_3D, Algo ) );
-      }
-      // retrieves a list of available algorithms from resources
-      availableHyps( dim, Algo, anAvailableAlgs, myAvailableHypData[dim][Algo], prevAlgo, nextAlgo, anCompareType);
-      anCurrentAvailableAlgo = myAvailableHypData[dim][Algo].indexOf( algoCur );
-      myDlg->tab( dim )->setAvailableHyps( Algo, anAvailableAlgs );
-      setCurrentHyp( dim, Algo, anCurrentAvailableAlgo );
-      if ( anCurrentAvailableAlgo > -1 )
-        isReqDisBound = algoCur->InputTypes.isEmpty();
-      if ( isReqDisBound ) {
-        aReqDim = dim;
-        break;
-      }
-    }
-    if ( !myIsOnGeometry )
-      for ( int i = SMESH::DIM_0D; i <= SMESH::DIM_3D; i++ ) {
-        bool disable = myAvailableHypData[i][Algo].isEmpty();
-        if ( disable ) myDlg->disableTab( i );
-        else           myDlg->enableTab( i );
-      }
-    else
-      for ( int i = SMESH::DIM_0D; i <= SMESH::DIM_3D; i++ ) {
-        if ( i > myMaxShapeDim || ( isReqDisBound && i < aReqDim ) ) myDlg->disableTab( i );
-        else                                                         myDlg->enableTab( i );
-      }
-    myDlg->setCurrentTab( theTabIndex );
-  }
-  else
-  {
-    HypothesisData* anCurrentAlgo = 0;
-    bool isReqDisBound = true;
-    QString anCurrentCompareType = anCompareType;
-    isNone = currentHyp( aDim, Algo ) < 0;
-    if ( !isNone && !myAvailableHypData[aDim][Algo].empty() )
-      isReqDisBound = myAvailableHypData[aDim][Algo].at( currentHyp( aDim, Algo ) )->InputTypes.isEmpty();
-    for ( int dim = aDim; dim >= SMESH::DIM_2D; dim-- )
-    {
-      bool isNoneAlg = currentHyp( dim, Algo ) < 0;
-      anCurrentAvailableAlgo = -1;
-      HypothesisData* prevAlgo = 0;
-      HypothesisData* nextAlgo = 0;
-      if ( dim == SMESH::DIM_2D ) {
-        prevAlgo = hypData( SMESH::DIM_1D, Algo, currentHyp( SMESH::DIM_1D, Algo ) );
-        if ( aDim == SMESH::DIM_3D )
-          nextAlgo = hypData( SMESH::DIM_3D, Algo, currentHyp( SMESH::DIM_3D, Algo ) );
-      }
-      // finding algorithm which is selected
-      if ( !isNoneAlg ) {
-        anCurrentAlgo = myAvailableHypData[dim][Algo].at( currentHyp( dim, Algo ) );
-      }
-      // retrieves a list of available algorithms from resources
-      availableHyps( dim, Algo, anAvailableAlgs, myAvailableHypData[dim][Algo], prevAlgo, nextAlgo, anCurrentCompareType );
-      // finding and adding algorithm depending on the type mesh
-      anCurrentAvailableAlgo = myAvailableHypData[dim][Algo].indexOf( anCurrentAlgo );
-      //set new algorithm list and select the current algorithm
-      myDlg->tab( dim )->setAvailableHyps( Algo, anAvailableAlgs );
-      anCurrentCompareType = ( anCompareType == "HEXA" || anCompareType == "QUAD" ) ? "QUAD" : "TRIA";
-      setCurrentHyp( dim, Algo, anCurrentAvailableAlgo, /*updateHyps=*/true );
-    }
-
-    for ( int i = myMaxShapeDim; i >= SMESH::DIM_0D; i-- ) {
-      bool isNoneAlg = currentHyp( i, Algo ) < 0;
-      if ( !isNoneAlg )
-        isReqDisBound = myAvailableHypData[i][Algo].at( currentHyp( i, Algo ) )->InputTypes.isEmpty();
-      else
-        isReqDisBound = true;
-      if ( isReqDisBound && !isNoneAlg && i <= aDim) {
-        for (int j = myMaxShapeDim; j >= SMESH::DIM_0D; j--) {
-          if ( currentHyp( j, Algo ) < 0 ) {
-            myDlg->disableTab( j );
-            setCurrentHyp( j , Algo, -1, /*updateHyps=*/true );
-          }
-        }
-        break;
-      }
-      else {
-        myDlg->enableTab( i );
-      }
-    }
-    if ( aDim == SMESH::DIM_2D) {
-      setCurrentHyp( SMESH::DIM_3D, Algo, -1, /*updateHyps=*/true );
-      myDlg->disableTab( SMESH::DIM_3D );
-    }
-
-    int currentTab = ( theTabIndex <= aDim ) ? theTabIndex : aDim;
-    myDlg->setCurrentTab( currentTab );
-  }
   THypDataList anAvailableAlgsData;
-  QStringList aHypothesesSetsList = SMESH::GetHypothesesSets( aDim );
+  QStringList aHypothesesSetsList = SMESH::GetHypothesesSets( myMaxShapeDim );
   QStringList aFilteredHypothesesSetsList;
-  aFilteredHypothesesSetsList.clear();
   QStringList::const_iterator inHypoSetName = aHypothesesSetsList.begin();
-  for ( ; inHypoSetName != aHypothesesSetsList.end(); ++inHypoSetName ) {
+  for ( ; inHypoSetName != aHypothesesSetsList.end(); ++inHypoSetName )
+  {
     HypothesesSet* currentHypoSet = SMESH::GetHypothesesSet( *inHypoSetName );
     bool isAvailable = false;
-    currentHypoSet->init( true );
-    while ( currentHypoSet->next(), currentHypoSet->more() ) {
+    for ( currentHypoSet->init( true ); currentHypoSet->more(); currentHypoSet->next() )
+    {
       isAvailable = false;
       if ( HypothesisData* algoDataIn = SMESH::GetHypothesisData( currentHypoSet->current() )) {
         for (int i = SMESH::DIM_0D; i <= myMaxShapeDim; i++) {
-          int anCurrentAvailableAlgo = myAvailableHypData[i][Algo].indexOf( algoDataIn );
-          if ( anCurrentAvailableAlgo > -1 ) {
+          int aCurrentAvailableAlgo = myAvailableHypData[i][Algo].indexOf( algoDataIn );
+          if ( aCurrentAvailableAlgo > -1 ) {
             isAvailable = true;
             break;
           }
@@ -2868,32 +2658,12 @@ void SMESHGUI_MeshOp::setFilteredAlgoData( const int theTabIndex, const int theI
 
 //================================================================================
 /*!
- * \brief Get current name types of mesh
-  * \param theIndex - current index types of mesh
-  * \retval QString - result
+ * \brief SLOT. Is called when the user select type of mesh
+ * \param theTabIndex - Index of current active tab
+ * \param theIndex - Index of current type of mesh
  */
 //================================================================================
-QString SMESHGUI_MeshOp::currentMeshTypeName( const int theIndex ) const
+void SMESHGUI_MeshOp::onAlgoSetByMeshType( const int theTabIndex, const int theIndex )
 {
-  QString aMeshType = "";
-  switch ( theIndex ) {
-  case MT_ANY:
-    aMeshType = "ANY";
-    break;
-  case MT_TRIANGULAR:
-    aMeshType = "TRIA";
-    break;
-  case MT_QUADRILATERAL:
-    aMeshType = "QUAD";
-    break;
-  case MT_TETRAHEDRAL:
-    aMeshType = "TETRA";
-    break;
-  case MT_HEXAHEDRAL:
-    aMeshType = "HEXA";
-    break;
-  default:;
-  }
-  return aMeshType;
+  setFilteredAlgoData();
 }
-

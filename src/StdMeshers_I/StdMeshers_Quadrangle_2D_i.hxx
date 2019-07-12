@@ -58,7 +58,7 @@ class STDMESHERS_I_EXPORT StdMeshers_Quadrangle_2D_i:
   ::StdMeshers_Quadrangle_2D* GetImpl();
 
   // Return true if the algorithm is applicable to a shape
-  static CORBA::Boolean IsApplicable(const TopoDS_Shape &S, CORBA::Boolean toCheckAll);
+  static bool IsApplicable(const TopoDS_Shape &S, bool toCheckAll, int );
 };
 
 // ======================================================
@@ -77,7 +77,7 @@ class STDMESHERS_I_EXPORT StdMeshers_QuadFromMedialAxis_1D2D_i:
   virtual ~StdMeshers_QuadFromMedialAxis_1D2D_i();
 
   // Return true if the algorithm is applicable to a shape
-  static CORBA::Boolean IsApplicable(const TopoDS_Shape &S, CORBA::Boolean toCheckAll);
+  static bool IsApplicable(const TopoDS_Shape &S, bool toCheckAll, int dim);
 };
 
 #endif

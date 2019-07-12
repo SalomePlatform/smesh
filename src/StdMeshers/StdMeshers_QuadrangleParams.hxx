@@ -43,7 +43,7 @@ enum StdMeshers_QuadType
 
 class STDMESHERS_EXPORT StdMeshers_QuadrangleParams: public SMESH_Hypothesis
 {
-public:
+ public:
   StdMeshers_QuadrangleParams(int hypId, SMESH_Gen* gen);
   virtual ~StdMeshers_QuadrangleParams();
 
@@ -61,14 +61,17 @@ public:
   void GetEnforcedNodes( std::vector< TopoDS_Shape >& shapes,
                          std::vector< gp_Pnt >&       points ) const;
 
+  void SetCorners( std::vector< int >& vertexIDs ) { _cornerVertices.swap( vertexIDs ); }
+  const std::vector< int >& GetCorners() const     { return _cornerVertices; }
+
   virtual std::ostream & SaveTo(std::ostream & save);
   virtual std::istream & LoadFrom(std::istream & load);
 
   /*!
    * \brief Initialize start and end length by the mesh built on the geometry
-    * \param theMesh - the built mesh
-    * \param theShape - the geometry of interest
-    * \retval bool - true if parameter values have been successfully defined
+   * \param theMesh - the built mesh
+   * \param theShape - the geometry of interest
+   * \retval bool - true if parameter values have been successfully defined
    */
   virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh,
                                    const TopoDS_Shape& theShape);
@@ -86,6 +89,7 @@ protected:
   StdMeshers_QuadType         _quadType;
   std::vector< TopoDS_Shape > _enforcedVertices;
   std::vector< gp_Pnt >       _enforcedPoints;
+  std::vector< int >          _cornerVertices;
 };
 
 #endif

@@ -148,9 +148,17 @@ public:
                                      ::SMESH_Gen*            theGenImpl) = 0;
   virtual ~GenericHypothesisCreator_i() {}
 
-  // return the name of IDL module
+  // Return the name of IDL module
   virtual std::string GetModuleName() = 0;
-  virtual bool IsApplicable( const TopoDS_Shape &S, bool toCheckAll ) {return true;}
+
+  // Check if an algorithm is applicable to a shape
+  virtual bool IsApplicable( const TopoDS_Shape &S, bool toCheckAll, int algoDim )
+  {
+    return IsShapeOfDim( S, algoDim );
+  }
+
+  // Check if a shape includes sub-shapes of a given dimension
+  static bool IsShapeOfDim( const TopoDS_Shape &S, int dim );
 };
 
 //=============================================================================

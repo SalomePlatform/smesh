@@ -83,21 +83,22 @@ namespace SMESH {
   class ApplicableToAny
   {
   public:
-    static CORBA::Boolean IsApplicable( const TopoDS_Shape &S, CORBA::Boolean toCheckAll )
+    static bool IsApplicable( const TopoDS_Shape &S, bool toCheckAll, int algoDim )
     {
-      return true;
+      return GenericHypothesisCreator_i::IsShapeOfDim( S, algoDim );
     }
   };
 };
+
 template <class T, class TIsApplicable = SMESH::ApplicableToAny>
 class StdHypothesisCreator_i : public HypothesisCreator_i< T >
 {
 public:
   // as we have 'module StdMeshers' in SMESH_BasicHypothesis.idl
   virtual std::string GetModuleName() { return "StdMeshers"; }
-  virtual CORBA::Boolean IsApplicable( const TopoDS_Shape & S, CORBA::Boolean toCheckAll )
+  virtual bool IsApplicable( const TopoDS_Shape & S, bool toCheckAll, int algoDim )
   {
-    return TIsApplicable::IsApplicable( S, toCheckAll );
+    return TIsApplicable::IsApplicable( S, toCheckAll, algoDim );
   }
 };
 

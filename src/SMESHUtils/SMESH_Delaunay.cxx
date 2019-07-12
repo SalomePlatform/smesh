@@ -276,12 +276,12 @@ const BRepMesh_Triangle* SMESH_Delaunay::GetTriangleNear( int iBndNode )
   int nodeIDs[3];
   int nbNbNodes = _bndNodes.size();
 #if OCC_VERSION_LARGE <= 0x07030000
-  const BRepMesh::ListOfInteger & linkIds = _triaDS->LinksConnectedTo( iBndNode + 1 );
-  BRepMesh::ListOfInteger::const_iterator iLink = linkIds.cbegin();
+  typedef BRepMesh::ListOfInteger TLinkList;
 #else
-  const IMeshData::ListOfInteger & linkIds = _triaDS->LinksConnectedTo( iBndNode + 1 );
-  IMeshData::ListOfInteger::const_iterator iLink = linkIds.cbegin();
+  typedef IMeshData::ListOfInteger TLinkList;
 #endif
+  const TLinkList &       linkIds = _triaDS->LinksConnectedTo( iBndNode + 1 );
+  TLinkList::const_iterator iLink = linkIds.cbegin();
   for ( ; iLink != linkIds.cend(); ++iLink )
   {
     const BRepMesh_PairOfIndex & triaIds = _triaDS->ElementsConnectedTo( *iLink );
@@ -363,7 +363,7 @@ void SMESH_Delaunay::ToPython() const
   text << "import salome, SMESH\n";
   text << "salome.salome_init()\n";
   text << "from salome.smesh import smeshBuilder\n";
-  text << "smesh = smeshBuilder.New(salome.myStudy)\n";
+  text << "smesh = smeshBuilder.New()\n";
   text << "mesh=smesh.Mesh()\n";
   const char* endl = "\n";
 
@@ -388,5 +388,5 @@ void SMESH_Delaunay::ToPython() const
   file.remove();
   file.openForWriting();
   file.write( text.c_str(), text.size() );
-  cout << "execfile( '" << fileName << "')" << endl;
+  cout << "exec(open('" << fileName << "', 'rb').read())";
 }

@@ -73,6 +73,11 @@ public:
   // Returns entries of shapes defining enforced nodes
   SMESH::string_array* GetEnfVertices();
 
+  // Set corner vertices
+  void SetCorners( const SMESH::long_array& vertexIDs );
+
+  // Return IDs of corner vertices
+  SMESH::long_array* GetCorners();
 
   // Get implementation
   ::StdMeshers_QuadrangleParams* GetImpl();

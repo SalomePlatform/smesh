@@ -89,6 +89,7 @@ class SMESH_EXPORT SMESH_Algo : public SMESH_Hypothesis
     std::set<SMDSAbs_GeometryType> _outElemTypes; // produced types of mesh elements
     std::string                    _label;        // GUI type name
 
+    Features(): _dim( -1 ) {}
     bool IsCompatible( const Features& algo2 ) const;
   };
   /*!

@@ -76,6 +76,7 @@ namespace SMESHUtils
     TVECTOR v2( vec );
     vec.swap( v2 );
   }
+
   /*!
    * \brief Auto pointer
    */
@@ -91,6 +92,7 @@ namespace SMESHUtils
   private:
     Deleter( const Deleter& );
   };
+
   /*!
    * \brief Auto pointer to array
    */
@@ -104,12 +106,33 @@ namespace SMESHUtils
     ArrayDeleter( const ArrayDeleter& );
   };
 
+  /*!
+   * \return SMDS_ElemIteratorPtr on an std container of SMDS_MeshElement's
+   */
   template < class ELEM_SET >
   SMDS_ElemIteratorPtr elemSetIterator( const ELEM_SET& elements )
   {
     typedef SMDS_SetIterator
       < SMDS_pElement, typename ELEM_SET::const_iterator> TSetIterator;
     return boost::make_shared< TSetIterator >( elements.begin(), elements.end() );
+  }
+
+  /*!
+   * \brief Increment enum value
+   */
+  template < typename ENUM >
+  void Increment( ENUM& v, int delta=1 )
+  {
+    v = ENUM( int(v)+delta );
+  }
+
+  /*!
+   * \brief Return incremented enum value
+   */
+  template < typename ENUM >
+  ENUM Add( ENUM v, int delta )
+  {
+    return ENUM( int(v)+delta );
   }
 }
 
@@ -213,7 +236,7 @@ typedef struct uvPtStruct
   double x, y; // 2d parameter, normalized [0,1]
   const SMDS_MeshNode * node;
 
-  uvPtStruct(): node(NULL) {}
+  uvPtStruct(const SMDS_MeshNode* n = 0): node(n) {}
 
   inline gp_XY UV() const { return gp_XY( u, v ); }
   inline void  SetUV( const gp_XY& uv ) { u = uv.X(); v = uv.Y(); }

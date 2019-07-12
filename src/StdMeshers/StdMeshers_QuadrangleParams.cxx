@@ -142,6 +142,10 @@ ostream & StdMeshers_QuadrangleParams::SaveTo(ostream & save)
          << " " << _enforcedPoints[i].Y()
          << " " << _enforcedPoints[i].Z();
 
+  save << " " << _cornerVertices.size();
+  for ( size_t i = 0; i < _cornerVertices.size(); ++i )
+    save << " " << _cornerVertices[i];
+
   return save;
 }
 
@@ -179,6 +183,17 @@ istream & StdMeshers_QuadrangleParams::LoadFrom(istream & load)
            load >> y &&
            load >> z )
         _enforcedPoints.push_back( gp_Pnt( x,y,z ));
+      else
+        break;
+  }
+
+  if ( load >> nbP && nbP > 0 )
+  {
+    int id;
+    _cornerVertices.reserve( nbP );
+    while ( _cornerVertices.size() < _cornerVertices.capacity() )
+      if ( load >> id )
+        _cornerVertices.push_back( id );
       else
         break;
   }

@@ -295,6 +295,43 @@ SMESH::string_array* StdMeshers_QuadrangleParams_i::GetEnfVertices()
 
 //=============================================================================
 /*!
+ * Set corner vertices
+ */
+//=============================================================================
+
+void StdMeshers_QuadrangleParams_i::SetCorners(const SMESH::long_array& theVertexIDs )
+{
+  std::vector< int > ids;
+  for ( CORBA::ULong i = 0; i < theVertexIDs.length(); ++i )
+    ids.push_back( theVertexIDs[i] );
+
+  if ( ids != GetImpl()->GetCorners() )
+  {
+    GetImpl()->SetCorners( ids );
+    SMESH::TPythonDump() << _this() << ".SetCorners( " << theVertexIDs << " )";
+  }
+}
+
+//=============================================================================
+/*!
+ * Return IDs of corner vertices
+ */
+//=============================================================================
+
+SMESH::long_array* StdMeshers_QuadrangleParams_i::GetCorners()
+{
+  const std::vector< int >& ids = GetImpl()->GetCorners();
+
+  SMESH::long_array_var  result = new SMESH::long_array;
+  result->length( ids.size() );
+  for ( size_t i = 0; i < ids.size(); ++i )
+    result[ i ] = ids[ i ];
+
+  return result._retn();
+}
+
+//=============================================================================
+/*!
  *  StdMeshers_QuadrangleParams_i::GetImpl
  *
  *  Get implementation

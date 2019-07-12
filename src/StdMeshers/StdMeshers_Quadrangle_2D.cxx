@@ -1048,6 +1048,74 @@ namespace
     return true;
   }
 
+  //================================================================================
+  /*!
+   * \brief Return angle between mesh segments of given EDGEs meeting at theVertexNode
+   */
+  //================================================================================
+
+  double getAngleByNodes( const int                  theE1Index,
+                          const int                  theE2Index,
+                          const SMDS_MeshNode*       theVertexNode,
+                          const StdMeshers_FaceSide& theFaceSide,
+                          const gp_Vec&              theFaceNormal)
+  {
+    int eID1 = theFaceSide.EdgeID( theE1Index );
+    int eID2 = theFaceSide.EdgeID( theE2Index );
+
+    const SMDS_MeshNode *n1 = 0, *n2 = 0;
+    bool is1st;
+    SMDS_ElemIteratorPtr segIt = theVertexNode->GetInverseElementIterator( SMDSAbs_Edge );
+    while ( segIt->more() )
+    {
+      const SMDS_MeshElement* seg = segIt->next();
+      int shapeID = seg->GetShapeID();
+      if      ( shapeID == eID1 )
+        is1st = true;
+      else if ( shapeID == eID2 )
+        is1st = false;
+      else
+        continue;
+      ( is1st ? n1 : n2 ) = seg->GetNodeWrap( 1 + seg->GetNodeIndex( theVertexNode ));
+    }
+
+    if ( !n1 || !n2 )
+    {
+      std::vector<const SMDS_MeshNode*> nodes;
+      for ( int is2nd = 0; is2nd < 2; ++is2nd )
+      {
+        const SMDS_MeshNode* & n = is2nd ? n2 : n1;
+        if ( n ) continue;
+        nodes.clear();
+        if ( is2nd ) theFaceSide.GetEdgeNodes( theE2Index, nodes );
+        else         theFaceSide.GetEdgeNodes( theE1Index, nodes );
+        if ( nodes.size() >= 2 )
+        {
+          if ( nodes[0] == theVertexNode )
+            n = nodes[1];
+          else
+            n = nodes[ nodes.size() - 2 ];
+        }
+      }
+    }
+    double angle = -2 * M_PI;
+    if ( n1 && n2 )
+    {
+      SMESH_NodeXYZ p1 = n1, p2 = theVertexNode, p3 = n2;
+      gp_Vec v1( p1, p2 ), v2( p2, p3 );
+      try
+      {
+        angle = v1.AngleWithRef( v2, theFaceNormal );
+      }
+      catch(...)
+      {
+      }
+      if ( std::isnan( angle ))
+        angle = -2 * M_PI;
+    }
+    return angle;
+  }
+
   //--------------------------------------------------------------------------------
   /*!
    * \brief EDGE of a FACE
@@ -1057,6 +1125,7 @@ namespace
     TopoDS_Edge   myEdge;
     TopoDS_Vertex my1stVertex;
     int           myIndex;
+    bool          myIsCorner;   // is fixed corner
     double        myAngle;      // angle at my1stVertex
     int           myNbSegments; // discretization
     Edge*         myPrev;       // preceding EDGE
@@ -1085,6 +1154,7 @@ namespace
 
     // quality criteria to minimize
     int    myOppDiff;
+    int    myIsFixedCorner;
     double myQuartDiff;
     double mySumAngle;
 
@@ -1112,6 +1182,11 @@ namespace
       myOppDiff = ( Abs( myNbSeg[0] - myNbSeg[2] ) +
                     Abs( myNbSeg[1] - myNbSeg[3] ));
 
+      myIsFixedCorner = - totNbSeg * ( myCornerE[0]->myIsCorner +
+                                       myCornerE[1]->myIsCorner +
+                                       myCornerE[2]->myIsCorner +
+                                       myCornerE[3]->myIsCorner );
+
       double nbSideIdeal = totNbSeg / 4.;
       myQuartDiff = -( Min( Min( myNbSeg[0], myNbSeg[1] ),
                             Min( myNbSeg[2], myNbSeg[3] )) / nbSideIdeal );
@@ -1125,7 +1200,7 @@ namespace
     };
 
     // first criterion - equality of nbSeg of opposite sides
-    int    crit1() const { return myOppDiff; }
+    int    crit1() const { return myOppDiff + myIsFixedCorner; }
 
     // second criterion - equality of nbSeg of adjacent sides and sharpness of angles
     double crit2() const { return myQuartDiff + mySumAngle; }
@@ -1143,7 +1218,7 @@ namespace
   //================================================================================
   /*!
    * \brief Unite EDGEs to get a required number of sides
-   *  \param [in] theNbCorners - the required number of sides
+   *  \param [in] theNbCorners - the required number of sides, 3 or 4
    *  \param [in] theConsiderMesh - to considered only meshed VERTEXes
    *  \param [in] theFaceSide - the FACE EDGEs
    *  \param [out] theVertices - the found corner vertices
@@ -1153,7 +1228,7 @@ namespace
   void uniteEdges( const int                   theNbCorners,
                    const bool                  theConsiderMesh,
                    const StdMeshers_FaceSide&  theFaceSide,
-                   const TopoDS_Shape&         theBaseVertex,
+                   const TopTools_MapOfShape&  theFixedVertices,
                    std::vector<TopoDS_Vertex>& theVertices,
                    bool&                       theHaveConcaveVertices)
   {
@@ -1183,23 +1258,28 @@ namespace
 
     // sort edges by angle
     std::multimap< double, Edge* > edgeByAngle;
-    int i, iBase = -1, nbConvexAngles = 0, nbSharpAngles = 0;
+    int i, nbConvexAngles = 0, nbSharpAngles = 0;
+    const SMDS_MeshNode* vertNode = 0;
+    gp_Vec faceNormal;
     const double angTol     = 5. / 180 * M_PI;
     const double sharpAngle = 0.5 * M_PI - angTol;
     Edge* e = edge0;
     for ( i = 0; i < nbEdges; ++i, e = e->myNext )
     {
       e->my1stVertex = SMESH_MesherHelper::IthVertex( 0, e->myEdge );
-      if ( e->my1stVertex.IsSame( theBaseVertex ))
-        iBase = e->myIndex;
+      e->myIsCorner = theFixedVertices.Contains( e->my1stVertex );
 
       e->myAngle = -2 * M_PI;
-      if ( !theConsiderMesh || theFaceSide.VertexNode( e->myIndex ))
+      if ( !theConsiderMesh || ( vertNode = theFaceSide.VertexNode( e->myIndex )))
       {
         e->myAngle = SMESH_MesherHelper::GetAngle( e->myPrev->myEdge, e->myEdge,
-                                                   theFaceSide.Face(), e->my1stVertex );
+                                                   theFaceSide.Face(), e->my1stVertex,
+                                                   &faceNormal );
         if ( e->myAngle > 2 * M_PI ) // GetAngle() failed
           e->myAngle *= -1.;
+        else if ( vertNode && ( 0. <= e->myAngle ) && ( e->myAngle <= angTol ))
+          e->myAngle = getAngleByNodes( e->myPrev->myIndex, e->myIndex,
+                                        vertNode, theFaceSide, faceNormal );
       }
       edgeByAngle.insert( std::make_pair( e->myAngle, e ));
       nbConvexAngles += ( e->myAngle > angTol );
@@ -1227,8 +1307,10 @@ namespace
       // return corners with maximal angles
 
       std::set< int > cornerIndices;
-      if ( iBase != -1 )
-        cornerIndices.insert( iBase );
+      if ( !theFixedVertices.IsEmpty() )
+        for ( i = 0, e = edge0; i < nbEdges; ++i, e = e->myNext )
+          if ( e->myIsCorner )
+            cornerIndices.insert( e->myIndex );
 
       std::multimap< double, Edge* >::reverse_iterator a2e = edgeByAngle.rbegin();
       for (; (int) cornerIndices.size() < theNbCorners; ++a2e )
@@ -1444,7 +1526,20 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
   myCheckOri = false;
   if ( theVertices.size() > 3 )
   {
-    uniteEdges( nbCorners, theConsiderMesh, faceSide, triaVertex, theVertices, myCheckOri );
+    TopTools_MapOfShape fixedVertices;
+    if ( !triaVertex.IsNull() )
+      fixedVertices.Add( triaVertex );
+    if ( myParams )
+    {
+      const std::vector< int >& vIDs = myParams->GetCorners();
+      for ( size_t i = 0; i < vIDs.size(); ++i )
+      {
+        const TopoDS_Shape& vertex = helper.GetMeshDS()->IndexToShape( vIDs[ i ]);
+        if ( !vertex.IsNull() )
+          fixedVertices.Add( vertex );
+      }
+    }
+    uniteEdges( nbCorners, theConsiderMesh, faceSide, fixedVertices, theVertices, myCheckOri );
   }
 
   if ( nbCorners == 3 && !triaVertex.IsSame( theVertices[0] ))

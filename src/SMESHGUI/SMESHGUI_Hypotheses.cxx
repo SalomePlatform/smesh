@@ -830,7 +830,7 @@ bool HypothesesSet::isAlgo() const
 void HypothesesSet::init( bool isAlgo )
 {
   myIsAlgo = isAlgo;
-  myIndex = -1;
+  myIndex = 0;
 }
 
 bool HypothesesSet::more() const
@@ -864,8 +864,7 @@ int HypothesesSet::maxDim() const
   int dim = -1;
   for ( int isAlgo = 0; isAlgo < 2; ++isAlgo )
   {
-    thisSet->init( isAlgo );
-    while ( thisSet->next(), thisSet->more() )
+    for ( thisSet->init( isAlgo ); thisSet->more(); thisSet->next() )
       if ( HypothesisData* hypData = SMESH::GetHypothesisData( thisSet->current() ))
         for ( int i = 0; i < hypData->Dim.count(); ++i )
           dim = qMax( dim, hypData->Dim[i] );

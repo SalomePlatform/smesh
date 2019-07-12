@@ -61,6 +61,7 @@ SET(SMESHUtils_HEADERS
   SMESH_MAT2d.hxx
   SMESH_ControlPnt.hxx
   SMESH_Delaunay.hxx
+  SMESH_Indexer.hxx
   )
 
 # --- sources ---

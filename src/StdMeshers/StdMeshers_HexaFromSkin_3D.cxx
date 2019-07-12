@@ -27,6 +27,7 @@
 #include "SMDS_VolumeTool.hxx"
 #include "SMESHDS_Mesh.hxx"
 #include "SMESH_Block.hxx"
+#include "SMESH_Indexer.hxx"
 #include "SMESH_Mesh.hxx"
 #include "SMESH_MeshAlgos.hxx"
 #include "SMESH_MesherHelper.hxx"
@@ -59,6 +60,10 @@ using namespace std;
 
 namespace
 {
+  // typedefs for struct's moved to SMESHUtils
+  typedef SMESH_Indexer         _Indexer;
+  typedef SMESH_OrientedIndexer _OrientedIndexer;
+
   enum EBoxSides //!< sides of the block
     {
       B_BOTTOM=0, B_RIGHT, B_TOP, B_LEFT, B_FRONT, B_BACK, NB_BLOCK_SIDES
@@ -145,67 +150,6 @@ namespace
 
   //================================================================================
   /*!
-   * \brief Converter of a pair of integers to a sole index
-   */
-  struct _Indexer
-  {
-    int _xSize, _ySize;
-    _Indexer( int xSize=0, int ySize=0 ): _xSize(xSize), _ySize(ySize) {}
-    int size() const { return _xSize * _ySize; }
-    int operator()(int x, int y) const { return y * _xSize + x; }
-  };
-  //================================================================================
-  /*!
-   * \brief Oriented converter of a pair of integers to a sole index 
-   */
-  class _OrientedIndexer : public _Indexer
-  {
-  public:
-    enum OriFlags //!< types of block side orientation
-      {
-        REV_X = 1, REV_Y = 2, SWAP_XY = 4, MAX_ORI = REV_X|REV_Y|SWAP_XY
-      };
-    _OrientedIndexer( const _Indexer& indexer, const int oriFlags ):
-      _Indexer( indexer._xSize, indexer._ySize ),
-      _xSize (indexer._xSize), _ySize(indexer._ySize),
-      _xRevFun((oriFlags & REV_X) ? & reverse : & lazy),
-      _yRevFun((oriFlags & REV_Y) ? & reverse : & lazy),
-      _swapFun((oriFlags & SWAP_XY ) ? & swap : & lazy)
-    {
-      (*_swapFun)( _xSize, _ySize );
-    }
-    //!< Return index by XY
-    int operator()(int x, int y) const
-    {
-      (*_xRevFun)( x, const_cast<int&>( _xSize ));
-      (*_yRevFun)( y, const_cast<int&>( _ySize ));
-      (*_swapFun)( x, y );
-      return _Indexer::operator()(x,y);
-    }
-    //!< Return index for a corner
-    int corner(bool xMax, bool yMax) const
-    {
-      int x = xMax, y = yMax, size = 2;
-      (*_xRevFun)( x, size );
-      (*_yRevFun)( y, size );
-      (*_swapFun)( x, y );
-      return _Indexer::operator()(x ? _Indexer::_xSize-1 : 0 , y ? _Indexer::_ySize-1 : 0);
-    }
-    int xSize() const { return _xSize; }
-    int ySize() const { return _ySize; }
-  private:
-    _Indexer _indexer;
-    int _xSize, _ySize;
-
-    typedef void (*TFun)(int& x, int& y);
-    TFun _xRevFun, _yRevFun, _swapFun;
-    
-    static void lazy   (int&, int&) {}
-    static void reverse(int& x, int& size) { x = size - x - 1; }
-    static void swap   (int& x, int& y) { std::swap(x,y); }
-  };
-  //================================================================================
-  /*!
    * \brief Structure corresponding to the meshed side of block
    */
   struct _BlockSide
@@ -216,7 +160,7 @@ namespace
     int                          _nbBlocksFound;
 
 #ifdef _DEBUG_ // want to get SIGSEGV in case of invalid index
-#define _grid_access_(pobj, i) pobj->_grid[ ((i) < (int)pobj->_grid.size()) ? i : int(1e100)]
+#define _grid_access_(pobj, i) pobj->_grid[ ((i) < pobj->_grid.size()) ? i : int(1e100)]
 #else
 #define _grid_access_(pobj, i) pobj->_grid[ i ]
 #endif

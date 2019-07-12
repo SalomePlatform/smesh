@@ -63,8 +63,7 @@ StdMeshers_Prism_3D_i::~StdMeshers_Prism_3D_i()
 }
 //-----------------------------------------------------------------------------
 
-CORBA::Boolean StdMeshers_Prism_3D_i::IsApplicable( const TopoDS_Shape &S,
-                                                    CORBA::Boolean toCheckAll )
+bool StdMeshers_Prism_3D_i::IsApplicable( const TopoDS_Shape &S, bool toCheckAll, int algoDim )
 {
   return ::StdMeshers_Prism_3D::IsApplicable( S, toCheckAll );
 }
@@ -99,8 +98,7 @@ StdMeshers_RadialPrism_3D_i::~StdMeshers_RadialPrism_3D_i()
 }
 //-----------------------------------------------------------------------------
 
-CORBA::Boolean StdMeshers_RadialPrism_3D_i::IsApplicable( const TopoDS_Shape &S,
-                                                          CORBA::Boolean toCheckAll )
+bool StdMeshers_RadialPrism_3D_i::IsApplicable( const TopoDS_Shape &S, bool toCheckAll, int )
 {
   return ::StdMeshers_RadialPrism_3D::IsApplicable( S, toCheckAll );
 }

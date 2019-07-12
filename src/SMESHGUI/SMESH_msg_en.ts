@@ -8222,7 +8222,7 @@ as they are of improper type:
         <translation>
 Some sub-shapes not found in the new geometry. They are listed 
 below along with dependent mesh objects that are marked with
-with red in the Object Browser.</translation>
+red in the Object Browser.</translation>
     </message>
 </context>
 <context>

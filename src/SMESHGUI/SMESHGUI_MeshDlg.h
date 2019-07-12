@@ -66,20 +66,23 @@ public:
   SMESHGUI_MeshDlg( const bool, const bool );
   virtual ~SMESHGUI_MeshDlg();
   
-  SMESHGUI_MeshTab*            tab( const int ) const;
   void                         reset();
-  void                         setCurrentTab( const int );
-  void                         setMaxHypoDim( const int );
+  void                         setTitile( const bool, const bool );
   void                         setHypoSets( const QStringList& );
   void                         setGeomPopupEnabled( const bool );
-  void                         disableTab(const int);
-  void                         enableTab(const int);
-  bool                         isTabEnabled(const int) const;
   int                          getActiveObject();
+
+  SMESHGUI_MeshTab*            tab( const int ) const;
+  void                         enableTab(const int);
+  void                         disableTab(const int);
+  bool                         isTabEnabled(const int) const;
+  void                         setCurrentTab( const int );
+  int                          currentTab() const;
+  void                         setMaxHypoDim( const int );
+
   void                         setAvailableMeshType(const QStringList& );
-  int                          currentMeshType();
   void                         setCurrentMeshType( const int );
-  void                         setTitile( const bool, const bool );
+  int                          currentMeshType();
 
 signals:
   void                         hypoSet( const QString& );

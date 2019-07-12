@@ -32,6 +32,11 @@
 
 #include "SMESHGUI_SelectionOp.h"
 
+// IDL includes
+#include <SALOMEconfig.h>
+#include CORBA_CLIENT_HEADER(SMESH_Gen)
+#include CORBA_CLIENT_HEADER(GEOM_Gen)
+
 class HypothesesSet;
 class SMESHGUI_MeshDlg;
 class SMESHGUI_ShapeByMeshOp;
@@ -82,7 +87,6 @@ protected slots:
   void                           onPublishShapeByMeshDlg( SUIT_Operation* );
   void                           onCloseShapeByMeshDlg( SUIT_Operation* );
   void                           onAlgoSelected( const int, const int = -1 );
-  void                           processSet();
   void                           onHypoCreated( int );
   void                           onHypoEdited( int );
   void                           onAlgoSetByMeshType( const int, const int );
@@ -92,11 +96,8 @@ private:
   typedef QMap<QString, bool>    THypLabelIsAppMap; // typedef: map of hypothesis is applicable
 
   bool                           isValid( QString& ) const;
-  bool                           isCompatibleToGeometry( HypothesisData* ,
-                                                         QString,
-                                                         GEOM::GEOM_Object_var);
-  bool                           isCompatibleToMeshType( HypothesisData* ,
-                                                         QString);
+  bool                           isCompatibleToGeometry( HypothesisData* , const int);
+  bool                           isCompatibleToMeshType( HypothesisData* , const int);
   void                           availableHyps( const int, 
                                                 const int,
                                                 QStringList&,
@@ -142,10 +143,9 @@ private:
   char*                          isSubmeshIgnored() const;
   _PTR(SObject)                  getSubmeshByGeom() const;
   void                           selectObject( _PTR(SObject) ) const;
-  void                           createMeshTypeList( QStringList& );
-  void                           setAvailableMeshType( const QStringList& );
-  void                           setFilteredAlgoData( const int, const int );
-  QString                        currentMeshTypeName( const int ) const;
+  void                           updateMeshTypeList();
+  void                           updateHypoSets();
+  void                           setFilteredAlgoData();
 
 private:
 
@@ -159,15 +159,17 @@ private:
   // The geometry of "invalid sub-mesh" is not a sub-shape of the main shape;
   // it is created for the case where a valid sub-shape not found by CopyMeshWithGeom()
 
+  QString                        myGeomEntry;
+  GEOM::GEOM_Object_var          myGeom;
+
   TDim2Type2HypList              myExistingHyps; //!< all hypothesis of SMESH module
   TDim2Type2HypList              myObjHyps;      //!< hypothesis assigned to the current
                                                  //   edited mesh/sub-mesh
   // hypdata corresponding to hypotheses present in myDlg
   THypDataList                   myAvailableHypData[4][NbHypTypes];
-  QString                        myLastGeomToSelect;
+  QString                        myLastGeomEntry;
   THypLabelIsAppMap              myHypMapIsApplicable;
   bool                           myIgnoreAlgoSelection;
-  HypothesesSet*                 myHypoSet;
   int                            myDim, myType, myMaxShapeDim;
 
   QString                        myObjectToSelect;

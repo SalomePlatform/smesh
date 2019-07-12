@@ -228,9 +228,8 @@ public:
 
   bool isAlgo() const;
 
-  //this method sets internal index to -1, thus before any data access it is necessary to call next()
+  // CASCADE-like iteration
   void init( bool );
-
   bool more() const;
   void next();
   QString current() const;
