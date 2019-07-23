@@ -22,6 +22,8 @@
 // File      : DriverCGNS_Read.cxx
 // Created   : Thu Jun 30 10:33:31 2011
 // Author    : Edward AGAPOV (eap)
+#define _DEBUG_
+#include <utilities.h>
 
 #include "DriverCGNS_Read.hxx"
 
@@ -36,6 +38,7 @@
 #include <cgnslib.h>
 
 #include <map>
+
 
 #if CGNS_VERSION < 3100
 # define cgsize_t int
@@ -633,6 +636,7 @@ namespace
 
 Driver_Mesh::Status DriverCGNS_Read::Perform()
 {
+  MESSAGE("DriverCGNS_Read::Perform");
   myErrorMessages.clear();
 
   Status aResult;
@@ -642,6 +646,7 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
   // read nb of meshes (CGNSBase_t)
   if ( myMeshId < 0 || myMeshId >= GetNbMeshes(aResult))
     return addMessage( SMESH_Comment("Invalid mesh index :") << myMeshId );
+  MESSAGE("NbMeshes: " << GetNbMeshes(aResult));
 
   // read a name and a dimension of the mesh
   const int cgnsBase = myMeshId + 1;
@@ -655,6 +660,8 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
                        << " in mesh '" << meshName << "'");
 
   myMeshName = meshName;
+  MESSAGE("myMeshName: " << myMeshName);
+
 
   // read nb of domains (Zone_t) in the mesh
   int nbZones = 0;
@@ -663,6 +670,7 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
 
   if ( nbZones < 1 )
     return addMessage( SMESH_Comment("Empty mesh: '") << meshName << "'");
+  MESSAGE("nbZones: " << nbZones);
 
   // read the domains (zones)
   // ------------------------
@@ -686,6 +694,7 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
     zone._nodeIdShift = meshInfo.NbNodes();
     zone._elemIdShift = meshInfo.NbElements();
     zone.SetSizeAndDim( sizes, meshDim );
+    MESSAGE("  zone name: " << name);
 
     // mesh type of the zone
     if ( cg_zone_type ( _fn, cgnsBase, iZone, &zone._type) != CG_OK) {
@@ -696,7 +705,10 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
     switch ( zone._type )
     {
     case CGNS_ENUMV( Unstructured ):
+      MESSAGE("  zone type: unstructured");
+      break;
     case CGNS_ENUMV( Structured ):
+      MESSAGE("  zone type: structured");
       break;
     case CGNS_ENUMV( ZoneTypeNull ):
       addMessage( "Meshes with ZoneTypeNull are not supported");
@@ -712,7 +724,7 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
     // -----------
     // Read nodes
     // -----------
-
+    MESSAGE("  Read nodes");
     if ( cg_ncoords( _fn, cgnsBase, iZone, &spaceDim) != CG_OK ) {
       addMessage( cg_get_error() );
       continue;
@@ -724,6 +736,7 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
     }
     // read coordinates
 
+    MESSAGE("  Read coordinates");
     cgsize_t rmin[3] = {1,1,1}; // range of nodes to read
     cgsize_t rmax[3] = {1,1,1};
     int nbNodes = rmax[0] = zone._sizes[0];
@@ -755,6 +768,7 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
         coords[ c-1 ].resize( nbNodes, 0.0 );
 
     // create nodes
+    MESSAGE("  create nodes");
     try {
       for ( int i = 0; i < nbNodes; ++i )
         myMesh->AddNodeWithID( coords[0][i], coords[1][i], coords[2][i], i+1+zone._nodeIdShift );
@@ -774,6 +788,7 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
     // --------------
     // Read elements
     // --------------
+    MESSAGE("  read elements");
     if ( zone.IsStructured())
     {
       int nbI = zone._sizeX - 1, nbJ = zone._sizeY - 1, nbK = zone._sizeZ - 1;
@@ -826,12 +841,14 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
 
       // read element data
 
+      MESSAGE("  read element data");
       CGNS_ENUMT( ElementType_t ) elemType;
       cgsize_t start, end; // range of ids of elements of a zone
       cgsize_t eDataSize = 0;
       int nbBnd, parent_flag;
       for ( int iSec = 1; iSec <= nbSections; ++iSec )
       {
+        MESSAGE("  section " << iSec << " of " << nbSections);
         if ( cg_section_read( _fn, cgnsBase, iZone, iSec, name, &elemType,
                               &start, &end, &nbBnd, &parent_flag) != CG_OK ||
              cg_ElementDataSize( _fn, cgnsBase, iZone, iSec, &eDataSize ) != CG_OK )
@@ -847,6 +864,7 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
         }
         // store elements
 
+        MESSAGE("   store elements");
         int pos = 0, cgnsNbNodes = 0, elemID = start + zone._elemIdShift;
         cg_npe( elemType, &cgnsNbNodes ); // get nb nodes by element type
         curAddElemFun = addElemFuns[ elemType ];
@@ -944,6 +962,8 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
     // -------------------------------------------
     // Read Boundary Conditions into SMESH groups
     // -------------------------------------------
+    
+    MESSAGE("  read Boundary Conditions");
     int nbBC = 0;
     if ( cg_nbocos( _fn, cgnsBase, iZone, &nbBC) == CG_OK )
     {
@@ -952,14 +972,17 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
       CGNS_ENUMT( DataType_t ) normDataType;
       cgsize_t nbPnt, normFlag;
       int normIndex[3], nbDS;
+      MESSAGE("  nbBC: " << nbBC);
       for ( int iBC = 1; iBC <= nbBC; ++iBC )
       {
+        MESSAGE("  iBC: " << iBC);
         if ( cg_boco_info( _fn, cgnsBase, iZone, iBC, name, &bcType, &psType,
                            &nbPnt, normIndex, &normFlag, &normDataType, &nbDS ) != CG_OK )
         {
           addMessage( cg_get_error() );
           continue;
         }
+        MESSAGE("  iBC info OK: " << iBC);
         vector< cgsize_t > ids( nbPnt * zone.IndexSize() );
         CGNS_ENUMT( GridLocation_t ) location;
         if ( cg_boco_read( _fn, cgnsBase, iZone, iBC, &ids[0], NULL ) != CG_OK ||
@@ -1145,12 +1168,62 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
 
       } // loop on BCs of the zone
     }
-    else
+    else addMessage( cg_get_error() );
+
+    
+    MESSAGE("  read flow solutions");
+    int nsols = 0;
+    if ( cg_nsols( _fn, cgnsBase, iZone, &nsols) == CG_OK )
     {
-      addMessage( cg_get_error() );
+       MESSAGE("  nb flow solutions: " << nsols);
     }
+    else addMessage( cg_get_error() );
+    
+    MESSAGE("  read discrete data");
+    int nbdiscrete = 0;
+    if ( cg_ndiscrete( _fn, cgnsBase, iZone, &nbdiscrete) == CG_OK )
+    {
+        MESSAGE("  nb discrete data: " << nbdiscrete);
+        char nameDiscrete[CGNS_NAME_SIZE];
+        for (int idisc = 1; idisc <= nbdiscrete; idisc++)
+        {
+            if ( cg_discrete_read( _fn, cgnsBase, iZone, idisc, nameDiscrete) == CG_OK )
+            {
+                MESSAGE("  discrete data #"<< idisc << " name: " << nameDiscrete);
+                PointSetType_t ptset_type;
+                cgsize_t npnts;
+                if ( cg_discrete_ptset_info( _fn, cgnsBase, iZone, idisc, &ptset_type, &npnts) == CG_OK )
+                {
+                    MESSAGE("  discrete data #"<< idisc << " npnts: " << npnts);
+                }
+                else addMessage( cg_get_error() );
+            }
+            else addMessage( cg_get_error() );
+        }
+    }
+    else addMessage( cg_get_error() );
+
+
+    MESSAGE("  read subregions");
+    int nbSubrg = 0;
+    if ( cg_nsubregs( _fn, cgnsBase, iZone, &nbSubrg) == CG_OK )
+    {
+       MESSAGE("  nb subregions: " << nbSubrg);
+    }
+    else addMessage( cg_get_error() );
+
+    MESSAGE("  end zone");
   } // loop on the zones of a mesh
 
+    MESSAGE("read families");
+    int nbFam = 0;
+    if ( cg_nfamilies( _fn, cgnsBase, &nbFam) == CG_OK )
+    {
+        MESSAGE("nb families: " << nbFam);
+    }
+    else addMessage( cg_get_error() );
+
+    
 
   // ------------------------------------------------------------------------
   // Make groups for multiple zones and remove free nodes at zone interfaces
@@ -1158,6 +1231,7 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
   map< string, TZoneData >::iterator nameZoneIt = zonesByName.begin();
   for ( ; nameZoneIt != zonesByName.end(); ++nameZoneIt )
   {
+    MESSAGE("nameZone: " << nameZoneIt->first);
     TZoneData& zone = nameZoneIt->second;
     if ( zone._nbElems == 0 ) continue;
     if ( zone._nbElems == meshInfo.NbElements() ) break; // there is only one non-empty zone
@@ -1186,7 +1260,7 @@ Driver_Mesh::Status DriverCGNS_Read::Perform()
 
   myMesh->Modified();
   myMesh->CompactMesh();
-
+  MESSAGE("end perform");
   return aResult;
 }
 

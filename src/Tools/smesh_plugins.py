@@ -84,8 +84,8 @@ try:
   if len(zcracksHome) > 1:
     #print 'ZCRACKSHOME ', zcracksHome
     from Zcracks.zcracks_plugin import ZcracksLct
-    salome_pluginsmanager.AddFunction('Run Zcrack',
-                                      'Run Zcrack',
+    salome_pluginsmanager.AddFunction('Run Zcracks',
+                                      'Add a crack in a mesh with Zcracks plug-in',
                                       ZcracksLct)
 except Exception as e:
   #print 'probleme zcracks'

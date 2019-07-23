@@ -28,6 +28,7 @@
 
 #include "SMESH_Comment.hxx"
 
+#define _DEBUG_
 #include <utilities.h>
 
 using namespace std;
