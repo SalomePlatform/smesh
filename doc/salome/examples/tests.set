@@ -43,7 +43,7 @@ SET(BAD_TESTS
   quality_controls_ex22.py
   viewing_meshes_ex01.py
   radial_prism_3d_algo.py
-  test_smeshplugins.py
+  test_smeshplugin_mg_tetra_parallele.py
   )
 
 SET(GOOD_TESTS
@@ -181,6 +181,7 @@ SET(GOOD_TESTS
   split_biquad.py
   quad_medial_axis_algo.py
   defining_hypotheses_len_near_vertex.py
+  test_smeshplugins.py
 )
 
 SET(EXAMPLES_TESTS ${BAD_TESTS} ${GOOD_TESTS} testme.py)
