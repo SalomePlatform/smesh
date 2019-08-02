@@ -813,6 +813,16 @@ module StdMeshers
      * Returns entries of shapes defining enforced nodes
      */
     SMESH::string_array GetEnfVertices();
+
+    /*!
+     * Set corner vertices
+     */
+    void SetCorners( in SMESH::long_array vertexIDs );
+
+    /*!
+     * Return IDs of corner vertices
+     */
+    SMESH::long_array GetCorners();
   };
 
   /*!

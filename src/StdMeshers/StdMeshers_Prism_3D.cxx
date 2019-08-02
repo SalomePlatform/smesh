@@ -5363,15 +5363,34 @@ void StdMeshers_Sweeper::fillZColumn( TZColumn&    zColumn,
 
 void StdMeshers_Sweeper::prepareTopBotDelaunay()
 {
+  SMESH_MesherHelper* helper[2] = { myHelper, myHelper };
+  SMESH_MesherHelper botHelper( *myHelper->GetMesh() );
+  SMESH_MesherHelper topHelper( *myHelper->GetMesh() );
+  const SMDS_MeshNode* intBotNode = 0;
+  const SMDS_MeshNode* intTopNode = 0;
+  if ( myHelper->HasSeam() || myHelper->HasDegeneratedEdges() ) // use individual helpers
+  {
+    botHelper.SetSubShape( myBotFace );
+    topHelper.SetSubShape( myTopFace );
+    helper[0] = & botHelper;
+    helper[1] = & topHelper;
+    if ( !myIntColumns.empty() )
+    {
+      TNodeColumn& nodes = *myIntColumns[ myIntColumns.size()/2 ];
+      intBotNode = nodes[0];
+      intTopNode = nodes.back();
+    }
+  }
+
   UVPtStructVec botUV( myBndColumns.size() );
   UVPtStructVec topUV( myBndColumns.size() );
   for ( size_t i = 0; i < myBndColumns.size(); ++i )
   {
     TNodeColumn& nodes = *myBndColumns[i];
     botUV[i].node = nodes[0];
-    botUV[i].SetUV( myHelper->GetNodeUV( myBotFace, nodes[0] ));
+    botUV[i].SetUV( helper[0]->GetNodeUV( myBotFace, nodes[0], intBotNode ));
     topUV[i].node = nodes.back();
-    topUV[i].SetUV( myHelper->GetNodeUV( myTopFace, nodes.back() ));
+    topUV[i].SetUV( helper[1]->GetNodeUV( myTopFace, nodes.back(), intTopNode ));
     botUV[i].node->setIsMarked( true );
   }
   TopoDS_Edge dummyE;

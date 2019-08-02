@@ -145,6 +145,7 @@ SET(_moc_HEADERS
   SMESHGUI_DisplayEntitiesDlg.h
   SMESHGUI_SplitBiQuad.h
   SMESHGUI_IdPreview.h
+  SMESHGUI_PreVisualObj.h
 )
 
 # header files / no moc processing

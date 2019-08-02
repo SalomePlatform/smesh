@@ -726,7 +726,7 @@ class StdMeshersBuilder_Quadrangle(Mesh_Algorithm):
         pass
 
     def QuadrangleParameters(self, quadType=StdMeshers.QUAD_STANDARD, triangleVertex=0,
-                             enfVertices=[],enfPoints=[],UseExisting=0):
+                             enfVertices=[],enfPoints=[],corners=[],UseExisting=0):
         """
         Defines "QuadrangleParameters" hypothesis
             quadType defines the algorithm of transition between differently descretized
@@ -762,6 +762,13 @@ class StdMeshersBuilder_Quadrangle(Mesh_Algorithm):
                 or triples of values ([[x1,y1,z1], [x2,y2,z2], ...]).
                 In the case if the defined QuadrangleParameters() refer to a sole face,
                 all given points must lie on this face, else the mesher fails.
+            corners: list of vertices that should be used as quadrangle corners.
+                The parameter can be useful for faces with more than four vertices,
+                since in some cases Quadrangle Mapping algorithm chooses corner vertices
+                differently than it is desired.
+                A hypothesis can be global and define corners for all CAD faces that
+                require it, but be sure that each specified vertex is a corner in all
+                faces the hypothesis will be applied to.
             UseExisting: if *True* - searches for the existing hypothesis created with
                 the same parameters, else (default) - Create a new one
         """
@@ -774,6 +781,7 @@ class StdMeshersBuilder_Quadrangle(Mesh_Algorithm):
         if isinstance( enfVertices, int ) and not enfPoints and not UseExisting:
             # a call of old syntax, before inserting enfVertices and enfPoints before UseExisting
             UseExisting, enfVertices = enfVertices, []
+
         pStructs, xyz = [], []
         for p in enfPoints:
             if isinstance( p, SMESH.PointStruct ):
@@ -791,6 +799,10 @@ class StdMeshersBuilder_Quadrangle(Mesh_Algorithm):
             self.params = self.Hypothesis("QuadrangleParams", [quadType,vertexID,entries,xyz],
                                           UseExisting = UseExisting, CompareMethod=compFun)
             pass
+
+        if corners and isinstance( corners[0], GEOM._objref_GEOM_Object ):
+            corners = [ self.mesh.geompyD.GetSubShapeID( self.mesh.geom, v ) for v in corners ]
+
         if self.params.GetQuadType() != quadType:
             self.params.SetQuadType(quadType)
         if vertexID > 0:
@@ -799,6 +811,7 @@ class StdMeshersBuilder_Quadrangle(Mesh_Algorithm):
         for v in enfVertices:
             AssureGeomPublished( self.mesh, v )
         self.params.SetEnforcedNodes( enfVertices, pStructs )
+        self.params.SetCorners( corners )
         return self.params
 
     def QuadranglePreference(self, reversed=False, UseExisting=0):

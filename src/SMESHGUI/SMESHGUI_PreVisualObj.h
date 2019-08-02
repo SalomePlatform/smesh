@@ -29,6 +29,8 @@
 
 #include "SMESH_Object.h"
 
+class SMESHDS_Mesh;
+
 /*!
  * \brief Incarnation of SMESH_VisualObj allowing usage of SMESH_Actor
  *        to show arbitrary mesh data. SMESHGUI_PreVisualObj encapsulates
@@ -37,13 +39,14 @@
  */
 class SMESHGUI_EXPORT SMESHGUI_PreVisualObj : public SMESH_VisualObj
 {
-  mutable SMDS_Mesh* myMesh;
-  bool               myEntitiesFlag;
-  unsigned int       myEntitiesState;
+  mutable SMESHDS_Mesh* myMesh;
+  bool                  myEntitiesFlag;
+  unsigned int          myEntitiesState;
 
  public:
   SMESHGUI_PreVisualObj();
-  virtual SMDS_Mesh* GetMesh() const { return myMesh; }
+  virtual SMDS_Mesh* GetMesh() const;
+  SMESHDS_Mesh* GetMeshDS() const { return myMesh; }
 
   virtual bool Update( int theIsClear );
   virtual bool NulData() { return false; }

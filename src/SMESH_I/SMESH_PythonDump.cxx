@@ -244,25 +244,6 @@ namespace SMESH
     return *this;
   }
 
-  template<class TArray>
-  void DumpArray(const TArray& theArray, TPythonDump & theStream)
-  {
-    if ( theArray.length() == 0 )
-    {
-      theStream << "[]";
-    }
-    else
-    {
-      theStream << "[ ";
-      for (CORBA::ULong i = 1; i <= theArray.length(); i++) {
-        theStream << theArray[i-1];
-        if ( i < theArray.length() )
-          theStream << ", ";
-      }
-      theStream << " ]";
-    }
-  }
-
   TPythonDump&
   TPythonDump::operator<<(const SMESH::long_array& theArg)
   {

@@ -22,12 +22,17 @@
 
 #include "SMESHGUI_PreVisualObj.h"
 
-#include <SMDS_Mesh.hxx>
+#include <SMESHDS_Mesh.hxx>
 #include <SMESH_Actor.h>
 
 SMESHGUI_PreVisualObj::SMESHGUI_PreVisualObj()
 {
-  myMesh = new SMDS_Mesh();
+  myMesh = new SMESHDS_Mesh(0,true);
+}
+
+SMDS_Mesh* SMESHGUI_PreVisualObj::GetMesh() const
+{
+  return myMesh;
 }
 
 bool SMESHGUI_PreVisualObj::Update( int theIsClear = true )

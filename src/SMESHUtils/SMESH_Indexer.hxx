@@ -82,7 +82,7 @@ struct SMESH_Indexer3D
  * the directions. Any combination of these transformations is allowed.
  *
  * The following code picks up a transformation such that two known array items
- * appear in a desired positions:
+ * appear in desired positions:
  * \code
  * for ( int ori = 0; ori < SMESH_OrientedIndexer::MAX_ORI+1; ++ori )
  * {

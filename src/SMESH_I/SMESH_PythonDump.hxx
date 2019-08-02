@@ -239,6 +239,27 @@ namespace SMESH
     TPythonDump&
     operator<<(const std::string& theArg);
 
+
+    template<class TArray, class TStream>
+      static TStream& DumpArray(const TArray& theArray, TStream & theStream)
+    {
+      if ( theArray.length() == 0 )
+      {
+        theStream << "[]";
+      }
+      else
+      {
+        theStream << "[ ";
+        for (CORBA::ULong i = 1; i <= theArray.length(); i++) {
+          theStream << theArray[i-1];
+          if ( i < theArray.length() )
+            theStream << ", ";
+        }
+        theStream << " ]";
+      }
+      return theStream;
+    }
+
     static const char* SMESHGenName() { return "smeshgen"; }
     static const char* MeshEditorName() { return "mesh_editor"; }
     static const char* NotPublishedObjectName();

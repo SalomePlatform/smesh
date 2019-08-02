@@ -93,12 +93,12 @@ namespace
 
 SMESH_Gen::~SMESH_Gen()
 {
-    std::map < int, SMESH_Hypothesis * >::iterator i_hyp = _studyContext->mapHypothesis.begin();
-    for ( ; i_hyp != _studyContext->mapHypothesis.end(); ++i_hyp )
-    {
-      if ( _Hyp* h = static_cast< _Hyp*>( i_hyp->second ))
-        h->NullifyGen();
-    }
+  std::map < int, SMESH_Hypothesis * >::iterator i_hyp = _studyContext->mapHypothesis.begin();
+  for ( ; i_hyp != _studyContext->mapHypothesis.end(); ++i_hyp )
+  {
+    if ( _Hyp* h = static_cast< _Hyp*>( i_hyp->second ))
+      h->NullifyGen();
+  }
   delete _studyContext->myDocument;
   delete _studyContext;
 }
