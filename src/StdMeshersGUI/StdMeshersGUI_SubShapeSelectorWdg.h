@@ -53,7 +53,7 @@ public:
   StdMeshersGUI_SubShapeSelectorWdg( QWidget*         parent = 0,
                                      TopAbs_ShapeEnum subShType = TopAbs_EDGE,
                                      const bool       toShowList = true,
-                                     const bool       toShowActivateBtn = false);
+                                     const bool       toShowSelectBtn = false);
   ~StdMeshersGUI_SubShapeSelectorWdg();
 
   SMESH::long_array_var          GetListOfIDs();

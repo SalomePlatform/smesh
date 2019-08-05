@@ -334,7 +334,7 @@
                dim      ="2">
       <python-wrap>
         <algo>Quadrangle_2D=Quadrangle(algo=smeshBuilder.QUADRANGLE)</algo>
-        <hypo>QuadrangleParams=QuadrangleParameters(SetQuadType(),SetTriaVertex(),SetEnforcedNodes(1),SetEnforcedNodes(2))</hypo>
+        <hypo>QuadrangleParams=QuadrangleParameters(SetQuadType(),SetTriaVertex(),SetEnforcedNodes(1),SetEnforcedNodes(2),SetCorners())</hypo>
         <hypo>ViscousLayers2D=ViscousLayers2D(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetIgnoreEdges())</hypo>
       </python-wrap>
     </algorithm>

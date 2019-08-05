@@ -78,6 +78,7 @@ class STDMESHERSGUI_EXPORT StdMeshersGUI_QuadrangleParamCreator : public StdMesh
   QLineEdit*                         myName;
   StdMeshersGUI_QuadrangleParamWdg*  myTypeWdg;
   StdMeshersGUI_SubShapeSelectorWdg* myVertexSelWdg;
+  StdMeshersGUI_SubShapeSelectorWdg* myCornersSelWdg;
   QListWidget*                       myShapesList;
   QPushButton*                       myAddShapeBut;
   QTreeWidget*                       myCoordsTreeWdg;

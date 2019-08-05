@@ -34,8 +34,9 @@
 #include "SMESH_Algo.hxx"
 
 
-class StdMeshers_ViscousLayers;
 class SMESH_MesherHelper;
+class StdMeshers_Quadrangle_2D;
+class StdMeshers_ViscousLayers;
 
 class STDMESHERS_EXPORT StdMeshers_Hexa_3D : public SMESH_3D_Algo
 {
@@ -63,6 +64,7 @@ public:
  protected:
 
   const StdMeshers_ViscousLayers* _viscousLayersHyp;
+  StdMeshers_Quadrangle_2D*       _quadAlgo;
 };
 
 #endif

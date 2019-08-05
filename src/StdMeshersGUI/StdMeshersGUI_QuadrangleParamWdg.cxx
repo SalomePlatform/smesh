@@ -55,7 +55,7 @@
 #define SPACING 6
 #define MARGIN 11
 
-enum { TAB_TRANSITION, TAB_VERTEX, TAB_ENF_POINTS };
+enum { TAB_TRANSITION, TAB_VERTEX, TAB_CORNERS, TAB_ENF_POINTS };
 
 //================================================================================
 // function : Constructor
@@ -153,11 +153,17 @@ QFrame*  StdMeshersGUI_QuadrangleParamCreator::buildFrame()
   pointsLay->addWidget( shapesGroup );
   pointsLay->addWidget( coordsGroup );
 
+  // Corners
+
+  myCornersSelWdg = new StdMeshersGUI_SubShapeSelectorWdg( fr, TopAbs_VERTEX );
+  myCornersSelWdg->layout()->setMargin( MARGIN );
+
   // Tabs
   myTabs = new QTabWidget( fr );
-  myTabs->addTab( myTypeWdg,      tr("TRANSITION"));
-  myTabs->addTab( myVertexSelWdg, tr("SMESH_BASE_VERTEX"));
-  myTabs->addTab( pointsFrame,    tr("ENF_NODES"));
+  myTabs->addTab( myTypeWdg,       tr("TRANSITION"));
+  myTabs->addTab( myVertexSelWdg,  tr("SMESH_BASE_VERTEX"));
+  myTabs->addTab( myCornersSelWdg, tr("CORNERS"));
+  myTabs->addTab( pointsFrame,     tr("ENF_NODES"));
 
   lay->addWidget( myTabs, row, 0, 2, 3 );
 
@@ -196,6 +202,7 @@ void StdMeshersGUI_QuadrangleParamCreator::retrieveParams() const
   if ( anEntry.isEmpty() )
     anEntry = h->GetObjectEntry();
   myVertexSelWdg->SetGeomShapeEntry(anEntry,aMainEntry);
+  myCornersSelWdg->SetGeomShapeEntry(anEntry,aMainEntry);
 
   if ( !isCreation())
   {
@@ -210,6 +217,10 @@ void StdMeshersGUI_QuadrangleParamCreator::retrieveParams() const
       aVec[0] = vertID;
       myVertexSelWdg->SetListOfIDs(aVec);
     }
+
+    // corners
+    SMESH::long_array_var aVec = h->GetCorners();
+    myCornersSelWdg->SetListOfIDs( aVec );
 
     // enforced nodes
     GEOM::ListOfGO_var     shapes;
@@ -264,6 +275,9 @@ QString  StdMeshersGUI_QuadrangleParamCreator::storeParams() const
   {
     h->SetTriaVertex( -1 );
   }
+
+  // corners
+  h->SetCorners( myCornersSelWdg->GetListOfIDs() );
 
   // enfored nodes
 
@@ -408,6 +422,7 @@ void StdMeshersGUI_QuadrangleParamCreator::onSelectionChanged()
 void StdMeshersGUI_QuadrangleParamCreator::onTabChanged(int i)
 {
   myVertexSelWdg->ShowPreview( i == TAB_VERTEX );
+  myCornersSelWdg->ShowPreview( i == TAB_CORNERS );
 }
 
 //================================================================================

@@ -77,6 +77,7 @@ StdMeshers_Hexa_3D::StdMeshers_Hexa_3D(int hypId, SMESH_Gen * gen)
   _shapeType = (1 << TopAbs_SHELL) | (1 << TopAbs_SOLID);       // 1 bit /shape type
   _requireShape = false;
   _compatibleHypothesis.push_back("ViscousLayers");
+  _quadAlgo = new StdMeshers_Quadrangle_2D( gen->GetANewId(), _gen );
 }
 
 //=============================================================================
@@ -87,6 +88,8 @@ StdMeshers_Hexa_3D::StdMeshers_Hexa_3D(int hypId, SMESH_Gen * gen)
 
 StdMeshers_Hexa_3D::~StdMeshers_Hexa_3D()
 {
+  delete _quadAlgo;
+  _quadAlgo = 0;
 }
 
 //=============================================================================
@@ -231,7 +234,7 @@ namespace
     for ( int i = 1; i < 6; ++i )
     {
       if ( !quad[i] ) continue;
-      for ( unsigned iS = 0; iS < quad[i]->side.size(); ++iS )
+      for ( size_t iS = 0; iS < quad[i]->side.size(); ++iS )
       {
         const StdMeshers_FaceSidePtr side2 = quad[i]->side[iS];
         if (( side->FirstVertex().IsSame( side2->FirstVertex() ) ||
@@ -244,9 +247,9 @@ namespace
           if ( iS != Q_BOTTOM )
           {
             vector< FaceQuadStruct::Side > newSides;
-            for ( unsigned j = iS; j < quad[i]->side.size(); ++j )
+            for ( size_t j = iS; j < quad[i]->side.size(); ++j )
               newSides.push_back( quad[i]->side[j] );
-            for ( unsigned j = 0; j < iS; ++j )
+            for ( size_t j = 0; j < iS; ++j )
               newSides.push_back( quad[i]->side[j] );
             quad[i]->side.swap( newSides );
           }
@@ -363,7 +366,7 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
   if ( exp.Next(), exp.More() )
     return error(COMPERR_BAD_SHAPE, "More than one SHELL in the geometry");
 
-  TopTools_IndexedMapOfShape FF;
+  TopTools_IndexedMapOfShape FF, EE;
   TopExp::MapShapes( aShape, TopAbs_FACE, FF);
   if ( FF.Extent() != 6)
   {
@@ -375,14 +378,23 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
 
   // Find sides of a cube
   // ---------------------
-  
+
+  // tool creating quadratic elements if needed
+  SMESH_MesherHelper helper (aMesh);
+  _quadraticMesh = helper.IsQuadraticSubMesh(aShape);
+
+  TopExp::MapShapes( aShape, TopAbs_EDGE, EE );
+  SMESH_MesherHelper* faceHelper = ( EE.Size() == 12 ) ? 0 : &helper;
+
   FaceQuadStructPtr quad[ 6 ];
-  StdMeshers_Quadrangle_2D quadAlgo( _gen->GetANewId(), _gen);
   for ( int i = 0; i < 6; ++i )
   {
-    if ( !( quad[i] = FaceQuadStructPtr( quadAlgo.CheckNbEdges( aMesh, FF( i+1 ),
-                                                                /*considerMesh=*/true))))
-      return error( quadAlgo.GetComputeError() );
+    if ( faceHelper )
+      faceHelper->SetSubShape( FF( i+1 ));
+    if ( !( quad[i] = FaceQuadStructPtr( _quadAlgo->CheckNbEdges( aMesh, FF( i+1 ),
+                                                                  /*considerMesh=*/true,
+                                                                  faceHelper))))
+      return error( _quadAlgo->GetComputeError() );
     if ( quad[i]->side.size() != 4 )
       return error( COMPERR_BAD_SHAPE, "Not a quadrangular box side" );
   }
@@ -436,10 +448,6 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
 
   // Check presence of regular grid mesh on FACEs of the cube
   // ------------------------------------------------------------
-
-  // tool creating quadratic elements if needed
-  SMESH_MesherHelper helper (aMesh);
-  _quadraticMesh = helper.IsQuadraticSubMesh(aShape);
 
   for ( int i = 0; i < 6; ++i )
   {
@@ -513,8 +521,8 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
 
   if ( proxymesh )
     for ( int i = 0; i < 6; ++i )
-      for ( unsigned j = 0; j < aCubeSide[i]._columns.size(); ++j)
-        for ( unsigned k = 0; k < aCubeSide[i]._columns[j].size(); ++k)
+      for ( size_t j = 0; j < aCubeSide[i]._columns.size(); ++j)
+        for ( size_t k = 0; k < aCubeSide[i]._columns[j].size(); ++k)
         {
           const SMDS_MeshNode* & n = aCubeSide[i]._columns[j][k];
           n = proxymesh->GetProxyNode( n );

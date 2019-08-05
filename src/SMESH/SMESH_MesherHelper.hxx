@@ -636,6 +636,10 @@ public:
    */
   int GetPeriodicIndex() const { return myParIndex; }
   /*!
+   * \brief Return period in given direction [1,2]
+   */
+  double GetPeriod(int perioIndex) const { return myPar2[ perioIndex-1 ] - myPar1[ perioIndex-1 ]; }
+  /*!
    * \brief Return an alternative parameter for a node on seam
    */
   double GetOtherParam(const double param) const;

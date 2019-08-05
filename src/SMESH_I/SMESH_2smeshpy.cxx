@@ -1971,7 +1971,7 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
       if ( !obj->CanClear() )
         allGroupsRemoved = false;
     }
-    if ( nbGroupsBefore == myGroups.size() ) // no new _pyGroup created
+    if ( nbGroupsBefore == myGroups.size() && !obj.IsNull() ) // no new _pyGroup created
       obj->AddProcessedCmd( theCommand ); // to clear theCommand if all groups are removed
 
     if ( !allGroupsRemoved && !theGen->IsToKeepAllCommands() )

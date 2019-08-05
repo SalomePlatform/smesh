@@ -51,6 +51,7 @@
 #include <Geom_Surface.hxx>
 #include <NCollection_DefineArray2.hxx>
 #include <Precision.hxx>
+#include <ShapeAnalysis.hxx>
 #include <TColStd_SequenceOfInteger.hxx>
 #include <TColStd_SequenceOfReal.hxx>
 #include <TColgp_SequenceOfXY.hxx>
@@ -1221,7 +1222,9 @@ namespace
    *  \param [in] theNbCorners - the required number of sides, 3 or 4
    *  \param [in] theConsiderMesh - to considered only meshed VERTEXes
    *  \param [in] theFaceSide - the FACE EDGEs
+   *  \param [in] theFixedVertices - VERTEXes to be used as corners
    *  \param [out] theVertices - the found corner vertices
+   *  \param [out] theHaveConcaveVertices - return if there are concave vertices
    */
   //================================================================================
 
@@ -1432,6 +1435,39 @@ namespace
     return;
   }
 
+  //================================================================================
+  /*!
+   * \brief Remove a seam and degenerated edge from a wire if the shape is
+   *        a quadrangle with a seam inside.
+   */
+  //================================================================================
+
+  bool removeInternalSeam( std::list<TopoDS_Edge>& theWire,
+                           SMESH_MesherHelper&     theHelper)
+  {
+    if ( !theHelper.HasRealSeam() ||
+         theHelper.NbDegeneratedEdges() != 2 ) // 1 EDGE + 1 VERTEX
+      return false;
+
+    typedef std::list<TopoDS_Edge>::iterator TEdgeIter;
+    std::vector< TEdgeIter > edgesToRemove;
+    edgesToRemove.reserve( 5 );
+    for ( TEdgeIter eIt = theWire.begin(); eIt != theWire.end(); ++eIt )
+    {
+      int eID = theHelper.ShapeToIndex( *eIt );
+      if ( theHelper.IsRealSeam( eID ) || theHelper.IsDegenShape( eID ))
+        edgesToRemove.push_back( eIt );
+    }
+
+    if ( theWire.size() - edgesToRemove.size() < 4 )
+      return false; // cone e.g.
+
+    for ( size_t i = 0; i < edgesToRemove.size(); ++i )
+      theWire.erase( edgesToRemove[ i ]);
+
+    return true;
+  }
+
 } // namespace
 
 //================================================================================
@@ -1461,6 +1497,9 @@ int StdMeshers_Quadrangle_2D::getCorners(const TopoDS_Face&          theFace,
   SMESH_MesherHelper helper( theMesh );
   if ( myHelper )
     helper.CopySubShapeInfo( *myHelper );
+
+  if ( removeInternalSeam( theWire, helper ))
+    theNbDegenEdges = 1;
 
   StdMeshers_FaceSide faceSide( theFace, theWire, &theMesh,
                                 /*isFwd=*/true, /*skipMedium=*/true, &helper );
@@ -4774,20 +4813,35 @@ bool StdMeshers_Quadrangle_2D::check()
     default:;
     }
 
-    // if ( isBad && myHelper->HasRealSeam() )
-    // {
-    //   // detect a case where a face intersects the seam
-    //   for ( int iPar = 1; iPar < 3; ++iPar )
-    //     if ( iPar & myHelper->GetPeriodicIndex() )
-    //     {
-    //       double min = uv[0].Coord( iPar ), max = uv[0].Coord( iPar );
-    //       for ( int i = 1; i < nbN; ++i )
-    //       {
-    //         min = Min( min, uv[i].Coord( iPar ));
-    //         max = Max( max, uv[i].Coord( iPar ));
-    //       }
-    //     }
-    // }
+    if ( isBad && myHelper->HasRealSeam() )
+    {
+      // fix uv for a case where a face intersects the seam
+      for ( int iPar = 1; iPar < 3; ++iPar )
+        if ( iPar & myHelper->GetPeriodicIndex() )
+        {
+          double max = uv[0].Coord( iPar );
+          for ( int i = 1; i < nbN; ++i )
+            max = Max( max, uv[i].Coord( iPar ));
+
+          for ( int i = 0; i < nbN; ++i )
+          {
+            double par   = uv[i].Coord( iPar );
+            double shift = ShapeAnalysis::AdjustByPeriod( par, max, myHelper->GetPeriod( iPar ));
+            uv[i].SetCoord( iPar, par + shift );
+          }
+        }
+      double sign1 = getArea( uv[0], uv[1], uv[2] );
+      double sign2 = getArea( uv[0], uv[2], uv[3] );
+      if ( sign1 * sign2 < 0 )
+      {
+        sign2 = getArea( uv[1], uv[2], uv[3] );
+        sign1 = getArea( uv[1], uv[3], uv[0] );
+        if ( sign1 * sign2 < 0 )
+          continue; // this should not happen
+      }
+      isBad = ( sign1 * okSign < 0 );
+    }
+
     if ( isBad )
       badFaces.push_back ( f );
   }
