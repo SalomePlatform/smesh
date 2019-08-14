@@ -2980,6 +2980,7 @@ void SMDS_Mesh::Modified()
 {
   if (this->myModified)
   {
+    myGrid->Modified();
     this->myModifTime++;
     myModified = false;
   }

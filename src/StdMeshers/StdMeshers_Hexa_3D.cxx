@@ -167,7 +167,7 @@ namespace
     // map of (node parameter on EDGE) to (column (vector) of nodes)
     TParam2ColumnMap _u2nodesMap;
 
-    // node column's taken form _u2nodesMap taking into account sub-shape orientation
+    // node column's taken from _u2nodesMap taking into account sub-shape orientation
     vector<TNodeColumn> _columns;
 
     // columns of normalized parameters of nodes within the unitary cube
@@ -542,18 +542,24 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
   _FaceGrid* fFront  = & aCubeSide[ B_FRONT  ];
   _FaceGrid* fBack   = & aCubeSide[ B_BACK   ];
 
-  // compute normalized parameters of nodes on sides (PAL23189)
-  computeIJK( *fBottom, COO_X, COO_Y, /*z=*/0. );
-  computeIJK( *fRight,  COO_Y, COO_Z, /*x=*/1. );
-  computeIJK( *fTop,    COO_X, COO_Y, /*z=*/1. );
-  computeIJK( *fLeft,   COO_Y, COO_Z, /*x=*/0. );
-  computeIJK( *fFront,  COO_X, COO_Z, /*y=*/0. );
-  computeIJK( *fBack,   COO_X, COO_Z, /*y=*/1. );
-
   // cube size measured in nb of nodes
-  int x, xSize = fBottom->_columns.size() , X = xSize - 1;
-  int y, ySize = fLeft->_columns.size()   , Y = ySize - 1;
-  int z, zSize = fLeft->_columns[0].size(), Z = zSize - 1;
+  size_t x, xSize = fBottom->_columns.size() , X = xSize - 1;
+  size_t y, ySize = fLeft->_columns.size()   , Y = ySize - 1;
+  size_t z, zSize = fLeft->_columns[0].size(), Z = zSize - 1;
+
+  // check sharing of FACEs (IPAL54417)
+  if ( fFront ->_columns.size()    != xSize ||
+       fBack  ->_columns.size()    != xSize ||
+       fTop   ->_columns.size()    != xSize ||
+
+       fRight ->_columns.size()    != ySize ||
+       fTop   ->_columns[0].size() != ySize ||
+       fBottom->_columns[0].size() != ySize ||
+
+       fRight ->_columns[0].size() != zSize ||
+       fFront ->_columns[0].size() != zSize ||
+       fBack  ->_columns[0].size() != zSize )
+    return error( COMPERR_BAD_SHAPE, "Not sewed faces" );
 
   // columns of internal nodes "rising" from nodes of fBottom
   _Indexer colIndex( xSize, ySize );
@@ -590,6 +596,14 @@ bool StdMeshers_Hexa_3D::Compute(SMESH_Mesh &         aMesh,
       column.back()  = fTop   ->GetNode( x, y );
     }
   }
+
+  // compute normalized parameters of nodes on sides (PAL23189)
+  computeIJK( *fBottom, COO_X, COO_Y, /*z=*/0. );
+  computeIJK( *fRight,  COO_Y, COO_Z, /*x=*/1. );
+  computeIJK( *fTop,    COO_X, COO_Y, /*z=*/1. );
+  computeIJK( *fLeft,   COO_Y, COO_Z, /*x=*/0. );
+  computeIJK( *fFront,  COO_X, COO_Z, /*y=*/0. );
+  computeIJK( *fBack,   COO_X, COO_Z, /*y=*/1. );
 
   // projection points of the internal node on cube sub-shapes by which
   // coordinates of the internal node are computed
