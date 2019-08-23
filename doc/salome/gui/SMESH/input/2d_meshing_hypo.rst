@@ -42,13 +42,25 @@ Length from Edges
 Quadrangle parameters
 #####################
 
+**Quadrangle parameters** is a hypothesis for :ref:`quad_ijk_algo_page`.
+
+Quadrangle parameters dialog includes four tab pages:
+
+- :ref:`Transition <transition_anchor>`
+- :ref:`Base vertex <base_vertex_anchor>`
+- :ref:`Corner Vertices <corner_vertices_anchor>`
+- :ref:`Enforced nodes <enforced_nodes_anchor>`
+
+.. _transition_anchor:
+
+Transition tab
+--------------
+
 .. image:: ../images/ hypo_quad_params_dialog.png 
 	:align: center
 
 .. centered::
 	Quadrangle parameters: Transition
-
-**Quadrangle parameters** is a hypothesis for :ref:`quad_ijk_algo_page`.
 
 **Transition** tab is used to define the algorithm of transition between opposite sides of the face with a different number of segments on them. The following types of transition algorithms are available:
 
@@ -70,7 +82,10 @@ Quadrangle parameters
 .. centered::
 	The fastest transition pattern: 3 to 1
 
-**Base vertex** tab allows using Quadrangle: Mapping algorithm for meshing of trilateral faces. In this case it is necessary to select the vertex, which will be used as the forth degenerated side of quadrangle.
+.. _base_vertex_anchor:
+
+Base vertex tab
+---------------
 
 .. image:: ../images/ hypo_quad_params_dialog_vert.png 
 	:align: center
@@ -78,33 +93,41 @@ Quadrangle parameters
 .. centered::
 	Quadrangle parameters: Base Vertex
 
-.. image:: ../images/ hypo_quad_params_1.png 
+**Base vertex** tab allows using Quadrangle: Mapping algorithm for meshing of trilateral faces. In this case it is necessary to select the vertex, which will be used as the forth degenerated side of quadrangle.
+
+.. image:: ../images/hypo_quad_params_1.png 
 	:align: center
 
 .. centered::
-	A face built from 3 edges
+	A face built from 3 edges and the resulting mesh
 
-.. image:: ../images/ hypo_quad_params_res.png 
-	:align: center
+This parameter can be also used to mesh a segment of a circular face. Please, consider that there is a limitation on the selection of the vertex for the faces built with the angle > 180 degrees (see the picture). In this case, selection of a wrong vertex for the **Base vertex** parameter will generate a wrong mesh. The picture below shows the good (left) and the bad (right) results of meshing.
 
-.. centered::
-	The resulting mesh
-
-This parameter can be also used to mesh a segment of a circular face. Please, consider that there is a limitation on the selection of the vertex for the faces built with the angle > 180 degrees (see the picture).
-
-.. image:: ../images/ hypo_quad_params_2.png 
+.. image:: ../images/hypo_quad_params_2.png 
 	:align: center
 
 .. centered:: 
-	3/4 of a circular face
+	3/4 of a circular face and the resulting meshes
 
-In this case, selection of a wrong vertex for the **Base vertex** parameter will generate a wrong mesh. The picture below shows the good (left) and the bad (right) results of meshing.
 
-.. image:: ../images/ hypo_quad_params_res_2.png 
+.. _corner_vertices_anchor:
+
+Corner Vertices tab
+-------------------
+
+.. image:: ../images/hypo_quad_params_dialog_corners.png 
 	:align: center
 
 .. centered::
-	The resulting meshes
+	Quadrangle parameters: Corner Vertices
+
+**Corner Vertices** tab page allows specifying vertices that should be used as quadrangle corners. This can be useful for faces with more than four vertices, since in some cases Quadrangle Mapping algorithm chooses corner vertices differently than it is desired. **Quadrangle parameters** hypothesis can be global and define corners for all CAD faces that require it, but be sure that each specified vertex is a corner in all faces the hypothesis will be applied to.
+
+
+.. _enforced_nodes_anchor:
+
+Enforced nodes tab
+------------------
 
 .. image:: ../images/ hypo_quad_params_dialog_enf.png 
 	:align: center

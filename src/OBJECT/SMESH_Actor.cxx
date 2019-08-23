@@ -1546,7 +1546,8 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation)
         myScalarBarActor->VisibilityOn();
     }
 
-    myPickableActor->VisibilityOn();
+    if ( GetPickable( ))
+      myPickableActor->VisibilityOn();
 
     if ( GetRepresentation() != ePoint )
     {
@@ -1556,7 +1557,8 @@ void SMESH_ActorDef::SetVisibility(int theMode, bool theIsUpdateRepersentation)
       if(myEntityMode & eBallElem    ){
         myBallActor->VisibilityOn();
       }
-      if(myEntityMode & eEdges && GetCellsLabeled() ){ // my1DActor shows labels only
+      if(myEntityMode & eEdges && ( GetCellsLabeled() || // my1DActor shows labels only
+                                    ( myControlActor == my1DActor && myControlMode != eNone ))){
         my1DActor->VisibilityOn();
       }
       if(myEntityMode & eFaces      ){
@@ -1757,6 +1759,12 @@ void SMESH_ActorDef::SetRepresentation (int theMode)
     case eLength:
     case eMultiConnection:
       aProp = aBackProp = my1DProp;
+      if ( myRepresentation != ePoint )
+        aReperesent = SMESH_DeviceActor::eInsideframe;
+      break;
+    case eCustomControl:
+      if ( myControlActor == my1DActor )
+        aProp = aBackProp = my1DProp;
       if ( myRepresentation != ePoint )
         aReperesent = SMESH_DeviceActor::eInsideframe;
       break;
@@ -2485,8 +2493,8 @@ void SMESH_ActorDef::UpdateDistribution()
     std::vector<int> nbEvents;
     std::vector<double> funValues;
     SMESH_VisualObjDef::TEntityList elems;
-    if ( ! dynamic_cast<SMESH_MeshObj*>(myVisualObj.get()))
-      dynamic_cast<SMESH_VisualObjDef*>(myVisualObj.get())->GetEntities( fun->GetType(), elems );
+    if ( dynamic_cast<SMESH_SubMeshObj*>(myVisualObj.get()))
+      dynamic_cast<SMESH_SubMeshObj*>(myVisualObj.get())->GetEntities( fun->GetType(), elems );
     std::vector<int> elemIds; elemIds.reserve( elems.size() );
     for ( SMESH_VisualObjDef::TEntityList::iterator e = elems.begin(); e != elems.end(); ++e)
       elemIds.push_back( (*e)->GetID());
@@ -2671,8 +2679,8 @@ SPlot2d_Histogram* SMESH_ActorDef::UpdatePlot2Histogram()
     std::vector<int> nbEvents;
     std::vector<double> funValues;
     SMESH_VisualObjDef::TEntityList elems;
-    if ( ! dynamic_cast<SMESH_MeshObj*>(myVisualObj.get()))
-      dynamic_cast<SMESH_VisualObjDef*>(myVisualObj.get())->GetEntities( fun->GetType(), elems );
+    if ( dynamic_cast<SMESH_SubMeshObj*>(myVisualObj.get()))
+      dynamic_cast<SMESH_SubMeshObj*>(myVisualObj.get())->GetEntities( fun->GetType(), elems );
     std::vector<int> elemIds;
 
     for ( SMESH_VisualObjDef::TEntityList::iterator e = elems.begin(); e != elems.end(); ++e)

@@ -5068,7 +5068,7 @@ SMESH::long_array* SMESH_Mesh_i::GetElemFaceNodes(CORBA::Long  elemId,
 }
 
 //=======================================================================
-//function : GetElemFaceNodes
+//function : GetFaceNormal
 //purpose  : Returns three components of normal of given mesh face.
 //=======================================================================
 

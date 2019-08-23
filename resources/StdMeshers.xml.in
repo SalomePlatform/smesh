@@ -484,7 +484,7 @@
                icon-id ="mesh_algo_hexa.png"
                group-id="2"
                priority="10"
-               input   ="QUAD,TRIA"
+               input   ="EDGE"
                output  ="HEXA,PENTA,OCTA,POLYHEDRON"
                dim     ="3">
       <python-wrap>
