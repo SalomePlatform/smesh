@@ -88,7 +88,7 @@ const SMDS_MeshNode* SMDS_MeshVolume::GetNode(const int ind) const
   {
     int nodesInFace = ptIds[id];
     if ( ind < nbPoints + nodesInFace )
-      return GetMesh()->FindNodeVtk( ptIds[ ind + i ]);
+      return GetMesh()->FindNodeVtk( ptIds[ 1 + ind + i ]);
     nbPoints += nodesInFace;
     id += (nodesInFace + 1);
   }

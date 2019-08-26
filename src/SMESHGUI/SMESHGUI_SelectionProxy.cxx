@@ -754,7 +754,7 @@ bool SMESH::SelectionProxy::perFaceConnectivity( int id, Connectivity& connectiv
           SMESH::long_array_var nodes = mesh->GetElemFaceNodes( id, iF );
           for ( CORBA::ULong iN = 0; iN < nodes->length(); ++iN )
           {
-            connectivity[ iF ] << nodes[iN];
+            connectivity[ iF+1 ] << nodes[iN];
             nodeSet << nodes[iN];
           }
         }
