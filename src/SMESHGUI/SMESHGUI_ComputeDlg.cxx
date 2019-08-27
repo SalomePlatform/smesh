@@ -1133,7 +1133,7 @@ void SMESHGUI_BaseComputeOp::showComputeResult( const bool theMemoryLack,
       aCompDlg->myFullInfo->hide();
     }
 
-    // pbs of hypo dfinitions
+    // pbs of hypo definitions
     if ( theNoHypoError ) {
       aCompDlg->myHypErrorGroup->hide();
     } else {

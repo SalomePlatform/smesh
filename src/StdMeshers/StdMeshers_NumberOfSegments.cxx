@@ -546,12 +546,12 @@ istream & StdMeshers_NumberOfSegments::LoadFrom(istream & load)
   //    we wait here the scale factor, which is double.
   // 2. If the hypothesis is stored in new format
   //    (nb.segments, distr.type, some other params.),
-  //    we wait here the ditribution type, which is integer
+  //    we wait here the distribution type, which is integer
   double scale_factor;
   isOK = static_cast<bool>(load >> scale_factor);
   a = (int)scale_factor;
 
-  // try to interpret ditribution type,
+  // try to interpret distribution type,
   // supposing that this hypothesis was written in the new format
   if (isOK)
   {

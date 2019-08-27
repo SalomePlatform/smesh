@@ -5,9 +5,9 @@ How to save MeshGems-SurfOpt Parameters
 =======================================
 
 MeshGems-SurfOpt hypothesis is not a meshing hypothesis for Salome, but an hypothesis for MeshGems-SurfOpt.
-The current set of parameters is automatically written in the salome study object browser when you run computation.
+The current set of parameters is automatically written in the Salome study object browser when you run computation.
 
-Theses parameters could also be stored in a special file.
+These parameters could also be stored in a special file.
 Default file is $HOME/.MGSurfOpt.dat.
 This ASCII file is appended, and never cleaned.
 

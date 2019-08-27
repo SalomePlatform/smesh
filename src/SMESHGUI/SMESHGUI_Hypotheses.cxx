@@ -489,7 +489,7 @@ SMESHGUI_GenericHypothesisCreator::ListOfWidgets& SMESHGUI_GenericHypothesisCrea
 
 //================================================================================
 /*!
- * \brief Returns a QLabel of a spesified parameter.
+ * \brief Returns a QLabel of a specified parameter.
  * If isCreation(), the 1st label (supposed to be "Name") is not countered.
  */
 //================================================================================

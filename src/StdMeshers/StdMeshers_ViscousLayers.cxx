@@ -8953,7 +8953,7 @@ gp_XYZ _LayerEdge::smoothAngular()
 
 //================================================================================
 /*!
- * \brief Computes a new node position using weigthed node positions
+ * \brief Computes a new node position using weighted node positions
  */
 //================================================================================
 

@@ -1510,7 +1510,7 @@ const char* SMESH_Swig::AddNewAlgorithm(const char* ior, const char* name)
 
 /////////////////////////////////////////////////////////////////
 /// \deprecated Publishing is done automatically.
-/// \deprecated Synonim of AddNewAlgorithm().
+/// \deprecated Synonym of AddNewAlgorithm().
 /// \param ior IOR of the algorithm.
 /// \param name Name of the algorithm (optional).
 /// \return UID of the data object.

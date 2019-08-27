@@ -33,7 +33,7 @@ module MESHJOB
 {
 
   //
-  // Structure to transmit the parameters requiered for the job to run
+  // Structure to transmit the parameters required for the job to run
   // the executable program on the target resource. See configure
   // service.
   //

@@ -158,7 +158,7 @@ public:
   // Update study
   void UpdateStudy();
 
-  // Create hypothesis/algorothm of given type
+  // Create hypothesis/algorithm of given type
   SMESH::SMESH_Hypothesis_ptr CreateHypothesis (const char* theHypType,
                                                 const char* theLibName)
     throw ( SALOME::SALOME_Exception );

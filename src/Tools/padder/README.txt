@@ -10,7 +10,7 @@ as the radius of a sphere whose center is the location of the particule.
 Discrete meshes are typically used to modelize civil components in rapid dynamic
 computation problems (seisms, chocs). These components consists in concrete parts
 embedding steal bares for reinforcement. These parts are input to the algorithm
-as standard finite elements meshes. The cells of theses meshes drive the location
+as standard finite elements meshes. The cells of these meshes drive the location
 and sizing of particules.
 
 In the med representation, a discrete mesh is described as MED_BALL elements.

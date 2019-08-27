@@ -724,7 +724,7 @@ StudyContext* SMESH_Gen_i::GetStudyContext()
 /*!
  *  SMESH_Gen_i::CreateHypothesis
  *
- *  Create hypothesis/algorothm of given type and publish it in the study
+ *  Create hypothesis/algorithm of given type and publish it in the study
  */
 //=============================================================================
 

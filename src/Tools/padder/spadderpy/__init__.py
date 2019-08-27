@@ -98,7 +98,7 @@ def loadSpadderCatalog():
     import SALOME_ModuleCatalog
     catalog = obj._narrow(SALOME_ModuleCatalog.ModuleCatalog)
     if not catalog:
-        raise RuntimeError("Can't accesss module catalog")
+        raise RuntimeError("Can't access module catalog")
 
     filename = getSpadderCatalogFilename()
     catalog.ImportXmlCatalogFile(filename)

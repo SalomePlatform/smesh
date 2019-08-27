@@ -29,7 +29,7 @@ module SPADDERPluginTest {
 
   //
   // ========================================================================
-  // Thi module defines an interface provided for testing the usage
+  // This module defines an interface provided for testing the usage
   // of SPADDERPlugin components and underlying classes from within a
   // C++ unit test running in a SALOME container (easy to run from a
   // python client)..

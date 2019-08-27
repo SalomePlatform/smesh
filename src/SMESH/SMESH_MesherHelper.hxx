@@ -510,7 +510,7 @@ public:
   /*!
    * \brief Define a pointer to wrapper over a function of gp_XY class,
    *       suitable to pass as xyFunPtr to ApplyIn2D().
-   *       For exaple gp_XY_FunPtr(Added) defines pointer gp_XY_Added to function
+   *       For example gp_XY_FunPtr(Added) defines pointer gp_XY_Added to function
    *       calling gp_XY::Added(gp_XY), which is to be used like following
    *       ApplyIn2D(surf, uv1, uv2, gp_XY_Added)
    */

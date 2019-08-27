@@ -457,7 +457,7 @@ namespace StdMeshersGUI
 
   //================================================================================
   /*!
-   * \brief Returms spacing to set to a hypothesis
+   * \brief Returns spacing to set to a hypothesis
    */
   //================================================================================
 

@@ -954,7 +954,7 @@ namespace {
 
 //================================================================================
 /*!
- * \brief Createa a Dump Python script
+ * \brief Creates a Dump Python script
  *  \param [in,out] theObjectNames - map of an entry to a study and python name
  *  \param [in] theNames -  - map of an entry to a study name
  *  \param [in] isPublished - \c true if dump of object publication in study is needed

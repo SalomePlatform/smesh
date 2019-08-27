@@ -870,7 +870,7 @@ FindElementsByPoint(const gp_Pnt&                           point,
 /*!
  * \brief Find an element of given type most close to the given point
  *
- * WARNING: Only face search is implemeneted so far
+ * WARNING: Only edge, face and volume search is implemented so far
  */
 //=======================================================================
 

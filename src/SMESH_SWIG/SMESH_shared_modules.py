@@ -25,7 +25,7 @@
 
 """
 
-# force SMESH importation at interpretor initialization
+# force SMESH importation at interpreter initialization
 # see salome_shared_modules.py
 # (avoids incomplete import at run time)
 

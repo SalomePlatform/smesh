@@ -109,7 +109,7 @@ public:
 
   ~StdMeshers_FaceSide();
 
-  // static "consrtuctors"
+  // static "constructors"
   static StdMeshers_FaceSidePtr New(const TopoDS_Face&   Face,
                                     const TopoDS_Edge&   Edge,
                                     SMESH_Mesh*          Mesh,

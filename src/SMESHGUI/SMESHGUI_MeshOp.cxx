@@ -2329,7 +2329,7 @@ int SMESHGUI_MeshOp::find( const SMESH::SMESH_Hypothesis_var& theHyp,
   * \param theMess - Output parameter intended for returning error message
   * \retval bool  - TRUE if mesh is edited successfully, FALSE otherwise
  *
- * Assigns new name hypotheses and algoriths to the mesh or sub-mesh
+ * Assigns new name hypotheses and algorithms to the mesh or sub-mesh
  */
 //================================================================================
 bool SMESHGUI_MeshOp::editMeshOrSubMesh( QString& theMess )

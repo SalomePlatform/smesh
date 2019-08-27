@@ -518,7 +518,7 @@ namespace
 //================================================================================
 /*!
  * \brief Create a slot of given width around given 1D elements lying on a triangle mesh.
- * The slot is consrtucted by cutting faces by cylindrical surfaces made around each segment.
+ * The slot is constructed by cutting faces by cylindrical surfaces made around each segment.
  * \return Edges located at the slot boundary
  */
 //================================================================================

@@ -5,9 +5,9 @@ How to save MG-Cleaner Parameters
 =================================
 
 MG-Cleaner hypothesis is not meshing hypothesis for Salome, but hypothesis for MG-Cleaner.
-The current set of parameters is automatically written in the salome study object browser when you run computation.
+The current set of parameters is automatically written in the Salome study object browser when you run computation.
 
-Theses parameters could also be stored in a special file.
+These parameters could also be stored in a special file.
 Default file is $HOME/.MGCleaner.dat.
 This ASCII file is appended, and never cleaned.
 
