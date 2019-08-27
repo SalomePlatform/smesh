@@ -475,6 +475,24 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
             obj,name = name,obj
         return Mesh(self, self.geompyD, obj, name)
 
+    def RemoveMesh( self, mesh ):
+        """
+        Delete a mesh
+        """
+        if isinstance( mesh, Mesh ):
+            mesh = mesh.GetMesh()
+            pass
+        if not isinstance( mesh, SMESH._objref_SMESH_Mesh ):
+            raise TypeError("%s is not a mesh" % mesh )
+        so = salome.ObjectToSObject( mesh )
+        if so:
+            sb = salome.myStudy.NewBuilder()
+            sb.RemoveObjectWithChildren( so )
+        else:
+            mesh.UnRegister()
+            pass
+        return
+
     def EnumToLong(self,theItem):
         """
         Return a long value from enumeration
