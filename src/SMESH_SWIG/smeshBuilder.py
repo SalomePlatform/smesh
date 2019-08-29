@@ -2773,6 +2773,10 @@ class Mesh(metaclass = MeshMeta):
 
         Parameters:
                 group (SMESH.SMESH_GroupBase): group to remove
+
+        Note:
+                This operation can create gaps in numeration of nodes or elements.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
 
         self.mesh.RemoveGroupWithContents(group)
@@ -3971,6 +3975,10 @@ class Mesh(metaclass = MeshMeta):
 
         Returns:
             True or False
+
+        Note:
+                This operation can create gaps in numeration of elements.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
 
         return self.editor.RemoveElements(IDsOfElements)
@@ -3984,6 +3992,10 @@ class Mesh(metaclass = MeshMeta):
 
         Returns:
             True or False
+
+        Note:
+                This operation can create gaps in numeration of nodes.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
 
         return self.editor.RemoveNodes(IDsOfNodes)
@@ -3994,6 +4006,10 @@ class Mesh(metaclass = MeshMeta):
 
         Returns:
             number of the removed nodes
+
+        Note:
+                This operation can create gaps in numeration of nodes.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
 
         return self.editor.RemoveOrphanNodes()
@@ -4469,6 +4485,10 @@ class Mesh(metaclass = MeshMeta):
 
         Returns:
             False if proper faces were not found
+
+        Note:
+                This operation can create gaps in numeration of elements.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
 
         return self.editor.DeleteDiag(NodeID1, NodeID2)
@@ -4599,6 +4619,10 @@ class Mesh(metaclass = MeshMeta):
 
         Returns:
             True in case of success, False otherwise.
+
+        Note:
+                This operation can create gaps in numeration of elements.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
 
         MaxAngle,Parameters,hasVars = ParseAngles(MaxAngle)
@@ -4623,6 +4647,10 @@ class Mesh(metaclass = MeshMeta):
 
         Returns:
             True in case of success, False otherwise.
+
+        Note:
+                This operation can create gaps in numeration of elements.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
 
         MaxAngle,Parameters,hasVars = ParseAngles(MaxAngle)
@@ -4646,6 +4674,10 @@ class Mesh(metaclass = MeshMeta):
 
         Returns:
             True in case of success, False otherwise.
+
+        Note:
+                This operation can create gaps in numeration of elements.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
@@ -4669,6 +4701,10 @@ class Mesh(metaclass = MeshMeta):
 
         Returns:
             True in case of success, False otherwise.
+
+        Note:
+                This operation can create gaps in numeration of elements.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
@@ -4686,6 +4722,10 @@ class Mesh(metaclass = MeshMeta):
                 theElements: the faces to be splitted. This can be either 
                         :class:`mesh, sub-mesh, group, filter <SMESH.SMESH_IDSource>`
                         or a list of face IDs. By default all quadrangles are split
+
+        Note:
+                This operation can create gaps in numeration of elements.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
         unRegister = genObjUnRegister()
         if isinstance( theElements, Mesh ):
@@ -4707,6 +4747,10 @@ class Mesh(metaclass = MeshMeta):
 
         Returns:
             True in case of success, False otherwise.
+
+        Note:
+                This operation can create gaps in numeration of elements.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
         if IDsOfElements == []:
             IDsOfElements = self.GetElementsId()
@@ -4723,6 +4767,10 @@ class Mesh(metaclass = MeshMeta):
 
         Returns:
             True in case of success, False otherwise.
+
+        Note:
+                This operation can create gaps in numeration of elements.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
         if ( isinstance( theObject, Mesh )):
             theObject = theObject.GetMesh()
@@ -4743,6 +4791,10 @@ class Mesh(metaclass = MeshMeta):
             * 1 if 1-3 diagonal is better, 
             * 2 if 2-4 diagonal is better, 
             * 0 if error occurs.
+
+        Note:
+                This operation can create gaps in numeration of elements.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
         return self.editor.BestSplit(IDOfQuad, self.smeshpyD.GetFunctor(theCriterion))
 
@@ -4755,6 +4807,10 @@ class Mesh(metaclass = MeshMeta):
                 method:  flags passing splitting method:
                         smesh.Hex_5Tet, smesh.Hex_6Tet, smesh.Hex_24Tet.
                         smesh.Hex_5Tet - to split the hexahedron into 5 tetrahedrons, etc.
+
+        Note:
+                This operation can create gaps in numeration of elements.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
         unRegister = genObjUnRegister()
         if isinstance( elems, Mesh ):
@@ -4779,6 +4835,10 @@ class Mesh(metaclass = MeshMeta):
         Parameters:
             elems: elements to split\: :class:`mesh, sub-mesh, group, filter <SMESH.SMESH_IDSource>` or element IDs;
                 if None (default), all bi-quadratic elements will be split
+
+        Note:
+                This operation can create gaps in numeration of elements.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
         unRegister = genObjUnRegister()
         if elems and isinstance( elems, list ) and isinstance( elems[0], int ):
@@ -4810,6 +4870,10 @@ class Mesh(metaclass = MeshMeta):
                 allDomains: if :code:`False`, only hexahedra adjacent to one closest
                         to *startHexPoint* are split, else *startHexPoint*
                         is used to find the facet to split in all domains present in *elems*.
+
+        Note:
+                This operation can create gaps in numeration of elements.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
         # IDSource
         unRegister = genObjUnRegister()
@@ -4839,6 +4903,10 @@ class Mesh(metaclass = MeshMeta):
     def SplitQuadsNearTriangularFacets(self):
         """
         Split quadrangle faces near triangular facets of volumes
+
+        Note:
+                This operation can create gaps in numeration of elements.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
         faces_array = self.GetElementsByType(SMESH.FACE)
         for face_id in faces_array:
@@ -4883,6 +4951,10 @@ class Mesh(metaclass = MeshMeta):
 
         Returns:
             True in case of success, False otherwise.
+
+        Note:
+                This operation can create gaps in numeration of elements.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
 #    Pattern:
 #                     5.---------.6
@@ -4947,6 +5019,10 @@ class Mesh(metaclass = MeshMeta):
 
         Returns:
             True in case of success, False otherwise.
+
+        Note:
+                This operation can create gaps in numeration of elements.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
 #        Pattern:     5.---------.6
 #                     /|#       /|
@@ -5104,6 +5180,10 @@ class Mesh(metaclass = MeshMeta):
 
         Warning:
             If *theSubMesh* is provided, the mesh can become non-conformal
+
+        Note:
+                This operation can create gaps in numeration of nodes or elements.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
 
         if isinstance( theSubMesh, Mesh ):
@@ -5131,6 +5211,10 @@ class Mesh(metaclass = MeshMeta):
 
         Warning:
             If *theSubMesh* is provided, the mesh can become non-conformal
+
+        Note:
+                This operation can create gaps in numeration of nodes or elements.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
 
         if theSubMesh:
@@ -6341,6 +6425,10 @@ class Mesh(metaclass = MeshMeta):
                 then the first node in the group is kept.
             AvoidMakingHoles: prevent merging nodes which cause removal of elements becoming
                 invalid
+
+        Note:
+                This operation can create gaps in numeration of nodes or elements.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
         self.editor.MergeNodes( GroupsOfNodes, NodesToKeep, AvoidMakingHoles )
 
@@ -6390,6 +6478,10 @@ class Mesh(metaclass = MeshMeta):
             ElementsToKeep: elements to keep in the mesh: a list of groups, sub-meshes or node IDs.
                 If *ElementsToKeep* does not include an element to keep for some group to merge,
                 then the first element in the group is kept.
+
+        Note:
+                This operation can create gaps in numeration of elements.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
 
         unRegister = genObjUnRegister()
@@ -6405,6 +6497,10 @@ class Mesh(metaclass = MeshMeta):
     def MergeEqualElements(self):
         """
         Leave one element and remove all other elements built on the same nodes.
+
+        Note:
+                This operation can create gaps in numeration of elements.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
 
         self.editor.MergeEqualElements()
@@ -6474,6 +6570,10 @@ class Mesh(metaclass = MeshMeta):
 
         Returns:
             a number of successfully sewed groups
+
+        Note:
+                This operation can create gaps in numeration of nodes or elements.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
 
         if freeBorders and isinstance( freeBorders, list ):
@@ -6505,6 +6605,10 @@ class Mesh(metaclass = MeshMeta):
 
         Returns:
             :class:`error code <SMESH.SMESH_MeshEditor.Sew_Error>`
+
+        Note:
+                This operation can create gaps in numeration of nodes or elements.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
 
         return self.editor.SewFreeBorders(FirstNodeID1, SecondNodeID1, LastNodeID1,
@@ -6518,6 +6622,10 @@ class Mesh(metaclass = MeshMeta):
 
         Returns:
             :class:`error code <SMESH.SMESH_MeshEditor.Sew_Error>`
+
+        Note:
+                This operation can create gaps in numeration of elements.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
 
         return self.editor.SewConformFreeBorders(FirstNodeID1, SecondNodeID1, LastNodeID1,
@@ -6530,6 +6638,10 @@ class Mesh(metaclass = MeshMeta):
 
         Returns:
             :class:`error code <SMESH.SMESH_MeshEditor.Sew_Error>`
+
+        Note:
+                This operation can create gaps in numeration of elements.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
 
         return self.editor.SewBorderToSide(FirstNodeIDOnFreeBorder, SecondNodeIDOnFreeBorder, LastNodeIDOnFreeBorder,
@@ -6548,6 +6660,10 @@ class Mesh(metaclass = MeshMeta):
 
         Returns:
             :class:`error code <SMESH.SMESH_MeshEditor.Sew_Error>`
+
+        Note:
+                This operation can create gaps in numeration of nodes.
+                Call :meth:`RenumberElements` to remove the gaps.
         """
 
         return self.editor.SewSideElements(IDsOfSide1Elements, IDsOfSide2Elements,
@@ -6556,7 +6672,7 @@ class Mesh(metaclass = MeshMeta):
 
     def ChangeElemNodes(self, ide, newIDs):
         """
-        Set new nodes for the given element.
+        Set new nodes for the given element. Number of nodes should be kept.
 
         Parameters:
             ide: the element ID

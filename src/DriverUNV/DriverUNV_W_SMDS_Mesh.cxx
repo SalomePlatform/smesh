@@ -56,17 +56,24 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
     UNV164::Write( out_stream ); // unit system
     UNV2420::Write( out_stream, myMeshName ); // Coordinate system
 
+    std::vector< size_t > nodeLabelByID;
+    if ( myMesh->HasNumerationHoles() )
+      nodeLabelByID.resize( myMesh->MaxNodeID() + 1 );
+
     {
       using namespace UNV2411;
       TDataSet aDataSet2411;
+      // -----------------------------------
       // Storing SMDS nodes to the UNV file
-      //-----------------------------------
+      // -----------------------------------
       SMDS_NodeIteratorPtr aNodesIter = myMesh->nodesIterator();
       TRecord aRec;
-      while ( aNodesIter->more() )
+      for ( aRec.label = 1; aNodesIter->more(); ++aRec.label )
       {
         const SMDS_MeshNode* aNode = aNodesIter->next();
-        aRec.label    = aNode->GetID();
+        // aRec.label    = aNode->GetID(); -- IPAL54452
+        if ( !nodeLabelByID.empty() )
+          nodeLabelByID[ aNode->GetID() ] = aRec.label;
         aRec.coord[0] = aNode->X();
         aRec.coord[1] = aNode->Y();
         aRec.coord[2] = aNode->Z();
@@ -74,52 +81,67 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
       }
       UNV2411::Write(out_stream,aDataSet2411);
     }
+
+    std::vector< size_t > elemLabelByID;
+    if ( !myGroups.empty() )
+      elemLabelByID.resize( myMesh->MaxElementID() + 1 );
+
     {
       using namespace UNV2412;
       TDataSet aDataSet2412;
+      TRecord aRec;
+      aRec.label = 0;
 
+      // -------------------
       // Storing SMDS Edges
-      if(myMesh->NbEdges()){
+      // -------------------
+      if ( myMesh->NbEdges() )
+      {
         SMDS_EdgeIteratorPtr anIter = myMesh->edgesIterator();
-        while( anIter->more() )
+        while ( anIter->more() )
         {
           const SMDS_MeshEdge* anElem = anIter->next();
-          int aNbNodes = anElem->NbNodes();
-          TRecord aRec;
-          aRec.label = anElem->GetID();
-          aRec.node_labels.reserve(aNbNodes);
-          if( anElem->IsQuadratic() ) {
-            aRec.fe_descriptor_id = 22;
-          } else {
-            aRec.fe_descriptor_id = 11;
-          }
+          // aRec.label = anElem->GetID();  -- IPAL54452
+          ++aRec.label;
+          if ( !elemLabelByID.empty() )
+            elemLabelByID[ anElem->GetID() ] = aRec.label;
+
+          aRec.fe_descriptor_id = anElem->IsQuadratic() ? 22 : 11;
+
           SMDS_NodeIteratorPtr aNodesIter = anElem->nodesIteratorToUNV();
-          while( aNodesIter->more())
+          for ( aRec.node_labels.clear(); aNodesIter->more(); )
           {
             const SMDS_MeshNode* aNode = aNodesIter->next();
-            aRec.node_labels.push_back( aNode->GetID() );
+            if ( nodeLabelByID.empty() )
+              aRec.node_labels.push_back( aNode->GetID() );
+            else
+              aRec.node_labels.push_back( nodeLabelByID[ aNode->GetID() ]);
           }
+
           aDataSet2412.push_back(aRec);
         }
       }
 
+      // -------------------
+      // Storing SMDS Faces
+      // -------------------
       if ( myMesh->NbFaces() )
       {
         SMDS_FaceIteratorPtr anIter = myMesh->facesIterator();
-        while ( anIter->more())
+        while ( anIter->more() )
         {
           const SMDS_MeshFace* anElem = anIter->next();
           if ( anElem->IsPoly() ) continue;
-          int aNbNodes = anElem->NbNodes();
-          TRecord aRec;
-          aRec.label = anElem->GetID();
-          aRec.node_labels.reserve(aNbNodes);
+
           SMDS_NodeIteratorPtr aNodesIter = anElem->nodesIteratorToUNV();
-          while( aNodesIter->more() ) {
+          for ( aRec.node_labels.clear(); aNodesIter->more();  ) {
             const SMDS_MeshNode* aNode = aNodesIter->next();
-            aRec.node_labels.push_back( aNode->GetID() );
+            if ( nodeLabelByID.empty() )
+              aRec.node_labels.push_back( aNode->GetID() );
+            else
+              aRec.node_labels.push_back( nodeLabelByID[ aNode->GetID() ]);
           }
-          switch ( aNbNodes ) {
+          switch ( anElem->NbNodes() ) {
           case 3: aRec.fe_descriptor_id = 41; break;
           case 4: aRec.fe_descriptor_id = 44; break;
           case 6: aRec.fe_descriptor_id = 42; break;
@@ -129,76 +151,94 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
           default:
             continue;
           }
+          // aRec.label = anElem->GetID(); -- IPAL54452
+          ++aRec.label;
+          if ( !elemLabelByID.empty() )
+            elemLabelByID[ anElem->GetID() ] = aRec.label;
+
           aDataSet2412.push_back(aRec);
         }
       }
 
+      // ---------------------
+      // Storing SMDS Volumes
+      // ---------------------
       if ( myMesh->NbVolumes() )
       {
         SMDS_VolumeIteratorPtr anIter = myMesh->volumesIterator();
-        while ( anIter->more())
+        while ( anIter->more() )
         {
           const SMDS_MeshVolume* anElem = anIter->next();
           if ( anElem->IsPoly() )
             continue;
-          int aNbNodes = anElem->NbNodes();
-          int anId = -1;
-          switch(aNbNodes) {
-          case 4:  anId = 111; break;
-          case 6:  anId = 112; break;
-          case 8:  anId = 115; break;
-          case 10: anId = 118; break;
-          case 13: anId = 114; break;
-          case 15: anId = 113; break;
+          size_t aNbNodes = anElem->NbNodes();
+          switch( aNbNodes ) {
+          case 4:  aRec.fe_descriptor_id = 111; break;
+          case 6:  aRec.fe_descriptor_id = 112; break;
+          case 8:  aRec.fe_descriptor_id = 115; break;
+          case 10: aRec.fe_descriptor_id = 118; break;
+          case 13: aRec.fe_descriptor_id = 114; break;
+          case 15: aRec.fe_descriptor_id = 113; break;
           case 20:
-          case 27: anId = 116; aNbNodes = 20; break;
+          case 27: aRec.fe_descriptor_id = 116; aNbNodes = 20; break;
           default:
             continue;
           }
-          if(anId>0){
-            TRecord aRec;
-            aRec.label = anElem->GetID();
-            aRec.fe_descriptor_id = anId;
-            aRec.node_labels.reserve(aNbNodes);
-            SMDS_NodeIteratorPtr aNodesIter = anElem->nodesIteratorToUNV();
-            while ( aNodesIter->more() && (int)aRec.node_labels.size() < aNbNodes )
-            {
-              const SMDS_MeshElement* aNode = aNodesIter->next();
-              aRec.node_labels.push_back(aNode->GetID());
-            }
-            aDataSet2412.push_back(aRec);
+          // aRec.label = anElem->GetID(); -- IPAL54452
+          ++aRec.label;
+          if ( !elemLabelByID.empty() )
+            elemLabelByID[  anElem->GetID() ] = aRec.label;
+
+          aRec.node_labels.clear();
+          SMDS_NodeIteratorPtr aNodesIter = anElem->nodesIteratorToUNV();
+          while ( aNodesIter->more() && aRec.node_labels.size() < aNbNodes )
+          {
+            const SMDS_MeshElement* aNode = aNodesIter->next();
+            if ( nodeLabelByID.empty() )
+              aRec.node_labels.push_back( aNode->GetID() );
+            else
+              aRec.node_labels.push_back( nodeLabelByID[ aNode->GetID() ]);
           }
+          aDataSet2412.push_back(aRec);
         }
       }
       UNV2412::Write(out_stream,aDataSet2412);
     }
+
+    // --------------------
+    // Storing SMDS Groups
+    // --------------------
     {
       using namespace UNV2417;
-      if (myGroups.size() > 0) {
+      if ( myGroups.size() > 0 ) {
+        TRecord aRec;
         TDataSet aDataSet2417;
         TGroupList::const_iterator aIter = myGroups.begin();
-        for (; aIter != myGroups.end(); aIter++) {
+        for ( ; aIter != myGroups.end(); aIter++ )
+        {
           SMESHDS_GroupBase* aGroupDS = *aIter;
-          TRecord aRec;
           aRec.GroupName = aGroupDS->GetStoreName();
+          aRec.NodeList.clear();
+          aRec.ElementList.clear();
 
-          int i;
           SMDS_ElemIteratorPtr aIter = aGroupDS->GetElements();
-          if (aGroupDS->GetType() == SMDSAbs_Node) {
-            aRec.NodeList.resize(aGroupDS->Extent());
-            i = 0;
-            while (aIter->more()) {
-              const SMDS_MeshElement* aElem = aIter->next();
-              aRec.NodeList[i] = aElem->GetID(); 
-              i++;
+          if ( aGroupDS->GetType() == SMDSAbs_Node ) {
+            while ( aIter->more() ) {
+              const SMDS_MeshElement* aNode = aIter->next();
+              if ( nodeLabelByID.empty() )
+                aRec.NodeList.push_back( aNode->GetID() );
+              else
+                aRec.NodeList.push_back( nodeLabelByID[ aNode->GetID() ]);
             }
-          } else {
-            aRec.ElementList.resize(aGroupDS->Extent());
-            i = 0;
-            while (aIter->more()) {
+          }
+          else
+          {
+            while ( aIter->more() ) {
               const SMDS_MeshElement* aElem = aIter->next();
-              aRec.ElementList[i] = aElem->GetID(); 
-              i++;
+              if ( elemLabelByID.empty() )
+                aRec.ElementList.push_back( aElem->GetID() );
+              else
+                aRec.ElementList.push_back( elemLabelByID[ aElem->GetID() ]);
             }
           }
           // 0019936: EDF 794 SMESH : Export UNV : Node color and group id
@@ -209,39 +249,6 @@ Driver_Mesh::Status DriverUNV_W_SMDS_Mesh::Perform()
         myGroups.clear();
       }
     }
-    /*    {
-      using namespace UNV2417;
-      TDataSet aDataSet2417;
-      for ( TGroupsMap::iterator it = myGroupsMap.begin(); it != myGroupsMap.end(); it++ ) {
-        SMESH_Group*       aGroup   = it->second;
-        SMESHDS_GroupBase* aGroupDS = aGroup->GetGroupDS();
-        if ( aGroupDS ) {
-          TRecord aRec;
-          aRec.GroupName = aGroup->GetName();
-          int i;
-          SMDS_ElemIteratorPtr aIter = aGroupDS->GetElements();
-          if (aGroupDS->GetType() == SMDSAbs_Node) {
-            aRec.NodeList.resize(aGroupDS->Extent());
-            i = 0;
-            while (aIter->more()) {
-              const SMDS_MeshElement* aElem = aIter->next();
-              aRec.NodeList[i] = aElem->GetID(); 
-              i++;
-            }
-          } else {
-            aRec.ElementList.resize(aGroupDS->Extent());
-            i = 0;
-            while (aIter->more()) {
-              const SMDS_MeshElement* aElem = aIter->next();
-              aRec.ElementList[i] = aElem->GetID(); 
-              i++;
-            }
-          }
-          aDataSet2417.insert(TDataSet::value_type(aGroupDS->GetID(), aRec));
-        }
-      }
-      UNV2417::Write(out_stream,aDataSet2417);
-      }*/
 
     out_stream.flush();
     out_stream.close();

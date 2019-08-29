@@ -76,11 +76,19 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
    *                       ECRITURE DES NOEUDS                                 *
    ****************************************************************************/
 
+  std::vector< size_t > nodeNumByID;
+  if ( myMesh->HasNumerationHoles() )
+    nodeNumByID.resize( myMesh->MaxNodeID() + 1 );
+
+  int num;
   SMDS_NodeIteratorPtr itNodes=myMesh->nodesIterator();
-  while(itNodes->more())
+  for ( num = 1; itNodes->more(); ++num )
   {
     const SMDS_MeshNode * node = itNodes->next();
-    fprintf(aFileId, "%d %.14e %.14e %.14e\n", node->GetID(), node->X(), node->Y(), node->Z());
+    fprintf(aFileId, "%d %.14e %.14e %.14e\n", num, node->X(), node->Y(), node->Z());
+
+    if ( !nodeNumByID.empty() )
+      nodeNumByID[ node->GetID() ] = num;
   }
 
   /****************************************************************************
@@ -88,47 +96,46 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
    ****************************************************************************/
   /* Ecriture des connectivites, noms, numeros des mailles */
 
-  SMDS_EdgeIteratorPtr itEdges=myMesh->edgesIterator();
-  while(itEdges->more())
+  num = 1;
+  for ( SMDS_EdgeIteratorPtr itEdges = myMesh->edgesIterator(); itEdges->more(); ++num )
   {
     const SMDS_MeshElement * elem = itEdges->next();
-    switch (elem->NbNodes())
+    fprintf(aFileId, "%d %d ", num, 100 + elem->NbNodes());
+
+    for ( SMDS_ElemIteratorPtr it = elem->nodesIterator(); it->more(); )
     {
-    case 2:
-      fprintf(aFileId, "%d %d ", elem->GetID(), 102);
-      break;
-    case 3:
-      fprintf(aFileId, "%d %d ", elem->GetID(), 103);
-      break;
+      int nodeID = it->next()->GetID();
+      if ( !nodeNumByID.empty() )
+        nodeID = nodeNumByID[ nodeID ];
+      fprintf(aFileId, "%d ", nodeID );
     }
-    SMDS_ElemIteratorPtr it=elem->nodesIterator();
-    while(it->more())
-      fprintf(aFileId, "%d ", it->next()->GetID());
     fprintf(aFileId, "\n");
   }
 
-  SMDS_FaceIteratorPtr itFaces=myMesh->facesIterator();
-  while(itFaces->more())
+  for ( SMDS_FaceIteratorPtr itFaces = myMesh->facesIterator(); itFaces->more(); ++num )
   {
     const SMDS_MeshElement * elem = itFaces->next();
-    if ( elem->IsPoly() )
-      fprintf(aFileId, "%d %d ", elem->GetID(), 400+elem->NbNodes());
-    else
-      fprintf(aFileId, "%d %d ", elem->GetID(), 200+elem->NbNodes());
-    SMDS_ElemIteratorPtr it=elem->nodesIterator();
-    while(it->more())
-      fprintf(aFileId, "%d ", it->next()->GetID());
+
+    fprintf(aFileId, "%d %d ", num, (elem->IsPoly() ? 400 : 200 ) + elem->NbNodes() );
+
+    for( SMDS_ElemIteratorPtr it = elem->nodesIterator(); it->more(); )
+    {
+      int nodeID = it->next()->GetID();
+      if ( !nodeNumByID.empty() )
+        nodeID = nodeNumByID[ nodeID ];
+      fprintf(aFileId, "%d ", nodeID );
+    }
     fprintf(aFileId, "\n");
   }
 
-  SMDS_VolumeIteratorPtr itVolumes=myMesh->volumesIterator();
+
   const SMDS_MeshVolume* v;
-  while(itVolumes->more())
+  for ( SMDS_VolumeIteratorPtr itVolumes=myMesh->volumesIterator(); itVolumes->more(); ++num )
   {
     const SMDS_MeshElement * elem = itVolumes->next();
     if ( elem->IsPoly() )
     {
-      fprintf(aFileId, "%d %d ", elem->GetID(), 500+elem->NbNodes());
+      fprintf(aFileId, "%d %d ", num, 500 + elem->NbNodes());
 
       if (( v = myMesh->DownCast< SMDS_MeshVolume >( elem )))
       {
@@ -143,11 +150,16 @@ Driver_Mesh::Status DriverDAT_W_SMDS_Mesh::Perform()
     }
     else
     {
-      fprintf(aFileId, "%d %d ", elem->GetID(), 300+elem->NbNodes());
+      fprintf(aFileId, "%d %d ", num, 300 + elem->NbNodes());
     }
-    SMDS_ElemIteratorPtr it=elem->nodesIterator();
-    while(it->more())
-      fprintf(aFileId, "%d ", it->next()->GetID());
+
+    for( SMDS_ElemIteratorPtr it = elem->nodesIterator(); it->more(); )
+    {
+      int nodeID = it->next()->GetID();
+      if ( !nodeNumByID.empty() )
+        nodeID = nodeNumByID[ nodeID ];
+      fprintf(aFileId, "%d ", nodeID );
+    }
 
     fprintf(aFileId, "\n");
   }

@@ -58,6 +58,12 @@ public:
 
   virtual const SMDS_MeshElement *FindElement(int IDelem) const;
 
+  virtual bool HasNumerationHoles();
+  virtual int MaxNodeID() const;
+  virtual int MinNodeID() const;
+  virtual int MaxElementID() const;
+  virtual int MinElementID() const;
+
 private:
   TIDSortedElemSet _elements[ SMDSAbs_NbElementTypes ];
   SMESHDS_Mesh*    _meshDS;

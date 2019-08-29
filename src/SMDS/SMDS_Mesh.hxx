@@ -618,7 +618,8 @@ public:
   // Renumber all nodes or elements.
 
   virtual void CompactMesh();
-  bool IsCompacted();
+  virtual bool IsCompacted();
+  virtual bool HasNumerationHoles();
 
   template<class ELEMTYPE>
     static const ELEMTYPE* DownCast( const SMDS_MeshElement* e )
@@ -677,10 +678,10 @@ public:
    */
   static int CheckMemory(const bool doNotRaise=false) throw (std::bad_alloc);
 
-  int MaxNodeID() const;
-  int MinNodeID() const;
-  int MaxElementID() const;
-  int MinElementID() const;
+  virtual int MaxNodeID() const;
+  virtual int MinNodeID() const;
+  virtual int MaxElementID() const;
+  virtual int MinElementID() const;
 
   const SMDS_MeshInfo& GetMeshInfo() const { return myInfo; }
 

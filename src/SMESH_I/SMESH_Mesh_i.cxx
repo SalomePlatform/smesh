@@ -6631,6 +6631,48 @@ const SMDS_MeshElement * SMESH_MeshPartDS::FindElement(int IDelem) const
   return 0;
 }
 // -------------------------------------------------------------------------------------
+bool SMESH_MeshPartDS::HasNumerationHoles()
+{
+  if ( _meshDS ) return _meshDS->HasNumerationHoles();
+
+  return ( MinNodeID() != 1 ||
+           MaxNodeID() != NbNodes() ||
+           MinElementID() != 1 ||
+           MaxElementID() != NbElements() );
+}
+// -------------------------------------------------------------------------------------
+int SMESH_MeshPartDS::MaxNodeID() const
+{
+  if ( _meshDS ) return _meshDS->MaxNodeID();
+  return NbNodes() == 0 ? 0 : (*_elements[ SMDSAbs_Node ].rbegin())->GetID();
+}
+// -------------------------------------------------------------------------------------
+int SMESH_MeshPartDS::MinNodeID() const
+{
+  if ( _meshDS ) return _meshDS->MinNodeID();
+  return NbNodes() == 0 ? 0 : (*_elements[ SMDSAbs_Node ].begin())->GetID();
+}  
+// -------------------------------------------------------------------------------------
+int SMESH_MeshPartDS::MaxElementID() const
+{
+  if ( _meshDS ) return _meshDS->MaxElementID();
+  int maxID = 0;
+  for ( int iType = SMDSAbs_Edge; iType < SMDSAbs_NbElementTypes; ++iType )
+    if ( !_elements[ iType ].empty() )
+      maxID = Max( maxID, (*_elements[ iType ].rbegin())->GetID() );
+  return maxID;
+}
+// -------------------------------------------------------------------------------------
+int SMESH_MeshPartDS::MinElementID() const
+{
+  if ( _meshDS ) return _meshDS->MinElementID();
+  int minID = 0;
+  for ( int iType = SMDSAbs_Edge; iType < SMDSAbs_NbElementTypes; ++iType )
+    if ( !_elements[ iType ].empty() )
+      minID = Min( minID, (*_elements[ iType ].begin())->GetID() );
+  return minID;
+}
+// -------------------------------------------------------------------------------------
 SMDS_ElemIteratorPtr SMESH_MeshPartDS::elementGeomIterator(SMDSAbs_GeometryType geomType) const
 {
   if ( _meshDS ) return _meshDS->elementGeomIterator( geomType );

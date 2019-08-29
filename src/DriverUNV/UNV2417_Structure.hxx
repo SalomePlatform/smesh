@@ -31,7 +31,7 @@
 
 namespace UNV2417{
 
-  typedef std::vector<int> TListOfId; // Nodal connectivitiesList of Id
+  typedef std::vector<int> TListOfId; // Nodal connectivity / List of Ids
 
   struct TRecord{
     std::string GroupName;

@@ -5617,23 +5617,20 @@ CORBA::Boolean SMESH_MeshEditor_i::ChangeElemNodes(CORBA::Long ide,
   initData();
 
   const SMDS_MeshElement* elem = getMeshDS()->FindElement(ide);
-  if(!elem) return false;
+  if ( !elem ) return false;
 
   int nbn = newIDs.length();
-  int i=0;
   vector<const SMDS_MeshNode*> aNodes(nbn);
-  int nbn1=-1;
-  for(; i<nbn; i++) {
-    const SMDS_MeshNode* aNode = getMeshDS()->FindNode(newIDs[i]);
-    if(aNode) {
-      nbn1++;
-      aNodes[nbn1] = aNode;
-    }
+  for ( int i = 0; i < nbn; i++ ) {
+    const SMDS_MeshNode* aNode = getMeshDS()->FindNode( newIDs[ i ]);
+    if ( !aNode )
+      return false;
+    aNodes[ i ] = aNode;
   }
   TPythonDump() << "isDone = " << this << ".ChangeElemNodes( "
                 << ide << ", " << newIDs << " )";
 
-  bool res = getMeshDS()->ChangeElementNodes( elem, & aNodes[0], nbn1+1 );
+  bool res = getMeshDS()->ChangeElementNodes( elem, & aNodes[0], aNodes.size() );
 
   declareMeshModified( /*isReComputeSafe=*/ !res );
 

@@ -2919,8 +2919,7 @@ void SMDS_Mesh::CompactMesh()
 {
   this->myCompactTime = this->myModifTime;
 
-  bool idsChange = ( myNodeFactory->CompactChangePointers() ||
-                     myCellFactory->CompactChangePointers() );
+  bool idsChange = HasNumerationHoles();
   if ( idsChange )
   {
     std::set< SMDS_ElementHolder* >::iterator holder = myElemHolders.begin();
@@ -2995,6 +2994,13 @@ vtkMTimeType SMDS_Mesh::GetMTime() const
 bool SMDS_Mesh::IsCompacted()
 {
   return ( this->myCompactTime == this->myModifTime );
+}
+
+//! are there holes in elements or nodes numeration
+bool SMDS_Mesh::HasNumerationHoles()
+{
+  return ( myNodeFactory->CompactChangePointers() ||
+           myCellFactory->CompactChangePointers() );
 }
 
 void SMDS_Mesh::setNbShapes( size_t nbShapes )
