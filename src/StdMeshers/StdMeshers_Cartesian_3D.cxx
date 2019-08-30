@@ -91,6 +91,15 @@
 
 //#undef WITH_TBB
 #ifdef WITH_TBB
+
+#ifdef WIN32
+// See https://docs.microsoft.com/en-gb/cpp/porting/modifying-winver-and-win32-winnt?view=vs-2019
+// Windows 10 = 0x0A00  
+#define WINVER 0x0A00
+#define _WIN32_WINNT 0x0A00
+
+#endif
+
 #include <tbb/parallel_for.h>
 //#include <tbb/enumerable_thread_specific.h>
 #endif
