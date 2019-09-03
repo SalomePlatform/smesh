@@ -93,7 +93,7 @@ class SMESH_EXPORT SMESH_Algo : public SMESH_Hypothesis
     bool IsCompatible( const Features& algo2 ) const;
   };
   /*!
-   * \brief Returns a structure describing algorithm features
+   * \brief Return a structure describing algorithm features
    */
   static const Features& GetFeatures( const std::string& algoType );
   const Features&        GetFeatures() const { return GetFeatures( _name ); }
@@ -127,7 +127,7 @@ class SMESH_EXPORT SMESH_Algo : public SMESH_Hypothesis
   virtual std::istream & LoadFrom(std::istream & load);
 
   /*!
-   * \brief Returns all types of compatible hypotheses
+   * \brief Return all types of compatible hypotheses
    */
   const std::vector < std::string > & GetCompatibleHypothesis();
 
@@ -196,7 +196,7 @@ class SMESH_EXPORT SMESH_Algo : public SMESH_Hypothesis
                         MapShapeNbElems& aResMap) = 0;
 
   /*!
-   * \brief Returns a list of compatible hypotheses used to mesh a shape
+   * \brief Return a list of compatible hypotheses used to mesh a shape
     * \param aMesh - the mesh 
     * \param aShape - the shape
     * \param ignoreAuxiliary - do not include auxiliary hypotheses in the list
@@ -213,22 +213,11 @@ class SMESH_EXPORT SMESH_Algo : public SMESH_Hypothesis
                     const TopoDS_Shape & aShape,
                     const bool           ignoreAuxiliary=true) const;
   /*!
-   * \brief Returns a list of compatible hypotheses assigned to a shape in a mesh
-    * \param aMesh - the mesh 
-    * \param aShape - the shape
-    * \param ignoreAuxiliary - do not include auxiliary hypotheses in the list
-    * \retval const std::list <const SMESHDS_Hypothesis*> - hypotheses list
-   * 
-   *  List the relevant hypothesis associated to the shape. Relevant hypothesis
-   *  have a name (type) listed in the algorithm. Hypothesis associated to
-   *  father shape -are not- taken into account (see GetUsedHypothesis)
+   * \brief Return sub-shape to which hypotheses returned by GetUsedHypothesis() are assigned
    */
-  const std::list <const SMESHDS_Hypothesis *> &
-  GetAppliedHypothesis(SMESH_Mesh &         aMesh,
-                       const TopoDS_Shape & aShape,
-                       const bool           ignoreAuxiliary=true) const;
+  virtual const std::list < TopoDS_Shape > & GetAssignedShapes() const;
   /*!
-   * \brief Returns the filter recognizing only compatible hypotheses
+   * \brief Return the filter recognizing only compatible hypotheses
    *  \param ignoreAuxiliary - make filter ignore compatible auxiliary hypotheses
    *  \retval SMESH_HypoFilter* - the filter that can be NULL
    */
@@ -442,8 +431,8 @@ protected:
   const SMESH_HypoFilter *              _compatibleAllHypFilter;
   const SMESH_HypoFilter *              _compatibleNoAuxHypFilter;
   std::vector<std::string>              _compatibleHypothesis;
-  std::list<const SMESHDS_Hypothesis *> _appliedHypList;
   std::list<const SMESHDS_Hypothesis *> _usedHypList;
+  std::list<TopoDS_Shape>               _assigedShapeList; // _usedHypList assigned to
   
 
   // Algo features influencing which Compute() and how is called:

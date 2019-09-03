@@ -332,6 +332,7 @@ protected:
   std::vector< SMESH_subMesh * >   _ancestors;
 
   SMESH_Algo *          _algo; // the algorithm found by last *StateEngine() call
+  TopoDS_Shape          _algoShape; // shape the algorithm is assigned to
   algo_state            _algoState;
   compute_state         _computeState;
   SMESH_ComputeErrorPtr _computeError;

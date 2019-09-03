@@ -201,7 +201,7 @@ SMESH_Algo* SMESH_subMesh::GetAlgo() const
   if ( !_algo )
   {
     SMESH_subMesh* me = const_cast< SMESH_subMesh* >( this );
-    me->_algo = _father->GetGen()->GetAlgo( me );
+    me->_algo = _father->GetGen()->GetAlgo( me, & me->_algoShape );
   }
   return _algo;
 }
@@ -2120,8 +2120,9 @@ TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * theGen,
     return _subShape;
 
   const bool skipAuxHyps = false;
-  list<const SMESHDS_Hypothesis*> aUsedHyp =
+  list<const SMESHDS_Hypothesis*> usedHyps =
     theAlgo->GetUsedHypothesis( *_father, _subShape, skipAuxHyps ); // copy
+  std::list < TopoDS_Shape >  assiShapes = theAlgo->GetAssignedShapes();
 
   // put in a compound all shapes with the same hypothesis assigned
   // and a good ComputeState
@@ -2148,7 +2149,9 @@ TopoDS_Shape SMESH_subMesh::getCollection(SMESH_Gen * theGen,
     {
       SMESH_Algo* anAlgo = subMesh->GetAlgo();
       if (( anAlgo->IsSameName( *theAlgo )) && // same algo
-          ( anAlgo->GetUsedHypothesis( *_father, S, skipAuxHyps ) == aUsedHyp )) // same hyps
+          ( anAlgo->GetUsedHypothesis( *_father, S, skipAuxHyps ) == usedHyps ) && // same hyps
+          ( anAlgo->GetAssignedShapes() == assiShapes ) && // on same sub-shapes
+          ( _algoShape == subMesh->_algoShape ))
       {
         aBuilder.Add( aCompound, S );
         if ( !subMesh->SubMeshesComputed() )

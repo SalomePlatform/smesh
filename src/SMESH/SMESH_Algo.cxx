@@ -268,11 +268,15 @@ SMESH_Algo::GetUsedHypothesis(SMESH_Mesh &         aMesh,
   savedHyps.swap( me->_usedHypList );              // it does not change (#16578)
 
   me->_usedHypList.clear();
+  me->_assigedShapeList.clear();
   if ( const SMESH_HypoFilter* filter = GetCompatibleHypoFilter( ignoreAuxiliary ))
   {
-    aMesh.GetHypotheses( aShape, *filter, me->_usedHypList, true );
+    aMesh.GetHypotheses( aShape, *filter, me->_usedHypList, true, & me->_assigedShapeList );
     if ( ignoreAuxiliary && _usedHypList.size() > 1 )
+    {
       me->_usedHypList.clear(); //only one compatible hypothesis allowed
+      me->_assigedShapeList.clear();
+    }
   }
   if ( _usedHypList == savedHyps )
     savedHyps.swap( me->_usedHypList );
@@ -280,32 +284,15 @@ SMESH_Algo::GetUsedHypothesis(SMESH_Mesh &         aMesh,
   return _usedHypList;
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *  List the relevant hypothesis associated to the shape. Relevant hypothesis
- *  have a name (type) listed in the algorithm. Hypothesis associated to
- *  father shape -are not- taken into account (see GetUsedHypothesis)
+ * Return sub-shape to which hypotheses returned by GetUsedHypothesis() are assigned
  */
-//=============================================================================
+//================================================================================
 
-const list<const SMESHDS_Hypothesis *> &
-SMESH_Algo::GetAppliedHypothesis(SMESH_Mesh &         aMesh,
-                                 const TopoDS_Shape & aShape,
-                                 const bool           ignoreAuxiliary) const
+const std::list < TopoDS_Shape > & SMESH_Algo::GetAssignedShapes() const
 {
-  SMESH_Algo* me = const_cast< SMESH_Algo* >( this );
-
-  std::list<const SMESHDS_Hypothesis *> savedHyps; // don't delete the list if 
-  savedHyps.swap( me->_appliedHypList );           // it does not change (#16578)
-
-  me->_appliedHypList.clear();
-  if ( const SMESH_HypoFilter* filter = GetCompatibleHypoFilter( ignoreAuxiliary ))
-    aMesh.GetHypotheses( aShape, *filter, me->_appliedHypList, false );
-
-  if ( _appliedHypList == savedHyps )
-    savedHyps.swap( me->_appliedHypList );
-
-  return _appliedHypList;
+  return _assigedShapeList;
 }
 
 //=============================================================================
