@@ -6367,7 +6367,7 @@ SMESH_MeshEditor::Transform (TIDSortedElemSet & theElems,
  *  \param [in] theValue - offset value
  *  \param [out] theTgtMesh - a mesh to add offset elements to
  *  \param [in] theMakeGroups - to generate groups
- *  \return PGroupIDs - IDs of created groups
+ *  \return PGroupIDs - IDs of created groups. NULL means failure
  */
 //================================================================================
 
@@ -6454,6 +6454,8 @@ SMESH_MeshEditor::PGroupIDs SMESH_MeshEditor::Offset( TIDSortedElemSet & theElem
   PGroupIDs newGroupIDs;
   if ( theMakeGroups )
     newGroupIDs = generateGroups( srcNodes, srcElems, "offset", theTgtMesh, false );
+  else
+    newGroupIDs.reset( new std::list< int > );
 
   return newGroupIDs;
 }

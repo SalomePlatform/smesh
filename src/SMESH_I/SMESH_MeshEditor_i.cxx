@@ -4115,8 +4115,6 @@ SMESH::SMESH_Mesh_ptr SMESH_MeshEditor_i::Offset( SMESH::SMESH_IDSource_ptr theO
   }
   else
   {
-    theGroups = theCopyGroups ? getGroups( groupIds.get() ) : new SMESH::ListOfGroups;
-
     if ( *theMeshName && mesh_var->NbFaces() == 0 )
     {
       // new mesh empty, remove it
@@ -4126,6 +4124,10 @@ SMESH::SMESH_Mesh_ptr SMESH_MeshEditor_i::Offset( SMESH::SMESH_IDSource_ptr theO
       builder->RemoveObjectWithChildren( meshSO );
       THROW_SALOME_CORBA_EXCEPTION("Offset failed", SALOME::INTERNAL_ERROR);
     }
+    if ( !groupIds ) // nothing changed in the current mesh
+      THROW_SALOME_CORBA_EXCEPTION("Offset failed", SALOME::INTERNAL_ERROR);
+
+    theGroups = theCopyGroups ? getGroups( groupIds.get() ) : new SMESH::ListOfGroups;
 
     // result of Offset() is a tuple (mesh, groups)
     if ( mesh_var->_is_nil() ) pyDump << myMesh_i->_this() << ", ";
