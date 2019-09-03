@@ -41,7 +41,7 @@ in one of the following ways:
 * In Mesh module, by clicking **Publish Sub-shape** button in a dialog showing :ref:`meshing errors <meshing_failed_anchor>`. 
 
 
-.. :submesh_priority: 
+.. _submesh_priority: 
 
 How hypotheses are selected among sub-meshes
 ############################################
@@ -62,7 +62,7 @@ of a sub-mesh where 1D algorithm is assigned:
 * **groups of solids** sharing the edge, if any
 * the **main shape**
 
-(This sequence of sub-shapes defines the priority of sub-meshes. Thus more
+(This sequence of sub-shapes defines the **priority** of sub-meshes. Thus more
 local, i.e. assigned to sub-shape of lower dimension, algorithms and
 hypotheses have higher priority during the search of hypotheses to
 apply.)

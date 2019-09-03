@@ -217,7 +217,11 @@ These elements can be kept in the mesh.
 Changing sub-mesh priority
 ##########################
 
-If the mesh contains concurrent :ref:`sub-meshes <constructing_submeshes_page>`, it is possible to change the priority of their computation, i.e. to change the priority of applying algorithms to the shared sub-shapes of the Mesh shape.
+If the mesh contains concurrent :ref:`sub-meshes <constructing_submeshes_page>`, it is possible to change their :ref:`default priority <submesh_priority>`. Changing priority works in two ways:
+
+* For sub-meshes with assigned algorithms of same dimension generating mesh of *several dimensions*, it sets the order in which the sub-meshes are computed.
+* For the rest sub-meshes, it sets the order in which the sub-meshes are checked when looking for  meshing parameters to apply to a sub-shape. Examples below present this way. To impose the order in which sub-meshes with uni-dimensional algorithms are computed, invoke **Compute Sub-mesh** command on sub-meshes in a desired order.
+
 
 *To change sub-mesh priority:*
 
