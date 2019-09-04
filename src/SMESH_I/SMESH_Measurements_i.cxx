@@ -151,7 +151,8 @@ static SMESHDS_Mesh* getMesh(SMESH::SMESH_IDSource_ptr theSource)
 {
   if (!CORBA::is_nil( theSource ))
   {
-    SMESH_Mesh_i* anImplPtr = DownCast<SMESH_Mesh_i*>(theSource->GetMesh());
+    SMESH::SMESH_Mesh_var mesh = theSource->GetMesh();
+    SMESH_Mesh_i* anImplPtr = DownCast<SMESH_Mesh_i*>( mesh );
     if (anImplPtr)
       return anImplPtr->GetImpl().GetMeshDS();
   }
@@ -287,19 +288,28 @@ static void enlargeBoundingBox(const SMESH::SMESH_IDSource_ptr theObject,
   const SMESHDS_Mesh* aMesh = getMesh( theObject );
   if ( !aMesh )
     return;
-  SMESH::array_of_ElementType_var types = theObject->GetTypes();
-  SMESH::long_array_var     aElementsId = theObject->GetIDs();
-  // here we assume that type of all IDs defined by first type in array
-  const bool isNode = isNodeType( types );
-  for(int i = 0, n = aElementsId->length(); i < n; i++)
+
+  if ( DownCast<SMESH_Mesh_i*>( theObject )) // theObject is mesh
   {
-    if (isNode)
-      enlargeBoundingBox( aMesh->FindNode( aElementsId[i] ), theMeasure);
-    else
+    for (SMDS_NodeIteratorPtr aNodeIter = aMesh->nodesIterator(); aNodeIter->more(); )
+      enlargeBoundingBox( aNodeIter->next(), theMeasure);
+  }
+  else
+  {
+    SMESH::array_of_ElementType_var types = theObject->GetTypes();
+    SMESH::long_array_var     aElementsId = theObject->GetIDs();
+    // here we assume that type of all IDs defined by first type in array
+    const bool isNode = isNodeType( types );
+    for(int i = 0, n = aElementsId->length(); i < n; i++)
     {
-      if ( const SMDS_MeshElement* elem = aMesh->FindElement( aElementsId[i] ))
-        for (SMDS_NodeIteratorPtr aNodeIter = elem->nodeIterator(); aNodeIter->more(); )
-          enlargeBoundingBox( aNodeIter->next(), theMeasure);
+      if (isNode)
+        enlargeBoundingBox( aMesh->FindNode( aElementsId[i] ), theMeasure);
+      else
+      {
+        if ( const SMDS_MeshElement* elem = aMesh->FindElement( aElementsId[i] ))
+          for (SMDS_NodeIteratorPtr aNodeIter = elem->nodeIterator(); aNodeIter->more(); )
+            enlargeBoundingBox( aNodeIter->next(), theMeasure);
+      }
     }
   }
 }

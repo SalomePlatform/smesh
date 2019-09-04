@@ -2072,7 +2072,14 @@ class Mesh(metaclass = MeshMeta):
 
     def SetMeshOrder(self, submeshes):
         """
-        Set order in which concurrent sub-meshes should be meshed
+        Set priority of sub-meshes. It works in two ways:
+        
+        * For sub-meshes with assigned algorithms of same dimension generating mesh of
+          *several dimensions*, it sets the order in which the sub-meshes are computed.
+        * For the rest sub-meshes, it sets the order in which the sub-meshes are checked
+          when looking for meshing parameters to apply to a sub-shape. To impose the 
+          order in which sub-meshes with uni-dimensional algorithms are computed, 
+          call **submesh.Compute()** in a desired order.
 
         Parameters:
                 submeshes: list of lists of :class:`sub-meshes <SMESH.SMESH_subMesh>`
