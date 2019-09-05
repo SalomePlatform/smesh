@@ -1461,6 +1461,7 @@ void SMESHGUI_MeshOp::setFilteredAlgoData()
   updateHypoSets(); // it sets myAvailableHypData by curMeshType
 
   // restore current algorithms according to changed myAvailableHypData
+  algosAvailable.clear();
   for ( int dim = 0; dim <= 3; ++dim )
   {
     int algoIndex = myAvailableHypData[ dim ][ Algo ].indexOf( curAlgos[ dim ]);
