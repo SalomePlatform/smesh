@@ -1223,8 +1223,8 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
         bool   byAverageNormal   = ByAverageNormalCheck->isChecked();
         int    dim               = (maxSelType == SMESH::FACE) ? 2 : 1;
 
-        groups = meshEditor->ExtrusionByNormal( faces, stepSize, nbSteps, useInputElemsOnly,
-                                                byAverageNormal, makeGroups, dim );
+        groups = meshEditor->ExtrusionByNormal( faces, stepSize, nbSteps, byAverageNormal,
+                                                useInputElemsOnly, makeGroups, dim );
       }
       else
       {
@@ -1261,9 +1261,9 @@ bool SMESHGUI_ExtrusionDlg::ClickOnApply()
       SMESH::Update( actor->getIO(), actor->GetVisibility() );
     if ( makeGroups )
       mySMESHGUI->updateObjBrowser(true); // new groups may appear
-    Init(false);
+
     mySelectionMgr->clearSelected();
-    SelectorWdg->Clear();
+    Init(false);
 
     SMESHGUI::Modified();
   }
@@ -1615,8 +1615,8 @@ void SMESHGUI_ExtrusionDlg::onDisplaySimulation( bool toDisplayPreview )
           bool   byAverageNormal   = ByAverageNormalCheck->isChecked();
           int    dim               = (maxSelType == SMESH::FACE) ? 2 : 1;
 
-          groups = meshEditor->ExtrusionByNormal( faces, stepSize, nbSteps, useInputElemsOnly,
-                                                  byAverageNormal, makeGroups, dim );
+          groups = meshEditor->ExtrusionByNormal( faces, stepSize, nbSteps, byAverageNormal,
+                                                  useInputElemsOnly, makeGroups, dim );
         }
         else
         {

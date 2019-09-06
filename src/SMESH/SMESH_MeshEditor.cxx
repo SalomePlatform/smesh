@@ -5850,6 +5850,11 @@ SMESH_MeshEditor::ExtrusionSweep (TIDSortedElemSet     theElemSets[2],
           }
           else
           {
+            if ( theParams.ToMakeBoundary() )
+            {
+              GetMeshDS()->Modified();
+              throw SALOME_Exception( SMESH_Comment("Can't extrude node #") << node->GetID() );
+            }
             break; // newNodesItVec will be shorter than nbNodes
           }
         }

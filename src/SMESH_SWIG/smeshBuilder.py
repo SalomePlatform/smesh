@@ -5595,6 +5595,8 @@ class Mesh(metaclass = MeshMeta):
         if isinstance( Elements, list ):
             if not Elements:
                 raise RuntimeError("Elements empty!")
+            if isinstance( Elements[0], Mesh ):
+                Elements = [ Elements[0].GetMesh() ]
             if isinstance( Elements[0], int ):
                 Elements = self.GetIDSource( Elements, SMESH.ALL )
                 unRegister.set( Elements )
