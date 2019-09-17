@@ -36,6 +36,7 @@
 #include "SMESH_Hypothesis.hxx"
 
 #include <GeomAbs_Shape.hxx>
+#include <TopoDS_Shape.hxx>
 
 #include <string>
 #include <vector>
