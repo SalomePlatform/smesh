@@ -52,7 +52,7 @@ extern "C"
 #if MED_MAJOR_NUM != MED_MAJOR_EXPECTED
   #error "MED major version does not correspond to the expected version, fix the minor and major compatibility values in CheckCompatibility method (MED_VERSIONS_APPEND_COMPATIBLE) and set the correct expected version"
 #endif
-#if MED_MINOR_NUM <= MED_MINOR_EXPECTED
+#if MED_MINOR_NUM < MED_MINOR_EXPECTED
   #error "MED minor version does not correspond to the expected version, fix the minor and major compatibility values in CheckCompatibility method (MED_VERSIONS_APPEND_COMPATIBLE) and set the correct expected version"
 #endif
 #define MED_VERSIONS_APPEND_COMPATIBLE {40, 32, 33} // --- 10*major + minor (the 3rd digit, release, is not used here,
