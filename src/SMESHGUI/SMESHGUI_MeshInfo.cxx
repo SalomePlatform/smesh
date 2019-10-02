@@ -3402,7 +3402,11 @@ void SMESHGUI_MeshInfoDlg::dump()
       if ( fd.isChecked( BaseInfo ) ) myBaseInfo->saveInfo( out );
       if ( fd.isChecked( ElemInfo ) ) myElemInfo->saveInfo( out );
       if ( fd.isChecked( AddInfo ) )  myAddInfo->saveInfo( out );
-      if ( fd.isChecked( CtrlInfo ) ) myCtrlInfo->saveInfo( out );
+      if ( fd.isChecked( CtrlInfo ) )
+      {
+        myCtrlInfo->showInfo( myProxy ); // it saves what is shown only
+        myCtrlInfo->saveInfo( out );
+      }
     }
   }
 }
@@ -3962,15 +3966,15 @@ void SMESHGUI_CtrlInfo::saveInfo( QTextStream &out )
   out << tr( "NAME_LAB" ) << "  " << myWidgets[0]->text() << endl;
   out << tr( "NODES_INFO" ) << endl;
   out << indent() << tr( "NUMBER_OF_THE_FREE_NODES" ) << ": " << myWidgets[1]->text() << endl;
-  out << indent() << tr( "NUMBER_OF_THE_DOUBLE_NODES" ) << ": " << myWidgets[2]->text() << endl;
+  out << indent() << tr( "NUMBER_OF_THE_DOUBLE_NODES" ) << ": " << myWidgets[3]->text() << endl;
   out << tr( "EDGES_INFO" ) << endl;
-  out << indent() << tr( "NUMBER_OF_THE_DOUBLE_EDGES" ) << ": " << myWidgets[3]->text() << endl;
+  out << indent() << tr( "NUMBER_OF_THE_DOUBLE_EDGES" ) << ": " << myWidgets[4]->text() << endl;
   out << tr( "FACES_INFO" ) << endl;
-  out << indent() << tr( "NUMBER_OF_THE_DOUBLE_FACES" ) << ": " << myWidgets[4]->text() << endl;
-  out << indent() << tr( "NUMBER_OF_THE_OVER_CONSTRAINED" ) << ": " << myWidgets[5]->text() << endl;
+  out << indent() << tr( "NUMBER_OF_THE_DOUBLE_FACES" ) << ": " << myWidgets[5]->text() << endl;
+  out << indent() << tr( "NUMBER_OF_THE_OVER_CONSTRAINED" ) << ": " << myWidgets[6]->text() << endl;
   out << tr( "VOLUMES_INFO" ) << endl;
-  out << indent() << tr( "NUMBER_OF_THE_DOUBLE_VOLUMES" ) << ": " << myWidgets[6]->text() << endl;
-  out << indent() << tr( "NUMBER_OF_THE_OVER_CONSTRAINED" ) << ": " << myWidgets[7]->text() << endl;
+  out << indent() << tr( "NUMBER_OF_THE_DOUBLE_VOLUMES" ) << ": " << myWidgets[7]->text() << endl;
+  out << indent() << tr( "NUMBER_OF_THE_OVER_CONSTRAINED" ) << ": " << myWidgets[8]->text() << endl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
