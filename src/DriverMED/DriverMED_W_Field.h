@@ -57,7 +57,7 @@ class MESHDRIVERMED_EXPORT DriverMED_W_Field: public Driver_SMESHDS_Mesh
   void AddValue( int    val );
 
   /*
-   * Returns elements in the order they are written in MED file. Result can be NULL!
+   * Return elements in the order they are written in MED file. Result can be NULL!
    */
   SMDS_ElemIteratorPtr GetOrderedElems();
 

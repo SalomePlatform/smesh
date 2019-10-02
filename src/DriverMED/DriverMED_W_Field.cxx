@@ -253,7 +253,11 @@ Driver_Mesh::Status DriverMED_W_Field::Perform()
   if ( !myMesh )
     return addMessage("Supporting mesh not set", /*isFatal=*/true );
 
-  MED::PWrapper medFile = MED::CrWrapperW( myFile );
+  int version = -1, major, minor, release;
+  if ( MED::GetMEDVersion( myFile, major, minor, release ))
+    version = major * 10 + minor;
+
+  MED::PWrapper medFile = MED::CrWrapperW( myFile, version );
   MED::PMeshInfo meshInfo;
   if ( myMeshId > 0 )
   {
@@ -276,7 +280,7 @@ Driver_Mesh::Status DriverMED_W_Field::Perform()
       ( !myMeshName.empty() && meshInfo->GetName() != myMeshName ))
   {
     myMeshId = -1;
-    return addMessage("Specified mesh not found in the file", /*isFatal=*/true );
+    return addMessage("DriverMED_W_Field: Specified mesh not found in the file", /*isFatal=*/true );
   }
 
   // create a field

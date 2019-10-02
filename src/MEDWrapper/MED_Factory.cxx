@@ -130,6 +130,9 @@ namespace MED
   {
     int mvok[] = MED_VERSIONS_APPEND_COMPATIBLE;
     std::vector<int> MEDVersionsOK(mvok, mvok + sizeof(mvok)/sizeof(int));
+    int curVersion = MED_MAJOR_NUM * 10 + MED_MINOR_NUM;
+    if ( MEDVersionsOK[0] != curVersion )
+      MEDVersionsOK.insert( MEDVersionsOK.begin(), curVersion );
     return MEDVersionsOK;
   }
 
@@ -142,7 +145,7 @@ namespace MED
   bool CheckCompatibility(const std::string& fileName, bool isForAppend)
   {
     bool ok = false;
-    int medVersionsOK[] = MED_VERSIONS_APPEND_COMPATIBLE;
+    std::vector<int> medVersionsOK = GetMEDVersionsAppendCompatible();
     // check that file is accessible
     if ( exists(fileName) ) {
       // check HDF5 && MED compatibility
@@ -161,7 +164,7 @@ namespace MED
               ok = true;
             else {
               int medVersion = 10*major + minor;
-              for (size_t ii=0; ii < sizeof(medVersionsOK)/sizeof(int); ii++)
+              for (size_t ii=0; ii < medVersionsOK.size(); ii++)
                 if (medVersionsOK[ii] == medVersion) {
                   ok =true;
                   break;
