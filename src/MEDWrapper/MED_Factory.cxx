@@ -57,14 +57,14 @@ extern "C"
 // *******************************************************************************************************************
 
 #define MED_MAJOR_EXPECTED 4
-#define MED_MINOR_EXPECTED 1
+#define MED_MINOR_EXPECTED 0
 #if MED_MAJOR_NUM != MED_MAJOR_EXPECTED
   #error "MED major version does not correspond to the expected version, fix the minor and major compatibility values in CheckCompatibility method (MED_VERSIONS_APPEND_COMPATIBLE) and set the correct expected version (MED_MAJOR_EXPECTED, MED_MINOR_EXPECTED)"
 #endif
 #if MED_MINOR_NUM != MED_MINOR_EXPECTED
   #error "MED minor version does not correspond to the expected version, fix the minor and major compatibility values in CheckCompatibility method (MED_VERSIONS_APPEND_COMPATIBLE) and set the correct expected version above (MED_MAJOR_EXPECTED, MED_MINOR_EXPECTED)"
 #endif
-#define MED_VERSIONS_APPEND_COMPATIBLE {41, 40, 32, 33} // --- 10*major + minor (the 3rd digit, release, is not used here,
+#define MED_VERSIONS_APPEND_COMPATIBLE {40, 32, 33} // --- 10*major + minor (the 3rd digit, release, is not used here,
                                                     //                       med uses always the latest available)
                                                     // --- The first in the list should be the default: current version
 // --- empty med file content for the different MED versions with a different major.
