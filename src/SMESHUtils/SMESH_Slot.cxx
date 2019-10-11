@@ -153,7 +153,12 @@ namespace
                 if ( myCuts[ iC1 ][ iP1 ].SquareDistance( myCuts[ iC2 ][ iP2 ]) < tol * tol )
                 {
                   nbShared += 2;
-                  isSharedPnt[ i1 ] = isSharedPnt[ i2 ] = true;
+                  if ( myCuts[ iC1 ][ 0 ].SquareDistance( myCuts[ iC1 ][ 1 ]) < tol * tol )
+                    isSharedPnt[ iC1 * 2 ] = isSharedPnt[ iC1 * 2 + 1 ] = true;
+                  else if ( myCuts[ iC2 ][ 0 ].SquareDistance( myCuts[ iC2 ][ 1 ]) < tol * tol )
+                    isSharedPnt[ iC2 * 2 ] = isSharedPnt[ iC2 * 2 + 1 ] = true;
+                  else
+                    isSharedPnt[ i1 ] = isSharedPnt[ i2 ] = true;
                 }
               }
           }
@@ -565,6 +570,7 @@ SMESH_MeshAlgos::MakeSlot( SMDS_ElemIteratorPtr             theSegmentIt,
   // ---------------------------------
 
   const double tol = Precision::Confusion();
+  const double angularTol = 1e-5;
   std::vector< gp_XYZ > faceNormals;
   SMESH_MeshAlgos::Intersector meshIntersector( theMesh, tol, faceNormals );
   std::unique_ptr< SMESH_ElementSearcher> faceSearcher;
@@ -725,7 +731,7 @@ SMESH_MeshAlgos::MakeSlot( SMDS_ElemIteratorPtr             theSegmentIt,
           if ( intPoints.size() == 2 )
             toCut = true;
           else if ( isCylinderOnFace )
-            toCut = cylAxis.Direction().IsParallel( edegDir, tol );
+            toCut = cylAxis.Direction().IsParallel( edegDir, angularTol );
           else
           {
             SMESH_NodeXYZ nBetween;

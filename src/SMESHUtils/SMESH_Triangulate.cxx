@@ -350,7 +350,7 @@ bool Triangulate::triangulate( std::vector< const SMDS_MeshNode*>& nodes,
   // connect nodes into a ring
   _pv.resize( nbNodes );
   for ( size_t i = 1; i < nbNodes; ++i )
-    _pv[i-1].SetNodeAndNext( nodes[i-1], _pv[i], i-1 );
+    _pv[i-1].SetNodeAndNext( nodes[i-1], _pv[i], /*index=*/i-1 );
   _pv[ nbNodes-1 ].SetNodeAndNext( nodes[ nbNodes-1 ], _pv[0], nbNodes-1 );
 
   // assure correctness of PolyVertex::_index as a node can encounter more than once
@@ -383,17 +383,23 @@ bool Triangulate::triangulate( std::vector< const SMDS_MeshNode*>& nodes,
   catch ( Standard_Failure ) {
     return false;
   }
+  double factor = 1.0, modulus = normal.Modulus();
+  if ( modulus < 1e-2 )
+    factor = 1. / sqrt( modulus );
   for ( size_t i = 0; i < nbNodes; ++i )
   {
     gp_XYZ p = _pv[i]._nxyz - p0;
-    _pv[i]._xy.SetX( axes.XDirection().XYZ() * p );
-    _pv[i]._xy.SetY( axes.YDirection().XYZ() * p );
+    _pv[i]._xy.SetX( axes.XDirection().XYZ() * p * factor);
+    _pv[i]._xy.SetY( axes.YDirection().XYZ() * p * factor );
   }
 
   // compute minimal triangle area
   double sumArea = 0;
-  for ( size_t i = 0; i < nbNodes; ++i )
-    sumArea += _pv[i].TriaArea();
+  if ( factor == 1.0 )
+    sumArea = modulus;
+  else
+    for ( size_t i = 0; i < nbNodes; ++i )
+      sumArea += _pv[i].TriaArea();
   const double minArea = 1e-6 * sumArea / ( nbNodes - 2 );
 
   // in a loop, find triangles with positive area and having no vertices inside
