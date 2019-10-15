@@ -158,16 +158,13 @@ int SMDS_UnstructuredGrid::InsertNextLinkedCell(int type, int npts, vtkIdType *p
     i++;
     for (int k = 0; k < nbnodes; k++)
     {
-      setOfNodes.insert(pts[i]);
+      if ( setOfNodes.insert( pts[i] ).second )
+      {
+        this->Links->ResizeCellList( pts[i], 1 );
+        this->Links->AddCellReference( cellid, pts[i] );
+      }
       i++;
     }
-  }
-
-  std::set<vtkIdType>::iterator it = setOfNodes.begin();
-  for (; it != setOfNodes.end(); ++it)
-  {
-    this->Links->ResizeCellList(*it, 1);
-    this->Links->AddCellReference(cellid, *it);
   }
 
   return cellid;

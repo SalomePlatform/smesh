@@ -806,10 +806,10 @@ SMESH_MeshAlgos::MakeSlot( SMDS_ElemIteratorPtr             theSegmentIt,
           isOut( intPnt[1].myNode, planeNormal, intPnt[1].myIsOutPln, 1 );
           const Segment * closeSeg[2] = { 0, 0 };
           if ( intPnt[0].myIsOutPln[0] )
-            closeSeg[0] = findTooCloseSegment( intPnt[0], 0.5 * theWidth - tol, tol,
+            closeSeg[0] = findTooCloseSegment( intPnt[0], 0.5 * theWidth - 1e-3*tol, tol,
                                                segment, n1, segmentsOfNode );
           if ( intPnt[1].myIsOutPln[0] )
-            closeSeg[1] = findTooCloseSegment( intPnt[1], 0.5 * theWidth - tol, tol,
+            closeSeg[1] = findTooCloseSegment( intPnt[1], 0.5 * theWidth - 1e-3*tol, tol,
                                                segment, n1, segmentsOfNode );
           int nbCut = bool( closeSeg[0] ) + bool( closeSeg[1] );
           if ( nbCut == 0 )

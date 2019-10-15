@@ -59,8 +59,12 @@ class SMDS_EXPORT SMDS_MeshVolume : public SMDS_MeshCell
   virtual SMDS_ElemIteratorPtr nodesIterator() const = 0;
   virtual SMDS_NodeIteratorPtr nodeIterator() const = 0;
 
+  bool ChangeNodes(const std::vector<const SMDS_MeshNode*>& nodes,
+                   const std::vector<int>&                  quantities) const;
+
   // 1 <= face_ind <= NbFaces()
   int NbFaceNodes (const int face_ind) const;
+
   // 1 <= face_ind <= NbFaces()
   // 1 <= node_ind <= NbFaceNodes()
   const SMDS_MeshNode* GetFaceNode (const int face_ind, const int node_ind) const;

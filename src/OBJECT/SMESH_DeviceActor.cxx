@@ -749,7 +749,7 @@ SMESH_DeviceActor
 {
   bool aShowFaceOrientation = myIsFacesOriented;
   aShowFaceOrientation &= vtkLODActor::GetVisibility(); //GetVisibility(); -- avoid calling GetUnstructuredGrid()  
-  aShowFaceOrientation &= myRepresentation == eSurface;
+  aShowFaceOrientation &= ( myRepresentation != ePoint );
   myFaceOrientation->SetVisibility(aShowFaceOrientation);
 }
 

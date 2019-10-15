@@ -75,6 +75,45 @@ void SMDS_MeshVolume::init( const std::vector<vtkIdType>& vtkNodeIds )
   SMDS_MeshCell::init( aType, vtkNodeIds );
 }
 
+bool SMDS_MeshVolume::ChangeNodes(const std::vector<const SMDS_MeshNode*>& nodes,
+                                  const std::vector<int>&                  quantities) const
+{
+  if ( !IsPoly() )
+    return false;
+
+  vtkIdType nFaces = 0;
+  vtkIdType* ptIds = 0;
+  getGrid()->GetFaceStream( GetVtkID(), nFaces, ptIds );
+
+  // stream size and nb faces should not change
+
+  if ((int) quantities.size() != nFaces )
+  {
+    return false;
+  }
+  int id = 0, nbPoints = 0;
+  for ( int i = 0; i < nFaces; i++ )
+  {
+    int nodesInFace = ptIds[id];
+    nbPoints += nodesInFace;
+    id += (nodesInFace + 1);
+  }
+  if ((int) nodes.size() != nbPoints )
+  {
+    return false;
+  }
+
+  // update ptIds
+  size_t iP = 0, iN = 0;
+  for ( size_t i = 0; i < quantities.size(); ++i )
+  {
+    ptIds[ iP++ ] = quantities[ i ]; // nb face nodes
+    for ( int j = 0; j < quantities[ i ]; ++j )
+      ptIds[ iP++ ] = nodes[ iN++ ]->GetVtkID();
+  }
+  return true;
+}
+
 const SMDS_MeshNode* SMDS_MeshVolume::GetNode(const int ind) const
 {
   if ( !IsPoly() )

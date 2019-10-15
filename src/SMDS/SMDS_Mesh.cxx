@@ -1045,6 +1045,31 @@ bool SMDS_Mesh::RemoveSubMesh(const SMDS_Mesh * aMesh)
 }
 
 //=======================================================================
+//function : ChangePolyhedronNodes
+//purpose  :
+//=======================================================================
+
+bool SMDS_Mesh::ChangePolyhedronNodes(const SMDS_MeshElement *                 element,
+                                      const std::vector<const SMDS_MeshNode*>& nodes,
+                                      const std::vector<int>&                  quantities)
+{
+  // keep current nodes of element
+  std::set<const SMDS_MeshNode*> oldNodes( element->begin_nodes(), element->end_nodes() );
+
+  // change nodes
+  bool Ok = false;
+  if ( const SMDS_MeshVolume* vol = DownCast<SMDS_MeshVolume>( element ))
+    Ok = vol->ChangeNodes( nodes, quantities );
+
+  if ( Ok )
+  {
+    setMyModified();
+    updateInverseElements( element, &nodes[0], nodes.size(), oldNodes );
+  }
+  return Ok;
+}
+
+//=======================================================================
 //function : ChangeElementNodes
 //purpose  :
 //=======================================================================
@@ -1062,14 +1087,30 @@ bool SMDS_Mesh::ChangeElementNodes(const SMDS_MeshElement * element,
     Ok = cell->ChangeNodes(nodes, nbnodes);
 
   if ( Ok )
+  {
     setMyModified();
+    updateInverseElements( element, nodes, nbnodes, oldNodes );
+  }
+  return Ok;
+}
 
-  if ( Ok && GetGrid()->HasLinks() ) // update InverseElements
+//=======================================================================
+//function : updateInverseElements
+//purpose  : update InverseElements when element changes node
+//=======================================================================
+
+void SMDS_Mesh::updateInverseElements( const SMDS_MeshElement *        element,
+                                       const SMDS_MeshNode* const*     nodes,
+                                       const int                       nbnodes,
+                                       std::set<const SMDS_MeshNode*>& oldNodes )
+{
+  if ( GetGrid()->HasLinks() ) // update InverseElements
   {
     std::set<const SMDS_MeshNode*>::iterator it;
 
     // AddInverseElement to new nodes
-    for ( int i = 0; i < nbnodes; i++ ) {
+    for ( int i = 0; i < nbnodes; i++ )
+    {
       it = oldNodes.find( nodes[i] );
       if ( it == oldNodes.end() )
         // new node
@@ -1086,7 +1127,6 @@ bool SMDS_Mesh::ChangeElementNodes(const SMDS_MeshElement * element,
     }
   }
 
-  return Ok;
 }
 
 const SMDS_Mesh0DElement* SMDS_Mesh::Find0DElement(const SMDS_MeshNode * node)

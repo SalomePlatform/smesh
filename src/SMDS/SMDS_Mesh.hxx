@@ -613,6 +613,9 @@ public:
   bool ChangeElementNodes(const SMDS_MeshElement * elem,
                           const SMDS_MeshNode    * nodes[],
                           const int                nbnodes);
+  bool ChangePolyhedronNodes(const SMDS_MeshElement *                 elem,
+                             const std::vector<const SMDS_MeshNode*>& nodes,
+                             const std::vector<int>&                  quantities);
 
   //virtual void Renumber (const bool isNodes, const int startID = 1, const int deltaID = 1);
   // Renumber all nodes or elements.
@@ -708,7 +711,7 @@ public:
   void Modified();
   vtkMTimeType GetMTime() const;
 
-protected:
+ protected:
   SMDS_Mesh(SMDS_Mesh * parent);
 
   void addChildrenWithNodes(std::set<const SMDS_MeshElement*>& setOfChildren,
@@ -724,6 +727,11 @@ protected:
     if (z > zmax) zmax = z;
     else if (z < zmin) zmin = z;
   }
+
+  void updateInverseElements( const SMDS_MeshElement *        element,
+                              const SMDS_MeshNode* const*     nodes,
+                              const int                       nbnodes,
+                              std::set<const SMDS_MeshNode*>& oldNodes );
 
   void setNbShapes( size_t nbShapes );
 

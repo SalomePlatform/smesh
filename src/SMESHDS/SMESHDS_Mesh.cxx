@@ -246,17 +246,17 @@ bool SMESHDS_Mesh::ChangePolygonNodes
 
 //=======================================================================
 //function : ChangePolyhedronNodes
-//purpose  : 
+//purpose  :
 //=======================================================================
-bool SMESHDS_Mesh::ChangePolyhedronNodes
-(const SMDS_MeshElement * elem,
- std::vector<const SMDS_MeshNode*> nodes,
- std::vector<int>                  quantities)
+bool SMESHDS_Mesh
+::ChangePolyhedronNodes (const SMDS_MeshElement *                 elem,
+                         const std::vector<const SMDS_MeshNode*>& nodes,
+                         const std::vector<int> &                 quantities)
 {
   ASSERT(nodes.size() > 3);
 
-  //if (!SMDS_Mesh::ChangePolyhedronNodes(elem, nodes, quantities))
-  return false;
+  if ( !SMDS_Mesh::ChangePolyhedronNodes( elem, nodes, quantities ))
+    return false;
 
   int i, len = nodes.size();
   std::vector<int> nodes_ids (len);
@@ -270,7 +270,7 @@ bool SMESHDS_Mesh::ChangePolyhedronNodes
 
 //=======================================================================
 //function : Renumber
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 void SMESHDS_Mesh::Renumber (const bool isNodes, const int startID, const int deltaID)
