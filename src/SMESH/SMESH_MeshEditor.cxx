@@ -1093,19 +1093,37 @@ bool SMESH_MeshEditor::Reorient (const SMDS_MeshElement * theElem)
       MESSAGE("Warning: bad volumic element");
       return false;
     }
-    const int nbFaces = aPolyedre->NbFaces();
+    SMDS_VolumeTool vTool( aPolyedre );
+    const int nbFaces = vTool.NbFaces();
+    vector<int> quantities( nbFaces );
     vector<const SMDS_MeshNode *> poly_nodes;
-    vector<int> quantities (nbFaces);
 
-    // reverse each face of the polyedre
-    for (int iface = 1; iface <= nbFaces; iface++) {
-      int inode, nbFaceNodes = aPolyedre->NbFaceNodes(iface);
-      quantities[iface - 1] = nbFaceNodes;
+    // check if all facets are oriented equally
+    bool sameOri = true;
+    vector<int>& facetOri = quantities; // keep orientation in quantities so far
+    for (int iface = 0; iface < nbFaces; iface++)
+    {
+      facetOri[ iface ] = vTool.IsFaceExternal( iface );
+      if ( facetOri[ iface ] != facetOri[ 0 ])
+        sameOri = false;
+    }
 
-      for (inode = nbFaceNodes; inode >= 1; inode--) {
-        const SMDS_MeshNode* curNode = aPolyedre->GetFaceNode(iface, inode);
-        poly_nodes.push_back(curNode);
-      }
+    // reverse faces of the polyhedron
+    int neededOri = sameOri ? 1 - facetOri[0] : 1;
+    poly_nodes.reserve( vTool.NbNodes() );
+    for ( int iface = 0; iface < nbFaces; iface++ )
+    {
+      int             nbFaceNodes = vTool.NbFaceNodes( iface );
+      const SMDS_MeshNode** nodes = vTool.GetFaceNodes( iface );
+      bool toReverse = ( facetOri[ iface ] != neededOri );
+
+      quantities[ iface ] = nbFaceNodes;
+
+      if ( toReverse )
+        for ( int inode = nbFaceNodes - 1; inode >= 0; inode-- )
+          poly_nodes.push_back( nodes[ inode ]);
+      else
+        poly_nodes.insert( poly_nodes.end(), nodes, nodes + nbFaceNodes );
     }
     return GetMeshDS()->ChangePolyhedronNodes( theElem, poly_nodes, quantities );
   }

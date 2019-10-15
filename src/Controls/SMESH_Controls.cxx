@@ -2286,7 +2286,19 @@ bool BadOrientedVolume::IsSatisfy( long theId )
     return false;
 
   SMDS_VolumeTool vTool( myMesh->FindElement( theId ));
-  return !vTool.IsForward();
+
+  bool isOk = true;
+  if ( vTool.IsPoly() )
+  {
+    isOk = true;
+    for ( int i = 0; i < vTool.NbFaces() && isOk; ++i )
+      isOk = vTool.IsFaceExternal( i );
+  }
+  else
+  {
+    isOk = vTool.IsForward();
+  }
+  return !isOk;
 }
 
 SMDSAbs_ElementType BadOrientedVolume::GetType() const
