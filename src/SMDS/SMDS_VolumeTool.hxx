@@ -248,7 +248,10 @@ class SMDS_EXPORT SMDS_VolumeTool
 
   bool setFace( int faceIndex ) const;
 
-  bool projectNodesToNormal( int faceIndex, double& minProj, double& maxProj ) const;
+  bool projectNodesToNormal( int     faceIndex,
+                             double& minProj,
+                             double& maxProj,
+                             double* normal = 0) const;
 
   const SMDS_MeshElement* myVolume;
   const SMDS_MeshVolume*  myPolyedre;

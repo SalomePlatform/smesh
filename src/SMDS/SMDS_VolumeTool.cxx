@@ -39,6 +39,7 @@
 #include <map>
 #include <limits>
 #include <cmath>
+#include <cstring>
 #include <numeric>
 #include <algorithm>
 
@@ -358,6 +359,7 @@ struct XYZ {
   XYZ( double X, double Y, double Z ) { x = X; y = Y; z = Z; }
   XYZ( const XYZ& other )             { x = other.x; y = other.y; z = other.z; }
   XYZ( const SMDS_MeshNode* n )       { x = n->X(); y = n->Y(); z = n->Z(); }
+  double* data()                      { return &x; }
   inline XYZ operator-( const XYZ& other );
   inline XYZ operator+( const XYZ& other );
   inline XYZ Crossed( const XYZ& other );
@@ -708,6 +710,7 @@ double SMDS_VolumeTool::GetSize() const
 
     SaveFacet savedFacet( myCurFace );
     SMDS_VolumeTool* me = const_cast< SMDS_VolumeTool* > ( this );
+    XYZ origin( 1 + 1e-6, 22 + 2e-6, 333 + 3e-6 ); // for invalid poly: avoid lying on a facet plane
     for ( int f = 0; f < NbFaces(); ++f )
     {
       me->setFace( f );
@@ -718,7 +721,7 @@ double SMDS_VolumeTool::GetSize() const
         area = area + p1.Crossed( p2 );
         p1 = p2;
       }
-      V += p1.Dot( area );
+      V += ( p1 - origin ).Dot( area );
     }
     V /= 6;
   }
@@ -1141,7 +1144,8 @@ bool SMDS_VolumeTool::IsFaceExternal( int faceIndex ) const
 
 bool SMDS_VolumeTool::projectNodesToNormal( int     faceIndex,
                                             double& minProj,
-                                            double& maxProj ) const
+                                            double& maxProj,
+                                            double* normalXYZ ) const
 {
   minProj = std::numeric_limits<double>::max();
   maxProj = std::numeric_limits<double>::min();
@@ -1149,6 +1153,9 @@ bool SMDS_VolumeTool::projectNodesToNormal( int     faceIndex,
   XYZ normal;
   if ( !GetFaceNormal( faceIndex, normal.x, normal.y, normal.z ))
     return false;
+  if ( normalXYZ )
+    memcpy( normalXYZ, normal.data(), 3*sizeof(double));
+
   XYZ p0 ( myCurFace.myNodes[0] );
   for ( size_t i = 0; i < myVolumeNodes.size(); ++i )
   {
