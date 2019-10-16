@@ -7,7 +7,9 @@ Import Elements from Another Mesh Algorithms
 **Import Elements from Another Mesh** algorithms allow to
 define the mesh of a geometrical 
 object by importing suitably located mesh elements from another
-mesh. The mesh elements to import from the other mesh should be contained in
+mesh. The algorithms import elements whose all nodes lye on the geometry
+being meshed.
+The mesh elements to import from the other mesh should be contained in
 groups. If several groups are used to mesh the same geometry, validity of
 nodal connectivity of result mesh must be assured by connectivity of
 the source mesh; no geometrical checks are performed to merge
@@ -41,7 +43,7 @@ In this dialog box you can define
 * **To copy mesh** checkbox allows to import not only the edges of the selected **Groups of Edges**, but the whole source mesh. In this case **To copy groups** checkbox allows to create the same groups as in the imported source mesh.
 
 
-**Import 1D-2D Elements from Another Mesh** algorithm allows to define the mesh of a geometrical face (or group of faces) by importing mesh faces contained in a group (or groups) from another (or this) mesh. 1D elements on the boundary of the geometrical face (if not yet present) are also created by the algorithm in conformity with the created 2D elements.
+**Import 1D-2D Elements from Another Mesh** algorithm allows to define the mesh of a geometrical face (or group of faces) by importing mesh faces contained in a group (or groups) from another (or this) mesh. 1D elements on the boundary of the geometrical face (if not yet present) are also created by the algorithm in conformity with the created 2D elements. The algorithm imports a mesh face provided that all its nodes lye on the geometrical face.
 
 To apply this algorithm select the geometrical face to be meshed (indicated in the field **Geometry** of **Create mesh** dialog box), **Import 1D-2D Elements from Another Mesh** in the list of 2D algorithms and click the *"Add Hypothesis"* button.
 
