@@ -307,10 +307,12 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
     const double groupTol = 0.5 * sqrt( getMinElemSize2( srcGroup ));
     minGroupTol = std::min( groupTol, minGroupTol );
 
+    // clsfTol is 3D tolerance
     //GeomAdaptor_Surface S( surface );
     // const double clsfTol = Min( S.UResolution( 0.1 * groupTol ), -- issue 0023092
     //                             S.VResolution( 0.1 * groupTol ));
-    const double clsfTol = BRep_Tool::Tolerance( geomFace );
+    // another idea: try to use max tol of all edges
+    const double clsfTol = 10 * BRep_Tool::Tolerance( geomFace ); // 0.1 * groupTol;
 
     if ( helper.HasSeam() )
       onEdgeClassifier.SetMesh( srcMesh->GetMeshDS() );
