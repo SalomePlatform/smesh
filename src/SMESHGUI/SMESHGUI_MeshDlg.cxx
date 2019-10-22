@@ -34,6 +34,7 @@
 #include <QtxToolButton.h>
 
 // Qt includes
+#include <QCheckBox>
 #include <QComboBox>
 #include <QCursor>
 #include <QGridLayout>
@@ -572,9 +573,12 @@ SMESHGUI_MeshDlg::SMESHGUI_MeshDlg( const bool theToCreate, const bool theIsMesh
   // mesh type
   QLabel* anMeshTypeLbl = new QLabel( tr( "MESH_TYPE" ), this );
   myMeshType = new QComboBox( this );
-  
+  // groups
+  myCreateGroupsCheck = new QCheckBox( tr( "CREATE_ALL_GROUPS" ), this );
+  myCreateGroupsCheck->setChecked( true );
+
   // Create tab widget
-  
+
   myTabWg = new QTabWidget( mainFrame() );
   myTabs[ Dim0D ] = new SMESHGUI_MeshTab( myTabWg );
   myTabs[ Dim1D ] = new SMESHGUI_MeshTab( myTabWg );
@@ -608,9 +612,10 @@ SMESHGUI_MeshDlg::SMESHGUI_MeshDlg( const bool theToCreate, const bool theIsMesh
   aLay->addWidget( objectWg( Geom, Control ), 2, 2 );
   aLay->addWidget( anMeshTypeLbl,             3, 0 );
   aLay->addWidget( myMeshType,                3, 2 );
-  aLay->addWidget( myTabWg,                   5, 0, 1, 3 );
-  aLay->addWidget( myHypoSetButton,           6, 0, 1, 3 );
-  aLay->setRowMinimumHeight( 3, 20 );
+  aLay->addWidget( myCreateGroupsCheck,       4, 0, 1, 3 );
+  aLay->addWidget( myTabWg,                   6, 0, 1, 3 );
+  aLay->addWidget( myHypoSetButton,           7, 0, 1, 3 );
+  aLay->setRowMinimumHeight( 4, 20 );
 
   myMeshType->clear();
 
@@ -658,7 +663,7 @@ void SMESHGUI_MeshDlg::setTitile( const bool theToCreate, const bool theIsMesh )
   {
     setWindowTitle( tr( theIsMesh ? "EDIT_MESH" : "EDIT_SUBMESH") );
   }
-  
+  myCreateGroupsCheck-> setVisible( theToCreate && theIsMesh );
 }
 
 //================================================================================
@@ -915,4 +920,15 @@ void SMESHGUI_MeshDlg::setCurrentMeshType( const int theIndex )
     myMeshType->setCurrentIndex( theIndex );
   else
     myMeshType->setCurrentIndex( 0 );
+}
+
+//================================================================================
+/*!
+ * \brief Return state of "Create all Groups on Geometry" check-box
+ */
+//================================================================================
+
+bool SMESHGUI_MeshDlg::toCreateAllGroups()
+{
+  return myCreateGroupsCheck->isChecked();
 }

@@ -5211,6 +5211,7 @@ void SMESHGUI::createPreferences()
                              "SMESH", "nb_segments_per_edge" );
   setPreferenceProperty( nbSeg, "min", 1 );
   setPreferenceProperty( nbSeg, "max", 10000000 );
+  addPreference( tr( "PREF_USE_MESHGEMS_HYPOSET" ), segGroup, LightApp_Preferences::Bool, "SMESH", "use-meshgems-hypo-sets" );
 
   int loadGroup = addPreference( tr( "SMESH_PREF_MESH_LOADING" ), genTab );
   addPreference( tr( "PREF_FORGET_MESH_AT_HYP_MODIF" ), loadGroup, LightApp_Preferences::Bool,

@@ -49,6 +49,7 @@ public:
 
     virtual LightApp_Dialog*    dlg() const;  
     static QString              GetDefaultName(const QString& theOperation);
+    static SMESH::ElementType   ElementType(GEOM::GEOM_Object_var geom);
 
 public slots:
 

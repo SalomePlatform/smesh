@@ -590,21 +590,44 @@
 
 <hypotheses-set-group>
 
-    <hypotheses-set name="Automatic Tetrahedralization"
-                    hypos="MaxLength"
-                    algos="Regular_1D, @MEFISTO2D_NAME@, NETGEN_3D"/>
+    <hypotheses-set name="Tetrahedralization"
+                    use-common-size="true"
+                    hypos="MG-CADSurf Parameters"
+                    algos="MG-CADSurf, MG-Tetra"
+                    alt-hypos="NETGEN_Parameters"
+                    alt-algos="NETGEN_2D3D"
+                    intern-edge-hypos="LocalLength"
+                    intern-edge-algos="Regular_1D"/>
 
-    <hypotheses-set name="Automatic Hexahedralization"
+    <hypotheses-set name="Mapped Hexahedralization"
                     hypos="NumberOfSegments"
                     algos="Regular_1D, Quadrangle_2D, Hexa_3D"/>
 
-    <hypotheses-set name="Automatic Triangulation"
-                    hypos="MaxLength"
-                    algos="Regular_1D, @MEFISTO2D_NAME@"/>
+    <hypotheses-set name="Free Hexahedralization"
+                    use-common-size="true"
+                    hypos="MG-CADSurf Parameters"
+                    algos="MG-CADSurf, MG-Hexa"
+                    intern-edge-hypos="LocalLength"
+                    intern-edge-algos="Regular_1D"/>
 
-    <hypotheses-set name="Automatic Quadrangulation"
+    <hypotheses-set name="Triangulation"
+                    use-common-size="true"
+                    hypos="MG-CADSurf Parameters"
+                    algos="MG-CADSurf"
+                    alt-hypos="NETGEN_Parameters_2D"
+                    alt-algos="NETGEN_2D"/>
+
+    <hypotheses-set name="Mapped Quadrangulation"
                     hypos="NumberOfSegments"
                     algos="Regular_1D, Quadrangle_2D"/>
+
+    <hypotheses-set name="Free Quadrangulation"
+                    use-common-size="true"
+                    quad-dominated="true"
+                    hypos="MG-CADSurf Parameters"
+                    algos="MG-CADSurf"
+                    alt-hypos="NETGEN_Parameters_2D"
+                    alt-algos="NETGEN_2D"/>
 
 </hypotheses-set-group>
 

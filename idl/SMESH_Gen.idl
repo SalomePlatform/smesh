@@ -116,6 +116,15 @@ module SMESH
   };
   typedef sequence<ComputeError> compute_error_array;
 
+  /*!
+   * Way to initialize hypothesis
+   */
+  struct HypInitParams
+  {
+    short   way; // 0 - by mesh, 1 - by geometry size + prefered parameters, 2 - by averageLength
+    double  averageLength;
+    boolean quadDominated;
+  };
 
   interface SMESH_Gen : Engines::EngineComponent, SALOMEDS::Driver
   {
@@ -175,7 +184,7 @@ module SMESH
                                                    in string            theLibName,
                                                    in SMESH_Mesh        theMesh,
                                                    in GEOM::GEOM_Object theGeom,
-                                                   in boolean           byMesh)
+                                                   in HypInitParams     theWay)
       raises ( SALOME::SALOME_Exception );
 
     /*!

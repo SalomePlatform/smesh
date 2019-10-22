@@ -95,11 +95,18 @@ public:
    */
   virtual bool SetParametersByMesh(const SMESH_Mesh* theMesh, const TopoDS_Shape& theShape)=0;
 
+  enum InitWay { BY_MESH, BY_GEOM, BY_AVERAGE_LENGTH };
   struct TDefaults
   {
+    InitWay       _way;
     double        _elemLength;
     int           _nbSegments;
+    bool          _quadDominated;
+    double        _diagonal;
     TopoDS_Shape* _shape; // future shape of the mesh being created
+
+    TDefaults():
+      _way(BY_GEOM), _elemLength(0),_nbSegments(0),_quadDominated(false),_diagonal(0),_shape(0) {}
   };
   /*!
    * \brief Initialize my parameter values by default parameters.

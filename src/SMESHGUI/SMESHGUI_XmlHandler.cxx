@@ -201,14 +201,26 @@ bool SMESHGUI_XmlHandler::startElement (const QString&, const QString&,
   {
     if (atts.value("name") != "")
     {
-      QString hypos = atts.value("hypos").remove( ' ' );
-      QString algos = atts.value("algos").remove( ' ' );
+      bool   useCommonSize = ( atts.value("use-common-size") == "true" );
+      bool isQuadDominated = ( atts.value("quad-dominated")  == "true" );
+      QString    hypos = atts.value("hypos");
+      QString    algos = atts.value("algos");
+      QString altHypos = atts.value("alt-hypos");
+      QString altAlgos = atts.value("alt-algos");
+      QString intHypos = atts.value("intern-edge-hypos");
+      QString intAlgos = atts.value("intern-edge-algos");
       bool badSet = hypos.contains( BAD_HYP_FLAG ) || algos.contains( BAD_HYP_FLAG );
 
       if ( !badSet )
-        myListOfHypothesesSets.append( new HypothesesSet ( atts.value("name"),
-                                                           hypos.split( ',', QString::SkipEmptyParts ),
-                                                           algos.split( ',', QString::SkipEmptyParts ) ) );
+        myListOfHypothesesSets.append
+          ( new HypothesesSet ( atts.value("name"),
+                                useCommonSize, isQuadDominated,
+                                hypos.split   ( ',', QString::SkipEmptyParts ),
+                                algos.split   ( ',', QString::SkipEmptyParts ),
+                                altHypos.split( ',', QString::SkipEmptyParts ),
+                                altAlgos.split( ',', QString::SkipEmptyParts ),
+                                intHypos.split( ',', QString::SkipEmptyParts ),
+                                intAlgos.split( ',', QString::SkipEmptyParts )));
     }
   }
   else if ( qName == "python-wrap" ||

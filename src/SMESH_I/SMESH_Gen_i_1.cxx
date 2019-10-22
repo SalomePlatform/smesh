@@ -839,21 +839,25 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishGroup (SMESH::SMESH_Mesh_ptr  theMesh,
         SetName( aRootSO, aRootNames[aType] );
 
       // Add new group to corresponding sub-tree
-      int isEmpty = false;
+      int isEmpty = ( theMesh->NbNodes() == 0 );
       std::string pm[2] = { "ICON_SMESH_TREE_GROUP", "ICON_SMESH_TREE_MESH_WARN" };
-      if ( SMESH::DownCast< SMESH_GroupOnFilter_i* > ( theGroup ))
+      if ( !isEmpty )
       {
-        pm[0] = "ICON_SMESH_TREE_GROUP_ON_FILTER";
-      }
-      else if ( SMESH::DownCast< SMESH_Group_i* > ( theGroup ))
-      {
-        if ( theGroup->GetType() == SMESH::NODE )
-          isEmpty = ( theMesh->NbNodes() == 0 );
-        else
+        if ( SMESH::DownCast< SMESH_GroupOnFilter_i* > ( theGroup )) // on filter
         {
-          SMESH::array_of_ElementType_var allElemTypes = theMesh->GetTypes();
-          for ( size_t i =0; i < allElemTypes->length() && isEmpty; ++i )
-            isEmpty = ( allElemTypes[i] != theGroup->GetType() );
+          pm[0] = "ICON_SMESH_TREE_GROUP_ON_FILTER";
+
+          if ( theGroup->GetType() != SMESH::NODE )
+          {
+            isEmpty = true;
+            SMESH::array_of_ElementType_var allElemTypes = theMesh->GetTypes();
+            for ( size_t i =0; i < allElemTypes->length() && isEmpty; ++i )
+              isEmpty = ( allElemTypes[i] != theGroup->GetType() );
+          }
+        }
+        else // standalone or on geometry
+        {
+          isEmpty = ( theGroup->Size() == 0 );
         }
       }
       aGroupSO = publish ( theGroup, aRootSO, 0, pm[isEmpty].c_str() );
@@ -873,14 +877,14 @@ SALOMEDS::SObject_ptr SMESH_Gen_i::PublishGroup (SMESH::SMESH_Mesh_ptr  theMesh,
 
 //=======================================================================
 //function : PublishHypothesis
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 SALOMEDS::SObject_ptr
-  SMESH_Gen_i::PublishHypothesis (SMESH::SMESH_Hypothesis_ptr theHyp,
-                                  const char*                 theName)
+SMESH_Gen_i::PublishHypothesis (SMESH::SMESH_Hypothesis_ptr theHyp,
+                                const char*                 theName)
 {
-  if(MYDEBUG) MESSAGE("PublishHypothesis")
+  if(MYDEBUG) MESSAGE("PublishHypothesis");
   if ( !myIsEnablePublish )
     return SALOMEDS::SObject::_nil();
   if (theHyp->_is_nil())

@@ -101,6 +101,10 @@ General Preferences
 
   * **Default Number of Segments** - defines the default number of segments in :ref:`Number of Segments <number_of_segments_anchor>` hypothesis.
 
+.. _use_meshgems_pref:
+
+  * **Use MeshGems meshers when assigning set of hypotheses** - if activated, commercial meshers of MeshGems suite are used instead of a free mesher NETGEN when assigning a set of hypotheses in Create Mesh/Sub-mesh dialog.
+  
 * **Mesh loading**
 
   * **No mesh loading from study file at hypothesis modification** - if activated, the mesh data will not be loaded from the study file when a hypothesis is modified. This allows saving time by omitting loading data of a large mesh that is planned to be recomputed with other parameters.

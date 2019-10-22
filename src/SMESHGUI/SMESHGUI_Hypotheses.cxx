@@ -27,10 +27,11 @@
 
 #include "SMESHGUI.h"
 #include "SMESHGUI_HypothesesUtils.h"
-#include "SMESHGUI_Utils.h"
 #include "SMESHGUI_SpinBox.h"
+#include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
 #include "SMESH_Actor.h"
+#include "SMESH_TypeDefs.hxx"
 
 // SALOME KERNEL includes
 #include <SALOMEDSClient_Study.hxx>
@@ -147,10 +148,14 @@ void SMESHGUI_GenericHypothesisCreator::editHypothesis( SMESH::SMESH_Hypothesis_
     Dlg->setWindowTitle( caption() );
     Dlg->setObjectName( theHypName );
     Dlg->setHIcon( icon() );
-    Dlg->setType( type() );
+    if ( theHypName == HypothesesSet::getCommonHypoSetHypoType() )
+      Dlg->setType( tr( HypothesesSet::getCommonHypoSetHypoType()) );
+    else
+      Dlg->setType( type() );
     retrieveParams();
-    Dlg->show();
+    Dlg->show(); // w/o this Dlg blocks selection
     Dlg->resize( Dlg->minimumSizeHint() );
+    Dlg->exec(); // w/o this we cant wait until edition ends when applying a hypo-set
   }
   else {
     emit finished( QDialog::Accepted );
@@ -671,6 +676,14 @@ SMESHGUI_HypothesisDlg::~SMESHGUI_HypothesisDlg()
   delete myCreator;
 }
 
+void SMESHGUI_HypothesisDlg::showEvent(QShowEvent *event)
+{
+  // resize( minimumSizeHint() );
+  // adjustSize();
+
+  QtxDialog::showEvent( event );
+}
+
 void SMESHGUI_HypothesisDlg::setCustomFrame( QFrame* f )
 {
   if( f )
@@ -779,32 +792,44 @@ HypothesisData::HypothesisData( const QString&     theTypeName,
 {
 }
 
-HypothesesSet::HypothesesSet( const QString& theSetName )
-  : myHypoSetName( theSetName ),
+// HypothesesSet::HypothesesSet( const QString& theSetName )
+//   : myHypoSetName( theSetName ),
+//     myIsAlgo( false ),
+//     myIsCustom( false )
+// {
+// }
+
+HypothesesSet::HypothesesSet( const QString& theSetName,
+                              bool useCommonSize, bool isQuadDominated,
+                              const QStringList& mainHypos, const QStringList& mainAlgos,
+                              const QStringList& altHypos,  const QStringList& altAlgos,
+                              const QStringList& intHypos,  const QStringList& intAlgos )
+  : myUseCommonSize( useCommonSize ),
+    myQuadDominated( isQuadDominated ),
+    myHypoSetName( theSetName ),
+    myHypoList({ mainHypos, altHypos, intHypos }),
+    myAlgoList({ mainAlgos, altAlgos, intAlgos }),
     myIsAlgo( false ),
-    myIsCustom( false )
+    myIsCustom( false ),
+    myIndex( 0 )
 {
+  for ( myHypType = MAIN; myHypType < NB_HYP_TYPES; SMESHUtils::Increment( myHypType ))
+    for ( int isAlgo = myIsAlgo = 0; isAlgo < 2; myIsAlgo = ++isAlgo )
+    {
+      QStringList& hyps = *list();
+      for ( int i = 0; i < hyps.count(); ++i )
+        hyps[ i ] = hyps[ i ].trimmed();
+    }
 }
 
-HypothesesSet::HypothesesSet( const QString&     theSetName,
-                              const QStringList& theHypoList,
-                              const QStringList& theAlgoList )
-  : myHypoSetName( theSetName ),
-    myHypoList( theHypoList ),
-    myAlgoList( theAlgoList ),
-    myIsAlgo( false ),
-    myIsCustom( false )
+QStringList* HypothesesSet::list( bool is_algo, SetType setType) const
 {
-}
-
-QStringList* HypothesesSet::list(bool is_algo) const
-{
-  return const_cast<QStringList*>( &( is_algo ? myAlgoList : myHypoList ) );
+  return const_cast<QStringList*>( &( is_algo ? myAlgoList[setType] : myHypoList[setType] ));
 }
 
 QStringList* HypothesesSet::list() const
 {
-  return list( myIsAlgo );
+  return list( myIsAlgo, myHypType );
 }
 
 QString HypothesesSet::name() const
@@ -812,23 +837,24 @@ QString HypothesesSet::name() const
   return myHypoSetName;
 }
 
-void HypothesesSet::set( bool isAlgo, const QStringList& lst )
-{
-  *list(isAlgo) = lst;
-}
+// void HypothesesSet::set( bool isAlgo, const QStringList& lst )
+// {
+//   *list(isAlgo) = lst;
+// }
 
-int HypothesesSet::count( bool isAlgo ) const
-{
-  return list(isAlgo)->count();
-}
+// int HypothesesSet::count( bool isAlgo, SetType setType ) const
+// {
+//   return list(isAlgo,setType)->count();
+// }
 
-bool HypothesesSet::isAlgo() const
-{
-  return myIsAlgo;
-}
+// bool HypothesesSet::isAlgo() const
+// {
+//   return myIsAlgo;
+// }
 
-void HypothesesSet::init( bool isAlgo )
+void HypothesesSet::init( bool isAlgo, SetType setType )
 {
+  myHypType = setType;
   myIsAlgo = isAlgo;
   myIndex = 0;
 }
@@ -858,16 +884,43 @@ bool HypothesesSet::getIsCustom() const
   return myIsCustom;
 }
 
+void HypothesesSet::setAlgoAvailable( SetType type, bool isAvailable )
+{
+  if ( MAIN <= type && type < NB_HYP_TYPES )
+    myIsAlgoAvailable[ type ] = isAvailable;
+}
+
+bool HypothesesSet::getAlgoAvailable( SetType type )
+{
+  bool isAva = false;
+  if ( MAIN <= type && type < NB_HYP_TYPES )
+    isAva = myIsAlgoAvailable[ type ];
+  return isAva;
+}
+
+HypothesesSet::SetType HypothesesSet::getPreferredHypType()
+{
+  SUIT_ResourceMgr* resMgr = SUIT_Session::session()->resourceMgr();
+  int useAltHypos = !resMgr->booleanValue( "SMESH", "use-meshgems-hypo-sets", false );
+  return ( HypothesesSet::SetType ) useAltHypos;
+}
+
 int HypothesesSet::maxDim() const
 {
   HypothesesSet * thisSet = (HypothesesSet*) this;
   int dim = -1;
-  for ( int isAlgo = 0; isAlgo < 2; ++isAlgo )
-  {
-    for ( thisSet->init( isAlgo ); thisSet->more(); thisSet->next() )
-      if ( HypothesisData* hypData = SMESH::GetHypothesisData( thisSet->current() ))
-        for ( int i = 0; i < hypData->Dim.count(); ++i )
-          dim = qMax( dim, hypData->Dim[i] );
-  }
+  for ( int setType = 0; setType < 2; ++setType )
+    for ( int isAlgo = 0; isAlgo < 2; ++isAlgo )
+    {
+      for ( thisSet->init( isAlgo, SetType( setType )); thisSet->more(); thisSet->next() )
+        if ( HypothesisData* hypData = SMESH::GetHypothesisData( thisSet->current() ))
+          for ( int i = 0; i < hypData->Dim.count(); ++i )
+            dim = qMax( dim, hypData->Dim[i] );
+    }
   return dim;
+}
+
+const char* HypothesesSet::getCommonHypoSetHypoType()
+{
+  return "AverageLengthForHypoSet";
 }

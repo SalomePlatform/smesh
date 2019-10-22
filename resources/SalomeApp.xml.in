@@ -76,6 +76,7 @@
     <parameter name="info_dump_ctrl"               value="true" />
     <parameter name="segmentation"                 value="10"/>
     <parameter name="nb_segments_per_edge"         value="15"/>
+    <parameter name="use-meshgems-hypo-sets"       value="@SMESH_USE_MESHGEMS_HYPOSET_VAR@"/>
     <parameter name="forget_mesh_on_hyp_modif"     value="true"/>
     <parameter name="quadratic_mode"               value="0"/>
     <parameter name="max_angle"                    value="2"/>

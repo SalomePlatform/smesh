@@ -329,8 +329,7 @@ namespace SMESH
         hypoSet != myListOfHypothesesSets.end();
         ++hypoSet ) {
       HypothesesSet* aSet = *hypoSet;
-      if ( aSet && ( aSet->count( true ) || aSet->count( false )) &&
-          aSet->maxDim() <= maxDim)
+      if ( aSet && 0 <= aSet->maxDim() && aSet->maxDim() <= maxDim )
       {
         aSetNameList.append( mangledHypoSetName( aSet ));
       }

@@ -27,6 +27,7 @@
 
 #include "SMESHGUI.h"
 #include "SMESHGUI_GEOMGenUtils.h"
+#include "SMESHGUI_GroupOnShapeDlg.h"
 #include "SMESHGUI_Hypotheses.h"
 #include "SMESHGUI_HypothesesUtils.h"
 #include "SMESHGUI_MeshDlg.h"
@@ -34,26 +35,30 @@
 #include "SMESHGUI_ShapeByMeshDlg.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESH_NumberFilter.hxx"
+#include "SMESH_TypeDefs.hxx"
 #include "SMESH_TypeFilter.hxx"
 
+#include CORBA_SERVER_HEADER(SMESH_BasicHypothesis)
+
 // SALOME GEOM includes
-#include <GEOM_SelectionFilter.h>
 #include <GEOMBase.h>
-#include <GeometryGUI.h>
-#include <GEOM_wrap.hxx>
 #include <GEOMImpl_Types.hxx>
+#include <GEOM_SelectionFilter.h>
+#include <GEOM_wrap.hxx>
+#include <GeometryGUI.h>
 
 // SALOME GUI includes
-#include <SalomeApp_Tools.h>
-#include <SalomeApp_Application.h>
 #include <LightApp_Application.h>
 #include <LightApp_SelectionMgr.h>
 #include <LightApp_UpdateFlags.h>
-#include <SUIT_MessageBox.h>
-#include <SUIT_OverrideCursor.h>
-#include <SUIT_Session.h>
 #include <SALOME_InteractiveObject.hxx>
 #include <SALOME_ListIO.hxx>
+#include <SUIT_MessageBox.h>
+#include <SUIT_OverrideCursor.h>
+#include <SUIT_ResourceMgr.h>
+#include <SUIT_Session.h>
+#include <SalomeApp_Application.h>
+#include <SalomeApp_Tools.h>
 
 // SALOME KERNEL includes
 #include <SALOMEDS_SComponent.hxx>
@@ -62,16 +67,16 @@
 #include <SALOMEDS_wrap.hxx>
 
 // Qt includes
-#include <QStringList>
-#include <QLineEdit>
 #include <QApplication>
+#include <QLineEdit>
+#include <QStringList>
 
 // OCCT includes
-#include <TopoDS.hxx>
-#include <TopoDS_Shape.hxx>
-#include <TopoDS_Shell.hxx>
-#include <TopExp_Explorer.hxx>
 #include <BRep_Tool.hxx>
+#include <TopExp.hxx>
+#include <TopExp_Explorer.hxx>
+#include <TopTools_IndexedMapOfShape.hxx>
+#include <TopoDS.hxx>
 
 //================================================================================
 /*!
@@ -183,6 +188,8 @@ bool SMESHGUI_MeshOp::onApply()
     SUIT_MessageBox::warning( myDlg, tr( "SMESH_ERROR" ), aMess );
   }
 
+  myHypoSet = 0;
+
   return aResult;
 }
 
@@ -257,6 +264,7 @@ void SMESHGUI_MeshOp::startOperation()
 
   selectionDone();
 
+  myHypoSet = 0;
   myHasConcurrentSubBefore = false;
   myObjectToSelect.clear();
 }
@@ -1022,8 +1030,9 @@ void SMESHGUI_MeshOp::existingHyps( const int       theDim,
  */
 //================================================================================
 SMESH::SMESH_Hypothesis_var
-SMESHGUI_MeshOp::getInitParamsHypothesis( const QString& aHypType,
-                                          const QString& aServerLib ) const
+SMESHGUI_MeshOp::getInitParamsHypothesis( const QString&              aHypType,
+                                          const QString&              aServerLib,
+                                          const SMESH::HypInitParams* aParams ) const
 {
   if ( aHypType.isEmpty() || aServerLib.isEmpty() )
     return SMESH::SMESH_Hypothesis::_nil();
@@ -1083,18 +1092,42 @@ SMESHGUI_MeshOp::getInitParamsHypothesis( const QString& aHypType,
     }
   }
 
+  SMESH::HypInitParams initParams;
+  enum { BY_MESH, BY_GEOM, BY_AVERAGE_LENGTH }; // same as ::SMESH_Hypothesis::InitWay
+  if ( aParams )
+  {
+    initParams = *aParams;
+  }
+  else
+  {
+    initParams.way = isSubMesh ? BY_MESH : BY_GEOM;
+  }
+
   SMESH::SMESH_Hypothesis_var hyp =
     SMESHGUI::GetSMESHGen()->GetHypothesisParameterValues( aHypType.toUtf8().data(),
                                                            aServerLib.toUtf8().data(),
                                                            aMesh,
                                                            aGeomVar,
-                                                           /*byMesh = */isSubMesh);
-  if ( hyp->_is_nil() && isSubMesh )
+                                                           initParams );
+  if ( hyp->_is_nil() && initParams.way == BY_MESH )
+  {
+    initParams.way = BY_GEOM;
     hyp = SMESHGUI::GetSMESHGen()->GetHypothesisParameterValues( aHypType.toLatin1().data(),
                                                                  aServerLib.toUtf8().data(),
                                                                  aMesh,
                                                                  aGeomVar,
-                                                                 /*byMesh = */false);
+                                                                 initParams );
+  }
+  if ( hyp->_is_nil() && initParams.way == BY_GEOM )
+  {
+    initParams.way = BY_AVERAGE_LENGTH;
+    initParams.averageLength = 1.;
+    hyp = SMESHGUI::GetSMESHGen()->GetHypothesisParameterValues( aHypType.toLatin1().data(),
+                                                                 aServerLib.toUtf8().data(),
+                                                                 aMesh,
+                                                                 aGeomVar,
+                                                                 initParams );
+  }
   return hyp;
 }
 
@@ -1221,25 +1254,14 @@ namespace
 
 //================================================================================
 /*!
- *  Create hypothesis and update dialog.
- *  \param theDim - dimension of hypothesis to be created
- *  \param theType - hypothesis category (algorithm, hypothesis, additional hypothesis)
- *  \param theTypeName - specifies hypothesis to be created
+ * \brief Return names of all existing hypotheses
  */
 //================================================================================
-void SMESHGUI_MeshOp::createHypothesis(const int theDim,
-                                       const int theType,
-                                       const QString& theTypeName)
+
+QStringList SMESHGUI_MeshOp::getHypoNames()
 {
-  HypothesisData* aData = SMESH::GetHypothesisData(theTypeName);
-  if (!aData)
-    return;
-
-  myDim = theDim;
-  myType = theType;
-
-  // get a unique hyp name
   QStringList aHypNames;
+
   TDim2Type2HypList::const_iterator aDimIter = myExistingHyps.begin();
   for ( ; aDimIter != myExistingHyps.end(); aDimIter++) {
     const TType2HypList& aType2HypList = aDimIter.value();
@@ -1254,7 +1276,30 @@ void SMESHGUI_MeshOp::createHypothesis(const int theDim,
       }
     }
   }
-  QString aHypName = GetUniqueName( aHypNames, aData->Label);
+  return aHypNames;
+}
+
+//================================================================================
+/*!
+ *  Create hypothesis and update dialog.
+ *  \param theDim - dimension of hypothesis to be created
+ *  \param theType - hypothesis category (algorithm, hypothesis, additional hypothesis)
+ *  \param theTypeName - specifies hypothesis to be created
+ */
+//================================================================================
+void SMESHGUI_MeshOp::createHypothesis(const int      theDim,
+                                       const int      theType,
+                                       const QString& theTypeName)
+{
+  HypothesisData* aData = SMESH::GetHypothesisData(theTypeName);
+  if (!aData)
+    return;
+
+  myDim = theDim;
+  myType = theType;
+
+  // get a unique hyp name
+  QString aHypName = GetUniqueName( getHypoNames(), aData->Label);
 
   // existing hypos
   bool dialog = false;
@@ -1657,6 +1702,179 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
 
 //================================================================================
 /*!
+ * \brief Create a sub-mesh on internal edges in the case where the global algorithm
+ *        is of type 1D-2D[-3D] so that the internal edges would remain not meshed.
+ */
+//================================================================================
+
+void SMESHGUI_MeshOp::createSubMeshOnInternalEdges( SMESH::SMESH_Mesh_ptr theMesh,
+                                                    GEOM::GEOM_Object_ptr theMainShape )
+{
+  if ( theMesh->_is_nil() || theMainShape->_is_nil() )
+    return;
+
+  if ( isAccessibleDim( 1 ))
+    return; // global 1D algorithm is/can be assigned
+
+  const HypothesesSet::SetType internSet = HypothesesSet::INTERN;
+  bool toCreate = true;
+  bool toCreateMandatory = ( myHypoSet &&
+                             myAverageSize > 0 &&
+                             ( myHypoSet->init( /*algo=*/ true, internSet ), myHypoSet->more()) &&
+                             ( myHypoSet->init( /*algo=*/false, internSet ), myHypoSet->more()));
+  if ( !toCreateMandatory ) // ask the user
+    toCreate = false; // can't pass both mesh and geometry to Create Submesh operation (so far?)
+    // toCreate = SUIT_MessageBox::warning( SMESHGUI::desktop(),
+    //                                      QObject::tr("SMESH_WRN_WARNING"),
+    //                                      QObject::tr("SMESH_CREATE_SUBMESH_ON_INTERNAL_EDGES"),
+    //                                      QObject::tr("SMESH_BUT_YES"),
+    //                                      QObject::tr("SMESH_BUT_NO"), 1, 0);
+  if ( !toCreate )
+    return;
+
+  TopoDS_Shape shape;
+  if ( !GEOMBase::GetShape( theMainShape, shape ))
+    return;
+
+  std::vector< TopoDS_Shape > internalEdges;
+  for ( TopExp_Explorer edge( shape, TopAbs_EDGE, TopAbs_WIRE ); edge.More(); edge.Next() )
+    internalEdges.push_back( edge.Current() );
+
+  if ( internalEdges.empty() )
+    return;
+
+  TopTools_IndexedMapOfShape shapeIDs;
+  TopExp::MapShapes( shape, shapeIDs );
+
+  std::set< int > intIDSet;
+  for ( size_t i = 0; i < internalEdges.size(); ++i )
+    intIDSet.insert( shapeIDs.FindIndex( internalEdges[ i ]));
+
+  GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
+  if (geomGen->_is_nil()) return;
+
+  GEOM::GEOM_Object_var edgeGroup;
+  GEOM::GEOM_IShapesOperations_wrap sOp = geomGen->GetIShapesOperations();
+  GEOM::GEOM_IGroupOperations_wrap  gOp = geomGen->GetIGroupOperations();
+  GEOM::ListOfGO_var         geomGroups = sOp->GetExistingSubObjects( theMainShape,
+                                                                      /*groupsOnly=*/true );
+  for ( CORBA::ULong i = 0; i < geomGroups->length(); ++i )
+  {
+    GEOM::ListOfLong_var ids = gOp->GetObjects( geomGroups[ i ]);
+    std::set< int > idSet( & ids[0], & ids[0] + ids->length() );
+    if ( idSet == intIDSet )
+    {
+      edgeGroup = geomGroups[ i ];
+      break;
+    }
+  }
+
+  if ( edgeGroup->_is_nil() )
+  {
+    GEOM::GEOM_Object_var edgeGroup = gOp->CreateGroup( theMainShape, TopAbs_EDGE );
+
+    GEOM::ListOfLong_var edgeIDs = new GEOM::ListOfLong;
+    edgeIDs->length( internalEdges.size() );
+    std::set< int >::iterator id = intIDSet.begin();
+    for ( size_t i = 0; i < intIDSet.size(); ++i, ++id )
+      edgeIDs[ i ] = *id;
+    gOp->UnionIDs( edgeGroup, edgeIDs );
+
+    SALOMEDS::SObject_wrap so = geomGen->AddInStudy( edgeGroup, "Internal edges", theMainShape );
+  }
+
+  if ( !toCreateMandatory )
+  {
+    // show Create Sub-mesh dislog
+    // _PTR(SObject) aMeshSO = SMESH::FindSObject( theMesh );
+    // selectionMgr()->clearFilters();
+    // selectObject( pSubmesh );
+    // SMESHGUI::GetSMESHGUI()->switchToOperation( SMESHOp::OpEditMeshOrSubMesh );
+    return;
+  }
+
+  // create a sub-mesh using myAverageSize w/o GUI
+
+  SMESH::SMESH_subMesh_var subMesh = theMesh->GetSubMesh( edgeGroup, "" );
+
+  for ( int isAlgo = 1; isAlgo >= 0; --isAlgo )
+    for ( myHypoSet->init( isAlgo, internSet ); myHypoSet->more(); myHypoSet->next() )
+    {
+      QString    aHypoTypeName = myHypoSet->current();
+      HypothesisData* aHypData = SMESH::GetHypothesisData( aHypoTypeName );
+      if ( !aHypData )
+        continue;
+
+      myDim = aHypData->Dim[0];
+      if ( myDim != 1 )
+        continue;
+
+      // create or/and set
+      SMESH::SMESH_Hypothesis_var newHypo;
+      if ( isAlgo )
+      {
+        myAvailableHypData[ myDim ][ Algo ].clear();
+        myAvailableHypData[ myDim ][ Algo ] << aHypData;
+        QStringList hypList; hypList << aHypoTypeName;
+        myDlg->tab( myDim )->setAvailableHyps( Algo, hypList );
+        setCurrentHyp( myDim, Algo, 0 );
+        newHypo = getAlgo( myDim );
+      }
+      else
+      {
+        SMESH::HypInitParams params = { 2, myAverageSize, false };
+        newHypo = getInitParamsHypothesis( aHypData->TypeName, aHypData->ServerLibName, & params );
+        QString hypName = GetUniqueName( getHypoNames(), aHypData->Label );
+        SALOMEDS::SObject_wrap so =
+          SMESHGUI::GetSMESHGen()->PublishInStudy( SALOMEDS::SObject::_nil(), newHypo,
+                                                   hypName.toUtf8().data() );
+      }
+      SMESH::AddHypothesisOnSubMesh( subMesh, newHypo );
+    }
+
+  return;
+}
+
+//================================================================================
+/*!
+ * \brief Ask the user to enter an average size which will be used to create
+ *        hypotheses of a hypo-set basing on this size
+ *  \param [out] averageSize - average element size
+ *  \return bool - false if the user canceled the dialog
+ */
+//================================================================================
+
+bool SMESHGUI_MeshOp::getAverageSize( double & averageSize )
+{
+  HypothesisData* hypData = SMESH::GetHypothesisData( "MaxLength" );
+  if ( !hypData )
+    return false;
+
+  SMESH::SMESH_Hypothesis_var hyp = getInitParamsHypothesis( hypData->TypeName,
+                                                             hypData->ServerLibName );
+  if ( hyp->_is_nil() )
+    return false;
+
+  SMESHGUI_GenericHypothesisCreator* aCreator = SMESH::GetHypothesisCreator( hypData->TypeName );
+  if ( !aCreator )
+    return false;
+  
+  initHypCreator( aCreator );
+  myDlg->setEnabled( false );
+
+  aCreator->edit( hyp.in(), HypothesesSet::getCommonHypoSetHypoType(),
+                  dlg(), this, SLOT( onHypoEdited( int )));
+
+  StdMeshers::StdMeshers_MaxLength_var lenHyp = StdMeshers::StdMeshers_MaxLength::_narrow( hyp );
+  if ( lenHyp->_is_nil() )
+    return false;
+
+  averageSize = lenHyp->GetLength();
+  return true;
+}
+
+//================================================================================
+/*!
  * \brief Creates and selects hypothesis of hypotheses set
  * \param theSetName - The name of hypotheses set
  */
@@ -1664,6 +1882,7 @@ void SMESHGUI_MeshOp::onAlgoSelected( const int theIndex,
 void SMESHGUI_MeshOp::onHypoSet( const QString& theSetName )
 {
   HypothesesSet* aHypoSet = SMESH::GetHypothesesSet(theSetName);
+  myHypoSet = aHypoSet;
   if (!aHypoSet)
     return;
 
@@ -1676,38 +1895,68 @@ void SMESHGUI_MeshOp::onHypoSet( const QString& theSetName )
     onAlgoSelected( -1, dim );
   }
 
+  HypothesesSet::SetType setType = aHypoSet->getPreferredHypType();
+  if ( !aHypoSet->getAlgoAvailable( setType ))
+  {
+    setType = setType == HypothesesSet::ALT ? HypothesesSet::MAIN : HypothesesSet::ALT;
+    if ( !aHypoSet->getAlgoAvailable( setType ))
+      return;
+  }
+
+  myAverageSize = -1;
+  if ( aHypoSet->toUseCommonSize() && !getAverageSize( myAverageSize ))
+    return;
+
   for ( int isAlgo = 1; isAlgo >= 0; --isAlgo )
-    for ( aHypoSet->init( isAlgo ); aHypoSet->more(); aHypoSet->next() )
+    for ( aHypoSet->init( isAlgo, setType ); aHypoSet->more(); aHypoSet->next() )
     {
       QString    aHypoTypeName = aHypoSet->current();
       HypothesisData* aHypData = SMESH::GetHypothesisData( aHypoTypeName );
       if (!aHypData)
         continue;
 
-      int aDim = aHypData->Dim[0];
+      myDim = aHypData->Dim[0];
       // create or/and set
       if ( isAlgo )
       {
-        int index = myAvailableHypData[aDim][Algo].indexOf( aHypData );
+        int index = myAvailableHypData[myDim][Algo].indexOf( aHypData );
         if ( index >= 0 )
         {
-          setCurrentHyp( aDim, Algo, index );
-          onAlgoSelected( index, aDim );
+          setCurrentHyp( myDim, Algo, index );
+          onAlgoSelected( index, myDim );
         }
       }
       else
       {
-        bool mainHyp = true;
-        int index = myAvailableHypData[aDim][MainHyp].indexOf( aHypData );
+        myType = MainHyp;
+        int index = myAvailableHypData[myDim][MainHyp].indexOf( aHypData );
         if ( index < 0 )
         {
-          mainHyp = false;
-          index = myAvailableHypData[aDim][AddHyp].indexOf( aHypData );
+          myType = AddHyp;
+          index = myAvailableHypData[myDim][AddHyp].indexOf( aHypData );
         }
         if ( index >= 0 )
-          createHypothesis( aDim, mainHyp ? MainHyp : AddHyp, aHypoTypeName );
+        {
+          if ( myAverageSize > 0 )
+          {
+            SMESH::HypInitParams params = { 2, myAverageSize, aHypoSet->isQuadDominated() };
+            SMESH::SMESH_Hypothesis_var hyp =
+              getInitParamsHypothesis( aHypData->TypeName, aHypData->ServerLibName, & params );
+
+            QString hypName = GetUniqueName( getHypoNames(), aHypData->Label );
+            SALOMEDS::SObject_wrap so =
+              SMESHGUI::GetSMESHGen()->PublishInStudy( SALOMEDS::SObject::_nil(), hyp,
+                                                       hypName.toUtf8().data() );
+            onHypoCreated(2);
+          }
+          else
+          {
+            createHypothesis( myDim, myType, aHypoTypeName );
+          }
+        }
       }
     }
+
   return;
 }
 
@@ -1755,7 +2004,7 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess, QStringList& theEntryList )
       namePrefix += "_";
   }
   QStringList::Iterator it = aList.begin();
-  for ( int i = 0; it!=aList.end(); it++, ++i )
+  for ( int i = 0; it != aList.end(); it++, ++i )
   {
     QString aGeomEntry = *it;
     _PTR(SObject) pGeom = SMESH::getStudy()->FindObjectID( aGeomEntry.toUtf8().data() );
@@ -1801,7 +2050,34 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess, QStringList& theEntryList )
       if ( !anAlgoVar->_is_nil() )
         SMESH::AddHypothesisOnMesh( aMesh, anAlgoVar );
     }
+
+
+    if ( myDlg->toCreateAllGroups() && !aGeomVar->_is_nil() )
+    {
+      // Create groups on all geom groups
+
+      GEOM::GEOM_Gen_var           geomGen = SMESH::GetGEOMGen();
+      GEOM::GEOM_IShapesOperations_wrap op = geomGen->GetIShapesOperations();
+      GEOM::ListOfGO_var        geomGroups = op->GetExistingSubObjects( aGeomVar,
+                                                                        /*groupsOnly=*/true );
+      SMESH::SMESH_GroupOnGeom_var meshGroup;
+      for ( CORBA::ULong iG = 0; iG < geomGroups->length(); ++iG )
+      {
+        SMESH::ElementType elemType = SMESHGUI_GroupOnShapeOp::ElementType( geomGroups[ iG ] );
+        if ( elemType == SMESH::ALL )
+          continue;
+
+        CORBA::String_var name = geomGroups[ iG ]->GetName();
+        meshGroup = aMesh->CreateGroupFromGEOM( elemType, name, geomGroups[ iG ]);
+        if ( elemType != SMESH::NODE )
+          meshGroup = aMesh->CreateGroupFromGEOM( SMESH::NODE, name, geomGroups[ iG ]);
+      }
+    }
+
+    createSubMeshOnInternalEdges( aMesh, aGeomVar );
+
   }
+
   return true;
 }
 
@@ -2435,6 +2711,12 @@ bool SMESHGUI_MeshOp::editMeshOrSubMesh( QString& theMess )
     }
   }
 
+  if ( aSubMeshVar->_is_nil() )
+  {
+    GEOM::GEOM_Object_var mainGeom = aMesh->GetShapeToMesh();
+    createSubMeshOnInternalEdges( aMesh, mainGeom );
+  }
+
   myHasConcurrentSubBefore =
     checkSubMeshConcurrency( aMesh, aSubMeshVar, /*askUser=*/!myHasConcurrentSubBefore );
 
@@ -2635,23 +2917,29 @@ void SMESHGUI_MeshOp::updateHypoSets()
   for ( ; inHypoSetName != aHypothesesSetsList.end(); ++inHypoSetName )
   {
     HypothesesSet* currentHypoSet = SMESH::GetHypothesesSet( *inHypoSetName );
-    bool isAvailable = false;
-    for ( currentHypoSet->init( true ); currentHypoSet->more(); currentHypoSet->next() )
+    HypothesesSet::SetType sType;
+    for ( sType = HypothesesSet::MAIN; sType <= HypothesesSet::ALT; SMESHUtils::Increment( sType ))
     {
-      isAvailable = false;
-      if ( HypothesisData* algoDataIn = SMESH::GetHypothesisData( currentHypoSet->current() )) {
-        for (int i = SMESH::DIM_0D; i <= myMaxShapeDim; i++) {
-          int aCurrentAvailableAlgo = myAvailableHypData[i][Algo].indexOf( algoDataIn );
-          if ( aCurrentAvailableAlgo > -1 ) {
-            isAvailable = true;
-            break;
+      bool isAvailable = false;
+      for ( currentHypoSet->init( true, sType ); currentHypoSet->more(); currentHypoSet->next() )
+      {
+        isAvailable = false;
+        if ( HypothesisData* algoDataIn = SMESH::GetHypothesisData( currentHypoSet->current() )) {
+          for ( int dim = SMESH::DIM_0D; dim <= myMaxShapeDim; dim++) {
+            int aCurrentAvailableAlgo = myAvailableHypData[dim][Algo].indexOf( algoDataIn );
+            if ( aCurrentAvailableAlgo > -1 ) {
+              isAvailable = true;
+              break;
+            }
           }
+          if ( !isAvailable )
+            break;
         }
-        if ( !isAvailable )
-          break;
       }
+      currentHypoSet->setAlgoAvailable( sType, isAvailable );
     }
-    if ( isAvailable )
+    if ( currentHypoSet->getAlgoAvailable( HypothesesSet::MAIN ) ||
+         currentHypoSet->getAlgoAvailable( HypothesesSet::ALT ))
       aFilteredHypothesesSetsList.append( *inHypoSetName );
   }
   myDlg->setHypoSets( aFilteredHypothesesSetsList );

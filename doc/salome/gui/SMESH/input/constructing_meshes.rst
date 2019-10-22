@@ -160,7 +160,6 @@ To construct a mesh:
       List of sets of hypotheses. Tag *[custom]* is automatically added to the sets defined by the user.
 
    .. note::
-      * *"Automatic"* in the names of predefined sets of hypotheses does not actually mean that they are suitable for meshing any geometry.
       * The list of sets of hypotheses can be shorter than in the above image depending on the geometry dimension.
   
 

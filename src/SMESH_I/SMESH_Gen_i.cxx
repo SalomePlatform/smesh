@@ -764,14 +764,16 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::CreateHypothesis( const char* theHypNam
 //================================================================================
 
 SMESH::SMESH_Hypothesis_ptr
-SMESH_Gen_i::GetHypothesisParameterValues (const char*           theHypType,
-                                           const char*           theLibName,
-                                           SMESH::SMESH_Mesh_ptr theMesh,
-                                           GEOM::GEOM_Object_ptr theGeom,
-                                           CORBA::Boolean        byMesh)
+SMESH_Gen_i::GetHypothesisParameterValues (const char*                 theHypType,
+                                           const char*                 theLibName,
+                                           SMESH::SMESH_Mesh_ptr       theMesh,
+                                           GEOM::GEOM_Object_ptr       theGeom,
+                                           const SMESH::HypInitParams& theParams)
   throw ( SALOME::SALOME_Exception )
 {
   Unexpect aCatch(SALOME_SalomeException);
+
+  const bool byMesh = ( theParams.way == ::SMESH_Hypothesis::BY_MESH );
   if ( byMesh && CORBA::is_nil( theMesh ) )
     return SMESH::SMESH_Hypothesis::_nil();
   if ( byMesh && CORBA::is_nil( theGeom ) )
@@ -826,17 +828,23 @@ SMESH_Gen_i::GetHypothesisParameterValues (const char*           theHypType,
     if ( hyp->SetParametersByMesh( mesh, shape ))
       return SMESH::SMESH_Hypothesis::_duplicate( tmpHyp );
   }
-  else {
-    double diagonal = 0;
-    if ( mesh )
-      diagonal = mesh->GetShapeDiagonalSize();
-    else
-      diagonal = ::SMESH_Mesh::GetShapeDiagonalSize( shape );
+  else
+  {
     ::SMESH_Hypothesis::TDefaults dflts;
-    dflts._elemLength = diagonal / myGen.GetBoundaryBoxSegmentation();
-    dflts._nbSegments = myGen.GetDefaultNbSegments();
-    dflts._shape      = &shape;
-    // let the temporary hypothesis initialize it's values
+    dflts._way           = ( ::SMESH_Hypothesis::InitWay) theParams.way;
+    dflts._nbSegments    = myGen.GetDefaultNbSegments();
+    dflts._elemLength    = theParams.averageLength;
+    dflts._quadDominated = theParams.quadDominated;
+    if ( theParams.way == ::SMESH_Hypothesis::BY_GEOM )
+    {
+      if ( mesh )
+        dflts._diagonal  = mesh->GetShapeDiagonalSize();
+      else
+        dflts._diagonal  = ::SMESH_Mesh::GetShapeDiagonalSize( shape );
+      dflts._elemLength  = dflts._diagonal / myGen.GetBoundaryBoxSegmentation();
+      dflts._shape       = &shape;
+    }
+    // let the hypothesis initialize it's values
     if ( hyp->SetParametersByDefaults( dflts, mesh ))
       return SMESH::SMESH_Hypothesis::_duplicate( tmpHyp );
   }

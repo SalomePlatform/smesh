@@ -37,14 +37,15 @@
 #include <QStringList>
 #include <QMap>
 
-class SMESHGUI_MeshTab;
 class QAction;
+class QCheckBox;
 class QComboBox;
 class QListWidget;
 class QMenu;
 class QTabWidget;
 class QToolButton;
 class QtxToolButton;
+class SMESHGUI_MeshTab;
 
 /*!
  * \brief Dialog for mech creation or editing
@@ -84,6 +85,8 @@ public:
   void                         setCurrentMeshType( const int );
   int                          currentMeshType();
 
+  bool                         toCreateAllGroups();
+
 signals:
   void                         hypoSet( const QString& );
   void                         geomSelectionByMesh( bool );
@@ -101,6 +104,7 @@ private slots:
   QToolButton*                 myHypoSetButton;
   QMenu*                       myGeomPopup;
   QComboBox*                   myMeshType;
+  QCheckBox*                   myCreateGroupsCheck;
 };
 
 /*!

@@ -164,11 +164,11 @@ public:
     throw ( SALOME::SALOME_Exception );
 
   // Return hypothesis of given type holding parameter values of the existing mesh
-  SMESH::SMESH_Hypothesis_ptr GetHypothesisParameterValues (const char*           theHypType,
-                                                            const char*           theLibName,
-                                                            SMESH::SMESH_Mesh_ptr theMesh,
-                                                            GEOM::GEOM_Object_ptr theGeom,
-                                                            CORBA::Boolean        byMesh)
+  SMESH::SMESH_Hypothesis_ptr GetHypothesisParameterValues (const char*                 theHypType,
+                                                            const char*                 theLibName,
+                                                            SMESH::SMESH_Mesh_ptr       theMesh,
+                                                            GEOM::GEOM_Object_ptr       theGeom,
+                                                            const SMESH::HypInitParams& theWay)
     throw ( SALOME::SALOME_Exception );
 
   /*

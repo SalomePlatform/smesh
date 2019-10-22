@@ -1250,6 +1250,27 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
 
         return hyp
 
+    def GetHypothesisParameterValues( self, hypType, libName, mesh, shape, initParams ):
+        """
+        Create hypothesis initialized according to parameters
+
+        Parameters:
+                hypType (string): hypothesis type
+                libName (string): plug-in library name
+                mesh: optional mesh by which a hypotheses can initialize self
+                shape: optional geometry  by size of which a hypotheses can initialize self
+                initParams: structure SMESH.HypInitParams defining how to initialize a hypothesis
+
+        Returns:
+                created hypothesis instance
+        """
+        if isinstance( mesh, Mesh ):
+            mesh = mesh.GetMesh()
+        if isinstance( initParams, (bool,int)):
+            initParams = SMESH.HypInitParams( not initParams, 1.0, not mesh )
+        return SMESH._objref_SMESH_Gen.GetHypothesisParameterValues(self, hypType, libName,
+                                                                    mesh, shape, initParams )
+
     def GetMeshInfo(self, obj):
         """
         Get the mesh statistic.

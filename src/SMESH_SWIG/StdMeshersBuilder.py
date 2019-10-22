@@ -174,10 +174,11 @@ class StdMeshersBuilder_Segment(Mesh_Algorithm):
             hyp.SetLength(length)
         if not UseExisting:
             # set preestimated length
+            import SMESH
             gen = self.mesh.smeshpyD
             initHyp = gen.GetHypothesisParameterValues("MaxLength", "libStdMeshersEngine.so",
                                                        self.mesh.GetMesh(), self.mesh.GetShape(),
-                                                       False) # <- byMesh
+                                                       SMESH.HypInitParams( 1, 1.0, False ))
             preHyp = initHyp._narrow(StdMeshers.StdMeshers_MaxLength)
             if preHyp:
                 hyp.SetPreestimatedLength( preHyp.GetPreestimatedLength() )

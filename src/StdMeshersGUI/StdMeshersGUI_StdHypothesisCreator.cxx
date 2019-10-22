@@ -841,7 +841,7 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
     item.myName = tr("SMESH_USE_PREESTIMATED_LENGTH");
     p.append( item );
     QCheckBox* aQCheckBox = new QCheckBox(dlg());
-    if ( !noPreestimatedAtEdition && h->HavePreestimatedLength() ) {
+    if ( h->HavePreestimatedLength() ) {
       aQCheckBox->setChecked( h->GetUsePreestimatedLength() );
       connect( aQCheckBox, SIGNAL(  stateChanged(int) ), this, SLOT( onValueChanged() ) );
     }

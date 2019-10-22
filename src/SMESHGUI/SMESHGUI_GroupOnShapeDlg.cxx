@@ -206,7 +206,7 @@ LightApp_Dialog* SMESHGUI_GroupOnShapeOp::dlg() const
  */
 //================================================================================
 
-static SMESH::ElementType elementType(GEOM::GEOM_Object_var geom)
+SMESH::ElementType SMESHGUI_GroupOnShapeOp::ElementType(GEOM::GEOM_Object_var geom)
 {
   if ( !geom->_is_nil() ) {
     switch ( geom->GetShapeType() ) {
@@ -232,7 +232,7 @@ static SMESH::ElementType elementType(GEOM::GEOM_Object_var geom)
         GEOM::ListOfLong_var        ids = aGroupOp->GetObjects( geom );
         if ( ids->length() && !mainShape->_is_nil() && !aShapeOp->_is_nil() ) {
           GEOM::GEOM_Object_wrap member = aShapeOp->GetSubShape( mainShape, ids[0] );
-          return elementType( member );
+          return ElementType( member );
         }
       }
     }
@@ -240,7 +240,7 @@ static SMESH::ElementType elementType(GEOM::GEOM_Object_var geom)
       GEOM::ListOfLong_var ids = aShapeOp->SubShapeAllIDs( geom, GEOM::SHAPE, false );
       if ( ids->length() ) {
         GEOM::GEOM_Object_wrap member = aShapeOp->GetSubShape( geom, ids[0] );
-        return elementType( member );
+        return ElementType( member );
       }
     }
   }
@@ -335,7 +335,7 @@ bool SMESHGUI_GroupOnShapeOp::onApply()
       if ( geom->_is_nil() ) continue;
 
       // group type
-      SMESH::ElementType elemType = isNode ? SMESH::NODE : elementType( geom );
+      SMESH::ElementType elemType = isNode ? SMESH::NODE : ElementType( geom );
       if ( elemType == SMESH::ALL )
         continue;
 

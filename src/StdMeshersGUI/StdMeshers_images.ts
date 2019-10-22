@@ -184,11 +184,23 @@
             <translation>mesh_tree_hypo_length.png</translation>
         </message>
         <message>
+            <source>ICON_SMESH_TREE_HYPO_ImportSource1D</source>
+            <translation>mesh_tree_hypo_import_source_1d.png</translation>
+        </message>
+        <message>
+            <source>ICON_SMESH_TREE_HYPO_ImportSource2D</source>
+            <translation>mesh_tree_hypo_import_source_2d.png</translation>
+        </message>
+        <message>
             <source>ICON_SMESH_TREE_HYPO_AutomaticLength</source>
             <translation>mesh_tree_hypo_length.png</translation>
         </message>
         <message>
             <source>ICON_SMESH_TREE_HYPO_Deflection1D</source>
+            <translation>mesh_tree_hypo_length.png</translation>
+        </message>
+        <message>
+            <source>ICON_SMESH_TREE_HYPO_FixedPoints1D</source>
             <translation>mesh_tree_hypo_length.png</translation>
         </message>
         <message>
@@ -198,6 +210,10 @@
         <message>
             <source>ICON_SMESH_TREE_HYPO_LayerDistribution</source>
             <translation>mesh_tree_hypo_layers_distribution.png</translation>
+        </message>
+        <message>
+            <source>ICON_SMESH_TREE_HYPO_LayerDistribution2D</source>
+            <translation>mesh_tree_hypo_layers_distribution_2d.png</translation>
         </message>
         <message>
             <source>ICON_SMESH_TREE_HYPO_LengthFromEdges</source>
@@ -229,7 +245,7 @@
         </message>
         <message>
             <source>ICON_SMESH_TREE_HYPO_NumberOfLayers2D</source>
-            <translation>mesh_tree_hypo_layers_distribution.png</translation>
+            <translation>mesh_tree_hypo_layers_distribution_2d.png</translation>
         </message>
         <message>
             <source>ICON_SMESH_TREE_HYPO_NumberOfSegments</source>

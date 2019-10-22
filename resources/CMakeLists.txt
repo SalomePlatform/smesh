@@ -21,7 +21,18 @@
 #
 
 SET(SMESH_RESOURCES_FILES
+  ModuleMesh.png
+  advanced_mesh_info.png
+  bare_border_face.png
+  bare_border_volume.png
+  copy_mesh.png
+  copy_mesh_with_geom.png
   delete.png
+  mesh.png
+  mesh_0D_elem.png
+  mesh_0D_on_all_nodes.png
+  mesh_2d_from_3d.png
+  mesh_add.png
   mesh_add_sub.png
   mesh_algo_hexa.png
   mesh_algo_mefisto.png
@@ -29,211 +40,203 @@ SET(SMESH_RESOURCES_FILES
   mesh_algo_regular.png
   mesh_algo_tetra.png
   mesh_angle.png
+  mesh_angle_measure.png
   mesh_area.png
   mesh_aspect.png
   mesh_aspect_3d.png
+  mesh_ball.png
   mesh_biquad_quadrangle.png
   mesh_biquad_triangle.png
+  mesh_bounding_box.png
+  mesh_build_compound.png
   mesh_choose.png
   mesh_choose_all.png
   mesh_clear.png
   mesh_compute.png
-  mesh_evaluate.png
-  mesh_order.png
+  mesh_conv_to_quad.png
+  mesh_cutGroups.png
+  mesh_cutquad.png
+  mesh_deflection.png
+  mesh_deleteGroups.png
   mesh_diagonal.png
+  mesh_duplicate_elem_only.png
+  mesh_duplicate_group_boundary.png
+  mesh_duplicate_nodes.png
+  mesh_duplicate_nodes_with_elem.png
   mesh_edit.png
-  mesh_hexa.png
-  mesh_hypo_area.png
-  mesh_hypo_length.png
-  mesh_hypo_segment.png
-  mesh_hypo_volume.png
-  mesh_hypo_edit.png
-  mesh_plus.png
-  mesh_minus.png
-  mesh_info.png
-  advanced_mesh_info.png
-  standard_mesh_info.png
+  mesh_edit_group.png
   mesh_elem_info.png
   mesh_equal_edge.png
   mesh_equal_face.png
   mesh_equal_node.png
   mesh_equal_volume.png
-  mesh_whatis.png
-  mesh_init.png
-  mesh_length.png
-  mesh_length_2d.png
+  mesh_evaluate.png
+  mesh_extmeth_face_offset.png
+  mesh_extmeth_node_offset.png
+  mesh_extmeth_surf_offset_smooth.png
+  mesh_extractGroup.png
+  mesh_extrusion.png
+  mesh_extrusionpath.png
+  mesh_face_groups_by_edges.png
   mesh_find_elem_by_point.png
   mesh_free_edges.png
   mesh_free_edges_2d.png
+  mesh_free_faces.png
   mesh_free_nodes.png
+  mesh_group.png
+  mesh_groups_from_gemetry.png
+  mesh_hexa.png
+  mesh_hide.png
+  mesh_hypo_area.png
+  mesh_hypo_edit.png
+  mesh_hypo_layer_distribution.png
+  mesh_hypo_length.png
+  mesh_hypo_segment.png
+  mesh_hypo_source_3d.png
+  mesh_hypo_source_edge.png
+  mesh_hypo_source_face.png
+  mesh_hypo_viscous_layers.png
+  mesh_hypo_volume.png
+  mesh_info.png
+  mesh_init.png
+  mesh_intersectGroups.png
+  mesh_length.png
+  mesh_length_2d.png
+  mesh_line.png
+  mesh_line_n.png
+  mesh_make_group.png
   mesh_max_element_length_2d.png
   mesh_max_element_length_3d.png
-  mesh_multi_edges.png
-  mesh_multi_edges_2d.png
-  mesh_line_n.png
-  mesh_line.png
+  mesh_measure_area.png
+  mesh_measure_basic_props.png
+  mesh_measure_length.png
+  mesh_measure_volume.png
+  mesh_merge_elements.png
+  mesh_merge_nodes.png
+  mesh_min_dist.png
+  mesh_minus.png
   mesh_move_node.png
   mesh_move_without_node.png
+  mesh_multi_edges.png
+  mesh_multi_edges_2d.png
+  mesh_node_to_point.png
   mesh_octahedron.png
+  mesh_offset.png
+  mesh_order.png
   mesh_orientation.png
-  mesh.png
+  mesh_pattern.png
+  mesh_pentahedron.png
   mesh_plugins_meshcut.png
+  mesh_plus.png
+  mesh_points.png
   mesh_polygon.png
   mesh_polyhedron.png
-  mesh_pyramid_n.png
+  mesh_precompute.png
   mesh_pyramid.png
-  mesh_quad_n.png
+  mesh_pyramid_n.png
   mesh_quad.png
+  mesh_quad_edge.png
+  mesh_quad_hexahedron.png
+  mesh_quad_n.png
+  mesh_quad_pentahedron.png
+  mesh_quad_polygon.png
+  mesh_quad_pyramid.png
+  mesh_quad_quadrangle.png
+  mesh_quad_tetrahedron.png
+  mesh_quad_triangle.png
   mesh_quadrangle_quadpref.png
   mesh_quadrangle_quadpref_reversed.png
   mesh_quadrangle_reduced.png
   mesh_quadrangle_standard.png
   mesh_quadrangle_triapref.png
+  mesh_quality.png
   mesh_rem_element.png
   mesh_rem_node.png
   mesh_rem_orphan_nodes.png
+  mesh_remove.png
+  mesh_renumbering_elements.png
+  mesh_renumbering_nodes.png
+  mesh_revolution.png
+  mesh_rotation.png
+  mesh_sew_bordertoside.png
+  mesh_sew_conform_freeborders.png
+  mesh_sew_freeborders.png
+  mesh_sew_sideelements.png
   mesh_shading.png
+  mesh_show.png
   mesh_shrink.png
   mesh_skew.png
+  mesh_smoothing.png
+  mesh_symmetry_axis.png
+  mesh_symmetry_plane.png
+  mesh_symmetry_point.png
   mesh_taper.png
   mesh_tetra.png
+  mesh_translation_points.png
+  mesh_translation_vector.png
+  mesh_tree_algo.png
+  mesh_tree_algo_0D.png
+  mesh_tree_algo_existing_2D.png
   mesh_tree_algo_hexa.png
   mesh_tree_algo_mefisto.png
   mesh_tree_algo_polygon.png
-  mesh_tree_algo.png
-  mesh_tree_algo_0D.png
-  mesh_tree_algo_quad.png
-  mesh_tree_algo_regular.png
-  mesh_tree_algo_tetra.png
-  mesh_tree_hypo_area.png
-  mesh_tree_hypo_length.png
-  mesh_tree_hypo.png
-  mesh_tree_hypo_segment.png
-  mesh_tree_hypo_volume.png
-  mesh_tree_hypo_cartesian.png
-  mesh_tree_mesh.png
-  mesh_tree_importedmesh.png
-  mesh_tree_mesh_warn.png
-  mesh_triangle_n.png
-  mesh_triquad_hexahedron.png
-  mesh_triangle.png
-  mesh_update.png
-  mesh_vertex_n.png
-  mesh_vertex.png
-  mesh_0D_elem.png
-  mesh_0D_on_all_nodes.png
-  mesh_volume_3d.png
-  bare_border_volume.png
-  bare_border_face.png
-  over_constrained_volume.png
-  over_constrained_face.png
-  mesh_wireframe.png
-  mesh_points.png
-  mesh_wrap.png
-  mesh_group.png
-  mesh_tree_group.png
-  mesh_tree_group_on_filter.png
-  mesh_edit_group.png
-  mesh_make_group.png
-  mesh_groups_from_gemetry.png
-  mesh_union2tri.png
-  mesh_uniontri.png
-  mesh_cutquad.png
-  mesh_smoothing.png
-  mesh_renumbering_nodes.png
-  mesh_renumbering_elements.png
-  mesh_extrusion.png
-  mesh_extrusionpath.png
-  mesh_revolution.png
-  ModuleMesh.png
-  mesh_unionGroups.png
-  mesh_intersectGroups.png
-  mesh_cutGroups.png
-  mesh_deleteGroups.png
-  mesh_translation_vector.png
-  mesh_translation_points.png
-  mesh_rotation.png
-  mesh_symmetry_point.png
-  mesh_symmetry_axis.png
-  mesh_symmetry_plane.png
-  mesh_sew_freeborders.png
-  mesh_sew_conform_freeborders.png
-  mesh_sew_bordertoside.png
-  mesh_sew_sideelements.png
-  mesh_merge_nodes.png
-  mesh_merge_elements.png
-  select1.png
-  open.png
-  mesh_pattern.png
-  mesh_pentahedron.png
-  pattern_sample_2d.png
-  pattern_sample_3D.png
-  mesh_add.png
-  mesh_remove.png
-  mesh_quad_edge.png
-  mesh_quad_triangle.png
-  mesh_quad_quadrangle.png
-  mesh_quad_polygon.png
-  mesh_quad_tetrahedron.png
-  mesh_quad_pyramid.png
-  mesh_quad_pentahedron.png
-  mesh_quad_hexahedron.png
-  mesh_conv_to_quad.png
-  mesh_tree_hypo_layers_distribution.png
-  mesh_tree_algo_radial_prism.png
-  mesh_tree_algo_radial_quadrangle_1D2D.png
-  mesh_tree_algo_existing_2D.png
   mesh_tree_algo_prism.png
   mesh_tree_algo_projection_2d.png
-  mesh_hypo_source_edge.png
-  mesh_hypo_source_3d.png
-  mesh_hypo_layer_distribution.png
-  mesh_hypo_source_face.png
-  mesh_tree_hypo_source_face.png
-  mesh_tree_hypo_source_edge.png
-  mesh_tree_hypo_source_3d_shape.png
-  mesh_tree_hypo_projection_3d.png
+  mesh_tree_algo_quad.png
+  mesh_tree_algo_radial_prism.png
+  mesh_tree_algo_radial_quadrangle_1D2D.png
+  mesh_tree_algo_regular.png
+  mesh_tree_algo_tetra.png
+  mesh_tree_group.png
+  mesh_tree_group_on_filter.png
+  mesh_tree_hypo.png
+  mesh_tree_hypo_area.png
+  mesh_tree_hypo_cartesian.png
+  mesh_tree_hypo_import_source_1d.png
+  mesh_tree_hypo_import_source_2d.png
+  mesh_tree_hypo_layers_distribution.png
+  mesh_tree_hypo_layers_distribution_2d.png
+  mesh_tree_hypo_length.png
   mesh_tree_hypo_projection_2d.png
+  mesh_tree_hypo_projection_3d.png
   mesh_tree_hypo_quadratic.png
-  mesh_build_compound.png
-  copy_mesh.png
-  copy_mesh_with_geom.png
-  mesh_node_to_point.png
+  mesh_tree_hypo_segment.png
+  mesh_tree_hypo_source_3d_shape.png
+  mesh_tree_hypo_source_edge.png
+  mesh_tree_hypo_source_face.png
+  mesh_tree_hypo_viscous_layers.png
+  mesh_tree_hypo_volume.png
+  mesh_tree_importedmesh.png
+  mesh_tree_mesh.png
   mesh_tree_mesh_partial.png
-  mesh_extractGroup.png
-  mesh_precompute.png
-  mesh_2d_from_3d.png
-  mesh_free_faces.png
+  mesh_tree_mesh_warn.png
+  mesh_triangle.png
+  mesh_triangle_n.png
+  mesh_triquad_hexahedron.png
+  mesh_union2tri.png
+  mesh_unionGroups.png
+  mesh_uniontri.png
+  mesh_update.png
+  mesh_vertex.png
+  mesh_vertex_n.png
+  mesh_volume_3d.png
+  mesh_whatis.png
+  mesh_wireframe.png
+  mesh_wrap.png
+  open.png
+  over_constrained_face.png
+  over_constrained_volume.png
+  pattern_sample_2d.png
+  pattern_sample_3D.png
+  reorient_faces_face.png
+  reorient_faces_point.png
+  reorient_faces_volume.png
   scale.png
   scale_along_axes.png
-  split_into_tetra.png
+  select1.png
   split_biquad.png
-  mesh_duplicate_nodes.png
-  mesh_duplicate_nodes_with_elem.png
-  mesh_duplicate_elem_only.png
-  mesh_duplicate_group_boundary.png
-  mesh_bounding_box.png
-  mesh_hypo_viscous_layers.png
-  mesh_tree_hypo_viscous_layers.png
-  mesh_min_dist.png
-  reorient_faces_point.png
-  reorient_faces_face.png
-  reorient_faces_volume.png
-  mesh_ball.png
-  mesh_measure_basic_props.png
-  mesh_measure_length.png
-  mesh_measure_area.png
-  mesh_measure_volume.png
-  mesh_extmeth_node_offset.png
-  mesh_extmeth_surf_offset_smooth.png
-  mesh_extmeth_face_offset.png
-  mesh_quality.png
-  mesh_show.png
-  mesh_hide.png
-  mesh_deflection.png
-  mesh_offset.png
-  mesh_face_groups_by_edges.png
-  mesh_angle_measure.png
+  split_into_tetra.png
+  standard_mesh_info.png
 )
 
 INSTALL(FILES ${SMESH_RESOURCES_FILES} DESTINATION ${SALOME_SMESH_INSTALL_RES_DATA})

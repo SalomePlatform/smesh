@@ -121,6 +121,8 @@ private:
   bool                           createMesh( QString&, QStringList& );
   bool                           createSubMesh( QString&, QStringList& );
   bool                           editMeshOrSubMesh( QString& );
+  void                           createSubMeshOnInternalEdges( SMESH::SMESH_Mesh_ptr mesh,
+                                                               GEOM::GEOM_Object_ptr mainShape );
   bool                           checkSubMeshConcurrency( SMESH::SMESH_Mesh_ptr    mesh,
                                                           SMESH::SMESH_subMesh_ptr submesh,
                                                           bool                     askUser=false);
@@ -137,8 +139,10 @@ private:
   int                            find( const SMESH::SMESH_Hypothesis_var&,
                                        const THypList& ) const;
   SMESH::SMESH_Hypothesis_var    getInitParamsHypothesis( const QString&,
-                                                          const QString& ) const;
+                                                          const QString&,
+                                                          const SMESH::HypInitParams* prm=0) const;
   void                           initHypCreator( SMESHGUI_GenericHypothesisCreator* aCreator );
+  bool                           getAverageSize( double & averageSize );
   bool                           isSubshapeOk() const;
   char*                          isSubmeshIgnored() const;
   _PTR(SObject)                  getSubmeshByGeom() const;
@@ -146,6 +150,7 @@ private:
   void                           updateMeshTypeList();
   void                           updateHypoSets();
   void                           setFilteredAlgoData();
+  QStringList                    getHypoNames();
 
 private:
 
@@ -171,6 +176,9 @@ private:
   THypLabelIsAppMap              myHypMapIsApplicable;
   bool                           myIgnoreAlgoSelection;
   int                            myDim, myType, myMaxShapeDim;
+
+  HypothesesSet*                 myHypoSet; // applied hypo-set
+  double                         myAverageSize; // entered at hypo-set processing
 
   QString                        myObjectToSelect;
 };

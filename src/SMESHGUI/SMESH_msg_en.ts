@@ -4660,6 +4660,10 @@ Please, create VTK viewer and try again</translation>
         <translation>Default Number of Segments</translation>
     </message>
     <message>
+        <source>PREF_USE_MESHGEMS_HYPOSET</source>
+        <translation>Use MeshGems meshers when assigning set of hypotheses</translation>
+    </message>
+    <message>
         <source>SMESH_PREF_MESH_LOADING</source>
         <translation>Mesh loading</translation>
     </message>
@@ -6515,6 +6519,10 @@ Please specify them and try again</translation>
     <message>
         <source>NAME</source>
         <translation>Name</translation>
+    </message>
+    <message>
+        <source>CREATE_ALL_GROUPS</source>
+        <translation>Create all Groups on Geometry</translation>
     </message>
 </context>
 <context>
@@ -8478,6 +8486,13 @@ red in the Object Browser.</translation>
     <message>
         <source>OPTION_VALUE</source>
         <translation>Option value</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_GenericHypothesisCreator</name>
+    <message>
+        <source>AverageLengthForHypoSet</source>
+        <translation>Mean Size</translation>
     </message>
 </context>
 </TS>

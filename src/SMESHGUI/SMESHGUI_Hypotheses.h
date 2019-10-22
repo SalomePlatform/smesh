@@ -158,6 +158,7 @@ public:
   void setHIcon( const QPixmap& );
   void setCustomFrame( QFrame* );
   void setType( const QString& );
+  void showEvent(QShowEvent *event);
 
 protected slots:
   virtual void accept();
@@ -215,32 +216,53 @@ struct HypothesisData
 class HypothesesSet
 {
 public:
-  HypothesesSet( const QString& );
-  HypothesesSet( const QString&, const QStringList&, const QStringList& );
+
+  enum SetType { MAIN, ALT, INTERN, NB_HYP_TYPES }; //!< hypos/algos type: main, alternative, internal-edges
+
+  //HypothesesSet( const QString& );
+  HypothesesSet( const QString& name,
+                 bool useCommonSize, bool isQuadDominated,
+                 const QStringList& mainHypos, const QStringList& mainAlgos,
+                 const QStringList& altHypos, const QStringList&  altAlgos,
+                 const QStringList& intHypos, const QStringList&  intAlgos );
 
   QString name() const;
-  void set( bool, const QStringList& );
-  int count( bool ) const;
+  bool toUseCommonSize() const { return myUseCommonSize; }
+  bool isQuadDominated() const { return myQuadDominated; }
+  //int count( bool, SetType ) const;
+
+  int maxDim() const;
 
   void setIsCustom( bool );
   bool getIsCustom() const;
-  int maxDim() const;
 
-  bool isAlgo() const;
+  void setAlgoAvailable( SetType type, bool isAvailable );
+  bool getAlgoAvailable( SetType type );
+
+  static SetType getPreferredHypType();
+  static const char* getCommonHypoSetHypoType();
+
+  //bool isAlgo() const;
 
   // CASCADE-like iteration
-  void init( bool );
+  void init( bool, SetType );
   bool more() const;
   void next();
   QString current() const;
 
 private:
-  QStringList* list(bool) const;
+  QStringList* list(bool,SetType) const;
   QStringList* list() const;
 
 private:
+  bool        myUseCommonSize; // Average size is asked only and used to create default hypotheses
+  bool        myQuadDominated;
   QString     myHypoSetName;
-  QStringList myHypoList, myAlgoList;
+  QStringList myHypoList[3], myAlgoList[3]; // per SetType
+  bool        myIsAlgoAvailable[3]; // current state depending on geometry etc
+
+  // iteration
+  SetType myHypType;
   bool myIsAlgo, myIsCustom;
   int myIndex;
 };
