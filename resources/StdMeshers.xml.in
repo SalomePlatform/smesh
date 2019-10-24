@@ -371,6 +371,18 @@
       </python-wrap>
     </algorithm>
 
+    <algorithm type     ="PolyhedronPerSolid_3D"
+               label-id ="Polyhedron per Solid"
+               icon-id  ="mesh_algo_polygon.png"
+               opt-hypos="ViscousLayers"
+               input    ="POLYGON,QUAD,TRIA,EDGE"
+               dim      ="3">
+      <python-wrap>
+        <algo>PolyhedronPerSolid_3D=Polyhedron()</algo>
+        <hypo>ViscousLayers=ViscousLayers(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetIgnoreEdges())</hypo>
+      </python-wrap>
+    </algorithm>
+
     <algorithm type     ="Hexa_3D"
                label-id ="Hexahedron (i,j,k)"
                icon-id  ="mesh_algo_hexa.png"

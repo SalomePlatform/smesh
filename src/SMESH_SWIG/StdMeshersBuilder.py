@@ -75,6 +75,11 @@ POLYGON     = "PolygonPerFace_2D"
 Algorithm type: Polygon Per Face 2D algorithm, see :class:`~StdMeshersBuilder.StdMeshersBuilder_PolygonPerFace`
 """
 
+POLYHEDRON = "PolyhedronPerSolid_3D"
+"""
+Algorithm type: Polyhedron Per Solid 3D algorithm, see :class:`~StdMeshersBuilder.StdMeshersBuilder_PolyhedronPerSolid`
+"""
+
 # import items of enums
 for e in StdMeshers.QuadType._items: exec('%s = StdMeshers.%s'%(e,e))
 for e in StdMeshers.VLExtrusionMethod._items: exec('%s = StdMeshers.%s'%(e,e))
@@ -1652,6 +1657,44 @@ class StdMeshersBuilder_PolygonPerFace(Mesh_Algorithm):
         of smeshBuilder.Mesh class
     """
     docHelper  = "Create polygon 2D algorithm for faces"
+    """
+    doc string of the method
+    """
+
+    def __init__(self, mesh, geom=0):
+        """
+        Private constructor.
+
+        Parameters:
+            mesh: parent mesh object algorithm is assigned to
+            geom: geometry (shape/sub-shape) algorithm is assigned to;
+                if it is :code:`0` (default), the algorithm is assigned to the main shape
+        """
+        Mesh_Algorithm.__init__(self)
+        self.Create(mesh, geom, self.algoType)
+        pass
+
+    pass
+
+class StdMeshersBuilder_PolyhedronPerSolid(Mesh_Algorithm):
+    """ Defines a Polyhedron Per Solid 3D algorithm.
+        It is created by calling smeshBuilder.Mesh.Polyhedron(geom=0)
+    """
+
+    meshMethod = "Polyhedron"
+    """
+    name of the dynamic method in smeshBuilder.Mesh class
+    """
+    algoType   = POLYHEDRON
+    """
+    type of algorithm used with helper function in smeshBuilder.Mesh class
+    """
+    isDefault  = True
+    """
+    flag pointing whether this algorithm should be used by default in dynamic method
+        of smeshBuilder.Mesh class
+    """
+    docHelper  = "Create polyhedron 3D algorithm for solids"
     """
     doc string of the method
     """

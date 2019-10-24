@@ -37,15 +37,15 @@
 
 #include <TopExp_Explorer.hxx>
 #include <TopoDS_Face.hxx>
+#include <TopoDS.hxx>
 
 #include <vector>
-#include <TopoDS.hxx>
 
 using namespace std;
 
 //=======================================================================
 //function : StdMeshers_PolygonPerFace_2D
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 StdMeshers_PolygonPerFace_2D::StdMeshers_PolygonPerFace_2D(int        hypId,

@@ -53,6 +53,7 @@ An algorithm represents either an implementation of a certain meshing technique 
    * :ref:`Extrusion 3D <prism_3d_algo_page>` - for meshing prismatic 3D shapes with hexahedra and prisms.
    * :ref:`Quadrangle: Medial Axis Projection <quad_from_ma_algo_page>` - for quadrangle meshing of faces with sinuous borders and rings.
    * **Polygon per Face** meshing algorithm - generates one mesh face (either a triangle, a quadrangle or a polygon) per a geometrical face using all nodes from the face boundary.
+   * **Polyhedron per Solid** meshing algorithm - generates one mesh volume (of a classical type or a polyhedron) per a geometrical solid using all faces of the solid boundary. It does not require that 2D mesh is generated on geometrical faces. It creates one mesh edge per geometrical edges and applies **Polygon per Face** to faces if they are not meshed by optional algorithms of lower dimensions.
    * :ref:`Projection algorithms <projection_algos_page>` - for meshing by projection of another mesh.
    * :ref:`Import algorithms <import_algos_page>` - for meshing by importing elements from another mesh.
    * :ref:`Radial Prism <radial_prism_algo_page>` - for meshing 3D geometrical objects with cavities with hexahedra and prisms.

@@ -1115,6 +1115,13 @@ module StdMeshers
   };
 
   /*!
+   * StdMeshers_PolyhedronPerSolid_3D: interface of "Polyhedron Per Solid" 3D algorithm
+   */
+  interface StdMeshers_PolyhedronPerSolid_3D : SMESH::SMESH_3D_Algo
+  {
+  };
+
+  /*!
    * StdMeshers_Hexa_3D: interface of "Hexahedron (i,j,k)" algorithm
    */
   interface StdMeshers_Hexa_3D : SMESH::SMESH_3D_Algo

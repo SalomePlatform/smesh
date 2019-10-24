@@ -130,6 +130,7 @@ SET(StdMeshers_HEADERS
   StdMeshers_Cartesian_3D.hxx
   StdMeshers_QuadFromMedialAxis_1D2D.hxx
   StdMeshers_PolygonPerFace_2D.hxx
+  StdMeshers_PolyhedronPerSolid_3D.hxx
 )
 
 IF(SALOME_SMESH_ENABLE_MEFISTO)
@@ -195,6 +196,7 @@ SET(StdMeshers_SOURCES
   StdMeshers_Adaptive1D.cxx
   StdMeshers_QuadFromMedialAxis_1D2D.cxx
   StdMeshers_PolygonPerFace_2D.cxx
+  StdMeshers_PolyhedronPerSolid_3D.cxx
 )
 
 IF(SALOME_SMESH_ENABLE_MEFISTO)

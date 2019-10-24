@@ -57,6 +57,7 @@
 #include "StdMeshers_NumberOfLayers_i.hxx"
 #include "StdMeshers_NumberOfSegments_i.hxx"
 #include "StdMeshers_PolygonPerFace_2D_i.hxx"
+#include "StdMeshers_PolyhedronPerSolid_3D_i.hxx"
 #include "StdMeshers_Prism_3D_i.hxx"
 #include "StdMeshers_ProjectionSource1D_i.hxx"
 #include "StdMeshers_ProjectionSource2D_i.hxx"
@@ -250,6 +251,8 @@ STDMESHERS_I_EXPORT
       aCreator = new StdHypothesisCreator_i<StdMeshers_Cartesian_3D_i>;
     else if (strcmp(aHypName, "PolygonPerFace_2D") == 0)
       aCreator = new StdHypothesisCreator_i<StdMeshers_PolygonPerFace_2D_i>;
+    else if (strcmp(aHypName, "PolyhedronPerSolid_3D") == 0)
+      aCreator = new StdHypothesisCreator_i<StdMeshers_PolyhedronPerSolid_3D_i>;
     else ;
 
     return aCreator;
