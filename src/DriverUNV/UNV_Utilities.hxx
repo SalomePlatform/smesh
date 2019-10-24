@@ -79,6 +79,8 @@ namespace UNV {
       }
       if (news == ds_name)
         return true;
+
+      olds.clear();
     }
     // should never end up here
     return false;
