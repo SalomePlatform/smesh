@@ -253,6 +253,32 @@ void StdMeshers_ViscousLayers_i::SetMethod( ::StdMeshers::VLExtrusionMethod how 
   return (::StdMeshers::VLExtrusionMethod) GetImpl()->GetMethod();
 }
 
+//================================================================================
+/*!
+ * \brief Set name of a group of layers elements
+ */
+//================================================================================
+
+void StdMeshers_ViscousLayers_i::SetGroupName(const char* name)
+{
+  if ( GetImpl()->GetGroupName() != name )
+  {
+    GetImpl()->SetGroupName( name );
+    SMESH::TPythonDump() << _this() << ".SetGroupName( '" << name << "' )";
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Return name of a group of layers elements
+ */
+//================================================================================
+
+char* StdMeshers_ViscousLayers_i::GetGroupName()
+{
+  return CORBA::string_dup( GetImpl()->GetGroupName().c_str() );
+}
+
 //=============================================================================
 /*!
  *  Get implementation

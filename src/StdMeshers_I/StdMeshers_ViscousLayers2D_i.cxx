@@ -222,6 +222,33 @@ throw ( SALOME::SALOME_Exception )
   return GetImpl()->GetStretchFactor();
 }
 
+//================================================================================
+/*!
+ * \brief Set name of a group of layers elements
+ */
+//================================================================================
+
+void StdMeshers_ViscousLayers2D_i::SetGroupName(const char* name)
+{
+  if ( GetImpl()->GetGroupName() != name )
+  {
+    GetImpl()->SetGroupName( name );
+    SMESH::TPythonDump() << _this() << ".SetGroupName( '" << name << "' )";
+  }
+}
+
+//================================================================================
+/*!
+ * \brief Return name of a group of layers elements
+ */
+//================================================================================
+
+char* StdMeshers_ViscousLayers2D_i::GetGroupName()
+{
+  return CORBA::string_dup( GetImpl()->GetGroupName().c_str() );
+}
+
+
 //=============================================================================
 /*!
  *  Get implementation

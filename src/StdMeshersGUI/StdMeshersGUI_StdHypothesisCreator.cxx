@@ -39,6 +39,7 @@
 #include "StdMeshersGUI_PropagationHelperWdg.h"
 #include "StdMeshersGUI_QuadrangleParamWdg.h"
 #include "StdMeshersGUI_RadioButtonsGrpWdg.h"
+#include "StdMeshersGUI_NameCheckableGrpWdg.h"
 #include "StdMeshersGUI_SubShapeSelectorWdg.h"
 
 #include <SALOMEDSClient_Study.hxx>
@@ -728,6 +729,12 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
       {
         h->SetFaces( idsWg->GetListOfIDs(), params[4].myValue.toInt() );
       }
+
+      if ( StdMeshersGUI_NameCheckableGrpWdg* nameWg =
+           widget< StdMeshersGUI_NameCheckableGrpWdg >( 6 ))
+      {
+        h->SetGroupName( nameWg->getName().toUtf8().data() );
+      }
     }
     else if( hypType()=="ViscousLayers2D" )
     {
@@ -745,6 +752,12 @@ QString StdMeshersGUI_StdHypothesisCreator::storeParams() const
            widget< StdMeshersGUI_SubShapeSelectorWdg >( 4 ))
       {
         h->SetEdges( idsWg->GetListOfIDs(), params[3].myValue.toInt() );
+      }
+
+      if ( StdMeshersGUI_NameCheckableGrpWdg* nameWg =
+           widget< StdMeshersGUI_NameCheckableGrpWdg >( 5 ))
+      {
+        h->SetGroupName( nameWg->getName().toUtf8().data() );
       }
     }
     // else if( hypType()=="QuadrangleParams" )
@@ -1250,6 +1263,19 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       }
       customWidgets()->append ( idsWg );
     }
+
+    item.setNoName();
+    p.append( item );
+    StdMeshersGUI_NameCheckableGrpWdg* nameWdg =
+      new StdMeshersGUI_NameCheckableGrpWdg( tr( "CREATE_GROUPS_FROM_LAYERS" ),
+                                             tr( "GROUP_NAME" ));
+    nameWdg->setName( h->GetGroupName() );
+    if ( nameWdg->getName().isEmpty() )
+    {
+      nameWdg->setDefaultName( type() );
+      nameWdg->setChecked( false );
+    }
+    customWidgets()->append ( nameWdg );
   }
   else if( hypType()=="ViscousLayers2D" )
   {
@@ -1308,6 +1334,19 @@ bool StdMeshersGUI_StdHypothesisCreator::stdParams( ListOfStdParams& p ) const
       }
       customWidgets()->append ( idsWg );
     }
+
+    item.setNoName();
+    p.append( item );
+    StdMeshersGUI_NameCheckableGrpWdg* nameWdg =
+      new StdMeshersGUI_NameCheckableGrpWdg( tr( "CREATE_GROUPS_FROM_LAYERS" ),
+                                             tr( "GROUP_NAME" ));
+    nameWdg->setName( h->GetGroupName() );
+    if ( nameWdg->getName().isEmpty() )
+    {
+      nameWdg->setDefaultName( type() );
+      nameWdg->setChecked( false );
+    }
+    customWidgets()->append ( nameWdg );
   }
   else
     res = false;
@@ -1572,6 +1611,10 @@ bool StdMeshersGUI_StdHypothesisCreator::getParamFromCustomWidget( StdParam & pa
     const StdMeshersGUI_RadioButtonsGrpWdg * w =
       static_cast<const StdMeshersGUI_RadioButtonsGrpWdg*>( widget );
     param.myValue = w->checkedId();
+    return true;
+  }
+  if ( widget->inherits( "StdMeshersGUI_NameCheckableGrpWdg" ))
+  {
     return true;
   }
   return false;

@@ -59,6 +59,14 @@ this one for this mesh/sub-mesh.</translation>
         <source>EXTMETH_FACE_OFFSET</source>
         <translation>Face offset</translation>
     </message>
+    <message>
+        <source>CREATE_GROUPS_FROM_LAYERS</source>
+        <translation>Create groups from layers</translation>
+    </message>
+    <message>
+        <source>GROUP_NAME</source>
+        <translation>Group name</translation>
+    </message>
 </context>
 <context>
     <name>@default</name>

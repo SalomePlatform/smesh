@@ -92,6 +92,8 @@ protected:
     const char* text() const {
       ((QByteArray&) myTextAsBytes) = myText.toUtf8(); return myTextAsBytes.constData();
     }
+    void setNoName() { myName.clear(); } // ==> widget occupies both columns
+    bool hasName() const { return !myName.isEmpty(); }
   };
 
   typedef QList<StdParam>      ListOfStdParams;

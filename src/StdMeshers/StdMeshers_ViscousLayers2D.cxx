@@ -2402,6 +2402,17 @@ bool _ViscousBuilder2D::refine()
       outerNodes.swap( innerNodes );
     }
 
+    // Add faces to a group
+    SMDS_MeshGroup* group = StdMeshers_ViscousLayers::CreateGroup( hyp->GetGroupName(),
+                                                                   *_helper.GetMesh(),
+                                                                   SMDSAbs_Face );
+    if ( group )
+    {
+      TIDSortedElemSet::iterator fIt = L._newFaces.begin();
+      for ( ; fIt != L._newFaces.end(); ++fIt )
+        group->Add( *fIt );
+    }
+
     // faces between not shared _LayerEdge's (at concave VERTEX)
     for ( int isR = 0; isR < 2; ++isR )
     {
@@ -2413,15 +2424,22 @@ bool _ViscousBuilder2D::refine()
       if ( lNodes.empty() || rNodes.empty() || lNodes.size() != rNodes.size() )
         continue;
 
+      const SMDS_MeshElement* face = 0;
       for ( size_t i = 1; i < lNodes.size(); ++i )
-        _helper.AddFace( lNodes[ i+prev ], rNodes[ i+prev ],
-                         rNodes[ i+cur ],  lNodes[ i+cur ]);
+      {
+        face = _helper.AddFace( lNodes[ i+prev ], rNodes[ i+prev ],
+                                rNodes[ i+cur ],  lNodes[ i+cur ]);
+        if ( group )
+          group->Add( face );
+      }
 
       const UVPtStruct& ptOnVertex = points[ isR ? L._lastPntInd : L._firstPntInd ];
       if ( isReverse )
-        _helper.AddFace( ptOnVertex.node, lNodes[ 0 ], rNodes[ 0 ]);
+        face = _helper.AddFace( ptOnVertex.node, lNodes[ 0 ], rNodes[ 0 ]);
       else
-        _helper.AddFace( ptOnVertex.node, rNodes[ 0 ], lNodes[ 0 ]);
+        face = _helper.AddFace( ptOnVertex.node, rNodes[ 0 ], lNodes[ 0 ]);
+      if ( group )
+        group->Add( face );
     }
 
     // Fill the _ProxyMeshOfFace

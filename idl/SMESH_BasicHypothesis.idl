@@ -924,6 +924,9 @@ module StdMeshers
 
     void SetMethod( in VLExtrusionMethod how );
     VLExtrusionMethod GetMethod();
+
+    void SetGroupName(in string name);
+    string GetGroupName();
   };
 
   /*!
@@ -965,6 +968,9 @@ module StdMeshers
      */
     void SetStretchFactor(in double factor) raises (SALOME::SALOME_Exception);
     double GetStretchFactor();
+
+    void SetGroupName(in string name);
+    string GetGroupName();
   };
 
   /*!

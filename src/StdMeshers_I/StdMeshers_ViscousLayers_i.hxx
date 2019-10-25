@@ -67,10 +67,14 @@ class STDMESHERS_I_EXPORT StdMeshers_ViscousLayers_i:
   void SetMethod( ::StdMeshers::VLExtrusionMethod how );
   ::StdMeshers::VLExtrusionMethod GetMethod();
 
+  void SetGroupName(const char* name);
+  char* GetGroupName();
+
+
   // Get implementation
   ::StdMeshers_ViscousLayers* GetImpl();
 
-  // Verify whether hypothesis supports given entity type 
+  // Verify whether hypothesis supports given entity type
   CORBA::Boolean IsDimSupported( SMESH::Dimension type );
 
   // Methods for copying mesh definition to other geometry

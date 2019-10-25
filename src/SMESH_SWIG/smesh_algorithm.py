@@ -290,7 +290,8 @@ class Mesh_Algorithm:
         return shape.GetStudyEntry()
 
     def ViscousLayers(self, thickness, numberOfLayers, stretchFactor,
-                      faces=[], isFacesToIgnore=True, extrMethod=StdMeshers.SURF_OFFSET_SMOOTH ):
+                      faces=[], isFacesToIgnore=True,
+                      extrMethod=StdMeshers.SURF_OFFSET_SMOOTH, groupName=""):
         """
         Defines "ViscousLayers" hypothesis to give parameters of layers of prisms to build
         near mesh boundary. This hypothesis can be used by several 3D algorithms:
@@ -319,8 +320,17 @@ class Mesh_Algorithm:
                         - StdMeshers.NODE_OFFSET method extrudes nodes along average normal of
                                 surrounding mesh faces by the layers thickness. Thickness of
                                 layers can be limited to avoid creation of invalid prisms.
+                groupName: name of a group to contain elements of layers. If not provided,
+                           no group is created. The group is created upon mesh generation.
+                           It can be retrieved by calling
+                           ::
+
+                             group = mesh.GetGroupByName( groupName, SMESH.VOLUME )[0]
+
+        Returns:
+                StdMeshers.StdMeshers_ViscousLayers hypothesis
         """
-        
+
         if not isinstance(self.algo, SMESH._objref_SMESH_3D_Algo):
             raise TypeError("ViscousLayers are supported by 3D algorithms only")
         if not "ViscousLayers" in self.GetCompatibleHypothesis():
@@ -342,11 +352,12 @@ class Mesh_Algorithm:
         hyp.SetStretchFactor( stretchFactor )
         hyp.SetFaces( faces, isFacesToIgnore )
         hyp.SetMethod( extrMethod )
+        hyp.SetGroupName( groupName )
         self.mesh.AddHypothesis( hyp, self.geom )
         return hyp
 
     def ViscousLayers2D(self, thickness, numberOfLayers, stretchFactor,
-                        edges=[], isEdgesToIgnore=True ):
+                        edges=[], isEdgesToIgnore=True,  groupName="" ):
         """
         Defines "ViscousLayers2D" hypothesis to give parameters of layers of quadrilateral
         elements to build near mesh boundary. This hypothesis can be used by several 2D algorithms:
@@ -361,6 +372,15 @@ class Mesh_Algorithm:
                         the value of **isEdgesToIgnore** parameter.
                 isEdgesToIgnore: if *True*, the Viscous layers are not generated on the
                         edges specified by the previous parameter (**edges**).
+                groupName: name of a group to contain elements of layers. If not provided,
+                        no group is created. The group is created upon mesh generation.
+                        It can be retrieved by calling
+                        ::
+
+                          group = mesh.GetGroupByName( groupName, SMESH.FACE )[0]
+
+        Returns:
+                StdMeshers.StdMeshers_ViscousLayers2D hypothesis
         """
         
         if not isinstance(self.algo, SMESH._objref_SMESH_2D_Algo):
@@ -383,6 +403,7 @@ class Mesh_Algorithm:
         hyp.SetNumberLayers(numberOfLayers)
         hyp.SetStretchFactor(stretchFactor)
         hyp.SetEdges(edges, isEdgesToIgnore)
+        hyp.SetGroupName( groupName )
         self.mesh.AddHypothesis( hyp, self.geom )
         return hyp
 

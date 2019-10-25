@@ -318,7 +318,7 @@
         <algo>MEFISTO_2D=Triangle(algo=smeshBuilder.MEFISTO)</algo>
         <hypo>LengthFromEdges=LengthFromEdges()</hypo>
         <hypo>MaxElementArea=MaxElementArea(SetMaxElementArea())</hypo>
-        <hypo>ViscousLayers2D=ViscousLayers2D(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetEdges(1),SetEdges(2))</hypo>
+        <hypo>ViscousLayers2D=ViscousLayers2D(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetEdges(1),SetEdges(2),SetGroupName())</hypo>
       </python-wrap>
     </algorithm>
 
@@ -335,7 +335,7 @@
       <python-wrap>
         <algo>Quadrangle_2D=Quadrangle(algo=smeshBuilder.QUADRANGLE)</algo>
         <hypo>QuadrangleParams=QuadrangleParameters(SetQuadType(),SetTriaVertex(),SetEnforcedNodes(1),SetEnforcedNodes(2),SetCorners())</hypo>
-        <hypo>ViscousLayers2D=ViscousLayers2D(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetIgnoreEdges())</hypo>
+        <hypo>ViscousLayers2D=ViscousLayers2D(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetEdges(1),SetEdges(2),SetGroupName())</hypo>
       </python-wrap>
     </algorithm>
 
@@ -351,7 +351,7 @@
                dim      ="2">
       <python-wrap>
         <algo>QuadFromMedialAxis_1D2D=Quadrangle(algo=smeshBuilder.QUAD_MA_PROJ)</algo>
-        <hypo>ViscousLayers2D=ViscousLayers2D(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetIgnoreEdges())</hypo>
+        <hypo>ViscousLayers2D=ViscousLayers2D(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetEdges(1),SetEdges(2),SetGroupName())</hypo>
         <hypo>NumberOfLayers2D=NumberOfLayers(SetNumberOfLayers())</hypo>
       </python-wrap>
     </algorithm>
@@ -367,7 +367,7 @@
                dim      ="2">
       <python-wrap>
         <algo>PolygonPerFace_2D=Polygon()</algo>
-        <hypo>ViscousLayers2D=ViscousLayers2D(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetIgnoreEdges())</hypo>
+        <hypo>ViscousLayers2D=ViscousLayers2D(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetEdges(1),SetEdges(2),SetGroupName())</hypo>
       </python-wrap>
     </algorithm>
 
@@ -395,7 +395,7 @@
                dim      ="3">
       <python-wrap>
         <algo>Hexa_3D=Hexahedron(algo=smeshBuilder.Hexa)</algo>
-        <hypo>ViscousLayers=ViscousLayers(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetFaces(1),SetFaces(2),SetMethod())</hypo>
+        <hypo>ViscousLayers=ViscousLayers(SetTotalThickness(),SetNumberLayers(),SetStretchFactor(),SetFaces(1),SetFaces(2),SetMethod(),SetGroupName())</hypo>
       </python-wrap>
     </algorithm>
 

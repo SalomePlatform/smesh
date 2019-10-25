@@ -108,6 +108,8 @@ computations.
   boundary faces/edges of the shape of this sub-mesh, at same time
   possibly being internal faces/edges within the whole model.
 
+* **Create groups from layers** - activates creation of a group containing elements of the layers.
+
   .. image:: ../images/viscous_layers_on_submesh.png 
      :align: center
 

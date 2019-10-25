@@ -612,12 +612,16 @@ namespace VISCOUS_3D
         _thickness      = Max( _thickness, hyp->GetTotalThickness() );
         _stretchFactor += hyp->GetStretchFactor();
         _method         = hyp->GetMethod();
+        if ( _groupName.empty() )
+          _groupName = hyp->GetGroupName();
       }
     }
     double GetTotalThickness() const { return _thickness; /*_nbHyps ? _thickness / _nbHyps : 0;*/ }
     double GetStretchFactor()  const { return _nbHyps ? _stretchFactor / _nbHyps : 0; }
     int    GetNumberLayers()   const { return _nbLayers; }
     int    GetMethod()         const { return _method; }
+    bool   ToCreateGroup()     const { return !_groupName.empty(); }
+    const std::string& GetGroupName() const { return _groupName; }
 
     bool   UseSurfaceNormal()  const
     { return _method == StdMeshers_ViscousLayers::SURF_OFFSET_SMOOTH; }
@@ -636,8 +640,9 @@ namespace VISCOUS_3D
     static bool Equals( double v1, double v2 ) { return Abs( v1 - v2 ) < 0.01 * ( v1 + v2 ); }
 
   private:
-    int     _nbLayers, _nbHyps, _method;
-    double  _thickness, _stretchFactor;
+    int         _nbLayers, _nbHyps, _method;
+    double      _thickness, _stretchFactor;
+    std::string _groupName;
   };
 
   //--------------------------------------------------------------------------------
@@ -1247,7 +1252,8 @@ namespace VISCOUS_3D
 StdMeshers_ViscousLayers::StdMeshers_ViscousLayers(int hypId, SMESH_Gen* gen)
   :SMESH_Hypothesis(hypId, gen),
    _isToIgnoreShapes(1), _nbLayers(1), _thickness(1), _stretchFactor(1),
-   _method( SURF_OFFSET_SMOOTH )
+   _method( SURF_OFFSET_SMOOTH ),
+   _groupName("")
 {
   _name = StdMeshers_ViscousLayers::GetHypType();
   _param_algo_dim = -3; // auxiliary hyp used by 3D algos
@@ -1278,6 +1284,15 @@ void StdMeshers_ViscousLayers::SetMethod( ExtrusionMethod method )
 {
   if ( _method != method )
     _method = method, NotifySubMeshesHypothesisModification();
+} // --------------------------------------------------------------------------------
+void StdMeshers_ViscousLayers::SetGroupName(const std::string& name)
+{
+  if ( _groupName != name )
+  {
+    _groupName = name;
+    if ( !_groupName.empty() )
+      NotifySubMeshesHypothesisModification();
+  }
 } // --------------------------------------------------------------------------------
 SMESH_ProxyMesh::Ptr
 StdMeshers_ViscousLayers::Compute(SMESH_Mesh&         theMesh,
@@ -1333,6 +1348,9 @@ std::ostream & StdMeshers_ViscousLayers::SaveTo(std::ostream & save)
     save << " " << _shapeIds[i];
   save << " " << !_isToIgnoreShapes; // negate to keep the behavior in old studies.
   save << " " << _method;
+  save << " " << _groupName.size();
+  if ( !_groupName.empty() )
+    save << " " << _groupName;
   return save;
 } // --------------------------------------------------------------------------------
 std::istream & StdMeshers_ViscousLayers::LoadFrom(std::istream & load)
@@ -1345,6 +1363,13 @@ std::istream & StdMeshers_ViscousLayers::LoadFrom(std::istream & load)
     _isToIgnoreShapes = !shapeToTreat;
     if ( load >> method )
       _method = (ExtrusionMethod) method;
+    int nameSize = 0;
+    if ( load >> nameSize && nameSize > 0 )
+    {
+      _groupName.resize( nameSize );
+      load.get( _groupName[0] ); // remove a white-space
+      load.getline( &_groupName[0], nameSize + 1 );
+    }
   }
   else {
     _isToIgnoreShapes = true; // old behavior
@@ -1378,6 +1403,36 @@ bool StdMeshers_ViscousLayers::IsShapeWithLayers(int shapeIndex) const
     ( std::find( _shapeIds.begin(), _shapeIds.end(), shapeIndex ) != _shapeIds.end() );
   return IsToIgnoreShapes() ? !isIn : isIn;
 }
+
+// --------------------------------------------------------------------------------
+SMDS_MeshGroup* StdMeshers_ViscousLayers::CreateGroup( const std::string&  theName,
+                                                       SMESH_Mesh&         theMesh,
+                                                       SMDSAbs_ElementType theType)
+{
+  SMESH_Group*      group = 0;
+  SMDS_MeshGroup* groupDS = 0;
+
+  if ( theName.empty() )
+    return groupDS;
+       
+  if ( SMESH_Mesh::GroupIteratorPtr grIt = theMesh.GetGroups() )
+    while( grIt->more() && !group )
+    {
+      group = grIt->next();
+      if ( !group ||
+           group->GetGroupDS()->GetType() != theType ||
+           group->GetName()               != theName ||
+           !dynamic_cast< SMESHDS_Group* >( group->GetGroupDS() ))
+        group = 0;
+    }
+  if ( !group )
+    group = theMesh.AddGroup( theType, theName.c_str() );
+
+  groupDS = & dynamic_cast< SMESHDS_Group* >( group->GetGroupDS() )->SMDSGroup();
+
+  return groupDS;
+}
+
 // END StdMeshers_ViscousLayers hypothesis
 //================================================================================
 
@@ -10230,6 +10285,11 @@ bool _ViscousBuilder::refine(_SolidData& data)
     const TGeomID faceID = getMeshDS()->ShapeToIndex( exp.Current() );
     if ( data._ignoreFaceIds.count( faceID ))
       continue;
+    _EdgesOnShape*    eos = data.GetShapeEdges( faceID );
+    SMDS_MeshGroup* group = StdMeshers_ViscousLayers::CreateGroup( eos->_hyp.GetGroupName(),
+                                                                   *helper.GetMesh(),
+                                                                   SMDSAbs_Volume );
+    std::vector< const SMDS_MeshElement* > vols;
     const bool isReversedFace = data._reversedFaceIds.count( faceID );
     SMESHDS_SubMesh*    fSubM = getMeshDS()->MeshElements( exp.Current() );
     SMDS_ElemIteratorPtr  fIt = fSubM->GetElements();
@@ -10260,14 +10320,20 @@ bool _ViscousBuilder::refine(_SolidData& data)
       if ( 0 < nnSet.size() && nnSet.size() < 3 )
         continue;
 
+      vols.clear();
+      const SMDS_MeshElement* vol;
+
       switch ( nbNodes )
       {
       case 3: // TRIA
       {
         // PENTA
         for ( size_t iZ = 1; iZ < minZ; ++iZ )
-          helper.AddVolume( (*nnVec[0])[iZ-1], (*nnVec[1])[iZ-1], (*nnVec[2])[iZ-1],
-                            (*nnVec[0])[iZ],   (*nnVec[1])[iZ],   (*nnVec[2])[iZ]);
+        {
+          vol = helper.AddVolume( (*nnVec[0])[iZ-1], (*nnVec[1])[iZ-1], (*nnVec[2])[iZ-1],
+                                  (*nnVec[0])[iZ],   (*nnVec[1])[iZ],   (*nnVec[2])[iZ]);
+          vols.push_back( vol );
+        }
 
         for ( size_t iZ = minZ; iZ < maxZ; ++iZ )
         {
@@ -10280,16 +10346,18 @@ bool _ViscousBuilder::refine(_SolidData& data)
             int i2 = *degenEdgeInd.begin();
             int i0 = helper.WrapIndex( i2 - 1, nbNodes );
             int i1 = helper.WrapIndex( i2 + 1, nbNodes );
-            helper.AddVolume( (*nnVec[i0])[iZ-1], (*nnVec[i1])[iZ-1],
-                              (*nnVec[i1])[iZ  ], (*nnVec[i0])[iZ  ], (*nnVec[i2]).back());
+            vol = helper.AddVolume( (*nnVec[i0])[iZ-1], (*nnVec[i1])[iZ-1],
+                                    (*nnVec[i1])[iZ  ], (*nnVec[i0])[iZ  ], (*nnVec[i2]).back());
+            vols.push_back( vol );
           }
           else  // TETRA
           {
             int i3 = !degenEdgeInd.count(0) ? 0 : !degenEdgeInd.count(1) ? 1 : 2;
-            helper.AddVolume( (*nnVec[  0 ])[ i3 == 0 ? iZ-1 : nnVec[0]->size()-1 ],
-                              (*nnVec[  1 ])[ i3 == 1 ? iZ-1 : nnVec[1]->size()-1 ],
-                              (*nnVec[  2 ])[ i3 == 2 ? iZ-1 : nnVec[2]->size()-1 ],
-                              (*nnVec[ i3 ])[ iZ ]);
+            vol = helper.AddVolume( (*nnVec[  0 ])[ i3 == 0 ? iZ-1 : nnVec[0]->size()-1 ],
+                                    (*nnVec[  1 ])[ i3 == 1 ? iZ-1 : nnVec[1]->size()-1 ],
+                                    (*nnVec[  2 ])[ i3 == 2 ? iZ-1 : nnVec[2]->size()-1 ],
+                                    (*nnVec[ i3 ])[ iZ ]);
+            vols.push_back( vol );
           }
         }
         break; // TRIA
@@ -10298,10 +10366,13 @@ bool _ViscousBuilder::refine(_SolidData& data)
       {
         // HEX
         for ( size_t iZ = 1; iZ < minZ; ++iZ )
-          helper.AddVolume( (*nnVec[0])[iZ-1], (*nnVec[1])[iZ-1],
-                            (*nnVec[2])[iZ-1], (*nnVec[3])[iZ-1],
-                            (*nnVec[0])[iZ],   (*nnVec[1])[iZ],
-                            (*nnVec[2])[iZ],   (*nnVec[3])[iZ]);
+        {
+          vol = helper.AddVolume( (*nnVec[0])[iZ-1], (*nnVec[1])[iZ-1],
+                                  (*nnVec[2])[iZ-1], (*nnVec[3])[iZ-1],
+                                  (*nnVec[0])[iZ],   (*nnVec[1])[iZ],
+                                  (*nnVec[2])[iZ],   (*nnVec[3])[iZ]);
+          vols.push_back( vol );
+        }
 
         for ( size_t iZ = minZ; iZ < maxZ; ++iZ )
         {
@@ -10320,9 +10391,9 @@ bool _ViscousBuilder::refine(_SolidData& data)
             int i0 = helper.WrapIndex( i3 + 1, nbNodes );
             int i1 = helper.WrapIndex( i0 + 1, nbNodes );
 
-            const SMDS_MeshElement* vol =
-              helper.AddVolume( nnVec[i3]->back(), (*nnVec[i0])[iZ], (*nnVec[i0])[iZ-1],
-                                nnVec[i2]->back(), (*nnVec[i1])[iZ], (*nnVec[i1])[iZ-1]);
+            vol = helper.AddVolume( nnVec[i3]->back(), (*nnVec[i0])[iZ], (*nnVec[i0])[iZ-1],
+                                    nnVec[i2]->back(), (*nnVec[i1])[iZ], (*nnVec[i1])[iZ-1]);
+            vols.push_back( vol );
             if ( !ok && vol )
               degenVols.push_back( vol );
           }
@@ -10330,15 +10401,15 @@ bool _ViscousBuilder::refine(_SolidData& data)
 
           default: // degen HEX
           {
-            const SMDS_MeshElement* vol =
-              helper.AddVolume( nnVec[0]->size() > iZ-1 ? (*nnVec[0])[iZ-1] : nnVec[0]->back(),
-                                nnVec[1]->size() > iZ-1 ? (*nnVec[1])[iZ-1] : nnVec[1]->back(),
-                                nnVec[2]->size() > iZ-1 ? (*nnVec[2])[iZ-1] : nnVec[2]->back(),
-                                nnVec[3]->size() > iZ-1 ? (*nnVec[3])[iZ-1] : nnVec[3]->back(),
-                                nnVec[0]->size() > iZ   ? (*nnVec[0])[iZ]   : nnVec[0]->back(),
-                                nnVec[1]->size() > iZ   ? (*nnVec[1])[iZ]   : nnVec[1]->back(),
-                                nnVec[2]->size() > iZ   ? (*nnVec[2])[iZ]   : nnVec[2]->back(),
-                                nnVec[3]->size() > iZ   ? (*nnVec[3])[iZ]   : nnVec[3]->back());
+            vol = helper.AddVolume( nnVec[0]->size() > iZ-1 ? (*nnVec[0])[iZ-1] : nnVec[0]->back(),
+                                    nnVec[1]->size() > iZ-1 ? (*nnVec[1])[iZ-1] : nnVec[1]->back(),
+                                    nnVec[2]->size() > iZ-1 ? (*nnVec[2])[iZ-1] : nnVec[2]->back(),
+                                    nnVec[3]->size() > iZ-1 ? (*nnVec[3])[iZ-1] : nnVec[3]->back(),
+                                    nnVec[0]->size() > iZ   ? (*nnVec[0])[iZ]   : nnVec[0]->back(),
+                                    nnVec[1]->size() > iZ   ? (*nnVec[1])[iZ]   : nnVec[1]->back(),
+                                    nnVec[2]->size() > iZ   ? (*nnVec[2])[iZ]   : nnVec[2]->back(),
+                                    nnVec[3]->size() > iZ   ? (*nnVec[3])[iZ]   : nnVec[3]->back());
+            vols.push_back( vol );
             degenVols.push_back( vol );
           }
           }
@@ -10349,6 +10420,11 @@ bool _ViscousBuilder::refine(_SolidData& data)
         return error("Not supported type of element", data._index);
 
       } // switch ( nbNodes )
+
+      if ( group )
+        for ( size_t i = 0; i < vols.size(); ++i )
+          group->Add( vols[ i ]);
+
     } // while ( fIt->more() )
   } // loop on FACEs
 

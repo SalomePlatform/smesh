@@ -32,6 +32,8 @@
 
 #include <vector>
 
+class SMDS_MeshGroup;
+
 /*!
  * \brief Hypothesis defining parameters of viscous layers
  */
@@ -72,6 +74,13 @@ public:
   };
   void   SetMethod( ExtrusionMethod how );
   ExtrusionMethod GetMethod() const { return _method; }
+
+  // name of a group to create
+  void SetGroupName(const std::string& name);
+  const std::string& GetGroupName() const { return _groupName; }
+  static SMDS_MeshGroup* CreateGroup( const std::string&  theName,
+                                      SMESH_Mesh&         theMesh,
+                                      SMDSAbs_ElementType theType);
 
   // Computes temporary 2D mesh to be used by 3D algorithm.
   // Return SMESH_ProxyMesh for each SOLID in theShape
@@ -116,6 +125,7 @@ public:
   double           _thickness;
   double           _stretchFactor;
   ExtrusionMethod  _method;
+  std::string      _groupName;
 };
 
 class SMESH_subMesh;

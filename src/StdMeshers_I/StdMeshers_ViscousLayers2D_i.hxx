@@ -64,6 +64,10 @@ class STDMESHERS_I_EXPORT StdMeshers_ViscousLayers2D_i:
   void SetStretchFactor(::CORBA::Double factor) throw ( SALOME::SALOME_Exception );
   ::CORBA::Double GetStretchFactor();
 
+  void SetGroupName(const char* name);
+  char* GetGroupName();
+
+
   // Get implementation
   ::StdMeshers_ViscousLayers2D* GetImpl();
 
