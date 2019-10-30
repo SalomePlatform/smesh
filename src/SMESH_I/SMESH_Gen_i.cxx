@@ -2986,7 +2986,8 @@ namespace // utils for CopyMeshWithGeom()
 {
   typedef std::map< std::string, std::string >             TStr2StrMap;
   typedef std::map< std::string, std::set< std::string > > TStr2StrSetMap;
-  //typedef std::map< std::set<int>, int >                   TIdSet2IndexMap;
+  typedef std::map< std::set<int>, int >                   TIdSet2IndexMap;
+  typedef std::map< std::string, int >                     TName2IndexMap;
 
   //================================================================================
   /*!
@@ -3004,8 +3005,9 @@ namespace // utils for CopyMeshWithGeom()
 
     TStr2StrMap   myOld2NewEntryMap; // map of study entries
 
-    //GEOM::ListOfGO_var         mySubshapes; // sub-shapes existing in the new geometry
-    //TIdSet2IndexMap            myIds2SubshapeIndex; // to find an existing sub-shape
+    GEOM::ListOfGO_var         mySubshapes; // sub-shapes existing in the new geometry
+    TIdSet2IndexMap            myIds2SubshapeIndex; // to find an existing sub-shape
+    TName2IndexMap             myName2SubshapeIndex; // to find an existing sub-shape by name
 
     bool                       myGIPMapDone;
     GEOM::ListOfListOfLong_var myGIPMap; // filled by GetInPlaceMap()
@@ -3044,16 +3046,18 @@ namespace // utils for CopyMeshWithGeom()
       CORBA::String_var newEntry = newSO->GetID();
       myOld2NewEntryMap.insert( std::make_pair( std::string( oldEntry.in() ),
                                                 std::string( newEntry.in() )));
+      std::string  newMainEntry = newEntry.in();
 
       SALOMEDS::Study_var            study = myGen_i->getStudyServant();
       GEOM::GEOM_Gen_var           geomGen = myGen_i->GetGeomEngine();
       GEOM::GEOM_IShapesOperations_wrap op = geomGen->GetIShapesOperations();
-      GEOM::ListOfGO_var         subShapes = op->GetExistingSubObjects( mainShapeNew,
+      mySubshapes                          = op->GetExistingSubObjects( mainShapeNew,
                                                                         /*groupsOnly=*/false );
-      for ( CORBA::ULong i = 0; i < subShapes->length(); ++i )
+      for ( CORBA::ULong i = 0; i < mySubshapes->length(); ++i )
       {
-        newSO = myGen_i->ObjectToSObject( subShapes[ i ]);
+        newSO = myGen_i->ObjectToSObject( mySubshapes[ i ]);
         SALOMEDS::ChildIterator_wrap anIter = study->NewChildIterator( newSO );
+        bool refFound = false;
         for ( ; anIter->More(); anIter->Next() )
         {
           SALOMEDS::SObject_wrap so = anIter->Value();
@@ -3061,8 +3065,22 @@ namespace // utils for CopyMeshWithGeom()
           {
             oldEntry = oldSO->GetID();
             newEntry = newSO->GetID();
-            myOld2NewEntryMap.insert( std::make_pair( std::string( oldEntry.in() ),
-                                                      std::string( newEntry.in() )));
+            if (( refFound = ( newMainEntry != oldEntry.in() )))
+              myOld2NewEntryMap.insert( std::make_pair( std::string( oldEntry.in() ),
+                                                        std::string( newEntry.in() )));
+          }
+        }
+        if ( !refFound )
+        {
+          GEOM::GEOM_Object_var father = mySubshapes[ i ]->GetMainShape();
+          if ( father->_is_equivalent( mainShapeNew ))
+          {
+            GEOM::ListOfLong_var ids = mySubshapes[ i ]->GetSubShapeIndices();
+            std::set< int > idSet( &ids[0] , &ids[0] + ids->length() );
+            myIds2SubshapeIndex.insert( std::make_pair( idSet, i ));
+            CORBA::String_var name = newSO->GetName();
+            if ( name.in()[0] )
+              myName2SubshapeIndex.insert( std::make_pair( name.in(), i ));
           }
         }
       }
@@ -3088,7 +3106,7 @@ namespace // utils for CopyMeshWithGeom()
       GEOM::GEOM_Object_var mainShapeNew = myNewMesh_i->GetShapeToMesh();
       GEOM::GEOM_Gen_var         geomGen = myGen_i->GetGeomEngine();
 
-      // try to find by entry
+      // try to find by entry or name
       if ( myToPublish )
       {
         CORBA::String_var  oldEntry = oldShape->GetStudyEntry();
@@ -3096,6 +3114,22 @@ namespace // utils for CopyMeshWithGeom()
         if ( o2nID != myOld2NewEntryMap.end() )
         {
           newShape = getShapeByEntry( o2nID->second );
+        }
+        if ( newShape->_is_nil() )
+        {
+          CORBA::String_var name = oldShape->GetName();
+          TName2IndexMap::iterator n2ind = myName2SubshapeIndex.find( name.in() );
+          if ( n2ind != myName2SubshapeIndex.end() )
+          {
+            newShape = GEOM::GEOM_Object::_duplicate( mySubshapes[ n2ind->second ]);
+            GEOM::ListOfLong_var oldIndices = oldShape->GetSubShapeIndices();
+            GEOM::ListOfLong_var newIndices = newShape->GetSubShapeIndices();
+            if ( oldIndices->length() == 0 ||
+                 newIndices->length() == 0 ||
+                 getShapeType( myNewMesh_i, newIndices[0] ) !=
+                 getShapeType( mySrcMesh_i, oldIndices[0] ))
+              newShape = GEOM::GEOM_Object::_nil();
+          }
         }
       }
 
@@ -3114,32 +3148,40 @@ namespace // utils for CopyMeshWithGeom()
           newIndices.clear();
           newShape = getInPlace( oldShape );
         }
-        if ( !newIndices.empty() )
+        if ( !newIndices.empty() && newShape->_is_nil() )
         {
-          try
-          {
-            if ( newIndices.size() > 1 || oldShape->GetType() == GEOM_GROUP )
-            {
-              int groupType = getShapeType( myNewMesh_i, newIndices[0] );
-
-              GEOM::GEOM_IGroupOperations_wrap grOp = geomGen->GetIGroupOperations();
-              newShape = grOp->CreateGroup( mainShapeNew, groupType );
-
-              GEOM::ListOfLong_var  newIndicesList = new GEOM::ListOfLong();
-              newIndicesList->length( newIndices.size() );
-              for ( size_t i = 0; i < newIndices.size(); ++i )
-                newIndicesList[ i ] = newIndices[ i ];
-              grOp->UnionIDs( newShape, newIndicesList );
-            }
-            else
-            {
-              GEOM::GEOM_IShapesOperations_wrap shOp = geomGen->GetIShapesOperations();
-              newShape = shOp->GetSubShape( mainShapeNew, newIndices[0] );
-            }
+          // search for a sub-shape with same ids
+          std::set< int > idSet( newIndices.begin(), newIndices.end() );
+          TIdSet2IndexMap::iterator ids2ind = myIds2SubshapeIndex.find( idSet );
+          if ( ids2ind != myIds2SubshapeIndex.end() ) {
+            newShape = GEOM::GEOM_Object::_duplicate( mySubshapes[ ids2ind->second ]);
           }
-          catch (...)
-          {
-          }
+          if ( newShape->_is_nil() )
+            try
+            {
+              // create a new shape
+              if ( newIndices.size() > 1 || oldShape->GetType() == GEOM_GROUP )
+              {
+                int groupType = getShapeType( myNewMesh_i, newIndices[0] );
+
+                GEOM::GEOM_IGroupOperations_wrap grOp = geomGen->GetIGroupOperations();
+                newShape = grOp->CreateGroup( mainShapeNew, groupType );
+
+                GEOM::ListOfLong_var  newIndicesList = new GEOM::ListOfLong();
+                newIndicesList->length( newIndices.size() );
+                for ( size_t i = 0; i < newIndices.size(); ++i )
+                  newIndicesList[ i ] = newIndices[ i ];
+                grOp->UnionIDs( newShape, newIndicesList );
+              }
+              else
+              {
+                GEOM::GEOM_IShapesOperations_wrap shOp = geomGen->GetIShapesOperations();
+                newShape = shOp->GetSubShape( mainShapeNew, newIndices[0] );
+              }
+            }
+            catch (...)
+            {
+            }
         }
       }
 
