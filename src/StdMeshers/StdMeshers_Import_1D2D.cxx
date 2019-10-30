@@ -49,6 +49,7 @@
 #include <BRepBndLib.hxx>
 #include <BRepClass_FaceClassifier.hxx>
 #include <BRepTools.hxx>
+#include <BRepTopAdaptor_FClass2d.hxx>
 #include <BRep_Builder.hxx>
 #include <BRep_Tool.hxx>
 #include <Bnd_B2d.hxx>
@@ -200,7 +201,8 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
   gp_Pnt p; gp_Vec du, dv;
 
   // BRepClass_FaceClassifier is most time consuming, so minimize its usage
-  BRepClass_FaceClassifier classifier;
+  const double clsfTol = 10 * BRep_Tool::Tolerance( geomFace );
+  BRepTopAdaptor_FClass2d classifier( geomFace, clsfTol ); //Brimless_FaceClassifier classifier;
   Bnd_B2d bndBox2d;
   Bnd_Box bndBox3d;
   {
@@ -307,12 +309,12 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
     const double groupTol = 0.5 * sqrt( getMinElemSize2( srcGroup ));
     minGroupTol = std::min( groupTol, minGroupTol );
 
-    // clsfTol is 3D tolerance
+    // clsfTol is 2D tolerance of a probe line
     //GeomAdaptor_Surface S( surface );
     // const double clsfTol = Min( S.UResolution( 0.1 * groupTol ), -- issue 0023092
     //                             S.VResolution( 0.1 * groupTol ));
     // another idea: try to use max tol of all edges
-    const double clsfTol = 10 * BRep_Tool::Tolerance( geomFace ); // 0.1 * groupTol;
+    //const double clsfTol = 10 * BRep_Tool::Tolerance( geomFace ); // 0.1 * groupTol;
 
     if ( helper.HasSeam() )
       onEdgeClassifier.SetMesh( srcMesh->GetMeshDS() );
@@ -376,8 +378,8 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
           //int iCoo;
           if ( !isOut && !isIn ) // classify
           {
-            classifier.Perform( geomFace, uv, clsfTol );
-            nodeState[i] = classifier.State();
+            nodeState[i] = classifier.Perform( uv ); //classifier.Perform( geomFace, uv, clsfTol );
+            //nodeState[i] = classifier.State();
             isOut = ( nodeState[i] == TopAbs_OUT );
             if ( isOut && helper.IsOnSeam( uv ) && onEdgeClassifier.IsSatisfy( (*node)->GetID() ))
             {
@@ -420,8 +422,8 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
         {
           if ( nodeState[i] != TopAbs_UNKNOWN ) continue;
           gp_XY uv = helper.GetNodeUV( geomFace, newNodes[i] );
-          classifier.Perform( geomFace, uv, clsfTol );
-          nodeState[i] = classifier.State();
+          nodeState[i] = classifier.Perform( uv ); //geomFace, uv, clsfTol );
+          //nodeState[i] = classifier.State();
           isIn = ( nodeState[i] == TopAbs_IN );
         }
         if ( !isIn ) // classify face center
@@ -442,8 +444,9 @@ bool StdMeshers_Import_1D2D::Compute(SMESH_Mesh & theMesh, const TopoDS_Shape & 
           Standard_Real U,V;
           proj.LowerDistanceParameters(U,V);
           gp_XY uv( U,V );
-          classifier.Perform( geomFace, uv, clsfTol );
-          if ( classifier.State() != TopAbs_IN )
+          //classifier.Perform( geomFace, uv, clsfTol );
+          TopAbs_State state = classifier.Perform( uv );
+          if ( state != TopAbs_IN )
             continue;
         }
       }
