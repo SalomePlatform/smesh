@@ -665,7 +665,7 @@ std::vector<const SMDS_MeshNode*> StdMeshers_FaceSide::GetOrderedNodes(int theEd
       iE   = theEdgeInd % NbEdges();
       iEnd = iE + 1;
     }
-    for ( iE = 0; iE < iEnd; ++iE )
+    for ( ; iE < iEnd; ++iE )
     {
       double prevNormPar = ( iE == 0 ? 0 : myNormPar[ iE-1 ]); // normalized param
 
