@@ -745,7 +745,7 @@ void SMESHGUI_MeshDlg::setHypoSets( const QStringList& theSets )
   }
   aHypoSetPopup->clear();
   for ( int i = 0, n = theSets.count(); i < n; i++ ) {
-    aHypoSetPopup->addAction( theSets[ i ] );
+    aHypoSetPopup->addAction( tr( theSets[ i ].toUtf8().data() ));
   }
   myHypoSetButton->setEnabled( !aHypoSetPopup->isEmpty() );
 }

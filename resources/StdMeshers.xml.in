@@ -605,6 +605,7 @@
 
     <hypotheses-set name="Free Hexahedralization"
                     use-common-size="true"
+                    quad-dominated="true"
                     hypos="MG-CADSurf Parameters"
                     algos="MG-CADSurf, MG-Hexa"
                     intern-edge-hypos="LocalLength"

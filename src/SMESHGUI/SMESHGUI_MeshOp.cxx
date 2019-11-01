@@ -294,8 +294,8 @@ void SMESHGUI_MeshOp::commitOperation()
 //================================================================================
 /*!
  * \brief Creates selection filter
-  * \param theId - identifier of current selection widget
-  * \retval SUIT_SelectionFilter* - pointer to the created filter or null
+ *  \param theId - identifier of current selection widget
+ *  \retval SUIT_SelectionFilter* - pointer to the created filter or null
  *
  * Creates selection filter in accordance with identifier of current selection widget
  */
@@ -2059,18 +2059,20 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess, QStringList& theEntryList )
       GEOM::GEOM_Gen_var           geomGen = SMESH::GetGEOMGen();
       GEOM::GEOM_IShapesOperations_wrap op = geomGen->GetIShapesOperations();
       GEOM::ListOfGO_var        geomGroups = op->GetExistingSubObjects( aGeomVar,
-                                                                        /*groupsOnly=*/true );
+                                                                        /*groupsOnly=*/false );
       SMESH::SMESH_GroupOnGeom_var meshGroup;
       for ( CORBA::ULong iG = 0; iG < geomGroups->length(); ++iG )
       {
         SMESH::ElementType elemType = SMESHGUI_GroupOnShapeOp::ElementType( geomGroups[ iG ] );
         if ( elemType == SMESH::ALL )
           continue;
+        if ( elemType == SMESH::ELEM0D )
+          elemType = SMESH::NODE;
 
         CORBA::String_var name = geomGroups[ iG ]->GetName();
         meshGroup = aMesh->CreateGroupFromGEOM( elemType, name, geomGroups[ iG ]);
-        if ( elemType != SMESH::NODE )
-          meshGroup = aMesh->CreateGroupFromGEOM( SMESH::NODE, name, geomGroups[ iG ]);
+        // if ( elemType != SMESH::NODE )
+        //   meshGroup = aMesh->CreateGroupFromGEOM( SMESH::NODE, name, geomGroups[ iG ]);
       }
     }
 

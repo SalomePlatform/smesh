@@ -6506,7 +6506,7 @@ Please specify them and try again</translation>
     </message>
     <message>
         <source>HYPOTHESES_SETS</source>
-        <translation>Assign a set of hypotheses</translation>
+        <translation>Assign a set of automatic hypotheses</translation>
     </message>
     <message>
         <source>MESH</source>

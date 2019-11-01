@@ -4589,6 +4589,10 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
         <translation>Affiche un avertissement quand un groupe est exporté</translation>
     </message>
     <message>
+        <source>PREF_ZTOLERANCE</source>
+        <translation>Tolérance sur Z pour l'export en MED</translation>
+    </message>
+    <message>
         <source>PREF_GROUP_SEGMENT_LENGTH</source>
         <translation>Paramètres automatiques</translation>
     </message>
@@ -4599,6 +4603,10 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     <message>
         <source>PREF_NB_SEGMENTS</source>
         <translation>Nombre de segments par défaut</translation>
+    </message>
+    <message>
+        <source>PREF_USE_MESHGEMS_HYPOSET</source>
+        <translation>Utiliser les mailleurs MeshGems pour définir les hypothèses automatiques</translation>
     </message>
     <message>
         <source>SMESH_PREF_MESH_LOADING</source>
@@ -4687,6 +4695,10 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     <message>
         <source>PREF_DISPLAY_MODE</source>
         <translation>Mode de visualisation par défaut</translation>
+    </message>
+    <message>
+        <source>PREF_FITALL_ON_DISPLAYONLY</source>
+        <translation>Ajuster la vue en cas d'affichage unique</translation>
     </message>
     <message>
         <source>PREF_ELEMENTS</source>
@@ -6433,7 +6445,7 @@ Indiquez-les et essayez de nouveau</translation>
     </message>
     <message>
         <source>HYPOTHESES_SETS</source>
-        <translation>Attribuer un jeu d&apos;hypothèses</translation>
+        <translation>Définir des hypothèses automatiques</translation>
     </message>
     <message>
         <source>MESH</source>
@@ -6446,6 +6458,10 @@ Indiquez-les et essayez de nouveau</translation>
     <message>
         <source>NAME</source>
         <translation>Nom</translation>
+    </message>
+    <message>
+        <source>CREATE_ALL_GROUPS</source>
+        <translation>Créer tous les groupes définis dans la géométrie</translation>
     </message>
 </context>
 <context>
@@ -8382,6 +8398,13 @@ with red in the Object Browser.</translation>
     <message>
         <source>OPTION_VALUE</source>
         <translation>Valeur de l'option'</translation>
+    </message>
+</context>
+<context>
+    <name>SMESHGUI_GenericHypothesisCreator</name>
+    <message>
+        <source>AverageLengthForHypoSet</source>
+        <translation>Taille moyenne</translation>
     </message>
 </context>
 </TS>
