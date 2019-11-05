@@ -751,6 +751,43 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::CreateHypothesis( const char* theHypNam
 
 //================================================================================
 /*!
+ * \brief Return a hypothesis initialized by given average length.
+ *  \param theHypType - hypothesis type name
+ *  \param theLibName - plugin library name
+ *  \param theAverageLength - average length
+ *  \param theQuadDominated - is quad-dominated flag
+ *  \retval SMESH::SMESH_Hypothesis_ptr - the new hypothesis
+ */
+//================================================================================
+
+SMESH::SMESH_Hypothesis_ptr
+SMESH_Gen_i::CreateHypothesisByAverageLength( const char*    theHypType,
+                                              const char*    theLibName,
+                                              CORBA::Double  theAverageLength,
+                                              CORBA::Boolean theQuadDominated)
+  throw ( SALOME::SALOME_Exception )
+{
+  SMESH::HypInitParams initParams = { ::SMESH_Hypothesis::BY_AVERAGE_LENGTH,
+                                      theAverageLength, theQuadDominated };
+
+  SMESH::SMESH_Hypothesis_var hyp =
+    GetHypothesisParameterValues( theHypType, theLibName,
+                                  SMESH::SMESH_Mesh::_nil(),
+                                  GEOM::GEOM_Object::_nil(),
+                                  initParams );
+  SALOMEDS::SObject_wrap so = PublishHypothesis( hyp );
+
+  TPythonDump() << hyp << " = " << this << ".CreateHypothesisByAverageLength( '"
+                << theHypType << "', '"
+                << theLibName << "', "
+                << theAverageLength << ", "
+                << theQuadDominated << " )";
+
+  return hyp._retn();
+}
+
+//================================================================================
+/*!
  * \brief Return a hypothesis holding parameter values corresponding either to the mesh
  * existing on the given geometry or to size of the geometry.
  *  \param theHypType - hypothesis type name
@@ -764,7 +801,7 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::CreateHypothesis( const char* theHypNam
 //================================================================================
 
 SMESH::SMESH_Hypothesis_ptr
-SMESH_Gen_i::GetHypothesisParameterValues (const char*                 theHypType,
+SMESH_Gen_i::GetHypothesisParameterValues( const char*                 theHypType,
                                            const char*                 theLibName,
                                            SMESH::SMESH_Mesh_ptr       theMesh,
                                            GEOM::GEOM_Object_ptr       theGeom,
@@ -844,6 +881,7 @@ SMESH_Gen_i::GetHypothesisParameterValues (const char*                 theHypTyp
       dflts._elemLength  = dflts._diagonal / myGen.GetBoundaryBoxSegmentation();
       dflts._shape       = &shape;
     }
+
     // let the hypothesis initialize it's values
     if ( hyp->SetParametersByDefaults( dflts, mesh ))
       return SMESH::SMESH_Hypothesis::_duplicate( tmpHyp );

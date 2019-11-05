@@ -53,7 +53,7 @@
     </message>
     <message>
         <source>GMF_BINARY_FILES_FILTER</source>
-        <translation>Fichier GMF binaires</translation>
+        <translation>Fichiers GMF binaires</translation>
     </message>
     <message>
         <source>STL_BIN_FILES_FILTER</source>
@@ -109,7 +109,7 @@
     </message>
     <message>
         <source>MIN_ELEM_EDGE</source>
-        <translation>Longueur arête Minimum</translation>
+        <translation>Longueur arête minimum</translation>
     </message>
     <message>
         <source>ASPECTRATIO_3D_ELEMENTS</source>
@@ -189,7 +189,7 @@
     </message>
     <message>
         <source>EDITERR_NO_MEDIUM_ON_GEOM</source>
-        <translation>Certain noeuds milieux (affichés en magenta) ne sont pas placés
+        <translation>Certain nœuds milieux (affichés en magenta) ne sont pas placés
         sur la géométrie pour éviter d&apos;obtenir des élements distordus.</translation>
     </message>
     <message>
@@ -234,7 +234,7 @@
     </message>
     <message>
         <source>DEFLECTION2D_FACES</source>
-        <translation>Deflection 2D</translation>
+        <translation>Déflection 2D</translation>
     </message>
     <message>
         <source>LENGTH_EDGES</source>
@@ -246,15 +246,15 @@
     </message>
     <message>
         <source>MAX_ELEMENT_LENGTH_2D</source>
-        <translation>Diamètre d&apos;éléments 2D</translation>
+        <translation>Diamètre des éléments 2D</translation>
     </message>
     <message>
         <source>MAX_ELEMENT_LENGTH_3D</source>
-        <translation>Diamètre Element 3D</translation>
+        <translation>Diamètre des éléments 3D</translation>
     </message>
     <message>
         <source>DEFLECTION_2D</source>
-        <translation>Deflection 2D</translation>
+        <translation>Déflection 2D</translation>
     </message>
     <message>
         <source>MEN_ADD</source>
@@ -334,7 +334,7 @@
     </message>
     <message>
         <source>MEN_CONV_TO_QUAD</source>
-        <translation>Convertir vers/de quadratique</translation>
+        <translation>Convertir vers/depuis quadratique</translation>
     </message>
     <message>
         <source>MEN_2D_FROM_3D</source>
@@ -450,7 +450,7 @@
     </message>
     <message>
         <source>MEN_0D_ON_ALL_NODES</source>
-        <translation>Eléments 0D sur des noeuds</translation>
+        <translation>Eléments 0D sur des nœuds</translation>
     </message>
     <message>
         <source>MEN_BALL</source>
@@ -1183,7 +1183,7 @@
     <message>
         <source>STB_OVERALL_MESH_QUALITY</source>
         <translation>Qualité du maillage global</translation>
-    </message>    
+    </message>
     <message>
         <source>STB_SPLIT_TO_TETRA</source>
         <translation>Eclater en tétraèdres</translation>
@@ -1803,7 +1803,7 @@ Voulez-vous continuer ?</translation>
     </message>
     <message>
         <source>SMESH_EXPORT_MED_VERSION_COLLISION</source>
-        <translation>La version MED du fichier &quot;%1&quot; n&apos;est pas connue 
+        <translation>La version MED du fichier &quot;%1&quot; n&apos;est pas connue
 ou ne correspond pas à la version choisie.
 Ecraser le fichier ?</translation>
     </message>
@@ -1855,8 +1855,7 @@ Voulez-vous continuer ?</translation>
     <message>
         <source>SMESH_FILE_EXISTS</source>
         <translation>Le fichier &quot;%1&quot; existe déjà.
-Voulez-vous le réécrire ou y ajouter 
-les données exportées ?</translation>
+Voulez-vous le réécrire ou y ajouter les données exportées ?</translation>
     </message>
     <message>
         <source>SMESH_FONT_ARIAL</source>
@@ -3154,7 +3153,7 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     </message>
     <message>
         <source>STB_0D_ON_ALL_NODES</source>
-        <translation>Créer des éléments 0D sur des noeuds</translation>
+        <translation>Créer des éléments 0D sur des nœuds</translation>
     </message>
     <message>
         <source>STB_ELEMS0D</source>
@@ -3846,7 +3845,7 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     </message>
     <message>
         <source>TOP_0D_ON_ALL_NODES</source>
-        <translation>Créer des éléments 0D sur des noeuds</translation>
+        <translation>Créer des éléments 0D sur des nœuds</translation>
     </message>
     <message>
         <source>TOP_ELEM0D</source>
@@ -4964,7 +4963,7 @@ Ouvrez une fenêtre VTK et essayez de nouveau</translation>
     <name>SMESHGUI_Add0DElemsOnAllNodesDlg</name>
     <message>
         <source>CAPTION</source>
-        <translation>Créer des éléments 0D sur des noeuds</translation>
+        <translation>Créer des éléments 0D sur des nœuds</translation>
     </message>
     <message>
         <source>OBJ_BTN</source>
@@ -5407,7 +5406,7 @@ Choisissez un groupe et essayez de nouveau</translation>
     </message>
     <message>
         <source>EDIT_SELECTED_NODE_GROUP</source>
-        <translation>Editer le groupe sélectionné de noeuds coïncidents</translation>
+        <translation>Editer le groupe sélectionné de nœuds coïncidents</translation>
     </message>
     <message>
         <source>EDIT_SELECTED_ELEM_GROUP</source>
@@ -5431,7 +5430,7 @@ Choisissez un groupe et essayez de nouveau</translation>
     </message>
     <message>
         <source>SEPARATE_CORNERS_AND_MEDIUM</source>
-        <translation>Pas de fusion du coin et des noeuds moyens des cellules quadratiques</translation>
+        <translation>Pas de fusion du coin et des nœuds moyens des cellules quadratiques</translation>
     </message>
     <message>
         <source>AVOID_MAKING_HOLES</source>
@@ -5439,7 +5438,7 @@ Choisissez un groupe et essayez de nouveau</translation>
     </message>
     <message>
         <source>KEEP_NODES</source>
-        <translation>Les noeuds à conserver pendant la fusion</translation>
+        <translation>Les nœuds à conserver pendant la fusion</translation>
     </message>
     <message>
         <source>GROUP_SUBMESH</source>
@@ -5533,7 +5532,7 @@ Choisissez un groupe et essayez de nouveau</translation>
     <name>SMESHGUI_ExtrusionDlg</name>
     <message>
         <source>EXTRUSION_0D</source>
-        <translation>Extrusion de noeuds</translation>
+        <translation>Extrusion de nœuds</translation>
     </message>
     <message>
         <source>EXTRUSION_1D</source>
@@ -5877,7 +5876,7 @@ Vérifiez la validité des informations données</translation>
     </message>
     <message>
         <source>NUMBEROFNODESINELEMENT</source>
-        <translation>Nombre de noeuds dans l&apos;élément</translation>
+        <translation>Nombre de nœuds dans l&apos;élément</translation>
     </message>
     <message>
         <source>COPY_FROM</source>
@@ -6463,6 +6462,30 @@ Indiquez-les et essayez de nouveau</translation>
         <source>CREATE_ALL_GROUPS</source>
         <translation>Créer tous les groupes définis dans la géométrie</translation>
     </message>
+    <message>
+        <source>3D: Tetrahedralization</source>
+        <translation>3D : Tétraèdres</translation>
+    </message>
+    <message>
+        <source>3D: Mapped Hexahedralization</source>
+        <translation>3D : Hexaèdres réglés</translation>
+    </message>
+    <message>
+        <source>3D: Free Hexahedralization</source>
+        <translation>3D : Hexaèdres libres</translation>
+    </message>
+    <message>
+        <source>2D: Triangulation</source>
+        <translation>2D : Triangles</translation>
+    </message>
+    <message>
+        <source>2D: Mapped Quadrangulation</source>
+        <translation>2D : Quadrangles réglés</translation>
+    </message>
+    <message>
+        <source>2D: Free Quadrangulation</source>
+        <translation>2D : Quadrangles libres</translation>
+    </message>
 </context>
 <context>
     <name>SMESHGUI_MeshOp</name>
@@ -6525,7 +6548,7 @@ Spécifiez-le et essayez de nouveau</translation>
     </message>
     <message>
         <source>MT_HEXAHEDRAL</source>
-        <translation>Hexahèdre</translation>
+        <translation>Hexaèdre</translation>
     </message>
     <message>
         <source>MT_TETRAHEDRAL</source>
@@ -6556,7 +6579,7 @@ Sélectionnez un maillage ou un sous-maillage et essayez de nouveau</translation
     </message>
     <message>
         <source>CONCURRENT_SUBMESH_APPEARS</source>
-        <translation> 
+        <translation>
 L&apos;algorithme assigné a la même priorité que celui assigné à un
 sous-maillage adjacent; ainsi l'algorithme à utiliser pour mailler la
 frontière partagée par les deux sous-maillages n&apos;est pas défini.
@@ -6588,7 +6611,7 @@ Il est probable que le fichier est corrompu ou contient un autre type de motif</
     </message>
     <message>
         <source>ERROR_OF_OPENING</source>
-        <translation>Il est impossible d&apos;ouvrir le fichier. 
+        <translation>Il est impossible d&apos;ouvrir le fichier.
 Vérifiez s&apos;il existe et si vous avez l&apos;autorisation</translation>
     </message>
     <message>
@@ -6638,7 +6661,7 @@ Il est impossible de lire les coordonnées des points dans le fichier</translati
     </message>
     <message>
         <source>ERR_READ_TOO_FEW_POINTS</source>
-        <translation>Il est impossible de charger le motif. 
+        <translation>Il est impossible de charger le motif.
 Il y a trop peu de points dans le fichier </translation>
     </message>
     <message>
@@ -8144,7 +8167,7 @@ en raison de leurs types incompatibles:
     <message>
         <source>SUBSHAPES_NOT_FOUND_MSG</source>
         <translation>
-Some sub-shapes not found in the new geometry. They are listed 
+Some sub-shapes not found in the new geometry. They are listed
 below along with dependent mesh objects that are marked with
 with red in the Object Browser.</translation>
     </message>

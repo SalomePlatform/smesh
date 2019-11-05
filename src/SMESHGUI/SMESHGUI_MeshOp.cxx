@@ -1103,12 +1103,18 @@ SMESHGUI_MeshOp::getInitParamsHypothesis( const QString&              aHypType,
     initParams.way = isSubMesh ? BY_MESH : BY_GEOM;
   }
 
-  SMESH::SMESH_Hypothesis_var hyp =
-    SMESHGUI::GetSMESHGen()->GetHypothesisParameterValues( aHypType.toUtf8().data(),
-                                                           aServerLib.toUtf8().data(),
-                                                           aMesh,
-                                                           aGeomVar,
-                                                           initParams );
+  SMESH::SMESH_Hypothesis_var hyp;
+  if ( initParams.way == BY_AVERAGE_LENGTH )
+    hyp = SMESHGUI::GetSMESHGen()->CreateHypothesisByAverageLength( aHypType.toUtf8().data(),
+                                                                    aServerLib.toUtf8().data(),
+                                                                    initParams.averageLength,
+                                                                    initParams.quadDominated );
+  else
+    hyp = SMESHGUI::GetSMESHGen()->GetHypothesisParameterValues( aHypType.toUtf8().data(),
+                                                                 aServerLib.toUtf8().data(),
+                                                                 aMesh,
+                                                                 aGeomVar,
+                                                                 initParams );
   if ( hyp->_is_nil() && initParams.way == BY_MESH )
   {
     initParams.way = BY_GEOM;
@@ -1898,7 +1904,7 @@ void SMESHGUI_MeshOp::onHypoSet( const QString& theSetName )
   HypothesesSet::SetType setType = aHypoSet->getPreferredHypType();
   if ( !aHypoSet->getAlgoAvailable( setType ))
   {
-    setType = setType == HypothesesSet::ALT ? HypothesesSet::MAIN : HypothesesSet::ALT;
+    setType = ( setType == HypothesesSet::ALT ) ? HypothesesSet::MAIN : HypothesesSet::ALT;
     if ( !aHypoSet->getAlgoAvailable( setType ))
       return;
   }
