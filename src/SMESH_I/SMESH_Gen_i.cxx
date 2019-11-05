@@ -2542,7 +2542,7 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::ListOfIDSources& theMeshesArray,
       continue;
     initImpl->Load();
 
-    // assure that IDs increments by one during iteration
+    // assure that IDs increment by one during iteration
     ::SMESH_Mesh& initLocMesh = initImpl->GetImpl();
     SMESHDS_Mesh*  initMeshDS = initLocMesh.GetMeshDS();
     if ( initMeshDS->MaxNodeID()    > initMeshDS->NbNodes() ||
@@ -2567,6 +2567,9 @@ SMESH_Gen_i::ConcatenateCommon(const SMESH::ListOfIDSources& theMeshesArray,
 
     // copy elements
 
+    SMESH::array_of_ElementType_var srcElemTypes = theMeshesArray[i]->GetTypes();
+    if ( srcElemTypes->length() == 1 && srcElemTypes[0] == SMESH::NODE ) // group of nodes
+      continue;
     std::vector< const SMDS_MeshElement* > newElems( initMeshDS->NbElements() + 1, 0 );
     elemIt = initImpl->GetElements( theMeshesArray[i], SMESH::ALL );
     while ( elemIt->more() )
