@@ -229,6 +229,7 @@ public:
   QString name() const;
   bool toUseCommonSize() const { return myUseCommonSize; }
   bool isQuadDominated() const { return myQuadDominated; }
+  bool hasAlgo( SetType type ) const { return !myAlgoList[ type ].isEmpty(); }
   //int count( bool, SetType ) const;
 
   int maxDim() const;

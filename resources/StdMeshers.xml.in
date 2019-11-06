@@ -608,6 +608,8 @@
                     quad-dominated="true"
                     hypos="MG-CADSurf Parameters"
                     algos="MG-CADSurf, MG-Hexa"
+                    alt-hypos="None"
+                    alt-algos="None"
                     intern-edge-hypos="LocalLength"
                     intern-edge-algos="Regular_1D"/>
 

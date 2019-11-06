@@ -744,8 +744,11 @@ void SMESHGUI_MeshDlg::setHypoSets( const QStringList& theSets )
     myHypoSetButton->setPopupMode( QToolButton::InstantPopup );
   }
   aHypoSetPopup->clear();
-  for ( int i = 0, n = theSets.count(); i < n; i++ ) {
-    aHypoSetPopup->addAction( tr( theSets[ i ].toUtf8().data() ));
+  for ( int i = 0, n = theSets.count(); i < n; i++ )
+  {
+    QAction* action = new QAction( tr( theSets[ i ].toUtf8().data() ));
+    action->setData( theSets[ i ] );
+    aHypoSetPopup->addAction( action );
   }
   myHypoSetButton->setEnabled( !aHypoSetPopup->isEmpty() );
 }
@@ -760,7 +763,7 @@ void SMESHGUI_MeshDlg::setHypoSets( const QStringList& theSets )
 //================================================================================
 void SMESHGUI_MeshDlg::onHypoSetPopup( QAction* a )
 {
-  emit hypoSet( a->text() );
+  emit hypoSet( a->data().toString() );
 }
   
 //================================================================================

@@ -2946,9 +2946,19 @@ void SMESHGUI_MeshOp::updateHypoSets()
       }
       currentHypoSet->setAlgoAvailable( sType, isAvailable );
     }
+    if ( currentHypoSet->hasAlgo( HypothesesSet::MAIN ) &&
+         currentHypoSet->hasAlgo( HypothesesSet::ALT ))
+    {
+      HypothesesSet::SetType setType = HypothesesSet::getPreferredHypType();
+      if ( !currentHypoSet->getAlgoAvailable( setType ))
+        continue; // not add if a preferred type not available currently
+    }
+
     if ( currentHypoSet->getAlgoAvailable( HypothesesSet::MAIN ) ||
          currentHypoSet->getAlgoAvailable( HypothesesSet::ALT ))
+    {
       aFilteredHypothesesSetsList.append( *inHypoSetName );
+    }
   }
   myDlg->setHypoSets( aFilteredHypothesesSetsList );
 }
