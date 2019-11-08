@@ -35,7 +35,7 @@
 #include <Utils_SALOME_Exception.hxx>
 
 #include <boost/intrusive/circular_list_algorithms.hpp>
-#include <boost/container/flat_map.hpp>
+//#include <boost/container/flat_map.hpp>
 
 #include <Bnd_B3d.hxx>
 
