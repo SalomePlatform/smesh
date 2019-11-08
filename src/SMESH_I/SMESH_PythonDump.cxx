@@ -32,6 +32,7 @@
 #include "SMESH_Gen_i.hxx"
 #include "SMESH_MeshEditor_i.hxx"
 
+#include <Basics_Utils.hxx>
 #include <SALOMEDS_wrap.hxx>
 
 #include <LDOMParser.hxx>
@@ -699,6 +700,9 @@ Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Boolean  isPublished,
                                            CORBA::Boolean  isMultiFile,
                                            CORBA::Boolean& isValidScript)
 {
+  // localizing
+  Kernel_Utils::Localizer loc;
+
   SALOMEDS::Study_var aStudy = getStudyServant();
   if (CORBA::is_nil(aStudy))
     return new Engines::TMPFile(0);
