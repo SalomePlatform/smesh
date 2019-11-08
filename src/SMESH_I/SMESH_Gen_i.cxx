@@ -4034,6 +4034,9 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                                       const char*              theURL,
                                       bool                     isMultiFile )
 {
+  // localizing
+  Kernel_Utils::Localizer loc;
+
   if (!myStudyContext)
     UpdateStudy();
 
@@ -5048,6 +5051,9 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                         const char*              theURL,
                         bool                     isMultiFile )
 {
+  // localizing
+  Kernel_Utils::Localizer loc;
+
   //if (!myStudyContext)
     UpdateStudy();
   SALOMEDS::Study_var aStudy = getStudyServant();
