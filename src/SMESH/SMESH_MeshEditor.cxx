@@ -7478,6 +7478,8 @@ void SMESH_MeshEditor::FindEqualElements( TIDSortedElemSet &        theElements,
   while ( elemIt->more() )
   {
     const SMDS_MeshElement* curElem = elemIt->next();
+    if ( curElem->IsNull() )
+      continue;
     ComparableElement      compElem = curElem;
     // check uniqueness
     const ComparableElement& elemInSet = mapOfElements.Added( compElem );
