@@ -12567,8 +12567,8 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
         for ( inode = 0; inode < srcNodes.size(); ++inode )
           tgtNodes[inode] = getNodeWithSameID( tgtMeshDS, srcNodes[inode] );
         if ( /*aroundElements && */tgtEditor.GetMeshDS()->FindElement( tgtNodes,
-                                                                   missType,
-                                                                   /*noMedium=*/false))
+                                                                       missType,
+                                                                       /*noMedium=*/false))
           continue;
         tgtEditor.AddElement( tgtNodes, elemKind.SetPoly( tgtNodes.size()/(iQuad+1) > 4 ));
         ++nbAddedBnd;
@@ -12578,8 +12578,8 @@ int SMESH_MeshEditor::MakeBoundaryMesh(const TIDSortedElemSet& elements,
       {
         TConnectivity& nodes = missingBndElems[ i ];
         if ( /*aroundElements && */tgtEditor.GetMeshDS()->FindElement( nodes,
-                                                                   missType,
-                                                                   /*noMedium=*/false))
+                                                                       missType,
+                                                                       /*noMedium=*/false))
           continue;
         SMDS_MeshElement* newElem =
           tgtEditor.AddElement( nodes, elemKind.SetPoly( nodes.size()/(iQuad+1) > 4 ));
