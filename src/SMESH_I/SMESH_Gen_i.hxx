@@ -109,7 +109,8 @@ public:
   // Get SALOME_LifeCycleCORBA object
   static SALOME_LifeCycleCORBA* GetLCC();
   // Retrieve and get GEOM engine reference
-  static GEOM::GEOM_Gen_var GetGeomEngine();
+  static GEOM::GEOM_Gen_var GetGeomEngine( bool isShaper );
+  static GEOM::GEOM_Gen_var GetGeomEngine( GEOM::GEOM_Object_ptr );
   // Get object of the CORBA reference
   static PortableServer::ServantBase_var GetServant( CORBA::Object_ptr theObject );
   // Get CORBA object corresponding to the SALOMEDS::SObject
@@ -634,8 +635,6 @@ private:
                                                  const char*           name );
 
   void highLightInvalid( SALOMEDS::SObject_ptr theSObject, bool isInvalid );
-
-  static void loadGeomData( SALOMEDS::SComponent_ptr theCompRoot );
 
   SMESH::mesh_array* CreateMeshesFromMEDorSAUV( const char* theFileName,
                                                 SMESH::DriverMED_ReadStatus& theStatus,

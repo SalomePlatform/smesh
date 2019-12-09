@@ -392,7 +392,6 @@ class Mesh_Algorithm:
         into a list acceptable to SetReversedEdges() of some 1D hypotheses
         """
         
-        from salome.smesh.smeshBuilder import FirstVertexOnCurve
         resList = []
         geompy = self.mesh.geompyD
         for i in reverseList:
@@ -417,7 +416,7 @@ class Mesh_Algorithm:
                 if e.GetShapeType() != geomBuilder.GEOM.EDGE or \
                    v.GetShapeType() != geomBuilder.GEOM.VERTEX:
                     raise TypeError("A list item must be a tuple (edge, 1st_vertex_of_edge)")
-                vFirst = FirstVertexOnCurve( self.mesh, e )
+                vFirst = geompy.GetVertexByIndex( e, 0, False )
                 tol    = geompy.Tolerance( vFirst )[-1]
                 if geompy.MinDistance( v, vFirst ) > 1.5*tol:
                     resList.append( geompy.GetSubShapeID(self.mesh.geom, e ))

@@ -1980,7 +1980,7 @@ void SMESH_Mesh_i::addGeomGroupData(GEOM::GEOM_Object_ptr theGeomObj,
   if ( groupSO->_is_nil() )
     return;
   // group indices
-  GEOM::GEOM_Gen_var geomGen = _gen_i->GetGeomEngine();
+  GEOM::GEOM_Gen_var geomGen = _gen_i->GetGeomEngine( theGeomObj );
   GEOM::GEOM_IGroupOperations_wrap groupOp =
     geomGen->GetIGroupOperations();
   GEOM::ListOfLong_var ids = groupOp->GetObjects( theGeomObj );
@@ -2039,7 +2039,7 @@ TopoDS_Shape SMESH_Mesh_i::newGroupShape( TGeomGroupData & groupData)
 
     // get indices of group items
     set<int> curIndices;
-    GEOM::GEOM_Gen_var geomGen = _gen_i->GetGeomEngine();
+    GEOM::GEOM_Gen_var geomGen = _gen_i->GetGeomEngine( geomGroup );
     GEOM::GEOM_IGroupOperations_wrap groupOp =
       geomGen->GetIGroupOperations();
     GEOM::ListOfLong_var   ids = groupOp->GetObjects( geomGroup );
@@ -2227,7 +2227,7 @@ void SMESH_Mesh_i::CheckGeomModif()
 
   GEOM_Client* geomClient = _gen_i->GetShapeReader();
   if ( !geomClient ) return;
-  GEOM::GEOM_Gen_var geomGen = _gen_i->GetGeomEngine();
+  GEOM::GEOM_Gen_var geomGen = _gen_i->GetGeomEngine( mainGO );
   if ( geomGen->_is_nil() ) return;
 
   CORBA::String_var ior = geomGen->GetStringFromIOR( mainGO );
