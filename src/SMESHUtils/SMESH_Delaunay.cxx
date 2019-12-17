@@ -388,5 +388,5 @@ void SMESH_Delaunay::ToPython() const
   file.remove();
   file.openForWriting();
   file.write( text.c_str(), text.size() );
-  cout << "exec(open('" << fileName << "', 'rb').read())";
+  std::cout << "exec(open('" << fileName << "', 'rb').read())";
 }

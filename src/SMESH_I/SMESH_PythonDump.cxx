@@ -668,7 +668,7 @@ namespace SMESH
   void printException( const char* text )
   {
 #ifdef _DEBUG_
-    cout << "Exception in SMESH_Gen_i::DumpPython(): " << text << endl;
+    std::cout << "Exception in SMESH_Gen_i::DumpPython(): " << text << std::endl;
 #endif
   }
 

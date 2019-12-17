@@ -44,6 +44,7 @@
 #include <map>
 #include <list>
 #include <vector>
+#include <ostream>
 
 #ifdef WIN32
 #pragma warning(disable:4251) // Warning DLL Interface ...
@@ -357,7 +358,7 @@ class SMESH_EXPORT SMESH_Mesh
   bool IsOrderOK( const SMESH_subMesh* smBefore,
                   const SMESH_subMesh* smAfter ) const;
 
-  std::ostream& Dump(ostream & save);
+  std::ostream& Dump(std::ostream & save);
   
 private:
 
