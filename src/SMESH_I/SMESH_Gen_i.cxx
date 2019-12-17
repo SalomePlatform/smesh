@@ -278,7 +278,7 @@ SALOME_LifeCycleCORBA*  SMESH_Gen_i::GetLCC()
 GEOM::GEOM_Gen_var SMESH_Gen_i::GetGeomEngine( bool isShaper )
 {
   Engines::EngineComponent_ptr temp =
-    GetLCC()->FindOrLoad_Component( isShaper ? "FactoryServerPy" : "FactoryServer",
+    GetLCC()->FindOrLoad_Component( isShaper ? "FactoryServer" : "FactoryServer",
                                     isShaper ? "SHAPERSTUDY" : "GEOM" );
   myGeomGen = GEOM::GEOM_Gen::_narrow( temp );
 
@@ -295,7 +295,7 @@ GEOM::GEOM_Gen_var SMESH_Gen_i::GetGeomEngine( bool isShaper )
 
 GEOM::GEOM_Gen_var SMESH_Gen_i::GetGeomEngine( GEOM::GEOM_Object_ptr go )
 {
-  GEOM::GEOM_Gen_var gen;
+  GEOM::GEOM_Gen_ptr gen;
   if ( !CORBA::is_nil( go ))
     gen = go->GetGen();
   return gen;
