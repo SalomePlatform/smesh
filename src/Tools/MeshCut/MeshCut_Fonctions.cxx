@@ -89,7 +89,7 @@ int MESHCUT::intersectionSegmentPlan(int it4, int na)
   float A[3], B[3];
 
   // Détermination des ng des extrémités de l'arête passée en argument na
-  int * offset = MAILLAGE1->CNX[TETRA4] + 4 * it4;
+  med_int * offset = MAILLAGE1->CNX[TETRA4] + 4 * it4;
   if (na == 0)
     {
       ngA = *(offset + 0);

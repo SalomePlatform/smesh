@@ -30,7 +30,7 @@
 #include "SMESH_DriverMED.hxx"
 
 #include "Driver_SMESHDS_Mesh.h"
-#include "MED_Common.hxx"
+//#include "MED_Common.hxx"
 
 #include <string>
 #include <list>

@@ -1035,7 +1035,7 @@ float MESHCUT::distance2(float x1, float y1, float z1, float x2, float y2, float
 /*!
  *  Conversion HL-MED d'une table de connectivités
  */
-void MESHCUT::conversionCNX(int *CNXtm, TYPE_MAILLE tm, int N)
+void MESHCUT::conversionCNX(med_int *CNXtm, TYPE_MAILLE tm, int N)
 {
 
   int n = Nnoeuds(tm);

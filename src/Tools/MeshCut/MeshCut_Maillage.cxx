@@ -66,7 +66,7 @@ void Maillage::afficheMailles(TYPE_MAILLE tm)
         {
           cout << "\tMaille " << i << " :" << endl;
           //Boucle sur les noeuds de la maille de numéro local i dans le type tm
-          int * offset = CNX[tm] + nnoeuds * i;
+          med_int * offset = CNX[tm] + nnoeuds * i;
           for (int j = 0; j < nnoeuds; j++)
             {
               int ngnoeud = *(offset + j);
@@ -868,7 +868,7 @@ void Maillage::acquisitionTYPE_inputMED(TYPE_MAILLE TYPE, int nTYPE, med_idt fid
   med_int *famTYPE = (med_int*) malloc(sizeof(med_int) * nTYPE);
 
   //med_int *conTYPE = (med_int*) malloc(sizeof(med_int)*tTYPE*nTYPE);
-  CNX[TYPE] = (int*) malloc(sizeof(int) * tTYPE * nTYPE);
+  CNX[TYPE] = (med_int*) malloc(sizeof(med_int) * tTYPE * nTYPE);
 
   med_bool inomTYPE, inumTYPE, ifamTYPE;
   med_geometry_type typeBanaliseMED = InstanceMGE(TYPE);
@@ -1705,10 +1705,10 @@ void Maillage::eliminationMailles(TYPE_MAILLE tm, vector<int> listeMaillesSuppr)
 
   // ************* Modification de la connectivité du type concerné
 
-  int* CNX2;
+  med_int* CNX2;
   int nNoeudsType = Nnoeuds(tm);
   int tailleCNX2 = nNoeudsType * (EFFECTIFS_TYPES[tm] - listeMaillesSuppr.size());
-  CNX2 = (int*) malloc(sizeof(int) * tailleCNX2);
+  CNX2 = (med_int*) malloc(sizeof(med_int) * tailleCNX2);
   // Recopie sélective des connectivités
   int isuppr = 0; // indice dans listeMaillesSuppr
   int ih2 = 0; // nouveau numéro local ( remarque: ih2 = ih1 - isuppr )

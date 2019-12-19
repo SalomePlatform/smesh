@@ -34,6 +34,7 @@
 #include "SMDS_MeshNode.hxx"
 #include "SMDS_SetIterator.hxx"
 #include "SMESHDS_Mesh.hxx"
+#include "MED_Common.hxx"
 
 #include <med.h>
 

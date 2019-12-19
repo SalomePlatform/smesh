@@ -479,7 +479,7 @@ bool SMESH_PreMeshInfo::readMeshInfo()
   MED::PMeshInfo medMeshInfo = aMed->CrMeshInfo(3,3,SMESH_Comment( _meshID ));
 
   // read nb nodes
-  int nbNodes = std::max( 0, aMed->GetNbNodes( medMeshInfo ));
+  int nbNodes = Max( 0, aMed->GetNbNodes( medMeshInfo ));
   if ( nbNodes > 0 )
   {
     setNb( SMDSEntity_Node, nbNodes);

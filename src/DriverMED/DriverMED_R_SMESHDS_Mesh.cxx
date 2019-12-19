@@ -266,7 +266,7 @@ Driver_Mesh::Status DriverMED_R_SMESHDS_Mesh::Perform()
             }
 #endif
             if ( !anIsNodeNum )
-              aNodeIds.swap( *(aBallInfo->myConn ));
+              aNodeIds.assign( aBallInfo->myConn->begin(), aBallInfo->myConn->end());
 
             // allocate array of diameters
             vtkIdType maxID = myMesh->MaxElementID() + aNbBalls;

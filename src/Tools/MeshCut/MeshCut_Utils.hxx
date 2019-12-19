@@ -71,7 +71,7 @@ namespace MESHCUT
     std::string nomMaille(TYPE_MAILLE tm, int nl);
     bool appartientVN(int n, std::vector<int> V);
     float distance2(float x1, float y1, float z1, float x2, float y2, float z2);
-    void conversionCNX(int *CNXtm, TYPE_MAILLE tm, int N);
+    void conversionCNX(med_int *CNXtm, TYPE_MAILLE tm, int N);
 
   }
 

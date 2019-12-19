@@ -211,7 +211,7 @@ int main(int argc, char *argv[])
     {
       bool plus = false;
       bool moins = false;
-      int *offset = MAILLAGE1->CNX[TETRA4] + 4 * it4;
+      med_int *offset = MAILLAGE1->CNX[TETRA4] + 4 * it4;
       for (int is = 0; is < 4; is++)
         {
           int ng = *(offset + is);
@@ -1065,7 +1065,7 @@ int main(int argc, char *argv[])
           // cout << "Legacy " << tm << " effectif " << MAILLAGE1->EFFECTIFS_TYPES[tm] << endl;
           int tailleType = Nnoeuds(tm);
 
-          MAILLAGE2->CNX[tm] = (int*) malloc(sizeof(int) * tailleType * (MAILLAGE1->EFFECTIFS_TYPES[tm]
+          MAILLAGE2->CNX[tm] = (med_int*) malloc(sizeof(med_int) * tailleType * (MAILLAGE1->EFFECTIFS_TYPES[tm]
               + cptNouvellesMailles[tm]));
           for (int i = 0; i < MAILLAGE1->EFFECTIFS_TYPES[tm]; i++)
             for (int j = 0; j < tailleType; j++)

@@ -31,7 +31,7 @@
 #include <set>
 #include <map>
 
-#include <hdf5.h>
+#include <med.h>
 
 #ifdef WIN32
 #pragma warning(disable:4099)
@@ -41,11 +41,12 @@ namespace MED
 {
   typedef enum {eFAUX, eVRAI} EBooleen;
   typedef double TFloat;
-#if defined(HAVE_F77INT64)
-  typedef long TInt;
-#else
-  typedef int TInt;
-#endif
+// #if defined(HAVE_F77INT64)
+//   typedef long TInt;
+// #else
+//   typedef int TInt;
+// #endif
+  typedef med_int TInt;
   typedef hid_t TIdt;
   typedef herr_t TErr;
 

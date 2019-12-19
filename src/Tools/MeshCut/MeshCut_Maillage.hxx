@@ -75,7 +75,7 @@ namespace MESHCUT
       // Le numéro global du j-ième noeud de la maille de numéro global i est stocké à l'adresse
       //           CNX[tm]+t*(i-1)+(j-1)
       // (t = taille du type, i.e. nombre de noeuds de l'élément)
-      std::map<TYPE_MAILLE, int*> CNX; // ****** MED-OBLIGATOIRE ******
+      std::map<TYPE_MAILLE, med_int*> CNX; // ****** MED-OBLIGATOIRE ******
 
       // Enveloppes cubiques
       std::map<TYPE_MAILLE, float*> EC;
