@@ -2241,6 +2241,13 @@ void SMESH_Mesh_i::CheckGeomModif()
   if ( newShape.IsNull() )
     return;
 
+  // for the SHAPER-STUDY: the geometry may be updated, so, add a warning icon
+  if (_mainShapeTick != mainGO->GetTick()) {
+    SALOMEDS::SObject_wrap meshSO = _gen_i->ObjectToSObject( me );
+    if ( !meshSO->_is_nil())
+      _gen_i->SetPixMap(meshSO, "ICON_SMESH_TREE_MESH_WARN");
+  }
+
   _mainShapeTick = mainGO->GetTick();
 
   SMESHDS_Mesh * meshDS = _impl->GetMeshDS();
