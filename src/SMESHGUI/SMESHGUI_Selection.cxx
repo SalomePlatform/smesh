@@ -140,6 +140,7 @@ QVariant SMESHGUI_Selection::parameter( const int ind, const QString& p ) const
   else if ( p=="nbChildren")            val = QVariant( nbChildren( ind ) );
   else if ( p=="isContainer")           val = QVariant( isContainer( ind ) );
   else if ( p=="guiState")              val = QVariant( guiState() );
+  else if ( p=="canBreakLink")          val = QVariant( canBreakLink(ind) );
 
   if ( val.isValid() )
     return val;
@@ -601,6 +602,20 @@ bool SMESHGUI_Selection::hasGeomReference( int ind ) const
     _PTR(SObject) so = SMESH::getStudy()->FindObjectID( entry( ind ).toUtf8().data() );
     GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );
     return !shape->_is_nil();
+  }
+  return false;
+}
+
+//=======================================================================
+//function : canBreakLink
+//purpose  : returns true if selected object is a Shaper object and it can break link
+//=======================================================================
+
+bool SMESHGUI_Selection::canBreakLink( int ind ) const
+{
+  if ( ind >= 0 && ind < myTypes.count()) {
+    _PTR(SObject) so = SMESH::getStudy()->FindObjectID( entry( ind ).toUtf8().data() );
+    return true;
   }
   return false;
 }

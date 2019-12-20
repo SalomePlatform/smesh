@@ -61,6 +61,7 @@ public:
   virtual bool            hasGeomReference( int ) const;
   virtual bool            isEditableHyp( int ) const;
   virtual bool            isVisible( int ) const;
+  virtual bool            canBreakLink(int) const;
 
   virtual bool            isQuadratic( int ) const;
   virtual QString         quadratic2DMode( int ) const;

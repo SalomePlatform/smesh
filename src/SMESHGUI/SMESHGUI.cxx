@@ -4888,7 +4888,7 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( separator(), -1, -1 );
 
   popupMgr()->insert( action( SMESHOp::OpBreakLink), -1, -1 );
-  popupMgr()->setRule( action( SMESHOp::OpBreakLink), "$component={'SHAPERSTUDY'} and client='ObjectBrowser'", QtxPopupMgr::VisibleRule );
+  popupMgr()->setRule( action( SMESHOp::OpBreakLink), "$component={'SHAPERSTUDY'} and client='ObjectBrowser' and canBreakLink", QtxPopupMgr::VisibleRule );
 
   connect( application(), SIGNAL( viewManagerActivated( SUIT_ViewManager* ) ),
            this, SLOT( onViewManagerActivated( SUIT_ViewManager* ) ) );
