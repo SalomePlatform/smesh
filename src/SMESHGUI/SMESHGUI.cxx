@@ -1400,7 +1400,9 @@ namespace
             QObject::tr("MSG_BREAK_SHAPER_LINK").arg(aName.c_str()),
             SUIT_MessageBox::Yes | SUIT_MessageBox::No, SUIT_MessageBox::No);
           if (aRes == SUIT_MessageBox::Yes) {
-            // Remove link here
+            GEOM::GEOM_Object_var aObject = SMESH::SObjectToInterface<GEOM::GEOM_Object>(aSObj);
+            if (!aObject->_is_nil())
+              aObject->BreakLinks();
           }
         }
       }

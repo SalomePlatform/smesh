@@ -614,8 +614,10 @@ bool SMESHGUI_Selection::hasGeomReference( int ind ) const
 bool SMESHGUI_Selection::canBreakLink( int ind ) const
 {
   if ( ind >= 0 && ind < myTypes.count()) {
-    _PTR(SObject) so = SMESH::getStudy()->FindObjectID( entry( ind ).toUtf8().data() );
-    return true;
+    _PTR(SObject) aSObject = SMESH::getStudy()->FindObjectID( entry( ind ).toUtf8().data() );
+    GEOM::GEOM_Object_var aObject = SMESH::SObjectToInterface<GEOM::GEOM_Object>(aSObject);
+    if (!aObject->_is_nil())
+      return aObject->IsParametrical();
   }
   return false;
 }
