@@ -230,6 +230,8 @@ namespace SMESHOp {
     OpClipping               = 6100,   // POPUP MENU - CLIPPING
     // SortChild ----------------------//--------------------------------
     OpSortChild              = 6110,   // POPUP MENU - SORT CHILDREN
+    // Break link with Shaper object --//--------------------------------
+    OpBreakLink              = 6120,   // POPUP MENU - Break link with Shaper
     // Advanced -----------------------//--------------------------------
     OpAdvancedNoOp           = 10000,  // NO OPERATION (advanced operations base)
     //@@ insert new functions before this line @@ do not remove this line @@//

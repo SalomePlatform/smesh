@@ -1382,6 +1382,31 @@ namespace
     }
   }
 
+  // Break link with Shaper model
+  void breakShaperLink()
+  {
+    LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+    SALOME_ListIO selected;
+    if (aSel) {
+      aSel->selectedObjects(selected);
+      if (selected.Extent()) {
+        Handle(SALOME_InteractiveObject) anIObject = selected.First();
+        _PTR(Study) aStudy = SMESH::getStudy();
+        _PTR(SObject) aSObj = aStudy->FindObjectID(anIObject->getEntry());
+        if (aSObj) {
+          std::string aName = aSObj->GetName();
+          QMessageBox::StandardButton aRes = SUIT_MessageBox::warning(SMESHGUI::desktop(),
+            QObject::tr("SMESH_WRN_WARNING"),
+            QObject::tr("MSG_BREAK_SHAPER_LINK").arg(aName.c_str()),
+            SUIT_MessageBox::Yes | SUIT_MessageBox::No, SUIT_MessageBox::No);
+          if (aRes == SUIT_MessageBox::Yes) {
+            // Remove link here
+          }
+        }
+      }
+    }
+  }
+
   void SetDisplayMode(int theCommandID, VTK::MarkerMap& theMarkerMap)
   {
     SALOME_ListIO selected;
@@ -3751,6 +3776,9 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpSortChild:
     ::sortChildren();
     break;
+  case SMESHOp::OpBreakLink:
+    ::breakShaperLink();
+    break;
 
   }
 
@@ -4083,6 +4111,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpShowOnly, "DISPLAY_ONLY" );
 
   createSMESHAction( SMESHOp::OpSortChild, "SORT_CHILD_ITEMS" );
+
+  createSMESHAction( SMESHOp::OpBreakLink, "BREAK_SHAPER_LINK" );
 
   QList<int> aCtrlActions;
   aCtrlActions << SMESHOp::OpFreeNode << SMESHOp::OpEqualNode
@@ -4856,6 +4886,9 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( action( SMESHOp::OpSortChild ), -1, -1 );
   popupMgr()->setRule( action( SMESHOp::OpSortChild ), "$component={'SMESH'} and client='ObjectBrowser' and isContainer and nbChildren>1", QtxPopupMgr::VisibleRule );
   popupMgr()->insert( separator(), -1, -1 );
+
+  popupMgr()->insert( action( SMESHOp::OpBreakLink), -1, -1 );
+  popupMgr()->setRule( action( SMESHOp::OpBreakLink), "$component={'SHAPERSTUDY'} and client='ObjectBrowser'", QtxPopupMgr::VisibleRule );
 
   connect( application(), SIGNAL( viewManagerActivated( SUIT_ViewManager* ) ),
            this, SLOT( onViewManagerActivated( SUIT_ViewManager* ) ) );
