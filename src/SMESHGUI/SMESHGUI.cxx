@@ -172,6 +172,7 @@
 #include <SALOMEDS_Study.hxx>
 #include <SALOMEDS_SObject.hxx>
 #include "utilities.h"
+#include <SALOME_LifeCycleCORBA.hxx>
 
 // OCCT includes
 #include <Standard_ErrorHandler.hxx>
@@ -1392,7 +1393,8 @@ namespace
       if (selected.Extent()) {
         Handle(SALOME_InteractiveObject) anIObject = selected.First();
         _PTR(Study) aStudy = SMESH::getStudy();
-        _PTR(SObject) aSObj = aStudy->FindObjectID(anIObject->getEntry());
+        std::string aEntry = anIObject->getEntry();
+        _PTR(SObject) aSObj = aStudy->FindObjectID(aEntry);
         if (aSObj) {
           std::string aName = aSObj->GetName();
           QMessageBox::StandardButton aRes = SUIT_MessageBox::warning(SMESHGUI::desktop(),
@@ -1400,9 +1402,26 @@ namespace
             QObject::tr("MSG_BREAK_SHAPER_LINK").arg(aName.c_str()),
             SUIT_MessageBox::Yes | SUIT_MessageBox::No, SUIT_MessageBox::No);
           if (aRes == SUIT_MessageBox::Yes) {
-            GEOM::GEOM_Object_var aObject = SMESH::SObjectToInterface<GEOM::GEOM_Object>(aSObj);
-            if (!aObject->_is_nil())
-              aObject->BreakLinks();
+            SUIT_DataOwnerPtrList aList;
+            aSel->selected(aList, "ObjectBrowser", true);
+            SUIT_DataOwner* aOwn = aList.first();
+            LightApp_DataOwner* sowner = dynamic_cast<LightApp_DataOwner*>(aOwn);
+            QString aREntry = sowner->entry();
+
+            static GEOM::GEOM_Gen_var geomGen;
+            if (CORBA::is_nil(geomGen)) {
+              SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>
+                (SUIT_Session::session()->activeApplication());
+              if (app) {
+                SALOME_LifeCycleCORBA* ls = new SALOME_LifeCycleCORBA(app->namingService());
+                Engines::EngineComponent_var comp =
+                  ls->FindOrLoad_Component("FactoryServer", "SHAPERSTUDY");
+                geomGen = GEOM::GEOM_Gen::_narrow(comp);
+              }
+            }
+            if (!CORBA::is_nil(geomGen)) {
+              geomGen->BreakLink(aREntry.toStdString().c_str());
+            }
           }
         }
       }

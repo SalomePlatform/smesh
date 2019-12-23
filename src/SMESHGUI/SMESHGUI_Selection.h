@@ -32,6 +32,7 @@
 
 // SALOME GUI includes
 #include <LightApp_Selection.h>
+#include <SUIT_DataOwner.h>
 
 // SALOME KERNEL includes
 #include <SALOMEDSClient_definitions.hxx>
@@ -96,6 +97,7 @@ private:
   QStringList             myTypes;
   QStringList             myControls;
   QList<SMESH_Actor*>     myActors;
+  SUIT_DataOwnerPtrList   myOwners;
 };
 
 #endif // SMESHGUI_SELECTION_H
