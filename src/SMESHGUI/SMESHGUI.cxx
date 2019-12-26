@@ -1421,6 +1421,7 @@ namespace
             }
             if (!CORBA::is_nil(geomGen)) {
               geomGen->BreakLink(aREntry.toStdString().c_str());
+              SMESHGUI::GetSMESHGUI()->updateObjBrowser();
             }
           }
         }
