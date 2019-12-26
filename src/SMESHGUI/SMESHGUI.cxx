@@ -4984,8 +4984,10 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
   if ( aDesk ) {
     QList<SUIT_ViewWindow*> wndList = aDesk->windows();
     SUIT_ViewWindow* wnd;
-    foreach ( wnd, wndList )
-      connectView( wnd );
+    foreach(wnd, wndList) {
+      connectView(wnd);
+      wnd->update();
+    }
   }
 
   Py_XDECREF(pluginsmanager);
