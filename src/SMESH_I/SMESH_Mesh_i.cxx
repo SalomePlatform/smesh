@@ -259,13 +259,15 @@ GEOM::GEOM_Object_ptr SMESH_Mesh_i::GetShapeToMesh()
 * \brief Replaces a shape in the mesh
 */
 //================================================================================
-void SMESH_Mesh_i::ReplaceShape(GEOM::GEOM_Object_ptr theNewGeom, GEOM::GEOM_Object_ptr theOldGeom)
+void SMESH_Mesh_i::ReplaceShape(GEOM::GEOM_Object_ptr theNewGeom)
   throw (SALOME::SALOME_Exception)
 {
+  TopoDS_Shape S = _impl->GetMeshDS()->ShapeToMesh();
   GEOM_Client* geomClient = _gen_i->GetShapeReader();
-  GEOM::GEOM_Gen_var geomGen = _gen_i->GetGeomEngine(theOldGeom);
-  CORBA::String_var groupIOR = geomGen->GetStringFromIOR(theOldGeom);
-  geomClient->RemoveShapeFromBuffer(groupIOR.in());
+  TCollection_AsciiString aIOR;
+  if (geomClient->Find(S, aIOR)) {
+    geomClient->RemoveShapeFromBuffer(aIOR);
+  }
   _impl->UndefShapeToMesh();
   SetShape(theNewGeom);
 }

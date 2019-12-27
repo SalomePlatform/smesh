@@ -350,7 +350,7 @@ module SMESH
     /*!
      * Replaces a shape in the mesh
      */
-    void ReplaceShape(in GEOM::GEOM_Object theNewGeom, in GEOM::GEOM_Object theOldGeom)
+    void ReplaceShape(in GEOM::GEOM_Object theNewGeom)
       raises (SALOME::SALOME_Exception);
 
     /*!
