@@ -348,6 +348,12 @@ module SMESH
       raises (SALOME::SALOME_Exception);
 
     /*!
+     * Replaces a shape in the mesh
+     */
+    void ReplaceShape(in GEOM::GEOM_Object theNewGeom, in GEOM::GEOM_Object theOldGeom)
+      raises (SALOME::SALOME_Exception);
+
+    /*!
      * Return false if the mesh is not yet fully loaded from the study file
      */
     boolean IsLoaded()

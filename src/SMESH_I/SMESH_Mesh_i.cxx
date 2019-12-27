@@ -256,6 +256,22 @@ GEOM::GEOM_Object_ptr SMESH_Mesh_i::GetShapeToMesh()
 
 //================================================================================
 /*!
+* \brief Replaces a shape in the mesh
+*/
+//================================================================================
+void SMESH_Mesh_i::ReplaceShape(GEOM::GEOM_Object_ptr theNewGeom, GEOM::GEOM_Object_ptr theOldGeom)
+  throw (SALOME::SALOME_Exception)
+{
+  GEOM_Client* geomClient = _gen_i->GetShapeReader();
+  GEOM::GEOM_Gen_var geomGen = _gen_i->GetGeomEngine(theOldGeom);
+  CORBA::String_var groupIOR = geomGen->GetStringFromIOR(theOldGeom);
+  geomClient->RemoveShapeFromBuffer(groupIOR.in());
+  _impl->UndefShapeToMesh();
+  SetShape(theNewGeom);
+}
+
+//================================================================================
+/*!
  * \brief Return false if the mesh is not yet fully loaded from the study file
  */
 //================================================================================

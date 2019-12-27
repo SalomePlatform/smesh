@@ -74,6 +74,9 @@ public:
   GEOM::GEOM_Object_ptr GetShapeToMesh()
     throw (SALOME::SALOME_Exception);
 
+  virtual void ReplaceShape(GEOM::GEOM_Object_ptr theNewGeom, GEOM::GEOM_Object_ptr theOldGeom)
+    throw (SALOME::SALOME_Exception);
+
   CORBA::Boolean IsLoaded()
     throw (SALOME::SALOME_Exception);
 
