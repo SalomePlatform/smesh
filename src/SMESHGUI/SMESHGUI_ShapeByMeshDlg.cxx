@@ -362,7 +362,7 @@ void SMESHGUI_ShapeByMeshOp::commitOperation()
       }
       else if (aNumberOfGO > 1)
       {
-        GEOM::GEOM_IGroupOperations_wrap aGroupOp =
+        GEOM::GEOM_IGroupOperations_ptr aGroupOp =
           geomGen->GetIGroupOperations();
         if(aGroupOp->_is_nil())
           return;

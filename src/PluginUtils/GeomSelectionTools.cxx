@@ -213,7 +213,7 @@ TopAbs_ShapeEnum GeomSelectionTools::entryToShapeType(std::string entry){
         // if the Geom Object is a group
         if (aShape->GetType() == GEOM_GROUP){
 //           MESSAGE("It's a group");
-          GEOM::GEOM_IGroupOperations_wrap aGroupOp =
+          GEOM::GEOM_IGroupOperations_ptr aGroupOp =
             _geomEngine->GetIGroupOperations();
           ShapeType= (TopAbs_ShapeEnum)aGroupOp->GetType(aShape);
         }

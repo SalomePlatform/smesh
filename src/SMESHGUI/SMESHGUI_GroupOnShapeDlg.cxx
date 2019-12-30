@@ -224,7 +224,7 @@ static SMESH::ElementType elementType(GEOM::GEOM_Object_var geom)
       SMESH::GetGEOMGen()->GetIShapesOperations();
 
     if ( geom->GetType() == 37 ) { // geom group
-      GEOM::GEOM_IGroupOperations_wrap aGroupOp =
+      GEOM::GEOM_IGroupOperations_ptr aGroupOp =
         SMESH::GetGEOMGen()->GetIGroupOperations();
       if ( !aGroupOp->_is_nil() ) {
         // mainShape is an existing servant => GEOM_Object_var not GEOM_Object_wrap

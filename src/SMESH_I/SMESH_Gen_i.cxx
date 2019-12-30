@@ -3190,7 +3190,7 @@ namespace // utils for CopyMeshWithGeom()
               {
                 int groupType = getShapeType( myNewMesh_i, newIndices[0] );
 
-                GEOM::GEOM_IGroupOperations_wrap grOp = geomGen->GetIGroupOperations();
+                GEOM::GEOM_IGroupOperations_ptr grOp = geomGen->GetIGroupOperations();
                 newShape = grOp->CreateGroup( mainShapeNew, groupType );
 
                 GEOM::ListOfLong_var  newIndicesList = new GEOM::ListOfLong();

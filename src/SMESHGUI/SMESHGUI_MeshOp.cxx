@@ -338,10 +338,10 @@ bool SMESHGUI_MeshOp::isSubshapeOk() const
   myDlg->selectedObject(SMESHGUI_MeshDlg::Geom, aGEOMs);
 
   if (aGEOMs.count() > 0) {
-    GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
+    GEOM::GEOM_Gen_var geomGen = mainGeom->GetGen();
     if (geomGen->_is_nil()) return false;
 
-    GEOM::GEOM_IGroupOperations_wrap op = geomGen->GetIGroupOperations();
+    GEOM::GEOM_IGroupOperations_ptr op = geomGen->GetIGroupOperations();
     if (op->_is_nil()) return false;
 
     // check all selected shapes
@@ -1856,7 +1856,7 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess, QStringList& theEntryList
     // create a GEOM group
     GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
     if (!geomGen->_is_nil()) {
-      GEOM::GEOM_IGroupOperations_wrap op =
+      GEOM::GEOM_IGroupOperations_ptr op =
         geomGen->GetIGroupOperations();
       if (!op->_is_nil()) {
         // check and add all selected GEOM objects: they must be
