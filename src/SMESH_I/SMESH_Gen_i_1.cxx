@@ -1031,6 +1031,28 @@ void SMESH_Gen_i::highLightInvalid( SALOMEDS::SObject_ptr theSObject, bool isInv
 }
 
 //=======================================================================
+//function : IsInvalid
+//purpose  : Check object validity == absence of AttributeTextColor=(178,34,34)
+//=======================================================================
+
+bool SMESH_Gen_i::IsInvalid( SALOMEDS::SObject_ptr theSObject )
+{
+  bool isValid = true;
+  if ( !theSObject->_is_nil() )
+  {
+    SALOMEDS::GenericAttribute_wrap attr;
+    SALOMEDS::StudyBuilder_var studyBuilder = getStudyServant()->NewBuilder();
+    if ( studyBuilder->FindAttribute( theSObject, attr.inout(), "AttributeTextColor" ))
+    {
+      SALOMEDS::AttributeTextColor_wrap colorAttr = attr;
+      SALOMEDS::Color color = colorAttr->TextColor();
+      isValid = ( color.R != 178 || color.G != 34 || color.B != 34 );
+    }
+  }
+  return isValid;
+}
+
+//=======================================================================
 //function : GetMeshOrSubmeshByShape
 //purpose  : 
 //=======================================================================

@@ -1191,11 +1191,11 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
   if ( !GetMeshDS()->IsUsedHypothesis( hyp ))
     return;
 
-  bool toCallBack = true;
-  if ( _callUp && hyp && NbNodes() == 0 ) // for not loaded mesh (#16648)
+  int nbEntities = ( _myMeshDS->NbNodes() + _myMeshDS->NbElements() );
+  if ( hyp && _callUp && !_callUp->IsLoaded() ) // for not loaded mesh (#16648)
   {
-    _callUp->HypothesisModified( hyp->GetID() );
-    toCallBack = ( NbNodes() > 0 );
+    _callUp->HypothesisModified( hyp->GetID(), /*updateIcons=*/true );
+    nbEntities = ( _myMeshDS->NbNodes() + _myMeshDS->NbElements() ); // after loading mesh
   }
 
   SMESH_Algo *algo;
@@ -1265,8 +1265,9 @@ void SMESH_Mesh::NotifySubMeshesHypothesisModification(const SMESH_Hypothesis* h
   HasModificationsToDiscard(); // to reset _isModified flag if mesh becomes empty
   GetMeshDS()->Modified();
 
-  if ( _callUp && hyp && toCallBack )
-    _callUp->HypothesisModified( hyp->GetID() );
+  int newNbEntities = ( _myMeshDS->NbNodes() + _myMeshDS->NbElements() );
+  if ( hyp && _callUp )
+    _callUp->HypothesisModified( hyp->GetID(), newNbEntities != nbEntities );
 }
 
 //=============================================================================

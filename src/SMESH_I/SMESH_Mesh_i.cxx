@@ -113,6 +113,7 @@ SMESH_Mesh_i::SMESH_Mesh_i( PortableServer::POA_ptr thePOA,
   _impl          = NULL;
   _gen_i         = gen_i;
   _id            = _idGenerator++;
+  _nbInvalidHypos= -1;
   _editor        = NULL;
   _previewEditor = NULL;
   _preMeshInfo   = NULL;
@@ -647,6 +648,8 @@ SMESH_Mesh_i::AddHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
   if ( _preMeshInfo )
     _preMeshInfo->ForgetOrLoad();
 
+  const int prevNbMeshEnt = _impl->NbNodes() + _impl->GetMeshDS()->NbElements();
+
   std::string error;
   SMESH_Hypothesis::Hypothesis_Status status = addHypothesis( aSubShape, anHyp, &error );
   anErrorText = error.c_str();
@@ -655,7 +658,10 @@ SMESH_Mesh_i::AddHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
   if ( !SMESH_Hypothesis::IsStatusFatal(status) )
   {
     _gen_i->AddHypothesisToShape( mesh, aSubShape, anHyp );
-    _gen_i->UpdateIcons( mesh );
+
+    int newNbMeshEnt = _impl->NbNodes() + _impl->GetMeshDS()->NbElements();
+    if ( newNbMeshEnt != prevNbMeshEnt )
+      _gen_i->UpdateIcons( mesh );
   }
   if(MYDEBUG) MESSAGE( " AddHypothesis(): status = " << status );
 
@@ -3072,40 +3078,55 @@ namespace
     SMESH_Mesh_i* _mesh;
     TCallUp_i(SMESH_Mesh_i* mesh):_mesh(mesh) {}
     virtual void RemoveGroup (const int theGroupID) { _mesh->removeGroup( theGroupID ); }
-    virtual void HypothesisModified (int theHypID)  { _mesh->onHypothesisModified( theHypID ); }
+    virtual void HypothesisModified( int hypID,
+                                     bool updIcons) { _mesh->onHypothesisModified( hypID,
+                                                                                   updIcons ); }
     virtual void Load ()                            { _mesh->Load(); }
+    virtual bool IsLoaded()                         { return _mesh->IsLoaded(); }
   };
 }
 
 //================================================================================
 /*!
- * \brief callback from _impl to forget not loaded mesh data (issue 0021208)
+ * \brief callback from _impl to
+ *     1) forget not loaded mesh data (issue 0021208)
+ *     2) mark hypothesis as valid
  */
 //================================================================================
 
-void SMESH_Mesh_i::onHypothesisModified(int theHypID)
+void SMESH_Mesh_i::onHypothesisModified(int theHypID, bool theUpdateIcons)
 {
   if ( _preMeshInfo )
     _preMeshInfo->ForgetOrLoad();
 
-  SMESH::SMESH_Mesh_var mesh = _this();
-  _gen_i->UpdateIcons( mesh );
-
-  // mark a hypothesis as valid after edition
-  SALOMEDS::SComponent_wrap smeshComp = _gen_i->PublishComponent();
-  SALOMEDS::SObject_wrap hypRoot;
-  if ( !smeshComp->_is_nil() && 
-       smeshComp->FindSubObject( _gen_i->GetHypothesisRootTag(), hypRoot.inout() ))
+  if ( theUpdateIcons )
   {
-    SALOMEDS::ChildIterator_wrap anIter = _gen_i->getStudyServant()->NewChildIterator( hypRoot );
-    for ( ; anIter->More(); anIter->Next() )
+    SMESH::SMESH_Mesh_var mesh = _this();
+    _gen_i->UpdateIcons( mesh );
+  }
+
+  if ( _nbInvalidHypos != 0 )
+  {
+    // mark a hypothesis as valid after edition
+    int nbInvalid = 0;
+    SALOMEDS::SComponent_wrap smeshComp = _gen_i->PublishComponent();
+    SALOMEDS::SObject_wrap hypRoot;
+    if ( !smeshComp->_is_nil() &&
+         smeshComp->FindSubObject( _gen_i->GetHypothesisRootTag(), hypRoot.inout() ))
     {
-      SALOMEDS::SObject_wrap    hypSO = anIter->Value();
-      CORBA::Object_var           obj = _gen_i->SObjectToObject( hypSO );
-      SMESH::SMESH_Hypothesis_var hyp = SMESH::SMESH_Hypothesis::_narrow( obj );
-      if ( !hyp->_is_nil() && hyp->GetId() == theHypID )
-        _gen_i->HighLightInvalid( hyp, false );
+      SALOMEDS::ChildIterator_wrap anIter = _gen_i->getStudyServant()->NewChildIterator( hypRoot );
+      for ( ; anIter->More(); anIter->Next() )
+      {
+        SALOMEDS::SObject_wrap    hypSO = anIter->Value();
+        CORBA::Object_var           obj = _gen_i->SObjectToObject( hypSO );
+        SMESH::SMESH_Hypothesis_var hyp = SMESH::SMESH_Hypothesis::_narrow( obj );
+        if ( !hyp->_is_nil() && hyp->GetId() == theHypID )
+          _gen_i->HighLightInvalid( hyp, false );
+        else
+          nbInvalid += _gen_i->IsInvalid( hypSO );
+      }
     }
+    _nbInvalidHypos = nbInvalid;
   }
 }
 

@@ -335,9 +335,10 @@ class SMESH_EXPORT SMESH_Mesh
 
   struct TCallUp // callback from SMESH to SMESH_I level
   {
-    virtual void RemoveGroup (const int theGroupID)=0;
-    virtual void HypothesisModified (int theHypID)=0;
-    virtual void Load ()=0;
+    virtual void RemoveGroup( const int theGroupID )=0;
+    virtual void HypothesisModified( int hypID, bool updateIcons )=0;
+    virtual void Load()=0;
+    virtual bool IsLoaded()=0;
     virtual ~TCallUp() {}
   };
   void SetCallUp( TCallUp * upCaller );

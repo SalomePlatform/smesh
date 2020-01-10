@@ -523,6 +523,7 @@ public:
                                       const char*            theName = 0);
   void UpdateIcons(SMESH::SMESH_Mesh_ptr theMesh);
   void HighLightInvalid(CORBA::Object_ptr theObject, bool isInvalid);
+  bool IsInvalid(SALOMEDS::SObject_ptr theObject);
   bool AddHypothesisToShape(SMESH::SMESH_Mesh_ptr       theMesh,
                             GEOM::GEOM_Object_ptr       theShapeObject,
                             SMESH::SMESH_Hypothesis_ptr theHyp);

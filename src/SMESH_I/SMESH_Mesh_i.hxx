@@ -452,10 +452,8 @@ public:
   const std::map<int, SMESH::SMESH_GroupBase_ptr>& getGroups() { return _mapGroups; }
   // return existing group objects
 
-  void onHypothesisModified(int theHypID);
+  void onHypothesisModified(int theHypID, bool updateIcons);
   // callback from _impl to forget not loaded mesh data (issue 0021208)
-
-  void checkMeshLoaded();
 
   /*!
    * \brief Update data if geometry changes
@@ -724,12 +722,13 @@ private:
    */
   TListOfListOfInt findConcurrentSubMeshes();
 
-private:
+ private:
 
   static int    _idGenerator;
   ::SMESH_Mesh* _impl;        // :: force no namespace here
   SMESH_Gen_i*  _gen_i;
   int           _id;          // id given by creator (unique within the creator instance)
+  int           _nbInvalidHypos;
   std::map<int, SMESH::SMESH_subMesh_ptr>    _mapSubMeshIor;
   std::map<int, SMESH::SMESH_GroupBase_ptr>  _mapGroups;
   std::map<int, SMESH::SMESH_Hypothesis_ptr> _mapHypo;
