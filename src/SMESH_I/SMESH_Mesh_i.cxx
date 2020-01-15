@@ -262,14 +262,16 @@ GEOM::GEOM_Object_ptr SMESH_Mesh_i::GetShapeToMesh()
 void SMESH_Mesh_i::ReplaceShape(GEOM::GEOM_Object_ptr theNewGeom)
   throw (SALOME::SALOME_Exception)
 {
-  TopoDS_Shape S = _impl->GetMeshDS()->ShapeToMesh();
+  TopoDS_Shape S = _impl->GetShapeToMesh();
   GEOM_Client* geomClient = _gen_i->GetShapeReader();
   TCollection_AsciiString aIOR;
   if (geomClient->Find(S, aIOR)) {
     geomClient->RemoveShapeFromBuffer(aIOR);
   }
-  _impl->UndefShapeToMesh();
-  SetShape(theNewGeom);
+
+  // re-assign global hypotheses to the new shape
+  _mainShapeTick = theNewGeom->GetTick() + 1;
+  CheckGeomModif();
 }
 
 //================================================================================
