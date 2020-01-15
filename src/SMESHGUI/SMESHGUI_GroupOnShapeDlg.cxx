@@ -220,12 +220,12 @@ static SMESH::ElementType elementType(GEOM::GEOM_Object_var geom)
     case GEOM::COMPOUND: break;
     default:             return SMESH::ALL;
     }
-    GEOM::GEOM_IShapesOperations_wrap aShapeOp =
-      SMESH::GetGEOMGen()->GetIShapesOperations();
+    GEOM::GEOM_Gen_var                 geomGen = SMESH::GetGEOMGen( geom );
+    GEOM::GEOM_IShapesOperations_wrap aShapeOp = geomGen->GetIShapesOperations();
 
-    if ( geom->GetType() == 37 ) { // geom group
-      GEOM::GEOM_IGroupOperations_ptr aGroupOp =
-        SMESH::GetGEOMGen()->GetIGroupOperations();
+    if ( geom->GetType() == 37 ) // geom group
+    {
+      GEOM::GEOM_IGroupOperations_ptr aGroupOp = geomGen->GetIGroupOperations();
       if ( !aGroupOp->_is_nil() ) {
         // mainShape is an existing servant => GEOM_Object_var not GEOM_Object_wrap
         GEOM::GEOM_Object_var mainShape = aGroupOp->GetMainShape( geom );
@@ -236,7 +236,8 @@ static SMESH::ElementType elementType(GEOM::GEOM_Object_var geom)
         }
       }
     }
-    else if ( !aShapeOp->_is_nil() ) { // just a compoud shape
+    else if ( !aShapeOp->_is_nil() ) // just a compoud shape
+    {
       GEOM::ListOfLong_var ids = aShapeOp->SubShapeAllIDs( geom, GEOM::SHAPE, false );
       if ( ids->length() ) {
         GEOM::GEOM_Object_wrap member = aShapeOp->GetSubShape( geom, ids[0] );

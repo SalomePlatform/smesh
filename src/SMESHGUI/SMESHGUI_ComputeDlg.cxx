@@ -1251,8 +1251,8 @@ void SMESHGUI_BaseComputeOp::stopOperation()
 
 void SMESHGUI_BaseComputeOp::onPublishShape()
 {
-  GEOM::GEOM_Gen_var      geomGen = SMESH::GetGEOMGen();
   GEOM::GEOM_Object_var meshShape = myMesh->GetShapeToMesh();
+  GEOM::GEOM_Gen_var      geomGen = SMESH::GetGEOMGen( meshShape );
 
   QStringList entryList;
   QList<int> rows;

@@ -1854,11 +1854,11 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess, QStringList& theEntryList
   else if (aGEOMs.count() > 1)
   {
     // create a GEOM group
-    GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
-    if (!geomGen->_is_nil()) {
-      GEOM::GEOM_IGroupOperations_ptr op =
-        geomGen->GetIGroupOperations();
-      if (!op->_is_nil()) {
+    GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen( mainGeom );
+    if ( !geomGen->_is_nil() ) {
+      GEOM::GEOM_IGroupOperations_ptr op = geomGen->GetIGroupOperations();
+      if ( !op->_is_nil() )
+      {
         // check and add all selected GEOM objects: they must be
         // a sub-shapes of the main GEOM and must be of one type
         int iSubSh = 0;
