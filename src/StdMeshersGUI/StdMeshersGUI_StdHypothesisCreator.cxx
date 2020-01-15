@@ -422,7 +422,7 @@ bool StdMeshersGUI_StdHypothesisCreator::checkParams( QString& msg ) const
       // then the FACE must have only one VERTEX
       GEOM::GEOM_Object_var face = w->GetObject< GEOM::GEOM_Object >();
 
-      GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
+      GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen( face );
       _PTR(Study)         aStudy = SMESH::getStudy();
       GEOM::GEOM_IShapesOperations_wrap shapeOp;
       if ( !geomGen->_is_nil() && aStudy )
