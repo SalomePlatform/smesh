@@ -72,6 +72,7 @@
 #include <TColStd_MapOfInteger.hxx>
 #include <TopExp.hxx>
 #include <TopExp_Explorer.hxx>
+#include <TopTools_DataMapOfShapeShape.hxx>
 #include <TopTools_MapIteratorOfMapOfShape.hxx>
 #include <TopTools_MapOfShape.hxx>
 #include <TopoDS_Compound.hxx>
@@ -270,7 +271,7 @@ void SMESH_Mesh_i::ReplaceShape(GEOM::GEOM_Object_ptr theNewGeom)
   }
 
   // re-assign global hypotheses to the new shape
-  _mainShapeTick = theNewGeom->GetTick() + 1;
+  _mainShapeTick = -1;
   CheckGeomModif();
 }
 
@@ -2059,10 +2060,9 @@ TopoDS_Shape SMESH_Mesh_i::newGroupShape( TGeomGroupData & groupData)
 
     // get indices of group items
     set<int> curIndices;
-    GEOM::GEOM_Gen_var geomGen = _gen_i->GetGeomEngine( geomGroup );
-    GEOM::GEOM_IGroupOperations_ptr groupOp =
-      geomGen->GetIGroupOperations();
-    GEOM::ListOfLong_var   ids = groupOp->GetObjects( geomGroup );
+    GEOM::GEOM_Gen_var              geomGen = _gen_i->GetGeomEngine( geomGroup );
+    GEOM::GEOM_IGroupOperations_ptr groupOp = geomGen->GetIGroupOperations();
+    GEOM::ListOfLong_var                ids = groupOp->GetObjects( geomGroup );
     for ( CORBA::ULong i = 0; i < ids->length(); ++i )
       curIndices.insert( ids[i] );
 
@@ -2182,6 +2182,8 @@ void SMESH_Mesh_i::CheckGeomModif()
   SMESH::SMESH_Mesh_var me = _this();
   GEOM::GEOM_Object_var mainGO = GetShapeToMesh();
 
+  TPythonDump dumpNothing; // prevent any dump
+
   //bool removedFromClient = false;
 
   if ( mainGO->_is_nil() ) // GEOM_Client cleared or geometry removed? (IPAL52735, PAL23636)
@@ -2243,7 +2245,7 @@ void SMESH_Mesh_i::CheckGeomModif()
     return;
   }
 
-  // Update after shape transformation like Translate
+  // Update after shape modification
 
   GEOM_Client* geomClient = _gen_i->GetShapeReader();
   if ( !geomClient ) return;
@@ -2253,20 +2255,16 @@ void SMESH_Mesh_i::CheckGeomModif()
   CORBA::String_var ior = geomGen->GetStringFromIOR( mainGO );
   geomClient->RemoveShapeFromBuffer( ior.in() );
 
-  // Update data taking into account that
+  // Update data taking into account that if topology doesn't change
   // all sub-shapes change but IDs of sub-shapes remain (except for geom groups)
+
+  if ( _preMeshInfo )
+    _preMeshInfo->ForgetAllData();
 
   _impl->Clear();
   TopoDS_Shape newShape = _gen_i->GeomObjectToShape( mainGO );
   if ( newShape.IsNull() )
     return;
-
-  // for the SHAPER-STUDY: the geometry may be updated, so, add a warning icon
-  if (_mainShapeTick != mainGO->GetTick()) {
-    SALOMEDS::SObject_wrap meshSO = _gen_i->ObjectToSObject( me );
-    if ( !meshSO->_is_nil())
-      _gen_i->SetPixMap(meshSO, "ICON_SMESH_TREE_MESH_WARN");
-  }
 
   _mainShapeTick = mainGO->GetTick();
 
@@ -2276,6 +2274,7 @@ void SMESH_Mesh_i::CheckGeomModif()
   std::vector< TGroupOnGeomData > groupsData;
   const std::set<SMESHDS_GroupBase*>& groups = meshDS->GetGroups();
   groupsData.reserve( groups.size() );
+  TopTools_DataMapOfShapeShape old2newShapeMap;
   std::set<SMESHDS_GroupBase*>::const_iterator g = groups.begin();
   for ( ; g != groups.end(); ++g )
   {
@@ -2297,6 +2296,11 @@ void SMESH_Mesh_i::CheckGeomModif()
         CORBA::String_var ior = geomGen->GetStringFromIOR( geom );
         geomClient->RemoveShapeFromBuffer( ior.in() );
         groupsData.back()._shape = _gen_i->GeomObjectToShape( geom );
+        old2newShapeMap.Bind( group->GetShape(), groupsData.back()._shape );
+      }
+      else if ( old2newShapeMap.IsBound( group->GetShape() ))
+      {
+        groupsData.back()._shape = old2newShapeMap( group->GetShape() );
       }
     }
   }
@@ -2310,12 +2314,33 @@ void SMESH_Mesh_i::CheckGeomModif()
     ids2Hyps.push_back( make_pair( meshDS->ShapeToIndex( s ), hyps ));
   }
 
-  // change shape to mesh
+  // count shapes excluding compounds corresponding to geom groups
   int oldNbSubShapes = meshDS->MaxShapeIndex();
+  for ( ; oldNbSubShapes > 0; --oldNbSubShapes )
+  {
+    const TopoDS_Shape& s = meshDS->IndexToShape( oldNbSubShapes );
+    if ( s.IsNull() || s.ShapeType() != TopAbs_COMPOUND )
+      break;
+  }
+
+  // check if shape topology changes - save shape type per shape ID
+  std::vector< TopAbs_ShapeEnum > shapeTypes( Max( oldNbSubShapes + 1, 1 ));
+  for ( int shapeID = oldNbSubShapes; shapeID > 0; --shapeID )
+    shapeTypes[ shapeID ] = meshDS->IndexToShape( shapeID ).ShapeType();
+
+  // change shape to mesh
   _impl->ShapeToMesh( TopoDS_Shape() );
   _impl->ShapeToMesh( newShape );
 
-  // re-add shapes of geom groups
+  // check if shape topology changes - check new shape types
+  bool sameTopology = ( oldNbSubShapes == meshDS->MaxShapeIndex() );
+  for ( int shapeID = oldNbSubShapes; shapeID > 0 &&  sameTopology; --shapeID )
+  {
+    const TopoDS_Shape& s = meshDS->IndexToShape( shapeID );
+    sameTopology = ( !s.IsNull() && s.ShapeType() == shapeTypes[ shapeID ]);
+  }
+
+  // re-add shapes (compounds) of geom groups
   std::list<TGeomGroupData>::iterator data = _geomGroupData.begin();
   for ( ; data != _geomGroupData.end(); ++data )
   {
@@ -2332,13 +2357,12 @@ void SMESH_Mesh_i::CheckGeomModif()
       _impl->GetSubMesh( newShape );
     }
   }
-  if ( oldNbSubShapes != meshDS->MaxShapeIndex() )
-    THROW_SALOME_CORBA_EXCEPTION( "SMESH_Mesh_i::CheckGeomModif() bug",
-                                  SALOME::INTERNAL_ERROR );
 
   // re-assign hypotheses
   for ( size_t i = 0; i < ids2Hyps.size(); ++i )
   {
+    if ( !sameTopology && ids2Hyps[i].first != 1 )
+      continue; // assign only global hypos
     const TopoDS_Shape& s = meshDS->IndexToShape( ids2Hyps[i].first );
     const THypList&  hyps = ids2Hyps[i].second;
     THypList::const_iterator h = hyps.begin();
@@ -2346,31 +2370,40 @@ void SMESH_Mesh_i::CheckGeomModif()
       _impl->AddHypothesis( s, (*h)->GetID() );
   }
 
-  // restore groups on geometry
-  for ( size_t i = 0; i < groupsData.size(); ++i )
+  if ( !sameTopology )
   {
-    const TGroupOnGeomData& data = groupsData[i];
-    if ( data._shape.IsNull() )
-      continue;
+    // remove invalid study sub-objects
+    CheckGeomGroupModif();
+  }
+  else
+  {
+    // restore groups on geometry
+    for ( size_t i = 0; i < groupsData.size(); ++i )
+    {
+      const TGroupOnGeomData& data = groupsData[i];
+      if ( data._shape.IsNull() )
+        continue;
 
-    std::map<int, SMESH::SMESH_GroupBase_ptr>::iterator i2g = _mapGroups.find( data._oldID );
-    if ( i2g == _mapGroups.end() ) continue;
+      std::map<int, SMESH::SMESH_GroupBase_ptr>::iterator i2g = _mapGroups.find( data._oldID );
+      if ( i2g == _mapGroups.end() ) continue;
 
-    SMESH_GroupBase_i* gr_i = SMESH::DownCast<SMESH_GroupBase_i*>( i2g->second );
-    if ( !gr_i ) continue;
+      SMESH_GroupBase_i* gr_i = SMESH::DownCast<SMESH_GroupBase_i*>( i2g->second );
+      if ( !gr_i ) continue;
 
-    SMESH_Group* g = _impl->AddGroup( data._type, data._name.c_str(), data._oldID, data._shape );
-    if ( !g )
-      _mapGroups.erase( i2g );
-    else
-      g->GetGroupDS()->SetColor( data._color );
+      SMESH_Group* g = _impl->AddGroup( data._type, data._name.c_str(), data._oldID, data._shape );
+      if ( !g )
+        _mapGroups.erase( i2g );
+      else
+        g->GetGroupDS()->SetColor( data._color );
+    }
+
+    // update _mapSubMesh
+    std::map<int, ::SMESH_subMesh*>::iterator i_sm = _mapSubMesh.begin();
+    for ( ; i_sm != _mapSubMesh.end(); ++i_sm )
+      i_sm->second = _impl->GetSubMesh( meshDS->IndexToShape( i_sm->first ));
   }
 
-  // update _mapSubMesh
-  std::map<int, ::SMESH_subMesh*>::iterator i_sm = _mapSubMesh.begin();
-  for ( ; i_sm != _mapSubMesh.end(); ++i_sm )
-    i_sm->second = _impl->GetSubMesh( meshDS->IndexToShape( i_sm->first ));
-
+  _gen_i->UpdateIcons( SMESH::SMESH_Mesh_var( _this() ));
 }
 
 //=============================================================================
