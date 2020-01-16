@@ -142,7 +142,7 @@ namespace {
     //  Case 1          Case 2
     //  |     |      |        |      |
     //  |     |      |        |      |
-    //  +-----+------+  +-----+------+ 
+    //  +-----+------+  +-----+------+
     //  |            |  |            |
     //  |            |  |            |
     // result should be 2 in both cases
@@ -491,7 +491,7 @@ double MaxElementLength2D::GetValue( const TSequenceOfXYZ& P )
   //     }
   // }
   // { // polygons
-    
+
   // }
 
   if( myPrecision >= 0 )
@@ -765,19 +765,9 @@ double AspectRatio::GetValue( long theId )
 {
   double aVal = 0;
   myCurrElement = myMesh->FindElement( theId );
-  if ( myCurrElement && myCurrElement->GetVtkType() == VTK_QUAD )
-  {
-    // issue 21723
-    vtkUnstructuredGrid* grid = const_cast<SMDS_Mesh*>( myMesh )->GetGrid();
-    if ( vtkCell* avtkCell = grid->GetCell( myCurrElement->GetVtkID() ))
-      aVal = Round( vtkMeshQuality::QuadAspectRatio( avtkCell ));
-  }
-  else
-  {
-    TSequenceOfXYZ P;
-    if ( GetPoints( myCurrElement, P ))
-      aVal = Round( GetValue( P ));
-  }
+  TSequenceOfXYZ P;
+  if ( GetPoints( myCurrElement, P ))
+    aVal = Round( GetValue( P ));
   return aVal;
 }
 
@@ -850,7 +840,7 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
     //
     // alpha = sqrt( 1/32 )
     // L = max( L1, L2, L3, L4, D1, D2 )
-    // C1 = sqrt( ( L1^2 + L1^2 + L1^2 + L1^2 ) / 4 )
+    // C1 = sqrt( L1^2 + L1^2 + L1^2 + L1^2 )
     // C2 = min( S1, S2, S3, S4 )
     // Li - lengths of the edges
     // Di - lengths of the diagonals
@@ -861,10 +851,10 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
                          Max( aLen[ 2 ],
                               Max( aLen[ 3 ],
                                    Max( aDia[ 0 ], aDia[ 1 ] ) ) ) ) );
-    double C1 = sqrt( ( aLen[0] * aLen[0] +
-                        aLen[1] * aLen[1] +
-                        aLen[2] * aLen[2] +
-                        aLen[3] * aLen[3] ) / 4. );
+    double C1 = sqrt( aLen[0] * aLen[0] +
+                      aLen[1] * aLen[1] +
+                      aLen[2] * aLen[2] +
+                      aLen[3] * aLen[3] );
     double C2 = Min( anArea[ 0 ],
                      Min( anArea[ 1 ],
                           Min( anArea[ 2 ], anArea[ 3 ] ) ) );
@@ -894,7 +884,7 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
     //
     // alpha = sqrt( 1/32 )
     // L = max( L1, L2, L3, L4, D1, D2 )
-    // C1 = sqrt( ( L1^2 + L1^2 + L1^2 + L1^2 ) / 4 )
+    // C1 = sqrt( L1^2 + L1^2 + L1^2 + L1^2 )
     // C2 = min( S1, S2, S3, S4 )
     // Li - lengths of the edges
     // Di - lengths of the diagonals
@@ -905,10 +895,10 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
                    Max( aLen[ 2 ],
                      Max( aLen[ 3 ],
                        Max( aDia[ 0 ], aDia[ 1 ] ) ) ) ) );
-    double C1 = sqrt( ( aLen[0] * aLen[0] +
-                        aLen[1] * aLen[1] +
-                        aLen[2] * aLen[2] +
-                        aLen[3] * aLen[3] ) / 4. );
+    double C1 = sqrt( aLen[0] * aLen[0] +
+                      aLen[1] * aLen[1] +
+                      aLen[2] * aLen[2] +
+                      aLen[3] * aLen[3] );
     double C2 = Min( anArea[ 0 ],
                   Min( anArea[ 1 ],
                     Min( anArea[ 2 ], anArea[ 3 ] ) ) );
@@ -2755,7 +2745,7 @@ bool FreeFaces::IsSatisfy( long theId )
       SMDS_MeshElement* aVol = (SMDS_MeshElement*)volItr->next();
       TItrMapOfVolume    itr = mapOfVol.insert( std::make_pair( aVol, 0 )).first;
       (*itr).second++;
-    } 
+    }
   }
   int nbVol = 0;
   TItrMapOfVolume volItr = mapOfVol.begin();
@@ -3171,7 +3161,7 @@ namespace
     double dot = v1 * v2; // cos * |v1| * |v2|
     double l1  = v1.SquareMagnitude();
     double l2  = v2.SquareMagnitude();
-    return (( dot * cos >= 0 ) && 
+    return (( dot * cos >= 0 ) &&
             ( dot * dot ) / l1 / l2 >= ( cos * cos ));
   }
 }
