@@ -1419,9 +1419,16 @@ namespace
                 geomGen = GEOM::GEOM_Gen::_narrow(comp);
               }
             }
-            if (!CORBA::is_nil(geomGen)) {
+            if (!CORBA::is_nil(geomGen))
+            {
               geomGen->BreakLink(aREntry.toStdString().c_str());
               SMESHGUI::GetSMESHGUI()->updateObjBrowser();
+
+              // remove actors whose objects are removed by BreakLink()
+              QList<SUIT_ViewWindow*> wndList = SMESHGUI::desktop()->windows();
+              SUIT_ViewWindow* wnd;
+              foreach(wnd, wndList)
+                SMESH::UpdateActorsAfterUpdateStudy(wnd);
             }
           }
         }

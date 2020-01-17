@@ -2328,7 +2328,7 @@ SMESH_Gen_i::GetGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
   GEOM::GEOM_Object_wrap geom = FindGeometryByMeshElement(theMesh, theElementID);
   if ( !geom->_is_nil() ) {
     GEOM::GEOM_Object_var mainShape = theMesh->GetShapeToMesh();
-    GEOM::GEOM_Gen_ptr    geomGen   = GetGeomEngine( geom );
+    GEOM::GEOM_Gen_var    geomGen   = GetGeomEngine( geom );
 
     // try to find the corresponding SObject
     SALOMEDS::SObject_wrap SObj = ObjectToSObject( geom.in() );
@@ -2359,7 +2359,7 @@ SMESH_Gen_i::GetGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
         }
       }
     }
-    if ( SObj->_is_nil() ) // publish a new subshape
+    if ( SObj->_is_nil() && !geomGen->_is_nil() ) // publish a new subshape
       SObj = geomGen->AddInStudy( geom, theGeomName, mainShape );
 
     // return only published geometry
@@ -2392,7 +2392,7 @@ SMESH_Gen_i::FindGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
     THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference", SALOME::BAD_PARAM );
 
   GEOM::GEOM_Object_var mainShape = theMesh->GetShapeToMesh();
-  GEOM::GEOM_Gen_ptr    geomGen   = GetGeomEngine( mainShape );
+  GEOM::GEOM_Gen_var    geomGen   = GetGeomEngine( mainShape );
 
   // get a core mesh DS
   SMESH_Mesh_i* meshServant = SMESH::DownCast<SMESH_Mesh_i*>( theMesh );
@@ -2415,7 +2415,7 @@ SMESH_Gen_i::FindGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
           }
           if ( !it->_is_nil() ) {
             for ( it->InitEx(true); it->More(); it->Next() ) {
-              SALOMEDS::SObject_wrap      so = it->Value();
+              SALOMEDS::SObject_wrap     so = it->Value();
               CORBA::Object_var         obj = SObjectToObject( so );
               GEOM::GEOM_Object_var subGeom = GEOM::GEOM_Object::_narrow( obj );
               if ( !subGeom->_is_nil() ) {
