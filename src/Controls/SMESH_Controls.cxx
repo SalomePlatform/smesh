@@ -148,7 +148,7 @@ namespace {
     // result should be 2 in both cases
     //
     int aResult0 = 0, aResult1 = 0;
-     // last node, it is a medium one in a quadratic edge
+    // last node, it is a medium one in a quadratic edge
     const SMDS_MeshNode* aLastNode = anEdge->GetNode( anEdge->NbNodes() - 1 );
     const SMDS_MeshNode*    aNode0 = anEdge->GetNode( 0 );
     const SMDS_MeshNode*    aNode1 = anEdge->GetNode( 1 );
@@ -891,17 +891,17 @@ double AspectRatio::GetValue( const TSequenceOfXYZ& P )
     // Si - areas of the triangles
     const double alpha = sqrt( 1 / 32. );
     double L = Max( aLen[ 0 ],
-                 Max( aLen[ 1 ],
-                   Max( aLen[ 2 ],
-                     Max( aLen[ 3 ],
-                       Max( aDia[ 0 ], aDia[ 1 ] ) ) ) ) );
+                    Max( aLen[ 1 ],
+                         Max( aLen[ 2 ],
+                              Max( aLen[ 3 ],
+                                   Max( aDia[ 0 ], aDia[ 1 ] ) ) ) ) );
     double C1 = sqrt( aLen[0] * aLen[0] +
                       aLen[1] * aLen[1] +
                       aLen[2] * aLen[2] +
                       aLen[3] * aLen[3] );
     double C2 = Min( anArea[ 0 ],
-                  Min( anArea[ 1 ],
-                    Min( anArea[ 2 ], anArea[ 3 ] ) ) );
+                     Min( anArea[ 1 ],
+                          Min( anArea[ 2 ], anArea[ 3 ] ) ) );
     if ( C2 <= theEps )
       return theInf;
     return alpha * L * C1 / C2;
@@ -2752,7 +2752,7 @@ bool FreeFaces::IsSatisfy( long theId )
   TItrMapOfVolume volEnd = mapOfVol.end();
   for ( ; volItr != volEnd; ++volItr )
     if ( (*volItr).second >= nbNode )
-       nbVol++;
+      nbVol++;
   // face is not free if number of volumes constructed on their nodes more than one
   return (nbVol < 2);
 }
