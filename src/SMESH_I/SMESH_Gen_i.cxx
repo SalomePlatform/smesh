@@ -4369,6 +4369,14 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
             aDataset->WriteOnDisk( &meshPersistentId );
             aDataset->CloseOnDisk();
 
+            // Store SMESH_Mesh_i::_mainShapeTick
+            int shapeTick = myImpl->MainShapeTick();
+            aSize[ 0 ] = 1;
+            aDataset = new HDFdataset( "shapeTick", aTopGroup, HDF_INT32, aSize, 1 );
+            aDataset->CreateOnDisk();
+            aDataset->WriteOnDisk( &shapeTick );
+            aDataset->CloseOnDisk();
+
             // write reference on a shape if exists
             SALOMEDS::SObject_wrap myRef;
             bool shapeRefFound = false;
@@ -5393,7 +5401,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
           }
 
           // issue 20918. Restore Persistent Id of SMESHDS_Mesh
-          if( aTopGroup->ExistInternalObject( "meshPersistentId" ) )
+          if ( aTopGroup->ExistInternalObject( "meshPersistentId" ) )
           {
             aDataset = new HDFdataset( "meshPersistentId", aTopGroup );
             aDataset->OpenOnDisk();
@@ -5403,6 +5411,16 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
             aDataset->CloseOnDisk();
             myNewMeshImpl->GetImpl().GetMeshDS()->SetPersistentId( *meshPersistentId );
             delete [] meshPersistentId;
+          }
+
+          // Restore SMESH_Mesh_i::_mainShapeTick
+          if ( aTopGroup->ExistInternalObject( "shapeTick" ))
+          {
+            aDataset = new HDFdataset( "shapeTick", aTopGroup );
+            aDataset->OpenOnDisk();
+            int* shapeTick = & myNewMeshImpl->MainShapeTick();
+            aDataset->ReadFromDisk( shapeTick );
+            aDataset->CloseOnDisk();
           }
 
           // Restore file info

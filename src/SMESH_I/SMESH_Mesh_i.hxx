@@ -624,6 +624,12 @@ public:
   void FileInfoFromString(const std::string& info);
 
   /*!
+   * Persistence of geometry tick
+   */
+  int& MainShapeTick() { return _mainShapeTick; }
+  
+
+  /*!
    * Sets list of notebook variables used for Mesh operations separated by ":" symbol
    */
   void SetParameters (const char* theParameters);
@@ -769,7 +775,7 @@ private:
   /*!
    * Return new group contents if it has been changed and update group data
    */
-  TopoDS_Shape newGroupShape( TGeomGroupData & groupData);
+  TopoDS_Shape newGroupShape( TGeomGroupData & groupData, bool onlyIfChanged);
 
 };
 

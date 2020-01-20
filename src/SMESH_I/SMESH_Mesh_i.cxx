@@ -2046,7 +2046,7 @@ void SMESH_Mesh_i::removeGeomGroupData(CORBA::Object_ptr theSmeshObj)
  */
 //================================================================================
 
-TopoDS_Shape SMESH_Mesh_i::newGroupShape( TGeomGroupData & groupData)
+TopoDS_Shape SMESH_Mesh_i::newGroupShape( TGeomGroupData & groupData, bool onlyIfChanged )
 {
   TopoDS_Shape newShape;
 
@@ -2066,7 +2066,7 @@ TopoDS_Shape SMESH_Mesh_i::newGroupShape( TGeomGroupData & groupData)
     for ( CORBA::ULong i = 0; i < ids->length(); ++i )
       curIndices.insert( ids[i] );
 
-    if ( groupData._indices == curIndices )
+    if ( onlyIfChanged && groupData._indices == curIndices )
       return newShape; // group not changed
 
     // update data
@@ -2344,7 +2344,7 @@ void SMESH_Mesh_i::CheckGeomModif()
   std::list<TGeomGroupData>::iterator data = _geomGroupData.begin();
   for ( ; data != _geomGroupData.end(); ++data )
   {
-    TopoDS_Shape newShape = newGroupShape( *data );
+    TopoDS_Shape newShape = newGroupShape( *data, /*onlyIfChanged=*/false );
     if ( !newShape.IsNull() )
     {
       if ( meshDS->ShapeToIndex( newShape ) > 0 ) // a group reduced to one sub-shape
@@ -2527,7 +2527,7 @@ void SMESH_Mesh_i::CheckGeomGroupModif()
     bool processedGroup    = !it_new.second;
     TopoDS_Shape& newShape = it_new.first->second;
     if ( !processedGroup )
-      newShape = newGroupShape( *data );
+      newShape = newGroupShape( *data, /*onlyIfChanged=*/true );
     if ( newShape.IsNull() )
       continue; // no changes
 
