@@ -465,7 +465,7 @@ public:
    *
    * Issue 0022501
    */
-  void CheckGeomModif();
+  void CheckGeomModif( bool isBreakLink = false );
   /*!
    * \brief Update hypotheses assigned to geom groups if the latter change
    *
@@ -775,7 +775,7 @@ private:
   /*!
    * Return new group contents if it has been changed and update group data
    */
-  TopoDS_Shape newGroupShape( TGeomGroupData & groupData, bool onlyIfChanged);
+  TopoDS_Shape newGroupShape( TGeomGroupData & groupData, int how );
 
 };
 
