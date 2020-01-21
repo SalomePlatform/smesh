@@ -951,7 +951,7 @@ void SMESHGUI_BaseComputeOp::computeMesh()
           SMESH::SMESH_IDSource_var aSubMeshObj =
             SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( smSObj );
           SMESH_Actor *anActor = SMESH::FindActorByObject( aSubMeshObj );
-          if ( anActor && anActor->GetVisibility() )
+          if ( anActor /*&& anActor->GetVisibility()*/ )
             aListToUpdate.append( TListOf_IDSrc_SObj::value_type( aSubMeshObj, smSObj ));
         }
         // put Groups into list
@@ -967,7 +967,7 @@ void SMESHGUI_BaseComputeOp::computeMesh()
           SMESH::SMESH_IDSource_var aGroupObj =
             SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( aGroupSO );
           SMESH_Actor *anActor = SMESH::FindActorByObject( aGroupObj );
-          if ( anActor && anActor->GetVisibility() )
+          if ( anActor /*&& anActor->GetVisibility()*/ )
             aListToUpdate.append( TListOf_IDSrc_SObj::value_type( aGroupObj, aGroupSO ));
         }
 
@@ -993,6 +993,13 @@ void SMESHGUI_BaseComputeOp::computeMesh()
                   anActor->SetEntityMode( entities );
                   //SMESH::DisplayActor( SMESH::GetActiveWindow(), anActor ); -- 23615
                 }
+              }
+              else
+              {
+                SMESH_Actor *anActor = SMESH::FindActorByEntry( entry.c_str() );
+                anActor->Update();
+                if ( !anActor->GetVisibility() )
+                  continue;
               }
               SMESH::UpdateView( SMESH::eDisplay, entry.c_str() );
 
