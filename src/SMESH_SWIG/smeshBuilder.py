@@ -305,7 +305,7 @@ def AssureGeomPublished(mesh, geom, name=''):
     """
     if not mesh.smeshpyD.IsEnablePublish():
         return
-    if not isinstance( geom, geomBuilder.GEOM._objref_GEOM_Object ):
+    if not hasattr( geom, "GetShapeType" ):
         return
     if not geom.GetStudyEntry():
         ## get a name

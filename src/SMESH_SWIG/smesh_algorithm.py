@@ -396,7 +396,7 @@ class Mesh_Algorithm:
         geompy = self.mesh.geompyD
         for i in reverseList:
             if isinstance( i, int ):
-                s = geompy.SubShapes(self.mesh.geom, [i])[0]
+                s = geompy.GetSubShape(self.mesh.geom, [i])
                 if s.GetShapeType() != geomBuilder.GEOM.EDGE:
                     raise TypeError("Not EDGE index given")
                 resList.append( i )
