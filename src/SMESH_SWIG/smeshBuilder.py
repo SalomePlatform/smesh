@@ -7628,7 +7628,7 @@ class genObjUnRegister:
             if genObj and hasattr( genObj, "UnRegister" ):
                 genObj.UnRegister()
 
-for pluginName in os.environ[ "SMESH_MeshersList" ].split( ":" ):
+for pluginName in os.environ[ "SMESH_MeshersList" ].split( os.pathsep ):
     """
     Bind methods creating mesher plug-ins to the Mesh class
     """

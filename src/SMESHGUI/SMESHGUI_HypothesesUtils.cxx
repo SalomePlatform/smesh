@@ -67,6 +67,7 @@
  #define LoadLib( name ) LoadLibrary( name )
  #define GetProc GetProcAddress
  #define UnLoadLib( handle ) FreeLibrary( handle );
+ #define env_sep ";"
 #else // WIN32
  #define LibHandle void*
  #ifdef DYNLOAD_LOCAL
@@ -76,6 +77,7 @@
  #endif // DYNLOAD_LOCAL
  #define GetProc dlsym
  #define UnLoadLib( handle ) dlclose( handle );
+ #define env_sep ":"
 #endif // WIN32
 
 #ifdef _DEBUG_
@@ -197,7 +199,7 @@ namespace SMESH
       if (cenv)
         HypsXml.sprintf("%s", cenv);
 
-      QStringList HypsXmlList = HypsXml.split(":", QString::SkipEmptyParts);
+      QStringList HypsXmlList = HypsXml.split(env_sep, QString::SkipEmptyParts);
       if (HypsXmlList.count() == 0) {
         SUIT_MessageBox::critical(SMESHGUI::desktop(),
                                   QObject::tr("SMESH_WRN_WARNING"),

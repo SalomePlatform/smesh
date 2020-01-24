@@ -56,6 +56,13 @@
 
 using namespace std;
 
+// Environment variable separator
+#ifdef WIN32
+  #define env_sep ';'
+#else
+  #define env_sep ':'
+#endif
+
 //=============================================================================
 /*!
  *  Constructor
@@ -984,7 +991,7 @@ std::vector< std::string > SMESH_Gen::GetPluginXMLPaths()
     while ( from < meshers.size() )
     {
       // cut off plugin name
-      pos = meshers.find( ':', from );
+      pos = meshers.find( env_sep, from );
       if ( pos != string::npos )
         plugin = meshers.substr( from, pos-from );
       else

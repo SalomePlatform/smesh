@@ -77,5 +77,5 @@ def set_env(args):
                         pass
                     pass
                 break
-    os.environ["SMESH_MeshersList"] = ":".join(plugin_list)
+    os.environ["SMESH_MeshersList"] = os.pathsep.join(plugin_list)
     os.environ["SalomeAppConfig"] = os.environ["SalomeAppConfig"] + psep + psep.join(resource_path_list)
