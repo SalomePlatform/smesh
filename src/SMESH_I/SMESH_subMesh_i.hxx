@@ -123,6 +123,7 @@ protected:
 
   void changeLocalId(int localId) { _localId = localId; }
   friend void SMESH_Mesh_i::CheckGeomGroupModif();
+  friend void SMESH_Mesh_i::CheckGeomModif(bool);
 
   SMESH_PreMeshInfo* _preMeshInfo; // mesh info before full loading from study file
 

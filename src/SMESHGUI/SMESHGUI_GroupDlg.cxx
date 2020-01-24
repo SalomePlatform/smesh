@@ -1083,6 +1083,8 @@ bool SMESHGUI_GroupDlg::onApply()
 
         GEOM::GEOM_Object_var  aMeshShape = myMesh->GetShapeToMesh();
         GEOM::GEOM_Object_wrap aGroupVar = op->CreateGroup(aMeshShape, aGroupType);
+        if ( aGroupVar->_is_nil() )
+          return false;
         op->UnionList(aGroupVar, myGeomObjects);
 
         if (op->IsDone()) {

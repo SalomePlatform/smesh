@@ -1280,7 +1280,7 @@ void SMESHGUI_BaseComputeOp::onPublishShape()
         // look for myMainShape in the table
         for ( int r = 0, nr = table()->rowCount(); r < nr; ++r ) {
           if ( table()->item( r, COL_SHAPEID )->text() == "1" ) {
-            if ( so->_is_nil() ) {
+            if ( !so->_is_nil() ) {
               CORBA::String_var name  = so->GetName();
               CORBA::String_var entry = so->GetID();
               QString       shapeText = QString("%1 (%2)").arg( name.in() ).arg( entry.in() );

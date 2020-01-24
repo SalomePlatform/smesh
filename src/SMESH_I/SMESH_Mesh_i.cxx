@@ -2002,8 +2002,7 @@ void SMESH_Mesh_i::addGeomGroupData(GEOM::GEOM_Object_ptr theGeomObj,
     return;
   // group indices
   GEOM::GEOM_Gen_var geomGen = _gen_i->GetGeomEngine( theGeomObj );
-  GEOM::GEOM_IGroupOperations_ptr groupOp =
-    geomGen->GetIGroupOperations();
+  GEOM::GEOM_IGroupOperations_ptr groupOp = geomGen->GetIGroupOperations();
   GEOM::ListOfLong_var ids = groupOp->GetObjects( theGeomObj );
 
   // store data
@@ -2347,6 +2346,8 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
     ids2Hyps.push_back( make_pair( meshDS->ShapeToIndex( s ), hyps ));
   }
 
+  std::map< std::set<int>, int > ii2iMap; // group sub-ids to group id in SMESHDS
+
   // count shapes excluding compounds corresponding to geom groups
   int oldNbSubShapes = meshDS->MaxShapeIndex();
   for ( ; oldNbSubShapes > 0; --oldNbSubShapes )
@@ -2354,6 +2355,11 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
     const TopoDS_Shape& s = meshDS->IndexToShape( oldNbSubShapes );
     if ( s.IsNull() || s.ShapeType() != TopAbs_COMPOUND )
       break;
+    // fill ii2iMap
+    std::set<int> subIds;
+    for ( TopoDS_Iterator it( s ); it.More(); it.Next() )
+      subIds.insert( meshDS->ShapeToIndex( it.Value() ));
+    ii2iMap.insert( std::make_pair( subIds, oldNbSubShapes ));
   }
 
   // check if shape topology changes - save shape type per shape ID
@@ -2374,9 +2380,15 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
   }
 
   // re-add shapes (compounds) of geom groups
+  std::map< int, int > old2newIDs; // group IDs
   std::list<TGeomGroupData>::iterator data = _geomGroupData.begin();
   for ( ; data != _geomGroupData.end(); ++data )
   {
+    int oldID = 0;
+    std::map< std::set<int>, int >::iterator ii2i = ii2iMap.find( data->_indices );
+    if ( ii2i != ii2iMap.end() )
+      oldID = ii2i->second;
+
     TopoDS_Shape newShape = newGroupShape( *data, isBreakLink ? IS_BREAK_LINK : MAIN_TRANSFORMED );
     if ( !newShape.IsNull() )
     {
@@ -2387,7 +2399,9 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
         BRep_Builder().Add( compound, newShape );
         newShape = compound;
       }
-      _impl->GetSubMesh( newShape );
+      int newID = _impl->GetSubMesh( newShape )->GetId();
+      if ( oldID && oldID != newID )
+        old2newIDs.insert( std::make_pair( oldID, newID ));
     }
   }
 
@@ -2396,7 +2410,11 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
   {
     if ( !sameTopology && ids2Hyps[i].first != 1 )
       continue; // assign only global hypos
-    const TopoDS_Shape& s = meshDS->IndexToShape( ids2Hyps[i].first );
+    int sID = ids2Hyps[i].first;
+    std::map< int, int >::iterator o2n = old2newIDs.find( sID );
+    if ( o2n != old2newIDs.end() )
+      sID = o2n->second;
+    const TopoDS_Shape& s = meshDS->IndexToShape( sID );
     const THypList&  hyps = ids2Hyps[i].second;
     THypList::const_iterator h = hyps.begin();
     for ( ; h != hyps.end(); ++h )
@@ -2428,6 +2446,21 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
         _mapGroups.erase( i2g );
       else
         g->GetGroupDS()->SetColor( data._color );
+    }
+
+    std::map< int, int >::iterator o2n = old2newIDs.begin();
+    for ( ; o2n != old2newIDs.end(); ++o2n )
+    {
+      int newID = o2n->second, oldID = o2n->first;
+      if ( !_mapSubMesh.count( oldID ))
+        continue;
+      _mapSubMesh   [ newID ] = _impl->GetSubMeshContaining( newID );
+      _mapSubMesh_i [ newID ] = _mapSubMesh_i [ oldID ];
+      _mapSubMeshIor[ newID ] = _mapSubMeshIor[ oldID ];
+      _mapSubMesh.   erase(oldID);
+      _mapSubMesh_i. erase(oldID);
+      _mapSubMeshIor.erase(oldID);
+      _mapSubMesh_i [ newID ]->changeLocalId( newID );
     }
 
     // update _mapSubMesh
