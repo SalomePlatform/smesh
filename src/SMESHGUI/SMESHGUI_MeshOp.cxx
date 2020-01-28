@@ -780,7 +780,7 @@ bool SMESHGUI_MeshOp::isCompatibleToGeometry(HypothesisData* theAlgoData,
 
   bool isApplicable = false;
   if ( myGeomEntry == myLastGeomEntry && !myGeomEntry.isEmpty() ) {
-    THypLabelIsAppMap::const_iterator lab2isApp = myHypMapIsApplicable.find( theAlgoData->Label );
+    THypLabelIsAppMap::const_iterator lab2isApp = myHypMapIsApplicable.find( theAlgoData->TypeName );
     if ( lab2isApp != myHypMapIsApplicable.end() ) {
       isApplicable = lab2isApp.value();
       return isApplicable;
@@ -791,7 +791,7 @@ bool SMESHGUI_MeshOp::isCompatibleToGeometry(HypothesisData* theAlgoData,
     toCheckIsApplicableToAll = ( myGeom->GetType() == GEOM_GROUP );
 
   isApplicable = SMESH::IsApplicable( theAlgoData->TypeName, myGeom, toCheckIsApplicableToAll );
-  myHypMapIsApplicable.insert( theAlgoData->Label, isApplicable );
+  myHypMapIsApplicable.insert( theAlgoData->TypeName, isApplicable );
   return isApplicable;
 }
 
