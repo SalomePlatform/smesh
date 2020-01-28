@@ -114,6 +114,7 @@ SET(SMESH_RESOURCES_FILES
   mesh_tree_mesh.png
   mesh_tree_importedmesh.png
   mesh_tree_mesh_warn.png
+  mesh_tree_mesh_geom_modif.png
   mesh_triangle_n.png
   mesh_triquad_hexahedron.png
   mesh_triangle.png

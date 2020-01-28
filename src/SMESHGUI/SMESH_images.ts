@@ -532,6 +532,10 @@
             <translation>mesh_tree_mesh_warn.png</translation>
         </message>
         <message>
+            <source>ICON_SMESH_TREE_GEOM_MODIF</source>
+            <translation>mesh_tree_mesh_geom_modif.png</translation>
+        </message>
+        <message>
             <source>ICON_STD_INFO</source>
             <translation>standard_mesh_info.png</translation>
         </message>

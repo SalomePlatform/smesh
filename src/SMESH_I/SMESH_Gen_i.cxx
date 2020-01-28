@@ -731,6 +731,53 @@ void SMESH_Gen_i::UpdateStudy()
   }
 }
 
+//=================================================================================
+// function : hasObjectInfo()
+// purpose  : shows if module provides information for its objects
+//=================================================================================
+
+bool SMESH_Gen_i::hasObjectInfo()
+{
+  return true;
+}
+
+//=================================================================================
+// function : getObjectInfo()
+// purpose  : returns an information for a given object by its entry
+//=================================================================================
+
+char* SMESH_Gen_i::getObjectInfo( const char* entry )
+{
+  // for a mesh with icon == ICON_SMESH_TREE_GEOM_MODIF show a warning;
+  // for the rest, "module 'SMESH', ID=0:1:2:*"
+
+  SMESH_Comment txt;
+
+  SALOMEDS::SObject_wrap  so = getStudyServant()->FindObjectID( entry );
+  CORBA::Object_var      obj = SObjectToObject( so );
+  SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( obj );
+  if ( !mesh->_is_nil() )
+  {
+    SALOMEDS::GenericAttribute_wrap attr;
+    if ( so->FindAttribute( attr.inout(), "AttributePixMap" ))
+    {
+      SALOMEDS::AttributePixMap_wrap pm = attr;
+      CORBA::String_var             ico = pm->GetPixMap();
+      if ( strcmp( ico.in(), "ICON_SMESH_TREE_GEOM_MODIF" ) == 0 )
+      {
+        txt << "The geometry was changed and the mesh needs to be recomputed";
+      }
+    }
+  }
+
+  if ( txt.empty() )
+  {
+    CORBA::String_var compType = ComponentDataType();
+    txt << "module '" << compType << "', ID=" << entry;
+  }
+  return CORBA::string_dup( txt );
+}
+
 //=============================================================================
 /*!
  *  SMESH_Gen_i::GetStudyContext

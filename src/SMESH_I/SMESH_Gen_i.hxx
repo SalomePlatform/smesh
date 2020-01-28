@@ -159,6 +159,12 @@ public:
   // Update study
   void UpdateStudy();
 
+  // Do provide info on objects
+  bool hasObjectInfo();
+
+  // Return an information for a given object
+  char* getObjectInfo(const char* entry);
+
   // Create hypothesis/algorithm of given type
   SMESH::SMESH_Hypothesis_ptr CreateHypothesis (const char* theHypType,
                                                 const char* theLibName)

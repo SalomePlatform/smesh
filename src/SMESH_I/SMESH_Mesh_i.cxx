@@ -2470,6 +2470,13 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
   }
 
   _gen_i->UpdateIcons( SMESH::SMESH_Mesh_var( _this() ));
+
+  if ( !isBreakLink )
+  {
+    SALOMEDS::SObject_wrap meshSO = _gen_i->ObjectToSObject( me );
+    if ( !meshSO->_is_nil() )
+      _gen_i->SetPixMap(meshSO, "ICON_SMESH_TREE_GEOM_MODIF");
+  }
 }
 
 //=============================================================================

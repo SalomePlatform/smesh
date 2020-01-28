@@ -4517,6 +4517,11 @@ It can&apos;t be deleted </translation>
 Continue?</translation>
     </message>
     <message>
+        <source>MSG_WARN_ON_GEOM_MODIF</source>
+        <translation>This action is prohibited since the geometry
+was changed and the mesh needs to be recomputed.</translation>
+    </message>
+    <message>
         <source>SMESH_ADVANCED</source>
         <translation>Advanced</translation>
     </message>
