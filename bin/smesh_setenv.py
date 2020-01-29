@@ -18,64 +18,64 @@
 # See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 #
 
-import os, sys
+"""
+Set-up additional environment needed for SMESH module and meshing plugins.
+"""
+
+import os
+import os.path as osp
+import sys
+from xml.dom.minidom import parse
 from setenv import add_path, get_lib_dir, salome_subdir
 
 # -----------------------------------------------------------------------------
 
 def set_env(args):
-    """Add to the PATH-variables modules specific paths"""
-    psep = os.pathsep
-    python_version="python%d.%d" % sys.version_info[0:2]
+    """Set-up additional environment needed for SMESH module and plugins"""
+    py_version = 'python{}.{}'.format(*sys.version_info[:2])
 
+    # search and set-up meshing plugins
+    plugins = []
+    resource_dirs = []
+    for var in [i for i in os.environ if i.endswith('_ROOT_DIR') and os.environ[i]]:
+        plugin_root = os.environ[var]
+        plugin_name = var[:-9] # plugin name as extracted from environment variable
+        plugin_lname = plugin_name.lower() # plugin name in lowercase
 
-    if "SALOME_StdMeshersResources" not in os.environ:
-        os.environ["SALOME_StdMeshersResources"] \
-        = os.path.join(os.environ["SMESH_ROOT_DIR"],"share",salome_subdir,"resources","smesh")
-        pass
+        # look for NAMEOFPlugin.xml file among resource files
+        # resource dir must be <plugin_root>/share/salome/resources/<plugin_name_lowercase>
+        resource_dir = osp.join(plugin_root, 'share', salome_subdir, 'resources', plugin_lname)
+        if not os.access(resource_dir, os.F_OK):
+            continue # directory does not exist or isn't accessible
 
-    # find plugins
-    plugin_list = ["StdMeshers"]
-    resource_path_list = []
-    for env_var in list(os.environ.keys()):
-        value = os.environ[env_var]
-        if env_var[-9:] == "_ROOT_DIR" and value:
-            plugin_root = value
-            plugin = env_var[:-9] # plugin name may have wrong case
+        for resource_file in [i for i in os.listdir(resource_dir) \
+                                  if osp.isfile(os.path.join(resource_dir, i))]:
+            # look for resource file (XML) to extract valid plugin name
+            if resource_file.lower() == f'{plugin_lname}.xml':
+                try:
+                    # get plugin name from 'resources' attribute of 'meshers-group' xml node
+                    # as name extracted from environment variable can be in wrong case
+                    xml_doc = parse(osp.join(resource_dir, resource_file))
+                    plugin_name = xml_doc.getElementsByTagName('meshers-group')[0].getAttribute('resources')
 
-            # look for NAMEOFPlugin.xml file among resource files
-            resource_dir = os.path.join(plugin_root,"share",salome_subdir,"resources",plugin.lower())
-            if not os.access( resource_dir, os.F_OK ): continue
-            for resource_file in os.listdir( resource_dir ):
-                if not resource_file.endswith( ".xml") or \
-                   resource_file.lower() != plugin.lower() + ".xml":
-                    continue
-                # use "resources" attribute of "meshers-group" as name of plugin in a right case
-                from xml.dom.minidom import parse
-                xml_doc = parse( os.path.join( resource_dir, resource_file ))
-                meshers_nodes = xml_doc.getElementsByTagName("meshers-group")
-                if not meshers_nodes or not meshers_nodes[0].hasAttribute("resources"): continue
-                plugin = meshers_nodes[0].getAttribute("resources")
-                if plugin in plugin_list: continue
+                    # add plugin to the list of available meshing plugins
+                    plugins.append(plugin_name)
+                    resource_dirs.append(resource_dir)
 
-                # add paths of plugin
-                plugin_list.append(plugin)
-                if "SALOME_"+plugin+"Resources" not in os.environ:
-                    resource_path = os.path.join(plugin_root,"share",salome_subdir,"resources",plugin.lower())
-                    os.environ["SALOME_"+plugin+"Resources"] = resource_path
-                    resource_path_list.append( resource_path )
-                    add_path(os.path.join(plugin_root,get_lib_dir(),python_version, "site-packages",salome_subdir), "PYTHONPATH")
-                    add_path(os.path.join(plugin_root,get_lib_dir(),salome_subdir), "PYTHONPATH")
+                    # setup environment needed for plugin
+                    add_path(osp.join(plugin_root, 'bin', salome_subdir), 'PATH')
+                    add_path(osp.join(plugin_root, get_lib_dir(), salome_subdir), 'PATH' \
+                                 if sys.platform == 'win32' else 'LD_LIBRARY_PATH')
+                    add_path(osp.join(plugin_root, 'bin', salome_subdir), 'PYTHONPATH')
+                    add_path(osp.join(plugin_root, get_lib_dir(), salome_subdir), 'PYTHONPATH')
+                    add_path(osp.join(plugin_root, get_lib_dir(), py_version, 'site-packages',
+                                      salome_subdir), 'PYTHONPATH')
 
-                    if sys.platform == "win32":
-                        add_path(os.path.join(plugin_root,get_lib_dir(),salome_subdir), "PATH")
-                        add_path(os.path.join(plugin_root,"bin",salome_subdir), "PYTHONPATH")
-                    else:
-                        add_path(os.path.join(plugin_root,get_lib_dir(),salome_subdir), "LD_LIBRARY_PATH")
-                        add_path(os.path.join(plugin_root,"bin",salome_subdir), "PYTHONPATH")
-                        add_path(os.path.join(plugin_root,"bin",salome_subdir), "PATH")
-                        pass
-                    pass
-                break
-    os.environ["SMESH_MeshersList"] = os.pathsep.join(plugin_list)
-    os.environ["SalomeAppConfig"] = os.environ["SalomeAppConfig"] + psep + psep.join(resource_path_list)
+                    break # one resource file is enough!
+                except:
+                    continue # invalid resource valid
+
+    # full list of known meshers
+    os.environ['SMESH_MeshersList'] = os.pathsep.join(['StdMeshers'] + plugins)
+    # access to resources
+    os.environ['SalomeAppConfig'] = os.pathsep.join(os.environ['SalomeAppConfig'].split(os.pathsep) + resource_dirs)
