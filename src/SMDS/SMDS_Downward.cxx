@@ -304,7 +304,7 @@ int SMDS_Down1D::getNodeSet(int cellId, int* nodeSet)
 void SMDS_Down1D::setNodes(int cellId, int vtkId)
 {
   vtkIdType npts = 0;
-  vtkIdType *pts; // will refer to the point id's of the face
+  vtkIdType const *pts(nullptr); // will refer to the point id's of the face
   _grid->GetCellPoints(vtkId, npts, pts);
   // MESSAGE(vtkId << " " << npts << "  " << _nbDownCells);
   //ASSERT(npts == _nbDownCells);
@@ -533,7 +533,7 @@ int SMDS_Down2D::computeVolumeIds(int cellId, int* ids)
   // --- find point id's of the face
 
   vtkIdType npts = 0;
-  vtkIdType *pts; // will refer to the point id's of the face
+  vtkIdType const *pts(nullptr); // will refer to the point id's of the face
   _grid->GetCellPoints(cellId, npts, pts);
   vector<int> nodes;
   for (int i = 0; i < npts; i++)
@@ -628,7 +628,7 @@ int SMDS_Down2D::computeVolumeIdsFromNodesFace(int* pts, int npts, int* ids)
 void SMDS_Down2D::setTempNodes(int cellId, int vtkId)
 {
   vtkIdType npts = 0;
-  vtkIdType *pts; // will refer to the point id's of the face
+  vtkIdType const *pts(nullptr); // will refer to the point id's of the face
   _grid->GetCellPoints(vtkId, npts, pts);
   // MESSAGE(vtkId << " " << npts << "  " << _nbNodes);
   //ASSERT(npts == _nbNodes);
@@ -796,7 +796,7 @@ void SMDS_Down3D::getNodeIds(int cellId, std::set<int>& nodeSet)
 {
   int vtkId = this->_vtkCellIds[cellId];
   vtkIdType npts = 0;
-  vtkIdType *nodes; // will refer to the point id's of the volume
+  vtkIdType const *nodes(nullptr); // will refer to the point id's of the volume
   _grid->GetCellPoints(vtkId, npts, nodes);
   for (int i = 0; i < npts; i++)
     nodeSet.insert(nodes[i]);
@@ -1127,7 +1127,7 @@ void SMDS_DownTetra::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& o
   //MESSAGE("cellId = " << cellId);
 
   vtkIdType npts = 0;
-  vtkIdType *nodes; // will refer to the point id's of the volume
+  vtkIdType const *nodes(nullptr); // will refer to the point id's of the volume
   _grid->GetCellPoints(this->_vtkCellIds[cellId], npts, nodes);
 
   set<int> tofind;
@@ -1179,7 +1179,7 @@ void SMDS_DownTetra::computeFacesWithNodes(int cellId, ListElemByNodesType& face
   // --- find point id's of the volume
 
   vtkIdType npts = 0;
-  vtkIdType *nodes; // will refer to the point id's of the volume
+  vtkIdType const *nodes(nullptr); // will refer to the point id's of the volume
   _grid->GetCellPoints(cellId, npts, nodes);
 
   // --- create all the ordered list of node id's for each face
@@ -1235,7 +1235,7 @@ void SMDS_DownQuadTetra::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType
   //MESSAGE("cellId = " << cellId);
 
   vtkIdType npts = 0;
-  vtkIdType *nodes; // will refer to the point id's of the volume
+  vtkIdType const *nodes(nullptr); // will refer to the point id's of the volume
   _grid->GetCellPoints(this->_vtkCellIds[cellId], npts, nodes);
 
   set<int> tofind;
@@ -1289,7 +1289,7 @@ void SMDS_DownQuadTetra::computeFacesWithNodes(int cellId, ListElemByNodesType& 
   // --- find point id's of the volume
 
   vtkIdType npts = 0;
-  vtkIdType *nodes; // will refer to the point id's of the volume
+  vtkIdType const *nodes(nullptr); // will refer to the point id's of the volume
   _grid->GetCellPoints(cellId, npts, nodes);
 
   // --- create all the ordered list of node id's for each face
@@ -1358,7 +1358,7 @@ void SMDS_DownPyramid::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>&
   //MESSAGE("cellId = " << cellId);
 
   vtkIdType npts = 0;
-  vtkIdType *nodes; // will refer to the point id's of the volume
+  vtkIdType const *nodes(nullptr); // will refer to the point id's of the volume
   _grid->GetCellPoints(this->_vtkCellIds[cellId], npts, nodes);
 
   set<int> tofind;
@@ -1436,7 +1436,7 @@ void SMDS_DownPyramid::computeFacesWithNodes(int cellId, ListElemByNodesType& fa
   // --- find point id's of the volume
 
   vtkIdType npts = 0;
-  vtkIdType *nodes; // will refer to the point id's of the volume
+  vtkIdType const *nodes(nullptr); // will refer to the point id's of the volume
   _grid->GetCellPoints(cellId, npts, nodes);
 
   // --- create all the ordered list of node id's for each face
@@ -1501,7 +1501,7 @@ void SMDS_DownQuadPyramid::getOrderedNodesOfFace(int cellId, std::vector<vtkIdTy
   //MESSAGE("cellId = " << cellId);
 
   vtkIdType npts = 0;
-  vtkIdType *nodes; // will refer to the point id's of the volume
+  vtkIdType const *nodes(nullptr); // will refer to the point id's of the volume
   _grid->GetCellPoints(this->_vtkCellIds[cellId], npts, nodes);
 
   set<int> tofind;
@@ -1581,7 +1581,7 @@ void SMDS_DownQuadPyramid::computeFacesWithNodes(int cellId, ListElemByNodesType
   // --- find point id's of the volume
 
   vtkIdType npts = 0;
-  vtkIdType *nodes; // will refer to the point id's of the volume
+  vtkIdType const *nodes(nullptr); // will refer to the point id's of the volume
   _grid->GetCellPoints(cellId, npts, nodes);
 
   // --- create all the ordered list of node id's for each face
@@ -1661,7 +1661,7 @@ void SMDS_DownPenta::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& o
   //MESSAGE("cellId = " << cellId);
 
   vtkIdType npts = 0;
-  vtkIdType *nodes; // will refer to the point id's of the volume
+  vtkIdType const *nodes(nullptr); // will refer to the point id's of the volume
   _grid->GetCellPoints(this->_vtkCellIds[cellId], npts, nodes);
 
   set<int> tofind;
@@ -1745,7 +1745,7 @@ void SMDS_DownPenta::computeFacesWithNodes(int cellId, ListElemByNodesType& face
   // --- find point id's of the volume
 
   vtkIdType npts = 0;
-  vtkIdType *nodes; // will refer to the point id's of the volume
+  vtkIdType const *nodes(nullptr); // will refer to the point id's of the volume
   _grid->GetCellPoints(cellId, npts, nodes);
 
   // --- create all the ordered list of node id's for each face
@@ -1811,7 +1811,7 @@ void SMDS_DownQuadPenta::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType
   //MESSAGE("cellId = " << cellId);
 
   vtkIdType npts = 0;
-  vtkIdType *nodes; // will refer to the point id's of the volume
+  vtkIdType const *nodes(nullptr); // will refer to the point id's of the volume
   _grid->GetCellPoints(this->_vtkCellIds[cellId], npts, nodes);
 
   set<int> tofind;
@@ -1897,7 +1897,7 @@ void SMDS_DownQuadPenta::computeFacesWithNodes(int cellId, ListElemByNodesType& 
   // --- find point id's of the volume
 
   vtkIdType npts = 0;
-  vtkIdType *nodes; // will refer to the point id's of the volume
+  vtkIdType const *nodes(nullptr); // will refer to the point id's of the volume
   _grid->GetCellPoints(cellId, npts, nodes);
 
   // --- create all the ordered list of node id's for each face
@@ -1982,7 +1982,7 @@ void SMDS_DownHexa::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>& or
   //MESSAGE("cellId = " << cellId);
 
   vtkIdType npts = 0;
-  vtkIdType *nodes; // will refer to the point id's of the volume
+  vtkIdType const *nodes(nullptr); // will refer to the point id's of the volume
   _grid->GetCellPoints(this->_vtkCellIds[cellId], npts, nodes);
 
   set<int> tofind;
@@ -2037,7 +2037,7 @@ void SMDS_DownHexa::computeFacesWithNodes(int cellId, ListElemByNodesType& faces
   // --- find point id's of the volume
 
   vtkIdType npts = 0;
-  vtkIdType *nodes; // will refer to the point id's of the volume
+  vtkIdType const *nodes(nullptr); // will refer to the point id's of the volume
   _grid->GetCellPoints(cellId, npts, nodes);
 
   // --- create all the ordered list of node id's for each face
@@ -2113,7 +2113,7 @@ void SMDS_DownQuadHexa::getOrderedNodesOfFace(int cellId, std::vector<vtkIdType>
   //MESSAGE("cellId = " << cellId);
 
   vtkIdType npts = 0;
-  vtkIdType *nodes; // will refer to the point id's of the volume
+  vtkIdType const *nodes(nullptr); // will refer to the point id's of the volume
   _grid->GetCellPoints(this->_vtkCellIds[cellId], npts, nodes);
 
   set<int> tofind;
@@ -2168,7 +2168,7 @@ void SMDS_DownQuadHexa::computeFacesWithNodes(int cellId, ListElemByNodesType& f
   // --- find point id's of the volume
 
   vtkIdType npts = 0;
-  vtkIdType *nodes; // will refer to the point id's of the volume
+  vtkIdType const *nodes; // will refer to the point id's of the volume
   _grid->GetCellPoints(cellId, npts, nodes);
 
   // --- create all the ordered list of node id's for each face

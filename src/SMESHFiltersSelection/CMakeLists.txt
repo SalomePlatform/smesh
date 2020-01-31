@@ -23,7 +23,6 @@ INCLUDE_DIRECTORIES(
   ${OpenCASCADE_INCLUDE_DIR}
   ${QT_INCLUDES}
   ${PYTHON_INCLUDE_DIRS}
-  ${VTK_INCLUDE_DIRS}
   ${KERNEL_INCLUDE_DIRS}
   ${GUI_INCLUDE_DIRS}
   ${GEOM_INCLUDE_DIRS}
@@ -46,8 +45,6 @@ SET(_link_LIBRARIES
   ${KERNEL_SalomeDS}
   ${GUI_SalomeApp}
   ${GUI_suit}
-  ${GUI_LightApp}
-  ${GEOM_GEOM}
   ${GEOM_GEOMClient}
   ${OpenCASCADE_FoundationClasses_LIBRARIES}
   ${OpenCASCADE_ModelingData_LIBRARIES}

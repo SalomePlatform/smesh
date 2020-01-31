@@ -30,7 +30,8 @@ _GetVtkNodes::_GetVtkNodes( TVtkIdList&        vtkIds,
 {
   vtkUnstructuredGrid*         grid = mesh->GetGrid();
   const std::vector<int>& interlace = SMDS_MeshCell::fromVtkOrder( type );
-  vtkIdType npts, *pts;
+  vtkIdType npts;
+  vtkIdType const *pts(nullptr);
   grid->GetCellPoints( vtkCellId, npts, pts );
   vtkIds.resize( npts );
   if ( interlace.empty() )
@@ -50,7 +51,8 @@ _GetVtkNodesToUNV::_GetVtkNodesToUNV( TVtkIdList&        vtkIds,
                                       SMDSAbs_EntityType type )
 {
   vtkUnstructuredGrid* grid = mesh->GetGrid();
-  vtkIdType npts, *pts;
+  vtkIdType npts;
+  vtkIdType const *pts(nullptr);
   grid->GetCellPoints( vtkCellId, npts, pts );
   const int *ids = 0;
   switch ( type )
@@ -140,7 +142,7 @@ _GetVtkNodesPolyh::_GetVtkNodesPolyh( TVtkIdList&        vtkIds,
   case SMDSEntity_Polyhedra:
   {
     vtkIdType nFaces = 0;
-    vtkIdType* ptIds = 0;
+    vtkIdType const *ptIds(nullptr);
     grid->GetFaceStream( vtkCellId, nFaces, ptIds );
     int id = 0, nbNodesInFaces = 0;
     for ( int i = 0; i < nFaces; i++ )

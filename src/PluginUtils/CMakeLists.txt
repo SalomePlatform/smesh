@@ -52,8 +52,6 @@ SET(_link_LIBRARIES
   ${QT_MT_LIBS}
   ${GUI_SalomeObject}
   ${GUI_suit}
-  ${GUI_LightApp}
-  ${GUI_SalomeApp}
   SalomeIDLSMESH
   SMESH
 )

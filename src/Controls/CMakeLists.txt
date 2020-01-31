@@ -21,7 +21,6 @@
 # additional include directories
 INCLUDE_DIRECTORIES(
   ${OpenCASCADE_INCLUDE_DIR}
-  ${VTK_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
   ${KERNEL_INCLUDE_DIRS}
   ${PROJECT_SOURCE_DIR}/src/SMDS
@@ -37,13 +36,13 @@ ADD_DEFINITIONS(
 
 # libraries to link to
 SET(_link_LIBRARIES
-  ${VTK_LIBRARIES}
   ${OpenCASCADE_FoundationClasses_LIBRARIES}
   ${OpenCASCADE_ModelingData_LIBRARIES}
   ${OpenCASCADE_ModelingAlgorithms_LIBRARIES}
   SMDS
   SMESHDS
   SMESHUtils
+  VTK::FiltersVerdict
 )
 
 # --- headers ---

@@ -361,7 +361,8 @@ void SMESHGUI_MinDistance::createPreview( double x1, double y1, double z1, doubl
   aCellLocationsArray->SetNumberOfComponents( 1 );
   aCellLocationsArray->SetNumberOfTuples( 1 );
   aCells->InitTraversal();
-  for( vtkIdType idType = 0, *pts, npts; aCells->GetNextCell( npts, pts ); idType++ )
+  vtkIdType const *pts(nullptr);
+  for( vtkIdType idType = 0, npts; aCells->GetNextCell( npts, pts ); idType++ )
     aCellLocationsArray->SetValue( idType, aCells->GetTraversalLocation( npts ) );
   aGrid->SetCells( aCellTypesArray, aCellLocationsArray, aCells );
   aCellLocationsArray->Delete();
@@ -894,7 +895,8 @@ void SMESHGUI_BoundingBox::createPreview( double minX, double maxX, double minY,
   aCellLocationsArray->SetNumberOfComponents( 1 );
   aCellLocationsArray->SetNumberOfTuples( 12 );
   aCells->InitTraversal();
-  for( vtkIdType idType = 0, *pts, npts; aCells->GetNextCell( npts, pts ); idType++ )
+  vtkIdType const *pts(nullptr);
+  for( vtkIdType idType = 0, npts; aCells->GetNextCell( npts, pts ); idType++ )
     aCellLocationsArray->SetValue( idType, aCells->GetTraversalLocation( npts ) );
   aGrid->SetCells( aCellTypesArray, aCellLocationsArray, aCells );
   aCellLocationsArray->Delete();

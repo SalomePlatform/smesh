@@ -1509,7 +1509,8 @@ void SMESHGUI_CuttingOfQuadsDlg::displayPreview()
   aCellLocationsArray->SetNumberOfTuples(aNbCells);
 
   aConnectivity->InitTraversal();
-  for(vtkIdType idType = 0, *pts, npts; aConnectivity->GetNextCell(npts, pts); idType++)
+  vtkIdType const *pts(nullptr);
+  for(vtkIdType idType = 0, npts; aConnectivity->GetNextCell(npts, pts); idType++)
     aCellLocationsArray->SetValue(idType, aConnectivity->GetTraversalLocation(npts));
 
   aGrid->SetPoints(aPoints);

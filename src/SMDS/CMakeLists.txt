@@ -21,7 +21,6 @@
 # additional include directories
 INCLUDE_DIRECTORIES(
   ${KERNEL_INCLUDE_DIRS}
-  ${VTK_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
 )
 
@@ -32,9 +31,10 @@ ADD_DEFINITIONS(
 
 # libraries to link to
 SET(_link_LIBRARIES
-  ${VTK_LIBRARIES}
   ${KERNEL_SALOMELocalTrace}
   ${KERNEL_OpUtil}
+  VTK::CommonCore
+  VTK::CommonDataModel
 )
 
 # --- headers ---

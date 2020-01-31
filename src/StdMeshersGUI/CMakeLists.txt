@@ -23,7 +23,6 @@ INCLUDE(UseQtExt)
 # additional include directories
 INCLUDE_DIRECTORIES(
   ${QT_INCLUDES}
-  ${VTK_INCLUDE_DIRS}
   ${OpenCASCADE_INCLUDE_DIR}
   ${PYTHON_INCLUDE_DIRS}
   ${KERNEL_INCLUDE_DIRS}
@@ -56,7 +55,6 @@ ADD_DEFINITIONS(
 
 # libraries to link to
 SET(_link_LIBRARIES
-  ${GUI_SalomeApp}
   ${OpenCASCADE_FoundationClasses_LIBRARIES}
   ${OpenCASCADE_ModelingAlgorithms_LIBRARIES}
   ${QWT_LIBRARY}

@@ -490,8 +490,10 @@ void SMDS_MeshCell::init( SMDSAbs_EntityType            theEntity,
 bool SMDS_MeshCell::ChangeNodes(const SMDS_MeshNode* nodes[], const int theNbNodes)
 {
   vtkIdType npts = 0;
-  vtkIdType* pts = 0;
-  getGrid()->GetCellPoints( GetVtkID(), npts, pts );
+  vtkIdType *pts(nullptr);
+  vtkIdType const *tmp(nullptr);
+  getGrid()->GetCellPoints( GetVtkID(), npts, tmp );
+  pts = const_cast<vtkIdType *>(tmp);
   if ( theNbNodes != npts )
   {
     MESSAGE("ChangeNodes problem: not the same number of nodes " << npts << " -> " << theNbNodes);
@@ -519,7 +521,8 @@ int SMDS_MeshCell::NbNodes() const
 {
   if ( GetVtkType() == VTK_POLYHEDRON )
     return static_cast< const SMDS_MeshVolume* >( this )->SMDS_MeshVolume::NbNodes();
-  vtkIdType *pts, npts;
+  vtkIdType npts;
+  vtkIdType const *pts;
   getGrid()->GetCellPoints( GetVtkID(), npts, pts );
   return npts;
 }
@@ -631,7 +634,8 @@ const SMDS_MeshNode* SMDS_MeshCell::GetNode(const int ind) const
   if ( GetVtkType() == VTK_POLYHEDRON )
     return static_cast< const SMDS_MeshVolume* >( this )->SMDS_MeshVolume::GetNode( ind );
 
-  vtkIdType npts, *pts;
+  vtkIdType npts;
+  vtkIdType const *pts;
   getGrid()->GetCellPoints( GetVtkID(), npts, pts );
   const std::vector<int>& interlace = SMDS_MeshCell::fromVtkOrder( VTKCellType( GetVtkType() ));
   return GetMesh()->FindNodeVtk( pts[ interlace.empty() ? ind : interlace[ ind ]]);
@@ -645,7 +649,8 @@ int SMDS_MeshCell::GetNodeIndex( const SMDS_MeshNode* node ) const
   if ( GetVtkType() == VTK_POLYHEDRON )
     return static_cast< const SMDS_MeshVolume* >( this )->SMDS_MeshVolume::GetNodeIndex( node );
 
-  vtkIdType npts, *pts;
+  vtkIdType npts;
+  vtkIdType const *pts;
   getGrid()->GetCellPoints( GetVtkID(), npts, pts );
   for ( vtkIdType i = 0; i < npts; ++i )
     if ( pts[i] == node->GetVtkID() )
