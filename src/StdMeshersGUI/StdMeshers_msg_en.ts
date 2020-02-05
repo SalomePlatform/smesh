@@ -581,6 +581,18 @@ this one for this mesh/sub-mesh.</translation>
         <translation>Implement Edges</translation>
     </message>
     <message>
+        <source>CREATE_FACES</source>
+        <translation>Create Faces</translation>
+    </message>
+    <message>
+        <source>CONSIDER_INTERNAL_FACES</source>
+        <translation>Consider Shared and Internal Faces</translation>
+    </message>
+    <message>
+        <source>USE_THRESHOLD_FOR_INTERNAL_FACES</source>
+        <translation>Apply Threshold to Shared / Internal Faces</translation>
+    </message>
+    <message>
         <source>AXIS_X</source>
         <translation>Axis X</translation>
     </message>

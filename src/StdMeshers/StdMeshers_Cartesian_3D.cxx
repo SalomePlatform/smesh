@@ -23,16 +23,22 @@
 //  Module : SMESH
 //
 #include "StdMeshers_Cartesian_3D.hxx"
+#include "StdMeshers_CartesianParameters3D.hxx"
 
+#include "ObjectPool.hxx"
 #include "SMDS_MeshNode.hxx"
+#include "SMDS_VolumeTool.hxx"
 #include "SMESHDS_Mesh.hxx"
 #include "SMESH_Block.hxx"
 #include "SMESH_Comment.hxx"
+#include "SMESH_ControlsDef.hxx"
 #include "SMESH_Mesh.hxx"
+#include "SMESH_MeshAlgos.hxx"
+#include "SMESH_MeshEditor.hxx"
 #include "SMESH_MesherHelper.hxx"
 #include "SMESH_subMesh.hxx"
 #include "SMESH_subMeshEventListener.hxx"
-#include "StdMeshers_CartesianParameters3D.hxx"
+#include "StdMeshers_FaceSide.hxx"
 
 #include <utilities.h>
 #include <Utils_ExceptHandlers.hxx>
@@ -89,6 +95,8 @@
 
 #include <limits>
 
+#include <boost/container/flat_map.hpp>
+
 //#undef WITH_TBB
 #ifdef WITH_TBB
 
@@ -97,7 +105,6 @@
 // Windows 10 = 0x0A00  
 #define WINVER 0x0A00
 #define _WIN32_WINNT 0x0A00
-
 #endif
 
 #include <tbb/parallel_for.h>
@@ -105,6 +112,7 @@
 #endif
 
 using namespace std;
+using namespace SMESH;
 
 #ifdef _DEBUG_
 //#define _MY_DEBUG_
@@ -161,7 +169,7 @@ bool StdMeshers_Cartesian_3D::CheckHypothesis (SMESH_Mesh&          aMesh,
 
 namespace
 {
-  typedef int TGeomID;
+  typedef int TGeomID; // IDs of sub-shapes
 
   //=============================================================================
   // Definitions of internal utils
@@ -170,7 +178,72 @@ namespace
     Trans_TANGENT = IntCurveSurface_Tangent,
     Trans_IN      = IntCurveSurface_In,
     Trans_OUT     = IntCurveSurface_Out,
-    Trans_APEX
+    Trans_APEX,
+    Trans_INTERNAL // for INTERNAL FACE
+  };
+  // --------------------------------------------------------------------------
+  /*!
+   * \brief Container of IDs of SOLID sub-shapes
+   */
+  class Solid // sole SOLID contains all sub-shapes
+  {
+    TGeomID _id; // SOLID id
+    bool    _hasInternalFaces;
+  public:
+    virtual ~Solid() {}
+    virtual bool Contains( TGeomID subID ) const { return true; }
+    virtual bool ContainsAny( const vector< TGeomID>& subIDs ) const { return true; }
+    virtual TopAbs_Orientation Orientation( const TopoDS_Shape& s ) const { return s.Orientation(); }
+    virtual bool IsOutsideOriented( TGeomID faceID ) const { return true; }
+    void SetID( TGeomID id ) { _id = id; }
+    TGeomID ID() const { return _id; }
+    void SetHasInternalFaces( bool has ) { _hasInternalFaces = has; }
+    bool HasInternalFaces() const { return _hasInternalFaces; }
+  };
+  // --------------------------------------------------------------------------
+  class OneOfSolids : public Solid
+  {
+    TColStd_MapOfInteger _subIDs;
+    TopTools_MapOfShape  _faces; // keep FACE orientation
+    TColStd_MapOfInteger _outFaceIDs; // FACEs of shape_to_mesh oriented outside the SOLID
+  public:
+    void Init( const TopoDS_Shape& solid,
+               TopAbs_ShapeEnum    subType,
+               const SMESHDS_Mesh* mesh );
+    virtual bool Contains( TGeomID i ) const { return i == ID() || _subIDs.Contains( i ); }
+    virtual bool ContainsAny( const vector< TGeomID>& subIDs ) const
+    {
+      for ( size_t i = 0; i < subIDs.size(); ++i ) if ( Contains( subIDs[ i ])) return true;
+      return false;
+    }
+    virtual TopAbs_Orientation Orientation( const TopoDS_Shape& face ) const
+    {
+      const TopoDS_Shape& sInMap = const_cast< OneOfSolids* >(this)->_faces.Added( face );
+      return sInMap.Orientation();
+    }
+    virtual bool IsOutsideOriented( TGeomID faceID ) const
+    {
+      return faceID == 0 || _outFaceIDs.Contains( faceID );
+    }
+  };
+  // --------------------------------------------------------------------------
+  /*!
+   * \brief Geom data
+   */
+  struct Geometry
+  {
+    TopoDS_Shape                _mainShape;
+    vector< vector< TGeomID > > _solidIDsByShapeID;// V/E/F ID -> SOLID IDs
+    Solid                       _soleSolid;
+    map< TGeomID, OneOfSolids > _solidByID;
+    TColStd_MapOfInteger        _boundaryFaces; // FACEs on boundary of mesh->ShapeToMesh()
+    TColStd_MapOfInteger        _strangeEdges; // EDGEs shared by strange FACEs
+    TGeomID                     _extIntFaceID; // pseudo FACE - extension of INTERNAL FACE
+
+    Controls::ElementsOnShape _edgeClassifier;
+    Controls::ElementsOnShape _vertexClassifier;
+
+    bool IsOneSolid() const { return _solidByID.size() < 2; }
   };
   // --------------------------------------------------------------------------
   /*!
@@ -194,6 +267,7 @@ namespace
   struct F_IntersectPoint : public B_IntersectPoint
   {
     double             _paramOnLine;
+    double             _u, _v;
     mutable Transition _transition;
     mutable size_t     _indexOnLine;
 
@@ -207,7 +281,7 @@ namespace
   {
     gp_Pnt  _point;
     double  _uvw[3];
-    TGeomID _shapeID;
+    TGeomID _shapeID; // ID of EDGE or VERTEX
   };
   // --------------------------------------------------------------------------
   /*!
@@ -220,7 +294,9 @@ namespace
     multiset< F_IntersectPoint > _intPoints;
 
     void RemoveExcessIntPoints( const double tol );
-    bool GetIsOutBefore( multiset< F_IntersectPoint >::iterator ip, bool prevIsOut );
+    TGeomID GetSolidIDBefore( multiset< F_IntersectPoint >::iterator ip,
+                              const TGeomID                          prevID,
+                              const Geometry&                        geom);
   };
   // --------------------------------------------------------------------------
   /*!
@@ -249,7 +325,7 @@ namespace
     {
       _size[0] = sz1; _size[1] = sz2; _size[2] = sz3;
       _curInd[0] = _curInd[1] = _curInd[2] = 0;
-      _iVar1 = iv1; _iVar2 = iv2; _iConst = iConst; 
+      _iVar1 = iv1; _iVar2 = iv2; _iConst = iConst;
       _name1 = nv1; _name2 = nv2; _nameConst = nConst;
     }
 
@@ -288,9 +364,16 @@ namespace
 
     vector< const SMDS_MeshNode* >    _nodes; // mesh nodes at grid nodes
     vector< const F_IntersectPoint* > _gridIntP; // grid node intersection with geometry
+    ObjectPool< E_IntersectPoint >    _edgeIntPool; // intersections with EDGEs
+    ObjectPool< F_IntersectPoint >    _extIntPool; // intersections with extended INTERNAL FACEs
+    //list< E_IntersectPoint >          _edgeIntP; // intersections with EDGEs
 
-    list< E_IntersectPoint >          _edgeIntP; // intersections with EDGEs
-    TopTools_IndexedMapOfShape        _shapes;
+    Geometry                          _geometry;
+    bool                              _toAddEdges;
+    bool                              _toCreateFaces;
+    bool                              _toConsiderInternalFaces;
+    bool                              _toUseThresholdForInternalFaces;
+    double                            _sizeThreshold;
 
     SMESH_MesherHelper*               _helper;
 
@@ -308,6 +391,43 @@ namespace
 
     LineIndexer GetLineIndexer(size_t iDir) const;
 
+    E_IntersectPoint* Add( const E_IntersectPoint& ip )
+    {
+      E_IntersectPoint* eip = _edgeIntPool.getNew();
+      *eip = ip;
+      return eip;
+    }
+    void Remove( E_IntersectPoint* eip ) { _edgeIntPool.destroy( eip ); }
+
+    TGeomID ShapeID( const TopoDS_Shape& s ) const;
+    const TopoDS_Shape& Shape( TGeomID id ) const;
+    TopAbs_ShapeEnum ShapeType( TGeomID id ) const { return Shape(id).ShapeType(); }
+    void InitGeometry( const TopoDS_Shape& theShape );
+    void InitClassifier( const TopoDS_Shape&        mainShape,
+                         TopAbs_ShapeEnum           shapeType,
+                         Controls::ElementsOnShape& classifier );
+    void GetEdgesToImplement( map< TGeomID, vector< TGeomID > > & edge2faceMap,
+                              const TopoDS_Shape&                 shape,
+                              const vector< TopoDS_Shape >&       faces );
+    void SetSolidFather( const TopoDS_Shape& s, const TopoDS_Shape& theShapeToMesh );
+    bool IsShared( TGeomID faceID ) const;
+    bool IsAnyShared( const std::vector< TGeomID >& faceIDs ) const;
+    bool IsInternal( TGeomID faceID ) const {
+      return ( faceID == PseudoIntExtFaceID() ||
+               Shape( faceID ).Orientation() == TopAbs_INTERNAL ); }
+    bool IsSolid( TGeomID shapeID ) const {
+      if ( _geometry.IsOneSolid() ) return _geometry._soleSolid.ID() == shapeID;
+      else                          return _geometry._solidByID.count( shapeID ); }
+    bool IsStrangeEdge( TGeomID id ) const { return _geometry._strangeEdges.Contains( id ); }
+    TGeomID PseudoIntExtFaceID() const { return _geometry._extIntFaceID; }
+    Solid* GetSolid( TGeomID solidID = 0 );
+    Solid* GetOneOfSolids( TGeomID solidID );
+    const vector< TGeomID > & GetSolidIDs( TGeomID subShapeID ) const;
+    bool IsCorrectTransition( TGeomID faceID, const Solid* solid );
+    bool IsBoundaryFace( TGeomID face ) const { return _geometry._boundaryFaces.Contains( face ); }
+    void SetOnShape( const SMDS_MeshNode* n, const F_IntersectPoint& ip, bool unset=false );
+    bool IsToCheckNodePos() const { return !_toAddEdges && _toCreateFaces; }
+
     void SetCoordinates(const vector<double>& xCoords,
                         const vector<double>& yCoords,
                         const vector<double>& zCoords,
@@ -315,6 +435,49 @@ namespace
                         const Bnd_Box&        bndBox );
     void ComputeUVW(const gp_XYZ& p, double uvw[3]);
     void ComputeNodes(SMESH_MesherHelper& helper);
+  };
+  // --------------------------------------------------------------------------
+  /*!
+   * \brief Return cells sharing a link
+   */
+  struct CellsAroundLink
+  {
+    int    _dInd[4][3];
+    size_t _nbCells[3];
+    int    _i,_j,_k;
+    Grid*  _grid;
+
+    CellsAroundLink( Grid* grid, int iDir ):
+      _dInd{ {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0} },
+      _nbCells{ grid->_coords[0].size() - 1,
+          grid->_coords[1].size() - 1,
+          grid->_coords[2].size() - 1 },
+      _grid( grid )
+    {
+      const int iDirOther[3][2] = {{ 1,2 },{ 0,2 },{ 0,1 }};
+      _dInd[1][ iDirOther[iDir][0] ] = -1;
+      _dInd[2][ iDirOther[iDir][1] ] = -1;
+      _dInd[3][ iDirOther[iDir][0] ] = -1; _dInd[3][ iDirOther[iDir][1] ] = -1;
+    }
+    void Init( int i, int j, int k, int link12 = 0 )
+    {
+      int iL = link12 % 4;
+      _i = i - _dInd[iL][0];
+      _j = j - _dInd[iL][1];
+      _k = k - _dInd[iL][2];
+    }
+    bool GetCell( int iL, int& i, int& j, int& k, int& cellIndex )
+    {
+      i =  _i + _dInd[iL][0];
+      j =  _j + _dInd[iL][1];
+      k =  _k + _dInd[iL][2];
+      if ( i < 0 || i >= (int)_nbCells[0] ||
+           j < 0 || j >= (int)_nbCells[1] ||
+           k < 0 || k >= (int)_nbCells[2] )
+        return false;
+      cellIndex = _grid->CellIndex( i,j,k );
+      return true;
+    }
   };
   // --------------------------------------------------------------------------
   /*!
@@ -336,7 +499,7 @@ namespace
     {
       for ( size_t i = 0; i < _intersections.size(); ++i )
       {
-        multiset< F_IntersectPoint >::iterator ip = 
+        multiset< F_IntersectPoint >::iterator ip =
           _intersections[i].first->_intPoints.insert( _intersections[i].second );
         ip->_faceIDs.reserve( 1 );
         ip->_faceIDs.push_back( _faceID );
@@ -368,7 +531,7 @@ namespace
   {
     double      _tol;
     double      _u, _v, _w; // params on the face and the line
-    Transition  _transition; // transition of at intersection (see IntCurveSurface.cdl)
+    Transition  _transition; // transition at intersection (see IntCurveSurface.cdl)
     Transition  _transIn, _transOut; // IN and OUT transitions depending of face orientation
 
     gp_Pln      _plane;
@@ -406,35 +569,30 @@ namespace
     // --------------------------------------------------------------------------------
     struct _Face;
     struct _Link;
+    enum IsInternalFlag { IS_NOT_INTERNAL, IS_INTERNAL, IS_CUT_BY_INTERNAL_FACE };
     // --------------------------------------------------------------------------------
     struct _Node //!< node either at a hexahedron corner or at intersection
     {
       const SMDS_MeshNode*    _node; // mesh node at hexahedron corner
       const B_IntersectPoint* _intPoint;
       const _Face*            _usedInFace;
+      char                    _isInternalFlags;
 
       _Node(const SMDS_MeshNode* n=0, const B_IntersectPoint* ip=0)
-        :_node(n), _intPoint(ip), _usedInFace(0) {} 
+        :_node(n), _intPoint(ip), _usedInFace(0), _isInternalFlags(0) {} 
       const SMDS_MeshNode*    Node() const
       { return ( _intPoint && _intPoint->_node ) ? _intPoint->_node : _node; }
       const E_IntersectPoint* EdgeIntPnt() const
       { return static_cast< const E_IntersectPoint* >( _intPoint ); }
+      const F_IntersectPoint* FaceIntPnt() const
+      { return static_cast< const F_IntersectPoint* >( _intPoint ); }
+      const vector< TGeomID >& faces() const { return _intPoint->_faceIDs; }
+      TGeomID face(size_t i) const { return _intPoint->_faceIDs[ i ]; }
+      void SetInternal( IsInternalFlag intFlag ) { _isInternalFlags |= intFlag; }
+      bool IsCutByInternal() const { return _isInternalFlags & IS_CUT_BY_INTERNAL_FACE; }
       bool IsUsedInFace( const _Face* polygon = 0 )
       {
         return polygon ? ( _usedInFace == polygon ) : bool( _usedInFace );
-      }
-      void Add( const E_IntersectPoint* ip )
-      {
-        if ( !_intPoint ) {
-          _intPoint = ip;
-        }
-        else if ( !_intPoint->_node ) {
-          ip->Add( _intPoint->_faceIDs );
-          _intPoint = ip;
-        }
-        else  {
-          _intPoint->Add( ip->_faceIDs );
-        }
       }
       TGeomID IsLinked( const B_IntersectPoint* other,
                         TGeomID                 avoidFace=-1 ) const // returns id of a common face
@@ -448,7 +606,7 @@ namespace
       gp_Pnt Point() const
       {
         if ( const SMDS_MeshNode* n = Node() )
-          return SMESH_TNodeXYZ( n );
+          return SMESH_NodeXYZ( n );
         if ( const E_IntersectPoint* eip =
              dynamic_cast< const E_IntersectPoint* >( _intPoint ))
           return eip->_point;
@@ -460,6 +618,27 @@ namespace
           return eip->_shapeID;
         return 0;
       }
+      void Add( const E_IntersectPoint* ip )
+      {
+        // Possible cases before Add(ip):
+        ///  1) _node != 0 --> _Node at hex corner ( _intPoint == 0 || _intPoint._node == 0 )
+        ///  2) _node == 0 && _intPoint._node != 0  -->  link intersected by FACE
+        ///  3) _node == 0 && _intPoint._node == 0  -->  _Node at EDGE intersection
+        //
+        // If ip is added in cases 1) and 2) _node position must be changed to ip._shapeID
+        //   at creation of elements
+        // To recognize this case, set _intPoint._node = Node()
+        const SMDS_MeshNode* node = Node();
+        if ( !_intPoint ) {
+          _intPoint = ip;
+        }
+        else {
+          ip->Add( _intPoint->_faceIDs );
+          _intPoint = ip;
+        }
+        if ( node )
+          _node = _intPoint->_node = node;
+      }
     };
     // --------------------------------------------------------------------------------
     struct _Link // link connecting two _Node's
@@ -469,7 +648,7 @@ namespace
       vector< const F_IntersectPoint* > _fIntPoints; // GridLine intersections with FACEs
       vector< _Node* >                  _fIntNodes;   // _Node's at _fIntPoints
       vector< _Link >                   _splits;
-      _Link() { _faces[0] = 0; }
+      _Link(): _faces{ 0, 0 } {}
     };
     // --------------------------------------------------------------------------------
     struct _OrientedLink
@@ -541,6 +720,43 @@ namespace
       }
     };
     // --------------------------------------------------------------------------------
+    struct _SplitIterator //! set to _hexLinks splits on one side of INTERNAL FACEs
+    {
+      struct _Split // data of a link split
+      {
+        int    _linkID;      // hex link ID
+        _Node* _nodes[2];
+        int    _iCheckIteration; // iteration where split is tried as Hexahedron split
+        _Link* _checkedSplit;    // split set to hex links
+        bool   _isUsed;    // used in a volume
+
+        _Split( _Link & split, int iLink ):
+          _linkID( iLink ), _nodes{ split._nodes[0], split._nodes[1] },
+          _iCheckIteration( 0 ), _isUsed( false )
+        {}
+        bool IsCheckedOrUsed( bool used ) const { return used ? _isUsed : _iCheckIteration > 0; }
+      };
+      _Link*                _hexLinks;
+      std::vector< _Split > _splits;
+      int                   _iterationNb;
+      size_t                _nbChecked;
+      size_t                _nbUsed;
+      std::vector< _Node* > _freeNodes; // nodes reached while composing a split set
+
+      _SplitIterator( _Link* hexLinks ):
+        _hexLinks( hexLinks ), _iterationNb(0), _nbChecked(0), _nbUsed(0)
+      {
+        _freeNodes.reserve( 12 );
+        _splits.reserve( 24 );
+        for ( int iL = 0; iL < 12; ++iL )
+          for ( size_t iS = 0; iS < _hexLinks[ iL ]._splits.size(); ++iS )
+            _splits.emplace_back( _hexLinks[ iL ]._splits[ iS ], iL );
+        Next();
+      }
+      bool More() const { return _nbUsed < _splits.size(); }
+      bool Next();
+    };
+    // --------------------------------------------------------------------------------
     struct _Face
     {
       vector< _OrientedLink > _links;       // links on GridLine's
@@ -573,14 +789,37 @@ namespace
     // --------------------------------------------------------------------------------
     struct _volumeDef // holder of nodes of a volume mesh element
     {
-      vector< _Node* > _nodes;
-      vector< int >    _quantities;
-      typedef boost::shared_ptr<_volumeDef> Ptr;
-      void set( const vector< _Node* >& nodes,
-                const vector< int >&    quant = vector< int >() )
-      { _nodes = nodes; _quantities = quant; }
-      void set( _Node** nodes, int nb )
+      struct _nodeDef
+      {
+        const SMDS_MeshNode*    _node; // mesh node at hexahedron corner
+        const B_IntersectPoint* _intPoint;
+
+        _nodeDef( _Node* n ): _node( n->_node), _intPoint( n->_intPoint ) {}
+        const SMDS_MeshNode*    Node() const
+        { return ( _intPoint && _intPoint->_node ) ? _intPoint->_node : _node; }
+        const E_IntersectPoint* EdgeIntPnt() const
+        { return static_cast< const E_IntersectPoint* >( _intPoint ); }
+      };
+      vector< _nodeDef >      _nodes;
+      vector< int >           _quantities;
+      _volumeDef*             _next; // to store several _volumeDefs in a chain
+      TGeomID                 _solidID;
+      const SMDS_MeshElement* _volume; // new volume
+
+      _volumeDef(): _next(0), _solidID(0), _volume(0) {}
+      ~_volumeDef() { delete _next; }
+      _volumeDef( _volumeDef& other ):
+        _next(0), _solidID( other._solidID ), _volume( other._volume )
+      { _nodes.swap( other._nodes ); _quantities.swap( other._quantities ); other._volume = 0; }
+
+      void Set( const vector< _Node* >& nodes, const vector< int >& quant = vector< int >() )
+      { _nodes.assign( nodes.begin(), nodes.end() ); _quantities = quant; }
+
+      void Set( _Node** nodes, int nb )
       { _nodes.assign( nodes, nodes + nb ); }
+
+      void SetNext( _volumeDef* vd )
+      { if ( _next ) { _next->SetNext( vd ); } else { _next = vd; }}
     };
 
     // topology of a hexahedron
@@ -602,26 +841,33 @@ namespace
     vector< _Node* > _vIntNodes;
 
     // computed volume elements
-    //vector< _volumeDef::Ptr > _volumeDefs;
     _volumeDef _volumeDefs;
 
     Grid*       _grid;
-    double      _sizeThreshold, _sideLength[3];
+    double      _sideLength[3];
     int         _nbCornerNodes, _nbFaceIntNodes, _nbBndNodes;
     int         _origNodeInd; // index of _hexNodes[0] node within the _grid
     size_t      _i,_j,_k;
+    bool        _hasTooSmall;
+
+#ifdef _DEBUG_
+    int         _cellID;
+#endif
 
   public:
-    Hexahedron(const double sizeThreshold, Grid* grid);
+    Hexahedron(Grid* grid);
     int MakeElements(SMESH_MesherHelper&                      helper,
                      const map< TGeomID, vector< TGeomID > >& edge2faceIDsMap);
-    void ComputeElements();
-    void Init() { init( _i, _j, _k ); }
+    void ComputeElements( const Solid* solid = 0, int solidIndex = -1 );
 
   private:
-    Hexahedron(const Hexahedron& other );
-    void init( size_t i, size_t j, size_t k );
+    Hexahedron(const Hexahedron& other, size_t i, size_t j, size_t k, int cellID );
+    void init( size_t i, size_t j, size_t k, const Solid* solid=0 );
     void init( size_t i );
+    void setIJK( size_t i );
+    bool compute( const Solid* solid, const IsInternalFlag intFlag );
+    vector< TGeomID > getSolids();
+    bool isCutByInternalFace( IsInternalFlag & maxFlag );
     void addEdges(SMESH_MesherHelper&                      helper,
                   vector< Hexahedron* >&                   intersectedHex,
                   const map< TGeomID, vector< TGeomID > >& edge2faceIDsMap);
@@ -629,7 +875,7 @@ namespace
                          double proj, BRepAdaptor_Curve& curve,
                          const gp_XYZ& axis, const gp_XYZ& origin );
     int  getEntity( const E_IntersectPoint* ip, int* facets, int& sub );
-    bool addIntersection( const E_IntersectPoint& ip,
+    bool addIntersection( const E_IntersectPoint* ip,
                           vector< Hexahedron* >&  hexes,
                           int ijk[], int dIJK[] );
     bool findChain( _Node* n1, _Node* n2, _Face& quad, vector<_Node*>& chainNodes );
@@ -640,11 +886,22 @@ namespace
                           size_t &                       iS,
                           _Face&                         quad,
                           vector<_Node*>&                chn);
-    int  addElements(SMESH_MesherHelper& helper);
-    bool isOutPoint( _Link& link, int iP, SMESH_MesherHelper& helper ) const;
+    int  addVolumes(SMESH_MesherHelper& helper );
+    void addFaces( SMESH_MesherHelper&                       helper,
+                   const vector< const SMDS_MeshElement* > & boundaryVolumes );
+    void addSegments( SMESH_MesherHelper&                      helper,
+                      const map< TGeomID, vector< TGeomID > >& edge2faceIDsMap );
+    void getVolumes( vector< const SMDS_MeshElement* > & volumes );
+    void getBoundaryElems( vector< const SMDS_MeshElement* > & boundaryVolumes );
+    TGeomID getAnyFace() const;
+    void cutByExtendedInternal( std::vector< Hexahedron* >& hexes,
+                                const TColStd_MapOfInteger& intEdgeIDs );
+    gp_Pnt mostDistantInternalPnt( int hexIndex, const gp_Pnt& p1, const gp_Pnt& p2 );
+    bool isOutPoint( _Link& link, int iP, SMESH_MesherHelper& helper, const Solid* solid ) const;
     void sortVertexNodes(vector<_Node*>& nodes, _Node* curNode, TGeomID face);
     bool isInHole() const;
-    bool checkPolyhedronSize() const;
+    bool hasStrangeEdge() const;
+    bool checkPolyhedronSize( bool isCutByInternalFace ) const;
     bool addHexa ();
     bool addTetra();
     bool addPenta();
@@ -660,8 +917,16 @@ namespace
           return nodes[i];
       return 0;
     }
-    bool isImplementEdges() const { return !_grid->_edgeIntP.empty(); }
+    bool isImplementEdges() const { return _grid->_edgeIntPool.nbElements(); }
     bool isOutParam(const double uvw[3]) const;
+
+    typedef boost::container::flat_map< TGeomID, size_t > TID2Nb;
+    static void insertAndIncrement( TGeomID id, TID2Nb& id2nbMap )
+    {
+      TID2Nb::value_type s0( id, 0 );
+      TID2Nb::iterator id2nb = id2nbMap.insert( s0 ).first;
+      id2nb->second++;
+    }
   };
 
 #ifdef WITH_TBB
@@ -756,29 +1021,72 @@ namespace
   }
   //================================================================================
   /*
-   * Return "is OUT" state for nodes before the given intersection point
+   * Return ID of SOLID for nodes before the given intersection point
    */
-  bool GridLine::GetIsOutBefore( multiset< F_IntersectPoint >::iterator ip, bool prevIsOut )
+  TGeomID GridLine::GetSolidIDBefore( multiset< F_IntersectPoint >::iterator ip,
+                                      const TGeomID                          prevID,
+                                      const Geometry&                        geom )
   {
-    if ( ip->_transition == Trans_IN )
-      return true;
-    if ( ip->_transition == Trans_OUT )
-      return false;
-    if ( ip->_transition == Trans_APEX )
+    if ( ip == _intPoints.begin() )
+      return 0;
+
+    if ( geom.IsOneSolid() )
     {
-      // singularity point (apex of a cone)
-      if ( _intPoints.size() == 1 || ip == _intPoints.begin() )
-        return true;
-      multiset< F_IntersectPoint >::iterator ipBef = ip, ipAft = ++ip;
-      if ( ipAft == _intPoints.end() )
-        return false;
-      --ipBef;
-      if ( ipBef->_transition != ipAft->_transition )
-        return ( ipBef->_transition == Trans_OUT );
-      return ( ipBef->_transition != Trans_OUT );
+      bool isOut = true;
+      switch ( ip->_transition ) {
+      case Trans_IN:      isOut = true;            break;
+      case Trans_OUT:     isOut = false;           break;
+      case Trans_TANGENT: isOut = ( prevID == 0 ); break;
+      case Trans_APEX:
+      {
+        // singularity point (apex of a cone)
+        multiset< F_IntersectPoint >::iterator ipBef = ip, ipAft = ++ip;
+        if ( ipAft == _intPoints.end() )
+          isOut = false;
+        else
+        {
+          --ipBef;
+          if ( ipBef->_transition != ipAft->_transition )
+            isOut = ( ipBef->_transition == Trans_OUT );
+          else
+            isOut = ( ipBef->_transition != Trans_OUT );
+        }
+        break;
+      }
+      case Trans_INTERNAL: isOut = false;
+      default:;
+      }
+      return isOut ? 0 : geom._soleSolid.ID();
     }
-    // _transition == Trans_TANGENT
-    return !prevIsOut;
+
+    const vector< TGeomID >& solids = geom._solidIDsByShapeID[ ip->_faceIDs[ 0 ]];
+
+    --ip;
+    if ( ip->_transition == Trans_INTERNAL )
+      return prevID;
+
+    const vector< TGeomID >& solidsBef = geom._solidIDsByShapeID[ ip->_faceIDs[ 0 ]];
+
+    if ( ip->_transition == Trans_IN ||
+         ip->_transition == Trans_OUT )
+    {
+      if ( solidsBef.size() == 1 )
+        return ( solidsBef[0] == prevID ) ? 0 : solidsBef[0];
+
+      return solidsBef[ solidsBef[0] == prevID ];
+    }
+
+    if ( solidsBef.size() == 1 )
+      return solidsBef[0];
+
+    for ( size_t i = 0; i < solids.size(); ++i )
+    {
+      vector< TGeomID >::const_iterator it =
+        std::find( solidsBef.begin(), solidsBef.end(), solids[i] );
+      if ( it != solidsBef.end() )
+        return solids[i];
+    }
+    return 0;
   }
   //================================================================================
   /*
@@ -822,6 +1130,35 @@ namespace
     vector< TGeomID >::const_iterator it =
       std::find( _faceIDs.begin(), _faceIDs.end(), faceID );
     return ( it != _faceIDs.end() );
+  }
+  //================================================================================
+  /*
+   * OneOfSolids initialization
+   */
+  void OneOfSolids::Init( const TopoDS_Shape& solid,
+                          TopAbs_ShapeEnum    subType,
+                          const SMESHDS_Mesh* mesh )
+  {
+    SetID( mesh->ShapeToIndex( solid ));
+
+    if ( subType == TopAbs_FACE )
+      SetHasInternalFaces( false );
+
+    for ( TopExp_Explorer sub( solid, subType ); sub.More(); sub.Next() )
+    {
+      _subIDs.Add( mesh->ShapeToIndex( sub.Current() ));
+      if ( subType == TopAbs_FACE )
+      {
+        _faces.Add( sub.Current() );
+        if ( sub.Current().Orientation() == TopAbs_INTERNAL )
+          SetHasInternalFaces( true );
+
+        TGeomID faceID = mesh->ShapeToIndex( sub.Current() );
+        if ( sub.Current().Orientation() == TopAbs_INTERNAL ||
+             sub.Current().Orientation() == mesh->IndexToShape( faceID ).Orientation() )
+          _outFaceIDs.Add( faceID );
+      }
+    }
   }
   //================================================================================
   /*
@@ -930,6 +1267,290 @@ namespace
   }
   //================================================================================
   /*
+   * Return local ID of shape
+   */
+  TGeomID Grid::ShapeID( const TopoDS_Shape& s ) const
+  {
+    return _helper->GetMeshDS()->ShapeToIndex( s );
+  }
+  //================================================================================
+  /*
+   * Return a shape by its local ID
+   */
+  const TopoDS_Shape& Grid::Shape( TGeomID id ) const
+  {
+    return _helper->GetMeshDS()->IndexToShape( id );
+  }
+  //================================================================================
+  /*
+   * Initialize _geometry
+   */
+  void Grid::InitGeometry( const TopoDS_Shape& theShapeToMesh )
+  {
+    SMESH_Mesh* mesh = _helper->GetMesh();
+
+    _geometry._mainShape = theShapeToMesh;
+    _geometry._extIntFaceID = mesh->GetMeshDS()->MaxShapeIndex() * 100;
+    _geometry._soleSolid.SetID( 0 );
+    _geometry._soleSolid.SetHasInternalFaces( false );
+
+    InitClassifier( theShapeToMesh, TopAbs_VERTEX, _geometry._vertexClassifier );
+    InitClassifier( theShapeToMesh, TopAbs_EDGE  , _geometry._edgeClassifier );
+
+    TopExp_Explorer solidExp( theShapeToMesh, TopAbs_SOLID );
+
+    bool isSeveralSolids = false;
+    if ( _toConsiderInternalFaces ) // check nb SOLIDs
+    {
+      solidExp.Next();
+      isSeveralSolids = solidExp.More();
+      _toConsiderInternalFaces = isSeveralSolids;
+      solidExp.ReInit();
+
+      if ( !isSeveralSolids ) // look for an internal FACE
+      {
+        TopExp_Explorer fExp( theShapeToMesh, TopAbs_FACE );
+        for ( ; fExp.More() &&  !_toConsiderInternalFaces; fExp.Next() )
+          _toConsiderInternalFaces = ( fExp.Current().Orientation() == TopAbs_INTERNAL );
+
+        _geometry._soleSolid.SetHasInternalFaces( _toConsiderInternalFaces );
+        _geometry._soleSolid.SetID( ShapeID( solidExp.Current() ));
+      }
+      else // fill Geometry::_solidByID
+      {
+        for ( ; solidExp.More(); solidExp.Next() )
+        {
+          OneOfSolids & solid = _geometry._solidByID[ ShapeID( solidExp.Current() )];
+          solid.Init( solidExp.Current(), TopAbs_FACE,   mesh->GetMeshDS() );
+          solid.Init( solidExp.Current(), TopAbs_EDGE,   mesh->GetMeshDS() );
+          solid.Init( solidExp.Current(), TopAbs_VERTEX, mesh->GetMeshDS() );
+        }
+      }
+    }
+    else
+    {
+      _geometry._soleSolid.SetID( ShapeID( solidExp.Current() ));
+    }
+
+    if ( !_toCreateFaces )
+    {
+      int nbSolidsGlobal = _helper->Count( mesh->GetShapeToMesh(), TopAbs_SOLID, false );
+      int nbSolidsLocal  = _helper->Count( theShapeToMesh,         TopAbs_SOLID, false );
+      _toCreateFaces = ( nbSolidsLocal < nbSolidsGlobal );
+    }
+
+    TopTools_IndexedMapOfShape faces;
+    if ( _toCreateFaces || isSeveralSolids )
+      TopExp::MapShapes( theShapeToMesh, TopAbs_FACE, faces );
+
+    // find boundary FACEs on boundary of mesh->ShapeToMesh()
+    if ( _toCreateFaces )
+      for ( int i = 1; i <= faces.Size(); ++i )
+        if ( faces(i).Orientation() != TopAbs_INTERNAL &&
+             _helper->NbAncestors( faces(i), *mesh, TopAbs_SOLID ) == 1 )
+        {
+          _geometry._boundaryFaces.Add( ShapeID( faces(i) ));
+        }
+
+    if ( isSeveralSolids )
+      for ( int i = 1; i <= faces.Size(); ++i )
+      {
+        SetSolidFather( faces(i), theShapeToMesh );
+        for ( TopExp_Explorer eExp( faces(i), TopAbs_EDGE ); eExp.More(); eExp.Next() )
+        {
+          const TopoDS_Edge& edge = TopoDS::Edge( eExp.Current() );
+          SetSolidFather( edge, theShapeToMesh );
+          SetSolidFather( _helper->IthVertex( 0, edge ), theShapeToMesh );
+          SetSolidFather( _helper->IthVertex( 1, edge ), theShapeToMesh );
+        }
+      }
+    return;
+  }
+  //================================================================================
+  /*
+   * Store ID of SOLID as father of its child shape ID
+   */
+  void Grid::SetSolidFather( const TopoDS_Shape& s, const TopoDS_Shape& theShapeToMesh )
+  {
+    if ( _geometry._solidIDsByShapeID.empty() )
+      _geometry._solidIDsByShapeID.resize( _helper->GetMeshDS()->MaxShapeIndex() + 1 );
+
+    vector< TGeomID > & solidIDs = _geometry._solidIDsByShapeID[ ShapeID( s )];
+    if ( !solidIDs.empty() )
+      return;
+    solidIDs.reserve(2);
+    PShapeIteratorPtr solidIt = _helper->GetAncestors( s,
+                                                       *_helper->GetMesh(),
+                                                       TopAbs_SOLID,
+                                                       & theShapeToMesh );
+    while ( const TopoDS_Shape* solid = solidIt->next() )
+      solidIDs.push_back( ShapeID( *solid ));
+  }
+  //================================================================================
+  /*
+   * Return IDs of solids given sub-shape belongs to
+   */
+  const vector< TGeomID > & Grid::GetSolidIDs( TGeomID subShapeID ) const
+  {
+    return _geometry._solidIDsByShapeID[ subShapeID ];
+  }
+  //================================================================================
+  /*
+   * Check if a sub-shape belongs to several SOLIDs
+   */
+  bool Grid::IsShared( TGeomID shapeID ) const
+  {
+    return !_geometry.IsOneSolid() && ( _geometry._solidIDsByShapeID[ shapeID ].size() > 1 );
+  }
+  //================================================================================
+  /*
+   * Check if any of FACEs belongs to several SOLIDs
+   */
+  bool Grid::IsAnyShared( const std::vector< TGeomID >& faceIDs ) const
+  {
+    for ( size_t i = 0; i < faceIDs.size(); ++i )
+      if ( IsShared( faceIDs[ i ]))
+        return true;
+    return false;
+  }
+  //================================================================================
+  /*
+   * Return Solid by ID
+   */
+  Solid* Grid::GetSolid( TGeomID solidID )
+  {
+    if ( !solidID || _geometry.IsOneSolid() || _geometry._solidByID.empty() )
+      return & _geometry._soleSolid;
+
+    return & _geometry._solidByID[ solidID ];
+  }
+  //================================================================================
+  /*
+   * Return OneOfSolids by ID
+   */
+  Solid* Grid::GetOneOfSolids( TGeomID solidID )
+  {
+    map< TGeomID, OneOfSolids >::iterator is2s = _geometry._solidByID.find( solidID );
+    if ( is2s != _geometry._solidByID.end() )
+      return & is2s->second;
+
+    return & _geometry._soleSolid;
+  }
+  //================================================================================
+  /*
+   * Check if transition on given FACE is correct for a given SOLID
+   */
+  bool Grid::IsCorrectTransition( TGeomID faceID, const Solid* solid )
+  {
+    if ( _geometry.IsOneSolid() )
+      return true;
+
+    const vector< TGeomID >& solidIDs = _geometry._solidIDsByShapeID[ faceID ];
+    return solidIDs[0] == solid->ID();
+  }
+
+  //================================================================================
+  /*
+   * Assign to geometry a node at FACE intersection
+   */
+  void Grid::SetOnShape( const SMDS_MeshNode* n, const F_IntersectPoint& ip, bool unset )
+  {
+    TopoDS_Shape s;
+    SMESHDS_Mesh* mesh = _helper->GetMeshDS();
+    if ( ip._faceIDs.size() == 1 )
+    {
+      mesh->SetNodeOnFace( n, ip._faceIDs[0], ip._u, ip._v );
+    }
+    else if ( _geometry._vertexClassifier.IsSatisfy( n, &s ))
+    {
+      if ( unset ) mesh->UnSetNodeOnShape( n );
+      mesh->SetNodeOnVertex( n, TopoDS::Vertex( s ));
+    }
+    else if ( _geometry._edgeClassifier.IsSatisfy( n, &s ))
+    {
+      if ( unset ) mesh->UnSetNodeOnShape( n );
+      mesh->SetNodeOnEdge( n, TopoDS::Edge( s ));
+    }
+    else if ( ip._faceIDs.size() > 0 )
+    {
+      mesh->SetNodeOnFace( n, ip._faceIDs[0], ip._u, ip._v );
+    }
+    else if ( !unset && _geometry.IsOneSolid() )
+    {
+      mesh->SetNodeInVolume( n, _geometry._soleSolid.ID() );
+    }
+  }
+  //================================================================================
+  /*
+   * Initialize a classifier
+   */
+  void Grid::InitClassifier( const TopoDS_Shape&        mainShape,
+                             TopAbs_ShapeEnum           shapeType,
+                             Controls::ElementsOnShape& classifier )
+  {
+    TopTools_IndexedMapOfShape shapes;
+    TopExp::MapShapes( mainShape, shapeType, shapes );
+
+    TopoDS_Compound compound; BRep_Builder builder;
+    builder.MakeCompound( compound );
+    for ( int i = 1; i <= shapes.Size(); ++i )
+      builder.Add( compound, shapes(i) );
+
+    classifier.SetMesh( _helper->GetMeshDS() );
+    //classifier.SetTolerance( _tol ); // _tol is not initialised
+    classifier.SetShape( compound, SMDSAbs_Node );
+  }
+
+  //================================================================================
+  /*
+   * Return EDGEs with FACEs to implement into the mesh
+   */
+  void Grid::GetEdgesToImplement( map< TGeomID, vector< TGeomID > > & edge2faceIDsMap,
+                                  const TopoDS_Shape&                 shape,
+                                  const vector< TopoDS_Shape >&       faces )
+  {
+    // check if there are strange EDGEs
+    TopTools_IndexedMapOfShape faceMap;
+    TopExp::MapShapes( _helper->GetMesh()->GetShapeToMesh(), TopAbs_FACE, faceMap );
+    int nbFacesGlobal = faceMap.Size();
+    faceMap.Clear( false );
+    TopExp::MapShapes( shape, TopAbs_FACE, faceMap );
+    int nbFacesLocal  = faceMap.Size();
+    bool hasStrangeEdges = ( nbFacesGlobal > nbFacesLocal );
+    if ( !_toAddEdges && !hasStrangeEdges )
+      return; // no FACEs in contact with those meshed by other algo
+
+    for ( size_t i = 0; i < faces.size(); ++i )
+    {
+      _helper->SetSubShape( faces[i] );
+      for ( TopExp_Explorer eExp( faces[i], TopAbs_EDGE ); eExp.More(); eExp.Next() )
+      {
+        const TopoDS_Edge& edge = TopoDS::Edge( eExp.Current() );
+        if ( hasStrangeEdges )
+        {
+          bool hasStrangeFace = false;
+          PShapeIteratorPtr faceIt = _helper->GetAncestors( edge, *_helper->GetMesh(), TopAbs_FACE);
+          while ( const TopoDS_Shape* face = faceIt->next() )
+            if (( hasStrangeFace = !faceMap.Contains( *face )))
+              break;
+          if ( !hasStrangeFace && !_toAddEdges )
+            continue;
+          _geometry._strangeEdges.Add( ShapeID( edge ));
+          _geometry._strangeEdges.Add( ShapeID( _helper->IthVertex( 0, edge )));
+          _geometry._strangeEdges.Add( ShapeID( _helper->IthVertex( 1, edge )));
+        }
+        if ( !SMESH_Algo::isDegenerated( edge ) &&
+             !_helper->IsRealSeam( edge ))
+        {
+          edge2faceIDsMap[ ShapeID( edge )].push_back( ShapeID( faces[i] ));
+        }
+      }
+    }
+    return;
+  }
+
+  //================================================================================
+  /*
    * Computes coordinates of a point in the grid CS
    */
   void Grid::ComputeUVW(const gp_XYZ& P, double UVW[3])
@@ -945,9 +1566,12 @@ namespace
   {
     // state of each node of the grid relative to the geometry
     const size_t nbGridNodes = _coords[0].size() * _coords[1].size() * _coords[2].size();
-    vector< bool > isNodeOut( nbGridNodes, false );
+    const TGeomID undefID = 1e+9;
+    vector< TGeomID > shapeIDVec( nbGridNodes, undefID );
     _nodes.resize( nbGridNodes, 0 );
     _gridIntP.resize( nbGridNodes, NULL );
+
+    SMESHDS_Mesh* mesh = helper.GetMeshDS();
 
     for ( int iDir = 0; iDir < 3; ++iDir ) // loop on 3 line directions
     {
@@ -968,26 +1592,30 @@ namespace
         GridLine& line = _lines[ iDir ][ li.LineIndex() ];
         const gp_XYZ lineLoc = line._line.Location().XYZ();
         const gp_XYZ lineDir = line._line.Direction().XYZ();
+
         line.RemoveExcessIntPoints( _tol );
-        multiset< F_IntersectPoint >& intPnts = line._intPoints;
+        multiset< F_IntersectPoint >&     intPnts = line._intPoints;
         multiset< F_IntersectPoint >::iterator ip = intPnts.begin();
 
-        bool isOut = true;
+        // Create mesh nodes at intersections with geometry
+        // and set OUT state of nodes between intersections
+
+        TGeomID solidID = 0;
         const double* nodeCoord = & coords[0];
         const double* coord0    = nodeCoord;
         const double* coordEnd  = coord0 + coords.size();
         double nodeParam = 0;
         for ( ; ip != intPnts.end(); ++ip )
         {
+          solidID = line.GetSolidIDBefore( ip, solidID, _geometry );
+
           // set OUT state or just skip IN nodes before ip
           if ( nodeParam < ip->_paramOnLine - _tol )
           {
-            isOut = line.GetIsOutBefore( ip, isOut );
-
             while ( nodeParam < ip->_paramOnLine - _tol )
             {
-              if ( isOut )
-                isNodeOut[ nIndex0 + nShift * ( nodeCoord-coord0 ) ] = isOut;
+              TGeomID & nodeShapeID = shapeIDVec[ nIndex0 + nShift * ( nodeCoord-coord0 ) ];
+              nodeShapeID = Min( solidID, nodeShapeID );
               if ( ++nodeCoord <  coordEnd )
                 nodeParam = *nodeCoord - *coord0;
               else
@@ -998,24 +1626,21 @@ namespace
           // create a mesh node on a GridLine at ip if it does not coincide with a grid node
           if ( nodeParam > ip->_paramOnLine + _tol )
           {
-            // li.SetIndexOnLine( 0 );
-            // double xyz[3] = { _coords[0][ li.I() ], _coords[1][ li.J() ], _coords[2][ li.K() ]};
-            // xyz[ li._iConst ] += ip->_paramOnLine;
             gp_XYZ xyz = lineLoc + ip->_paramOnLine * lineDir;
-            ip->_node = helper.AddNode( xyz.X(), xyz.Y(), xyz.Z() );
+            ip->_node = mesh->AddNode( xyz.X(), xyz.Y(), xyz.Z() );
             ip->_indexOnLine = nodeCoord-coord0-1;
+            SetOnShape( ip->_node, *ip );
           }
-          // create a mesh node at ip concident with a grid node
+          // create a mesh node at ip coincident with a grid node
           else
           {
             int nodeIndex = nIndex0 + nShift * ( nodeCoord-coord0 );
             if ( !_nodes[ nodeIndex ] )
             {
-              //li.SetIndexOnLine( nodeCoord-coord0 );
-              //double xyz[3] = { _coords[0][ li.I() ], _coords[1][ li.J() ], _coords[2][ li.K() ]};
               gp_XYZ xyz = lineLoc + nodeParam * lineDir;
-              _nodes   [ nodeIndex ] = helper.AddNode( xyz.X(), xyz.Y(), xyz.Z() );
-              _gridIntP[ nodeIndex ] = & * ip;
+              _nodes   [ nodeIndex ] = mesh->AddNode( xyz.X(), xyz.Y(), xyz.Z() );
+              //_gridIntP[ nodeIndex ] = & * ip;
+              //SetOnShape( _nodes[ nodeIndex ], *ip );
             }
             if ( _gridIntP[ nodeIndex ] )
               _gridIntP[ nodeIndex ]->Add( ip->_faceIDs );
@@ -1029,7 +1654,7 @@ namespace
         }
         // set OUT state to nodes after the last ip
         for ( ; nodeCoord < coordEnd; ++nodeCoord )
-          isNodeOut[ nIndex0 + nShift * ( nodeCoord-coord0 ) ] = true;
+          shapeIDVec[ nIndex0 + nShift * ( nodeCoord-coord0 ) ] = 0;
       }
     }
 
@@ -1040,13 +1665,19 @@ namespace
         for ( size_t x = 0; x < _coords[0].size(); ++x )
         {
           size_t nodeIndex = NodeIndex( x, y, z );
-          if ( !isNodeOut[ nodeIndex ] && !_nodes[ nodeIndex] )
+          if ( !_nodes[ nodeIndex ] &&
+               0 < shapeIDVec[ nodeIndex ] && shapeIDVec[ nodeIndex ] < undefID )
           {
-            //_nodes[ nodeIndex ] = helper.AddNode( _coords[0][x], _coords[1][y], _coords[2][z] );
             gp_XYZ xyz = ( _coords[0][x] * _axes[0] +
                            _coords[1][y] * _axes[1] +
                            _coords[2][z] * _axes[2] );
-            _nodes[ nodeIndex ] = helper.AddNode( xyz.X(), xyz.Y(), xyz.Z() );
+            _nodes[ nodeIndex ] = mesh->AddNode( xyz.X(), xyz.Y(), xyz.Z() );
+            mesh->SetNodeInVolume( _nodes[ nodeIndex ], shapeIDVec[ nodeIndex ]);
+          }
+          else if ( _nodes[ nodeIndex ] && _gridIntP[ nodeIndex ] /*&&
+                    !_nodes[ nodeIndex]->GetShapeID()*/ )
+          {
+            SetOnShape( _nodes[ nodeIndex ], *_gridIntP[ nodeIndex ]);
           }
         }
 
@@ -1174,6 +1805,17 @@ namespace
           _intersections.push_back( make_pair( &gridLine, intersector._intPoints[i] ));
       }
     }
+
+    if ( _face.Orientation() == TopAbs_INTERNAL )
+    {
+      for ( size_t i = 0; i < _intersections.size(); ++i )
+        if ( _intersections[i].second._transition == Trans_IN ||
+             _intersections[i].second._transition == Trans_OUT )
+        {
+          _intersections[i].second._transition = Trans_INTERNAL;
+        }
+    }
+    return;
   }
   //================================================================================
   /*
@@ -1194,6 +1836,8 @@ namespace
     {
       F_IntersectPoint p;
       p._paramOnLine = _w;
+      p._u           = _u;
+      p._v           = _v;
       p._transition  = _transition;
       _intPoints.push_back( p );
     }
@@ -1428,8 +2072,8 @@ namespace
   /*!
    * \brief Creates topology of the hexahedron
    */
-  Hexahedron::Hexahedron(const double sizeThreshold, Grid* grid)
-    : _grid( grid ), _sizeThreshold( sizeThreshold ), _nbFaceIntNodes(0)
+  Hexahedron::Hexahedron(Grid* grid)
+    : _grid( grid ), _nbFaceIntNodes(0), _hasTooSmall( false )
   {
     _polygons.reserve(100); // to avoid reallocation;
 
@@ -1491,11 +2135,12 @@ namespace
   /*!
    * \brief Copy constructor
    */
-  Hexahedron::Hexahedron( const Hexahedron& other )
-    :_grid( other._grid ), _sizeThreshold( other._sizeThreshold ), _nbFaceIntNodes(0)
+  Hexahedron::Hexahedron( const Hexahedron& other, size_t i, size_t j, size_t k, int cellID )
+    :_grid( other._grid ), _nbFaceIntNodes(0), _i( i ), _j( j ), _k( k ), _hasTooSmall( false )
   {
     _polygons.reserve(100); // to avoid reallocation;
 
+    // copy topology
     for ( int i = 0; i < 8; ++i )
       _nodeShift[i] = other._nodeShift[i];
 
@@ -1520,23 +2165,192 @@ namespace
         tgtLink._link    = _hexLinks + ( srcLink._link - other._hexLinks );
       }
     }
+#ifdef _DEBUG_
+    _cellID = cellID;
+#endif
   }
 
   //================================================================================
   /*!
-   * \brief Initializes its data by given grid cell
+   * \brief Return IDs of SOLIDs interfering with this Hexahedron
    */
-  void Hexahedron::init( size_t i, size_t j, size_t k )
+  vector< TGeomID > Hexahedron::getSolids()
+  {
+    // count intersection points belonging to each SOLID
+    TID2Nb id2NbPoints;
+    id2NbPoints.reserve( 3 );
+
+    _origNodeInd = _grid->NodeIndex( _i,_j,_k );
+    for ( int iN = 0; iN < 8; ++iN )
+    {
+      _hexNodes[iN]._node     = _grid->_nodes   [ _origNodeInd + _nodeShift[iN] ];
+      _hexNodes[iN]._intPoint = _grid->_gridIntP[ _origNodeInd + _nodeShift[iN] ];
+
+      if ( _hexNodes[iN]._intPoint ) // intersection with a FACE
+      {
+        for ( size_t iF = 0; iF < _hexNodes[iN]._intPoint->_faceIDs.size(); ++iF )
+        {
+          const vector< TGeomID > & solidIDs =
+            _grid->GetSolidIDs( _hexNodes[iN]._intPoint->_faceIDs[iF] );
+          for ( size_t i = 0; i < solidIDs.size(); ++i )
+            insertAndIncrement( solidIDs[i], id2NbPoints );
+        }
+      }
+      else if ( _hexNodes[iN]._node ) // node inside a SOLID
+      {
+        insertAndIncrement( _hexNodes[iN]._node->GetShapeID(), id2NbPoints );
+      }
+    }
+
+    for ( int iL = 0; iL < 12; ++iL )
+    {
+      const _Link& link = _hexLinks[ iL ];
+      for ( size_t iP = 0; iP < link._fIntPoints.size(); ++iP )
+      {
+        for ( size_t iF = 0; iF < link._fIntPoints[iP]->_faceIDs.size(); ++iF )
+        {
+          const vector< TGeomID > & solidIDs =
+            _grid->GetSolidIDs( link._fIntPoints[iP]->_faceIDs[iF] );
+          for ( size_t i = 0; i < solidIDs.size(); ++i )
+            insertAndIncrement( solidIDs[i], id2NbPoints );
+        }
+      }
+    }
+
+    for ( size_t iP = 0; iP < _eIntPoints.size(); ++iP )
+    {
+      const vector< TGeomID > & solidIDs = _grid->GetSolidIDs( _eIntPoints[iP]->_shapeID );
+      for ( size_t i = 0; i < solidIDs.size(); ++i )
+        insertAndIncrement( solidIDs[i], id2NbPoints );
+    }
+
+    vector< TGeomID > solids; solids.reserve( id2NbPoints.size() );
+    for ( TID2Nb::iterator id2nb = id2NbPoints.begin(); id2nb != id2NbPoints.end(); ++id2nb )
+      if ( id2nb->second >= 3 )
+        solids.push_back( id2nb->first );
+
+    return solids;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Count cuts by INTERNAL FACEs and set _Node::_isInternalFlags
+   */
+  bool Hexahedron::isCutByInternalFace( IsInternalFlag & maxFlag )
+  {
+    TID2Nb id2NbPoints;
+    id2NbPoints.reserve( 3 );
+
+    for ( size_t iN = 0; iN < _intNodes.size(); ++iN )
+      for ( size_t iF = 0; iF < _intNodes[iN]._intPoint->_faceIDs.size(); ++iF )
+      {
+        if ( _grid->IsInternal( _intNodes[iN]._intPoint->_faceIDs[iF]))
+          insertAndIncrement( _intNodes[iN]._intPoint->_faceIDs[iF], id2NbPoints );
+      }
+    for ( size_t iN = 0; iN < 8; ++iN )
+      if ( _hexNodes[iN]._intPoint )
+        for ( size_t iF = 0; iF < _hexNodes[iN]._intPoint->_faceIDs.size(); ++iF )
+        {
+          if ( _grid->IsInternal( _hexNodes[iN]._intPoint->_faceIDs[iF]))
+            insertAndIncrement( _hexNodes[iN]._intPoint->_faceIDs[iF], id2NbPoints );
+        }
+
+    maxFlag = IS_NOT_INTERNAL;
+    for ( TID2Nb::iterator id2nb = id2NbPoints.begin(); id2nb != id2NbPoints.end(); ++id2nb )
+    {
+      TGeomID        intFace = id2nb->first;
+      IsInternalFlag intFlag = ( id2nb->second >= 3 ? IS_CUT_BY_INTERNAL_FACE : IS_INTERNAL );
+      if ( intFlag > maxFlag )
+        maxFlag = intFlag;
+
+      for ( size_t iN = 0; iN < _intNodes.size(); ++iN )
+        if ( _intNodes[iN].IsOnFace( intFace ))
+          _intNodes[iN].SetInternal( intFlag );
+
+      for ( size_t iN = 0; iN < 8; ++iN )
+        if ( _hexNodes[iN].IsOnFace( intFace ))
+          _hexNodes[iN].SetInternal( intFlag );
+    }
+
+    return maxFlag;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Return any FACE interfering with this Hexahedron
+   */
+  TGeomID Hexahedron::getAnyFace() const
+  {
+    TID2Nb id2NbPoints;
+    id2NbPoints.reserve( 3 );
+
+    for ( size_t iN = 0; iN < _intNodes.size(); ++iN )
+      for ( size_t iF = 0; iF < _intNodes[iN]._intPoint->_faceIDs.size(); ++iF )
+        insertAndIncrement( _intNodes[iN]._intPoint->_faceIDs[iF], id2NbPoints );
+
+    for ( size_t iN = 0; iN < 8; ++iN )
+      if ( _hexNodes[iN]._intPoint )
+        for ( size_t iF = 0; iF < _hexNodes[iN]._intPoint->_faceIDs.size(); ++iF )
+          insertAndIncrement( _hexNodes[iN]._intPoint->_faceIDs[iF], id2NbPoints );
+
+    for ( unsigned int minNb = 3; minNb > 0; --minNb )
+      for ( TID2Nb::iterator id2nb = id2NbPoints.begin(); id2nb != id2NbPoints.end(); ++id2nb )
+        if ( id2nb->second >= minNb )
+          return id2nb->first;
+
+    return 0;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Initializes IJK by Hexahedron index
+   */
+  void Hexahedron::setIJK( size_t iCell )
+  {
+    size_t iNbCell = _grid->_coords[0].size() - 1;
+    size_t jNbCell = _grid->_coords[1].size() - 1;
+    _i = iCell % iNbCell;
+    _j = ( iCell % ( iNbCell * jNbCell )) / iNbCell;
+    _k = iCell / iNbCell / jNbCell;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Initializes its data by given grid cell (countered from zero)
+   */
+  void Hexahedron::init( size_t iCell )
+  {
+    setIJK( iCell );
+    init( _i, _j, _k );
+  }
+
+  //================================================================================
+  /*!
+   * \brief Initializes its data by given grid cell nodes and intersections
+   */
+  void Hexahedron::init( size_t i, size_t j, size_t k, const Solid* solid )
   {
     _i = i; _j = j; _k = k;
+
+    if ( !solid )
+      solid = _grid->GetSolid();
+
     // set nodes of grid to nodes of the hexahedron and
     // count nodes at hexahedron corners located IN and ON geometry
     _nbCornerNodes = _nbBndNodes = 0;
     _origNodeInd   = _grid->NodeIndex( i,j,k );
     for ( int iN = 0; iN < 8; ++iN )
     {
+      _hexNodes[iN]._isInternalFlags = 0;
+
       _hexNodes[iN]._node     = _grid->_nodes   [ _origNodeInd + _nodeShift[iN] ];
       _hexNodes[iN]._intPoint = _grid->_gridIntP[ _origNodeInd + _nodeShift[iN] ];
+
+      if ( _hexNodes[iN]._node && !solid->Contains( _hexNodes[iN]._node->GetShapeID() ))
+        _hexNodes[iN]._node = 0;
+      if ( _hexNodes[iN]._intPoint && !solid->ContainsAny( _hexNodes[iN]._intPoint->_faceIDs ))
+        _hexNodes[iN]._intPoint = 0;
+
       _nbCornerNodes += bool( _hexNodes[iN]._node );
       _nbBndNodes    += bool( _hexNodes[iN]._intPoint );
     }
@@ -1547,25 +2361,28 @@ namespace
     _intNodes.clear();
     _vIntNodes.clear();
 
-    if ( _nbFaceIntNodes + _eIntPoints.size() > 0 &&
-         _nbFaceIntNodes + _nbCornerNodes + _eIntPoints.size() > 3)
+    if ( _nbFaceIntNodes + _eIntPoints.size()                  > 0 &&
+         _nbFaceIntNodes + _eIntPoints.size() + _nbCornerNodes > 3)
     {
       _intNodes.reserve( 3 * _nbBndNodes + _nbFaceIntNodes + _eIntPoints.size() );
 
       // this method can be called in parallel, so use own helper
       SMESH_MesherHelper helper( *_grid->_helper->GetMesh() );
 
-      // create sub-links (_splits) by splitting links with _fIntPoints
+      // Create sub-links (_Link::_splits) by splitting links with _Link::_fIntPoints
+      // ---------------------------------------------------------------
       _Link split;
       for ( int iLink = 0; iLink < 12; ++iLink )
       {
         _Link& link = _hexLinks[ iLink ];
-        link._fIntNodes.resize( link._fIntPoints.size() );
+        link._fIntNodes.clear();
+        link._fIntNodes.reserve( link._fIntPoints.size() );
         for ( size_t i = 0; i < link._fIntPoints.size(); ++i )
-        {
-          _intNodes.push_back( _Node( 0, link._fIntPoints[i] ));
-          link._fIntNodes[ i ] = & _intNodes.back();
-        }
+          if ( solid->ContainsAny( link._fIntPoints[i]->_faceIDs ))
+          {
+            _intNodes.push_back( _Node( 0, link._fIntPoints[i] ));
+            link._fIntNodes.push_back( & _intNodes.back() );
+          }
 
         link._splits.clear();
         split._nodes[ 0 ] = link._nodes[0];
@@ -1590,15 +2407,21 @@ namespace
           }
           if ( checkTransition )
           {
-            if ( link._fIntPoints[i]->_faceIDs.size() > 1 || _eIntPoints.size() > 0 )
-              isOut = isOutPoint( link, i, helper );
+            const vector< TGeomID >& faceIDs = link._fIntNodes[i]->_intPoint->_faceIDs;
+            if ( _grid->IsInternal( faceIDs.back() ))
+              isOut = false;
+            else if ( faceIDs.size() > 1 || _eIntPoints.size() > 0 )
+              isOut = isOutPoint( link, i, helper, solid );
             else
-              switch ( link._fIntPoints[i]->_transition ) {
-              case Trans_OUT: isOut = true;  break;
-              case Trans_IN : isOut = false; break;
+            {
+              bool okTransi = _grid->IsCorrectTransition( faceIDs[0], solid );
+              switch ( link._fIntNodes[i]->FaceIntPnt()->_transition ) {
+              case Trans_OUT: isOut = okTransi;  break;
+              case Trans_IN : isOut = !okTransi; break;
               default:
-                isOut = isOutPoint( link, i, helper );
+                isOut = isOutPoint( link, i, helper, solid );
               }
+            }
           }
         }
         if ( link._nodes[ 1 ]->Node() && split._nodes[ 0 ]->Node() && !isOut )
@@ -1609,12 +2432,20 @@ namespace
       }
 
       // Create _Node's at intersections with EDGEs.
-
+      // --------------------------------------------
+      // 1) add this->_eIntPoints to _Face::_eIntNodes
+      // 2) fill _intNodes and _vIntNodes
+      //
       const double tol2 = _grid->_tol * _grid->_tol;
       int facets[3], nbFacets, subEntity;
 
+      for ( int iF = 0; iF < 6; ++iF )
+        _hexQuads[ iF ]._eIntNodes.clear();
+
       for ( size_t iP = 0; iP < _eIntPoints.size(); ++iP )
       {
+        if ( !solid->ContainsAny( _eIntPoints[iP]->_faceIDs ))
+          continue;
         nbFacets = getEntity( _eIntPoints[iP], facets, subEntity );
         _Node* equalNode = 0;
         switch( nbFacets ) {
@@ -1639,10 +2470,16 @@ namespace
             equalNode = findEqualNode( link._fIntNodes, _eIntPoints[ iP ], tol2 );
             if ( equalNode )
               equalNode->Add( _eIntPoints[ iP ] );
+            else if ( link._splits.size() == 1 &&
+                      link._splits[0]._nodes[0] &&
+                      link._splits[0]._nodes[1] )
+              link._splits.clear(); // hex edge is divided by _eIntPoints[iP]
           }
-          else
+          //else
+          if ( !equalNode )
           {
             _intNodes.push_back( _Node( 0, _eIntPoints[ iP ]));
+            bool newNodeUsed = false;
             for ( int iF = 0; iF < 2; ++iF )
             {
               _Face& quad = _hexQuads[ facets[iF] - SMESH_Block::ID_FirstF ];
@@ -1652,8 +2489,11 @@ namespace
               }
               else {
                 quad._eIntNodes.push_back( & _intNodes.back() );
+                newNodeUsed = true;
               }
             }
+            if ( !newNodeUsed )
+              _intNodes.pop_back();
           }
           break;
         }
@@ -1685,7 +2525,7 @@ namespace
         } // switch( nbFacets )
 
         if ( nbFacets == 0 ||
-             _grid->_shapes( _eIntPoints[ iP ]->_shapeID ).ShapeType() == TopAbs_VERTEX )
+             _grid->ShapeType( _eIntPoints[ iP ]->_shapeID ) == TopAbs_VERTEX )
         {
           equalNode = findEqualNode( _vIntNodes, _eIntPoints[ iP ], tol2 );
           if ( equalNode ) {
@@ -1699,6 +2539,7 @@ namespace
         }
       } // loop on _eIntPoints
     }
+
     else if ( 3 < _nbCornerNodes && _nbCornerNodes < 8 ) // _nbFaceIntNodes == 0
     {
       _Link split;
@@ -1715,39 +2556,75 @@ namespace
         }
       }
     }
+    return;
 
-  }
-  //================================================================================
-  /*!
-   * \brief Initializes its data by given grid cell (countered from zero)
-   */
-  void Hexahedron::init( size_t iCell )
-  {
-    size_t iNbCell = _grid->_coords[0].size() - 1;
-    size_t jNbCell = _grid->_coords[1].size() - 1;
-    _i = iCell % iNbCell;
-    _j = ( iCell % ( iNbCell * jNbCell )) / iNbCell;
-    _k = iCell / iNbCell / jNbCell;
-    init( _i, _j, _k );
-  }
+  } // init( _i, _j, _k )
 
   //================================================================================
   /*!
    * \brief Compute mesh volumes resulted from intersection of the Hexahedron
    */
-  void Hexahedron::ComputeElements()
+  void Hexahedron::ComputeElements( const Solid* solid, int solidIndex )
   {
-    Init();
+    if ( !solid )
+    {
+      solid = _grid->GetSolid();
+      if ( !_grid->_geometry.IsOneSolid() )
+      {
+        vector< TGeomID > solidIDs = getSolids();
+        if ( solidIDs.size() > 1 )
+        {
+          for ( size_t i = 0; i < solidIDs.size(); ++i )
+          {
+            solid = _grid->GetSolid( solidIDs[i] );
+            ComputeElements( solid, i );
+            if ( !_volumeDefs._nodes.empty() && i < solidIDs.size() - 1 )
+              _volumeDefs.SetNext( new _volumeDef( _volumeDefs ));
+          }
+          return;
+        }
+        solid = _grid->GetSolid( solidIDs[0] );
+      }
+    }
+
+    init( _i, _j, _k, solid ); // get nodes and intersections from grid nodes and split links
 
     int nbIntersections = _nbFaceIntNodes + _eIntPoints.size();
     if ( _nbCornerNodes + nbIntersections < 4 )
       return;
 
     if ( _nbBndNodes == _nbCornerNodes && nbIntersections == 0 && isInHole() )
-      return;
+      return; // cell is in a hole
 
+    IsInternalFlag intFlag = IS_NOT_INTERNAL;
+    if ( solid->HasInternalFaces() && this->isCutByInternalFace( intFlag ))
+    {
+      for ( _SplitIterator it( _hexLinks ); it.More(); it.Next() )
+      {
+        if ( compute( solid, intFlag ))
+          _volumeDefs.SetNext( new _volumeDef( _volumeDefs ));
+      }
+    }
+    else
+    {
+      if ( solidIndex >= 0 )
+        intFlag = IS_CUT_BY_INTERNAL_FACE;
+
+      compute( solid, intFlag );
+    }
+  }
+
+  //================================================================================
+  /*!
+   * \brief Compute mesh volumes resulted from intersection of the Hexahedron
+   */
+  bool Hexahedron::compute( const Solid* solid, const IsInternalFlag intFlag )
+  {
     _polygons.clear();
     _polygons.reserve( 20 );
+
+    for ( int iN = 0; iN < 8; ++iN )
+      _hexNodes[iN]._usedInFace = 0;
 
     // Create polygons from quadrangles
     // --------------------------------
@@ -1778,14 +2655,13 @@ namespace
       if (( nbSplits == 1 ) &&
           ( quad._eIntNodes.empty() ||
             splits[0].FirstNode()->IsLinked( splits[0].LastNode()->_intPoint )))
-          //( quad._eIntNodes.empty() || _nbCornerNodes + nbIntersections > 6 ))
+        //( quad._eIntNodes.empty() || _nbCornerNodes + nbIntersections > 6 ))
         nbSplits = 0;
 
-#ifdef _DEBUG_
       for ( size_t iP = 0; iP < quad._eIntNodes.size(); ++iP )
         if ( quad._eIntNodes[ iP ]->IsUsedInFace( polygon ))
           quad._eIntNodes[ iP ]->_usedInFace = 0;
-#endif
+
       size_t nbUsedEdgeNodes = 0;
       _Face* prevPolyg = 0; // polygon previously created from this quad
 
@@ -1815,16 +2691,20 @@ namespace
           n1 = split.FirstNode();
           if ( n1 == n2 &&
                n1->_intPoint &&
-               n1->_intPoint->_faceIDs.size() > 1 )
+               (( n1->_intPoint->_faceIDs.size() > 1 && isImplementEdges() ) ||
+                ( n1->_isInternalFlags )))
           {
             // n1 is at intersection with EDGE
             if ( findChainOnEdge( splits, polygon->_links.back(), split, iS, quad, chainNodes ))
             {
               for ( size_t i = 1; i < chainNodes.size(); ++i )
                 polygon->AddPolyLink( chainNodes[i-1], chainNodes[i], prevPolyg );
-              prevPolyg = polygon;
-              n2 = chainNodes.back();
-              continue;
+              if ( chainNodes.back() != n1 ) // not a partial cut by INTERNAL FACE
+              {
+                prevPolyg = polygon;
+                n2 = chainNodes.back();
+                continue;
+              }
             }
           }
           else if ( n1 != n2 )
@@ -1940,7 +2820,7 @@ namespace
           freeLinks.push_back( & polygon._links[ iL ]);
     }
     int nbFreeLinks = freeLinks.size();
-    if ( nbFreeLinks == 1 ) return;
+    if ( nbFreeLinks == 1 ) return false;
 
     // put not used intersection nodes to _vIntNodes
     int nbVertexNodes = 0; // nb not used vertex nodes
@@ -2106,7 +2986,8 @@ namespace
                 _vIntNodes[ iN ]->_usedInFace = &polygon;
                 chainNodes.push_back( _vIntNodes[ iN ] );
               }
-            if ( chainNodes.size() > 1 )
+            if ( chainNodes.size() > 1 &&
+                 curFace != _grid->PseudoIntExtFaceID() ) /////// TODO
             {
               sortVertexNodes( chainNodes, curNode, curFace );
             }
@@ -2130,7 +3011,7 @@ namespace
 
       if ( polygon._links.size() < 2 ||
            polygon._links[0].LastNode() != polygon._links.back().FirstNode() )
-        return; // closed polygon not found -> invalid polyhedron
+        return false; // closed polygon not found -> invalid polyhedron
 
       if ( polygon._links.size() == 2 )
       {
@@ -2251,14 +3132,15 @@ namespace
       } // end of case ( polygon._links.size() > 2 )
     } // while ( nbFreeLinks > 0 )
 
-    if ( ! checkPolyhedronSize() )
-    {
-      return;
-    }
+    // check volume size
+    _hasTooSmall = ! checkPolyhedronSize( intFlag & IS_CUT_BY_INTERNAL_FACE );
 
     for ( size_t i = 0; i < 8; ++i )
       if ( _hexNodes[ i ]._intPoint == &ipTmp )
         _hexNodes[ i ]._intPoint = 0;
+
+    if ( _hasTooSmall )
+      return false; // too small volume
 
     // create a classic cell if possible
 
@@ -2292,6 +3174,9 @@ namespace
           _volumeDefs._nodes.push_back( _polygons[ iF ]._links[ iL ].FirstNode() );
       }
     }
+    _volumeDefs._solidID = solid->ID();
+
+    return !_volumeDefs._nodes.empty();
   }
   //================================================================================
   /*!
@@ -2302,23 +3187,18 @@ namespace
   {
     SMESHDS_Mesh* mesh = helper.GetMeshDS();
 
-    size_t nbCells[3] = { _grid->_coords[0].size() - 1,
-                          _grid->_coords[1].size() - 1,
-                          _grid->_coords[2].size() - 1 };
-    const size_t nbGridCells = nbCells[0] * nbCells[1] * nbCells[2];
+    CellsAroundLink c( _grid, 0 );
+    const size_t nbGridCells = c._nbCells[0] * c._nbCells[1] * c._nbCells[2];
     vector< Hexahedron* > allHexa( nbGridCells, 0 );
     int nbIntHex = 0;
 
     // set intersection nodes from GridLine's to links of allHexa
-    int i,j,k, iDirOther[3][2] = {{ 1,2 },{ 0,2 },{ 0,1 }};
+    int i,j,k, cellIndex;
     for ( int iDir = 0; iDir < 3; ++iDir )
     {
-      int dInd[4][3] = { {0,0,0}, {0,0,0}, {0,0,0}, {0,0,0} };
-      dInd[1][ iDirOther[iDir][0] ] = -1;
-      dInd[2][ iDirOther[iDir][1] ] = -1;
-      dInd[3][ iDirOther[iDir][0] ] = -1; dInd[3][ iDirOther[iDir][1] ] = -1;
       // loop on GridLine's parallel to iDir
       LineIndexer lineInd = _grid->GetLineIndexer( iDir );
+      CellsAroundLink fourCells( _grid, iDir );
       for ( ; lineInd.More(); ++lineInd )
       {
         GridLine& line = _grid->_lines[ iDir ][ lineInd.LineIndex() ];
@@ -2327,23 +3207,15 @@ namespace
         {
           // if ( !ip->_node ) continue; // intersection at a grid node
           lineInd.SetIndexOnLine( ip->_indexOnLine );
+          fourCells.Init( lineInd.I(), lineInd.J(), lineInd.K() );
           for ( int iL = 0; iL < 4; ++iL ) // loop on 4 cells sharing a link
           {
-            i = int(lineInd.I()) + dInd[iL][0];
-            j = int(lineInd.J()) + dInd[iL][1];
-            k = int(lineInd.K()) + dInd[iL][2];
-            if ( i < 0 || i >= (int) nbCells[0] ||
-                 j < 0 || j >= (int) nbCells[1] ||
-                 k < 0 || k >= (int) nbCells[2] ) continue;
-
-            const size_t hexIndex = _grid->CellIndex( i,j,k );
-            Hexahedron *& hex = allHexa[ hexIndex ];
+            if ( !fourCells.GetCell( iL, i,j,k, cellIndex ))
+              continue;
+            Hexahedron *& hex = allHexa[ cellIndex ];
             if ( !hex)
             {
-              hex = new Hexahedron( *this );
-              hex->_i = i;
-              hex->_j = j;
-              hex->_k = k;
+              hex = new Hexahedron( *this, i, j, k, cellIndex );
               ++nbIntHex;
             }
             const int iLink = iL + iDir * 4;
@@ -2357,22 +3229,24 @@ namespace
     // implement geom edges into the mesh
     addEdges( helper, allHexa, edge2faceIDsMap );
 
-    // add not split hexadrons to the mesh
+    // add not split hexahedra to the mesh
     int nbAdded = 0;
-    vector< Hexahedron* > intHexa( nbIntHex, (Hexahedron*) NULL );
+    vector< Hexahedron* > intHexa; intHexa.reserve( nbIntHex );
+    vector< const SMDS_MeshElement* > boundaryVolumes; boundaryVolumes.reserve( nbIntHex * 1.1 );
     for ( size_t i = 0; i < allHexa.size(); ++i )
     {
+      // initialize this by not cut allHexa[ i ]
       Hexahedron * & hex = allHexa[ i ];
-      if ( hex )
+      if ( hex ) // split hexahedron
       {
         intHexa.push_back( hex );
         if ( hex->_nbFaceIntNodes > 0 || hex->_eIntPoints.size() > 0 )
-          continue; // treat intersected hex later
+          continue; // treat intersected hex later in parallel
         this->init( hex->_i, hex->_j, hex->_k );
       }
       else
-      {    
-        this->init( i );
+      {
+        this->init( i ); // == init(i,j,k)
       }
       if (( _nbCornerNodes == 8 ) &&
           ( _nbBndNodes < _nbCornerNodes || !isInHole() ))
@@ -2383,18 +3257,31 @@ namespace
                            _hexNodes[3].Node(), _hexNodes[1].Node(),
                            _hexNodes[4].Node(), _hexNodes[6].Node(),
                            _hexNodes[7].Node(), _hexNodes[5].Node() );
-        mesh->SetMeshElementOnShape( el, helper.GetSubShapeID() );
+        TGeomID solidID = 0;
+        if ( _nbBndNodes < _nbCornerNodes )
+        {
+          for ( int iN = 0; iN < 8 &&  !solidID; ++iN )
+            if ( !_hexNodes[iN]._intPoint ) // no intersection
+              solidID = _hexNodes[iN].Node()->GetShapeID();
+        }
+        else
+        {
+          solidID = getSolids()[0];
+        }
+        mesh->SetMeshElementOnShape( el, solidID );
         ++nbAdded;
         if ( hex )
           intHexa.pop_back();
+        if ( _grid->_toCreateFaces && _nbBndNodes >= 3 )
+        {
+          boundaryVolumes.push_back( el );
+          el->setIsMarked( true );
+        }
       }
-      else if ( _nbCornerNodes > 3  && !hex )
+      else if ( _nbCornerNodes > 3 && !hex )
       {
         // all intersection of hex with geometry are at grid nodes
-        hex = new Hexahedron( *this );
-        hex->_i = _i;
-        hex->_j = _j;
-        hex->_k = _k;
+        hex = new Hexahedron( *this, _i, _j, _k, i );
         intHexa.push_back( hex );
       }
     }
@@ -2406,15 +3293,29 @@ namespace
                         tbb::simple_partitioner()); // ComputeElements() is called here
     for ( size_t i = 0; i < intHexa.size(); ++i )
       if ( Hexahedron * hex = intHexa[ i ] )
-        nbAdded += hex->addElements( helper );
+        nbAdded += hex->addVolumes( helper );
 #else
     for ( size_t i = 0; i < intHexa.size(); ++i )
       if ( Hexahedron * hex = intHexa[ i ] )
       {
         hex->ComputeElements();
-        nbAdded += hex->addElements( helper );
+        nbAdded += hex->addVolumes( helper );
       }
 #endif
+
+    // fill boundaryVolumes with volumes neighboring too small skipped volumes
+    if ( _grid->_toCreateFaces )
+    {
+      for ( size_t i = 0; i < intHexa.size(); ++i )
+        if ( Hexahedron * hex = intHexa[ i ] )
+          hex->getBoundaryElems( boundaryVolumes );
+    }
+
+    // create boundary mesh faces
+    addFaces( helper, boundaryVolumes );
+
+    // create mesh edges
+    addSegments( helper, edge2faceIDsMap );
 
     for ( size_t i = 0; i < allHexa.size(); ++i )
       if ( allHexa[ i ] )
@@ -2456,18 +3357,28 @@ namespace
     const double tol        = _grid->_tol;
     E_IntersectPoint ip;
 
+    TColStd_MapOfInteger intEdgeIDs; // IDs of not shared INTERNAL EDGES
+
     // Intersect EDGEs with the planes
     map< TGeomID, vector< TGeomID > >::const_iterator e2fIt = edge2faceIDsMap.begin();
     for ( ; e2fIt != edge2faceIDsMap.end(); ++e2fIt )
     {
       const TGeomID  edgeID = e2fIt->first;
-      const TopoDS_Edge & E = TopoDS::Edge( _grid->_shapes( edgeID ));
+      const TopoDS_Edge & E = TopoDS::Edge( _grid->Shape( edgeID ));
       BRepAdaptor_Curve curve( E );
-      TopoDS_Vertex v1 = helper.IthVertex( 0, E, false ); 
-      TopoDS_Vertex v2 = helper.IthVertex( 1, E, false ); 
+      TopoDS_Vertex v1 = helper.IthVertex( 0, E, false );
+      TopoDS_Vertex v2 = helper.IthVertex( 1, E, false );
 
       ip._faceIDs = e2fIt->second;
       ip._shapeID = edgeID;
+
+      bool isInternal = ( ip._faceIDs.size() == 1 && _grid->IsInternal( edgeID ));
+      if ( isInternal )
+      {
+        intEdgeIDs.Add( edgeID );
+        intEdgeIDs.Add( _grid->ShapeID( v1 ));
+        intEdgeIDs.Add( _grid->ShapeID( v2 ));
+      }
 
       // discretize the EDGE
       GCPnts_UniformDeflection discret( curve, deflection, true );
@@ -2475,6 +3386,7 @@ namespace
         continue;
 
       // perform intersection
+      E_IntersectPoint* eip, *vip;
       for ( int iDirZ = 0; iDirZ < 3; ++iDirZ )
       {
         GridPlanes& planes = pln[ iDirZ ];
@@ -2501,7 +3413,7 @@ namespace
         locateValue( iY1, ip._uvw[iDirY], _grid->_coords[ iDirY ], dIJK[ iDirY ], tol );
         locateValue( iZ1, ip._uvw[iDirZ], _grid->_coords[ iDirZ ], dIJK[ iDirZ ], tol );
 
-        int ijk[3]; // grid index where a segment intersect a plane
+        int ijk[3]; // grid index where a segment intersects a plane
         ijk[ iDirX ] = iX1;
         ijk[ iDirY ] = iY1;
         ijk[ iDirZ ] = iZ1;
@@ -2510,10 +3422,12 @@ namespace
         if ( iDirZ == 0 )
         {
           ip._point   = p1;
-          ip._shapeID = _grid->_shapes.Add( v1 );
-          _grid->_edgeIntP.push_back( ip );
-          if ( !addIntersection( _grid->_edgeIntP.back(), hexes, ijk, d000 ))
-            _grid->_edgeIntP.pop_back();
+          ip._shapeID = _grid->ShapeID( v1 );
+          vip = _grid->Add( ip );
+          if ( isInternal )
+            vip->_faceIDs.push_back( _grid->PseudoIntExtFaceID() );
+          if ( !addIntersection( vip, hexes, ijk, d000 ))
+            _grid->Remove( vip );
           ip._shapeID = edgeID;
         }
         for ( int iP = 2; iP <= discret.NbPoints(); ++iP )
@@ -2541,15 +3455,17 @@ namespace
               ijk[ iDirZ ] = iZ;
 
               // add ip to hex "above" the plane
-              _grid->_edgeIntP.push_back( ip );
+              eip = _grid->Add( ip );
+              if ( isInternal )
+                eip->_faceIDs.push_back( _grid->PseudoIntExtFaceID() );
               dIJK[ iDirZ ] = 0;
-              bool added = addIntersection(_grid->_edgeIntP.back(), hexes, ijk, dIJK);
+              bool added = addIntersection( eip, hexes, ijk, dIJK);
 
               // add ip to hex "below" the plane
               ijk[ iDirZ ] = iZ-1;
-              if ( !addIntersection( _grid->_edgeIntP.back(), hexes, ijk, dIJK ) &&
-                   !added)
-                _grid->_edgeIntP.pop_back();
+              if ( !addIntersection( eip, hexes, ijk, dIJK ) &&
+                   !added )
+                _grid->Remove( eip );
             }
           }
           iZ1    = iZ2;
@@ -2560,20 +3476,250 @@ namespace
         // add the 2nd vertex point to a hexahedron
         if ( iDirZ == 0 )
         {
-          ip._shapeID = _grid->_shapes.Add( v2 );
-          ip._point = p1;
+          ip._point   = p1;
+          ip._shapeID = _grid->ShapeID( v2 );
           _grid->ComputeUVW( p1, ip._uvw );
           locateValue( ijk[iDirX], ip._uvw[iDirX], _grid->_coords[iDirX], dIJK[iDirX], tol );
           locateValue( ijk[iDirY], ip._uvw[iDirY], _grid->_coords[iDirY], dIJK[iDirY], tol );
           ijk[ iDirZ ] = iZ1;
-          _grid->_edgeIntP.push_back( ip );
-          if ( !addIntersection( _grid->_edgeIntP.back(), hexes, ijk, d000 ))
-            _grid->_edgeIntP.pop_back();
+          bool sameV = ( v1.IsSame( v2 ));
+          if ( !sameV )
+            vip = _grid->Add( ip );
+          if ( isInternal && !sameV )
+            vip->_faceIDs.push_back( _grid->PseudoIntExtFaceID() );
+          if ( !addIntersection( vip, hexes, ijk, d000 ) && !sameV )
+            _grid->Remove( vip );
           ip._shapeID = edgeID;
         }
       } // loop on 3 grid directions
     } // loop on EDGEs
 
+
+    if ( intEdgeIDs.Size() > 0 )
+      cutByExtendedInternal( hexes, intEdgeIDs );
+
+    return;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Fully cut hexes that are partially cut by INTERNAL FACE.
+   *        Cut them by extended INTERNAL FACE.
+   */
+  void Hexahedron::cutByExtendedInternal( std::vector< Hexahedron* >& hexes,
+                                          const TColStd_MapOfInteger& intEdgeIDs )
+  {
+    IntAna_IntConicQuad intersection;
+    SMESHDS_Mesh* meshDS = _grid->_helper->GetMeshDS();
+    const double tol2 = _grid->_tol * _grid->_tol;
+
+    for ( size_t iH = 0; iH < hexes.size(); ++iH )
+    {
+      Hexahedron* hex = hexes[ iH ];
+      if ( !hex || hex->_eIntPoints.size() < 2 )
+        continue;
+      if ( !intEdgeIDs.Contains( hex->_eIntPoints.back()->_shapeID ))
+        continue;
+
+      // get 3 points on INTERNAL FACE to construct a cutting plane
+      gp_Pnt p1 = hex->_eIntPoints[0]->_point;
+      gp_Pnt p2 = hex->_eIntPoints[1]->_point;
+      gp_Pnt p3 = hex->mostDistantInternalPnt( iH, p1, p2 );
+
+      gp_Vec norm = gp_Vec( p1, p2 ) ^ gp_Vec( p1, p3 );
+      gp_Pln pln;
+      try {
+        pln = gp_Pln( p1, norm );
+      }
+      catch(...)
+      {
+        continue;
+      }
+
+      TGeomID intFaceID = hex->_eIntPoints.back()->_faceIDs.front(); // FACE being "extended"
+      TGeomID   solidID = _grid->GetSolid( intFaceID )->ID();
+
+      // cut links by the plane
+      //bool isCut = false;
+      for ( int iLink = 0; iLink < 12; ++iLink )
+      {
+        _Link& link = hex->_hexLinks[ iLink ];
+        if ( !link._fIntPoints.empty() )
+        {
+          // if ( link._fIntPoints[0]->_faceIDs.back() == _grid->PseudoIntExtFaceID() )
+          //   isCut = true;
+          continue; // already cut link
+        }
+        if ( !link._nodes[0]->Node() ||
+             !link._nodes[1]->Node() )
+          continue; // outside link
+
+        if ( link._nodes[0]->IsOnFace( intFaceID ))
+        {
+          if ( link._nodes[0]->_intPoint->_faceIDs.back() != _grid->PseudoIntExtFaceID() )
+            if ( p1.SquareDistance( link._nodes[0]->Point() ) < tol2  ||
+                 p2.SquareDistance( link._nodes[0]->Point() ) < tol2 )
+              link._nodes[0]->_intPoint->_faceIDs.push_back( _grid->PseudoIntExtFaceID() );
+          continue; // link is cut by FACE being "extended"
+        }
+        if ( link._nodes[1]->IsOnFace( intFaceID ))
+        {
+          if ( link._nodes[1]->_intPoint->_faceIDs.back() != _grid->PseudoIntExtFaceID() )
+            if ( p1.SquareDistance( link._nodes[1]->Point() ) < tol2  ||
+                 p2.SquareDistance( link._nodes[1]->Point() ) < tol2 )
+              link._nodes[1]->_intPoint->_faceIDs.push_back( _grid->PseudoIntExtFaceID() );
+          continue; // link is cut by FACE being "extended"
+        }
+        gp_Pnt p4 = link._nodes[0]->Point();
+        gp_Pnt p5 = link._nodes[1]->Point();
+        gp_Lin line( p4, gp_Vec( p4, p5 ));
+
+        intersection.Perform( line, pln );
+        if ( !intersection.IsDone() ||
+             intersection.IsInQuadric() ||
+             intersection.IsParallel() ||
+             intersection.NbPoints() < 1 )
+          continue;
+
+        double u = intersection.ParamOnConic(1);
+        if ( u + _grid->_tol < 0 )
+          continue;
+        int       iDir = iLink / 4;
+        int      index = (&hex->_i)[iDir];
+        double linkLen = _grid->_coords[iDir][index+1] - _grid->_coords[iDir][index];
+        if ( u - _grid->_tol > linkLen )
+          continue;
+
+        if ( u < _grid->_tol ||
+             u > linkLen - _grid->_tol ) // intersection at grid node
+        {
+          int  i = ! ( u < _grid->_tol ); // [0,1]
+          int iN = link._nodes[ i ] - hex->_hexNodes; // [0-7]
+
+          const F_IntersectPoint * & ip = _grid->_gridIntP[ hex->_origNodeInd + _nodeShift[iN] ];
+          if ( !ip )
+          {
+            ip = _grid->_extIntPool.getNew();
+            ip->_faceIDs.push_back( _grid->PseudoIntExtFaceID() );
+            //ip->_transition = Trans_INTERNAL;
+          }
+          else if ( ip->_faceIDs.back() != _grid->PseudoIntExtFaceID() )
+          {
+            ip->_faceIDs.push_back( _grid->PseudoIntExtFaceID() );
+          }
+          hex->_nbFaceIntNodes++;
+          //isCut = true;
+        }
+        else
+        {
+          const gp_Pnt&      p = intersection.Point( 1 );
+          F_IntersectPoint* ip = _grid->_extIntPool.getNew();
+          ip->_node = meshDS->AddNode( p.X(), p.Y(), p.Z() );
+          ip->_faceIDs.push_back( _grid->PseudoIntExtFaceID() );
+          ip->_transition = Trans_INTERNAL;
+          meshDS->SetNodeInVolume( ip->_node, solidID );
+
+          CellsAroundLink fourCells( _grid, iDir );
+          fourCells.Init( hex->_i, hex->_j, hex->_k, iLink );
+          int i,j,k, cellIndex;
+          for ( int iC = 0; iC < 4; ++iC ) // loop on 4 cells sharing the link
+          {
+            if ( !fourCells.GetCell( iC, i,j,k, cellIndex ))
+              continue;
+            Hexahedron * h = hexes[ cellIndex ];
+            if ( !h )
+              h = hexes[ cellIndex ] = new Hexahedron( *this, i, j, k, cellIndex );
+            const int iL = iC + iDir * 4;
+            h->_hexLinks[iL]._fIntPoints.push_back( ip );
+            h->_nbFaceIntNodes++;
+            //isCut = true;
+          }
+        }
+      }
+
+      // if ( isCut )
+      //   for ( size_t i = 0; i < hex->_eIntPoints.size(); ++i )
+      //   {
+      //     if ( _grid->IsInternal( hex->_eIntPoints[i]->_shapeID ) &&
+      //          ! hex->_eIntPoints[i]->IsOnFace( _grid->PseudoIntExtFaceID() ))
+      //       hex->_eIntPoints[i]->_faceIDs.push_back( _grid->PseudoIntExtFaceID() );
+      //   }
+      continue;
+
+    } // loop on all hexes
+    return;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Return intersection point on INTERNAL FACE most distant from given ones
+   */
+  gp_Pnt Hexahedron::mostDistantInternalPnt( int hexIndex, const gp_Pnt& p1, const gp_Pnt& p2 )
+  {
+    gp_Pnt resultPnt = p1;
+
+    double maxDist2 = 0;
+    for ( int iLink = 0; iLink < 12; ++iLink ) // check links
+    {
+      _Link& link = _hexLinks[ iLink ];
+      for ( size_t i = 0; i < link._fIntPoints.size(); ++i )
+        if ( _grid->PseudoIntExtFaceID() != link._fIntPoints[i]->_faceIDs[0] &&
+             _grid->IsInternal( link._fIntPoints[i]->_faceIDs[0] ) &&
+             link._fIntPoints[i]->_node )
+        {
+          gp_Pnt p = SMESH_NodeXYZ( link._fIntPoints[i]->_node );
+          double d = p1.SquareDistance( p );
+          if ( d > maxDist2 )
+          {
+            resultPnt = p;
+            maxDist2  = d;
+          }
+          else
+          {
+            d = p2.SquareDistance( p );
+            if ( d > maxDist2 )
+            {
+              resultPnt = p;
+              maxDist2  = d;
+            }
+          }
+        }
+    }
+    setIJK( hexIndex );
+    _origNodeInd = _grid->NodeIndex( _i,_j,_k );
+
+    for ( size_t iN = 0; iN < 8; ++iN ) // check corners
+    {
+      _hexNodes[iN]._node     = _grid->_nodes   [ _origNodeInd + _nodeShift[iN] ];
+      _hexNodes[iN]._intPoint = _grid->_gridIntP[ _origNodeInd + _nodeShift[iN] ];
+      if ( _hexNodes[iN]._intPoint )
+        for ( size_t iF = 0; iF < _hexNodes[iN]._intPoint->_faceIDs.size(); ++iF )
+        {
+          if ( _grid->IsInternal( _hexNodes[iN]._intPoint->_faceIDs[iF]))
+          {
+            gp_Pnt p = SMESH_NodeXYZ( _hexNodes[iN]._node );
+            double d = p1.SquareDistance( p );
+            if ( d > maxDist2 )
+            {
+              resultPnt = p;
+              maxDist2  = d;
+            }
+            else
+            {
+              d = p2.SquareDistance( p );
+              if ( d > maxDist2 )
+              {
+                resultPnt = p;
+                maxDist2  = d;
+              }
+            }
+          }
+        }
+    }
+    if ( maxDist2 < _grid->_tol * _grid->_tol )
+      return p1;
+
+    return resultPnt;
   }
 
   //================================================================================
@@ -2683,7 +3829,7 @@ namespace
   /*!
    * \brief Adds intersection with an EDGE
    */
-  bool Hexahedron::addIntersection( const E_IntersectPoint& ip,
+  bool Hexahedron::addIntersection( const E_IntersectPoint* ip,
                                     vector< Hexahedron* >&  hexes,
                                     int ijk[], int dIJK[] )
   {
@@ -2697,16 +3843,17 @@ namespace
     };
     for ( int i = 0; i < 4; ++i )
     {
-      if ( /*0 <= hexIndex[i] &&*/ hexIndex[i] < hexes.size() && hexes[ hexIndex[i] ] )
+      if ( hexIndex[i] < hexes.size() && hexes[ hexIndex[i] ] )
       {
         Hexahedron* h = hexes[ hexIndex[i] ];
-        // check if ip is really inside the hex
+        h->_eIntPoints.reserve(2);
+        h->_eIntPoints.push_back( ip );
+        added = true;
 #ifdef _DEBUG_
-        if ( h->isOutParam( ip._uvw ))
+        // check if ip is really inside the hex
+        if ( h->isOutParam( ip->_uvw ))
           throw SALOME_Exception("ip outside a hex");
 #endif
-        h->_eIntPoints.push_back( & ip );
-        added = true;
       }
     }
     return added;
@@ -2798,8 +3945,10 @@ namespace
   /*!
    * \brief Finds nodes on the same EDGE as the first node of avoidSplit.
    *
-   * This function is for a case where an EDGE lies on a quad which lies on a FACE
-   * so that a part of quad in ON and another part in IN
+   * This function is for
+   * 1) a case where an EDGE lies on a quad which lies on a FACE
+   *    so that a part of quad in ON and another part is IN
+   * 2) INTERNAL FACE passes through the 1st node of avoidSplit
    */
   bool Hexahedron::findChainOnEdge( const vector< _OrientedLink >& splits,
                                     const _OrientedLink&           prevSplit,
@@ -2808,19 +3957,16 @@ namespace
                                     _Face&                         quad,
                                     vector<_Node*>&                chn )
   {
-    if ( !isImplementEdges() )
-      return false;
-
     _Node* pn1 = prevSplit.FirstNode();
     _Node* pn2 = prevSplit.LastNode();
     int avoidFace = pn1->IsLinked( pn2->_intPoint ); // FACE under the quad
     if ( avoidFace < 1 && pn1->_intPoint )
       return false;
 
-    _Node* n, *stopNode = avoidSplit.LastNode();
+    _Node* n = 0, *stopNode = avoidSplit.LastNode();
 
     chn.clear();
-    if ( !quad._eIntNodes.empty() )
+    if ( !quad._eIntNodes.empty() ) // connect pn2 with EDGE intersections
     {
       chn.push_back( pn2 );
       bool found;
@@ -2841,7 +3987,7 @@ namespace
     }
 
     int i;
-    for ( i = splits.size()-1; i >= 0; --i )
+    for ( i = splits.size()-1; i >= 0; --i ) // connect new pn2 (at _eIntNodes) with a split
     {
       if ( !splits[i] )
         continue;
@@ -2862,12 +4008,19 @@ namespace
         break;
       n = 0;
     }
-    if ( n && n != stopNode)
+    if ( n && n != stopNode )
     {
       if ( chn.empty() )
         chn.push_back( pn2 );
       chn.push_back( n );
       iS = i-1;
+      return true;
+    }
+    else if ( !chn.empty() && chn.back()->_isInternalFlags )
+    {
+      // INTERNAL FACE partially cuts the quad
+      for ( int i = chn.size() - 2; i >= 0; --i )
+        chn.push_back( chn[ i ]);
       return true;
     }
     return false;
@@ -2876,11 +4029,16 @@ namespace
   /*!
    * \brief Checks transition at the ginen intersection node of a link
    */
-  bool Hexahedron::isOutPoint( _Link& link, int iP, SMESH_MesherHelper& helper ) const
+  bool Hexahedron::isOutPoint( _Link& link, int iP,
+                               SMESH_MesherHelper& helper, const Solid* solid ) const
   {
     bool isOut = false;
 
-    const bool moreIntPoints = ( iP+1 < (int) link._fIntPoints.size() );
+    if ( link._fIntNodes[iP]->faces().size() == 1 &&
+         _grid->IsInternal( link._fIntNodes[iP]->face(0) ))
+      return false;
+
+    const bool moreIntPoints = ( iP+1 < (int) link._fIntNodes.size() );
 
     // get 2 _Node's
     _Node* n1 = link._fIntNodes[ iP ];
@@ -2894,16 +4052,16 @@ namespace
 
     // get all FACEs under n1 and n2
     set< TGeomID > faceIDs;
-    if ( moreIntPoints ) faceIDs.insert( link._fIntPoints[iP+1]->_faceIDs.begin(),
-                                         link._fIntPoints[iP+1]->_faceIDs.end() );
+    if ( moreIntPoints ) faceIDs.insert( link._fIntNodes[iP+1]->faces().begin(),
+                                         link._fIntNodes[iP+1]->faces().end() );
     if ( n2->_intPoint ) faceIDs.insert( n2->_intPoint->_faceIDs.begin(),
                                          n2->_intPoint->_faceIDs.end() );
     if ( faceIDs.empty() )
       return false; // n2 is inside
     if ( n1->_intPoint ) faceIDs.insert( n1->_intPoint->_faceIDs.begin(),
                                          n1->_intPoint->_faceIDs.end() );
-    faceIDs.insert( link._fIntPoints[iP]->_faceIDs.begin(),
-                    link._fIntPoints[iP]->_faceIDs.end() );
+    faceIDs.insert( link._fIntNodes[iP]->faces().begin(),
+                    link._fIntNodes[iP]->faces().end() );
 
     // get a point between 2 nodes
     gp_Pnt p1      = n1->Point();
@@ -2916,10 +4074,9 @@ namespace
     for ( ; faceID != faceIDs.end(); ++faceID )
     {
       // project pOnLink on a FACE
-      if ( *faceID < 1 ) continue;
-      const TopoDS_Face& face = TopoDS::Face( _grid->_shapes( *faceID ));
-      GeomAPI_ProjectPointOnSurf& proj =
-        helper.GetProjector( face, loc, 0.1*_grid->_tol );
+      if ( *faceID < 1 || !solid->Contains( *faceID )) continue;
+      const TopoDS_Face& face = TopoDS::Face( _grid->Shape( *faceID ));
+      GeomAPI_ProjectPointOnSurf& proj = helper.GetProjector( face, loc, 0.1*_grid->_tol );
       gp_Pnt testPnt = pOnLink.Transformed( loc.Transformation().Inverted() );
       proj.Perform( testPnt );
       if ( proj.IsDone() && proj.NbPoints() > 0 )       
@@ -2940,7 +4097,7 @@ namespace
                                    0.1*_grid->_tol,
                                    normal ) < 3 )
           {
-            if ( face.Orientation() == TopAbs_REVERSED )
+            if ( solid->Orientation( face ) == TopAbs_REVERSED )
               normal.Reverse();
             gp_Vec v( proj.NearestPoint(), testPnt );
             isOut = ( v * normal > 0 );
@@ -2980,7 +4137,7 @@ namespace
         return;
 
     // get shapes of the FACE
-    const TopoDS_Face&  face = TopoDS::Face( _grid->_shapes( faceID ));
+    const TopoDS_Face&  face = TopoDS::Face( _grid->Shape( faceID ));
     list< TopoDS_Edge > edges;
     list< int >         nbEdges;
     int nbW = SMESH_Block::GetOrderedEdges (face, edges, nbEdges);
@@ -2995,8 +4152,8 @@ namespace
           for ( int i = 0; i < 2; ++i )
           {
             TGeomID id = i==0 ?
-              _grid->_shapes.FindIndex( *e ) :
-              _grid->_shapes.FindIndex( SMESH_MesherHelper::IthVertex( 0, *e ));
+              _grid->ShapeID( *e ) :
+              _grid->ShapeID( SMESH_MesherHelper::IthVertex( 0, *e ));
             if (( id > 0 ) &&
                 ( std::find( &nShapeIds[0], nShapeIdsEnd, id ) != nShapeIdsEnd ))
             {
@@ -3015,7 +4172,7 @@ namespace
     list< TopoDS_Edge >::iterator e = edges.begin(), eMidOut = edges.end();
     for ( ; e != edges.end(); ++e )
     {
-      if ( !_grid->_shapes.FindIndex( *e ))
+      if ( !_grid->ShapeID( *e ))
         continue;
       bool isOut = false;
       gp_Pnt p;
@@ -3063,14 +4220,14 @@ namespace
     TGeomID id, *pID = 0;
     for ( e = edges.begin(); e != edges.end(); ++e )
     {
-      if (( id = _grid->_shapes.FindIndex( SMESH_MesherHelper::IthVertex( 0, *e ))) &&
+      if (( id = _grid->ShapeID( SMESH_MesherHelper::IthVertex( 0, *e ))) &&
           (( pID = std::find( &nShapeIds[0], nShapeIdsEnd, id )) != nShapeIdsEnd ))
       {
         //orderShapeIDs[ nbN ] = id;
         orderNodes   [ nbN++ ] = nodes[ pID - &nShapeIds[0] ];
         *pID = -1;
       }
-      if (( id = _grid->_shapes.FindIndex( *e )) &&
+      if (( id = _grid->ShapeID( *e )) &&
           (( pID = std::find( &nShapeIds[0], nShapeIdsEnd, id )) != nShapeIdsEnd ))
       {
         //orderShapeIDs[ nbN ] = id;
@@ -3092,46 +4249,81 @@ namespace
   /*!
    * \brief Adds computed elements to the mesh
    */
-  int Hexahedron::addElements(SMESH_MesherHelper& helper)
+  int Hexahedron::addVolumes( SMESH_MesherHelper& helper )
   {
+    F_IntersectPoint noIntPnt;
+    const bool toCheckNodePos = _grid->IsToCheckNodePos();
+
     int nbAdded = 0;
     // add elements resulted from hexahedron intersection
-    //for ( size_t i = 0; i < _volumeDefs.size(); ++i )
+    for ( _volumeDef* volDef = &_volumeDefs; volDef; volDef = volDef->_next )
     {
-      vector< const SMDS_MeshNode* > nodes( _volumeDefs._nodes.size() );
+      vector< const SMDS_MeshNode* > nodes( volDef->_nodes.size() );
       for ( size_t iN = 0; iN < nodes.size(); ++iN )
-        if ( !( nodes[iN] = _volumeDefs._nodes[iN]->Node() ))
+      {
+        if ( !( nodes[iN] = volDef->_nodes[iN].Node() ))
         {
-          if ( const E_IntersectPoint* eip = _volumeDefs._nodes[iN]->EdgeIntPnt() )
-            nodes[iN] = _volumeDefs._nodes[iN]->_intPoint->_node =
+          if ( const E_IntersectPoint* eip = volDef->_nodes[iN].EdgeIntPnt() )
+          {
+            nodes[iN] = volDef->_nodes[iN]._intPoint->_node =
               helper.AddNode( eip->_point.X(),
                               eip->_point.Y(),
                               eip->_point.Z() );
+            if ( _grid->ShapeType( eip->_shapeID ) == TopAbs_VERTEX )
+              helper.GetMeshDS()->SetNodeOnVertex( nodes[iN], eip->_shapeID );
+            else
+              helper.GetMeshDS()->SetNodeOnEdge( nodes[iN], eip->_shapeID );
+          }
           else
             throw SALOME_Exception("Bug: no node at intersection point");
         }
+        else if ( volDef->_nodes[iN]._intPoint &&
+                  volDef->_nodes[iN]._intPoint->_node == volDef->_nodes[iN]._node )
+        {
+          // Update position of node at EDGE intersection;
+          // see comment to _Node::Add( E_IntersectPoint )
+          SMESHDS_Mesh* mesh = helper.GetMeshDS();
+          TGeomID    shapeID = volDef->_nodes[iN].EdgeIntPnt()->_shapeID;
+          mesh->UnSetNodeOnShape( nodes[iN] );
+          if ( _grid->ShapeType( shapeID ) == TopAbs_VERTEX )
+            mesh->SetNodeOnVertex( nodes[iN], shapeID );
+          else
+            mesh->SetNodeOnEdge( nodes[iN], shapeID );
+        }
+        else if ( toCheckNodePos &&
+                  !nodes[iN]->isMarked() && 
+                  _grid->ShapeType( nodes[iN]->GetShapeID() ) == TopAbs_FACE )
+        {
+          _grid->SetOnShape( nodes[iN], noIntPnt, /*unset=*/true );
+          nodes[iN]->setIsMarked( true );
+        }
+      }
 
-      if ( !_volumeDefs._quantities.empty() )
+      const SMDS_MeshElement* v = 0;
+      if ( !volDef->_quantities.empty() )
       {
-        helper.AddPolyhedralVolume( nodes, _volumeDefs._quantities );
+        v = helper.AddPolyhedralVolume( nodes, volDef->_quantities );
       }
       else
       {
         switch ( nodes.size() )
         {
-        case 8: helper.AddVolume( nodes[0],nodes[1],nodes[2],nodes[3],
-                                  nodes[4],nodes[5],nodes[6],nodes[7] );
+        case 8: v = helper.AddVolume( nodes[0],nodes[1],nodes[2],nodes[3],
+                                      nodes[4],nodes[5],nodes[6],nodes[7] );
           break;
-        case 4: helper.AddVolume( nodes[0],nodes[1],nodes[2],nodes[3] );
+        case 4: v = helper.AddVolume( nodes[0],nodes[1],nodes[2],nodes[3] );
           break;
-        case 6: helper.AddVolume( nodes[0],nodes[1],nodes[2],nodes[3], nodes[4],nodes[5] );
+        case 6: v = helper.AddVolume( nodes[0],nodes[1],nodes[2],nodes[3],nodes[4],nodes[5] );
           break;
-        case 5:
-          helper.AddVolume( nodes[0],nodes[1],nodes[2],nodes[3],nodes[4] );
+        case 5: v = helper.AddVolume( nodes[0],nodes[1],nodes[2],nodes[3],nodes[4] );
           break;
         }
       }
-      nbAdded += int ( _volumeDefs._nodes.size() > 0 );
+      if (( volDef->_volume = v ))
+      {
+        helper.GetMeshDS()->SetMeshElementOnShape( v, volDef->_solidID );
+        ++nbAdded;
+      }
     }
 
     return nbAdded;
@@ -3182,7 +4374,8 @@ namespace
         if ( firstIntPnt )
         {
           hasLinks = true;
-          allLinksOut = ( firstIntPnt->_transition == Trans_OUT );
+          allLinksOut = ( firstIntPnt->_transition == Trans_OUT &&
+                          !_grid->IsShared( firstIntPnt->_faceIDs[0] ));
         }
       }
       if ( hasLinks && allLinksOut )
@@ -3193,10 +4386,66 @@ namespace
 
   //================================================================================
   /*!
+   * \brief Check if a polyherdon has an edge lying on EDGE shared by strange FACE
+   *        that will be meshed by other algo
+   */
+  bool Hexahedron::hasStrangeEdge() const
+  {
+    if ( _eIntPoints.size() < 2 )
+      return false;
+
+    TopTools_MapOfShape edges;
+    for ( size_t i = 0; i < _eIntPoints.size(); ++i )
+    {
+      if ( !_grid->IsStrangeEdge( _eIntPoints[i]->_shapeID ))
+        continue;
+      const TopoDS_Shape& s = _grid->Shape( _eIntPoints[i]->_shapeID );
+      if ( s.ShapeType() == TopAbs_EDGE )
+      {
+        if ( ! edges.Add( s ))
+          return true; // an EDGE encounters twice
+      }
+      else
+      {
+        PShapeIteratorPtr edgeIt = _grid->_helper->GetAncestors( s,
+                                                                 *_grid->_helper->GetMesh(),
+                                                                 TopAbs_EDGE );
+        while ( const TopoDS_Shape* edge = edgeIt->next() )
+          if ( ! edges.Add( *edge ))
+            return true; // an EDGE encounters twice
+      }
+    }
+    return false;
+  }
+
+  //================================================================================
+  /*!
    * \brief Return true if a polyhedron passes _sizeThreshold criterion
    */
-  bool Hexahedron::checkPolyhedronSize() const
+  bool Hexahedron::checkPolyhedronSize( bool cutByInternalFace ) const
   {
+    if ( cutByInternalFace && !_grid->_toUseThresholdForInternalFaces )
+    {
+      // check if any polygon fully lies on shared/internal FACEs
+      for ( size_t iP = 0; iP < _polygons.size(); ++iP )
+      {
+        const _Face& polygon = _polygons[iP];
+        if ( polygon._links.empty() )
+          continue;
+        bool allNodesInternal = true;
+        for ( size_t iL = 0; iL < polygon._links.size() &&  allNodesInternal; ++iL )
+        {
+          _Node* n = polygon._links[ iL ].FirstNode();
+          allNodesInternal = (( n->IsCutByInternal() ) ||
+                              ( n->_intPoint && _grid->IsAnyShared( n->_intPoint->_faceIDs )));
+        }
+        if ( allNodesInternal )
+          return true;
+      }
+    }
+    if ( this->hasStrangeEdge() )
+      return true;
+
     double volume = 0;
     for ( size_t iP = 0; iP < _polygons.size(); ++iP )
     {
@@ -3217,7 +4466,7 @@ namespace
 
     double initVolume = _sideLength[0] * _sideLength[1] * _sideLength[2];
 
-    return volume > initVolume / _sizeThreshold;
+    return volume > initVolume / _grid->_sizeThreshold;
   }
   //================================================================================
   /*!
@@ -3263,7 +4512,7 @@ namespace
         }
     }
     if ( nbN == 8 )
-      _volumeDefs.set( &nodes[0], 8 );
+      _volumeDefs.Set( &nodes[0], 8 );
 
     return nbN == 8;
   }
@@ -3295,7 +4544,7 @@ namespace
       if ( tria->_links[i]._link == link )
       {
         nodes[3] = tria->_links[(i+1)%3].LastNode();
-        _volumeDefs.set( &nodes[0], 4 );
+        _volumeDefs.Set( &nodes[0], 4 );
         return true;
       }
 
@@ -3340,7 +4589,7 @@ namespace
         }
     }
     if ( nbN == 6 )
-      _volumeDefs.set( &nodes[0], 6 );
+      _volumeDefs.Set( &nodes[0], 6 );
 
     return ( nbN == 6 );
   }
@@ -3375,7 +4624,7 @@ namespace
       if ( tria->_links[i]._link == link )
       {
         nodes[4] = tria->_links[(i+1)%3].LastNode();
-        _volumeDefs.set( &nodes[0], 5 );
+        _volumeDefs.Set( &nodes[0], 5 );
         return true;
       }
 
@@ -3407,6 +4656,467 @@ namespace
             ( _grid->_coords[1][ _j+1 ] + _grid->_tol < uvw[1] ) ||
             ( _grid->_coords[2][ _k   ] - _grid->_tol > uvw[2] ) ||
             ( _grid->_coords[2][ _k+1 ] + _grid->_tol < uvw[2] ));
+  }
+  //================================================================================
+  /*!
+   * \brief Divide a polygon into triangles and modify accordingly an adjacent polyhedron
+   */
+  void splitPolygon( const SMDS_MeshElement*         polygon,
+                     SMDS_VolumeTool &               volume,
+                     const int                       facetIndex,
+                     const TGeomID                   faceID,
+                     const TGeomID                   solidID,
+                     SMESH_MeshEditor::ElemFeatures& face,
+                     SMESH_MeshEditor&               editor,
+                     const bool                      reinitVolume)
+  {
+    SMESH_MeshAlgos::Triangulate divider(/*optimize=*/false);
+    int nbTrias = divider.GetTriangles( polygon, face.myNodes );
+    face.myNodes.resize( nbTrias * 3 );
+
+    SMESH_MeshEditor::ElemFeatures newVolumeDef;
+    newVolumeDef.Init( volume.Element() );
+    newVolumeDef.SetID( volume.Element()->GetID() );
+
+    newVolumeDef.myPolyhedQuantities.reserve( volume.NbFaces() + nbTrias );
+    newVolumeDef.myNodes.reserve( volume.NbNodes() + nbTrias * 3 );
+
+    SMESHDS_Mesh* meshDS = editor.GetMeshDS();
+    SMDS_MeshElement* newTriangle;
+    for ( int iF = 0, nF = volume.NbFaces(); iF < nF; iF++ )
+    {
+      if ( iF == facetIndex )
+      {
+        newVolumeDef.myPolyhedQuantities.push_back( 3 );
+        newVolumeDef.myNodes.insert( newVolumeDef.myNodes.end(),
+                                     face.myNodes.begin(),
+                                     face.myNodes.begin() + 3 );
+        meshDS->RemoveFreeElement( polygon, 0, false );
+        newTriangle = meshDS->AddFace( face.myNodes[0], face.myNodes[1], face.myNodes[2] );
+        meshDS->SetMeshElementOnShape( newTriangle, faceID );
+      }
+      else
+      {
+        const SMDS_MeshNode** nn = volume.GetFaceNodes( iF );
+        const size_t nbFaceNodes = volume.NbFaceNodes ( iF );
+        newVolumeDef.myPolyhedQuantities.push_back( nbFaceNodes );
+        newVolumeDef.myNodes.insert( newVolumeDef.myNodes.end(), nn, nn + nbFaceNodes );
+      }
+    }
+
+    for ( size_t iN = 3; iN < face.myNodes.size(); iN += 3 )
+    {
+      newVolumeDef.myPolyhedQuantities.push_back( 3 );
+      newVolumeDef.myNodes.insert( newVolumeDef.myNodes.end(),
+                                   face.myNodes.begin() + iN,
+                                   face.myNodes.begin() + iN + 3 );
+      newTriangle = meshDS->AddFace( face.myNodes[iN], face.myNodes[iN+1], face.myNodes[iN+2] );
+      meshDS->SetMeshElementOnShape( newTriangle, faceID );
+    }
+
+    meshDS->RemoveFreeElement( volume.Element(), 0, false );
+    SMDS_MeshElement* newVolume = editor.AddElement( newVolumeDef.myNodes, newVolumeDef );
+    meshDS->SetMeshElementOnShape( newVolume, solidID );
+
+    if ( reinitVolume )
+    {
+      volume.Set( 0 );
+      volume.Set( newVolume );
+    }
+    return;
+  }
+  //================================================================================
+  /*!
+   * \brief Create mesh faces at free facets
+   */
+  void Hexahedron::addFaces( SMESH_MesherHelper&                       helper,
+                             const vector< const SMDS_MeshElement* > & boundaryVolumes )
+  {
+    if ( !_grid->_toCreateFaces )
+      return;
+
+    SMDS_VolumeTool vTool;
+    vector<int> bndFacets;
+    SMESH_MeshEditor editor( helper.GetMesh() );
+    SMESH_MeshEditor::ElemFeatures face( SMDSAbs_Face );
+    SMESHDS_Mesh* meshDS = helper.GetMeshDS();
+
+    // check if there are internal or shared FACEs
+    bool hasInternal = ( !_grid->_geometry.IsOneSolid() ||
+                         _grid->_geometry._soleSolid.HasInternalFaces() );
+
+    for ( size_t iV = 0; iV < boundaryVolumes.size(); ++iV )
+    {
+      if ( !vTool.Set( boundaryVolumes[ iV ]))
+        continue;
+
+      TGeomID solidID = vTool.Element()->GetShapeID();
+      Solid *   solid = _grid->GetOneOfSolids( solidID );
+
+      // find boundary facets
+
+      bndFacets.clear();
+      for ( int iF = 0, n = vTool.NbFaces(); iF < n; iF++ )
+      {
+        bool isBoundary = vTool.IsFreeFace( iF );
+        if ( isBoundary )
+        {
+          bndFacets.push_back( iF );
+        }
+        else if ( hasInternal )
+        {
+          // check if all nodes are on internal/shared FACEs
+          isBoundary = true;
+          const SMDS_MeshNode** nn = vTool.GetFaceNodes( iF );
+          const size_t nbFaceNodes = vTool.NbFaceNodes ( iF );
+          for ( size_t iN = 0; iN < nbFaceNodes &&  isBoundary; ++iN )
+            isBoundary = ( nn[ iN ]->GetShapeID() != solidID );
+          if ( isBoundary )
+            bndFacets.push_back( -( iF+1 )); // !!! minus ==> to check the FACE
+        }
+      }
+      if ( bndFacets.empty() )
+        continue;
+
+      // create faces
+
+      if ( !vTool.IsPoly() )
+        vTool.SetExternalNormal();
+      for ( size_t i = 0; i < bndFacets.size(); ++i ) // loop on boundary facets
+      {
+        const bool    isBoundary = ( bndFacets[i] >= 0 );
+        const int         iFacet = isBoundary ? bndFacets[i] : -bndFacets[i]-1;
+        const SMDS_MeshNode** nn = vTool.GetFaceNodes( iFacet );
+        const size_t nbFaceNodes = vTool.NbFaceNodes ( iFacet );
+        face.myNodes.assign( nn, nn + nbFaceNodes );
+
+        TGeomID faceID = 0;
+        const SMDS_MeshElement* existFace = 0, *newFace = 0;
+
+        if (( existFace = meshDS->FindElement( face.myNodes, SMDSAbs_Face )))
+        {
+          if ( existFace->isMarked() )
+            continue; // created by this method
+          faceID = existFace->GetShapeID();
+        }
+        else
+        {
+          // look for a supporting FACE
+          for ( size_t iN = 0; iN < nbFaceNodes &&  !faceID; ++iN ) // look for a node on FACE
+          {
+            if ( nn[ iN ]->GetPosition()->GetDim() == 2 )
+              faceID = nn[ iN ]->GetShapeID();
+          }
+          for ( size_t iN = 0; iN < nbFaceNodes &&  !faceID; ++iN )
+          {
+            // look for a father FACE of EDGEs and VERTEXes
+            const TopoDS_Shape& s1 = _grid->Shape( nn[ iN   ]->GetShapeID() );
+            const TopoDS_Shape& s2 = _grid->Shape( nn[ iN+1 ]->GetShapeID() );
+            if ( s1 != s2 && s1.ShapeType() == TopAbs_EDGE && s2.ShapeType() == TopAbs_EDGE )
+            {
+              TopoDS_Shape f = helper.GetCommonAncestor( s1, s2, *helper.GetMesh(), TopAbs_FACE );
+              if ( !f.IsNull() )
+                faceID = _grid->ShapeID( f );
+            }
+          }
+
+          bool toCheckFace = faceID && (( !isBoundary ) ||
+                                        ( hasInternal && _grid->_toUseThresholdForInternalFaces ));
+          if ( toCheckFace ) // check if all nodes are on the found FACE
+          {
+            SMESH_subMesh* faceSM = helper.GetMesh()->GetSubMeshContaining( faceID );
+            for ( size_t iN = 0; iN < nbFaceNodes &&  faceID; ++iN )
+            {
+              TGeomID subID = nn[ iN ]->GetShapeID();
+              if ( subID != faceID && !faceSM->DependsOn( subID ))
+                faceID = 0;
+            }
+            if ( !faceID && !isBoundary )
+              continue;
+          }
+        }
+        // orient a new face according to supporting FACE orientation in shape_to_mesh
+        if ( !solid->IsOutsideOriented( faceID ))
+        {
+          if ( existFace )
+            editor.Reorient( existFace );
+          else
+            std::reverse( face.myNodes.begin(), face.myNodes.end() );
+        }
+
+        if ( ! ( newFace = existFace ))
+        {
+          face.SetPoly( nbFaceNodes > 4 );
+          newFace = editor.AddElement( face.myNodes, face );
+          if ( !newFace )
+            continue;
+          newFace->setIsMarked( true ); // to distinguish from face created in getBoundaryElems()
+        }
+
+        if ( faceID && _grid->IsBoundaryFace( faceID )) // face is not shared
+        {
+          // set newFace to the found FACE provided that it fully lies on the FACE
+          for ( size_t iN = 0; iN < nbFaceNodes &&  faceID; ++iN )
+            if ( nn[iN]->GetShapeID() == solidID )
+            {
+              if ( existFace )
+                meshDS->UnSetMeshElementOnShape( existFace, _grid->Shape( faceID ));
+              faceID = 0;
+            }
+        }
+
+        // split a polygon that will be used by other 3D algorithm
+        if ( faceID && nbFaceNodes > 4 &&
+             !_grid->IsInternal( faceID ) &&
+             !_grid->IsShared( faceID ) &&
+             !_grid->IsBoundaryFace( faceID ))
+        {
+          splitPolygon( newFace, vTool, iFacet, faceID, solidID,
+                        face, editor, i+1 < bndFacets.size() );
+        }
+        else
+        {
+          if ( faceID )
+            meshDS->SetMeshElementOnShape( newFace, faceID );
+          else
+            meshDS->SetMeshElementOnShape( newFace, solidID );
+        }
+      } // loop on bndFacets
+    } // loop on boundaryVolumes
+
+
+    // Orient coherently mesh faces on INTERNAL FACEs
+
+    if ( hasInternal )
+    {
+      TopExp_Explorer faceExp( _grid->_geometry._mainShape, TopAbs_FACE );
+      for ( ; faceExp.More(); faceExp.Next() )
+      {
+        if ( faceExp.Current().Orientation() != TopAbs_INTERNAL )
+          continue;
+
+        SMESHDS_SubMesh* sm = meshDS->MeshElements( faceExp.Current() );
+        if ( !sm ) continue;
+
+        TIDSortedElemSet facesToOrient;
+        for ( SMDS_ElemIteratorPtr fIt = sm->GetElements(); fIt->more(); )
+          facesToOrient.insert( facesToOrient.end(), fIt->next() );
+        if ( facesToOrient.size() < 2 )
+          continue;
+
+        gp_Dir direction(1,0,0);
+        const SMDS_MeshElement* anyFace = *facesToOrient.begin();
+        editor.Reorient2D( facesToOrient, direction, anyFace );
+      }
+    }
+    return;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Create mesh segments.
+   */
+  void Hexahedron::addSegments( SMESH_MesherHelper&                      helper,
+                                const map< TGeomID, vector< TGeomID > >& edge2faceIDsMap )
+  {
+    SMESHDS_Mesh* mesh = helper.GetMeshDS();
+
+    std::vector<const SMDS_MeshNode*> nodes;
+    std::vector<const SMDS_MeshElement *> elems;
+    map< TGeomID, vector< TGeomID > >::const_iterator e2ff = edge2faceIDsMap.begin();
+    for ( ; e2ff != edge2faceIDsMap.end(); ++e2ff )
+    {
+      const TopoDS_Edge& edge = TopoDS::Edge( _grid->Shape( e2ff->first ));
+      const TopoDS_Face& face = TopoDS::Face( _grid->Shape( e2ff->second[0] ));
+      StdMeshers_FaceSide side( face, edge, helper.GetMesh(), /*isFwd=*/true, /*skipMed=*/true );
+      nodes = side.GetOrderedNodes();
+
+      elems.clear();
+      if ( nodes.size() == 2 )
+        // check that there is an element connecting two nodes
+        if ( !mesh->GetElementsByNodes( nodes, elems ))
+          continue;
+
+      for ( size_t i = 1; i < nodes.size(); i++ )
+      {
+        SMDS_MeshElement* segment = mesh->AddEdge( nodes[i-1], nodes[i] );
+        mesh->SetMeshElementOnShape( segment, e2ff->first );
+      }
+    }
+    return;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Return created volumes and volumes that can have free facet because of
+   *        skipped small volume. Also create mesh faces on free facets
+   *        of adjacent not-cut volumes id the result volume is too small.
+   */
+  void Hexahedron::getBoundaryElems( vector< const SMDS_MeshElement* > & boundaryElems )
+  {
+    if ( _hasTooSmall /*|| _volumeDefs.IsEmpty()*/ )
+    {
+      // create faces around a missing small volume
+      TGeomID faceID = 0;
+      SMESH_MeshEditor editor( _grid->_helper->GetMesh() );
+      SMESH_MeshEditor::ElemFeatures polygon( SMDSAbs_Face );
+      SMESHDS_Mesh* meshDS = _grid->_helper->GetMeshDS();
+      std::vector<const SMDS_MeshElement *> adjVolumes(2);
+      for ( size_t iF = 0; iF < _polygons.size(); ++iF )
+      {
+        const size_t nbLinks = _polygons[ iF ]._links.size();
+        if ( nbLinks != 4 ) continue;
+        polygon.myNodes.resize( nbLinks );
+        polygon.myNodes.back() = 0;
+        for ( size_t iL = 0, iN = nbLinks - 1; iL < nbLinks; ++iL, --iN )
+          if ( ! ( polygon.myNodes[iN] = _polygons[ iF ]._links[ iL ].FirstNode()->Node() ))
+            break;
+        if ( !polygon.myNodes.back() )
+          continue;
+
+        meshDS->GetElementsByNodes( polygon.myNodes, adjVolumes, SMDSAbs_Volume );
+        if ( adjVolumes.size() != 1 )
+          continue;
+        if ( !adjVolumes[0]->isMarked() )
+        {
+          boundaryElems.push_back( adjVolumes[0] );
+          adjVolumes[0]->setIsMarked( true );
+        }
+
+        bool sameShape = true;
+        TGeomID shapeID = polygon.myNodes[0]->GetShapeID();
+        for ( size_t i = 1; i < polygon.myNodes.size() && sameShape; ++i )
+          sameShape = ( shapeID == polygon.myNodes[i]->GetShapeID() );
+
+        if ( !sameShape || !_grid->IsSolid( shapeID ))
+          continue; // some of shapes must be FACE
+
+        if ( !faceID )
+        {
+          faceID = getAnyFace();
+          if ( !faceID )
+            break;
+          if ( _grid->IsInternal( faceID ) ||
+               _grid->IsShared( faceID ) ||
+               _grid->IsBoundaryFace( faceID ))
+            break; // create only if a new face will be used by other 3D algo
+        }
+
+        Solid * solid = _grid->GetOneOfSolids( adjVolumes[0]->GetShapeID() );
+        if ( !solid->IsOutsideOriented( faceID ))
+          std::reverse( polygon.myNodes.begin(), polygon.myNodes.end() );
+
+        //polygon.SetPoly( polygon.myNodes.size() > 4 );
+        const SMDS_MeshElement* newFace = editor.AddElement( polygon.myNodes, polygon );
+        meshDS->SetMeshElementOnShape( newFace, faceID );
+      }
+    }
+
+    // return created volumes
+    for ( _volumeDef* volDef = &_volumeDefs; volDef; volDef = volDef->_next )
+    {
+      if ( volDef->_volume && !volDef->_volume->isMarked() )
+      {
+        volDef->_volume->setIsMarked( true );
+        boundaryElems.push_back( volDef->_volume );
+
+        if ( _grid->IsToCheckNodePos() ) // un-mark nodes marked in addVolumes()
+          for ( size_t iN = 0; iN < volDef->_nodes.size(); ++iN )
+            volDef->_nodes[iN].Node()->setIsMarked( false );
+      }
+    }
+  }
+
+  //================================================================================
+  /*!
+   * \brief Set to _hexLinks a next portion of splits located on one side of INTERNAL FACEs
+   */
+  bool Hexahedron::_SplitIterator::Next()
+  {
+    if ( _iterationNb > 0 )
+      // count used splits
+      for ( size_t i = 0; i < _splits.size(); ++i )
+      {
+        if ( _splits[i]._iCheckIteration == _iterationNb )
+        {
+          _splits[i]._isUsed = _splits[i]._checkedSplit->_faces[1];
+          _nbUsed += _splits[i]._isUsed;
+        }
+        if ( !More() )
+          return false;
+      }
+
+    ++_iterationNb;
+
+    bool toTestUsed = ( _nbChecked >= _splits.size() );
+    if ( toTestUsed )
+    {
+      // all splits are checked; find all not used splits
+      for ( size_t i = 0; i < _splits.size(); ++i )
+        if ( !_splits[i].IsCheckedOrUsed( toTestUsed ))
+          _splits[i]._iCheckIteration = _iterationNb;
+
+      _nbUsed = _splits.size(); // to stop iteration
+    }
+    else
+    {
+      // get any not used/checked split to start from
+      _freeNodes.clear();
+      for ( size_t i = 0; i < _splits.size(); ++i )
+      {
+        if ( !_splits[i].IsCheckedOrUsed( toTestUsed ))
+        {
+          _freeNodes.push_back( _splits[i]._nodes[0] );
+          _freeNodes.push_back( _splits[i]._nodes[1] );
+          _splits[i]._iCheckIteration = _iterationNb;
+          break;
+        }
+      }
+      // find splits connected to the start one via _freeNodes
+      for ( size_t iN = 0; iN < _freeNodes.size(); ++iN )
+      {
+        for ( size_t iS = 0; iS < _splits.size(); ++iS )
+        {
+          if ( _splits[iS].IsCheckedOrUsed( toTestUsed ))
+            continue;
+          int iN2 = -1;
+          if (      _freeNodes[iN] == _splits[iS]._nodes[0] )
+            iN2 = 1;
+          else if ( _freeNodes[iN] == _splits[iS]._nodes[1] )
+            iN2 = 0;
+          else
+            continue;
+          if ( _freeNodes[iN]->_isInternalFlags > 0 )
+          {
+            if ( _splits[iS]._nodes[ iN2 ]->_isInternalFlags == 0 )
+              continue;
+            if ( !_splits[iS]._nodes[ iN2 ]->IsLinked( _freeNodes[iN]->_intPoint ))
+              continue;
+          }
+          _splits[iS]._iCheckIteration = _iterationNb;
+          _freeNodes.push_back( _splits[iS]._nodes[ iN2 ]);
+        }
+      }
+    }
+    // set splits to hex links
+
+    for ( int iL = 0; iL < 12; ++iL )
+      _hexLinks[ iL ]._splits.clear();
+
+    _Link split;
+    for ( size_t i = 0; i < _splits.size(); ++i )
+    {
+      if ( _splits[i]._iCheckIteration == _iterationNb )
+      {
+        split._nodes[0] = _splits[i]._nodes[0];
+        split._nodes[1] = _splits[i]._nodes[1];
+        _Link & hexLink = _hexLinks[ _splits[i]._linkID ];
+        hexLink._splits.push_back( split );
+        _splits[i]._checkedSplit = & hexLink._splits.back();
+        ++_nbChecked;
+      }
+    }
+    return More();
   }
 
   //================================================================================
@@ -3524,49 +5234,45 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
   _computeCanceled = false;
 
   SMESH_MesherHelper helper( theMesh );
+  SMESHDS_Mesh* meshDS = theMesh.GetMeshDS();
 
   try
   {
     Grid grid;
-    grid._helper = &helper;
+    grid._helper                         = &helper;
+    grid._toAddEdges                     = _hyp->GetToAddEdges();
+    grid._toCreateFaces                  = _hyp->GetToCreateFaces();
+    grid._toConsiderInternalFaces        = _hyp->GetToConsiderInternalFaces();
+    grid._toUseThresholdForInternalFaces = _hyp->GetToUseThresholdForInternalFaces();
+    grid._sizeThreshold                  = _hyp->GetSizeThreshold();
+    grid.InitGeometry( theShape );
 
     vector< TopoDS_Shape > faceVec;
     {
       TopTools_MapOfShape faceMap;
       TopExp_Explorer fExp;
       for ( fExp.Init( theShape, TopAbs_FACE ); fExp.More(); fExp.Next() )
-        if ( !faceMap.Add( fExp.Current() ))
-          faceMap.Remove( fExp.Current() ); // remove a face shared by two solids
-
-      for ( fExp.ReInit(); fExp.More(); fExp.Next() )
-        if ( faceMap.Contains( fExp.Current() ))
-          faceVec.push_back( fExp.Current() );
+      {
+        bool isNewFace = faceMap.Add( fExp.Current() );
+        if ( !grid._toConsiderInternalFaces )
+          if ( !isNewFace || fExp.Current().Orientation() == TopAbs_INTERNAL )
+            // remove an internal face
+            faceMap.Remove( fExp.Current() );
+      }
+      faceVec.reserve( faceMap.Extent() );
+      faceVec.assign( faceMap.cbegin(), faceMap.cend() );
     }
     vector<FaceGridIntersector> facesItersectors( faceVec.size() );
-    map< TGeomID, vector< TGeomID > > edge2faceIDsMap;
-    TopExp_Explorer eExp;
     Bnd_Box shapeBox;
     for ( size_t i = 0; i < faceVec.size(); ++i )
     {
-      facesItersectors[i]._face   = TopoDS::Face    ( faceVec[i] );
-      facesItersectors[i]._faceID = grid._shapes.Add( faceVec[i] );
+      facesItersectors[i]._face   = TopoDS::Face( faceVec[i] );
+      facesItersectors[i]._faceID = grid.ShapeID( faceVec[i] );
       facesItersectors[i]._grid   = &grid;
       shapeBox.Add( facesItersectors[i].GetFaceBndBox() );
-
-      if ( _hyp->GetToAddEdges() )
-      {
-        helper.SetSubShape( faceVec[i] );
-        for ( eExp.Init( faceVec[i], TopAbs_EDGE ); eExp.More(); eExp.Next() )
-        {
-          const TopoDS_Edge& edge = TopoDS::Edge( eExp.Current() );
-          if ( !SMESH_Algo::isDegenerated( edge ) &&
-               !helper.IsRealSeam( edge ))
-            edge2faceIDsMap[ grid._shapes.Add( edge )].push_back( facesItersectors[i]._faceID );
-        }
-      }
     }
-
     getExactBndBox( faceVec, _hyp->GetAxisDirs(), shapeBox );
+
 
     vector<double> xCoords, yCoords, zCoords;
     _hyp->GetCoordinates( xCoords, yCoords, zCoords, shapeBox );
@@ -3581,7 +5287,7 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
       BRepBuilderAPI_Copy copier;
       for ( size_t i = 0; i < facesItersectors.size(); ++i )
       {
-        if ( !facesItersectors[i].IsThreadSafe(tshapes) )
+        if ( !facesItersectors[i].IsThreadSafe( tshapes ))
         {
           copier.Perform( facesItersectors[i]._face );
           facesItersectors[i]._face = TopoDS::Face( copier );
@@ -3603,33 +5309,36 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
     for ( size_t i = 0; i < facesItersectors.size(); ++i )
       facesItersectors[i].StoreIntersections();
 
-    TopExp_Explorer solidExp (theShape, TopAbs_SOLID);
-    helper.SetSubShape( solidExp.Current() );
-    helper.SetElementsOnShape( true );
-
     if ( _computeCanceled ) return false;
 
     // create nodes on the geometry
-    grid.ComputeNodes(helper);
+    grid.ComputeNodes( helper );
 
     if ( _computeCanceled ) return false;
 
+    // get EDGEs to take into account
+    map< TGeomID, vector< TGeomID > > edge2faceIDsMap;
+    grid.GetEdgesToImplement( edge2faceIDsMap, theShape, faceVec );
+
     // create volume elements
-    Hexahedron hex( _hyp->GetSizeThreshold(), &grid );
+    Hexahedron hex( &grid );
     int nbAdded = hex.MakeElements( helper, edge2faceIDsMap );
 
-    SMESHDS_Mesh* meshDS = theMesh.GetMeshDS();
     if ( nbAdded > 0 )
     {
-      // make all SOLIDs computed
-      if ( SMESHDS_SubMesh* sm1 = meshDS->MeshElements( solidExp.Current()) )
+      if ( !grid._toConsiderInternalFaces )
       {
-        SMDS_ElemIteratorPtr volIt = sm1->GetElements();
-        for ( ; solidExp.More() && volIt->more(); solidExp.Next() )
+        // make all SOLIDs computed
+        TopExp_Explorer solidExp( theShape, TopAbs_SOLID );
+        if ( SMESHDS_SubMesh* sm1 = meshDS->MeshElements( solidExp.Current()) )
         {
-          const SMDS_MeshElement* vol = volIt->next();
-          sm1->RemoveElement( vol );
-          meshDS->SetMeshElementOnShape( vol, solidExp.Current() );
+          SMDS_ElemIteratorPtr volIt = sm1->GetElements();
+          for ( ; solidExp.More() && volIt->more(); solidExp.Next() )
+          {
+            const SMDS_MeshElement* vol = volIt->next();
+            sm1->RemoveElement( vol );
+            meshDS->SetMeshElementOnShape( vol, solidExp.Current() );
+          }
         }
       }
       // make other sub-shapes computed
@@ -3637,9 +5346,9 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
     }
 
     // remove free nodes
-    if ( SMESHDS_SubMesh * smDS = meshDS->MeshElements( helper.GetSubShapeID() ))
+    //if ( SMESHDS_SubMesh * smDS = meshDS->MeshElements( helper.GetSubShapeID() ))
     {
-      TIDSortedNodeSet nodesToRemove;
+      std::vector< const SMDS_MeshNode* > nodesToRemove;
       // get intersection nodes
       for ( int iDir = 0; iDir < 3; ++iDir )
       {
@@ -3648,19 +5357,25 @@ bool StdMeshers_Cartesian_3D::Compute(SMESH_Mesh &         theMesh,
         {
           multiset< F_IntersectPoint >::iterator ip = lines[i]._intPoints.begin();
           for ( ; ip != lines[i]._intPoints.end(); ++ip )
-            if ( ip->_node && ip->_node->NbInverseElements() == 0 )
-              nodesToRemove.insert( nodesToRemove.end(), ip->_node );
+            if ( ip->_node && ip->_node->NbInverseElements() == 0 && !ip->_node->isMarked() )
+            {
+              nodesToRemove.push_back( ip->_node );
+              ip->_node->setIsMarked( true );
+            }
         }
       }
       // get grid nodes
       for ( size_t i = 0; i < grid._nodes.size(); ++i )
-        if ( grid._nodes[i] && grid._nodes[i]->NbInverseElements() == 0 )
-          nodesToRemove.insert( nodesToRemove.end(), grid._nodes[i] );
+        if ( grid._nodes[i] && grid._nodes[i]->NbInverseElements() == 0 &&
+             !grid._nodes[i]->isMarked() )
+        {
+          nodesToRemove.push_back( grid._nodes[i] );
+          grid._nodes[i]->setIsMarked( true );
+        }
 
       // do remove
-      TIDSortedNodeSet::iterator n = nodesToRemove.begin();
-      for ( ; n != nodesToRemove.end(); ++n )
-        meshDS->RemoveFreeNode( *n, smDS, /*fromGroups=*/false );
+      for ( size_t i = 0; i < nodesToRemove.size(); ++i )
+        meshDS->RemoveFreeNode( nodesToRemove[i], /*smD=*/0, /*fromGroups=*/false );
     }
 
     return nbAdded;
@@ -3795,4 +5510,3 @@ void StdMeshers_Cartesian_3D::setSubmeshesComputed(SMESH_Mesh&         theMesh,
   for ( TopExp_Explorer soExp( theShape, TopAbs_SOLID ); soExp.More(); soExp.Next() )
     _EventListener::setAlwaysComputed( true, theMesh.GetSubMesh( soExp.Current() ));
 }
-

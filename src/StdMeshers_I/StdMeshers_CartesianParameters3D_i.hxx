@@ -100,7 +100,7 @@ class STDMESHERS_I_EXPORT StdMeshers_CartesianParameters3D_i:
 
 
   /*!
-   * \brief Enables implementation of geometrical edges into the mesh. If this feature
+   * \brief Enable implementation of geometrical edges into the mesh. If this feature
    *        is disabled, sharp edges of the shape are lost ("smoothed") in the mesh if
    *        they don't coincide with the grid lines
    */
@@ -108,13 +108,32 @@ class STDMESHERS_I_EXPORT StdMeshers_CartesianParameters3D_i:
   CORBA::Boolean GetToAddEdges();
 
   /*!
-   * \brief Return true if the grid is defined by spacing functions and 
+   * Enable treatment of geom faces, either shared by solids or internal.
+   */
+  void SetToConsiderInternalFaces(CORBA::Boolean toTreat);
+  CORBA::Boolean GetToConsiderInternalFaces();
+
+  /*!
+   * Enable applying size threshold to grid cells cut by internal geom faces.
+   */
+  void SetToUseThresholdForInternalFaces(CORBA::Boolean toUse);
+  CORBA::Boolean GetToUseThresholdForInternalFaces();
+
+  /*!
+   * Enable creation of mesh faces.
+   */
+  void SetToCreateFaces(CORBA::Boolean toCreate);
+  CORBA::Boolean GetToCreateFaces();
+
+
+  /*!
+   * \brief Return true if the grid is defined by spacing functions and
    *        not by node coordinates
    */
   CORBA::Boolean IsGridBySpacing(CORBA::Short axis);
 
   /*!
-   * Returns axes at which number of hexahedra is maximal
+   * Return axes at which number of hexahedra is maximal
    */
   void ComputeOptimalAxesDirs(GEOM::GEOM_Object_ptr shape,
                               CORBA::Boolean        isOrthogonal,
@@ -122,7 +141,7 @@ class STDMESHERS_I_EXPORT StdMeshers_CartesianParameters3D_i:
                               SMESH::DirStruct&     y,
                               SMESH::DirStruct&     z) throw (SALOME::SALOME_Exception);
   /*!
-   * \brief Computes node coordinates by spacing functions
+   * \brief Compute node coordinates by spacing functions
    *  \param x0 - lower coordinate
    *  \param x1 - upper coordinate
    *  \param spaceFuns - space functions

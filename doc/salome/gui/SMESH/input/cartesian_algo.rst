@@ -52,6 +52,9 @@ This dialog allows to define
 	.. centered::
 		Implement Edges switched off to the left and on to the right
 
+* **Create Faces** check-box activates creation on mesh faces.
+* **Consider Shared and Internal Faces** check-box activates treatment of faces shared by solids and internal. By default the algorithm considers only outer boundaries of the geometry.
+* **Apply Threshold to Shared / Internal Faces** check-box activates application of **Threshold** to cells cut by shared and internal faces, that can cause appearance of holes inside the mesh.
 * **Definition mode** allows choosing how Cartesian structured grid is defined. Location of nodes along each grid axis is defined individually:
     
 	* You can specify the **Coordinates** of grid nodes. **Insert** button inserts a node at **Step** distance (negative or positive) from the selected node. **Delete** button removes the selected node. Double click on a coordinate in the list enables its edition. **Note** that node coordinates are measured along directions of axes that can differ from the directions of the Global Coordinate System.

@@ -4262,6 +4262,7 @@ private:
   bool isOutOfFace  (const gp_Pnt& p);
   bool isOutOfEdge  (const gp_Pnt& p);
   bool isOutOfVertex(const gp_Pnt& p);
+  bool isOutOfNone  (const gp_Pnt& p) { return true; }
   bool isBox        (const TopoDS_Shape& s);
 
   bool (Classifier::*          myIsOutFun)(const gp_Pnt& p);
@@ -4583,7 +4584,7 @@ bool ElementsOnShape::IsSatisfy (const SMDS_MeshNode* node,
         {
           isNodeOut = false;
           if ( okShape )
-            *okShape = myWorkClassifiers[i]->Shape();
+            *okShape = myClassifiers[i].Shape();
           break;
         }
     }
@@ -4621,17 +4622,27 @@ void ElementsOnShape::Classifier::Init( const TopoDS_Shape& theShape,
   {
     Standard_Real u1,u2,v1,v2;
     Handle(Geom_Surface) surf = BRep_Tool::Surface( TopoDS::Face( theShape ));
-    surf->Bounds( u1,u2,v1,v2 );
-    myProjFace.Init(surf, u1,u2, v1,v2, myTol );
-    myIsOutFun = & ElementsOnShape::Classifier::isOutOfFace;
+    if ( surf.IsNull() )
+      myIsOutFun = & ElementsOnShape::Classifier::isOutOfNone;
+    else
+    {
+      surf->Bounds( u1,u2,v1,v2 );
+      myProjFace.Init(surf, u1,u2, v1,v2, myTol );
+      myIsOutFun = & ElementsOnShape::Classifier::isOutOfFace;
+    }
     break;
   }
   case TopAbs_EDGE:
   {
     Standard_Real u1, u2;
     Handle(Geom_Curve) curve = BRep_Tool::Curve( TopoDS::Edge( theShape ), u1, u2);
-    myProjEdge.Init(curve, u1, u2);
-    myIsOutFun = & ElementsOnShape::Classifier::isOutOfEdge;
+    if ( curve.IsNull() )
+      myIsOutFun = & ElementsOnShape::Classifier::isOutOfNone;
+    else
+    {
+      myProjEdge.Init(curve, u1, u2);
+      myIsOutFun = & ElementsOnShape::Classifier::isOutOfEdge;
+    }
     break;
   }
   case TopAbs_VERTEX:

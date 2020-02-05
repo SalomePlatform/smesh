@@ -140,6 +140,25 @@ public:
   bool GetToAddEdges() const;
 
   /*!
+   * \brief Enables treatment of geom faces either shared by solids or internal.
+   */
+  void SetToConsiderInternalFaces(bool toTreat);
+  bool GetToConsiderInternalFaces() const { return _toConsiderInternalFaces; }
+
+  /*!
+   * \brief Enables applying size threshold to grid cells cut by internal geom faces.
+   */
+  void SetToUseThresholdForInternalFaces(bool toUse);
+  bool GetToUseThresholdForInternalFaces() const { return _toUseThresholdForInternalFaces; }
+
+  /*!
+   * \brief Enables creation of mesh faces.
+   */
+  void SetToCreateFaces(bool toCreate);
+  bool GetToCreateFaces() const { return _toCreateFaces; }
+
+
+  /*!
    * \brief Return true if parameters are well defined
    */
   bool IsDefined() const;
@@ -171,6 +190,9 @@ public:
 
   double _sizeThreshold;
   bool   _toAddEdges;
+  bool   _toConsiderInternalFaces;
+  bool   _toUseThresholdForInternalFaces;
+  bool   _toCreateFaces;
 };
 
 #endif

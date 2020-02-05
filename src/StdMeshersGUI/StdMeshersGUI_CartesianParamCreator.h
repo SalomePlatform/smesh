@@ -152,6 +152,9 @@ private:
   QLineEdit*                  myName;
   SMESHGUI_SpinBox*           myThreshold;
   QCheckBox*                  myAddEdges;
+  QCheckBox*                  myCreateFaces;
+  QCheckBox*                  myConsiderInternalFaces;
+  QCheckBox*                  myUseThresholdForInternalFaces;
 
   StdMeshersGUI::GridAxisTab* myAxisTabs[3];
   QGroupBox*                  myFixedPointGrp;

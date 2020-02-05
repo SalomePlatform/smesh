@@ -14,10 +14,13 @@ smesh =  smeshBuilder.New()
 
 # create a sphere
 sphere = geompy.MakeSphereR( 50 )
-geompy.addToStudy( sphere, "sphere" )
+
+# cut the sphere by a box
+box = geompy.MakeBoxDXDYDZ( 100, 100, 100 )
+partition = geompy.MakePartition([ sphere ], [ box ], theName="partition")
 
 # create a mesh and assign a "Body Fitting" algo
-mesh = smesh.Mesh( sphere )
+mesh = smesh.Mesh( partition )
 cartAlgo = mesh.BodyFitted()
 
 # define a cartesian grid using Coordinates
@@ -38,7 +41,27 @@ mesh.Compute()
 print("nb hexahedra",mesh.NbHexas())
 print("nb tetrahedra",mesh.NbTetras())
 print("nb polyhedra",mesh.NbPolyhedrons())
+print("nb faces",mesh.NbFaces())
+print()
 
+# activate creation of faces
+cartHyp.SetToCreateFaces( True )
+
+mesh.Compute()
+print("nb hexahedra",mesh.NbHexas())
+print("nb tetrahedra",mesh.NbTetras())
+print("nb polyhedra",mesh.NbPolyhedrons())
+print("nb faces",mesh.NbFaces())
+print()
+
+# enable consideration of shared faces
+cartHyp.SetToConsiderInternalFaces( True )
+mesh.Compute()
+print("nb hexahedra",mesh.NbHexas())
+print("nb tetrahedra",mesh.NbTetras())
+print("nb polyhedra",mesh.NbPolyhedrons())
+print("nb faces",mesh.NbFaces())
+print()
 
 # define the grid by setting different spacing in 2 sub-ranges of geometry
 spaceFuns = ["5","10+10*t"]

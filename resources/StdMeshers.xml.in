@@ -224,7 +224,6 @@
     <hypothesis type     ="CartesianParameters3D"
                 label-id ="Body Fitting Parameters"
                 icon-id  ="mesh_hypo_length.png"
-                context  ="GLOBAL"
                 dim      ="3"/>
 
   </hypotheses>
@@ -570,7 +569,6 @@
                support-submeshes="false"
                output           ="HEXA"
                need-hyp         ="true"
-               context          ="GLOBAL"
                dim              ="3">
       <python-wrap>
         <algo>Cartesian_3D=BodyFitted()</algo>

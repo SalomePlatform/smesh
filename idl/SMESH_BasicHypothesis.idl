@@ -1037,7 +1037,7 @@ module StdMeshers
     boolean GetFixedPoint(out SMESH::PointStruct p);
 
     /*!
-     * Enables implementation of geometrical edges into the mesh. If this feature
+     * Enable implementation of geometrical edges into the mesh. If this feature
      * is disabled, sharp edges of the shape are lost ("smoothed") in the mesh if
      * they don't coincide with the grid lines
      */
@@ -1045,17 +1045,35 @@ module StdMeshers
     boolean GetToAddEdges();
 
     /*!
-     * Returns axes at which a number of generated hexahedra is maximal
+     * Enable treatment of geom faces, either shared by solids or internal.
+     */
+    void SetToConsiderInternalFaces(in boolean toTreat);
+    boolean GetToConsiderInternalFaces();
+
+    /*!
+     * Enable applying size threshold to grid cells cut by internal geom faces.
+     */
+    void SetToUseThresholdForInternalFaces(in boolean toUse);
+    boolean GetToUseThresholdForInternalFaces();
+
+    /*!
+     * Enable creation of mesh faces.
+     */
+    void SetToCreateFaces(in boolean toCreate);
+    boolean GetToCreateFaces();
+
+    /*!
+     * Return axes at which a number of generated hexahedra is maximal
      */
     void ComputeOptimalAxesDirs(in GEOM::GEOM_Object shape,
                                 in boolean           isOrthogonal,
                                 out SMESH::DirStruct x,
                                 out SMESH::DirStruct y,
-                                out SMESH::DirStruct z ) 
+                                out SMESH::DirStruct z )
       raises (SALOME::SALOME_Exception);
 
     /*!
-     * \brief Computes node coordinates by spacing functions
+     * \brief Compute node coordinates by spacing functions
      *  \param x0 - lower coordinate
      *  \param x1 - upper coordinate
      *  \param spaceFuns - space functions

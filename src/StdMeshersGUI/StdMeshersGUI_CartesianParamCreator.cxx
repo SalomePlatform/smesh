@@ -204,8 +204,8 @@ namespace StdMeshersGUI
     axisTabLayout->setSpacing( SPACING );
 
     axisTabLayout->addWidget( modeBox    , 0, 0, 1, 3 );
-    axisTabLayout->addWidget( myInsertBtn  , 1, 0, 1, 2 );
-    axisTabLayout->addWidget( myDeleteBtn  , 2, 0, 1, 2 );
+    axisTabLayout->addWidget( myInsertBtn, 1, 0, 1, 2 );
+    axisTabLayout->addWidget( myDeleteBtn, 2, 0, 1, 2 );
     axisTabLayout->addWidget( myStepLabel, 3, 0 );
     axisTabLayout->addWidget( myStepSpin , 3, 1 );
     axisTabLayout->addWidget( csFrame    , 1, 2, 4, 1 );
@@ -821,6 +821,15 @@ QFrame* StdMeshersGUI_CartesianParamCreator::buildFrame()
   myAddEdges = new QCheckBox( tr("ADD_EDGES"), GroupC1 );
   argGroupLayout->addWidget( myAddEdges, row, 0, 1, 2 );
   row++;
+  myCreateFaces = new QCheckBox( tr("CREATE_FACES"), GroupC1 );
+  argGroupLayout->addWidget( myCreateFaces, row, 0, 1, 2 );
+  row++;
+  myConsiderInternalFaces = new QCheckBox( tr("CONSIDER_INTERNAL_FACES"), GroupC1 );
+  argGroupLayout->addWidget( myConsiderInternalFaces, row, 0, 1, 2 );
+  row++;
+  myUseThresholdForInternalFaces = new QCheckBox( tr("USE_THRESHOLD_FOR_INTERNAL_FACES"), GroupC1 );
+  argGroupLayout->addWidget( myUseThresholdForInternalFaces, row, 0, 1, 2 );
+  row++;
 
   // 3)  Grid definition
   QTabWidget* tabWdg = new QTabWidget( fr );
@@ -924,6 +933,8 @@ QFrame* StdMeshersGUI_CartesianParamCreator::buildFrame()
   connect( myOrthogonalChk, SIGNAL( toggled(bool)),             SLOT( onOrthogonalAxes(bool)));
   connect( optimBtn,        SIGNAL( clicked(bool)),             SLOT( onOptimalAxes(bool)));
   connect( resetBtn,        SIGNAL( clicked(bool)),             SLOT( onResetAxes(bool)));
+  connect( myConsiderInternalFaces,      SIGNAL( toggled(bool)),
+           myUseThresholdForInternalFaces, SLOT( setEnabled(bool)));
   for ( int i = 0; i < 3; ++i )
   {
     connect( myXDirSpin[i], SIGNAL(valueChanged   (const QString&)),
@@ -999,6 +1010,9 @@ void StdMeshersGUI_CartesianParamCreator::retrieveParams() const
     myThreshold->setText( varName );
 
   myAddEdges->setChecked( h->GetToAddEdges() );
+  myCreateFaces->setChecked( h->GetToCreateFaces() );
+  myConsiderInternalFaces->setChecked( h->GetToConsiderInternalFaces() );
+  myUseThresholdForInternalFaces->setChecked( h->GetToUseThresholdForInternalFaces() );
 
   // grid definition
   for ( int ax = 0; ax < 3; ++ax )
@@ -1086,6 +1100,9 @@ QString StdMeshersGUI_CartesianParamCreator::storeParams() const
     h->SetVarParameter( myThreshold->text().toLatin1().constData(), "SetSizeThreshold" );
     h->SetSizeThreshold( myThreshold->text().toDouble() );
     h->SetToAddEdges( myAddEdges->isChecked() );
+    h->SetToCreateFaces( myCreateFaces->isChecked() );
+    h->SetToConsiderInternalFaces( myConsiderInternalFaces->isChecked() );
+    h->SetToUseThresholdForInternalFaces( myUseThresholdForInternalFaces->isChecked() );
 
     // grid
     for ( int ax = 0; ax < 3; ++ax )

@@ -115,9 +115,12 @@ void SMESHDS_SubMesh::AddElement(const SMDS_MeshElement * elem)
           (LOCALIZED("add element in subshape already belonging to a subshape"));
       }
     }
+    else
+    {
+      ++myNbElements;
+    }
 
     elem->setShapeID( myIndex );
-    myNbElements++;
 
     // remember element with smallest ID to optimize iteration on them
     add( elem );
@@ -178,8 +181,11 @@ void SMESHDS_SubMesh::AddNode(const SMDS_MeshNode * N)
           (LOCALIZED("a node being in sub-mesh is added to another sub-mesh"));
       return; // already in
     }
+    else
+    {
+      ++myNbNodes;
+    }
     N->setShapeID( myIndex );
-    myNbNodes++;
 
     // remember node with smallest ID to optimize iteration on them
     add( N );

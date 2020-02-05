@@ -161,8 +161,7 @@ SMESH_MeshEditor::ElemFeatures::Init( const SMDS_MeshElement* elem, bool basicOn
         myIsQuad = elem->IsQuadratic();
         if ( myType == SMDSAbs_Volume && !basicOnly )
         {
-          vector<int> quant = static_cast<const SMDS_MeshVolume* >( elem )->GetQuantities();
-          myPolyhedQuantities.swap( quant );
+          myPolyhedQuantities = static_cast<const SMDS_MeshVolume* >( elem )->GetQuantities();
         }
       }
     }

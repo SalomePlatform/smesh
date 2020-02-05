@@ -64,7 +64,10 @@ StdMeshers_CartesianParameters3D::StdMeshers_CartesianParameters3D(int         h
                                                                    SMESH_Gen * gen)
   : SMESH_Hypothesis(hypId, gen),
     _sizeThreshold( 4.0 ), // default according to the customer specification
-    _toAddEdges( false )
+    _toAddEdges( false ),
+    _toConsiderInternalFaces( false ),
+    _toUseThresholdForInternalFaces( false ),
+    _toCreateFaces( false )
 {
   _name = "CartesianParameters3D"; // used by "Cartesian_3D"
   _param_algo_dim = 3; // 3D
@@ -740,6 +743,48 @@ bool StdMeshers_CartesianParameters3D::GetToAddEdges() const
 }
 
 //=======================================================================
+//function : SetToConsiderInternalFaces
+//purpose  : Enables treatment of geom faces either shared by solids or internal
+//=======================================================================
+
+void StdMeshers_CartesianParameters3D::SetToConsiderInternalFaces(bool toTreat)
+{
+  if ( _toConsiderInternalFaces != toTreat )
+  {
+    _toConsiderInternalFaces = toTreat;
+    NotifySubMeshesHypothesisModification();
+  }
+}
+
+//=======================================================================
+//function : SetToUseThresholdForInternalFaces
+//purpose  : Enables applying size threshold to grid cells cut by internal geom faces.
+//=======================================================================
+
+void StdMeshers_CartesianParameters3D::SetToUseThresholdForInternalFaces(bool toUse)
+{
+  if ( _toUseThresholdForInternalFaces != toUse )
+  {
+    _toUseThresholdForInternalFaces = toUse;
+    NotifySubMeshesHypothesisModification();
+  }
+}
+
+//=======================================================================
+//function : SetToCreateFaces
+//purpose  : Enables creation of mesh faces.
+//=======================================================================
+
+void StdMeshers_CartesianParameters3D::SetToCreateFaces(bool toCreate)
+{
+  if ( _toCreateFaces != toCreate )
+  {
+    _toCreateFaces = toCreate;
+    NotifySubMeshesHypothesisModification();
+  }
+}
+
+//=======================================================================
 //function : IsDefined
 //purpose  : Return true if parameters are well defined
 //=======================================================================
@@ -785,6 +830,10 @@ std::ostream & StdMeshers_CartesianParameters3D::SaveTo(std::ostream & save)
 
   for ( int i = 0; i < 3; ++i )
     save << _fixedPoint[i] << " ";
+
+  save << " " << _toConsiderInternalFaces
+       << " " << _toUseThresholdForInternalFaces
+       << " " << _toCreateFaces;
 
   return save;
 }
@@ -843,6 +892,12 @@ std::istream & StdMeshers_CartesianParameters3D::LoadFrom(std::istream & load)
 
   for ( int i = 0; i < 3 && ok ; ++i )
     ok = static_cast<bool>( load >> _fixedPoint[i]);
+
+  if ( load >> _toConsiderInternalFaces )
+  {
+    load >> _toUseThresholdForInternalFaces;
+    load >> _toCreateFaces;
+  }
 
   return load;
 }

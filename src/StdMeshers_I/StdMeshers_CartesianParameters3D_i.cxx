@@ -240,6 +240,14 @@ void StdMeshers_CartesianParameters3D_i::SetAxesDirs(const SMESH::DirStruct& xDi
   coords[6] = zDir.PS.x;
   coords[7] = zDir.PS.y;
   coords[8] = zDir.PS.z;
+
+  const double* oldCoords = GetImpl()->GetAxisDirs();
+  bool isSame = true;
+  for ( int i = 0; i < 9 &&  isSame; ++i )
+    isSame = ( oldCoords[i] == coords[i] );
+  if ( isSame )
+    return;
+
   try {
     this->GetImpl()->SetAxisDirs(coords);
 
@@ -283,6 +291,11 @@ void StdMeshers_CartesianParameters3D_i::GetAxesDirs(SMESH::DirStruct& xDir,
 void StdMeshers_CartesianParameters3D_i::SetFixedPoint(const SMESH::PointStruct& ps,
                                                        CORBA::Boolean            toUnset)
 {
+  SMESH::PointStruct oldPS;
+  GetFixedPoint( oldPS );
+  if ( oldPS.x == ps.x && oldPS.y == ps.y && oldPS.z == ps.z )
+    return;
+
   double p[3] = { ps.x, ps.y, ps.z };
   GetImpl()->SetFixedPoint( p, toUnset );
 
@@ -333,6 +346,76 @@ void StdMeshers_CartesianParameters3D_i::SetToAddEdges(CORBA::Boolean toAdd)
 CORBA::Boolean StdMeshers_CartesianParameters3D_i::GetToAddEdges()
 {
   return GetImpl()->GetToAddEdges();
+}
+
+//=======================================================================
+//function : SetToConsiderInternalFaces
+//purpose  : Enables treatment of geom faces, either shared by solids or internal.
+//=======================================================================
+
+void  StdMeshers_CartesianParameters3D_i::SetToConsiderInternalFaces(CORBA::Boolean toTreat)
+{
+  if ( GetToConsiderInternalFaces() == toTreat )
+    return;
+  GetImpl()->SetToConsiderInternalFaces( toTreat );
+  SMESH::TPythonDump() << _this() << ".SetToConsiderInternalFaces( " << toTreat << " )";
+}
+
+//=======================================================================
+//function : GetToConsiderInternalFaces
+//purpose  : Return true if treatment of internal geom faces is enabled
+//=======================================================================
+
+CORBA::Boolean  StdMeshers_CartesianParameters3D_i::GetToConsiderInternalFaces()
+{
+  return GetImpl()->GetToConsiderInternalFaces();
+}
+
+//=======================================================================
+//function : SetToUseThresholdForInternalFaces
+//purpose  : Enables applying size threshold to grid cells cut by internal geom faces.
+//=======================================================================
+
+void  StdMeshers_CartesianParameters3D_i::SetToUseThresholdForInternalFaces(CORBA::Boolean toUse)
+{
+  if ( GetToUseThresholdForInternalFaces() == toUse )
+    return;
+  GetImpl()->SetToUseThresholdForInternalFaces( toUse );
+  SMESH::TPythonDump() << _this() << ".SetToUseThresholdForInternalFaces( " << toUse << " )";
+}
+
+//=======================================================================
+//function : GetToUseThresholdForInternalFaces
+//purpose  : Return true if applying size threshold to grid cells cut by
+//           internal geom faces is enabled
+//=======================================================================
+
+CORBA::Boolean StdMeshers_CartesianParameters3D_i::GetToUseThresholdForInternalFaces()
+{
+  return GetImpl()->GetToUseThresholdForInternalFaces();
+}
+
+//=======================================================================
+//function : SetToCreateFaces
+//purpose  : Enables creation of mesh faces.
+//=======================================================================
+
+void  StdMeshers_CartesianParameters3D_i::SetToCreateFaces(CORBA::Boolean toCreate)
+{
+  if ( GetToCreateFaces() == toCreate )
+    return;
+  GetImpl()->SetToCreateFaces( toCreate );
+  SMESH::TPythonDump() << _this() << ".SetToCreateFaces( " << toCreate << " )";
+}
+
+//=======================================================================
+//function : GetToCreateFaces
+//purpose  : Check if creation of mesh faces enabled
+//=======================================================================
+
+CORBA::Boolean StdMeshers_CartesianParameters3D_i::GetToCreateFaces()
+{
+  return GetImpl()->GetToCreateFaces();
 }
 
 //=======================================================================
