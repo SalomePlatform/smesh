@@ -1390,8 +1390,11 @@ void SMESH_MeshEditor_i::SetNodeOnEdge(CORBA::Long NodeID, CORBA::Long EdgeID,
   Standard_Real f,l;
   BRep_Tool::Range( TopoDS::Edge( shape ), f,l);
   if ( paramOnEdge < f || paramOnEdge > l )
-    THROW_SALOME_CORBA_EXCEPTION("Invalid paramOnEdge", SALOME::BAD_PARAM);
-
+  {
+    SMESH_Comment txt("Invalid paramOnEdge. It must vary in range [ ");
+    txt << f << ", " << l << " ]";
+    THROW_SALOME_CORBA_EXCEPTION(txt.c_str(), SALOME::BAD_PARAM);
+  }
   mesh->SetNodeOnEdge( node, EdgeID, paramOnEdge );
 
   myMesh->SetIsModified( true );
@@ -1434,14 +1437,11 @@ void SMESH_MeshEditor_i::SetNodeOnFace(CORBA::Long NodeID, CORBA::Long FaceID,
                  v > surf.LastVParameter() );
 
   if ( isOut ) {
-#ifdef _DEBUG_
-    MESSAGE ( "FACE " << FaceID << " (" << u << "," << v << ") out of "
-              << " u( " <<  surf.FirstUParameter()
-              << "," <<  surf.LastUParameter()
-              << ") v( " <<  surf.FirstVParameter()
-              << "," <<  surf.LastVParameter() << ")" );
-#endif
-    THROW_SALOME_CORBA_EXCEPTION("Invalid UV", SALOME::BAD_PARAM);
+    SMESH_Comment txt("Invalid UV. U must vary in range [ ");
+    txt << surf.FirstUParameter() << ", " << surf.LastUParameter() << " ], ";
+    txt << "V must vary in range [ ";
+    txt << surf.FirstVParameter() << ", " << surf.LastVParameter() << " ]";
+    THROW_SALOME_CORBA_EXCEPTION(txt.c_str(), SALOME::BAD_PARAM);
   }
 
   mesh->SetNodeOnFace( node, FaceID, u, v );
