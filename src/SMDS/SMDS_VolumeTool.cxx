@@ -1203,11 +1203,13 @@ bool SMDS_VolumeTool::GetFaceNormal (int faceIndex, double & X, double & Y, doub
   XYZ aVec13( p3 - p1 );
   XYZ cross = aVec12.Crossed( aVec13 );
 
-  if ( myCurFace.myNbNodes >3*iQuad ) {
-    XYZ p4 ( myCurFace.myNodes[3*iQuad] );
+  for ( int i = 3*iQuad; i < myCurFace.myNbNodes; i += iQuad )
+  {
+    XYZ p4 ( myCurFace.myNodes[i] );
     XYZ aVec14( p4 - p1 );
     XYZ cross2 = aVec13.Crossed( aVec14 );
     cross = cross + cross2;
+    aVec13 = aVec14;
   }
 
   double size = cross.Magnitude();

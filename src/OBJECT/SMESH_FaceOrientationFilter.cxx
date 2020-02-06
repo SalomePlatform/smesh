@@ -25,18 +25,18 @@
 
 #include <VTKViewer_CellCenters.h>
 
+#include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
-#include <vtkPolyData.h>
-#include <vtkObjectFactory.h>
-#include <vtkInformation.h>
-#include <vtkInformationVector.h>
-
 #include <vtkFloatArray.h>
-#include <vtkCellArray.h>
-#include <vtkMaskPoints.h>
 #include <vtkGlyph3D.h>
 #include <vtkGlyphSource2D.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
+#include <vtkMaskPoints.h>
+#include <vtkObjectFactory.h>
+#include <vtkPolyData.h>
+#include <vtkPolygon.h>
 
 #include <QColor>
 
@@ -216,13 +216,16 @@ void GetFaceParams( vtkCell* theFace, double theNormal[3], double& theSize )
   vtkPoints* aPoints = theFace->GetPoints();
 
   // here we get first 3 points from the face and calculate the normal as a cross-product of vectors
-  double x0 = aPoints->GetPoint(0)[0], y0 = aPoints->GetPoint(0)[1], z0 = aPoints->GetPoint(0)[2];
-  double x1 = aPoints->GetPoint(1)[0], y1 = aPoints->GetPoint(1)[1], z1 = aPoints->GetPoint(1)[2];
-  double x2 = aPoints->GetPoint(2)[0], y2 = aPoints->GetPoint(2)[1], z2 = aPoints->GetPoint(2)[2];
+  // double x0 = aPoints->GetPoint(0)[0], y0 = aPoints->GetPoint(0)[1], z0 = aPoints->GetPoint(0)[2];
+  // double x1 = aPoints->GetPoint(1)[0], y1 = aPoints->GetPoint(1)[1], z1 = aPoints->GetPoint(1)[2];
+  // double x2 = aPoints->GetPoint(2)[0], y2 = aPoints->GetPoint(2)[1], z2 = aPoints->GetPoint(2)[2];
 
-  theNormal[0] = ( y1 - y0 ) * ( z2 - z0 ) - ( z1 - z0 ) * ( y2 - y0 );
-  theNormal[1] = ( z1 - z0 ) * ( x2 - x0 ) - ( x1 - x0 ) * ( z2 - z0 );
-  theNormal[2] = ( x1 - x0 ) * ( y2 - y0 ) - ( y1 - y0 ) * ( x2 - x0 );
+  // theNormal[0] = ( y1 - y0 ) * ( z2 - z0 ) - ( z1 - z0 ) * ( y2 - y0 );
+  // theNormal[1] = ( z1 - z0 ) * ( x2 - x0 ) - ( x1 - x0 ) * ( z2 - z0 );
+  // theNormal[2] = ( x1 - x0 ) * ( y2 - y0 ) - ( y1 - y0 ) * ( x2 - x0 );
+
+  // issue #18665: Polyhedron volume calculation
+  vtkPolygon::ComputeNormal( aPoints, theNormal );
 
   double* aBounds = theFace->GetBounds();
   theSize = pow( pow( aBounds[1] - aBounds[0], 2 ) +
