@@ -273,6 +273,18 @@ void SMESH_Mesh_i::ReplaceShape(GEOM::GEOM_Object_ptr theNewGeom)
   // re-assign global hypotheses to the new shape
   _mainShapeTick = -1;
   CheckGeomModif( true );
+
+  // update the reference to theNewGeom (needed for correct execution of a dumped python script)
+  SALOMEDS::SObject_var aSO = _gen_i->ObjectToSObject(_this());
+  if (!aSO->_is_nil()) {
+    SALOMEDS::SObject_var aShapeRefSO;
+    if (aSO->FindSubObject(1, aShapeRefSO)) {
+      _gen_i->getStudyServant()->NewBuilder()->Addreference(
+        aShapeRefSO, _gen_i->getStudyServant()->FindObjectID(theNewGeom->GetStudyEntry()));
+    }
+  }
+
+  TPythonDump() <<  SMESH::SMESH_Mesh_var(_this()) << ".ReplaceShape( " << theNewGeom->GetStudyEntry() << " )";
 }
 
 //================================================================================
