@@ -216,6 +216,12 @@ SMESHGUI_EXPORT
                            double& theDist );
  SMESHGUI_EXPORT
    void RemoveVisualObjectWithActors( const char* theEntry, bool fromAllViews = false );
+
+  SMESHGUI_EXPORT
+  void UpdateActorsAfterUpdateStudy( SUIT_ViewWindow* wnd );
+
+  SMESHGUI_EXPORT
+  void UpdateActorsAfterUpdateStudy();
 };
 
 #endif // SMESHGUI_VTKUTILS_H

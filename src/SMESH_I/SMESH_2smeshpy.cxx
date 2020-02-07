@@ -1827,7 +1827,7 @@ _pyMesh::_pyMesh(const Handle(_pyCommand) theCreationCmd, const _pyID& meshId):
 
 void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
 {
-  // some methods of SMESH_Mesh interface needs special conversion
+  // some methods of SMESH_Mesh interface need special conversion
   // to methods of Mesh python class
   //
   // 1. GetSubMesh(geom, name) + AddHypothesis(geom, algo)
@@ -1980,7 +1980,7 @@ void _pyMesh::Process( const Handle(_pyCommand)& theCommand )
       // if GetGroups() is just after Compute(), this can mean that the groups
       // were created by some algorithm and hence Compute() should not be discarded
       std::list< Handle(_pyCommand) >& cmdList = theGen->GetCommands();
-      std::list< Handle(_pyCommand) >::iterator cmd = cmdList.begin();
+      std::list< Handle(_pyCommand) >::reverse_iterator cmd = cmdList.rbegin();
       while ( (*cmd)->GetMethod() == "GetGroups" )
         ++cmd;
       if ( myLastComputeCmd == (*cmd))
@@ -3158,8 +3158,7 @@ void _pyHypothesis::ComputeDiscarded( const Handle(_pyCommand)& theComputeCmd )
       continue;
     // check if a cmd is a sole command setting its parameter;
     // don't use method name for search as it can change
-    map<TCollection_AsciiString, list<Handle(_pyCommand)> >::iterator
-      m2cmds = myMeth2Commands.begin();
+    map<_AString, list<Handle(_pyCommand)> >::iterator m2cmds = myMeth2Commands.begin();
     for ( ; m2cmds != myMeth2Commands.end(); ++m2cmds )
     {
       list< Handle(_pyCommand)>& cmds = m2cmds->second;

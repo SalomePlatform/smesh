@@ -66,6 +66,9 @@ protected:
   bool             initVariableName(SMESH::SMESH_Hypothesis_var theHyp, StdParam& theParams, const char* theMethod) const;
   QWidget*         makeReverseEdgesWdg( SMESH::long_array_var edgeIDs,
                                         CORBA::String_var     shapeEntry) const;
+  void             removeOldGroup(const char*        oldName,
+                                  const char*        newName,
+                                  SMESH::ElementType type) const;
   
 
 

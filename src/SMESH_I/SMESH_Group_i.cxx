@@ -171,13 +171,13 @@ char* SMESH_GroupBase_i::GetName()
 {
   ::SMESH_Group* aGroup = GetSmeshGroup();
   if (aGroup)
-    return CORBA::string_dup (aGroup->GetName());
+    return CORBA::string_dup( aGroup->GetName() );
   return CORBA::string_dup( "NO_NAME" );
 }
 
 //=============================================================================
 /*!
- *  
+ *
  */
 //=============================================================================
 

@@ -340,6 +340,8 @@ void SMESHGUI_GenericHypothesisCreator::onDialogFinished( int result )
   myDlg->close();
   //delete myDlg; since WA_DeleteOnClose==true
   myDlg = 0;
+
+  SMESH::UpdateActorsAfterUpdateStudy();// remove actors of removed groups (#16522)
   if (SVTK_ViewWindow* vf = SMESH::GetCurrentVtkView()) {
     vf->Repaint();
   }

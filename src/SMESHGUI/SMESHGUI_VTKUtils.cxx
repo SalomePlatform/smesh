@@ -234,6 +234,86 @@ namespace SMESH
 
   //================================================================================
   /*!
+   * \brief Remove/update actors while module activation
+   *  \param [in] wnd - window
+   *
+   * At module activation, groups and sub-meshes can be removed on engine side due
+   * to modification of meshed geometry, while their actors can remain.
+   * Here we remove/update SMESH_Actor's of changed objects. State (emptiness) of objects
+   * is defined by their icons in the Object Browser
+   */
+  //================================================================================
+
+  void UpdateActorsAfterUpdateStudy( SUIT_ViewWindow* theWindow )
+  {
+    const char* emptyIcon = "ICON_SMESH_TREE_MESH_WARN";
+    _PTR(Study) aStudy = SMESH::getStudy();
+
+    if ( SVTK_ViewWindow* aViewWindow = GetVtkViewWindow( theWindow ))
+    {
+      vtkRenderer *aRenderer = aViewWindow->getRenderer();
+      VTK::ActorCollectionCopy aCopy(aRenderer->GetActors());
+      vtkActorCollection *aCollection = aCopy.GetActors();
+      aCollection->InitTraversal();
+      while ( vtkActor *actor = aCollection->GetNextActor() ) {
+        if ( SMESH_Actor *smeshActor = dynamic_cast<SMESH_Actor*>( actor ))
+        {
+          if ( !smeshActor->hasIO() )
+            continue;
+          Handle(SALOME_InteractiveObject) io = smeshActor->getIO();
+          if ( !io->hasEntry() )
+            continue;
+          _PTR(SObject) so = aStudy->FindObjectID( io->getEntry() );
+          if ( !so )
+            continue; // seems impossible
+
+          CORBA::Object_var obj = SMESH::SObjectToObject( so );
+          if ( CORBA::is_nil( obj )) // removed object
+          {
+            RemoveActor( theWindow, smeshActor );
+            continue;
+          }
+
+          bool toShow = smeshActor->GetVisibility();
+          _PTR(GenericAttribute) attr;
+          if ( toShow && so->FindAttribute( attr, "AttributePixMap" )) // check emptiness
+          {
+            _PTR(AttributePixMap) pixMap = attr;
+            toShow = ( pixMap->GetPixMap() != emptyIcon );
+          }
+          smeshActor->Update();
+          UpdateView( theWindow, toShow ? eDisplay : eErase, io->getEntry() );
+        }
+      }
+    }
+    return;
+  }
+
+  //================================================================================
+  /*!
+   * \brief Remove/update actors while module activation
+   *
+   * At module activation, groups and sub-meshes can be removed on engine side due
+   * to modification of meshed geometry, while their actors can remain.
+   * Here we remove/update SMESH_Actor's of changed objects. State (emptiness) of objects
+   * is defined by their icons in the Object Browser
+   */
+  //================================================================================
+
+  void UpdateActorsAfterUpdateStudy()
+  {
+    SUIT_Study* study = SMESH::GetActiveStudy();
+    if ( SUIT_Desktop* desk = study->application()->desktop() )
+    {
+      QList<SUIT_ViewWindow*> wndList = desk->windows();
+      SUIT_ViewWindow* wnd;
+      foreach ( wnd, wndList )
+        SMESH::UpdateActorsAfterUpdateStudy(wnd);
+    }
+  }
+
+  //================================================================================
+  /*!
    * \brief Notify the user on problems during visualization
    */
   //================================================================================

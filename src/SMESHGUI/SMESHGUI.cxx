@@ -4930,7 +4930,14 @@ bool SMESHGUI::activateModule( SUIT_Study* study )
     QList<SUIT_ViewWindow*> wndList = aDesk->windows();
     SUIT_ViewWindow* wnd;
     foreach ( wnd, wndList )
+    {
       connectView( wnd );
+
+      // remove actors whose objects are removed in GetSMESHGen()->UpdateStudy()
+      SMESH::UpdateActorsAfterUpdateStudy(wnd);
+
+      wnd->update();
+    }
   }
 
   Py_XDECREF(pluginsmanager);
