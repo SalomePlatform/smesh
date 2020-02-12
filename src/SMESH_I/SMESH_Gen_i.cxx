@@ -2021,6 +2021,8 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
     if ( meshServant ) {
       meshServant->Load();
       // NPAL16168: "geometrical group edition from a submesh don't modify mesh computation"
+      // Clear meshy because it was not cleared in CheckGeomModif of previous call
+      meshServant->Clear();
       meshServant->CheckGeomModif();
       // get local TopoDS_Shape
       TopoDS_Shape myLocShape;

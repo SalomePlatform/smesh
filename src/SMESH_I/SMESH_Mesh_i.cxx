@@ -2288,7 +2288,7 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
   if ( _preMeshInfo )
     _preMeshInfo->ForgetAllData();
 
-  _impl->Clear();
+  //_impl->Clear();
   TopoDS_Shape newShape = _gen_i->GeomObjectToShape( mainGO );
   if ( newShape.IsNull() )
     return;
