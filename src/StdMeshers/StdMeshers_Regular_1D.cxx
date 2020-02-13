@@ -974,6 +974,8 @@ bool StdMeshers_Regular_1D::computeInternalParameters(SMESH_Mesh &     theMesh,
       an = eltSize;
       eltSize *= q;
       ++nbParams;
+      if ( q < 1. && eltSize < 1e-100 )
+        return error("Too small common ratio causes too many segments");
     }
     if ( nbParams > 1 )
     {
