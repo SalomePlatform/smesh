@@ -284,7 +284,11 @@ void SMESH_Mesh_i::ReplaceShape(GEOM::GEOM_Object_ptr theNewGeom)
     }
   }
 
-  TPythonDump() <<  SMESH::SMESH_Mesh_var(_this()) << ".ReplaceShape( " << theNewGeom->GetStudyEntry() << " )";
+  TPythonDump() <<  SMESH::SMESH_Mesh_var(_this()) << ".ReplaceShape( "
+    << theNewGeom->GetStudyEntry() << " )";
+
+  TPythonDump() << "SHAPERSTUDY.breakLinkForSubElements(salome.ObjectToSObject("
+    << SMESH::SMESH_Mesh_var(_this()) <<".GetMesh()), " << theNewGeom->GetStudyEntry() << ")";
 }
 
 //================================================================================
@@ -2288,7 +2292,9 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
   if ( _preMeshInfo )
     _preMeshInfo->ForgetAllData();
 
-  //_impl->Clear();
+  
+  if (isBreakLink)
+    _impl->Clear();
   TopoDS_Shape newShape = _gen_i->GeomObjectToShape( mainGO );
   if ( newShape.IsNull() )
     return;
