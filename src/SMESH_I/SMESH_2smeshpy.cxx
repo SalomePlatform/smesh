@@ -3839,6 +3839,8 @@ bool _pyCommand::IsMethodCall()
     return false;
   if ( myString.StartsWith("#") )
     return false;
+  if ( myString.StartsWith("SHAPERSTUDY") ) // skip shaperstudy specific dump string analysis
+    return false;
   const char* s = myString.ToCString() + GetBegPos( METHOD_IND ) + myMeth.Length() - 1;
   return ( s[0] == '(' || s[1] == '(' );
 }
