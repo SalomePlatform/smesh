@@ -731,6 +731,25 @@ void SMESH_Gen_i::UpdateStudy()
   }
 }
 
+//================================================================================
+/*!
+ * \brief Return true if mesh has ICON_SMESH_TREE_GEOM_MODIF icon
+ */
+//================================================================================
+
+bool SMESH_Gen_i::isGeomModifIcon( SMESH::SMESH_Mesh_ptr mesh )
+{
+  SALOMEDS::SObject_wrap so = ObjectToSObject( mesh );
+  SALOMEDS::GenericAttribute_wrap attr;
+  if ( ! so->_is_nil() && so->FindAttribute( attr.inout(), "AttributePixMap" ))
+  {
+    SALOMEDS::AttributePixMap_wrap pm = attr;
+    CORBA::String_var             ico = pm->GetPixMap();
+    return ( strcmp( ico.in(), "ICON_SMESH_TREE_GEOM_MODIF" ) == 0 );
+  }
+  return false;
+}
+
 //=================================================================================
 // function : hasObjectInfo()
 // purpose  : shows if module provides information for its objects
@@ -756,18 +775,9 @@ char* SMESH_Gen_i::getObjectInfo( const char* entry )
   SALOMEDS::SObject_wrap  so = getStudyServant()->FindObjectID( entry );
   CORBA::Object_var      obj = SObjectToObject( so );
   SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( obj );
-  if ( !mesh->_is_nil() )
+  if ( isGeomModifIcon( mesh ))
   {
-    SALOMEDS::GenericAttribute_wrap attr;
-    if ( so->FindAttribute( attr.inout(), "AttributePixMap" ))
-    {
-      SALOMEDS::AttributePixMap_wrap pm = attr;
-      CORBA::String_var             ico = pm->GetPixMap();
-      if ( strcmp( ico.in(), "ICON_SMESH_TREE_GEOM_MODIF" ) == 0 )
-      {
-        txt << "The geometry was changed and the mesh needs to be recomputed";
-      }
-    }
+    txt << "The geometry was changed and the mesh needs to be recomputed";
   }
 
   if ( txt.empty() )
@@ -2019,10 +2029,11 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
     SMESH_Mesh_i* meshServant = SMESH::DownCast<SMESH_Mesh_i*>( theMesh );
     ASSERT( meshServant );
     if ( meshServant ) {
-      meshServant->Load();
+      if ( isGeomModifIcon( theMesh ))
+        meshServant->Clear();
+      else
+        meshServant->Load();
       // NPAL16168: "geometrical group edition from a submesh don't modify mesh computation"
-      // Clear meshy because it was not cleared in CheckGeomModif of previous call
-      meshServant->Clear();
       meshServant->CheckGeomModif();
       // get local TopoDS_Shape
       TopoDS_Shape myLocShape;

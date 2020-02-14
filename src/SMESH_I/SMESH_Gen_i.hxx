@@ -634,6 +634,9 @@ private:
   SMESH::SMESH_Mesh_ptr createMesh()
     throw ( SALOME::SALOME_Exception );
 
+  // Check mesh icon
+  bool isGeomModifIcon( SMESH::SMESH_Mesh_ptr mesh );
+
   // Create a sub-mesh on a geometry that is not a sub-shape of the main shape
   // for the case where a valid sub-shape not found by CopyMeshWithGeom()
   SMESH::SMESH_subMesh_ptr createInvalidSubMesh( SMESH::SMESH_Mesh_ptr mesh,

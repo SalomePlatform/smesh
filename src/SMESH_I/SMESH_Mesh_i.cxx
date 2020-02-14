@@ -270,25 +270,30 @@ void SMESH_Mesh_i::ReplaceShape(GEOM::GEOM_Object_ptr theNewGeom)
     geomClient->RemoveShapeFromBuffer(aIOR);
   }
 
+  // update the reference to theNewGeom (needed for correct execution of a dumped python script)
+  SMESH::SMESH_Mesh_var   me = _this();
+  SALOMEDS::SObject_wrap aSO = _gen_i->ObjectToSObject( me );
+  CORBA::String_var    entry = theNewGeom->GetStudyEntry();
+  if ( !aSO->_is_nil() )
+  {
+    SALOMEDS::SObject_wrap aShapeRefSO;
+    if ( aSO->FindSubObject( _gen_i->GetRefOnShapeTag(), aShapeRefSO.inout() ))
+    {
+      SALOMEDS::SObject_wrap    aShapeSO = _gen_i->getStudyServant()->FindObjectID( entry );
+      SALOMEDS::StudyBuilder_var builder = _gen_i->getStudyServant()->NewBuilder();
+      builder->Addreference( aShapeRefSO, aShapeSO );
+    }
+  }
+
   // re-assign global hypotheses to the new shape
   _mainShapeTick = -1;
   CheckGeomModif( true );
 
-  // update the reference to theNewGeom (needed for correct execution of a dumped python script)
-  SALOMEDS::SObject_var aSO = _gen_i->ObjectToSObject(_this());
-  if (!aSO->_is_nil()) {
-    SALOMEDS::SObject_var aShapeRefSO;
-    if (aSO->FindSubObject(1, aShapeRefSO)) {
-      _gen_i->getStudyServant()->NewBuilder()->Addreference(
-        aShapeRefSO, _gen_i->getStudyServant()->FindObjectID(theNewGeom->GetStudyEntry()));
-    }
-  }
-
-  TPythonDump() <<  SMESH::SMESH_Mesh_var(_this()) << ".ReplaceShape( "
-    << theNewGeom->GetStudyEntry() << " )";
-
   TPythonDump() << "SHAPERSTUDY.breakLinkForSubElements(salome.ObjectToSObject("
-    << SMESH::SMESH_Mesh_var(_this()) <<".GetMesh()), " << theNewGeom->GetStudyEntry() << ")";
+                << me <<".GetMesh()), " << entry.in() << ")";
+
+  TPythonDump() <<  me << ".ReplaceShape( " << entry.in() << " )";
+
 }
 
 //================================================================================
@@ -2077,6 +2082,8 @@ TopoDS_Shape SMESH_Mesh_i::newGroupShape( TGeomGroupData & groupData, int how )
       CORBA::Object_var  geomObj = _gen_i->SObjectToObject( geomSO );
       GEOM::GEOM_Object_var geom = GEOM::GEOM_Object::_narrow( geomObj );
       newShape = _gen_i->GeomObjectToShape( geom );
+      CORBA::String_var entry = geom->GetStudyEntry();
+      groupData._groupEntry = entry.in();
     }
   }
   else
@@ -2472,13 +2479,17 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
       int newID = o2n->second, oldID = o2n->first;
       if ( !_mapSubMesh.count( oldID ))
         continue;
-      _mapSubMesh   [ newID ] = _impl->GetSubMeshContaining( newID );
-      _mapSubMesh_i [ newID ] = _mapSubMesh_i [ oldID ];
-      _mapSubMeshIor[ newID ] = _mapSubMeshIor[ oldID ];
+      if ( newID > 0 )
+      {
+        _mapSubMesh   [ newID ] = _impl->GetSubMeshContaining( newID );
+        _mapSubMesh_i [ newID ] = _mapSubMesh_i [ oldID ];
+        _mapSubMeshIor[ newID ] = _mapSubMeshIor[ oldID ];
+      }
       _mapSubMesh.   erase(oldID);
       _mapSubMesh_i. erase(oldID);
       _mapSubMeshIor.erase(oldID);
-      _mapSubMesh_i [ newID ]->changeLocalId( newID );
+      if ( newID > 0 )
+        _mapSubMesh_i [ newID ]->changeLocalId( newID );
     }
 
     // update _mapSubMesh
@@ -2487,7 +2498,7 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
       i_sm->second = _impl->GetSubMesh( meshDS->IndexToShape( i_sm->first ));
   }
 
-  _gen_i->UpdateIcons( SMESH::SMESH_Mesh_var( _this() ));
+  _gen_i->UpdateIcons( me );
 
   if ( !isBreakLink )
   {
