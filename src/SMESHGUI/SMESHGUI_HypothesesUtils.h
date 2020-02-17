@@ -116,6 +116,7 @@ namespace SMESH
                                           SMESH::SMESH_Hypothesis_ptr );
 
   typedef std::vector<_PTR(SObject)> SObjectList;
+  SMESHGUI_EXPORT
   SObjectList GetMeshesUsingAlgoOrHypothesis( SMESH::SMESH_Hypothesis_ptr );
 
   SMESHGUI_EXPORT
