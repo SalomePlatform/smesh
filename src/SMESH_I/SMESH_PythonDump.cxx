@@ -696,7 +696,7 @@ namespace SMESH
 //function : DumpPython
 //purpose  :
 //=======================================================================
-Engines::TMPFile* SMESH_Gen_i::DumpPython (CORBA::Boolean  isPublished,
+Engines::TMPFile* SMESH_Gen_i::DumpPython( CORBA::Boolean  isPublished,
                                            CORBA::Boolean  isMultiFile,
                                            CORBA::Boolean& isValidScript)
 {

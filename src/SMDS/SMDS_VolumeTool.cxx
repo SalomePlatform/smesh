@@ -706,11 +706,22 @@ double SMDS_VolumeTool::GetSize() const
     if ( !myPolyedre )
       return 0.;
 
+    SaveFacet savedFacet( myCurFace );
+
+    // get an origin not lying in plane of any facet
+    int faceIndex = std::max( myCurFace.myIndex, 0 );
+    setFace( faceIndex );
+    double minProj, maxProj;
+    XYZ normal, origin;
+    projectNodesToNormal( faceIndex, minProj, maxProj, normal.data());
+    GetFaceBaryCenter( faceIndex, origin.x, origin.y, origin.z );
+    origin.x += normal.x * ( maxProj - minProj ) * 1e-1;
+    origin.y += normal.y * ( maxProj - minProj ) * 1e-2;
+    origin.z += normal.z * ( maxProj - minProj ) * 1e-3;
+
     // split a polyhedron into tetrahedrons
 
-    SaveFacet savedFacet( myCurFace );
     SMDS_VolumeTool* me = const_cast< SMDS_VolumeTool* > ( this );
-    XYZ origin( 1 + 1e-6, 22 + 2e-6, 333 + 3e-6 ); // for invalid poly: avoid lying on a facet plane
     for ( int f = 0; f < NbFaces(); ++f )
     {
       me->setFace( f );
