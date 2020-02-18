@@ -708,19 +708,9 @@ double SMDS_VolumeTool::GetSize() const
 
     SaveFacet savedFacet( myCurFace );
 
-    // get an origin not lying in plane of any facet
-    int faceIndex = std::max( myCurFace.myIndex, 0 );
-    setFace( faceIndex );
-    double minProj, maxProj;
-    XYZ normal, origin;
-    projectNodesToNormal( faceIndex, minProj, maxProj, normal.data());
-    GetFaceBaryCenter( faceIndex, origin.x, origin.y, origin.z );
-    origin.x += normal.x * ( maxProj - minProj ) * 1e-1;
-    origin.y += normal.y * ( maxProj - minProj ) * 1e-2;
-    origin.z += normal.z * ( maxProj - minProj ) * 1e-3;
-
     // split a polyhedron into tetrahedrons
 
+    bool oriOk = true;
     SMDS_VolumeTool* me = const_cast< SMDS_VolumeTool* > ( this );
     for ( int f = 0; f < NbFaces(); ++f )
     {
@@ -732,9 +722,12 @@ double SMDS_VolumeTool::GetSize() const
         area = area + p1.Crossed( p2 );
         p1 = p2;
       }
-      V += ( p1 - origin ).Dot( area );
+      V += p1.Dot( area );
+      oriOk = oriOk && IsFaceExternal( f );
     }
     V /= 6;
+    if ( !oriOk && V > 0 )
+      V *= -1;
   }
   else 
   {
