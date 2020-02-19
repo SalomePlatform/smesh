@@ -2639,7 +2639,7 @@ class Mesh(metaclass = MeshMeta):
         tgeo = str(shape.GetShapeType())
         if tgeo == "VERTEX":
             typ = NODE
-        elif tgeo == "EDGE":
+        elif tgeo == "EDGE" or tgeo == "WIRE":
             typ = EDGE
         elif tgeo == "FACE" or tgeo == "SHELL":
             typ = FACE
