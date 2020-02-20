@@ -225,11 +225,8 @@ const BRepMesh_Triangle* SMESH_Delaunay::FindTriangle( const gp_XY&             
     gp_XY seg = uv - gc;
 
     tria->Edges( linkIDs, ori );
-#if OCC_VERSION_LARGE <= 0x07030000
-    int triaID = _triaDS->IndexOf( *tria );
-#else
-    int triaID = tria - & ( _triaDS->GetElement( 0 ));
-#endif
+
+    const BRepMesh_Triangle* prevTria = tria;
     tria = 0;
 
     for ( int i = 0; i < 3; ++i )
@@ -252,7 +249,9 @@ const BRepMesh_Triangle* SMESH_Delaunay::FindTriangle( const gp_XY&             
       double uSeg = ( uv1 - gc ) ^ lin / crossSegLin;
       if ( 0. <= uSeg && uSeg <= 1. )
       {
-        tria = & _triaDS->GetElement( triIDs.Index( 1 + ( triIDs.Index(1) == triaID )));
+        tria = & _triaDS->GetElement( triIDs.Index( 1 ));
+        if ( tria == prevTria )
+          tria = & _triaDS->GetElement( triIDs.Index( 2 ));
         if ( tria->Movability() != BRepMesh_Deleted )
           break;
       }
