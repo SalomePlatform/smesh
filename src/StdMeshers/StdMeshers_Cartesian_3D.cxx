@@ -375,6 +375,7 @@ namespace
     bool                              _toUseThresholdForInternalFaces;
     double                            _sizeThreshold;
 
+    vector< TGeomID >                 _shapeIDs; // returned by Hexahedron::getSolids()
     SMESH_MesherHelper*               _helper;
 
     size_t CellIndex( size_t i, size_t j, size_t k ) const
@@ -866,7 +867,7 @@ namespace
     void init( size_t i );
     void setIJK( size_t i );
     bool compute( const Solid* solid, const IsInternalFlag intFlag );
-    vector< TGeomID > getSolids();
+    const vector< TGeomID >& getSolids();
     bool isCutByInternalFace( IsInternalFlag & maxFlag );
     void addEdges(SMESH_MesherHelper&                      helper,
                   vector< Hexahedron* >&                   intersectedHex,
@@ -2174,8 +2175,14 @@ namespace
   /*!
    * \brief Return IDs of SOLIDs interfering with this Hexahedron
    */
-  vector< TGeomID > Hexahedron::getSolids()
+  const vector< TGeomID >& Hexahedron::getSolids()
   {
+    _grid->_shapeIDs.clear();
+    if ( _grid->_geometry.IsOneSolid() )
+    {
+      _grid->_shapeIDs.push_back( _grid->GetSolid()->ID() );
+      return _grid->_shapeIDs;
+    }
     // count intersection points belonging to each SOLID
     TID2Nb id2NbPoints;
     id2NbPoints.reserve( 3 );
@@ -2224,12 +2231,12 @@ namespace
         insertAndIncrement( solidIDs[i], id2NbPoints );
     }
 
-    vector< TGeomID > solids; solids.reserve( id2NbPoints.size() );
+    _grid->_shapeIDs.reserve( id2NbPoints.size() );
     for ( TID2Nb::iterator id2nb = id2NbPoints.begin(); id2nb != id2NbPoints.end(); ++id2nb )
       if ( id2nb->second >= 3 )
-        solids.push_back( id2nb->first );
+        _grid->_shapeIDs.push_back( id2nb->first );
 
-    return solids;
+    return _grid->_shapeIDs;
   }
 
   //================================================================================
@@ -2571,7 +2578,7 @@ namespace
       solid = _grid->GetSolid();
       if ( !_grid->_geometry.IsOneSolid() )
       {
-        vector< TGeomID > solidIDs = getSolids();
+        const vector< TGeomID >& solidIDs = getSolids();
         if ( solidIDs.size() > 1 )
         {
           for ( size_t i = 0; i < solidIDs.size(); ++i )

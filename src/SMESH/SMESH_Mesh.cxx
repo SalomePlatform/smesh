@@ -176,10 +176,18 @@ SMESH_Mesh::~SMESH_Mesh()
 {
   if(MYDEBUG) MESSAGE("SMESH_Mesh::~SMESH_Mesh");
 
-  // avoid usual removal of elements while processing RemoveHypothesis( algo ) event
-  SMESHDS_SubMeshIteratorPtr smIt = _myMeshDS->SubMeshes();
-  while ( smIt->more() )
-    const_cast<SMESHDS_SubMesh*>( smIt->next() )->Clear();
+  if ( _myDocument ) // avoid destructing _myMeshDS from ~SMESH_Gen()
+    _myDocument->RemoveMesh( _id );
+  _myDocument = 0;
+
+  // remove self from studyContext
+  if ( _gen )
+  {
+    StudyContextStruct * studyContext = _gen->GetStudyContext();
+    studyContext->mapMesh.erase( _id );
+  }
+
+  _myMeshDS->ClearMesh();
 
   // issue 0020340: EDF 1022 SMESH : Crash with FindNodeClosestTo in a second new study
   //   Notify event listeners at least that something happens
@@ -199,16 +207,6 @@ SMESH_Mesh::~SMESH_Mesh()
 
   if ( _callUp) delete _callUp;
   _callUp = 0;
-
-  // remove self from studyContext
-  if ( _gen )
-  {
-    StudyContextStruct * studyContext = _gen->GetStudyContext();
-    studyContext->mapMesh.erase( _id );
-  }
-  if ( _myDocument )
-    _myDocument->RemoveMesh( _id );
-  _myDocument = 0;
 
   if ( _myMeshDS ) {
     // delete _myMeshDS, in a thread in order not to block closing a study with large meshes
