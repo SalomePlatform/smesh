@@ -4471,6 +4471,21 @@ Il ne peut pas être supprimé.</translation>
         <translation>Trier les items enfants</translation>
     </message>
     <message>
+      <source>MEN_BREAK_SHAPER_LINK</source>
+      <translation>Rompre le lien</translation>
+    </message>
+    <message>
+      <source>STB_BREAK_SHAPER_LINK</source>
+      <translation>Rupture du lien avec le modèle Shaper</translation>
+    </message>
+    <message>
+      <source>MSG_BREAK_SHAPER_LINK</source>
+      <translation>
+        Un lien avec le modèle Shaper pour l'objet %1 sera rompu.
+        Continuer?
+      </translation>
+    </message>
+    <message>
         <source>SMESH_ADVANCED</source>
         <translation>Avancé</translation>
     </message>

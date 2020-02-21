@@ -44,16 +44,12 @@
 
 namespace SMESH
 {
-  GEOM::GEOM_Gen_var GetGEOMGen()
+  GEOM::GEOM_Gen_var GetGEOMGen( GEOM::GEOM_Object_ptr go )
   {
-    static GEOM::GEOM_Gen_var aGEOMGen;
-
-    if(CORBA::is_nil(aGEOMGen)) {
-      if ( GeometryGUI::GetGeomGen()->_is_nil() )
-        GeometryGUI::InitGeomGen();
-      aGEOMGen = GeometryGUI::GetGeomGen();
-    }
-    return aGEOMGen;
+    GEOM::GEOM_Gen_ptr gen;
+    if ( !CORBA::is_nil( go ))
+      gen = go->GetGen();
+    return gen;
   }
 
   GEOM::GEOM_Object_var GetShapeOnMeshOrSubMesh(_PTR(SObject) theMeshOrSubmesh,
@@ -155,14 +151,18 @@ namespace SMESH
   GEOM::GEOM_Object_ptr GetSubShape (GEOM::GEOM_Object_ptr theMainShape,
                                      long                  theID)
   {
-    GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
+    if ( CORBA::is_nil( theMainShape ))
+      return GEOM::GEOM_Object::_nil();
+
+    GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen( theMainShape );
     if (geomGen->_is_nil())
       return GEOM::GEOM_Object::_nil();
-    GEOM::GEOM_IShapesOperations_wrap aShapesOp =
-      geomGen->GetIShapesOperations();
+
+    GEOM::GEOM_IShapesOperations_wrap aShapesOp = geomGen->GetIShapesOperations();
     if (aShapesOp->_is_nil())
       return GEOM::GEOM_Object::_nil();
-    GEOM::GEOM_Object_wrap subShape = aShapesOp->GetSubShape (theMainShape,theID);
+
+    GEOM::GEOM_Object_wrap subShape = aShapesOp->GetSubShape( theMainShape, theID );
     return subShape._retn();
   }
 

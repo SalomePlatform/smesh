@@ -32,6 +32,7 @@
 
 // SALOME GUI includes
 #include <LightApp_Selection.h>
+#include <SUIT_DataOwner.h>
 
 // SALOME KERNEL includes
 #include <SALOMEDSClient_definitions.hxx>
@@ -61,6 +62,7 @@ public:
   virtual bool            hasGeomReference( int ) const;
   virtual bool            isEditableHyp( int ) const;
   virtual bool            isVisible( int ) const;
+  virtual bool            canBreakLink(int) const;
 
   virtual bool            isQuadratic( int ) const;
   virtual QString         quadratic2DMode( int ) const;
@@ -95,6 +97,7 @@ private:
   QStringList             myTypes;
   QStringList             myControls;
   QList<SMESH_Actor*>     myActors;
+  SUIT_DataOwnerPtrList   myOwners;
 };
 
 #endif // SMESHGUI_SELECTION_H

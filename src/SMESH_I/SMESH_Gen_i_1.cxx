@@ -252,9 +252,10 @@ GEOM::GEOM_Object_ptr SMESH_Gen_i::ShapeToGeomObject (const TopoDS_Shape& theSha
 TopoDS_Shape SMESH_Gen_i::GeomObjectToShape(GEOM::GEOM_Object_ptr theGeomObject)
 {
   TopoDS_Shape S;
-  if ( !theGeomObject->_is_nil() && !theGeomObject->_non_existent() ) {
-    GEOM_Client* aClient = GetShapeReader();
-    GEOM::GEOM_Gen_ptr aGeomEngine = GetGeomEngine();
+  if ( !theGeomObject->_is_nil() && !theGeomObject->_non_existent() )
+  {
+    GEOM_Client*           aClient = GetShapeReader();
+    GEOM::GEOM_Gen_var aGeomEngine = GetGeomEngine( theGeomObject );
     if ( aClient && !aGeomEngine->_is_nil () )
       S = aClient->GetShape( aGeomEngine, theGeomObject );
   }
@@ -263,7 +264,7 @@ TopoDS_Shape SMESH_Gen_i::GeomObjectToShape(GEOM::GEOM_Object_ptr theGeomObject)
 
 //=======================================================================
 //function : publish
-//purpose  : 
+//purpose  :
 //=======================================================================
 
 static SALOMEDS::SObject_ptr publish(CORBA::Object_ptr     theIOR,

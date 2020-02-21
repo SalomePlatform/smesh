@@ -157,7 +157,7 @@ static int MYDEBUG = 0;
 #endif
 
 // Static variables definition
-GEOM::GEOM_Gen_var      SMESH_Gen_i::myGeomGen = GEOM::GEOM_Gen::_nil();
+GEOM::GEOM_Gen_var      SMESH_Gen_i::myGeomGen;
 CORBA::ORB_var          SMESH_Gen_i::myOrb;
 PortableServer::POA_var SMESH_Gen_i::myPoa;
 SALOME_NamingService*   SMESH_Gen_i::myNS  = NULL;
@@ -258,13 +258,14 @@ SALOME_NamingService* SMESH_Gen_i::GetNS()
  *  Get SALOME_LifeCycleCORBA object
  */
 //=============================================================================
-SALOME_LifeCycleCORBA*  SMESH_Gen_i::GetLCC() {
+
+SALOME_LifeCycleCORBA*  SMESH_Gen_i::GetLCC()
+{
   if ( myLCC == NULL ) {
     myLCC = new SALOME_LifeCycleCORBA( GetNS() );
   }
   return myLCC;
 }
-
 
 //=============================================================================
 /*!
@@ -273,16 +274,31 @@ SALOME_LifeCycleCORBA*  SMESH_Gen_i::GetLCC() {
  *  Get GEOM::GEOM_Gen reference
  */
 //=============================================================================
-GEOM::GEOM_Gen_var SMESH_Gen_i::GetGeomEngine() {
-  //CCRT GEOM::GEOM_Gen_var aGeomEngine =
-  //CCRT   GEOM::GEOM_Gen::_narrow( GetLCC()->FindOrLoad_Component("FactoryServer","GEOM") );
-  //CCRT return aGeomEngine._retn();
-  if(CORBA::is_nil(myGeomGen))
-  {
-    Engines::EngineComponent_ptr temp=GetLCC()->FindOrLoad_Component("FactoryServer","GEOM");
-    myGeomGen=GEOM::GEOM_Gen::_narrow(temp);
-  }
+
+GEOM::GEOM_Gen_var SMESH_Gen_i::GetGeomEngine( bool isShaper )
+{
+  Engines::EngineComponent_ptr temp =
+    GetLCC()->FindOrLoad_Component( isShaper ? "FactoryServer" : "FactoryServer",
+                                    isShaper ? "SHAPERSTUDY" : "GEOM" );
+  myGeomGen = GEOM::GEOM_Gen::_narrow( temp );
+
   return myGeomGen;
+}
+
+//=============================================================================
+/*!
+ *  GetGeomEngine [ static ]
+ *
+ *  Get GEOM::GEOM_Gen reference
+ */
+//=============================================================================
+
+GEOM::GEOM_Gen_var SMESH_Gen_i::GetGeomEngine( GEOM::GEOM_Object_ptr go )
+{
+  GEOM::GEOM_Gen_ptr gen;
+  if ( !CORBA::is_nil( go ))
+    gen = go->GetGen();
+  return gen;
 }
 
 //=============================================================================
@@ -687,11 +703,18 @@ void SMESH_Gen_i::UpdateStudy()
     myStudyContext = new StudyContext;
 
   SALOMEDS::Study_var aStudy = getStudyServant();
-  if ( !CORBA::is_nil( aStudy ) ) {
+  if ( !CORBA::is_nil( aStudy ) )
+  {
     SALOMEDS::StudyBuilder_var aStudyBuilder = aStudy->NewBuilder();
+
     SALOMEDS::SComponent_wrap GEOM_var = aStudy->FindComponent( "GEOM" );
     if( !GEOM_var->_is_nil() )
-      aStudyBuilder->LoadWith( GEOM_var, GetGeomEngine() );
+      aStudyBuilder->LoadWith( GEOM_var, GetGeomEngine( /*isShaper=*/false ) );
+
+    GEOM_var = aStudy->FindComponent( "SHAPERSTUDY" );
+    if( !GEOM_var->_is_nil() )
+      aStudyBuilder->LoadWith( GEOM_var, GetGeomEngine( /*isShaper=*/true ) );
+
     // NPAL16168, issue 0020210
     // Let meshes update their data depending on GEOM groups that could change
     CORBA::String_var compDataType = ComponentDataType();
@@ -706,6 +729,63 @@ void SMESH_Gen_i::UpdateStudy()
       }
     }
   }
+}
+
+//================================================================================
+/*!
+ * \brief Return true if mesh has ICON_SMESH_TREE_GEOM_MODIF icon
+ */
+//================================================================================
+
+bool SMESH_Gen_i::isGeomModifIcon( SMESH::SMESH_Mesh_ptr mesh )
+{
+  SALOMEDS::SObject_wrap so = ObjectToSObject( mesh );
+  SALOMEDS::GenericAttribute_wrap attr;
+  if ( ! so->_is_nil() && so->FindAttribute( attr.inout(), "AttributePixMap" ))
+  {
+    SALOMEDS::AttributePixMap_wrap pm = attr;
+    CORBA::String_var             ico = pm->GetPixMap();
+    return ( strcmp( ico.in(), "ICON_SMESH_TREE_GEOM_MODIF" ) == 0 );
+  }
+  return false;
+}
+
+//=================================================================================
+// function : hasObjectInfo()
+// purpose  : shows if module provides information for its objects
+//=================================================================================
+
+bool SMESH_Gen_i::hasObjectInfo()
+{
+  return true;
+}
+
+//=================================================================================
+// function : getObjectInfo()
+// purpose  : returns an information for a given object by its entry
+//=================================================================================
+
+char* SMESH_Gen_i::getObjectInfo( const char* entry )
+{
+  // for a mesh with icon == ICON_SMESH_TREE_GEOM_MODIF show a warning;
+  // for the rest, "module 'SMESH', ID=0:1:2:*"
+
+  SMESH_Comment txt;
+
+  SALOMEDS::SObject_wrap  so = getStudyServant()->FindObjectID( entry );
+  CORBA::Object_var      obj = SObjectToObject( so );
+  SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( obj );
+  if ( isGeomModifIcon( mesh ))
+  {
+    txt << "The geometry was changed and the mesh needs to be recomputed";
+  }
+
+  if ( txt.empty() )
+  {
+    CORBA::String_var compType = ComponentDataType();
+    txt << "module '" << compType << "', ID=" << entry;
+  }
+  return CORBA::string_dup( txt );
 }
 
 //=============================================================================
@@ -1995,7 +2075,10 @@ CORBA::Boolean SMESH_Gen_i::Compute( SMESH::SMESH_Mesh_ptr theMesh,
     SMESH_Mesh_i* meshServant = SMESH::DownCast<SMESH_Mesh_i*>( theMesh );
     ASSERT( meshServant );
     if ( meshServant ) {
-      meshServant->Load();
+      if ( isGeomModifIcon( theMesh ))
+        meshServant->Clear();
+      else
+        meshServant->Load();
       // NPAL16168: "geometrical group edition from a submesh don't modify mesh computation"
       meshServant->CheckGeomModif();
       // get local TopoDS_Shape
@@ -2351,7 +2434,7 @@ SMESH_Gen_i::GetGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
   GEOM::GEOM_Object_wrap geom = FindGeometryByMeshElement(theMesh, theElementID);
   if ( !geom->_is_nil() ) {
     GEOM::GEOM_Object_var mainShape = theMesh->GetShapeToMesh();
-    GEOM::GEOM_Gen_ptr    geomGen   = GetGeomEngine();
+    GEOM::GEOM_Gen_var    geomGen   = GetGeomEngine( geom );
 
     // try to find the corresponding SObject
     SALOMEDS::SObject_wrap SObj = ObjectToSObject( geom.in() );
@@ -2382,7 +2465,7 @@ SMESH_Gen_i::GetGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
         }
       }
     }
-    if ( SObj->_is_nil() ) // publish a new subshape
+    if ( SObj->_is_nil() && !geomGen->_is_nil() ) // publish a new subshape
       SObj = geomGen->AddInStudy( geom, theGeomName, mainShape );
 
     // return only published geometry
@@ -2415,7 +2498,7 @@ SMESH_Gen_i::FindGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
     THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference", SALOME::BAD_PARAM );
 
   GEOM::GEOM_Object_var mainShape = theMesh->GetShapeToMesh();
-  GEOM::GEOM_Gen_ptr    geomGen   = GetGeomEngine();
+  GEOM::GEOM_Gen_var    geomGen   = GetGeomEngine( mainShape );
 
   // get a core mesh DS
   SMESH_Mesh_i* meshServant = SMESH::DownCast<SMESH_Mesh_i*>( theMesh );
@@ -2438,7 +2521,7 @@ SMESH_Gen_i::FindGeometryByMeshElement( SMESH::SMESH_Mesh_ptr  theMesh,
           }
           if ( !it->_is_nil() ) {
             for ( it->InitEx(true); it->More(); it->Next() ) {
-              SALOMEDS::SObject_wrap      so = it->Value();
+              SALOMEDS::SObject_wrap     so = it->Value();
               CORBA::Object_var         obj = SObjectToObject( so );
               GEOM::GEOM_Object_var subGeom = GEOM::GEOM_Object::_narrow( obj );
               if ( !subGeom->_is_nil() ) {
@@ -3098,7 +3181,7 @@ namespace // utils for CopyMeshWithGeom()
       std::string  newMainEntry = newEntry.in();
 
       SALOMEDS::Study_var            study = myGen_i->getStudyServant();
-      GEOM::GEOM_Gen_var           geomGen = myGen_i->GetGeomEngine();
+      GEOM::GEOM_Gen_var           geomGen = myGen_i->GetGeomEngine( mainShapeNew );
       GEOM::GEOM_IShapesOperations_wrap op = geomGen->GetIShapesOperations();
       mySubshapes                          = op->GetExistingSubObjects( mainShapeNew,
                                                                         /*groupsOnly=*/false );
@@ -3153,7 +3236,7 @@ namespace // utils for CopyMeshWithGeom()
         return GEOM::GEOM_Object::_duplicate( oldShape ); // shape independent of the old shape
 
       GEOM::GEOM_Object_var mainShapeNew = myNewMesh_i->GetShapeToMesh();
-      GEOM::GEOM_Gen_var         geomGen = myGen_i->GetGeomEngine();
+      GEOM::GEOM_Gen_var         geomGen = myGen_i->GetGeomEngine( mainShapeNew );
 
       // try to find by entry or name
       if ( myToPublish )
@@ -3213,7 +3296,7 @@ namespace // utils for CopyMeshWithGeom()
               {
                 int groupType = getShapeType( myNewMesh_i, newIndices[0] );
 
-                GEOM::GEOM_IGroupOperations_wrap grOp = geomGen->GetIGroupOperations();
+                GEOM::GEOM_IGroupOperations_ptr grOp = geomGen->GetIGroupOperations();
                 newShape = grOp->CreateGroup( mainShapeNew, groupType );
 
                 GEOM::ListOfLong_var  newIndicesList = new GEOM::ListOfLong();
@@ -3375,7 +3458,7 @@ namespace // utils for CopyMeshWithGeom()
 
         GEOM::GEOM_Object_var   mainShapeNew = myNewMesh_i->GetShapeToMesh();
         GEOM::GEOM_Object_var   mainShapeOld = mySrcMesh_i->GetShapeToMesh();
-        GEOM::GEOM_Gen_var           geomGen = myGen_i->GetGeomEngine();
+        GEOM::GEOM_Gen_var           geomGen = myGen_i->GetGeomEngine( mainShapeNew );
         GEOM::GEOM_IShapesOperations_wrap op = geomGen->GetIShapesOperations();
         try
         {
@@ -3397,7 +3480,7 @@ namespace // utils for CopyMeshWithGeom()
       GEOM::GEOM_Object_var newShape;
 
       GEOM::GEOM_Object_var   mainShapeNew = myNewMesh_i->GetShapeToMesh();
-      GEOM::GEOM_Gen_var           geomGen = myGen_i->GetGeomEngine();
+      GEOM::GEOM_Gen_var           geomGen = myGen_i->GetGeomEngine( mainShapeNew );
       GEOM::GEOM_IShapesOperations_wrap op = geomGen->GetIShapesOperations();
       try
       {
@@ -4392,6 +4475,14 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
             aDataset->WriteOnDisk( &meshPersistentId );
             aDataset->CloseOnDisk();
 
+            // Store SMESH_Mesh_i::_mainShapeTick
+            int shapeTick = myImpl->MainShapeTick();
+            aSize[ 0 ] = 1;
+            aDataset = new HDFdataset( "shapeTick", aTopGroup, HDF_INT32, aSize, 1 );
+            aDataset->CreateOnDisk();
+            aDataset->WriteOnDisk( &shapeTick );
+            aDataset->CloseOnDisk();
+
             // write reference on a shape if exists
             SALOMEDS::SObject_wrap myRef;
             bool shapeRefFound = false;
@@ -5069,23 +5160,6 @@ SALOMEDS::TMPFile* SMESH_Gen_i::SaveASCII( SALOMEDS::SComponent_ptr theComponent
 
 //=============================================================================
 /*!
- *  SMESH_Gen_i::loadGeomData
- *
- *  Load GEOM module data
- */
-//=============================================================================
-
-void SMESH_Gen_i::loadGeomData( SALOMEDS::SComponent_ptr theCompRoot )
-{
-  if ( theCompRoot->_is_nil() )
-    return;
-
-  SALOMEDS::StudyBuilder_var aStudyBuilder = getStudyServant()->NewBuilder();
-  aStudyBuilder->LoadWith( theCompRoot, GetGeomEngine() );
-}
-
-//=============================================================================
-/*!
  *  SMESH_Gen_i::Load
  *
  *  Load SMESH module's data
@@ -5097,17 +5171,10 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
                         const char*              theURL,
                         bool                     isMultiFile )
 {
-  // localizing
+  UpdateStudy(); // load geom data
   Kernel_Utils::Localizer loc;
 
-  //if (!myStudyContext)
-    UpdateStudy();
   SALOMEDS::Study_var aStudy = getStudyServant();
-  /*  if( !theComponent->_is_nil() )
-      {
-      if( !aStudy->FindComponent( "GEOM" )->_is_nil() )
-      loadGeomData( aStudy->FindComponent( "GEOM" ) );
-      }*/
 
   // Get temporary files location
   TCollection_AsciiString tmpDir =
@@ -5429,11 +5496,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
             aDataset->CloseOnDisk();
             if ( strlen( refFromFile ) > 0 ) {
               SALOMEDS::SObject_wrap shapeSO = aStudy->FindObjectID( refFromFile );
-
-              // Make sure GEOM data are loaded first
-              //loadGeomData( shapeSO->GetFatherComponent() );
-
-              CORBA::Object_var shapeObject = SObjectToObject( shapeSO );
+              CORBA::Object_var  shapeObject = SObjectToObject( shapeSO );
               if ( !CORBA::is_nil( shapeObject ) ) {
                 aShapeObject = GEOM::GEOM_Object::_narrow( shapeObject );
                 if ( !aShapeObject->_is_nil() )
@@ -5444,7 +5507,7 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
           }
 
           // issue 20918. Restore Persistent Id of SMESHDS_Mesh
-          if( aTopGroup->ExistInternalObject( "meshPersistentId" ) )
+          if ( aTopGroup->ExistInternalObject( "meshPersistentId" ) )
           {
             aDataset = new HDFdataset( "meshPersistentId", aTopGroup );
             aDataset->OpenOnDisk();
@@ -5454,6 +5517,16 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
             aDataset->CloseOnDisk();
             myNewMeshImpl->GetImpl().GetMeshDS()->SetPersistentId( *meshPersistentId );
             delete [] meshPersistentId;
+          }
+
+          // Restore SMESH_Mesh_i::_mainShapeTick
+          if ( aTopGroup->ExistInternalObject( "shapeTick" ))
+          {
+            aDataset = new HDFdataset( "shapeTick", aTopGroup );
+            aDataset->OpenOnDisk();
+            int* shapeTick = & myNewMeshImpl->MainShapeTick();
+            aDataset->ReadFromDisk( shapeTick );
+            aDataset->CloseOnDisk();
           }
 
           // Restore file info

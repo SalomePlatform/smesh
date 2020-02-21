@@ -87,6 +87,9 @@ class SMESH_EXPORT SMESH_Mesh
    * \brief Return true if there is a geometry to be meshed, not PseudoShape()
    */
   bool HasShapeToMesh() const { return _isShapeToMesh; }
+
+  void UndefShapeToMesh() { _isShapeToMesh = false; }
+
   /*!
    * \brief Return diagonal size of bounding box of shape to mesh.
    */

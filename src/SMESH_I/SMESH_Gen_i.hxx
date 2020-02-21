@@ -109,7 +109,8 @@ public:
   // Get SALOME_LifeCycleCORBA object
   static SALOME_LifeCycleCORBA* GetLCC();
   // Retrieve and get GEOM engine reference
-  static GEOM::GEOM_Gen_var GetGeomEngine();
+  static GEOM::GEOM_Gen_var GetGeomEngine( bool isShaper );
+  static GEOM::GEOM_Gen_var GetGeomEngine( GEOM::GEOM_Object_ptr );
   // Get object of the CORBA reference
   static PortableServer::ServantBase_var GetServant( CORBA::Object_ptr theObject );
   // Get CORBA object corresponding to the SALOMEDS::SObject
@@ -157,6 +158,12 @@ public:
 
   // Update study
   void UpdateStudy();
+
+  // Do provide info on objects
+  bool hasObjectInfo();
+
+  // Return an information for a given object
+  char* getObjectInfo(const char* entry);
 
   // Create hypothesis/algorithm of given type
   SMESH::SMESH_Hypothesis_ptr CreateHypothesis (const char* theHypType,
@@ -635,6 +642,9 @@ private:
   SMESH::SMESH_Mesh_ptr createMesh()
     throw ( SALOME::SALOME_Exception );
 
+  // Check mesh icon
+  bool isGeomModifIcon( SMESH::SMESH_Mesh_ptr mesh );
+
   // Create a sub-mesh on a geometry that is not a sub-shape of the main shape
   // for the case where a valid sub-shape not found by CopyMeshWithGeom()
   SMESH::SMESH_subMesh_ptr createInvalidSubMesh( SMESH::SMESH_Mesh_ptr mesh,
@@ -642,8 +652,6 @@ private:
                                                  const char*           name );
 
   void highLightInvalid( SALOMEDS::SObject_ptr theSObject, bool isInvalid );
-
-  static void loadGeomData( SALOMEDS::SComponent_ptr theCompRoot );
 
   SMESH::mesh_array* CreateMeshesFromMEDorSAUV( const char* theFileName,
                                                 SMESH::DriverMED_ReadStatus& theStatus,

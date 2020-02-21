@@ -323,7 +323,10 @@ private:
   Handle(_pyCommand)                        myLastCommand;
   int                                       myNbFilters;
   bool                                      myToKeepAllCommands;
+  // difference of entry and index of this difference
   int                                       myGeomIDNb, myGeomIDIndex;
+  // difference of entry and index of this difference, specific for the SHAPER study
+  int                                       myShaperIDNb, myShaperIDIndex;
   std::map< _AString, ExportedMeshData >    myFile2ExportedMesh;
   Handle( _pyHypothesisReader )             myHypReader;
 

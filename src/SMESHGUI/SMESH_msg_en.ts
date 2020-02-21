@@ -4504,6 +4504,24 @@ It can&apos;t be deleted </translation>
         <translation>Sort child items</translation>
     </message>
     <message>
+        <source>MEN_BREAK_SHAPER_LINK</source>
+        <translation>Break link</translation>
+    </message>
+    <message>
+        <source>STB_BREAK_SHAPER_LINK</source>
+        <translation>Break link with Shaper model</translation>
+    </message>
+    <message>
+      <source>MSG_BREAK_SHAPER_LINK</source>
+      <translation>A link with Shaper model for object %1 will be broken.
+Continue?</translation>
+    </message>
+    <message>
+        <source>MSG_WARN_ON_GEOM_MODIF</source>
+        <translation>This action is prohibited since the geometry
+was changed and the mesh needs to be recomputed.</translation>
+    </message>
+    <message>
         <source>SMESH_ADVANCED</source>
         <translation>Advanced</translation>
     </message>

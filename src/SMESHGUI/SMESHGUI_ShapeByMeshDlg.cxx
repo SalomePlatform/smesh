@@ -318,22 +318,20 @@ void SMESHGUI_ShapeByMeshOp::commitOperation()
     }
     else
     {
-      GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
+      GEOM::GEOM_Object_var aMeshShape = myMesh->GetShapeToMesh();
 
-      if (geomGen->_is_nil())
+      GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen( aMeshShape );
+      if ( geomGen->_is_nil() )
         return;
 
-      GEOM::GEOM_IShapesOperations_wrap aShapesOp =
-        geomGen->GetIShapesOperations();
-      if (aShapesOp->_is_nil() )
+      GEOM::GEOM_IShapesOperations_wrap aShapesOp = geomGen->GetIShapesOperations();
+      if ( aShapesOp->_is_nil() )
         return;
 
       TopAbs_ShapeEnum aGroupType = TopAbs_SHAPE;
 
       std::map<int, GEOM::GEOM_Object_wrap> aGeomObjectsMap;
       GEOM::GEOM_Object_wrap aGeomObject;
-
-      GEOM::GEOM_Object_var aMeshShape = myMesh->GetShapeToMesh();
 
       for ( int i = 0; i < aListId.count(); i++ )
       {
@@ -362,9 +360,8 @@ void SMESHGUI_ShapeByMeshOp::commitOperation()
       }
       else if (aNumberOfGO > 1)
       {
-        GEOM::GEOM_IGroupOperations_wrap aGroupOp =
-          geomGen->GetIGroupOperations();
-        if(aGroupOp->_is_nil())
+        GEOM::GEOM_IGroupOperations_ptr aGroupOp = geomGen->GetIGroupOperations();
+        if ( aGroupOp->_is_nil() )
           return;
 
         GEOM::ListOfGO_var aGeomObjects = new GEOM::ListOfGO();
@@ -379,7 +376,7 @@ void SMESHGUI_ShapeByMeshOp::commitOperation()
         aGeomObject = aGroupOp->CreateGroup(aMeshShape, aGroupType);
         aGroupOp->UnionList(aGeomObject, aGeomObjects);
 
-        if (!aGroupOp->IsDone())
+        if ( !aGroupOp->IsDone() )
           return;
       }
 
@@ -419,7 +416,7 @@ void SMESHGUI_ShapeByMeshOp::onSelectionDone()
   try {
     SALOME_ListIO aList;
     selectionMgr()->selectedObjects(aList);
-    if (!myIsMultipleAllowed && aList.Extent() != 1)
+    if ( aList.IsEmpty() || ( !myIsMultipleAllowed && aList.Extent() != 1) )
       return;
 
     SMESH::SMESH_Mesh_var aMesh = SMESH::GetMeshByIO(aList.First());

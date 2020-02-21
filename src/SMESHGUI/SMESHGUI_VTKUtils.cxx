@@ -281,7 +281,7 @@ namespace SMESH
             _PTR(AttributePixMap) pixMap = attr;
             toShow = ( pixMap->GetPixMap() != emptyIcon );
           }
-          smeshActor->Update();
+          //smeshActor->Update();
           UpdateView( theWindow, toShow ? eDisplay : eErase, io->getEntry() );
         }
       }

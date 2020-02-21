@@ -951,7 +951,7 @@ void SMESHGUI_BaseComputeOp::computeMesh()
           SMESH::SMESH_IDSource_var aSubMeshObj =
             SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( smSObj );
           SMESH_Actor *anActor = SMESH::FindActorByObject( aSubMeshObj );
-          if ( anActor && anActor->GetVisibility() )
+          if ( anActor /*&& anActor->GetVisibility()*/ )
             aListToUpdate.append( TListOf_IDSrc_SObj::value_type( aSubMeshObj, smSObj ));
         }
         // put Groups into list
@@ -967,7 +967,7 @@ void SMESHGUI_BaseComputeOp::computeMesh()
           SMESH::SMESH_IDSource_var aGroupObj =
             SMESH::SObjectToInterface<SMESH::SMESH_IDSource>( aGroupSO );
           SMESH_Actor *anActor = SMESH::FindActorByObject( aGroupObj );
-          if ( anActor && anActor->GetVisibility() )
+          if ( anActor /*&& anActor->GetVisibility()*/ )
             aListToUpdate.append( TListOf_IDSrc_SObj::value_type( aGroupObj, aGroupSO ));
         }
 
@@ -993,6 +993,13 @@ void SMESHGUI_BaseComputeOp::computeMesh()
                   anActor->SetEntityMode( entities );
                   //SMESH::DisplayActor( SMESH::GetActiveWindow(), anActor ); -- 23615
                 }
+              }
+              else
+              {
+                SMESH_Actor *anActor = SMESH::FindActorByEntry( entry.c_str() );
+                anActor->Update();
+                if ( !anActor->GetVisibility() )
+                  continue;
               }
               SMESH::UpdateView( SMESH::eDisplay, entry.c_str() );
 
@@ -1251,8 +1258,8 @@ void SMESHGUI_BaseComputeOp::stopOperation()
 
 void SMESHGUI_BaseComputeOp::onPublishShape()
 {
-  GEOM::GEOM_Gen_var      geomGen = SMESH::GetGEOMGen();
   GEOM::GEOM_Object_var meshShape = myMesh->GetShapeToMesh();
+  GEOM::GEOM_Gen_var      geomGen = SMESH::GetGEOMGen( meshShape );
 
   QStringList entryList;
   QList<int> rows;
@@ -1273,7 +1280,7 @@ void SMESHGUI_BaseComputeOp::onPublishShape()
         // look for myMainShape in the table
         for ( int r = 0, nr = table()->rowCount(); r < nr; ++r ) {
           if ( table()->item( r, COL_SHAPEID )->text() == "1" ) {
-            if ( so->_is_nil() ) {
+            if ( !so->_is_nil() ) {
               CORBA::String_var name  = so->GetName();
               CORBA::String_var entry = so->GetID();
               QString       shapeText = QString("%1 (%2)").arg( name.in() ).arg( entry.in() );

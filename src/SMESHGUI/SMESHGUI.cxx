@@ -172,6 +172,7 @@
 #include <SALOMEDS_Study.hxx>
 #include <SALOMEDS_SObject.hxx>
 #include "utilities.h"
+#include <SALOME_LifeCycleCORBA.hxx>
 
 // OCCT includes
 #include <Standard_ErrorHandler.hxx>
@@ -1380,6 +1381,108 @@ namespace
         }
       }
     }
+  }
+
+  // Break link with Shaper model
+  void breakShaperLink()
+  {
+    LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
+    SALOME_ListIO selected;
+    if (aSel) {
+      aSel->selectedObjects(selected);
+      if (selected.Extent()) {
+        Handle(SALOME_InteractiveObject) anIObject = selected.First();
+        _PTR(Study) aStudy = SMESH::getStudy();
+        std::string aEntry = anIObject->getEntry();
+        _PTR(SObject) aSObj = aStudy->FindObjectID(aEntry);
+        if (aSObj) {
+          std::string aName = aSObj->GetName();
+          QMessageBox::StandardButton aRes = SUIT_MessageBox::warning(SMESHGUI::desktop(),
+            QObject::tr("SMESH_WRN_WARNING"),
+            QObject::tr("MSG_BREAK_SHAPER_LINK").arg(aName.c_str()),
+            SUIT_MessageBox::Yes | SUIT_MessageBox::No, SUIT_MessageBox::No);
+          if (aRes == SUIT_MessageBox::Yes) {
+            SUIT_DataOwnerPtrList aList;
+            aSel->selected(aList, "ObjectBrowser", true);
+            SUIT_DataOwner* aOwn = aList.first();
+            LightApp_DataOwner* sowner = dynamic_cast<LightApp_DataOwner*>(aOwn);
+            QString aREntry = sowner->entry();
+
+            static GEOM::GEOM_Gen_var geomGen;
+            if (CORBA::is_nil(geomGen)) {
+              SalomeApp_Application* app = dynamic_cast<SalomeApp_Application*>
+                (SUIT_Session::session()->activeApplication());
+              if (app) {
+                SALOME_LifeCycleCORBA* ls = new SALOME_LifeCycleCORBA(app->namingService());
+                Engines::EngineComponent_var comp =
+                  ls->FindOrLoad_Component("FactoryServer", "SHAPERSTUDY");
+                geomGen = GEOM::GEOM_Gen::_narrow(comp);
+              }
+            }
+            if (!CORBA::is_nil(geomGen))
+            {
+              geomGen->BreakLink(aREntry.toStdString().c_str());
+              SMESHGUI::GetSMESHGUI()->updateObjBrowser();
+
+              // remove actors whose objects are removed by BreakLink()
+              QList<SUIT_ViewWindow*> wndList = SMESHGUI::desktop()->windows();
+              SUIT_ViewWindow* wnd;
+              foreach(wnd, wndList)
+                SMESH::UpdateActorsAfterUpdateStudy(wnd);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  //================================================================================
+  /*!
+   * \brief Return true if a mesh icon == ICON_SMESH_TREE_GEOM_MODIF
+   * which means that the mesh can't be modified. It should be either re-computed
+   * or breakShaperLink()'ed. Warn the user about it.
+   */
+  //================================================================================
+
+  bool warnOnGeomModif()
+  {
+    SALOME_ListIO selected;
+    if ( LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr() )
+      aSel->selectedObjects(selected,"",/*convertReferences=*/false);
+
+    SALOME_ListIteratorOfListIO It( selected );
+    for ( ; It.More(); It.Next() )
+    {
+      Handle(SALOME_InteractiveObject) io = It.Value();
+      if ( !io->hasEntry() ) continue;
+      _PTR(SObject) so = SMESH::getStudy()->FindObjectID( io->getEntry() );
+      SMESH::SMESH_Mesh_var mesh;
+      while ( mesh->_is_nil() && so )
+      {
+        CORBA::Object_var obj = SMESH::SObjectToObject( so );
+        SMESH::SMESH_IDSource_var isrc = SMESH::SMESH_IDSource::_narrow( obj );
+        if ( isrc->_is_nil() )
+          so = so->GetFather();
+        else
+          mesh = isrc->GetMesh();
+      }
+      if ( mesh->_is_nil() ) continue;
+      so = SMESH::FindSObject( mesh );
+      if ( !so ) continue;
+      _PTR(GenericAttribute) attr;
+      so->FindAttribute( attr, "AttributePixMap" );
+      _PTR(AttributePixMap) pixmap = attr;
+      if ( !pixmap ) continue;
+
+      if ( pixmap->GetPixMap() == "ICON_SMESH_TREE_GEOM_MODIF" )
+      {
+        SUIT_MessageBox::warning(SMESHGUI::desktop(),
+                                 QObject::tr("SMESH_WRN_WARNING"),
+                                 QObject::tr("MSG_WARN_ON_GEOM_MODIF"));
+        return true;
+      }
+    }
+    return false;
   }
 
   void SetDisplayMode(int theCommandID, VTK::MarkerMap& theMarkerMap)
@@ -2754,16 +2857,19 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
 
-  case SMESHOp::OpCreateMesh:
-  case SMESHOp::OpCreateSubMesh:
   case SMESHOp::OpEditMeshOrSubMesh:
   case SMESHOp::OpEditMesh:
   case SMESHOp::OpEditSubMesh:
+  case SMESHOp::OpMeshOrder:
+  case SMESHOp::OpCreateSubMesh:
+    if ( warnOnGeomModif() )
+      break; // action forbiden as geometry modified
+
+  case SMESHOp::OpCreateMesh:
   case SMESHOp::OpCompute:
   case SMESHOp::OpComputeSubMesh:
   case SMESHOp::OpPreCompute:
   case SMESHOp::OpEvaluate:
-  case SMESHOp::OpMeshOrder:
     startOperation( theCommandID );
     break;
   case SMESHOp::OpCopyMesh:
@@ -2792,6 +2898,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
       if ( isStudyLocked() )
         break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
 
       /*Standard_Boolean aRes;
       SMESH::SMESH_Mesh_var aMesh = SMESH::IObjectToInterface<SMESH::SMESH_Mesh>(IObject);
@@ -2822,6 +2930,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
       if ( isStudyLocked() )
         break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
 
       EmitSignalDeactivateDialog();
       SMESHGUI_MultiEditDlg* aDlg = NULL;
@@ -2840,6 +2950,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpSmoothing:
     {
       if(isStudyLocked()) break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       if( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_SmoothingDlg( this ) )->show();
@@ -2852,6 +2964,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpExtrusion:
     {
       if (isStudyLocked()) break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       if (vtkwnd) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_ExtrusionDlg ( this ) )->show();
@@ -2863,6 +2977,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpExtrusionAlongAPath:
     {
       if (isStudyLocked()) break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       if (vtkwnd) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_ExtrusionAlongPathDlg( this ) )->show();
@@ -2874,6 +2990,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpRevolution:
     {
       if(isStudyLocked()) break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       if( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_RevolutionDlg( this ) )->show();
@@ -2887,6 +3005,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if ( isStudyLocked() )
         break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       if ( vtkwnd )
       {
         EmitSignalDeactivateDialog();
@@ -2903,6 +3023,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpReorientFaces:
   case SMESHOp::OpCreateGeometryGroup:
     {
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       startOperation( theCommandID );
       break;
     }
@@ -2915,6 +3037,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
 
       if(isStudyLocked()) break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       EmitSignalDeactivateDialog();
       SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_nil();
 
@@ -2942,6 +3066,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
 
       if(isStudyLocked()) break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       EmitSignalDeactivateDialog();
 
       LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
@@ -3019,6 +3145,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
 
       if(isStudyLocked()) break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       EmitSignalDeactivateDialog();
 
       LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
@@ -3116,6 +3244,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
 
       if ( isStudyLocked() )
         break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
 
       EmitSignalDeactivateDialog();
 
@@ -3136,6 +3266,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if ( isStudyLocked() )
         break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
 
       EmitSignalDeactivateDialog();
       SMESHGUI_GroupOpDlg* aDlg = new SMESHGUI_DimGroupDlg( this );
@@ -3148,6 +3280,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     {
       if ( isStudyLocked() )
         break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
 
       EmitSignalDeactivateDialog();
       SMESHGUI_FaceGroupsSeparatedByEdgesDlg* aDlg = new SMESHGUI_FaceGroupsSeparatedByEdgesDlg( this );
@@ -3207,6 +3341,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpEditHypothesis:
     {
       if(isStudyLocked()) break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
 
       LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
       SALOME_ListIO selected;
@@ -3252,6 +3388,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpUnassign:                      // REMOVE HYPOTHESIS / ALGORITHMS
     {
       if(isStudyLocked()) break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       SUIT_OverrideCursor wc;
 
       LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr();
@@ -3283,6 +3421,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpHexagonalPrism:
     {
       if(isStudyLocked()) break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         SMDSAbs_EntityType type = SMDSEntity_Edge;
@@ -3309,6 +3449,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpPolyhedron:
     {
       if(isStudyLocked()) break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_CreatePolyhedralVolumeDlg( this ) )->show();
@@ -3332,6 +3474,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpTriQuadraticHexahedron:
     {
       if(isStudyLocked()) break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         SMDSAbs_EntityType type = SMDSEntity_Last;
@@ -3363,6 +3507,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpRemoveNodes:
     {
       if(isStudyLocked()) break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_RemoveNodesDlg( this ) )->show();
@@ -3376,6 +3522,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpRemoveElements:                                    // REMOVES ELEMENTS
     {
       if(isStudyLocked()) break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       if( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_RemoveElementsDlg( this ) )->show();
@@ -3390,6 +3538,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpClearMesh: {
 
     if(isStudyLocked()) break;
+    if ( warnOnGeomModif() )
+      break; // action forbiden as geometry modified
 
     SALOME_ListIO selected;
     if( LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr() )
@@ -3429,6 +3579,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpRemoveOrphanNodes:
     {
       if(isStudyLocked()) break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       SALOME_ListIO selected;
       if( LightApp_SelectionMgr *aSel = SMESHGUI::selectionMgr() )
         aSel->selectedObjects( selected );
@@ -3468,6 +3620,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpRenumberingNodes:
     {
       if(isStudyLocked()) break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       if( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_RenumberingDlg( this, 0 ) )->show();
@@ -3482,6 +3636,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpRenumberingElements:
     {
       if(isStudyLocked()) break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_RenumberingDlg( this, 1 ) )->show();
@@ -3496,6 +3652,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpTranslation:
     {
       if(isStudyLocked()) break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_TranslationDlg( this ) )->show();
@@ -3509,6 +3667,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpRotation:
     {
       if(isStudyLocked()) break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       if( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_RotationDlg( this ) )->show();
@@ -3522,6 +3682,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpSymmetry:
     {
       if(isStudyLocked()) break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       if(vtkwnd) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_SymmetryDlg( this ) )->show();
@@ -3535,6 +3697,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpScale:
     {
       if(isStudyLocked()) break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_ScaleDlg( this ) )->show();
@@ -3549,6 +3713,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpOffset:
     {
       if(isStudyLocked()) break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_OffsetDlg( this ) )->show();
@@ -3563,6 +3729,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpSewing:
     {
       if(isStudyLocked()) break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       if(vtkwnd) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_SewingDlg( this ) )->show();
@@ -3576,6 +3744,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpMergeNodes:
     {
       if(isStudyLocked()) break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       if(vtkwnd) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_MergeDlg( this, 0 ) )->show();
@@ -3589,6 +3759,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpMergeElements:
     {
       if (isStudyLocked()) break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       if (vtkwnd) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_MergeDlg( this, 1 ) )->show();
@@ -3600,12 +3772,16 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
 
   case SMESHOp::OpMoveNode: // MAKE MESH PASS THROUGH POINT
+    if ( warnOnGeomModif() )
+      break; // action forbiden as geometry modified
     startOperation( SMESHOp::OpMoveNode );
     break;
 
   case SMESHOp::OpDuplicateNodes:
     {
       if(isStudyLocked()) break;
+      if ( warnOnGeomModif() )
+        break; // action forbiden as geometry modified
       if ( vtkwnd ) {
         EmitSignalDeactivateDialog();
         ( new SMESHGUI_DuplicateNodesDlg( this ) )->show();
@@ -3618,6 +3794,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
 
   case SMESHOp::OpElem0DOnElemNodes: // 0D_ON_ALL_NODES
+    if ( warnOnGeomModif() )
+      break; // action forbiden as geometry modified
     startOperation( SMESHOp::OpElem0DOnElemNodes );
     break;
 
@@ -3750,6 +3928,9 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
     }
   case SMESHOp::OpSortChild:
     ::sortChildren();
+    break;
+  case SMESHOp::OpBreakLink:
+    ::breakShaperLink();
     break;
 
   }
@@ -4083,6 +4264,8 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpShowOnly, "DISPLAY_ONLY" );
 
   createSMESHAction( SMESHOp::OpSortChild, "SORT_CHILD_ITEMS" );
+
+  createSMESHAction( SMESHOp::OpBreakLink, "BREAK_SHAPER_LINK" );
 
   QList<int> aCtrlActions;
   aCtrlActions << SMESHOp::OpFreeNode << SMESHOp::OpEqualNode
@@ -4856,6 +5039,9 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( action( SMESHOp::OpSortChild ), -1, -1 );
   popupMgr()->setRule( action( SMESHOp::OpSortChild ), "$component={'SMESH'} and client='ObjectBrowser' and isContainer and nbChildren>1", QtxPopupMgr::VisibleRule );
   popupMgr()->insert( separator(), -1, -1 );
+
+  popupMgr()->insert( action( SMESHOp::OpBreakLink), -1, -1 );
+  popupMgr()->setRule( action( SMESHOp::OpBreakLink), "$component={'SHAPERSTUDY'} and client='ObjectBrowser' and canBreakLink", QtxPopupMgr::VisibleRule );
 
   connect( application(), SIGNAL( viewManagerActivated( SUIT_ViewManager* ) ),
            this, SLOT( onViewManagerActivated( SUIT_ViewManager* ) ) );

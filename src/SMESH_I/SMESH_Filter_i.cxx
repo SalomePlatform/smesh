@@ -903,9 +903,7 @@ void BelongToGeom_i::SetGeom( GEOM::GEOM_Object_ptr theGeom )
 {
   if ( theGeom->_is_nil() )
     return;
-  SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-  GEOM::GEOM_Gen_ptr aGEOMGen = SMESH_Gen_i::GetGeomEngine();
-  TopoDS_Shape aLocShape = aSMESHGen->GetShapeReader()->GetShape( aGEOMGen, theGeom );
+  TopoDS_Shape aLocShape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape( theGeom );
   myBelongToGeomPtr->SetGeom( aLocShape );
   TPythonDump()<<this<<".SetGeom("<<theGeom<<")";
 }
@@ -1001,9 +999,7 @@ void BelongToSurface_i::SetSurface( GEOM::GEOM_Object_ptr theGeom, ElementType t
 {
   if ( theGeom->_is_nil() )
     return;
-  SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-  GEOM::GEOM_Gen_ptr aGEOMGen = SMESH_Gen_i::GetGeomEngine();
-  TopoDS_Shape aLocShape = aSMESHGen->GetShapeReader()->GetShape( aGEOMGen, theGeom );
+  TopoDS_Shape aLocShape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape( theGeom );
 
   if ( aLocShape.ShapeType() == TopAbs_FACE )
   {
@@ -1173,9 +1169,7 @@ void LyingOnGeom_i::SetGeom( GEOM::GEOM_Object_ptr theGeom )
 {
   if ( theGeom->_is_nil() )
     return;
-  SMESH_Gen_i* aSMESHGen = SMESH_Gen_i::GetSMESHGen();
-  GEOM::GEOM_Gen_ptr aGEOMGen = SMESH_Gen_i::GetGeomEngine();
-  TopoDS_Shape aLocShape = aSMESHGen->GetShapeReader()->GetShape( aGEOMGen, theGeom );
+  TopoDS_Shape aLocShape = SMESH_Gen_i::GetSMESHGen()->GeomObjectToShape( theGeom );
   myLyingOnGeomPtr->SetGeom( aLocShape );
   TPythonDump()<<this<<".SetGeom("<<theGeom<<")";
 }

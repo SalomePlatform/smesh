@@ -45,7 +45,7 @@ class QString;
 
 namespace SMESH
 {
-  SMESHGUI_EXPORT GEOM::GEOM_Gen_var    GetGEOMGen();
+  SMESHGUI_EXPORT GEOM::GEOM_Gen_var    GetGEOMGen( GEOM::GEOM_Object_ptr go );
 
   SMESHGUI_EXPORT GEOM::GEOM_Object_var GetShapeOnMeshOrSubMesh( _PTR(SObject), bool* isMesh=0 );
 
@@ -53,7 +53,7 @@ namespace SMESH
 
   SMESHGUI_EXPORT GEOM::GEOM_Object_var GetGeom( Handle(SALOME_InteractiveObject) io );
 
-  SMESHGUI_EXPORT char* GetGeomName( _PTR(SObject) smeshSO );
+  SMESHGUI_EXPORT char*                 GetGeomName( _PTR(SObject) smeshSO );
 
   SMESHGUI_EXPORT GEOM::GEOM_Object_ptr GetSubShape( GEOM::GEOM_Object_ptr, long );
 

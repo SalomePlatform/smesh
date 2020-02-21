@@ -1061,12 +1061,15 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
                                    isHistoricalDump );
 
   bool importGeom = false;
-  GEOM::GEOM_Gen_ptr geom = GetGeomEngine();
+  GEOM::GEOM_Gen_ptr geom[2];
+  for ( int isShaper = 0; isShaper < 2; ++isShaper )
   {
+    geom[ isShaper ] = GetGeomEngine( isShaper );
+    if ( CORBA::is_nil( geom[ isShaper ]))
+      continue;
     // Add names of GEOM objects to theObjectNames to exclude same names of SMESH objects
-    GEOM::string_array_var aGeomNames = geom->GetAllDumpNames();
-    int ign = 0, nbgn = aGeomNames->length();
-    for (; ign < nbgn; ign++) {
+    GEOM::string_array_var aGeomNames = geom[ isShaper ]->GetAllDumpNames();
+    for ( CORBA::ULong ign = 0; ign < aGeomNames->length(); ign++) {
       TCollection_AsciiString aName = aGeomNames[ign].in();
       theObjectNames.Bind(aName, "1");
     }
@@ -1100,7 +1103,11 @@ TCollection_AsciiString SMESH_Gen_i::DumpPython_impl
         anUpdatedScript += aLine.SubString( aStart, aSeq->Value(i) - 1 ); // line part before i-th entry
       anEntry = aLine.SubString( aSeq->Value(i), aSeq->Value(i + 1) );
       // is a GEOM object?
-      CORBA::String_var geomName = geom->GetDumpName( anEntry.ToCString() );
+      CORBA::String_var geomName;
+      if ( !CORBA::is_nil( geom[0] ))
+        geomName = geom[0]->GetDumpName( anEntry.ToCString() );
+      if (( !geomName.in() || !geomName.in()[0] ) && !CORBA::is_nil( geom[1] ))
+        geomName = geom[1]->GetDumpName( anEntry.ToCString() );
       if ( !geomName.in() || !geomName.in()[0] ) {
         // is a SMESH object
         if ( theObjectNames.IsBound( anEntry )) {

@@ -43,6 +43,8 @@
 #include <SalomeApp_Application.h>
 #include <LightApp_VTKSelector.h>
 #include <SVTK_ViewWindow.h>
+#include <LightApp_SelectionMgr.h>
+#include <LightApp_DataOwner.h>
 
 // IDL includes
 #include <SALOMEconfig.h>
@@ -77,6 +79,8 @@ void SMESHGUI_Selection::init( const QString& client, LightApp_SelectionMgr* mgr
 
   if( mgr )
   {
+    myOwners.clear();
+    mgr->selected(myOwners, client);
     for( int i=0, n=count(); i<n; i++ ) {
       myTypes.append( typeName( type( entry( i ) ) ) );
       myControls.append( controlMode( i ) );
@@ -140,6 +144,7 @@ QVariant SMESHGUI_Selection::parameter( const int ind, const QString& p ) const
   else if ( p=="nbChildren")            val = QVariant( nbChildren( ind ) );
   else if ( p=="isContainer")           val = QVariant( isContainer( ind ) );
   else if ( p=="guiState")              val = QVariant( guiState() );
+  else if ( p=="canBreakLink")          val = QVariant( canBreakLink(ind) );
 
   if ( val.isValid() )
     return val;
@@ -601,6 +606,33 @@ bool SMESHGUI_Selection::hasGeomReference( int ind ) const
     _PTR(SObject) so = SMESH::getStudy()->FindObjectID( entry( ind ).toUtf8().data() );
     GEOM::GEOM_Object_var shape = SMESH::GetShapeOnMeshOrSubMesh( so );
     return !shape->_is_nil();
+  }
+  return false;
+}
+
+//=======================================================================
+//function : canBreakLink
+//purpose  : returns true if selected object is a Shaper object and it can break link
+//=======================================================================
+
+bool SMESHGUI_Selection::canBreakLink( int ind ) const
+{
+  if ( ind >= 0 && ind < myTypes.count()) {
+    if (isReference(ind)) {
+      SUIT_DataOwner* aOwn = myOwners.at(ind);
+      LightApp_DataOwner* sowner = dynamic_cast<LightApp_DataOwner*>(aOwn);
+      QString aEntry = sowner->entry();
+      _PTR(SObject) aSObject = SMESH::getStudy()->FindObjectID(aEntry.toStdString());
+      _PTR(SObject) aFatherObj = aSObject->GetFather();
+      _PTR(SComponent) aComponent = aFatherObj->GetFatherComponent();
+      if (aComponent->ComponentDataType() == "SMESH") {
+        QString aObjEntry = entry(ind);
+        _PTR(SObject) aGeomSObject = SMESH::getStudy()->FindObjectID(aObjEntry.toStdString());
+        GEOM::GEOM_Object_var aObject = SMESH::SObjectToInterface<GEOM::GEOM_Object>(aGeomSObject);
+        if (!aObject->_is_nil())
+          return aObject->IsParametrical();
+      }
+    }
   }
   return false;
 }

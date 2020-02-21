@@ -305,7 +305,7 @@ def AssureGeomPublished(mesh, geom, name=''):
     """
     if not mesh.smeshpyD.IsEnablePublish():
         return
-    if not isinstance( geom, geomBuilder.GEOM._objref_GEOM_Object ):
+    if not hasattr( geom, "GetShapeType" ):
         return
     if not geom.GetStudyEntry():
         ## get a name
@@ -318,27 +318,13 @@ def AssureGeomPublished(mesh, geom, name=''):
         mesh.geompyD.addToStudyInFather( mesh.geom, geom, name )
     return
 
-def FirstVertexOnCurve(mesh, edge):
-    """
-    Returns:
-        the first vertex of a geometrical edge by ignoring orientation
-    """
-    vv = mesh.geompyD.SubShapeAll( edge, geomBuilder.geomBuilder.ShapeType["VERTEX"])
-    if not vv:
-        raise TypeError("Given object has no vertices")
-    if len( vv ) == 1: return vv[0]
-    v0   = mesh.geompyD.MakeVertexOnCurve(edge,0.)
-    xyz  = mesh.geompyD.PointCoordinates( v0 ) # coords of the first vertex
-    xyz1 = mesh.geompyD.PointCoordinates( vv[0] )
-    xyz2 = mesh.geompyD.PointCoordinates( vv[1] )
-    dist1, dist2 = 0,0
-    for i in range(3):
-        dist1 += abs( xyz[i] - xyz1[i] )
-        dist2 += abs( xyz[i] - xyz2[i] )
-    if dist1 < dist2:
-        return vv[0]
-    else:
-        return vv[1]
+# def FirstVertexOnCurve(mesh, edge):
+#     """
+#     Returns:
+#         the first vertex of a geometrical edge by ignoring orientation
+#     """
+#     return mesh.geompyD.GetVertexByIndex( edge, 0, False )
+
 
 smeshInst = None
 """
@@ -531,8 +517,8 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
         Returns:
                 :class:`SMESH.PointStruct`
         """
-
-        [x, y, z] = self.geompyD.PointCoordinates(theVertex)
+        geompyD = theVertex.GetGen()
+        [x, y, z] = geompyD.PointCoordinates(theVertex)
         return PointStruct(x,y,z)
 
     def GetDirStruct(self,theVector):
@@ -545,13 +531,13 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
         Returns:
                 :class:`SMESH.DirStruct`
         """
-
-        vertices = self.geompyD.SubShapeAll( theVector, geomBuilder.geomBuilder.ShapeType["VERTEX"] )
+        geompyD = theVector.GetGen()
+        vertices = geompyD.SubShapeAll( theVector, geomBuilder.geomBuilder.ShapeType["VERTEX"] )
         if(len(vertices) != 2):
             print("Error: vector object is incorrect.")
             return None
-        p1 = self.geompyD.PointCoordinates(vertices[0])
-        p2 = self.geompyD.PointCoordinates(vertices[1])
+        p1 = geompyD.PointCoordinates(vertices[0])
+        p2 = geompyD.PointCoordinates(vertices[1])
         pnt = PointStruct(p2[0]-p1[0], p2[1]-p1[1], p2[2]-p1[2])
         dirst = DirStruct(pnt)
         return dirst
@@ -581,28 +567,29 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
             :class:`SMESH.AxisStruct`
         """
         import GEOM
-        edges = self.geompyD.SubShapeAll( theObj, geomBuilder.geomBuilder.ShapeType["EDGE"] )
+        geompyD = theObj.GetGen()
+        edges = geompyD.SubShapeAll( theObj, geomBuilder.geomBuilder.ShapeType["EDGE"] )
         axis = None
         if len(edges) > 1:
-            vertex1, vertex2 = self.geompyD.SubShapeAll( edges[0], geomBuilder.geomBuilder.ShapeType["VERTEX"] )
-            vertex3, vertex4 = self.geompyD.SubShapeAll( edges[1], geomBuilder.geomBuilder.ShapeType["VERTEX"] )
-            vertex1 = self.geompyD.PointCoordinates(vertex1)
-            vertex2 = self.geompyD.PointCoordinates(vertex2)
-            vertex3 = self.geompyD.PointCoordinates(vertex3)
-            vertex4 = self.geompyD.PointCoordinates(vertex4)
+            vertex1, vertex2 = geompyD.SubShapeAll( edges[0], geomBuilder.geomBuilder.ShapeType["VERTEX"] )
+            vertex3, vertex4 = geompyD.SubShapeAll( edges[1], geomBuilder.geomBuilder.ShapeType["VERTEX"] )
+            vertex1 = geompyD.PointCoordinates(vertex1)
+            vertex2 = geompyD.PointCoordinates(vertex2)
+            vertex3 = geompyD.PointCoordinates(vertex3)
+            vertex4 = geompyD.PointCoordinates(vertex4)
             v1 = [vertex2[0]-vertex1[0], vertex2[1]-vertex1[1], vertex2[2]-vertex1[2]]
             v2 = [vertex4[0]-vertex3[0], vertex4[1]-vertex3[1], vertex4[2]-vertex3[2]]
             normal = [ v1[1]*v2[2]-v2[1]*v1[2], v1[2]*v2[0]-v2[2]*v1[0], v1[0]*v2[1]-v2[0]*v1[1] ]
             axis = AxisStruct(vertex1[0], vertex1[1], vertex1[2], normal[0], normal[1], normal[2])
             axis._mirrorType = SMESH.SMESH_MeshEditor.PLANE
         elif len(edges) == 1:
-            vertex1, vertex2 = self.geompyD.SubShapeAll( edges[0], geomBuilder.geomBuilder.ShapeType["VERTEX"] )
-            p1 = self.geompyD.PointCoordinates( vertex1 )
-            p2 = self.geompyD.PointCoordinates( vertex2 )
+            vertex1, vertex2 = geompyD.SubShapeAll( edges[0], geomBuilder.geomBuilder.ShapeType["VERTEX"] )
+            p1 = geompyD.PointCoordinates( vertex1 )
+            p2 = geompyD.PointCoordinates( vertex2 )
             axis = AxisStruct(p1[0], p1[1], p1[2], p2[0]-p1[0], p2[1]-p1[1], p2[2]-p1[2])
             axis._mirrorType = SMESH.SMESH_MeshEditor.AXIS
         elif theObj.GetShapeType() == GEOM.VERTEX:
-            x,y,z = self.geompyD.PointCoordinates( theObj )
+            x,y,z = geompyD.PointCoordinates( theObj )
             axis = AxisStruct( x,y,z, 1,0,0,)
             axis._mirrorType = SMESH.SMESH_MeshEditor.POINT
         return axis
@@ -972,7 +959,8 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
                     name = aCriterion.ThresholdStr
                     if not name:
                         name = "%s_%s"%(aThreshold.GetShapeType(), id(aThreshold)%10000)
-                    aCriterion.ThresholdID = self.geompyD.addToStudy( aThreshold, name )
+                    geompyD = aThreshold.GetGen()
+                    aCriterion.ThresholdID = geompyD.addToStudy( aThreshold, name )
             # or a name of GEOM object
             elif isinstance( aThreshold, str ):
                 aCriterion.ThresholdStr = aThreshold
@@ -1023,7 +1011,8 @@ class smeshBuilder( SMESH._objref_SMESH_Gen, object ):
                     name = aThreshold.GetName()
                     if not name:
                         name = "%s_%s"%(aThreshold.GetShapeType(), id(aThreshold)%10000)
-                    aCriterion.ThresholdID = self.geompyD.addToStudy( aThreshold, name )
+                    geompyD = aThreshold.GetGen()
+                    aCriterion.ThresholdID = geompyD.addToStudy( aThreshold, name )
             elif isinstance(aThreshold, int): # node id
                 aCriterion.Threshold = aThreshold
             elif isinstance(aThreshold, list): # 3 point coordinates
@@ -1654,14 +1643,15 @@ class Mesh(metaclass = MeshMeta):
         Parameters:
                 theMesh: a :class:`SMESH.SMESH_Mesh` object
         """
-
-
         # do not call Register() as this prevents mesh servant deletion at closing study
         #if self.mesh: self.mesh.UnRegister()
         self.mesh = theMesh
         if self.mesh:
             #self.mesh.Register()
             self.geom = self.mesh.GetShapeToMesh()
+            if self.geom:
+                self.geompyD = self.geom.GetGen()
+                pass
         pass
 
     def GetMesh(self):

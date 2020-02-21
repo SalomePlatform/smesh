@@ -1055,27 +1055,27 @@ bool SMESHGUI_GroupDlg::onApply()
       }
       else {
         SMESH::SMESH_Gen_var aSMESHGen = SMESHGUI::GetSMESHGen();
-        if ( aSMESHGen->_is_nil() )
+        if ( aSMESHGen->_is_nil() || myGeomObjects->length() == 0 )
           return false;
 
         // create a geometry group
-        GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
-
+        GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen( myGeomObjects[0] );
         if (geomGen->_is_nil())
           return false;
 
-        GEOM::GEOM_IGroupOperations_wrap op = geomGen->GetIGroupOperations();
+        GEOM::GEOM_IGroupOperations_ptr op = geomGen->GetIGroupOperations();
         if (op->_is_nil())
           return false;
 
         // check and add all selected GEOM objects: they must be
         // a sub-shapes of the main GEOM and must be of one type
         TopAbs_ShapeEnum aGroupType = TopAbs_SHAPE;
-        for ( int i =0; i < (int)myGeomObjects->length(); i++) {
+        for ( CORBA::ULong i =0; i < myGeomObjects->length(); i++)
+        {
           TopAbs_ShapeEnum aSubShapeType = (TopAbs_ShapeEnum)myGeomObjects[i]->GetShapeType();
-          if (i == 0)
+          if ( i == 0 )
             aGroupType = aSubShapeType;
-          else if (aSubShapeType != aGroupType) {
+          else if ( aSubShapeType != aGroupType ) {
             aGroupType = TopAbs_SHAPE;
             break;
           }
@@ -1083,6 +1083,8 @@ bool SMESHGUI_GroupDlg::onApply()
 
         GEOM::GEOM_Object_var  aMeshShape = myMesh->GetShapeToMesh();
         GEOM::GEOM_Object_wrap aGroupVar = op->CreateGroup(aMeshShape, aGroupType);
+        if ( aGroupVar->_is_nil() )
+          return false;
         op->UnionList(aGroupVar, myGeomObjects);
 
         if (op->IsDone()) {
@@ -1106,7 +1108,7 @@ bool SMESHGUI_GroupDlg::onApply()
 
       resultGroup = SMESH::SMESH_GroupBase::_narrow( myGroupOnGeom );
       isCreation = false;
-    }      
+    }
     anIsOk = true;
   }
   if (myGrpTypeId == 2) // group on filter
@@ -1410,13 +1412,15 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
 
         // The main shape of the group
         GEOM::GEOM_Object_var aGroupMainShape;
-        if (aGeomGroup->GetType() == 37) {
-          GEOM::GEOM_IGroupOperations_wrap anOp =
-            SMESH::GetGEOMGen()->GetIGroupOperations();
-          aGroupMainShape = anOp->GetMainShape(aGeomGroup);
+        if (aGeomGroup->GetType() == 37)
+        {
+          GEOM::GEOM_IGroupOperations_ptr anOp =
+            SMESH::GetGEOMGen( aGeomGroup )->GetIGroupOperations();
+          aGroupMainShape = anOp->GetMainShape( aGeomGroup );
           // aGroupMainShape is an existing servant => GEOM_Object_var not GEOM_Object_wrap
         }
-        else {
+        else
+        {
           aGroupMainShape = aGeomGroup;
           aGroupMainShape->Register();
         }
@@ -1867,7 +1871,8 @@ void SMESHGUI_GroupDlg::onAdd()
   QListWidgetItem* anItem = 0;
   QList<QListWidgetItem*> listItemsToSel;
 
-  if (myCurrentLineEdit == 0) {
+  if ( myCurrentLineEdit == 0 )
+  {
     //if (aNbSel != 1) { myIsBusy = false; return; }
     QString aListStr = "";
     int aNbItems = 0;
@@ -1910,7 +1915,9 @@ void SMESHGUI_GroupDlg::onAdd()
       onListSelectionChanged();
       listItemsToSel.clear();
     }
-  } else if (myCurrentLineEdit == mySubMeshLine) {
+  }
+  else if ( myCurrentLineEdit == mySubMeshLine )
+  {
     //SALOME_ListIteratorOfListIO anIt (mySelectionMgr->StoredIObjects());
 
     SALOME_ListIO aList;
@@ -1958,7 +1965,9 @@ void SMESHGUI_GroupDlg::onAdd()
     myIsBusy = false;
     onListSelectionChanged();
 
-  } else if (myCurrentLineEdit == myGroupLine) {
+  }
+  else if ( myCurrentLineEdit == myGroupLine )
+  {
     //SALOME_ListIteratorOfListIO anIt (mySelectionMgr->StoredIObjects());
     SALOME_ListIO aList;
     mySelectionMgr->selectedObjects( aList );
@@ -2000,9 +2009,11 @@ void SMESHGUI_GroupDlg::onAdd()
     myIsBusy = false;
     onListSelectionChanged();
 
-  } else if (myCurrentLineEdit == myGeomGroupLine && myGeomObjects->length() == 1) {
-    GEOM::GEOM_IGroupOperations_wrap aGroupOp =
-      SMESH::GetGEOMGen()->GetIGroupOperations();
+  }
+  else if ( myCurrentLineEdit == myGeomGroupLine && myGeomObjects->length() == 1 )
+  {
+    GEOM::GEOM_IGroupOperations_ptr aGroupOp =
+      SMESH::GetGEOMGen( myGeomObjects[0] )->GetIGroupOperations();
 
     SMESH::ElementType aGroupType = SMESH::ALL;
     switch(aGroupOp->GetType(myGeomObjects[0])) {

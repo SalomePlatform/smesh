@@ -346,10 +346,10 @@ bool SMESHGUI_MeshOp::isSubshapeOk() const
   myDlg->selectedObject(SMESHGUI_MeshDlg::Geom, aGEOMs);
 
   if (aGEOMs.count() > 0) {
-    GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
+    GEOM::GEOM_Gen_var geomGen = mainGeom->GetGen();
     if (geomGen->_is_nil()) return false;
 
-    GEOM::GEOM_IGroupOperations_wrap op = geomGen->GetIGroupOperations();
+    GEOM::GEOM_IGroupOperations_ptr op = geomGen->GetIGroupOperations();
     if (op->_is_nil()) return false;
 
     // check all selected shapes
@@ -1756,7 +1756,7 @@ void SMESHGUI_MeshOp::createSubMeshOnInternalEdges( SMESH::SMESH_Mesh_ptr theMes
   for ( size_t i = 0; i < internalEdges.size(); ++i )
     intIDSet.insert( shapeIDs.FindIndex( internalEdges[ i ]));
 
-  GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
+  GEOM::GEOM_Gen_var geomGen = theMainShape->GetGen();
   if (geomGen->_is_nil()) return;
 
   GEOM::GEOM_Object_var edgeGroup;
@@ -2062,7 +2062,7 @@ bool SMESHGUI_MeshOp::createMesh( QString& theMess, QStringList& theEntryList )
     {
       // Create groups on all geom groups
 
-      GEOM::GEOM_Gen_var           geomGen = SMESH::GetGEOMGen();
+      GEOM::GEOM_Gen_var           geomGen = aGeomVar->GetGen();
       GEOM::GEOM_IShapesOperations_wrap op = geomGen->GetIShapesOperations();
       GEOM::ListOfGO_var        geomGroups = op->GetExistingSubObjects( aGeomVar,
                                                                         /*groupsOnly=*/false );
@@ -2138,11 +2138,11 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess, QStringList& theEntryList
   else if (aGEOMs.count() > 1)
   {
     // create a GEOM group
-    GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
-    if (!geomGen->_is_nil()) {
-      GEOM::GEOM_IGroupOperations_wrap op =
-        geomGen->GetIGroupOperations();
-      if (!op->_is_nil()) {
+    GEOM::GEOM_Gen_var geomGen = mainGeom->GetGen();
+    if ( !geomGen->_is_nil() ) {
+      GEOM::GEOM_IGroupOperations_ptr op = geomGen->GetIGroupOperations();
+      if ( !op->_is_nil() )
+      {
         // check and add all selected GEOM objects: they must be
         // a sub-shapes of the main GEOM and must be of one type
         int iSubSh = 0;

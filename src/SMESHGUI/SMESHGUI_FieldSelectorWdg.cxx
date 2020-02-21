@@ -91,9 +91,6 @@ GetAllFields(const QList< QPair< SMESH::SMESH_IDSource_var, QString > >& meshes,
 {
   myFields = & fields;
   myTree->clear();
-  
-  GEOM::GEOM_Gen_var geomGen = SMESH::GetGEOMGen();
-  GEOM::GEOM_IFieldOperations_wrap fieldOp = geomGen->GetIFieldOperations();
 
   for ( int iM = 0; iM < meshes.count(); ++iM )
   {
@@ -109,6 +106,9 @@ GetAllFields(const QList< QPair< SMESH::SMESH_IDSource_var, QString > >& meshes,
         QTreeWidgetItem* meshItem = createItem( myTree, meshes[iM].second, iM );
 
         GEOM::GEOM_Object_var shape = mesh->GetShapeToMesh();
+        GEOM::GEOM_Gen_var  geomGen = SMESH::GetGEOMGen( shape );
+        GEOM::GEOM_IFieldOperations_wrap fieldOp = geomGen->GetIFieldOperations();
+
         fields = fieldOp->GetFields( shape );
         for ( size_t iF = 0; iF < fields->length(); ++iF )
         {

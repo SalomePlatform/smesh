@@ -74,6 +74,9 @@ public:
   GEOM::GEOM_Object_ptr GetShapeToMesh()
     throw (SALOME::SALOME_Exception);
 
+  virtual void ReplaceShape(GEOM::GEOM_Object_ptr theNewGeom)
+    throw (SALOME::SALOME_Exception);
+
   CORBA::Boolean IsLoaded()
     throw (SALOME::SALOME_Exception);
 
@@ -460,7 +463,7 @@ public:
    *
    * Issue 0022501
    */
-  void CheckGeomModif();
+  void CheckGeomModif( bool isBreakLink = false );
   /*!
    * \brief Update hypotheses assigned to geom groups if the latter change
    *
@@ -619,6 +622,12 @@ public:
   void FileInfoFromString(const std::string& info);
 
   /*!
+   * Persistence of geometry tick
+   */
+  int& MainShapeTick() { return _mainShapeTick; }
+  
+
+  /*!
    * Sets list of notebook variables used for Mesh operations separated by ":" symbol
    */
   void SetParameters (const char* theParameters);
@@ -765,7 +774,7 @@ private:
   /*!
    * Return new group contents if it has been changed and update group data
    */
-  TopoDS_Shape newGroupShape( TGeomGroupData & groupData);
+  TopoDS_Shape newGroupShape( TGeomGroupData & groupData, int how );
 
 };
 
