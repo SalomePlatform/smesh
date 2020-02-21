@@ -2028,9 +2028,9 @@ void SMESH_Mesh_i::addGeomGroupData(GEOM::GEOM_Object_ptr theGeomObj,
   if ( groupSO->_is_nil() )
     return;
   // group indices
-  GEOM::GEOM_Gen_var geomGen = _gen_i->GetGeomEngine( theGeomObj );
-  GEOM::GEOM_IGroupOperations_ptr groupOp = geomGen->GetIGroupOperations();
-  GEOM::ListOfLong_var ids = groupOp->GetObjects( theGeomObj );
+  GEOM::GEOM_Gen_var               geomGen = _gen_i->GetGeomEngine( theGeomObj );
+  GEOM::GEOM_IGroupOperations_wrap groupOp = geomGen->GetIGroupOperations();
+  GEOM::ListOfLong_var                 ids = groupOp->GetObjects( theGeomObj );
 
   // store data
   _geomGroupData.push_back( TGeomGroupData() );
@@ -2104,9 +2104,9 @@ TopoDS_Shape SMESH_Mesh_i::newGroupShape( TGeomGroupData & groupData, int how )
 
       // get indices of group items
       set<int> curIndices;
-      GEOM::GEOM_Gen_var              geomGen = _gen_i->GetGeomEngine( geomGroup );
-      GEOM::GEOM_IGroupOperations_ptr groupOp = geomGen->GetIGroupOperations();
-      GEOM::ListOfLong_var                ids = groupOp->GetObjects( geomGroup );
+      GEOM::GEOM_Gen_var               geomGen = _gen_i->GetGeomEngine( geomGroup );
+      GEOM::GEOM_IGroupOperations_wrap groupOp = geomGen->GetIGroupOperations();
+      GEOM::ListOfLong_var                 ids = groupOp->GetObjects( geomGroup );
       for ( CORBA::ULong i = 0; i < ids->length(); ++i )
         curIndices.insert( ids[i] );
 

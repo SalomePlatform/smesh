@@ -225,7 +225,7 @@ SMESH::ElementType SMESHGUI_GroupOnShapeOp::ElementType(GEOM::GEOM_Object_var ge
 
     if ( geom->GetType() == 37 ) // geom group
     {
-      GEOM::GEOM_IGroupOperations_ptr aGroupOp = geomGen->GetIGroupOperations();
+      GEOM::GEOM_IGroupOperations_wrap aGroupOp = geomGen->GetIGroupOperations();
       if ( !aGroupOp->_is_nil() ) {
         // mainShape is an existing servant => GEOM_Object_var not GEOM_Object_wrap
         GEOM::GEOM_Object_var mainShape = aGroupOp->GetMainShape( geom );

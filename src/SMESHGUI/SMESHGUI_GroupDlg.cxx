@@ -1063,7 +1063,7 @@ bool SMESHGUI_GroupDlg::onApply()
         if (geomGen->_is_nil())
           return false;
 
-        GEOM::GEOM_IGroupOperations_ptr op = geomGen->GetIGroupOperations();
+        GEOM::GEOM_IGroupOperations_wrap op = geomGen->GetIGroupOperations();
         if (op->_is_nil())
           return false;
 
@@ -1414,7 +1414,7 @@ void SMESHGUI_GroupDlg::onObjectSelectionChanged()
         GEOM::GEOM_Object_var aGroupMainShape;
         if (aGeomGroup->GetType() == 37)
         {
-          GEOM::GEOM_IGroupOperations_ptr anOp =
+          GEOM::GEOM_IGroupOperations_wrap anOp =
             SMESH::GetGEOMGen( aGeomGroup )->GetIGroupOperations();
           aGroupMainShape = anOp->GetMainShape( aGeomGroup );
           // aGroupMainShape is an existing servant => GEOM_Object_var not GEOM_Object_wrap
@@ -2012,7 +2012,7 @@ void SMESHGUI_GroupDlg::onAdd()
   }
   else if ( myCurrentLineEdit == myGeomGroupLine && myGeomObjects->length() == 1 )
   {
-    GEOM::GEOM_IGroupOperations_ptr aGroupOp =
+    GEOM::GEOM_IGroupOperations_wrap aGroupOp =
       SMESH::GetGEOMGen( myGeomObjects[0] )->GetIGroupOperations();
 
     SMESH::ElementType aGroupType = SMESH::ALL;

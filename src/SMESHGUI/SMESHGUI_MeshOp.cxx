@@ -349,7 +349,7 @@ bool SMESHGUI_MeshOp::isSubshapeOk() const
     GEOM::GEOM_Gen_var geomGen = mainGeom->GetGen();
     if (geomGen->_is_nil()) return false;
 
-    GEOM::GEOM_IGroupOperations_ptr op = geomGen->GetIGroupOperations();
+    GEOM::GEOM_IGroupOperations_wrap op = geomGen->GetIGroupOperations();
     if (op->_is_nil()) return false;
 
     // check all selected shapes
@@ -2140,7 +2140,7 @@ bool SMESHGUI_MeshOp::createSubMesh( QString& theMess, QStringList& theEntryList
     // create a GEOM group
     GEOM::GEOM_Gen_var geomGen = mainGeom->GetGen();
     if ( !geomGen->_is_nil() ) {
-      GEOM::GEOM_IGroupOperations_ptr op = geomGen->GetIGroupOperations();
+      GEOM::GEOM_IGroupOperations_wrap op = geomGen->GetIGroupOperations();
       if ( !op->_is_nil() )
       {
         // check and add all selected GEOM objects: they must be
