@@ -1037,7 +1037,7 @@ namespace
       switch ( ip->_transition ) {
       case Trans_IN:      isOut = true;            break;
       case Trans_OUT:     isOut = false;           break;
-      case Trans_TANGENT: isOut = ( prevID == 0 ); break;
+      case Trans_TANGENT: isOut = ( prevID != 0 ); break;
       case Trans_APEX:
       {
         // singularity point (apex of a cone)
