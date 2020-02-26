@@ -420,9 +420,9 @@ namespace
                          const TopTools_MapOfShape& cornerVV,
                          TopTools_MapOfShape&       internEE)
   {
-    TopTools_IndexedMapOfShape subEE;
+    TopTools_IndexedMapOfShape subEE, subFF;
     TopExp::MapShapes( shape, TopAbs_EDGE, subEE );
-    //TopExp::MapShapes( shape, TopAbs_FACE, subFF );
+    TopExp::MapShapes( shape, TopAbs_FACE, subFF );
 
     TopoDS_Vertex VV[2];
     TopTools_MapOfShape subChecked, ridgeEE;
@@ -459,6 +459,8 @@ namespace
             while ( const TopoDS_Shape* F = fIt->next() )
             {
               if ( !SMESH_MesherHelper::IsSubShape( ridgeE, *F ))
+                continue;
+              if ( !subFF.Contains( *F ))
                 continue;
               if ( isContinuousMesh( ridgeE, TopoDS::Edge( *E ), TopoDS::Face( *F ), mesh ))
               {
