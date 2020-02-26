@@ -31,7 +31,7 @@ right-clicking on the selected mesh.
 
 * **Rename** - allows to rename the object in the Object browser.
 * **Hide all** - allows to hide all objects in the viewer.
-* **Update** - refreshes the presentation of your mesh in the Object Browser, applying all recent changes. 
+* **Update** - refreshes the presentation of your mesh in the 3D Viewer, applying all recent changes. 
 * :ref:`Mesh Information <mesh_infos_page>` -  provides information about the mesh.
 * :ref:`Find Element by Point <find_element_by_point_page>` - allows to find all mesh elements, to which belongs a point with the given coordinates.
 * **Auto Color** - switch on / off auto-assigning colors for the groups. If switched on, a default color of a new group in :ref:`Create Group <creating_groups_page>` dialog is chosen randomly. 
