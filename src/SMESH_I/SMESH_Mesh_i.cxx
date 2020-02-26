@@ -2295,6 +2295,8 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
   if ( !geomClient ) return;
   GEOM::GEOM_Gen_var geomGen = _gen_i->GetGeomEngine( mainGO );
   if ( geomGen->_is_nil() ) return;
+  CORBA::String_var geomComponentType = geomGen->ComponentDataType();
+  bool isShaper = ( strcmp( geomComponentType.in(), "SHAPERSTUDY" ) == 0 );
 
   CORBA::String_var ior = geomGen->GetStringFromIOR( mainGO );
   geomClient->RemoveShapeFromBuffer( ior.in() );
@@ -2306,7 +2308,7 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
     _preMeshInfo->ForgetAllData();
 
   
-  if (isBreakLink)
+  if ( isBreakLink || !isShaper )
     _impl->Clear();
   TopoDS_Shape newShape = _gen_i->GeomObjectToShape( mainGO );
   if ( newShape.IsNull() )
@@ -2506,7 +2508,7 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
 
   _gen_i->UpdateIcons( me );
 
-  if ( !isBreakLink )
+  if ( !isBreakLink && isShaper )
   {
     SALOMEDS::SObject_wrap meshSO = _gen_i->ObjectToSObject( me );
     if ( !meshSO->_is_nil() )
