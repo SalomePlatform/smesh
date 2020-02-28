@@ -78,6 +78,7 @@ typedef struct
 
 static int GmfIniFlg=0;
 static GmfMshSct *GmfMshTab[ MaxMsh + 1 ];
+// see MeshGems/Docs/meshgems_formats_description.pdf
 static const char *GmfKwdFmt[ GmfMaxKwd + 1 ][4] = 
 {       {"Reserved", "", "", ""},
         {"MeshVersionFormatted", "", "", "i"},
@@ -159,7 +160,8 @@ static const char *GmfKwdFmt[ GmfMaxKwd + 1 ][4] =
         {"Iterations", "","","i"},
         {"Time", "","","r"},
         {"Fault_SmallTri", "Fault_SmallTri","i","i"},
-        {"CoarseHexahedra", "CoarseHexahedron", "i", "i"}
+        {"CoarseHexahedra", "CoarseHexahedron", "i", "i"},
+        {"Fault_MultipleEdge", "Fault_MultipleEdge", "i", "i"}
  };
 
 
@@ -1062,7 +1064,7 @@ static int ScaKwdTab(GmfMshSct *msh)
                         {
                                 /* Search which kwd code this string is associated with, 
                                         then get its header and save the current position in file (just before the data) */
-
+                                // printf("libmesh ScaKwdTab %s\n", str);
                                 for(KwdCod=1; KwdCod<= GmfMaxKwd; KwdCod++)
                                         if(!strcmp(str, GmfKwdFmt[ KwdCod ][0]))
                                         {

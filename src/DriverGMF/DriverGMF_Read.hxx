@@ -50,6 +50,11 @@ public:
     _makeRequiredGroups = theMakeRequiredGroups;
   }
 
+  void SetMakeFaultGroups( bool theMakeFaultGroups )
+  {
+    _makeFaultGroups = theMakeFaultGroups;
+  }
+
   virtual Status Perform();
 
  private:
@@ -57,6 +62,7 @@ public:
   Status storeBadNodeIds(const char* gmfKwd, int elemNb, int nb, ...);
 
   bool _makeRequiredGroups;
+  bool _makeFaultGroups;
 
 };
 

@@ -22,7 +22,7 @@
 
 #define GmfStrSiz 1024
 #define GmfMaxTyp 1000
-#define GmfMaxKwd 80
+#define GmfMaxKwd 81
 #define GmfMshVer 1
 #define GmfRead 1
 #define GmfWrite 2
@@ -33,6 +33,7 @@
 #define GmfFloat 1
 #define GmfDouble 2
 
+// see MeshGems/Docs/meshgems_formats_description.pdf
 enum GmfKwdCod
 {
         GmfReserved1, \
@@ -115,7 +116,8 @@ enum GmfKwdCod
         GmfIterations, \
         GmfTime, \
         GmfFault_SmallTri, \
-        GmfCoarseHexahedra
+        GmfCoarseHexahedra, \
+        GmfFault_MultipleEdge
 };
 
 
