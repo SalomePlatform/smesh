@@ -48,7 +48,7 @@ namespace
   //--------------------------------------------------------------------------------
   /*!
    * \brief Intersected face side storing a node created at this intersection
-   *        and a intersected face
+   *        and an intersected face
    */
   struct CutLink
   {
@@ -105,7 +105,7 @@ namespace
     int                     myIndex; // positive -> side index, negative -> State
     const SMDS_MeshElement* myFace;
 
-    enum State { _INTERNAL = -1, _COPLANAR = -2 };
+    enum State { _INTERNAL = -1, _COPLANAR = -2, _PENDING = -3 };
 
     void Set( const SMDS_MeshNode*    Node1,
               const SMDS_MeshNode*    Node2,
@@ -1524,7 +1524,8 @@ namespace SMESH_MeshAlgos
     SMESH_MeshAlgos::GetBarycentricCoords( p2D( p ),
                                            p2D( nodes[0] ), p2D( nodes[1] ), p2D( nodes[2] ),
                                            bc1, bc2 );
-    return ( 0. < bc1 && 0. < bc2 && bc1 + bc2 < 1. );
+    //return ( 0. < bc1 && 0. < bc2 && bc1 + bc2 < 1. );
+    return ( myTol < bc1 && myTol < bc2 && bc1 + bc2 + myTol < 1. );
   }
 
   //================================================================================
@@ -1676,7 +1677,11 @@ namespace SMESH_MeshAlgos
 
     size_t limit = cf.myLinks.size() * cf.myLinks.size() * 2;
 
-    for ( size_t i1 = 3; i1 < cf.myLinks.size(); ++i1 )
+    size_t i1 = 3;
+    while ( cf.myLinks[i1-1].IsInternal() && i1 > 0 )
+      --i1;
+
+    for ( ; i1 < cf.myLinks.size(); ++i1 )
     {
       if ( !cf.myLinks[i1].IsInternal() )
         continue;
@@ -1998,6 +2003,28 @@ namespace SMESH_MeshAlgos
         myMesh->RemoveFreeElement( f );
     }
 
+    // remove faces that are merged off
+    for ( cutFacesIt = myCutFaces.cbegin(); cutFacesIt != myCutFaces.cend(); ++cutFacesIt )
+    {
+      const CutFace& cf = *cutFacesIt;
+      if ( !cf.myLinks.empty() || cf.myInitFace->IsNull() )
+        continue;
+
+      nodes.assign( cf.myInitFace->begin_nodes(), cf.myInitFace->end_nodes() );
+      for ( size_t i = 0; i < nodes.size(); ++i )
+      {
+        const SMDS_MeshNode* n = nodes[ i ];
+        while ( myRemove2KeepNodes.IsBound( n ))
+          n = myRemove2KeepNodes( n );
+        if ( n != nodes[ i ] && cf.myInitFace->GetNodeIndex( n ) >= 0 )
+        {
+          theNew2OldFaces[ cf.myInitFace->GetID() ].first = 0;
+          myMesh->RemoveFreeElement( cf.myInitFace );
+          break;
+        }
+      }
+    }
+
     // remove faces connected to cut off parts of cf.myInitFace
 
     nodes.resize(2);
@@ -2010,9 +2037,9 @@ namespace SMESH_MeshAlgos
       if ( nodes[0] != nodes[1] &&
            myMesh->GetElementsByNodes( nodes, faces ))
       {
-        if ( cutOffLinks[i].myFace &&
-             cutOffLinks[i].myIndex != EdgePart::_COPLANAR &&
-             faces.size() == 2 )
+        if ( // cutOffLinks[i].myFace &&
+            cutOffLinks[i].myIndex != EdgePart::_COPLANAR &&
+            faces.size() != 1 )
           continue;
         for ( size_t iF = 0; iF < faces.size(); ++iF )
         {
@@ -2045,13 +2072,22 @@ namespace SMESH_MeshAlgos
     for ( size_t i = 0; i < touchedFaces.size(); ++i )
     {
       const CutFace& cf = *touchedFaces[i];
+      if ( cf.myInitFace->IsNull() )
+        continue;
 
       int index = cf.myInitFace->GetID(); // index in theNew2OldFaces
       if ( !theNew2OldFaces[ index ].first )
         continue; // already cut off
 
+      cf.InitLinks();
       if ( !cf.ReplaceNodes( myRemove2KeepNodes ))
-        continue; // just keep as is
+      {
+        if ( cf.myLinks.size() == 3 &&
+             cf.myInitFace->GetNodeIndex( cf.myLinks[0].myNode1 ) >= 0 &&
+             cf.myInitFace->GetNodeIndex( cf.myLinks[1].myNode1 ) >= 0 &&
+             cf.myInitFace->GetNodeIndex( cf.myLinks[2].myNode1 ) >= 0 )
+          continue; // just keep as is
+      }
 
       if ( cf.myLinks.size() == 3 )
       {
@@ -2737,8 +2773,16 @@ namespace
     {
       theLoops.AddNewLoop();
       theLoops.AddEdge( myLinks[0] );
-      theLoops.AddEdge( myLinks[1] );
-      theLoops.AddEdge( myLinks[2] );
+      if ( myLinks[0].myNode2 == myLinks[1].myNode1 )
+      {
+        theLoops.AddEdge( myLinks[1] );
+        theLoops.AddEdge( myLinks[2] );
+      }
+      else
+      {
+        theLoops.AddEdge( myLinks[2] );
+        theLoops.AddEdge( myLinks[1] );
+      }
       return;
     }
 
@@ -2828,6 +2872,8 @@ namespace
                              TLinkMap&                    theCutOffCoplanarLinks) const
   {
     EdgePart sideEdge;
+    boost::container::flat_set< const SMDS_MeshElement* > checkedCoplanar;
+
     for ( size_t i = 0; i < myLinks.size(); ++i )
     {
       if ( !myLinks[i].myFace )
@@ -2875,6 +2921,21 @@ namespace
             loop = theLoops.GetLoopOf( twin );
           toErase = ( loop && !loop->myLinks.empty() );
         }
+
+        if ( toErase ) // do not erase if cutFace is connected to a co-planar cutFace
+        {
+          checkedCoplanar.clear();
+          for ( size_t iE = 0; iE < myLinks.size() &&  toErase; ++iE )
+          {
+            if ( !myLinks[iE].myFace || myLinks[iE].myIndex != EdgePart::_COPLANAR )
+              continue;
+            bool isAdded = checkedCoplanar.insert( myLinks[iE].myFace ).second;
+            if ( !isAdded )
+              continue;
+            toErase = SMESH_MeshAlgos::GetCommonNodes( myLinks[i ].myFace,
+                                                       myLinks[iE].myFace ).size() < 1;
+          }
+        }
       }
 
       if ( toErase )
@@ -2886,8 +2947,8 @@ namespace
           {
             if ( !loop->myLinks[ iE ]->myFace              &&
                  !loop->myLinks[ iE ]->IsInternal()     )//   &&
-                 // !loop->myLinks[ iE ]->myNode1->isMarked() && // cut nodes are marked
-                 // !loop->myLinks[ iE ]->myNode2->isMarked() )
+              // !loop->myLinks[ iE ]->myNode1->isMarked() && // cut nodes are marked
+              // !loop->myLinks[ iE ]->myNode2->isMarked() )
             {
               int i = loop->myLinks[ iE ]->myIndex;
               sideEdge.Set( myInitFace->GetNode    ( i   ),
@@ -2963,7 +3024,9 @@ namespace
     if ( myIndex + e.myIndex == _COPLANAR + _INTERNAL )
     {
       //check if the faces are connected
-      int nbCommonNodes = SMESH_MeshAlgos::GetCommonNodes( e.myFace, myFace ).size();
+      int nbCommonNodes = 0;
+      if ( e.myFace && myFace )
+        nbCommonNodes = SMESH_MeshAlgos::GetCommonNodes( e.myFace, myFace ).size();
       bool toReplace = (( myIndex == _INTERNAL && nbCommonNodes > 1 ) ||
                         ( myIndex == _COPLANAR && nbCommonNodes < 2 ));
       if ( toReplace )
@@ -3070,7 +3133,7 @@ SMDS_Mesh* SMESH_MeshAlgos::MakeOffset( SMDS_ElemIteratorPtr theFaceIt,
     {
       p.Set( nodes[i] );
       double dist = ( pPrev - p ).SquareModulus();
-      if ( dist > std::numeric_limits<double>::min() )
+      if ( dist < minNodeDist && dist > std::numeric_limits<double>::min() )
         minNodeDist = dist;
       pPrev = p;
     }
@@ -3240,7 +3303,10 @@ SMDS_Mesh* SMESH_MeshAlgos::MakeOffset( SMDS_ElemIteratorPtr theFaceIt,
             break;
 
         if ( !isConcaveNode2 && nbCommonNodes > 0 )
-          continue;
+        {
+          if ( normals[ newFace->GetID() ] * normals[ closeFace->GetID() ] < 1.0 )
+            continue; // not co-planar
+        }
       }
 
       intersector.Cut( newFace, closeFace, nbCommonNodes );
