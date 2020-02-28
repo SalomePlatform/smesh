@@ -1771,7 +1771,7 @@ namespace VISCOUS_3D
     PyDump(SMESH_Mesh& m) {
       int tag = 3 + m.GetId();
       const char* fname = "/tmp/viscous.py";
-      cout << "execfile('"<<fname<<"')"<<endl;
+      cout << "exec(open('"<<fname<<"','rb').read() )"<<endl;
       py = _pyStream = new ofstream(fname);
       *py << "import SMESH" << endl
           << "from salome.smesh import smeshBuilder" << endl
@@ -6452,7 +6452,7 @@ gp_XYZ _Smoother1D::getNormalNormal( const gp_XYZ & normal,
 void _Smoother1D::offPointsToPython() const
 {
   const char* fname = "/tmp/offPoints.py";
-  cout << "execfile('"<<fname<<"')"<<endl;
+  cout << "exec(open('"<<fname<<"','rb').read() )"<<endl;
   ofstream py(fname);
   py << "import SMESH" << endl
      << "from salome.smesh import smeshBuilder" << endl
@@ -10462,6 +10462,8 @@ namespace VISCOUS_3D
     PeriodicFaces( ShrinkFace* sf1, ShrinkFace* sf2 ): _shriFace{ sf1, sf2 } {}
     bool IncludeShrunk( const TopoDS_Face& face, const TopTools_MapOfShape& shrunkFaces ) const;
     bool MoveNodes( const TopoDS_Face& tgtFace );
+    void Clear() { _nnMap.clear(); }
+    bool IsEmpty() const { return _nnMap.empty(); }
   };
 
   //--------------------------------------------------------------------------------
@@ -10756,6 +10758,13 @@ namespace VISCOUS_3D
           return & _periodicFaces[ i ];
       return 0;
     }
+    void ClearPeriodic( const TopoDS_Face& face )
+    {
+      for ( size_t i = 0; i < _periodicFaces.size(); ++i )
+        if ( _periodicFaces[ i ]._shriFace[0]->IsSame( face ) ||
+             _periodicFaces[ i ]._shriFace[1]->IsSame( face ))
+          _periodicFaces[ i ].Clear();
+    }
   };
 
   //================================================================================
@@ -10765,6 +10774,7 @@ namespace VISCOUS_3D
   bool PeriodicFaces::IncludeShrunk( const TopoDS_Face&         face,
                                      const TopTools_MapOfShape& shrunkFaces ) const
   {
+    if ( IsEmpty() ) return false;
     return (( _shriFace[0]->IsSame( face ) && _shriFace[1]->IsShrunk( shrunkFaces )) ||
             ( _shriFace[1]->IsSame( face ) && _shriFace[0]->IsShrunk( shrunkFaces )));
   }
@@ -10785,7 +10795,8 @@ namespace VISCOUS_3D
     if ( iSrc != 0 )
     {
       trsfInverse = _trsf;
-      trsfInverse.Invert();
+      if ( !trsfInverse.Invert())
+        return false;
       trsf = &trsfInverse;
     }
     SMESHDS_Mesh* meshDS = dataSrc->GetHelper().GetMeshDS();
@@ -10823,10 +10834,10 @@ namespace VISCOUS_3D
       }
     }
     bool done = ( n2n == _nnMap.end() );
-    // cout << "MMMMMMMOOOOOOOOOOVVVVVVVVVVVEEEEEEEE "
-    //      << _shriFace[iSrc]->_subMesh->GetId() << " -> "
-    //      << _shriFace[iTgt]->_subMesh->GetId() << " -- "
-    //      << ( done ? "DONE" : "FAIL") << endl;
+    debugMsg( "PeriodicFaces::MoveNodes "
+              << _shriFace[iSrc]->_subMesh->GetId() << " -> "
+              << _shriFace[iTgt]->_subMesh->GetId() << " -- "
+              << ( done ? "DONE" : "FAIL"));
 
     return done;
   }
@@ -11286,6 +11297,8 @@ bool _ViscousBuilder::shrink(_SolidData& theData)
             getMeshDS()->RemoveFreeNode( n, smDS, /*fromGroups=*/false );
         }
       }
+      _periodicity->ClearPeriodic( F );
+
       // restore position and UV of target nodes
       gp_Pnt p;
       for ( size_t iS = 0; iS < subEOS.size(); ++iS )
@@ -11527,6 +11540,13 @@ bool _ViscousBuilder::prepareEdgeToShrink( _LayerEdge&            edge,
     }
     if ( !n2 )
       return error(SMESH_Comment("Wrongly meshed EDGE ") << getMeshDS()->ShapeToIndex( E ));
+
+    if ( n2 == tgtNode ) // for 3D_mesh_GHS3D_01/B1
+    {
+      // shrunk by other SOLID
+      edge.Set( _LayerEdge::SHRUNK ); // ???
+      return true;
+    }
 
     double uSrc = helper.GetNodeU( E, srcNode, n2 );
     double uTgt = helper.GetNodeU( E, tgtNode, srcNode );
