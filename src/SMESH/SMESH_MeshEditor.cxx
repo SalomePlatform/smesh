@@ -296,6 +296,18 @@ SMESH_MeshEditor::AddElement(const vector<const SMDS_MeshNode*> & node,
                                                  node[8], node[9], node[10],node[11],
                                                  node[12],node[13],node[14] );
       }
+      else if (nbnode == 18) {
+        if ( ID >= 1 ) e = mesh->AddVolumeWithID(node[0], node[1], node[2], node[3],
+                                                 node[4], node[5], node[6], node[7],
+                                                 node[8], node[9], node[10],node[11],
+                                                 node[12],node[13],node[14],
+                                                 node[15],node[16],node[17],ID );
+        else           e = mesh->AddVolume      (node[0], node[1], node[2], node[3],
+                                                 node[4], node[5], node[6], node[7],
+                                                 node[8], node[9], node[10],node[11],
+                                                 node[12],node[13],node[14],
+                                                 node[15],node[16],node[17] );
+      }
       else if (nbnode == 20) {
         if ( ID >= 1 ) e = mesh->AddVolumeWithID(node[0], node[1], node[2], node[3],
                                                  node[4], node[5], node[6], node[7],

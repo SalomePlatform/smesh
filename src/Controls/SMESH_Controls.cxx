@@ -1081,7 +1081,7 @@ double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )
   case 5:{
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 3 ),P( 5 )};
-      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4]));
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 3 ),P( 4 ),P( 5 )};
@@ -1100,7 +1100,7 @@ double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )
   case 6:{
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 4 ),P( 6 )};
-      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4]));
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 4 ),P( 3 )};
@@ -1127,7 +1127,7 @@ double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )
   case 8:{
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 5 ),P( 3 )};
-      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4])),aQuality);
+      aQuality = GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[4]));
     }
     {
       gp_XYZ aXYZ[4] = {P( 1 ),P( 2 ),P( 5 ),P( 4 )};
@@ -1262,7 +1262,7 @@ double AspectRatio3D::GetValue( const TSequenceOfXYZ& P )
   case 12:
     {
       gp_XYZ aXYZ[8] = {P( 1 ),P( 2 ),P( 4 ),P( 5 ),P( 7 ),P( 8 ),P( 10 ),P( 11 )};
-      aQuality = std::max(GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[8])),aQuality);
+      aQuality = GetValue(TSequenceOfXYZ(&aXYZ[0],&aXYZ[8]));
     }
     {
       gp_XYZ aXYZ[8] = {P( 2 ),P( 3 ),P( 5 ),P( 6 ),P( 8 ),P( 9 ),P( 11 ),P( 12 )};
