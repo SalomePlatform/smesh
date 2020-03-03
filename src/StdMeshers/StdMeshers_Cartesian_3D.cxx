@@ -375,7 +375,6 @@ namespace
     bool                              _toUseThresholdForInternalFaces;
     double                            _sizeThreshold;
 
-    vector< TGeomID >                 _shapeIDs; // returned by Hexahedron::getSolids()
     SMESH_MesherHelper*               _helper;
 
     size_t CellIndex( size_t i, size_t j, size_t k ) const
@@ -867,7 +866,7 @@ namespace
     void init( size_t i );
     void setIJK( size_t i );
     bool compute( const Solid* solid, const IsInternalFlag intFlag );
-    const vector< TGeomID >& getSolids();
+    size_t getSolids( TGeomID ids[] );
     bool isCutByInternalFace( IsInternalFlag & maxFlag );
     void addEdges(SMESH_MesherHelper&                      helper,
                   vector< Hexahedron* >&                   intersectedHex,
@@ -2175,13 +2174,12 @@ namespace
   /*!
    * \brief Return IDs of SOLIDs interfering with this Hexahedron
    */
-  const vector< TGeomID >& Hexahedron::getSolids()
+  size_t Hexahedron::getSolids( TGeomID ids[] )
   {
-    _grid->_shapeIDs.clear();
     if ( _grid->_geometry.IsOneSolid() )
     {
-      _grid->_shapeIDs.push_back( _grid->GetSolid()->ID() );
-      return _grid->_shapeIDs;
+      ids[0] = _grid->GetSolid()->ID();
+      return 1;
     }
     // count intersection points belonging to each SOLID
     TID2Nb id2NbPoints;
@@ -2231,12 +2229,12 @@ namespace
         insertAndIncrement( solidIDs[i], id2NbPoints );
     }
 
-    _grid->_shapeIDs.reserve( id2NbPoints.size() );
+    size_t nbSolids = 0;
     for ( TID2Nb::iterator id2nb = id2NbPoints.begin(); id2nb != id2NbPoints.end(); ++id2nb )
       if ( id2nb->second >= 3 )
-        _grid->_shapeIDs.push_back( id2nb->first );
+        ids[ nbSolids++ ] = id2nb->first;
 
-    return _grid->_shapeIDs;
+    return nbSolids;
   }
 
   //================================================================================
@@ -2578,14 +2576,15 @@ namespace
       solid = _grid->GetSolid();
       if ( !_grid->_geometry.IsOneSolid() )
       {
-        const vector< TGeomID >& solidIDs = getSolids();
-        if ( solidIDs.size() > 1 )
+        TGeomID solidIDs[20];
+        size_t nbSolids = getSolids( solidIDs );
+        if ( nbSolids > 1 )
         {
-          for ( size_t i = 0; i < solidIDs.size(); ++i )
+          for ( size_t i = 0; i < nbSolids; ++i )
           {
             solid = _grid->GetSolid( solidIDs[i] );
             ComputeElements( solid, i );
-            if ( !_volumeDefs._nodes.empty() && i < solidIDs.size() - 1 )
+            if ( !_volumeDefs._nodes.empty() && i < nbSolids - 1 )
               _volumeDefs.SetNext( new _volumeDef( _volumeDefs ));
           }
           return;
@@ -3238,6 +3237,7 @@ namespace
 
     // add not split hexahedra to the mesh
     int nbAdded = 0;
+    TGeomID solidIDs[20];
     vector< Hexahedron* > intHexa; intHexa.reserve( nbIntHex );
     vector< const SMDS_MeshElement* > boundaryVolumes; boundaryVolumes.reserve( nbIntHex * 1.1 );
     for ( size_t i = 0; i < allHexa.size(); ++i )
@@ -3273,7 +3273,8 @@ namespace
         }
         else
         {
-          solidID = getSolids()[0];
+          getSolids( solidIDs );
+          solidID = solidIDs[0];
         }
         mesh->SetMeshElementOnShape( el, solidID );
         ++nbAdded;
