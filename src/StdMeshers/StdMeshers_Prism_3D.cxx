@@ -5222,10 +5222,10 @@ bool StdMeshers_Sweeper::ComputeNodesByTrsf( const double tol,
     for ( ++zS, --zT; zS < zTgt; ++zS, --zT ) // vertical loop on layers
     {
       // invert transformation
-      if ( !trsfOfLayer[ zS+1 ].Invert() )
-        trsfOfLayer[ zS+1 ] = NSProjUtils::TrsfFinder3D(); // to recompute
-      if ( !trsfOfLayer[ zT-1 ].Invert() )
-        trsfOfLayer[ zT-1 ] = NSProjUtils::TrsfFinder3D();
+      //if ( !trsfOfLayer[ zS+1 ].Invert() )
+      trsfOfLayer[ zS+1 ] = NSProjUtils::TrsfFinder3D(); // to recompute
+      //if ( !trsfOfLayer[ zT-1 ].Invert() )
+      trsfOfLayer[ zT-1 ] = NSProjUtils::TrsfFinder3D();
 
       // project internal nodes and compute bnd error
       for ( size_t iP = 0; iP < myBndColumns.size(); ++iP )
