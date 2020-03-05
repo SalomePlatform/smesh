@@ -51,7 +51,7 @@ def set_env(args):
         for resource_file in [i for i in os.listdir(resource_dir) \
                                   if osp.isfile(os.path.join(resource_dir, i))]:
             # look for resource file (XML) to extract valid plugin name
-            if resource_file.lower() == f'{plugin_lname}.xml':
+            if resource_file.lower() == '{plugin_lname}.xml'.format(plugin_lname=plugin_lname):
                 try:
                     # get plugin name from 'resources' attribute of 'meshers-group' xml node
                     # as name extracted from environment variable can be in wrong case
