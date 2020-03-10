@@ -836,20 +836,22 @@ SMESH_MeshAlgos::MakeSlot( SMDS_ElemIteratorPtr             theSegmentIt,
             // 2)
             double minCutDist = theWidth;
             gp_XYZ projection, closestProj;
-            int    iCut;
-            for ( size_t iC = 0; iC < closeSeg[iP]->myCuts.size(); ++iC )
+            int    iCut = -1;
+            for ( size_t iC2 = 0; iC2 < closeSeg[iP]->myCuts.size(); ++iC2 )
             {
-              double cutDist = closeSeg[iP]->myCuts[iC].SquareDistance( intPnt[iP].myNode,
+              double cutDist = closeSeg[iP]->myCuts[iC2].SquareDistance( intPnt[iP].myNode,
                                                                         projection );
               if ( cutDist < minCutDist )
               {
                 closestProj = projection;
                 minCutDist  = cutDist;
-                iCut        = iC;
+                iCut        = iC2;
+                if ( minCutDist < tol * tol )
+                  break;
               }
-              if ( minCutDist < tol * tol )
-                break;
             }
+            if ( iCut < 0 )
+              continue; // ???
             double d1 = SMESH_MeshAlgos::GetDistance( neighborSeg->myEdge,
                                                       closeSeg[iP]->myCuts[iCut][0].myNode );
             double d2 = SMESH_MeshAlgos::GetDistance( neighborSeg->myEdge,
