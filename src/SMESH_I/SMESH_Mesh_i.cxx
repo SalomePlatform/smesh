@@ -2422,7 +2422,8 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
     if ( ii2i != ii2iMap.end() )
       oldID = ii2i->second;
 
-    TopoDS_Shape newShape = newGroupShape( *data, isBreakLink ? IS_BREAK_LINK : MAIN_TRANSFORMED );
+    int how = ( isBreakLink || !sameTopology ) ? IS_BREAK_LINK : MAIN_TRANSFORMED;
+    TopoDS_Shape newShape = newGroupShape( *data, how );
     if ( !newShape.IsNull() )
     {
       if ( meshDS->ShapeToIndex( newShape ) > 0 ) // a group reduced to one sub-shape
@@ -2441,12 +2442,12 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
   // re-assign hypotheses
   for ( size_t i = 0; i < ids2Hyps.size(); ++i )
   {
-    if ( !sameTopology && ids2Hyps[i].first != 1 )
-      continue; // assign only global hypos
     int sID = ids2Hyps[i].first;
     std::map< int, int >::iterator o2n = old2newIDs.find( sID );
     if ( o2n != old2newIDs.end() )
       sID = o2n->second;
+    else if ( sID != 1 )
+      continue;
     const TopoDS_Shape& s = meshDS->IndexToShape( sID );
     const THypList&  hyps = ids2Hyps[i].second;
     THypList::const_iterator h = hyps.begin();
@@ -2454,12 +2455,6 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
       _impl->AddHypothesis( s, (*h)->GetID() );
   }
 
-  if ( !sameTopology )
-  {
-    // remove invalid study sub-objects
-    CheckGeomGroupModif();
-  }
-  else
   {
     // restore groups on geometry
     for ( size_t i = 0; i < groupsData.size(); ++i )
@@ -2504,6 +2499,12 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
     std::map<int, ::SMESH_subMesh*>::iterator i_sm = _mapSubMesh.begin();
     for ( ; i_sm != _mapSubMesh.end(); ++i_sm )
       i_sm->second = _impl->GetSubMesh( meshDS->IndexToShape( i_sm->first ));
+  }
+
+  if ( !sameTopology )
+  {
+    // remove invalid study sub-objects
+    CheckGeomGroupModif();
   }
 
   _gen_i->UpdateIcons( me );
