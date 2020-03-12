@@ -270,6 +270,16 @@ void SMESH_Mesh_i::ReplaceShape(GEOM::GEOM_Object_ptr theNewGeom)
   if (geomClient->Find(S, aIOR)) {
     geomClient->RemoveShapeFromBuffer(aIOR);
   }
+  // clear buffer also for sub-groups
+  const std::set<SMESHDS_GroupBase*>& groups = _impl->GetMeshDS()->GetGroups();
+  std::set<SMESHDS_GroupBase*>::const_iterator g = groups.begin();
+  for (; g != groups.end(); ++g)
+    if (const SMESHDS_GroupOnGeom* group = dynamic_cast<SMESHDS_GroupOnGeom*>(*g))
+    {
+      const TopoDS_Shape& s = group->GetShape();
+      if (geomClient->Find(s, aIOR))
+        geomClient->RemoveShapeFromBuffer(aIOR);
+    }
 
   // update the reference to theNewGeom (needed for correct execution of a dumped python script)
   SMESH::SMESH_Mesh_var   me = _this();
