@@ -1457,7 +1457,7 @@ namespace
       if ( !io->hasEntry() ) continue;
       _PTR(SObject) so = SMESH::getStudy()->FindObjectID( io->getEntry() );
       SMESH::SMESH_Mesh_var mesh;
-      while ( mesh->_is_nil() && so )
+      while ( mesh->_is_nil() && so && so->GetID() != "0:" )
       {
         CORBA::Object_var obj = SMESH::SObjectToObject( so );
         SMESH::SMESH_IDSource_var isrc = SMESH::SMESH_IDSource::_narrow( obj );
