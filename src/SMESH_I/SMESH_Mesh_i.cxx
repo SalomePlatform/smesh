@@ -2098,8 +2098,11 @@ TopoDS_Shape SMESH_Mesh_i::newGroupShape( TGeomGroupData & groupData, int how )
       CORBA::Object_var  geomObj = _gen_i->SObjectToObject( geomSO );
       GEOM::GEOM_Object_var geom = GEOM::GEOM_Object::_narrow( geomObj );
       newShape = _gen_i->GeomObjectToShape( geom );
-      CORBA::String_var entry = geom->GetStudyEntry();
-      groupData._groupEntry = entry.in();
+      if ( !newShape.IsNull() )
+      {
+        CORBA::String_var entry = geom->GetStudyEntry();
+        groupData._groupEntry = entry.in();
+      }
     }
   }
   else
@@ -2431,9 +2434,11 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
     std::map< std::set<int>, int >::iterator ii2i = ii2iMap.find( data->_indices );
     if ( ii2i != ii2iMap.end() )
       oldID = ii2i->second;
+    if ( old2newIDs.count( oldID ))
+      continue;
 
     int how = ( isBreakLink || !sameTopology ) ? IS_BREAK_LINK : MAIN_TRANSFORMED;
-    TopoDS_Shape newShape = newGroupShape( *data, how );
+    newShape = newGroupShape( *data, how );
     if ( !newShape.IsNull() )
     {
       if ( meshDS->ShapeToIndex( newShape ) > 0 ) // a group reduced to one sub-shape
@@ -2444,8 +2449,13 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
         newShape = compound;
       }
       int newID = _impl->GetSubMesh( newShape )->GetId();
-      if ( oldID && oldID != newID )
+      if ( oldID /*&& oldID != newID*/ )
         old2newIDs.insert( std::make_pair( oldID, newID ));
+      if ( data->_indices.size() == 1 )
+      {
+        oldID = *data->_indices.begin();
+        old2newIDs.insert( std::make_pair( oldID, newID ));
+      }
     }
   }
 
@@ -2456,10 +2466,12 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
     std::map< int, int >::iterator o2n = old2newIDs.find( sID );
     if ( o2n != old2newIDs.end() )
       sID = o2n->second;
-    else if ( sID != 1 )
+    else if ( !sameTopology && sID != 1 )
       continue;
     const TopoDS_Shape& s = meshDS->IndexToShape( sID );
-    const THypList&  hyps = ids2Hyps[i].second;
+    if ( s.IsNull() )
+      continue;
+    const THypList& hyps = ids2Hyps[i].second;
     THypList::const_iterator h = hyps.begin();
     for ( ; h != hyps.end(); ++h )
       _impl->AddHypothesis( s, (*h)->GetID() );
@@ -2490,7 +2502,7 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
     for ( ; o2n != old2newIDs.end(); ++o2n )
     {
       int newID = o2n->second, oldID = o2n->first;
-      if ( !_mapSubMesh.count( oldID ))
+      if ( newID == oldID || !_mapSubMesh.count( oldID ))
         continue;
       if ( newID > 0 )
       {
