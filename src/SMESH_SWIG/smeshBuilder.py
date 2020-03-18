@@ -6374,8 +6374,8 @@ class Mesh(metaclass = MeshMeta):
         theValue,Parameters,hasVars = ParseParameters(Value)
         mesh_groups = self.editor.Offset(theObject, Value, MakeGroups, CopyElements, NewMeshName)
         self.mesh.SetParameters(Parameters)
-        # if mesh_groups[0]:
-        #     return Mesh( self.smeshpyD, self.geompyD, mesh_groups[0] ), mesh_groups[1]
+        if mesh_groups[0]:
+            return Mesh( self.smeshpyD, self.geompyD, mesh_groups[0] ), mesh_groups[1]
         return mesh_groups
 
     def FindCoincidentNodes (self, Tolerance, SeparateCornerAndMediumNodes=False):

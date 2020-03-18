@@ -712,6 +712,53 @@ namespace
     return useOneNormal;
   }
 
+  //================================================================================
+  /*!
+   * \brief Remove small faces
+   */
+  //================================================================================
+
+  void removeSmallFaces( SMDS_Mesh*                        theMesh,
+                         SMESH_MeshAlgos::TElemIntPairVec& theNew2OldFaces,
+                         const double                      theTol2 )
+  {
+    std::vector< SMESH_NodeXYZ > points(3);
+    std::vector< const SMDS_MeshNode* > nodes(3);
+    for ( SMDS_ElemIteratorPtr faceIt = theMesh->elementsIterator(); faceIt->more(); )
+    {
+      const SMDS_MeshElement* face = faceIt->next();
+      points.assign( face->begin_nodes(), face->end_nodes() );
+
+      SMESH_NodeXYZ* prevN = & points.back();
+      for ( size_t i = 0; i < points.size(); ++i )
+      {
+        double dist2 = ( *prevN - points[ i ]).SquareModulus();
+        if ( dist2 < theTol2 )
+        {
+          const SMDS_MeshNode* nToRemove =
+            (*prevN)->GetID() > points[ i ]->GetID() ? prevN->Node() : points[ i ].Node();
+          const SMDS_MeshNode* nToKeep =
+            nToRemove == points[ i ].Node() ? prevN->Node() : points[ i ].Node();
+          for ( SMDS_ElemIteratorPtr fIt = nToRemove->GetInverseElementIterator(); fIt->more(); )
+          {
+            const SMDS_MeshElement* f = fIt->next();
+            if ( f == face )
+              continue;
+            nodes.assign( f->begin_nodes(), f->end_nodes() );
+            nodes[ f->GetNodeIndex( nToRemove )] = nToKeep;
+            theMesh->ChangeElementNodes( f, &nodes[0], nodes.size() );
+          }
+          theNew2OldFaces[ face->GetID() ].first = 0;
+          theMesh->RemoveFreeElement( face );
+          break;
+        }
+        prevN = & points[ i ];
+      }
+      continue;
+    }
+    return;
+  }
+
 } // namespace
 
 namespace SMESH_MeshAlgos
@@ -1239,6 +1286,8 @@ namespace SMESH_MeshAlgos
         if ( !link2.IntNode() ) link2.myIntNode = link1.myIntNode;
 
         cf1.AddPoint( link1, link2, myTol );
+        if ( l1n1 ) link1.Set( l1n1, l1n2, face2 );
+        if ( l2n1 ) link2.Set( l2n1, l2n2, face2 );
         cf2.AddPoint( link1, link2, myTol );
       }
       else
@@ -3251,6 +3300,8 @@ SMDS_Mesh* SMESH_MeshAlgos::MakeOffset( SMDS_ElemIteratorPtr theFaceIt,
     // mark all new nodes located closer than theOffset from theSrcMesh
   }
 
+  removeSmallFaces( newMesh, theNew2OldFaces, tol*tol );
+
   // ==================================================
   // find self-intersections of new faces and fix them
   // ==================================================
@@ -3261,8 +3312,9 @@ SMDS_Mesh* SMESH_MeshAlgos::MakeOffset( SMDS_ElemIteratorPtr theFaceIt,
   Intersector intersector( newMesh, tol, normals );
 
   std::vector< const SMDS_MeshElement* > closeFaces;
-  std::vector< const SMDS_MeshNode* >    faceNodes;
+  std::vector< SMESH_NodeXYZ >           faceNodes;
   Bnd_B3d faceBox;
+
   for ( size_t iF = 1; iF < theNew2OldFaces.size(); ++iF )
   {
     const SMDS_MeshElement* newFace = theNew2OldFaces[iF].first;
@@ -3277,7 +3329,7 @@ SMDS_Mesh* SMESH_MeshAlgos::MakeOffset( SMDS_ElemIteratorPtr theFaceIt,
     closeFaces.clear();
     faceBox.Clear();
     for ( size_t i = 0; i < faceNodes.size(); ++i )
-      faceBox.Add( SMESH_NodeXYZ( faceNodes[i] ));
+      faceBox.Add( faceNodes[i] );
     faceBox.Enlarge( tol );
 
     fSearcher->GetElementsInBox( faceBox, SMDSAbs_Face, closeFaces );
@@ -3293,7 +3345,7 @@ SMDS_Mesh* SMESH_MeshAlgos::MakeOffset( SMDS_ElemIteratorPtr theFaceIt,
       // do not intersect connected faces if they have no concave nodes
       int nbCommonNodes = 0;
       for ( size_t iN = 0; iN < faceNodes.size(); ++iN )
-        nbCommonNodes += ( closeFace->GetNodeIndex( faceNodes[iN] ) >= 0 );
+        nbCommonNodes += ( closeFace->GetNodeIndex( faceNodes[iN].Node() ) >= 0 );
 
       if ( !isConcaveNode1 )
       {
@@ -3312,7 +3364,7 @@ SMDS_Mesh* SMESH_MeshAlgos::MakeOffset( SMDS_ElemIteratorPtr theFaceIt,
       intersector.Cut( newFace, closeFace, nbCommonNodes );
     }
   }
-  intersector.MakeNewFaces( theNew2OldFaces, theNew2OldNodes, sign );
+  intersector.MakeNewFaces( theNew2OldFaces, theNew2OldNodes, sign, /*optimize=*/true );
 
   return newMesh;
 }
