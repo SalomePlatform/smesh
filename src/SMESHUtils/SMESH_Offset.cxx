@@ -2981,8 +2981,8 @@ namespace
             bool isAdded = checkedCoplanar.insert( myLinks[iE].myFace ).second;
             if ( !isAdded )
               continue;
-            toErase = SMESH_MeshAlgos::GetCommonNodes( myLinks[i ].myFace,
-                                                       myLinks[iE].myFace ).size() < 1;
+            toErase = ( SMESH_MeshAlgos::NbCommonNodes( myLinks[i ].myFace,
+                                                        myLinks[iE].myFace ) < 1 );
           }
         }
       }
@@ -3075,7 +3075,7 @@ namespace
       //check if the faces are connected
       int nbCommonNodes = 0;
       if ( e.myFace && myFace )
-        nbCommonNodes = SMESH_MeshAlgos::GetCommonNodes( e.myFace, myFace ).size();
+        nbCommonNodes = SMESH_MeshAlgos::NbCommonNodes( e.myFace, myFace );
       bool toReplace = (( myIndex == _INTERNAL && nbCommonNodes > 1 ) ||
                         ( myIndex == _COPLANAR && nbCommonNodes < 2 ));
       if ( toReplace )

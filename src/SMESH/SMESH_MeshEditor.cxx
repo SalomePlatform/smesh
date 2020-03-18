@@ -9349,7 +9349,7 @@ void SMESH_MeshEditor::ConvertFromQuadratic(TIDSortedElemSet& theElements)
             const SMDS_MeshElement* eComplex = invIt2->next();
             if ( eComplex->IsQuadratic() && !allMediumNodesIn( eComplex, mediumNodes))
             {
-              int nbCommonNodes = SMESH_MeshAlgos::GetCommonNodes( e, eComplex ).size();
+              int nbCommonNodes = SMESH_MeshAlgos::NbCommonNodes( e, eComplex );
               if ( nbCommonNodes == e->NbNodes())
               {
                 complexFound = true;

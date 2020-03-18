@@ -188,6 +188,12 @@ namespace SMESH_MeshAlgos
   bool FaceNormal(const SMDS_MeshElement* F, gp_XYZ& normal, bool normalized=true);
 
   /*!
+   * \brief Return number of nodes common to two elements
+   */
+  SMESHUtils_EXPORT
+  int NbCommonNodes(const SMDS_MeshElement* e1,
+                    const SMDS_MeshElement* e2);
+  /*!
    * \brief Return nodes common to two elements
    */
   SMESHUtils_EXPORT

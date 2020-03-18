@@ -1369,7 +1369,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute2ndPart(SMESH_Mesh&                   
       while ( vIt->more() )
       {
         const SMDS_MeshElement* PrmJ = vIt->next();
-        if ( SMESH_MeshAlgos::GetCommonNodes( PrmI, PrmJ ).size() > 1 )
+        if ( SMESH_MeshAlgos::NbCommonNodes( PrmI, PrmJ ) > 1 )
           checkedPyrams.insert( PrmJ );
       }
     }

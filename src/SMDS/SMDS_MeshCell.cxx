@@ -521,9 +521,7 @@ int SMDS_MeshCell::NbNodes() const
 {
   if ( GetVtkType() == VTK_POLYHEDRON )
     return static_cast< const SMDS_MeshVolume* >( this )->SMDS_MeshVolume::NbNodes();
-  vtkIdType npts;
-  vtkIdType const *pts;
-  getGrid()->GetCellPoints( GetVtkID(), npts, pts );
+  vtkIdType npts = getGrid()->GetCells()->GetCellSize( GetVtkID() );
   return npts;
 }
 

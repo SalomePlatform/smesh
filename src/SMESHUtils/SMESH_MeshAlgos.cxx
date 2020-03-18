@@ -1098,7 +1098,7 @@ TopAbs_State SMESH_ElementSearcherImpl::GetPointState(const gp_Pnt& point)
             const SMDS_MeshElement* prevFace = u_int1->second._face;
             while ( ok && u_int2->second._coincides )
             {
-              if ( SMESH_MeshAlgos::GetCommonNodes(prevFace , u_int2->second._face).empty() )
+              if ( SMESH_MeshAlgos::NbCommonNodes(prevFace , u_int2->second._face) == 0 )
                 ok = false;
               else
               {
@@ -2210,10 +2210,26 @@ bool SMESH_MeshAlgos::FaceNormal(const SMDS_MeshElement* F, gp_XYZ& normal, bool
   return ok;
 }
 
-//=======================================================================
-//function : GetCommonNodes
-//purpose  : Return nodes common to two elements
-//=======================================================================
+//================================================================================
+/*!
+ * \brief Return nodes common to two elements
+ */
+//================================================================================
+
+int SMESH_MeshAlgos::NbCommonNodes(const SMDS_MeshElement* e1,
+                                   const SMDS_MeshElement* e2)
+{
+  int nb = 0;
+  for ( int i = 0 ; i < e1->NbNodes(); ++i )
+    nb += ( e2->GetNodeIndex( e1->GetNode( i )) >= 0 );
+  return nb;
+}
+
+//================================================================================
+/*!
+ * \brief Return nodes common to two elements
+ */
+//================================================================================
 
 std::vector< const SMDS_MeshNode*> SMESH_MeshAlgos::GetCommonNodes(const SMDS_MeshElement* e1,
                                                                    const SMDS_MeshElement* e2)
@@ -2224,6 +2240,7 @@ std::vector< const SMDS_MeshNode*> SMESH_MeshAlgos::GetCommonNodes(const SMDS_Me
       common.push_back( e1->GetNode( i ));
   return common;
 }
+
 //================================================================================
 /*!
  * \brief Return true if node1 encounters first in the face and node2, after
