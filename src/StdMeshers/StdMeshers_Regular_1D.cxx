@@ -362,7 +362,10 @@ static bool computeParamByFunc(Adaptor3d_Curve& C3d,
   int nbPnt = 1 + nbSeg;
   vector<double> x( nbPnt, 0. );
 
-  if ( !buildDistribution( func, 0.0, 1.0, nbSeg, x, 1E-4 ))
+
+  const double eps = Min( 1E-4, 1./nbSeg/100. );
+
+  if ( !buildDistribution( func, 0.0, 1.0, nbSeg, x, eps ))
      return false;
 
   // apply parameters in range [0,1] to the space of the curve
