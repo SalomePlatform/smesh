@@ -3304,12 +3304,22 @@ bool _ViscousBuilder::findShapesToSmooth( _SolidData& data )
           if ( isC1 )
           {
             double maxEdgeLen = 3 * Min( eov._edges[0]->_maxLen, eov._hyp.GetTotalThickness() );
-            double eLen1 = SMESH_Algo::EdgeLength( TopoDS::Edge( dirOfEdges[i].first->_shape ));
-            double eLen2 = SMESH_Algo::EdgeLength( TopoDS::Edge( dirOfEdges[j].first->_shape ));
-            if ( eLen1 < maxEdgeLen ) eov._eosC1.push_back( dirOfEdges[i].first );
-            if ( eLen2 < maxEdgeLen ) eov._eosC1.push_back( dirOfEdges[j].first );
-            dirOfEdges[i].first = 0;
-            dirOfEdges[j].first = 0;
+            for ( int isJ = 0; isJ < 2; ++isJ ) // loop on [i,j]
+            {
+              size_t k = isJ ? j : i;
+              const TopoDS_Edge& e = TopoDS::Edge( dirOfEdges[k].first->_shape );
+              double eLen = SMESH_Algo::EdgeLength( e );
+              if ( eLen < maxEdgeLen )
+              {
+                TopoDS_Shape oppV = SMESH_MesherHelper::IthVertex( 0, e );
+                if ( oppV.IsSame( V ))
+                  oppV = SMESH_MesherHelper::IthVertex( 1, e );
+                _EdgesOnShape* eovOpp = data.GetShapeEdges( oppV );
+                if ( dirOfEdges[k].second * eovOpp->_edges[0]->_normal < 0 )
+                  eov._eosC1.push_back( dirOfEdges[k].first );
+              }
+              dirOfEdges[k].first = 0;
+            }
           }
         }
   } // fill _eosC1 of VERTEXes
