@@ -135,7 +135,8 @@ public:
   SMDS_ElemIteratorPtr   GetInverseElementIterator(const SMDS_MeshNode* node,
                                                    SMDSAbs_ElementType  type) const;
 
-
+  // Check if a FACE has prisms on its both sides
+  static bool HasPrismsOnTwoSides( SMESHDS_SubMesh* faceSM );
 
   SMESH_Mesh*            GetMesh() const { return const_cast<SMESH_Mesh*>( _mesh ); }
 

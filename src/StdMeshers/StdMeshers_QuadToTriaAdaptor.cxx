@@ -307,6 +307,37 @@ namespace
 
     return false; // == "algo fails"
   }
+
+  //================================================================================
+  /*!
+   * \brief Check if a face is in a SOLID
+   */
+  //================================================================================
+
+  bool isInSolid( vector<const SMDS_MeshNode*> & faceNodes,
+                  const int                      nbNodes,
+                  const int                      solidID )
+  {
+    if ( !faceNodes[0] )
+      return true; // NOT_QUAD
+    for ( int i = 0; i < nbNodes; ++i )
+    {
+      int shapeID = faceNodes[i]->GetShapeID();
+      if ( shapeID == solidID )
+        return true;
+    }
+    faceNodes.resize( nbNodes );
+    std::vector<const SMDS_MeshElement*> vols;
+    SMDS_Mesh::GetElementsByNodes( faceNodes, vols, SMDSAbs_Volume );
+    bool inSolid = false;
+    for ( size_t i = 0; i < vols.size() && !inSolid; ++i )
+    {
+      int shapeID = vols[i]->GetShapeID();
+      inSolid = ( shapeID == solidID );
+    }
+    faceNodes.push_back( faceNodes[0] );
+    return inSolid;
+  }
 }
 
 //================================================================================
@@ -850,8 +881,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh&         aMesh,
 {
   SMESH_ProxyMesh::setMesh( aMesh );
 
-  if ( aShape.ShapeType() != TopAbs_SOLID &&
-       aShape.ShapeType() != TopAbs_SHELL )
+  if ( aShape.ShapeType() != TopAbs_SOLID )
     return false;
 
   myShape = aShape;
@@ -860,8 +890,8 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh&         aMesh,
 
   const SMESHDS_SubMesh * aSubMeshDSFace;
   SMESHDS_Mesh * meshDS = aMesh.GetMeshDS();
-  SMESH_MesherHelper helper(aMesh);
-  helper.IsQuadraticSubMesh(aShape);
+  SMESH_MesherHelper helper1(aMesh);
+  helper1.IsQuadraticSubMesh(aShape);
 
   if ( myElemSearcher ) delete myElemSearcher;
   vector< SMDS_ElemIteratorPtr > itVec;
@@ -885,6 +915,7 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh&         aMesh,
   vector<const SMDS_MeshNode*> FNodes(5);
   gp_Pnt PC;
   gp_Vec VNorm;
+  const int solidID = meshDS->ShapeToIndex( aShape );
 
   for ( TopExp_Explorer exp(aShape,TopAbs_FACE); exp.More(); exp.Next() )
   {
@@ -893,22 +924,46 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh&         aMesh,
       aSubMeshDSFace = aProxyMesh->GetSubMesh( aShapeFace );
     else
       aSubMeshDSFace = meshDS->MeshElements( aShapeFace );
+    if ( !aSubMeshDSFace )
+      continue;
 
     vector<const SMDS_MeshElement*> trias, quads;
     bool hasNewTrias = false;
 
-    if ( aSubMeshDSFace )
+    const bool toCheckFaceInSolid =
+      aProxyMesh ? aProxyMesh->HasPrismsOnTwoSides( meshDS->MeshElements( aShapeFace )) : false;
+    if ( toCheckFaceInSolid && !dynamic_cast< const SMESH_ProxyMesh::SubMesh* >( aSubMeshDSFace ))
+      continue; // no room for pyramids as prisms are on both sides 
+
     {
-      bool isRev = false;
-      if ( helper.NbAncestors( aShapeFace, aMesh, aShape.ShapeType() ) > 1 )
-        isRev = helper.IsReversedSubMesh( TopoDS::Face(aShapeFace) );
+      bool isRevGlob = false;
+      SMESH_MesherHelper helper2( aMesh );
+      PShapeIteratorPtr sIt = helper2.GetAncestors( aShapeFace, aMesh, aShape.ShapeType() );
+      while ( const TopoDS_Shape * solid = sIt->next() )
+        if ( !solid->IsSame( aShape ))
+        {
+          isRevGlob = helper2.IsReversedSubMesh( TopoDS::Face( aShapeFace ));
+          if ( toCheckFaceInSolid )
+            helper2.IsQuadraticSubMesh( *solid );
+          break;
+        }
 
       SMDS_ElemIteratorPtr iteratorElem = aSubMeshDSFace->GetElements();
       while ( iteratorElem->more() ) // loop on elements on a geometrical face
       {
         const SMDS_MeshElement* face = iteratorElem->next();
+
         // preparation step to get face info
-        int stat = Preparation(face, PN, VN, FNodes, PC, VNorm);
+        int stat = Preparation( face, PN, VN, FNodes, PC, VNorm );
+
+        bool isRev = isRevGlob;
+        SMESH_MesherHelper* helper = &helper1;
+        if ( toCheckFaceInSolid && !isInSolid( FNodes, face->NbCornerNodes(), solidID ))
+        {
+          isRev  = !isRevGlob;
+          helper = &helper2;
+        }
+
         switch ( stat )
         {
         case NOT_QUAD:
@@ -921,11 +976,11 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh&         aMesh,
             // degenerate face
             // add triangles to result map
             SMDS_MeshFace* NewFace;
-            helper.SetElementsOnShape( false );
+            helper->SetElementsOnShape( false );
             if(!isRev)
-              NewFace = helper.AddFace( FNodes[0], FNodes[1], FNodes[2] );
+              NewFace = helper->AddFace( FNodes[0], FNodes[1], FNodes[2] );
             else
-              NewFace = helper.AddFace( FNodes[0], FNodes[2], FNodes[1] );
+              NewFace = helper->AddFace( FNodes[0], FNodes[2], FNodes[1] );
             storeTmpElement( NewFace );
             trias.push_back ( NewFace );
             quads.push_back( face );
@@ -962,22 +1017,22 @@ bool StdMeshers_QuadToTriaAdaptor::Compute(SMESH_Mesh&         aMesh,
                 return false;
             }
             // create node at PCbest
-            helper.SetElementsOnShape( true );
-            SMDS_MeshNode* NewNode = helper.AddNode( PCbest.X(), PCbest.Y(), PCbest.Z() );
+            helper->SetElementsOnShape( true );
+            SMDS_MeshNode* NewNode = helper->AddNode( PCbest.X(), PCbest.Y(), PCbest.Z() );
 
             // create a pyramid
             SMDS_MeshVolume* aPyram;
             if ( isRev )
-              aPyram = helper.AddVolume( FNodes[0], FNodes[3], FNodes[2], FNodes[1], NewNode );
+              aPyram = helper->AddVolume( FNodes[0], FNodes[3], FNodes[2], FNodes[1], NewNode );
             else
-              aPyram = helper.AddVolume( FNodes[0], FNodes[1], FNodes[2], FNodes[3], NewNode );
+              aPyram = helper->AddVolume( FNodes[0], FNodes[1], FNodes[2], FNodes[3], NewNode );
             myPyramids.push_back(aPyram);
 
             // add triangles to result map
-            helper.SetElementsOnShape( false );
+            helper->SetElementsOnShape( false );
             for ( i = 0; i < 4; i++ )
             {
-              trias.push_back ( helper.AddFace( NewNode, FNodes[i], FNodes[i+1] ));
+              trias.push_back ( helper->AddFace( NewNode, FNodes[i], FNodes[i+1] ));
               storeTmpElement( trias.back() );
             }
 

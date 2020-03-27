@@ -641,6 +641,33 @@ SMDS_ElemIteratorPtr SMESH_ProxyMesh::GetInverseElementIterator(const SMDS_MeshN
 
 //================================================================================
 /*!
+ * \brief Check if a FACE has prisms on its both sides
+ *  \param [in] smFace - sub-mesh of the FACE. NOT a proxy sub-mesh!
+ *  \return bool - true if there are prisms on the two sides
+ */
+//================================================================================
+
+bool SMESH_ProxyMesh::HasPrismsOnTwoSides( SMESHDS_SubMesh* smFace )
+{
+  if ( !smFace || smFace->NbElements() == 0 )
+    return false;
+
+  SMDS_ElemIteratorPtr faces = smFace->GetElements();
+  while ( faces->more() )
+  {
+    const SMDS_MeshElement* f = faces->next();
+    std::vector<const SMDS_MeshNode*> fNodes( f->begin_nodes(), f->end_nodes() );
+    std::vector<const SMDS_MeshElement*> vols;
+    if ( SMDS_Mesh::GetElementsByNodes( fNodes, vols, SMDSAbs_Volume ) < 2 )
+      return false;
+    return ( vols[0]->NbCornerNodes() == 2 * f->NbCornerNodes() &&
+             vols[1]->NbCornerNodes() == 2 * f->NbCornerNodes() );
+  }
+  return false;
+}
+
+//================================================================================
+/*!
  * \brief SubMesh Constructor
  */
 //================================================================================
