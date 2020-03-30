@@ -52,7 +52,7 @@ namespace MED
     TWrapper& operator=(const TWrapper&);
 
   public:
-    TWrapper(const std::string& theFileName, bool write, TInt theVersion=-1);
+    TWrapper(const std::string& theFileName, bool write, TInt theMajor=-1, TInt theVersion=-1);
 
     virtual
     ~TWrapper();
@@ -939,6 +939,7 @@ namespace MED
 
   protected:
     PFile myFile;
+    TInt myMajor;
     TInt myMinor;
   };
 

@@ -78,13 +78,15 @@ namespace MED
     TFile(const TFile&);
 
   public:
-    TFile(const std::string& theFileName, TInt theMinor=-1):
+    TFile(const std::string& theFileName, TInt theMajor=-1, TInt theMinor=-1):
       myCount(0),
       myFid(0),
       myFileName(theFileName),
+      myMajor(theMajor),
       myMinor(theMinor)
     {
-      if ((myMinor < 0) || (myMinor > MED_MINOR_NUM)) myMinor = MED_MINOR_NUM;
+      if ((myMajor < 0) || (myMajor > MED_MAJOR_NUM)) myMajor = MED_MAJOR_NUM;
+      if ((myMinor < 0) || (myMajor == MED_MAJOR_NUM && myMinor > MED_MINOR_NUM)) myMinor = MED_MINOR_NUM;
     }
 
     ~TFile()
@@ -98,7 +100,7 @@ namespace MED
     {
       if (myCount++ == 0) {
         const char* aFileName = myFileName.c_str();
-        myFid = MEDfileVersionOpen(aFileName,med_access_mode(theMode), MED_MAJOR_NUM, myMinor, MED_RELEASE_NUM);
+        myFid = MEDfileVersionOpen(aFileName,med_access_mode(theMode), myMajor, myMinor, MED_RELEASE_NUM);
       }
       if (theErr)
         *theErr = TErr(myFid);
@@ -125,6 +127,7 @@ namespace MED
     TInt myCount;
     TIdt myFid;
     std::string myFileName;
+    TInt myMajor;
     TInt myMinor;
   };
 
@@ -187,8 +190,9 @@ namespace MED
 
   //---------------------------------------------------------------
   TWrapper
-  ::TWrapper(const std::string& theFileName, bool write, TInt theMinor):
-    myFile(new TFile(theFileName, theMinor)),
+  ::TWrapper(const std::string& theFileName, bool write, TInt theMajor, TInt theMinor):
+    myFile(new TFile(theFileName, theMajor, theMinor)),
+    myMajor(theMajor),
     myMinor(theMinor)
   {
     TErr aRet;
