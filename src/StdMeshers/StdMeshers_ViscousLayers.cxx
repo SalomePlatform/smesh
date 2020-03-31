@@ -917,7 +917,7 @@ namespace VISCOUS_3D
 
   private:
 
-    bool findSolidsWithLayers();
+    bool findSolidsWithLayers(const bool checkFaceMesh=true);
     bool setBefore( _SolidData& solidBefore, _SolidData& solidAfter );
     bool findFacesWithLayers(const bool onlyWith=false);
     void findPeriodicFaces();
@@ -2040,7 +2040,7 @@ SMESH_ComputeErrorPtr _ViscousBuilder::CheckHypotheses( SMESH_Mesh&         mesh
     return SMESH_ComputeErrorPtr(); // everything already computed
 
 
-  findSolidsWithLayers();
+  findSolidsWithLayers( /*checkFaceMesh=*/false );
   bool ok = findFacesWithLayers( true );
 
   // remove _MeshOfSolid's of _SolidData's
@@ -2059,7 +2059,7 @@ SMESH_ComputeErrorPtr _ViscousBuilder::CheckHypotheses( SMESH_Mesh&         mesh
  */
 //================================================================================
 
-bool _ViscousBuilder::findSolidsWithLayers()
+bool _ViscousBuilder::findSolidsWithLayers(const bool checkFaceMesh)
 {
   // get all solids
   TopTools_IndexedMapOfShape allSolids;
@@ -2069,13 +2069,28 @@ bool _ViscousBuilder::findSolidsWithLayers()
   SMESH_HypoFilter filter;
   for ( int i = 1; i <= allSolids.Extent(); ++i )
   {
-    // find StdMeshers_ViscousLayers hyp assigned to the i-th solid
     SMESH_subMesh* sm = _mesh->GetSubMesh( allSolids(i) );
     if ( sm->GetSubMeshDS() && sm->GetSubMeshDS()->NbElements() > 0 )
       continue; // solid is already meshed
+    // TODO: check if algo is hidden
     SMESH_Algo* algo = sm->GetAlgo();
     if ( !algo ) continue;
-    // TODO: check if algo is hidden
+    // check if all FACEs are meshed, which can be false if Compute() a sub-shape
+    if ( checkFaceMesh )
+    {
+      bool facesMeshed = true;
+      SMESH_subMeshIteratorPtr smIt = sm->getDependsOnIterator(false,true);
+      while ( smIt->more() && facesMeshed )
+      {
+        SMESH_subMesh * faceSM = smIt->next();
+        if ( faceSM->GetSubShape().ShapeType() != TopAbs_FACE )
+          break;
+        facesMeshed = faceSM->IsMeshComputed();
+      }
+      if ( !facesMeshed )
+        continue;
+    }
+    // find StdMeshers_ViscousLayers hyp assigned to the i-th solid
     const list <const SMESHDS_Hypothesis *> & allHyps =
       algo->GetUsedHypothesis(*_mesh, allSolids(i), /*ignoreAuxiliary=*/false);
     _SolidData* soData = 0;
