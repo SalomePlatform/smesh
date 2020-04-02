@@ -2097,6 +2097,12 @@ TopoDS_Shape SMESH_Mesh_i::newGroupShape( TGeomGroupData & groupData, int how )
     {
       CORBA::Object_var  geomObj = _gen_i->SObjectToObject( geomSO );
       GEOM::GEOM_Object_var geom = GEOM::GEOM_Object::_narrow( geomObj );
+      if ( geom->_is_nil() ) return newShape;
+      GEOM::GEOM_Gen_var geomGen = _gen_i->GetGeomEngine( geom );
+      CORBA::String_var groupIOR = geomGen->GetStringFromIOR( geom );
+
+      if ( GEOM_Client* geomClient = _gen_i->GetShapeReader() )
+        geomClient->RemoveShapeFromBuffer( groupIOR.in() );
       newShape = _gen_i->GeomObjectToShape( geom );
       if ( !newShape.IsNull() )
       {
@@ -2392,7 +2398,7 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
     ids2Hyps.push_back( make_pair( meshDS->ShapeToIndex( s ), hyps ));
   }
 
-  std::map< std::set<int>, int > ii2iMap; // group sub-ids to group id in SMESHDS
+  std::multimap< std::set<int>, int > ii2iMap; // group sub-ids to group id in SMESHDS
 
   // count shapes excluding compounds corresponding to geom groups
   int oldNbSubShapes = meshDS->MaxShapeIndex();
@@ -2431,9 +2437,14 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
   for ( ; data != _geomGroupData.end(); ++data )
   {
     int oldID = 0;
-    std::map< std::set<int>, int >::iterator ii2i = ii2iMap.find( data->_indices );
+    std::multimap< std::set<int>, int >::iterator ii2i = ii2iMap.find( data->_indices );
     if ( ii2i != ii2iMap.end() )
+    {
       oldID = ii2i->second;
+      ii2iMap.erase( ii2i );
+    }
+    if ( !oldID && data->_indices.size() == 1 )
+      oldID = *data->_indices.begin();
     if ( old2newIDs.count( oldID ))
       continue;
 
@@ -2498,23 +2509,26 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
         g->GetGroupDS()->SetColor( data._color );
     }
 
-    std::map< int, int >::iterator o2n = old2newIDs.begin();
-    for ( ; o2n != old2newIDs.end(); ++o2n )
+    if ( !sameTopology )
     {
-      int newID = o2n->second, oldID = o2n->first;
-      if ( newID == oldID || !_mapSubMesh.count( oldID ))
-        continue;
-      if ( newID > 0 )
+      std::map< int, int >::iterator o2n = old2newIDs.begin();
+      for ( ; o2n != old2newIDs.end(); ++o2n )
       {
-        _mapSubMesh   [ newID ] = _impl->GetSubMeshContaining( newID );
-        _mapSubMesh_i [ newID ] = _mapSubMesh_i [ oldID ];
-        _mapSubMeshIor[ newID ] = _mapSubMeshIor[ oldID ];
+        int newID = o2n->second, oldID = o2n->first;
+        if ( newID == oldID || !_mapSubMesh.count( oldID ))
+          continue;
+        if ( newID > 0 )
+        {
+          _mapSubMesh   [ newID ] = _impl->GetSubMeshContaining( newID );
+          _mapSubMesh_i [ newID ] = _mapSubMesh_i [ oldID ];
+          _mapSubMeshIor[ newID ] = _mapSubMeshIor[ oldID ];
+        }
+        _mapSubMesh.   erase(oldID);
+        _mapSubMesh_i. erase(oldID);
+        _mapSubMeshIor.erase(oldID);
+        if ( newID > 0 )
+          _mapSubMesh_i [ newID ]->changeLocalId( newID );
       }
-      _mapSubMesh.   erase(oldID);
-      _mapSubMesh_i. erase(oldID);
-      _mapSubMeshIor.erase(oldID);
-      if ( newID > 0 )
-        _mapSubMesh_i [ newID ]->changeLocalId( newID );
     }
 
     // update _mapSubMesh
