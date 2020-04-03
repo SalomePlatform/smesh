@@ -199,7 +199,8 @@ TopAbs_ShapeEnum GeomSelectionTools::entryToShapeType(std::string entry){
     if ( aSO->ReferencedObject( aRefSObj ))
       aSO = aRefSObj;
     // MESSAGE("aSO->GetFatherComponent()->ComponentDataType(): " << aSO->GetFatherComponent()->ComponentDataType());
-    if (  strcmp(aSO->GetFatherComponent()->ComponentDataType().c_str(),"GEOM") == 0)
+    std::string aComponentType = aSO->GetFatherComponent()->ComponentDataType();
+    if (aComponentType == "GEOM" || aComponentType == "SHAPERSTUDY")
       aShape = SMESH::SObjectToInterface<GEOM::GEOM_Object>(aSO);
     if ( !aShape->_is_nil() ){
       // MESSAGE("Got the Geom Object ");
@@ -207,7 +208,7 @@ TopAbs_ShapeEnum GeomSelectionTools::entryToShapeType(std::string entry){
       SalomeApp_Application* anApp = GetSalomeApplication();
       if (anApp) {
 //         MESSAGE("Got Application");
-        Engines::EngineComponent_var component = anApp->lcc()->FindOrLoad_Component( "FactoryServer","GEOM" );
+        Engines::EngineComponent_var component = anApp->lcc()->FindOrLoad_Component( "FactoryServer", aComponentType.c_str());
         GEOM::GEOM_Gen_var _geomEngine = GEOM::GEOM_Gen::_narrow(component);
 //         MESSAGE("Got GEOM engine");
         // if the Geom Object is a group
