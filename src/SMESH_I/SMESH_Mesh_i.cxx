@@ -2124,11 +2124,29 @@ TopoDS_Shape SMESH_Mesh_i::newGroupShape( TGeomGroupData & groupData, int how )
   if ( how == ONLY_IF_CHANGED && sameIndices )
     return newShape; // group not changed
 
+  // update data
+  CORBA::String_var entry = geomGroup->GetStudyEntry();
+  groupData._groupEntry = entry.in();
+  groupData._indices = curIndices;
+
   newShape = _gen_i->GeomObjectToShape( geomGroup );
 
+  // check if newShape is up-to-date
   if ( !newShape.IsNull() && ids->length() > 0 )
   {
-    if ( !sameIndices || !_impl->GetMeshDS()->IsGroupOfSubShapes( newShape ))
+    bool toUpdate = ! _impl->GetMeshDS()->IsGroupOfSubShapes( newShape );
+    if ( !toUpdate )
+    {
+      TopExp_Explorer exp( newShape, (TopAbs_ShapeEnum)( groupOp->GetType( geomGroup )));
+      for ( ; exp.More() && !toUpdate; exp.Next() )
+      {
+        int ind = _impl->GetMeshDS()->ShapeToIndex( exp.Current() );
+        toUpdate = ( curIndices.erase( ind ) == 0 );
+      }
+      if ( !curIndices.empty() )
+        toUpdate = true;
+    }
+    if ( toUpdate )
     {
       GEOM_Client*    geomClient = _gen_i->GetShapeReader();
       CORBA::String_var groupIOR = geomGen->GetStringFromIOR( geomGroup );
@@ -2143,11 +2161,6 @@ TopoDS_Shape SMESH_Mesh_i::newGroupShape( TGeomGroupData & groupData, int how )
     BRep_Builder().MakeCompound(compound);
     newShape = compound;
   }
-
-  // update data
-  CORBA::String_var entry = geomGroup->GetStudyEntry();
-  groupData._groupEntry = entry.in();
-  groupData._indices = curIndices;
 
   return newShape;
 }
@@ -2318,8 +2331,15 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
   CORBA::String_var geomComponentType = geomGen->ComponentDataType();
   bool isShaper = ( strcmp( geomComponentType.in(), "SHAPERSTUDY" ) == 0 );
 
-  CORBA::String_var ior = geomGen->GetStringFromIOR( mainGO );
-  geomClient->RemoveShapeFromBuffer( ior.in() );
+  SMESHDS_Mesh * meshDS = _impl->GetMeshDS();
+
+  TopoDS_Shape newShape = _gen_i->GeomObjectToShape( mainGO );
+  if ( meshDS->ShapeToIndex( newShape ) == 1 ) // not yet updated
+  {
+    CORBA::String_var ior = geomGen->GetStringFromIOR( mainGO );
+    geomClient->RemoveShapeFromBuffer( ior.in() );
+    newShape = _gen_i->GeomObjectToShape( mainGO );
+  }
 
   // Update data taking into account that if topology doesn't change
   // all sub-shapes change but IDs of sub-shapes remain (except for geom groups)
@@ -2327,16 +2347,12 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
   if ( _preMeshInfo )
     _preMeshInfo->ForgetAllData();
 
-  
   if ( isBreakLink || !isShaper )
     _impl->Clear();
-  TopoDS_Shape newShape = _gen_i->GeomObjectToShape( mainGO );
   if ( newShape.IsNull() )
     return;
 
   _mainShapeTick = mainGO->GetTick();
-
-  SMESHDS_Mesh * meshDS = _impl->GetMeshDS();
 
   // store data of groups on geometry including new TopoDS_Shape's
   std::vector< TGroupOnGeomData > groupsData;
@@ -2359,7 +2375,10 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
       GEOM::GEOM_Object_var geom;
       if ( !gog->_is_nil() )
       {
-        if ( isBreakLink )
+        if ( !isBreakLink )
+          geom = gog->GetShape();
+
+        if ( isBreakLink || geom->_is_nil() )
         {
           SALOMEDS::SObject_wrap grpSO = _gen_i->ObjectToSObject( gog );
           SALOMEDS::SObject_wrap geomRefSO, geomSO;
@@ -2371,10 +2390,6 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
             geom = GEOM::GEOM_Object::_narrow( geomObj );
           }
         }
-        else
-        {
-          geom = gog->GetShape();
-        }
       }
       if ( old2newShapeMap.IsBound( group->GetShape() ))
       {
@@ -2383,7 +2398,7 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
       else if ( !geom->_is_nil() )
       {
         groupsData.back()._shape = _gen_i->GeomObjectToShape( geom );
-        if ( meshDS->ShapeToIndex( groupsData.back()._shape ) > 0 )
+        if ( meshDS->IsGroupOfSubShapes( groupsData.back()._shape ))
         {
           CORBA::String_var ior = geomGen->GetStringFromIOR( geom );
           geomClient->RemoveShapeFromBuffer( ior.in() );
@@ -2646,12 +2661,15 @@ void SMESH_Mesh_i::CheckGeomGroupModif()
     bool isValidGeom = false;
     if ( !onGeom->_is_nil() )
     {
-      isValidGeom = ( ! GEOM::GEOM_Object_var( onGeom->GetShape() )->_is_nil() &&
-                      ! groupSO->_is_nil() &&
-                      groupSO->FindSubObject( SMESH::Tag_RefOnShape, refSO.inout() ) &&
-                      refSO->ReferencedObject( geomSO.inout() ) &&
-                      ! geomSO->_is_nil());
-      isValidGeom = ( isValidGeom && !CORBA::is_nil( CORBA::Object_var( geomSO->GetObject() )));
+      isValidGeom = ( ! GEOM::GEOM_Object_var( onGeom->GetShape() )->_is_nil() ); // check TopoDS
+      if ( !isValidGeom ) // check reference
+      {
+        isValidGeom = ( ! groupSO->_is_nil() &&
+                        groupSO->FindSubObject( SMESH::Tag_RefOnShape, refSO.inout() ) &&
+                        refSO->ReferencedObject( geomSO.inout() ) &&
+                        ! geomSO->_is_nil() &&
+                        !CORBA::is_nil( CORBA::Object_var( geomSO->GetObject() )));
+      }
     }
     else if ( !onFilt->_is_nil() )
     {
