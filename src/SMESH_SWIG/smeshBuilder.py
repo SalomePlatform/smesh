@@ -1860,10 +1860,7 @@ class Mesh(metaclass = MeshMeta):
         """
 
         if geom == 0 or not isinstance(geom, geomBuilder.GEOM._objref_GEOM_Object):
-            if self.geom == 0:
-                geom = self.mesh.GetShapeToMesh()
-            else:
-                geom = self.geom
+            geom = self.mesh.GetShapeToMesh()
         ok = False
         try:
             if discardModifs and self.mesh.HasModificationsToDiscard(): # issue 0020693

@@ -2176,7 +2176,7 @@ SMESH::MeshPreviewStruct* SMESH_Gen_i::Precompute( SMESH::SMESH_Mesh_ptr theMesh
       if(theMesh->HasShapeToMesh())
         myLocShape = GeomObjectToShape( theShapeObject );
       else
-        return result._retn();;
+        return result._retn();
 
       // call implementation compute
       ::SMESH_Mesh& myLocMesh = meshServant->GetImpl();

@@ -2086,68 +2086,69 @@ enum { ONLY_IF_CHANGED, IS_BREAK_LINK, MAIN_TRANSFORMED };
 TopoDS_Shape SMESH_Mesh_i::newGroupShape( TGeomGroupData & groupData, int how )
 {
   TopoDS_Shape newShape;
+  SALOMEDS::SObject_wrap groupSO;
 
   if ( how == IS_BREAK_LINK )
   {
     SALOMEDS::SObject_wrap meshSO = _gen_i->ObjectToSObject( groupData._smeshObject );
-    SALOMEDS::SObject_wrap geomRefSO, geomSO;
+    SALOMEDS::SObject_wrap geomRefSO;
     if ( !meshSO->_is_nil() &&
-         meshSO->FindSubObject( SMESH::Tag_RefOnShape, geomRefSO.inout() ) &&
-         geomRefSO->ReferencedObject( geomSO.inout() ))
+         meshSO->FindSubObject( SMESH::Tag_RefOnShape, geomRefSO.inout() ))
     {
-      CORBA::Object_var  geomObj = _gen_i->SObjectToObject( geomSO );
-      GEOM::GEOM_Object_var geom = GEOM::GEOM_Object::_narrow( geomObj );
-      if ( geom->_is_nil() ) return newShape;
-      GEOM::GEOM_Gen_var geomGen = _gen_i->GetGeomEngine( geom );
-      CORBA::String_var groupIOR = geomGen->GetStringFromIOR( geom );
-
-      if ( GEOM_Client* geomClient = _gen_i->GetShapeReader() )
-        geomClient->RemoveShapeFromBuffer( groupIOR.in() );
-      newShape = _gen_i->GeomObjectToShape( geom );
-      if ( !newShape.IsNull() )
-      {
-        CORBA::String_var entry = geom->GetStudyEntry();
-        groupData._groupEntry = entry.in();
-      }
+      geomRefSO->ReferencedObject( groupSO.inout() );
     }
   }
   else
   {
     // get geom group
-    SALOMEDS::SObject_wrap groupSO = SMESH_Gen_i::getStudyServant()->FindObjectID( groupData._groupEntry.c_str() );
-    if ( !groupSO->_is_nil() )
+    groupSO = _gen_i->getStudyServant()->FindObjectID( groupData._groupEntry.c_str() );
+  }
+
+  if ( groupSO->_is_nil() )
+    return newShape;
+
+  CORBA::Object_var      groupObj = _gen_i->SObjectToObject( groupSO );
+  GEOM::GEOM_Object_var geomGroup = GEOM::GEOM_Object::_narrow( groupObj );
+  if ( geomGroup->_is_nil() )
+    return newShape;
+
+  // get indices of group items
+  set<int> curIndices;
+  GEOM::GEOM_Gen_var               geomGen = _gen_i->GetGeomEngine( geomGroup );
+  GEOM::GEOM_IGroupOperations_wrap groupOp = geomGen->GetIGroupOperations();
+  GEOM::ListOfLong_var                 ids = groupOp->GetObjects( geomGroup );
+  for ( CORBA::ULong i = 0; i < ids->length(); ++i )
+    curIndices.insert( ids[i] );
+
+  bool sameIndices = ( groupData._indices == curIndices );
+  if ( how == ONLY_IF_CHANGED && sameIndices )
+    return newShape; // group not changed
+
+  newShape = _gen_i->GeomObjectToShape( geomGroup );
+
+  if ( !newShape.IsNull() && ids->length() > 0 )
+  {
+    if ( !sameIndices || !_impl->GetMeshDS()->IsGroupOfSubShapes( newShape ))
     {
-      CORBA::Object_var groupObj = _gen_i->SObjectToObject( groupSO );
-      if ( CORBA::is_nil( groupObj )) return newShape;
-      GEOM::GEOM_Object_var geomGroup = GEOM::GEOM_Object::_narrow( groupObj );
-
-      // get indices of group items
-      set<int> curIndices;
-      GEOM::GEOM_Gen_var               geomGen = _gen_i->GetGeomEngine( geomGroup );
-      GEOM::GEOM_IGroupOperations_wrap groupOp = geomGen->GetIGroupOperations();
-      GEOM::ListOfLong_var                 ids = groupOp->GetObjects( geomGroup );
-      for ( CORBA::ULong i = 0; i < ids->length(); ++i )
-        curIndices.insert( ids[i] );
-
-      if ( how == ONLY_IF_CHANGED && groupData._indices == curIndices )
-        return newShape; // group not changed
-
-      // update data
-      groupData._indices = curIndices;
-
-      GEOM_Client* geomClient = _gen_i->GetShapeReader();
-      if ( !geomClient ) return newShape;
+      GEOM_Client*    geomClient = _gen_i->GetShapeReader();
       CORBA::String_var groupIOR = geomGen->GetStringFromIOR( geomGroup );
       geomClient->RemoveShapeFromBuffer( groupIOR.in() );
       newShape = _gen_i->GeomObjectToShape( geomGroup );
     }
   }
-  if ( newShape.IsNull() ) {
+  else
+  {
     // geom group becomes empty - return empty compound
     TopoDS_Compound compound;
     BRep_Builder().MakeCompound(compound);
     newShape = compound;
   }
+
+  // update data
+  CORBA::String_var entry = geomGroup->GetStudyEntry();
+  groupData._groupEntry = entry.in();
+  groupData._indices = curIndices;
+
   return newShape;
 }
 
@@ -2337,7 +2338,7 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
 
   SMESHDS_Mesh * meshDS = _impl->GetMeshDS();
 
-  // store data of groups on geometry
+  // store data of groups on geometry including new TopoDS_Shape's
   std::vector< TGroupOnGeomData > groupsData;
   const std::set<SMESHDS_GroupBase*>& groups = meshDS->GetGroups();
   groupsData.reserve( groups.size() );
@@ -2375,17 +2376,22 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
           geom = gog->GetShape();
         }
       }
-      if ( !geom->_is_nil() )
-      {
-        CORBA::String_var ior = geomGen->GetStringFromIOR( geom );
-        geomClient->RemoveShapeFromBuffer( ior.in() );
-        groupsData.back()._shape = _gen_i->GeomObjectToShape( geom );
-        old2newShapeMap.Bind( group->GetShape(), groupsData.back()._shape );
-      }
-      else if ( old2newShapeMap.IsBound( group->GetShape() ))
+      if ( old2newShapeMap.IsBound( group->GetShape() ))
       {
         groupsData.back()._shape = old2newShapeMap( group->GetShape() );
       }
+      else if ( !geom->_is_nil() )
+      {
+        groupsData.back()._shape = _gen_i->GeomObjectToShape( geom );
+        if ( meshDS->ShapeToIndex( groupsData.back()._shape ) > 0 )
+        {
+          CORBA::String_var ior = geomGen->GetStringFromIOR( geom );
+          geomClient->RemoveShapeFromBuffer( ior.in() );
+          groupsData.back()._shape = _gen_i->GeomObjectToShape( geom );
+        }
+        old2newShapeMap.Bind( group->GetShape(), groupsData.back()._shape );
+      }
+      
     }
   }
   // store assigned hypotheses
@@ -2432,10 +2438,25 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
   }
 
   // re-add shapes (compounds) of geom groups
+  typedef std::map< std::vector< int >, TGeomGroupData* > TIndices2GroupData;
+  TIndices2GroupData ii2grData;
+  std::vector< int > ii;
   std::map< int, int > old2newIDs; // group IDs
-  std::list<TGeomGroupData>::iterator data = _geomGroupData.begin();
-  for ( ; data != _geomGroupData.end(); ++data )
+  std::list<TGeomGroupData>::iterator dataIt = _geomGroupData.begin();
+  for ( ; dataIt != _geomGroupData.end(); ++dataIt )
   {
+    TGeomGroupData* data = &(*dataIt);
+    ii.reserve( data->_indices.size() );
+    ii.assign( data->_indices.begin(), data->_indices.end() );
+    TIndices2GroupData::iterator ii2gd = ii2grData.insert( std::make_pair( ii, data )).first;
+    if ( ii2gd->second != data )
+    {
+      data->_groupEntry = ii2gd->second->_groupEntry;
+      data->_indices    = ii2gd->second->_indices;
+      continue;
+    }
+    const int  oldNbSub = data->_indices.size();
+    const int soleOldID = oldNbSub == 1 ? *data->_indices.begin() : 0;
     int oldID = 0;
     std::multimap< std::set<int>, int >::iterator ii2i = ii2iMap.find( data->_indices );
     if ( ii2i != ii2iMap.end() )
@@ -2443,16 +2464,17 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
       oldID = ii2i->second;
       ii2iMap.erase( ii2i );
     }
-    if ( !oldID && data->_indices.size() == 1 )
-      oldID = *data->_indices.begin();
+    if ( !oldID && oldNbSub == 1 )
+      oldID = soleOldID;
     if ( old2newIDs.count( oldID ))
       continue;
 
     int how = ( isBreakLink || !sameTopology ) ? IS_BREAK_LINK : MAIN_TRANSFORMED;
     newShape = newGroupShape( *data, how );
+
     if ( !newShape.IsNull() )
     {
-      if ( meshDS->ShapeToIndex( newShape ) > 0 ) // a group reduced to one sub-shape
+      if ( oldNbSub > 1 && meshDS->ShapeToIndex( newShape ) > 0 ) // group reduced to one sub-shape
       {
         TopoDS_Compound compound;
         BRep_Builder().MakeCompound( compound );
@@ -2462,11 +2484,8 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
       int newID = _impl->GetSubMesh( newShape )->GetId();
       if ( oldID /*&& oldID != newID*/ )
         old2newIDs.insert( std::make_pair( oldID, newID ));
-      if ( data->_indices.size() == 1 )
-      {
-        oldID = *data->_indices.begin();
-        old2newIDs.insert( std::make_pair( oldID, newID ));
-      }
+      if ( oldNbSub == 1 )
+        old2newIDs.insert( std::make_pair( soleOldID, newID ));
     }
   }
 
@@ -2621,13 +2640,18 @@ void SMESH_Mesh_i::CheckGeomGroupModif()
   {
     SMESH::SMESH_GroupBase_ptr group = i_gr->second;
     ++i_gr;
-    SALOMEDS::SObject_wrap        groupSO = _gen_i->ObjectToSObject( group ), refSO;
+    SALOMEDS::SObject_wrap        groupSO = _gen_i->ObjectToSObject( group ), refSO, geomSO;
     SMESH::SMESH_GroupOnGeom_var   onGeom = SMESH::SMESH_GroupOnGeom::_narrow  ( group );
     SMESH::SMESH_GroupOnFilter_var onFilt = SMESH::SMESH_GroupOnFilter::_narrow( group );
     bool isValidGeom = false;
     if ( !onGeom->_is_nil() )
     {
-      isValidGeom = ( ! GEOM::GEOM_Object_var( onGeom->GetShape() )->_is_nil() );
+      isValidGeom = ( ! GEOM::GEOM_Object_var( onGeom->GetShape() )->_is_nil() &&
+                      ! groupSO->_is_nil() &&
+                      groupSO->FindSubObject( SMESH::Tag_RefOnShape, refSO.inout() ) &&
+                      refSO->ReferencedObject( geomSO.inout() ) &&
+                      ! geomSO->_is_nil());
+      isValidGeom = ( isValidGeom && !CORBA::is_nil( CORBA::Object_var( geomSO->GetObject() )));
     }
     else if ( !onFilt->_is_nil() )
     {
