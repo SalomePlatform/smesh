@@ -957,13 +957,15 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::GetSubMesh(GEOM::GEOM_Object_ptr aSubShap
 
     //Get or Create the SMESH_subMesh object implementation
 
-    int subMeshId = _impl->GetMeshDS()->ShapeToIndex( myLocSubShape );
-
-    if ( !subMeshId && ! _impl->GetMeshDS()->IsGroupOfSubShapes( myLocSubShape ))
+    TopoDS_Iterator it( myLocSubShape );
+    int   subMeshId = _impl->GetMeshDS()->ShapeToIndex( myLocSubShape );
+    bool isValidSub = ( subMeshId || _impl->GetMeshDS()->IsGroupOfSubShapes( myLocSubShape ));
+    if ( isValidSub && myLocSubShape.ShapeType() == TopAbs_COMPOUND )
+      isValidSub = !it.Value().IsSame( _impl->GetShapeToMesh() );
+    if ( !isValidSub )
     {
-      TopoDS_Iterator it( myLocSubShape );
       if ( it.More() )
-        THROW_SALOME_CORBA_EXCEPTION("not sub-shape of the main shape", SALOME::BAD_PARAM);
+        THROW_SALOME_CORBA_EXCEPTION("Not a sub-shape of the main shape", SALOME::BAD_PARAM);
     }
     subMesh = getSubMesh( subMeshId );
 
@@ -2508,11 +2510,14 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
   for ( size_t i = 0; i < ids2Hyps.size(); ++i )
   {
     int sID = ids2Hyps[i].first;
-    std::map< int, int >::iterator o2n = old2newIDs.find( sID );
-    if ( o2n != old2newIDs.end() )
-      sID = o2n->second;
-    else if ( !sameTopology && sID != 1 )
-      continue;
+    if ( sID != 1 )
+    {
+      std::map< int, int >::iterator o2n = old2newIDs.find( sID );
+      if ( o2n != old2newIDs.end() )
+        sID = o2n->second;
+      else if ( !sameTopology )
+        continue;
+    }
     const TopoDS_Shape& s = meshDS->IndexToShape( sID );
     if ( s.IsNull() )
       continue;
