@@ -69,7 +69,7 @@ class MonYamsPlugDialog(Ui_YamsPlugDialog,QWidget):
     self.PB_MeshFile.setToolTip("source mesh from a file in disk")
 
     #Ces parametres ne sont pas remis a rien par le clean
-    self.paramsFile= os.path.abspath(os.path.join(os.environ["HOME"],".MGSurfOpt.dat"))
+    self.paramsFile= os.path.abspath(os.path.join(os.path.expanduser("~"),".MGSurfOpt.dat"))
     self.LE_ParamsFile.setText(self.paramsFile)
     self.LE_MeshFile.setText("")
     self.LE_MeshSmesh.setText("")

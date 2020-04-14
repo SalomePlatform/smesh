@@ -81,7 +81,7 @@ class MGCleanerMonViewText(Ui_ViewExe, QDialog):
 
     def saveFile(self):
         #recuperation du nom du fichier
-        savedir=os.environ['HOME']
+        savedir=os.path.expanduser("~")
         fn, mask = QFileDialog.getSaveFileName(None,"Save File",savedir)
         if not fn: return
         ulfile = os.path.abspath(str(fn))

@@ -24,7 +24,7 @@ import  subprocess
 
 
 def Chercheversion(salomePath):
-    home=os.environ['HOME']
+    home=os.path.expanduser("~")
     commande=os.path.abspath(os.path.join(home,salomePath,'salome'))
     argus="--version"
     p = subprocess.Popen([commande,argus], stdout=subprocess.PIPE)
