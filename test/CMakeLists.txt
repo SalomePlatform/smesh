@@ -27,7 +27,7 @@ SET(_test_helper ${CMAKE_SOURCE_DIR}/doc/salome/examples/testme.py)
 
 SET(RESTRICTED_ROOT_DIR $ENV{RESTRICTED_ROOT_DIR} CACHE PATH "Path to the restricted repository")
 
-IF(EXISTS ${RESTRICTED_ROOT_DIR} AND WITH_SHAPER_STUDY)
+IF(WITH_SHAPER_STUDY AND EXISTS ${RESTRICTED_ROOT_DIR})
   FILE(GLOB _restricted_tests "${RESTRICTED_ROOT_DIR}/SMESH/*.py")
   FOREACH(_test ${_restricted_tests})
     GET_FILENAME_COMPONENT(_test_name ${_test} NAME_WE)
