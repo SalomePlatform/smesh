@@ -43,7 +43,7 @@ master_doc = 'index'
 
 # General substitutions.
 project = 'Plug-in blocFissure'
-copyright = '2010-2017 EDF R&D'
+copyright = '2010-2020 EDF R&D'
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.

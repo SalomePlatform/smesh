@@ -43,7 +43,7 @@ master_doc = 'index'
 
 # General substitutions.
 project = 'MeshGems-SurfOpt Plug-in'
-copyright = '2007-2017 CEA/DEN, EDF R&D, OPEN CASCADE'
+copyright = '2007-2020 EDF R&D'
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.
