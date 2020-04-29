@@ -126,7 +126,7 @@ class SMESH_EXPORT SMESH_subMesh
   // ==================================================================
 
   /*!
-   * \brief Sets an event listener and its data to a submesh
+   * \brief Set an event listener and its data to a submesh
     * \param listener - the listener to store
     * \param data - the listener data to store
     * \param where - the submesh to store the listener and it's data

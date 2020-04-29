@@ -35,6 +35,7 @@
 #include "SMESH_MeshAlgos.hxx"
 #include "SMESH_OctreeNode.hxx"
 
+#include <GEOMUtils.hxx>
 #include <Basics_Utils.hxx>
 
 #include <BRepAdaptor_Surface.hxx>
@@ -4265,6 +4266,8 @@ private:
   bool isOutOfNone  (const gp_Pnt& p) { return true; }
   bool isBox        (const TopoDS_Shape& s);
 
+  TopoDS_Shape prepareSolid( const TopoDS_Shape& theSolid );
+
   bool (Classifier::*          myIsOutFun)(const gp_Pnt& p);
   BRepClass3d_SolidClassifier* mySolidClfr; // ptr because of a run-time forbidden copy-constructor
   Bnd_B3d                      myBox;
@@ -4524,11 +4527,17 @@ bool ElementsOnShape::IsSatisfy (const SMDS_MeshElement* elem)
     centerXYZ /= elem->NbNodes();
     isSatisfy = false;
     if ( myOctree )
+    {
+      myWorkClassifiers.clear();
+      myOctree->GetClassifiersAtPoint( centerXYZ, myWorkClassifiers );
       for ( size_t i = 0; i < myWorkClassifiers.size() && !isSatisfy; ++i )
         isSatisfy = ! myWorkClassifiers[i]->IsOut( centerXYZ );
+    }
     else
+    {
       for ( size_t i = 0; i < myClassifiers.size() && !isSatisfy; ++i )
         isSatisfy = ! myClassifiers[i].IsOut( centerXYZ );
+    }
   }
 
   return isSatisfy;
@@ -4613,7 +4622,7 @@ void ElementsOnShape::Classifier::Init( const TopoDS_Shape& theShape,
     }
     else
     {
-      mySolidClfr = new BRepClass3d_SolidClassifier(theShape);
+      mySolidClfr = new BRepClass3d_SolidClassifier( prepareSolid( theShape ));
       myIsOutFun = & ElementsOnShape::Classifier::isOutOfSolid;
     }
     break;
@@ -4690,6 +4699,25 @@ void ElementsOnShape::Classifier::Init( const TopoDS_Shape& theShape,
 ElementsOnShape::Classifier::~Classifier()
 {
   delete mySolidClfr; mySolidClfr = 0;
+}
+
+TopoDS_Shape ElementsOnShape::Classifier::prepareSolid( const TopoDS_Shape& theSolid )
+{
+  // try to limit tolerance of theSolid down to myTol (issue #19026)
+
+  // check if tolerance of theSolid is more than myTol
+  bool tolIsOk = true; // max tolerance is at VERTEXes
+  for ( TopExp_Explorer exp( theSolid, TopAbs_VERTEX ); exp.More() &&  tolIsOk; exp.Next() )
+    tolIsOk = ( myTol >= BRep_Tool::Tolerance( TopoDS::Vertex( exp.Current() )));
+  if ( tolIsOk )
+    return theSolid;
+
+  // make a copy to prevent the original shape from changes
+  TopoDS_Shape resultShape = BRepBuilderAPI_Copy( theSolid );
+
+  if ( !GEOMUtils::FixShapeTolerance( resultShape, TopAbs_SHAPE, myTol ))
+    return theSolid;
+  return resultShape;
 }
 
 bool ElementsOnShape::Classifier::isOutOfSolid( const gp_Pnt& p )

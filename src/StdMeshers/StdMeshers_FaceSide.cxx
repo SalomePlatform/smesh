@@ -450,6 +450,7 @@ const std::vector<UVPtStruct>& StdMeshers_FaceSide::GetUVPtStruct(bool   isXCons
         for ( size_t j = 0; j < u2nodeVec.size(); ++j )
           u2node.insert( u2node.end(), u2nodeVec[j] );
       }
+      continue;
     } // loop on myEdge's
 
     // Add 2nd VERTEX node for a last EDGE

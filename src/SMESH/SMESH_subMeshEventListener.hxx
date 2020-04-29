@@ -92,7 +92,7 @@ struct SMESH_subMeshEventListenerData
                                             !! they are used to track intermesh
                                             dependencies at mesh loading as well !! */
 public:
-  SMESH_subMeshEventListenerData(bool isDeletable):myIsDeletable(isDeletable) {}
+  SMESH_subMeshEventListenerData(bool isDeletable):myIsDeletable(isDeletable),myType(-1) {}
   virtual ~SMESH_subMeshEventListenerData() {}
   bool IsDeletable() const { return myIsDeletable; }
 
