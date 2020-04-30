@@ -39,6 +39,7 @@ SET(_link_LIBRARIES
   ${OpenCASCADE_FoundationClasses_LIBRARIES}
   ${OpenCASCADE_ModelingData_LIBRARIES}
   ${OpenCASCADE_ModelingAlgorithms_LIBRARIES}
+  ${GEOM_GEOMUtils}
   SMDS
   SMESHDS
   SMESHUtils
