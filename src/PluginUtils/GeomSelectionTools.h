@@ -58,10 +58,10 @@ public:
   Handle(SALOME_InteractiveObject) getFirstSelectedSalomeObject();
   std::string getFirstSelectedEntry();
   std::string getEntryOfObject(Handle(SALOME_InteractiveObject));
-  std::string getNameFromEntry(std::string);
+  std::string getNameFromEntry(const std::string& );
   std::string getFirstSelectedComponentDataType();
   TopAbs_ShapeEnum getFirstSelectedShapeType();
-  TopAbs_ShapeEnum entryToShapeType(std::string );
+  TopAbs_ShapeEnum entryToShapeType(const std::string& );
   GeomAbs_SurfaceType getFaceInformation(TopoDS_Shape);
 };
 

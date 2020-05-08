@@ -955,9 +955,7 @@ QFrame* StdMeshersGUI_CartesianParamCreator::buildFrame()
   if ( !shapeEntry.isEmpty() )
   {
     // find origin
-    Handle(SALOME_InteractiveObject) io =
-      new SALOME_InteractiveObject( shapeEntry.toStdString().c_str(), "GEOM" );
-    GEOM::GEOM_Object_var geomObj = SMESH::IObjectToInterface<GEOM::GEOM_Object>( io );
+    GEOM::GEOM_Object_var geomObj = SMESH::EntryToInterface<GEOM::GEOM_Object>( shapeEntry );
     if ( GEOMBase::GetShape( geomObj, shape ) && !shape.IsNull())
     {
       Bnd_Box box;
@@ -1394,9 +1392,7 @@ void StdMeshersGUI_CartesianParamCreator::onOptimalAxes(bool)
   if ( shapeEntry.isEmpty() )
     return;
 
-  Handle(SALOME_InteractiveObject) io =
-    new SALOME_InteractiveObject( shapeEntry.toStdString().c_str(), "GEOM" );
-  GEOM::GEOM_Object_var geomObj = SMESH::IObjectToInterface<GEOM::GEOM_Object>( io );
+  GEOM::GEOM_Object_var geomObj = SMESH::EntryToInterface<GEOM::GEOM_Object>( shapeEntry );
   if ( geomObj->_is_nil() )
     return;
 

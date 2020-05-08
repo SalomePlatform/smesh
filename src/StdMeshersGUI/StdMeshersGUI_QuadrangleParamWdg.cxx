@@ -288,9 +288,7 @@ QString  StdMeshersGUI_QuadrangleParamCreator::storeParams() const
   {
     QListWidgetItem* item = myShapesList->item(i);
     QString         entry = item->data( Qt::UserRole ).toString();
-    Handle(SALOME_InteractiveObject) io =
-      new SALOME_InteractiveObject( entry.toStdString().c_str(), "GEOM" );
-    GEOM::GEOM_Object_var go = GEOMBase::ConvertIOinGEOMObject( io );
+    GEOM::GEOM_Object_var go = SMESH::EntryToInterface<GEOM::GEOM_Object>( entry );
     if ( !go->_is_nil() )
       goList[ nbShapes++ ] = go;
   }

@@ -3203,6 +3203,8 @@ bool SMESHGUI_FilterDlg::isValid() const
       myTable->GetThreshold(i, aName);
 
       std::vector<_PTR(SObject)> aList = SMESH::getStudy()->FindObjectByName(aName.toUtf8().constData(), "GEOM");
+      if (aList.size() == 0)
+        aList = SMESH::getStudy()->FindObjectByName(aName.toUtf8().constData(), "SHAPERSTUDY");
       if (aList.size() == 0) {
         SUIT_MessageBox::information(SMESHGUI::desktop(), tr("SMESH_INSUFFICIENT_DATA"),
                                      tr("BAD_SHAPE_NAME").arg(aName));

@@ -107,17 +107,14 @@ bool SMESH_NumberFilter::isOk (const SUIT_DataOwner* theDataOwner) const
     return false;
 
   // Get GEOM engine
-  Engines::EngineComponent_var comp =
-    SalomeApp_Application::lcc()->FindOrLoad_Component( "FactoryServer", "GEOM" );
-  GEOM::GEOM_Gen_var geomEngine = GEOM::GEOM_Gen::_narrow( comp );
-  if ( CORBA::is_nil( geomEngine ) )
+  GEOM::GEOM_Gen_var geomEngine = aGeomObj->GetGen();
+  if ( CORBA::is_nil( geomEngine ))
     return false;
 
   // Get shape from geom object and verify its parameters
   GEOM_Client aGeomClient;
   TopoDS_Shape aShape = aGeomClient.GetShape(geomEngine.in(), aGeomObj);
-  if (aShape.IsNull() ||
-      !myShapeTypes.Contains(aShape.ShapeType()))
+  if (aShape.IsNull() || !myShapeTypes.Contains(aShape.ShapeType()))
     return false;
 
   if (myIsClosedOnly && aShape.ShapeType() == TopAbs_SHELL && !aShape.Closed())
@@ -129,16 +126,11 @@ bool SMESH_NumberFilter::isOk (const SUIT_DataOwner* theDataOwner) const
     if (aMainShape.IsNull())
       return false;
 
-    bool isFound = false;
-    TopAbs_ShapeEnum aShapeType = aShape.ShapeType();
-    TopExp_Explorer anExp (aMainShape, aShapeType);
-    for (; anExp.More(); anExp.Next()) {
-      if (anExp.Current() == aShape) {
-        isFound = true;
+    TopExp_Explorer anExp (aMainShape, aShape.ShapeType());
+    for (; anExp.More(); anExp.Next())
+      if (anExp.Current() == aShape)
         break;
-      }
-    }
-    if (!isFound)
+    if (!anExp.More())
       return false;
   }
 

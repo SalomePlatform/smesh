@@ -137,6 +137,8 @@ static TopoDS_Shape getShapeByName( const char* theName )
   {
     SMESH_Gen_i* aSMESHGen     = SMESH_Gen_i::GetSMESHGen();
     SALOMEDS::Study::ListOfSObject_var aList = SMESH_Gen_i::getStudyServant()->FindObjectByName( theName, "GEOM" );
+    if ( aList->length() == 0 )
+      aList = SMESH_Gen_i::getStudyServant()->FindObjectByName( theName, "SHAPERSTUDY" );
     if ( aList->length() > 0 )
     {
       CORBA::Object_var        anObj = aList[ 0 ]->GetObject();

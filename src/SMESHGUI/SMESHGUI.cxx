@@ -97,12 +97,12 @@
 
 #include "SMESH_version.h"
 
-#include "SMESH_ControlsDef.hxx"
 #include "SMESH_Actor.h"
 #include "SMESH_ActorUtils.h"
 #include "SMESH_Client.hxx"
+#include "SMESH_Comment.hxx"
+#include "SMESH_ControlsDef.hxx"
 #include "SMESH_ScalarBarActor.h"
-#include <SMESH_Comment.hxx>
 #include "SMESH_TypeFilter.hxx"
 
 // SALOME GUI includes
@@ -5068,8 +5068,9 @@ bool SMESHGUI::isSelectionCompatible()
   SALOME_ListIteratorOfListIO It( selected );
   for ( ; isCompatible && It.More(); It.Next())
     isCompatible =
-      ( strcmp("GEOM", It.Value()->getComponentDataType()) == 0 ) ||
-      ( strcmp("SMESH", It.Value()->getComponentDataType()) == 0 );
+      ( strcmp("GEOM",        It.Value()->getComponentDataType()) == 0 ) ||
+      ( strcmp("SHAPERSTUDY", It.Value()->getComponentDataType()) == 0 ) ||
+      ( strcmp("SMESH",       It.Value()->getComponentDataType()) == 0 );
 
   return isCompatible;
 }
@@ -6332,8 +6333,6 @@ void SMESHGUI::restoreVisualParameters (int savePoint)
 
   // componentName is used for encoding of entries when storing them in IParameters
   std::string componentName = myComponentSMESH->ComponentDataType();
-  //_PTR(SComponent) aSComponent = studyDS->FindComponent("GEOM");
-  //if (!aSComponent) return;
 
   // IParameters
   _PTR(AttributeParameter) ap = studyDS->GetModuleParameters("Interface Applicative",

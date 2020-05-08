@@ -196,10 +196,15 @@ bool SMESH_Gen_i::CanPublishInStudy(CORBA::Object_ptr theIOR)
 SALOMEDS::SObject_ptr SMESH_Gen_i::ObjectToSObject(CORBA::Object_ptr theObject)
 {
   SALOMEDS::SObject_wrap aSO;
-  if ( !CORBA::is_nil( theObject ))
+  try {
+    if ( !CORBA::is_nil( theObject ))
+    {
+      CORBA::String_var objStr = SMESH_Gen_i::GetORB()->object_to_string( theObject );
+      aSO = getStudyServant()->FindObjectIOR( objStr.in() );
+    }
+  }
+  catch (...)
   {
-    CORBA::String_var objStr = SMESH_Gen_i::GetORB()->object_to_string( theObject );
-    aSO = getStudyServant()->FindObjectIOR( objStr.in() );
   }
   return aSO._retn();
 }
