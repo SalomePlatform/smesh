@@ -2464,7 +2464,7 @@ namespace MED
 
     // write node ids
     SetCellInfo(theInfo, theMode, theErr);
-    if (theErr && theErr < 0)
+    if (theErr && *theErr < 0)
       return;
 
     // write diameter
