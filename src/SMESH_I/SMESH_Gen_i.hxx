@@ -659,9 +659,9 @@ private:
                                                 const char* theFileNameForPython);
 
   std::vector<long> _GetInside(SMESH::SMESH_IDSource_ptr meshPart,
-                               SMESH::ElementType     theElemType,
-                               TopoDS_Shape& aShape,
-                               double* theTolerance = NULL);
+                               SMESH::ElementType        ElemType,
+                               const TopoDS_Shape&       Shape,
+                               double*                   Tolerance = NULL);
 
 private:
   static GEOM::GEOM_Gen_var      myGeomGen;

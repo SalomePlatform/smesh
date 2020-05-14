@@ -402,6 +402,7 @@ SMESH_Gen_i::~SMESH_Gen_i()
   if ( myShapeReader )
     delete myShapeReader;
 }
+
 //=============================================================================
 /*!
  *  SMESH_Gen_i::getHypothesisCreator
@@ -409,6 +410,7 @@ SMESH_Gen_i::~SMESH_Gen_i()
  *  Get hypothesis creator
  */
 //=============================================================================
+
 GenericHypothesisCreator_i* SMESH_Gen_i::getHypothesisCreator(const char* theHypName,
                                                               const char* theLibName,
                                                               std::string& thePlatformLibName)
@@ -527,6 +529,7 @@ GenericHypothesisCreator_i* SMESH_Gen_i::getHypothesisCreator(const char* theHyp
  *  Create hypothesis of given type
  */
 //=============================================================================
+
 SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName,
                                                           const char* theLibName)
 {
@@ -560,6 +563,7 @@ SMESH::SMESH_Hypothesis_ptr SMESH_Gen_i::createHypothesis(const char* theHypName
  *  Create empty mesh on shape
  */
 //=============================================================================
+
 SMESH::SMESH_Mesh_ptr SMESH_Gen_i::createMesh()
   throw ( SALOME::SALOME_Exception )
 {
@@ -594,6 +598,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::createMesh()
  *  Get shape reader
  */
 //=============================================================================
+
 GEOM_Client* SMESH_Gen_i::GetShapeReader()
 {
   // create shape reader if necessary
@@ -610,13 +615,10 @@ GEOM_Client* SMESH_Gen_i::GetShapeReader()
  *  Set GEOM::GEOM_Gen reference
  */
 //=============================================================================
-//GEOM::GEOM_Gen_ptr SMESH_Gen_i::SetGeomEngine( const char* containerLoc )
+
 void SMESH_Gen_i::SetGeomEngine( GEOM::GEOM_Gen_ptr geomcompo )
 {
-  //Engines::Component_ptr temp=GetLCC()->FindOrLoad_Component(containerLoc,"GEOM");
-  //myGeomGen=GEOM::GEOM_Gen::_narrow(temp);
-  myGeomGen=GEOM::GEOM_Gen::_duplicate(geomcompo);
-  //return myGeomGen;
+  myGeomGen = GEOM::GEOM_Gen::_duplicate( geomcompo );
 }
 
 //=============================================================================
@@ -671,6 +673,7 @@ CORBA::Boolean SMESH_Gen_i::IsEmbeddedMode()
  *  Set enable publishing in the study
  */
 //=============================================================================
+
 void SMESH_Gen_i::SetEnablePublish( CORBA::Boolean theIsEnablePublish )
 {
   myIsEnablePublish = theIsEnablePublish;
@@ -795,6 +798,7 @@ char* SMESH_Gen_i::getObjectInfo( const char* entry )
  *  Get study context
  */
 //=============================================================================
+
 StudyContext* SMESH_Gen_i::GetStudyContext()
 {
   return myStudyContext;
@@ -1070,7 +1074,7 @@ CORBA::Boolean SMESH_Gen_i::GetSoleSubMeshUsingHyp( SMESH::SMESH_Hypothesis_ptr 
 
 //=============================================================================
 /*!
- * Sets number of segments per diagonal of boundary box of geometry by which
+ * Set number of segments per diagonal of boundary box of geometry by which
  * default segment length of appropriate 1D hypotheses is defined
  */
 //=============================================================================
@@ -1083,11 +1087,13 @@ void SMESH_Gen_i::SetBoundaryBoxSegmentation( CORBA::Long theNbSegments )
   else
     THROW_SALOME_CORBA_EXCEPTION( "non-positive number of segments", SALOME::BAD_PARAM );
 }
+
 //=============================================================================
-  /*!
-   * \brief Sets default number of segments per edge
-   */
+/*!
+ * \brief Set default number of segments per edge
+ */
 //=============================================================================
+
 void SMESH_Gen_i::SetDefaultNbSegments(CORBA::Long theNbSegments)
   throw ( SALOME::SALOME_Exception )
 {
@@ -1099,8 +1105,8 @@ void SMESH_Gen_i::SetDefaultNbSegments(CORBA::Long theNbSegments)
 
 //=============================================================================
 /*!
-  Set an option value
-*/
+ * Set an option value
+ */
 //=============================================================================
 
 void SMESH_Gen_i::SetOption(const char* name, const char* value)
@@ -1162,8 +1168,8 @@ void SMESH_Gen_i::SetOption(const char* name, const char* value)
 
 //=============================================================================
 /*!
-  Return an option value
-*/
+ *  Return an option value
+ */
 //=============================================================================
 
 char* SMESH_Gen_i::GetOption(const char* name)
@@ -1256,7 +1262,7 @@ namespace
 {
   //================================================================================
   /*!
-   * \brief Throws an exception in case if the file can't be read
+   * \brief Throw an exception in case if the file can't be read
    */
   //================================================================================
 
@@ -1407,14 +1413,21 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMEDorSAUV( const char* theFileNa
   return aResult._retn();
 }
 
-SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
+//================================================================================
+/*!
+ * \brief Create meshes by reading a MED file
+ */
+//================================================================================
+
+SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char*                  theFileName,
                                                      SMESH::DriverMED_ReadStatus& theStatus)
   throw ( SALOME::SALOME_Exception )
 {
   Unexpect aCatch(SALOME_SalomeException);
   checkFileReadable( theFileName );
 
-  SMESH::mesh_array* result = CreateMeshesFromMEDorSAUV(theFileName, theStatus, "CreateMeshesFromMED", theFileName);
+  SMESH::mesh_array* result = CreateMeshesFromMEDorSAUV(theFileName, theStatus,
+                                                        "CreateMeshesFromMED", theFileName);
   return result;
 }
 
@@ -1426,7 +1439,7 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromMED( const char* theFileName,
  */
 //=============================================================================
 
-SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromSAUV( const char* theFileName,
+SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromSAUV( const char*                  theFileName,
                                                       SMESH::DriverMED_ReadStatus& theStatus)
      throw ( SALOME::SALOME_Exception )
 {
@@ -1446,7 +1459,10 @@ SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromSAUV( const char* theFileName,
   cmd += "from medutilities import convert ; convert(r'" + sauvfilename + "', 'GIBI', 'MED', 1, r'" + medfilename + "')";
   cmd += "\"";
   system(cmd.c_str());
-  SMESH::mesh_array* result = CreateMeshesFromMEDorSAUV(medfilename.c_str(), theStatus, "CreateMeshesFromSAUV", sauvfilename.c_str());
+  SMESH::mesh_array* result = CreateMeshesFromMEDorSAUV(medfilename.c_str(),
+                                                        theStatus,
+                                                        "CreateMeshesFromSAUV",
+                                                        sauvfilename.c_str());
 #ifdef WIN32
   cmd = "%PYTHONBIN% ";
 #else
@@ -1507,7 +1523,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Gen_i::CreateMeshesFromSTL( const char* theFileName 
  */
 //================================================================================
 
-SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromCGNS( const char* theFileName,
+SMESH::mesh_array* SMESH_Gen_i::CreateMeshesFromCGNS( const char*                  theFileName,
                                                       SMESH::DriverMED_ReadStatus& theStatus)
   throw ( SALOME::SALOME_Exception )
 {
@@ -1635,7 +1651,7 @@ SMESH_Gen_i::CreateMeshesFromGMF( const char*             theFileName,
 /*!
  *  SMESH_Gen_i::IsReadyToCompute
  *
- *  Returns true if mesh contains enough data to be computed
+ *  Return true if mesh contains enough data to be computed
  */
 //=============================================================================
 
@@ -1649,11 +1665,9 @@ CORBA::Boolean SMESH_Gen_i::IsReadyToCompute( SMESH::SMESH_Mesh_ptr theMesh,
   if ( CORBA::is_nil( theShapeObject ) )
     THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference",
                                   SALOME::BAD_PARAM );
-
   if ( CORBA::is_nil( theMesh ) )
     THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference",
                                   SALOME::BAD_PARAM );
-
   try {
     // get mesh servant
     SMESH_Mesh_i* meshServant = dynamic_cast<SMESH_Mesh_i*>( GetServant( theMesh ).in() );
@@ -1681,7 +1695,7 @@ CORBA::Boolean SMESH_Gen_i::IsReadyToCompute( SMESH::SMESH_Mesh_ptr theMesh,
 SALOMEDS::SObject_ptr SMESH_Gen_i::GetAlgoSO(const ::SMESH_Algo* algo)
 {
   if ( algo ) {
-  SALOMEDS::Study_var aStudy = getStudyServant();
+    SALOMEDS::Study_var aStudy = getStudyServant();
     if ( !aStudy->_is_nil() ) {
       // find algo in the study
       CORBA::String_var compDataType  = ComponentDataType();
@@ -1908,9 +1922,9 @@ SMESH_Gen_i::MakeGroupsOfBadInputElements( SMESH::SMESH_Mesh_ptr theMesh,
 //================================================================================
 /*!
  * \brief Returns errors of hypotheses definition
- * \param theMesh - the mesh
- * \param theSubObject - the main or sub- shape
- * \retval SMESH::algo_error_array* - sequence of errors
+ *  \param theMesh - the mesh
+ *  \param theSubObject - the main or sub- shape
+ *  \retval SMESH::algo_error_array* - sequence of errors
  */
 //================================================================================
 
@@ -2343,12 +2357,10 @@ SMESH::long_array* SMESH_Gen_i::Evaluate(SMESH::SMESH_Mesh_ptr theMesh,
   if(MYDEBUG) MESSAGE( "SMESH_Gen_i::Evaluate" );
 
   if ( CORBA::is_nil( theShapeObject ) && theMesh->HasShapeToMesh())
-    THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference",
-                                  SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "bad shape object reference", SALOME::BAD_PARAM );
 
   if ( CORBA::is_nil( theMesh ) )
-    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference",
-                                  SALOME::BAD_PARAM );
+    THROW_SALOME_CORBA_EXCEPTION( "bad Mesh reference", SALOME::BAD_PARAM );
 
   SMESH::long_array_var nbels = new SMESH::long_array;
   nbels->length(SMESH::Entity_Last);
@@ -4097,6 +4109,7 @@ char* SMESH_Gen_i::GetMEDFileVersion()
  *  Get MED version of the file by its name
  */
 //================================================================================
+
 char* SMESH_Gen_i::GetMEDVersion(const char* theFileName)
 {
   std::string version = MED::GetMEDVersion( theFileName );
@@ -4110,6 +4123,7 @@ char* SMESH_Gen_i::GetMEDVersion(const char* theFileName)
  *  Check compatibility of file with MED format being used, read only.
  */
 //================================================================================
+
 CORBA::Boolean SMESH_Gen_i::CheckCompatibility(const char* theFileName)
 {
   return MED::CheckCompatibility( theFileName );
@@ -4122,6 +4136,7 @@ CORBA::Boolean SMESH_Gen_i::CheckCompatibility(const char* theFileName)
  *  Check compatibility of file with MED format being used, for append on write.
  */
 //================================================================================
+
 CORBA::Boolean SMESH_Gen_i::CheckWriteCompatibility(const char* theFileName)
 {
   return MED::CheckCompatibility( theFileName, true );
@@ -4135,13 +4150,12 @@ CORBA::Boolean SMESH_Gen_i::CheckWriteCompatibility(const char* theFileName)
  */
 //================================================================================
 SMESH::string_array* SMESH_Gen_i::GetMeshNames(const char* theFileName)
+
 {
-  //MESSAGE("GetMeshNames " << theFileName);
   SMESH::string_array_var aResult = new SMESH::string_array();
   MED::PWrapper aMed = MED::CrWrapperR( theFileName );
   MED::TErr anErr;
   MED::TInt aNbMeshes = aMed->GetNbMeshes( &anErr );
-  //MESSAGE("---" << aNbMeshes);
   if( anErr >= 0 ) {
     aResult->length( aNbMeshes );
     for( MED::TInt i = 0; i < aNbMeshes; i++ ) {
@@ -4159,6 +4173,7 @@ SMESH::string_array* SMESH_Gen_i::GetMeshNames(const char* theFileName)
  *  Save SMESH module's data
  */
 //=============================================================================
+
 SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                                       const char*              theURL,
                                       bool                     isMultiFile )
@@ -4301,8 +4316,6 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 #else
               // PAL17753 (Regression: missing hypothesis in restored study)
               // "lib" also should be removed from the beginning
-              //if( libname_len > 3 )
-              //libname.resize( libname_len - 3 );
               if( libname_len > 6 )
                 libname = libname.substr( 3, libname_len - 3 - 3 );
 #endif
@@ -4371,8 +4384,6 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
 #else
               // PAL17753 (Regression: missing hypothesis in restored study)
               // "lib" also should be removed from the beginning
-              //if( libname_len > 3 )
-              //libname.resize( libname_len - 3 );
               if( libname_len > 6 )
                 libname = libname.substr( 3, libname_len - 3 - 3 );
 #endif
@@ -4776,10 +4787,6 @@ SALOMEDS::TMPFile* SMESH_Gen_i::Save( SALOMEDS::SComponent_ptr theComponent,
                 aGroup->CloseOnDisk();
               }
             }
-            // All sub-meshes will be stored in MED file
-            // .. will NOT (PAL 12992)
-            //if ( shapeRefFound )
-            //myWriter.AddAllSubMeshes();
 
             // store submesh order if any
             const TListOfListOfInt& theOrderIds = myLocMesh.GetMeshOrder();
@@ -5214,9 +5221,6 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
 
   TPythonDump pd; // prevent dump during loading
 
-  // DriverMED_R_SMESHDS_Mesh myReader;
-  // myReader.SetFile( meshfile.ToCString() );
-
   // For PAL13473 ("Repetitive mesh") implementation.
   // New dependencies between SMESH objects are established:
   // now hypotheses can refer to meshes, shapes and other hypotheses.
@@ -5562,8 +5566,6 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
     {
       aTopGroup                   = meshi_group->second;
       SMESH_Mesh_i* myNewMeshImpl = meshi_group->first;
-      //::SMESH_Mesh& myLocMesh     = myNewMeshImpl->GetImpl();
-      //SMESHDS_Mesh* mySMESHDSMesh = myLocMesh.GetMeshDS();
 
       GEOM::GEOM_Object_var aShapeObject = myNewMeshImpl->GetShapeToMesh();
       bool hasData = false;
@@ -5608,8 +5610,6 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
             aDataset->ReadFromDisk( refFromFile );
             aDataset->CloseOnDisk();
             // san - it is impossible to recover applied algorithms using their entries within Load() method
-            //SALOMEDS::SObject_wrap hypSO = aStudy->FindObjectID( refFromFile );
-            //CORBA::Object_var hypObject = SObjectToObject( hypSO );
             int id = atoi( refFromFile );
             delete [] refFromFile;
             string anIOR = myStudyContext->getIORbyOldId( id );
@@ -5645,8 +5645,6 @@ bool SMESH_Gen_i::Load( SALOMEDS::SComponent_ptr theComponent,
             aDataset->ReadFromDisk( refFromFile );
             aDataset->CloseOnDisk();
             // san - it is impossible to recover applied hypotheses using their entries within Load() method
-            //SALOMEDS::SObject_wrap hypSO = myStudy->FindObjectID( refFromFile );
-            //CORBA::Object_var hypObject = SObjectToObject( hypSO );
             int id = atoi( refFromFile );
             delete [] refFromFile;
             string anIOR = myStudyContext->getIORbyOldId( id );
@@ -6229,6 +6227,7 @@ CORBA::Long SMESH_Gen_i::GetObjectId(CORBA::Object_ptr theObject)
  *  Set a new object name
  */
 //=============================================================================
+
 void SMESH_Gen_i::SetName(const char* theIOR,
                           const char* theName)
 {
@@ -6256,6 +6255,7 @@ char* SMESH_Gen_i::getVersion()
 // purpose  : Moves objects to the specified position.
 //            Is used in the drag-n-drop functionality.
 //=================================================================================
+
 void SMESH_Gen_i::Move( const SMESH::sobject_list& what,
                         SALOMEDS::SObject_ptr      where,
                         CORBA::Long                row )
@@ -6331,10 +6331,12 @@ CORBA::Boolean SMESH_Gen_i::IsApplicable ( const char*           theAlgoType,
   return true;
 }
 
-//=================================================================================
-// function : GetInsideSphere
-// purpose  : Collect indices of elements, which are located inside the sphere
-//=================================================================================
+//================================================================================
+/*!
+ * \brief Collect indices of elements, which are located inside the sphere
+ */
+//================================================================================
+
 SMESH::long_array* SMESH_Gen_i::GetInsideSphere( SMESH::SMESH_IDSource_ptr meshPart,
                                                  SMESH::ElementType     theElemType,
                                                  CORBA::Double         theX,
@@ -6361,6 +6363,12 @@ SMESH::long_array* SMESH_Gen_i::GetInsideSphere( SMESH::SMESH_IDSource_ptr meshP
   return aResult._retn();
 }
 
+//================================================================================
+/*!
+ * \brief Collect indices of elements, which are located inside the box
+ */
+//================================================================================
+
 SMESH::long_array* SMESH_Gen_i::GetInsideBox( SMESH::SMESH_IDSource_ptr meshPart,
                                               SMESH::ElementType        theElemType,
                                               CORBA::Double             theX1,
@@ -6368,12 +6376,14 @@ SMESH::long_array* SMESH_Gen_i::GetInsideBox( SMESH::SMESH_IDSource_ptr meshPart
                                               CORBA::Double             theZ1,
                                               CORBA::Double             theX2,
                                               CORBA::Double             theY2,
-                                              CORBA::Double             theZ2) {
+                                              CORBA::Double             theZ2)
+{
   SMESH::long_array_var aResult = new SMESH::long_array();
   if( meshPart->_is_nil() )
     return aResult._retn();
 
-  TopoDS_Shape aShape = BRepPrimAPI_MakeBox( gp_Pnt( theX1, theY1, theZ1 ), gp_Pnt( theX2, theY2, theZ2 ) ).Shape();
+  TopoDS_Shape aShape = BRepPrimAPI_MakeBox( gp_Pnt( theX1, theY1, theZ1 ),
+                                             gp_Pnt( theX2, theY2, theZ2 ) ).Shape();
 
   std::vector<long> lst =_GetInside(meshPart, theElemType, aShape);
 
@@ -6386,6 +6396,12 @@ SMESH::long_array* SMESH_Gen_i::GetInsideBox( SMESH::SMESH_IDSource_ptr meshPart
   return aResult._retn();
 }
 
+//================================================================================
+/*!
+ * \brief Collect indices of elements, which are located inside the cylinder
+ */
+//================================================================================
+
 SMESH::long_array* SMESH_Gen_i::GetInsideCylinder( SMESH::SMESH_IDSource_ptr meshPart,
                                                    SMESH::ElementType        theElemType,
                                                    CORBA::Double             theX,
@@ -6395,7 +6411,8 @@ SMESH::long_array* SMESH_Gen_i::GetInsideCylinder( SMESH::SMESH_IDSource_ptr mes
                                                    CORBA::Double             theDY,
                                                    CORBA::Double             theDZ,
                                                    CORBA::Double             theH,
-                                                   CORBA::Double             theR ){
+                                                   CORBA::Double             theR )
+{
   SMESH::long_array_var aResult = new SMESH::long_array();
   if( meshPart->_is_nil() )
     return aResult._retn();
@@ -6417,10 +6434,17 @@ SMESH::long_array* SMESH_Gen_i::GetInsideCylinder( SMESH::SMESH_IDSource_ptr mes
   return aResult._retn();
 }
 
+//================================================================================
+/*!
+ * \brief Collect indices of elements, which are located inside the geom object
+ */
+//================================================================================
+
 SMESH::long_array* SMESH_Gen_i::GetInside( SMESH::SMESH_IDSource_ptr meshPart,
                                            SMESH::ElementType        theElemType,
                                            GEOM::GEOM_Object_ptr     theGeom,
-                                           CORBA::Double             theTolerance ) {
+                                           CORBA::Double             theTolerance )
+{
   SMESH::long_array_var aResult = new SMESH::long_array();
   if( meshPart->_is_nil() || theGeom->_is_nil() )
     return aResult._retn();
@@ -6438,12 +6462,16 @@ SMESH::long_array* SMESH_Gen_i::GetInside( SMESH::SMESH_IDSource_ptr meshPart,
   return aResult._retn();
 }
 
-
+//================================================================================
+/*!
+ * \brief Collect indices of elements, which are located inside the TopoDS_Shape
+ */
+//================================================================================
 
 std::vector<long> SMESH_Gen_i::_GetInside( SMESH::SMESH_IDSource_ptr meshPart,
-                                           SMESH::ElementType theElemType,
-                                           TopoDS_Shape& aShape,
-                                           double* theTolerance) {
+                                           SMESH::ElementType        theElemType,
+                                           const TopoDS_Shape&       theShape,
+                                           double*                   theTolerance) {
 
   std::vector<long> res;
   SMESH::SMESH_Mesh_var mesh = meshPart->GetMesh();
@@ -6464,7 +6492,7 @@ std::vector<long> SMESH_Gen_i::_GetInside( SMESH::SMESH_IDSource_ptr meshPart,
   SMESH::Controls::ElementsOnShape* anElementsOnShape = new SMESH::Controls::ElementsOnShape();
   anElementsOnShape->SetAllNodes( true );
   anElementsOnShape->SetMesh( meshDS );
-  anElementsOnShape->SetShape( aShape, aType );
+  anElementsOnShape->SetShape( theShape, aType );
 
   if(theTolerance)
     anElementsOnShape->SetTolerance(*theTolerance);
@@ -6517,7 +6545,6 @@ std::vector<long> SMESH_Gen_i::_GetInside( SMESH::SMESH_IDSource_ptr meshPart,
   }
   return res;
 }
-
 
 //=============================================================================
 /*!

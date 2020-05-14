@@ -176,7 +176,7 @@ SMESH_Mesh_i::~SMESH_Mesh_i()
 /*!
  *  SetShape
  *
- *  Associates <this> mesh with <theShape> and puts a reference
+ *  Associate <this> mesh with <theShape> and put a reference
  *  to <theShape> into the current study;
  *  the previous shape is substituted by the new one.
  */
@@ -201,7 +201,7 @@ void SMESH_Mesh_i::SetShape( GEOM::GEOM_Object_ptr theShapeObject )
 
 //================================================================================
 /*!
- * \brief return true if mesh has a shape to build a shape on
+ * \brief Return true if mesh has a shape to build a shape on
  */
 //================================================================================
 
@@ -219,10 +219,11 @@ CORBA::Boolean SMESH_Mesh_i::HasShapeToMesh()
   return res;
 }
 
-//=======================================================================
-//function : GetShapeToMesh
-//purpose  :
-//=======================================================================
+//================================================================================
+/*!
+ * \brief Return the shape to mesh
+ */
+//================================================================================
 
 GEOM::GEOM_Object_ptr SMESH_Mesh_i::GetShapeToMesh()
   throw (SALOME::SALOME_Exception)
@@ -254,149 +255,6 @@ GEOM::GEOM_Object_ptr SMESH_Mesh_i::GetShapeToMesh()
     THROW_SALOME_CORBA_EXCEPTION(S_ex.what(), SALOME::BAD_PARAM);
   }
   return aShapeObj._retn();
-}
-
-//================================================================================
-/*!
-* \brief Replace a shape in the mesh
-*/
-//================================================================================
-
-void SMESH_Mesh_i::ReplaceShape(GEOM::GEOM_Object_ptr theNewGeom)
-  throw (SALOME::SALOME_Exception)
-{
-  // check if geometry changed
-  bool geomChanged = true;
-  GEOM::GEOM_Object_var oldGeom = GetShapeToMesh();
-  if ( !theNewGeom->_is_nil() && !oldGeom->_is_nil() )
-    geomChanged = ( //oldGeom->_is_equivalent( theNewGeom ) ||
-                   oldGeom->GetTick() < theNewGeom->GetTick() );
-
-  TopoDS_Shape S = _impl->GetShapeToMesh();
-  GEOM_Client* geomClient = _gen_i->GetShapeReader();
-  TCollection_AsciiString aIOR;
-  CORBA::String_var ior;
-  if ( geomClient->Find( S, aIOR ))
-    geomClient->RemoveShapeFromBuffer( aIOR );
-
-  // clear buffer also for sub-groups
-  const std::set<SMESHDS_GroupBase*>& groups = _impl->GetMeshDS()->GetGroups();
-  std::set<SMESHDS_GroupBase*>::const_iterator g = groups.begin();
-  for (; g != groups.end(); ++g)
-    if (const SMESHDS_GroupOnGeom* group = dynamic_cast<SMESHDS_GroupOnGeom*>(*g))
-    {
-      const TopoDS_Shape& s = group->GetShape();
-      if ( geomClient->Find( s, aIOR ))
-        geomClient->RemoveShapeFromBuffer( aIOR );
-    }
-
-  typedef struct {
-    int shapeID, fromID, toID; // indices of elements of a sub-mesh
-  } TRange;
-  std::vector< TRange > elemRanges, nodeRanges; // elements of sub-meshes
-  std::vector< SMDS_PositionPtr > positions; // node positions
-  SMESHDS_Mesh* meshDS = _impl->GetMeshDS();
-  if ( !geomChanged )
-  {
-    // store positions of elements on geometry
-    Load();
-    if ( meshDS->MaxNodeID()    > meshDS->NbNodes() ||
-         meshDS->MaxElementID() > meshDS->NbElements() )
-    {
-      meshDS->Modified();
-      meshDS->CompactMesh();
-    }
-    positions.resize( meshDS->NbNodes() + 1 );
-    for ( SMDS_NodeIteratorPtr nodeIt = meshDS->nodesIterator(); nodeIt->more(); )
-    {
-      const SMDS_MeshNode* n = nodeIt->next();
-      positions[ n->GetID() ] = n->GetPosition();
-    }
-
-    // remove elements from sub-meshes to avoid their removal at hypotheses addition
-    for ( int isNode = 0; isNode < 2; ++isNode )
-    {
-      std::vector< TRange > & ranges = isNode ? nodeRanges : elemRanges;
-      ranges.reserve( meshDS->MaxShapeIndex() + 10 );
-      ranges.push_back( TRange{ 0,0,0 });
-      SMDS_ElemIteratorPtr elemIt = meshDS->elementsIterator( isNode ? SMDSAbs_Node : SMDSAbs_All );
-      while ( elemIt->more() )
-      {
-        const SMDS_MeshElement* e = elemIt->next();
-        const int          elemID = e->GetID();
-        const int         shapeID = e->GetShapeID();
-        TRange &        lastRange = ranges.back();
-        if ( lastRange.shapeID != shapeID ||
-             lastRange.toID    != elemID )
-          ranges.push_back( TRange{ shapeID, elemID, elemID + 1 });
-        else
-          lastRange.toID = elemID + 1;
-
-        if ( SMESHDS_SubMesh* sm = meshDS->MeshElements( shapeID ))
-        {
-          if ( isNode ) sm->RemoveNode( static_cast< const SMDS_MeshNode *>( e ));
-          else          sm->RemoveElement( e );
-        }
-      }
-    }
-  }
-
-
-  // update the reference to theNewGeom (needed for correct execution of a dumped python script)
-  SMESH::SMESH_Mesh_var   me = _this();
-  SALOMEDS::SObject_wrap aSO = _gen_i->ObjectToSObject( me );
-  CORBA::String_var    entry = theNewGeom->GetStudyEntry();
-  if ( !aSO->_is_nil() )
-  {
-    SALOMEDS::SObject_wrap aShapeRefSO;
-    if ( aSO->FindSubObject( _gen_i->GetRefOnShapeTag(), aShapeRefSO.inout() ))
-    {
-      SALOMEDS::SObject_wrap    aShapeSO = _gen_i->getStudyServant()->FindObjectID( entry );
-      SALOMEDS::StudyBuilder_var builder = _gen_i->getStudyServant()->NewBuilder();
-      builder->Addreference( aShapeRefSO, aShapeSO );
-    }
-  }
-
-  // re-assign global hypotheses to the new shape
-  _mainShapeTick = geomChanged ? -1 : theNewGeom->GetTick();
-  CheckGeomModif( true );
-
-  if ( !geomChanged )
-  {
-    // restore positions of elements on geometry
-    for ( int isNode = 0; isNode < 2; ++isNode )
-    {
-      std::vector< TRange > & ranges = isNode ? nodeRanges : elemRanges;
-      for ( size_t i = 1; i < ranges.size(); ++i )
-      {
-        int elemID = ranges[ i ].fromID;
-        int   toID = ranges[ i ].toID;
-        SMESHDS_SubMesh * smDS = meshDS->NewSubMesh( ranges[ i ].shapeID );
-        if ( isNode )
-          for ( ; elemID < toID; ++elemID )
-            smDS->AddNode( meshDS->FindNode( elemID ));
-        else
-          for ( ; elemID < toID; ++elemID )
-            smDS->AddElement( meshDS->FindElement( elemID ));
-
-        if ( SMESH_subMesh* sm = _impl->GetSubMeshContaining( ranges[ i ].shapeID ))
-          sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
-      }
-    }
-    for ( unsigned int nodeID = 1; nodeID < positions.size(); ++nodeID )
-      if ( positions[ nodeID ])
-        if ( SMDS_MeshNode* n = const_cast< SMDS_MeshNode*>( meshDS->FindNode( nodeID )))
-          n->SetPosition( positions[ nodeID ], n->GetShapeID() );
-
-    // restore icons
-    _gen_i->UpdateIcons( SMESH::SMESH_Mesh_var( _this() ));
-  }
-
-  TPythonDump() << "SHAPERSTUDY.breakLinkForSubElements(salome.ObjectToSObject("
-                << me <<".GetMesh()), " << entry.in() << ")";
-
-  TPythonDump() <<  me << ".ReplaceShape( " << entry.in() << " )";
-
 }
 
 //================================================================================
@@ -530,7 +388,7 @@ static SMESH::ComputeError* ConvertComputeError( SMESH_ComputeErrorPtr errorPtr 
 /*!
  *  ImportMEDFile
  *
- *  Imports mesh data from MED file
+ *  Import mesh data from MED file
  */
 //=============================================================================
 
@@ -568,7 +426,7 @@ SMESH_Mesh_i::ImportMEDFile( const char* theFileName, const char* theMeshName )
 
 //================================================================================
 /*!
- * \brief Imports mesh data from the CGNS file
+ * \brief Import mesh data from the CGNS file
  */
 //================================================================================
 
@@ -620,6 +478,7 @@ char* SMESH_Mesh_i::GetVersionString(CORBA::Long minor, CORBA::Short nbDigits)
  *  encoded in 10*major+minor (for instance, code for med 3.2.1 is 32)
  */
 //================================================================================
+
 SMESH::long_array* SMESH_Mesh_i::GetMEDVersionsCompatibleForAppend()
 {
   SMESH::long_array_var aResult = new SMESH::long_array();
@@ -635,7 +494,7 @@ SMESH::long_array* SMESH_Mesh_i::GetMEDVersionsCompatibleForAppend()
 /*!
  *  ImportUNVFile
  *
- *  Imports mesh data from MED file
+ *  Import mesh data from MED file
  */
 //=============================================================================
 
@@ -665,9 +524,10 @@ int SMESH_Mesh_i::ImportUNVFile( const char* theFileName )
 /*!
  *  ImportSTLFile
  *
- *  Imports mesh data from STL file
+ *  Import mesh data from STL file
  */
 //=============================================================================
+
 int SMESH_Mesh_i::ImportSTLFile( const char* theFileName )
   throw ( SALOME::SALOME_Exception )
 {
@@ -708,7 +568,7 @@ namespace
 
 //================================================================================
 /*!
- * \brief Imports data from a GMF file and returns an error description
+ * \brief Import data from a GMF file and Return an error description
  */
 //================================================================================
 
@@ -742,7 +602,7 @@ SMESH::ComputeError* SMESH_Mesh_i::ImportGMFFile( const char* theFileName,
 
 //=============================================================================
 /*!
- *
+ * \brief Convert SMESH_Hypothesis::Hypothesis_Status into SMESH::Hypothesis_Status
  */
 //=============================================================================
 
@@ -776,7 +636,7 @@ SMESH::Hypothesis_Status SMESH_Mesh_i::ConvertHypothesisStatus
 /*!
  *  AddHypothesis
  *
- *  calls internal addHypothesis() and then adds a reference to <anHyp> under
+ *  Call internal addHypothesis() and then add a reference to <anHyp> under
  *  the SObject actually having a reference to <aSubShape>.
  *  NB: For this method to work, it is necessary to add a reference to sub-shape first.
  */
@@ -816,11 +676,11 @@ SMESH_Mesh_i::AddHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
   return ConvertHypothesisStatus(status);
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *
+ * \brief Create  a sub-mesh and add a hypothesis to it
  */
-//=============================================================================
+//================================================================================
 
 SMESH_Hypothesis::Hypothesis_Status
 SMESH_Mesh_i::addHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
@@ -871,13 +731,13 @@ SMESH_Mesh_i::addHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
   return status;
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *
+ * \brief Un-assign a hypothesis from a sub-mesh dedicate to the given sub-shape
  */
-//=============================================================================
+//================================================================================
 
-SMESH::Hypothesis_Status SMESH_Mesh_i::RemoveHypothesis(GEOM::GEOM_Object_ptr aSubShape,
+SMESH::Hypothesis_Status SMESH_Mesh_i::RemoveHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
                                                         SMESH::SMESH_Hypothesis_ptr anHyp)
   throw(SALOME::SALOME_Exception)
 {
@@ -906,7 +766,7 @@ SMESH::Hypothesis_Status SMESH_Mesh_i::RemoveHypothesis(GEOM::GEOM_Object_ptr aS
 
 //=============================================================================
 /*!
- *
+ * \brief Un-assign a hypothesis from a sub-mesh dedicate to the given sub-shape
  */
 //=============================================================================
 
@@ -950,11 +810,11 @@ SMESH_Mesh_i::removeHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
   return status;
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *
+ * \brief Return hypotheses assigned to a given sub-shape
  */
-//=============================================================================
+//================================================================================
 
 SMESH::ListOfHypothesis *
 SMESH_Mesh_i::GetHypothesisList(GEOM::GEOM_Object_ptr aSubShape)
@@ -992,6 +852,12 @@ throw(SALOME::SALOME_Exception)
   return aList._retn();
 }
 
+//================================================================================
+/*!
+ * \brief Return sub-meshes
+ */
+//================================================================================
+
 SMESH::submesh_array* SMESH_Mesh_i::GetSubMeshes() throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
@@ -1028,11 +894,11 @@ SMESH::submesh_array* SMESH_Mesh_i::GetSubMeshes() throw (SALOME::SALOME_Excepti
   return aList._retn();
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *
+ * \brief Create and return a sub-mesh on the given sub-shape
  */
-//=============================================================================
+//================================================================================
 
 SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::GetSubMesh(GEOM::GEOM_Object_ptr aSubShape,
                                                   const char*           theName )
@@ -1081,11 +947,11 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::GetSubMesh(GEOM::GEOM_Object_ptr aSubShap
   return subMesh._retn();
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *
+ * \brief Remove a sub-mesh
  */
-//=============================================================================
+//================================================================================
 
 void SMESH_Mesh_i::RemoveSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh )
   throw (SALOME::SALOME_Exception)
@@ -1124,11 +990,11 @@ void SMESH_Mesh_i::RemoveSubMesh( SMESH::SMESH_subMesh_ptr theSubMesh )
   SMESH_CATCH( SMESH::throwCorbaException );
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *
+ * \brief Create a standalone group
  */
-//=============================================================================
+//================================================================================
 
 SMESH::SMESH_Group_ptr SMESH_Mesh_i::CreateGroup( SMESH::ElementType theElemType,
                                                   const char*        theName )
@@ -1154,11 +1020,12 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CreateGroup( SMESH::ElementType theElemType
   return aNewGroup._retn();
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *
+ * \brief Create a group based on the given geometry
  */
-//=============================================================================
+//================================================================================
+
 SMESH::SMESH_GroupOnGeom_ptr
 SMESH_Mesh_i::CreateGroupFromGEOM (SMESH::ElementType    theElemType,
                                    const char*           theName,
@@ -1238,11 +1105,11 @@ SMESH_Mesh_i::CreateGroupFromFilter(SMESH::ElementType theElemType,
   return aNewGroup._retn();
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *
+ * \brief Remove a group
  */
-//=============================================================================
+//================================================================================
 
 void SMESH_Mesh_i::RemoveGroup( SMESH::SMESH_GroupBase_ptr theGroup )
   throw (SALOME::SALOME_Exception)
@@ -1582,6 +1449,7 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::IntersectGroups( SMESH::SMESH_GroupBase_ptr
   \return pointer on the group
 */
 //=============================================================================
+
 SMESH::SMESH_Group_ptr
 SMESH_Mesh_i::IntersectListOfGroups(const SMESH::ListOfGroups& theGroups,
                                     const char*                theName )
@@ -1731,6 +1599,7 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::CutGroups( SMESH::SMESH_GroupBase_ptr theGr
   \return pointer on the group
 */
 //=============================================================================
+
 SMESH::SMESH_Group_ptr
 SMESH_Mesh_i::CutListOfGroups(const SMESH::ListOfGroups& theMainGroups,
                               const SMESH::ListOfGroups& theToolGroups,
@@ -2172,9 +2041,153 @@ void SMESH_Mesh_i::removeGeomGroupData(CORBA::Object_ptr theSmeshObj)
 
 //================================================================================
 /*!
+* \brief Replace a shape in the mesh upon Break Link
+*/
+//================================================================================
+
+void SMESH_Mesh_i::ReplaceShape(GEOM::GEOM_Object_ptr theNewGeom)
+  throw (SALOME::SALOME_Exception)
+{
+  // check if geometry changed
+  bool geomChanged = true;
+  GEOM::GEOM_Object_var oldGeom = GetShapeToMesh();
+  if ( !theNewGeom->_is_nil() && !oldGeom->_is_nil() )
+    geomChanged = ( //oldGeom->_is_equivalent( theNewGeom ) ||
+                   oldGeom->GetTick() < theNewGeom->GetTick() );
+
+  TopoDS_Shape S = _impl->GetShapeToMesh();
+  GEOM_Client* geomClient = _gen_i->GetShapeReader();
+  TCollection_AsciiString aIOR;
+  CORBA::String_var ior;
+  if ( geomClient->Find( S, aIOR ))
+    geomClient->RemoveShapeFromBuffer( aIOR );
+
+  // clear buffer also for sub-groups
+  const std::set<SMESHDS_GroupBase*>& groups = _impl->GetMeshDS()->GetGroups();
+  std::set<SMESHDS_GroupBase*>::const_iterator g = groups.begin();
+  for (; g != groups.end(); ++g)
+    if (const SMESHDS_GroupOnGeom* group = dynamic_cast<SMESHDS_GroupOnGeom*>(*g))
+    {
+      const TopoDS_Shape& s = group->GetShape();
+      if ( geomClient->Find( s, aIOR ))
+        geomClient->RemoveShapeFromBuffer( aIOR );
+    }
+
+  typedef struct {
+    int shapeID, fromID, toID; // indices of elements of a sub-mesh
+  } TRange;
+  std::vector< TRange > elemRanges, nodeRanges; // elements of sub-meshes
+  std::vector< SMDS_PositionPtr > positions; // node positions
+  SMESHDS_Mesh* meshDS = _impl->GetMeshDS();
+  if ( !geomChanged )
+  {
+    // store positions of elements on geometry
+    Load();
+    if ( meshDS->MaxNodeID()    > meshDS->NbNodes() ||
+         meshDS->MaxElementID() > meshDS->NbElements() )
+    {
+      meshDS->Modified();
+      meshDS->CompactMesh();
+    }
+    positions.resize( meshDS->NbNodes() + 1 );
+    for ( SMDS_NodeIteratorPtr nodeIt = meshDS->nodesIterator(); nodeIt->more(); )
+    {
+      const SMDS_MeshNode* n = nodeIt->next();
+      positions[ n->GetID() ] = n->GetPosition();
+    }
+
+    // remove elements from sub-meshes to avoid their removal at hypotheses addition
+    for ( int isNode = 0; isNode < 2; ++isNode )
+    {
+      std::vector< TRange > & ranges = isNode ? nodeRanges : elemRanges;
+      ranges.reserve( meshDS->MaxShapeIndex() + 10 );
+      ranges.push_back( TRange{ 0,0,0 });
+      SMDS_ElemIteratorPtr elemIt = meshDS->elementsIterator( isNode ? SMDSAbs_Node : SMDSAbs_All );
+      while ( elemIt->more() )
+      {
+        const SMDS_MeshElement* e = elemIt->next();
+        const int          elemID = e->GetID();
+        const int         shapeID = e->GetShapeID();
+        TRange &        lastRange = ranges.back();
+        if ( lastRange.shapeID != shapeID ||
+             lastRange.toID    != elemID )
+          ranges.push_back( TRange{ shapeID, elemID, elemID + 1 });
+        else
+          lastRange.toID = elemID + 1;
+
+        if ( SMESHDS_SubMesh* sm = meshDS->MeshElements( shapeID ))
+        {
+          if ( isNode ) sm->RemoveNode( static_cast< const SMDS_MeshNode *>( e ));
+          else          sm->RemoveElement( e );
+        }
+      }
+    }
+  }
+
+
+  // update the reference to theNewGeom (needed for correct execution of a dumped python script)
+  SMESH::SMESH_Mesh_var   me = _this();
+  SALOMEDS::SObject_wrap aSO = _gen_i->ObjectToSObject( me );
+  CORBA::String_var    entry = theNewGeom->GetStudyEntry();
+  if ( !aSO->_is_nil() )
+  {
+    SALOMEDS::SObject_wrap aShapeRefSO;
+    if ( aSO->FindSubObject( _gen_i->GetRefOnShapeTag(), aShapeRefSO.inout() ))
+    {
+      SALOMEDS::SObject_wrap    aShapeSO = _gen_i->getStudyServant()->FindObjectID( entry );
+      SALOMEDS::StudyBuilder_var builder = _gen_i->getStudyServant()->NewBuilder();
+      builder->Addreference( aShapeRefSO, aShapeSO );
+    }
+  }
+
+  // re-assign global hypotheses to the new shape
+  _mainShapeTick = geomChanged ? -1 : theNewGeom->GetTick();
+  CheckGeomModif( true );
+
+  if ( !geomChanged )
+  {
+    // restore positions of elements on geometry
+    for ( int isNode = 0; isNode < 2; ++isNode )
+    {
+      std::vector< TRange > & ranges = isNode ? nodeRanges : elemRanges;
+      for ( size_t i = 1; i < ranges.size(); ++i )
+      {
+        int elemID = ranges[ i ].fromID;
+        int   toID = ranges[ i ].toID;
+        SMESHDS_SubMesh * smDS = meshDS->NewSubMesh( ranges[ i ].shapeID );
+        if ( isNode )
+          for ( ; elemID < toID; ++elemID )
+            smDS->AddNode( meshDS->FindNode( elemID ));
+        else
+          for ( ; elemID < toID; ++elemID )
+            smDS->AddElement( meshDS->FindElement( elemID ));
+
+        if ( SMESH_subMesh* sm = _impl->GetSubMeshContaining( ranges[ i ].shapeID ))
+          sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+      }
+    }
+    for ( unsigned int nodeID = 1; nodeID < positions.size(); ++nodeID )
+      if ( positions[ nodeID ])
+        if ( SMDS_MeshNode* n = const_cast< SMDS_MeshNode*>( meshDS->FindNode( nodeID )))
+          n->SetPosition( positions[ nodeID ], n->GetShapeID() );
+
+    // restore icons
+    _gen_i->UpdateIcons( SMESH::SMESH_Mesh_var( _this() ));
+  }
+
+  TPythonDump() << "SHAPERSTUDY.breakLinkForSubElements(salome.ObjectToSObject("
+                << me <<".GetMesh()), " << entry.in() << ")";
+
+  TPythonDump() <<  me << ".ReplaceShape( " << entry.in() << " )";
+
+}
+
+//================================================================================
+/*!
  * \brief Return new group contents if it has been changed and update group data
  */
 //================================================================================
+
 enum { ONLY_IF_CHANGED, IS_BREAK_LINK, MAIN_TRANSFORMED };
 
 TopoDS_Shape SMESH_Mesh_i::newGroupShape( TGeomGroupData & groupData, int how )
@@ -3110,11 +3123,11 @@ SMESH::SMESH_Group_ptr SMESH_Mesh_i::ConvertToStandalone( SMESH::SMESH_GroupBase
   return aGroup._retn();
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *
+ * \brief Create a sub-mesh on a given sub-shape
  */
-//=============================================================================
+//================================================================================
 
 SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::createSubMesh( GEOM::GEOM_Object_ptr theSubShapeObject )
 {
@@ -3160,10 +3173,11 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::createSubMesh( GEOM::GEOM_Object_ptr theS
   return subMesh._retn();
 }
 
-//=======================================================================
-//function : getSubMesh
-//purpose  :
-//=======================================================================
+//================================================================================
+/*!
+ * \brief Return an existing sub-mesh based on a sub-shape with the given ID
+ */
+//================================================================================
 
 SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::getSubMesh(int shapeID)
 {
@@ -3174,11 +3188,11 @@ SMESH::SMESH_subMesh_ptr SMESH_Mesh_i::getSubMesh(int shapeID)
   return SMESH::SMESH_subMesh::_duplicate( (*it).second );
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *
+ * \brief Remove a sub-mesh based on the given sub-shape
  */
-//=============================================================================
+//================================================================================
 
 bool SMESH_Mesh_i::removeSubMesh (SMESH::SMESH_subMesh_ptr theSubMesh,
                                   GEOM::GEOM_Object_ptr    theSubShapeObject )
@@ -3240,11 +3254,11 @@ bool SMESH_Mesh_i::removeSubMesh (SMESH::SMESH_subMesh_ptr theSubMesh,
   return isHypChanged;
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *
+ * \brief Create a group. Group type depends on given arguments
  */
-//=============================================================================
+//================================================================================
 
 SMESH::SMESH_GroupBase_ptr SMESH_Mesh_i::createGroup (SMESH::ElementType        theElemType,
                                                       const char*               theName,
@@ -3322,11 +3336,11 @@ void SMESH_Mesh_i::removeGroup( const int theId )
   }
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *
+ * \brief Return a log that can be used to move another mesh to the same state as this one
  */
-//=============================================================================
+//================================================================================
 
 SMESH::log_array * SMESH_Mesh_i::GetLog(CORBA::Boolean clearAfterGet)
   throw(SALOME::SALOME_Exception)
@@ -3341,22 +3355,17 @@ SMESH::log_array * SMESH_Mesh_i::GetLog(CORBA::Boolean clearAfterGet)
   aLog = new SMESH::log_array;
   int indexLog = 0;
   int lg = logDS.size();
-  SCRUTE(lg);
   aLog->length(lg);
   list < SMESHDS_Command * >::iterator its = logDS.begin();
   while(its != logDS.end()){
     SMESHDS_Command *com = *its;
     int comType = com->GetType();
-    //SCRUTE(comType);
     int lgcom = com->GetNumber();
-    //SCRUTE(lgcom);
     const list < int >&intList = com->GetIndexes();
     int inum = intList.size();
-    //SCRUTE(inum);
     list < int >::const_iterator ii = intList.begin();
     const list < double >&coordList = com->GetCoords();
     int rnum = coordList.size();
-    //SCRUTE(rnum);
     list < double >::const_iterator ir = coordList.begin();
     aLog[indexLog].commandType = comType;
     aLog[indexLog].number = lgcom;
@@ -3364,12 +3373,10 @@ SMESH::log_array * SMESH_Mesh_i::GetLog(CORBA::Boolean clearAfterGet)
     aLog[indexLog].indexes.length(inum);
     for(int i = 0; i < rnum; i++){
       aLog[indexLog].coords[i] = *ir;
-      //MESSAGE(" "<<i<<" "<<ir.Value());
       ir++;
     }
     for(int i = 0; i < inum; i++){
       aLog[indexLog].indexes[i] = *ii;
-      //MESSAGE(" "<<i<<" "<<ii.Value());
       ii++;
     }
     indexLog++;
@@ -3383,12 +3390,11 @@ SMESH::log_array * SMESH_Mesh_i::GetLog(CORBA::Boolean clearAfterGet)
   return aLog._retn();
 }
 
-
-//=============================================================================
+//================================================================================
 /*!
- *
+ * \brief Remove the log of commands
  */
-//=============================================================================
+//================================================================================
 
 void SMESH_Mesh_i::ClearLog() throw(SALOME::SALOME_Exception)
 {
@@ -3397,11 +3403,11 @@ void SMESH_Mesh_i::ClearLog() throw(SALOME::SALOME_Exception)
   SMESH_CATCH( SMESH::throwCorbaException );
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *
+ * \brief Return a mesh ID
  */
-//=============================================================================
+//================================================================================
 
 CORBA::Long SMESH_Mesh_i::GetId()throw(SALOME::SALOME_Exception)
 {
@@ -3471,11 +3477,11 @@ void SMESH_Mesh_i::onHypothesisModified(int theHypID, bool theUpdateIcons)
   }
 }
 
-//=============================================================================
+//================================================================================
 /*!
- *
+ * \brief Set mesh implementation
  */
-//=============================================================================
+//================================================================================
 
 void SMESH_Mesh_i::SetImpl(::SMESH_Mesh * impl)
 {
@@ -3487,7 +3493,7 @@ void SMESH_Mesh_i::SetImpl(::SMESH_Mesh * impl)
 
 //=============================================================================
 /*!
- *
+ * Return a mesh implementation
  */
 //=============================================================================
 
@@ -3565,7 +3571,7 @@ CORBA::Boolean SMESH_Mesh_i::HasModificationsToDiscard() throw(SALOME::SALOME_Ex
 
 //================================================================================
 /*!
- * \brief Returns a random unique color
+ * \brief Return a random unique color
  */
 //================================================================================
 
@@ -3601,7 +3607,7 @@ static SALOMEDS::Color getUniqueColor( const std::list<SALOMEDS::Color>& theRese
 
 //=============================================================================
 /*!
- * Sets auto-color mode. If it is on, groups get unique random colors
+ * Set auto-color mode. If it is on, groups get unique random colors
  */
 //=============================================================================
 
@@ -3625,7 +3631,7 @@ void SMESH_Mesh_i::SetAutoColor(CORBA::Boolean theAutoColor) throw(SALOME::SALOM
 
 //=============================================================================
 /*!
- * Returns true if auto-color mode is on
+ * Return true if auto-color mode is on
  */
 //=============================================================================
 
@@ -3637,7 +3643,7 @@ CORBA::Boolean SMESH_Mesh_i::GetAutoColor() throw(SALOME::SALOME_Exception)
 
 //=============================================================================
 /*!
- *  Checks if there are groups with equal names
+ *  Check if there are groups with equal names
  */
 //=============================================================================
 
@@ -3689,7 +3695,7 @@ void SMESH_Mesh_i::PrepareForWriting (const char* file, bool overwrite)
 
 //================================================================================
 /*!
- * \brief Prepares a file for export and pass names of mesh groups from study to mesh DS
+ * \brief Prepare a file for export and pass names of mesh groups from study to mesh DS
  *  \param file - file name
  *  \param overwrite - to erase the file or not
  *  \retval string - mesh name
@@ -4410,6 +4416,12 @@ CORBA::Double SMESH_Mesh_i::GetComputeProgress()
   return 0.;
 }
 
+//================================================================================
+/*!
+ * \brief Return nb of nodes
+ */
+//================================================================================
+
 CORBA::Long SMESH_Mesh_i::NbNodes()throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
@@ -4418,6 +4430,12 @@ CORBA::Long SMESH_Mesh_i::NbNodes()throw(SALOME::SALOME_Exception)
 
   return _impl->NbNodes();
 }
+
+//================================================================================
+/*!
+ * \brief Return nb of elements
+ */
+//================================================================================
 
 CORBA::Long SMESH_Mesh_i::NbElements()throw (SALOME::SALOME_Exception)
 {
@@ -4428,6 +4446,12 @@ CORBA::Long SMESH_Mesh_i::NbElements()throw (SALOME::SALOME_Exception)
   return Nb0DElements() + NbEdges() + NbFaces() + NbVolumes() + NbBalls();
 }
 
+//================================================================================
+/*!
+ * \brief Return nb of 0D elements
+ */
+//================================================================================
+
 CORBA::Long SMESH_Mesh_i::Nb0DElements()throw (SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
@@ -4436,6 +4460,12 @@ CORBA::Long SMESH_Mesh_i::Nb0DElements()throw (SALOME::SALOME_Exception)
 
   return _impl->Nb0DElements();
 }
+
+//================================================================================
+/*!
+ * \brief Return nb of BALL elements
+ */
+//================================================================================
 
 CORBA::Long SMESH_Mesh_i::NbBalls() throw (SALOME::SALOME_Exception)
 {
@@ -4446,6 +4476,12 @@ CORBA::Long SMESH_Mesh_i::NbBalls() throw (SALOME::SALOME_Exception)
   return _impl->NbBalls();
 }
 
+//================================================================================
+/*!
+ * \brief Return nb of 1D elements
+ */
+//================================================================================
+
 CORBA::Long SMESH_Mesh_i::NbEdges()throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
@@ -4454,6 +4490,12 @@ CORBA::Long SMESH_Mesh_i::NbEdges()throw(SALOME::SALOME_Exception)
 
   return _impl->NbEdges();
 }
+
+//================================================================================
+/*!
+ * \brief Return nb of edges
+ */
+//================================================================================
 
 CORBA::Long SMESH_Mesh_i::NbEdgesOfOrder(SMESH::ElementOrder order)
   throw(SALOME::SALOME_Exception)
@@ -4465,7 +4507,11 @@ CORBA::Long SMESH_Mesh_i::NbEdgesOfOrder(SMESH::ElementOrder order)
   return _impl->NbEdges( (SMDSAbs_ElementOrder) order);
 }
 
-//=============================================================================
+//================================================================================
+/*!
+ * \brief Return nb of faces
+ */
+//================================================================================
 
 CORBA::Long SMESH_Mesh_i::NbFaces()throw(SALOME::SALOME_Exception)
 {
@@ -4476,6 +4522,12 @@ CORBA::Long SMESH_Mesh_i::NbFaces()throw(SALOME::SALOME_Exception)
   return _impl->NbFaces();
 }
 
+//================================================================================
+/*!
+ * \brief Return nb of tringles
+ */
+//================================================================================
+
 CORBA::Long SMESH_Mesh_i::NbTriangles()throw(SALOME::SALOME_Exception)
 {
   Unexpect aCatch(SALOME_SalomeException);
@@ -4484,6 +4536,12 @@ CORBA::Long SMESH_Mesh_i::NbTriangles()throw(SALOME::SALOME_Exception)
 
   return _impl->NbTriangles();
 }
+
+//================================================================================
+/*!
+ * \brief Return nb of bi-quadratic triangles
+ */
+//================================================================================
 
 CORBA::Long SMESH_Mesh_i::NbBiQuadTriangles()throw(SALOME::SALOME_Exception)
 {
@@ -4686,7 +4744,7 @@ CORBA::Long SMESH_Mesh_i::NbPrismsOfOrder(SMESH::ElementOrder order)
 
 //=============================================================================
 /*!
- * Returns nb of published sub-meshes
+ * Return nb of published sub-meshes
  */
 //=============================================================================
 
@@ -4722,7 +4780,7 @@ SMESH::long_array* SMESH_Mesh_i::GetIDs()
 
 //=============================================================================
 /*!
- * Returns ids of all elements
+ * Return ids of all elements
  */
 //=============================================================================
 
@@ -4751,7 +4809,7 @@ SMESH::long_array* SMESH_Mesh_i::GetElementsId()
 
 //=============================================================================
 /*!
- * Returns ids of all elements of given type
+ * Return ids of all elements of given type
  */
 //=============================================================================
 
@@ -4791,7 +4849,7 @@ SMESH::long_array* SMESH_Mesh_i::GetElementsByType( SMESH::ElementType theElemTy
 
 //=============================================================================
 /*!
- * Returns ids of all nodes
+ * Return ids of all nodes
  */
 //=============================================================================
 
@@ -4819,7 +4877,7 @@ SMESH::long_array* SMESH_Mesh_i::GetNodesId()
 
 //=============================================================================
 /*!
- *
+ * Return type of the given element
  */
 //=============================================================================
 
@@ -4841,7 +4899,7 @@ SMESH::ElementType SMESH_Mesh_i::GetElementType( const CORBA::Long id, const boo
 
 //=============================================================================
 /*!
- *
+ * Return geometric type of the given element
  */
 //=============================================================================
 
@@ -4860,7 +4918,7 @@ SMESH::EntityType SMESH_Mesh_i::GetElementGeomType( const CORBA::Long id )
 
 //=============================================================================
 /*!
- *
+ * Return type of the given element
  */
 //=============================================================================
 
@@ -4879,9 +4937,10 @@ SMESH::GeometryType SMESH_Mesh_i::GetElementShape( const CORBA::Long id )
 
 //=============================================================================
 /*!
- * Returns ID of elements for given submesh
+ * Return ID of elements for given submesh
  */
 //=============================================================================
+
 SMESH::long_array* SMESH_Mesh_i::GetSubMeshElementsId(const CORBA::Long ShapeID)
      throw (SALOME::SALOME_Exception)
 {
@@ -4912,9 +4971,9 @@ SMESH::long_array* SMESH_Mesh_i::GetSubMeshElementsId(const CORBA::Long ShapeID)
 
 //=============================================================================
 /*!
- * Returns ID of nodes for given submesh
- * If param all==true - returns all nodes, else -
- * returns only nodes on shapes.
+ * Return ID of nodes for given sub-mesh
+ * If param all==true - Return all nodes, else -
+ * Return only nodes on shapes.
  */
 //=============================================================================
 
@@ -4967,7 +5026,7 @@ SMESH::long_array* SMESH_Mesh_i::GetSubMeshNodesId(const CORBA::Long ShapeID,
 
 //=============================================================================
 /*!
- * Returns type of elements for given submesh
+ * Return type of elements for given sub-mesh
  */
 //=============================================================================
 
@@ -5002,7 +5061,7 @@ SMESH::ElementType SMESH_Mesh_i::GetSubMeshElementType(const CORBA::Long ShapeID
 
 //=============================================================================
 /*!
- * Returns pointer to _impl as an integer value. Is called from constructor of SMESH_Client
+ * Return pointer to _impl as an integer value. Is called from constructor of SMESH_Client
  */
 //=============================================================================
 
@@ -5020,7 +5079,7 @@ CORBA::LongLong SMESH_Mesh_i::GetMeshPtr()
 //=============================================================================
 /*!
  * Get XYZ coordinates of node as list of double
- * If there is not node for given ID - returns empty list
+ * If there is not node for given ID - Return empty list
  */
 //=============================================================================
 
@@ -5050,8 +5109,8 @@ SMESH::double_array* SMESH_Mesh_i::GetNodeXYZ(const CORBA::Long id)
 
 //=============================================================================
 /*!
- * For given node returns list of IDs of inverse elements
- * If there is not node for given ID - returns empty list
+ * For given node Return list of IDs of inverse elements
+ * If there is not node for given ID - Return empty list
  */
 //=============================================================================
 
@@ -5184,8 +5243,8 @@ SMESH::ElementPosition SMESH_Mesh_i::GetElementPosition(CORBA::Long ElemID)
 
 //=============================================================================
 /*!
- * If given element is node returns IDs of shape from position
- * If there is not node for given ID - returns -1
+ * If given element is node Return IDs of shape from position
+ * If there is not node for given ID - Return -1
  */
 //=============================================================================
 
@@ -5210,9 +5269,9 @@ CORBA::Long SMESH_Mesh_i::GetShapeID(const CORBA::Long id)
 
 //=============================================================================
 /*!
- * For given element returns ID of result shape after
+ * For given element return ID of result shape after
  * ::FindShape() from SMESH_MeshEditor
- * If there is not element for given ID - returns -1
+ * If there is not element for given ID - Return -1
  */
 //=============================================================================
 
@@ -5241,8 +5300,8 @@ CORBA::Long SMESH_Mesh_i::GetShapeIDForElem(const CORBA::Long id)
 
 //=============================================================================
 /*!
- * Returns number of nodes for given element
- * If there is not element for given ID - returns -1
+ * Return number of nodes for given element
+ * If there is not element for given ID - Return -1
  */
 //=============================================================================
 
@@ -5262,9 +5321,9 @@ CORBA::Long SMESH_Mesh_i::GetElemNbNodes(const CORBA::Long id)
 
 //=============================================================================
 /*!
- * Returns ID of node by given index for given element
- * If there is not element for given ID - returns -1
- * If there is not node for given index - returns -2
+ * Return ID of node by given index for given element
+ * If there is not element for given ID - Return -1
+ * If there is not node for given index - Return -2
  */
 //=============================================================================
 
@@ -5283,7 +5342,7 @@ CORBA::Long SMESH_Mesh_i::GetElemNode(const CORBA::Long id, const CORBA::Long in
 
 //=============================================================================
 /*!
- * Returns IDs of nodes of given element
+ * Return IDs of nodes of given element
  */
 //=============================================================================
 
@@ -5308,7 +5367,7 @@ SMESH::long_array* SMESH_Mesh_i::GetElemNodes(const CORBA::Long id)
 
 //=============================================================================
 /*!
- * Returns true if given node is medium node
+ * Return true if given node is medium node
  * in given quadratic element
  */
 //=============================================================================
@@ -5333,7 +5392,7 @@ CORBA::Boolean SMESH_Mesh_i::IsMediumNode(const CORBA::Long ide, const CORBA::Lo
 
 //=============================================================================
 /*!
- * Returns true if given node is medium node
+ * Return true if given node is medium node
  * in one of quadratic elements
  */
 //=============================================================================
@@ -5365,7 +5424,7 @@ CORBA::Boolean SMESH_Mesh_i::IsMediumNodeOfAnyElem(const CORBA::Long idn,
 
 //=============================================================================
 /*!
- * Returns number of edges for given element
+ * Return number of edges for given element
  */
 //=============================================================================
 
@@ -5384,7 +5443,7 @@ CORBA::Long SMESH_Mesh_i::ElemNbEdges(const CORBA::Long id)
 
 //=============================================================================
 /*!
- * Returns number of faces for given element
+ * Return number of faces for given element
  */
 //=============================================================================
 
@@ -5400,10 +5459,11 @@ CORBA::Long SMESH_Mesh_i::ElemNbFaces(const CORBA::Long id)
   return elem->NbFaces();
 }
 
-//=======================================================================
-//function : GetElemFaceNodes
-//purpose  : Returns nodes of given face (counted from zero) for given element.
-//=======================================================================
+//================================================================================
+/*!
+ * \brief Return nodes of given face (counted from zero) for given element.
+ */
+//================================================================================
 
 SMESH::long_array* SMESH_Mesh_i::GetElemFaceNodes(CORBA::Long  elemId,
                                                   CORBA::Short faceIndex)
@@ -5429,10 +5489,11 @@ SMESH::long_array* SMESH_Mesh_i::GetElemFaceNodes(CORBA::Long  elemId,
   return aResult._retn();
 }
 
-//=======================================================================
-//function : GetFaceNormal
-//purpose  : Returns three components of normal of given mesh face.
-//=======================================================================
+//================================================================================
+/*!
+ * \brief Return three components of normal of given mesh face.
+ */
+//================================================================================
 
 SMESH::double_array* SMESH_Mesh_i::GetFaceNormal(CORBA::Long    elemId,
                                                  CORBA::Boolean normalized)
@@ -5456,10 +5517,11 @@ SMESH::double_array* SMESH_Mesh_i::GetFaceNormal(CORBA::Long    elemId,
   return aResult._retn();
 }
 
-//=======================================================================
-//function : FindElementByNodes
-//purpose  : Returns an element based on all given nodes.
-//=======================================================================
+//================================================================================
+/*!
+ * \brief Return an element based on all given nodes.
+ */
+//================================================================================
 
 CORBA::Long SMESH_Mesh_i::FindElementByNodes(const SMESH::long_array& nodes)
 {
@@ -5516,7 +5578,7 @@ SMESH::long_array* SMESH_Mesh_i::GetElementsByNodes(const SMESH::long_array& nod
 
 //=============================================================================
 /*!
- * Returns true if given element is polygon
+ * Return true if given element is polygon
  */
 //=============================================================================
 
@@ -5535,7 +5597,7 @@ CORBA::Boolean SMESH_Mesh_i::IsPoly(const CORBA::Long id)
 
 //=============================================================================
 /*!
- * Returns true if given element is quadratic
+ * Return true if given element is quadratic
  */
 //=============================================================================
 
@@ -5553,7 +5615,7 @@ CORBA::Boolean SMESH_Mesh_i::IsQuadratic(const CORBA::Long id)
 
 //=============================================================================
 /*!
- * Returns diameter of ball discrete element or zero in case of an invalid \a id
+ * Return diameter of ball discrete element or zero in case of an invalid \a id
  */
 //=============================================================================
 
@@ -5571,7 +5633,7 @@ CORBA::Double SMESH_Mesh_i::GetBallDiameter(CORBA::Long id)
 
 //=============================================================================
 /*!
- * Returns bary center for given element
+ * Return bary center for given element
  */
 //=============================================================================
 
@@ -5901,7 +5963,7 @@ void SMESH_Mesh_i::checkGroupNames()
 
 //=============================================================================
 /*!
- * \brief Sets list of notebook variables used for Mesh operations separated by ":" symbol
+ * \brief Set list of notebook variables used for Mesh operations separated by ":" symbol
  */
 //=============================================================================
 void SMESH_Mesh_i::SetParameters(const char* theParameters)
@@ -5912,7 +5974,7 @@ void SMESH_Mesh_i::SetParameters(const char* theParameters)
 
 //=============================================================================
 /*!
- * \brief Returns list of notebook variables used for Mesh operations separated by ":" symbol
+ * \brief Return list of notebook variables used for Mesh operations separated by ":" symbol
  */
 //=============================================================================
 
@@ -5923,7 +5985,7 @@ char* SMESH_Mesh_i::GetParameters()
 
 //=============================================================================
 /*!
- * \brief Returns list of notebook variables used for last Mesh operation
+ * \brief Return list of notebook variables used for last Mesh operation
  */
 //=============================================================================
 SMESH::string_array* SMESH_Mesh_i::GetLastParameters()
@@ -5943,10 +6005,11 @@ SMESH::string_array* SMESH_Mesh_i::GetLastParameters()
   return aResult._retn();
 }
 
-//=======================================================================
-//function : GetTypes
-//purpose  : Returns types of elements it contains
-//=======================================================================
+//================================================================================
+/*!
+ * \brief Return types of elements it contains
+ */
+//================================================================================
 
 SMESH::array_of_ElementType* SMESH_Mesh_i::GetTypes()
 {
@@ -5969,21 +6032,25 @@ SMESH::array_of_ElementType* SMESH_Mesh_i::GetTypes()
   return types._retn();
 }
 
-//=======================================================================
-//function : GetMesh
-//purpose  : Returns self
-//=======================================================================
+//================================================================================
+/*!
+ * \brief Return self
+ */
+//================================================================================
 
 SMESH::SMESH_Mesh_ptr SMESH_Mesh_i::GetMesh()
 {
   return SMESH::SMESH_Mesh::_duplicate( _this() );
 }
 
-//=======================================================================
-//function : IsMeshInfoCorrect
-//purpose  : * Returns false if GetMeshInfo() returns incorrect information that may
-//           * happen if mesh data is not yet fully loaded from the file of study.
-//=======================================================================
+//================================================================================
+/*!
+ * \brief Return false if GetMeshInfo() Return incorrect information that may
+ *        happen if mesh data is not yet fully loaded from the file of study.
+ * 
+ * 
+ */
+//================================================================================
 
 bool SMESH_Mesh_i::IsMeshInfoCorrect()
 {
@@ -5992,7 +6059,7 @@ bool SMESH_Mesh_i::IsMeshInfoCorrect()
 
 //=============================================================================
 /*!
- * \brief Returns number of mesh elements per each \a EntityType
+ * \brief Return number of mesh elements per each \a EntityType
  */
 //=============================================================================
 
@@ -6016,7 +6083,7 @@ SMESH::long_array* SMESH_Mesh_i::GetMeshInfo()
 
 //=============================================================================
 /*!
- * \brief Returns number of mesh elements per each \a ElementType
+ * \brief Return number of mesh elements per each \a ElementType
  */
 //=============================================================================
 
@@ -6055,7 +6122,7 @@ void SMESH_Mesh_i::CollectMeshInfo(const SMDS_ElemIteratorPtr theItr,
 }
 //=============================================================================
 /*
- * Returns mesh unstructed grid information.
+ * Return mesh unstructed grid information.
  */
 //=============================================================================
 
