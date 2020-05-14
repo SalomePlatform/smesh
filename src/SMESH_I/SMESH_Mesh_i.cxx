@@ -258,18 +258,27 @@ GEOM::GEOM_Object_ptr SMESH_Mesh_i::GetShapeToMesh()
 
 //================================================================================
 /*!
-* \brief Replaces a shape in the mesh
+* \brief Replace a shape in the mesh
 */
 //================================================================================
+
 void SMESH_Mesh_i::ReplaceShape(GEOM::GEOM_Object_ptr theNewGeom)
   throw (SALOME::SALOME_Exception)
 {
+  // check if geometry changed
+  bool geomChanged = true;
+  GEOM::GEOM_Object_var oldGeom = GetShapeToMesh();
+  if ( !theNewGeom->_is_nil() && !oldGeom->_is_nil() )
+    geomChanged = ( //oldGeom->_is_equivalent( theNewGeom ) ||
+                   oldGeom->GetTick() < theNewGeom->GetTick() );
+
   TopoDS_Shape S = _impl->GetShapeToMesh();
   GEOM_Client* geomClient = _gen_i->GetShapeReader();
   TCollection_AsciiString aIOR;
-  if (geomClient->Find(S, aIOR)) {
-    geomClient->RemoveShapeFromBuffer(aIOR);
-  }
+  CORBA::String_var ior;
+  if ( geomClient->Find( S, aIOR ))
+    geomClient->RemoveShapeFromBuffer( aIOR );
+
   // clear buffer also for sub-groups
   const std::set<SMESHDS_GroupBase*>& groups = _impl->GetMeshDS()->GetGroups();
   std::set<SMESHDS_GroupBase*>::const_iterator g = groups.begin();
@@ -277,9 +286,61 @@ void SMESH_Mesh_i::ReplaceShape(GEOM::GEOM_Object_ptr theNewGeom)
     if (const SMESHDS_GroupOnGeom* group = dynamic_cast<SMESHDS_GroupOnGeom*>(*g))
     {
       const TopoDS_Shape& s = group->GetShape();
-      if (geomClient->Find(s, aIOR))
-        geomClient->RemoveShapeFromBuffer(aIOR);
+      if ( geomClient->Find( s, aIOR ))
+        geomClient->RemoveShapeFromBuffer( aIOR );
     }
+
+  typedef struct {
+    int shapeID, fromID, toID; // indices of elements of a sub-mesh
+  } TRange;
+  std::vector< TRange > elemRanges, nodeRanges; // elements of sub-meshes
+  std::vector< SMDS_PositionPtr > positions; // node positions
+  SMESHDS_Mesh* meshDS = _impl->GetMeshDS();
+  if ( !geomChanged )
+  {
+    // store positions of elements on geometry
+    Load();
+    if ( meshDS->MaxNodeID()    > meshDS->NbNodes() ||
+         meshDS->MaxElementID() > meshDS->NbElements() )
+    {
+      meshDS->Modified();
+      meshDS->CompactMesh();
+    }
+    positions.resize( meshDS->NbNodes() + 1 );
+    for ( SMDS_NodeIteratorPtr nodeIt = meshDS->nodesIterator(); nodeIt->more(); )
+    {
+      const SMDS_MeshNode* n = nodeIt->next();
+      positions[ n->GetID() ] = n->GetPosition();
+    }
+
+    // remove elements from sub-meshes to avoid their removal at hypotheses addition
+    for ( int isNode = 0; isNode < 2; ++isNode )
+    {
+      std::vector< TRange > & ranges = isNode ? nodeRanges : elemRanges;
+      ranges.reserve( meshDS->MaxShapeIndex() + 10 );
+      ranges.push_back( TRange{ 0,0,0 });
+      SMDS_ElemIteratorPtr elemIt = meshDS->elementsIterator( isNode ? SMDSAbs_Node : SMDSAbs_All );
+      while ( elemIt->more() )
+      {
+        const SMDS_MeshElement* e = elemIt->next();
+        const int          elemID = e->GetID();
+        const int         shapeID = e->GetShapeID();
+        TRange &        lastRange = ranges.back();
+        if ( lastRange.shapeID != shapeID ||
+             lastRange.toID    != elemID )
+          ranges.push_back( TRange{ shapeID, elemID, elemID + 1 });
+        else
+          lastRange.toID = elemID + 1;
+
+        if ( SMESHDS_SubMesh* sm = meshDS->MeshElements( shapeID ))
+        {
+          if ( isNode ) sm->RemoveNode( static_cast< const SMDS_MeshNode *>( e ));
+          else          sm->RemoveElement( e );
+        }
+      }
+    }
+  }
+
 
   // update the reference to theNewGeom (needed for correct execution of a dumped python script)
   SMESH::SMESH_Mesh_var   me = _this();
@@ -297,8 +358,39 @@ void SMESH_Mesh_i::ReplaceShape(GEOM::GEOM_Object_ptr theNewGeom)
   }
 
   // re-assign global hypotheses to the new shape
-  _mainShapeTick = -1;
+  _mainShapeTick = geomChanged ? -1 : theNewGeom->GetTick();
   CheckGeomModif( true );
+
+  if ( !geomChanged )
+  {
+    // restore positions of elements on geometry
+    for ( int isNode = 0; isNode < 2; ++isNode )
+    {
+      std::vector< TRange > & ranges = isNode ? nodeRanges : elemRanges;
+      for ( size_t i = 1; i < ranges.size(); ++i )
+      {
+        int elemID = ranges[ i ].fromID;
+        int   toID = ranges[ i ].toID;
+        SMESHDS_SubMesh * smDS = meshDS->NewSubMesh( ranges[ i ].shapeID );
+        if ( isNode )
+          for ( ; elemID < toID; ++elemID )
+            smDS->AddNode( meshDS->FindNode( elemID ));
+        else
+          for ( ; elemID < toID; ++elemID )
+            smDS->AddElement( meshDS->FindElement( elemID ));
+
+        if ( SMESH_subMesh* sm = _impl->GetSubMeshContaining( ranges[ i ].shapeID ))
+          sm->ComputeStateEngine( SMESH_subMesh::CHECK_COMPUTE_STATE );
+      }
+    }
+    for ( unsigned int nodeID = 1; nodeID < positions.size(); ++nodeID )
+      if ( positions[ nodeID ])
+        if ( SMDS_MeshNode* n = const_cast< SMDS_MeshNode*>( meshDS->FindNode( nodeID )))
+          n->SetPosition( positions[ nodeID ], n->GetShapeID() );
+
+    // restore icons
+    _gen_i->UpdateIcons( SMESH::SMESH_Mesh_var( _this() ));
+  }
 
   TPythonDump() << "SHAPERSTUDY.breakLinkForSubElements(salome.ObjectToSObject("
                 << me <<".GetMesh()), " << entry.in() << ")";
@@ -2256,7 +2348,7 @@ namespace
  */
 //=============================================================================
 
-void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
+void SMESH_Mesh_i::CheckGeomModif( bool theIsBreakLink )
 {
   SMESH::SMESH_Mesh_var me = _this();
   GEOM::GEOM_Object_var mainGO = GetShapeToMesh();
@@ -2314,17 +2406,18 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
 
   // Update after group modification
 
-  if ( mainGO->GetType() == GEOM_GROUP ||    // is group or not modified
-       mainGO->GetTick() == _mainShapeTick )
-  {
-    int nb = NbNodes() + NbElements();
-    CheckGeomGroupModif();
-    if ( nb != NbNodes() + NbElements() ) // something removed due to hypotheses change
-      _gen_i->UpdateIcons( me );
-    return;
-  }
+  const bool geomChanged = ( mainGO->GetTick() != _mainShapeTick );
+  if ( !theIsBreakLink )
+    if ( mainGO->GetType() == GEOM_GROUP || !geomChanged )  // is group or not modified
+    {
+      int nb = NbNodes() + NbElements();
+      CheckGeomGroupModif();
+      if ( nb != NbNodes() + NbElements() ) // something removed due to hypotheses change
+        _gen_i->UpdateIcons( me );
+      return;
+    }
 
-  // Update after shape modification
+  // Update after shape modification or breakLink w/o geometry change
 
   GEOM_Client* geomClient = _gen_i->GetShapeReader();
   if ( !geomClient ) return;
@@ -2349,7 +2442,7 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
   if ( _preMeshInfo )
     _preMeshInfo->ForgetAllData();
 
-  if ( isBreakLink || !isShaper )
+  if ( geomChanged || !isShaper )
     _impl->Clear();
   if ( newShape.IsNull() )
     return;
@@ -2377,10 +2470,10 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
       GEOM::GEOM_Object_var geom;
       if ( !gog->_is_nil() )
       {
-        if ( !isBreakLink )
+        if ( !theIsBreakLink )
           geom = gog->GetShape();
 
-        if ( isBreakLink || geom->_is_nil() )
+        if ( theIsBreakLink || geom->_is_nil() )
         {
           SALOMEDS::SObject_wrap grpSO = _gen_i->ObjectToSObject( gog );
           SALOMEDS::SObject_wrap geomRefSO, geomSO;
@@ -2486,7 +2579,7 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
     if ( old2newIDs.count( oldID ))
       continue;
 
-    int how = ( isBreakLink || !sameTopology ) ? IS_BREAK_LINK : MAIN_TRANSFORMED;
+    int how = ( theIsBreakLink || !sameTopology ) ? IS_BREAK_LINK : MAIN_TRANSFORMED;
     newShape = newGroupShape( *data, how );
 
     if ( !newShape.IsNull() )
@@ -2584,7 +2677,7 @@ void SMESH_Mesh_i::CheckGeomModif( bool isBreakLink )
 
   _gen_i->UpdateIcons( me );
 
-  if ( !isBreakLink && isShaper )
+  if ( !theIsBreakLink && isShaper )
   {
     SALOMEDS::SObject_wrap meshSO = _gen_i->ObjectToSObject( me );
     if ( !meshSO->_is_nil() )
