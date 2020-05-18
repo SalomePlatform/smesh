@@ -663,8 +663,8 @@ SMESH_Mesh_i::AddHypothesis(GEOM::GEOM_Object_ptr       aSubShape,
   {
     _gen_i->AddHypothesisToShape( mesh, aSubShape, anHyp );
 
-    int newNbMeshEnt = _impl->NbNodes() + _impl->GetMeshDS()->NbElements();
-    if ( newNbMeshEnt != prevNbMeshEnt )
+    //int newNbMeshEnt = _impl->NbNodes() + _impl->GetMeshDS()->NbElements();
+    if ( prevNbMeshEnt > 0 /*newNbMeshEnt != prevNbMeshEnt*/ )
       _gen_i->UpdateIcons( mesh );
   }
   if(MYDEBUG) MESSAGE( " AddHypothesis(): status = " << status );

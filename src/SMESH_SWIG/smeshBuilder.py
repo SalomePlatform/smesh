@@ -2091,6 +2091,9 @@ class Mesh(metaclass = MeshMeta):
 
         Parameters:
                 submeshes: list of lists of :class:`sub-meshes <SMESH.SMESH_subMesh>`
+
+        Warning: the method is for setting the order for all sub-meshes at once:
+                 SetMeshOrder( [ [sm1, sm2, sm3], [sm4, sm5] ] )
         """
 
         return self.mesh.SetMeshOrder(submeshes)

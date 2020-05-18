@@ -108,6 +108,9 @@ Creating groups of entities basing on nodes of other groups
 .. image:: ../images/dimgroup_tui1.png
 	:align: center
 
+
+.. _tui_groups_by_sharp_edges: 
+
 Creating face groups separated by sharp edges
 =============================================
 
