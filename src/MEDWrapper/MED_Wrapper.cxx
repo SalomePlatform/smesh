@@ -105,28 +105,28 @@ namespace MED
       if (myCount++ == 0) {
         const char* aFileName = myFileName.c_str();
 #ifdef WIN32
-		if (med_access_mode(theMode) == MED_ACC_RDWR) {
-			// Force removing readonly attribute from a file under Windows, because of a bug in the HDF5
-			std::string aReadOlnyRmCmd = "attrib -r \"" + myFileName + "\"> nul 2>&1";
+        if (med_access_mode(theMode) == MED_ACC_RDWR) {
+          // Force removing readonly attribute from a file under Windows, because of a bug in the HDF5
+          std::string aReadOlnyRmCmd = "attrib -r \"" + myFileName + "\"> nul 2>&1";
 #ifdef UNICODE
-			const char* to_decode = aReadOlnyRmCmd.c_str();
-			int size_needed = MultiByteToWideChar(CP_UTF8, 0, to_decode, strlen(to_decode), NULL, 0);
-			wchar_t* awReadOlnyRmCmd = new wchar_t[size_needed + 1];
-			MultiByteToWideChar(CP_UTF8, 0, to_decode, strlen(to_decode), awReadOlnyRmCmd, size_needed);
-			awReadOlnyRmCmd[size_needed] = '\0';
-			_wsystem(awReadOlnyRmCmd);
-			delete[] awReadOlnyRmCmd;
-#else  
-			system(aReadOlnyRmCmd.c_str());
+          const char* to_decode = aReadOlnyRmCmd.c_str();
+          int size_needed = MultiByteToWideChar(CP_UTF8, 0, to_decode, strlen(to_decode), NULL, 0);
+          wchar_t* awReadOlnyRmCmd = new wchar_t[size_needed + 1];
+          MultiByteToWideChar(CP_UTF8, 0, to_decode, strlen(to_decode), awReadOlnyRmCmd, size_needed);
+          awReadOlnyRmCmd[size_needed] = '\0';
+          _wsystem(awReadOlnyRmCmd);
+          delete[] awReadOlnyRmCmd;
+#else
+          system(aReadOlnyRmCmd.c_str());
 #endif
-		}
+        }
 #endif
         myFid = MEDfileVersionOpen(aFileName,med_access_mode(theMode), myMajor, myMinor, MED_RELEASE_NUM);
       }
       if (theErr)
         *theErr = TErr(myFid);
       else if (myFid < 0)
-        EXCEPTION(std::runtime_error,"TFile - MEDfileVersionOpen('"<<myFileName<<"',"<<theMode<<"',"<< MED_MAJOR_NUM<<"',"<< myMinor<<"',"<< MED_RELEASE_NUM<<")");
+        EXCEPTION(std::runtime_error,"TFile - MEDfileVersionOpen('"<<myFileName<<"',"<<theMode<<"',"<< myMajor <<"',"<< myMinor<<"',"<< MED_RELEASE_NUM<<")");
     }
 
     const TIdt&
