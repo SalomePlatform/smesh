@@ -29,9 +29,14 @@ INCLUDE_DIRECTORIES(
   ${PROJECT_BINARY_DIR}
   ${PROJECT_BINARY_DIR}/idl
   ${PROJECT_BINARY_DIR}/adm_local/unix
-  ${PROJECT_SOURCE_DIR}/src/FrontTrack
+  ${PROJECT_SOURCE_DIR}/src/ADAPTFrontTrack
   ${PROJECT_SOURCE_DIR}/src/ADAPT
   ${PROJECT_SOURCE_DIR}/src/ADAPTGUI
+  ${PROJECT_SOURCE_DIR}/src/SMESH_I
+  ${PROJECT_SOURCE_DIR}/src/SMESH
+  ${PROJECT_SOURCE_DIR}/src/SMESHDS
+  ${PROJECT_SOURCE_DIR}/src/SMDS
+  ${PROJECT_SOURCE_DIR}/src/SMESHUtils
 )
 # additional preprocessor / compiler flags
 ADD_DEFINITIONS(
@@ -50,9 +55,9 @@ SET(_link_LIBRARIES
   ${KERNEL_SalomeGenericObj}
   ${SMESH_SalomeIDLSMESH}
   ${SMESH_SMESHEngine}
-  FrontTrack
-  SalomeIDLADAPT
+  ADAPTFrontTrack
   ADAPTImpl
+  SMESHimpl
 )
 
 # --- headers ---
