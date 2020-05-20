@@ -474,7 +474,7 @@
     </message>
     <message>
         <source>MEN_EDIT</source>
-        <translation>Edition</translation>
+        <translation>Editer</translation>
     </message>
     <message>
         <source>MEN_EDIT_GROUP</source>
@@ -779,6 +779,10 @@
     <message>
         <source>MEN_MODIFY</source>
         <translation>Modification</translation>
+    </message>
+    <message>
+        <source>MEN_ADAPT</source>
+        <translation>Adaptation</translation>
     </message>
     <message>
         <source>MEN_MEASURE</source>
@@ -1107,6 +1111,38 @@
     <message>
         <source>MEN_TRANSF</source>
         <translation>Transformation</translation>
+    </message>
+    <message>
+        <source>MEN_REF_ALL</source>
+        <translation>Raffinement uniforme</translation>
+    </message>
+    <message>
+        <source>MEN_REF_HOMARD</source>
+        <translation>Raffinement avec HOMARD</translation>
+    </message>
+    <message>
+        <source>MEN_HOMARD_CREATE_CASE</source>
+        <translation>Création d'un cas</translation>
+    </message>
+    <message>
+        <source>MEN_HOMARD_FOLLOW_ITERATION</source>
+        <translation>Poursuite d'une itération.</translation>
+    </message>
+    <message>
+        <source>MEN_HOMARD_NEW_ITERATION</source>
+        <translation>Création d'une itération</translation>
+    </message>
+    <message>
+        <source>MEN_HOMARD_COMPUTE</source>
+        <translation>Calculer</translation>
+    </message>
+    <message>
+        <source>MEN_HOMARD_COMPUTE_PUBLISH</source>
+        <translation>Calculer et publier</translation>
+    </message>
+    <message>
+        <source>MEN_MG_ADAPT</source>
+        <translation>Remaillage avec MG_Adapt</translation>
     </message>
     <message>
         <source>MEN_TRANSP</source>
@@ -3080,6 +3116,18 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Construire un groupe</translation>
     </message>
     <message>
+        <source>STB_REF_ALL</source>
+        <translation>Raffinement uniforme</translation>
+    </message>
+    <message>
+        <source>STB_REF_HOMARD</source>
+        <translation>Raffinement avec HOMARD</translation>
+    </message>
+    <message>
+        <source>STB_MG_ADAPT</source>
+        <translation>Remaillage avec MG_Adapt</translation>
+    </message>
+    <message>
         <source>STB_CONV_TO_QUAD</source>
         <translation>Convertir vers/de quadratique</translation>
     </message>
@@ -3672,6 +3720,10 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Barre des contrôles des volumes</translation>
     </message>
     <message>
+        <source>TB_ADAPTATION</source>
+        <translation>Barre de l'adaptation</translation>
+    </message>
+    <message>
         <source>TB_MEASUREM</source>
         <translation>Barre des mesures</translation>
     </message>
@@ -3774,6 +3826,18 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
     <message>
         <source>TOP_CONSTRUCT_GROUP</source>
         <translation>Construire un groupe</translation>
+    </message>
+    <message>
+        <source>TOP_REF_ALL</source>
+        <translation>Raffinement uniforme</translation>
+    </message>
+    <message>
+        <source>TOP_REF_HOMARD</source>
+        <translation>Raffinement avec HOMARD</translation>
+    </message>
+    <message>
+        <source>TOP_MG_ADAPT</source>
+        <translation>Remaillage avec MG_Adapt</translation>
     </message>
     <message>
         <source>TOP_CONV_TO_QUAD</source>

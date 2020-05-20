@@ -333,6 +333,38 @@
         <translation>Construct Group</translation>
     </message>
     <message>
+        <source>MEN_REF_ALL</source>
+        <translation>Uniform refinement</translation>
+    </message>
+    <message>
+        <source>MEN_REF_HOMARD</source>
+        <translation>Refinement with HOMARD</translation>
+    </message>
+    <message>
+        <source>MEN_HOMARD_CREATE_CASE</source>
+        <translation>New case</translation>
+    </message>
+    <message>
+        <source>MEN_HOMARD_FOLLOW_ITERATION</source>
+        <translation>Existing case</translation>
+    </message>
+    <message>
+        <source>MEN_HOMARD_NEW_ITERATION</source>
+        <translation>New iteration</translation>
+    </message>
+    <message>
+        <source>MEN_HOMARD_COMPUTE</source>
+        <translation>Compute</translation>
+    </message>
+    <message>
+        <source>MEN_HOMARD_COMPUTE_PUBLISH</source>
+        <translation>Compute and publish</translation>
+    </message>
+    <message>
+        <source>MEN_MG_ADAPT</source>
+        <translation>Remesh with MG_Adapt</translation>
+    </message>
+    <message>
         <source>MEN_CONV_TO_QUAD</source>
         <translation>Convert to/from quadratic</translation>
     </message>
@@ -779,6 +811,10 @@
     <message>
         <source>MEN_MODIFY</source>
         <translation>Modification</translation>
+    </message>
+    <message>
+        <source>MEN_ADAPT</source>
+        <translation>Adaptation</translation>
     </message>
     <message>
         <source>MEN_MEASURE</source>
@@ -1493,6 +1529,10 @@ Please enter correct values and try again</translation>
     <message>
         <source>SMESH_AVAILABLE</source>
         <translation>Available</translation>
+    </message>
+    <message>
+        <source>SMESH_NOT_AVAILABLE</source>
+        <translation>Not available</translation>
     </message>
     <message>
         <source>SMESH_AVAILABLE_ALGORITHMS</source>
@@ -3105,6 +3145,18 @@ Use Display Entity menu command to show them.
         <translation>Construct Group</translation>
     </message>
     <message>
+        <source>STB_REF_ALL</source>
+        <translation>Uniform refinement</translation>
+    </message>
+    <message>
+        <source>STB_REF_HOMARD</source>
+        <translation>Refinement with HOMARD</translation>
+    </message>
+    <message>
+        <source>STB_MG_ADAPT</source>
+        <translation>Remesh with MG_Adapt</translation>
+    </message>
+    <message>
         <source>STB_CONV_TO_QUAD</source>
         <translation>Convert to/from quadratic</translation>
     </message>
@@ -3701,6 +3753,10 @@ Use Display Entity menu command to show them.
         <translation>Volume Controls Toolbar</translation>
     </message>
     <message>
+        <source>TB_ADAPTATION</source>
+        <translation>Adaptation Toolbar</translation>
+    </message>
+    <message>
         <source>TB_MEASUREM</source>
         <translation>Measurements Toolbar</translation>
     </message>
@@ -3803,6 +3859,18 @@ Use Display Entity menu command to show them.
     <message>
         <source>TOP_CONSTRUCT_GROUP</source>
         <translation>Construct Group</translation>
+    </message>
+    <message>
+        <source>TOP_REF_ALL</source>
+        <translation>Uniform refinement</translation>
+    </message>
+    <message>
+        <source>TOP_REF_HOMARD</source>
+        <translation>Refinement with HOMARD</translation>
+    </message>
+    <message>
+        <source>TOP_MG_ADAPT</source>
+        <translation>Remesh with MG_Adapt</translation>
     </message>
     <message>
         <source>TOP_CONV_TO_QUAD</source>

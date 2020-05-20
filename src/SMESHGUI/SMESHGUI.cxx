@@ -3018,6 +3018,17 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       break;
     }
   case SMESHOp::OpSplitBiQuadratic:
+
+  case SMESHOp::OpUniformRefinement:
+  case SMESHOp::OpHONewCase:
+  case SMESHOp::OpHOCaseFollow:
+  case SMESHOp::OpHONewIter:
+  case SMESHOp::OpHOIterCompute:
+  case SMESHOp::OpHOIterComputePublish:
+  case SMESHOp::OpHOEdit:
+  case SMESHOp::OpHODelete:
+  case SMESHOp::OpMGAdapt:
+
   case SMESHOp::OpConvertMeshToQuadratic:
   case SMESHOp::OpCreateBoundaryElements: // create 2D mesh from 3D
   case SMESHOp::OpReorientFaces:
@@ -4252,6 +4263,17 @@ void SMESHGUI::initialize( CAM_Application* app )
   createSMESHAction( SMESHOp::OpAutoColor,        "AUTO_COLOR" );
   createSMESHAction( SMESHOp::OpDisableAutoColor, "DISABLE_AUTO_COLOR" );
 
+// Mesh adaptation
+  createSMESHAction( SMESHOp::OpUniformRefinement,    "REF_ALL",                 "ICON_REF_ALL" );
+  createSMESHAction( SMESHOp::OpHONewCase,            "HOMARD_CREATE_CASE",      "ICON_HOMARD_CREATE_CASE" );
+  createSMESHAction( SMESHOp::OpHOCaseFollow,         "HOMARD_FOLLOW_ITERATION", "ICON_HOMARD_FOLLOW_ITERATION" );
+  createSMESHAction( SMESHOp::OpHONewIter,            "HOMARD_NEW_ITERATION",    "ICON_HOMARD_NEW_ITERATION" );
+  createSMESHAction( SMESHOp::OpHOIterCompute,        "HOMARD_COMPUTE",          "ICON_HOMARD_COMPUTE" );
+  createSMESHAction( SMESHOp::OpHOIterComputePublish, "HOMARD_COMPUTE_PUBLISH",  "ICON_HOMARD_COMPUTE_PUBLISH" );
+  createSMESHAction( SMESHOp::OpHOEdit,               "EDIT",                    "ICON_DLG_EDIT_MESH" );
+  createSMESHAction( SMESHOp::OpHODelete,             "DELETE",                  "ICON_DELETE" );
+  createSMESHAction( SMESHOp::OpMGAdapt,              "MG_ADAPT",                "ICON_MG_ADAPT" );
+
   createSMESHAction( SMESHOp::OpMinimumDistance,  "MEASURE_MIN_DIST", "ICON_MEASURE_MIN_DIST" );
   createSMESHAction( SMESHOp::OpBoundingBox,      "MEASURE_BND_BOX",  "ICON_MEASURE_BND_BOX" );
   createSMESHAction( SMESHOp::OpPropertiesLength, "MEASURE_LENGTH",   "ICON_MEASURE_LENGTH" );
@@ -4293,6 +4315,7 @@ void SMESHGUI::initialize( CAM_Application* app )
       meshId    = createMenu( tr( "MEN_MESH" ),    -1, 70, 10 ),
       ctrlId    = createMenu( tr( "MEN_CTRL" ),    -1, 60, 10 ),
       modifyId  = createMenu( tr( "MEN_MODIFY" ),  -1, 40, 10 ),
+      adaptId   = createMenu( tr( "MEN_ADAPT" ),   -1, 80, 10 ),
       measureId = createMenu( tr( "MEN_MEASURE" ), -1, 50, 10 ),
       viewId    = createMenu( tr( "MEN_VIEW" ),    -1,  2 );
 
@@ -4310,6 +4333,7 @@ void SMESHGUI::initialize( CAM_Application* app )
       removeId = createMenu( tr( "MEN_REMOVE" ), modifyId, 403 ),
     //renumId  = createMenu( tr( "MEN_RENUM" ),  modifyId, 404 ),
       transfId = createMenu( tr( "MEN_TRANSF" ), modifyId, 405 ),
+      refHomardId = createMenu( tr( "MEN_REF_HOMARD" ), adaptId, -1, 10 ),
       basicPropId = createMenu( tr( "MEN_BASIC_PROPERTIES" ), measureId, -1, 10 );
 
   //createMenu( SMESHOp::OpImportDAT, importId, -1 );
@@ -4465,6 +4489,18 @@ void SMESHGUI::initialize( CAM_Application* app )
   createMenu( SMESHOp::OpSmoothing,              modifyId, -1 );
   createMenu( SMESHOp::OpPatternMapping,         modifyId, -1 );
 
+  createMenu( SMESHOp::OpUniformRefinement,    adaptId, -1 );
+  createMenu( SMESHOp::OpHONewCase,            refHomardId, -1 );
+  createMenu( SMESHOp::OpHOCaseFollow,         refHomardId, -1 );
+  createMenu( separator(),                     refHomardId, -1 );
+  createMenu( SMESHOp::OpHONewIter,            refHomardId, -1 );
+  createMenu( SMESHOp::OpHOIterCompute,        refHomardId, -1 );
+  createMenu( SMESHOp::OpHOIterComputePublish, refHomardId, -1 );
+  createMenu( separator(),                     refHomardId, -1 );
+  createMenu( SMESHOp::OpHOEdit,               refHomardId, -1 );
+  createMenu( SMESHOp::OpHODelete,             refHomardId, -1 );
+  createMenu( SMESHOp::OpMGAdapt,              adaptId, -1 );
+
   createMenu( SMESHOp::OpMinimumDistance,  measureId,   -1 );
   createMenu( SMESHOp::OpBoundingBox,      measureId,   -1 );
   createMenu( SMESHOp::OpAngle,            measureId,   -1 );
@@ -4492,6 +4528,7 @@ void SMESHGUI::initialize( CAM_Application* app )
     //renumbTb     = createTool( tr( "TB_RENUMBER" ),  QString( "SMESHRenumberingToolbar" ) ),
       transformTb  = createTool( tr( "TB_TRANSFORM" ), QString( "SMESHTransformationToolbar" ) ),
       modifyTb     = createTool( tr( "TB_MODIFY" ),    QString( "SMESHModificationToolbar" ) ),
+//       adaptTb      = createTool( tr( "TB_ADAPTATION" ),QString( "SMESHAdaptationToolbar" ) ),
       measuremTb   = createTool( tr( "TB_MEASUREM" ),  QString( "SMESHMeasurementsToolbar" ) ),
       dispModeTb   = createTool( tr( "TB_DISP_MODE" ), QString( "SMESHDisplayModeToolbar" ) );
 
@@ -4611,6 +4648,10 @@ void SMESHGUI::initialize( CAM_Application* app )
   createTool( SMESHOp::OpSmoothing,              modifyTb );
   createTool( SMESHOp::OpPatternMapping,         modifyTb );
 
+//   createTool( SMESHOp::OpUniformRefinement, adaptTb );
+//   createTool( SMESHOp::OpHOMARDRefinement,  adaptTb );
+//   createTool( SMESHOp::OpMGAdapt,           adaptTb );
+
   createTool( SMESHOp::OpMinimumDistance, measuremTb );
 
   createTool( SMESHOp::OpUpdate, dispModeTb );
@@ -4689,6 +4730,9 @@ void SMESHGUI::initialize( CAM_Application* app )
   popupMgr()->insert( separator(), -1, 0 );
   createPopupItem( SMESHOp::OpClearMesh,              OB, mesh );
   //popupMgr()->insert( separator(), -1, 0 );
+//   createPopupItem( SMESHOp::OpUniformRefinement, OB, mesh );
+//   createPopupItem( SMESHOp::OpHOMARDRefinement,  OB, mesh );
+//   createPopupItem( SMESHOp::OpMGAdapt,           OB, mesh );
 
   QString only_one_non_empty = QString( " && %1=1 && numberOfNodes>0" ).arg( dc );
   QString multiple_non_empty = QString( " && %1>0 && numberOfNodes>0" ).arg( dc );
@@ -5833,6 +5877,24 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
   {
     case SMESHOp::OpSplitBiQuadratic:
       op = new SMESHGUI_SplitBiQuadOp();
+    break;
+    case SMESHOp::OpUniformRefinement:
+    break;
+    case SMESHOp::OpHONewCase:
+    break;
+    case SMESHOp::OpHOCaseFollow:
+    break;
+    case SMESHOp::OpHONewIter:
+    break;
+    case SMESHOp::OpHOIterCompute:
+    break;
+    case SMESHOp::OpHOIterComputePublish:
+    break;
+    case SMESHOp::OpHOEdit:
+    break;
+    case SMESHOp::OpHODelete:
+    break;
+    case SMESHOp::OpMGAdapt:
     break;
     case SMESHOp::OpConvertMeshToQuadratic:
       op = new SMESHGUI_ConvToQuadOp();
