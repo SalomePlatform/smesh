@@ -1,0 +1,87 @@
+// Copyright (C) 2011-2020  CEA/DEN, EDF R&D
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License, or (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+//
+// See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
+//
+
+// Remarques :
+// L'ordre de description des fonctions est le meme dans tous les fichiers
+// HOMARD_aaaa.idl, HOMARD_aaaa.hxx, HOMARD_aaaa.cxx, HOMARD_aaaa_i.hxx, HOMARD_aaaa_i.cxx :
+// 1. Les generalites : Name, Delete, DumpPython, Dump, Restore
+// 2. Les caracteristiques
+// 3. Le lien avec les autres structures
+//
+// Quand les 2 fonctions Setxxx et Getxxx sont presentes, Setxxx est decrit en premier
+//
+
+#ifndef _HOMARD_YACS_IDL
+#define _HOMARD_YACS_IDL
+
+#include "SALOME_Component.idl"
+#include "SALOME_Exception.idl"
+#include "SALOMEDS.idl"
+
+module HOMARD
+{
+  interface HOMARD_YACS : Engines::EngineComponent
+  {
+// Generalites
+    void     SetName(in string Name)                       raises (SALOME::SALOME_Exception);
+    string   GetName()                                     raises (SALOME::SALOME_Exception);
+
+    long     Delete(in long Option)                        raises (SALOME::SALOME_Exception);
+
+    string   GetDumpPython()                               raises (SALOME::SALOME_Exception);
+
+// Caracteristiques
+    void     SetType (in long Type)                        raises (SALOME::SALOME_Exception);
+    long     GetType()                                     raises (SALOME::SALOME_Exception);
+
+    void     SetMaxIter (in long MaxIter)                  raises (SALOME::SALOME_Exception);
+    long     GetMaxIter()                                  raises (SALOME::SALOME_Exception);
+    void     SetMaxNode (in long MaxNode)                  raises (SALOME::SALOME_Exception);
+    long     GetMaxNode()                                  raises (SALOME::SALOME_Exception);
+    void     SetMaxElem (in long MaxElem)                  raises (SALOME::SALOME_Exception);
+    long     GetMaxElem()                                  raises (SALOME::SALOME_Exception);
+
+    void     SetTestConvergence (in long TypeTest, in double VRef)
+                                                           raises (SALOME::SALOME_Exception);
+    long     GetTestConvergenceType()                      raises (SALOME::SALOME_Exception);
+    double   GetTestConvergenceVRef()                      raises (SALOME::SALOME_Exception);
+
+    void     SetDirName(in string NomDir)                  raises (SALOME::SALOME_Exception);
+    string   GetDirName()                                  raises (SALOME::SALOME_Exception);
+
+    void     SetMeshFile(in string MeshFile)               raises (SALOME::SALOME_Exception);
+    string   GetMeshFile()                                 raises (SALOME::SALOME_Exception);
+
+    void     SetScriptFile(in string ScriptFile)           raises (SALOME::SALOME_Exception);
+    string   GetScriptFile()                               raises (SALOME::SALOME_Exception);
+
+    void     SetXMLFile(in string XMLFile)                 raises (SALOME::SALOME_Exception);
+    string   GetXMLFile()                                  raises (SALOME::SALOME_Exception);
+
+    long     Write()                                       raises (SALOME::SALOME_Exception);
+    long     WriteOnFile( in string YACSFile )             raises (SALOME::SALOME_Exception);
+
+// Liens avec les autres structures
+    void     SetCaseName(in string NomCas)                 raises (SALOME::SALOME_Exception);
+    string   GetCaseName()                                 raises (SALOME::SALOME_Exception);
+
+// Divers
+  };
+};
+#endif
