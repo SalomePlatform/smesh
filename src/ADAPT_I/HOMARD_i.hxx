@@ -21,7 +21,7 @@
 #define _HOMARD_I_HXX_
 
 #ifdef WIN32
-  #if defined HOMARDENGINE_EXPORTS || defined HOMARDEngine_EXPORTS
+  #if defined HOMARDENGINE_EXPORTS || defined ADAPTEngine_EXPORTS
     #define HOMARDENGINE_EXPORT __declspec( dllexport )
   #else
     #define HOMARDENGINE_EXPORT __declspec( dllimport )

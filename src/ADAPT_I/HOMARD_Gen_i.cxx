@@ -32,7 +32,7 @@
 
 #include "FrontTrack.hxx"
 
-#include "HOMARD_version.h"
+#include "SMESH_version.h"
 
 #include "utilities.h"
 #include "Basics_Utils.hxx"
@@ -5174,9 +5174,9 @@ void SALOMEException( std::string message )
 char* HOMARD_Gen_i::getVersion()
 {
 #if HOMARD_DEVELOPMENT
-  return CORBA::string_dup(HOMARD_VERSION_STR"dev");
+  return CORBA::string_dup(SMESH_VERSION_STR"dev");
 #else
-  return CORBA::string_dup(HOMARD_VERSION_STR);
+  return CORBA::string_dup(SMESH_VERSION_STR);
 #endif
 }
 //===============================================================================
@@ -5419,13 +5419,13 @@ CORBA::Long HOMARD_Gen_i::GetYACSConvergenceType()
 extern "C"
 {
   HOMARDENGINE_EXPORT
-  PortableServer::ObjectId* HOMARDEngine_factory(CORBA::ORB_ptr orb,
+  PortableServer::ObjectId* ADAPTEngine_factory(CORBA::ORB_ptr orb,
 						  PortableServer::POA_ptr poa,
 						  PortableServer::ObjectId* contId,
 						  const char* instanceName,
 						  const char* interfaceName)
   {
-    MESSAGE("PortableServer::ObjectId* HOMARDEngine_factory()");
+    MESSAGE("PortableServer::ObjectId* ADAPTEngine_factory()");
     HOMARD_Gen_i* myHOMARD_Gen = new HOMARD_Gen_i(orb, poa, contId, instanceName, interfaceName);
     return myHOMARD_Gen->getId();
   }
