@@ -94,6 +94,7 @@ void StdMeshers_LayerDistribution::SetLayerDistribution(SMESH_Hypothesis* hyp1D)
 
 ostream & StdMeshers_LayerDistribution::SaveTo(ostream & save)
 {
+  save << "StdMeshers_LayerDistribution"; // just to enable "Edit" in pop-up menu
   return save;
 }
 
