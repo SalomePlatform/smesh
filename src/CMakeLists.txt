@@ -40,6 +40,8 @@ SET(SUBDIRS_COMMON
   StdMeshers_I
   SMESH_PY
   Tools
+  ADAPT
+  ADAPT_I
 )
 
 IF(SALOME_SMESH_ENABLE_MEFISTO)
@@ -65,6 +67,7 @@ IF(SALOME_BUILD_GUI)
                   PluginUtils
 	          SMESH_SWIG_WITHIHM
 	          StdMeshersGUI
+	          ADAPTGUI
   )
 ENDIF(SALOME_BUILD_GUI)
 
