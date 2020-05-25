@@ -2930,6 +2930,46 @@ Check algorithm documentation for supported geometry</translation>
         <translation>Multicolor</translation>
     </message>
     <message>
+        <source>ADAPT_PREF_TAB_GENERAL</source>
+        <translation>Adaptation</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_PUBLICATION</source>
+        <translation>Publication</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_PUBLICATION_MAILLAGE_IN</source>
+        <translation>IN meshes</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_PUBLICATION_MAILLAGE_OUT</source>
+        <translation>OUT meshes</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_YACS_MAX</source>
+        <translation>Maximum numbers</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_YACS_MAX_ITER</source>
+        <translation>Iterations</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_YACS_MAX_NODE</source>
+        <translation>Nodes</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_YACS_MAX_ELEM</source>
+        <translation>Elements</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_YACS_CONVERGENCE</source>
+        <translation>Convergence</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_YACS_TYPE_TEST</source>
+        <translation>Test type</translation>
+    </message>
+    <message>
         <source>SMESH_VISU_PROBLEM</source>
         <translation>Mesh visualization failed</translation>
     </message>

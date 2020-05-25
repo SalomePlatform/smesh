@@ -1123,49 +1123,5 @@
         <source>HOM_YACS_EDIT_WINDOW_TITLE</source>
         <translation>Edition d'un schéma YACS</translation>
     </message>
-    <message>
-        <source>PREF_TAB_GENERAL</source>
-        <translation>Général</translation>
-    </message>
-    <message>
-        <source>PREF_PUBLICATION</source>
-        <translation>Publication</translation>
-    </message>
-    <message>
-        <source>PREF_PUBLICATION_MAILLAGE_IN</source>
-        <translation>Les maillages d'entrée</translation>
-    </message>
-    <message>
-        <source>PREF_PUBLICATION_MAILLAGE_OUT</source>
-        <translation>Les maillages de sortie</translation>
-    </message>
-    <message>
-        <source>PREF_YACS</source>
-        <translation>YACS</translation>
-    </message>
-    <message>
-        <source>PREF_YACS_MAX</source>
-        <translation>Nombres maximum</translation>
-    </message>
-    <message>
-        <source>PREF_YACS_MAX_ITER</source>
-        <translation>Itérations</translation>
-    </message>
-    <message>
-        <source>PREF_YACS_MAX_NODE</source>
-        <translation>Noeuds</translation>
-    </message>
-    <message>
-        <source>PREF_YACS_MAX_ELEM</source>
-        <translation>Eléments</translation>
-    </message>
-    <message>
-        <source>PREF_YACS_CONVERGENCE</source>
-        <translation>Convergence</translation>
-    </message>
-    <message>
-        <source>PREF_YACS_TYPE_TEST</source>
-        <translation>Type de test</translation>
-    </message>
 </context>
 </TS>

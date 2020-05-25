@@ -94,6 +94,7 @@
 #include "SMESHGUI_TransparencyDlg.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
+#include "ADAPTGUI.h"
 
 #include "SMESH_version.h"
 
@@ -5713,6 +5714,38 @@ void SMESHGUI::createPreferences()
   setPreferenceProperty( coloringType, "indexes", indices );
   addPreference( tr( "SMESH_DISTRIBUTION_COLOR" ), distributionGr, LightApp_Preferences::Color, "SMESH", "distribution_color" );
 
+  // Adaptation tab ------------------------------------------------------------------------
+  int adaptTab = addPreference( tr( "ADAPT_PREF_TAB_GENERAL" ) );
+  int bloc, pref ;
+  // Refinement with HOMARD
+  bloc = addPreference( tr( "ADAPT_PREF_PUBLICATION" ), adaptTab );
+  setPreferenceProperty( bloc, "columns", 1 );
+  pref = addPreference( tr( "ADAPT_PREF_PUBLICATION_MAILLAGE_IN" ), bloc, LightApp_Preferences::Bool, "HOMARD", "publish_mesh_in" );
+  pref = addPreference( tr( "ADAPT_PREF_PUBLICATION_MAILLAGE_OUT" ), bloc, LightApp_Preferences::Bool, "HOMARD", "publish_mesh_out" );
+
+  bloc = addPreference( tr( "ADAPT_PREF_YACS_MAX" ), adaptTab );
+  setPreferenceProperty( bloc, "columns", 1 );
+  pref = addPreference( tr( "ADAPT_PREF_YACS_MAX_ITER" ), bloc, LightApp_Preferences::IntSpin, "HOMARD", "yacs_max_iter" );
+  setPreferenceProperty( pref, "min",  0 );
+  setPreferenceProperty( pref, "max",  100000000 );
+  setPreferenceProperty( pref, "step", 1 );
+  pref = addPreference( tr( "ADAPT_PREF_YACS_MAX_NODE" ), bloc, LightApp_Preferences::IntSpin, "HOMARD", "yacs_max_node" );
+  setPreferenceProperty( pref, "min",  0 );
+  setPreferenceProperty( pref, "max",  100000000 );
+  setPreferenceProperty( pref, "step", 1000 );
+  pref = addPreference( tr( "ADAPT_PREF_YACS_MAX_ELEM" ), bloc, LightApp_Preferences::IntSpin, "HOMARD", "yacs_max_elem" );
+  setPreferenceProperty( pref, "min",  0 );
+  setPreferenceProperty( pref, "max",  100000000 );
+  setPreferenceProperty( pref, "step", 1000 );
+  bloc = addPreference( tr( "ADAPT_PREF_YACS_CONVERGENCE" ), adaptTab );
+  setPreferenceProperty( bloc, "columns", 1 );
+  pref = addPreference( tr( "ADAPT_PREF_YACS_TYPE_TEST" ), bloc, LightApp_Preferences::Selector, "HOMARD", "yacs_type_test" );
+  QStringList aListOfTypeTest;
+  aListOfTypeTest << "None";
+  aListOfTypeTest << "VTest > VRef";
+  aListOfTypeTest << "VTest < VRef";
+  setPreferenceProperty( pref, "strings", aListOfTypeTest );
+
 }
 
 void SMESHGUI::preferencesChanged( const QString& sect, const QString& name )
@@ -5879,22 +5912,15 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
       op = new SMESHGUI_SplitBiQuadOp();
     break;
     case SMESHOp::OpUniformRefinement:
-    break;
     case SMESHOp::OpHONewCase:
-    break;
     case SMESHOp::OpHOCaseFollow:
-    break;
     case SMESHOp::OpHONewIter:
-    break;
     case SMESHOp::OpHOIterCompute:
-    break;
     case SMESHOp::OpHOIterComputePublish:
-    break;
     case SMESHOp::OpHOEdit:
-    break;
     case SMESHOp::OpHODelete:
-    break;
     case SMESHOp::OpMGAdapt:
+//       op = new ADAPTGUI( id );
     break;
     case SMESHOp::OpConvertMeshToQuadratic:
       op = new SMESHGUI_ConvToQuadOp();

@@ -411,49 +411,5 @@
         <source>HOM_YACS_EDIT_WINDOW_TITLE</source>
         <translation>Edition of a schema YACS</translation>
     </message>
-    <message>
-        <source>PREF_TAB_GENERAL</source>
-        <translation>General</translation>
-    </message>
-    <message>
-        <source>PREF_PUBLICATION</source>
-        <translation>Publication</translation>
-    </message>
-    <message>
-        <source>PREF_PUBLICATION_MAILLAGE_IN</source>
-        <translation>IN meshes</translation>
-    </message>
-    <message>
-        <source>PREF_PUBLICATION_MAILLAGE_OUT</source>
-        <translation>OUT meshes</translation>
-    </message>
-    <message>
-        <source>PREF_YACS</source>
-        <translation>YACS</translation>
-    </message>
-    <message>
-        <source>PREF_YACS_MAX</source>
-        <translation>Maximum numbers</translation>
-    </message>
-    <message>
-        <source>PREF_YACS_MAX_ITER</source>
-        <translation>Iterations</translation>
-    </message>
-    <message>
-        <source>PREF_YACS_MAX_NODE</source>
-        <translation>Nodes</translation>
-    </message>
-    <message>
-        <source>PREF_YACS_MAX_ELEM</source>
-        <translation>Elements</translation>
-    </message>
-    <message>
-        <source>PREF_YACS_CONVERGENCE</source>
-        <translation>Convergence</translation>
-    </message>
-    <message>
-        <source>PREF_YACS_TYPE_TEST</source>
-        <translation>Test type</translation>
-    </message>
 </context>
 </TS>

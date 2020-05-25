@@ -2900,6 +2900,46 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
         <translation>Multicouleur</translation>
     </message>
     <message>
+        <source>ADAPT_PREF_TAB_GENERAL</source>
+        <translation>Adaptation</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_PUBLICATION</source>
+        <translation>Publication</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_PUBLICATION_MAILLAGE_IN</source>
+        <translation>Les maillages d'entrée</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_PUBLICATION_MAILLAGE_OUT</source>
+        <translation>Les maillages de sortie</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_YACS_MAX</source>
+        <translation>Nombres maximaux</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_YACS_MAX_ITER</source>
+        <translation>Itérations</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_YACS_MAX_NODE</source>
+        <translation>Noeuds</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_YACS_MAX_ELEM</source>
+        <translation>Eléments</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_YACS_CONVERGENCE</source>
+        <translation>Convergence</translation>
+    </message>
+    <message>
+        <source>ADAPT_PREF_YACS_TYPE_TEST</source>
+        <translation>Type de test</translation>
+    </message>
+    <message>
         <source>SMESH_VISU_PROBLEM</source>
         <translation>Impossible de visualiser le maillage, probablement à cause d&apos;un manque de mémoire</translation>
     </message>
