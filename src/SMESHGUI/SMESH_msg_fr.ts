@@ -3124,6 +3124,30 @@ Utilisez le menu &quot;Visualiser une entité&quot; pour les afficher.
         <translation>Raffinement avec HOMARD</translation>
     </message>
     <message>
+        <source>STB_HOMARD_CREATE_CASE</source>
+        <translation>Création d'un nouveau cas</translation>
+    </message>
+    <message>
+        <source>STB_HOMARD_FOLLOW_ITERATION</source>
+        <translation>Création d'un nouveau cas : poursuite d'une itération stockée</translation>
+    </message>
+    <message>
+        <source>STB_HOMARD_NEW_ITERATION</source>
+        <translation>Création d'une nouvelle itération</translation>
+    </message>
+    <message>
+        <source>STB_HOMARD_COMPUTE</source>
+        <translation>Calcule le raffinement</translation>
+    </message>
+    <message>
+        <source>STB_HOMARD_COMPUTE_PUBLISH</source>
+        <translation>Calcule le raffinement et publie le maillage résultat</translation>
+    </message>
+    <message>
+        <source>STB_EDIT</source>
+        <translation>Edit</translation>
+    </message>
+    <message>
         <source>STB_MG_ADAPT</source>
         <translation>Remaillage avec MG_Adapt</translation>
     </message>

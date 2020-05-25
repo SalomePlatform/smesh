@@ -3153,6 +3153,30 @@ Use Display Entity menu command to show them.
         <translation>Refinement with HOMARD</translation>
     </message>
     <message>
+        <source>STB_HOMARD_CREATE_CASE</source>
+        <translation>Creation of a new case</translation>
+    </message>
+    <message>
+        <source>STB_HOMARD_FOLLOW_ITERATION</source>
+        <translation>Creation of a new case: pursuit of a stored iteration</translation>
+    </message>
+    <message>
+        <source>STB_HOMARD_NEW_ITERATION</source>
+        <translation>Creation of a next iteration</translation>
+    </message>
+    <message>
+        <source>STB_HOMARD_COMPUTE</source>
+        <translation>Compute the refinement</translation>
+    </message>
+    <message>
+        <source>STB_HOMARD_COMPUTE_PUBLISH</source>
+        <translation>Compute the refinement and publish the final mesh</translation>
+    </message>
+    <message>
+        <source>STB_EDIT</source>
+        <translation>Edit</translation>
+    </message>
+    <message>
         <source>STB_MG_ADAPT</source>
         <translation>Remesh with MG_Adapt</translation>
     </message>
