@@ -44,7 +44,7 @@ SET(_link_LIBRARIES
 
 # header files / to be processed by moc
 SET(ADAPTFrontTrack_Swig_HEADERS
-  FrontTrack_Swig.i
+  FrontTrack.i
 )
 
 # --- sources ---
@@ -62,7 +62,7 @@ SET_SOURCE_FILES_PROPERTIES(FrontTrack_Swig.i PROPERTIES SWIG_DEFINITIONS "-shad
 
 # scripts / swig wrappings
 SET(_swig_SCRIPTS
-  ${CMAKE_CURRENT_BINARY_DIR}/FrontTrack.py 
+  ${CMAKE_CURRENT_BINARY_DIR}/FrontTrack.py
 )
 
 # --- rules ---
