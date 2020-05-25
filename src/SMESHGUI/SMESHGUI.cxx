@@ -30,6 +30,7 @@
 
 //  SMESH includes
 #include "SMESHGUI.h"
+#include "SMESHGUI_AdaptDlg.h"
 #include "SMESHGUI_Add0DElemsOnAllNodesDlg.h"
 #include "SMESHGUI_AddMeshElementDlg.h"
 #include "SMESHGUI_AddQuadraticElementDlg.h"
@@ -94,7 +95,6 @@
 #include "SMESHGUI_TransparencyDlg.h"
 #include "SMESHGUI_Utils.h"
 #include "SMESHGUI_VTKUtils.h"
-#include "ADAPTGUI.h"
 
 #include "SMESH_version.h"
 
@@ -5920,7 +5920,8 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
     case SMESHOp::OpHOEdit:
     case SMESHOp::OpHODelete:
     case SMESHOp::OpMGAdapt:
-//       op = new ADAPTGUI( id );
+      SMESHGUI_GroupDlg *aDlg = new SMESHGUI_AdaptDlg( this, id);
+      aDlg->show();
     break;
     case SMESHOp::OpConvertMeshToQuadratic:
       op = new SMESHGUI_ConvToQuadOp();
