@@ -2947,7 +2947,7 @@ Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>ADAPT_PREF_YACS_MAX</source>
-        <translation>Maximum numbers</translation>
+        <translation>Maximum numbers for a YACS schema with HOMARD</translation>
     </message>
     <message>
         <source>ADAPT_PREF_YACS_MAX_ITER</source>
@@ -2967,7 +2967,7 @@ Check algorithm documentation for supported geometry</translation>
     </message>
     <message>
         <source>ADAPT_PREF_YACS_TYPE_TEST</source>
-        <translation>Test type</translation>
+        <translation>Test type for a YACS schema with HOMARD</translation>
     </message>
     <message>
         <source>SMESH_VISU_PROBLEM</source>
