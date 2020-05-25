@@ -2917,7 +2917,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>ADAPT_PREF_YACS_MAX</source>
-        <translation>Nombres maximaux</translation>
+        <translation>Nombres maximaux pour un schéma YACS avec HOMARD</translation>
     </message>
     <message>
         <source>ADAPT_PREF_YACS_MAX_ITER</source>
@@ -2937,7 +2937,7 @@ Référez-vous à la documentation sur l&apos;algorithme et la géométrie suppo
     </message>
     <message>
         <source>ADAPT_PREF_YACS_TYPE_TEST</source>
-        <translation>Type de test</translation>
+        <translation>Type de test pour un schéma YACS avec HOMARD</translation>
     </message>
     <message>
         <source>SMESH_VISU_PROBLEM</source>
