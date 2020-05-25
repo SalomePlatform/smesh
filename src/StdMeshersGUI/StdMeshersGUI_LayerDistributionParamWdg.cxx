@@ -207,7 +207,11 @@ void StdMeshersGUI_LayerDistributionParamWdg::onEdit()
   if ( !editor ) return;
 
   if ( myDlg )
-    myDlg->hide();
+  {
+    //myDlg->hide(); -- pb: show() does not work
+    myDlg->setWindowTitle( tr( "SMESH_HYPOTHESIS" ));
+    myDlg->setEnabled(false);
+  }
 
   try {
     QWidget* parent = this;
@@ -223,5 +227,8 @@ void StdMeshersGUI_LayerDistributionParamWdg::onEdit()
 void StdMeshersGUI_LayerDistributionParamWdg::onEdited( int result )
 {
   if ( myDlg )
-    myDlg->show();
+  {
+    //myDlg->show(); does not work
+    myDlg->setEnabled(true);
+  }
 }
