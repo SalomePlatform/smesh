@@ -36,7 +36,7 @@
 #include "SALOMEconfig.h"
 #include "utilities.h"
 #include <string>
-#include <HOMARDGUI.h>
+#include <ADAPTGUI.h>
 
 
 #include <qstring.h>
@@ -256,7 +256,7 @@ void HOMARD_UTILS::PushOnHelp(QString monFichierAide, QString contexte, QString 
   LightApp_Application* app = (LightApp_Application*)(SUIT_Session::session()->activeApplication());
   if (app)
   {
-    HOMARDGUI* aHomardGUI = dynamic_cast<HOMARDGUI*>( app->module( "Homard" ) );
+    ADAPTGUI* aHomardGUI = dynamic_cast<ADAPTGUI*>( app->module( "Homard" ) );
     // Repertoire de reference de la documentation
     QString rep = aHomardGUI ? app->moduleName(aHomardGUI->moduleName()) : QString("") ;
     // WARNING/ATTENTION : si on savait recuperer la langue depuis les preferences, on ne ferait pas le passage par argument

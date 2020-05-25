@@ -17,11 +17,11 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  HOMARDGUI : HOMARD component GUI implemetation
+//  ADAPTGUI : HOMARD component GUI implemetation
 //
 
-#ifndef _HOMARDGUI_H_
-#define _HOMARDGUI_H_
+#ifndef _ADAPTGUI_H_
+#define _ADAPTGUI_H_
 
 #include "HOMARDGUI_Exports.hxx"
 
@@ -38,13 +38,13 @@
 
 class SalomeApp_Application;
 
-class HOMARD_EXPORT HOMARDGUI: public SalomeApp_Module
+class HOMARD_EXPORT ADAPTGUI: public SalomeApp_Module
 {
   Q_OBJECT
 
 public:
-   HOMARDGUI(const QString&);
-  ~HOMARDGUI();
+   ADAPTGUI(const QString&);
+  ~ADAPTGUI();
 
 
 

@@ -17,11 +17,11 @@
 // See http://www.salome-platform.org/ or email : webmaster.salome@opencascade.com
 //
 
-//  File   : HOMARDGUI.cxx
+//  File   : ADAPTGUI.cxx
 //  Author : Gerald NICOLAS, EDF
 //  Module : HOMARD
 
-#include "HOMARDGUI.h"
+#include "ADAPTGUI.h"
 
 // SALOME Includes
 #include "Utils_ORB_INIT.hxx"
@@ -84,18 +84,18 @@ using namespace std;
 static CORBA::ORB_var _orb;
 
 //=======================================================================
-// function : HOMARDGUI()
+// function : ADAPTGUI()
 // purpose  : Constructor
 //=======================================================================
-HOMARDGUI::HOMARDGUI(const QString&) :
+ADAPTGUI::ADAPTGUI(const QString&) :
            SalomeApp_Module( "HOMARD" ) // default name
 {
 }
 //=======================================================================
-// function : ~HOMARDGUI()
+// function : ~ADAPTGUI()
 // purpose  : Destructor
 //=======================================================================
-HOMARDGUI::~HOMARDGUI()
+ADAPTGUI::~ADAPTGUI()
 {
 }
 
@@ -103,7 +103,7 @@ HOMARDGUI::~HOMARDGUI()
 // function : InitHOMARDGen
 // launch HOMARD component and return a handle
 //=======================================================================
-HOMARD::HOMARD_Gen_var HOMARDGUI::InitHOMARDGen(SalomeApp_Application* app)
+HOMARD::HOMARD_Gen_var ADAPTGUI::InitHOMARDGen(SalomeApp_Application* app)
 {
   Engines::EngineComponent_var comp = app->lcc()->FindOrLoad_Component( "FactoryServer","HOMARD" );
   HOMARD::HOMARD_Gen_var clr = HOMARD::HOMARD_Gen::_narrow(comp);
@@ -113,7 +113,7 @@ HOMARD::HOMARD_Gen_var HOMARDGUI::InitHOMARDGen(SalomeApp_Application* app)
 
 //=======================================================================
 // Module's initialization
-void HOMARDGUI::initialize( CAM_Application* app )
+void ADAPTGUI::initialize( CAM_Application* app )
 //=======================================================================
 {
   SalomeApp_Module::initialize( app );
@@ -128,7 +128,7 @@ void HOMARDGUI::initialize( CAM_Application* app )
 // function : createHOMARDAction
 // create an item in status bar and Homard menu
 //================================================
-void HOMARDGUI::createHOMARDAction( const int id, const QString& po_id, const QString& icon_id, const int key, const bool toggle  )
+void ADAPTGUI::createHOMARDAction( const int id, const QString& po_id, const QString& icon_id, const int key, const bool toggle  )
 {
 //   MESSAGE("createHOMARDAction");
   QIcon icon;
@@ -154,7 +154,7 @@ void HOMARDGUI::createHOMARDAction( const int id, const QString& po_id, const QS
 // constructs Homard menu
 // calls createHOMARDAction for each item
 //================================================
-void HOMARDGUI::createActions(){
+void ADAPTGUI::createActions(){
 //
   createHOMARDAction( 1101, "NEW_CASE",         "cas_calcule.png"        );
   createHOMARDAction( 1102, "PURSUE_ITERATION", "iter_poursuite.png"     );
@@ -177,7 +177,7 @@ void HOMARDGUI::createActions(){
 //================================================
 // function : createPreferences
 //================================================
-void HOMARDGUI::createPreferences()
+void ADAPTGUI::createPreferences()
 {
   MESSAGE("createPreferences")
 
@@ -229,7 +229,7 @@ void HOMARDGUI::createPreferences()
 //================================================
 // function : createMenus
 //================================================
-void HOMARDGUI::createMenus()
+void ADAPTGUI::createMenus()
 {
   MESSAGE("createMenus")
 //
@@ -266,14 +266,14 @@ void HOMARDGUI::createMenus()
 //   ces valeurs sont les valeurs definies.
 // . Si cela ne s'est pas bien passe, ce sont les valeurs par defaut de HOMARD_Gen
 //================================================
-void HOMARDGUI::recupPreferences()
+void ADAPTGUI::recupPreferences()
 {
   MESSAGE("recupPreferences")
 //
 // A. Declarations
 //
   SalomeApp_Application* app = dynamic_cast< SalomeApp_Application* >( application() );
-  HOMARD::HOMARD_Gen_var homardGen = HOMARDGUI::InitHOMARDGen(app);
+  HOMARD::HOMARD_Gen_var homardGen = ADAPTGUI::InitHOMARDGen(app);
   int defaut_i ;
   std::string defaut_s ;
   QString QString_v ;
@@ -339,7 +339,7 @@ void HOMARDGUI::recupPreferences()
 }
 
 //================================================
-void HOMARDGUI::OnGUIEvent()
+void ADAPTGUI::OnGUIEvent()
 //================================================
 {
   MESSAGE("OnGUIEvent()")
@@ -354,7 +354,7 @@ void HOMARDGUI::OnGUIEvent()
 //=======================================================================
 // Method OnGUIEvent pour Homard
 //=======================================================================
-bool HOMARDGUI::OnGUIEvent (int theCommandID)
+bool ADAPTGUI::OnGUIEvent (int theCommandID)
 {
   MESSAGE("OnGUIEvent avec theCommandID = "<<theCommandID);
 // A. Controles
@@ -370,7 +370,7 @@ bool HOMARDGUI::OnGUIEvent (int theCommandID)
 
   SUIT_Desktop* parent = application()->desktop();
 
-  HOMARD::HOMARD_Gen_var homardGen = HOMARDGUI::InitHOMARDGen(app);
+  HOMARD::HOMARD_Gen_var homardGen = ADAPTGUI::InitHOMARDGen(app);
 
   if (!CORBA::is_nil(homardGen))
     homardGen->UpdateStudy();
@@ -667,7 +667,7 @@ bool HOMARDGUI::OnGUIEvent (int theCommandID)
 
 // Module's engine IOR
 //=============================================================================
-QString HOMARDGUI::engineIOR() const
+QString ADAPTGUI::engineIOR() const
 //=============================================================================
 {
   CORBA::String_var anIOR = getApp()->orb()->object_to_string( InitHOMARDGen(getApp()) );
@@ -676,7 +676,7 @@ QString HOMARDGUI::engineIOR() const
 
 // Module's activation
 //=============================================================================
-bool HOMARDGUI::activateModule( SUIT_Study* theStudy )
+bool ADAPTGUI::activateModule( SUIT_Study* theStudy )
 //=============================================================================
 {
   bool bOk = SalomeApp_Module::activateModule( theStudy );
@@ -689,7 +689,7 @@ bool HOMARDGUI::activateModule( SUIT_Study* theStudy )
 
 // Module's deactivation
 //=============================================================================
-bool HOMARDGUI::deactivateModule( SUIT_Study* theStudy )
+bool ADAPTGUI::deactivateModule( SUIT_Study* theStudy )
 //=============================================================================
 {
   setMenuShown( false );
@@ -700,7 +700,7 @@ bool HOMARDGUI::deactivateModule( SUIT_Study* theStudy )
 
 // Default windows
 //=============================================================================
-void HOMARDGUI::windows( QMap<int, int>& theMap ) const
+void ADAPTGUI::windows( QMap<int, int>& theMap ) const
 //=============================================================================
 {
   theMap.clear();
@@ -711,7 +711,7 @@ void HOMARDGUI::windows( QMap<int, int>& theMap ) const
 }
 
 //=============================================================================
-void HOMARDGUI::setOrb()
+void ADAPTGUI::setOrb()
 //=============================================================================
 {
   try
@@ -728,7 +728,7 @@ void HOMARDGUI::setOrb()
 	    ASSERT(! CORBA::is_nil(_orb));
 }
 //========================================
-_PTR(SObject) HOMARDGUI::chercheMonObjet()
+_PTR(SObject) ADAPTGUI::chercheMonObjet()
 //========================================
 {
   SALOMEDSClient_SObject* aSO = NULL;
@@ -747,7 +747,7 @@ _PTR(SObject) HOMARDGUI::chercheMonObjet()
   else { return _PTR(SObject)(aSO); }
 }
 //=============================================================================
-void HOMARDGUI::contextMenuPopup( const QString& client, QMenu* menu, QString& title )
+void ADAPTGUI::contextMenuPopup( const QString& client, QMenu* menu, QString& title )
 //=============================================================================
 {
   MESSAGE("Debut de contextMenuPopup");
@@ -841,56 +841,56 @@ void HOMARDGUI::contextMenuPopup( const QString& client, QMenu* menu, QString& t
   }
 }
 
-void HOMARDGUI::NextIter()
+void ADAPTGUI::NextIter()
 {
   this->OnGUIEvent(1103);
 }
 
-void HOMARDGUI::LanceCalcul0()
+void ADAPTGUI::LanceCalcul0()
 {
   this->OnGUIEvent(1111);
 }
 
-void HOMARDGUI::LanceCalcul1()
+void ADAPTGUI::LanceCalcul1()
 {
   this->OnGUIEvent(1112);
 }
 
-void HOMARDGUI::IterInfo()
+void ADAPTGUI::IterInfo()
 {
   this->OnGUIEvent(1121);
 }
 
-void HOMARDGUI::MeshPublish0()
+void ADAPTGUI::MeshPublish0()
 {
   this->OnGUIEvent(1131);
 }
 
-void HOMARDGUI::MeshPublish1()
+void ADAPTGUI::MeshPublish1()
 {
   this->OnGUIEvent(1132);
 }
 
-void HOMARDGUI::Edit()
+void ADAPTGUI::Edit()
 {
   this->OnGUIEvent(1201);
 }
 
-void HOMARDGUI::Delete()
+void ADAPTGUI::Delete()
 {
   this->OnGUIEvent(1211);
 }
 
-void HOMARDGUI::EditAsciiFile()
+void ADAPTGUI::EditAsciiFile()
 {
   this->OnGUIEvent(1302);
 }
 
-void HOMARDGUI::YACSCreate()
+void ADAPTGUI::YACSCreate()
 {
   this->OnGUIEvent(1401);
 }
-void HOMARDGUI::YACSWrite()
+void ADAPTGUI::YACSWrite()
 {
   this->OnGUIEvent(1402);
 }
@@ -903,7 +903,7 @@ void HOMARDGUI::YACSWrite()
 extern "C" {
   Standard_EXPORT CAM_Module* createModule()
   {
-    return new HOMARDGUI("");
+    return new ADAPTGUI("");
   }
 }
 
