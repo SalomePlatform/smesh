@@ -191,6 +191,15 @@ IF(NOT WITH_SHAPER_STUDY AND SALOME_BUILD_TESTS)
   MESSAGE(WARNING "SHAPERSTUDY is not found; the corresponding tests will be omitted")
 ENDIF()
 
+# Find MEDCoupling
+# ================
+SET(MEDCOUPLING_ROOT_DIR $ENV{MEDCOUPLING_ROOT_DIR} CACHE PATH "Path to the MEDCoupling tool")
+IF(EXISTS ${MEDCOUPLING_ROOT_DIR})
+  FIND_PACKAGE(SalomeMEDCoupling REQUIRED)   # will reload HDF5, MEDFile, XDR, etc ...
+ELSE(EXISTS ${MEDCOUPLING_ROOT_DIR})
+  MESSAGE(FATAL_ERROR "We absolutely need the MEDCoupling tool, please define MEDCOUPLING_ROOT_DIR !")
+ENDIF(EXISTS ${MEDCOUPLING_ROOT_DIR})
+
 ##
 ## SMESH specifics
 ##
