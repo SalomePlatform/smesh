@@ -58,6 +58,32 @@ SET(_link_LIBRARIES
   ADAPTEngine
 )
 
+# --- resources ---
+
+# resource files / to be processed by lrelease
+SET(_ts_RESOURCES
+  ADAPT_msg_en.ts
+  ADAPT_msg_fr.ts
+  ADAPT_msg_ja.ts
+)
+
+# resource files / to be processed by uic
+SET(_uic_FILES
+  CreateBoundaryCAO.ui
+  CreateBoundaryAn.ui
+  CreateBoundaryDi.ui
+  CreateCase.ui
+  CreateHypothesis.ui
+  CreateIteration.ui
+  CreateListGroup.ui
+  CreateYACS.ui
+  CreateZone.ui
+  EditFile.ui
+  IterInfo.ui
+  MeshInfo.ui
+  PursueIteration.ui
+)
+
 # --- headers ---
 
 # header files / to be processed by moc
@@ -140,32 +166,6 @@ SET(_other_SOURCES
 
 # sources / to compile
 SET(ADAPT_SOURCES ${_other_SOURCES} ${_moc_SOURCES} ${_uic_HEADERS})
-
-# --- resources ---
-
-# resource files / to be processed by lrelease
-SET(_ts_RESOURCES
-  ADAPT_msg_en.ts
-  ADAPT_msg_fr.ts
-  ADAPT_msg_ja.ts
-)
-
-# resource files / to be processed by uic
-SET(_uic_FILES
-  CreateBoundaryCAO.ui
-  CreateBoundaryAn.ui
-  CreateBoundaryDi.ui
-  CreateCase.ui
-  CreateHypothesis.ui
-  CreateIteration.ui
-  CreateListGroup.ui
-  CreateYACS.ui
-  CreateZone.ui
-  EditFile.ui
-  IterInfo.ui
-  MeshInfo.ui
-  PursueIteration.ui
-)
 
 # --- rules ---
 
