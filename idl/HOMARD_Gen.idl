@@ -31,7 +31,7 @@
 #include "HOMARD_Boundary.idl"
 #include "HOMARD_YACS.idl"
 
-module HOMARD
+module ADAPT
 {
   typedef sequence<string> listeHypotheses;
   typedef sequence<string> listeZones;

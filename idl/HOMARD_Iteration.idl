@@ -34,7 +34,7 @@
 #include "SALOME_Exception.idl"
 #include "SALOMEDS.idl"
 
-module HOMARD
+module ADAPT
 {
   typedef sequence<string> listeIterFilles ;
   typedef sequence<string> listeFieldInterpsIter ;

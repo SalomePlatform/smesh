@@ -36,7 +36,7 @@
 
 #include "HOMARD_Cas.idl"
 
-module HOMARD
+module ADAPT
 {
   typedef sequence<string> listeZonesHypo ;
   typedef sequence<string> listeIters ;

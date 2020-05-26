@@ -37,7 +37,7 @@
 #include "HOMARD_Iteration.idl"
 #include "HOMARD_YACS.idl"
 
-module HOMARD
+module ADAPT
 {
  typedef sequence<double> extrema ;
  typedef sequence<string> ListGroupType ;

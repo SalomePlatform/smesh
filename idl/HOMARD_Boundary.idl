@@ -38,7 +38,7 @@
 #include "HOMARD_Zone.idl"
 
 
-module HOMARD
+module ADAPT
 {
   interface HOMARD_Boundary : Engines::EngineComponent
   {
@@ -80,11 +80,11 @@ module HOMARD
                                                            raises (SALOME::SALOME_Exception);
 
 
-    HOMARD::double_array GetCoords()                       raises (SALOME::SALOME_Exception);
+    ADAPT::double_array GetCoords()                       raises (SALOME::SALOME_Exception);
 
     void     SetLimit (in double Xincr, in double Yincr, in double Zincr)
                                                            raises (SALOME::SALOME_Exception);
-    HOMARD::double_array GetLimit()                        raises (SALOME::SALOME_Exception);
+    ADAPT::double_array GetLimit()                        raises (SALOME::SALOME_Exception);
 
     void       AddGroup(in string LeGroupe)                raises (SALOME::SALOME_Exception);
     void       SetGroups(in ListGroupType ListGroup)       raises (SALOME::SALOME_Exception);

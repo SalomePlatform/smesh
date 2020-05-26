@@ -34,7 +34,7 @@
 #include "SALOME_Exception.idl"
 #include "SALOMEDS.idl"
 
-module HOMARD
+module ADAPT
 {
   typedef sequence<double    > double_array ;
   typedef sequence<string    > listeHypo ;

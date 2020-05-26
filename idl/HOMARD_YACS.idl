@@ -34,7 +34,7 @@
 #include "SALOME_Exception.idl"
 #include "SALOMEDS.idl"
 
-module HOMARD
+module ADAPT
 {
   interface HOMARD_YACS : Engines::EngineComponent
   {
