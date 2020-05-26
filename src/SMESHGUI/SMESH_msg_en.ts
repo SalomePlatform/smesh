@@ -309,6 +309,14 @@
         <translation>Compute</translation>
     </message>
     <message>
+        <source>MEN_RE_COMPUTE</source>
+        <translation>Clear + Compute</translation>
+    </message>
+    <message>
+        <source>MEN_SHOW_ERRORS</source>
+        <translation>Show Compute Errors</translation>
+    </message>
+    <message>
         <source>MEN_COMPUTE_SUBMESH</source>
         <translation>Compute Sub-mesh</translation>
     </message>

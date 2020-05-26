@@ -129,6 +129,8 @@ QVariant SMESHGUI_Selection::parameter( const int ind, const QString& p ) const
   else if ( p=="entityMode" )           val = QVariant( entityMode( ind ) );
   else if ( p=="isNumFunctor" )         val = QVariant( isNumFunctor( ind ) );
   else if ( p=="displayMode" )          val = QVariant( displayMode( ind ) );
+  else if ( p=="hasAlgo" )              val = QVariant( hasAlgo( ind ) );
+  else if ( p=="hasErrors" )            val = QVariant( hasErrors( ind ) );
   else if ( p=="isComputable" )         val = QVariant( isComputable( ind ) );
   else if ( p=="isPreComputable" )      val = QVariant( isPreComputable( ind ) );
   else if ( p=="hasGeomReference" )     val = QVariant( hasGeomReference( ind ) );
@@ -548,8 +550,51 @@ int SMESHGUI_Selection::dim( int ind ) const
 }
 
 //=======================================================================
+//function : hasAlgo
+//purpose  : return true for a ready-to-compute [sub-]mesh
+//=======================================================================
+
+bool SMESHGUI_Selection::hasAlgo( int ind ) const
+{
+  if ( ind >= 0 && ind < myTypes.count() && ( myTypes[ind] == "Mesh" ||
+                                              myTypes[ind].startsWith("Mesh " )))
+  {
+    QMap<int,int> modeMap;
+    _PTR(SObject) meshSO = SMESH::getStudy()->FindObjectID( entry( ind ).toStdString() );
+
+    SMESHGUI_PrecomputeOp::getAssignedAlgos( meshSO, modeMap );
+    return modeMap.size() > 0;
+  }
+  return false;
+}
+
+
+//=======================================================================
+//function : hasAlgo
+//purpose  : return true if a mesh was computed with errors
+//=======================================================================
+
+bool SMESHGUI_Selection::hasErrors( int ind ) const
+{
+  if ( ind >= 0 && ind < myTypes.count() && ( myTypes[ind] == "Mesh"))
+  {
+    _PTR(SObject)       meshSO = SMESH::getStudy()->FindObjectID( entry( ind ).toStdString() );
+    CORBA::Object_var      obj = SMESH::SObjectToObject( meshSO );
+    SMESH::SMESH_Mesh_var mesh = SMESH::SMESH_Mesh::_narrow( obj );
+    if ( !CORBA::is_nil( mesh ) )
+    {
+      SMESH::SMESH_Gen_var   gen = SMESHGUI::GetSMESHGUI()->GetSMESHGen();
+      GEOM::GEOM_Object_var geom = mesh->GetShapeToMesh();
+      SMESH::compute_error_array_var compErrors = gen->GetComputeErrors( mesh, geom );
+      return compErrors->length();
+    }
+  }
+  return false;
+}
+
+//=======================================================================
 //function : isComputable
-//purpose  : return true for a ready-to-compute mesh
+//purpose  : Return true if a [sub-]mesh does not have "computed" icon
 //=======================================================================
 
 bool SMESHGUI_Selection::isComputable( int ind ) const
@@ -557,16 +602,13 @@ bool SMESHGUI_Selection::isComputable( int ind ) const
   if ( ind >= 0 && ind < myTypes.count() && ( myTypes[ind] == "Mesh" ||
                                               myTypes[ind].startsWith("Mesh " )))
   {
-    QMap<int,int> modeMap;
-    _PTR(SObject) meshSO = SMESH::getStudy()->FindObjectID( entry( ind ).toUtf8().data() );
-
-    _PTR(SComponent) component = meshSO->GetFatherComponent();
-    if ( meshSO->Depth() - component->Depth() > 1 ) // sub-mesh, get a mesh
-      while ( meshSO->Depth() - component->Depth() > 1 )
-        meshSO = meshSO->GetFather();
-
-    SMESHGUI_PrecomputeOp::getAssignedAlgos( meshSO, modeMap );
-    return modeMap.size() > 0;
+    _PTR(GenericAttribute) attr;
+    if ( _PTR(SObject) meshSO = SMESH::getStudy()->FindObjectID( entry( ind ).toStdString() ))
+      if ( meshSO->FindAttribute( attr, "AttributePixMap" ))
+      {
+        _PTR(AttributePixMap) pixmap = attr;
+        return ( pixmap->GetPixMap() != "ICON_SMESH_TREE_MESH" );
+      }
   }
   return false;
 }

@@ -656,6 +656,24 @@ SMESHGUI_BaseComputeOp::SMESHGUI_BaseComputeOp()
   myHelpFileName = "about_meshes.html"; // V4
 }
 
+//================================================================================
+/*!
+ * \brief Gets dialog of this operation
+ * \retval LightApp_Dialog* - pointer to dialog of this operation
+ */
+//================================================================================
+
+LightApp_Dialog* SMESHGUI_BaseComputeOp::dlg() const
+{
+  return myCompDlg;
+}
+
+//================================================================================
+/*!
+ * \brief Return a selected mesh
+ */
+//================================================================================
+
 SMESH::SMESH_Mesh_ptr SMESHGUI_BaseComputeOp::getMesh()
 {
   LightApp_SelectionMgr* Sel = selectionMgr();
@@ -663,6 +681,23 @@ SMESH::SMESH_Mesh_ptr SMESHGUI_BaseComputeOp::getMesh()
   Handle(SALOME_InteractiveObject) anIO = selected.First();
   SMESH::SMESH_Mesh_var aMesh = SMESH::GetMeshByIO(anIO);
   return myMesh->_is_nil() ? aMesh._retn() : SMESH::SMESH_Mesh::_duplicate( myMesh );
+}
+
+//================================================================================
+/*!
+ * \brief check the same operations on the same mesh
+ */
+//================================================================================
+
+bool SMESHGUI_BaseComputeOp::isValid(  SUIT_Operation* theOp  ) const
+{
+  SMESHGUI_BaseComputeOp* baseOp = dynamic_cast<SMESHGUI_BaseComputeOp*>( theOp );
+  bool ret = true;
+  if ( !myMesh->_is_nil() && baseOp ) {
+    SMESH::SMESH_Mesh_var aMesh = baseOp->getMesh();
+    if ( !aMesh->_is_nil() && aMesh->GetId() == myMesh->GetId() ) ret = false;
+  }
+  return ret;
 }
 
 //================================================================================
@@ -719,6 +754,8 @@ void SMESHGUI_BaseComputeOp::startOperation()
     onCancel();
     return;
   }
+
+  myCompDlg->myMeshName->setText( SMESH::GetName( myIObject ));
 
   myMainShape = myMesh->GetShapeToMesh();
 
@@ -883,7 +920,6 @@ void SMESHGUI_BaseComputeOp::computeMesh()
   bool shapeOK = myMainShape->_is_nil() ? !hasShape : hasShape;
   if ( shapeOK )
   {
-    myCompDlg->myMeshName->setText( aMeshSObj->GetName().c_str() );
     SMESH::SMESH_Gen_var gen = getSMESHGUI()->GetSMESHGen();
     SMESH::algo_error_array_var errors = gen->GetAlgoState(myMesh,myMainShape);
     if ( errors->length() > 0 ) {
@@ -1554,23 +1590,6 @@ void SMESHGUI_ComputeOp::startOperation()
 
 //================================================================================
 /*!
- * \brief check the same operations on the same mesh
- */
-//================================================================================
-
-bool SMESHGUI_BaseComputeOp::isValid(  SUIT_Operation* theOp  ) const
-{
-  SMESHGUI_BaseComputeOp* baseOp = dynamic_cast<SMESHGUI_BaseComputeOp*>( theOp );
-  bool ret = true;
-  if ( !myMesh->_is_nil() && baseOp ) {
-    SMESH::SMESH_Mesh_var aMesh = baseOp->getMesh();
-    if ( !aMesh->_is_nil() && aMesh->GetId() == myMesh->GetId() ) ret = false;
-  }
-  return ret;
-}
-
-//================================================================================
-/*!
  * \brief Gets dialog of this operation
  * \retval LightApp_Dialog* - pointer to dialog of this operation
  */
@@ -1956,7 +1975,6 @@ void SMESHGUI_PrecomputeOp::onPreview()
   bool computeFailed = true, memoryLack = false;
 
   SMESHGUI_ComputeDlg* aCompDlg = computeDlg();
-  aCompDlg->myMeshName->setText( aMeshSObj->GetName().c_str() );
 
   SMESHGUI* gui = getSMESHGUI();
   SMESH::SMESH_Gen_var gen = gui->GetSMESHGen();
@@ -2203,7 +2221,6 @@ void SMESHGUI_BaseComputeOp::evaluateMesh()
   bool shapeOK = myMainShape->_is_nil() ? !hasShape : hasShape;
   if ( shapeOK )
   {
-    myCompDlg->myMeshName->setText( aMeshSObj->GetName().c_str() );
     SMESH::SMESH_Gen_var gen = getSMESHGUI()->GetSMESHGen();
     SMESH::algo_error_array_var errors = gen->GetAlgoState(myMesh,myMainShape);
     if ( errors->length() > 0 ) {
@@ -2407,3 +2424,43 @@ SMESHGUI_ComputeDlg* SMESHGUI_BaseComputeOp::evaluateDlg() const
   return myCompDlg;
 }
 
+//================================================================================
+/*!
+ * \brief SMESHGUI_BaseComputeOp constructor
+ */
+//================================================================================
+
+SMESHGUI_ShowErrorsOp::SMESHGUI_ShowErrorsOp():
+  SMESHGUI_BaseComputeOp()
+{
+}
+
+//================================================================================
+/*!
+ * \brief Start SMESHGUI_ShowErrorsOp
+ */
+//================================================================================
+
+void SMESHGUI_ShowErrorsOp::startOperation()
+{
+  SMESHGUI_BaseComputeOp::startOperation();
+
+  if ( myMesh->_is_nil() )
+    return;
+
+  SMESH::SMESH_Gen_var                  gen = getSMESHGUI()->GetSMESHGen();
+  SMESH::compute_error_array_var compErrors = gen->GetComputeErrors( myMesh, myMainShape );
+  QString                        hypErrors;
+  if ( compErrors->length() == 0 )
+    return;
+
+  showComputeResult( /*MemoryLack=*/false, /*NoCompError=*/false, compErrors,
+                     /*NoHypoError=*/true, hypErrors );
+
+  SMESHGUI_ComputeDlg* aCompDlg = computeDlg();
+  aCompDlg->setWindowTitle( tr( "SMESH_WRN_COMPUTE_FAILED" ));
+  aCompDlg->myFullInfo->hide();
+  aCompDlg->myBriefInfo->hide();
+
+  return;
+}

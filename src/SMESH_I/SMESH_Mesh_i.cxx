@@ -568,7 +568,7 @@ namespace
 
 //================================================================================
 /*!
- * \brief Import data from a GMF file and Return an error description
+ * \brief Import data from a GMF file and return an error description
  */
 //================================================================================
 
@@ -4972,7 +4972,7 @@ SMESH::long_array* SMESH_Mesh_i::GetSubMeshElementsId(const CORBA::Long ShapeID)
 //=============================================================================
 /*!
  * Return ID of nodes for given sub-mesh
- * If param all==true - Return all nodes, else -
+ * If param all==true - return all nodes, else -
  * Return only nodes on shapes.
  */
 //=============================================================================
@@ -5079,7 +5079,7 @@ CORBA::LongLong SMESH_Mesh_i::GetMeshPtr()
 //=============================================================================
 /*!
  * Get XYZ coordinates of node as list of double
- * If there is not node for given ID - Return empty list
+ * If there is not node for given ID - return empty list
  */
 //=============================================================================
 
@@ -5109,8 +5109,8 @@ SMESH::double_array* SMESH_Mesh_i::GetNodeXYZ(const CORBA::Long id)
 
 //=============================================================================
 /*!
- * For given node Return list of IDs of inverse elements
- * If there is not node for given ID - Return empty list
+ * For given node return list of IDs of inverse elements
+ * If there is not node for given ID - return empty list
  */
 //=============================================================================
 
@@ -5243,8 +5243,8 @@ SMESH::ElementPosition SMESH_Mesh_i::GetElementPosition(CORBA::Long ElemID)
 
 //=============================================================================
 /*!
- * If given element is node Return IDs of shape from position
- * If there is not node for given ID - Return -1
+ * If given element is node return IDs of shape from position
+ * If there is not node for given ID - return -1
  */
 //=============================================================================
 
@@ -5271,7 +5271,7 @@ CORBA::Long SMESH_Mesh_i::GetShapeID(const CORBA::Long id)
 /*!
  * For given element return ID of result shape after
  * ::FindShape() from SMESH_MeshEditor
- * If there is not element for given ID - Return -1
+ * If there is not element for given ID - return -1
  */
 //=============================================================================
 
@@ -5301,7 +5301,7 @@ CORBA::Long SMESH_Mesh_i::GetShapeIDForElem(const CORBA::Long id)
 //=============================================================================
 /*!
  * Return number of nodes for given element
- * If there is not element for given ID - Return -1
+ * If there is not element for given ID - return -1
  */
 //=============================================================================
 
@@ -5322,8 +5322,8 @@ CORBA::Long SMESH_Mesh_i::GetElemNbNodes(const CORBA::Long id)
 //=============================================================================
 /*!
  * Return ID of node by given index for given element
- * If there is not element for given ID - Return -1
- * If there is not node for given index - Return -2
+ * If there is not element for given ID - return -1
+ * If there is not node for given index - return -2
  */
 //=============================================================================
 
@@ -6045,7 +6045,7 @@ SMESH::SMESH_Mesh_ptr SMESH_Mesh_i::GetMesh()
 
 //================================================================================
 /*!
- * \brief Return false if GetMeshInfo() Return incorrect information that may
+ * \brief Return false if GetMeshInfo() return incorrect information that may
  *        happen if mesh data is not yet fully loaded from the file of study.
  * 
  * 
@@ -6425,7 +6425,7 @@ class SMESH_DimHyp
   //! fields
   int _dim;    //!< a dimension the algo can build (concurrent dimension)
   int _ownDim; //!< dimension of shape of _subMesh (>=_dim)
-  TopTools_MapOfShape _shapeMap;
+  TopTools_MapOfShape _shapeMap; //!< [sub-]shapes of dimension == _dim
   SMESH_subMesh*      _subMesh;
   list<const SMESHDS_Hypothesis*> _hypotheses; //!< algo is first, then its parameters
 
@@ -6522,9 +6522,11 @@ class SMESH_DimHyp
     bool isSame = checkAlgo( a1, a2 );
     if ( !isSame )
     {
-      if ( !a1 || !a2 )
-        return false; // pb?
-      return a1->GetDim() == a2->GetDim(); // different algorithms of same dim -> concurrency !
+      return true;
+      // commented off for IPAL54678
+      // if ( !a1 || !a2 )
+      //   return false; // pb?
+      // return a1->GetDim() == a2->GetDim(); // different algorithms of same dim -> concurrency !
     }
 
     // check hypothesises for concurrence (skip first as algorithm)
@@ -6565,6 +6567,9 @@ void addDimHypInstance(const int                               theDim,
                        const list <const SMESHDS_Hypothesis*>& theHypList,
                        TDimHypList*                            theDimHypListArr )
 {
+  if ( !theAlgo->NeedDiscreteBoundary() &&
+       theAlgo->NeedLowerHyps( theDim )) // IPAL54678
+    return;
   TDimHypList& listOfdimHyp = theDimHypListArr[theDim];
   if ( listOfdimHyp.empty() || listOfdimHyp.back()->_subMesh != theSubMesh ) {
     SMESH_DimHyp* dimHyp = new SMESH_DimHyp( theSubMesh, theDim, theShape );
@@ -6707,7 +6712,7 @@ CORBA::Boolean SMESH_Mesh_i::IsUnorderedSubMesh(CORBA::Long submeshID)
 
 //=============================================================================
 /*!
- * \brief Return submesh objects list in meshing order
+ * \brief Return sub-mesh objects list in meshing order
  */
 //=============================================================================
 
@@ -6776,7 +6781,8 @@ TListOfListOfInt SMESH_Mesh_i::findConcurrentSubMeshes()
           continue; // no algorithm assigned to a current submesh
 
         int dim = anAlgo->GetDim(); // top concurrent dimension (see comment to SMESH_DimHyp)
-        // the submesh can concurrent at <dim> (or lower dims if !anAlgo->NeedDiscreteBoundary())
+        // the submesh can concurrent at <dim> (or lower dims if !anAlgo->NeedDiscreteBoundary()
+        // and !anAlgo->NeedLowerHyps( dim ))
 
         // create instance of dimension-hypothesis for found concurrent dimension(s) and algorithm
         for ( int j = anAlgo->NeedDiscreteBoundary() ? dim : 1, jn = dim; j <= jn; j++ )

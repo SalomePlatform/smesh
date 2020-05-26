@@ -1913,6 +1913,7 @@ void SMESHGUI_MeshOp::onHypoSet( const QString& theSetName )
   if ( aHypoSet->toUseCommonSize() && !getAverageSize( myAverageSize ))
     return;
 
+  int maxDim = -1;
   for ( int isAlgo = 1; isAlgo >= 0; --isAlgo )
     for ( aHypoSet->init( isAlgo, setType ); aHypoSet->more(); aHypoSet->next() )
     {
@@ -1930,6 +1931,7 @@ void SMESHGUI_MeshOp::onHypoSet( const QString& theSetName )
         {
           setCurrentHyp( myDim, Algo, index );
           onAlgoSelected( index, myDim );
+          maxDim = Max( maxDim, myDim );
         }
       }
       else
@@ -1962,6 +1964,9 @@ void SMESHGUI_MeshOp::onHypoSet( const QString& theSetName )
         }
       }
     }
+
+  if ( maxDim > 0 )
+    myDlg->setCurrentTab( maxDim );
 
   return;
 }
