@@ -334,6 +334,7 @@ SET(_${PROJECT_NAME}_exposed_targets
   SMDS SMESHimpl SMESHEngine SMESHClient SMESHDS
   SMESHUtils StdMeshers StdMeshersEngine MeshJobManagerEngine
   SPADDERPluginTesterEngine SalomeIDLSMESH SalomeIDLSPADDER
+  ADAPTEngine ADAPTFrontTrack ADAPTImpl
 )
 
 IF(SALOME_SMESH_ENABLE_MEFISTO)
@@ -343,7 +344,7 @@ ENDIF(SALOME_SMESH_ENABLE_MEFISTO)
 
 IF(SALOME_BUILD_GUI)
   LIST(APPEND _${PROJECT_NAME}_exposed_targets
-      SMESHObject SMESHFiltersSelection SMESH PluginUtils StdMeshersGUI
+      SMESHObject SMESHFiltersSelection SMESH PluginUtils StdMeshersGUI ADAPTGUI
   )
 ENDIF(SALOME_BUILD_GUI)
 

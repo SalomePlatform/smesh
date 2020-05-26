@@ -74,6 +74,7 @@ SET(_link_LIBRARIES
   SMDS
   SMESHControls
   SMESHObject
+  ADAPTGUI
 )
 
 # --- headers ---
