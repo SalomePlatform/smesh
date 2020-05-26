@@ -3018,8 +3018,8 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
       }
       break;
     }
-  case SMESHOp::OpSplitBiQuadratic:
 
+  // Adaptation - begin
   case SMESHOp::OpUniformRefinement:
   case SMESHOp::OpHONewCase:
   case SMESHOp::OpHOCaseFollow:
@@ -3029,7 +3029,14 @@ bool SMESHGUI::OnGUIEvent( int theCommandID )
   case SMESHOp::OpHOEdit:
   case SMESHOp::OpHODelete:
   case SMESHOp::OpMGAdapt:
+    {
+      SMESH::SMESH_Mesh_var aMesh = SMESH::SMESH_Mesh::_nil();
+      SMESHGUI_AdaptDlg *aDlg = new SMESHGUI_AdaptDlg( this, theCommandID, aMesh);
+      aDlg->show();
+    }
+  // Adaptation - end
 
+  case SMESHOp::OpSplitBiQuadratic:
   case SMESHOp::OpConvertMeshToQuadratic:
   case SMESHOp::OpCreateBoundaryElements: // create 2D mesh from 3D
   case SMESHOp::OpReorientFaces:
@@ -5908,9 +5915,6 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
   // to do : create operation here
   switch( id )
   {
-    case SMESHOp::OpSplitBiQuadratic:
-      op = new SMESHGUI_SplitBiQuadOp();
-    break;
     case SMESHOp::OpUniformRefinement:
     case SMESHOp::OpHONewCase:
     case SMESHOp::OpHOCaseFollow:
@@ -5920,8 +5924,9 @@ LightApp_Operation* SMESHGUI::createOperation( const int id ) const
     case SMESHOp::OpHOEdit:
     case SMESHOp::OpHODelete:
     case SMESHOp::OpMGAdapt:
-      SMESHGUI_GroupDlg *aDlg = new SMESHGUI_AdaptDlg( this, id);
-      aDlg->show();
+    break;
+    case SMESHOp::OpSplitBiQuadratic:
+      op = new SMESHGUI_SplitBiQuadOp();
     break;
     case SMESHOp::OpConvertMeshToQuadratic:
       op = new SMESHGUI_ConvToQuadOp();
